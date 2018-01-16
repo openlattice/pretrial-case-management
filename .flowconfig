@@ -1,0 +1,6 @@
+[ignore]
+.*/build/.*
+.*/node_modules/.*
+
+[libs]
+./node_modules/redux-reqseq/config/flow/types.js
