@@ -2,14 +2,16 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import FontAwesome from 'react-fontawesome';
 import DatePicker from 'react-bootstrap-date-picker';
+import Immutable from 'immutable';
 import moment from 'moment';
 import styled from 'styled-components';
 import { connect } from 'react-redux';
 import { Redirect, Route, Switch, withRouter } from 'react-router-dom';
 import { bindActionCreators } from 'redux';
 
+import PSAReviewRow from '../../components/review/PSAReviewRow';
 import StyledButton from '../../components/buttons/StyledButton';
-import * as DownloadActionFactory from './DownloadActionFactory';
+import * as ReviewActionFactory from './ReviewActionFactory';
 import * as Routes from '../../core/router/Routes';
 
 const StyledFormViewWrapper = styled.div`
@@ -75,52 +77,51 @@ const Error = styled.div`
   margin-top: 15px;
 `;
 
+const DATE_FORMAT = 'MM/DD/YYYY';
 
-class Review extends React.Component {
+class ReviewPSA extends React.Component {
 
   static propTypes = {
+    scoresAsMap: PropTypes.instanceOf(Immutable.Map).isRequired,
+    psaNeighborsByDate: PropTypes.instanceOf(Immutable.Map).isRequired,
+    errorMesasge: PropTypes.string.isRequired,
     actions: PropTypes.shape({
-      downloadRequest: PropTypes.func.isRequired
+      loadPsasByDateRequest: PropTypes.func.isRequired,
+      downloadPsaReviewPdfRequest: PropTypes.func.isRequired
     })
   }
 
   constructor(props) {
     super(props);
     this.state = {
-      startDate: undefined,
-      endDate: undefined
-    }
+      date: moment().toISOString()
+    };
+  }
+
+  componentDidMount() {
+    this.props.actions.loadPsasByDateRequest();
   }
 
   handleClose = () => {
     this.setState({
-      startDate: undefined,
-      endDate: undefined
+      date: moment().toISOString()
     });
     this.props.history.push(Routes.DASHBOARD);
   }
 
   renderDateRangePicker = () => {
-    const { startDate, endDate } = this.state;
+    const { date } = this.state;
 
     return (
       <div>
-        <DatePickerTitle>Choose a date range.</DatePickerTitle>
+        <DatePickerTitle>Choose a date.</DatePickerTitle>
         <DateRangeContainer>
           <DatePickerGroupContainer>
-            <div>Start Date:</div>
+            <div>PSA Date:</div>
             <DatePicker
-              value={startDate}
+              value={date}
               onChange={(date) => {
-                this.setState({ startDate: date });
-              }} />
-          </DatePickerGroupContainer>
-          <DatePickerGroupContainer>
-            <div>End Date:</div>
-            <DatePicker
-              value={endDate}
-              onChange={(date) => {
-                this.setState({ endDate: date });
+                this.setState({ date });
               }} />
           </DatePickerGroupContainer>
         </DateRangeContainer>
@@ -128,41 +129,26 @@ class Review extends React.Component {
     )
   }
 
-  getErrorText = () => {
-    const { startDate, endDate } = this.state;
-    let errorText;
-
-    if (startDate && endDate) {
-
-      const start = moment(startDate);
-      const end = moment(endDate);
-      const today = moment();
-
-      if (!start.isValid() || !end.isValid()) {
-        errorText = 'At least one of the selected dates is invalid.';
-      }
-      else if (start.isAfter(today)) {
-        errorText = 'The selected start date cannot be later than today.'
-      }
-      else if (end.isBefore(start)) {
-        errorText = 'The selected end date must be after the selected start date.';
-      }
-    }
-    return errorText
-  }
-
   renderError = () => {
-    return <Error>{this.getErrorText()}</Error>;
+    return <Error>{this.props.errorMessage}</Error>;
   }
 
-  download = () => {
-    this.props.actions.downloadRequest(this.state.startDate, this.state.endDate);
-  }
-
-  renderDownload = () => {
-    const { startDate, endDate } = this.state;
-    if (!startDate || !endDate || this.getErrorText()) return null;
-    return <StyledButton onClick={this.download}>Download PSAs in This Range</StyledButton>
+  renderPsas = () => {
+    const { scoresAsMap, psaNeighborsByDate, actions } = this.props;
+    const date = moment(this.state.date).format(DATE_FORMAT);
+    const rows = [];
+    return psaNeighborsByDate.get(date, Immutable.Map()).keySeq().map((id) => {
+      const entityNeighbors = psaNeighborsByDate.getIn([date, id], Immutable.Map());
+      const scores = scoresAsMap.get(id, Immutable.Map());
+      return (
+        <PSAReviewRow
+            neighbors={entityNeighbors}
+            scores={scores}
+            entityKeyId={id}
+            downloadFn={actions.downloadPsaReviewPdfRequest}
+            key={id} />
+      );
+    });
   }
 
   render() {
@@ -174,9 +160,9 @@ class Review extends React.Component {
             <CloseX name="close" onClick={this.handleClose} />
           </StyledTitleWrapper>
           <StyledSectionWrapper>
-            {this.renderDateRangePicker()}
             {this.renderError()}
-            {this.renderDownload()}
+            {this.renderDateRangePicker()}
+            {this.renderPsas()}
             <StyledTopFormNavBuffer />
           </StyledSectionWrapper>
         </StyledFormWrapper>
@@ -186,18 +172,27 @@ class Review extends React.Component {
 
 }
 
+function mapStateToProps(state) {
+  const review = state.get('review');
+  return {
+    scoresAsMap: review.get('scoresAsMap'),
+    psaNeighborsByDate: review.get('psaNeighborsByDate'),
+    errorMesasge: review.get('errorMesasge')
+  };
+}
+
 function mapDispatchToProps(dispatch :Function) :Object {
   const actions :{ [string] :Function } = {};
 
-  Object.keys(DownloadActionFactory).forEach((action :string) => {
-    actions[action] = DownloadActionFactory[action];
+  Object.keys(ReviewActionFactory).forEach((action :string) => {
+    actions[action] = ReviewActionFactory[action];
   });
 
   return {
     actions: {
-      ...bindActionCreators(actions, dispatch),
+      ...bindActionCreators(actions, dispatch)
     }
   };
 }
 
-export default connect(null, mapDispatchToProps)(Review);
+export default connect(mapStateToProps, mapDispatchToProps)(ReviewPSA);
