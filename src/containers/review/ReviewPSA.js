@@ -94,7 +94,7 @@ class ReviewPSA extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      date: moment().toISOString()
+      date: moment.utc(moment().format(DATE_FORMAT)).toISOString()
     };
   }
 
@@ -104,7 +104,7 @@ class ReviewPSA extends React.Component {
 
   handleClose = () => {
     this.setState({
-      date: moment().toISOString()
+      date: moment.utc(moment().format(DATE_FORMAT)).toISOString()
     });
     this.props.history.push(Routes.DASHBOARD);
   }

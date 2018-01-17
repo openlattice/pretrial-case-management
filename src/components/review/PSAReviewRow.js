@@ -65,12 +65,12 @@ const DownloadButton = styled(StyledButton)`
 `;
 
 const colorsByScale = {
-  1: '#339933',
-  2: '#bfff00',
-  3: '#ffff00',
-  4: '#ffcc00',
-  5: '#ff9933',
-  6: '#cc0000'
+  1: '#3494E6',
+  2: '#598CDB',
+  3: '#7A85D0',
+  4: '#A37DC4',
+  5: '#CA75B8',
+  6: '#EC6EAD'
 }
 
 const HEIGHT_MULTIPLIER = 10;
