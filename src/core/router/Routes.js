@@ -19,9 +19,13 @@ export const PSA_FORM :string = FORMS + PSA;
 const CREATE :string = '/create';
 export const CREATE_FORMS = DASHBOARD + CREATE;
 
-/* Review Reports */
+/* Review Report */
 const REVIEW :string = '/review';
 export const REVIEW_FORMS = DASHBOARD + REVIEW;
+
+/* Download Reports */
+const DOWNLOAD :string = '/download';
+export const DOWNLOAD_FORMS = DASHBOARD + DOWNLOAD;
 
 /* people */
 export const PERSON = `${DASHBOARD}/person`;

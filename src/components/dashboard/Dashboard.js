@@ -7,7 +7,8 @@ import FormsContainer from '../../containers/dashboard/FormsContainer';
 import NewPersonContainer from '../../containers/person/NewPersonContainer';
 import PeopleContainer from '../../containers/people/PeopleContainer';
 import PersonDetailsContainer from '../../containers/people/PersonDetailsContainer';
-import PSAReview from '../../containers/review/Review';
+import DownloadPSA from '../../containers/download/DownloadPSA';
+import ReviewPSA from '../../containers/review/ReviewPSA';
 import * as Routes from '../../core/router/Routes';
 
 const DashboardWrapper = styled.div`
@@ -30,7 +31,8 @@ const Dashboard = () => {
           <Route path={Routes.NEW_PERSON} component={NewPersonContainer} />
           <Route path={Routes.PEOPLE} component={PeopleContainer} />
           <Route path={Routes.PERSON_DETAILS} component={PersonDetailsContainer} />
-          <Route path={Routes.REVIEW_FORMS} component={PSAReview} />
+          <Route path={Routes.DOWNLOAD_FORMS} component={DownloadPSA} />
+          <Route path={Routes.REVIEW_FORMS} component={ReviewPSA} />
           <Redirect from={Routes.DASHBOARD} to={Routes.CREATE_FORMS} />
         </Switch>
       </StyledMainWrapper>

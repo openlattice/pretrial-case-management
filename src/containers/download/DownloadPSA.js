@@ -76,7 +76,7 @@ const Error = styled.div`
 `;
 
 
-class Review extends React.Component {
+class DownloadPSA extends React.Component {
 
   static propTypes = {
     actions: PropTypes.shape({
@@ -170,7 +170,7 @@ class Review extends React.Component {
       <StyledFormViewWrapper>
         <StyledFormWrapper>
           <StyledTitleWrapper>
-            <div>Review PSA Forms</div>
+            <div>Download PSA Forms</div>
             <CloseX name="close" onClick={this.handleClose} />
           </StyledTitleWrapper>
           <StyledSectionWrapper>
@@ -200,4 +200,4 @@ function mapDispatchToProps(dispatch :Function) :Object {
   };
 }
 
-export default connect(null, mapDispatchToProps)(Review);
+export default connect(null, mapDispatchToProps)(DownloadPSA);

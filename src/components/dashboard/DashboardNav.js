@@ -64,7 +64,12 @@ const DashboardNav = () => {
             to={Routes.REVIEW_FORMS}
             name={Routes.REVIEW_FORMS}>
           Review Report
-          </StyledNavLink>
+        </StyledNavLink>
+        <StyledNavLink
+            to={Routes.DOWNLOAD_FORMS}
+            name={Routes.DOWNLOAD_FORMS}>
+          Downloads
+        </StyledNavLink>
         <StyledNavLink
             to={Routes.NEW_PERSON}
             name={Routes.NEW_PERSON}>
