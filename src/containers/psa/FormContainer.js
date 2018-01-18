@@ -47,9 +47,9 @@ import {
   getIsLastPage,
   getProgress
 } from '../../utils/Helpers';
-import { PROPERTY_TYPES } from '../../utils/DataModelConsts';
+import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 
-import { chargeFieldIsViolent } from '../../utils/ChargeConsts';
+import { chargeFieldIsViolent } from '../../utils/consts/ChargeConsts';
 
 const {
   FIRST_NAME,

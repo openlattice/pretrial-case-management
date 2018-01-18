@@ -7,7 +7,7 @@ import { call, put, take, all } from 'redux-saga/effects';
 
 import * as FormActionFactory from './FormActionFactory';
 import * as FormActionTypes from './FormActionTypes';
-import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/DataModelConsts';
+import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 
 function* loadDataModel(entitySetName) {
   const entitySetId = yield call(EntityDataModelApi.getEntitySetId, entitySetName);

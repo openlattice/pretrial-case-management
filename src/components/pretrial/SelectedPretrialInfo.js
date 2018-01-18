@@ -5,7 +5,7 @@ import Immutable from 'immutable';
 import { Button } from 'react-bootstrap';
 
 import PretrialCard from './PretrialCard';
-import { chargeFieldIsViolent } from '../../utils/ChargeConsts';
+import { chargeFieldIsViolent } from '../../utils/consts/ChargeConsts';
 import { formatValue, formatDateList } from '../../utils/Utils';
 import {
   ChargeItem,
@@ -20,7 +20,7 @@ import {
   InfoSubHeader,
   InfoWrapper
 } from '../../utils/Layout';
-import { PROPERTY_TYPES } from '../../utils/DataModelConsts';
+import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 
 const {
   MOST_SERIOUS_CHARGE_NO,
@@ -155,7 +155,7 @@ export default class SelectedPretrialInfo extends React.Component {
         <InfoHeader>Pretrial Case Processing</InfoHeader>
         <CardContainer>
           <CardWrapper>
-            <PretrialCard pretrialCase={Immutable.fromJS(this.props.pretrialCaseDetails)} />            
+            <PretrialCard pretrialCase={Immutable.fromJS(this.props.pretrialCaseDetails)} />
           </CardWrapper>
         </CardContainer>
         {this.renderCharges()}

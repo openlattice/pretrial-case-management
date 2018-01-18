@@ -7,7 +7,7 @@ import { connect } from 'react-redux';
 
 import { getPersonData } from './PeopleActionFactory';
 import PersonDetails from '../../components/people/PersonDetails';
-import { PERSON_FQNS } from '../../utils/Consts';
+import { PERSON_FQNS } from '../../utils/consts/Consts';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { formatDOB } from '../../utils/Helpers';
 

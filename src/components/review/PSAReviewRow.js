@@ -5,7 +5,7 @@ import styled from 'styled-components';
 
 import PersonCard from '../person/PersonCard';
 import StyledButton from '../buttons/StyledButton';
-import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/DataModelConsts';
+import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 
 const ScoresTable = styled.table`
   margin: 0 50px;

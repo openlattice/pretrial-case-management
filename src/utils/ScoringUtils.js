@@ -1,4 +1,4 @@
-import { PROPERTY_TYPES } from './DataModelConsts';
+import { PROPERTY_TYPES } from './consts/DataModelConsts';
 
 const {
   AGE_AT_CURRENT_ARREST_FQN,

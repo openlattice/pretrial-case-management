@@ -10,7 +10,7 @@ import { call, put, take, all } from 'redux-saga/effects';
 import exportPDF from '../../utils/PDFUtils';
 import * as ActionFactory from './ReviewActionFactory';
 import * as ActionTypes from './ReviewActionTypes';
-import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/DataModelConsts';
+import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 
 export function* loadPSAsByDate() :Generator<*, *, *> {
   while (true) {
