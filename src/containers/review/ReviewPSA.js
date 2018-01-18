@@ -10,6 +10,7 @@ import { Redirect, Route, Switch, withRouter } from 'react-router-dom';
 import { bindActionCreators } from 'redux';
 
 import PSAReviewRow from '../../components/review/PSAReviewRow';
+import LoadingSpinner from '../../components/LoadingSpinner';
 import StyledButton from '../../components/buttons/StyledButton';
 import * as ReviewActionFactory from './ReviewActionFactory';
 import * as Routes from '../../core/router/Routes';
@@ -54,7 +55,7 @@ const StyledTopFormNavBuffer = styled.div`
 `;
 
 const DatePickerTitle = styled.div`
-  font-size: 16px;
+  font-size: 18px;
   margin: 15px 0;
   text-align: center;
 `;
@@ -77,6 +78,11 @@ const Error = styled.div`
   margin-top: 15px;
 `;
 
+const LoadingText = styled.div`
+  font-size: 20px;
+  margin: 15px;
+`;
+
 const DATE_FORMAT = 'MM/DD/YYYY';
 
 class ReviewPSA extends React.Component {
@@ -84,6 +90,7 @@ class ReviewPSA extends React.Component {
   static propTypes = {
     scoresAsMap: PropTypes.instanceOf(Immutable.Map).isRequired,
     psaNeighborsByDate: PropTypes.instanceOf(Immutable.Map).isRequired,
+    loadingResults: PropTypes.bool.isRequired,
     errorMesasge: PropTypes.string.isRequired,
     actions: PropTypes.shape({
       loadPsasByDateRequest: PropTypes.func.isRequired,
@@ -129,6 +136,15 @@ class ReviewPSA extends React.Component {
     )
   }
 
+  renderSpinner = () => {
+    return (
+      <div>
+        <LoadingText>Loading past reports...</LoadingText>
+        <LoadingSpinner />
+      </div>
+    );
+  }
+
   renderError = () => {
     return <Error>{this.props.errorMessage}</Error>;
   }
@@ -151,6 +167,20 @@ class ReviewPSA extends React.Component {
     });
   }
 
+  renderContent = () => {
+    if (this.props.loadingResults) {
+      return <StyledSectionWrapper>{this.renderSpinner()}</StyledSectionWrapper>;
+    }
+    return (
+      <StyledSectionWrapper>
+        {this.renderError()}
+        {this.renderDateRangePicker()}
+        {this.renderPsas()}
+        <StyledTopFormNavBuffer />
+      </StyledSectionWrapper>
+    );
+  }
+
   render() {
     return (
       <StyledFormViewWrapper>
@@ -159,12 +189,7 @@ class ReviewPSA extends React.Component {
             <div>Review PSA Forms</div>
             <CloseX name="close" onClick={this.handleClose} />
           </StyledTitleWrapper>
-          <StyledSectionWrapper>
-            {this.renderError()}
-            {this.renderDateRangePicker()}
-            {this.renderPsas()}
-            <StyledTopFormNavBuffer />
-          </StyledSectionWrapper>
+          {this.renderContent()}
         </StyledFormWrapper>
       </StyledFormViewWrapper>
     );
@@ -177,6 +202,7 @@ function mapStateToProps(state) {
   return {
     scoresAsMap: review.get('scoresAsMap'),
     psaNeighborsByDate: review.get('psaNeighborsByDate'),
+    loadingResults: review.get('loadingResults'),
     errorMesasge: review.get('errorMesasge')
   };
 }
