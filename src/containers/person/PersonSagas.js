@@ -8,7 +8,7 @@ import { call, put, take } from 'redux-saga/effects';
 
 import { SUBMIT_FAILURE, SUBMIT_SUCCESS } from '../../utils/submit/SubmitActionTypes';
 import { submit } from '../../utils/submit/SubmitActionFactory';
-import { ENTITY_SETS } from '../../utils/DataModelConsts';
+import { ENTITY_SETS } from '../../utils/consts/DataModelConsts';
 
 import {
   LOAD_PERSON_DETAILS_REQUEST,

@@ -31,7 +31,7 @@ import {
   PRIOR_FAILURE_TO_APPEAR_RECENT_PROMPT,
   PRIOR_FAILURE_TO_APPEAR_OLD_PROMPT,
   PRIOR_SENTENCE_TO_INCARCERATION_PROMPT
-} from '../../utils/FormPromptConsts';
+} from '../../utils/consts/FormPromptConsts';
 
 const PSAInputForm = ({ section, handleSingleSelection, input, handleSubmit, incompleteError }) => {
 

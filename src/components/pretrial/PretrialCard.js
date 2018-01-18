@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import moment from 'moment';
 import styled from 'styled-components';
 
-import { PROPERTY_TYPES } from '../../utils/DataModelConsts';
+import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 
 const {
   CASE_ID_FQN,

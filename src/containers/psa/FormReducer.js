@@ -6,7 +6,7 @@ import Immutable from 'immutable';
 
 import * as FormActionTypes from './FormActionTypes';
 import { SEARCH_PEOPLE_REQUEST } from '../person/PersonActionFactory';
-import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/DataModelConsts';
+import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 
 const {
   PRETRIAL_CASES,

@@ -13,7 +13,7 @@ import { connect } from 'react-redux';
 
 import SelfieWebCam from '../../components/SelfieWebCam';
 import Checkbox from '../../components/controls/StyledCheckbox';
-import { GENDERS, STATES } from '../../utils/Consts';
+import { GENDERS, STATES } from '../../utils/consts/Consts';
 import { PaddedRow, TitleLabel } from '../../utils/Layout';
 import { newPersonSubmitRequest } from './PersonActionFactory';
 

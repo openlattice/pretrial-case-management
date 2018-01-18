@@ -11,7 +11,7 @@ import { Button } from 'react-bootstrap';
 
 import PretrialCard from '../../../components/pretrial/PretrialCard';
 
-import { PROPERTY_TYPES } from '../../../utils/DataModelConsts';
+import { PROPERTY_TYPES } from '../../../utils/consts/DataModelConsts';
 const {
   CASE_ID_FQN,
   ARREST_DATE_FQN,

@@ -10,7 +10,7 @@ import { call, put, take, all } from 'redux-saga/effects';
 import FileSaver from '../../utils/FileSaver';
 import * as ActionFactory from './DownloadActionFactory';
 import * as ActionTypes from './DownloadActionTypes';
-import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/DataModelConsts';
+import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 
 function* loadDataModel(entitySetName) {
   const entitySetId = yield call(EntityDataModelApi.getEntitySetId, entitySetName);

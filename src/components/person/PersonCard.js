@@ -4,7 +4,7 @@ import moment from 'moment';
 import styled from 'styled-components';
 
 import defaultUserIcon from '../../assets/images/user-profile-icon.png';
-import { PROPERTY_TYPES } from '../../utils/DataModelConsts';
+import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 
 const {
   DOB,

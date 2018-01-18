@@ -18,7 +18,7 @@ import {
   UnpaddedCol,
   UnpaddedRow
 } from '../../utils/Layout';
-import { LIST_FIELDS } from '../../utils/Consts';
+import { LIST_FIELDS } from '../../utils/consts/Consts';
 import { getIsLastPage } from '../../utils/Helpers';
 
 const { ID, ENTITY_SET_ID } = LIST_FIELDS

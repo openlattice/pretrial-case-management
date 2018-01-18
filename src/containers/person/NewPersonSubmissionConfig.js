@@ -2,7 +2,7 @@
  * @flow
  */
 
-import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/DataModelConsts';
+import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { ALIASES } from '../../config/formconfig/ConfigConsts';
 
 export const ADDRESS_VALUE :'addressValue' = 'addressValue';
