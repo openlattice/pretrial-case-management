@@ -9,12 +9,10 @@ const StyledIconWrapper = styled.div`
   width: 40px;
 `;
 
-const CreateFormListItem = () => {
-  return (
-    <StyledIconWrapper>
-      <FontAwesome name="book" size="2x" />
-    </StyledIconWrapper>
-  );
-};
+const CreateFormListItem = () => (
+  <StyledIconWrapper>
+    <FontAwesome name="book" size="2x" />
+  </StyledIconWrapper>
+);
 
 export default CreateFormListItem;

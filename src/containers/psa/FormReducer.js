@@ -94,12 +94,8 @@ function formReducer(state :Map<> = INITIAL_STATE, action :Object) {
       };
       const selectedCaseIdArr = action.selectedPretrialCase[CASE_ID_FQN] || [];
       const charges = state.get('allChargesForPerson')
-        .filter((charge) => {
-          return getCaseAndChargeNum(charge)[0] === selectedCaseIdArr[0];
-        })
-        .sort((c1, c2) => {
-          return getCaseAndChargeNum(c1)[1] > getCaseAndChargeNum(c2)[1];
-        });
+        .filter(charge => getCaseAndChargeNum(charge)[0] === selectedCaseIdArr[0])
+        .sort((c1, c2) => getCaseAndChargeNum(c1)[1] > getCaseAndChargeNum(c2)[1]);
       return state
         .set('selectedPretrialCase', action.selectedPretrialCase)
         .set('charges', charges);

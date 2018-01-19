@@ -134,9 +134,7 @@ class NewPersonContainer extends React.Component<Props, State> {
     };
   }
 
-  isReadyToSubmit = () :boolean => {
-
-    return !!this.state[ADDRESS_VALUE]
+  isReadyToSubmit = () :boolean => !!this.state[ADDRESS_VALUE]
         && !!this.state[CITY_VALUE]
         && !!this.state[COUNTRY_VALUE]
         && !!this.state[DOB_VALUE]
@@ -144,8 +142,7 @@ class NewPersonContainer extends React.Component<Props, State> {
         && !!this.state[GENDER_VALUE]
         && !!this.state[LAST_NAME_VALUE]
         && !!this.state[STATE_VALUE]
-        && !!this.state[ZIP_VALUE];
-  }
+        && !!this.state[ZIP_VALUE]
 
   handleOnChangeDateOfBirth = (dob :?string) => {
 
@@ -214,17 +211,13 @@ class NewPersonContainer extends React.Component<Props, State> {
 
   render() {
 
-    const genderOptions = GENDERS.map((gender) => {
-      return (
-        <option key={gender} value={gender}>{gender}</option>
-      );
-    });
+    const genderOptions = GENDERS.map(gender => (
+      <option key={gender} value={gender}>{gender}</option>
+    ));
 
-    const stateOptions = STATES.map((state) => {
-      return (
-        <option key={state} value={state}>{state}</option>
-      );
-    });
+    const stateOptions = STATES.map(state => (
+      <option key={state} value={state}>{state}</option>
+    ));
 
     return (
       <ContainerOuterWrapper>

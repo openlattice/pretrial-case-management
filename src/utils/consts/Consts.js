@@ -101,6 +101,18 @@ export const STATES = [
 export const RADIO_YES_VALUE = 'yes';
 export const RADIO_NO_VALUE = 'no';
 
+export const PSA = {
+  AGE_AT_CURRENT_ARREST: 'ageAtCurrentArrest',
+  CURRENT_VIOLENT_OFFENSE: 'currentViolentOffense',
+  PENDING_CHARGE: 'pendingCharge',
+  PRIOR_MISDEMEANOR: 'priorMisdemeanor',
+  PRIOR_FELONY: 'priorFelony',
+  PRIOR_VIOLENT_CONVICTION: 'priorViolentConviction',
+  PRIOR_FAILURE_TO_APPEAR_RECENT: 'priorFailureToAppearRecent',
+  PRIOR_FAILURE_TO_APPEAR_OLD: 'priorFailureToAppearOld',
+  PRIOR_SENTENCE_TO_INCARCERATION: 'priorSentenceToIncarceration'
+};
+
 export const FORM_IDS = {
   PERSON_ID: 'personId',
   STAFF_ID: 'staffId',

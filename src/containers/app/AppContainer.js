@@ -89,29 +89,26 @@ type Props = {
   };
 };
 
-const AppContainer = (props :Props) => {
-
-  return (
-    <AppWrapper>
-      <AppHeaderWrapper>
-        <AppTitle>
-          <BrandLink to={Routes.DASHBOARD}>
-            <Logo src={logo} role="presentation" />
-            Pre-Trial Case Management
-          </BrandLink>
-        </AppTitle>
-        <StyledLogoutButton onClick={props.actions.logout}>Logout</StyledLogoutButton>
-      </AppHeaderWrapper>
-      <AppBodyWrapper>
-        <Switch>
-          <Route path={Routes.DASHBOARD} component={Dashboard} />
-          <Route path={Routes.FORMS} component={Forms} />
-          <Redirect to={Routes.DASHBOARD} />
-        </Switch>
-      </AppBodyWrapper>
-    </AppWrapper>
-  );
-};
+const AppContainer = (props :Props) => (
+  <AppWrapper>
+    <AppHeaderWrapper>
+      <AppTitle>
+        <BrandLink to={Routes.DASHBOARD}>
+          <Logo src={logo} role="presentation" />
+          Pre-Trial Case Management
+        </BrandLink>
+      </AppTitle>
+      <StyledLogoutButton onClick={props.actions.logout}>Logout</StyledLogoutButton>
+    </AppHeaderWrapper>
+    <AppBodyWrapper>
+      <Switch>
+        <Route path={Routes.DASHBOARD} component={Dashboard} />
+        <Route path={Routes.FORMS} component={Forms} />
+        <Redirect to={Routes.DASHBOARD} />
+      </Switch>
+    </AppBodyWrapper>
+  </AppWrapper>
+);
 
 function mapDispatchToProps(dispatch :Function) :Object {
 

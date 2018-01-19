@@ -2,7 +2,6 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import Immutable from 'immutable';
-import { Button } from 'react-bootstrap';
 
 import PretrialCard from './PretrialCard';
 import { chargeFieldIsViolent } from '../../utils/consts/ChargeConsts';
@@ -17,8 +16,7 @@ import {
   InfoContainer,
   InfoHeader,
   InfoItem,
-  InfoSubHeader,
-  InfoWrapper
+  InfoSubHeader
 } from '../../utils/Layout';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 
@@ -145,7 +143,7 @@ export default class SelectedPretrialInfo extends React.Component {
         </ChargesWrapper>
         <br />
       </div>
-    )
+    );
   }
 
   render() {
