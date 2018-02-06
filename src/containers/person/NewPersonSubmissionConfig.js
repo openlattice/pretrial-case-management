@@ -6,7 +6,6 @@ import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts'
 import { ALIASES } from '../../config/formconfig/ConfigConsts';
 
 export const ADDRESS_VALUE :'addressValue' = 'addressValue';
-export const AGE_VALUE :'ageValue' = 'ageValue';
 export const CITY_VALUE :'cityValue' = 'cityValue';
 export const COUNTRY_VALUE :'countryValue' = 'countryValue';
 export const DOB_VALUE :'dobValue' = 'dobValue';
@@ -27,7 +26,6 @@ export const newPersonSubmissionConfig = {
       alias: ALIASES.PERSON,
       name: ENTITY_SETS.PEOPLE,
       fields: {
-        [AGE_VALUE]: PROPERTY_TYPES.AGE,
         [DOB_VALUE]: PROPERTY_TYPES.DOB,
         [FIRST_NAME_VALUE]: PROPERTY_TYPES.FIRST_NAME,
         [GENDER_VALUE]: PROPERTY_TYPES.SEX,
