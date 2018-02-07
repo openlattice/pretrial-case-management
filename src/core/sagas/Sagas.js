@@ -11,6 +11,7 @@ import * as DataSagas from '../../utils/data/DataSagas';
 import * as PsaSagas from '../../containers/psa/FormSagas';
 import * as ReviewSagas from '../../containers/review/ReviewSagas';
 import * as DownloadSagas from '../../containers/download/DownloadSagas';
+import * as EnrollSagas from '../../containers/enroll/EnrollSagas';
 import SubmitDataSaga from '../../utils/submit/SubmitSaga';
 
 export default function* sagas() :Generator<*, *, *> {
@@ -29,6 +30,10 @@ export default function* sagas() :Generator<*, *, *> {
 
     // DownloadSagas
     fork(DownloadSagas.downloadPSAs),
+
+    // EnrollSagas
+    fork(EnrollSagas.enrollVoiceProfile),
+    fork(EnrollSagas.getOrCreateProfile),
 
     // SubmitDataSaga
     fork(SubmitDataSaga),

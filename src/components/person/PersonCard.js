@@ -92,7 +92,7 @@ export default class PersonCard extends React.Component {
           key={id}
           onClick={() => {
             if (handleSelect) {
-              handleSelect(person, entityKeyId);
+              handleSelect(person, entityKeyId, id);
             }
           }}>
         <PersonPictureWrapper>

@@ -27,6 +27,10 @@ export const REVIEW_FORMS = DASHBOARD + REVIEW;
 const DOWNLOAD :string = '/download';
 export const DOWNLOAD_FORMS = DASHBOARD + DOWNLOAD;
 
+/* Enroll voice profile */
+const VOICE :string = '/voice';
+export const VOICE_ENROLLMENT = DASHBOARD + VOICE;
+
 /* people */
 export const PERSON = `${DASHBOARD}/person`;
 export const PEOPLE = `${DASHBOARD}/people`;

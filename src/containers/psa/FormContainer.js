@@ -34,11 +34,18 @@ import { formatDate } from '../../utils/Utils';
 import { getScoresAndRiskFactors } from '../../utils/ScoringUtils';
 import {
   ButtonWrapper,
+  CloseX,
   Divider,
   RecommendationWrapper,
   ResultsContainer,
   SmallHeader,
-  Spacer
+  Spacer,
+  StyledFormViewWrapper,
+  StyledFormWrapper,
+  StyledSectionWrapper,
+  StyledTitleWrapper,
+  StyledTopFormNavBuffer
+
 } from '../../utils/Layout';
 import {
   getCurrentPage,
@@ -70,44 +77,6 @@ const {
   CHARGE_NUM_FQN,
   CASE_ID_FQN
 } = PROPERTY_TYPES;
-
-const StyledFormViewWrapper = styled.div`
-  display: flex;
-  width: 100%;
-`;
-
-const StyledFormWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  margin: 55px auto;
-  width: 1300px;
-`;
-
-const StyledTitleWrapper = styled.div`
-  align-items: center;
-  color: #37454a;
-  display: flex;
-  font-size: 32px;
-  justify-content: space-between;
-  margin-bottom: 30px;
-  width: 100%;
-`;
-
-const StyledSectionWrapper = styled.div`
-  background: #fff;
-  display: flex;
-  flex-direction: column;
-  padding: 55px;
-  width: 100%;
-`;
-
-const CloseX = styled(FontAwesome)`
-  cursor: pointer;
-`;
-
-const StyledTopFormNavBuffer = styled.div`
-  height: 55px;
-`;
 
 const CenteredDiv = styled.div`
   text-align: center;

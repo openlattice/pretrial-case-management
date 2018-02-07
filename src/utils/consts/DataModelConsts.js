@@ -6,17 +6,20 @@ export const ENTITY_SETS = {
   PSA_RISK_FACTORS: 'southdakotapsariskfactors',
   PSA_SCORES: 'southdakotapsas',
   RELEASE_RECOMMENDATIONS: 'southdakotareleaserecommendations',
+  SPEAKER_RECOGNITION_PROFILES: 'southdakotaspeakerverificationprofiles',
 
   // association entity sets
   APPEARS_IN: 'southdakotaappearsin',
   LIVES_AT: 'southdakotalivesat',
   GETS_MAIL_AT: 'southdakotagetsmailat',
   CALCULATED_FOR: 'southdakotacalculatedfor',
-  CHARGED_WITH: 'southdakotachargedwith'
+  CHARGED_WITH: 'southdakotachargedwith',
+  REGISTERED_FOR: 'southdakotaregisteredfor'
 };
 
 export const PROPERTY_TYPES = {
   STRING_ID: 'general.stringid',
+  TIMESTAMP: 'date.completeddatetime',
 
   FIRST_NAME: 'nc.PersonGivenName',
   LAST_NAME: 'nc.PersonSurName',
@@ -72,6 +75,10 @@ export const PROPERTY_TYPES = {
   GENERAL_ID_FQN: 'general.id',
   RELEASE_RECOMMENDATION_FQN: 'publicsafety.recommendation',
 
+  // Vocie recognition entity type consts
+  AUDIO_SAMPLE: 'media.audio',
+  PIN: 'general.pin',
+
   // Entity set names
   PERSON_ENTITY_SET_NAME: 'southdakotapeople',
   PRETRIAL_CASE_ENTITY_SET_NAME: 'southdakotapretrialcaseprocessings',
@@ -79,5 +86,5 @@ export const PROPERTY_TYPES = {
   PSA_ENTITY_SET_NAME: 'southdakotapsas',
   RISK_FACTORS_ENTITY_SET_NAME: 'southdakotapsariskfactors',
   CALCULATED_FOR_ENTITY_SET_NAME: 'southdakotacalculatedfor',
-  RELEASE_RECOMMENDATION_ENTITY_SET_NAME: 'southdakotareleaserecommendations',
+  RELEASE_RECOMMENDATION_ENTITY_SET_NAME: 'southdakotareleaserecommendations'
 };

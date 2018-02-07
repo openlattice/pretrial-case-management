@@ -107,9 +107,9 @@ class SearchPeopleContainer extends React.Component<Props> {
     this.props.actions.clearSearchResults();
   }
 
-  handleOnSelectPerson = (person :Map, entityKeyId :string) => {
+  handleOnSelectPerson = (person :Map, entityKeyId :string, personId :string) => {
 
-    this.props.onSelectPerson(person, entityKeyId);
+    this.props.onSelectPerson(person, entityKeyId, personId);
   }
 
   handleOnSubmitSearch = (searchQuery :string) => {
