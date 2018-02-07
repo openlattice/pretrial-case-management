@@ -22,24 +22,22 @@ const StyledMainWrapper = styled.div`
   width: 100%;
 `;
 
-const Dashboard = () => {
-  return (
-    <DashboardWrapper>
-      <DashboardNav />
-      <StyledMainWrapper>
-        <Switch>
-          <Route path={Routes.CREATE_FORMS} component={FormsContainer} />
-          <Route path={Routes.NEW_PERSON} component={NewPersonContainer} />
-          <Route path={Routes.PEOPLE} component={PeopleContainer} />
-          <Route path={Routes.PERSON_DETAILS} component={PersonDetailsContainer} />
-          <Route path={Routes.DOWNLOAD_FORMS} component={DownloadPSA} />
-          <Route path={Routes.REVIEW_FORMS} component={ReviewPSA} />
-          <Route path={Routes.VOICE_ENROLLMENT} component={EnrollVoice} />
-          <Redirect from={Routes.DASHBOARD} to={Routes.CREATE_FORMS} />
-        </Switch>
-      </StyledMainWrapper>
-    </DashboardWrapper>
-  );
-};
+const Dashboard = () => (
+  <DashboardWrapper>
+    <DashboardNav />
+    <StyledMainWrapper>
+      <Switch>
+        <Route path={Routes.CREATE_FORMS} component={FormsContainer} />
+        <Route path={Routes.NEW_PERSON} component={NewPersonContainer} />
+        <Route path={Routes.PEOPLE} component={PeopleContainer} />
+        <Route path={Routes.PERSON_DETAILS} component={PersonDetailsContainer} />
+        <Route path={Routes.DOWNLOAD_FORMS} component={DownloadPSA} />
+        <Route path={Routes.REVIEW_FORMS} component={ReviewPSA} />
+        <Route path={Routes.VOICE_ENROLLMENT} component={EnrollVoice} />
+        <Redirect from={Routes.DASHBOARD} to={Routes.CREATE_FORMS} />
+      </Switch>
+    </StyledMainWrapper>
+  </DashboardWrapper>
+);
 
 export default Dashboard;

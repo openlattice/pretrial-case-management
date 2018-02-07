@@ -9,16 +9,14 @@ import Immutable from 'immutable';
 import moment from 'moment';
 import styled from 'styled-components';
 import randomUUID from 'uuid/v4';
-import FontAwesome from 'react-fontawesome';
 import { Button } from 'react-bootstrap';
 import { connect } from 'react-redux';
-import { Redirect, Route, Switch, withRouter } from 'react-router-dom';
+import { Redirect, Route, Switch } from 'react-router-dom';
 import { bindActionCreators } from 'redux';
 
 import SearchPersonContainer from '../person/SearchPersonContainer';
 import SelectPretrialCaseContainer from '../pages/pretrialcase/SelectPretrialCaseContainer';
 import InlineEditableControl from '../../components/controls/InlineEditableControl';
-import PersonFormView from '../../components/person/PersonFormView';
 import SelectedPersonInfo from '../../components/person/SelectedPersonInfo';
 import SelectedPretrialCaseInfo from '../../components/pretrial/SelectedPretrialInfo';
 import PSAInputForm from '../../components/psainput/PSAInputForm';
@@ -45,17 +43,13 @@ import {
   StyledSectionWrapper,
   StyledTitleWrapper,
   StyledTopFormNavBuffer
-
 } from '../../utils/Layout';
 import {
-  getCurrentPage,
   getNextPath,
-  getPrevPath,
-  getIsLastPage,
-  getProgress
+  getPrevPath
 } from '../../utils/Helpers';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-
+import { PSA } from '../../utils/consts/Consts';
 import { chargeFieldIsViolent } from '../../utils/consts/ChargeConsts';
 
 const {
@@ -74,9 +68,20 @@ const {
   FTA_SCALE_FQN,
   GENERAL_ID_FQN,
   MOST_SERIOUS_CHARGE_NO,
-  CHARGE_NUM_FQN,
-  CASE_ID_FQN
+  CHARGE_NUM_FQN
 } = PROPERTY_TYPES;
+
+const {
+  AGE_AT_CURRENT_ARREST,
+  CURRENT_VIOLENT_OFFENSE,
+  PENDING_CHARGE,
+  PRIOR_MISDEMEANOR,
+  PRIOR_FELONY,
+  PRIOR_VIOLENT_CONVICTION,
+  PRIOR_FAILURE_TO_APPEAR_RECENT,
+  PRIOR_FAILURE_TO_APPEAR_OLD,
+  PRIOR_SENTENCE_TO_INCARCERATION
+} = PSA;
 
 const CenteredDiv = styled.div`
   text-align: center;
@@ -102,15 +107,15 @@ const INITIAL_PERSON_FORM = Immutable.fromJS({
 });
 
 const INITIAL_PSA_FORM = Immutable.fromJS({
-  ageAtCurrentArrest: null,
-  currentViolentOffense: null,
-  pendingCharge: null,
-  priorMisdemeanor: null,
-  priorFelony: null,
-  priorViolentConviction: null,
-  priorFailureToAppearRecent: null,
-  priorFailureToAppearOld: null,
-  priorSentenceToIncarceration: null
+  [AGE_AT_CURRENT_ARREST]: null,
+  [CURRENT_VIOLENT_OFFENSE]: null,
+  [PENDING_CHARGE]: null,
+  [PRIOR_MISDEMEANOR]: null,
+  [PRIOR_FELONY]: null,
+  [PRIOR_VIOLENT_CONVICTION]: null,
+  [PRIOR_FAILURE_TO_APPEAR_RECENT]: null,
+  [PRIOR_FAILURE_TO_APPEAR_OLD]: null,
+  [PRIOR_SENTENCE_TO_INCARCERATION]: null
 });
 
 const INITIAL_STATE = Immutable.fromJS({
@@ -128,7 +133,7 @@ const INITIAL_STATE = Immutable.fromJS({
   scoresWereGenerated: false,
   releaseRecommendation: '',
   releaseRecommendationId: undefined
-})
+});
 
 const numPages = 4;
 
@@ -160,7 +165,7 @@ class Form extends React.Component {
 
   constructor(props) {
     super(props);
-    this.state = INITIAL_STATE.toJS()
+    this.state = INITIAL_STATE.toJS();
   }
 
   componentDidMount() {
@@ -180,10 +185,9 @@ class Form extends React.Component {
   // For text input
   handleTextInput = (e) => {
     const sectionKey = e.target.dataset.section;
-    const name = e.target.name;
-    const input = e.target.value;
+    const { name, value } = e.target;
     const sectionState = this.state[sectionKey];
-    sectionState[name] = input;
+    sectionState[name] = value;
     this.setState({ [sectionKey]: sectionState });
   }
 
@@ -200,10 +204,10 @@ class Form extends React.Component {
     const sectionState = this.state[sectionKey];
     sectionState[e.target.name] = e.target.value;
     if (sectionKey === 'psaForm') {
-      if (e.target.name === 'priorMisdemeanor' || e.target.name === 'priorFelony') {
-        if (sectionState.priorMisdemeanor === 'false' && sectionState.priorFelony === 'false') {
-          sectionState.priorViolentConviction = '0';
-          sectionState.priorSentenceToIncarceration = 'false';
+      if (e.target.name === PRIOR_MISDEMEANOR || e.target.name === PRIOR_FELONY) {
+        if (sectionState[PRIOR_MISDEMEANOR] === 'false' && sectionState[PRIOR_FELONY] === 'false') {
+          sectionState[PRIOR_VIOLENT_CONVICTION] = '0';
+          sectionState[PRIOR_SENTENCE_TO_INCARCERATION] = 'false';
         }
       }
     }
@@ -213,8 +217,7 @@ class Form extends React.Component {
   tryAutofillFields = (nextCase, nextCharges) => {
     const currCase = this.props.selectedPretrialCase;
 
-    let ageAtCurrentArrest = this.state.psaForm.ageAtCurrentArrest;
-    let currentViolentOffense = this.state.psaForm.currentViolentOffense;
+    let { ageAtCurrentArrest, currentViolentOffense } = this.state.psaForm;
     if (ageAtCurrentArrest === null || nextCase[ARREST_DATE_FQN] !== currCase[ARREST_DATE_FQN]) {
       ageAtCurrentArrest = this.tryAutofillAge(nextCase[ARREST_DATE_FQN], ageAtCurrentArrest);
     }
@@ -253,7 +256,7 @@ class Form extends React.Component {
     let ageAtCurrentArrestValue = defaultValue;
     if (dob.isValid && arrest.isValid) {
       const age = Math.floor(moment.duration(arrest.diff(dob)).asYears());
-      if (!isNaN(age)) {
+      if (!Number.isNaN(age)) {
         if (age <= 20) ageAtCurrentArrestValue = '0';
         if (age === 21 || age === 22) ageAtCurrentArrestValue = '1';
         if (age >= 23) ageAtCurrentArrestValue = '2';
@@ -262,14 +265,11 @@ class Form extends React.Component {
     return ageAtCurrentArrestValue;
   }
 
-  getCalculatedForEntityDetails = () => {
-    return { [TIMESTAMP_FQN]: [new Date()] };
-  }
+  getCalculatedForEntityDetails = () => ({ [TIMESTAMP_FQN]: [new Date()] })
 
   getBlankReleaseRecommendationEntity = () => {
-    const propertyType = this.props.releaseRecommendationDataModel.propertyTypes.filter((propertyType) => {
-      return `${propertyType.type.namespace}.${propertyType.type.name}` === GENERAL_ID_FQN;
-    })[0];
+    const propertyType = this.props.releaseRecommendationDataModel.propertyTypes.filter(pt =>
+      `${pt.type.namespace}.${pt.type.name}` === GENERAL_ID_FQN)[0];
     if (!propertyType) return {};
     const id = randomUUID();
 
@@ -314,9 +314,7 @@ class Form extends React.Component {
         keyIdToFqn[propertyType.id] = fqn;
       }
     });
-    const primaryKeys = dataModel.entityType.key.map((id) => {
-      return keyIdToFqn[id];
-    });
+    const primaryKeys = dataModel.entityType.key.map(id => keyIdToFqn[id]);
     const details = (isExistingEntity) ? this.getEntityWithUuids(entityDetails, primaryKeys, fqnToId)
       : this.getEntityWithUuids(entityDetails, Object.keys(entityDetails), fqnToId);
 
@@ -347,7 +345,8 @@ class Form extends React.Component {
       riskFactorsEntity,
       psaEntity,
       releaseRecommendationEntity,
-      calculatedForEntity);
+      calculatedForEntity
+    );
     this.setState({ releaseRecommendationId: releaseRecommendationEntity.key.entityId });
   }
 
@@ -473,9 +472,7 @@ class Form extends React.Component {
     this.props.actions.clearForm();
   }
 
-  renderPersonSection = () => {
-    return <SelectedPersonInfo personDetails={this.props.selectedPerson} />;
-  }
+  renderPersonSection = () => <SelectedPersonInfo personDetails={this.props.selectedPerson} />
 
   renderPretrialCaseSection = () => {
     const { selectedPretrialCase, pretrialCaseDataModel, charges } = this.props;
@@ -491,16 +488,14 @@ class Form extends React.Component {
     );
   }
 
-  renderPSAInputForm = () => {
-    return (
-      <PSAInputForm
-          handleSingleSelection={this.handleSingleSelection}
-          handleSubmit={this.generateScores}
-          section="psaForm"
-          input={this.state.psaForm}
-          incompleteError={this.state.formIncompleteError} />
-    );
-  }
+  renderPSAInputForm = () => (
+    <PSAInputForm
+        handleSingleSelection={this.handleSingleSelection}
+        handleSubmit={this.generateScores}
+        section="psaForm"
+        input={this.state.psaForm}
+        incompleteError={this.state.formIncompleteError} />
+  )
 
   renderPSASection = () => {
     if (!this.state.scoresWereGenerated) return this.renderPSAInputForm();
@@ -537,7 +532,8 @@ class Form extends React.Component {
             bsStyle="info"
             onClick={() => {
               exportPDF(this.state, this.props.selectedPretrialCase, this.props.selectedPerson, this.props.charges);
-            }}>Export as PDF</Button>
+            }}>Export as PDF
+        </Button>
       </ButtonWrapper>
     );
   }
@@ -560,18 +556,15 @@ class Form extends React.Component {
     this.props.history.push(path);
   };
 
-  getSearchPeopleSection = () => {
-    return (
-      <SearchPersonContainer onSelectPerson={(person, entityKeyId) => {
-        this.handleSelectPerson(person, entityKeyId);
-        this.nextPage();
-      }} />
-    );
-  };
+  getSearchPeopleSection = () => (
+    <SearchPersonContainer onSelectPerson={(person, entityKeyId) => {
+      this.handleSelectPerson(person, entityKeyId);
+      this.nextPage();
+    }} />
+  );
 
-  getSelectPretrialCaseSection = () => {
-    return (
-      <SelectPretrialCaseContainer
+  getSelectPretrialCaseSection = () => (
+    <SelectPretrialCaseContainer
         caseOptions={Immutable.fromJS(this.props.pretrialCaseOptions)}
         nextPage={this.nextPage}
         prevPage={this.prevPage}
@@ -579,8 +572,7 @@ class Form extends React.Component {
           this.props.actions.selectPretrialCase(selectedCase.toJS());
           this.nextPage();
         }} />
-    );
-  }
+  )
 
   getPsaInputForm = () => {
     const personId = this.props.selectedPerson.id;
@@ -629,7 +621,7 @@ class Form extends React.Component {
               <Route path={`${Routes.PSA_FORM}/4`} render={this.getPsaResults} />;
               <Redirect from={Routes.PSA_FORM} to={`${Routes.PSA_FORM}/1`} />
               <Redirect from={Routes.FORMS} to={Routes.DASHBOARD} />
-              </Switch>
+            </Switch>
           </StyledSectionWrapper>
         </StyledFormWrapper>
       </StyledFormViewWrapper>

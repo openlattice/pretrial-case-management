@@ -14,14 +14,12 @@ const StyledHeader = styled.div`
   margin-bottom: 18px;
 `;
 
-const DashboardMainSection = (props) => {
-  return (
-    <StyledSectionWrapper>
-      <StyledHeader>{props.header}</StyledHeader>
-      {props.children}
-    </StyledSectionWrapper>
-  );
-};
+const DashboardMainSection = props => (
+  <StyledSectionWrapper>
+    <StyledHeader>{props.header}</StyledHeader>
+    {props.children}
+  </StyledSectionWrapper>
+);
 
 DashboardMainSection.propTypes = {
   children: PropTypes.node.isRequired,

@@ -94,20 +94,18 @@ const StyledCheckbox = ({
   onChange,
   disabled,
   dataSection
-}) => {
-  return (
-    <Control>{label}
-      <CheckboxInput
-          data-section={dataSection}
-          name={name}
-          value={value}
-          checked={checked}
-          onChange={onChange}
-          disabled={disabled} />
-      <CheckboxIndicator />
-    </Control>
-  );
-};
+}) => (
+  <Control>{label}
+    <CheckboxInput
+        data-section={dataSection}
+        name={name}
+        value={value}
+        checked={checked}
+        onChange={onChange}
+        disabled={disabled} />
+    <CheckboxIndicator />
+  </Control>
+);
 
 StyledCheckbox.propTypes = {
   name: PropTypes.string.isRequired,

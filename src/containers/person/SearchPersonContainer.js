@@ -5,7 +5,6 @@
 import React from 'react';
 
 import Immutable from 'immutable';
-import moment from 'moment';
 import styled from 'styled-components';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
@@ -37,50 +36,6 @@ const SearchResultsList = styled.div`
   display: flex;
   flex-direction: column;
   margin: 20px 0;
-`;
-
-const PersonResultWrapper = styled.div`
-  display: flex;
-  flex-direction: row;
-  flex: 1 0 auto;
-  margin: 10px 0;
-  &:hover {
-    cursor: pointer;
-  }
-`;
-
-const PersonPictureWrapper = styled.div`
-
-`;
-
-const PersonPicture = styled.img`
-  max-height: 150px;
-`;
-
-const PersonInfoWrapper = styled.div`
-  display: flex;
-  flex-direction: row;
-  margin-left: 10px;
-`;
-
-const PersonInfoHeaders = styled.div`
-  display: flex;
-  flex-direction: column;
-  justify-content: space-around;
-  strong {
-    font-weight: 600;
-  }
-`;
-
-const PersonInfo = styled.div`
-  display: flex;
-  flex-direction: column;
-  justify-content: space-around;
-  margin: 0;
-  margin-left: 10px;
-  span {
-    margin: 0;
-  }
 `;
 
 /*
@@ -125,9 +80,12 @@ class SearchPeopleContainer extends React.Component<Props> {
       );
     }
 
-    const searchResults = this.props.searchResults.map((personResult :Map<*, *>) => {
-      return <PersonCard key={personResult.getIn(['id', 0], '')} person={personResult} handleSelect={this.handleOnSelectPerson} />
-    });
+    const searchResults = this.props.searchResults.map((personResult :Map<*, *>) => (
+      <PersonCard
+          key={personResult.getIn(['id', 0], '')}
+          person={personResult}
+          handleSelect={this.handleOnSelectPerson} />
+    ));
 
     return (
       <SearchResultsList>

@@ -79,20 +79,18 @@ const StyledRadio = ({
   onChange,
   disabled,
   dataSection
-}) => {
-  return (
-    <RadioContainer>{label}
-      <RadioInputContainer
-          data-section={dataSection}
-          name={name}
-          value={value}
-          checked={checked}
-          onChange={onChange}
-          disabled={disabled} />
-      <RadioSelection />
-    </RadioContainer>
-  );
-};
+}) => (
+  <RadioContainer>{label}
+    <RadioInputContainer
+        data-section={dataSection}
+        name={name}
+        value={value}
+        checked={checked}
+        onChange={onChange}
+        disabled={disabled} />
+    <RadioSelection />
+  </RadioContainer>
+);
 
 StyledRadio.propTypes = {
   name: PropTypes.string.isRequired,

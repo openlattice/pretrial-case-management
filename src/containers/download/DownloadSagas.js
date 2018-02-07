@@ -12,16 +12,6 @@ import * as ActionFactory from './DownloadActionFactory';
 import * as ActionTypes from './DownloadActionTypes';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 
-function* loadDataModel(entitySetName) {
-  const entitySetId = yield call(EntityDataModelApi.getEntitySetId, entitySetName);
-  const entitySet = yield call(EntityDataModelApi.getEntitySet, entitySetId);
-  const entityType = yield call(EntityDataModelApi.getEntityType, entitySet.entityTypeId);
-  const propertyTypes = yield all(entityType.properties.map((propertyTypeId) => {
-    return call(EntityDataModelApi.getPropertyType, propertyTypeId);
-  }));
-  return { entitySet, entityType, propertyTypes };
-}
-
 export function* downloadPSAs() :Generator<*, *, *> {
   while (true) {
     const { startDate, endDate } = yield take(ActionTypes.DOWNLOAD_PSA_FORMS_REQUEST);
@@ -55,7 +45,7 @@ export function* downloadPSAs() :Generator<*, *, *> {
           if (timestampList.length) {
             const timestamp = moment.parseZone(timestampList[0]);
             const matchesStart = timestamp.diff(start, 'seconds') > 0 || timestamp.isSame(start, 'day');
-            const matchesEnd = timestamp.diff(end, 'seconds') < 0  || timestamp.isSame(end, 'day')
+            const matchesEnd = timestamp.diff(end, 'seconds') < 0 || timestamp.isSame(end, 'day');
             if (matchesStart && matchesEnd) {
               usableNeighbors = usableNeighbors.push(Immutable.fromJS(neighbor));
             }
@@ -75,7 +65,7 @@ export function* downloadPSAs() :Generator<*, *, *> {
           combinedEntity = combinedEntity.set(fqn, newArrayValues);
         });
         return combinedEntity;
-      }
+      };
 
       let jsonResults = Immutable.List();
       usableNeighborsById.keySeq().forEach((id) => {
@@ -95,7 +85,7 @@ export function* downloadPSAs() :Generator<*, *, *> {
       yield put(ActionFactory.downloadSuccess());
     }
     catch (error) {
-      console.error(error)
+      console.error(error);
       yield put(ActionFactory.downloadFailure(error));
     }
   }
