@@ -16,7 +16,7 @@ export default function baseWebpackConfig(env) {
    * constants
    */
 
-  const BASE_PATH = `/${env.basePath || 'psa'}/`;
+  const BASE_PATH = `/${env.basePath || 'pretrial-case-management'}/`;
 
   /*
    * loaders
