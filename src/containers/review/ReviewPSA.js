@@ -6,12 +6,10 @@ import Immutable from 'immutable';
 import moment from 'moment';
 import styled from 'styled-components';
 import { connect } from 'react-redux';
-import { Redirect, Route, Switch, withRouter } from 'react-router-dom';
 import { bindActionCreators } from 'redux';
 
 import PSAReviewRow from '../../components/review/PSAReviewRow';
 import LoadingSpinner from '../../components/LoadingSpinner';
-import StyledButton from '../../components/buttons/StyledButton';
 import * as ReviewActionFactory from './ReviewActionFactory';
 import * as Routes from '../../core/router/Routes';
 
@@ -88,13 +86,15 @@ const DATE_FORMAT = 'MM/DD/YYYY';
 class ReviewPSA extends React.Component {
 
   static propTypes = {
+    scoresEntitySetId: PropTypes.string.isRequired,
     scoresAsMap: PropTypes.instanceOf(Immutable.Map).isRequired,
     psaNeighborsByDate: PropTypes.instanceOf(Immutable.Map).isRequired,
     loadingResults: PropTypes.bool.isRequired,
     errorMesasge: PropTypes.string.isRequired,
     actions: PropTypes.shape({
       loadPsasByDateRequest: PropTypes.func.isRequired,
-      downloadPsaReviewPdfRequest: PropTypes.func.isRequired
+      downloadPsaReviewPdfRequest: PropTypes.func.isRequired,
+      updateScoresAndRiskFactorsRequest: PropTypes.func.isRequired
     })
   }
 
@@ -126,33 +126,28 @@ class ReviewPSA extends React.Component {
           <DatePickerGroupContainer>
             <div>PSA Date:</div>
             <DatePicker
-              value={date}
-              onChange={(date) => {
-                this.setState({ date });
-              }} />
+                value={date}
+                onChange={(newDate) => {
+                  this.setState({ date: newDate });
+                }} />
           </DatePickerGroupContainer>
         </DateRangeContainer>
-      </div>
-    )
-  }
-
-  renderSpinner = () => {
-    return (
-      <div>
-        <LoadingText>Loading past reports...</LoadingText>
-        <LoadingSpinner />
       </div>
     );
   }
 
-  renderError = () => {
-    return <Error>{this.props.errorMessage}</Error>;
-  }
+  renderSpinner = () => (
+    <div>
+      <LoadingText>Loading past reports...</LoadingText>
+      <LoadingSpinner />
+    </div>
+  )
+
+  renderError = () => <Error>{this.props.errorMessage}</Error>
 
   renderPsas = () => {
     const { scoresAsMap, psaNeighborsByDate, actions } = this.props;
     const date = moment(this.state.date).format(DATE_FORMAT);
-    const rows = [];
     return psaNeighborsByDate.get(date, Immutable.Map()).keySeq().map((id) => {
       const entityNeighbors = psaNeighborsByDate.getIn([date, id], Immutable.Map());
       const scores = scoresAsMap.get(id, Immutable.Map());
@@ -162,9 +157,22 @@ class ReviewPSA extends React.Component {
             scores={scores}
             entityKeyId={id}
             downloadFn={actions.downloadPsaReviewPdfRequest}
+            updateScoresAndRiskFactors={this.updateScoresAndRiskFactors}
             key={id} />
       );
     });
+  }
+
+  updateScoresAndRiskFactors = (scoresId, scoresEntity, riskFactorsEntitySetId, riskFactorsId, riskFactorsEntity) => {
+    const { scoresEntitySetId, actions } = this.props;
+    actions.updateScoresAndRiskFactorsRequest(
+      scoresEntitySetId,
+      scoresId,
+      scoresEntity,
+      riskFactorsEntitySetId,
+      riskFactorsId,
+      riskFactorsEntity
+    );
   }
 
   renderContent = () => {
@@ -200,6 +208,7 @@ class ReviewPSA extends React.Component {
 function mapStateToProps(state) {
   const review = state.get('review');
   return {
+    scoresEntitySetId: review.get('scoresEntitySetId'),
     scoresAsMap: review.get('scoresAsMap'),
     psaNeighborsByDate: review.get('psaNeighborsByDate'),
     loadingResults: review.get('loadingResults'),

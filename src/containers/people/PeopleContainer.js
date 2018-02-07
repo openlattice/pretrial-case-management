@@ -54,9 +54,7 @@ class PeopleContainer extends React.Component {
   }
 
   getFormattedPeople = () => {
-    const formattedPeople = this.props.peopleResults.map((person) => {
-      return this.formatPeopleInfo(person);
-    });
+    const formattedPeople = this.props.peopleResults.map(person => this.formatPeopleInfo(person));
 
     return formattedPeople;
   }

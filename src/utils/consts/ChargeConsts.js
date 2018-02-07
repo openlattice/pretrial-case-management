@@ -63,13 +63,9 @@ const VIOLENT_CHARGES = [
   '26-10-30'
 ];
 
-const stripDegree = (chargeNum) => {
-  return chargeNum.trim().split('(')[0];
-};
+const stripDegree = chargeNum => chargeNum.trim().split('(')[0];
 
-export const chargeIsViolent = (chargeNum) => {
-  return VIOLENT_CHARGES.includes(stripDegree(chargeNum));
-};
+export const chargeIsViolent = chargeNum => VIOLENT_CHARGES.includes(stripDegree(chargeNum));
 
 export const chargeFieldIsViolent = (chargeField) => {
   let violent = false;

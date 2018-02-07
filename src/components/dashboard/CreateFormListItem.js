@@ -27,14 +27,12 @@ const StyledName = styled.div`
   font-size: 18px;
 `;
 
-const CreateFormListItem = (props) => {
-  return (
-    <ItemWrapper to={props.path}>
-      <FormListItemIcon />
-      <StyledName>{props.name}</StyledName>
-    </ItemWrapper>
-  );
-};
+const CreateFormListItem = props => (
+  <ItemWrapper to={props.path}>
+    <FormListItemIcon />
+    <StyledName>{props.name}</StyledName>
+  </ItemWrapper>
+);
 
 CreateFormListItem.propTypes = {
   name: PropTypes.string.isRequired,

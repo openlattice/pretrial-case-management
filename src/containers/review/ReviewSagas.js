@@ -2,10 +2,9 @@
  * @flow
  */
 import Immutable from 'immutable';
-import Papa from 'papaparse';
 import moment from 'moment';
-import { EntityDataModelApi, SearchApi, SyncApi, DataApi } from 'lattice';
-import { call, put, take, all } from 'redux-saga/effects';
+import { DataApi, EntityDataModelApi, SearchApi} from 'lattice';
+import { call, put, take } from 'redux-saga/effects';
 
 import exportPDF from '../../utils/PDFUtils';
 import * as ActionFactory from './ReviewActionFactory';
@@ -40,7 +39,8 @@ export function* loadPSAsByDate() :Generator<*, *, *> {
 
         neighborsById.get(id).forEach((neighbor) => {
 
-          neighbor.getIn(['associationDetails', PROPERTY_TYPES.TIMESTAMP_FQN], Immutable.List()).forEach((timestamp) => {
+          neighbor.getIn(['associationDetails', PROPERTY_TYPES.TIMESTAMP_FQN],
+            Immutable.List()).forEach((timestamp) => {
             const timestampMoment = moment.parseZone(timestamp);
             if (timestampMoment.isValid()) {
               allDatesEdited = allDatesEdited.push(timestampMoment.format('MM/DD/YYYY'));
@@ -54,11 +54,14 @@ export function* loadPSAsByDate() :Generator<*, *, *> {
         });
 
         allDatesEdited.forEach((editDate) => {
-          psaNeighborsByDate = psaNeighborsByDate.set(editDate, psaNeighborsByDate.get(editDate, Immutable.Map()).set(id, neighborsByEntitySetName));
+          psaNeighborsByDate = psaNeighborsByDate.set(
+            editDate,
+            psaNeighborsByDate.get(editDate, Immutable.Map()).set(id, neighborsByEntitySetName)
+          );
         });
       });
 
-      yield put(ActionFactory.loadPsasByDateSuccess(scoresAsMap, psaNeighborsByDate));
+      yield put(ActionFactory.loadPsasByDateSuccess(scoresAsMap, psaNeighborsByDate, entitySetId));
     }
     catch (error) {
       console.error(error);
@@ -77,23 +80,21 @@ export function* downloadPSAReviewPDF() :Generator<*, *, *> {
       const caseNeighbors = yield call(SearchApi.searchEntityNeighbors, caseEntitySetId, caseEntityKeyId);
       let charges = Immutable.List();
       let recommendations = Immutable.List();
-      Immutable.fromJS(caseNeighbors).filter((neighbor) => {
+      Immutable.fromJS(caseNeighbors).forEach((neighbor) => {
         const name = neighbor.getIn(['neighborEntitySet', 'name']);
         if (name === ENTITY_SETS.CHARGES) {
           charges = charges.push(neighbor);
         }
-        else if (name == ENTITY_SETS.RELEASE_RECOMMENDATIONS) {
+        else if (name === ENTITY_SETS.RELEASE_RECOMMENDATIONS) {
           recommendations = recommendations.push(neighbor);
         }
       });
 
-      const recommendationText = recommendations.map((neighbor) => {
-        return neighbor.getIn([
-          ENTITY_SETS.RELEASE_RECOMMENDATIONS,
-          'neighborDetails',
-          PROPERTY_TYPES.RELEASE_RECOMMENDATION_FQN
-        ], Immutable.List()).join(', ');
-      }).join(', ');
+      const recommendationText = recommendations.map(neighbor => neighbor.getIn([
+        ENTITY_SETS.RELEASE_RECOMMENDATIONS,
+        'neighborDetails',
+        PROPERTY_TYPES.RELEASE_RECOMMENDATION_FQN
+      ], Immutable.List()).join(', ')).join(', ');
 
       const formattedScores = Immutable.Map()
         .set('ftaScale', scores.getIn([PROPERTY_TYPES.FTA_SCALE_FQN, 0]))
@@ -106,7 +107,7 @@ export function* downloadPSAReviewPDF() :Generator<*, *, *> {
           map = map.set(fqn, neighbors.getIn([entitySetName, 'neighborDetails', fqn, 0]));
         });
         return map;
-      }
+      };
 
       const data = Immutable.Map()
         .set('scores', formattedScores)
@@ -114,11 +115,12 @@ export function* downloadPSAReviewPDF() :Generator<*, *, *> {
         .set('riskFactors', setMultimapToMap(ENTITY_SETS.PSA_RISK_FACTORS))
         .toJS();
 
-      const selectedPretrialCase = neighbors.getIn([ENTITY_SETS.PRETRIAL_CASES, 'neighborDetails'], Immutable.Map()).toJS();
+      const selectedPretrialCase = neighbors.getIn(
+        [ENTITY_SETS.PRETRIAL_CASES, 'neighborDetails'],
+        Immutable.Map()
+      ).toJS();
       const selectedPerson = neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborDetails'], Immutable.Map()).toJS();
-      const selectedCharges = charges.map((neighbor) => {
-        return setMultimapToMap(ENTITY_SETS.CHARGES);
-      }).toJS();
+      const selectedCharges = charges.map(neighbor => setMultimapToMap(ENTITY_SETS.CHARGES)).toJS();
 
       exportPDF(data, selectedPretrialCase, selectedPerson, selectedCharges);
 
@@ -127,6 +129,38 @@ export function* downloadPSAReviewPDF() :Generator<*, *, *> {
     catch (error) {
       console.error(error);
       yield put(ActionFactory.downloadPsaReviewPdfFailure(error));
+    }
+  }
+}
+
+export function* updateScoresAndRiskFactors() :Generator<*, *, *> {
+  while (true) {
+    const {
+      scoresEntitySetId,
+      scoresId,
+      scoresEntity,
+      riskFactorsEntitySetId,
+      riskFactorsId,
+      riskFactorsEntity
+    } = yield take(ActionTypes.UPDATE_SCORES_AND_RISK_FACTORS_REQUEST);
+
+    try {
+      yield call(DataApi.replaceEntityInEntitySetUsingFqns, riskFactorsEntitySetId, riskFactorsId, riskFactorsEntity);
+      yield call(DataApi.replaceEntityInEntitySetUsingFqns, scoresEntitySetId, scoresId, scoresEntity);
+
+      const newScoreEntity = yield call(DataApi.getEntity, scoresEntitySetId, scoresId)
+      const newRiskFactorsEntity = yield call(DataApi.getEntity, riskFactorsEntitySetId, riskFactorsId);
+
+      yield put(ActionFactory.updateScoresAndRiskFactorsSuccess(
+        scoresId,
+        newScoreEntity,
+        riskFactorsId,
+        newRiskFactorsEntity
+      ));
+    }
+    catch (error) {
+      console.error(error);
+      yield put(ActionFactory.updateScoresAndRiskFactorsFailure(error));
     }
   }
 }

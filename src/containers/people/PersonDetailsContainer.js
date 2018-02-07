@@ -60,9 +60,7 @@ function mapStateToProps(state) {
 
   // Format person data
   let selectedPersonData = state.getIn(['people', 'selectedPersonData'], Immutable.Map());
-  selectedPersonData = selectedPersonData.map((value) => {
-    return value.get(0);
-  });
+  selectedPersonData = selectedPersonData.map(value => value.get(0));
   const dob = formatDOB(selectedPersonData.get(PERSON_FQNS.DOB));
   selectedPersonData = selectedPersonData.set(
     PERSON_FQNS.DOB,

@@ -161,12 +161,13 @@ export function loadNeighborsFailure() {
 }
 
 export function submitData(
-    personEntity :Object,
-    pretrialCaseEntity :Object,
-    riskFactorsEntity :Object,
-    psaEntity :Object,
-    releaseRecommendationEntity :Object,
-    calculatedForEntity :Object) :Object {
+  personEntity :Object,
+  pretrialCaseEntity :Object,
+  riskFactorsEntity :Object,
+  psaEntity :Object,
+  releaseRecommendationEntity :Object,
+  calculatedForEntity :Object
+) :Object {
   return {
     type: FormActionTypes.SUBMIT_DATA_REQUEST,
     personEntity,

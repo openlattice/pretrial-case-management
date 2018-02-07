@@ -31,9 +31,7 @@ export default class PSAResults extends React.Component {
     };
   }
 
-  getNvcaString = () => {
-    return (this.props.scores.nvcaFlag) ? 'Yes' : 'No';
-  }
+  getNvcaString = () => ((this.props.scores.nvcaFlag) ? 'Yes' : 'No')
 
   renderScale = (val) => {
     const scale = [];
@@ -135,39 +133,32 @@ export default class PSAResults extends React.Component {
     );
   }
 
-  renderWeightedScore = (score) => {
-    return this.state.showWeightedScores ? <WeightedScoreWrapper>Weighted Score: {score}</WeightedScoreWrapper> : null;
-  }
+  renderWeightedScore = score => (this.state.showWeightedScores
+    ? <WeightedScoreWrapper>Weighted Score: {score}</WeightedScoreWrapper> : null)
 
-  renderNvca = () => {
-    return (
-      <div>
-        <ResultHeader>New Violent Criminal Activity Flag</ResultHeader>
-        {this.renderWeightedScore(this.props.scores.nvcaTotal)}
-        <div>&nbsp;&nbsp;{this.getNvcaString()}</div>
-      </div>
-    );
-  }
+  renderNvca = () => (
+    <div>
+      <ResultHeader>New Violent Criminal Activity Flag</ResultHeader>
+      {this.renderWeightedScore(this.props.scores.nvcaTotal)}
+      <div>&nbsp;&nbsp;{this.getNvcaString()}</div>
+    </div>
+  )
 
-  renderNca = () => {
-    return (
-      <div>
-        <ResultHeader>New Criminal Activity Scale</ResultHeader>
-        {this.renderWeightedScore(this.props.scores.ncaTotal)}
-        {this.renderScale(this.props.scores.ncaScale)}
-      </div>
-    );
-  }
+  renderNca = () => (
+    <div>
+      <ResultHeader>New Criminal Activity Scale</ResultHeader>
+      {this.renderWeightedScore(this.props.scores.ncaTotal)}
+      {this.renderScale(this.props.scores.ncaScale)}
+    </div>
+  )
 
-  renderFta = () => {
-    return (
-      <div>
-        <ResultHeader>Failure to Appear Scale</ResultHeader>
-        {this.renderWeightedScore(this.props.scores.ftaTotal)}
-        {this.renderScale(this.props.scores.ftaScale)}
-      </div>
-    );
-  }
+  renderFta = () => (
+    <div>
+      <ResultHeader>Failure to Appear Scale</ResultHeader>
+      {this.renderWeightedScore(this.props.scores.ftaTotal)}
+      {this.renderScale(this.props.scores.ftaScale)}
+    </div>
+  )
 
   render() {
     return (
