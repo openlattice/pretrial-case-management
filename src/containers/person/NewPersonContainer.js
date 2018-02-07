@@ -13,13 +13,12 @@ import { connect } from 'react-redux';
 
 import SelfieWebCam from '../../components/SelfieWebCam';
 import Checkbox from '../../components/controls/StyledCheckbox';
-import { GENDERS, STATES } from '../../utils/Consts';
+import { GENDERS, STATES } from '../../utils/consts/Consts';
 import { PaddedRow, TitleLabel } from '../../utils/Layout';
 import { newPersonSubmitRequest } from './PersonActionFactory';
 
 import {
   ADDRESS_VALUE,
-  AGE_VALUE,
   CITY_VALUE,
   COUNTRY_VALUE,
   DOB_VALUE,
@@ -91,7 +90,6 @@ type Props = {
 
 type State = {
   addressValue :?string,
-  ageValue :?string,
   cityValue :?string,
   countryValue :?string,
   dobValue :?string,
@@ -117,7 +115,6 @@ class NewPersonContainer extends React.Component<Props, State> {
 
     this.state = {
       [ADDRESS_VALUE]: '',
-      [AGE_VALUE]: '',
       [CITY_VALUE]: '',
       [COUNTRY_VALUE]: '',
       [DOB_VALUE]: '',
@@ -134,9 +131,7 @@ class NewPersonContainer extends React.Component<Props, State> {
     };
   }
 
-  isReadyToSubmit = () :boolean => {
-
-    return !!this.state[ADDRESS_VALUE]
+  isReadyToSubmit = () :boolean => !!this.state[ADDRESS_VALUE]
         && !!this.state[CITY_VALUE]
         && !!this.state[COUNTRY_VALUE]
         && !!this.state[DOB_VALUE]
@@ -144,8 +139,7 @@ class NewPersonContainer extends React.Component<Props, State> {
         && !!this.state[GENDER_VALUE]
         && !!this.state[LAST_NAME_VALUE]
         && !!this.state[STATE_VALUE]
-        && !!this.state[ZIP_VALUE];
-  }
+        && !!this.state[ZIP_VALUE]
 
   handleOnChangeDateOfBirth = (dob :?string) => {
 
@@ -192,7 +186,6 @@ class NewPersonContainer extends React.Component<Props, State> {
 
     const values = {
       [ADDRESS_VALUE]: this.state[ADDRESS_VALUE] || null,
-      [AGE_VALUE]: this.state[AGE_VALUE] || null,
       [CITY_VALUE]: this.state[CITY_VALUE],
       [COUNTRY_VALUE]: this.state[COUNTRY_VALUE] || null,
       [DOB_VALUE]: this.state[DOB_VALUE] || null,
@@ -214,17 +207,13 @@ class NewPersonContainer extends React.Component<Props, State> {
 
   render() {
 
-    const genderOptions = GENDERS.map((gender) => {
-      return (
-        <option key={gender} value={gender}>{gender}</option>
-      );
-    });
+    const genderOptions = GENDERS.map(gender => (
+      <option key={gender} value={gender}>{gender}</option>
+    ));
 
-    const stateOptions = STATES.map((state) => {
-      return (
-        <option key={state} value={state}>{state}</option>
-      );
-    });
+    const stateOptions = STATES.map(state => (
+      <option key={state} value={state}>{state}</option>
+    ));
 
     return (
       <ContainerOuterWrapper>
@@ -257,22 +246,13 @@ class NewPersonContainer extends React.Component<Props, State> {
                 </Col>
               </PaddedRow>
               <PaddedRow>
-                <Col lg={6}>
+                <Col lg={4}>
                   <TitleLabel>Date of Birth</TitleLabel>
                   <DatePicker
                       value={this.state[DOB_VALUE]}
                       onChange={this.handleOnChangeDateOfBirth} />
                 </Col>
-                <Col lg={6}>
-                  <TitleLabel>Age</TitleLabel>
-                  <FormControl
-                      name={AGE_VALUE}
-                      value={this.state[AGE_VALUE]}
-                      onChange={this.handleOnChangeInput} />
-                </Col>
-              </PaddedRow>
-              <PaddedRow>
-                <Col lg={6}>
+                <Col lg={4}>
                   <TitleLabel>Gender</TitleLabel>
                   <FormControl
                       componentClass="select"
@@ -284,7 +264,7 @@ class NewPersonContainer extends React.Component<Props, State> {
                     { genderOptions }
                   </FormControl>
                 </Col>
-                <Col lg={6}>
+                <Col lg={4}>
                   <TitleLabel>Social Security Number</TitleLabel>
                   <FormControl
                       name={SSN_VALUE}

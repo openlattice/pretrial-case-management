@@ -16,34 +16,18 @@ export default function peopleReducer(state = INITIAL_STATE, action) {
 
     case getPeople.case(action.type): {
       return getPeople.reducer(state, action, {
-        REQUEST: () => {
-          return state.set('isFetchingPeople', true);
-        },
-        SUCCESS: () => {
-          return state.set('peopleResults', Immutable.fromJS(action.value));
-        },
-        FAILURE: () => {
-          return state.set('peopleResults', Immutable.List());
-        },
-        FINALLY: () => {
-          return state.set('isFetchingPeople', false);
-        }
+        REQUEST: () => state.set('isFetchingPeople', true),
+        SUCCESS: () => state.set('peopleResults', Immutable.fromJS(action.value)),
+        FAILURE: () => state.set('peopleResults', Immutable.List()),
+        FINALLY: () => state.set('isFetchingPeople', false)
       });
     }
     case getPersonData.case(action.type): {
       return getPersonData.reducer(state, action, {
-        REQUEST: () => {
-          return state.set('isFetchingPersonData', true);
-        },
-        SUCCESS: () => {
-          return state.set('selectedPersonData', Immutable.fromJS(action.value));
-        },
-        FAILURE: () => {
-          return state.set('selectedPersonData', Immutable.Map());
-        },
-        FINALLY: () => {
-          return state.set('isFetchingPersonData', false);
-        }
+        REQUEST: () => state.set('isFetchingPersonData', true),
+        SUCCESS: () => state.set('selectedPersonData', Immutable.fromJS(action.value)),
+        FAILURE: () => state.set('selectedPersonData', Immutable.Map()),
+        FINALLY: () => state.set('isFetchingPersonData', false)
       });
     }
     default:

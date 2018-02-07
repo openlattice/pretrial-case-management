@@ -4,7 +4,7 @@ import ImmutablePropTypes from 'react-immutable-proptypes';
 import { Redirect, Route, Switch } from 'react-router-dom';
 
 import { StyledInnerNav } from '../../utils/Layout';
-import { PERSON_FQNS } from '../../utils/Consts';
+import { PERSON_FQNS } from '../../utils/consts/Consts';
 import * as Routes from '../../core/router/Routes';
 import AboutPerson from './AboutPerson';
 import InnerNavLink from '../../components/InnerNavLink';

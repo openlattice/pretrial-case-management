@@ -2,10 +2,9 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import Immutable from 'immutable';
-import { Button } from 'react-bootstrap';
 
 import PretrialCard from './PretrialCard';
-import { chargeFieldIsViolent } from '../../utils/ChargeConsts';
+import { chargeFieldIsViolent } from '../../utils/consts/ChargeConsts';
 import { formatValue, formatDateList } from '../../utils/Utils';
 import {
   ChargeItem,
@@ -17,10 +16,9 @@ import {
   InfoContainer,
   InfoHeader,
   InfoItem,
-  InfoSubHeader,
-  InfoWrapper
+  InfoSubHeader
 } from '../../utils/Layout';
-import { PROPERTY_TYPES } from '../../utils/DataModelConsts';
+import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 
 const {
   MOST_SERIOUS_CHARGE_NO,
@@ -145,7 +143,7 @@ export default class SelectedPretrialInfo extends React.Component {
         </ChargesWrapper>
         <br />
       </div>
-    )
+    );
   }
 
   render() {
@@ -155,7 +153,7 @@ export default class SelectedPretrialInfo extends React.Component {
         <InfoHeader>Pretrial Case Processing</InfoHeader>
         <CardContainer>
           <CardWrapper>
-            <PretrialCard pretrialCase={Immutable.fromJS(this.props.pretrialCaseDetails)} />            
+            <PretrialCard pretrialCase={Immutable.fromJS(this.props.pretrialCaseDetails)} />
           </CardWrapper>
         </CardContainer>
         {this.renderCharges()}

@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import PropTypes from 'prop-types';
 import ImmutablePropTypes from 'react-immutable-proptypes';
 
-import { PERSON_FQNS } from '../../utils/Consts';
+import { PERSON_FQNS } from '../../utils/consts/Consts';
 import Headshot from '../Headshot';
 import ContentSection from '../ContentSection';
 

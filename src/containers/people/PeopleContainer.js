@@ -8,7 +8,7 @@ import { Redirect, Route, Switch } from 'react-router-dom';
 
 import { getPeople } from './PeopleActionFactory';
 import * as Routes from '../../core/router/Routes';
-import { PERSON_FQNS } from '../../utils/Consts';
+import { PERSON_FQNS } from '../../utils/consts/Consts';
 import { StyledInnerNav } from '../../utils/Layout';
 import InnerNavLink from '../../components/InnerNavLink';
 import DashboardMainSection from '../../components/dashboard/DashboardMainSection';
@@ -54,9 +54,7 @@ class PeopleContainer extends React.Component {
   }
 
   getFormattedPeople = () => {
-    const formattedPeople = this.props.peopleResults.map((person) => {
-      return this.formatPeopleInfo(person);
-    });
+    const formattedPeople = this.props.peopleResults.map(person => this.formatPeopleInfo(person));
 
     return formattedPeople;
   }

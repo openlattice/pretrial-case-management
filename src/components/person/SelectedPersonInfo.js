@@ -2,11 +2,10 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import Immutable from 'immutable';
 import styled from 'styled-components';
-import { Button } from 'react-bootstrap';
 
 import PersonCard from './PersonCard';
 import { formatValue, formatDateList } from '../../utils/Utils';
-import { InfoContainer, InfoWrapper, InfoHeader, InfoItem, InlineBold, Spacer } from '../../utils/Layout';
+import { InfoContainer, InfoWrapper, InfoHeader, Spacer } from '../../utils/Layout';
 
 
 const CardContainer = styled.div`

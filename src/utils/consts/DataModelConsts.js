@@ -79,5 +79,5 @@ export const PROPERTY_TYPES = {
   PSA_ENTITY_SET_NAME: 'southdakotapsas',
   RISK_FACTORS_ENTITY_SET_NAME: 'southdakotapsariskfactors',
   CALCULATED_FOR_ENTITY_SET_NAME: 'southdakotacalculatedfor',
-  RELEASE_RECOMMENDATION_ENTITY_SET_NAME: 'southdakotareleaserecommendations',
+  RELEASE_RECOMMENDATION_ENTITY_SET_NAME: 'southdakotareleaserecommendations'
 };

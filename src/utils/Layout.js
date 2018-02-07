@@ -13,7 +13,7 @@ import {
   ToggleButtonGroup
 } from 'react-bootstrap';
 
-import { FLEX } from './Consts';
+import { FLEX } from './consts/Consts';
 
 export const PaddedRow = styled(Row)`
   margin-bottom: 38px;

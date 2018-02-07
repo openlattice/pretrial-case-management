@@ -50,29 +50,32 @@ const StyledNavLink = styled(NavLink).attrs({
   }
 `;
 
-const DashboardNav = () => {
-  return (
-    <StyledNavWrapper>
-      <UserInfoBlock />
-      <StyledLinksWrapper>
-        <StyledNavLink
-            to={Routes.CREATE_FORMS}
-            name={Routes.CREATE_FORMS}>
-          Create Report
-        </StyledNavLink>
-        <StyledNavLink
-            to={Routes.REVIEW_FORMS}
-            name={Routes.REVIEW_FORMS}>
-          Review Report
-          </StyledNavLink>
-        <StyledNavLink
-            to={Routes.NEW_PERSON}
-            name={Routes.NEW_PERSON}>
-          New Person
-        </StyledNavLink>
-      </StyledLinksWrapper>
-    </StyledNavWrapper>
-  );
-};
+const DashboardNav = () => (
+  <StyledNavWrapper>
+    <UserInfoBlock />
+    <StyledLinksWrapper>
+      <StyledNavLink
+          to={Routes.CREATE_FORMS}
+          name={Routes.CREATE_FORMS}>
+        Create Report
+      </StyledNavLink>
+      <StyledNavLink
+          to={Routes.REVIEW_FORMS}
+          name={Routes.REVIEW_FORMS}>
+        Review Report
+      </StyledNavLink>
+      <StyledNavLink
+          to={Routes.DOWNLOAD_FORMS}
+          name={Routes.DOWNLOAD_FORMS}>
+        Downloads
+      </StyledNavLink>
+      <StyledNavLink
+          to={Routes.NEW_PERSON}
+          name={Routes.NEW_PERSON}>
+        New Person
+      </StyledNavLink>
+    </StyledLinksWrapper>
+  </StyledNavWrapper>
+);
 
 export default DashboardNav;

@@ -1,3 +1,7 @@
+/*
+ * @flow
+ */
+
 import React from 'react';
 import PropTypes from 'prop-types';
 import FontAwesome from 'react-fontawesome';
@@ -5,7 +9,6 @@ import DatePicker from 'react-bootstrap-date-picker';
 import moment from 'moment';
 import styled from 'styled-components';
 import { connect } from 'react-redux';
-import { Redirect, Route, Switch, withRouter } from 'react-router-dom';
 import { bindActionCreators } from 'redux';
 
 import StyledButton from '../../components/buttons/StyledButton';
@@ -76,7 +79,7 @@ const Error = styled.div`
 `;
 
 
-class Review extends React.Component {
+class DownloadPSA extends React.Component {
 
   static propTypes = {
     actions: PropTypes.shape({
@@ -89,7 +92,7 @@ class Review extends React.Component {
     this.state = {
       startDate: undefined,
       endDate: undefined
-    }
+    };
   }
 
   handleClose = () => {
@@ -110,22 +113,22 @@ class Review extends React.Component {
           <DatePickerGroupContainer>
             <div>Start Date:</div>
             <DatePicker
-              value={startDate}
-              onChange={(date) => {
-                this.setState({ startDate: date });
-              }} />
+                value={startDate}
+                onChange={(date) => {
+                  this.setState({ startDate: date });
+                }} />
           </DatePickerGroupContainer>
           <DatePickerGroupContainer>
             <div>End Date:</div>
             <DatePicker
-              value={endDate}
-              onChange={(date) => {
-                this.setState({ endDate: date });
-              }} />
+                value={endDate}
+                onChange={(date) => {
+                  this.setState({ endDate: date });
+                }} />
           </DatePickerGroupContainer>
         </DateRangeContainer>
       </div>
-    )
+    );
   }
 
   getErrorText = () => {
@@ -142,18 +145,16 @@ class Review extends React.Component {
         errorText = 'At least one of the selected dates is invalid.';
       }
       else if (start.isAfter(today)) {
-        errorText = 'The selected start date cannot be later than today.'
+        errorText = 'The selected start date cannot be later than today.';
       }
       else if (end.isBefore(start)) {
         errorText = 'The selected end date must be after the selected start date.';
       }
     }
-    return errorText
+    return errorText;
   }
 
-  renderError = () => {
-    return <Error>{this.getErrorText()}</Error>;
-  }
+  renderError = () => <Error>{this.getErrorText()}</Error>
 
   download = () => {
     this.props.actions.downloadRequest(this.state.startDate, this.state.endDate);
@@ -162,7 +163,7 @@ class Review extends React.Component {
   renderDownload = () => {
     const { startDate, endDate } = this.state;
     if (!startDate || !endDate || this.getErrorText()) return null;
-    return <StyledButton onClick={this.download}>Download PSAs in This Range</StyledButton>
+    return <StyledButton onClick={this.download}>Download PSAs in This Range</StyledButton>;
   }
 
   render() {
@@ -170,7 +171,7 @@ class Review extends React.Component {
       <StyledFormViewWrapper>
         <StyledFormWrapper>
           <StyledTitleWrapper>
-            <div>Review PSA Forms</div>
+            <div>Download PSA Forms</div>
             <CloseX name="close" onClick={this.handleClose} />
           </StyledTitleWrapper>
           <StyledSectionWrapper>
@@ -195,9 +196,9 @@ function mapDispatchToProps(dispatch :Function) :Object {
 
   return {
     actions: {
-      ...bindActionCreators(actions, dispatch),
+      ...bindActionCreators(actions, dispatch)
     }
   };
 }
 
-export default connect(null, mapDispatchToProps)(Review);
+export default connect(null, mapDispatchToProps)(DownloadPSA);

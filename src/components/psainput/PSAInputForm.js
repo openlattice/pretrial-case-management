@@ -4,7 +4,6 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import styled from 'styled-components';
 import { FormGroup, Col } from 'react-bootstrap';
 
 import SectionView from '../SectionView';
@@ -21,6 +20,7 @@ import {
   Divider
 } from '../../utils/Layout';
 
+import { PSA } from '../../utils/consts/Consts';
 import {
   CURRENT_AGE_PROMPT,
   CURRENT_VIOLENT_OFFENSE_PROMPT,
@@ -31,53 +31,63 @@ import {
   PRIOR_FAILURE_TO_APPEAR_RECENT_PROMPT,
   PRIOR_FAILURE_TO_APPEAR_OLD_PROMPT,
   PRIOR_SENTENCE_TO_INCARCERATION_PROMPT
-} from '../../utils/FormPromptConsts';
+} from '../../utils/consts/FormPromptConsts';
 
-const PSAInputForm = ({ section, handleSingleSelection, input, handleSubmit, incompleteError }) => {
+const {
+  AGE_AT_CURRENT_ARREST,
+  CURRENT_VIOLENT_OFFENSE,
+  PENDING_CHARGE,
+  PRIOR_MISDEMEANOR,
+  PRIOR_FELONY,
+  PRIOR_VIOLENT_CONVICTION,
+  PRIOR_FAILURE_TO_APPEAR_RECENT,
+  PRIOR_FAILURE_TO_APPEAR_OLD,
+  PRIOR_SENTENCE_TO_INCARCERATION
+} = PSA;
+
+const PSAInputForm = ({
+  section,
+  handleSingleSelection,
+  input,
+  handleSubmit,
+  incompleteError
+}) => {
 
   const noPriorConvictions = input.priorMisdemeanor === 'false' && input.priorFelony === 'false';
 
-  const renderHeader = (header) => {
-    return (
-      <Col lg={4}>
-        <TitleLabel>{header}</TitleLabel>
-      </Col>
-    );
-  }
+  const renderHeader = header => (
+    <Col lg={4}>
+      <TitleLabel>{header}</TitleLabel>
+    </Col>
+  );
 
-  const renderHeaders = (header1, header2, header3) => {
-    return (
-      <UnpaddedRow>
-        {renderHeader(header1)}
-        {renderHeader(header2)}
-        {renderHeader(header3)}
-      </UnpaddedRow>
-    )
-  }
+  const renderHeaders = (header1, header2, header3) => (
+    <UnpaddedRow>
+      {renderHeader(header1)}
+      {renderHeader(header2)}
+      {renderHeader(header3)}
+    </UnpaddedRow>
+  );
 
-  const renderRadio = (name, value, label, disabledField) => {
-    return (
-      <Radio
-          dataSection={section}
-          name={name}
-          value={`${value}`}
-          checked={input[name] === `${value}`}
-          onChange={handleSingleSelection}
-          disabled={disabledField && disabledField !== undefined}
-          label={label} />
-    );
-  }
+  const renderRadio = (name, value, label, disabledField) => (
+    <Radio
+        dataSection={section}
+        name={name}
+        value={`${value}`}
+        checked={input[name] === `${value}`}
+        onChange={handleSingleSelection}
+        disabled={disabledField && disabledField !== undefined}
+        label={label} />
+  );
 
-  const renderTrueFalseRadio = (name, disabledField) => {
-    return (
-      <Col lg={4}>
-        <FormGroup>
-          {renderRadio(name, false, 'No', disabledField)}
-          {renderRadio(name, true, 'Yes', disabledField)}
-        </FormGroup>
-      </Col>
-    );
-  };
+  const renderTrueFalseRadio = (name, disabledField) => (
+    <Col lg={4}>
+      <FormGroup>
+        {renderRadio(name, false, 'No', disabledField)}
+        {renderRadio(name, true, 'Yes', disabledField)}
+      </FormGroup>
+    </Col>
+  );
 
   return (
     <div>
@@ -91,15 +101,15 @@ const PSAInputForm = ({ section, handleSingleSelection, input, handleSubmit, inc
             <PaddedRow>
               <Col lg={4}>
                 <FormGroup>
-                  {renderRadio('ageAtCurrentArrest', 0, '20 or younger')}
-                  {renderRadio('ageAtCurrentArrest', 1, '21 or 22')}
-                  {renderRadio('ageAtCurrentArrest', 2, '23 or older')}
+                  {renderRadio(AGE_AT_CURRENT_ARREST, 0, '20 or younger')}
+                  {renderRadio(AGE_AT_CURRENT_ARREST, 1, '21 or 22')}
+                  {renderRadio(AGE_AT_CURRENT_ARREST, 2, '23 or older')}
                 </FormGroup>
               </Col>
 
-              {renderTrueFalseRadio('currentViolentOffense')}
+              {renderTrueFalseRadio(CURRENT_VIOLENT_OFFENSE)}
 
-              {renderTrueFalseRadio('pendingCharge')}
+              {renderTrueFalseRadio(PENDING_CHARGE)}
 
             </PaddedRow>
 
@@ -107,16 +117,16 @@ const PSAInputForm = ({ section, handleSingleSelection, input, handleSubmit, inc
 
             <PaddedRow>
 
-              {renderTrueFalseRadio('priorMisdemeanor')}
+              {renderTrueFalseRadio(PRIOR_MISDEMEANOR)}
 
-              {renderTrueFalseRadio('priorFelony')}
+              {renderTrueFalseRadio(PRIOR_FELONY)}
 
               <Col lg={4}>
                 <FormGroup>
-                  {renderRadio('priorViolentConviction', 0, '0', noPriorConvictions)}
-                  {renderRadio('priorViolentConviction', 1, '1', noPriorConvictions)}
-                  {renderRadio('priorViolentConviction', 2, '2', noPriorConvictions)}
-                  {renderRadio('priorViolentConviction', 3, '3 or more', noPriorConvictions)}
+                  {renderRadio(PRIOR_VIOLENT_CONVICTION, 0, '0', noPriorConvictions)}
+                  {renderRadio(PRIOR_VIOLENT_CONVICTION, 1, '1', noPriorConvictions)}
+                  {renderRadio(PRIOR_VIOLENT_CONVICTION, 2, '2', noPriorConvictions)}
+                  {renderRadio(PRIOR_VIOLENT_CONVICTION, 3, '3 or more', noPriorConvictions)}
                 </FormGroup>
               </Col>
 
@@ -132,15 +142,15 @@ const PSAInputForm = ({ section, handleSingleSelection, input, handleSubmit, inc
             <PaddedRow>
               <Col lg={4}>
                 <FormGroup>
-                  {renderRadio('priorFailureToAppearRecent', 0, '0')}
-                  {renderRadio('priorFailureToAppearRecent', 1, '1')}
-                  {renderRadio('priorFailureToAppearRecent', 2, '2 or more')}
+                  {renderRadio(PRIOR_FAILURE_TO_APPEAR_RECENT, 0, '0')}
+                  {renderRadio(PRIOR_FAILURE_TO_APPEAR_RECENT, 1, '1')}
+                  {renderRadio(PRIOR_FAILURE_TO_APPEAR_RECENT, 2, '2 or more')}
                 </FormGroup>
               </Col>
 
-              {renderTrueFalseRadio('priorFailureToAppearOld')}
+              {renderTrueFalseRadio(PRIOR_FAILURE_TO_APPEAR_OLD)}
 
-              {renderTrueFalseRadio('priorSentenceToIncarceration', noPriorConvictions)}
+              {renderTrueFalseRadio(PRIOR_SENTENCE_TO_INCARCERATION, noPriorConvictions)}
 
             </PaddedRow>
             {

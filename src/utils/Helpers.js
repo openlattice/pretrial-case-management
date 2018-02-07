@@ -1,5 +1,5 @@
 import moment from 'moment';
-import { FORM_LENGTHS } from './Consts';
+import { FORM_LENGTHS } from './consts/Consts';
 
 const getSplitStr = (location) => {
   const splitStr = location ? location.hash.split('/') : [];

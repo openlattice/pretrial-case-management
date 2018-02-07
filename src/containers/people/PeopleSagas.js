@@ -1,7 +1,7 @@
 import { EntityDataModelApi, DataApi, SearchApi } from 'lattice';
 import { call, put, takeEvery } from 'redux-saga/effects';
 
-import { ENTITY_SETS } from '../../utils/DataModelConsts';
+import { ENTITY_SETS } from '../../utils/consts/DataModelConsts';
 import {
   GET_PEOPLE,
   GET_PERSON_DATA,

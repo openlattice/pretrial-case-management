@@ -9,7 +9,8 @@ import * as PersonSagas from '../../containers/person/PersonSagas';
 import * as PeopleSagas from '../../containers/people/PeopleSagas';
 import * as DataSagas from '../../utils/data/DataSagas';
 import * as PsaSagas from '../../containers/psa/FormSagas';
-import * as DownloadSagas from '../../containers/review/DownloadSagas';
+import * as ReviewSagas from '../../containers/review/ReviewSagas';
+import * as DownloadSagas from '../../containers/download/DownloadSagas';
 import SubmitDataSaga from '../../utils/submit/SubmitSaga';
 
 export default function* sagas() :Generator<*, *, *> {
@@ -51,6 +52,11 @@ export default function* sagas() :Generator<*, *, *> {
     fork(PsaSagas.searchPeople),
     fork(PsaSagas.loadNeighbors),
     fork(PsaSagas.submitData),
-    fork(PsaSagas.updateReleaseRecommendation)
+    fork(PsaSagas.updateReleaseRecommendation),
+
+    // Review Sagas
+    fork(ReviewSagas.downloadPSAReviewPDF),
+    fork(ReviewSagas.loadPSAsByDate),
+    fork(ReviewSagas.updateScoresAndRiskFactors)
   ];
 }

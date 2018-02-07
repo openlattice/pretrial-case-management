@@ -33,11 +33,9 @@ function mapDispatchToProps(dispatch :Function) {
   };
 }
 
-const LogoutButton = ({ actions }) => {
-  return (
-    <StyledLogoutButton onClick={actions.logout}>Logout</StyledLogoutButton>
-  );
-};
+const LogoutButton = ({ actions }) => (
+  <StyledLogoutButton onClick={actions.logout}>Logout</StyledLogoutButton>
+);
 
 LogoutButton.propTypes = {
   actions: PropTypes.shape({
