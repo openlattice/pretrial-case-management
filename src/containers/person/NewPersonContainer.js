@@ -22,6 +22,7 @@ import {
   CITY_VALUE,
   COUNTRY_VALUE,
   DOB_VALUE,
+  ETHNICITY_VALUE,
   FIRST_NAME_VALUE,
   GENDER_VALUE,
   ID_VALUE,
@@ -29,6 +30,7 @@ import {
   LIVES_AT_ID_VALUE,
   MIDDLE_NAME_VALUE,
   PICTURE_VALUE,
+  RACE_VALUE,
   SSN_VALUE,
   STATE_VALUE,
   ZIP_VALUE,
@@ -93,12 +95,14 @@ type State = {
   cityValue :?string,
   countryValue :?string,
   dobValue :?string,
+  ethnicityValue :?string,
   firstNameValue :?string,
   genderValue :?string,
   isSubmitting :boolean,
   lastNameValue :?string,
   middleNameValue :?string,
   pictureValue :?string,
+  raceValue :?string,
   showSelfieWebCam :boolean,
   ssnValue :?string,
   stateValue :?string,
@@ -118,11 +122,13 @@ class NewPersonContainer extends React.Component<Props, State> {
       [CITY_VALUE]: '',
       [COUNTRY_VALUE]: '',
       [DOB_VALUE]: '',
+      [ETHNICITY_VALUE]: '',
       [FIRST_NAME_VALUE]: '',
       [GENDER_VALUE]: '',
       [LAST_NAME_VALUE]: '',
       [MIDDLE_NAME_VALUE]: '',
       [PICTURE_VALUE]: '',
+      [RACE_VALUE]: '',
       [SSN_VALUE]: '',
       [STATE_VALUE]: '',
       [ZIP_VALUE]: '',
@@ -131,15 +137,9 @@ class NewPersonContainer extends React.Component<Props, State> {
     };
   }
 
-  isReadyToSubmit = () :boolean => !!this.state[ADDRESS_VALUE]
-        && !!this.state[CITY_VALUE]
-        && !!this.state[COUNTRY_VALUE]
-        && !!this.state[DOB_VALUE]
+  isReadyToSubmit = () :boolean => !!this.state[DOB_VALUE]
         && !!this.state[FIRST_NAME_VALUE]
-        && !!this.state[GENDER_VALUE]
         && !!this.state[LAST_NAME_VALUE]
-        && !!this.state[STATE_VALUE]
-        && !!this.state[ZIP_VALUE]
 
   handleOnChangeDateOfBirth = (dob :?string) => {
 
@@ -189,11 +189,13 @@ class NewPersonContainer extends React.Component<Props, State> {
       [CITY_VALUE]: this.state[CITY_VALUE],
       [COUNTRY_VALUE]: this.state[COUNTRY_VALUE] || null,
       [DOB_VALUE]: this.state[DOB_VALUE] || null,
+      [ETHNICITY_VALUE]: this.state[ETHNICITY_VALUE] || null,
       [FIRST_NAME_VALUE]: this.state[FIRST_NAME_VALUE] || null,
       [GENDER_VALUE]: this.state[GENDER_VALUE] || null,
       [LAST_NAME_VALUE]: this.state[LAST_NAME_VALUE] || null,
       [MIDDLE_NAME_VALUE]: this.state[MIDDLE_NAME_VALUE] || null,
       [PICTURE_VALUE]: this.state[PICTURE_VALUE] || null,
+      [RACE_VALUE]: this.state[RACE_VALUE] || null,
       [SSN_VALUE]: this.state[SSN_VALUE] || null,
       [STATE_VALUE]: this.state[STATE_VALUE] || null,
       [ZIP_VALUE]: this.state[ZIP_VALUE] || null,
@@ -269,6 +271,22 @@ class NewPersonContainer extends React.Component<Props, State> {
                   <FormControl
                       name={SSN_VALUE}
                       value={this.state[SSN_VALUE]}
+                      onChange={this.handleOnChangeInput} />
+                </Col>
+              </PaddedRow>
+              <PaddedRow>
+                <Col lg={6}>
+                  <TitleLabel>Race</TitleLabel>
+                  <FormControl
+                      name={RACE_VALUE}
+                      value={this.state[RACE_VALUE]}
+                      onChange={this.handleOnChangeInput} />
+                </Col>
+                <Col lg={6}>
+                  <TitleLabel>Ethnicity</TitleLabel>
+                  <FormControl
+                      name={ETHNICITY_VALUE}
+                      value={this.state[ETHNICITY_VALUE]}
                       onChange={this.handleOnChangeInput} />
                 </Col>
               </PaddedRow>

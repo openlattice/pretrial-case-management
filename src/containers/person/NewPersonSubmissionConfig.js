@@ -9,6 +9,7 @@ export const ADDRESS_VALUE :'addressValue' = 'addressValue';
 export const CITY_VALUE :'cityValue' = 'cityValue';
 export const COUNTRY_VALUE :'countryValue' = 'countryValue';
 export const DOB_VALUE :'dobValue' = 'dobValue';
+export const ETHNICITY_VALUE :'ethnicityValue' = 'ethnicityValue';
 export const FIRST_NAME_VALUE :'firstNameValue' = 'firstNameValue';
 export const GENDER_VALUE :'genderValue' = 'genderValue';
 export const ID_VALUE :'idValue' = 'idValue';
@@ -16,6 +17,7 @@ export const LAST_NAME_VALUE :'lastNameValue' = 'lastNameValue';
 export const LIVES_AT_ID_VALUE :'livesAtId' = 'livesAtId';
 export const MIDDLE_NAME_VALUE :'middleNameValue' = 'middleNameValue';
 export const PICTURE_VALUE :'pictureValue' = 'pictureValue';
+export const RACE_VALUE :'raceValue' = 'raceValue';
 export const SSN_VALUE :'ssnValue' = 'ssnValue';
 export const STATE_VALUE :'stateValue' = 'stateValue';
 export const ZIP_VALUE :'zipValue' = 'zipValue';
@@ -28,11 +30,13 @@ export const newPersonSubmissionConfig = {
       fields: {
         [DOB_VALUE]: PROPERTY_TYPES.DOB,
         [FIRST_NAME_VALUE]: PROPERTY_TYPES.FIRST_NAME,
+        [ETHNICITY_VALUE]: PROPERTY_TYPES.ETHNICITY,
         [GENDER_VALUE]: PROPERTY_TYPES.SEX,
         [ID_VALUE]: PROPERTY_TYPES.PERSON_ID,
         [LAST_NAME_VALUE]: PROPERTY_TYPES.LAST_NAME,
         [MIDDLE_NAME_VALUE]: PROPERTY_TYPES.MIDDLE_NAME,
         [PICTURE_VALUE]: PROPERTY_TYPES.PICTURE,
+        [RACE_VALUE]: PROPERTY_TYPES.RACE,
         [SSN_VALUE]: PROPERTY_TYPES.SSN
       }
     },
