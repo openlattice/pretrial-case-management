@@ -90,6 +90,9 @@ export default class SelectPretrialCaseContainer extends React.Component<Props> 
     return (
       <SearchResultsList>
         { caseOptions.toSeq() }
+        <StyledNavBtnWrapper>
+          <NavButton onClick={this.props.nextPage}>Proceed Without Case</NavButton>
+        </StyledNavBtnWrapper>
       </SearchResultsList>
     );
   }
