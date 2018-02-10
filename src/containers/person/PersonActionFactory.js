@@ -110,10 +110,11 @@ type SearchPeopleRequestAction = {
   type :typeof SEARCH_PEOPLE_REQUEST
 };
 
-function searchPeopleRequest(searchQuery :string) :SearchPeopleRequestAction {
+function searchPeopleRequest(firstName :string, lastName :string) :SearchPeopleRequestAction {
 
   return {
-    searchQuery,
+    firstName,
+    lastName,
     type: SEARCH_PEOPLE_REQUEST
   };
 }
