@@ -42,7 +42,7 @@ import {
   getNextPath,
   getPrevPath
 } from '../../utils/Helpers';
-import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA } from '../../utils/consts/Consts';
 import { chargeFieldIsViolent } from '../../utils/consts/ChargeConsts';
 
@@ -62,7 +62,10 @@ const {
   FTA_SCALE_FQN,
   GENERAL_ID_FQN,
   MOST_SERIOUS_CHARGE_NO,
-  CHARGE_NUM_FQN
+  CHARGE_NUM_FQN,
+  CASE_ID_FQN,
+  CHARGE_ID_FQN,
+  DISPOSITION_DATE
 } = PROPERTY_TYPES;
 
 const {
@@ -180,7 +183,8 @@ class Form extends React.Component {
     selectedPretrialCase: PropTypes.object.isRequired,
     pretrialCaseOptions: PropTypes.array.isRequired,
     charges: PropTypes.array.isRequired,
-    peopleOptions: PropTypes.array.isRequired
+    peopleOptions: PropTypes.array.isRequired,
+    allChargesForPerson: PropTypes.array.isRequired
   };
 
   constructor(props) {
@@ -193,8 +197,17 @@ class Form extends React.Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    if (Object.keys(nextProps.selectedPretrialCase).length || nextProps.charges.length) {
-      this.tryAutofillFields(nextProps.selectedPretrialCase, nextProps.charges);
+    const {
+      selectedPretrialCase,
+      charges,
+      pretrialCaseOptions,
+      allChargesForPerson
+    } = nextProps;
+    if (Object.keys(selectedPretrialCase).length
+      || charges.length
+      || pretrialCaseOptions.length
+      || allChargesForPerson.length) {
+      this.tryAutofillFields(selectedPretrialCase, charges, pretrialCaseOptions, allChargesForPerson);
     }
   }
 
@@ -234,22 +247,32 @@ class Form extends React.Component {
     this.setState({ [sectionKey]: sectionState });
   }
 
-  tryAutofillFields = (nextCase, nextCharges) => {
+  tryAutofillFields = (nextCase, nextCharges, allCases, allCharges) => {
     const currCase = this.props.selectedPretrialCase;
 
-    let { ageAtCurrentArrest, currentViolentOffense } = this.state.psaForm;
+    let { ageAtCurrentArrest, currentViolentOffense, pendingCharge } = this.state.psaForm;
     if (ageAtCurrentArrest === null || nextCase[ARREST_DATE_FQN] !== currCase[ARREST_DATE_FQN]) {
       ageAtCurrentArrest = this.tryAutofillAge(nextCase[ARREST_DATE_FQN], ageAtCurrentArrest);
     }
     if (nextCase[MOST_SERIOUS_CHARGE_NO] !== currCase[MOST_SERIOUS_CHARGE_NO] || (nextCharges && nextCharges.length)) {
       currentViolentOffense = this.tryAutofillCurrentViolentCharge(nextCharges, nextCase[MOST_SERIOUS_CHARGE_NO]);
     }
+    if (pendingCharge === null || nextCase[ARREST_DATE_FQN] !== currCase[ARREST_DATE_FQN]) {
+      pendingCharge = this.tryAutofillPendingCharge(
+        nextCase[CASE_ID_FQN],
+        nextCase[ARREST_DATE_FQN],
+        allCases,
+        allCharges,
+        pendingCharge
+      );
+    }
     this.setState({
       psaForm: Object.assign(
         {},
         this.state.psaForm, {
           ageAtCurrentArrest,
-          currentViolentOffense
+          currentViolentOffense,
+          pendingCharge
         }
       )
     });
@@ -283,6 +306,44 @@ class Form extends React.Component {
       }
     }
     return ageAtCurrentArrestValue;
+  }
+
+  tryAutofillPendingCharge = (currCaseNums, dateArrested, allCases, allCharges, defaultValue) => {
+    if (!dateArrested || !dateArrested.length || !currCaseNums || !currCaseNums.length) return defaultValue;
+    const currCaseNum = currCaseNums[0];
+    const arrest = moment.utc(dateArrested[0]);
+    const casesWithArrestBefore = [];
+    const casesWithDispositionAfter = new Set();
+    if (arrest.isValid) {
+      let pending = false;
+      allCases.forEach((caseDetails) => {
+        const prevArrestDates = caseDetails[ARREST_DATE_FQN];
+        if (prevArrestDates && prevArrestDates.length) {
+          const prevArrestDate = moment.utc(prevArrestDates[0]);
+          if (prevArrestDate.isValid && prevArrestDate.isBefore(arrest)) {
+            const caseNum = caseDetails[CASE_ID_FQN][0];
+            if (caseNum !== currCaseNum) casesWithArrestBefore.push(caseNum);
+          }
+        }
+      });
+      allCharges.forEach((chargeDetails) => {
+        const dispositionDates = chargeDetails[DISPOSITION_DATE];
+        if (dispositionDates && dispositionDates.length) {
+          const dispositionDate = moment.utc(dispositionDates[0]);
+          if (dispositionDate.isValid && dispositionDate.isAfter(arrest)) {
+            const chargeId = chargeDetails[CHARGE_ID_FQN][0];
+            const caseNums = chargeId.split('|');
+            if (caseNums && caseNums.length) {
+              const caseNum = caseNums[0];
+              if (caseNum !== currCaseNum) casesWithDispositionAfter.add(caseNum);
+            }
+          }
+        }
+      });
+      if (casesWithArrestBefore.filter(caseNum => casesWithDispositionAfter.has(caseNum)).length) pending = true;
+      return `${pending}`;
+    }
+    return defaultValue;
   }
 
   getCalculatedForEntityDetails = () => ({ [TIMESTAMP_FQN]: [new Date()] })
@@ -663,7 +724,8 @@ function mapStateToProps(state :Map<>) :Object {
     charges: psaForm.get('charges'),
     peopleOptions: psaForm.get('peopleOptions'),
     selectedPerson: psaForm.get('selectedPerson'),
-    selectedPretrialCase: psaForm.get('selectedPretrialCase')
+    selectedPretrialCase: psaForm.get('selectedPretrialCase'),
+    allChargesForPerson: psaForm.get('allChargesForPerson')
   };
 }
 

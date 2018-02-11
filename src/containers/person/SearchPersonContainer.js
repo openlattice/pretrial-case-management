@@ -88,7 +88,7 @@ class SearchPeopleContainer extends React.Component<Props> {
   handleOnSubmitSearch = () => {
 
     const { firstName, lastName } = this.state;
-    if (firstName.length && lastName.length) {
+    if (firstName.length || lastName.length) {
       this.props.actions.searchPeopleRequest(firstName, lastName);
     }
   }
