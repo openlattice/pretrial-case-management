@@ -50,6 +50,7 @@ export const PROPERTY_TYPES = {
   CHARGE_NUM_FQN: 'event.OffenseLocalCodeSection',
   CHARGE_DESCRIPTION_FQN: 'event.OffenseLocalDescription',
   CHARGE_DEGREE_FQN: 'event.ChargeLevelState',
+  DISPOSITION_DATE: 'justice.dispositiondate',
 
   // PSA form entity type consts
   AGE_AT_CURRENT_ARREST_FQN: 'psa.AgeAtCurrentArrest',
