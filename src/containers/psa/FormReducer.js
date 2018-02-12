@@ -31,7 +31,9 @@ const INITIAL_STATE :Map<> = Immutable.Map().withMutations((map :Map<>) => {
   map.set('riskFactorsDataModel', EMPTY_DATA_MODEL);
   map.set('psaDataModel', EMPTY_DATA_MODEL);
   map.set('releaseRecommendationDataModel', EMPTY_DATA_MODEL);
+  map.set('staffDataModel', EMPTY_DATA_MODEL);
   map.set('calculatedForDataModel', EMPTY_DATA_MODEL);
+  map.set('assessedByDataModel', EMPTY_DATA_MODEL);
   map.set('peopleOptions', []);
   map.set('pretrialCaseOptions', []);
   map.set('allChargesForPerson', []);
@@ -59,8 +61,14 @@ function formReducer(state :Map<> = INITIAL_STATE, action :Object) {
     case FormActionTypes.LOAD_RELEASE_RECOMMENDATION_DATA_MODEL_SUCCESS:
       return state.set('releaseRecommendationDataModel', action.dataModel);
 
+    case FormActionTypes.LOAD_STAFF_DATA_MODEL_SUCCESS:
+      return state.set('staffDataModel', action.dataModel);
+
     case FormActionTypes.LOAD_CALCULATED_FOR_DATA_MODEL_SUCCESS:
       return state.set('calculatedForDataModel', action.dataModel);
+
+    case FormActionTypes.LOAD_ASSESSED_BY_DATA_MODEL_SUCCESS:
+      return state.set('assessedByDataModel', action.dataModel);
 
     case SEARCH_PEOPLE_REQUEST:
       return state.set('peopleOptions', []).set('pretrialCaseOptions', []);

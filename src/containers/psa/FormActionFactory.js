@@ -99,6 +99,25 @@ export function loadReleaseRecommendationDataModelFailure() :Object {
   };
 }
 
+export function loadStaffDataModel() :Object {
+  return {
+    type: FormActionTypes.LOAD_STAFF_DATA_MODEL_REQUEST
+  };
+}
+
+export function loadStaffDataModelSuccess(dataModel :Object) :Object {
+  return {
+    type: FormActionTypes.LOAD_STAFF_DATA_MODEL_SUCCESS,
+    dataModel
+  };
+}
+
+export function loadStaffDataModelFailure() :Object {
+  return {
+    type: FormActionTypes.LOAD_STAFF_DATA_MODEL_FAILURE
+  };
+}
+
 export function loadCalculatedForDataModel() :Object {
   return {
     type: FormActionTypes.LOAD_CALCULATED_FOR_DATA_MODEL_REQUEST
@@ -115,6 +134,25 @@ export function loadCalculatedForDataModelSuccess(dataModel :Object) :Object {
 export function loadCalculatedForDataModelFailure() :Object {
   return {
     type: FormActionTypes.LOAD_CALCULATED_FOR_DATA_MODEL_FAILURE
+  };
+}
+
+export function loadAssessedByDataModel() :Object {
+  return {
+    type: FormActionTypes.LOAD_ASSESSED_BY_DATA_MODEL_REQUEST
+  };
+}
+
+export function loadAssessedByDataModelSuccess(dataModel :Object) :Object {
+  return {
+    type: FormActionTypes.LOAD_ASSESSED_BY_DATA_MODEL_SUCCESS,
+    dataModel
+  };
+}
+
+export function loadAssessedByDataModelFailure() :Object {
+  return {
+    type: FormActionTypes.LOAD_ASSESSED_BY_DATA_MODEL_FAILURE
   };
 }
 
@@ -166,7 +204,9 @@ export function submitData(
   riskFactorsEntity :Object,
   psaEntity :Object,
   releaseRecommendationEntity :Object,
-  calculatedForEntity :Object
+  staffEntity :Object,
+  calculatedForEntity :Object,
+  assessedByEntity :Object
 ) :Object {
   return {
     type: FormActionTypes.SUBMIT_DATA_REQUEST,
@@ -175,7 +215,9 @@ export function submitData(
     riskFactorsEntity,
     psaEntity,
     releaseRecommendationEntity,
-    calculatedForEntity
+    staffEntity,
+    calculatedForEntity,
+    assessedByEntity
   };
 }
 
