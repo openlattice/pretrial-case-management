@@ -8,7 +8,7 @@ import { call, put, take } from 'redux-saga/effects';
 
 import { SUBMIT_FAILURE, SUBMIT_SUCCESS } from '../../utils/submit/SubmitActionTypes';
 import { submit } from '../../utils/submit/SubmitActionFactory';
-import { ENTITY_SETS } from '../../utils/consts/DataModelConsts';
+import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 
 import {
   LOAD_PERSON_DETAILS_REQUEST,
@@ -71,15 +71,40 @@ export function* watchSearchPeopleRequest() :Generator<*, *, *> {
 
   while (true) {
     const action :SearchPeopleRequestAction = yield take(SEARCH_PEOPLE_REQUEST);
-    // TODO: implement actual paging
+    const { firstName, lastName } = action;
+    const searchFields = [];
+    if (firstName.length) {
+      const firstNameFqnArr = PROPERTY_TYPES.FIRST_NAME.split('.');
+      const firstNameId = yield call(EntityDataModelApi.getPropertyTypeId, {
+        namespace: firstNameFqnArr[0],
+        name: firstNameFqnArr[1]
+      })
+      searchFields.push({
+        searchTerm: firstName,
+        property: firstNameId,
+        exact: true
+      });
+    }
+    if (lastName.length) {
+      const lastNameFqnArr = PROPERTY_TYPES.LAST_NAME.split('.');
+      const lastNameId = yield call(EntityDataModelApi.getPropertyTypeId, {
+        namespace: lastNameFqnArr[0],
+        name: lastNameFqnArr[1]
+      })
+      searchFields.push({
+        searchTerm: lastName,
+        property: lastNameId,
+        exact: true
+      });
+    }
     const searchOptions = {
-      searchTerm: action.searchQuery,
+      searchFields,
       start: 0,
       maxHits: 100
     };
     try {
       const entitySetId :string = yield call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.PEOPLE);
-      const response = yield call(SearchApi.searchEntitySetData, entitySetId, searchOptions);
+      const response = yield call(SearchApi.advancedSearchEntitySetData, entitySetId, searchOptions);
       yield put(searchPeopleSuccess(response));
     }
     catch (error) {

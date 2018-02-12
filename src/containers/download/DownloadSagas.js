@@ -41,8 +41,9 @@ export function* downloadPSAs() :Generator<*, *, *> {
         let usableNeighbors = Immutable.List();
         const neighborList = neighborsById[id];
         neighborList.forEach((neighbor) => {
-          const timestampList = neighbor.associationDetails[PROPERTY_TYPES.TIMESTAMP_FQN];
-          if (timestampList.length) {
+          const timestampList = neighbor.associationDetails[PROPERTY_TYPES.TIMESTAMP_FQN]
+            || neighbor.associationDetails[PROPERTY_TYPES.COMPLETED_DATE_TIME];
+          if (timestampList && timestampList.length) {
             const timestamp = moment.parseZone(timestampList[0]);
             const matchesStart = timestamp.diff(start, 'seconds') > 0 || timestamp.isSame(start, 'day');
             const matchesEnd = timestamp.diff(end, 'seconds') < 0 || timestamp.isSame(end, 'day');

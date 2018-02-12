@@ -84,6 +84,19 @@ export function* loadReleaseRecommendationDataModel() :Generator<*, *, *> {
   }
 }
 
+export function* loadStaffDataModel() :Generator<*, *, *> {
+  while (true) {
+    yield take(FormActionTypes.LOAD_STAFF_DATA_MODEL_REQUEST);
+    try {
+      const dataModel = yield* loadDataModel(ENTITY_SETS.STAFF);
+      yield put(FormActionFactory.loadStaffDataModelSuccess(dataModel));
+    }
+    catch (error) {
+      yield put(FormActionFactory.loadStaffDataModelFailure());
+    }
+  }
+}
+
 export function* loadCalculatedForDataModel() :Generator<*, *, *> {
   while (true) {
     yield take(FormActionTypes.LOAD_CALCULATED_FOR_DATA_MODEL_REQUEST);
@@ -93,6 +106,19 @@ export function* loadCalculatedForDataModel() :Generator<*, *, *> {
     }
     catch (error) {
       yield put(FormActionFactory.loadCalculatedForDataModelFailure());
+    }
+  }
+}
+
+export function* loadAssessedByDataModel() :Generator<*, *, *> {
+  while (true) {
+    yield take(FormActionTypes.LOAD_ASSESSED_BY_DATA_MODEL_REQUEST);
+    try {
+      const dataModel = yield* loadDataModel(ENTITY_SETS.ASSESSED_BY);
+      yield put(FormActionFactory.loadAssessedByDataModelSuccess(dataModel));
+    }
+    catch (error) {
+      yield put(FormActionFactory.loadAssessedByDataModelFailure());
     }
   }
 }
@@ -133,7 +159,9 @@ export function* submitData() :Generator<*, *, *> {
       riskFactorsEntity,
       psaEntity,
       releaseRecommendationEntity,
-      calculatedForEntity
+      staffEntity,
+      calculatedForEntity,
+      assessedByEntity
     } = yield take(FormActionTypes.SUBMIT_DATA_REQUEST);
 
     try {
@@ -143,21 +171,27 @@ export function* submitData() :Generator<*, *, *> {
         riskFactorsSyncId,
         psaSyncId,
         releaseRecommendationSyncId,
-        calculatedForSyncId
+        staffSyncId,
+        calculatedForSyncId,
+        assessedBySyncId
       ] = yield all([
         call(SyncApi.getCurrentSyncId, personEntity.key.entitySetId),
         call(SyncApi.getCurrentSyncId, pretrialCaseEntity.key.entitySetId),
         call(SyncApi.getCurrentSyncId, riskFactorsEntity.key.entitySetId),
         call(SyncApi.getCurrentSyncId, psaEntity.key.entitySetId),
         call(SyncApi.getCurrentSyncId, releaseRecommendationEntity.key.entitySetId),
-        call(SyncApi.getCurrentSyncId, calculatedForEntity.key.entitySetId)
+        call(SyncApi.getCurrentSyncId, staffEntity.key.entitySetId),
+        call(SyncApi.getCurrentSyncId, calculatedForEntity.key.entitySetId),
+        call(SyncApi.getCurrentSyncId, assessedByEntity.key.entitySetId)
       ]);
       personEntity.key.syncId = personSyncId;
       pretrialCaseEntity.key.syncId = pretrialCaseSyncId;
       riskFactorsEntity.key.syncId = riskFactorsSyncId;
       psaEntity.key.syncId = psaSyncId;
       releaseRecommendationEntity.key.syncId = releaseRecommendationSyncId;
+      staffEntity.key.syncId = staffSyncId;
       calculatedForEntity.key.syncId = calculatedForSyncId;
+      assessedByEntity.key.syncId = assessedBySyncId;
 
       const psaToPersonAssociation = Object.assign(
         {},
@@ -222,7 +256,28 @@ export function* submitData() :Generator<*, *, *> {
         { dst: pretrialCaseEntity.key }
       );
 
-      const entities = [personEntity, pretrialCaseEntity, riskFactorsEntity, psaEntity, releaseRecommendationEntity];
+      const psaToStaffAssociation = Object.assign(
+        {},
+        assessedByEntity,
+        { src: psaEntity.key },
+        { dst: staffEntity.key }
+      );
+
+      const riskFactorsToStaffAssociation = Object.assign(
+        {},
+        assessedByEntity,
+        { src: riskFactorsEntity.key },
+        { dst: staffEntity.key }
+      );
+
+      const releaseRecommendationToStaffAssociation = Object.assign(
+        {},
+        assessedByEntity,
+        { src: releaseRecommendationEntity.key },
+        { dst: staffEntity.key }
+      );
+
+      const entities = [personEntity, pretrialCaseEntity, riskFactorsEntity, psaEntity, releaseRecommendationEntity, staffEntity];
       const associations = [
         psaToPersonAssociation,
         psaToPretrialCaseAssociation,
@@ -232,7 +287,10 @@ export function* submitData() :Generator<*, *, *> {
         recommendationToPersonAssociation,
         recommendationToRiskFactorsAssociation,
         recommendationToScoresAssociation,
-        recommendationToCaseAssociation
+        recommendationToCaseAssociation,
+        psaToStaffAssociation,
+        riskFactorsToStaffAssociation,
+        releaseRecommendationToStaffAssociation
       ];
 
       const syncTickets = yield all([
@@ -241,7 +299,9 @@ export function* submitData() :Generator<*, *, *> {
         call(DataApi.acquireSyncTicket, riskFactorsEntity.key.entitySetId, riskFactorsSyncId),
         call(DataApi.acquireSyncTicket, psaEntity.key.entitySetId, psaSyncId),
         call(DataApi.acquireSyncTicket, releaseRecommendationEntity.key.entitySetId, releaseRecommendationSyncId),
-        call(DataApi.acquireSyncTicket, calculatedForEntity.key.entitySetId, calculatedForSyncId)
+        call(DataApi.acquireSyncTicket, staffEntity.key.entitySetId, staffSyncId),
+        call(DataApi.acquireSyncTicket, calculatedForEntity.key.entitySetId, calculatedForSyncId),
+        call(DataApi.acquireSyncTicket, assessedByEntity.key.entitySetId, assessedBySyncId)
       ]);
 
       yield call(DataApi.createEntityAndAssociationData, { syncTickets, entities, associations });

@@ -10,6 +10,7 @@ import moment from 'moment';
 import styled from 'styled-components';
 import randomUUID from 'uuid/v4';
 import FontAwesome from 'react-fontawesome';
+import { AuthUtils } from 'lattice-auth';
 import { Button } from 'react-bootstrap';
 import { connect } from 'react-redux';
 import { Redirect, Route, Switch } from 'react-router-dom';
@@ -42,7 +43,7 @@ import {
   getNextPath,
   getPrevPath
 } from '../../utils/Helpers';
-import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA } from '../../utils/consts/Consts';
 import { chargeFieldIsViolent } from '../../utils/consts/ChargeConsts';
 
@@ -62,7 +63,11 @@ const {
   FTA_SCALE_FQN,
   GENERAL_ID_FQN,
   MOST_SERIOUS_CHARGE_NO,
-  CHARGE_NUM_FQN
+  CHARGE_NUM_FQN,
+  CASE_ID_FQN,
+  CHARGE_ID_FQN,
+  DISPOSITION_DATE,
+  COMPLETED_DATE_TIME
 } = PROPERTY_TYPES;
 
 const {
@@ -175,12 +180,15 @@ class Form extends React.Component {
     riskFactorsDataModel: PropTypes.object.isRequired,
     psaDataModel: PropTypes.object.isRequired,
     releaseRecommendationDataModel: PropTypes.object.isRequired,
+    staffDataModel: PropTypes.object.isRequired,
     calculatedForDataModel: PropTypes.object.isRequired,
+    assessedByDataModel: PropTypes.object.isRequired,
     selectedPerson: PropTypes.object.isRequired,
     selectedPretrialCase: PropTypes.object.isRequired,
     pretrialCaseOptions: PropTypes.array.isRequired,
     charges: PropTypes.array.isRequired,
-    peopleOptions: PropTypes.array.isRequired
+    peopleOptions: PropTypes.array.isRequired,
+    allChargesForPerson: PropTypes.array.isRequired
   };
 
   constructor(props) {
@@ -193,8 +201,17 @@ class Form extends React.Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    if (Object.keys(nextProps.selectedPretrialCase).length || nextProps.charges.length) {
-      this.tryAutofillFields(nextProps.selectedPretrialCase, nextProps.charges);
+    const {
+      selectedPretrialCase,
+      charges,
+      pretrialCaseOptions,
+      allChargesForPerson
+    } = nextProps;
+    if (Object.keys(selectedPretrialCase).length
+      || charges.length
+      || pretrialCaseOptions.length
+      || allChargesForPerson.length) {
+      this.tryAutofillFields(selectedPretrialCase, charges, pretrialCaseOptions, allChargesForPerson);
     }
   }
 
@@ -234,22 +251,32 @@ class Form extends React.Component {
     this.setState({ [sectionKey]: sectionState });
   }
 
-  tryAutofillFields = (nextCase, nextCharges) => {
+  tryAutofillFields = (nextCase, nextCharges, allCases, allCharges) => {
     const currCase = this.props.selectedPretrialCase;
 
-    let { ageAtCurrentArrest, currentViolentOffense } = this.state.psaForm;
+    let { ageAtCurrentArrest, currentViolentOffense, pendingCharge } = this.state.psaForm;
     if (ageAtCurrentArrest === null || nextCase[ARREST_DATE_FQN] !== currCase[ARREST_DATE_FQN]) {
       ageAtCurrentArrest = this.tryAutofillAge(nextCase[ARREST_DATE_FQN], ageAtCurrentArrest);
     }
     if (nextCase[MOST_SERIOUS_CHARGE_NO] !== currCase[MOST_SERIOUS_CHARGE_NO] || (nextCharges && nextCharges.length)) {
       currentViolentOffense = this.tryAutofillCurrentViolentCharge(nextCharges, nextCase[MOST_SERIOUS_CHARGE_NO]);
     }
+    if (pendingCharge === null || nextCase[ARREST_DATE_FQN] !== currCase[ARREST_DATE_FQN]) {
+      pendingCharge = this.tryAutofillPendingCharge(
+        nextCase[CASE_ID_FQN],
+        nextCase[ARREST_DATE_FQN],
+        allCases,
+        allCharges,
+        pendingCharge
+      );
+    }
     this.setState({
       psaForm: Object.assign(
         {},
         this.state.psaForm, {
           ageAtCurrentArrest,
-          currentViolentOffense
+          currentViolentOffense,
+          pendingCharge
         }
       )
     });
@@ -285,6 +312,44 @@ class Form extends React.Component {
     return ageAtCurrentArrestValue;
   }
 
+  tryAutofillPendingCharge = (currCaseNums, dateArrested, allCases, allCharges, defaultValue) => {
+    if (!dateArrested || !dateArrested.length || !currCaseNums || !currCaseNums.length) return defaultValue;
+    const currCaseNum = currCaseNums[0];
+    const arrest = moment.utc(dateArrested[0]);
+    const casesWithArrestBefore = [];
+    const casesWithDispositionAfter = new Set();
+    if (arrest.isValid) {
+      let pending = false;
+      allCases.forEach((caseDetails) => {
+        const prevArrestDates = caseDetails[ARREST_DATE_FQN];
+        if (prevArrestDates && prevArrestDates.length) {
+          const prevArrestDate = moment.utc(prevArrestDates[0]);
+          if (prevArrestDate.isValid && prevArrestDate.isBefore(arrest)) {
+            const caseNum = caseDetails[CASE_ID_FQN][0];
+            if (caseNum !== currCaseNum) casesWithArrestBefore.push(caseNum);
+          }
+        }
+      });
+      allCharges.forEach((chargeDetails) => {
+        const dispositionDates = chargeDetails[DISPOSITION_DATE];
+        if (dispositionDates && dispositionDates.length) {
+          const dispositionDate = moment.utc(dispositionDates[0]);
+          if (dispositionDate.isValid && dispositionDate.isAfter(arrest)) {
+            const chargeId = chargeDetails[CHARGE_ID_FQN][0];
+            const caseNums = chargeId.split('|');
+            if (caseNums && caseNums.length) {
+              const caseNum = caseNums[0];
+              if (caseNum !== currCaseNum) casesWithDispositionAfter.add(caseNum);
+            }
+          }
+        }
+      });
+      if (casesWithArrestBefore.filter(caseNum => casesWithDispositionAfter.has(caseNum)).length) pending = true;
+      return `${pending}`;
+    }
+    return defaultValue;
+  }
+
   getCalculatedForEntityDetails = () => ({ [TIMESTAMP_FQN]: [new Date()] })
 
   getBlankReleaseRecommendationEntity = () => {
@@ -301,6 +366,8 @@ class Form extends React.Component {
       }
     };
   }
+
+  getAssessedByEntityDetails = () => ({ [COMPLETED_DATE_TIME]: [new Date()] })
 
   getEntityId = (entity, primaryKeyIds) => {
     const pKeyVals = [];
@@ -348,16 +415,28 @@ class Form extends React.Component {
     };
   }
 
+  getStaffEntityDetails = () => {
+    const userInfo = AuthUtils.getUserInfo();
+    let { id } = userInfo;
+    if (userInfo.email && userInfo.email.length > 0) {
+      id = userInfo.email;
+    }
+    return { [PERSON_ID]: [id] };
+  }
+
   submitEntities = (scores) => {
     const { riskFactors } = getScoresAndRiskFactors(this.state.psaForm);
     const calculatedForEntityDetails = this.getCalculatedForEntityDetails();
     const releaseRecommendationEntity = this.getBlankReleaseRecommendationEntity();
+    const assessedByEntityDetails = this.getAssessedByEntityDetails();
 
     const personEntity = this.getEntity(this.props.selectedPerson, this.props.personDataModel, true);
     const pretrialCaseEntity = this.getEntity(this.props.selectedPretrialCase, this.props.pretrialCaseDataModel, true);
     const riskFactorsEntity = this.getEntity(riskFactors, this.props.riskFactorsDataModel, false, true);
     const psaEntity = this.getEntity(scores, this.props.psaDataModel, false, true);
     const calculatedForEntity = this.getEntity(calculatedForEntityDetails, this.props.calculatedForDataModel);
+    const staffEntity = this.getEntity(this.getStaffEntityDetails(), this.props.staffDataModel);
+    const assessedByEntity = this.getEntity(assessedByEntityDetails, this.props.assessedByDataModel);
 
     this.props.actions.submitData(
       personEntity,
@@ -365,7 +444,9 @@ class Form extends React.Component {
       riskFactorsEntity,
       psaEntity,
       releaseRecommendationEntity,
-      calculatedForEntity
+      staffEntity,
+      calculatedForEntity,
+      assessedByEntity
     );
     this.setState({ releaseRecommendationId: releaseRecommendationEntity.key.entityId });
   }
@@ -658,12 +739,15 @@ function mapStateToProps(state :Map<>) :Object {
     riskFactorsDataModel: psaForm.get('riskFactorsDataModel'),
     psaDataModel: psaForm.get('psaDataModel'),
     releaseRecommendationDataModel: psaForm.get('releaseRecommendationDataModel'),
+    staffDataModel: psaForm.get('staffDataModel'),
     calculatedForDataModel: psaForm.get('calculatedForDataModel'),
+    assessedByDataModel: psaForm.get('assessedByDataModel'),
     pretrialCaseOptions: psaForm.get('pretrialCaseOptions'),
     charges: psaForm.get('charges'),
     peopleOptions: psaForm.get('peopleOptions'),
     selectedPerson: psaForm.get('selectedPerson'),
-    selectedPretrialCase: psaForm.get('selectedPretrialCase')
+    selectedPretrialCase: psaForm.get('selectedPretrialCase'),
+    allChargesForPerson: psaForm.get('allChargesForPerson')
   };
 }
 
@@ -689,7 +773,9 @@ function mapDispatchToProps(dispatch :Function) :Object {
         dispatch(FormActionFactory.loadRiskFactorsDataModel());
         dispatch(FormActionFactory.loadPsaDataModel());
         dispatch(FormActionFactory.loadReleaseRecommendationDataModel());
+        dispatch(FormActionFactory.loadStaffDataModel());
         dispatch(FormActionFactory.loadCalculatedForDataModel());
+        dispatch(FormActionFactory.loadAssessedByDataModel());
       }
     }
   };

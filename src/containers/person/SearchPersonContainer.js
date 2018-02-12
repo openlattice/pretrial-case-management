@@ -6,12 +6,17 @@ import React from 'react';
 
 import Immutable from 'immutable';
 import styled from 'styled-components';
+import { Button, FormControl, Col } from 'react-bootstrap';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 
 import SearchControl from '../../components/controls/SearchControl';
 import PersonCard from '../../components/person/PersonCard';
 import { clearSearchResults, searchPeopleRequest } from './PersonActionFactory';
+import {
+  PaddedRow,
+  TitleLabel
+} from '../../utils/Layout';
 
 /*
  * styled components
@@ -22,6 +27,7 @@ const Wrapper = styled.div`
   flex: 1 0 auto;
   flex-direction: column;
   padding: 50px;
+  width: 100%;
 `;
 
 const Header = styled.h1`
@@ -36,6 +42,10 @@ const SearchResultsList = styled.div`
   display: flex;
   flex-direction: column;
   margin: 20px 0;
+`;
+
+const SearchRow = styled(PaddedRow)`
+  align-items: flex-end;
 `;
 
 /*
@@ -57,6 +67,14 @@ class SearchPeopleContainer extends React.Component<Props> {
     onSelectPerson: () => {}
   }
 
+  constructor(props) {
+    super(props);
+    this.state = {
+      firstName: '',
+      lastName: ''
+    };
+  }
+
   componentWillUnmount() {
 
     this.props.actions.clearSearchResults();
@@ -67,9 +85,12 @@ class SearchPeopleContainer extends React.Component<Props> {
     this.props.onSelectPerson(person, entityKeyId);
   }
 
-  handleOnSubmitSearch = (searchQuery :string) => {
+  handleOnSubmitSearch = () => {
 
-    this.props.actions.searchPeopleRequest(searchQuery);
+    const { firstName, lastName } = this.state;
+    if (firstName.length || lastName.length) {
+      this.props.actions.searchPeopleRequest(firstName, lastName);
+    }
   }
 
   renderSearchResults = () => {
@@ -95,10 +116,32 @@ class SearchPeopleContainer extends React.Component<Props> {
   }
 
   render() {
+    const { firstName, lastName } = this.state;
+
     return (
       <Wrapper>
         <Header>Search for people</Header>
-        <SearchControl withButton onSubmit={this.handleOnSubmitSearch} />
+        <SearchRow>
+          <Col lg={5}>
+            <TitleLabel>First Name</TitleLabel>
+            <FormControl
+                value={firstName}
+                onChange={(e) => {
+                  this.setState({ firstName: e.target.value });
+                }} />
+          </Col>
+          <Col lg={5}>
+            <TitleLabel>Last Name</TitleLabel>
+            <FormControl
+                value={lastName}
+                onChange={(e) => {
+                  this.setState({ lastName: e.target.value });
+                }} />
+          </Col>
+          <Col lg={2}>
+            <Button onClick={this.handleOnSubmitSearch}>Search</Button>
+          </Col>
+        </SearchRow>
         { this.renderSearchResults() }
       </Wrapper>
     );

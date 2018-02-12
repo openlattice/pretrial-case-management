@@ -6,6 +6,8 @@ export const ENTITY_SETS = {
   PSA_RISK_FACTORS: 'southdakotapsariskfactors',
   PSA_SCORES: 'southdakotapsas',
   RELEASE_RECOMMENDATIONS: 'southdakotareleaserecommendations',
+  STAFF: 'southdakotastaff',
+  ASSESSED_BY: 'southdakotaassessedby',
 
   // association entity sets
   APPEARS_IN: 'southdakotaappearsin',
@@ -17,6 +19,7 @@ export const ENTITY_SETS = {
 
 export const PROPERTY_TYPES = {
   STRING_ID: 'general.stringid',
+  COMPLETED_DATE_TIME: 'date.completeddatetime',
 
   FIRST_NAME: 'nc.PersonGivenName',
   LAST_NAME: 'nc.PersonSurName',
@@ -50,6 +53,7 @@ export const PROPERTY_TYPES = {
   CHARGE_NUM_FQN: 'event.OffenseLocalCodeSection',
   CHARGE_DESCRIPTION_FQN: 'event.OffenseLocalDescription',
   CHARGE_DEGREE_FQN: 'event.ChargeLevelState',
+  DISPOSITION_DATE: 'justice.dispositiondate',
 
   // PSA form entity type consts
   AGE_AT_CURRENT_ARREST_FQN: 'psa.AgeAtCurrentArrest',
