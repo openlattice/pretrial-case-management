@@ -10,6 +10,7 @@ import moment from 'moment';
 import styled from 'styled-components';
 import randomUUID from 'uuid/v4';
 import FontAwesome from 'react-fontawesome';
+import { AuthUtils } from 'lattice-auth';
 import { Button } from 'react-bootstrap';
 import { connect } from 'react-redux';
 import { Redirect, Route, Switch } from 'react-router-dom';
@@ -65,7 +66,8 @@ const {
   CHARGE_NUM_FQN,
   CASE_ID_FQN,
   CHARGE_ID_FQN,
-  DISPOSITION_DATE
+  DISPOSITION_DATE,
+  COMPLETED_DATE_TIME
 } = PROPERTY_TYPES;
 
 const {
@@ -178,7 +180,9 @@ class Form extends React.Component {
     riskFactorsDataModel: PropTypes.object.isRequired,
     psaDataModel: PropTypes.object.isRequired,
     releaseRecommendationDataModel: PropTypes.object.isRequired,
+    staffDataModel: PropTypes.object.isRequired,
     calculatedForDataModel: PropTypes.object.isRequired,
+    assessedByDataModel: PropTypes.object.isRequired,
     selectedPerson: PropTypes.object.isRequired,
     selectedPretrialCase: PropTypes.object.isRequired,
     pretrialCaseOptions: PropTypes.array.isRequired,
@@ -363,6 +367,8 @@ class Form extends React.Component {
     };
   }
 
+  getAssessedByEntityDetails = () => ({ [COMPLETED_DATE_TIME]: [new Date()] })
+
   getEntityId = (entity, primaryKeyIds) => {
     const pKeyVals = [];
     primaryKeyIds.forEach((pKey) => {
@@ -409,16 +415,28 @@ class Form extends React.Component {
     };
   }
 
+  getStaffEntityDetails = () => {
+    const userInfo = AuthUtils.getUserInfo();
+    let { id } = userInfo;
+    if (userInfo.email && userInfo.email.length > 0) {
+      id = userInfo.email;
+    }
+    return { [PERSON_ID]: [id] };
+  }
+
   submitEntities = (scores) => {
     const { riskFactors } = getScoresAndRiskFactors(this.state.psaForm);
     const calculatedForEntityDetails = this.getCalculatedForEntityDetails();
     const releaseRecommendationEntity = this.getBlankReleaseRecommendationEntity();
+    const assessedByEntityDetails = this.getAssessedByEntityDetails();
 
     const personEntity = this.getEntity(this.props.selectedPerson, this.props.personDataModel, true);
     const pretrialCaseEntity = this.getEntity(this.props.selectedPretrialCase, this.props.pretrialCaseDataModel, true);
     const riskFactorsEntity = this.getEntity(riskFactors, this.props.riskFactorsDataModel, false, true);
     const psaEntity = this.getEntity(scores, this.props.psaDataModel, false, true);
     const calculatedForEntity = this.getEntity(calculatedForEntityDetails, this.props.calculatedForDataModel);
+    const staffEntity = this.getEntity(this.getStaffEntityDetails(), this.props.staffDataModel);
+    const assessedByEntity = this.getEntity(assessedByEntityDetails, this.props.assessedByDataModel);
 
     this.props.actions.submitData(
       personEntity,
@@ -426,7 +444,9 @@ class Form extends React.Component {
       riskFactorsEntity,
       psaEntity,
       releaseRecommendationEntity,
-      calculatedForEntity
+      staffEntity,
+      calculatedForEntity,
+      assessedByEntity
     );
     this.setState({ releaseRecommendationId: releaseRecommendationEntity.key.entityId });
   }
@@ -719,7 +739,9 @@ function mapStateToProps(state :Map<>) :Object {
     riskFactorsDataModel: psaForm.get('riskFactorsDataModel'),
     psaDataModel: psaForm.get('psaDataModel'),
     releaseRecommendationDataModel: psaForm.get('releaseRecommendationDataModel'),
+    staffDataModel: psaForm.get('staffDataModel'),
     calculatedForDataModel: psaForm.get('calculatedForDataModel'),
+    assessedByDataModel: psaForm.get('assessedByDataModel'),
     pretrialCaseOptions: psaForm.get('pretrialCaseOptions'),
     charges: psaForm.get('charges'),
     peopleOptions: psaForm.get('peopleOptions'),
@@ -751,7 +773,9 @@ function mapDispatchToProps(dispatch :Function) :Object {
         dispatch(FormActionFactory.loadRiskFactorsDataModel());
         dispatch(FormActionFactory.loadPsaDataModel());
         dispatch(FormActionFactory.loadReleaseRecommendationDataModel());
+        dispatch(FormActionFactory.loadStaffDataModel());
         dispatch(FormActionFactory.loadCalculatedForDataModel());
+        dispatch(FormActionFactory.loadAssessedByDataModel());
       }
     }
   };
