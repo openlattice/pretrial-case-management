@@ -3,6 +3,7 @@
  */
 
 import Immutable from 'immutable';
+import moment from 'moment';
 
 import * as FormActionTypes from './FormActionTypes';
 import { SEARCH_PEOPLE_REQUEST } from '../person/PersonActionFactory';
@@ -15,7 +16,8 @@ const {
 
 const {
   CHARGE_ID_FQN,
-  CASE_ID_FQN
+  CASE_ID_FQN,
+  ARREST_DATE_FQN
 } = PROPERTY_TYPES;
 
 const EMPTY_DATA_MODEL = {
@@ -77,19 +79,39 @@ function formReducer(state :Map<> = INITIAL_STATE, action :Object) {
       return state.set('peopleOptions', action.people);
 
     case FormActionTypes.LOAD_NEIGHBORS_SUCCESS: {
-      const pretrialCaseOptions = [];
+      const pretrialCaseOptionsWithDate = [];
+      const pretrialCaseOptionsWithoutDate = [];
       const allChargesForPerson = []
       const neighbors = action.neighbors || [];
       neighbors.forEach((neighbor) => {
         const entitySet = neighbor.neighborEntitySet;
         if (entitySet && entitySet.name === PRETRIAL_CASES) {
-          pretrialCaseOptions.push(Object.assign({}, neighbor.neighborDetails, { id: neighbor.neighborId }));
+          const caseObj = Object.assign({}, neighbor.neighborDetails, { id: neighbor.neighborId });
+          const arrList = caseObj[ARREST_DATE_FQN];
+          if (arrList && arrList.length) {
+            pretrialCaseOptionsWithDate.push(caseObj);
+          }
+          else {
+            pretrialCaseOptionsWithoutDate.push(caseObj);
+          }
         }
         else if (entitySet && entitySet.name === CHARGES) {
           allChargesForPerson.push(Object.assign({}, neighbor.neighborDetails, { id: neighbor.neighborId }));
         }
       });
-      return state.set('pretrialCaseOptions', pretrialCaseOptions).set('allChargesForPerson', allChargesForPerson);
+
+      pretrialCaseOptionsWithDate.sort((case1, case2) => {
+        const arr1 = moment(case1[ARREST_DATE_FQN][0]);
+        const arr2 = moment(case2[ARREST_DATE_FQN][0]);
+        if (arr1.isValid && arr2.isValid) {
+          if (arr1.isBefore(arr2)) return 1;
+          if (arr1.isAfter(arr2)) return -1;
+          return 0;
+        }
+      });
+      return state
+        .set('pretrialCaseOptions', pretrialCaseOptionsWithDate.concat(pretrialCaseOptionsWithoutDate))
+        .set('allChargesForPerson', allChargesForPerson);
     }
 
     case FormActionTypes.SELECT_PERSON:
