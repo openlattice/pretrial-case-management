@@ -331,17 +331,28 @@ class Form extends React.Component {
         }
       });
       allCharges.forEach((chargeDetails) => {
+        let caseNum;
+        let shouldInclude = false;
+
+        const chargeId = chargeDetails[CHARGE_ID_FQN][0];
+        const caseNums = chargeId.split('|');
+        if (caseNums && caseNums.length) {
+          [caseNum] = caseNums;
+        }
+
         const dispositionDates = chargeDetails[DISPOSITION_DATE];
         if (dispositionDates && dispositionDates.length) {
           const dispositionDate = moment.utc(dispositionDates[0]);
           if (dispositionDate.isValid && dispositionDate.isAfter(arrest)) {
-            const chargeId = chargeDetails[CHARGE_ID_FQN][0];
-            const caseNums = chargeId.split('|');
-            if (caseNums && caseNums.length) {
-              const caseNum = caseNums[0];
-              if (caseNum !== currCaseNum) casesWithDispositionAfter.add(caseNum);
-            }
+            shouldInclude = true;
           }
+        }
+        else {
+          shouldInclude = true;
+        }
+
+        if (shouldInclude && caseNum) {
+          casesWithDispositionAfter.add(caseNum);
         }
       });
       if (casesWithArrestBefore.filter(caseNum => casesWithDispositionAfter.has(caseNum)).length) pending = true;
