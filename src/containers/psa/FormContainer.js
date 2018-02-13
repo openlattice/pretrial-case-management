@@ -45,7 +45,12 @@ import {
 } from '../../utils/Helpers';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA } from '../../utils/consts/Consts';
-import { chargeFieldIsViolent } from '../../utils/consts/ChargeConsts';
+import {
+  chargeFieldIsViolent,
+  degreeFieldIsFelony,
+  degreeFieldIsMisdemeanor,
+  dispositionFieldIsGuilty
+} from '../../utils/consts/ChargeConsts';
 
 const {
   FIRST_NAME,
@@ -66,6 +71,8 @@ const {
   CHARGE_NUM_FQN,
   CASE_ID_FQN,
   CHARGE_ID_FQN,
+  CHARGE_DEGREE_FQN,
+  DISPOSITION,
   DISPOSITION_DATE,
   COMPLETED_DATE_TIME
 } = PROPERTY_TYPES;
@@ -254,7 +261,14 @@ class Form extends React.Component {
   tryAutofillFields = (nextCase, nextCharges, allCases, allCharges) => {
     const currCase = this.props.selectedPretrialCase;
 
-    let { ageAtCurrentArrest, currentViolentOffense, pendingCharge } = this.state.psaForm;
+    let {
+      ageAtCurrentArrest,
+      currentViolentOffense,
+      pendingCharge,
+      priorMisdemeanor,
+      priorFelony,
+      priorViolentConviction
+    } = this.state.psaForm;
     if (ageAtCurrentArrest === null || nextCase[ARREST_DATE_FQN] !== currCase[ARREST_DATE_FQN]) {
       ageAtCurrentArrest = this.tryAutofillAge(nextCase[ARREST_DATE_FQN], ageAtCurrentArrest);
     }
@@ -270,13 +284,27 @@ class Form extends React.Component {
         pendingCharge
       );
     }
+    if (allCharges && allCharges.length) {
+      if (priorMisdemeanor === null) {
+        priorMisdemeanor = this.tryAutofillPreviousMisdemeanors(allCharges);
+      }
+      if (priorFelony === null) {
+        priorFelony = this.tryAutofillPreviousFelonies(allCharges);
+      }
+      if (priorViolentConviction === null) {
+        priorViolentConviction = this.tryAutofillPreviousViolentCharge(allCharges);
+      }
+    }
     this.setState({
       psaForm: Object.assign(
         {},
         this.state.psaForm, {
           ageAtCurrentArrest,
           currentViolentOffense,
-          pendingCharge
+          pendingCharge,
+          priorMisdemeanor,
+          priorFelony,
+          priorViolentConviction
         }
       )
     });
@@ -359,6 +387,41 @@ class Form extends React.Component {
       return `${pending}`;
     }
     return defaultValue;
+  }
+
+  tryAutofillPreviousMisdemeanors = (allCharges) => {
+    let previousMisdemeanors = false;
+    allCharges.forEach((charge) => {
+      if (dispositionFieldIsGuilty(charge[DISPOSITION]) && degreeFieldIsMisdemeanor(charge[CHARGE_DEGREE_FQN])) {
+        previousMisdemeanors = true;
+      }
+    });
+
+    return `${previousMisdemeanors}`;
+  }
+
+  tryAutofillPreviousFelonies = (allCharges) => {
+    let previousFelonies = false;
+    allCharges.forEach((charge) => {
+      if (dispositionFieldIsGuilty(charge[DISPOSITION]) && degreeFieldIsFelony(charge[CHARGE_DEGREE_FQN])) {
+        previousFelonies = true;
+      }
+    });
+
+    return `${previousFelonies}`;
+  }
+
+  tryAutofillPreviousViolentCharge = (allCharges) => {
+    let previousViolentCharge = 0;
+    allCharges.forEach((charge) => {
+      if (dispositionFieldIsGuilty(charge[DISPOSITION])
+      && chargeFieldIsViolent(charge[CHARGE_NUM_FQN])
+      && previousViolentCharge < 3) {
+        previousViolentCharge += 1;
+      }
+    });
+
+    return `${previousViolentCharge}`;
   }
 
   getCalculatedForEntityDetails = () => ({ [TIMESTAMP_FQN]: [new Date()] })

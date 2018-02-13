@@ -72,7 +72,7 @@ export default class PretrialCard extends React.Component {
     const arrestDate = pretrialCase.getIn([ARREST_DATE_FQN, 0]);
     let arrestDateFormatted = arrestDate;
     if (arrestDate) {
-      arrestDateFormatted = moment.utc(arrestDate).format('MMMM Do YYYY');
+      arrestDateFormatted = moment.utc(arrestDate).format('MMMM D, YYYY');
     }
     const mostSeriousChargeNum = pretrialCase.getIn([MOST_SERIOUS_CHARGE_NO, 0]);
     const mostSeriousChargeDesc = pretrialCase.getIn([MOST_SERIOUS_CHARGE_DESC, 0]);

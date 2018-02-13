@@ -82,7 +82,7 @@ export default class PersonCard extends React.Component {
     const dob = person.getIn([DOB, 0]);
     let dobFormatted = dob;
     if (dob) {
-      dobFormatted = moment.utc(dob).format('MMMM Do YYYY');
+      dobFormatted = moment.utc(dob).format('MMMM D, YYYY');
     }
     const id :string = person.getIn([PERSON_ID, 0], '');
     const entityKeyId :string = person.getIn(['id', 0], '');
