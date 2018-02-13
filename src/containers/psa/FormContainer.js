@@ -286,13 +286,13 @@ class Form extends React.Component {
     }
     if (allCharges && allCharges.length) {
       if (priorMisdemeanor === null) {
-        priorMisdemeanor = this.tryAutofillPreviousMisdemeanors(allCharges, priorMisdemeanor);
+        priorMisdemeanor = this.tryAutofillPreviousMisdemeanors(allCharges);
       }
       if (priorFelony === null) {
-        priorFelony = this.tryAutofillPreviousFelonies(allCharges, priorFelony);
+        priorFelony = this.tryAutofillPreviousFelonies(allCharges);
       }
       if (priorViolentConviction === null) {
-        priorViolentConviction = this.tryAutofillPreviousViolentCharge(allCharges, priorViolentConviction);
+        priorViolentConviction = this.tryAutofillPreviousViolentCharge(allCharges);
       }
     }
     this.setState({
