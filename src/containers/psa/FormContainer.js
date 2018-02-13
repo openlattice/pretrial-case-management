@@ -710,7 +710,6 @@ class Form extends React.Component {
     const {
       selectedPretrialCase,
       selectedPerson,
-      charges,
       pretrialCaseOptions,
       allChargesForPerson
     } = this.props;
@@ -723,7 +722,6 @@ class Form extends React.Component {
                 this.state,
                 selectedPretrialCase,
                 selectedPerson,
-                charges,
                 pretrialCaseOptions,
                 allChargesForPerson
               );

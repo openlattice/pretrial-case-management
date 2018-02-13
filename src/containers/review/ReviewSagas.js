@@ -75,17 +75,48 @@ export function* downloadPSAReviewPDF() :Generator<*, *, *> {
     const { neighbors, scores } = yield take(ActionTypes.DOWNLOAD_PSA_REVIEW_PDF_REQUEST);
 
     try {
+      const personEntitySetId = neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborEntitySet', 'id']);
+      const personEntityKeyId = neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborId']);
+      const personNeighbors = yield call(SearchApi.searchEntityNeighbors, personEntitySetId, personEntityKeyId);
+
+      const pretrialCaseOptionsWithDate = [];
+      const pretrialCaseOptionsWithoutDate = [];
+      const allCharges = []
+      personNeighbors.forEach((neighbor) => {
+        const entitySet = neighbor.neighborEntitySet;
+        if (entitySet && entitySet.name === ENTITY_SETS.PRETRIAL_CASES) {
+          const caseObj = Object.assign({}, neighbor.neighborDetails, { id: neighbor.neighborId });
+          const arrList = caseObj[PROPERTY_TYPES.ARREST_DATE_FQN];
+          if (arrList && arrList.length) {
+            pretrialCaseOptionsWithDate.push(caseObj);
+          }
+          else {
+            pretrialCaseOptionsWithoutDate.push(caseObj);
+          }
+        }
+        else if (entitySet && entitySet.name === ENTITY_SETS.CHARGES) {
+          allCharges.push(neighbor.neighborDetails);
+        }
+      });
+      pretrialCaseOptionsWithDate.sort((case1, case2) => {
+        const arr1 = moment(case1[PROPERTY_TYPES.ARREST_DATE_FQN][0]);
+        const arr2 = moment(case2[PROPERTY_TYPES.ARREST_DATE_FQN][0]);
+        if (arr1.isValid && arr2.isValid) {
+          if (arr1.isBefore(arr2)) return 1;
+          if (arr1.isAfter(arr2)) return -1;
+          return 0;
+        }
+      });
+
+      const allCases = pretrialCaseOptionsWithDate.concat(pretrialCaseOptionsWithoutDate);
+
       const caseEntitySetId = neighbors.getIn([ENTITY_SETS.PRETRIAL_CASES, 'neighborEntitySet', 'id']);
       const caseEntityKeyId = neighbors.getIn([ENTITY_SETS.PRETRIAL_CASES, 'neighborId']);
       const caseNeighbors = yield call(SearchApi.searchEntityNeighbors, caseEntitySetId, caseEntityKeyId);
-      let charges = Immutable.List();
       let recommendations = Immutable.List();
       Immutable.fromJS(caseNeighbors).forEach((neighbor) => {
         const name = neighbor.getIn(['neighborEntitySet', 'name']);
-        if (name === ENTITY_SETS.CHARGES) {
-          charges = charges.push(neighbor);
-        }
-        else if (name === ENTITY_SETS.RELEASE_RECOMMENDATIONS) {
+        if (name === ENTITY_SETS.RELEASE_RECOMMENDATIONS) {
           recommendations = recommendations.push(neighbor);
         }
       });
@@ -120,9 +151,8 @@ export function* downloadPSAReviewPDF() :Generator<*, *, *> {
         Immutable.Map()
       ).toJS();
       const selectedPerson = neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborDetails'], Immutable.Map()).toJS();
-      const selectedCharges = charges.map(neighbor => setMultimapToMap(ENTITY_SETS.CHARGES)).toJS();
 
-      exportPDF(data, selectedPretrialCase, selectedPerson, selectedCharges);
+      exportPDF(data, selectedPretrialCase, selectedPerson, allCases, allCharges);
 
       yield put(ActionFactory.downloadPsaReviewPdfSuccess());
     }

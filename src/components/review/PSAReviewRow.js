@@ -120,7 +120,7 @@ export default class PSAReviewRow extends React.Component {
   }
 
   getRiskFactors = (neighbors) => {
-    const riskFactors = neighbors.getIn([ENTITY_SETS.PSA_RISK_FACTORS, 'neighborDetails']);
+    const riskFactors = neighbors.getIn([ENTITY_SETS.PSA_RISK_FACTORS, 'neighborDetails'], Immutable.Map());
     const ageAtCurrentArrestVal = riskFactors.getIn([PROPERTY_TYPES.AGE_AT_CURRENT_ARREST_FQN, 0]);
     let ageAtCurrentArrest = 0;
     if (ageAtCurrentArrestVal === '21 or 22') ageAtCurrentArrest = 1;
