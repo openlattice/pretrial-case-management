@@ -63,6 +63,32 @@ const VIOLENT_CHARGES = [
   '26-10-30'
 ];
 
+const GUILTY_DISPOSITIONS = [
+  'Convicted at Trial',
+  'Convicted at Trial/Punishment Enhanced by Part II Info',
+  'Conviction-Death Penalty',
+  'Guilty But Mentally Ill',
+  'Jail',
+  'Judgment on Plea of Guilty',
+  'No Formal Action',
+  'Punishment Enhanced by Part II Information',
+  'Restitution',
+  'Stipulate to Facts-Found Guilty',
+  'Suspended Execution of Sentence',
+  'Suspended Execution of Sentence Revoked and Released',
+  'Suspended Execution Revocation to Jail',
+  'Suspended Execution Revocation to Penitentiary',
+  'Suspended Execution Revocation/Continued on Probation',
+  'Stipulate to Facts-Found Guilty',
+  'Suspended Execution of Sentence',
+  'Suspended Execution of Sentence Revoked and Released',
+  'Suspended Imposition of Sentence',
+  'Suspended Imposition Revocation to Jail',
+  'Suspended Imposition Revocation to Penitentiary',
+  'Suspended Imposition Revocation/Continued on Probation',
+  'Suspended Imposition Revoked/Released'
+];
+
 const stripDegree = chargeNum => chargeNum.trim().split('(')[0];
 
 export const chargeIsViolent = chargeNum => VIOLENT_CHARGES.includes(stripDegree(chargeNum));
@@ -75,6 +101,28 @@ export const chargeFieldIsViolent = (chargeField) => {
     });
   }
   return violent;
+};
+
+export const dispositionIsGuilty = disposition => GUILTY_DISPOSITIONS.includes(disposition);
+
+export const dispositionFieldIsGuilty = (dispositionField) => {
+  let guilty = false;
+  if (dispositionField && dispositionField.length) {
+    dispositionField.forEach((disposition) => {
+      if (dispositionIsGuilty(disposition)) guilty = true;
+    });
+  }
+  return guilty;
+};
+
+export const degreeFieldIsMisdemeanor = (degreeField) => {
+  degreeField.forEach(degree => degree.toLowerCase().startsWith('m'));
+  return false;
+};
+
+export const degreeFieldIsFelony = (degreeField) => {
+  degreeField.forEach(degree => degree.toLowerCase().startsWith('f'));
+  return false;
 };
 
 export default VIOLENT_CHARGES;
