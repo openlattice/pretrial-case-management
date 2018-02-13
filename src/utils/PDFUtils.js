@@ -100,11 +100,7 @@ const getPleaText = (charge) => {
     text = `${text} ${formatValue(charge[PLEA])}`;
   }
 
-  if (text.length) {
-    text = `Plea: ${text}`;
-  }
-
-  return text;
+  return `Plea: ${text}`;
 };
 
 const getDispositionText = (charge) => {
@@ -117,11 +113,7 @@ const getDispositionText = (charge) => {
     text = `${text} ${formatValue(charge[DISPOSITION])}`;
   }
 
-  if (text.length) {
-    text = `Disposition: ${text}`;
-  }
-
-  return text;
+  return `Disposition: ${text}`;
 };
 
 const getPdfName = (name) => {
@@ -258,6 +250,9 @@ const charges = (doc, yInit, selectedPretrialCase, selectedCharges, showDetails)
 
 const riskFactors = (doc, yInit, riskFactorVals) => {
   let y = yInit;
+  if (y > 190) {
+    y = newPage(doc);
+  }
   doc.text(X_MARGIN, y, 'Risk Factors:');
   doc.text(RESPONSE_OFFSET, y, 'Responses:');
   y += Y_INC_SMALL;
