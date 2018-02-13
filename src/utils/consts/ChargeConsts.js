@@ -116,13 +116,19 @@ export const dispositionFieldIsGuilty = (dispositionField) => {
 };
 
 export const degreeFieldIsMisdemeanor = (degreeField) => {
-  degreeField.forEach(degree => degree.toLowerCase().startsWith('m'));
-  return false;
+  let result = false;
+  degreeField.forEach((degree) => {
+    if (degree.toLowerCase().startsWith('m')) result = true;
+  });
+  return result;
 };
 
 export const degreeFieldIsFelony = (degreeField) => {
-  degreeField.forEach(degree => degree.toLowerCase().startsWith('f'));
-  return false;
+  let result = false;
+  degreeField.forEach((degree) => {
+    if (degree.toLowerCase().startsWith('f')) result = true;
+  });
+  return result;
 };
 
 export default VIOLENT_CHARGES;
