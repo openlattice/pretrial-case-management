@@ -336,7 +336,7 @@ const getChargesByCaseNum = (allCharges) => {
     }
   });
   return chargesByCaseNum;
-}
+};
 
 const caseHistory = (doc, yInit, allCases, chargesByCaseNum) => {
   let y = newPage(doc);
@@ -364,10 +364,9 @@ const caseHistory = (doc, yInit, allCases, chargesByCaseNum) => {
   return y;
 };
 
-const exportPDF = (data, selectedPretrialCase, selectedPerson, selectedCharges, allCases, allCharges) => {
+const exportPDF = (data, selectedPretrialCase, selectedPerson, allCases, allCharges) => {
   const doc = new JSPDF();
   let y = 20;
-
   const name = getName(selectedPerson);
   const chargesByCaseNum = getChargesByCaseNum(allCharges);
   const caseNum = (selectedPretrialCase[CASE_ID_FQN] && selectedPretrialCase[CASE_ID_FQN].length)
