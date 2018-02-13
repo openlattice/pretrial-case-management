@@ -65,7 +65,7 @@ export default class PSAResults extends React.Component {
     const pendingChargeValue = (pendingCharge === 'true') ? 'Yes' : 'No';
     const priorMisdemeanorValue = (priorMisdemeanor === 'true') ? 'Yes' : 'No';
     const priorFelonyValue = (priorFelony === 'true') ? 'Yes' : 'No';
-    const priorConvictionValue = (priorMisdemeanor === 'true' && priorFelony === 'true') ? 'Yes' : 'No';
+    const priorConvictionValue = (priorMisdemeanor === 'true' || priorFelony === 'true') ? 'Yes' : 'No';
     const priorViolentConvictionValue = (priorViolentConviction === '3') ? '3 or more' : priorViolentConviction;
     const priorFailureToAppearRecentValue = (priorFailureToAppearRecent === '2')
       ? '2 or more' : priorFailureToAppearRecent;
