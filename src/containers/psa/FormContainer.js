@@ -267,7 +267,8 @@ class Form extends React.Component {
       pendingCharge,
       priorMisdemeanor,
       priorFelony,
-      priorViolentConviction
+      priorViolentConviction,
+      priorSentenceToIncarceration
     } = this.state.psaForm;
     if (ageAtCurrentArrest === null || nextCase[ARREST_DATE_FQN] !== currCase[ARREST_DATE_FQN]) {
       ageAtCurrentArrest = this.tryAutofillAge(nextCase[ARREST_DATE_FQN], ageAtCurrentArrest);
@@ -291,7 +292,11 @@ class Form extends React.Component {
       if (priorFelony === null) {
         priorFelony = this.tryAutofillPreviousFelonies(allCharges);
       }
-      if (priorViolentConviction === null) {
+      if (priorMisdemeanor === 'false' && priorFelony === 'false') {
+        priorViolentConviction = '0';
+        priorSentenceToIncarceration = 'false';
+      }
+      else if (priorViolentConviction === null) {
         priorViolentConviction = this.tryAutofillPreviousViolentCharge(allCharges);
       }
     }
@@ -304,7 +309,8 @@ class Form extends React.Component {
           pendingCharge,
           priorMisdemeanor,
           priorFelony,
-          priorViolentConviction
+          priorViolentConviction,
+          priorSentenceToIncarceration
         }
       )
     });
@@ -701,12 +707,26 @@ class Form extends React.Component {
 
   renderExportButton = () => {
     if (!this.state.scoresWereGenerated) return null;
+    const {
+      selectedPretrialCase,
+      selectedPerson,
+      charges,
+      pretrialCaseOptions,
+      allChargesForPerson
+    } = this.props;
     return (
       <ButtonWrapper>
         <Button
             bsStyle="info"
             onClick={() => {
-              exportPDF(this.state, this.props.selectedPretrialCase, this.props.selectedPerson, this.props.charges);
+              exportPDF(
+                this.state,
+                selectedPretrialCase,
+                selectedPerson,
+                charges,
+                pretrialCaseOptions,
+                allChargesForPerson
+              );
             }}>Export as PDF
         </Button>
       </ButtonWrapper>
