@@ -55,6 +55,8 @@ export const PROPERTY_TYPES = {
   CHARGE_DEGREE_FQN: 'event.ChargeLevelState',
   DISPOSITION_DATE: 'justice.dispositiondate',
   DISPOSITION: 'justice.disposition',
+  PLEA: 'justice.plea',
+  PLEA_DATE: 'justice.pleadate',
 
   // PSA form entity type consts
   AGE_AT_CURRENT_ARREST_FQN: 'psa.AgeAtCurrentArrest',

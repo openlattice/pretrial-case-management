@@ -1,7 +1,7 @@
 import JSPDF from 'jspdf';
 import moment from 'moment';
 
-import { formatValue, formatDate } from './Utils';
+import { formatValue, formatDate, formatDateList } from './Utils';
 import { PROPERTY_TYPES } from './consts/DataModelConsts';
 
 const {
@@ -29,7 +29,13 @@ const {
   SEX,
   CHARGE_NUM_FQN,
   CHARGE_DESCRIPTION_FQN,
-  CHARGE_DEGREE_FQN
+  CHARGE_DEGREE_FQN,
+  CHARGE_ID_FQN,
+  CASE_ID_FQN,
+  PLEA,
+  PLEA_DATE,
+  DISPOSITION,
+  DISPOSITION_DATE
 } = PROPERTY_TYPES;
 
 const LARGE_FONT_SIZE = 15;
@@ -38,13 +44,18 @@ const FONT_SIZE = 10;
 const X_MARGIN = 10;
 const X_MAX = 200;
 const Y_INC = 5;
-const Y_INC_SMALL = 3;
+const Y_INC_SMALL = 4;
 const SCORE_OFFSET = 5;
 const RESPONSE_OFFSET = (X_MAX * 2) / 3;
 const GENERATED_RISK_FACTOR_OFFSET = X_MARGIN + 5;
 const BOX_MARGIN = X_MARGIN + 5;
 const BOX_HEIGHT = 10;
 const BOX_WIDTH = (X_MAX - (2 * BOX_MARGIN)) / 6;
+
+const newPage = (doc) => {
+  doc.addPage();
+  return 20;
+};
 
 const getName = (selectedPerson) => {
   let name = formatValue(selectedPerson[FIRST_NAME]);
@@ -79,14 +90,46 @@ const getChargeText = (charge) => {
   return text;
 };
 
+const getPleaText = (charge) => {
+  let text = formatDateList(charge[PLEA_DATE]);
+
+  if (charge[PLEA] && charge[PLEA].length) {
+    if (text.length) {
+      text = `${text} -`;
+    }
+    text = `${text} ${formatValue(charge[PLEA])}`;
+  }
+
+  if (text.length) {
+    text = `Plea: ${text}`;
+  }
+
+  return text;
+};
+
+const getDispositionText = (charge) => {
+  let text = formatDateList(charge[DISPOSITION_DATE]);
+
+  if (charge[DISPOSITION] && charge[DISPOSITION].length) {
+    if (text.length) {
+      text = `${text} -`;
+    }
+    text = `${text} ${formatValue(charge[DISPOSITION])}`;
+  }
+
+  if (text.length) {
+    text = `Disposition: ${text}`;
+  }
+
+  return text;
+};
+
 const getPdfName = (name) => {
   const dashedName = name.replace(/\./g, '').replace(/ /g, '-');
   return `PSA-Report-${dashedName}-${moment().format('MM/DD/YYYY')}.pdf`;
 };
 
-const getBooleanText = (bool) => {
-  return bool ? 'Yes' : 'No';
-};
+const getBooleanText = bool => (bool ? 'Yes' : 'No');
 
 const thinLine = (doc, y) => {
   doc.setLineWidth(0.1);
@@ -116,11 +159,11 @@ const person = (doc, yInit, selectedPerson, selectedPretrialCase, name) => {
   doc.text(X_MARGIN, y, `Name: ${name}`);
   doc.text(X_MAX / 2, y, `PID: ${formatValue(selectedPerson[PERSON_ID])}`);
   y += Y_INC;
-  doc.text(X_MARGIN, y, `DOB: ${formatDate(selectedPerson[DOB])}`);
+  doc.text(X_MARGIN, y, `DOB: ${formatDateList(selectedPerson[DOB])}`);
   doc.text(X_MAX / 2, y, `Race: ${formatValue(selectedPerson[RACE])}`);
   doc.text(X_MAX - 50, y, `Gender: ${formatValue(selectedPerson[SEX])}`);
   y += Y_INC;
-  doc.text(X_MARGIN, y, `Arrest Date: ${formatDate(selectedPretrialCase[ARREST_DATE_FQN])}`);
+  doc.text(X_MARGIN, y, `Arrest Date: ${formatDateList(selectedPretrialCase[ARREST_DATE_FQN])}`);
   doc.text(X_MAX / 2, y, `PSA - Court Completion Date: ${formatDate(new Date().toISOString())}`);
   y += Y_INC;
   return y;
@@ -177,7 +220,7 @@ const scores = (doc, yInit, scoreValues) => {
   return y;
 };
 
-const charges = (doc, yInit, selectedPretrialCase, selectedCharges) => {
+const charges = (doc, yInit, selectedPretrialCase, selectedCharges, showDetails) => {
   let y = yInit;
   doc.text(X_MARGIN, y, 'Charge(s):');
   y += Y_INC_SMALL;
@@ -192,9 +235,20 @@ const charges = (doc, yInit, selectedPretrialCase, selectedCharges) => {
   }
   else {
     selectedCharges.forEach((charge) => {
+      if (y > 260) {
+        y = newPage(doc);
+      }
       const chargeLines = doc.splitTextToSize(getChargeText(charge), X_MAX - (2 * X_MARGIN));
       doc.text(X_MARGIN + SCORE_OFFSET, y, chargeLines);
-      y += chargeLines.length * Y_INC_SMALL;
+      y += chargeLines.length * (showDetails ? Y_INC : Y_INC_SMALL);
+      if (showDetails) {
+        const pleaLines = doc.splitTextToSize(getPleaText(charge), X_MAX - (2 * X_MARGIN));
+        doc.text(X_MARGIN + SCORE_OFFSET, y, pleaLines);
+        y += pleaLines.length * Y_INC;
+        const dispositionLines = doc.splitTextToSize(getDispositionText(charge), X_MAX - (2 * X_MARGIN));
+        doc.text(X_MARGIN + SCORE_OFFSET, y, dispositionLines);
+        y += dispositionLines.length * Y_INC_SMALL;
+      }
       thinLine(doc, y);
       y += Y_INC;
     });
@@ -258,11 +312,72 @@ const recommendations = (doc, yInit, releaseRecommendation) => {
   return y;
 };
 
-const exportPDF = (data, selectedPretrialCase, selectedPerson, selectedCharges) => {
+const caseHistoryHeader = (doc, yInit) => {
+  let y = yInit;
+  doc.setFontSize(LARGE_FONT_SIZE);
+  doc.text(X_MARGIN, y, 'CASE HISTORY');
+  y += Y_INC * 2;
+  doc.setFontSize(FONT_SIZE);
+  thickLine(doc, y);
+  y += Y_INC;
+  return y;
+};
+
+const getChargesByCaseNum = (allCharges) => {
+  const chargesByCaseNum = {};
+  allCharges.forEach((charge) => {
+    const chargeIds = charge[CHARGE_ID_FQN];
+    if (chargeIds && chargeIds.length) {
+      const chargeIdElements = chargeIds[0].split('|');
+      if (chargeIdElements && chargeIdElements.length) {
+        const caseNum = chargeIdElements[0];
+        if (chargesByCaseNum[caseNum]) {
+          chargesByCaseNum[caseNum].push(charge);
+        }
+        else {
+          chargesByCaseNum[caseNum] = [charge];
+        }
+      }
+    }
+  });
+  return chargesByCaseNum;
+}
+
+const caseHistory = (doc, yInit, allCases, chargesByCaseNum) => {
+  let y = newPage(doc);
+  y = caseHistoryHeader(doc, y);
+
+  allCases.forEach((c) => {
+    y += Y_INC;
+    if (y > 260) {
+      y = newPage(doc);
+    }
+    thickLine(doc, y);
+    y += Y_INC;
+    const caseNum = (c[CASE_ID_FQN] && c[CASE_ID_FQN].length) ? formatValue(c[CASE_ID_FQN]) : '';
+    doc.text(X_MARGIN, y, `Case Number: ${caseNum}`);
+    y += Y_INC;
+    doc.text(X_MARGIN, y, `Arrest Date: ${formatDateList(c[ARREST_DATE_FQN])}`);
+    y += Y_INC;
+    const chargesForCase = chargesByCaseNum[caseNum];
+    if (chargesForCase && chargesForCase.length) {
+      y = charges(doc, y, null, chargesForCase, true);
+    }
+    thickLine(doc, y);
+    y += Y_INC;
+  });
+  return y;
+};
+
+const exportPDF = (data, selectedPretrialCase, selectedPerson, selectedCharges, allCases, allCharges) => {
   const doc = new JSPDF();
   let y = 20;
 
   const name = getName(selectedPerson);
+  const chargesByCaseNum = getChargesByCaseNum(allCharges);
+  const caseNum = (selectedPretrialCase[CASE_ID_FQN] && selectedPretrialCase[CASE_ID_FQN].length)
+    ? formatValue(selectedPretrialCase[CASE_ID_FQN]) : '';
+  const currCharges = chargesByCaseNum[caseNum];
 
   // PAGE HEADER
   y = header(doc, y);
@@ -278,8 +393,8 @@ const exportPDF = (data, selectedPretrialCase, selectedPerson, selectedCharges) 
   thickLine(doc, y);
   y += Y_INC;
 
-  // CHARGES SECTION (TODO: will we have access to all charges or only most serious?)
-  y = charges(doc, y, selectedPretrialCase, selectedCharges);
+  // CHARGES SECTION
+  y = charges(doc, y, selectedPretrialCase, currCharges, false);
   thickLine(doc, y);
   y += Y_INC;
 
@@ -290,6 +405,9 @@ const exportPDF = (data, selectedPretrialCase, selectedPerson, selectedCharges) 
 
   // RECOMMENDATION SECTION
   y = recommendations(doc, y, data.releaseRecommendation);
+
+  // CASE HISTORY SECCTION=
+  y = caseHistory(doc, y, allCases, chargesByCaseNum);
 
   doc.save(getPdfName(name));
 };

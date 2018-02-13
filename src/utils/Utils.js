@@ -29,7 +29,7 @@ export function formatValue(rawValue :string|string[]) {
 export function formatDate(dateString :string) {
   if (!dateString) return '';
   const date = moment.utc(dateString);
-  if (!date) return dateString;
+  if (!date || !date.isValid) return dateString;
   return date.format('MM/DD/YYYY');
 }
 
