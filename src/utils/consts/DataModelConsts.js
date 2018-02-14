@@ -24,6 +24,7 @@ export const PROPERTY_TYPES = {
   FIRST_NAME: 'nc.PersonGivenName',
   LAST_NAME: 'nc.PersonSurName',
   MIDDLE_NAME: 'nc.PersonMiddleName',
+  SUFFIX: 'nc.PersonSuffix',
   DOB: 'nc.PersonBirthDate',
   SEX: 'nc.PersonSex',
   RACE: 'nc.PersonRace',
