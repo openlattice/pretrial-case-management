@@ -10,6 +10,7 @@ const {
   DOB,
   FIRST_NAME,
   LAST_NAME,
+  SUFFIX,
   MUGSHOT,
   PERSON_ID,
   PICTURE
@@ -80,6 +81,7 @@ export default class PersonCard extends React.Component {
     const firstName = person.getIn([FIRST_NAME, 0]);
     const lastName = person.getIn([LAST_NAME, 0]);
     const dob = person.getIn([DOB, 0]);
+    const suffix = person.getIn([SUFFIX, 0]);
     let dobFormatted = dob;
     if (dob) {
       dobFormatted = moment.utc(dob).format('MMMM D, YYYY');
@@ -102,12 +104,14 @@ export default class PersonCard extends React.Component {
           <PersonInfoHeaders>
             <strong>First Name:</strong>
             <strong>Last Name:</strong>
+            { suffix ? <strong>Suffix:</strong> : null }
             <strong>Date of Birth:</strong>
             <strong>Identifier:</strong>
           </PersonInfoHeaders>
           <PersonInfo>
             <span>{ firstName }</span>
             <span>{ lastName }</span>
+            { suffix ? suffix : null }
             <span>{ dobFormatted }</span>
             <span>{ id }</span>
           </PersonInfo>
