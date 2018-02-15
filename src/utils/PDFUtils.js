@@ -2,6 +2,13 @@ import JSPDF from 'jspdf';
 import moment from 'moment';
 
 import { formatValue, formatDate, formatDateList } from './Utils';
+import {
+  getViolentCharges,
+  getPendingCharges,
+  getPreviousMisdemeanors,
+  getPreviousFelonies,
+  getPreviousViolentCharges
+} from './AutofillUtils';
 import { PROPERTY_TYPES } from './consts/DataModelConsts';
 
 const {
@@ -248,11 +255,35 @@ const charges = (doc, yInit, selectedPretrialCase, selectedCharges, showDetails)
   return y;
 };
 
-const riskFactors = (doc, yInit, riskFactorVals) => {
+const chargeReferences = (yInit, doc, referenceCharges) => {
+  let y = yInit;
+  if (referenceCharges && referenceCharges.length) {
+    const chargeText = referenceCharges.join(', ');
+    const chargeLines = doc.splitTextToSize(chargeText, X_MAX - X_MARGIN - GENERATED_RISK_FACTOR_OFFSET);
+    doc.setFontType('italic');
+    doc.text(GENERATED_RISK_FACTOR_OFFSET, y, chargeLines);
+    doc.setFontType('regular');
+    y += (Y_INC * chargeLines.length);
+  }
+  return y;
+}
+
+const riskFactors = (
+  doc,
+  yInit,
+  riskFactorVals,
+  currCharges,
+  allCharges,
+  mostSeriousCharge,
+  currCaseNums,
+  dateArrested,
+  allCases
+) => {
   let y = yInit;
   if (y > 190) {
     y = newPage(doc);
   }
+
   doc.text(X_MARGIN, y, 'Risk Factors:');
   doc.text(RESPONSE_OFFSET, y, 'Responses:');
   y += Y_INC_SMALL;
@@ -264,24 +295,39 @@ const riskFactors = (doc, yInit, riskFactorVals) => {
   doc.text(X_MARGIN, y, '2. Current Violent Offense');
   doc.text(RESPONSE_OFFSET, y, getBooleanText(riskFactorVals[CURRENT_VIOLENT_OFFENSE_FQN]));
   y += Y_INC;
+  if (riskFactorVals[CURRENT_VIOLENT_OFFENSE_FQN]) {
+    y = chargeReferences(y, doc, getViolentCharges(currCharges, mostSeriousCharge));
+  }
   doc.text(GENERATED_RISK_FACTOR_OFFSET, y, 'a. Current Violent Offense & 20 Years Old or Younger');
   doc.text(RESPONSE_OFFSET, y, getBooleanText(riskFactorVals[CURRENT_VIOLENT_OFFENSE_AND_YOUNG_FQN]));
   y += Y_INC;
   doc.text(X_MARGIN, y, '3. Pending Charge at the Time of the Offense');
   doc.text(RESPONSE_OFFSET, y, getBooleanText(riskFactorVals[PENDING_CHARGE_FQN]));
   y += Y_INC;
+  if (riskFactorVals[PENDING_CHARGE_FQN]) {
+    y = chargeReferences(y, doc, getPendingCharges(currCaseNums, dateArrested, allCases, allCharges));
+  }
   doc.text(X_MARGIN, y, '4. Prior Misdemeanor Conviction');
   doc.text(RESPONSE_OFFSET, y, getBooleanText(riskFactorVals[PRIOR_MISDEMEANOR_FQN]));
   y += Y_INC;
+  if (riskFactorVals[PRIOR_MISDEMEANOR_FQN]) {
+    y = chargeReferences(y, doc, getPreviousMisdemeanors(allCharges));
+  }
   doc.text(X_MARGIN, y, '5. Prior Felony Conviction');
   doc.text(RESPONSE_OFFSET, y, getBooleanText(riskFactorVals[PRIOR_FELONY_FQN]));
   y += Y_INC;
+  if (riskFactorVals[PRIOR_FELONY_FQN]) {
+    y = chargeReferences(y, doc, getPreviousFelonies(allCharges));
+  }
   doc.text(GENERATED_RISK_FACTOR_OFFSET, y, 'a. Prior Conviction');
   doc.text(RESPONSE_OFFSET, y, getBooleanText(riskFactorVals[PRIOR_CONVICTION_FQN]));
   y += Y_INC;
   doc.text(X_MARGIN, y, '6. Prior Violent Conviction');
   doc.text(RESPONSE_OFFSET, y, riskFactorVals[PRIOR_VIOLENT_CONVICTION_FQN]);
   y += Y_INC;
+  if (riskFactorVals[PRIOR_VIOLENT_CONVICTION_FQN] > 0) {
+    y = chargeReferences(y, doc, getPreviousViolentCharges(allCharges));
+  }
   doc.text(X_MARGIN, y, '7. Prior Pre-Trial Failure to Appear in the Last 2 Years');
   doc.text(RESPONSE_OFFSET, y, riskFactorVals[PRIOR_FAILURE_TO_APPEAR_RECENT_FQN]);
   y += Y_INC;
@@ -366,12 +412,14 @@ const caseHistory = (doc, yInit, allCases, chargesByCaseNum) => {
 
 const exportPDF = (data, selectedPretrialCase, selectedPerson, allCases, allCharges) => {
   const doc = new JSPDF();
+  doc.setFontType('regular');
   let y = 20;
   const name = getName(selectedPerson);
   const chargesByCaseNum = getChargesByCaseNum(allCharges);
   const caseNum = (selectedPretrialCase[CASE_ID_FQN] && selectedPretrialCase[CASE_ID_FQN].length)
     ? formatValue(selectedPretrialCase[CASE_ID_FQN]) : '';
   const currCharges = chargesByCaseNum[caseNum];
+  const mostSeriousCharge = selectedPretrialCase[MOST_SERIOUS_CHARGE_NO];
 
   // PAGE HEADER
   y = header(doc, y);
@@ -393,7 +441,16 @@ const exportPDF = (data, selectedPretrialCase, selectedPerson, allCases, allChar
   y += Y_INC;
 
   // RISK FACTORS SECTION
-  y = riskFactors(doc, y, data.riskFactors);
+  y = riskFactors(
+    doc,
+    y,
+    data.riskFactors,
+    currCharges,
+    allCharges,
+    mostSeriousCharge,
+    selectedPretrialCase[CASE_ID_FQN],
+    selectedPretrialCase[ARREST_DATE_FQN],
+    allCases);
   thickLine(doc, y);
   y += Y_INC;
 
