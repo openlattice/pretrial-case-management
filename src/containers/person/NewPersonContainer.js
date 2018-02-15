@@ -67,10 +67,19 @@ const Title = styled.h1`
   margin: 20px 0;
 `;
 
+const Instructions = styled.div`
+  font-size: 14px;
+  font-style: italic;
+`;
+
 const SectionHeader = styled.h2`
   font-size: 20px;
   font-weight: 500;
   margin: 10px 0;
+`;
+
+const RequiredTitleLabel = styled(TitleLabel)`
+  font-weight: bold;
 `;
 
 const CenteredSubmitButton = styled(Button).attrs({
@@ -221,12 +230,13 @@ class NewPersonContainer extends React.Component<Props, State> {
       <ContainerOuterWrapper>
         <ContainerInnerWrapper>
           <Title>Enter New Person Information</Title>
+          <Instructions>* = required field</Instructions>
           <FormWrapper>
             <div>
               <SectionHeader>Personal Information</SectionHeader>
               <PaddedRow>
                 <Col lg={4}>
-                  <TitleLabel>First Name</TitleLabel>
+                  <RequiredTitleLabel>*First Name</RequiredTitleLabel>
                   <FormControl
                       name={FIRST_NAME_VALUE}
                       value={this.state[FIRST_NAME_VALUE]}
@@ -240,7 +250,7 @@ class NewPersonContainer extends React.Component<Props, State> {
                       onChange={this.handleOnChangeInput} />
                 </Col>
                 <Col lg={4}>
-                  <TitleLabel>Last Name</TitleLabel>
+                  <RequiredTitleLabel>*Last Name</RequiredTitleLabel>
                   <FormControl
                       name={LAST_NAME_VALUE}
                       value={this.state[LAST_NAME_VALUE]}
@@ -249,7 +259,7 @@ class NewPersonContainer extends React.Component<Props, State> {
               </PaddedRow>
               <PaddedRow>
                 <Col lg={4}>
-                  <TitleLabel>Date of Birth</TitleLabel>
+                  <RequiredTitleLabel>*Date of Birth</RequiredTitleLabel>
                   <DatePicker
                       value={this.state[DOB_VALUE]}
                       onChange={this.handleOnChangeDateOfBirth} />
