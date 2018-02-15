@@ -56,14 +56,6 @@ export const newPersonSubmissionConfig = {
       fields: {
         [LIVES_AT_ID_VALUE]: PROPERTY_TYPES.STRING_ID
       }
-    },
-    {
-      alias: ALIASES.GETS_MAIL_AT,
-      name: ENTITY_SETS.GETS_MAIL_AT,
-      fields: {
-        [ID_VALUE]: PROPERTY_TYPES.PERSON_ID,
-        [LIVES_AT_ID_VALUE]: PROPERTY_TYPES.STRING_ID
-      }
     }
   ],
   associations: [
@@ -71,11 +63,6 @@ export const newPersonSubmissionConfig = {
       src: ALIASES.PERSON,
       dst: ALIASES.PERSON_ADDRESSES,
       association: ALIASES.LIVES_AT
-    },
-    {
-      src: ALIASES.PERSON,
-      dst: ALIASES.PERSON_ADDRESSES,
-      association: ALIASES.GETS_MAIL_AT
     }
   ]
 };
