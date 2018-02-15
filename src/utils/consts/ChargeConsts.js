@@ -1,3 +1,18 @@
+import { PROPERTY_TYPES } from './DataModelConsts';
+import { formatValue, formatDateList } from '../Utils';
+
+const {
+  DOB,
+  ARREST_DATE_FQN,
+  MOST_SERIOUS_CHARGE_NO,
+  CHARGE_NUM_FQN,
+  CASE_ID_FQN,
+  CHARGE_ID_FQN,
+  CHARGE_DEGREE_FQN,
+  DISPOSITION,
+  DISPOSITION_DATE
+} = PROPERTY_TYPES;
+
 const VIOLENT_CHARGES = [
   '16-10-32',
   '22-41-1',
@@ -93,15 +108,23 @@ const stripDegree = chargeNum => chargeNum.trim().split('(')[0];
 
 export const chargeIsViolent = chargeNum => VIOLENT_CHARGES.includes(stripDegree(chargeNum));
 
-export const chargeFieldIsViolent = (chargeField) => {
-  let violent = false;
-  if (chargeField && chargeField.length) {
-    chargeField.forEach((chargeNum) => {
-      if (chargeIsViolent(chargeNum)) violent = true;
-    });
-  }
-  return violent;
+export const getUnique = (field) => {
+  if (!field || !field.length) return [];
+  return field.filter((val, index) => field.indexOf(val) === index);
 };
+
+export const getViolentChargeNums = (chargeFields) => {
+  if (!chargeFields || !chargeFields.length) return [];
+
+  return getUnique(chargeFields
+    .map((charge) => {
+      if (!charge[CHARGE_NUM_FQN]) return [];
+      return charge[CHARGE_NUM_FQN].filter(chargeNum => chargeIsViolent(chargeNum))
+    })
+    .reduce((c1, c2) => [...c1, ...c2]));
+};
+
+export const chargeFieldIsViolent = chargeField => getViolentChargeNums(chargeField).length > 0;
 
 export const dispositionIsGuilty = disposition => GUILTY_DISPOSITIONS.includes(disposition);
 
@@ -129,6 +152,14 @@ export const degreeFieldIsFelony = (degreeField) => {
     if (degree.toLowerCase().startsWith('f')) result = true;
   });
   return result;
+};
+
+export const getChargeTitle = (charge) => {
+  const degree = formatValue(charge[CHARGE_NUM_FQN]);
+  const dispositionDate = formatDateList(charge[DISPOSITION_DATE]);
+  let val = `${degree}`;
+  if (dispositionDate && dispositionDate.length) val = `${val} (${dispositionDate})`;
+  return val;
 };
 
 export default VIOLENT_CHARGES;
