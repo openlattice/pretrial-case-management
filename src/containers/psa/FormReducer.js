@@ -163,7 +163,6 @@ function formReducer(state :Map<> = INITIAL_STATE, action :Object) {
       if (psa.get(PRIOR_MISDEMEANOR) === 'false' && psa.get(PRIOR_FELONY) === 'false') {
         psa = psa.set(PRIOR_VIOLENT_CONVICTION, '0').set(PRIOR_SENTENCE_TO_INCARCERATION, 'false');
       }
-      console.log(psa.toJS())
       return state.set('psa', psa);
     }
 
