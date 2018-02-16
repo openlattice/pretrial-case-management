@@ -10,7 +10,7 @@ import styled from 'styled-components';
 import randomUUID from 'uuid/v4';
 import FontAwesome from 'react-fontawesome';
 import { AuthUtils } from 'lattice-auth';
-import { Button } from 'react-bootstrap';
+import { Button, ProgressBar } from 'react-bootstrap';
 import { connect } from 'react-redux';
 import { Redirect, Route, Switch } from 'react-router-dom';
 import { bindActionCreators } from 'redux';
@@ -113,6 +113,16 @@ const StyledTopFormNavBuffer = styled.div`
   height: 55px;
 `;
 
+const LoadingContainer = styled.div`
+  text-align: center;
+`;
+
+const LoadingText = styled.div`
+  font-size: 20px;
+  margin: 20px;
+  display: inline-flex;
+`;
+
 const INITIAL_PERSON_FORM = Immutable.fromJS({
   id: '',
   lastName: '',
@@ -181,7 +191,11 @@ class Form extends React.Component {
     pretrialCaseOptions: PropTypes.array.isRequired,
     charges: PropTypes.array.isRequired,
     peopleOptions: PropTypes.array.isRequired,
-    allChargesForPerson: PropTypes.array.isRequired
+    allChargesForPerson: PropTypes.array.isRequired,
+    selectedPersonId: PropTypes.string.isRequired,
+    isLoadingCases: PropTypes.bool.isRequired,
+    numCasesToLoad: PropTypes.number.isRequired,
+    numCasesLoaded: PropTypes.number.isRequired
   };
 
   constructor(props) {
@@ -432,7 +446,7 @@ class Form extends React.Component {
       person.get('id', Immutable.List()).get(0)
     );
 
-    this.props.actions.loadPersonDetailsRequest(entityKeyId);
+    this.props.actions.loadPersonDetailsRequest(entityKeyId, true);
   }
 
   nextPage = () => {
@@ -587,16 +601,37 @@ class Form extends React.Component {
     }} />
   );
 
-  getSelectPretrialCaseSection = () => (
-    <SelectPretrialCaseContainer
-        caseOptions={Immutable.fromJS(this.props.pretrialCaseOptions)}
-        nextPage={this.nextPage}
-        prevPage={this.prevPage}
-        onSelectCase={(selectedCase) => {
-          this.props.actions.selectPretrialCase(selectedCase.toJS());
-          this.nextPage();
-        }} />
-  )
+  getSelectPretrialCaseSection = () => {
+    const {
+      selectedPersonId,
+      isLoadingCases,
+      numCasesToLoad,
+      numCasesLoaded,
+      pretrialCaseOptions,
+      actions
+    } = this.props;
+    if (isLoadingCases) {
+      if (numCasesLoaded === numCasesToLoad) {
+        actions.loadPersonDetailsRequest(selectedPersonId, false);
+      }
+      const progress = Math.floor((numCasesLoaded / numCasesToLoad) * 100);
+      return (
+        <LoadingContainer>
+          <LoadingText>Loading cases ({`${numCasesLoaded} / ${numCasesToLoad}`})</LoadingText>
+          <ProgressBar bsStyle="success" now={progress} label={`${progress}%`} />
+        </LoadingContainer>);
+    }
+    return (
+      <SelectPretrialCaseContainer
+          caseOptions={Immutable.fromJS(pretrialCaseOptions)}
+          nextPage={this.nextPage}
+          prevPage={this.prevPage}
+          onSelectCase={(selectedCase) => {
+            actions.selectPretrialCase(selectedCase.toJS());
+            this.nextPage();
+          }} />
+    );
+  }
 
   getPsaInputForm = () => {
     const personId = this.props.selectedPerson.id;
@@ -655,6 +690,7 @@ class Form extends React.Component {
 
 function mapStateToProps(state :Map<>) :Object {
   const psaForm = state.get('psa');
+  const search = state.get('search');
 
   return {
     personDataModel: psaForm.get('personDataModel'),
@@ -670,7 +706,12 @@ function mapStateToProps(state :Map<>) :Object {
     peopleOptions: psaForm.get('peopleOptions'),
     selectedPerson: psaForm.get('selectedPerson'),
     selectedPretrialCase: psaForm.get('selectedPretrialCase'),
-    allChargesForPerson: psaForm.get('allChargesForPerson')
+    allChargesForPerson: psaForm.get('allChargesForPerson'),
+
+    selectedPersonId: search.get('selectedPersonId'),
+    isLoadingCases: search.get('loadingCases'),
+    numCasesToLoad: search.get('numCasesToLoad'),
+    numCasesLoaded: search.get('numCasesLoaded')
   };
 }
 
