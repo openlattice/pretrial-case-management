@@ -225,7 +225,8 @@ export default class PSAReviewRow extends React.Component {
     };
 
     const scoresId = this.props.entityKeyId;
-    const riskFactorsEntitySetId = this.props.neighbors.getIn([ENTITY_SETS.PSA_RISK_FACTORS, 'neighborEntitySet', 'id']);
+    const riskFactorsEntitySetId = this.props.neighbors
+      .getIn([ENTITY_SETS.PSA_RISK_FACTORS, 'neighborEntitySet', 'id']);
     const riskFactorsId = this.props.neighbors.getIn([ENTITY_SETS.PSA_RISK_FACTORS, 'neighborId']);
     this.props.updateScoresAndRiskFactors(scoresId, scoresEntity, riskFactorsEntitySetId, riskFactorsId, riskFactors);
     this.setState({ open: false });
@@ -254,8 +255,7 @@ export default class PSAReviewRow extends React.Component {
         <Collapse in={open}>
           <div>
             <PSAInputForm
-                section="review"
-                input={riskFactors}
+                input={Immutable.fromJS(riskFactors)}
                 handleSingleSelection={this.handleRiskFactorChange}
                 handleSubmit={this.onRiskFactorEdit}
                 incompleteError={false} />
