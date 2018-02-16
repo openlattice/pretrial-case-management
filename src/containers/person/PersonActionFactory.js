@@ -110,14 +110,23 @@ function searchPeopleFailure(error :any) :SearchPeopleFailureAction {
 type SearchPeopleRequestAction = {
   firstName :string,
   lastName :string,
+  dob :?string,
+  subjectId :string,
   type :typeof SEARCH_PEOPLE_REQUEST
 };
 
-function searchPeopleRequest(firstName :string, lastName :string) :SearchPeopleRequestAction {
+function searchPeopleRequest(
+  firstName :string,
+  lastName :string,
+  dob :?string,
+  subjectId :string
+) :SearchPeopleRequestAction {
 
   return {
     firstName,
     lastName,
+    dob,
+    subjectId,
     type: SEARCH_PEOPLE_REQUEST
   };
 }

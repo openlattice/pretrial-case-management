@@ -6,6 +6,7 @@ import React from 'react';
 
 import Immutable from 'immutable';
 import styled from 'styled-components';
+import DatePicker from 'react-bootstrap-date-picker';
 import { Button, FormControl, Col } from 'react-bootstrap';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
@@ -54,6 +55,11 @@ const LoadingText = styled.div`
   margin: 15px;
 `;
 
+const ButtonWrapper = styled.div`
+  margin-top: -5px;
+  text-align: center;
+`;
+
 /*
  * types
  */
@@ -78,7 +84,9 @@ class SearchPeopleContainer extends React.Component<Props> {
     super(props);
     this.state = {
       firstName: '',
-      lastName: ''
+      lastName: '',
+      dob: undefined,
+      subjectId: ''
     };
   }
 
@@ -94,9 +102,14 @@ class SearchPeopleContainer extends React.Component<Props> {
 
   handleOnSubmitSearch = () => {
 
-    const { firstName, lastName } = this.state;
-    if (firstName.length || lastName.length) {
-      this.props.actions.searchPeopleRequest(firstName, lastName);
+    const {
+      firstName,
+      lastName,
+      dob,
+      subjectId
+    } = this.state;
+    if (firstName.length || lastName.length || dob || subjectId.length) {
+      this.props.actions.searchPeopleRequest(firstName, lastName, dob, subjectId);
     }
   }
 
@@ -142,13 +155,18 @@ class SearchPeopleContainer extends React.Component<Props> {
   }
 
   render() {
-    const { firstName, lastName } = this.state;
+    const {
+      firstName,
+      lastName,
+      dob,
+      subjectId
+    } = this.state;
 
     return (
       <Wrapper>
         <Header>Search for people</Header>
         <SearchRow>
-          <Col lg={5}>
+          <Col lg={3}>
             <TitleLabel>First Name</TitleLabel>
             <FormControl
                 name="firstName"
@@ -156,7 +174,7 @@ class SearchPeopleContainer extends React.Component<Props> {
                 onKeyPress={this.handleKeyPress}
                 onChange={this.onInputChange} />
           </Col>
-          <Col lg={5}>
+          <Col lg={3}>
             <TitleLabel>Last Name</TitleLabel>
             <FormControl
                 name="lastName"
@@ -164,8 +182,28 @@ class SearchPeopleContainer extends React.Component<Props> {
                 onKeyPress={this.handleKeyPress}
                 onChange={this.onInputChange} />
           </Col>
-          <Col lg={2}>
-            <Button onClick={this.handleOnSubmitSearch}>Search</Button>
+          <Col lg={3}>
+            <TitleLabel>Date of Birth</TitleLabel>
+            <DatePicker
+                value={dob}
+                onChange={(newDate) => {
+                  this.setState({ dob: newDate });
+                }} />
+          </Col>
+          <Col lg={3}>
+            <TitleLabel>Court File Number</TitleLabel>
+            <FormControl
+                name="subjectId"
+                value={subjectId}
+                onKeyPress={this.handleKeyPress}
+                onChange={this.onInputChange} />
+          </Col>
+        </SearchRow>
+        <SearchRow>
+          <Col lg={12}>
+            <ButtonWrapper>
+              <Button onClick={this.handleOnSubmitSearch}>Search</Button>
+            </ButtonWrapper>
           </Col>
         </SearchRow>
         { this.renderSearchResults() }
