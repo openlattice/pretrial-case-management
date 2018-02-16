@@ -115,6 +115,16 @@ class SearchPeopleContainer extends React.Component<Props> {
     );
   }
 
+  onInputChange = (e) => {
+    this.setState({ [e.target.name]: e.target.value });
+  }
+
+  handleKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      this.handleOnSubmitSearch()
+    }
+  }
+
   render() {
     const { firstName, lastName } = this.state;
 
@@ -125,18 +135,17 @@ class SearchPeopleContainer extends React.Component<Props> {
           <Col lg={5}>
             <TitleLabel>First Name</TitleLabel>
             <FormControl
+                name="firstName"
                 value={firstName}
-                onChange={(e) => {
-                  this.setState({ firstName: e.target.value });
-                }} />
+                onKeyPress={this.handleKeyPress}
+                onChange={this.onInputChange} />
           </Col>
           <Col lg={5}>
             <TitleLabel>Last Name</TitleLabel>
             <FormControl
+                name="lastName"
                 value={lastName}
-                onChange={(e) => {
-                  this.setState({ lastName: e.target.value });
-                }} />
+                onChange={this.onInputChange} />
           </Col>
           <Col lg={2}>
             <Button onClick={this.handleOnSubmitSearch}>Search</Button>
