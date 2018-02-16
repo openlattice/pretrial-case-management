@@ -86,7 +86,7 @@ export function* watchUpdateCaseRequestWorker(action :UpdateCaseRequestAction) :
   try {
     const loadRequest = {
       method: 'get',
-      url: `https://bifrost.openlattice.com:8443/bifrost/caseloader/${caseNum}`,
+      url: `https://api.openlattice.com/bifrost/caseloader/${caseNum}`,
       headers: {
         Authentication: `Bearer ${AuthUtils.getAuthToken()}`
       }
