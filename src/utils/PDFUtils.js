@@ -48,6 +48,7 @@ const {
 const LARGE_FONT_SIZE = 15;
 const MEDIUM_FONT_SIZE = 13;
 const FONT_SIZE = 10;
+const SMALL_FONT_SIZE = 8;
 const X_MARGIN = 10;
 const X_MAX = 200;
 const Y_INC = 5;
@@ -59,9 +60,10 @@ const BOX_MARGIN = X_MARGIN + 5;
 const BOX_HEIGHT = 10;
 const BOX_WIDTH = (X_MAX - (2 * BOX_MARGIN)) / 6;
 
-const newPage = (doc) => {
+const newPage = (doc, page, name) => {
   doc.addPage();
-  return 20;
+  doc.text(10, X_MARGIN, `${name} - ${page}`);
+  return [20, page + 1];
 };
 
 const getName = (selectedPerson) => {
@@ -219,8 +221,9 @@ const scores = (doc, yInit, scoreValues) => {
   return y;
 };
 
-const charges = (doc, yInit, selectedPretrialCase, selectedCharges, showDetails) => {
+const charges = (doc, yInit, pageInit, name, selectedPretrialCase, selectedCharges, showDetails) => {
   let y = yInit;
+  let page = pageInit;
   doc.text(X_MARGIN, y, 'Charge(s):');
   y += Y_INC_SMALL;
   thinLine(doc, y);
@@ -235,7 +238,7 @@ const charges = (doc, yInit, selectedPretrialCase, selectedCharges, showDetails)
   else {
     selectedCharges.forEach((charge) => {
       if (y > 260) {
-        y = newPage(doc);
+        [y, page] = newPage(doc, page, name);
       }
       const chargeLines = doc.splitTextToSize(getChargeText(charge), X_MAX - (2 * X_MARGIN));
       doc.text(X_MARGIN + SCORE_OFFSET, y, chargeLines);
@@ -252,7 +255,7 @@ const charges = (doc, yInit, selectedPretrialCase, selectedCharges, showDetails)
       y += Y_INC;
     });
   }
-  return y;
+  return [y, page];
 };
 
 const chargeReferences = (yInit, doc, referenceCharges) => {
@@ -271,6 +274,8 @@ const chargeReferences = (yInit, doc, referenceCharges) => {
 const riskFactors = (
   doc,
   yInit,
+  pageInit,
+  name,
   riskFactorVals,
   currCharges,
   allCharges,
@@ -280,8 +285,9 @@ const riskFactors = (
   allCases
 ) => {
   let y = yInit;
+  let page = pageInit;
   if (y > 190) {
-    y = newPage(doc);
+    [y, page] = newPage(doc, page, name);
   }
 
   doc.text(X_MARGIN, y, 'Risk Factors:');
@@ -337,7 +343,7 @@ const riskFactors = (
   doc.text(X_MARGIN, y, '9. Prior Sentence to Incarceration');
   doc.text(RESPONSE_OFFSET, y, getBooleanText(riskFactorVals[PRIOR_SENTENCE_TO_INCARCERATION_FQN]));
   y += Y_INC;
-  return y;
+  return [y, page];
 };
 
 const recommendations = (doc, yInit, releaseRecommendation) => {
@@ -384,14 +390,14 @@ const getChargesByCaseNum = (allCharges) => {
   return chargesByCaseNum;
 };
 
-const caseHistory = (doc, yInit, allCases, chargesByCaseNum) => {
-  let y = newPage(doc);
+const caseHistory = (doc, yInit, pageInit, name, allCases, chargesByCaseNum) => {
+  let [y, page] = newPage(doc, pageInit, name);
   y = caseHistoryHeader(doc, y);
 
   allCases.forEach((c) => {
     y += Y_INC;
     if (y > 260) {
-      y = newPage(doc);
+      [y, page] = newPage(doc, page, name);
     }
     thickLine(doc, y);
     y += Y_INC;
@@ -402,18 +408,19 @@ const caseHistory = (doc, yInit, allCases, chargesByCaseNum) => {
     y += Y_INC;
     const chargesForCase = chargesByCaseNum[caseNum];
     if (chargesForCase && chargesForCase.length) {
-      y = charges(doc, y, null, chargesForCase, true);
+      [y, page] = charges(doc, y, page, name, null, chargesForCase, true);
     }
     thickLine(doc, y);
     y += Y_INC;
   });
-  return y;
+  return [y, page];
 };
 
 const exportPDF = (data, selectedPretrialCase, selectedPerson, allCases, allCharges) => {
   const doc = new JSPDF();
   doc.setFontType('regular');
   let y = 20;
+  let page = 1;
   const name = getName(selectedPerson);
   const chargesByCaseNum = getChargesByCaseNum(allCharges);
   const caseNum = (selectedPretrialCase[CASE_ID_FQN] && selectedPretrialCase[CASE_ID_FQN].length)
@@ -436,21 +443,24 @@ const exportPDF = (data, selectedPretrialCase, selectedPerson, allCases, allChar
   y += Y_INC;
 
   // CHARGES SECTION
-  y = charges(doc, y, selectedPretrialCase, currCharges, false);
+  [y, page] = charges(doc, y, page, name, selectedPretrialCase, currCharges, false);
   thickLine(doc, y);
   y += Y_INC;
 
   // RISK FACTORS SECTION
-  y = riskFactors(
+  [y, page] = riskFactors(
     doc,
     y,
+    page,
+    name,
     data.riskFactors,
     currCharges,
     allCharges,
     mostSeriousCharge,
     selectedPretrialCase[CASE_ID_FQN],
     selectedPretrialCase[ARREST_DATE_FQN],
-    allCases);
+    allCases
+  );
   thickLine(doc, y);
   y += Y_INC;
 
@@ -458,7 +468,7 @@ const exportPDF = (data, selectedPretrialCase, selectedPerson, allCases, allChar
   y = recommendations(doc, y, data.releaseRecommendation);
 
   // CASE HISTORY SECCTION=
-  y = caseHistory(doc, y, allCases, chargesByCaseNum);
+  [y, page] = caseHistory(doc, y, page, name, allCases, chargesByCaseNum);
 
   doc.save(getPdfName(name));
 };
