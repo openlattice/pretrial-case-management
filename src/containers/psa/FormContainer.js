@@ -612,9 +612,11 @@ class Form extends React.Component {
         actions.loadNeighbors(personDataModel.entitySet.id, selectedPersonId);
       }
       const progress = Math.floor((numCasesLoaded / numCasesToLoad) * 100);
+      let loadingText = 'Loading cases';
+      if (numCasesToLoad > 0) loadingText = `${loadingText} (${numCasesLoaded} / ${numCasesToLoad})`;
       return (
         <LoadingContainer>
-          <LoadingText>Loading cases ({`${numCasesLoaded} / ${numCasesToLoad}`})</LoadingText>
+          <LoadingText>{loadingText}</LoadingText>
           <ProgressBar bsStyle="success" now={progress} label={`${progress}%`} />
         </LoadingContainer>);
     }
