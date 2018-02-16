@@ -88,7 +88,7 @@ export function* watchUpdateCaseRequestWorker(action :UpdateCaseRequestAction) :
       method: 'get',
       url: `https://api.openlattice.com/bifrost/caseloader/${caseNum}`,
       headers: {
-        Authentication: `Bearer ${AuthUtils.getAuthToken()}`
+        Authorization: `Bearer ${AuthUtils.getAuthToken()}`
       }
     };
     yield call(axios, loadRequest);
