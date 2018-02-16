@@ -55,6 +55,11 @@ const LoadingText = styled.div`
   margin: 15px;
 `;
 
+const ButtonWrapper = styled.div`
+  margin-top: -5px;
+  text-align: center;
+`;
+
 /*
  * types
  */
@@ -161,7 +166,7 @@ class SearchPeopleContainer extends React.Component<Props> {
       <Wrapper>
         <Header>Search for people</Header>
         <SearchRow>
-          <Col lg={5}>
+          <Col lg={3}>
             <TitleLabel>First Name</TitleLabel>
             <FormControl
                 name="firstName"
@@ -169,7 +174,7 @@ class SearchPeopleContainer extends React.Component<Props> {
                 onKeyPress={this.handleKeyPress}
                 onChange={this.onInputChange} />
           </Col>
-          <Col lg={5}>
+          <Col lg={3}>
             <TitleLabel>Last Name</TitleLabel>
             <FormControl
                 name="lastName"
@@ -177,9 +182,7 @@ class SearchPeopleContainer extends React.Component<Props> {
                 onKeyPress={this.handleKeyPress}
                 onChange={this.onInputChange} />
           </Col>
-        </SearchRow>
-        <SearchRow>
-          <Col lg={5}>
+          <Col lg={3}>
             <TitleLabel>Date of Birth</TitleLabel>
             <DatePicker
                 value={dob}
@@ -187,7 +190,7 @@ class SearchPeopleContainer extends React.Component<Props> {
                   this.setState({ dob: newDate });
                 }} />
           </Col>
-          <Col lg={5}>
+          <Col lg={3}>
             <TitleLabel>Court File Number</TitleLabel>
             <FormControl
                 name="subjectId"
@@ -195,8 +198,12 @@ class SearchPeopleContainer extends React.Component<Props> {
                 onKeyPress={this.handleKeyPress}
                 onChange={this.onInputChange} />
           </Col>
-          <Col lg={2}>
-            <Button onClick={this.handleOnSubmitSearch}>Search</Button>
+        </SearchRow>
+        <SearchRow>
+          <Col lg={12}>
+            <ButtonWrapper>
+              <Button onClick={this.handleOnSubmitSearch}>Search</Button>
+            </ButtonWrapper>
           </Col>
         </SearchRow>
         { this.renderSearchResults() }
