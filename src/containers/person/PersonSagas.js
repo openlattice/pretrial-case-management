@@ -71,6 +71,7 @@ export function* watchLoadPersonDetailsRequest() :Generator<*, *, *> {
       // </HACK>
 
       else {
+        yield call(() => new Promise(resolve => setTimeout(resolve, 3000)));
         yield put(loadPersonDetailsSuccess(response));
       }
     }
@@ -138,7 +139,7 @@ export function* watchSearchPeopleRequest() :Generator<*, *, *> {
       const firstNameId = yield call(EntityDataModelApi.getPropertyTypeId, {
         namespace: firstNameFqnArr[0],
         name: firstNameFqnArr[1]
-      })
+      });
       searchFields.push({
         searchTerm: firstName,
         property: firstNameId,
@@ -150,7 +151,7 @@ export function* watchSearchPeopleRequest() :Generator<*, *, *> {
       const lastNameId = yield call(EntityDataModelApi.getPropertyTypeId, {
         namespace: lastNameFqnArr[0],
         name: lastNameFqnArr[1]
-      })
+      });
       searchFields.push({
         searchTerm: lastName,
         property: lastNameId,
