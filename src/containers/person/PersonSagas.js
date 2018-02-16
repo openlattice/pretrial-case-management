@@ -1,10 +1,12 @@
 /*
  * @flow
  */
+import axios from 'axios';
+import LatticeAuth from 'lattice-auth';
 
 import { EntityDataModelApi, SearchApi } from 'lattice';
 import { push } from 'react-router-redux';
-import { call, put, take } from 'redux-saga/effects';
+import { all, call, put, take, takeEvery } from 'redux-saga/effects';
 
 import { SUBMIT_FAILURE, SUBMIT_SUCCESS } from '../../utils/submit/SubmitActionTypes';
 import { submit } from '../../utils/submit/SubmitActionFactory';
@@ -19,15 +21,23 @@ import {
   newPersonSubmitSuccess,
   SEARCH_PEOPLE_REQUEST,
   searchPeopleFailure,
-  searchPeopleSuccess
+  searchPeopleSuccess,
+  UPDATE_CASE_REQUEST,
+  updateCaseFailure,
+  updateCaseRequest,
+  updateCaseSuccess
 } from './PersonActionFactory';
 
 import type {
+  LoadPersonDetailsRequestAction,
   NewPersonSubmitRequestAction,
-  SearchPeopleRequestAction
+  SearchPeopleRequestAction,
+  UpdateCaseRequestAction
 } from './PersonActionFactory';
 
 import * as Routes from '../../core/router/Routes';
+
+const { AuthUtils } = LatticeAuth;
 
 export function* watchLoadPersonDetailsRequest() :Generator<*, *, *> {
 
@@ -36,12 +46,62 @@ export function* watchLoadPersonDetailsRequest() :Generator<*, *, *> {
     try {
       const entitySetId :string = yield call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.PEOPLE);
       const response = yield call(SearchApi.searchEntityNeighbors, entitySetId, action.id);
-      yield put(loadPersonDetailsSuccess(response));
+
+      // <HACK>
+      if (action.shouldLoadCases) {
+        const caseNumRequests = response.filter((neighborObj) => {
+          const { neighborEntitySet, neighborDetails } = neighborObj;
+          if (neighborEntitySet && neighborDetails && neighborEntitySet.name === ENTITY_SETS.PRETRIAL_CASES) {
+            const arrestDate = neighborDetails[PROPERTY_TYPES.ARREST_DATE_FQN];
+            return !arrestDate || !arrestDate.length;
+          }
+          return false;
+        }).map(neighborObj => neighborObj.neighborDetails[PROPERTY_TYPES.CASE_ID_FQN])
+          .reduce((c1, c2) => [...c1, ...c2])
+          .filter((caseNum, index, arr) => arr.indexOf(caseNum) === index)
+          .map(caseNum => put(updateCaseRequest(caseNum)));
+
+        if (caseNumRequests.length) {
+          yield all(caseNumRequests);
+        }
+        else {
+          yield put(loadPersonDetailsSuccess(response));
+        }
+      }
+      // </HACK>
+
+      else {
+        yield put(loadPersonDetailsSuccess(response));
+      }
     }
     catch (error) {
       yield put(loadPersonDetailsFailure(error));
     }
   }
+}
+
+export function* watchUpdateCaseRequestWorker(action :UpdateCaseRequestAction) :Generator<*, *, *> {
+  const { caseNum } = action;
+
+  try {
+    const loadRequest = {
+      method: 'get',
+      url: `https://api.openlattice.com/bifrost/caseloader/${caseNum}`,
+      headers: {
+        Authorization: `Bearer ${AuthUtils.getAuthToken()}`
+      }
+    };
+    yield call(axios, loadRequest);
+    yield put(updateCaseSuccess(caseNum));
+  }
+  catch (error) {
+    yield put(updateCaseFailure(caseNum, error));
+  }
+}
+
+export function* watchUpdateCaseRequest() :Generator<*, *, *> {
+
+  yield takeEvery(UPDATE_CASE_REQUEST, watchUpdateCaseRequestWorker);
 }
 
 export function* watchNewPersonSubmitRequest() :Generator<*, *, *> {
@@ -78,7 +138,7 @@ export function* watchSearchPeopleRequest() :Generator<*, *, *> {
       const firstNameId = yield call(EntityDataModelApi.getPropertyTypeId, {
         namespace: firstNameFqnArr[0],
         name: firstNameFqnArr[1]
-      })
+      });
       searchFields.push({
         searchTerm: firstName,
         property: firstNameId,
@@ -90,7 +150,7 @@ export function* watchSearchPeopleRequest() :Generator<*, *, *> {
       const lastNameId = yield call(EntityDataModelApi.getPropertyTypeId, {
         namespace: lastNameFqnArr[0],
         name: lastNameFqnArr[1]
-      })
+      });
       searchFields.push({
         searchTerm: lastName,
         property: lastNameId,
