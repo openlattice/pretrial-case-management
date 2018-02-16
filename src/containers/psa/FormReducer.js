@@ -8,6 +8,7 @@ import moment from 'moment';
 import * as FormActionTypes from './FormActionTypes';
 import { SEARCH_PEOPLE_REQUEST } from '../person/PersonActionFactory';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { PSA } from '../../utils/consts/Consts'
 
 const {
   PRETRIAL_CASES,
@@ -20,6 +21,31 @@ const {
   ARREST_DATE_FQN
 } = PROPERTY_TYPES;
 
+const {
+  AGE_AT_CURRENT_ARREST,
+  CURRENT_VIOLENT_OFFENSE,
+  PENDING_CHARGE,
+  PRIOR_MISDEMEANOR,
+  PRIOR_FELONY,
+  PRIOR_VIOLENT_CONVICTION,
+  PRIOR_FAILURE_TO_APPEAR_RECENT,
+  PRIOR_FAILURE_TO_APPEAR_OLD,
+  PRIOR_SENTENCE_TO_INCARCERATION
+} = PSA;
+
+const INITIAL_PSA_FORM = Immutable.fromJS({
+  [AGE_AT_CURRENT_ARREST]: null,
+  [CURRENT_VIOLENT_OFFENSE]: null,
+  [PENDING_CHARGE]: null,
+  [PRIOR_MISDEMEANOR]: null,
+  [PRIOR_FELONY]: null,
+  [PRIOR_VIOLENT_CONVICTION]: null,
+  [PRIOR_FAILURE_TO_APPEAR_RECENT]: null,
+  [PRIOR_FAILURE_TO_APPEAR_OLD]: null,
+  [PRIOR_SENTENCE_TO_INCARCERATION]: null
+});
+
+
 const EMPTY_DATA_MODEL = {
   entitySet: {},
   syncId: '',
@@ -27,21 +53,22 @@ const EMPTY_DATA_MODEL = {
   propertyTypes: []
 };
 
-const INITIAL_STATE :Map<> = Immutable.Map().withMutations((map :Map<>) => {
-  map.set('personDataModel', EMPTY_DATA_MODEL);
-  map.set('pretrialCaseDataModel', EMPTY_DATA_MODEL);
-  map.set('riskFactorsDataModel', EMPTY_DATA_MODEL);
-  map.set('psaDataModel', EMPTY_DATA_MODEL);
-  map.set('releaseRecommendationDataModel', EMPTY_DATA_MODEL);
-  map.set('staffDataModel', EMPTY_DATA_MODEL);
-  map.set('calculatedForDataModel', EMPTY_DATA_MODEL);
-  map.set('assessedByDataModel', EMPTY_DATA_MODEL);
-  map.set('peopleOptions', []);
-  map.set('pretrialCaseOptions', []);
-  map.set('allChargesForPerson', []);
-  map.set('charges', []);
-  map.set('selectedPerson', {});
-  map.set('selectedPretrialCase', {});
+const INITIAL_STATE :Map<> = Immutable.fromJS({
+  personDataModel: EMPTY_DATA_MODEL,
+  pretrialCaseDataModel: EMPTY_DATA_MODEL,
+  riskFactorsDataModel: EMPTY_DATA_MODEL,
+  psaDataModel: EMPTY_DATA_MODEL,
+  releaseRecommendationDataModel: EMPTY_DATA_MODEL,
+  staffDataModel: EMPTY_DATA_MODEL,
+  calculatedForDataModel: EMPTY_DATA_MODEL,
+  assessedByDataModel: EMPTY_DATA_MODEL,
+  peopleOptions: [],
+  pretrialCaseOptions: [],
+  allChargesForPerson: [],
+  charges: [],
+  selectedPerson: {},
+  selectedPretrialCase: {},
+  psa: INITIAL_PSA_FORM
 });
 
 function formReducer(state :Map<> = INITIAL_STATE, action :Object) {
@@ -131,15 +158,27 @@ function formReducer(state :Map<> = INITIAL_STATE, action :Object) {
         .set('charges', charges);
     }
 
-    case FormActionTypes.CLEAR_FORM: {
+    case FormActionTypes.SET_PSA_VALUE:
+      return state.setIn(['psa', action.field], action.value);
+
+    case FormActionTypes.SET_PSA_VALUES: {
+      let psa = state.get('psa').merge(action.values);
+      if (psa.get(PRIOR_MISDEMEANOR) === 'false' && psa.get(PRIOR_FELONY) === 'false') {
+        psa = psa.set(PRIOR_VIOLENT_CONVICTION, '0').set(PRIOR_SENTENCE_TO_INCARCERATION, 'false');
+      }
+      console.log(psa.toJS())
+      return state.set('psa', psa);
+    }
+
+    case FormActionTypes.CLEAR_FORM:
       return state
         .set('peopleOptions', [])
         .set('pretrialCaseOptions', [])
         .set('allChargesForPerson', [])
         .set('selectedPerson', {})
         .set('selectedPretrialCase', {})
-        .set('charges', []);
-    }
+        .set('charges', [])
+        .set('psa', INITIAL_PSA_FORM);
 
     default:
       return state;

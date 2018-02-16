@@ -29,7 +29,7 @@ import * as PersonActionFactory from '../person/PersonActionFactory';
 import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
 import * as Routes from '../../core/router/Routes';
 
-import { formatDate, formatValue } from '../../utils/Utils';
+import { formatDate } from '../../utils/Utils';
 import { getScoresAndRiskFactors } from '../../utils/ScoringUtils';
 import {
   ButtonWrapper,
@@ -62,18 +62,6 @@ const {
   GENERAL_ID_FQN,
   COMPLETED_DATE_TIME
 } = PROPERTY_TYPES;
-
-const {
-  AGE_AT_CURRENT_ARREST,
-  CURRENT_VIOLENT_OFFENSE,
-  PENDING_CHARGE,
-  PRIOR_MISDEMEANOR,
-  PRIOR_FELONY,
-  PRIOR_VIOLENT_CONVICTION,
-  PRIOR_FAILURE_TO_APPEAR_RECENT,
-  PRIOR_FAILURE_TO_APPEAR_OLD,
-  PRIOR_SENTENCE_TO_INCARCERATION
-} = PSA;
 
 const StyledFormViewWrapper = styled.div`
   display: flex;
@@ -134,22 +122,10 @@ const INITIAL_PERSON_FORM = Immutable.fromJS({
   sex: ''
 });
 
-const INITIAL_PSA_FORM = Immutable.fromJS({
-  [AGE_AT_CURRENT_ARREST]: null,
-  [CURRENT_VIOLENT_OFFENSE]: null,
-  [PENDING_CHARGE]: null,
-  [PRIOR_MISDEMEANOR]: null,
-  [PRIOR_FELONY]: null,
-  [PRIOR_VIOLENT_CONVICTION]: null,
-  [PRIOR_FAILURE_TO_APPEAR_RECENT]: null,
-  [PRIOR_FAILURE_TO_APPEAR_OLD]: null,
-  [PRIOR_SENTENCE_TO_INCARCERATION]: null
-});
-
 const INITIAL_STATE = Immutable.fromJS({
   personForm: INITIAL_PERSON_FORM,
-  psaForm: INITIAL_PSA_FORM,
   formIncompleteError: false,
+  riskFactors: {},
   scores: {
     ftaTotal: 0,
     ncaTotal: 0,
@@ -176,7 +152,9 @@ class Form extends React.Component {
       selectPerson: PropTypes.func.isRequired,
       selectPretrialCase: PropTypes.func.isRequired,
       updateRecommendation: PropTypes.func.isRequired,
-      loadPersonDetailsRequest: PropTypes.func.isRequired
+      loadPersonDetailsRequest: PropTypes.func.isRequired,
+      setPSAValue: PropTypes.func.isRequired,
+      setPSAValues: PropTypes.func.isRequired
     }).isRequired,
     personDataModel: PropTypes.object.isRequired,
     pretrialCaseDataModel: PropTypes.object.isRequired,
@@ -195,7 +173,8 @@ class Form extends React.Component {
     selectedPersonId: PropTypes.string.isRequired,
     isLoadingCases: PropTypes.bool.isRequired,
     numCasesToLoad: PropTypes.number.isRequired,
-    numCasesLoaded: PropTypes.number.isRequired
+    numCasesLoaded: PropTypes.number.isRequired,
+    psaForm: PropTypes.instanceOf(Immutable.Map).isRequired
   };
 
   constructor(props) {
@@ -212,22 +191,23 @@ class Form extends React.Component {
       selectedPretrialCase,
       charges,
       pretrialCaseOptions,
-      allChargesForPerson
+      allChargesForPerson,
+      psaForm,
+      actions
     } = nextProps;
     if (Object.keys(selectedPretrialCase).length
       || charges.length
       || pretrialCaseOptions.length
       || allChargesForPerson.length) {
-      const psaForm = Object.assign({}, this.state.psaForm, tryAutofillFields(
+      actions.setPSAValues(Immutable.fromJS(tryAutofillFields(
         selectedPretrialCase,
         charges,
         pretrialCaseOptions,
         allChargesForPerson,
         this.props.selectedPretrialCase,
         this.props.selectedPerson,
-        this.state.psaForm
-      ));
-      this.setState({ psaForm });
+        psaForm
+      )));
     }
   }
 
@@ -235,36 +215,8 @@ class Form extends React.Component {
     this.clear();
   }
 
-  // For text input
-  handleTextInput = (e) => {
-    const sectionKey = e.target.dataset.section;
-    const { name, value } = e.target;
-    const sectionState = this.state[sectionKey];
-    sectionState[name] = value;
-    this.setState({ [sectionKey]: sectionState });
-  }
-
-  handleDateInput = (e, section, name) => {
-    const input = e;
-    const sectionState = this.state[section];
-    sectionState[name] = input;
-    this.setState({ [section]: sectionState });
-  }
-
-  // For radio or select input
   handleSingleSelection = (e) => {
-    const sectionKey = e.target.dataset.section;
-    const sectionState = this.state[sectionKey];
-    sectionState[e.target.name] = e.target.value;
-    if (sectionKey === 'psaForm') {
-      if (e.target.name === PRIOR_MISDEMEANOR || e.target.name === PRIOR_FELONY) {
-        if (sectionState[PRIOR_MISDEMEANOR] === 'false' && sectionState[PRIOR_FELONY] === 'false') {
-          sectionState[PRIOR_VIOLENT_CONVICTION] = '0';
-          sectionState[PRIOR_SENTENCE_TO_INCARCERATION] = 'false';
-        }
-      }
-    }
-    this.setState({ [sectionKey]: sectionState });
+    this.props.actions.setPSAValues(Immutable.fromJS({ [e.target.name]: e.target.value }));
   }
 
   getCalculatedForEntityDetails = () => ({ [TIMESTAMP_FQN]: [new Date()] })
@@ -342,7 +294,7 @@ class Form extends React.Component {
   }
 
   submitEntities = (scores) => {
-    const { riskFactors } = getScoresAndRiskFactors(this.state.psaForm);
+    const { riskFactors } = getScoresAndRiskFactors(this.props.psaForm.toJS());
     const calculatedForEntityDetails = this.getCalculatedForEntityDetails();
     const releaseRecommendationEntity = this.getBlankReleaseRecommendationEntity();
     const assessedByEntityDetails = this.getAssessedByEntityDetails();
@@ -457,13 +409,11 @@ class Form extends React.Component {
   generateScores = (e) => {
     e.preventDefault();
 
-    if (Object.values(this.state.psaForm).filter((value) => {
-      return !value;
-    }).length) {
+    if (this.props.psaForm.valueSeq().filter(value => value === null).size) {
       this.setState({ formIncompleteError: true });
     }
     else {
-      const { riskFactors, scores } = getScoresAndRiskFactors(this.state.psaForm);
+      const { riskFactors, scores } = getScoresAndRiskFactors(this.props.psaForm.toJS());
       this.setState({
         formIncompleteError: false,
         riskFactors,
@@ -505,14 +455,13 @@ class Form extends React.Component {
     <PSAInputForm
         handleSingleSelection={this.handleSingleSelection}
         handleSubmit={this.generateScores}
-        section="psaForm"
-        input={this.state.psaForm}
+        input={this.props.psaForm}
         incompleteError={this.state.formIncompleteError} />
   )
 
   renderPSASection = () => {
     if (!this.state.scoresWereGenerated) return this.renderPSAInputForm();
-    return <PSAResults scores={this.state.scores} formValues={this.state.psaForm} />;
+    return <PSAResults scores={this.state.scores} riskFactors={this.state.riskFactors} />;
   }
 
   renderRecommendationSection = () => {
@@ -648,14 +597,15 @@ class Form extends React.Component {
   }
 
   getPsaResults = () => {
+    const { scoresWereGenerated, scores, riskFactors } = this.state;
     const personId = this.props.selectedPerson.id;
-    if (!personId || !personId.length || !this.state.scoresWereGenerated) {
+    if (!personId || !personId.length || !scoresWereGenerated) {
       this.props.history.push(`${Routes.PSA_FORM}/1`);
       return null;
     }
     return (
       <div>
-        <PSAResults scores={this.state.scores} formValues={this.state.psaForm} />
+        <PSAResults scores={scores} riskFactors={riskFactors} />
         {this.renderRecommendationSection()}
         {this.renderExportButton()}
       </div>
@@ -706,6 +656,7 @@ function mapStateToProps(state :Map<>) :Object {
     selectedPerson: psaForm.get('selectedPerson'),
     selectedPretrialCase: psaForm.get('selectedPretrialCase'),
     allChargesForPerson: psaForm.get('allChargesForPerson'),
+    psaForm: psaForm.get('psa'),
 
     selectedPersonId: search.get('selectedPersonId'),
     isLoadingCases: search.get('loadingCases'),

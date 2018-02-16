@@ -273,3 +273,18 @@ export function clearForm() {
     type: FormActionTypes.CLEAR_FORM
   };
 }
+
+export function setPSAValue(field :string, value :string) {
+  return {
+    type: FormActionTypes.SET_PSA_VALUE,
+    field,
+    value
+  };
+}
+
+export function setPSAValues(values :Map) {
+  return {
+    type: FormActionTypes.SET_PSA_VALUES,
+    values
+  };
+}

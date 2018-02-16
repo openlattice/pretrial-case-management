@@ -4,6 +4,7 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
+import Immutable from 'immutable';
 import { FormGroup, Col } from 'react-bootstrap';
 
 import SectionView from '../SectionView';
@@ -46,14 +47,13 @@ const {
 } = PSA;
 
 const PSAInputForm = ({
-  section,
   handleSingleSelection,
   input,
   handleSubmit,
   incompleteError
 }) => {
 
-  const noPriorConvictions = input.priorMisdemeanor === 'false' && input.priorFelony === 'false';
+  const noPriorConvictions = input.get(PRIOR_MISDEMEANOR) === 'false' && input.get(PRIOR_FELONY) === 'false';
 
   const renderHeader = header => (
     <Col lg={4}>
@@ -71,10 +71,9 @@ const PSAInputForm = ({
 
   const renderRadio = (name, value, label, disabledField) => (
     <Radio
-        dataSection={section}
         name={name}
         value={`${value}`}
-        checked={input[name] === `${value}`}
+        checked={input.get(name) === `${value}`}
         onChange={handleSingleSelection}
         disabled={disabledField && disabledField !== undefined}
         label={label} />
@@ -168,9 +167,8 @@ const PSAInputForm = ({
 };
 
 PSAInputForm.propTypes = {
-  section: PropTypes.string.isRequired,
   handleSingleSelection: PropTypes.func.isRequired,
-  input: PropTypes.object.isRequired,
+  input: PropTypes.instanceOf(Immutable.Map).isRequired,
   handleSubmit: PropTypes.func.isRequired,
   incompleteError: PropTypes.bool.isRequired
 };

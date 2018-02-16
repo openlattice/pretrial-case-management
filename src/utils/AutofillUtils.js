@@ -11,6 +11,8 @@ import {
   getUnique
 } from './consts/ChargeConsts';
 
+import { PSA } from './consts/Consts';
+
 const {
   DOB,
   ARREST_DATE_FQN,
@@ -22,6 +24,18 @@ const {
   DISPOSITION,
   DISPOSITION_DATE
 } = PROPERTY_TYPES;
+
+const {
+  AGE_AT_CURRENT_ARREST,
+  CURRENT_VIOLENT_OFFENSE,
+  PENDING_CHARGE,
+  PRIOR_MISDEMEANOR,
+  PRIOR_FELONY,
+  PRIOR_VIOLENT_CONVICTION,
+  PRIOR_FAILURE_TO_APPEAR_RECENT,
+  PRIOR_FAILURE_TO_APPEAR_OLD,
+  PRIOR_SENTENCE_TO_INCARCERATION
+} = PSA;
 
 export const getViolentCharges = (charges, mostSeriousCharge) => {
   if ((!charges || !charges.length) && !mostSeriousCharge) return [];
@@ -143,53 +157,52 @@ export const tryAutofillFields = (
   psaFormValues
 ) => {
 
-  let {
-    ageAtCurrentArrest,
-    currentViolentOffense,
-    pendingCharge,
-    priorMisdemeanor,
-    priorFelony,
-    priorViolentConviction,
-    priorSentenceToIncarceration
-  } = psaFormValues;
+  let psaForm = psaFormValues;
 
+  const ageAtCurrentArrest = psaForm.get(AGE_AT_CURRENT_ARREST);
   if (ageAtCurrentArrest === null || nextCase[ARREST_DATE_FQN] !== currCase[ARREST_DATE_FQN]) {
-    ageAtCurrentArrest = tryAutofillAge(nextCase[ARREST_DATE_FQN], ageAtCurrentArrest, selectedPerson);
+    psaForm = psaForm.set(
+      AGE_AT_CURRENT_ARREST,
+      tryAutofillAge(nextCase[ARREST_DATE_FQN], ageAtCurrentArrest, selectedPerson)
+    );
   }
+
   if (nextCase[MOST_SERIOUS_CHARGE_NO] !== currCase[MOST_SERIOUS_CHARGE_NO] || (nextCharges && nextCharges.length)) {
-    currentViolentOffense = tryAutofillCurrentViolentCharge(nextCharges, nextCase[MOST_SERIOUS_CHARGE_NO]);
+    psaForm = psaForm.set(
+      CURRENT_VIOLENT_OFFENSE,
+      tryAutofillCurrentViolentCharge(nextCharges, nextCase[MOST_SERIOUS_CHARGE_NO])
+    );
   }
+
+  const pendingCharge = psaForm.get(PENDING_CHARGE);
   if (pendingCharge === null || nextCase[ARREST_DATE_FQN] !== currCase[ARREST_DATE_FQN]) {
-    pendingCharge = tryAutofillPendingCharge(
-      nextCase[CASE_ID_FQN],
-      nextCase[ARREST_DATE_FQN],
-      allCases,
-      allCharges,
-      pendingCharge
+    psaForm = psaForm.set(
+      PENDING_CHARGE,
+      tryAutofillPendingCharge(
+        nextCase[CASE_ID_FQN],
+        nextCase[ARREST_DATE_FQN],
+        allCases,
+        allCharges,
+        pendingCharge
+      )
     );
   }
   if (allCharges && allCharges.length) {
+    const priorMisdemeanor = psaForm.get(PRIOR_MISDEMEANOR);
     if (priorMisdemeanor === null) {
-      priorMisdemeanor = tryAutofillPreviousMisdemeanors(allCharges);
+      psaForm = psaForm.set(PRIOR_MISDEMEANOR, tryAutofillPreviousMisdemeanors(allCharges));
     }
+    const priorFelony = psaForm.get(PRIOR_FELONY);
     if (priorFelony === null) {
-      priorFelony = tryAutofillPreviousFelonies(allCharges);
+      psaForm = psaForm.set(PRIOR_FELONY, tryAutofillPreviousFelonies(allCharges));
     }
     if (priorMisdemeanor === 'false' && priorFelony === 'false') {
-      priorViolentConviction = '0';
-      priorSentenceToIncarceration = 'false';
+      psaForm = psaForm.set(PRIOR_VIOLENT_CONVICTION, '0');
+      psaForm = psaForm.set(PRIOR_SENTENCE_TO_INCARCERATION, 'false');
     }
-    else if (priorViolentConviction === null) {
-      priorViolentConviction = tryAutofillPreviousViolentCharge(allCharges);
+    else if (psaForm.get(PRIOR_VIOLENT_CONVICTION) === null) {
+      psaForm = psaForm.set(PRIOR_VIOLENT_CONVICTION, tryAutofillPreviousViolentCharge(allCharges));
     }
   }
-  return {
-    ageAtCurrentArrest,
-    currentViolentOffense,
-    pendingCharge,
-    priorMisdemeanor,
-    priorFelony,
-    priorViolentConviction,
-    priorSentenceToIncarceration
-  };
+  return psaForm.toJS();
 };
