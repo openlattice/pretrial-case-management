@@ -6,6 +6,7 @@ import React from 'react';
 
 import Immutable from 'immutable';
 import styled from 'styled-components';
+import DatePicker from 'react-bootstrap-date-picker';
 import { Button, FormControl, Col } from 'react-bootstrap';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
@@ -78,7 +79,9 @@ class SearchPeopleContainer extends React.Component<Props> {
     super(props);
     this.state = {
       firstName: '',
-      lastName: ''
+      lastName: '',
+      dob: undefined,
+      subjectId: ''
     };
   }
 
@@ -94,9 +97,14 @@ class SearchPeopleContainer extends React.Component<Props> {
 
   handleOnSubmitSearch = () => {
 
-    const { firstName, lastName } = this.state;
-    if (firstName.length || lastName.length) {
-      this.props.actions.searchPeopleRequest(firstName, lastName);
+    const {
+      firstName,
+      lastName,
+      dob,
+      subjectId
+    } = this.state;
+    if (firstName.length || lastName.length || dob || subjectId.length) {
+      this.props.actions.searchPeopleRequest(firstName, lastName, dob, subjectId);
     }
   }
 
@@ -142,7 +150,12 @@ class SearchPeopleContainer extends React.Component<Props> {
   }
 
   render() {
-    const { firstName, lastName } = this.state;
+    const {
+      firstName,
+      lastName,
+      dob,
+      subjectId
+    } = this.state;
 
     return (
       <Wrapper>
@@ -161,6 +174,24 @@ class SearchPeopleContainer extends React.Component<Props> {
             <FormControl
                 name="lastName"
                 value={lastName}
+                onKeyPress={this.handleKeyPress}
+                onChange={this.onInputChange} />
+          </Col>
+        </SearchRow>
+        <SearchRow>
+          <Col lg={5}>
+            <TitleLabel>Date of Birth</TitleLabel>
+            <DatePicker
+                value={dob}
+                onChange={(newDate) => {
+                  this.setState({ dob: newDate });
+                }} />
+          </Col>
+          <Col lg={5}>
+            <TitleLabel>Court File Number</TitleLabel>
+            <FormControl
+                name="subjectId"
+                value={subjectId}
                 onKeyPress={this.handleKeyPress}
                 onChange={this.onInputChange} />
           </Col>
