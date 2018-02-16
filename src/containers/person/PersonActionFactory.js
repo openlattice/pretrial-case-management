@@ -21,13 +21,15 @@ function loadPersonDetailsFailure(error :any) :LoadPersonDetailsFailureAction {
 
 type LoadPersonDetailsRequestAction = {
   id :UUID,
+  shouldLoadCases :boolean,
   type :typeof LOAD_PERSON_DETAILS_REQUEST
 };
 
-function loadPersonDetailsRequest(id :UUID) :LoadPersonDetailsRequestAction {
+function loadPersonDetailsRequest(id :UUID, shouldLoadCases :boolean) :LoadPersonDetailsRequestAction {
 
   return {
     id,
+    shouldLoadCases,
     type: LOAD_PERSON_DETAILS_REQUEST
   };
 }
@@ -106,7 +108,8 @@ function searchPeopleFailure(error :any) :SearchPeopleFailureAction {
 }
 
 type SearchPeopleRequestAction = {
-  searchQuery :string,
+  firstName :string,
+  lastName :string,
   type :typeof SEARCH_PEOPLE_REQUEST
 };
 
@@ -129,6 +132,51 @@ function searchPeopleSuccess(searchResults :Object) :SearchPeopleSuccessAction {
   return {
     searchResults,
     type: SEARCH_PEOPLE_SUCCESS
+  };
+}
+
+const UPDATE_CASE_FAILURE :'UPDATE_CASE_FAILURE' = 'UPDATE_CASE_FAILURE';
+const UPDATE_CASE_REQUEST :'UPDATE_CASE_REQUEST' = 'UPDATE_CASE_REQUEST';
+const UPDATE_CASE_SUCCESS :'UPDATE_CASE_SUCCESS' = 'UPDATE_CASE_SUCCESS';
+
+type UpdateCaseFailureAction = {
+  caseNum :string,
+  error :any,
+  type :typeof UPDATE_CASE_FAILURE
+};
+
+function updateCaseFailure(caseNum :string, error :any) :UpdateCaseFailureAction {
+
+  return {
+    caseNum,
+    error,
+    type: UPDATE_CASE_FAILURE
+  };
+}
+
+type UpdateCaseRequestAction = {
+  caseNum :string,
+  type :typeof UPDATE_CASE_REQUEST
+};
+
+function updateCaseRequest(caseNum :string) :UpdateCaseRequestAction {
+
+  return {
+    caseNum,
+    type: UPDATE_CASE_REQUEST
+  };
+}
+
+type UpdateCaseSuccessAction = {
+  caseNum :string,
+  type :typeof UPDATE_CASE_SUCCESS
+};
+
+function updateCaseSuccess(caseNum :string) :UpdateCaseSuccessAction {
+
+  return {
+    caseNum,
+    type: UPDATE_CASE_SUCCESS
   };
 }
 
@@ -155,7 +203,10 @@ export {
   NEW_PERSON_SUBMIT_SUCCESS,
   SEARCH_PEOPLE_FAILURE,
   SEARCH_PEOPLE_REQUEST,
-  SEARCH_PEOPLE_SUCCESS
+  SEARCH_PEOPLE_SUCCESS,
+  UPDATE_CASE_FAILURE,
+  UPDATE_CASE_REQUEST,
+  UPDATE_CASE_SUCCESS
 };
 
 export {
@@ -168,7 +219,10 @@ export {
   newPersonSubmitSuccess,
   searchPeopleFailure,
   searchPeopleRequest,
-  searchPeopleSuccess
+  searchPeopleSuccess,
+  updateCaseFailure,
+  updateCaseRequest,
+  updateCaseSuccess
 };
 
 export type {
@@ -181,7 +235,10 @@ export type {
   NewPersonSubmitSuccessAction,
   SearchPeopleFailureAction,
   SearchPeopleRequestAction,
-  SearchPeopleSuccessAction
+  SearchPeopleSuccessAction,
+  UpdateCaseFailureAction,
+  UpdateCaseRequestAction,
+  UpdateCaseSuccessAction
 };
 
 export type Action =
@@ -194,4 +251,7 @@ export type Action =
   | NewPersonSubmitSuccessAction
   | SearchPeopleFailureAction
   | SearchPeopleRequestAction
-  | SearchPeopleSuccessAction;
+  | SearchPeopleSuccessAction
+  | UpdateCaseFailureAction
+  | UpdateCaseRequestAction
+  | UpdateCaseSuccessAction;
