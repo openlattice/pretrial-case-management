@@ -52,8 +52,8 @@ export function* watchLoadPersonDetailsRequest() :Generator<*, *, *> {
         const caseNumRequests = response.filter((neighborObj) => {
           const { neighborEntitySet, neighborDetails } = neighborObj;
           if (neighborEntitySet && neighborDetails && neighborEntitySet.name === ENTITY_SETS.PRETRIAL_CASES) {
-            const dispositionDate = neighborDetails[PROPERTY_TYPES.DISPOSITION_DATE];
-            return !dispositionDate || !dispositionDate.length;
+            const arrestDate = neighborDetails[PROPERTY_TYPES.ARREST_DATE_FQN];
+            return !arrestDate || !arrestDate.length;
           }
           return false;
         }).map(neighborObj => neighborObj.neighborDetails[PROPERTY_TYPES.CASE_ID_FQN])
