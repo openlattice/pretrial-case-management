@@ -48,7 +48,6 @@ const {
 const LARGE_FONT_SIZE = 15;
 const MEDIUM_FONT_SIZE = 13;
 const FONT_SIZE = 10;
-const SMALL_FONT_SIZE = 8;
 const X_MARGIN = 10;
 const X_MAX = 200;
 const Y_INC = 5;
@@ -60,10 +59,11 @@ const BOX_MARGIN = X_MARGIN + 5;
 const BOX_HEIGHT = 10;
 const BOX_WIDTH = (X_MAX - (2 * BOX_MARGIN)) / 6;
 
-const newPage = (doc, page, name) => {
+const newPage = (doc, pageInit, name) => {
+  const page = pageInit + 1;
   doc.addPage();
   doc.text(10, X_MARGIN, `${name} - ${page}`);
-  return [20, page + 1];
+  return [20, page];
 };
 
 const getName = (selectedPerson) => {
