@@ -12,6 +12,7 @@ import { connect } from 'react-redux';
 
 import SearchControl from '../../components/controls/SearchControl';
 import PersonCard from '../../components/person/PersonCard';
+import LoadingSpinner from '../../components/LoadingSpinner';
 import { clearSearchResults, searchPeopleRequest } from './PersonActionFactory';
 import {
   PaddedRow,
@@ -48,6 +49,11 @@ const SearchRow = styled(PaddedRow)`
   align-items: flex-end;
 `;
 
+const LoadingText = styled.div`
+  font-size: 20px;
+  margin: 15px;
+`;
+
 /*
  * types
  */
@@ -57,6 +63,7 @@ type Props = {
     clearSearchResults :Function,
     searchPeopleRequest :Function
   },
+  isLoadingPeople :boolean,
   searchResults :List<Map<*, *>>,
   onSelectPerson :Function
 }
@@ -94,6 +101,15 @@ class SearchPeopleContainer extends React.Component<Props> {
   }
 
   renderSearchResults = () => {
+
+    if (this.props.isLoadingPeople) {
+      return (
+        <div>
+          <LoadingText>Loading results...</LoadingText>
+          <LoadingSpinner />
+        </div>
+      )
+    }
 
     if (this.props.searchResults.isEmpty()) {
       return (
@@ -161,7 +177,8 @@ class SearchPeopleContainer extends React.Component<Props> {
 function mapStateToProps(state :Map<*, *>) :Object {
 
   return {
-    searchResults: state.getIn(['search', 'searchResults'], Immutable.List())
+    searchResults: state.getIn(['search', 'searchResults'], Immutable.List()),
+    isLoadingPeople: state.getIn(['search', 'isLoadingPeople'], false)
   };
 }
 
