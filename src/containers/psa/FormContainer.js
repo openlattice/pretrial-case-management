@@ -441,11 +441,6 @@ class Form extends React.Component {
 
   handleSelectPerson = (person, entityKeyId) => {
     this.props.actions.selectPerson(person.toJS());
-    this.props.actions.loadNeighbors(
-      this.props.personDataModel.entitySet.id,
-      person.get('id', Immutable.List()).get(0)
-    );
-
     this.props.actions.loadPersonDetailsRequest(entityKeyId, true);
   }
 
