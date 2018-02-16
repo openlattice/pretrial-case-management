@@ -143,8 +143,7 @@ export function* watchSearchPeopleRequest() :Generator<*, *, *> {
     const {
       firstName,
       lastName,
-      dob,
-      subjectId
+      dob
     } = action;
     const searchFields = [];
     const updateSearchField = (searchTerm, property) => {
@@ -168,10 +167,6 @@ export function* watchSearchPeopleRequest() :Generator<*, *, *> {
         const dobId = yield call(getPropertyTypeId, PROPERTY_TYPES.DOB);
         updateSearchField(`"${dobMoment.format('YYYY-MM-DD')}"`, dobId);
       }
-    }
-    if (subjectId && subjectId.length) {
-      const idPtId = yield call(getPropertyTypeId, PROPERTY_TYPES.PERSON_ID);
-      updateSearchField(subjectId, idPtId);
     }
     const searchOptions = {
       searchFields,
