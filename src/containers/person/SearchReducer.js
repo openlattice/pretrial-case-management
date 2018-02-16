@@ -20,6 +20,7 @@ import {
 import type { Action } from './PersonActionFactory';
 
 const INITIAL_STATE :Map<*, *> = Immutable.fromJS({
+  isLoadingPeople: false,
   searchResults: Immutable.List(),
   selectedPersonId: '',
   personDetails: Immutable.List(),
@@ -37,12 +38,16 @@ export default function searchReducer(state :Map<*, *> = INITIAL_STATE, action :
         .set('searchResults', Immutable.List())
         .set('personDetails', Immutable.List());
 
-    case SEARCH_PEOPLE_FAILURE:
     case SEARCH_PEOPLE_REQUEST:
-      return state;
+      return state.set('isLoadingPeople', true);
+
+    case SEARCH_PEOPLE_FAILURE:
+      return state.set('isLoadingPeople', false);
 
     case SEARCH_PEOPLE_SUCCESS:
-      return state.set('searchResults', Immutable.fromJS(action.searchResults.hits));
+      return state
+        .set('searchResults', Immutable.fromJS(action.searchResults.hits))
+        .set('isLoadingPeople', false);
 
     case LOAD_PERSON_DETAILS_REQUEST:
       return state.set('selectedPersonId', action.id).set('loadingCases', true);
