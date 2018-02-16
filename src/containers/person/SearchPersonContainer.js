@@ -85,8 +85,7 @@ class SearchPeopleContainer extends React.Component<Props> {
     this.state = {
       firstName: '',
       lastName: '',
-      dob: undefined,
-      subjectId: ''
+      dob: undefined
     };
   }
 
@@ -105,11 +104,10 @@ class SearchPeopleContainer extends React.Component<Props> {
     const {
       firstName,
       lastName,
-      dob,
-      subjectId
+      dob
     } = this.state;
-    if (firstName.length || lastName.length || dob || subjectId.length) {
-      this.props.actions.searchPeopleRequest(firstName, lastName, dob, subjectId);
+    if (firstName.length || lastName.length || dob ) {
+      this.props.actions.searchPeopleRequest(firstName, lastName, dob);
     }
   }
 
@@ -158,15 +156,14 @@ class SearchPeopleContainer extends React.Component<Props> {
     const {
       firstName,
       lastName,
-      dob,
-      subjectId
+      dob
     } = this.state;
 
     return (
       <Wrapper>
         <Header>Search for people</Header>
         <SearchRow>
-          <Col lg={3}>
+          <Col lg={4}>
             <TitleLabel>First Name</TitleLabel>
             <FormControl
                 name="firstName"
@@ -174,7 +171,7 @@ class SearchPeopleContainer extends React.Component<Props> {
                 onKeyPress={this.handleKeyPress}
                 onChange={this.onInputChange} />
           </Col>
-          <Col lg={3}>
+          <Col lg={4}>
             <TitleLabel>Last Name</TitleLabel>
             <FormControl
                 name="lastName"
@@ -182,21 +179,13 @@ class SearchPeopleContainer extends React.Component<Props> {
                 onKeyPress={this.handleKeyPress}
                 onChange={this.onInputChange} />
           </Col>
-          <Col lg={3}>
+          <Col lg={4}>
             <TitleLabel>Date of Birth</TitleLabel>
             <DatePicker
                 value={dob}
                 onChange={(newDate) => {
                   this.setState({ dob: newDate });
                 }} />
-          </Col>
-          <Col lg={3}>
-            <TitleLabel>Court File Number</TitleLabel>
-            <FormControl
-                name="subjectId"
-                value={subjectId}
-                onKeyPress={this.handleKeyPress}
-                onChange={this.onInputChange} />
           </Col>
         </SearchRow>
         <SearchRow>
