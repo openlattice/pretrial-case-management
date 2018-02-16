@@ -2,6 +2,7 @@
  * @flow
  */
 import axios from 'axios';
+import LatticeAuth from 'lattice-auth';
 
 import { EntityDataModelApi, SearchApi } from 'lattice';
 import { push } from 'react-router-redux';
@@ -35,6 +36,8 @@ import type {
 } from './PersonActionFactory';
 
 import * as Routes from '../../core/router/Routes';
+
+const { AuthUtils } = LatticeAuth;
 
 export function* watchLoadPersonDetailsRequest() :Generator<*, *, *> {
 
@@ -83,7 +86,10 @@ export function* watchUpdateCaseRequestWorker(action :UpdateCaseRequestAction) :
   try {
     const loadRequest = {
       method: 'get',
-      url: `https://api.openlattice.com/bifrost/caseloader/${caseNum}`
+      url: `https://bifrost.openlattice.com:8443/bifrost/caseloader/${caseNum}`,
+      headers: {
+        Authentication: `Bearer ${AuthUtils.getAuthToken()}`
+      }
     };
     yield call(axios, loadRequest);
     yield put(updateCaseSuccess(caseNum));
