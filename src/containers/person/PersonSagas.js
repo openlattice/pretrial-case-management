@@ -2,6 +2,7 @@
  * @flow
  */
 import axios from 'axios';
+import moment from 'moment';
 import LatticeAuth from 'lattice-auth';
 
 import { EntityDataModelApi, SearchApi } from 'lattice';
@@ -127,35 +128,50 @@ export function* watchNewPersonSubmitRequest() :Generator<*, *, *> {
   }
 }
 
+function* getPropertyTypeId(propertyTypeFqn :string) :string {
+  const propertyTypeFqnArr = propertyTypeFqn.split('.');
+  return yield call(EntityDataModelApi.getPropertyTypeId, {
+    namespace: propertyTypeFqnArr[0],
+    name: propertyTypeFqnArr[1]
+  });
+}
+
 export function* watchSearchPeopleRequest() :Generator<*, *, *> {
 
   while (true) {
     const action :SearchPeopleRequestAction = yield take(SEARCH_PEOPLE_REQUEST);
-    const { firstName, lastName } = action;
+    const {
+      firstName,
+      lastName,
+      dob,
+      subjectId
+    } = action;
     const searchFields = [];
-    if (firstName.length) {
-      const firstNameFqnArr = PROPERTY_TYPES.FIRST_NAME.split('.');
-      const firstNameId = yield call(EntityDataModelApi.getPropertyTypeId, {
-        namespace: firstNameFqnArr[0],
-        name: firstNameFqnArr[1]
-      });
+    const updateSearchField = (searchTerm, property) => {
       searchFields.push({
-        searchTerm: firstName,
-        property: firstNameId,
+        searchTerm,
+        property,
         exact: true
       });
+    };
+    if (firstName.length) {
+      const firstNameId = yield call(getPropertyTypeId, PROPERTY_TYPES.FIRST_NAME);
+      updateSearchField(firstName, firstNameId);
     }
     if (lastName.length) {
-      const lastNameFqnArr = PROPERTY_TYPES.LAST_NAME.split('.');
-      const lastNameId = yield call(EntityDataModelApi.getPropertyTypeId, {
-        namespace: lastNameFqnArr[0],
-        name: lastNameFqnArr[1]
-      });
-      searchFields.push({
-        searchTerm: lastName,
-        property: lastNameId,
-        exact: true
-      });
+      const lastNameId = yield call(getPropertyTypeId, PROPERTY_TYPES.LAST_NAME);
+      updateSearchField(lastName, lastNameId);
+    }
+    if (dob && dob.length) {
+      const dobMoment = moment(dob);
+      if (dobMoment.isValid) {
+        const dobId = yield call(getPropertyTypeId, PROPERTY_TYPES.DOB);
+        updateSearchField(`"${dobMoment.format('YYYY-MM-DD')}"`, dobId);
+      }
+    }
+    if (subjectId && subjectId.length) {
+      const idPtId = yield call(getPropertyTypeId, PROPERTY_TYPES.PERSON_ID);
+      updateSearchField(subjectId, idPtId);
     }
     const searchOptions = {
       searchFields,
