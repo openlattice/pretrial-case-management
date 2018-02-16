@@ -45,7 +45,6 @@ export function* watchLoadPersonDetailsRequest() :Generator<*, *, *> {
     const action :LoadPersonDetailsRequestAction = yield take(LOAD_PERSON_DETAILS_REQUEST);
     try {
       const entitySetId :string = yield call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.PEOPLE);
-      if (!action.shouldLoadCases) yield call(() => new Promise(resolve => setTimeout(resolve, 10000)));
       const response = yield call(SearchApi.searchEntityNeighbors, entitySetId, action.id);
 
       // <HACK>

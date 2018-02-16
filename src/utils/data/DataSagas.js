@@ -27,7 +27,7 @@ export function* deleteEntity() :Generator<> {
 
     const state = yield select();
     const personId = state.getIn(['search', 'selectedPersonId'], '');
-    if (personId) yield put(loadPersonDetailsRequest(personId));
+    if (personId) yield put(loadPersonDetailsRequest(personId, false));
 
     try {
       yield call(DataApi.deleteEntityFromEntitySet, entitySetId, entityKeyId);
@@ -35,7 +35,7 @@ export function* deleteEntity() :Generator<> {
 
       const state = yield select();
       const personId = state.getIn(['search', 'selectedPersonId'], '');
-      if (personId) yield put(loadPersonDetailsRequest(personId));
+      if (personId) yield put(loadPersonDetailsRequest(personId, false));
     }
     catch (error) {
       yield put(deleteEntityFailure(entityKeyId, error));
@@ -57,7 +57,7 @@ export function* replaceEntity() :Generator<> {
 
       const state = yield select();
       const personId = state.getIn(['search', 'selectedPersonId'], '');
-      if (personId) yield put(loadPersonDetailsRequest(personId));
+      if (personId) yield put(loadPersonDetailsRequest(personId, false));
     }
     catch (error) {
       yield put(replaceEntityFailure(entityKeyId, error));

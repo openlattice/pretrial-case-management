@@ -607,12 +607,14 @@ class Form extends React.Component {
       isLoadingCases,
       numCasesToLoad,
       numCasesLoaded,
+      personDataModel,
       pretrialCaseOptions,
       actions
     } = this.props;
     if (isLoadingCases) {
       if (numCasesLoaded === numCasesToLoad) {
         actions.loadPersonDetailsRequest(selectedPersonId, false);
+        actions.loadNeighbors(personDataModel.entitySet.id, selectedPersonId);
       }
       const progress = Math.floor((numCasesLoaded / numCasesToLoad) * 100);
       return (
