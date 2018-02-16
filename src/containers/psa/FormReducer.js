@@ -158,9 +158,6 @@ function formReducer(state :Map<> = INITIAL_STATE, action :Object) {
         .set('charges', charges);
     }
 
-    case FormActionTypes.SET_PSA_VALUE:
-      return state.setIn(['psa', action.field], action.value);
-
     case FormActionTypes.SET_PSA_VALUES: {
       let psa = state.get('psa').merge(action.values);
       if (psa.get(PRIOR_MISDEMEANOR) === 'false' && psa.get(PRIOR_FELONY) === 'false') {
