@@ -145,6 +145,7 @@ class SearchPeopleContainer extends React.Component<Props> {
             <FormControl
                 name="lastName"
                 value={lastName}
+                onKeyPress={this.handleKeyPress}
                 onChange={this.onInputChange} />
           </Col>
           <Col lg={2}>
