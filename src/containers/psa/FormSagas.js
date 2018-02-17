@@ -245,7 +245,7 @@ export function* updateReleaseRecommendation() :Generator<*, *, *> {
         start: 0,
         maxHits: 1,
         searchTerm: `${fqnToId[PROPERTY_TYPES.GENERAL_ID_FQN]}:"${entityId}"`
-      }
+      };
       const response = yield call(SearchApi.searchEntitySetData, entitySetId, searchOptions);
       const result = response.hits[0];
       if (result) {
@@ -253,7 +253,7 @@ export function* updateReleaseRecommendation() :Generator<*, *, *> {
         Object.keys(result).forEach((fqn) => {
           const propertyTypeId = fqnToId[fqn];
           if (propertyTypeId) entity[propertyTypeId] = result[fqn];
-        })
+        });
         entity[fqnToId[PROPERTY_TYPES.RELEASE_RECOMMENDATION_FQN]] = [recommendation];
         yield call(DataApi.replaceEntityInEntitySet, entitySetId, result.id[0], entity);
         yield put(FormActionFactory.updateRecommendationSuccess());
