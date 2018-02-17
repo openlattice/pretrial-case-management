@@ -45,59 +45,32 @@ const INITIAL_PSA_FORM = Immutable.fromJS({
   [PRIOR_SENTENCE_TO_INCARCERATION]: null
 });
 
-
-const EMPTY_DATA_MODEL = {
-  entitySet: {},
-  syncId: '',
-  entityType: {},
-  propertyTypes: []
-};
-
 const INITIAL_STATE :Map<> = Immutable.fromJS({
-  personDataModel: EMPTY_DATA_MODEL,
-  pretrialCaseDataModel: EMPTY_DATA_MODEL,
-  riskFactorsDataModel: EMPTY_DATA_MODEL,
-  psaDataModel: EMPTY_DATA_MODEL,
-  releaseRecommendationDataModel: EMPTY_DATA_MODEL,
-  staffDataModel: EMPTY_DATA_MODEL,
-  calculatedForDataModel: EMPTY_DATA_MODEL,
-  assessedByDataModel: EMPTY_DATA_MODEL,
   peopleOptions: [],
   pretrialCaseOptions: [],
   allChargesForPerson: [],
   charges: [],
   selectedPerson: {},
   selectedPretrialCase: {},
-  psa: INITIAL_PSA_FORM
+  psa: INITIAL_PSA_FORM,
+  dataModel: {},
+  entitySetLookup: {}
 });
 
 function formReducer(state :Map<> = INITIAL_STATE, action :Object) {
 
   switch (action.type) {
 
-    case FormActionTypes.LOAD_PERSON_DATA_MODEL_SUCCESS:
-      return state.set('personDataModel', action.dataModel);
-
-    case FormActionTypes.LOAD_PRETRIAL_DATA_MODEL_SUCCESS:
-      return state.set('pretrialCaseDataModel', action.dataModel);
-
-    case FormActionTypes.LOAD_RISK_FACTORS_DATA_MODEL_SUCCESS:
-      return state.set('riskFactorsDataModel', action.dataModel);
-
-    case FormActionTypes.LOAD_PSA_DATA_MODEL_SUCCESS:
-      return state.set('psaDataModel', action.dataModel);
-
-    case FormActionTypes.LOAD_RELEASE_RECOMMENDATION_DATA_MODEL_SUCCESS:
-      return state.set('releaseRecommendationDataModel', action.dataModel);
-
-    case FormActionTypes.LOAD_STAFF_DATA_MODEL_SUCCESS:
-      return state.set('staffDataModel', action.dataModel);
-
-    case FormActionTypes.LOAD_CALCULATED_FOR_DATA_MODEL_SUCCESS:
-      return state.set('calculatedForDataModel', action.dataModel);
-
-    case FormActionTypes.LOAD_ASSESSED_BY_DATA_MODEL_SUCCESS:
-      return state.set('assessedByDataModel', action.dataModel);
+    case FormActionTypes.LOAD_DATA_MODEL_SUCCESS: {
+      const { dataModel } = action;
+      const entitySetLookup = {};
+      Object.values(dataModel.entitySets).forEach((entitySet) => {
+        entitySetLookup[entitySet.name] = entitySet.id;
+      });
+      return state
+        .set('dataModel', Immutable.fromJS(dataModel))
+        .set('entitySetLookup', Immutable.fromJS(entitySetLookup));
+    }
 
     case SEARCH_PEOPLE_REQUEST:
       return state.set('peopleOptions', []).set('pretrialCaseOptions', []);

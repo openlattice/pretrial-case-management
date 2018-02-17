@@ -4,155 +4,23 @@
 
 import * as FormActionTypes from './FormActionTypes';
 
-export function loadPersonDataModel() :Object {
+export function loadDataModelRequest() :Object {
   return {
-    type: FormActionTypes.LOAD_PERSON_DATA_MODEL_REQUEST
+    type: FormActionTypes.LOAD_DATA_MODEL_REQUEST
   };
 }
 
-export function loadPersonDataModelSuccess(dataModel :Object) :Object {
+export function loadDataModelSuccess(dataModel :Object) :Object {
   return {
-    type: FormActionTypes.LOAD_PERSON_DATA_MODEL_SUCCESS,
+    type: FormActionTypes.LOAD_DATA_MODEL_SUCCESS,
     dataModel
   };
 }
 
-export function loadPersonDataModelFailure() :Object {
+export function loadDataModelFailure(errorMessage :string) :Object {
   return {
-    type: FormActionTypes.LOAD_PERSON_DATA_MODEL_FAILURE
-  };
-}
-
-export function loadPretrialCaseDataModel() :Object {
-  return {
-    type: FormActionTypes.LOAD_PRETRIAL_DATA_MODEL_REQUEST
-  };
-}
-
-export function loadPretrialCaseDataModelSuccess(dataModel :Object) :Object {
-  return {
-    type: FormActionTypes.LOAD_PRETRIAL_DATA_MODEL_SUCCESS,
-    dataModel
-  };
-}
-
-export function loadPretrialCaseDataModelFailure() :Object {
-  return {
-    type: FormActionTypes.LOAD_RISK_FACTORS_DATA_MODEL_FAILURE
-  };
-}
-
-export function loadRiskFactorsDataModel() :Object {
-  return {
-    type: FormActionTypes.LOAD_RISK_FACTORS_DATA_MODEL_REQUEST
-  };
-}
-
-export function loadRiskFactorsDataModelSuccess(dataModel :Object) :Object {
-  return {
-    type: FormActionTypes.LOAD_RISK_FACTORS_DATA_MODEL_SUCCESS,
-    dataModel
-  };
-}
-
-export function loadRiskFactorsDataModelFailure() :Object {
-  return {
-    type: FormActionTypes.LOAD_PRETRIAL_DATA_MODEL_FAILURE
-  };
-}
-
-export function loadPsaDataModel() :Object {
-  return {
-    type: FormActionTypes.LOAD_PSA_DATA_MODEL_REQUEST
-  };
-}
-
-export function loadPsaDataModelSuccess(dataModel :Object) :Object {
-  return {
-    type: FormActionTypes.LOAD_PSA_DATA_MODEL_SUCCESS,
-    dataModel
-  };
-}
-
-export function loadPsaDataModelFailure() :Object {
-  return {
-    type: FormActionTypes.LOAD_PSA_DATA_MODEL_FAILURE
-  };
-}
-
-export function loadReleaseRecommendationDataModel() :Object {
-  return {
-    type: FormActionTypes.LOAD_RELEASE_RECOMMENDATION_DATA_MODEL_REQUEST
-  };
-}
-
-export function loadReleaseRecommendationDataModelSuccess(dataModel :Object) :Object {
-  return {
-    type: FormActionTypes.LOAD_RELEASE_RECOMMENDATION_DATA_MODEL_SUCCESS,
-    dataModel
-  };
-}
-
-export function loadReleaseRecommendationDataModelFailure() :Object {
-  return {
-    type: FormActionTypes.LOAD_RELEASE_RECOMMENDATION_DATA_MODEL_FAILURE
-  };
-}
-
-export function loadStaffDataModel() :Object {
-  return {
-    type: FormActionTypes.LOAD_STAFF_DATA_MODEL_REQUEST
-  };
-}
-
-export function loadStaffDataModelSuccess(dataModel :Object) :Object {
-  return {
-    type: FormActionTypes.LOAD_STAFF_DATA_MODEL_SUCCESS,
-    dataModel
-  };
-}
-
-export function loadStaffDataModelFailure() :Object {
-  return {
-    type: FormActionTypes.LOAD_STAFF_DATA_MODEL_FAILURE
-  };
-}
-
-export function loadCalculatedForDataModel() :Object {
-  return {
-    type: FormActionTypes.LOAD_CALCULATED_FOR_DATA_MODEL_REQUEST
-  };
-}
-
-export function loadCalculatedForDataModelSuccess(dataModel :Object) :Object {
-  return {
-    type: FormActionTypes.LOAD_CALCULATED_FOR_DATA_MODEL_SUCCESS,
-    dataModel
-  };
-}
-
-export function loadCalculatedForDataModelFailure() :Object {
-  return {
-    type: FormActionTypes.LOAD_CALCULATED_FOR_DATA_MODEL_FAILURE
-  };
-}
-
-export function loadAssessedByDataModel() :Object {
-  return {
-    type: FormActionTypes.LOAD_ASSESSED_BY_DATA_MODEL_REQUEST
-  };
-}
-
-export function loadAssessedByDataModelSuccess(dataModel :Object) :Object {
-  return {
-    type: FormActionTypes.LOAD_ASSESSED_BY_DATA_MODEL_SUCCESS,
-    dataModel
-  };
-}
-
-export function loadAssessedByDataModelFailure() :Object {
-  return {
-    type: FormActionTypes.LOAD_ASSESSED_BY_DATA_MODEL_FAILURE
+    type: FormActionTypes.LOAD_DATA_MODEL_FAILURE,
+    errorMessage
   };
 }
 
@@ -247,12 +115,18 @@ export function selectPretrialCase(selectedPretrialCase :Object) {
   };
 }
 
-export function updateRecommendation(recommendation :string, entityId :string, dataModel :Object) {
+export function updateRecommendation(
+  recommendation :string,
+  entityId :string,
+  entitySetId :string,
+  propertyTypes :List<Map<*, *>>
+) {
   return {
     type: FormActionTypes.UPDATE_RECOMMENDATION_REQUEST,
     recommendation,
     entityId,
-    dataModel
+    entitySetId,
+    propertyTypes
   };
 }
 

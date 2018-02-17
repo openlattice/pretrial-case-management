@@ -9,116 +9,22 @@ import * as FormActionFactory from './FormActionFactory';
 import * as FormActionTypes from './FormActionTypes';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 
-function* loadDataModel(entitySetName) {
-  const entitySetId = yield call(EntityDataModelApi.getEntitySetId, entitySetName);
-  const entitySet = yield call(EntityDataModelApi.getEntitySet, entitySetId);
-  const entityType = yield call(EntityDataModelApi.getEntityType, entitySet.entityTypeId);
-  const propertyTypes = yield all(entityType.properties.map((propertyTypeId) => {
-    return call(EntityDataModelApi.getPropertyType, propertyTypeId);
-  }));
-  return { entitySet, entityType, propertyTypes };
-}
-
-export function* loadPersonDataModel() :Generator<*, *, *> {
+export function* loadDataModels() :Generator<*, *, *> {
   while (true) {
-    yield take(FormActionTypes.LOAD_PERSON_DATA_MODEL_REQUEST);
+    yield take(FormActionTypes.LOAD_DATA_MODEL_REQUEST);
     try {
-      const dataModel = yield* loadDataModel(ENTITY_SETS.PEOPLE);
-      yield put(FormActionFactory.loadPersonDataModelSuccess(dataModel));
+      const entitySetIds = yield all(Object.values(ENTITY_SETS).map(entitySetName =>
+        call(EntityDataModelApi.getEntitySetId, entitySetName)));
+      const selectors = entitySetIds.map(id => ({
+        id,
+        type: 'EntitySet',
+        include: ['EntitySet', 'EntityType', 'PropertyTypeInEntitySet']
+      }));
+      const dataModel = yield call(EntityDataModelApi.getEntityDataModelProjection, selectors);
+      yield put(FormActionFactory.loadDataModelSuccess(dataModel));
     }
     catch (error) {
-      yield put(FormActionFactory.loadPersonDataModelFailure());
-    }
-  }
-}
-
-export function* loadPretrialCaseDataModel() :Generator<*, *, *> {
-  while (true) {
-    yield take(FormActionTypes.LOAD_PRETRIAL_DATA_MODEL_REQUEST);
-    try {
-      const dataModel = yield* loadDataModel(ENTITY_SETS.PRETRIAL_CASES);
-      yield put(FormActionFactory.loadPretrialCaseDataModelSuccess(dataModel));
-    }
-    catch (error) {
-      yield put(FormActionFactory.loadPretrialCaseDataModelFailure());
-    }
-  }
-}
-
-export function* loadRiskFactorsDataModel() :Generator<*, *, *> {
-  while (true) {
-    yield take(FormActionTypes.LOAD_RISK_FACTORS_DATA_MODEL_REQUEST);
-    try {
-      const dataModel = yield* loadDataModel(ENTITY_SETS.PSA_RISK_FACTORS);
-      yield put(FormActionFactory.loadRiskFactorsDataModelSuccess(dataModel));
-    }
-    catch (error) {
-      yield put(FormActionFactory.loadRiskFactorsDataModelFailure());
-    }
-  }
-}
-
-export function* loadPsaDataModel() :Generator<*, *, *> {
-  while (true) {
-    yield take(FormActionTypes.LOAD_PSA_DATA_MODEL_REQUEST);
-    try {
-      const dataModel = yield* loadDataModel(ENTITY_SETS.PSA_SCORES);
-      yield put(FormActionFactory.loadPsaDataModelSuccess(dataModel));
-    }
-    catch (error) {
-      yield put(FormActionFactory.loadPsaDataModelFailure());
-    }
-  }
-}
-
-export function* loadReleaseRecommendationDataModel() :Generator<*, *, *> {
-  while (true) {
-    yield take(FormActionTypes.LOAD_RELEASE_RECOMMENDATION_DATA_MODEL_REQUEST);
-    try {
-      const dataModel = yield* loadDataModel(ENTITY_SETS.RELEASE_RECOMMENDATIONS);
-      yield put(FormActionFactory.loadReleaseRecommendationDataModelSuccess(dataModel));
-    }
-    catch (error) {
-      yield put(FormActionFactory.loadReleaseRecommendationDataModelFailure());
-    }
-  }
-}
-
-export function* loadStaffDataModel() :Generator<*, *, *> {
-  while (true) {
-    yield take(FormActionTypes.LOAD_STAFF_DATA_MODEL_REQUEST);
-    try {
-      const dataModel = yield* loadDataModel(ENTITY_SETS.STAFF);
-      yield put(FormActionFactory.loadStaffDataModelSuccess(dataModel));
-    }
-    catch (error) {
-      yield put(FormActionFactory.loadStaffDataModelFailure());
-    }
-  }
-}
-
-export function* loadCalculatedForDataModel() :Generator<*, *, *> {
-  while (true) {
-    yield take(FormActionTypes.LOAD_CALCULATED_FOR_DATA_MODEL_REQUEST);
-    try {
-      const dataModel = yield* loadDataModel(ENTITY_SETS.CALCULATED_FOR);
-      yield put(FormActionFactory.loadCalculatedForDataModelSuccess(dataModel));
-    }
-    catch (error) {
-      yield put(FormActionFactory.loadCalculatedForDataModelFailure());
-    }
-  }
-}
-
-export function* loadAssessedByDataModel() :Generator<*, *, *> {
-  while (true) {
-    yield take(FormActionTypes.LOAD_ASSESSED_BY_DATA_MODEL_REQUEST);
-    try {
-      const dataModel = yield* loadDataModel(ENTITY_SETS.ASSESSED_BY);
-      yield put(FormActionFactory.loadAssessedByDataModelSuccess(dataModel));
-    }
-    catch (error) {
-      yield put(FormActionFactory.loadAssessedByDataModelFailure());
+      yield put(FormActionFactory.loadDataModelFailure(error));
     }
   }
 }
@@ -277,7 +183,14 @@ export function* submitData() :Generator<*, *, *> {
         { dst: staffEntity.key }
       );
 
-      const entities = [personEntity, pretrialCaseEntity, riskFactorsEntity, psaEntity, releaseRecommendationEntity, staffEntity];
+      const entities = [
+        personEntity,
+        pretrialCaseEntity,
+        riskFactorsEntity,
+        psaEntity,
+        releaseRecommendationEntity,
+        staffEntity
+      ];
       const associations = [
         psaToPersonAssociation,
         psaToPretrialCaseAssociation,
@@ -315,13 +228,18 @@ export function* submitData() :Generator<*, *, *> {
 
 export function* updateReleaseRecommendation() :Generator<*, *, *> {
   while (true) {
-    const { recommendation, entityId, dataModel } = yield take(FormActionTypes.UPDATE_RECOMMENDATION_REQUEST);
+    const {
+      recommendation,
+      entityId,
+      entitySetId,
+      propertyTypes
+    } = yield take(FormActionTypes.UPDATE_RECOMMENDATION_REQUEST);
 
     try {
-      const entitySetId = dataModel.entitySet.id;
       const fqnToId = {};
-      dataModel.propertyTypes.forEach((propertyType) => {
-        fqnToId[`${propertyType.type.namespace}.${propertyType.type.name}`] = propertyType.id;
+      propertyTypes.forEach((propertyType) => {
+        const fqn = `${propertyType.getIn(['type', 'namespace'])}.${propertyType.getIn(['type', 'name'])}`;
+        fqnToId[fqn] = propertyType.get('id');
       });
       const searchOptions = {
         start: 0,

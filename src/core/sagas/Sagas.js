@@ -44,14 +44,7 @@ export default function* sagas() :Generator<*, *, *> {
     fork(PeopleSagas.getPersonDataWatcher),
 
     // PSA Sagas
-    fork(PsaSagas.loadPersonDataModel),
-    fork(PsaSagas.loadPretrialCaseDataModel),
-    fork(PsaSagas.loadRiskFactorsDataModel),
-    fork(PsaSagas.loadPsaDataModel),
-    fork(PsaSagas.loadReleaseRecommendationDataModel),
-    fork(PsaSagas.loadStaffDataModel),
-    fork(PsaSagas.loadCalculatedForDataModel),
-    fork(PsaSagas.loadAssessedByDataModel),
+    fork(PsaSagas.loadDataModels),
     fork(PsaSagas.searchPeople),
     fork(PsaSagas.loadNeighbors),
     fork(PsaSagas.submitData),

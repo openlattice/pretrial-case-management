@@ -43,8 +43,7 @@ import {
   getPrevPath
 } from '../../utils/Helpers';
 import { tryAutofillFields } from '../../utils/AutofillUtils';
-import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { PSA } from '../../utils/consts/Consts';
+import { PROPERTY_TYPES, ENTITY_SETS } from '../../utils/consts/DataModelConsts';
 
 const {
   FIRST_NAME,
@@ -62,6 +61,22 @@ const {
   GENERAL_ID_FQN,
   COMPLETED_DATE_TIME
 } = PROPERTY_TYPES;
+
+const {
+  PEOPLE,
+  ADDRESSES,
+  CHARGES,
+  PRETRIAL_CASES,
+  PSA_RISK_FACTORS,
+  PSA_SCORES,
+  RELEASE_RECOMMENDATIONS,
+  STAFF,
+  ASSESSED_BY,
+  APPEARS_IN,
+  LIVES_AT,
+  CALCULATED_FOR,
+  CHARGED_WITH
+} = ENTITY_SETS
 
 const StyledFormViewWrapper = styled.div`
   display: flex;
@@ -153,17 +168,10 @@ class Form extends React.Component {
       selectPretrialCase: PropTypes.func.isRequired,
       updateRecommendation: PropTypes.func.isRequired,
       loadPersonDetailsRequest: PropTypes.func.isRequired,
-      setPSAValue: PropTypes.func.isRequired,
       setPSAValues: PropTypes.func.isRequired
     }).isRequired,
-    personDataModel: PropTypes.object.isRequired,
-    pretrialCaseDataModel: PropTypes.object.isRequired,
-    riskFactorsDataModel: PropTypes.object.isRequired,
-    psaDataModel: PropTypes.object.isRequired,
-    releaseRecommendationDataModel: PropTypes.object.isRequired,
-    staffDataModel: PropTypes.object.isRequired,
-    calculatedForDataModel: PropTypes.object.isRequired,
-    assessedByDataModel: PropTypes.object.isRequired,
+    dataModel: PropTypes.instanceOf(Immutable.Map).isRequired,
+    entitySetLookup: PropTypes.instanceOf(Immutable.Map).isRequired,
     selectedPerson: PropTypes.object.isRequired,
     selectedPretrialCase: PropTypes.object.isRequired,
     pretrialCaseOptions: PropTypes.array.isRequired,
@@ -222,16 +230,16 @@ class Form extends React.Component {
   getCalculatedForEntityDetails = () => ({ [TIMESTAMP_FQN]: [new Date()] })
 
   getBlankReleaseRecommendationEntity = () => {
-    const propertyType = this.props.releaseRecommendationDataModel.propertyTypes.filter(pt =>
-      `${pt.type.namespace}.${pt.type.name}` === GENERAL_ID_FQN)[0];
+    const propertyType = this.getPropertyTypes(RELEASE_RECOMMENDATIONS)
+      .filter(pt => this.getFqn(pt) === GENERAL_ID_FQN).get(0);
     if (!propertyType) return {};
     const id = randomUUID();
 
     return {
-      details: { [propertyType.id]: [id] },
+      details: { [propertyType.get('id')]: [id] },
       key: {
         entityId: id,
-        entitySetId: this.props.releaseRecommendationDataModel.entitySet.id
+        entitySetId: this.props.entitySetLookup.get(RELEASE_RECOMMENDATIONS)
       }
     };
   }
@@ -255,33 +263,49 @@ class Form extends React.Component {
   getEntityWithUuids = (details, fqnsToInclude, fqnToId) => {
     const basicEntity = {};
     fqnsToInclude.forEach((fqn) => {
-      if (details[fqn]) Object.assign(basicEntity, { [fqnToId[fqn]]: details[fqn] });
+      if (details[fqn]) Object.assign(basicEntity, { [fqnToId.get(fqn)]: details[fqn] });
     });
     return basicEntity;
   }
 
-  getEntity = (entityDetails, dataModel, isExistingEntity, useRandomId) => {
-    const fqnToId = {};
-    const keyIdToFqn = {};
-    dataModel.propertyTypes.forEach((propertyType) => {
-      const fqn = `${propertyType.type.namespace}.${propertyType.type.name}`;
-      fqnToId[fqn] = propertyType.id;
-      if (dataModel.entityType.key.includes(propertyType.id)) {
-        keyIdToFqn[propertyType.id] = fqn;
+  getEntity = (entityDetails, entitySetName, isExistingEntity, useRandomId) => {
+    const { dataModel, entitySetLookup } = this.props;
+    const entitySetId = entitySetLookup.get(entitySetName);
+    let fqnToId = Immutable.Map();
+    let keyIdToFqn = Immutable.Map();
+
+    const entitySet = dataModel.getIn(['entitySets', entitySetId], Immutable.Map());
+    const entityType = dataModel.getIn(['entityTypes', entitySet.get('entityTypeId')], Immutable.Map());
+
+    entityType.get('properties', Immutable.List()).forEach((propertyTypeId) => {
+      const propertyType = dataModel.getIn(['propertyTypes', propertyTypeId], Immutable.Map());
+      const fqn = this.getFqn(propertyType);
+      fqnToId = fqnToId.set(fqn, propertyTypeId);
+      if (entityType.get('key').includes(propertyTypeId)) {
+        keyIdToFqn = keyIdToFqn.set(propertyTypeId, fqn);
       }
     });
-    const primaryKeys = dataModel.entityType.key.map(id => keyIdToFqn[id]);
-    const details = (isExistingEntity) ? this.getEntityWithUuids(entityDetails, primaryKeys, fqnToId)
+
+    const primaryKeys = entityType.get('key').map(id => keyIdToFqn.get(id)).toJS();
+
+    const details = (isExistingEntity)
+      ? this.getEntityWithUuids(entityDetails, primaryKeys, fqnToId)
       : this.getEntityWithUuids(entityDetails, Object.keys(entityDetails), fqnToId);
 
-    const entityId = useRandomId ? randomUUID() : this.getEntityId(details, dataModel.entityType.key);
+    const entityId = useRandomId ? randomUUID() : this.getEntityId(details, entityType.get('key'));
     return {
       details,
-      key: {
-        entitySetId: dataModel.entitySet.id,
-        entityId
-      }
+      key: { entitySetId, entityId }
     };
+  }
+
+  getPropertyTypes = (entitySetName) => {
+    const { dataModel, entitySetLookup } = this.props;
+    const entitySetId = entitySetLookup.get(entitySetName);
+    const entitySet = dataModel.getIn(['entitySets', entitySetId], Immutable.Map());
+    const entityType = dataModel.getIn(['entityTypes', entitySet.get('entityTypeId')], Immutable.Map());
+    return entityType.get('properties', Immutable.List())
+      .map(propertyTypeId => dataModel.getIn(['propertyTypes', propertyTypeId]));
   }
 
   getStaffEntityDetails = () => {
@@ -299,13 +323,13 @@ class Form extends React.Component {
     const releaseRecommendationEntity = this.getBlankReleaseRecommendationEntity();
     const assessedByEntityDetails = this.getAssessedByEntityDetails();
 
-    const personEntity = this.getEntity(this.props.selectedPerson, this.props.personDataModel, true);
-    const pretrialCaseEntity = this.getEntity(this.props.selectedPretrialCase, this.props.pretrialCaseDataModel, true);
-    const riskFactorsEntity = this.getEntity(riskFactors, this.props.riskFactorsDataModel, false, true);
-    const psaEntity = this.getEntity(scores, this.props.psaDataModel, false, true);
-    const calculatedForEntity = this.getEntity(calculatedForEntityDetails, this.props.calculatedForDataModel);
-    const staffEntity = this.getEntity(this.getStaffEntityDetails(), this.props.staffDataModel);
-    const assessedByEntity = this.getEntity(assessedByEntityDetails, this.props.assessedByDataModel);
+    const personEntity = this.getEntity(this.props.selectedPerson, PEOPLE, true);
+    const pretrialCaseEntity = this.getEntity(this.props.selectedPretrialCase, PRETRIAL_CASES, true);
+    const riskFactorsEntity = this.getEntity(riskFactors, PSA_RISK_FACTORS, false, true);
+    const psaEntity = this.getEntity(scores, PSA_SCORES, false, true);
+    const calculatedForEntity = this.getEntity(calculatedForEntityDetails, CALCULATED_FOR);
+    const staffEntity = this.getEntity(this.getStaffEntityDetails(), STAFF);
+    const assessedByEntity = this.getEntity(assessedByEntityDetails, ASSESSED_BY);
 
     this.props.actions.submitData(
       personEntity,
@@ -320,76 +344,7 @@ class Form extends React.Component {
     this.setState({ releaseRecommendationId: releaseRecommendationEntity.key.entityId });
   }
 
-  handleSubmit = (e) => {
-    e.preventDefault();
-    const searchOptions = {
-      searchFields: this.getSearchDetails(),
-      start: 0,
-      maxHits: 50
-    };
-    this.props.actions.searchPeople(this.props.personDataModel.entitySet.id, searchOptions);
-  }
-
-  getFqn = (propertyType) => {
-    return `${propertyType.type.namespace}.${propertyType.type.name}`;
-  }
-
-  updateSearchDetails = (searchDetails, property, value, shouldFormatDate) => {
-    const searchTerm = (shouldFormatDate) ? formatDate(value) : value;
-    if (searchTerm && searchTerm.length) {
-      searchDetails.push({
-        searchTerm,
-        property,
-        exact: true
-      });
-    }
-    return searchDetails;
-  }
-
-  getSearchDetails = () => {
-    const { firstName, middleName, lastName, dob, sex, race, ethnicity, id } = this.state.personForm;
-    let searchDetails = [];
-    this.props.personDataModel.propertyTypes.forEach((propertyType) => {
-      const fqn = this.getFqn(propertyType);
-      switch (fqn) {
-        case FIRST_NAME:
-          searchDetails = this.updateSearchDetails(searchDetails, propertyType.id, firstName);
-          break;
-
-        case MIDDLE_NAME:
-          searchDetails = this.updateSearchDetails(searchDetails, propertyType.id, middleName);
-          break;
-
-        case LAST_NAME:
-          searchDetails = this.updateSearchDetails(searchDetails, propertyType.id, lastName);
-          break;
-
-        case SEX:
-          searchDetails = this.updateSearchDetails(searchDetails, propertyType.id, sex);
-          break;
-
-        case RACE:
-          searchDetails = this.updateSearchDetails(searchDetails, propertyType.id, race);
-          break;
-
-        case ETHNICITY:
-          searchDetails = this.updateSearchDetails(searchDetails, propertyType.id, ethnicity);
-          break;
-
-        case DOB:
-          searchDetails = this.updateSearchDetails(searchDetails, propertyType.id, dob, true);
-          break;
-
-        case PERSON_ID:
-          searchDetails = this.updateSearchDetails(searchDetails, propertyType.id, id);
-          break;
-
-        default:
-          break;
-      }
-    });
-    return searchDetails;
-  }
+  getFqn = propertyType => `${propertyType.getIn(['type', 'namespace'])}.${propertyType.getIn(['type', 'name'])}`
 
   handleSelectPerson = (person, entityKeyId) => {
     this.props.actions.selectPerson(person.toJS());
@@ -438,7 +393,7 @@ class Form extends React.Component {
   renderPersonSection = () => <SelectedPersonInfo personDetails={this.props.selectedPerson} />
 
   renderPretrialCaseSection = () => {
-    const { selectedPretrialCase, pretrialCaseDataModel, charges } = this.props;
+    const { selectedPretrialCase, charges } = this.props;
     if (!selectedPretrialCase || !Object.keys(selectedPretrialCase).length) return null;
     return (
       <div>
@@ -446,7 +401,7 @@ class Form extends React.Component {
         <SelectedPretrialCaseInfo
             pretrialCaseDetails={selectedPretrialCase}
             charges={charges}
-            propertyTypes={pretrialCaseDataModel.propertyTypes} />
+            propertyTypes={this.getPropertyTypes(PRETRIAL_CASES).toJS()} />
       </div>
     );
   }
@@ -466,6 +421,7 @@ class Form extends React.Component {
 
   renderRecommendationSection = () => {
     if (!this.state.scoresWereGenerated) return null;
+    const { dataModel, entitySetLookup } = this.props;
     return (
       <ResultsContainer>
         <RecommendationWrapper>
@@ -477,7 +433,8 @@ class Form extends React.Component {
                 this.props.actions.updateRecommendation(
                   releaseRecommendation,
                   this.state.releaseRecommendationId,
-                  this.props.releaseRecommendationDataModel);
+                  entitySetLookup.get(RELEASE_RECOMMENDATIONS),
+                  this.getPropertyTypes(RELEASE_RECOMMENDATIONS));
                 this.setState({ releaseRecommendation });
               }}
               size="medium_small" />
@@ -551,14 +508,14 @@ class Form extends React.Component {
       isLoadingCases,
       numCasesToLoad,
       numCasesLoaded,
-      personDataModel,
+      entitySetLookup,
       pretrialCaseOptions,
       actions
     } = this.props;
     if (isLoadingCases) {
       if (numCasesLoaded === numCasesToLoad) {
         actions.loadPersonDetailsRequest(selectedPersonId, false);
-        actions.loadNeighbors(personDataModel.entitySet.id, selectedPersonId);
+        actions.loadNeighbors(entitySetLookup.get(PEOPLE), selectedPersonId);
       }
       const progress = Math.floor((numCasesLoaded / numCasesToLoad) * 100);
       let loadingText = 'Loading cases';
@@ -642,14 +599,8 @@ function mapStateToProps(state :Map<>) :Object {
   const search = state.get('search');
 
   return {
-    personDataModel: psaForm.get('personDataModel'),
-    pretrialCaseDataModel: psaForm.get('pretrialCaseDataModel'),
-    riskFactorsDataModel: psaForm.get('riskFactorsDataModel'),
-    psaDataModel: psaForm.get('psaDataModel'),
-    releaseRecommendationDataModel: psaForm.get('releaseRecommendationDataModel'),
-    staffDataModel: psaForm.get('staffDataModel'),
-    calculatedForDataModel: psaForm.get('calculatedForDataModel'),
-    assessedByDataModel: psaForm.get('assessedByDataModel'),
+    dataModel: psaForm.get('dataModel'),
+    entitySetLookup: psaForm.get('entitySetLookup'),
     pretrialCaseOptions: psaForm.get('pretrialCaseOptions'),
     charges: psaForm.get('charges'),
     peopleOptions: psaForm.get('peopleOptions'),
@@ -682,14 +633,7 @@ function mapDispatchToProps(dispatch :Function) :Object {
     actions: {
       ...bindActionCreators(actions, dispatch),
       loadDataModelElements: () => {
-        dispatch(FormActionFactory.loadPersonDataModel());
-        dispatch(FormActionFactory.loadPretrialCaseDataModel());
-        dispatch(FormActionFactory.loadRiskFactorsDataModel());
-        dispatch(FormActionFactory.loadPsaDataModel());
-        dispatch(FormActionFactory.loadReleaseRecommendationDataModel());
-        dispatch(FormActionFactory.loadStaffDataModel());
-        dispatch(FormActionFactory.loadCalculatedForDataModel());
-        dispatch(FormActionFactory.loadAssessedByDataModel());
+        dispatch(FormActionFactory.loadDataModelRequest());
       }
     }
   };
