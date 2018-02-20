@@ -57,13 +57,14 @@ export function* downloadPSAs() :Generator<*, *, *> {
         }
       });
 
-      const getUpdatedEntity = (combinedEntity, details) => {
+      const getUpdatedEntity = (combinedEntity, entitySetName, details) => {
         details.keySeq().forEach((fqn) => {
-          let newArrayValues = combinedEntity.get(fqn, Immutable.List());
+          const header = `${entitySetName}|${fqn}`;
+          let newArrayValues = combinedEntity.get(header, Immutable.List());
           details.get(fqn).forEach((val) => {
             if (!newArrayValues.includes(val)) newArrayValues = newArrayValues.push(val);
           });
-          combinedEntity = combinedEntity.set(fqn, newArrayValues);
+          combinedEntity = combinedEntity.set(header, newArrayValues);
         });
         return combinedEntity;
       };
@@ -72,8 +73,16 @@ export function* downloadPSAs() :Generator<*, *, *> {
       usableNeighborsById.keySeq().forEach((id) => {
         let combinedEntity = scoresAsMap.get(id);
         usableNeighborsById.get(id).forEach((neighbor) => {
-          combinedEntity = getUpdatedEntity(combinedEntity, neighbor.get('associationDetails'));
-          combinedEntity = getUpdatedEntity(combinedEntity, neighbor.get('neighborDetails', Immutable.Map()));
+          combinedEntity = getUpdatedEntity(
+            combinedEntity,
+            neighbor.getIn(['associationEntitySet', 'title']),
+            neighbor.get('associationDetails')
+          );
+          combinedEntity = getUpdatedEntity(
+            combinedEntity,
+            neighbor.getIn(['neighborEntitySet', 'title']),
+            neighbor.get('neighborDetails', Immutable.Map())
+          );
         });
         jsonResults = jsonResults.push(combinedEntity);
       });
