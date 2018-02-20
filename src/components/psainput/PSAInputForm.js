@@ -5,6 +5,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import Immutable from 'immutable';
+import styled from 'styled-components';
 import { FormGroup, Col } from 'react-bootstrap';
 
 import SectionView from '../SectionView';
@@ -13,7 +14,6 @@ import Radio from '../controls/StyledRadio';
 import {
   PaddedRow,
   UnpaddedRow,
-  FormWrapper,
   TitleLabel,
   SubmitButtonWrapper,
   SubmitButton,
@@ -45,6 +45,10 @@ const {
   PRIOR_FAILURE_TO_APPEAR_OLD,
   PRIOR_SENTENCE_TO_INCARCERATION
 } = PSA;
+
+const StyledFormWrapper = styled.div`
+  margin: 0 60px 0 60px;
+`;
 
 const PSAInputForm = ({
   handleSingleSelection,
@@ -91,7 +95,7 @@ const PSAInputForm = ({
   return (
     <div>
       <Divider />
-      <FormWrapper>
+      <StyledFormWrapper>
         <form onSubmit={handleSubmit}>
           <SectionView header="PSA Information">
 
@@ -161,7 +165,7 @@ const PSAInputForm = ({
             <SubmitButton type="submit" bsStyle="primary" bsSize="lg">Score & Submit</SubmitButton>
           </SubmitButtonWrapper>
         </form>
-      </FormWrapper>
+      </StyledFormWrapper>
     </div>
   );
 };
