@@ -235,7 +235,9 @@ export default class PSAReviewRow extends React.Component {
     const { open, riskFactors } = this.state;
     const Symbol = styled(EditButtonSymbol).attrs({
       name: open ? 'angle-up' : 'angle-down'
-    })``;
+    })`
+      margin-top: ${open ? '20px' : '0'}
+    `;
     const buttonContents = open ? (
       <div>
         <Symbol />
