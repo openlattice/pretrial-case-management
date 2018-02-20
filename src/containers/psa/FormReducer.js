@@ -73,42 +73,45 @@ function formReducer(state :Map<> = INITIAL_STATE, action :Object) {
     }
 
     case SEARCH_PEOPLE_REQUEST:
-      return state.set('peopleOptions', []).set('pretrialCaseOptions', []);
+      return state.set('peopleOptions', []).set('pretrialCaseOptions', Immutable.List());
 
     case FormActionTypes.SEARCH_PEOPLE_SUCCESS:
       return state.set('peopleOptions', action.people);
 
     case FormActionTypes.LOAD_NEIGHBORS_SUCCESS: {
-      const pretrialCaseOptionsWithDate = [];
-      const pretrialCaseOptionsWithoutDate = [];
-      const allChargesForPerson = []
-      const neighbors = action.neighbors || [];
+      let pretrialCaseOptionsWithDate = Immutable.List();
+      let pretrialCaseOptionsWithoutDate = Immutable.List();
+      let allChargesForPerson = Immutable.List();
+
+      const neighbors = Immutable.fromJS(action.neighbors) || Immutable.List();
       neighbors.forEach((neighbor) => {
-        const entitySet = neighbor.neighborEntitySet;
-        if (entitySet && entitySet.name === PRETRIAL_CASES) {
-          const caseObj = Object.assign({}, neighbor.neighborDetails, { id: neighbor.neighborId });
-          const arrList = caseObj[ARREST_DATE_FQN];
-          if (arrList && arrList.length) {
-            pretrialCaseOptionsWithDate.push(caseObj);
+        const entitySetName = neighbor.getIn(['neighborEntitySet', 'name'], '');
+        const neighborObj = neighbor.get('neighborDetails', Immutable.Map()).set('id', neighbor.get('neighborId', ''));
+
+        if (entitySetName === PRETRIAL_CASES) {
+          const arrList = neighborObj.get(ARREST_DATE_FQN, Immutable.List());
+          if (arrList.size) {
+            pretrialCaseOptionsWithDate = pretrialCaseOptionsWithDate.push(neighborObj);
           }
           else {
-            pretrialCaseOptionsWithoutDate.push(caseObj);
+            pretrialCaseOptionsWithoutDate = pretrialCaseOptionsWithoutDate.push(neighborObj);
           }
         }
-        else if (entitySet && entitySet.name === CHARGES) {
-          allChargesForPerson.push(Object.assign({}, neighbor.neighborDetails, { id: neighbor.neighborId }));
+        else if (entitySetName === CHARGES) {
+          allChargesForPerson = allChargesForPerson.push(neighborObj);
         }
       });
 
-      pretrialCaseOptionsWithDate.sort((case1, case2) => {
-        const arr1 = moment(case1[ARREST_DATE_FQN][0]);
-        const arr2 = moment(case2[ARREST_DATE_FQN][0]);
+      pretrialCaseOptionsWithDate = pretrialCaseOptionsWithDate.sort((case1, case2) => {
+        const arr1 = moment(case1.getIn([ARREST_DATE_FQN, 0], ''));
+        const arr2 = moment(case2.getIn([ARREST_DATE_FQN, 0], ''));
         if (arr1.isValid && arr2.isValid) {
           if (arr1.isBefore(arr2)) return 1;
           if (arr1.isAfter(arr2)) return -1;
-          return 0;
         }
+        return 0;
       });
+
       return state
         .set('pretrialCaseOptions', pretrialCaseOptionsWithDate.concat(pretrialCaseOptionsWithoutDate))
         .set('allChargesForPerson', allChargesForPerson);

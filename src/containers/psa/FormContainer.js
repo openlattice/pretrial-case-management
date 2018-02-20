@@ -29,7 +29,6 @@ import * as PersonActionFactory from '../person/PersonActionFactory';
 import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
 import * as Routes from '../../core/router/Routes';
 
-import { formatDate } from '../../utils/Utils';
 import { getScoresAndRiskFactors } from '../../utils/ScoringUtils';
 import {
   ButtonWrapper,
@@ -46,13 +45,6 @@ import { tryAutofillFields } from '../../utils/AutofillUtils';
 import { PROPERTY_TYPES, ENTITY_SETS } from '../../utils/consts/DataModelConsts';
 
 const {
-  FIRST_NAME,
-  MIDDLE_NAME,
-  LAST_NAME,
-  DOB,
-  SEX,
-  RACE,
-  ETHNICITY,
   PERSON_ID,
   TIMESTAMP_FQN,
   NVCA_FLAG_FQN,
@@ -64,19 +56,14 @@ const {
 
 const {
   PEOPLE,
-  ADDRESSES,
-  CHARGES,
   PRETRIAL_CASES,
   PSA_RISK_FACTORS,
   PSA_SCORES,
   RELEASE_RECOMMENDATIONS,
   STAFF,
   ASSESSED_BY,
-  APPEARS_IN,
-  LIVES_AT,
-  CALCULATED_FOR,
-  CHARGED_WITH
-} = ENTITY_SETS
+  CALCULATED_FOR
+} = ENTITY_SETS;
 
 const StyledFormViewWrapper = styled.div`
   display: flex;
@@ -205,8 +192,8 @@ class Form extends React.Component {
     } = nextProps;
     if (Object.keys(selectedPretrialCase).length
       || charges.length
-      || pretrialCaseOptions.length
-      || allChargesForPerson.length) {
+      || pretrialCaseOptions.size
+      || allChargesForPerson.size) {
       actions.setPSAValues(Immutable.fromJS(tryAutofillFields(
         selectedPretrialCase,
         charges,

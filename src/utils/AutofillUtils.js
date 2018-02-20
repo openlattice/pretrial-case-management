@@ -187,10 +187,10 @@ export const tryAutofillFields = (
       )
     );
   }
-  if (allCharges && allCharges.length) {
+  if (allCharges.size) {
     const priorMisdemeanor = psaForm.get(PRIOR_MISDEMEANOR);
     if (priorMisdemeanor === null) {
-      psaForm = psaForm.set(PRIOR_MISDEMEANOR, tryAutofillPreviousMisdemeanors(allCharges));
+      psaForm = psaForm.set(PRIOR_MISDEMEANOR, tryAutofillPreviousMisdemeanors(allCharges.toJS()));
     }
     const priorFelony = psaForm.get(PRIOR_FELONY);
     if (priorFelony === null) {

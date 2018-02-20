@@ -48,7 +48,7 @@ export default class SelectedPretrialInfo extends React.Component {
 
   static propTypes = {
     propertyTypes: PropTypes.array.isRequired,
-    charges: PropTypes.array.isRequired,
+    charges: PropTypes.instanceOf(Immutable.List).isRequired,
     pretrialCaseDetails: PropTypes.object.isRequired
   }
 
@@ -84,7 +84,7 @@ export default class SelectedPretrialInfo extends React.Component {
         if (mostSeriousNum === chargeNum) mostSerious = true;
       });
     });
-    if (chargeFieldIsViolent(chargeNumField)) violent = true;
+    if (chargeFieldIsViolent(chargeNumField.toJS())) violent = true;
 
     return (
       <ChargeTagWrapper>
@@ -96,30 +96,28 @@ export default class SelectedPretrialInfo extends React.Component {
 
   getChargeList = () => {
     const rows = this.props.charges.map((charge, index) => {
-      if (!charge[CHARGE_NUM_FQN] || !charge[CHARGE_NUM_FQN].length) {
+      if (!charge.get(CHARGE_NUM_FQN, Immutable.List()).size) {
         return (
           <ChargeRow key={index}><ChargeItem /></ChargeRow>
         );
       }
+      const chargeDescription = charge.get(CHARGE_DESCRIPTION_FQN, Immutable.List());
+      const chargeDegree = charge.get(CHARGE_DEGREE_FQN, Immutable.List());
+      const chargeNum = charge.get(CHARGE_NUM_FQN, Immutable.List());
 
       const description = (
         <div>
-          { (charge[CHARGE_DESCRIPTION_FQN] && charge[CHARGE_DESCRIPTION_FQN].length)
-            ? <span> {formatValue(charge[CHARGE_DESCRIPTION_FQN])}</span> : null
-          }
-          {
-            (charge[CHARGE_DEGREE_FQN] && charge[CHARGE_DEGREE_FQN].length)
-              ? <i> ({formatValue(charge[CHARGE_DEGREE_FQN])})</i> : null
-          }
+          { chargeDescription.size ? <span> {formatValue(chargeDescription.toJS())}</span> : null }
+          { chargeDegree.size ? <i> ({formatValue(chargeDegree.toJS())})</i> : null }
         </div>
       );
 
       return (
         <ChargeRow key={index}>
-          <ChargeItem><InlineBold>{formatValue(charge[CHARGE_NUM_FQN])}</InlineBold></ChargeItem>
+          <ChargeItem><InlineBold>{formatValue(chargeNum.toJS())}</InlineBold></ChargeItem>
           <ChargeItem>
             {description}
-            {this.renderTags(charge[CHARGE_NUM_FQN])}
+            {this.renderTags(chargeNum)}
           </ChargeItem>
         </ChargeRow>
       );
