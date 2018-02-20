@@ -161,10 +161,10 @@ class Form extends React.Component {
     entitySetLookup: PropTypes.instanceOf(Immutable.Map).isRequired,
     selectedPerson: PropTypes.object.isRequired,
     selectedPretrialCase: PropTypes.object.isRequired,
-    pretrialCaseOptions: PropTypes.array.isRequired,
-    charges: PropTypes.array.isRequired,
+    pretrialCaseOptions: PropTypes.instanceOf(Immutable.List).isRequired,
+    charges: PropTypes.instanceOf(Immutable.List).isRequired,
     peopleOptions: PropTypes.array.isRequired,
-    allChargesForPerson: PropTypes.array.isRequired,
+    allChargesForPerson: PropTypes.instanceOf(Immutable.List).isRequired,
     selectedPersonId: PropTypes.string.isRequired,
     isLoadingCases: PropTypes.bool.isRequired,
     numCasesToLoad: PropTypes.number.isRequired,
@@ -190,8 +190,8 @@ class Form extends React.Component {
       psaForm,
       actions
     } = nextProps;
-    if (Object.keys(selectedPretrialCase).length
-      || charges.length
+    if (Object.keys(selectedPretrialCase).size
+      || charges.size
       || pretrialCaseOptions.size
       || allChargesForPerson.size) {
       actions.setPSAValues(Immutable.fromJS(tryAutofillFields(
@@ -455,8 +455,8 @@ class Form extends React.Component {
                 Object.assign({}, this.state, { riskFactors: this.setMultimapToMap(this.state.riskFactors) }),
                 selectedPretrialCase,
                 selectedPerson,
-                pretrialCaseOptions,
-                allChargesForPerson
+                pretrialCaseOptions.toJS(),
+                allChargesForPerson.toJS()
               );
             }}>Export as PDF
         </Button>
@@ -515,7 +515,7 @@ class Form extends React.Component {
     }
     return (
       <SelectPretrialCaseContainer
-          caseOptions={Immutable.fromJS(pretrialCaseOptions)}
+          caseOptions={pretrialCaseOptions}
           nextPage={this.nextPage}
           prevPage={this.prevPage}
           onSelectCase={(selectedCase) => {

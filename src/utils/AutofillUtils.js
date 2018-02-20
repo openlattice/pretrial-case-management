@@ -1,6 +1,7 @@
 import moment from 'moment';
 
 import { PROPERTY_TYPES } from './consts/DataModelConsts';
+import { PSA } from './consts/Consts';
 import {
   chargeFieldIsViolent,
   degreeFieldIsFelony,
@@ -10,8 +11,6 @@ import {
   getChargeTitle,
   getUnique
 } from './consts/ChargeConsts';
-
-import { PSA } from './consts/Consts';
 
 const {
   DOB,
@@ -32,8 +31,6 @@ const {
   PRIOR_MISDEMEANOR,
   PRIOR_FELONY,
   PRIOR_VIOLENT_CONVICTION,
-  PRIOR_FAILURE_TO_APPEAR_RECENT,
-  PRIOR_FAILURE_TO_APPEAR_OLD,
   PRIOR_SENTENCE_TO_INCARCERATION
 } = PSA;
 
@@ -45,7 +42,7 @@ export const getViolentCharges = (charges, mostSeriousCharge) => {
 };
 
 export const tryAutofillCurrentViolentCharge = (charges, mostSeriousCharge) => {
-  return `${getViolentCharges(charges, mostSeriousCharge).length > 0}`
+  return `${getViolentCharges(charges.toJS(), mostSeriousCharge).length > 0}`
 };
 
 export const tryAutofillAge = (dateArrested, defaultValue, selectedPerson) => {
@@ -71,31 +68,25 @@ export const getPendingCharges = (currCaseNums, dateArrested, allCases, allCharg
   const casesWithDispositionAfter = new Set();
   if (arrest.isValid) {
     allCases.forEach((caseDetails) => {
-      const prevArrestDates = caseDetails[ARREST_DATE_FQN];
-      if (prevArrestDates && prevArrestDates.length) {
-        const prevArrestDate = moment.utc(prevArrestDates[0]);
-        if (prevArrestDate.isValid && prevArrestDate.isBefore(arrest)) {
-          const caseNum = caseDetails[CASE_ID_FQN][0];
-          if (caseNum !== currCaseNum) casesWithArrestBefore.push(caseNum);
-        }
+      const prevArrestDate = moment.utc(caseDetails.getIn([ARREST_DATE_FQN, 0], ''));
+      if (prevArrestDate.isValid && prevArrestDate.isBefore(arrest)) {
+        const caseNum = caseDetails.getIn([CASE_ID_FQN, 0]);
+        if (caseNum !== currCaseNum) casesWithArrestBefore.push(caseNum);
       }
     });
     allCharges.forEach((chargeDetails) => {
       let caseNum;
       let shouldInclude = false;
 
-      const chargeId = chargeDetails[CHARGE_ID_FQN][0];
+      const chargeId = chargeDetails.getIn([CHARGE_ID_FQN, 0], '');
       const caseNums = chargeId.split('|');
       if (caseNums && caseNums.length) {
         [caseNum] = caseNums;
       }
 
-      const dispositionDates = chargeDetails[DISPOSITION_DATE];
-      if (dispositionDates && dispositionDates.length) {
-        const dispositionDate = moment.utc(dispositionDates[0]);
-        if (dispositionDate.isValid && dispositionDate.isAfter(arrest)) {
-          shouldInclude = true;
-        }
+      const dispositionDate = moment.utc(chargeDetails.getIn([DISPOSITION_DATE, 0], ''));
+      if (dispositionDate.isValid && dispositionDate.isAfter(arrest)) {
+        shouldInclude = true;
       }
       else {
         shouldInclude = true;
@@ -167,7 +158,7 @@ export const tryAutofillFields = (
     );
   }
 
-  if (nextCase[MOST_SERIOUS_CHARGE_NO] !== currCase[MOST_SERIOUS_CHARGE_NO] || (nextCharges && nextCharges.length)) {
+  if (nextCase[MOST_SERIOUS_CHARGE_NO] !== currCase[MOST_SERIOUS_CHARGE_NO] || nextCharges.size) {
     psaForm = psaForm.set(
       CURRENT_VIOLENT_OFFENSE,
       tryAutofillCurrentViolentCharge(nextCharges, nextCase[MOST_SERIOUS_CHARGE_NO])
@@ -187,6 +178,7 @@ export const tryAutofillFields = (
       )
     );
   }
+
   if (allCharges.size) {
     const priorMisdemeanor = psaForm.get(PRIOR_MISDEMEANOR);
     if (priorMisdemeanor === null) {
@@ -194,14 +186,14 @@ export const tryAutofillFields = (
     }
     const priorFelony = psaForm.get(PRIOR_FELONY);
     if (priorFelony === null) {
-      psaForm = psaForm.set(PRIOR_FELONY, tryAutofillPreviousFelonies(allCharges));
+      psaForm = psaForm.set(PRIOR_FELONY, tryAutofillPreviousFelonies(allCharges.toJS()));
     }
     if (priorMisdemeanor === 'false' && priorFelony === 'false') {
       psaForm = psaForm.set(PRIOR_VIOLENT_CONVICTION, '0');
       psaForm = psaForm.set(PRIOR_SENTENCE_TO_INCARCERATION, 'false');
     }
     else if (psaForm.get(PRIOR_VIOLENT_CONVICTION) === null) {
-      psaForm = psaForm.set(PRIOR_VIOLENT_CONVICTION, tryAutofillPreviousViolentCharge(allCharges));
+      psaForm = psaForm.set(PRIOR_VIOLENT_CONVICTION, tryAutofillPreviousViolentCharge(allCharges.toJS()));
     }
   }
   return psaForm.toJS();
