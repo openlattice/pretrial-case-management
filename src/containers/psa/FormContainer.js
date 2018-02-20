@@ -535,20 +535,18 @@ class Form extends React.Component {
     this.setState({ releaseRecommendation });
   }
 
-  renderRecommendationSection = () => {
-    return (
-      <ResultsContainer>
-        <RecommendationWrapper>
-          <SmallHeader>Release notes:</SmallHeader>
-          <InlineEditableControl
-              type="text"
-              value={this.state.releaseRecommendation}
-              onChange={this.handleReleaseRecommendationUpdate}
-              size="medium_small" />
-        </RecommendationWrapper>
-      </ResultsContainer>
-    );
-  }
+  renderRecommendationSection = () => (
+    <ResultsContainer>
+      <RecommendationWrapper>
+        <SmallHeader>Release notes:</SmallHeader>
+        <InlineEditableControl
+            type="text"
+            value={this.state.releaseRecommendation}
+            onChange={this.handleReleaseRecommendationUpdate}
+            size="medium_small" />
+      </RecommendationWrapper>
+    </ResultsContainer>
+  )
 
   setMultimapToMap = (setMultimap) => {
     const map = {};
@@ -656,6 +654,7 @@ class Form extends React.Component {
         {this.renderPersonSection()}
         {this.renderPretrialCaseSection()}
         {this.renderPSAInputForm()}
+        {this.renderRecommendationSection()}
       </div>
     );
   }
