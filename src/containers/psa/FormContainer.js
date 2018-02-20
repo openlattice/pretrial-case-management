@@ -60,7 +60,8 @@ const {
   NCA_SCALE_FQN,
   FTA_SCALE_FQN,
   GENERAL_ID_FQN,
-  COMPLETED_DATE_TIME
+  COMPLETED_DATE_TIME,
+  RELEASE_RECOMMENDATION_FQN
 } = PROPERTY_TYPES;
 
 const {
@@ -270,13 +271,21 @@ class Form extends React.Component {
   getCalculatedForEntityDetails = () => ({ [TIMESTAMP_FQN]: [new Date()] })
 
   getBlankReleaseRecommendationEntity = () => {
-    const propertyType = this.props.releaseRecommendationDataModel.propertyTypes.filter(pt =>
-      `${pt.type.namespace}.${pt.type.name}` === GENERAL_ID_FQN)[0];
-    if (!propertyType) return {};
+    let generalId;
+    let notesId;
+    this.props.releaseRecommendationDataModel.propertyTypes.forEach((pt) => {
+      const fqn = `${pt.type.namespace}.${pt.type.name}`;
+      if (fqn === GENERAL_ID_FQN) generalId = pt.id;
+      else if (fqn === RELEASE_RECOMMENDATION_FQN) notesId = pt.id;
+    });
+    if (!generalId || !notesId) return {};
     const id = randomUUID();
 
     return {
-      details: { [propertyType.id]: [id] },
+      details: {
+        [generalId]: [id],
+        [notesId]: [this.state.releaseRecommendation]
+      },
       key: {
         entityId: id,
         entitySetId: this.props.releaseRecommendationDataModel.entitySet.id
@@ -515,27 +524,29 @@ class Form extends React.Component {
     return <PSAResults scores={this.state.scores} formValues={this.state.psaForm} />;
   }
 
-  renderRecommendationSection = () => {
-    if (!this.state.scoresWereGenerated) return null;
-    return (
-      <ResultsContainer>
-        <RecommendationWrapper>
-          <SmallHeader>Release recommendation:</SmallHeader>
-          <InlineEditableControl
-              type="text"
-              value={this.state.releaseRecommendation}
-              onChange={(releaseRecommendation) => {
-                this.props.actions.updateRecommendation(
-                  releaseRecommendation,
-                  this.state.releaseRecommendationId,
-                  this.props.releaseRecommendationDataModel);
-                this.setState({ releaseRecommendation });
-              }}
-              size="medium_small" />
-        </RecommendationWrapper>
-      </ResultsContainer>
-    );
+  handleReleaseRecommendationUpdate = (releaseRecommendation) => {
+    if (this.state.scoresWereGenerated) {
+      this.props.actions.updateRecommendation(
+        releaseRecommendation,
+        this.state.releaseRecommendationId,
+        this.props.releaseRecommendationDataModel
+      );
+    }
+    this.setState({ releaseRecommendation });
   }
+
+  renderRecommendationSection = () => (
+    <ResultsContainer>
+      <RecommendationWrapper>
+        <SmallHeader>Release notes:</SmallHeader>
+        <InlineEditableControl
+            type="text"
+            value={this.state.releaseRecommendation}
+            onChange={this.handleReleaseRecommendationUpdate}
+            size="medium_small" />
+      </RecommendationWrapper>
+    </ResultsContainer>
+  )
 
   setMultimapToMap = (setMultimap) => {
     const map = {};
@@ -643,6 +654,7 @@ class Form extends React.Component {
         {this.renderPersonSection()}
         {this.renderPretrialCaseSection()}
         {this.renderPSAInputForm()}
+        {this.renderRecommendationSection()}
       </div>
     );
   }
