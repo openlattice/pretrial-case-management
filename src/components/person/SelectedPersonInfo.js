@@ -15,28 +15,18 @@ const CardContainer = styled.div`
 export default class SelectedPersonInfo extends React.Component {
 
   static propTypes = {
-    personDetails: PropTypes.object.isRequired
-  }
-
-  getField = (fieldName) => {
-    if (!this.props.personDetails[fieldName]) return '';
-    return formatValue(this.props.personDetails[fieldName]);
-  }
-
-  getDateField = (fieldName) => {
-    if (!this.props.personDetails[fieldName]) return '';
-    return formatDateList(this.props.personDetails[fieldName]);
+    personDetails: PropTypes.instanceOf(Immutable.Map).isRequired
   }
 
   render() {
-    if (!Object.keys(this.props.personDetails).length) return null;
+    if (!this.props.personDetails.size) return null;
     return (
       <InfoContainer>
         <Spacer />
         <InfoHeader>Person</InfoHeader>
         <InfoWrapper>
           <CardContainer>
-            <PersonCard person={Immutable.fromJS(this.props.personDetails)} />
+            <PersonCard person={this.props.personDetails} />
           </CardContainer>
         </InfoWrapper>
       </InfoContainer>

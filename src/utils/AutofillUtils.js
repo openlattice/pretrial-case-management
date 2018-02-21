@@ -58,7 +58,7 @@ export const tryAutofillCurrentViolentCharge = (charges, mostSeriousCharge) =>
   `${getViolentCharges(charges.toJS(), mostSeriousCharge).length > 0}`;
 
 export const tryAutofillAge = (dateArrested, defaultValue, selectedPerson) => {
-  const dob = moment.utc(selectedPerson[DOB]);
+  const dob = moment.utc(selectedPerson.getIn([DOB, 0], ''));
   const arrest = moment.utc(dateArrested);
   let ageAtCurrentArrestValue = defaultValue;
   if (dob.isValid && arrest.isValid) {

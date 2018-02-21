@@ -160,7 +160,7 @@ class Form extends React.Component {
     }).isRequired,
     dataModel: PropTypes.instanceOf(Immutable.Map).isRequired,
     entitySetLookup: PropTypes.instanceOf(Immutable.Map).isRequired,
-    selectedPerson: PropTypes.object.isRequired,
+    selectedPerson: PropTypes.instanceOf(Immutable.Map).isRequired,
     selectedPretrialCase: PropTypes.instanceOf(Immutable.Map).isRequired,
     pretrialCaseOptions: PropTypes.instanceOf(Immutable.List).isRequired,
     charges: PropTypes.instanceOf(Immutable.List).isRequired,
@@ -184,9 +184,7 @@ class Form extends React.Component {
 
   redirectToFirstPageIfNecessary = () => {
     const { scoresWereGenerated } = this.state;
-    const personId = this.props.selectedPerson.id;
-    if ((!personId || !personId.length || !scoresWereGenerated) && !window.location.href.endsWith('1')) {
-
+    if ((!this.props.selectedPerson.size || !scoresWereGenerated) && !window.location.href.endsWith('1')) {
       this.props.history.push(`${Routes.PSA_FORM}/1`);
     }
   }
@@ -329,7 +327,7 @@ class Form extends React.Component {
     const releaseRecommendationEntity = this.getBlankReleaseRecommendationEntity();
     const assessedByEntityDetails = this.getAssessedByEntityDetails();
 
-    const personEntity = this.getEntity(this.props.selectedPerson, PEOPLE, true);
+    const personEntity = this.getEntity(this.props.selectedPerson.toJS(), PEOPLE, true);
     const pretrialCaseEntity = this.getEntity(this.props.selectedPretrialCase.toJS(), PRETRIAL_CASES, true);
     const riskFactorsEntity = this.getEntity(riskFactors, PSA_RISK_FACTORS, false, true);
     const psaEntity = this.getEntity(scores, PSA_SCORES, false, true);
@@ -353,7 +351,7 @@ class Form extends React.Component {
   getFqn = propertyType => `${propertyType.getIn(['type', 'namespace'])}.${propertyType.getIn(['type', 'name'])}`
 
   handleSelectPerson = (person, entityKeyId) => {
-    this.props.actions.selectPerson(person.toJS());
+    this.props.actions.selectPerson(person);
     this.props.actions.loadPersonDetailsRequest(entityKeyId, true);
   }
 
@@ -473,7 +471,7 @@ class Form extends React.Component {
               exportPDF(
                 Object.assign({}, this.state, { riskFactors: this.setMultimapToMap(this.state.riskFactors) }),
                 selectedPretrialCase.toJS(),
-                selectedPerson,
+                selectedPerson.toJS(),
                 pretrialCaseOptions.toJS(),
                 allChargesForPerson.toJS()
               );

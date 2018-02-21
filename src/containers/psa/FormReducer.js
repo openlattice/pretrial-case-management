@@ -48,7 +48,7 @@ const INITIAL_STATE :Map<> = Immutable.fromJS({
   pretrialCaseOptions: Immutable.List(),
   allChargesForPerson: Immutable.List(),
   charges: Immutable.List(),
-  selectedPerson: {},
+  selectedPerson: Immutable.Map(),
   selectedPretrialCase: Immutable.Map(),
   psa: INITIAL_PSA_FORM,
   dataModel: Immutable.Map(),
@@ -141,7 +141,7 @@ function formReducer(state :Map<> = INITIAL_STATE, action :Object) {
       return state
         .set('pretrialCaseOptions', Immutable.List())
         .set('allChargesForPerson', Immutable.List())
-        .set('selectedPerson', {})
+        .set('', Immutable.Map())
         .set('selectedPretrialCase', Immutable.Map())
         .set('charges', Immutable.List())
         .set('psa', INITIAL_PSA_FORM);
