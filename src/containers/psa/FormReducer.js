@@ -6,7 +6,6 @@ import Immutable from 'immutable';
 import moment from 'moment';
 
 import * as FormActionTypes from './FormActionTypes';
-import { SEARCH_PEOPLE_REQUEST } from '../person/PersonActionFactory';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA } from '../../utils/consts/Consts'
 
@@ -46,7 +45,6 @@ const INITIAL_PSA_FORM = Immutable.fromJS({
 });
 
 const INITIAL_STATE :Map<> = Immutable.fromJS({
-  peopleOptions: [],
   pretrialCaseOptions: Immutable.List(),
   allChargesForPerson: Immutable.List(),
   charges: Immutable.List(),
@@ -71,12 +69,6 @@ function formReducer(state :Map<> = INITIAL_STATE, action :Object) {
         .set('dataModel', Immutable.fromJS(dataModel))
         .set('entitySetLookup', Immutable.fromJS(entitySetLookup));
     }
-
-    case SEARCH_PEOPLE_REQUEST:
-      return state.set('peopleOptions', []).set('pretrialCaseOptions', Immutable.List());
-
-    case FormActionTypes.SEARCH_PEOPLE_SUCCESS:
-      return state.set('peopleOptions', action.people);
 
     case FormActionTypes.LOAD_NEIGHBORS_SUCCESS: {
       let pretrialCaseOptionsWithDate = Immutable.List();
@@ -147,7 +139,6 @@ function formReducer(state :Map<> = INITIAL_STATE, action :Object) {
 
     case FormActionTypes.CLEAR_FORM:
       return state
-        .set('peopleOptions', [])
         .set('pretrialCaseOptions', Immutable.List())
         .set('allChargesForPerson', Immutable.List())
         .set('selectedPerson', {})
