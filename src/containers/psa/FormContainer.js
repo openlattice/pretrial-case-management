@@ -179,6 +179,16 @@ class Form extends React.Component {
 
   componentDidMount() {
     this.props.actions.loadDataModelElements();
+    this.redirectToFirstPageIfNecessary();
+  }
+
+  redirectToFirstPageIfNecessary = () => {
+    const { scoresWereGenerated } = this.state;
+    const personId = this.props.selectedPerson.id;
+    if ((!personId || !personId.length || !scoresWereGenerated) && !window.location.href.endsWith('1')) {
+
+      this.props.history.push(`${Routes.PSA_FORM}/1`);
+    }
   }
 
   componentWillReceiveProps(nextProps) {
@@ -534,29 +544,17 @@ class Form extends React.Component {
     );
   }
 
-  getPsaInputForm = () => {
-    const personId = this.props.selectedPerson.id;
-    if (!personId || !personId.length) {
-      this.props.history.push(`${Routes.PSA_FORM}/1`);
-      return null;
-    }
-    return (
-      <div>
-        {this.renderPersonSection()}
-        {this.renderPretrialCaseSection()}
-        {this.renderPSAInputForm()}
-        {this.renderRecommendationSection()}
-      </div>
-    );
-  }
+  getPsaInputForm = () => (
+    <div>
+      {this.renderPersonSection()}
+      {this.renderPretrialCaseSection()}
+      {this.renderPSAInputForm()}
+      {this.renderRecommendationSection()}
+    </div>
+  )
 
   getPsaResults = () => {
-    const { scoresWereGenerated, scores, riskFactors } = this.state;
-    const personId = this.props.selectedPerson.id;
-    if (!personId || !personId.length || !scoresWereGenerated) {
-      this.props.history.push(`${Routes.PSA_FORM}/1`);
-      return null;
-    }
+    const { scores, riskFactors } = this.state;
     return (
       <div>
         <PSAResults scores={scores} riskFactors={riskFactors} />

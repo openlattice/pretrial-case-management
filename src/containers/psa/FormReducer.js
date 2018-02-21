@@ -51,8 +51,8 @@ const INITIAL_STATE :Map<> = Immutable.fromJS({
   selectedPerson: {},
   selectedPretrialCase: Immutable.Map(),
   psa: INITIAL_PSA_FORM,
-  dataModel: {},
-  entitySetLookup: {}
+  dataModel: Immutable.Map(),
+  entitySetLookup: Immutable.Map()
 });
 
 function formReducer(state :Map<> = INITIAL_STATE, action :Object) {
