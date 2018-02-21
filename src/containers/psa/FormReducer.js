@@ -51,7 +51,7 @@ const INITIAL_STATE :Map<> = Immutable.fromJS({
   allChargesForPerson: Immutable.List(),
   charges: Immutable.List(),
   selectedPerson: {},
-  selectedPretrialCase: {},
+  selectedPretrialCase: Immutable.Map(),
   psa: INITIAL_PSA_FORM,
   dataModel: {},
   entitySetLookup: {}
@@ -126,12 +126,14 @@ function formReducer(state :Map<> = INITIAL_STATE, action :Object) {
         return chargeVal.size ? chargeVal.split('|') : [];
       };
 
-      const selectedCaseIdArr = action.selectedPretrialCase[CASE_ID_FQN] || [];
+      const selectedPretrialCase = Immutable.fromJS(action.selectedPretrialCase);
+
+      const selectedCaseIdList = selectedPretrialCase.get(CASE_ID_FQN, Immutable.List());
       const charges = state.get('allChargesForPerson')
-        .filter(charge => getCaseAndChargeNum(charge)[0] === selectedCaseIdArr[0])
+        .filter(charge => getCaseAndChargeNum(charge)[0] === selectedCaseIdList.get(0))
         .sort((c1, c2) => getCaseAndChargeNum(c1)[1] > getCaseAndChargeNum(c2)[1]);
       return state
-        .set('selectedPretrialCase', action.selectedPretrialCase)
+        .set('selectedPretrialCase', selectedPretrialCase)
         .set('charges', charges);
     }
 
@@ -149,7 +151,7 @@ function formReducer(state :Map<> = INITIAL_STATE, action :Object) {
         .set('pretrialCaseOptions', Immutable.List())
         .set('allChargesForPerson', Immutable.List())
         .set('selectedPerson', {})
-        .set('selectedPretrialCase', {})
+        .set('selectedPretrialCase', Immutable.Map())
         .set('charges', Immutable.List())
         .set('psa', INITIAL_PSA_FORM);
 

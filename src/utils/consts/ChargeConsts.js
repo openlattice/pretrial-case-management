@@ -115,13 +115,7 @@ export const getUnique = (field) => {
 
 export const getViolentChargeNums = (chargeFields) => {
   if (!chargeFields || !chargeFields.length) return [];
-
-  return getUnique(chargeFields
-    .map((charge) => {
-      if (!charge[CHARGE_NUM_FQN]) return [];
-      return charge[CHARGE_NUM_FQN].filter(chargeNum => chargeIsViolent(chargeNum))
-    })
-    .reduce((c1, c2) => [...c1, ...c2]));
+  return getUnique(chargeFields.filter(charge => charge && chargeIsViolent(charge)));
 };
 
 export const chargeFieldIsViolent = chargeField => getViolentChargeNums(chargeField).length > 0;

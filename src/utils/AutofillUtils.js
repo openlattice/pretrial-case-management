@@ -35,15 +35,27 @@ const {
 } = PSA;
 
 export const getViolentCharges = (charges, mostSeriousCharge) => {
-  if ((!charges || !charges.length) && !mostSeriousCharge) return [];
-  const chargesToConsider = charges || [];
-  if (mostSeriousCharge && mostSeriousCharge[CHARGE_NUM_FQN]) chargesToConsider.push(mostSeriousCharge[CHARGE_NUM_FQN]);
-  return getViolentChargeNums(chargesToConsider).map(charge => getChargeTitle(charge));
+  if (!charges || !charges.length) {
+    if (!mostSeriousCharge) return [];
+    if (getViolentChargeNums([mostSeriousCharge]).length) {
+      return [mostSeriousCharge];
+    }
+  }
+
+  const chargesToConsider = charges
+    .filter(charge => charge[CHARGE_NUM_FQN] && charge[CHARGE_NUM_FQN].length)
+    .map(charge => charge[CHARGE_NUM_FQN][0]);
+  if (mostSeriousCharge && mostSeriousCharge.length) chargesToConsider.push(mostSeriousCharge);
+  const violentChargeNums = getViolentChargeNums(chargesToConsider);
+
+  return charges.filter((charge) => {
+    if (!charge[CHARGE_NUM_FQN] || !charge[CHARGE_NUM_FQN].length) return false;
+    return violentChargeNums.includes(charge[CHARGE_NUM_FQN][0]);
+  }).map(charge => getChargeTitle(charge));
 };
 
-export const tryAutofillCurrentViolentCharge = (charges, mostSeriousCharge) => {
-  return `${getViolentCharges(charges.toJS(), mostSeriousCharge).length > 0}`
-};
+export const tryAutofillCurrentViolentCharge = (charges, mostSeriousCharge) =>
+  `${getViolentCharges(charges.toJS(), mostSeriousCharge).length > 0}`;
 
 export const tryAutofillAge = (dateArrested, defaultValue, selectedPerson) => {
   const dob = moment.utc(selectedPerson[DOB]);
@@ -60,10 +72,9 @@ export const tryAutofillAge = (dateArrested, defaultValue, selectedPerson) => {
   return ageAtCurrentArrestValue;
 };
 
-export const getPendingCharges = (currCaseNums, dateArrested, allCases, allCharges) => {
-  if (!dateArrested || !dateArrested.length || !currCaseNums || !currCaseNums.length) return [];
-  const currCaseNum = currCaseNums[0];
-  const arrest = moment.utc(dateArrested[0]);
+export const getPendingCharges = (currCaseNum, dateArrested, allCases, allCharges) => {
+  if (!dateArrested || !dateArrested.length || !currCaseNum || !currCaseNum.length) return [];
+  const arrest = moment.utc(dateArrested);
   const casesWithArrestBefore = [];
   const casesWithDispositionAfter = new Set();
   if (arrest.isValid) {
@@ -102,9 +113,9 @@ export const getPendingCharges = (currCaseNums, dateArrested, allCases, allCharg
   return [];
 };
 
-export const tryAutofillPendingCharge = (currCaseNums, dateArrested, allCases, allCharges, defaultValue) => {
-  if (!dateArrested || !dateArrested.length || !currCaseNums || !currCaseNums.length) return defaultValue;
-  return `${getPendingCharges(currCaseNums, dateArrested, allCases, allCharges).length > 0}`;
+export const tryAutofillPendingCharge = (currCaseNum, dateArrested, allCases, allCharges, defaultValue) => {
+  if (!dateArrested.length || !currCaseNum.length) return defaultValue;
+  return `${getPendingCharges(currCaseNum, dateArrested, allCases, allCharges).length > 0}`;
 };
 
 export const getPreviousMisdemeanors = (allCharges) => {
@@ -127,8 +138,13 @@ export const tryAutofillPreviousFelonies = allCharges => `${getPreviousFelonies(
 
 export const getPreviousViolentCharges = (allCharges) => {
   if (!allCharges || !allCharges.length) return [];
+
   return getUnique(allCharges
-    .filter(charge => dispositionFieldIsGuilty(charge[DISPOSITION]) && chargeFieldIsViolent([charge]))
+    .filter((charge) => {
+      const chargeNumArr = charge[CHARGE_NUM_FQN];
+      return chargeNumArr && chargeNumArr.length
+        && dispositionFieldIsGuilty(charge[DISPOSITION]) && chargeFieldIsViolent([chargeNumArr[0]]);
+    })
     .map(charge => getChargeTitle(charge)));
 };
 
@@ -150,28 +166,34 @@ export const tryAutofillFields = (
 
   let psaForm = psaFormValues;
 
+  const nextArrestDate = nextCase.getIn([ARREST_DATE_FQN, 0], '');
+  const currArrestDate = currCase.getIn([ARREST_DATE_FQN, 0], '');
+
+  const nextMostSeriousCharge = nextCase.getIn([MOST_SERIOUS_CHARGE_NO, 0], '');
+  const currMostSeriousCharge = currCase.getIn([MOST_SERIOUS_CHARGE_NO, 0], '');
+
   const ageAtCurrentArrest = psaForm.get(AGE_AT_CURRENT_ARREST);
-  if (ageAtCurrentArrest === null || nextCase[ARREST_DATE_FQN] !== currCase[ARREST_DATE_FQN]) {
+  if (ageAtCurrentArrest === null || nextArrestDate !== currArrestDate) {
     psaForm = psaForm.set(
       AGE_AT_CURRENT_ARREST,
-      tryAutofillAge(nextCase[ARREST_DATE_FQN], ageAtCurrentArrest, selectedPerson)
+      tryAutofillAge(nextCase.get(ARREST_DATE_FQN), ageAtCurrentArrest, selectedPerson)
     );
   }
 
-  if (nextCase[MOST_SERIOUS_CHARGE_NO] !== currCase[MOST_SERIOUS_CHARGE_NO] || nextCharges.size) {
+  if (nextMostSeriousCharge !== currMostSeriousCharge || nextCharges.size) {
     psaForm = psaForm.set(
       CURRENT_VIOLENT_OFFENSE,
-      tryAutofillCurrentViolentCharge(nextCharges, nextCase[MOST_SERIOUS_CHARGE_NO])
+      tryAutofillCurrentViolentCharge(nextCharges, nextMostSeriousCharge)
     );
   }
 
   const pendingCharge = psaForm.get(PENDING_CHARGE);
-  if (pendingCharge === null || nextCase[ARREST_DATE_FQN] !== currCase[ARREST_DATE_FQN]) {
+  if (pendingCharge === null || nextArrestDate !== currArrestDate) {
     psaForm = psaForm.set(
       PENDING_CHARGE,
       tryAutofillPendingCharge(
-        nextCase[CASE_ID_FQN],
-        nextCase[ARREST_DATE_FQN],
+        nextCase.getIn([CASE_ID_FQN, 0], ''),
+        nextArrestDate,
         allCases,
         allCharges,
         pendingCharge

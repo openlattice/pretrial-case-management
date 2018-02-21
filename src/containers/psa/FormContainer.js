@@ -161,7 +161,7 @@ class Form extends React.Component {
     dataModel: PropTypes.instanceOf(Immutable.Map).isRequired,
     entitySetLookup: PropTypes.instanceOf(Immutable.Map).isRequired,
     selectedPerson: PropTypes.object.isRequired,
-    selectedPretrialCase: PropTypes.object.isRequired,
+    selectedPretrialCase: PropTypes.instanceOf(Immutable.Map).isRequired,
     pretrialCaseOptions: PropTypes.instanceOf(Immutable.List).isRequired,
     charges: PropTypes.instanceOf(Immutable.List).isRequired,
     peopleOptions: PropTypes.array.isRequired,
@@ -191,7 +191,7 @@ class Form extends React.Component {
       psaForm,
       actions
     } = nextProps;
-    if (Object.keys(selectedPretrialCase).size
+    if (selectedPretrialCase.size
       || charges.size
       || pretrialCaseOptions.size
       || allChargesForPerson.size) {
@@ -321,7 +321,7 @@ class Form extends React.Component {
     const assessedByEntityDetails = this.getAssessedByEntityDetails();
 
     const personEntity = this.getEntity(this.props.selectedPerson, PEOPLE, true);
-    const pretrialCaseEntity = this.getEntity(this.props.selectedPretrialCase, PRETRIAL_CASES, true);
+    const pretrialCaseEntity = this.getEntity(this.props.selectedPretrialCase.toJS(), PRETRIAL_CASES, true);
     const riskFactorsEntity = this.getEntity(riskFactors, PSA_RISK_FACTORS, false, true);
     const psaEntity = this.getEntity(scores, PSA_SCORES, false, true);
     const calculatedForEntity = this.getEntity(calculatedForEntityDetails, CALCULATED_FOR);
@@ -391,7 +391,7 @@ class Form extends React.Component {
 
   renderPretrialCaseSection = () => {
     const { selectedPretrialCase, charges } = this.props;
-    if (!selectedPretrialCase || !Object.keys(selectedPretrialCase).length) return null;
+    if (!selectedPretrialCase.size) return null;
     return (
       <div>
         <Divider />
@@ -463,7 +463,7 @@ class Form extends React.Component {
             onClick={() => {
               exportPDF(
                 Object.assign({}, this.state, { riskFactors: this.setMultimapToMap(this.state.riskFactors) }),
-                selectedPretrialCase,
+                selectedPretrialCase.toJS(),
                 selectedPerson,
                 pretrialCaseOptions.toJS(),
                 allChargesForPerson.toJS()

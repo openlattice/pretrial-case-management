@@ -269,7 +269,7 @@ const chargeReferences = (yInit, doc, referenceCharges) => {
     y += (Y_INC * chargeLines.length);
   }
   return y;
-}
+};
 
 const riskFactors = (
   doc,
@@ -302,7 +302,7 @@ const riskFactors = (
   doc.text(RESPONSE_OFFSET, y, getBooleanText(riskFactorVals[CURRENT_VIOLENT_OFFENSE_FQN]));
   y += Y_INC;
   if (riskFactorVals[CURRENT_VIOLENT_OFFENSE_FQN]) {
-    y = chargeReferences(y, doc, getViolentCharges(currCharges, mostSeriousCharge));
+    y = chargeReferences(y, doc, getViolentCharges(currCharges, mostSeriousCharge[0]));
   }
   doc.text(GENERATED_RISK_FACTOR_OFFSET, y, 'a. Current Violent Offense & 20 Years Old or Younger');
   doc.text(RESPONSE_OFFSET, y, getBooleanText(riskFactorVals[CURRENT_VIOLENT_OFFENSE_AND_YOUNG_FQN]));

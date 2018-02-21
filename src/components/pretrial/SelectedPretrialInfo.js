@@ -49,21 +49,18 @@ export default class SelectedPretrialInfo extends React.Component {
   static propTypes = {
     propertyTypes: PropTypes.array.isRequired,
     charges: PropTypes.instanceOf(Immutable.List).isRequired,
-    pretrialCaseDetails: PropTypes.object.isRequired
+    pretrialCaseDetails: PropTypes.instanceOf(Immutable.Map).isRequired
   }
 
-  getField = (fieldName) => {
-    if (!this.props.pretrialCaseDetails[fieldName]) return '';
-    return formatValue(this.props.pretrialCaseDetails[fieldName]);
-  }
+  getField = fieldName => this.props.pretrialCaseDetails.get(fieldName, '')
 
   getInfoItems = () => {
     const labels = [];
     this.props.propertyTypes.forEach((propertyType) => {
       const fqn = `${propertyType.type.namespace}.${propertyType.type.name}`;
-      if (this.props.pretrialCaseDetails[fqn]) {
-        const value = (propertyType.datatype === 'Date')
-          ? formatDateList(this.props.pretrialCaseDetails[fqn]) : formatValue(this.props.pretrialCaseDetails[fqn]);
+      const rawValue = this.props.pretrialCaseDetails.get(fqn);
+      if (rawValue) {
+        const value = (propertyType.datatype === 'Date') ? formatDateList(rawValue) : formatValue(rawValue);
         labels.push(
           <InfoItem key={propertyType.id}>
             <InlineBold>{propertyType.title}: </InlineBold> {value}
@@ -78,7 +75,7 @@ export default class SelectedPretrialInfo extends React.Component {
     let mostSerious = false;
     let violent = false;
 
-    const mostSeriousNumField = this.props.pretrialCaseDetails[MOST_SERIOUS_CHARGE_NO];
+    const mostSeriousNumField = this.props.pretrialCaseDetails.get(MOST_SERIOUS_CHARGE_NO, Immutable.List());
     chargeNumField.forEach((chargeNum) => {
       mostSeriousNumField.forEach((mostSeriousNum) => {
         if (mostSeriousNum === chargeNum) mostSerious = true;
@@ -145,13 +142,13 @@ export default class SelectedPretrialInfo extends React.Component {
   }
 
   render() {
-    if (!Object.keys(this.props.pretrialCaseDetails).length) return null;
+    if (!this.props.pretrialCaseDetails.size) return null;
     return (
       <InfoContainer>
         <InfoHeader>Pretrial Case Processing</InfoHeader>
         <CardContainer>
           <CardWrapper>
-            <PretrialCard pretrialCase={Immutable.fromJS(this.props.pretrialCaseDetails)} />
+            <PretrialCard pretrialCase={this.props.pretrialCaseDetails} />
           </CardWrapper>
         </CardContainer>
         {this.renderCharges()}

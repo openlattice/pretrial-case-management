@@ -202,7 +202,6 @@ class ReviewPSA extends React.Component {
       </StyledFormViewWrapper>
     );
   }
-
 }
 
 function mapStateToProps(state) {
