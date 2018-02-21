@@ -38,6 +38,8 @@ import type {
 
 import * as Routes from '../../core/router/Routes';
 
+declare var __ENV_DEV__ :boolean;
+
 const { AuthUtils } = LatticeAuth;
 
 export function* watchLoadPersonDetailsRequest() :Generator<*, *, *> {
@@ -49,7 +51,7 @@ export function* watchLoadPersonDetailsRequest() :Generator<*, *, *> {
       const response = yield call(SearchApi.searchEntityNeighbors, entitySetId, action.id);
 
       // <HACK>
-      if (action.shouldLoadCases) {
+      if (action.shouldLoadCases && !__ENV_DEV__) {
         const caseNumRequests = response.filter((neighborObj) => {
           const { neighborEntitySet, neighborDetails } = neighborObj;
           if (neighborEntitySet && neighborDetails && neighborEntitySet.name === ENTITY_SETS.PRETRIAL_CASES) {
