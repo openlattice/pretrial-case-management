@@ -91,13 +91,14 @@ export function* downloadPSAReviewPDF() :Generator<*, *, *> {
 
       let pretrialCaseOptionsWithDate = Immutable.List();
       let pretrialCaseOptionsWithoutDate = Immutable.List();
-      let allCharges = Immutable.List()
+      let allCharges = Immutable.List();
       personNeighbors.forEach((neighbor) => {
+        const neighborDetails = Immutable.fromJS(neighbor.neighborDetails);
         const entitySet = neighbor.neighborEntitySet;
         if (entitySet && entitySet.name === ENTITY_SETS.PRETRIAL_CASES) {
-          const caseObj = Object.assign({}, neighbor.neighborDetails, { id: neighbor.neighborId });
-          const arrList = caseObj[PROPERTY_TYPES.ARREST_DATE_FQN];
-          if (arrList && arrList.length) {
+          const caseObj = neighborDetails.set('id', neighbor.neighborId);
+          const arrList = caseObj.get(PROPERTY_TYPES.ARREST_DATE_FQN, Immutable.List());
+          if (arrList.size) {
             pretrialCaseOptionsWithDate = pretrialCaseOptionsWithDate.push(caseObj);
           }
           else {
@@ -105,7 +106,7 @@ export function* downloadPSAReviewPDF() :Generator<*, *, *> {
           }
         }
         else if (entitySet && entitySet.name === ENTITY_SETS.CHARGES) {
-          allCharges = allCharges.push(neighbor.neighborDetails);
+          allCharges = allCharges.push(neighborDetails);
         }
       });
 

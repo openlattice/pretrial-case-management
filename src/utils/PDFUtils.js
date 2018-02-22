@@ -225,7 +225,6 @@ const scores = (doc, yInit, scoreValues) => {
   doc.text(X_MARGIN + SCORE_OFFSET, y, 'New Criminal Activity Scale');
   y += Y_INC;
   y = scale(doc, y, scoreValues.get('ncaScale'));
-  // TODO: draw the boxes
   y += Y_INC;
   doc.text(X_MARGIN + SCORE_OFFSET, y, 'Failure to Appear Flag');
   y += Y_INC;
@@ -429,7 +428,7 @@ const caseHistory = (doc, yInit, pageInit, name, allCases, chargesByCaseNum) => 
     y += Y_INC;
     const chargesForCase = chargesByCaseNum.get(caseNum, Immutable.List());
     if (chargesForCase.size) {
-      [y, page] = charges(doc, y, page, name, null, chargesForCase, true); // TODO chargesForCase should be immutable
+      [y, page] = charges(doc, y, page, name, null, chargesForCase, true);
     }
     thickLine(doc, y);
     y += Y_INC;
@@ -443,7 +442,7 @@ const exportPDF = (data, selectedPretrialCase, selectedPerson, allCases, allChar
   let y = 20;
   let page = 1;
   const name = getName(selectedPerson);
-  const chargesByCaseNum = getChargesByCaseNum(allCharges); // TODO this is immutable now
+  const chargesByCaseNum = getChargesByCaseNum(allCharges);
   const caseIdArr = selectedPretrialCase.get(CASE_ID_FQN, Immutable.List());
   const mostSeriousCharge = selectedPretrialCase.getIn([MOST_SERIOUS_CHARGE_NO, 0], '');
 

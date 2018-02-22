@@ -153,6 +153,7 @@ export function getScoresAndRiskFactors(psaForm) {
     priorConviction,
     currentViolentOffenseAndYoung
   } = psaForm;
+
   let ageAtCurrentArrestValue = '20 or Younger';
   if (ageAtCurrentArrest === '1') ageAtCurrentArrestValue = '21 or 22';
   else if (ageAtCurrentArrest === '2') ageAtCurrentArrestValue = '23 or Older';

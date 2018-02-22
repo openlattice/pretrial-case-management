@@ -105,8 +105,8 @@ export default class PSAReviewRow extends React.Component {
 
   static propTypes = {
     entityKeyId: PropTypes.string.isRequired,
-    scores: PropTypes.instanceOf(Immutable.Map),
-    neighbors: PropTypes.instanceOf(Immutable.Map),
+    scores: PropTypes.instanceOf(Immutable.Map).isRequired,
+    neighbors: PropTypes.instanceOf(Immutable.Map).isRequired,
     downloadFn: PropTypes.func.isRequired,
     updateScoresAndRiskFactors: PropTypes.func.isRequired
   }
@@ -130,7 +130,7 @@ export default class PSAReviewRow extends React.Component {
     const priorFTAVal = riskFactors.getIn([PROPERTY_TYPES.PRIOR_FAILURE_TO_APPEAR_RECENT_FQN, 0]);
     const priorFTA = (priorFTAVal === '2 or more') ? 2 : priorFTAVal;
 
-    return {
+    return Immutable.fromJS({
       [PSA.AGE_AT_CURRENT_ARREST]: `${ageAtCurrentArrest}`,
       [PSA.CURRENT_VIOLENT_OFFENSE]: `${riskFactors.getIn([PROPERTY_TYPES.CURRENT_VIOLENT_OFFENSE_FQN, 0])}`,
       [PSA.PENDING_CHARGE]: `${riskFactors.getIn([PROPERTY_TYPES.PENDING_CHARGE_FQN, 0])}`,
@@ -141,7 +141,7 @@ export default class PSAReviewRow extends React.Component {
       [PSA.PRIOR_FAILURE_TO_APPEAR_OLD]: `${riskFactors.getIn([PROPERTY_TYPES.PRIOR_FAILURE_TO_APPEAR_OLD_FQN, 0])}`,
       [PSA.PRIOR_SENTENCE_TO_INCARCERATION]:
         `${riskFactors.getIn([PROPERTY_TYPES.PRIOR_SENTENCE_TO_INCARCERATION_FQN, 0])}`
-    };
+    });
   }
 
   downloadRow = () => {
@@ -210,14 +210,14 @@ export default class PSAReviewRow extends React.Component {
   )
 
   handleRiskFactorChange = (e) => {
-    const { riskFactors } = this.state;
-    riskFactors[e.target.name] = e.target.value;
+    let { riskFactors } = this.state;
+    riskFactors = riskFactors.set(e.target.name, e.target.value);
     this.setState({ riskFactors });
   }
 
   onRiskFactorEdit = (e) => {
     e.preventDefault();
-    const { scores, riskFactors } = getScoresAndRiskFactors(this.state.riskFactors);
+    const { scores, riskFactors } = getScoresAndRiskFactors(this.state.riskFactors.toJS());
     const scoresEntity = {
       [PROPERTY_TYPES.NCA_SCALE_FQN]: [scores.ncaScale],
       [PROPERTY_TYPES.FTA_SCALE_FQN]: [scores.ftaScale],
@@ -231,7 +231,13 @@ export default class PSAReviewRow extends React.Component {
       'id'
     ]);
     const riskFactorsId = this.props.neighbors.getIn([ENTITY_SETS.PSA_RISK_FACTORS, 'neighborId']);
-    this.props.updateScoresAndRiskFactors(scoresId, scoresEntity, riskFactorsEntitySetId, riskFactorsId, riskFactors);
+    this.props.updateScoresAndRiskFactors(
+      scoresId,
+      scoresEntity,
+      riskFactorsEntitySetId,
+      riskFactorsId,
+      riskFactors
+    );
     this.setState({ open: false });
   }
 
@@ -261,7 +267,7 @@ export default class PSAReviewRow extends React.Component {
           <div>
             <PSAInputForm
                 section="review"
-                input={Immutable.fromJS(riskFactors)}
+                input={riskFactors}
                 handleSingleSelection={this.handleRiskFactorChange}
                 handleSubmit={this.onRiskFactorEdit}
                 incompleteError={false} />
