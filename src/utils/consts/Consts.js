@@ -1,3 +1,7 @@
+/*
+ * @flow
+ */
+
 export const MAX_PAGE = 5;
 
 export const FORM_PATHS = {

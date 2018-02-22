@@ -1,3 +1,7 @@
+/*
+ * @flow
+ */
+
 import styled from 'styled-components';
 import { Link } from 'react-router-dom';
 import {
@@ -78,15 +82,11 @@ export const InlineCheckbox = styled(Checkbox)`
   margin-left: 0 !important;
 `;
 
-export const InputWrapper = styled(({ flex, children, ...rest }) => {
-  return (
-    <FormGroup {...rest}>{children}</FormGroup>
-  );
-})`
+export const InputWrapper = styled(({ flex, children, ...rest }) => (
+  <FormGroup {...rest}>{children}</FormGroup>
+))`
   padding-right: 30px;
-  flex: ${(props) => {
-    return props.flex || FLEX.COL_1_3;
-  }};
+  flex: ${props => props.flex || FLEX.COL_1_3};
 `;
 
 export const OtherWrapper = styled.span`
@@ -218,9 +218,7 @@ export const SubmitButtonWrapper = ButtonWrapper.extend`
 `;
 
 export const SubmitButton = styled(Button).attrs({
-  type: (props) => {
-    return props.type || 'submit';
-  }
+  type: props => props.type || 'submit'
 })`
   background-color: #2AA1C0;
   border: none;

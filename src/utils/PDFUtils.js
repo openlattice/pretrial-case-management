@@ -1,3 +1,7 @@
+/*
+ * @flow
+ */
+
 import JSPDF from 'jspdf';
 import Immutable from 'immutable';
 import moment from 'moment';
@@ -60,14 +64,14 @@ const BOX_MARGIN = X_MARGIN + 5;
 const BOX_HEIGHT = 10;
 const BOX_WIDTH = (X_MAX - (2 * BOX_MARGIN)) / 6;
 
-const newPage = (doc, pageInit, name) => {
+const newPage = (doc :Object, pageInit :number, name :string) :number[] => {
   const page = pageInit + 1;
   doc.addPage();
   doc.text(10, X_MARGIN, `${name} - ${page}`);
   return [20, page];
 };
 
-const getName = (selectedPerson) => {
+const getName = (selectedPerson :Immutable.Map<*, *>) :string => {
   let name = formatValue(selectedPerson.get(FIRST_NAME, ''));
   const middleName = selectedPerson.get(MIDDLE_NAME, '');
   if (middleName.length) name = name.concat(` ${formatValue(middleName)}`);
@@ -75,7 +79,7 @@ const getName = (selectedPerson) => {
   return name;
 };
 
-const getMostSevChargeText = (pretrialInfo) => {
+const getMostSevChargeText = (pretrialInfo :Immutable.Map<*, *>) :string => {
   const mostSeriousChargeNoList = pretrialInfo.get(MOST_SERIOUS_CHARGE_NO, Immutable.List());
   const mostSeriousChargeDescList = pretrialInfo.get(MOST_SERIOUS_CHARGE_DESC, Immutable.List());
   const mostSeriousChargeDegList = pretrialInfo.get(MOST_SERIOUS_CHARGE_DEG, Immutable.List());
@@ -91,7 +95,7 @@ const getMostSevChargeText = (pretrialInfo) => {
   return text;
 };
 
-const getChargeText = (charge) => {
+const getChargeText = (charge :Immutable.Map<*, *>) :string => {
   const chargeNumList = charge.get(CHARGE_NUM_FQN, Immutable.List());
   const chargeDescList = charge.get(CHARGE_DESCRIPTION_FQN, Immutable.List());
   const chargeDegList = charge.get(CHARGE_DEGREE_FQN, Immutable.List());
@@ -108,7 +112,7 @@ const getChargeText = (charge) => {
   return text;
 };
 
-const getPleaText = (charge) => {
+const getPleaText = (charge :Immutable.Map<*, *>) :string => {
   const pleaDateList = charge.get(PLEA_DATE, Immutable.List());
   const pleaList = charge.get(PLEA, Immutable.List());
 
@@ -123,7 +127,7 @@ const getPleaText = (charge) => {
   return `Plea: ${text}`;
 };
 
-const getDispositionText = (charge) => {
+const getDispositionText = (charge :Immutable.Map<*, *>) :string => {
   const dispositionDateList = charge.get(DISPOSITION_DATE, Immutable.List());
   const dispositionList = charge.get(DISPOSITION, Immutable.List());
 
@@ -138,24 +142,24 @@ const getDispositionText = (charge) => {
   return `Disposition: ${text}`;
 };
 
-const getPdfName = (name) => {
+const getPdfName = (name :string) :string => {
   const dashedName = name.replace(/\./g, '').replace(/ /g, '-');
   return `PSA-Report-${dashedName}-${moment().format('MM/DD/YYYY')}.pdf`;
 };
 
-const getBooleanText = bool => (bool ? 'Yes' : 'No');
+const getBooleanText = (bool :boolean) :string => (bool ? 'Yes' : 'No');
 
-const thinLine = (doc, y) => {
+const thinLine = (doc :Object, y :number) :void => {
   doc.setLineWidth(0.1);
   doc.line(X_MARGIN, y, X_MAX - X_MARGIN, y);
 };
 
-const thickLine = (doc, y) => {
+const thickLine = (doc :Object, y :number) :void => {
   doc.setLineWidth(0.5);
   doc.line(X_MARGIN, y, X_MAX - X_MARGIN, y);
 };
 
-const header = (doc, yInit) => {
+const header = (doc :Object, yInit :number) :number => {
   let y = yInit;
   doc.setFontSize(LARGE_FONT_SIZE);
   doc.text(X_MARGIN, y, 'PRETRIAL SERVICES');
@@ -168,7 +172,13 @@ const header = (doc, yInit) => {
   return y;
 };
 
-const person = (doc, yInit, selectedPerson, selectedPretrialCase, name) => {
+const person = (
+  doc :Object,
+  yInit :number,
+  selectedPerson :Immutable.Map<*, *>,
+  selectedPretrialCase :Immutable.Map<*, *>,
+  name :string
+) :number => {
   let y = yInit;
   doc.text(X_MARGIN, y, `Name: ${name}`);
   doc.text(X_MAX / 2, y, `PID: ${formatValue(selectedPerson.get(PERSON_ID))}`);
@@ -183,7 +193,7 @@ const person = (doc, yInit, selectedPerson, selectedPretrialCase, name) => {
   return y;
 };
 
-const box = (doc, y, num) => {
+const box = (doc :Object, y :number, num :number) :void => {
   const x = BOX_MARGIN + ((num - 1) * BOX_WIDTH);
   doc.rect(x, y, BOX_WIDTH, BOX_HEIGHT, 'FD');
   const textX = x + ((BOX_WIDTH / 2) - 1);
@@ -191,21 +201,21 @@ const box = (doc, y, num) => {
   doc.text(textX, textY, num.toString());
 };
 
-const unselectedBox = (doc, y, value) => {
+const unselectedBox = (doc :Object, y :number, value :number) :void => {
   doc.setDrawColor(128);
   doc.setFillColor(255);
   doc.setTextColor(0);
   box(doc, y, value);
 };
 
-const selectedBox = (doc, y, value) => {
+const selectedBox = (doc :Object, y :number, value :number) :void => {
   doc.setDrawColor(128);
   doc.setFillColor(0);
   doc.setTextColor(255);
   box(doc, y, value);
 };
 
-const scale = (doc, yInit, value) => {
+const scale = (doc :Object, yInit :number, value :number) :number => {
   let y = yInit;
   for (let i = 1; i <= 6; i += 1) {
     if (i <= value) selectedBox(doc, yInit, i);
@@ -216,7 +226,7 @@ const scale = (doc, yInit, value) => {
   return y;
 };
 
-const scores = (doc, yInit, scoreValues) => {
+const scores = (doc :Object, yInit :number, scoreValues :Immutable.Map<*, *>) :number => {
   let y = yInit;
   doc.text(X_MARGIN + SCORE_OFFSET, y, 'New Violent Criminal Activity Flag');
   y += Y_INC;
@@ -233,9 +243,17 @@ const scores = (doc, yInit, scoreValues) => {
   return y;
 };
 
-const charges = (doc, yInit, pageInit, name, selectedPretrialCase, selectedCharges, showDetails) => {
-  let y = yInit;
-  let page = pageInit;
+const charges = (
+  doc :Object,
+  yInit :number,
+  pageInit :number,
+  name :string,
+  selectedPretrialCase :Immutable.Map<*, *>,
+  selectedCharges :Immutable.List<*>,
+  showDetails :boolean
+) :number[] => {
+  let y :number = yInit;
+  let page :number = pageInit;
   doc.text(X_MARGIN, y, 'Charge(s):');
   y += Y_INC_SMALL;
   thinLine(doc, y);
@@ -270,7 +288,7 @@ const charges = (doc, yInit, pageInit, name, selectedPretrialCase, selectedCharg
   return [y, page];
 };
 
-const chargeReferences = (yInit, doc, referenceCharges) => {
+const chargeReferences = (yInit :number, doc :Object, referenceCharges :Immutable.List<*>) :number => {
   let y = yInit;
   if (referenceCharges.size) {
     const chargeText = referenceCharges.join(', ');
@@ -284,18 +302,18 @@ const chargeReferences = (yInit, doc, referenceCharges) => {
 };
 
 const riskFactors = (
-  doc,
-  yInit,
-  pageInit,
-  name,
-  riskFactorVals,
-  currCharges,
-  allCharges,
-  mostSeriousCharge,
-  currCaseNum,
-  dateArrested,
-  allCases
-) => {
+  doc :Object,
+  yInit :number,
+  pageInit :number,
+  name :string,
+  riskFactorVals :Immutable.Map<*, *>,
+  currCharges :Immutable.List<*>,
+  allCharges :Immutable.List<*>,
+  mostSeriousCharge :string,
+  currCaseNum :string,
+  dateArrested :string,
+  allCases :Immutable.List<*>
+) :number[] => {
   let y = yInit;
   let page = pageInit;
   if (y > 190) {
@@ -370,7 +388,7 @@ const riskFactors = (
   return [y, page];
 };
 
-const recommendations = (doc, yInit, releaseRecommendation) => {
+const recommendations = (doc :Object, yInit :number, releaseRecommendation :string) :number => {
   let y = yInit;
   doc.text(X_MARGIN, y, 'Recommendations:');
   y += Y_INC_SMALL;
@@ -383,7 +401,7 @@ const recommendations = (doc, yInit, releaseRecommendation) => {
   return y;
 };
 
-const caseHistoryHeader = (doc, yInit) => {
+const caseHistoryHeader = (doc :Object, yInit :number) :number => {
   let y = yInit;
   doc.setFontSize(LARGE_FONT_SIZE);
   doc.text(X_MARGIN, y, 'CASE HISTORY');
@@ -394,7 +412,7 @@ const caseHistoryHeader = (doc, yInit) => {
   return y;
 };
 
-const getChargesByCaseNum = (allCharges) => {
+const getChargesByCaseNum = (allCharges :Immutable.List<*>) :Immutable.Map<*, *> => {
   let chargesByCaseNum = Immutable.Map();
   allCharges.forEach((charge) => {
     const chargeIdStr = charge.getIn([CHARGE_ID_FQN, 0], '');
@@ -409,7 +427,14 @@ const getChargesByCaseNum = (allCharges) => {
   return chargesByCaseNum;
 };
 
-const caseHistory = (doc, yInit, pageInit, name, allCases, chargesByCaseNum) => {
+const caseHistory = (
+  doc :Object,
+  yInit :number,
+  pageInit :number,
+  name :string,
+  allCases :Immutable.List<*>,
+  chargesByCaseNum :Immutable.Map<*, *>
+) :number[] => {
   let [y, page] = newPage(doc, pageInit, name);
   y = caseHistoryHeader(doc, y);
 
@@ -436,7 +461,13 @@ const caseHistory = (doc, yInit, pageInit, name, allCases, chargesByCaseNum) => 
   return [y, page];
 };
 
-const exportPDF = (data, selectedPretrialCase, selectedPerson, allCases, allCharges) => {
+const exportPDF = (
+  data :Immutable.Map<*, *>,
+  selectedPretrialCase :Immutable.Map<*, *>,
+  selectedPerson :Immutable.Map<*, *>,
+  allCases :Immutable.List<*>,
+  allCharges :Immutable.List<*>
+) :void => {
   const doc = new JSPDF();
   doc.setFontType('regular');
   let y = 20;

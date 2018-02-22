@@ -1,17 +1,14 @@
+/*
+ * @flow
+ */
+
 import Immutable from 'immutable';
 
 import { PROPERTY_TYPES } from './DataModelConsts';
 import { formatValue, formatDateList } from '../Utils';
 
 const {
-  DOB,
-  ARREST_DATE_FQN,
-  MOST_SERIOUS_CHARGE_NO,
   CHARGE_NUM_FQN,
-  CASE_ID_FQN,
-  CHARGE_ID_FQN,
-  CHARGE_DEGREE_FQN,
-  DISPOSITION,
   DISPOSITION_DATE
 } = PROPERTY_TYPES;
 
@@ -106,20 +103,21 @@ const GUILTY_DISPOSITIONS = [
   'Suspended Imposition Revoked/Released'
 ];
 
-const stripDegree = chargeNum => chargeNum.trim().split('(')[0];
+const stripDegree = (chargeNum :string) :string => chargeNum.trim().split('(')[0];
 
-export const chargeIsViolent = chargeNum => VIOLENT_CHARGES.includes(stripDegree(chargeNum));
+export const chargeIsViolent = (chargeNum :string) :boolean => VIOLENT_CHARGES.includes(stripDegree(chargeNum));
 
-export const getUnique = field => field.filter((val, index) => field.indexOf(val) === index);
+export const getUnique = (field :Immutable.List<string>) :Immutable.List<string> =>
+  field.filter((val, index) => field.indexOf(val) === index);
 
-export const getViolentChargeNums = chargeFields =>
+export const getViolentChargeNums = (chargeFields :Immutable.List<string>) :Immutable.List<string> =>
   getUnique(chargeFields.filter(charge => charge && chargeIsViolent(charge)));
 
-export const chargeFieldIsViolent = chargeField => getViolentChargeNums(chargeField).size > 0;
+export const chargeFieldIsViolent = (chargeField :Immutable.List<string>) => getViolentChargeNums(chargeField).size > 0;
 
-export const dispositionIsGuilty = disposition => GUILTY_DISPOSITIONS.includes(disposition);
+export const dispositionIsGuilty = (disposition :string) :boolean => GUILTY_DISPOSITIONS.includes(disposition);
 
-export const dispositionFieldIsGuilty = (dispositionField) => {
+export const dispositionFieldIsGuilty = (dispositionField :Immutable.List<string>) :boolean => {
   let guilty = false;
   if (dispositionField.size) {
     dispositionField.forEach((disposition) => {
@@ -129,7 +127,7 @@ export const dispositionFieldIsGuilty = (dispositionField) => {
   return guilty;
 };
 
-export const degreeFieldIsMisdemeanor = (degreeField) => {
+export const degreeFieldIsMisdemeanor = (degreeField :Immutable.List<string>) :boolean => {
   let result = false;
   degreeField.forEach((degree) => {
     if (degree.toLowerCase().startsWith('m')) result = true;
@@ -137,7 +135,7 @@ export const degreeFieldIsMisdemeanor = (degreeField) => {
   return result;
 };
 
-export const degreeFieldIsFelony = (degreeField) => {
+export const degreeFieldIsFelony = (degreeField :Immutable.List<string>) :boolean => {
   let result = false;
   degreeField.forEach((degree) => {
     if (degree.toLowerCase().startsWith('f')) result = true;
@@ -145,7 +143,7 @@ export const degreeFieldIsFelony = (degreeField) => {
   return result;
 };
 
-export const getChargeTitle = (charge) => {
+export const getChargeTitle = (charge :Immutable.Map<*, *>) :string => {
   const degree = formatValue(charge.get(CHARGE_NUM_FQN, Immutable.List()));
   const dispositionDate = formatDateList(charge.get(DISPOSITION_DATE, Immutable.List()));
   let val = `${degree}`;

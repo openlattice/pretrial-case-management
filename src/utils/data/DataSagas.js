@@ -18,17 +18,12 @@ import {
   loadPersonDetailsRequest
 } from '../../containers/person/PersonActionFactory';
 
-export function* deleteEntity() :Generator<> {
+export function* deleteEntity() :Generator<*, *, *> {
   while (true) {
     const {
       entitySetId,
       entityKeyId
     } = yield take(ActionTypes.DELETE_ENTITY_REQUEST);
-
-    const state = yield select();
-    const personId = state.getIn(['search', 'selectedPersonId'], '');
-    if (personId) yield put(loadPersonDetailsRequest(personId, false));
-
     try {
       yield call(DataApi.deleteEntityFromEntitySet, entitySetId, entityKeyId);
       yield put(deleteEntitySuccess(entityKeyId));
@@ -43,7 +38,7 @@ export function* deleteEntity() :Generator<> {
   }
 }
 
-export function* replaceEntity() :Generator<> {
+export function* replaceEntity() :Generator<*, *, *> {
   while (true) {
     const {
       entitySetId,

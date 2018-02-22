@@ -1,3 +1,7 @@
+/*
+ * @flow
+ */
+
 import * as SubmitActionTypes from './SubmitActionTypes';
 
 export function submit(config :Object, values :Object) :Object {
@@ -14,7 +18,7 @@ export function submitSuccess() :Object {
   };
 }
 
-export function submitFailure() {
+export function submitFailure() :Object {
   return {
     type: SubmitActionTypes.SUBMIT_FAILURE
   };

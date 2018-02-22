@@ -235,7 +235,7 @@ class Form extends React.Component<Props, State> {
       || charges.size
       || pretrialCaseOptions.size
       || allChargesForPerson.size) {
-      actions.setPSAValues(Immutable.fromJS(tryAutofillFields(
+      actions.setPSAValues(tryAutofillFields(
         selectedPretrialCase,
         charges,
         pretrialCaseOptions,
@@ -243,7 +243,7 @@ class Form extends React.Component<Props, State> {
         this.props.selectedPretrialCase,
         this.props.selectedPerson,
         psaForm
-      )));
+      ));
     }
   }
 

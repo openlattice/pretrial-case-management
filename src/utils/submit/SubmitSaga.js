@@ -58,7 +58,7 @@ function shouldCreateEntity(entityDescription, values, details) {
   return true;
 }
 
-export default function* submitData() :Generator<> {
+export default function* submitData() :Generator<*, *, *> {
   while (true) {
     const {
       config,
@@ -67,27 +67,23 @@ export default function* submitData() :Generator<> {
 
 
     try {
-      const allEntitySetIdsRequest = config.entitySets.map((entitySet) => {
-        return call(EntityDataModelApi.getEntitySetId, entitySet.name);
-      });
+      const allEntitySetIdsRequest = config.entitySets.map(entitySet =>
+        call(EntityDataModelApi.getEntitySetId, entitySet.name));
       const allEntitySetIds = yield all(allEntitySetIdsRequest);
 
-      const allSyncIdsRequest = allEntitySetIds.map((id) => {
-        return call(SyncApi.getCurrentSyncId, id);
-      });
+      const allSyncIdsRequest = allEntitySetIds.map(id =>
+        call(SyncApi.getCurrentSyncId, id));
       const allSyncIds = yield all(allSyncIdsRequest);
 
-      const edmDetailsRequest = allEntitySetIds.map((id) => {
-        return {
-          id,
-          type: 'EntitySet',
-          include: [
-            'EntitySet',
-            'EntityType',
-            'PropertyTypeInEntitySet'
-          ]
-        };
-      });
+      const edmDetailsRequest = allEntitySetIds.map(id => ({
+        id,
+        type: 'EntitySet',
+        include: [
+          'EntitySet',
+          'EntityType',
+          'PropertyTypeInEntitySet'
+        ]
+      }));
       const edmDetails = yield call(EntityDataModelApi.getEntityDataModelProjection, edmDetailsRequest);
 
       const propertyTypesByFqn = {};
@@ -162,9 +158,8 @@ export default function* submitData() :Generator<> {
         }
       });
 
-      const ticketsRequest = allEntitySetIds.map((entitySetId, index) => {
-        return call(DataApi.acquireSyncTicket, entitySetId, allSyncIds[index]);
-      });
+      const ticketsRequest = allEntitySetIds.map((entitySetId, index) =>
+        call(DataApi.acquireSyncTicket, entitySetId, allSyncIds[index]));
       const syncTickets = yield all(ticketsRequest);
 
       yield call(DataApi.createEntityAndAssociationData, { syncTickets, entities, associations });

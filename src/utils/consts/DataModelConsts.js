@@ -1,3 +1,7 @@
+/*
+ * @flow
+ */
+
 export const ENTITY_SETS = {
   PEOPLE: 'southdakotapeople',
   ADDRESSES: 'southdakotaaddresses',

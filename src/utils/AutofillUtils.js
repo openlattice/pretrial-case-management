@@ -1,3 +1,7 @@
+/*
+ * @flow
+ */
+
 import Immutable from 'immutable';
 import moment from 'moment';
 
@@ -35,7 +39,7 @@ const {
   PRIOR_SENTENCE_TO_INCARCERATION
 } = PSA;
 
-export const getViolentCharges = (charges, mostSeriousCharge) => {
+export const getViolentCharges = (charges :Immutable.List<*>, mostSeriousCharge :string) :Immutable.List<*> => {
   if (!charges.size) {
     if (!mostSeriousCharge) return Immutable.List();
     if (getViolentChargeNums(Immutable.List.of(mostSeriousCharge)).size) {
@@ -55,10 +59,14 @@ export const getViolentCharges = (charges, mostSeriousCharge) => {
   }).map(charge => getChargeTitle(charge));
 };
 
-export const tryAutofillCurrentViolentCharge = (charges, mostSeriousCharge) =>
+export const tryAutofillCurrentViolentCharge = (charges :Immutable.List<*>, mostSeriousCharge :string) :string =>
   `${getViolentCharges(charges, mostSeriousCharge).size > 0}`;
 
-export const tryAutofillAge = (dateArrested, defaultValue, selectedPerson) => {
+export const tryAutofillAge = (
+  dateArrested :string,
+  defaultValue :string,
+  selectedPerson :Immutable.Map<*, *>
+) :string => {
   const dob = moment.utc(selectedPerson.getIn([DOB, 0], ''));
   const arrest = moment.utc(dateArrested);
   let ageAtCurrentArrestValue = defaultValue;
@@ -73,7 +81,12 @@ export const tryAutofillAge = (dateArrested, defaultValue, selectedPerson) => {
   return ageAtCurrentArrestValue;
 };
 
-export const getPendingCharges = (currCaseNum, dateArrested, allCases, allCharges) => {
+export const getPendingCharges = (
+  currCaseNum :string,
+  dateArrested :string,
+  allCases :Immutable.List<*>,
+  allCharges :Immutable.List<*>
+) :Immutable.List<*> => {
   if (!dateArrested || !dateArrested.length || !currCaseNum || !currCaseNum.length) return Immutable.List();
   const arrest = moment.utc(dateArrested);
   const casesWithArrestBefore = [];
@@ -114,22 +127,29 @@ export const getPendingCharges = (currCaseNum, dateArrested, allCases, allCharge
   return Immutable.List();
 };
 
-export const tryAutofillPendingCharge = (currCaseNum, dateArrested, allCases, allCharges, defaultValue) => {
+export const tryAutofillPendingCharge = (
+  currCaseNum :string,
+  dateArrested :string,
+  allCases :Immutable.List<*>,
+  allCharges :Immutable.List<*>,
+  defaultValue :string
+) :string => {
   if (!dateArrested.length || !currCaseNum.length) return defaultValue;
   return `${getPendingCharges(currCaseNum, dateArrested, allCases, allCharges).size > 0}`;
 };
 
-export const getPreviousMisdemeanors = (allCharges) => {
+export const getPreviousMisdemeanors = (allCharges :Immutable.List<*>) :Immutable.List<*> => {
   if (!allCharges.size) return Immutable.List();
   return getUnique(allCharges.filter(charge =>
     dispositionFieldIsGuilty(charge.get(DISPOSITION, Immutable.List()))
-    && degreeFieldIsMisdemeanor(charge.get(CHARGE_DEGREE_FQN), Immutable.List()))
+    && degreeFieldIsMisdemeanor(charge.get(CHARGE_DEGREE_FQN, Immutable.List())))
     .map(charge => getChargeTitle(charge)));
 };
 
-export const tryAutofillPreviousMisdemeanors = allCharges => `${getPreviousMisdemeanors(allCharges).size > 0}`;
+export const tryAutofillPreviousMisdemeanors = (allCharges :Immutable.List<*>) :string =>
+  `${getPreviousMisdemeanors(allCharges).size > 0}`;
 
-export const getPreviousFelonies = (allCharges) => {
+export const getPreviousFelonies = (allCharges :Immutable.List<*>) :Immutable.List<*> => {
   if (!allCharges.size) return Immutable.List();
   return getUnique(allCharges.filter(charge =>
     dispositionFieldIsGuilty(charge.get(DISPOSITION, Immutable.List()))
@@ -137,9 +157,10 @@ export const getPreviousFelonies = (allCharges) => {
     .map(charge => getChargeTitle(charge)));
 };
 
-export const tryAutofillPreviousFelonies = allCharges => `${getPreviousFelonies(allCharges).size > 0}`;
+export const tryAutofillPreviousFelonies = (allCharges :Immutable.List<*>) :string =>
+  `${getPreviousFelonies(allCharges).size > 0}`;
 
-export const getPreviousViolentCharges = (allCharges) => {
+export const getPreviousViolentCharges = (allCharges :Immutable.List<*>) :Immutable.List<*> => {
   if (!allCharges.size) return Immutable.List();
 
   return getUnique(allCharges
@@ -152,21 +173,21 @@ export const getPreviousViolentCharges = (allCharges) => {
     .map(charge => getChargeTitle(charge)));
 };
 
-export const tryAutofillPreviousViolentCharge = (allCharges) => {
+export const tryAutofillPreviousViolentCharge = (allCharges :Immutable.List<*>) :string => {
   const numViolentCharges = getPreviousViolentCharges(allCharges).size;
   if (numViolentCharges > 3) return '3';
   return `${numViolentCharges}`;
 };
 
 export const tryAutofillFields = (
-  nextCase,
-  nextCharges,
-  allCases,
-  allCharges,
-  currCase,
-  selectedPerson,
-  psaFormValues
-) => {
+  nextCase :Immutable.Map<*, *>,
+  nextCharges :Immutable.List<*>,
+  allCases :Immutable.List<*>,
+  allCharges :Immutable.List<*>,
+  currCase :Immutable.Map<*, *>,
+  selectedPerson :Immutable.Map<*, *>,
+  psaFormValues :Immutable.Map<*, *>
+) :Immutable.Map<*, *> => {
 
   let psaForm = psaFormValues;
 
@@ -222,5 +243,5 @@ export const tryAutofillFields = (
       psaForm = psaForm.set(PRIOR_VIOLENT_CONVICTION, tryAutofillPreviousViolentCharge(allCharges));
     }
   }
-  return psaForm.toJS();
+  return psaForm;
 };

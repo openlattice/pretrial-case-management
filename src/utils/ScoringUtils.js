@@ -1,3 +1,7 @@
+/*
+ * @flow
+ */
+
 import { PROPERTY_TYPES } from './consts/DataModelConsts';
 
 const {
@@ -14,7 +18,21 @@ const {
   PRIOR_SENTENCE_TO_INCARCERATION_FQN
 } = PROPERTY_TYPES;
 
-function getFtaScaleFromScore(score) {
+type PsaForm = {
+  ageAtCurrentArrest :string,
+  currentViolentOffense :string,
+  pendingCharge :string,
+  priorMisdemeanor :string,
+  priorFelony :string,
+  priorViolentConviction :string,
+  priorFailureToAppearRecent :string,
+  priorFailureToAppearOld :string,
+  priorSentenceToIncarceration :string,
+  priorConviction? :?string,
+  currentViolentOffenseAndYoung? :?string
+}
+
+function getFtaScaleFromScore(score :number) :number {
   switch (score) {
     case 0:
       return 1;
@@ -41,7 +59,7 @@ function getFtaScaleFromScore(score) {
   }
 }
 
-function getNcaScaleFromScore(score) {
+function getNcaScaleFromScore(score :number) :number {
   switch (score) {
     case 0:
       return 1;
@@ -74,12 +92,12 @@ function getNcaScaleFromScore(score) {
   }
 }
 
-function getNvcaFlagFromScore(score) {
+function getNvcaFlagFromScore(score :number) :boolean {
   if (score > 3) return true;
   return false;
 }
 
-export function getScores(psaForm) {
+export function getScores(psaForm :PsaForm) :{} {
   const {
     ageAtCurrentArrest,
     currentViolentOffense,
@@ -133,11 +151,17 @@ export function getScores(psaForm) {
   const ncaScale = getNcaScaleFromScore(ncaTotal);
   const nvcaFlag = getNvcaFlagFromScore(nvcaTotal);
 
-  return { ftaTotal, ncaTotal, nvcaTotal, ftaScale, ncaScale, nvcaFlag };
-
+  return {
+    ftaTotal,
+    ncaTotal,
+    nvcaTotal,
+    ftaScale,
+    ncaScale,
+    nvcaFlag
+  };
 }
 
-export function getScoresAndRiskFactors(psaForm) {
+export function getScoresAndRiskFactors(psaForm :PsaForm) :{} {
   const scores = getScores(psaForm);
   const {
     ageAtCurrentArrest,
