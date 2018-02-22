@@ -1,5 +1,8 @@
+/*
+ * @flow
+ */
+
 import React from 'react';
-import PropTypes from 'prop-types';
 import styled from 'styled-components';
 
 const Control = styled.label`
@@ -86,6 +89,16 @@ const CheckboxIndicator = styled.div`
   }
 `;
 
+type Props = {
+  name :string,
+  label :string,
+  value :string,
+  checked :boolean,
+  onChange :(event :Object) => void,
+  disabled? :boolean,
+  dataSection? :?string
+};
+
 const StyledCheckbox = ({
   name,
   label,
@@ -94,7 +107,7 @@ const StyledCheckbox = ({
   onChange,
   disabled,
   dataSection
-}) => (
+} :Props) => (
   <Control>{label}
     <CheckboxInput
         data-section={dataSection}
@@ -106,16 +119,6 @@ const StyledCheckbox = ({
     <CheckboxIndicator />
   </Control>
 );
-
-StyledCheckbox.propTypes = {
-  name: PropTypes.string.isRequired,
-  label: PropTypes.string.isRequired,
-  value: PropTypes.string.isRequired,
-  checked: PropTypes.bool.isRequired,
-  onChange: PropTypes.func.isRequired,
-  disabled: PropTypes.bool,
-  dataSection: PropTypes.string
-};
 
 StyledCheckbox.defaultProps = {
   disabled: false,

@@ -1,5 +1,8 @@
+/*
+ * @flow
+ */
+
 import React from 'react';
-import PropTypes from 'prop-types';
 import FontAwesome from 'react-fontawesome';
 import Immutable from 'immutable';
 import styled from 'styled-components';
@@ -9,7 +12,6 @@ import {
   DeleteButton,
   PaddedRow,
   SectionHeader,
-  SectionHeaderSubtitle,
   SubmitWrapper,
   StyledInnerSectionWrapper,
   TableFormControl,
@@ -21,38 +23,44 @@ import {
 import { LIST_FIELDS } from '../../utils/consts/Consts';
 import { getIsLastPage } from '../../utils/Helpers';
 
-const { ID, ENTITY_SET_ID } = LIST_FIELDS
+const { ID, ENTITY_SET_ID } = LIST_FIELDS;
 
 const InputCol = styled(Col)`
   margin: 10px 0;
 `;
 
-export default class AbstractListComponent extends React.Component {
-  static propTypes = {
-    actions: PropTypes.shape({
-      deleteEntityRequest: PropTypes.func.isRequired,
-      setInputValue: PropTypes.func.isRequired,
-      modifyRow: PropTypes.func.isRequired,
-      deleteRow: PropTypes.func.isRequired,
-      addRow: PropTypes.func.isRequired
-    }).isRequired,
-    values: PropTypes.instanceOf(Immutable.Map).isRequired,
-    valueList: PropTypes.instanceOf(Immutable.List).isRequired,
-    existingValueList: PropTypes.instanceOf(Immutable.List).isRequired,
-    fields: PropTypes.arrayOf(PropTypes.shape({
-      name: PropTypes.string.isRequired,
-      inputLabel: PropTypes.string.isRequired,
-      tableLabel: PropTypes.string.isRequired,
-      inputWidth: PropTypes.number.isRequired,
-      tableWidth: PropTypes.number.isRequired,
-      renderFn: PropTypes.func,
-      valueFilterFn: PropTypes.func,
-      onChange: PropTypes.func
-    })).isRequired,
-    header: PropTypes.string
-  }
+type FilterFunctionType = (value :string) => boolean;
 
-  handleInputChange = (e, optionalFilter) => {
+type Props = {
+  actions :{
+    deleteEntityRequest :(entitySetId :string, entityKeyId :string) => void,
+    setInputValue :(attrs :{
+      name :string,
+      value :string
+    }) => void,
+    modifyRow :(index :number, name :string, value :string) => void,
+    deleteRow :(index :number) => void,
+    addRow :(event :Object) => void
+  },
+  values :Immutable.Map<*, *>,
+  valueList :Immutable.List<*>,
+  existingValueList :Immutable.List<*>,
+  fields :{
+    name :string,
+    inputLabel :string,
+    tableLabel :string,
+    inputWidth :number,
+    tableWidth :number,
+    renderFn? :(name :string, value :string, updateFn :(event :Object) => void, editable :boolean) => void,
+    valueFilterFn? :FilterFunctionType,
+    onChange? :(event :Object) => void
+  }[],
+  header? :string
+};
+
+export default class AbstractListComponent extends React.Component<Props, *> {
+
+  handleInputChange = (e :Object, optionalFilter :FilterFunctionType) => {
     if (optionalFilter && optionalFilter(e.target.value) && e.target.value.length) return;
     this.props.actions.setInputValue({
       name: e.target.name,
@@ -60,7 +68,7 @@ export default class AbstractListComponent extends React.Component {
     });
   }
 
-  renderInputField = (field, optionalFilter) => {
+  renderInputField = (field :string, optionalFilter :FilterFunctionType) => {
     const onChange = (optionalFilter) ? (e) => {
       this.handleInputChange(e, optionalFilter);
     } : this.handleInputChange;
@@ -93,7 +101,7 @@ export default class AbstractListComponent extends React.Component {
     );
   }
 
-  handleRowUpdate = (e, index) => {
+  handleRowUpdate = (e :Object, index :number) => {
     const { name, value } = e.target;
     this.props.actions.modifyRow(index, name, value);
   }
@@ -161,12 +169,17 @@ export default class AbstractListComponent extends React.Component {
   renderInputFields = () => {
     const { fields, values } = this.props;
     const inputFields = fields.map((field) => {
-      const { name, inputLabel, inputWidth, valueFilterFn, renderFn, onChange } = field;
+      const {
+        name,
+        valueFilterFn,
+        renderFn,
+        onChange
+      } = field;
 
       const updateFn = onChange ? onChange : (e) => {
         this.handleInputChange(e, valueFilterFn);
       };
-      const element =  renderFn
+      const element = renderFn
         ? field.renderFn(name, values.get(name), updateFn, !getIsLastPage(window.location))
         : this.renderInputField(name, valueFilterFn);
 

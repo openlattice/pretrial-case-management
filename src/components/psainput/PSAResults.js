@@ -1,5 +1,8 @@
+/*
+ * @flow
+ */
+
 import React from 'react';
-import PropTypes from 'prop-types';
 import Immutable from 'immutable';
 import { Button } from 'react-bootstrap';
 
@@ -33,14 +36,18 @@ const {
   PRIOR_SENTENCE_TO_INCARCERATION_FQN
 } = PROPERTY_TYPES;
 
-export default class PSAResults extends React.Component {
+type Props = {
+  scores :Object,
+  riskFactors :Object
+};
 
-  static propTypes = {
-    scores: PropTypes.object.isRequired,
-    riskFactors: PropTypes.object.isRequired
-  }
+type State = {
+  showWeightedScores :boolean
+};
 
-  constructor(props) {
+export default class PSAResults extends React.Component<Props, State> {
+
+  constructor(props :Props) {
     super(props);
     this.state = {
       showWeightedScores: false
@@ -49,7 +56,7 @@ export default class PSAResults extends React.Component {
 
   getNvcaString = () => ((this.props.scores.nvcaFlag) ? 'Yes' : 'No')
 
-  renderScale = (val) => {
+  renderScale = (val :number) => {
     const scale = [];
     for (let i = 1; i < 7; i += 1) {
       const block = (i <= val)
@@ -130,7 +137,7 @@ export default class PSAResults extends React.Component {
     );
   }
 
-  renderWeightedScore = score => (this.state.showWeightedScores
+  renderWeightedScore = (score :number) => (this.state.showWeightedScores
     ? <WeightedScoreWrapper>Weighted Score: {score}</WeightedScoreWrapper> : null)
 
   renderNvca = () => (

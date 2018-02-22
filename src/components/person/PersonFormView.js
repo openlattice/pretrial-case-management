@@ -3,7 +3,6 @@
  */
 
 import React from 'react';
-import PropTypes from 'prop-types';
 import { FormControl, Col } from 'react-bootstrap';
 import DatePicker from 'react-bootstrap-date-picker';
 
@@ -11,9 +10,30 @@ import SectionView from '../SectionView';
 
 import { PaddedRow, FormWrapper, TitleLabel, SubmitButtonWrapper, SubmitButton } from '../../utils/Layout';
 
+type Props = {
+  section :string,
+  handleTextInput :(e :Object) => void,
+  handleDateInput :(e :Object, section :string, field :string) => void,
+  input :{
+    lastName :string,
+    firstName :string,
+    middleName :string,
+    dob :string,
+    id :string,
+    sex :string,
+    race :string,
+    ethnicity :string
+  },
+  handleSubmit :(e :Object) => void
+};
+
 const PersonFormView = ({
-  section, handleTextInput, handleDateInput, input, handleSubmit
-}) => (
+  section,
+  handleTextInput,
+  handleDateInput,
+  input,
+  handleSubmit
+} :Props) => (
   <FormWrapper>
     <form onSubmit={handleSubmit}>
       <SectionView header="Person Information">
@@ -69,13 +89,5 @@ const PersonFormView = ({
     </form>
   </FormWrapper>
 );
-
-PersonFormView.propTypes = {
-  handleTextInput: PropTypes.func.isRequired,
-  handleDateInput: PropTypes.func.isRequired,
-  input: PropTypes.object.isRequired,
-  section: PropTypes.string.isRequired,
-  handleSubmit: PropTypes.func.isRequired
-};
 
 export default PersonFormView;

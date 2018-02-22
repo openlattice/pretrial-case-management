@@ -1,5 +1,8 @@
+/*
+ * @flow
+ */
+
 import React from 'react';
-import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import { ProgressBar } from 'react-bootstrap';
 
@@ -8,17 +11,15 @@ const Bar = styled(ProgressBar)`
   width: 100%;
 `;
 
-const FormProgressBar = ({ progress }) => {
-  return (
-    <Bar bsStyle="info" now={progress.num} label={progress.percentage} />
-  );
+type Props = {
+  progress :{
+    num :number,
+    percentage :string
+  }
 };
 
-FormProgressBar.propTypes = {
-  progress: PropTypes.shape({
-    num: PropTypes.number.isRequired,
-    percentage: PropTypes.string.isRequired
-  }).isRequired
-};
+const FormProgressBar = ({ progress } :Props) => (
+  <Bar bsStyle="info" now={progress.num} label={progress.percentage} />
+);
 
 export default FormProgressBar;

@@ -1,5 +1,8 @@
+/*
+ * @flow
+ */
+
 import React from 'react';
-import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import Immutable from 'immutable';
 
@@ -44,15 +47,15 @@ const CardWrapper = styled.div`
   display: inline-block;
 `;
 
-export default class SelectedPretrialInfo extends React.Component {
+type Props = {
+  propertyTypes :Object[],
+  charges :Immutable.List<*>,
+  pretrialCaseDetails :Immutable.Map<*, *>
+};
 
-  static propTypes = {
-    propertyTypes: PropTypes.array.isRequired,
-    charges: PropTypes.instanceOf(Immutable.List).isRequired,
-    pretrialCaseDetails: PropTypes.instanceOf(Immutable.Map).isRequired
-  }
+export default class SelectedPretrialInfo extends React.Component<Props, *> {
 
-  getField = fieldName => this.props.pretrialCaseDetails.get(fieldName, '')
+  getField = (fieldName :string) => this.props.pretrialCaseDetails.get(fieldName, '')
 
   getInfoItems = () => {
     const labels = [];
@@ -71,7 +74,7 @@ export default class SelectedPretrialInfo extends React.Component {
     return labels;
   }
 
-  renderTags = (chargeNumField) => {
+  renderTags = (chargeNumField :string[]) => {
     let mostSerious = false;
     let violent = false;
 

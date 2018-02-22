@@ -1,5 +1,8 @@
+/*
+ * @flow
+ */
+
 import React from 'react';
-import PropTypes from 'prop-types';
 import Immutable from 'immutable';
 import FontAwesome from 'react-fontawesome';
 import styled from 'styled-components';
@@ -101,17 +104,28 @@ const colorsByScale = {
 
 const HEIGHT_MULTIPLIER = 10;
 
-export default class PSAReviewRow extends React.Component {
+type Props = {
+  entityKeyId :string,
+  scores :Immutable.Map<*, *>,
+  neighbors :Immutable.Map<*, *>,
+  downloadFn :(neighbors :Immutable.Map<*, *>, scores :Immutable.Map<*, *>) => void,
+  updateScoresAndRiskFactors :(
+    scoresId :string,
+    scoresEntity :Object,
+    riskFactorsEntitySetId :string,
+    riskFactorsId :string,
+    riskFactorsEntity :Object
+  ) => void
+};
 
-  static propTypes = {
-    entityKeyId: PropTypes.string.isRequired,
-    scores: PropTypes.instanceOf(Immutable.Map).isRequired,
-    neighbors: PropTypes.instanceOf(Immutable.Map).isRequired,
-    downloadFn: PropTypes.func.isRequired,
-    updateScoresAndRiskFactors: PropTypes.func.isRequired
-  }
+type State = {
+  open :boolean,
+  riskFactors :Immutable.Map<*, *>
+};
 
-  constructor(props) {
+export default class PSAReviewRow extends React.Component<Props, State> {
+
+  constructor(props :Props) {
     super(props);
     this.state = {
       open: false,
@@ -119,7 +133,7 @@ export default class PSAReviewRow extends React.Component {
     };
   }
 
-  getRiskFactors = (neighbors) => {
+  getRiskFactors = (neighbors :Immutable.Map<*, *>) => {
     const riskFactors = neighbors.getIn([ENTITY_SETS.PSA_RISK_FACTORS, 'neighborDetails'], Immutable.Map());
     const ageAtCurrentArrestVal = riskFactors.getIn([PROPERTY_TYPES.AGE_AT_CURRENT_ARREST_FQN, 0]);
     let ageAtCurrentArrest = 0;
@@ -156,13 +170,13 @@ export default class PSAReviewRow extends React.Component {
     return <PersonCard person={personDetails.set('id', neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborId']))} />;
   }
 
-  getScaleForScore = score => styled(Scale)`
+  getScaleForScore = (score :number) => styled(Scale)`
       height: ${HEIGHT_MULTIPLIER * score}px;
       background: ${colorsByScale[score]};
     `
 
   renderScores = () => {
-    const scores = this.props.scores;
+    const { scores } = this.props;
     const ftaVal = scores.getIn([PROPERTY_TYPES.FTA_SCALE_FQN, 0]);
     const ncaVal = scores.getIn([PROPERTY_TYPES.NCA_SCALE_FQN, 0]);
     const nvcaVal = scores.getIn([PROPERTY_TYPES.NVCA_FLAG_FQN, 0]);
@@ -209,13 +223,13 @@ export default class PSAReviewRow extends React.Component {
     </DownloadButtonContainer>
   )
 
-  handleRiskFactorChange = (e) => {
+  handleRiskFactorChange = (e :Object) => {
     let { riskFactors } = this.state;
     riskFactors = riskFactors.set(e.target.name, e.target.value);
     this.setState({ riskFactors });
   }
 
-  onRiskFactorEdit = (e) => {
+  onRiskFactorEdit = (e :Object) => {
     e.preventDefault();
     const { scores, riskFactors } = getScoresAndRiskFactors(this.state.riskFactors.toJS());
     const scoresEntity = {

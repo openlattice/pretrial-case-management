@@ -1,3 +1,7 @@
+/*
+ * @flow
+ */
+
 import React from 'react';
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
@@ -25,7 +29,21 @@ export const SubmitButton = NextButton.extend.attrs({
 })`
 `;
 
-const FormNav = ({ prevPath, nextPath, submit, handlePageChange, handleSubmit }) => {
+type Props = {
+  prevPath? :string,
+  nextPath? :string,
+  submit? :boolean,
+  handlePageChange :(path :string) => void,
+  handleSubmit :(event :Object) => void
+};
+
+const FormNav = ({
+  prevPath,
+  nextPath,
+  submit,
+  handlePageChange,
+  handleSubmit
+} :Props) => {
 
   const renderNav = () => {
     return (
@@ -72,14 +90,6 @@ FormNav.defaultProps = {
   prevPath: null,
   nextPath: null,
   submit: null
-};
-
-FormNav.propTypes = {
-  prevPath: PropTypes.string,
-  nextPath: PropTypes.string,
-  submit: PropTypes.bool,
-  handlePageChange: PropTypes.func.isRequired,
-  handleSubmit: PropTypes.func.isRequired
 };
 
 export default FormNav;

@@ -3,7 +3,6 @@
  */
 
 import React from 'react';
-import PropTypes from 'prop-types';
 import Immutable from 'immutable';
 import styled from 'styled-components';
 import { FormGroup, Col } from 'react-bootstrap';
@@ -50,12 +49,19 @@ const StyledFormWrapper = styled.div`
   margin: 0 60px 0 60px;
 `;
 
+type Props = {
+  handleSingleSelection :(event :Object) => void,
+  input :Immutable.Map<*, *>,
+  handleSubmit :(event :Object) => void,
+  incompleteError :boolean
+};
+
 const PSAInputForm = ({
   handleSingleSelection,
   input,
   handleSubmit,
   incompleteError
-}) => {
+} :Props) => {
 
   const noPriorConvictions = input.get(PRIOR_MISDEMEANOR) === 'false' && input.get(PRIOR_FELONY) === 'false';
 
@@ -168,13 +174,6 @@ const PSAInputForm = ({
       </StyledFormWrapper>
     </div>
   );
-};
-
-PSAInputForm.propTypes = {
-  handleSingleSelection: PropTypes.func.isRequired,
-  input: PropTypes.instanceOf(Immutable.Map).isRequired,
-  handleSubmit: PropTypes.func.isRequired,
-  incompleteError: PropTypes.bool.isRequired
 };
 
 export default PSAInputForm;

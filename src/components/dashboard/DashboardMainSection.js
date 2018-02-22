@@ -1,6 +1,9 @@
-import React from 'react';
+/*
+ * @flow
+ */
+
+import * as React from 'react';
 import styled from 'styled-components';
-import PropTypes from 'prop-types';
 
 const StyledSectionWrapper = styled.div`
   width: 100%;
@@ -14,16 +17,17 @@ const StyledHeader = styled.div`
   margin-bottom: 18px;
 `;
 
-const DashboardMainSection = props => (
+type Props = {
+  children :React.Node,
+  header :string
+};
+
+const DashboardMainSection = (props :Props) => (
   <StyledSectionWrapper>
     <StyledHeader>{props.header}</StyledHeader>
     {props.children}
   </StyledSectionWrapper>
 );
 
-DashboardMainSection.propTypes = {
-  children: PropTypes.node.isRequired,
-  header: PropTypes.string.isRequired
-};
 
 export default DashboardMainSection;

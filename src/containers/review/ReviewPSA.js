@@ -89,8 +89,8 @@ const DATE_FORMAT = 'MM/DD/YYYY';
 type Props = {
   history :string[],
   scoresEntitySetId :string,
-  scoresAsMap :Map<*, *>,
-  psaNeighborsByDate :Map<*, Map<*, *>>,
+  scoresAsMap :Immutable.Map<*, *>,
+  psaNeighborsByDate :Immutable.Map<*, Immutable.Map<*, *>>,
   loadingResults :boolean,
   errorMessage :string,
   actions :{

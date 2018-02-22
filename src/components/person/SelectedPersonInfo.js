@@ -1,10 +1,12 @@
+/*
+ * @flow
+ */
+
 import React from 'react';
-import PropTypes from 'prop-types';
 import Immutable from 'immutable';
 import styled from 'styled-components';
 
 import PersonCard from './PersonCard';
-import { formatValue, formatDateList } from '../../utils/Utils';
 import { InfoContainer, InfoWrapper, InfoHeader, Spacer } from '../../utils/Layout';
 
 
@@ -12,24 +14,24 @@ const CardContainer = styled.div`
   display: inline-block;
 `;
 
-export default class SelectedPersonInfo extends React.Component {
+type Props = {
+  personDetails :Immutable.Map<*, *>
+};
 
-  static propTypes = {
-    personDetails: PropTypes.instanceOf(Immutable.Map).isRequired
-  }
+const SelectedPersonInfo = ({ personDetails } :Props) => {
 
-  render() {
-    if (!this.props.personDetails.size) return null;
-    return (
-      <InfoContainer>
-        <Spacer />
-        <InfoHeader>Person</InfoHeader>
-        <InfoWrapper>
-          <CardContainer>
-            <PersonCard person={this.props.personDetails} />
-          </CardContainer>
-        </InfoWrapper>
-      </InfoContainer>
-    );
-  }
-}
+  if (!personDetails.size) return null;
+  return (
+    <InfoContainer>
+      <Spacer />
+      <InfoHeader>Person</InfoHeader>
+      <InfoWrapper>
+        <CardContainer>
+          <PersonCard person={personDetails} />
+        </CardContainer>
+      </InfoWrapper>
+    </InfoContainer>
+  );
+};
+
+export default SelectedPersonInfo;

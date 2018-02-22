@@ -1,13 +1,25 @@
+/*
+ * @flow
+ */
+
 import React from 'react';
-import PropTypes from 'prop-types';
 
 import StyledCard from '../../components/StyledCard';
 import * as Routes from '../../core/router/Routes';
 import { UndecoratedLink } from '../../utils/Layout';
 import Headshot from '../Headshot';
 
+type Props = {
+  person :{
+    firstName :string,
+    lastName :string,
+    dob :string,
+    photo :string,
+    identification :string
+  }
+};
 
-const PersonCard = ({ person }) => {
+const PersonCard = ({ person } :Props) => {
   const {
     firstName,
     lastName,
@@ -26,16 +38,6 @@ const PersonCard = ({ person }) => {
       </StyledCard>
     </UndecoratedLink>
   );
-};
-
-PersonCard.propTypes = {
-  person: PropTypes.shape({
-    identification: PropTypes.string.isRequired,
-    firstName: PropTypes.string.isRequired,
-    lastName: PropTypes.string.isRequired,
-    dob: PropTypes.string.isRequired,
-    photo: PropTypes.string
-  }).isRequired
 };
 
 export default PersonCard;
