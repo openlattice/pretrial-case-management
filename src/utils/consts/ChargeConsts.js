@@ -1,3 +1,5 @@
+import Immutable from 'immutable';
+
 import { PROPERTY_TYPES } from './DataModelConsts';
 import { formatValue, formatDateList } from '../Utils';
 
@@ -108,23 +110,18 @@ const stripDegree = chargeNum => chargeNum.trim().split('(')[0];
 
 export const chargeIsViolent = chargeNum => VIOLENT_CHARGES.includes(stripDegree(chargeNum));
 
-export const getUnique = (field) => {
-  if (!field || !field.length) return [];
-  return field.filter((val, index) => field.indexOf(val) === index);
-};
+export const getUnique = field => field.filter((val, index) => field.indexOf(val) === index);
 
-export const getViolentChargeNums = (chargeFields) => {
-  if (!chargeFields || !chargeFields.length) return [];
-  return getUnique(chargeFields.filter(charge => charge && chargeIsViolent(charge)));
-};
+export const getViolentChargeNums = chargeFields =>
+  getUnique(chargeFields.filter(charge => charge && chargeIsViolent(charge)));
 
-export const chargeFieldIsViolent = chargeField => getViolentChargeNums(chargeField).length > 0;
+export const chargeFieldIsViolent = chargeField => getViolentChargeNums(chargeField).size > 0;
 
 export const dispositionIsGuilty = disposition => GUILTY_DISPOSITIONS.includes(disposition);
 
 export const dispositionFieldIsGuilty = (dispositionField) => {
   let guilty = false;
-  if (dispositionField && dispositionField.length) {
+  if (dispositionField.size) {
     dispositionField.forEach((disposition) => {
       if (dispositionIsGuilty(disposition)) guilty = true;
     });
@@ -149,8 +146,8 @@ export const degreeFieldIsFelony = (degreeField) => {
 };
 
 export const getChargeTitle = (charge) => {
-  const degree = formatValue(charge[CHARGE_NUM_FQN]);
-  const dispositionDate = formatDateList(charge[DISPOSITION_DATE]);
+  const degree = formatValue(charge.get(CHARGE_NUM_FQN, Immutable.List()));
+  const dispositionDate = formatDateList(charge.get(DISPOSITION_DATE, Immutable.List()));
   let val = `${degree}`;
   if (dispositionDate && dispositionDate.length) val = `${val} (${dispositionDate})`;
   return val;

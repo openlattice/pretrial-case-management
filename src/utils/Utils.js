@@ -19,11 +19,11 @@ export function configureLattice(authToken :?string) :void {
   Lattice.configure({ authToken, baseUrl });
 }
 
-export function formatValue(rawValue :string|string[]) {
-  if (rawValue instanceof Array) {
-    return rawValue.join(', ');
+export function formatValue(rawValue :string | string[]) {
+  if (typeof rawValue === 'string') {
+    return rawValue || '';
   }
-  return rawValue || '';
+  return rawValue.join(', ');
 }
 
 export function formatDate(dateString :string) {
@@ -34,8 +34,6 @@ export function formatDate(dateString :string) {
 }
 
 export function formatDateList(dateList :string[]) {
-  if (!dateList || !dateList.length) return '';
-  return dateList.map((dateString) => {
-    return formatDate(dateString);
-  }).join(', ');
+  if (!dateList || (!dateList.length && !dateList.size)) return '';
+  return dateList.map(dateString => formatDate(dateString)).join(', ');
 }

@@ -261,7 +261,7 @@ export default class PSAReviewRow extends React.Component {
           <div>
             <PSAInputForm
                 section="review"
-                input={riskFactors}
+                input={Immutable.fromJS(riskFactors)}
                 handleSingleSelection={this.handleRiskFactorChange}
                 handleSubmit={this.onRiskFactorEdit}
                 incompleteError={false} />

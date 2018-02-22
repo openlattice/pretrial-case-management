@@ -448,9 +448,9 @@ class Form extends React.Component {
   )
 
   setMultimapToMap = (setMultimap) => {
-    const map = {};
+    let map = Immutable.Map();
     Object.keys(setMultimap).forEach((key) => {
-      map[key] = setMultimap[key][0];
+      map = map.set(key, setMultimap[key][0])
     });
     return map;
   };
@@ -468,12 +468,11 @@ class Form extends React.Component {
         <Button
             bsStyle="info"
             onClick={() => {
-              exportPDF(
-                Object.assign({}, this.state, { riskFactors: this.setMultimapToMap(this.state.riskFactors) }),
-                selectedPretrialCase.toJS(),
-                selectedPerson.toJS(),
-                pretrialCaseOptions.toJS(),
-                allChargesForPerson.toJS()
+              exportPDF(Immutable.fromJS(this.state).set('riskFactors', this.setMultimapToMap(this.state.riskFactors)),
+                selectedPretrialCase,
+                selectedPerson,
+                pretrialCaseOptions,
+                allChargesForPerson
               );
             }}>Export as PDF
         </Button>

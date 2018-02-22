@@ -1,3 +1,4 @@
+import Immutable from 'immutable';
 import moment from 'moment';
 
 import { PROPERTY_TYPES } from './consts/DataModelConsts';
@@ -35,27 +36,27 @@ const {
 } = PSA;
 
 export const getViolentCharges = (charges, mostSeriousCharge) => {
-  if (!charges || !charges.length) {
-    if (!mostSeriousCharge) return [];
-    if (getViolentChargeNums([mostSeriousCharge]).length) {
-      return [mostSeriousCharge];
+  if (!charges.size) {
+    if (!mostSeriousCharge) return Immutable.List();
+    if (getViolentChargeNums(Immutable.List.of(mostSeriousCharge)).size) {
+      return Immutable.List.of(mostSeriousCharge);
     }
   }
 
-  const chargesToConsider = charges
-    .filter(charge => charge[CHARGE_NUM_FQN] && charge[CHARGE_NUM_FQN].length)
-    .map(charge => charge[CHARGE_NUM_FQN][0]);
-  if (mostSeriousCharge && mostSeriousCharge.length) chargesToConsider.push(mostSeriousCharge);
-  const violentChargeNums = getViolentChargeNums(chargesToConsider);
+  const chargesNumsToConsider = charges
+    .filter(charge => charge.get(CHARGE_NUM_FQN, Immutable.List()).size)
+    .map(charge => charge.getIn([CHARGE_NUM_FQN, 0], ''));
+  if (mostSeriousCharge && mostSeriousCharge.length) chargesNumsToConsider.push(mostSeriousCharge);
+  const violentChargeNums = getViolentChargeNums(chargesNumsToConsider);
 
   return charges.filter((charge) => {
-    if (!charge[CHARGE_NUM_FQN] || !charge[CHARGE_NUM_FQN].length) return false;
-    return violentChargeNums.includes(charge[CHARGE_NUM_FQN][0]);
+    if (!charge.get(CHARGE_NUM_FQN, Immutable.List()).size) return false;
+    return violentChargeNums.includes(charge.getIn([CHARGE_NUM_FQN, 0], ''));
   }).map(charge => getChargeTitle(charge));
 };
 
 export const tryAutofillCurrentViolentCharge = (charges, mostSeriousCharge) =>
-  `${getViolentCharges(charges.toJS(), mostSeriousCharge).length > 0}`;
+  `${getViolentCharges(charges, mostSeriousCharge).size > 0}`;
 
 export const tryAutofillAge = (dateArrested, defaultValue, selectedPerson) => {
   const dob = moment.utc(selectedPerson.getIn([DOB, 0], ''));
@@ -73,7 +74,7 @@ export const tryAutofillAge = (dateArrested, defaultValue, selectedPerson) => {
 };
 
 export const getPendingCharges = (currCaseNum, dateArrested, allCases, allCharges) => {
-  if (!dateArrested || !dateArrested.length || !currCaseNum || !currCaseNum.length) return [];
+  if (!dateArrested || !dateArrested.length || !currCaseNum || !currCaseNum.length) return Immutable.List();
   const arrest = moment.utc(dateArrested);
   const casesWithArrestBefore = [];
   const casesWithDispositionAfter = new Set();
@@ -110,46 +111,49 @@ export const getPendingCharges = (currCaseNum, dateArrested, allCases, allCharge
     return casesWithArrestBefore
       .filter(caseNum => casesWithDispositionAfter.has(caseNum));
   }
-  return [];
+  return Immutable.List();
 };
 
 export const tryAutofillPendingCharge = (currCaseNum, dateArrested, allCases, allCharges, defaultValue) => {
   if (!dateArrested.length || !currCaseNum.length) return defaultValue;
-  return `${getPendingCharges(currCaseNum, dateArrested, allCases, allCharges).length > 0}`;
+  return `${getPendingCharges(currCaseNum, dateArrested, allCases, allCharges).size > 0}`;
 };
 
 export const getPreviousMisdemeanors = (allCharges) => {
-  if (!allCharges || !allCharges.length) return [];
+  if (!allCharges.size) return Immutable.List();
   return getUnique(allCharges.filter(charge =>
-    dispositionFieldIsGuilty(charge[DISPOSITION]) && degreeFieldIsMisdemeanor(charge[CHARGE_DEGREE_FQN]))
+    dispositionFieldIsGuilty(charge.get(DISPOSITION, Immutable.List()))
+    && degreeFieldIsMisdemeanor(charge.get(CHARGE_DEGREE_FQN), Immutable.List()))
     .map(charge => getChargeTitle(charge)));
 };
 
-export const tryAutofillPreviousMisdemeanors = allCharges => `${getPreviousMisdemeanors(allCharges).length > 0}`;
+export const tryAutofillPreviousMisdemeanors = allCharges => `${getPreviousMisdemeanors(allCharges).size > 0}`;
 
 export const getPreviousFelonies = (allCharges) => {
-  if (!allCharges || !allCharges.length) return [];
+  if (!allCharges.size) return Immutable.List();
   return getUnique(allCharges.filter(charge =>
-    dispositionFieldIsGuilty(charge[DISPOSITION]) && degreeFieldIsFelony(charge[CHARGE_DEGREE_FQN]))
+    dispositionFieldIsGuilty(charge.get(DISPOSITION, Immutable.List()))
+    && degreeFieldIsFelony(charge.get(CHARGE_DEGREE_FQN, Immutable.List())))
     .map(charge => getChargeTitle(charge)));
 };
 
-export const tryAutofillPreviousFelonies = allCharges => `${getPreviousFelonies(allCharges).length > 0}`;
+export const tryAutofillPreviousFelonies = allCharges => `${getPreviousFelonies(allCharges).size > 0}`;
 
 export const getPreviousViolentCharges = (allCharges) => {
-  if (!allCharges || !allCharges.length) return [];
+  if (!allCharges.size) return Immutable.List();
 
   return getUnique(allCharges
     .filter((charge) => {
-      const chargeNumArr = charge[CHARGE_NUM_FQN];
-      return chargeNumArr && chargeNumArr.length
-        && dispositionFieldIsGuilty(charge[DISPOSITION]) && chargeFieldIsViolent([chargeNumArr[0]]);
+      const chargeNum = charge.getIn([CHARGE_NUM_FQN, 0], '');
+      return chargeNum.length
+        && dispositionFieldIsGuilty(charge.get(DISPOSITION, Immutable.List()))
+        && chargeFieldIsViolent(Immutable.List.of(chargeNum));
     })
     .map(charge => getChargeTitle(charge)));
 };
 
 export const tryAutofillPreviousViolentCharge = (allCharges) => {
-  const numViolentCharges = getPreviousViolentCharges(allCharges).length;
+  const numViolentCharges = getPreviousViolentCharges(allCharges).size;
   if (numViolentCharges > 3) return '3';
   return `${numViolentCharges}`;
 };
@@ -204,18 +208,18 @@ export const tryAutofillFields = (
   if (allCharges.size) {
     const priorMisdemeanor = psaForm.get(PRIOR_MISDEMEANOR);
     if (priorMisdemeanor === null) {
-      psaForm = psaForm.set(PRIOR_MISDEMEANOR, tryAutofillPreviousMisdemeanors(allCharges.toJS()));
+      psaForm = psaForm.set(PRIOR_MISDEMEANOR, tryAutofillPreviousMisdemeanors(allCharges));
     }
     const priorFelony = psaForm.get(PRIOR_FELONY);
     if (priorFelony === null) {
-      psaForm = psaForm.set(PRIOR_FELONY, tryAutofillPreviousFelonies(allCharges.toJS()));
+      psaForm = psaForm.set(PRIOR_FELONY, tryAutofillPreviousFelonies(allCharges));
     }
     if (priorMisdemeanor === 'false' && priorFelony === 'false') {
       psaForm = psaForm.set(PRIOR_VIOLENT_CONVICTION, '0');
       psaForm = psaForm.set(PRIOR_SENTENCE_TO_INCARCERATION, 'false');
     }
     else if (psaForm.get(PRIOR_VIOLENT_CONVICTION) === null) {
-      psaForm = psaForm.set(PRIOR_VIOLENT_CONVICTION, tryAutofillPreviousViolentCharge(allCharges.toJS()));
+      psaForm = psaForm.set(PRIOR_VIOLENT_CONVICTION, tryAutofillPreviousViolentCharge(allCharges));
     }
   }
   return psaForm.toJS();

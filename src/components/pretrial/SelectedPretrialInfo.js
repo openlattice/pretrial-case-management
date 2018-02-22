@@ -81,7 +81,7 @@ export default class SelectedPretrialInfo extends React.Component {
         if (mostSeriousNum === chargeNum) mostSerious = true;
       });
     });
-    if (chargeFieldIsViolent(chargeNumField.toJS())) violent = true;
+    if (chargeFieldIsViolent(chargeNumField)) violent = true;
 
     return (
       <ChargeTagWrapper>
