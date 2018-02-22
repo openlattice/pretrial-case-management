@@ -3,7 +3,6 @@
  */
 
 import React from 'react';
-import PropTypes from 'prop-types';
 import FontAwesome from 'react-fontawesome';
 import DatePicker from 'react-bootstrap-date-picker';
 import Immutable from 'immutable';
@@ -96,7 +95,7 @@ type Props = {
   errorMessage :string,
   actions :{
     loadPsasByDateRequest :() => void,
-    downloadPsaReviewPdfRequest :() => void,
+    downloadPsaReviewPdfRequest :(neighbors :Map<*, *>, scores :Map<*, *>) => void,
     updateScoresAndRiskFactorsRequest :(
       scoresEntitySetId :string,
       scoresId :string,

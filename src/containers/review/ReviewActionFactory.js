@@ -1,3 +1,7 @@
+/*
+ * @flow
+ */
+
 import * as ActionTypes from './ReviewActionTypes';
 
 export function loadPsasByDateRequest() {
@@ -6,7 +10,7 @@ export function loadPsasByDateRequest() {
   };
 }
 
-export function loadPsasByDateSuccess(scoresAsMap :Map, psaNeighborsByDate :Map, entitySetId :UUID) {
+export function loadPsasByDateSuccess(scoresAsMap :Map<*, *>, psaNeighborsByDate :Map<*, *>, entitySetId :UUID) {
   return {
     type: ActionTypes.LOAD_PSAS_BY_DATE_SUCCESS,
     scoresAsMap,
@@ -22,7 +26,7 @@ export function loadPsasByDateFailure(errorMesasge :string) {
   };
 }
 
-export function downloadPsaReviewPdfRequest(neighbors :Map, scores :Map) {
+export function downloadPsaReviewPdfRequest(neighbors :Map<*, *>, scores :Map<*, *>) {
   return {
     type: ActionTypes.DOWNLOAD_PSA_REVIEW_PDF_REQUEST,
     neighbors,
@@ -46,10 +50,11 @@ export function downloadPsaReviewPdfFailure(errorMesasge :string) {
 export function updateScoresAndRiskFactorsRequest(
   scoresEntitySetId :UUID,
   scoresId :UUID,
-  scoresEntity :Map,
+  scoresEntity :Map<*, *>,
   riskFactorsEntitySetId :UUID,
   riskFactorsId :UUID,
-  riskFactorsEntity :Map) {
+  riskFactorsEntity :Map<*, *>
+) {
   return {
     type: ActionTypes.UPDATE_SCORES_AND_RISK_FACTORS_REQUEST,
     scoresEntitySetId,
@@ -63,9 +68,10 @@ export function updateScoresAndRiskFactorsRequest(
 
 export function updateScoresAndRiskFactorsSuccess(
   scoresId :UUID,
-  scoresEntity :Map,
+  scoresEntity :Map<*, *>,
   riskFactorsId :UUID,
-  riskFactorsEntity :Map) {
+  riskFactorsEntity :Map<*, *>
+) {
   return {
     type: ActionTypes.UPDATE_SCORES_AND_RISK_FACTORS_SUCCESS,
     scoresId,
