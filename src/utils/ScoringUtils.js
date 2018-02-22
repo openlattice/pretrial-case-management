@@ -1,8 +1,23 @@
 /*
  * @flow
  */
-
+import Immutable from 'immutable';
+import { PSA } from './consts/Consts';
 import { PROPERTY_TYPES } from './consts/DataModelConsts';
+
+const {
+  AGE_AT_CURRENT_ARREST,
+  CURRENT_VIOLENT_OFFENSE,
+  PENDING_CHARGE,
+  PRIOR_MISDEMEANOR,
+  PRIOR_FELONY,
+  PRIOR_VIOLENT_CONVICTION,
+  PRIOR_FAILURE_TO_APPEAR_RECENT,
+  PRIOR_FAILURE_TO_APPEAR_OLD,
+  PRIOR_SENTENCE_TO_INCARCERATION,
+  PRIOR_CONVICTION,
+  CURRENT_VIOLENT_OFFENSE_AND_YOUNG
+} = PSA;
 
 const {
   AGE_AT_CURRENT_ARREST_FQN,
@@ -17,20 +32,6 @@ const {
   PRIOR_FAILURE_TO_APPEAR_OLD_FQN,
   PRIOR_SENTENCE_TO_INCARCERATION_FQN
 } = PROPERTY_TYPES;
-
-type PsaForm = {
-  ageAtCurrentArrest :string,
-  currentViolentOffense :string,
-  pendingCharge :string,
-  priorMisdemeanor :string,
-  priorFelony :string,
-  priorViolentConviction :string,
-  priorFailureToAppearRecent :string,
-  priorFailureToAppearOld :string,
-  priorSentenceToIncarceration :string,
-  priorConviction? :?string,
-  currentViolentOffenseAndYoung? :?string
-}
 
 function getFtaScaleFromScore(score :number) :number {
   switch (score) {
@@ -97,18 +98,17 @@ function getNvcaFlagFromScore(score :number) :boolean {
   return false;
 }
 
-export function getScores(psaForm :PsaForm) :{} {
-  const {
-    ageAtCurrentArrest,
-    currentViolentOffense,
-    pendingCharge,
-    priorMisdemeanor,
-    priorFelony,
-    priorViolentConviction,
-    priorFailureToAppearRecent,
-    priorFailureToAppearOld,
-    priorSentenceToIncarceration
-  } = psaForm;
+export function getScores(psaForm :Immutable.Map<*, *>) :{} {
+
+  const ageAtCurrentArrest = psaForm.get(AGE_AT_CURRENT_ARREST);
+  const currentViolentOffense = psaForm.get(CURRENT_VIOLENT_OFFENSE);
+  const pendingCharge = psaForm.get(PENDING_CHARGE);
+  const priorMisdemeanor = psaForm.get(PRIOR_MISDEMEANOR);
+  const priorFelony = psaForm.get(PRIOR_FELONY);
+  const priorViolentConviction = psaForm.get(PRIOR_VIOLENT_CONVICTION);
+  const priorFailureToAppearRecent = psaForm.get(PRIOR_FAILURE_TO_APPEAR_RECENT);
+  const priorFailureToAppearOld = psaForm.get(PRIOR_FAILURE_TO_APPEAR_OLD);
+  const priorSentenceToIncarceration = psaForm.get(PRIOR_SENTENCE_TO_INCARCERATION);
 
   let ftaTotal = 0;
   let ncaTotal = 0;
@@ -161,22 +161,22 @@ export function getScores(psaForm :PsaForm) :{} {
   };
 }
 
-export function getScoresAndRiskFactors(psaForm :PsaForm) :{} {
+export function getScoresAndRiskFactors(psaForm :Immutable.Map<*, *>) :{} {
   const scores = getScores(psaForm);
-  const {
-    ageAtCurrentArrest,
-    currentViolentOffense,
-    pendingCharge,
-    priorMisdemeanor,
-    priorFelony,
-    priorViolentConviction,
-    priorFailureToAppearRecent,
-    priorFailureToAppearOld,
-    priorSentenceToIncarceration,
-    // optional params
-    priorConviction,
-    currentViolentOffenseAndYoung
-  } = psaForm;
+
+  const ageAtCurrentArrest = psaForm.get(AGE_AT_CURRENT_ARREST);
+  const currentViolentOffense = psaForm.get(CURRENT_VIOLENT_OFFENSE);
+  const pendingCharge = psaForm.get(PENDING_CHARGE);
+  const priorMisdemeanor = psaForm.get(PRIOR_MISDEMEANOR);
+  const priorFelony = psaForm.get(PRIOR_FELONY);
+  const priorViolentConviction = psaForm.get(PRIOR_VIOLENT_CONVICTION);
+  const priorFailureToAppearRecent = psaForm.get(PRIOR_FAILURE_TO_APPEAR_RECENT);
+  const priorFailureToAppearOld = psaForm.get(PRIOR_FAILURE_TO_APPEAR_OLD);
+  const priorSentenceToIncarceration = psaForm.get(PRIOR_SENTENCE_TO_INCARCERATION);
+
+  // optional params
+  const priorConviction = psaForm.get(PRIOR_CONVICTION);
+  const currentViolentOffenseAndYoung = psaForm.get(CURRENT_VIOLENT_OFFENSE_AND_YOUNG)
 
   let ageAtCurrentArrestValue = '20 or Younger';
   if (ageAtCurrentArrest === '1') ageAtCurrentArrestValue = '21 or 22';

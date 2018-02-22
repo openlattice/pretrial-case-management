@@ -355,7 +355,7 @@ class Form extends React.Component<Props, State> {
   }
 
   submitEntities = (scores) => {
-    const { riskFactors } = getScoresAndRiskFactors(this.props.psaForm.toJS());
+    const { riskFactors } = getScoresAndRiskFactors(this.props.psaForm);
     const calculatedForEntityDetails = this.getCalculatedForEntityDetails();
     const releaseRecommendationEntity = this.getBlankReleaseRecommendationEntity();
     const assessedByEntityDetails = this.getAssessedByEntityDetails();
@@ -394,7 +394,7 @@ class Form extends React.Component<Props, State> {
   }
 
   prevPage = () => {
-    const prevPage = getPrevPath(window.location, numPages);
+    const prevPage = getPrevPath(window.location);
     this.handlePageChange(prevPage);
   }
 
@@ -405,7 +405,7 @@ class Form extends React.Component<Props, State> {
       this.setState({ formIncompleteError: true });
     }
     else {
-      const { riskFactors, scores } = getScoresAndRiskFactors(this.props.psaForm.toJS());
+      const { riskFactors, scores } = getScoresAndRiskFactors(this.props.psaForm);
       this.setState({
         formIncompleteError: false,
         riskFactors,

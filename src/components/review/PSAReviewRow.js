@@ -231,7 +231,7 @@ export default class PSAReviewRow extends React.Component<Props, State> {
 
   onRiskFactorEdit = (e :Object) => {
     e.preventDefault();
-    const { scores, riskFactors } = getScoresAndRiskFactors(this.state.riskFactors.toJS());
+    const { scores, riskFactors } = getScoresAndRiskFactors(this.state.riskFactors);
     const scoresEntity = {
       [PROPERTY_TYPES.NCA_SCALE_FQN]: [scores.ncaScale],
       [PROPERTY_TYPES.FTA_SCALE_FQN]: [scores.ftaScale],
