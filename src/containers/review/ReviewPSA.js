@@ -1,3 +1,7 @@
+/*
+ * @flow
+ */
+
 import React from 'react';
 import PropTypes from 'prop-types';
 import FontAwesome from 'react-fontawesome';
@@ -83,22 +87,34 @@ const LoadingText = styled.div`
 
 const DATE_FORMAT = 'MM/DD/YYYY';
 
-class ReviewPSA extends React.Component {
-
-  static propTypes = {
-    scoresEntitySetId: PropTypes.string.isRequired,
-    scoresAsMap: PropTypes.instanceOf(Immutable.Map).isRequired,
-    psaNeighborsByDate: PropTypes.instanceOf(Immutable.Map).isRequired,
-    loadingResults: PropTypes.bool.isRequired,
-    errorMesasge: PropTypes.string.isRequired,
-    actions: PropTypes.shape({
-      loadPsasByDateRequest: PropTypes.func.isRequired,
-      downloadPsaReviewPdfRequest: PropTypes.func.isRequired,
-      updateScoresAndRiskFactorsRequest: PropTypes.func.isRequired
-    })
+type Props = {
+  history :string[],
+  scoresEntitySetId :string,
+  scoresAsMap :Map<*, *>,
+  psaNeighborsByDate :Map<*, Map<*, *>>,
+  loadingResults :boolean,
+  errorMessage :string,
+  actions :{
+    loadPsasByDateRequest :() => void,
+    downloadPsaReviewPdfRequest :() => void,
+    updateScoresAndRiskFactorsRequest :(
+      scoresEntitySetId :string,
+      scoresId :string,
+      scoresEntity :Map<*, *>,
+      riskFactorsEntitySetId :string,
+      riskFactorsId :string,
+      riskFactorsEntity :Map<*, *>
+    ) => void
   }
+}
 
-  constructor(props) {
+type State = {
+  date :string;
+};
+
+class ReviewPSA extends React.Component<Props, State> {
+
+  constructor(props :Props) {
     super(props);
     this.state = {
       date: moment().format()

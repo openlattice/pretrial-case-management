@@ -6,6 +6,7 @@ import Immutable from 'immutable';
 
 import * as ActionTypes from './ReviewActionTypes';
 import { ENTITY_SETS } from '../../utils/consts/DataModelConsts';
+
 const INITIAL_STATE :Map<*, *> = Immutable.fromJS({
   scoresEntitySetId: '',
   scoresAsMap: Immutable.Map(),
@@ -14,7 +15,7 @@ const INITIAL_STATE :Map<*, *> = Immutable.fromJS({
   errorMesasge: ''
 });
 
-export default function reviewReducer(state :Map<*, *> = INITIAL_STATE, action :Action) {
+export default function reviewReducer(state :Map<*, *> = INITIAL_STATE, action :Object) {
 
   switch (action.type) {
 
