@@ -2,6 +2,7 @@
  * @flow
  */
 
+import Immutable from 'immutable';
 import * as FormActionTypes from './FormActionTypes';
 
 export function loadDataModelRequest() :Object {
@@ -119,7 +120,7 @@ export function updateRecommendation(
   recommendation :string,
   entityId :string,
   entitySetId :string,
-  propertyTypes :List<Map<*, *>>
+  propertyTypes :Immutable.List<Immutable.Map<*, *>>
 ) {
   return {
     type: FormActionTypes.UPDATE_RECOMMENDATION_REQUEST,

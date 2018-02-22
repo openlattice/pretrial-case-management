@@ -3,6 +3,7 @@
  */
 
 import React from 'react';
+import Immutable from 'immutable';
 import styled from 'styled-components';
 import { Button } from 'react-bootstrap';
 
@@ -49,7 +50,7 @@ export const NavButton = styled(Button)`
  */
 
 type Props = {
-  caseOptions :List<Map<*, *>>,
+  caseOptions :Immutable.List<Map<*, *>>,
   onSelectCase :Function,
   nextPage :Function,
   prevPage :Function

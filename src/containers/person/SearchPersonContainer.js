@@ -11,7 +11,6 @@ import { Button, FormControl, Col } from 'react-bootstrap';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 
-import SearchControl from '../../components/controls/SearchControl';
 import PersonCard from '../../components/person/PersonCard';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { clearSearchResults, searchPeopleRequest } from './PersonActionFactory';
@@ -80,7 +79,7 @@ class SearchPeopleContainer extends React.Component<Props> {
     onSelectPerson: () => {}
   }
 
-  constructor(props) {
+  constructor(props :Props) {
     super(props);
     this.state = {
       firstName: '',

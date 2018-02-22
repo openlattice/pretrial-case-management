@@ -4,7 +4,6 @@
 
 import React from 'react';
 
-import PropTypes from 'prop-types';
 import Immutable from 'immutable';
 import styled from 'styled-components';
 import randomUUID from 'uuid/v4';
@@ -144,35 +143,69 @@ const INITIAL_STATE = Immutable.fromJS({
 
 const numPages = 4;
 
-class Form extends React.Component {
-  static propTypes = {
-    actions: PropTypes.shape({
-      loadDataModelElements: PropTypes.func.isRequired,
-      searchPeople: PropTypes.func.isRequired,
-      loadNeighbors: PropTypes.func.isRequired,
-      clearForm: PropTypes.func.isRequired,
-      submitData: PropTypes.func.isRequired,
-      selectPerson: PropTypes.func.isRequired,
-      selectPretrialCase: PropTypes.func.isRequired,
-      updateRecommendation: PropTypes.func.isRequired,
-      loadPersonDetailsRequest: PropTypes.func.isRequired,
-      setPSAValues: PropTypes.func.isRequired
-    }).isRequired,
-    dataModel: PropTypes.instanceOf(Immutable.Map).isRequired,
-    entitySetLookup: PropTypes.instanceOf(Immutable.Map).isRequired,
-    selectedPerson: PropTypes.instanceOf(Immutable.Map).isRequired,
-    selectedPretrialCase: PropTypes.instanceOf(Immutable.Map).isRequired,
-    pretrialCaseOptions: PropTypes.instanceOf(Immutable.List).isRequired,
-    charges: PropTypes.instanceOf(Immutable.List).isRequired,
-    allChargesForPerson: PropTypes.instanceOf(Immutable.List).isRequired,
-    selectedPersonId: PropTypes.string.isRequired,
-    isLoadingCases: PropTypes.bool.isRequired,
-    numCasesToLoad: PropTypes.number.isRequired,
-    numCasesLoaded: PropTypes.number.isRequired,
-    psaForm: PropTypes.instanceOf(Immutable.Map).isRequired
-  };
+type Entity = {
+  key :{
+    entitySetId :string,
+    entityId :string,
+    syncId? :string
+  },
+  details :{}
+};
 
-  constructor(props) {
+type Props = {
+  actions :{
+    loadDataModelElements :() => void,
+    loadNeighbors :(entitySetId :string, entityKeyId :string) => void,
+    clearForm :() => void,
+    submitData :(
+      personEntity :Entity,
+      pretrialCaseEntity :Entity,
+      riskFactorsEntity :Entity,
+      psaEntity :Entity,
+      releaseRecommendationEntity :Entity,
+      staffEntity :Entity,
+      calculatedForEntity :Entity,
+      assessedByEntity :Entity
+    ) => void,
+    selectPerson :(person :Immutable.Map<*, *>) => void,
+    selectPretrialCase :(selectedPretrialCase :{}) => void,
+    updateRecommendation :(
+      releaseRecommendation :string,
+      releaseRecommendationId :string,
+      entitySetId :string,
+      propertyTypes :Immutable.List<*>
+    ) => void,
+    loadPersonDetailsRequest :(personId :string, shouldFetchCases :boolean) => void,
+    setPSAValues :(newValues :Immutable.Map<*, *>) => void
+  },
+  dataModel :Immutable.Map<*, *>,
+  entitySetLookup :Immutable.Map<*, *>,
+  selectedPerson :Immutable.Map<*, *>,
+  selectedPretrialCase :Immutable.Map<*, *>,
+  pretrialCaseOptions :Immutable.List<*>,
+  charges :Immutable.List<*>,
+  allChargesForPerson :Immutable.List<*>,
+  selectedPersonId :string,
+  isLoadingCases :boolean,
+  numCasesToLoad :number,
+  numCasesLoaded :number,
+  psaForm :Immutable.Map<*, *>,
+  history :string[]
+};
+
+type State = {
+  personForm :Immutable.Map<*, *>,
+  formIncompleteError :boolean,
+  riskFactors :{},
+  scores :{},
+  scoresWereGenerated :boolean,
+  releaseRecommendation :string,
+  releaseRecommendationId :string
+};
+
+class Form extends React.Component<Props, State> {
+
+  constructor(props :Props) {
     super(props);
     this.state = INITIAL_STATE.toJS();
   }
@@ -224,7 +257,7 @@ class Form extends React.Component {
 
   getCalculatedForEntityDetails = () => ({ [TIMESTAMP_FQN]: [new Date()] })
 
-  getBlankReleaseRecommendationEntity = () => {
+  getBlankReleaseRecommendationEntity = () :Entity => {
     let generalId;
     let notesId;
     this.getPropertyTypes(RELEASE_RECOMMENDATIONS).forEach((pt) => {
@@ -272,7 +305,7 @@ class Form extends React.Component {
     return basicEntity;
   }
 
-  getEntity = (entityDetails, entitySetName, isExistingEntity, useRandomId) => {
+  getEntity = (entityDetails, entitySetName, isExistingEntity, useRandomId) :Entity => {
     const { dataModel, entitySetLookup } = this.props;
     const entitySetId = entitySetLookup.get(entitySetName);
     let fqnToId = Immutable.Map();
@@ -429,7 +462,8 @@ class Form extends React.Component {
         releaseRecommendation,
         this.state.releaseRecommendationId,
         this.props.entitySetLookup.get(RELEASE_RECOMMENDATIONS),
-        this.getPropertyTypes(RELEASE_RECOMMENDATIONS));
+        this.getPropertyTypes(RELEASE_RECOMMENDATIONS)
+      );
     }
     this.setState({ releaseRecommendation });
   }
@@ -450,7 +484,7 @@ class Form extends React.Component {
   setMultimapToMap = (setMultimap) => {
     let map = Immutable.Map();
     Object.keys(setMultimap).forEach((key) => {
-      map = map.set(key, setMultimap[key][0])
+      map = map.set(key, setMultimap[key][0]);
     });
     return map;
   };
@@ -472,8 +506,7 @@ class Form extends React.Component {
                 selectedPretrialCase,
                 selectedPerson,
                 pretrialCaseOptions,
-                allChargesForPerson
-              );
+                allChargesForPerson);
             }}>Export as PDF
         </Button>
       </ButtonWrapper>
@@ -586,7 +619,7 @@ class Form extends React.Component {
   }
 }
 
-function mapStateToProps(state :Map<>) :Object {
+function mapStateToProps(state :Immutable.Map<*, *>) :Object {
   const psaForm = state.get('psa');
   const search = state.get('search');
 

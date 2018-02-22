@@ -17,7 +17,7 @@ const StyledSpinner = styled.svg`
 `;
 
 type Props = {
-  size :?number
+  size? :?number
 };
 
 export default function(props :Props) {

@@ -19,7 +19,7 @@ import {
 
 import type { Action } from './PersonActionFactory';
 
-const INITIAL_STATE :Map<*, *> = Immutable.fromJS({
+const INITIAL_STATE :Immutable.Map<*, *> = Immutable.fromJS({
   isLoadingPeople: false,
   searchResults: Immutable.List(),
   selectedPersonId: '',
@@ -29,7 +29,7 @@ const INITIAL_STATE :Map<*, *> = Immutable.fromJS({
   numCasesLoaded: 0
 });
 
-export default function searchReducer(state :Map<*, *> = INITIAL_STATE, action :Action) {
+export default function searchReducer(state :Immutable.Map<*, *> = INITIAL_STATE, action :Action) {
 
   switch (action.type) {
 

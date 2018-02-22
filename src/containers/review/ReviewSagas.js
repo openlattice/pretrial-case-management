@@ -1,6 +1,7 @@
 /*
  * @flow
  */
+
 import Immutable from 'immutable';
 import moment from 'moment';
 import { DataApi, EntityDataModelApi, SearchApi} from 'lattice';
@@ -65,7 +66,7 @@ export function* loadPSAsByDate() :Generator<*, *, *> {
     }
     catch (error) {
       console.error(error);
-      yield put(ActionFactory.loadPsasForIdsFailure(error));
+      yield put(ActionFactory.loadPsasByDateFailure(error));
     }
   }
 }
@@ -180,7 +181,7 @@ export function* updateScoresAndRiskFactors() :Generator<*, *, *> {
       yield call(DataApi.replaceEntityInEntitySetUsingFqns, riskFactorsEntitySetId, riskFactorsId, riskFactorsEntity);
       yield call(DataApi.replaceEntityInEntitySetUsingFqns, scoresEntitySetId, scoresId, scoresEntity);
 
-      const newScoreEntity = yield call(DataApi.getEntity, scoresEntitySetId, scoresId)
+      const newScoreEntity = yield call(DataApi.getEntity, scoresEntitySetId, scoresId);
       const newRiskFactorsEntity = yield call(DataApi.getEntity, riskFactorsEntitySetId, riskFactorsId);
 
       yield put(ActionFactory.updateScoresAndRiskFactorsSuccess(

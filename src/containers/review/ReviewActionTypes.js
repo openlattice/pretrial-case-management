@@ -1,3 +1,7 @@
+/*
+ * @flow
+ */
+
 export const LOAD_PSAS_BY_DATE_REQUEST :string = 'LOAD_PSAS_BY_DATE_REQUEST';
 export const LOAD_PSAS_BY_DATE_SUCCESS :string = 'LOAD_PSAS_BY_DATE_SUCCESS';
 export const LOAD_PSAS_BY_DATE_FAILURE :string = 'LOAD_PSAS_BY_DATE_FAILURE';

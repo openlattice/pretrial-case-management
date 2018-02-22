@@ -1,6 +1,7 @@
 /*
  * @flow
  */
+
 import axios from 'axios';
 import moment from 'moment';
 import LatticeAuth from 'lattice-auth';
@@ -130,7 +131,7 @@ export function* watchNewPersonSubmitRequest() :Generator<*, *, *> {
   }
 }
 
-function* getPropertyTypeId(propertyTypeFqn :string) :string {
+function* getPropertyTypeId(propertyTypeFqn :string) :Generator<*, *, *> {
   const propertyTypeFqnArr = propertyTypeFqn.split('.');
   return yield call(EntityDataModelApi.getPropertyTypeId, {
     namespace: propertyTypeFqnArr[0],

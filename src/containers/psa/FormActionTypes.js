@@ -1,6 +1,7 @@
 /*
  * @flow
  */
+
 export const LOAD_DATA_MODEL_REQUEST :string = 'LOAD_DATA_MODEL_REQUEST';
 export const LOAD_DATA_MODEL_SUCCESS :string = 'LOAD_DATA_MODEL_SUCCESS';
 export const LOAD_DATA_MODEL_FAILURE :string = 'LOAD_DATA_MODEL_FAILURE';

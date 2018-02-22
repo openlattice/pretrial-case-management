@@ -1,7 +1,9 @@
+/*
+ * @flow
+ */
+
 import React from 'react';
-import PropTypes from 'prop-types';
 import Immutable from 'immutable';
-import ImmutablePropTypes from 'react-immutable-proptypes';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { Redirect, Route, Switch } from 'react-router-dom';
@@ -15,21 +17,25 @@ import DashboardMainSection from '../../components/dashboard/DashboardMainSectio
 import PeopleList from '../../components/people/PeopleList';
 import { formatDOB } from '../../utils/Helpers';
 
-class PeopleContainer extends React.Component {
-  constructor(props) {
+type Props = {
+  isFetchingPeople :boolean,
+  peopleResults :Immutable.List<*>,
+  actions :{
+    getPeople :() => void
+  }
+};
+
+type State = {
+  didMapPeopleToProps :boolean
+};
+
+class PeopleContainer extends React.Component<Props, State> {
+  constructor(props :Props) {
     super(props);
 
     this.state = {
       didMapPeopleToProps: false
     };
-  }
-
-  static propTypes = {
-    isFetchingPeople: PropTypes.bool.isRequired,
-    peopleResults: ImmutablePropTypes.listOf(ImmutablePropTypes.map).isRequired,
-    actions: PropTypes.shape({
-      getPeople: PropTypes.func.isRequired
-    }).isRequired
   }
 
   componentDidMount() {

@@ -44,7 +44,7 @@ const INITIAL_PSA_FORM = Immutable.fromJS({
   [PRIOR_SENTENCE_TO_INCARCERATION]: null
 });
 
-const INITIAL_STATE :Map<> = Immutable.fromJS({
+const INITIAL_STATE :Immutable.Map<> = Immutable.fromJS({
   pretrialCaseOptions: Immutable.List(),
   allChargesForPerson: Immutable.List(),
   charges: Immutable.List(),
@@ -55,7 +55,7 @@ const INITIAL_STATE :Map<> = Immutable.fromJS({
   entitySetLookup: Immutable.Map()
 });
 
-function formReducer(state :Map<> = INITIAL_STATE, action :Object) {
+function formReducer(state :Immutable.Map<> = INITIAL_STATE, action :Object) {
 
   switch (action.type) {
 
