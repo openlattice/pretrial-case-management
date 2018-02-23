@@ -584,7 +584,8 @@ class Form extends React.Component<Props, State> {
   )
 
   getPsaResults = () => {
-    const { scores, riskFactors } = this.state;
+    const { scoresWereGenerated, scores, riskFactors } = this.state;
+    if (!scoresWereGenerated) return null;
     return (
       <div>
         <PSAResults scores={scores} riskFactors={riskFactors} />
