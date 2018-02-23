@@ -10,7 +10,6 @@ import { EntityDataModelApi, SearchApi } from 'lattice';
 import { push } from 'react-router-redux';
 import { all, call, put, take, takeEvery } from 'redux-saga/effects';
 
-import { SUBMIT_FAILURE, SUBMIT_SUCCESS } from '../../utils/submit/SubmitActionTypes';
 import { submit } from '../../utils/submit/SubmitActionFactory';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 
@@ -47,6 +46,7 @@ export function* watchLoadPersonDetailsRequest() :Generator<*, *, *> {
 
   while (true) {
     const action :LoadPersonDetailsRequestAction = yield take(LOAD_PERSON_DETAILS_REQUEST);
+
     try {
       const entitySetId :string = yield call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.PEOPLE);
       const response = yield call(SearchApi.searchEntityNeighbors, entitySetId, action.id);
@@ -108,15 +108,26 @@ export function* watchUpdateCaseRequest() :Generator<*, *, *> {
   yield takeEvery(UPDATE_CASE_REQUEST, watchUpdateCaseRequestWorker);
 }
 
+function takeReqSeqSuccessFailure(reqseq :RequestSequence, seqAction :SequenceAction) {
+  return take(
+    (anAction :Object) => {
+      return (anAction.type === reqseq.SUCCESS && anAction.id === seqAction.id)
+        || (anAction.type === reqseq.FAILURE && anAction.id === seqAction.id);
+    }
+  );
+}
+
 export function* watchNewPersonSubmitRequest() :Generator<*, *, *> {
 
   while (true) {
     const action :NewPersonSubmitRequestAction = yield take(NEW_PERSON_SUBMIT_REQUEST);
+    const { config, values } = action;
     try {
-      yield put(submit(action.config, action.values));
-      // TODO: need a way to guarantee these next actions are the result of the above dispatch
-      const failureOrSuccess = yield take([SUBMIT_FAILURE, SUBMIT_SUCCESS]);
-      if (failureOrSuccess.type === SUBMIT_SUCCESS) {
+      const submitAction :SequenceAction = submit({ config, values });
+      yield put(submitAction);
+      const submitRes :SequenceAction = yield takeReqSeqSuccessFailure(submit, submitAction);
+
+      if (submitRes.type === submit.SUCCESS) {
         yield put(newPersonSubmitSuccess());
         // TODO: is routing the best way to handle a successful submit?
         yield put(push(Routes.ROOT));

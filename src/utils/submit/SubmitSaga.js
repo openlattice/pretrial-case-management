@@ -5,7 +5,7 @@
 import { EntityDataModelApi, SyncApi, DataApi, Models } from 'lattice';
 import { call, put, takeEvery, all } from 'redux-saga/effects';
 
-import { SUBMIT, submit} from './SubmitActionFactory';
+import { SUBMIT, submit } from './SubmitActionFactory';
 
 const {
   FullyQualifiedName

@@ -2,156 +2,49 @@
  * @flow
  */
 
-import Immutable from 'immutable';
-import * as FormActionTypes from './FormActionTypes';
+import { newRequestSequence } from 'redux-reqseq';
 
-export function loadDataModelRequest() :Object {
-  return {
-    type: FormActionTypes.LOAD_DATA_MODEL_REQUEST
-  };
-}
+const LOAD_DATA_MODEL :string = 'LOAD_DATA_MODEL';
+const loadDataModel :RequestSequence = newRequestSequence(LOAD_DATA_MODEL);
 
-export function loadDataModelSuccess(dataModel :Object) :Object {
-  return {
-    type: FormActionTypes.LOAD_DATA_MODEL_SUCCESS,
-    dataModel
-  };
-}
+const LOAD_NEIGHBORS :string = 'LOAD_NEIGHBORS';
+const loadNeighbors :RequestSequence = newRequestSequence(LOAD_NEIGHBORS);
 
-export function loadDataModelFailure(errorMessage :string) :Object {
-  return {
-    type: FormActionTypes.LOAD_DATA_MODEL_FAILURE,
-    errorMessage
-  };
-}
+const SUBMIT_DATA :string = 'SUBMIT_DATA';
+const submitData :RequestSequence = newRequestSequence(SUBMIT_DATA);
 
-export function searchPeople(entitySetId :UUID, searchOptions :Object[]) :Object {
-  return {
-    type: FormActionTypes.SEARCH_PEOPLE_REQUEST,
-    entitySetId,
-    searchOptions
-  };
-}
+const UPDATE_RECOMMENDATION :string = 'UPDATE_RECOMMENDATION';
+const updateRecommendation :RequestSequence = newRequestSequence(UPDATE_RECOMMENDATION);
 
-export function searchPeopleSuccess(people :Object[]) :Object {
-  return {
-    type: FormActionTypes.SEARCH_PEOPLE_SUCCESS,
-    people
-  };
-}
+// reducer only
 
-export function searchPeopleFailure() {
-  return {
-    type: FormActionTypes.SEARCH_PEOPLE_FAILURE
-  };
-}
+const CLEAR_FORM :string = 'CLEAR_FORM';
+const clearForm :RequestSequence = newRequestSequence(CLEAR_FORM);
 
-export function loadNeighbors(entitySetId :UUID, rowId :UUID) :Object {
-  return {
-    type: FormActionTypes.LOAD_NEIGHBORS_REQUEST,
-    entitySetId,
-    rowId
-  };
-}
+const SELECT_PERSON :string = 'SELECT_PERSON';
+const selectPerson :RequestSequence = newRequestSequence(SELECT_PERSON);
 
-export function loadNeighborsSuccess(neighbors :Object[]) :Object {
-  return {
-    type: FormActionTypes.LOAD_NEIGHBORS_SUCCESS,
-    neighbors
-  };
-}
+const SELECT_PRETRIAL_CASE :string = 'SELECT_PRETRIAL_CASE';
+const selectPretrialCase :RequestSequence = newRequestSequence(SELECT_PRETRIAL_CASE);
 
-export function loadNeighborsFailure() {
-  return {
-    type: FormActionTypes.LOAD_NEIGHBORS_FAILURE
-  };
-}
+const SET_PSA_VALUES :string = 'SET_PSA_VALUES';
+const setPSAValues :RequestSequence = newRequestSequence(SET_PSA_VALUES);
 
-export function submitData(
-  personEntity :Object,
-  pretrialCaseEntity :Object,
-  riskFactorsEntity :Object,
-  psaEntity :Object,
-  releaseRecommendationEntity :Object,
-  staffEntity :Object,
-  calculatedForEntity :Object,
-  assessedByEntity :Object
-) :Object {
-  return {
-    type: FormActionTypes.SUBMIT_DATA_REQUEST,
-    personEntity,
-    pretrialCaseEntity,
-    riskFactorsEntity,
-    psaEntity,
-    releaseRecommendationEntity,
-    staffEntity,
-    calculatedForEntity,
-    assessedByEntity
-  };
-}
-
-export function submitDataSuccess() :Object {
-  return {
-    type: FormActionTypes.SUBMIT_DATA_SUCCESS
-  };
-}
-
-export function submitDataFailure() {
-  return {
-    type: FormActionTypes.SUBMIT_DATA_FAILURE
-  };
-}
-
-export function selectPerson(selectedPerson :Object) {
-  return {
-    type: FormActionTypes.SELECT_PERSON,
-    selectedPerson
-  };
-}
-
-export function selectPretrialCase(selectedPretrialCase :Object) {
-  return {
-    type: FormActionTypes.SELECT_PRETRIAL,
-    selectedPretrialCase
-  };
-}
-
-export function updateRecommendation(
-  recommendation :string,
-  entityId :string,
-  entitySetId :string,
-  propertyTypes :Immutable.List<Immutable.Map<*, *>>
-) {
-  return {
-    type: FormActionTypes.UPDATE_RECOMMENDATION_REQUEST,
-    recommendation,
-    entityId,
-    entitySetId,
-    propertyTypes
-  };
-}
-
-export function updateRecommendationSuccess() {
-  return {
-    type: FormActionTypes.UPDATE_RECOMMENDATION_SUCCESS
-  };
-}
-
-export function updateRecommendationFailure() {
-  return {
-    type: FormActionTypes.UPDATE_RECOMMENDATION_FAILURE
-  };
-}
-
-export function clearForm() {
-  return {
-    type: FormActionTypes.CLEAR_FORM
-  };
-}
-
-export function setPSAValues(values :Immutable.Map<string, string>) {
-  return {
-    type: FormActionTypes.SET_PSA_VALUES,
-    values
-  };
-}
+export {
+  LOAD_DATA_MODEL,
+  LOAD_NEIGHBORS,
+  SUBMIT_DATA,
+  UPDATE_RECOMMENDATION,
+  loadDataModel,
+  loadNeighbors,
+  submitData,
+  updateRecommendation,
+  CLEAR_FORM,
+  SELECT_PERSON,
+  SELECT_PRETRIAL_CASE,
+  SET_PSA_VALUES,
+  clearForm,
+  selectPerson,
+  selectPretrialCase,
+  setPSAValues
+};

@@ -154,10 +154,13 @@ type Entity = {
 
 type Props = {
   actions :{
-    loadDataModelElements :() => void,
-    loadNeighbors :(entitySetId :string, entityKeyId :string) => void,
+    loadDataModel :() => void,
+    loadNeighbors :(value :{
+      entitySetId :string,
+      entityKeyId :string
+    }) => void,
     clearForm :() => void,
-    submitData :(
+    submitData :(values :{
       personEntity :Entity,
       pretrialCaseEntity :Entity,
       riskFactorsEntity :Entity,
@@ -166,17 +169,23 @@ type Props = {
       staffEntity :Entity,
       calculatedForEntity :Entity,
       assessedByEntity :Entity
-    ) => void,
-    selectPerson :(person :Immutable.Map<*, *>) => void,
-    selectPretrialCase :(selectedPretrialCase :{}) => void,
-    updateRecommendation :(
+    }) => void,
+    selectPerson :(value :{
+      selectedPerson :Immutable.Map<*, *>
+    }) => void,
+    selectPretrialCase :(value :{
+      selectedPretrialCase :Immutable.Map<*, *>
+    }) => void,
+    updateRecommendation :(value :{
       releaseRecommendation :string,
       releaseRecommendationId :string,
       entitySetId :string,
       propertyTypes :Immutable.List<*>
-    ) => void,
+    }) => void,
     loadPersonDetailsRequest :(personId :string, shouldFetchCases :boolean) => void,
-    setPSAValues :(newValues :Immutable.Map<*, *>) => void
+    setPSAValues :(value :{
+      newValues :Immutable.Map<*, *>
+    }) => void
   },
   dataModel :Immutable.Map<*, *>,
   entitySetLookup :Immutable.Map<*, *>,
@@ -211,7 +220,7 @@ class Form extends React.Component<Props, State> {
   }
 
   componentDidMount() {
-    this.props.actions.loadDataModelElements();
+    this.props.actions.loadDataModel();
     this.redirectToFirstPageIfNecessary();
   }
 
@@ -235,15 +244,17 @@ class Form extends React.Component<Props, State> {
       || charges.size
       || pretrialCaseOptions.size
       || allChargesForPerson.size) {
-      actions.setPSAValues(tryAutofillFields(
-        selectedPretrialCase,
-        charges,
-        pretrialCaseOptions,
-        allChargesForPerson,
-        this.props.selectedPretrialCase,
-        this.props.selectedPerson,
-        psaForm
-      ));
+      actions.setPSAValues({
+        newValues: tryAutofillFields(
+          selectedPretrialCase,
+          charges,
+          pretrialCaseOptions,
+          allChargesForPerson,
+          this.props.selectedPretrialCase,
+          this.props.selectedPerson,
+          psaForm
+        )
+      });
     }
   }
 
@@ -252,7 +263,8 @@ class Form extends React.Component<Props, State> {
   }
 
   handleSingleSelection = (e) => {
-    this.props.actions.setPSAValues(Immutable.fromJS({ [e.target.name]: e.target.value }));
+    const newValues = Immutable.fromJS({ [e.target.name]: e.target.value });
+    this.props.actions.setPSAValues({ newValues });
   }
 
   getCalculatedForEntityDetails = () => ({ [TIMESTAMP_FQN]: [new Date()] })
@@ -368,7 +380,7 @@ class Form extends React.Component<Props, State> {
     const staffEntity = this.getEntity(this.getStaffEntityDetails(), STAFF);
     const assessedByEntity = this.getEntity(assessedByEntityDetails, ASSESSED_BY);
 
-    this.props.actions.submitData(
+    this.props.actions.submitData({
       personEntity,
       pretrialCaseEntity,
       riskFactorsEntity,
@@ -377,14 +389,14 @@ class Form extends React.Component<Props, State> {
       staffEntity,
       calculatedForEntity,
       assessedByEntity
-    );
+    });
     this.setState({ releaseRecommendationId: releaseRecommendationEntity.key.entityId });
   }
 
   getFqn = propertyType => `${propertyType.getIn(['type', 'namespace'])}.${propertyType.getIn(['type', 'name'])}`
 
-  handleSelectPerson = (person, entityKeyId) => {
-    this.props.actions.selectPerson(person);
+  handleSelectPerson = (selectedPerson, entityKeyId) => {
+    this.props.actions.selectPerson({ selectedPerson });
     this.props.actions.loadPersonDetailsRequest(entityKeyId, true);
   }
 
@@ -458,12 +470,12 @@ class Form extends React.Component<Props, State> {
 
   handleReleaseRecommendationUpdate = (releaseRecommendation) => {
     if (this.state.scoresWereGenerated) {
-      this.props.actions.updateRecommendation(
+      this.props.actions.updateRecommendation({
         releaseRecommendation,
-        this.state.releaseRecommendationId,
-        this.props.entitySetLookup.get(RELEASE_RECOMMENDATIONS),
-        this.getPropertyTypes(RELEASE_RECOMMENDATIONS)
-      );
+        releaseRecommendationId: this.state.releaseRecommendationId,
+        entitySetId: this.props.entitySetLookup.get(RELEASE_RECOMMENDATIONS),
+        propertyTypes: this.getPropertyTypes(RELEASE_RECOMMENDATIONS)
+      });
     }
     this.setState({ releaseRecommendation });
   }
@@ -551,7 +563,10 @@ class Form extends React.Component<Props, State> {
     if (isLoadingCases) {
       if (numCasesLoaded === numCasesToLoad) {
         actions.loadPersonDetailsRequest(selectedPersonId, false);
-        actions.loadNeighbors(entitySetLookup.get(PEOPLE), selectedPersonId);
+        actions.loadNeighbors({
+          entitySetId: entitySetLookup.get(PEOPLE),
+          entityKeyId: selectedPersonId
+        });
       }
       const progress = Math.floor((numCasesLoaded / numCasesToLoad) * 100);
       let loadingText = 'Loading cases';
@@ -568,7 +583,7 @@ class Form extends React.Component<Props, State> {
           nextPage={this.nextPage}
           prevPage={this.prevPage}
           onSelectCase={(selectedCase) => {
-            actions.selectPretrialCase(selectedCase.toJS());
+            actions.selectPretrialCase({ selectedPretrialCase: selectedCase });
             this.nextPage();
           }} />
     );
@@ -657,9 +672,6 @@ function mapDispatchToProps(dispatch :Function) :Object {
   return {
     actions: {
       ...bindActionCreators(actions, dispatch),
-      loadDataModelElements: () => {
-        dispatch(FormActionFactory.loadDataModelRequest());
-      }
     }
   };
 }

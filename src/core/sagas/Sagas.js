@@ -44,11 +44,10 @@ export default function* sagas() :Generator<*, *, *> {
     fork(PeopleSagas.getPersonDataWatcher),
 
     // PSA Sagas
-    fork(PsaSagas.loadDataModels),
-    fork(PsaSagas.searchPeople),
-    fork(PsaSagas.loadNeighbors),
-    fork(PsaSagas.submitData),
-    fork(PsaSagas.updateReleaseRecommendation),
+    fork(PsaSagas.loadDataModelWatcher),
+    fork(PsaSagas.loadNeighborsWatcher),
+    fork(PsaSagas.submitDataWatcher),
+    fork(PsaSagas.updateReleaseRecommendationWatcher),
 
     // Review Sagas
     fork(ReviewSagas.downloadPSAReviewPDFWatcher),
