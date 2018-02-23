@@ -28,7 +28,7 @@ export default function* sagas() :Generator<*, *, *> {
     fork(DataSagas.replaceEntity),
 
     // DownloadSagas
-    fork(DownloadSagas.downloadPSAs),
+    fork(DownloadSagas.downloadPSAsWatcher),
 
     // SubmitDataSaga
     fork(SubmitDataSaga),

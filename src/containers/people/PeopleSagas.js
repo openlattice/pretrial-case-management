@@ -13,7 +13,7 @@ import {
   getPersonData
 } from './PeopleActionFactory';
 
-function* getPeopleWorker(action) {
+function* getPeopleWorker(action) :Generator<*, *, *> {
 
   try {
     yield put(getPeople.request(action.id));
@@ -29,11 +29,11 @@ function* getPeopleWorker(action) {
   }
 }
 
-function* getPeopleWatcher() {
+function* getPeopleWatcher() :Generator<*, *, *> {
   yield takeEvery(GET_PEOPLE, getPeopleWorker);
 }
 
-function* getPersonDataWorker(action) {
+function* getPersonDataWorker(action) :Generator<*, *, *> {
   const searchOptions = {
     searchTerm: action.value,
     start: 0,
@@ -54,7 +54,7 @@ function* getPersonDataWorker(action) {
   }
 }
 
-function* getPersonDataWatcher() {
+function* getPersonDataWatcher() :Generator<*, *, *> {
   yield takeEvery(GET_PERSON_DATA, getPersonDataWorker);
 }
 

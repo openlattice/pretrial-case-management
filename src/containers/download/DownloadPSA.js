@@ -79,7 +79,10 @@ const Error = styled.div`
 
 type Props = {
   actions :{
-    downloadRequest :(startDate :string, endDate :string) => void
+    downloadPsaForms :(value :{
+      startDate :string,
+      endDate :string
+    }) => void
   },
   history :string[]
 };
@@ -163,7 +166,7 @@ class DownloadPSA extends React.Component<Props, State> {
   download = () => {
     const { startDate, endDate } = this.state;
     if (startDate && endDate) {
-      this.props.actions.downloadRequest(startDate, endDate);
+      this.props.actions.downloadPsaForms({ startDate, endDate });
     }
   }
 
