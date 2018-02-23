@@ -11,7 +11,7 @@ import * as DataSagas from '../../utils/data/DataSagas';
 import * as PsaSagas from '../../containers/psa/FormSagas';
 import * as ReviewSagas from '../../containers/review/ReviewSagas';
 import * as DownloadSagas from '../../containers/download/DownloadSagas';
-import SubmitDataSaga from '../../utils/submit/SubmitSaga';
+import * as SubmitSagas from '../../utils/submit/SubmitSaga';
 
 export default function* sagas() :Generator<*, *, *> {
 
@@ -31,7 +31,7 @@ export default function* sagas() :Generator<*, *, *> {
     fork(DownloadSagas.downloadPSAsWatcher),
 
     // SubmitDataSaga
-    fork(SubmitDataSaga),
+    fork(SubmitSagas.submitWatcher),
 
     // PersonSagas
     fork(PersonSagas.watchLoadPersonDetailsRequest),

@@ -2,24 +2,12 @@
  * @flow
  */
 
-import * as SubmitActionTypes from './SubmitActionTypes';
+import { newRequestSequence } from 'redux-reqseq';
 
-export function submit(config :Object, values :Object) :Object {
-  return {
-    type: SubmitActionTypes.SUBMIT_REQUEST,
-    config,
-    values
-  };
-}
+const SUBMIT :string = 'SUBMIT';
+const submit :RequestSequence = newRequestSequence(SUBMIT);
 
-export function submitSuccess() :Object {
-  return {
-    type: SubmitActionTypes.SUBMIT_SUCCESS
-  };
-}
-
-export function submitFailure() :Object {
-  return {
-    type: SubmitActionTypes.SUBMIT_FAILURE
-  };
-}
+export {
+  SUBMIT,
+  submit
+};
