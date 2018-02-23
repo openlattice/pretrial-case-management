@@ -94,16 +94,19 @@ type Props = {
   loadingResults :boolean,
   errorMessage :string,
   actions :{
-    loadPsasByDateRequest :() => void,
-    downloadPsaReviewPdfRequest :(neighbors :Immutable.Map<*, *>, scores :Immutable.Map<*, *>) => void,
-    updateScoresAndRiskFactorsRequest :(
+    downloadPSAReviewPDF :(values :{
+      neighbors :Immutable.Map<*, *>,
+      scores :Immutable.Map<*, *>
+    }) => void,
+    loadPSAsByDate :() => void,
+    updateScoresAndRiskFactors :(values :{
       scoresEntitySetId :string,
       scoresId :string,
       scoresEntity :Immutable.Map<*, *>,
       riskFactorsEntitySetId :string,
       riskFactorsId :string,
       riskFactorsEntity :Immutable.Map<*, *>
-    ) => void
+    }) => void
   }
 }
 
@@ -121,7 +124,7 @@ class ReviewPSA extends React.Component<Props, State> {
   }
 
   componentDidMount() {
-    this.props.actions.loadPsasByDateRequest();
+    this.props.actions.loadPSAsByDate();
   }
 
   handleClose = () => {
@@ -171,7 +174,7 @@ class ReviewPSA extends React.Component<Props, State> {
             neighbors={entityNeighbors}
             scores={scores}
             entityKeyId={id}
-            downloadFn={actions.downloadPsaReviewPdfRequest}
+            downloadFn={actions.downloadPSAReviewPDF}
             updateScoresAndRiskFactors={this.updateScoresAndRiskFactors}
             key={id} />
       );
@@ -180,14 +183,14 @@ class ReviewPSA extends React.Component<Props, State> {
 
   updateScoresAndRiskFactors = (scoresId, scoresEntity, riskFactorsEntitySetId, riskFactorsId, riskFactorsEntity) => {
     const { scoresEntitySetId, actions } = this.props;
-    actions.updateScoresAndRiskFactorsRequest(
+    actions.updateScoresAndRiskFactors({
       scoresEntitySetId,
       scoresId,
       scoresEntity,
       riskFactorsEntitySetId,
       riskFactorsId,
       riskFactorsEntity
-    );
+    });
   }
 
   renderContent = () => {

@@ -108,7 +108,10 @@ type Props = {
   entityKeyId :string,
   scores :Immutable.Map<*, *>,
   neighbors :Immutable.Map<*, *>,
-  downloadFn :(neighbors :Immutable.Map<*, *>, scores :Immutable.Map<*, *>) => void,
+  downloadFn :(values :{
+    neighbors :Immutable.Map<*, *>,
+    scores :Immutable.Map<*, *>
+  }) => void,
   updateScoresAndRiskFactors :(
     scoresId :string,
     scoresEntity :Object,
@@ -160,7 +163,7 @@ export default class PSAReviewRow extends React.Component<Props, State> {
 
   downloadRow = () => {
     const { downloadFn, neighbors, scores } = this.props;
-    downloadFn(neighbors, scores);
+    downloadFn({ neighbors, scores });
   }
 
   renderPersonCard = () => {

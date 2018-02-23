@@ -14,7 +14,7 @@ import {
 } from './DownloadActionFactory';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 
-function* downloadPSAsWorker(action) :Generator<*, *, *> {
+function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
 
   try {
     yield put(downloadPsaForms.request(action.id));
@@ -101,7 +101,7 @@ function* downloadPSAsWorker(action) :Generator<*, *, *> {
   }
   catch (error) {
     console.error(error);
-    yield put(downloadPsaForms.failure(action.id, error));
+    yield put(downloadPsaForms.failure(action.id, { error }));
   }
   finally {
     yield put(downloadPsaForms.finally(action.id));
