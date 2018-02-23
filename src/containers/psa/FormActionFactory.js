@@ -149,7 +149,7 @@ export function clearForm() {
   };
 }
 
-export function setPSAValues(values :Map<string, string>) {
+export function setPSAValues(values :Immutable.Map<string, string>) {
   return {
     type: FormActionTypes.SET_PSA_VALUES,
     values

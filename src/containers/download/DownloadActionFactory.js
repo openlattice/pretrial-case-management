@@ -1,3 +1,7 @@
+/*
+ * @flow
+ */
+
 import * as ActionTypes from './DownloadActionTypes';
 
 export function downloadRequest(startDate :string, endDate :string) :Object {

@@ -95,14 +95,14 @@ type Props = {
   errorMessage :string,
   actions :{
     loadPsasByDateRequest :() => void,
-    downloadPsaReviewPdfRequest :(neighbors :Map<*, *>, scores :Map<*, *>) => void,
+    downloadPsaReviewPdfRequest :(neighbors :Immutable.Map<*, *>, scores :Immutable.Map<*, *>) => void,
     updateScoresAndRiskFactorsRequest :(
       scoresEntitySetId :string,
       scoresId :string,
-      scoresEntity :Map<*, *>,
+      scoresEntity :Immutable.Map<*, *>,
       riskFactorsEntitySetId :string,
       riskFactorsId :string,
-      riskFactorsEntity :Map<*, *>
+      riskFactorsEntity :Immutable.Map<*, *>
     ) => void
   }
 }

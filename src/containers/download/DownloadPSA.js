@@ -3,7 +3,6 @@
  */
 
 import React from 'react';
-import PropTypes from 'prop-types';
 import FontAwesome from 'react-fontawesome';
 import DatePicker from 'react-bootstrap-date-picker';
 import moment from 'moment';
@@ -78,16 +77,21 @@ const Error = styled.div`
   margin-top: 15px;
 `;
 
+type Props = {
+  actions :{
+    downloadRequest :(startDate :string, endDate :string) => void
+  },
+  history :string[]
+};
 
-class DownloadPSA extends React.Component {
+type State = {
+  startDate :?string,
+  endDate :?string
+};
 
-  static propTypes = {
-    actions: PropTypes.shape({
-      downloadRequest: PropTypes.func.isRequired
-    })
-  }
+class DownloadPSA extends React.Component<Props, State> {
 
-  constructor(props) {
+  constructor(props :Props) {
     super(props);
     this.state = {
       startDate: undefined,
@@ -157,7 +161,10 @@ class DownloadPSA extends React.Component {
   renderError = () => <Error>{this.getErrorText()}</Error>
 
   download = () => {
-    this.props.actions.downloadRequest(this.state.startDate, this.state.endDate);
+    const { startDate, endDate } = this.state;
+    if (startDate && endDate) {
+      this.props.actions.downloadRequest(startDate, endDate);
+    }
   }
 
   renderDownload = () => {
