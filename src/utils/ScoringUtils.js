@@ -176,7 +176,7 @@ export function getScoresAndRiskFactors(psaForm :Immutable.Map<*, *>) :{} {
 
   // optional params
   const priorConviction = psaForm.get(PRIOR_CONVICTION);
-  const currentViolentOffenseAndYoung = psaForm.get(CURRENT_VIOLENT_OFFENSE_AND_YOUNG)
+  const currentViolentOffenseAndYoung = psaForm.get(CURRENT_VIOLENT_OFFENSE_AND_YOUNG);
 
   let ageAtCurrentArrestValue = '20 or Younger';
   if (ageAtCurrentArrest === '1') ageAtCurrentArrestValue = '21 or 22';
