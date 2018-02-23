@@ -24,8 +24,8 @@ export default function* sagas() :Generator<*, *, *> {
     fork(AuthSagas.watchLogout),
 
     // DataSagas
-    fork(DataSagas.deleteEntity),
-    fork(DataSagas.replaceEntity),
+    fork(DataSagas.deleteEntityWatcher),
+    fork(DataSagas.replaceEntityWatcher),
 
     // DownloadSagas
     fork(DownloadSagas.downloadPSAsWatcher),

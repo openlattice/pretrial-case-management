@@ -4,8 +4,8 @@
 import Immutable from 'immutable';
 import Papa from 'papaparse';
 import moment from 'moment';
-import { EntityDataModelApi, SearchApi, SyncApi, DataApi } from 'lattice';
-import { call, put, take, all, takeEvery } from 'redux-saga/effects';
+import { EntityDataModelApi, SearchApi } from 'lattice';
+import { call, put, takeEvery } from 'redux-saga/effects';
 
 import FileSaver from '../../utils/FileSaver';
 import {

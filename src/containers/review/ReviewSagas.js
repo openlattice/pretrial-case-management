@@ -5,7 +5,7 @@
 import Immutable from 'immutable';
 import moment from 'moment';
 import { DataApi, EntityDataModelApi, SearchApi} from 'lattice';
-import { call, put, take, takeEvery } from 'redux-saga/effects';
+import { call, put, takeEvery } from 'redux-saga/effects';
 
 import exportPDF from '../../utils/PDFUtils';
 import {
@@ -17,8 +17,6 @@ import {
   updateScoresAndRiskFactors
 } from './ReviewActionFactory';
 
-import * as ActionFactory from './ReviewActionFactory';
-import * as ActionTypes from './ReviewActionTypes';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 
 function* loadPSAsByDateWorker(action :SequenceAction) :Generator<*, *, *> {

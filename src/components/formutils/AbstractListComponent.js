@@ -33,7 +33,10 @@ type FilterFunctionType = (value :string) => boolean;
 
 type Props = {
   actions :{
-    deleteEntityRequest :(entitySetId :string, entityKeyId :string) => void,
+    deleteEntity :(value :{
+      entitySetId :string,
+      entityKeyId :string
+    }) => void,
     setInputValue :(attrs :{
       name :string,
       value :string
@@ -112,7 +115,10 @@ export default class AbstractListComponent extends React.Component<Props, *> {
         this.props.actions.deleteRow(index);
       }
       : () => {
-        this.props.actions.deleteEntityRequest(row.get(ENTITY_SET_ID), row.get(ID));
+        this.props.actions.deleteEntity({
+          entitySetId: row.get(ENTITY_SET_ID),
+          entityKeyId: row.get(ID)
+        });
       };
 
     const rows = this.props.fields.map((field) => {
