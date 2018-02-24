@@ -568,7 +568,7 @@ class Form extends React.Component<Props, State> {
           entityKeyId: selectedPersonId
         });
       }
-      const progress = Math.floor((numCasesLoaded / numCasesToLoad) * 100);
+      const progress = (numCasesToLoad > 0) ? Math.floor((numCasesLoaded / numCasesToLoad) * 100) : 0;
       let loadingText = 'Loading cases';
       if (numCasesToLoad > 0) loadingText = `${loadingText} (${numCasesLoaded} / ${numCasesToLoad})`;
       return (
