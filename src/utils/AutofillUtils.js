@@ -24,7 +24,7 @@ const {
   CHARGE_NUM_FQN,
   CASE_ID_FQN,
   CHARGE_ID_FQN,
-  CHARGE_DEGREE_FQN,
+  CHARGE_LEVEL,
   DISPOSITION,
   DISPOSITION_DATE
 } = PROPERTY_TYPES;
@@ -142,7 +142,7 @@ export const getPreviousMisdemeanors = (allCharges :Immutable.List<*>) :Immutabl
   if (!allCharges.size) return Immutable.List();
   return getUnique(allCharges.filter(charge =>
     dispositionFieldIsGuilty(charge.get(DISPOSITION, Immutable.List()))
-    && degreeFieldIsMisdemeanor(charge.get(CHARGE_DEGREE_FQN, Immutable.List())))
+    && degreeFieldIsMisdemeanor(charge.get(CHARGE_LEVEL, Immutable.List())))
     .map(charge => getChargeTitle(charge)));
 };
 
@@ -153,7 +153,7 @@ export const getPreviousFelonies = (allCharges :Immutable.List<*>) :Immutable.Li
   if (!allCharges.size) return Immutable.List();
   return getUnique(allCharges.filter(charge =>
     dispositionFieldIsGuilty(charge.get(DISPOSITION, Immutable.List()))
-    && degreeFieldIsFelony(charge.get(CHARGE_DEGREE_FQN, Immutable.List())))
+    && degreeFieldIsFelony(charge.get(CHARGE_LEVEL, Immutable.List())))
     .map(charge => getChargeTitle(charge)));
 };
 

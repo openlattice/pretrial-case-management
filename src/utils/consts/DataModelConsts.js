@@ -58,6 +58,7 @@ export const PROPERTY_TYPES = {
   CHARGE_NUM_FQN: 'event.OffenseLocalCodeSection',
   CHARGE_DESCRIPTION_FQN: 'event.OffenseLocalDescription',
   CHARGE_DEGREE_FQN: 'event.ChargeLevelState',
+  CHARGE_LEVEL: 'event.ChargeLevel',
   DISPOSITION_DATE: 'justice.dispositiondate',
   DISPOSITION: 'justice.disposition',
   PLEA: 'justice.plea',
