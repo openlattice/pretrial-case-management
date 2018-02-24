@@ -104,7 +104,10 @@ function formReducer(state :Immutable.Map<> = INITIAL_STATE, action :Object) {
               }
             }
             else if (entitySetName === CHARGES) {
-              allChargesForPerson = allChargesForPerson.push(neighborObj);
+              const chargeObj = neighborObj
+                .get('neighborDetails', Immutable.Map())
+                .set('id', neighbor.get('neighborId', ''));
+              allChargesForPerson = allChargesForPerson.push(chargeObj);
             }
           });
 
