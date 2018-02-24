@@ -12,7 +12,6 @@ import Radio from '../controls/StyledRadio';
 
 import {
   PaddedRow,
-  UnpaddedRow,
   TitleLabel,
   SubmitButtonWrapper,
   SubmitButton,
@@ -49,6 +48,12 @@ const StyledFormWrapper = styled.div`
   margin: 0 60px 0 60px;
 `;
 
+const PSACol = styled(Col)`
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+`;
+
 type Props = {
   handleSingleSelection :(event :Object) => void,
   input :Immutable.Map<*, *>,
@@ -65,20 +70,6 @@ const PSAInputForm = ({
 
   const noPriorConvictions = input.get(PRIOR_MISDEMEANOR) === 'false' && input.get(PRIOR_FELONY) === 'false';
 
-  const renderHeader = header => (
-    <Col lg={4}>
-      <TitleLabel>{header}</TitleLabel>
-    </Col>
-  );
-
-  const renderHeaders = (header1, header2, header3) => (
-    <UnpaddedRow>
-      {renderHeader(header1)}
-      {renderHeader(header2)}
-      {renderHeader(header3)}
-    </UnpaddedRow>
-  );
-
   const renderRadio = (name, value, label, disabledField) => (
     <Radio
         name={name}
@@ -89,13 +80,14 @@ const PSAInputForm = ({
         label={label} />
   );
 
-  const renderTrueFalseRadio = (name, disabledField) => (
-    <Col lg={4}>
+  const renderTrueFalseRadio = (name, header, disabledField) => (
+    <PSACol lg={4}>
+      <TitleLabel>{header}</TitleLabel>
       <FormGroup>
         {renderRadio(name, false, 'No', disabledField)}
         {renderRadio(name, true, 'Yes', disabledField)}
       </FormGroup>
-    </Col>
+    </PSACol>
   );
 
   return (
@@ -105,61 +97,57 @@ const PSAInputForm = ({
         <form onSubmit={handleSubmit}>
           <SectionView header="PSA Information">
 
-            {renderHeaders(CURRENT_AGE_PROMPT, CURRENT_VIOLENT_OFFENSE_PROMPT, PENDING_CHARGE_PROMPT)}
-
             <PaddedRow>
-              <Col lg={4}>
+              <PSACol lg={4}>
+                <TitleLabel>{CURRENT_AGE_PROMPT}</TitleLabel>
                 <FormGroup>
                   {renderRadio(AGE_AT_CURRENT_ARREST, 0, '20 or younger')}
                   {renderRadio(AGE_AT_CURRENT_ARREST, 1, '21 or 22')}
                   {renderRadio(AGE_AT_CURRENT_ARREST, 2, '23 or older')}
                 </FormGroup>
-              </Col>
+              </PSACol>
 
-              {renderTrueFalseRadio(CURRENT_VIOLENT_OFFENSE)}
+              {renderTrueFalseRadio(CURRENT_VIOLENT_OFFENSE, CURRENT_VIOLENT_OFFENSE_PROMPT)}
 
-              {renderTrueFalseRadio(PENDING_CHARGE)}
+              {renderTrueFalseRadio(PENDING_CHARGE, PENDING_CHARGE_PROMPT)}
 
             </PaddedRow>
 
-            {renderHeaders(PRIOR_MISDEMEANOR_PROMPT, PRIOR_FELONY_PROMPT, PRIOR_VIOLENT_CONVICTION_PROMPT)}
-
             <PaddedRow>
 
-              {renderTrueFalseRadio(PRIOR_MISDEMEANOR)}
+              {renderTrueFalseRadio(PRIOR_MISDEMEANOR, PRIOR_MISDEMEANOR_PROMPT)}
 
-              {renderTrueFalseRadio(PRIOR_FELONY)}
+              {renderTrueFalseRadio(PRIOR_FELONY, PRIOR_FELONY_PROMPT)}
 
-              <Col lg={4}>
+              <PSACol lg={4}>
+                <TitleLabel>{PRIOR_VIOLENT_CONVICTION_PROMPT}</TitleLabel>
                 <FormGroup>
                   {renderRadio(PRIOR_VIOLENT_CONVICTION, 0, '0', noPriorConvictions)}
                   {renderRadio(PRIOR_VIOLENT_CONVICTION, 1, '1', noPriorConvictions)}
                   {renderRadio(PRIOR_VIOLENT_CONVICTION, 2, '2', noPriorConvictions)}
                   {renderRadio(PRIOR_VIOLENT_CONVICTION, 3, '3 or more', noPriorConvictions)}
                 </FormGroup>
-              </Col>
+              </PSACol>
 
             </PaddedRow>
 
-            {renderHeaders(
-              PRIOR_FAILURE_TO_APPEAR_RECENT_PROMPT,
-              PRIOR_FAILURE_TO_APPEAR_OLD_PROMPT,
-              PRIOR_SENTENCE_TO_INCARCERATION_PROMPT
-            )}
-
-
             <PaddedRow>
-              <Col lg={4}>
+              <PSACol lg={4}>
+                <TitleLabel>{PRIOR_FAILURE_TO_APPEAR_RECENT_PROMPT}</TitleLabel>
                 <FormGroup>
                   {renderRadio(PRIOR_FAILURE_TO_APPEAR_RECENT, 0, '0')}
                   {renderRadio(PRIOR_FAILURE_TO_APPEAR_RECENT, 1, '1')}
                   {renderRadio(PRIOR_FAILURE_TO_APPEAR_RECENT, 2, '2 or more')}
                 </FormGroup>
-              </Col>
+              </PSACol>
 
-              {renderTrueFalseRadio(PRIOR_FAILURE_TO_APPEAR_OLD)}
+              {renderTrueFalseRadio(PRIOR_FAILURE_TO_APPEAR_OLD, PRIOR_FAILURE_TO_APPEAR_OLD_PROMPT)}
 
-              {renderTrueFalseRadio(PRIOR_SENTENCE_TO_INCARCERATION, noPriorConvictions)}
+              {renderTrueFalseRadio(
+                PRIOR_SENTENCE_TO_INCARCERATION,
+                PRIOR_SENTENCE_TO_INCARCERATION_PROMPT,
+                noPriorConvictions
+              )}
 
             </PaddedRow>
             {

@@ -374,3 +374,8 @@ export const RecommendationWrapper = styled.div`
   display: inline-block;
   width: 50%;
 `;
+
+export const ErrorMessage = styled.div`
+  text-align: center;
+  color: red;
+`;
