@@ -16,7 +16,11 @@ const StyledSpinner = styled.svg`
   align-self: center;
 `;
 
-export default function(props :Object) {
+type Props = {
+  size? :?number
+};
+
+export default function(props :Props) {
 
   const size = props.size || 50;
 

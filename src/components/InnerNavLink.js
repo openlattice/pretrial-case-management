@@ -1,8 +1,10 @@
+/*
+ * @flow
+ */
+
 import React from 'react';
-import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import { NavLink } from 'react-router-dom';
-
 
 const CustomNavLink = styled(NavLink).attrs({
   activeStyle: {
@@ -26,25 +28,22 @@ const CustomNavLink = styled(NavLink).attrs({
   }
 `;
 
+type Props = {
+  label :string,
+  path :string,
+  linkName? :string
+}
 
-const InnerNavLink = ({ label, path, linkName }) => {
-  return (
-    <CustomNavLink
-        to={path}
-        name={linkName}>
-      { label }
-    </CustomNavLink>
-  );
-};
+const InnerNavLink = ({ label, path, linkName } :Props) => (
+  <CustomNavLink
+      to={path}
+      name={linkName}>
+    { label }
+  </CustomNavLink>
+);
 
 InnerNavLink.defaultProps = {
   linkName: ''
-};
-
-InnerNavLink.propTypes = {
-  label: PropTypes.string.isRequired,
-  path: PropTypes.string.isRequired,
-  linkName: PropTypes.string
 };
 
 export default InnerNavLink;

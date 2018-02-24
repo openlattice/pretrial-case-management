@@ -1,3 +1,7 @@
+/*
+ * @flow
+ */
+
 import { newRequestSequence } from 'redux-reqseq';
 
 const GET_PEOPLE = 'GET_PEOPLE';

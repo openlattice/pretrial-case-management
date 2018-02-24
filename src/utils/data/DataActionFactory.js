@@ -2,51 +2,17 @@
  * @flow
  */
 
-import * as ActionTypes from './DataActionTypes';
+import { newRequestSequence } from 'redux-reqseq';
 
-export function deleteEntityRequest(entitySetId :UUID, entityKeyId :UUID) {
-  return {
-    type: ActionTypes.DELETE_ENTITY_REQUEST,
-    entitySetId,
-    entityKeyId
-  };
-}
+const DELETE_ENTITY :string = 'DELETE_ENTITY';
+const deleteEntity :RequestSequence = newRequestSequence(DELETE_ENTITY);
 
-export function deleteEntitySuccess(entityKeyId :UUID) {
-  return {
-    type: ActionTypes.DELETE_ENTITY_SUCCESS,
-    entityKeyId
-  };
-}
+const REPLACE_ENTITY :string = 'REPLACE_ENTITY';
+const replaceEntity :RequestSequence = newRequestSequence(REPLACE_ENTITY);
 
-export function deleteEntityFailure(entityKeyId :UUID, errorMessage :string) {
-  return {
-    type: ActionTypes.DELETE_ENTITY_FAILURE,
-    entityKeyId,
-    errorMessage
-  };
-}
-
-export function replaceEntityRequest(entitySetId :UUID, entityKeyId :UUID, entity :Object) {
-  return {
-    type: ActionTypes.REPLACE_ENTITY_REQUEST,
-    entitySetId,
-    entityKeyId,
-    entity
-  };
-}
-
-export function replaceEntitySuccess(entityKeyId :UUID) {
-  return {
-    type: ActionTypes.REPLACE_ENTITY_SUCCESS,
-    entityKeyId
-  };
-}
-
-export function replaceEntityFailure(entityKeyId :UUID, errorMessage :string) {
-  return {
-    type: ActionTypes.REPLACE_ENTITY_FAILURE,
-    entityKeyId,
-    errorMessage
-  };
-}
+export {
+  DELETE_ENTITY,
+  REPLACE_ENTITY,
+  deleteEntity,
+  replaceEntity
+};

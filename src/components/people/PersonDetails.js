@@ -1,6 +1,9 @@
+/*
+ * @flow
+ */
+
 import React from 'react';
-import PropTypes from 'prop-types';
-import ImmutablePropTypes from 'react-immutable-proptypes';
+import Immutable from 'immutable';
 import { Redirect, Route, Switch } from 'react-router-dom';
 
 import { StyledInnerNav } from '../../utils/Layout';
@@ -10,8 +13,11 @@ import AboutPerson from './AboutPerson';
 import InnerNavLink from '../../components/InnerNavLink';
 import DashboardMainSection from '../dashboard/DashboardMainSection';
 
+type Props = {
+  selectedPersonData :Immutable.Map<*, *>
+};
 
-const PersonDetails = ({ selectedPersonData }) => {
+const PersonDetails = ({ selectedPersonData } :Props) => {
   const subjectId = selectedPersonData.get(PERSON_FQNS.SUBJECT_ID);
 
   const renderAboutPersonComponent = () => {
@@ -42,19 +48,6 @@ const PersonDetails = ({ selectedPersonData }) => {
       </Switch>
     </DashboardMainSection>
   );
-};
-
-PersonDetails.propTypes = {
-  selectedPersonData: ImmutablePropTypes.mapContains({
-    [PERSON_FQNS.ID]: PropTypes.arrayOf(PropTypes.string),
-    [PERSON_FQNS.DOB]: PropTypes.arrayOf(PropTypes.string),
-    [PERSON_FQNS.FIRST_NAME]: PropTypes.arrayOf(PropTypes.string),
-    [PERSON_FQNS.LAST_NAME]: PropTypes.arrayOf(PropTypes.string),
-    [PERSON_FQNS.SSN]: PropTypes.arrayOf(PropTypes.string),
-    [PERSON_FQNS.SUBJECT_ID]: PropTypes.arrayOf(PropTypes.string),
-    [PERSON_FQNS.PHOTO]: PropTypes.arrayOf(PropTypes.string),
-    [PERSON_FQNS.SEX]: PropTypes.arrayOf(PropTypes.string)
-  }).isRequired
 };
 
 export default PersonDetails;

@@ -1,7 +1,10 @@
+/*
+ * @flow
+ */
+
 import React from 'react';
+import Immutable from 'immutable';
 import styled from 'styled-components';
-import PropTypes from 'prop-types';
-import ImmutablePropTypes from 'react-immutable-proptypes';
 
 import { PERSON_FQNS } from '../../utils/consts/Consts';
 import Headshot from '../Headshot';
@@ -29,8 +32,11 @@ const StyledColumnRight = styled.div`
   overflow: auto;
 `;
 
+type Props = {
+  selectedPersonData :Immutable.Map<*, *>
+};
 
-const AboutPerson = ({ selectedPersonData }) => {
+const AboutPerson = ({ selectedPersonData } :Props) => {
 
   // TODO: Replace hardcoded contactInfoContent w/ real data
   const contactInfoContent = [
@@ -76,19 +82,6 @@ const AboutPerson = ({ selectedPersonData }) => {
       </StyledColumnRight>
     </Wrapper>
   );
-};
-
-AboutPerson.propTypes = {
-  selectedPersonData: ImmutablePropTypes.mapContains({
-    [PERSON_FQNS.ID]: PropTypes.arrayOf(PropTypes.string),
-    [PERSON_FQNS.DOB]: PropTypes.arrayOf(PropTypes.string),
-    [PERSON_FQNS.FIRST_NAME]: PropTypes.arrayOf(PropTypes.string),
-    [PERSON_FQNS.LAST_NAME]: PropTypes.arrayOf(PropTypes.string),
-    [PERSON_FQNS.SSN]: PropTypes.arrayOf(PropTypes.string),
-    [PERSON_FQNS.SUBJECT_ID]: PropTypes.arrayOf(PropTypes.string),
-    [PERSON_FQNS.PHOTO]: PropTypes.arrayOf(PropTypes.string),
-    [PERSON_FQNS.SEX]: PropTypes.arrayOf(PropTypes.string)
-  }).isRequired
 };
 
 export default AboutPerson;

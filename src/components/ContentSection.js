@@ -1,5 +1,8 @@
+/*
+ * @flow
+ */
+
 import React from 'react';
-import PropTypes from 'prop-types';
 import styled from 'styled-components';
 
 import ContentBlock from './ContentBlock';
@@ -19,18 +22,24 @@ const StyledSectionHeaderWrapper = styled.div`
   text-transform: uppercase;
 `;
 
+type Props = {
+  title :string,
+  vertical? :boolean,
+  content :{
+    label :string,
+    content :{
+      line :string
+    }[]
+  }[]
+};
 
-const ContentSection = ({ title, vertical, content }) => {
-  const renderContent = () => {
-    return content.map((contentBlock) => {
-      return (
-        <ContentBlock
-            contentBlock={contentBlock}
-            vertical={vertical}
-            key={contentBlock.label} />
-      );
-    });
-  };
+const ContentSection = ({ title, vertical, content } :Props) => {
+  const renderContent = () => content.map(contentBlock => (
+    <ContentBlock
+        contentBlock={contentBlock}
+        vertical={vertical}
+        key={contentBlock.label} />
+  ));
 
   return (
     <StyledSection>
@@ -42,12 +51,6 @@ const ContentSection = ({ title, vertical, content }) => {
 
 ContentSection.defaultProps = {
   vertical: false
-}
-
-ContentSection.propTypes = {
-  title: PropTypes.string.isRequired,
-  vertical: PropTypes.bool,
-  content: PropTypes.arrayOf(PropTypes.string).isRequired
 };
 
 export default ContentSection;

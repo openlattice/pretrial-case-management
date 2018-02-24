@@ -1,18 +1,16 @@
+import Immutable from 'immutable';
 import { expect } from 'chai';
-import scenarios from '../../testingscenarios/scenarios';
+import scenarios from './consts/ScoringTestConsts';
 import { getScoresAndRiskFactors } from './ScoringUtils';
 import '../../config/chai/chai.config';
 
 describe('ScoringUtils', () => {
-  const id = 'id';
 
   describe('Score values', () => {
 
     describe('Provided scenarios', () => {
       scenarios.forEach((scenario) => {
-        const getBoolString = (val) => {
-          return (val === 'Yes') ? 'true' : 'false';
-        };
+        const getBoolString = val => ((val === 'Yes') ? 'true' : 'false');
         const scenarioName = scenario.scenario;
 
         it(`should correctly score ${scenarioName}`, () => {
@@ -20,7 +18,7 @@ describe('ScoringUtils', () => {
           const providedValues = {};
           providedValues.ageAtCurrentArrest = scenario.ageAtCurrentArrest;
           providedValues.currentViolentOffense = scenario.currentViolentOffense;
-          providedValues.priorViolentOffenseAndYoung = scenario.priorViolentOffenseAndYoung;
+          providedValues.currentViolentOffenseAndYoung = scenario.currentViolentOffenseAndYoung;
           providedValues.pendingCharge = scenario.pendingCharge;
           providedValues.priorMisdemeanor = scenario.priorMisdemeanor;
           providedValues.priorFelony = scenario.priorFelony;
@@ -33,7 +31,7 @@ describe('ScoringUtils', () => {
           if (scenario.ageAtCurrentArrest === 22) ageAtCurrentArrest = '1';
           else if (scenario.ageAtCurrentArrest === 23) ageAtCurrentArrest = '2';
           const currentViolentOffense = getBoolString(scenario.currentViolentOffense);
-          const priorViolentOffenseAndYoung = getBoolString(scenario.priorViolentOffenseAndYoung);
+          const currentViolentOffenseAndYoung = getBoolString(scenario.currentViolentOffenseAndYoung);
           const pendingCharge = getBoolString(scenario.pendingCharge);
           const priorMisdemeanor = getBoolString(scenario.priorMisdemeanor);
           const priorConviction = getBoolString(scenario.priorConviction);
@@ -45,7 +43,7 @@ describe('ScoringUtils', () => {
 
           const nvcaFlag = scenario.nvcaFlag === 'Yes';
 
-          const formValues = {
+          const formValues = Immutable.fromJS({
             ageAtCurrentArrest,
             currentViolentOffense,
             pendingCharge,
@@ -56,8 +54,8 @@ describe('ScoringUtils', () => {
             priorFailureToAppearOld,
             priorSentenceToIncarceration,
             priorConviction,
-            priorViolentOffenseAndYoung
-          };
+            currentViolentOffenseAndYoung
+          });
 
           const expectedResults = {};
           expectedResults.ncaScale = scenario.ncaScale;
