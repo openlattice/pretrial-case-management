@@ -14,7 +14,6 @@ export const ALIASES = {
 
   CONTACTED_AT: 'contactedAt',
   EMPLOYED_BY: 'employedBy',
-  GETS_MAIL_AT: 'getsMailAt',
   HAS: 'has',
   INCLUDES: 'includes',
   LIVES_AT: 'livesAt',
