@@ -47,6 +47,7 @@ export const PROPERTY_TYPES = {
   // Pretrial case entity type consts
   CASE_ID_FQN: 'j.CaseNumberText',
   ARREST_DATE_FQN: 'publicsafety.ArrestDate',
+  FILE_DATE: 'publicsafety.FileDate',
   MOST_SERIOUS_CHARGE_NO: 'publicsafety.MostSeriousChargeStatuteNumber',
   MOST_SERIOUS_CHARGE_DESC: 'publicsafety.MostSeriousStatuteDescription',
   MOST_SERIOUS_CHARGE_DEG: 'publicsafety.MostSeriousChargeDegree',

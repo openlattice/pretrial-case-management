@@ -56,8 +56,8 @@ export function* watchLoadPersonDetailsRequest() :Generator<*, *, *> {
         const caseNumRequests = response.filter((neighborObj) => {
           const { neighborEntitySet, neighborDetails } = neighborObj;
           if (neighborEntitySet && neighborDetails && neighborEntitySet.name === ENTITY_SETS.PRETRIAL_CASES) {
-            const disposition = neighborDetails[PROPERTY_TYPES.DISPOSITION];
-            return !disposition || !disposition.length;
+            const fileDate = neighborDetails[PROPERTY_TYPES.FILE_DATE];
+            return !fileDate || !fileDate.length;
           }
           return false;
         }).map(neighborObj => neighborObj.neighborDetails[PROPERTY_TYPES.CASE_ID_FQN])
