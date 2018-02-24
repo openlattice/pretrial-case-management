@@ -53,19 +53,21 @@ export function* watchLoadPersonDetailsRequest() :Generator<*, *, *> {
 
       // <HACK>
       if (action.shouldLoadCases && !__ENV_DEV__) {
-        const caseNumRequests = response.filter((neighborObj) => {
+        const caseNums = response.filter((neighborObj) => {
           const { neighborEntitySet, neighborDetails } = neighborObj;
           if (neighborEntitySet && neighborDetails && neighborEntitySet.name === ENTITY_SETS.PRETRIAL_CASES) {
             const fileDate = neighborDetails[PROPERTY_TYPES.FILE_DATE];
             return !fileDate || !fileDate.length;
           }
           return false;
-        }).map(neighborObj => neighborObj.neighborDetails[PROPERTY_TYPES.CASE_ID_FQN])
-          .reduce((c1, c2) => [...c1, ...c2])
-          .filter((caseNum, index, arr) => arr.indexOf(caseNum) === index)
-          .map(caseNum => put(updateCaseRequest(caseNum)));
+        });
 
-        if (caseNumRequests.length) {
+        if (caseNums.length) {
+          const caseNumRequests = caseNums
+            .map(neighborObj => neighborObj.neighborDetails[PROPERTY_TYPES.CASE_ID_FQN])
+            .reduce((c1, c2) => [...c1, ...c2])
+            .filter((caseNum, index, arr) => arr.indexOf(caseNum) === index)
+            .map(caseNum => put(updateCaseRequest(caseNum)));
           yield all(caseNumRequests);
         }
         else {
