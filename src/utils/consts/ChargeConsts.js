@@ -107,8 +107,8 @@ const stripDegree = (chargeNum :string) :string => chargeNum.trim().split('(')[0
 
 export const chargeIsViolent = (chargeNum :string) :boolean => VIOLENT_CHARGES.includes(stripDegree(chargeNum));
 
-export const getUnique = (field :Immutable.List<string>) :Immutable.List<string> =>
-  field.filter((val, index) => field.indexOf(val) === index);
+export const getUnique = (valueList :Immutable.List<string>) :Immutable.List<string> =>
+  valueList.filter((val, index) => valueList.indexOf(val) === index);
 
 export const getViolentChargeNums = (chargeFields :Immutable.List<string>) :Immutable.List<string> =>
   getUnique(chargeFields.filter(charge => charge && chargeIsViolent(charge)));
