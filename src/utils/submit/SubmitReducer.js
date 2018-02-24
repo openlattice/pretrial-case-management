@@ -4,18 +4,21 @@
 
 import Immutable from 'immutable';
 
-import * as SubmitActionTypes from './SubmitActionTypes';
+import { submit } from './SubmitActionFactory';
 
-const INITIAL_STATE :Map<> = Immutable.Map().withMutations((map :Map<>) => {
+const INITIAL_STATE :Immutable.Map<*, *> = Immutable.Map().withMutations((map :Immutable.Map<*, *>) => {
   map.set('submitSuccess', false);
 });
 
-function submitReducer(state :Map<> = INITIAL_STATE, action :Object) {
-
+function submitReducer(state :Immutable.Map<*, *> = INITIAL_STATE, action :Object) {
   switch (action.type) {
 
-    case SubmitActionTypes.SUBMIT_SUCCESS: {
-      return state;
+    case submit.case(action.type): {
+      return submit.reducer(state, action, {
+        REQUEST: () => state.set('submitSuccess', false),
+        SUCCESS: () => state.set('submitSuccess', true),
+        FAILURE: () => state.set('submitSuccess', false)
+      });
     }
 
     default:

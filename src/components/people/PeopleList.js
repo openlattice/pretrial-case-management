@@ -1,7 +1,10 @@
+/*
+ * @flow
+ */
+
 import React from 'react';
 import styled from 'styled-components';
-import PropTypes from 'prop-types';
-import ImmutablePropTypes from 'react-immutable-proptypes';
+import Immutable from 'immutable';
 
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { StyledErrorMessage } from '../../utils/Layout';
@@ -16,16 +19,18 @@ const CardsWrapper = styled.div`
   height: 100%;
 `;
 
+type Props = {
+  didMapPeopleToProps :boolean,
+  isFetchingPeople :boolean,
+  people :Immutable.List<*>
+};
 
-const PeopleList = ({ people, isFetchingPeople, didMapPeopleToProps }) => {
+const PeopleList = ({ people, isFetchingPeople, didMapPeopleToProps } :Props) => {
 
   const renderPersonCards = () => {
     try {
       if (people && people.size > 0) {
-
-        return people.map((person) => {
-          return <PersonCard key={person.identification} person={person} />;
-        });
+        return people.map(person => <PersonCard key={person.identification} person={person} />);
       }
       else if (people && people.size === 0 && didMapPeopleToProps) {
         return <div>There are no people.</div>;
@@ -48,18 +53,6 @@ const PeopleList = ({ people, isFetchingPeople, didMapPeopleToProps }) => {
       { isFetchingPeople ? <LoadingSpinner /> : null }
     </CardsWrapper>
   );
-};
-
-PeopleList.propTypes = {
-  didMapPeopleToProps: PropTypes.bool.isRequired,
-  isFetchingPeople: PropTypes.bool.isRequired,
-  people: ImmutablePropTypes.listOf(ImmutablePropTypes.contains({
-    dob: PropTypes.string,
-    firstName: PropTypes.string,
-    identification: PropTypes.string,
-    lastName: PropTypes.string,
-    photo: PropTypes.string
-  })).isRequired
 };
 
 export default PeopleList;

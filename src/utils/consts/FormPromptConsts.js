@@ -1,3 +1,7 @@
+/*
+ * @flow
+ */
+
 export const CURRENT_AGE_PROMPT =
   '1. What was the defendant’s age at the time of the arrest or administering the PSA – Court?';
 export const CURRENT_VIOLENT_OFFENSE_PROMPT = '2. Is any current charge considered violent?';

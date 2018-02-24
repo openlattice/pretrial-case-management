@@ -1,5 +1,9 @@
+/*
+ * @flow
+ */
+
 import React from 'react';
-import PropTypes from 'prop-types';
+import Immutable from 'immutable';
 import moment from 'moment';
 import styled from 'styled-components';
 
@@ -54,73 +58,76 @@ const FlexContainer = styled.div`
   flex-direction: column;
 `;
 
-export default class PretrialCard extends React.Component {
-  static propTypes = {
-    pretrialCase: PropTypes.object.isRequired,
-    handleSelect: PropTypes.func
-  };
+type Props = {
+  pretrialCase :Immutable.Map<*, *>,
+  handleSelect? :(pretrialCase :Immutable.Map<*, *>, entityKeyId :string) => void
+};
 
-  render() {
-    const { pretrialCase, handleSelect } = this.props;
-    const Wrapper = styled(CaseResultWrapper)`
-      &:hover {
-        cursor: ${handleSelect ? 'pointer' : 'default'};
-      }
-    `;
+const PretrialCard = ({ pretrialCase, handleSelect } :Props) => {
 
-    const caseNum = pretrialCase.getIn([CASE_ID_FQN, 0]);
-    const arrestDate = pretrialCase.getIn([ARREST_DATE_FQN, 0]);
-    let arrestDateFormatted = arrestDate;
-    if (arrestDate) {
-      arrestDateFormatted = moment.utc(arrestDate).format('MMMM D, YYYY');
+  const Wrapper = styled(CaseResultWrapper)`
+    &:hover {
+      cursor: ${handleSelect ? 'pointer' : 'default'};
     }
-    const mostSeriousChargeNum = pretrialCase.getIn([MOST_SERIOUS_CHARGE_NO, 0]);
-    const mostSeriousChargeDesc = pretrialCase.getIn([MOST_SERIOUS_CHARGE_DESC, 0]);
-    const mostSeriousChargeDeg = pretrialCase.getIn([MOST_SERIOUS_CHARGE_DEG, 0]);
-    const numCharges = pretrialCase.getIn([NUMBER_OF_CHARGES_FQN, 0]);
+  `;
 
-    const entityKeyId :string = pretrialCase.get('id', '');
-
-    return (
-      <Wrapper
-          key={entityKeyId}
-          onClick={() => {
-            if (handleSelect) {
-              handleSelect(pretrialCase, entityKeyId);
-            }
-          }}>
-        <CaseInfoWrapper>
-          <CaseInfoHeaders>
-            <strong>Case Number:</strong>
-            <strong>Arrest Date:</strong>
-            {
-              handleSelect ? (
-                <FlexContainer>
-                  <strong>Most Serious Charge:</strong>
-                  <strong>Most Serious Charge Description:</strong>
-                  <strong>Most Serious Charge Degree:</strong>
-                </FlexContainer>
-              ) : null
-            }
-            <strong>Number of Charges:</strong>
-          </CaseInfoHeaders>
-          <CaseInfo>
-            <span>{ caseNum }</span>
-            <span>{ arrestDateFormatted }</span>
-            {
-              handleSelect ? (
-                <FlexContainer>
-                  <span>{ mostSeriousChargeNum }</span>
-                  <span>{ mostSeriousChargeDesc }</span>
-                  <span>{ mostSeriousChargeDeg }</span>
-                </FlexContainer>
-              ) : null
-            }
-            <span>{ numCharges }</span>
-          </CaseInfo>
-        </CaseInfoWrapper>
-      </Wrapper>
-    );
+  const caseNum = pretrialCase.getIn([CASE_ID_FQN, 0]);
+  const arrestDate = pretrialCase.getIn([ARREST_DATE_FQN, 0]);
+  let arrestDateFormatted = arrestDate;
+  if (arrestDate) {
+    arrestDateFormatted = moment.utc(arrestDate).format('MMMM D, YYYY');
   }
+  const mostSeriousChargeNum = pretrialCase.getIn([MOST_SERIOUS_CHARGE_NO, 0]);
+  const mostSeriousChargeDesc = pretrialCase.getIn([MOST_SERIOUS_CHARGE_DESC, 0]);
+  const mostSeriousChargeDeg = pretrialCase.getIn([MOST_SERIOUS_CHARGE_DEG, 0]);
+  const numCharges = pretrialCase.getIn([NUMBER_OF_CHARGES_FQN, 0]);
 
-}
+  const entityKeyId :string = pretrialCase.get('id', '');
+
+  return (
+    <Wrapper
+        key={entityKeyId}
+        onClick={() => {
+          if (handleSelect) {
+            handleSelect(pretrialCase, entityKeyId);
+          }
+        }}>
+      <CaseInfoWrapper>
+        <CaseInfoHeaders>
+          <strong>Case Number:</strong>
+          <strong>Arrest Date:</strong>
+          {
+            handleSelect ? (
+              <FlexContainer>
+                <strong>Most Serious Charge:</strong>
+                <strong>Most Serious Charge Description:</strong>
+                <strong>Most Serious Charge Degree:</strong>
+              </FlexContainer>
+            ) : null
+          }
+          <strong>Number of Charges:</strong>
+        </CaseInfoHeaders>
+        <CaseInfo>
+          <span>{ caseNum }</span>
+          <span>{ arrestDateFormatted }</span>
+          {
+            handleSelect ? (
+              <FlexContainer>
+                <span>{ mostSeriousChargeNum }</span>
+                <span>{ mostSeriousChargeDesc }</span>
+                <span>{ mostSeriousChargeDeg }</span>
+              </FlexContainer>
+            ) : null
+          }
+          <span>{ numCharges }</span>
+        </CaseInfo>
+      </CaseInfoWrapper>
+    </Wrapper>
+  );
+};
+
+PretrialCard.defaultProps = {
+  handleSelect: () => {}
+};
+
+export default PretrialCard;

@@ -3,7 +3,7 @@
  */
 
 import React from 'react';
-import PropTypes from 'prop-types';
+import Immutable from 'immutable';
 import styled from 'styled-components';
 import { FormGroup, Col } from 'react-bootstrap';
 
@@ -49,15 +49,21 @@ const StyledFormWrapper = styled.div`
   margin: 0 60px 0 60px;
 `;
 
+type Props = {
+  handleSingleSelection :(event :Object) => void,
+  input :Immutable.Map<*, *>,
+  handleSubmit :(event :Object) => void,
+  incompleteError :boolean
+};
+
 const PSAInputForm = ({
-  section,
   handleSingleSelection,
   input,
   handleSubmit,
   incompleteError
-}) => {
+} :Props) => {
 
-  const noPriorConvictions = input.priorMisdemeanor === 'false' && input.priorFelony === 'false';
+  const noPriorConvictions = input.get(PRIOR_MISDEMEANOR) === 'false' && input.get(PRIOR_FELONY) === 'false';
 
   const renderHeader = header => (
     <Col lg={4}>
@@ -75,10 +81,9 @@ const PSAInputForm = ({
 
   const renderRadio = (name, value, label, disabledField) => (
     <Radio
-        dataSection={section}
         name={name}
         value={`${value}`}
-        checked={input[name] === `${value}`}
+        checked={input.get(name) === `${value}`}
         onChange={handleSingleSelection}
         disabled={disabledField && disabledField !== undefined}
         label={label} />
@@ -169,14 +174,6 @@ const PSAInputForm = ({
       </StyledFormWrapper>
     </div>
   );
-};
-
-PSAInputForm.propTypes = {
-  section: PropTypes.string.isRequired,
-  handleSingleSelection: PropTypes.func.isRequired,
-  input: PropTypes.object.isRequired,
-  handleSubmit: PropTypes.func.isRequired,
-  incompleteError: PropTypes.bool.isRequired
 };
 
 export default PSAInputForm;

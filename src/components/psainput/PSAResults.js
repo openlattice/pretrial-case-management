@@ -1,5 +1,9 @@
+/*
+ * @flow
+ */
+
 import React from 'react';
-import PropTypes from 'prop-types';
+import Immutable from 'immutable';
 import { Button } from 'react-bootstrap';
 
 import {
@@ -16,15 +20,34 @@ import {
   SelectedScaleBlock,
   WeightedScoreWrapper
 } from '../../utils/Layout';
+import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 
-export default class PSAResults extends React.Component {
+const {
+  AGE_AT_CURRENT_ARREST_FQN,
+  CURRENT_VIOLENT_OFFENSE_FQN,
+  CURRENT_VIOLENT_OFFENSE_AND_YOUNG_FQN,
+  PENDING_CHARGE_FQN,
+  PRIOR_MISDEMEANOR_FQN,
+  PRIOR_FELONY_FQN,
+  PRIOR_CONVICTION_FQN,
+  PRIOR_VIOLENT_CONVICTION_FQN,
+  PRIOR_FAILURE_TO_APPEAR_RECENT_FQN,
+  PRIOR_FAILURE_TO_APPEAR_OLD_FQN,
+  PRIOR_SENTENCE_TO_INCARCERATION_FQN
+} = PROPERTY_TYPES;
 
-  static propTypes = {
-    scores: PropTypes.object.isRequired,
-    formValues: PropTypes.object.isRequired
-  }
+type Props = {
+  scores :Object,
+  riskFactors :Object
+};
 
-  constructor(props) {
+type State = {
+  showWeightedScores :boolean
+};
+
+export default class PSAResults extends React.Component<Props, State> {
+
+  constructor(props :Props) {
     super(props);
     this.state = {
       showWeightedScores: false
@@ -33,7 +56,7 @@ export default class PSAResults extends React.Component {
 
   getNvcaString = () => ((this.props.scores.nvcaFlag) ? 'Yes' : 'No')
 
-  renderScale = (val) => {
+  renderScale = (val :number) => {
     const scale = [];
     for (let i = 1; i < 7; i += 1) {
       const block = (i <= val)
@@ -44,33 +67,14 @@ export default class PSAResults extends React.Component {
   }
 
   renderRiskFactors = () => {
-    const {
-      ageAtCurrentArrest,
-      currentViolentOffense,
-      pendingCharge,
-      priorMisdemeanor,
-      priorFelony,
-      priorViolentConviction,
-      priorFailureToAppearRecent,
-      priorFailureToAppearOld,
-      priorSentenceToIncarceration
-    } = this.props.formValues;
+    const { riskFactors } = this.props;
 
-    let ageAtCurrentArrestValue = '20 or Younger';
-    if (ageAtCurrentArrest === '1') ageAtCurrentArrestValue = '21 or 22';
-    else if (ageAtCurrentArrest === '2') ageAtCurrentArrestValue = '23 or Older';
-    const currentViolentOffenseValue = (currentViolentOffense === 'true') ? 'Yes' : 'No';
-    const currentViolentOffenseAndYoungValue = (currentViolentOffense === 'true' && ageAtCurrentArrest === '0')
-      ? 'Yes' : 'No';
-    const pendingChargeValue = (pendingCharge === 'true') ? 'Yes' : 'No';
-    const priorMisdemeanorValue = (priorMisdemeanor === 'true') ? 'Yes' : 'No';
-    const priorFelonyValue = (priorFelony === 'true') ? 'Yes' : 'No';
-    const priorConvictionValue = (priorMisdemeanor === 'true' || priorFelony === 'true') ? 'Yes' : 'No';
-    const priorViolentConvictionValue = (priorViolentConviction === '3') ? '3 or more' : priorViolentConviction;
-    const priorFailureToAppearRecentValue = (priorFailureToAppearRecent === '2')
-      ? '2 or more' : priorFailureToAppearRecent;
-    const priorFailureToAppearOldValue = (priorFailureToAppearOld === 'true') ? 'Yes' : 'No';
-    const priorSentenceToIncarcerationValue = (priorSentenceToIncarceration === 'true') ? 'Yes' : 'No';
+    const format = (valList) => {
+      if (!valList.length) return '';
+      const val = valList[0];
+      if (val.length) return val;
+      return val ? 'Yes' : 'No';
+    };
 
     return (
       <RiskFactorTable>
@@ -81,59 +85,59 @@ export default class PSAResults extends React.Component {
           </tr>
           <tr>
             <RiskFactorCell>1. Age at Current Arrest</RiskFactorCell>
-            <RiskFactorCell>{ageAtCurrentArrestValue}</RiskFactorCell>
+            <RiskFactorCell>{format(riskFactors[AGE_AT_CURRENT_ARREST_FQN])}</RiskFactorCell>
           </tr>
           <tr>
             <RiskFactorCell>2. Current Violent Offense</RiskFactorCell>
-            <RiskFactorCell>{currentViolentOffenseValue}</RiskFactorCell>
+            <RiskFactorCell>{format(riskFactors[CURRENT_VIOLENT_OFFENSE_FQN])}</RiskFactorCell>
           </tr>
           <tr>
             <RiskFactorCell>
               &nbsp;&nbsp;&nbsp;&nbsp;a. Current Violent Offense & 20 Years Old or Younger
               <i> (calculated from 1 and 2)</i>
             </RiskFactorCell>
-            <RiskFactorCell>{currentViolentOffenseAndYoungValue}</RiskFactorCell>
+            <RiskFactorCell>{format(riskFactors[CURRENT_VIOLENT_OFFENSE_AND_YOUNG_FQN])}</RiskFactorCell>
           </tr>
           <tr>
             <RiskFactorCell>3. Pending Charge at the Time of the Offense</RiskFactorCell>
-            <RiskFactorCell>{pendingChargeValue}</RiskFactorCell>
+            <RiskFactorCell>{format(riskFactors[PENDING_CHARGE_FQN])}</RiskFactorCell>
           </tr>
           <tr>
             <RiskFactorCell>4. Prior Misdemeanor Conviction</RiskFactorCell>
-            <RiskFactorCell>{priorMisdemeanorValue}</RiskFactorCell>
+            <RiskFactorCell>{format(riskFactors[PRIOR_MISDEMEANOR_FQN])}</RiskFactorCell>
           </tr>
           <tr>
             <RiskFactorCell>5. Prior Felony Conviction</RiskFactorCell>
-            <RiskFactorCell>{priorFelonyValue}</RiskFactorCell>
+            <RiskFactorCell>{format(riskFactors[PRIOR_FELONY_FQN])}</RiskFactorCell>
           </tr>
           <tr>
             <RiskFactorCell>
               &nbsp;&nbsp;&nbsp;&nbsp;a. Prior Conviction <i>(calculated from 4 and 5)</i>
             </RiskFactorCell>
-            <RiskFactorCell>{priorConvictionValue}</RiskFactorCell>
+            <RiskFactorCell>{format(riskFactors[PRIOR_CONVICTION_FQN])}</RiskFactorCell>
           </tr>
           <tr>
             <RiskFactorCell>6. Prior Violent Conviction</RiskFactorCell>
-            <RiskFactorCell>{priorViolentConvictionValue}</RiskFactorCell>
+            <RiskFactorCell>{format(riskFactors[PRIOR_VIOLENT_CONVICTION_FQN])}</RiskFactorCell>
           </tr>
           <tr>
             <RiskFactorCell>7. Prior Pre-trial Failure to Appear in Past 2 Years</RiskFactorCell>
-            <RiskFactorCell>{priorFailureToAppearRecentValue}</RiskFactorCell>
+            <RiskFactorCell>{format(riskFactors[PRIOR_FAILURE_TO_APPEAR_RECENT_FQN])}</RiskFactorCell>
           </tr>
           <tr>
             <RiskFactorCell>8. Prior Pre-trial Failure to Appear Older than 2 Years</RiskFactorCell>
-            <RiskFactorCell>{priorFailureToAppearOldValue}</RiskFactorCell>
+            <RiskFactorCell>{format(riskFactors[PRIOR_FAILURE_TO_APPEAR_OLD_FQN])}</RiskFactorCell>
           </tr>
           <tr>
             <RiskFactorCell>9. Prior Sentence to Incarceration</RiskFactorCell>
-            <RiskFactorCell>{priorSentenceToIncarcerationValue}</RiskFactorCell>
+            <RiskFactorCell>{format(riskFactors[PRIOR_SENTENCE_TO_INCARCERATION_FQN])}</RiskFactorCell>
           </tr>
         </tbody>
       </RiskFactorTable>
     );
   }
 
-  renderWeightedScore = score => (this.state.showWeightedScores
+  renderWeightedScore = (score :number) => (this.state.showWeightedScores
     ? <WeightedScoreWrapper>Weighted Score: {score}</WeightedScoreWrapper> : null)
 
   renderNvca = () => (

@@ -1,3 +1,7 @@
+/*
+ * @flow
+ */
+
 export const ENTITY_SETS = {
   PEOPLE: 'southdakotapeople',
   ADDRESSES: 'southdakotaaddresses',
@@ -12,7 +16,6 @@ export const ENTITY_SETS = {
   // association entity sets
   APPEARS_IN: 'southdakotaappearsin',
   LIVES_AT: 'southdakotalivesat',
-  GETS_MAIL_AT: 'southdakotagetsmailat',
   CALCULATED_FOR: 'southdakotacalculatedfor',
   CHARGED_WITH: 'southdakotachargedwith'
 };
@@ -44,6 +47,7 @@ export const PROPERTY_TYPES = {
   // Pretrial case entity type consts
   CASE_ID_FQN: 'j.CaseNumberText',
   ARREST_DATE_FQN: 'publicsafety.ArrestDate',
+  FILE_DATE: 'publicsafety.FileDate',
   MOST_SERIOUS_CHARGE_NO: 'publicsafety.MostSeriousChargeStatuteNumber',
   MOST_SERIOUS_CHARGE_DESC: 'publicsafety.MostSeriousStatuteDescription',
   MOST_SERIOUS_CHARGE_DEG: 'publicsafety.MostSeriousChargeDegree',
@@ -54,6 +58,7 @@ export const PROPERTY_TYPES = {
   CHARGE_NUM_FQN: 'event.OffenseLocalCodeSection',
   CHARGE_DESCRIPTION_FQN: 'event.OffenseLocalDescription',
   CHARGE_DEGREE_FQN: 'event.ChargeLevelState',
+  CHARGE_LEVEL: 'event.ChargeLevel',
   DISPOSITION_DATE: 'justice.dispositiondate',
   DISPOSITION: 'justice.disposition',
   PLEA: 'justice.plea',

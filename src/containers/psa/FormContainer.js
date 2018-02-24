@@ -4,7 +4,6 @@
 
 import React from 'react';
 
-import PropTypes from 'prop-types';
 import Immutable from 'immutable';
 import styled from 'styled-components';
 import randomUUID from 'uuid/v4';
@@ -29,7 +28,6 @@ import * as PersonActionFactory from '../person/PersonActionFactory';
 import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
 import * as Routes from '../../core/router/Routes';
 
-import { formatDate, formatValue } from '../../utils/Utils';
 import { getScoresAndRiskFactors } from '../../utils/ScoringUtils';
 import {
   ButtonWrapper,
@@ -43,17 +41,9 @@ import {
   getPrevPath
 } from '../../utils/Helpers';
 import { tryAutofillFields } from '../../utils/AutofillUtils';
-import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { PSA } from '../../utils/consts/Consts';
+import { PROPERTY_TYPES, ENTITY_SETS } from '../../utils/consts/DataModelConsts';
 
 const {
-  FIRST_NAME,
-  MIDDLE_NAME,
-  LAST_NAME,
-  DOB,
-  SEX,
-  RACE,
-  ETHNICITY,
   PERSON_ID,
   TIMESTAMP_FQN,
   NVCA_FLAG_FQN,
@@ -65,16 +55,15 @@ const {
 } = PROPERTY_TYPES;
 
 const {
-  AGE_AT_CURRENT_ARREST,
-  CURRENT_VIOLENT_OFFENSE,
-  PENDING_CHARGE,
-  PRIOR_MISDEMEANOR,
-  PRIOR_FELONY,
-  PRIOR_VIOLENT_CONVICTION,
-  PRIOR_FAILURE_TO_APPEAR_RECENT,
-  PRIOR_FAILURE_TO_APPEAR_OLD,
-  PRIOR_SENTENCE_TO_INCARCERATION
-} = PSA;
+  PEOPLE,
+  PRETRIAL_CASES,
+  PSA_RISK_FACTORS,
+  PSA_SCORES,
+  RELEASE_RECOMMENDATIONS,
+  STAFF,
+  ASSESSED_BY,
+  CALCULATED_FOR
+} = ENTITY_SETS;
 
 const StyledFormViewWrapper = styled.div`
   display: flex;
@@ -135,22 +124,10 @@ const INITIAL_PERSON_FORM = Immutable.fromJS({
   sex: ''
 });
 
-const INITIAL_PSA_FORM = Immutable.fromJS({
-  [AGE_AT_CURRENT_ARREST]: null,
-  [CURRENT_VIOLENT_OFFENSE]: null,
-  [PENDING_CHARGE]: null,
-  [PRIOR_MISDEMEANOR]: null,
-  [PRIOR_FELONY]: null,
-  [PRIOR_VIOLENT_CONVICTION]: null,
-  [PRIOR_FAILURE_TO_APPEAR_RECENT]: null,
-  [PRIOR_FAILURE_TO_APPEAR_OLD]: null,
-  [PRIOR_SENTENCE_TO_INCARCERATION]: null
-});
-
 const INITIAL_STATE = Immutable.fromJS({
   personForm: INITIAL_PERSON_FORM,
-  psaForm: INITIAL_PSA_FORM,
   formIncompleteError: false,
+  riskFactors: {},
   scores: {
     ftaTotal: 0,
     ncaTotal: 0,
@@ -166,46 +143,92 @@ const INITIAL_STATE = Immutable.fromJS({
 
 const numPages = 4;
 
-class Form extends React.Component {
-  static propTypes = {
-    actions: PropTypes.shape({
-      loadDataModelElements: PropTypes.func.isRequired,
-      searchPeople: PropTypes.func.isRequired,
-      loadNeighbors: PropTypes.func.isRequired,
-      clearForm: PropTypes.func.isRequired,
-      submitData: PropTypes.func.isRequired,
-      selectPerson: PropTypes.func.isRequired,
-      selectPretrialCase: PropTypes.func.isRequired,
-      updateRecommendation: PropTypes.func.isRequired,
-      loadPersonDetailsRequest: PropTypes.func.isRequired
-    }).isRequired,
-    personDataModel: PropTypes.object.isRequired,
-    pretrialCaseDataModel: PropTypes.object.isRequired,
-    riskFactorsDataModel: PropTypes.object.isRequired,
-    psaDataModel: PropTypes.object.isRequired,
-    releaseRecommendationDataModel: PropTypes.object.isRequired,
-    staffDataModel: PropTypes.object.isRequired,
-    calculatedForDataModel: PropTypes.object.isRequired,
-    assessedByDataModel: PropTypes.object.isRequired,
-    selectedPerson: PropTypes.object.isRequired,
-    selectedPretrialCase: PropTypes.object.isRequired,
-    pretrialCaseOptions: PropTypes.array.isRequired,
-    charges: PropTypes.array.isRequired,
-    peopleOptions: PropTypes.array.isRequired,
-    allChargesForPerson: PropTypes.array.isRequired,
-    selectedPersonId: PropTypes.string.isRequired,
-    isLoadingCases: PropTypes.bool.isRequired,
-    numCasesToLoad: PropTypes.number.isRequired,
-    numCasesLoaded: PropTypes.number.isRequired
-  };
+type Entity = {
+  key :{
+    entitySetId :string,
+    entityId :string,
+    syncId? :string
+  },
+  details :{}
+};
 
-  constructor(props) {
+type Props = {
+  actions :{
+    loadDataModel :() => void,
+    loadNeighbors :(value :{
+      entitySetId :string,
+      entityKeyId :string
+    }) => void,
+    clearForm :() => void,
+    submitData :(values :{
+      personEntity :Entity,
+      pretrialCaseEntity :Entity,
+      riskFactorsEntity :Entity,
+      psaEntity :Entity,
+      releaseRecommendationEntity :Entity,
+      staffEntity :Entity,
+      calculatedForEntity :Entity,
+      assessedByEntity :Entity
+    }) => void,
+    selectPerson :(value :{
+      selectedPerson :Immutable.Map<*, *>
+    }) => void,
+    selectPretrialCase :(value :{
+      selectedPretrialCase :Immutable.Map<*, *>
+    }) => void,
+    updateRecommendation :(value :{
+      releaseRecommendation :string,
+      releaseRecommendationId :string,
+      entitySetId :string,
+      propertyTypes :Immutable.List<*>
+    }) => void,
+    loadPersonDetailsRequest :(personId :string, shouldFetchCases :boolean) => void,
+    setPSAValues :(value :{
+      newValues :Immutable.Map<*, *>
+    }) => void
+  },
+  dataModel :Immutable.Map<*, *>,
+  entitySetLookup :Immutable.Map<*, *>,
+  selectedPerson :Immutable.Map<*, *>,
+  selectedPretrialCase :Immutable.Map<*, *>,
+  pretrialCaseOptions :Immutable.List<*>,
+  charges :Immutable.List<*>,
+  allChargesForPerson :Immutable.List<*>,
+  selectedPersonId :string,
+  isLoadingCases :boolean,
+  numCasesToLoad :number,
+  numCasesLoaded :number,
+  psaForm :Immutable.Map<*, *>,
+  history :string[]
+};
+
+type State = {
+  personForm :Immutable.Map<*, *>,
+  formIncompleteError :boolean,
+  riskFactors :{},
+  scores :{},
+  scoresWereGenerated :boolean,
+  releaseRecommendation :string,
+  releaseRecommendationId :string
+};
+
+class Form extends React.Component<Props, State> {
+
+  constructor(props :Props) {
     super(props);
     this.state = INITIAL_STATE.toJS();
   }
 
   componentDidMount() {
-    this.props.actions.loadDataModelElements();
+    this.props.actions.loadDataModel();
+    this.redirectToFirstPageIfNecessary();
+  }
+
+  redirectToFirstPageIfNecessary = () => {
+    const { scoresWereGenerated } = this.state;
+    if ((!this.props.selectedPerson.size || !scoresWereGenerated) && !window.location.href.endsWith('1')) {
+      this.props.history.push(`${Routes.PSA_FORM}/1`);
+    }
   }
 
   componentWillReceiveProps(nextProps) {
@@ -213,22 +236,25 @@ class Form extends React.Component {
       selectedPretrialCase,
       charges,
       pretrialCaseOptions,
-      allChargesForPerson
+      allChargesForPerson,
+      psaForm,
+      actions
     } = nextProps;
-    if (Object.keys(selectedPretrialCase).length
-      || charges.length
-      || pretrialCaseOptions.length
-      || allChargesForPerson.length) {
-      const psaForm = Object.assign({}, this.state.psaForm, tryAutofillFields(
-        selectedPretrialCase,
-        charges,
-        pretrialCaseOptions,
-        allChargesForPerson,
-        this.props.selectedPretrialCase,
-        this.props.selectedPerson,
-        this.state.psaForm
-      ));
-      this.setState({ psaForm });
+    if (selectedPretrialCase.size
+      || charges.size
+      || pretrialCaseOptions.size
+      || allChargesForPerson.size) {
+      actions.setPSAValues({
+        newValues: tryAutofillFields(
+          selectedPretrialCase,
+          charges,
+          pretrialCaseOptions,
+          allChargesForPerson,
+          this.props.selectedPretrialCase,
+          this.props.selectedPerson,
+          psaForm
+        )
+      });
     }
   }
 
@@ -236,47 +262,21 @@ class Form extends React.Component {
     this.clear();
   }
 
-  // For text input
-  handleTextInput = (e) => {
-    const sectionKey = e.target.dataset.section;
-    const { name, value } = e.target;
-    const sectionState = this.state[sectionKey];
-    sectionState[name] = value;
-    this.setState({ [sectionKey]: sectionState });
-  }
-
-  handleDateInput = (e, section, name) => {
-    const input = e;
-    const sectionState = this.state[section];
-    sectionState[name] = input;
-    this.setState({ [section]: sectionState });
-  }
-
-  // For radio or select input
   handleSingleSelection = (e) => {
-    const sectionKey = e.target.dataset.section;
-    const sectionState = this.state[sectionKey];
-    sectionState[e.target.name] = e.target.value;
-    if (sectionKey === 'psaForm') {
-      if (e.target.name === PRIOR_MISDEMEANOR || e.target.name === PRIOR_FELONY) {
-        if (sectionState[PRIOR_MISDEMEANOR] === 'false' && sectionState[PRIOR_FELONY] === 'false') {
-          sectionState[PRIOR_VIOLENT_CONVICTION] = '0';
-          sectionState[PRIOR_SENTENCE_TO_INCARCERATION] = 'false';
-        }
-      }
-    }
-    this.setState({ [sectionKey]: sectionState });
+    const newValues = Immutable.fromJS({ [e.target.name]: e.target.value });
+    this.props.actions.setPSAValues({ newValues });
   }
 
   getCalculatedForEntityDetails = () => ({ [TIMESTAMP_FQN]: [new Date()] })
 
-  getBlankReleaseRecommendationEntity = () => {
+  getBlankReleaseRecommendationEntity = () :Entity => {
     let generalId;
     let notesId;
-    this.props.releaseRecommendationDataModel.propertyTypes.forEach((pt) => {
-      const fqn = `${pt.type.namespace}.${pt.type.name}`;
-      if (fqn === GENERAL_ID_FQN) generalId = pt.id;
-      else if (fqn === RELEASE_RECOMMENDATION_FQN) notesId = pt.id;
+    this.getPropertyTypes(RELEASE_RECOMMENDATIONS).forEach((pt) => {
+      const fqn = this.getFqn(pt);
+      const ptId = pt.get('id');
+      if (fqn === GENERAL_ID_FQN) generalId = ptId;
+      else if (fqn === RELEASE_RECOMMENDATION_FQN) notesId = ptId;
     });
     if (!generalId || !notesId) return {};
     const id = randomUUID();
@@ -288,7 +288,7 @@ class Form extends React.Component {
       },
       key: {
         entityId: id,
-        entitySetId: this.props.releaseRecommendationDataModel.entitySet.id
+        entitySetId: this.props.entitySetLookup.get(RELEASE_RECOMMENDATIONS)
       }
     };
   }
@@ -312,33 +312,49 @@ class Form extends React.Component {
   getEntityWithUuids = (details, fqnsToInclude, fqnToId) => {
     const basicEntity = {};
     fqnsToInclude.forEach((fqn) => {
-      if (details[fqn]) Object.assign(basicEntity, { [fqnToId[fqn]]: details[fqn] });
+      if (details[fqn]) Object.assign(basicEntity, { [fqnToId.get(fqn)]: details[fqn] });
     });
     return basicEntity;
   }
 
-  getEntity = (entityDetails, dataModel, isExistingEntity, useRandomId) => {
-    const fqnToId = {};
-    const keyIdToFqn = {};
-    dataModel.propertyTypes.forEach((propertyType) => {
-      const fqn = `${propertyType.type.namespace}.${propertyType.type.name}`;
-      fqnToId[fqn] = propertyType.id;
-      if (dataModel.entityType.key.includes(propertyType.id)) {
-        keyIdToFqn[propertyType.id] = fqn;
+  getEntity = (entityDetails, entitySetName, isExistingEntity, useRandomId) :Entity => {
+    const { dataModel, entitySetLookup } = this.props;
+    const entitySetId = entitySetLookup.get(entitySetName);
+    let fqnToId = Immutable.Map();
+    let keyIdToFqn = Immutable.Map();
+
+    const entitySet = dataModel.getIn(['entitySets', entitySetId], Immutable.Map());
+    const entityType = dataModel.getIn(['entityTypes', entitySet.get('entityTypeId')], Immutable.Map());
+
+    entityType.get('properties', Immutable.List()).forEach((propertyTypeId) => {
+      const propertyType = dataModel.getIn(['propertyTypes', propertyTypeId], Immutable.Map());
+      const fqn = this.getFqn(propertyType);
+      fqnToId = fqnToId.set(fqn, propertyTypeId);
+      if (entityType.get('key').includes(propertyTypeId)) {
+        keyIdToFqn = keyIdToFqn.set(propertyTypeId, fqn);
       }
     });
-    const primaryKeys = dataModel.entityType.key.map(id => keyIdToFqn[id]);
-    const details = (isExistingEntity) ? this.getEntityWithUuids(entityDetails, primaryKeys, fqnToId)
+
+    const primaryKeys = entityType.get('key').map(id => keyIdToFqn.get(id)).toJS();
+
+    const details = (isExistingEntity)
+      ? this.getEntityWithUuids(entityDetails, primaryKeys, fqnToId)
       : this.getEntityWithUuids(entityDetails, Object.keys(entityDetails), fqnToId);
 
-    const entityId = useRandomId ? randomUUID() : this.getEntityId(details, dataModel.entityType.key);
+    const entityId = useRandomId ? randomUUID() : this.getEntityId(details, entityType.get('key'));
     return {
       details,
-      key: {
-        entitySetId: dataModel.entitySet.id,
-        entityId
-      }
+      key: { entitySetId, entityId }
     };
+  }
+
+  getPropertyTypes = (entitySetName) => {
+    const { dataModel, entitySetLookup } = this.props;
+    const entitySetId = entitySetLookup.get(entitySetName);
+    const entitySet = dataModel.getIn(['entitySets', entitySetId], Immutable.Map());
+    const entityType = dataModel.getIn(['entityTypes', entitySet.get('entityTypeId')], Immutable.Map());
+    return entityType.get('properties', Immutable.List())
+      .map(propertyTypeId => dataModel.getIn(['propertyTypes', propertyTypeId]));
   }
 
   getStaffEntityDetails = () => {
@@ -351,20 +367,20 @@ class Form extends React.Component {
   }
 
   submitEntities = (scores) => {
-    const { riskFactors } = getScoresAndRiskFactors(this.state.psaForm);
+    const { riskFactors } = getScoresAndRiskFactors(this.props.psaForm);
     const calculatedForEntityDetails = this.getCalculatedForEntityDetails();
     const releaseRecommendationEntity = this.getBlankReleaseRecommendationEntity();
     const assessedByEntityDetails = this.getAssessedByEntityDetails();
 
-    const personEntity = this.getEntity(this.props.selectedPerson, this.props.personDataModel, true);
-    const pretrialCaseEntity = this.getEntity(this.props.selectedPretrialCase, this.props.pretrialCaseDataModel, true);
-    const riskFactorsEntity = this.getEntity(riskFactors, this.props.riskFactorsDataModel, false, true);
-    const psaEntity = this.getEntity(scores, this.props.psaDataModel, false, true);
-    const calculatedForEntity = this.getEntity(calculatedForEntityDetails, this.props.calculatedForDataModel);
-    const staffEntity = this.getEntity(this.getStaffEntityDetails(), this.props.staffDataModel);
-    const assessedByEntity = this.getEntity(assessedByEntityDetails, this.props.assessedByDataModel);
+    const personEntity = this.getEntity(this.props.selectedPerson.toJS(), PEOPLE, true);
+    const pretrialCaseEntity = this.getEntity(this.props.selectedPretrialCase.toJS(), PRETRIAL_CASES, true);
+    const riskFactorsEntity = this.getEntity(riskFactors, PSA_RISK_FACTORS, false, true);
+    const psaEntity = this.getEntity(scores, PSA_SCORES, false, true);
+    const calculatedForEntity = this.getEntity(calculatedForEntityDetails, CALCULATED_FOR);
+    const staffEntity = this.getEntity(this.getStaffEntityDetails(), STAFF);
+    const assessedByEntity = this.getEntity(assessedByEntityDetails, ASSESSED_BY);
 
-    this.props.actions.submitData(
+    this.props.actions.submitData({
       personEntity,
       pretrialCaseEntity,
       riskFactorsEntity,
@@ -373,83 +389,14 @@ class Form extends React.Component {
       staffEntity,
       calculatedForEntity,
       assessedByEntity
-    );
+    });
     this.setState({ releaseRecommendationId: releaseRecommendationEntity.key.entityId });
   }
 
-  handleSubmit = (e) => {
-    e.preventDefault();
-    const searchOptions = {
-      searchFields: this.getSearchDetails(),
-      start: 0,
-      maxHits: 50
-    };
-    this.props.actions.searchPeople(this.props.personDataModel.entitySet.id, searchOptions);
-  }
+  getFqn = propertyType => `${propertyType.getIn(['type', 'namespace'])}.${propertyType.getIn(['type', 'name'])}`
 
-  getFqn = (propertyType) => {
-    return `${propertyType.type.namespace}.${propertyType.type.name}`;
-  }
-
-  updateSearchDetails = (searchDetails, property, value, shouldFormatDate) => {
-    const searchTerm = (shouldFormatDate) ? formatDate(value) : value;
-    if (searchTerm && searchTerm.length) {
-      searchDetails.push({
-        searchTerm,
-        property,
-        exact: true
-      });
-    }
-    return searchDetails;
-  }
-
-  getSearchDetails = () => {
-    const { firstName, middleName, lastName, dob, sex, race, ethnicity, id } = this.state.personForm;
-    let searchDetails = [];
-    this.props.personDataModel.propertyTypes.forEach((propertyType) => {
-      const fqn = this.getFqn(propertyType);
-      switch (fqn) {
-        case FIRST_NAME:
-          searchDetails = this.updateSearchDetails(searchDetails, propertyType.id, firstName);
-          break;
-
-        case MIDDLE_NAME:
-          searchDetails = this.updateSearchDetails(searchDetails, propertyType.id, middleName);
-          break;
-
-        case LAST_NAME:
-          searchDetails = this.updateSearchDetails(searchDetails, propertyType.id, lastName);
-          break;
-
-        case SEX:
-          searchDetails = this.updateSearchDetails(searchDetails, propertyType.id, sex);
-          break;
-
-        case RACE:
-          searchDetails = this.updateSearchDetails(searchDetails, propertyType.id, race);
-          break;
-
-        case ETHNICITY:
-          searchDetails = this.updateSearchDetails(searchDetails, propertyType.id, ethnicity);
-          break;
-
-        case DOB:
-          searchDetails = this.updateSearchDetails(searchDetails, propertyType.id, dob, true);
-          break;
-
-        case PERSON_ID:
-          searchDetails = this.updateSearchDetails(searchDetails, propertyType.id, id);
-          break;
-
-        default:
-          break;
-      }
-    });
-    return searchDetails;
-  }
-
-  handleSelectPerson = (person, entityKeyId) => {
-    this.props.actions.selectPerson(person.toJS());
+  handleSelectPerson = (selectedPerson, entityKeyId) => {
+    this.props.actions.selectPerson({ selectedPerson });
     this.props.actions.loadPersonDetailsRequest(entityKeyId, true);
   }
 
@@ -459,20 +406,18 @@ class Form extends React.Component {
   }
 
   prevPage = () => {
-    const prevPage = getPrevPath(window.location, numPages);
+    const prevPage = getPrevPath(window.location);
     this.handlePageChange(prevPage);
   }
 
   generateScores = (e) => {
     e.preventDefault();
 
-    if (Object.values(this.state.psaForm).filter((value) => {
-      return !value;
-    }).length) {
+    if (this.props.psaForm.valueSeq().filter(value => value === null).size) {
       this.setState({ formIncompleteError: true });
     }
     else {
-      const { riskFactors, scores } = getScoresAndRiskFactors(this.state.psaForm);
+      const { riskFactors, scores } = getScoresAndRiskFactors(this.props.psaForm);
       this.setState({
         formIncompleteError: false,
         riskFactors,
@@ -497,15 +442,15 @@ class Form extends React.Component {
   renderPersonSection = () => <SelectedPersonInfo personDetails={this.props.selectedPerson} />
 
   renderPretrialCaseSection = () => {
-    const { selectedPretrialCase, pretrialCaseDataModel, charges } = this.props;
-    if (!selectedPretrialCase || !Object.keys(selectedPretrialCase).length) return null;
+    const { selectedPretrialCase, charges } = this.props;
+    if (!selectedPretrialCase.size) return null;
     return (
       <div>
         <Divider />
         <SelectedPretrialCaseInfo
             pretrialCaseDetails={selectedPretrialCase}
             charges={charges}
-            propertyTypes={pretrialCaseDataModel.propertyTypes} />
+            propertyTypes={this.getPropertyTypes(PRETRIAL_CASES).toJS()} />
       </div>
     );
   }
@@ -514,23 +459,23 @@ class Form extends React.Component {
     <PSAInputForm
         handleSingleSelection={this.handleSingleSelection}
         handleSubmit={this.generateScores}
-        section="psaForm"
-        input={this.state.psaForm}
+        input={this.props.psaForm}
         incompleteError={this.state.formIncompleteError} />
   )
 
   renderPSASection = () => {
     if (!this.state.scoresWereGenerated) return this.renderPSAInputForm();
-    return <PSAResults scores={this.state.scores} formValues={this.state.psaForm} />;
+    return <PSAResults scores={this.state.scores} riskFactors={this.state.riskFactors} />;
   }
 
   handleReleaseRecommendationUpdate = (releaseRecommendation) => {
     if (this.state.scoresWereGenerated) {
-      this.props.actions.updateRecommendation(
+      this.props.actions.updateRecommendation({
         releaseRecommendation,
-        this.state.releaseRecommendationId,
-        this.props.releaseRecommendationDataModel
-      );
+        releaseRecommendationId: this.state.releaseRecommendationId,
+        entitySetId: this.props.entitySetLookup.get(RELEASE_RECOMMENDATIONS),
+        propertyTypes: this.getPropertyTypes(RELEASE_RECOMMENDATIONS)
+      });
     }
     this.setState({ releaseRecommendation });
   }
@@ -549,9 +494,9 @@ class Form extends React.Component {
   )
 
   setMultimapToMap = (setMultimap) => {
-    const map = {};
+    let map = Immutable.Map();
     Object.keys(setMultimap).forEach((key) => {
-      map[key] = setMultimap[key][0];
+      map = map.set(key, setMultimap[key][0]);
     });
     return map;
   };
@@ -569,13 +514,11 @@ class Form extends React.Component {
         <Button
             bsStyle="info"
             onClick={() => {
-              exportPDF(
-                Object.assign({}, this.state, { riskFactors: this.setMultimapToMap(this.state.riskFactors) }),
+              exportPDF(Immutable.fromJS(this.state).set('riskFactors', this.setMultimapToMap(this.state.riskFactors)),
                 selectedPretrialCase,
                 selectedPerson,
                 pretrialCaseOptions,
-                allChargesForPerson
-              );
+                allChargesForPerson);
             }}>Export as PDF
         </Button>
       </ButtonWrapper>
@@ -613,16 +556,19 @@ class Form extends React.Component {
       isLoadingCases,
       numCasesToLoad,
       numCasesLoaded,
-      personDataModel,
+      entitySetLookup,
       pretrialCaseOptions,
       actions
     } = this.props;
     if (isLoadingCases) {
       if (numCasesLoaded === numCasesToLoad) {
         actions.loadPersonDetailsRequest(selectedPersonId, false);
-        actions.loadNeighbors(personDataModel.entitySet.id, selectedPersonId);
+        actions.loadNeighbors({
+          entitySetId: entitySetLookup.get(PEOPLE),
+          entityKeyId: selectedPersonId
+        });
       }
-      const progress = Math.floor((numCasesLoaded / numCasesToLoad) * 100);
+      const progress = (numCasesToLoad > 0) ? Math.floor((numCasesLoaded / numCasesToLoad) * 100) : 0;
       let loadingText = 'Loading cases';
       if (numCasesToLoad > 0) loadingText = `${loadingText} (${numCasesLoaded} / ${numCasesToLoad})`;
       return (
@@ -633,41 +579,31 @@ class Form extends React.Component {
     }
     return (
       <SelectPretrialCaseContainer
-          caseOptions={Immutable.fromJS(pretrialCaseOptions)}
+          caseOptions={pretrialCaseOptions}
           nextPage={this.nextPage}
           prevPage={this.prevPage}
           onSelectCase={(selectedCase) => {
-            actions.selectPretrialCase(selectedCase.toJS());
+            actions.selectPretrialCase({ selectedPretrialCase: selectedCase });
             this.nextPage();
           }} />
     );
   }
 
-  getPsaInputForm = () => {
-    const personId = this.props.selectedPerson.id;
-    if (!personId || !personId.length) {
-      this.props.history.push(`${Routes.PSA_FORM}/1`);
-      return null;
-    }
-    return (
-      <div>
-        {this.renderPersonSection()}
-        {this.renderPretrialCaseSection()}
-        {this.renderPSAInputForm()}
-        {this.renderRecommendationSection()}
-      </div>
-    );
-  }
+  getPsaInputForm = () => (
+    <div>
+      {this.renderPersonSection()}
+      {this.renderPretrialCaseSection()}
+      {this.renderPSAInputForm()}
+      {this.renderRecommendationSection()}
+    </div>
+  )
 
   getPsaResults = () => {
-    const personId = this.props.selectedPerson.id;
-    if (!personId || !personId.length || !this.state.scoresWereGenerated) {
-      this.props.history.push(`${Routes.PSA_FORM}/1`);
-      return null;
-    }
+    const { scoresWereGenerated, scores, riskFactors } = this.state;
+    if (!scoresWereGenerated) return null;
     return (
       <div>
-        <PSAResults scores={this.state.scores} formValues={this.state.psaForm} />
+        <PSAResults scores={scores} riskFactors={riskFactors} />
         {this.renderRecommendationSection()}
         {this.renderExportButton()}
       </div>
@@ -699,25 +635,19 @@ class Form extends React.Component {
   }
 }
 
-function mapStateToProps(state :Map<>) :Object {
+function mapStateToProps(state :Immutable.Map<*, *>) :Object {
   const psaForm = state.get('psa');
   const search = state.get('search');
 
   return {
-    personDataModel: psaForm.get('personDataModel'),
-    pretrialCaseDataModel: psaForm.get('pretrialCaseDataModel'),
-    riskFactorsDataModel: psaForm.get('riskFactorsDataModel'),
-    psaDataModel: psaForm.get('psaDataModel'),
-    releaseRecommendationDataModel: psaForm.get('releaseRecommendationDataModel'),
-    staffDataModel: psaForm.get('staffDataModel'),
-    calculatedForDataModel: psaForm.get('calculatedForDataModel'),
-    assessedByDataModel: psaForm.get('assessedByDataModel'),
+    dataModel: psaForm.get('dataModel'),
+    entitySetLookup: psaForm.get('entitySetLookup'),
     pretrialCaseOptions: psaForm.get('pretrialCaseOptions'),
     charges: psaForm.get('charges'),
-    peopleOptions: psaForm.get('peopleOptions'),
     selectedPerson: psaForm.get('selectedPerson'),
     selectedPretrialCase: psaForm.get('selectedPretrialCase'),
     allChargesForPerson: psaForm.get('allChargesForPerson'),
+    psaForm: psaForm.get('psa'),
 
     selectedPersonId: search.get('selectedPersonId'),
     isLoadingCases: search.get('loadingCases'),
@@ -742,16 +672,6 @@ function mapDispatchToProps(dispatch :Function) :Object {
   return {
     actions: {
       ...bindActionCreators(actions, dispatch),
-      loadDataModelElements: () => {
-        dispatch(FormActionFactory.loadPersonDataModel());
-        dispatch(FormActionFactory.loadPretrialCaseDataModel());
-        dispatch(FormActionFactory.loadRiskFactorsDataModel());
-        dispatch(FormActionFactory.loadPsaDataModel());
-        dispatch(FormActionFactory.loadReleaseRecommendationDataModel());
-        dispatch(FormActionFactory.loadStaffDataModel());
-        dispatch(FormActionFactory.loadCalculatedForDataModel());
-        dispatch(FormActionFactory.loadAssessedByDataModel());
-      }
     }
   };
 }

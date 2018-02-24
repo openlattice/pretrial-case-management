@@ -1,5 +1,8 @@
+/*
+ * @flow
+ */
+
 import React from 'react';
-import PropTypes from 'prop-types';
 import FontAwesome from 'react-fontawesome';
 import DatePicker from 'react-bootstrap-date-picker';
 import Immutable from 'immutable';
@@ -83,22 +86,37 @@ const LoadingText = styled.div`
 
 const DATE_FORMAT = 'MM/DD/YYYY';
 
-class ReviewPSA extends React.Component {
-
-  static propTypes = {
-    scoresEntitySetId: PropTypes.string.isRequired,
-    scoresAsMap: PropTypes.instanceOf(Immutable.Map).isRequired,
-    psaNeighborsByDate: PropTypes.instanceOf(Immutable.Map).isRequired,
-    loadingResults: PropTypes.bool.isRequired,
-    errorMesasge: PropTypes.string.isRequired,
-    actions: PropTypes.shape({
-      loadPsasByDateRequest: PropTypes.func.isRequired,
-      downloadPsaReviewPdfRequest: PropTypes.func.isRequired,
-      updateScoresAndRiskFactorsRequest: PropTypes.func.isRequired
-    })
+type Props = {
+  history :string[],
+  scoresEntitySetId :string,
+  scoresAsMap :Immutable.Map<*, *>,
+  psaNeighborsByDate :Immutable.Map<*, Immutable.Map<*, *>>,
+  loadingResults :boolean,
+  errorMessage :string,
+  actions :{
+    downloadPSAReviewPDF :(values :{
+      neighbors :Immutable.Map<*, *>,
+      scores :Immutable.Map<*, *>
+    }) => void,
+    loadPSAsByDate :() => void,
+    updateScoresAndRiskFactors :(values :{
+      scoresEntitySetId :string,
+      scoresId :string,
+      scoresEntity :Immutable.Map<*, *>,
+      riskFactorsEntitySetId :string,
+      riskFactorsId :string,
+      riskFactorsEntity :Immutable.Map<*, *>
+    }) => void
   }
+}
 
-  constructor(props) {
+type State = {
+  date :string;
+};
+
+class ReviewPSA extends React.Component<Props, State> {
+
+  constructor(props :Props) {
     super(props);
     this.state = {
       date: moment().format()
@@ -106,7 +124,7 @@ class ReviewPSA extends React.Component {
   }
 
   componentDidMount() {
-    this.props.actions.loadPsasByDateRequest();
+    this.props.actions.loadPSAsByDate();
   }
 
   handleClose = () => {
@@ -156,7 +174,7 @@ class ReviewPSA extends React.Component {
             neighbors={entityNeighbors}
             scores={scores}
             entityKeyId={id}
-            downloadFn={actions.downloadPsaReviewPdfRequest}
+            downloadFn={actions.downloadPSAReviewPDF}
             updateScoresAndRiskFactors={this.updateScoresAndRiskFactors}
             key={id} />
       );
@@ -165,14 +183,14 @@ class ReviewPSA extends React.Component {
 
   updateScoresAndRiskFactors = (scoresId, scoresEntity, riskFactorsEntitySetId, riskFactorsId, riskFactorsEntity) => {
     const { scoresEntitySetId, actions } = this.props;
-    actions.updateScoresAndRiskFactorsRequest(
+    actions.updateScoresAndRiskFactors({
       scoresEntitySetId,
       scoresId,
       scoresEntity,
       riskFactorsEntitySetId,
       riskFactorsId,
       riskFactorsEntity
-    );
+    });
   }
 
   renderContent = () => {
@@ -202,7 +220,6 @@ class ReviewPSA extends React.Component {
       </StyledFormViewWrapper>
     );
   }
-
 }
 
 function mapStateToProps(state) {

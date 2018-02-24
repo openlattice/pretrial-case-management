@@ -1,7 +1,9 @@
+/*
+ * @flow
+ */
+
 import React from 'react';
-import PropTypes from 'prop-types';
 import Immutable from 'immutable';
-import ImmutablePropTypes from 'react-immutable-proptypes';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 
@@ -11,29 +13,20 @@ import { PERSON_FQNS } from '../../utils/consts/Consts';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { formatDOB } from '../../utils/Helpers';
 
-
-class PersonDetailsContainer extends React.Component {
-  static propTypes = {
-    selectedPersonData: ImmutablePropTypes.mapContains({
-      [PERSON_FQNS.ID]: PropTypes.string,
-      [PERSON_FQNS.DOB]: PropTypes.string,
-      [PERSON_FQNS.FIRST_NAME]: PropTypes.string,
-      [PERSON_FQNS.LAST_NAME]: PropTypes.string,
-      [PERSON_FQNS.SSN]: PropTypes.string,
-      [PERSON_FQNS.SUBJECT_ID]: PropTypes.string,
-      [PERSON_FQNS.PHOTO]: PropTypes.string,
-      [PERSON_FQNS.SEX]: PropTypes.string
-    }).isRequired,
-    isFetchingPersonData: PropTypes.bool.isRequired,
-    actions: PropTypes.shape({
-      getPersonData: PropTypes.func.isRequired
-    }).isRequired,
-    match: PropTypes.shape({
-      params: PropTypes.shape({
-        personId: PropTypes.node
-      }).isRequired
-    }).isRequired
+type Props = {
+  selectedPersonData :Immutable.Map<*, *>,
+  isFetchingPersonData :boolean,
+  actions :{
+    getPersonData :(personId :string) => void
+  },
+  match :{
+    params :{
+      personId :string
+    }
   }
+};
+
+class PersonDetailsContainer extends React.Component<Props> {
 
   componentDidMount() {
     this.props.actions.getPersonData(this.props.match.params.personId);

@@ -2,274 +2,49 @@
  * @flow
  */
 
-import * as FormActionTypes from './FormActionTypes';
+import { newRequestSequence } from 'redux-reqseq';
 
-export function loadPersonDataModel() :Object {
-  return {
-    type: FormActionTypes.LOAD_PERSON_DATA_MODEL_REQUEST
-  };
-}
+const LOAD_DATA_MODEL :string = 'LOAD_DATA_MODEL';
+const loadDataModel :RequestSequence = newRequestSequence(LOAD_DATA_MODEL);
 
-export function loadPersonDataModelSuccess(dataModel :Object) :Object {
-  return {
-    type: FormActionTypes.LOAD_PERSON_DATA_MODEL_SUCCESS,
-    dataModel
-  };
-}
+const LOAD_NEIGHBORS :string = 'LOAD_NEIGHBORS';
+const loadNeighbors :RequestSequence = newRequestSequence(LOAD_NEIGHBORS);
 
-export function loadPersonDataModelFailure() :Object {
-  return {
-    type: FormActionTypes.LOAD_PERSON_DATA_MODEL_FAILURE
-  };
-}
+const SUBMIT_DATA :string = 'SUBMIT_DATA';
+const submitData :RequestSequence = newRequestSequence(SUBMIT_DATA);
 
-export function loadPretrialCaseDataModel() :Object {
-  return {
-    type: FormActionTypes.LOAD_PRETRIAL_DATA_MODEL_REQUEST
-  };
-}
+const UPDATE_RECOMMENDATION :string = 'UPDATE_RECOMMENDATION';
+const updateRecommendation :RequestSequence = newRequestSequence(UPDATE_RECOMMENDATION);
 
-export function loadPretrialCaseDataModelSuccess(dataModel :Object) :Object {
-  return {
-    type: FormActionTypes.LOAD_PRETRIAL_DATA_MODEL_SUCCESS,
-    dataModel
-  };
-}
+// reducer only
 
-export function loadPretrialCaseDataModelFailure() :Object {
-  return {
-    type: FormActionTypes.LOAD_RISK_FACTORS_DATA_MODEL_FAILURE
-  };
-}
+const CLEAR_FORM :string = 'CLEAR_FORM';
+const clearForm :RequestSequence = newRequestSequence(CLEAR_FORM);
 
-export function loadRiskFactorsDataModel() :Object {
-  return {
-    type: FormActionTypes.LOAD_RISK_FACTORS_DATA_MODEL_REQUEST
-  };
-}
+const SELECT_PERSON :string = 'SELECT_PERSON';
+const selectPerson :RequestSequence = newRequestSequence(SELECT_PERSON);
 
-export function loadRiskFactorsDataModelSuccess(dataModel :Object) :Object {
-  return {
-    type: FormActionTypes.LOAD_RISK_FACTORS_DATA_MODEL_SUCCESS,
-    dataModel
-  };
-}
+const SELECT_PRETRIAL_CASE :string = 'SELECT_PRETRIAL_CASE';
+const selectPretrialCase :RequestSequence = newRequestSequence(SELECT_PRETRIAL_CASE);
 
-export function loadRiskFactorsDataModelFailure() :Object {
-  return {
-    type: FormActionTypes.LOAD_PRETRIAL_DATA_MODEL_FAILURE
-  };
-}
+const SET_PSA_VALUES :string = 'SET_PSA_VALUES';
+const setPSAValues :RequestSequence = newRequestSequence(SET_PSA_VALUES);
 
-export function loadPsaDataModel() :Object {
-  return {
-    type: FormActionTypes.LOAD_PSA_DATA_MODEL_REQUEST
-  };
-}
-
-export function loadPsaDataModelSuccess(dataModel :Object) :Object {
-  return {
-    type: FormActionTypes.LOAD_PSA_DATA_MODEL_SUCCESS,
-    dataModel
-  };
-}
-
-export function loadPsaDataModelFailure() :Object {
-  return {
-    type: FormActionTypes.LOAD_PSA_DATA_MODEL_FAILURE
-  };
-}
-
-export function loadReleaseRecommendationDataModel() :Object {
-  return {
-    type: FormActionTypes.LOAD_RELEASE_RECOMMENDATION_DATA_MODEL_REQUEST
-  };
-}
-
-export function loadReleaseRecommendationDataModelSuccess(dataModel :Object) :Object {
-  return {
-    type: FormActionTypes.LOAD_RELEASE_RECOMMENDATION_DATA_MODEL_SUCCESS,
-    dataModel
-  };
-}
-
-export function loadReleaseRecommendationDataModelFailure() :Object {
-  return {
-    type: FormActionTypes.LOAD_RELEASE_RECOMMENDATION_DATA_MODEL_FAILURE
-  };
-}
-
-export function loadStaffDataModel() :Object {
-  return {
-    type: FormActionTypes.LOAD_STAFF_DATA_MODEL_REQUEST
-  };
-}
-
-export function loadStaffDataModelSuccess(dataModel :Object) :Object {
-  return {
-    type: FormActionTypes.LOAD_STAFF_DATA_MODEL_SUCCESS,
-    dataModel
-  };
-}
-
-export function loadStaffDataModelFailure() :Object {
-  return {
-    type: FormActionTypes.LOAD_STAFF_DATA_MODEL_FAILURE
-  };
-}
-
-export function loadCalculatedForDataModel() :Object {
-  return {
-    type: FormActionTypes.LOAD_CALCULATED_FOR_DATA_MODEL_REQUEST
-  };
-}
-
-export function loadCalculatedForDataModelSuccess(dataModel :Object) :Object {
-  return {
-    type: FormActionTypes.LOAD_CALCULATED_FOR_DATA_MODEL_SUCCESS,
-    dataModel
-  };
-}
-
-export function loadCalculatedForDataModelFailure() :Object {
-  return {
-    type: FormActionTypes.LOAD_CALCULATED_FOR_DATA_MODEL_FAILURE
-  };
-}
-
-export function loadAssessedByDataModel() :Object {
-  return {
-    type: FormActionTypes.LOAD_ASSESSED_BY_DATA_MODEL_REQUEST
-  };
-}
-
-export function loadAssessedByDataModelSuccess(dataModel :Object) :Object {
-  return {
-    type: FormActionTypes.LOAD_ASSESSED_BY_DATA_MODEL_SUCCESS,
-    dataModel
-  };
-}
-
-export function loadAssessedByDataModelFailure() :Object {
-  return {
-    type: FormActionTypes.LOAD_ASSESSED_BY_DATA_MODEL_FAILURE
-  };
-}
-
-export function searchPeople(entitySetId :UUID, searchOptions :Object[]) :Object {
-  return {
-    type: FormActionTypes.SEARCH_PEOPLE_REQUEST,
-    entitySetId,
-    searchOptions
-  };
-}
-
-export function searchPeopleSuccess(people :Object[]) :Object {
-  return {
-    type: FormActionTypes.SEARCH_PEOPLE_SUCCESS,
-    people
-  };
-}
-
-export function searchPeopleFailure() {
-  return {
-    type: FormActionTypes.SEARCH_PEOPLE_FAILURE
-  };
-}
-
-export function loadNeighbors(entitySetId :UUID, rowId :UUID) :Object {
-  return {
-    type: FormActionTypes.LOAD_NEIGHBORS_REQUEST,
-    entitySetId,
-    rowId
-  };
-}
-
-export function loadNeighborsSuccess(neighbors :Object[]) :Object {
-  return {
-    type: FormActionTypes.LOAD_NEIGHBORS_SUCCESS,
-    neighbors
-  };
-}
-
-export function loadNeighborsFailure() {
-  return {
-    type: FormActionTypes.LOAD_NEIGHBORS_FAILURE
-  };
-}
-
-export function submitData(
-  personEntity :Object,
-  pretrialCaseEntity :Object,
-  riskFactorsEntity :Object,
-  psaEntity :Object,
-  releaseRecommendationEntity :Object,
-  staffEntity :Object,
-  calculatedForEntity :Object,
-  assessedByEntity :Object
-) :Object {
-  return {
-    type: FormActionTypes.SUBMIT_DATA_REQUEST,
-    personEntity,
-    pretrialCaseEntity,
-    riskFactorsEntity,
-    psaEntity,
-    releaseRecommendationEntity,
-    staffEntity,
-    calculatedForEntity,
-    assessedByEntity
-  };
-}
-
-export function submitDataSuccess() :Object {
-  return {
-    type: FormActionTypes.SUBMIT_DATA_SUCCESS
-  };
-}
-
-export function submitDataFailure() {
-  return {
-    type: FormActionTypes.SUBMIT_DATA_FAILURE
-  };
-}
-
-export function selectPerson(selectedPerson :Object) {
-  return {
-    type: FormActionTypes.SELECT_PERSON,
-    selectedPerson
-  };
-}
-
-export function selectPretrialCase(selectedPretrialCase :Object) {
-  return {
-    type: FormActionTypes.SELECT_PRETRIAL,
-    selectedPretrialCase
-  };
-}
-
-export function updateRecommendation(recommendation :string, entityId :string, dataModel :Object) {
-  return {
-    type: FormActionTypes.UPDATE_RECOMMENDATION_REQUEST,
-    recommendation,
-    entityId,
-    dataModel
-  };
-}
-
-export function updateRecommendationSuccess() {
-  return {
-    type: FormActionTypes.UPDATE_RECOMMENDATION_SUCCESS
-  };
-}
-
-export function updateRecommendationFailure() {
-  return {
-    type: FormActionTypes.UPDATE_RECOMMENDATION_FAILURE
-  };
-}
-
-export function clearForm() {
-  return {
-    type: FormActionTypes.CLEAR_FORM
-  };
-}
+export {
+  LOAD_DATA_MODEL,
+  LOAD_NEIGHBORS,
+  SUBMIT_DATA,
+  UPDATE_RECOMMENDATION,
+  loadDataModel,
+  loadNeighbors,
+  submitData,
+  updateRecommendation,
+  CLEAR_FORM,
+  SELECT_PERSON,
+  SELECT_PRETRIAL_CASE,
+  SET_PSA_VALUES,
+  clearForm,
+  selectPerson,
+  selectPretrialCase,
+  setPSAValues
+};

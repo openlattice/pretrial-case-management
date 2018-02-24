@@ -11,7 +11,6 @@ import { Button, FormControl, Col } from 'react-bootstrap';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 
-import SearchControl from '../../components/controls/SearchControl';
 import PersonCard from '../../components/person/PersonCard';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { clearSearchResults, searchPeopleRequest } from './PersonActionFactory';
@@ -70,17 +69,23 @@ type Props = {
     searchPeopleRequest :Function
   },
   isLoadingPeople :boolean,
-  searchResults :List<Map<*, *>>,
+  searchResults :Immutable.List<Immutable.Map<*, *>>,
   onSelectPerson :Function
 }
 
-class SearchPeopleContainer extends React.Component<Props> {
+type State = {
+  firstName :string,
+  lastName :string,
+  dob :?string
+};
+
+class SearchPeopleContainer extends React.Component<Props, State> {
 
   static defaultProps = {
     onSelectPerson: () => {}
   }
 
-  constructor(props) {
+  constructor(props :Props) {
     super(props);
     this.state = {
       firstName: '',
@@ -94,7 +99,7 @@ class SearchPeopleContainer extends React.Component<Props> {
     this.props.actions.clearSearchResults();
   }
 
-  handleOnSelectPerson = (person :Map, entityKeyId :string) => {
+  handleOnSelectPerson = (person :Immutable.Map, entityKeyId :string) => {
 
     this.props.onSelectPerson(person, entityKeyId);
   }
@@ -106,7 +111,7 @@ class SearchPeopleContainer extends React.Component<Props> {
       lastName,
       dob
     } = this.state;
-    if (firstName.length || lastName.length || dob ) {
+    if (firstName.length || lastName.length || dob) {
       this.props.actions.searchPeopleRequest(firstName, lastName, dob);
     }
   }
@@ -119,7 +124,7 @@ class SearchPeopleContainer extends React.Component<Props> {
           <LoadingText>Loading results...</LoadingText>
           <LoadingSpinner />
         </div>
-      )
+      );
     }
 
     if (this.props.searchResults.isEmpty()) {
@@ -128,7 +133,7 @@ class SearchPeopleContainer extends React.Component<Props> {
       );
     }
 
-    const searchResults = this.props.searchResults.map((personResult :Map<*, *>) => (
+    const searchResults = this.props.searchResults.map((personResult :Immutable.Map<*, *>) => (
       <PersonCard
           key={personResult.getIn(['id', 0], '')}
           person={personResult}
@@ -148,7 +153,7 @@ class SearchPeopleContainer extends React.Component<Props> {
 
   handleKeyPress = (e) => {
     if (e.key === 'Enter') {
-      this.handleOnSubmitSearch()
+      this.handleOnSubmitSearch();
     }
   }
 
@@ -201,7 +206,7 @@ class SearchPeopleContainer extends React.Component<Props> {
   }
 }
 
-function mapStateToProps(state :Map<*, *>) :Object {
+function mapStateToProps(state :Immutable.Map<*, *>) :Object {
 
   return {
     searchResults: state.getIn(['search', 'searchResults'], Immutable.List()),

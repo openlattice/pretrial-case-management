@@ -1,22 +1,13 @@
-import * as ActionTypes from './DownloadActionTypes';
+/*
+ * @flow
+ */
 
-export function downloadRequest(startDate :string, endDate :string) :Object {
-  return {
-    type: ActionTypes.DOWNLOAD_PSA_FORMS_REQUEST,
-    startDate,
-    endDate
-  };
-}
+import { newRequestSequence } from 'redux-reqseq';
 
-export function downloadSuccess() :Object {
-  return {
-    type: ActionTypes.DOWNLOAD_PSA_FORMS_SUCCESS
-  };
-}
+const DOWNLOAD_PSA_FORMS :string = 'DOWNLOAD_PSA_FORMS';
+const downloadPsaForms :RequestSequence = newRequestSequence(DOWNLOAD_PSA_FORMS);
 
-export function downloadFailure(errorMessage :string) {
-  return {
-    type: ActionTypes.DOWNLOAD_PSA_FORMS_FAILURE,
-    errorMessage
-  };
-}
+export {
+  DOWNLOAD_PSA_FORMS,
+  downloadPsaForms
+};

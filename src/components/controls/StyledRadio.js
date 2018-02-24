@@ -1,5 +1,8 @@
+/*
+ * @flow
+ */
+
 import React from 'react';
-import PropTypes from 'prop-types';
 import styled from 'styled-components';
 
 export const RadioInputContainer = styled.input.attrs({
@@ -71,6 +74,16 @@ export const RadioSelection = styled.span`
   }
 `;
 
+type Props = {
+  name :string,
+  label :string,
+  value :string,
+  checked :boolean,
+  onChange :(event :Object) => void,
+  disabled? :boolean,
+  dataSection? :string
+};
+
 const StyledRadio = ({
   name,
   label,
@@ -79,7 +92,7 @@ const StyledRadio = ({
   onChange,
   disabled,
   dataSection
-}) => (
+} :Props) => (
   <RadioContainer>{label}
     <RadioInputContainer
         data-section={dataSection}
@@ -91,16 +104,6 @@ const StyledRadio = ({
     <RadioSelection />
   </RadioContainer>
 );
-
-StyledRadio.propTypes = {
-  name: PropTypes.string.isRequired,
-  label: PropTypes.string.isRequired,
-  value: PropTypes.string.isRequired,
-  checked: PropTypes.bool.isRequired,
-  onChange: PropTypes.func.isRequired,
-  disabled: PropTypes.bool,
-  dataSection: PropTypes.string
-};
 
 StyledRadio.defaultProps = {
   disabled: false,

@@ -1,12 +1,28 @@
+/*
+ * @flow
+ */
+
 import React from 'react';
 import styled from 'styled-components';
 import { Button, InputGroup, FormControl } from 'react-bootstrap';
-import PropTypes from 'prop-types';
 
 import { InlineCheckbox } from '../../utils/Layout';
 
+type Props = {
+  value :string,
+  show :boolean,
+  onChange :(event :Object) => void,
+  checked :boolean,
+  disabled :boolean
+};
 
-const ConditionalCheckbox = ({ value, show, onChange, checked, disabled }) => {
+const ConditionalCheckbox = ({
+  value,
+  show,
+  onChange,
+  checked,
+  disabled
+} :Props) => {
   if (!show) return null;
   return (
     <InlineCheckbox
@@ -18,14 +34,6 @@ const ConditionalCheckbox = ({ value, show, onChange, checked, disabled }) => {
       {value}
     </InlineCheckbox>
   );
-};
-
-ConditionalCheckbox.propTypes = {
-  value: PropTypes.string.isRequired,
-  show: PropTypes.bool.isRequired,
-  onChange: PropTypes.func.isRequired,
-  checked: PropTypes.bool.isRequired,
-  disabled: PropTypes.bool.isRequired
 };
 
 export default ConditionalCheckbox;
