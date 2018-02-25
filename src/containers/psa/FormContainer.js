@@ -671,7 +671,7 @@ function mapDispatchToProps(dispatch :Function) :Object {
 
   return {
     actions: {
-      ...bindActionCreators(actions, dispatch),
+      ...bindActionCreators(actions, dispatch)
     }
   };
 }
