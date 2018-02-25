@@ -20,7 +20,7 @@ export function configureLattice(authToken :?string) :void {
 }
 
 export function formatValue(rawValue :string | string[]) :string {
-  if (!rawValue || !rawValue.length) return '';
+  if (!rawValue || (!rawValue.length && !rawValue.size)) return '';
   if (typeof rawValue === 'string') {
     return rawValue || '';
   }
