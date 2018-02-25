@@ -98,7 +98,6 @@ function* downloadPSAReviewPDFWorker(action :SequenceAction) :Generator<*, *, *>
   try {
     yield put(downloadPSAReviewPDF.request(action.id))
     const { neighbors, scores } = action.value;
-
     const personEntitySetId = neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborEntitySet', 'id']);
     const personEntityKeyId = neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborId']);
     const personNeighbors = yield call(SearchApi.searchEntityNeighbors, personEntitySetId, personEntityKeyId);
@@ -127,22 +126,11 @@ function* downloadPSAReviewPDFWorker(action :SequenceAction) :Generator<*, *, *>
     pretrialCaseOptionsWithDate = pretrialCaseOptionsWithDate.sort(orderCasesByArrestDate);
     const allCases = pretrialCaseOptionsWithDate.concat(pretrialCaseOptionsWithoutDate);
 
-    const caseEntitySetId = neighbors.getIn([ENTITY_SETS.PRETRIAL_CASES, 'neighborEntitySet', 'id']);
-    const caseEntityKeyId = neighbors.getIn([ENTITY_SETS.PRETRIAL_CASES, 'neighborId']);
-    const caseNeighbors = yield call(SearchApi.searchEntityNeighbors, caseEntitySetId, caseEntityKeyId);
-    let recommendations = Immutable.List();
-    Immutable.fromJS(caseNeighbors).forEach((neighbor) => {
-      const name = neighbor.getIn(['neighborEntitySet', 'name']);
-      if (name === ENTITY_SETS.RELEASE_RECOMMENDATIONS) {
-        recommendations = recommendations.push(neighbor);
-      }
-    });
-
-    const recommendationText = recommendations.map(neighbor => neighbor.getIn([
+    const recommendationText = neighbors.getIn([
       ENTITY_SETS.RELEASE_RECOMMENDATIONS,
       'neighborDetails',
       PROPERTY_TYPES.RELEASE_RECOMMENDATION_FQN
-    ], Immutable.List()).join(', ')).join(', ');
+    ], Immutable.List()).join(', ');
 
     const formattedScores = Immutable.Map()
       .set('ftaScale', scores.getIn([PROPERTY_TYPES.FTA_SCALE_FQN, 0]))
