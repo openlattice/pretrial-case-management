@@ -227,8 +227,17 @@ export default class PSAReviewRow extends React.Component<Props, State> {
   )
 
   handleRiskFactorChange = (e :Object) => {
+    const {
+      PRIOR_MISDEMEANOR,
+      PRIOR_FELONY,
+      PRIOR_VIOLENT_CONVICTION,
+      PRIOR_SENTENCE_TO_INCARCERATION
+    } = PSA;
     let { riskFactors } = this.state;
     riskFactors = riskFactors.set(e.target.name, e.target.value);
+    if (riskFactors.get(PRIOR_MISDEMEANOR) === 'false' && riskFactors.get(PRIOR_FELONY) === 'false') {
+      riskFactors = riskFactors.set(PRIOR_VIOLENT_CONVICTION, '0').set(PRIOR_SENTENCE_TO_INCARCERATION, 'false');
+    }
     this.setState({ riskFactors });
   }
 
