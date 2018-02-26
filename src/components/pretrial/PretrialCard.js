@@ -12,6 +12,7 @@ import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 const {
   CASE_ID_FQN,
   ARREST_DATE_FQN,
+  FILE_DATE,
   MOST_SERIOUS_CHARGE_NO,
   MOST_SERIOUS_CHARGE_DESC,
   MOST_SERIOUS_CHARGE_DEG,
@@ -63,6 +64,14 @@ type Props = {
   handleSelect? :(pretrialCase :Immutable.Map<*, *>, entityKeyId :string) => void
 };
 
+const getDate = (dateStr) => {
+  let dateFormatted = dateStr;
+  if (dateStr) {
+    dateFormatted = moment.utc(dateStr).format('MMMM D, YYYY');
+  }
+  return dateFormatted;
+};
+
 const PretrialCard = ({ pretrialCase, handleSelect } :Props) => {
 
   const Wrapper = styled(CaseResultWrapper)`
@@ -72,11 +81,8 @@ const PretrialCard = ({ pretrialCase, handleSelect } :Props) => {
   `;
 
   const caseNum = pretrialCase.getIn([CASE_ID_FQN, 0]);
-  const arrestDate = pretrialCase.getIn([ARREST_DATE_FQN, 0]);
-  let arrestDateFormatted = arrestDate;
-  if (arrestDate) {
-    arrestDateFormatted = moment.utc(arrestDate).format('MMMM D, YYYY');
-  }
+  const arrestDate = getDate(pretrialCase.getIn([ARREST_DATE_FQN, 0]));
+  const fileDate = getDate(pretrialCase.getIn([FILE_DATE, 0]));
   const mostSeriousChargeNum = pretrialCase.getIn([MOST_SERIOUS_CHARGE_NO, 0]);
   const mostSeriousChargeDesc = pretrialCase.getIn([MOST_SERIOUS_CHARGE_DESC, 0]);
   const mostSeriousChargeDeg = pretrialCase.getIn([MOST_SERIOUS_CHARGE_DEG, 0]);
@@ -95,6 +101,7 @@ const PretrialCard = ({ pretrialCase, handleSelect } :Props) => {
       <CaseInfoWrapper>
         <CaseInfoHeaders>
           <strong>Case Number:</strong>
+          <strong>File Date:</strong>
           <strong>Arrest Date:</strong>
           {
             handleSelect ? (
@@ -109,7 +116,8 @@ const PretrialCard = ({ pretrialCase, handleSelect } :Props) => {
         </CaseInfoHeaders>
         <CaseInfo>
           <span>{ caseNum }</span>
-          <span>{ arrestDateFormatted }</span>
+          <span>{ fileDate }</span>
+          <span>{ arrestDate }</span>
           {
             handleSelect ? (
               <FlexContainer>
