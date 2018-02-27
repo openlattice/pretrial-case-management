@@ -96,7 +96,7 @@ const orderCasesByArrestDate = (case1, case2) => {
 function* downloadPSAReviewPDFWorker(action :SequenceAction) :Generator<*, *, *> {
 
   try {
-    yield put(downloadPSAReviewPDF.request(action.id))
+    yield put(downloadPSAReviewPDF.request(action.id));
     const { neighbors, scores } = action.value;
     const personEntitySetId = neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborEntitySet', 'id']);
     const personEntityKeyId = neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborId']);
