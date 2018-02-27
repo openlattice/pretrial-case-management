@@ -17,10 +17,10 @@ import {
 import { PROPERTY_TYPES } from './consts/DataModelConsts';
 
 const {
-  AGE_AT_CURRENT_ARREST_FQN,
-  ARREST_DATE_FQN,
-  CURRENT_VIOLENT_OFFENSE_FQN,
-  CURRENT_VIOLENT_OFFENSE_AND_YOUNG_FQN,
+  AGE_AT_CURRENT_ARREST,
+  ARREST_DATE,
+  CURRENT_VIOLENT_OFFENSE,
+  CURRENT_VIOLENT_OFFENSE_AND_YOUNG,
   DOB,
   FIRST_NAME,
   LAST_NAME,
@@ -28,22 +28,22 @@ const {
   MOST_SERIOUS_CHARGE_DESC,
   MOST_SERIOUS_CHARGE_NO,
   MOST_SERIOUS_CHARGE_DEG,
-  PENDING_CHARGE_FQN,
+  PENDING_CHARGE,
   PERSON_ID,
-  PRIOR_MISDEMEANOR_FQN,
-  PRIOR_FELONY_FQN,
-  PRIOR_CONVICTION_FQN,
-  PRIOR_VIOLENT_CONVICTION_FQN,
-  PRIOR_FAILURE_TO_APPEAR_RECENT_FQN,
-  PRIOR_FAILURE_TO_APPEAR_OLD_FQN,
-  PRIOR_SENTENCE_TO_INCARCERATION_FQN,
+  PRIOR_MISDEMEANOR,
+  PRIOR_FELONY,
+  PRIOR_CONVICTION,
+  PRIOR_VIOLENT_CONVICTION,
+  PRIOR_FAILURE_TO_APPEAR_RECENT,
+  PRIOR_FAILURE_TO_APPEAR_OLD,
+  PRIOR_SENTENCE_TO_INCARCERATION,
   RACE,
   SEX,
-  CHARGE_NUM_FQN,
-  CHARGE_DESCRIPTION_FQN,
-  CHARGE_DEGREE_FQN,
-  CHARGE_ID_FQN,
-  CASE_ID_FQN,
+  CHARGE_STATUTE,
+  CHARGE_DESCRIPTION,
+  CHARGE_DEGREE,
+  CHARGE_ID,
+  CASE_ID,
   PLEA,
   PLEA_DATE,
   DISPOSITION,
@@ -96,9 +96,9 @@ const getMostSevChargeText = (pretrialInfo :Immutable.Map<*, *>) :string => {
 };
 
 const getChargeText = (charge :Immutable.Map<*, *>) :string => {
-  const chargeNumList = charge.get(CHARGE_NUM_FQN, Immutable.List());
-  const chargeDescList = charge.get(CHARGE_DESCRIPTION_FQN, Immutable.List());
-  const chargeDegList = charge.get(CHARGE_DEGREE_FQN, Immutable.List());
+  const chargeNumList = charge.get(CHARGE_STATUTE, Immutable.List());
+  const chargeDescList = charge.get(CHARGE_DESCRIPTION, Immutable.List());
+  const chargeDegList = charge.get(CHARGE_DEGREE, Immutable.List());
 
   if (!chargeNumList.size) return '';
 
@@ -187,7 +187,7 @@ const person = (
   doc.text(X_MAX / 2, y, `Race: ${formatValue(selectedPerson.get(RACE))}`);
   doc.text(X_MAX - 50, y, `Gender: ${formatValue(selectedPerson.get(SEX))}`);
   y += Y_INC;
-  doc.text(X_MARGIN, y, `Arrest Date: ${formatDateList(selectedPretrialCase.get(ARREST_DATE_FQN, Immutable.List()))}`);
+  doc.text(X_MARGIN, y, `Arrest Date: ${formatDateList(selectedPretrialCase.get(ARREST_DATE, Immutable.List()))}`);
   doc.text(X_MAX / 2, y, `PSA - Court Completion Date: ${formatDate(moment().toISOString())}`);
   y += Y_INC;
   return y;
@@ -320,17 +320,17 @@ const riskFactors = (
     [y, page] = newPage(doc, page, name);
   }
 
-  const ageAtCurrentArrest = riskFactorVals.get(AGE_AT_CURRENT_ARREST_FQN);
-  const currentViolentOffense = riskFactorVals.get(CURRENT_VIOLENT_OFFENSE_FQN);
-  const currentViolentOffenseAndYoung = riskFactorVals.get(CURRENT_VIOLENT_OFFENSE_AND_YOUNG_FQN);
-  const pendingCharge = riskFactorVals.get(PENDING_CHARGE_FQN);
-  const priorMisdemeanor = riskFactorVals.get(PRIOR_MISDEMEANOR_FQN);
-  const priorFelony = riskFactorVals.get(PRIOR_FELONY_FQN);
-  const priorConviction = riskFactorVals.get(PRIOR_CONVICTION_FQN);
-  const priorViolentConviction = riskFactorVals.get(PRIOR_VIOLENT_CONVICTION_FQN);
-  const priorFailureToAppearRecent = riskFactorVals.get(PRIOR_FAILURE_TO_APPEAR_RECENT_FQN);
-  const priorFailureToAppearOld = riskFactorVals.get(PRIOR_FAILURE_TO_APPEAR_OLD_FQN);
-  const priorSentenceToIncarceration = riskFactorVals.get(PRIOR_SENTENCE_TO_INCARCERATION_FQN);
+  const ageAtCurrentArrest = riskFactorVals.get(AGE_AT_CURRENT_ARREST);
+  const currentViolentOffense = riskFactorVals.get(CURRENT_VIOLENT_OFFENSE);
+  const currentViolentOffenseAndYoung = riskFactorVals.get(CURRENT_VIOLENT_OFFENSE_AND_YOUNG);
+  const pendingCharge = riskFactorVals.get(PENDING_CHARGE);
+  const priorMisdemeanor = riskFactorVals.get(PRIOR_MISDEMEANOR);
+  const priorFelony = riskFactorVals.get(PRIOR_FELONY);
+  const priorConviction = riskFactorVals.get(PRIOR_CONVICTION);
+  const priorViolentConviction = riskFactorVals.get(PRIOR_VIOLENT_CONVICTION);
+  const priorFailureToAppearRecent = riskFactorVals.get(PRIOR_FAILURE_TO_APPEAR_RECENT);
+  const priorFailureToAppearOld = riskFactorVals.get(PRIOR_FAILURE_TO_APPEAR_OLD);
+  const priorSentenceToIncarceration = riskFactorVals.get(PRIOR_SENTENCE_TO_INCARCERATION);
 
   doc.text(X_MARGIN, y, 'Risk Factors:');
   doc.text(RESPONSE_OFFSET, y, 'Responses:');
@@ -415,7 +415,7 @@ const caseHistoryHeader = (doc :Object, yInit :number) :number => {
 const getChargesByCaseNum = (allCharges :Immutable.List<*>) :Immutable.Map<*, *> => {
   let chargesByCaseNum = Immutable.Map();
   allCharges.forEach((charge) => {
-    const chargeIdStr = charge.getIn([CHARGE_ID_FQN, 0], '');
+    const chargeIdStr = charge.getIn([CHARGE_ID, 0], '');
     if (chargeIdStr.length) {
       const chargeIdElements = chargeIdStr.split('|');
       if (chargeIdElements && chargeIdElements.length) {
@@ -445,11 +445,11 @@ const caseHistory = (
     }
     thickLine(doc, y);
     y += Y_INC;
-    const caseNumArr = c.get(CASE_ID_FQN, Immutable.List());
+    const caseNumArr = c.get(CASE_ID, Immutable.List());
     const caseNum = (caseNumArr.size) ? formatValue(caseNumArr) : '';
     doc.text(X_MARGIN, y, `Case Number: ${caseNum}`);
     y += Y_INC;
-    doc.text(X_MARGIN, y, `Arrest Date: ${formatDateList(c.get(ARREST_DATE_FQN, Immutable.List()))}`);
+    doc.text(X_MARGIN, y, `Arrest Date: ${formatDateList(c.get(ARREST_DATE, Immutable.List()))}`);
     y += Y_INC;
     const chargesForCase = chargesByCaseNum.get(caseNum, Immutable.List());
     if (chargesForCase.size) {
@@ -474,7 +474,7 @@ const exportPDF = (
   let page = 1;
   const name = getName(selectedPerson);
   const chargesByCaseNum = getChargesByCaseNum(allCharges);
-  const caseIdArr = selectedPretrialCase.get(CASE_ID_FQN, Immutable.List());
+  const caseIdArr = selectedPretrialCase.get(CASE_ID, Immutable.List());
   const mostSeriousCharge = selectedPretrialCase.getIn([MOST_SERIOUS_CHARGE_NO, 0], '');
 
   const caseNum = (caseIdArr.size) ? formatValue(caseIdArr) : '';
@@ -509,8 +509,8 @@ const exportPDF = (
     currCharges,
     allCharges,
     mostSeriousCharge,
-    selectedPretrialCase.getIn([CASE_ID_FQN, 0], ''),
-    selectedPretrialCase.getIn([ARREST_DATE_FQN, 0], ''),
+    selectedPretrialCase.getIn([CASE_ID, 0], ''),
+    selectedPretrialCase.getIn([ARREST_DATE, 0], ''),
     allCases
   );
   thickLine(doc, y);

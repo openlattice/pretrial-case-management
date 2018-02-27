@@ -22,8 +22,8 @@ const {
 } = ENTITY_SETS;
 
 const {
-  CHARGE_ID_FQN,
-  CASE_ID_FQN,
+  CHARGE_ID,
+  CASE_ID,
   FILE_DATE
 } = PROPERTY_TYPES;
 
@@ -129,13 +129,13 @@ function formReducer(state :Immutable.Map<> = INITIAL_STATE, action :Object) {
 
     case SELECT_PRETRIAL_CASE: {
       const getCaseAndChargeNum :Function = (charge) => {
-        const chargeVal = charge.getIn([CHARGE_ID_FQN, 0], Immutable.List());
+        const chargeVal = charge.getIn([CHARGE_ID, 0], Immutable.List());
         return chargeVal.size ? chargeVal.split('|') : [];
       };
 
       const { selectedPretrialCase } = action.value;
 
-      const selectedCaseIdList = selectedPretrialCase.get(CASE_ID_FQN, Immutable.List());
+      const selectedCaseIdList = selectedPretrialCase.get(CASE_ID, Immutable.List());
       const charges = state.get('allChargesForPerson')
         .filter(charge => getCaseAndChargeNum(charge)[0] === selectedCaseIdList.get(0))
         .sort((c1, c2) => getCaseAndChargeNum(c1)[1] > getCaseAndChargeNum(c2)[1]);
