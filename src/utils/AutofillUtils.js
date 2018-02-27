@@ -19,11 +19,11 @@ import {
 
 const {
   DOB,
-  ARREST_DATE_FQN,
+  ARREST_DATE,
   MOST_SERIOUS_CHARGE_NO,
-  CHARGE_NUM_FQN,
-  CASE_ID_FQN,
-  CHARGE_ID_FQN,
+  CHARGE_STATUTE,
+  CASE_ID,
+  CHARGE_ID,
   CHARGE_LEVEL,
   DISPOSITION,
   DISPOSITION_DATE
@@ -48,14 +48,14 @@ export const getViolentCharges = (charges :Immutable.List<*>, mostSeriousCharge 
   }
 
   const chargesNumsToConsider = charges
-    .filter(charge => charge.get(CHARGE_NUM_FQN, Immutable.List()).size)
-    .map(charge => charge.getIn([CHARGE_NUM_FQN, 0], ''));
+    .filter(charge => charge.get(CHARGE_STATUTE, Immutable.List()).size)
+    .map(charge => charge.getIn([CHARGE_STATUTE, 0], ''));
   if (mostSeriousCharge && mostSeriousCharge.length) chargesNumsToConsider.push(mostSeriousCharge);
   const violentChargeNums = getViolentChargeNums(chargesNumsToConsider);
 
   return charges.filter((charge) => {
-    if (!charge.get(CHARGE_NUM_FQN, Immutable.List()).size) return false;
-    return violentChargeNums.includes(charge.getIn([CHARGE_NUM_FQN, 0], ''));
+    if (!charge.get(CHARGE_STATUTE, Immutable.List()).size) return false;
+    return violentChargeNums.includes(charge.getIn([CHARGE_STATUTE, 0], ''));
   }).map(charge => getChargeTitle(charge));
 };
 
@@ -93,9 +93,9 @@ export const getPendingCharges = (
   const casesWithDispositionAfter = new Set();
   if (arrest.isValid) {
     allCases.forEach((caseDetails) => {
-      const prevArrestDate = moment.utc(caseDetails.getIn([ARREST_DATE_FQN, 0], ''));
+      const prevArrestDate = moment.utc(caseDetails.getIn([ARREST_DATE, 0], ''));
       if (prevArrestDate.isValid && prevArrestDate.isBefore(arrest)) {
-        const caseNum = caseDetails.getIn([CASE_ID_FQN, 0]);
+        const caseNum = caseDetails.getIn([CASE_ID, 0]);
         if (caseNum !== currCaseNum) casesWithArrestBefore.push(caseNum);
       }
     });
@@ -103,7 +103,7 @@ export const getPendingCharges = (
       let caseNum;
       let shouldInclude = false;
 
-      const chargeId = chargeDetails.getIn([CHARGE_ID_FQN, 0], '');
+      const chargeId = chargeDetails.getIn([CHARGE_ID, 0], '');
       const caseNums = chargeId.split('|');
       if (caseNums && caseNums.length) {
         [caseNum] = caseNums;
@@ -165,7 +165,7 @@ export const getPreviousViolentCharges = (allCharges :Immutable.List<*>) :Immuta
 
   return getUnique(allCharges
     .filter((charge) => {
-      const chargeNum = charge.getIn([CHARGE_NUM_FQN, 0], '');
+      const chargeNum = charge.getIn([CHARGE_STATUTE, 0], '');
       return chargeNum.length
         && dispositionFieldIsGuilty(charge.get(DISPOSITION, Immutable.List()))
         && chargeFieldIsViolent(Immutable.List.of(chargeNum));
@@ -191,8 +191,8 @@ export const tryAutofillFields = (
 
   let psaForm = psaFormValues;
 
-  const nextArrestDate = nextCase.getIn([ARREST_DATE_FQN, 0], '');
-  const currArrestDate = currCase.getIn([ARREST_DATE_FQN, 0], '');
+  const nextArrestDate = nextCase.getIn([ARREST_DATE, 0], '');
+  const currArrestDate = currCase.getIn([ARREST_DATE, 0], '');
 
   const nextMostSeriousCharge = nextCase.getIn([MOST_SERIOUS_CHARGE_NO, 0], '');
   const currMostSeriousCharge = currCase.getIn([MOST_SERIOUS_CHARGE_NO, 0], '');
@@ -201,7 +201,7 @@ export const tryAutofillFields = (
   if (ageAtCurrentArrest === null || nextArrestDate !== currArrestDate) {
     psaForm = psaForm.set(
       AGE_AT_CURRENT_ARREST,
-      tryAutofillAge(nextCase.get(ARREST_DATE_FQN), ageAtCurrentArrest, selectedPerson)
+      tryAutofillAge(nextCase.get(ARREST_DATE), ageAtCurrentArrest, selectedPerson)
     );
   }
 
@@ -217,7 +217,7 @@ export const tryAutofillFields = (
     psaForm = psaForm.set(
       PENDING_CHARGE,
       tryAutofillPendingCharge(
-        nextCase.getIn([CASE_ID_FQN, 0], ''),
+        nextCase.getIn([CASE_ID, 0], ''),
         nextArrestDate,
         allCases,
         allCharges,

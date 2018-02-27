@@ -25,9 +25,9 @@ import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 
 const {
   MOST_SERIOUS_CHARGE_NO,
-  CHARGE_NUM_FQN,
-  CHARGE_DESCRIPTION_FQN,
-  CHARGE_DEGREE_FQN
+  CHARGE_STATUTE,
+  CHARGE_DESCRIPTION,
+  CHARGE_DEGREE
 } = PROPERTY_TYPES;
 
 const MostSeriousTag = styled(ChargeTag)`
@@ -96,14 +96,14 @@ export default class SelectedPretrialInfo extends React.Component<Props, *> {
 
   getChargeList = () => {
     const rows = this.props.charges.map((charge, index) => {
-      if (!charge.get(CHARGE_NUM_FQN, Immutable.List()).size) {
+      if (!charge.get(CHARGE_STATUTE, Immutable.List()).size) {
         return (
           <ChargeRow key={index}><ChargeItem /></ChargeRow>
         );
       }
-      const chargeDescription = charge.get(CHARGE_DESCRIPTION_FQN, Immutable.List());
-      const chargeDegree = charge.get(CHARGE_DEGREE_FQN, Immutable.List());
-      const chargeNum = charge.get(CHARGE_NUM_FQN, Immutable.List());
+      const chargeDescription = charge.get(CHARGE_DESCRIPTION, Immutable.List());
+      const chargeDegree = charge.get(CHARGE_DEGREE, Immutable.List());
+      const chargeNum = charge.get(CHARGE_STATUTE, Immutable.List());
 
       const description = (
         <div>

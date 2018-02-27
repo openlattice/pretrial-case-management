@@ -10,13 +10,13 @@ import styled from 'styled-components';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 
 const {
-  CASE_ID_FQN,
-  ARREST_DATE_FQN,
+  CASE_ID,
+  ARREST_DATE,
   FILE_DATE,
   MOST_SERIOUS_CHARGE_NO,
   MOST_SERIOUS_CHARGE_DESC,
   MOST_SERIOUS_CHARGE_DEG,
-  NUMBER_OF_CHARGES_FQN
+  NUMBER_OF_CHARGES
 } = PROPERTY_TYPES;
 
 const CaseResultWrapper = styled.div`
@@ -80,13 +80,13 @@ const PretrialCard = ({ pretrialCase, handleSelect } :Props) => {
     }
   `;
 
-  const caseNum = pretrialCase.getIn([CASE_ID_FQN, 0]);
-  const arrestDate = getDate(pretrialCase.getIn([ARREST_DATE_FQN, 0]));
+  const caseNum = pretrialCase.getIn([CASE_ID, 0]);
+  const arrestDate = getDate(pretrialCase.getIn([ARREST_DATE, 0]));
   const fileDate = getDate(pretrialCase.getIn([FILE_DATE, 0]));
   const mostSeriousChargeNum = pretrialCase.getIn([MOST_SERIOUS_CHARGE_NO, 0]);
   const mostSeriousChargeDesc = pretrialCase.getIn([MOST_SERIOUS_CHARGE_DESC, 0]);
   const mostSeriousChargeDeg = pretrialCase.getIn([MOST_SERIOUS_CHARGE_DEG, 0]);
-  const numCharges = pretrialCase.getIn([NUMBER_OF_CHARGES_FQN, 0]);
+  const numCharges = pretrialCase.getIn([NUMBER_OF_CHARGES, 0]);
 
   const entityKeyId :string = pretrialCase.get('id', '');
 

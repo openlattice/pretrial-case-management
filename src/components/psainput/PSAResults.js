@@ -23,17 +23,17 @@ import {
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 
 const {
-  AGE_AT_CURRENT_ARREST_FQN,
-  CURRENT_VIOLENT_OFFENSE_FQN,
-  CURRENT_VIOLENT_OFFENSE_AND_YOUNG_FQN,
-  PENDING_CHARGE_FQN,
-  PRIOR_MISDEMEANOR_FQN,
-  PRIOR_FELONY_FQN,
-  PRIOR_CONVICTION_FQN,
-  PRIOR_VIOLENT_CONVICTION_FQN,
-  PRIOR_FAILURE_TO_APPEAR_RECENT_FQN,
-  PRIOR_FAILURE_TO_APPEAR_OLD_FQN,
-  PRIOR_SENTENCE_TO_INCARCERATION_FQN
+  AGE_AT_CURRENT_ARREST,
+  CURRENT_VIOLENT_OFFENSE,
+  CURRENT_VIOLENT_OFFENSE_AND_YOUNG,
+  PENDING_CHARGE,
+  PRIOR_MISDEMEANOR,
+  PRIOR_FELONY,
+  PRIOR_CONVICTION,
+  PRIOR_VIOLENT_CONVICTION,
+  PRIOR_FAILURE_TO_APPEAR_RECENT,
+  PRIOR_FAILURE_TO_APPEAR_OLD,
+  PRIOR_SENTENCE_TO_INCARCERATION
 } = PROPERTY_TYPES;
 
 type Props = {
@@ -85,52 +85,52 @@ export default class PSAResults extends React.Component<Props, State> {
           </tr>
           <tr>
             <RiskFactorCell>1. Age at Current Arrest</RiskFactorCell>
-            <RiskFactorCell>{format(riskFactors[AGE_AT_CURRENT_ARREST_FQN])}</RiskFactorCell>
+            <RiskFactorCell>{format(riskFactors[AGE_AT_CURRENT_ARREST])}</RiskFactorCell>
           </tr>
           <tr>
             <RiskFactorCell>2. Current Violent Offense</RiskFactorCell>
-            <RiskFactorCell>{format(riskFactors[CURRENT_VIOLENT_OFFENSE_FQN])}</RiskFactorCell>
+            <RiskFactorCell>{format(riskFactors[CURRENT_VIOLENT_OFFENSE])}</RiskFactorCell>
           </tr>
           <tr>
             <RiskFactorCell>
               &nbsp;&nbsp;&nbsp;&nbsp;a. Current Violent Offense & 20 Years Old or Younger
               <i> (calculated from 1 and 2)</i>
             </RiskFactorCell>
-            <RiskFactorCell>{format(riskFactors[CURRENT_VIOLENT_OFFENSE_AND_YOUNG_FQN])}</RiskFactorCell>
+            <RiskFactorCell>{format(riskFactors[CURRENT_VIOLENT_OFFENSE_AND_YOUNG])}</RiskFactorCell>
           </tr>
           <tr>
             <RiskFactorCell>3. Pending Charge at the Time of the Offense</RiskFactorCell>
-            <RiskFactorCell>{format(riskFactors[PENDING_CHARGE_FQN])}</RiskFactorCell>
+            <RiskFactorCell>{format(riskFactors[PENDING_CHARGE])}</RiskFactorCell>
           </tr>
           <tr>
             <RiskFactorCell>4. Prior Misdemeanor Conviction</RiskFactorCell>
-            <RiskFactorCell>{format(riskFactors[PRIOR_MISDEMEANOR_FQN])}</RiskFactorCell>
+            <RiskFactorCell>{format(riskFactors[PRIOR_MISDEMEANOR])}</RiskFactorCell>
           </tr>
           <tr>
             <RiskFactorCell>5. Prior Felony Conviction</RiskFactorCell>
-            <RiskFactorCell>{format(riskFactors[PRIOR_FELONY_FQN])}</RiskFactorCell>
+            <RiskFactorCell>{format(riskFactors[PRIOR_FELONY])}</RiskFactorCell>
           </tr>
           <tr>
             <RiskFactorCell>
               &nbsp;&nbsp;&nbsp;&nbsp;a. Prior Conviction <i>(calculated from 4 and 5)</i>
             </RiskFactorCell>
-            <RiskFactorCell>{format(riskFactors[PRIOR_CONVICTION_FQN])}</RiskFactorCell>
+            <RiskFactorCell>{format(riskFactors[PRIOR_CONVICTION])}</RiskFactorCell>
           </tr>
           <tr>
             <RiskFactorCell>6. Prior Violent Conviction</RiskFactorCell>
-            <RiskFactorCell>{format(riskFactors[PRIOR_VIOLENT_CONVICTION_FQN])}</RiskFactorCell>
+            <RiskFactorCell>{format(riskFactors[PRIOR_VIOLENT_CONVICTION])}</RiskFactorCell>
           </tr>
           <tr>
             <RiskFactorCell>7. Prior Pre-trial Failure to Appear in Past 2 Years</RiskFactorCell>
-            <RiskFactorCell>{format(riskFactors[PRIOR_FAILURE_TO_APPEAR_RECENT_FQN])}</RiskFactorCell>
+            <RiskFactorCell>{format(riskFactors[PRIOR_FAILURE_TO_APPEAR_RECENT])}</RiskFactorCell>
           </tr>
           <tr>
             <RiskFactorCell>8. Prior Pre-trial Failure to Appear Older than 2 Years</RiskFactorCell>
-            <RiskFactorCell>{format(riskFactors[PRIOR_FAILURE_TO_APPEAR_OLD_FQN])}</RiskFactorCell>
+            <RiskFactorCell>{format(riskFactors[PRIOR_FAILURE_TO_APPEAR_OLD])}</RiskFactorCell>
           </tr>
           <tr>
             <RiskFactorCell>9. Prior Sentence to Incarceration</RiskFactorCell>
-            <RiskFactorCell>{format(riskFactors[PRIOR_SENTENCE_TO_INCARCERATION_FQN])}</RiskFactorCell>
+            <RiskFactorCell>{format(riskFactors[PRIOR_SENTENCE_TO_INCARCERATION])}</RiskFactorCell>
           </tr>
         </tbody>
       </RiskFactorTable>

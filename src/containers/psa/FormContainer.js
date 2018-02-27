@@ -45,13 +45,13 @@ import { PROPERTY_TYPES, ENTITY_SETS } from '../../utils/consts/DataModelConsts'
 
 const {
   PERSON_ID,
-  TIMESTAMP_FQN,
-  NVCA_FLAG_FQN,
-  NCA_SCALE_FQN,
-  FTA_SCALE_FQN,
-  GENERAL_ID_FQN,
+  TIMESTAMP,
+  NVCA_FLAG,
+  NCA_SCALE,
+  FTA_SCALE,
+  GENERAL_ID,
   COMPLETED_DATE_TIME,
-  RELEASE_RECOMMENDATION_FQN
+  RELEASE_RECOMMENDATION
 } = PROPERTY_TYPES;
 
 const {
@@ -267,7 +267,7 @@ class Form extends React.Component<Props, State> {
     this.props.actions.setPSAValues({ newValues });
   }
 
-  getCalculatedForEntityDetails = () => ({ [TIMESTAMP_FQN]: [new Date()] })
+  getCalculatedForEntityDetails = () => ({ [TIMESTAMP]: [new Date()] })
 
   getBlankReleaseRecommendationEntity = () :Entity => {
     let generalId;
@@ -275,8 +275,8 @@ class Form extends React.Component<Props, State> {
     this.getPropertyTypes(RELEASE_RECOMMENDATIONS).forEach((pt) => {
       const fqn = this.getFqn(pt);
       const ptId = pt.get('id');
-      if (fqn === GENERAL_ID_FQN) generalId = ptId;
-      else if (fqn === RELEASE_RECOMMENDATION_FQN) notesId = ptId;
+      if (fqn === GENERAL_ID) generalId = ptId;
+      else if (fqn === RELEASE_RECOMMENDATION) notesId = ptId;
     });
     if (!generalId || !notesId) return {};
     const id = randomUUID();
@@ -425,9 +425,9 @@ class Form extends React.Component<Props, State> {
         scoresWereGenerated: true
       });
       const formattedScores = {
-        [NVCA_FLAG_FQN]: [scores.nvcaFlag],
-        [NCA_SCALE_FQN]: [scores.ncaScale],
-        [FTA_SCALE_FQN]: [scores.ftaScale]
+        [NVCA_FLAG]: [scores.nvcaFlag],
+        [NCA_SCALE]: [scores.ncaScale],
+        [FTA_SCALE]: [scores.ftaScale]
       };
       this.submitEntities(formattedScores);
       this.nextPage();
