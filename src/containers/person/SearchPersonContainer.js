@@ -169,18 +169,18 @@ class SearchPeopleContainer extends React.Component<Props, State> {
         <Header>Search for people</Header>
         <SearchRow>
           <Col lg={4}>
-            <TitleLabel>First Name</TitleLabel>
-            <FormControl
-                name="firstName"
-                value={firstName}
-                onKeyPress={this.handleKeyPress}
-                onChange={this.onInputChange} />
-          </Col>
-          <Col lg={4}>
             <TitleLabel>Last Name</TitleLabel>
             <FormControl
                 name="lastName"
                 value={lastName}
+                onKeyPress={this.handleKeyPress}
+                onChange={this.onInputChange} />
+          </Col>
+          <Col lg={4}>
+            <TitleLabel>First Name</TitleLabel>
+            <FormControl
+                name="firstName"
+                value={firstName}
                 onKeyPress={this.handleKeyPress}
                 onChange={this.onInputChange} />
           </Col>

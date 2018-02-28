@@ -8,7 +8,7 @@ import { PROPERTY_TYPES } from './DataModelConsts';
 import { formatValue, formatDateList } from '../Utils';
 
 const {
-  CHARGE_NUM_FQN,
+  CHARGE_STATUTE,
   DISPOSITION_DATE
 } = PROPERTY_TYPES;
 
@@ -144,7 +144,7 @@ export const degreeFieldIsFelony = (degreeField :Immutable.List<string>) :boolea
 };
 
 export const getChargeTitle = (charge :Immutable.Map<*, *>) :string => {
-  const degree = formatValue(charge.get(CHARGE_NUM_FQN, Immutable.List()));
+  const degree = formatValue(charge.get(CHARGE_STATUTE, Immutable.List()));
   const dispositionDate = formatDateList(charge.get(DISPOSITION_DATE, Immutable.List()));
   let val = `${degree}`;
   if (dispositionDate && dispositionDate.length) val = `${val} (${dispositionDate})`;

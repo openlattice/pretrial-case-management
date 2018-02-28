@@ -45,7 +45,7 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
       let usableNeighbors = Immutable.List();
       const neighborList = neighborsById[id];
       neighborList.forEach((neighbor) => {
-        const timestampList = neighbor.associationDetails[PROPERTY_TYPES.TIMESTAMP_FQN]
+        const timestampList = neighbor.associationDetails[PROPERTY_TYPES.TIMESTAMP]
           || neighbor.associationDetails[PROPERTY_TYPES.COMPLETED_DATE_TIME];
         if (timestampList && timestampList.length) {
           const timestamp = moment.parseZone(timestampList[0]);

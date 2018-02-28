@@ -138,26 +138,26 @@ export default class PSAReviewRow extends React.Component<Props, State> {
 
   getRiskFactors = (neighbors :Immutable.Map<*, *>) => {
     const riskFactors = neighbors.getIn([ENTITY_SETS.PSA_RISK_FACTORS, 'neighborDetails'], Immutable.Map());
-    const ageAtCurrentArrestVal = riskFactors.getIn([PROPERTY_TYPES.AGE_AT_CURRENT_ARREST_FQN, 0]);
+    const ageAtCurrentArrestVal = riskFactors.getIn([PROPERTY_TYPES.AGE_AT_CURRENT_ARREST, 0]);
     let ageAtCurrentArrest = 0;
     if (ageAtCurrentArrestVal === '21 or 22') ageAtCurrentArrest = 1;
     else if (ageAtCurrentArrestVal === '23 or Older') ageAtCurrentArrest = 2;
-    const priorViolentConvictionVal = riskFactors.getIn([PROPERTY_TYPES.PRIOR_VIOLENT_CONVICTION_FQN, 0]);
+    const priorViolentConvictionVal = riskFactors.getIn([PROPERTY_TYPES.PRIOR_VIOLENT_CONVICTION, 0]);
     const priorViolentConviction = (priorViolentConvictionVal === '3 or more') ? 3 : priorViolentConvictionVal;
-    const priorFTAVal = riskFactors.getIn([PROPERTY_TYPES.PRIOR_FAILURE_TO_APPEAR_RECENT_FQN, 0]);
+    const priorFTAVal = riskFactors.getIn([PROPERTY_TYPES.PRIOR_FAILURE_TO_APPEAR_RECENT, 0]);
     const priorFTA = (priorFTAVal === '2 or more') ? 2 : priorFTAVal;
 
     return Immutable.fromJS({
       [PSA.AGE_AT_CURRENT_ARREST]: `${ageAtCurrentArrest}`,
-      [PSA.CURRENT_VIOLENT_OFFENSE]: `${riskFactors.getIn([PROPERTY_TYPES.CURRENT_VIOLENT_OFFENSE_FQN, 0])}`,
-      [PSA.PENDING_CHARGE]: `${riskFactors.getIn([PROPERTY_TYPES.PENDING_CHARGE_FQN, 0])}`,
-      [PSA.PRIOR_MISDEMEANOR]: `${riskFactors.getIn([PROPERTY_TYPES.PRIOR_MISDEMEANOR_FQN, 0])}`,
-      [PSA.PRIOR_FELONY]: `${riskFactors.getIn([PROPERTY_TYPES.PRIOR_FELONY_FQN, 0])}`,
+      [PSA.CURRENT_VIOLENT_OFFENSE]: `${riskFactors.getIn([PROPERTY_TYPES.CURRENT_VIOLENT_OFFENSE, 0])}`,
+      [PSA.PENDING_CHARGE]: `${riskFactors.getIn([PROPERTY_TYPES.PENDING_CHARGE, 0])}`,
+      [PSA.PRIOR_MISDEMEANOR]: `${riskFactors.getIn([PROPERTY_TYPES.PRIOR_MISDEMEANOR, 0])}`,
+      [PSA.PRIOR_FELONY]: `${riskFactors.getIn([PROPERTY_TYPES.PRIOR_FELONY, 0])}`,
       [PSA.PRIOR_VIOLENT_CONVICTION]: `${priorViolentConviction}`,
       [PSA.PRIOR_FAILURE_TO_APPEAR_RECENT]: `${priorFTA}`,
-      [PSA.PRIOR_FAILURE_TO_APPEAR_OLD]: `${riskFactors.getIn([PROPERTY_TYPES.PRIOR_FAILURE_TO_APPEAR_OLD_FQN, 0])}`,
+      [PSA.PRIOR_FAILURE_TO_APPEAR_OLD]: `${riskFactors.getIn([PROPERTY_TYPES.PRIOR_FAILURE_TO_APPEAR_OLD, 0])}`,
       [PSA.PRIOR_SENTENCE_TO_INCARCERATION]:
-        `${riskFactors.getIn([PROPERTY_TYPES.PRIOR_SENTENCE_TO_INCARCERATION_FQN, 0])}`
+        `${riskFactors.getIn([PROPERTY_TYPES.PRIOR_SENTENCE_TO_INCARCERATION, 0])}`
     });
   }
 
@@ -180,9 +180,9 @@ export default class PSAReviewRow extends React.Component<Props, State> {
 
   renderScores = () => {
     const { scores } = this.props;
-    const ftaVal = scores.getIn([PROPERTY_TYPES.FTA_SCALE_FQN, 0]);
-    const ncaVal = scores.getIn([PROPERTY_TYPES.NCA_SCALE_FQN, 0]);
-    const nvcaVal = scores.getIn([PROPERTY_TYPES.NVCA_FLAG_FQN, 0]);
+    const ftaVal = scores.getIn([PROPERTY_TYPES.FTA_SCALE, 0]);
+    const ncaVal = scores.getIn([PROPERTY_TYPES.NCA_SCALE, 0]);
+    const nvcaVal = scores.getIn([PROPERTY_TYPES.NVCA_FLAG, 0]);
     const nvcaScaleVal = nvcaVal ? 6 : 1;
 
     const FtaScale = styled(Scale)`
@@ -245,9 +245,9 @@ export default class PSAReviewRow extends React.Component<Props, State> {
     e.preventDefault();
     const { scores, riskFactors } = getScoresAndRiskFactors(this.state.riskFactors);
     const scoresEntity = {
-      [PROPERTY_TYPES.NCA_SCALE_FQN]: [scores.ncaScale],
-      [PROPERTY_TYPES.FTA_SCALE_FQN]: [scores.ftaScale],
-      [PROPERTY_TYPES.NVCA_FLAG_FQN]: [scores.nvcaFlag]
+      [PROPERTY_TYPES.NCA_SCALE]: [scores.ncaScale],
+      [PROPERTY_TYPES.FTA_SCALE]: [scores.ftaScale],
+      [PROPERTY_TYPES.NVCA_FLAG]: [scores.nvcaFlag]
     };
 
     const scoresId = this.props.entityKeyId;

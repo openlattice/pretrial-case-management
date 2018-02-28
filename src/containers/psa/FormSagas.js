@@ -257,7 +257,7 @@ function* updateReleaseRecommendationWorker(action :SequenceAction) :Generator<*
     const searchOptions = {
       start: 0,
       maxHits: 1,
-      searchTerm: `${fqnToId[PROPERTY_TYPES.GENERAL_ID_FQN]}:"${entityId}"`
+      searchTerm: `${fqnToId[PROPERTY_TYPES.GENERAL_ID]}:"${entityId}"`
     };
     const response = yield call(SearchApi.searchEntitySetData, entitySetId, searchOptions);
     const result = response.hits[0];
@@ -267,7 +267,7 @@ function* updateReleaseRecommendationWorker(action :SequenceAction) :Generator<*
         const propertyTypeId = fqnToId[fqn];
         if (propertyTypeId) entity[propertyTypeId] = result[fqn];
       });
-      entity[fqnToId[PROPERTY_TYPES.RELEASE_RECOMMENDATION_FQN]] = [recommendation];
+      entity[fqnToId[PROPERTY_TYPES.RELEASE_RECOMMENDATION]] = [recommendation];
       yield call(DataApi.replaceEntityInEntitySet, entitySetId, result.id[0], entity);
       yield put(updateRecommendation.success(action.id));
     }

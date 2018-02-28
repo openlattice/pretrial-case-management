@@ -46,7 +46,7 @@ function* loadPSAsByDateWorker(action :SequenceAction) :Generator<*, *, *> {
 
       neighborsById.get(id).forEach((neighbor) => {
 
-        neighbor.getIn(['associationDetails', PROPERTY_TYPES.TIMESTAMP_FQN],
+        neighbor.getIn(['associationDetails', PROPERTY_TYPES.TIMESTAMP],
           Immutable.List()).forEach((timestamp) => {
           const timestampMoment = moment.parseZone(timestamp);
           if (timestampMoment.isValid()) {
@@ -84,8 +84,8 @@ function* loadPSAsByDateWatcher() :Generator<*, *, *> {
 }
 
 const orderCasesByArrestDate = (case1, case2) => {
-  const date1 = moment(case1.getIn([PROPERTY_TYPES.ARREST_DATE_FQN, 0], ''));
-  const date2 = moment(case2.getIn([PROPERTY_TYPES.ARREST_DATE_FQN, 0], ''));
+  const date1 = moment(case1.getIn([PROPERTY_TYPES.ARREST_DATE, 0], ''));
+  const date2 = moment(case2.getIn([PROPERTY_TYPES.ARREST_DATE, 0], ''));
   if (date1.isValid && date2.isValid) {
     if (date1.isBefore(date2)) return 1;
     if (date1.isAfter(date2)) return -1;
@@ -110,7 +110,7 @@ function* downloadPSAReviewPDFWorker(action :SequenceAction) :Generator<*, *, *>
       const entitySet = neighbor.neighborEntitySet;
       if (entitySet && entitySet.name === ENTITY_SETS.PRETRIAL_CASES) {
         const caseObj = neighborDetails.set('id', neighbor.neighborId);
-        const arrList = caseObj.get(PROPERTY_TYPES.ARREST_DATE_FQN, Immutable.List());
+        const arrList = caseObj.get(PROPERTY_TYPES.ARREST_DATE, Immutable.List());
         if (arrList.size) {
           pretrialCaseOptionsWithDate = pretrialCaseOptionsWithDate.push(caseObj);
         }
@@ -129,13 +129,13 @@ function* downloadPSAReviewPDFWorker(action :SequenceAction) :Generator<*, *, *>
     const recommendationText = neighbors.getIn([
       ENTITY_SETS.RELEASE_RECOMMENDATIONS,
       'neighborDetails',
-      PROPERTY_TYPES.RELEASE_RECOMMENDATION_FQN
+      PROPERTY_TYPES.RELEASE_RECOMMENDATION
     ], Immutable.List()).join(', ');
 
     const formattedScores = Immutable.Map()
-      .set('ftaScale', scores.getIn([PROPERTY_TYPES.FTA_SCALE_FQN, 0]))
-      .set('ncaScale', scores.getIn([PROPERTY_TYPES.NCA_SCALE_FQN, 0]))
-      .set('nvcaFlag', scores.getIn([PROPERTY_TYPES.NVCA_FLAG_FQN, 0]));
+      .set('ftaScale', scores.getIn([PROPERTY_TYPES.FTA_SCALE, 0]))
+      .set('ncaScale', scores.getIn([PROPERTY_TYPES.NCA_SCALE, 0]))
+      .set('nvcaFlag', scores.getIn([PROPERTY_TYPES.NVCA_FLAG, 0]));
 
     const setMultimapToMap = (entitySetName) => {
       let map = Immutable.Map();
