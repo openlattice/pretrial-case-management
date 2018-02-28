@@ -107,8 +107,8 @@ export default class SelectedPretrialInfo extends React.Component<Props, *> {
 
       const description = (
         <div>
-          { chargeDescription.size ? <span> {formatValue(chargeDescription.toJS())}</span> : null }
-          { chargeDegree.size ? <i> ({formatValue(chargeDegree.toJS())})</i> : null }
+          { chargeDescription.size ? <span> {formatValue(chargeDescription)}</span> : null }
+          { chargeDegree.size ? <i> ({formatValue(chargeDegree)})</i> : null }
         </div>
       );
 
@@ -132,7 +132,7 @@ export default class SelectedPretrialInfo extends React.Component<Props, *> {
   }
 
   renderCharges = () => {
-    if (!this.props.charges.length) return null;
+    if (!this.props.charges.size) return null;
     return (
       <div>
         <InfoSubHeader>Charges:</InfoSubHeader>
