@@ -544,10 +544,12 @@ class Form extends React.Component<Props, State> {
   };
 
   getSearchPeopleSection = () => (
-    <SearchPersonContainer onSelectPerson={(person, entityKeyId) => {
-      this.handleSelectPerson(person, entityKeyId);
-      this.nextPage();
-    }} />
+    <SearchPersonContainer
+        history={this.props.history}
+        onSelectPerson={(person, entityKeyId) => {
+          this.handleSelectPerson(person, entityKeyId);
+          this.nextPage();
+        }} />
   );
 
   getSelectPretrialCaseSection = () => {
