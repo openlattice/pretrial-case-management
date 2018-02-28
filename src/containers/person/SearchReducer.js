@@ -26,7 +26,8 @@ const INITIAL_STATE :Immutable.Map<*, *> = Immutable.fromJS({
   personDetails: Immutable.List(),
   loadingCases: false,
   numCasesToLoad: 0,
-  numCasesLoaded: 0
+  numCasesLoaded: 0,
+  searchHasRun: false
 });
 
 export default function searchReducer(state :Immutable.Map<*, *> = INITIAL_STATE, action :Action) {
@@ -36,7 +37,9 @@ export default function searchReducer(state :Immutable.Map<*, *> = INITIAL_STATE
     case CLEAR_SEARCH_RESULTS:
       return state
         .set('searchResults', Immutable.List())
-        .set('personDetails', Immutable.List());
+        .set('personDetails', Immutable.List())
+        .set('searchHasRun', false)
+        .set('isLoadingPeople', false);
 
     case SEARCH_PEOPLE_REQUEST:
       return state.set('isLoadingPeople', true);
@@ -47,7 +50,8 @@ export default function searchReducer(state :Immutable.Map<*, *> = INITIAL_STATE
     case SEARCH_PEOPLE_SUCCESS:
       return state
         .set('searchResults', Immutable.fromJS(action.searchResults.hits))
-        .set('isLoadingPeople', false);
+        .set('isLoadingPeople', false)
+        .set('searchHasRun', true);
 
     case LOAD_PERSON_DETAILS_REQUEST:
       return state.set('selectedPersonId', action.id).set('loadingCases', true);

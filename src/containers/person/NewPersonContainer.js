@@ -6,6 +6,7 @@ import React from 'react';
 
 import DatePicker from 'react-bootstrap-date-picker';
 import styled from 'styled-components';
+import qs from 'query-string';
 import uuid from 'uuid/v4';
 import { Button, Col, FormControl } from 'react-bootstrap';
 import { bindActionCreators } from 'redux';
@@ -36,6 +37,7 @@ import {
   ZIP_VALUE,
   newPersonSubmissionConfig
 } from './NewPersonSubmissionConfig';
+import * as Routes from '../../core/router/Routes';
 
 /*
  * styled components
@@ -96,6 +98,9 @@ const CenteredSubmitButton = styled(Button).attrs({
 type Props = {
   actions :{
     newPersonSubmitRequest :Function
+  },
+  location :{
+    search :string
   }
 }
 
@@ -126,15 +131,21 @@ class NewPersonContainer extends React.Component<Props, State> {
 
     super(props);
 
+    const optionalParams = qs.parse(props.location.search);
+
+    const firstName = optionalParams[Routes.FIRST_NAME] || '';
+    const lastName = optionalParams[Routes.LAST_NAME] || '';
+    const dob = optionalParams[Routes.DOB] || '';
+
     this.state = {
       [ADDRESS_VALUE]: '',
       [CITY_VALUE]: '',
       [COUNTRY_VALUE]: '',
-      [DOB_VALUE]: '',
+      [DOB_VALUE]: dob,
       [ETHNICITY_VALUE]: '',
-      [FIRST_NAME_VALUE]: '',
+      [FIRST_NAME_VALUE]: firstName,
       [GENDER_VALUE]: '',
-      [LAST_NAME_VALUE]: '',
+      [LAST_NAME_VALUE]: lastName,
       [MIDDLE_NAME_VALUE]: '',
       [PICTURE_VALUE]: '',
       [RACE_VALUE]: '',

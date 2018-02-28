@@ -5,12 +5,14 @@
 import React from 'react';
 
 import Immutable from 'immutable';
-import styled from 'styled-components';
 import DatePicker from 'react-bootstrap-date-picker';
+import styled from 'styled-components';
+import qs from 'query-string';
 import { Button, FormControl, Col } from 'react-bootstrap';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 
+import StyledButton from '../../components/buttons/StyledButton';
 import PersonCard from '../../components/person/PersonCard';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { clearSearchResults, searchPeopleRequest } from './PersonActionFactory';
@@ -18,6 +20,7 @@ import {
   PaddedRow,
   TitleLabel
 } from '../../utils/Layout';
+import * as Routes from '../../core/router/Routes';
 
 /*
  * styled components
@@ -59,6 +62,10 @@ const ButtonWrapper = styled.div`
   text-align: center;
 `;
 
+const NoResultsContainer = styled.div`
+  text-align: center;
+`;
+
 /*
  * types
  */
@@ -69,8 +76,10 @@ type Props = {
     searchPeopleRequest :Function
   },
   isLoadingPeople :boolean,
+  searchHasRun :boolean,
   searchResults :Immutable.List<Immutable.Map<*, *>>,
-  onSelectPerson :Function
+  onSelectPerson :Function,
+  history :string[]
 }
 
 type State = {
@@ -116,9 +125,31 @@ class SearchPeopleContainer extends React.Component<Props, State> {
     }
   }
 
+  createNewPerson = () => {
+
+    const {
+      firstName,
+      lastName,
+      dob
+    } = this.state;
+    const params = {
+      [Routes.LAST_NAME]: lastName,
+      [Routes.FIRST_NAME]: firstName
+    };
+    if (dob) params[Routes.DOB] = dob;
+
+    this.props.history.push(`${Routes.NEW_PERSON}?${qs.stringify(params)}`);
+  }
+
   renderSearchResults = () => {
 
-    if (this.props.isLoadingPeople) {
+    const {
+      isLoadingPeople,
+      searchResults,
+      searchHasRun
+    } = this.props;
+
+    if (isLoadingPeople) {
       return (
         <div>
           <LoadingText>Loading results...</LoadingText>
@@ -127,13 +158,16 @@ class SearchPeopleContainer extends React.Component<Props, State> {
       );
     }
 
-    if (this.props.searchResults.isEmpty()) {
+    if (searchHasRun && searchResults.isEmpty()) {
       return (
-        <SearchResultsList>No search results.</SearchResultsList>
+        <NoResultsContainer>
+          <div>No search results.</div>
+          <StyledButton onClick={this.createNewPerson}>Create Person</StyledButton>
+        </NoResultsContainer>
       );
     }
 
-    const searchResults = this.props.searchResults.map((personResult :Immutable.Map<*, *>) => (
+    const searchResultCards = searchResults.map((personResult :Immutable.Map<*, *>) => (
       <PersonCard
           key={personResult.getIn(['id', 0], '')}
           person={personResult}
@@ -142,7 +176,7 @@ class SearchPeopleContainer extends React.Component<Props, State> {
 
     return (
       <SearchResultsList>
-        { searchResults.toSeq() }
+        { searchResultCards.toSeq() }
       </SearchResultsList>
     );
   }
@@ -210,7 +244,8 @@ function mapStateToProps(state :Immutable.Map<*, *>) :Object {
 
   return {
     searchResults: state.getIn(['search', 'searchResults'], Immutable.List()),
-    isLoadingPeople: state.getIn(['search', 'isLoadingPeople'], false)
+    isLoadingPeople: state.getIn(['search', 'isLoadingPeople'], false),
+    searchHasRun: state.getIn(['search', 'searchHasRun'], false)
   };
 }
 
