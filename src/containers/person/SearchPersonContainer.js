@@ -8,6 +8,7 @@ import Immutable from 'immutable';
 import DatePicker from 'react-bootstrap-date-picker';
 import styled from 'styled-components';
 import qs from 'query-string';
+import moment from 'moment';
 import { Button, FormControl, Col } from 'react-bootstrap';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
@@ -20,6 +21,7 @@ import {
   PaddedRow,
   TitleLabel
 } from '../../utils/Layout';
+import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import * as Routes from '../../core/router/Routes';
 
 /*
@@ -167,12 +169,28 @@ class SearchPeopleContainer extends React.Component<Props, State> {
       );
     }
 
-    const searchResultCards = searchResults.map((personResult :Immutable.Map<*, *>) => (
-      <PersonCard
-          key={personResult.getIn(['id', 0], '')}
-          person={personResult}
-          handleSelect={this.handleOnSelectPerson} />
-    ));
+    const searchResultCards = searchResults
+      .sort((p1 :Immutable.Map<*, *>, p2 :Immutable.Map<*, *>) => {
+        const p1Last = p1.getIn([PROPERTY_TYPES.LAST_NAME, 0], '').toLowerCase();
+        const p2Last = p2.getIn([PROPERTY_TYPES.LAST_NAME, 0], '').toLowerCase();
+        if (p1Last !== p2Last) return p1Last < p2Last ? -1 : 1;
+
+        const p1First = p1.getIn([PROPERTY_TYPES.FIRST_NAME, 0], '').toLowerCase();
+        const p2First = p2.getIn([PROPERTY_TYPES.FIRST_NAME, 0], '').toLowerCase();
+        if (p1First !== p2First) return p1First < p2First ? -1 : 1;
+
+        const p1Dob = moment(p1.getIn([PROPERTY_TYPES.DOB, 0], ''));
+        const p2Dob = moment(p2.getIn([PROPERTY_TYPES.DOB, 0], ''));
+        if (p1Dob.isValid() && p2Dob.isValid) return p1Dob.isBefore(p2Dob) ? -1 : 1;
+
+        return 0;
+      })
+      .map((personResult :Immutable.Map<*, *>) => (
+        <PersonCard
+            key={personResult.getIn(['id', 0], '')}
+            person={personResult}
+            handleSelect={this.handleOnSelectPerson} />
+      ));
 
     return (
       <SearchResultsList>
