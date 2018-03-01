@@ -13,6 +13,7 @@ import { bindActionCreators } from 'redux';
 
 import PSAReviewRow from '../../components/review/PSAReviewRow';
 import LoadingSpinner from '../../components/LoadingSpinner';
+import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import * as ReviewActionFactory from './ReviewActionFactory';
 import * as Routes from '../../core/router/Routes';
 
@@ -165,20 +166,40 @@ class ReviewPSA extends React.Component<Props, State> {
 
   renderPsas = () => {
     const { scoresAsMap, psaNeighborsByDate, actions } = this.props;
+
     const date = moment(this.state.date).format(DATE_FORMAT);
-    return psaNeighborsByDate.get(date, Immutable.Map()).keySeq().map((id) => {
-      const entityNeighbors = psaNeighborsByDate.getIn([date, id], Immutable.Map());
-      const scores = scoresAsMap.get(id, Immutable.Map());
-      return (
-        <PSAReviewRow
-            neighbors={entityNeighbors}
-            scores={scores}
-            entityKeyId={id}
-            downloadFn={actions.downloadPSAReviewPDF}
-            updateScoresAndRiskFactors={this.updateScoresAndRiskFactors}
-            key={id} />
-      );
-    });
+    return psaNeighborsByDate.get(date, Immutable.Map()).keySeq()
+      .sort((id1, id2) => {
+        const p1 = psaNeighborsByDate.getIn([date, id1, ENTITY_SETS.PEOPLE, 'neighborDetails'], Immutable.Map());
+        const p2 = psaNeighborsByDate.getIn([date, id2, ENTITY_SETS.PEOPLE, 'neighborDetails'], Immutable.Map());
+
+        const p1Last = p1.getIn([PROPERTY_TYPES.LAST_NAME, 0], '').toLowerCase();
+        const p2Last = p2.getIn([PROPERTY_TYPES.LAST_NAME, 0], '').toLowerCase();
+        if (p1Last !== p2Last) return p1Last < p2Last ? -1 : 1;
+
+        const p1First = p1.getIn([PROPERTY_TYPES.FIRST_NAME, 0], '').toLowerCase();
+        const p2First = p2.getIn([PROPERTY_TYPES.FIRST_NAME, 0], '').toLowerCase();
+        if (p1First !== p2First) return p1First < p2First ? -1 : 1;
+
+        const p1Dob = moment(p1.getIn([PROPERTY_TYPES.DOB, 0], ''));
+        const p2Dob = moment(p2.getIn([PROPERTY_TYPES.DOB, 0], ''));
+        if (p1Dob.isValid() && p2Dob.isValid()) return p1Dob.isBefore(p2Dob) ? -1 : 1;
+
+        return 0;
+      })
+      .map((id) => {
+        const entityNeighbors = psaNeighborsByDate.getIn([date, id], Immutable.Map());
+        const scores = scoresAsMap.get(id, Immutable.Map());
+        return (
+          <PSAReviewRow
+              neighbors={entityNeighbors}
+              scores={scores}
+              entityKeyId={id}
+              downloadFn={actions.downloadPSAReviewPDF}
+              updateScoresAndRiskFactors={this.updateScoresAndRiskFactors}
+              key={id} />
+        );
+      });
   }
 
   updateScoresAndRiskFactors = (scoresId, scoresEntity, riskFactorsEntitySetId, riskFactorsId, riskFactorsEntity) => {
