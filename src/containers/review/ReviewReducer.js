@@ -13,9 +13,11 @@ import { ENTITY_SETS } from '../../utils/consts/DataModelConsts';
 const INITIAL_STATE :Immutable.Map<*, *> = Immutable.fromJS({
   scoresEntitySetId: '',
   scoresAsMap: Immutable.Map(),
+  psaNeighborsById: Immutable.Map(),
   psaNeighborsByDate: Immutable.Map(),
   loadingResults: false,
-  errorMesasge: ''
+  errorMesasge: '',
+  allFilers: Immutable.Set()
 });
 
 export default function reviewReducer(state :Immutable.Map<*, *> = INITIAL_STATE, action :SequenceAction) {
@@ -30,7 +32,9 @@ export default function reviewReducer(state :Immutable.Map<*, *> = INITIAL_STATE
         SUCCESS: () => state
           .set('scoresAsMap', Immutable.fromJS(action.value.scoresAsMap))
           .set('scoresEntitySetId', action.value.entitySetId)
+          .set('psaNeighborsById', Immutable.fromJS(action.value.psaNeighborsById))
           .set('psaNeighborsByDate', Immutable.fromJS(action.value.psaNeighborsByDate))
+          .set('allFilers', action.value.allFilers)
           .set('errorMesasge', ''),
         FAILURE: () => state
           .set('scoresEntitySetId', '')
@@ -56,8 +60,14 @@ export default function reviewReducer(state :Immutable.Map<*, *> = INITIAL_STATE
               );
             }
           });
+          const psaNeighborsById = state.get('psaNeighborsById')
+            .setIn(
+              [scoresId, ENTITY_SETS.PSA_RISK_FACTORS, 'neighborDetails'],
+              Immutable.fromJS(newRiskFactorsEntity)
+            );
           return state
             .set('scoresAsMap', scoresAsMap)
+            .set('psaNeighborsById', psaNeighborsById)
             .set('psaNeighborsByDate', psaNeighborsByDate);
         }
       });
