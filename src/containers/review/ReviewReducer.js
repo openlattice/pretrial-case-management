@@ -34,7 +34,7 @@ export default function reviewReducer(state :Immutable.Map<*, *> = INITIAL_STATE
           .set('scoresEntitySetId', action.value.entitySetId)
           .set('psaNeighborsById', Immutable.fromJS(action.value.psaNeighborsById))
           .set('psaNeighborsByDate', Immutable.fromJS(action.value.psaNeighborsByDate))
-          .set('allFilers', action.value.allFilers)
+          .set('allFilers', action.value.allFilers.sort())
           .set('errorMesasge', ''),
         FAILURE: () => state
           .set('scoresEntitySetId', '')
