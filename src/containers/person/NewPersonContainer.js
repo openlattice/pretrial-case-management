@@ -15,7 +15,7 @@ import { connect } from 'react-redux';
 import SelfieWebCam from '../../components/SelfieWebCam';
 import Checkbox from '../../components/controls/StyledCheckbox';
 import { GENDERS, STATES } from '../../utils/consts/Consts';
-import { PaddedRow, TitleLabel } from '../../utils/Layout';
+import { PaddedRow, StyledSelect, TitleLabel } from '../../utils/Layout';
 import { newPersonSubmitRequest } from './PersonActionFactory';
 
 import {
@@ -277,15 +277,13 @@ class NewPersonContainer extends React.Component<Props, State> {
                 </Col>
                 <Col lg={4}>
                   <TitleLabel>Gender</TitleLabel>
-                  <FormControl
-                      componentClass="select"
-                      placeholder="select"
+                  <StyledSelect
                       name={GENDER_VALUE}
                       value={this.state[GENDER_VALUE]}
                       onChange={this.handleOnChangeInput}>
                     <option value="">Select</option>
                     { genderOptions }
-                  </FormControl>
+                  </StyledSelect>
                 </Col>
                 <Col lg={4}>
                   <TitleLabel>Social Security Number</TitleLabel>
@@ -333,15 +331,13 @@ class NewPersonContainer extends React.Component<Props, State> {
                 </Col>
                 <Col lg={6}>
                   <TitleLabel>State</TitleLabel>
-                  <FormControl
-                      componentClass="select"
-                      placeholder="select"
+                  <StyledSelect
                       name={STATE_VALUE}
                       value={this.state[STATE_VALUE]}
                       onChange={this.handleOnChangeInput}>
                     <option value="">Select</option>
                     { stateOptions }
-                  </FormControl>
+                  </StyledSelect>
                 </Col>
               </PaddedRow>
               <PaddedRow>

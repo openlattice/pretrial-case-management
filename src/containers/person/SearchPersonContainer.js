@@ -181,7 +181,7 @@ class SearchPeopleContainer extends React.Component<Props, State> {
 
         const p1Dob = moment(p1.getIn([PROPERTY_TYPES.DOB, 0], ''));
         const p2Dob = moment(p2.getIn([PROPERTY_TYPES.DOB, 0], ''));
-        if (p1Dob.isValid() && p2Dob.isValid) return p1Dob.isBefore(p2Dob) ? -1 : 1;
+        if (p1Dob.isValid() && p2Dob.isValid()) return p1Dob.isBefore(p2Dob) ? -1 : 1;
 
         return 0;
       })

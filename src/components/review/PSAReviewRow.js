@@ -6,6 +6,7 @@ import React from 'react';
 import Immutable from 'immutable';
 import FontAwesome from 'react-fontawesome';
 import styled from 'styled-components';
+import moment from 'moment';
 import { Collapse } from 'react-bootstrap';
 
 import PSAInputForm from '../psainput/PSAInputForm';
@@ -25,6 +26,7 @@ const ReviewRowContainer = styled.div`
   &:hover {
     background: #f7f8f9;
   }
+  padding: 20px;
 `;
 
 const DetailsRowContainer = styled.div`
@@ -91,6 +93,18 @@ const EditButtonSymbol = styled(FontAwesome).attrs({
   size: '2x'
 })`
   margin-top: -15px;
+`;
+
+const MetadataText = styled.div`
+  width: 100%;
+  font-style: italic;
+  font-size: 12px;
+  margin-bottom: -15px;
+  color: #bbb;
+`;
+
+const ImportantMetadataText = styled.span`
+  color: black;
 `;
 
 const colorsByScale = {
@@ -308,9 +322,29 @@ export default class PSAReviewRow extends React.Component<Props, State> {
     );
   }
 
+  renderMetadata = () => {
+    const staff = this.props.neighbors.get(ENTITY_SETS.STAFF, Immutable.Map());
+    const dateCreated = moment(staff.getIn(['associationDetails', PROPERTY_TYPES.COMPLETED_DATE_TIME, 0], ''));
+    const dateCreatedText = dateCreated.isValid() ? dateCreated.format('MMMM D, YYYY hh:mm a') : '';
+    const creator = staff.getIn(['neighborDetails', PROPERTY_TYPES.PERSON_ID, 0], '');
+    if (!dateCreatedText.length && !creator.length) return null;
+
+    const text = ['Created'];
+    if (dateCreatedText.length) {
+      text.push(' on ')
+      text.push(<ImportantMetadataText>{dateCreatedText}</ImportantMetadataText>);
+    }
+    if (creator.length) {
+      text.push(' by ');
+      text.push(<ImportantMetadataText>{creator}</ImportantMetadataText>);
+    }
+    return <MetadataText>{text}</MetadataText>;
+  }
+
   render() {
     return (
       <ReviewRowContainer>
+        {this.renderMetadata()}
         <DetailsRowContainer>
           <ReviewRowWrapper>
             {this.renderPersonCard()}

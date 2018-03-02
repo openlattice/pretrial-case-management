@@ -24,13 +24,17 @@ function* loadPSAsByDateWorker(action :SequenceAction) :Generator<*, *, *> {
   try {
     yield put(loadPSAsByDate.request(action.id));
     const entitySetId = yield call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.PSA_SCORES);
+
+    const size = yield call(DataApi.getEntitySetSize, entitySetId);
     const options = {
       searchTerm: '*',
       start: 0,
-      maxHits: 10000 // temporary hack to load all entity set data
+      maxHits: size // temporary hack to load all entity set data
     };
 
     const allScoreData = yield call(SearchApi.searchEntitySetData, entitySetId, options);
+
+    let allFilers = Immutable.Set();
     let scoresAsMap = Immutable.Map();
     allScoreData.hits.forEach((row) => {
       scoresAsMap = scoresAsMap.set(row.id[0], Immutable.fromJS(row).delete('id'));
@@ -38,6 +42,8 @@ function* loadPSAsByDateWorker(action :SequenceAction) :Generator<*, *, *> {
 
     let neighborsById = yield call(SearchApi.searchEntityNeighborsBulk, entitySetId, scoresAsMap.keySeq().toJS());
     neighborsById = Immutable.fromJS(neighborsById);
+
+    let psaNeighborsById = Immutable.Map();
     let psaNeighborsByDate = Immutable.Map();
 
     neighborsById.keySeq().forEach((id) => {
@@ -57,10 +63,18 @@ function* loadPSAsByDateWorker(action :SequenceAction) :Generator<*, *, *> {
         const neighborName = neighbor.getIn(['neighborEntitySet', 'name']);
         if (neighborName) {
           neighborsByEntitySetName = neighborsByEntitySetName.set(neighborName, neighbor);
+
+          if (neighborName === ENTITY_SETS.STAFF) {
+            neighbor.getIn(['neighborDetails', PROPERTY_TYPES.PERSON_ID], Immutable.List())
+              .forEach((filer) => {
+                allFilers = allFilers.add(filer);
+              });
+          }
         }
       });
 
       allDatesEdited.forEach((editDate) => {
+        psaNeighborsById = psaNeighborsById.set(id, neighborsByEntitySetName);
         psaNeighborsByDate = psaNeighborsByDate.set(
           editDate,
           psaNeighborsByDate.get(editDate, Immutable.Map()).set(id, neighborsByEntitySetName)
@@ -68,7 +82,13 @@ function* loadPSAsByDateWorker(action :SequenceAction) :Generator<*, *, *> {
       });
     });
 
-    yield put(loadPSAsByDate.success(action.id, { scoresAsMap, psaNeighborsByDate, entitySetId }));
+    yield put(loadPSAsByDate.success(action.id, {
+      scoresAsMap,
+      psaNeighborsByDate,
+      entitySetId,
+      psaNeighborsById,
+      allFilers
+    }));
   }
   catch (error) {
     console.error(error);
