@@ -10,10 +10,13 @@ import moment from 'moment';
 import styled from 'styled-components';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
+import { Col, FormControl, Pager, Tab, Tabs } from 'react-bootstrap';
 
 import PSAReviewRow from '../../components/review/PSAReviewRow';
 import LoadingSpinner from '../../components/LoadingSpinner';
+import StyledButton from '../../components/buttons/StyledButton';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { PaddedRow, TitleLabel, StyledSelect } from '../../utils/Layout';
 import * as ReviewActionFactory from './ReviewActionFactory';
 import * as Routes from '../../core/router/Routes';
 
@@ -85,7 +88,14 @@ const LoadingText = styled.div`
   margin: 15px;
 `;
 
+const SearchRow = styled(PaddedRow)`
+  align-items: flex-end;
+  justify-content: center;
+  margin: 10px;
+`;
+
 const DATE_FORMAT = 'MM/DD/YYYY';
+const MAX_RESULTS = 10;
 
 type Props = {
   history :string[],
@@ -108,11 +118,21 @@ type Props = {
       riskFactorsId :string,
       riskFactorsEntity :Immutable.Map<*, *>
     }) => void
-  }
+  },
+  psaNeighborsById :Immutable.Map<*, *>,
+  allFilers :Immutable.Set<*>
 }
 
 type State = {
-  date :string;
+  activeFilterKey :number,
+  filters :{
+    date :string,
+    firstName :string,
+    lastName :string,
+    dob :string,
+    filer :string,
+    start :number
+  }
 };
 
 class ReviewPSA extends React.Component<Props, State> {
@@ -120,7 +140,15 @@ class ReviewPSA extends React.Component<Props, State> {
   constructor(props :Props) {
     super(props);
     this.state = {
-      date: moment().format()
+      activeFilterKey: 1,
+      filters: {
+        date: moment().format(),
+        firstName: '',
+        lastName: '',
+        dob: '',
+        filer: '',
+        start: 0
+      }
     };
   }
 
@@ -128,30 +156,89 @@ class ReviewPSA extends React.Component<Props, State> {
     this.props.actions.loadPSAsByDate();
   }
 
+  updateFilters = (newFilters :Object) => {
+    const filters = Object.assign({}, {
+      date: '',
+      firstName: '',
+      lastName: '',
+      dob: '',
+      filer: '',
+      start: 0
+    }, newFilters);
+    this.setState({ filters });
+  }
+
   handleClose = () => {
-    this.setState({
-      date: moment().format()
-    });
+    this.updateFilters({ date: moment().format() });
     this.props.history.push(Routes.DASHBOARD);
   }
 
   renderDateRangePicker = () => {
-    const { date } = this.state;
+    const { date } = this.state.filters;
 
     return (
-      <div>
-        <DatePickerTitle>Choose a date.</DatePickerTitle>
-        <DateRangeContainer>
-          <DatePickerGroupContainer>
-            <div>PSA Date:</div>
-            <DatePicker
-                value={date}
-                onChange={(newDate) => {
-                  this.setState({ date: newDate });
-                }} />
-          </DatePickerGroupContainer>
-        </DateRangeContainer>
-      </div>
+      <DateRangeContainer>
+        <DatePickerGroupContainer>
+          <div>PSA Date:</div>
+          <DatePicker
+              value={date}
+              onChange={(newDate) => {
+                this.updateFilters({ date: newDate });
+              }} />
+        </DatePickerGroupContainer>
+      </DateRangeContainer>
+    );
+  }
+
+  renderPersonFilter = () => (
+    <div>
+      <SearchRow>
+        <Col lg={3}>
+          <TitleLabel>Last Name</TitleLabel>
+          <FormControl id="lastName" onKeyPress={this.handleKeyPress} />
+        </Col>
+        <Col lg={3}>
+          <TitleLabel>First Name</TitleLabel>
+          <FormControl id="firstName" onKeyPress={this.handleKeyPress} />
+        </Col>
+        <Col lg={3}>
+          <TitleLabel>Date of Birth</TitleLabel>
+          <DatePicker id="dob" />
+        </Col>
+        <StyledButton onClick={this.filterPersonRequest}>Filter</StyledButton>
+      </SearchRow>
+    </div>
+  )
+
+  filterPersonRequest = () => {
+    this.updateFilters({
+      firstName: document.getElementById('firstName').value,
+      lastName: document.getElementById('lastName').value,
+      dob: document.getElementById('dob').value
+    });
+  }
+
+  handleKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      this.filterPersonRequest();
+    }
+  }
+
+  renderFilerFilter = () => {
+    const filerOptions = this.props.allFilers.map(filer => <option key={filer} value={filer}>{filer}</option>);
+
+    return (
+      <SearchRow>
+        <TitleLabel>Select a filer.</TitleLabel>
+        <StyledSelect
+            value={this.state.filters.filer}
+            onChange={(e) => {
+              this.updateFilters({ filer: e.target.value });
+            }}>
+          <option value="">Select</option>
+          { filerOptions }
+        </StyledSelect>
+      </SearchRow>
     );
   }
 
@@ -162,12 +249,90 @@ class ReviewPSA extends React.Component<Props, State> {
     </div>
   )
 
+  onInputChange = (e) => {
+    this.setState({ [e.target.name]: e.target.value });
+  }
+
+  handleFilterRequest = () => {
+    const { activeFilterKey, filters } = this.state;
+    const { start } = filters;
+    let items = [];
+    if (activeFilterKey === 1) {
+      items = this.filterByDate();
+    }
+    else if (activeFilterKey === 2) {
+      items = this.filterByPerson();
+    }
+    else if (activeFilterKey === 3) {
+      items = this.filterByFiler();
+    }
+    return (
+      <div>
+        {items.slice(start, start + MAX_RESULTS).map(([scoreId, neighbors]) => this.renderRow(scoreId, neighbors))}
+        {this.renderPagination(items.length)}
+      </div>
+    );
+  }
+
   renderError = () => <Error>{this.props.errorMessage}</Error>
 
-  renderPsas = () => {
-    const { scoresAsMap, psaNeighborsByDate, actions } = this.props;
+  renderRow = (scoreId, neighbors) => {
+    const scores = this.props.scoresAsMap.get(scoreId, Immutable.Map());
+    return (
+      <PSAReviewRow
+          neighbors={neighbors}
+          scores={scores}
+          entityKeyId={scoreId}
+          downloadFn={this.props.actions.downloadPSAReviewPDF}
+          updateScoresAndRiskFactors={this.updateScoresAndRiskFactors}
+          key={scoreId} />
+    );
+  }
 
-    const date = moment(this.state.date).format(DATE_FORMAT);
+  filterByFiler = () => {
+    const { filer } = this.state.filters;
+    if (!filer.length) return [];
+    const { psaNeighborsById } = this.props;
+
+    return psaNeighborsById.entrySeq().filter(([scoreId, neighbors]) => neighbors.getIn(
+      [ENTITY_SETS.STAFF, 'neighborDetails', PROPERTY_TYPES.PERSON_ID],
+      Immutable.List()
+    ).includes(filer)).toArray();
+  }
+
+  filterByPerson = () => {
+    const { firstName, lastName, dob } = this.state.filters;
+    if (!firstName.length || !lastName.length) return [];
+    const { psaNeighborsById } = this.props;
+
+    return psaNeighborsById.entrySeq().filter(([scoreId, neighbors]) => {
+      const neighborFirst = neighbors.getIn(
+        [ENTITY_SETS.PEOPLE, 'neighborDetails', PROPERTY_TYPES.FIRST_NAME],
+        Immutable.List()
+      );
+      const neighborLast = neighbors.getIn(
+        [ENTITY_SETS.PEOPLE, 'neighborDetails', PROPERTY_TYPES.LAST_NAME],
+        Immutable.List()
+      );
+      const neighborDob = neighbors.getIn(
+        [ENTITY_SETS.PEOPLE, 'neighborDetails', PROPERTY_TYPES.DOB],
+        Immutable.List()
+      );
+
+      if (!neighborFirst.filter(val => val.toLowerCase().includes(firstName.toLowerCase())).size) return false;
+      if (!neighborLast.filter(val => val.toLowerCase().includes(lastName.toLowerCase())).size) return false;
+      if (dob && dob.length
+        && !neighborDob.filter(val => val.toLowerCase().includes(dob.split('T')[0])).size) return false;
+
+      return true;
+    }).toArray();
+
+  }
+
+  filterByDate = () => {
+    const { psaNeighborsByDate } = this.props;
+
+    const date = moment(this.state.filters.date).format(DATE_FORMAT);
     return psaNeighborsByDate.get(date, Immutable.Map()).keySeq()
       .sort((id1, id2) => {
         const p1 = psaNeighborsByDate.getIn([date, id1, ENTITY_SETS.PEOPLE, 'neighborDetails'], Immutable.Map());
@@ -187,20 +352,26 @@ class ReviewPSA extends React.Component<Props, State> {
 
         return 0;
       })
-      .map((id) => {
-        const entityNeighbors = psaNeighborsByDate.getIn([date, id], Immutable.Map());
-        const scores = scoresAsMap.get(id, Immutable.Map());
-        return (
-          <PSAReviewRow
-              neighbors={entityNeighbors}
-              scores={scores}
-              entityKeyId={id}
-              downloadFn={actions.downloadPSAReviewPDF}
-              updateScoresAndRiskFactors={this.updateScoresAndRiskFactors}
-              key={id} />
-        );
-      });
+      .map(id => [id, psaNeighborsByDate.getIn([date, id], Immutable.Map())])
+      .toArray();
   }
+
+  onFilterSelect = (activeFilterKey) => {
+    this.setState({ activeFilterKey });
+    this.updateFilters({});
+  }
+
+  renderFilters = () => (
+    <div>
+      <DatePickerTitle>Filter Submitted PSA Forms</DatePickerTitle>
+      <Tabs id="filter" activeKey={this.state.activeFilterKey} onSelect={this.onFilterSelect}>
+        <Tab eventKey={1} title="Date">{this.renderDateRangePicker()}</Tab>
+        <Tab eventKey={2} title="Person">{this.renderPersonFilter()}</Tab>
+        <Tab eventKey={3} title="Filer">{this.renderFilerFilter()}</Tab>
+      </Tabs>
+      <hr />
+    </div>
+  )
 
   updateScoresAndRiskFactors = (scoresId, scoresEntity, riskFactorsEntitySetId, riskFactorsId, riskFactorsEntity) => {
     const { scoresEntitySetId, actions } = this.props;
@@ -214,6 +385,33 @@ class ReviewPSA extends React.Component<Props, State> {
     });
   }
 
+  updatePage = (start) => {
+    this.setState({ filters: Object.assign({}, this.state.filters, { start }) });
+  }
+
+  renderPagination = (numResults) => {
+    const { start } = this.state.filters;
+    if (numResults <= MAX_RESULTS) return null;
+    const numPages = Math.ceil(numResults / MAX_RESULTS);
+    const currPage = (start / MAX_RESULTS) + 1;
+    return (
+      <Pager>
+        <Pager.Item
+            previous
+            onClick={() => this.updatePage(start - MAX_RESULTS)}
+            disabled={currPage === 1}>
+          &larr;
+        </Pager.Item>
+        <Pager.Item
+            next
+            onClick={() => this.updatePage(start + MAX_RESULTS)}
+            disabled={currPage === numPages}>
+          &rarr;
+        </Pager.Item>
+      </Pager>
+    );
+  }
+
   renderContent = () => {
     if (this.props.loadingResults) {
       return <StyledSectionWrapper>{this.renderSpinner()}</StyledSectionWrapper>;
@@ -221,8 +419,8 @@ class ReviewPSA extends React.Component<Props, State> {
     return (
       <StyledSectionWrapper>
         {this.renderError()}
-        {this.renderDateRangePicker()}
-        {this.renderPsas()}
+        {this.renderFilters()}
+        {this.handleFilterRequest()}
         <StyledTopFormNavBuffer />
       </StyledSectionWrapper>
     );
@@ -249,6 +447,8 @@ function mapStateToProps(state) {
     scoresEntitySetId: review.get('scoresEntitySetId'),
     scoresAsMap: review.get('scoresAsMap'),
     psaNeighborsByDate: review.get('psaNeighborsByDate'),
+    psaNeighborsById: review.get('psaNeighborsById'),
+    allFilers: review.get('allFilers'),
     loadingResults: review.get('loadingResults'),
     errorMesasge: review.get('errorMesasge')
   };

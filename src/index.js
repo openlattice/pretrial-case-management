@@ -16,6 +16,7 @@ import { injectGlobal } from 'styled-components';
 import AppContainer from './containers/app/AppContainer';
 import initializeReduxStore from './core/redux/ReduxStore';
 import initializeRouterHistory from './core/router/RouterHistory';
+import { globals } from './utils/styleoverrides/ReactBootstrapOverrides';
 import * as Routes from './core/router/Routes';
 
 // injected by Webpack.DefinePlugin
@@ -43,6 +44,8 @@ injectGlobal`
     height: 100%;
     width: 100%;
   }
+
+  ${globals}
 `;
 /* eslint-enable */
 

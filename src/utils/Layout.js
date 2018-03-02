@@ -379,3 +379,17 @@ export const ErrorMessage = styled.div`
   text-align: center;
   color: red;
 `;
+
+export const StyledSelect = styled.select`
+  height: 34px;
+  width: 100%;
+  background: transparent;
+  border: 1px solid rgb(204, 204, 204);
+  box-shadow: rgba(0, 0, 0, 0.075) 0px 1px 1px inset;
+
+  &:focus {
+    border-color: #66afe9;
+    outline: 0;
+    box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(102,175,233,.6);
+  }
+`;
