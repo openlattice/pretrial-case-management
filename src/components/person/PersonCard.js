@@ -36,30 +36,19 @@ const PersonPicture = styled.img`
   max-height: 100px;
 `;
 
-const PersonInfoWrapper = styled.div`
+const InfoRow = styled.tr`
   display: flex;
-  flex-direction: row;
-  margin-left: 10px;
+  justify-content: flex-start;
 `;
 
-const PersonInfoHeaders = styled.div`
-  display: flex;
-  flex-direction: column;
-  justify-content: space-around;
-  strong {
-    font-weight: 600;
-  }
+const Header = styled.th`
+  width: 95px;
+  margin: 2px 5px 2px 0;
 `;
 
-const PersonInfo = styled.div`
-  display: flex;
-  flex-direction: column;
-  justify-content: space-around;
-  margin: 0;
-  margin-left: 10px;
-  span {
-    margin: 0;
-  }
+const DataElem = styled.td`
+  width: 200px;
+  margin: 2px 0;
 `;
 
 type Props = {
@@ -72,7 +61,8 @@ const PersonCard = ({ person, handleSelect } :Props) => {
   const Wrapper = styled(PersonResultWrapper)`
     &:hover {
       cursor: ${handleSelect ? 'pointer' : 'default'};
-    }
+    },
+    width: 150px;
   `;
 
   let pictureAsBase64 :string = person.getIn([MUGSHOT, 0]);
@@ -101,22 +91,33 @@ const PersonCard = ({ person, handleSelect } :Props) => {
       <PersonPictureWrapper>
         <PersonPicture src={pictureImgSrc} role="presentation" />
       </PersonPictureWrapper>
-      <PersonInfoWrapper>
-        <PersonInfoHeaders>
-          <strong>First Name:</strong>
-          <strong>Last Name:</strong>
-          { suffix ? <strong>Suffix:</strong> : null }
-          <strong>Date of Birth:</strong>
-          <strong>Identifier:</strong>
-        </PersonInfoHeaders>
-        <PersonInfo>
-          <span>{ firstName }</span>
-          <span>{ lastName }</span>
-          { suffix || null }
-          <span>{ dobFormatted }</span>
-          <span>{ id }</span>
-        </PersonInfo>
-      </PersonInfoWrapper>
+      <table>
+        <tbody>
+          <InfoRow>
+            <Header>First Name:</Header>
+            <DataElem>{ firstName }</DataElem>
+          </InfoRow>
+          <InfoRow>
+            <Header>Last Name:</Header>
+            <DataElem>{ lastName }</DataElem>
+          </InfoRow>
+          { suffix ? (
+            <InfoRow>
+              <Header>Suffix:</Header>
+              <DataElem>{ suffix }</DataElem>
+            </InfoRow>
+          ) : null
+          }
+          <InfoRow>
+            <Header>Date of Birth:</Header>
+            <DataElem>{ dobFormatted }</DataElem>
+          </InfoRow>
+          <InfoRow>
+            <Header>Identifier:</Header>
+            <DataElem>{ id }</DataElem>
+          </InfoRow>
+        </tbody>
+      </table>
     </Wrapper>
   );
 };
