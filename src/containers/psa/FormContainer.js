@@ -374,6 +374,7 @@ class Form extends React.Component<Props, State> {
 
     const personEntity = this.getEntity(this.props.selectedPerson.toJS(), PEOPLE, true);
     const pretrialCaseEntity = this.getEntity(this.props.selectedPretrialCase.toJS(), PRETRIAL_CASES, true);
+    pretrialCaseEntity.key.entityId = this.props.selectedPretrialCase.getIn([PROPERTY_TYPES.CASE_ID, 0]);
     const riskFactorsEntity = this.getEntity(riskFactors, PSA_RISK_FACTORS, false, true);
     const psaEntity = this.getEntity(scores, PSA_SCORES, false, true);
     const calculatedForEntity = this.getEntity(calculatedForEntityDetails, CALCULATED_FOR);
