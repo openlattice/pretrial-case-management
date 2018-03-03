@@ -188,7 +188,8 @@ const person = (
   doc.text(X_MAX - 50, y, `Gender: ${formatValue(selectedPerson.get(SEX))}`);
   y += Y_INC;
   doc.text(X_MARGIN, y, `Arrest Date: ${formatDateList(selectedPretrialCase.get(ARREST_DATE, Immutable.List()))}`);
-  doc.text(X_MAX / 2, y, `PSA - Court Completion Date: ${formatDate(moment().toISOString())}`);
+  doc.text(X_MAX / 3, y, `PSA - Court Completion Date: ${formatDate(moment().toISOString())}`);
+  doc.text(X_MAX - 50, y, `Case #: ${formatValue(selectedPretrialCase.get(CASE_ID, Immutable.List()))}`);
   y += Y_INC;
   return y;
 };
