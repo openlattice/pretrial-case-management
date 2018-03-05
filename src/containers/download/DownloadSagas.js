@@ -64,7 +64,7 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
     const getUpdatedEntity = (combinedEntityInit, entitySetName, details) => {
       let combinedEntity = combinedEntityInit;
       details.keySeq().forEach((fqn) => {
-        const header = `${entitySetName}|${fqn}`;
+        const header = `${fqn}|${entitySetName}`;
         let newArrayValues = combinedEntity.get(header, Immutable.List());
         details.get(fqn).forEach((val) => {
           if (!newArrayValues.includes(val)) newArrayValues = newArrayValues.push(val);
