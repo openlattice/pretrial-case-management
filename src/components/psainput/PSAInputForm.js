@@ -11,6 +11,14 @@ import SectionView from '../SectionView';
 import Radio from '../controls/StyledRadio';
 
 import {
+  getViolentCharges,
+  getPendingCharges,
+  getPreviousMisdemeanors,
+  getPreviousFelonies,
+  getPreviousViolentCharges
+} from '../../utils/AutofillUtils';
+
+import {
   PaddedRow,
   TitleLabel,
   SubmitButtonWrapper,
@@ -19,7 +27,10 @@ import {
   Divider
 } from '../../utils/Layout';
 
+import { formatValue } from '../../utils/Utils';
+
 import { PSA } from '../../utils/consts/Consts';
+import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import {
   CURRENT_AGE_PROMPT,
   CURRENT_VIOLENT_OFFENSE_PROMPT,
@@ -54,21 +65,91 @@ const PSACol = styled(Col)`
   justify-content: space-between;
 `;
 
+const JustificationTitle = styled.div`
+  font-size: 16px;
+  margin: 10px 0;
+  font-style: italic;
+  padding-top: 10px;
+  border-top: 1px solid #ddd
+`;
+
+const FootnoteNumber = styled.span`
+  font-weight: bold;
+  font-size: 14px;
+`;
+
+const NoResultsText = styled.span`
+  font-style: italic;
+  color: #777;
+`;
+
 type Props = {
   handleSingleSelection :(event :Object) => void,
   input :Immutable.Map<*, *>,
   handleSubmit :(event :Object) => void,
-  incompleteError :boolean
+  incompleteError :boolean,
+  currCharges :Immutable.List<*>,
+  currCase :Immutable.Map<*, *>,
+  allCharges :Immutable.List<*>,
+  allCases :Immutable.List<*>
 };
 
 const PSAInputForm = ({
   handleSingleSelection,
   input,
   handleSubmit,
-  incompleteError
+  incompleteError,
+  isReview,
+  currCharges,
+  currCase,
+  allCharges,
+  allCases
 } :Props) => {
 
   const noPriorConvictions = input.get(PRIOR_MISDEMEANOR) === 'false' && input.get(PRIOR_FELONY) === 'false';
+
+  const renderItem = (valueList) => {
+    if (!valueList.size) return <NoResultsText>No matching charges found in Odyssey</NoResultsText>;
+    return <span>{formatValue(valueList)}</span>;
+  };
+
+  const renderAutofillJustifications = () => {
+    const currCaseNum = currCase.getIn([PROPERTY_TYPES.CASE_ID, 0], '');
+    const arrestDate = currCase.getIn([PROPERTY_TYPES.FILE_DATE, 0], currCase.getIn([PROPERTY_TYPES.FILE_DATE, 0], ''));
+    const mostSeriousCharge = currCase.getIn([PROPERTY_TYPES.MOST_SERIOUS_CHARGE_NO, 0], '');
+
+    const currentViolentCharges = getViolentCharges(currCharges, mostSeriousCharge);
+    const pendingCharges = getPendingCharges(currCaseNum, arrestDate, allCases, allCharges);
+    const priorMisdemeanors = getPreviousMisdemeanors(allCharges);
+    const priorFelonies = getPreviousFelonies(allCharges);
+    const priorViolentConvictions = getPreviousViolentCharges(allCharges);
+
+    return (
+      <div>
+        <JustificationTitle>Autofill Logic</JustificationTitle>
+        <div>
+          <FootnoteNumber>2: </FootnoteNumber>
+          <span>{renderItem(currentViolentCharges)}</span>
+        </div>
+        <div>
+          <FootnoteNumber>3: </FootnoteNumber>
+          <span>{renderItem(pendingCharges)}</span>
+        </div>
+        <div>
+          <FootnoteNumber>4: </FootnoteNumber>
+          <span>{renderItem(priorMisdemeanors)}</span>
+        </div>
+        <div>
+          <FootnoteNumber>5: </FootnoteNumber>
+          <span>{renderItem(priorFelonies)}</span>
+        </div>
+        <div>
+          <FootnoteNumber>6: </FootnoteNumber>
+          <span>{renderItem(priorViolentConvictions)}</span>
+        </div>
+      </div>
+    );
+  };
 
   const renderRadio = (name, value, label, disabledField) => (
     <Radio
@@ -150,6 +231,11 @@ const PSAInputForm = ({
               )}
 
             </PaddedRow>
+
+            {
+              isReview ? null : renderAutofillJustifications()
+            }
+
             {
               incompleteError ? <ErrorMessage>All fields must be filled out.</ErrorMessage> : null
             }
