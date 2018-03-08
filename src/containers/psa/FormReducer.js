@@ -11,7 +11,8 @@ import {
   SELECT_PRETRIAL_CASE,
   SET_PSA_VALUES,
   loadDataModel,
-  loadNeighbors
+  loadNeighbors,
+  submitData
 } from './FormActionFactory';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA } from '../../utils/consts/Consts';
@@ -59,7 +60,9 @@ const INITIAL_STATE :Immutable.Map<> = Immutable.fromJS({
   selectedPretrialCase: Immutable.Map(),
   psa: INITIAL_PSA_FORM,
   dataModel: Immutable.Map(),
-  entitySetLookup: Immutable.Map()
+  entitySetLookup: Immutable.Map(),
+  isSubmitting: false,
+  errorMessage: ''
 });
 
 function formReducer(state :Immutable.Map<> = INITIAL_STATE, action :Object) {
@@ -122,6 +125,15 @@ function formReducer(state :Immutable.Map<> = INITIAL_STATE, action :Object) {
             .set('pretrialCaseOptions', pretrialCaseOptionsWithDate.concat(pretrialCaseOptionsWithoutDate))
             .set('allChargesForPerson', allChargesForPerson);
         }
+      });
+    }
+
+    case submitData.case(action.type): {
+      return submitData.reducer(state, action, {
+        REQUEST: () => state.set('errorMessage', '').set('isSubmitting', true),
+        SUCCESS: () => state.set('errorMessage', ''),
+        FAILURE: () => state.set('errorMessage', action.value.error),
+        FINALLY: () => state.set('isSubmitting', false)
       });
     }
 
