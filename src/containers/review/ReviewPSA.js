@@ -75,6 +75,12 @@ const DatePickerGroupContainer = styled.div`
   margin: 10px;
 `;
 
+const NoResults = styled.div`
+  width: 100%;
+  font-size: 16px;
+  text-align: center;
+`;
+
 const Error = styled.div`
   width: 100%;
   text-align: center;
@@ -147,7 +153,8 @@ class ReviewPSA extends React.Component<Props, State> {
         lastName: '',
         dob: '',
         filer: '',
-        start: 0
+        start: 0,
+        searchExecuted: false
       }
     };
   }
@@ -163,7 +170,8 @@ class ReviewPSA extends React.Component<Props, State> {
       lastName: '',
       dob: '',
       filer: '',
-      start: 0
+      start: 0,
+      searchExecuted: true
     }, newFilters);
     this.setState({ filters });
   }
@@ -266,6 +274,9 @@ class ReviewPSA extends React.Component<Props, State> {
     else if (activeFilterKey === 3) {
       items = this.filterByFiler();
     }
+    if (!items.length && filters.searchExecuted) {
+      return <NoResults>No results.</NoResults>;
+    }
     return (
       <div>
         {items.slice(start, start + MAX_RESULTS).map(([scoreId, neighbors]) => this.renderRow(scoreId, neighbors))}
@@ -358,7 +369,7 @@ class ReviewPSA extends React.Component<Props, State> {
 
   onFilterSelect = (activeFilterKey) => {
     this.setState({ activeFilterKey });
-    this.updateFilters({});
+    this.updateFilters({ searchExecuted: false });
   }
 
   renderFilters = () => (
