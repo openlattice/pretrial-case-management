@@ -310,7 +310,8 @@ export default class PSAReviewRow extends React.Component<Props, State> {
                 input={riskFactors}
                 handleSingleSelection={this.handleRiskFactorChange}
                 handleSubmit={this.onRiskFactorEdit}
-                incompleteError={false} />
+                incompleteError={false}
+                isReview />
           </div>
         </Collapse>
         <EditButton onClick={() => {
