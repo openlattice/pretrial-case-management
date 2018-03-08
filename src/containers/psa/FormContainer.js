@@ -113,6 +113,22 @@ const LoadingText = styled.div`
   display: inline-flex;
 `;
 
+const Status = styled.div`
+  width: 100%;
+  text-align: center;
+  margin: 20px;
+  font-size: 20px;
+  font-weight: bold;
+`;
+
+const Success = styled(Status)`
+  color: green;
+`;
+
+const Failure = styled(Status)`
+  color: red;
+`;
+
 const INITIAL_PERSON_FORM = Immutable.fromJS({
   id: '',
   lastName: '',
@@ -187,6 +203,8 @@ type Props = {
       newValues :Immutable.Map<*, *>
     }) => void
   },
+  isSubmitting :boolean,
+  submitError :boolean,
   dataModel :Immutable.Map<*, *>,
   entitySetLookup :Immutable.Map<*, *>,
   selectedPerson :Immutable.Map<*, *>,
@@ -602,10 +620,21 @@ class Form extends React.Component<Props, State> {
   )
 
   getPsaResults = () => {
+    const { isSubmitting, submitError } = this.props;
     const { scoresWereGenerated, scores, riskFactors } = this.state;
     if (!scoresWereGenerated) return null;
+    let header;
+    if (isSubmitting) header = <Status>Submitting...</Status>;
+    else {
+      header = submitError ? (
+        <Failure>An error occurred: unable to submit PSA.</Failure>
+      ) : (
+        <Success>PSA Successfully Submitted!</Success>
+      );
+    }
     return (
       <div>
+        {header}
         <PSAResults scores={scores} riskFactors={riskFactors} />
         {this.renderRecommendationSection()}
         {this.renderExportButton()}
@@ -651,6 +680,8 @@ function mapStateToProps(state :Immutable.Map<*, *>) :Object {
     selectedPretrialCase: psaForm.get('selectedPretrialCase'),
     allChargesForPerson: psaForm.get('allChargesForPerson'),
     psaForm: psaForm.get('psa'),
+    isSubmitting: psaForm.get('isSubmitting'),
+    submitError: psaForm.get('submitError'),
 
     selectedPersonId: search.get('selectedPersonId'),
     isLoadingCases: search.get('loadingCases'),
