@@ -204,7 +204,7 @@ type Props = {
     }) => void
   },
   isSubmitting :boolean,
-  errorMessage :string,
+  submitError :boolean,
   dataModel :Immutable.Map<*, *>,
   entitySetLookup :Immutable.Map<*, *>,
   selectedPerson :Immutable.Map<*, *>,
@@ -620,17 +620,21 @@ class Form extends React.Component<Props, State> {
   )
 
   getPsaResults = () => {
-    const { isSubmitting, errorMessage } = this.props;
+    const { isSubmitting, submitError } = this.props;
     const { scoresWereGenerated, scores, riskFactors } = this.state;
     if (!scoresWereGenerated) return null;
-    const successOrFailure = (errorMessage.length) ? (
-      <Failure>An error occurred: unable to submit PSA.</Failure>
-    ) : (
-      <Success>PSA Successfully Submitted!</Success>
-    );
+    let header;
+    if (isSubmitting) header = <Status>Submitting...</Status>;
+    else {
+      header = submitError ? (
+        <Failure>An error occurred: unable to submit PSA.</Failure>
+      ) : (
+        <Success>PSA Successfully Submitted!</Success>
+      );
+    }
     return (
       <div>
-        { isSubmitting ? null : successOrFailure }
+        {header}
         <PSAResults scores={scores} riskFactors={riskFactors} />
         {this.renderRecommendationSection()}
         {this.renderExportButton()}
@@ -677,7 +681,7 @@ function mapStateToProps(state :Immutable.Map<*, *>) :Object {
     allChargesForPerson: psaForm.get('allChargesForPerson'),
     psaForm: psaForm.get('psa'),
     isSubmitting: psaForm.get('isSubmitting'),
-    errorMessage: psaForm.get('errorMessage'),
+    submitError: psaForm.get('submitError'),
 
     selectedPersonId: search.get('selectedPersonId'),
     isLoadingCases: search.get('loadingCases'),
