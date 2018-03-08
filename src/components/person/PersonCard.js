@@ -8,6 +8,7 @@ import styled from 'styled-components';
 import Immutable from 'immutable';
 
 import defaultUserIcon from '../../assets/images/user-profile-icon.png';
+import { formatValue, formatDateList } from '../../utils/Utils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 
 const {
@@ -69,14 +70,10 @@ const PersonCard = ({ person, handleSelect } :Props) => {
   if (!pictureAsBase64) pictureAsBase64 = person.getIn([PICTURE, 0]);
   const pictureImgSrc = pictureAsBase64 ? `data:image/png;base64,${pictureAsBase64}` : defaultUserIcon;
 
-  const firstName = person.getIn([FIRST_NAME, 0]);
-  const lastName = person.getIn([LAST_NAME, 0]);
-  const dob = person.getIn([DOB, 0]);
-  const suffix = person.getIn([SUFFIX, 0]);
-  let dobFormatted = dob;
-  if (dob) {
-    dobFormatted = moment.utc(dob).format('MMMM D, YYYY');
-  }
+  const firstName = formatValue(person.get(FIRST_NAME, Immutable.List()));
+  const lastName = formatValue(person.get(LAST_NAME, Immutable.List()));
+  const dob = formatDateList(person.get(DOB, Immutable.List()), 'MMMM D, YYYY');
+  const suffix = formatValue(person.get(SUFFIX, Immutable.List()));
   const id :string = person.getIn([PERSON_ID, 0], '');
   const entityKeyId :string = person.getIn(['id', 0], '');
 
@@ -110,7 +107,7 @@ const PersonCard = ({ person, handleSelect } :Props) => {
           }
           <InfoRow>
             <Header>Date of Birth:</Header>
-            <DataElem>{ dobFormatted }</DataElem>
+            <DataElem>{ dob }</DataElem>
           </InfoRow>
           <InfoRow>
             <Header>Identifier:</Header>

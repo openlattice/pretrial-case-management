@@ -27,14 +27,15 @@ export function formatValue(rawValue :string | string[]) :string {
   return rawValue.join(', ');
 }
 
-export function formatDate(dateString :string) :string {
+export function formatDate(dateString :string, optionalFormat :?string) :string {
   if (!dateString) return '';
   const date = moment.utc(dateString);
   if (!date || !date.isValid) return dateString;
-  return date.format('MM/DD/YYYY');
+  const format = optionalFormat || 'MM/DD/YYYY';
+  return date.format(format);
 }
 
-export function formatDateList(dateList :string[]) :string {
+export function formatDateList(dateList :string[], optionalFormat :?string) :string {
   if (!dateList || (!dateList.length && !dateList.size)) return '';
-  return dateList.map(dateString => formatDate(dateString)).join(', ');
+  return dateList.map(dateString => formatDate(dateString, optionalFormat)).join(', ');
 }
