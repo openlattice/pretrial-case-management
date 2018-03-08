@@ -274,7 +274,7 @@ function* updateReleaseRecommendationWorker(action :SequenceAction) :Generator<*
   }
   catch (error) {
     console.error(error);
-    yield put(updateRecommendation.failure(action.id, { error }));
+    yield put(updateRecommendation.failure(action.id));
   }
   finally {
     yield put(updateRecommendation.finally(action.id));
