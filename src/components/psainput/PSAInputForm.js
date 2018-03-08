@@ -99,6 +99,7 @@ const PSAInputForm = ({
   input,
   handleSubmit,
   incompleteError,
+  isReview,
   currCharges,
   currCase,
   allCharges,
@@ -108,7 +109,7 @@ const PSAInputForm = ({
   const noPriorConvictions = input.get(PRIOR_MISDEMEANOR) === 'false' && input.get(PRIOR_FELONY) === 'false';
 
   const renderItem = (valueList) => {
-    if (!valueList.size) return <NoResultsText>No matching cases found in Odyssey</NoResultsText>;
+    if (!valueList.size) return <NoResultsText>No matching charges found in Odyssey</NoResultsText>;
     return <span>{formatValue(valueList)}</span>;
   };
 
@@ -231,7 +232,9 @@ const PSAInputForm = ({
 
             </PaddedRow>
 
-            {renderAutofillJustifications()}
+            {
+              isReview ? null : renderAutofillJustifications()
+            }
 
             {
               incompleteError ? <ErrorMessage>All fields must be filled out.</ErrorMessage> : null
