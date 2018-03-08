@@ -26,7 +26,8 @@ const {
   CHARGE_ID,
   CHARGE_LEVEL,
   DISPOSITION,
-  DISPOSITION_DATE
+  DISPOSITION_DATE,
+  FILE_DATE
 } = PROPERTY_TYPES;
 
 const {
@@ -191,8 +192,8 @@ export const tryAutofillFields = (
 
   let psaForm = psaFormValues;
 
-  const nextArrestDate = nextCase.getIn([ARREST_DATE, 0], '');
-  const currArrestDate = currCase.getIn([ARREST_DATE, 0], '');
+  const nextArrestDate = nextCase.getIn([ARREST_DATE, 0], nextCase.getIn([FILE_DATE, 0], ''));
+  const currArrestDate = currCase.getIn([ARREST_DATE, 0], nextCase.getIn([FILE_DATE, 0], ''));
 
   const nextMostSeriousCharge = nextCase.getIn([MOST_SERIOUS_CHARGE_NO, 0], '');
   const currMostSeriousCharge = currCase.getIn([MOST_SERIOUS_CHARGE_NO, 0], '');
@@ -201,7 +202,7 @@ export const tryAutofillFields = (
   if (ageAtCurrentArrest === null || nextArrestDate !== currArrestDate) {
     psaForm = psaForm.set(
       AGE_AT_CURRENT_ARREST,
-      tryAutofillAge(nextCase.get(ARREST_DATE), ageAtCurrentArrest, selectedPerson)
+      tryAutofillAge(nextCase.get(ARREST_DATE, nextCase.get(FILE_DATE, '')), ageAtCurrentArrest, selectedPerson)
     );
   }
 

@@ -22,6 +22,7 @@ const {
   CURRENT_VIOLENT_OFFENSE,
   CURRENT_VIOLENT_OFFENSE_AND_YOUNG,
   DOB,
+  FILE_DATE,
   FIRST_NAME,
   LAST_NAME,
   MIDDLE_NAME,
@@ -511,7 +512,7 @@ const exportPDF = (
     allCharges,
     mostSeriousCharge,
     selectedPretrialCase.getIn([CASE_ID, 0], ''),
-    selectedPretrialCase.getIn([ARREST_DATE, 0], ''),
+    selectedPretrialCase.getIn([ARREST_DATE, 0], selectedPretrialCase.getIn([FILE_DATE, 0], '')),
     allCases
   );
   thickLine(doc, y);

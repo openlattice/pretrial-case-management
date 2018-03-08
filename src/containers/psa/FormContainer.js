@@ -479,7 +479,11 @@ class Form extends React.Component<Props, State> {
         handleSingleSelection={this.handleSingleSelection}
         handleSubmit={this.generateScores}
         input={this.props.psaForm}
-        incompleteError={this.state.formIncompleteError} />
+        incompleteError={this.state.formIncompleteError}
+        currCharges={this.props.charges}
+        currCase={this.props.selectedPretrialCase}
+        allCharges={this.props.allChargesForPerson}
+        allCases={this.props.pretrialCaseOptions} />
   )
 
   renderPSASection = () => {
