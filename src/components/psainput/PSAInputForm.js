@@ -108,7 +108,7 @@ const PSAInputForm = ({
   const noPriorConvictions = input.get(PRIOR_MISDEMEANOR) === 'false' && input.get(PRIOR_FELONY) === 'false';
 
   const renderItem = (valueList) => {
-    if (!valueList.length) return <NoResultsText>No matching cases found in Odyssey</NoResultsText>;
+    if (!valueList.size) return <NoResultsText>No matching cases found in Odyssey</NoResultsText>;
     return <span>{formatValue(valueList)}</span>;
   };
 
@@ -117,7 +117,7 @@ const PSAInputForm = ({
     const arrestDate = currCase.getIn([PROPERTY_TYPES.FILE_DATE, 0], currCase.getIn([PROPERTY_TYPES.FILE_DATE, 0], ''));
     const mostSeriousCharge = currCase.getIn([PROPERTY_TYPES.MOST_SERIOUS_CHARGE_NO, 0], '');
 
-    const currentViolentCharges = getViolentCharges(currCharges, mostSeriousCharge).join(', ');
+    const currentViolentCharges = getViolentCharges(currCharges, mostSeriousCharge);
     const pendingCharges = getPendingCharges(currCaseNum, arrestDate, allCases, allCharges);
     const priorMisdemeanors = getPreviousMisdemeanors(allCharges);
     const priorFelonies = getPreviousFelonies(allCharges);
