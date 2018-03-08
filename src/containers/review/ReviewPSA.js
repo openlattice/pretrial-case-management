@@ -302,7 +302,7 @@ class ReviewPSA extends React.Component<Props, State> {
 
   filterByPerson = () => {
     const { firstName, lastName, dob } = this.state.filters;
-    if (!firstName.length || !lastName.length) return [];
+    if (!firstName.length && !lastName.length) return [];
     const { psaNeighborsById } = this.props;
 
     return psaNeighborsById.entrySeq().filter(([scoreId, neighbors]) => {
