@@ -69,7 +69,8 @@ export const tryAutofillAge = (
   selectedPerson :Immutable.Map<*, *>
 ) :string => {
   const dob = moment.utc(selectedPerson.getIn([DOB, 0], ''));
-  const arrest = moment.utc(dateArrested);
+  let arrest = moment.utc(dateArrested);
+  if (!arrest.isValid()) arrest = moment();
   let ageAtCurrentArrestValue = defaultValue;
   if (dob.isValid && arrest.isValid) {
     const age = Math.floor(moment.duration(arrest.diff(dob)).asYears());
@@ -202,7 +203,11 @@ export const tryAutofillFields = (
   if (ageAtCurrentArrest === null || nextArrestDate !== currArrestDate) {
     psaForm = psaForm.set(
       AGE_AT_CURRENT_ARREST,
-      tryAutofillAge(nextCase.get(ARREST_DATE, nextCase.get(FILE_DATE, '')), ageAtCurrentArrest, selectedPerson)
+      tryAutofillAge(
+        nextCase.getIn([ARREST_DATE, 0], nextCase.getIn([FILE_DATE, 0], '')),
+        ageAtCurrentArrest,
+        selectedPerson
+      )
     );
   }
 
