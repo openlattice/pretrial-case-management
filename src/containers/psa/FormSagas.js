@@ -205,7 +205,6 @@ function* submitDataWorker(action :SequenceAction) :Generator<*, *, *> {
       recommendationToPersonAssociation,
       recommendationToRiskFactorsAssociation,
       recommendationToScoresAssociation,
-      recommendationToCaseAssociation,
       psaToStaffAssociation,
       riskFactorsToStaffAssociation,
       releaseRecommendationToStaffAssociation
@@ -215,6 +214,7 @@ function* submitDataWorker(action :SequenceAction) :Generator<*, *, *> {
       entities.push(pretrialCaseEntity);
       associations.push(psaToPretrialCaseAssociation);
       associations.push(riskFactorsToPretrialCaseAssociation);
+      associations.push(recommendationToCaseAssociation);
     }
 
 
