@@ -192,18 +192,16 @@ function* submitDataWorker(action :SequenceAction) :Generator<*, *, *> {
 
     const entities = [
       personEntity,
-      pretrialCaseEntity,
       riskFactorsEntity,
       psaEntity,
       releaseRecommendationEntity,
       staffEntity
     ];
+
     const associations = [
       psaToPersonAssociation,
-      psaToPretrialCaseAssociation,
       psaToRiskFactorsAssociation,
       riskFactorsToPersonAssociation,
-      riskFactorsToPretrialCaseAssociation,
       recommendationToPersonAssociation,
       recommendationToRiskFactorsAssociation,
       recommendationToScoresAssociation,
@@ -212,6 +210,13 @@ function* submitDataWorker(action :SequenceAction) :Generator<*, *, *> {
       riskFactorsToStaffAssociation,
       releaseRecommendationToStaffAssociation
     ];
+
+    if (Object.keys(pretrialCaseEntity.details).length) {
+      entities.push(pretrialCaseEntity);
+      associations.push(psaToPretrialCaseAssociation);
+      associations.push(riskFactorsToPretrialCaseAssociation);
+    }
+
 
     const syncTickets = yield all([
       call(DataApi.acquireSyncTicket, personEntity.key.entitySetId, personSyncId),
