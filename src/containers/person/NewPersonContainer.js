@@ -8,6 +8,7 @@ import DatePicker from 'react-bootstrap-date-picker';
 import styled from 'styled-components';
 import qs from 'query-string';
 import uuid from 'uuid/v4';
+import moment from 'moment';
 import { Button, Col, FormControl } from 'react-bootstrap';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
@@ -162,9 +163,11 @@ class NewPersonContainer extends React.Component<Props, State> {
         && !!this.state[LAST_NAME_VALUE]
 
   handleOnChangeDateOfBirth = (dob :?string) => {
+    const dobMoment = dob ? moment(dob) : null;
+    const dobValue = (dobMoment && dobMoment.isValid()) ? dobMoment.format('YYYY-MM-DD') : '';
 
     this.setState({
-      [DOB_VALUE]: dob || ''
+      [DOB_VALUE]: dobValue
     });
   }
 
