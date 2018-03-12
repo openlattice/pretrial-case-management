@@ -13,8 +13,7 @@ import {
   degreeFieldIsMisdemeanor,
   dispositionFieldIsGuilty,
   getViolentChargeNums,
-  getChargeTitle,
-  getUnique
+  getChargeTitle
 } from './consts/ChargeConsts';
 
 const {
@@ -142,10 +141,10 @@ export const tryAutofillPendingCharge = (
 
 export const getPreviousMisdemeanors = (allCharges :Immutable.List<*>) :Immutable.List<*> => {
   if (!allCharges.size) return Immutable.List();
-  return getUnique(allCharges.filter(charge =>
+  return allCharges.filter(charge =>
     dispositionFieldIsGuilty(charge.get(DISPOSITION, Immutable.List()))
     && degreeFieldIsMisdemeanor(charge.get(CHARGE_LEVEL, Immutable.List())))
-    .map(charge => getChargeTitle(charge)));
+    .map(charge => getChargeTitle(charge));
 };
 
 export const tryAutofillPreviousMisdemeanors = (allCharges :Immutable.List<*>) :string =>
@@ -153,10 +152,10 @@ export const tryAutofillPreviousMisdemeanors = (allCharges :Immutable.List<*>) :
 
 export const getPreviousFelonies = (allCharges :Immutable.List<*>) :Immutable.List<*> => {
   if (!allCharges.size) return Immutable.List();
-  return getUnique(allCharges.filter(charge =>
+  return allCharges.filter(charge =>
     dispositionFieldIsGuilty(charge.get(DISPOSITION, Immutable.List()))
     && degreeFieldIsFelony(charge.get(CHARGE_LEVEL, Immutable.List())))
-    .map(charge => getChargeTitle(charge)));
+    .map(charge => getChargeTitle(charge));
 };
 
 export const tryAutofillPreviousFelonies = (allCharges :Immutable.List<*>) :string =>
@@ -165,14 +164,14 @@ export const tryAutofillPreviousFelonies = (allCharges :Immutable.List<*>) :stri
 export const getPreviousViolentCharges = (allCharges :Immutable.List<*>) :Immutable.List<*> => {
   if (!allCharges.size) return Immutable.List();
 
-  return getUnique(allCharges
+  return allCharges
     .filter((charge) => {
       const chargeNum = charge.getIn([CHARGE_STATUTE, 0], '');
       return chargeNum.length
         && dispositionFieldIsGuilty(charge.get(DISPOSITION, Immutable.List()))
         && chargeFieldIsViolent(Immutable.List.of(chargeNum));
     })
-    .map(charge => getChargeTitle(charge)));
+    .map(charge => getChargeTitle(charge));
 };
 
 export const tryAutofillPreviousViolentCharge = (allCharges :Immutable.List<*>) :string => {
