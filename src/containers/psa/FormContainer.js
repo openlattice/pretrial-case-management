@@ -218,7 +218,10 @@ type Props = {
   numCasesToLoad :number,
   numCasesLoaded :number,
   psaForm :Immutable.Map<*, *>,
-  history :string[]
+  history :string[],
+  location :{
+    pathname :string
+  }
 };
 
 type State = {

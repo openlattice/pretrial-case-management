@@ -205,10 +205,12 @@ export const tryAutofillFields = (
 
   // current violent offense
   const nextMostSeriousCharge = nextCase.getIn([MOST_SERIOUS_CHARGE_NO, 0], '');
-  psaForm = psaForm.set(
-    CURRENT_VIOLENT_OFFENSE,
-    tryAutofillCurrentViolentCharge(nextCharges, nextMostSeriousCharge)
-  );
+  if (nextCharges.size || nextMostSeriousCharge.length) {
+    psaForm = psaForm.set(
+      CURRENT_VIOLENT_OFFENSE,
+      tryAutofillCurrentViolentCharge(nextCharges, nextMostSeriousCharge)
+    );
+  }
 
   // pending charge
   psaForm = psaForm.set(
