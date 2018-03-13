@@ -267,7 +267,6 @@ class Form extends React.Component<Props, State> {
           charges,
           pretrialCaseOptions,
           allChargesForPerson,
-          this.props.selectedPretrialCase,
           this.props.selectedPerson,
           psaForm
         )

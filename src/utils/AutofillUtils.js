@@ -185,18 +185,25 @@ export const tryAutofillFields = (
   nextCharges :Immutable.List<*>,
   allCases :Immutable.List<*>,
   allCharges :Immutable.List<*>,
-  currCase :Immutable.Map<*, *>,
   selectedPerson :Immutable.Map<*, *>,
   psaFormValues :Immutable.Map<*, *>
 ) :Immutable.Map<*, *> => {
 
   let psaForm = psaFormValues;
 
+  const nextArrestDate = nextCase.getIn([ARREST_DATE, 0], nextCase.getIn([FILE_DATE, 0], ''));
+
+  console.log(nextCase.toJS());
+  console.log(nextCase.getIn([ARREST_DATE, 0], ''));
+  console.log(nextCase.getIn([FILE_DATE, 0], ''));
+  console.log(nextCase.getIn([ARREST_DATE, 0], nextCase.getIn([FILE_DATE, 0], '')))
+  console.log(nextCase.getIn([CASE_ID, 0], ''));
+
   const ageAtCurrentArrest = psaForm.get(AGE_AT_CURRENT_ARREST);
   psaForm = psaForm.set(
     AGE_AT_CURRENT_ARREST,
     tryAutofillAge(
-      nextCase.getIn([ARREST_DATE, 0], nextCase.getIn([FILE_DATE, 0], '')),
+      nextArrestDate,
       ageAtCurrentArrest,
       selectedPerson
     )
@@ -210,7 +217,6 @@ export const tryAutofillFields = (
   );
 
   // pending charge
-  const nextArrestDate = nextCase.getIn([ARREST_DATE, 0], nextCase.getIn([FILE_DATE, 0], ''));
   psaForm = psaForm.set(
     PENDING_CHARGE,
     tryAutofillPendingCharge(
