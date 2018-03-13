@@ -38,6 +38,11 @@ export const CURRENT_PEOPLE = `${PEOPLE}/current`;
 export const INCOMING_PEOPLE = `${PEOPLE}/incoming`;
 export const PAST_PEOPLE = `${PEOPLE}/past`;
 
+/* query params */
+export const FIRST_NAME = 'fname';
+export const LAST_NAME = 'lname';
+export const DOB = 'dob';
+
 /* Person Details */
 export const ABOUT_PERSON = `${PERSON_DETAILS}/about`;
 export const ABOUT = 'about';

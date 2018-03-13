@@ -3,287 +3,297 @@
  */
 
 import { EntityDataModelApi, SearchApi, SyncApi, DataApi } from 'lattice';
-import { call, put, take, all } from 'redux-saga/effects';
+import { call, put, take, takeEvery, all } from 'redux-saga/effects';
 
-import * as FormActionFactory from './FormActionFactory';
-import * as FormActionTypes from './FormActionTypes';
+import {
+  LOAD_DATA_MODEL,
+  LOAD_NEIGHBORS,
+  SUBMIT_DATA,
+  UPDATE_RECOMMENDATION,
+  loadDataModel,
+  loadNeighbors,
+  submitData,
+  updateRecommendation
+} from './FormActionFactory'
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 
-function* loadDataModel(entitySetName) {
-  const entitySetId = yield call(EntityDataModelApi.getEntitySetId, entitySetName);
-  const entitySet = yield call(EntityDataModelApi.getEntitySet, entitySetId);
-  const entityType = yield call(EntityDataModelApi.getEntityType, entitySet.entityTypeId);
-  const propertyTypes = yield all(entityType.properties.map((propertyTypeId) => {
-    return call(EntityDataModelApi.getPropertyType, propertyTypeId);
-  }));
-  return { entitySet, entityType, propertyTypes };
-}
+function* loadDataModelWorker(action :SequenceAction) :Generator<*, *, *> {
 
-export function* loadPersonDataModel() :Generator<*, *, *> {
-  while (true) {
-    yield take(FormActionTypes.LOAD_PERSON_DATA_MODEL_REQUEST);
-    try {
-      const dataModel = yield* loadDataModel(ENTITY_SETS.PEOPLE);
-      yield put(FormActionFactory.loadPersonDataModelSuccess(dataModel));
-    }
-    catch (error) {
-      yield put(FormActionFactory.loadPersonDataModelFailure());
-    }
+  try {
+    yield put(loadDataModel.request(action.id));
+    const entitySetIds = yield all(Object.values(ENTITY_SETS).map(entitySetName =>
+      call(EntityDataModelApi.getEntitySetId, entitySetName)));
+    const selectors = entitySetIds.map(id => ({
+      id,
+      type: 'EntitySet',
+      include: ['EntitySet', 'EntityType', 'PropertyTypeInEntitySet']
+    }));
+    const dataModel = yield call(EntityDataModelApi.getEntityDataModelProjection, selectors);
+    yield put(loadDataModel.success(action.id, { dataModel }));
+  }
+  catch (error) {
+    yield put(loadDataModel.failure(action.id, { error }));
+  }
+  finally {
+    yield put(loadDataModel.finally(action.id));
   }
 }
 
-export function* loadPretrialCaseDataModel() :Generator<*, *, *> {
-  while (true) {
-    yield take(FormActionTypes.LOAD_PRETRIAL_DATA_MODEL_REQUEST);
-    try {
-      const dataModel = yield* loadDataModel(ENTITY_SETS.PRETRIAL_CASES);
-      yield put(FormActionFactory.loadPretrialCaseDataModelSuccess(dataModel));
-    }
-    catch (error) {
-      yield put(FormActionFactory.loadPretrialCaseDataModelFailure());
-    }
+function* loadDataModelWatcher() :Generator<*, *, *> {
+  yield takeEvery(LOAD_DATA_MODEL, loadDataModelWorker);
+}
+
+function* loadNeighborsWorker(action :SequenceAction) :Generator<*, *, *> {
+  const { entitySetId, entityKeyId } = action.value;
+
+  try {
+    yield put(loadNeighbors.request(action.id));
+    const neighbors = yield call(SearchApi.searchEntityNeighbors, entitySetId, entityKeyId);
+    yield put(loadNeighbors.success(action.id, { neighbors }));
+  }
+  catch (error) {
+    yield put(loadNeighbors.failure(action.id));
+  }
+  finally {
+    yield put(loadNeighbors.finally(action.id));
   }
 }
 
-export function* loadRiskFactorsDataModel() :Generator<*, *, *> {
-  while (true) {
-    yield take(FormActionTypes.LOAD_RISK_FACTORS_DATA_MODEL_REQUEST);
-    try {
-      const dataModel = yield* loadDataModel(ENTITY_SETS.PSA_RISK_FACTORS);
-      yield put(FormActionFactory.loadRiskFactorsDataModelSuccess(dataModel));
-    }
-    catch (error) {
-      yield put(FormActionFactory.loadRiskFactorsDataModelFailure());
-    }
-  }
+function* loadNeighborsWatcher() :Generator<*, *, *> {
+  yield takeEvery(LOAD_NEIGHBORS, loadNeighborsWorker);
 }
 
-export function* loadPsaDataModel() :Generator<*, *, *> {
-  while (true) {
-    yield take(FormActionTypes.LOAD_PSA_DATA_MODEL_REQUEST);
-    try {
-      const dataModel = yield* loadDataModel(ENTITY_SETS.PSA_SCORES);
-      yield put(FormActionFactory.loadPsaDataModelSuccess(dataModel));
-    }
-    catch (error) {
-      yield put(FormActionFactory.loadPsaDataModelFailure());
-    }
-  }
-}
+function* submitDataWorker(action :SequenceAction) :Generator<*, *, *> {
 
-export function* loadReleaseRecommendationDataModel() :Generator<*, *, *> {
-  while (true) {
-    yield take(FormActionTypes.LOAD_RELEASE_RECOMMENDATION_DATA_MODEL_REQUEST);
-    try {
-      const dataModel = yield* loadDataModel(ENTITY_SETS.RELEASE_RECOMMENDATIONS);
-      yield put(FormActionFactory.loadReleaseRecommendationDataModelSuccess(dataModel));
-    }
-    catch (error) {
-      yield put(FormActionFactory.loadReleaseRecommendationDataModelFailure());
-    }
-  }
-}
+  const {
+    personEntity,
+    pretrialCaseEntity,
+    riskFactorsEntity,
+    psaEntity,
+    releaseRecommendationEntity,
+    staffEntity,
+    calculatedForEntity,
+    assessedByEntity
+  } = action.value;
 
-export function* loadCalculatedForDataModel() :Generator<*, *, *> {
-  while (true) {
-    yield take(FormActionTypes.LOAD_CALCULATED_FOR_DATA_MODEL_REQUEST);
-    try {
-      const dataModel = yield* loadDataModel(ENTITY_SETS.CALCULATED_FOR);
-      yield put(FormActionFactory.loadCalculatedForDataModelSuccess(dataModel));
-    }
-    catch (error) {
-      yield put(FormActionFactory.loadCalculatedForDataModelFailure());
-    }
-  }
-}
+  try {
+    yield put(submitData.request(action.id));
+    const [
+      personSyncId,
+      pretrialCaseSyncId,
+      riskFactorsSyncId,
+      psaSyncId,
+      releaseRecommendationSyncId,
+      staffSyncId,
+      calculatedForSyncId,
+      assessedBySyncId
+    ] = yield all([
+      call(SyncApi.getCurrentSyncId, personEntity.key.entitySetId),
+      call(SyncApi.getCurrentSyncId, pretrialCaseEntity.key.entitySetId),
+      call(SyncApi.getCurrentSyncId, riskFactorsEntity.key.entitySetId),
+      call(SyncApi.getCurrentSyncId, psaEntity.key.entitySetId),
+      call(SyncApi.getCurrentSyncId, releaseRecommendationEntity.key.entitySetId),
+      call(SyncApi.getCurrentSyncId, staffEntity.key.entitySetId),
+      call(SyncApi.getCurrentSyncId, calculatedForEntity.key.entitySetId),
+      call(SyncApi.getCurrentSyncId, assessedByEntity.key.entitySetId)
+    ]);
+    personEntity.key.syncId = personSyncId;
+    pretrialCaseEntity.key.syncId = pretrialCaseSyncId;
+    riskFactorsEntity.key.syncId = riskFactorsSyncId;
+    psaEntity.key.syncId = psaSyncId;
+    releaseRecommendationEntity.key.syncId = releaseRecommendationSyncId;
+    staffEntity.key.syncId = staffSyncId;
+    calculatedForEntity.key.syncId = calculatedForSyncId;
+    assessedByEntity.key.syncId = assessedBySyncId;
 
-export function* searchPeople() :Generator<*, *, *> {
-  while (true) {
-    const { entitySetId, searchOptions } = yield take(FormActionTypes.SEARCH_PEOPLE_REQUEST);
-    try {
-      const results = yield call(SearchApi.advancedSearchEntitySetData, entitySetId, searchOptions);
-      yield put(FormActionFactory.searchPeopleSuccess(results.hits));
-    }
-    catch (error) {
-      yield put(FormActionFactory.searchPeopleFailure());
-    }
-  }
-}
+    const psaToPersonAssociation = Object.assign(
+      {},
+      calculatedForEntity,
+      { src: psaEntity.key },
+      { dst: personEntity.key }
+    );
 
-export function* loadNeighbors() :Generator<*, *, *> {
-  while (true) {
-    const { entitySetId, rowId } = yield take(FormActionTypes.LOAD_NEIGHBORS_REQUEST);
-    try {
-      const neighbors = yield call(SearchApi.searchEntityNeighbors, entitySetId, rowId);
-      yield put(FormActionFactory.loadNeighborsSuccess(neighbors));
-    }
-    catch (error) {
-      yield put(FormActionFactory.loadNeighborsFailure());
-    }
-  }
-}
+    const psaToPretrialCaseAssociation = Object.assign(
+      {},
+      calculatedForEntity,
+      { src: psaEntity.key },
+      { dst: pretrialCaseEntity.key }
+    );
 
-export function* submitData() :Generator<*, *, *> {
+    const psaToRiskFactorsAssociation = Object.assign(
+      {},
+      calculatedForEntity,
+      { src: psaEntity.key },
+      { dst: riskFactorsEntity.key }
+    );
 
-  while (true) {
+    const riskFactorsToPersonAssociation = Object.assign(
+      {},
+      calculatedForEntity,
+      { src: riskFactorsEntity.key },
+      { dst: personEntity.key }
+    );
 
-    const {
+    const riskFactorsToPretrialCaseAssociation = Object.assign(
+      {},
+      calculatedForEntity,
+      { src: riskFactorsEntity.key },
+      { dst: pretrialCaseEntity.key }
+    );
+
+    const recommendationToPersonAssociation = Object.assign(
+      {},
+      calculatedForEntity,
+      { src: releaseRecommendationEntity.key },
+      { dst: personEntity.key }
+    );
+
+    const recommendationToRiskFactorsAssociation = Object.assign(
+      {},
+      calculatedForEntity,
+      { src: releaseRecommendationEntity.key },
+      { dst: riskFactorsEntity.key }
+    );
+
+    const recommendationToScoresAssociation = Object.assign(
+      {},
+      calculatedForEntity,
+      { src: releaseRecommendationEntity.key },
+      { dst: psaEntity.key }
+    );
+
+    const recommendationToCaseAssociation = Object.assign(
+      {},
+      calculatedForEntity,
+      { src: releaseRecommendationEntity.key },
+      { dst: pretrialCaseEntity.key }
+    );
+
+    const psaToStaffAssociation = Object.assign(
+      {},
+      assessedByEntity,
+      { src: psaEntity.key },
+      { dst: staffEntity.key }
+    );
+
+    const riskFactorsToStaffAssociation = Object.assign(
+      {},
+      assessedByEntity,
+      { src: riskFactorsEntity.key },
+      { dst: staffEntity.key }
+    );
+
+    const releaseRecommendationToStaffAssociation = Object.assign(
+      {},
+      assessedByEntity,
+      { src: releaseRecommendationEntity.key },
+      { dst: staffEntity.key }
+    );
+
+    const entities = [
       personEntity,
-      pretrialCaseEntity,
       riskFactorsEntity,
       psaEntity,
       releaseRecommendationEntity,
-      calculatedForEntity
-    } = yield take(FormActionTypes.SUBMIT_DATA_REQUEST);
+      staffEntity
+    ];
 
-    try {
-      const [
-        personSyncId,
-        pretrialCaseSyncId,
-        riskFactorsSyncId,
-        psaSyncId,
-        releaseRecommendationSyncId,
-        calculatedForSyncId
-      ] = yield all([
-        call(SyncApi.getCurrentSyncId, personEntity.key.entitySetId),
-        call(SyncApi.getCurrentSyncId, pretrialCaseEntity.key.entitySetId),
-        call(SyncApi.getCurrentSyncId, riskFactorsEntity.key.entitySetId),
-        call(SyncApi.getCurrentSyncId, psaEntity.key.entitySetId),
-        call(SyncApi.getCurrentSyncId, releaseRecommendationEntity.key.entitySetId),
-        call(SyncApi.getCurrentSyncId, calculatedForEntity.key.entitySetId)
-      ]);
-      personEntity.key.syncId = personSyncId;
-      pretrialCaseEntity.key.syncId = pretrialCaseSyncId;
-      riskFactorsEntity.key.syncId = riskFactorsSyncId;
-      psaEntity.key.syncId = psaSyncId;
-      releaseRecommendationEntity.key.syncId = releaseRecommendationSyncId;
-      calculatedForEntity.key.syncId = calculatedForSyncId;
+    const associations = [
+      psaToPersonAssociation,
+      psaToRiskFactorsAssociation,
+      riskFactorsToPersonAssociation,
+      recommendationToPersonAssociation,
+      recommendationToRiskFactorsAssociation,
+      recommendationToScoresAssociation,
+      psaToStaffAssociation,
+      riskFactorsToStaffAssociation,
+      releaseRecommendationToStaffAssociation
+    ];
 
-      const psaToPersonAssociation = Object.assign(
-        {},
-        calculatedForEntity,
-        { src: psaEntity.key },
-        { dst: personEntity.key }
-      );
-
-      const psaToPretrialCaseAssociation = Object.assign(
-        {},
-        calculatedForEntity,
-        { src: psaEntity.key },
-        { dst: pretrialCaseEntity.key }
-      );
-
-      const psaToRiskFactorsAssociation = Object.assign(
-        {},
-        calculatedForEntity,
-        { src: psaEntity.key },
-        { dst: riskFactorsEntity.key }
-      );
-
-      const riskFactorsToPersonAssociation = Object.assign(
-        {},
-        calculatedForEntity,
-        { src: riskFactorsEntity.key },
-        { dst: personEntity.key }
-      );
-
-      const riskFactorsToPretrialCaseAssociation = Object.assign(
-        {},
-        calculatedForEntity,
-        { src: riskFactorsEntity.key },
-        { dst: pretrialCaseEntity.key }
-      );
-
-      const recommendationToPersonAssociation = Object.assign(
-        {},
-        calculatedForEntity,
-        { src: releaseRecommendationEntity.key },
-        { dst: personEntity.key }
-      );
-
-      const recommendationToRiskFactorsAssociation = Object.assign(
-        {},
-        calculatedForEntity,
-        { src: releaseRecommendationEntity.key },
-        { dst: riskFactorsEntity.key }
-      );
-
-      const recommendationToScoresAssociation = Object.assign(
-        {},
-        calculatedForEntity,
-        { src: releaseRecommendationEntity.key },
-        { dst: psaEntity.key }
-      );
-
-      const recommendationToCaseAssociation = Object.assign(
-        {},
-        calculatedForEntity,
-        { src: releaseRecommendationEntity.key },
-        { dst: pretrialCaseEntity.key }
-      );
-
-      const entities = [personEntity, pretrialCaseEntity, riskFactorsEntity, psaEntity, releaseRecommendationEntity];
-      const associations = [
-        psaToPersonAssociation,
-        psaToPretrialCaseAssociation,
-        psaToRiskFactorsAssociation,
-        riskFactorsToPersonAssociation,
-        riskFactorsToPretrialCaseAssociation,
-        recommendationToPersonAssociation,
-        recommendationToRiskFactorsAssociation,
-        recommendationToScoresAssociation,
-        recommendationToCaseAssociation
-      ];
-
-      const syncTickets = yield all([
-        call(DataApi.acquireSyncTicket, personEntity.key.entitySetId, personSyncId),
-        call(DataApi.acquireSyncTicket, pretrialCaseEntity.key.entitySetId, pretrialCaseSyncId),
-        call(DataApi.acquireSyncTicket, riskFactorsEntity.key.entitySetId, riskFactorsSyncId),
-        call(DataApi.acquireSyncTicket, psaEntity.key.entitySetId, psaSyncId),
-        call(DataApi.acquireSyncTicket, releaseRecommendationEntity.key.entitySetId, releaseRecommendationSyncId),
-        call(DataApi.acquireSyncTicket, calculatedForEntity.key.entitySetId, calculatedForSyncId)
-      ]);
-
-      yield call(DataApi.createEntityAndAssociationData, { syncTickets, entities, associations });
-      yield put(FormActionFactory.submitDataSuccess());
+    if (Object.keys(pretrialCaseEntity.details).length) {
+      entities.push(pretrialCaseEntity);
+      associations.push(psaToPretrialCaseAssociation);
+      associations.push(riskFactorsToPretrialCaseAssociation);
+      associations.push(recommendationToCaseAssociation);
     }
-    catch (error) {
-      yield put(FormActionFactory.submitDataFailure());
-    }
+
+
+    const syncTickets = yield all([
+      call(DataApi.acquireSyncTicket, personEntity.key.entitySetId, personSyncId),
+      call(DataApi.acquireSyncTicket, pretrialCaseEntity.key.entitySetId, pretrialCaseSyncId),
+      call(DataApi.acquireSyncTicket, riskFactorsEntity.key.entitySetId, riskFactorsSyncId),
+      call(DataApi.acquireSyncTicket, psaEntity.key.entitySetId, psaSyncId),
+      call(DataApi.acquireSyncTicket, releaseRecommendationEntity.key.entitySetId, releaseRecommendationSyncId),
+      call(DataApi.acquireSyncTicket, staffEntity.key.entitySetId, staffSyncId),
+      call(DataApi.acquireSyncTicket, calculatedForEntity.key.entitySetId, calculatedForSyncId),
+      call(DataApi.acquireSyncTicket, assessedByEntity.key.entitySetId, assessedBySyncId)
+    ]);
+
+    yield call(DataApi.createEntityAndAssociationData, { syncTickets, entities, associations });
+    yield put(submitData.success(action.id));
+  }
+  catch (error) {
+    yield put(submitData.failure(action.id, { error }));
+  }
+  finally {
+    yield put(submitData.finally(action.id));
   }
 }
 
-export function* updateReleaseRecommendation() :Generator<*, *, *> {
-  while (true) {
-    const { recommendation, entityId, dataModel } = yield take(FormActionTypes.UPDATE_RECOMMENDATION_REQUEST);
+function* submitDataWatcher() :Generator<*, *, *> {
+  yield takeEvery(SUBMIT_DATA, submitDataWorker);
+}
 
-    try {
-      const entitySetId = dataModel.entitySet.id;
-      const fqnToId = {};
-      dataModel.propertyTypes.forEach((propertyType) => {
-        fqnToId[`${propertyType.type.namespace}.${propertyType.type.name}`] = propertyType.id;
+function* updateReleaseRecommendationWorker(action :SequenceAction) :Generator<*, *, *> {
+  const {
+    recommendation,
+    entityId,
+    entitySetId,
+    propertyTypes
+  } = action.value;
+
+  try {
+    yield put(updateRecommendation.request(action.id));
+    const fqnToId = {};
+    propertyTypes.forEach((propertyType) => {
+      const fqn = `${propertyType.getIn(['type', 'namespace'])}.${propertyType.getIn(['type', 'name'])}`;
+      fqnToId[fqn] = propertyType.get('id');
+    });
+    const searchOptions = {
+      start: 0,
+      maxHits: 1,
+      searchTerm: `${fqnToId[PROPERTY_TYPES.GENERAL_ID]}:"${entityId}"`
+    };
+    const response = yield call(SearchApi.searchEntitySetData, entitySetId, searchOptions);
+    const result = response.hits[0];
+    if (result) {
+      const entity = {};
+      Object.keys(result).forEach((fqn) => {
+        const propertyTypeId = fqnToId[fqn];
+        if (propertyTypeId) entity[propertyTypeId] = result[fqn];
       });
-      const searchOptions = {
-        start: 0,
-        maxHits: 1,
-        searchTerm: `${fqnToId[PROPERTY_TYPES.GENERAL_ID_FQN]}:"${entityId}"`
-      }
-      const response = yield call(SearchApi.searchEntitySetData, entitySetId, searchOptions);
-      const result = response.hits[0];
-      if (result) {
-        const entity = {};
-        Object.keys(result).forEach((fqn) => {
-          const propertyTypeId = fqnToId[fqn];
-          if (propertyTypeId) entity[propertyTypeId] = result[fqn];
-        })
-        entity[fqnToId[PROPERTY_TYPES.RELEASE_RECOMMENDATION_FQN]] = [recommendation];
-        yield call(DataApi.replaceEntityInEntitySet, entitySetId, result.id[0], entity);
-        yield put(FormActionFactory.updateRecommendationSuccess());
-      }
-    }
-    catch (error) {
-      console.error(error);
-      yield put(FormActionFactory.updateRecommendationFailure());
+      entity[fqnToId[PROPERTY_TYPES.RELEASE_RECOMMENDATION]] = [recommendation];
+      yield call(DataApi.replaceEntityInEntitySet, entitySetId, result.id[0], entity);
+      yield put(updateRecommendation.success(action.id));
     }
   }
+  catch (error) {
+    console.error(error);
+    yield put(updateRecommendation.failure(action.id));
+  }
+  finally {
+    yield put(updateRecommendation.finally(action.id));
+  }
 }
+
+function* updateReleaseRecommendationWatcher() :Generator<*, *, *> {
+  yield takeEvery(UPDATE_RECOMMENDATION, updateReleaseRecommendationWorker);
+}
+
+
+export {
+  loadDataModelWatcher,
+  loadNeighborsWatcher,
+  submitDataWatcher,
+  updateReleaseRecommendationWatcher
+};

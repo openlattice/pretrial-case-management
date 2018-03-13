@@ -3,6 +3,7 @@
  */
 
 import React from 'react';
+import Immutable from 'immutable';
 import styled from 'styled-components';
 import { Button } from 'react-bootstrap';
 
@@ -49,7 +50,7 @@ export const NavButton = styled(Button)`
  */
 
 type Props = {
-  caseOptions :List<Map<*, *>>,
+  caseOptions :Immutable.List<Map<*, *>>,
   onSelectCase :Function,
   nextPage :Function,
   prevPage :Function
@@ -61,22 +62,20 @@ export default class SelectPretrialCaseContainer extends React.Component<Props> 
     onSelectCase: () => {}
   }
 
-  handleOnSelectCase = (selectedCase :Map, entityKeyId :string) => {
+  handleOnSelectCase = (selectedCase :Immutable.Map<*, *>, entityKeyId :string) => {
 
     this.props.onSelectCase(selectedCase, entityKeyId);
   }
 
-  renderNoResults = () => {
-    return (
-      <div>
-        <SearchResultsList>No cases found.</SearchResultsList>
-        <StyledNavBtnWrapper>
-          <NavButton onClick={this.props.prevPage}>Modify Search</NavButton>
-          <NavButton onClick={this.props.nextPage}>Proceed Without Case</NavButton>
-        </StyledNavBtnWrapper>
-      </div>
-    );
-  }
+  renderNoResults = () => (
+    <div>
+      <SearchResultsList>No cases found.</SearchResultsList>
+      <StyledNavBtnWrapper>
+        <NavButton onClick={this.props.prevPage}>Modify Search</NavButton>
+        <NavButton onClick={this.props.nextPage}>Proceed Without Case</NavButton>
+      </StyledNavBtnWrapper>
+    </div>
+  )
 
   renderSearchResults = () => {
 
@@ -84,11 +83,14 @@ export default class SelectPretrialCaseContainer extends React.Component<Props> 
       return this.renderNoResults();
     }
 
-    const caseOptions = this.props.caseOptions.map((caseResult :Map<*, *>) =>
+    const caseOptions = this.props.caseOptions.map((caseResult :Immutable.Map<*, *>) =>
       <PretrialCard key={caseResult.get('id')} handleSelect={this.handleOnSelectCase} pretrialCase={caseResult} />);
 
     return (
       <SearchResultsList>
+        <StyledNavBtnWrapper>
+          <NavButton onClick={this.props.nextPage}>Proceed Without Case</NavButton>
+        </StyledNavBtnWrapper>
         { caseOptions.toSeq() }
       </SearchResultsList>
     );

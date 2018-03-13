@@ -3,64 +3,75 @@
  */
 
 import { DataApi } from 'lattice';
-import { call, put, take, select } from 'redux-saga/effects';
-
-import * as ActionTypes from './DataActionTypes';
+import { call, put, select, takeEvery } from 'redux-saga/effects';
 
 import {
-  deleteEntityFailure,
-  deleteEntitySuccess,
-  replaceEntityFailure,
-  replaceEntitySuccess
+  DELETE_ENTITY,
+  REPLACE_ENTITY,
+  deleteEntity,
+  replaceEntity
 } from './DataActionFactory';
 
 import {
   loadPersonDetailsRequest
 } from '../../containers/person/PersonActionFactory';
 
-export function* deleteEntity() :Generator<> {
-  while (true) {
-    const {
-      entitySetId,
-      entityKeyId
-    } = yield take(ActionTypes.DELETE_ENTITY_REQUEST);
+function* deleteEntityWorker(action :SequenceAction) :Generator<*, *, *> {
+  const {
+    entitySetId,
+    entityKeyId
+  } = action.value;
+
+  try {
+    yield put(deleteEntity.request(action.id));
+    yield call(DataApi.deleteEntityFromEntitySet, entitySetId, entityKeyId);
+    yield put(deleteEntity.success(action.id, { entityKeyId }));
 
     const state = yield select();
     const personId = state.getIn(['search', 'selectedPersonId'], '');
-    if (personId) yield put(loadPersonDetailsRequest(personId));
-
-    try {
-      yield call(DataApi.deleteEntityFromEntitySet, entitySetId, entityKeyId);
-      yield put(deleteEntitySuccess(entityKeyId));
-
-      const state = yield select();
-      const personId = state.getIn(['search', 'selectedPersonId'], '');
-      if (personId) yield put(loadPersonDetailsRequest(personId));
-    }
-    catch (error) {
-      yield put(deleteEntityFailure(entityKeyId, error));
-    }
+    if (personId) yield put(loadPersonDetailsRequest(personId, false));
+  }
+  catch (error) {
+    yield put(deleteEntity.failure(action.id, { entityKeyId, error }));
+  }
+  finally {
+    yield put(deleteEntity.finally(action.id));
   }
 }
 
-export function* replaceEntity() :Generator<> {
-  while (true) {
-    const {
-      entitySetId,
-      entityKeyId,
-      entity
-    } = yield take(ActionTypes.REPLACE_ENTITY_REQUEST);
+function* deleteEntityWatcher() :Generator<*, *, *> {
+  yield takeEvery(DELETE_ENTITY, deleteEntityWorker);
+}
 
-    try {
-      yield call(DataApi.replaceEntityInEntitySet, entitySetId, entityKeyId, entity);
-      yield put(replaceEntitySuccess(entityKeyId));
+function* replaceEntityWorker(action :SequenceAction) :Generator<*, *, *> {
+  const {
+    entitySetId,
+    entityKeyId,
+    entity
+  } = action.value;
 
-      const state = yield select();
-      const personId = state.getIn(['search', 'selectedPersonId'], '');
-      if (personId) yield put(loadPersonDetailsRequest(personId));
-    }
-    catch (error) {
-      yield put(replaceEntityFailure(entityKeyId, error));
-    }
+  try {
+    yield put(replaceEntity.request(action.id));
+    yield call(DataApi.replaceEntityInEntitySet, entitySetId, entityKeyId, entity);
+    yield put(replaceEntity.success(action.id, { entityKeyId }));
+
+    const state = yield select();
+    const personId = state.getIn(['search', 'selectedPersonId'], '');
+    if (personId) yield put(loadPersonDetailsRequest(personId, false));
+  }
+  catch (error) {
+    yield put(replaceEntity.failure(action.id, { entityKeyId, error }));
+  }
+  finally {
+    yield put(replaceEntity.finally(action.id));
   }
 }
+
+function* replaceEntityWatcher() :Generator<*, *, *> {
+  yield takeEvery(REPLACE_ENTITY, replaceEntityWorker);
+}
+
+export {
+  deleteEntityWatcher,
+  replaceEntityWatcher
+};

@@ -1,15 +1,21 @@
+/*
+ * @flow
+ */
+
 import React from 'react';
-import PropTypes from 'prop-types';
 import moment from 'moment';
 import styled from 'styled-components';
+import Immutable from 'immutable';
 
 import defaultUserIcon from '../../assets/images/user-profile-icon.png';
+import { formatValue, formatDateList } from '../../utils/Utils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 
 const {
   DOB,
   FIRST_NAME,
   LAST_NAME,
+  SUFFIX,
   MUGSHOT,
   PERSON_ID,
   PICTURE
@@ -31,89 +37,90 @@ const PersonPicture = styled.img`
   max-height: 100px;
 `;
 
-const PersonInfoWrapper = styled.div`
+const InfoRow = styled.tr`
   display: flex;
-  flex-direction: row;
-  margin-left: 10px;
+  justify-content: flex-start;
 `;
 
-const PersonInfoHeaders = styled.div`
-  display: flex;
-  flex-direction: column;
-  justify-content: space-around;
-  strong {
-    font-weight: 600;
-  }
+const Header = styled.th`
+  width: 95px;
+  margin: 2px 5px 2px 0;
 `;
 
-const PersonInfo = styled.div`
-  display: flex;
-  flex-direction: column;
-  justify-content: space-around;
-  margin: 0;
-  margin-left: 10px;
-  span {
-    margin: 0;
-  }
+const DataElem = styled.td`
+  width: 200px;
+  margin: 2px 0;
 `;
 
-export default class PersonCard extends React.Component {
-  static propTypes = {
-    person: PropTypes.object.isRequired,
-    handleSelect: PropTypes.func
-  };
+type Props = {
+  person :Immutable.Map<*, *>,
+  handleSelect? :(person :Immutable.Map<*, *>, entityKeyId :string) => void
+};
 
-  render() {
-    const { person, handleSelect } = this.props;
+const PersonCard = ({ person, handleSelect } :Props) => {
 
-    const Wrapper = styled(PersonResultWrapper)`
-      &:hover {
-        cursor: ${handleSelect ? 'pointer' : 'default'};
-      }
-    `;
+  const Wrapper = styled(PersonResultWrapper)`
+    &:hover {
+      cursor: ${handleSelect ? 'pointer' : 'default'};
+    },
+    width: 150px;
+  `;
 
+  let pictureAsBase64 :string = person.getIn([MUGSHOT, 0]);
+  if (!pictureAsBase64) pictureAsBase64 = person.getIn([PICTURE, 0]);
+  const pictureImgSrc = pictureAsBase64 ? `data:image/png;base64,${pictureAsBase64}` : defaultUserIcon;
 
-    let pictureAsBase64 :string = person.getIn([MUGSHOT, 0]);
-    if (!pictureAsBase64) pictureAsBase64 = person.getIn([PICTURE, 0]);
-    const pictureImgSrc = pictureAsBase64 ? `data:image/png;base64,${pictureAsBase64}` : defaultUserIcon;
+  const firstName = formatValue(person.get(FIRST_NAME, Immutable.List()));
+  const lastName = formatValue(person.get(LAST_NAME, Immutable.List()));
+  const dob = formatDateList(person.get(DOB, Immutable.List()), 'MMMM D, YYYY');
+  const suffix = formatValue(person.get(SUFFIX, Immutable.List()));
+  const id :string = person.getIn([PERSON_ID, 0], '');
+  const entityKeyId :string = person.getIn(['id', 0], '');
 
-    const firstName = person.getIn([FIRST_NAME, 0]);
-    const lastName = person.getIn([LAST_NAME, 0]);
-    const dob = person.getIn([DOB, 0]);
-    let dobFormatted = dob;
-    if (dob) {
-      dobFormatted = moment(dob).format('MMMM Do YYYY');
-    }
-    const id :string = person.getIn([PERSON_ID, 0], '');
-    const entityKeyId :string = person.getIn(['id', 0], '');
+  return (
+    <Wrapper
+        key={id}
+        onClick={() => {
+          if (handleSelect) {
+            handleSelect(person, entityKeyId, id);
+          }
+        }}>
+      <PersonPictureWrapper>
+        <PersonPicture src={pictureImgSrc} role="presentation" />
+      </PersonPictureWrapper>
+      <table>
+        <tbody>
+          <InfoRow>
+            <Header>First Name:</Header>
+            <DataElem>{ firstName }</DataElem>
+          </InfoRow>
+          <InfoRow>
+            <Header>Last Name:</Header>
+            <DataElem>{ lastName }</DataElem>
+          </InfoRow>
+          { suffix ? (
+            <InfoRow>
+              <Header>Suffix:</Header>
+              <DataElem>{ suffix }</DataElem>
+            </InfoRow>
+          ) : null
+          }
+          <InfoRow>
+            <Header>Date of Birth:</Header>
+            <DataElem>{ dob }</DataElem>
+          </InfoRow>
+          <InfoRow>
+            <Header>Identifier:</Header>
+            <DataElem>{ id }</DataElem>
+          </InfoRow>
+        </tbody>
+      </table>
+    </Wrapper>
+  );
+};
 
-    return (
-      <Wrapper
-          key={id}
-          onClick={() => {
-            if (handleSelect) {
-              handleSelect(person, entityKeyId, id);
-            }
-          }}>
-        <PersonPictureWrapper>
-          <PersonPicture src={pictureImgSrc} role="presentation" />
-        </PersonPictureWrapper>
-        <PersonInfoWrapper>
-          <PersonInfoHeaders>
-            <strong>First Name:</strong>
-            <strong>Last Name:</strong>
-            <strong>Date of Birth:</strong>
-            <strong>Identifier:</strong>
-          </PersonInfoHeaders>
-          <PersonInfo>
-            <span>{ firstName }</span>
-            <span>{ lastName }</span>
-            <span>{ dobFormatted }</span>
-            <span>{ id }</span>
-          </PersonInfo>
-        </PersonInfoWrapper>
-      </Wrapper>
-    );
-  }
+PersonCard.defaultProps = {
+  handleSelect: () => {}
+};
 
-}
+export default PersonCard;

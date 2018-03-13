@@ -58,17 +58,17 @@ const TableBodyContainer = styled.div`
     return `${height - 1}px`;
   }};
   width: ${TABLE_MAX_WIDTH}px;
-`;
+  `;
 
 const TableHeadGrid = styled(Grid)`
   outline: none;
   overflow: hidden !important;
-`;
+  `;
 
 const TableBodyGrid = styled(Grid)`
   cursor: pointer;
   outline: none;
-`;
+  `;
 
 const TableHeadCell = styled.div`
   align-items: center;
@@ -85,7 +85,7 @@ const TableHeadCell = styled.div`
   &:hover {
     cursor: pointer;
   }
-`;
+  `;
 
 const TableBodyCell = styled.div`
   align-items: center;
@@ -109,29 +109,29 @@ const TableBodyCell = styled.div`
     }
     return '';
   }}
-`;
+  `;
 
 const SortIcon = styled.span`
   font-size: 11px;
-`;
+  `;
 
 const HeaderText = styled.span`
   margin-left: 5px;
-`;
+  `;
 
-type SetMultiMap = Map<string, Set<any>>;
-type ListSetMultiMap = List<SetMultiMap>;
+type SetMultiMap = Immutable.Map<string, Set<any>>;
+type ListSetMultiMap = Immutable.List<SetMultiMap>;
 
 type Props = {
   data :ListSetMultiMap,
-  headers :List<Map<string, string>>,
+  headers :Immutable.List<Immutable.Map<string, string>>,
   excludeEmptyColumns :boolean,
   onRowClick :Function
 };
 
 type State = {
   data :ListSetMultiMap,
-  headerIdToWidthMap :Map<string, number>,
+  headerIdToWidthMap :Immutable.Map<string, number>,
   hoveredColumnIndex :number,
   hoveredRowIndex :number,
   lastColumnOverrideMaxWidth :boolean,
@@ -157,12 +157,10 @@ class DataTable extends React.Component<Props, State> {
 
     super(props);
 
-    let headerIdToWidthMap :Map<string, number> = this.getHeaderIdToWidthMap(props.headers, props.data);
+    let headerIdToWidthMap :Immutable.Map<string, number> = this.getHeaderIdToWidthMap(props.headers, props.data);
 
     const tableWidth :number = headerIdToWidthMap.reduce(
-      (widthSum :number, columnWidth :number) :number => {
-        return widthSum + columnWidth;
-      },
+      (widthSum :number, columnWidth :number) :number => widthSum + columnWidth,
       0
     );
 
@@ -191,12 +189,11 @@ class DataTable extends React.Component<Props, State> {
     // if either the data changed or the headers changed, we need to setState() again
     if (!this.props.data.equals(nextProps.data) || !this.props.headers.equals(nextProps.headers)) {
 
-      let headerIdToWidthMap :Map<string, number> = this.getHeaderIdToWidthMap(nextProps.headers, nextProps.data);
+      let headerIdToWidthMap :Immutable.Map<string, number> =
+        this.getHeaderIdToWidthMap(nextProps.headers, nextProps.data);
 
       const tableWidth :number = headerIdToWidthMap.reduce(
-        (widthSum :number, columnWidth :number) :number => {
-          return widthSum + columnWidth;
-        },
+        (widthSum :number, columnWidth :number) :number => widthSum + columnWidth,
         0
       );
 
@@ -236,19 +233,21 @@ class DataTable extends React.Component<Props, State> {
     }
   }
 
-  getHeaderIdToWidthMap = (headers :List<Map<string, string>>, data :ListSetMultiMap) :Map<string, number> => {
-
-    return Immutable.OrderedMap().withMutations((map :OrderedMap<string, number>) => {
+  getHeaderIdToWidthMap = (
+    headers :Immutable.List<Immutable.Map<string, string>>,
+    data :ListSetMultiMap
+  ) :Immutable.Map<string, number> =>
+    Immutable.OrderedMap().withMutations((map :OrderedMap<string, number>) => {
 
       // iterate through the results, column by column, and compute an estimated width for each column
-      headers.forEach((header :Map<string, string>) => {
+      headers.forEach((header :Immutable.Map<string, string>) => {
 
         // find the widest cell in the column
         let columnWidth :number = 0;
         let isColumnEmpty :boolean = true;
 
         data.forEach((row :SetMultiMap) => {
-          const cell :Set<any> = row.get(header.get('id'));
+          const cell :Immutable.Set<any> = row.get(header.get('id'));
           if (cell) {
             let cellValue :string = cell;
             if (Immutable.isIndexed(cell)) {
@@ -287,8 +286,7 @@ class DataTable extends React.Component<Props, State> {
 
         map.set(header.get('id'), columnWidthInPixels);
       });
-    });
-  }
+    })
 
   setTableHeadGrid = (tableHeadGridRef :any) => {
 
@@ -308,39 +306,31 @@ class DataTable extends React.Component<Props, State> {
     return this.props.excludeEmptyColumns && columnWidth === 0;
   }
 
-  isLastColumn = (columnIndex :number) :boolean => {
-    return columnIndex + 1 === this.state.headerIdToWidthMap.size;
-  }
+  isLastColumn = (columnIndex :number) :boolean => columnIndex + 1 === this.state.headerIdToWidthMap.size
 
-  getGridColumnWidth = (params :Object) :number => {
-    return this.state.headerIdToWidthMap.get(
-      this.props.headers.getIn([params.index, 'id'], ''),
-      COLUMN_MIN_WIDTH
-    );
-  };
+  getGridColumnWidth = (params :Object) :number => this.state.headerIdToWidthMap.get(
+    this.props.headers.getIn([params.index, 'id'], ''),
+    COLUMN_MIN_WIDTH
+  );
 
-  getGridRowHeight = (params :Object) :number => {
-    return ROW_MIN_HEIGHT; // TODO: implement more intelligently
-  };
+  getGridRowHeight = (params :Object) :number =>
+    ROW_MIN_HEIGHT // TODO: implement more intelligently
+  ;
 
   getCellValue = (rowIndex :number, columnIndex :number) => {
 
     const header :string = this.props.headers.getIn([columnIndex, 'id']);
-    const formatFn :Function = this.props.headers.getIn([columnIndex, 'formatFn'], (value :string) => {
-      return value;
-    });
+    const formatFn :Function = this.props.headers.getIn([columnIndex, 'formatFn'], (value :string) => value);
     let cellValue :string = this.state.data.getIn([rowIndex, header], '');
     if (Immutable.isIndexed(cellValue)) {
-      cellValue = cellValue.map((value) => {
-        return formatFn(value);
-      }).join(', ');
+      cellValue = cellValue.map(value => formatFn(value)).join(', ');
     }
     else cellValue = formatFn(cellValue);
 
     return cellValue;
   }
 
-  getCellValueInRow = (row :Map<string, any>, columnIndex :number) => {
+  getCellValueInRow = (row :Immutable.Map<string, any>, columnIndex :number) => {
 
     const header :string = this.props.headers.getIn([columnIndex, 'id'], '');
 
@@ -498,42 +488,40 @@ class DataTable extends React.Component<Props, State> {
     return (
       <ScrollSync>
         {
-          ({ onScroll, scrollLeft }) => {
-            return (
-              <TableContainer>
-                <TableHeadContainer>
-                  <TableHeadGrid
-                      cellRenderer={this.renderGridHeaderCell}
-                      columnCount={columnCount}
-                      columnWidth={this.getGridColumnWidth}
-                      estimatedColumnSize={COLUMN_MIN_WIDTH}
-                      height={ROW_MIN_HEIGHT}
-                      innerRef={this.setTableHeadGrid}
-                      overscanColumnCount={overscanColumnCount}
-                      overscanRowCount={overscanRowCount}
-                      rowHeight={ROW_MIN_HEIGHT}
-                      rowCount={1}
-                      scrollLeft={scrollLeft}
-                      width={TABLE_MAX_WIDTH} />
-                </TableHeadContainer>
-                <TableBodyContainer gridHeight={gridHeight}>
-                  <TableBodyGrid
-                      cellRenderer={this.renderGridCell}
-                      columnCount={columnCount}
-                      columnWidth={this.getGridColumnWidth}
-                      estimatedColumnSize={COLUMN_MIN_WIDTH}
-                      height={gridHeight}
-                      innerRef={this.setTableBodyGrid}
-                      onScroll={onScroll}
-                      overscanColumnCount={overscanColumnCount}
-                      overscanRowCount={overscanRowCount}
-                      rowCount={rowCount}
-                      rowHeight={this.getGridRowHeight}
-                      width={TABLE_MAX_WIDTH} />
-                </TableBodyContainer>
-              </TableContainer>
-            );
-          }
+          ({ onScroll, scrollLeft }) => (
+            <TableContainer>
+              <TableHeadContainer>
+                <TableHeadGrid
+                    cellRenderer={this.renderGridHeaderCell}
+                    columnCount={columnCount}
+                    columnWidth={this.getGridColumnWidth}
+                    estimatedColumnSize={COLUMN_MIN_WIDTH}
+                    height={ROW_MIN_HEIGHT}
+                    innerRef={this.setTableHeadGrid}
+                    overscanColumnCount={overscanColumnCount}
+                    overscanRowCount={overscanRowCount}
+                    rowHeight={ROW_MIN_HEIGHT}
+                    rowCount={1}
+                    scrollLeft={scrollLeft}
+                    width={TABLE_MAX_WIDTH} />
+              </TableHeadContainer>
+              <TableBodyContainer gridHeight={gridHeight}>
+                <TableBodyGrid
+                    cellRenderer={this.renderGridCell}
+                    columnCount={columnCount}
+                    columnWidth={this.getGridColumnWidth}
+                    estimatedColumnSize={COLUMN_MIN_WIDTH}
+                    height={gridHeight}
+                    innerRef={this.setTableBodyGrid}
+                    onScroll={onScroll}
+                    overscanColumnCount={overscanColumnCount}
+                    overscanRowCount={overscanRowCount}
+                    rowCount={rowCount}
+                    rowHeight={this.getGridRowHeight}
+                    width={TABLE_MAX_WIDTH} />
+              </TableBodyContainer>
+            </TableContainer>
+          )
         }
       </ScrollSync>
     );

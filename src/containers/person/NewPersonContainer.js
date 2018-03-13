@@ -6,7 +6,9 @@ import React from 'react';
 
 import DatePicker from 'react-bootstrap-date-picker';
 import styled from 'styled-components';
+import qs from 'query-string';
 import uuid from 'uuid/v4';
+import moment from 'moment';
 import { Button, Col, FormControl } from 'react-bootstrap';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
@@ -14,7 +16,7 @@ import { connect } from 'react-redux';
 import SelfieWebCam from '../../components/SelfieWebCam';
 import Checkbox from '../../components/controls/StyledCheckbox';
 import { GENDERS, STATES } from '../../utils/consts/Consts';
-import { PaddedRow, TitleLabel } from '../../utils/Layout';
+import { PaddedRow, StyledSelect, TitleLabel } from '../../utils/Layout';
 import { newPersonSubmitRequest } from './PersonActionFactory';
 
 import {
@@ -22,6 +24,7 @@ import {
   CITY_VALUE,
   COUNTRY_VALUE,
   DOB_VALUE,
+  ETHNICITY_VALUE,
   FIRST_NAME_VALUE,
   GENDER_VALUE,
   ID_VALUE,
@@ -29,11 +32,13 @@ import {
   LIVES_AT_ID_VALUE,
   MIDDLE_NAME_VALUE,
   PICTURE_VALUE,
+  RACE_VALUE,
   SSN_VALUE,
   STATE_VALUE,
   ZIP_VALUE,
   newPersonSubmissionConfig
 } from './NewPersonSubmissionConfig';
+import * as Routes from '../../core/router/Routes';
 
 /*
  * styled components
@@ -65,10 +70,19 @@ const Title = styled.h1`
   margin: 20px 0;
 `;
 
+const Instructions = styled.div`
+  font-size: 14px;
+  font-style: italic;
+`;
+
 const SectionHeader = styled.h2`
   font-size: 20px;
   font-weight: 500;
   margin: 10px 0;
+`;
+
+const RequiredTitleLabel = styled(TitleLabel)`
+  font-weight: bold;
 `;
 
 const CenteredSubmitButton = styled(Button).attrs({
@@ -85,6 +99,9 @@ const CenteredSubmitButton = styled(Button).attrs({
 type Props = {
   actions :{
     newPersonSubmitRequest :Function
+  },
+  location :{
+    search :string
   }
 }
 
@@ -93,12 +110,14 @@ type State = {
   cityValue :?string,
   countryValue :?string,
   dobValue :?string,
+  ethnicityValue :?string,
   firstNameValue :?string,
   genderValue :?string,
   isSubmitting :boolean,
   lastNameValue :?string,
   middleNameValue :?string,
   pictureValue :?string,
+  raceValue :?string,
   showSelfieWebCam :boolean,
   ssnValue :?string,
   stateValue :?string,
@@ -113,16 +132,24 @@ class NewPersonContainer extends React.Component<Props, State> {
 
     super(props);
 
+    const optionalParams = qs.parse(props.location.search);
+
+    const firstName = optionalParams[Routes.FIRST_NAME] || '';
+    const lastName = optionalParams[Routes.LAST_NAME] || '';
+    const dob = optionalParams[Routes.DOB] || '';
+
     this.state = {
       [ADDRESS_VALUE]: '',
       [CITY_VALUE]: '',
       [COUNTRY_VALUE]: '',
-      [DOB_VALUE]: '',
-      [FIRST_NAME_VALUE]: '',
+      [DOB_VALUE]: dob,
+      [ETHNICITY_VALUE]: '',
+      [FIRST_NAME_VALUE]: firstName,
       [GENDER_VALUE]: '',
-      [LAST_NAME_VALUE]: '',
+      [LAST_NAME_VALUE]: lastName,
       [MIDDLE_NAME_VALUE]: '',
       [PICTURE_VALUE]: '',
+      [RACE_VALUE]: '',
       [SSN_VALUE]: '',
       [STATE_VALUE]: '',
       [ZIP_VALUE]: '',
@@ -131,20 +158,16 @@ class NewPersonContainer extends React.Component<Props, State> {
     };
   }
 
-  isReadyToSubmit = () :boolean => !!this.state[ADDRESS_VALUE]
-        && !!this.state[CITY_VALUE]
-        && !!this.state[COUNTRY_VALUE]
-        && !!this.state[DOB_VALUE]
+  isReadyToSubmit = () :boolean => !!this.state[DOB_VALUE]
         && !!this.state[FIRST_NAME_VALUE]
-        && !!this.state[GENDER_VALUE]
         && !!this.state[LAST_NAME_VALUE]
-        && !!this.state[STATE_VALUE]
-        && !!this.state[ZIP_VALUE]
 
   handleOnChangeDateOfBirth = (dob :?string) => {
+    const dobMoment = dob ? moment(dob) : null;
+    const dobValue = (dobMoment && dobMoment.isValid()) ? dobMoment.format('YYYY-MM-DD') : '';
 
     this.setState({
-      [DOB_VALUE]: dob || ''
+      [DOB_VALUE]: dobValue
     });
   }
 
@@ -189,11 +212,13 @@ class NewPersonContainer extends React.Component<Props, State> {
       [CITY_VALUE]: this.state[CITY_VALUE],
       [COUNTRY_VALUE]: this.state[COUNTRY_VALUE] || null,
       [DOB_VALUE]: this.state[DOB_VALUE] || null,
+      [ETHNICITY_VALUE]: this.state[ETHNICITY_VALUE] || null,
       [FIRST_NAME_VALUE]: this.state[FIRST_NAME_VALUE] || null,
       [GENDER_VALUE]: this.state[GENDER_VALUE] || null,
       [LAST_NAME_VALUE]: this.state[LAST_NAME_VALUE] || null,
       [MIDDLE_NAME_VALUE]: this.state[MIDDLE_NAME_VALUE] || null,
       [PICTURE_VALUE]: this.state[PICTURE_VALUE] || null,
+      [RACE_VALUE]: this.state[RACE_VALUE] || null,
       [SSN_VALUE]: this.state[SSN_VALUE] || null,
       [STATE_VALUE]: this.state[STATE_VALUE] || null,
       [ZIP_VALUE]: this.state[ZIP_VALUE] || null,
@@ -219,12 +244,13 @@ class NewPersonContainer extends React.Component<Props, State> {
       <ContainerOuterWrapper>
         <ContainerInnerWrapper>
           <Title>Enter New Person Information</Title>
+          <Instructions>* = required field</Instructions>
           <FormWrapper>
             <div>
               <SectionHeader>Personal Information</SectionHeader>
               <PaddedRow>
                 <Col lg={4}>
-                  <TitleLabel>First Name</TitleLabel>
+                  <RequiredTitleLabel>*First Name</RequiredTitleLabel>
                   <FormControl
                       name={FIRST_NAME_VALUE}
                       value={this.state[FIRST_NAME_VALUE]}
@@ -238,7 +264,7 @@ class NewPersonContainer extends React.Component<Props, State> {
                       onChange={this.handleOnChangeInput} />
                 </Col>
                 <Col lg={4}>
-                  <TitleLabel>Last Name</TitleLabel>
+                  <RequiredTitleLabel>*Last Name</RequiredTitleLabel>
                   <FormControl
                       name={LAST_NAME_VALUE}
                       value={this.state[LAST_NAME_VALUE]}
@@ -247,28 +273,42 @@ class NewPersonContainer extends React.Component<Props, State> {
               </PaddedRow>
               <PaddedRow>
                 <Col lg={4}>
-                  <TitleLabel>Date of Birth</TitleLabel>
+                  <RequiredTitleLabel>*Date of Birth</RequiredTitleLabel>
                   <DatePicker
                       value={this.state[DOB_VALUE]}
                       onChange={this.handleOnChangeDateOfBirth} />
                 </Col>
                 <Col lg={4}>
                   <TitleLabel>Gender</TitleLabel>
-                  <FormControl
-                      componentClass="select"
-                      placeholder="select"
+                  <StyledSelect
                       name={GENDER_VALUE}
                       value={this.state[GENDER_VALUE]}
                       onChange={this.handleOnChangeInput}>
                     <option value="">Select</option>
                     { genderOptions }
-                  </FormControl>
+                  </StyledSelect>
                 </Col>
                 <Col lg={4}>
                   <TitleLabel>Social Security Number</TitleLabel>
                   <FormControl
                       name={SSN_VALUE}
                       value={this.state[SSN_VALUE]}
+                      onChange={this.handleOnChangeInput} />
+                </Col>
+              </PaddedRow>
+              <PaddedRow>
+                <Col lg={6}>
+                  <TitleLabel>Race</TitleLabel>
+                  <FormControl
+                      name={RACE_VALUE}
+                      value={this.state[RACE_VALUE]}
+                      onChange={this.handleOnChangeInput} />
+                </Col>
+                <Col lg={6}>
+                  <TitleLabel>Ethnicity</TitleLabel>
+                  <FormControl
+                      name={ETHNICITY_VALUE}
+                      value={this.state[ETHNICITY_VALUE]}
                       onChange={this.handleOnChangeInput} />
                 </Col>
               </PaddedRow>
@@ -294,15 +334,13 @@ class NewPersonContainer extends React.Component<Props, State> {
                 </Col>
                 <Col lg={6}>
                   <TitleLabel>State</TitleLabel>
-                  <FormControl
-                      componentClass="select"
-                      placeholder="select"
+                  <StyledSelect
                       name={STATE_VALUE}
                       value={this.state[STATE_VALUE]}
                       onChange={this.handleOnChangeInput}>
                     <option value="">Select</option>
                     { stateOptions }
-                  </FormControl>
+                  </StyledSelect>
                 </Col>
               </PaddedRow>
               <PaddedRow>

@@ -1,8 +1,9 @@
+/*
+ * @flow
+ */
+
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import {
-  FORM_IDS,
-  LIST_FIELDS
-} from '../../utils/consts/Consts';
+import { FORM_IDS } from '../../utils/consts/Consts';
 
 export const ALIASES = {
   CONTACT_INFO: 'contactinfo',
@@ -13,7 +14,6 @@ export const ALIASES = {
 
   CONTACTED_AT: 'contactedAt',
   EMPLOYED_BY: 'employedBy',
-  GETS_MAIL_AT: 'getsMailAt',
   HAS: 'has',
   INCLUDES: 'includes',
   LIVES_AT: 'livesAt',

@@ -11,39 +11,76 @@ import {
   LOAD_PERSON_DETAILS_SUCCESS,
   SEARCH_PEOPLE_FAILURE,
   SEARCH_PEOPLE_REQUEST,
-  SEARCH_PEOPLE_SUCCESS
+  SEARCH_PEOPLE_SUCCESS,
+  UPDATE_CASE_FAILURE,
+  UPDATE_CASE_REQUEST,
+  UPDATE_CASE_SUCCESS
 } from './PersonActionFactory';
 
 import type { Action } from './PersonActionFactory';
 
-const INITIAL_STATE :Map<*, *> = Immutable.fromJS({
+const INITIAL_STATE :Immutable.Map<*, *> = Immutable.fromJS({
+  isLoadingPeople: false,
   searchResults: Immutable.List(),
   selectedPersonId: '',
-  personDetails: Immutable.List()
+  personDetails: Immutable.List(),
+  loadingCases: false,
+  numCasesToLoad: 0,
+  numCasesLoaded: 0,
+  searchHasRun: false
 });
 
-export default function searchReducer(state :Map<*, *> = INITIAL_STATE, action :Action) {
+export default function searchReducer(state :Immutable.Map<*, *> = INITIAL_STATE, action :Action) {
 
   switch (action.type) {
 
     case CLEAR_SEARCH_RESULTS:
       return state
         .set('searchResults', Immutable.List())
-        .set('personDetails', Immutable.List());
+        .set('personDetails', Immutable.List())
+        .set('searchHasRun', false)
+        .set('isLoadingPeople', false);
 
-    case LOAD_PERSON_DETAILS_FAILURE:
-    case SEARCH_PEOPLE_FAILURE:
     case SEARCH_PEOPLE_REQUEST:
-      return state;
+      return state.set('isLoadingPeople', true);
+
+    case SEARCH_PEOPLE_FAILURE:
+      return state.set('isLoadingPeople', false);
 
     case SEARCH_PEOPLE_SUCCESS:
-      return state.set('searchResults', Immutable.fromJS(action.searchResults.hits));
+      return state
+        .set('searchResults', Immutable.fromJS(action.searchResults.hits))
+        .set('isLoadingPeople', false)
+        .set('searchHasRun', true);
 
     case LOAD_PERSON_DETAILS_REQUEST:
-      return state.set('selectedPersonId', action.id);
+      return state.set('selectedPersonId', action.id).set('loadingCases', true);
 
     case LOAD_PERSON_DETAILS_SUCCESS:
-      return state.set('personDetails', Immutable.fromJS(action.details));
+      return state
+        .set('personDetails', Immutable.fromJS(action.details))
+        .set('loadingCases', false)
+        .set('numCasesToLoad', 0)
+        .set('numCasesLoaded', 0);
+
+    case LOAD_PERSON_DETAILS_FAILURE:
+      return state
+        .set('personDetails', Immutable.List())
+        .set('loadingCases', false)
+        .set('numCasesToLoad', 0)
+        .set('numCasesLoaded', 0);
+
+
+    case UPDATE_CASE_REQUEST:
+      return state
+        .set('numCasesToLoad', state.get('numCasesToLoad') + 1)
+        .set('loadingCases', true);
+
+    case UPDATE_CASE_SUCCESS:
+      return state.set('numCasesLoaded', state.get('numCasesLoaded') + 1);
+
+    case UPDATE_CASE_FAILURE:
+      return state.set('numCasesLoaded', state.get('numCasesLoaded') + 1);
 
     default:
       return state;

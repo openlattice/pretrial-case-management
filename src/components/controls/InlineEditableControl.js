@@ -136,17 +136,23 @@ const STYLE_MAP = {
  *       a Badge inside TextControl
  */
 
-export default class InlineEditableControl extends React.Component {
+type Props = {
+  type :string,
+  size :string,
+  placeholder? :string,
+  value? :string,
+  viewOnly? :boolean,
+  onChange? :(newVal :string) => void,
+  onChangeConfirm? :(newVal :string) => Promise<void>
+};
 
-  static propTypes = {
-    type: React.PropTypes.string.isRequired,
-    size: React.PropTypes.string.isRequired,
-    placeholder: React.PropTypes.string,
-    value: React.PropTypes.string,
-    viewOnly: React.PropTypes.bool,
-    onChange: React.PropTypes.func,
-    onChangeConfirm: React.PropTypes.func
-  };
+type State = {
+  editable :boolean,
+  currentValue :string,
+  previousValue :string
+};
+
+export default class InlineEditableControl extends React.Component<Props, State> {
 
   static defaultProps = {
     placeholder: 'Click to edit...',
@@ -157,13 +163,8 @@ export default class InlineEditableControl extends React.Component {
   };
 
   control :any
-  state :{
-    editable :boolean,
-    currentValue :string,
-    previousValue :string
-  }
 
-  constructor(props :Object) {
+  constructor(props :Props) {
 
     super(props);
 

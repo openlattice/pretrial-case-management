@@ -12,7 +12,7 @@ import * as PsaSagas from '../../containers/psa/FormSagas';
 import * as ReviewSagas from '../../containers/review/ReviewSagas';
 import * as DownloadSagas from '../../containers/download/DownloadSagas';
 import * as EnrollSagas from '../../containers/enroll/EnrollSagas';
-import SubmitDataSaga from '../../utils/submit/SubmitSaga';
+import * as SubmitSagas from '../../utils/submit/SubmitSaga';
 
 export default function* sagas() :Generator<*, *, *> {
 
@@ -25,43 +25,38 @@ export default function* sagas() :Generator<*, *, *> {
     fork(AuthSagas.watchLogout),
 
     // DataSagas
-    fork(DataSagas.deleteEntity),
-    fork(DataSagas.replaceEntity),
+    fork(DataSagas.deleteEntityWatcher),
+    fork(DataSagas.replaceEntityWatcher),
 
     // DownloadSagas
-    fork(DownloadSagas.downloadPSAs),
+    fork(DownloadSagas.downloadPSAsWatcher),
 
     // EnrollSagas
     fork(EnrollSagas.enrollVoiceProfile),
     fork(EnrollSagas.getOrCreateProfile),
 
     // SubmitDataSaga
-    fork(SubmitDataSaga),
+    fork(SubmitSagas.submitWatcher),
 
     // PersonSagas
     fork(PersonSagas.watchLoadPersonDetailsRequest),
     fork(PersonSagas.watchNewPersonSubmitRequest),
     fork(PersonSagas.watchSearchPeopleRequest),
+    fork(PersonSagas.watchUpdateCaseRequest),
 
     // PeopleSagas
     fork(PeopleSagas.getPeopleWatcher),
     fork(PeopleSagas.getPersonDataWatcher),
 
     // PSA Sagas
-    fork(PsaSagas.loadPersonDataModel),
-    fork(PsaSagas.loadPretrialCaseDataModel),
-    fork(PsaSagas.loadRiskFactorsDataModel),
-    fork(PsaSagas.loadPsaDataModel),
-    fork(PsaSagas.loadReleaseRecommendationDataModel),
-    fork(PsaSagas.loadCalculatedForDataModel),
-    fork(PsaSagas.searchPeople),
-    fork(PsaSagas.loadNeighbors),
-    fork(PsaSagas.submitData),
-    fork(PsaSagas.updateReleaseRecommendation),
+    fork(PsaSagas.loadDataModelWatcher),
+    fork(PsaSagas.loadNeighborsWatcher),
+    fork(PsaSagas.submitDataWatcher),
+    fork(PsaSagas.updateReleaseRecommendationWatcher),
 
     // Review Sagas
-    fork(ReviewSagas.downloadPSAReviewPDF),
-    fork(ReviewSagas.loadPSAsByDate),
-    fork(ReviewSagas.updateScoresAndRiskFactors)
+    fork(ReviewSagas.downloadPSAReviewPDFWatcher),
+    fork(ReviewSagas.loadPSAsByDateWatcher),
+    fork(ReviewSagas.updateScoresAndRiskFactorsWatcher)
   ];
 }

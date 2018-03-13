@@ -19,23 +19,23 @@ export function configureLattice(authToken :?string) :void {
   Lattice.configure({ authToken, baseUrl });
 }
 
-export function formatValue(rawValue :string|string[]) {
-  if (rawValue instanceof Array) {
-    return rawValue.join(', ');
+export function formatValue(rawValue :string | string[]) :string {
+  if (!rawValue || (!rawValue.length && !rawValue.size)) return '';
+  if (typeof rawValue === 'string') {
+    return rawValue || '';
   }
-  return rawValue || '';
+  return rawValue.join(', ');
 }
 
-export function formatDate(dateString :string) {
+export function formatDate(dateString :string, optionalFormat :?string) :string {
   if (!dateString) return '';
   const date = moment.utc(dateString);
-  if (!date) return dateString;
-  return date.format('MM/DD/YYYY');
+  if (!date || !date.isValid) return dateString;
+  const format = optionalFormat || 'MM/DD/YYYY';
+  return date.format(format);
 }
 
-export function formatDateList(dateList :string[]) {
-  if (!dateList || !dateList.length) return '';
-  return dateList.map((dateString) => {
-    return formatDate(dateString);
-  }).join(', ');
+export function formatDateList(dateList :string[], optionalFormat :?string) :string {
+  if (!dateList || (!dateList.length && !dateList.size)) return '';
+  return dateList.map(dateString => formatDate(dateString, optionalFormat)).join(', ');
 }

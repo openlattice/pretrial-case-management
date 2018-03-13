@@ -1,3 +1,7 @@
+/*
+ * @flow
+ */
+
 export const MAX_PAGE = 5;
 
 export const FORM_PATHS = {
@@ -110,7 +114,11 @@ export const PSA = {
   PRIOR_VIOLENT_CONVICTION: 'priorViolentConviction',
   PRIOR_FAILURE_TO_APPEAR_RECENT: 'priorFailureToAppearRecent',
   PRIOR_FAILURE_TO_APPEAR_OLD: 'priorFailureToAppearOld',
-  PRIOR_SENTENCE_TO_INCARCERATION: 'priorSentenceToIncarceration'
+  PRIOR_SENTENCE_TO_INCARCERATION: 'priorSentenceToIncarceration',
+
+  // optional values
+  PRIOR_CONVICTION: 'priorConviction',
+  CURRENT_VIOLENT_OFFENSE_AND_YOUNG: 'currentViolentOffenseAndYoung'
 };
 
 export const FORM_IDS = {

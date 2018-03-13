@@ -3,16 +3,23 @@
  */
 
 import React from 'react';
-import PropTypes from 'prop-types';
+import Immutable from 'immutable';
+import styled from 'styled-components';
 import { FormGroup, Col } from 'react-bootstrap';
 
 import SectionView from '../SectionView';
 import Radio from '../controls/StyledRadio';
 
 import {
+  getViolentCharges,
+  getPendingCharges,
+  getPreviousMisdemeanors,
+  getPreviousFelonies,
+  getPreviousViolentCharges
+} from '../../utils/AutofillUtils';
+
+import {
   PaddedRow,
-  UnpaddedRow,
-  FormWrapper,
   TitleLabel,
   SubmitButtonWrapper,
   SubmitButton,
@@ -20,7 +27,10 @@ import {
   Divider
 } from '../../utils/Layout';
 
+import { formatValue } from '../../utils/Utils';
+
 import { PSA } from '../../utils/consts/Consts';
+import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import {
   CURRENT_AGE_PROMPT,
   CURRENT_VIOLENT_OFFENSE_PROMPT,
@@ -45,114 +55,187 @@ const {
   PRIOR_SENTENCE_TO_INCARCERATION
 } = PSA;
 
+const StyledFormWrapper = styled.div`
+  margin: 0 60px 0 60px;
+`;
+
+const PSACol = styled(Col)`
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+`;
+
+const JustificationTitle = styled.div`
+  font-size: 16px;
+  margin: 10px 0;
+  font-style: italic;
+  padding-top: 10px;
+  border-top: 1px solid #ddd
+`;
+
+const FootnoteNumber = styled.span`
+  font-weight: bold;
+  font-size: 14px;
+`;
+
+const NoResultsText = styled.span`
+  font-style: italic;
+  color: #777;
+`;
+
+type Props = {
+  handleSingleSelection :(event :Object) => void,
+  input :Immutable.Map<*, *>,
+  handleSubmit :(event :Object) => void,
+  incompleteError :boolean,
+  currCharges :Immutable.List<*>,
+  currCase :Immutable.Map<*, *>,
+  allCharges :Immutable.List<*>,
+  allCases :Immutable.List<*>
+};
+
 const PSAInputForm = ({
-  section,
   handleSingleSelection,
   input,
   handleSubmit,
-  incompleteError
-}) => {
+  incompleteError,
+  isReview,
+  currCharges,
+  currCase,
+  allCharges,
+  allCases
+} :Props) => {
 
-  const noPriorConvictions = input.priorMisdemeanor === 'false' && input.priorFelony === 'false';
+  const noPriorConvictions = input.get(PRIOR_MISDEMEANOR) === 'false' && input.get(PRIOR_FELONY) === 'false';
 
-  const renderHeader = header => (
-    <Col lg={4}>
-      <TitleLabel>{header}</TitleLabel>
-    </Col>
-  );
+  const renderItem = (valueList) => {
+    if (!valueList.size) return <NoResultsText>No matching charges found in Odyssey</NoResultsText>;
+    return <span>{formatValue(valueList)}</span>;
+  };
 
-  const renderHeaders = (header1, header2, header3) => (
-    <UnpaddedRow>
-      {renderHeader(header1)}
-      {renderHeader(header2)}
-      {renderHeader(header3)}
-    </UnpaddedRow>
-  );
+  const renderAutofillJustifications = () => {
+    const currCaseNum = currCase.getIn([PROPERTY_TYPES.CASE_ID, 0], '');
+    const arrestDate = currCase.getIn([PROPERTY_TYPES.FILE_DATE, 0], currCase.getIn([PROPERTY_TYPES.FILE_DATE, 0], ''));
+    const mostSeriousCharge = currCase.getIn([PROPERTY_TYPES.MOST_SERIOUS_CHARGE_NO, 0], '');
+
+    const currentViolentCharges = getViolentCharges(currCharges, mostSeriousCharge);
+    const pendingCharges = getPendingCharges(currCaseNum, arrestDate, allCases, allCharges);
+    const priorMisdemeanors = getPreviousMisdemeanors(allCharges);
+    const priorFelonies = getPreviousFelonies(allCharges);
+    const priorViolentConvictions = getPreviousViolentCharges(allCharges);
+
+    return (
+      <div>
+        <JustificationTitle>Autofill Logic</JustificationTitle>
+        <div>
+          <FootnoteNumber>2: </FootnoteNumber>
+          <span>{renderItem(currentViolentCharges)}</span>
+        </div>
+        <div>
+          <FootnoteNumber>3: </FootnoteNumber>
+          <span>{renderItem(pendingCharges)}</span>
+        </div>
+        <div>
+          <FootnoteNumber>4: </FootnoteNumber>
+          <span>{renderItem(priorMisdemeanors)}</span>
+        </div>
+        <div>
+          <FootnoteNumber>5: </FootnoteNumber>
+          <span>{renderItem(priorFelonies)}</span>
+        </div>
+        <div>
+          <FootnoteNumber>6: </FootnoteNumber>
+          <span>{renderItem(priorViolentConvictions)}</span>
+        </div>
+      </div>
+    );
+  };
 
   const renderRadio = (name, value, label, disabledField) => (
     <Radio
-        dataSection={section}
         name={name}
         value={`${value}`}
-        checked={input[name] === `${value}`}
+        checked={input.get(name) === `${value}`}
         onChange={handleSingleSelection}
         disabled={disabledField && disabledField !== undefined}
         label={label} />
   );
 
-  const renderTrueFalseRadio = (name, disabledField) => (
-    <Col lg={4}>
+  const renderTrueFalseRadio = (name, header, disabledField) => (
+    <PSACol lg={4}>
+      <TitleLabel>{header}</TitleLabel>
       <FormGroup>
         {renderRadio(name, false, 'No', disabledField)}
         {renderRadio(name, true, 'Yes', disabledField)}
       </FormGroup>
-    </Col>
+    </PSACol>
   );
 
   return (
     <div>
       <Divider />
-      <FormWrapper>
+      <StyledFormWrapper>
         <form onSubmit={handleSubmit}>
           <SectionView header="PSA Information">
 
-            {renderHeaders(CURRENT_AGE_PROMPT, CURRENT_VIOLENT_OFFENSE_PROMPT, PENDING_CHARGE_PROMPT)}
-
             <PaddedRow>
-              <Col lg={4}>
+              <PSACol lg={4}>
+                <TitleLabel>{CURRENT_AGE_PROMPT}</TitleLabel>
                 <FormGroup>
                   {renderRadio(AGE_AT_CURRENT_ARREST, 0, '20 or younger')}
                   {renderRadio(AGE_AT_CURRENT_ARREST, 1, '21 or 22')}
                   {renderRadio(AGE_AT_CURRENT_ARREST, 2, '23 or older')}
                 </FormGroup>
-              </Col>
+              </PSACol>
 
-              {renderTrueFalseRadio(CURRENT_VIOLENT_OFFENSE)}
+              {renderTrueFalseRadio(CURRENT_VIOLENT_OFFENSE, CURRENT_VIOLENT_OFFENSE_PROMPT)}
 
-              {renderTrueFalseRadio(PENDING_CHARGE)}
+              {renderTrueFalseRadio(PENDING_CHARGE, PENDING_CHARGE_PROMPT)}
 
             </PaddedRow>
 
-            {renderHeaders(PRIOR_MISDEMEANOR_PROMPT, PRIOR_FELONY_PROMPT, PRIOR_VIOLENT_CONVICTION_PROMPT)}
-
             <PaddedRow>
 
-              {renderTrueFalseRadio(PRIOR_MISDEMEANOR)}
+              {renderTrueFalseRadio(PRIOR_MISDEMEANOR, PRIOR_MISDEMEANOR_PROMPT)}
 
-              {renderTrueFalseRadio(PRIOR_FELONY)}
+              {renderTrueFalseRadio(PRIOR_FELONY, PRIOR_FELONY_PROMPT)}
 
-              <Col lg={4}>
+              <PSACol lg={4}>
+                <TitleLabel>{PRIOR_VIOLENT_CONVICTION_PROMPT}</TitleLabel>
                 <FormGroup>
                   {renderRadio(PRIOR_VIOLENT_CONVICTION, 0, '0', noPriorConvictions)}
                   {renderRadio(PRIOR_VIOLENT_CONVICTION, 1, '1', noPriorConvictions)}
                   {renderRadio(PRIOR_VIOLENT_CONVICTION, 2, '2', noPriorConvictions)}
                   {renderRadio(PRIOR_VIOLENT_CONVICTION, 3, '3 or more', noPriorConvictions)}
                 </FormGroup>
-              </Col>
+              </PSACol>
 
             </PaddedRow>
 
-            {renderHeaders(
-              PRIOR_FAILURE_TO_APPEAR_RECENT_PROMPT,
-              PRIOR_FAILURE_TO_APPEAR_OLD_PROMPT,
-              PRIOR_SENTENCE_TO_INCARCERATION_PROMPT
-            )}
-
-
             <PaddedRow>
-              <Col lg={4}>
+              <PSACol lg={4}>
+                <TitleLabel>{PRIOR_FAILURE_TO_APPEAR_RECENT_PROMPT}</TitleLabel>
                 <FormGroup>
                   {renderRadio(PRIOR_FAILURE_TO_APPEAR_RECENT, 0, '0')}
                   {renderRadio(PRIOR_FAILURE_TO_APPEAR_RECENT, 1, '1')}
                   {renderRadio(PRIOR_FAILURE_TO_APPEAR_RECENT, 2, '2 or more')}
                 </FormGroup>
-              </Col>
+              </PSACol>
 
-              {renderTrueFalseRadio(PRIOR_FAILURE_TO_APPEAR_OLD)}
+              {renderTrueFalseRadio(PRIOR_FAILURE_TO_APPEAR_OLD, PRIOR_FAILURE_TO_APPEAR_OLD_PROMPT)}
 
-              {renderTrueFalseRadio(PRIOR_SENTENCE_TO_INCARCERATION, noPriorConvictions)}
+              {renderTrueFalseRadio(
+                PRIOR_SENTENCE_TO_INCARCERATION,
+                PRIOR_SENTENCE_TO_INCARCERATION_PROMPT,
+                noPriorConvictions
+              )}
 
             </PaddedRow>
+
+            {
+              isReview ? null : renderAutofillJustifications()
+            }
+
             {
               incompleteError ? <ErrorMessage>All fields must be filled out.</ErrorMessage> : null
             }
@@ -162,17 +245,9 @@ const PSAInputForm = ({
             <SubmitButton type="submit" bsStyle="primary" bsSize="lg">Score & Submit</SubmitButton>
           </SubmitButtonWrapper>
         </form>
-      </FormWrapper>
+      </StyledFormWrapper>
     </div>
   );
-};
-
-PSAInputForm.propTypes = {
-  section: PropTypes.string.isRequired,
-  handleSingleSelection: PropTypes.func.isRequired,
-  input: PropTypes.object.isRequired,
-  handleSubmit: PropTypes.func.isRequired,
-  incompleteError: PropTypes.bool.isRequired
 };
 
 export default PSAInputForm;

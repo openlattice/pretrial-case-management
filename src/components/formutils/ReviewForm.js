@@ -1,6 +1,9 @@
-import React from 'react';
+/*
+ * @flow
+ */
+
+import * as React from 'react';
 import { Link } from 'react-router-dom';
-import PropTypes from 'prop-types';
 import styled from 'styled-components';
 
 import { SectionHeader } from '../../utils/Layout';
@@ -22,34 +25,30 @@ const StyledSection = styled.div`
 `;
 
 
-const getSections = (pages, formPath) => {
-  return pages.map((Page, index) => {
-    const sectionKey = `section-${index}`;
-    return (
-      <StyledSection key={sectionKey}>
-        <StyledSectionHeaderWrapper>
-          <EditLink to={`${formPath}/${index + 2}`}>edit</EditLink>
-        </StyledSectionHeaderWrapper>
-        <Page />
-      </StyledSection>
-    );
-  });
-};
-
-const ReviewForm = ({ pages, formPath }) => {
+const getSections = (pages, formPath) => pages.map((Page, index) => {
+  const sectionKey = `section-${index}`;
   return (
-    <div>
-      <div>
-        <SectionHeader>Review</SectionHeader>
-        {getSections(pages, formPath)}
-      </div>
-    </div>
+    <StyledSection key={sectionKey}>
+      <StyledSectionHeaderWrapper>
+        <EditLink to={`${formPath}/${index + 2}`}>edit</EditLink>
+      </StyledSectionHeaderWrapper>
+      <Page />
+    </StyledSection>
   );
+});
+
+type Props = {
+  pages :React.ComponentType<*>[],
+  formPath :string
 };
 
-ReviewForm.propTypes = {
-  pages: PropTypes.array.isRequired,
-  formPath: PropTypes.string.isRequired
-};
+const ReviewForm = ({ pages, formPath } :Props) => (
+  <div>
+    <div>
+      <SectionHeader>Review</SectionHeader>
+      {getSections(pages, formPath)}
+    </div>
+  </div>
+);
 
 export default ReviewForm;

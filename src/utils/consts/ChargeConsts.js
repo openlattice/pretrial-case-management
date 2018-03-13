@@ -1,6 +1,21 @@
+/*
+ * @flow
+ */
+
+import Immutable from 'immutable';
+
+import { PROPERTY_TYPES } from './DataModelConsts';
+import { formatValue, formatDateList } from '../Utils';
+
+const {
+  CHARGE_ID,
+  CHARGE_STATUTE,
+  DISPOSITION_DATE
+} = PROPERTY_TYPES;
+
 const VIOLENT_CHARGES = [
   '16-10-32',
-  '22-41-1',
+  '22-4-1',
   '22-4-2',
   '22-4a-1',
   '22-8-12',
@@ -63,18 +78,81 @@ const VIOLENT_CHARGES = [
   '26-10-30'
 ];
 
-const stripDegree = chargeNum => chargeNum.trim().split('(')[0];
+const GUILTY_DISPOSITIONS = [
+  'Convicted at Trial',
+  'Convicted at Trial/Punishment Enhanced by Part II Info',
+  'Conviction-Death Penalty',
+  'Guilty But Mentally Ill',
+  'Jail',
+  'Judgment on Plea of Guilty',
+  'No Formal Action',
+  'Punishment Enhanced by Part II Information',
+  'Restitution',
+  'Stipulate to Facts-Found Guilty',
+  'Suspended Execution of Sentence',
+  'Suspended Execution of Sentence Revoked and Released',
+  'Suspended Execution Revocation to Jail',
+  'Suspended Execution Revocation to Penitentiary',
+  'Suspended Execution Revocation/Continued on Probation',
+  'Stipulate to Facts-Found Guilty',
+  'Suspended Execution of Sentence',
+  'Suspended Execution of Sentence Revoked and Released',
+  'Suspended Imposition of Sentence',
+  'Suspended Imposition Revocation to Jail',
+  'Suspended Imposition Revocation to Penitentiary',
+  'Suspended Imposition Revocation/Continued on Probation',
+  'Suspended Imposition Revoked/Released'
+];
 
-export const chargeIsViolent = chargeNum => VIOLENT_CHARGES.includes(stripDegree(chargeNum));
+const stripDegree = (chargeNum :string) :string => chargeNum.trim().split('(')[0];
 
-export const chargeFieldIsViolent = (chargeField) => {
-  let violent = false;
-  if (chargeField && chargeField.length) {
-    chargeField.forEach((chargeNum) => {
-      if (chargeIsViolent(chargeNum)) violent = true;
+export const chargeIsViolent = (chargeNum :string) :boolean => VIOLENT_CHARGES.includes(stripDegree(chargeNum));
+
+export const getUnique = (valueList :Immutable.List<string>) :Immutable.List<string> =>
+  valueList.filter((val, index) => valueList.indexOf(val) === index);
+
+export const getViolentChargeNums = (chargeFields :Immutable.List<string>) :Immutable.List<string> =>
+  getUnique(chargeFields.filter(charge => charge && chargeIsViolent(charge)));
+
+export const chargeFieldIsViolent = (chargeField :Immutable.List<string>) => getViolentChargeNums(chargeField).size > 0;
+
+export const dispositionIsGuilty = (disposition :string) :boolean => GUILTY_DISPOSITIONS.includes(disposition);
+
+export const dispositionFieldIsGuilty = (dispositionField :Immutable.List<string>) :boolean => {
+  let guilty = false;
+  if (dispositionField.size) {
+    dispositionField.forEach((disposition) => {
+      if (dispositionIsGuilty(disposition)) guilty = true;
     });
   }
-  return violent;
+  return guilty;
+};
+
+export const degreeFieldIsMisdemeanor = (degreeField :Immutable.List<string>) :boolean => {
+  let result = false;
+  degreeField.forEach((degree) => {
+    if (degree.toLowerCase().startsWith('m')) result = true;
+  });
+  return result;
+};
+
+export const degreeFieldIsFelony = (degreeField :Immutable.List<string>) :boolean => {
+  let result = false;
+  degreeField.forEach((degree) => {
+    if (degree.toLowerCase().startsWith('f')) result = true;
+  });
+  return result;
+};
+
+export const getChargeTitle = (charge :Immutable.Map<*, *>) :string => {
+  const caseNum = charge.getIn([CHARGE_ID, 0], '').split('|')[0];
+  const degree = formatValue(charge.get(CHARGE_STATUTE, Immutable.List()));
+  const dispositionDate = formatDateList(charge.get(DISPOSITION_DATE, Immutable.List()));
+  let val = '';
+  if (caseNum.length) val = `${caseNum} `;
+  val = `${val}${degree}`;
+  if (dispositionDate && dispositionDate.length) val = `${val} (${dispositionDate})`;
+  return val;
 };
 
 export default VIOLENT_CHARGES;

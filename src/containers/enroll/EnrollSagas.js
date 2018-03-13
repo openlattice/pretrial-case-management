@@ -77,23 +77,20 @@ export function* getOrCreateProfile() :Generator<> {
       const neighbors = yield call(SearchApi.searchEntityNeighbors, personEntitySetId, personEntityKeyId);
 
       const idsToTry = {};
-      neighbors.forEach((neighborObj) => {
-        const entitySet = neighborObj.neighborEntitySet;
-        if (entitySet && entitySet.name === ENTITY_SETS.SPEAKER_RECOGNITION_PROFILES) {
-          const ids = neighborObj.neighborDetails[PROPERTY_TYPES.GENERAL_ID_FQN];
-          if (ids && ids.length) {
-            const id = ids[0];
-            const pins = neighborObj.neighborDetails[PROPERTY_TYPES.PIN];
-            const pin = pins ? pins[0] : undefined;
-            idsToTry[id] = pin;
+      if (neighbors) {
+        neighbors.forEach((neighborObj) => {
+          const entitySet = neighborObj.neighborEntitySet;
+          if (entitySet && entitySet.name === ENTITY_SETS.SPEAKER_RECOGNITION_PROFILES) {
+            const ids = neighborObj.neighborDetails[PROPERTY_TYPES.GENERAL_ID];
+            if (ids && ids.length) {
+              const id = ids[0];
+              const pins = neighborObj.neighborDetails[PROPERTY_TYPES.PIN];
+              const pin = pins ? pins[0] : undefined;
+              idsToTry[id] = pin;
+            }
           }
-        }
-      });
-
-      console.log('ids to try')
-      console.log(idsToTry)
-      console.log('url')
-      console.log(`${BASE_URL}/${PROFILES}`)
+        });
+      }
 
       let profile;
       let pin;
@@ -101,19 +98,13 @@ export function* getOrCreateProfile() :Generator<> {
       if (Object.keys(idsToTry).length) {
         const idList = (idsToTry.length > 3) ? Object.keys(idsToTry).splice(0, 3) : Object.keys(idsToTry);
         const requests = idList.map(id => call(tryLoadProfile, id));
-        console.log('requests')
-        console.log(requests)
         const profiles = yield all(requests);
-        console.log('profiles')
-        console.log(profiles)
         const successfulProfiles = profiles.filter(p => p);
         if (successfulProfiles.length) {
           [profile] = successfulProfiles;
           pin = idsToTry[profile.data.verificationProfileId];
         }
       }
-      console.log('profile')
-      console.log(profile)
 
       if (!profile || !profile.data || !profile.data.verificationProfileId) {
         const createProfileRequest = {
@@ -134,29 +125,21 @@ export function* getOrCreateProfile() :Generator<> {
 
         const [subjectId, generalId, timestampId, pinId] = yield all([
           call(EntityDataModelApi.getPropertyTypeId, getFqnObj(PROPERTY_TYPES.PERSON_ID)),
-          call(EntityDataModelApi.getPropertyTypeId, getFqnObj(PROPERTY_TYPES.GENERAL_ID_FQN)),
-          call(EntityDataModelApi.getPropertyTypeId, getFqnObj(PROPERTY_TYPES.TIMESTAMP)),
+          call(EntityDataModelApi.getPropertyTypeId, getFqnObj(PROPERTY_TYPES.GENERAL_ID)),
+          call(EntityDataModelApi.getPropertyTypeId, getFqnObj(PROPERTY_TYPES.COMPLETED_DATE_TIME)),
           call(EntityDataModelApi.getPropertyTypeId, getFqnObj(PROPERTY_TYPES.PIN))
         ]);
-
-        console.log({ subjectId, generalId, timestampId, pinId })
 
         const [voiceEntitySetId, registeredForEntitySetId] = yield all([
           call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.SPEAKER_RECOGNITION_PROFILES),
           call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.REGISTERED_FOR)
         ]);
 
-        console.log({ voiceEntitySetId, registeredForEntitySetId })
-
-
         const [personSyncId, voiceSyncId, registeredForSyncId] = yield all([
           call(SyncApi.getCurrentSyncId, personEntitySetId),
           call(SyncApi.getCurrentSyncId, voiceEntitySetId),
           call(SyncApi.getCurrentSyncId, registeredForEntitySetId)
         ]);
-
-        console.log({ personSyncId, voiceSyncId, registeredForSyncId })
-
 
         const personDetails = {
           [subjectId]: [personId]
@@ -195,9 +178,6 @@ export function* getOrCreateProfile() :Generator<> {
           call(DataApi.acquireSyncTicket, registeredForEntitySetId, registeredForSyncId)
         ]);
 
-        console.log({ syncTickets })
-
-
         const entities = [{
           key: personEntityKey,
           details: personDetails
@@ -212,20 +192,16 @@ export function* getOrCreateProfile() :Generator<> {
           details: registeredForDetails
         }];
 
-        console.log({ entities, associations })
-
         yield call(DataApi.createEntityAndAssociationData, { syncTickets, entities, associations });
         yield put(getProfileSuccess(speakerVerificationId, `${newPin}`, 0));
       }
       else {
         if (!pin) pin = yield call(getPin, profile.data.verificationProfileId);
-        console.log('pin is')
-        console.log(pin)
-        console.log(pin.toString())
         yield put(getProfileSuccess(profile.data.verificationProfileId, `${pin}`, profile.data.enrollmentsCount));
       }
     }
     catch (error) {
+      console.error(error)
       yield put(getProfileFailure(`Unable to load or create profile for user with id ${personId}.`));
     }
   }
@@ -252,7 +228,7 @@ export function* enrollVoiceProfile() :Generator<> {
       yield call(axios, enrollRequest);
 
       const [generalId, audioId] = yield all([
-        call(EntityDataModelApi.getPropertyTypeId, getFqnObj(PROPERTY_TYPES.GENERAL_ID_FQN)),
+        call(EntityDataModelApi.getPropertyTypeId, getFqnObj(PROPERTY_TYPES.GENERAL_ID)),
         call(EntityDataModelApi.getPropertyTypeId, getFqnObj(PROPERTY_TYPES.AUDIO_SAMPLE))
       ]);
 

@@ -1,3 +1,7 @@
+/*
+ * @flow
+ */
+
 import styled from 'styled-components';
 import FontAwesome from 'react-fontawesome';
 import { Link } from 'react-router-dom';
@@ -79,15 +83,11 @@ export const InlineCheckbox = styled(Checkbox)`
   margin-left: 0 !important;
 `;
 
-export const InputWrapper = styled(({ flex, children, ...rest }) => {
-  return (
-    <FormGroup {...rest}>{children}</FormGroup>
-  );
-})`
+export const InputWrapper = styled(({ flex, children, ...rest }) => (
+  <FormGroup {...rest}>{children}</FormGroup>
+))`
   padding-right: 30px;
-  flex: ${(props) => {
-    return props.flex || FLEX.COL_1_3;
-  }};
+  flex: ${props => props.flex || FLEX.COL_1_3};
 `;
 
 export const OtherWrapper = styled.span`
@@ -414,4 +414,23 @@ export const CloseX = styled(FontAwesome)`
 
 export const StyledTopFormNavBuffer = styled.div`
   height: 55px;
+`;
+
+export const ErrorMessage = styled.div`
+  text-align: center;
+  color: red;
+`;
+
+export const StyledSelect = styled.select`
+  height: 34px;
+  width: 100%;
+  background: transparent;
+  border: 1px solid rgb(204, 204, 204);
+  box-shadow: rgba(0, 0, 0, 0.075) 0px 1px 1px inset;
+
+  &:focus {
+    border-color: #66afe9;
+    outline: 0;
+    box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(102,175,233,.6);
+  }
 `;

@@ -1,3 +1,7 @@
+/*
+ * @flow
+ */
+
 export const ENTITY_SETS = {
   PEOPLE: 'southdakotapeople',
   ADDRESSES: 'southdakotaaddresses',
@@ -6,12 +10,13 @@ export const ENTITY_SETS = {
   PSA_RISK_FACTORS: 'southdakotapsariskfactors',
   PSA_SCORES: 'southdakotapsas',
   RELEASE_RECOMMENDATIONS: 'southdakotareleaserecommendations',
+  STAFF: 'southdakotastaff',
+  ASSESSED_BY: 'southdakotaassessedby',
   SPEAKER_RECOGNITION_PROFILES: 'southdakotaspeakerverificationprofiles',
 
   // association entity sets
   APPEARS_IN: 'southdakotaappearsin',
   LIVES_AT: 'southdakotalivesat',
-  GETS_MAIL_AT: 'southdakotagetsmailat',
   CALCULATED_FOR: 'southdakotacalculatedfor',
   CHARGED_WITH: 'southdakotachargedwith',
   REGISTERED_FOR: 'southdakotaregisteredfor'
@@ -19,11 +24,12 @@ export const ENTITY_SETS = {
 
 export const PROPERTY_TYPES = {
   STRING_ID: 'general.stringid',
-  TIMESTAMP: 'date.completeddatetime',
+  COMPLETED_DATE_TIME: 'date.completeddatetime',
 
   FIRST_NAME: 'nc.PersonGivenName',
   LAST_NAME: 'nc.PersonSurName',
   MIDDLE_NAME: 'nc.PersonMiddleName',
+  SUFFIX: 'nc.PersonSuffix',
   DOB: 'nc.PersonBirthDate',
   SEX: 'nc.PersonSex',
   RACE: 'nc.PersonRace',
@@ -41,39 +47,45 @@ export const PROPERTY_TYPES = {
   ZIP: 'location.zip',
 
   // Pretrial case entity type consts
-  CASE_ID_FQN: 'j.CaseNumberText',
-  ARREST_DATE_FQN: 'publicsafety.ArrestDate',
+  CASE_ID: 'j.CaseNumberText',
+  ARREST_DATE: 'publicsafety.ArrestDate',
+  FILE_DATE: 'publicsafety.FileDate',
   MOST_SERIOUS_CHARGE_NO: 'publicsafety.MostSeriousChargeStatuteNumber',
   MOST_SERIOUS_CHARGE_DESC: 'publicsafety.MostSeriousStatuteDescription',
   MOST_SERIOUS_CHARGE_DEG: 'publicsafety.MostSeriousChargeDegree',
-  NUMBER_OF_CHARGES_FQN: 'publicsafety.NumberOfCharges',
+  NUMBER_OF_CHARGES: 'publicsafety.NumberOfCharges',
 
   // Charge entity type consts
-  CHARGE_ID_FQN: 'justice.ArrestTrackingNumber',
-  CHARGE_NUM_FQN: 'event.OffenseLocalCodeSection',
-  CHARGE_DESCRIPTION_FQN: 'event.OffenseLocalDescription',
-  CHARGE_DEGREE_FQN: 'event.ChargeLevelState',
+  CHARGE_ID: 'justice.ArrestTrackingNumber',
+  CHARGE_STATUTE: 'event.OffenseLocalCodeSection',
+  CHARGE_DESCRIPTION: 'event.OffenseLocalDescription',
+  CHARGE_DEGREE: 'event.ChargeLevelState',
+  CHARGE_LEVEL: 'event.ChargeLevel',
+  DISPOSITION_DATE: 'justice.dispositiondate',
+  DISPOSITION: 'justice.disposition',
+  PLEA: 'justice.plea',
+  PLEA_DATE: 'justice.pleadate',
 
   // PSA form entity type consts
-  AGE_AT_CURRENT_ARREST_FQN: 'psa.AgeAtCurrentArrest',
-  CURRENT_VIOLENT_OFFENSE_FQN: 'psa.CurrentViolentOffense',
-  CURRENT_VIOLENT_OFFENSE_AND_YOUNG_FQN: 'psa.CurrentViolentOffenseAnd20OrYounger',
-  PENDING_CHARGE_FQN: 'psa.PendingCharge',
-  PRIOR_MISDEMEANOR_FQN: 'psa.PriorMisdemeanorConviction',
-  PRIOR_FELONY_FQN: 'psa.PriorFelonyConviction',
-  PRIOR_CONVICTION_FQN: 'psa.PriorConviction',
-  PRIOR_VIOLENT_CONVICTION_FQN: 'psa.PriorViolentConviction',
-  PRIOR_FAILURE_TO_APPEAR_RECENT_FQN: 'psa.PriorFailureToAppearWithinTwoYears',
-  PRIOR_FAILURE_TO_APPEAR_OLD_FQN: 'psa.PriorFailureToAppearOlderThanTwoYears',
-  PRIOR_SENTENCE_TO_INCARCERATION_FQN: 'psa.PriorSentenceToIncarceration',
-  NVCA_FLAG_FQN: 'psa.nvcaFlag',
-  NCA_SCALE_FQN: 'psa.ncaScale',
-  FTA_SCALE_FQN: 'psa.ftaScale',
-  TIMESTAMP_FQN: 'psa.GeneratedDate',
+  AGE_AT_CURRENT_ARREST: 'psa.AgeAtCurrentArrest',
+  CURRENT_VIOLENT_OFFENSE: 'psa.CurrentViolentOffense',
+  CURRENT_VIOLENT_OFFENSE_AND_YOUNG: 'psa.CurrentViolentOffenseAnd20OrYounger',
+  PENDING_CHARGE: 'psa.PendingCharge',
+  PRIOR_MISDEMEANOR: 'psa.PriorMisdemeanorConviction',
+  PRIOR_FELONY: 'psa.PriorFelonyConviction',
+  PRIOR_CONVICTION: 'psa.PriorConviction',
+  PRIOR_VIOLENT_CONVICTION: 'psa.PriorViolentConviction',
+  PRIOR_FAILURE_TO_APPEAR_RECENT: 'psa.PriorFailureToAppearWithinTwoYears',
+  PRIOR_FAILURE_TO_APPEAR_OLD: 'psa.PriorFailureToAppearOlderThanTwoYears',
+  PRIOR_SENTENCE_TO_INCARCERATION: 'psa.PriorSentenceToIncarceration',
+  NVCA_FLAG: 'psa.nvcaFlag',
+  NCA_SCALE: 'psa.ncaScale',
+  FTA_SCALE: 'psa.ftaScale',
+  TIMESTAMP: 'psa.GeneratedDate',
 
   // Release recommendation entity type consts
-  GENERAL_ID_FQN: 'general.id',
-  RELEASE_RECOMMENDATION_FQN: 'publicsafety.recommendation',
+  GENERAL_ID: 'general.id',
+  RELEASE_RECOMMENDATION: 'publicsafety.recommendation',
 
   // Vocie recognition entity type consts
   AUDIO_SAMPLE: 'media.audio',

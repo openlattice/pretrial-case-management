@@ -4,7 +4,6 @@
 
 import React from 'react';
 
-import PropTypes from 'prop-types';
 import styled from 'styled-components';
 
 import { Button } from 'react-bootstrap';
@@ -33,14 +32,14 @@ function mapDispatchToProps(dispatch :Function) {
   };
 }
 
-const LogoutButton = ({ actions }) => (
+type Props = {
+  actions :{
+    logout :() => void
+  }
+};
+
+const LogoutButton = ({ actions } :Props) => (
   <StyledLogoutButton onClick={actions.logout}>Logout</StyledLogoutButton>
 );
-
-LogoutButton.propTypes = {
-  actions: PropTypes.shape({
-    logout: PropTypes.func.isRequired
-  }).isRequired
-};
 
 export default connect(null, mapDispatchToProps)(LogoutButton);

@@ -2,8 +2,7 @@
  * @flow
  */
 
-import React from 'react';
-import PropTypes from 'prop-types';
+import * as React from 'react';
 import styled from 'styled-components';
 
 const SectionWrapper = styled.div`
@@ -18,17 +17,16 @@ const Header = styled.div`
   font-weight: bold;
 `;
 
-const SectionView = ({ header, ...props }) => {
-  return (
-    <SectionWrapper>
-      <Header>{header}</Header>
-      <div>{props.children}</div>
-    </SectionWrapper>
-  );
+type Props = {
+  header :string,
+  children :React.ChildrenArray<*>
 };
 
-SectionView.propTypes = {
-	header: PropTypes.string.isRequired
-};
+const SectionView = ({ header, children } :Props) => (
+  <SectionWrapper>
+    <Header>{header}</Header>
+    <div>{children}</div>
+  </SectionWrapper>
+);
 
 export default SectionView;

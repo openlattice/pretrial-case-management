@@ -1,6 +1,9 @@
+/*
+ * @flow
+ */
+
 import React from 'react';
 import styled from 'styled-components';
-import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 
 import FormListItemIcon from './FormListItemIcon';
@@ -27,16 +30,16 @@ const StyledName = styled.div`
   font-size: 18px;
 `;
 
-const CreateFormListItem = props => (
+type Props = {
+  path :string,
+  name :string
+};
+
+const CreateFormListItem = (props :Props) => (
   <ItemWrapper to={props.path}>
     <FormListItemIcon />
     <StyledName>{props.name}</StyledName>
   </ItemWrapper>
 );
-
-CreateFormListItem.propTypes = {
-  name: PropTypes.string.isRequired,
-  path: PropTypes.string.isRequired
-};
 
 export default CreateFormListItem;
