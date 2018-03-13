@@ -217,7 +217,8 @@ type Props = {
   numCasesToLoad :number,
   numCasesLoaded :number,
   psaForm :Immutable.Map<*, *>,
-  history :string[]
+  history :string[],
+  isLoadingPeople :boolean
 };
 
 type State = {
@@ -256,12 +257,10 @@ class Form extends React.Component<Props, State> {
       pretrialCaseOptions,
       allChargesForPerson,
       psaForm,
-      actions
+      actions,
+      isLoadingPeople
     } = nextProps;
-    if (selectedPretrialCase.size
-      || charges.size
-      || pretrialCaseOptions.size
-      || allChargesForPerson.size) {
+    if (!isLoadingPeople && this.props.isLoadingPeople) {
       actions.setPSAValues({
         newValues: tryAutofillFields(
           selectedPretrialCase,
@@ -690,7 +689,8 @@ function mapStateToProps(state :Immutable.Map<*, *>) :Object {
     selectedPersonId: search.get('selectedPersonId'),
     isLoadingCases: search.get('loadingCases'),
     numCasesToLoad: search.get('numCasesToLoad'),
-    numCasesLoaded: search.get('numCasesLoaded')
+    numCasesLoaded: search.get('numCasesLoaded'),
+    isLoadingPeople: search.get('isLoadingPeople')
   };
 }
 
