@@ -433,7 +433,7 @@ class Form extends React.Component<Props, State> {
   generateScores = (e) => {
     e.preventDefault();
 
-    if (this.props.psaForm.valueSeq().filter(value => value === null).size) {
+    if (this.props.psaForm.valueSeq().filter(value => value === null).toList().size) {
       this.setState({ formIncompleteError: true });
     }
     else {
