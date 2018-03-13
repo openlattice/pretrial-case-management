@@ -192,59 +192,47 @@ export const tryAutofillFields = (
 
   let psaForm = psaFormValues;
 
-  const nextArrestDate = nextCase.getIn([ARREST_DATE, 0], nextCase.getIn([FILE_DATE, 0], ''));
-  const currArrestDate = currCase.getIn([ARREST_DATE, 0], nextCase.getIn([FILE_DATE, 0], ''));
-
-  const nextMostSeriousCharge = nextCase.getIn([MOST_SERIOUS_CHARGE_NO, 0], '');
-  const currMostSeriousCharge = currCase.getIn([MOST_SERIOUS_CHARGE_NO, 0], '');
-
   const ageAtCurrentArrest = psaForm.get(AGE_AT_CURRENT_ARREST);
-  if (ageAtCurrentArrest === null || nextArrestDate !== currArrestDate) {
-    psaForm = psaForm.set(
-      AGE_AT_CURRENT_ARREST,
-      tryAutofillAge(
-        nextCase.getIn([ARREST_DATE, 0], nextCase.getIn([FILE_DATE, 0], '')),
-        ageAtCurrentArrest,
-        selectedPerson
-      )
-    );
-  }
+  psaForm = psaForm.set(
+    AGE_AT_CURRENT_ARREST,
+    tryAutofillAge(
+      nextCase.getIn([ARREST_DATE, 0], nextCase.getIn([FILE_DATE, 0], '')),
+      ageAtCurrentArrest,
+      selectedPerson
+    )
+  );
 
-  if (nextMostSeriousCharge !== currMostSeriousCharge || nextCharges.size) {
-    psaForm = psaForm.set(
-      CURRENT_VIOLENT_OFFENSE,
-      tryAutofillCurrentViolentCharge(nextCharges, nextMostSeriousCharge)
-    );
-  }
+  // current violent offense
+  const nextMostSeriousCharge = nextCase.getIn([MOST_SERIOUS_CHARGE_NO, 0], '');
+  psaForm = psaForm.set(
+    CURRENT_VIOLENT_OFFENSE,
+    tryAutofillCurrentViolentCharge(nextCharges, nextMostSeriousCharge)
+  );
 
-  const pendingCharge = psaForm.get(PENDING_CHARGE);
-  if (pendingCharge === null || nextArrestDate !== currArrestDate) {
-    psaForm = psaForm.set(
-      PENDING_CHARGE,
-      tryAutofillPendingCharge(
-        nextCase.getIn([CASE_ID, 0], ''),
-        nextArrestDate,
-        allCases,
-        allCharges,
-        pendingCharge
-      )
-    );
-  }
+  // pending charge
+  const nextArrestDate = nextCase.getIn([ARREST_DATE, 0], nextCase.getIn([FILE_DATE, 0], ''));
+  psaForm = psaForm.set(
+    PENDING_CHARGE,
+    tryAutofillPendingCharge(
+      nextCase.getIn([CASE_ID, 0], ''),
+      nextArrestDate,
+      allCases,
+      allCharges,
+      psaForm.get(PENDING_CHARGE)
+    )
+  );
 
   if (allCharges.size) {
+    psaForm = psaForm.set(PRIOR_MISDEMEANOR, tryAutofillPreviousMisdemeanors(allCharges));
+    psaForm = psaForm.set(PRIOR_FELONY, tryAutofillPreviousFelonies(allCharges));
+
     const priorMisdemeanor = psaForm.get(PRIOR_MISDEMEANOR);
-    if (priorMisdemeanor === null) {
-      psaForm = psaForm.set(PRIOR_MISDEMEANOR, tryAutofillPreviousMisdemeanors(allCharges));
-    }
     const priorFelony = psaForm.get(PRIOR_FELONY);
-    if (priorFelony === null) {
-      psaForm = psaForm.set(PRIOR_FELONY, tryAutofillPreviousFelonies(allCharges));
-    }
     if (priorMisdemeanor === 'false' && priorFelony === 'false') {
       psaForm = psaForm.set(PRIOR_VIOLENT_CONVICTION, '0');
       psaForm = psaForm.set(PRIOR_SENTENCE_TO_INCARCERATION, 'false');
     }
-    else if (psaForm.get(PRIOR_VIOLENT_CONVICTION) === null) {
+    else {
       psaForm = psaForm.set(PRIOR_VIOLENT_CONVICTION, tryAutofillPreviousViolentCharge(allCharges));
     }
   }
