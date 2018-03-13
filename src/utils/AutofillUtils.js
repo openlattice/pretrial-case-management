@@ -94,7 +94,7 @@ export const getPendingCharges = (
   const casesWithDispositionAfter = new Set();
   if (arrest.isValid) {
     allCases.forEach((caseDetails) => {
-      const prevArrestDate = moment.utc(caseDetails.getIn([ARREST_DATE, 0], ''));
+      const prevArrestDate = moment.utc(caseDetails.getIn([ARREST_DATE, 0], caseDetails.getIn([FILE_DATE, 0], '')));
       if (prevArrestDate.isValid && prevArrestDate.isBefore(arrest)) {
         const caseNum = caseDetails.getIn([CASE_ID, 0]);
         if (caseNum !== currCaseNum) casesWithArrestBefore.push(caseNum);
