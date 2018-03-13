@@ -193,12 +193,6 @@ export const tryAutofillFields = (
 
   const nextArrestDate = nextCase.getIn([ARREST_DATE, 0], nextCase.getIn([FILE_DATE, 0], ''));
 
-  console.log(nextCase.toJS());
-  console.log(nextCase.getIn([ARREST_DATE, 0], ''));
-  console.log(nextCase.getIn([FILE_DATE, 0], ''));
-  console.log(nextCase.getIn([ARREST_DATE, 0], nextCase.getIn([FILE_DATE, 0], '')))
-  console.log(nextCase.getIn([CASE_ID, 0], ''));
-
   const ageAtCurrentArrest = psaForm.get(AGE_AT_CURRENT_ARREST);
   psaForm = psaForm.set(
     AGE_AT_CURRENT_ARREST,
