@@ -11,6 +11,7 @@ import FontAwesome from 'react-fontawesome';
 import { AuthUtils } from 'lattice-auth';
 import { Button, ProgressBar } from 'react-bootstrap';
 import { connect } from 'react-redux';
+import { withRouter } from 'react-router-dom';
 import { Redirect, Route, Switch } from 'react-router-dom';
 import { bindActionCreators } from 'redux';
 
@@ -256,9 +257,10 @@ class Form extends React.Component<Props, State> {
       pretrialCaseOptions,
       allChargesForPerson,
       psaForm,
-      actions
+      actions,
+      location
     } = nextProps;
-    if (selectedPretrialCase.size && !this.props.selectedPretrialCase.size) {
+    if (location.pathname.endsWith('3') && !this.props.location.pathname.endsWith('3')) {
       actions.setPSAValues({
         newValues: tryAutofillFields(
           selectedPretrialCase,
@@ -710,4 +712,4 @@ function mapDispatchToProps(dispatch :Function) :Object {
   };
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(Form);
+export default withRouter(connect(mapStateToProps, mapDispatchToProps)(Form));
