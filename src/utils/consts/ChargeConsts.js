@@ -104,7 +104,7 @@ const GUILTY_DISPOSITIONS = [
   'Suspended Imposition Revoked/Released'
 ];
 
-const stripDegree = (chargeNum :string) :string => chargeNum.trim().split('(')[0];
+const stripDegree = (chargeNum :string) :string => chargeNum.split('(')[0].trim();
 
 export const chargeIsViolent = (chargeNum :string) :boolean => VIOLENT_CHARGES.includes(stripDegree(chargeNum));
 
