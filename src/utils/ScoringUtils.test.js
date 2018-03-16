@@ -87,7 +87,7 @@ describe('ScoringUtils', () => {
             }
             else scenarioValues.passed = false;
           }
-          // console.log(scenarioValues);
+          console.log(scenarioValues);
         });
       });
     });
