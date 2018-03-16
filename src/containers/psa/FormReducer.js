@@ -114,7 +114,7 @@ function formReducer(state :Immutable.Map<> = INITIAL_STATE, action :Object) {
           pretrialCaseOptionsWithDate = pretrialCaseOptionsWithDate.sort((case1, case2) => {
             const arr1 = moment(case1.getIn([FILE_DATE, 0], ''));
             const arr2 = moment(case2.getIn([FILE_DATE, 0], ''));
-            if (arr1.isValid && arr2.isValid) {
+            if (arr1.isValid() && arr2.isValid()) {
               if (arr1.isBefore(arr2)) return 1;
               if (arr1.isAfter(arr2)) return -1;
             }
