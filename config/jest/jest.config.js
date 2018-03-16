@@ -1,7 +1,7 @@
 const PACKAGE = require('../../package.json');
 
 module.exports = {
-  collectCoverage: true,
+  collectCoverage: false,
   collectCoverageFrom: [
     '**/src/index.js'
   ],
@@ -20,10 +20,16 @@ module.exports = {
     __PACKAGE__: PACKAGE.name,
     __VERSION__: PACKAGE.version
   },
+  modulePathIgnorePatterns: [
+    '<rootDir>/build/',
+    '<rootDir>/config/',
+    '<rootDir>/flow-typed/'
+  ],
   rootDir: '../..',
   setupFiles: [
     '<rootDir>/config/jest/polyfill.rAF.js',
     '<rootDir>/config/jest/enzyme.config.js'
   ],
-  testEnvironment: '<rootDir>/config/jest/jsdom.config.js'
+  testEnvironment: '<rootDir>/config/jest/jsdom.config.js',
+  testResultsProcessor: 'jest-bamboo-reporter'
 };
