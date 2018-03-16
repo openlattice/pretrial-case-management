@@ -180,7 +180,7 @@ export function* watchSearchPeopleRequest() :Generator<*, *, *> {
     }
     if (dob && dob.length) {
       const dobMoment = moment(dob);
-      if (dobMoment.isValid) {
+      if (dobMoment.isValid()) {
         const dobId = yield call(getPropertyTypeId, PROPERTY_TYPES.DOB);
         updateSearchField(`"${dobMoment.format('YYYY-MM-DD')}"`, dobId);
       }

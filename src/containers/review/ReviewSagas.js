@@ -106,7 +106,7 @@ function* loadPSAsByDateWatcher() :Generator<*, *, *> {
 const orderCasesByArrestDate = (case1, case2) => {
   const date1 = moment(case1.getIn([PROPERTY_TYPES.ARREST_DATE, 0], ''));
   const date2 = moment(case2.getIn([PROPERTY_TYPES.ARREST_DATE, 0], ''));
-  if (date1.isValid && date2.isValid) {
+  if (date1.isValid() && date2.isValid()) {
     if (date1.isBefore(date2)) return 1;
     if (date1.isAfter(date2)) return -1;
   }
