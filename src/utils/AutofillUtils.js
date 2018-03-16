@@ -90,14 +90,14 @@ export const getPendingCharges = (
 ) :Immutable.List<*> => {
   if (!dateArrested || !dateArrested.length || !currCaseNum || !currCaseNum.length) return Immutable.List();
   const arrest = moment.utc(dateArrested);
-  const casesWithArrestBefore = [];
-  const casesWithDispositionAfter = new Set();
+  let casesWithArrestBefore = Immutable.List();
+  let casesWithDispositionAfter = Immutable.Set();
   if (arrest.isValid()) {
     allCases.forEach((caseDetails) => {
       const prevArrestDate = moment.utc(caseDetails.getIn([ARREST_DATE, 0], caseDetails.getIn([FILE_DATE, 0], '')));
       if (prevArrestDate.isValid() && prevArrestDate.isBefore(arrest)) {
         const caseNum = caseDetails.getIn([CASE_ID, 0]);
-        if (caseNum !== currCaseNum) casesWithArrestBefore.push(caseNum);
+        if (caseNum !== currCaseNum) casesWithArrestBefore = casesWithArrestBefore.push(caseNum);
       }
     });
     allCharges.forEach((chargeDetails) => {
@@ -122,7 +122,7 @@ export const getPendingCharges = (
       }
 
       if (shouldInclude && caseNum) {
-        casesWithDispositionAfter.add(caseNum);
+        casesWithDispositionAfter = casesWithDispositionAfter.add(caseNum);
       }
     });
     return casesWithArrestBefore
