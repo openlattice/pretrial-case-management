@@ -1,8 +1,6 @@
 import Immutable from 'immutable';
-import { expect } from 'chai';
 import scenarios from './consts/ScoringTestConsts';
 import { getScoresAndRiskFactors } from './ScoringUtils';
-import '../../config/chai/chai.config';
 
 describe('ScoringUtils', () => {
 
@@ -13,7 +11,7 @@ describe('ScoringUtils', () => {
         const getBoolString = val => ((val === 'Yes') ? 'true' : 'false');
         const scenarioName = scenario.scenario;
 
-        it(`should correctly score ${scenarioName}`, () => {
+        test(`should correctly score ${scenarioName}`, () => {
           const scenarioValues = {};
           const providedValues = {};
           providedValues.ageAtCurrentArrest = scenario.ageAtCurrentArrest;
@@ -71,17 +69,17 @@ describe('ScoringUtils', () => {
           if (scenario.logic === 'ILLOGICAL') {
             expect(() => {
               getScoresAndRiskFactors(formValues);
-            }).to.throw();
+            }).toThrow();
           }
           else {
             const { scores } = getScoresAndRiskFactors(formValues);
             scenarioValues.calculatedResults = scores;
-            expect(scores.ncaScale).to.equal(scenario.ncaScale);
-            expect(scores.ftaScale).to.equal(scenario.ftaScale);
-            expect(scores.nvcaFlag).to.equal(nvcaFlag);
-            expect(scores.ncaTotal).to.equal(scenario.ncaScore);
-            expect(scores.ftaTotal).to.equal(scenario.ftaScore);
-            expect(scores.nvcaTotal).to.equal(scenario.nvcaScore);
+            expect(scores.ncaScale).toEqual(scenario.ncaScale);
+            expect(scores.ftaScale).toEqual(scenario.ftaScale);
+            expect(scores.nvcaFlag).toEqual(nvcaFlag);
+            expect(scores.ncaTotal).toEqual(scenario.ncaScore);
+            expect(scores.ftaTotal).toEqual(scenario.ftaScore);
+            expect(scores.nvcaTotal).toEqual(scenario.nvcaScore);
             if (scores.ncaScale === scenario.ncaScale && scores.ftaScale === scenario.ftaScale
               && scores.nvcaFlag === nvcaFlag && scores.ncaTotal === scenario.ncaScore
               && scores.ftaTotal === scenario.ftaScore && scores.nvcaTotal === scenario.nvcaScore) {

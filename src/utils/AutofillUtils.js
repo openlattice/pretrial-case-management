@@ -71,7 +71,7 @@ export const tryAutofillAge = (
   let arrest = moment.utc(dateArrested);
   if (!arrest.isValid()) arrest = moment();
   let ageAtCurrentArrestValue = defaultValue;
-  if (dob.isValid && arrest.isValid) {
+  if (dob.isValid() && arrest.isValid()) {
     const age = Math.floor(moment.duration(arrest.diff(dob)).asYears());
     if (!Number.isNaN(age)) {
       if (age <= 20) ageAtCurrentArrestValue = '0';
@@ -90,14 +90,14 @@ export const getPendingCharges = (
 ) :Immutable.List<*> => {
   if (!dateArrested || !dateArrested.length || !currCaseNum || !currCaseNum.length) return Immutable.List();
   const arrest = moment.utc(dateArrested);
-  const casesWithArrestBefore = [];
-  const casesWithDispositionAfter = new Set();
-  if (arrest.isValid) {
+  let casesWithArrestBefore = Immutable.List();
+  let casesWithDispositionAfter = Immutable.Set();
+  if (arrest.isValid()) {
     allCases.forEach((caseDetails) => {
       const prevArrestDate = moment.utc(caseDetails.getIn([ARREST_DATE, 0], caseDetails.getIn([FILE_DATE, 0], '')));
-      if (prevArrestDate.isValid && prevArrestDate.isBefore(arrest)) {
+      if (prevArrestDate.isValid() && prevArrestDate.isBefore(arrest)) {
         const caseNum = caseDetails.getIn([CASE_ID, 0]);
-        if (caseNum !== currCaseNum) casesWithArrestBefore.push(caseNum);
+        if (caseNum !== currCaseNum) casesWithArrestBefore = casesWithArrestBefore.push(caseNum);
       }
     });
     allCharges.forEach((chargeDetails) => {
@@ -110,16 +110,19 @@ export const getPendingCharges = (
         [caseNum] = caseNums;
       }
 
-      const dispositionDate = moment.utc(chargeDetails.getIn([DISPOSITION_DATE, 0], ''));
-      if (dispositionDate.isValid && dispositionDate.isAfter(arrest)) {
+      const dispositionDateStr = chargeDetails.getIn([DISPOSITION_DATE, 0], '');
+      if (!dispositionDateStr.length) {
         shouldInclude = true;
       }
       else {
-        shouldInclude = true;
+        const dispositionDate = moment.utc(dispositionDateStr);
+        if (dispositionDate.isValid() && dispositionDate.isAfter(arrest)) {
+          shouldInclude = true;
+        }
       }
 
       if (shouldInclude && caseNum) {
-        casesWithDispositionAfter.add(caseNum);
+        casesWithDispositionAfter = casesWithDispositionAfter.add(caseNum);
       }
     });
     return casesWithArrestBefore
