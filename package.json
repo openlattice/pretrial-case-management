@@ -112,8 +112,6 @@
     "lint:css": "stylelint './src/**/*.js'",
     "lint:js": "eslint --config .eslintrc src",
     "test": "jest --config config/jest/jest.config.js",
-    "test:bamboo": "better-npm-run test:bamboo",
-    "test:karma": "",
     "test:watch": "jest --config config/jest/jest.config.js --watch"
   },
   "betterScripts": {
@@ -133,12 +131,6 @@
       "command": "webpack-dev-server --config config/webpack/webpack.config.babel.js",
       "env": {
         "BUILD": "development"
-      }
-    },
-    "test:bamboo": {
-      "command": "",
-      "env": {
-        "TEST": "bamboo"
       }
     }
   }
