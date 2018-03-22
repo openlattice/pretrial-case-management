@@ -104,6 +104,11 @@ const GUILTY_DISPOSITIONS = [
   'Suspended Imposition Revoked/Released'
 ];
 
+const MISDEMEANOR_CHARGE_LEVEL_CODES :Set<string> = Immutable.Set([
+  'M1',
+  'M2'
+]);
+
 const stripDegree = (chargeNum :string) :string => chargeNum.split('(')[0].trim();
 
 export const chargeIsViolent = (chargeNum :string) :boolean => VIOLENT_CHARGES.includes(stripDegree(chargeNum));
@@ -129,11 +134,17 @@ export const dispositionFieldIsGuilty = (dispositionField :Immutable.List<string
 };
 
 export const degreeFieldIsMisdemeanor = (degreeField :Immutable.List<string>) :boolean => {
-  let result = false;
-  degreeField.forEach((degree) => {
-    if (degree.toLowerCase().startsWith('m')) result = true;
-  });
-  return result;
+
+  if (!degreeField || degreeField.isEmpty()) {
+    return false;
+  }
+
+  return degreeField.reduce(
+    (isMisdemeanor :boolean, degree :string) => (
+      MISDEMEANOR_CHARGE_LEVEL_CODES.has(degree.toUpperCase()) || isMisdemeanor
+    ),
+    false
+  );
 };
 
 export const degreeFieldIsFelony = (degreeField :Immutable.List<string>) :boolean => {
