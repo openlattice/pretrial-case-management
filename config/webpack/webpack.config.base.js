@@ -7,7 +7,7 @@ import PACKAGE from '../../package.json';
 import APP_CONFIG from '../app/app.config.js';
 import APP_PATHS from '../app/paths.config.js';
 
-import { isDev, isProd, isTest } from '../app/env.config.js';
+import { ifDev, ifProd, isDev, isProd, isTest } from '../app/env.config.js';
 import { AUTH0_CLIENT_ID, AUTH0_DOMAIN } from '../auth/auth0.config.js';
 
 export default function baseWebpackConfig(env) {
@@ -69,21 +69,28 @@ export default function baseWebpackConfig(env) {
 
   return {
     bail: true,
-    performance: {
-      hints: false // disable performance hints for now
-    },
     entry: [
       APP_PATHS.ABS.APP_ENTRY
     ],
-    output: {
-      path: APP_PATHS.ABS.BUILD,
-      publicPath: BASE_PATH
-    },
+    mode: ifDev('development', 'production'),
     module: {
       rules: [
         BABEL_LOADER,
         FILE_LOADER_ASSETS_IMAGES
       ]
+    },
+    node: {
+      net: 'empty'
+    },
+    optimization: {
+      minimize: ifProd(true, false)
+    },
+    output: {
+      path: APP_PATHS.ABS.BUILD,
+      publicPath: BASE_PATH
+    },
+    performance: {
+      hints: false // disable performance hints for now
     },
     plugins: [
       DEFINE_PLUGIN,
@@ -95,9 +102,6 @@ export default function baseWebpackConfig(env) {
         APP_PATHS.ABS.SOURCE,
         APP_PATHS.ABS.NODE
       ]
-    },
-    node: {
-      net: 'empty'
     }
   };
 }
