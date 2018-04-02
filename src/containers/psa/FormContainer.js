@@ -7,6 +7,7 @@ import React from 'react';
 import Immutable from 'immutable';
 import styled from 'styled-components';
 import randomUUID from 'uuid/v4';
+import moment from 'moment';
 import FontAwesome from 'react-fontawesome';
 import { AuthUtils } from 'lattice-auth';
 import { Button, ProgressBar } from 'react-bootstrap';
@@ -523,7 +524,8 @@ class Form extends React.Component<Props, State> {
                 selectedPretrialCase,
                 selectedPerson,
                 pretrialCaseOptions,
-                allChargesForPerson);
+                allChargesForPerson,
+                moment().toISOString());
             }}>Export as PDF
         </Button>
       </ButtonWrapper>
