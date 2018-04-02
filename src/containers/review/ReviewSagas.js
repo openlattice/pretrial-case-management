@@ -176,7 +176,14 @@ function* downloadPSAReviewPDFWorker(action :SequenceAction) :Generator<*, *, *>
     );
     const selectedPerson = neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborDetails'], Immutable.Map());
 
-    exportPDF(data, selectedPretrialCase, selectedPerson, allCases, allCharges);
+    const submitDate = neighbors.getIn([
+      ENTITY_SETS.PSA_RISK_FACTORS,
+      'associationDetails',
+      PROPERTY_TYPES.TIMESTAMP,
+      0
+    ], '');
+
+    exportPDF(data, selectedPretrialCase, selectedPerson, allCases, allCharges, submitDate);
 
     yield put(downloadPSAReviewPDF.success(action.id));
   }
