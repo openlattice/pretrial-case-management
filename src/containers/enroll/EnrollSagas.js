@@ -17,7 +17,7 @@ import {
 
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 
-const CHECKINS_BASE_URL = 'http://localhost:8081/checkins/voice';
+const CHECKINS_BASE_URL = 'https://api.openlattice.com/checkins/voice';
 
 const getEntityId = (entity, primaryKeyIds) => {
   const pKeyVals = [];
