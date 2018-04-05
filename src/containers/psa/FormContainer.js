@@ -33,10 +33,17 @@ import * as Routes from '../../core/router/Routes';
 import { getScoresAndRiskFactors } from '../../utils/ScoringUtils';
 import {
   ButtonWrapper,
+  CloseX,
   Divider,
   RecommendationWrapper,
   ResultsContainer,
-  SmallHeader
+  SmallHeader,
+  Spacer,
+  StyledFormViewWrapper,
+  StyledFormWrapper,
+  StyledSectionWrapper,
+  StyledTitleWrapper,
+  StyledTopFormNavBuffer
 } from '../../utils/Layout';
 import {
   getNextPath,
@@ -67,42 +74,16 @@ const {
   CALCULATED_FOR
 } = ENTITY_SETS;
 
-const StyledFormViewWrapper = styled.div`
-  display: flex;
+const CenteredDiv = styled.div`
+  text-align: center;
+`;
+
+const NoResultsText = styled.div`
+  text-align: center;
   width: 100%;
-`;
-
-const StyledFormWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  margin: 55px auto;
-  width: 1300px;
-`;
-
-const StyledTitleWrapper = styled.div`
-  align-items: center;
-  color: #37454a;
-  display: flex;
-  font-size: 32px;
-  justify-content: space-between;
-  margin-bottom: 30px;
-  width: 100%;
-`;
-
-const StyledSectionWrapper = styled.div`
-  background: #fff;
-  display: flex;
-  flex-direction: column;
-  padding: 55px;
-  width: 100%;
-`;
-
-const CloseX = styled(FontAwesome)`
-  cursor: pointer;
-`;
-
-const StyledTopFormNavBuffer = styled.div`
-  height: 55px;
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 15px;
 `;
 
 const LoadingContainer = styled.div`

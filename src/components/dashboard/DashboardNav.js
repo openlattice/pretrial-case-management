@@ -78,6 +78,11 @@ const DashboardNav = () => (
           name={Routes.NEW_PERSON}>
         New Person
       </StyledNavLink>
+      <StyledNavLink
+          to={Routes.VOICE_ENROLLMENT}
+          name={Routes.VOICE_ENROLLMENT}>
+        Enroll Voice
+      </StyledNavLink>
     </StyledLinksWrapper>
   </StyledNavWrapper>
 );

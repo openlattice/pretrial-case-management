@@ -12,12 +12,14 @@ export const ENTITY_SETS = {
   RELEASE_RECOMMENDATIONS: 'southdakotareleaserecommendations',
   STAFF: 'southdakotastaff',
   ASSESSED_BY: 'southdakotaassessedby',
+  SPEAKER_RECOGNITION_PROFILES: 'southdakotaspeakerverificationprofiles',
 
   // association entity sets
   APPEARS_IN: 'southdakotaappearsin',
   LIVES_AT: 'southdakotalivesat',
   CALCULATED_FOR: 'southdakotacalculatedfor',
-  CHARGED_WITH: 'southdakotachargedwith'
+  CHARGED_WITH: 'southdakotachargedwith',
+  REGISTERED_FOR: 'southdakotaregisteredfor'
 };
 
 export const PROPERTY_TYPES = {
@@ -83,5 +85,18 @@ export const PROPERTY_TYPES = {
 
   // Release recommendation entity type consts
   GENERAL_ID: 'general.id',
-  RELEASE_RECOMMENDATION: 'publicsafety.recommendation'
+  RELEASE_RECOMMENDATION: 'publicsafety.recommendation',
+
+  // Vocie recognition entity type consts
+  AUDIO_SAMPLE: 'media.audio',
+  PIN: 'general.pin',
+
+  // Entity set names
+  PERSON_ENTITY_SET_NAME: 'southdakotapeople',
+  PRETRIAL_CASE_ENTITY_SET_NAME: 'southdakotapretrialcaseprocessings',
+  CHARGE_ENTITY_SET_NAME: 'southdakotacharges',
+  PSA_ENTITY_SET_NAME: 'southdakotapsas',
+  RISK_FACTORS_ENTITY_SET_NAME: 'southdakotapsariskfactors',
+  CALCULATED_FOR_ENTITY_SET_NAME: 'southdakotacalculatedfor',
+  RELEASE_RECOMMENDATION_ENTITY_SET_NAME: 'southdakotareleaserecommendations'
 };

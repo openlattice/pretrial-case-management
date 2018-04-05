@@ -3,6 +3,7 @@
  */
 
 import styled from 'styled-components';
+import FontAwesome from 'react-fontawesome';
 import { Link } from 'react-router-dom';
 import {
   Button,
@@ -373,6 +374,46 @@ export const SmallHeader = styled.div`
 export const RecommendationWrapper = styled.div`
   display: inline-block;
   width: 50%;
+`;
+
+/* FORM SETUP */
+export const StyledFormViewWrapper = styled.div`
+  display: flex;
+  width: 100%;
+`;
+
+export const StyledFormWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  margin: 55px auto;
+  width: 1300px;
+`;
+
+export const StyledTitleWrapper = styled.div`
+  align-items: center;
+  color: #37454a;
+  display: flex;
+  font-size: 32px;
+  justify-content: space-between;
+  margin-bottom: 30px;
+  width: 100%;
+`;
+
+export const StyledSectionWrapper = styled.div`
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 55px;
+  width: 100%;
+`;
+
+export const CloseX = styled(FontAwesome)`
+  cursor: pointer;
+`;
+
+export const StyledTopFormNavBuffer = styled.div`
+  height: 55px;
 `;
 
 export const ErrorMessage = styled.div`

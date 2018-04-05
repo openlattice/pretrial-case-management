@@ -82,7 +82,7 @@ const PersonCard = ({ person, handleSelect } :Props) => {
         key={id}
         onClick={() => {
           if (handleSelect) {
-            handleSelect(person, entityKeyId);
+            handleSelect(person, entityKeyId, id);
           }
         }}>
       <PersonPictureWrapper>
