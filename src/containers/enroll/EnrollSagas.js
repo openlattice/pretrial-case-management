@@ -213,12 +213,11 @@ export function* getOrCreateProfile() :Generator<*, *, *> {
 export function* enrollVoiceProfile() :Generator<*, *, *> {
   while (true) {
     const {
-      profileId2, // TODO
+      profileId,
       audio
     } = yield take(ActionTypes.ENROLL_VOICE_REQUEST);
 
     try {
-      const profileId = 'cd508d22-23a2-461a-aaef-7ed04cfd7510'; // TODO
       const enrollRequest = {
         method: 'post',
         url: `${CHECKINS_BASE_URL}/profile/${profileId}`,
