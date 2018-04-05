@@ -4,6 +4,7 @@
 import axios from 'axios';
 import randomUUID from 'uuid/v4';
 import { DataApi, EntityDataModelApi, SearchApi, SyncApi } from 'lattice';
+import { AuthUtils } from 'lattice-auth';
 import { call, put, take, all } from 'redux-saga/effects';
 
 import * as ActionTypes from './EnrollActionTypes';
@@ -14,13 +15,9 @@ import {
   getProfileFailure
 } from './EnrollActionFactory';
 
-import {
-  API_TOKEN,
-  BASE_URL,
-  PROFILES
-} from './SpeakerVerificationApiConsts';
-
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+
+const CHECKINS_BASE_URL = 'http://localhost:8081/checkins/voice';
 
 const getEntityId = (entity, primaryKeyIds) => {
   const pKeyVals = [];
@@ -36,6 +33,12 @@ const getEntityId = (entity, primaryKeyIds) => {
   return pKeyVals.length ? pKeyVals.join(',') : randomUUID();
 };
 
+const getHeaders = () => {
+  return {
+    Authorization: `Bearer ${AuthUtils.getAuthToken()}`
+  };
+};
+
 const getFqnObj = (fqnStr) => {
   const splitStr = fqnStr.split('.');
   return {
@@ -48,11 +51,8 @@ function* tryLoadProfile(id) {
   try {
     return yield call(axios, {
       method: 'get',
-      url: `${BASE_URL}/${PROFILES}/${id}`,
-      headers: {
-        'Content-Type': 'application/json',
-        'Ocp-Apim-Subscription-Key': API_TOKEN
-      }
+      url: `${CHECKINS_BASE_URL}/profile/${id}`,
+      headers: getHeaders()
     });
   }
   catch (error) {
@@ -63,12 +63,13 @@ function* tryLoadProfile(id) {
 function* getPin(id) {
   const response = yield call(axios, {
     method: 'get',
-    url: `http://localhost:8081/checkins/voice/pin?profileId=${id}`
+    url: `${CHECKINS_BASE_URL}/pin?profileId=${id}`,
+    headers: getHeaders()
   });
   return response.data;
 }
 
-export function* getOrCreateProfile() :Generator<> {
+export function* getOrCreateProfile() :Generator<*, *, *> {
   while (true) {
     const { personId, personEntityKeyId } = yield take(ActionTypes.GET_PROFILE_REQUEST);
 
@@ -106,21 +107,23 @@ export function* getOrCreateProfile() :Generator<> {
         }
       }
 
+      profile = {
+        data: {
+          verificationProfileId: 'cd508d22-23a2-461a-aaef-7ed04cfd7510',
+          enrollmentsCount: 0
+        }
+      };
+      pin = 1234;
+
       if (!profile || !profile.data || !profile.data.verificationProfileId) {
         const createProfileRequest = {
           method: 'post',
-          url: `${BASE_URL}/${PROFILES}`,
-          headers: {
-            'Content-Type': 'application/json',
-            'Ocp-Apim-Subscription-Key': API_TOKEN
-          },
-          data: {
-            locale: 'en-us'
-          }
+          url: `${CHECKINS_BASE_URL}/profile/create`,
+          headers: getHeaders()
         };
 
         const createProfileResponse = yield call(axios, createProfileRequest);
-        const speakerVerificationId = createProfileResponse.data.verificationProfileId;
+        const speakerVerificationId = createProfileResponse.data;
         const newPin = yield call(getPin, speakerVerificationId);
 
         const [subjectId, generalId, timestampId, pinId] = yield all([
@@ -207,21 +210,19 @@ export function* getOrCreateProfile() :Generator<> {
   }
 }
 
-export function* enrollVoiceProfile() :Generator<> {
+export function* enrollVoiceProfile() :Generator<*, *, *> {
   while (true) {
     const {
-      profileId,
+      profileId2, // TODO
       audio
     } = yield take(ActionTypes.ENROLL_VOICE_REQUEST);
 
     try {
+      const profileId = 'cd508d22-23a2-461a-aaef-7ed04cfd7510'; // TODO
       const enrollRequest = {
         method: 'post',
-        url: `${BASE_URL}/${PROFILES}/${profileId}/enroll`,
-        headers: {
-          'Content-Type': 'multipart/form-data',
-          'Ocp-Apim-Subscription-Key': API_TOKEN
-        },
+        url: `${CHECKINS_BASE_URL}/profile/${profileId}`,
+        headers: Object.assign({}, getHeaders(), { 'Content-Type': 'multipart/form-data' }),
         data: audio
       };
 
