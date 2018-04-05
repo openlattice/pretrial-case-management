@@ -222,9 +222,6 @@ class EnrollVoice extends React.Component {
       );
     }
 
-    console.log('hi')
-    console.log(this.props)
-
     return (
       <BodyContainer>
         <PromptHeaderText>
