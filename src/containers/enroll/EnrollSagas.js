@@ -107,14 +107,6 @@ export function* getOrCreateProfile() :Generator<*, *, *> {
         }
       }
 
-      profile = {
-        data: {
-          verificationProfileId: 'cd508d22-23a2-461a-aaef-7ed04cfd7510',
-          enrollmentsCount: 0
-        }
-      };
-      pin = 1234;
-
       if (!profile || !profile.data || !profile.data.verificationProfileId) {
         const createProfileRequest = {
           method: 'post',
