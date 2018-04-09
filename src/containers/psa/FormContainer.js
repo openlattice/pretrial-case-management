@@ -16,6 +16,7 @@ import { withRouter } from 'react-router-dom';
 import { Redirect, Route, Switch } from 'react-router-dom';
 import { bindActionCreators } from 'redux';
 
+import LoadingSpinner from '../../components/LoadingSpinner';
 import SearchPersonContainer from '../person/SearchPersonContainer';
 import SelectPretrialCaseContainer from '../pages/pretrialcase/SelectPretrialCaseContainer';
 import InlineEditableControl from '../../components/controls/InlineEditableControl';
@@ -612,7 +613,14 @@ class Form extends React.Component<Props, State> {
     const { scoresWereGenerated, scores, riskFactors } = this.state;
     if (!scoresWereGenerated) return null;
     let header;
-    if (isSubmitting) header = <Status>Submitting...</Status>;
+    // if (isSubmitting) header = <Status>Submitting...</Status>;
+    if (isSubmitting) {
+      header = (
+        <div>
+          <LoadingText>Submitting...</LoadingText>
+          <LoadingSpinner />
+        </div>);
+    }
     else {
       header = submitError ? (
         <Failure>An error occurred: unable to submit PSA.</Failure>
