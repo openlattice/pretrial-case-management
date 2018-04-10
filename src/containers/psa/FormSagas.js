@@ -290,8 +290,21 @@ function* updateReleaseRecommendationWatcher() :Generator<*, *, *> {
   yield takeEvery(UPDATE_RECOMMENDATION, updateReleaseRecommendationWorker);
 }
 
+function* hardRestartWorker() :Generator<*, *, *> {
+  // hardRestartWorker and Watcher taken from BHR
+  yield call(() => {
+    window.location.href = `${window.location.origin}${window.location.pathname}`;
+  });
+}
+
+function* hardRestartWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(HARD_RESTART, hardRestartWorker);
+}
+
 
 export {
+  hardRestartWatcher,
   loadDataModelWatcher,
   loadNeighborsWatcher,
   submitDataWatcher,
