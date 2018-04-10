@@ -6,6 +6,7 @@ import { EntityDataModelApi, SearchApi, SyncApi, DataApi } from 'lattice';
 import { call, put, take, takeEvery, all } from 'redux-saga/effects';
 
 import {
+  HARD_RESTART,
   LOAD_DATA_MODEL,
   LOAD_NEIGHBORS,
   SUBMIT_DATA,
@@ -14,7 +15,7 @@ import {
   loadNeighbors,
   submitData,
   updateRecommendation
-} from './FormActionFactory'
+} from './FormActionFactory';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 
 function* loadDataModelWorker(action :SequenceAction) :Generator<*, *, *> {

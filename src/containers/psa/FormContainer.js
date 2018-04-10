@@ -155,6 +155,7 @@ type Entity = {
 
 type Props = {
   actions :{
+    hardRestart :() => void;
     loadDataModel :() => void,
     loadNeighbors :(value :{
       entitySetId :string,
@@ -650,7 +651,7 @@ class Form extends React.Component<Props, State> {
       <ConfirmationModal
           submissionStatus={this.props.isSubmitted}
           // Implement hard reset
-          handleModalButtonClick={/* this.props.actions.hardRestart */} />
+          handleModalButtonClick={this.props.actions.hardRestart} />
     );
   }
 
