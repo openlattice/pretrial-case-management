@@ -17,6 +17,7 @@ import { Redirect, Route, Switch } from 'react-router-dom';
 import { bindActionCreators } from 'redux';
 
 import LoadingSpinner from '../../components/LoadingSpinner';
+import ConfirmationModal from '../../components/ConfirmationModalView';
 import SearchPersonContainer from '../person/SearchPersonContainer';
 import SelectPretrialCaseContainer from '../pages/pretrialcase/SelectPretrialCaseContainer';
 import InlineEditableControl from '../../components/controls/InlineEditableControl';
@@ -638,6 +639,19 @@ class Form extends React.Component<Props, State> {
     );
   }
 
+  renderModal = () => {
+    // need to collect isSubmitted from reducer first
+    if (!isSubmitted) {
+      return null;
+    }
+
+    return (
+      <ConfirmationModal
+          // Implement hard reset
+          handleModalButtonClick={this.props.actions.hardRestart} />
+    );
+  }
+
   render() {
     return (
       <StyledFormViewWrapper>
@@ -656,6 +670,7 @@ class Form extends React.Component<Props, State> {
               <Redirect from={Routes.PSA_FORM} to={`${Routes.PSA_FORM}/1`} />
               <Redirect from={Routes.FORMS} to={Routes.DASHBOARD} />
             </Switch>
+            {/* renderModal() */}
           </StyledSectionWrapper>
         </StyledFormWrapper>
       </StyledFormViewWrapper>
