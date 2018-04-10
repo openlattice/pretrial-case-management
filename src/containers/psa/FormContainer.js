@@ -188,6 +188,7 @@ type Props = {
       newValues :Immutable.Map<*, *>
     }) => void
   },
+  isSubmitted :boolean,
   isSubmitting :boolean,
   submitError :boolean,
   dataModel :Immutable.Map<*, *>,
@@ -640,15 +641,16 @@ class Form extends React.Component<Props, State> {
   }
 
   renderModal = () => {
-    // need to collect isSubmitted from reducer first
+    const { isSubmitted } = this.props;
     if (!isSubmitted) {
       return null;
     }
 
     return (
       <ConfirmationModal
+          submissionStatus={this.props.isSubmitted}
           // Implement hard reset
-          handleModalButtonClick={this.props.actions.hardRestart} />
+          handleModalButtonClick={/* this.props.actions.hardRestart */} />
     );
   }
 
@@ -691,6 +693,7 @@ function mapStateToProps(state :Immutable.Map<*, *>) :Object {
     selectedPretrialCase: psaForm.get('selectedPretrialCase'),
     allChargesForPerson: psaForm.get('allChargesForPerson'),
     psaForm: psaForm.get('psa'),
+    isSubmitted: psaForm.get('isSubmitted'),
     isSubmitting: psaForm.get('isSubmitting'),
     submitError: psaForm.get('submitError'),
 

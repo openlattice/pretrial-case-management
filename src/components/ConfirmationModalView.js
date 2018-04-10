@@ -4,34 +4,32 @@ import { Modal, Button } from 'react-bootstrap';
 
 import { ButtonWrapper } from '../utils/Layout';
 
-import { isSubmitted } from '../containers/psa/FormReducer';
-
-function getTitle() {
-  if (isSubmitted) {
+function getTitle(submissionStatus) {
+  if (submissionStatus) {
     return 'Success!';
   }
   return 'Error Submitting Report';
 }
 
-function getBody() {
-  if (isSubmitted) {
+function getBody(submissionStatus) {
+  if (submissionStatus) {
     return 'Your psa report has been submitted.';
   }
   return `There was an error submitting your report. Please try again.
   If there continues to be an issue, contact help@openlattice.com.`;
 }
 
-function ConfirmationModal({ handleModalButtonClick }) {
+function ConfirmationModal({ submissionStatus, handleModalButtonClick }) {
   return (
     <div className="static-modal">
       <Modal.Dialog>
         <Modal.Header>
           <Modal.Title>
-            { getTitle() }
+            { getTitle(submissionStatus) }
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          { getBody() }
+          { getBody(submissionStatus) }
         </Modal.Body>
         <Modal.Footer>
           <ButtonWrapper>
@@ -44,6 +42,7 @@ function ConfirmationModal({ handleModalButtonClick }) {
 }
 
 ConfirmationModal.propTypes = {
+  submissionStatus: PropTypes.bool.isRequired,
   handleModalButtonClick: PropTypes.func.isRequired
 };
 
