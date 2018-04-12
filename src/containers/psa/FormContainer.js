@@ -673,7 +673,7 @@ class Form extends React.Component<Props, State> {
               <Redirect from={Routes.PSA_FORM} to={`${Routes.PSA_FORM}/1`} />
               <Redirect from={Routes.FORMS} to={Routes.DASHBOARD} />
             </Switch>
-            {/* renderModal() */}
+            { this.renderModal() }
           </StyledSectionWrapper>
         </StyledFormWrapper>
       </StyledFormViewWrapper>
