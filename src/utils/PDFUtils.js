@@ -143,9 +143,9 @@ const getDispositionText = (charge :Immutable.Map<*, *>) :string => {
   return `Disposition: ${text}`;
 };
 
-const getPdfName = (name :string) :string => {
+const getPdfName = (name :string, dateSubmitted :string) :string => {
   const dashedName = name.replace(/\./g, '').replace(/ /g, '-');
-  return `PSA-Report-${dashedName}-${moment().format('MM/DD/YYYY')}.pdf`;
+  return `PSA-Report-${dashedName}-${formatDate(dateSubmitted)}.pdf`;
 };
 
 const getBooleanText = (bool :boolean) :string => (bool ? 'Yes' : 'No');
@@ -178,7 +178,8 @@ const person = (
   yInit :number,
   selectedPerson :Immutable.Map<*, *>,
   selectedPretrialCase :Immutable.Map<*, *>,
-  name :string
+  name :string,
+  dateSubmitted :string
 ) :number => {
   let y = yInit;
   doc.text(X_MARGIN, y, `Name: ${name}`);
@@ -189,7 +190,7 @@ const person = (
   doc.text(X_MAX - 50, y, `Gender: ${formatValue(selectedPerson.get(SEX))}`);
   y += Y_INC;
   doc.text(X_MARGIN, y, `Arrest Date: ${formatDateList(selectedPretrialCase.get(ARREST_DATE, Immutable.List()))}`);
-  doc.text(X_MAX / 3, y, `PSA - Court Completion Date: ${formatDate(moment().toISOString())}`);
+  doc.text(X_MAX / 3, y, `PSA - Court Completion Date: ${formatDate(dateSubmitted)}`);
   doc.text(X_MAX - 50, y, `Case #: ${formatValue(selectedPretrialCase.get(CASE_ID, Immutable.List()))}`);
   y += Y_INC;
   return y;
@@ -468,7 +469,8 @@ const exportPDF = (
   selectedPretrialCase :Immutable.Map<*, *>,
   selectedPerson :Immutable.Map<*, *>,
   allCases :Immutable.List<*>,
-  allCharges :Immutable.List<*>
+  allCharges :Immutable.List<*>,
+  dateSubmitted :string
 ) :void => {
   const doc = new JSPDF();
   doc.setFontType('regular');
@@ -487,7 +489,7 @@ const exportPDF = (
 
   doc.setFontSize(FONT_SIZE);
   // PERSON SECTION
-  y = person(doc, y, selectedPerson, selectedPretrialCase, name);
+  y = person(doc, y, selectedPerson, selectedPretrialCase, name, dateSubmitted);
   thickLine(doc, y);
   y += Y_INC;
 
@@ -524,7 +526,7 @@ const exportPDF = (
   // CASE HISTORY SECCTION=
   [y, page] = caseHistory(doc, y, page, name, allCases, chargesByCaseNum);
 
-  doc.save(getPdfName(name));
+  doc.save(getPdfName(name, dateSubmitted));
 };
 
 export default exportPDF;

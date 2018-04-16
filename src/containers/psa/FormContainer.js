@@ -7,6 +7,7 @@ import React from 'react';
 import Immutable from 'immutable';
 import styled from 'styled-components';
 import randomUUID from 'uuid/v4';
+import moment from 'moment';
 import FontAwesome from 'react-fontawesome';
 import { AuthUtils } from 'lattice-auth';
 import { Button, ProgressBar } from 'react-bootstrap';
@@ -32,10 +33,17 @@ import * as Routes from '../../core/router/Routes';
 import { getScoresAndRiskFactors } from '../../utils/ScoringUtils';
 import {
   ButtonWrapper,
+  CloseX,
   Divider,
   RecommendationWrapper,
   ResultsContainer,
-  SmallHeader
+  SmallHeader,
+  Spacer,
+  StyledFormViewWrapper,
+  StyledFormWrapper,
+  StyledSectionWrapper,
+  StyledTitleWrapper,
+  StyledTopFormNavBuffer
 } from '../../utils/Layout';
 import {
   getNextPath,
@@ -66,42 +74,16 @@ const {
   CALCULATED_FOR
 } = ENTITY_SETS;
 
-const StyledFormViewWrapper = styled.div`
-  display: flex;
+const CenteredDiv = styled.div`
+  text-align: center;
+`;
+
+const NoResultsText = styled.div`
+  text-align: center;
   width: 100%;
-`;
-
-const StyledFormWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  margin: 55px auto;
-  width: 1300px;
-`;
-
-const StyledTitleWrapper = styled.div`
-  align-items: center;
-  color: #37454a;
-  display: flex;
-  font-size: 32px;
-  justify-content: space-between;
-  margin-bottom: 30px;
-  width: 100%;
-`;
-
-const StyledSectionWrapper = styled.div`
-  background: #fff;
-  display: flex;
-  flex-direction: column;
-  padding: 55px;
-  width: 100%;
-`;
-
-const CloseX = styled(FontAwesome)`
-  cursor: pointer;
-`;
-
-const StyledTopFormNavBuffer = styled.div`
-  height: 55px;
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 15px;
 `;
 
 const LoadingContainer = styled.div`
@@ -507,9 +489,9 @@ class Form extends React.Component<Props, State> {
   renderRecommendationSection = () => (
     <ResultsContainer>
       <RecommendationWrapper>
-        <SmallHeader>Release notes:</SmallHeader>
+        <SmallHeader>Notes:</SmallHeader>
         <InlineEditableControl
-            type="text"
+            type="textarea"
             value={this.state.releaseRecommendation}
             onChange={this.handleReleaseRecommendationUpdate}
             size="medium_small" />
@@ -542,7 +524,8 @@ class Form extends React.Component<Props, State> {
                 selectedPretrialCase,
                 selectedPerson,
                 pretrialCaseOptions,
-                allChargesForPerson);
+                allChargesForPerson,
+                moment().toISOString());
             }}>Export as PDF
         </Button>
       </ButtonWrapper>
