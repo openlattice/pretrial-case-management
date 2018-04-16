@@ -94,7 +94,7 @@ const TextAreaControl = styled.textarea`
 
 const TYPES = {
   TEXT: 'text',
-  TEXA_AREA: 'textarea'
+  TEXT_AREA: 'textarea'
 };
 
 /*
@@ -341,7 +341,7 @@ export default class InlineEditableControl extends React.Component<Props, State>
     switch (this.props.type) {
       case TYPES.TEXT:
         return this.renderTextControl();
-      case TYPES.TEXA_AREA:
+      case TYPES.TEXT_AREA:
         return this.renderTextAreaControl();
       default:
         return this.renderTextControl();

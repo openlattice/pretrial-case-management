@@ -489,9 +489,9 @@ class Form extends React.Component<Props, State> {
   renderRecommendationSection = () => (
     <ResultsContainer>
       <RecommendationWrapper>
-        <SmallHeader>Release notes:</SmallHeader>
+        <SmallHeader>Notes:</SmallHeader>
         <InlineEditableControl
-            type="text"
+            type="textarea"
             value={this.state.releaseRecommendation}
             onChange={this.handleReleaseRecommendationUpdate}
             size="medium_small" />

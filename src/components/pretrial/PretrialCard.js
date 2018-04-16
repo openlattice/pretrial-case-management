@@ -67,7 +67,7 @@ type Props = {
 const getDate = (dateStr) => {
   let dateFormatted = dateStr;
   if (dateStr) {
-    dateFormatted = moment.utc(dateStr).format('MMMM D, YYYY');
+    dateFormatted = moment.utc(dateStr).format('MM/DD/YYYY');
   }
   return dateFormatted;
 };
