@@ -326,7 +326,7 @@ export default class PSAReviewRow extends React.Component<Props, State> {
   renderMetadata = () => {
     const staff = this.props.neighbors.get(ENTITY_SETS.STAFF, Immutable.Map());
     const dateCreated = moment(staff.getIn(['associationDetails', PROPERTY_TYPES.COMPLETED_DATE_TIME, 0], ''));
-    const dateCreatedText = dateCreated.isValid() ? dateCreated.format('MMMM D, YYYY hh:mm a') : '';
+    const dateCreatedText = dateCreated.isValid() ? dateCreated.format('MM/DD/YYYY hh:mm a') : '';
     const creator = staff.getIn(['neighborDetails', PROPERTY_TYPES.PERSON_ID, 0], '');
     if (!dateCreatedText.length && !creator.length) return null;
 

@@ -72,7 +72,7 @@ const PersonCard = ({ person, handleSelect } :Props) => {
 
   const firstName = formatValue(person.get(FIRST_NAME, Immutable.List()));
   const lastName = formatValue(person.get(LAST_NAME, Immutable.List()));
-  const dob = formatDateList(person.get(DOB, Immutable.List()), 'MMMM D, YYYY');
+  const dob = formatDateList(person.get(DOB, Immutable.List()), 'MM/DD/YYYY');
   const suffix = formatValue(person.get(SUFFIX, Immutable.List()));
   const id :string = person.getIn([PERSON_ID, 0], '');
   const entityKeyId :string = person.getIn(['id', 0], '');
