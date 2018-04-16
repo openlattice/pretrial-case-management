@@ -14,6 +14,7 @@ import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 const {
   DOB,
   FIRST_NAME,
+  MIDDLE_NAME,
   LAST_NAME,
   SUFFIX,
   MUGSHOT,
@@ -34,7 +35,7 @@ const PersonPictureWrapper = styled.div`
 `;
 
 const PersonPicture = styled.img`
-  max-height: 100px;
+  max-height: 115px;
 `;
 
 const InfoRow = styled.tr`
@@ -43,7 +44,7 @@ const InfoRow = styled.tr`
 `;
 
 const Header = styled.th`
-  width: 95px;
+  width: 105px;
   margin: 2px 5px 2px 0;
 `;
 
@@ -71,6 +72,7 @@ const PersonCard = ({ person, handleSelect } :Props) => {
   const pictureImgSrc = pictureAsBase64 ? `data:image/png;base64,${pictureAsBase64}` : defaultUserIcon;
 
   const firstName = formatValue(person.get(FIRST_NAME, Immutable.List()));
+  const middleName = formatValue(person.get(MIDDLE_NAME, Immutable.List()));
   const lastName = formatValue(person.get(LAST_NAME, Immutable.List()));
   const dob = formatDateList(person.get(DOB, Immutable.List()), 'MM/DD/YYYY');
   const suffix = formatValue(person.get(SUFFIX, Immutable.List()));
@@ -93,6 +95,10 @@ const PersonCard = ({ person, handleSelect } :Props) => {
           <InfoRow>
             <Header>First Name:</Header>
             <DataElem>{ firstName }</DataElem>
+          </InfoRow>
+          <InfoRow>
+            <Header>Middle Name:</Header>
+            <DataElem>{ middleName }</DataElem>
           </InfoRow>
           <InfoRow>
             <Header>Last Name:</Header>
