@@ -64,7 +64,7 @@ const ButtonWrapper = styled.div`
   text-align: center;
 `;
 
-const NoResultsContainer = styled.div`
+const FooterContainer = styled.div`
   text-align: center;
 `;
 
@@ -160,12 +160,13 @@ class SearchPeopleContainer extends React.Component<Props, State> {
       );
     }
 
-    if (searchHasRun && searchResults.isEmpty()) {
-      return (
-        <NoResultsContainer>
-          <div>No search results.</div>
+    let footer = null;
+    if (searchHasRun) {
+      footer = (
+        <FooterContainer>
+          { searchResults.isEmpty() ? <div>No search results.</div> : null }
           <StyledButton onClick={this.createNewPerson}>Create Person</StyledButton>
-        </NoResultsContainer>
+        </FooterContainer>
       );
     }
 
@@ -195,6 +196,7 @@ class SearchPeopleContainer extends React.Component<Props, State> {
     return (
       <SearchResultsList>
         { searchResultCards.toSeq() }
+        { footer }
       </SearchResultsList>
     );
   }
