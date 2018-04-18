@@ -3,6 +3,7 @@
  */
 import axios from 'axios';
 import randomUUID from 'uuid/v4';
+import moment from 'moment';
 import { DataApi, EntityDataModelApi, SearchApi, SyncApi } from 'lattice';
 import { AuthUtils } from 'lattice-auth';
 import { call, put, take, all } from 'redux-saga/effects';
@@ -146,7 +147,7 @@ export function* getOrCreateProfile() :Generator<*, *, *> {
         };
 
         const registeredForDetails = {
-          [timestampId]: [new Date().toISOString()]
+          [timestampId]: [moment().toISOString()]
         };
 
         const personEntityKey = {
