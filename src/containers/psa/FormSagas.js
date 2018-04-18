@@ -246,7 +246,7 @@ function* submitDataWatcher() :Generator<*, *, *> {
 
 function* updateReleaseRecommendationWorker(action :SequenceAction) :Generator<*, *, *> {
   const {
-    recommendation,
+    notes,
     entityId,
     entitySetId,
     propertyTypes
@@ -272,7 +272,7 @@ function* updateReleaseRecommendationWorker(action :SequenceAction) :Generator<*
         const propertyTypeId = fqnToId[fqn];
         if (propertyTypeId) entity[propertyTypeId] = result[fqn];
       });
-      entity[fqnToId[PROPERTY_TYPES.RELEASE_RECOMMENDATION]] = [recommendation];
+      entity[fqnToId[PROPERTY_TYPES.RELEASE_RECOMMENDATION]] = [notes];
       yield call(DataApi.replaceEntityInEntitySet, entitySetId, result.id[0], entity);
       yield put(updateRecommendation.success(action.id));
     }

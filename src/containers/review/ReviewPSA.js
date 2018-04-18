@@ -17,6 +17,7 @@ import LoadingSpinner from '../../components/LoadingSpinner';
 import StyledButton from '../../components/buttons/StyledButton';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PaddedRow, TitleLabel, StyledSelect } from '../../utils/Layout';
+import * as FormActionFactory from '../psa/FormActionFactory';
 import * as ReviewActionFactory from './ReviewActionFactory';
 import * as Routes from '../../core/router/Routes';
 
@@ -123,6 +124,12 @@ type Props = {
       riskFactorsEntitySetId :string,
       riskFactorsId :string,
       riskFactorsEntity :Immutable.Map<*, *>
+    }) => void,
+    updateRecommendation :(value :{
+      notes :string,
+      entityId :string,
+      entitySetId :string,
+      propertyTypes :Immutable.List<*>
     }) => void
   },
   psaNeighborsById :Immutable.Map<*, *>,
@@ -296,6 +303,7 @@ class ReviewPSA extends React.Component<Props, State> {
           entityKeyId={scoreId}
           downloadFn={this.props.actions.downloadPSAReviewPDF}
           updateScoresAndRiskFactors={this.updateScoresAndRiskFactors}
+          updateRecommendation={this.updateRecommendation}
           key={scoreId} />
     );
   }
@@ -396,6 +404,15 @@ class ReviewPSA extends React.Component<Props, State> {
     });
   }
 
+  updateRecommendation = (notes, entityId, entitySetId, propertyTypes) => {
+    this.props.actions.updateRecommendation({
+      notes,
+      entityId,
+      entitySetId,
+      propertyTypes
+    });
+  }
+
   updatePage = (start) => {
     this.setState({ filters: Object.assign({}, this.state.filters, { start }) });
   }
@@ -467,6 +484,10 @@ function mapStateToProps(state) {
 
 function mapDispatchToProps(dispatch :Function) :Object {
   const actions :{ [string] :Function } = {};
+
+  Object.keys(FormActionFactory).forEach((action :string) => {
+    actions[action] = FormActionFactory[action];
+  });
 
   Object.keys(ReviewActionFactory).forEach((action :string) => {
     actions[action] = ReviewActionFactory[action];

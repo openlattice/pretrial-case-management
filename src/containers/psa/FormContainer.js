@@ -176,8 +176,8 @@ type Props = {
       selectedPretrialCase :Immutable.Map<*, *>
     }) => void,
     updateRecommendation :(value :{
-      releaseRecommendation :string,
-      releaseRecommendationId :string,
+      notes :string,
+      entityId :string,
       entitySetId :string,
       propertyTypes :Immutable.List<*>
     }) => void,
@@ -474,16 +474,16 @@ class Form extends React.Component<Props, State> {
     return <PSAResults scores={this.state.scores} riskFactors={this.state.riskFactors} />;
   }
 
-  handleReleaseRecommendationUpdate = (releaseRecommendation) => {
+  handleReleaseRecommendationUpdate = (notes) => {
     if (this.state.scoresWereGenerated) {
       this.props.actions.updateRecommendation({
-        releaseRecommendation,
-        releaseRecommendationId: this.state.releaseRecommendationId,
+        notes,
+        entityId: this.state.releaseRecommendationId,
         entitySetId: this.props.entitySetLookup.get(RELEASE_RECOMMENDATIONS),
         propertyTypes: this.getPropertyTypes(RELEASE_RECOMMENDATIONS)
       });
     }
-    this.setState({ releaseRecommendation });
+    this.setState({ releaseRecommendation: notes });
   }
 
   renderRecommendationSection = () => (
