@@ -268,7 +268,7 @@ class Form extends React.Component<Props, State> {
     this.props.actions.setPSAValues({ newValues });
   }
 
-  getCalculatedForEntityDetails = () => ({ [TIMESTAMP]: [new Date()] })
+  getCalculatedForEntityDetails = () => ({ [TIMESTAMP]: [moment().toISOString()] })
 
   getBlankReleaseRecommendationEntity = () :Entity => {
     let generalId;
@@ -294,7 +294,7 @@ class Form extends React.Component<Props, State> {
     };
   }
 
-  getAssessedByEntityDetails = () => ({ [COMPLETED_DATE_TIME]: [new Date()] })
+  getAssessedByEntityDetails = () => ({ [COMPLETED_DATE_TIME]: [moment().toISOString()] })
 
   getEntityId = (entity, primaryKeyIds) => {
     const pKeyVals = [];
