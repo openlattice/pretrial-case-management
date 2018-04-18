@@ -12,6 +12,7 @@ import { Collapse } from 'react-bootstrap';
 import PSAInputForm from '../psainput/PSAInputForm';
 import PersonCard from '../person/PersonCard';
 import StyledButton from '../buttons/StyledButton';
+import InlineEditableControl from '../controls/InlineEditableControl';
 import { getScoresAndRiskFactors } from '../../utils/ScoringUtils';
 import { PSA } from '../../utils/consts/Consts';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
@@ -107,6 +108,10 @@ const ImportantMetadataText = styled.span`
   color: black;
 `;
 
+const NotesContainer = styled.div`
+  text-align: left;
+`;
+
 const colorsByScale = {
   1: '#3494E6',
   2: '#598CDB',
@@ -132,7 +137,13 @@ type Props = {
     riskFactorsEntitySetId :string,
     riskFactorsId :string,
     riskFactorsEntity :Object
-  ) => void
+  ) => void,
+  updateNotes :(
+    notes :string,
+    entityId :string,
+    entitySetId :string,
+    propertyTypes :Immutable.List<*>
+  ) => void,
 };
 
 type State = {
@@ -240,6 +251,32 @@ export default class PSAReviewRow extends React.Component<Props, State> {
     </DownloadButtonContainer>
   )
 
+  handleNotesUpdate = (notes :string) => {
+    const neighbor = this.props.neighbors.get(ENTITY_SETS.RELEASE_RECOMMENDATIONS, Immutable.Map());
+    const entityId = neighbor.getIn(['neighborDetails', PROPERTY_TYPES.GENERAL_ID, 0]);
+    const entitySetId = neighbor.getIn(['neighborEntitySet', 'id']);
+    const propertyTypes = neighbor.get('neighborPropertyTypes');
+    this.props.updateNotes(notes, entityId, entitySetId, propertyTypes);
+  }
+
+  renderNotes = () => {
+    const notes = this.props.neighbors.getIn(
+      [ENTITY_SETS.RELEASE_RECOMMENDATIONS, 'neighborDetails', PROPERTY_TYPES.RELEASE_RECOMMENDATION, 0],
+      ''
+    );
+    return (
+      <NotesContainer>
+        <div>Notes:</div>
+        <InlineEditableControl
+            type="textarea"
+            value={notes}
+            onChange={this.handleNotesUpdate}
+            viewOnly={!this.state.open}
+            size="medium_small" />
+      </NotesContainer>
+    );
+  }
+
   handleRiskFactorChange = (e :Object) => {
     const {
       PRIOR_MISDEMEANOR,
@@ -333,11 +370,11 @@ export default class PSAReviewRow extends React.Component<Props, State> {
     const text = ['Created'];
     if (dateCreatedText.length) {
       text.push(' on ')
-      text.push(<ImportantMetadataText>{dateCreatedText}</ImportantMetadataText>);
+      text.push(<ImportantMetadataText key={dateCreatedText}>{dateCreatedText}</ImportantMetadataText>);
     }
     if (creator.length) {
       text.push(' by ');
-      text.push(<ImportantMetadataText>{creator}</ImportantMetadataText>);
+      text.push(<ImportantMetadataText key={creator}>{creator}</ImportantMetadataText>);
     }
     return <MetadataText>{text}</MetadataText>;
   }
@@ -353,6 +390,7 @@ export default class PSAReviewRow extends React.Component<Props, State> {
             {this.renderDownloadButton()}
           </ReviewRowWrapper>
         </DetailsRowContainer>
+        {this.renderNotes()}
         {this.renderEdit()}
       </ReviewRowContainer>
     );
