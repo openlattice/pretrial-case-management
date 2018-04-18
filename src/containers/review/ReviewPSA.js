@@ -125,7 +125,7 @@ type Props = {
       riskFactorsId :string,
       riskFactorsEntity :Immutable.Map<*, *>
     }) => void,
-    updateRecommendation :(value :{
+    updateNotes :(value :{
       notes :string,
       entityId :string,
       entitySetId :string,
@@ -303,7 +303,7 @@ class ReviewPSA extends React.Component<Props, State> {
           entityKeyId={scoreId}
           downloadFn={this.props.actions.downloadPSAReviewPDF}
           updateScoresAndRiskFactors={this.updateScoresAndRiskFactors}
-          updateRecommendation={this.updateRecommendation}
+          updateNotes={this.updateNotes}
           key={scoreId} />
     );
   }
@@ -404,8 +404,8 @@ class ReviewPSA extends React.Component<Props, State> {
     });
   }
 
-  updateRecommendation = (notes, entityId, entitySetId, propertyTypes) => {
-    this.props.actions.updateRecommendation({
+  updateNotes = (notes, entityId, entitySetId, propertyTypes) => {
+    this.props.actions.updateNotes({
       notes,
       entityId,
       entitySetId,

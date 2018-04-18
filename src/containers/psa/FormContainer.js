@@ -136,8 +136,8 @@ const INITIAL_STATE = Immutable.fromJS({
     nvcaFlag: false
   },
   scoresWereGenerated: false,
-  releaseRecommendation: '',
-  releaseRecommendationId: undefined
+  notes: '',
+  notesId: undefined
 });
 
 const numPages = 4;
@@ -164,7 +164,7 @@ type Props = {
       pretrialCaseEntity :Entity,
       riskFactorsEntity :Entity,
       psaEntity :Entity,
-      releaseRecommendationEntity :Entity,
+      notesEntity :Entity,
       staffEntity :Entity,
       calculatedForEntity :Entity,
       assessedByEntity :Entity
@@ -175,7 +175,7 @@ type Props = {
     selectPretrialCase :(value :{
       selectedPretrialCase :Immutable.Map<*, *>
     }) => void,
-    updateRecommendation :(value :{
+    updateNotes :(value :{
       notes :string,
       entityId :string,
       entitySetId :string,
@@ -212,8 +212,8 @@ type State = {
   riskFactors :{},
   scores :{},
   scoresWereGenerated :boolean,
-  releaseRecommendation :string,
-  releaseRecommendationId :string
+  notes :string,
+  notesId :string
 };
 
 class Form extends React.Component<Props, State> {
@@ -270,7 +270,7 @@ class Form extends React.Component<Props, State> {
 
   getCalculatedForEntityDetails = () => ({ [TIMESTAMP]: [moment().toISOString()] })
 
-  getBlankReleaseRecommendationEntity = () :Entity => {
+  getBlankNotesEntity = () :Entity => {
     let generalId;
     let notesId;
     this.getPropertyTypes(RELEASE_RECOMMENDATIONS).forEach((pt) => {
@@ -285,7 +285,7 @@ class Form extends React.Component<Props, State> {
     return {
       details: {
         [generalId]: [id],
-        [notesId]: [this.state.releaseRecommendation]
+        [notesId]: [this.state.notes]
       },
       key: {
         entityId: id,
@@ -370,7 +370,7 @@ class Form extends React.Component<Props, State> {
   submitEntities = (scores) => {
     const { riskFactors } = getScoresAndRiskFactors(this.props.psaForm);
     const calculatedForEntityDetails = this.getCalculatedForEntityDetails();
-    const releaseRecommendationEntity = this.getBlankReleaseRecommendationEntity();
+    const notesEntity = this.getBlankNotesEntity();
     const assessedByEntityDetails = this.getAssessedByEntityDetails();
 
     const personEntity = this.getEntity(this.props.selectedPerson.toJS(), PEOPLE, true);
@@ -387,12 +387,12 @@ class Form extends React.Component<Props, State> {
       pretrialCaseEntity,
       riskFactorsEntity,
       psaEntity,
-      releaseRecommendationEntity,
+      notesEntity,
       staffEntity,
       calculatedForEntity,
       assessedByEntity
     });
-    this.setState({ releaseRecommendationId: releaseRecommendationEntity.key.entityId });
+    this.setState({ notesId: notesEntity.key.entityId });
   }
 
   getFqn = propertyType => `${propertyType.getIn(['type', 'namespace'])}.${propertyType.getIn(['type', 'name'])}`
@@ -474,16 +474,16 @@ class Form extends React.Component<Props, State> {
     return <PSAResults scores={this.state.scores} riskFactors={this.state.riskFactors} />;
   }
 
-  handleReleaseRecommendationUpdate = (notes) => {
+  handleNotesUpdate = (notes) => {
     if (this.state.scoresWereGenerated) {
-      this.props.actions.updateRecommendation({
+      this.props.actions.updateNotes({
         notes,
-        entityId: this.state.releaseRecommendationId,
+        entityId: this.state.notesId,
         entitySetId: this.props.entitySetLookup.get(RELEASE_RECOMMENDATIONS),
         propertyTypes: this.getPropertyTypes(RELEASE_RECOMMENDATIONS)
       });
     }
-    this.setState({ releaseRecommendation: notes });
+    this.setState({ notes });
   }
 
   renderRecommendationSection = () => (
@@ -492,8 +492,8 @@ class Form extends React.Component<Props, State> {
         <SmallHeader>Notes:</SmallHeader>
         <InlineEditableControl
             type="textarea"
-            value={this.state.releaseRecommendation}
-            onChange={this.handleReleaseRecommendationUpdate}
+            value={this.state.notes}
+            onChange={this.handleNotesUpdate}
             size="medium_small" />
       </RecommendationWrapper>
     </ResultsContainer>

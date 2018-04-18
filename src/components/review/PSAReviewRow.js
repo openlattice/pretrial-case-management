@@ -138,7 +138,7 @@ type Props = {
     riskFactorsId :string,
     riskFactorsEntity :Object
   ) => void,
-  updateRecommendation :(
+  updateNotes :(
     notes :string,
     entityId :string,
     entitySetId :string,
@@ -256,7 +256,7 @@ export default class PSAReviewRow extends React.Component<Props, State> {
     const entityId = neighbor.getIn(['neighborDetails', PROPERTY_TYPES.GENERAL_ID, 0]);
     const entitySetId = neighbor.getIn(['neighborEntitySet', 'id']);
     const propertyTypes = neighbor.get('neighborPropertyTypes');
-    this.props.updateRecommendation(notes, entityId, entitySetId, propertyTypes);
+    this.props.updateNotes(notes, entityId, entitySetId, propertyTypes);
   }
 
   renderNotes = () => {

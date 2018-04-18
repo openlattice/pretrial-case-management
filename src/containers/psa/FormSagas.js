@@ -9,11 +9,11 @@ import {
   LOAD_DATA_MODEL,
   LOAD_NEIGHBORS,
   SUBMIT_DATA,
-  UPDATE_RECOMMENDATION,
+  UPDATE_NOTES,
   loadDataModel,
   loadNeighbors,
   submitData,
-  updateRecommendation
+  updateNotes
 } from './FormActionFactory'
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 
@@ -70,7 +70,7 @@ function* submitDataWorker(action :SequenceAction) :Generator<*, *, *> {
     pretrialCaseEntity,
     riskFactorsEntity,
     psaEntity,
-    releaseRecommendationEntity,
+    notesEntity,
     staffEntity,
     calculatedForEntity,
     assessedByEntity
@@ -83,7 +83,7 @@ function* submitDataWorker(action :SequenceAction) :Generator<*, *, *> {
       pretrialCaseSyncId,
       riskFactorsSyncId,
       psaSyncId,
-      releaseRecommendationSyncId,
+      notesSyncId,
       staffSyncId,
       calculatedForSyncId,
       assessedBySyncId
@@ -92,7 +92,7 @@ function* submitDataWorker(action :SequenceAction) :Generator<*, *, *> {
       call(SyncApi.getCurrentSyncId, pretrialCaseEntity.key.entitySetId),
       call(SyncApi.getCurrentSyncId, riskFactorsEntity.key.entitySetId),
       call(SyncApi.getCurrentSyncId, psaEntity.key.entitySetId),
-      call(SyncApi.getCurrentSyncId, releaseRecommendationEntity.key.entitySetId),
+      call(SyncApi.getCurrentSyncId, notesEntity.key.entitySetId),
       call(SyncApi.getCurrentSyncId, staffEntity.key.entitySetId),
       call(SyncApi.getCurrentSyncId, calculatedForEntity.key.entitySetId),
       call(SyncApi.getCurrentSyncId, assessedByEntity.key.entitySetId)
@@ -101,7 +101,7 @@ function* submitDataWorker(action :SequenceAction) :Generator<*, *, *> {
     pretrialCaseEntity.key.syncId = pretrialCaseSyncId;
     riskFactorsEntity.key.syncId = riskFactorsSyncId;
     psaEntity.key.syncId = psaSyncId;
-    releaseRecommendationEntity.key.syncId = releaseRecommendationSyncId;
+    notesEntity.key.syncId = notesSyncId;
     staffEntity.key.syncId = staffSyncId;
     calculatedForEntity.key.syncId = calculatedForSyncId;
     assessedByEntity.key.syncId = assessedBySyncId;
@@ -144,28 +144,28 @@ function* submitDataWorker(action :SequenceAction) :Generator<*, *, *> {
     const recommendationToPersonAssociation = Object.assign(
       {},
       calculatedForEntity,
-      { src: releaseRecommendationEntity.key },
+      { src: notesEntity.key },
       { dst: personEntity.key }
     );
 
     const recommendationToRiskFactorsAssociation = Object.assign(
       {},
       calculatedForEntity,
-      { src: releaseRecommendationEntity.key },
+      { src: notesEntity.key },
       { dst: riskFactorsEntity.key }
     );
 
     const recommendationToScoresAssociation = Object.assign(
       {},
       calculatedForEntity,
-      { src: releaseRecommendationEntity.key },
+      { src: notesEntity.key },
       { dst: psaEntity.key }
     );
 
     const recommendationToCaseAssociation = Object.assign(
       {},
       calculatedForEntity,
-      { src: releaseRecommendationEntity.key },
+      { src: notesEntity.key },
       { dst: pretrialCaseEntity.key }
     );
 
@@ -183,10 +183,10 @@ function* submitDataWorker(action :SequenceAction) :Generator<*, *, *> {
       { dst: staffEntity.key }
     );
 
-    const releaseRecommendationToStaffAssociation = Object.assign(
+    const notesToStaffAssociation = Object.assign(
       {},
       assessedByEntity,
-      { src: releaseRecommendationEntity.key },
+      { src: notesEntity.key },
       { dst: staffEntity.key }
     );
 
@@ -194,7 +194,7 @@ function* submitDataWorker(action :SequenceAction) :Generator<*, *, *> {
       personEntity,
       riskFactorsEntity,
       psaEntity,
-      releaseRecommendationEntity,
+      notesEntity,
       staffEntity
     ];
 
@@ -207,7 +207,7 @@ function* submitDataWorker(action :SequenceAction) :Generator<*, *, *> {
       recommendationToScoresAssociation,
       psaToStaffAssociation,
       riskFactorsToStaffAssociation,
-      releaseRecommendationToStaffAssociation
+      notesToStaffAssociation
     ];
 
     if (Object.keys(pretrialCaseEntity.details).length) {
@@ -223,7 +223,7 @@ function* submitDataWorker(action :SequenceAction) :Generator<*, *, *> {
       call(DataApi.acquireSyncTicket, pretrialCaseEntity.key.entitySetId, pretrialCaseSyncId),
       call(DataApi.acquireSyncTicket, riskFactorsEntity.key.entitySetId, riskFactorsSyncId),
       call(DataApi.acquireSyncTicket, psaEntity.key.entitySetId, psaSyncId),
-      call(DataApi.acquireSyncTicket, releaseRecommendationEntity.key.entitySetId, releaseRecommendationSyncId),
+      call(DataApi.acquireSyncTicket, notesEntity.key.entitySetId, notesSyncId),
       call(DataApi.acquireSyncTicket, staffEntity.key.entitySetId, staffSyncId),
       call(DataApi.acquireSyncTicket, calculatedForEntity.key.entitySetId, calculatedForSyncId),
       call(DataApi.acquireSyncTicket, assessedByEntity.key.entitySetId, assessedBySyncId)
@@ -244,7 +244,7 @@ function* submitDataWatcher() :Generator<*, *, *> {
   yield takeEvery(SUBMIT_DATA, submitDataWorker);
 }
 
-function* updateReleaseRecommendationWorker(action :SequenceAction) :Generator<*, *, *> {
+function* updateNotesWorker(action :SequenceAction) :Generator<*, *, *> {
   const {
     notes,
     entityId,
@@ -253,7 +253,7 @@ function* updateReleaseRecommendationWorker(action :SequenceAction) :Generator<*
   } = action.value;
 
   try {
-    yield put(updateRecommendation.request(action.id));
+    yield put(updateNotes.request(action.id));
     const fqnToId = {};
     propertyTypes.forEach((propertyType) => {
       const fqn = `${propertyType.getIn(['type', 'namespace'])}.${propertyType.getIn(['type', 'name'])}`;
@@ -274,20 +274,20 @@ function* updateReleaseRecommendationWorker(action :SequenceAction) :Generator<*
       });
       entity[fqnToId[PROPERTY_TYPES.RELEASE_RECOMMENDATION]] = [notes];
       yield call(DataApi.replaceEntityInEntitySet, entitySetId, result.id[0], entity);
-      yield put(updateRecommendation.success(action.id));
+      yield put(updateNotes.success(action.id));
     }
   }
   catch (error) {
     console.error(error);
-    yield put(updateRecommendation.failure(action.id));
+    yield put(updateNotes.failure(action.id));
   }
   finally {
-    yield put(updateRecommendation.finally(action.id));
+    yield put(updateNotes.finally(action.id));
   }
 }
 
-function* updateReleaseRecommendationWatcher() :Generator<*, *, *> {
-  yield takeEvery(UPDATE_RECOMMENDATION, updateReleaseRecommendationWorker);
+function* updateNotesWatcher() :Generator<*, *, *> {
+  yield takeEvery(UPDATE_NOTES, updateNotesWorker);
 }
 
 
@@ -295,5 +295,5 @@ export {
   loadDataModelWatcher,
   loadNeighborsWatcher,
   submitDataWatcher,
-  updateReleaseRecommendationWatcher
+  updateNotesWatcher
 };
