@@ -4,10 +4,9 @@
 
 import React from 'react';
 import Immutable from 'immutable';
-import FontAwesome from 'react-fontawesome';
 import styled from 'styled-components';
 import moment from 'moment';
-import { Collapse } from 'react-bootstrap';
+import { Modal } from 'react-bootstrap';
 
 import PSAInputForm from '../psainput/PSAInputForm';
 import PersonCard from '../person/PersonCard';
@@ -16,6 +15,7 @@ import InlineEditableControl from '../controls/InlineEditableControl';
 import { getScoresAndRiskFactors } from '../../utils/ScoringUtils';
 import { PSA } from '../../utils/consts/Consts';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import * as OverrideClassNames from '../../utils/styleoverrides/OverrideClassNames';
 
 const ScoresTable = styled.table`
   margin: 0 50px;
@@ -33,6 +33,7 @@ const ReviewRowContainer = styled.div`
 const DetailsRowContainer = styled.div`
   display: flex;
   justify-content: center;
+  cursor: pointer;
 `;
 
 const ReviewRowWrapper = styled.div`
@@ -79,21 +80,8 @@ const DownloadButton = styled(StyledButton)`
   height: 50px;
 `;
 
-const EditButton = styled.button`
-  display: inline-block;
-  background: none;
+const ButtonContainer = styled.div`
   text-align: center;
-  border: none;
-`;
-
-const EditButtonText = styled.div`
-  font-size: 16px;
-`;
-
-const EditButtonSymbol = styled(FontAwesome).attrs({
-  size: '2x'
-})`
-  margin-top: -15px;
 `;
 
 const MetadataText = styled.div`
@@ -148,6 +136,7 @@ type Props = {
 
 type State = {
   open :boolean,
+  editing :boolean,
   riskFactors :Immutable.Map<*, *>
 };
 
@@ -157,6 +146,7 @@ export default class PSAReviewRow extends React.Component<Props, State> {
     super(props);
     this.state = {
       open: false,
+      editing: false,
       riskFactors: this.getRiskFactors(props.neighbors)
     };
   }
@@ -226,19 +216,19 @@ export default class PSAReviewRow extends React.Component<Props, State> {
       <ScoresTable>
         <tbody>
           <tr>
-            <ScoreHeader>FTA</ScoreHeader>
-            <ScoreHeader>NCA</ScoreHeader>
             <ScoreHeader>NVCA</ScoreHeader>
+            <ScoreHeader>NCA</ScoreHeader>
+            <ScoreHeader>FTA</ScoreHeader>
           </tr>
           <ScaleRow>
-            <ScoreItem><FtaScale /></ScoreItem>
-            <ScoreItem><NcaScale /></ScoreItem>
             <ScoreItem><NvcaScale /></ScoreItem>
+            <ScoreItem><NcaScale /></ScoreItem>
+            <ScoreItem><FtaScale /></ScoreItem>
           </ScaleRow>
           <tr>
-            <ScoreItem>{ftaVal}</ScoreItem>
-            <ScoreItem>{ncaVal}</ScoreItem>
             <ScoreItem>{nvcaVal ? 'YES' : 'NO'}</ScoreItem>
+            <ScoreItem>{ncaVal}</ScoreItem>
+            <ScoreItem>{ftaVal}</ScoreItem>
           </tr>
         </tbody>
       </ScoresTable>
@@ -271,7 +261,7 @@ export default class PSAReviewRow extends React.Component<Props, State> {
             type="textarea"
             value={notes}
             onChange={this.handleNotesUpdate}
-            viewOnly={!this.state.open}
+            viewOnly={!this.state.editing}
             size="medium_small" />
       </NotesContainer>
     );
@@ -318,45 +308,44 @@ export default class PSAReviewRow extends React.Component<Props, State> {
     this.setState({ open: false });
   }
 
+  getName = () => {
+    const person = this.props.neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborDetails'], Immutable.Map());
+    const firstName = person.getIn([PROPERTY_TYPES.FIRST_NAME, 0], '');
+    const lastName = person.getIn([PROPERTY_TYPES.LAST_NAME, 0], '');
+    return `${firstName} ${lastName}`;
+  }
+
   renderEdit = () => {
-    const { open, riskFactors } = this.state;
-    const Symbol = styled(EditButtonSymbol).attrs({
-      name: open ? 'angle-up' : 'angle-down'
-    })`
-      margin-top: ${open ? '20px' : '0'}
-    `;
-    const buttonContents = open ? (
-      <div>
-        <Symbol />
-        <br />
-        <EditButtonText>Close</EditButtonText>
-      </div>
-    ) : (
-      <div>
-        <EditButtonText>Edit</EditButtonText>
-        <br />
-        <Symbol />
-      </div>
-    );
-    return (
-      <div>
-        <Collapse in={open}>
-          <div>
-            <PSAInputForm
-                section="review"
-                input={riskFactors}
-                handleSingleSelection={this.handleRiskFactorChange}
-                handleSubmit={this.onRiskFactorEdit}
-                incompleteError={false}
-                isReview />
-          </div>
-        </Collapse>
-        <EditButton onClick={() => {
-          this.setState({ open: !open });
+    const { open, editing, riskFactors } = this.state;
+
+    const editButton = editing ? null : (
+      <ButtonContainer>
+        <StyledButton onClick={() => {
+          this.setState({ editing: true });
         }}>
-          {buttonContents}
-        </EditButton>
-      </div>
+          Edit
+        </StyledButton>
+      </ButtonContainer>
+    );
+
+    return (
+      <Modal show={open} onHide={this.closeModal} dialogClassName={OverrideClassNames.PSA_REVIEW_MODAL}>
+        <Modal.Header closeButton>
+          <Modal.Title>{`PSA Details: ${this.getName()}`}</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <PSAInputForm
+              section="review"
+              input={riskFactors}
+              handleSingleSelection={this.handleRiskFactorChange}
+              handleSubmit={this.onRiskFactorEdit}
+              incompleteError={false}
+              viewOnly={!editing}
+              isReview />
+          {this.renderNotes()}
+          {editButton}
+        </Modal.Body>
+      </Modal>
     );
   }
 
@@ -379,18 +368,31 @@ export default class PSAReviewRow extends React.Component<Props, State> {
     return <MetadataText>{text}</MetadataText>;
   }
 
+  closeModal = () => {
+    this.setState({
+      open: false,
+      editing: false
+    });
+  }
+
+  showDetails = () => {
+    this.setState({
+      open: true,
+      editing: false
+    });
+  }
+
   render() {
     return (
       <ReviewRowContainer>
         {this.renderMetadata()}
-        <DetailsRowContainer>
+        <DetailsRowContainer onClick={this.showDetails}>
           <ReviewRowWrapper>
             {this.renderPersonCard()}
             {this.renderScores()}
             {this.renderDownloadButton()}
           </ReviewRowWrapper>
         </DetailsRowContainer>
-        {this.renderNotes()}
         {this.renderEdit()}
       </ReviewRowContainer>
     );

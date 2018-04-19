@@ -11,11 +11,11 @@ export const ENTITY_SETS = {
   PSA_SCORES: 'southdakotapsas',
   RELEASE_RECOMMENDATIONS: 'southdakotareleaserecommendations',
   STAFF: 'southdakotastaff',
-  ASSESSED_BY: 'southdakotaassessedby',
   SPEAKER_RECOGNITION_PROFILES: 'southdakotaspeakerverificationprofiles',
 
   // association entity sets
   APPEARS_IN: 'southdakotaappearsin',
+  ASSESSED_BY: 'southdakotaassessedby',
   LIVES_AT: 'southdakotalivesat',
   CALCULATED_FOR: 'southdakotacalculatedfor',
   CHARGED_WITH: 'southdakotachargedwith',
