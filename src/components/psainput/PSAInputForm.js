@@ -91,7 +91,8 @@ type Props = {
   currCharges :Immutable.List<*>,
   currCase :Immutable.Map<*, *>,
   allCharges :Immutable.List<*>,
-  allCases :Immutable.List<*>
+  allCases :Immutable.List<*>,
+  viewOnly? :boolean
 };
 
 const PSAInputForm = ({
@@ -103,7 +104,8 @@ const PSAInputForm = ({
   currCharges,
   currCase,
   allCharges,
-  allCases
+  allCases,
+  viewOnly
 } :Props) => {
 
   const noPriorConvictions = input.get(PRIOR_MISDEMEANOR) === 'false' && input.get(PRIOR_FELONY) === 'false';
@@ -157,7 +159,7 @@ const PSAInputForm = ({
         value={`${value}`}
         checked={input.get(name) === `${value}`}
         onChange={handleSingleSelection}
-        disabled={disabledField && disabledField !== undefined}
+        disabled={viewOnly || (disabledField && disabledField !== undefined)}
         label={label} />
   );
 
@@ -241,13 +243,21 @@ const PSAInputForm = ({
             }
 
           </SectionView>
-          <SubmitButtonWrapper>
-            <SubmitButton type="submit" bsStyle="primary" bsSize="lg">Score & Submit</SubmitButton>
-          </SubmitButtonWrapper>
+          {
+            viewOnly ? null : (
+              <SubmitButtonWrapper>
+                <SubmitButton type="submit" bsStyle="primary" bsSize="lg">Score & Submit</SubmitButton>
+              </SubmitButtonWrapper>
+            )
+          }
         </form>
       </StyledFormWrapper>
     </div>
   );
+};
+
+PSAInputForm.defaultProps = {
+  viewOnly: false
 };
 
 export default PSAInputForm;
