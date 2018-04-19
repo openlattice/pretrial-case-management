@@ -116,6 +116,10 @@ type Props = {
       neighbors :Immutable.Map<*, *>,
       scores :Immutable.Map<*, *>
     }) => void,
+    loadCaseHistory :(values :{
+      personId :string,
+      neighbors :Immutable.Map<*, *>
+    }) => void,
     loadPSAsByDate :() => void,
     updateScoresAndRiskFactors :(values :{
       scoresEntitySetId :string,
@@ -133,7 +137,9 @@ type Props = {
     }) => void
   },
   psaNeighborsById :Immutable.Map<*, *>,
-  allFilers :Immutable.Set<*>
+  allFilers :Immutable.Set<*>,
+  caseHistory :Immutable.Map<*, *>,
+  chargeHistory :Immutable.Map<*, *>
 }
 
 type State = {
@@ -296,14 +302,20 @@ class ReviewPSA extends React.Component<Props, State> {
 
   renderRow = (scoreId, neighbors) => {
     const scores = this.props.scoresAsMap.get(scoreId, Immutable.Map());
+    const personId = neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborId'], '');
+    const caseHistory = this.props.caseHistory.get(personId, Immutable.Map());
+    const chargeHistory = this.props.chargeHistory.get(personId, Immutable.Map());
     return (
       <PSAReviewRow
           neighbors={neighbors}
           scores={scores}
           entityKeyId={scoreId}
           downloadFn={this.props.actions.downloadPSAReviewPDF}
+          loadCaseHistoryFn={this.props.actions.loadCaseHistory}
           updateScoresAndRiskFactors={this.updateScoresAndRiskFactors}
           updateNotes={this.updateNotes}
+          caseHistory={caseHistory}
+          chargeHistory={chargeHistory}
           key={scoreId} />
     );
   }
@@ -478,7 +490,9 @@ function mapStateToProps(state) {
     psaNeighborsById: review.get('psaNeighborsById'),
     allFilers: review.get('allFilers'),
     loadingResults: review.get('loadingResults'),
-    errorMesasge: review.get('errorMesasge')
+    errorMesasge: review.get('errorMesasge'),
+    caseHistory: review.get('caseHistory'),
+    chargeHistory: review.get('chargeHistory')
   };
 }
 

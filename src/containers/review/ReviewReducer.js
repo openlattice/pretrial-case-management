@@ -5,6 +5,7 @@
 import Immutable from 'immutable';
 
 import {
+  loadCaseHistory,
   loadPSAsByDate,
   updateScoresAndRiskFactors
 } from './ReviewActionFactory';
@@ -17,11 +18,27 @@ const INITIAL_STATE :Immutable.Map<*, *> = Immutable.fromJS({
   psaNeighborsByDate: Immutable.Map(),
   loadingResults: false,
   errorMesasge: '',
-  allFilers: Immutable.Set()
+  allFilers: Immutable.Set(),
+  caseHistory: Immutable.Map(),
+  chargeHistory: Immutable.Map()
 });
 
 export default function reviewReducer(state :Immutable.Map<*, *> = INITIAL_STATE, action :SequenceAction) {
   switch (action.type) {
+
+    case loadCaseHistory.case(action.type): {
+      return loadCaseHistory.reducer(state, action, {
+        REQUEST: () => state
+          .setIn(['caseHistory', action.value.personId], Immutable.Map())
+          .setIn(['chargeHistory', action.value.personId], Immutable.Map()),
+        SUCCESS: () => state
+          .setIn(['caseHistory', action.value.personId], action.value.casesById)
+          .setIn(['chargeHistory', action.value.personId], action.value.chargesByCaseId),
+        FAILURE: () => state
+          .setIn(['caseHistory', action.value.personId], Immutable.Map())
+          .setIn(['chargeHistory', action.value.personId], Immutable.Map())
+      });
+    }
 
     case loadPSAsByDate.case(action.type): {
       return loadPSAsByDate.reducer(state, action, {

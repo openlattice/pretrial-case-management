@@ -6,13 +6,15 @@ import React from 'react';
 import Immutable from 'immutable';
 import styled from 'styled-components';
 import moment from 'moment';
-import { Modal } from 'react-bootstrap';
+import { Modal, Tab, Tabs } from 'react-bootstrap';
 
 import PSAInputForm from '../psainput/PSAInputForm';
 import PersonCard from '../person/PersonCard';
 import StyledButton from '../buttons/StyledButton';
 import InlineEditableControl from '../controls/InlineEditableControl';
+import ChargeList from '../../components/charges/ChargeList';
 import { getScoresAndRiskFactors } from '../../utils/ScoringUtils';
+import { formatValue, formatDateList } from '../../utils/Utils';
 import { PSA } from '../../utils/consts/Consts';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import * as OverrideClassNames from '../../utils/styleoverrides/OverrideClassNames';
@@ -80,7 +82,7 @@ const DownloadButton = styled(StyledButton)`
   height: 50px;
 `;
 
-const ButtonContainer = styled.div`
+const CenteredContainer = styled.div`
   text-align: center;
 `;
 
@@ -100,6 +102,29 @@ const NotesContainer = styled.div`
   text-align: left;
 `;
 
+const InfoRow = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  margin: 15px 0;
+`;
+
+const InfoItem = styled.div`
+  margin: 0 20px;
+`;
+
+const InfoHeader = styled.span`
+  font-weight: bold;
+`;
+
+const ScoresContainer = styled.div`
+  display: inline-block;
+`;
+
+const CaseHeader = styled.div`
+  font-size: 20px;
+`;
+
 const colorsByScale = {
   1: '#3494E6',
   2: '#598CDB',
@@ -115,9 +140,15 @@ type Props = {
   entityKeyId :string,
   scores :Immutable.Map<*, *>,
   neighbors :Immutable.Map<*, *>,
+  caseHistory :Immutable.Map<*, *>,
+  chargeHistory :Immutable.Map<*, *>,
   downloadFn :(values :{
     neighbors :Immutable.Map<*, *>,
     scores :Immutable.Map<*, *>
+  }) => void,
+  loadCaseHistoryFn :(values :{
+    personId :string,
+    neighbors :Immutable.Map<*, *>
   }) => void,
   updateScoresAndRiskFactors :(
     scoresId :string,
@@ -137,7 +168,14 @@ type Props = {
 type State = {
   open :boolean,
   editing :boolean,
+  view :string,
   riskFactors :Immutable.Map<*, *>
+};
+
+const VIEWS = {
+  SUMMARY: 'SUMMARY',
+  PSA: 'PSA',
+  HISTORY: 'HISTORY'
 };
 
 export default class PSAReviewRow extends React.Component<Props, State> {
@@ -147,7 +185,8 @@ export default class PSAReviewRow extends React.Component<Props, State> {
     this.state = {
       open: false,
       editing: false,
-      riskFactors: this.getRiskFactors(props.neighbors)
+      riskFactors: this.getRiskFactors(props.neighbors),
+      view: VIEWS.PSA
     };
   }
 
@@ -315,18 +354,106 @@ export default class PSAReviewRow extends React.Component<Props, State> {
     return `${firstName} ${lastName}`;
   }
 
-  renderEdit = () => {
-    const { open, editing, riskFactors } = this.state;
+  onViewSelect = (view) => {
+    this.setState({ view });
+  }
+
+  renderPersonInfo = () => {
+    const person = this.props.neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborDetails'], Immutable.Map());
+    const firstName = formatValue(person.get(PROPERTY_TYPES.FIRST_NAME));
+    const middleName = formatValue(person.get(PROPERTY_TYPES.MIDDLE_NAME));
+    const lastName = formatValue(person.get(PROPERTY_TYPES.LAST_NAME));
+    const dob = formatDateList(person.get(PROPERTY_TYPES.DOB));
+    const sex = formatValue(person.get(PROPERTY_TYPES.SEX));
+    const race = formatValue(person.get(PROPERTY_TYPES.RACE));
+
+    return (
+      <div>
+        <InfoRow>
+          <InfoItem><InfoHeader>First Name: </InfoHeader>{firstName}</InfoItem>
+          <InfoItem><InfoHeader>Middle Name: </InfoHeader>{middleName}</InfoItem>
+          <InfoItem><InfoHeader>Last Name: </InfoHeader>{lastName}</InfoItem>
+        </InfoRow>
+        <InfoRow>
+          <InfoItem><InfoHeader>Date of Birth: </InfoHeader>{dob}</InfoItem>
+          <InfoItem><InfoHeader>Gender: </InfoHeader>{sex}</InfoItem>
+          <InfoItem><InfoHeader>Race: </InfoHeader>{race}</InfoItem>
+        </InfoRow>
+      </div>
+    );
+  }
+
+  renderCaseInfo = () => {
+    const { caseHistory, chargeHistory, neighbors } = this.props;
+    const caseNum = neighbors.getIn(
+      [ENTITY_SETS.PRETRIAL_CASES, 'neighborDetails', PROPERTY_TYPES.CASE_ID, 0],
+      ''
+    );
+    const pretrialCase = caseHistory.get(caseNum, Immutable.Map());
+    const charges = chargeHistory.get(caseNum, Immutable.List());
+    return (
+      <CenteredContainer>
+        <CaseHeader>{`Case #: ${caseNum}`}</CaseHeader>
+        <ChargeList pretrialCaseDetails={pretrialCase} charges={charges} />
+      </CenteredContainer>
+    );
+  }
+
+  renderSummary = () => {
+    return (
+      <div>
+        {this.renderPersonInfo()}
+        <hr />
+        <CenteredContainer>
+          <ScoresContainer>
+            {this.renderScores()}
+          </ScoresContainer>
+        </CenteredContainer>
+        <hr />
+        {this.renderCaseInfo()}
+      </div>
+    );
+  }
+
+  renderPSADetails = () => {
+    const { editing, riskFactors } = this.state;
 
     const editButton = editing ? null : (
-      <ButtonContainer>
+      <CenteredContainer>
         <StyledButton onClick={() => {
           this.setState({ editing: true });
         }}>
           Edit
         </StyledButton>
-      </ButtonContainer>
+      </CenteredContainer>
     );
+
+    return (
+      <div>
+        <PSAInputForm
+            section="review"
+            input={riskFactors}
+            handleSingleSelection={this.handleRiskFactorChange}
+            handleSubmit={this.onRiskFactorEdit}
+            incompleteError={false}
+            viewOnly={!editing}
+            isReview />
+        {this.renderNotes()}
+        {editButton}
+      </div>
+    );
+  }
+
+  renderCaseHistory = () => {
+    return (
+      <div>
+        Case history!
+      </div>
+    );
+  }
+
+  renderDetails = () => {
+    const { open } = this.state;
 
     return (
       <Modal show={open} onHide={this.closeModal} dialogClassName={OverrideClassNames.PSA_REVIEW_MODAL}>
@@ -334,16 +461,11 @@ export default class PSAReviewRow extends React.Component<Props, State> {
           <Modal.Title>{`PSA Details: ${this.getName()}`}</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <PSAInputForm
-              section="review"
-              input={riskFactors}
-              handleSingleSelection={this.handleRiskFactorChange}
-              handleSubmit={this.onRiskFactorEdit}
-              incompleteError={false}
-              viewOnly={!editing}
-              isReview />
-          {this.renderNotes()}
-          {editButton}
+          <Tabs id={`details-${this.props.entityKeyId}`} activeKey={this.state.view} onSelect={this.onViewSelect}>
+            <Tab eventKey={VIEWS.SUMMARY} title="Summary">{this.renderSummary()}</Tab>
+            <Tab eventKey={VIEWS.PSA} title="PSA">{this.renderPSADetails()}</Tab>
+            <Tab eventKey={VIEWS.HISTORY} title="Case History">{this.renderCaseHistory()}</Tab>
+          </Tabs>
         </Modal.Body>
       </Modal>
     );
@@ -358,7 +480,7 @@ export default class PSAReviewRow extends React.Component<Props, State> {
 
     const text = ['Created'];
     if (dateCreatedText.length) {
-      text.push(' on ')
+      text.push(' on ');
       text.push(<ImportantMetadataText key={dateCreatedText}>{dateCreatedText}</ImportantMetadataText>);
     }
     if (creator.length) {
@@ -375,7 +497,10 @@ export default class PSAReviewRow extends React.Component<Props, State> {
     });
   }
 
-  showDetails = () => {
+  openDetailsModal = () => {
+    const { neighbors, loadCaseHistoryFn } = this.props;
+    const personId = neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborId'], '');
+    loadCaseHistoryFn({ personId, neighbors });
     this.setState({
       open: true,
       editing: false
@@ -386,14 +511,14 @@ export default class PSAReviewRow extends React.Component<Props, State> {
     return (
       <ReviewRowContainer>
         {this.renderMetadata()}
-        <DetailsRowContainer onClick={this.showDetails}>
+        <DetailsRowContainer onClick={this.openDetailsModal}>
           <ReviewRowWrapper>
             {this.renderPersonCard()}
             {this.renderScores()}
             {this.renderDownloadButton()}
           </ReviewRowWrapper>
         </DetailsRowContainer>
-        {this.renderEdit()}
+        {this.renderDetails()}
       </ReviewRowContainer>
     );
   }
