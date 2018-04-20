@@ -7,10 +7,11 @@ import styled from 'styled-components';
 import Immutable from 'immutable';
 
 import { chargeFieldIsViolent } from '../../utils/consts/ChargeConsts';
-import { formatValue } from '../../utils/Utils';
+import { formatValue, formatDateList } from '../../utils/Utils';
 import {
   ChargeItem,
   ChargeRow,
+  ChargesTable,
   ChargesWrapper,
   ChargeTag,
   ChargeTagWrapper,
@@ -34,12 +35,22 @@ const ViolentTag = styled(ChargeTag)`
   background-color: #992619;
 `;
 
+const ChargeHeaderItem = styled(ChargeItem)`
+  width: 100px;
+  font-weight: bold;
+`;
+
 type Props = {
   charges :Immutable.List<*>,
-  pretrialCaseDetails :Immutable.Map<*, *>
+  pretrialCaseDetails :Immutable.Map<*, *>,
+  detailed? :boolean
 };
 
 export default class ChargeList extends React.Component<Props, *> {
+
+  static defaultProps = {
+    detailed: false
+  };
 
   renderTags = (chargeNumField :string[]) => {
     let mostSerious = false;
@@ -61,6 +72,23 @@ export default class ChargeList extends React.Component<Props, *> {
     );
   }
 
+  renderChargeDetails = (charge :Immutable.Map<*, *>) => {
+    if (!this.props.detailed) return null;
+
+    const plea = formatValue(charge.get(PROPERTY_TYPES.PLEA, Immutable.List()));
+    const pleaDate = formatDateList(charge.get(PROPERTY_TYPES.PLEA_DATE, Immutable.List()));
+    const disposition = formatValue(charge.get(PROPERTY_TYPES.DISPOSITION, Immutable.List()));
+    const dispositionDate = formatDateList(charge.get(PROPERTY_TYPES.DISPOSITION_DATE, Immutable.List()));
+    return (
+      <div>
+        <div><InlineBold>Plea: </InlineBold>{plea}</div>
+        <div><InlineBold>Plea Date: </InlineBold>{pleaDate}</div>
+        <div><InlineBold>Disposition: </InlineBold>{disposition}</div>
+        <div><InlineBold>Disposition Date: </InlineBold>{dispositionDate}</div>
+      </div>
+    );
+  }
+
   getChargeList = () => {
     const rows = this.props.charges.map((charge, index) => {
       if (!charge.get(CHARGE_STATUTE, Immutable.List()).size) {
@@ -79,22 +107,26 @@ export default class ChargeList extends React.Component<Props, *> {
         </div>
       );
 
+      const styledDescription = this.props.detailed
+        ? <InlineBold>{description}</InlineBold> : <span>{description}</span>;
+
       return (
         <ChargeRow key={index}>
-          <ChargeItem><InlineBold>{formatValue(chargeNum.toJS())}</InlineBold></ChargeItem>
+          <ChargeHeaderItem>{formatValue(chargeNum.toJS())}</ChargeHeaderItem>
           <ChargeItem>
-            {description}
+            {styledDescription}
+            {this.renderChargeDetails(charge)}
             {this.renderTags(chargeNum)}
           </ChargeItem>
         </ChargeRow>
       );
     });
     return (
-      <table>
+      <ChargesTable>
         <tbody>
           {rows}
         </tbody>
-      </table>
+      </ChargesTable>
     );
   }
 

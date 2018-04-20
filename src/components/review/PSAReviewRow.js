@@ -125,6 +125,12 @@ const CaseHeader = styled.div`
   font-size: 20px;
 `;
 
+const CaseHistoryContainer = styled.div`
+  max-height: 750px;
+  overflow-y: scroll;
+  text-align: center;
+`;
+
 const colorsByScale = {
   1: '#3494E6',
   2: '#598CDB',
@@ -140,7 +146,7 @@ type Props = {
   entityKeyId :string,
   scores :Immutable.Map<*, *>,
   neighbors :Immutable.Map<*, *>,
-  caseHistory :Immutable.Map<*, *>,
+  caseHistory :Immutable.List<*>,
   chargeHistory :Immutable.Map<*, *>,
   downloadFn :(values :{
     neighbors :Immutable.Map<*, *>,
@@ -215,7 +221,8 @@ export default class PSAReviewRow extends React.Component<Props, State> {
     });
   }
 
-  downloadRow = () => {
+  downloadRow = (e) => {
+    e.stopPropagation();
     const { downloadFn, neighbors, scores } = this.props;
     downloadFn({ neighbors, scores });
   }
@@ -344,7 +351,7 @@ export default class PSAReviewRow extends React.Component<Props, State> {
       riskFactorsId,
       riskFactors
     );
-    this.setState({ open: false });
+    this.setState({ editing: false });
   }
 
   getName = () => {
@@ -389,7 +396,7 @@ export default class PSAReviewRow extends React.Component<Props, State> {
       [ENTITY_SETS.PRETRIAL_CASES, 'neighborDetails', PROPERTY_TYPES.CASE_ID, 0],
       ''
     );
-    const pretrialCase = caseHistory.get(caseNum, Immutable.Map());
+    const pretrialCase = caseHistory.filter(caseObj => caseObj.getIn([PROPERTY_TYPES.CASE_ID, 0], '') === caseNum);
     const charges = chargeHistory.get(caseNum, Immutable.List());
     return (
       <CenteredContainer>
@@ -445,10 +452,28 @@ export default class PSAReviewRow extends React.Component<Props, State> {
   }
 
   renderCaseHistory = () => {
+    const { caseHistory, chargeHistory } = this.props;
+    const cases = caseHistory
+      .filter(caseObj => caseObj.getIn([PROPERTY_TYPES.CASE_ID, 0], '').length)
+      .map((caseObj) => {
+        const caseNum = caseObj.getIn([PROPERTY_TYPES.CASE_ID, 0], '');
+        const charges = chargeHistory.get(caseNum);
+        const fileDate = formatDateList(caseObj.get(PROPERTY_TYPES.FILE_DATE, Immutable.List()));
+        return (
+          <div key={caseNum}>
+            <InfoRow>
+              <InfoItem><InfoHeader>Case #: </InfoHeader>{caseNum}</InfoItem>
+              <InfoItem><InfoHeader>File Date: </InfoHeader>{fileDate}</InfoItem>
+            </InfoRow>
+            <ChargeList pretrialCaseDetails={caseObj} charges={charges} detailed />
+            <hr />
+          </div>
+        );
+      });
     return (
-      <div>
-        Case history!
-      </div>
+      <CaseHistoryContainer>
+        {cases}
+      </CaseHistoryContainer>
     );
   }
 

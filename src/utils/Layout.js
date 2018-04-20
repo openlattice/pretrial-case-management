@@ -265,6 +265,11 @@ export const ChargesWrapper = styled.div`
   text-align: left;
   margin-bottom: 30px;
   display: inline-block;
+  width: 100%;
+`;
+
+export const ChargesTable = styled.table`
+  width: 100%;
 `;
 
 export const ChargeRow = styled.tr`

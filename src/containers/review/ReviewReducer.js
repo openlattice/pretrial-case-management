@@ -29,13 +29,13 @@ export default function reviewReducer(state :Immutable.Map<*, *> = INITIAL_STATE
     case loadCaseHistory.case(action.type): {
       return loadCaseHistory.reducer(state, action, {
         REQUEST: () => state
-          .setIn(['caseHistory', action.value.personId], Immutable.Map())
+          .setIn(['caseHistory', action.value.personId], Immutable.List())
           .setIn(['chargeHistory', action.value.personId], Immutable.Map()),
         SUCCESS: () => state
-          .setIn(['caseHistory', action.value.personId], action.value.casesById)
+          .setIn(['caseHistory', action.value.personId], action.value.allCases)
           .setIn(['chargeHistory', action.value.personId], action.value.chargesByCaseId),
         FAILURE: () => state
-          .setIn(['caseHistory', action.value.personId], Immutable.Map())
+          .setIn(['caseHistory', action.value.personId], Immutable.List())
           .setIn(['chargeHistory', action.value.personId], Immutable.Map())
       });
     }

@@ -138,7 +138,7 @@ type Props = {
   },
   psaNeighborsById :Immutable.Map<*, *>,
   allFilers :Immutable.Set<*>,
-  caseHistory :Immutable.Map<*, *>,
+  caseHistory :Immutable.List<*>,
   chargeHistory :Immutable.Map<*, *>
 }
 
@@ -303,7 +303,7 @@ class ReviewPSA extends React.Component<Props, State> {
   renderRow = (scoreId, neighbors) => {
     const scores = this.props.scoresAsMap.get(scoreId, Immutable.Map());
     const personId = neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborId'], '');
-    const caseHistory = this.props.caseHistory.get(personId, Immutable.Map());
+    const caseHistory = this.props.caseHistory.get(personId, Immutable.List());
     const chargeHistory = this.props.chargeHistory.get(personId, Immutable.Map());
     return (
       <PSAReviewRow

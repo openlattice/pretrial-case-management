@@ -25,6 +25,16 @@ const CardWrapper = styled.div`
   display: inline-block;
 `;
 
+const ChargeWrapper = styled.div`
+  width: 50%;
+  min-width: 700px;
+  display: inline-block;
+`;
+
+const ChargeContainer = styled.div`
+  text-align: center;
+`;
+
 type Props = {
   propertyTypes :Object[],
   charges :Immutable.List<*>,
@@ -63,7 +73,11 @@ export default class SelectedPretrialInfo extends React.Component<Props, *> {
             <PretrialCard pretrialCase={pretrialCaseDetails} />
           </CardWrapper>
         </CardContainer>
-        <ChargeList pretrialCaseDetails={pretrialCaseDetails} charges={charges} />
+        <ChargeContainer>
+          <ChargeWrapper>
+            <ChargeList pretrialCaseDetails={pretrialCaseDetails} charges={charges} />
+          </ChargeWrapper>
+        </ChargeContainer>
       </InfoContainer>
     );
   }

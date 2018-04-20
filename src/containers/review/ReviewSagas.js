@@ -22,8 +22,8 @@ import {
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 
 const orderCasesByArrestDate = (case1, case2) => {
-  const date1 = moment(case1.getIn([PROPERTY_TYPES.ARREST_DATE, 0], ''));
-  const date2 = moment(case2.getIn([PROPERTY_TYPES.ARREST_DATE, 0], ''));
+  const date1 = moment(case1.getIn([PROPERTY_TYPES.ARREST_DATE, 0], case1.getIn([PROPERTY_TYPES.FILE_DATE, 0], '')));
+  const date2 = moment(case2.getIn([PROPERTY_TYPES.ARREST_DATE, 0], case2.getIn([PROPERTY_TYPES.FILE_DATE, 0], '')));
   if (date1.isValid() && date2.isValid()) {
     if (date1.isBefore(date2)) return 1;
     if (date1.isAfter(date2)) return -1;
@@ -44,7 +44,7 @@ function* getCasesAndCharges(neighbors) {
     const entitySet = neighbor.neighborEntitySet;
     if (entitySet && entitySet.name === ENTITY_SETS.PRETRIAL_CASES) {
       const caseObj = neighborDetails.set('id', neighbor.neighborId);
-      const arrList = caseObj.get(PROPERTY_TYPES.ARREST_DATE, Immutable.List());
+      const arrList = caseObj.get(PROPERTY_TYPES.ARREST_DATE, caseObj.get(PROPERTY_TYPES.FILE_DATE, Immutable.List()));
       if (arrList.size) {
         pretrialCaseOptionsWithDate = pretrialCaseOptionsWithDate.push(caseObj);
       }
@@ -56,7 +56,6 @@ function* getCasesAndCharges(neighbors) {
       allCharges = allCharges.push(neighborDetails);
     }
   });
-
   pretrialCaseOptionsWithDate = pretrialCaseOptionsWithDate.sort(orderCasesByArrestDate);
   const allCases = pretrialCaseOptionsWithDate.concat(pretrialCaseOptionsWithoutDate);
   return { allCases, allCharges };
@@ -67,15 +66,7 @@ function* loadCaseHistoryWorker(action :SequenceAction) :Generator<*, *, *> {
   try {
     const { personId, neighbors } = action.value;
     const { allCases, allCharges } = yield getCasesAndCharges(neighbors);
-
-    let casesById = Immutable.Map();
     let chargesByCaseId = Immutable.Map();
-    allCases.forEach((caseObj) => {
-      const caseId = caseObj.getIn([PROPERTY_TYPES.CASE_ID, 0], '');
-      if (caseId.length) {
-        casesById = casesById.set(caseId, caseObj);
-      }
-    })
 
     allCharges.forEach((charge) => {
       const chargeIdArr = charge.getIn([PROPERTY_TYPES.CHARGE_ID, 0], '').split('|');
@@ -85,7 +76,7 @@ function* loadCaseHistoryWorker(action :SequenceAction) :Generator<*, *, *> {
       }
     });
 
-    yield put(loadCaseHistory.success(action.id, { personId, casesById, chargesByCaseId }));
+    yield put(loadCaseHistory.success(action.id, { personId, allCases, chargesByCaseId }));
 
   }
   catch (error) {
