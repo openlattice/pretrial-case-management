@@ -30,7 +30,6 @@ const {
   MOST_SERIOUS_CHARGE_NO,
   MOST_SERIOUS_CHARGE_DEG,
   PENDING_CHARGE,
-  PERSON_ID,
   PRIOR_MISDEMEANOR,
   PRIOR_FELONY,
   PRIOR_CONVICTION,
@@ -166,7 +165,7 @@ const header = (doc :Object, yInit :number) :number => {
   doc.text(X_MARGIN, y, 'PRETRIAL SERVICES');
   y += Y_INC * 2;
   doc.setFontSize(MEDIUM_FONT_SIZE);
-  doc.text(X_MARGIN, y, 'Public Safety Assessment - Court Report');
+  doc.text(X_MARGIN, y, 'Public Safety Assessment (PSA) Report');
   y += Y_INC;
   thickLine(doc, y);
   y += Y_INC;
@@ -183,7 +182,6 @@ const person = (
 ) :number => {
   let y = yInit;
   doc.text(X_MARGIN, y, `Name: ${name}`);
-  doc.text(X_MAX / 2, y, `PID: ${formatValue(selectedPerson.get(PERSON_ID))}`);
   y += Y_INC;
   doc.text(X_MARGIN, y, `DOB: ${formatDateList(selectedPerson.get(DOB))}`);
   doc.text(X_MAX / 2, y, `Race: ${formatValue(selectedPerson.get(RACE))}`);
@@ -229,12 +227,32 @@ const scale = (doc :Object, yInit :number, value :number) :number => {
   return y;
 };
 
+const nvcaFlag = (doc :Object, yInit :number, value :string) :number => {
+  const flagIsTrue = value === 'Yes';
+  let y = yInit;
+  if (flagIsTrue) {
+    doc.setFontSize(LARGE_FONT_SIZE);
+    doc.setFontType('bold')
+  }
+
+  doc.text(X_MARGIN + SCORE_OFFSET + SCORE_OFFSET, y, value);
+  if (flagIsTrue) {
+    doc.setFontSize(FONT_SIZE);
+    doc.setFontType('regular')
+    y += Y_INC;
+  }
+  else {
+    y += Y_INC;
+  }
+  return y;
+
+}
+
 const scores = (doc :Object, yInit :number, scoreValues :Immutable.Map<*, *>) :number => {
   let y = yInit;
   doc.text(X_MARGIN + SCORE_OFFSET, y, 'New Violent Criminal Activity Flag');
   y += Y_INC;
-  doc.text(X_MARGIN + SCORE_OFFSET + SCORE_OFFSET, y, getBooleanText(scoreValues.get('nvcaFlag')));
-  y += Y_INC;
+  y = nvcaFlag(doc, y, getBooleanText(scoreValues.get('nvcaFlag')));
   doc.text(X_MARGIN + SCORE_OFFSET, y, 'New Criminal Activity Scale');
   y += Y_INC;
   y = scale(doc, y, scoreValues.get('ncaScale'));
@@ -349,7 +367,7 @@ const riskFactors = (
   if (currentViolentOffense) {
     y = chargeReferences(y, doc, getViolentCharges(currCharges, mostSeriousCharge));
   }
-  doc.text(GENERATED_RISK_FACTOR_OFFSET, y, 'a. Current Violent Offense & 20 Years Old or Younger');
+  doc.text(X_MARGIN, y, '2a. Current Violent Offense & 20 Years Old or Younger');
   doc.text(RESPONSE_OFFSET, y, getBooleanText(currentViolentOffenseAndYoung));
   y += Y_INC;
   doc.text(X_MARGIN, y, '3. Pending Charge at the Time of the Offense');
@@ -370,7 +388,7 @@ const riskFactors = (
   if (priorFelony) {
     y = chargeReferences(y, doc, getPreviousFelonies(allCharges));
   }
-  doc.text(GENERATED_RISK_FACTOR_OFFSET, y, 'a. Prior Conviction');
+  doc.text(X_MARGIN, y, '5a. Prior Conviction (Prior Felony or Misdemeanor Conviction)');
   doc.text(RESPONSE_OFFSET, y, getBooleanText(priorConviction));
   y += Y_INC;
   doc.text(X_MARGIN, y, '6. Prior Violent Conviction');
@@ -393,12 +411,11 @@ const riskFactors = (
 
 const recommendations = (doc :Object, yInit :number, releaseRecommendation :string) :number => {
   let y = yInit;
-  doc.text(X_MARGIN, y, 'Recommendations:');
+  doc.text(X_MARGIN, y, 'Notes:');
   y += Y_INC_SMALL;
   thinLine(doc, y);
   y += Y_INC;
-  const recommendationText = `Release recommendation - ${releaseRecommendation}`;
-  const recommendationLines = doc.splitTextToSize(recommendationText, X_MAX - (2 * X_MARGIN));
+  const recommendationLines = doc.splitTextToSize(releaseRecommendation, X_MAX - (2 * X_MARGIN));
   doc.text(X_MARGIN, y, recommendationLines);
   y += (recommendationLines.length * Y_INC);
   return y;
