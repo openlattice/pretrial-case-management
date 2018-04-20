@@ -398,9 +398,10 @@ export default class PSAReviewRow extends React.Component<Props, State> {
     );
     const pretrialCase = caseHistory.filter(caseObj => caseObj.getIn([PROPERTY_TYPES.CASE_ID, 0], '') === caseNum);
     const charges = chargeHistory.get(caseNum, Immutable.List());
+    const caseNumText = caseNum.length ? `Case #: ${caseNum}` : 'No case information provided.';
     return (
       <CenteredContainer>
-        <CaseHeader>{`Case #: ${caseNum}`}</CaseHeader>
+        <CaseHeader>{caseNumText}</CaseHeader>
         <ChargeList pretrialCaseDetails={pretrialCase} charges={charges} />
       </CenteredContainer>
     );
