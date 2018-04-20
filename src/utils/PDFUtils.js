@@ -411,12 +411,11 @@ const riskFactors = (
 
 const recommendations = (doc :Object, yInit :number, releaseRecommendation :string) :number => {
   let y = yInit;
-  doc.text(X_MARGIN, y, 'Recommendations:');
+  doc.text(X_MARGIN, y, 'Notes:');
   y += Y_INC_SMALL;
   thinLine(doc, y);
   y += Y_INC;
-  const recommendationText = `Notes - ${releaseRecommendation}`;
-  const recommendationLines = doc.splitTextToSize(recommendationText, X_MAX - (2 * X_MARGIN));
+  const recommendationLines = doc.splitTextToSize(releaseRecommendation, X_MAX - (2 * X_MARGIN));
   doc.text(X_MARGIN, y, recommendationLines);
   y += (recommendationLines.length * Y_INC);
   return y;
