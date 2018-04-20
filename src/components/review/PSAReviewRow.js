@@ -14,6 +14,12 @@ import StyledButton from '../buttons/StyledButton';
 import InlineEditableControl from '../controls/InlineEditableControl';
 import ChargeList from '../../components/charges/ChargeList';
 import { getScoresAndRiskFactors } from '../../utils/ScoringUtils';
+import {
+  degreeFieldIsMisdemeanor,
+  degreeFieldIsFelony,
+  dispositionFieldIsGuilty
+} from '../../utils/consts/ChargeConsts';
+import { InlineBold } from '../../utils/Layout';
 import { formatValue, formatDateList } from '../../utils/Utils';
 import { PSA } from '../../utils/consts/Consts';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
@@ -129,6 +135,41 @@ const CaseHistoryContainer = styled.div`
   max-height: 750px;
   overflow-y: scroll;
   text-align: center;
+`;
+
+const StatsContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background: #f3f5f7;
+  padding: 15px 0;
+`;
+
+const StatsWrapper = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  background: #f3f5f7;
+`;
+
+const StatsTitle = styled.div`
+  font-weight: bold;
+  text-decoration: underline;
+  font-style: italic;
+`;
+
+const StatsGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: baseline;
+  margin: 10px;
+`;
+const StatsItem = styled.div`
+  margin: 2px;
+`;
+
+const StatsCount = styled.span`
+  font-size: 18px;
 `;
 
 const colorsByScale = {
@@ -452,6 +493,57 @@ export default class PSAReviewRow extends React.Component<Props, State> {
     );
   }
 
+  renderStatistics = () => {
+    const { chargeHistory } = this.props;
+    let numMisdemeanorCharges = 0;
+    let numMisdemeanorConvictions = 0;
+    let numFelonyCharges = 0;
+    let numFelonyConvictions = 0;
+
+    chargeHistory.valueSeq().forEach((chargeList) => {
+      chargeList.forEach((charge) => {
+        const degreeField = charge.get(PROPERTY_TYPES.CHARGE_LEVEL, Immutable.List());
+        const convicted = dispositionFieldIsGuilty(charge.get(PROPERTY_TYPES.DISPOSITION, Immutable.List()));
+        if (degreeFieldIsMisdemeanor(degreeField)) {
+          numMisdemeanorCharges += 1;
+          if (convicted) numMisdemeanorConvictions += 1;
+        }
+        else if (degreeFieldIsFelony(degreeField)) {
+          numFelonyCharges += 1;
+          if (convicted) numFelonyConvictions += 1;
+        }
+      });
+    });
+
+    return (
+      <StatsContainer>
+        <StatsTitle>Summary Statistics:</StatsTitle>
+        <StatsWrapper>
+          <StatsGroup>
+            <StatsItem>
+              <InlineBold>Num misdemeanor charges: </InlineBold>
+              <StatsCount>{numMisdemeanorCharges}</StatsCount>
+            </StatsItem>
+            <StatsItem>
+              <InlineBold>Num misdemeanor convictions: </InlineBold>
+              <StatsCount>{numMisdemeanorConvictions}</StatsCount>
+            </StatsItem>
+          </StatsGroup>
+          <StatsGroup>
+            <StatsItem>
+              <InlineBold>Num felony charges: </InlineBold>
+              <StatsCount>{numFelonyCharges}</StatsCount>
+            </StatsItem>
+            <StatsItem>
+              <InlineBold>Num felony convictions: </InlineBold>
+              <StatsCount>{numFelonyConvictions}</StatsCount>
+            </StatsItem>
+          </StatsGroup>
+        </StatsWrapper>
+      </StatsContainer>
+    );
+  }
+
   renderCaseHistory = () => {
     const { caseHistory, chargeHistory } = this.props;
     const cases = caseHistory
@@ -473,6 +565,7 @@ export default class PSAReviewRow extends React.Component<Props, State> {
       });
     return (
       <CaseHistoryContainer>
+        {this.renderStatistics()}
         {cases}
       </CaseHistoryContainer>
     );
