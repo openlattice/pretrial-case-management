@@ -131,7 +131,7 @@ export default class ChargeList extends React.Component<Props, *> {
   }
 
   render = () => {
-    if (!this.props.charges.size) return null;
+    if (!this.props.charges || !this.props.charges.size) return null;
     return (
       <div>
         <InfoSubHeader>Charges:</InfoSubHeader>
