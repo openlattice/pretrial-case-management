@@ -5,6 +5,7 @@
 import Immutable from 'immutable';
 
 import {
+  checkPSAPermissions,
   loadCaseHistory,
   loadPSAsByDate,
   updateScoresAndRiskFactors
@@ -20,11 +21,20 @@ const INITIAL_STATE :Immutable.Map<*, *> = Immutable.fromJS({
   errorMesasge: '',
   allFilers: Immutable.Set(),
   caseHistory: Immutable.Map(),
-  chargeHistory: Immutable.Map()
+  chargeHistory: Immutable.Map(),
+  readOnly: true
 });
 
 export default function reviewReducer(state :Immutable.Map<*, *> = INITIAL_STATE, action :SequenceAction) {
   switch (action.type) {
+
+    case checkPSAPermissions.case(action.type): {
+      return checkPSAPermissions.reducer(state, action, {
+        REQUEST: () => state.set('readOnly', true),
+        SUCCESS: () => state.set('readOnly', action.value.readOnly),
+        FAILURE: () => state.set('readOnly', true)
+      });
+    }
 
     case loadCaseHistory.case(action.type): {
       return loadCaseHistory.reducer(state, action, {

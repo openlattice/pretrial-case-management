@@ -189,6 +189,7 @@ type Props = {
   neighbors :Immutable.Map<*, *>,
   caseHistory :Immutable.List<*>,
   chargeHistory :Immutable.Map<*, *>,
+  readOnly :boolean,
   downloadFn :(values :{
     neighbors :Immutable.Map<*, *>,
     scores :Immutable.Map<*, *>
@@ -467,7 +468,7 @@ export default class PSAReviewRow extends React.Component<Props, State> {
   renderPSADetails = () => {
     const { editing, riskFactors } = this.state;
 
-    const editButton = editing ? null : (
+    const editButton = (editing || this.props.readOnly) ? null : (
       <CenteredContainer>
         <StyledButton onClick={() => {
           this.setState({ editing: true });

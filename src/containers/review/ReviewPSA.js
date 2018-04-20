@@ -134,12 +134,14 @@ type Props = {
       entityId :string,
       entitySetId :string,
       propertyTypes :Immutable.List<*>
-    }) => void
+    }) => void,
+    checkPSAPermissions :() => void,
   },
   psaNeighborsById :Immutable.Map<*, *>,
   allFilers :Immutable.Set<*>,
   caseHistory :Immutable.List<*>,
-  chargeHistory :Immutable.Map<*, *>
+  chargeHistory :Immutable.Map<*, *>,
+  readOnly :boolean
 }
 
 type State = {
@@ -173,6 +175,7 @@ class ReviewPSA extends React.Component<Props, State> {
   }
 
   componentDidMount() {
+    this.props.actions.checkPSAPermissions();
     this.props.actions.loadPSAsByDate();
   }
 
@@ -316,6 +319,7 @@ class ReviewPSA extends React.Component<Props, State> {
           updateNotes={this.updateNotes}
           caseHistory={caseHistory}
           chargeHistory={chargeHistory}
+          readOnly={this.props.readOnly}
           key={scoreId} />
     );
   }
@@ -492,7 +496,8 @@ function mapStateToProps(state) {
     loadingResults: review.get('loadingResults'),
     errorMesasge: review.get('errorMesasge'),
     caseHistory: review.get('caseHistory'),
-    chargeHistory: review.get('chargeHistory')
+    chargeHistory: review.get('chargeHistory'),
+    readOnly: review.get('readOnly')
   };
 }
 

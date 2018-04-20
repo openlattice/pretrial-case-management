@@ -4,15 +4,17 @@
 
 import Immutable from 'immutable';
 import moment from 'moment';
-import { DataApi, EntityDataModelApi, SearchApi} from 'lattice';
+import { AuthorizationApi, DataApi, EntityDataModelApi, SearchApi } from 'lattice';
 import { call, put, takeEvery } from 'redux-saga/effects';
 
 import exportPDF from '../../utils/PDFUtils';
 import {
+  CHECK_PSA_PERMISSIONS,
   DOWNLOAD_PSA_REVIEW_PDF,
   LOAD_CASE_HISTORY,
   LOAD_PSAS_BY_DATE,
   UPDATE_SCORES_AND_RISK_FACTORS,
+  checkPSAPermissions,
   downloadPSAReviewPDF,
   loadCaseHistory,
   loadPSAsByDate,
@@ -61,10 +63,38 @@ function* getCasesAndCharges(neighbors) {
   return { allCases, allCharges };
 }
 
+function* checkPSAPermissionsWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  try {
+    yield put(checkPSAPermissions.request(action.id));
+
+    const entitySetId = yield call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.PSA_RISK_FACTORS);
+    const permissions = yield call(AuthorizationApi.checkAuthorizations, [{
+      aclKey: [entitySetId],
+      permissions: ['WRITE']
+    }]);
+    yield put(checkPSAPermissions.success(action.id, { readOnly: !permissions[0].permissions.WRITE }))
+  }
+  catch (error) {
+    console.error(error);
+    yield put(checkPSAPermissions.failure(action.id, { error }));
+  }
+  finally {
+    yield put(checkPSAPermissions.finally(action.id));
+  }
+}
+
+function* checkPSAPermissionsWatcher() :Generator<*, *, *> {
+  yield takeEvery(CHECK_PSA_PERMISSIONS, checkPSAPermissionsWorker);
+}
+
+
 function* loadCaseHistoryWorker(action :SequenceAction) :Generator<*, *, *> {
 
   try {
     const { personId, neighbors } = action.value;
+    yield put(loadCaseHistory.request(action.id, { personId }));
+
     const { allCases, allCharges } = yield getCasesAndCharges(neighbors);
     let chargesByCaseId = Immutable.Map();
 
@@ -275,6 +305,7 @@ function* updateScoresAndRiskFactorsWatcher() :Generator<*, *, *> {
 }
 
 export {
+  checkPSAPermissionsWatcher,
   downloadPSAReviewPDFWatcher,
   loadCaseHistoryWatcher,
   loadPSAsByDateWatcher,
