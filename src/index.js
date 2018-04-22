@@ -53,9 +53,9 @@ injectGlobal`
  * // !!! MUST HAPPEN FIRST !!!
  */
 
-let baseUrl = (__ENV_DEV__) ? 'localhost' : 'production';
-if (window.location.host.startsWith('staging')) {
-  baseUrl = 'staging';
+let baseUrl = 'localhost';
+if (!__ENV_DEV__) {
+  baseUrl = window.location.host.startsWith('staging') ? 'staging' : 'production';
 }
 
 LatticeAuth.configure({
