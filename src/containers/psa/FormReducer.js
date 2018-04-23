@@ -142,8 +142,8 @@ function formReducer(state :Immutable.Map<> = INITIAL_STATE, action :Object) {
 
     case SELECT_PRETRIAL_CASE: {
       const getCaseAndChargeNum :Function = (charge) => {
-        const chargeVal = charge.getIn([CHARGE_ID, 0], Immutable.List());
-        return chargeVal.size ? chargeVal.split('|') : [];
+        const chargeVal = charge.getIn([CHARGE_ID, 0], '');
+        return chargeVal.length ? chargeVal.split('|') : [];
       };
 
       const { selectedPretrialCase } = action.value;

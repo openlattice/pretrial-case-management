@@ -54,11 +54,16 @@ injectGlobal`
  * // !!! MUST HAPPEN FIRST !!!
  */
 
+let baseUrl = 'localhost';
+if (!__ENV_DEV__) {
+  baseUrl = window.location.host.startsWith('staging') ? 'staging' : 'production';
+}
+
 LatticeAuth.configure({
   auth0ClientId: __AUTH0_CLIENT_ID__,
   auth0Domain: __AUTH0_DOMAIN__,
   authToken: AuthUtils.getAuthToken(),
-  baseUrl: (__ENV_DEV__) ? 'localhost' : 'production'
+  baseUrl
 });
 
 /*

@@ -111,7 +111,8 @@ const MISDEMEANOR_CHARGE_LEVEL_CODES :Set<string> = Immutable.Set([
 
 const stripDegree = (chargeNum :string) :string => chargeNum.split('(')[0].trim();
 
-export const chargeIsViolent = (chargeNum :string) :boolean => VIOLENT_CHARGES.includes(stripDegree(chargeNum));
+export const chargeIsViolent = (chargeNum :string) :boolean =>
+  VIOLENT_CHARGES.includes(stripDegree(chargeNum.toLowerCase()));
 
 export const getUnique = (valueList :Immutable.List<string>) :Immutable.List<string> =>
   valueList.filter((val, index) => valueList.indexOf(val) === index);

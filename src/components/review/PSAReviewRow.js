@@ -4,17 +4,26 @@
 
 import React from 'react';
 import Immutable from 'immutable';
-import FontAwesome from 'react-fontawesome';
 import styled from 'styled-components';
 import moment from 'moment';
-import { Collapse } from 'react-bootstrap';
+import { Modal, Tab, Tabs } from 'react-bootstrap';
 
 import PSAInputForm from '../psainput/PSAInputForm';
 import PersonCard from '../person/PersonCard';
 import StyledButton from '../buttons/StyledButton';
+import InlineEditableControl from '../controls/InlineEditableControl';
+import ChargeList from '../../components/charges/ChargeList';
 import { getScoresAndRiskFactors } from '../../utils/ScoringUtils';
+import {
+  degreeFieldIsMisdemeanor,
+  degreeFieldIsFelony,
+  dispositionFieldIsGuilty
+} from '../../utils/consts/ChargeConsts';
+import { InlineBold } from '../../utils/Layout';
+import { formatValue, formatDateList } from '../../utils/Utils';
 import { PSA } from '../../utils/consts/Consts';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import * as OverrideClassNames from '../../utils/styleoverrides/OverrideClassNames';
 
 const ScoresTable = styled.table`
   margin: 0 50px;
@@ -32,6 +41,7 @@ const ReviewRowContainer = styled.div`
 const DetailsRowContainer = styled.div`
   display: flex;
   justify-content: center;
+  cursor: pointer;
 `;
 
 const ReviewRowWrapper = styled.div`
@@ -78,21 +88,8 @@ const DownloadButton = styled(StyledButton)`
   height: 50px;
 `;
 
-const EditButton = styled.button`
-  display: inline-block;
-  background: none;
+const CenteredContainer = styled.div`
   text-align: center;
-  border: none;
-`;
-
-const EditButtonText = styled.div`
-  font-size: 16px;
-`;
-
-const EditButtonSymbol = styled(FontAwesome).attrs({
-  size: '2x'
-})`
-  margin-top: -15px;
 `;
 
 const MetadataText = styled.div`
@@ -105,6 +102,74 @@ const MetadataText = styled.div`
 
 const ImportantMetadataText = styled.span`
   color: black;
+`;
+
+const NotesContainer = styled.div`
+  text-align: left;
+`;
+
+const InfoRow = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  margin: 15px 0;
+`;
+
+const InfoItem = styled.div`
+  margin: 0 20px;
+`;
+
+const InfoHeader = styled.span`
+  font-weight: bold;
+`;
+
+const ScoresContainer = styled.div`
+  display: inline-block;
+`;
+
+const CaseHeader = styled.div`
+  font-size: 20px;
+`;
+
+const CaseHistoryContainer = styled.div`
+  max-height: 750px;
+  overflow-y: scroll;
+  text-align: center;
+`;
+
+const StatsContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background: #f3f5f7;
+  padding: 15px 0;
+`;
+
+const StatsWrapper = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  background: #f3f5f7;
+`;
+
+const StatsTitle = styled.div`
+  font-weight: bold;
+  text-decoration: underline;
+  font-style: italic;
+`;
+
+const StatsGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: baseline;
+  margin: 10px;
+`;
+const StatsItem = styled.div`
+  margin: 2px;
+`;
+
+const StatsCount = styled.span`
+  font-size: 18px;
 `;
 
 const colorsByScale = {
@@ -122,9 +187,16 @@ type Props = {
   entityKeyId :string,
   scores :Immutable.Map<*, *>,
   neighbors :Immutable.Map<*, *>,
+  caseHistory :Immutable.List<*>,
+  chargeHistory :Immutable.Map<*, *>,
+  readOnly :boolean,
   downloadFn :(values :{
     neighbors :Immutable.Map<*, *>,
     scores :Immutable.Map<*, *>
+  }) => void,
+  loadCaseHistoryFn :(values :{
+    personId :string,
+    neighbors :Immutable.Map<*, *>
   }) => void,
   updateScoresAndRiskFactors :(
     scoresId :string,
@@ -132,12 +204,26 @@ type Props = {
     riskFactorsEntitySetId :string,
     riskFactorsId :string,
     riskFactorsEntity :Object
-  ) => void
+  ) => void,
+  updateNotes :(
+    notes :string,
+    entityId :string,
+    entitySetId :string,
+    propertyTypes :Immutable.List<*>
+  ) => void,
 };
 
 type State = {
   open :boolean,
+  editing :boolean,
+  view :string,
   riskFactors :Immutable.Map<*, *>
+};
+
+const VIEWS = {
+  SUMMARY: 'SUMMARY',
+  PSA: 'PSA',
+  HISTORY: 'HISTORY'
 };
 
 export default class PSAReviewRow extends React.Component<Props, State> {
@@ -146,7 +232,9 @@ export default class PSAReviewRow extends React.Component<Props, State> {
     super(props);
     this.state = {
       open: false,
-      riskFactors: this.getRiskFactors(props.neighbors)
+      editing: false,
+      riskFactors: this.getRiskFactors(props.neighbors),
+      view: VIEWS.PSA
     };
   }
 
@@ -175,7 +263,8 @@ export default class PSAReviewRow extends React.Component<Props, State> {
     });
   }
 
-  downloadRow = () => {
+  downloadRow = (e) => {
+    e.stopPropagation();
     const { downloadFn, neighbors, scores } = this.props;
     downloadFn({ neighbors, scores });
   }
@@ -215,19 +304,19 @@ export default class PSAReviewRow extends React.Component<Props, State> {
       <ScoresTable>
         <tbody>
           <tr>
-            <ScoreHeader>FTA</ScoreHeader>
-            <ScoreHeader>NCA</ScoreHeader>
             <ScoreHeader>NVCA</ScoreHeader>
+            <ScoreHeader>NCA</ScoreHeader>
+            <ScoreHeader>FTA</ScoreHeader>
           </tr>
           <ScaleRow>
-            <ScoreItem><FtaScale /></ScoreItem>
-            <ScoreItem><NcaScale /></ScoreItem>
             <ScoreItem><NvcaScale /></ScoreItem>
+            <ScoreItem><NcaScale /></ScoreItem>
+            <ScoreItem><FtaScale /></ScoreItem>
           </ScaleRow>
           <tr>
-            <ScoreItem>{ftaVal}</ScoreItem>
-            <ScoreItem>{ncaVal}</ScoreItem>
             <ScoreItem>{nvcaVal ? 'YES' : 'NO'}</ScoreItem>
+            <ScoreItem>{ncaVal}</ScoreItem>
+            <ScoreItem>{ftaVal}</ScoreItem>
           </tr>
         </tbody>
       </ScoresTable>
@@ -239,6 +328,32 @@ export default class PSAReviewRow extends React.Component<Props, State> {
       <DownloadButton onClick={this.downloadRow}>Download PDF Report</DownloadButton>
     </DownloadButtonContainer>
   )
+
+  handleNotesUpdate = (notes :string) => {
+    const neighbor = this.props.neighbors.get(ENTITY_SETS.RELEASE_RECOMMENDATIONS, Immutable.Map());
+    const entityId = neighbor.getIn(['neighborDetails', PROPERTY_TYPES.GENERAL_ID, 0]);
+    const entitySetId = neighbor.getIn(['neighborEntitySet', 'id']);
+    const propertyTypes = neighbor.get('neighborPropertyTypes');
+    this.props.updateNotes(notes, entityId, entitySetId, propertyTypes);
+  }
+
+  renderNotes = () => {
+    const notes = this.props.neighbors.getIn(
+      [ENTITY_SETS.RELEASE_RECOMMENDATIONS, 'neighborDetails', PROPERTY_TYPES.RELEASE_RECOMMENDATION, 0],
+      ''
+    );
+    return (
+      <NotesContainer>
+        <div>Notes:</div>
+        <InlineEditableControl
+            type="textarea"
+            value={notes}
+            onChange={this.handleNotesUpdate}
+            viewOnly={!this.state.editing}
+            size="medium_small" />
+      </NotesContainer>
+    );
+  }
 
   handleRiskFactorChange = (e :Object) => {
     const {
@@ -278,82 +393,252 @@ export default class PSAReviewRow extends React.Component<Props, State> {
       riskFactorsId,
       riskFactors
     );
-    this.setState({ open: false });
+    this.setState({ editing: false });
   }
 
-  renderEdit = () => {
-    const { open, riskFactors } = this.state;
-    const Symbol = styled(EditButtonSymbol).attrs({
-      name: open ? 'angle-up' : 'angle-down'
-    })`
-      margin-top: ${open ? '20px' : '0'}
-    `;
-    const buttonContents = open ? (
-      <div>
-        <Symbol />
-        <br />
-        <EditButtonText>Close</EditButtonText>
-      </div>
-    ) : (
-      <div>
-        <EditButtonText>Edit</EditButtonText>
-        <br />
-        <Symbol />
-      </div>
-    );
+  getName = () => {
+    const person = this.props.neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborDetails'], Immutable.Map());
+    const firstName = person.getIn([PROPERTY_TYPES.FIRST_NAME, 0], '');
+    const lastName = person.getIn([PROPERTY_TYPES.LAST_NAME, 0], '');
+    return `${firstName} ${lastName}`;
+  }
+
+  onViewSelect = (view) => {
+    this.setState({ view });
+  }
+
+  renderPersonInfo = () => {
+    const person = this.props.neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborDetails'], Immutable.Map());
+    const firstName = formatValue(person.get(PROPERTY_TYPES.FIRST_NAME));
+    const middleName = formatValue(person.get(PROPERTY_TYPES.MIDDLE_NAME));
+    const lastName = formatValue(person.get(PROPERTY_TYPES.LAST_NAME));
+    const dob = formatDateList(person.get(PROPERTY_TYPES.DOB));
+    const sex = formatValue(person.get(PROPERTY_TYPES.SEX));
+    const race = formatValue(person.get(PROPERTY_TYPES.RACE));
+
     return (
       <div>
-        <Collapse in={open}>
-          <div>
-            <PSAInputForm
-                section="review"
-                input={riskFactors}
-                handleSingleSelection={this.handleRiskFactorChange}
-                handleSubmit={this.onRiskFactorEdit}
-                incompleteError={false}
-                isReview />
-          </div>
-        </Collapse>
-        <EditButton onClick={() => {
-          this.setState({ open: !open });
-        }}>
-          {buttonContents}
-        </EditButton>
+        <InfoRow>
+          <InfoItem><InfoHeader>First Name: </InfoHeader>{firstName}</InfoItem>
+          <InfoItem><InfoHeader>Middle Name: </InfoHeader>{middleName}</InfoItem>
+          <InfoItem><InfoHeader>Last Name: </InfoHeader>{lastName}</InfoItem>
+        </InfoRow>
+        <InfoRow>
+          <InfoItem><InfoHeader>Date of Birth: </InfoHeader>{dob}</InfoItem>
+          <InfoItem><InfoHeader>Gender: </InfoHeader>{sex}</InfoItem>
+          <InfoItem><InfoHeader>Race: </InfoHeader>{race}</InfoItem>
+        </InfoRow>
       </div>
+    );
+  }
+
+  renderCaseInfo = () => {
+    const { caseHistory, chargeHistory, neighbors } = this.props;
+    const caseNum = neighbors.getIn(
+      [ENTITY_SETS.PRETRIAL_CASES, 'neighborDetails', PROPERTY_TYPES.CASE_ID, 0],
+      ''
+    );
+    const pretrialCase = caseHistory.filter(caseObj => caseObj.getIn([PROPERTY_TYPES.CASE_ID, 0], '') === caseNum);
+    const charges = chargeHistory.get(caseNum, Immutable.List());
+    const caseNumText = caseNum.length ? `Case #: ${caseNum}` : 'No case information provided.';
+    return (
+      <CenteredContainer>
+        <CaseHeader>{caseNumText}</CaseHeader>
+        <ChargeList pretrialCaseDetails={pretrialCase} charges={charges} />
+      </CenteredContainer>
+    );
+  }
+
+  renderSummary = () => {
+    return (
+      <div>
+        {this.renderPersonInfo()}
+        <hr />
+        <CenteredContainer>
+          <ScoresContainer>
+            {this.renderScores()}
+          </ScoresContainer>
+        </CenteredContainer>
+        <hr />
+        {this.renderCaseInfo()}
+      </div>
+    );
+  }
+
+  renderPSADetails = () => {
+    const { editing, riskFactors } = this.state;
+
+    const editButton = (editing || this.props.readOnly) ? null : (
+      <CenteredContainer>
+        <StyledButton onClick={() => {
+          this.setState({ editing: true });
+        }}>
+          Edit
+        </StyledButton>
+      </CenteredContainer>
+    );
+
+    return (
+      <div>
+        <PSAInputForm
+            section="review"
+            input={riskFactors}
+            handleSingleSelection={this.handleRiskFactorChange}
+            handleSubmit={this.onRiskFactorEdit}
+            incompleteError={false}
+            viewOnly={!editing}
+            isReview />
+        {this.renderNotes()}
+        {editButton}
+      </div>
+    );
+  }
+
+  renderStatistics = () => {
+    const { chargeHistory } = this.props;
+    let numMisdemeanorCharges = 0;
+    let numMisdemeanorConvictions = 0;
+    let numFelonyCharges = 0;
+    let numFelonyConvictions = 0;
+
+    chargeHistory.valueSeq().forEach((chargeList) => {
+      chargeList.forEach((charge) => {
+        const degreeField = charge.get(PROPERTY_TYPES.CHARGE_LEVEL, Immutable.List());
+        const convicted = dispositionFieldIsGuilty(charge.get(PROPERTY_TYPES.DISPOSITION, Immutable.List()));
+        if (degreeFieldIsMisdemeanor(degreeField)) {
+          numMisdemeanorCharges += 1;
+          if (convicted) numMisdemeanorConvictions += 1;
+        }
+        else if (degreeFieldIsFelony(degreeField)) {
+          numFelonyCharges += 1;
+          if (convicted) numFelonyConvictions += 1;
+        }
+      });
+    });
+
+    return (
+      <StatsContainer>
+        <StatsTitle>Summary Statistics:</StatsTitle>
+        <StatsWrapper>
+          <StatsGroup>
+            <StatsItem>
+              <InlineBold>Num misdemeanor charges: </InlineBold>
+              <StatsCount>{numMisdemeanorCharges}</StatsCount>
+            </StatsItem>
+            <StatsItem>
+              <InlineBold>Num misdemeanor convictions: </InlineBold>
+              <StatsCount>{numMisdemeanorConvictions}</StatsCount>
+            </StatsItem>
+          </StatsGroup>
+          <StatsGroup>
+            <StatsItem>
+              <InlineBold>Num felony charges: </InlineBold>
+              <StatsCount>{numFelonyCharges}</StatsCount>
+            </StatsItem>
+            <StatsItem>
+              <InlineBold>Num felony convictions: </InlineBold>
+              <StatsCount>{numFelonyConvictions}</StatsCount>
+            </StatsItem>
+          </StatsGroup>
+        </StatsWrapper>
+      </StatsContainer>
+    );
+  }
+
+  renderCaseHistory = () => {
+    const { caseHistory, chargeHistory } = this.props;
+    const cases = caseHistory
+      .filter(caseObj => caseObj.getIn([PROPERTY_TYPES.CASE_ID, 0], '').length)
+      .map((caseObj) => {
+        const caseNum = caseObj.getIn([PROPERTY_TYPES.CASE_ID, 0], '');
+        const charges = chargeHistory.get(caseNum);
+        const fileDate = formatDateList(caseObj.get(PROPERTY_TYPES.FILE_DATE, Immutable.List()));
+        return (
+          <div key={caseNum}>
+            <InfoRow>
+              <InfoItem><InfoHeader>Case #: </InfoHeader>{caseNum}</InfoItem>
+              <InfoItem><InfoHeader>File Date: </InfoHeader>{fileDate}</InfoItem>
+            </InfoRow>
+            <ChargeList pretrialCaseDetails={caseObj} charges={charges} detailed />
+            <hr />
+          </div>
+        );
+      });
+    return (
+      <CaseHistoryContainer>
+        {this.renderStatistics()}
+        {cases}
+      </CaseHistoryContainer>
+    );
+  }
+
+  renderDetails = () => {
+    const { open } = this.state;
+
+    return (
+      <Modal show={open} onHide={this.closeModal} dialogClassName={OverrideClassNames.PSA_REVIEW_MODAL}>
+        <Modal.Header closeButton>
+          <Modal.Title>{`PSA Details: ${this.getName()}`}</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Tabs id={`details-${this.props.entityKeyId}`} activeKey={this.state.view} onSelect={this.onViewSelect}>
+            <Tab eventKey={VIEWS.SUMMARY} title="Summary">{this.renderSummary()}</Tab>
+            <Tab eventKey={VIEWS.PSA} title="PSA">{this.renderPSADetails()}</Tab>
+            <Tab eventKey={VIEWS.HISTORY} title="Case History">{this.renderCaseHistory()}</Tab>
+          </Tabs>
+        </Modal.Body>
+      </Modal>
     );
   }
 
   renderMetadata = () => {
     const staff = this.props.neighbors.get(ENTITY_SETS.STAFF, Immutable.Map());
     const dateCreated = moment(staff.getIn(['associationDetails', PROPERTY_TYPES.COMPLETED_DATE_TIME, 0], ''));
-    const dateCreatedText = dateCreated.isValid() ? dateCreated.format('MMMM D, YYYY hh:mm a') : '';
+    const dateCreatedText = dateCreated.isValid() ? dateCreated.format('MM/DD/YYYY hh:mm a') : '';
     const creator = staff.getIn(['neighborDetails', PROPERTY_TYPES.PERSON_ID, 0], '');
     if (!dateCreatedText.length && !creator.length) return null;
 
     const text = ['Created'];
     if (dateCreatedText.length) {
-      text.push(' on ')
-      text.push(<ImportantMetadataText>{dateCreatedText}</ImportantMetadataText>);
+      text.push(' on ');
+      text.push(<ImportantMetadataText key={dateCreatedText}>{dateCreatedText}</ImportantMetadataText>);
     }
     if (creator.length) {
       text.push(' by ');
-      text.push(<ImportantMetadataText>{creator}</ImportantMetadataText>);
+      text.push(<ImportantMetadataText key={creator}>{creator}</ImportantMetadataText>);
     }
     return <MetadataText>{text}</MetadataText>;
+  }
+
+  closeModal = () => {
+    this.setState({
+      open: false,
+      editing: false
+    });
+  }
+
+  openDetailsModal = () => {
+    const { neighbors, loadCaseHistoryFn } = this.props;
+    const personId = neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborId'], '');
+    loadCaseHistoryFn({ personId, neighbors });
+    this.setState({
+      open: true,
+      editing: false
+    });
   }
 
   render() {
     return (
       <ReviewRowContainer>
         {this.renderMetadata()}
-        <DetailsRowContainer>
+        <DetailsRowContainer onClick={this.openDetailsModal}>
           <ReviewRowWrapper>
             {this.renderPersonCard()}
             {this.renderScores()}
             {this.renderDownloadButton()}
           </ReviewRowWrapper>
         </DetailsRowContainer>
-        {this.renderEdit()}
+        {this.renderDetails()}
       </ReviewRowContainer>
     );
   }

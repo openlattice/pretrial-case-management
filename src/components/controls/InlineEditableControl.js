@@ -94,7 +94,7 @@ const TextAreaControl = styled.textarea`
 
 const TYPES = {
   TEXT: 'text',
-  TEXA_AREA: 'textarea'
+  TEXT_AREA: 'textarea'
 };
 
 /*
@@ -264,13 +264,17 @@ export default class InlineEditableControl extends React.Component<Props, State>
     }
   }
 
+  getPlaceholder = () => {
+    return this.props.viewOnly ? '' : this.props.placeholder;
+  }
+
   renderTextControl = () => {
 
     if (!this.props.viewOnly && this.state.editable) {
       return (
         <TextInputControl
             styleMap={STYLE_MAP[this.props.size]}
-            placeholder={this.props.placeholder}
+            placeholder={this.getPlaceholder()}
             value={this.state.currentValue}
             onBlur={this.handleOnBlur}
             onChange={this.handleOnChange}
@@ -292,7 +296,7 @@ export default class InlineEditableControl extends React.Component<Props, State>
         {
           isNonEmptyString(this.state.currentValue)
             ? this.state.currentValue
-            : this.props.placeholder
+            : this.getPlaceholder()
         }
       </TextControl>
     );
@@ -308,7 +312,7 @@ export default class InlineEditableControl extends React.Component<Props, State>
       return (
         <TextAreaControl
             styleMap={STYLE_MAP[this.props.size]}
-            placeholder={this.props.placeholder}
+            placeholder={this.getPlaceholder()}
             value={this.state.currentValue}
             onBlur={this.handleOnBlur}
             onChange={this.handleOnChange}
@@ -330,7 +334,7 @@ export default class InlineEditableControl extends React.Component<Props, State>
         {
           isNonEmptyString(this.state.currentValue)
             ? this.state.currentValue
-            : this.props.placeholder
+            : this.getPlaceholder()
         }
       </TextControl>
     );
@@ -341,7 +345,7 @@ export default class InlineEditableControl extends React.Component<Props, State>
     switch (this.props.type) {
       case TYPES.TEXT:
         return this.renderTextControl();
-      case TYPES.TEXA_AREA:
+      case TYPES.TEXT_AREA:
         return this.renderTextAreaControl();
       default:
         return this.renderTextControl();

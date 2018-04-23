@@ -4,20 +4,123 @@
 
 import Immutable from 'immutable';
 import moment from 'moment';
-import { DataApi, EntityDataModelApi, SearchApi} from 'lattice';
+import { AuthorizationApi, DataApi, EntityDataModelApi, SearchApi } from 'lattice';
 import { call, put, takeEvery } from 'redux-saga/effects';
 
 import exportPDF from '../../utils/PDFUtils';
 import {
+  CHECK_PSA_PERMISSIONS,
   DOWNLOAD_PSA_REVIEW_PDF,
+  LOAD_CASE_HISTORY,
   LOAD_PSAS_BY_DATE,
   UPDATE_SCORES_AND_RISK_FACTORS,
+  checkPSAPermissions,
   downloadPSAReviewPDF,
+  loadCaseHistory,
   loadPSAsByDate,
   updateScoresAndRiskFactors
 } from './ReviewActionFactory';
 
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+
+const orderCasesByArrestDate = (case1, case2) => {
+  const date1 = moment(case1.getIn([PROPERTY_TYPES.ARREST_DATE, 0], case1.getIn([PROPERTY_TYPES.FILE_DATE, 0], '')));
+  const date2 = moment(case2.getIn([PROPERTY_TYPES.ARREST_DATE, 0], case2.getIn([PROPERTY_TYPES.FILE_DATE, 0], '')));
+  if (date1.isValid() && date2.isValid()) {
+    if (date1.isBefore(date2)) return 1;
+    if (date1.isAfter(date2)) return -1;
+  }
+  return 0;
+};
+
+function* getCasesAndCharges(neighbors) {
+  const personEntitySetId = neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborEntitySet', 'id']);
+  const personEntityKeyId = neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborId']);
+  const personNeighbors = yield call(SearchApi.searchEntityNeighbors, personEntitySetId, personEntityKeyId);
+
+  let pretrialCaseOptionsWithDate = Immutable.List();
+  let pretrialCaseOptionsWithoutDate = Immutable.List();
+  let allCharges = Immutable.List();
+  personNeighbors.forEach((neighbor) => {
+    const neighborDetails = Immutable.fromJS(neighbor.neighborDetails);
+    const entitySet = neighbor.neighborEntitySet;
+    if (entitySet && entitySet.name === ENTITY_SETS.PRETRIAL_CASES) {
+      const caseObj = neighborDetails.set('id', neighbor.neighborId);
+      const arrList = caseObj.get(PROPERTY_TYPES.ARREST_DATE, caseObj.get(PROPERTY_TYPES.FILE_DATE, Immutable.List()));
+      if (arrList.size) {
+        pretrialCaseOptionsWithDate = pretrialCaseOptionsWithDate.push(caseObj);
+      }
+      else {
+        pretrialCaseOptionsWithoutDate = pretrialCaseOptionsWithoutDate.push(caseObj);
+      }
+    }
+    else if (entitySet && entitySet.name === ENTITY_SETS.CHARGES) {
+      allCharges = allCharges.push(neighborDetails);
+    }
+  });
+  pretrialCaseOptionsWithDate = pretrialCaseOptionsWithDate.sort(orderCasesByArrestDate);
+  const allCases = pretrialCaseOptionsWithDate.concat(pretrialCaseOptionsWithoutDate);
+  return { allCases, allCharges };
+}
+
+function* checkPSAPermissionsWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  try {
+    yield put(checkPSAPermissions.request(action.id));
+
+    const entitySetId = yield call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.PSA_RISK_FACTORS);
+    const permissions = yield call(AuthorizationApi.checkAuthorizations, [{
+      aclKey: [entitySetId],
+      permissions: ['WRITE']
+    }]);
+    yield put(checkPSAPermissions.success(action.id, { readOnly: !permissions[0].permissions.WRITE }))
+  }
+  catch (error) {
+    console.error(error);
+    yield put(checkPSAPermissions.failure(action.id, { error }));
+  }
+  finally {
+    yield put(checkPSAPermissions.finally(action.id));
+  }
+}
+
+function* checkPSAPermissionsWatcher() :Generator<*, *, *> {
+  yield takeEvery(CHECK_PSA_PERMISSIONS, checkPSAPermissionsWorker);
+}
+
+
+function* loadCaseHistoryWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  try {
+    const { personId, neighbors } = action.value;
+    yield put(loadCaseHistory.request(action.id, { personId }));
+
+    const { allCases, allCharges } = yield getCasesAndCharges(neighbors);
+    let chargesByCaseId = Immutable.Map();
+
+    allCharges.forEach((charge) => {
+      const chargeIdArr = charge.getIn([PROPERTY_TYPES.CHARGE_ID, 0], '').split('|');
+      if (chargeIdArr.length > 1) {
+        const caseId = chargeIdArr[0];
+        chargesByCaseId = chargesByCaseId.set(caseId, chargesByCaseId.get(caseId, Immutable.List()).push(charge));
+      }
+    });
+
+    yield put(loadCaseHistory.success(action.id, { personId, allCases, chargesByCaseId }));
+
+  }
+  catch (error) {
+    console.error(error);
+    yield put(loadCaseHistory.failure(action.id, { error }));
+  }
+  finally {
+    yield put(loadCaseHistory.finally(action.id));
+  }
+}
+
+function* loadCaseHistoryWatcher() :Generator<*, *, *> {
+  yield takeEvery(LOAD_CASE_HISTORY, loadCaseHistoryWorker);
+}
 
 function* loadPSAsByDateWorker(action :SequenceAction) :Generator<*, *, *> {
 
@@ -103,48 +206,12 @@ function* loadPSAsByDateWatcher() :Generator<*, *, *> {
   yield takeEvery(LOAD_PSAS_BY_DATE, loadPSAsByDateWorker);
 }
 
-const orderCasesByArrestDate = (case1, case2) => {
-  const date1 = moment(case1.getIn([PROPERTY_TYPES.ARREST_DATE, 0], ''));
-  const date2 = moment(case2.getIn([PROPERTY_TYPES.ARREST_DATE, 0], ''));
-  if (date1.isValid() && date2.isValid()) {
-    if (date1.isBefore(date2)) return 1;
-    if (date1.isAfter(date2)) return -1;
-  }
-  return 0;
-};
-
 function* downloadPSAReviewPDFWorker(action :SequenceAction) :Generator<*, *, *> {
 
   try {
     yield put(downloadPSAReviewPDF.request(action.id));
     const { neighbors, scores } = action.value;
-    const personEntitySetId = neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborEntitySet', 'id']);
-    const personEntityKeyId = neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborId']);
-    const personNeighbors = yield call(SearchApi.searchEntityNeighbors, personEntitySetId, personEntityKeyId);
-
-    let pretrialCaseOptionsWithDate = Immutable.List();
-    let pretrialCaseOptionsWithoutDate = Immutable.List();
-    let allCharges = Immutable.List();
-    personNeighbors.forEach((neighbor) => {
-      const neighborDetails = Immutable.fromJS(neighbor.neighborDetails);
-      const entitySet = neighbor.neighborEntitySet;
-      if (entitySet && entitySet.name === ENTITY_SETS.PRETRIAL_CASES) {
-        const caseObj = neighborDetails.set('id', neighbor.neighborId);
-        const arrList = caseObj.get(PROPERTY_TYPES.ARREST_DATE, Immutable.List());
-        if (arrList.size) {
-          pretrialCaseOptionsWithDate = pretrialCaseOptionsWithDate.push(caseObj);
-        }
-        else {
-          pretrialCaseOptionsWithoutDate = pretrialCaseOptionsWithoutDate.push(caseObj);
-        }
-      }
-      else if (entitySet && entitySet.name === ENTITY_SETS.CHARGES) {
-        allCharges = allCharges.push(neighborDetails);
-      }
-    });
-
-    pretrialCaseOptionsWithDate = pretrialCaseOptionsWithDate.sort(orderCasesByArrestDate);
-    const allCases = pretrialCaseOptionsWithDate.concat(pretrialCaseOptionsWithoutDate);
+    const { allCases, allCharges } = yield getCasesAndCharges(neighbors);
 
     const recommendationText = neighbors.getIn([
       ENTITY_SETS.RELEASE_RECOMMENDATIONS,
@@ -238,7 +305,9 @@ function* updateScoresAndRiskFactorsWatcher() :Generator<*, *, *> {
 }
 
 export {
+  checkPSAPermissionsWatcher,
   downloadPSAReviewPDFWatcher,
+  loadCaseHistoryWatcher,
   loadPSAsByDateWatcher,
   updateScoresAndRiskFactorsWatcher
 };

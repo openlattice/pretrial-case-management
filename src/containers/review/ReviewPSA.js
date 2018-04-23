@@ -17,6 +17,7 @@ import LoadingSpinner from '../../components/LoadingSpinner';
 import StyledButton from '../../components/buttons/StyledButton';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PaddedRow, TitleLabel, StyledSelect } from '../../utils/Layout';
+import * as FormActionFactory from '../psa/FormActionFactory';
 import * as ReviewActionFactory from './ReviewActionFactory';
 import * as Routes from '../../core/router/Routes';
 
@@ -115,6 +116,10 @@ type Props = {
       neighbors :Immutable.Map<*, *>,
       scores :Immutable.Map<*, *>
     }) => void,
+    loadCaseHistory :(values :{
+      personId :string,
+      neighbors :Immutable.Map<*, *>
+    }) => void,
     loadPSAsByDate :() => void,
     updateScoresAndRiskFactors :(values :{
       scoresEntitySetId :string,
@@ -123,10 +128,20 @@ type Props = {
       riskFactorsEntitySetId :string,
       riskFactorsId :string,
       riskFactorsEntity :Immutable.Map<*, *>
-    }) => void
+    }) => void,
+    updateNotes :(value :{
+      notes :string,
+      entityId :string,
+      entitySetId :string,
+      propertyTypes :Immutable.List<*>
+    }) => void,
+    checkPSAPermissions :() => void,
   },
   psaNeighborsById :Immutable.Map<*, *>,
-  allFilers :Immutable.Set<*>
+  allFilers :Immutable.Set<*>,
+  caseHistory :Immutable.List<*>,
+  chargeHistory :Immutable.Map<*, *>,
+  readOnly :boolean
 }
 
 type State = {
@@ -160,6 +175,7 @@ class ReviewPSA extends React.Component<Props, State> {
   }
 
   componentDidMount() {
+    this.props.actions.checkPSAPermissions();
     this.props.actions.loadPSAsByDate();
   }
 
@@ -289,13 +305,21 @@ class ReviewPSA extends React.Component<Props, State> {
 
   renderRow = (scoreId, neighbors) => {
     const scores = this.props.scoresAsMap.get(scoreId, Immutable.Map());
+    const personId = neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborId'], '');
+    const caseHistory = this.props.caseHistory.get(personId, Immutable.List());
+    const chargeHistory = this.props.chargeHistory.get(personId, Immutable.Map());
     return (
       <PSAReviewRow
           neighbors={neighbors}
           scores={scores}
           entityKeyId={scoreId}
           downloadFn={this.props.actions.downloadPSAReviewPDF}
+          loadCaseHistoryFn={this.props.actions.loadCaseHistory}
           updateScoresAndRiskFactors={this.updateScoresAndRiskFactors}
+          updateNotes={this.updateNotes}
+          caseHistory={caseHistory}
+          chargeHistory={chargeHistory}
+          readOnly={this.props.readOnly}
           key={scoreId} />
     );
   }
@@ -396,6 +420,15 @@ class ReviewPSA extends React.Component<Props, State> {
     });
   }
 
+  updateNotes = (notes, entityId, entitySetId, propertyTypes) => {
+    this.props.actions.updateNotes({
+      notes,
+      entityId,
+      entitySetId,
+      propertyTypes
+    });
+  }
+
   updatePage = (start) => {
     this.setState({ filters: Object.assign({}, this.state.filters, { start }) });
   }
@@ -461,12 +494,19 @@ function mapStateToProps(state) {
     psaNeighborsById: review.get('psaNeighborsById'),
     allFilers: review.get('allFilers'),
     loadingResults: review.get('loadingResults'),
-    errorMesasge: review.get('errorMesasge')
+    errorMesasge: review.get('errorMesasge'),
+    caseHistory: review.get('caseHistory'),
+    chargeHistory: review.get('chargeHistory'),
+    readOnly: review.get('readOnly')
   };
 }
 
 function mapDispatchToProps(dispatch :Function) :Object {
   const actions :{ [string] :Function } = {};
+
+  Object.keys(FormActionFactory).forEach((action :string) => {
+    actions[action] = FormActionFactory[action];
+  });
 
   Object.keys(ReviewActionFactory).forEach((action :string) => {
     actions[action] = ReviewActionFactory[action];

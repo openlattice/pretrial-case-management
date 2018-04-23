@@ -138,8 +138,8 @@ const INITIAL_STATE = Immutable.fromJS({
     nvcaFlag: false
   },
   scoresWereGenerated: false,
-  releaseRecommendation: '',
-  releaseRecommendationId: undefined
+  notes: '',
+  notesId: undefined
 });
 
 const numPages = 4;
@@ -167,7 +167,7 @@ type Props = {
       pretrialCaseEntity :Entity,
       riskFactorsEntity :Entity,
       psaEntity :Entity,
-      releaseRecommendationEntity :Entity,
+      notesEntity :Entity,
       staffEntity :Entity,
       calculatedForEntity :Entity,
       assessedByEntity :Entity
@@ -178,9 +178,9 @@ type Props = {
     selectPretrialCase :(value :{
       selectedPretrialCase :Immutable.Map<*, *>
     }) => void,
-    updateRecommendation :(value :{
-      releaseRecommendation :string,
-      releaseRecommendationId :string,
+    updateNotes :(value :{
+      notes :string,
+      entityId :string,
       entitySetId :string,
       propertyTypes :Immutable.List<*>
     }) => void,
@@ -216,8 +216,8 @@ type State = {
   riskFactors :{},
   scores :{},
   scoresWereGenerated :boolean,
-  releaseRecommendation :string,
-  releaseRecommendationId :string
+  notes :string,
+  notesId :string
 };
 
 class Form extends React.Component<Props, State> {
@@ -272,9 +272,9 @@ class Form extends React.Component<Props, State> {
     this.props.actions.setPSAValues({ newValues });
   }
 
-  getCalculatedForEntityDetails = () => ({ [TIMESTAMP]: [new Date()] })
+  getCalculatedForEntityDetails = () => ({ [TIMESTAMP]: [moment().toISOString()] })
 
-  getBlankReleaseRecommendationEntity = () :Entity => {
+  getBlankNotesEntity = () :Entity => {
     let generalId;
     let notesId;
     this.getPropertyTypes(RELEASE_RECOMMENDATIONS).forEach((pt) => {
@@ -289,7 +289,7 @@ class Form extends React.Component<Props, State> {
     return {
       details: {
         [generalId]: [id],
-        [notesId]: [this.state.releaseRecommendation]
+        [notesId]: [this.state.notes]
       },
       key: {
         entityId: id,
@@ -298,7 +298,7 @@ class Form extends React.Component<Props, State> {
     };
   }
 
-  getAssessedByEntityDetails = () => ({ [COMPLETED_DATE_TIME]: [new Date()] })
+  getAssessedByEntityDetails = () => ({ [COMPLETED_DATE_TIME]: [moment().toISOString()] })
 
   getEntityId = (entity, primaryKeyIds) => {
     const pKeyVals = [];
@@ -374,7 +374,7 @@ class Form extends React.Component<Props, State> {
   submitEntities = (scores) => {
     const { riskFactors } = getScoresAndRiskFactors(this.props.psaForm);
     const calculatedForEntityDetails = this.getCalculatedForEntityDetails();
-    const releaseRecommendationEntity = this.getBlankReleaseRecommendationEntity();
+    const notesEntity = this.getBlankNotesEntity();
     const assessedByEntityDetails = this.getAssessedByEntityDetails();
 
     const personEntity = this.getEntity(this.props.selectedPerson.toJS(), PEOPLE, true);
@@ -391,12 +391,12 @@ class Form extends React.Component<Props, State> {
       pretrialCaseEntity,
       riskFactorsEntity,
       psaEntity,
-      releaseRecommendationEntity,
+      notesEntity,
       staffEntity,
       calculatedForEntity,
       assessedByEntity
     });
-    this.setState({ releaseRecommendationId: releaseRecommendationEntity.key.entityId });
+    this.setState({ notesId: notesEntity.key.entityId });
   }
 
   getFqn = propertyType => `${propertyType.getIn(['type', 'namespace'])}.${propertyType.getIn(['type', 'name'])}`
@@ -478,26 +478,26 @@ class Form extends React.Component<Props, State> {
     return <PSAResults scores={this.state.scores} riskFactors={this.state.riskFactors} />;
   }
 
-  handleReleaseRecommendationUpdate = (releaseRecommendation) => {
+  handleNotesUpdate = (notes) => {
     if (this.state.scoresWereGenerated) {
-      this.props.actions.updateRecommendation({
-        releaseRecommendation,
-        releaseRecommendationId: this.state.releaseRecommendationId,
+      this.props.actions.updateNotes({
+        notes,
+        entityId: this.state.notesId,
         entitySetId: this.props.entitySetLookup.get(RELEASE_RECOMMENDATIONS),
         propertyTypes: this.getPropertyTypes(RELEASE_RECOMMENDATIONS)
       });
     }
-    this.setState({ releaseRecommendation });
+    this.setState({ notes });
   }
 
   renderRecommendationSection = () => (
     <ResultsContainer>
       <RecommendationWrapper>
-        <SmallHeader>Release notes:</SmallHeader>
+        <SmallHeader>Notes:</SmallHeader>
         <InlineEditableControl
-            type="text"
-            value={this.state.releaseRecommendation}
-            onChange={this.handleReleaseRecommendationUpdate}
+            type="textarea"
+            value={this.state.notes}
+            onChange={this.handleNotesUpdate}
             size="medium_small" />
       </RecommendationWrapper>
     </ResultsContainer>

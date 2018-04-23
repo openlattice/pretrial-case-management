@@ -13,8 +13,8 @@ const loadNeighbors :RequestSequence = newRequestSequence(LOAD_NEIGHBORS);
 const SUBMIT_DATA :string = 'SUBMIT_DATA';
 const submitData :RequestSequence = newRequestSequence(SUBMIT_DATA);
 
-const UPDATE_RECOMMENDATION :string = 'UPDATE_RECOMMENDATION';
-const updateRecommendation :RequestSequence = newRequestSequence(UPDATE_RECOMMENDATION);
+const UPDATE_NOTES :string = 'UPDATE_NOTES';
+const updateNotes :RequestSequence = newRequestSequence(UPDATE_NOTES);
 
 const HARD_RESTART :'HARD_RESTART' = 'HARD_RESTART';
 function hardRestart() :Object {
@@ -41,12 +41,12 @@ export {
   LOAD_DATA_MODEL,
   LOAD_NEIGHBORS,
   SUBMIT_DATA,
-  UPDATE_RECOMMENDATION,
+  UPDATE_NOTES,
   hardRestart,
   loadDataModel,
   loadNeighbors,
   submitData,
-  updateRecommendation,
+  updateNotes,
   CLEAR_FORM,
   SELECT_PERSON,
   SELECT_PRETRIAL_CASE,
