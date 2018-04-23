@@ -13,8 +13,7 @@ import {
   UPDATE_RECOMMENDATION,
   loadDataModel,
   loadNeighbors,
-  submitData,
-  updateRecommendation
+  submitData
 } from './FormActionFactory';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 
