@@ -16,6 +16,7 @@ import { connect } from 'react-redux';
 import SelfieWebCam from '../../components/SelfieWebCam';
 import Checkbox from '../../components/controls/StyledCheckbox';
 import { GENDERS, STATES } from '../../utils/consts/Consts';
+import { toISODate } from '../../utils/Utils';
 import { PaddedRow, StyledSelect, TitleLabel } from '../../utils/Layout';
 import { newPersonSubmitRequest } from './PersonActionFactory';
 
@@ -164,7 +165,7 @@ class NewPersonContainer extends React.Component<Props, State> {
 
   handleOnChangeDateOfBirth = (dob :?string) => {
     const dobMoment = dob ? moment(dob) : null;
-    const dobValue = (dobMoment && dobMoment.isValid()) ? dobMoment.format('YYYY-MM-DD') : '';
+    const dobValue = toISODate(dobMoment) || '';
 
     this.setState({
       [DOB_VALUE]: dobValue

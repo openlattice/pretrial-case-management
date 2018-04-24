@@ -30,6 +30,7 @@ import * as PersonActionFactory from '../person/PersonActionFactory';
 import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
 import * as Routes from '../../core/router/Routes';
 
+import { toISODate, toISODateTime } from '../../utils/Utils';
 import { getScoresAndRiskFactors } from '../../utils/ScoringUtils';
 import {
   ButtonWrapper,
@@ -37,7 +38,6 @@ import {
   Divider,
   RecommendationWrapper,
   ResultsContainer,
-  SmallHeader,
   Spacer,
   StyledFormViewWrapper,
   StyledFormWrapper,
@@ -73,18 +73,6 @@ const {
   ASSESSED_BY,
   CALCULATED_FOR
 } = ENTITY_SETS;
-
-const CenteredDiv = styled.div`
-  text-align: center;
-`;
-
-const NoResultsText = styled.div`
-  text-align: center;
-  width: 100%;
-  font-size: 16px;
-  font-weight: bold;
-  margin-bottom: 15px;
-`;
 
 const LoadingContainer = styled.div`
   text-align: center;
@@ -268,7 +256,7 @@ class Form extends React.Component<Props, State> {
     this.props.actions.setPSAValues({ newValues });
   }
 
-  getCalculatedForEntityDetails = () => ({ [TIMESTAMP]: [moment().toISOString()] })
+  getCalculatedForEntityDetails = () => ({ [TIMESTAMP]: [toISODateTime(moment())] })
 
   getBlankNotesEntity = () :Entity => {
     let generalId;
@@ -294,7 +282,7 @@ class Form extends React.Component<Props, State> {
     };
   }
 
-  getAssessedByEntityDetails = () => ({ [COMPLETED_DATE_TIME]: [moment().toISOString()] })
+  getAssessedByEntityDetails = () => ({ [COMPLETED_DATE_TIME]: [toISODateTime(moment())] })
 
   getEntityId = (entity, primaryKeyIds) => {
     const pKeyVals = [];
@@ -525,7 +513,7 @@ class Form extends React.Component<Props, State> {
                 selectedPerson,
                 pretrialCaseOptions,
                 allChargesForPerson,
-                moment().toISOString());
+                toISODateTime(moment()));
             }}>Export as PDF
         </Button>
       </ButtonWrapper>
