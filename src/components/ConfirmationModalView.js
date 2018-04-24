@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { Modal, Button } from 'react-bootstrap';
 
 import { ButtonWrapper } from '../utils/Layout';
+import * as OverrideClassNames from '../utils/styleoverrides/OverrideClassNames';
 
 function getTitle(submissionStatus) {
   if (submissionStatus) {
@@ -20,24 +21,23 @@ function getBody(submissionStatus, pageContent) {
 }
 
 function ConfirmationModal({ submissionStatus, pageContent, handleModalButtonClick }) {
+  const open = true;
   return (
-    <div className="static-modal">
-      <Modal.Dialog>
-        <Modal.Header>
-          <Modal.Title>
-            { getTitle(submissionStatus) }
-          </Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          { getBody(submissionStatus, pageContent) }
-        </Modal.Body>
-        <Modal.Footer>
-          <ButtonWrapper>
-            <Button bsStyle="primary" onClick={handleModalButtonClick}>OK</Button>
-          </ButtonWrapper>
-        </Modal.Footer>
-      </Modal.Dialog>
-    </div>
+    <Modal show={open} dialogClassName={OverrideClassNames.PSA_REVIEW_MODAL}>
+      <Modal.Header>
+        <Modal.Title>
+          { getTitle(submissionStatus) }
+        </Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        { getBody(submissionStatus, pageContent) }
+      </Modal.Body>
+      <Modal.Footer>
+        <ButtonWrapper>
+          <Button bsStyle="primary" onClick={handleModalButtonClick}>OK</Button>
+        </ButtonWrapper>
+      </Modal.Footer>
+    </Modal>
   );
 }
 
