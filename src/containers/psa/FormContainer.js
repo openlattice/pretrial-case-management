@@ -12,8 +12,7 @@ import FontAwesome from 'react-fontawesome';
 import { AuthUtils } from 'lattice-auth';
 import { Button, ProgressBar } from 'react-bootstrap';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router-dom';
-import { Redirect, Route, Switch } from 'react-router-dom';
+import { Redirect, Route, Switch, withRouter } from 'react-router-dom';
 import { bindActionCreators } from 'redux';
 
 import LoadingSpinner from '../../components/LoadingSpinner';
@@ -650,6 +649,7 @@ class Form extends React.Component<Props, State> {
     return (
       <ConfirmationModal
           submissionStatus={this.props.isSubmitted}
+          pageContent={this.getPsaResults}
           // Implement hard reset
           handleModalButtonClick={this.props.actions.hardRestart} />
     );

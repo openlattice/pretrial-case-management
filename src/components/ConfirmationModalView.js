@@ -11,15 +11,15 @@ function getTitle(submissionStatus) {
   return 'Error Submitting Report';
 }
 
-function getBody(submissionStatus) {
+function getBody(submissionStatus, pageContent) {
   if (submissionStatus) {
-    return 'Your psa report has been submitted.';
+    return pageContent();
   }
   return `There was an error submitting your report. Please try again.
   If there continues to be an issue, contact help@openlattice.com.`;
 }
 
-function ConfirmationModal({ submissionStatus, handleModalButtonClick }) {
+function ConfirmationModal({ submissionStatus, pageContent, handleModalButtonClick }) {
   return (
     <div className="static-modal">
       <Modal.Dialog>
@@ -29,7 +29,7 @@ function ConfirmationModal({ submissionStatus, handleModalButtonClick }) {
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          { getBody(submissionStatus) }
+          { getBody(submissionStatus, pageContent) }
         </Modal.Body>
         <Modal.Footer>
           <ButtonWrapper>
@@ -42,6 +42,7 @@ function ConfirmationModal({ submissionStatus, handleModalButtonClick }) {
 }
 
 ConfirmationModal.propTypes = {
+  pageContent: PropTypes.func.isRequired,
   submissionStatus: PropTypes.bool.isRequired,
   handleModalButtonClick: PropTypes.func.isRequired
 };
