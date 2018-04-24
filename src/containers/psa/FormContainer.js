@@ -39,6 +39,7 @@ import {
   RecommendationWrapper,
   ResultsContainer,
   Spacer,
+  SmallHeader,
   StyledFormViewWrapper,
   StyledFormWrapper,
   StyledSectionWrapper,
