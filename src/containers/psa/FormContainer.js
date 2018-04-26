@@ -8,7 +8,6 @@ import Immutable from 'immutable';
 import styled from 'styled-components';
 import randomUUID from 'uuid/v4';
 import moment from 'moment';
-import FontAwesome from 'react-fontawesome';
 import { AuthUtils } from 'lattice-auth';
 import { Button, ProgressBar } from 'react-bootstrap';
 import { connect } from 'react-redux';
@@ -38,7 +37,6 @@ import {
   Divider,
   RecommendationWrapper,
   ResultsContainer,
-  Spacer,
   SmallHeader,
   StyledFormViewWrapper,
   StyledFormWrapper,

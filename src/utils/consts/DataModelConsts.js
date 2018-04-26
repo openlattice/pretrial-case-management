@@ -89,14 +89,5 @@ export const PROPERTY_TYPES = {
 
   // Vocie recognition entity type consts
   AUDIO_SAMPLE: 'media.audio',
-  PIN: 'general.pin',
-
-  // Entity set names
-  PERSON_ENTITY_SET_NAME: 'southdakotapeople',
-  PRETRIAL_CASE_ENTITY_SET_NAME: 'southdakotapretrialcaseprocessings',
-  CHARGE_ENTITY_SET_NAME: 'southdakotacharges',
-  PSA_ENTITY_SET_NAME: 'southdakotapsas',
-  RISK_FACTORS_ENTITY_SET_NAME: 'southdakotapsariskfactors',
-  CALCULATED_FOR_ENTITY_SET_NAME: 'southdakotacalculatedfor',
-  RELEASE_RECOMMENDATION_ENTITY_SET_NAME: 'southdakotareleaserecommendations'
+  PIN: 'general.pin'
 };

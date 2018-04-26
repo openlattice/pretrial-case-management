@@ -9,7 +9,7 @@ const StyledSectionWrapper = styled.div`
   width: 100%;
   display: flex;
   flex-direction: column;
-  margin: 55px;
+  padding: 55px;
 `;
 
 const StyledHeader = styled.div`
