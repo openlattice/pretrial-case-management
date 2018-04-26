@@ -12,22 +12,15 @@ import PSAInputForm from '../psainput/PSAInputForm';
 import PersonCard from '../person/PersonCard';
 import StyledButton from '../buttons/StyledButton';
 import InlineEditableControl from '../controls/InlineEditableControl';
+import CaseHistory from '../../components/review/CaseHistory';
 import ChargeList from '../../components/charges/ChargeList';
+import PSAScores from './PSAScores';
 import { getScoresAndRiskFactors } from '../../utils/ScoringUtils';
-import {
-  degreeFieldIsMisdemeanor,
-  degreeFieldIsFelony,
-  dispositionFieldIsGuilty
-} from '../../utils/consts/ChargeConsts';
-import { InlineBold } from '../../utils/Layout';
+import { CenteredContainer } from '../../utils/Layout';
 import { formatValue, formatDateList } from '../../utils/Utils';
 import { PSA } from '../../utils/consts/Consts';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import * as OverrideClassNames from '../../utils/styleoverrides/OverrideClassNames';
-
-const ScoresTable = styled.table`
-  margin: 0 50px;
-`;
 
 const ReviewRowContainer = styled.div`
   width: 100%;
@@ -52,32 +45,6 @@ const ReviewRowWrapper = styled.div`
   justify-content: center;
 `;
 
-const ScoreHeader = styled.th`
-  text-align: center;
-  height: 15px;
-  transform: scaleY(0.7);
-  min-width: 50px;
-`;
-
-const ScoreItem = styled.td`
-  font-weight: bold;
-  font-size: 16px;
-  text-align: center;
-`;
-
-const Scale = styled.div`
-  width: 30px;
-  display: inline-block;
-  border-radius: 3px 3px 0 0;
-  margin-bottom: -5px;
-`;
-
-const ScaleRow = styled.tr`
-  vertical-align: bottom;
-  border-bottom: 1px solid black;
-  text-align: center;
-`;
-
 const DownloadButtonContainer = styled.div`
   height: 100%;
   display: flex;
@@ -86,10 +53,6 @@ const DownloadButtonContainer = styled.div`
 
 const DownloadButton = styled(StyledButton)`
   height: 50px;
-`;
-
-const CenteredContainer = styled.div`
-  text-align: center;
 `;
 
 const MetadataText = styled.div`
@@ -131,58 +94,6 @@ const CaseHeader = styled.div`
   font-size: 20px;
 `;
 
-const CaseHistoryContainer = styled.div`
-  max-height: 750px;
-  overflow-y: scroll;
-  text-align: center;
-`;
-
-const StatsContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  background: #f3f5f7;
-  padding: 15px 0;
-`;
-
-const StatsWrapper = styled.div`
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  background: #f3f5f7;
-`;
-
-const StatsTitle = styled.div`
-  font-weight: bold;
-  text-decoration: underline;
-  font-style: italic;
-`;
-
-const StatsGroup = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: baseline;
-  margin: 10px;
-`;
-const StatsItem = styled.div`
-  margin: 2px;
-`;
-
-const StatsCount = styled.span`
-  font-size: 18px;
-`;
-
-const colorsByScale = {
-  1: '#3494E6',
-  2: '#598CDB',
-  3: '#7A85D0',
-  4: '#A37DC4',
-  5: '#CA75B8',
-  6: '#EC6EAD'
-};
-
-const HEIGHT_MULTIPLIER = 10;
-
 type Props = {
   entityKeyId :string,
   scores :Immutable.Map<*, *>,
@@ -190,6 +101,7 @@ type Props = {
   caseHistory :Immutable.List<*>,
   chargeHistory :Immutable.Map<*, *>,
   readOnly :boolean,
+  personId? :string,
   downloadFn :(values :{
     neighbors :Immutable.Map<*, *>,
     scores :Immutable.Map<*, *>
@@ -198,14 +110,14 @@ type Props = {
     personId :string,
     neighbors :Immutable.Map<*, *>
   }) => void,
-  updateScoresAndRiskFactors :(
+  updateScoresAndRiskFactors? :(
     scoresId :string,
     scoresEntity :Object,
     riskFactorsEntitySetId :string,
     riskFactorsId :string,
     riskFactorsEntity :Object
   ) => void,
-  updateNotes :(
+  updateNotes? :(
     notes :string,
     entityId :string,
     entitySetId :string,
@@ -234,7 +146,7 @@ export default class PSAReviewRow extends React.Component<Props, State> {
       open: false,
       editing: false,
       riskFactors: this.getRiskFactors(props.neighbors),
-      view: VIEWS.PSA
+      view: VIEWS.SUMMARY
     };
   }
 
@@ -274,53 +186,6 @@ export default class PSAReviewRow extends React.Component<Props, State> {
     const personDetails = neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborDetails'], Immutable.Map());
     if (!personDetails.size) return <div>Person details unknown.</div>;
     return <PersonCard person={personDetails.set('id', neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborId']))} />;
-  }
-
-  getScaleForScore = (score :number) => styled(Scale)`
-      height: ${HEIGHT_MULTIPLIER * score}px;
-      background: ${colorsByScale[score]};
-    `
-
-  renderScores = () => {
-    const { scores } = this.props;
-    const ftaVal = scores.getIn([PROPERTY_TYPES.FTA_SCALE, 0]);
-    const ncaVal = scores.getIn([PROPERTY_TYPES.NCA_SCALE, 0]);
-    const nvcaVal = scores.getIn([PROPERTY_TYPES.NVCA_FLAG, 0]);
-    const nvcaScaleVal = nvcaVal ? 6 : 1;
-
-    const FtaScale = styled(Scale)`
-      height: ${HEIGHT_MULTIPLIER * ftaVal}px;
-      background: ${colorsByScale[ftaVal]};
-    `;
-    const NcaScale = styled(Scale)`
-      height: ${HEIGHT_MULTIPLIER * ncaVal}px;
-      background: ${colorsByScale[ncaVal]};
-    `;
-    const NvcaScale = styled(Scale)`
-      height: ${HEIGHT_MULTIPLIER * nvcaScaleVal}px;
-      background: ${colorsByScale[nvcaScaleVal]};
-    `;
-    return (
-      <ScoresTable>
-        <tbody>
-          <tr>
-            <ScoreHeader>NVCA</ScoreHeader>
-            <ScoreHeader>NCA</ScoreHeader>
-            <ScoreHeader>FTA</ScoreHeader>
-          </tr>
-          <ScaleRow>
-            <ScoreItem><NvcaScale /></ScoreItem>
-            <ScoreItem><NcaScale /></ScoreItem>
-            <ScoreItem><FtaScale /></ScoreItem>
-          </ScaleRow>
-          <tr>
-            <ScoreItem>{nvcaVal ? 'YES' : 'NO'}</ScoreItem>
-            <ScoreItem>{ncaVal}</ScoreItem>
-            <ScoreItem>{ftaVal}</ScoreItem>
-          </tr>
-        </tbody>
-      </ScoresTable>
-    );
   }
 
   renderDownloadButton = () => (
@@ -456,7 +321,7 @@ export default class PSAReviewRow extends React.Component<Props, State> {
         <hr />
         <CenteredContainer>
           <ScoresContainer>
-            {this.renderScores()}
+            <PSAScores scores={this.props.scores} />
           </ScoresContainer>
         </CenteredContainer>
         <hr />
@@ -494,84 +359,6 @@ export default class PSAReviewRow extends React.Component<Props, State> {
     );
   }
 
-  renderStatistics = () => {
-    const { chargeHistory } = this.props;
-    let numMisdemeanorCharges = 0;
-    let numMisdemeanorConvictions = 0;
-    let numFelonyCharges = 0;
-    let numFelonyConvictions = 0;
-
-    chargeHistory.valueSeq().forEach((chargeList) => {
-      chargeList.forEach((charge) => {
-        const degreeField = charge.get(PROPERTY_TYPES.CHARGE_LEVEL, Immutable.List());
-        const convicted = dispositionFieldIsGuilty(charge.get(PROPERTY_TYPES.DISPOSITION, Immutable.List()));
-        if (degreeFieldIsMisdemeanor(degreeField)) {
-          numMisdemeanorCharges += 1;
-          if (convicted) numMisdemeanorConvictions += 1;
-        }
-        else if (degreeFieldIsFelony(degreeField)) {
-          numFelonyCharges += 1;
-          if (convicted) numFelonyConvictions += 1;
-        }
-      });
-    });
-
-    return (
-      <StatsContainer>
-        <StatsTitle>Summary Statistics:</StatsTitle>
-        <StatsWrapper>
-          <StatsGroup>
-            <StatsItem>
-              <InlineBold>Num misdemeanor charges: </InlineBold>
-              <StatsCount>{numMisdemeanorCharges}</StatsCount>
-            </StatsItem>
-            <StatsItem>
-              <InlineBold>Num misdemeanor convictions: </InlineBold>
-              <StatsCount>{numMisdemeanorConvictions}</StatsCount>
-            </StatsItem>
-          </StatsGroup>
-          <StatsGroup>
-            <StatsItem>
-              <InlineBold>Num felony charges: </InlineBold>
-              <StatsCount>{numFelonyCharges}</StatsCount>
-            </StatsItem>
-            <StatsItem>
-              <InlineBold>Num felony convictions: </InlineBold>
-              <StatsCount>{numFelonyConvictions}</StatsCount>
-            </StatsItem>
-          </StatsGroup>
-        </StatsWrapper>
-      </StatsContainer>
-    );
-  }
-
-  renderCaseHistory = () => {
-    const { caseHistory, chargeHistory } = this.props;
-    const cases = caseHistory
-      .filter(caseObj => caseObj.getIn([PROPERTY_TYPES.CASE_ID, 0], '').length)
-      .map((caseObj) => {
-        const caseNum = caseObj.getIn([PROPERTY_TYPES.CASE_ID, 0], '');
-        const charges = chargeHistory.get(caseNum);
-        const fileDate = formatDateList(caseObj.get(PROPERTY_TYPES.FILE_DATE, Immutable.List()));
-        return (
-          <div key={caseNum}>
-            <InfoRow>
-              <InfoItem><InfoHeader>Case #: </InfoHeader>{caseNum}</InfoItem>
-              <InfoItem><InfoHeader>File Date: </InfoHeader>{fileDate}</InfoItem>
-            </InfoRow>
-            <ChargeList pretrialCaseDetails={caseObj} charges={charges} detailed />
-            <hr />
-          </div>
-        );
-      });
-    return (
-      <CaseHistoryContainer>
-        {this.renderStatistics()}
-        {cases}
-      </CaseHistoryContainer>
-    );
-  }
-
   renderDetails = () => {
     const { open } = this.state;
 
@@ -584,7 +371,9 @@ export default class PSAReviewRow extends React.Component<Props, State> {
           <Tabs id={`details-${this.props.entityKeyId}`} activeKey={this.state.view} onSelect={this.onViewSelect}>
             <Tab eventKey={VIEWS.SUMMARY} title="Summary">{this.renderSummary()}</Tab>
             <Tab eventKey={VIEWS.PSA} title="PSA">{this.renderPSADetails()}</Tab>
-            <Tab eventKey={VIEWS.HISTORY} title="Case History">{this.renderCaseHistory()}</Tab>
+            <Tab eventKey={VIEWS.HISTORY} title="Case History">
+              <CaseHistory caseHistory={this.props.caseHistory} chargeHistory={this.props.chargeHistory} />
+            </Tab>
           </Tabs>
         </Modal.Body>
       </Modal>
@@ -619,7 +408,7 @@ export default class PSAReviewRow extends React.Component<Props, State> {
 
   openDetailsModal = () => {
     const { neighbors, loadCaseHistoryFn } = this.props;
-    const personId = neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborId'], '');
+    const personId = this.props.personId || neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborId'], '');
     loadCaseHistoryFn({ personId, neighbors });
     this.setState({
       open: true,
@@ -634,7 +423,7 @@ export default class PSAReviewRow extends React.Component<Props, State> {
         <DetailsRowContainer onClick={this.openDetailsModal}>
           <ReviewRowWrapper>
             {this.renderPersonCard()}
-            {this.renderScores()}
+            <PSAScores scores={this.props.scores} />
             {this.renderDownloadButton()}
           </ReviewRowWrapper>
         </DetailsRowContainer>

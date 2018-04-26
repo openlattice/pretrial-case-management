@@ -78,6 +78,11 @@ const DashboardNav = () => (
           name={Routes.NEW_PERSON}>
         New Person
       </StyledNavLink>
+      <StyledNavLink
+          to={Routes.PEOPLE}
+          name={Routes.PEOPLE}>
+        Browse People
+      </StyledNavLink>
     </StyledLinksWrapper>
   </StyledNavWrapper>
 );
