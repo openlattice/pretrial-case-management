@@ -1,16 +1,20 @@
-/*
- * @flow
- */
-
 import React from 'react';
+import PropTypes from 'prop-types';
 import styled from 'styled-components';
 
-import ContentBlock from './ContentBlock';
+import { StyledContentItalic } from '../utils/Layout';
 
 const StyledSection = styled.div`
   display: flex;
   flex-direction: column;
+  flex-wrap: wrap;
   margin-bottom: 20px;
+  margin-right: 40px;
+`;
+
+const StyledContentBlockWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
 `;
 
 const StyledSectionHeaderWrapper = styled.div`
@@ -22,35 +26,29 @@ const StyledSectionHeaderWrapper = styled.div`
   text-transform: uppercase;
 `;
 
-type Props = {
-  title :string,
-  vertical? :boolean,
-  content :{
-    label :string,
-    content :{
-      line :string
-    }[]
-  }[]
-};
 
-const ContentSection = ({ title, vertical, content } :Props) => {
-  const renderContent = () => content.map(contentBlock => (
-    <ContentBlock
-        contentBlock={contentBlock}
-        vertical={vertical}
-        key={contentBlock.label} />
-  ));
+const ContentSection = ({ title, width, ...props }) => {
+  const renderContent = () => {
+    if (props.children) {
+      return props.children;
+    }
+
+    return <StyledContentItalic>Information not available</StyledContentItalic>;
+  };
 
   return (
-    <StyledSection>
+    <StyledSection width={width}>
       <StyledSectionHeaderWrapper>{title}</StyledSectionHeaderWrapper>
-      { renderContent() }
+      <StyledContentBlockWrapper>
+        { renderContent() }
+      </StyledContentBlockWrapper>
     </StyledSection>
   );
 };
 
-ContentSection.defaultProps = {
-  vertical: false
+ContentSection.propTypes = {
+  title: PropTypes.string.isRequired,
+  children: PropTypes.node.isRequired
 };
 
 export default ContentSection;

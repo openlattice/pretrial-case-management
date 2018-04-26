@@ -7,44 +7,46 @@ import Immutable from 'immutable';
 import { Redirect, Route, Switch } from 'react-router-dom';
 
 import { StyledInnerNav } from '../../utils/Layout';
-import { PERSON_FQNS } from '../../utils/consts/Consts';
+import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { formatValue } from '../../utils/Utils';
 import * as Routes from '../../core/router/Routes';
 import AboutPerson from './AboutPerson';
 import InnerNavLink from '../../components/InnerNavLink';
 import DashboardMainSection from '../dashboard/DashboardMainSection';
 
 type Props = {
-  selectedPersonData :Immutable.Map<*, *>
+  selectedPersonId :string,
+  selectedPersonData :Immutable.Map<*, *>,
+  neighbors :Immutable.Map<*, *>
 };
 
-const PersonDetails = ({ selectedPersonData } :Props) => {
-  const subjectId = selectedPersonData.get(PERSON_FQNS.SUBJECT_ID);
+const PersonDetails = ({ selectedPersonId, selectedPersonData, neighbors } :Props) => {
 
   const renderAboutPersonComponent = () => {
     return (
-      <AboutPerson selectedPersonData={selectedPersonData} />
+      <AboutPerson selectedPersonData={selectedPersonData} neighbors={neighbors} />
     );
   };
 
   return (
     <DashboardMainSection
         header={
-          `${selectedPersonData.get(PERSON_FQNS.FIRST_NAME)}
-           ${selectedPersonData.get(PERSON_FQNS.LAST_NAME)}`
+          `${formatValue(selectedPersonData.get(PROPERTY_TYPES.FIRST_NAME))}
+           ${formatValue(selectedPersonData.get(PROPERTY_TYPES.LAST_NAME))}`
         }>
       <StyledInnerNav>
         <InnerNavLink
-            path={Routes.ABOUT_PERSON}
+            path={`${Routes.ABOUT_PERSON}`}
             name="About_Person"
             label="About" />
       </StyledInnerNav>
       <Switch>
         <Route
-            path={`${Routes.PERSON_DETAILS_ROOT}/${subjectId}/${Routes.ABOUT}`}
+            path={`${Routes.PERSON_DETAILS_ROOT}/${selectedPersonId}/${Routes.ABOUT}`}
             render={renderAboutPersonComponent} />
         <Redirect
             from={Routes.PERSON_DETAILS}
-            to={`${Routes.PERSON_DETAILS_ROOT}/${subjectId}/${Routes.ABOUT}`} />
+            to={`${Routes.PERSON_DETAILS_ROOT}/${selectedPersonId}/${Routes.ABOUT}`} />
       </Switch>
     </DashboardMainSection>
   );

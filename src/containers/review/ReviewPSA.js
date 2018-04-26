@@ -10,11 +10,11 @@ import moment from 'moment';
 import styled from 'styled-components';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { Col, FormControl, Pager, Tab, Tabs } from 'react-bootstrap';
+import { Pager, Tab, Tabs } from 'react-bootstrap';
 
 import PSAReviewRow from '../../components/review/PSAReviewRow';
 import LoadingSpinner from '../../components/LoadingSpinner';
-import StyledButton from '../../components/buttons/StyledButton';
+import PersonSearchFields from '../../components/person/PersonSearchFields';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PaddedRow, TitleLabel, StyledSelect } from '../../utils/Layout';
 import * as FormActionFactory from '../psa/FormActionFactory';
@@ -214,38 +214,11 @@ class ReviewPSA extends React.Component<Props, State> {
     );
   }
 
-  renderPersonFilter = () => (
-    <div>
-      <SearchRow>
-        <Col lg={3}>
-          <TitleLabel>Last Name</TitleLabel>
-          <FormControl id="lastName" onKeyPress={this.handleKeyPress} />
-        </Col>
-        <Col lg={3}>
-          <TitleLabel>First Name</TitleLabel>
-          <FormControl id="firstName" onKeyPress={this.handleKeyPress} />
-        </Col>
-        <Col lg={3}>
-          <TitleLabel>Date of Birth</TitleLabel>
-          <DatePicker id="dob" />
-        </Col>
-        <StyledButton onClick={this.filterPersonRequest}>Filter</StyledButton>
-      </SearchRow>
-    </div>
-  )
-
-  filterPersonRequest = () => {
-    this.updateFilters({
-      firstName: document.getElementById('firstName').value,
-      lastName: document.getElementById('lastName').value,
-      dob: document.getElementById('dob').value
-    });
-  }
-
-  handleKeyPress = (e) => {
-    if (e.key === 'Enter') {
-      this.filterPersonRequest();
-    }
+  renderPersonFilter = () => {
+    const handleSubmit = (firstName, lastName, dob) => {
+      this.updateFilters({ firstName, lastName, dob });
+    };
+    return <PersonSearchFields handleSubmit={handleSubmit} />;
   }
 
   renderFilerFilter = () => {
