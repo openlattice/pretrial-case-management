@@ -13,7 +13,6 @@ import PersonSearchFields from '../../components/person/PersonSearchFields';
 import PeopleList from '../../components/people/PeopleList';
 import InnerNavLink from '../../components/InnerNavLink';
 import DashboardMainSection from '../../components/dashboard/DashboardMainSection';
-import { getPeople } from './PeopleActionFactory';
 import { searchPeopleRequest } from '../person/PersonActionFactory';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { StyledInnerNav } from '../../utils/Layout';
@@ -33,7 +32,6 @@ type Props = {
   isFetchingPeople :boolean,
   peopleResults :Immutable.List<*>,
   actions :{
-    getPeople :() => void,
     searchPeopleRequest :(firstName :string, lastName :string, dob :string) => void
   }
 };
@@ -49,10 +47,6 @@ class PeopleContainer extends React.Component<Props, State> {
     this.state = {
       didMapPeopleToProps: false
     };
-  }
-
-  componentDidMount() {
-    this.props.actions.getPeople();
   }
 
   componentWillReceiveProps(nextProps) {
@@ -149,7 +143,7 @@ function mapStateToProps(state) {
 function mapDispatchToProps(dispatch) {
 
   return {
-    actions: bindActionCreators({ getPeople, searchPeopleRequest }, dispatch)
+    actions: bindActionCreators({ searchPeopleRequest }, dispatch)
   };
 }
 
