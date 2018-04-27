@@ -7,17 +7,28 @@ import Immutable from 'immutable';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 
-import { getPersonData } from './PeopleActionFactory';
 import PersonDetails from '../../components/people/PersonDetails';
-import { PERSON_FQNS } from '../../utils/consts/Consts';
 import LoadingSpinner from '../../components/LoadingSpinner';
-import { formatDOB } from '../../utils/Helpers';
+import * as PeopleActionFactory from './PeopleActionFactory';
+import * as ReviewActionFactory from '../review/ReviewActionFactory';
 
 type Props = {
   selectedPersonData :Immutable.Map<*, *>,
   isFetchingPersonData :boolean,
+  neighbors :Immutable.Map<*, *>,
   actions :{
-    getPersonData :(personId :string) => void
+    getPersonData :(personId :string) => void,
+    getPersonNeighbors :(value :{
+      personId :string
+    }) => void,
+    loadCaseHistory :(values :{
+      personId :string,
+      neighbors :Immutable.Map<*, *>
+    }) => void,
+    downloadPSAReviewPDF :(values :{
+      neighbors :Immutable.Map<*, *>,
+      scores :Immutable.Map<*, *>
+    }) => void,
   },
   match :{
     params :{
@@ -29,7 +40,10 @@ type Props = {
 class PersonDetailsContainer extends React.Component<Props> {
 
   componentDidMount() {
-    this.props.actions.getPersonData(this.props.match.params.personId);
+    const { match, actions } = this.props;
+    const { personId } = match.params;
+    actions.getPersonData(personId);
+    actions.getPersonNeighbors({ personId });
   }
 
   render() {
@@ -37,39 +51,46 @@ class PersonDetailsContainer extends React.Component<Props> {
       <div>
         {
           this.props.isFetchingPersonData
-            ? <LoadingSpinner />
-            : <PersonDetails
+            ? <LoadingSpinner /> :
+            <PersonDetails
+                selectedPersonId={this.props.match.params.personId}
                 selectedPersonData={this.props.selectedPersonData}
-                isFetchingPersonData={this.props.isFetchingPersonData} />
+                isFetchingPersonData={this.props.isFetchingPersonData}
+                neighbors={this.props.neighbors} />
         }
       </div>
     );
   }
 }
 
+function mapStateToProps(state, ownProps) {
+  const { personId } = ownProps.match.params;
 
-function mapStateToProps(state) {
   const isFetchingPersonData = state.getIn(['people', 'isFetchingPersonData'], true);
 
-  // Format person data
-  let selectedPersonData = state.getIn(['people', 'selectedPersonData'], Immutable.Map());
-  selectedPersonData = selectedPersonData.map(value => value.get(0));
-  const dob = formatDOB(selectedPersonData.get(PERSON_FQNS.DOB));
-  selectedPersonData = selectedPersonData.set(
-    PERSON_FQNS.DOB,
-    dob
-  );
+  const selectedPersonData = state.getIn(['people', 'selectedPersonData'], Immutable.List());
+  const neighbors = state.getIn(['people', 'peopleNeighbors', personId], Immutable.Map());
 
   return {
     selectedPersonData,
-    isFetchingPersonData
+    isFetchingPersonData,
+    neighbors
   };
 }
 
 function mapDispatchToProps(dispatch) {
+  const actions :{ [string] :Function } = {};
+
+  Object.keys(PeopleActionFactory).forEach((action :string) => {
+    actions[action] = PeopleActionFactory[action];
+  });
+
+  Object.keys(ReviewActionFactory).forEach((action :string) => {
+    actions[action] = ReviewActionFactory[action];
+  });
 
   return {
-    actions: bindActionCreators({ getPersonData }, dispatch)
+    actions: bindActionCreators(actions, dispatch)
   };
 }
 

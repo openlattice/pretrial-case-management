@@ -137,17 +137,6 @@ export const FORM_LENGTHS = {
   psa: 4
 };
 
-export const PERSON_FQNS = {
-  ID: 'id',
-  SUBJECT_ID: 'nc.SubjectIdentification',
-  FIRST_NAME: 'nc.PersonGivenName',
-  LAST_NAME: 'nc.PersonSurName',
-  DOB: 'nc.PersonBirthDate',
-  PHOTO: 'person.picture',
-  SEX: 'nc.PersonSex',
-  SSN: 'nc.SSN'
-};
-
 export const FLEX = {
   COL_1_3: '0 0 520px',
   COL_2_3: '0 0 1040px',
