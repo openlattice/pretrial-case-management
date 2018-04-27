@@ -5,7 +5,7 @@
 import Immutable from 'immutable';
 import moment from 'moment';
 import { AuthorizationApi, DataApi, EntityDataModelApi, SearchApi } from 'lattice';
-import { call, put, takeEvery } from 'redux-saga/effects';
+import { all, call, put, takeEvery } from 'redux-saga/effects';
 
 import exportPDF from '../../utils/PDFUtils';
 import {
@@ -279,8 +279,10 @@ function* updateScoresAndRiskFactorsWorker(action :SequenceAction) :Generator<*,
       riskFactorsId,
       riskFactorsEntity
     } = action.value;
-    yield call(DataApi.replaceEntityInEntitySetUsingFqns, riskFactorsEntitySetId, riskFactorsId, riskFactorsEntity);
-    yield call(DataApi.replaceEntityInEntitySetUsingFqns, scoresEntitySetId, scoresId, scoresEntity);
+    yield all([
+      call(DataApi.replaceEntityInEntitySetUsingFqns, riskFactorsEntitySetId, riskFactorsId, riskFactorsEntity),
+      call(DataApi.replaceEntityInEntitySetUsingFqns, scoresEntitySetId, scoresId, scoresEntity)
+    ]);
 
     const newScoreEntity = yield call(DataApi.getEntity, scoresEntitySetId, scoresId);
     const newRiskFactorsEntity = yield call(DataApi.getEntity, riskFactorsEntitySetId, riskFactorsId);
