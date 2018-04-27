@@ -4,24 +4,35 @@
 
 import React from 'react';
 import Immutable from 'immutable';
+import styled from 'styled-components';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { Redirect, Route, Switch } from 'react-router-dom';
 
-import { getPeople } from './PeopleActionFactory';
-import * as Routes from '../../core/router/Routes';
-import { PERSON_FQNS } from '../../utils/consts/Consts';
-import { StyledInnerNav } from '../../utils/Layout';
+import PersonSearchFields from '../../components/person/PersonSearchFields';
+import PeopleList from '../../components/people/PeopleList';
 import InnerNavLink from '../../components/InnerNavLink';
 import DashboardMainSection from '../../components/dashboard/DashboardMainSection';
-import PeopleList from '../../components/people/PeopleList';
+import { searchPeopleRequest } from '../person/PersonActionFactory';
+import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { StyledInnerNav } from '../../utils/Layout';
 import { formatDOB } from '../../utils/Helpers';
+import * as Routes from '../../core/router/Routes';
+
+const SearchBox = styled.div`
+  padding: 30px 0;
+  margin-bottom: 30px;
+  background: white;
+  box-shadow: 0 2px 8px -2px rgba(17,51,85,0.15);
+  border: 1px solid #ccc;
+  border-radius: 5px;
+`;
 
 type Props = {
   isFetchingPeople :boolean,
   peopleResults :Immutable.List<*>,
   actions :{
-    getPeople :() => void
+    searchPeopleRequest :(firstName :string, lastName :string, dob :string) => void
   }
 };
 
@@ -38,10 +49,6 @@ class PeopleContainer extends React.Component<Props, State> {
     };
   }
 
-  componentDidMount() {
-    this.props.actions.getPeople();
-  }
-
   componentWillReceiveProps(nextProps) {
     if (nextProps.peopleResults !== this.props.peopleResults) {
       this.setState({ didMapPeopleToProps: true });
@@ -49,13 +56,13 @@ class PeopleContainer extends React.Component<Props, State> {
   }
 
   formatPeopleInfo = (person) => {
-    const formattedDOB = formatDOB(person.getIn([PERSON_FQNS.DOB, 0]));
+    const formattedDOB = formatDOB(person.getIn([PROPERTY_TYPES.DOB, 0]));
     return {
-      identification: person.getIn([PERSON_FQNS.SUBJECT_ID, 0]),
-      firstName: person.getIn([PERSON_FQNS.FIRST_NAME, 0]),
-      lastName: person.getIn([PERSON_FQNS.LAST_NAME, 0]),
+      identification: person.getIn([PROPERTY_TYPES.PERSON_ID, 0]),
+      firstName: person.getIn([PROPERTY_TYPES.FIRST_NAME, 0]),
+      lastName: person.getIn([PROPERTY_TYPES.LAST_NAME, 0]),
       dob: formattedDOB,
-      photo: person.getIn([PERSON_FQNS.PHOTO, 0])
+      photo: person.getIn([PROPERTY_TYPES.PICTURE, 0])
     };
   }
 
@@ -68,10 +75,15 @@ class PeopleContainer extends React.Component<Props, State> {
   renderCurrentPeopleComponent = () => {
     const formattedPeople = this.getFormattedPeople();
     return (
-      <PeopleList
-          people={formattedPeople}
-          isFetchingPeople={this.props.isFetchingPeople}
-          didMapPeopleToProps={this.state.didMapPeopleToProps} />
+      <div>
+        <SearchBox>
+          <PersonSearchFields handleSubmit={this.props.actions.searchPeopleRequest} />
+        </SearchBox>
+        <PeopleList
+            people={formattedPeople}
+            isFetchingPeople={this.props.isFetchingPeople}
+            didMapPeopleToProps={this.state.didMapPeopleToProps} />
+      </div>
     );
   }
 
@@ -106,14 +118,6 @@ class PeopleContainer extends React.Component<Props, State> {
               path={Routes.CURRENT_PEOPLE}
               name={Routes.CURRENT_PEOPLE}
               label="Current" />
-          <InnerNavLink
-              path={Routes.INCOMING_PEOPLE}
-              name={Routes.INCOMING_PEOPLE}
-              label="Incoming" />
-          <InnerNavLink
-              path={Routes.PAST_PEOPLE}
-              name={Routes.PAST_PEOPLE}
-              label="Past" />
         </StyledInnerNav>
         <Switch>
           <Route path={Routes.CURRENT_PEOPLE} render={this.renderCurrentPeopleComponent} />
@@ -128,10 +132,10 @@ class PeopleContainer extends React.Component<Props, State> {
 
 
 function mapStateToProps(state) {
-  const people = state.getIn(['people', 'peopleResults'], Immutable.List());
-  const isFetchingPeople = state.getIn(['people', 'isFetchingPeople'], false);
+  const peopleResults = state.getIn(['search', 'searchResults'], Immutable.List());
+  const isFetchingPeople = state.getIn(['search', 'isLoadingPeople'], false);
   return {
-    peopleResults: people,
+    peopleResults,
     isFetchingPeople
   };
 }
@@ -139,7 +143,7 @@ function mapStateToProps(state) {
 function mapDispatchToProps(dispatch) {
 
   return {
-    actions: bindActionCreators({ getPeople }, dispatch)
+    actions: bindActionCreators({ searchPeopleRequest }, dispatch)
   };
 }
 

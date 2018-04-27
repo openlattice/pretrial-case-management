@@ -44,5 +44,5 @@ export const LAST_NAME = 'lname';
 export const DOB = 'dob';
 
 /* Person Details */
-export const ABOUT_PERSON = `${PERSON_DETAILS}/about`;
 export const ABOUT = 'about';
+export const ABOUT_PERSON = `${PERSON_DETAILS}/${ABOUT}`;
