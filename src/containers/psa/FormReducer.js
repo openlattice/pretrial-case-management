@@ -172,7 +172,10 @@ function formReducer(state :Immutable.Map<> = INITIAL_STATE, action :Object) {
         .set('selectPerson', Immutable.Map())
         .set('selectedPretrialCase', Immutable.Map())
         .set('charges', Immutable.List())
-        .set('psa', INITIAL_PSA_FORM);
+        .set('psa', INITIAL_PSA_FORM)
+        .set('isSubmitted', false)
+        .set('isSubmitting', false)
+        .set('submitError', false);
 
 
     default:
