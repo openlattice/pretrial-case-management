@@ -73,18 +73,6 @@ const {
   CALCULATED_FOR
 } = ENTITY_SETS;
 
-const CenteredDiv = styled.div`
-  text-align: center;
-`;
-
-const NoResultsText = styled.div`
-  text-align: center;
-  width: 100%;
-  font-size: 16px;
-  font-weight: bold;
-  margin-bottom: 15px;
-`;
-
 const LoadingContainer = styled.div`
   text-align: center;
 `;
@@ -139,7 +127,7 @@ const INITIAL_STATE = Immutable.fromJS({
   notesId: undefined
 });
 
-const numPages = 4;
+const numPages = 3;
 
 type Entity = {
   key :{
