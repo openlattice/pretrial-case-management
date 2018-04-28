@@ -1,16 +1,15 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import styled from 'styled-components';
 import { Modal, Button } from 'react-bootstrap';
 
 import { ButtonWrapper } from '../utils/Layout';
 import * as OverrideClassNames from '../utils/styleoverrides/OverrideClassNames';
 
-function getTitle(submissionStatus) {
-  if (submissionStatus) {
-    return 'Success!';
-  }
-  return 'Error Submitting Report';
-}
+const CloseButtonWrapper = styled(ButtonWrapper)`
+  width: 100%;
+  text-align: center;
+`;
 
 function getBody(submissionStatus, pageContent) {
   if (submissionStatus) {
@@ -24,18 +23,13 @@ function ConfirmationModal({ submissionStatus, pageContent, handleModalButtonCli
   const open = true;
   return (
     <Modal show={open} dialogClassName={OverrideClassNames.PSA_REVIEW_MODAL}>
-      <Modal.Header>
-        <Modal.Title>
-          { getTitle(submissionStatus) }
-        </Modal.Title>
-      </Modal.Header>
       <Modal.Body>
         { getBody(submissionStatus, pageContent) }
       </Modal.Body>
       <Modal.Footer>
-        <ButtonWrapper>
-          <Button bsStyle="primary" onClick={handleModalButtonClick}>OK</Button>
-        </ButtonWrapper>
+        <CloseButtonWrapper>
+          <Button bsStyle="default" onClick={handleModalButtonClick}>Close</Button>
+        </CloseButtonWrapper>
       </Modal.Footer>
     </Modal>
   );

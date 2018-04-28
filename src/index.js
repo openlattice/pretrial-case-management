@@ -13,7 +13,6 @@ import { Provider } from 'react-redux';
 import { ConnectedRouter } from 'react-router-redux';
 import { injectGlobal } from 'styled-components';
 
-// import importEntitySets from '../importEntitySets';
 import AppContainer from './containers/app/AppContainer';
 import initializeReduxStore from './core/redux/ReduxStore';
 import initializeRouterHistory from './core/router/RouterHistory';
@@ -73,7 +72,6 @@ LatticeAuth.configure({
 const routerHistory = initializeRouterHistory();
 const reduxStore = initializeReduxStore(routerHistory);
 
-// importEntitySets();
 ReactDOM.render(
   <Provider store={reduxStore}>
     <ConnectedRouter history={routerHistory}>

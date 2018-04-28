@@ -8,7 +8,6 @@ import Immutable from 'immutable';
 import styled from 'styled-components';
 import randomUUID from 'uuid/v4';
 import moment from 'moment';
-import FontAwesome from 'react-fontawesome';
 import { AuthUtils } from 'lattice-auth';
 import { Button, ProgressBar } from 'react-bootstrap';
 import { connect } from 'react-redux';
@@ -640,14 +639,14 @@ class Form extends React.Component<Props, State> {
   }
 
   renderModal = () => {
-    const { isSubmitted } = this.props;
-    if (!isSubmitted) {
+    const { isSubmitting, isSubmitted } = this.props;
+    if (!isSubmitting && !isSubmitted) {
       return null;
     }
 
     return (
       <ConfirmationModal
-          submissionStatus={this.props.isSubmitted}
+          submissionStatus={isSubmitting || isSubmitted}
           pageContent={this.getPsaResults}
           // Implement hard reset
           handleModalButtonClick={this.props.actions.hardRestart} />
@@ -668,7 +667,6 @@ class Form extends React.Component<Props, State> {
               <Route path={`${Routes.PSA_FORM}/1`} render={this.getSearchPeopleSection} />;
               <Route path={`${Routes.PSA_FORM}/2`} render={this.getSelectPretrialCaseSection} />;
               <Route path={`${Routes.PSA_FORM}/3`} render={this.getPsaInputForm} />;
-              <Route path={`${Routes.PSA_FORM}/4`} render={this.getPsaResults} />;
               <Redirect from={Routes.PSA_FORM} to={`${Routes.PSA_FORM}/1`} />
               <Redirect from={Routes.FORMS} to={Routes.DASHBOARD} />
             </Switch>
