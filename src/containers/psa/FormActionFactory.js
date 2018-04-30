@@ -16,6 +16,12 @@ const submitData :RequestSequence = newRequestSequence(SUBMIT_DATA);
 const UPDATE_NOTES :string = 'UPDATE_NOTES';
 const updateNotes :RequestSequence = newRequestSequence(UPDATE_NOTES);
 
+const HARD_RESTART :'HARD_RESTART' = 'HARD_RESTART';
+function hardRestart() :Object {
+  return {
+    type: HARD_RESTART
+  };
+}
 // reducer only
 
 const CLEAR_FORM :string = 'CLEAR_FORM';
@@ -31,10 +37,12 @@ const SET_PSA_VALUES :string = 'SET_PSA_VALUES';
 const setPSAValues :RequestSequence = newRequestSequence(SET_PSA_VALUES);
 
 export {
+  HARD_RESTART,
   LOAD_DATA_MODEL,
   LOAD_NEIGHBORS,
   SUBMIT_DATA,
   UPDATE_NOTES,
+  hardRestart,
   loadDataModel,
   loadNeighbors,
   submitData,
