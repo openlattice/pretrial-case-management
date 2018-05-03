@@ -21,6 +21,14 @@ const psaEditedConfig = {
       }
     },
     {
+      name: ENTITY_SETS.RELEASE_RECOMMENDATIONS,
+      alias: ALIASES.NOTES,
+      entityId: EDIT_FIELDS.NOTES_ID,
+      fields: {
+        [EDIT_FIELDS.NOTES_ID]: PROPERTY_TYPES.GENERAL_ID
+      }
+    },
+    {
       name: ENTITY_SETS.STAFF,
       alias: ALIASES.STAFF,
       fields: {

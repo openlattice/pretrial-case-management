@@ -207,6 +207,16 @@ export default class PSAReviewRow extends React.Component<Props, State> {
     const entitySetId = neighbor.getIn(['neighborEntitySet', 'id']);
     const propertyTypes = neighbor.get('neighborPropertyTypes');
     this.props.updateNotes(notes, entityId, entitySetId, propertyTypes);
+
+    this.props.submitData({
+      config: psaEditedConfig,
+      values: {
+        [EDIT_FIELDS.PSA_ID]: [this.props.scores.getIn([PROPERTY_TYPES.GENERAL_ID, 0])],
+        [EDIT_FIELDS.NOTES_ID]: [entityId],
+        [EDIT_FIELDS.TIMESTAMP]: [moment().toISOString()],
+        [EDIT_FIELDS.PERSON_ID]: [AuthUtils.getUserInfo().email]
+      }
+    });
   }
 
   renderNotes = () => {
