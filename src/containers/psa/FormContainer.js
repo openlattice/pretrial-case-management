@@ -326,12 +326,14 @@ class Form extends React.Component<Props, State> {
     });
 
     const primaryKeys = entityType.get('key').map(id => keyIdToFqn.get(id)).toJS();
+    const randomId = randomUUID();
 
+    if (useRandomId) entityDetails[GENERAL_ID] = [randomId];
     const details = (isExistingEntity)
       ? this.getEntityWithUuids(entityDetails, primaryKeys, fqnToId)
       : this.getEntityWithUuids(entityDetails, Object.keys(entityDetails), fqnToId);
 
-    const entityId = useRandomId ? randomUUID() : this.getEntityId(details, entityType.get('key'));
+    const entityId = useRandomId ? randomId : this.getEntityId(details, entityType.get('key'));
     return {
       details,
       key: { entitySetId, entityId }

@@ -20,6 +20,7 @@ import { PaddedRow, TitleLabel, StyledSelect } from '../../utils/Layout';
 import * as FormActionFactory from '../psa/FormActionFactory';
 import * as ReviewActionFactory from './ReviewActionFactory';
 import * as Routes from '../../core/router/Routes';
+import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
 
 const StyledFormViewWrapper = styled.div`
   display: flex;
@@ -136,6 +137,7 @@ type Props = {
       propertyTypes :Immutable.List<*>
     }) => void,
     checkPSAPermissions :() => void,
+    submit :(value :{ config :Object, values :Object}) => void
   },
   psaNeighborsById :Immutable.Map<*, *>,
   allFilers :Immutable.Set<*>,
@@ -290,6 +292,7 @@ class ReviewPSA extends React.Component<Props, State> {
           loadCaseHistoryFn={this.props.actions.loadCaseHistory}
           updateScoresAndRiskFactors={this.updateScoresAndRiskFactors}
           updateNotes={this.updateNotes}
+          submitData={this.props.actions.submit}
           caseHistory={caseHistory}
           chargeHistory={chargeHistory}
           readOnly={this.props.readOnly}
@@ -302,10 +305,15 @@ class ReviewPSA extends React.Component<Props, State> {
     if (!filer.length) return [];
     const { psaNeighborsById } = this.props;
 
-    return psaNeighborsById.entrySeq().filter(([scoreId, neighbors]) => neighbors.getIn(
-      [ENTITY_SETS.STAFF, 'neighborDetails', PROPERTY_TYPES.PERSON_ID],
-      Immutable.List()
-    ).includes(filer)).toArray();
+    return psaNeighborsById.entrySeq().filter(([scoreId, neighbors]) => {
+      let includesFiler = false;
+      neighbors.get(ENTITY_SETS.STAFF, Immutable.List()).forEach((neighbor) => {
+        if (neighbor.getIn(['neighborDetails', PROPERTY_TYPES.PERSON_ID], Immutable.List()).includes(filer)) {
+          includesFiler = true;
+        }
+      });
+      return includesFiler;
+    }).toArray();
   }
 
   filterByPerson = () => {
@@ -483,6 +491,10 @@ function mapDispatchToProps(dispatch :Function) :Object {
 
   Object.keys(ReviewActionFactory).forEach((action :string) => {
     actions[action] = ReviewActionFactory[action];
+  });
+
+  Object.keys(SubmitActionFactory).forEach((action :string) => {
+    actions[action] = SubmitActionFactory[action];
   });
 
   return {

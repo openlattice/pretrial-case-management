@@ -7,6 +7,7 @@ import Immutable from 'immutable';
 import styled from 'styled-components';
 import moment from 'moment';
 import { Modal, Tab, Tabs } from 'react-bootstrap';
+import { AuthUtils } from 'lattice-auth';
 
 import PSAInputForm from '../psainput/PSAInputForm';
 import PersonCard from '../person/PersonCard';
@@ -15,10 +16,11 @@ import InlineEditableControl from '../controls/InlineEditableControl';
 import CaseHistory from '../../components/review/CaseHistory';
 import ChargeList from '../../components/charges/ChargeList';
 import PSAScores from './PSAScores';
+import psaEditedConfig from '../../config/formconfig/PsaEditedConfig';
 import { getScoresAndRiskFactors } from '../../utils/ScoringUtils';
 import { CenteredContainer } from '../../utils/Layout';
 import { formatValue, formatDateList } from '../../utils/Utils';
-import { PSA } from '../../utils/consts/Consts';
+import { PSA, EDIT_FIELDS } from '../../utils/consts/Consts';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import * as OverrideClassNames from '../../utils/styleoverrides/OverrideClassNames';
 
@@ -59,7 +61,7 @@ const MetadataText = styled.div`
   width: 100%;
   font-style: italic;
   font-size: 12px;
-  margin-bottom: -15px;
+  margin: 20px 0 -15px 0;
   color: #bbb;
 `;
 
@@ -69,6 +71,10 @@ const ImportantMetadataText = styled.span`
 
 const NotesContainer = styled.div`
   text-align: left;
+`;
+
+const MetadataItem = styled.div`
+  display: block;
 `;
 
 const InfoRow = styled.div`
@@ -123,6 +129,7 @@ type Props = {
     entitySetId :string,
     propertyTypes :Immutable.List<*>
   ) => void,
+  submitData :(value :{ config :Object, values :Object }) => void
 };
 
 type State = {
@@ -238,26 +245,45 @@ export default class PSAReviewRow extends React.Component<Props, State> {
   onRiskFactorEdit = (e :Object) => {
     e.preventDefault();
     const { scores, riskFactors } = getScoresAndRiskFactors(this.state.riskFactors);
+    const scoreId = this.props.scores.getIn([PROPERTY_TYPES.GENERAL_ID, 0]);
+    const riskFactorsId = this.props.neighbors.getIn(
+      [ENTITY_SETS.PSA_RISK_FACTORS, 'neighborDetails', PROPERTY_TYPES.GENERAL_ID, 0]
+    );
     const scoresEntity = {
       [PROPERTY_TYPES.NCA_SCALE]: [scores.ncaScale],
       [PROPERTY_TYPES.FTA_SCALE]: [scores.ftaScale],
       [PROPERTY_TYPES.NVCA_FLAG]: [scores.nvcaFlag]
     };
+    if (scoreId) scoresEntity[PROPERTY_TYPES.GENERAL_ID] = [scoreId];
+    if (riskFactorsId) riskFactors[PROPERTY_TYPES.GENERAL_ID] = [riskFactorsId];
 
-    const scoresId = this.props.entityKeyId;
+    const scoresEKId = this.props.entityKeyId;
     const riskFactorsEntitySetId = this.props.neighbors.getIn([
       ENTITY_SETS.PSA_RISK_FACTORS,
       'neighborEntitySet',
       'id'
     ]);
-    const riskFactorsId = this.props.neighbors.getIn([ENTITY_SETS.PSA_RISK_FACTORS, 'neighborId']);
+    const riskFactorsEKId = this.props.neighbors.getIn([ENTITY_SETS.PSA_RISK_FACTORS, 'neighborId']);
     this.props.updateScoresAndRiskFactors(
-      scoresId,
+      scoresEKId,
       scoresEntity,
       riskFactorsEntitySetId,
-      riskFactorsId,
+      riskFactorsEKId,
       riskFactors
     );
+
+    if (scoreId) {
+      this.props.submitData({
+        config: psaEditedConfig,
+        values: {
+          [EDIT_FIELDS.PSA_ID]: [scoreId],
+          [EDIT_FIELDS.RISK_FACTORS_ID]: [riskFactorsId],
+          [EDIT_FIELDS.TIMESTAMP]: [moment().toISOString()],
+          [EDIT_FIELDS.PERSON_ID]: [AuthUtils.getUserInfo().email]
+        }
+      });
+    }
+
     this.setState({ editing: false });
   }
 
@@ -380,23 +406,59 @@ export default class PSAReviewRow extends React.Component<Props, State> {
     );
   }
 
-  renderMetadata = () => {
-    const staff = this.props.neighbors.get(ENTITY_SETS.STAFF, Immutable.Map());
-    const dateCreated = moment(staff.getIn(['associationDetails', PROPERTY_TYPES.COMPLETED_DATE_TIME, 0], ''));
-    const dateCreatedText = dateCreated.isValid() ? dateCreated.format('MM/DD/YYYY hh:mm a') : '';
-    const creator = staff.getIn(['neighborDetails', PROPERTY_TYPES.PERSON_ID, 0], '');
-    if (!dateCreatedText.length && !creator.length) return null;
-
-    const text = ['Created'];
-    if (dateCreatedText.length) {
+  renderMetadataText = (actionText, dateText, user) => {
+    const text = [actionText];
+    if (dateText.length) {
       text.push(' on ');
-      text.push(<ImportantMetadataText key={dateCreatedText}>{dateCreatedText}</ImportantMetadataText>);
+      text.push(<ImportantMetadataText key={`${actionText}-${dateText}`}>{dateText}</ImportantMetadataText>);
     }
-    if (creator.length) {
+    if (user.length) {
       text.push(' by ');
-      text.push(<ImportantMetadataText key={creator}>{creator}</ImportantMetadataText>);
+      text.push(<ImportantMetadataText key={`${actionText}-${user}`}>{user}</ImportantMetadataText>);
     }
     return <MetadataText>{text}</MetadataText>;
+  }
+
+  renderMetadata = () => {
+    const dateFormat = 'MM/DD/YYYY hh:mm a';
+    let dateCreated;
+    let creator;
+    let dateEdited;
+    let editor;
+
+    this.props.neighbors.get(ENTITY_SETS.STAFF, Immutable.List()).forEach((neighbor) => {
+      const associationEntitySetName = neighbor.getIn(['associationEntitySet', 'name']);
+      const personId = neighbor.getIn(['neighborDetails', PROPERTY_TYPES.PERSON_ID, 0], '');
+      if (associationEntitySetName === ENTITY_SETS.ASSESSED_BY) {
+        creator = personId;
+        const maybeDate = moment(neighbor.getIn(['associationDetails', PROPERTY_TYPES.COMPLETED_DATE_TIME, 0], ''));
+        if (maybeDate.isValid()) dateCreated = maybeDate;
+      }
+      if (associationEntitySetName === ENTITY_SETS.EDITED_BY) {
+        const maybeDate = moment(neighbor.getIn(['associationDetails', PROPERTY_TYPES.DATE_TIME, 0], ''));
+        if (maybeDate.isValid()) {
+          if (!dateEdited || dateEdited.isBefore(maybeDate)) {
+            dateEdited = maybeDate;
+            editor = personId;
+          }
+        }
+      }
+    });
+
+    if (!dateCreated && !creator) return null;
+
+    const dateCreatedText = dateCreated ? dateCreated.format(dateFormat) : '';
+    const dateEditedText = dateEdited ? dateEdited.format(dateFormat) : '';
+
+    return (
+      <div>
+        <MetadataItem>{this.renderMetadataText('Created', dateCreatedText, creator)}</MetadataItem>
+        { dateEdited || editor
+          ? <MetadataItem>{this.renderMetadataText('Edited', dateEditedText, editor)}</MetadataItem>
+          : null
+        }
+      </div>
+    );
   }
 
   closeModal = () => {
