@@ -97,10 +97,13 @@ function* submitWorker(action :SequenceAction) :Generator<*, *, *> {
       entityList.forEach((entityValues) => {
         const details = getEntityDetails(entityDescription, propertyTypesByFqn, entityValues);
         if (shouldCreateEntity(entityDescription, entityValues, details)) {
+
+          const entityId = entityDescription.entityId ? entityValues[entityDescription.entityId][0]
+            : getEntityId(primaryKey, edmDetails.propertyTypes, entityValues, entityDescription.fields);
           const key = {
             entitySetId,
             syncId: allSyncIds[index],
-            entityId: getEntityId(primaryKey, edmDetails.propertyTypes, entityValues, entityDescription.fields)
+            entityId
           };
           const entity = { key, details };
           entitiesForAlias.push(entity);
@@ -108,7 +111,6 @@ function* submitWorker(action :SequenceAction) :Generator<*, *, *> {
       });
       mappedEntities[entityDescription.alias] = entitiesForAlias;
     });
-
 
     const associationAliases = {};
     config.associations.forEach((associationDescription) => {

@@ -6,6 +6,7 @@ export const ENTITY_SETS = {
   PEOPLE: 'southdakotapeople',
   ADDRESSES: 'southdakotaaddresses',
   CHARGES: 'southdakotacharges',
+  SENTENCES: 'southdakotasentences',
   PRETRIAL_CASES: 'southdakotapretrialcaseprocessings',
   PSA_RISK_FACTORS: 'southdakotapsariskfactors',
   PSA_SCORES: 'southdakotapsas',
@@ -19,12 +20,14 @@ export const ENTITY_SETS = {
   LIVES_AT: 'southdakotalivesat',
   CALCULATED_FOR: 'southdakotacalculatedfor',
   CHARGED_WITH: 'southdakotachargedwith',
-  REGISTERED_FOR: 'southdakotaregisteredfor'
+  REGISTERED_FOR: 'southdakotaregisteredfor',
+  EDITED_BY: 'southdakotaeditedby'
 };
 
 export const PROPERTY_TYPES = {
   STRING_ID: 'general.stringid',
   COMPLETED_DATE_TIME: 'date.completeddatetime',
+  DATE_TIME: 'general.datetime',
 
   FIRST_NAME: 'nc.PersonGivenName',
   LAST_NAME: 'nc.PersonSurName',
@@ -65,6 +68,16 @@ export const PROPERTY_TYPES = {
   DISPOSITION: 'justice.disposition',
   PLEA: 'justice.plea',
   PLEA_DATE: 'justice.pleadate',
+
+  // Sentence entity type consts
+  JAIL_DAYS_SERVED: 'justice.incarcerationdays',
+  JAIL_MONTHS_SERVED: 'justice.incarcerationmonths',
+  JAIL_YEARS_SERVED: 'justice.incarcerationyears',
+  JAIL_DAYS_SUSPENDED: 'justice.incarcerationsuspendeddays',
+  JAIL_MONTHS_SUSPENDED: 'justice.incarcerationsuspendedmonths',
+  JAIL_YEARS_SUSPENDED: 'justice.incarcerationsuspendedyears',
+  JAIL_START_DATE: 'justice.incarcerationstartdate',
+  CONCURRENT_CONSECUTIVE: 'justice.concurrentconsecutive',
 
   // PSA form entity type consts
   AGE_AT_CURRENT_ARREST: 'psa.AgeAtCurrentArrest',
