@@ -252,7 +252,7 @@ export default class PSAReviewRow extends React.Component<Props, State> {
     const scoresEntity = {
       [PROPERTY_TYPES.NCA_SCALE]: [scores.ncaScale],
       [PROPERTY_TYPES.FTA_SCALE]: [scores.ftaScale],
-      [PROPERTY_TYPES.NVCA_FLAG]: [scores.nvcaFlag],
+      [PROPERTY_TYPES.NVCA_FLAG]: [scores.nvcaFlag]
     };
     if (scoreId) scoresEntity[PROPERTY_TYPES.GENERAL_ID] = [scoreId];
     if (riskFactorsId) riskFactors[PROPERTY_TYPES.GENERAL_ID] = [riskFactorsId];
