@@ -158,7 +158,7 @@ function* loadPSAsByDateWorker(action :SequenceAction) :Generator<*, *, *> {
 
         neighbor.getIn(['associationDetails', PROPERTY_TYPES.TIMESTAMP],
           neighbor.getIn(['associationDetails', PROPERTY_TYPES.DATE_TIME], Immutable.List())).forEach((timestamp) => {
-          const timestampMoment = moment.parseZone(timestamp);
+          const timestampMoment = moment(timestamp);
           if (timestampMoment.isValid()) {
             allDatesEdited = allDatesEdited.push(timestampMoment.format('MM/DD/YYYY'));
           }
