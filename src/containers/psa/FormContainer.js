@@ -11,10 +11,11 @@ import moment from 'moment';
 import { AuthUtils } from 'lattice-auth';
 import { Button, ProgressBar } from 'react-bootstrap';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router-dom';
-import { Redirect, Route, Switch } from 'react-router-dom';
+import { Redirect, Route, Switch, withRouter } from 'react-router-dom';
 import { bindActionCreators } from 'redux';
 
+import LoadingSpinner from '../../components/LoadingSpinner';
+import ConfirmationModal from '../../components/ConfirmationModalView';
 import SearchPersonContainer from '../person/SearchPersonContainer';
 import SelectPretrialCaseContainer from '../pages/pretrialcase/SelectPretrialCaseContainer';
 import InlineEditableControl from '../../components/controls/InlineEditableControl';
@@ -127,7 +128,7 @@ const INITIAL_STATE = Immutable.fromJS({
   notesId: undefined
 });
 
-const numPages = 4;
+const numPages = 3;
 
 type Entity = {
   key :{
@@ -140,6 +141,7 @@ type Entity = {
 
 type Props = {
   actions :{
+    hardRestart :() => void;
     loadDataModel :() => void,
     loadNeighbors :(value :{
       entitySetId :string,
@@ -173,6 +175,7 @@ type Props = {
       newValues :Immutable.Map<*, *>
     }) => void
   },
+  isSubmitted :boolean,
   isSubmitting :boolean,
   submitError :boolean,
   dataModel :Immutable.Map<*, *>,
@@ -324,12 +327,14 @@ class Form extends React.Component<Props, State> {
     });
 
     const primaryKeys = entityType.get('key').map(id => keyIdToFqn.get(id)).toJS();
+    const randomId = randomUUID();
 
+    if (useRandomId) entityDetails[GENERAL_ID] = [randomId];
     const details = (isExistingEntity)
       ? this.getEntityWithUuids(entityDetails, primaryKeys, fqnToId)
       : this.getEntityWithUuids(entityDetails, Object.keys(entityDetails), fqnToId);
 
-    const entityId = useRandomId ? randomUUID() : this.getEntityId(details, entityType.get('key'));
+    const entityId = useRandomId ? randomId : this.getEntityId(details, entityType.get('key'));
     return {
       details,
       key: { entitySetId, entityId }
@@ -599,7 +604,14 @@ class Form extends React.Component<Props, State> {
     const { scoresWereGenerated, scores, riskFactors } = this.state;
     if (!scoresWereGenerated) return null;
     let header;
-    if (isSubmitting) header = <Status>Submitting...</Status>;
+    // if (isSubmitting) header = <Status>Submitting...</Status>;
+    if (isSubmitting) {
+      header = (
+        <div>
+          <LoadingText>Submitting...</LoadingText>
+          <LoadingSpinner />
+        </div>);
+    }
     else {
       header = submitError ? (
         <Failure>An error occurred: unable to submit PSA.</Failure>
@@ -617,6 +629,21 @@ class Form extends React.Component<Props, State> {
     );
   }
 
+  renderModal = () => {
+    const { isSubmitting, isSubmitted } = this.props;
+    if (!isSubmitting && !isSubmitted) {
+      return null;
+    }
+
+    return (
+      <ConfirmationModal
+          submissionStatus={isSubmitting || isSubmitted}
+          pageContent={this.getPsaResults}
+          // Implement hard reset
+          handleModalButtonClick={this.props.actions.hardRestart} />
+    );
+  }
+
   render() {
     return (
       <StyledFormViewWrapper>
@@ -631,10 +658,10 @@ class Form extends React.Component<Props, State> {
               <Route path={`${Routes.PSA_FORM}/1`} render={this.getSearchPeopleSection} />;
               <Route path={`${Routes.PSA_FORM}/2`} render={this.getSelectPretrialCaseSection} />;
               <Route path={`${Routes.PSA_FORM}/3`} render={this.getPsaInputForm} />;
-              <Route path={`${Routes.PSA_FORM}/4`} render={this.getPsaResults} />;
               <Redirect from={Routes.PSA_FORM} to={`${Routes.PSA_FORM}/1`} />
               <Redirect from={Routes.FORMS} to={Routes.DASHBOARD} />
             </Switch>
+            { this.renderModal() }
           </StyledSectionWrapper>
         </StyledFormWrapper>
       </StyledFormViewWrapper>
@@ -655,6 +682,7 @@ function mapStateToProps(state :Immutable.Map<*, *>) :Object {
     selectedPretrialCase: psaForm.get('selectedPretrialCase'),
     allChargesForPerson: psaForm.get('allChargesForPerson'),
     psaForm: psaForm.get('psa'),
+    isSubmitted: psaForm.get('isSubmitted'),
     isSubmitting: psaForm.get('isSubmitting'),
     submitError: psaForm.get('submitError'),
 

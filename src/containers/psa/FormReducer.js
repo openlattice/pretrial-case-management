@@ -61,6 +61,7 @@ const INITIAL_STATE :Immutable.Map<> = Immutable.fromJS({
   psa: INITIAL_PSA_FORM,
   dataModel: Immutable.Map(),
   entitySetLookup: Immutable.Map(),
+  isSubmitted: false,
   isSubmitting: false,
   submitError: false
 });
@@ -131,7 +132,7 @@ function formReducer(state :Immutable.Map<> = INITIAL_STATE, action :Object) {
     case submitData.case(action.type): {
       return submitData.reducer(state, action, {
         REQUEST: () => state.set('submitError', false).set('isSubmitting', true),
-        SUCCESS: () => state.set('submitError', false),
+        SUCCESS: () => state.set('submitError', false).set('isSubmitted', true),
         FAILURE: () => state.set('submitError', true),
         FINALLY: () => state.set('isSubmitting', false)
       });
@@ -171,7 +172,10 @@ function formReducer(state :Immutable.Map<> = INITIAL_STATE, action :Object) {
         .set('selectPerson', Immutable.Map())
         .set('selectedPretrialCase', Immutable.Map())
         .set('charges', Immutable.List())
-        .set('psa', INITIAL_PSA_FORM);
+        .set('psa', INITIAL_PSA_FORM)
+        .set('isSubmitted', false)
+        .set('isSubmitting', false)
+        .set('submitError', false);
 
 
     default:

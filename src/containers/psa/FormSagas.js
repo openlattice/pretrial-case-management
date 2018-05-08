@@ -3,9 +3,10 @@
  */
 
 import { EntityDataModelApi, SearchApi, SyncApi, DataApi } from 'lattice';
-import { call, put, take, takeEvery, all } from 'redux-saga/effects';
+import { call, put, takeEvery, all } from 'redux-saga/effects';
 
 import {
+  HARD_RESTART,
   LOAD_DATA_MODEL,
   LOAD_NEIGHBORS,
   SUBMIT_DATA,
@@ -14,7 +15,7 @@ import {
   loadNeighbors,
   submitData,
   updateNotes
-} from './FormActionFactory'
+} from './FormActionFactory';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 
 function* loadDataModelWorker(action :SequenceAction) :Generator<*, *, *> {
@@ -290,8 +291,21 @@ function* updateNotesWatcher() :Generator<*, *, *> {
   yield takeEvery(UPDATE_NOTES, updateNotesWorker);
 }
 
+function* hardRestartWorker() :Generator<*, *, *> {
+  // hardRestartWorker and Watcher taken from BHR
+  yield call(() => {
+    window.location.href = `${window.location.origin}${window.location.pathname}`;
+  });
+}
+
+function* hardRestartWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(HARD_RESTART, hardRestartWorker);
+}
+
 
 export {
+  hardRestartWatcher,
   loadDataModelWatcher,
   loadNeighborsWatcher,
   submitDataWatcher,
