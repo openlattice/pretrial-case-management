@@ -19,7 +19,7 @@ import PSAScores from './PSAScores';
 import psaEditedConfig from '../../config/formconfig/PsaEditedConfig';
 import { getScoresAndRiskFactors } from '../../utils/ScoringUtils';
 import { CenteredContainer } from '../../utils/Layout';
-import { formatValue, formatDateList } from '../../utils/Utils';
+import { formatValue, formatDateList, toISODateTime } from '../../utils/Utils';
 import { PSA, EDIT_FIELDS } from '../../utils/consts/Consts';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import * as OverrideClassNames from '../../utils/styleoverrides/OverrideClassNames';
@@ -213,7 +213,7 @@ export default class PSAReviewRow extends React.Component<Props, State> {
       values: {
         [EDIT_FIELDS.PSA_ID]: [this.props.scores.getIn([PROPERTY_TYPES.GENERAL_ID, 0])],
         [EDIT_FIELDS.NOTES_ID]: [entityId],
-        [EDIT_FIELDS.TIMESTAMP]: [moment().toISOString()],
+        [EDIT_FIELDS.TIMESTAMP]: [toISODateTime(moment())],
         [EDIT_FIELDS.PERSON_ID]: [AuthUtils.getUserInfo().email]
       }
     });
@@ -288,7 +288,7 @@ export default class PSAReviewRow extends React.Component<Props, State> {
         values: {
           [EDIT_FIELDS.PSA_ID]: [scoreId],
           [EDIT_FIELDS.RISK_FACTORS_ID]: [riskFactorsId],
-          [EDIT_FIELDS.TIMESTAMP]: [moment().toISOString()],
+          [EDIT_FIELDS.TIMESTAMP]: [toISODateTime(moment())],
           [EDIT_FIELDS.PERSON_ID]: [AuthUtils.getUserInfo().email]
         }
       });

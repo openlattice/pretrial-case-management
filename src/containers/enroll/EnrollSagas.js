@@ -16,6 +16,7 @@ import {
   getProfileFailure
 } from './EnrollActionFactory';
 
+import { toISODateTime } from '../../utils/Utils';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 
 const CHECKINS_BASE_URL = 'https://api.openlattice.com/checkins/voice';
@@ -147,7 +148,7 @@ export function* getOrCreateProfile() :Generator<*, *, *> {
         };
 
         const registeredForDetails = {
-          [timestampId]: [moment().toISOString()]
+          [timestampId]: [toISODateTime(moment())]
         };
 
         const personEntityKey = {

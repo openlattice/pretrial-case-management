@@ -15,7 +15,6 @@ export function configureLattice(authToken :?string) :void {
   const host :string = window.location.host;
   const hostName :string = (host.startsWith('www.')) ? host.substring('www.'.length) : host;
   const baseUrl :string = (__DEV__) ? 'http://localhost:8080' : `https://api.${hostName}`;
-
   Lattice.configure({ authToken, baseUrl });
 }
 
@@ -38,4 +37,20 @@ export function formatDate(dateString :string, optionalFormat :?string) :string 
 export function formatDateList(dateList :string[], optionalFormat :?string) :string {
   if (!dateList || (!dateList.length && !dateList.size)) return '';
   return dateList.map(dateString => formatDate(dateString, optionalFormat)).join(', ');
+}
+
+export function toISODateTime(momentObj) {
+  let momentStr;
+  if (momentObj && momentObj.isValid()) {
+    momentStr = momentObj.format('YYYY-MM-DDTHH:mm:ss.SSSZ');
+  }
+  return momentStr;
+}
+
+export function toISODate(momentObj) {
+  let momentStr;
+  if (momentObj && momentObj.isValid()) {
+    momentStr = momentObj.format('YYYY-MM-DD');
+  }
+  return momentStr;
 }
