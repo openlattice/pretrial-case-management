@@ -11,6 +11,9 @@ export const ALIASES = {
   PERSON: 'person',
   PERSON_ADDRESSES: 'personAddresses',
   STAFF: 'staff',
+  PSA: 'psa',
+  RISK_FACTORS: 'riskFactors',
+  NOTES: 'notes',
 
   CONTACTED_AT: 'contactedAt',
   EMPLOYED_BY: 'employedBy',
@@ -19,7 +22,8 @@ export const ALIASES = {
   LIVES_AT: 'livesAt',
   REPORTED: 'reported',
   TAKING: 'taking',
-  USED: 'used'
+  USED: 'used',
+  EDITED_BY: 'editedBy'
 };
 
 export const PERSON_CONFIG = {

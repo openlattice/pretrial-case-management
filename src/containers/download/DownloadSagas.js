@@ -20,8 +20,8 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
     yield put(downloadPsaForms.request(action.id));
     const { startDate, endDate } = action.value;
 
-    const start = moment.parseZone(startDate);
-    const end = moment.parseZone(endDate);
+    const start = moment(startDate);
+    const end = moment(endDate);
     const entitySetId = yield call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.PSA_SCORES);
     const options = {
       searchTerm: '*',
@@ -48,7 +48,7 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
         const timestampList = neighbor.associationDetails[PROPERTY_TYPES.TIMESTAMP]
           || neighbor.associationDetails[PROPERTY_TYPES.COMPLETED_DATE_TIME];
         if (timestampList && timestampList.length) {
-          const timestamp = moment.parseZone(timestampList[0]);
+          const timestamp = moment(timestampList[0]);
           const matchesStart = timestamp.diff(start, 'seconds') > 0 || timestamp.isSame(start, 'day');
           const matchesEnd = timestamp.diff(end, 'seconds') < 0 || timestamp.isSame(end, 'day');
           if (matchesStart && matchesEnd) {

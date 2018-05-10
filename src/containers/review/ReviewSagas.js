@@ -157,8 +157,8 @@ function* loadPSAsByDateWorker(action :SequenceAction) :Generator<*, *, *> {
       neighborsById.get(id).forEach((neighbor) => {
 
         neighbor.getIn(['associationDetails', PROPERTY_TYPES.TIMESTAMP],
-          Immutable.List()).forEach((timestamp) => {
-          const timestampMoment = moment.parseZone(timestamp);
+          neighbor.getIn(['associationDetails', PROPERTY_TYPES.DATE_TIME], Immutable.List())).forEach((timestamp) => {
+          const timestampMoment = moment(timestamp);
           if (timestampMoment.isValid()) {
             allDatesEdited = allDatesEdited.push(timestampMoment.format('MM/DD/YYYY'));
           }
@@ -166,13 +166,19 @@ function* loadPSAsByDateWorker(action :SequenceAction) :Generator<*, *, *> {
 
         const neighborName = neighbor.getIn(['neighborEntitySet', 'name']);
         if (neighborName) {
-          neighborsByEntitySetName = neighborsByEntitySetName.set(neighborName, neighbor);
-
           if (neighborName === ENTITY_SETS.STAFF) {
             neighbor.getIn(['neighborDetails', PROPERTY_TYPES.PERSON_ID], Immutable.List())
               .forEach((filer) => {
                 allFilers = allFilers.add(filer);
               });
+
+            neighborsByEntitySetName = neighborsByEntitySetName.set(
+              neighborName,
+              neighborsByEntitySetName.get(neighborName, Immutable.List()).push(neighbor)
+            );
+          }
+          else {
+            neighborsByEntitySetName = neighborsByEntitySetName.set(neighborName, neighbor);
           }
         }
       });

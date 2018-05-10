@@ -538,7 +538,7 @@ const exportPDF = (
   y += Y_INC;
 
   // RECOMMENDATION SECTION
-  y = recommendations(doc, y, data.get('notes', data.get('recommendations'), ''));
+  y = recommendations(doc, y, data.get('notes', data.get('recommendations', ''), ''));
 
   // CASE HISTORY SECCTION=
   [y, page] = caseHistory(doc, y, page, name, allCases, chargesByCaseNum);

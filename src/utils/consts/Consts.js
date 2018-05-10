@@ -128,6 +128,14 @@ export const FORM_IDS = {
   TIMESTAMP: 'timestamp'
 };
 
+export const EDIT_FIELDS = {
+  PSA_ID: 'psaId',
+  RISK_FACTORS_ID: 'riskFactorsId',
+  NOTES_ID: 'notesId',
+  PERSON_ID: 'personId',
+  TIMESTAMP: 'timestamp'
+};
+
 export const LIST_FIELDS = {
   ENTITY_SET_ID: 'entitySetId',
   ID: 'entityKeyId'
