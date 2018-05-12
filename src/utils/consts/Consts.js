@@ -170,6 +170,16 @@ export const FLEX = {
   COL_100: '100%'
 };
 
+export const ID_FIELD_NAMES = {
+  PSA_ID: 'psaId',
+  RISK_FACTORS_ID: 'riskFactorsId',
+  NOTES_ID: 'notesId',
+  PERSON_ID: 'personId',
+  CASE_ID: 'caseId',
+  STAFF_ID: 'staffId',
+  TIMESTAMP: 'timestamp'
+};
+
 export const ID_FIELDS = {
   PSA: 'psaEntityKeyId',
   RISK_FACTORS: 'riskFactorsEntityKeyId',
