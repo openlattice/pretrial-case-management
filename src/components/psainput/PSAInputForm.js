@@ -7,7 +7,7 @@ import Immutable from 'immutable';
 import styled from 'styled-components';
 import { FormGroup, ControlLabel, FormControl, Col } from 'react-bootstrap';
 
-import SectionView from '../SectionView';
+import { Header } from '../SectionView';
 import StyledButton from '../buttons/StyledButton';
 import ExpandableText from '../controls/ExpandableText';
 import Radio from '../controls/StyledRadio';
@@ -58,6 +58,10 @@ const {
   PRIOR_FAILURE_TO_APPEAR_OLD,
   PRIOR_SENTENCE_TO_INCARCERATION
 } = PSA;
+
+const StyledSectionView = styled.div`
+  padding: 30px 0;
+`;
 
 const StyledFormWrapper = styled.div`
   margin: 0 60px 0 60px;
@@ -188,7 +192,8 @@ const PSAInputForm = ({
       <Divider />
       <StyledFormWrapper>
         <form onSubmit={handleSubmit}>
-          <SectionView header="PSA Information">
+          <StyledSectionView>
+            <Header>PSA Information</Header>
 
             <QuestionRow>
               <PSACol lg={6}>
@@ -265,7 +270,7 @@ const PSAInputForm = ({
               incompleteError ? <ErrorMessage>All fields must be filled out.</ErrorMessage> : null
             }
 
-          </SectionView>
+          </StyledSectionView>
           {
             viewOnly ? null : (
               <SubmitButtonWrapper>
