@@ -10,9 +10,6 @@ const loadDataModel :RequestSequence = newRequestSequence(LOAD_DATA_MODEL);
 const LOAD_NEIGHBORS :string = 'LOAD_NEIGHBORS';
 const loadNeighbors :RequestSequence = newRequestSequence(LOAD_NEIGHBORS);
 
-const SUBMIT_DATA :string = 'SUBMIT_DATA';
-const submitData :RequestSequence = newRequestSequence(SUBMIT_DATA);
-
 const UPDATE_NOTES :string = 'UPDATE_NOTES';
 const updateNotes :RequestSequence = newRequestSequence(UPDATE_NOTES);
 
@@ -40,12 +37,10 @@ export {
   HARD_RESTART,
   LOAD_DATA_MODEL,
   LOAD_NEIGHBORS,
-  SUBMIT_DATA,
   UPDATE_NOTES,
   hardRestart,
   loadDataModel,
   loadNeighbors,
-  submitData,
   updateNotes,
   CLEAR_FORM,
   SELECT_PERSON,

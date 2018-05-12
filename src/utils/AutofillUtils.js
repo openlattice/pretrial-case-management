@@ -15,6 +15,7 @@ import {
   getViolentChargeNums,
   getChargeTitle
 } from './consts/ChargeConsts';
+import { getSentenceToIncarcerationCaseNums } from './consts/SentenceConsts';
 
 const {
   DOB,
@@ -26,7 +27,16 @@ const {
   CHARGE_LEVEL,
   DISPOSITION,
   DISPOSITION_DATE,
-  FILE_DATE
+  FILE_DATE,
+  GENERAL_ID,
+  JAIL_DAYS_SERVED,
+  JAIL_MONTHS_SERVED,
+  JAIL_YEARS_SERVED,
+  JAIL_DAYS_SUSPENDED,
+  JAIL_MONTHS_SUSPENDED,
+  JAIL_YEARS_SUSPENDED,
+  JAIL_START_DATE,
+  CONCURRENT_CONSECUTIVE
 } = PROPERTY_TYPES;
 
 const {
@@ -183,11 +193,15 @@ export const tryAutofillPreviousViolentCharge = (allCharges :Immutable.List<*>) 
   return `${numViolentCharges}`;
 };
 
+export const tryAutofillPriorSentenceToIncarceration = (allSentences :Immutable.List<*>) :string =>
+  `${getSentenceToIncarcerationCaseNums(allSentences).size > 0}`;
+
 export const tryAutofillFields = (
   nextCase :Immutable.Map<*, *>,
   nextCharges :Immutable.List<*>,
   allCases :Immutable.List<*>,
   allCharges :Immutable.List<*>,
+  allSentences :Immutable.List<*>,
   selectedPerson :Immutable.Map<*, *>,
   psaFormValues :Immutable.Map<*, *>
 ) :Immutable.Map<*, *> => {
@@ -240,6 +254,10 @@ export const tryAutofillFields = (
     else {
       psaForm = psaForm.set(PRIOR_VIOLENT_CONVICTION, tryAutofillPreviousViolentCharge(allCharges));
     }
+  }
+
+  if (allSentences.size) {
+    psaForm = psaForm.set(PRIOR_SENTENCE_TO_INCARCERATION, tryAutofillPriorSentenceToIncarceration(allSentences))
   }
   return psaForm;
 };

@@ -51,14 +51,24 @@ export function* watchLoadPersonDetailsRequest() :Generator<*, *, *> {
     try {
       const entitySetId :string = yield call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.PEOPLE);
       const response = yield call(SearchApi.searchEntityNeighbors, entitySetId, action.id);
+      const lastImportUpdate = moment('2018-05-12T02:46:21.536Z');
 
       // <HACK>
       if (action.shouldLoadCases && !__ENV_DEV__) {
         const caseNums = response.filter((neighborObj) => {
           const { neighborEntitySet, neighborDetails } = neighborObj;
           if (neighborEntitySet && neighborDetails && neighborEntitySet.name === ENTITY_SETS.PRETRIAL_CASES) {
-            const fileDate = neighborDetails[PROPERTY_TYPES.FILE_DATE];
-            return !fileDate || !fileDate.length;
+            const lastUpdatedDateList = neighborDetails[PROPERTY_TYPES.LAST_UPDATED_DATE];
+            if (lastUpdatedDateList && lastUpdatedDateList.length) {
+              let updatedAfterLastImportChange = false;
+              lastUpdatedDateList.forEach((updateDateStr) => {
+                const updateDate = moment(updateDateStr);
+                if (updateDate.isValid() && updateDate.isAfter(lastImportUpdate)) {
+                  updatedAfterLastImportChange = true;
+                }
+              });
+              return updatedAfterLastImportChange;
+            }
           }
           return false;
         });

@@ -20,7 +20,7 @@ import psaEditedConfig from '../../config/formconfig/PsaEditedConfig';
 import { getScoresAndRiskFactors } from '../../utils/ScoringUtils';
 import { CenteredContainer } from '../../utils/Layout';
 import { formatValue, formatDateList, toISODateTime } from '../../utils/Utils';
-import { PSA, EDIT_FIELDS } from '../../utils/consts/Consts';
+import { PSA, NOTES, EDIT_FIELDS, ID_FIELDS } from '../../utils/consts/Consts';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import * as OverrideClassNames from '../../utils/styleoverrides/OverrideClassNames';
 
@@ -106,6 +106,7 @@ type Props = {
   neighbors :Immutable.Map<*, *>,
   caseHistory :Immutable.List<*>,
   chargeHistory :Immutable.Map<*, *>,
+  sentenceHistory :Immutable.Map<*, *>,
   readOnly :boolean,
   personId? :string,
   downloadFn :(values :{
@@ -178,7 +179,19 @@ export default class PSAReviewRow extends React.Component<Props, State> {
       [PSA.PRIOR_FAILURE_TO_APPEAR_RECENT]: `${priorFTA}`,
       [PSA.PRIOR_FAILURE_TO_APPEAR_OLD]: `${riskFactors.getIn([PROPERTY_TYPES.PRIOR_FAILURE_TO_APPEAR_OLD, 0])}`,
       [PSA.PRIOR_SENTENCE_TO_INCARCERATION]:
-        `${riskFactors.getIn([PROPERTY_TYPES.PRIOR_SENTENCE_TO_INCARCERATION, 0])}`
+        `${riskFactors.getIn([PROPERTY_TYPES.PRIOR_SENTENCE_TO_INCARCERATION, 0])}`,
+      [NOTES[PSA.AGE_AT_CURRENT_ARREST]]: riskFactors.getIn([PROPERTY_TYPES.AGE_AT_CURRENT_ARREST_NOTES, 0], ''),
+      [NOTES[PSA.CURRENT_VIOLENT_OFFENSE]]: riskFactors.getIn([PROPERTY_TYPES.CURRENT_VIOLENT_OFFENSE_NOTES, 0], ''),
+      [NOTES[PSA.PENDING_CHARGE]]: riskFactors.getIn([PROPERTY_TYPES.PENDING_CHARGE_NOTES, 0], ''),
+      [NOTES[PSA.PRIOR_MISDEMEANOR]]: riskFactors.getIn([PROPERTY_TYPES.PRIOR_MISDEMEANOR_NOTES, 0], ''),
+      [NOTES[PSA.PRIOR_FELONY]]: riskFactors.getIn([PROPERTY_TYPES.PRIOR_FELONY_NOTES, 0], ''),
+      [NOTES[PSA.PRIOR_VIOLENT_CONVICTION]]: riskFactors.getIn([PROPERTY_TYPES.PRIOR_VIOLENT_CONVICTION_NOTES, 0], ''),
+      [NOTES[PSA.PRIOR_FAILURE_TO_APPEAR_RECENT]]:
+        riskFactors.getIn([PROPERTY_TYPES.PRIOR_FAILURE_TO_APPEAR_RECENT_NOTES, 0], ''),
+      [NOTES[PSA.PRIOR_FAILURE_TO_APPEAR_OLD]]:
+        riskFactors.getIn([PROPERTY_TYPES.PRIOR_FAILURE_TO_APPEAR_OLD_NOTES, 0], ''),
+      [NOTES[PSA.PRIOR_SENTENCE_TO_INCARCERATION]]:
+        riskFactors.getIn([PROPERTY_TYPES.PRIOR_SENTENCE_TO_INCARCERATION_NOTES, 0], '')
     });
   }
 
@@ -252,9 +265,30 @@ export default class PSAReviewRow extends React.Component<Props, State> {
     this.setState({ riskFactors });
   }
 
+
   onRiskFactorEdit = (e :Object) => {
     e.preventDefault();
-    const { scores, riskFactors } = getScoresAndRiskFactors(this.state.riskFactors);
+    let { scores, riskFactors } = getScoresAndRiskFactors(this.state.riskFactors);
+
+    riskFactors[PROPERTY_TYPES.AGE_AT_CURRENT_ARREST_NOTES] =
+      [this.state.riskFactors.get(NOTES[PSA.AGE_AT_CURRENT_ARREST])];
+    riskFactors[PROPERTY_TYPES.CURRENT_VIOLENT_OFFENSE_NOTES] =
+      [this.state.riskFactors.get(NOTES[PSA.CURRENT_VIOLENT_OFFENSE])];
+    riskFactors[PROPERTY_TYPES.PENDING_CHARGE_NOTES] =
+      [this.state.riskFactors.get(NOTES[PSA.PENDING_CHARGE])];
+    riskFactors[PROPERTY_TYPES.PRIOR_MISDEMEANOR_NOTES] =
+      [this.state.riskFactors.get(NOTES[PSA.PRIOR_MISDEMEANOR])];
+    riskFactors[PROPERTY_TYPES.PRIOR_FELONY_NOTES] =
+      [this.state.riskFactors.get(NOTES[PSA.PRIOR_FELONY])];
+    riskFactors[PROPERTY_TYPES.PRIOR_VIOLENT_CONVICTION_NOTES] =
+      [this.state.riskFactors.get(NOTES[PSA.PRIOR_VIOLENT_CONVICTION])];
+    riskFactors[PROPERTY_TYPES.PRIOR_FAILURE_TO_APPEAR_RECENT_NOTES] =
+      [this.state.riskFactors.get(NOTES[PSA.PRIOR_FAILURE_TO_APPEAR_RECENT])];
+    riskFactors[PROPERTY_TYPES.PRIOR_FAILURE_TO_APPEAR_OLD_NOTES] =
+      [this.state.riskFactors.get(NOTES[PSA.PRIOR_FAILURE_TO_APPEAR_OLD])];
+    riskFactors[PROPERTY_TYPES.PRIOR_SENTENCE_TO_INCARCERATION_NOTES] =
+      [this.state.riskFactors.get(NOTES[PSA.PRIOR_SENTENCE_TO_INCARCERATION])];
+
     const scoreId = this.props.scores.getIn([PROPERTY_TYPES.GENERAL_ID, 0]);
     const riskFactorsId = this.props.neighbors.getIn(
       [ENTITY_SETS.PSA_RISK_FACTORS, 'neighborDetails', PROPERTY_TYPES.GENERAL_ID, 0]
@@ -304,7 +338,7 @@ export default class PSAReviewRow extends React.Component<Props, State> {
     return `${firstName} ${lastName}`;
   }
 
-  onViewSelect = (view) => {
+  onViewSelect = (view :string) => {
     this.setState({ view });
   }
 
@@ -367,6 +401,12 @@ export default class PSAReviewRow extends React.Component<Props, State> {
   }
 
   renderPSADetails = () => {
+    const {
+      caseHistory,
+      chargeHistory,
+      sentenceHistory,
+      neighbors
+    } = this.props;
     const { editing, riskFactors } = this.state;
 
     const editButton = (editing || this.props.readOnly) ? null : (
@@ -379,16 +419,27 @@ export default class PSAReviewRow extends React.Component<Props, State> {
       </CenteredContainer>
     );
 
+    const caseNum = neighbors.getIn(
+      [ENTITY_SETS.PRETRIAL_CASES, 'neighborDetails', PROPERTY_TYPES.CASE_ID, 0],
+      ''
+    );
+    const currCase = caseHistory.filter(caseObj => caseObj.getIn([PROPERTY_TYPES.CASE_ID, 0], '') === caseNum);
+    const currCharges = chargeHistory.get(caseNum, Immutable.List());
+
     return (
       <div>
         <PSAInputForm
             section="review"
             input={riskFactors}
-            handleSingleSelection={this.handleRiskFactorChange}
+            handleInputChange={this.handleRiskFactorChange}
             handleSubmit={this.onRiskFactorEdit}
             incompleteError={false}
-            viewOnly={!editing}
-            isReview />
+            currCase={currCase}
+            currCharges={currCharges}
+            allCharges={chargeHistory}
+            allCases={caseHistory}
+            allSentences={sentenceHistory}
+            viewOnly={!editing} />
         {this.renderNotes()}
         {editButton}
       </div>

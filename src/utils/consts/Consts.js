@@ -118,7 +118,22 @@ export const PSA = {
 
   // optional values
   PRIOR_CONVICTION: 'priorConviction',
-  CURRENT_VIOLENT_OFFENSE_AND_YOUNG: 'currentViolentOffenseAndYoung'
+  CURRENT_VIOLENT_OFFENSE_AND_YOUNG: 'currentViolentOffenseAndYoung',
+
+  // notes
+  NOTES: 'psaNotes'
+};
+
+export const NOTES = {
+  [PSA.AGE_AT_CURRENT_ARREST]: 'ageAtCurrentArrestNotes',
+  [PSA.CURRENT_VIOLENT_OFFENSE]: 'currentViolentOffenseNotes',
+  [PSA.PENDING_CHARGE]: 'pendingChargeNotes',
+  [PSA.PRIOR_MISDEMEANOR]: 'priorMisdemeanorNotes',
+  [PSA.PRIOR_FELONY]: 'priorFelonyNotes',
+  [PSA.PRIOR_VIOLENT_CONVICTION]: 'priorViolentConvictionNotes',
+  [PSA.PRIOR_FAILURE_TO_APPEAR_RECENT]: 'priorFailureToAppearRecentNotes',
+  [PSA.PRIOR_FAILURE_TO_APPEAR_OLD]: 'priorFailureToAppearOldNotes',
+  [PSA.PRIOR_SENTENCE_TO_INCARCERATION]: 'priorSentenceToIncarcerationNotes'
 };
 
 export const FORM_IDS = {
@@ -153,6 +168,17 @@ export const FLEX = {
   COL_1_5: '0 0 312px',
   COL_1_6: '0 0 260px',
   COL_100: '100%'
+};
+
+export const ID_FIELDS = {
+  PSA: 'psaEntityKeyId',
+  RISK_FACTORS: 'riskFactorsEntityKeyId',
+  NOTES: 'notesEntityKeyId',
+  PERSON: 'personEntityKeyId',
+  STAFF: 'staffEntityKeyId',
+  CASE: 'caseEntityKeyId',
+  CHARGE: 'chargeEntityKeyId',
+  SENTENCE: 'sentenceEntityKeyId'
 };
 
 export const TABLE_WIDTH = 1000;
