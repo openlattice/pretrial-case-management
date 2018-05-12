@@ -11,15 +11,15 @@ import {
   SELECT_PRETRIAL_CASE,
   SET_PSA_VALUES,
   loadDataModel,
-  loadNeighbors,
-  submitData
+  loadNeighbors
 } from './FormActionFactory';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { PSA } from '../../utils/consts/Consts';
+import { PSA, NOTES } from '../../utils/consts/Consts';
 
 const {
   PRETRIAL_CASES,
-  CHARGES
+  CHARGES,
+  SENTENCES
 } = ENTITY_SETS;
 
 const {
@@ -49,12 +49,23 @@ const INITIAL_PSA_FORM = Immutable.fromJS({
   [PRIOR_VIOLENT_CONVICTION]: null,
   [PRIOR_FAILURE_TO_APPEAR_RECENT]: null,
   [PRIOR_FAILURE_TO_APPEAR_OLD]: null,
-  [PRIOR_SENTENCE_TO_INCARCERATION]: null
+  [PRIOR_SENTENCE_TO_INCARCERATION]: null,
+
+  [NOTES[AGE_AT_CURRENT_ARREST]]: '',
+  [NOTES[CURRENT_VIOLENT_OFFENSE]]: '',
+  [NOTES[PENDING_CHARGE]]: '',
+  [NOTES[PRIOR_MISDEMEANOR]]: '',
+  [NOTES[PRIOR_FELONY]]: '',
+  [NOTES[PRIOR_VIOLENT_CONVICTION]]: '',
+  [NOTES[PRIOR_FAILURE_TO_APPEAR_RECENT]]: '',
+  [NOTES[PRIOR_FAILURE_TO_APPEAR_OLD]]: '',
+  [NOTES[PRIOR_SENTENCE_TO_INCARCERATION]]: ''
 });
 
 const INITIAL_STATE :Immutable.Map<> = Immutable.fromJS({
   pretrialCaseOptions: Immutable.List(),
   allChargesForPerson: Immutable.List(),
+  allSentencesForPerson: Immutable.List(),
   charges: Immutable.List(),
   selectedPerson: Immutable.Map(),
   selectedPretrialCase: Immutable.Map(),
@@ -90,6 +101,7 @@ function formReducer(state :Immutable.Map<> = INITIAL_STATE, action :Object) {
           let pretrialCaseOptionsWithDate = Immutable.List();
           let pretrialCaseOptionsWithoutDate = Immutable.List();
           let allChargesForPerson = Immutable.List();
+          let allSentencesForPerson = Immutable.List();
 
           const neighbors = Immutable.fromJS(action.value.neighbors) || Immutable.List();
           neighbors.forEach((neighbor) => {
@@ -110,6 +122,9 @@ function formReducer(state :Immutable.Map<> = INITIAL_STATE, action :Object) {
             else if (entitySetName === CHARGES) {
               allChargesForPerson = allChargesForPerson.push(neighborObj);
             }
+            else if (entitySetName === SENTENCES) {
+              allSentencesForPerson = allSentencesForPerson.push(neighborObj);
+            }
           });
 
           pretrialCaseOptionsWithDate = pretrialCaseOptionsWithDate.sort((case1, case2) => {
@@ -124,17 +139,9 @@ function formReducer(state :Immutable.Map<> = INITIAL_STATE, action :Object) {
 
           return state
             .set('pretrialCaseOptions', pretrialCaseOptionsWithDate.concat(pretrialCaseOptionsWithoutDate))
-            .set('allChargesForPerson', allChargesForPerson);
+            .set('allChargesForPerson', allChargesForPerson)
+            .set('allSentencesForPerson', allSentencesForPerson);
         }
-      });
-    }
-
-    case submitData.case(action.type): {
-      return submitData.reducer(state, action, {
-        REQUEST: () => state.set('submitError', false).set('isSubmitting', true),
-        SUCCESS: () => state.set('submitError', false).set('isSubmitted', true),
-        FAILURE: () => state.set('submitError', true),
-        FINALLY: () => state.set('isSubmitting', false)
       });
     }
 
@@ -169,6 +176,7 @@ function formReducer(state :Immutable.Map<> = INITIAL_STATE, action :Object) {
       return state
         .set('pretrialCaseOptions', Immutable.List())
         .set('allChargesForPerson', Immutable.List())
+        .set('allSentencesForPerson', Immutable.List())
         .set('selectPerson', Immutable.Map())
         .set('selectedPretrialCase', Immutable.Map())
         .set('charges', Immutable.List())

@@ -42,6 +42,7 @@ function* getCasesAndCharges(neighbors) {
   let pretrialCaseOptionsWithDate = Immutable.List();
   let pretrialCaseOptionsWithoutDate = Immutable.List();
   let allCharges = Immutable.List();
+  let allSentences = Immutable.List();
   personNeighbors.forEach((neighbor) => {
     const neighborDetails = Immutable.fromJS(neighbor.neighborDetails);
     const entitySet = neighbor.neighborEntitySet;
@@ -58,10 +59,13 @@ function* getCasesAndCharges(neighbors) {
     else if (entitySet && entitySet.name === ENTITY_SETS.CHARGES) {
       allCharges = allCharges.push(neighborDetails);
     }
+    else if (entitySet && entitySet.name === ENTITY_SETS.SENTENCES) {
+      allSentences = allSentences.push(neighborDetails);
+    }
   });
   pretrialCaseOptionsWithDate = pretrialCaseOptionsWithDate.sort(orderCasesByArrestDate);
   const allCases = pretrialCaseOptionsWithDate.concat(pretrialCaseOptionsWithoutDate);
-  return { allCases, allCharges };
+  return { allCases, allCharges, allSentences };
 }
 
 function* checkPSAPermissionsWorker(action :SequenceAction) :Generator<*, *, *> {
@@ -96,18 +100,29 @@ function* loadCaseHistoryWorker(action :SequenceAction) :Generator<*, *, *> {
     const { personId, neighbors } = action.value;
     yield put(loadCaseHistory.request(action.id, { personId }));
 
-    const { allCases, allCharges } = yield getCasesAndCharges(neighbors);
-    let chargesByCaseId = Immutable.Map();
+    const getMapByCaseId = (list, fqn) => {
+      let objMap = Immutable.Map();
+      list.forEach((obj) => {
+        const objIdArr = obj.getIn([fqn, 0], '').split('|');
+        if (objIdArr.length > 1) {
+          const caseId = objIdArr[0];
+          objMap = objMap.set(caseId, objMap.get(caseId, Immutable.List()).push(obj));
+        }
+      });
+      return objMap;
+    }
 
-    allCharges.forEach((charge) => {
-      const chargeIdArr = charge.getIn([PROPERTY_TYPES.CHARGE_ID, 0], '').split('|');
-      if (chargeIdArr.length > 1) {
-        const caseId = chargeIdArr[0];
-        chargesByCaseId = chargesByCaseId.set(caseId, chargesByCaseId.get(caseId, Immutable.List()).push(charge));
-      }
-    });
+    const { allCases, allCharges, allSentences } = yield getCasesAndCharges(neighbors);
 
-    yield put(loadCaseHistory.success(action.id, { personId, allCases, chargesByCaseId }));
+    const chargesByCaseId = getMapByCaseId(allCharges, PROPERTY_TYPES.CHARGE_ID);
+    const sentencesByCaseId = getMapByCaseId(allSentences, PROPERTY_TYPES.GENERAL_ID);
+
+    yield put(loadCaseHistory.success(action.id, {
+      personId,
+      allCases,
+      chargesByCaseId,
+      sentencesByCaseId
+    }));
 
   }
   catch (error) {
@@ -218,7 +233,7 @@ function* downloadPSAReviewPDFWorker(action :SequenceAction) :Generator<*, *, *>
   try {
     yield put(downloadPSAReviewPDF.request(action.id));
     const { neighbors, scores } = action.value;
-    const { allCases, allCharges } = yield getCasesAndCharges(neighbors);
+    const { allCases, allCharges, allSentences } = yield getCasesAndCharges(neighbors);
 
     const recommendationText = neighbors.getIn([
       ENTITY_SETS.RELEASE_RECOMMENDATIONS,
@@ -257,7 +272,7 @@ function* downloadPSAReviewPDFWorker(action :SequenceAction) :Generator<*, *, *>
       0
     ], '');
 
-    exportPDF(data, selectedPretrialCase, selectedPerson, allCases, allCharges, submitDate);
+    exportPDF(data, selectedPretrialCase, selectedPerson, allCases, allCharges, allSentences, submitDate);
 
     yield put(downloadPSAReviewPDF.success(action.id));
   }

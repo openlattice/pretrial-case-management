@@ -143,6 +143,7 @@ type Props = {
   allFilers :Immutable.Set<*>,
   caseHistory :Immutable.List<*>,
   chargeHistory :Immutable.Map<*, *>,
+  sentenceHistory :Immutable.Map<*, *>,
   readOnly :boolean
 }
 
@@ -283,6 +284,7 @@ class ReviewPSA extends React.Component<Props, State> {
     const personId = neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborId'], '');
     const caseHistory = this.props.caseHistory.get(personId, Immutable.List());
     const chargeHistory = this.props.chargeHistory.get(personId, Immutable.Map());
+    const sentenceHistory = this.props.sentenceHistory.get(personId, Immutable.Map());
     return (
       <PSAReviewRow
           neighbors={neighbors}
@@ -295,6 +297,7 @@ class ReviewPSA extends React.Component<Props, State> {
           submitData={this.props.actions.submit}
           caseHistory={caseHistory}
           chargeHistory={chargeHistory}
+          sentenceHistory={sentenceHistory}
           readOnly={this.props.readOnly}
           key={scoreId} />
     );
@@ -478,6 +481,7 @@ function mapStateToProps(state) {
     errorMesasge: review.get('errorMesasge'),
     caseHistory: review.get('caseHistory'),
     chargeHistory: review.get('chargeHistory'),
+    sentenceHistory: review.get('sentenceHistory'),
     readOnly: review.get('readOnly')
   };
 }

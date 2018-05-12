@@ -57,6 +57,7 @@ export const PROPERTY_TYPES = {
   MOST_SERIOUS_CHARGE_DESC: 'publicsafety.MostSeriousStatuteDescription',
   MOST_SERIOUS_CHARGE_DEG: 'publicsafety.MostSeriousChargeDegree',
   NUMBER_OF_CHARGES: 'publicsafety.NumberOfCharges',
+  LAST_UPDATED_DATE: 'general.entryupdated',
 
   // Charge entity type consts
   CHARGE_ID: 'justice.ArrestTrackingNumber',
@@ -91,6 +92,19 @@ export const PROPERTY_TYPES = {
   PRIOR_FAILURE_TO_APPEAR_RECENT: 'psa.PriorFailureToAppearWithinTwoYears',
   PRIOR_FAILURE_TO_APPEAR_OLD: 'psa.PriorFailureToAppearOlderThanTwoYears',
   PRIOR_SENTENCE_TO_INCARCERATION: 'psa.PriorSentenceToIncarceration',
+
+  // PSA form entity type consts
+  AGE_AT_CURRENT_ARREST_NOTES: 'psa.AgeAtCurrentArrestNotes',
+  CURRENT_VIOLENT_OFFENSE_NOTES: 'psa.CurrentViolentOffenseNotes',
+  PENDING_CHARGE_NOTES: 'psa.PendingChargeNotes',
+  PRIOR_MISDEMEANOR_NOTES: 'psa.PriorMisdemeanorConvictionNotes',
+  PRIOR_FELONY_NOTES: 'psa.PriorFelonyConvictionNotes',
+  PRIOR_VIOLENT_CONVICTION_NOTES: 'psa.PriorViolentConvictionNotes',
+  PRIOR_FAILURE_TO_APPEAR_RECENT_NOTES: 'psa.PriorFailureToAppearWithinTwoYearsNotes',
+  PRIOR_FAILURE_TO_APPEAR_OLD_NOTES: 'psa.PriorFailureToAppearOlderThanTwoYearsNotes',
+  PRIOR_SENTENCE_TO_INCARCERATION_NOTES: 'psa.PriorSentenceToIncarcerationNotes',
+
+  // PSA scores entity type consts
   NVCA_FLAG: 'psa.nvcaFlag',
   NCA_SCALE: 'psa.ncaScale',
   FTA_SCALE: 'psa.ftaScale',

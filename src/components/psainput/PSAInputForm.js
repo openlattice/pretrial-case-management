@@ -5,9 +5,11 @@
 import React from 'react';
 import Immutable from 'immutable';
 import styled from 'styled-components';
-import { FormGroup, Col } from 'react-bootstrap';
+import { FormGroup, ControlLabel, FormControl, Col } from 'react-bootstrap';
 
 import SectionView from '../SectionView';
+import StyledButton from '../buttons/StyledButton';
+import ExpandableText from '../controls/ExpandableText';
 import Radio from '../controls/StyledRadio';
 
 import {
@@ -17,9 +19,11 @@ import {
   getPreviousFelonies,
   getPreviousViolentCharges
 } from '../../utils/AutofillUtils';
+import { getSentenceToIncarcerationCaseNums } from '../../utils/consts/SentenceConsts';
 
 import {
   PaddedRow,
+  UnpaddedRow,
   TitleLabel,
   SubmitButtonWrapper,
   SubmitButton,
@@ -29,7 +33,7 @@ import {
 
 import { formatValue } from '../../utils/Utils';
 
-import { PSA } from '../../utils/consts/Consts';
+import { PSA, NOTES } from '../../utils/consts/Consts';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import {
   CURRENT_AGE_PROMPT,
@@ -59,112 +63,79 @@ const StyledFormWrapper = styled.div`
   margin: 0 60px 0 60px;
 `;
 
+const QuestionRow = styled(PaddedRow)`
+  padding-bottom: 15px;
+  border-bottom: 1px solid #ddd;
+`;
+
 const PSACol = styled(Col)`
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: flex-start;
 `;
 
-const JustificationTitle = styled.div`
-  font-size: 16px;
-  margin: 10px 0;
-  font-style: italic;
-  padding-top: 10px;
-  border-top: 1px solid #ddd
+const NotesCol = styled(Col)`
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
 `;
 
-const FootnoteNumber = styled.span`
-  font-weight: bold;
-  font-size: 14px;
+const NoteContainer = styled(UnpaddedRow)`
+  flex-direction: column;
 `;
 
-const NoResultsText = styled.span`
-  font-style: italic;
-  color: #777;
+const PaddedExpandableText = styled(ExpandableText)`
+  margin: 5px 0 10px 0;
+`;
+
+const NotesLabel = styled(ControlLabel)`
+  margin-top: -10px;
+`;
+
+const JustificationLabel = styled(ControlLabel)`
+  margin-top: 10px;
 `;
 
 type Props = {
-  handleSingleSelection :(event :Object) => void,
+  handleInputChange :(event :Object) => void,
   input :Immutable.Map<*, *>,
   handleSubmit :(event :Object) => void,
   incompleteError :boolean,
   currCharges :Immutable.List<*>,
   currCase :Immutable.Map<*, *>,
   allCharges :Immutable.List<*>,
+  allSentences :Immutable.List<*>,
   allCases :Immutable.List<*>,
   viewOnly? :boolean
 };
 
 const PSAInputForm = ({
-  handleSingleSelection,
+  handleInputChange,
   input,
   handleSubmit,
   incompleteError,
-  isReview,
   currCharges,
   currCase,
   allCharges,
+  allSentences,
   allCases,
   viewOnly
 } :Props) => {
 
   const noPriorConvictions = input.get(PRIOR_MISDEMEANOR) === 'false' && input.get(PRIOR_FELONY) === 'false';
 
-  const renderItem = (valueList) => {
-    if (!valueList.size) return <NoResultsText>No matching charges found in Odyssey</NoResultsText>;
-    return <span>{formatValue(valueList)}</span>;
-  };
-
-  const renderAutofillJustifications = () => {
-    const currCaseNum = currCase.getIn([PROPERTY_TYPES.CASE_ID, 0], '');
-    const arrestDate = currCase.getIn([PROPERTY_TYPES.FILE_DATE, 0], currCase.getIn([PROPERTY_TYPES.FILE_DATE, 0], ''));
-    const mostSeriousCharge = currCase.getIn([PROPERTY_TYPES.MOST_SERIOUS_CHARGE_NO, 0], '');
-
-    const currentViolentCharges = getViolentCharges(currCharges, mostSeriousCharge);
-    const pendingCharges = getPendingCharges(currCaseNum, arrestDate, allCases, allCharges);
-    const priorMisdemeanors = getPreviousMisdemeanors(allCharges);
-    const priorFelonies = getPreviousFelonies(allCharges);
-    const priorViolentConvictions = getPreviousViolentCharges(allCharges);
-
-    return (
-      <div>
-        <JustificationTitle>Autofill Logic</JustificationTitle>
-        <div>
-          <FootnoteNumber>2: </FootnoteNumber>
-          <span>{renderItem(currentViolentCharges)}</span>
-        </div>
-        <div>
-          <FootnoteNumber>3: </FootnoteNumber>
-          <span>{renderItem(pendingCharges)}</span>
-        </div>
-        <div>
-          <FootnoteNumber>4: </FootnoteNumber>
-          <span>{renderItem(priorMisdemeanors)}</span>
-        </div>
-        <div>
-          <FootnoteNumber>5: </FootnoteNumber>
-          <span>{renderItem(priorFelonies)}</span>
-        </div>
-        <div>
-          <FootnoteNumber>6: </FootnoteNumber>
-          <span>{renderItem(priorViolentConvictions)}</span>
-        </div>
-      </div>
-    );
-  };
-
   const renderRadio = (name, value, label, disabledField) => (
     <Radio
         name={name}
         value={`${value}`}
         checked={input.get(name) === `${value}`}
-        onChange={handleSingleSelection}
+        onChange={handleInputChange}
         disabled={viewOnly || (disabledField && disabledField !== undefined)}
         label={label} />
   );
 
   const renderTrueFalseRadio = (name, header, disabledField) => (
-    <PSACol lg={4}>
+    <PSACol lg={6}>
       <TitleLabel>{header}</TitleLabel>
       <FormGroup>
         {renderRadio(name, false, 'No', disabledField)}
@@ -173,6 +144,45 @@ const PSAInputForm = ({
     </PSACol>
   );
 
+  const renderNotesAndJustifications = (name, autofillJustifications) => {
+    let justifications = null;
+    if (autofillJustifications) {
+      const justificationText = autofillJustifications.size
+        ? formatValue(autofillJustifications) : 'No matching charges.';
+      justifications = (
+        <NoteContainer>
+          <JustificationLabel>Autofill Justification</JustificationLabel>
+          <PaddedExpandableText text={justificationText} maxLength={250} />
+        </NoteContainer>
+      );
+    }
+    return (
+      <NotesCol lg={6}>
+        <NoteContainer>
+          <NotesLabel>Notes</NotesLabel>
+          <FormControl
+              type="text"
+              name={name}
+              value={input.get(name)}
+              onChange={handleInputChange}
+              disabled={viewOnly} />
+        </NoteContainer>
+        {justifications}
+      </NotesCol>
+    );
+  };
+
+  const currCaseNum = currCase.getIn([PROPERTY_TYPES.CASE_ID, 0], '');
+  const arrestDate = currCase.getIn([PROPERTY_TYPES.FILE_DATE, 0], currCase.getIn([PROPERTY_TYPES.FILE_DATE, 0], ''));
+  const mostSeriousCharge = currCase.getIn([PROPERTY_TYPES.MOST_SERIOUS_CHARGE_NO, 0], '');
+
+  const currentViolentCharges = getViolentCharges(currCharges, mostSeriousCharge);
+  const pendingCharges = getPendingCharges(currCaseNum, arrestDate, allCases, allCharges);
+  const priorMisdemeanors = getPreviousMisdemeanors(allCharges);
+  const priorFelonies = getPreviousFelonies(allCharges);
+  const priorViolentConvictions = getPreviousViolentCharges(allCharges);
+  const priorSentenceToIncarceration = getSentenceToIncarcerationCaseNums(allSentences);
+
   return (
     <div>
       <Divider />
@@ -180,8 +190,8 @@ const PSAInputForm = ({
         <form onSubmit={handleSubmit}>
           <SectionView header="PSA Information">
 
-            <PaddedRow>
-              <PSACol lg={4}>
+            <QuestionRow>
+              <PSACol lg={6}>
                 <TitleLabel>{CURRENT_AGE_PROMPT}</TitleLabel>
                 <FormGroup>
                   {renderRadio(AGE_AT_CURRENT_ARREST, 0, '20 or younger')}
@@ -189,20 +199,31 @@ const PSAInputForm = ({
                   {renderRadio(AGE_AT_CURRENT_ARREST, 2, '23 or older')}
                 </FormGroup>
               </PSACol>
+              {renderNotesAndJustifications(NOTES[AGE_AT_CURRENT_ARREST])}
+            </QuestionRow>
 
+            <QuestionRow>
               {renderTrueFalseRadio(CURRENT_VIOLENT_OFFENSE, CURRENT_VIOLENT_OFFENSE_PROMPT)}
+              {renderNotesAndJustifications(NOTES[CURRENT_VIOLENT_OFFENSE], currentViolentCharges)}
+            </QuestionRow>
 
+            <QuestionRow>
               {renderTrueFalseRadio(PENDING_CHARGE, PENDING_CHARGE_PROMPT)}
+              {renderNotesAndJustifications(NOTES[PENDING_CHARGE], pendingCharges)}
+            </QuestionRow>
 
-            </PaddedRow>
-
-            <PaddedRow>
-
+            <QuestionRow>
               {renderTrueFalseRadio(PRIOR_MISDEMEANOR, PRIOR_MISDEMEANOR_PROMPT)}
+              {renderNotesAndJustifications(NOTES[PRIOR_MISDEMEANOR], priorMisdemeanors)}
+            </QuestionRow>
 
+            <QuestionRow>
               {renderTrueFalseRadio(PRIOR_FELONY, PRIOR_FELONY_PROMPT)}
+              {renderNotesAndJustifications(NOTES[PRIOR_FELONY], priorFelonies)}
+            </QuestionRow>
 
-              <PSACol lg={4}>
+            <QuestionRow>
+              <PSACol lg={6}>
                 <TitleLabel>{PRIOR_VIOLENT_CONVICTION_PROMPT}</TitleLabel>
                 <FormGroup>
                   {renderRadio(PRIOR_VIOLENT_CONVICTION, 0, '0', noPriorConvictions)}
@@ -211,11 +232,11 @@ const PSAInputForm = ({
                   {renderRadio(PRIOR_VIOLENT_CONVICTION, 3, '3 or more', noPriorConvictions)}
                 </FormGroup>
               </PSACol>
+              {renderNotesAndJustifications(NOTES[PRIOR_VIOLENT_CONVICTION], priorViolentConvictions)}
+            </QuestionRow>
 
-            </PaddedRow>
-
-            <PaddedRow>
-              <PSACol lg={4}>
+            <QuestionRow>
+              <PSACol lg={6}>
                 <TitleLabel>{PRIOR_FAILURE_TO_APPEAR_RECENT_PROMPT}</TitleLabel>
                 <FormGroup>
                   {renderRadio(PRIOR_FAILURE_TO_APPEAR_RECENT, 0, '0')}
@@ -223,20 +244,22 @@ const PSAInputForm = ({
                   {renderRadio(PRIOR_FAILURE_TO_APPEAR_RECENT, 2, '2 or more')}
                 </FormGroup>
               </PSACol>
+              {renderNotesAndJustifications(NOTES[PRIOR_FAILURE_TO_APPEAR_RECENT])}
+            </QuestionRow>
 
+            <QuestionRow>
               {renderTrueFalseRadio(PRIOR_FAILURE_TO_APPEAR_OLD, PRIOR_FAILURE_TO_APPEAR_OLD_PROMPT)}
+              {renderNotesAndJustifications(NOTES[PRIOR_FAILURE_TO_APPEAR_OLD])}
+            </QuestionRow>
 
+            <QuestionRow>
               {renderTrueFalseRadio(
                 PRIOR_SENTENCE_TO_INCARCERATION,
                 PRIOR_SENTENCE_TO_INCARCERATION_PROMPT,
                 noPriorConvictions
               )}
-
-            </PaddedRow>
-
-            {
-              isReview ? null : renderAutofillJustifications()
-            }
+              {renderNotesAndJustifications(NOTES[PRIOR_SENTENCE_TO_INCARCERATION], priorSentenceToIncarceration)}
+            </QuestionRow>
 
             {
               incompleteError ? <ErrorMessage>All fields must be filled out.</ErrorMessage> : null

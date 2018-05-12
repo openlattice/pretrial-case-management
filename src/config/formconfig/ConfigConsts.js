@@ -14,6 +14,7 @@ export const ALIASES = {
   PSA: 'psa',
   RISK_FACTORS: 'riskFactors',
   NOTES: 'notes',
+  CASE: 'pretrialCase',
 
   CONTACTED_AT: 'contactedAt',
   EMPLOYED_BY: 'employedBy',
@@ -23,6 +24,8 @@ export const ALIASES = {
   REPORTED: 'reported',
   TAKING: 'taking',
   USED: 'used',
+  CALCULATED_FOR: 'calculatedFor',
+  ASSESSED_BY: 'assessedBy',
   EDITED_BY: 'editedBy'
 };
 

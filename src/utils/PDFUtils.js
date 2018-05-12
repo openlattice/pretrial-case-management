@@ -14,6 +14,7 @@ import {
   getPreviousFelonies,
   getPreviousViolentCharges
 } from './AutofillUtils';
+import { getSentenceToIncarcerationCaseNums } from './consts/SentenceConsts';
 import { PROPERTY_TYPES } from './consts/DataModelConsts';
 
 const {
@@ -330,6 +331,7 @@ const riskFactors = (
   riskFactorVals :Immutable.Map<*, *>,
   currCharges :Immutable.List<*>,
   allCharges :Immutable.List<*>,
+  allSentences :Immutable.List<*>,
   mostSeriousCharge :string,
   currCaseNum :string,
   dateArrested :string,
@@ -405,6 +407,9 @@ const riskFactors = (
   y += Y_INC;
   doc.text(X_MARGIN, y, '9. Prior Sentence to Incarceration');
   doc.text(RESPONSE_OFFSET, y, getBooleanText(priorSentenceToIncarceration));
+  if (priorSentenceToIncarceration) {
+    y = chargeReferences(y, doc, getSentenceToIncarcerationCaseNums(allSentences));
+  }
   y += Y_INC;
   return [y, page];
 };
@@ -487,6 +492,7 @@ const exportPDF = (
   selectedPerson :Immutable.Map<*, *>,
   allCases :Immutable.List<*>,
   allCharges :Immutable.List<*>,
+  allSentences :Immutable.List<*>,
   dateSubmitted :string
 ) :void => {
   const doc = new JSPDF();
@@ -529,6 +535,7 @@ const exportPDF = (
     data.get('riskFactors'),
     currCharges,
     allCharges,
+    allSentences,
     mostSeriousCharge,
     selectedPretrialCase.getIn([CASE_ID, 0], ''),
     selectedPretrialCase.getIn([ARREST_DATE, 0], selectedPretrialCase.getIn([FILE_DATE, 0], '')),
