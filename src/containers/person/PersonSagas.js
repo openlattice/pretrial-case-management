@@ -58,18 +58,20 @@ export function* watchLoadPersonDetailsRequest() :Generator<*, *, *> {
         const caseNums = response.filter((neighborObj) => {
           const { neighborEntitySet, neighborDetails } = neighborObj;
           if (neighborEntitySet && neighborDetails && neighborEntitySet.name === ENTITY_SETS.PRETRIAL_CASES) {
+
+            let shouldUpdate = true;
             const lastUpdatedDateList = neighborDetails[PROPERTY_TYPES.LAST_UPDATED_DATE];
             if (lastUpdatedDateList && lastUpdatedDateList.length) {
-              let updatedAfterLastImportChange = false;
               lastUpdatedDateList.forEach((updateDateStr) => {
                 const updateDate = moment(updateDateStr);
                 if (updateDate.isValid() && updateDate.isAfter(lastImportUpdate)) {
-                  updatedAfterLastImportChange = true;
+                  shouldUpdate = false;
                 }
               });
-              return updatedAfterLastImportChange;
             }
+            return shouldUpdate;
           }
+
           return false;
         });
 
