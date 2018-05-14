@@ -93,23 +93,25 @@ function* submitWorker(action :SequenceAction) :Generator<*, *, *> {
       const primaryKey = edmDetails.entityTypes[edmDetails.entitySets[entitySetId].entityTypeId].key;
       const entityList = (entityDescription.multipleValuesField)
         ? values[entityDescription.multipleValuesField] : [values];
-      const entitiesForAlias = [];
-      entityList.forEach((entityValues) => {
-        const details = getEntityDetails(entityDescription, propertyTypesByFqn, entityValues);
-        if (shouldCreateEntity(entityDescription, entityValues, details)) {
+      if (entityList) {
+        const entitiesForAlias = [];
+        entityList.forEach((entityValues) => {
+          const details = getEntityDetails(entityDescription, propertyTypesByFqn, entityValues);
+          if (shouldCreateEntity(entityDescription, entityValues, details)) {
 
-          const entityId = entityDescription.entityId ? entityValues[entityDescription.entityId][0]
-            : getEntityId(primaryKey, edmDetails.propertyTypes, entityValues, entityDescription.fields);
-          const key = {
-            entitySetId,
-            syncId: allSyncIds[index],
-            entityId
-          };
-          const entity = { key, details };
-          entitiesForAlias.push(entity);
-        }
-      });
-      mappedEntities[entityDescription.alias] = entitiesForAlias;
+            const entityId = entityDescription.entityId ? entityValues[entityDescription.entityId][0]
+              : getEntityId(primaryKey, edmDetails.propertyTypes, entityValues, entityDescription.fields);
+            const key = {
+              entitySetId,
+              syncId: allSyncIds[index],
+              entityId
+            };
+            const entity = { key, details };
+            entitiesForAlias.push(entity);
+          }
+        });
+        mappedEntities[entityDescription.alias] = entitiesForAlias;
+      }
     });
 
     const associationAliases = {};

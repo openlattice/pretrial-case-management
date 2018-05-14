@@ -8,6 +8,7 @@ import styled from 'styled-components';
 import { Button } from 'react-bootstrap';
 
 import PretrialCard from '../../../components/pretrial/PretrialCard';
+import ManualPretrialCaseEntry from './ManualPretrialCaseEntry';
 
 /*
  * styled components
@@ -53,13 +54,26 @@ type Props = {
   caseOptions :Immutable.List<Map<*, *>>,
   onSelectCase :Function,
   nextPage :Function,
-  prevPage :Function
+  prevPage :Function,
+  onManualEntry :(value :{
+    pretrialCase :Immutable.Map<*, *>,
+    charges :Immutable.List<Immutable.Map<*, *>>
+  }) => void
 }
 
-export default class SelectPretrialCaseContainer extends React.Component<Props> {
+type State = {
+  manualEntry :boolean
+};
+
+export default class SelectPretrialCaseContainer extends React.Component<Props, State> {
 
   static defaultProps = {
     onSelectCase: () => {}
+  }
+
+  constructor(props :Props) {
+    super(props);
+    this.state = { manualEntry: false };
   }
 
   handleOnSelectCase = (selectedCase :Immutable.Map<*, *>, entityKeyId :string) => {
@@ -72,12 +86,28 @@ export default class SelectPretrialCaseContainer extends React.Component<Props> 
       <SearchResultsList>No cases found.</SearchResultsList>
       <StyledNavBtnWrapper>
         <NavButton onClick={this.props.prevPage}>Modify Search</NavButton>
-        <NavButton onClick={this.props.nextPage}>Proceed Without Case</NavButton>
+        <NavButton onClick={this.enterManually}>Proceed Without Case</NavButton>
       </StyledNavBtnWrapper>
     </div>
   )
 
+  renderManualEntry = () => {
+    const onSubmit = (pretrialCase, charges) => {
+      this.props.onManualEntry({ pretrialCase, charges });
+      this.props.nextPage();
+    };
+    return <ManualPretrialCaseEntry onSubmit={onSubmit} />;
+  }
+
+  enterManually = () => {
+    this.setState({ manualEntry: true });
+  }
+
   renderSearchResults = () => {
+
+    if (this.state.manualEntry) {
+      return this.renderManualEntry();
+    }
 
     if (this.props.caseOptions.isEmpty()) {
       return this.renderNoResults();
@@ -89,7 +119,7 @@ export default class SelectPretrialCaseContainer extends React.Component<Props> 
     return (
       <SearchResultsList>
         <StyledNavBtnWrapper>
-          <NavButton onClick={this.props.nextPage}>Proceed Without Case</NavButton>
+          <NavButton onClick={this.enterManually}>Proceed Without Case</NavButton>
         </StyledNavBtnWrapper>
         { caseOptions.toSeq() }
       </SearchResultsList>

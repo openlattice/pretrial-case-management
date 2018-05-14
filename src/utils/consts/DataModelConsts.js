@@ -8,6 +8,8 @@ export const ENTITY_SETS = {
   CHARGES: 'southdakotacharges',
   SENTENCES: 'southdakotasentences',
   PRETRIAL_CASES: 'southdakotapretrialcaseprocessings',
+  MANUAL_PRETRIAL_CASES: 'southdakotamanualpretrialcaseprocessings',
+  MANUAL_CHARGES: 'southdakotamanualcharges',
   PSA_RISK_FACTORS: 'southdakotapsariskfactors',
   PSA_SCORES: 'southdakotapsas',
   RELEASE_RECOMMENDATIONS: 'southdakotareleaserecommendations',
@@ -58,6 +60,7 @@ export const PROPERTY_TYPES = {
   MOST_SERIOUS_CHARGE_DEG: 'publicsafety.MostSeriousChargeDegree',
   NUMBER_OF_CHARGES: 'publicsafety.NumberOfCharges',
   LAST_UPDATED_DATE: 'general.entryupdated',
+  CASE_DISPOSITION_DATE: 'publicsafety.CaseDispositionDate',
 
   // Charge entity type consts
   CHARGE_ID: 'justice.ArrestTrackingNumber',
