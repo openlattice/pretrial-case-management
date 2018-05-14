@@ -176,7 +176,8 @@ export function* watchSearchPeopleRequest() :Generator<*, *, *> {
       dob
     } = action;
     const searchFields = [];
-    const updateSearchField = (searchTerm, property) => {
+    const updateSearchField = (searchString :string, property :string, exact? :boolean) => {
+      const searchTerm = exact ? `"${searchString}"` : searchString;
       searchFields.push({
         searchTerm,
         property,
@@ -195,7 +196,7 @@ export function* watchSearchPeopleRequest() :Generator<*, *, *> {
       const dobMoment = moment(dob);
       if (dobMoment.isValid()) {
         const dobId = yield call(getPropertyTypeId, PROPERTY_TYPES.DOB);
-        updateSearchField(toISODate(dobMoment), dobId);
+        updateSearchField(toISODate(dobMoment), dobId, true);
       }
     }
     const searchOptions = {
