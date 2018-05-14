@@ -48,7 +48,7 @@ const psaConfig = {
     {
       name: ENTITY_SETS.RELEASE_RECOMMENDATIONS,
       alias: ALIASES.NOTES,
-      entityId: PSA.NOTES,
+      entityId: ID_FIELD_NAMES.NOTES_ID,
       fields: {
         [ID_FIELD_NAMES.NOTES_ID]: PROPERTY_TYPES.GENERAL_ID,
         [PSA.NOTES]: PROPERTY_TYPES.RELEASE_RECOMMENDATION
