@@ -183,14 +183,14 @@ const person = (
 ) :number => {
   let y = yInit;
   doc.text(X_MARGIN, y, `Name: ${name}`);
+  doc.text(X_MAX / 2, y, `PSA - Court Completion Date: ${formatDate(dateSubmitted)}`);
   y += Y_INC;
   doc.text(X_MARGIN, y, `DOB: ${formatDateList(selectedPerson.get(DOB))}`);
   doc.text(X_MAX / 2, y, `Race: ${formatValue(selectedPerson.get(RACE))}`);
   doc.text(X_MAX - 50, y, `Gender: ${formatValue(selectedPerson.get(SEX))}`);
   y += Y_INC;
   doc.text(X_MARGIN, y, `Arrest Date: ${formatDateList(selectedPretrialCase.get(ARREST_DATE, Immutable.List()))}`);
-  doc.text(X_MAX / 3, y, `PSA - Court Completion Date: ${formatDate(dateSubmitted)}`);
-  doc.text(X_MAX - 50, y, `Case #: ${formatValue(selectedPretrialCase.get(CASE_ID, Immutable.List()))}`);
+  doc.text(X_MAX / 2, y, `Case #: ${formatValue(selectedPretrialCase.get(CASE_ID, Immutable.List()))}`);
   y += Y_INC;
   return y;
 };
@@ -407,6 +407,7 @@ const riskFactors = (
   y += Y_INC;
   doc.text(X_MARGIN, y, '9. Prior Sentence to Incarceration');
   doc.text(RESPONSE_OFFSET, y, getBooleanText(priorSentenceToIncarceration));
+  y += Y_INC;
   if (priorSentenceToIncarceration) {
     y = chargeReferences(y, doc, getSentenceToIncarcerationCaseNums(allSentences));
   }
