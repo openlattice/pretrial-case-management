@@ -9,8 +9,14 @@ import { NavLink } from 'react-router-dom';
 import * as Routes from '../../core/router/Routes';
 import UserInfoBlock from './UserInfoBlock';
 
-const StyledNavWrapper = styled.div`
+const DashboardNavWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
   background: white;
+`;
+
+const StyledNavWrapper = styled.div`
   display: flex;
   flex-direction: column;
   height: auto;
@@ -29,12 +35,7 @@ const StyledLinksWrapper = styled.div`
   }
 `;
 
-const StyledNavLink = styled(NavLink).attrs({
-  activeStyle: {
-    fontWeight: 'bold',
-    color: '#5bc0de'
-  }
-})`
+const linkStyle = `
   border-top: 1px solid rgba(84,110,122,0.2);
   color: inherit;
   font-size: 18px;
@@ -54,37 +55,51 @@ const StyledNavLink = styled(NavLink).attrs({
   }
 `;
 
+const StyledNavLink = styled(NavLink).attrs({
+  activeStyle: {
+    fontWeight: 'bold',
+    color: '#5bc0de'
+  }
+})`${linkStyle}`;
+
+const StyledLink = styled.a`${linkStyle}`;
+
 const DashboardNav = () => (
-  <StyledNavWrapper>
-    <UserInfoBlock />
-    <StyledLinksWrapper>
-      <StyledNavLink
-          to={Routes.CREATE_FORMS}
-          name={Routes.CREATE_FORMS}>
-        Create Report
-      </StyledNavLink>
-      <StyledNavLink
-          to={Routes.REVIEW_FORMS}
-          name={Routes.REVIEW_FORMS}>
-        Review Report
-      </StyledNavLink>
-      <StyledNavLink
-          to={Routes.DOWNLOAD_FORMS}
-          name={Routes.DOWNLOAD_FORMS}>
-        Downloads
-      </StyledNavLink>
-      <StyledNavLink
-          to={Routes.NEW_PERSON}
-          name={Routes.NEW_PERSON}>
-        New Person
-      </StyledNavLink>
-      <StyledNavLink
-          to={Routes.PEOPLE}
-          name={Routes.PEOPLE}>
-        Browse People
-      </StyledNavLink>
-    </StyledLinksWrapper>
-  </StyledNavWrapper>
+  <DashboardNavWrapper>
+    <StyledNavWrapper>
+      <UserInfoBlock />
+      <StyledLinksWrapper>
+        <StyledNavLink
+            to={Routes.CREATE_FORMS}
+            name={Routes.CREATE_FORMS}>
+          Create Report
+        </StyledNavLink>
+        <StyledNavLink
+            to={Routes.REVIEW_FORMS}
+            name={Routes.REVIEW_FORMS}>
+          Review Report
+        </StyledNavLink>
+        <StyledNavLink
+            to={Routes.DOWNLOAD_FORMS}
+            name={Routes.DOWNLOAD_FORMS}>
+          Downloads
+        </StyledNavLink>
+        <StyledNavLink
+            to={Routes.NEW_PERSON}
+            name={Routes.NEW_PERSON}>
+          New Person
+        </StyledNavLink>
+        <StyledNavLink
+            to={Routes.PEOPLE}
+            name={Routes.PEOPLE}>
+          Browse People
+        </StyledNavLink>
+      </StyledLinksWrapper>
+    </StyledNavWrapper>
+    <StyledNavWrapper>
+      <StyledLink href="https://support.openlattice.com">Contact Support</StyledLink>
+    </StyledNavWrapper>
+  </DashboardNavWrapper>
 );
 
 export default DashboardNav;
