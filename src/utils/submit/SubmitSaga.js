@@ -93,33 +93,35 @@ function* submitWorker(action :SequenceAction) :Generator<*, *, *> {
       const primaryKey = edmDetails.entityTypes[edmDetails.entitySets[entitySetId].entityTypeId].key;
       const entityList = (entityDescription.multipleValuesField)
         ? values[entityDescription.multipleValuesField] : [values];
-      const entitiesForAlias = [];
-      entityList.forEach((entityValues) => {
-        const details = getEntityDetails(entityDescription, propertyTypesByFqn, entityValues);
-        if (shouldCreateEntity(entityDescription, entityValues, details)) {
-          let entityId;
-          if (entityDescription.entityId) {
-            let entityIdVal = entityValues[entityDescription.entityId];
-            if (entityIdVal instanceof Array && entityIdVal.length) {
-              [entityIdVal] = entityIdVal;
+      if (entityList) {
+        const entitiesForAlias = [];
+        entityList.forEach((entityValues) => {
+          const details = getEntityDetails(entityDescription, propertyTypesByFqn, entityValues);
+          if (shouldCreateEntity(entityDescription, entityValues, details)) {
+            let entityId;
+            if (entityDescription.entityId) {
+              let entityIdVal = entityValues[entityDescription.entityId];
+              if (entityIdVal instanceof Array && entityIdVal.length) {
+                [entityIdVal] = entityIdVal;
+              }
+              entityId = entityIdVal;
             }
-            entityId = entityIdVal;
+            else {
+              entityId = getEntityId(primaryKey, edmDetails.propertyTypes, entityValues, entityDescription.fields);
+            }
+            if (entityId && entityId.length) {
+              const key = {
+                entitySetId,
+                syncId: allSyncIds[index],
+                entityId
+              };
+              const entity = { key, details };
+              entitiesForAlias.push(entity);
+            }
           }
-          else {
-            entityId = getEntityId(primaryKey, edmDetails.propertyTypes, entityValues, entityDescription.fields);
-          }
-          if (entityId && entityId.length) {
-            const key = {
-              entitySetId,
-              syncId: allSyncIds[index],
-              entityId
-            };
-            const entity = { key, details };
-            entitiesForAlias.push(entity);
-          }
-        }
-      });
-      mappedEntities[entityDescription.alias] = entitiesForAlias;
+        });
+        mappedEntities[entityDescription.alias] = entitiesForAlias;
+      }
     });
 
     const associationAliases = {};

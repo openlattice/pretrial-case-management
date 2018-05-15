@@ -184,16 +184,16 @@ export function* watchSearchPeopleRequest() :Generator<*, *, *> {
         exact: true
       });
     };
-    if (firstName.length) {
+    if (firstName.trim().length) {
       const firstNameId = yield call(getPropertyTypeId, PROPERTY_TYPES.FIRST_NAME);
-      updateSearchField(firstName, firstNameId);
+      updateSearchField(firstName.trim(), firstNameId);
     }
-    if (lastName.length) {
+    if (lastName.trim().length) {
       const lastNameId = yield call(getPropertyTypeId, PROPERTY_TYPES.LAST_NAME);
-      updateSearchField(lastName, lastNameId);
+      updateSearchField(lastName.trim(), lastNameId);
     }
-    if (dob && dob.length) {
-      const dobMoment = moment(dob);
+    if (dob && dob.trim().length) {
+      const dobMoment = moment(dob.trim());
       if (dobMoment.isValid()) {
         const dobId = yield call(getPropertyTypeId, PROPERTY_TYPES.DOB);
         updateSearchField(toISODate(dobMoment), dobId, true);
