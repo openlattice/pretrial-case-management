@@ -2,7 +2,7 @@
  * @flow
  */
 import Immutable from 'immutable';
-import { PSA } from './consts/Consts';
+import { PSA, NOTES } from './consts/Consts';
 import { PROPERTY_TYPES } from './consts/DataModelConsts';
 
 const {
@@ -16,7 +16,16 @@ const {
   PRIOR_VIOLENT_CONVICTION,
   PRIOR_FAILURE_TO_APPEAR_RECENT,
   PRIOR_FAILURE_TO_APPEAR_OLD,
-  PRIOR_SENTENCE_TO_INCARCERATION
+  PRIOR_SENTENCE_TO_INCARCERATION,
+  AGE_AT_CURRENT_ARREST_NOTES,
+  CURRENT_VIOLENT_OFFENSE_NOTES,
+  PENDING_CHARGE_NOTES,
+  PRIOR_MISDEMEANOR_NOTES,
+  PRIOR_FELONY_NOTES,
+  PRIOR_VIOLENT_CONVICTION_NOTES,
+  PRIOR_FAILURE_TO_APPEAR_RECENT_NOTES,
+  PRIOR_FAILURE_TO_APPEAR_OLD_NOTES,
+  PRIOR_SENTENCE_TO_INCARCERATION_NOTES
 } = PROPERTY_TYPES;
 
 function getFtaScaleFromScore(score :number) :number {
@@ -199,6 +208,16 @@ export function getScoresAndRiskFactors(psaForm :Immutable.Map<*, *>) :{} {
     }
   }
 
+  const ageAtCurrentArrestNotes = psaForm.get(NOTES[PSA.AGE_AT_CURRENT_ARREST]);
+  const currentViolentOffenseNotes = psaForm.get(NOTES[PSA.CURRENT_VIOLENT_OFFENSE]);
+  const pendingChargeNotes = psaForm.get(NOTES[PSA.PENDING_CHARGE]);
+  const priorMisdemeanorNotes = psaForm.get(NOTES[PSA.PRIOR_MISDEMEANOR]);
+  const priorFelonyNotes = psaForm.get(NOTES[PSA.PRIOR_FELONY]);
+  const priorViolentConvictionNotes = psaForm.get(NOTES[PSA.PRIOR_VIOLENT_CONVICTION]);
+  const priorFTARecentNotes = psaForm.get(NOTES[PSA.PRIOR_FAILURE_TO_APPEAR_RECENT]);
+  const priorFTAOldNotes = psaForm.get(NOTES[PSA.PRIOR_FAILURE_TO_APPEAR_OLD]);
+  const priorSentenceToIncarcerationNotes = psaForm.get(NOTES[PSA.PRIOR_SENTENCE_TO_INCARCERATION]);
+
   const riskFactors = {
     [AGE_AT_CURRENT_ARREST]: [ageAtCurrentArrestValue],
     [CURRENT_VIOLENT_OFFENSE]: [currentViolentOffenseValue],
@@ -212,6 +231,33 @@ export function getScoresAndRiskFactors(psaForm :Immutable.Map<*, *>) :{} {
     [PRIOR_FAILURE_TO_APPEAR_OLD]: [priorFailureToAppearOldValue],
     [PRIOR_SENTENCE_TO_INCARCERATION]: [priorSentenceToIncarcerationValue]
   };
+  if (ageAtCurrentArrestNotes && ageAtCurrentArrestNotes.length) {
+    riskFactors[AGE_AT_CURRENT_ARREST_NOTES] = [ageAtCurrentArrestNotes];
+  }
+  if (currentViolentOffenseNotes && currentViolentOffenseNotes.length) {
+    riskFactors[CURRENT_VIOLENT_OFFENSE_NOTES] = [currentViolentOffenseNotes];
+  }
+  if (pendingChargeNotes && pendingChargeNotes.length) {
+    riskFactors[PENDING_CHARGE_NOTES] = [pendingChargeNotes];
+  }
+  if (priorMisdemeanorNotes && priorMisdemeanorNotes.length) {
+    riskFactors[PRIOR_MISDEMEANOR_NOTES] = [priorMisdemeanorNotes];
+  }
+  if (priorFelonyNotes && priorFelonyNotes.length) {
+    riskFactors[PRIOR_FELONY_NOTES] = [priorFelonyNotes];
+  }
+  if (priorViolentConvictionNotes && priorViolentConvictionNotes.length) {
+    riskFactors[PRIOR_VIOLENT_CONVICTION_NOTES] = [priorViolentConvictionNotes];
+  }
+  if (priorFTARecentNotes && priorFTARecentNotes.length) {
+    riskFactors[PRIOR_FAILURE_TO_APPEAR_RECENT_NOTES] = [priorFTARecentNotes];
+  }
+  if (priorFTAOldNotes && priorFTAOldNotes.length) {
+    riskFactors[PRIOR_FAILURE_TO_APPEAR_OLD_NOTES] = [priorFTAOldNotes];
+  }
+  if (priorSentenceToIncarcerationNotes && priorSentenceToIncarcerationNotes.length) {
+    riskFactors[PRIOR_SENTENCE_TO_INCARCERATION_NOTES] = [priorSentenceToIncarcerationNotes];
+  }
 
   return { riskFactors, scores };
 }

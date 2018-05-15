@@ -268,26 +268,7 @@ export default class PSAReviewRow extends React.Component<Props, State> {
 
   onRiskFactorEdit = (e :Object) => {
     e.preventDefault();
-    let { scores, riskFactors } = getScoresAndRiskFactors(this.state.riskFactors);
-
-    riskFactors[PROPERTY_TYPES.AGE_AT_CURRENT_ARREST_NOTES] =
-      [this.state.riskFactors.get(NOTES[PSA.AGE_AT_CURRENT_ARREST])];
-    riskFactors[PROPERTY_TYPES.CURRENT_VIOLENT_OFFENSE_NOTES] =
-      [this.state.riskFactors.get(NOTES[PSA.CURRENT_VIOLENT_OFFENSE])];
-    riskFactors[PROPERTY_TYPES.PENDING_CHARGE_NOTES] =
-      [this.state.riskFactors.get(NOTES[PSA.PENDING_CHARGE])];
-    riskFactors[PROPERTY_TYPES.PRIOR_MISDEMEANOR_NOTES] =
-      [this.state.riskFactors.get(NOTES[PSA.PRIOR_MISDEMEANOR])];
-    riskFactors[PROPERTY_TYPES.PRIOR_FELONY_NOTES] =
-      [this.state.riskFactors.get(NOTES[PSA.PRIOR_FELONY])];
-    riskFactors[PROPERTY_TYPES.PRIOR_VIOLENT_CONVICTION_NOTES] =
-      [this.state.riskFactors.get(NOTES[PSA.PRIOR_VIOLENT_CONVICTION])];
-    riskFactors[PROPERTY_TYPES.PRIOR_FAILURE_TO_APPEAR_RECENT_NOTES] =
-      [this.state.riskFactors.get(NOTES[PSA.PRIOR_FAILURE_TO_APPEAR_RECENT])];
-    riskFactors[PROPERTY_TYPES.PRIOR_FAILURE_TO_APPEAR_OLD_NOTES] =
-      [this.state.riskFactors.get(NOTES[PSA.PRIOR_FAILURE_TO_APPEAR_OLD])];
-    riskFactors[PROPERTY_TYPES.PRIOR_SENTENCE_TO_INCARCERATION_NOTES] =
-      [this.state.riskFactors.get(NOTES[PSA.PRIOR_SENTENCE_TO_INCARCERATION])];
+    const { scores, riskFactors } = getScoresAndRiskFactors(this.state.riskFactors);
 
     const scoreId = this.props.scores.getIn([PROPERTY_TYPES.GENERAL_ID, 0]);
     const riskFactorsId = this.props.neighbors.getIn(
