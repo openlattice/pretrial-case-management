@@ -114,18 +114,22 @@ const AboutPerson = ({ selectedPersonData, neighbors } :Props) => {
 
   const renderCaseHistory = () => {
     const caseHistory = neighbors.get(ENTITY_SETS.PRETRIAL_CASES, Immutable.List())
+      .concat(neighbors.get(ENTITY_SETS.MANUAL_PRETRIAL_CASES, Immutable.List()))
       .map(neighborObj => neighborObj.get('neighborDetails', Immutable.Map()));
+
     let chargeHistory = Immutable.Map();
-    neighbors.get(ENTITY_SETS.CHARGES, Immutable.List()).forEach((chargeNeighbor) => {
-      const chargeIdArr = chargeNeighbor.getIn(['neighborDetails', PROPERTY_TYPES.CHARGE_ID, 0], '').split('|');
-      if (chargeIdArr.length) {
-        const caseId = chargeIdArr[0];
-        chargeHistory = chargeHistory.set(
-          caseId,
-          chargeHistory.get(caseId, Immutable.List()).push(chargeNeighbor.get('neighborDetails', Immutable.Map()))
-        );
-      }
-    });
+    neighbors.get(ENTITY_SETS.CHARGES, Immutable.List())
+      .concat(neighbors.get(ENTITY_SETS.MANUAL_CHARGES, Immutable.List()))
+      .forEach((chargeNeighbor) => {
+        const chargeIdArr = chargeNeighbor.getIn(['neighborDetails', PROPERTY_TYPES.CHARGE_ID, 0], '').split('|');
+        if (chargeIdArr.length) {
+          const caseId = chargeIdArr[0];
+          chargeHistory = chargeHistory.set(
+            caseId,
+            chargeHistory.get(caseId, Immutable.List()).push(chargeNeighbor.get('neighborDetails', Immutable.Map()))
+          );
+        }
+      });
     return <CaseHistory caseHistory={caseHistory} chargeHistory={chargeHistory} />;
   };
 

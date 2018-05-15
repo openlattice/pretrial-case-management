@@ -136,6 +136,29 @@ export const NOTES = {
   [PSA.PRIOR_SENTENCE_TO_INCARCERATION]: 'priorSentenceToIncarcerationNotes'
 };
 
+export type Charge = {
+  statute :string,
+  description :string,
+  degree :string,
+  degreeShort :string,
+  dispositionDate :string,
+  disposition :string,
+  pleaDate :string,
+  plea :string
+};
+
+export const CHARGE = {
+  ID: 'chargeId',
+  STATUTE: 'statute',
+  DESCRIPTION: 'description',
+  DEGREE: 'degree',
+  DEGREE_SHORT: 'degreeShort',
+  DISPOSITION_DATE: 'dispositionDate',
+  DISPOSITION: 'disposition',
+  PLEA_DATE: 'pleaDate',
+  PLEA: 'plea'
+};
+
 export const FORM_IDS = {
   PERSON_ID: 'personId',
   STAFF_ID: 'staffId',

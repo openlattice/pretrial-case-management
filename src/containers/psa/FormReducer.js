@@ -6,6 +6,7 @@ import Immutable from 'immutable';
 import moment from 'moment';
 
 import {
+  ADD_CASE_AND_CHARGES,
   CLEAR_FORM,
   SELECT_PERSON,
   SELECT_PRETRIAL_CASE,
@@ -69,6 +70,7 @@ const INITIAL_STATE :Immutable.Map<> = Immutable.fromJS({
   charges: Immutable.List(),
   selectedPerson: Immutable.Map(),
   selectedPretrialCase: Immutable.Map(),
+  chargesManuallyEntered: false,
   psa: INITIAL_PSA_FORM,
   dataModel: Immutable.Map(),
   entitySetLookup: Immutable.Map(),
@@ -145,6 +147,19 @@ function formReducer(state :Immutable.Map<> = INITIAL_STATE, action :Object) {
       });
     }
 
+    case ADD_CASE_AND_CHARGES: {
+      let allChargesForPerson = state.get('allChargesForPerson', Immutable.List());
+      action.value.charges.forEach((charge) => {
+        allChargesForPerson = allChargesForPerson.push(charge);
+      });
+      return state
+        .set('chargesManuallyEntered', true)
+        .set('pretrialCaseOptions', state.get('pretrialCaseOptions').unshift(action.value.pretrialCase))
+        .set('allChargesForPerson', allChargesForPerson)
+        .set('charges', action.value.charges)
+        .set('selectedPretrialCase', action.value.pretrialCase);
+    }
+
     case SELECT_PERSON: return state.set('selectedPerson', action.value.selectedPerson);
 
     case SELECT_PRETRIAL_CASE: {
@@ -179,6 +194,7 @@ function formReducer(state :Immutable.Map<> = INITIAL_STATE, action :Object) {
         .set('allSentencesForPerson', Immutable.List())
         .set('selectPerson', Immutable.Map())
         .set('selectedPretrialCase', Immutable.Map())
+        .set('chargesManuallyEntered', false)
         .set('charges', Immutable.List())
         .set('psa', INITIAL_PSA_FORM)
         .set('isSubmitted', false)

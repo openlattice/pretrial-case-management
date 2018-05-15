@@ -89,6 +89,49 @@ const psaConfig = {
       fields: {
         [ID_FIELD_NAMES.TIMESTAMP]: PROPERTY_TYPES.COMPLETED_DATE_TIME
       }
+    },
+    // manual entry setup
+    {
+      name: ENTITY_SETS.MANUAL_PRETRIAL_CASES,
+      alias: ALIASES.MANUAL_CASE,
+      entityId: PROPERTY_TYPES.CASE_ID,
+      fields: {
+        [PROPERTY_TYPES.CASE_ID]: PROPERTY_TYPES.CASE_ID,
+        [PROPERTY_TYPES.CASE_DISPOSITION_DATE]: PROPERTY_TYPES.CASE_DISPOSITION_DATE,
+        [PROPERTY_TYPES.ARREST_DATE]: PROPERTY_TYPES.ARREST_DATE,
+        [PROPERTY_TYPES.FILE_DATE]: PROPERTY_TYPES.FILE_DATE,
+        [PROPERTY_TYPES.NUMBER_OF_CHARGES]: PROPERTY_TYPES.NUMBER_OF_CHARGES
+      }
+    },
+    {
+      name: ENTITY_SETS.MANUAL_CHARGES,
+      alias: ALIASES.MANUAL_CHARGES,
+      multipleValuesField: 'charges',
+      fields: {
+        [PROPERTY_TYPES.CHARGE_ID]: PROPERTY_TYPES.CHARGE_ID,
+        [PROPERTY_TYPES.CHARGE_LEVEL]: PROPERTY_TYPES.CHARGE_LEVEL,
+        [PROPERTY_TYPES.CHARGE_DEGREE]: PROPERTY_TYPES.CHARGE_DEGREE,
+        [PROPERTY_TYPES.CHARGE_STATUTE]: PROPERTY_TYPES.CHARGE_STATUTE,
+        [PROPERTY_TYPES.CHARGE_DESCRIPTION]: PROPERTY_TYPES.CHARGE_DESCRIPTION,
+        [PROPERTY_TYPES.DISPOSITION]: PROPERTY_TYPES.DISPOSITION,
+        [PROPERTY_TYPES.DISPOSITION_DATE]: PROPERTY_TYPES.DISPOSITION_DATE,
+        [PROPERTY_TYPES.PLEA]: PROPERTY_TYPES.PLEA,
+        [PROPERTY_TYPES.PLEA_DATE]: PROPERTY_TYPES.PLEA_DATE
+      }
+    },
+    {
+      name: ENTITY_SETS.CHARGED_WITH,
+      alias: ALIASES.CHARGED_WITH,
+      fields: {
+        [PROPERTY_TYPES.CASE_ID]: PROPERTY_TYPES.STRING_ID
+      }
+    },
+    {
+      name: ENTITY_SETS.APPEARS_IN,
+      alias: ALIASES.APPEARS_IN,
+      fields: {
+        [PROPERTY_TYPES.CASE_ID]: PROPERTY_TYPES.STRING_ID
+      }
     }
   ],
   associations: [
@@ -108,6 +151,11 @@ const psaConfig = {
       dst: ALIASES.CASE,
       association: ALIASES.CALCULATED_FOR
     },
+    {
+      src: ALIASES.PSA,
+      dst: ALIASES.MANUAL_CASE,
+      association: ALIASES.CALCULATED_FOR
+    },
 
     // Risk Factors calculated for _____
     {
@@ -118,6 +166,11 @@ const psaConfig = {
     {
       src: ALIASES.RISK_FACTORS,
       dst: ALIASES.CASE,
+      association: ALIASES.CALCULATED_FOR
+    },
+    {
+      src: ALIASES.RISK_FACTORS,
+      dst: ALIASES.MANUAL_CASE,
       association: ALIASES.CALCULATED_FOR
     },
 
@@ -135,6 +188,11 @@ const psaConfig = {
     {
       src: ALIASES.NOTES,
       dst: ALIASES.CASE,
+      association: ALIASES.CALCULATED_FOR
+    },
+    {
+      src: ALIASES.NOTES,
+      dst: ALIASES.MANUAL_CASE,
       association: ALIASES.CALCULATED_FOR
     },
     {
@@ -158,6 +216,23 @@ const psaConfig = {
       src: ALIASES.NOTES,
       dst: ALIASES.STAFF,
       association: ALIASES.ASSESSED_BY
+    },
+
+    // manual cases -> manual charges
+    {
+      src: ALIASES.MANUAL_CHARGES,
+      dst: ALIASES.MANUAL_CASE,
+      association: ALIASES.APPEARS_IN
+    },
+    {
+      src: ALIASES.PERSON,
+      dst: ALIASES.MANUAL_CASE,
+      association: ALIASES.APPEARS_IN
+    },
+    {
+      src: ALIASES.PERSON,
+      dst: ALIASES.MANUAL_CHARGES,
+      association: ALIASES.CHARGED_WITH
     }
   ]
 };

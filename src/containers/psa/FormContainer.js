@@ -124,6 +124,10 @@ const numPages = 3;
 
 type Props = {
   actions :{
+    addCaseAndCharges :(value :{
+      pretrialCase :Immutable.Map<*, *>,
+      charges :Immutable.List<Immutable.Map<*, *>>
+    }) => void,
     hardRestart :() => void;
     loadDataModel :() => void,
     loadNeighbors :(value :{
@@ -160,6 +164,7 @@ type Props = {
   charges :Immutable.List<*>,
   allChargesForPerson :Immutable.List<*>,
   allSentencesForPerson :Immutable.List<*>,
+  chargesManuallyEntered :boolean,
   selectedPersonId :string,
   isLoadingCases :boolean,
   numCasesToLoad :number,
@@ -262,10 +267,17 @@ class Form extends React.Component<Props, State> {
     values[ID_FIELD_NAMES.RISK_FACTORS_ID] = [randomUUID()];
     values[ID_FIELD_NAMES.NOTES_ID] = [randomUUID()];
     values[ID_FIELD_NAMES.PERSON_ID] = [this.props.selectedPerson.getIn([PROPERTY_TYPES.PERSON_ID, 0])];
-    values[ID_FIELD_NAMES.CASE_ID] = [this.props.selectedPretrialCase.getIn([PROPERTY_TYPES.CASE_ID, 0])];
     values[ID_FIELD_NAMES.STAFF_ID] = [staffId];
 
     values[ID_FIELD_NAMES.TIMESTAMP] = toISODateTime(moment());
+
+    if (this.props.chargesManuallyEntered) {
+      Object.assign(values, this.props.selectedPretrialCase.toJS());
+      values.charges = this.props.charges.toJS();
+    }
+    else {
+      values[ID_FIELD_NAMES.CASE_ID] = [this.props.selectedPretrialCase.getIn([PROPERTY_TYPES.CASE_ID, 0])];
+    }
 
     this.props.actions.submit({
       values,
@@ -472,6 +484,7 @@ class Form extends React.Component<Props, State> {
           caseOptions={pretrialCaseOptions}
           nextPage={this.nextPage}
           prevPage={this.prevPage}
+          onManualEntry={this.props.actions.addCaseAndCharges}
           onSelectCase={(selectedCase) => {
             actions.selectPretrialCase({ selectedPretrialCase: selectedCase });
             this.nextPage();
@@ -572,6 +585,7 @@ function mapStateToProps(state :Immutable.Map<*, *>) :Object {
     selectedPretrialCase: psaForm.get('selectedPretrialCase'),
     allChargesForPerson: psaForm.get('allChargesForPerson'),
     allSentencesForPerson: psaForm.get('allSentencesForPerson'),
+    chargesManuallyEntered: psaForm.get('chargesManuallyEntered'),
     psaForm: psaForm.get('psa'),
     isSubmitted: submit.get('submitted'),
     isSubmitting: submit.get('submitting'),

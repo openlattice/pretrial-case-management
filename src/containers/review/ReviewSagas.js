@@ -46,21 +46,27 @@ function* getCasesAndCharges(neighbors) {
   personNeighbors.forEach((neighbor) => {
     const neighborDetails = Immutable.fromJS(neighbor.neighborDetails);
     const entitySet = neighbor.neighborEntitySet;
-    if (entitySet && entitySet.name === ENTITY_SETS.PRETRIAL_CASES) {
-      const caseObj = neighborDetails.set('id', neighbor.neighborId);
-      const arrList = caseObj.get(PROPERTY_TYPES.ARREST_DATE, caseObj.get(PROPERTY_TYPES.FILE_DATE, Immutable.List()));
-      if (arrList.size) {
-        pretrialCaseOptionsWithDate = pretrialCaseOptionsWithDate.push(caseObj);
+    if (entitySet) {
+      const { name } = entitySet;
+      if (name === ENTITY_SETS.PRETRIAL_CASES || name === ENTITY_SETS.MANUAL_PRETRIAL_CASES) {
+        const caseObj = neighborDetails.set('id', neighbor.neighborId);
+        const arrList = caseObj.get(
+          PROPERTY_TYPES.ARREST_DATE,
+          caseObj.get(PROPERTY_TYPES.FILE_DATE, Immutable.List())
+        );
+        if (arrList.size) {
+          pretrialCaseOptionsWithDate = pretrialCaseOptionsWithDate.push(caseObj);
+        }
+        else {
+          pretrialCaseOptionsWithoutDate = pretrialCaseOptionsWithoutDate.push(caseObj);
+        }
       }
-      else {
-        pretrialCaseOptionsWithoutDate = pretrialCaseOptionsWithoutDate.push(caseObj);
+      else if (name === ENTITY_SETS.CHARGES || name === ENTITY_SETS.MANUAL_CHARGES) {
+        allCharges = allCharges.push(neighborDetails);
       }
-    }
-    else if (entitySet && entitySet.name === ENTITY_SETS.CHARGES) {
-      allCharges = allCharges.push(neighborDetails);
-    }
-    else if (entitySet && entitySet.name === ENTITY_SETS.SENTENCES) {
-      allSentences = allSentences.push(neighborDetails);
+      else if (name === ENTITY_SETS.SENTENCES) {
+        allSentences = allSentences.push(neighborDetails);
+      }
     }
   });
   pretrialCaseOptionsWithDate = pretrialCaseOptionsWithDate.sort(orderCasesByArrestDate);
@@ -261,7 +267,10 @@ function* downloadPSAReviewPDFWorker(action :SequenceAction) :Generator<*, *, *>
 
     const selectedPretrialCase = neighbors.getIn(
       [ENTITY_SETS.PRETRIAL_CASES, 'neighborDetails'],
-      Immutable.Map()
+      neighbors.getIn(
+        [ENTITY_SETS.MANUAL_PRETRIAL_CASES, 'neighborDetails'],
+        Immutable.Map()
+      )
     );
     const selectedPerson = neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborDetails'], Immutable.Map());
 

@@ -4,6 +4,9 @@
 
 import { newRequestSequence } from 'redux-reqseq';
 
+const ADD_CASE_AND_CHARGES :string = 'ADD_CASE_AND_CHARGES';
+const addCaseAndCharges :RequestSequence = newRequestSequence(ADD_CASE_AND_CHARGES);
+
 const LOAD_DATA_MODEL :string = 'LOAD_DATA_MODEL';
 const loadDataModel :RequestSequence = newRequestSequence(LOAD_DATA_MODEL);
 
@@ -34,10 +37,12 @@ const SET_PSA_VALUES :string = 'SET_PSA_VALUES';
 const setPSAValues :RequestSequence = newRequestSequence(SET_PSA_VALUES);
 
 export {
+  ADD_CASE_AND_CHARGES,
   HARD_RESTART,
   LOAD_DATA_MODEL,
   LOAD_NEIGHBORS,
   UPDATE_NOTES,
+  addCaseAndCharges,
   hardRestart,
   loadDataModel,
   loadNeighbors,
