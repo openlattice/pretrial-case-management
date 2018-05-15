@@ -55,25 +55,15 @@ import { PSA, ID_FIELD_NAMES } from '../../utils/consts/Consts';
 import { PROPERTY_TYPES, ENTITY_SETS } from '../../utils/consts/DataModelConsts';
 
 const {
-  PERSON_ID,
-  TIMESTAMP,
   NVCA_FLAG,
   NCA_SCALE,
-  FTA_SCALE,
-  GENERAL_ID,
-  COMPLETED_DATE_TIME,
-  RELEASE_RECOMMENDATION
+  FTA_SCALE
 } = PROPERTY_TYPES;
 
 const {
   PEOPLE,
   PRETRIAL_CASES,
-  PSA_RISK_FACTORS,
-  PSA_SCORES,
   RELEASE_RECOMMENDATIONS,
-  STAFF,
-  ASSESSED_BY,
-  CALCULATED_FOR
 } = ENTITY_SETS;
 
 const LoadingContainer = styled.div`
@@ -131,15 +121,6 @@ const INITIAL_STATE = Immutable.fromJS({
 });
 
 const numPages = 3;
-
-type Entity = {
-  key :{
-    entitySetId :string,
-    entityId :string,
-    syncId? :string
-  },
-  details :{}
-};
 
 type Props = {
   actions :{
@@ -263,8 +244,7 @@ class Form extends React.Component<Props, State> {
       .map(propertyTypeId => dataModel.getIn(['propertyTypes', propertyTypeId]));
   }
 
-  submitEntities = (scores) => {
-    const { riskFactors } = getScoresAndRiskFactors(this.props.psaForm);
+  submitEntities = (scores, riskFactors) => {
     const staffInfo = AuthUtils.getUserInfo();
     let staffId = staffInfo.id;
     if (staffInfo.email && staffInfo.email.length > 0) {
@@ -273,7 +253,6 @@ class Form extends React.Component<Props, State> {
 
     const values = Object.assign(
       {},
-      this.props.psaForm.toJS(),
       riskFactors,
       scores
     );
@@ -331,7 +310,7 @@ class Form extends React.Component<Props, State> {
         [NCA_SCALE]: [scores.ncaScale],
         [FTA_SCALE]: [scores.ftaScale]
       };
-      this.submitEntities(formattedScores);
+      this.submitEntities(formattedScores, riskFactors);
     }
   }
 
