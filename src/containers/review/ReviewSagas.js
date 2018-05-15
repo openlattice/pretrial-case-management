@@ -256,7 +256,7 @@ function* downloadPSAReviewPDFWorker(action :SequenceAction) :Generator<*, *, *>
 
     const data = Immutable.Map()
       .set('scores', formattedScores)
-      .set('releaseRecommendation', recommendationText)
+      .set('notes', recommendationText)
       .set('riskFactors', setMultimapToMap(ENTITY_SETS.PSA_RISK_FACTORS));
 
     const selectedPretrialCase = neighbors.getIn(
