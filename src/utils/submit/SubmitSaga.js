@@ -97,16 +97,26 @@ function* submitWorker(action :SequenceAction) :Generator<*, *, *> {
       entityList.forEach((entityValues) => {
         const details = getEntityDetails(entityDescription, propertyTypesByFqn, entityValues);
         if (shouldCreateEntity(entityDescription, entityValues, details)) {
-
-          const entityId = entityDescription.entityId ? entityValues[entityDescription.entityId][0]
-            : getEntityId(primaryKey, edmDetails.propertyTypes, entityValues, entityDescription.fields);
-          const key = {
-            entitySetId,
-            syncId: allSyncIds[index],
-            entityId
-          };
-          const entity = { key, details };
-          entitiesForAlias.push(entity);
+          let entityId;
+          if (entityDescription.entityId) {
+            let entityIdVal = entityValues[entityDescription.entityId];
+            if (entityIdVal instanceof Array && entityIdVal.length) {
+              [entityIdVal] = entityIdVal;
+            }
+            entityId = entityIdVal;
+          }
+          else {
+            entityId = getEntityId(primaryKey, edmDetails.propertyTypes, entityValues, entityDescription.fields);
+          }
+          if (entityId && entityId.length) {
+            const key = {
+              entitySetId,
+              syncId: allSyncIds[index],
+              entityId
+            };
+            const entity = { key, details };
+            entitiesForAlias.push(entity);
+          }
         }
       });
       mappedEntities[entityDescription.alias] = entitiesForAlias;
