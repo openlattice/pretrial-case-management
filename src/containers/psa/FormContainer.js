@@ -63,7 +63,7 @@ const {
 const {
   PEOPLE,
   PRETRIAL_CASES,
-  RELEASE_RECOMMENDATIONS,
+  RELEASE_RECOMMENDATIONS
 } = ENTITY_SETS;
 
 const LoadingContainer = styled.div`
