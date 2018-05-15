@@ -113,6 +113,7 @@ type Props = {
   loadingResults :boolean,
   errorMessage :string,
   actions :{
+    clearForm :() => void,
     downloadPSAReviewPDF :(values :{
       neighbors :Immutable.Map<*, *>,
       scores :Immutable.Map<*, *>
@@ -143,6 +144,7 @@ type Props = {
   allFilers :Immutable.Set<*>,
   caseHistory :Immutable.List<*>,
   chargeHistory :Immutable.Map<*, *>,
+  sentenceHistory :Immutable.Map<*, *>,
   readOnly :boolean
 }
 
@@ -179,6 +181,10 @@ class ReviewPSA extends React.Component<Props, State> {
   componentDidMount() {
     this.props.actions.checkPSAPermissions();
     this.props.actions.loadPSAsByDate();
+  }
+
+  componentWillUnmount() {
+    this.props.actions.clearForm();
   }
 
   updateFilters = (newFilters :Object) => {
@@ -283,6 +289,7 @@ class ReviewPSA extends React.Component<Props, State> {
     const personId = neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborId'], '');
     const caseHistory = this.props.caseHistory.get(personId, Immutable.List());
     const chargeHistory = this.props.chargeHistory.get(personId, Immutable.Map());
+    const sentenceHistory = this.props.sentenceHistory.get(personId, Immutable.Map());
     return (
       <PSAReviewRow
           neighbors={neighbors}
@@ -295,6 +302,7 @@ class ReviewPSA extends React.Component<Props, State> {
           submitData={this.props.actions.submit}
           caseHistory={caseHistory}
           chargeHistory={chargeHistory}
+          sentenceHistory={sentenceHistory}
           readOnly={this.props.readOnly}
           key={scoreId} />
     );
@@ -478,6 +486,7 @@ function mapStateToProps(state) {
     errorMesasge: review.get('errorMesasge'),
     caseHistory: review.get('caseHistory'),
     chargeHistory: review.get('chargeHistory'),
+    sentenceHistory: review.get('sentenceHistory'),
     readOnly: review.get('readOnly')
   };
 }

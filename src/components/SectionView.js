@@ -10,7 +10,7 @@ const SectionWrapper = styled.div`
   border-bottom: 1px solid lightgray;
 `;
 
-const Header = styled.div`
+export const Header = styled.div`
   font-size: 24px;
   margin-bottom: 20px;
   color: #37454A;

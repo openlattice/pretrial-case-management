@@ -24,6 +24,7 @@ import SelectedPretrialCaseInfo from '../../components/pretrial/SelectedPretrial
 import PSAInputForm from '../../components/psainput/PSAInputForm';
 import PSAResults from '../../components/psainput/PSAResults';
 import exportPDF from '../../utils/PDFUtils';
+import psaConfig from '../../config/formconfig/PsaConfig';
 
 import * as FormActionFactory from './FormActionFactory';
 import * as PersonActionFactory from '../person/PersonActionFactory';
@@ -50,28 +51,19 @@ import {
   getPrevPath
 } from '../../utils/Helpers';
 import { tryAutofillFields } from '../../utils/AutofillUtils';
+import { PSA, ID_FIELD_NAMES } from '../../utils/consts/Consts';
 import { PROPERTY_TYPES, ENTITY_SETS } from '../../utils/consts/DataModelConsts';
 
 const {
-  PERSON_ID,
-  TIMESTAMP,
   NVCA_FLAG,
   NCA_SCALE,
-  FTA_SCALE,
-  GENERAL_ID,
-  COMPLETED_DATE_TIME,
-  RELEASE_RECOMMENDATION
+  FTA_SCALE
 } = PROPERTY_TYPES;
 
 const {
   PEOPLE,
   PRETRIAL_CASES,
-  PSA_RISK_FACTORS,
-  PSA_SCORES,
-  RELEASE_RECOMMENDATIONS,
-  STAFF,
-  ASSESSED_BY,
-  CALCULATED_FOR
+  RELEASE_RECOMMENDATIONS
 } = ENTITY_SETS;
 
 const LoadingContainer = styled.div`
@@ -130,15 +122,6 @@ const INITIAL_STATE = Immutable.fromJS({
 
 const numPages = 3;
 
-type Entity = {
-  key :{
-    entitySetId :string,
-    entityId :string,
-    syncId? :string
-  },
-  details :{}
-};
-
 type Props = {
   actions :{
     hardRestart :() => void;
@@ -148,16 +131,6 @@ type Props = {
       entityKeyId :string
     }) => void,
     clearForm :() => void,
-    submitData :(values :{
-      personEntity :Entity,
-      pretrialCaseEntity :Entity,
-      riskFactorsEntity :Entity,
-      psaEntity :Entity,
-      notesEntity :Entity,
-      staffEntity :Entity,
-      calculatedForEntity :Entity,
-      assessedByEntity :Entity
-    }) => void,
     selectPerson :(value :{
       selectedPerson :Immutable.Map<*, *>
     }) => void,
@@ -173,7 +146,8 @@ type Props = {
     loadPersonDetailsRequest :(personId :string, shouldFetchCases :boolean) => void,
     setPSAValues :(value :{
       newValues :Immutable.Map<*, *>
-    }) => void
+    }) => void,
+    submit :({ config :Object, values :Object }) => void
   },
   isSubmitted :boolean,
   isSubmitting :boolean,
@@ -185,6 +159,7 @@ type Props = {
   pretrialCaseOptions :Immutable.List<*>,
   charges :Immutable.List<*>,
   allChargesForPerson :Immutable.List<*>,
+  allSentencesForPerson :Immutable.List<*>,
   selectedPersonId :string,
   isLoadingCases :boolean,
   numCasesToLoad :number,
@@ -231,6 +206,7 @@ class Form extends React.Component<Props, State> {
       charges,
       pretrialCaseOptions,
       allChargesForPerson,
+      allSentencesForPerson,
       psaForm,
       actions,
       location
@@ -242,6 +218,7 @@ class Form extends React.Component<Props, State> {
           charges,
           pretrialCaseOptions,
           allChargesForPerson,
+          allSentencesForPerson,
           this.props.selectedPerson,
           psaForm
         )
@@ -253,92 +230,9 @@ class Form extends React.Component<Props, State> {
     this.clear();
   }
 
-  handleSingleSelection = (e) => {
+  handleInputChange = (e) => {
     const newValues = Immutable.fromJS({ [e.target.name]: e.target.value });
     this.props.actions.setPSAValues({ newValues });
-  }
-
-  getCalculatedForEntityDetails = () => ({ [TIMESTAMP]: [toISODateTime(moment())] })
-
-  getBlankNotesEntity = () :Entity => {
-    let generalId;
-    let notesId;
-    this.getPropertyTypes(RELEASE_RECOMMENDATIONS).forEach((pt) => {
-      const fqn = this.getFqn(pt);
-      const ptId = pt.get('id');
-      if (fqn === GENERAL_ID) generalId = ptId;
-      else if (fqn === RELEASE_RECOMMENDATION) notesId = ptId;
-    });
-    if (!generalId || !notesId) return {};
-    const id = randomUUID();
-
-    return {
-      details: {
-        [generalId]: [id],
-        [notesId]: [this.state.notes]
-      },
-      key: {
-        entityId: id,
-        entitySetId: this.props.entitySetLookup.get(RELEASE_RECOMMENDATIONS)
-      }
-    };
-  }
-
-  getAssessedByEntityDetails = () => ({ [COMPLETED_DATE_TIME]: [toISODateTime(moment())] })
-
-  getEntityId = (entity, primaryKeyIds) => {
-    const pKeyVals = [];
-    primaryKeyIds.forEach((pKey) => {
-      if (entity[pKey]) {
-        const keyValues = [];
-        entity[pKey].forEach((value) => {
-          keyValues.push(btoa(value));
-        });
-        pKeyVals.push(btoa(encodeURI(keyValues.join(','))));
-      }
-    });
-    return pKeyVals.length ? pKeyVals.join(',') : randomUUID();
-  }
-
-  getEntityWithUuids = (details, fqnsToInclude, fqnToId) => {
-    const basicEntity = {};
-    fqnsToInclude.forEach((fqn) => {
-      if (details[fqn]) Object.assign(basicEntity, { [fqnToId.get(fqn)]: details[fqn] });
-    });
-    return basicEntity;
-  }
-
-  getEntity = (entityDetails, entitySetName, isExistingEntity, useRandomId) :Entity => {
-    const { dataModel, entitySetLookup } = this.props;
-    const entitySetId = entitySetLookup.get(entitySetName);
-    let fqnToId = Immutable.Map();
-    let keyIdToFqn = Immutable.Map();
-
-    const entitySet = dataModel.getIn(['entitySets', entitySetId], Immutable.Map());
-    const entityType = dataModel.getIn(['entityTypes', entitySet.get('entityTypeId')], Immutable.Map());
-
-    entityType.get('properties', Immutable.List()).forEach((propertyTypeId) => {
-      const propertyType = dataModel.getIn(['propertyTypes', propertyTypeId], Immutable.Map());
-      const fqn = this.getFqn(propertyType);
-      fqnToId = fqnToId.set(fqn, propertyTypeId);
-      if (entityType.get('key').includes(propertyTypeId)) {
-        keyIdToFqn = keyIdToFqn.set(propertyTypeId, fqn);
-      }
-    });
-
-    const primaryKeys = entityType.get('key').map(id => keyIdToFqn.get(id)).toJS();
-    const randomId = randomUUID();
-
-    if (useRandomId) entityDetails[GENERAL_ID] = [randomId];
-    const details = (isExistingEntity)
-      ? this.getEntityWithUuids(entityDetails, primaryKeys, fqnToId)
-      : this.getEntityWithUuids(entityDetails, Object.keys(entityDetails), fqnToId);
-
-    const entityId = useRandomId ? randomId : this.getEntityId(details, entityType.get('key'));
-    return {
-      details,
-      key: { entitySetId, entityId }
-    };
   }
 
   getPropertyTypes = (entitySetName) => {
@@ -350,41 +244,34 @@ class Form extends React.Component<Props, State> {
       .map(propertyTypeId => dataModel.getIn(['propertyTypes', propertyTypeId]));
   }
 
-  getStaffEntityDetails = () => {
-    const userInfo = AuthUtils.getUserInfo();
-    let { id } = userInfo;
-    if (userInfo.email && userInfo.email.length > 0) {
-      id = userInfo.email;
+  submitEntities = (scores, riskFactors) => {
+    const staffInfo = AuthUtils.getUserInfo();
+    let staffId = staffInfo.id;
+    if (staffInfo.email && staffInfo.email.length > 0) {
+      staffId = staffInfo.email;
     }
-    return { [PERSON_ID]: [id] };
-  }
 
-  submitEntities = (scores) => {
-    const { riskFactors } = getScoresAndRiskFactors(this.props.psaForm);
-    const calculatedForEntityDetails = this.getCalculatedForEntityDetails();
-    const notesEntity = this.getBlankNotesEntity();
-    const assessedByEntityDetails = this.getAssessedByEntityDetails();
+    const values = Object.assign(
+      {},
+      riskFactors,
+      scores
+    );
+    values[PSA.NOTES] = this.state.notes;
 
-    const personEntity = this.getEntity(this.props.selectedPerson.toJS(), PEOPLE, true);
-    const pretrialCaseEntity = this.getEntity(this.props.selectedPretrialCase.toJS(), PRETRIAL_CASES, true);
-    pretrialCaseEntity.key.entityId = this.props.selectedPretrialCase.getIn([PROPERTY_TYPES.CASE_ID, 0]);
-    const riskFactorsEntity = this.getEntity(riskFactors, PSA_RISK_FACTORS, false, true);
-    const psaEntity = this.getEntity(scores, PSA_SCORES, false, true);
-    const calculatedForEntity = this.getEntity(calculatedForEntityDetails, CALCULATED_FOR);
-    const staffEntity = this.getEntity(this.getStaffEntityDetails(), STAFF);
-    const assessedByEntity = this.getEntity(assessedByEntityDetails, ASSESSED_BY);
+    values[ID_FIELD_NAMES.PSA_ID] = [randomUUID()];
+    values[ID_FIELD_NAMES.RISK_FACTORS_ID] = [randomUUID()];
+    values[ID_FIELD_NAMES.NOTES_ID] = [randomUUID()];
+    values[ID_FIELD_NAMES.PERSON_ID] = [this.props.selectedPerson.getIn([PROPERTY_TYPES.PERSON_ID, 0])];
+    values[ID_FIELD_NAMES.CASE_ID] = [this.props.selectedPretrialCase.getIn([PROPERTY_TYPES.CASE_ID, 0])];
+    values[ID_FIELD_NAMES.STAFF_ID] = [staffId];
 
-    this.props.actions.submitData({
-      personEntity,
-      pretrialCaseEntity,
-      riskFactorsEntity,
-      psaEntity,
-      notesEntity,
-      staffEntity,
-      calculatedForEntity,
-      assessedByEntity
+    values[ID_FIELD_NAMES.TIMESTAMP] = toISODateTime(moment());
+
+    this.props.actions.submit({
+      values,
+      config: psaConfig
     });
-    this.setState({ notesId: notesEntity.key.entityId });
+    this.setState({ notesId: values[ID_FIELD_NAMES.NOTES_ID][0] });
   }
 
   getFqn = propertyType => `${propertyType.getIn(['type', 'namespace'])}.${propertyType.getIn(['type', 'name'])}`
@@ -423,8 +310,7 @@ class Form extends React.Component<Props, State> {
         [NCA_SCALE]: [scores.ncaScale],
         [FTA_SCALE]: [scores.ftaScale]
       };
-      this.submitEntities(formattedScores);
-      this.nextPage();
+      this.submitEntities(formattedScores, riskFactors);
     }
   }
 
@@ -451,13 +337,14 @@ class Form extends React.Component<Props, State> {
 
   renderPSAInputForm = () => (
     <PSAInputForm
-        handleSingleSelection={this.handleSingleSelection}
+        handleInputChange={this.handleInputChange}
         handleSubmit={this.generateScores}
         input={this.props.psaForm}
         incompleteError={this.state.formIncompleteError}
         currCharges={this.props.charges}
         currCase={this.props.selectedPretrialCase}
         allCharges={this.props.allChargesForPerson}
+        allSentences={this.props.allSentencesForPerson}
         allCases={this.props.pretrialCaseOptions} />
   )
 
@@ -505,7 +392,8 @@ class Form extends React.Component<Props, State> {
       selectedPretrialCase,
       selectedPerson,
       pretrialCaseOptions,
-      allChargesForPerson
+      allChargesForPerson,
+      allSentencesForPerson
     } = this.props;
     return (
       <ButtonWrapper>
@@ -517,6 +405,7 @@ class Form extends React.Component<Props, State> {
                 selectedPerson,
                 pretrialCaseOptions,
                 allChargesForPerson,
+                allSentencesForPerson,
                 toISODateTime(moment()));
             }}>Export as PDF
         </Button>
@@ -629,7 +518,7 @@ class Form extends React.Component<Props, State> {
     );
   }
 
-  renderModal = () => {
+  renderPSAResultsModal = () => {
     const { isSubmitting, isSubmitted } = this.props;
     if (!isSubmitting && !isSubmitted) {
       return null;
@@ -661,7 +550,7 @@ class Form extends React.Component<Props, State> {
               <Redirect from={Routes.PSA_FORM} to={`${Routes.PSA_FORM}/1`} />
               <Redirect from={Routes.FORMS} to={Routes.DASHBOARD} />
             </Switch>
-            { this.renderModal() }
+            { this.renderPSAResultsModal() }
           </StyledSectionWrapper>
         </StyledFormWrapper>
       </StyledFormViewWrapper>
@@ -672,6 +561,7 @@ class Form extends React.Component<Props, State> {
 function mapStateToProps(state :Immutable.Map<*, *>) :Object {
   const psaForm = state.get('psa');
   const search = state.get('search');
+  const submit = state.get('submit');
 
   return {
     dataModel: psaForm.get('dataModel'),
@@ -681,10 +571,11 @@ function mapStateToProps(state :Immutable.Map<*, *>) :Object {
     selectedPerson: psaForm.get('selectedPerson'),
     selectedPretrialCase: psaForm.get('selectedPretrialCase'),
     allChargesForPerson: psaForm.get('allChargesForPerson'),
+    allSentencesForPerson: psaForm.get('allSentencesForPerson'),
     psaForm: psaForm.get('psa'),
-    isSubmitted: psaForm.get('isSubmitted'),
-    isSubmitting: psaForm.get('isSubmitting'),
-    submitError: psaForm.get('submitError'),
+    isSubmitted: submit.get('submitted'),
+    isSubmitting: submit.get('submitting'),
+    submitError: submit.get('error'),
 
     selectedPersonId: search.get('selectedPersonId'),
     isLoadingCases: search.get('loadingCases'),

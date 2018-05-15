@@ -14,12 +14,15 @@ import {
   getPreviousFelonies,
   getPreviousViolentCharges
 } from './AutofillUtils';
+import { getSentenceToIncarcerationCaseNums } from './consts/SentenceConsts';
 import { PROPERTY_TYPES } from './consts/DataModelConsts';
 
 const {
   AGE_AT_CURRENT_ARREST,
+  AGE_AT_CURRENT_ARREST_NOTES,
   ARREST_DATE,
   CURRENT_VIOLENT_OFFENSE,
+  CURRENT_VIOLENT_OFFENSE_NOTES,
   CURRENT_VIOLENT_OFFENSE_AND_YOUNG,
   DOB,
   FILE_DATE,
@@ -30,13 +33,20 @@ const {
   MOST_SERIOUS_CHARGE_NO,
   MOST_SERIOUS_CHARGE_DEG,
   PENDING_CHARGE,
+  PENDING_CHARGE_NOTES,
   PRIOR_MISDEMEANOR,
+  PRIOR_MISDEMEANOR_NOTES,
   PRIOR_FELONY,
+  PRIOR_FELONY_NOTES,
   PRIOR_CONVICTION,
   PRIOR_VIOLENT_CONVICTION,
+  PRIOR_VIOLENT_CONVICTION_NOTES,
   PRIOR_FAILURE_TO_APPEAR_RECENT,
+  PRIOR_FAILURE_TO_APPEAR_RECENT_NOTES,
   PRIOR_FAILURE_TO_APPEAR_OLD,
+  PRIOR_FAILURE_TO_APPEAR_OLD_NOTES,
   PRIOR_SENTENCE_TO_INCARCERATION,
+  PRIOR_SENTENCE_TO_INCARCERATION_NOTES,
   RACE,
   SEX,
   CHARGE_STATUTE,
@@ -69,6 +79,15 @@ const newPage = (doc :Object, pageInit :number, name :string) :number[] => {
   doc.addPage();
   doc.text(10, X_MARGIN, `${name} - ${page}`);
   return [20, page];
+};
+
+const tryIncrementPage = (doc :Object, yInit :number, pageInit :number, name :string) => {
+  let y = yInit;
+  let page = pageInit;
+  if (y > 260) {
+    [y, page] = newPage(doc, page, name);
+  }
+  return [y, page];
 };
 
 const getName = (selectedPerson :Immutable.Map<*, *>) :string => {
@@ -182,14 +201,14 @@ const person = (
 ) :number => {
   let y = yInit;
   doc.text(X_MARGIN, y, `Name: ${name}`);
+  doc.text(X_MAX / 2, y, `PSA - Court Completion Date: ${formatDate(dateSubmitted)}`);
   y += Y_INC;
   doc.text(X_MARGIN, y, `DOB: ${formatDateList(selectedPerson.get(DOB))}`);
   doc.text(X_MAX / 2, y, `Race: ${formatValue(selectedPerson.get(RACE))}`);
   doc.text(X_MAX - 50, y, `Gender: ${formatValue(selectedPerson.get(SEX))}`);
   y += Y_INC;
   doc.text(X_MARGIN, y, `Arrest Date: ${formatDateList(selectedPretrialCase.get(ARREST_DATE, Immutable.List()))}`);
-  doc.text(X_MAX / 3, y, `PSA - Court Completion Date: ${formatDate(dateSubmitted)}`);
-  doc.text(X_MAX - 50, y, `Case #: ${formatValue(selectedPretrialCase.get(CASE_ID, Immutable.List()))}`);
+  doc.text(X_MAX / 2, y, `Case #: ${formatValue(selectedPretrialCase.get(CASE_ID, Immutable.List()))}`);
   y += Y_INC;
   return y;
 };
@@ -312,7 +331,7 @@ const charges = (
 const chargeReferences = (yInit :number, doc :Object, referenceCharges :Immutable.List<*>) :number => {
   let y = yInit;
   if (referenceCharges.size) {
-    const chargeText = referenceCharges.join(', ');
+    const chargeText = `Case history references: ${referenceCharges.join(', ')}`;
     const chargeLines = doc.splitTextToSize(chargeText, X_MAX - X_MARGIN - GENERATED_RISK_FACTOR_OFFSET);
     doc.setFontType('italic');
     doc.text(GENERATED_RISK_FACTOR_OFFSET, y, chargeLines);
@@ -322,6 +341,17 @@ const chargeReferences = (yInit :number, doc :Object, referenceCharges :Immutabl
   return y;
 };
 
+const riskFactorNotes = (yInit :number, doc :Object, note :string) :number => {
+  let y = yInit + Y_INC;
+  if (note && note.length) {
+    const noteText = `Notes: ${note}`;
+    const noteLines = doc.splitTextToSize(noteText, X_MAX - X_MARGIN - GENERATED_RISK_FACTOR_OFFSET);
+    doc.text(GENERATED_RISK_FACTOR_OFFSET, y, noteLines);
+    y += (Y_INC * noteLines.length);
+  }
+  return y;
+}
+
 const riskFactors = (
   doc :Object,
   yInit :number,
@@ -330,6 +360,7 @@ const riskFactors = (
   riskFactorVals :Immutable.Map<*, *>,
   currCharges :Immutable.List<*>,
   allCharges :Immutable.List<*>,
+  allSentences :Immutable.List<*>,
   mostSeriousCharge :string,
   currCaseNum :string,
   dateArrested :string,
@@ -337,9 +368,7 @@ const riskFactors = (
 ) :number[] => {
   let y = yInit;
   let page = pageInit;
-  if (y > 190) {
-    [y, page] = newPage(doc, page, name);
-  }
+  [y, page] = tryIncrementPage(doc, y, page, name);
 
   const ageAtCurrentArrest = riskFactorVals.get(AGE_AT_CURRENT_ARREST);
   const currentViolentOffense = riskFactorVals.get(CURRENT_VIOLENT_OFFENSE);
@@ -360,52 +389,76 @@ const riskFactors = (
   y += Y_INC;
   doc.text(X_MARGIN, y, '1. Age at Current Arrest');
   doc.text(RESPONSE_OFFSET, y, ageAtCurrentArrest);
-  y += Y_INC;
+  y = riskFactorNotes(y, doc, riskFactorVals.get(AGE_AT_CURRENT_ARREST_NOTES));
+  [y, page] = tryIncrementPage(doc, y, page, name);
+
   doc.text(X_MARGIN, y, '2. Current Violent Offense');
   doc.text(RESPONSE_OFFSET, y, getBooleanText(currentViolentOffense));
-  y += Y_INC;
+  y = riskFactorNotes(y, doc, riskFactorVals.get(CURRENT_VIOLENT_OFFENSE_NOTES));
   if (currentViolentOffense) {
     y = chargeReferences(y, doc, getViolentCharges(currCharges, mostSeriousCharge));
   }
+  [y, page] = tryIncrementPage(doc, y, page, name);
+
   doc.text(X_MARGIN, y, '2a. Current Violent Offense & 20 Years Old or Younger');
   doc.text(RESPONSE_OFFSET, y, getBooleanText(currentViolentOffenseAndYoung));
   y += Y_INC;
+  [y, page] = tryIncrementPage(doc, y, page, name);
+
   doc.text(X_MARGIN, y, '3. Pending Charge at the Time of the Offense');
   doc.text(RESPONSE_OFFSET, y, getBooleanText(pendingCharge));
-  y += Y_INC;
+  y = riskFactorNotes(y, doc, riskFactorVals.get(PENDING_CHARGE_NOTES));
   if (pendingCharge) {
     y = chargeReferences(y, doc, getPendingCharges(currCaseNum, dateArrested, allCases, allCharges));
   }
+  [y, page] = tryIncrementPage(doc, y, page, name);
+
   doc.text(X_MARGIN, y, '4. Prior Misdemeanor Conviction');
   doc.text(RESPONSE_OFFSET, y, getBooleanText(priorMisdemeanor));
-  y += Y_INC;
+  y = riskFactorNotes(y, doc, riskFactorVals.get(PRIOR_MISDEMEANOR_NOTES));
   if (priorMisdemeanor) {
     y = chargeReferences(y, doc, getPreviousMisdemeanors(allCharges));
   }
+  [y, page] = tryIncrementPage(doc, y, page, name);
+
   doc.text(X_MARGIN, y, '5. Prior Felony Conviction');
   doc.text(RESPONSE_OFFSET, y, getBooleanText(priorFelony));
-  y += Y_INC;
+  y = riskFactorNotes(y, doc, riskFactorVals.get(PRIOR_FELONY_NOTES));
   if (priorFelony) {
     y = chargeReferences(y, doc, getPreviousFelonies(allCharges));
   }
+  [y, page] = tryIncrementPage(doc, y, page, name);
+
   doc.text(X_MARGIN, y, '5a. Prior Conviction (Prior Felony or Misdemeanor Conviction)');
   doc.text(RESPONSE_OFFSET, y, getBooleanText(priorConviction));
   y += Y_INC;
   doc.text(X_MARGIN, y, '6. Prior Violent Conviction');
   doc.text(RESPONSE_OFFSET, y, priorViolentConviction);
-  y += Y_INC;
+  y = riskFactorNotes(y, doc, riskFactorVals.get(PRIOR_VIOLENT_CONVICTION_NOTES));
   if (priorViolentConviction > 0) {
     y = chargeReferences(y, doc, getPreviousViolentCharges(allCharges));
   }
+  [y, page] = tryIncrementPage(doc, y, page, name);
+
   doc.text(X_MARGIN, y, '7. Prior Pre-Trial Failure to Appear in the Last 2 Years');
   doc.text(RESPONSE_OFFSET, y, priorFailureToAppearRecent);
-  y += Y_INC;
+  y = riskFactorNotes(y, doc, riskFactorVals.get(PRIOR_FAILURE_TO_APPEAR_RECENT_NOTES));
+  [y, page] = tryIncrementPage(doc, y, page, name);
+
   doc.text(X_MARGIN, y, '8. Prior Pre-Trial Failure to Appear Older than 2 Years');
   doc.text(RESPONSE_OFFSET, y, getBooleanText(priorFailureToAppearOld));
-  y += Y_INC;
+  y = riskFactorNotes(y, doc, riskFactorVals.get(PRIOR_FAILURE_TO_APPEAR_OLD_NOTES));
+  [y, page] = tryIncrementPage(doc, y, page, name);
+
   doc.text(X_MARGIN, y, '9. Prior Sentence to Incarceration');
   doc.text(RESPONSE_OFFSET, y, getBooleanText(priorSentenceToIncarceration));
+  y = riskFactorNotes(y, doc, riskFactorVals.get(PRIOR_SENTENCE_TO_INCARCERATION_NOTES));
+  if (priorSentenceToIncarceration) {
+    y = chargeReferences(y, doc, getSentenceToIncarcerationCaseNums(allSentences));
+  }
   y += Y_INC;
+  [y, page] = tryIncrementPage(doc, y, page, name);
+
   return [y, page];
 };
 
@@ -487,6 +540,7 @@ const exportPDF = (
   selectedPerson :Immutable.Map<*, *>,
   allCases :Immutable.List<*>,
   allCharges :Immutable.List<*>,
+  allSentences :Immutable.List<*>,
   dateSubmitted :string
 ) :void => {
   const doc = new JSPDF();
@@ -529,6 +583,7 @@ const exportPDF = (
     data.get('riskFactors'),
     currCharges,
     allCharges,
+    allSentences,
     mostSeriousCharge,
     selectedPretrialCase.getIn([CASE_ID, 0], ''),
     selectedPretrialCase.getIn([ARREST_DATE, 0], selectedPretrialCase.getIn([FILE_DATE, 0], '')),
