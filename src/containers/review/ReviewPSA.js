@@ -113,6 +113,7 @@ type Props = {
   loadingResults :boolean,
   errorMessage :string,
   actions :{
+    clearForm :() => void,
     downloadPSAReviewPDF :(values :{
       neighbors :Immutable.Map<*, *>,
       scores :Immutable.Map<*, *>
@@ -180,6 +181,10 @@ class ReviewPSA extends React.Component<Props, State> {
   componentDidMount() {
     this.props.actions.checkPSAPermissions();
     this.props.actions.loadPSAsByDate();
+  }
+
+  componentWillUnmount() {
+    this.props.actions.clearForm();
   }
 
   updateFilters = (newFilters :Object) => {
