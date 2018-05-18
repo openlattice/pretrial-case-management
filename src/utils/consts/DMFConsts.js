@@ -1,0 +1,203 @@
+import { PROPERTY_TYPES } from './DataModelConsts';
+
+export const CONTEXT = {
+  COURT: 'Court',
+  BOOKING: 'Booking'
+};
+
+export const CHARGE_TYPES = {
+  ESCAPE_FIRST_DEGREE: 'ESCAPE_FIRST_DEGREE',
+  ESCAPE_SECOND_DEGREE: 'ESCAPE_SECOND_DEGREE',
+  MURDER_FIRST_DEGREE: 'MURDER_FIRST_DEGREE',
+  MURDER_SECOND_DEGREE: 'MURDER_SECOND_DEGREE',
+  ATTEMPTED_MURDER: 'ATTEMPTED_MURDER',
+  MANSLAUGHTER_FIRST_DEGREE: 'MANSLAUGHTER_FIRST_DEGREE',
+  RAPE_FIRST_DEGREEE: 'RAPE_FIRST_DEGREEE',
+  RAPE_SECOND_DEGREE: 'RAPE_SECOND_DEGREE',
+  RAPE_THIRD_DEGREE: 'RAPE_THIRD_DEGREE',
+  KIDNAPPING_FIRST_DEGREE: 'KIDNAPPING_FIRST_DEGREE',
+  ROBBERY_FIRST_DEGREE: 'ROBBERY_FIRST_DEGREE',
+  DOMESTIC_VIOLENCE: 'DOMESTIC_VIOLENCE',
+  STALKING: 'STALKING',
+  VIOLATION_OF_PROTECTION_ORDER: 'VIOLATION_OF_PROTECTION_ORDER',
+  VIOLATION_OF_NO_CONTACT_ORDER: 'VIOLATION_OF_NO_CONTACT_ORDER',
+  AGGRAVATED_ASSAULT: 'AGGRAVATED_ASSAULT',
+  PERSON_TO_PERSON_SEX_CRIME: 'PERSON_TO_PERSON_SEX_CRIME',
+  RAPE_FOURTH_DEGREE: 'RAPE_FOURTH_DEGREE',
+  ARSON: 'ARSON',
+  ROBBERY_SECOND_DEGREE: 'ROBBERY_SECOND_DEGREE',
+  KIDNAPPING_SECOND_DEGREE: 'KIDNAPPING_SECOND_DEGREE',
+  OFFENSE_RESULTING_IN_HUMAN_DEATH: 'OFFENSE_RESULTING_IN_HUMAN_DEATH',
+  OFFENSE_INVOLVING_WEAPON: 'OFFENSE_INVOLVING_WEAPON'
+};
+
+export const CHARGE_VALUES = {
+  [CHARGE_TYPES.ESCAPE_FIRST_DEGREE]: ['22-11A-2ESC1'], // TODO this was the statute number we were provided for this
+  [CHARGE_TYPES.ESCAPE_SECOND_DEGREE]: ['22-11A-2.1'],
+  [CHARGE_TYPES.MURDER_FIRST_DEGREE]: ['22-16-4', '22-16-4MRDD'], // TODO these are both marked as 1st degree
+  [CHARGE_TYPES.MURDER_SECOND_DEGREE]: ['22-16-7', '22-16-7MR2D'], // TODO these are both marked as 2nd degree
+  [CHARGE_TYPES.ATTEMPTED_MURDER]: [], // TODO there is no attempted murder charge in charges.csv
+  [CHARGE_TYPES.MANSLAUGHTER_FIRST_DEGREE]: ['22-16-15MANS', '22-16-15MNSD'], // TODO these are both marked as 1st degree
+  [CHARGE_TYPES.RAPE_FIRST_DEGREEE]: ['22-22-1(1)RP1D', '22-22-1(1)RPF1'], // TODO these are our only rape 1st degree charges
+  [CHARGE_TYPES.RAPE_SECOND_DEGREE]: ['22-22-1(2)RP2D', '22-22-1(2)RPF2'], // TODO these are our only rape 2nd degree charges
+  [CHARGE_TYPES.RAPE_THIRD_DEGREE]: ['22-22-1(3)RPIC', '22-22-1(3)RPID', '22-22-1(4)RP3D', '22-22-1(4)RPDI'], // TODO these are our only rape 3rd degree charges
+  [CHARGE_TYPES.KIDNAPPING_FIRST_DEGREE]: ['22-19-1KDN1', '22-19-1KD1D', '22-19-1AKDN', '22-19-1AK1D'], // TODO these are all marked as 1st degree
+  [CHARGE_TYPES.ROBBERY_FIRST_DEGREE]: ['22-30-7RB1D', '22-30-7RBR1'], // TODO are these right? listed as 22-30-6
+  [CHARGE_TYPES.DOMESTIC_VIOLENCE]: [
+    '22-18-1.1(5)',
+    '22-18-1.1(1)AGBD',
+    '22-18-1.1(2)AGDD',
+    '22-18-1.1(4)AGSD',
+    '22-18-1.1(5)AGWD',
+    '22-18-1.1(8)ACHK',
+    '22-18-1(1)ASAD',
+    '22-18-1(1)SAAD',
+    '22-18-1(2)ASRD',
+    '22-18-1(2)SARD',
+    '22-18-1(3)ASND',
+    '22-18-1(3)SAND',
+    '22-18-1(4)ASFD',
+    '22-18-1(4)SAFD',
+    '22-18-1(5)ASID',
+    '22-18-1(5)SAID',
+    '22-18-1.5DAIP'
+  ], // TODO verify these
+  [CHARGE_TYPES.STALKING]: [
+    '22-19A-16ST3D',
+    '22-19A-16STSF',
+    '22-19A-16VPRO',
+    '22-19A-1STKD',
+    '22-19A-1STKS',
+    '22-19A-1STLD',
+    '22-19A-1STLK',
+    '22-19A-7STKD',
+    '22-19A-7STKF'
+  ], // TODO verify
+  [CHARGE_TYPES.VIOLATION_OF_PROTECTION_ORDER]: [
+    '25-10-13VMAD',
+    '25-10-13VMBD',
+    '25-10-13VOMA',
+    '25-10-13VOMB',
+    '26-7A-107.2VOPM',
+    '22-19A-16VPRD',
+    '22-19A-16VPRO'
+  ], // TODO ???
+  [CHARGE_TYPES.VIOLATION_OF_NO_CONTACT_ORDER]: ['22-19A-18', '22-19A-18DBND'], // TODO ???
+  [CHARGE_TYPES.AGGRAVATED_ASSAULT]: [
+    '22-18-1.1(5)',
+    '22-18-1.05AGLO',
+    '22-18-1.05ASLO',
+    '22-18-1.1(1)AGBD',
+    '22-18-1.1(1)AGBI',
+    '22-18-1.1(2)AGDD',
+    '22-18-1.1(2)AGDW',
+    '22-18-1.1(4)AGSD',
+    '22-18-1.1(4)AGSI',
+    '22-18-1.1(5)AGWD',
+    '22-18-1.1(5)AGWE',
+    '22-18-1.1(8)ACHK',
+    '22-18-1.1(8)AGCH'
+  ], // TODO verify
+  [CHARGE_TYPES.PERSON_TO_PERSON_SEX_CRIME]: [
+    '22-22-7.2',
+    '22-22-7.2SXCD',
+    '22-22-7.3',
+    '22-22-7.3CNTD',
+    '22-22-7.4',
+    '22-22-7.4SCTD',
+    '22-22-7.5',
+    '22-22-7.5SFZD',
+    '22-22-7.6',
+    '22-22-7.6SADJ',
+    '22-22-7.7APSV',
+    '22-22-7CNCD',
+    '22-22-7ML1D',
+    '22-22-7ML2D',
+    '22-22-7MLC1',
+    '22-22-7MLCD',
+    '22-22-7SCWC',
+    '22-24A-5SLSN'
+  ], // TODO verify
+  [CHARGE_TYPES.RAPE_FOURTH_DEGREE]: ['22-22-1(5)', '22-22-1(5)RP4D'], // TODO these are our only rape 4th degree charges
+  [CHARGE_TYPES.ARSON]: ['22-33-9.1', '22-33-9.1AR1D', '22-33-9.2', '22-33-9.2AR2D', '22-33-3'], // TODO verify,
+  [CHARGE_TYPES.ROBBERY_SECOND_DEGREE]: ['22-30-7RB2D', '22-30-7RBR2'], // TODO are these right? listed as 22-30-6
+  [CHARGE_TYPES.KIDNAPPING_SECOND_DEGREE]: ['22-19-1.1AGKD', '22-19-1.1AK2D', '22-19-1.1KD2D', '22-19-1.1KDN2'], // TODO these are all marked as 2nd degree
+  [CHARGE_TYPES.OFFENSE_RESULTING_IN_HUMAN_DEATH]: [
+    '22-16-1.1',
+    '22-16-7',
+    '22-16-7MR2D',
+    '22-16-20MAN2',
+    '22-16-20MN2D',
+    '22-16-41VHHM',
+    '22-16-41VHMD'
+  ], // TODO verify
+  [CHARGE_TYPES.OFFENSE_INVOLVING_WEAPON]: [
+    '22-14-6',
+    '22-14-8',
+    '22-14-12ARA1',
+    '22-14-12ARA2',
+    '22-14-20SHMV',
+    '22-14-21DMMV'
+  ] // TODO verify
+};
+
+export const getCombinedChargeList = (chargeList) => {
+  let result = [];
+  chargeList.forEach((chargeType) => {
+    result = [...result, ...CHARGE_VALUES[chargeType]];
+  });
+  return result;
+};
+
+const dmfStepTwoCharges = getCombinedChargeList([
+  CHARGE_TYPES.ESCAPE_FIRST_DEGREE,
+  CHARGE_TYPES.ESCAPE_SECOND_DEGREE,
+  CHARGE_TYPES.MURDER_FIRST_DEGREE,
+  CHARGE_TYPES.MURDER_SECOND_DEGREE,
+  CHARGE_TYPES.ATTEMPTED_MURDER,
+  CHARGE_TYPES.MANSLAUGHTER_FIRST_DEGREE,
+  CHARGE_TYPES.RAPE_FIRST_DEGREEE,
+  CHARGE_TYPES.RAPE_SECOND_DEGREE,
+  CHARGE_TYPES.RAPE_THIRD_DEGREE,
+  CHARGE_TYPES.KIDNAPPING_FIRST_DEGREE,
+  CHARGE_TYPES.ROBBERY_FIRST_DEGREE
+]);
+
+const dmfStepFourCharges = getCombinedChargeList([
+  CHARGE_TYPES.DOMESTIC_VIOLENCE,
+  CHARGE_TYPES.STALKING,
+  CHARGE_TYPES.VIOLATION_OF_PROTECTION_ORDER,
+  CHARGE_TYPES.VIOLATION_OF_NO_CONTACT_ORDER,
+  CHARGE_TYPES.AGGRAVATED_ASSAULT,
+  CHARGE_TYPES.PERSON_TO_PERSON_SEX_CRIME,
+  CHARGE_TYPES.RAPE_FOURTH_DEGREE,
+  CHARGE_TYPES.ARSON,
+  CHARGE_TYPES.ROBBERY_SECOND_DEGREE,
+  CHARGE_TYPES.KIDNAPPING_SECOND_DEGREE,
+  CHARGE_TYPES.OFFENSE_RESULTING_IN_HUMAN_DEATH,
+  CHARGE_TYPES.OFFENSE_INVOLVING_WEAPON
+]);
+
+export const chargeMatchesStepTwo = (statuteNum) => {
+  return dmfStepTwoCharges.includes(statuteNum);
+};
+
+export const chargeMatchesStepFour = (statuteNum) => {
+  return dmfStepFourCharges.includes(statuteNum);
+};
+
+const filterChargeList = (chargeList, filterFn) => {
+  return chargeList.filter((charge) => {
+    return filterFn(charge.getIn([PROPERTY_TYPES.CHARGE_STATUTE, 0], ''));
+  }).map((charge) => {
+    return charge.getIn([PROPERTY_TYPES.CHARGE_STATUTE, 0], '');
+  });
+}
+
+export const getAllStepTwoCharges = (chargeList) => {
+  return filterChargeList(chargeList, chargeMatchesStepTwo);
+};
+
+export const getAllStepFourCharges = (chargeList) => {
+  return filterChargeList(chargeList, chargeMatchesStepFour);
+};

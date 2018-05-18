@@ -1,5 +1,6 @@
 import { ALIASES } from './ConfigConsts';
-import { PSA, NOTES, ID_FIELD_NAMES, ID_FIELDS } from '../../utils/consts/Consts';
+import { PSA, DMF, NOTES, ID_FIELD_NAMES, ID_FIELDS } from '../../utils/consts/Consts';
+import { RESULT_CATEGORIES } from '../../utils/consts/DMFResultConsts';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 
 const psaConfig = {
@@ -52,6 +53,35 @@ const psaConfig = {
       fields: {
         [ID_FIELD_NAMES.NOTES_ID]: PROPERTY_TYPES.GENERAL_ID,
         [PSA.NOTES]: PROPERTY_TYPES.RELEASE_RECOMMENDATION
+      }
+    },
+    {
+      name: ENTITY_SETS.DMF_RISK_FACTORS,
+      alias: ALIASES.DMF_RISK_FACTORS,
+      entityId: ID_FIELD_NAMES.DMF_RISK_FACTORS_ID,
+      fields: {
+        [ID_FIELD_NAMES.DMF_RISK_FACTORS_ID]: PROPERTY_TYPES.GENERAL_ID,
+        [DMF.EXTRADITED]: PROPERTY_TYPES.EXTRADITED,
+        [NOTES[DMF.EXTRADITED]]: PROPERTY_TYPES.EXTRADITED_NOTES,
+        [DMF.STEP_2_CHARGES]: PROPERTY_TYPES.DMF_STEP_2_CHARGES,
+        [NOTES[DMF.STEP_2_CHARGES]]: PROPERTY_TYPES.DMF_STEP_2_CHARGES_NOTES,
+        [DMF.STEP_4_CHARGES]: PROPERTY_TYPES.DMF_STEP_4_CHARGES,
+        [NOTES[DMF.STEP_4_CHARGES]]: PROPERTY_TYPES.DMF_STEP_4_CHARGES_NOTES,
+        [DMF.COURT_OR_BOOKING]: PROPERTY_TYPES.CONTEXT
+      }
+    },
+    {
+      name: ENTITY_SETS.DMF_RESULTS,
+      alias: ALIASES.DMF,
+      entityId: ID_FIELD_NAMES.DMF_ID,
+      fields: {
+        [ID_FIELD_NAMES.DMF_ID]: PROPERTY_TYPES.GENERAL_ID,
+        [RESULT_CATEGORIES.COLOR]: PROPERTY_TYPES.COLOR,
+        [RESULT_CATEGORIES.RELEASE_TYPE]: PROPERTY_TYPES.RELEASE_TYPE,
+        [RESULT_CATEGORIES.CONDITIONS_LEVEL]: PROPERTY_TYPES.CONDITIONS_LEVEL,
+        [RESULT_CATEGORIES.CONDITION_1]: PROPERTY_TYPES.CONDITION_1,
+        [RESULT_CATEGORIES.CONDITION_2]: PROPERTY_TYPES.CONDITION_2,
+        [RESULT_CATEGORIES.CONDITION_3]: PROPERTY_TYPES.CONDITION_3
       }
     },
     {
@@ -201,6 +231,50 @@ const psaConfig = {
       association: ALIASES.CALCULATED_FOR
     },
 
+    // DMF Risk Factors calculated for _____
+    {
+      src: ALIASES.DMF_RISK_FACTORS,
+      dst: ALIASES.PERSON,
+      association: ALIASES.CALCULATED_FOR
+    },
+    {
+      src: ALIASES.DMF_RISK_FACTORS,
+      dst: ALIASES.CASE,
+      association: ALIASES.CALCULATED_FOR
+    },
+    {
+      src: ALIASES.DMF_RISK_FACTORS,
+      dst: ALIASES.MANUAL_CASE,
+      association: ALIASES.CALCULATED_FOR
+    },
+
+    // DMF calculated for _____
+    {
+      src: ALIASES.DMF,
+      dst: ALIASES.PERSON,
+      association: ALIASES.CALCULATED_FOR
+    },
+    {
+      src: ALIASES.DMF,
+      dst: ALIASES.DMF_RISK_FACTORS,
+      association: ALIASES.CALCULATED_FOR
+    },
+    {
+      src: ALIASES.DMF,
+      dst: ALIASES.CASE,
+      association: ALIASES.CALCULATED_FOR
+    },
+    {
+      src: ALIASES.DMF,
+      dst: ALIASES.MANUAL_CASE,
+      association: ALIASES.CALCULATED_FOR
+    },
+    {
+      src: ALIASES.DMF,
+      dst: ALIASES.PSA,
+      association: ALIASES.CALCULATED_FOR
+    },
+
     // _____ assessed by staff
     {
       src: ALIASES.PSA,
@@ -209,6 +283,16 @@ const psaConfig = {
     },
     {
       src: ALIASES.RISK_FACTORS,
+      dst: ALIASES.STAFF,
+      association: ALIASES.ASSESSED_BY
+    },
+    {
+      src: ALIASES.DMF,
+      dst: ALIASES.STAFF,
+      association: ALIASES.ASSESSED_BY
+    },
+    {
+      src: ALIASES.DMF_RISK_FACTORS,
       dst: ALIASES.STAFF,
       association: ALIASES.ASSESSED_BY
     },

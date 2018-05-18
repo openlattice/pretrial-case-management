@@ -12,6 +12,8 @@ export const ENTITY_SETS = {
   MANUAL_CHARGES: 'southdakotamanualcharges',
   PSA_RISK_FACTORS: 'southdakotapsariskfactors',
   PSA_SCORES: 'southdakotapsas',
+  DMF_RISK_FACTORS: 'southdakotadmfriskfactors',
+  DMF_RESULTS: 'southdakotadmfs',
   RELEASE_RECOMMENDATIONS: 'southdakotareleaserecommendations',
   STAFF: 'southdakotastaff',
   SPEAKER_RECOGNITION_PROFILES: 'southdakotaspeakerverificationprofiles',
@@ -96,7 +98,7 @@ export const PROPERTY_TYPES = {
   PRIOR_FAILURE_TO_APPEAR_OLD: 'psa.PriorFailureToAppearOlderThanTwoYears',
   PRIOR_SENTENCE_TO_INCARCERATION: 'psa.PriorSentenceToIncarceration',
 
-  // PSA form entity type consts
+  // PSA form note entity type consts
   AGE_AT_CURRENT_ARREST_NOTES: 'psa.AgeAtCurrentArrestNotes',
   CURRENT_VIOLENT_OFFENSE_NOTES: 'psa.CurrentViolentOffenseNotes',
   PENDING_CHARGE_NOTES: 'psa.PendingChargeNotes',
@@ -106,6 +108,25 @@ export const PROPERTY_TYPES = {
   PRIOR_FAILURE_TO_APPEAR_RECENT_NOTES: 'psa.PriorFailureToAppearWithinTwoYearsNotes',
   PRIOR_FAILURE_TO_APPEAR_OLD_NOTES: 'psa.PriorFailureToAppearOlderThanTwoYearsNotes',
   PRIOR_SENTENCE_TO_INCARCERATION_NOTES: 'psa.PriorSentenceToIncarcerationNotes',
+
+  // DMF risk factors entity type consts
+  EXTRADITED: 'justice.extradited',
+  DMF_STEP_2_CHARGES: 'justice.dmfstep2',
+  DMF_STEP_4_CHARGES: 'justice.dmfstep4',
+  CONTEXT: 'general.context',
+
+  // DMF risk factor notes entity type consts
+  EXTRADITED_NOTES: 'justice.extraditednotes',
+  DMF_STEP_2_CHARGES_NOTES: 'justice.dmfstep2notes',
+  DMF_STEP_4_CHARGES_NOTES: 'justice.dmfstep4notes',
+
+  // DMF result entity type consts
+  COLOR: 'general.color',
+  RELEASE_TYPE: 'criminaljustice.releasetype',
+  CONDITIONS_LEVEL: 'justice.conditionslevel',
+  CONDITION_1: 'justice.condition1',
+  CONDITION_2: 'justice.condition2',
+  CONDITION_3: 'justice.condition3',
 
   // PSA scores entity type consts
   NVCA_FLAG: 'psa.nvcaFlag',
