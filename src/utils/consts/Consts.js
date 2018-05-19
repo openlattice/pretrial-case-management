@@ -178,10 +178,12 @@ export const FORM_IDS = {
 
 export const EDIT_FIELDS = {
   PSA_ID: 'psaId',
-  RISK_FACTORS_ID: 'riskFactorsId',
+  RISK_FACTORS_ID: 'psaRiskFactorsId',
   NOTES_ID: 'notesId',
   PERSON_ID: 'personId',
-  TIMESTAMP: 'timestamp'
+  TIMESTAMP: 'timestamp',
+  DMF_ID: 'dmfId',
+  DMF_RISK_FACTORS_ID: 'dmfRiskFactorsId'
 };
 
 export const LIST_FIELDS = {

@@ -19,7 +19,7 @@ import PSAScores from './PSAScores';
 import DMFCell from '../dmf/DMFCell';
 import DMFExplanation from '../dmf/DMFExplanation';
 import psaEditedConfig from '../../config/formconfig/PsaEditedConfig';
-import { getScoresAndRiskFactors } from '../../utils/ScoringUtils';
+import { getScoresAndRiskFactors, calculateDMF } from '../../utils/ScoringUtils';
 import { CenteredContainer } from '../../utils/Layout';
 import { formatValue, formatDateList, toISODateTime } from '../../utils/Utils';
 import { PSA, DMF, NOTES, EDIT_FIELDS, ID_FIELDS } from '../../utils/consts/Consts';
@@ -138,7 +138,13 @@ type Props = {
     scoresEntity :Object,
     riskFactorsEntitySetId :string,
     riskFactorsId :string,
-    riskFactorsEntity :Object
+    riskFactorsEntity :Object,
+    dmfEntitySetId :string,
+    dmfId :string,
+    dmfEntity :Object,
+    dmfRiskFactorsEntitySetId :string,
+    dmfRiskFactorsId :string,
+    dmfRiskFactorsEntity :Object
   ) => void,
   updateNotes? :(
     notes :string,
@@ -291,15 +297,63 @@ export default class PSAReviewRow extends React.Component<Props, State> {
     this.setState({ riskFactors });
   }
 
+  getDMFEntity = (dmf, dmfId) => {
+    const result = {
+      [PROPERTY_TYPES.GENERAL_ID]: [dmfId],
+      [PROPERTY_TYPES.COLOR]: [dmf[RESULT_CATEGORIES.COLOR]],
+      [PROPERTY_TYPES.RELEASE_TYPE]: [dmf[RESULT_CATEGORIES.RELEASE_TYPE]]
+    };
+    if (dmf[RESULT_CATEGORIES.CONDITIONS_LEVEL]) {
+      result[PROPERTY_TYPES.CONDITIONS_LEVEL] = [dmf[RESULT_CATEGORIES.CONDITIONS_LEVEL]];
+    }
+    if (dmf[RESULT_CATEGORIES.CONDITION_1]) {
+      result[PROPERTY_TYPES.CONDITION_1] = [dmf[RESULT_CATEGORIES.CONDITION_1]];
+    }
+    if (dmf[RESULT_CATEGORIES.CONDITION_2]) {
+      result[PROPERTY_TYPES.CONDITION_2] = [dmf[RESULT_CATEGORIES.CONDITION_2]];
+    }
+    if (dmf[RESULT_CATEGORIES.CONDITION_3]) {
+      result[PROPERTY_TYPES.CONDITION_3] = [dmf[RESULT_CATEGORIES.CONDITION_3]];
+    }
+    return result;
+  }
+
+  getDMFRiskFactorsEntity = (riskFactors, dmfRiskFactorsId) => ({
+    [PROPERTY_TYPES.GENERAL_ID]: [dmfRiskFactorsId],
+    [PROPERTY_TYPES.EXTRADITED]: [riskFactors.get(DMF.EXTRADITED)],
+    [PROPERTY_TYPES.DMF_STEP_2_CHARGES]: [riskFactors.get(DMF.STEP_2_CHARGES)],
+    [PROPERTY_TYPES.DMF_STEP_4_CHARGES]: [riskFactors.get(DMF.STEP_4_CHARGES)],
+    [PROPERTY_TYPES.CONTEXT]: [riskFactors.get(DMF.COURT_OR_BOOKING)],
+    [PROPERTY_TYPES.EXTRADITED_NOTES]: [riskFactors.get(NOTES[DMF.EXTRADITED])],
+    [PROPERTY_TYPES.DMF_STEP_2_CHARGES_NOTES]: [riskFactors.get(NOTES[DMF.STEP_2_CHARGES])],
+    [PROPERTY_TYPES.DMF_STEP_4_CHARGES_NOTES]: [riskFactors.get(NOTES[DMF.STEP_4_CHARGES])]
+  });
 
   onRiskFactorEdit = (e :Object) => {
     e.preventDefault();
     const { scores, riskFactors } = getScoresAndRiskFactors(this.state.riskFactors);
+    const dmf = calculateDMF(this.state.riskFactors, scores);
 
     const scoreId = this.props.scores.getIn([PROPERTY_TYPES.GENERAL_ID, 0]);
     const riskFactorsId = this.props.neighbors.getIn(
       [ENTITY_SETS.PSA_RISK_FACTORS, 'neighborDetails', PROPERTY_TYPES.GENERAL_ID, 0]
     );
+
+    const dmfId = this.props.neighbors.getIn(
+      [ENTITY_SETS.DMF_RESULTS, 'neighborDetails', PROPERTY_TYPES.GENERAL_ID, 0]
+    );
+    const dmfEKId = this.props.neighbors.getIn([ENTITY_SETS.DMF_RESULTS, 'neighborId']);
+    const dmfEntitySetId = this.props.neighbors.getIn([ENTITY_SETS.DMF_RESULTS, 'neighborEntitySet', 'id']);
+    const dmfEntity = this.getDMFEntity(dmf, dmfId);
+
+    const dmfRiskFactorsId = this.props.neighbors.getIn(
+      [ENTITY_SETS.DMF_RISK_FACTORS, 'neighborDetails', PROPERTY_TYPES.GENERAL_ID, 0]
+    );
+    const dmfRiskFactorsEKId = this.props.neighbors.getIn([ENTITY_SETS.DMF_RISK_FACTORS, 'neighborId']);
+    const dmfRiskFactorsEntitySetId =
+      this.props.neighbors.getIn([ENTITY_SETS.DMF_RISK_FACTORS, 'neighborEntitySet', 'id']);
+    const dmfRiskFactorsEntity = this.getDMFRiskFactorsEntity(this.state.riskFactors, dmfRiskFactorsId);
+
     const scoresEntity = {
       [PROPERTY_TYPES.NCA_SCALE]: [scores.ncaScale],
       [PROPERTY_TYPES.FTA_SCALE]: [scores.ftaScale],
@@ -320,7 +374,13 @@ export default class PSAReviewRow extends React.Component<Props, State> {
       scoresEntity,
       riskFactorsEntitySetId,
       riskFactorsEKId,
-      riskFactors
+      riskFactors,
+      dmfEntitySetId,
+      dmfEKId,
+      dmfEntity,
+      dmfRiskFactorsEntitySetId,
+      dmfRiskFactorsEKId,
+      dmfRiskFactorsEntity
     );
 
     if (scoreId) {
@@ -329,6 +389,8 @@ export default class PSAReviewRow extends React.Component<Props, State> {
         values: {
           [EDIT_FIELDS.PSA_ID]: [scoreId],
           [EDIT_FIELDS.RISK_FACTORS_ID]: [riskFactorsId],
+          [EDIT_FIELDS.DMF_ID]: [dmfId],
+          [EDIT_FIELDS.DMF_RISK_FACTORS_ID]: [dmfRiskFactorsId],
           [EDIT_FIELDS.TIMESTAMP]: [toISODateTime(moment())],
           [EDIT_FIELDS.PERSON_ID]: [AuthUtils.getUserInfo().email]
         }

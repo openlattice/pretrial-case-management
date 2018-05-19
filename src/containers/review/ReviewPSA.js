@@ -129,7 +129,13 @@ type Props = {
       scoresEntity :Immutable.Map<*, *>,
       riskFactorsEntitySetId :string,
       riskFactorsId :string,
-      riskFactorsEntity :Immutable.Map<*, *>
+      riskFactorsEntity :Immutable.Map<*, *>,
+      dmfEntitySetId :string,
+      dmfId :string,
+      dmfEntity :Object,
+      dmfRiskFactorsEntitySetId :string,
+      dmfRiskFactorsId :string,
+      dmfRiskFactorsEntity :Object
     }) => void,
     updateNotes :(value :{
       notes :string,
@@ -397,7 +403,19 @@ class ReviewPSA extends React.Component<Props, State> {
     </div>
   )
 
-  updateScoresAndRiskFactors = (scoresId, scoresEntity, riskFactorsEntitySetId, riskFactorsId, riskFactorsEntity) => {
+  updateScoresAndRiskFactors = (
+    scoresId,
+    scoresEntity,
+    riskFactorsEntitySetId,
+    riskFactorsId,
+    riskFactorsEntity,
+    dmfEntitySetId,
+    dmfId,
+    dmfEntity,
+    dmfRiskFactorsEntitySetId,
+    dmfRiskFactorsId,
+    dmfRiskFactorsEntity
+  ) => {
     const { scoresEntitySetId, actions } = this.props;
     actions.updateScoresAndRiskFactors({
       scoresEntitySetId,
@@ -405,7 +423,13 @@ class ReviewPSA extends React.Component<Props, State> {
       scoresEntity,
       riskFactorsEntitySetId,
       riskFactorsId,
-      riskFactorsEntity
+      riskFactorsEntity,
+      dmfEntitySetId,
+      dmfId,
+      dmfEntity,
+      dmfRiskFactorsEntitySetId,
+      dmfRiskFactorsId,
+      dmfRiskFactorsEntity
     });
   }
 
