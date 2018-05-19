@@ -84,6 +84,10 @@ const QuestionRow = styled(PaddedRow)`
   border-bottom: 1px solid #ddd;
 `;
 
+const LastQuestionRow = styled(QuestionRow)`
+  border-bottom: 1px solid #bbb;
+`;
+
 const PSACol = styled(Col)`
   display: flex;
   flex-direction: column;
@@ -272,14 +276,16 @@ const PSAInputForm = ({
               {renderNotesAndJustifications(NOTES[PRIOR_FAILURE_TO_APPEAR_OLD])}
             </QuestionRow>
 
-            <QuestionRow>
+            <LastQuestionRow>
               {renderTrueFalseRadio(
                 PRIOR_SENTENCE_TO_INCARCERATION,
                 PRIOR_SENTENCE_TO_INCARCERATION_PROMPT,
                 noPriorConvictions
               )}
               {renderNotesAndJustifications(NOTES[PRIOR_SENTENCE_TO_INCARCERATION], priorSentenceToIncarceration)}
-            </QuestionRow>
+            </LastQuestionRow>
+
+            <Header>DMF Information</Header>
 
             <QuestionRow>
               {renderTrueFalseRadio(EXTRADITED, EXTRADITED_PROMPT)}
