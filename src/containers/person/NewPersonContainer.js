@@ -19,6 +19,7 @@ import { GENDERS, STATES } from '../../utils/consts/Consts';
 import { toISODate } from '../../utils/Utils';
 import { PaddedRow, StyledSelect, TitleLabel } from '../../utils/Layout';
 import { newPersonSubmitRequest } from './PersonActionFactory';
+import { clearForm } from '../psa/FormActionFactory';
 
 import {
   ADDRESS_VALUE,
@@ -99,7 +100,8 @@ const CenteredSubmitButton = styled(Button).attrs({
 
 type Props = {
   actions :{
-    newPersonSubmitRequest :Function
+    newPersonSubmitRequest :Function,
+    clearForm :Function
   },
   location :{
     search :string
@@ -157,6 +159,10 @@ class NewPersonContainer extends React.Component<Props, State> {
       isSubmitting: false,
       showSelfieWebCam: false
     };
+  }
+
+  componentWillUnmount() {
+    this.props.actions.clearForm();
   }
 
   isReadyToSubmit = () :boolean => !!this.state[DOB_VALUE]
@@ -400,7 +406,7 @@ class NewPersonContainer extends React.Component<Props, State> {
 function mapDispatchToProps(dispatch :Function) :Object {
 
   return {
-    actions: bindActionCreators({ newPersonSubmitRequest }, dispatch)
+    actions: bindActionCreators({ newPersonSubmitRequest, clearForm }, dispatch)
   };
 }
 
