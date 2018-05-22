@@ -75,6 +75,7 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
     };
 
     let jsonResults = Immutable.List();
+    let allHeaders = Immutable.Set();
     usableNeighborsById.keySeq().forEach((id) => {
       let combinedEntity = scoresAsMap.get(id);
       usableNeighborsById.get(id).forEach((neighbor) => {
@@ -88,10 +89,14 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
           neighbor.getIn(['neighborEntitySet', 'title']),
           neighbor.get('neighborDetails', Immutable.Map())
         );
+        allHeaders = allHeaders.union(combinedEntity.keys());
       });
       jsonResults = jsonResults.push(combinedEntity);
     });
-    const csv = Papa.unparse(jsonResults.toJS());
+    const csv = Papa.unparse({
+      fields: allHeaders.toJS(),
+      data: jsonResults.toJS()
+    });
 
     const name = `PSAs-${start.format('MM-DD-YYYY')}-to-${end.format('MM-DD-YYYY')}`;
 
