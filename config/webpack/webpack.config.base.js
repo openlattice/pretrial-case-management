@@ -80,6 +80,7 @@ export default function baseWebpackConfig(env) {
       ]
     },
     node: {
+      fs: 'empty',
       net: 'empty'
     },
     optimization: {

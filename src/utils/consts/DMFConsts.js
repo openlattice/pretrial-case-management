@@ -350,8 +350,8 @@ export const chargeIsInList = (chargesToMatch, statuteNum, description) => {
   return result;
 };
 
-const filterChargeList = (chargeList, chargesToMatch) => {
-  return chargeList.filter((charge) => {
+const filterChargeList = (charges, chargesToMatch) => {
+  return charges.filter((charge) => {
     const statuteNum = charge.getIn([PROPERTY_TYPES.CHARGE_STATUTE, 0], '');
     const description = charge.getIn([PROPERTY_TYPES.CHARGE_DESCRIPTION, 0], '')
     return chargeIsInList(chargesToMatch, statuteNum, description);
