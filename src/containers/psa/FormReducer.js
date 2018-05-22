@@ -58,7 +58,7 @@ const INITIAL_PSA_FORM = Immutable.fromJS({
   [PRIOR_FAILURE_TO_APPEAR_RECENT]: null,
   [PRIOR_FAILURE_TO_APPEAR_OLD]: null,
   [PRIOR_SENTENCE_TO_INCARCERATION]: null,
-  [EXTRADITED]: null,
+  [EXTRADITED]: 'false',
   [STEP_2_CHARGES]: null,
   [STEP_4_CHARGES]: null,
   [COURT_OR_BOOKING]: null,
