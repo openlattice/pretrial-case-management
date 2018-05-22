@@ -124,6 +124,13 @@ export const PSA = {
   NOTES: 'psaNotes'
 };
 
+export const DMF = {
+  EXTRADITED: 'personWasExtradited',
+  STEP_2_CHARGES: 'dmfStepTwoCharges',
+  STEP_4_CHARGES: 'dmfStepFourCharges',
+  COURT_OR_BOOKING: 'courtOrBooking'
+};
+
 export const NOTES = {
   [PSA.AGE_AT_CURRENT_ARREST]: 'ageAtCurrentArrestNotes',
   [PSA.CURRENT_VIOLENT_OFFENSE]: 'currentViolentOffenseNotes',
@@ -133,7 +140,10 @@ export const NOTES = {
   [PSA.PRIOR_VIOLENT_CONVICTION]: 'priorViolentConvictionNotes',
   [PSA.PRIOR_FAILURE_TO_APPEAR_RECENT]: 'priorFailureToAppearRecentNotes',
   [PSA.PRIOR_FAILURE_TO_APPEAR_OLD]: 'priorFailureToAppearOldNotes',
-  [PSA.PRIOR_SENTENCE_TO_INCARCERATION]: 'priorSentenceToIncarcerationNotes'
+  [PSA.PRIOR_SENTENCE_TO_INCARCERATION]: 'priorSentenceToIncarcerationNotes',
+  [DMF.EXTRADITED]: 'extraditedNotes',
+  [DMF.STEP_2_CHARGES]: 'dmfStep2ChargesNotes',
+  [DMF.STEP_4_CHARGES]: 'dmfStep4ChargesNotes'
 };
 
 export type Charge = {
@@ -168,10 +178,12 @@ export const FORM_IDS = {
 
 export const EDIT_FIELDS = {
   PSA_ID: 'psaId',
-  RISK_FACTORS_ID: 'riskFactorsId',
+  RISK_FACTORS_ID: 'psaRiskFactorsId',
   NOTES_ID: 'notesId',
   PERSON_ID: 'personId',
-  TIMESTAMP: 'timestamp'
+  TIMESTAMP: 'timestamp',
+  DMF_ID: 'dmfId',
+  DMF_RISK_FACTORS_ID: 'dmfRiskFactorsId'
 };
 
 export const LIST_FIELDS = {
@@ -200,7 +212,9 @@ export const ID_FIELD_NAMES = {
   PERSON_ID: 'personId',
   CASE_ID: 'caseId',
   STAFF_ID: 'staffId',
-  TIMESTAMP: 'timestamp'
+  TIMESTAMP: 'timestamp',
+  DMF_RISK_FACTORS_ID: 'dmfRiskFactorsId',
+  DMF_ID: 'dmfId'
 };
 
 export const ID_FIELDS = {

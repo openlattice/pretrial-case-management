@@ -32,7 +32,7 @@ import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
 import * as Routes from '../../core/router/Routes';
 
 import { toISODate, toISODateTime } from '../../utils/Utils';
-import { getScoresAndRiskFactors } from '../../utils/ScoringUtils';
+import { getScoresAndRiskFactors, calculateDMF } from '../../utils/ScoringUtils';
 import {
   ButtonWrapper,
   CloseX,
@@ -115,6 +115,7 @@ const INITIAL_STATE = Immutable.fromJS({
     ncaScale: 0,
     nvcaFlag: false
   },
+  dmf: {},
   scoresWereGenerated: false,
   notes: '',
   notesId: undefined
@@ -181,6 +182,7 @@ type State = {
   formIncompleteError :boolean,
   riskFactors :{},
   scores :{},
+  dmf :{},
   scoresWereGenerated :boolean,
   notes :string,
   notesId :string
@@ -249,7 +251,7 @@ class Form extends React.Component<Props, State> {
       .map(propertyTypeId => dataModel.getIn(['propertyTypes', propertyTypeId]));
   }
 
-  submitEntities = (scores, riskFactors) => {
+  submitEntities = (scores, riskFactors, dmf) => {
     const staffInfo = AuthUtils.getUserInfo();
     let staffId = staffInfo.id;
     if (staffInfo.email && staffInfo.email.length > 0) {
@@ -258,13 +260,17 @@ class Form extends React.Component<Props, State> {
 
     const values = Object.assign(
       {},
+      this.props.psaForm.toJS(),
       riskFactors,
-      scores
+      scores,
+      dmf
     );
     values[PSA.NOTES] = this.state.notes;
 
     values[ID_FIELD_NAMES.PSA_ID] = [randomUUID()];
     values[ID_FIELD_NAMES.RISK_FACTORS_ID] = [randomUUID()];
+    values[ID_FIELD_NAMES.DMF_ID] = [randomUUID()];
+    values[ID_FIELD_NAMES.DMF_RISK_FACTORS_ID] = [randomUUID()];
     values[ID_FIELD_NAMES.NOTES_ID] = [randomUUID()];
     values[ID_FIELD_NAMES.PERSON_ID] = [this.props.selectedPerson.getIn([PROPERTY_TYPES.PERSON_ID, 0])];
     values[ID_FIELD_NAMES.STAFF_ID] = [staffId];
@@ -311,10 +317,12 @@ class Form extends React.Component<Props, State> {
     }
     else {
       const { riskFactors, scores } = getScoresAndRiskFactors(this.props.psaForm);
+      const dmf = calculateDMF(this.props.psaForm, scores);
       this.setState({
         formIncompleteError: false,
         riskFactors,
         scores,
+        dmf,
         scoresWereGenerated: true
       });
       const formattedScores = {
@@ -322,7 +330,7 @@ class Form extends React.Component<Props, State> {
         [NCA_SCALE]: [scores.ncaScale],
         [FTA_SCALE]: [scores.ftaScale]
       };
-      this.submitEntities(formattedScores, riskFactors);
+      this.submitEntities(formattedScores, riskFactors, dmf);
     }
   }
 
@@ -503,7 +511,12 @@ class Form extends React.Component<Props, State> {
 
   getPsaResults = () => {
     const { isSubmitting, submitError } = this.props;
-    const { scoresWereGenerated, scores, riskFactors } = this.state;
+    const {
+      scoresWereGenerated,
+      scores,
+      riskFactors,
+      dmf
+    } = this.state;
     if (!scoresWereGenerated) return null;
     let header;
     // if (isSubmitting) header = <Status>Submitting...</Status>;
@@ -524,7 +537,7 @@ class Form extends React.Component<Props, State> {
     return (
       <div>
         {header}
-        <PSAResults scores={scores} riskFactors={riskFactors} />
+        <PSAResults scores={scores} riskFactors={riskFactors} dmf={dmf} />
         {this.renderRecommendationSection()}
         {this.renderExportButton()}
       </div>

@@ -20,6 +20,7 @@ import {
   getPreviousViolentCharges
 } from '../../utils/AutofillUtils';
 import { getSentenceToIncarcerationCaseNums } from '../../utils/consts/SentenceConsts';
+import { CONTEXT, getAllStepTwoCharges, getAllStepFourCharges } from '../../utils/consts/DMFConsts';
 
 import {
   PaddedRow,
@@ -33,7 +34,7 @@ import {
 
 import { formatValue } from '../../utils/Utils';
 
-import { PSA, NOTES } from '../../utils/consts/Consts';
+import { PSA, NOTES, DMF } from '../../utils/consts/Consts';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import {
   CURRENT_AGE_PROMPT,
@@ -44,7 +45,11 @@ import {
   PRIOR_VIOLENT_CONVICTION_PROMPT,
   PRIOR_FAILURE_TO_APPEAR_RECENT_PROMPT,
   PRIOR_FAILURE_TO_APPEAR_OLD_PROMPT,
-  PRIOR_SENTENCE_TO_INCARCERATION_PROMPT
+  PRIOR_SENTENCE_TO_INCARCERATION_PROMPT,
+  EXTRADITED_PROMPT,
+  STEP_2_CHARGES_PROMPT,
+  STEP_4_CHARGES_PROMPT,
+  COURT_OR_BOOKING_PROMPT
 } from '../../utils/consts/FormPromptConsts';
 
 const {
@@ -59,6 +64,13 @@ const {
   PRIOR_SENTENCE_TO_INCARCERATION
 } = PSA;
 
+const {
+  EXTRADITED,
+  STEP_2_CHARGES,
+  STEP_4_CHARGES,
+  COURT_OR_BOOKING
+} = DMF;
+
 const StyledSectionView = styled.div`
   padding: 30px 0;
 `;
@@ -70,6 +82,10 @@ const StyledFormWrapper = styled.div`
 const QuestionRow = styled(PaddedRow)`
   padding-bottom: 15px;
   border-bottom: 1px solid #ddd;
+`;
+
+const LastQuestionRow = styled(QuestionRow)`
+  border-bottom: 1px solid #bbb;
 `;
 
 const PSACol = styled(Col)`
@@ -187,6 +203,9 @@ const PSAInputForm = ({
   const priorViolentConvictions = getPreviousViolentCharges(allCharges);
   const priorSentenceToIncarceration = getSentenceToIncarcerationCaseNums(allSentences);
 
+  const step2Charges = getAllStepTwoCharges(currCharges);
+  const step4Charges = getAllStepFourCharges(currCharges);
+
   return (
     <div>
       <Divider />
@@ -257,13 +276,40 @@ const PSAInputForm = ({
               {renderNotesAndJustifications(NOTES[PRIOR_FAILURE_TO_APPEAR_OLD])}
             </QuestionRow>
 
-            <QuestionRow>
+            <LastQuestionRow>
               {renderTrueFalseRadio(
                 PRIOR_SENTENCE_TO_INCARCERATION,
                 PRIOR_SENTENCE_TO_INCARCERATION_PROMPT,
                 noPriorConvictions
               )}
               {renderNotesAndJustifications(NOTES[PRIOR_SENTENCE_TO_INCARCERATION], priorSentenceToIncarceration)}
+            </LastQuestionRow>
+
+            <Header>DMF Information</Header>
+
+            <QuestionRow>
+              {renderTrueFalseRadio(EXTRADITED, EXTRADITED_PROMPT)}
+              {renderNotesAndJustifications(NOTES[EXTRADITED])}
+            </QuestionRow>
+
+            <QuestionRow>
+              {renderTrueFalseRadio(STEP_2_CHARGES, STEP_2_CHARGES_PROMPT)}
+              {renderNotesAndJustifications(NOTES[STEP_2_CHARGES], step2Charges)}
+            </QuestionRow>
+
+            <QuestionRow>
+              {renderTrueFalseRadio(STEP_4_CHARGES, STEP_4_CHARGES_PROMPT)}
+              {renderNotesAndJustifications(NOTES[STEP_4_CHARGES], step4Charges)}
+            </QuestionRow>
+
+            <QuestionRow>
+              <PSACol lg={6}>
+                <TitleLabel>{COURT_OR_BOOKING_PROMPT}</TitleLabel>
+                <FormGroup>
+                  {renderRadio(COURT_OR_BOOKING, CONTEXT.BOOKING, CONTEXT.BOOKING)}
+                  {renderRadio(COURT_OR_BOOKING, CONTEXT.COURT, CONTEXT.COURT)}
+                </FormGroup>
+              </PSACol>
             </QuestionRow>
 
             {

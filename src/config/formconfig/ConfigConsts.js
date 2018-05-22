@@ -13,6 +13,8 @@ export const ALIASES = {
   STAFF: 'staff',
   PSA: 'psa',
   RISK_FACTORS: 'riskFactors',
+  DMF_RISK_FACTORS: 'dmfRiskFactors',
+  DMF: 'dmf',
   NOTES: 'notes',
   CASE: 'pretrialCase',
   MANUAL_CASE: 'manualPretrialCase',

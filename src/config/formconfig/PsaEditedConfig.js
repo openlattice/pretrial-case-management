@@ -13,6 +13,22 @@ const psaEditedConfig = {
       }
     },
     {
+      name: ENTITY_SETS.DMF_RESULTS,
+      alias: ALIASES.DMF,
+      entityId: EDIT_FIELDS.DMF_ID,
+      fields: {
+        [EDIT_FIELDS.DMF_ID]: PROPERTY_TYPES.GENERAL_ID
+      }
+    },
+    {
+      name: ENTITY_SETS.DMF_RISK_FACTORS,
+      alias: ALIASES.DMF_RISK_FACTORS,
+      entityId: EDIT_FIELDS.DMF_RISK_FACTORS_ID,
+      fields: {
+        [EDIT_FIELDS.DMF_RISK_FACTORS_ID]: PROPERTY_TYPES.GENERAL_ID
+      }
+    },
+    {
       name: ENTITY_SETS.PSA_RISK_FACTORS,
       alias: ALIASES.RISK_FACTORS,
       entityId: EDIT_FIELDS.RISK_FACTORS_ID,
@@ -51,6 +67,16 @@ const psaEditedConfig = {
     },
     {
       src: ALIASES.RISK_FACTORS,
+      dst: ALIASES.STAFF,
+      association: ALIASES.EDITED_BY
+    },
+    {
+      src: ALIASES.DMF,
+      dst: ALIASES.STAFF,
+      association: ALIASES.EDITED_BY
+    },
+    {
+      src: ALIASES.DMF_RISK_FACTORS,
       dst: ALIASES.STAFF,
       association: ALIASES.EDITED_BY
     }
