@@ -116,6 +116,11 @@ const ScoreTitle = styled.div`
   margin-bottom: 10px;
 `;
 
+const NoDMFContainer = styled(CenteredContainer)`
+  margin: 30px;
+  font-size: 18px;
+`;
+
 type Props = {
   entityKeyId :string,
   scores :Immutable.Map<*, *>,
@@ -544,6 +549,9 @@ export default class PSAReviewRow extends React.Component<Props, State> {
     const dmf = this.getDMF();
     const nca = scores.getIn([PROPERTY_TYPES.NCA_SCALE, 0]);
     const fta = scores.getIn([PROPERTY_TYPES.FTA_SCALE, 0]);
+    if (!this.props.neighbors.getIn([ENTITY_SETS.DMF_RESULTS, 'neighborDetails'], Immutable.Map()).size) {
+      return <NoDMFContainer>A DMF was not calculated for this PSA.</NoDMFContainer>;
+    }
 
     return <DMFExplanation dmf={dmf} nca={nca} fta={fta} riskFactors={this.state.riskFactors} />;
   }
