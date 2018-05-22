@@ -199,7 +199,7 @@ export default class ManualPretrialCaseEntry extends React.Component<Props, Stat
     this.setState({ charges });
   }
 
-  formatCharge = (charge :Charge) => `${charge.statute} ${charge.description} (${charge.degreeShort})`;
+  formatCharge = (charge :Charge) => `${charge.statute} ${charge.description}`;
 
   formatChargeOptions = () => {
     let options = Immutable.Map();

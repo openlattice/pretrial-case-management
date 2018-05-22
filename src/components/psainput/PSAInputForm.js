@@ -289,7 +289,7 @@ const PSAInputForm = ({
 
             <QuestionRow>
               {renderTrueFalseRadio(EXTRADITED, EXTRADITED_PROMPT)}
-              {renderNotesAndJustifications(NOTES[EXTRADITED], Immutable.List())}
+              {renderNotesAndJustifications(NOTES[EXTRADITED])}
             </QuestionRow>
 
             <QuestionRow>
