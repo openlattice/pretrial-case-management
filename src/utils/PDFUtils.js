@@ -6,7 +6,7 @@ import JSPDF from 'jspdf';
 import Immutable from 'immutable';
 import moment from 'moment';
 
-import { formatValue, formatDate, formatDateList } from './Utils';
+import { formatValue, formatDate, formatDateTime, formatDateList } from './Utils';
 import {
   getViolentCharges,
   getPendingCharges,
@@ -197,11 +197,18 @@ const person = (
   selectedPerson :Immutable.Map<*, *>,
   selectedPretrialCase :Immutable.Map<*, *>,
   name :string,
-  dateSubmitted :string
+  createData :{
+    user :string,
+    timestamp :string
+  },
+  updateData :{
+    user :string,
+    timestamp :string
+  }
 ) :number => {
   let y = yInit;
   doc.text(X_MARGIN, y, `Name: ${name}`);
-  doc.text(X_MAX / 2, y, `PSA - Court Completion Date: ${formatDate(dateSubmitted)}`);
+  doc.text(X_MAX / 2, y, `PSA - Court Completion Date: ${formatDate(createData.timestamp)}`);
   y += Y_INC;
   doc.text(X_MARGIN, y, `DOB: ${formatDateList(selectedPerson.get(DOB))}`);
   doc.text(X_MAX / 2, y, `Race: ${formatValue(selectedPerson.get(RACE))}`);
@@ -210,6 +217,21 @@ const person = (
   doc.text(X_MARGIN, y, `Arrest Date: ${formatDateList(selectedPretrialCase.get(ARREST_DATE, Immutable.List()))}`);
   doc.text(X_MAX / 2, y, `Case #: ${formatValue(selectedPretrialCase.get(CASE_ID, Immutable.List()))}`);
   y += Y_INC;
+
+  let createdText = `Created by ${createData.user}`;
+  if (createData.timestamp && moment(createData.timestamp).isValid()) {
+    createdText = `${createdText} at ${formatDateTime(createData.timestamp)}`;
+  }
+  doc.text(X_MARGIN, y, createdText);
+  y += Y_INC;
+  if (updateData) {
+    let editedText = `Edited by ${updateData.user}`;
+    if (updateData.timestamp && moment(updateData.timestamp).isValid()) {
+      editedText = `${editedText} at ${formatDateTime(updateData.timestamp)}`;
+    }
+    doc.text(X_MARGIN, y, editedText);
+    y += Y_INC;
+  }
   return y;
 };
 
@@ -541,7 +563,14 @@ const exportPDF = (
   allCases :Immutable.List<*>,
   allCharges :Immutable.List<*>,
   allSentences :Immutable.List<*>,
-  dateSubmitted :string
+  createData :{
+    user :string,
+    timestamp :string
+  },
+  updateData :{
+    user :string,
+    timestamp :string
+  }
 ) :void => {
   const doc = new JSPDF();
   doc.setFontType('regular');
@@ -560,7 +589,7 @@ const exportPDF = (
 
   doc.setFontSize(FONT_SIZE);
   // PERSON SECTION
-  y = person(doc, y, selectedPerson, selectedPretrialCase, name, dateSubmitted);
+  y = person(doc, y, selectedPerson, selectedPretrialCase, name, createData, updateData);
   thickLine(doc, y);
   y += Y_INC;
 
@@ -598,7 +627,7 @@ const exportPDF = (
   // CASE HISTORY SECCTION=
   [y, page] = caseHistory(doc, y, page, name, allCases, chargesByCaseNum);
 
-  doc.save(getPdfName(name, dateSubmitted));
+  doc.save(getPdfName(name, createData.timestamp));
 };
 
 export default exportPDF;

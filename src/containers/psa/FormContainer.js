@@ -251,12 +251,17 @@ class Form extends React.Component<Props, State> {
       .map(propertyTypeId => dataModel.getIn(['propertyTypes', propertyTypeId]));
   }
 
-  submitEntities = (scores, riskFactors, dmf) => {
+  getStaffId = () => {
     const staffInfo = AuthUtils.getUserInfo();
     let staffId = staffInfo.id;
     if (staffInfo.email && staffInfo.email.length > 0) {
       staffId = staffInfo.email;
     }
+    return staffId;
+  }
+
+  submitEntities = (scores, riskFactors, dmf) => {
+    const staffId = this.getStaffId();
 
     const values = Object.assign(
       {},
@@ -415,6 +420,7 @@ class Form extends React.Component<Props, State> {
       allChargesForPerson,
       allSentencesForPerson
     } = this.props;
+
     return (
       <ButtonWrapper>
         <Button
@@ -426,7 +432,10 @@ class Form extends React.Component<Props, State> {
                 pretrialCaseOptions,
                 allChargesForPerson,
                 allSentencesForPerson,
-                toISODateTime(moment()));
+                {
+                  user: this.getStaffId(),
+                  timestamp: toISODateTime(moment())
+                });
             }}>Export as PDF
         </Button>
       </ButtonWrapper>
