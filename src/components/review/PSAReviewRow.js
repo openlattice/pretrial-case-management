@@ -523,6 +523,7 @@ export default class PSAReviewRow extends React.Component<Props, State> {
     );
     const currCase = caseHistory.filter(caseObj => caseObj.getIn([PROPERTY_TYPES.CASE_ID, 0], '') === caseNum);
     const currCharges = chargeHistory.get(caseNum, Immutable.List());
+    const allCharges = chargeHistory.toList().flatMap(list => list);
 
     return (
       <div>
@@ -534,7 +535,7 @@ export default class PSAReviewRow extends React.Component<Props, State> {
             incompleteError={false}
             currCase={currCase}
             currCharges={currCharges}
-            allCharges={chargeHistory}
+            allCharges={allCharges}
             allCases={caseHistory}
             allSentences={sentenceHistory}
             viewOnly={!editing} />
