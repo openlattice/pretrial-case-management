@@ -215,7 +215,7 @@ const person = (
   doc.text(X_MAX - 50, y, `Gender: ${formatValue(selectedPerson.get(SEX))}`);
   y += Y_INC;
   doc.text(X_MARGIN, y, `Arrest Date: ${formatDateList(selectedPretrialCase.get(ARREST_DATE, Immutable.List()))}`);
-  doc.text(X_MAX / 2, y, `Case #: ${formatValue(selectedPretrialCase.get(CASE_ID, Immutable.List()))}`);
+  doc.text(X_MAX / 2, y, `Arrest ID: ${formatValue(selectedPretrialCase.get(CASE_ID, Immutable.List()))}`);
   y += Y_INC;
 
   let createdText = `Created by ${createData.user}`;
