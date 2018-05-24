@@ -317,7 +317,7 @@ export default class ManualPretrialCaseEntry extends React.Component<Props, Stat
       <Container>
         {this.renderCaseInfo()}
         {this.renderCharges()}
-        <StyledButton onClick={this.onSubmit}>Confirm Case Details</StyledButton>
+        <StyledButton onClick={this.onSubmit}>Confirm Charge Details</StyledButton>
       </Container>
     );
   }
