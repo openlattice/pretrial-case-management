@@ -32,7 +32,7 @@ import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
 import * as Routes from '../../core/router/Routes';
 
 import { toISODate, toISODateTime } from '../../utils/Utils';
-import { getScoresAndRiskFactors } from '../../utils/ScoringUtils';
+import { getScoresAndRiskFactors, calculateDMF } from '../../utils/ScoringUtils';
 import {
   ButtonWrapper,
   CloseX,
@@ -115,6 +115,7 @@ const INITIAL_STATE = Immutable.fromJS({
     ncaScale: 0,
     nvcaFlag: false
   },
+  dmf: {},
   scoresWereGenerated: false,
   notes: '',
   notesId: undefined
@@ -124,6 +125,10 @@ const numPages = 3;
 
 type Props = {
   actions :{
+    addCaseAndCharges :(value :{
+      pretrialCase :Immutable.Map<*, *>,
+      charges :Immutable.List<Immutable.Map<*, *>>
+    }) => void,
     hardRestart :() => void;
     loadDataModel :() => void,
     loadNeighbors :(value :{
@@ -160,6 +165,7 @@ type Props = {
   charges :Immutable.List<*>,
   allChargesForPerson :Immutable.List<*>,
   allSentencesForPerson :Immutable.List<*>,
+  chargesManuallyEntered :boolean,
   selectedPersonId :string,
   isLoadingCases :boolean,
   numCasesToLoad :number,
@@ -176,6 +182,7 @@ type State = {
   formIncompleteError :boolean,
   riskFactors :{},
   scores :{},
+  dmf :{},
   scoresWereGenerated :boolean,
   notes :string,
   notesId :string
@@ -244,28 +251,44 @@ class Form extends React.Component<Props, State> {
       .map(propertyTypeId => dataModel.getIn(['propertyTypes', propertyTypeId]));
   }
 
-  submitEntities = (scores, riskFactors) => {
+  getStaffId = () => {
     const staffInfo = AuthUtils.getUserInfo();
     let staffId = staffInfo.id;
     if (staffInfo.email && staffInfo.email.length > 0) {
       staffId = staffInfo.email;
     }
+    return staffId;
+  }
+
+  submitEntities = (scores, riskFactors, dmf) => {
+    const staffId = this.getStaffId();
 
     const values = Object.assign(
       {},
+      this.props.psaForm.toJS(),
       riskFactors,
-      scores
+      scores,
+      dmf
     );
     values[PSA.NOTES] = this.state.notes;
 
     values[ID_FIELD_NAMES.PSA_ID] = [randomUUID()];
     values[ID_FIELD_NAMES.RISK_FACTORS_ID] = [randomUUID()];
+    values[ID_FIELD_NAMES.DMF_ID] = [randomUUID()];
+    values[ID_FIELD_NAMES.DMF_RISK_FACTORS_ID] = [randomUUID()];
     values[ID_FIELD_NAMES.NOTES_ID] = [randomUUID()];
     values[ID_FIELD_NAMES.PERSON_ID] = [this.props.selectedPerson.getIn([PROPERTY_TYPES.PERSON_ID, 0])];
-    values[ID_FIELD_NAMES.CASE_ID] = [this.props.selectedPretrialCase.getIn([PROPERTY_TYPES.CASE_ID, 0])];
     values[ID_FIELD_NAMES.STAFF_ID] = [staffId];
 
     values[ID_FIELD_NAMES.TIMESTAMP] = toISODateTime(moment());
+
+    if (this.props.chargesManuallyEntered) {
+      Object.assign(values, this.props.selectedPretrialCase.toJS());
+      values.charges = this.props.charges.toJS();
+    }
+    else {
+      values[ID_FIELD_NAMES.CASE_ID] = [this.props.selectedPretrialCase.getIn([PROPERTY_TYPES.CASE_ID, 0])];
+    }
 
     this.props.actions.submit({
       values,
@@ -299,10 +322,12 @@ class Form extends React.Component<Props, State> {
     }
     else {
       const { riskFactors, scores } = getScoresAndRiskFactors(this.props.psaForm);
+      const dmf = calculateDMF(this.props.psaForm, scores);
       this.setState({
         formIncompleteError: false,
         riskFactors,
         scores,
+        dmf,
         scoresWereGenerated: true
       });
       const formattedScores = {
@@ -310,7 +335,7 @@ class Form extends React.Component<Props, State> {
         [NCA_SCALE]: [scores.ncaScale],
         [FTA_SCALE]: [scores.ftaScale]
       };
-      this.submitEntities(formattedScores, riskFactors);
+      this.submitEntities(formattedScores, riskFactors, dmf);
     }
   }
 
@@ -395,6 +420,7 @@ class Form extends React.Component<Props, State> {
       allChargesForPerson,
       allSentencesForPerson
     } = this.props;
+
     return (
       <ButtonWrapper>
         <Button
@@ -406,7 +432,10 @@ class Form extends React.Component<Props, State> {
                 pretrialCaseOptions,
                 allChargesForPerson,
                 allSentencesForPerson,
-                toISODateTime(moment()));
+                {
+                  user: this.getStaffId(),
+                  timestamp: toISODateTime(moment())
+                });
             }}>Export as PDF
         </Button>
       </ButtonWrapper>
@@ -472,6 +501,7 @@ class Form extends React.Component<Props, State> {
           caseOptions={pretrialCaseOptions}
           nextPage={this.nextPage}
           prevPage={this.prevPage}
+          onManualEntry={this.props.actions.addCaseAndCharges}
           onSelectCase={(selectedCase) => {
             actions.selectPretrialCase({ selectedPretrialCase: selectedCase });
             this.nextPage();
@@ -490,7 +520,12 @@ class Form extends React.Component<Props, State> {
 
   getPsaResults = () => {
     const { isSubmitting, submitError } = this.props;
-    const { scoresWereGenerated, scores, riskFactors } = this.state;
+    const {
+      scoresWereGenerated,
+      scores,
+      riskFactors,
+      dmf
+    } = this.state;
     if (!scoresWereGenerated) return null;
     let header;
     // if (isSubmitting) header = <Status>Submitting...</Status>;
@@ -511,7 +546,7 @@ class Form extends React.Component<Props, State> {
     return (
       <div>
         {header}
-        <PSAResults scores={scores} riskFactors={riskFactors} />
+        <PSAResults scores={scores} riskFactors={riskFactors} dmf={dmf} />
         {this.renderRecommendationSection()}
         {this.renderExportButton()}
       </div>
@@ -572,6 +607,7 @@ function mapStateToProps(state :Immutable.Map<*, *>) :Object {
     selectedPretrialCase: psaForm.get('selectedPretrialCase'),
     allChargesForPerson: psaForm.get('allChargesForPerson'),
     allSentencesForPerson: psaForm.get('allSentencesForPerson'),
+    chargesManuallyEntered: psaForm.get('chargesManuallyEntered'),
     psaForm: psaForm.get('psa'),
     isSubmitted: submit.get('submitted'),
     isSubmitting: submit.get('submitting'),

@@ -1,5 +1,6 @@
 import { ALIASES } from './ConfigConsts';
-import { PSA, NOTES, ID_FIELD_NAMES, ID_FIELDS } from '../../utils/consts/Consts';
+import { PSA, DMF, NOTES, ID_FIELD_NAMES, ID_FIELDS } from '../../utils/consts/Consts';
+import { RESULT_CATEGORIES } from '../../utils/consts/DMFResultConsts';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 
 const psaConfig = {
@@ -55,6 +56,35 @@ const psaConfig = {
       }
     },
     {
+      name: ENTITY_SETS.DMF_RISK_FACTORS,
+      alias: ALIASES.DMF_RISK_FACTORS,
+      entityId: ID_FIELD_NAMES.DMF_RISK_FACTORS_ID,
+      fields: {
+        [ID_FIELD_NAMES.DMF_RISK_FACTORS_ID]: PROPERTY_TYPES.GENERAL_ID,
+        [DMF.EXTRADITED]: PROPERTY_TYPES.EXTRADITED,
+        [NOTES[DMF.EXTRADITED]]: PROPERTY_TYPES.EXTRADITED_NOTES,
+        [DMF.STEP_2_CHARGES]: PROPERTY_TYPES.DMF_STEP_2_CHARGES,
+        [NOTES[DMF.STEP_2_CHARGES]]: PROPERTY_TYPES.DMF_STEP_2_CHARGES_NOTES,
+        [DMF.STEP_4_CHARGES]: PROPERTY_TYPES.DMF_STEP_4_CHARGES,
+        [NOTES[DMF.STEP_4_CHARGES]]: PROPERTY_TYPES.DMF_STEP_4_CHARGES_NOTES,
+        [DMF.COURT_OR_BOOKING]: PROPERTY_TYPES.CONTEXT
+      }
+    },
+    {
+      name: ENTITY_SETS.DMF_RESULTS,
+      alias: ALIASES.DMF,
+      entityId: ID_FIELD_NAMES.DMF_ID,
+      fields: {
+        [ID_FIELD_NAMES.DMF_ID]: PROPERTY_TYPES.GENERAL_ID,
+        [RESULT_CATEGORIES.COLOR]: PROPERTY_TYPES.COLOR,
+        [RESULT_CATEGORIES.RELEASE_TYPE]: PROPERTY_TYPES.RELEASE_TYPE,
+        [RESULT_CATEGORIES.CONDITIONS_LEVEL]: PROPERTY_TYPES.CONDITIONS_LEVEL,
+        [RESULT_CATEGORIES.CONDITION_1]: PROPERTY_TYPES.CONDITION_1,
+        [RESULT_CATEGORIES.CONDITION_2]: PROPERTY_TYPES.CONDITION_2,
+        [RESULT_CATEGORIES.CONDITION_3]: PROPERTY_TYPES.CONDITION_3
+      }
+    },
+    {
       name: ENTITY_SETS.STAFF,
       alias: ALIASES.STAFF,
       fields: {
@@ -89,6 +119,49 @@ const psaConfig = {
       fields: {
         [ID_FIELD_NAMES.TIMESTAMP]: PROPERTY_TYPES.COMPLETED_DATE_TIME
       }
+    },
+    // manual entry setup
+    {
+      name: ENTITY_SETS.MANUAL_PRETRIAL_CASES,
+      alias: ALIASES.MANUAL_CASE,
+      entityId: PROPERTY_TYPES.CASE_ID,
+      fields: {
+        [PROPERTY_TYPES.CASE_ID]: PROPERTY_TYPES.CASE_ID,
+        [PROPERTY_TYPES.CASE_DISPOSITION_DATE]: PROPERTY_TYPES.CASE_DISPOSITION_DATE,
+        [PROPERTY_TYPES.ARREST_DATE]: PROPERTY_TYPES.ARREST_DATE,
+        [PROPERTY_TYPES.FILE_DATE]: PROPERTY_TYPES.FILE_DATE,
+        [PROPERTY_TYPES.NUMBER_OF_CHARGES]: PROPERTY_TYPES.NUMBER_OF_CHARGES
+      }
+    },
+    {
+      name: ENTITY_SETS.MANUAL_CHARGES,
+      alias: ALIASES.MANUAL_CHARGES,
+      multipleValuesField: 'charges',
+      fields: {
+        [PROPERTY_TYPES.CHARGE_ID]: PROPERTY_TYPES.CHARGE_ID,
+        [PROPERTY_TYPES.CHARGE_LEVEL]: PROPERTY_TYPES.CHARGE_LEVEL,
+        [PROPERTY_TYPES.CHARGE_DEGREE]: PROPERTY_TYPES.CHARGE_DEGREE,
+        [PROPERTY_TYPES.CHARGE_STATUTE]: PROPERTY_TYPES.CHARGE_STATUTE,
+        [PROPERTY_TYPES.CHARGE_DESCRIPTION]: PROPERTY_TYPES.CHARGE_DESCRIPTION,
+        [PROPERTY_TYPES.DISPOSITION]: PROPERTY_TYPES.DISPOSITION,
+        [PROPERTY_TYPES.DISPOSITION_DATE]: PROPERTY_TYPES.DISPOSITION_DATE,
+        [PROPERTY_TYPES.PLEA]: PROPERTY_TYPES.PLEA,
+        [PROPERTY_TYPES.PLEA_DATE]: PROPERTY_TYPES.PLEA_DATE
+      }
+    },
+    {
+      name: ENTITY_SETS.CHARGED_WITH,
+      alias: ALIASES.CHARGED_WITH,
+      fields: {
+        [PROPERTY_TYPES.CASE_ID]: PROPERTY_TYPES.STRING_ID
+      }
+    },
+    {
+      name: ENTITY_SETS.APPEARS_IN,
+      alias: ALIASES.APPEARS_IN,
+      fields: {
+        [PROPERTY_TYPES.CASE_ID]: PROPERTY_TYPES.STRING_ID
+      }
     }
   ],
   associations: [
@@ -108,6 +181,11 @@ const psaConfig = {
       dst: ALIASES.CASE,
       association: ALIASES.CALCULATED_FOR
     },
+    {
+      src: ALIASES.PSA,
+      dst: ALIASES.MANUAL_CASE,
+      association: ALIASES.CALCULATED_FOR
+    },
 
     // Risk Factors calculated for _____
     {
@@ -118,6 +196,11 @@ const psaConfig = {
     {
       src: ALIASES.RISK_FACTORS,
       dst: ALIASES.CASE,
+      association: ALIASES.CALCULATED_FOR
+    },
+    {
+      src: ALIASES.RISK_FACTORS,
+      dst: ALIASES.MANUAL_CASE,
       association: ALIASES.CALCULATED_FOR
     },
 
@@ -139,6 +222,55 @@ const psaConfig = {
     },
     {
       src: ALIASES.NOTES,
+      dst: ALIASES.MANUAL_CASE,
+      association: ALIASES.CALCULATED_FOR
+    },
+    {
+      src: ALIASES.NOTES,
+      dst: ALIASES.PSA,
+      association: ALIASES.CALCULATED_FOR
+    },
+
+    // DMF Risk Factors calculated for _____
+    {
+      src: ALIASES.DMF_RISK_FACTORS,
+      dst: ALIASES.PERSON,
+      association: ALIASES.CALCULATED_FOR
+    },
+    {
+      src: ALIASES.DMF_RISK_FACTORS,
+      dst: ALIASES.CASE,
+      association: ALIASES.CALCULATED_FOR
+    },
+    {
+      src: ALIASES.DMF_RISK_FACTORS,
+      dst: ALIASES.MANUAL_CASE,
+      association: ALIASES.CALCULATED_FOR
+    },
+
+    // DMF calculated for _____
+    {
+      src: ALIASES.DMF,
+      dst: ALIASES.PERSON,
+      association: ALIASES.CALCULATED_FOR
+    },
+    {
+      src: ALIASES.DMF,
+      dst: ALIASES.DMF_RISK_FACTORS,
+      association: ALIASES.CALCULATED_FOR
+    },
+    {
+      src: ALIASES.DMF,
+      dst: ALIASES.CASE,
+      association: ALIASES.CALCULATED_FOR
+    },
+    {
+      src: ALIASES.DMF,
+      dst: ALIASES.MANUAL_CASE,
+      association: ALIASES.CALCULATED_FOR
+    },
+    {
+      src: ALIASES.DMF,
       dst: ALIASES.PSA,
       association: ALIASES.CALCULATED_FOR
     },
@@ -155,9 +287,36 @@ const psaConfig = {
       association: ALIASES.ASSESSED_BY
     },
     {
+      src: ALIASES.DMF,
+      dst: ALIASES.STAFF,
+      association: ALIASES.ASSESSED_BY
+    },
+    {
+      src: ALIASES.DMF_RISK_FACTORS,
+      dst: ALIASES.STAFF,
+      association: ALIASES.ASSESSED_BY
+    },
+    {
       src: ALIASES.NOTES,
       dst: ALIASES.STAFF,
       association: ALIASES.ASSESSED_BY
+    },
+
+    // manual cases -> manual charges
+    {
+      src: ALIASES.MANUAL_CHARGES,
+      dst: ALIASES.MANUAL_CASE,
+      association: ALIASES.APPEARS_IN
+    },
+    {
+      src: ALIASES.PERSON,
+      dst: ALIASES.MANUAL_CASE,
+      association: ALIASES.APPEARS_IN
+    },
+    {
+      src: ALIASES.PERSON,
+      dst: ALIASES.MANUAL_CHARGES,
+      association: ALIASES.CHARGED_WITH
     }
   ]
 };

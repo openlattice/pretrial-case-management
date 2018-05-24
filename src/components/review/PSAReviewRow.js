@@ -16,12 +16,15 @@ import InlineEditableControl from '../controls/InlineEditableControl';
 import CaseHistory from '../../components/review/CaseHistory';
 import ChargeList from '../../components/charges/ChargeList';
 import PSAScores from './PSAScores';
+import DMFCell from '../dmf/DMFCell';
+import DMFExplanation from '../dmf/DMFExplanation';
 import psaEditedConfig from '../../config/formconfig/PsaEditedConfig';
-import { getScoresAndRiskFactors } from '../../utils/ScoringUtils';
+import { getScoresAndRiskFactors, calculateDMF } from '../../utils/ScoringUtils';
 import { CenteredContainer } from '../../utils/Layout';
 import { formatValue, formatDateList, toISODateTime } from '../../utils/Utils';
-import { PSA, NOTES, EDIT_FIELDS, ID_FIELDS } from '../../utils/consts/Consts';
+import { PSA, DMF, NOTES, EDIT_FIELDS, ID_FIELDS } from '../../utils/consts/Consts';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { RESULT_CATEGORIES } from '../../utils/consts/DMFResultConsts';
 import * as OverrideClassNames from '../../utils/styleoverrides/OverrideClassNames';
 
 const ReviewRowContainer = styled.div`
@@ -100,6 +103,24 @@ const CaseHeader = styled.div`
   font-size: 20px;
 `;
 
+const SummaryScores = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  text-align: center;
+`;
+
+const ScoreTitle = styled.div`
+  font-size: 14px;
+  font-weight: bold;
+  margin-bottom: 10px;
+`;
+
+const NoDMFContainer = styled(CenteredContainer)`
+  margin: 30px;
+  font-size: 18px;
+`;
+
 type Props = {
   entityKeyId :string,
   scores :Immutable.Map<*, *>,
@@ -122,7 +143,13 @@ type Props = {
     scoresEntity :Object,
     riskFactorsEntitySetId :string,
     riskFactorsId :string,
-    riskFactorsEntity :Object
+    riskFactorsEntity :Object,
+    dmfEntitySetId :string,
+    dmfId :string,
+    dmfEntity :Object,
+    dmfRiskFactorsEntitySetId :string,
+    dmfRiskFactorsId :string,
+    dmfRiskFactorsEntity :Object
   ) => void,
   updateNotes? :(
     notes :string,
@@ -143,6 +170,7 @@ type State = {
 const VIEWS = {
   SUMMARY: 'SUMMARY',
   PSA: 'PSA',
+  DMF: 'DMF',
   HISTORY: 'HISTORY'
 };
 
@@ -160,6 +188,7 @@ export default class PSAReviewRow extends React.Component<Props, State> {
 
   getRiskFactors = (neighbors :Immutable.Map<*, *>) => {
     const riskFactors = neighbors.getIn([ENTITY_SETS.PSA_RISK_FACTORS, 'neighborDetails'], Immutable.Map());
+    const dmfRiskFactors = neighbors.getIn([ENTITY_SETS.DMF_RISK_FACTORS, 'neighborDetails'], Immutable.Map());
     const ageAtCurrentArrestVal = riskFactors.getIn([PROPERTY_TYPES.AGE_AT_CURRENT_ARREST, 0]);
     let ageAtCurrentArrest = 0;
     if (ageAtCurrentArrestVal === '21 or 22') ageAtCurrentArrest = 1;
@@ -191,7 +220,15 @@ export default class PSAReviewRow extends React.Component<Props, State> {
       [NOTES[PSA.PRIOR_FAILURE_TO_APPEAR_OLD]]:
         riskFactors.getIn([PROPERTY_TYPES.PRIOR_FAILURE_TO_APPEAR_OLD_NOTES, 0], ''),
       [NOTES[PSA.PRIOR_SENTENCE_TO_INCARCERATION]]:
-        riskFactors.getIn([PROPERTY_TYPES.PRIOR_SENTENCE_TO_INCARCERATION_NOTES, 0], '')
+        riskFactors.getIn([PROPERTY_TYPES.PRIOR_SENTENCE_TO_INCARCERATION_NOTES, 0], ''),
+
+      [DMF.EXTRADITED]: `${dmfRiskFactors.getIn([PROPERTY_TYPES.EXTRADITED, 0])}`,
+      [DMF.STEP_2_CHARGES]: `${dmfRiskFactors.getIn([PROPERTY_TYPES.DMF_STEP_2_CHARGES, 0])}`,
+      [DMF.STEP_4_CHARGES]: `${dmfRiskFactors.getIn([PROPERTY_TYPES.DMF_STEP_4_CHARGES, 0])}`,
+      [DMF.COURT_OR_BOOKING]: `${dmfRiskFactors.getIn([PROPERTY_TYPES.CONTEXT, 0])}`,
+      [NOTES[DMF.EXTRADITED]]: `${dmfRiskFactors.getIn([PROPERTY_TYPES.EXTRADITED_NOTES, 0], '')}`,
+      [NOTES[DMF.STEP_2_CHARGES]]: `${dmfRiskFactors.getIn([PROPERTY_TYPES.DMF_STEP_2_CHARGES_NOTES, 0], '')}`,
+      [NOTES[DMF.STEP_4_CHARGES]]: `${dmfRiskFactors.getIn([PROPERTY_TYPES.DMF_STEP_4_CHARGES_NOTES, 0], '')}`
     });
   }
 
@@ -265,15 +302,63 @@ export default class PSAReviewRow extends React.Component<Props, State> {
     this.setState({ riskFactors });
   }
 
+  getDMFEntity = (dmf, dmfId) => {
+    const result = {
+      [PROPERTY_TYPES.GENERAL_ID]: [dmfId],
+      [PROPERTY_TYPES.COLOR]: [dmf[RESULT_CATEGORIES.COLOR]],
+      [PROPERTY_TYPES.RELEASE_TYPE]: [dmf[RESULT_CATEGORIES.RELEASE_TYPE]]
+    };
+    if (dmf[RESULT_CATEGORIES.CONDITIONS_LEVEL]) {
+      result[PROPERTY_TYPES.CONDITIONS_LEVEL] = [dmf[RESULT_CATEGORIES.CONDITIONS_LEVEL]];
+    }
+    if (dmf[RESULT_CATEGORIES.CONDITION_1]) {
+      result[PROPERTY_TYPES.CONDITION_1] = [dmf[RESULT_CATEGORIES.CONDITION_1]];
+    }
+    if (dmf[RESULT_CATEGORIES.CONDITION_2]) {
+      result[PROPERTY_TYPES.CONDITION_2] = [dmf[RESULT_CATEGORIES.CONDITION_2]];
+    }
+    if (dmf[RESULT_CATEGORIES.CONDITION_3]) {
+      result[PROPERTY_TYPES.CONDITION_3] = [dmf[RESULT_CATEGORIES.CONDITION_3]];
+    }
+    return result;
+  }
+
+  getDMFRiskFactorsEntity = (riskFactors, dmfRiskFactorsId) => ({
+    [PROPERTY_TYPES.GENERAL_ID]: [dmfRiskFactorsId],
+    [PROPERTY_TYPES.EXTRADITED]: [riskFactors.get(DMF.EXTRADITED)],
+    [PROPERTY_TYPES.DMF_STEP_2_CHARGES]: [riskFactors.get(DMF.STEP_2_CHARGES)],
+    [PROPERTY_TYPES.DMF_STEP_4_CHARGES]: [riskFactors.get(DMF.STEP_4_CHARGES)],
+    [PROPERTY_TYPES.CONTEXT]: [riskFactors.get(DMF.COURT_OR_BOOKING)],
+    [PROPERTY_TYPES.EXTRADITED_NOTES]: [riskFactors.get(NOTES[DMF.EXTRADITED])],
+    [PROPERTY_TYPES.DMF_STEP_2_CHARGES_NOTES]: [riskFactors.get(NOTES[DMF.STEP_2_CHARGES])],
+    [PROPERTY_TYPES.DMF_STEP_4_CHARGES_NOTES]: [riskFactors.get(NOTES[DMF.STEP_4_CHARGES])]
+  });
 
   onRiskFactorEdit = (e :Object) => {
     e.preventDefault();
     const { scores, riskFactors } = getScoresAndRiskFactors(this.state.riskFactors);
+    const dmf = calculateDMF(this.state.riskFactors, scores);
 
     const scoreId = this.props.scores.getIn([PROPERTY_TYPES.GENERAL_ID, 0]);
     const riskFactorsId = this.props.neighbors.getIn(
       [ENTITY_SETS.PSA_RISK_FACTORS, 'neighborDetails', PROPERTY_TYPES.GENERAL_ID, 0]
     );
+
+    const dmfId = this.props.neighbors.getIn(
+      [ENTITY_SETS.DMF_RESULTS, 'neighborDetails', PROPERTY_TYPES.GENERAL_ID, 0]
+    );
+    const dmfEKId = this.props.neighbors.getIn([ENTITY_SETS.DMF_RESULTS, 'neighborId']);
+    const dmfEntitySetId = this.props.neighbors.getIn([ENTITY_SETS.DMF_RESULTS, 'neighborEntitySet', 'id']);
+    const dmfEntity = this.getDMFEntity(dmf, dmfId);
+
+    const dmfRiskFactorsId = this.props.neighbors.getIn(
+      [ENTITY_SETS.DMF_RISK_FACTORS, 'neighborDetails', PROPERTY_TYPES.GENERAL_ID, 0]
+    );
+    const dmfRiskFactorsEKId = this.props.neighbors.getIn([ENTITY_SETS.DMF_RISK_FACTORS, 'neighborId']);
+    const dmfRiskFactorsEntitySetId =
+      this.props.neighbors.getIn([ENTITY_SETS.DMF_RISK_FACTORS, 'neighborEntitySet', 'id']);
+    const dmfRiskFactorsEntity = this.getDMFRiskFactorsEntity(this.state.riskFactors, dmfRiskFactorsId);
+
     const scoresEntity = {
       [PROPERTY_TYPES.NCA_SCALE]: [scores.ncaScale],
       [PROPERTY_TYPES.FTA_SCALE]: [scores.ftaScale],
@@ -294,7 +379,13 @@ export default class PSAReviewRow extends React.Component<Props, State> {
       scoresEntity,
       riskFactorsEntitySetId,
       riskFactorsEKId,
-      riskFactors
+      riskFactors,
+      dmfEntitySetId,
+      dmfEKId,
+      dmfEntity,
+      dmfRiskFactorsEntitySetId,
+      dmfRiskFactorsEKId,
+      dmfRiskFactorsEntity
     );
 
     if (scoreId) {
@@ -303,6 +394,8 @@ export default class PSAReviewRow extends React.Component<Props, State> {
         values: {
           [EDIT_FIELDS.PSA_ID]: [scoreId],
           [EDIT_FIELDS.RISK_FACTORS_ID]: [riskFactorsId],
+          [EDIT_FIELDS.DMF_ID]: [dmfId],
+          [EDIT_FIELDS.DMF_RISK_FACTORS_ID]: [dmfRiskFactorsId],
           [EDIT_FIELDS.TIMESTAMP]: [toISODateTime(moment())],
           [EDIT_FIELDS.PERSON_ID]: [AuthUtils.getUserInfo().email]
         }
@@ -352,7 +445,10 @@ export default class PSAReviewRow extends React.Component<Props, State> {
     const { caseHistory, chargeHistory, neighbors } = this.props;
     const caseNum = neighbors.getIn(
       [ENTITY_SETS.PRETRIAL_CASES, 'neighborDetails', PROPERTY_TYPES.CASE_ID, 0],
-      ''
+      neighbors.getIn(
+        [ENTITY_SETS.MANUAL_PRETRIAL_CASES, 'neighborDetails', PROPERTY_TYPES.CASE_ID, 0],
+        ''
+      )
     );
     const pretrialCase = caseHistory.filter(caseObj => caseObj.getIn([PROPERTY_TYPES.CASE_ID, 0], '') === caseNum);
     const charges = chargeHistory.get(caseNum, Immutable.List());
@@ -365,16 +461,34 @@ export default class PSAReviewRow extends React.Component<Props, State> {
     );
   }
 
+  getDMF = () => {
+    const dmfNeighbor = this.props.neighbors.getIn([ENTITY_SETS.DMF_RESULTS, 'neighborDetails'], Immutable.Map());
+    return {
+      [RESULT_CATEGORIES.COLOR]: dmfNeighbor.getIn([PROPERTY_TYPES.COLOR, 0]),
+      [RESULT_CATEGORIES.RELEASE_TYPE]: dmfNeighbor.getIn([PROPERTY_TYPES.RELEASE_TYPE, 0]),
+      [RESULT_CATEGORIES.CONDITIONS_LEVEL]: dmfNeighbor.getIn([PROPERTY_TYPES.CONDITIONS_LEVEL, 0]),
+      [RESULT_CATEGORIES.CONDITION_1]: dmfNeighbor.getIn([PROPERTY_TYPES.CONDITION_1, 0]),
+      [RESULT_CATEGORIES.CONDITION_2]: dmfNeighbor.getIn([PROPERTY_TYPES.CONDITION_1, 2]),
+      [RESULT_CATEGORIES.CONDITION_3]: dmfNeighbor.getIn([PROPERTY_TYPES.CONDITION_1, 3])
+    };
+  }
+
   renderSummary = () => {
+    const dmf = this.getDMF();
     return (
       <div>
         {this.renderPersonInfo()}
         <hr />
-        <CenteredContainer>
+        <SummaryScores>
           <ScoresContainer>
+            <ScoreTitle>PSA:</ScoreTitle>
             <PSAScores scores={this.props.scores} />
           </ScoresContainer>
-        </CenteredContainer>
+          <ScoresContainer>
+            <ScoreTitle>DMF:</ScoreTitle>
+            <DMFCell dmf={dmf} selected />
+          </ScoresContainer>
+        </SummaryScores>
         <hr />
         {this.renderCaseInfo()}
       </div>
@@ -402,10 +516,14 @@ export default class PSAReviewRow extends React.Component<Props, State> {
 
     const caseNum = neighbors.getIn(
       [ENTITY_SETS.PRETRIAL_CASES, 'neighborDetails', PROPERTY_TYPES.CASE_ID, 0],
-      ''
+      neighbors.getIn(
+        [ENTITY_SETS.MANUAL_PRETRIAL_CASES, 'neighborDetails', PROPERTY_TYPES.CASE_ID, 0],
+        ''
+      )
     );
     const currCase = caseHistory.filter(caseObj => caseObj.getIn([PROPERTY_TYPES.CASE_ID, 0], '') === caseNum);
     const currCharges = chargeHistory.get(caseNum, Immutable.List());
+    const allCharges = chargeHistory.toList().flatMap(list => list);
 
     return (
       <div>
@@ -417,7 +535,7 @@ export default class PSAReviewRow extends React.Component<Props, State> {
             incompleteError={false}
             currCase={currCase}
             currCharges={currCharges}
-            allCharges={chargeHistory}
+            allCharges={allCharges}
             allCases={caseHistory}
             allSentences={sentenceHistory}
             viewOnly={!editing} />
@@ -425,6 +543,18 @@ export default class PSAReviewRow extends React.Component<Props, State> {
         {editButton}
       </div>
     );
+  }
+
+  renderDMFExplanation = () => {
+    const { scores } = this.props;
+    const dmf = this.getDMF();
+    const nca = scores.getIn([PROPERTY_TYPES.NCA_SCALE, 0]);
+    const fta = scores.getIn([PROPERTY_TYPES.FTA_SCALE, 0]);
+    if (!this.props.neighbors.getIn([ENTITY_SETS.DMF_RESULTS, 'neighborDetails'], Immutable.Map()).size) {
+      return <NoDMFContainer>A DMF was not calculated for this PSA.</NoDMFContainer>;
+    }
+
+    return <DMFExplanation dmf={dmf} nca={nca} fta={fta} riskFactors={this.state.riskFactors} />;
   }
 
   renderDetails = () => {
@@ -439,6 +569,7 @@ export default class PSAReviewRow extends React.Component<Props, State> {
           <Tabs id={`details-${this.props.entityKeyId}`} activeKey={this.state.view} onSelect={this.onViewSelect}>
             <Tab eventKey={VIEWS.SUMMARY} title="Summary">{this.renderSummary()}</Tab>
             <Tab eventKey={VIEWS.PSA} title="PSA">{this.renderPSADetails()}</Tab>
+            <Tab eventKey={VIEWS.DMF} title="DMF">{this.renderDMFExplanation()}</Tab>
             <Tab eventKey={VIEWS.HISTORY} title="Case History">
               <CaseHistory caseHistory={this.props.caseHistory} chargeHistory={this.props.chargeHistory} />
             </Tab>

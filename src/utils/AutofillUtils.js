@@ -6,7 +6,7 @@ import Immutable from 'immutable';
 import moment from 'moment';
 
 import { PROPERTY_TYPES } from './consts/DataModelConsts';
-import { PSA } from './consts/Consts';
+import { PSA, DMF } from './consts/Consts';
 import {
   chargeFieldIsViolent,
   degreeFieldIsFelony,
@@ -16,6 +16,7 @@ import {
   getChargeTitle
 } from './consts/ChargeConsts';
 import { getSentenceToIncarcerationCaseNums } from './consts/SentenceConsts';
+import { getAllStepTwoCharges, getAllStepFourCharges } from './consts/DMFConsts';
 
 const {
   DOB,
@@ -48,6 +49,11 @@ const {
   PRIOR_VIOLENT_CONVICTION,
   PRIOR_SENTENCE_TO_INCARCERATION
 } = PSA;
+
+const {
+  STEP_2_CHARGES,
+  STEP_4_CHARGES
+} = DMF;
 
 export const getViolentCharges = (charges :Immutable.List<*>, mostSeriousCharge :string) :Immutable.List<*> => {
   if (!charges.size) {
@@ -196,6 +202,12 @@ export const tryAutofillPreviousViolentCharge = (allCharges :Immutable.List<*>) 
 export const tryAutofillPriorSentenceToIncarceration = (allSentences :Immutable.List<*>) :string =>
   `${getSentenceToIncarcerationCaseNums(allSentences).size > 0}`;
 
+export const tryAutofillDMFStepTwo = (currCharges :Immutable.List<*>) :string =>
+  `${getAllStepTwoCharges(currCharges).size > 0}`;
+
+export const tryAutofillDMFStepFour = (currCharges :Immutable.List<*>) :string =>
+  `${getAllStepFourCharges(currCharges).size > 0}`;
+
 export const tryAutofillFields = (
   nextCase :Immutable.Map<*, *>,
   nextCharges :Immutable.List<*>,
@@ -227,6 +239,10 @@ export const tryAutofillFields = (
       CURRENT_VIOLENT_OFFENSE,
       tryAutofillCurrentViolentCharge(nextCharges, nextMostSeriousCharge)
     );
+
+    // DMF
+    psaForm = psaForm.set(STEP_2_CHARGES, tryAutofillDMFStepTwo(nextCharges));
+    psaForm = psaForm.set(STEP_4_CHARGES, tryAutofillDMFStepFour(nextCharges));
   }
 
   // pending charge

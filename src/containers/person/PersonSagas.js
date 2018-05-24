@@ -77,6 +77,7 @@ export function* watchLoadPersonDetailsRequest() :Generator<*, *, *> {
 
         if (caseNums.length) {
           const caseNumRequests = caseNums
+            .filter(neighborObj => neighborObj.neighborDetails[PROPERTY_TYPES.CASE_ID])
             .map(neighborObj => neighborObj.neighborDetails[PROPERTY_TYPES.CASE_ID])
             .reduce((c1, c2) => [...c1, ...c2])
             .filter((caseNum, index, arr) => arr.indexOf(caseNum) === index)

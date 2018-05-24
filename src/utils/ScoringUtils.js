@@ -2,8 +2,9 @@
  * @flow
  */
 import Immutable from 'immutable';
-import { PSA, NOTES } from './consts/Consts';
+import { PSA, DMF, NOTES } from './consts/Consts';
 import { PROPERTY_TYPES } from './consts/DataModelConsts';
+import { getDMFDecision, increaseDMFSeverity } from './consts/DMFResultConsts';
 
 const {
   AGE_AT_CURRENT_ARREST,
@@ -261,3 +262,21 @@ export function getScoresAndRiskFactors(psaForm :Immutable.Map<*, *>) :{} {
 
   return { riskFactors, scores };
 }
+
+export const calculateDMF = (inputData, scores) => {
+  const extradited = inputData.get(DMF.EXTRADITED) === 'true';
+  const stepTwo = inputData.get(DMF.STEP_2_CHARGES) === 'true';
+  const stepFour = inputData.get(DMF.STEP_4_CHARGES) === 'true';
+  const context = inputData.get(DMF.COURT_OR_BOOKING);
+
+  if (extradited || stepTwo) {
+    return getDMFDecision(6, 6, context);
+  }
+  const nca = scores.ncaScale;
+  const fta = scores.ftaScale;
+  const stepThreeCalculation = getDMFDecision(nca, fta, context);
+  if (stepFour) {
+    return increaseDMFSeverity(stepThreeCalculation);
+  }
+  return stepThreeCalculation;
+};

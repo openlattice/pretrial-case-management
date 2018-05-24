@@ -46,21 +46,27 @@ function* getCasesAndCharges(neighbors) {
   personNeighbors.forEach((neighbor) => {
     const neighborDetails = Immutable.fromJS(neighbor.neighborDetails);
     const entitySet = neighbor.neighborEntitySet;
-    if (entitySet && entitySet.name === ENTITY_SETS.PRETRIAL_CASES) {
-      const caseObj = neighborDetails.set('id', neighbor.neighborId);
-      const arrList = caseObj.get(PROPERTY_TYPES.ARREST_DATE, caseObj.get(PROPERTY_TYPES.FILE_DATE, Immutable.List()));
-      if (arrList.size) {
-        pretrialCaseOptionsWithDate = pretrialCaseOptionsWithDate.push(caseObj);
+    if (entitySet) {
+      const { name } = entitySet;
+      if (name === ENTITY_SETS.PRETRIAL_CASES || name === ENTITY_SETS.MANUAL_PRETRIAL_CASES) {
+        const caseObj = neighborDetails.set('id', neighbor.neighborId);
+        const arrList = caseObj.get(
+          PROPERTY_TYPES.ARREST_DATE,
+          caseObj.get(PROPERTY_TYPES.FILE_DATE, Immutable.List())
+        );
+        if (arrList.size) {
+          pretrialCaseOptionsWithDate = pretrialCaseOptionsWithDate.push(caseObj);
+        }
+        else {
+          pretrialCaseOptionsWithoutDate = pretrialCaseOptionsWithoutDate.push(caseObj);
+        }
       }
-      else {
-        pretrialCaseOptionsWithoutDate = pretrialCaseOptionsWithoutDate.push(caseObj);
+      else if (name === ENTITY_SETS.CHARGES || name === ENTITY_SETS.MANUAL_CHARGES) {
+        allCharges = allCharges.push(neighborDetails);
       }
-    }
-    else if (entitySet && entitySet.name === ENTITY_SETS.CHARGES) {
-      allCharges = allCharges.push(neighborDetails);
-    }
-    else if (entitySet && entitySet.name === ENTITY_SETS.SENTENCES) {
-      allSentences = allSentences.push(neighborDetails);
+      else if (name === ENTITY_SETS.SENTENCES) {
+        allSentences = allSentences.push(neighborDetails);
+      }
     }
   });
   pretrialCaseOptionsWithDate = pretrialCaseOptionsWithDate.sort(orderCasesByArrestDate);
@@ -261,18 +267,43 @@ function* downloadPSAReviewPDFWorker(action :SequenceAction) :Generator<*, *, *>
 
     const selectedPretrialCase = neighbors.getIn(
       [ENTITY_SETS.PRETRIAL_CASES, 'neighborDetails'],
-      Immutable.Map()
+      neighbors.getIn(
+        [ENTITY_SETS.MANUAL_PRETRIAL_CASES, 'neighborDetails'],
+        Immutable.Map()
+      )
     );
     const selectedPerson = neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborDetails'], Immutable.Map());
 
-    const submitDate = neighbors.getIn([
-      ENTITY_SETS.PSA_RISK_FACTORS,
-      'associationDetails',
-      PROPERTY_TYPES.TIMESTAMP,
-      0
-    ], '');
+    let createData;
+    let updateData;
 
-    exportPDF(data, selectedPretrialCase, selectedPerson, allCases, allCharges, allSentences, submitDate);
+    neighbors.get(ENTITY_SETS.STAFF).forEach((writerNeighbor) => {
+      const name = writerNeighbor.getIn(['associationEntitySet', 'name']);
+      const user = writerNeighbor.getIn(['neighborDetails', PROPERTY_TYPES.PERSON_ID, 0], '');
+
+      if (name === ENTITY_SETS.ASSESSED_BY) {
+        createData = {
+          timestamp: writerNeighbor.getIn(['associationDetails', PROPERTY_TYPES.COMPLETED_DATE_TIME, 0], ''),
+          user
+        };
+      }
+      else if (name === ENTITY_SETS.EDITED_BY) {
+        const timestamp = writerNeighbor.getIn(['associationDetails', PROPERTY_TYPES.DATE_TIME, 0], '')
+        const newUpdateData = { timestamp, user };
+        if (!updateData) {
+          updateData = newUpdateData;
+        }
+        else {
+          const prevTime = moment(updateData.timestamp);
+          const currTime = moment(timestamp);
+          if (!prevTime.isValid() || currTime.isAfter(prevTime)) {
+            updateData = newUpdateData;
+          }
+        }
+      }
+    });
+
+    exportPDF(data, selectedPretrialCase, selectedPerson, allCases, allCharges, allSentences, createData, updateData);
 
     yield put(downloadPSAReviewPDF.success(action.id));
   }
@@ -298,21 +329,36 @@ function* updateScoresAndRiskFactorsWorker(action :SequenceAction) :Generator<*,
       scoresEntity,
       riskFactorsEntitySetId,
       riskFactorsId,
-      riskFactorsEntity
+      riskFactorsEntity,
+      dmfEntitySetId,
+      dmfId,
+      dmfEntity,
+      dmfRiskFactorsEntitySetId,
+      dmfRiskFactorsId,
+      dmfRiskFactorsEntity
     } = action.value;
     yield all([
       call(DataApi.replaceEntityInEntitySetUsingFqns, riskFactorsEntitySetId, riskFactorsId, riskFactorsEntity),
-      call(DataApi.replaceEntityInEntitySetUsingFqns, scoresEntitySetId, scoresId, scoresEntity)
+      call(DataApi.replaceEntityInEntitySetUsingFqns, scoresEntitySetId, scoresId, scoresEntity),
+      call(DataApi.replaceEntityInEntitySetUsingFqns, dmfEntitySetId, dmfId, dmfEntity),
+      call(DataApi.replaceEntityInEntitySetUsingFqns, dmfRiskFactorsEntitySetId, dmfRiskFactorsId, dmfRiskFactorsEntity)
     ]);
 
-    const newScoreEntity = yield call(DataApi.getEntity, scoresEntitySetId, scoresId);
-    const newRiskFactorsEntity = yield call(DataApi.getEntity, riskFactorsEntitySetId, riskFactorsId);
+    const [newScoreEntity, newRiskFactorsEntity, newDMFEntity, newDMFRiskFactorsEntity] = yield all([
+      call(DataApi.getEntity, scoresEntitySetId, scoresId),
+      call(DataApi.getEntity, riskFactorsEntitySetId, riskFactorsId),
+      call(DataApi.getEntity, dmfEntitySetId, dmfId),
+      call(DataApi.getEntity, dmfRiskFactorsEntitySetId, dmfRiskFactorsId)
+    ]);
 
     yield put(updateScoresAndRiskFactors.success(action.id, {
       scoresId,
       newScoreEntity,
       riskFactorsId,
-      newRiskFactorsEntity
+      newRiskFactorsEntity,
+      dmfId,
+      newDMFEntity,
+      newDMFRiskFactorsEntity
     }));
   }
   catch (error) {

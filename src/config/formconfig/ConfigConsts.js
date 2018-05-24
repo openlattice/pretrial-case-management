@@ -13,8 +13,12 @@ export const ALIASES = {
   STAFF: 'staff',
   PSA: 'psa',
   RISK_FACTORS: 'riskFactors',
+  DMF_RISK_FACTORS: 'dmfRiskFactors',
+  DMF: 'dmf',
   NOTES: 'notes',
   CASE: 'pretrialCase',
+  MANUAL_CASE: 'manualPretrialCase',
+  MANUAL_CHARGES: 'manualCharges',
 
   CONTACTED_AT: 'contactedAt',
   EMPLOYED_BY: 'employedBy',
@@ -26,7 +30,9 @@ export const ALIASES = {
   USED: 'used',
   CALCULATED_FOR: 'calculatedFor',
   ASSESSED_BY: 'assessedBy',
-  EDITED_BY: 'editedBy'
+  EDITED_BY: 'editedBy',
+  CHARGED_WITH: 'chargedWith',
+  APPEARS_IN: 'appearsIn'
 };
 
 export const PERSON_CONFIG = {

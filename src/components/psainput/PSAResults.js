@@ -3,11 +3,13 @@
  */
 
 import React from 'react';
-import Immutable from 'immutable';
 import { Button } from 'react-bootstrap';
 
+import DMFCell from '../../components/dmf/DMFCell';
+import { getHeaderText } from '../../utils/consts/DMFResultConsts';
 import {
   ButtonWrapper,
+  CenteredContainer,
   Divider,
   ResultsContainer,
   ResultsWrapper,
@@ -38,7 +40,8 @@ const {
 
 type Props = {
   scores :Object,
-  riskFactors :Object
+  riskFactors :Object,
+  dmf :Object
 };
 
 type State = {
@@ -164,6 +167,15 @@ export default class PSAResults extends React.Component<Props, State> {
     </div>
   )
 
+  renderDMF = () => (
+    <div>
+      <ResultHeader>{`DMF Result: ${getHeaderText(this.props.dmf)}`}</ResultHeader>
+      <CenteredContainer>
+        <DMFCell dmf={this.props.dmf} selected />
+      </CenteredContainer>
+    </div>
+  )
+
   render() {
     return (
       <div>
@@ -182,6 +194,7 @@ export default class PSAResults extends React.Component<Props, State> {
             {this.renderNvca()}
             {this.renderNca()}
             {this.renderFta()}
+            {this.renderDMF()}
             <Divider />
             {this.renderRiskFactors()}
           </ResultsWrapper>
