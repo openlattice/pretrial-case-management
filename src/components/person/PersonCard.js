@@ -93,16 +93,16 @@ const PersonCard = ({ person, handleSelect } :Props) => {
       <table>
         <tbody>
           <InfoRow>
+            <Header>Last Name:</Header>
+            <DataElem>{ lastName }</DataElem>
+          </InfoRow>
+          <InfoRow>
             <Header>First Name:</Header>
             <DataElem>{ firstName }</DataElem>
           </InfoRow>
           <InfoRow>
             <Header>Middle Name:</Header>
             <DataElem>{ middleName }</DataElem>
-          </InfoRow>
-          <InfoRow>
-            <Header>Last Name:</Header>
-            <DataElem>{ lastName }</DataElem>
           </InfoRow>
           { suffix ? (
             <InfoRow>
