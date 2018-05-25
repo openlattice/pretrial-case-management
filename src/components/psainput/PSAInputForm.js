@@ -33,6 +33,7 @@ import {
 } from '../../utils/Layout';
 
 import { formatValue } from '../../utils/Utils';
+import { getRecentFTAs, getOldFTAs } from '../../utils/FTAUtils';
 
 import { PSA, NOTES, DMF } from '../../utils/consts/Consts';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
@@ -126,6 +127,7 @@ type Props = {
   allCharges :Immutable.List<*>,
   allSentences :Immutable.List<*>,
   allCases :Immutable.List<*>,
+  allFTAs :Immutable.List<*>,
   viewOnly? :boolean
 };
 
@@ -139,6 +141,7 @@ const PSAInputForm = ({
   allCharges,
   allSentences,
   allCases,
+  allFTAs,
   viewOnly
 } :Props) => {
 
@@ -201,6 +204,8 @@ const PSAInputForm = ({
   const priorMisdemeanors = getPreviousMisdemeanors(allCharges);
   const priorFelonies = getPreviousFelonies(allCharges);
   const priorViolentConvictions = getPreviousViolentCharges(allCharges);
+  const recentFTAs = getRecentFTAs(allFTAs);
+  const oldFTAs = getOldFTAs(allFTAs);
   const priorSentenceToIncarceration = getSentenceToIncarcerationCaseNums(allSentences);
 
   const step2Charges = getAllStepTwoCharges(currCharges);
@@ -268,12 +273,12 @@ const PSAInputForm = ({
                   {renderRadio(PRIOR_FAILURE_TO_APPEAR_RECENT, 2, '2 or more')}
                 </FormGroup>
               </PSACol>
-              {renderNotesAndJustifications(NOTES[PRIOR_FAILURE_TO_APPEAR_RECENT])}
+              {renderNotesAndJustifications(NOTES[PRIOR_FAILURE_TO_APPEAR_RECENT], recentFTAs)}
             </QuestionRow>
 
             <QuestionRow>
               {renderTrueFalseRadio(PRIOR_FAILURE_TO_APPEAR_OLD, PRIOR_FAILURE_TO_APPEAR_OLD_PROMPT)}
-              {renderNotesAndJustifications(NOTES[PRIOR_FAILURE_TO_APPEAR_OLD])}
+              {renderNotesAndJustifications(NOTES[PRIOR_FAILURE_TO_APPEAR_OLD], oldFTAs)}
             </QuestionRow>
 
             <LastQuestionRow>

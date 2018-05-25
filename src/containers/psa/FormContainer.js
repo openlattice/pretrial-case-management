@@ -165,6 +165,7 @@ type Props = {
   charges :Immutable.List<*>,
   allChargesForPerson :Immutable.List<*>,
   allSentencesForPerson :Immutable.List<*>,
+  allFTAs :Immutable.List<*>,
   chargesManuallyEntered :boolean,
   selectedPersonId :string,
   isLoadingCases :boolean,
@@ -214,6 +215,7 @@ class Form extends React.Component<Props, State> {
       pretrialCaseOptions,
       allChargesForPerson,
       allSentencesForPerson,
+      allFTAs,
       psaForm,
       actions,
       location
@@ -226,6 +228,7 @@ class Form extends React.Component<Props, State> {
           pretrialCaseOptions,
           allChargesForPerson,
           allSentencesForPerson,
+          allFTAs,
           this.props.selectedPerson,
           psaForm
         )
@@ -370,7 +373,8 @@ class Form extends React.Component<Props, State> {
         currCase={this.props.selectedPretrialCase}
         allCharges={this.props.allChargesForPerson}
         allSentences={this.props.allSentencesForPerson}
-        allCases={this.props.pretrialCaseOptions} />
+        allCases={this.props.pretrialCaseOptions}
+        allFTAs={this.props.allFTAs} />
   )
 
   renderPSASection = () => {
@@ -418,7 +422,8 @@ class Form extends React.Component<Props, State> {
       selectedPerson,
       pretrialCaseOptions,
       allChargesForPerson,
-      allSentencesForPerson
+      allSentencesForPerson,
+      allFTAs
     } = this.props;
 
     return (
@@ -432,6 +437,7 @@ class Form extends React.Component<Props, State> {
                 pretrialCaseOptions,
                 allChargesForPerson,
                 allSentencesForPerson,
+                allFTAs,
                 {
                   user: this.getStaffId(),
                   timestamp: toISODateTime(moment())
@@ -607,6 +613,7 @@ function mapStateToProps(state :Immutable.Map<*, *>) :Object {
     selectedPretrialCase: psaForm.get('selectedPretrialCase'),
     allChargesForPerson: psaForm.get('allChargesForPerson'),
     allSentencesForPerson: psaForm.get('allSentencesForPerson'),
+    allFTAs: psaForm.get('allFTAs'),
     chargesManuallyEntered: psaForm.get('chargesManuallyEntered'),
     psaForm: psaForm.get('psa'),
     isSubmitted: submit.get('submitted'),
