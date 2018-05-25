@@ -17,6 +17,7 @@ export const ENTITY_SETS = {
   RELEASE_RECOMMENDATIONS: 'southdakotareleaserecommendations',
   STAFF: 'southdakotastaff',
   SPEAKER_RECOGNITION_PROFILES: 'southdakotaspeakerverificationprofiles',
+  FTAS: 'southdakotaftas',
 
   // association entity sets
   APPEARS_IN: 'southdakotaappearsin',

@@ -151,6 +151,7 @@ type Props = {
   caseHistory :Immutable.List<*>,
   chargeHistory :Immutable.Map<*, *>,
   sentenceHistory :Immutable.Map<*, *>,
+  ftaHistory :Immutable.Map<*, *>,
   readOnly :boolean
 }
 
@@ -296,6 +297,7 @@ class ReviewPSA extends React.Component<Props, State> {
     const caseHistory = this.props.caseHistory.get(personId, Immutable.List());
     const chargeHistory = this.props.chargeHistory.get(personId, Immutable.Map());
     const sentenceHistory = this.props.sentenceHistory.get(personId, Immutable.Map());
+    const ftaHistory = this.props.ftaHistory.get(personId, Immutable.Map());
     return (
       <PSAReviewRow
           neighbors={neighbors}
@@ -309,6 +311,7 @@ class ReviewPSA extends React.Component<Props, State> {
           caseHistory={caseHistory}
           chargeHistory={chargeHistory}
           sentenceHistory={sentenceHistory}
+          ftaHistory={ftaHistory}
           readOnly={this.props.readOnly}
           key={scoreId} />
     );
@@ -511,6 +514,7 @@ function mapStateToProps(state) {
     caseHistory: review.get('caseHistory'),
     chargeHistory: review.get('chargeHistory'),
     sentenceHistory: review.get('sentenceHistory'),
+    ftaHistory: review.get('ftaHistory'),
     readOnly: review.get('readOnly')
   };
 }

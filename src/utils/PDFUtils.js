@@ -15,6 +15,7 @@ import {
   getPreviousViolentCharges
 } from './AutofillUtils';
 import { getSentenceToIncarcerationCaseNums } from './consts/SentenceConsts';
+import { getRecentFTAs, getOldFTAs } from './FTAUtils';
 import { PROPERTY_TYPES } from './consts/DataModelConsts';
 
 const {
@@ -372,7 +373,7 @@ const riskFactorNotes = (yInit :number, doc :Object, note :string) :number => {
     y += (Y_INC * noteLines.length);
   }
   return y;
-}
+};
 
 const riskFactors = (
   doc :Object,
@@ -386,7 +387,8 @@ const riskFactors = (
   mostSeriousCharge :string,
   currCaseNum :string,
   dateArrested :string,
-  allCases :Immutable.List<*>
+  allCases :Immutable.List<*>,
+  allFTAs :Immutable.List<*>
 ) :number[] => {
   let y = yInit;
   let page = pageInit;
@@ -465,11 +467,17 @@ const riskFactors = (
   doc.text(X_MARGIN, y, '7. Prior Pre-Trial Failure to Appear in the Last 2 Years');
   doc.text(RESPONSE_OFFSET, y, priorFailureToAppearRecent);
   y = riskFactorNotes(y, doc, riskFactorVals.get(PRIOR_FAILURE_TO_APPEAR_RECENT_NOTES));
+  if (priorFailureToAppearRecent > 0) {
+    y = chargeReferences(y, doc, getRecentFTAs(allFTAs));
+  }
   [y, page] = tryIncrementPage(doc, y, page, name);
 
   doc.text(X_MARGIN, y, '8. Prior Pre-Trial Failure to Appear Older than 2 Years');
   doc.text(RESPONSE_OFFSET, y, getBooleanText(priorFailureToAppearOld));
   y = riskFactorNotes(y, doc, riskFactorVals.get(PRIOR_FAILURE_TO_APPEAR_OLD_NOTES));
+  if (priorFailureToAppearOld) {
+    y = chargeReferences(y, doc, getOldFTAs(allFTAs));
+  }
   [y, page] = tryIncrementPage(doc, y, page, name);
 
   doc.text(X_MARGIN, y, '9. Prior Sentence to Incarceration');
@@ -563,6 +571,7 @@ const exportPDF = (
   allCases :Immutable.List<*>,
   allCharges :Immutable.List<*>,
   allSentences :Immutable.List<*>,
+  allFTAs :Immutable.List<*>,
   createData :{
     user :string,
     timestamp :string
@@ -616,7 +625,8 @@ const exportPDF = (
     mostSeriousCharge,
     selectedPretrialCase.getIn([CASE_ID, 0], ''),
     selectedPretrialCase.getIn([ARREST_DATE, 0], selectedPretrialCase.getIn([FILE_DATE, 0], '')),
-    allCases
+    allCases,
+    allFTAs
   );
   thickLine(doc, y);
   y += Y_INC;

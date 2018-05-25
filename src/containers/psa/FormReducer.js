@@ -20,7 +20,8 @@ import { PSA, NOTES, DMF } from '../../utils/consts/Consts';
 const {
   PRETRIAL_CASES,
   CHARGES,
-  SENTENCES
+  SENTENCES,
+  FTAS
 } = ENTITY_SETS;
 
 const {
@@ -81,6 +82,7 @@ const INITIAL_STATE :Immutable.Map<> = Immutable.fromJS({
   pretrialCaseOptions: Immutable.List(),
   allChargesForPerson: Immutable.List(),
   allSentencesForPerson: Immutable.List(),
+  allFTAs: Immutable.List(),
   charges: Immutable.List(),
   selectedPerson: Immutable.Map(),
   selectedPretrialCase: Immutable.Map(),
@@ -118,6 +120,7 @@ function formReducer(state :Immutable.Map<> = INITIAL_STATE, action :Object) {
           let pretrialCaseOptionsWithoutDate = Immutable.List();
           let allChargesForPerson = Immutable.List();
           let allSentencesForPerson = Immutable.List();
+          let allFTAs = Immutable.List();
 
           const neighbors = Immutable.fromJS(action.value.neighbors) || Immutable.List();
           neighbors.forEach((neighbor) => {
@@ -141,6 +144,9 @@ function formReducer(state :Immutable.Map<> = INITIAL_STATE, action :Object) {
             else if (entitySetName === SENTENCES) {
               allSentencesForPerson = allSentencesForPerson.push(neighborObj);
             }
+            else if (entitySetName === FTAS) {
+              allFTAs = allFTAs.push(neighborObj);
+            }
           });
 
           pretrialCaseOptionsWithDate = pretrialCaseOptionsWithDate.sort((case1, case2) => {
@@ -156,7 +162,8 @@ function formReducer(state :Immutable.Map<> = INITIAL_STATE, action :Object) {
           return state
             .set('pretrialCaseOptions', pretrialCaseOptionsWithDate.concat(pretrialCaseOptionsWithoutDate))
             .set('allChargesForPerson', allChargesForPerson)
-            .set('allSentencesForPerson', allSentencesForPerson);
+            .set('allSentencesForPerson', allSentencesForPerson)
+            .set('allFTAs', allFTAs);
         }
       });
     }
@@ -206,6 +213,7 @@ function formReducer(state :Immutable.Map<> = INITIAL_STATE, action :Object) {
         .set('pretrialCaseOptions', Immutable.List())
         .set('allChargesForPerson', Immutable.List())
         .set('allSentencesForPerson', Immutable.List())
+        .set('allFTAs', Immutable.List())
         .set('selectPerson', Immutable.Map())
         .set('selectedPretrialCase', Immutable.Map())
         .set('chargesManuallyEntered', false)

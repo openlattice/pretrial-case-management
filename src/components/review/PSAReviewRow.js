@@ -128,6 +128,7 @@ type Props = {
   caseHistory :Immutable.List<*>,
   chargeHistory :Immutable.Map<*, *>,
   sentenceHistory :Immutable.Map<*, *>,
+  ftaHistory :Immutable.Map<*, *>,
   readOnly :boolean,
   personId? :string,
   downloadFn :(values :{
@@ -500,6 +501,7 @@ export default class PSAReviewRow extends React.Component<Props, State> {
       caseHistory,
       chargeHistory,
       sentenceHistory,
+      ftaHistory,
       neighbors
     } = this.props;
     const { editing, riskFactors } = this.state;
@@ -521,9 +523,12 @@ export default class PSAReviewRow extends React.Component<Props, State> {
         ''
       )
     );
-    const currCase = caseHistory.filter(caseObj => caseObj.getIn([PROPERTY_TYPES.CASE_ID, 0], '') === caseNum);
+    const currCase = caseHistory
+      .filter(caseObj => caseObj.getIn([PROPERTY_TYPES.CASE_ID, 0], '') === caseNum)
+      .get(0, Immutable.Map());
     const currCharges = chargeHistory.get(caseNum, Immutable.List());
     const allCharges = chargeHistory.toList().flatMap(list => list);
+    const allSentences = sentenceHistory.toList().flatMap(list => list);
 
     return (
       <div>
@@ -537,7 +542,8 @@ export default class PSAReviewRow extends React.Component<Props, State> {
             currCharges={currCharges}
             allCharges={allCharges}
             allCases={caseHistory}
-            allSentences={sentenceHistory}
+            allSentences={allSentences}
+            allFTAs={ftaHistory}
             viewOnly={!editing} />
         {this.renderNotes()}
         {editButton}
