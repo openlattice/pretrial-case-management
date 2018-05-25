@@ -51,7 +51,7 @@ export function* watchLoadPersonDetailsRequest() :Generator<*, *, *> {
     try {
       const entitySetId :string = yield call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.PEOPLE);
       const response = yield call(SearchApi.searchEntityNeighbors, entitySetId, action.id);
-      const lastImportUpdate = moment('2018-05-12T02:46:21.536Z');
+      const lastImportUpdate = moment('2018-05-25T19:07:58.236Z');
 
       // <HACK>
       if (action.shouldLoadCases && !__ENV_DEV__) {
