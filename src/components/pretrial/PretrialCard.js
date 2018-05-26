@@ -7,11 +7,12 @@ import Immutable from 'immutable';
 import moment from 'moment';
 import styled from 'styled-components';
 
+import { formatDate, formatDateTime } from '../../utils/Utils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 
 const {
   CASE_ID,
-  ARREST_DATE,
+  ARREST_DATE_TIME,
   FILE_DATE,
   MOST_SERIOUS_CHARGE_NO,
   MOST_SERIOUS_CHARGE_DESC,
@@ -46,7 +47,7 @@ const CaseInfo = styled.div`
   display: flex;
   text-align: left;
   flex-direction: column;
-  justify-content: space-around;
+  justify-content: flex-start;
   margin: 0;
   margin-left: 10px;
   span {
@@ -64,14 +65,6 @@ type Props = {
   handleSelect? :(pretrialCase :Immutable.Map<*, *>, entityKeyId :string) => void
 };
 
-const getDate = (dateStr) => {
-  let dateFormatted = dateStr;
-  if (dateStr) {
-    dateFormatted = moment.utc(dateStr).format('MM/DD/YYYY');
-  }
-  return dateFormatted;
-};
-
 const PretrialCard = ({ pretrialCase, handleSelect } :Props) => {
 
   const Wrapper = styled(CaseResultWrapper)`
@@ -81,8 +74,8 @@ const PretrialCard = ({ pretrialCase, handleSelect } :Props) => {
   `;
 
   const caseNum = pretrialCase.getIn([CASE_ID, 0]);
-  const arrestDate = getDate(pretrialCase.getIn([ARREST_DATE, 0]));
-  const fileDate = getDate(pretrialCase.getIn([FILE_DATE, 0]));
+  const arrestDate = formatDateTime(pretrialCase.getIn([ARREST_DATE_TIME, 0]));
+  const fileDate = formatDate(pretrialCase.getIn([FILE_DATE, 0]));
   const mostSeriousChargeNum = pretrialCase.getIn([MOST_SERIOUS_CHARGE_NO, 0]);
   const mostSeriousChargeDesc = pretrialCase.getIn([MOST_SERIOUS_CHARGE_DESC, 0]);
   const mostSeriousChargeDeg = pretrialCase.getIn([MOST_SERIOUS_CHARGE_DEG, 0]);
@@ -101,8 +94,8 @@ const PretrialCard = ({ pretrialCase, handleSelect } :Props) => {
       <CaseInfoWrapper>
         <CaseInfoHeaders>
           <strong>Case Number:</strong>
-          <strong>File Date:</strong>
           <strong>Arrest Date:</strong>
+          <strong>File Date:</strong>
           {
             handleSelect ? (
               <FlexContainer>
@@ -116,8 +109,8 @@ const PretrialCard = ({ pretrialCase, handleSelect } :Props) => {
         </CaseInfoHeaders>
         <CaseInfo>
           <span>{ caseNum }</span>
-          <span>{ fileDate }</span>
           <span>{ arrestDate }</span>
+          <span>{ fileDate }</span>
           {
             handleSelect ? (
               <FlexContainer>
