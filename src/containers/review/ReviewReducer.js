@@ -22,6 +22,7 @@ const INITIAL_STATE :Immutable.Map<*, *> = Immutable.fromJS({
   allFilers: Immutable.Set(),
   caseHistory: Immutable.Map(),
   chargeHistory: Immutable.Map(),
+  arrestChargeHistory: Immutable.Map(),
   sentenceHistory: Immutable.Map(),
   ftaHistory: Immutable.Map(),
   readOnly: true
@@ -43,16 +44,19 @@ export default function reviewReducer(state :Immutable.Map<*, *> = INITIAL_STATE
         REQUEST: () => state
           .setIn(['caseHistory', action.value.personId], Immutable.List())
           .setIn(['chargeHistory', action.value.personId], Immutable.Map())
+          .setIn(['arrestChargeHistory', action.value.personId], Immutable.Map())
           .setIn(['sentenceHistory', action.value.personId], Immutable.Map())
           .setIn(['ftaHistory', action.value.personId], Immutable.List()),
         SUCCESS: () => state
           .setIn(['caseHistory', action.value.personId], action.value.allCases)
           .setIn(['chargeHistory', action.value.personId], action.value.chargesByCaseId)
+          .setIn(['arrestChargeHistory', action.value.personId], action.value.arrestChargesByCaseId)
           .setIn(['sentenceHistory', action.value.personId], action.value.sentencesByCaseId)
           .setIn(['ftaHistory', action.value.personId], action.value.allFTAs),
         FAILURE: () => state
           .setIn(['caseHistory', action.value.personId], Immutable.List())
           .setIn(['chargeHistory', action.value.personId], Immutable.Map())
+          .setIn(['arrestChargeHistory', action.value.personId], Immutable.Map())
           .setIn(['sentenceHistory', action.value.personId], Immutable.Map())
           .setIn(['ftaHistory', action.value.personId], Immutable.List())
       });

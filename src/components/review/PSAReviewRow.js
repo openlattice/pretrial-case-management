@@ -127,6 +127,7 @@ type Props = {
   neighbors :Immutable.Map<*, *>,
   caseHistory :Immutable.List<*>,
   chargeHistory :Immutable.Map<*, *>,
+  arrestChargeHistory :Immutable.Map<*, *>,
   sentenceHistory :Immutable.Map<*, *>,
   ftaHistory :Immutable.Map<*, *>,
   readOnly :boolean,
@@ -443,16 +444,16 @@ export default class PSAReviewRow extends React.Component<Props, State> {
   }
 
   renderCaseInfo = () => {
-    const { caseHistory, chargeHistory, neighbors } = this.props;
+    const { caseHistory, arrestChargeHistory, neighbors } = this.props;
     const caseNum = neighbors.getIn(
-      [ENTITY_SETS.PRETRIAL_CASES, 'neighborDetails', PROPERTY_TYPES.CASE_ID, 0],
+      [ENTITY_SETS.ARREST_CASES, 'neighborDetails', PROPERTY_TYPES.CASE_ID, 0],
       neighbors.getIn(
         [ENTITY_SETS.MANUAL_PRETRIAL_CASES, 'neighborDetails', PROPERTY_TYPES.CASE_ID, 0],
         ''
       )
     );
     const pretrialCase = caseHistory.filter(caseObj => caseObj.getIn([PROPERTY_TYPES.CASE_ID, 0], '') === caseNum);
-    const charges = chargeHistory.get(caseNum, Immutable.List());
+    const charges = arrestChargeHistory.get(caseNum, Immutable.List());
     const caseNumText = caseNum.length ? `Case #: ${caseNum}` : 'No case information provided.';
     return (
       <CenteredContainer>
