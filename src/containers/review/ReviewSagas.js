@@ -301,6 +301,11 @@ function* downloadPSAReviewPDFWorker(action :SequenceAction) :Generator<*, *, *>
         Immutable.Map()
       )
     );
+    const caseId = selectedCase.getIn([PROPERTY_TYPES.CASE_ID, 0], '');
+
+    const selectedCharges = (neighbors.get(ENTITY_SETS.ARREST_CASES, false) ? allArrestCharges : allCharges)
+      .filter(chargeObj => chargeObj.getIn([PROPERTY_TYPES.CHARGE_ID, 0], '').split('|')[0] === caseId);
+
     const selectedPerson = neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborDetails'], Immutable.Map());
 
     let createData;
@@ -335,7 +340,7 @@ function* downloadPSAReviewPDFWorker(action :SequenceAction) :Generator<*, *, *>
     exportPDF(
       data,
       selectedCase,
-      allArrestCharges,
+      selectedCharges,
       selectedPerson,
       allCases,
       allCharges,
