@@ -419,6 +419,7 @@ class Form extends React.Component<Props, State> {
     if (!this.state.scoresWereGenerated) return null;
     const {
       selectedPretrialCase,
+      charges,
       selectedPerson,
       pretrialCaseOptions,
       allChargesForPerson,
@@ -433,6 +434,7 @@ class Form extends React.Component<Props, State> {
             onClick={() => {
               exportPDF(Immutable.fromJS(this.state).set('riskFactors', this.setMultimapToMap(this.state.riskFactors)),
                 selectedPretrialCase,
+                charges,
                 selectedPerson,
                 pretrialCaseOptions,
                 allChargesForPerson,

@@ -136,7 +136,6 @@ function* loadCaseHistoryWorker(action :SequenceAction) :Generator<*, *, *> {
       allCases,
       allCharges,
       allArrestCharges,
-      allManualCharges,
       allSentences,
       allFTAs
     } = yield getCasesAndCharges(neighbors);
@@ -266,6 +265,7 @@ function* downloadPSAReviewPDFWorker(action :SequenceAction) :Generator<*, *, *>
     const {
       allCases,
       allCharges,
+      allArrestCharges,
       allSentences,
       allFTAs
     } = yield getCasesAndCharges(neighbors);
@@ -332,7 +332,18 @@ function* downloadPSAReviewPDFWorker(action :SequenceAction) :Generator<*, *, *>
       }
     });
 
-    exportPDF(data, selectedCase, selectedPerson, allCases, allCharges, allSentences, allFTAs, createData, updateData);
+    exportPDF(
+      data,
+      selectedCase,
+      allArrestCharges,
+      selectedPerson,
+      allCases,
+      allCharges,
+      allSentences,
+      allFTAs,
+      createData,
+      updateData
+    );
 
     yield put(downloadPSAReviewPDF.success(action.id));
   }
