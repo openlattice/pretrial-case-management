@@ -95,7 +95,7 @@ export function* watchLoadPersonDetailsRequest() :Generator<*, *, *> {
       }
     }
     catch (error) {
-      console.error(error)
+      console.error(error);
       yield put(loadPersonDetailsFailure(error));
     }
   }
