@@ -119,7 +119,7 @@ export default class SelectPretrialCaseContainer extends React.Component<Props, 
     return (
       <SearchResultsList>
         <StyledNavBtnWrapper>
-          <NavButton onClick={this.enterManually}>Proceed Without Case</NavButton>
+          <NavButton onClick={this.enterManually}>Proceed Without Arrest</NavButton>
         </StyledNavBtnWrapper>
         { caseOptions.toSeq() }
       </SearchResultsList>
@@ -129,7 +129,7 @@ export default class SelectPretrialCaseContainer extends React.Component<Props, 
   render() {
     return (
       <Wrapper>
-        <Header>Select a case</Header>
+        <Header>Select an arrest</Header>
         { this.renderSearchResults() }
       </Wrapper>
     );
