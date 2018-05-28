@@ -10,7 +10,7 @@ import moment from 'moment';
 import styled from 'styled-components';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { Pager, Tab, Tabs } from 'react-bootstrap';
+import { ButtonToolbar, Pager, Tab, Tabs, ToggleButton, ToggleButtonGroup } from 'react-bootstrap';
 
 import PSAReviewRow from '../../components/review/PSAReviewRow';
 import LoadingSpinner from '../../components/LoadingSpinner';
@@ -100,6 +100,21 @@ const SearchRow = styled(PaddedRow)`
   align-items: flex-end;
   justify-content: center;
   margin: 10px;
+`;
+
+const SortContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+`;
+
+const SortText = styled.div`
+  font-size: 14px;
+  margin: -5px 0 5px 0;
+`;
+
+const SortButton = styled(ToggleButton)`
+  -webkit-appearance: none !important;
 `;
 
 const DATE_FORMAT = 'MM/DD/YYYY';
@@ -470,6 +485,22 @@ class ReviewPSA extends React.Component<Props, State> {
     </div>
   )
 
+  onSortChange = (sort) => {
+    this.setState({ sort });
+  }
+
+  renderSortChoices = () => (
+    <SortContainer>
+      <SortText>Sort by:</SortText>
+      <ButtonToolbar>
+        <ToggleButtonGroup type="radio" name="sortPicker" value={this.state.sort} onChange={this.onSortChange}>
+          <SortButton value={SORT_TYPES.NAME}>Name</SortButton>
+          <SortButton value={SORT_TYPES.DATE}>Date</SortButton>
+        </ToggleButtonGroup>
+      </ButtonToolbar>
+    </SortContainer>
+  )
+
   updateScoresAndRiskFactors = (
     scoresId,
     scoresEntity,
@@ -544,6 +575,7 @@ class ReviewPSA extends React.Component<Props, State> {
       <StyledSectionWrapper>
         {this.renderError()}
         {this.renderFilters()}
+        {this.renderSortChoices()}
         {this.handleFilterRequest()}
         <StyledTopFormNavBuffer />
       </StyledSectionWrapper>
