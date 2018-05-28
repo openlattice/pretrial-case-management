@@ -3,7 +3,7 @@ import { PSA, DMF, NOTES, ID_FIELD_NAMES, ID_FIELDS } from '../../utils/consts/C
 import { RESULT_CATEGORIES } from '../../utils/consts/DMFResultConsts';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 
-const psaConfig = {
+const psaConfig = caseEntitySetName => ({
   entitySets: [
     {
       name: ENTITY_SETS.PSA_SCORES,
@@ -99,7 +99,7 @@ const psaConfig = {
       }
     },
     {
-      name: ENTITY_SETS.PRETRIAL_CASES,
+      name: caseEntitySetName,
       alias: ALIASES.CASE,
       entityId: ID_FIELD_NAMES.CASE_ID,
       fields: {
@@ -319,6 +319,6 @@ const psaConfig = {
       association: ALIASES.CHARGED_WITH
     }
   ]
-};
+});
 
 export default psaConfig;

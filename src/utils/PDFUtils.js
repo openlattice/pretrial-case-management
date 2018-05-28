@@ -567,6 +567,7 @@ const caseHistory = (
 const exportPDF = (
   data :Immutable.Map<*, *>,
   selectedPretrialCase :Immutable.Map<*, *>,
+  selectedCharges :Immutable.Map<*, *>,
   selectedPerson :Immutable.Map<*, *>,
   allCases :Immutable.List<*>,
   allCharges :Immutable.List<*>,
@@ -587,11 +588,7 @@ const exportPDF = (
   let page = 1;
   const name = getName(selectedPerson);
   const chargesByCaseNum = getChargesByCaseNum(allCharges);
-  const caseIdArr = selectedPretrialCase.get(CASE_ID, Immutable.List());
   const mostSeriousCharge = selectedPretrialCase.getIn([MOST_SERIOUS_CHARGE_NO, 0], '');
-
-  const caseNum = (caseIdArr.size) ? formatValue(caseIdArr) : '';
-  const currCharges = chargesByCaseNum.get(caseNum, Immutable.List());
 
   // PAGE HEADER
   y = header(doc, y);
@@ -608,7 +605,7 @@ const exportPDF = (
   y += Y_INC;
 
   // CHARGES SECTION
-  [y, page] = charges(doc, y, page, name, selectedPretrialCase, currCharges, false);
+  [y, page] = charges(doc, y, page, name, selectedPretrialCase, selectedCharges, false);
   thickLine(doc, y);
   y += Y_INC;
 
@@ -619,7 +616,7 @@ const exportPDF = (
     page,
     name,
     data.get('riskFactors'),
-    currCharges,
+    selectedCharges,
     allCharges,
     allSentences,
     mostSeriousCharge,

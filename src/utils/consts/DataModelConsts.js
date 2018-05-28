@@ -19,6 +19,12 @@ export const ENTITY_SETS = {
   SPEAKER_RECOGNITION_PROFILES: 'southdakotaspeakerverificationprofiles',
   FTAS: 'southdakotaftas',
 
+  // arrest entity sets
+  ARREST_CASES: 'PenZuercherPretrialCase',
+  ARREST_CHARGES: 'PenZuercherCharge',
+  ARREST_APPEARS_IN: 'PenZuercherAppearsin',
+  ARREST_CHARGED_WITH: 'PenZuercherchargedwith',
+
   // association entity sets
   APPEARS_IN: 'southdakotaappearsin',
   ASSESSED_BY: 'southdakotaassessedby',
@@ -57,6 +63,7 @@ export const PROPERTY_TYPES = {
   // Pretrial case entity type consts
   CASE_ID: 'j.CaseNumberText',
   ARREST_DATE: 'publicsafety.ArrestDate',
+  ARREST_DATE_TIME: 'ol.arrestdatetime',
   FILE_DATE: 'publicsafety.FileDate',
   MOST_SERIOUS_CHARGE_NO: 'publicsafety.MostSeriousChargeStatuteNumber',
   MOST_SERIOUS_CHARGE_DESC: 'publicsafety.MostSeriousStatuteDescription',

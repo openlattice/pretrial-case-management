@@ -150,6 +150,7 @@ type Props = {
   allFilers :Immutable.Set<*>,
   caseHistory :Immutable.List<*>,
   chargeHistory :Immutable.Map<*, *>,
+  arrestChargeHistory :Immutable.Map<*, *>,
   sentenceHistory :Immutable.Map<*, *>,
   ftaHistory :Immutable.Map<*, *>,
   readOnly :boolean
@@ -296,6 +297,7 @@ class ReviewPSA extends React.Component<Props, State> {
     const personId = neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborId'], '');
     const caseHistory = this.props.caseHistory.get(personId, Immutable.List());
     const chargeHistory = this.props.chargeHistory.get(personId, Immutable.Map());
+    const arrestChargeHistory = this.props.arrestChargeHistory.get(personId, Immutable.Map());
     const sentenceHistory = this.props.sentenceHistory.get(personId, Immutable.Map());
     const ftaHistory = this.props.ftaHistory.get(personId, Immutable.Map());
     return (
@@ -310,6 +312,7 @@ class ReviewPSA extends React.Component<Props, State> {
           submitData={this.props.actions.submit}
           caseHistory={caseHistory}
           chargeHistory={chargeHistory}
+          arrestChargeHistory={arrestChargeHistory}
           sentenceHistory={sentenceHistory}
           ftaHistory={ftaHistory}
           readOnly={this.props.readOnly}
@@ -513,6 +516,7 @@ function mapStateToProps(state) {
     errorMesasge: review.get('errorMesasge'),
     caseHistory: review.get('caseHistory'),
     chargeHistory: review.get('chargeHistory'),
+    arrestChargeHistory: review.get('arrestChargeHistory'),
     sentenceHistory: review.get('sentenceHistory'),
     ftaHistory: review.get('ftaHistory'),
     readOnly: review.get('readOnly')

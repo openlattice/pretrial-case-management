@@ -18,6 +18,8 @@ import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts'
 import { PSA, NOTES, DMF } from '../../utils/consts/Consts';
 
 const {
+  ARREST_CASES,
+  ARREST_CHARGES,
   PRETRIAL_CASES,
   CHARGES,
   SENTENCES,
@@ -27,7 +29,8 @@ const {
 const {
   CHARGE_ID,
   CASE_ID,
-  FILE_DATE
+  FILE_DATE,
+  ARREST_DATE_TIME
 } = PROPERTY_TYPES;
 
 const {
@@ -80,8 +83,10 @@ const INITIAL_PSA_FORM = Immutable.fromJS({
 
 const INITIAL_STATE :Immutable.Map<> = Immutable.fromJS({
   pretrialCaseOptions: Immutable.List(),
+  allArrests: Immutable.List(),
   allChargesForPerson: Immutable.List(),
   allSentencesForPerson: Immutable.List(),
+  allArrestCharges: Immutable.List(),
   allFTAs: Immutable.List(),
   charges: Immutable.List(),
   selectedPerson: Immutable.Map(),
@@ -116,8 +121,10 @@ function formReducer(state :Immutable.Map<> = INITIAL_STATE, action :Object) {
     case loadNeighbors.case(action.type): {
       return loadNeighbors.reducer(state, action, {
         SUCCESS: () => {
-          let pretrialCaseOptionsWithDate = Immutable.List();
-          let pretrialCaseOptionsWithoutDate = Immutable.List();
+          let allCasesForPerson = Immutable.List();
+          let arrestOptionsWithDate = Immutable.List();
+          let arrestOptionsWithoutDate = Immutable.List();
+          let allArrestCharges = Immutable.List();
           let allChargesForPerson = Immutable.List();
           let allSentencesForPerson = Immutable.List();
           let allFTAs = Immutable.List();
@@ -130,13 +137,19 @@ function formReducer(state :Immutable.Map<> = INITIAL_STATE, action :Object) {
               .set('id', neighbor.get('neighborId', ''));
 
             if (entitySetName === PRETRIAL_CASES) {
-              const arrList = neighborObj.get(FILE_DATE, Immutable.List());
+              allCasesForPerson = allCasesForPerson.push(neighborObj);
+            }
+            else if (entitySetName === ARREST_CASES) {
+              const arrList = neighborObj.get(ARREST_DATE_TIME, Immutable.List());
               if (arrList.size) {
-                pretrialCaseOptionsWithDate = pretrialCaseOptionsWithDate.push(neighborObj);
+                arrestOptionsWithDate = arrestOptionsWithDate.push(neighborObj);
               }
               else {
-                pretrialCaseOptionsWithoutDate = pretrialCaseOptionsWithoutDate.push(neighborObj);
+                arrestOptionsWithoutDate = arrestOptionsWithoutDate.push(neighborObj);
               }
+            }
+            else if (entitySetName === ARREST_CHARGES) {
+              allArrestCharges = allArrestCharges.push(neighborObj);
             }
             else if (entitySetName === CHARGES) {
               allChargesForPerson = allChargesForPerson.push(neighborObj);
@@ -149,7 +162,7 @@ function formReducer(state :Immutable.Map<> = INITIAL_STATE, action :Object) {
             }
           });
 
-          pretrialCaseOptionsWithDate = pretrialCaseOptionsWithDate.sort((case1, case2) => {
+          arrestOptionsWithDate = arrestOptionsWithDate.sort((case1, case2) => {
             const arr1 = moment(case1.getIn([FILE_DATE, 0], ''));
             const arr2 = moment(case2.getIn([FILE_DATE, 0], ''));
             if (arr1.isValid() && arr2.isValid()) {
@@ -160,10 +173,12 @@ function formReducer(state :Immutable.Map<> = INITIAL_STATE, action :Object) {
           });
 
           return state
-            .set('pretrialCaseOptions', pretrialCaseOptionsWithDate.concat(pretrialCaseOptionsWithoutDate))
+            .set('pretrialCaseOptions', arrestOptionsWithDate.concat(arrestOptionsWithoutDate))
+            .set('allCasesForPerson', allCasesForPerson)
             .set('allChargesForPerson', allChargesForPerson)
             .set('allSentencesForPerson', allSentencesForPerson)
-            .set('allFTAs', allFTAs);
+            .set('allFTAs', allFTAs)
+            .set('allArrestCharges', allArrestCharges);
         }
       });
     }
@@ -192,7 +207,7 @@ function formReducer(state :Immutable.Map<> = INITIAL_STATE, action :Object) {
       const { selectedPretrialCase } = action.value;
 
       const selectedCaseIdList = selectedPretrialCase.get(CASE_ID, Immutable.List());
-      const charges = state.get('allChargesForPerson')
+      const charges = state.get('allArrestCharges')
         .filter(charge => getCaseAndChargeNum(charge)[0] === selectedCaseIdList.get(0))
         .sort((c1, c2) => getCaseAndChargeNum(c1)[1] > getCaseAndChargeNum(c2)[1]);
       return state

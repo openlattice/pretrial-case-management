@@ -293,10 +293,10 @@ class Form extends React.Component<Props, State> {
       values[ID_FIELD_NAMES.CASE_ID] = [this.props.selectedPretrialCase.getIn([PROPERTY_TYPES.CASE_ID, 0])];
     }
 
-    this.props.actions.submit({
-      values,
-      config: psaConfig
-    });
+    const config = this.props.chargesManuallyEntered
+      ? psaConfig(ENTITY_SETS.MANUAL_PRETRIAL_CASES) : psaConfig(ENTITY_SETS.ARREST_CASES);
+
+    this.props.actions.submit({ values, config });
     this.setState({ notesId: values[ID_FIELD_NAMES.NOTES_ID][0] });
   }
 
@@ -419,6 +419,7 @@ class Form extends React.Component<Props, State> {
     if (!this.state.scoresWereGenerated) return null;
     const {
       selectedPretrialCase,
+      charges,
       selectedPerson,
       pretrialCaseOptions,
       allChargesForPerson,
@@ -433,6 +434,7 @@ class Form extends React.Component<Props, State> {
             onClick={() => {
               exportPDF(Immutable.fromJS(this.state).set('riskFactors', this.setMultimapToMap(this.state.riskFactors)),
                 selectedPretrialCase,
+                charges,
                 selectedPerson,
                 pretrialCaseOptions,
                 allChargesForPerson,
