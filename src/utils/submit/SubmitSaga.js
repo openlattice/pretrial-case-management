@@ -176,7 +176,7 @@ function* submitWorker(action :SequenceAction) :Generator<*, *, *> {
   }
   catch (error) {
     console.error(error)
-    yield put(submit.failure(action.id));
+    yield put(submit.failure(action.id, error));
   }
   finally {
     yield put(submit.finally(action.id));
