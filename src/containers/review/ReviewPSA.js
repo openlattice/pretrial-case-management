@@ -10,13 +10,13 @@ import moment from 'moment';
 import styled from 'styled-components';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { ButtonToolbar, Pager, Tab, Tabs, ToggleButton, ToggleButtonGroup } from 'react-bootstrap';
+import { ButtonToolbar, Pagination, Tab, Tabs, ToggleButton, ToggleButtonGroup } from 'react-bootstrap';
 
 import PSAReviewRow from '../../components/review/PSAReviewRow';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import PersonSearchFields from '../../components/person/PersonSearchFields';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { PaddedRow, TitleLabel, StyledSelect } from '../../utils/Layout';
+import { CenteredContainer, PaddedRow, TitleLabel, StyledSelect } from '../../utils/Layout';
 import * as FormActionFactory from '../psa/FormActionFactory';
 import * as ReviewActionFactory from './ReviewActionFactory';
 import * as Routes from '../../core/router/Routes';
@@ -550,20 +550,17 @@ class ReviewPSA extends React.Component<Props, State> {
     const numPages = Math.ceil(numResults / MAX_RESULTS);
     const currPage = (start / MAX_RESULTS) + 1;
     return (
-      <Pager>
-        <Pager.Item
-            previous
-            onClick={() => this.updatePage(start - MAX_RESULTS)}
-            disabled={currPage === 1}>
-          &larr;
-        </Pager.Item>
-        <Pager.Item
+      <CenteredContainer>
+        <Pagination
+            prev
             next
-            onClick={() => this.updatePage(start + MAX_RESULTS)}
-            disabled={currPage === numPages}>
-          &rarr;
-        </Pager.Item>
-      </Pager>
+            ellipsis
+            boundaryLinks
+            items={numPages}
+            maxButtons={5}
+            activePage={currPage}
+            onSelect={page => this.updatePage((page - 1) * MAX_RESULTS)} />
+      </CenteredContainer>
     );
   }
 
