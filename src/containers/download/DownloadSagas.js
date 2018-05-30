@@ -4,7 +4,7 @@
 import Immutable from 'immutable';
 import Papa from 'papaparse';
 import moment from 'moment';
-import { EntityDataModelApi, SearchApi } from 'lattice';
+import { DataApi, EntityDataModelApi, SearchApi } from 'lattice';
 import { call, put, takeEvery } from 'redux-saga/effects';
 
 import FileSaver from '../../utils/FileSaver';
@@ -23,10 +23,11 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
     const start = moment(startDate);
     const end = moment(endDate);
     const entitySetId = yield call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.PSA_SCORES);
+    const entitySetSize = yield call(DataApi.getEntitySetSize, entitySetId);
     const options = {
       searchTerm: '*',
       start: 0,
-      maxHits: 10000 // temporary hack to load all entity set data
+      maxHits: entitySetSize
     };
 
     const allScoreData = yield call(SearchApi.searchEntitySetData, entitySetId, options);
@@ -79,7 +80,7 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
     let jsonResults = Immutable.List();
     let allHeaders = Immutable.Set();
     usableNeighborsById.keySeq().forEach((id) => {
-      let combinedEntity = getUpdatedEntity(Immutable.Map(), 'PSA Scores', ENTITY_SETS.PSA, scoresAsMap.get(id));
+      let combinedEntity = getUpdatedEntity(Immutable.Map(), 'PSA Scores', ENTITY_SETS.PSA_SCORES, scoresAsMap.get(id));
 
       usableNeighborsById.get(id).forEach((neighbor) => {
         combinedEntity = getUpdatedEntity(
