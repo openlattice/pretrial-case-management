@@ -52,6 +52,51 @@ export const getHeaderText = (dmf) => {
   }
 };
 
+export const getConditionText = (condition) => {
+  switch (condition) {
+    case CONDITION_TYPES.PR:
+      return 'PR';
+
+    case CONDITION_TYPES.PR_RELEASE:
+      return 'PR - Release';
+
+    case CONDITION_TYPES.EM_OR_BOND:
+      return 'EM or $ Bond';
+
+    case CONDITION_TYPES.EM_AND_BOND:
+      return 'EM and $ Bond';
+
+    case CONDITION_TYPES.CHECKIN_WEEKLY:
+      return 'Weekly check-in';
+
+    case CONDITION_TYPES.CHECKIN_WEEKLY_AT_LEAST:
+      return 'At least weekly check-in';
+
+    case CONDITION_TYPES.CHECKIN_MONTHLY:
+      return '1/month check-in';
+
+    case CONDITION_TYPES.CHECKIN_TWICE_MONTHLY:
+      return '2/month check-in';
+
+    case CONDITION_TYPES.IF_APPLICABLE_247:
+      return '24/7, if applicable';
+
+    case CONDITION_TYPES.HOLD_PENDING_JUDICIAL_REVIEW:
+      return 'Hold pending judicial review';
+
+    default:
+      return '';
+  }
+};
+
+export const getConditionsTextList = (dmf) => {
+  const condition1 = getConditionText(dmf[RESULT_CATEGORIES.CONDITION_1]);
+  const condition2 = getConditionText(dmf[RESULT_CATEGORIES.CONDITION_2]);
+  const condition3 = getConditionText(dmf[RESULT_CATEGORIES.CONDITION_3]);
+
+  return [condition1, condition2, condition3].filter(val => val.length);
+};
+
 export const increaseDMFSeverity = (dmfResult) => {
   const increasedValues = {};
   let newColor = dmfResult[RESULT_CATEGORIES.COLOR];

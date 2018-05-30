@@ -22,6 +22,7 @@ import {
 } from './ReviewActionFactory';
 
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { RESULT_CATEGORIES } from '../../utils/consts/DMFResultConsts';
 
 const orderCasesByArrestDate = (case1, case2) => {
   const date1 = moment(case1.getIn([PROPERTY_TYPES.ARREST_DATE, 0], case1.getIn([PROPERTY_TYPES.FILE_DATE, 0], '')));
@@ -281,6 +282,15 @@ function* downloadPSAReviewPDFWorker(action :SequenceAction) :Generator<*, *, *>
       .set('ncaScale', scores.getIn([PROPERTY_TYPES.NCA_SCALE, 0]))
       .set('nvcaFlag', scores.getIn([PROPERTY_TYPES.NVCA_FLAG, 0]));
 
+    const dmf = neighbors.getIn([ENTITY_SETS.DMF_RESULTS, 'neighborDetails'], Immutable.Map());
+    const formattedDMF = Immutable.Map()
+      .set(RESULT_CATEGORIES.RELEASE_TYPE, dmf.getIn([PROPERTY_TYPES.RELEASE_TYPE, 0]))
+      .set(RESULT_CATEGORIES.CONDITIONS_LEVEL, dmf.getIn([PROPERTY_TYPES.CONDITIONS_LEVEL, 0]))
+      .set(RESULT_CATEGORIES.CONDITION_1, dmf.getIn([PROPERTY_TYPES.CONDITION_1, 0]))
+      .set(RESULT_CATEGORIES.CONDITION_2, dmf.getIn([PROPERTY_TYPES.CONDITION_2, 0]))
+      .set(RESULT_CATEGORIES.CONDITION_3, dmf.getIn([PROPERTY_TYPES.CONDITION_3, 0]))
+      .filter(val => !!val);
+
     const setMultimapToMap = (entitySetName) => {
       let map = Immutable.Map();
       neighbors.getIn([entitySetName, 'neighborDetails'], Immutable.Map()).keySeq().forEach((fqn) => {
@@ -292,7 +302,8 @@ function* downloadPSAReviewPDFWorker(action :SequenceAction) :Generator<*, *, *>
     const data = Immutable.Map()
       .set('scores', formattedScores)
       .set('notes', recommendationText)
-      .set('riskFactors', setMultimapToMap(ENTITY_SETS.PSA_RISK_FACTORS));
+      .set('riskFactors', setMultimapToMap(ENTITY_SETS.PSA_RISK_FACTORS))
+      .set('dmf', formattedDMF);
 
     const selectedCase = neighbors.getIn(
       [ENTITY_SETS.ARREST_CASES, 'neighborDetails'],

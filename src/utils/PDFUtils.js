@@ -17,6 +17,7 @@ import {
 import { getSentenceToIncarcerationCaseNums } from './consts/SentenceConsts';
 import { getRecentFTAs, getOldFTAs } from './FTAUtils';
 import { PROPERTY_TYPES } from './consts/DataModelConsts';
+import { getHeaderText, getConditionsTextList } from './consts/DMFResultConsts';
 
 const {
   AGE_AT_CURRENT_ARREST,
@@ -280,15 +281,14 @@ const nvcaFlag = (doc :Object, yInit :number, value :string) :number => {
   doc.text(X_MARGIN + SCORE_OFFSET + SCORE_OFFSET, y, value);
   if (flagIsTrue) {
     doc.setFontSize(FONT_SIZE);
-    doc.setFontType('regular')
+    doc.setFontType('regular');
     y += Y_INC;
   }
   else {
     y += Y_INC;
   }
   return y;
-
-}
+};
 
 const scores = (doc :Object, yInit :number, scoreValues :Immutable.Map<*, *>) :number => {
   let y = yInit;
@@ -303,6 +303,32 @@ const scores = (doc :Object, yInit :number, scoreValues :Immutable.Map<*, *>) :n
   y += Y_INC;
   y = scale(doc, y, scoreValues.get('ftaScale'));
   y += Y_INC;
+  return y;
+};
+
+const dmf = (doc :Object, yInit :number, dmfValues :Immutable.Map<*, *>) :number => {
+  let y = yInit;
+  if (dmfValues.size) {
+    doc.text(X_MARGIN, y, 'DMF Decision:');
+    y += Y_INC;
+    thinLine(doc, y);
+    y += Y_INC;
+
+    const headerText = getHeaderText(dmfValues.toJS());
+    doc.text(X_MARGIN + SCORE_OFFSET, y, headerText);
+    y += Y_INC;
+
+    const conditionsTextList = getConditionsTextList(dmfValues.toJS());
+    doc.setFontType('italic');
+    conditionsTextList.forEach((condition, index) => {
+      doc.text(X_MARGIN * 2, y, `Condition ${index + 1}: ${condition}`);
+      y += Y_INC;
+    });
+    doc.setFontType('regular');
+
+    thickLine(doc, y);
+    y += Y_INC;
+  }
   return y;
 };
 
@@ -603,6 +629,9 @@ const exportPDF = (
   y = scores(doc, y, data.get('scores'));
   thickLine(doc, y);
   y += Y_INC;
+
+  // DMF SECTION
+  y = dmf(doc, y, data.get('dmf'));
 
   // CHARGES SECTION
   [y, page] = charges(doc, y, page, name, selectedPretrialCase, selectedCharges, false);
