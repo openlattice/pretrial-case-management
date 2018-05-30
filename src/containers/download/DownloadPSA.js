@@ -3,8 +3,7 @@
  */
 
 import React from 'react';
-import FontAwesome from 'react-fontawesome';
-import DatePicker from 'react-bootstrap-date-picker';
+import DateTimePicker from 'react-datetime';
 import moment from 'moment';
 import styled from 'styled-components';
 import { connect } from 'react-redux';
@@ -94,7 +93,7 @@ class DownloadPSA extends React.Component<Props, State> {
         <DateRangeContainer>
           <DatePickerGroupContainer>
             <div>Start Date:</div>
-            <DatePicker
+            <DateTimePicker
                 value={startDate}
                 onChange={(date) => {
                   this.setState({ startDate: date });
@@ -102,7 +101,7 @@ class DownloadPSA extends React.Component<Props, State> {
           </DatePickerGroupContainer>
           <DatePickerGroupContainer>
             <div>End Date:</div>
-            <DatePicker
+            <DateTimePicker
                 value={endDate}
                 onChange={(date) => {
                   this.setState({ endDate: date });

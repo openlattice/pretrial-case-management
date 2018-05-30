@@ -49,9 +49,7 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
           || neighbor.associationDetails[PROPERTY_TYPES.COMPLETED_DATE_TIME];
         if (timestampList && timestampList.length) {
           const timestamp = moment(timestampList[0]);
-          const matchesStart = timestamp.diff(start, 'seconds') > 0 || timestamp.isSame(start, 'day');
-          const matchesEnd = timestamp.diff(end, 'seconds') < 0 || timestamp.isSame(end, 'day');
-          if (matchesStart && matchesEnd) {
+          if (timestamp.isSameOrAfter(start) && timestamp.isSameOrBefore(end)) {
             usableNeighbors = usableNeighbors.push(Immutable.fromJS(neighbor));
           }
         }
