@@ -557,11 +557,12 @@ export default class PSAReviewRow extends React.Component<Props, State> {
     const dmf = this.getDMF();
     const nca = scores.getIn([PROPERTY_TYPES.NCA_SCALE, 0]);
     const fta = scores.getIn([PROPERTY_TYPES.FTA_SCALE, 0]);
+    const nvca = scores.getIn([PROPERTY_TYPES.NVCA_FLAG, 0]);
     if (!this.props.neighbors.getIn([ENTITY_SETS.DMF_RESULTS, 'neighborDetails'], Immutable.Map()).size) {
       return <NoDMFContainer>A DMF was not calculated for this PSA.</NoDMFContainer>;
     }
 
-    return <DMFExplanation dmf={dmf} nca={nca} fta={fta} riskFactors={this.state.riskFactors} />;
+    return <DMFExplanation dmf={dmf} nca={nca} fta={fta} nvca={nvca} riskFactors={this.state.riskFactors} />;
   }
 
   renderDetails = () => {

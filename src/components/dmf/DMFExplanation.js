@@ -4,7 +4,7 @@ import styled from 'styled-components';
 
 import DMFCell from './DMFCell';
 import DMFTable from './DMFTable';
-import { DMF, NOTES } from '../../utils/consts/Consts';
+import { DMF, NOTES, PSA } from '../../utils/consts/Consts';
 import { getDMFDecision } from '../../utils/consts/DMFResultConsts';
 
 const StepHeader = styled.div`
@@ -67,25 +67,43 @@ const StepTwo = ({
   extraditedNotes,
   stepTwoVal,
   stepTwoNotes,
+  violent,
   context
 }) => {
-  if (!extradited && !stepTwoVal) {
+  if (!extradited && !stepTwoVal && !violent) {
     return (
       <div>
         <StepHeader>Step Two:</StepHeader>
         <StepWrapper>
-          <div>Defendant was not extradited and no charges meet the requirements to skip to maximum requirements.</div>
+          <div>
+            Defendant was not extradited, no NVCA flag and current violent offense, and
+            no charges meet the requirements to skip to maximum requirements.
+          </div>
         </StepWrapper>
       </div>
     );
   }
-  let text = 'Defendant was extradited and current charge severity meets the requirements to skip to maximum requirements.';
-  if (!extradited) {
-    text = 'Current charge severity meets the requirements to skip to maximum requirements.';
+  const textArr = [];
+  if (extradited) {
+    textArr.push('defendant was extradited');
   }
-  if (!stepTwoVal) {
-    text = 'Defendant was extradited.';
+  if (violent) {
+    textArr.push('PSA resulted in NVCA flag with current violent offense');
   }
+  if (stepTwoVal) {
+    textArr.push('current charge severity meets the requirements to skip to maximum requirements');
+  }
+
+  let text = textArr[0];
+  if (textArr.length === 3) {
+    text = `${textArr[0]}, ${textArr[1]}, and ${textArr[2]}`;
+  }
+  else if (textArr.length === 2) {
+    text = textArr.join(' and ');
+  }
+
+  text = text[0].toUpperCase().concat(text.slice(1, text.length)).concat('.');
+
   return (
     <div>
       <StepHeader>Step Two:</StepHeader>
@@ -155,11 +173,13 @@ const DMFExplanation = ({
   dmf,
   riskFactors,
   nca,
-  fta
+  fta,
+  nvca
 }) => {
   const context = riskFactors.get(DMF.COURT_OR_BOOKING);
   const extradited = riskFactors.get(DMF.EXTRADITED) === `${true}`;
   const extraditedNotes = riskFactors.get(NOTES[DMF.EXTRADITED]);
+  const violent = riskFactors.get(PSA.CURRENT_VIOLENT_OFFENSE) === `${true}` && nvca;
   const stepTwoVal = riskFactors.get(DMF.STEP_2_CHARGES) === `${true}`;
   const stepTwoNotes = riskFactors.get(NOTES[DMF.STEP_2_CHARGES]);
   const stepFourVal = riskFactors.get(DMF.STEP_4_CHARGES) === `${true}`;
@@ -174,6 +194,7 @@ const DMFExplanation = ({
           extraditedNotes={extraditedNotes}
           stepTwoVal={stepTwoVal}
           stepTwoNotes={stepTwoNotes}
+          violent={violent}
           context={context} />
       <StepThree shouldRender={shouldRenderFull} dmf={dmf} nca={nca} fta={fta} context={context} />
       <StepFour
