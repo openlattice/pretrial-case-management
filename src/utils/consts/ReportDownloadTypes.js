@@ -1,0 +1,18 @@
+import { ENTITY_SETS, PROPERTY_TYPES } from './DataModelConsts';
+
+export const SUMMARY_REPORT = {
+  [ENTITY_SETS.PEOPLE]: {
+    [PROPERTY_TYPES.LAST_NAME]: 'Last Name',
+    [PROPERTY_TYPES.FIRST_NAME]: 'First Name',
+    [PROPERTY_TYPES.MIDDLE_NAME]: 'Middle Name',
+    [PROPERTY_TYPES.DOB]: 'Date of Birth'
+  },
+  [ENTITY_SETS.STAFF]: {
+    [PROPERTY_TYPES.PERSON_ID]: 'Filer'
+  },
+  [ENTITY_SETS.PSA_SCORES]: {
+    [PROPERTY_TYPES.NVCA_FLAG]: 'NVCA',
+    [PROPERTY_TYPES.NCA_SCALE]: 'NCA',
+    [PROPERTY_TYPES.FTA_SCALE]: 'FTA'
+  }
+};

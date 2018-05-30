@@ -21,6 +21,7 @@ import {
   StyledTitleWrapper,
   StyledTopFormNavBuffer
 } from '../../utils/Layout';
+import { SUMMARY_REPORT } from '../../utils/consts/ReportDownloadTypes';
 
 const DatePickerTitle = styled.div`
   font-size: 16px;
@@ -38,6 +39,10 @@ const DatePickerGroupContainer = styled.div`
   margin: 10px;
 `;
 
+const DownloadButton = styled(StyledButton)`
+  margin: 0 6px;
+`;
+
 const Error = styled.div`
   width: 100%;
   text-align: center;
@@ -50,7 +55,8 @@ type Props = {
   actions :{
     downloadPsaForms :(value :{
       startDate :string,
-      endDate :string
+      endDate :string,
+      filters? :Object
     }) => void
   },
   history :string[]
@@ -132,17 +138,22 @@ class DownloadPSA extends React.Component<Props, State> {
 
   renderError = () => <Error>{this.getErrorText()}</Error>
 
-  download = () => {
+  download = (filters) => {
     const { startDate, endDate } = this.state;
     if (startDate && endDate) {
-      this.props.actions.downloadPsaForms({ startDate, endDate });
+      this.props.actions.downloadPsaForms({ startDate, endDate, filters });
     }
   }
 
   renderDownload = () => {
     const { startDate, endDate } = this.state;
     if (!startDate || !endDate || this.getErrorText()) return null;
-    return <StyledButton onClick={this.download}>Download PSAs in This Range</StyledButton>;
+    return (
+      <div>
+        <DownloadButton onClick={() => this.download()}>Download All PSA Data</DownloadButton>
+        <DownloadButton onClick={() => this.download(SUMMARY_REPORT)}>Download Summary Report</DownloadButton>
+      </div>
+    );
   }
 
   render() {

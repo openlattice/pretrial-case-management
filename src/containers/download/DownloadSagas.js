@@ -18,7 +18,7 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
 
   try {
     yield put(downloadPsaForms.request(action.id));
-    const { startDate, endDate } = action.value;
+    const { startDate, endDate, filters } = action.value;
 
     const start = moment(startDate);
     const end = moment(endDate);
@@ -61,15 +61,19 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
       }
     });
 
-    const getUpdatedEntity = (combinedEntityInit, entitySetName, details) => {
+    const getUpdatedEntity = (combinedEntityInit, entitySetTitle, entitySetName, details) => {
+      if (filters && !filters[entitySetName]) return combinedEntityInit;
+
       let combinedEntity = combinedEntityInit;
       details.keySeq().forEach((fqn) => {
-        const header = `${fqn}|${entitySetName}`;
-        let newArrayValues = combinedEntity.get(header, Immutable.List());
-        details.get(fqn).forEach((val) => {
-          if (!newArrayValues.includes(val)) newArrayValues = newArrayValues.push(val);
-        });
-        combinedEntity = combinedEntity.set(header, newArrayValues);
+        const header = filters ? filters[entitySetName][fqn] : `${fqn}|${entitySetTitle}`;
+        if (header) {
+          let newArrayValues = combinedEntity.get(header, Immutable.List());
+          details.get(fqn).forEach((val) => {
+            if (!newArrayValues.includes(val)) newArrayValues = newArrayValues.push(val);
+          });
+          combinedEntity = combinedEntity.set(header, newArrayValues);
+        }
       });
       return combinedEntity;
     };
@@ -77,24 +81,31 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
     let jsonResults = Immutable.List();
     let allHeaders = Immutable.Set();
     usableNeighborsById.keySeq().forEach((id) => {
-      let combinedEntity = scoresAsMap.get(id);
+      let combinedEntity = getUpdatedEntity(Immutable.Map(), 'PSA Scores', ENTITY_SETS.PSA, scoresAsMap.get(id));
+
       usableNeighborsById.get(id).forEach((neighbor) => {
         combinedEntity = getUpdatedEntity(
           combinedEntity,
           neighbor.getIn(['associationEntitySet', 'title']),
+          neighbor.getIn(['associationEntitySet', 'name']),
           neighbor.get('associationDetails')
         );
         combinedEntity = getUpdatedEntity(
           combinedEntity,
           neighbor.getIn(['neighborEntitySet', 'title']),
+          neighbor.getIn(['neighborEntitySet', 'name']),
           neighbor.get('neighborDetails', Immutable.Map())
         );
         allHeaders = allHeaders.union(combinedEntity.keys());
       });
       jsonResults = jsonResults.push(combinedEntity);
     });
+
+    const fields = filters
+      ? Object.values(filters).reduce((es1, es2) => [...Object.values(es1), ...Object.values(es2)])
+      : allHeaders.toJS();
     const csv = Papa.unparse({
-      fields: allHeaders.toJS(),
+      fields,
       data: jsonResults.toJS()
     });
 
