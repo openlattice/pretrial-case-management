@@ -47,6 +47,7 @@
     "react-bootstrap": "^0.31.3",
     "react-bootstrap-date-picker": "^5.1.0",
     "react-bootstrap-time-picker": "^1.0.3",
+    "react-datetime": "^2.14.0",
     "react-dom": "^15.6.1",
     "react-fontawesome": "^1.6.1",
     "react-immutable-proptypes": "^2.1.0",

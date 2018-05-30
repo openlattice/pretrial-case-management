@@ -99,11 +99,11 @@ const psaConfig = {
       }
     },
     {
-      name: ENTITY_SETS.PRETRIAL_CASES,
+      name: ENTITY_SETS.ARREST_CASES,
       alias: ALIASES.CASE,
-      entityId: ID_FIELD_NAMES.CASE_ID,
+      entityId: ID_FIELD_NAMES.ARREST_ID,
       fields: {
-        [ID_FIELD_NAMES.CASE_ID]: PROPERTY_TYPES.CASE_ID
+        [ID_FIELD_NAMES.ARREST_ID]: PROPERTY_TYPES.CASE_ID
       }
     },
     {

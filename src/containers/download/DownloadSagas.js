@@ -4,7 +4,7 @@
 import Immutable from 'immutable';
 import Papa from 'papaparse';
 import moment from 'moment';
-import { EntityDataModelApi, SearchApi } from 'lattice';
+import { DataApi, EntityDataModelApi, SearchApi } from 'lattice';
 import { call, put, takeEvery } from 'redux-saga/effects';
 
 import FileSaver from '../../utils/FileSaver';
@@ -18,15 +18,16 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
 
   try {
     yield put(downloadPsaForms.request(action.id));
-    const { startDate, endDate } = action.value;
+    const { startDate, endDate, filters } = action.value;
 
     const start = moment(startDate);
     const end = moment(endDate);
     const entitySetId = yield call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.PSA_SCORES);
+    const entitySetSize = yield call(DataApi.getEntitySetSize, entitySetId);
     const options = {
       searchTerm: '*',
       start: 0,
-      maxHits: 10000 // temporary hack to load all entity set data
+      maxHits: entitySetSize
     };
 
     const allScoreData = yield call(SearchApi.searchEntitySetData, entitySetId, options);
@@ -49,9 +50,7 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
           || neighbor.associationDetails[PROPERTY_TYPES.COMPLETED_DATE_TIME];
         if (timestampList && timestampList.length) {
           const timestamp = moment(timestampList[0]);
-          const matchesStart = timestamp.diff(start, 'seconds') > 0 || timestamp.isSame(start, 'day');
-          const matchesEnd = timestamp.diff(end, 'seconds') < 0 || timestamp.isSame(end, 'day');
-          if (matchesStart && matchesEnd) {
+          if (timestamp.isSameOrAfter(start) && timestamp.isSameOrBefore(end)) {
             usableNeighbors = usableNeighbors.push(Immutable.fromJS(neighbor));
           }
         }
@@ -61,15 +60,19 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
       }
     });
 
-    const getUpdatedEntity = (combinedEntityInit, entitySetName, details) => {
+    const getUpdatedEntity = (combinedEntityInit, entitySetTitle, entitySetName, details) => {
+      if (filters && !filters[entitySetName]) return combinedEntityInit;
+
       let combinedEntity = combinedEntityInit;
       details.keySeq().forEach((fqn) => {
-        const header = `${fqn}|${entitySetName}`;
-        let newArrayValues = combinedEntity.get(header, Immutable.List());
-        details.get(fqn).forEach((val) => {
-          if (!newArrayValues.includes(val)) newArrayValues = newArrayValues.push(val);
-        });
-        combinedEntity = combinedEntity.set(header, newArrayValues);
+        const header = filters ? filters[entitySetName][fqn] : `${fqn}|${entitySetTitle}`;
+        if (header) {
+          let newArrayValues = combinedEntity.get(header, Immutable.List());
+          details.get(fqn).forEach((val) => {
+            if (!newArrayValues.includes(val)) newArrayValues = newArrayValues.push(val);
+          });
+          combinedEntity = combinedEntity.set(header, newArrayValues);
+        }
       });
       return combinedEntity;
     };
@@ -77,24 +80,31 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
     let jsonResults = Immutable.List();
     let allHeaders = Immutable.Set();
     usableNeighborsById.keySeq().forEach((id) => {
-      let combinedEntity = scoresAsMap.get(id);
+      let combinedEntity = getUpdatedEntity(Immutable.Map(), 'PSA Scores', ENTITY_SETS.PSA_SCORES, scoresAsMap.get(id));
+
       usableNeighborsById.get(id).forEach((neighbor) => {
         combinedEntity = getUpdatedEntity(
           combinedEntity,
           neighbor.getIn(['associationEntitySet', 'title']),
+          neighbor.getIn(['associationEntitySet', 'name']),
           neighbor.get('associationDetails')
         );
         combinedEntity = getUpdatedEntity(
           combinedEntity,
           neighbor.getIn(['neighborEntitySet', 'title']),
+          neighbor.getIn(['neighborEntitySet', 'name']),
           neighbor.get('neighborDetails', Immutable.Map())
         );
         allHeaders = allHeaders.union(combinedEntity.keys());
       });
       jsonResults = jsonResults.push(combinedEntity);
     });
+
+    const fields = filters
+      ? Object.values(filters).reduce((es1, es2) => [...Object.values(es1), ...Object.values(es2)])
+      : allHeaders.toJS();
     const csv = Papa.unparse({
-      fields: allHeaders.toJS(),
+      fields,
       data: jsonResults.toJS()
     });
 

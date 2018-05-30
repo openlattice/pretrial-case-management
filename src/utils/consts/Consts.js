@@ -211,6 +211,7 @@ export const ID_FIELD_NAMES = {
   NOTES_ID: 'notesId',
   PERSON_ID: 'personId',
   CASE_ID: 'caseId',
+  ARREST_ID: 'arrestId',
   STAFF_ID: 'staffId',
   TIMESTAMP: 'timestamp',
   DMF_RISK_FACTORS_ID: 'dmfRiskFactorsId',

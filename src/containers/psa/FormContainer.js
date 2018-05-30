@@ -165,6 +165,7 @@ type Props = {
   charges :Immutable.List<*>,
   allChargesForPerson :Immutable.List<*>,
   allSentencesForPerson :Immutable.List<*>,
+  allFTAs :Immutable.List<*>,
   chargesManuallyEntered :boolean,
   selectedPersonId :string,
   isLoadingCases :boolean,
@@ -214,6 +215,7 @@ class Form extends React.Component<Props, State> {
       pretrialCaseOptions,
       allChargesForPerson,
       allSentencesForPerson,
+      allFTAs,
       psaForm,
       actions,
       location
@@ -226,6 +228,7 @@ class Form extends React.Component<Props, State> {
           pretrialCaseOptions,
           allChargesForPerson,
           allSentencesForPerson,
+          allFTAs,
           this.props.selectedPerson,
           psaForm
         )
@@ -287,13 +290,12 @@ class Form extends React.Component<Props, State> {
       values.charges = this.props.charges.toJS();
     }
     else {
-      values[ID_FIELD_NAMES.CASE_ID] = [this.props.selectedPretrialCase.getIn([PROPERTY_TYPES.CASE_ID, 0])];
+      values[ID_FIELD_NAMES.ARREST_ID] = [this.props.selectedPretrialCase.getIn([PROPERTY_TYPES.CASE_ID, 0])];
     }
 
-    this.props.actions.submit({
-      values,
-      config: psaConfig
-    });
+    const config = psaConfig;
+
+    this.props.actions.submit({ values, config });
     this.setState({ notesId: values[ID_FIELD_NAMES.NOTES_ID][0] });
   }
 
@@ -370,7 +372,8 @@ class Form extends React.Component<Props, State> {
         currCase={this.props.selectedPretrialCase}
         allCharges={this.props.allChargesForPerson}
         allSentences={this.props.allSentencesForPerson}
-        allCases={this.props.pretrialCaseOptions} />
+        allCases={this.props.pretrialCaseOptions}
+        allFTAs={this.props.allFTAs} />
   )
 
   renderPSASection = () => {
@@ -415,10 +418,12 @@ class Form extends React.Component<Props, State> {
     if (!this.state.scoresWereGenerated) return null;
     const {
       selectedPretrialCase,
+      charges,
       selectedPerson,
       pretrialCaseOptions,
       allChargesForPerson,
-      allSentencesForPerson
+      allSentencesForPerson,
+      allFTAs
     } = this.props;
 
     return (
@@ -428,10 +433,12 @@ class Form extends React.Component<Props, State> {
             onClick={() => {
               exportPDF(Immutable.fromJS(this.state).set('riskFactors', this.setMultimapToMap(this.state.riskFactors)),
                 selectedPretrialCase,
+                charges,
                 selectedPerson,
                 pretrialCaseOptions,
                 allChargesForPerson,
                 allSentencesForPerson,
+                allFTAs,
                 {
                   user: this.getStaffId(),
                   timestamp: toISODateTime(moment())
@@ -607,6 +614,7 @@ function mapStateToProps(state :Immutable.Map<*, *>) :Object {
     selectedPretrialCase: psaForm.get('selectedPretrialCase'),
     allChargesForPerson: psaForm.get('allChargesForPerson'),
     allSentencesForPerson: psaForm.get('allSentencesForPerson'),
+    allFTAs: psaForm.get('allFTAs'),
     chargesManuallyEntered: psaForm.get('chargesManuallyEntered'),
     psaForm: psaForm.get('psa'),
     isSubmitted: submit.get('submitted'),

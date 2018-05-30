@@ -17,6 +17,7 @@ import {
 } from './consts/ChargeConsts';
 import { getSentenceToIncarcerationCaseNums } from './consts/SentenceConsts';
 import { getAllStepTwoCharges, getAllStepFourCharges } from './consts/DMFConsts';
+import { getRecentFTAs, getOldFTAs } from './FTAUtils';
 
 const {
   DOB,
@@ -47,7 +48,9 @@ const {
   PRIOR_MISDEMEANOR,
   PRIOR_FELONY,
   PRIOR_VIOLENT_CONVICTION,
-  PRIOR_SENTENCE_TO_INCARCERATION
+  PRIOR_SENTENCE_TO_INCARCERATION,
+  PRIOR_FAILURE_TO_APPEAR_RECENT,
+  PRIOR_FAILURE_TO_APPEAR_OLD
 } = PSA;
 
 const {
@@ -208,12 +211,20 @@ export const tryAutofillDMFStepTwo = (currCharges :Immutable.List<*>) :string =>
 export const tryAutofillDMFStepFour = (currCharges :Immutable.List<*>) :string =>
   `${getAllStepFourCharges(currCharges).size > 0}`;
 
+export const tryAutofillRecentFTAs = (allFTAs :Immutable.List<*>) :string => {
+  const numFTAs = getRecentFTAs(allFTAs).size;
+  return `${numFTAs > 2 ? 2 : numFTAs}`;
+}
+
+export const tryAutofillOldFTAs = (allFTAs :Immutable.List<*>) :string => `${getOldFTAs(allFTAs).size > 0}`;
+
 export const tryAutofillFields = (
   nextCase :Immutable.Map<*, *>,
   nextCharges :Immutable.List<*>,
   allCases :Immutable.List<*>,
   allCharges :Immutable.List<*>,
   allSentences :Immutable.List<*>,
+  allFTAs :Immutable.List<*>,
   selectedPerson :Immutable.Map<*, *>,
   psaFormValues :Immutable.Map<*, *>
 ) :Immutable.Map<*, *> => {
@@ -275,5 +286,11 @@ export const tryAutofillFields = (
   if (allSentences.size) {
     psaForm = psaForm.set(PRIOR_SENTENCE_TO_INCARCERATION, tryAutofillPriorSentenceToIncarceration(allSentences))
   }
+
+  if (allFTAs.size) {
+    psaForm = psaForm.set(PRIOR_FAILURE_TO_APPEAR_RECENT, tryAutofillRecentFTAs(allFTAs));
+    psaForm = psaForm.set(PRIOR_FAILURE_TO_APPEAR_OLD, tryAutofillOldFTAs(allFTAs));
+  }
+
   return psaForm;
 };

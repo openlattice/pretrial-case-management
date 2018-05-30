@@ -10,13 +10,13 @@ import moment from 'moment';
 import styled from 'styled-components';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { Pager, Tab, Tabs } from 'react-bootstrap';
+import { ButtonToolbar, Pagination, Tab, Tabs, ToggleButton, ToggleButtonGroup } from 'react-bootstrap';
 
 import PSAReviewRow from '../../components/review/PSAReviewRow';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import PersonSearchFields from '../../components/person/PersonSearchFields';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { PaddedRow, TitleLabel, StyledSelect } from '../../utils/Layout';
+import { CenteredContainer, PaddedRow, TitleLabel, StyledSelect } from '../../utils/Layout';
 import * as FormActionFactory from '../psa/FormActionFactory';
 import * as ReviewActionFactory from './ReviewActionFactory';
 import * as Routes from '../../core/router/Routes';
@@ -83,7 +83,7 @@ const NoResults = styled.div`
   text-align: center;
 `;
 
-const Error = styled.div`
+const ErrorText = styled.div`
   width: 100%;
   text-align: center;
   font-size: 16px;
@@ -102,8 +102,28 @@ const SearchRow = styled(PaddedRow)`
   margin: 10px;
 `;
 
+const SortContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+`;
+
+const SortText = styled.div`
+  font-size: 14px;
+  margin: -5px 0 5px 0;
+`;
+
+const SortButton = styled(ToggleButton)`
+  -webkit-appearance: none !important;
+`;
+
 const DATE_FORMAT = 'MM/DD/YYYY';
 const MAX_RESULTS = 10;
+
+const SORT_TYPES = {
+  DATE: 'DATE',
+  NAME: 'NAME'
+};
 
 type Props = {
   history :string[],
@@ -150,7 +170,9 @@ type Props = {
   allFilers :Immutable.Set<*>,
   caseHistory :Immutable.List<*>,
   chargeHistory :Immutable.Map<*, *>,
+  arrestChargeHistory :Immutable.Map<*, *>,
   sentenceHistory :Immutable.Map<*, *>,
+  ftaHistory :Immutable.Map<*, *>,
   readOnly :boolean
 }
 
@@ -163,7 +185,8 @@ type State = {
     dob :string,
     filer :string,
     start :number
-  }
+  },
+  sort :string
 };
 
 class ReviewPSA extends React.Component<Props, State> {
@@ -180,7 +203,8 @@ class ReviewPSA extends React.Component<Props, State> {
         filer: '',
         start: 0,
         searchExecuted: false
-      }
+      },
+      sort: SORT_TYPES.NAME
     };
   }
 
@@ -267,7 +291,7 @@ class ReviewPSA extends React.Component<Props, State> {
   handleFilterRequest = () => {
     const { activeFilterKey, filters } = this.state;
     const { start } = filters;
-    let items = [];
+    let items = null;
     if (activeFilterKey === 1) {
       items = this.filterByDate();
     }
@@ -277,9 +301,15 @@ class ReviewPSA extends React.Component<Props, State> {
     else if (activeFilterKey === 3) {
       items = this.filterByFiler();
     }
-    if (!items.length && filters.searchExecuted) {
+
+    if ((!items || !items.count()) && filters.searchExecuted) {
       return <NoResults>No results.</NoResults>;
     }
+
+    if (items && items.count()) {
+      items = this.sortRows(items);
+    }
+
     return (
       <div>
         {items.slice(start, start + MAX_RESULTS).map(([scoreId, neighbors]) => this.renderRow(scoreId, neighbors))}
@@ -288,14 +318,16 @@ class ReviewPSA extends React.Component<Props, State> {
     );
   }
 
-  renderError = () => <Error>{this.props.errorMessage}</Error>
+  renderError = () => <ErrorText>{this.props.errorMessage}</ErrorText>
 
   renderRow = (scoreId, neighbors) => {
     const scores = this.props.scoresAsMap.get(scoreId, Immutable.Map());
     const personId = neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborId'], '');
     const caseHistory = this.props.caseHistory.get(personId, Immutable.List());
     const chargeHistory = this.props.chargeHistory.get(personId, Immutable.Map());
+    const arrestChargeHistory = this.props.arrestChargeHistory.get(personId, Immutable.Map());
     const sentenceHistory = this.props.sentenceHistory.get(personId, Immutable.Map());
+    const ftaHistory = this.props.ftaHistory.get(personId, Immutable.Map());
     return (
       <PSAReviewRow
           neighbors={neighbors}
@@ -308,15 +340,86 @@ class ReviewPSA extends React.Component<Props, State> {
           submitData={this.props.actions.submit}
           caseHistory={caseHistory}
           chargeHistory={chargeHistory}
+          arrestChargeHistory={arrestChargeHistory}
           sentenceHistory={sentenceHistory}
+          ftaHistory={ftaHistory}
           readOnly={this.props.readOnly}
           key={scoreId} />
     );
   }
 
+  sortByName = rowSeq => rowSeq.sort(([id1, neighbor1], [id2, neighbor2]) => {
+    const p1 = neighbor1.getIn([ENTITY_SETS.PEOPLE, 'neighborDetails'], Immutable.Map());
+    const p2 = neighbor2.getIn([ENTITY_SETS.PEOPLE, 'neighborDetails'], Immutable.Map());
+
+    const p1Last = p1.getIn([PROPERTY_TYPES.LAST_NAME, 0], '').toLowerCase();
+    const p2Last = p2.getIn([PROPERTY_TYPES.LAST_NAME, 0], '').toLowerCase();
+    if (p1Last !== p2Last) return p1Last < p2Last ? -1 : 1;
+
+    const p1First = p1.getIn([PROPERTY_TYPES.FIRST_NAME, 0], '').toLowerCase();
+    const p2First = p2.getIn([PROPERTY_TYPES.FIRST_NAME, 0], '').toLowerCase();
+    if (p1First !== p2First) return p1First < p2First ? -1 : 1;
+
+    const p1Dob = moment(p1.getIn([PROPERTY_TYPES.DOB, 0], ''));
+    const p2Dob = moment(p2.getIn([PROPERTY_TYPES.DOB, 0], ''));
+    if (p1Dob.isValid() && p2Dob.isValid()) return p1Dob.isBefore(p2Dob) ? -1 : 1;
+
+    return 0;
+  })
+
+  sortByDate = rowSeq => rowSeq.sort(([id1, neighbor1], [id2, neighbor2]) => {
+    let latest1;
+    let latest2;
+
+    const getDate = (neighborObj, latest) => {
+      const associationName = neighborObj.getIn(['associationEntitySet', 'name']);
+      const ptFqn = associationName === ENTITY_SETS.ASSESSED_BY
+        ? PROPERTY_TYPES.COMPLETED_DATE_TIME : PROPERTY_TYPES.DATE_TIME;
+      const date = moment(neighborObj.getIn(['associationDetails', ptFqn, 0], ''));
+      if (date.isValid()) {
+        if (!latest || latest.isBefore(date)) {
+          return date;
+        }
+      }
+      return null;
+    };
+
+    neighbor1.get(ENTITY_SETS.STAFF, Immutable.List()).forEach((neighborObj) => {
+      const date = getDate(neighborObj, latest1);
+      if (date) latest1 = date;
+    });
+
+    neighbor2.get(ENTITY_SETS.STAFF, Immutable.List()).forEach((neighborObj) => {
+      const date = getDate(neighborObj, latest2);
+      if (date) latest2 = date;
+    });
+
+    if (latest1 && latest2) {
+      return latest1.isAfter(latest2) ? -1 : 1;
+    }
+
+    if (latest1 || latest2) {
+      return latest1 ? -1 : 1;
+    }
+
+    return 0;
+  })
+
+  sortRows = (rowSeq) => {
+    const { sort } = this.state;
+    if (sort === SORT_TYPES.NAME) {
+      return this.sortByName(rowSeq).toArray();
+    }
+    if (sort === SORT_TYPES.DATE) {
+      return this.sortByDate(rowSeq).toArray();
+    }
+
+    return [];
+  }
+
   filterByFiler = () => {
     const { filer } = this.state.filters;
-    if (!filer.length) return [];
+    if (!filer.length) return Immutable.Collection();
     const { psaNeighborsById } = this.props;
 
     return psaNeighborsById.entrySeq().filter(([scoreId, neighbors]) => {
@@ -327,12 +430,12 @@ class ReviewPSA extends React.Component<Props, State> {
         }
       });
       return includesFiler;
-    }).toArray();
+    });
   }
 
   filterByPerson = () => {
     const { firstName, lastName, dob } = this.state.filters;
-    if (!firstName.length && !lastName.length) return [];
+    if (!firstName.length && !lastName.length) return Immutable.Collection();
     const { psaNeighborsById } = this.props;
 
     return psaNeighborsById.entrySeq().filter(([scoreId, neighbors]) => {
@@ -355,35 +458,14 @@ class ReviewPSA extends React.Component<Props, State> {
         && !neighborDob.filter(val => val.toLowerCase().includes(dob.split('T')[0])).size) return false;
 
       return true;
-    }).toArray();
-
+    });
   }
 
   filterByDate = () => {
     const { psaNeighborsByDate } = this.props;
 
     const date = moment(this.state.filters.date).format(DATE_FORMAT);
-    return psaNeighborsByDate.get(date, Immutable.Map()).keySeq()
-      .sort((id1, id2) => {
-        const p1 = psaNeighborsByDate.getIn([date, id1, ENTITY_SETS.PEOPLE, 'neighborDetails'], Immutable.Map());
-        const p2 = psaNeighborsByDate.getIn([date, id2, ENTITY_SETS.PEOPLE, 'neighborDetails'], Immutable.Map());
-
-        const p1Last = p1.getIn([PROPERTY_TYPES.LAST_NAME, 0], '').toLowerCase();
-        const p2Last = p2.getIn([PROPERTY_TYPES.LAST_NAME, 0], '').toLowerCase();
-        if (p1Last !== p2Last) return p1Last < p2Last ? -1 : 1;
-
-        const p1First = p1.getIn([PROPERTY_TYPES.FIRST_NAME, 0], '').toLowerCase();
-        const p2First = p2.getIn([PROPERTY_TYPES.FIRST_NAME, 0], '').toLowerCase();
-        if (p1First !== p2First) return p1First < p2First ? -1 : 1;
-
-        const p1Dob = moment(p1.getIn([PROPERTY_TYPES.DOB, 0], ''));
-        const p2Dob = moment(p2.getIn([PROPERTY_TYPES.DOB, 0], ''));
-        if (p1Dob.isValid() && p2Dob.isValid()) return p1Dob.isBefore(p2Dob) ? -1 : 1;
-
-        return 0;
-      })
-      .map(id => [id, psaNeighborsByDate.getIn([date, id], Immutable.Map())])
-      .toArray();
+    return psaNeighborsByDate.get(date, Immutable.Map()).entrySeq();
   }
 
   onFilterSelect = (activeFilterKey) => {
@@ -401,6 +483,22 @@ class ReviewPSA extends React.Component<Props, State> {
       </Tabs>
       <hr />
     </div>
+  )
+
+  onSortChange = (sort) => {
+    this.setState({ sort });
+  }
+
+  renderSortChoices = () => (
+    <SortContainer>
+      <SortText>Sort by:</SortText>
+      <ButtonToolbar>
+        <ToggleButtonGroup type="radio" name="sortPicker" value={this.state.sort} onChange={this.onSortChange}>
+          <SortButton value={SORT_TYPES.NAME}>Name</SortButton>
+          <SortButton value={SORT_TYPES.DATE}>Date</SortButton>
+        </ToggleButtonGroup>
+      </ButtonToolbar>
+    </SortContainer>
   )
 
   updateScoresAndRiskFactors = (
@@ -452,20 +550,17 @@ class ReviewPSA extends React.Component<Props, State> {
     const numPages = Math.ceil(numResults / MAX_RESULTS);
     const currPage = (start / MAX_RESULTS) + 1;
     return (
-      <Pager>
-        <Pager.Item
-            previous
-            onClick={() => this.updatePage(start - MAX_RESULTS)}
-            disabled={currPage === 1}>
-          &larr;
-        </Pager.Item>
-        <Pager.Item
+      <CenteredContainer>
+        <Pagination
+            prev
             next
-            onClick={() => this.updatePage(start + MAX_RESULTS)}
-            disabled={currPage === numPages}>
-          &rarr;
-        </Pager.Item>
-      </Pager>
+            ellipsis
+            boundaryLinks
+            items={numPages}
+            maxButtons={5}
+            activePage={currPage}
+            onSelect={page => this.updatePage((page - 1) * MAX_RESULTS)} />
+      </CenteredContainer>
     );
   }
 
@@ -477,6 +572,7 @@ class ReviewPSA extends React.Component<Props, State> {
       <StyledSectionWrapper>
         {this.renderError()}
         {this.renderFilters()}
+        {this.renderSortChoices()}
         {this.handleFilterRequest()}
         <StyledTopFormNavBuffer />
       </StyledSectionWrapper>
@@ -510,7 +606,9 @@ function mapStateToProps(state) {
     errorMesasge: review.get('errorMesasge'),
     caseHistory: review.get('caseHistory'),
     chargeHistory: review.get('chargeHistory'),
+    arrestChargeHistory: review.get('arrestChargeHistory'),
     sentenceHistory: review.get('sentenceHistory'),
+    ftaHistory: review.get('ftaHistory'),
     readOnly: review.get('readOnly')
   };
 }

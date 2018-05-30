@@ -15,7 +15,9 @@ import {
   getPreviousViolentCharges
 } from './AutofillUtils';
 import { getSentenceToIncarcerationCaseNums } from './consts/SentenceConsts';
+import { getRecentFTAs, getOldFTAs } from './FTAUtils';
 import { PROPERTY_TYPES } from './consts/DataModelConsts';
+import { getHeaderText, getConditionsTextList } from './consts/DMFResultConsts';
 
 const {
   AGE_AT_CURRENT_ARREST,
@@ -279,15 +281,14 @@ const nvcaFlag = (doc :Object, yInit :number, value :string) :number => {
   doc.text(X_MARGIN + SCORE_OFFSET + SCORE_OFFSET, y, value);
   if (flagIsTrue) {
     doc.setFontSize(FONT_SIZE);
-    doc.setFontType('regular')
+    doc.setFontType('regular');
     y += Y_INC;
   }
   else {
     y += Y_INC;
   }
   return y;
-
-}
+};
 
 const scores = (doc :Object, yInit :number, scoreValues :Immutable.Map<*, *>) :number => {
   let y = yInit;
@@ -302,6 +303,32 @@ const scores = (doc :Object, yInit :number, scoreValues :Immutable.Map<*, *>) :n
   y += Y_INC;
   y = scale(doc, y, scoreValues.get('ftaScale'));
   y += Y_INC;
+  return y;
+};
+
+const dmf = (doc :Object, yInit :number, dmfValues :Immutable.Map<*, *>) :number => {
+  let y = yInit;
+  if (dmfValues.size) {
+    doc.text(X_MARGIN, y, 'DMF Decision:');
+    y += Y_INC;
+    thinLine(doc, y);
+    y += Y_INC;
+
+    const headerText = getHeaderText(dmfValues.toJS());
+    doc.text(X_MARGIN + SCORE_OFFSET, y, headerText);
+    y += Y_INC;
+
+    const conditionsTextList = getConditionsTextList(dmfValues.toJS());
+    doc.setFontType('italic');
+    conditionsTextList.forEach((condition, index) => {
+      doc.text(X_MARGIN * 2, y, `Condition ${index + 1}: ${condition}`);
+      y += Y_INC;
+    });
+    doc.setFontType('regular');
+
+    thickLine(doc, y);
+    y += Y_INC;
+  }
   return y;
 };
 
@@ -372,7 +399,7 @@ const riskFactorNotes = (yInit :number, doc :Object, note :string) :number => {
     y += (Y_INC * noteLines.length);
   }
   return y;
-}
+};
 
 const riskFactors = (
   doc :Object,
@@ -386,7 +413,8 @@ const riskFactors = (
   mostSeriousCharge :string,
   currCaseNum :string,
   dateArrested :string,
-  allCases :Immutable.List<*>
+  allCases :Immutable.List<*>,
+  allFTAs :Immutable.List<*>
 ) :number[] => {
   let y = yInit;
   let page = pageInit;
@@ -465,11 +493,17 @@ const riskFactors = (
   doc.text(X_MARGIN, y, '7. Prior Pre-Trial Failure to Appear in the Last 2 Years');
   doc.text(RESPONSE_OFFSET, y, priorFailureToAppearRecent);
   y = riskFactorNotes(y, doc, riskFactorVals.get(PRIOR_FAILURE_TO_APPEAR_RECENT_NOTES));
+  if (priorFailureToAppearRecent > 0) {
+    y = chargeReferences(y, doc, getRecentFTAs(allFTAs));
+  }
   [y, page] = tryIncrementPage(doc, y, page, name);
 
   doc.text(X_MARGIN, y, '8. Prior Pre-Trial Failure to Appear Older than 2 Years');
   doc.text(RESPONSE_OFFSET, y, getBooleanText(priorFailureToAppearOld));
   y = riskFactorNotes(y, doc, riskFactorVals.get(PRIOR_FAILURE_TO_APPEAR_OLD_NOTES));
+  if (priorFailureToAppearOld) {
+    y = chargeReferences(y, doc, getOldFTAs(allFTAs));
+  }
   [y, page] = tryIncrementPage(doc, y, page, name);
 
   doc.text(X_MARGIN, y, '9. Prior Sentence to Incarceration');
@@ -559,10 +593,12 @@ const caseHistory = (
 const exportPDF = (
   data :Immutable.Map<*, *>,
   selectedPretrialCase :Immutable.Map<*, *>,
+  selectedCharges :Immutable.Map<*, *>,
   selectedPerson :Immutable.Map<*, *>,
   allCases :Immutable.List<*>,
   allCharges :Immutable.List<*>,
   allSentences :Immutable.List<*>,
+  allFTAs :Immutable.List<*>,
   createData :{
     user :string,
     timestamp :string
@@ -578,11 +614,7 @@ const exportPDF = (
   let page = 1;
   const name = getName(selectedPerson);
   const chargesByCaseNum = getChargesByCaseNum(allCharges);
-  const caseIdArr = selectedPretrialCase.get(CASE_ID, Immutable.List());
   const mostSeriousCharge = selectedPretrialCase.getIn([MOST_SERIOUS_CHARGE_NO, 0], '');
-
-  const caseNum = (caseIdArr.size) ? formatValue(caseIdArr) : '';
-  const currCharges = chargesByCaseNum.get(caseNum, Immutable.List());
 
   // PAGE HEADER
   y = header(doc, y);
@@ -598,8 +630,11 @@ const exportPDF = (
   thickLine(doc, y);
   y += Y_INC;
 
+  // DMF SECTION
+  y = dmf(doc, y, data.get('dmf'));
+
   // CHARGES SECTION
-  [y, page] = charges(doc, y, page, name, selectedPretrialCase, currCharges, false);
+  [y, page] = charges(doc, y, page, name, selectedPretrialCase, selectedCharges, false);
   thickLine(doc, y);
   y += Y_INC;
 
@@ -610,13 +645,14 @@ const exportPDF = (
     page,
     name,
     data.get('riskFactors'),
-    currCharges,
+    selectedCharges,
     allCharges,
     allSentences,
     mostSeriousCharge,
     selectedPretrialCase.getIn([CASE_ID, 0], ''),
     selectedPretrialCase.getIn([ARREST_DATE, 0], selectedPretrialCase.getIn([FILE_DATE, 0], '')),
-    allCases
+    allCases,
+    allFTAs
   );
   thickLine(doc, y);
   y += Y_INC;
