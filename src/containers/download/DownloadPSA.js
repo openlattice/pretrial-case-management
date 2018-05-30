@@ -3,8 +3,7 @@
  */
 
 import React from 'react';
-import FontAwesome from 'react-fontawesome';
-import DatePicker from 'react-bootstrap-date-picker';
+import DateTimePicker from 'react-datetime';
 import moment from 'moment';
 import styled from 'styled-components';
 import { connect } from 'react-redux';
@@ -21,6 +20,7 @@ import {
   StyledTitleWrapper,
   StyledTopFormNavBuffer
 } from '../../utils/Layout';
+import { SUMMARY_REPORT } from '../../utils/consts/ReportDownloadTypes';
 
 const DatePickerTitle = styled.div`
   font-size: 16px;
@@ -38,6 +38,10 @@ const DatePickerGroupContainer = styled.div`
   margin: 10px;
 `;
 
+const DownloadButton = styled(StyledButton)`
+  margin: 0 6px;
+`;
+
 const Error = styled.div`
   width: 100%;
   text-align: center;
@@ -50,7 +54,8 @@ type Props = {
   actions :{
     downloadPsaForms :(value :{
       startDate :string,
-      endDate :string
+      endDate :string,
+      filters? :Object
     }) => void
   },
   history :string[]
@@ -88,7 +93,7 @@ class DownloadPSA extends React.Component<Props, State> {
         <DateRangeContainer>
           <DatePickerGroupContainer>
             <div>Start Date:</div>
-            <DatePicker
+            <DateTimePicker
                 value={startDate}
                 onChange={(date) => {
                   this.setState({ startDate: date });
@@ -96,7 +101,7 @@ class DownloadPSA extends React.Component<Props, State> {
           </DatePickerGroupContainer>
           <DatePickerGroupContainer>
             <div>End Date:</div>
-            <DatePicker
+            <DateTimePicker
                 value={endDate}
                 onChange={(date) => {
                   this.setState({ endDate: date });
@@ -132,17 +137,22 @@ class DownloadPSA extends React.Component<Props, State> {
 
   renderError = () => <Error>{this.getErrorText()}</Error>
 
-  download = () => {
+  download = (filters) => {
     const { startDate, endDate } = this.state;
     if (startDate && endDate) {
-      this.props.actions.downloadPsaForms({ startDate, endDate });
+      this.props.actions.downloadPsaForms({ startDate, endDate, filters });
     }
   }
 
   renderDownload = () => {
     const { startDate, endDate } = this.state;
     if (!startDate || !endDate || this.getErrorText()) return null;
-    return <StyledButton onClick={this.download}>Download PSAs in This Range</StyledButton>;
+    return (
+      <div>
+        <DownloadButton onClick={() => this.download()}>Download All PSA Data</DownloadButton>
+        <DownloadButton onClick={() => this.download(SUMMARY_REPORT)}>Download Summary Report</DownloadButton>
+      </div>
+    );
   }
 
   render() {
