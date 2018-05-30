@@ -266,10 +266,11 @@ export function getScoresAndRiskFactors(psaForm :Immutable.Map<*, *>) :{} {
 export const calculateDMF = (inputData, scores) => {
   const extradited = inputData.get(DMF.EXTRADITED) === 'true';
   const stepTwo = inputData.get(DMF.STEP_2_CHARGES) === 'true';
+  const violent = inputData.get(CURRENT_VIOLENT_OFFENSE) === 'true' && scores.nvcaFlag;
   const stepFour = inputData.get(DMF.STEP_4_CHARGES) === 'true';
   const context = inputData.get(DMF.COURT_OR_BOOKING);
 
-  if (extradited || stepTwo) {
+  if (extradited || stepTwo || violent) {
     return getDMFDecision(6, 6, context);
   }
   const nca = scores.ncaScale;
