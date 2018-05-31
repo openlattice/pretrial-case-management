@@ -494,7 +494,7 @@ export default class PSAReviewRow extends React.Component<Props, State> {
     const psaRiskFactors = neighbors.getIn([ENTITY_SETS.PSA_RISK_FACTORS, 'neighborDetails'], Immutable.Map());
 
     const step2 = stepTwoIncrease(dmfRiskFactors, psaRiskFactors, scores);
-    const step4 = stepFourIncrease(dmfRiskFactors);
+    const step4 = stepFourIncrease(dmfRiskFactors, psaRiskFactors, scores);
     return (
       <div>
         {this.renderPersonInfo()}

@@ -347,7 +347,8 @@ export default class PSAInputForm extends React.Component<Props, State> {
                   <TitleLabel>{COURT_OR_BOOKING_PROMPT}</TitleLabel>
                   <FormGroup>
                     {this.renderRadio(COURT_OR_BOOKING, CONTEXT.BOOKING, CONTEXT.BOOKING)}
-                    {this.renderRadio(COURT_OR_BOOKING, CONTEXT.COURT, CONTEXT.COURT)}
+                    {this.renderRadio(COURT_OR_BOOKING, CONTEXT.COURT_PENN, CONTEXT.COURT_PENN)}
+                    {this.renderRadio(COURT_OR_BOOKING, CONTEXT.COURT_MINN, CONTEXT.COURT_MINN)}
                   </FormGroup>
                 </PSACol>
               </QuestionRow>

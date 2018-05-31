@@ -271,8 +271,11 @@ export const stepTwoIncrease = (dmfRiskFactors, psaRiskFactors, psaScores) => {
   return extradited || chargeMatch || violent;
 };
 
-export const stepFourIncrease = (dmfRiskFactors) => {
-  return dmfRiskFactors.getIn([PROPERTY_TYPES.DMF_STEP_4_CHARGES, 0]);
+export const stepFourIncrease = (dmfRiskFactors, psaRiskFactors, psaScores) => {
+  const chargeMatch = dmfRiskFactors.getIn([PROPERTY_TYPES.DMF_STEP_4_CHARGES, 0]);
+  const violentRisk = !psaRiskFactors.getIn([PROPERTY_TYPES.CURRENT_VIOLENT_OFFENSE, 0])
+    && psaScores.getIn([PROPERTY_TYPES.NVCA_FLAG, 0]);
+  return chargeMatch || violentRisk;
 };
 
 export const getDMFRiskFactors = (inputData) => {
@@ -292,8 +295,12 @@ export const getDMFRiskFactors = (inputData) => {
 export const calculateDMF = (inputData, scores) => {
   const extradited = inputData.get(DMF.EXTRADITED) === 'true';
   const stepTwo = inputData.get(DMF.STEP_2_CHARGES) === 'true';
-  const violent = inputData.get(CURRENT_VIOLENT_OFFENSE) === 'true' && scores.nvcaFlag;
-  const stepFour = inputData.get(DMF.STEP_4_CHARGES) === 'true';
+  const currentViolentOffense = inputData.get(CURRENT_VIOLENT_OFFENSE) === 'true';
+  const nvca = scores.nvcaFlag;
+  const violent = currentViolentOffense && nvca;
+  const violentRisk = !currentViolentOffense && nvca;
+
+  const stepFour = inputData.get(DMF.STEP_4_CHARGES) === 'true' || violentRisk;
   const context = inputData.get(DMF.COURT_OR_BOOKING);
 
   if (extradited || stepTwo || violent) {

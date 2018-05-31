@@ -62,14 +62,29 @@ const StepOne = ({ nca, fta, context }) => {
   );
 }
 
+const formatTextArr = (textArr) => {
+  let text = textArr[0];
+  if (textArr.length === 3) {
+    text = `${textArr[0]}, ${textArr[1]}, and ${textArr[2]}`;
+  }
+  else if (textArr.length === 2) {
+    text = textArr.join(' and ');
+  }
+
+  text = text[0].toUpperCase().concat(text.slice(1, text.length)).concat('.');
+  return text;
+}
+
 const StepTwo = ({
   extradited,
   extraditedNotes,
   stepTwoVal,
   stepTwoNotes,
-  violent,
+  currentViolentOffense,
+  nvca,
   context
 }) => {
+  const violent = currentViolentOffense && nvca;
   if (!extradited && !stepTwoVal && !violent) {
     return (
       <div>
@@ -94,15 +109,7 @@ const StepTwo = ({
     textArr.push('current charge severity meets the requirements to skip to maximum requirements');
   }
 
-  let text = textArr[0];
-  if (textArr.length === 3) {
-    text = `${textArr[0]}, ${textArr[1]}, and ${textArr[2]}`;
-  }
-  else if (textArr.length === 2) {
-    text = textArr.join(' and ');
-  }
-
-  text = text[0].toUpperCase().concat(text.slice(1, text.length)).concat('.');
+  const text = formatTextArr(textArr);
 
   return (
     <div>
@@ -142,29 +149,44 @@ const StepFour = ({
   stepFourNotes,
   nca,
   fta,
+  nvca,
+  currentViolentOffense,
   context
 }) => {
   if (!shouldRender) return null;
-  if (!stepFourVal) {
-    return (
-      <div>
-        <StepHeader>Step Four:</StepHeader>
-        <StepWrapper>No charges meet the requirements to increase severity.</StepWrapper>
-        <StepWrapper>
-          <DMFCell dmf={dmf} selected />
-        </StepWrapper>
-      </div>
+  const textArr = [];
+  let dmfTransformation;
+
+  const violentRisk = nvca && !currentViolentOffense;
+  if (!stepFourVal && !violentRisk) {
+    textArr.push('no charges meet the requirements to increase severity');
+    dmfTransformation = (
+      <StepWrapper>
+        <DMFCell dmf={dmf} selected />
+      </StepWrapper>
     );
   }
-  return (
-    <div>
-      <StepHeader>Step Four:</StepHeader>
-      <StepWrapper>Charges meet the requirements to increase severity.</StepWrapper>
+  else {
+    dmfTransformation = (
       <StepWrapper>
         <DMFCell dmf={getDMFDecision(nca, fta, context)} selected />
         <Arrow />
         <DMFCell dmf={dmf} selected />
       </StepWrapper>
+    );
+    if (stepFourVal) {
+      textArr.push('charges meet the requirements to increase severity')
+    }
+    if (violentRisk) {
+      textArr.push('PSA resulted in NVCA flag and current offense is not violent');
+    }
+  }
+
+  return (
+    <div>
+      <StepHeader>Step Four:</StepHeader>
+      <StepWrapper>{formatTextArr(textArr)}</StepWrapper>
+      {dmfTransformation}
     </div>
   )
 }
@@ -179,7 +201,7 @@ const DMFExplanation = ({
   const context = riskFactors.get(DMF.COURT_OR_BOOKING);
   const extradited = riskFactors.get(DMF.EXTRADITED) === `${true}`;
   const extraditedNotes = riskFactors.get(NOTES[DMF.EXTRADITED]);
-  const violent = riskFactors.get(PSA.CURRENT_VIOLENT_OFFENSE) === `${true}` && nvca;
+  const currentViolentOffense = riskFactors.get(PSA.CURRENT_VIOLENT_OFFENSE) === `${true}`;
   const stepTwoVal = riskFactors.get(DMF.STEP_2_CHARGES) === `${true}`;
   const stepTwoNotes = riskFactors.get(NOTES[DMF.STEP_2_CHARGES]);
   const stepFourVal = riskFactors.get(DMF.STEP_4_CHARGES) === `${true}`;
@@ -194,7 +216,8 @@ const DMFExplanation = ({
           extraditedNotes={extraditedNotes}
           stepTwoVal={stepTwoVal}
           stepTwoNotes={stepTwoNotes}
-          violent={violent}
+          currentViolentOffense={currentViolentOffense}
+          nvca={nvca}
           context={context} />
       <StepThree shouldRender={shouldRenderFull} dmf={dmf} nca={nca} fta={fta} context={context} />
       <StepFour
@@ -204,6 +227,8 @@ const DMFExplanation = ({
           stepFourNotes={stepFourNotes}
           nca={nca}
           fta={fta}
+          nvca={nvca}
+          currentViolentOffense={currentViolentOffense}
           context={context} />
     </div>
   );
