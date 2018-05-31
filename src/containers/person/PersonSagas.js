@@ -43,6 +43,22 @@ declare var __ENV_DEV__ :boolean;
 
 const { AuthUtils } = LatticeAuth;
 
+function* loadCaseHistory(entityKeyId :string) :Generator<*, *, *> {
+  try {
+    const loadRequest = {
+      method: 'get',
+      url: `https://api.openlattice.com/bifrost/caseloader/history/${entityKeyId}`,
+      headers: {
+        Authorization: `Bearer ${AuthUtils.getAuthToken()}`
+      }
+    };
+    yield call(axios, loadRequest);
+  }
+  catch (error) {
+    console.error(`Unable to load case history for person with entityKeyId: ${entityKeyId}`);
+  }
+}
+
 export function* watchLoadPersonDetailsRequest() :Generator<*, *, *> {
 
   while (true) {
@@ -50,24 +66,31 @@ export function* watchLoadPersonDetailsRequest() :Generator<*, *, *> {
 
     try {
       const entitySetId :string = yield call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.PEOPLE);
-      const response = yield call(SearchApi.searchEntityNeighbors, entitySetId, action.id);
+      const entityKeyId = action.id;
       const lastImportUpdate = moment('2018-05-25T19:07:58.236Z');
 
       // <HACK>
       if (action.shouldLoadCases && !__ENV_DEV__) {
+        yield call(loadCaseHistory, entityKeyId);
+        const response = yield call(SearchApi.searchEntityNeighbors, entitySetId, entityKeyId);
         const caseNums = response.filter((neighborObj) => {
           const { neighborEntitySet, neighborDetails } = neighborObj;
           if (neighborEntitySet && neighborDetails && neighborEntitySet.name === ENTITY_SETS.PRETRIAL_CASES) {
 
-            let shouldUpdate = true;
-            const lastUpdatedDateList = neighborDetails[PROPERTY_TYPES.LAST_UPDATED_DATE];
-            if (lastUpdatedDateList && lastUpdatedDateList.length) {
-              lastUpdatedDateList.forEach((updateDateStr) => {
-                const updateDate = moment(updateDateStr);
-                if (updateDate.isValid() && updateDate.isAfter(lastImportUpdate)) {
-                  shouldUpdate = false;
-                }
-              });
+            let shouldUpdate = false;
+            if (!neighborDetails[PROPERTY_TYPES.DISPOSITION]) {
+              shouldUpdate = true;
+            }
+            else {
+              const lastUpdatedDateList = neighborDetails[PROPERTY_TYPES.LAST_UPDATED_DATE];
+              if (lastUpdatedDateList && lastUpdatedDateList.length) {
+                lastUpdatedDateList.forEach((updateDateStr) => {
+                  const updateDate = moment(updateDateStr);
+                  if (updateDate.isValid() && updateDate.isBefore(lastImportUpdate)) {
+                    shouldUpdate = true;
+                  }
+                });
+              }
             }
             return shouldUpdate;
           }
@@ -91,6 +114,7 @@ export function* watchLoadPersonDetailsRequest() :Generator<*, *, *> {
       // </HACK>
 
       else {
+        const response = yield call(SearchApi.searchEntityNeighbors, entitySetId, entityKeyId);
         yield put(loadPersonDetailsSuccess(response));
       }
     }
