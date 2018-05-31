@@ -7,7 +7,8 @@ const {
 } = CHARGE;
 
 export const CONTEXT = {
-  COURT: 'Court',
+  COURT_MINN: 'Court (Minnehaha)',
+  COURT_PENN: 'Court (Pennington)',
   BOOKING: 'Booking'
 };
 

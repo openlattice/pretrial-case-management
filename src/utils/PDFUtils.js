@@ -341,7 +341,7 @@ const dmf = (
       doc.text(X_MARGIN * 2, y, 'Step two increase.');
       y += Y_INC;
     }
-    const step4 = stepFourIncrease(dmfRiskFactors);
+    const step4 = stepFourIncrease(dmfRiskFactors, psaRiskFactors, scores);
     if (step4) {
       doc.text(X_MARGIN * 2, y, 'Step four increase.');
       y += Y_INC;
