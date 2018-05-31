@@ -19,7 +19,7 @@ import PSAScores from './PSAScores';
 import DMFCell from '../dmf/DMFCell';
 import DMFExplanation from '../dmf/DMFExplanation';
 import psaEditedConfig from '../../config/formconfig/PsaEditedConfig';
-import { getScoresAndRiskFactors, calculateDMF } from '../../utils/ScoringUtils';
+import { getScoresAndRiskFactors, calculateDMF, stepTwoIncrease, stepFourIncrease } from '../../utils/ScoringUtils';
 import { CenteredContainer } from '../../utils/Layout';
 import { formatValue, formatDateList, toISODateTime } from '../../utils/Utils';
 import { PSA, DMF, NOTES, EDIT_FIELDS, ID_FIELDS } from '../../utils/consts/Consts';
@@ -99,15 +99,15 @@ const ScoresContainer = styled.div`
   display: inline-block;
 `;
 
-const CaseHeader = styled.div`
-  font-size: 20px;
-`;
-
 const SummaryScores = styled.div`
   display: flex;
   flex-direction: row;
   justify-content: center;
   text-align: center;
+`;
+
+const DMFSummaryContainer = styled(SummaryScores)`
+  align-items: center;
 `;
 
 const ScoreTitle = styled.div`
@@ -119,6 +119,11 @@ const ScoreTitle = styled.div`
 const NoDMFContainer = styled(CenteredContainer)`
   margin: 30px;
   font-size: 18px;
+`;
+
+const DMFIncreaseText = styled.div`
+  margin: 5px;
+  font-weight: bold;
 `;
 
 type Props = {
@@ -483,7 +488,13 @@ export default class PSAReviewRow extends React.Component<Props, State> {
   }
 
   renderSummary = () => {
+    const { scores, neighbors } = this.props;
     const dmf = this.getDMF();
+    const dmfRiskFactors = neighbors.getIn([ENTITY_SETS.DMF_RISK_FACTORS, 'neighborDetails'], Immutable.Map());
+    const psaRiskFactors = neighbors.getIn([ENTITY_SETS.PSA_RISK_FACTORS, 'neighborDetails'], Immutable.Map());
+
+    const step2 = stepTwoIncrease(dmfRiskFactors, psaRiskFactors, scores);
+    const step4 = stepFourIncrease(dmfRiskFactors);
     return (
       <div>
         {this.renderPersonInfo()}
@@ -494,8 +505,16 @@ export default class PSAReviewRow extends React.Component<Props, State> {
             <PSAScores scores={this.props.scores} />
           </ScoresContainer>
           <ScoresContainer>
-            <ScoreTitle>DMF:</ScoreTitle>
-            <DMFCell dmf={dmf} selected />
+            <DMFSummaryContainer>
+              <div>
+                <ScoreTitle>DMF:</ScoreTitle>
+                <DMFCell dmf={dmf} selected />
+              </div>
+              <div>
+                <DMFIncreaseText>{step2 ? 'Step two increase.' : null}</DMFIncreaseText>
+                <DMFIncreaseText>{step4 ? 'Step four increase.' : null}</DMFIncreaseText>
+              </div>
+            </DMFSummaryContainer>
           </ScoresContainer>
         </SummaryScores>
         <hr />
