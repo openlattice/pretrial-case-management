@@ -263,6 +263,32 @@ export function getScoresAndRiskFactors(psaForm :Immutable.Map<*, *>) :{} {
   return { riskFactors, scores };
 }
 
+export const stepTwoIncrease = (dmfRiskFactors, psaRiskFactors, psaScores) => {
+  const extradited = dmfRiskFactors.getIn([PROPERTY_TYPES.EXTRADITED, 0]);
+  const chargeMatch = dmfRiskFactors.getIn([PROPERTY_TYPES.DMF_STEP_2_CHARGES, 0]);
+  const violent = psaRiskFactors.getIn([PROPERTY_TYPES.CURRENT_VIOLENT_OFFENSE, 0])
+    && psaScores.getIn([PROPERTY_TYPES.NVCA_FLAG, 0]);
+  return extradited || chargeMatch || violent;
+};
+
+export const stepFourIncrease = (dmfRiskFactors) => {
+  return dmfRiskFactors.getIn([PROPERTY_TYPES.DMF_STEP_4_CHARGES, 0]);
+};
+
+export const getDMFRiskFactors = (inputData) => {
+  const extradited = inputData.get(DMF.EXTRADITED) === 'true';
+  const stepTwo = inputData.get(DMF.STEP_2_CHARGES) === 'true';
+  const stepFour = inputData.get(DMF.STEP_4_CHARGES) === 'true';
+  const context = inputData.get(DMF.COURT_OR_BOOKING);
+
+  return {
+    [PROPERTY_TYPES.EXTRADITED]: [extradited],
+    [PROPERTY_TYPES.DMF_STEP_2_CHARGES]: [stepTwo],
+    [PROPERTY_TYPES.DMF_STEP_4_CHARGES]: [stepFour],
+    [PROPERTY_TYPES.CONTEXT]: [context]
+  };
+};
+
 export const calculateDMF = (inputData, scores) => {
   const extradited = inputData.get(DMF.EXTRADITED) === 'true';
   const stepTwo = inputData.get(DMF.STEP_2_CHARGES) === 'true';

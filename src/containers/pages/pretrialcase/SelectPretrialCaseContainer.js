@@ -86,7 +86,7 @@ export default class SelectPretrialCaseContainer extends React.Component<Props, 
       <SearchResultsList>No cases found.</SearchResultsList>
       <StyledNavBtnWrapper>
         <NavButton onClick={this.props.prevPage}>Modify Search</NavButton>
-        <NavButton onClick={this.enterManually}>Proceed Without Case</NavButton>
+        <NavButton onClick={this.enterManually}>Proceed Without Arrest</NavButton>
       </StyledNavBtnWrapper>
     </div>
   )

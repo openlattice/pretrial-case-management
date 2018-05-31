@@ -32,7 +32,7 @@ import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
 import * as Routes from '../../core/router/Routes';
 
 import { toISODate, toISODateTime } from '../../utils/Utils';
-import { getScoresAndRiskFactors, calculateDMF } from '../../utils/ScoringUtils';
+import { getScoresAndRiskFactors, calculateDMF, getDMFRiskFactors } from '../../utils/ScoringUtils';
 import {
   ButtonWrapper,
   CloseX,
@@ -107,6 +107,7 @@ const INITIAL_STATE = Immutable.fromJS({
   personForm: INITIAL_PERSON_FORM,
   formIncompleteError: false,
   riskFactors: {},
+  dmfRiskFactors: {},
   scores: {
     ftaTotal: 0,
     ncaTotal: 0,
@@ -182,6 +183,7 @@ type State = {
   personForm :Immutable.Map<*, *>,
   formIncompleteError :boolean,
   riskFactors :{},
+  dmfRiskFactors :{},
   scores :{},
   dmf :{},
   scoresWereGenerated :boolean,
@@ -316,6 +318,12 @@ class Form extends React.Component<Props, State> {
     this.handlePageChange(prevPage);
   }
 
+  getFormattedScores = scores => ({
+    [NVCA_FLAG]: [scores.nvcaFlag],
+    [NCA_SCALE]: [scores.ncaScale],
+    [FTA_SCALE]: [scores.ftaScale]
+  })
+
   generateScores = (e) => {
     e.preventDefault();
 
@@ -325,18 +333,16 @@ class Form extends React.Component<Props, State> {
     else {
       const { riskFactors, scores } = getScoresAndRiskFactors(this.props.psaForm);
       const dmf = calculateDMF(this.props.psaForm, scores);
+      const dmfRiskFactors = getDMFRiskFactors(this.props.psaForm);
       this.setState({
         formIncompleteError: false,
         riskFactors,
+        dmfRiskFactors,
         scores,
         dmf,
         scoresWereGenerated: true
       });
-      const formattedScores = {
-        [NVCA_FLAG]: [scores.nvcaFlag],
-        [NCA_SCALE]: [scores.ncaScale],
-        [FTA_SCALE]: [scores.ftaScale]
-      };
+      const formattedScores = this.getFormattedScores(scores);
       this.submitEntities(formattedScores, riskFactors, dmf);
     }
   }
@@ -426,12 +432,18 @@ class Form extends React.Component<Props, State> {
       allFTAs
     } = this.props;
 
+    const data = Immutable.fromJS(this.state)
+      .set('riskFactors', this.setMultimapToMap(this.state.riskFactors))
+      .set('psaRiskFactors', Immutable.fromJS(this.state.riskFactors))
+      .set('dmfRiskFactors', Immutable.fromJS(this.state.dmfRiskFactors))
+      .set('psaScores', Immutable.fromJS(this.getFormattedScores(this.state.scores)));
+
     return (
       <ButtonWrapper>
         <Button
             bsStyle="info"
             onClick={() => {
-              exportPDF(Immutable.fromJS(this.state).set('riskFactors', this.setMultimapToMap(this.state.riskFactors)),
+              exportPDF(data,
                 selectedPretrialCase,
                 charges,
                 selectedPerson,
