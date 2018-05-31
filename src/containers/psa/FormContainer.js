@@ -495,8 +495,9 @@ class Form extends React.Component<Props, State> {
         });
       }
       const progress = (numCasesToLoad > 0) ? Math.floor((numCasesLoaded / numCasesToLoad) * 100) : 0;
-      let loadingText = 'Loading cases';
-      if (numCasesToLoad > 0) loadingText = `${loadingText} (${numCasesLoaded} / ${numCasesToLoad})`;
+      const loadingText = numCasesToLoad > 0
+        ? `Loading cases (${numCasesLoaded} / ${numCasesToLoad})`
+        : 'Loading case history';
       return (
         <LoadingContainer>
           <LoadingText>{loadingText}</LoadingText>
