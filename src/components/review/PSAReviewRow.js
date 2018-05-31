@@ -444,20 +444,27 @@ export default class PSAReviewRow extends React.Component<Props, State> {
   }
 
   renderCaseInfo = () => {
-    const { caseHistory, arrestChargeHistory, neighbors } = this.props;
+    const {
+      caseHistory,
+      arrestChargeHistory,
+      chargeHistory,
+      neighbors
+    } = this.props;
     const caseNum = neighbors.getIn(
       [ENTITY_SETS.ARREST_CASES, 'neighborDetails', PROPERTY_TYPES.CASE_ID, 0],
       neighbors.getIn(
         [ENTITY_SETS.MANUAL_PRETRIAL_CASES, 'neighborDetails', PROPERTY_TYPES.CASE_ID, 0],
-        ''
+        '',
+        neighbors.getIn(
+          [ENTITY_SETS.ARREST_CASES, 'neighborDetails', PROPERTY_TYPES.CASE_ID, 0],
+          ''
+        )
       )
     );
     const pretrialCase = caseHistory.filter(caseObj => caseObj.getIn([PROPERTY_TYPES.CASE_ID, 0], '') === caseNum);
-    const charges = arrestChargeHistory.get(caseNum, Immutable.List());
-    const caseNumText = caseNum.length ? `Case #: ${caseNum}` : 'No case information provided.';
+    const charges = arrestChargeHistory.get(caseNum, chargeHistory.get(caseNum, Immutable.List()));
     return (
       <CenteredContainer>
-        <CaseHeader>{caseNumText}</CaseHeader>
         <ChargeList pretrialCaseDetails={pretrialCase} charges={charges} />
       </CenteredContainer>
     );
