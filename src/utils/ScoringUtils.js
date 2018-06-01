@@ -328,6 +328,7 @@ export const calculateDMF = (inputData, scores) => {
   if (stepFour) {
     return increaseDMFSeverity(stepThreeCalculation);
   }
+
   if (shouldCheckForSecondaryRelease(context, nca, fta) && secondaryRelease) {
     return updateDMFSecondaryRelease(stepThreeCalculation);
   }
