@@ -21,7 +21,7 @@ import { getRecentFTAs, getOldFTAs } from './FTAUtils';
 
 const {
   DOB,
-  ARREST_DATE,
+  ARREST_DATE_TIME,
   MOST_SERIOUS_CHARGE_NO,
   CHARGE_STATUTE,
   CASE_ID,
@@ -100,12 +100,12 @@ export const getPendingCharges = (
   allCharges :Immutable.List<*>
 ) :Immutable.List<*> => {
   if (!dateArrested || !dateArrested.length || !currCaseNum || !currCaseNum.length) return Immutable.List();
-  const arrest = moment.utc(dateArrested);
+  const arrest = moment(dateArrested);
   let casesWithArrestBefore = Immutable.List();
   let casesWithDispositionAfter = Immutable.Set();
   if (arrest.isValid()) {
     allCases.forEach((caseDetails) => {
-      const prevArrestDate = moment.utc(caseDetails.getIn([ARREST_DATE, 0], caseDetails.getIn([FILE_DATE, 0], '')));
+      const prevArrestDate = moment(caseDetails.getIn([ARREST_DATE_TIME, 0], caseDetails.getIn([FILE_DATE, 0], '')));
       if (prevArrestDate.isValid() && prevArrestDate.isBefore(arrest)) {
         const caseNum = caseDetails.getIn([CASE_ID, 0]);
         if (caseNum !== currCaseNum) casesWithArrestBefore = casesWithArrestBefore.push(caseNum);
@@ -126,7 +126,7 @@ export const getPendingCharges = (
         shouldInclude = true;
       }
       else {
-        const dispositionDate = moment.utc(dispositionDateStr);
+        const dispositionDate = moment(dispositionDateStr);
         if (dispositionDate.isValid() && dispositionDate.isAfter(arrest)) {
           shouldInclude = true;
         }
@@ -226,7 +226,7 @@ export const tryAutofillFields = (
 
   let psaForm = psaFormValues;
 
-  const nextArrestDate = nextCase.getIn([ARREST_DATE, 0], nextCase.getIn([FILE_DATE, 0], ''));
+  const nextArrestDate = nextCase.getIn([ARREST_DATE_TIME, 0], nextCase.getIn([FILE_DATE, 0], ''));
 
   const ageAtCurrentArrest = psaForm.get(AGE_AT_CURRENT_ARREST);
   psaForm = psaForm.set(
