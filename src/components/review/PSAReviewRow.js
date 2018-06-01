@@ -512,9 +512,16 @@ export default class PSAReviewRow extends React.Component<Props, State> {
     const dmfRiskFactors = neighbors.getIn([ENTITY_SETS.DMF_RISK_FACTORS, 'neighborDetails'], Immutable.Map());
     const psaRiskFactors = neighbors.getIn([ENTITY_SETS.PSA_RISK_FACTORS, 'neighborDetails'], Immutable.Map());
 
-    const step2 = stepTwoIncrease(dmfRiskFactors, psaRiskFactors, scores);
-    const step4 = stepFourIncrease(dmfRiskFactors, psaRiskFactors, scores);
-    const secondaryRelease = dmfSecondaryReleaseDecrease(dmfRiskFactors, scores);
+    let modificationText;
+    if (stepTwoIncrease(dmfRiskFactors, psaRiskFactors, scores)) {
+      modificationText = 'Step two increase.';
+    }
+    else if (stepFourIncrease(dmfRiskFactors, psaRiskFactors, scores)) {
+      modificationText = 'Step four increase.';
+    }
+    else if (dmfSecondaryReleaseDecrease(dmfRiskFactors, scores)) {
+      modificationText = 'Exception release.';
+    }
     return (
       <div>
         {this.renderPersonInfo()}
@@ -531,9 +538,7 @@ export default class PSAReviewRow extends React.Component<Props, State> {
                 <DMFCell dmf={dmf} selected />
               </div>
               <div>
-                <DMFIncreaseText>{step2 ? 'Step two increase.' : null}</DMFIncreaseText>
-                <DMFIncreaseText>{step4 ? 'Step four increase.' : null}</DMFIncreaseText>
-                <DMFIncreaseText>{secondaryRelease ? 'Exception release.' : null}</DMFIncreaseText>
+                <DMFIncreaseText>{modificationText}</DMFIncreaseText>
               </div>
             </DMFSummaryContainer>
           </ScoresContainer>
