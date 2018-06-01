@@ -15,8 +15,7 @@ const HeaderCell = styled.th`
 type Props = {
   nca :number,
   fta :object,
-  context :string,
-  dmf :Object
+  context :string
 };
 
 const getRowCells = (dmfNca, dmfFta, rowFta, context) => {
@@ -45,8 +44,7 @@ const getRowCells = (dmfNca, dmfFta, rowFta, context) => {
 const DMFTable = ({
   nca,
   fta,
-  context,
-  dmf
+  context
 }) :Props => {
 
   const rows = [];

@@ -159,7 +159,7 @@ export const shouldCheckForSecondaryRelease = (context, ncaScore, ftaScore) => {
 };
 
 export const updateDMFSecondaryRelease = (dmfResult) => {
-  const newDmf = dmfResult;
+  const newDmf = Object.assign({}, dmfResult);
   newDmf[RESULT_CATEGORIES.CONDITION_1] = CONDITION_TYPES.PR_RELEASE;
   return newDmf;
 };
