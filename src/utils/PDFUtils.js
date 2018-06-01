@@ -18,7 +18,7 @@ import { getSentenceToIncarcerationCaseNums } from './consts/SentenceConsts';
 import { getRecentFTAs, getOldFTAs } from './FTAUtils';
 import { PROPERTY_TYPES } from './consts/DataModelConsts';
 import { getHeaderText, getConditionsTextList } from './consts/DMFResultConsts';
-import { stepTwoIncrease, stepFourIncrease } from './ScoringUtils';
+import { stepTwoIncrease, stepFourIncrease, dmfSecondaryReleaseDecrease } from './ScoringUtils';
 
 const {
   AGE_AT_CURRENT_ARREST,
@@ -341,9 +341,12 @@ const dmf = (
       doc.text(X_MARGIN * 2, y, 'Step two increase.');
       y += Y_INC;
     }
-    const step4 = stepFourIncrease(dmfRiskFactors, psaRiskFactors, scores);
-    if (step4) {
+    if (stepFourIncrease(dmfRiskFactors, psaRiskFactors, scores)) {
       doc.text(X_MARGIN * 2, y, 'Step four increase.');
+      y += Y_INC;
+    }
+    if (dmfSecondaryReleaseDecrease(dmfRiskFactors, scores)) {
+      doc.text(X_MARGIN * 2, y, 'Exception release.');
       y += Y_INC;
     }
 

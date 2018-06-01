@@ -50,7 +50,8 @@ import {
   EXTRADITED_PROMPT,
   STEP_2_CHARGES_PROMPT,
   STEP_4_CHARGES_PROMPT,
-  COURT_OR_BOOKING_PROMPT
+  COURT_OR_BOOKING_PROMPT,
+  SECONDARY_RELEASE_CHARGES_PROMPT
 } from '../../utils/consts/FormPromptConsts';
 
 const {
@@ -69,7 +70,8 @@ const {
   EXTRADITED,
   STEP_2_CHARGES,
   STEP_4_CHARGES,
-  COURT_OR_BOOKING
+  COURT_OR_BOOKING,
+  SECONDARY_RELEASE_CHARGES
 } = DMF;
 
 const StyledSectionView = styled.div`
@@ -352,6 +354,15 @@ export default class PSAInputForm extends React.Component<Props, State> {
                   </FormGroup>
                 </PSACol>
               </QuestionRow>
+
+              {
+                input.get(COURT_OR_BOOKING) === CONTEXT.BOOKING ? (
+                  <QuestionRow>
+                    {this.renderTrueFalseRadio(SECONDARY_RELEASE_CHARGES, SECONDARY_RELEASE_CHARGES_PROMPT)}
+                    {this.renderNotesAndJustifications(NOTES[SECONDARY_RELEASE_CHARGES])}
+                  </QuestionRow>
+                ) : null
+              }
 
               {
                 incompleteError ? <ErrorMessage>All fields must be filled out.</ErrorMessage> : null

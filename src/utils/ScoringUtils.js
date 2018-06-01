@@ -4,7 +4,12 @@
 import Immutable from 'immutable';
 import { PSA, DMF, NOTES } from './consts/Consts';
 import { PROPERTY_TYPES } from './consts/DataModelConsts';
-import { getDMFDecision, increaseDMFSeverity } from './consts/DMFResultConsts';
+import {
+  getDMFDecision,
+  increaseDMFSeverity,
+  shouldCheckForSecondaryRelease,
+  updateDMFSecondaryRelease
+} from './consts/DMFResultConsts';
 
 const {
   AGE_AT_CURRENT_ARREST,
@@ -278,16 +283,26 @@ export const stepFourIncrease = (dmfRiskFactors, psaRiskFactors, psaScores) => {
   return chargeMatch || violentRisk;
 };
 
+export const dmfSecondaryReleaseDecrease = (dmfRiskFactors, psaScores) => {
+  const context = dmfRiskFactors.getIn([PROPERTY_TYPES.CONTEXT, 0]);
+  const nca = psaScores.getIn([PROPERTY_TYPES.NCA_SCALE, 0]);
+  const fta = psaScores.getIn([PROPERTY_TYPES.FTA_SCALE, 0]);
+  const chargeMatch = dmfRiskFactors.getIn([PROPERTY_TYPES.DMF_SECONDARY_RELEASE_CHARGES, 0], false);
+  return shouldCheckForSecondaryRelease(context, nca, fta) && chargeMatch;
+}
+
 export const getDMFRiskFactors = (inputData) => {
   const extradited = inputData.get(DMF.EXTRADITED) === 'true';
   const stepTwo = inputData.get(DMF.STEP_2_CHARGES) === 'true';
   const stepFour = inputData.get(DMF.STEP_4_CHARGES) === 'true';
+  const secondaryRelease = inputData.get(DMF.SECONDARY_RELEASE_CHARGES) === 'true';
   const context = inputData.get(DMF.COURT_OR_BOOKING);
 
   return {
     [PROPERTY_TYPES.EXTRADITED]: [extradited],
     [PROPERTY_TYPES.DMF_STEP_2_CHARGES]: [stepTwo],
     [PROPERTY_TYPES.DMF_STEP_4_CHARGES]: [stepFour],
+    [PROPERTY_TYPES.DMF_SECONDARY_RELEASE_CHARGES]: [secondaryRelease],
     [PROPERTY_TYPES.CONTEXT]: [context]
   };
 };
@@ -296,6 +311,7 @@ export const calculateDMF = (inputData, scores) => {
   const extradited = inputData.get(DMF.EXTRADITED) === 'true';
   const stepTwo = inputData.get(DMF.STEP_2_CHARGES) === 'true';
   const currentViolentOffense = inputData.get(CURRENT_VIOLENT_OFFENSE) === 'true';
+  const secondaryRelease = inputData.get(DMF.SECONDARY_RELEASE_CHARGES) === 'true';
   const nvca = scores.nvcaFlag;
   const violent = currentViolentOffense && nvca;
   const violentRisk = !currentViolentOffense && nvca;
@@ -311,6 +327,9 @@ export const calculateDMF = (inputData, scores) => {
   const stepThreeCalculation = getDMFDecision(nca, fta, context);
   if (stepFour) {
     return increaseDMFSeverity(stepThreeCalculation);
+  }
+  if (shouldCheckForSecondaryRelease(context, nca, fta) && secondaryRelease) {
+    return updateDMFSecondaryRelease(stepThreeCalculation);
   }
   return stepThreeCalculation;
 };

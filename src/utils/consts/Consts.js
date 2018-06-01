@@ -128,7 +128,8 @@ export const DMF = {
   EXTRADITED: 'personWasExtradited',
   STEP_2_CHARGES: 'dmfStepTwoCharges',
   STEP_4_CHARGES: 'dmfStepFourCharges',
-  COURT_OR_BOOKING: 'courtOrBooking'
+  COURT_OR_BOOKING: 'courtOrBooking',
+  SECONDARY_RELEASE_CHARGES: 'dmfSecondaryReleaseCharges'
 };
 
 export const NOTES = {
@@ -143,7 +144,8 @@ export const NOTES = {
   [PSA.PRIOR_SENTENCE_TO_INCARCERATION]: 'priorSentenceToIncarcerationNotes',
   [DMF.EXTRADITED]: 'extraditedNotes',
   [DMF.STEP_2_CHARGES]: 'dmfStep2ChargesNotes',
-  [DMF.STEP_4_CHARGES]: 'dmfStep4ChargesNotes'
+  [DMF.STEP_4_CHARGES]: 'dmfStep4ChargesNotes',
+  [DMF.SECONDARY_RELEASE_CHARGES]: 'dmfSecondaryReleaseChargesNotes'
 };
 
 export type Charge = {

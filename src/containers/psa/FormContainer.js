@@ -51,8 +51,9 @@ import {
   getPrevPath
 } from '../../utils/Helpers';
 import { tryAutofillFields } from '../../utils/AutofillUtils';
-import { PSA, ID_FIELD_NAMES } from '../../utils/consts/Consts';
+import { DMF, NOTES, ID_FIELD_NAMES, PSA } from '../../utils/consts/Consts';
 import { PROPERTY_TYPES, ENTITY_SETS } from '../../utils/consts/DataModelConsts';
+import { CONTEXT } from '../../utils/consts/DMFConsts';
 
 const {
   NVCA_FLAG,
@@ -296,6 +297,11 @@ class Form extends React.Component<Props, State> {
     }
 
     const config = psaConfig;
+
+    if (values[DMF.COURT_OR_BOOKING] !== CONTEXT.BOOKING) {
+      delete values[DMF.SECONDARY_RELEASE_CHARGES];
+      delete values[NOTES[DMF.SECONDARY_RELEASE_CHARGES]];
+    }
 
     this.props.actions.submit({ values, config });
     this.setState({ notesId: values[ID_FIELD_NAMES.NOTES_ID][0] });
