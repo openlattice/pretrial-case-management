@@ -248,12 +248,15 @@ const DMFExplanation = ({
   const extradited = riskFactors.get(DMF.EXTRADITED) === `${true}`;
   const extraditedNotes = riskFactors.get(NOTES[DMF.EXTRADITED]);
   const currentViolentOffense = riskFactors.get(PSA.CURRENT_VIOLENT_OFFENSE) === `${true}`;
-  const stepTwoVal = riskFactors.get(DMF.STEP_2_CHARGES) === `${true}`;
+  const stepTwoCharges = riskFactors.get(DMF.STEP_2_CHARGES) === `${true}`;
   const stepTwoNotes = riskFactors.get(NOTES[DMF.STEP_2_CHARGES]);
-  const stepFourVal = riskFactors.get(DMF.STEP_4_CHARGES) === `${true}`;
+  const stepFourCharges = riskFactors.get(DMF.STEP_4_CHARGES) === `${true}`;
   const stepFourNotes = riskFactors.get(NOTES[DMF.STEP_4_CHARGES]);
   const secondaryReleaseVal = riskFactors.get(DMF.SECONDARY_RELEASE_CHARGES) === `${true}`;
   const secondaryReleaseNotes = riskFactors.get(NOTES[DMF.SECONDARY_RELEASE_CHARGES]);
+
+  const stepTwoIncrease = extradited || stepTwoCharges || (nvca && currentViolentOffense);
+  const stepFourIncrease = stepFourCharges || (nvca && !currentViolentOffense);
 
   return (
     <div>
@@ -261,16 +264,16 @@ const DMFExplanation = ({
       <StepTwo
           extradited={extradited}
           extraditedNotes={extraditedNotes}
-          stepTwoVal={stepTwoVal}
+          stepTwoVal={stepTwoCharges}
           stepTwoNotes={stepTwoNotes}
           currentViolentOffense={currentViolentOffense}
           nvca={nvca}
           context={context} />
-      <StepThree shouldRender={!extradited && !stepTwoVal} dmf={dmf} nca={nca} fta={fta} context={context} />
+      <StepThree shouldRender={!stepTwoIncrease} dmf={dmf} nca={nca} fta={fta} context={context} />
       <StepFour
-          shouldRender={!extradited && !stepTwoVal}
+          shouldRender={!stepTwoIncrease}
           dmf={dmf}
-          stepFourVal={stepFourVal}
+          stepFourVal={stepFourCharges}
           stepFourNotes={stepFourNotes}
           nca={nca}
           fta={fta}
@@ -278,7 +281,7 @@ const DMFExplanation = ({
           currentViolentOffense={currentViolentOffense}
           context={context} />
       <SecondaryRelease
-          shouldRender={!extradited && !stepTwoVal && !stepFourVal}
+          shouldRender={!stepTwoIncrease && !stepFourIncrease}
           dmf={dmf}
           nca={nca}
           fta={fta}
