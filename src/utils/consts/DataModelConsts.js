@@ -121,12 +121,14 @@ export const PROPERTY_TYPES = {
   EXTRADITED: 'justice.extradited',
   DMF_STEP_2_CHARGES: 'justice.dmfstep2',
   DMF_STEP_4_CHARGES: 'justice.dmfstep4',
+  DMF_SECONDARY_RELEASE_CHARGES: 'justice.dmfsecondaryreleasecharges',
   CONTEXT: 'general.context',
 
   // DMF risk factor notes entity type consts
   EXTRADITED_NOTES: 'justice.extraditednotes',
   DMF_STEP_2_CHARGES_NOTES: 'justice.dmfstep2notes',
   DMF_STEP_4_CHARGES_NOTES: 'justice.dmfstep4notes',
+  DMF_SECONDARY_RELEASE_CHARGES_NOTES: 'justice.dmfsecondaryreleasechargesnotes',
 
   // DMF result entity type consts
   COLOR: 'general.color',

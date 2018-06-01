@@ -50,7 +50,8 @@ import {
   EXTRADITED_PROMPT,
   STEP_2_CHARGES_PROMPT,
   STEP_4_CHARGES_PROMPT,
-  COURT_OR_BOOKING_PROMPT
+  COURT_OR_BOOKING_PROMPT,
+  SECONDARY_RELEASE_CHARGES_PROMPT
 } from '../../utils/consts/FormPromptConsts';
 
 const {
@@ -69,7 +70,8 @@ const {
   EXTRADITED,
   STEP_2_CHARGES,
   STEP_4_CHARGES,
-  COURT_OR_BOOKING
+  COURT_OR_BOOKING,
+  SECONDARY_RELEASE_CHARGES
 } = DMF;
 
 const StyledSectionView = styled.div`
@@ -132,7 +134,6 @@ type Props = {
   handleInputChange :(event :Object) => void,
   input :Immutable.Map<*, *>,
   handleSubmit :(event :Object) => void,
-  incompleteError :boolean,
   currCharges :Immutable.List<*>,
   currCase :Immutable.Map<*, *>,
   allCharges :Immutable.List<*>,
@@ -143,7 +144,8 @@ type Props = {
 };
 
 type State = {
-  iiiChecked :boolean
+  iiiChecked :boolean,
+  incomplete :boolean
 };
 
 export default class PSAInputForm extends React.Component<Props, State> {
@@ -155,7 +157,8 @@ export default class PSAInputForm extends React.Component<Props, State> {
   constructor(props :Props) {
     super(props);
     this.state = {
-      iiiChecked: false
+      iiiChecked: false,
+      incomplete: false
     };
   }
 
@@ -211,11 +214,26 @@ export default class PSAInputForm extends React.Component<Props, State> {
     this.setState({ iiiChecked: event.target.checked });
   }
 
+  invalidValue = (val :string) => val === null || val === undefined || val === 'null' || val === 'undefined';
+
+  handleSubmit = (e) => {
+    e.preventDefault();
+
+    const requiredFields = (this.props.input.get(DMF.COURT_OR_BOOKING) === CONTEXT.BOOKING)
+      ? this.props.input : this.props.input.remove(DMF.SECONDARY_RELEASE_CHARGES);
+
+    if (requiredFields.valueSeq().filter(this.invalidValue).toList().size) {
+      this.setState({ incomplete: true });
+    }
+    else {
+      this.props.handleSubmit(e);
+      this.setState({ incomplete: false });
+    }
+  }
+
   render() {
     const {
       input,
-      handleSubmit,
-      incompleteError,
       currCharges,
       currCase,
       allCharges,
@@ -247,7 +265,7 @@ export default class PSAInputForm extends React.Component<Props, State> {
       <div>
         <Divider />
         <StyledFormWrapper>
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={this.handleSubmit}>
             <StyledSectionView>
               <Header>PSA Information</Header>
 
@@ -354,7 +372,16 @@ export default class PSAInputForm extends React.Component<Props, State> {
               </QuestionRow>
 
               {
-                incompleteError ? <ErrorMessage>All fields must be filled out.</ErrorMessage> : null
+                input.get(COURT_OR_BOOKING) === CONTEXT.BOOKING ? (
+                  <QuestionRow>
+                    {this.renderTrueFalseRadio(SECONDARY_RELEASE_CHARGES, SECONDARY_RELEASE_CHARGES_PROMPT)}
+                    {this.renderNotesAndJustifications(NOTES[SECONDARY_RELEASE_CHARGES])}
+                  </QuestionRow>
+                ) : null
+              }
+
+              {
+                this.state.incomplete ? <ErrorMessage>All fields must be filled out.</ErrorMessage> : null
               }
 
             </StyledSectionView>

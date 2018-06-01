@@ -51,8 +51,9 @@ import {
   getPrevPath
 } from '../../utils/Helpers';
 import { tryAutofillFields } from '../../utils/AutofillUtils';
-import { PSA, ID_FIELD_NAMES } from '../../utils/consts/Consts';
+import { DMF, NOTES, ID_FIELD_NAMES, PSA } from '../../utils/consts/Consts';
 import { PROPERTY_TYPES, ENTITY_SETS } from '../../utils/consts/DataModelConsts';
+import { CONTEXT } from '../../utils/consts/DMFConsts';
 
 const {
   NVCA_FLAG,
@@ -105,7 +106,6 @@ const INITIAL_PERSON_FORM = Immutable.fromJS({
 
 const INITIAL_STATE = Immutable.fromJS({
   personForm: INITIAL_PERSON_FORM,
-  formIncompleteError: false,
   riskFactors: {},
   dmfRiskFactors: {},
   scores: {
@@ -181,7 +181,6 @@ type Props = {
 
 type State = {
   personForm :Immutable.Map<*, *>,
-  formIncompleteError :boolean,
   riskFactors :{},
   dmfRiskFactors :{},
   scores :{},
@@ -297,6 +296,11 @@ class Form extends React.Component<Props, State> {
 
     const config = psaConfig;
 
+    if (values[DMF.COURT_OR_BOOKING] !== CONTEXT.BOOKING) {
+      delete values[DMF.SECONDARY_RELEASE_CHARGES];
+      delete values[NOTES[DMF.SECONDARY_RELEASE_CHARGES]];
+    }
+
     this.props.actions.submit({ values, config });
     this.setState({ notesId: values[ID_FIELD_NAMES.NOTES_ID][0] });
   }
@@ -325,26 +329,18 @@ class Form extends React.Component<Props, State> {
   })
 
   generateScores = (e) => {
-    e.preventDefault();
-
-    if (this.props.psaForm.valueSeq().filter(value => value === null).toList().size) {
-      this.setState({ formIncompleteError: true });
-    }
-    else {
-      const { riskFactors, scores } = getScoresAndRiskFactors(this.props.psaForm);
-      const dmf = calculateDMF(this.props.psaForm, scores);
-      const dmfRiskFactors = getDMFRiskFactors(this.props.psaForm);
-      this.setState({
-        formIncompleteError: false,
-        riskFactors,
-        dmfRiskFactors,
-        scores,
-        dmf,
-        scoresWereGenerated: true
-      });
-      const formattedScores = this.getFormattedScores(scores);
-      this.submitEntities(formattedScores, riskFactors, dmf);
-    }
+    const { riskFactors, scores } = getScoresAndRiskFactors(this.props.psaForm);
+    const dmf = calculateDMF(this.props.psaForm, scores);
+    const dmfRiskFactors = getDMFRiskFactors(this.props.psaForm);
+    this.setState({
+      riskFactors,
+      dmfRiskFactors,
+      scores,
+      dmf,
+      scoresWereGenerated: true
+    });
+    const formattedScores = this.getFormattedScores(scores);
+    this.submitEntities(formattedScores, riskFactors, dmf);
   }
 
   clear = () => {
@@ -373,7 +369,6 @@ class Form extends React.Component<Props, State> {
         handleInputChange={this.handleInputChange}
         handleSubmit={this.generateScores}
         input={this.props.psaForm}
-        incompleteError={this.state.formIncompleteError}
         currCharges={this.props.charges}
         currCase={this.props.selectedPretrialCase}
         allCharges={this.props.allChargesForPerson}

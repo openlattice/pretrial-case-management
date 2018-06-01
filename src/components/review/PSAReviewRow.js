@@ -19,11 +19,18 @@ import PSAScores from './PSAScores';
 import DMFCell from '../dmf/DMFCell';
 import DMFExplanation from '../dmf/DMFExplanation';
 import psaEditedConfig from '../../config/formconfig/PsaEditedConfig';
-import { getScoresAndRiskFactors, calculateDMF, stepTwoIncrease, stepFourIncrease } from '../../utils/ScoringUtils';
+import {
+  getScoresAndRiskFactors,
+  calculateDMF,
+  stepTwoIncrease,
+  stepFourIncrease,
+  dmfSecondaryReleaseDecrease
+} from '../../utils/ScoringUtils';
 import { CenteredContainer } from '../../utils/Layout';
 import { formatValue, formatDateList, toISODateTime } from '../../utils/Utils';
 import { PSA, DMF, NOTES, EDIT_FIELDS, ID_FIELDS } from '../../utils/consts/Consts';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { CONTEXT } from '../../utils/consts/DMFConsts';
 import { RESULT_CATEGORIES } from '../../utils/consts/DMFResultConsts';
 import * as OverrideClassNames from '../../utils/styleoverrides/OverrideClassNames';
 
@@ -233,9 +240,12 @@ export default class PSAReviewRow extends React.Component<Props, State> {
       [DMF.STEP_2_CHARGES]: `${dmfRiskFactors.getIn([PROPERTY_TYPES.DMF_STEP_2_CHARGES, 0])}`,
       [DMF.STEP_4_CHARGES]: `${dmfRiskFactors.getIn([PROPERTY_TYPES.DMF_STEP_4_CHARGES, 0])}`,
       [DMF.COURT_OR_BOOKING]: `${dmfRiskFactors.getIn([PROPERTY_TYPES.CONTEXT, 0])}`,
+      [DMF.SECONDARY_RELEASE_CHARGES]: `${dmfRiskFactors.getIn([PROPERTY_TYPES.DMF_SECONDARY_RELEASE_CHARGES, 0])}`,
       [NOTES[DMF.EXTRADITED]]: `${dmfRiskFactors.getIn([PROPERTY_TYPES.EXTRADITED_NOTES, 0], '')}`,
       [NOTES[DMF.STEP_2_CHARGES]]: `${dmfRiskFactors.getIn([PROPERTY_TYPES.DMF_STEP_2_CHARGES_NOTES, 0], '')}`,
-      [NOTES[DMF.STEP_4_CHARGES]]: `${dmfRiskFactors.getIn([PROPERTY_TYPES.DMF_STEP_4_CHARGES_NOTES, 0], '')}`
+      [NOTES[DMF.STEP_4_CHARGES]]: `${dmfRiskFactors.getIn([PROPERTY_TYPES.DMF_STEP_4_CHARGES_NOTES, 0], '')}`,
+      [NOTES[DMF.SECONDARY_RELEASE_CHARGES]]:
+        `${dmfRiskFactors.getIn([PROPERTY_TYPES.DMF_SECONDARY_RELEASE_CHARGES_NOTES, 0], '')}`
     });
   }
 
@@ -330,19 +340,28 @@ export default class PSAReviewRow extends React.Component<Props, State> {
     return result;
   }
 
-  getDMFRiskFactorsEntity = (riskFactors, dmfRiskFactorsId) => ({
-    [PROPERTY_TYPES.GENERAL_ID]: [dmfRiskFactorsId],
-    [PROPERTY_TYPES.EXTRADITED]: [riskFactors.get(DMF.EXTRADITED)],
-    [PROPERTY_TYPES.DMF_STEP_2_CHARGES]: [riskFactors.get(DMF.STEP_2_CHARGES)],
-    [PROPERTY_TYPES.DMF_STEP_4_CHARGES]: [riskFactors.get(DMF.STEP_4_CHARGES)],
-    [PROPERTY_TYPES.CONTEXT]: [riskFactors.get(DMF.COURT_OR_BOOKING)],
-    [PROPERTY_TYPES.EXTRADITED_NOTES]: [riskFactors.get(NOTES[DMF.EXTRADITED])],
-    [PROPERTY_TYPES.DMF_STEP_2_CHARGES_NOTES]: [riskFactors.get(NOTES[DMF.STEP_2_CHARGES])],
-    [PROPERTY_TYPES.DMF_STEP_4_CHARGES_NOTES]: [riskFactors.get(NOTES[DMF.STEP_4_CHARGES])]
-  });
+  getDMFRiskFactorsEntity = (riskFactors, dmfRiskFactorsId) => {
+    const result = {
+      [PROPERTY_TYPES.GENERAL_ID]: [dmfRiskFactorsId],
+      [PROPERTY_TYPES.EXTRADITED]: [riskFactors.get(DMF.EXTRADITED)],
+      [PROPERTY_TYPES.DMF_STEP_2_CHARGES]: [riskFactors.get(DMF.STEP_2_CHARGES)],
+      [PROPERTY_TYPES.DMF_STEP_4_CHARGES]: [riskFactors.get(DMF.STEP_4_CHARGES)],
+      [PROPERTY_TYPES.CONTEXT]: [riskFactors.get(DMF.COURT_OR_BOOKING)],
+      [PROPERTY_TYPES.EXTRADITED_NOTES]: [riskFactors.get(NOTES[DMF.EXTRADITED])],
+      [PROPERTY_TYPES.DMF_STEP_2_CHARGES_NOTES]: [riskFactors.get(NOTES[DMF.STEP_2_CHARGES])],
+      [PROPERTY_TYPES.DMF_STEP_4_CHARGES_NOTES]: [riskFactors.get(NOTES[DMF.STEP_4_CHARGES])]
+    };
+    if (riskFactors.get(DMF.COURT_OR_BOOKING) === CONTEXT.BOOKING) {
+      result[PROPERTY_TYPES.DMF_SECONDARY_RELEASE_CHARGES] = [riskFactors.get(DMF.SECONDARY_RELEASE_CHARGES)];
+      result[PROPERTY_TYPES.DMF_SECONDARY_RELEASE_CHARGES_NOTES]
+        = [riskFactors.get(NOTES[DMF.SECONDARY_RELEASE_CHARGES])];
+    }
+    return result;
+  };
 
   onRiskFactorEdit = (e :Object) => {
     e.preventDefault();
+
     const { scores, riskFactors } = getScoresAndRiskFactors(this.state.riskFactors);
     const dmf = calculateDMF(this.state.riskFactors, scores);
 
@@ -495,6 +514,7 @@ export default class PSAReviewRow extends React.Component<Props, State> {
 
     const step2 = stepTwoIncrease(dmfRiskFactors, psaRiskFactors, scores);
     const step4 = stepFourIncrease(dmfRiskFactors, psaRiskFactors, scores);
+    const secondaryRelease = dmfSecondaryReleaseDecrease(dmfRiskFactors, scores);
     return (
       <div>
         {this.renderPersonInfo()}
@@ -513,6 +533,7 @@ export default class PSAReviewRow extends React.Component<Props, State> {
               <div>
                 <DMFIncreaseText>{step2 ? 'Step two increase.' : null}</DMFIncreaseText>
                 <DMFIncreaseText>{step4 ? 'Step four increase.' : null}</DMFIncreaseText>
+                <DMFIncreaseText>{secondaryRelease ? 'Exception release.' : null}</DMFIncreaseText>
               </div>
             </DMFSummaryContainer>
           </ScoresContainer>
@@ -564,7 +585,6 @@ export default class PSAReviewRow extends React.Component<Props, State> {
             input={riskFactors}
             handleInputChange={this.handleRiskFactorChange}
             handleSubmit={this.onRiskFactorEdit}
-            incompleteError={false}
             currCase={currCase}
             currCharges={currCharges}
             allCharges={allCharges}
