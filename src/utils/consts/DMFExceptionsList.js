@@ -43,10 +43,6 @@ export const PENN_BOOKING_EXCEPTIONS = [
     [DESCRIPTION]: 'Boating-Age Requirement for Driving Certain Motorboats(M2)'
   },
   {
-    [STATUTE]: '42-8-58',
-    [DESCRIPTION]: 'Boating-Failure to Report Boating Accident(M2)'
-  },
-  {
     [STATUTE]: '42-8-46',
     [DESCRIPTION]: 'Boating-Reckless Operation(M1)'
   },
@@ -57,14 +53,6 @@ export const PENN_BOOKING_EXCEPTIONS = [
   {
     [STATUTE]: '42-8-49',
     [DESCRIPTION]: 'Boating-Water Skiing Without Observor or Mirror(M2)'
-  },
-  {
-    [STATUTE]: '10.16.050',
-    [DESCRIPTION]: 'City - Accident Hit & Run Duty Upon Striking Fixtures on Street(M2)'
-  },
-  {
-    [STATUTE]: '10.16.030',
-    [DESCRIPTION]: 'City - Accident Hit and Run(M2)'
   },
   {
     [STATUTE]: '6.08.180',
@@ -189,10 +177,6 @@ export const PENN_BOOKING_EXCEPTIONS = [
   {
     [STATUTE]: '10.12.400',
     [DESCRIPTION]: 'City - Failure to Move Over/Vehicle Using Hazard Lights(M2)'
-  },
-  {
-    [STATUTE]: '10.16.060',
-    [DESCRIPTION]: 'City - Failure to Report Accident(M2)'
   },
   {
     [STATUTE]: '10.28.050',
@@ -337,10 +321,6 @@ export const PENN_BOOKING_EXCEPTIONS = [
   {
     [STATUTE]: '12.12.070',
     [DESCRIPTION]: 'City - Public Right-of-Ways - Work Impeding Use(M2)'
-  },
-  {
-    [STATUTE]: '10.12.340 (A)',
-    [DESCRIPTION]: 'City - Reckless Driving(M1)'
   },
   {
     [STATUTE]: '10.52.060',
@@ -519,6 +499,10 @@ export const PENN_BOOKING_EXCEPTIONS = [
     [DESCRIPTION]: 'Driving Under Suspension (M2)'
   },
   {
+    [STATUTE]: '32-5-101',
+    [DESCRIPTION]: 'Driving while Registration Suspended or Revoked(M1)'
+  },
+  {
     [STATUTE]: '32-17-20',
     [DESCRIPTION]: 'Driving With Fog Lights On(M2)'
   },
@@ -599,6 +583,10 @@ export const PENN_BOOKING_EXCEPTIONS = [
     [DESCRIPTION]: 'Jaywalking-Duty to Yield Right-of-Way to Vehicles (PO)'
   },
   {
+    [STATUTE]: '32-22-57',
+    [DESCRIPTION]: 'Lift Axle Control Requirements--Permits(M2)'
+  },
+  {
     [STATUTE]: '32-12-41',
     [DESCRIPTION]: 'Lost or Destroyed License-Issuance of Duplicate'
   },
@@ -613,6 +601,10 @@ export const PENN_BOOKING_EXCEPTIONS = [
   {
     [STATUTE]: '32-25-4',
     [DESCRIPTION]: 'Maximum Speeds on Interstate Highways(M2)'
+  },
+  {
+    [STATUTE]: '32-22-21',
+    [DESCRIPTION]: 'Maximum Weight Per Tire--Spacing of Axles--Violation as misdemeanor(M2)'
   },
   {
     [STATUTE]: '32-25-5',
@@ -635,12 +627,36 @@ export const PENN_BOOKING_EXCEPTIONS = [
     [DESCRIPTION]: 'No Windshield/Laminated Windshield Required'
   },
   {
+    [STATUTE]: '32-22-52',
+    [DESCRIPTION]: 'Operate Overweight or Oversize Vehicle or Allow Operation(M2)'
+  },
+  {
     [STATUTE]: '32-20-6.1',
     [DESCRIPTION]: 'Operating Motorcycle With More Than 2 Passengers(M2)'
   },
   {
     [STATUTE]: '32-20-12',
     [DESCRIPTION]: 'Operating Offroad Vehicle/Operation on Certain Lands(M2)'
+  },
+  {
+    [STATUTE]: '32-22-16.3',
+    [DESCRIPTION]: 'Overweight Agricultural Vehicles(M2)'
+  },
+  {
+    [STATUTE]: '32-22-42.2',
+    [DESCRIPTION]: 'Overweight Harvest Vehicle(M2)'
+  },
+  {
+    [STATUTE]: '32-9-14',
+    [DESCRIPTION]: 'Overweight on Commercial Vehicle(M2)'
+  },
+  {
+    [STATUTE]: '32-22-25',
+    [DESCRIPTION]: 'Overweight Vehicle on Specified Road Weight Limits(M2)'
+  },
+  {
+    [STATUTE]: '32-22-16',
+    [DESCRIPTION]: 'Overweight Vehicles(M2)'
   },
   {
     [STATUTE]: '32-30-11.3',
@@ -673,6 +689,10 @@ export const PENN_BOOKING_EXCEPTIONS = [
   {
     [STATUTE]: '32-6B-29',
     [DESCRIPTION]: 'Prohibitions on Use of Temporary Thirty-Day License Permits(M1)'
+  },
+  {
+    [STATUTE]: '32-22-24',
+    [DESCRIPTION]: 'Reduced Load Maximums February 15 - April 13--Extension of Period--Changing Restrictions--Overweight Permits(M2)'
   },
   {
     [STATUTE]: '32-5-86',
@@ -983,16 +1003,16 @@ export const PENN_BOOKING_EXCEPTIONS = [
     [DESCRIPTION]: 'Unreasonably Slow Speed Prohibited(M2)'
   },
   {
+    [STATUTE]: '32-22-57.1',
+    [DESCRIPTION]: 'Vehicle Equipped with Variable Load Axle to be Equipped with Pressure Control Device(M2)'
+  },
+  {
     [STATUTE]: '32-5-2.7',
     [DESCRIPTION]: 'Vehicle-Removal of Number Plates Upon Transfer or Assignment(M2)'
   },
   {
     [STATUTE]: '32-5-2.9',
     [DESCRIPTION]: 'Vehicle-Seller\'s Permit Required for Sold/Transferred Vehicle(M2)'
-  },
-  {
-    [STATUTE]: '22-18-36',
-    [DESCRIPTION]: 'Vehicular Battery (F4)'
   },
   {
     [STATUTE]: '32-28-6',
@@ -1005,5 +1025,169 @@ export const PENN_BOOKING_EXCEPTIONS = [
   {
     [STATUTE]: '32-35-116',
     [DESCRIPTION]: 'Written Evidence of Financial Responsibility'
+  },
+  {
+    [STATUTE]: '32-24-8',
+    [DESCRIPTION]: 'Careless Driving (M2)'
+  },
+  {
+    [STATUTE]: '10.12.340 (B)',
+    [DESCRIPTION]: 'City - Careless Driving(M2)'
+  },
+  {
+    [STATUTE]: '5.12.080 (B)',
+    [DESCRIPTION]: 'City - Liquor - Open Container in Public(M2)'
+  },
+  {
+    [STATUTE]: '5.12.120',
+    [DESCRIPTION]: 'City - Open Container in Motor Vehicle (DO NOT USE)'
+  },
+  {
+    [STATUTE]: '10.68.040 (E)',
+    [DESCRIPTION]: 'City - Snowmobile Violations - Careless/Reckless Driving(M2)'
+  },
+  {
+    [STATUTE]: '9.12.140',
+    [DESCRIPTION]: 'City - Trespassing(M2)'
+  },
+  {
+    [STATUTE]: '12.24.010',
+    [DESCRIPTION]: 'City - Trespassing-Park Closed (M2)'
+  },
+  {
+    [STATUTE]: '32-5-98',
+    [DESCRIPTION]: 'Conspicuous Display Plates or Number(M2)'
+  },
+  {
+    [STATUTE]: '85-8',
+    [DESCRIPTION]: 'County - Liquor Open Container (New Underwood) (M2)'
+  },
+  {
+    "statute": 10.4,
+    [DESCRIPTION]: 'County - Open Container (Hill City) (M)'
+  },
+  {
+    "statute": 1163.25,
+    [DESCRIPTION]: 'County - Reckless Careless and Exhibition Driving (Box Elder) (M2)'
+  },
+  {
+    [STATUTE]: '32-35-110',
+    [DESCRIPTION]: 'Driving After Suspension of License or Registration(M2)'
+  },
+  {
+    [STATUTE]: '32-12-65 (2)',
+    [DESCRIPTION]: 'Driving Under Suspension (M2)'
+  },
+  {
+    [STATUTE]: '32-12-65',
+    [DESCRIPTION]: 'Driving Under Suspension (M2)'
+  },
+  {
+    [STATUTE]: '32-12-65',
+    [DESCRIPTION]: 'Driving Under Suspension (M2)'
+  },
+  {
+    [STATUTE]: '32-23-1',
+    [DESCRIPTION]: 'DUI 1st Offense (M1)'
+  },
+  {
+    [STATUTE]: '22-35-5',
+    [DESCRIPTION]: 'Enter or Remain in Building - Unlawful Occupancy (M1)'
+  },
+  {
+    [STATUTE]: '32-5-2.4',
+    [DESCRIPTION]: 'Expired License Plates(M2)'
+  },
+  {
+    [STATUTE]: '32-5-2',
+    [DESCRIPTION]: 'Failure to Register Vehicle (M2)'
+  },
+  {
+    [STATUTE]: '22-35-6',
+    [DESCRIPTION]: 'Failure to Vacate/Ordered to Leave (M1)'
+  },
+  {
+    [STATUTE]: '22-42-15',
+    [DESCRIPTION]: 'Ingesting Substance Excluding Alcohol/To Intoxicate (Drugs)(M1)'
+  },
+  {
+    [STATUTE]: '22-42-15',
+    [DESCRIPTION]: 'Ingesting Substance Exluding Alcohol/To Intoxicate (Non-Drug)(M1)'
+  },
+  {
+    [STATUTE]: '22-34-1',
+    [DESCRIPTION]: 'Intentional Damage to Private Property $0-$400 (M2)'
+  },
+  {
+    [STATUTE]: '22-34-1',
+    [DESCRIPTION]: 'Intentional Damage to Property $400 or less - 3rd Degree Vandalism(M2)'
+  },
+  {
+    [STATUTE]: '22-34-1',
+    [DESCRIPTION]: 'Intentional Damage to Public Property $0-$400 (M2)'
+  },
+  {
+    [STATUTE]: '32-35-113',
+    [DESCRIPTION]: 'No Proof of Insurance(M2)'
+  },
+  {
+    [STATUTE]: '32-35-118',
+    [DESCRIPTION]: 'No Proof of Insurance/Owner (When Another Person is Driver)(M2)'
+  },
+  {
+    [STATUTE]: '35-1-9.1',
+    [DESCRIPTION]: 'Open Container/Motor Vehicle (M2)'
+  },
+  {
+    [STATUTE]: '32-3-12',
+    [DESCRIPTION]: 'Operation or Possession of Vehicle Without Certificate(M2)'
+  },
+  {
+    [STATUTE]: '22-42-6',
+    [DESCRIPTION]: 'Possession of Marijuana 2 oz or less (M1)'
+  },
+  {
+    [STATUTE]: '22-42-6',
+    [DESCRIPTION]: 'Possession of Marijuana in a Motor Vehicle(M1)'
+  },
+  {
+    [STATUTE]: '22-42A-3',
+    [DESCRIPTION]: 'Possession or Use Drug Paraphernalia by Driver(M2)'
+  },
+  {
+    [STATUTE]: '22-42A-3',
+    [DESCRIPTION]: 'Possession or Use Drug Paraphernalia in MV(M2)'
+  },
+  {
+    [STATUTE]: '22-42A-3',
+    [DESCRIPTION]: 'Possession or Use Drug Paraphernalia(M2)'
+  },
+  {
+    [STATUTE]: '35-1-5.3',
+    [DESCRIPTION]: 'Public Consumption of Alcoholic Beverage (M2)'
+  },
+  {
+    [STATUTE]: '32-5-103',
+    [DESCRIPTION]: 'Substitution/Alteration of License Plates(M1)'
+  },
+  {
+    [STATUTE]: '22-30A-17.3',
+    [DESCRIPTION]: 'Theft - Petty Theft All Others Less Than $400(M2)'
+  },
+  {
+    [STATUTE]: '22-30A-17.3',
+    [DESCRIPTION]: 'Theft / OPWP $0 - $400 (M2)'
+  },
+  {
+    [STATUTE]: '22-35-6',
+    [DESCRIPTION]: 'Trespassing on Premises (M1)'
+  },
+  {
+    [STATUTE]: '22-35-6',
+    [DESCRIPTION]: 'Trespassing on Premises (M2)'
+  },
+  {
+    [STATUTE]: '35-9-2',
+    [DESCRIPTION]: 'Underage Purchase/Possession/Consumption of Alcoholic Beverages (M2)'
   }
 ];
