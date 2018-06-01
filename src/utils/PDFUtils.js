@@ -337,16 +337,19 @@ const dmf = (
     thinLine(doc, y);
     y += Y_INC;
 
+    let modificationText;
     if (stepTwoIncrease(dmfRiskFactors, psaRiskFactors, scores)) {
-      doc.text(X_MARGIN * 2, y, 'Step two increase.');
-      y += Y_INC;
+      modificationText = 'Step two increase.';
     }
-    if (stepFourIncrease(dmfRiskFactors, psaRiskFactors, scores)) {
-      doc.text(X_MARGIN * 2, y, 'Step four increase.');
-      y += Y_INC;
+    else if (stepFourIncrease(dmfRiskFactors, psaRiskFactors, scores)) {
+      modificationText = 'Step four increase.';
     }
-    if (dmfSecondaryReleaseDecrease(dmfRiskFactors, scores)) {
-      doc.text(X_MARGIN * 2, y, 'Exception release.');
+    else if (dmfSecondaryReleaseDecrease(dmfRiskFactors, scores)) {
+      modificationText = 'Exception release.';
+    }
+
+    if (modificationText) {
+      doc.text(X_MARGIN * 2, y, modificationText);
       y += Y_INC;
     }
 
