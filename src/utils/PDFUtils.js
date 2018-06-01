@@ -18,6 +18,7 @@ import { getSentenceToIncarcerationCaseNums } from './consts/SentenceConsts';
 import { getRecentFTAs, getOldFTAs } from './FTAUtils';
 import { PROPERTY_TYPES } from './consts/DataModelConsts';
 import { getHeaderText, getConditionsTextList } from './consts/DMFResultConsts';
+import { stepTwoIncrease, stepFourIncrease, dmfSecondaryReleaseDecrease } from './ScoringUtils';
 
 const {
   AGE_AT_CURRENT_ARREST,
@@ -306,7 +307,14 @@ const scores = (doc :Object, yInit :number, scoreValues :Immutable.Map<*, *>) :n
   return y;
 };
 
-const dmf = (doc :Object, yInit :number, dmfValues :Immutable.Map<*, *>) :number => {
+const dmf = (
+  doc :Object,
+  yInit :number,
+  dmfValues :Immutable.Map<*, *>,
+  dmfRiskFactors :Immutable.Map<*, *>,
+  psaRiskFactors :Immutable.Map<*, *>,
+  scores :Immutable.Map<*, *>
+) :number => {
   let y = yInit;
   if (dmfValues.size) {
     doc.text(X_MARGIN, y, 'DMF Decision:');
@@ -325,6 +333,25 @@ const dmf = (doc :Object, yInit :number, dmfValues :Immutable.Map<*, *>) :number
       y += Y_INC;
     });
     doc.setFontType('regular');
+
+    thinLine(doc, y);
+    y += Y_INC;
+
+    let modificationText;
+    if (stepTwoIncrease(dmfRiskFactors, psaRiskFactors, scores)) {
+      modificationText = 'Step two increase.';
+    }
+    else if (stepFourIncrease(dmfRiskFactors, psaRiskFactors, scores)) {
+      modificationText = 'Step four increase.';
+    }
+    else if (dmfSecondaryReleaseDecrease(dmfRiskFactors, scores)) {
+      modificationText = 'Exception release.';
+    }
+
+    if (modificationText) {
+      doc.text(X_MARGIN * 2, y, modificationText);
+      y += Y_INC;
+    }
 
     thickLine(doc, y);
     y += Y_INC;
@@ -631,7 +658,7 @@ const exportPDF = (
   y += Y_INC;
 
   // DMF SECTION
-  y = dmf(doc, y, data.get('dmf'));
+  y = dmf(doc, y, data.get('dmf'), data.get('dmfRiskFactors'), data.get('psaRiskFactors'), data.get('psaScores'));
 
   // CHARGES SECTION
   [y, page] = charges(doc, y, page, name, selectedPretrialCase, selectedCharges, false);

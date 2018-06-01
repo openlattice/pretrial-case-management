@@ -16,7 +16,7 @@ import {
   getChargeTitle
 } from './consts/ChargeConsts';
 import { getSentenceToIncarcerationCaseNums } from './consts/SentenceConsts';
-import { getAllStepTwoCharges, getAllStepFourCharges } from './consts/DMFConsts';
+import { getAllStepTwoCharges, getAllStepFourCharges, getAllSecondaryReleaseCharges } from './consts/DMFConsts';
 import { getRecentFTAs, getOldFTAs } from './FTAUtils';
 
 const {
@@ -29,16 +29,7 @@ const {
   CHARGE_LEVEL,
   DISPOSITION,
   DISPOSITION_DATE,
-  FILE_DATE,
-  GENERAL_ID,
-  JAIL_DAYS_SERVED,
-  JAIL_MONTHS_SERVED,
-  JAIL_YEARS_SERVED,
-  JAIL_DAYS_SUSPENDED,
-  JAIL_MONTHS_SUSPENDED,
-  JAIL_YEARS_SUSPENDED,
-  JAIL_START_DATE,
-  CONCURRENT_CONSECUTIVE
+  FILE_DATE
 } = PROPERTY_TYPES;
 
 const {
@@ -55,7 +46,8 @@ const {
 
 const {
   STEP_2_CHARGES,
-  STEP_4_CHARGES
+  STEP_4_CHARGES,
+  SECONDARY_RELEASE_CHARGES
 } = DMF;
 
 export const getViolentCharges = (charges :Immutable.List<*>, mostSeriousCharge :string) :Immutable.List<*> => {
@@ -211,6 +203,9 @@ export const tryAutofillDMFStepTwo = (currCharges :Immutable.List<*>) :string =>
 export const tryAutofillDMFStepFour = (currCharges :Immutable.List<*>) :string =>
   `${getAllStepFourCharges(currCharges).size > 0}`;
 
+export const tryAutofillDMFSecondaryReleaseCharges = (currCharges :Immutable.List<*>) :string =>
+  `${getAllSecondaryReleaseCharges(currCharges).size === currCharges.size}`;
+
 export const tryAutofillRecentFTAs = (allFTAs :Immutable.List<*>) :string => {
   const numFTAs = getRecentFTAs(allFTAs).size;
   return `${numFTAs > 2 ? 2 : numFTAs}`;
@@ -254,6 +249,7 @@ export const tryAutofillFields = (
     // DMF
     psaForm = psaForm.set(STEP_2_CHARGES, tryAutofillDMFStepTwo(nextCharges));
     psaForm = psaForm.set(STEP_4_CHARGES, tryAutofillDMFStepFour(nextCharges));
+    psaForm = psaForm.set(SECONDARY_RELEASE_CHARGES, tryAutofillDMFSecondaryReleaseCharges(nextCharges));
   }
 
   // pending charge

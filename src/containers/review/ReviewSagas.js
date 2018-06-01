@@ -300,9 +300,12 @@ function* downloadPSAReviewPDFWorker(action :SequenceAction) :Generator<*, *, *>
     };
 
     const data = Immutable.Map()
+      .set('psaScores', scores)
       .set('scores', formattedScores)
       .set('notes', recommendationText)
       .set('riskFactors', setMultimapToMap(ENTITY_SETS.PSA_RISK_FACTORS))
+      .set('psaRiskFactors', neighbors.getIn([ENTITY_SETS.PSA_RISK_FACTORS, 'neighborDetails'], Immutable.Map()))
+      .set('dmfRiskFactors', neighbors.getIn([ENTITY_SETS.DMF_RISK_FACTORS, 'neighborDetails'], Immutable.Map()))
       .set('dmf', formattedDMF);
 
     const selectedCase = neighbors.getIn(
@@ -333,7 +336,7 @@ function* downloadPSAReviewPDFWorker(action :SequenceAction) :Generator<*, *, *>
         };
       }
       else if (name === ENTITY_SETS.EDITED_BY) {
-        const timestamp = writerNeighbor.getIn(['associationDetails', PROPERTY_TYPES.DATE_TIME, 0], '')
+        const timestamp = writerNeighbor.getIn(['associationDetails', PROPERTY_TYPES.DATE_TIME, 0], '');
         const newUpdateData = { timestamp, user };
         if (!updateData) {
           updateData = newUpdateData;

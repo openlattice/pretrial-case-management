@@ -32,7 +32,7 @@ import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
 import * as Routes from '../../core/router/Routes';
 
 import { toISODate, toISODateTime } from '../../utils/Utils';
-import { getScoresAndRiskFactors, calculateDMF } from '../../utils/ScoringUtils';
+import { getScoresAndRiskFactors, calculateDMF, getDMFRiskFactors } from '../../utils/ScoringUtils';
 import {
   ButtonWrapper,
   CloseX,
@@ -51,8 +51,9 @@ import {
   getPrevPath
 } from '../../utils/Helpers';
 import { tryAutofillFields } from '../../utils/AutofillUtils';
-import { PSA, ID_FIELD_NAMES } from '../../utils/consts/Consts';
+import { DMF, NOTES, ID_FIELD_NAMES, PSA } from '../../utils/consts/Consts';
 import { PROPERTY_TYPES, ENTITY_SETS } from '../../utils/consts/DataModelConsts';
+import { CONTEXT } from '../../utils/consts/DMFConsts';
 
 const {
   NVCA_FLAG,
@@ -105,8 +106,8 @@ const INITIAL_PERSON_FORM = Immutable.fromJS({
 
 const INITIAL_STATE = Immutable.fromJS({
   personForm: INITIAL_PERSON_FORM,
-  formIncompleteError: false,
   riskFactors: {},
+  dmfRiskFactors: {},
   scores: {
     ftaTotal: 0,
     ncaTotal: 0,
@@ -180,8 +181,8 @@ type Props = {
 
 type State = {
   personForm :Immutable.Map<*, *>,
-  formIncompleteError :boolean,
   riskFactors :{},
+  dmfRiskFactors :{},
   scores :{},
   dmf :{},
   scoresWereGenerated :boolean,
@@ -295,6 +296,11 @@ class Form extends React.Component<Props, State> {
 
     const config = psaConfig;
 
+    if (values[DMF.COURT_OR_BOOKING] !== CONTEXT.BOOKING) {
+      delete values[DMF.SECONDARY_RELEASE_CHARGES];
+      delete values[NOTES[DMF.SECONDARY_RELEASE_CHARGES]];
+    }
+
     this.props.actions.submit({ values, config });
     this.setState({ notesId: values[ID_FIELD_NAMES.NOTES_ID][0] });
   }
@@ -316,29 +322,25 @@ class Form extends React.Component<Props, State> {
     this.handlePageChange(prevPage);
   }
 
-  generateScores = (e) => {
-    e.preventDefault();
+  getFormattedScores = scores => ({
+    [NVCA_FLAG]: [scores.nvcaFlag],
+    [NCA_SCALE]: [scores.ncaScale],
+    [FTA_SCALE]: [scores.ftaScale]
+  })
 
-    if (this.props.psaForm.valueSeq().filter(value => value === null).toList().size) {
-      this.setState({ formIncompleteError: true });
-    }
-    else {
-      const { riskFactors, scores } = getScoresAndRiskFactors(this.props.psaForm);
-      const dmf = calculateDMF(this.props.psaForm, scores);
-      this.setState({
-        formIncompleteError: false,
-        riskFactors,
-        scores,
-        dmf,
-        scoresWereGenerated: true
-      });
-      const formattedScores = {
-        [NVCA_FLAG]: [scores.nvcaFlag],
-        [NCA_SCALE]: [scores.ncaScale],
-        [FTA_SCALE]: [scores.ftaScale]
-      };
-      this.submitEntities(formattedScores, riskFactors, dmf);
-    }
+  generateScores = (e) => {
+    const { riskFactors, scores } = getScoresAndRiskFactors(this.props.psaForm);
+    const dmf = calculateDMF(this.props.psaForm, scores);
+    const dmfRiskFactors = getDMFRiskFactors(this.props.psaForm);
+    this.setState({
+      riskFactors,
+      dmfRiskFactors,
+      scores,
+      dmf,
+      scoresWereGenerated: true
+    });
+    const formattedScores = this.getFormattedScores(scores);
+    this.submitEntities(formattedScores, riskFactors, dmf);
   }
 
   clear = () => {
@@ -367,7 +369,6 @@ class Form extends React.Component<Props, State> {
         handleInputChange={this.handleInputChange}
         handleSubmit={this.generateScores}
         input={this.props.psaForm}
-        incompleteError={this.state.formIncompleteError}
         currCharges={this.props.charges}
         currCase={this.props.selectedPretrialCase}
         allCharges={this.props.allChargesForPerson}
@@ -426,12 +427,18 @@ class Form extends React.Component<Props, State> {
       allFTAs
     } = this.props;
 
+    const data = Immutable.fromJS(this.state)
+      .set('riskFactors', this.setMultimapToMap(this.state.riskFactors))
+      .set('psaRiskFactors', Immutable.fromJS(this.state.riskFactors))
+      .set('dmfRiskFactors', Immutable.fromJS(this.state.dmfRiskFactors))
+      .set('psaScores', Immutable.fromJS(this.getFormattedScores(this.state.scores)));
+
     return (
       <ButtonWrapper>
         <Button
             bsStyle="info"
             onClick={() => {
-              exportPDF(Immutable.fromJS(this.state).set('riskFactors', this.setMultimapToMap(this.state.riskFactors)),
+              exportPDF(data,
                 selectedPretrialCase,
                 charges,
                 selectedPerson,
@@ -495,8 +502,9 @@ class Form extends React.Component<Props, State> {
         });
       }
       const progress = (numCasesToLoad > 0) ? Math.floor((numCasesLoaded / numCasesToLoad) * 100) : 0;
-      let loadingText = 'Loading cases';
-      if (numCasesToLoad > 0) loadingText = `${loadingText} (${numCasesLoaded} / ${numCasesToLoad})`;
+      const loadingText = numCasesToLoad > 0
+        ? `Loading cases (${numCasesLoaded} / ${numCasesToLoad})`
+        : 'Loading case history';
       return (
         <LoadingContainer>
           <LoadingText>{loadingText}</LoadingText>

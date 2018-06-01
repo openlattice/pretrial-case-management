@@ -1,5 +1,6 @@
 import { PROPERTY_TYPES } from './DataModelConsts';
 import { CHARGE } from './Consts';
+import { PENN_BOOKING_EXCEPTIONS } from './DMFExceptionsList';
 
 const {
   STATUTE,
@@ -7,7 +8,8 @@ const {
 } = CHARGE;
 
 export const CONTEXT = {
-  COURT: 'Court',
+  COURT_MINN: 'Court (Minnehaha)',
+  COURT_PENN: 'Court (Pennington)',
   BOOKING: 'Booking'
 };
 
@@ -303,6 +305,8 @@ export const CHARGE_VALUES = {
   }]
 };
 
+
+
 export const getCombinedChargeList = (chargeList) => {
   let result = [];
   chargeList.forEach((chargeType) => {
@@ -366,4 +370,8 @@ export const getAllStepTwoCharges = (chargeList) => {
 
 export const getAllStepFourCharges = (chargeList) => {
   return filterChargeList(chargeList, dmfStepFourCharges);
+};
+
+export const getAllSecondaryReleaseCharges = (chargeList) => {
+  return filterChargeList(chargeList, PENN_BOOKING_EXCEPTIONS);
 };

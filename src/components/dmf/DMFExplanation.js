@@ -4,8 +4,13 @@ import styled from 'styled-components';
 
 import DMFCell from './DMFCell';
 import DMFTable from './DMFTable';
-import { DMF, NOTES } from '../../utils/consts/Consts';
-import { getDMFDecision } from '../../utils/consts/DMFResultConsts';
+import { DMF, NOTES, PSA } from '../../utils/consts/Consts';
+import { CONTEXT } from '../../utils/consts/DMFConsts';
+import {
+  getDMFDecision,
+  increaseDMFSeverity,
+  shouldCheckForSecondaryRelease
+} from '../../utils/consts/DMFResultConsts';
 
 const StepHeader = styled.div`
   font-weight: bold;
@@ -62,30 +67,55 @@ const StepOne = ({ nca, fta, context }) => {
   );
 }
 
+const formatTextArr = (textArr) => {
+  let text = textArr[0];
+  if (textArr.length === 3) {
+    text = `${textArr[0]}, ${textArr[1]}, and ${textArr[2]}`;
+  }
+  else if (textArr.length === 2) {
+    text = textArr.join(' and ');
+  }
+
+  text = text[0].toUpperCase().concat(text.slice(1, text.length)).concat('.');
+  return text;
+}
+
 const StepTwo = ({
   extradited,
   extraditedNotes,
   stepTwoVal,
   stepTwoNotes,
+  currentViolentOffense,
+  nvca,
   context
 }) => {
-  if (!extradited && !stepTwoVal) {
+  const violent = currentViolentOffense && nvca;
+  if (!extradited && !stepTwoVal && !violent) {
     return (
       <div>
         <StepHeader>Step Two:</StepHeader>
         <StepWrapper>
-          <div>Defendant was not extradited and no charges meet the requirements to skip to maximum requirements.</div>
+          <div>
+            Defendant was not extradited, no NVCA flag and current violent offense, and
+            no charges meet the requirements to skip to maximum requirements.
+          </div>
         </StepWrapper>
       </div>
     );
   }
-  let text = 'Defendant was extradited and current charge severity meets the requirements to skip to maximum requirements.';
-  if (!extradited) {
-    text = 'Current charge severity meets the requirements to skip to maximum requirements.';
+  const textArr = [];
+  if (extradited) {
+    textArr.push('defendant was extradited');
   }
-  if (!stepTwoVal) {
-    text = 'Defendant was extradited.';
+  if (violent) {
+    textArr.push('PSA resulted in NVCA flag with current violent offense');
   }
+  if (stepTwoVal) {
+    textArr.push('current charge severity meets the requirements to skip to maximum requirements');
+  }
+
+  const text = formatTextArr(textArr);
+
   return (
     <div>
       <StepHeader>Step Two:</StepHeader>
@@ -119,52 +149,114 @@ const StepThree = ({
 
 const StepFour = ({
   shouldRender,
-  dmf,
   stepFourVal,
   stepFourNotes,
   nca,
   fta,
+  nvca,
+  currentViolentOffense,
   context
 }) => {
   if (!shouldRender) return null;
-  if (!stepFourVal) {
-    return (
-      <div>
-        <StepHeader>Step Four:</StepHeader>
-        <StepWrapper>No charges meet the requirements to increase severity.</StepWrapper>
-        <StepWrapper>
-          <DMFCell dmf={dmf} selected />
-        </StepWrapper>
-      </div>
+  const textArr = [];
+  let dmfTransformation;
+
+  const stepThreeDmf = getDMFDecision(nca, fta, context);
+
+  const violentRisk = nvca && !currentViolentOffense;
+  if (!stepFourVal && !violentRisk) {
+    textArr.push('no charges meet the requirements to increase severity');
+    dmfTransformation = (
+      <StepWrapper>
+        <DMFCell dmf={stepThreeDmf} selected />
+      </StepWrapper>
     );
   }
+  else {
+    dmfTransformation = (
+      <StepWrapper>
+        <DMFCell dmf={stepThreeDmf} selected />
+        <Arrow />
+        <DMFCell dmf={increaseDMFSeverity(stepThreeDmf)} selected />
+      </StepWrapper>
+    );
+    if (stepFourVal) {
+      textArr.push('charges meet the requirements to increase severity');
+    }
+    if (violentRisk) {
+      textArr.push('PSA resulted in NVCA flag and current offense is not violent');
+    }
+  }
+
   return (
     <div>
       <StepHeader>Step Four:</StepHeader>
-      <StepWrapper>Charges meet the requirements to increase severity.</StepWrapper>
+      <StepWrapper>{formatTextArr(textArr)}</StepWrapper>
+      {dmfTransformation}
+    </div>
+  );
+}
+
+const SecondaryRelease = ({
+  shouldRender,
+  dmf,
+  nca,
+  fta,
+  context,
+  secondaryReleaseVal,
+  secondaryReleaseNotes
+}) => {
+  if (!shouldRender || !shouldCheckForSecondaryRelease(context, nca, fta)) return null;
+
+  const text = secondaryReleaseVal
+    ? 'Charges qualify for a secondary release option'
+    : 'Charges do not qualify for a secondary release option.'
+
+  const dmfTransformation = secondaryReleaseVal
+    ? (
       <StepWrapper>
         <DMFCell dmf={getDMFDecision(nca, fta, context)} selected />
         <Arrow />
         <DMFCell dmf={dmf} selected />
       </StepWrapper>
+    ) : (
+      <StepWrapper>
+        <DMFCell dmf={dmf} selected />
+      </StepWrapper>
+    );
+
+  return (
+    <div>
+      <StepHeader>Step Five:</StepHeader>
+      <StepWrapper>{text}</StepWrapper>
+      {dmfTransformation}
     </div>
-  )
+  );
 }
 
 const DMFExplanation = ({
   dmf,
   riskFactors,
   nca,
-  fta
+  fta,
+  nvca
 }) => {
-  const context = riskFactors.get(DMF.COURT_OR_BOOKING);
+  let context = riskFactors.get(DMF.COURT_OR_BOOKING);
+  if (context === 'Court') {
+    context = CONTEXT.COURT_PENN;
+  }
   const extradited = riskFactors.get(DMF.EXTRADITED) === `${true}`;
   const extraditedNotes = riskFactors.get(NOTES[DMF.EXTRADITED]);
-  const stepTwoVal = riskFactors.get(DMF.STEP_2_CHARGES) === `${true}`;
+  const currentViolentOffense = riskFactors.get(PSA.CURRENT_VIOLENT_OFFENSE) === `${true}`;
+  const stepTwoCharges = riskFactors.get(DMF.STEP_2_CHARGES) === `${true}`;
   const stepTwoNotes = riskFactors.get(NOTES[DMF.STEP_2_CHARGES]);
-  const stepFourVal = riskFactors.get(DMF.STEP_4_CHARGES) === `${true}`;
+  const stepFourCharges = riskFactors.get(DMF.STEP_4_CHARGES) === `${true}`;
   const stepFourNotes = riskFactors.get(NOTES[DMF.STEP_4_CHARGES]);
-  const shouldRenderFull = !extradited && !stepTwoVal;
+  const secondaryReleaseVal = riskFactors.get(DMF.SECONDARY_RELEASE_CHARGES) === `${true}`;
+  const secondaryReleaseNotes = riskFactors.get(NOTES[DMF.SECONDARY_RELEASE_CHARGES]);
+
+  const stepTwoIncrease = extradited || stepTwoCharges || (nvca && currentViolentOffense);
+  const stepFourIncrease = stepFourCharges || (nvca && !currentViolentOffense);
 
   return (
     <div>
@@ -172,18 +264,30 @@ const DMFExplanation = ({
       <StepTwo
           extradited={extradited}
           extraditedNotes={extraditedNotes}
-          stepTwoVal={stepTwoVal}
+          stepTwoVal={stepTwoCharges}
           stepTwoNotes={stepTwoNotes}
+          currentViolentOffense={currentViolentOffense}
+          nvca={nvca}
           context={context} />
-      <StepThree shouldRender={shouldRenderFull} dmf={dmf} nca={nca} fta={fta} context={context} />
+      <StepThree shouldRender={!stepTwoIncrease} dmf={dmf} nca={nca} fta={fta} context={context} />
       <StepFour
-          shouldRender={shouldRenderFull}
+          shouldRender={!stepTwoIncrease}
           dmf={dmf}
-          stepFourVal={stepFourVal}
+          stepFourVal={stepFourCharges}
           stepFourNotes={stepFourNotes}
           nca={nca}
           fta={fta}
+          nvca={nvca}
+          currentViolentOffense={currentViolentOffense}
           context={context} />
+      <SecondaryRelease
+          shouldRender={!stepTwoIncrease && !stepFourIncrease}
+          dmf={dmf}
+          nca={nca}
+          fta={fta}
+          context={context}
+          secondaryReleaseVal={secondaryReleaseVal}
+          secondaryReleaseNotes={secondaryReleaseNotes} />
     </div>
   );
 };

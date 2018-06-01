@@ -19,11 +19,18 @@ import PSAScores from './PSAScores';
 import DMFCell from '../dmf/DMFCell';
 import DMFExplanation from '../dmf/DMFExplanation';
 import psaEditedConfig from '../../config/formconfig/PsaEditedConfig';
-import { getScoresAndRiskFactors, calculateDMF } from '../../utils/ScoringUtils';
+import {
+  getScoresAndRiskFactors,
+  calculateDMF,
+  stepTwoIncrease,
+  stepFourIncrease,
+  dmfSecondaryReleaseDecrease
+} from '../../utils/ScoringUtils';
 import { CenteredContainer } from '../../utils/Layout';
 import { formatValue, formatDateList, toISODateTime } from '../../utils/Utils';
 import { PSA, DMF, NOTES, EDIT_FIELDS, ID_FIELDS } from '../../utils/consts/Consts';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { CONTEXT } from '../../utils/consts/DMFConsts';
 import { RESULT_CATEGORIES } from '../../utils/consts/DMFResultConsts';
 import * as OverrideClassNames from '../../utils/styleoverrides/OverrideClassNames';
 
@@ -99,15 +106,15 @@ const ScoresContainer = styled.div`
   display: inline-block;
 `;
 
-const CaseHeader = styled.div`
-  font-size: 20px;
-`;
-
 const SummaryScores = styled.div`
   display: flex;
   flex-direction: row;
   justify-content: center;
   text-align: center;
+`;
+
+const DMFSummaryContainer = styled(SummaryScores)`
+  align-items: center;
 `;
 
 const ScoreTitle = styled.div`
@@ -119,6 +126,11 @@ const ScoreTitle = styled.div`
 const NoDMFContainer = styled(CenteredContainer)`
   margin: 30px;
   font-size: 18px;
+`;
+
+const DMFIncreaseText = styled.div`
+  margin: 5px;
+  font-weight: bold;
 `;
 
 type Props = {
@@ -166,7 +178,8 @@ type State = {
   open :boolean,
   editing :boolean,
   view :string,
-  riskFactors :Immutable.Map<*, *>
+  riskFactors :Immutable.Map<*, *>,
+  dmf :Object
 };
 
 const VIEWS = {
@@ -184,8 +197,15 @@ export default class PSAReviewRow extends React.Component<Props, State> {
       open: false,
       editing: false,
       riskFactors: this.getRiskFactors(props.neighbors),
-      view: VIEWS.SUMMARY
+      view: VIEWS.SUMMARY,
+      dmf: this.getDMF(props.neighbors)
     };
+  }
+
+  componentWillReceiveProps(nextProps :Props) {
+    this.setState({
+      dmf: this.getDMF(nextProps.neighbors)
+    });
   }
 
   getRiskFactors = (neighbors :Immutable.Map<*, *>) => {
@@ -228,10 +248,25 @@ export default class PSAReviewRow extends React.Component<Props, State> {
       [DMF.STEP_2_CHARGES]: `${dmfRiskFactors.getIn([PROPERTY_TYPES.DMF_STEP_2_CHARGES, 0])}`,
       [DMF.STEP_4_CHARGES]: `${dmfRiskFactors.getIn([PROPERTY_TYPES.DMF_STEP_4_CHARGES, 0])}`,
       [DMF.COURT_OR_BOOKING]: `${dmfRiskFactors.getIn([PROPERTY_TYPES.CONTEXT, 0])}`,
+      [DMF.SECONDARY_RELEASE_CHARGES]: `${dmfRiskFactors.getIn([PROPERTY_TYPES.DMF_SECONDARY_RELEASE_CHARGES, 0])}`,
       [NOTES[DMF.EXTRADITED]]: `${dmfRiskFactors.getIn([PROPERTY_TYPES.EXTRADITED_NOTES, 0], '')}`,
       [NOTES[DMF.STEP_2_CHARGES]]: `${dmfRiskFactors.getIn([PROPERTY_TYPES.DMF_STEP_2_CHARGES_NOTES, 0], '')}`,
-      [NOTES[DMF.STEP_4_CHARGES]]: `${dmfRiskFactors.getIn([PROPERTY_TYPES.DMF_STEP_4_CHARGES_NOTES, 0], '')}`
+      [NOTES[DMF.STEP_4_CHARGES]]: `${dmfRiskFactors.getIn([PROPERTY_TYPES.DMF_STEP_4_CHARGES_NOTES, 0], '')}`,
+      [NOTES[DMF.SECONDARY_RELEASE_CHARGES]]:
+        `${dmfRiskFactors.getIn([PROPERTY_TYPES.DMF_SECONDARY_RELEASE_CHARGES_NOTES, 0], '')}`
     });
+  }
+
+  getDMF = (neighbors :Immutable.Map<*, *>) => {
+    const dmfNeighbor = neighbors.getIn([ENTITY_SETS.DMF_RESULTS, 'neighborDetails'], Immutable.Map());
+    return {
+      [RESULT_CATEGORIES.COLOR]: dmfNeighbor.getIn([PROPERTY_TYPES.COLOR, 0]),
+      [RESULT_CATEGORIES.RELEASE_TYPE]: dmfNeighbor.getIn([PROPERTY_TYPES.RELEASE_TYPE, 0]),
+      [RESULT_CATEGORIES.CONDITIONS_LEVEL]: dmfNeighbor.getIn([PROPERTY_TYPES.CONDITIONS_LEVEL, 0]),
+      [RESULT_CATEGORIES.CONDITION_1]: dmfNeighbor.getIn([PROPERTY_TYPES.CONDITION_1, 0]),
+      [RESULT_CATEGORIES.CONDITION_2]: dmfNeighbor.getIn([PROPERTY_TYPES.CONDITION_2, 0]),
+      [RESULT_CATEGORIES.CONDITION_3]: dmfNeighbor.getIn([PROPERTY_TYPES.CONDITION_3, 0])
+    };
   }
 
   downloadRow = (e) => {
@@ -325,19 +360,28 @@ export default class PSAReviewRow extends React.Component<Props, State> {
     return result;
   }
 
-  getDMFRiskFactorsEntity = (riskFactors, dmfRiskFactorsId) => ({
-    [PROPERTY_TYPES.GENERAL_ID]: [dmfRiskFactorsId],
-    [PROPERTY_TYPES.EXTRADITED]: [riskFactors.get(DMF.EXTRADITED)],
-    [PROPERTY_TYPES.DMF_STEP_2_CHARGES]: [riskFactors.get(DMF.STEP_2_CHARGES)],
-    [PROPERTY_TYPES.DMF_STEP_4_CHARGES]: [riskFactors.get(DMF.STEP_4_CHARGES)],
-    [PROPERTY_TYPES.CONTEXT]: [riskFactors.get(DMF.COURT_OR_BOOKING)],
-    [PROPERTY_TYPES.EXTRADITED_NOTES]: [riskFactors.get(NOTES[DMF.EXTRADITED])],
-    [PROPERTY_TYPES.DMF_STEP_2_CHARGES_NOTES]: [riskFactors.get(NOTES[DMF.STEP_2_CHARGES])],
-    [PROPERTY_TYPES.DMF_STEP_4_CHARGES_NOTES]: [riskFactors.get(NOTES[DMF.STEP_4_CHARGES])]
-  });
+  getDMFRiskFactorsEntity = (riskFactors, dmfRiskFactorsId) => {
+    const result = {
+      [PROPERTY_TYPES.GENERAL_ID]: [dmfRiskFactorsId],
+      [PROPERTY_TYPES.EXTRADITED]: [riskFactors.get(DMF.EXTRADITED)],
+      [PROPERTY_TYPES.DMF_STEP_2_CHARGES]: [riskFactors.get(DMF.STEP_2_CHARGES)],
+      [PROPERTY_TYPES.DMF_STEP_4_CHARGES]: [riskFactors.get(DMF.STEP_4_CHARGES)],
+      [PROPERTY_TYPES.CONTEXT]: [riskFactors.get(DMF.COURT_OR_BOOKING)],
+      [PROPERTY_TYPES.EXTRADITED_NOTES]: [riskFactors.get(NOTES[DMF.EXTRADITED])],
+      [PROPERTY_TYPES.DMF_STEP_2_CHARGES_NOTES]: [riskFactors.get(NOTES[DMF.STEP_2_CHARGES])],
+      [PROPERTY_TYPES.DMF_STEP_4_CHARGES_NOTES]: [riskFactors.get(NOTES[DMF.STEP_4_CHARGES])]
+    };
+    if (riskFactors.get(DMF.COURT_OR_BOOKING) === CONTEXT.BOOKING) {
+      result[PROPERTY_TYPES.DMF_SECONDARY_RELEASE_CHARGES] = [riskFactors.get(DMF.SECONDARY_RELEASE_CHARGES)];
+      result[PROPERTY_TYPES.DMF_SECONDARY_RELEASE_CHARGES_NOTES]
+        = [riskFactors.get(NOTES[DMF.SECONDARY_RELEASE_CHARGES])];
+    }
+    return result;
+  };
 
   onRiskFactorEdit = (e :Object) => {
     e.preventDefault();
+
     const { scores, riskFactors } = getScoresAndRiskFactors(this.state.riskFactors);
     const dmf = calculateDMF(this.state.riskFactors, scores);
 
@@ -444,39 +488,48 @@ export default class PSAReviewRow extends React.Component<Props, State> {
   }
 
   renderCaseInfo = () => {
-    const { caseHistory, arrestChargeHistory, neighbors } = this.props;
+    const {
+      caseHistory,
+      arrestChargeHistory,
+      chargeHistory,
+      neighbors
+    } = this.props;
     const caseNum = neighbors.getIn(
       [ENTITY_SETS.ARREST_CASES, 'neighborDetails', PROPERTY_TYPES.CASE_ID, 0],
       neighbors.getIn(
         [ENTITY_SETS.MANUAL_PRETRIAL_CASES, 'neighborDetails', PROPERTY_TYPES.CASE_ID, 0],
-        ''
+        '',
+        neighbors.getIn(
+          [ENTITY_SETS.ARREST_CASES, 'neighborDetails', PROPERTY_TYPES.CASE_ID, 0],
+          ''
+        )
       )
     );
     const pretrialCase = caseHistory.filter(caseObj => caseObj.getIn([PROPERTY_TYPES.CASE_ID, 0], '') === caseNum);
-    const charges = arrestChargeHistory.get(caseNum, Immutable.List());
-    const caseNumText = caseNum.length ? `Case #: ${caseNum}` : 'No case information provided.';
+    const charges = arrestChargeHistory.get(caseNum, chargeHistory.get(caseNum, Immutable.List()));
     return (
       <CenteredContainer>
-        <CaseHeader>{caseNumText}</CaseHeader>
         <ChargeList pretrialCaseDetails={pretrialCase} charges={charges} />
       </CenteredContainer>
     );
   }
 
-  getDMF = () => {
-    const dmfNeighbor = this.props.neighbors.getIn([ENTITY_SETS.DMF_RESULTS, 'neighborDetails'], Immutable.Map());
-    return {
-      [RESULT_CATEGORIES.COLOR]: dmfNeighbor.getIn([PROPERTY_TYPES.COLOR, 0]),
-      [RESULT_CATEGORIES.RELEASE_TYPE]: dmfNeighbor.getIn([PROPERTY_TYPES.RELEASE_TYPE, 0]),
-      [RESULT_CATEGORIES.CONDITIONS_LEVEL]: dmfNeighbor.getIn([PROPERTY_TYPES.CONDITIONS_LEVEL, 0]),
-      [RESULT_CATEGORIES.CONDITION_1]: dmfNeighbor.getIn([PROPERTY_TYPES.CONDITION_1, 0]),
-      [RESULT_CATEGORIES.CONDITION_2]: dmfNeighbor.getIn([PROPERTY_TYPES.CONDITION_2, 0]),
-      [RESULT_CATEGORIES.CONDITION_3]: dmfNeighbor.getIn([PROPERTY_TYPES.CONDITION_3, 0])
-    };
-  }
-
   renderSummary = () => {
-    const dmf = this.getDMF();
+    const { scores, neighbors } = this.props;
+    const { dmf } = this.state;
+    const dmfRiskFactors = neighbors.getIn([ENTITY_SETS.DMF_RISK_FACTORS, 'neighborDetails'], Immutable.Map());
+    const psaRiskFactors = neighbors.getIn([ENTITY_SETS.PSA_RISK_FACTORS, 'neighborDetails'], Immutable.Map());
+
+    let modificationText;
+    if (stepTwoIncrease(dmfRiskFactors, psaRiskFactors, scores)) {
+      modificationText = 'Step two increase.';
+    }
+    else if (stepFourIncrease(dmfRiskFactors, psaRiskFactors, scores)) {
+      modificationText = 'Step four increase.';
+    }
+    else if (dmfSecondaryReleaseDecrease(dmfRiskFactors, scores)) {
+      modificationText = 'Exception release.';
+    }
     return (
       <div>
         {this.renderPersonInfo()}
@@ -487,8 +540,15 @@ export default class PSAReviewRow extends React.Component<Props, State> {
             <PSAScores scores={this.props.scores} />
           </ScoresContainer>
           <ScoresContainer>
-            <ScoreTitle>DMF:</ScoreTitle>
-            <DMFCell dmf={dmf} selected />
+            <DMFSummaryContainer>
+              <div>
+                <ScoreTitle>DMF:</ScoreTitle>
+                <DMFCell dmf={dmf} selected />
+              </div>
+              <div>
+                <DMFIncreaseText>{modificationText}</DMFIncreaseText>
+              </div>
+            </DMFSummaryContainer>
           </ScoresContainer>
         </SummaryScores>
         <hr />
@@ -538,7 +598,6 @@ export default class PSAReviewRow extends React.Component<Props, State> {
             input={riskFactors}
             handleInputChange={this.handleRiskFactorChange}
             handleSubmit={this.onRiskFactorEdit}
-            incompleteError={false}
             currCase={currCase}
             currCharges={currCharges}
             allCharges={allCharges}
@@ -554,14 +613,15 @@ export default class PSAReviewRow extends React.Component<Props, State> {
 
   renderDMFExplanation = () => {
     const { scores } = this.props;
-    const dmf = this.getDMF();
+    const { dmf, riskFactors } = this.state;
     const nca = scores.getIn([PROPERTY_TYPES.NCA_SCALE, 0]);
     const fta = scores.getIn([PROPERTY_TYPES.FTA_SCALE, 0]);
+    const nvca = scores.getIn([PROPERTY_TYPES.NVCA_FLAG, 0]);
     if (!this.props.neighbors.getIn([ENTITY_SETS.DMF_RESULTS, 'neighborDetails'], Immutable.Map()).size) {
       return <NoDMFContainer>A DMF was not calculated for this PSA.</NoDMFContainer>;
     }
 
-    return <DMFExplanation dmf={dmf} nca={nca} fta={fta} riskFactors={this.state.riskFactors} />;
+    return <DMFExplanation dmf={dmf} nca={nca} fta={fta} nvca={nvca} riskFactors={riskFactors} />;
   }
 
   renderDetails = () => {
