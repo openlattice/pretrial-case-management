@@ -78,7 +78,7 @@ export function* watchLoadPersonDetailsRequest() :Generator<*, *, *> {
           if (neighborEntitySet && neighborDetails && neighborEntitySet.name === ENTITY_SETS.PRETRIAL_CASES) {
 
             let shouldUpdate = false;
-            if (!neighborDetails[PROPERTY_TYPES.DISPOSITION]) {
+            if (!neighborDetails[PROPERTY_TYPES.FILE_DATE]) {
               shouldUpdate = true;
             }
             else {
