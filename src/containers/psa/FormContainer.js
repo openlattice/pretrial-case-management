@@ -333,7 +333,10 @@ class Form extends React.Component<Props, State> {
   generateScores = (e) => {
     e.preventDefault();
 
-    if (this.props.psaForm.valueSeq().filter(value => value === null).toList().size) {
+    const requiredFields = (this.props.psaForm.get(DMF.COURT_OR_BOOKING) === CONTEXT.BOOKING)
+      ? this.props.psaForm : this.props.psaForm.remove(DMF.SECONDARY_RELEASE_CHARGES);
+
+    if (requiredFields.valueSeq().filter(value => value === null).toList().size) {
       this.setState({ formIncompleteError: true });
     }
     else {
