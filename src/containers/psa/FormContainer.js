@@ -106,7 +106,6 @@ const INITIAL_PERSON_FORM = Immutable.fromJS({
 
 const INITIAL_STATE = Immutable.fromJS({
   personForm: INITIAL_PERSON_FORM,
-  formIncompleteError: false,
   riskFactors: {},
   dmfRiskFactors: {},
   scores: {
@@ -182,7 +181,6 @@ type Props = {
 
 type State = {
   personForm :Immutable.Map<*, *>,
-  formIncompleteError :boolean,
   riskFactors :{},
   dmfRiskFactors :{},
   scores :{},
@@ -331,29 +329,18 @@ class Form extends React.Component<Props, State> {
   })
 
   generateScores = (e) => {
-    e.preventDefault();
-
-    const requiredFields = (this.props.psaForm.get(DMF.COURT_OR_BOOKING) === CONTEXT.BOOKING)
-      ? this.props.psaForm : this.props.psaForm.remove(DMF.SECONDARY_RELEASE_CHARGES);
-
-    if (requiredFields.valueSeq().filter(value => value === null).toList().size) {
-      this.setState({ formIncompleteError: true });
-    }
-    else {
-      const { riskFactors, scores } = getScoresAndRiskFactors(this.props.psaForm);
-      const dmf = calculateDMF(this.props.psaForm, scores);
-      const dmfRiskFactors = getDMFRiskFactors(this.props.psaForm);
-      this.setState({
-        formIncompleteError: false,
-        riskFactors,
-        dmfRiskFactors,
-        scores,
-        dmf,
-        scoresWereGenerated: true
-      });
-      const formattedScores = this.getFormattedScores(scores);
-      this.submitEntities(formattedScores, riskFactors, dmf);
-    }
+    const { riskFactors, scores } = getScoresAndRiskFactors(this.props.psaForm);
+    const dmf = calculateDMF(this.props.psaForm, scores);
+    const dmfRiskFactors = getDMFRiskFactors(this.props.psaForm);
+    this.setState({
+      riskFactors,
+      dmfRiskFactors,
+      scores,
+      dmf,
+      scoresWereGenerated: true
+    });
+    const formattedScores = this.getFormattedScores(scores);
+    this.submitEntities(formattedScores, riskFactors, dmf);
   }
 
   clear = () => {
@@ -382,7 +369,6 @@ class Form extends React.Component<Props, State> {
         handleInputChange={this.handleInputChange}
         handleSubmit={this.generateScores}
         input={this.props.psaForm}
-        incompleteError={this.state.formIncompleteError}
         currCharges={this.props.charges}
         currCase={this.props.selectedPretrialCase}
         allCharges={this.props.allChargesForPerson}

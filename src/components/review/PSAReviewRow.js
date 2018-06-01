@@ -361,6 +361,7 @@ export default class PSAReviewRow extends React.Component<Props, State> {
 
   onRiskFactorEdit = (e :Object) => {
     e.preventDefault();
+
     const { scores, riskFactors } = getScoresAndRiskFactors(this.state.riskFactors);
     const dmf = calculateDMF(this.state.riskFactors, scores);
 
@@ -584,7 +585,6 @@ export default class PSAReviewRow extends React.Component<Props, State> {
             input={riskFactors}
             handleInputChange={this.handleRiskFactorChange}
             handleSubmit={this.onRiskFactorEdit}
-            incompleteError={false}
             currCase={currCase}
             currCharges={currCharges}
             allCharges={allCharges}
