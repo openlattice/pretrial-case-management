@@ -97,7 +97,7 @@ const DashboardNav = () => (
       </StyledLinksWrapper>
     </StyledNavWrapper>
     <StyledNavWrapper>
-      <StyledLink href="https://support.openlattice.com">Contact Support</StyledLink>
+      <StyledLink href="https://support.openlattice.com/servicedesk/customer/portal/1">Contact Support</StyledLink>
     </StyledNavWrapper>
   </DashboardNavWrapper>
 );
