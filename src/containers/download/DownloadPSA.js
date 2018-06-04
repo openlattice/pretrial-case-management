@@ -20,7 +20,7 @@ import {
   StyledTitleWrapper,
   StyledTopFormNavBuffer
 } from '../../utils/Layout';
-import { SUMMARY_REPORT } from '../../utils/consts/ReportDownloadTypes';
+import { DOMAIN, SUMMARY_REPORT } from '../../utils/consts/ReportDownloadTypes';
 
 const DatePickerTitle = styled.div`
   font-size: 16px;
@@ -137,10 +137,15 @@ class DownloadPSA extends React.Component<Props, State> {
 
   renderError = () => <Error>{this.getErrorText()}</Error>
 
-  download = (filters) => {
+  download = (filters, domain) => {
     const { startDate, endDate } = this.state;
     if (startDate && endDate) {
-      this.props.actions.downloadPsaForms({ startDate, endDate, filters });
+      this.props.actions.downloadPsaForms({
+        startDate,
+        endDate,
+        filters,
+        domain
+      });
     }
   }
 
@@ -150,7 +155,12 @@ class DownloadPSA extends React.Component<Props, State> {
     return (
       <div>
         <DownloadButton onClick={() => this.download()}>Download All PSA Data</DownloadButton>
-        <DownloadButton onClick={() => this.download(SUMMARY_REPORT)}>Download Summary Report</DownloadButton>
+        <DownloadButton onClick={() => this.download(SUMMARY_REPORT, DOMAIN.MINNEHAHA)}>
+          Download Minnehaha Summary Report
+        </DownloadButton>
+        <DownloadButton onClick={() => this.download(SUMMARY_REPORT, DOMAIN.PENNINGTON)}>
+          Download Pennington Summary Report
+        </DownloadButton>
       </div>
     );
   }

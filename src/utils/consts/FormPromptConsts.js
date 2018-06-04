@@ -20,4 +20,4 @@ export const EXTRADITED_PROMPT = '10. Was the defendant extradited for any curre
 export const STEP_2_CHARGES_PROMPT = '11. Is any current charge escape 1st or 2nd degree murder (1st & 2nd murder, 1st manslaughter), 1st, 2nd, and 3rd degree rape, kidnapping 1st, robbery 1st, an attempt to commit any of these charges, or a pretrial FTA for any of these charges?';
 export const STEP_4_CHARGES_PROMPT = '12. Is any current charge domestic violence, stalking, violation of a protection order, violation of a no contact order, aggravated assault, a person to person sex crime (includes 22-24a-5), 4th degree rape, arson, robbery 2nd, kidnapping 2nd, any offense that results in the death of a human, involved the use of a weapon, an attempt to commit any of these charges, or a pretrial FTA for any of these charges?';
 export const COURT_OR_BOOKING_PROMPT = '13. Is the PSA being administered at the time of booking or court date?';
-export const SECONDARY_RELEASE_CHARGES_PROMPT = '14. Do the current charges qualify for a secondary release option?';
+export const SECONDARY_RELEASE_CHARGES_PROMPT = '14. Does the booking hold exception list apply?';

@@ -31,7 +31,7 @@ export function formatDateTime(dateString :string, optionalFormat :?string) :str
   if (!dateString) return '';
   const date = moment(dateString);
   if (!date || !date.isValid()) return dateString;
-  const format = optionalFormat || 'MM/DD/YYYY hh:mm a';
+  const format = optionalFormat || 'MM/DD/YYYY hh:mma';
   return date.format(format);
 }
 

@@ -55,7 +55,7 @@ const DataElem = styled.td`
 
 type Props = {
   person :Immutable.Map<*, *>,
-  handleSelect? :(person :Immutable.Map<*, *>, entityKeyId :string) => void
+  handleSelect? :(person :Immutable.Map<*, *>, entityKeyId :string, id :string) => void
 };
 
 const PersonCard = ({ person, handleSelect } :Props) => {
