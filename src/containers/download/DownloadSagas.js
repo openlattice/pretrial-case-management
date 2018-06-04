@@ -8,6 +8,7 @@ import { DataApi, EntityDataModelApi, SearchApi } from 'lattice';
 import { call, put, takeEvery } from 'redux-saga/effects';
 
 import FileSaver from '../../utils/FileSaver';
+import { formatDateTime } from '../../utils/Utils';
 import {
   DOWNLOAD_PSA_FORMS,
   downloadPsaForms
@@ -18,7 +19,12 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
 
   try {
     yield put(downloadPsaForms.request(action.id));
-    const { startDate, endDate, filters } = action.value;
+    const {
+      startDate,
+      endDate,
+      filters,
+      domain
+    } = action.value;
 
     const start = moment(startDate);
     const end = moment(endDate);
@@ -42,10 +48,18 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
 
     let usableNeighborsById = Immutable.Map();
 
+
     Object.keys(neighborsById).forEach((id) => {
       let usableNeighbors = Immutable.List();
       const neighborList = neighborsById[id];
+      let domainMatch = true;
       neighborList.forEach((neighbor) => {
+        if (domain && neighbor.neighborEntitySet && neighbor.neighborEntitySet.name === ENTITY_SETS.STAFF) {
+          const filer = neighbor.neighborDetails[PROPERTY_TYPES.PERSON_ID][0];
+          if (!filer.toLowerCase().endsWith(domain)) {
+            domainMatch = false;
+          }
+        }
         const timestampList = neighbor.associationDetails[PROPERTY_TYPES.TIMESTAMP]
           || neighbor.associationDetails[PROPERTY_TYPES.COMPLETED_DATE_TIME];
         if (timestampList && timestampList.length) {
@@ -55,7 +69,7 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
           }
         }
       });
-      if (usableNeighbors.size > 0) {
+      if (domainMatch && usableNeighbors.size > 0) {
         usableNeighborsById = usableNeighborsById.set(id, usableNeighbors);
       }
     });
@@ -69,7 +83,15 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
         if (header) {
           let newArrayValues = combinedEntity.get(header, Immutable.List());
           details.get(fqn).forEach((val) => {
-            if (!newArrayValues.includes(val)) newArrayValues = newArrayValues.push(val);
+            let newVal = val;
+            if (fqn === PROPERTY_TYPES.TIMESTAMP
+              || fqn === PROPERTY_TYPES.COMPLETED_DATE_TIME
+              || fqn === PROPERTY_TYPES.DATE_TIME) {
+              newVal = formatDateTime(val, 'YYYY-MM-DD hh:mma');
+            }
+            if (!newArrayValues.includes(val)) {
+              newArrayValues = newArrayValues.push(newVal);
+            }
           });
           combinedEntity = combinedEntity.set(header, newArrayValues);
         }
