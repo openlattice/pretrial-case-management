@@ -27,7 +27,6 @@ import { getRecentFTAs, getOldFTAs } from './FTAUtils';
 const {
   DOB,
   ARREST_DATE_TIME,
-  MOST_SERIOUS_CHARGE_NO,
   CHARGE_STATUTE,
   CASE_ID,
   CHARGE_ID,
@@ -75,8 +74,9 @@ export const getViolentCharges = (charges :Immutable.List<*>, mostSeriousCharge 
   }).map(charge => getChargeTitle(charge));
 };
 
-export const tryAutofillCurrentViolentCharge = (charges :Immutable.List<*>, mostSeriousCharge :string) :string =>
-  `${getAllViolentCharges(charges).size > 0}`;
+export const tryAutofillCurrentViolentCharge = (charges :Immutable.List<*>) :string => {
+  return `${getAllViolentCharges(charges).size > 0}`;
+}
 
 export const tryAutofillAge = (
   dateArrested :string,
@@ -244,11 +244,10 @@ export const tryAutofillFields = (
   );
 
   // current violent offense
-  const nextMostSeriousCharge = nextCase.getIn([MOST_SERIOUS_CHARGE_NO, 0], '');
-  if (nextCharges.size || nextMostSeriousCharge.length) {
+  if (nextCharges.size) {
     psaForm = psaForm.set(
       CURRENT_VIOLENT_OFFENSE,
-      tryAutofillCurrentViolentCharge(nextCharges, nextMostSeriousCharge)
+      tryAutofillCurrentViolentCharge(nextCharges)
     );
 
     // DMF
@@ -269,29 +268,23 @@ export const tryAutofillFields = (
     )
   );
 
-  if (allCharges.size) {
-    psaForm = psaForm.set(PRIOR_MISDEMEANOR, tryAutofillPreviousMisdemeanors(allCharges));
-    psaForm = psaForm.set(PRIOR_FELONY, tryAutofillPreviousFelonies(allCharges));
+  psaForm = psaForm.set(PRIOR_MISDEMEANOR, tryAutofillPreviousMisdemeanors(allCharges));
+  psaForm = psaForm.set(PRIOR_FELONY, tryAutofillPreviousFelonies(allCharges));
 
-    const priorMisdemeanor = psaForm.get(PRIOR_MISDEMEANOR);
-    const priorFelony = psaForm.get(PRIOR_FELONY);
-    if (priorMisdemeanor === 'false' && priorFelony === 'false') {
-      psaForm = psaForm.set(PRIOR_VIOLENT_CONVICTION, '0');
-      psaForm = psaForm.set(PRIOR_SENTENCE_TO_INCARCERATION, 'false');
-    }
-    else {
-      psaForm = psaForm.set(PRIOR_VIOLENT_CONVICTION, tryAutofillPreviousViolentCharge(allCharges));
-    }
+  const priorMisdemeanor = psaForm.get(PRIOR_MISDEMEANOR);
+  const priorFelony = psaForm.get(PRIOR_FELONY);
+  if (priorMisdemeanor === 'false' && priorFelony === 'false') {
+    psaForm = psaForm.set(PRIOR_VIOLENT_CONVICTION, '0');
+    psaForm = psaForm.set(PRIOR_SENTENCE_TO_INCARCERATION, 'false');
+  }
+  else {
+    psaForm = psaForm.set(PRIOR_VIOLENT_CONVICTION, tryAutofillPreviousViolentCharge(allCharges));
   }
 
-  if (allSentences.size) {
-    psaForm = psaForm.set(PRIOR_SENTENCE_TO_INCARCERATION, tryAutofillPriorSentenceToIncarceration(allSentences))
-  }
+  psaForm = psaForm.set(PRIOR_SENTENCE_TO_INCARCERATION, tryAutofillPriorSentenceToIncarceration(allSentences));
 
-  if (allFTAs.size) {
-    psaForm = psaForm.set(PRIOR_FAILURE_TO_APPEAR_RECENT, tryAutofillRecentFTAs(allFTAs));
-    psaForm = psaForm.set(PRIOR_FAILURE_TO_APPEAR_OLD, tryAutofillOldFTAs(allFTAs));
-  }
+  psaForm = psaForm.set(PRIOR_FAILURE_TO_APPEAR_RECENT, tryAutofillRecentFTAs(allFTAs));
+  psaForm = psaForm.set(PRIOR_FAILURE_TO_APPEAR_OLD, tryAutofillOldFTAs(allFTAs));
 
   return psaForm;
 };

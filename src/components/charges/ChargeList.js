@@ -6,6 +6,7 @@ import React from 'react';
 import styled from 'styled-components';
 import Immutable from 'immutable';
 
+import { getAllViolentCharges } from '../../utils/consts/ArrestChargeConsts';
 import { chargeFieldIsViolent } from '../../utils/consts/ChargeConsts';
 import { formatValue, formatDateList } from '../../utils/Utils';
 import {
@@ -52,17 +53,16 @@ export default class ChargeList extends React.Component<Props, *> {
     detailed: false
   };
 
-  renderTags = (chargeNumField :string[]) => {
+  renderTags = (charge :Immutable.Map<*, *>) => {
     let mostSerious = false;
-    let violent = false;
+    const violent = getAllViolentCharges(Immutable.fromJS([charge])).size > 0;
 
     const mostSeriousNumField = this.props.pretrialCaseDetails.get(MOST_SERIOUS_CHARGE_NO, Immutable.List());
-    chargeNumField.forEach((chargeNum) => {
+    charge.get(CHARGE_STATUTE, Immutable.List()).forEach((chargeNum) => {
       mostSeriousNumField.forEach((mostSeriousNum) => {
         if (mostSeriousNum === chargeNum) mostSerious = true;
       });
     });
-    if (chargeFieldIsViolent(chargeNumField)) violent = true;
 
     return (
       <ChargeTagWrapper>
@@ -116,7 +116,7 @@ export default class ChargeList extends React.Component<Props, *> {
           <ChargeItem>
             {styledDescription}
             {this.renderChargeDetails(charge)}
-            {this.renderTags(chargeNum)}
+            {this.renderTags(charge)}
           </ChargeItem>
         </ChargeRow>
       );
