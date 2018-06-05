@@ -4,7 +4,6 @@ export const SUMMARY_REPORT = {
   [ENTITY_SETS.PEOPLE]: {
     [PROPERTY_TYPES.LAST_NAME]: 'Last Name',
     [PROPERTY_TYPES.FIRST_NAME]: 'First Name',
-    [PROPERTY_TYPES.MIDDLE_NAME]: 'Middle Name',
     [PROPERTY_TYPES.DOB]: 'Date of Birth'
   },
   [ENTITY_SETS.STAFF]: {
@@ -19,10 +18,10 @@ export const SUMMARY_REPORT = {
     [PROPERTY_TYPES.FTA_SCALE]: 'FTA'
   },
   [ENTITY_SETS.DMF_RESULTS]: {
+    S2: 'S2',
+    S4: 'S4',
     [PROPERTY_TYPES.RELEASE_TYPE]: 'Final PSA Recommendation',
-    [PROPERTY_TYPES.CONDITION_1]: 'Condition 1',
-    [PROPERTY_TYPES.CONDITION_2]: 'Condition 2',
-    [PROPERTY_TYPES.CONDITION_3]: 'Condition 3'
+    [PROPERTY_TYPES.CONDITIONS_LEVEL]: 'Conditions Level'
   }
 };
 
