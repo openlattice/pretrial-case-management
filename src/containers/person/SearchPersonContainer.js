@@ -68,6 +68,16 @@ const FooterContainer = styled.div`
   text-align: center;
 `;
 
+const ListSectionHeader = styled.div`
+  font-size: 20px;
+  font-weight: bold;
+  margin: 20px 0;
+`;
+
+const GrayListSectionHeader = styled(ListSectionHeader)`
+  color: #aaa;
+`;
+
 /*
  * types
  */
@@ -143,6 +153,30 @@ class SearchPeopleContainer extends React.Component<Props, State> {
     this.props.history.push(`${Routes.NEW_PERSON}?${qs.stringify(params)}`);
   }
 
+  getSortedPeopleList = (peopleList, gray) => {
+    return peopleList.sort((p1 :Immutable.Map<*, *>, p2 :Immutable.Map<*, *>) => {
+      const p1Last = p1.getIn([PROPERTY_TYPES.LAST_NAME, 0], '').toLowerCase();
+      const p2Last = p2.getIn([PROPERTY_TYPES.LAST_NAME, 0], '').toLowerCase();
+      if (p1Last !== p2Last) return p1Last < p2Last ? -1 : 1;
+
+      const p1First = p1.getIn([PROPERTY_TYPES.FIRST_NAME, 0], '').toLowerCase();
+      const p2First = p2.getIn([PROPERTY_TYPES.FIRST_NAME, 0], '').toLowerCase();
+      if (p1First !== p2First) return p1First < p2First ? -1 : 1;
+
+      const p1Dob = moment(p1.getIn([PROPERTY_TYPES.DOB, 0], ''));
+      const p2Dob = moment(p2.getIn([PROPERTY_TYPES.DOB, 0], ''));
+      if (p1Dob.isValid() && p2Dob.isValid()) return p1Dob.isBefore(p2Dob) ? -1 : 1;
+
+      return 0;
+    }).map((personResult :Immutable.Map<*, *>) => (
+      <PersonCard
+          key={personResult.getIn(['id', 0], '')}
+          person={personResult}
+          handleSelect={this.handleOnSelectPerson}
+          gray={gray} />
+    )).toSeq();
+  }
+
   renderSearchResults = () => {
 
     const {
@@ -170,32 +204,45 @@ class SearchPeopleContainer extends React.Component<Props, State> {
       );
     }
 
-    const searchResultCards = searchResults
-      .sort((p1 :Immutable.Map<*, *>, p2 :Immutable.Map<*, *>) => {
-        const p1Last = p1.getIn([PROPERTY_TYPES.LAST_NAME, 0], '').toLowerCase();
-        const p2Last = p2.getIn([PROPERTY_TYPES.LAST_NAME, 0], '').toLowerCase();
-        if (p1Last !== p2Last) return p1Last < p2Last ? -1 : 1;
+    let peopleWithHistory = Immutable.List();
+    let peopleWithoutHistory = Immutable.List();
 
-        const p1First = p1.getIn([PROPERTY_TYPES.FIRST_NAME, 0], '').toLowerCase();
-        const p2First = p2.getIn([PROPERTY_TYPES.FIRST_NAME, 0], '').toLowerCase();
-        if (p1First !== p2First) return p1First < p2First ? -1 : 1;
+    searchResults.forEach((person) => {
+      const id = person.getIn([PROPERTY_TYPES.PERSON_ID, 0], '');
+      const hasHistory = Number.parseInt(id, 10).toString() === id.toString();
+      if (hasHistory) {
+        peopleWithHistory = peopleWithHistory.push(person);
+      }
+      else {
+        peopleWithoutHistory = peopleWithoutHistory.push(person);
+      }
+    });
 
-        const p1Dob = moment(p1.getIn([PROPERTY_TYPES.DOB, 0], ''));
-        const p2Dob = moment(p2.getIn([PROPERTY_TYPES.DOB, 0], ''));
-        if (p1Dob.isValid() && p2Dob.isValid()) return p1Dob.isBefore(p2Dob) ? -1 : 1;
-
-        return 0;
-      })
-      .map((personResult :Immutable.Map<*, *>) => (
-        <PersonCard
-            key={personResult.getIn(['id', 0], '')}
-            person={personResult}
-            handleSelect={this.handleOnSelectPerson} />
-      ));
+    const body = searchHasRun ? (
+      <div>
+        {
+          peopleWithHistory.size ? (
+            <div>
+              <ListSectionHeader>People With Case History:</ListSectionHeader>
+              { this.getSortedPeopleList(peopleWithHistory) }
+              <hr />
+            </div>
+          ) : null
+        }
+        {
+          peopleWithoutHistory.size ? (
+            <div>
+              <GrayListSectionHeader>People Without Case History:</GrayListSectionHeader>
+              { this.getSortedPeopleList(peopleWithoutHistory, true) }
+            </div>
+          ) : null
+        }
+      </div>
+    ) : null;
 
     return (
       <SearchResultsList>
-        { searchResultCards.toSeq() }
+        { body }
         { footer }
       </SearchResultsList>
     );
