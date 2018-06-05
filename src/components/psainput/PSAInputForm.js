@@ -13,7 +13,6 @@ import ExpandableText from '../controls/ExpandableText';
 import Radio from '../controls/StyledRadio';
 
 import {
-  getViolentCharges,
   getPendingCharges,
   getPreviousMisdemeanors,
   getPreviousFelonies,

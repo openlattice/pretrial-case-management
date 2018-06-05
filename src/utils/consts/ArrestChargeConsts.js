@@ -818,9 +818,10 @@ const dmfStepFourCharges = getCombinedChargeList([
 ]);
 
 export const chargeIsInList = (chargesToMatch, statuteNum, description) => {
+  if (!statuteNum || !statuteNum.length || !description || !description.length) return false;
   let result = false;
   chargesToMatch.forEach((charge) => {
-    if (charge[STATUTE] === statuteNum && charge[DESCRIPTION] === description) {
+    if (charge[STATUTE] === statuteNum.trim() && charge[DESCRIPTION] === description.trim()) {
       result = true;
     }
   });
@@ -830,16 +831,16 @@ export const chargeIsInList = (chargesToMatch, statuteNum, description) => {
 const filterChargeList = (charges, chargesToMatch) => {
   return charges.filter((charge) => {
     const statuteNum = charge.getIn([PROPERTY_TYPES.CHARGE_STATUTE, 0], '');
-    const description = charge.getIn([PROPERTY_TYPES.CHARGE_DESCRIPTION, 0], '')
+    const description = charge.getIn([PROPERTY_TYPES.CHARGE_DESCRIPTION, 0], '');
     return chargeIsInList(chargesToMatch, statuteNum, description);
   }).map((charge) => {
     return charge.getIn([PROPERTY_TYPES.CHARGE_STATUTE, 0], '');
   });
-}
+};
 
 export const getAllViolentCharges = (chargeList) => {
   return filterChargeList(chargeList, violentCharges);
-}
+};
 
 export const getAllStepTwoCharges = (chargeList) => {
   return filterChargeList(chargeList, dmfStepTwoCharges);
