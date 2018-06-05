@@ -163,6 +163,7 @@ type Props = {
   selectedPretrialCase :Immutable.Map<*, *>,
   pretrialCaseOptions :Immutable.List<*>,
   charges :Immutable.List<*>,
+  allCasesForPerson :Immutable.List<*>,
   allChargesForPerson :Immutable.List<*>,
   allSentencesForPerson :Immutable.List<*>,
   allFTAs :Immutable.List<*>,
@@ -212,7 +213,7 @@ class Form extends React.Component<Props, State> {
     const {
       selectedPretrialCase,
       charges,
-      pretrialCaseOptions,
+      allCasesForPerson,
       allChargesForPerson,
       allSentencesForPerson,
       allFTAs,
@@ -225,7 +226,7 @@ class Form extends React.Component<Props, State> {
         newValues: tryAutofillFields(
           selectedPretrialCase,
           charges,
-          pretrialCaseOptions,
+          allCasesForPerson,
           allChargesForPerson,
           allSentencesForPerson,
           allFTAs,
@@ -619,6 +620,7 @@ function mapStateToProps(state :Immutable.Map<*, *>) :Object {
     charges: psaForm.get('charges'),
     selectedPerson: psaForm.get('selectedPerson'),
     selectedPretrialCase: psaForm.get('selectedPretrialCase'),
+    allCasesForPerson: psaForm.get('allCasesForPerson'),
     allChargesForPerson: psaForm.get('allChargesForPerson'),
     allSentencesForPerson: psaForm.get('allSentencesForPerson'),
     allFTAs: psaForm.get('allFTAs'),
