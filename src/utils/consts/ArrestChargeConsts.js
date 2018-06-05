@@ -8,296 +8,438 @@ const {
 } = CHARGE;
 
 export const CHARGE_TYPES = {
-  ESCAPE_FIRST_DEGREE: 'ESCAPE_FIRST_DEGREE',
-  ESCAPE_SECOND_DEGREE: 'ESCAPE_SECOND_DEGREE',
-  MURDER_FIRST_DEGREE: 'MURDER_FIRST_DEGREE',
-  MURDER_SECOND_DEGREE: 'MURDER_SECOND_DEGREE',
-  ATTEMPTED_MURDER: 'ATTEMPTED_MURDER',
-  MANSLAUGHTER_FIRST_DEGREE: 'MANSLAUGHTER_FIRST_DEGREE',
-  RAPE_FIRST_DEGREEE: 'RAPE_FIRST_DEGREEE',
-  RAPE_SECOND_DEGREE: 'RAPE_SECOND_DEGREE',
-  RAPE_THIRD_DEGREE: 'RAPE_THIRD_DEGREE',
-  KIDNAPPING_FIRST_DEGREE: 'KIDNAPPING_FIRST_DEGREE',
-  ROBBERY_FIRST_DEGREE: 'ROBBERY_FIRST_DEGREE',
-  DOMESTIC_VIOLENCE: 'DOMESTIC_VIOLENCE',
-  STALKING: 'STALKING',
-  VIOLATION_OF_PROTECTION_ORDER: 'VIOLATION_OF_PROTECTION_ORDER',
-  VIOLATION_OF_NO_CONTACT_ORDER: 'VIOLATION_OF_NO_CONTACT_ORDER',
-  AGGRAVATED_ASSAULT: 'AGGRAVATED_ASSAULT',
-  PERSON_TO_PERSON_SEX_CRIME: 'PERSON_TO_PERSON_SEX_CRIME',
-  RAPE_FOURTH_DEGREE: 'RAPE_FOURTH_DEGREE',
-  ARSON: 'ARSON',
-  ROBBERY_SECOND_DEGREE: 'ROBBERY_SECOND_DEGREE',
-  KIDNAPPING_SECOND_DEGREE: 'KIDNAPPING_SECOND_DEGREE',
-  OFFENSE_RESULTING_IN_HUMAN_DEATH: 'OFFENSE_RESULTING_IN_HUMAN_DEATH',
-  OFFENSE_INVOLVING_WEAPON: 'OFFENSE_INVOLVING_WEAPON',
+  STEP_TWO: 'STEP_TWO',
+  STEP_FOUR: 'STEP_FOUR',
   ALL_VIOLENT: 'ALL_VIOLENT'
 };
 
 export const CHARGE_VALUES = {
-  [CHARGE_TYPES.ESCAPE_FIRST_DEGREE]: [{
+  [CHARGE_TYPES.STEP_TWO]: [{
     [STATUTE]: '22-11A-2',
     [DESCRIPTION]: 'Escape by prisoner - 1st Degree (F4)'
-  }],
-
-  [CHARGE_TYPES.ESCAPE_SECOND_DEGREE]: [{
+  },
+  {
     [STATUTE]: '22-11A-2.1',
     [DESCRIPTION]: 'Escape by prisoner - 2nd Degree (F5)'
-  }],
-
-  [CHARGE_TYPES.MURDER_FIRST_DEGREE]: [{
-    [STATUTE]: '22-16-4',
-    [DESCRIPTION]: 'Murder in First Degree/Felony Murder(FA)'
-  }],
-
-  [CHARGE_TYPES.MURDER_SECOND_DEGREE]: [{
-    [STATUTE]: '22-16-7',
-    [DESCRIPTION]: 'Murder In Second Degree-Depraved Mind(FB)'
-  }],
-
-  [CHARGE_TYPES.ATTEMPTED_MURDER]: [{
-    [STATUTE]: '22-16-4',
-    [DESCRIPTION]: 'Attempted Murder (F2)'
-  }],
-
-  [CHARGE_TYPES.MANSLAUGHTER_FIRST_DEGREE]: [{
+  },
+  {
+    [STATUTE]: '22-16-1.1',
+    [DESCRIPTION]: 'Fetal Homicide(FB)'
+  },
+  {
     [STATUTE]: '22-16-15',
     [DESCRIPTION]: 'Manslaughter in First Degree-Heat of Passion(FC)'
-  }],
-
-  [CHARGE_TYPES.RAPE_FIRST_DEGREEE]: [{
-    [STATUTE]: '22-22-1',
-    [DESCRIPTION]: 'Rape - 1st Degree - Less than 13 years of age(FC)'
-  }, {
-    [STATUTE]: '22-22-1',
-    [DESCRIPTION]: 'Rape - Female/Female - V < 13 (1st Degree, Class C Felony)(FC)'
-  }, {
-    [STATUTE]: '22-22-1',
-    [DESCRIPTION]: 'Rape - Male/Male - Sodomy if Victim Less than 13 Years of Age(FC)'
-  }, {
-    [STATUTE]: '22-22-1',
-    [DESCRIPTION]: 'Rape if Victim Less Than 13 Years of Age or Intoxication Level Incapable of Consent(FC)'
-  }, {
-    [STATUTE]: '22-22-1',
-    [DESCRIPTION]: 'Rape with Object if Victim Less than 13 Years of Age (FC)'
-  }],
-
-  [CHARGE_TYPES.RAPE_SECOND_DEGREE]: [{
-    [STATUTE]: '22-22-1',
-    [DESCRIPTION]: 'Rape - 2nd Degree - Force, Coercion, Threats(F1)'
-  }, {
-    [STATUTE]: '22-22-1',
-    [DESCRIPTION]: 'Rape - Female/Female - 2nd Deg, Class 1 Felony(F1)'
-  }, {
-    [STATUTE]: '22-22-1',
-    [DESCRIPTION]: 'Rape - Male/Male - Sodomy by Force, Coercion, or Threats (F1)'
-  }, {
-    [STATUTE]: '22-22-1',
-    [DESCRIPTION]: 'Rape with Object Using Force, Coercion, or Threats(F1)'
-  }],
-  [CHARGE_TYPES.RAPE_THIRD_DEGREE]: [{
-    [STATUTE]: '22-22-1',
-    [DESCRIPTION]: 'Rape - 3rd Degree - Physical or Mental Incapacity(F2)'
-  }, {
-    [STATUTE]: '22-22-1',
-    [DESCRIPTION]: 'Rape - 3rd Degree - V incapable of giving consent because of any Intoxicating, Narcotic, or Anesthetic Agent or Hypnosis(F2)'
-  }, {
-    [STATUTE]: '22-22-1',
-    [DESCRIPTION]: 'Rape - Female/Female - V Incapable Intox/Drug (3rd deg. Class 2 Felony)'
-  }, {
-    [STATUTE]: '22-22-1',
-    [DESCRIPTION]: 'Rape - Female/Female - V Incapable Phys or Ment (3rd Deg, Class 2 Felony)'
-  }, {
-    [STATUTE]: '22-22-1',
-    [DESCRIPTION]: 'Rape - Male/Male - Sodomy if V is Incapable because of Physical or Mental Incapacity(F2)'
-  }, {
-    [STATUTE]: '22-22-1',
-    [DESCRIPTION]: 'Rape - Male/Male - Sodomy if V is Incapable of Giving Consent because of any Intoxicating, Narcotic, or Anesthetic Agent or Hypnosis(F2)'
-  }, {
-    [STATUTE]: '22-22-1',
-    [DESCRIPTION]: 'Rape by Force, Coercion, or Threats or Physically Incapable of Giving Consent(F2)'
-  }, {
-    [STATUTE]: '22-22-1',
-    [DESCRIPTION]: 'Rape with Object if V is Incapabale because of Intoxicating, Narcotic, Anesthetic Agent or Hypnosis(F2)'
-  }, {
-    [STATUTE]: '22-22-1',
-    [DESCRIPTION]: 'Rape with Object if V is Incapable because of Physical or Mental Incapacity of Giving Consent(F2)'
-  }],
-
-  [CHARGE_TYPES.KIDNAPPING_FIRST_DEGREE]: [{
-    [STATUTE]: '22-19-1',
-    [DESCRIPTION]: 'Kidnapping 1st Degree(FC)'
-  }, {
+  },
+  {
+    [STATUTE]: '22-16-4',
+    [DESCRIPTION]: 'Attempted Murder (F2)'
+  },
+  {
+    [STATUTE]: '22-16-4',
+    [DESCRIPTION]: 'Murder in First Degree/Felony Murder(FA)'
+  },
+  {
+    [STATUTE]: '22-16-5',
+    [DESCRIPTION]: 'Premeditated Design to Effect the Death Defined'
+  },
+  {
+    [STATUTE]: '22-16-7',
+    [DESCRIPTION]: 'Murder In Second Degree-Depraved Mind(FB)'
+  },
+  {
     [STATUTE]: '22-19-1',
     [DESCRIPTION]: 'Aggravated Kidnapping With Serious Injury(FB)'
-  }],
-
-  [CHARGE_TYPES.ROBBERY_FIRST_DEGREE]: [{
+  },
+  {
+    [STATUTE]: '22-19-1',
+    [DESCRIPTION]: 'Kidnapping 1st Degree(FC)'
+  },
+  {
+    [STATUTE]: '22-22-1',
+    [DESCRIPTION]: 'Rape - 1st Degree - Less than 13 years of age(FC)'
+  },
+  {
+    [STATUTE]: '22-22-1',
+    [DESCRIPTION]: 'Rape - 2nd Degree - Force, Coercion, Threats(F1)'
+  },
+  {
+    [STATUTE]: '22-22-1',
+    [DESCRIPTION]: 'Rape - 3rd Deg (DO NOT USE)'
+  },
+  {
+    [STATUTE]: '22-22-1',
+    [DESCRIPTION]: 'Rape - 3rd Degree - Physical or Mental Incapacity(F2)'
+  },
+  {
+    [STATUTE]: '22-22-1',
+    [DESCRIPTION]: 'Rape - 3rd Degree - V incapable of giving consent because of any Intoxicating, Narcotic, or Anesthetic Agent or Hypnosis(F2)'
+  },
+  {
+    [STATUTE]: '22-22-1',
+    [DESCRIPTION]: 'Rape - Female/Female - 2nd Deg, Class 1 Felony(F1)'
+  },
+  {
+    [STATUTE]: '22-22-1',
+    [DESCRIPTION]: 'Rape - Female/Female - V < 13 (1st Degree, Class C Felony)(FC)'
+  },
+  {
+    [STATUTE]: '22-22-1',
+    [DESCRIPTION]: 'Rape - Female/Female - V Incapable Intox/Drug (3rd deg. Class 2 Felony)'
+  },
+  {
+    [STATUTE]: '22-22-1',
+    [DESCRIPTION]: 'Rape - Female/Female - V Incapable Phys or Ment (3rd Deg, Class 2 Felony)'
+  },
+  {
+    [STATUTE]: '22-22-1',
+    [DESCRIPTION]: 'Rape - Male/Male - Sodomy by Force, Coercion, or Threats (F1)'
+  },
+  {
+    [STATUTE]: '22-22-1',
+    [DESCRIPTION]: 'Rape - Male/Male - Sodomy if V is Incapable because of Physical or Mental Incapacity(F2)'
+  },
+  {
+    [STATUTE]: '22-22-1',
+    [DESCRIPTION]: 'Rape - Male/Male - Sodomy if V is Incapable of Giving Consent because of any Intoxicating, Narcotic, or Anesthetic Agent or Hypnosis(F2)'
+  },
+  {
+    [STATUTE]: '22-22-1',
+    [DESCRIPTION]: 'Rape - Male/Male - Sodomy if Victim Less than 13 Years of Age(FC)'
+  },
+  {
+    [STATUTE]: '22-22-1',
+    [DESCRIPTION]: 'Rape by Force, Coercion, or Threats or Physically Incapable of Giving Consent(F2)'
+  },
+  {
+    [STATUTE]: '22-22-1',
+    [DESCRIPTION]: 'Rape if Victim Less Than 13 Years of Age or Intoxication Level Incapable of Consent(FC)'
+  },
+  {
+    [STATUTE]: '22-22-1',
+    [DESCRIPTION]: 'Rape with Object if V is Incapabale because of Intoxicating, Narcotic, Anesthetic Agent or Hypnosis(F2)'
+  },
+  {
+    [STATUTE]: '22-22-1',
+    [DESCRIPTION]: 'Rape with Object if V is Incapable because of Physical or Mental Incapacity of Giving Consent(F2)'
+  },
+  {
+    [STATUTE]: '22-22-1',
+    [DESCRIPTION]: 'Rape with Object if Victim Less than 13 Years of Age (FC)'
+  },
+  {
+    [STATUTE]: '22-22-1',
+    [DESCRIPTION]: 'Rape with Object Using Force, Coercion, or Threats(F1)'
+  },
+  {
+    [STATUTE]: '22-22-1',
+    [DESCRIPTION]: 'Rape with Object Using Force, Coercion, or Threats(F1)'
+  },
+  {
     [STATUTE]: '22-30-6',
     [DESCRIPTION]: 'Robbery In The First Degree(F2)'
   }],
 
-  [CHARGE_TYPES.DOMESTIC_VIOLENCE]: [{
-    [STATUTE]: '22-18-1.1',
-    [DESCRIPTION]: 'Aggravated Assault Domestic(F3)'
-  }, {
-    [STATUTE]: '22-18-1',
-    [DESCRIPTION]: 'Simple Assault Domestic (F6)'
-  }, {
-    [STATUTE]: '22-18-1',
-    [DESCRIPTION]: 'Simple Assault Domestic (M1)'
-  }],
-
-  [CHARGE_TYPES.STALKING]: [{
-    [STATUTE]: '22-19A-1',
-    [DESCRIPTION]: 'Stalking - 2nd or Subsequent Conviction (F6)'
-  }, {
-    [STATUTE]: '22-19A-7',
-    [DESCRIPTION]: 'Stalking - Child 12 or Younger(F6)'
-  }, {
-    [STATUTE]: '22-19A-1',
-    [DESCRIPTION]: 'Stalking (1)(M1)'
-  }, {
-    [STATUTE]: '22-19A-1',
-    [DESCRIPTION]: 'Stalking (2)(M1)'
-  }, {
-    [STATUTE]: '22-19A-1',
-    [DESCRIPTION]: 'Stalking (3)(M1)'
-  }, {
-    [STATUTE]: '22-19A-1',
-    [DESCRIPTION]: 'Stalking Domestic - 1st offense (M1)'
-  }, {
-    [STATUTE]: '22-19A-1',
-    [DESCRIPTION]: 'Stalking(M1)'
-  }],
-
-  [CHARGE_TYPES.VIOLATION_OF_PROTECTION_ORDER]: [],
-
-  [CHARGE_TYPES.VIOLATION_OF_NO_CONTACT_ORDER]: [],
-
-  [CHARGE_TYPES.AGGRAVATED_ASSAULT]: [{
-    [STATUTE]: '22-18-1.05',
-    [DESCRIPTION]: 'Aggravated Assault - Against Law Enforcement Officer/Corrections/Parole/Probation (F2)'
-  }, {
-    [STATUTE]: '22-18-1.1',
-    [DESCRIPTION]: 'Aggravated Assault (F3)'
-  }, {
-    [STATUTE]: '22-18-1.1',
-    [DESCRIPTION]: 'Aggravated Assault Domestic Child Under 3 Years of Age(F3)'
-  }, {
-    [STATUTE]: '22-18-1.1',
-    [DESCRIPTION]: 'Aggravated Assault Domestic Intimidation(F3)'
-  }, {
-    [STATUTE]: '22-18-1.1',
-    [DESCRIPTION]: 'Aggravated Assault Intimidation(F3)'
-  }, {
-    [STATUTE]: '22-18-1.1',
-    [DESCRIPTION]: 'Aggravated Assault-Child Under 3 Yrs of Age(F3)'
-  }],
-
-  [CHARGE_TYPES.PERSON_TO_PERSON_SEX_CRIME]: [{
-    [STATUTE]: '22-22-7',
-    [DESCRIPTION]: 'Sexual Contact with Child at Least 13 Years of Age and Actor Less Than 5 years Older(M1)'
-  }, {
-    [STATUTE]: '22-22-7',
-    [DESCRIPTION]: 'Sexual Contact With Child Less Than 16 - Offender 16 Years of Age or Older(F3)'
-  }, {
-    [STATUTE]: '22-22-7.2',
-    [DESCRIPTION]: 'Sexual Contact-Victim Incapable of Consent and Over 16(F4)'
-  }, {
-    [STATUTE]: '22-22-7.3',
-    [DESCRIPTION]: 'Sexual Contact Both Under 16 Years of Age(M1)'
-  }, {
-    [STATUTE]: '22-22-7.4',
-    [DESCRIPTION]: 'Sexual Contact without Consent 15 Years of Age or Older(M1)'
-  }, {
-    [STATUTE]: '22-22-7.6',
-    [DESCRIPTION]: 'Sexual Contact between Jail Employees and Adult Detainees (F6)'
-  }, {
-    [STATUTE]: '22-22-7.6',
-    [DESCRIPTION]: 'Sexual Contact between Jail Employees and Juvenile Detainees(F4)'
-  }, {
-    [STATUTE]: '22-24A-5',
-    [DESCRIPTION]: 'Solicitation of a Minor (F4)'
-  }],
-
-  [CHARGE_TYPES.RAPE_FOURTH_DEGREE]: [{
-    [STATUTE]: '22-22-1',
-    [DESCRIPTION]: 'Rape - Female/Female - V = 13, but < 16, and S at least 3 yrs older than V (4th Deg, Class 3 Felony)(F3)'
-  }, {
-    [STATUTE]: '22-22-1',
-    [DESCRIPTION]: 'Rape - Male/Male - Sodomy of Victim Age 13 but Less than 16 Years Old and S at Least 3 Years Older Than V(F3)'
-  }, {
-    [STATUTE]: '22-22-1',
-    [DESCRIPTION]: 'Rape of Victim Age 13 but Less than 16 years old and the S is at Least 3 Years Older than the V(F3)'
-  }, {
-    [STATUTE]: '22-22-1',
-    [DESCRIPTION]: 'Rape with Object of Victim Age 13 but Less than 16 Years Old and S at Least 3 Years Older than V(F3)'
-  }, {
-    [STATUTE]: '22-22-1',
-    [DESCRIPTION]: 'Statutory rape - Victim Age 13 but Less than 16 years old and S at Least 3 years older (F3)'
-  }, {
-    [STATUTE]: '22-22-1',
-    [DESCRIPTION]: 'Statutory Rape - Victim Age 13 but Less than 16 years old and S at Least 3 years older (F3)'
-  }],
-
-  [CHARGE_TYPES.ARSON]: [{
-    [STATUTE]: '22-33-9.1',
-    [DESCRIPTION]: 'Arson 1st Degree(F2)'
-  }, {
-    [STATUTE]: '22-33-9.2',
-    [DESCRIPTION]: 'Arson 2nd Degree (1)(F4)'
-  }, {
-    [STATUTE]: '22-33-9.2',
-    [DESCRIPTION]: 'Arson 2nd Degree (2-Insurance)(F4)'
-  }, {
-    [STATUTE]: '22-33-9.2',
-    [DESCRIPTION]: 'Arson 2nd Degree(F4)'
-  }, {
-    [STATUTE]: '22-33-3',
-    [DESCRIPTION]: 'Arson-3rd Degree (REPEALED)'
-  }],
-
-  [CHARGE_TYPES.ROBBERY_SECOND_DEGREE]: [{
-    [STATUTE]: '22-30-6',
-    [DESCRIPTION]: 'Robbery in the 2nd Degree(F4)'
-  }],
-
-  [CHARGE_TYPES.KIDNAPPING_SECOND_DEGREE]: [{
-    [STATUTE]: '22-19-1.1',
-    [DESCRIPTION]: 'Aggravated Kidnapping-2nd Degree - Bodily Injury(F1)'
-  }],
-
-  [CHARGE_TYPES.OFFENSE_RESULTING_IN_HUMAN_DEATH]: [{
-    [STATUTE]: '22-16-1.1',
-    [DESCRIPTION]: 'Fetal Homicide(FB)'
-  }, {
-    [STATUTE]: '22-16-7',
-    [DESCRIPTION]: 'Murder In Second Degree-Depraved Mind(FB)'
-  }, {
-    [STATUTE]: '22-16-20',
-    [DESCRIPTION]: 'Manslaughter in Second-Recklessly Killing (F4)'
-  }, {
-    [STATUTE]: '22-16-41',
-    [DESCRIPTION]: 'Vehicular Homicide (F3)'
-  }],
-
-  [CHARGE_TYPES.OFFENSE_INVOLVING_WEAPON]: [{
-    [STATUTE]: '22-14-6',
-    [DESCRIPTION]: 'Possession of Controlled Weapon(F6)'
-  }, {
-    [STATUTE]: '22-14-8',
-    [DESCRIPTION]: 'Concealed Dangerous Weapon with Intent to do Felony(F5)'
-  }, {
+  [CHARGE_TYPES.STEP_FOUR]: [{
+    [STATUTE]: '22-10-5',
+    [DESCRIPTION]: 'Aggravated Riot (Carrying Dangerous Weapon) (F3)'
+  },
+  {
     [STATUTE]: '22-14-12',
     [DESCRIPTION]: 'Commit or Attempt to Commit Felony with Firearm(F2)'
-  }, {
+  },
+  {
     [STATUTE]: '22-14-20',
     [DESCRIPTION]: 'Discharge of Firearm at Structure/Motor Vehicle (F3)'
-  }, {
-    [STATUTE]: '22-14-21',
-    [DESCRIPTION]: 'Discharge of Firearm From Moving Vehicle(F6)'
+  },
+  {
+    [STATUTE]: '22-14-8',
+    [DESCRIPTION]: 'Concealed Dangerous Weapon with Intent to do Felony(F5)'
+  },
+  {
+    [STATUTE]: '22-16-20',
+    [DESCRIPTION]: 'Manslaughter in Second-Recklessly Killing (F4)'
+  },
+  {
+    [STATUTE]: '22-16-34',
+    [DESCRIPTION]: 'Justifiable Homicide- Resisting Attempted Murder or Felony in Dwelling'
+  },
+  {
+    [STATUTE]: '22-16-35',
+    [DESCRIPTION]: 'Justifiable Homicide- Defense of Persons in Household'
+  },
+  {
+    [STATUTE]: '22-16-37',
+    [DESCRIPTION]: 'Aiding and Abetting Suicide (F6)'
+  },
+  {
+    [STATUTE]: '22-16-41',
+    [DESCRIPTION]: 'Vehicular Homicide (F3)'
+  },
+  {
+    [STATUTE]: '22-18-1',
+    [DESCRIPTION]: 'Simple Assault Domestic (F6)'
+  },
+  {
+    [STATUTE]: '22-18-1',
+    [DESCRIPTION]: 'Simple Assault Domestic (M1)'
+  },
+  {
+    [STATUTE]: '22-18-1',
+    [DESCRIPTION]: 'Simple Assault Domestic Intimidation (M1)'
+  },
+  {
+    [STATUTE]: '22-18-1.05',
+    [DESCRIPTION]: 'Aggravated Assault - Against Law Enforcement Officer/Corrections/Parole/Probation (F2)'
+  },
+  {
+    [STATUTE]: '22-18-1.1',
+    [DESCRIPTION]: 'Aggravated Assault (F3)'
+  },
+  {
+    [STATUTE]: '22-18-1.1',
+    [DESCRIPTION]: 'Aggravated Assault Domestic Child Under 3 Years of Age(F3)'
+  },
+  {
+    [STATUTE]: '22-18-1.1',
+    [DESCRIPTION]: 'Aggravated Assault Domestic Intimidation(F3)'
+  },
+  {
+    [STATUTE]: '22-18-1.1',
+    [DESCRIPTION]: 'Aggravated Assault Domestic(F3)'
+  },
+  {
+    [STATUTE]: '22-18-1.1',
+    [DESCRIPTION]: 'Aggravated Assault Intimidation(F3)'
+  },
+  {
+    [STATUTE]: '22-18-1.1',
+    [DESCRIPTION]: 'Aggravated Assault-Child Under 3 Yrs of Age(F3)'
+  },
+  {
+    [STATUTE]: '22-18-1.3',
+    [DESCRIPTION]: 'Aggravated Criminal Battery of an Unborn Child'
+  },
+  {
+    [STATUTE]: '22-18-1.4',
+    [DESCRIPTION]: 'Aggravated battery of an infant(F2)'
+  },
+  {
+    [STATUTE]: '22-18-1.5',
+    [DESCRIPTION]: 'Assault with intent to cause serious permanent disfigurement'
+  },
+  {
+    [STATUTE]: '22-19-1.1',
+    [DESCRIPTION]: 'Aggravated Kidnapping-2nd Degree - Bodily Injury(F1)'
+  },
+  {
+    [STATUTE]: '22-19-1.1',
+    [DESCRIPTION]: 'Kidnapping - 2nd Degree(F3)'
+  },
+  {
+    [STATUTE]: '22-19A-1',
+    [DESCRIPTION]: 'Stalking - 2nd or Subsequent Conviction (F6)'
+  },
+  {
+    [STATUTE]: '22-19A-1',
+    [DESCRIPTION]: 'Stalking (1)(M1)'
+  },
+  {
+    [STATUTE]: '22-19A-1',
+    [DESCRIPTION]: 'Stalking (2)(M1)'
+  },
+  {
+    [STATUTE]: '22-19A-1',
+    [DESCRIPTION]: 'Stalking (3)(M1)'
+  },
+  {
+    [STATUTE]: '22-19A-1',
+    [DESCRIPTION]: 'Stalking Domestic - 1st offense (M1)'
+  },
+  {
+    [STATUTE]: '22-19A-1',
+    [DESCRIPTION]: 'Stalking(M1)'
+  },
+  {
+    [STATUTE]: '22-19A-16',
+    [DESCRIPTION]: 'Violation of a Stalking Protection Order (M1)'
+  },
+  {
+    [STATUTE]: '22-19A-16',
+    [DESCRIPTION]: 'Violation of Stalking Protection Order (F6)'
+  },
+  {
+    [STATUTE]: '22-19A-16',
+    [DESCRIPTION]: 'Violation of Stalking Protection Order Domestic(F6)'
+  },
+  {
+    [STATUTE]: '22-19A-16',
+    [DESCRIPTION]: 'Violation of Stalking Protection Order Including Aggravated Assault(F6)'
+  },
+  {
+    [STATUTE]: '22-19A-16',
+    [DESCRIPTION]: 'Violation of Stalking Protection Order Prior Including Aggravated Assault Domestic(F6)'
+  },
+  {
+    [STATUTE]: '22-19A-17',
+    [DESCRIPTION]: 'Violation of No Contact Prior to Court Appearance Domestic(M1)'
+  },
+  {
+    [STATUTE]: '22-19A-17',
+    [DESCRIPTION]: 'Violation of No Contact Prior to Court Appearance(M1)'
+  },
+  {
+    [STATUTE]: '22-19A-18',
+    [DESCRIPTION]: 'Violation of No Contact Terms (M1)'
+  },
+  {
+    [STATUTE]: '22-19A-7',
+    [DESCRIPTION]: 'Stalking - Child 12 or Younger(F6)'
+  },
+  {
+    [STATUTE]: '22-22-1',
+    [DESCRIPTION]: 'Rape - Female/Female - V = 13, but < 16, and S at least 3 yrs older than V (4th Deg, Class 3 Felony)(F3)'
+  },
+  {
+    [STATUTE]: '22-22-1',
+    [DESCRIPTION]: 'Rape - Male/Male - Sodomy of Victim Age 13 but Less than 16 Years Old and S at Least 3 Years Older Than V(F3)'
+  },
+  {
+    [STATUTE]: '22-22-1',
+    [DESCRIPTION]: 'Rape of Victim Age 13 but Less than 16 years old and the S is at Least 3 Years Older than the V(F3)'
+  },
+  {
+    [STATUTE]: '22-22-1',
+    [DESCRIPTION]: 'Rape with Object of Victim Age 13 but Less than 16 Years Old and S at Least 3 Years Older than V(F3)'
+  },
+  {
+    [STATUTE]: '22-22-1',
+    [DESCRIPTION]: 'Statutory rape - Victim Age 13 but Less than 16 years old and S at Least 3 years older (F3)'
+  },
+  {
+    [STATUTE]: '22-22-1',
+    [DESCRIPTION]: 'Statutory Rape - Victim Age 13 but Less than 16 years old and S at Least 3 years older (F3)'
+  },
+  {
+    [STATUTE]: '22-22-23, 22-22-23.1',
+    [DESCRIPTION]: 'Sex Offense-Photograph Child in Obscene Act (REPEALED - DO NOT USE)'
+  },
+  {
+    [STATUTE]: '22-22-23, 22-22-23.1',
+    [DESCRIPTION]: 'Sex Offense-Possession of Child Pornography (DO NOT USE-REPEALED)'
+  },
+  {
+    [STATUTE]: '22-22-24.3',
+    [DESCRIPTION]: 'Sexual Exploitation of Minor (F6)'
+  },
+  {
+    [STATUTE]: '22-22-7',
+    [DESCRIPTION]: 'Sexual Contact with Child at Least 13 Years of Age and Actor Less Than 5 years Older(M1)'
+  },
+  {
+    [STATUTE]: '22-22-7',
+    [DESCRIPTION]: 'Sexual Contact With Child Less Than 16 - Offender 16 Years of Age or Older(F3)'
+  },
+  {
+    [STATUTE]: '22-22-7.2',
+    [DESCRIPTION]: 'Sexual Contact-Victim Incapable of Consent and Over 16(F4)'
+  },
+  {
+    [STATUTE]: '22-22-7.3',
+    [DESCRIPTION]: 'Sexual Contact Both Under 16 Years of Age(M1)'
+  },
+  {
+    [STATUTE]: '22-22-7.4',
+    [DESCRIPTION]: 'Sexual Contact without Consent 15 Years of Age or Older(M1)'
+  },
+  {
+    [STATUTE]: '22-22-7.6',
+    [DESCRIPTION]: 'Sexual Contact between Jail Employees and Adult Detainees (F6)'
+  },
+  {
+    [STATUTE]: '22-22-7.6',
+    [DESCRIPTION]: 'Sexual Contact between Jail Employees and Juvenile Detainees(F4)'
+  },
+  {
+    [STATUTE]: '22-24A-5',
+    [DESCRIPTION]: 'Solicitation of a Minor (F4)'
+  },
+  {
+    [STATUTE]: '22-30-6',
+    [DESCRIPTION]: 'Robbery in the 2nd Degree(F4)'
+  },
+  {
+    [STATUTE]: '22-32-1',
+    [DESCRIPTION]: 'Burglary in First Degree Inflict Injury on Another, Possess Weapon, or Nighttime(F2)'
+  },
+  {
+    [STATUTE]: '22-33-3',
+    [DESCRIPTION]: 'Arson-3rd Degree (REPEALED)'
+  },
+  {
+    [STATUTE]: '22-33-9.1',
+    [DESCRIPTION]: 'Arson 1st Degree(F2)'
+  },
+  {
+    [STATUTE]: '22-33-9.2',
+    [DESCRIPTION]: 'Arson 2nd Degree (1)(F4)'
+  },
+  {
+    [STATUTE]: '22-33-9.2',
+    [DESCRIPTION]: 'Arson 2nd Degree (2-Insurance)(F4)'
+  },
+  {
+    [STATUTE]: '22-33-9.2',
+    [DESCRIPTION]: 'Arson 2nd Degree(F4)'
+  },
+  {
+    [STATUTE]: '25-10-13',
+    [DESCRIPTION]: 'Violation of No Contact Order (F6)'
+  },
+  {
+    [STATUTE]: '25-10-13',
+    [DESCRIPTION]: 'Violation of No Contact Order (M1)'
+  },
+  {
+    [STATUTE]: '25-10-13',
+    [DESCRIPTION]: 'Violation of No Contact Order as Condition of Sentence (M1)'
+  },
+  {
+    [STATUTE]: '25-10-13',
+    [DESCRIPTION]: 'Violation of Protection Order (F6)'
+  },
+  {
+    [STATUTE]: '25-10-13',
+    [DESCRIPTION]: 'Violation of Protection Order (M1)'
+  },
+  {
+    [STATUTE]: '25-10-23',
+    [DESCRIPTION]: 'Violation of Conditional Bond from Jail (letter)(M1)'
+  },
+  {
+    [STATUTE]: '25-10-23',
+    [DESCRIPTION]: 'Violation of Conditional Bond from Jail(M1)'
+  },
+  {
+    [STATUTE]: '25-10-23',
+    [DESCRIPTION]: 'Violation of Conditional Bond(M1)'
+  },
+  {
+    [STATUTE]: '25-10-23',
+    [DESCRIPTION]: 'Violation of No Contact Order (F6)'
+  },
+  {
+    [STATUTE]: '25-10-23',
+    [DESCRIPTION]: 'Violation of No Contact Order (M2)'
+  },
+  {
+    [STATUTE]: '25-10-43',
+    [DESCRIPTION]: 'Violation of No Contact with DV Victim (M1)'
+  },
+  {
+    [STATUTE]: '22-17-6',
+    [DESCRIPTION]: 'Intentional Killing of Human Fetus by Unauthorized Injury to Mother'
   }],
+
   [CHARGE_TYPES.ALL_VIOLENT]: [{
     [STATUTE]: '26-10-1',
     [DESCRIPTION]: 'Abuse or Cruelty to a Minor Age 7+ (F4) (Major Injuries)'
@@ -784,38 +926,9 @@ export const getCombinedChargeList = (chargeList) => {
   return result;
 };
 
-const violentCharges = getCombinedChargeList([
-  CHARGE_TYPES.ALL_VIOLENT
-]);
-
-const dmfStepTwoCharges = getCombinedChargeList([
-  CHARGE_TYPES.ESCAPE_FIRST_DEGREE,
-  CHARGE_TYPES.ESCAPE_SECOND_DEGREE,
-  CHARGE_TYPES.MURDER_FIRST_DEGREE,
-  CHARGE_TYPES.MURDER_SECOND_DEGREE,
-  CHARGE_TYPES.ATTEMPTED_MURDER,
-  CHARGE_TYPES.MANSLAUGHTER_FIRST_DEGREE,
-  CHARGE_TYPES.RAPE_FIRST_DEGREEE,
-  CHARGE_TYPES.RAPE_SECOND_DEGREE,
-  CHARGE_TYPES.RAPE_THIRD_DEGREE,
-  CHARGE_TYPES.KIDNAPPING_FIRST_DEGREE,
-  CHARGE_TYPES.ROBBERY_FIRST_DEGREE
-]);
-
-const dmfStepFourCharges = getCombinedChargeList([
-  CHARGE_TYPES.DOMESTIC_VIOLENCE,
-  CHARGE_TYPES.STALKING,
-  CHARGE_TYPES.VIOLATION_OF_PROTECTION_ORDER,
-  CHARGE_TYPES.VIOLATION_OF_NO_CONTACT_ORDER,
-  CHARGE_TYPES.AGGRAVATED_ASSAULT,
-  CHARGE_TYPES.PERSON_TO_PERSON_SEX_CRIME,
-  CHARGE_TYPES.RAPE_FOURTH_DEGREE,
-  CHARGE_TYPES.ARSON,
-  CHARGE_TYPES.ROBBERY_SECOND_DEGREE,
-  CHARGE_TYPES.KIDNAPPING_SECOND_DEGREE,
-  CHARGE_TYPES.OFFENSE_RESULTING_IN_HUMAN_DEATH,
-  CHARGE_TYPES.OFFENSE_INVOLVING_WEAPON
-]);
+const violentCharges = CHARGE_VALUES[CHARGE_TYPES.ALL_VIOLENT];
+const dmfStepTwoCharges = CHARGE_VALUES[CHARGE_TYPES.STEP_TWO];
+const dmfStepFourCharges = CHARGE_VALUES[CHARGE_TYPES.STEP_FOUR];
 
 export const chargeIsInList = (chargesToMatch, statuteNum, description) => {
   if (!statuteNum || !statuteNum.length || !description || !description.length) return false;
