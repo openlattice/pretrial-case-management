@@ -4,8 +4,7 @@ import styled from 'styled-components';
 
 import DMFCell from './DMFCell';
 import DMFTable from './DMFTable';
-import { DMF, NOTES, PSA } from '../../utils/consts/Consts';
-import { CONTEXT } from '../../utils/consts/DMFConsts';
+import { CONTEXT, DMF, NOTES, PSA } from '../../utils/consts/Consts';
 import {
   getDMFDecision,
   increaseDMFSeverity,

@@ -20,7 +20,11 @@ import {
   getPreviousViolentCharges
 } from '../../utils/AutofillUtils';
 import { getSentenceToIncarcerationCaseNums } from '../../utils/consts/SentenceConsts';
-import { CONTEXT, getAllStepTwoCharges, getAllStepFourCharges } from '../../utils/consts/DMFConsts';
+import {
+  getAllViolentCharges,
+  getAllStepTwoCharges,
+  getAllStepFourCharges
+} from '../../utils/consts/ArrestChargeConsts';
 
 import {
   PaddedRow,
@@ -35,7 +39,7 @@ import {
 import { formatValue } from '../../utils/Utils';
 import { getRecentFTAs, getOldFTAs } from '../../utils/FTAUtils';
 
-import { PSA, NOTES, DMF } from '../../utils/consts/Consts';
+import { CONTEXT, DMF, NOTES, PSA } from '../../utils/consts/Consts';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import {
   CURRENT_AGE_PROMPT,
@@ -247,9 +251,8 @@ export default class PSAInputForm extends React.Component<Props, State> {
 
     const currCaseNum = currCase.getIn([PROPERTY_TYPES.CASE_ID, 0], '');
     const arrestDate = currCase.getIn([PROPERTY_TYPES.FILE_DATE, 0], currCase.getIn([PROPERTY_TYPES.FILE_DATE, 0], ''));
-    const mostSeriousCharge = currCase.getIn([PROPERTY_TYPES.MOST_SERIOUS_CHARGE_NO, 0], '');
 
-    const currentViolentCharges = getViolentCharges(currCharges, mostSeriousCharge);
+    const currentViolentCharges = getAllViolentCharges(currCharges);
     const pendingCharges = getPendingCharges(currCaseNum, arrestDate, allCases, allCharges);
     const priorMisdemeanors = getPreviousMisdemeanors(allCharges);
     const priorFelonies = getPreviousFelonies(allCharges);
