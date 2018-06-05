@@ -15,6 +15,46 @@ import {
 } from './DownloadActionFactory';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 
+const getStepTwo = (neighborList, psaScores) => {
+  const nvca = psaScores.getIn([PROPERTY_TYPES.NVCA_FLAG, 0], false);
+  let extradited = false;
+  let step2Charges = false;
+  let currentViolentOffense = false;
+
+  neighborList.forEach((neighbor) => {
+    const name = neighbor.getIn(['neighborEntitySet', 'name'], '');
+    const data = neighbor.get('neighborDetails', Immutable.Map());
+    if (name === ENTITY_SETS.DMF_RISK_FACTORS) {
+      extradited = data.getIn([PROPERTY_TYPES.EXTRADITED, 0], false);
+      step2Charges = data.getIn([PROPERTY_TYPES.DMF_STEP_2_CHARGES, 0], false);
+    }
+    else if (name === ENTITY_SETS.PSA_RISK_FACTORS) {
+      currentViolentOffense = data.getIn([PROPERTY_TYPES.CURRENT_VIOLENT_OFFENSE, 0], false);
+    }
+  });
+
+  return extradited || step2Charges || (nvca && currentViolentOffense);
+};
+
+const getStepFour = (neighborList, psaScores) => {
+  const nvca = psaScores.getIn([PROPERTY_TYPES.NVCA_FLAG, 0], false);
+  let step4Charges = false;
+  let currentViolentOffense = false;
+
+  neighborList.forEach((neighbor) => {
+    const name = neighbor.getIn(['neighborEntitySet', 'name'], '');
+    const data = neighbor.get('neighborDetails', Immutable.Map());
+    if (name === ENTITY_SETS.DMF_RISK_FACTORS) {
+      step4Charges = data.getIn([PROPERTY_TYPES.DMF_STEP_4_CHARGES, 0], false);
+    }
+    else if (name === ENTITY_SETS.PSA_RISK_FACTORS) {
+      currentViolentOffense = data.getIn([PROPERTY_TYPES.CURRENT_VIOLENT_OFFENSE, 0], false);
+    }
+  });
+
+  return step4Charges || (nvca && !currentViolentOffense);
+};
+
 function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
 
   try {
@@ -43,11 +83,9 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
       scoresAsMap = scoresAsMap.set(row.id[0], Immutable.fromJS(row).delete('id'));
     });
 
-
     const neighborsById = yield call(SearchApi.searchEntityNeighborsBulk, entitySetId, scoresAsMap.keySeq().toJS());
 
     let usableNeighborsById = Immutable.Map();
-
 
     Object.keys(neighborsById).forEach((id) => {
       let usableNeighbors = Immutable.List();
@@ -119,6 +157,9 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
         );
         allHeaders = allHeaders.union(combinedEntity.keys());
       });
+
+      combinedEntity = combinedEntity.set('S2', getStepTwo(usableNeighborsById.get(id), scoresAsMap.get(id)));
+      combinedEntity = combinedEntity.set('S4', getStepFour(usableNeighborsById.get(id), scoresAsMap.get(id)));
       jsonResults = jsonResults.push(combinedEntity);
     });
 
