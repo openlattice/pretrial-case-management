@@ -30,6 +30,10 @@ const PersonResultWrapper = styled.div`
   margin: 10px 0;
 `;
 
+const GrayPersonResultWrapper = styled(PersonResultWrapper)`
+  color: #aaa;
+`;
+
 const PersonPictureWrapper = styled.div`
 
 `;
@@ -55,12 +59,13 @@ const DataElem = styled.td`
 
 type Props = {
   person :Immutable.Map<*, *>,
-  handleSelect? :(person :Immutable.Map<*, *>, entityKeyId :string, id :string) => void
+  handleSelect? :(person :Immutable.Map<*, *>, entityKeyId :string, id :string) => void,
+  gray? :boolean
 };
 
-const PersonCard = ({ person, handleSelect } :Props) => {
+const PersonCard = ({ person, handleSelect, gray } :Props) => {
 
-  const Wrapper = styled(PersonResultWrapper)`
+  const Wrapper = styled(gray ? GrayPersonResultWrapper : PersonResultWrapper)`
     &:hover {
       cursor: ${handleSelect ? 'pointer' : 'default'};
     },
@@ -126,7 +131,8 @@ const PersonCard = ({ person, handleSelect } :Props) => {
 };
 
 PersonCard.defaultProps = {
-  handleSelect: () => {}
+  handleSelect: () => {},
+  gray: false
 };
 
 export default PersonCard;
