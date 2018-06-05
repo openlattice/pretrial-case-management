@@ -26,6 +26,7 @@ import { getRecentFTAs, getOldFTAs } from './FTAUtils';
 
 const {
   DOB,
+  ARREST_DATE,
   ARREST_DATE_TIME,
   CHARGE_STATUTE,
   CASE_ID,
@@ -231,7 +232,9 @@ export const tryAutofillFields = (
 
   let psaForm = psaFormValues;
 
-  const nextArrestDate = nextCase.getIn([ARREST_DATE_TIME, 0], nextCase.getIn([FILE_DATE, 0], ''));
+  const nextArrestDate = nextCase.getIn([ARREST_DATE_TIME, 0],
+    nextCase.getIn([ARREST_DATE, 0],
+      nextCase.getIn([FILE_DATE, 0], '')));
 
   const ageAtCurrentArrest = psaForm.get(AGE_AT_CURRENT_ARREST);
   psaForm = psaForm.set(
