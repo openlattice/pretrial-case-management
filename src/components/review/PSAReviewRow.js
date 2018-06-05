@@ -28,9 +28,8 @@ import {
 } from '../../utils/ScoringUtils';
 import { CenteredContainer } from '../../utils/Layout';
 import { formatValue, formatDateList, toISODateTime } from '../../utils/Utils';
-import { PSA, DMF, NOTES, EDIT_FIELDS, ID_FIELDS } from '../../utils/consts/Consts';
+import { CONTEXT, DMF, EDIT_FIELDS, ID_FIELDS, NOTES, PSA } from '../../utils/consts/Consts';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { CONTEXT } from '../../utils/consts/DMFConsts';
 import { RESULT_CATEGORIES } from '../../utils/consts/DMFResultConsts';
 import * as OverrideClassNames from '../../utils/styleoverrides/OverrideClassNames';
 

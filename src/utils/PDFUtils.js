@@ -14,6 +14,7 @@ import {
   getPreviousFelonies,
   getPreviousViolentCharges
 } from './AutofillUtils';
+import { getAllViolentCharges } from './consts/ArrestChargeConsts';
 import { getSentenceToIncarcerationCaseNums } from './consts/SentenceConsts';
 import { getRecentFTAs, getOldFTAs } from './FTAUtils';
 import { PROPERTY_TYPES } from './consts/DataModelConsts';
@@ -473,7 +474,7 @@ const riskFactors = (
   doc.text(RESPONSE_OFFSET, y, getBooleanText(currentViolentOffense));
   y = riskFactorNotes(y, doc, riskFactorVals.get(CURRENT_VIOLENT_OFFENSE_NOTES));
   if (currentViolentOffense) {
-    y = chargeReferences(y, doc, getViolentCharges(currCharges, mostSeriousCharge));
+    y = chargeReferences(y, doc, getAllViolentCharges(currCharges));
   }
   [y, page] = tryIncrementPage(doc, y, page, name);
 

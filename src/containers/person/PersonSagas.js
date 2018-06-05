@@ -10,7 +10,7 @@ import { EntityDataModelApi, SearchApi } from 'lattice';
 import { push } from 'react-router-redux';
 import { all, call, put, take, takeEvery } from 'redux-saga/effects';
 
-import { toISODate } from '../../utils/Utils';
+import { toISODate, formatDate } from '../../utils/Utils';
 import { submit } from '../../utils/submit/SubmitActionFactory';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 
@@ -56,6 +56,28 @@ function* loadCaseHistory(entityKeyId :string) :Generator<*, *, *> {
   }
   catch (error) {
     console.error(`Unable to load case history for person with entityKeyId: ${entityKeyId}`);
+  }
+}
+
+function* loadPersonId(person) :Generator<*, *, *> {
+  const firstName = person.firstNameValue;
+  const lastName = person.lastNameValue;
+  const dob = formatDate(person.dobValue, 'MM/DD/YYYY');
+  try {
+    const loadRequest = {
+      method: 'post',
+      url: 'https://api.openlattice.com/bifrost/caseloader/id',
+      data: { firstName, lastName, dob },
+      headers: {
+        Authorization: `Bearer ${AuthUtils.getAuthToken()}`
+      }
+    };
+    const response = yield call(axios, loadRequest);
+    return response.data ? response.data.toString() : '';
+  }
+  catch (error) {
+    console.error('Unable to load person id from Odyssey.');
+    return '';
   }
 }
 
@@ -164,6 +186,10 @@ export function* watchNewPersonSubmitRequest() :Generator<*, *, *> {
     const action :NewPersonSubmitRequestAction = yield take(NEW_PERSON_SUBMIT_REQUEST);
     const { config, values } = action;
     try {
+      const personId = yield call(loadPersonId, values);
+      if (personId && personId.length) {
+        values.idValue = personId;
+      }
       const submitAction :SequenceAction = submit({ config, values });
       yield put(submitAction);
       const submitRes :SequenceAction = yield takeReqSeqSuccessFailure(submit, submitAction);

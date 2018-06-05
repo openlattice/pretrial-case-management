@@ -51,9 +51,8 @@ import {
   getPrevPath
 } from '../../utils/Helpers';
 import { tryAutofillFields } from '../../utils/AutofillUtils';
-import { DMF, NOTES, ID_FIELD_NAMES, PSA } from '../../utils/consts/Consts';
+import { CONTEXT, DMF, ID_FIELD_NAMES, NOTES, PSA } from '../../utils/consts/Consts';
 import { PROPERTY_TYPES, ENTITY_SETS } from '../../utils/consts/DataModelConsts';
-import { CONTEXT } from '../../utils/consts/DMFConsts';
 
 const {
   NVCA_FLAG,

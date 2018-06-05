@@ -16,7 +16,12 @@ import {
   getChargeTitle
 } from './consts/ChargeConsts';
 import { getSentenceToIncarcerationCaseNums } from './consts/SentenceConsts';
-import { getAllStepTwoCharges, getAllStepFourCharges, getAllSecondaryReleaseCharges } from './consts/DMFConsts';
+import {
+  getAllViolentCharges,
+  getAllStepTwoCharges,
+  getAllStepFourCharges,
+  getAllSecondaryReleaseCharges
+} from './consts/ArrestChargeConsts';
 import { getRecentFTAs, getOldFTAs } from './FTAUtils';
 
 const {
@@ -71,7 +76,7 @@ export const getViolentCharges = (charges :Immutable.List<*>, mostSeriousCharge 
 };
 
 export const tryAutofillCurrentViolentCharge = (charges :Immutable.List<*>, mostSeriousCharge :string) :string =>
-  `${getViolentCharges(charges, mostSeriousCharge).size > 0}`;
+  `${getAllViolentCharges(charges).size > 0}`;
 
 export const tryAutofillAge = (
   dateArrested :string,
