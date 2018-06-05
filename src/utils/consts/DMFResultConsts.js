@@ -1,4 +1,4 @@
-import { CONTEXT } from './DMFConsts';
+import { CONTEXT } from './Consts';
 
 export const COLORS = {
   DARK_GREEN: 'DARK_GREEN',

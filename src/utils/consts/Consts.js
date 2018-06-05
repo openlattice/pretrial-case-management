@@ -148,6 +148,12 @@ export const NOTES = {
   [DMF.SECONDARY_RELEASE_CHARGES]: 'dmfSecondaryReleaseChargesNotes'
 };
 
+export const CONTEXT = {
+  COURT_MINN: 'Court (Minnehaha)',
+  COURT_PENN: 'Court (Pennington)',
+  BOOKING: 'Booking'
+};
+
 export type Charge = {
   statute :string,
   description :string,
