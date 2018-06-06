@@ -9,6 +9,9 @@ import {
   LOAD_PERSON_DETAILS_FAILURE,
   LOAD_PERSON_DETAILS_REQUEST,
   LOAD_PERSON_DETAILS_SUCCESS,
+  NEW_PERSON_SUBMIT_FAILURE,
+  NEW_PERSON_SUBMIT_REQUEST,
+  NEW_PERSON_SUBMIT_SUCCESS,
   SEARCH_PEOPLE_FAILURE,
   SEARCH_PEOPLE_REQUEST,
   SEARCH_PEOPLE_SUCCESS,
@@ -27,7 +30,9 @@ const INITIAL_STATE :Immutable.Map<*, *> = Immutable.fromJS({
   loadingCases: false,
   numCasesToLoad: 0,
   numCasesLoaded: 0,
-  searchHasRun: false
+  searchHasRun: false,
+  isCreatingPerson: false,
+  createPersonError: false
 });
 
 export default function searchReducer(state :Immutable.Map<*, *> = INITIAL_STATE, action :Action) {
@@ -81,6 +86,15 @@ export default function searchReducer(state :Immutable.Map<*, *> = INITIAL_STATE
 
     case UPDATE_CASE_FAILURE:
       return state.set('numCasesLoaded', state.get('numCasesLoaded') + 1);
+
+    case NEW_PERSON_SUBMIT_FAILURE:
+      return state.set('isCreatingPerson', false).set('createPersonError', true);
+
+    case NEW_PERSON_SUBMIT_REQUEST:
+      return state.set('isCreatingPerson', true).set('createPersonError', false);
+
+    case NEW_PERSON_SUBMIT_SUCCESS:
+      return state.set('isCreatingPerson', false).set('createPersonError', false);
 
     default:
       return state;
