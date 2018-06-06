@@ -1189,5 +1189,9 @@ export const PENN_BOOKING_EXCEPTIONS = [
   {
     [STATUTE]: '35-9-2',
     [DESCRIPTION]: 'Underage Purchase/Possession/Consumption of Alcoholic Beverages (M2)'
+  },
+  {
+    [STATUTE]: '32-12-22',
+    [DESCRIPTION]: 'Driving Without Valid License or Permit(M2)'
   }
 ];
