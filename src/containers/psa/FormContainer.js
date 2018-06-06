@@ -373,7 +373,7 @@ class Form extends React.Component<Props, State> {
         currCase={this.props.selectedPretrialCase}
         allCharges={this.props.allChargesForPerson}
         allSentences={this.props.allSentencesForPerson}
-        allCases={this.props.pretrialCaseOptions}
+        allCases={this.props.allCasesForPerson}
         allFTAs={this.props.allFTAs} />
   )
 
