@@ -5,6 +5,7 @@
 import React from 'react';
 
 import DatePicker from 'react-bootstrap-date-picker';
+import Immutable from 'immutable';
 import styled from 'styled-components';
 import qs from 'query-string';
 import uuid from 'uuid/v4';
@@ -94,6 +95,14 @@ const CenteredSubmitButton = styled(Button).attrs({
   margin-top: 50px;
 `;
 
+const ErrorMessage = styled.div`
+  color: #cc0000;
+  font-size: 16px;
+  font-weight: bold;
+  margin-top: 20px;
+  text-align: center;
+`;
+
 /*
  * types
  */
@@ -105,7 +114,9 @@ type Props = {
   },
   location :{
     search :string
-  }
+  },
+  isCreatingPerson :boolean,
+  createPersonError :boolean
 }
 
 type State = {
@@ -116,7 +127,6 @@ type State = {
   ethnicityValue :?string,
   firstNameValue :?string,
   genderValue :?string,
-  isSubmitting :boolean,
   lastNameValue :?string,
   middleNameValue :?string,
   pictureValue :?string,
@@ -156,7 +166,6 @@ class NewPersonContainer extends React.Component<Props, State> {
       [SSN_VALUE]: '',
       [STATE_VALUE]: '',
       [ZIP_VALUE]: '',
-      isSubmitting: false,
       showSelfieWebCam: false
     };
   }
@@ -168,6 +177,7 @@ class NewPersonContainer extends React.Component<Props, State> {
   isReadyToSubmit = () :boolean => !!this.state[DOB_VALUE]
         && !!this.state[FIRST_NAME_VALUE]
         && !!this.state[LAST_NAME_VALUE]
+        && !this.props.isCreatingPerson
 
   handleOnChangeDateOfBirth = (dob :?string) => {
     const dobMoment = dob ? moment(dob) : null;
@@ -205,10 +215,6 @@ class NewPersonContainer extends React.Component<Props, State> {
   }
 
   submitNewPerson = () => {
-
-    this.setState({
-      isSubmitting: true
-    });
 
     if (this.selfieWebCam) {
       this.selfieWebCam.closeMediaStream();
@@ -387,7 +393,7 @@ class NewPersonContainer extends React.Component<Props, State> {
               }
             </div>
             {
-              this.isReadyToSubmit() && !this.state.isSubmitting
+              this.isReadyToSubmit()
                 ? (
                   <CenteredSubmitButton onClick={this.submitNewPerson}>Submit</CenteredSubmitButton>
                 )
@@ -395,11 +401,24 @@ class NewPersonContainer extends React.Component<Props, State> {
                   <CenteredSubmitButton disabled>Submit</CenteredSubmitButton>
                 )
             }
+            {
+              this.props.createPersonError
+                ? <ErrorMessage>An error occurred: unable to create new person.</ErrorMessage>
+                : null
+            }
           </FormWrapper>
         </ContainerInnerWrapper>
       </ContainerOuterWrapper>
     );
   }
+}
+
+function mapStateToProps(state :Immutable.Map<*, *>) :Object {
+
+  return {
+    isCreatingPerson: state.getIn(['search', 'isCreatingPerson']),
+    createPersonError: state.getIn(['search', 'createPersonError'])
+  };
 }
 
 function mapDispatchToProps(dispatch :Function) :Object {
@@ -409,4 +428,4 @@ function mapDispatchToProps(dispatch :Function) :Object {
   };
 }
 
-export default connect(null, mapDispatchToProps)(NewPersonContainer);
+export default connect(mapStateToProps, mapDispatchToProps)(NewPersonContainer);
