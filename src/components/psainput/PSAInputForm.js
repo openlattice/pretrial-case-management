@@ -249,7 +249,9 @@ export default class PSAInputForm extends React.Component<Props, State> {
     const noPriorConvictions = input.get(PRIOR_MISDEMEANOR) === 'false' && input.get(PRIOR_FELONY) === 'false';
 
     const currCaseNum = currCase.getIn([PROPERTY_TYPES.CASE_ID, 0], '');
-    const arrestDate = currCase.getIn([PROPERTY_TYPES.FILE_DATE, 0], currCase.getIn([PROPERTY_TYPES.FILE_DATE, 0], ''));
+    const arrestDate = currCase.getIn([PROPERTY_TYPES.ARREST_DATE_TIME, 0],
+      currCase.getIn([PROPERTY_TYPES.ARREST_DATE, 0],
+        currCase.getIn([PROPERTY_TYPES.FILE_DATE, 0], '')));
 
     const currentViolentCharges = getAllViolentCharges(currCharges);
     const pendingCharges = getPendingCharges(currCaseNum, arrestDate, allCases, allCharges);

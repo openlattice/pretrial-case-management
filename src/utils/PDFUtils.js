@@ -25,6 +25,7 @@ const {
   AGE_AT_CURRENT_ARREST,
   AGE_AT_CURRENT_ARREST_NOTES,
   ARREST_DATE,
+  ARREST_DATE_TIME,
   CURRENT_VIOLENT_OFFENSE,
   CURRENT_VIOLENT_OFFENSE_NOTES,
   CURRENT_VIOLENT_OFFENSE_AND_YOUNG,
@@ -678,7 +679,9 @@ const exportPDF = (
     allSentences,
     mostSeriousCharge,
     selectedPretrialCase.getIn([CASE_ID, 0], ''),
-    selectedPretrialCase.getIn([ARREST_DATE, 0], selectedPretrialCase.getIn([FILE_DATE, 0], '')),
+    selectedPretrialCase.getIn([ARREST_DATE_TIME, 0],
+      selectedPretrialCase.getIn([ARREST_DATE, 0],
+        selectedPretrialCase.getIn([FILE_DATE, 0], ''))),
     allCases,
     allFTAs
   );
