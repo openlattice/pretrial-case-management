@@ -4,19 +4,15 @@
 
 import React from 'react';
 import Immutable from 'immutable';
-import moment from 'moment';
 import styled from 'styled-components';
 
-import { formatDate, formatDateTime } from '../../utils/Utils';
+import { formatDateTime } from '../../utils/Utils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 
 const {
   CASE_ID,
   ARREST_DATE_TIME,
-  FILE_DATE,
-  MOST_SERIOUS_CHARGE_NO,
-  MOST_SERIOUS_CHARGE_DESC,
-  MOST_SERIOUS_CHARGE_DEG,
+  ARREST_DATE,
   NUMBER_OF_CHARGES
 } = PROPERTY_TYPES;
 
@@ -47,17 +43,12 @@ const CaseInfo = styled.div`
   display: flex;
   text-align: left;
   flex-direction: column;
-  justify-content: flex-start;
+  justify-content: space-between;
   margin: 0;
   margin-left: 10px;
   span {
     margin: 0;
   }
-`;
-
-const FlexContainer = styled.div`
-  display: flex;
-  flex-direction: column;
 `;
 
 type Props = {
@@ -74,11 +65,8 @@ const PretrialCard = ({ pretrialCase, handleSelect } :Props) => {
   `;
 
   const caseNum = pretrialCase.getIn([CASE_ID, 0]);
-  const arrestDate = formatDateTime(pretrialCase.getIn([ARREST_DATE_TIME, 0]));
-  const fileDate = formatDate(pretrialCase.getIn([FILE_DATE, 0]));
-  const mostSeriousChargeNum = pretrialCase.getIn([MOST_SERIOUS_CHARGE_NO, 0]);
-  const mostSeriousChargeDesc = pretrialCase.getIn([MOST_SERIOUS_CHARGE_DESC, 0]);
-  const mostSeriousChargeDeg = pretrialCase.getIn([MOST_SERIOUS_CHARGE_DEG, 0]);
+  const arrestDate = formatDateTime(pretrialCase.getIn([ARREST_DATE_TIME, 0],
+    pretrialCase.getIn([ARREST_DATE, 0], '')));
   const numCharges = pretrialCase.getIn([NUMBER_OF_CHARGES, 0]);
 
   const entityKeyId :string = pretrialCase.get('id', '');
@@ -95,31 +83,11 @@ const PretrialCard = ({ pretrialCase, handleSelect } :Props) => {
         <CaseInfoHeaders>
           <strong>Case Number:</strong>
           <strong>Arrest Date:</strong>
-          <strong>File Date:</strong>
-          {
-            handleSelect ? (
-              <FlexContainer>
-                <strong>Most Serious Charge:</strong>
-                <strong>Most Serious Charge Description:</strong>
-                <strong>Most Serious Charge Degree:</strong>
-              </FlexContainer>
-            ) : null
-          }
           <strong>Number of Charges:</strong>
         </CaseInfoHeaders>
         <CaseInfo>
           <span>{ caseNum }</span>
           <span>{ arrestDate }</span>
-          <span>{ fileDate }</span>
-          {
-            handleSelect ? (
-              <FlexContainer>
-                <span>{ mostSeriousChargeNum }</span>
-                <span>{ mostSeriousChargeDesc }</span>
-                <span>{ mostSeriousChargeDeg }</span>
-              </FlexContainer>
-            ) : null
-          }
           <span>{ numCharges }</span>
         </CaseInfo>
       </CaseInfoWrapper>
