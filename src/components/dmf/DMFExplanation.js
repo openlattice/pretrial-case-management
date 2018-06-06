@@ -176,7 +176,7 @@ const StepFour = ({
       <StepWrapper>
         <DMFCell dmf={stepThreeDmf} selected />
         <Arrow />
-        <DMFCell dmf={increaseDMFSeverity(stepThreeDmf)} selected />
+        <DMFCell dmf={increaseDMFSeverity(stepThreeDmf, context)} selected />
       </StepWrapper>
     );
     if (stepFourVal) {
