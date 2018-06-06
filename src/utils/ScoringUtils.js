@@ -326,7 +326,7 @@ export const calculateDMF = (inputData, scores) => {
   const fta = scores.ftaScale;
   const stepThreeCalculation = getDMFDecision(nca, fta, context);
   if (stepFour) {
-    return increaseDMFSeverity(stepThreeCalculation);
+    return increaseDMFSeverity(stepThreeCalculation, context);
   }
 
   if (shouldCheckForSecondaryRelease(context, nca, fta) && secondaryRelease) {

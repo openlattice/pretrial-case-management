@@ -97,7 +97,7 @@ export const getConditionsTextList = (dmf) => {
   return [condition1, condition2, condition3].filter(val => val.length);
 };
 
-export const increaseDMFSeverity = (dmfResult) => {
+export const increaseDMFSeverity = (dmfResult, context) => {
   const increasedValues = {};
   let newColor = dmfResult[RESULT_CATEGORIES.COLOR];
   let conditionsLevel;
@@ -144,6 +144,10 @@ export const increaseDMFSeverity = (dmfResult) => {
   }
   if (releaseType) {
     increasedValues[RESULT_CATEGORIES.RELEASE_TYPE] = releaseType;
+  }
+
+  if (context === CONTEXT.BOOKING) {
+    increasedValues[RESULT_CATEGORIES.CONDITION_1] = CONDITION_TYPES.HOLD_PENDING_JUDICIAL_REVIEW;
   }
 
   return Object.assign({}, dmfResult, increasedValues);
