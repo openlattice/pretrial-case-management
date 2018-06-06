@@ -233,7 +233,6 @@ class NewPersonContainer extends React.Component<Props, State> {
       [LIVES_AT_ID_VALUE]: uuid()
     };
 
-    // TODO: need to handle failed submissions
     this.props.actions.newPersonSubmitRequest(newPersonSubmissionConfig, values);
   }
 
