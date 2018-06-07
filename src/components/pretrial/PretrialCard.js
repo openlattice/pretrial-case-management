@@ -16,6 +16,21 @@ const {
   NUMBER_OF_CHARGES
 } = PROPERTY_TYPES;
 
+const InfoRow = styled.tr`
+  display: flex;
+  justify-content: flex-start;
+`;
+
+const Header = styled.th`
+  width: 105px;
+  margin: 2px 5px 2px 0;
+`;
+
+const DataElem = styled.td`
+  width: 200px;
+  margin: 2px 0;
+`;
+
 const CaseResultWrapper = styled.div`
   display: flex;
   flex-direction: row;
@@ -79,18 +94,22 @@ const PretrialCard = ({ pretrialCase, handleSelect } :Props) => {
             handleSelect(pretrialCase, entityKeyId);
           }
         }}>
-      <CaseInfoWrapper>
-        <CaseInfoHeaders>
-          <strong>Case Number:</strong>
-          <strong>Arrest Date:</strong>
-          <strong>Number of Charges:</strong>
-        </CaseInfoHeaders>
-        <CaseInfo>
-          <span>{ caseNum }</span>
-          <span>{ arrestDate }</span>
-          <span>{ numCharges }</span>
-        </CaseInfo>
-      </CaseInfoWrapper>
+      <table>
+        <tbody>
+          <InfoRow>
+            <Header>Case Number:</Header>
+            <DataElem>{ caseNum }</DataElem>
+          </InfoRow>
+          <InfoRow>
+            <Header>Arrest Date:</Header>
+            <DataElem>{ arrestDate }</DataElem>
+          </InfoRow>
+          <InfoRow>
+            <Header>Number of Charges:</Header>
+            <DataElem>{ numCharges }</DataElem>
+          </InfoRow>
+        </tbody>
+      </table>
     </Wrapper>
   );
 };
