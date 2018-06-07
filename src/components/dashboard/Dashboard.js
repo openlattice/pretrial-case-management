@@ -13,6 +13,7 @@ import PeopleContainer from '../../containers/people/PeopleContainer';
 import PersonDetailsContainer from '../../containers/people/PersonDetailsContainer';
 import DownloadPSA from '../../containers/download/DownloadPSA';
 import ReviewPSA from '../../containers/review/ReviewPSA';
+import JudgeContainer from '../../containers/judge/JudgeContainer';
 import EnrollVoice from '../../containers/enroll/EnrollVoice';
 import * as Routes from '../../core/router/Routes';
 
@@ -36,6 +37,7 @@ const Dashboard = () => (
         <Route path={Routes.PEOPLE} component={PeopleContainer} />
         <Route path={Routes.PERSON_DETAILS} component={PersonDetailsContainer} />
         <Route path={Routes.DOWNLOAD_FORMS} component={DownloadPSA} />
+        <Route path={Routes.JUDGE_VIEW} component={JudgeContainer} />
         <Route path={Routes.REVIEW_FORMS} component={ReviewPSA} />
         <Route path={Routes.VOICE_ENROLLMENT} component={EnrollVoice} />
         <Redirect from={Routes.DASHBOARD} to={Routes.CREATE_FORMS} />

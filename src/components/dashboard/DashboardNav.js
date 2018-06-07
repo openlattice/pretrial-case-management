@@ -94,6 +94,11 @@ const DashboardNav = () => (
             name={Routes.PEOPLE}>
           Browse People
         </StyledNavLink>
+        <StyledNavLink
+            to={Routes.JUDGE_VIEW}
+            name={Routes.JUDGE_VIEW}>
+          Judges
+        </StyledNavLink>
       </StyledLinksWrapper>
     </StyledNavWrapper>
     <StyledNavWrapper>
