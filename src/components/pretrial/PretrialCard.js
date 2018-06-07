@@ -38,34 +38,6 @@ const CaseResultWrapper = styled.div`
   margin: 10px 0;
 `;
 
-const CaseInfoWrapper = styled.div`
-  display: flex;
-  flex-direction: row;
-  margin-left: 10px;
-`;
-
-const CaseInfoHeaders = styled.div`
-  display: flex;
-  text-align: left;
-  flex-direction: column;
-  justify-content: space-around;
-  strong {
-    font-weight: 600;
-  }
-`;
-
-const CaseInfo = styled.div`
-  display: flex;
-  text-align: left;
-  flex-direction: column;
-  justify-content: space-between;
-  margin: 0;
-  margin-left: 10px;
-  span {
-    margin: 0;
-  }
-`;
-
 type Props = {
   pretrialCase :Immutable.Map<*, *>,
   handleSelect? :(pretrialCase :Immutable.Map<*, *>, entityKeyId :string) => void

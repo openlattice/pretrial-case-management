@@ -22,7 +22,8 @@ import { getSentenceToIncarcerationCaseNums } from '../../utils/consts/SentenceC
 import {
   getAllViolentCharges,
   getAllStepTwoCharges,
-  getAllStepFourCharges
+  getAllStepFourCharges,
+  getSecondaryReleaseChargeJustification
 } from '../../utils/consts/ArrestChargeConsts';
 
 import {
@@ -165,11 +166,14 @@ export default class PSAInputForm extends React.Component<Props, State> {
     };
   }
 
-  renderNotesAndJustifications = (name, autofillJustifications) => {
+  renderNotesAndJustifications = (name, autofillJustifications, justificationHeader) => {
     let justifications = null;
     if (autofillJustifications) {
-      const justificationText = autofillJustifications.size
+      let justificationText = autofillJustifications.size
         ? formatValue(autofillJustifications) : 'No matching charges.';
+      if (justificationHeader) {
+        justificationText = `${justificationHeader}: ${justificationText}`;
+      }
       justifications = (
         <NoteContainer>
           <JustificationLabel>Autofill Justification</JustificationLabel>
@@ -264,6 +268,7 @@ export default class PSAInputForm extends React.Component<Props, State> {
 
     const step2Charges = getAllStepTwoCharges(currCharges);
     const step4Charges = getAllStepFourCharges(currCharges);
+    const [secondaryReleaseCharges, secondaryReleaseHeader] = getSecondaryReleaseChargeJustification(currCharges);
 
     return (
       <div>
@@ -379,7 +384,11 @@ export default class PSAInputForm extends React.Component<Props, State> {
                 input.get(COURT_OR_BOOKING) === CONTEXT.BOOKING ? (
                   <QuestionRow>
                     {this.renderTrueFalseRadio(SECONDARY_RELEASE_CHARGES, SECONDARY_RELEASE_CHARGES_PROMPT)}
-                    {this.renderNotesAndJustifications(NOTES[SECONDARY_RELEASE_CHARGES])}
+                    {this.renderNotesAndJustifications(
+                      NOTES[SECONDARY_RELEASE_CHARGES],
+                      secondaryReleaseCharges,
+                      secondaryReleaseHeader
+                    )}
                   </QuestionRow>
                 ) : null
               }

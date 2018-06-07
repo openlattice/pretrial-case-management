@@ -941,11 +941,12 @@ export const chargeIsInList = (chargesToMatch, statuteNum, description) => {
   return result;
 };
 
-const filterChargeList = (charges, chargesToMatch) => {
+const filterChargeList = (charges, chargesToMatch, negated) => {
   return charges.filter((charge) => {
     const statuteNum = charge.getIn([PROPERTY_TYPES.CHARGE_STATUTE, 0], '');
     const description = charge.getIn([PROPERTY_TYPES.CHARGE_DESCRIPTION, 0], '');
-    return chargeIsInList(chargesToMatch, statuteNum, description);
+    const present = chargeIsInList(chargesToMatch, statuteNum, description);
+    return negated ? !present : present;
   }).map((charge) => {
     return charge.getIn([PROPERTY_TYPES.CHARGE_STATUTE, 0], '');
   });
@@ -966,3 +967,12 @@ export const getAllStepFourCharges = (chargeList) => {
 export const getAllSecondaryReleaseCharges = (chargeList) => {
   return filterChargeList(chargeList, PENN_BOOKING_EXCEPTIONS);
 };
+
+export const getSecondaryReleaseChargeJustification = (chargeList) => {
+  const secondaryReleaseCharges = filterChargeList(chargeList, PENN_BOOKING_EXCEPTIONS);
+  if (secondaryReleaseCharges.size === chargeList.size) {
+    return [secondaryReleaseCharges, 'BHE Charges'];
+  }
+
+  return [filterChargeList(chargeList, PENN_BOOKING_EXCEPTIONS, true), 'Non-BHE charges exist'];
+}
