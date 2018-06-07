@@ -239,33 +239,29 @@ const person = (
   return y;
 };
 
-const box = (doc :Object, y :number, num :number) :void => {
+const box = (doc :Object, y :number, num :number, score :number) :void => {
   const x = BOX_MARGIN + ((num - 1) * BOX_WIDTH);
   doc.rect(x, y, BOX_WIDTH, BOX_HEIGHT, 'FD');
   const textX = x + ((BOX_WIDTH / 2) - 1);
   const textY = y + ((BOX_HEIGHT / 2) + 1);
-  doc.text(textX, textY, num.toString());
+  if (num === score) {
+    doc.setFontType('bold')
+    doc.text(textX, textY, num.toString());
+    doc.setFontType('regular')
+  }
 };
 
-const unselectedBox = (doc :Object, y :number, value :number) :void => {
+const unselectedBox = (doc :Object, y :number, value :number, score :number) :void => {
   doc.setDrawColor(128);
   doc.setFillColor(255);
   doc.setTextColor(0);
-  box(doc, y, value);
-};
-
-const selectedBox = (doc :Object, y :number, value :number) :void => {
-  doc.setDrawColor(128);
-  doc.setFillColor(0);
-  doc.setTextColor(255);
-  box(doc, y, value);
+  box(doc, y, value, score);
 };
 
 const scale = (doc :Object, yInit :number, value :number) :number => {
   let y = yInit;
-  for (let i = 1; i <= 6; i += 1) {
-    if (i <= value) selectedBox(doc, yInit, i);
-    else unselectedBox(doc, yInit, i);
+  for (let i = 1; i <= value; i += 1) {
+    unselectedBox(doc, yInit, i, value);
   }
   doc.setTextColor(0, 0, 0);
   y += Y_INC + BOX_HEIGHT;
