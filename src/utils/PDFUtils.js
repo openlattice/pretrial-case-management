@@ -8,7 +8,6 @@ import moment from 'moment';
 
 import { formatValue, formatDate, formatDateTime, formatDateList } from './Utils';
 import {
-  getViolentCharges,
   getPendingCharges,
   getPreviousMisdemeanors,
   getPreviousFelonies,
