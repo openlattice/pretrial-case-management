@@ -3,13 +3,13 @@
  */
 
 import React from 'react';
-import DateTimePicker from 'react-datetime';
 import moment from 'moment';
 import styled from 'styled-components';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
 import StyledButton from '../../components/buttons/StyledButton';
+import DateTimeRange from '../../components/datetime/DateTimeRange';
 import * as DownloadActionFactory from './DownloadActionFactory';
 import * as Routes from '../../core/router/Routes';
 import {
@@ -21,22 +21,6 @@ import {
   StyledTopFormNavBuffer
 } from '../../utils/Layout';
 import { DOMAIN, SUMMARY_REPORT } from '../../utils/consts/ReportDownloadTypes';
-
-const DatePickerTitle = styled.div`
-  font-size: 16px;
-  margin: 15px 0;
-  text-align: center;
-`;
-
-const DateRangeContainer = styled.div`
-  display: flex;
-  flex-direction: row;
-`;
-
-const DatePickerGroupContainer = styled.div`
-  max-width: 300px;
-  margin: 10px;
-`;
 
 const DownloadButton = styled(StyledButton)`
   margin: 0 6px;
@@ -82,34 +66,6 @@ class DownloadPSA extends React.Component<Props, State> {
       endDate: undefined
     });
     this.props.history.push(Routes.DASHBOARD);
-  }
-
-  renderDateRangePicker = () => {
-    const { startDate, endDate } = this.state;
-
-    return (
-      <div>
-        <DatePickerTitle>Choose a date range.</DatePickerTitle>
-        <DateRangeContainer>
-          <DatePickerGroupContainer>
-            <div>Start Date:</div>
-            <DateTimePicker
-                value={startDate}
-                onChange={(date) => {
-                  this.setState({ startDate: date });
-                }} />
-          </DatePickerGroupContainer>
-          <DatePickerGroupContainer>
-            <div>End Date:</div>
-            <DateTimePicker
-                value={endDate}
-                onChange={(date) => {
-                  this.setState({ endDate: date });
-                }} />
-          </DatePickerGroupContainer>
-        </DateRangeContainer>
-      </div>
-    );
   }
 
   getErrorText = () => {
@@ -174,7 +130,11 @@ class DownloadPSA extends React.Component<Props, State> {
             <CloseX name="close" onClick={this.handleClose} />
           </StyledTitleWrapper>
           <StyledSectionWrapper>
-            {this.renderDateRangePicker()}
+            <DateTimeRange
+                startDate={this.state.startDate}
+                endDate={this.state.endDate}
+                onStartChange={startDate => this.setState({ startDate })}
+                onEndChange={endDate => this.setState({ endDate })} />
             {this.renderError()}
             {this.renderDownload()}
             <StyledTopFormNavBuffer />
