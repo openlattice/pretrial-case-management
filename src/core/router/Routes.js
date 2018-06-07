@@ -23,6 +23,10 @@ export const CREATE_FORMS = DASHBOARD + CREATE;
 const REVIEW :string = '/review';
 export const REVIEW_FORMS = DASHBOARD + REVIEW;
 
+/* Judge View */
+const JUDGE :string = '/judges';
+export const JUDGE_VIEW = DASHBOARD + JUDGE;
+
 /* Download Reports */
 const DOWNLOAD :string = '/download';
 export const DOWNLOAD_FORMS = DASHBOARD + DOWNLOAD;
