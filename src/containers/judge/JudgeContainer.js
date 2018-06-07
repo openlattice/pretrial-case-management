@@ -140,8 +140,8 @@ class JudgeContainer extends React.Component<Props, State> {
   constructor(props :Props) {
     super(props);
     this.state = {
-      startDate: moment().subtract(1, 'day').startOf('day').add(9, 'hours'),
-      endDate: moment(),
+      startDate: moment().subtract(1, 'day').startOf('day').add(5, 'hours'),
+      endDate: moment().startOf('day').add(5, 'hours'),
       domain: DOMAIN.PENNINGTON,
       start: 0
     };
