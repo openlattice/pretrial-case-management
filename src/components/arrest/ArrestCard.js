@@ -39,11 +39,11 @@ const CaseResultWrapper = styled.div`
 `;
 
 type Props = {
-  pretrialCase :Immutable.Map<*, *>,
-  handleSelect? :(pretrialCase :Immutable.Map<*, *>, entityKeyId :string) => void
+  arrest :Immutable.Map<*, *>,
+  handleSelect? :(arrest :Immutable.Map<*, *>, entityKeyId :string) => void
 };
 
-const PretrialCard = ({ pretrialCase, handleSelect } :Props) => {
+const ArrestCard = ({ arrest, handleSelect } :Props) => {
 
   const Wrapper = styled(CaseResultWrapper)`
     &:hover {
@@ -51,19 +51,19 @@ const PretrialCard = ({ pretrialCase, handleSelect } :Props) => {
     }
   `;
 
-  const caseNum = pretrialCase.getIn([CASE_ID, 0]);
-  const arrestDate = formatDateTime(pretrialCase.getIn([ARREST_DATE_TIME, 0],
-    pretrialCase.getIn([ARREST_DATE, 0], '')));
-  const numCharges = pretrialCase.getIn([NUMBER_OF_CHARGES, 0]);
+  const caseNum = arrest.getIn([CASE_ID, 0]);
+  const arrestDate = formatDateTime(arrest.getIn([ARREST_DATE_TIME, 0],
+    arrest.getIn([ARREST_DATE, 0], '')));
+  const numCharges = arrest.getIn([NUMBER_OF_CHARGES, 0]);
 
-  const entityKeyId :string = pretrialCase.get('id', '');
+  const entityKeyId :string = arrest.get('id', '');
 
   return (
     <Wrapper
         key={entityKeyId}
         onClick={() => {
           if (handleSelect) {
-            handleSelect(pretrialCase, entityKeyId);
+            handleSelect(arrest, entityKeyId);
           }
         }}>
       <table>
@@ -86,8 +86,8 @@ const PretrialCard = ({ pretrialCase, handleSelect } :Props) => {
   );
 };
 
-PretrialCard.defaultProps = {
+ArrestCard.defaultProps = {
   handleSelect: () => {}
 };
 
-export default PretrialCard;
+export default ArrestCard;

@@ -85,7 +85,7 @@ const INITIAL_PSA_FORM = Immutable.fromJS({
 });
 
 const INITIAL_STATE :Immutable.Map<> = Immutable.fromJS({
-  pretrialCaseOptions: Immutable.List(),
+  arrestOptions: Immutable.List(),
   allCasesForPerson: Immutable.List(),
   allChargesForPerson: Immutable.List(),
   allSentencesForPerson: Immutable.List(),
@@ -93,8 +93,8 @@ const INITIAL_STATE :Immutable.Map<> = Immutable.fromJS({
   allFTAs: Immutable.List(),
   charges: Immutable.List(),
   selectedPerson: Immutable.Map(),
+  arrestId: '',
   selectedPretrialCase: Immutable.Map(),
-  chargesManuallyEntered: false,
   psa: INITIAL_PSA_FORM,
   dataModel: Immutable.Map(),
   entitySetLookup: Immutable.Map(),
@@ -176,7 +176,7 @@ function formReducer(state :Immutable.Map<> = INITIAL_STATE, action :Object) {
           });
 
           return state
-            .set('pretrialCaseOptions', arrestOptionsWithDate.concat(arrestOptionsWithoutDate))
+            .set('arrestOptions', arrestOptionsWithDate.concat(arrestOptionsWithoutDate))
             .set('allCasesForPerson', allCasesForPerson)
             .set('allChargesForPerson', allChargesForPerson)
             .set('allSentencesForPerson', allSentencesForPerson)
@@ -192,14 +192,14 @@ function formReducer(state :Immutable.Map<> = INITIAL_STATE, action :Object) {
         allChargesForPerson = allChargesForPerson.push(charge);
       });
       return state
-        .set('chargesManuallyEntered', true)
-        .set('pretrialCaseOptions', state.get('pretrialCaseOptions').unshift(action.value.pretrialCase))
+        .set('arrestOptions', state.get('arrestOptions').unshift(action.value.pretrialCase))
         .set('allChargesForPerson', allChargesForPerson)
         .set('charges', action.value.charges)
         .set('selectedPretrialCase', action.value.pretrialCase);
     }
 
-    case SELECT_PERSON: return state.set('selectedPerson', action.value.selectedPerson);
+    case SELECT_PERSON:
+      return state.set('selectedPerson', action.value.selectedPerson);
 
     case SELECT_PRETRIAL_CASE: {
       const getCaseAndChargeNum :Function = (charge) => {
@@ -215,7 +215,8 @@ function formReducer(state :Immutable.Map<> = INITIAL_STATE, action :Object) {
         .sort((c1, c2) => getCaseAndChargeNum(c1)[1] > getCaseAndChargeNum(c2)[1]);
       return state
         .set('selectedPretrialCase', selectedPretrialCase)
-        .set('charges', charges);
+        .set('charges', charges)
+        .set('arrestId', selectedCaseIdList.get(0, ''));
     }
 
     case SET_PSA_VALUES: {
@@ -228,14 +229,14 @@ function formReducer(state :Immutable.Map<> = INITIAL_STATE, action :Object) {
 
     case CLEAR_FORM:
       return state
-        .set('pretrialCaseOptions', Immutable.List())
+        .set('arrestOptions', Immutable.List())
         .set('allCasesForPerson', Immutable.List())
         .set('allChargesForPerson', Immutable.List())
         .set('allSentencesForPerson', Immutable.List())
         .set('allFTAs', Immutable.List())
         .set('selectPerson', Immutable.Map())
+        .set('arrestId', '')
         .set('selectedPretrialCase', Immutable.Map())
-        .set('chargesManuallyEntered', false)
         .set('charges', Immutable.List())
         .set('psa', INITIAL_PSA_FORM)
         .set('isSubmitted', false)
