@@ -412,11 +412,7 @@ export default class PSAReviewRow extends React.Component<Props, State> {
     const dmfRiskFactorsEntitySetId = getEntitySetId(ENTITY_SETS.DMF_RISK_FACTORS);
     const dmfRiskFactorsEntity = this.getDMFRiskFactorsEntity(this.state.riskFactors, dmfRiskFactorsIdValue);
 
-    const scoresEntity = {
-      [PROPERTY_TYPES.NCA_SCALE]: [scores.ncaScale],
-      [PROPERTY_TYPES.FTA_SCALE]: [scores.ftaScale],
-      [PROPERTY_TYPES.NVCA_FLAG]: [scores.nvcaFlag]
-    };
+    const scoresEntity = scores.toJS();
     if (scoreId) scoresEntity[PROPERTY_TYPES.GENERAL_ID] = [scoreId];
     if (riskFactorsIdValue) riskFactorsEntity[PROPERTY_TYPES.GENERAL_ID] = [riskFactorsIdValue];
 

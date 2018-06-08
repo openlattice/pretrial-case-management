@@ -290,11 +290,6 @@ function* downloadPSAReviewPDFWorker(action :SequenceAction) :Generator<*, *, *>
       PROPERTY_TYPES.RELEASE_RECOMMENDATION
     ], Immutable.List()).join(', ');
 
-    const formattedScores = Immutable.Map()
-      .set('ftaScale', scores.getIn([PROPERTY_TYPES.FTA_SCALE, 0]))
-      .set('ncaScale', scores.getIn([PROPERTY_TYPES.NCA_SCALE, 0]))
-      .set('nvcaFlag', scores.getIn([PROPERTY_TYPES.NVCA_FLAG, 0]));
-
     const dmf = neighbors.getIn([ENTITY_SETS.DMF_RESULTS, 'neighborDetails'], Immutable.Map());
     const formattedDMF = Immutable.Map()
       .set(RESULT_CATEGORIES.RELEASE_TYPE, dmf.getIn([PROPERTY_TYPES.RELEASE_TYPE, 0]))
@@ -313,8 +308,7 @@ function* downloadPSAReviewPDFWorker(action :SequenceAction) :Generator<*, *, *>
     };
 
     const data = Immutable.Map()
-      .set('psaScores', scores)
-      .set('scores', formattedScores)
+      .set('scores', scores)
       .set('notes', recommendationText)
       .set('riskFactors', setMultimapToMap(ENTITY_SETS.PSA_RISK_FACTORS))
       .set('psaRiskFactors', neighbors.getIn([ENTITY_SETS.PSA_RISK_FACTORS, 'neighborDetails'], Immutable.Map()))
