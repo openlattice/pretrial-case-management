@@ -174,7 +174,7 @@ export default class SelectChargesContainer extends React.Component<Props, State
     return (
       <CaseDetailsWrapper>
         <hr />
-        <SectionHeader>Case Details:</SectionHeader>
+        <SectionHeader>Arrest Details:</SectionHeader>
         <PaddedRow>
           <Col lg={6}>
             <TitleLabel>Arrest Date:</TitleLabel>
