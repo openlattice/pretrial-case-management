@@ -57,7 +57,7 @@ export default class PSAResults extends React.Component<Props, State> {
     };
   }
 
-  getNvcaString = () => ((this.props.scores.nvcaFlag) ? 'Yes' : 'No')
+  getNvcaString = () => (this.props.scores.getIn([PROPERTY_TYPES.NVCA_FLAG, 0]) ? 'Yes' : 'No')
 
   renderScale = (val :number) => {
     const scale = [];
@@ -155,7 +155,7 @@ export default class PSAResults extends React.Component<Props, State> {
     <div>
       <ResultHeader>New Criminal Activity Scale</ResultHeader>
       {this.renderWeightedScore(this.props.scores.ncaTotal)}
-      {this.renderScale(this.props.scores.ncaScale)}
+      {this.renderScale(this.props.scores.getIn([PROPERTY_TYPES.NCA_SCALE, 0]))}
     </div>
   )
 
@@ -163,7 +163,7 @@ export default class PSAResults extends React.Component<Props, State> {
     <div>
       <ResultHeader>Failure to Appear Scale</ResultHeader>
       {this.renderWeightedScore(this.props.scores.ftaTotal)}
-      {this.renderScale(this.props.scores.ftaScale)}
+      {this.renderScale(this.props.scores.getIn([PROPERTY_TYPES.FTA_SCALE, 0]))}
     </div>
   )
 

@@ -292,14 +292,14 @@ const scores = (doc :Object, yInit :number, scoreValues :Immutable.Map<*, *>) :n
   let y = yInit;
   doc.text(X_MARGIN + SCORE_OFFSET, y, 'New Violent Criminal Activity Flag');
   y += Y_INC;
-  y = nvcaFlag(doc, y, getBooleanText(scoreValues.get('nvcaFlag')));
+  y = nvcaFlag(doc, y, getBooleanText(scoreValues.getIn([PROPERTY_TYPES.NVCA_FLAG, 0])));
   doc.text(X_MARGIN + SCORE_OFFSET, y, 'New Criminal Activity Scale');
   y += Y_INC;
-  y = scale(doc, y, scoreValues.get('ncaScale'));
+  y = scale(doc, y, scoreValues.getIn([PROPERTY_TYPES.NCA_SCALE, 0]));
   y += Y_INC;
   doc.text(X_MARGIN + SCORE_OFFSET, y, 'Failure to Appear Flag');
   y += Y_INC;
-  y = scale(doc, y, scoreValues.get('ftaScale'));
+  y = scale(doc, y, scoreValues.getIn([PROPERTY_TYPES.FTA_SCALE, 0]));
   y += Y_INC;
   return y;
 };
@@ -655,7 +655,7 @@ const exportPDF = (
   y += Y_INC;
 
   // DMF SECTION
-  y = dmf(doc, y, data.get('dmf'), data.get('dmfRiskFactors'), data.get('psaRiskFactors'), data.get('psaScores'));
+  y = dmf(doc, y, data.get('dmf'), data.get('dmfRiskFactors'), data.get('psaRiskFactors'), data.get('scores'));
 
   // CHARGES SECTION
   [y, page] = charges(doc, y, page, name, selectedPretrialCase, selectedCharges, false);

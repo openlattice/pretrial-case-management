@@ -3,6 +3,7 @@ import psaScenarios from './consts/ScoringTestConsts';
 import dmfScenarios from './consts/DMFTestConsts';
 import { getScoresAndRiskFactors, calculateDMF } from './ScoringUtils';
 import { DMF } from './consts/Consts';
+import { PROPERTY_TYPES } from './consts/DataModelConsts';
 import { RESULT_CATEGORIES } from './consts/DMFResultConsts';
 
 describe('ScoringUtils', () => {
@@ -14,7 +15,7 @@ describe('ScoringUtils', () => {
         Object.keys(scenario.expected).forEach((context) => {
           test(`should correctly score DMF scenario ${index} with context ${context}`, () => {
             const inputData = Immutable.fromJS(scenario.inputData).set(DMF.COURT_OR_BOOKING, context);
-            const dmf = calculateDMF(inputData, scenario.scores);
+            const dmf = calculateDMF(inputData, Immutable.fromJS(scenario.scores));
 
             expect(dmf[RESULT_CATEGORIES.COLOR])
               .toEqual(scenario.expected[context][RESULT_CATEGORIES.COLOR]);
@@ -99,17 +100,25 @@ describe('ScoringUtils', () => {
             }).toThrow();
           }
           else {
-            const { scores } = getScoresAndRiskFactors(formValues);
-            scenarioValues.calculatedResults = scores;
-            expect(scores.ncaScale).toEqual(scenario.ncaScale);
-            expect(scores.ftaScale).toEqual(scenario.ftaScale);
-            expect(scores.nvcaFlag).toEqual(nvcaFlag);
-            expect(scores.ncaTotal).toEqual(scenario.ncaScore);
-            expect(scores.ftaTotal).toEqual(scenario.ftaScore);
-            expect(scores.nvcaTotal).toEqual(scenario.nvcaScore);
-            if (scores.ncaScale === scenario.ncaScale && scores.ftaScale === scenario.ftaScale
-              && scores.nvcaFlag === nvcaFlag && scores.ncaTotal === scenario.ncaScore
-              && scores.ftaTotal === scenario.ftaScore && scores.nvcaTotal === scenario.nvcaScore) {
+            const { scores, scoreTotals } = getScoresAndRiskFactors(formValues);
+            scenarioValues.calculatedResults = scores.toJS();
+
+            const nca = scores.getIn([PROPERTY_TYPES.NCA_SCALE, 0]);
+            const fta = scores.getIn([PROPERTY_TYPES.FTA_SCALE, 0]);
+            const nvca = scores.getIn([PROPERTY_TYPES.NVCA_FLAG, 0]);
+
+            expect(nca).toEqual(scenario.ncaScale);
+            expect(fta).toEqual(scenario.ftaScale);
+            expect(nvca).toEqual(nvcaFlag);
+            expect(scoreTotals.ncaTotal).toEqual(scenario.ncaScore);
+            expect(scoreTotals.ftaTotal).toEqual(scenario.ftaScore);
+            expect(scoreTotals.nvcaTotal).toEqual(scenario.nvcaScore);
+            if (nca === scenario.ncaScale
+              && fta === scenario.ftaScale
+              && nvca === nvcaFlag
+              && scoreTotals.ncaTotal === scenario.ncaScore
+              && scoreTotals.ftaTotal === scenario.ftaScore
+              && scoreTotals.nvcaTotal === scenario.nvcaScore) {
               scenarioValues.passed = true;
             }
             else scenarioValues.passed = false;

@@ -152,18 +152,19 @@ export function getScores(psaForm :Immutable.Map<*, *>) :{} {
   const ncaScale = getNcaScaleFromScore(ncaTotal);
   const nvcaFlag = getNvcaFlagFromScore(nvcaTotal);
 
-  return {
-    ftaTotal,
-    ncaTotal,
-    nvcaTotal,
-    ftaScale,
-    ncaScale,
-    nvcaFlag
-  };
+  const scores = Immutable.fromJS({
+    [PROPERTY_TYPES.FTA_SCALE]: [ftaScale],
+    [PROPERTY_TYPES.NCA_SCALE]: [ncaScale],
+    [PROPERTY_TYPES.NVCA_FLAG]: [nvcaFlag]
+  });
+
+  const scoreTotals = { ftaTotal, ncaTotal, nvcaTotal };
+
+  return { scores, scoreTotals };
 }
 
 export function getScoresAndRiskFactors(psaForm :Immutable.Map<*, *>) :{} {
-  const scores = getScores(psaForm);
+  const { scores, scoreTotals } = getScores(psaForm);
 
   const ageAtCurrentArrest = psaForm.get(PSA.AGE_AT_CURRENT_ARREST);
   const currentViolentOffense = psaForm.get(PSA.CURRENT_VIOLENT_OFFENSE);
@@ -265,7 +266,7 @@ export function getScoresAndRiskFactors(psaForm :Immutable.Map<*, *>) :{} {
     riskFactors[PRIOR_SENTENCE_TO_INCARCERATION_NOTES] = [priorSentenceToIncarcerationNotes];
   }
 
-  return { riskFactors, scores };
+  return { riskFactors, scores, scoreTotals };
 }
 
 export const stepTwoIncrease = (dmfRiskFactors, psaRiskFactors, psaScores) => {
@@ -312,7 +313,7 @@ export const calculateDMF = (inputData, scores) => {
   const stepTwo = inputData.get(DMF.STEP_2_CHARGES) === 'true';
   const currentViolentOffense = inputData.get(PSA.CURRENT_VIOLENT_OFFENSE) === 'true';
   const secondaryRelease = inputData.get(DMF.SECONDARY_RELEASE_CHARGES) === 'true';
-  const nvca = scores.nvcaFlag;
+  const nvca = scores.getIn([PROPERTY_TYPES.NVCA_FLAG, 0]);
   const violent = currentViolentOffense && nvca;
   const violentRisk = !currentViolentOffense && nvca;
 
@@ -322,8 +323,8 @@ export const calculateDMF = (inputData, scores) => {
   if (extradited || stepTwo || violent) {
     return getDMFDecision(6, 6, context);
   }
-  const nca = scores.ncaScale;
-  const fta = scores.ftaScale;
+  const nca = scores.getIn([PROPERTY_TYPES.NCA_SCALE, 0]);
+  const fta = scores.getIn([PROPERTY_TYPES.FTA_SCALE, 0]);
   const stepThreeCalculation = getDMFDecision(nca, fta, context);
   if (stepFour) {
     return increaseDMFSeverity(stepThreeCalculation, context);

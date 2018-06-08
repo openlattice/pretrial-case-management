@@ -1,5 +1,6 @@
 import { PSA, DMF, CONTEXT } from './Consts';
 import { RESULT_CATEGORIES, COLORS, RELEASE_TYPES, CONDITION_TYPES } from './DMFResultConsts';
+import { PROPERTY_TYPES } from './DataModelConsts';
 
 const scenarios = [
   // STEP 2 DMFs
@@ -12,9 +13,9 @@ const scenarios = [
       [DMF.SECONDARY_RELEASE_CHARGES]: 'false'
     },
     scores: {
-      nvcaFlag: true,
-      ncaScale: 6,
-      nvcaScale: 6
+      [PROPERTY_TYPES.NVCA_FLAG]: [true],
+      [PROPERTY_TYPES.NCA_SCALE]: [6],
+      [PROPERTY_TYPES.FTA_SCALE]: [6]
     },
     expected: {
       [CONTEXT.COURT_PENN]: {
@@ -46,9 +47,9 @@ const scenarios = [
       [DMF.SECONDARY_RELEASE_CHARGES]: 'false'
     },
     scores: {
-      nvcaFlag: true,
-      ncaScale: 3,
-      nvcaScale: 3
+      [PROPERTY_TYPES.NVCA_FLAG]: [true],
+      [PROPERTY_TYPES.NCA_SCALE]: [3],
+      [PROPERTY_TYPES.FTA_SCALE]: [3]
     },
     expected: {
       [CONTEXT.COURT_PENN]: {
@@ -80,9 +81,9 @@ const scenarios = [
       [DMF.SECONDARY_RELEASE_CHARGES]: 'false'
     },
     scores: {
-      nvcaFlag: false,
-      ncaScale: 3,
-      nvcaScale: 3
+      [PROPERTY_TYPES.NVCA_FLAG]: [false],
+      [PROPERTY_TYPES.NCA_SCALE]: [3],
+      [PROPERTY_TYPES.FTA_SCALE]: [3]
     },
     expected: {
       [CONTEXT.COURT_PENN]: {
@@ -114,9 +115,9 @@ const scenarios = [
       [DMF.SECONDARY_RELEASE_CHARGES]: 'true'
     },
     scores: {
-      nvcaFlag: true,
-      ncaScale: 3,
-      nvcaScale: 3
+      [PROPERTY_TYPES.NVCA_FLAG]: [true],
+      [PROPERTY_TYPES.NCA_SCALE]: [3],
+      [PROPERTY_TYPES.FTA_SCALE]: [3]
     },
     expected: {
       [CONTEXT.COURT_PENN]: {
@@ -150,9 +151,9 @@ const scenarios = [
       [DMF.SECONDARY_RELEASE_CHARGES]: 'true'
     },
     scores: {
-      nvcaFlag: false,
-      ncaScale: 3,
-      ftaScale: 3
+      [PROPERTY_TYPES.NVCA_FLAG]: [false],
+      [PROPERTY_TYPES.NCA_SCALE]: [3],
+      [PROPERTY_TYPES.FTA_SCALE]: [3]
     },
     expected: {
       [CONTEXT.COURT_PENN]: {
@@ -185,9 +186,9 @@ const scenarios = [
       [DMF.SECONDARY_RELEASE_CHARGES]: 'true'
     },
     scores: {
-      nvcaFlag: true,
-      ncaScale: 3,
-      ftaScale: 3
+      [PROPERTY_TYPES.NVCA_FLAG]: [true],
+      [PROPERTY_TYPES.NCA_SCALE]: [3],
+      [PROPERTY_TYPES.FTA_SCALE]: [3]
     },
     expected: {
       [CONTEXT.COURT_PENN]: {
@@ -220,9 +221,9 @@ const scenarios = [
       [DMF.SECONDARY_RELEASE_CHARGES]: 'true'
     },
     scores: {
-      nvcaFlag: false,
-      ncaScale: 1,
-      ftaScale: 1
+      [PROPERTY_TYPES.NVCA_FLAG]: [false],
+      [PROPERTY_TYPES.NCA_SCALE]: [1],
+      [PROPERTY_TYPES.FTA_SCALE]: [1]
     },
     expected: {
       [CONTEXT.COURT_PENN]: {
@@ -254,9 +255,9 @@ const scenarios = [
       [DMF.SECONDARY_RELEASE_CHARGES]: 'true'
     },
     scores: {
-      nvcaFlag: false,
-      ncaScale: 2,
-      ftaScale: 5
+      [PROPERTY_TYPES.NVCA_FLAG]: [false],
+      [PROPERTY_TYPES.NCA_SCALE]: [2],
+      [PROPERTY_TYPES.FTA_SCALE]: [5]
     },
     expected: {
       [CONTEXT.COURT_PENN]: {
@@ -289,9 +290,9 @@ const scenarios = [
       [DMF.SECONDARY_RELEASE_CHARGES]: 'true'
     },
     scores: {
-      nvcaFlag: false,
-      ncaScale: 5,
-      ftaScale: 2
+      [PROPERTY_TYPES.NVCA_FLAG]: [false],
+      [PROPERTY_TYPES.NCA_SCALE]: [5],
+      [PROPERTY_TYPES.FTA_SCALE]: [2]
     },
     expected: {
       [CONTEXT.COURT_PENN]: {
@@ -323,9 +324,9 @@ const scenarios = [
       [DMF.SECONDARY_RELEASE_CHARGES]: 'true'
     },
     scores: {
-      nvcaFlag: false,
-      ncaScale: 6,
-      ftaScale: 6
+      [PROPERTY_TYPES.NVCA_FLAG]: [false],
+      [PROPERTY_TYPES.NCA_SCALE]: [6],
+      [PROPERTY_TYPES.FTA_SCALE]: [6]
     },
     expected: {
       [CONTEXT.COURT_PENN]: {
@@ -359,9 +360,9 @@ const scenarios = [
       [DMF.SECONDARY_RELEASE_CHARGES]: 'true'
     },
     scores: {
-      nvcaFlag: false,
-      ncaScale: 1,
-      ftaScale: 1
+      [PROPERTY_TYPES.NVCA_FLAG]: [false],
+      [PROPERTY_TYPES.NCA_SCALE]: [1],
+      [PROPERTY_TYPES.FTA_SCALE]: [1]
     },
     expected: {
       [CONTEXT.COURT_PENN]: {
@@ -391,9 +392,9 @@ const scenarios = [
       [DMF.SECONDARY_RELEASE_CHARGES]: 'true'
     },
     scores: {
-      nvcaFlag: false,
-      ncaScale: 2,
-      ftaScale: 5
+      [PROPERTY_TYPES.NVCA_FLAG]: [false],
+      [PROPERTY_TYPES.NCA_SCALE]: [2],
+      [PROPERTY_TYPES.FTA_SCALE]: [5]
     },
     expected: {
       [CONTEXT.COURT_PENN]: {
@@ -426,9 +427,9 @@ const scenarios = [
       [DMF.SECONDARY_RELEASE_CHARGES]: 'true'
     },
     scores: {
-      nvcaFlag: false,
-      ncaScale: 3,
-      ftaScale: 4
+      [PROPERTY_TYPES.NVCA_FLAG]: [false],
+      [PROPERTY_TYPES.NCA_SCALE]: [3],
+      [PROPERTY_TYPES.FTA_SCALE]: [4]
     },
     expected: {
       [CONTEXT.COURT_PENN]: {
@@ -461,9 +462,9 @@ const scenarios = [
       [DMF.SECONDARY_RELEASE_CHARGES]: 'true'
     },
     scores: {
-      nvcaFlag: false,
-      ncaScale: 4,
-      ftaScale: 4
+      [PROPERTY_TYPES.NVCA_FLAG]: [false],
+      [PROPERTY_TYPES.NCA_SCALE]: [4],
+      [PROPERTY_TYPES.FTA_SCALE]: [4]
     },
     expected: {
       [CONTEXT.COURT_PENN]: {
@@ -498,9 +499,9 @@ const scenarios = [
       [DMF.SECONDARY_RELEASE_CHARGES]: 'true'
     },
     scores: {
-      nvcaFlag: false,
-      ncaScale: 4,
-      ftaScale: 5
+      [PROPERTY_TYPES.NVCA_FLAG]: [false],
+      [PROPERTY_TYPES.NCA_SCALE]: [4],
+      [PROPERTY_TYPES.FTA_SCALE]: [5]
     },
     expected: {
       [CONTEXT.COURT_PENN]: {
@@ -535,9 +536,9 @@ const scenarios = [
       [DMF.SECONDARY_RELEASE_CHARGES]: 'true'
     },
     scores: {
-      nvcaFlag: false,
-      ncaScale: 4,
-      ftaScale: 5
+      [PROPERTY_TYPES.NVCA_FLAG]: [false],
+      [PROPERTY_TYPES.NCA_SCALE]: [4],
+      [PROPERTY_TYPES.FTA_SCALE]: [5]
     },
     expected: {
       [CONTEXT.COURT_PENN]: {
@@ -574,9 +575,9 @@ const scenarios = [
       [DMF.SECONDARY_RELEASE_CHARGES]: 'false'
     },
     scores: {
-      nvcaFlag: false,
-      ncaScale: 1,
-      ftaScale: 1
+      [PROPERTY_TYPES.NVCA_FLAG]: [false],
+      [PROPERTY_TYPES.NCA_SCALE]: [1],
+      [PROPERTY_TYPES.FTA_SCALE]: [1]
     },
     expected: {
       [CONTEXT.COURT_PENN]: {
@@ -606,9 +607,9 @@ const scenarios = [
       [DMF.SECONDARY_RELEASE_CHARGES]: 'false'
     },
     scores: {
-      nvcaFlag: false,
-      ncaScale: 3,
-      ftaScale: 5
+      [PROPERTY_TYPES.NVCA_FLAG]: [false],
+      [PROPERTY_TYPES.NCA_SCALE]: [3],
+      [PROPERTY_TYPES.FTA_SCALE]: [5]
     },
     expected: {
       [CONTEXT.COURT_PENN]: {
@@ -641,9 +642,9 @@ const scenarios = [
       [DMF.SECONDARY_RELEASE_CHARGES]: 'false'
     },
     scores: {
-      nvcaFlag: false,
-      ncaScale: 4,
-      ftaScale: 5
+      [PROPERTY_TYPES.NVCA_FLAG]: [false],
+      [PROPERTY_TYPES.NCA_SCALE]: [4],
+      [PROPERTY_TYPES.FTA_SCALE]: [5]
     },
     expected: {
       [CONTEXT.COURT_PENN]: {
@@ -678,9 +679,9 @@ const scenarios = [
       [DMF.SECONDARY_RELEASE_CHARGES]: 'false'
     },
     scores: {
-      nvcaFlag: false,
-      ncaScale: 4,
-      ftaScale: 6
+      [PROPERTY_TYPES.NVCA_FLAG]: [false],
+      [PROPERTY_TYPES.NCA_SCALE]: [4],
+      [PROPERTY_TYPES.FTA_SCALE]: [6]
     },
     expected: {
       [CONTEXT.COURT_PENN]: {
@@ -712,9 +713,9 @@ const scenarios = [
       [DMF.SECONDARY_RELEASE_CHARGES]: 'false'
     },
     scores: {
-      nvcaFlag: false,
-      ncaScale: 6,
-      ftaScale: 6
+      [PROPERTY_TYPES.NVCA_FLAG]: [false],
+      [PROPERTY_TYPES.NCA_SCALE]: [6],
+      [PROPERTY_TYPES.FTA_SCALE]: [6]
     },
     expected: {
       [CONTEXT.COURT_PENN]: {
