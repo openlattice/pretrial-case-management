@@ -137,8 +137,9 @@ type Props = {
   scores :Immutable.Map<*, *>,
   neighbors :Immutable.Map<*, *>,
   caseHistory :Immutable.List<*>,
+  manualCaseHistory :Immutable.List<*>,
   chargeHistory :Immutable.Map<*, *>,
-  arrestChargeHistory :Immutable.Map<*, *>,
+  manualChargeHistory: Immutable.Map<*, *>,
   sentenceHistory :Immutable.Map<*, *>,
   ftaHistory :Immutable.Map<*, *>,
   readOnly :boolean,
@@ -151,25 +152,26 @@ type Props = {
     personId :string,
     neighbors :Immutable.Map<*, *>
   }) => void,
-  updateScoresAndRiskFactors? :(
+  updateScoresAndRiskFactors? :(values :{
+    scoresEntitySetId :string,
     scoresId :string,
-    scoresEntity :Object,
+    scoresEntity :Immutable.Map<*, *>,
     riskFactorsEntitySetId :string,
     riskFactorsId :string,
-    riskFactorsEntity :Object,
+    riskFactorsEntity :Immutable.Map<*, *>,
     dmfEntitySetId :string,
     dmfId :string,
     dmfEntity :Object,
     dmfRiskFactorsEntitySetId :string,
     dmfRiskFactorsId :string,
     dmfRiskFactorsEntity :Object
-  ) => void,
-  updateNotes? :(
+  }) => void,
+  updateNotes :(value :{
     notes :string,
     entityId :string,
     entitySetId :string,
     propertyTypes :Immutable.List<*>
-  ) => void,
+  }) => void,
   submitData :(value :{ config :Object, values :Object }) => void
 };
 
@@ -292,7 +294,12 @@ export default class PSAReviewRow extends React.Component<Props, State> {
     const entityId = neighbor.getIn(['neighborDetails', PROPERTY_TYPES.GENERAL_ID, 0]);
     const entitySetId = neighbor.getIn(['neighborEntitySet', 'id']);
     const propertyTypes = neighbor.get('neighborPropertyTypes');
-    this.props.updateNotes(notes, entityId, entitySetId, propertyTypes);
+    this.props.updateNotes({
+      notes,
+      entityId,
+      entitySetId,
+      propertyTypes
+    });
 
     this.props.submitData({
       config: psaEditedConfig,
@@ -381,28 +388,29 @@ export default class PSAReviewRow extends React.Component<Props, State> {
   onRiskFactorEdit = (e :Object) => {
     e.preventDefault();
 
+    const getEntitySetId = (name) :string => this.props.neighbors.getIn([name, 'neighborEntitySet', 'id']);
+
+    const getEntityKeyId = (name) :string => this.props.neighbors.getIn([name, 'neighborId']);
+
+    const getIdValue = (name) :string =>
+      this.props.neighbors.getIn([name, 'neighborDetails', PROPERTY_TYPES.GENERAL_ID, 0]);
+
     const { scores, riskFactors } = getScoresAndRiskFactors(this.state.riskFactors);
+    const riskFactorsEntity = Object.assign({}, riskFactors);
     const dmf = calculateDMF(this.state.riskFactors, scores);
 
     const scoreId = this.props.scores.getIn([PROPERTY_TYPES.GENERAL_ID, 0]);
-    const riskFactorsId = this.props.neighbors.getIn(
-      [ENTITY_SETS.PSA_RISK_FACTORS, 'neighborDetails', PROPERTY_TYPES.GENERAL_ID, 0]
-    );
+    const riskFactorsIdValue = getIdValue(ENTITY_SETS.PSA_RISK_FACTORS);
 
-    const dmfId = this.props.neighbors.getIn(
-      [ENTITY_SETS.DMF_RESULTS, 'neighborDetails', PROPERTY_TYPES.GENERAL_ID, 0]
-    );
-    const dmfEKId = this.props.neighbors.getIn([ENTITY_SETS.DMF_RESULTS, 'neighborId']);
-    const dmfEntitySetId = this.props.neighbors.getIn([ENTITY_SETS.DMF_RESULTS, 'neighborEntitySet', 'id']);
-    const dmfEntity = this.getDMFEntity(dmf, dmfId);
+    const dmfIdValue = getIdValue(ENTITY_SETS.DMF_RESULTS);
+    const dmfId = getEntityKeyId(ENTITY_SETS.DMF_RESULTS);
+    const dmfEntitySetId = getEntitySetId(ENTITY_SETS.DMF_RESULTS);
+    const dmfEntity = this.getDMFEntity(dmf, dmfIdValue);
 
-    const dmfRiskFactorsId = this.props.neighbors.getIn(
-      [ENTITY_SETS.DMF_RISK_FACTORS, 'neighborDetails', PROPERTY_TYPES.GENERAL_ID, 0]
-    );
-    const dmfRiskFactorsEKId = this.props.neighbors.getIn([ENTITY_SETS.DMF_RISK_FACTORS, 'neighborId']);
-    const dmfRiskFactorsEntitySetId =
-      this.props.neighbors.getIn([ENTITY_SETS.DMF_RISK_FACTORS, 'neighborEntitySet', 'id']);
-    const dmfRiskFactorsEntity = this.getDMFRiskFactorsEntity(this.state.riskFactors, dmfRiskFactorsId);
+    const dmfRiskFactorsIdValue = getIdValue(ENTITY_SETS.DMF_RISK_FACTORS);
+    const dmfRiskFactorsId = getEntityKeyId(ENTITY_SETS.DMF_RISK_FACTORS);
+    const dmfRiskFactorsEntitySetId = getEntitySetId(ENTITY_SETS.DMF_RISK_FACTORS);
+    const dmfRiskFactorsEntity = this.getDMFRiskFactorsEntity(this.state.riskFactors, dmfRiskFactorsIdValue);
 
     const scoresEntity = {
       [PROPERTY_TYPES.NCA_SCALE]: [scores.ncaScale],
@@ -410,28 +418,27 @@ export default class PSAReviewRow extends React.Component<Props, State> {
       [PROPERTY_TYPES.NVCA_FLAG]: [scores.nvcaFlag]
     };
     if (scoreId) scoresEntity[PROPERTY_TYPES.GENERAL_ID] = [scoreId];
-    if (riskFactorsId) riskFactors[PROPERTY_TYPES.GENERAL_ID] = [riskFactorsId];
+    if (riskFactorsIdValue) riskFactorsEntity[PROPERTY_TYPES.GENERAL_ID] = [riskFactorsIdValue];
 
-    const scoresEKId = this.props.entityKeyId;
-    const riskFactorsEntitySetId = this.props.neighbors.getIn([
-      ENTITY_SETS.PSA_RISK_FACTORS,
-      'neighborEntitySet',
-      'id'
-    ]);
-    const riskFactorsEKId = this.props.neighbors.getIn([ENTITY_SETS.PSA_RISK_FACTORS, 'neighborId']);
-    this.props.updateScoresAndRiskFactors(
-      scoresEKId,
+    const scoresId = this.props.entityKeyId;
+    const scoresEntitySetId = getEntitySetId(ENTITY_SETS.PSA_SCORES);
+    const riskFactorsEntitySetId = getEntitySetId(ENTITY_SETS.PSA_RISK_FACTORS);
+    const riskFactorsId = getEntityKeyId(ENTITY_SETS.PSA_RISK_FACTORS);
+
+    this.props.updateScoresAndRiskFactors({
+      scoresEntitySetId,
+      scoresId,
       scoresEntity,
       riskFactorsEntitySetId,
-      riskFactorsEKId,
-      riskFactors,
+      riskFactorsId,
+      riskFactorsEntity,
       dmfEntitySetId,
-      dmfEKId,
+      dmfId,
       dmfEntity,
       dmfRiskFactorsEntitySetId,
-      dmfRiskFactorsEKId,
+      dmfRiskFactorsId,
       dmfRiskFactorsEntity
-    );
+    });
 
     if (scoreId) {
       this.props.submitData({
@@ -488,24 +495,18 @@ export default class PSAReviewRow extends React.Component<Props, State> {
 
   renderCaseInfo = () => {
     const {
-      caseHistory,
-      arrestChargeHistory,
+      manualCaseHistory,
+      manualChargeHistory,
       chargeHistory,
       neighbors
     } = this.props;
     const caseNum = neighbors.getIn(
-      [ENTITY_SETS.ARREST_CASES, 'neighborDetails', PROPERTY_TYPES.CASE_ID, 0],
-      neighbors.getIn(
-        [ENTITY_SETS.MANUAL_PRETRIAL_CASES, 'neighborDetails', PROPERTY_TYPES.CASE_ID, 0],
-        '',
-        neighbors.getIn(
-          [ENTITY_SETS.ARREST_CASES, 'neighborDetails', PROPERTY_TYPES.CASE_ID, 0],
-          ''
-        )
-      )
+      [ENTITY_SETS.MANUAL_PRETRIAL_CASES, 'neighborDetails', PROPERTY_TYPES.CASE_ID, 0],
+      ''
     );
-    const pretrialCase = caseHistory.filter(caseObj => caseObj.getIn([PROPERTY_TYPES.CASE_ID, 0], '') === caseNum);
-    const charges = arrestChargeHistory.get(caseNum, chargeHistory.get(caseNum, Immutable.List()));
+    const pretrialCase = manualCaseHistory
+      .filter(caseObj => caseObj.getIn([PROPERTY_TYPES.CASE_ID, 0], '') === caseNum);
+    const charges = manualChargeHistory.get(caseNum, chargeHistory.get(caseNum, Immutable.List()));
     return (
       <CenteredContainer>
         <ChargeList pretrialCaseDetails={pretrialCase} charges={charges} />
@@ -559,7 +560,9 @@ export default class PSAReviewRow extends React.Component<Props, State> {
   renderPSADetails = () => {
     const {
       caseHistory,
+      manualCaseHistory,
       chargeHistory,
+      manualChargeHistory,
       sentenceHistory,
       ftaHistory,
       neighbors
@@ -583,10 +586,10 @@ export default class PSAReviewRow extends React.Component<Props, State> {
         ''
       )
     );
-    const currCase = caseHistory
+    const currCase = manualCaseHistory
       .filter(caseObj => caseObj.getIn([PROPERTY_TYPES.CASE_ID, 0], '') === caseNum)
       .get(0, Immutable.Map());
-    const currCharges = chargeHistory.get(caseNum, Immutable.List());
+    const currCharges = manualChargeHistory.get(caseNum, Immutable.List());
     const allCharges = chargeHistory.toList().flatMap(list => list);
     const allSentences = sentenceHistory.toList().flatMap(list => list);
 

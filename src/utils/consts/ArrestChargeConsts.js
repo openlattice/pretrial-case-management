@@ -975,4 +975,4 @@ export const getSecondaryReleaseChargeJustification = (chargeList) => {
   }
 
   return [filterChargeList(chargeList, PENN_BOOKING_EXCEPTIONS, true), 'Non-BHE charges exist'];
-}
+};

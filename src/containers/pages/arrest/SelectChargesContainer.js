@@ -5,7 +5,7 @@
 import React from 'react';
 import Immutable from 'immutable';
 import FontAwesome from 'react-fontawesome';
-import DatePicker from 'react-bootstrap-date-picker';
+import DateTimePicker from 'react-datetime';
 import styled from 'styled-components';
 import moment from 'moment';
 import randomUUID from 'uuid/v4';
@@ -92,24 +92,41 @@ const ChargeTitle = styled.div`
 `;
 
 type Props = {
-  onSubmit :(pretrialCase :Immutable.Map<*, *>, charges :Immutable.List<*>) => void
+  defaultArrest :Immutable.Map<*, *>,
+  defaultCharges :Immutable.List<*>,
+  onSubmit :(pretrialCase :Immutable.Map<*, *>, charges :Immutable.List<*>) => void,
+  nextPage :() => void,
+  prevPage :() => void
 };
 
 type State = {
-  arrestDate :?string,
+  arrestDate :?Object,
   caseDispositionDate :?string,
   charges :Charge[]
 };
 
-export default class ManualPretrialCaseEntry extends React.Component<Props, State> {
+export default class SelectChargesContainer extends React.Component<Props, State> {
 
   constructor(props :Props) {
     super(props);
     this.state = {
-      arrestDate: null,
+      arrestDate: moment(props.defaultArrest.getIn([PROPERTY_TYPES.ARREST_DATE_TIME, 0])),
       caseDispositionDate: null,
-      charges: []
+      charges: this.formatChargeList(props.defaultCharges)
     };
+  }
+
+  formatChargeList = (chargeList :Immutable.List<*>) :Object[] => {
+    const result = [];
+    chargeList.forEach((charge) => {
+      result.push({
+        [STATUTE]: charge.getIn([PROPERTY_TYPES.CHARGE_STATUTE, 0]),
+        [DESCRIPTION]: charge.getIn([PROPERTY_TYPES.CHARGE_DESCRIPTION, 0]),
+        [DEGREE]: charge.getIn([PROPERTY_TYPES.CHARGE_DEGREE, 0]),
+        [DEGREE_SHORT]: charge.getIn([PROPERTY_TYPES.CHARGE_LEVEL, 0])
+      });
+    });
+    return result;
   }
 
   getDateTime = (dateTimeStr) => {
@@ -117,16 +134,6 @@ export default class ManualPretrialCaseEntry extends React.Component<Props, Stat
       const dateTime = moment(dateTimeStr);
       if (dateTime.isValid()) {
         return toISODateTime(dateTime);
-      }
-    }
-    return '';
-  }
-
-  getDate = (dateTimeStr) => {
-    if (dateTimeStr) {
-      const dateTime = moment(dateTimeStr);
-      if (dateTime.isValid()) {
-        return toISODate(dateTime);
       }
     }
     return '';
@@ -141,7 +148,7 @@ export default class ManualPretrialCaseEntry extends React.Component<Props, Stat
       [PROPERTY_TYPES.NUMBER_OF_CHARGES]: [charges.length]
     };
     if (caseDispositionDate) caseEntity[PROPERTY_TYPES.CASE_DISPOSITION_DATE] = [this.getDateTime(caseDispositionDate)];
-    if (arrestDate) caseEntity[PROPERTY_TYPES.ARREST_DATE] = [this.getDate(arrestDate)];
+    if (arrestDate) caseEntity[PROPERTY_TYPES.ARREST_DATE_TIME] = [this.getDateTime(arrestDate)];
 
     const chargeEntities = charges.map((charge, index) => {
       const chargeEntity = {
@@ -159,7 +166,11 @@ export default class ManualPretrialCaseEntry extends React.Component<Props, Stat
       return chargeEntity;
     });
 
-    this.props.onSubmit(Immutable.fromJS(caseEntity), Immutable.fromJS(chargeEntities));
+    this.props.onSubmit({
+      pretrialCase: Immutable.fromJS(caseEntity),
+      charges: Immutable.fromJS(chargeEntities)
+    });
+    this.props.nextPage();
   }
 
   renderCaseInfo = () => {
@@ -171,7 +182,7 @@ export default class ManualPretrialCaseEntry extends React.Component<Props, Stat
         <PaddedRow>
           <Col lg={6}>
             <TitleLabel>Arrest Date:</TitleLabel>
-            <DatePicker
+            <DateTimePicker
                 value={arrestDate}
                 onChange={(date) => {
                   this.setState({ arrestDate: date });
@@ -179,7 +190,7 @@ export default class ManualPretrialCaseEntry extends React.Component<Props, Stat
           </Col>
           <Col lg={6}>
             <TitleLabel>Case Disposition Date:</TitleLabel>
-            <DatePicker
+            <DateTimePicker
                 value={caseDispositionDate}
                 onChange={(date) => {
                   this.setState({ caseDispositionDate: date });
@@ -234,7 +245,7 @@ export default class ManualPretrialCaseEntry extends React.Component<Props, Stat
   )
 
   renderDatePicker = (charge :Charge, field :string, onChange :(event :Object) => void) => (
-    <DatePicker
+    <DateTimePicker
         name={field}
         value={charge[field]}
         onChange={onChange} />
