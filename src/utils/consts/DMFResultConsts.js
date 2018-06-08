@@ -136,7 +136,9 @@ export const increaseDMFSeverity = (dmfResult, context) => {
       break;
 
     case RELEASE_TYPES.RELEASE_WITH_CONDITIONS:
-      releaseType = RELEASE_TYPES.MAXIMUM_CONDITIONS;
+      if (dmfResult[RESULT_CATEGORIES.CONDITIONS_LEVEL] === 3) {
+        releaseType = RELEASE_TYPES.MAXIMUM_CONDITIONS;
+      }
       break;
 
     default:

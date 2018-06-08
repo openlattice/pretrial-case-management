@@ -1,13 +1,40 @@
 import Immutable from 'immutable';
-import scenarios from './consts/ScoringTestConsts';
-import { getScoresAndRiskFactors } from './ScoringUtils';
+import psaScenarios from './consts/ScoringTestConsts';
+import dmfScenarios from './consts/DMFTestConsts';
+import { getScoresAndRiskFactors, calculateDMF } from './ScoringUtils';
+import { DMF } from './consts/Consts';
+import { RESULT_CATEGORIES } from './consts/DMFResultConsts';
 
 describe('ScoringUtils', () => {
 
   describe('Score values', () => {
 
-    describe('Provided scenarios', () => {
-      scenarios.forEach((scenario) => {
+    describe('Score DMFs', () => {
+      dmfScenarios.forEach((scenario, index) => {
+        Object.keys(scenario.expected).forEach((context) => {
+          test(`should correctly score DMF scenario ${index} with context ${context}`, () => {
+            const inputData = Immutable.fromJS(scenario.inputData).set(DMF.COURT_OR_BOOKING, context);
+            const dmf = calculateDMF(inputData, scenario.scores);
+
+            expect(dmf[RESULT_CATEGORIES.COLOR])
+              .toEqual(scenario.expected[context][RESULT_CATEGORIES.COLOR]);
+            expect(dmf[RESULT_CATEGORIES.RELEASE_TYPE])
+              .toEqual(scenario.expected[context][RESULT_CATEGORIES.RELEASE_TYPE]);
+            expect(dmf[RESULT_CATEGORIES.CONDITIONS_LEVEL])
+              .toEqual(scenario.expected[context][RESULT_CATEGORIES.CONDITIONS_LEVEL]);
+            expect(dmf[RESULT_CATEGORIES.CONDITION_1])
+              .toEqual(scenario.expected[context][RESULT_CATEGORIES.CONDITION_1]);
+            expect(dmf[RESULT_CATEGORIES.CONDITION_2])
+              .toEqual(scenario.expected[context][RESULT_CATEGORIES.CONDITION_2]);
+            expect(dmf[RESULT_CATEGORIES.CONDITION_3])
+              .toEqual(scenario.expected[context][RESULT_CATEGORIES.CONDITION_3]);
+          });
+        });
+      });
+    });
+
+    describe('Provided PSA scenarios', () => {
+      psaScenarios.forEach((scenario) => {
         const getBoolString = val => ((val === 'Yes') ? 'true' : 'false');
         const scenarioName = scenario.scenario;
 
