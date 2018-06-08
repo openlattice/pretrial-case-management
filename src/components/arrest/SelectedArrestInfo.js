@@ -6,7 +6,7 @@ import React from 'react';
 import styled from 'styled-components';
 import Immutable from 'immutable';
 
-import PretrialCard from './PretrialCard';
+import ArrestCard from './ArrestCard';
 import ChargeList from '../charges/ChargeList';
 import { formatValue, formatDateList } from '../../utils/Utils';
 import {
@@ -38,18 +38,18 @@ const ChargeContainer = styled.div`
 type Props = {
   propertyTypes :Object[],
   charges :Immutable.List<*>,
-  pretrialCaseDetails :Immutable.Map<*, *>
+  arrest :Immutable.Map<*, *>
 };
 
-export default class SelectedPretrialInfo extends React.Component<Props, *> {
+export default class SelectedArrestInfo extends React.Component<Props, *> {
 
-  getField = (fieldName :string) => this.props.pretrialCaseDetails.get(fieldName, '')
+  getField = (fieldName :string) => this.props.arrest.get(fieldName, '')
 
   getInfoItems = () => {
     const labels = [];
     this.props.propertyTypes.forEach((propertyType) => {
       const fqn = `${propertyType.type.namespace}.${propertyType.type.name}`;
-      const rawValue = this.props.pretrialCaseDetails.get(fqn);
+      const rawValue = this.props.arrest.get(fqn);
       if (rawValue) {
         const value = (propertyType.datatype === 'Date') ? formatDateList(rawValue) : formatValue(rawValue);
         labels.push(
@@ -63,19 +63,19 @@ export default class SelectedPretrialInfo extends React.Component<Props, *> {
   }
 
   render() {
-    const { pretrialCaseDetails, charges } = this.props;
-    if (!pretrialCaseDetails.size) return null;
+    const { arrest, charges } = this.props;
+    if (!arrest.size) return null;
     return (
       <InfoContainer>
-        <InfoHeader>Pretrial Case Processing</InfoHeader>
+        <InfoHeader>Arrest</InfoHeader>
         <CardContainer>
           <CardWrapper>
-            <PretrialCard pretrialCase={pretrialCaseDetails} />
+            <ArrestCard arrest={arrest} />
           </CardWrapper>
         </CardContainer>
         <ChargeContainer>
           <ChargeWrapper>
-            <ChargeList pretrialCaseDetails={pretrialCaseDetails} charges={charges} />
+            <ChargeList pretrialCaseDetails={arrest} charges={charges} />
           </ChargeWrapper>
         </ChargeContainer>
       </InfoContainer>

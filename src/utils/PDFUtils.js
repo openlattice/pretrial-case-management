@@ -273,7 +273,7 @@ const nvcaFlag = (doc :Object, yInit :number, value :string) :number => {
   let y = yInit;
   if (flagIsTrue) {
     doc.setFontSize(LARGE_FONT_SIZE);
-    doc.setFontType('bold')
+    doc.setFontType('bold');
   }
 
   doc.text(X_MARGIN + SCORE_OFFSET + SCORE_OFFSET, y, value);

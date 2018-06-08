@@ -5,7 +5,7 @@
 import React from 'react';
 import Immutable from 'immutable';
 import FontAwesome from 'react-fontawesome';
-import DatePicker from 'react-bootstrap-date-picker';
+import DateTimePicker from 'react-datetime';
 import styled from 'styled-components';
 import moment from 'moment';
 import randomUUID from 'uuid/v4';
@@ -14,12 +14,11 @@ import { FormControl, Col } from 'react-bootstrap';
 import StyledButton from '../../../components/buttons/StyledButton';
 import SearchableSelect from '../../../components/controls/SearchableSelect';
 import AllChargesList from '../../../utils/consts/AllChargesList';
-import DISPOSITIONS from '../../../utils/consts/DispositionConsts';
-import PLEAS from '../../../utils/consts/PleaConsts';
+import QUALIFIERS from '../../../utils/consts/QualifierConsts';
 import { CHARGE } from '../../../utils/consts/Consts';
 import type { Charge } from '../../../utils/consts/Consts';
 import { PROPERTY_TYPES } from '../../../utils/consts/DataModelConsts';
-import { toISODate, toISODateTime } from '../../../utils/Utils';
+import { toISODateTime } from '../../../utils/Utils';
 
 import {
   PaddedRow,
@@ -35,7 +34,8 @@ const {
   DISPOSITION_DATE,
   DISPOSITION,
   PLEA_DATE,
-  PLEA
+  PLEA,
+  QUALIFIER
 } = CHARGE;
 
 const Container = styled.div`
@@ -92,24 +92,41 @@ const ChargeTitle = styled.div`
 `;
 
 type Props = {
-  onSubmit :(pretrialCase :Immutable.Map<*, *>, charges :Immutable.List<*>) => void
+  defaultArrest :Immutable.Map<*, *>,
+  defaultCharges :Immutable.List<*>,
+  onSubmit :(pretrialCase :Immutable.Map<*, *>, charges :Immutable.List<*>) => void,
+  nextPage :() => void,
+  prevPage :() => void
 };
 
 type State = {
-  arrestDate :?string,
+  arrestDate :?Object,
   caseDispositionDate :?string,
   charges :Charge[]
 };
 
-export default class ManualPretrialCaseEntry extends React.Component<Props, State> {
+export default class SelectChargesContainer extends React.Component<Props, State> {
 
   constructor(props :Props) {
     super(props);
     this.state = {
-      arrestDate: null,
+      arrestDate: moment(props.defaultArrest.getIn([PROPERTY_TYPES.ARREST_DATE_TIME, 0])),
       caseDispositionDate: null,
-      charges: []
+      charges: this.formatChargeList(props.defaultCharges)
     };
+  }
+
+  formatChargeList = (chargeList :Immutable.List<*>) :Object[] => {
+    const result = [];
+    chargeList.forEach((charge) => {
+      result.push({
+        [STATUTE]: charge.getIn([PROPERTY_TYPES.CHARGE_STATUTE, 0]),
+        [DESCRIPTION]: charge.getIn([PROPERTY_TYPES.CHARGE_DESCRIPTION, 0]),
+        [DEGREE]: charge.getIn([PROPERTY_TYPES.CHARGE_DEGREE, 0]),
+        [DEGREE_SHORT]: charge.getIn([PROPERTY_TYPES.CHARGE_LEVEL, 0])
+      });
+    });
+    return result;
   }
 
   getDateTime = (dateTimeStr) => {
@@ -117,16 +134,6 @@ export default class ManualPretrialCaseEntry extends React.Component<Props, Stat
       const dateTime = moment(dateTimeStr);
       if (dateTime.isValid()) {
         return toISODateTime(dateTime);
-      }
-    }
-    return '';
-  }
-
-  getDate = (dateTimeStr) => {
-    if (dateTimeStr) {
-      const dateTime = moment(dateTimeStr);
-      if (dateTime.isValid()) {
-        return toISODate(dateTime);
       }
     }
     return '';
@@ -141,7 +148,7 @@ export default class ManualPretrialCaseEntry extends React.Component<Props, Stat
       [PROPERTY_TYPES.NUMBER_OF_CHARGES]: [charges.length]
     };
     if (caseDispositionDate) caseEntity[PROPERTY_TYPES.CASE_DISPOSITION_DATE] = [this.getDateTime(caseDispositionDate)];
-    if (arrestDate) caseEntity[PROPERTY_TYPES.ARREST_DATE] = [this.getDate(arrestDate)];
+    if (arrestDate) caseEntity[PROPERTY_TYPES.ARREST_DATE_TIME] = [this.getDateTime(arrestDate)];
 
     const chargeEntities = charges.map((charge, index) => {
       const chargeEntity = {
@@ -151,15 +158,15 @@ export default class ManualPretrialCaseEntry extends React.Component<Props, Stat
         [PROPERTY_TYPES.CHARGE_DEGREE]: [charge[DEGREE]],
         [PROPERTY_TYPES.CHARGE_LEVEL]: [charge[DEGREE_SHORT]]
       };
-      if (charge[DISPOSITION]) chargeEntity[PROPERTY_TYPES.DISPOSITION] = [charge[DISPOSITION]];
-      if (charge[DISPOSITION_DATE]) chargeEntity[PROPERTY_TYPES.DISPOSITION_DATE] =
-        [this.getDateTime(charge[DISPOSITION_DATE])];
-      if (charge[PLEA]) chargeEntity[PROPERTY_TYPES.PLEA] = [charge[PLEA]];
-      if (charge[PLEA_DATE]) chargeEntity[PROPERTY_TYPES.PLEA_DATE] = [this.getDateTime(charge[PLEA_DATE])];
+      if (charge[QUALIFIER]) chargeEntity[PROPERTY_TYPES.QUALIFIER] = [charge[QUALIFIER]];
       return chargeEntity;
     });
 
-    this.props.onSubmit(Immutable.fromJS(caseEntity), Immutable.fromJS(chargeEntities));
+    this.props.onSubmit({
+      pretrialCase: Immutable.fromJS(caseEntity),
+      charges: Immutable.fromJS(chargeEntities)
+    });
+    this.props.nextPage();
   }
 
   renderCaseInfo = () => {
@@ -167,11 +174,11 @@ export default class ManualPretrialCaseEntry extends React.Component<Props, Stat
     return (
       <CaseDetailsWrapper>
         <hr />
-        <SectionHeader>Case Details:</SectionHeader>
+        <SectionHeader>Arrest Details:</SectionHeader>
         <PaddedRow>
           <Col lg={6}>
             <TitleLabel>Arrest Date:</TitleLabel>
-            <DatePicker
+            <DateTimePicker
                 value={arrestDate}
                 onChange={(date) => {
                   this.setState({ arrestDate: date });
@@ -179,7 +186,7 @@ export default class ManualPretrialCaseEntry extends React.Component<Props, Stat
           </Col>
           <Col lg={6}>
             <TitleLabel>Case Disposition Date:</TitleLabel>
-            <DatePicker
+            <DateTimePicker
                 value={caseDispositionDate}
                 onChange={(date) => {
                   this.setState({ caseDispositionDate: date });
@@ -234,7 +241,7 @@ export default class ManualPretrialCaseEntry extends React.Component<Props, Stat
   )
 
   renderDatePicker = (charge :Charge, field :string, onChange :(event :Object) => void) => (
-    <DatePicker
+    <DateTimePicker
         name={field}
         value={charge[field]}
         onChange={onChange} />
@@ -262,31 +269,13 @@ export default class ManualPretrialCaseEntry extends React.Component<Props, Stat
           <ChargeTitle>{this.formatCharge(charge)}</ChargeTitle>
           <UnpaddedRow>
             <Col lg={3}>
-              <TitleLabel>Disposition Date</TitleLabel>
-              {this.renderDatePicker(charge, DISPOSITION_DATE, getOnSelect(DISPOSITION_DATE))}
-            </Col>
-            <Col lg={3}>
-              <TitleLabel>Disposition</TitleLabel>
+              <TitleLabel>Qualifier</TitleLabel>
               <SearchableSelect
-                  onSelect={getOnSelect(DISPOSITION)}
-                  options={this.formatSelectOptions(DISPOSITIONS)}
-                  searchPlaceholder="Select a disposition"
-                  value={charge[DISPOSITION]}
-                  onClear={getOnClear(DISPOSITION)}
-                  short />
-            </Col>
-            <Col lg={3}>
-              <TitleLabel>Plea Date</TitleLabel>
-              {this.renderDatePicker(charge, PLEA_DATE, getOnSelect(PLEA_DATE))}
-            </Col>
-            <Col lg={3}>
-              <TitleLabel>Plea</TitleLabel>
-              <SearchableSelect
-                  onSelect={getOnSelect(PLEA)}
-                  options={this.formatSelectOptions(PLEAS)}
-                  searchPlaceholder="Select a plea"
-                  value={charge[PLEA]}
-                  onClear={getOnClear(PLEA)}
+                  onSelect={getOnSelect(QUALIFIER)}
+                  options={this.formatSelectOptions(QUALIFIERS)}
+                  searchPlaceholder="Select a qualifier"
+                  value={charge[QUALIFIER]}
+                  onClear={getOnClear(QUALIFIER)}
                   short />
             </Col>
           </UnpaddedRow>

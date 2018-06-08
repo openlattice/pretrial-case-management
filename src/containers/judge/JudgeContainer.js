@@ -122,8 +122,9 @@ type Props = {
   },
   psaNeighborsById :Immutable.Map<*, *>,
   caseHistory :Immutable.List<*>,
+  manualCaseHistory :Immutable.List<*>,
   chargeHistory :Immutable.Map<*, *>,
-  arrestChargeHistory :Immutable.Map<*, *>,
+  manualChargeHistory :Immutable.Map<*, *>,
   sentenceHistory :Immutable.Map<*, *>,
   ftaHistory :Immutable.Map<*, *>
 }
@@ -211,8 +212,9 @@ class JudgeContainer extends React.Component<Props, State> {
     const scores = this.props.scoresAsMap.get(scoreId, Immutable.Map());
     const personId = neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborId'], '');
     const caseHistory = this.props.caseHistory.get(personId, Immutable.List());
+    const manualCaseHistory = this.props.manualCaseHistory.get(personId, Immutable.List());
     const chargeHistory = this.props.chargeHistory.get(personId, Immutable.Map());
-    const arrestChargeHistory = this.props.arrestChargeHistory.get(personId, Immutable.Map());
+    const manualChargeHistory = this.props.manualChargeHistory.get(personId, Immutable.Map());
     const sentenceHistory = this.props.sentenceHistory.get(personId, Immutable.Map());
     const ftaHistory = this.props.ftaHistory.get(personId, Immutable.Map());
     return (
@@ -226,8 +228,9 @@ class JudgeContainer extends React.Component<Props, State> {
           updateNotes={() => {}}
           submitData={() => {}}
           caseHistory={caseHistory}
+          manualCaseHistory={manualCaseHistory}
           chargeHistory={chargeHistory}
-          arrestChargeHistory={arrestChargeHistory}
+          manualChargeHistory={manualChargeHistory}
           sentenceHistory={sentenceHistory}
           ftaHistory={ftaHistory}
           key={scoreId}
@@ -357,8 +360,9 @@ function mapStateToProps(state) {
     loadingResults: review.get('loadingResults'),
     errorMesasge: review.get('errorMesasge'),
     caseHistory: review.get('caseHistory'),
+    manualCaseHistory: review.get('manualCaseHistory'),
     chargeHistory: review.get('chargeHistory'),
-    arrestChargeHistory: review.get('arrestChargeHistory'),
+    manualChargeHistory: review.get('manualChargeHistory'),
     sentenceHistory: review.get('sentenceHistory'),
     ftaHistory: review.get('ftaHistory')
   };

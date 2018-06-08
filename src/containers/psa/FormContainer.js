@@ -17,10 +17,11 @@ import { bindActionCreators } from 'redux';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import ConfirmationModal from '../../components/ConfirmationModalView';
 import SearchPersonContainer from '../person/SearchPersonContainer';
-import SelectPretrialCaseContainer from '../pages/pretrialcase/SelectPretrialCaseContainer';
+import SelectArrestContainer from '../pages/arrest/SelectArrestContainer';
+import SelectChargesContainer from '../pages/arrest/SelectChargesContainer';
 import InlineEditableControl from '../../components/controls/InlineEditableControl';
 import SelectedPersonInfo from '../../components/person/SelectedPersonInfo';
-import SelectedPretrialCaseInfo from '../../components/pretrial/SelectedPretrialInfo';
+import SelectedArrestInfo from '../../components/arrest/SelectedArrestInfo';
 import PSAInputForm from '../../components/psainput/PSAInputForm';
 import PSAResults from '../../components/psainput/PSAResults';
 import exportPDF from '../../utils/PDFUtils';
@@ -31,7 +32,7 @@ import * as PersonActionFactory from '../person/PersonActionFactory';
 import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
 import * as Routes from '../../core/router/Routes';
 
-import { toISODate, toISODateTime } from '../../utils/Utils';
+import { toISODateTime } from '../../utils/Utils';
 import { getScoresAndRiskFactors, calculateDMF, getDMFRiskFactors } from '../../utils/ScoringUtils';
 import {
   ButtonWrapper,
@@ -121,7 +122,7 @@ const INITIAL_STATE = Immutable.fromJS({
   notesId: undefined
 });
 
-const numPages = 3;
+const numPages = 4;
 
 type Props = {
   actions :{
@@ -129,6 +130,7 @@ type Props = {
       pretrialCase :Immutable.Map<*, *>,
       charges :Immutable.List<Immutable.Map<*, *>>
     }) => void,
+
     hardRestart :() => void;
     loadDataModel :() => void,
     loadNeighbors :(value :{
@@ -160,14 +162,14 @@ type Props = {
   dataModel :Immutable.Map<*, *>,
   entitySetLookup :Immutable.Map<*, *>,
   selectedPerson :Immutable.Map<*, *>,
+  arrestId :string,
   selectedPretrialCase :Immutable.Map<*, *>,
-  pretrialCaseOptions :Immutable.List<*>,
+  arrestOptions :Immutable.List<*>,
   charges :Immutable.List<*>,
   allCasesForPerson :Immutable.List<*>,
   allChargesForPerson :Immutable.List<*>,
   allSentencesForPerson :Immutable.List<*>,
   allFTAs :Immutable.List<*>,
-  chargesManuallyEntered :boolean,
   selectedPersonId :string,
   isLoadingCases :boolean,
   numCasesToLoad :number,
@@ -221,7 +223,7 @@ class Form extends React.Component<Props, State> {
       actions,
       location
     } = nextProps;
-    if (location.pathname.endsWith('3') && !this.props.location.pathname.endsWith('3')) {
+    if (location.pathname.endsWith('4') && !this.props.location.pathname.endsWith('4')) {
       actions.setPSAValues({
         newValues: tryAutofillFields(
           selectedPretrialCase,
@@ -286,12 +288,10 @@ class Form extends React.Component<Props, State> {
 
     values[ID_FIELD_NAMES.TIMESTAMP] = toISODateTime(moment());
 
-    if (this.props.chargesManuallyEntered) {
-      Object.assign(values, this.props.selectedPretrialCase.toJS());
-      values.charges = this.props.charges.toJS();
-    }
-    else {
-      values[ID_FIELD_NAMES.ARREST_ID] = [this.props.selectedPretrialCase.getIn([PROPERTY_TYPES.CASE_ID, 0])];
+    Object.assign(values, this.props.selectedPretrialCase.toJS());
+    values.charges = this.props.charges.toJS();
+    if (this.props.arrestId.length) {
+      values[ID_FIELD_NAMES.ARREST_ID] = [this.props.arrestId];
     }
 
     const config = psaConfig;
@@ -356,8 +356,8 @@ class Form extends React.Component<Props, State> {
     return (
       <div>
         <Divider />
-        <SelectedPretrialCaseInfo
-            pretrialCaseDetails={selectedPretrialCase}
+        <SelectedArrestInfo
+            arrest={selectedPretrialCase}
             charges={charges}
             propertyTypes={this.getPropertyTypes(PRETRIAL_CASES).toJS()} />
       </div>
@@ -421,7 +421,7 @@ class Form extends React.Component<Props, State> {
       selectedPretrialCase,
       charges,
       selectedPerson,
-      pretrialCaseOptions,
+      arrestOptions,
       allChargesForPerson,
       allSentencesForPerson,
       allFTAs
@@ -442,7 +442,7 @@ class Form extends React.Component<Props, State> {
                 selectedPretrialCase,
                 charges,
                 selectedPerson,
-                pretrialCaseOptions,
+                arrestOptions,
                 allChargesForPerson,
                 allSentencesForPerson,
                 allFTAs,
@@ -483,14 +483,14 @@ class Form extends React.Component<Props, State> {
         }} />
   );
 
-  getSelectPretrialCaseSection = () => {
+  getSelectArrestSection = () => {
     const {
       selectedPersonId,
       isLoadingCases,
       numCasesToLoad,
       numCasesLoaded,
       entitySetLookup,
-      pretrialCaseOptions,
+      arrestOptions,
       actions
     } = this.props;
     if (isLoadingCases) {
@@ -512,8 +512,8 @@ class Form extends React.Component<Props, State> {
         </LoadingContainer>);
     }
     return (
-      <SelectPretrialCaseContainer
-          caseOptions={pretrialCaseOptions}
+      <SelectArrestContainer
+          caseOptions={arrestOptions}
           nextPage={this.nextPage}
           prevPage={this.prevPage}
           onManualEntry={this.props.actions.addCaseAndCharges}
@@ -521,6 +521,17 @@ class Form extends React.Component<Props, State> {
             actions.selectPretrialCase({ selectedPretrialCase: selectedCase });
             this.nextPage();
           }} />
+    );
+  }
+
+  getSelectChargesSection = () => {
+    return (
+      <SelectChargesContainer
+          defaultArrest={this.props.selectedPretrialCase}
+          defaultCharges={this.props.charges}
+          nextPage={this.nextPage}
+          prevPage={this.prevPage}
+          onSubmit={this.props.actions.addCaseAndCharges} />
     );
   }
 
@@ -543,7 +554,7 @@ class Form extends React.Component<Props, State> {
     } = this.state;
     if (!scoresWereGenerated) return null;
     let header;
-    // if (isSubmitting) header = <Status>Submitting...</Status>;
+
     if (isSubmitting) {
       header = (
         <div>
@@ -595,8 +606,9 @@ class Form extends React.Component<Props, State> {
             <StyledTopFormNavBuffer />
             <Switch>
               <Route path={`${Routes.PSA_FORM}/1`} render={this.getSearchPeopleSection} />;
-              <Route path={`${Routes.PSA_FORM}/2`} render={this.getSelectPretrialCaseSection} />;
-              <Route path={`${Routes.PSA_FORM}/3`} render={this.getPsaInputForm} />;
+              <Route path={`${Routes.PSA_FORM}/2`} render={this.getSelectArrestSection} />;
+              <Route path={`${Routes.PSA_FORM}/3`} render={this.getSelectChargesSection} />;
+              <Route path={`${Routes.PSA_FORM}/4`} render={this.getPsaInputForm} />;
               <Redirect from={Routes.PSA_FORM} to={`${Routes.PSA_FORM}/1`} />
               <Redirect from={Routes.FORMS} to={Routes.DASHBOARD} />
             </Switch>
@@ -616,15 +628,15 @@ function mapStateToProps(state :Immutable.Map<*, *>) :Object {
   return {
     dataModel: psaForm.get('dataModel'),
     entitySetLookup: psaForm.get('entitySetLookup'),
-    pretrialCaseOptions: psaForm.get('pretrialCaseOptions'),
+    arrestOptions: psaForm.get('arrestOptions'),
     charges: psaForm.get('charges'),
     selectedPerson: psaForm.get('selectedPerson'),
+    arrestId: psaForm.get('arrestId'),
     selectedPretrialCase: psaForm.get('selectedPretrialCase'),
     allCasesForPerson: psaForm.get('allCasesForPerson'),
     allChargesForPerson: psaForm.get('allChargesForPerson'),
     allSentencesForPerson: psaForm.get('allSentencesForPerson'),
     allFTAs: psaForm.get('allFTAs'),
-    chargesManuallyEntered: psaForm.get('chargesManuallyEntered'),
     psaForm: psaForm.get('psa'),
     isSubmitted: submit.get('submitted'),
     isSubmitting: submit.get('submitting'),

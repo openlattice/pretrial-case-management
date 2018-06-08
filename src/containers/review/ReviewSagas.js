@@ -42,7 +42,9 @@ function* getCasesAndCharges(neighbors) {
 
   let pretrialCaseOptionsWithDate = Immutable.List();
   let pretrialCaseOptionsWithoutDate = Immutable.List();
+  let allManualCases = Immutable.List();
   let allCharges = Immutable.List();
+  let allManualCharges = Immutable.List();
   let allArrestCharges = Immutable.List();
   let allSentences = Immutable.List();
   let allFTAs = Immutable.List();
@@ -51,7 +53,7 @@ function* getCasesAndCharges(neighbors) {
     const entitySet = neighbor.neighborEntitySet;
     if (entitySet) {
       const { name } = entitySet;
-      if (name === ENTITY_SETS.PRETRIAL_CASES || name === ENTITY_SETS.MANUAL_PRETRIAL_CASES) {
+      if (name === ENTITY_SETS.PRETRIAL_CASES) {
         const caseObj = neighborDetails.set('id', neighbor.neighborId);
         const arrList = caseObj.get(
           PROPERTY_TYPES.ARREST_DATE,
@@ -64,8 +66,14 @@ function* getCasesAndCharges(neighbors) {
           pretrialCaseOptionsWithoutDate = pretrialCaseOptionsWithoutDate.push(caseObj);
         }
       }
-      else if (name === ENTITY_SETS.CHARGES || name === ENTITY_SETS.MANUAL_CHARGES) {
+      else if (name === ENTITY_SETS.MANUAL_PRETRIAL_CASES) {
+        allManualCases = allManualCases.push(neighborDetails);
+      }
+      else if (name === ENTITY_SETS.CHARGES) {
         allCharges = allCharges.push(neighborDetails);
+      }
+      else if (name === ENTITY_SETS.MANUAL_CHARGES) {
+        allManualCharges = allManualCharges.push(neighborDetails);
       }
       else if (name === ENTITY_SETS.ARREST_CHARGES) {
         allArrestCharges = allArrestCharges.push(neighborDetails);
@@ -82,7 +90,9 @@ function* getCasesAndCharges(neighbors) {
   const allCases = pretrialCaseOptionsWithDate.concat(pretrialCaseOptionsWithoutDate);
   return {
     allCases,
+    allManualCases,
     allCharges,
+    allManualCharges,
     allArrestCharges,
     allSentences,
     allFTAs
@@ -135,22 +145,24 @@ function* loadCaseHistoryWorker(action :SequenceAction) :Generator<*, *, *> {
 
     const {
       allCases,
+      allManualCases,
       allCharges,
-      allArrestCharges,
+      allManualCharges,
       allSentences,
       allFTAs
     } = yield getCasesAndCharges(neighbors);
 
     const chargesByCaseId = getMapByCaseId(allCharges, PROPERTY_TYPES.CHARGE_ID);
-    const arrestChargesByCaseId = getMapByCaseId(allArrestCharges, PROPERTY_TYPES.CHARGE_ID);
+    const manualChargesByCaseId = getMapByCaseId(allManualCharges, PROPERTY_TYPES.CHARGE_ID);
     const sentencesByCaseId = getMapByCaseId(allSentences, PROPERTY_TYPES.GENERAL_ID);
 
     yield put(loadCaseHistory.success(action.id, {
       personId,
       allCases,
+      allManualCases,
       chargesByCaseId,
+      manualChargesByCaseId,
       sentencesByCaseId,
-      arrestChargesByCaseId,
       allFTAs
     }));
 
@@ -266,6 +278,7 @@ function* downloadPSAReviewPDFWorker(action :SequenceAction) :Generator<*, *, *>
     const {
       allCases,
       allCharges,
+      allManualCharges,
       allArrestCharges,
       allSentences,
       allFTAs
@@ -308,16 +321,10 @@ function* downloadPSAReviewPDFWorker(action :SequenceAction) :Generator<*, *, *>
       .set('dmfRiskFactors', neighbors.getIn([ENTITY_SETS.DMF_RISK_FACTORS, 'neighborDetails'], Immutable.Map()))
       .set('dmf', formattedDMF);
 
-    const selectedCase = neighbors.getIn(
-      [ENTITY_SETS.ARREST_CASES, 'neighborDetails'],
-      neighbors.getIn(
-        [ENTITY_SETS.MANUAL_PRETRIAL_CASES, 'neighborDetails'],
-        Immutable.Map()
-      )
-    );
+    const selectedCase = neighbors.getIn([ENTITY_SETS.MANUAL_PRETRIAL_CASES, 'neighborDetails'], Immutable.Map());
     const caseId = selectedCase.getIn([PROPERTY_TYPES.CASE_ID, 0], '');
 
-    const selectedCharges = (neighbors.get(ENTITY_SETS.ARREST_CASES, false) ? allArrestCharges : allCharges)
+    const selectedCharges = allManualCharges
       .filter(chargeObj => chargeObj.getIn([PROPERTY_TYPES.CHARGE_ID, 0], '').split('|')[0] === caseId);
 
     const selectedPerson = neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborDetails'], Immutable.Map());

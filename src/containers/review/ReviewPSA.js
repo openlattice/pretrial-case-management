@@ -169,8 +169,9 @@ type Props = {
   psaNeighborsById :Immutable.Map<*, *>,
   allFilers :Immutable.Set<*>,
   caseHistory :Immutable.List<*>,
+  manualCaseHistory :Immutable.List<*>,
   chargeHistory :Immutable.Map<*, *>,
-  arrestChargeHistory :Immutable.Map<*, *>,
+  manualChargeHistory :Immutable.Map<*, *>,
   sentenceHistory :Immutable.Map<*, *>,
   ftaHistory :Immutable.Map<*, *>,
   readOnly :boolean
@@ -324,8 +325,9 @@ class ReviewPSA extends React.Component<Props, State> {
     const scores = this.props.scoresAsMap.get(scoreId, Immutable.Map());
     const personId = neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborId'], '');
     const caseHistory = this.props.caseHistory.get(personId, Immutable.List());
+    const manualCaseHistory = this.props.manualCaseHistory.get(personId, Immutable.List());
     const chargeHistory = this.props.chargeHistory.get(personId, Immutable.Map());
-    const arrestChargeHistory = this.props.arrestChargeHistory.get(personId, Immutable.Map());
+    const manualChargeHistory = this.props.manualChargeHistory.get(personId, Immutable.Map());
     const sentenceHistory = this.props.sentenceHistory.get(personId, Immutable.Map());
     const ftaHistory = this.props.ftaHistory.get(personId, Immutable.Map());
     return (
@@ -335,12 +337,13 @@ class ReviewPSA extends React.Component<Props, State> {
           entityKeyId={scoreId}
           downloadFn={this.props.actions.downloadPSAReviewPDF}
           loadCaseHistoryFn={this.props.actions.loadCaseHistory}
-          updateScoresAndRiskFactors={this.updateScoresAndRiskFactors}
+          updateScoresAndRiskFactors={this.props.actions.updateScoresAndRiskFactors}
           updateNotes={this.updateNotes}
           submitData={this.props.actions.submit}
           caseHistory={caseHistory}
+          manualCaseHistory={manualCaseHistory}
           chargeHistory={chargeHistory}
-          arrestChargeHistory={arrestChargeHistory}
+          manualChargeHistory={manualChargeHistory}
           sentenceHistory={sentenceHistory}
           ftaHistory={ftaHistory}
           readOnly={this.props.readOnly}
@@ -501,36 +504,6 @@ class ReviewPSA extends React.Component<Props, State> {
     </SortContainer>
   )
 
-  updateScoresAndRiskFactors = (
-    scoresId,
-    scoresEntity,
-    riskFactorsEntitySetId,
-    riskFactorsId,
-    riskFactorsEntity,
-    dmfEntitySetId,
-    dmfId,
-    dmfEntity,
-    dmfRiskFactorsEntitySetId,
-    dmfRiskFactorsId,
-    dmfRiskFactorsEntity
-  ) => {
-    const { scoresEntitySetId, actions } = this.props;
-    actions.updateScoresAndRiskFactors({
-      scoresEntitySetId,
-      scoresId,
-      scoresEntity,
-      riskFactorsEntitySetId,
-      riskFactorsId,
-      riskFactorsEntity,
-      dmfEntitySetId,
-      dmfId,
-      dmfEntity,
-      dmfRiskFactorsEntitySetId,
-      dmfRiskFactorsId,
-      dmfRiskFactorsEntity
-    });
-  }
-
   updateNotes = (notes, entityId, entitySetId, propertyTypes) => {
     this.props.actions.updateNotes({
       notes,
@@ -605,8 +578,9 @@ function mapStateToProps(state) {
     loadingResults: review.get('loadingResults'),
     errorMesasge: review.get('errorMesasge'),
     caseHistory: review.get('caseHistory'),
+    manualCaseHistory: review.get('manualCaseHistory'),
     chargeHistory: review.get('chargeHistory'),
-    arrestChargeHistory: review.get('arrestChargeHistory'),
+    manualChargeHistory: review.get('manualChargeHistory'),
     sentenceHistory: review.get('sentenceHistory'),
     ftaHistory: review.get('ftaHistory'),
     readOnly: review.get('readOnly')
