@@ -310,7 +310,7 @@ export const getDMFRiskFactors = (inputData) => {
 export const calculateDMF = (inputData, scores) => {
   const extradited = inputData.get(DMF.EXTRADITED) === 'true';
   const stepTwo = inputData.get(DMF.STEP_2_CHARGES) === 'true';
-  const currentViolentOffense = inputData.get(CURRENT_VIOLENT_OFFENSE) === 'true';
+  const currentViolentOffense = inputData.get(PSA.CURRENT_VIOLENT_OFFENSE) === 'true';
   const secondaryRelease = inputData.get(DMF.SECONDARY_RELEASE_CHARGES) === 'true';
   const nvca = scores.nvcaFlag;
   const violent = currentViolentOffense && nvca;
