@@ -14,12 +14,11 @@ import { FormControl, Col } from 'react-bootstrap';
 import StyledButton from '../../../components/buttons/StyledButton';
 import SearchableSelect from '../../../components/controls/SearchableSelect';
 import AllChargesList from '../../../utils/consts/AllChargesList';
-import DISPOSITIONS from '../../../utils/consts/DispositionConsts';
-import PLEAS from '../../../utils/consts/PleaConsts';
+import QUALIFIERS from '../../../utils/consts/QualifierConsts';
 import { CHARGE } from '../../../utils/consts/Consts';
 import type { Charge } from '../../../utils/consts/Consts';
 import { PROPERTY_TYPES } from '../../../utils/consts/DataModelConsts';
-import { toISODate, toISODateTime } from '../../../utils/Utils';
+import { toISODateTime } from '../../../utils/Utils';
 
 import {
   PaddedRow,
@@ -35,7 +34,8 @@ const {
   DISPOSITION_DATE,
   DISPOSITION,
   PLEA_DATE,
-  PLEA
+  PLEA,
+  QUALIFIER
 } = CHARGE;
 
 const Container = styled.div`
@@ -158,11 +158,7 @@ export default class SelectChargesContainer extends React.Component<Props, State
         [PROPERTY_TYPES.CHARGE_DEGREE]: [charge[DEGREE]],
         [PROPERTY_TYPES.CHARGE_LEVEL]: [charge[DEGREE_SHORT]]
       };
-      if (charge[DISPOSITION]) chargeEntity[PROPERTY_TYPES.DISPOSITION] = [charge[DISPOSITION]];
-      if (charge[DISPOSITION_DATE]) chargeEntity[PROPERTY_TYPES.DISPOSITION_DATE] =
-        [this.getDateTime(charge[DISPOSITION_DATE])];
-      if (charge[PLEA]) chargeEntity[PROPERTY_TYPES.PLEA] = [charge[PLEA]];
-      if (charge[PLEA_DATE]) chargeEntity[PROPERTY_TYPES.PLEA_DATE] = [this.getDateTime(charge[PLEA_DATE])];
+      if (charge[QUALIFIER]) chargeEntity[PROPERTY_TYPES.QUALIFIER] = [charge[QUALIFIER]];
       return chargeEntity;
     });
 
@@ -273,31 +269,13 @@ export default class SelectChargesContainer extends React.Component<Props, State
           <ChargeTitle>{this.formatCharge(charge)}</ChargeTitle>
           <UnpaddedRow>
             <Col lg={3}>
-              <TitleLabel>Disposition Date</TitleLabel>
-              {this.renderDatePicker(charge, DISPOSITION_DATE, getOnSelect(DISPOSITION_DATE))}
-            </Col>
-            <Col lg={3}>
-              <TitleLabel>Disposition</TitleLabel>
+              <TitleLabel>Qualifier</TitleLabel>
               <SearchableSelect
-                  onSelect={getOnSelect(DISPOSITION)}
-                  options={this.formatSelectOptions(DISPOSITIONS)}
-                  searchPlaceholder="Select a disposition"
-                  value={charge[DISPOSITION]}
-                  onClear={getOnClear(DISPOSITION)}
-                  short />
-            </Col>
-            <Col lg={3}>
-              <TitleLabel>Plea Date</TitleLabel>
-              {this.renderDatePicker(charge, PLEA_DATE, getOnSelect(PLEA_DATE))}
-            </Col>
-            <Col lg={3}>
-              <TitleLabel>Plea</TitleLabel>
-              <SearchableSelect
-                  onSelect={getOnSelect(PLEA)}
-                  options={this.formatSelectOptions(PLEAS)}
-                  searchPlaceholder="Select a plea"
-                  value={charge[PLEA]}
-                  onClear={getOnClear(PLEA)}
+                  onSelect={getOnSelect(QUALIFIER)}
+                  options={this.formatSelectOptions(QUALIFIERS)}
+                  searchPlaceholder="Select a qualifier"
+                  value={charge[QUALIFIER]}
+                  onClear={getOnClear(QUALIFIER)}
                   short />
             </Col>
           </UnpaddedRow>

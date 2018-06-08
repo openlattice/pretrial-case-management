@@ -162,7 +162,8 @@ export type Charge = {
   dispositionDate :string,
   disposition :string,
   pleaDate :string,
-  plea :string
+  plea :string,
+  qualifier :string
 };
 
 export const CHARGE = {
@@ -174,7 +175,8 @@ export const CHARGE = {
   DISPOSITION_DATE: 'dispositionDate',
   DISPOSITION: 'disposition',
   PLEA_DATE: 'pleaDate',
-  PLEA: 'plea'
+  PLEA: 'plea',
+  QUALIFIER: 'qualifier'
 };
 
 export const FORM_IDS = {
