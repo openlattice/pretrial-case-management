@@ -112,9 +112,9 @@ const INITIAL_STATE = Immutable.fromJS({
     ftaTotal: 0,
     ncaTotal: 0,
     nvcaTotal: 0,
-    ftaScale: 0,
-    ncaScale: 0,
-    nvcaFlag: false
+    [PROPERTY_TYPES.FTA_SCALE]: [0],
+    [PROPERTY_TYPES.NCA_SCALE]: [0],
+    [PROPERTY_TYPES.NVCA_FLAG]: [false]
   },
   dmf: {},
   scoresWereGenerated: false,
@@ -273,7 +273,7 @@ class Form extends React.Component<Props, State> {
       {},
       this.props.psaForm.toJS(),
       riskFactors,
-      scores,
+      scores.toJS(),
       dmf
     );
     values[PSA.NOTES] = this.state.notes;
@@ -322,12 +322,6 @@ class Form extends React.Component<Props, State> {
     this.handlePageChange(prevPage);
   }
 
-  getFormattedScores = scores => ({
-    [NVCA_FLAG]: [scores.nvcaFlag],
-    [NCA_SCALE]: [scores.ncaScale],
-    [FTA_SCALE]: [scores.ftaScale]
-  })
-
   generateScores = (e) => {
     const { riskFactors, scores } = getScoresAndRiskFactors(this.props.psaForm);
     const dmf = calculateDMF(this.props.psaForm, scores);
@@ -339,8 +333,7 @@ class Form extends React.Component<Props, State> {
       dmf,
       scoresWereGenerated: true
     });
-    const formattedScores = this.getFormattedScores(scores);
-    this.submitEntities(formattedScores, riskFactors, dmf);
+    this.submitEntities(scores, riskFactors, dmf);
   }
 
   clear = () => {
@@ -428,10 +421,10 @@ class Form extends React.Component<Props, State> {
     } = this.props;
 
     const data = Immutable.fromJS(this.state)
+      .set('scores', this.state.scores)
       .set('riskFactors', this.setMultimapToMap(this.state.riskFactors))
       .set('psaRiskFactors', Immutable.fromJS(this.state.riskFactors))
-      .set('dmfRiskFactors', Immutable.fromJS(this.state.dmfRiskFactors))
-      .set('psaScores', Immutable.fromJS(this.getFormattedScores(this.state.scores)));
+      .set('dmfRiskFactors', Immutable.fromJS(this.state.dmfRiskFactors));
 
     return (
       <ButtonWrapper>
