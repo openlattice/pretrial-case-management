@@ -36,7 +36,11 @@ const ViolentTag = styled(ChargeTag)`
   background-color: #992619;
 `;
 
-const ChargeHeaderItem = styled(ChargeItem)`
+const PaddedChargeItem = styled(ChargeItem)`
+  padding-bottom: 15px;
+`;
+
+const ChargeHeaderItem = styled(PaddedChargeItem)`
   width: 100px;
   font-weight: bold;
 `;
@@ -95,6 +99,11 @@ export default class ChargeList extends React.Component<Props, *> {
     );
   }
 
+  renderQualifier = (charge :Immutable.Map<*, *>) => (
+    this.props.historical ? null : (
+      <PaddedChargeItem>{formatValue(charge.get(PROPERTY_TYPES.QUALIFIER, Immutable.List()))}</PaddedChargeItem>
+    ))
+
   getChargeList = () => {
     const rows = this.props.charges.map((charge, index) => {
       if (!charge.get(CHARGE_STATUTE, Immutable.List()).size) {
@@ -124,6 +133,7 @@ export default class ChargeList extends React.Component<Props, *> {
             {this.renderChargeDetails(charge)}
             {this.renderTags(charge)}
           </ChargeItem>
+          {this.renderQualifier(charge)}
         </ChargeRow>
       );
     });

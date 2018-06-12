@@ -61,7 +61,8 @@ const {
   PLEA,
   PLEA_DATE,
   DISPOSITION,
-  DISPOSITION_DATE
+  DISPOSITION_DATE,
+  QUALIFIER
 } = PROPERTY_TYPES;
 
 const LARGE_FONT_SIZE = 15;
@@ -393,6 +394,15 @@ const charges = (
         const dispositionLines = doc.splitTextToSize(getDispositionText(charge), X_MAX - (2 * X_MARGIN));
         doc.text(X_MARGIN + SCORE_OFFSET, y, dispositionLines);
         y += dispositionLines.length * Y_INC_SMALL;
+      }
+      else {
+        const qualifierText = formatValue(charge.get(QUALIFIER, Immutable.List()));
+        if (qualifierText.length) {
+          doc.setFontType('italic');
+          doc.text(X_MARGIN * 2, y, qualifierText);
+          doc.setFontType('regular');
+          y += Y_INC_SMALL;
+        }
       }
       thinLine(doc, y);
       y += Y_INC;

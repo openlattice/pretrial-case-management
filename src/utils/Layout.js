@@ -283,10 +283,10 @@ export const ChargeRow = styled.tr`
 
 export const ChargeItem = styled.td`
   padding: 15px 15px 0 15px;
+  border-left: 1px solid #bbb;
 
   &:first-child {
-    border-right: 1px solid #bbb;
-    padding-bottom: 15px;
+    border-left: none;
   }
 `;
 
