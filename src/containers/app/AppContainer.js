@@ -29,7 +29,6 @@ const AppWrapper = styled.div`
   display: flex;
   flex-direction: column;
   height: 100%;
-  overflow: auto;
   width: 100%;
 `;
 

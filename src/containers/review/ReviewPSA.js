@@ -313,6 +313,7 @@ class ReviewPSA extends React.Component<Props, State> {
 
     return (
       <div>
+        {this.renderPagination(items.length)}
         {items.slice(start, start + MAX_RESULTS).map(([scoreId, neighbors]) => this.renderRow(scoreId, neighbors))}
         {this.renderPagination(items.length)}
       </div>
@@ -515,6 +516,10 @@ class ReviewPSA extends React.Component<Props, State> {
 
   updatePage = (start) => {
     this.setState({ filters: Object.assign({}, this.state.filters, { start }) });
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
   }
 
   renderPagination = (numResults) => {
