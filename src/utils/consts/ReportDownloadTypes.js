@@ -20,8 +20,7 @@ export const SUMMARY_REPORT = {
   [ENTITY_SETS.DMF_RESULTS]: {
     S2: 'S2',
     S4: 'S4',
-    [PROPERTY_TYPES.RELEASE_TYPE]: 'Final PSA Recommendation',
-    [PROPERTY_TYPES.CONDITIONS_LEVEL]: 'Conditions Level'
+    [PROPERTY_TYPES.COLOR]: 'DMF Color'
   }
 };
 
