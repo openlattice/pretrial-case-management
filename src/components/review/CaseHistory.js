@@ -11,6 +11,7 @@ import { formatDateList } from '../../utils/Utils';
 import { InlineBold } from '../../utils/Layout';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import {
+  chargeFieldIsViolent,
   degreeFieldIsMisdemeanor,
   degreeFieldIsFelony,
   dispositionFieldIsGuilty
@@ -83,10 +84,13 @@ const CaseHistory = ({ caseHistory, chargeHistory } :Props) => {
   let numMisdemeanorConvictions = 0;
   let numFelonyCharges = 0;
   let numFelonyConvictions = 0;
+  let numViolentCharges = 0;
+  let numViolentConvictions = 0;
 
   chargeHistory.valueSeq().forEach((chargeList) => {
     chargeList.forEach((charge) => {
       const degreeField = charge.get(PROPERTY_TYPES.CHARGE_LEVEL, Immutable.List());
+      const chargeField = charge.get(PROPERTY_TYPES.CHARGE_STATUTE, Immutable.List());
       const convicted = dispositionFieldIsGuilty(charge.get(PROPERTY_TYPES.DISPOSITION, Immutable.List()));
       if (degreeFieldIsMisdemeanor(degreeField)) {
         numMisdemeanorCharges += 1;
@@ -95,6 +99,11 @@ const CaseHistory = ({ caseHistory, chargeHistory } :Props) => {
       else if (degreeFieldIsFelony(degreeField)) {
         numFelonyCharges += 1;
         if (convicted) numFelonyConvictions += 1;
+      }
+
+      if (chargeFieldIsViolent(chargeField)) {
+        numViolentCharges += 1;
+        if (convicted) numViolentConvictions += 1;
       }
     });
   });
@@ -111,7 +120,7 @@ const CaseHistory = ({ caseHistory, chargeHistory } :Props) => {
             <InfoItem><InfoHeader>Case #: </InfoHeader>{caseNum}</InfoItem>
             <InfoItem><InfoHeader>File Date: </InfoHeader>{fileDate}</InfoItem>
           </InfoRow>
-          <ChargeList pretrialCaseDetails={caseObj} charges={charges} detailed />
+          <ChargeList pretrialCaseDetails={caseObj} charges={charges} detailed historical />
           <hr />
         </div>
       );
@@ -140,6 +149,16 @@ const CaseHistory = ({ caseHistory, chargeHistory } :Props) => {
             <StatsItem>
               <InlineBold>Num felony convictions: </InlineBold>
               <StatsCount>{numFelonyConvictions}</StatsCount>
+            </StatsItem>
+          </StatsGroup>
+          <StatsGroup>
+            <StatsItem>
+              <InlineBold>Num violent charges: </InlineBold>
+              <StatsCount>{numViolentCharges}</StatsCount>
+            </StatsItem>
+            <StatsItem>
+              <InlineBold>Num violent convictions: </InlineBold>
+              <StatsCount>{numViolentConvictions}</StatsCount>
             </StatsItem>
           </StatsGroup>
         </StatsWrapper>

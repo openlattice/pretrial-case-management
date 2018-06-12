@@ -56,12 +56,6 @@ import { CONTEXT, DMF, ID_FIELD_NAMES, NOTES, PSA } from '../../utils/consts/Con
 import { PROPERTY_TYPES, ENTITY_SETS } from '../../utils/consts/DataModelConsts';
 
 const {
-  NVCA_FLAG,
-  NCA_SCALE,
-  FTA_SCALE
-} = PROPERTY_TYPES;
-
-const {
   PEOPLE,
   PRETRIAL_CASES,
   RELEASE_RECOMMENDATIONS
