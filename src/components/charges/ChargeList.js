@@ -44,21 +44,27 @@ const ChargeHeaderItem = styled(ChargeItem)`
 type Props = {
   charges :Immutable.List<*>,
   pretrialCaseDetails :Immutable.Map<*, *>,
-  detailed? :boolean
+  detailed? :boolean,
+  historical? :boolean
 };
 
 export default class ChargeList extends React.Component<Props, *> {
 
   static defaultProps = {
-    detailed: false
+    detailed: false,
+    historical: false
   };
 
   renderTags = (charge :Immutable.Map<*, *>) => {
     let mostSerious = false;
-    const violent = getAllViolentCharges(Immutable.fromJS([charge])).size > 0;
+
+    const statuteField = charge.get(CHARGE_STATUTE, Immutable.List());
+    const violent = this.props.historical
+      ? chargeFieldIsViolent(statuteField)
+      : getAllViolentCharges(Immutable.fromJS([charge])).size > 0;
 
     const mostSeriousNumField = this.props.pretrialCaseDetails.get(MOST_SERIOUS_CHARGE_NO, Immutable.List());
-    charge.get(CHARGE_STATUTE, Immutable.List()).forEach((chargeNum) => {
+    statuteField.forEach((chargeNum) => {
       mostSeriousNumField.forEach((mostSeriousNum) => {
         if (mostSeriousNum === chargeNum) mostSerious = true;
       });
