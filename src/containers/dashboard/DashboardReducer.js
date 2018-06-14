@@ -7,7 +7,8 @@ import { loadDashboardData } from './DashboardActionFactory';
 
 const INITIAL_STATE = Immutable.fromJS({
   dashboardData: Immutable.Map(),
-  isLoading: false
+  isLoading: false,
+  error: false
 });
 
 export default function peopleReducer(state = INITIAL_STATE, action) {
@@ -15,9 +16,9 @@ export default function peopleReducer(state = INITIAL_STATE, action) {
 
     case loadDashboardData.case(action.type): {
       return loadDashboardData.reducer(state, action, {
-        REQUEST: () => state.set('dashboardData', Immutable.Map()).set('isLoading', true),
-        SUCCESS: () => state.set('dashboardData', Immutable.fromJS(action.value)),
-        FAILURE: () => state.set('dashboardData', Immutable.Map()),
+        REQUEST: () => state.set('dashboardData', Immutable.Map()).set('isLoading', true).set('error', false),
+        SUCCESS: () => state.set('dashboardData', Immutable.fromJS(action.value)).set('error', false),
+        FAILURE: () => state.set('dashboardData', Immutable.Map()).set('error', true),
         FINALLY: () => state.set('isLoading', false)
       });
     }
