@@ -99,6 +99,11 @@ const DashboardNav = () => (
             name={Routes.JUDGE_VIEW}>
           Judges
         </StyledNavLink>
+        <StyledNavLink
+            to={Routes.VISUALIZE_DASHBOARD}
+            name={Routes.VISUALIZE_DASHBOARD}>
+          Dashboard
+        </StyledNavLink>
       </StyledLinksWrapper>
     </StyledNavWrapper>
     <StyledNavWrapper>

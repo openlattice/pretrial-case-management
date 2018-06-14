@@ -7,6 +7,7 @@ import { fork } from 'redux-saga/effects';
 
 import * as PersonSagas from '../../containers/person/PersonSagas';
 import * as PeopleSagas from '../../containers/people/PeopleSagas';
+import * as DashboardSagas from '../../containers/dashboard/DashboardSagas';
 import * as DataSagas from '../../utils/data/DataSagas';
 import * as PsaSagas from '../../containers/psa/FormSagas';
 import * as ReviewSagas from '../../containers/review/ReviewSagas';
@@ -23,6 +24,9 @@ export default function* sagas() :Generator<*, *, *> {
     fork(AuthSagas.watchAuthFailure),
     fork(AuthSagas.watchAuthExpired),
     fork(AuthSagas.watchLogout),
+
+    // DashboardSagas
+    fork(DashboardSagas.loadDashboardDataWatcher),
 
     // DataSagas
     fork(DataSagas.deleteEntityWatcher),

@@ -7,7 +7,8 @@ import { Redirect, Route, Switch } from 'react-router-dom';
 import styled from 'styled-components';
 
 import DashboardNav from './DashboardNav';
-import FormsContainer from '../../containers/dashboard/FormsContainer';
+import DashboardContainer from '../../containers/dashboard/DashboardContainer';
+import FormsContainer from '../../containers/forms/FormsContainer';
 import NewPersonContainer from '../../containers/person/NewPersonContainer';
 import PeopleContainer from '../../containers/people/PeopleContainer';
 import PersonDetailsContainer from '../../containers/people/PersonDetailsContainer';
@@ -40,6 +41,7 @@ const Dashboard = () => (
         <Route path={Routes.JUDGE_VIEW} component={JudgeContainer} />
         <Route path={Routes.REVIEW_FORMS} component={ReviewPSA} />
         <Route path={Routes.VOICE_ENROLLMENT} component={EnrollVoice} />
+        <Route path={Routes.VISUALIZE_DASHBOARD} component={DashboardContainer} />
         <Redirect from={Routes.DASHBOARD} to={Routes.CREATE_FORMS} />
       </Switch>
     </StyledMainWrapper>
