@@ -71,6 +71,14 @@ const ChartTitle = styled.div`
   margin-bottom: 10px;
 `;
 
+const ErrorMessage = styled.div`
+  color: #cc0000;
+  font-size: 18px;
+  font-weight: bold;
+  text-align: center;
+  margin-top: 40px;
+`;
+
 const CHART_HEIGHT = 300;
 const CHART_WIDTH = 600;
 
@@ -99,7 +107,8 @@ type Props = {
     loadDashboardData :() => void
   },
   dashboardData :Immutable.Map<*, *>,
-  isLoading :boolean
+  isLoading :boolean,
+  error :boolean
 }
 
 type State = {
@@ -254,6 +263,10 @@ class DashboardContainer extends React.Component<Props, State> {
       return <SpinnerWrapper><LoadingSpinner /></SpinnerWrapper>;
     }
 
+    if (this.props.error) {
+      return <ErrorMessage>Unable to load dashboard.</ErrorMessage>;
+    }
+
     const Chart = ({ title, render }) => (
       <ChartWrapper>
         <ChartTitle>{title}</ChartTitle>
@@ -314,7 +327,8 @@ function mapStateToProps(state) {
   const dashboard = state.get('dashboard');
   return {
     dashboardData: dashboard.get('dashboardData'),
-    isLoading: dashboard.get('isLoading')
+    isLoading: dashboard.get('isLoading'),
+    error: dashboard.get('error')
   };
 }
 
