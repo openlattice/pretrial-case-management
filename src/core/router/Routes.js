@@ -31,6 +31,10 @@ export const JUDGE_VIEW = DASHBOARD + JUDGE;
 const DOWNLOAD :string = '/download';
 export const DOWNLOAD_FORMS = DASHBOARD + DOWNLOAD;
 
+/* Visualize Stats */
+const VISUALIZE :string = '/visualize';
+export const VISUALIZE_DASHBOARD = DASHBOARD + VISUALIZE;
+
 /* Enroll voice profile */
 const VOICE :string = '/voice';
 export const VOICE_ENROLLMENT = DASHBOARD + VOICE;
