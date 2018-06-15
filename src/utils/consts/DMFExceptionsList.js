@@ -1205,5 +1205,9 @@ export const PENN_BOOKING_EXCEPTIONS = [
   {
     [STATUTE]: '32-12-67',
     [DESCRIPTION]: '32-12-67 Possession of Revoked, Altered or Fictitious Driver\'s License (M1)'
+  },
+  {
+    [STATUTE]: '32-26-6',
+    [DESCRIPTION]: 'Improper Lane Change (M2)'
   }
 ];
