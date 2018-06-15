@@ -79,6 +79,13 @@ const ErrorMessage = styled.div`
   margin-top: 40px;
 `;
 
+const DemoBanner = styled.div`
+  font-size: 18px;
+  font-weight: bold;
+  font-style: italic;
+  margin: 15px;
+`;
+
 const CHART_HEIGHT = 300;
 const CHART_WIDTH = 600;
 
@@ -304,6 +311,10 @@ class DashboardContainer extends React.Component<Props, State> {
     </DomainContainer>
   )
 
+  renderDemoBanner = () => {
+    return <DemoBanner>FOR DEMONSTRATION PURPOSES ONLY</DemoBanner>;
+  }
+
   render() {
     return (
       <StyledFormViewWrapper>
@@ -313,6 +324,7 @@ class DashboardContainer extends React.Component<Props, State> {
             <CloseX name="close" onClick={this.handleClose} />
           </StyledTitleWrapper>
           <StyledSectionWrapper>
+            {this.renderDemoBanner()}
             {this.renderDomainChoices()}
             {this.renderContent()}
             <StyledTopFormNavBuffer />
