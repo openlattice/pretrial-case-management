@@ -134,7 +134,8 @@ class DownloadPSA extends React.Component<Props, State> {
                 startDate={this.state.startDate}
                 endDate={this.state.endDate}
                 onStartChange={startDate => this.setState({ startDate })}
-                onEndChange={endDate => this.setState({ endDate })} />
+                onEndChange={endDate => this.setState({ endDate })}
+                format24HourClock />
             {this.renderError()}
             {this.renderDownload()}
             <StyledTopFormNavBuffer />

@@ -9,6 +9,7 @@ import styled from 'styled-components';
 type Props = {
   startDate :?string,
   endDate :?string,
+  format24HourClock? :boolean,
   onStartChange :(start :string) => void,
   onEndChange :(end :string) => void
 };
@@ -33,24 +34,30 @@ const DatePickerGroupContainer = styled.div`
 const DateTimeRange = ({
   startDate,
   endDate,
+  format24HourClock,
   onStartChange,
   onEndChange
-} :Props) => (
-  <div>
-    <DatePickerTitle>Choose a date range.</DatePickerTitle>
-    <DateRangeContainer>
-      <DatePickerGroupContainer>
-        <div>Start Date:</div>
-        <DateTimePicker value={startDate} onChange={onStartChange} />
-      </DatePickerGroupContainer>
-      <DatePickerGroupContainer>
-        <div>End Date:</div>
-        <DateTimePicker
-            value={endDate}
-            onChange={onEndChange} />
-      </DatePickerGroupContainer>
-    </DateRangeContainer>
-  </div>
-);
+} :Props) => {
+  const timeFormat = format24HourClock ? 'HH:mm' : 'hh:mm A';
+  return (
+    <div>
+      <DatePickerTitle>Choose a date range.</DatePickerTitle>
+      <DateRangeContainer>
+        <DatePickerGroupContainer>
+          <div>Start Date:</div>
+          <DateTimePicker timeFormat={timeFormat} value={startDate} onChange={onStartChange} />
+        </DatePickerGroupContainer>
+        <DatePickerGroupContainer>
+          <div>End Date:</div>
+          <DateTimePicker timeFormat={timeFormat} value={endDate} onChange={onEndChange} />
+        </DatePickerGroupContainer>
+      </DateRangeContainer>
+    </div>
+  );
+};
+
+DateTimeRange.defaultProps = {
+  format24HourClock: false
+};
 
 export default DateTimeRange;

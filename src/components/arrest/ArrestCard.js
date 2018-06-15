@@ -10,9 +10,10 @@ import { formatDateTime } from '../../utils/Utils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 
 const {
+  ARRESTING_AGENCY,
   CASE_ID,
-  ARREST_DATE_TIME,
   ARREST_DATE,
+  ARREST_DATE_TIME,
   NUMBER_OF_CHARGES
 } = PROPERTY_TYPES;
 
@@ -22,7 +23,7 @@ const InfoRow = styled.tr`
 `;
 
 const Header = styled.th`
-  width: 105px;
+  width: 145px;
   margin: 2px 5px 2px 0;
 `;
 
@@ -53,8 +54,9 @@ const ArrestCard = ({ arrest, handleSelect } :Props) => {
 
   const caseNum = arrest.getIn([CASE_ID, 0]);
   const arrestDate = formatDateTime(arrest.getIn([ARREST_DATE_TIME, 0],
-    arrest.getIn([ARREST_DATE, 0], '')));
+    arrest.getIn([ARREST_DATE, 0], '')), 'MM/DD/YYYY HH:mm');
   const numCharges = arrest.getIn([NUMBER_OF_CHARGES, 0]);
+  const arrestAgency = arrest.getIn([ARRESTING_AGENCY, 0]);
 
   const entityKeyId :string = arrest.get('id', '');
 
@@ -79,6 +81,10 @@ const ArrestCard = ({ arrest, handleSelect } :Props) => {
           <InfoRow>
             <Header>Number of Charges:</Header>
             <DataElem>{ numCharges }</DataElem>
+          </InfoRow>
+          <InfoRow>
+            <Header>Arresting Agency:</Header>
+            <DataElem>{ arrestAgency }</DataElem>
           </InfoRow>
         </tbody>
       </table>

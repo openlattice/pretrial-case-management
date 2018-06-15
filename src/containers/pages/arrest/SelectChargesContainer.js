@@ -179,6 +179,7 @@ export default class SelectChargesContainer extends React.Component<Props, State
           <Col lg={6}>
             <TitleLabel>Arrest Date:</TitleLabel>
             <DateTimePicker
+                timeFormat="HH:mm"
                 value={arrestDate}
                 onChange={(date) => {
                   this.setState({ arrestDate: date });
