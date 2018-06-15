@@ -10,10 +10,12 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { Redirect, Route, Switch, Link } from 'react-router-dom';
 
+import AppConsent from '../../containers/app/AppConsent';
 import Dashboard from '../../components/dashboard/Dashboard';
 import Forms from '../forms/Forms';
 import StyledButton from '../../components/buttons/StyledButton';
 import logo from '../../assets/images/logo.png';
+import { TERMS_ACCEPTED_TOKEN } from '../../utils/consts/Consts';
 import * as Routes from '../../core/router/Routes';
 
 const {
@@ -88,6 +90,12 @@ type Props = {
   };
 };
 
+const renderComponent = (Component, props) => {
+  return localStorage.getItem(TERMS_ACCEPTED_TOKEN) === 'true'
+    ? <Component {...props} />
+    : <Redirect to={Routes.TERMS} />;
+};
+
 const AppContainer = (props :Props) => (
   <AppWrapper>
     <AppHeaderWrapper>
@@ -101,8 +109,9 @@ const AppContainer = (props :Props) => (
     </AppHeaderWrapper>
     <AppBodyWrapper>
       <Switch>
-        <Route path={Routes.DASHBOARD} component={Dashboard} />
-        <Route path={Routes.FORMS} component={Forms} />
+        <Route path={Routes.TERMS} component={AppConsent} />
+        <Route path={Routes.DASHBOARD} render={() => renderComponent(Dashboard)} />
+        <Route path={Routes.FORMS} render={() => renderComponent(Forms)} />
         <Redirect to={Routes.DASHBOARD} />
       </Switch>
     </AppBodyWrapper>
