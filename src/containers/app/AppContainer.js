@@ -15,7 +15,7 @@ import Dashboard from '../../components/dashboard/Dashboard';
 import Forms from '../forms/Forms';
 import StyledButton from '../../components/buttons/StyledButton';
 import logo from '../../assets/images/logo.png';
-import { TERMS_ACCEPTED_TOKEN } from '../../utils/consts/Consts';
+import { termsAreAccepted } from '../../utils/AcceptTermsUtils';
 import * as Routes from '../../core/router/Routes';
 
 const {
@@ -90,11 +90,11 @@ type Props = {
   };
 };
 
-const renderComponent = (Component, props) => {
-  return localStorage.getItem(TERMS_ACCEPTED_TOKEN) === 'true'
+const renderComponent = (Component, props) => (
+  termsAreAccepted()
     ? <Component {...props} />
-    : <Redirect to={Routes.TERMS} />;
-};
+    : <Redirect to={Routes.TERMS} />
+);
 
 const AppContainer = (props :Props) => (
   <AppWrapper>

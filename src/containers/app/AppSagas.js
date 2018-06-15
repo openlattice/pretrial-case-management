@@ -5,8 +5,10 @@
 import { AuthActionFactory } from 'lattice-auth';
 import { takeEvery } from 'redux-saga/effects';
 
+import { removeTermsToken } from '../../utils/AcceptTermsUtils';
+
 function cleanupWorker() {
-  localStorage.removeItem('openlattice_psa_terms_accepted');
+  removeTermsToken();
 }
 
 function* logoutCleanupWatcher() :Generator<*, *, *> {

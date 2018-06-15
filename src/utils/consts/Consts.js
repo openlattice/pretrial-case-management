@@ -12,8 +12,6 @@ export const FORM_PATHS = {
   5: '/5'
 };
 
-export const TERMS_ACCEPTED_TOKEN = 'openlattice_psa_terms_accepted';
-
 export const PERSONAL_INFO_SECTION = 'personalInfo';
 
 export const PERSONAL_INFO_NAMES = {

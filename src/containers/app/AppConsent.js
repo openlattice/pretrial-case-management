@@ -6,7 +6,7 @@ import React from 'react';
 import styled from 'styled-components';
 
 import StyledButton from '../../components/buttons/StyledButton';
-import { TERMS_ACCEPTED_TOKEN } from '../../utils/consts/Consts';
+import { acceptTerms, termsAreAccepted } from '../../utils/consts/Consts';
 import * as Routes from '../../core/router/Routes';
 
 type Props = {
@@ -41,7 +41,7 @@ By clicking Sign In, you consent to any monitoring and recording performed by th
 export default class AppConsent extends React.Component<Props> {
 
   componentDidMount() {
-    if (localStorage.getItem(TERMS_ACCEPTED_TOKEN) === 'true') {
+    if (termsAreAccepted()) {
       this.redirect();
     }
   }
@@ -51,7 +51,7 @@ export default class AppConsent extends React.Component<Props> {
   }
 
   acceptTerms = () => {
-    localStorage.setItem(TERMS_ACCEPTED_TOKEN, 'true');
+    acceptTerms();
     this.redirect();
   }
 
