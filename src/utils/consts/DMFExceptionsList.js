@@ -1193,5 +1193,21 @@ export const PENN_BOOKING_EXCEPTIONS = [
   {
     [STATUTE]: '32-12-22',
     [DESCRIPTION]: 'Driving Without Valid License or Permit(M2)'
+  },
+  {
+    [STATUTE]: '32-12-65',
+    [DESCRIPTION]: 'Driving Under Cancelled Driver\'s License (M2)'
+  },
+  {
+    [STATUTE]: '32-12-65',
+    [DESCRIPTION]: 'Driving Under Revocation (M1)'
+  },
+  {
+    [STATUTE]: '32-12-67',
+    [DESCRIPTION]: '32-12-67 Possession of Revoked, Altered or Fictitious Driver\'s License (M1)'
+  },
+  {
+    [STATUTE]: '32-26-6',
+    [DESCRIPTION]: 'Improper Lane Change (M2)'
   }
 ];

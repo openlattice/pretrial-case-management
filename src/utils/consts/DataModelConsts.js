@@ -71,6 +71,7 @@ export const PROPERTY_TYPES = {
   NUMBER_OF_CHARGES: 'publicsafety.NumberOfCharges',
   LAST_UPDATED_DATE: 'general.entryupdated',
   CASE_DISPOSITION_DATE: 'publicsafety.CaseDispositionDate',
+  ARRESTING_AGENCY: 'criminaljustice.arrestagency',
 
   // Charge entity type consts
   CHARGE_ID: 'justice.ArrestTrackingNumber',
