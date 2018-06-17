@@ -6,7 +6,7 @@ import React from 'react';
 import styled from 'styled-components';
 
 import StyledButton from '../../components/buttons/StyledButton';
-import { acceptTerms, termsAreAccepted } from '../../utils/consts/Consts';
+import { acceptTerms, termsAreAccepted } from '../../utils/AcceptTermsUtils';
 import * as Routes from '../../core/router/Routes';
 
 type Props = {
