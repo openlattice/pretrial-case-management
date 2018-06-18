@@ -5,6 +5,7 @@
 import { AuthSagas } from 'lattice-auth';
 import { fork } from 'redux-saga/effects';
 
+import * as AppSagas from '../../containers/app/AppSagas';
 import * as PersonSagas from '../../containers/person/PersonSagas';
 import * as PeopleSagas from '../../containers/people/PeopleSagas';
 import * as DashboardSagas from '../../containers/dashboard/DashboardSagas';
@@ -18,6 +19,10 @@ import * as SubmitSagas from '../../utils/submit/SubmitSaga';
 export default function* sagas() :Generator<*, *, *> {
 
   yield [
+    // AppSagas
+    fork(AppSagas.authExpirationCleanupWatcher),
+    fork(AppSagas.logoutCleanupWatcher),
+
     // AuthSagas
     fork(AuthSagas.watchAuthAttempt),
     fork(AuthSagas.watchAuthSuccess),
