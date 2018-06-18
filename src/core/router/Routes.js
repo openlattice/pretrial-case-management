@@ -12,6 +12,8 @@ export const PERSON_DETAILS :string = `${PERSON_DETAILS_ROOT}/:personId`;
 /* Reports */
 export const FORMS :string = '/forms';
 
+export const TERMS :string = '/terms';
+
 const PSA :string = '/psa';
 export const PSA_FORM :string = FORMS + PSA;
 
