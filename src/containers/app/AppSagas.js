@@ -11,8 +11,12 @@ function cleanupWorker() {
   removeTermsToken();
 }
 
+function* authExpirationCleanupWatcher() :Generator<*, *, *> {
+  yield takeEvery(AuthActionFactory.AUTH_EXPIRED, cleanupWorker);
+}
+
 function* logoutCleanupWatcher() :Generator<*, *, *> {
   yield takeEvery(AuthActionFactory.LOGOUT, cleanupWorker);
 }
 
-export { logoutCleanupWatcher };
+export { authExpirationCleanupWatcher, logoutCleanupWatcher };
