@@ -221,41 +221,42 @@ export function* watchSearchPeopleRequest() :Generator<*, *, *> {
 
   while (true) {
     const action :SearchPeopleRequestAction = yield take(SEARCH_PEOPLE_REQUEST);
-    const {
-      firstName,
-      lastName,
-      dob
-    } = action;
-    const searchFields = [];
-    const updateSearchField = (searchString :string, property :string, exact? :boolean) => {
-      const searchTerm = exact ? `"${searchString}"` : searchString;
-      searchFields.push({
-        searchTerm,
-        property,
-        exact: true
-      });
-    };
-    if (firstName.trim().length) {
-      const firstNameId = yield call(getPropertyTypeId, PROPERTY_TYPES.FIRST_NAME);
-      updateSearchField(firstName.trim(), firstNameId);
-    }
-    if (lastName.trim().length) {
-      const lastNameId = yield call(getPropertyTypeId, PROPERTY_TYPES.LAST_NAME);
-      updateSearchField(lastName.trim(), lastNameId);
-    }
-    if (dob && dob.trim().length) {
-      const dobMoment = moment(dob.trim());
-      if (dobMoment.isValid()) {
-        const dobId = yield call(getPropertyTypeId, PROPERTY_TYPES.DOB);
-        updateSearchField(toISODate(dobMoment), dobId, true);
-      }
-    }
-    const searchOptions = {
-      searchFields,
-      start: 0,
-      maxHits: 100
-    };
     try {
+      const {
+        firstName,
+        lastName,
+        dob
+      } = action;
+      const searchFields = [];
+      const updateSearchField = (searchString :string, property :string, exact? :boolean) => {
+        const searchTerm = exact ? `"${searchString}"` : searchString;
+        searchFields.push({
+          searchTerm,
+          property,
+          exact: true
+        });
+      };
+      if (firstName.trim().length) {
+        const firstNameId = yield call(getPropertyTypeId, PROPERTY_TYPES.FIRST_NAME);
+        updateSearchField(firstName.trim(), firstNameId);
+      }
+      if (lastName.trim().length) {
+        const lastNameId = yield call(getPropertyTypeId, PROPERTY_TYPES.LAST_NAME);
+        updateSearchField(lastName.trim(), lastNameId);
+      }
+      if (dob && dob.trim().length) {
+        const dobMoment = moment(dob.trim());
+        if (dobMoment.isValid()) {
+          const dobId = yield call(getPropertyTypeId, PROPERTY_TYPES.DOB);
+          updateSearchField(toISODate(dobMoment), dobId, true);
+        }
+      }
+      const searchOptions = {
+        searchFields,
+        start: 0,
+        maxHits: 100
+      };
+
       const entitySetId :string = yield call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.PEOPLE);
       const response = yield call(SearchApi.advancedSearchEntitySetData, entitySetId, searchOptions);
       yield put(searchPeopleSuccess(response));

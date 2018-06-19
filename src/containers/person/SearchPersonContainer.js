@@ -79,6 +79,13 @@ const GrayListSectionHeader = styled(ListSectionHeader)`
   color: #aaa;
 `;
 
+const ErrorMessage = styled.div`
+  color: #cc0000;
+  text-align: center;
+  font-weight: bold;
+  font-size: 16px;
+`;
+
 /*
  * types
  */
@@ -92,7 +99,8 @@ type Props = {
   searchHasRun :boolean,
   searchResults :Immutable.List<Immutable.Map<*, *>>,
   onSelectPerson :Function,
-  history :string[]
+  history :string[],
+  error :boolean
 }
 
 type State = {
@@ -185,7 +193,8 @@ class SearchPeopleContainer extends React.Component<Props, State> {
     const {
       isLoadingPeople,
       searchResults,
-      searchHasRun
+      searchHasRun,
+      error
     } = this.props;
 
     if (isLoadingPeople) {
@@ -194,6 +203,12 @@ class SearchPeopleContainer extends React.Component<Props, State> {
           <LoadingText>Loading results...</LoadingText>
           <LoadingSpinner />
         </div>
+      );
+    }
+
+    if (error) {
+      return (
+        <ErrorMessage>Unable to load search results.</ErrorMessage>
       );
     }
 
@@ -315,7 +330,8 @@ function mapStateToProps(state :Immutable.Map<*, *>) :Object {
   return {
     searchResults: state.getIn(['search', 'searchResults'], Immutable.List()),
     isLoadingPeople: state.getIn(['search', 'isLoadingPeople'], false),
-    searchHasRun: state.getIn(['search', 'searchHasRun'], false)
+    searchHasRun: state.getIn(['search', 'searchHasRun'], false),
+    error: state.getIn(['search', 'searchError'], false)
   };
 }
 
