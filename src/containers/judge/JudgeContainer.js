@@ -16,6 +16,7 @@ import LoadingSpinner from '../../components/LoadingSpinner';
 import DateTimeRange from '../../components/datetime/DateTimeRange';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { DOMAIN } from '../../utils/consts/ReportDownloadTypes';
+import { PSA_STATUSES } from '../../utils/consts/Consts';
 import { CenteredContainer } from '../../utils/Layout';
 import * as FormActionFactory from '../psa/FormActionFactory';
 import * as ReviewActionFactory from '../review/ReviewActionFactory';
@@ -117,7 +118,7 @@ type Props = {
       personId :string,
       neighbors :Immutable.Map<*, *>
     }) => void,
-    loadPSAsByDate :() => void,
+    loadPSAsByDate :(filter :string) => void,
     checkPSAPermissions :() => void
   },
   psaNeighborsById :Immutable.Map<*, *>,
@@ -150,7 +151,7 @@ class JudgeContainer extends React.Component<Props, State> {
 
   componentDidMount() {
     this.props.actions.checkPSAPermissions();
-    this.props.actions.loadPSAsByDate();
+    this.props.actions.loadPSAsByDate(PSA_STATUSES.OPEN);
   }
 
   componentWillUnmount() {

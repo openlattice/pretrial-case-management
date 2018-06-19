@@ -14,23 +14,17 @@ import PersonCard from '../person/PersonCard';
 import StyledButton from '../buttons/StyledButton';
 import InlineEditableControl from '../controls/InlineEditableControl';
 import CaseHistory from '../../components/review/CaseHistory';
-import ChargeList from '../../components/charges/ChargeList';
 import PSAScores from './PSAScores';
-import DMFCell from '../dmf/DMFCell';
+import PSASummary from './PSASummary';
 import DMFExplanation from '../dmf/DMFExplanation';
+import ClosePSAModal from './ClosePSAModal';
 import psaEditedConfig from '../../config/formconfig/PsaEditedConfig';
-import {
-  getScoresAndRiskFactors,
-  calculateDMF,
-  stepTwoIncrease,
-  stepFourIncrease,
-  dmfSecondaryReleaseDecrease
-} from '../../utils/ScoringUtils';
+import { getScoresAndRiskFactors, calculateDMF } from '../../utils/ScoringUtils';
 import { CenteredContainer } from '../../utils/Layout';
-import { formatValue, formatDateList, toISODateTime } from '../../utils/Utils';
+import { toISODateTime } from '../../utils/Utils';
 import { CONTEXT, DMF, EDIT_FIELDS, ID_FIELDS, NOTES, PSA } from '../../utils/consts/Consts';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { RESULT_CATEGORIES } from '../../utils/consts/DMFResultConsts';
+import { RESULT_CATEGORIES, formatDMFFromEntity } from '../../utils/consts/DMFResultConsts';
 import * as OverrideClassNames from '../../utils/styleoverrides/OverrideClassNames';
 
 const ReviewRowContainer = styled.div`
@@ -86,50 +80,13 @@ const MetadataItem = styled.div`
   display: block;
 `;
 
-const InfoRow = styled.div`
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  margin: 15px 0;
-`;
-
-const InfoItem = styled.div`
-  margin: 0 20px;
-`;
-
-const InfoHeader = styled.span`
-  font-weight: bold;
-`;
-
-const ScoresContainer = styled.div`
-  display: inline-block;
-`;
-
-const SummaryScores = styled.div`
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  text-align: center;
-`;
-
-const DMFSummaryContainer = styled(SummaryScores)`
-  align-items: center;
-`;
-
-const ScoreTitle = styled.div`
-  font-size: 14px;
-  font-weight: bold;
-  margin-bottom: 10px;
-`;
-
 const NoDMFContainer = styled(CenteredContainer)`
   margin: 30px;
   font-size: 18px;
 `;
 
-const DMFIncreaseText = styled.div`
-  margin: 5px;
-  font-weight: bold;
+const TitleHeader = styled.span`
+  margin-right: 15px;
 `;
 
 type Props = {
@@ -139,7 +96,7 @@ type Props = {
   caseHistory :Immutable.List<*>,
   manualCaseHistory :Immutable.List<*>,
   chargeHistory :Immutable.Map<*, *>,
-  manualChargeHistory: Immutable.Map<*, *>,
+  manualChargeHistory :Immutable.Map<*, *>,
   sentenceHistory :Immutable.Map<*, *>,
   ftaHistory :Immutable.Map<*, *>,
   readOnly :boolean,
@@ -166,6 +123,11 @@ type Props = {
     dmfRiskFactorsId :string,
     dmfRiskFactorsEntity :Object
   }) => void,
+  changePSAStatus? :(values :{
+    scoresEntitySetId :string,
+    scoresId :string,
+    scoresEntity :Immutable.Map<*, *>
+  }) => void,
   updateNotes :(value :{
     notes :string,
     entityId :string,
@@ -178,6 +140,7 @@ type Props = {
 type State = {
   open :boolean,
   editing :boolean,
+  closing :boolean,
   view :string,
   riskFactors :Immutable.Map<*, *>,
   dmf :Object
@@ -197,6 +160,7 @@ export default class PSAReviewRow extends React.Component<Props, State> {
     this.state = {
       open: false,
       editing: false,
+      closing: false,
       riskFactors: this.getRiskFactors(props.neighbors),
       view: VIEWS.SUMMARY,
       dmf: this.getDMF(props.neighbors)
@@ -207,6 +171,7 @@ export default class PSAReviewRow extends React.Component<Props, State> {
     this.setState({
       dmf: this.getDMF(nextProps.neighbors)
     });
+
   }
 
   getRiskFactors = (neighbors :Immutable.Map<*, *>) => {
@@ -258,17 +223,8 @@ export default class PSAReviewRow extends React.Component<Props, State> {
     });
   }
 
-  getDMF = (neighbors :Immutable.Map<*, *>) => {
-    const dmfNeighbor = neighbors.getIn([ENTITY_SETS.DMF_RESULTS, 'neighborDetails'], Immutable.Map());
-    return {
-      [RESULT_CATEGORIES.COLOR]: dmfNeighbor.getIn([PROPERTY_TYPES.COLOR, 0]),
-      [RESULT_CATEGORIES.RELEASE_TYPE]: dmfNeighbor.getIn([PROPERTY_TYPES.RELEASE_TYPE, 0]),
-      [RESULT_CATEGORIES.CONDITIONS_LEVEL]: dmfNeighbor.getIn([PROPERTY_TYPES.CONDITIONS_LEVEL, 0]),
-      [RESULT_CATEGORIES.CONDITION_1]: dmfNeighbor.getIn([PROPERTY_TYPES.CONDITION_1, 0]),
-      [RESULT_CATEGORIES.CONDITION_2]: dmfNeighbor.getIn([PROPERTY_TYPES.CONDITION_2, 0]),
-      [RESULT_CATEGORIES.CONDITION_3]: dmfNeighbor.getIn([PROPERTY_TYPES.CONDITION_3, 0])
-    };
-  }
+  getDMF = (neighbors :Immutable.Map<*, *>) =>
+    formatDMFFromEntity(neighbors.getIn([ENTITY_SETS.DMF_RESULTS, 'neighborDetails'], Immutable.Map()))
 
   downloadRow = (e) => {
     e.stopPropagation();
@@ -385,31 +341,31 @@ export default class PSAReviewRow extends React.Component<Props, State> {
     return result;
   };
 
+  getEntitySetId = (name) :string => this.props.neighbors.getIn([name, 'neighborEntitySet', 'id']);
+
+  getEntityKeyId = (name) :string => this.props.neighbors.getIn([name, 'neighborId']);
+
+  getIdValue = (name) :string =>
+    this.props.neighbors.getIn([name, 'neighborDetails', PROPERTY_TYPES.GENERAL_ID, 0]);
+
   onRiskFactorEdit = (e :Object) => {
     e.preventDefault();
-
-    const getEntitySetId = (name) :string => this.props.neighbors.getIn([name, 'neighborEntitySet', 'id']);
-
-    const getEntityKeyId = (name) :string => this.props.neighbors.getIn([name, 'neighborId']);
-
-    const getIdValue = (name) :string =>
-      this.props.neighbors.getIn([name, 'neighborDetails', PROPERTY_TYPES.GENERAL_ID, 0]);
 
     const { scores, riskFactors } = getScoresAndRiskFactors(this.state.riskFactors);
     const riskFactorsEntity = Object.assign({}, riskFactors);
     const dmf = calculateDMF(this.state.riskFactors, scores);
 
     const scoreId = this.props.scores.getIn([PROPERTY_TYPES.GENERAL_ID, 0]);
-    const riskFactorsIdValue = getIdValue(ENTITY_SETS.PSA_RISK_FACTORS);
+    const riskFactorsIdValue = this.getIdValue(ENTITY_SETS.PSA_RISK_FACTORS);
 
-    const dmfIdValue = getIdValue(ENTITY_SETS.DMF_RESULTS);
-    const dmfId = getEntityKeyId(ENTITY_SETS.DMF_RESULTS);
-    const dmfEntitySetId = getEntitySetId(ENTITY_SETS.DMF_RESULTS);
+    const dmfIdValue = this.getIdValue(ENTITY_SETS.DMF_RESULTS);
+    const dmfId = this.getEntityKeyId(ENTITY_SETS.DMF_RESULTS);
+    const dmfEntitySetId = this.getEntitySetId(ENTITY_SETS.DMF_RESULTS);
     const dmfEntity = this.getDMFEntity(dmf, dmfIdValue);
 
-    const dmfRiskFactorsIdValue = getIdValue(ENTITY_SETS.DMF_RISK_FACTORS);
-    const dmfRiskFactorsId = getEntityKeyId(ENTITY_SETS.DMF_RISK_FACTORS);
-    const dmfRiskFactorsEntitySetId = getEntitySetId(ENTITY_SETS.DMF_RISK_FACTORS);
+    const dmfRiskFactorsIdValue = this.getIdValue(ENTITY_SETS.DMF_RISK_FACTORS);
+    const dmfRiskFactorsId = this.getEntityKeyId(ENTITY_SETS.DMF_RISK_FACTORS);
+    const dmfRiskFactorsEntitySetId = this.getEntitySetId(ENTITY_SETS.DMF_RISK_FACTORS);
     const dmfRiskFactorsEntity = this.getDMFRiskFactorsEntity(this.state.riskFactors, dmfRiskFactorsIdValue);
 
     const scoresEntity = scores.toJS();
@@ -417,9 +373,9 @@ export default class PSAReviewRow extends React.Component<Props, State> {
     if (riskFactorsIdValue) riskFactorsEntity[PROPERTY_TYPES.GENERAL_ID] = [riskFactorsIdValue];
 
     const scoresId = this.props.entityKeyId;
-    const scoresEntitySetId = getEntitySetId(ENTITY_SETS.PSA_SCORES);
-    const riskFactorsEntitySetId = getEntitySetId(ENTITY_SETS.PSA_RISK_FACTORS);
-    const riskFactorsId = getEntityKeyId(ENTITY_SETS.PSA_RISK_FACTORS);
+    const scoresEntitySetId = this.getEntitySetId(ENTITY_SETS.PSA_SCORES);
+    const riskFactorsEntitySetId = this.getEntitySetId(ENTITY_SETS.PSA_RISK_FACTORS);
+    const riskFactorsId = this.getEntityKeyId(ENTITY_SETS.PSA_RISK_FACTORS);
 
     this.props.updateScoresAndRiskFactors({
       scoresEntitySetId,
@@ -453,6 +409,32 @@ export default class PSAReviewRow extends React.Component<Props, State> {
     this.setState({ editing: false });
   }
 
+  handleStatusChange = (status :string, failureReason :string[]) => {
+    if (!this.props.changePSAStatus) return;
+
+    let scoresEntity = this.props.scores.set(PROPERTY_TYPES.STATUS, Immutable.List.of(status));
+    if (failureReason.length) {
+      scoresEntity = scoresEntity.set(PROPERTY_TYPES.FAILURE_REASON, Immutable.fromJS(failureReason));
+    }
+    const scoresId = this.props.entityKeyId;
+    const scoresEntitySetId = this.getEntitySetId(ENTITY_SETS.PSA_SCORES);
+    this.props.changePSAStatus({
+      scoresEntitySetId,
+      scoresId,
+      scoresEntity
+    });
+
+    this.props.submitData({
+      config: psaEditedConfig,
+      values: {
+        [EDIT_FIELDS.PSA_ID]: [scoresEntity.getIn([PROPERTY_TYPES.GENERAL_ID, 0])],
+        [EDIT_FIELDS.TIMESTAMP]: [toISODateTime(moment())],
+        [EDIT_FIELDS.PERSON_ID]: [AuthUtils.getUserInfo().email]
+      }
+    });
+    this.setState({ editing: false });
+  }
+
   getName = () => {
     const person = this.props.neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborDetails'], Immutable.Map());
     const firstName = person.getIn([PROPERTY_TYPES.FIRST_NAME, 0], '');
@@ -464,94 +446,13 @@ export default class PSAReviewRow extends React.Component<Props, State> {
     this.setState({ view });
   }
 
-  renderPersonInfo = () => {
-    const person = this.props.neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborDetails'], Immutable.Map());
-    const firstName = formatValue(person.get(PROPERTY_TYPES.FIRST_NAME));
-    const middleName = formatValue(person.get(PROPERTY_TYPES.MIDDLE_NAME));
-    const lastName = formatValue(person.get(PROPERTY_TYPES.LAST_NAME));
-    const dob = formatDateList(person.get(PROPERTY_TYPES.DOB));
-    const sex = formatValue(person.get(PROPERTY_TYPES.SEX));
-    const race = formatValue(person.get(PROPERTY_TYPES.RACE));
-
-    return (
-      <div>
-        <InfoRow>
-          <InfoItem><InfoHeader>First Name: </InfoHeader>{firstName}</InfoItem>
-          <InfoItem><InfoHeader>Middle Name: </InfoHeader>{middleName}</InfoItem>
-          <InfoItem><InfoHeader>Last Name: </InfoHeader>{lastName}</InfoItem>
-        </InfoRow>
-        <InfoRow>
-          <InfoItem><InfoHeader>Date of Birth: </InfoHeader>{dob}</InfoItem>
-          <InfoItem><InfoHeader>Gender: </InfoHeader>{sex}</InfoItem>
-          <InfoItem><InfoHeader>Race: </InfoHeader>{race}</InfoItem>
-        </InfoRow>
-      </div>
-    );
-  }
-
-  renderCaseInfo = () => {
-    const {
-      manualCaseHistory,
-      manualChargeHistory,
-      chargeHistory,
-      neighbors
-    } = this.props;
-    const caseNum = neighbors.getIn(
-      [ENTITY_SETS.MANUAL_PRETRIAL_CASES, 'neighborDetails', PROPERTY_TYPES.CASE_ID, 0],
-      ''
-    );
-    const pretrialCase = manualCaseHistory
-      .filter(caseObj => caseObj.getIn([PROPERTY_TYPES.CASE_ID, 0], '') === caseNum);
-    const charges = manualChargeHistory.get(caseNum, chargeHistory.get(caseNum, Immutable.List()));
-    return (
-      <CenteredContainer>
-        <ChargeList pretrialCaseDetails={pretrialCase} charges={charges} />
-      </CenteredContainer>
-    );
-  }
-
-  renderSummary = () => {
-    const { scores, neighbors } = this.props;
-    const { dmf } = this.state;
-    const dmfRiskFactors = neighbors.getIn([ENTITY_SETS.DMF_RISK_FACTORS, 'neighborDetails'], Immutable.Map());
-    const psaRiskFactors = neighbors.getIn([ENTITY_SETS.PSA_RISK_FACTORS, 'neighborDetails'], Immutable.Map());
-
-    let modificationText;
-    if (stepTwoIncrease(dmfRiskFactors, psaRiskFactors, scores)) {
-      modificationText = 'Step two increase.';
-    }
-    else if (stepFourIncrease(dmfRiskFactors, psaRiskFactors, scores)) {
-      modificationText = 'Step four increase.';
-    }
-    else if (dmfSecondaryReleaseDecrease(dmfRiskFactors, scores)) {
-      modificationText = 'Exception release.';
-    }
-    return (
-      <div>
-        {this.renderPersonInfo()}
-        <hr />
-        <SummaryScores>
-          <ScoresContainer>
-            <ScoreTitle>PSA:</ScoreTitle>
-            <PSAScores scores={this.props.scores} />
-          </ScoresContainer>
-          <ScoresContainer>
-            <DMFSummaryContainer>
-              <div>
-                <ScoreTitle>DMF:</ScoreTitle>
-                <DMFCell dmf={dmf} selected />
-              </div>
-              <div>
-                <DMFIncreaseText>{modificationText}</DMFIncreaseText>
-              </div>
-            </DMFSummaryContainer>
-          </ScoresContainer>
-        </SummaryScores>
-        <hr />
-        {this.renderCaseInfo()}
-      </div>
-    );
-  }
+  renderSummary = () => (
+    <PSASummary
+        scores={this.props.scores}
+        neighbors={this.props.neighbors}
+        manualCaseHistory={this.props.manualCaseHistory}
+        manualChargeHistory={this.props.manualChargeHistory} />
+  )
 
   renderPSADetails = () => {
     const {
@@ -628,9 +529,21 @@ export default class PSAReviewRow extends React.Component<Props, State> {
     return (
       <Modal show={open} onHide={this.closeModal} dialogClassName={OverrideClassNames.PSA_REVIEW_MODAL}>
         <Modal.Header closeButton>
-          <Modal.Title>{`PSA Details: ${this.getName()}`}</Modal.Title>
+          <Modal.Title>
+            <div>
+              <TitleHeader>{`PSA Details: ${this.getName()}`}</TitleHeader>
+              { this.props.readOnly
+                ? null
+                : <StyledButton onClick={() => this.setState({ closing: true })}>Close PSA</StyledButton>
+              }
+            </div>
+          </Modal.Title>
         </Modal.Header>
         <Modal.Body>
+          <ClosePSAModal
+              open={this.state.closing}
+              onClose={() => this.setState({ closing: false })}
+              onSubmit={this.handleStatusChange} />
           <Tabs id={`details-${this.props.entityKeyId}`} activeKey={this.state.view} onSelect={this.onViewSelect}>
             <Tab eventKey={VIEWS.SUMMARY} title="Summary">{this.renderSummary()}</Tab>
             <Tab eventKey={VIEWS.PSA} title="PSA">{this.renderPSADetails()}</Tab>

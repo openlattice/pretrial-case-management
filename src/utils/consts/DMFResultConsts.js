@@ -1,4 +1,5 @@
 import { CONTEXT } from './Consts';
+import { PROPERTY_TYPES } from './DataModelConsts';
 
 export const COLORS = {
   DARK_GREEN: 'DARK_GREEN',
@@ -169,6 +170,15 @@ export const updateDMFSecondaryRelease = (dmfResult) => {
   newDmf[RESULT_CATEGORIES.CONDITION_1] = CONDITION_TYPES.PR_RELEASE;
   return newDmf;
 };
+
+export const formatDMFFromEntity = dmfEntity => ({
+  [RESULT_CATEGORIES.COLOR]: dmfEntity.getIn([PROPERTY_TYPES.COLOR, 0]),
+  [RESULT_CATEGORIES.RELEASE_TYPE]: dmfEntity.getIn([PROPERTY_TYPES.RELEASE_TYPE, 0]),
+  [RESULT_CATEGORIES.CONDITIONS_LEVEL]: dmfEntity.getIn([PROPERTY_TYPES.CONDITIONS_LEVEL, 0]),
+  [RESULT_CATEGORIES.CONDITION_1]: dmfEntity.getIn([PROPERTY_TYPES.CONDITION_1, 0]),
+  [RESULT_CATEGORIES.CONDITION_2]: dmfEntity.getIn([PROPERTY_TYPES.CONDITION_2, 0]),
+  [RESULT_CATEGORIES.CONDITION_3]: dmfEntity.getIn([PROPERTY_TYPES.CONDITION_3, 0])
+});
 
 // NCA score -> FTA score -> PSA CONTEXT
 export const DMF_RESULTS = {

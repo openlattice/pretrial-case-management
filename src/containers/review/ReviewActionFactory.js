@@ -4,6 +4,9 @@
 
 import { newRequestSequence } from 'redux-reqseq';
 
+const CHANGE_PSA_STATUS :string = 'CHANGE_PSA_STATUS';
+const changePSAStatus :RequestSequence = newRequestSequence(CHANGE_PSA_STATUS);
+
 const CHECK_PSA_PERMISSIONS :string = 'CHECK_PSA_PERMISSIONS';
 const checkPSAPermissions :RequestSequence = newRequestSequence(CHECK_PSA_PERMISSIONS);
 
@@ -20,11 +23,13 @@ const UPDATE_SCORES_AND_RISK_FACTORS :string = 'UPDATE_SCORES_AND_RISK_FACTORS';
 const updateScoresAndRiskFactors :RequestSequence = newRequestSequence(UPDATE_SCORES_AND_RISK_FACTORS);
 
 export {
+  CHANGE_PSA_STATUS,
   CHECK_PSA_PERMISSIONS,
   DOWNLOAD_PSA_REVIEW_PDF,
   LOAD_CASE_HISTORY,
   LOAD_PSAS_BY_DATE,
   UPDATE_SCORES_AND_RISK_FACTORS,
+  changePSAStatus,
   checkPSAPermissions,
   downloadPSAReviewPDF,
   loadCaseHistory,

@@ -16,7 +16,7 @@ import {
   getProfileFailure
 } from './EnrollActionFactory';
 
-import { toISODateTime } from '../../utils/Utils';
+import { toISODateTime, getFqnObj } from '../../utils/Utils';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 
 const CHECKINS_BASE_URL = 'https://api.openlattice.com/checkins/voice';
@@ -38,14 +38,6 @@ const getEntityId = (entity, primaryKeyIds) => {
 const getHeaders = () => {
   return {
     Authorization: `Bearer ${AuthUtils.getAuthToken()}`
-  };
-};
-
-const getFqnObj = (fqnStr) => {
-  const splitStr = fqnStr.split('.');
-  return {
-    namespace: splitStr[0],
-    name: splitStr[1]
   };
 };
 

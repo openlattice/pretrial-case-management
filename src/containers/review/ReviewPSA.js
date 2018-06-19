@@ -10,12 +10,22 @@ import moment from 'moment';
 import styled from 'styled-components';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { ButtonToolbar, Pagination, Tab, Tabs, ToggleButton, ToggleButtonGroup } from 'react-bootstrap';
+import {
+  ButtonToolbar,
+  DropdownButton,
+  MenuItem,
+  Pagination,
+  Tab,
+  Tabs,
+  ToggleButton,
+  ToggleButtonGroup
+} from 'react-bootstrap';
 
 import PSAReviewRow from '../../components/review/PSAReviewRow';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import PersonSearchFields from '../../components/person/PersonSearchFields';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { PSA_STATUSES } from '../../utils/consts/Consts';
 import { CenteredContainer, PaddedRow, TitleLabel, StyledSelect } from '../../utils/Layout';
 import * as FormActionFactory from '../psa/FormActionFactory';
 import * as ReviewActionFactory from './ReviewActionFactory';
@@ -125,6 +135,25 @@ const SORT_TYPES = {
   NAME: 'NAME'
 };
 
+const STATUS_OPTIONS = {
+  OPEN: {
+    value: PSA_STATUSES.OPEN,
+    label: 'Open'
+  },
+  SUCCESS: {
+    value: PSA_STATUSES.SUCCESS,
+    label: 'Successful'
+  },
+  FAILURE: {
+    value: PSA_STATUSES.FAILURE,
+    label: 'Failed'
+  },
+  ALL: {
+    value: '*',
+    label: 'All'
+  }
+};
+
 type Props = {
   history :string[],
   scoresEntitySetId :string,
@@ -142,7 +171,7 @@ type Props = {
       personId :string,
       neighbors :Immutable.Map<*, *>
     }) => void,
-    loadPSAsByDate :() => void,
+    loadPSAsByDate :(filter :string) => void,
     updateScoresAndRiskFactors :(values :{
       scoresEntitySetId :string,
       scoresId :string,
@@ -156,6 +185,11 @@ type Props = {
       dmfRiskFactorsEntitySetId :string,
       dmfRiskFactorsId :string,
       dmfRiskFactorsEntity :Object
+    }) => void,
+    changePSAStatus :(values :{
+      scoresEntitySetId :string,
+      scoresId :string,
+      scoresEntity :Immutable.Map<*, *>
     }) => void,
     updateNotes :(value :{
       notes :string,
@@ -187,7 +221,8 @@ type State = {
     filer :string,
     start :number
   },
-  sort :string
+  sort :string,
+  status :string
 };
 
 class ReviewPSA extends React.Component<Props, State> {
@@ -205,13 +240,14 @@ class ReviewPSA extends React.Component<Props, State> {
         start: 0,
         searchExecuted: false
       },
-      sort: SORT_TYPES.NAME
+      sort: SORT_TYPES.NAME,
+      status: 'OPEN'
     };
   }
 
   componentDidMount() {
     this.props.actions.checkPSAPermissions();
-    this.props.actions.loadPSAsByDate();
+    this.props.actions.loadPSAsByDate(PSA_STATUSES[this.state.status].value);
   }
 
   componentWillUnmount() {
@@ -339,6 +375,7 @@ class ReviewPSA extends React.Component<Props, State> {
           downloadFn={this.props.actions.downloadPSAReviewPDF}
           loadCaseHistoryFn={this.props.actions.loadCaseHistory}
           updateScoresAndRiskFactors={this.props.actions.updateScoresAndRiskFactors}
+          changePSAStatus={this.props.actions.changePSAStatus}
           updateNotes={this.updateNotes}
           submitData={this.props.actions.submit}
           caseHistory={caseHistory}
@@ -477,9 +514,25 @@ class ReviewPSA extends React.Component<Props, State> {
     this.updateFilters({ searchExecuted: false });
   }
 
+  changeStatus = (status) => {
+    this.setState({ status });
+    this.props.actions.loadPSAsByDate(STATUS_OPTIONS[status].value);
+  }
+
+  renderStatusDropdown = () => (
+    <DropdownButton title={STATUS_OPTIONS[this.state.status].label} id="statusDropdown">
+      {Object.keys(STATUS_OPTIONS).map(k =>
+        <MenuItem key={k} eventKey={k} onClick={() => this.changeStatus(k)}>{STATUS_OPTIONS[k].label}</MenuItem>)}
+    </DropdownButton>
+  )
+
   renderFilters = () => (
     <div>
-      <DatePickerTitle>Filter Submitted PSA Forms</DatePickerTitle>
+      <DatePickerTitle>
+        <span>Filter </span>
+        {this.renderStatusDropdown()}
+        <span> PSA Forms</span>
+      </DatePickerTitle>
       <Tabs id="filter" activeKey={this.state.activeFilterKey} onSelect={this.onFilterSelect}>
         <Tab eventKey={1} title="Date">{this.renderDateRangePicker()}</Tab>
         <Tab eventKey={2} title="Person">{this.renderPersonFilter()}</Tab>

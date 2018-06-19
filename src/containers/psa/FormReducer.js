@@ -16,21 +16,25 @@ import {
 } from './FormActionFactory';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA, NOTES, DMF } from '../../utils/consts/Consts';
+import { getMapByCaseId } from '../../utils/CaseUtils';
 
 const {
   ARREST_CASES,
   ARREST_CHARGES,
-  PRETRIAL_CASES,
   CHARGES,
-  SENTENCES,
-  FTAS
+  FTAS,
+  MANUAL_CHARGES,
+  MANUAL_PRETRIAL_CASES,
+  PRETRIAL_CASES,
+  PSA_SCORES,
+  SENTENCES
 } = ENTITY_SETS;
 
 const {
+  ARREST_DATE_TIME,
   CHARGE_ID,
   CASE_ID,
-  FILE_DATE,
-  ARREST_DATE_TIME
+  FILE_DATE
 } = PROPERTY_TYPES;
 
 const {
@@ -91,8 +95,12 @@ const INITIAL_STATE :Immutable.Map<> = Immutable.fromJS({
   allSentencesForPerson: Immutable.List(),
   allArrestCharges: Immutable.List(),
   allFTAs: Immutable.List(),
+  allPSAs: Immutable.List(),
+  allManualCases: Immutable.List(),
+  allManualCharges: Immutable.Map(),
   charges: Immutable.List(),
   selectedPerson: Immutable.Map(),
+  openPSAs: Immutable.Map(),
   arrestId: '',
   selectedPretrialCase: Immutable.Map(),
   psa: INITIAL_PSA_FORM,
@@ -130,7 +138,10 @@ function formReducer(state :Immutable.Map<> = INITIAL_STATE, action :Object) {
           let allArrestCharges = Immutable.List();
           let allChargesForPerson = Immutable.List();
           let allSentencesForPerson = Immutable.List();
+          let allManualCases = Immutable.List();
+          let allManualCharges = Immutable.List();
           let allFTAs = Immutable.List();
+          let allPSAs = Immutable.List();
 
           const neighbors = Immutable.fromJS(action.value.neighbors) || Immutable.List();
           neighbors.forEach((neighbor) => {
@@ -151,8 +162,14 @@ function formReducer(state :Immutable.Map<> = INITIAL_STATE, action :Object) {
                 arrestOptionsWithoutDate = arrestOptionsWithoutDate.push(neighborObj);
               }
             }
+            else if (entitySetName === MANUAL_PRETRIAL_CASES) {
+              allManualCases = allManualCases.push(neighborObj);
+            }
             else if (entitySetName === ARREST_CHARGES) {
               allArrestCharges = allArrestCharges.push(neighborObj);
+            }
+            else if (entitySetName === MANUAL_CHARGES) {
+              allManualCharges = allManualCharges.push(neighborObj);
             }
             else if (entitySetName === CHARGES) {
               allChargesForPerson = allChargesForPerson.push(neighborObj);
@@ -162,6 +179,9 @@ function formReducer(state :Immutable.Map<> = INITIAL_STATE, action :Object) {
             }
             else if (entitySetName === FTAS) {
               allFTAs = allFTAs.push(neighborObj);
+            }
+            else if (entitySetName === PSA_SCORES) {
+              allPSAs = allPSAs.push(neighborObj);
             }
           });
 
@@ -181,7 +201,11 @@ function formReducer(state :Immutable.Map<> = INITIAL_STATE, action :Object) {
             .set('allChargesForPerson', allChargesForPerson)
             .set('allSentencesForPerson', allSentencesForPerson)
             .set('allFTAs', allFTAs)
-            .set('allArrestCharges', allArrestCharges);
+            .set('allPSAs', allPSAs)
+            .set('allArrestCharges', allArrestCharges)
+            .set('openPSAs', Immutable.fromJS(action.value.openPSAs))
+            .set('allManualCases', allManualCases)
+            .set('allManualCharges', getMapByCaseId(allManualCharges, CHARGE_ID));
         }
       });
     }
@@ -234,6 +258,10 @@ function formReducer(state :Immutable.Map<> = INITIAL_STATE, action :Object) {
         .set('allChargesForPerson', Immutable.List())
         .set('allSentencesForPerson', Immutable.List())
         .set('allFTAs', Immutable.List())
+        .set('allPSAs', Immutable.List())
+        .set('allManualCases', Immutable.List())
+        .set('allManualCharges', Immutable.Map())
+        .set('openPSAs', Immutable.Map())
         .set('selectPerson', Immutable.Map())
         .set('arrestId', '')
         .set('selectedPretrialCase', Immutable.Map())
