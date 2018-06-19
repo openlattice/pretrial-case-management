@@ -11,6 +11,7 @@ import StyledButton from '../buttons/StyledButton';
 import { PaddedRow, TitleLabel } from '../../utils/Layout';
 
 const SearchRow = styled(PaddedRow)`
+  display: flex;
   align-items: flex-end;
   justify-content: center;
   margin: 10px;

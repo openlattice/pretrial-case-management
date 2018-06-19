@@ -2,6 +2,7 @@ import * as OverrideClassNames from './OverrideClassNames';
 
 export const globals = {
   [`.${OverrideClassNames.NAV_TABS}`]: {
+    display: 'flex',
     'justify-content': 'center'
   },
   [`.${OverrideClassNames.PSA_REVIEW_MODAL}`]: {

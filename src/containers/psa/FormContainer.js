@@ -52,12 +52,13 @@ import {
   getPrevPath
 } from '../../utils/Helpers';
 import { tryAutofillFields } from '../../utils/AutofillUtils';
-import { CONTEXT, DMF, ID_FIELD_NAMES, NOTES, PSA } from '../../utils/consts/Consts';
+import { CONTEXT, DMF, ID_FIELD_NAMES, NOTES, PSA, PSA_STATUSES } from '../../utils/consts/Consts';
 import { PROPERTY_TYPES, ENTITY_SETS } from '../../utils/consts/DataModelConsts';
 
 const {
   PEOPLE,
   PRETRIAL_CASES,
+  PSA_SCORES,
   RELEASE_RECOMMENDATIONS
 } = ENTITY_SETS;
 
@@ -327,7 +328,7 @@ class Form extends React.Component<Props, State> {
       dmf,
       scoresWereGenerated: true
     });
-    this.submitEntities(scores, riskFactors, dmf);
+    this.submitEntities(scores.set(PROPERTY_TYPES.STATUS, Immutable.List.of(PSA_STATUSES.OPEN)), riskFactors, dmf);
   }
 
   clear = () => {
