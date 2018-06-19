@@ -145,6 +145,8 @@ export const PROPERTY_TYPES = {
   NCA_SCALE: 'psa.ncaScale',
   FTA_SCALE: 'psa.ftaScale',
   TIMESTAMP: 'psa.GeneratedDate',
+  STATUS: 'general.status',
+  FAILURE_REASON: 'justice.failurereason',
 
   // Release recommendation entity type consts
   GENERAL_ID: 'general.id',
