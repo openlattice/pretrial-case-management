@@ -239,6 +239,19 @@ export const ID_FIELDS = {
   SENTENCE: 'sentenceEntityKeyId'
 };
 
+export const PSA_STATUSES = {
+  OPEN: 'Open',
+  SUCCESS: 'Success',
+  FAILURE: 'Failure'
+};
+
+export const PSA_FAILURE_REASONS = {
+  FTA: 'Failure to Appear',
+  REARREST: 'Rearrest',
+  NONCOMPLIANCE: 'Non-compliance',
+  OTHER: 'Other'
+};
+
 export const TABLE_WIDTH = 1000;
 export const ROW_HEIGHT = 50;
 export const TABLE_OFFSET = 2;
