@@ -21,6 +21,7 @@ import {
   PaddedRow,
   TitleLabel
 } from '../../utils/Layout';
+import { toISODate } from '../../utils/Utils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import * as Routes from '../../core/router/Routes';
 
@@ -148,7 +149,9 @@ class SearchPeopleContainer extends React.Component<Props, State> {
       [Routes.LAST_NAME]: lastName,
       [Routes.FIRST_NAME]: firstName
     };
-    if (dob) params[Routes.DOB] = dob;
+    if (dob) {
+      params[Routes.DOB] = toISODate(moment(dob));
+    }
 
     this.props.history.push(`${Routes.NEW_PERSON}?${qs.stringify(params)}`);
   }
