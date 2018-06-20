@@ -32,6 +32,8 @@ const CloseButton = styled(StyledButton)`
 type Props = {
   open :boolean,
   onClose :() => void,
+  defaultStatus? :?string,
+  defaultFailureReasons? :string[],
   onSubmit :(status :string, failureReason :string[]) => void
 };
 
@@ -78,8 +80,8 @@ export default class ClosePSAModal extends React.Component<Props, State> {
   constructor(props :Props) {
     super(props);
     this.state = {
-      status: null,
-      failureReason: []
+      status: props.defaultStatus,
+      failureReason: props.defaultFailureReasons
     };
   }
 

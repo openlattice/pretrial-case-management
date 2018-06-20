@@ -5,6 +5,7 @@
 import Immutable from 'immutable';
 
 import {
+  changePSAStatus,
   checkPSAPermissions,
   loadCaseHistory,
   loadPSAData,
@@ -33,6 +34,13 @@ const INITIAL_STATE :Immutable.Map<*, *> = Immutable.fromJS({
 
 export default function reviewReducer(state :Immutable.Map<*, *> = INITIAL_STATE, action :SequenceAction) {
   switch (action.type) {
+
+    case changePSAStatus.case(action.type): {
+      return changePSAStatus.reducer(state, action, {
+        SUCCESS: () =>
+          state.set('scoresAsMap', state.get('scoresAsMap').set(action.value.id, Immutable.fromJS(action.value.entity)))
+      });
+    }
 
     case checkPSAPermissions.case(action.type): {
       return checkPSAPermissions.reducer(state, action, {

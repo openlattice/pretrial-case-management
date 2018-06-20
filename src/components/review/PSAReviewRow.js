@@ -422,10 +422,10 @@ export default class PSAReviewRow extends React.Component<Props, State> {
   handleStatusChange = (status :string, failureReason :string[]) => {
     if (!this.props.changePSAStatus) return;
 
-    let scoresEntity = this.props.scores.set(PROPERTY_TYPES.STATUS, Immutable.List.of(status));
-    if (failureReason.length) {
-      scoresEntity = scoresEntity.set(PROPERTY_TYPES.FAILURE_REASON, Immutable.fromJS(failureReason));
-    }
+    const scoresEntity = this.props.scores
+      .set(PROPERTY_TYPES.STATUS, Immutable.List.of(status))
+      .set(PROPERTY_TYPES.FAILURE_REASON, Immutable.fromJS(failureReason));
+
     const scoresId = this.props.entityKeyId;
     const scoresEntitySetId = this.getEntitySetId(ENTITY_SETS.PSA_SCORES);
     this.props.changePSAStatus({
@@ -557,6 +557,8 @@ export default class PSAReviewRow extends React.Component<Props, State> {
         <Modal.Body>
           <ClosePSAModal
               open={this.state.closing}
+              defaultStatus={this.props.scores.getIn([PROPERTY_TYPES.STATUS, 0])}
+              defaultFailureReasons={this.props.scores.get(PROPERTY_TYPES.FAILURE_REASON, Immutable.List()).toJS()}
               onClose={() => this.setState({ closing: false })}
               onSubmit={this.handleStatusChange} />
           <Tabs id={`details-${this.props.entityKeyId}`} activeKey={this.state.view} onSelect={this.onViewSelect}>
