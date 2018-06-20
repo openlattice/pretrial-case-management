@@ -5,7 +5,7 @@
 import Immutable from 'immutable';
 import moment from 'moment';
 import { AuthorizationApi, DataApi, EntityDataModelApi, SearchApi } from 'lattice';
-import { all, call, put, takeEvery } from 'redux-saga/effects';
+import { all, call, put, take, takeEvery } from 'redux-saga/effects';
 
 import exportPDF from '../../utils/PDFUtils';
 import { getMapByCaseId } from '../../utils/CaseUtils';
@@ -14,18 +14,20 @@ import {
   CHECK_PSA_PERMISSIONS,
   DOWNLOAD_PSA_REVIEW_PDF,
   LOAD_CASE_HISTORY,
+  LOAD_PSA_DATA,
   LOAD_PSAS_BY_DATE,
   UPDATE_SCORES_AND_RISK_FACTORS,
   changePSAStatus,
   checkPSAPermissions,
   downloadPSAReviewPDF,
   loadCaseHistory,
+  loadPSAData,
   loadPSAsByDate,
   updateScoresAndRiskFactors
 } from './ReviewActionFactory';
 
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { RESULT_CATEGORIES } from '../../utils/consts/DMFResultConsts';
+import { RESULT_CATEGORIES, formatDMFFromEntity } from '../../utils/consts/DMFResultConsts';
 import { PSA_STATUSES } from '../../utils/consts/Consts';
 import { getFqnObj } from '../../utils/Utils';
 
@@ -190,25 +192,14 @@ function* getAllSearchResults(entitySetId :string, searchTerm :string) :Generato
   return yield call(SearchApi.searchEntitySetData, entitySetId, loadResultsRequest);
 }
 
-function* loadPSAsByDateWorker(action :SequenceAction) :Generator<*, *, *> {
-
+function* loadPSADataWorker(action :SequenceAction) :Generator<*, *, *> {
   try {
-    yield put(loadPSAsByDate.request(action.id));
+    yield put(loadPSAData.request(action.id))
     const entitySetId = yield call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.PSA_SCORES);
-    const statusPropertyTypeId = yield call(EntityDataModelApi.getPropertyTypeId, getFqnObj(PROPERTY_TYPES.STATUS));
-    const filter = action.value || PSA_STATUSES.OPEN;
-    const searchTerm = action.value === '*' ? action.value : `${statusPropertyTypeId}:"${filter}"`;
-    const allScoreData = yield call(getAllSearchResults, entitySetId, searchTerm);
-
-    let allFilers = Immutable.Set();
-    let scoresAsMap = Immutable.Map();
-    allScoreData.hits.forEach((row) => {
-      scoresAsMap = scoresAsMap.set(row.id[0], Immutable.fromJS(row).delete('id'));
-    });
-
-    let neighborsById = yield call(SearchApi.searchEntityNeighborsBulk, entitySetId, scoresAsMap.keySeq().toJS());
+    let neighborsById = yield call(SearchApi.searchEntityNeighborsBulk, entitySetId, action.value);
     neighborsById = Immutable.fromJS(neighborsById);
 
+    let allFilers = Immutable.Set();
     let psaNeighborsById = Immutable.Map();
     let psaNeighborsByDate = Immutable.Map();
 
@@ -254,13 +245,60 @@ function* loadPSAsByDateWorker(action :SequenceAction) :Generator<*, *, *> {
       });
     });
 
-    yield put(loadPSAsByDate.success(action.id, {
-      scoresAsMap,
+    yield put(loadPSAData.success(action.id, {
       psaNeighborsByDate,
-      entitySetId,
       psaNeighborsById,
       allFilers
     }));
+  }
+  catch (error) {
+    console.error(error);
+    yield put(loadPSAData.failure(action.id, error));
+  }
+  finally {
+    yield put(loadPSAData.finally(action.id));
+  }
+}
+
+function* loadPSADataWatcher() :Generator<*, *, *> {
+  yield takeEvery(LOAD_PSA_DATA, loadPSADataWorker);
+}
+
+function takeReqSeqSuccessFailure(reqseq :RequestSequence, seqAction :SequenceAction) {
+  return take(
+    (anAction :Object) => {
+      return (anAction.type === reqseq.SUCCESS && anAction.id === seqAction.id)
+        || (anAction.type === reqseq.FAILURE && anAction.id === seqAction.id);
+    }
+  );
+}
+
+function* loadPSAsByDateWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  try {
+    yield put(loadPSAsByDate.request(action.id));
+    const entitySetId = yield call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.PSA_SCORES);
+    const statusPropertyTypeId = yield call(EntityDataModelApi.getPropertyTypeId, getFqnObj(PROPERTY_TYPES.STATUS));
+    const filter = action.value || PSA_STATUSES.OPEN;
+    const searchTerm = action.value === '*' ? action.value : `${statusPropertyTypeId}:"${filter}"`;
+    const allScoreData = yield call(getAllSearchResults, entitySetId, searchTerm);
+
+    let scoresAsMap = Immutable.Map();
+    allScoreData.hits.forEach((row) => {
+      scoresAsMap = scoresAsMap.set(row.id[0], Immutable.fromJS(row).delete('id'));
+    });
+
+    yield put(loadPSAsByDate.success(action.id, {
+      scoresAsMap,
+      entitySetId
+    }));
+
+    const psaIds = scoresAsMap.keySeq().toJS();
+    if (psaIds.length) {
+      const loadPSADataRequest = loadPSAData(psaIds);
+      yield put(loadPSADataRequest);
+      yield takeReqSeqSuccessFailure(loadPSAData, loadPSADataRequest);
+    }
   }
   catch (error) {
     console.error(error);
@@ -296,13 +334,7 @@ function* downloadPSAReviewPDFWorker(action :SequenceAction) :Generator<*, *, *>
     ], Immutable.List()).join(', ');
 
     const dmf = neighbors.getIn([ENTITY_SETS.DMF_RESULTS, 'neighborDetails'], Immutable.Map());
-    const formattedDMF = Immutable.Map()
-      .set(RESULT_CATEGORIES.RELEASE_TYPE, dmf.getIn([PROPERTY_TYPES.RELEASE_TYPE, 0]))
-      .set(RESULT_CATEGORIES.CONDITIONS_LEVEL, dmf.getIn([PROPERTY_TYPES.CONDITIONS_LEVEL, 0]))
-      .set(RESULT_CATEGORIES.CONDITION_1, dmf.getIn([PROPERTY_TYPES.CONDITION_1, 0]))
-      .set(RESULT_CATEGORIES.CONDITION_2, dmf.getIn([PROPERTY_TYPES.CONDITION_2, 0]))
-      .set(RESULT_CATEGORIES.CONDITION_3, dmf.getIn([PROPERTY_TYPES.CONDITION_3, 0]))
-      .filter(val => !!val);
+    const formattedDMF = Immutable.fromJS(formatDMFFromEntity(dmf)).filter(val => !!val);
 
     const setMultimapToMap = (entitySetName) => {
       let map = Immutable.Map();
@@ -331,7 +363,7 @@ function* downloadPSAReviewPDFWorker(action :SequenceAction) :Generator<*, *, *>
     let createData;
     let updateData;
 
-    neighbors.get(ENTITY_SETS.STAFF).forEach((writerNeighbor) => {
+    neighbors.get(ENTITY_SETS.STAFF, Immutable.List()).forEach((writerNeighbor) => {
       const name = writerNeighbor.getIn(['associationEntitySet', 'name']);
       const user = writerNeighbor.getIn(['neighborDetails', PROPERTY_TYPES.PERSON_ID, 0], '');
 
@@ -474,6 +506,7 @@ export {
   checkPSAPermissionsWatcher,
   downloadPSAReviewPDFWatcher,
   loadCaseHistoryWatcher,
+  loadPSADataWatcher,
   loadPSAsByDateWatcher,
   updateScoresAndRiskFactorsWatcher
 };

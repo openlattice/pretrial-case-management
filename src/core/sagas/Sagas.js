@@ -69,6 +69,7 @@ export default function* sagas() :Generator<*, *, *> {
     fork(ReviewSagas.checkPSAPermissionsWatcher),
     fork(ReviewSagas.downloadPSAReviewPDFWatcher),
     fork(ReviewSagas.loadCaseHistoryWatcher),
+    fork(ReviewSagas.loadPSADataWatcher),
     fork(ReviewSagas.loadPSAsByDateWatcher),
     fork(ReviewSagas.updateScoresAndRiskFactorsWatcher)
   ];

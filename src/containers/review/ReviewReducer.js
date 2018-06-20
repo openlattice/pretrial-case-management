@@ -7,6 +7,7 @@ import Immutable from 'immutable';
 import {
   checkPSAPermissions,
   loadCaseHistory,
+  loadPSAData,
   loadPSAsByDate,
   updateScoresAndRiskFactors
 } from './ReviewActionFactory';
@@ -18,7 +19,7 @@ const INITIAL_STATE :Immutable.Map<*, *> = Immutable.fromJS({
   psaNeighborsById: Immutable.Map(),
   psaNeighborsByDate: Immutable.Map(),
   loadingResults: false,
-  errorMesasge: '',
+  errorMessage: '',
   allFilers: Immutable.Set(),
   caseHistory: Immutable.Map(),
   manualCaseHistory: Immutable.Map(),
@@ -66,24 +67,32 @@ export default function reviewReducer(state :Immutable.Map<*, *> = INITIAL_STATE
       });
     }
 
+    case loadPSAData.case(action.type): {
+      return loadPSAData.reducer(state, action, {
+        REQUEST: () => state
+          .set('errorMessage', ''),
+        SUCCESS: () => state
+          .set('psaNeighborsById', Immutable.fromJS(action.value.psaNeighborsById))
+          .set('psaNeighborsByDate', Immutable.fromJS(action.value.psaNeighborsByDate))
+          .set('allFilers', action.value.allFilers.sort())
+          .set('errorMessage', ''),
+        FAILURE: () => state
+          .set('psaNeighborsByDate', Immutable.Map())
+          .set('errorMessage', action.value)
+      });
+    }
+
     case loadPSAsByDate.case(action.type): {
       return loadPSAsByDate.reducer(state, action, {
         REQUEST: () => state
           .set('loadingResults', true)
-          .set('errorMesasge', '')
           .set('scoresEntitySetId', ''),
         SUCCESS: () => state
           .set('scoresAsMap', Immutable.fromJS(action.value.scoresAsMap))
-          .set('scoresEntitySetId', action.value.entitySetId)
-          .set('psaNeighborsById', Immutable.fromJS(action.value.psaNeighborsById))
-          .set('psaNeighborsByDate', Immutable.fromJS(action.value.psaNeighborsByDate))
-          .set('allFilers', action.value.allFilers.sort())
-          .set('errorMesasge', ''),
+          .set('scoresEntitySetId', action.value.entitySetId),
         FAILURE: () => state
           .set('scoresEntitySetId', '')
-          .set('scoresAsMap', Immutable.Map())
-          .set('psaNeighborsByDate', Immutable.Map())
-          .set('errorMesasge', action.value.errorMesasge),
+          .set('scoresAsMap', Immutable.Map()),
         FINALLY: () => state.set('loadingResults', false)
       });
     }
