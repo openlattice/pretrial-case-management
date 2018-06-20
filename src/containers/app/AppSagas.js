@@ -15,8 +15,12 @@ function* authExpirationCleanupWatcher() :Generator<*, *, *> {
   yield takeEvery(AuthActionFactory.AUTH_EXPIRED, cleanupWorker);
 }
 
+function* authFailureCleanupWatcher() :Generator<*, *, *> {
+  yield takeEvery(AuthActionFactory.AUTH_FAILURE, cleanupWorker);
+}
+
 function* logoutCleanupWatcher() :Generator<*, *, *> {
   yield takeEvery(AuthActionFactory.LOGOUT, cleanupWorker);
 }
 
-export { authExpirationCleanupWatcher, logoutCleanupWatcher };
+export { authExpirationCleanupWatcher, authFailureCleanupWatcher, logoutCleanupWatcher };
