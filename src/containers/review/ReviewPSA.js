@@ -126,7 +126,6 @@ const SortButton = styled(ToggleButton)`
 `;
 
 const DATE_FORMAT = 'MM/DD/YYYY';
-const MAX_RESULTS = 10;
 
 const SORT_TYPES = {
   DATE: 'DATE',
@@ -198,7 +197,7 @@ class ReviewPSA extends React.Component<Props, State> {
   }
 
   componentDidMount() {
-    this.props.actions.loadPSAsByDate(PSA_STATUSES[this.state.status].value);
+    this.props.actions.loadPSAsByDate(STATUS_OPTIONS[this.state.status].value);
   }
 
   updateFilters = (newFilters :Object) => {
