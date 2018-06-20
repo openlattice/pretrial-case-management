@@ -9,6 +9,7 @@ import { bindActionCreators } from 'redux';
 import { Pagination } from 'react-bootstrap';
 
 import PSAReviewRow from '../../components/review/PSAReviewRow';
+import LoadingSpinner from '../../components/LoadingSpinner';
 import { ENTITY_SETS } from '../../utils/consts/DataModelConsts';
 import { CenteredContainer } from '../../utils/Layout';
 import * as FormActionFactory from '../psa/FormActionFactory';
@@ -64,7 +65,8 @@ type Props = {
   manualChargeHistory :Immutable.Map<*, *>,
   sentenceHistory :Immutable.Map<*, *>,
   ftaHistory :Immutable.Map<*, *>,
-  readOnlyPermissions :boolean
+  readOnlyPermissions :boolean,
+  loadingPSAData :boolean
 }
 
 type State = {
@@ -146,7 +148,7 @@ class PSAReviewRowList extends React.Component<Props, State> {
   renderPagination = (numResults) => {
     const { start } = this.state;
 
-    if (start + MAX_RESULTS >= numResults) return null;
+    if (numResults <= MAX_RESULTS) return null;
     const numPages = Math.ceil(numResults / MAX_RESULTS);
     const currPage = (start / MAX_RESULTS) + 1;
     return (
@@ -165,8 +167,12 @@ class PSAReviewRowList extends React.Component<Props, State> {
   }
 
   render() {
-    const { scoreSeq } = this.props;
+    const { scoreSeq, loadingPSAData } = this.props;
     const { start } = this.state;
+
+    if (loadingPSAData) {
+      return <LoadingSpinner />;
+    }
 
     const items = scoreSeq.slice(start, start + MAX_RESULTS);
     const numItems = scoreSeq.length || scoreSeq.size;
@@ -190,7 +196,8 @@ function mapStateToProps(state) {
     manualChargeHistory: review.get('manualChargeHistory'),
     sentenceHistory: review.get('sentenceHistory'),
     ftaHistory: review.get('ftaHistory'),
-    readOnlyPermissions: review.get('readOnly')
+    readOnlyPermissions: review.get('readOnly'),
+    loadingPSAData: review.get('loadingPSAData')
   };
 }
 

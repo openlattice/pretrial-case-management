@@ -504,7 +504,7 @@ function mapStateToProps(state) {
     psaNeighborsByDate: review.get('psaNeighborsByDate'),
     psaNeighborsById: review.get('psaNeighborsById'),
     allFilers: review.get('allFilers'),
-    loadingResults: review.get('loadingResults'),
+    loadingResults: review.get('loadingResults') || review.get('loadingPSAData'),
     errorMessage: review.get('errorMessage')
   };
 }

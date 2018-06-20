@@ -18,6 +18,7 @@ const INITIAL_STATE :Immutable.Map<*, *> = Immutable.fromJS({
   scoresAsMap: Immutable.Map(),
   psaNeighborsById: Immutable.Map(),
   psaNeighborsByDate: Immutable.Map(),
+  loadingPSAData: false,
   loadingResults: false,
   errorMessage: '',
   allFilers: Immutable.Set(),
@@ -70,6 +71,7 @@ export default function reviewReducer(state :Immutable.Map<*, *> = INITIAL_STATE
     case loadPSAData.case(action.type): {
       return loadPSAData.reducer(state, action, {
         REQUEST: () => state
+          .set('loadingPSAData', true)
           .set('errorMessage', ''),
         SUCCESS: () => state
           .set('psaNeighborsById', Immutable.fromJS(action.value.psaNeighborsById))
@@ -78,7 +80,8 @@ export default function reviewReducer(state :Immutable.Map<*, *> = INITIAL_STATE
           .set('errorMessage', ''),
         FAILURE: () => state
           .set('psaNeighborsByDate', Immutable.Map())
-          .set('errorMessage', action.value)
+          .set('errorMessage', action.value),
+        FINALLY: () => state.set('loadingPSAData', false)
       });
     }
 
