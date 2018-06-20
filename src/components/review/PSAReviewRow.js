@@ -89,6 +89,10 @@ const TitleHeader = styled.span`
   margin-right: 15px;
 `;
 
+const Header = styled.div`
+  font-weight: bold;
+`;
+
 type Props = {
   entityKeyId :string,
   scores :Immutable.Map<*, *>,
@@ -281,7 +285,7 @@ export default class PSAReviewRow extends React.Component<Props, State> {
     );
     return (
       <NotesContainer>
-        <div>Notes:</div>
+        <Header>Notes</Header>
         <InlineEditableControl
             type="textarea"
             value={notes}
@@ -418,10 +422,10 @@ export default class PSAReviewRow extends React.Component<Props, State> {
   handleStatusChange = (status :string, failureReason :string[]) => {
     if (!this.props.changePSAStatus) return;
 
-    let scoresEntity = this.props.scores.set(PROPERTY_TYPES.STATUS, Immutable.List.of(status));
-    if (failureReason.length) {
-      scoresEntity = scoresEntity.set(PROPERTY_TYPES.FAILURE_REASON, Immutable.fromJS(failureReason));
-    }
+    const scoresEntity = this.props.scores
+      .set(PROPERTY_TYPES.STATUS, Immutable.List.of(status))
+      .set(PROPERTY_TYPES.FAILURE_REASON, Immutable.fromJS(failureReason));
+
     const scoresId = this.props.entityKeyId;
     const scoresEntitySetId = this.getEntitySetId(ENTITY_SETS.PSA_SCORES);
     this.props.changePSAStatus({
@@ -448,6 +452,11 @@ export default class PSAReviewRow extends React.Component<Props, State> {
     return `${firstName} ${lastName}`;
   }
 
+  psaClosed = () => {
+    const status = this.props.scores.getIn([PROPERTY_TYPES.STATUS, 0], '');
+    return status && status !== PSA_STATUSES.OPEN;
+  }
+
   onViewSelect = (view :string) => {
     this.setState({ view });
   }
@@ -472,7 +481,7 @@ export default class PSAReviewRow extends React.Component<Props, State> {
     } = this.props;
     const { editing, riskFactors } = this.state;
 
-    const editButton = (editing || this.props.readOnly) ? null : (
+    const editButton = (editing || this.props.readOnly || this.psaClosed()) ? null : (
       <CenteredContainer>
         <StyledButton onClick={() => {
           this.setState({ editing: true });
@@ -509,7 +518,7 @@ export default class PSAReviewRow extends React.Component<Props, State> {
             allCases={caseHistory}
             allSentences={allSentences}
             allFTAs={ftaHistory}
-            viewOnly={!editing} />
+            viewOnly={!editing || this.psaClosed()} />
         {this.renderNotes()}
         {editButton}
       </div>
@@ -531,8 +540,6 @@ export default class PSAReviewRow extends React.Component<Props, State> {
 
   renderDetails = () => {
     const { open } = this.state;
-    const status = this.props.scores.getIn([PROPERTY_TYPES.STATUS, 0], '');
-    const psaIsPending = !status || status === PSA_STATUSES.OPEN;
 
     return (
       <Modal show={open} onHide={this.closeModal} dialogClassName={OverrideClassNames.PSA_REVIEW_MODAL}>
@@ -540,7 +547,7 @@ export default class PSAReviewRow extends React.Component<Props, State> {
           <Modal.Title>
             <div>
               <TitleHeader>{`PSA Details: ${this.getName()}`}</TitleHeader>
-              { this.props.readOnly || !psaIsPending
+              { this.props.readOnly
                 ? null
                 : <StyledButton onClick={() => this.setState({ closing: true })}>Close PSA</StyledButton>
               }
@@ -550,6 +557,8 @@ export default class PSAReviewRow extends React.Component<Props, State> {
         <Modal.Body>
           <ClosePSAModal
               open={this.state.closing}
+              defaultStatus={this.props.scores.getIn([PROPERTY_TYPES.STATUS, 0])}
+              defaultFailureReasons={this.props.scores.get(PROPERTY_TYPES.FAILURE_REASON, Immutable.List()).toJS()}
               onClose={() => this.setState({ closing: false })}
               onSubmit={this.handleStatusChange} />
           <Tabs id={`details-${this.props.entityKeyId}`} activeKey={this.state.view} onSelect={this.onViewSelect}>

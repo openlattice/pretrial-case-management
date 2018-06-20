@@ -483,7 +483,12 @@ function* changePSAStatusWorker(action :SequenceAction) :Generator<*, *, *> {
     yield put(changePSAStatus.request(action.id));
 
     yield call(DataApi.replaceEntityInEntitySetUsingFqns, scoresEntitySetId, scoresId, scoresEntity.toJS());
-    yield put(changePSAStatus.success(action.id));
+    const newScoresEntity = yield call(DataApi.getEntity, scoresEntitySetId, scoresId);
+
+    yield put(changePSAStatus.success(action.id, {
+      id: scoresId,
+      entity: newScoresEntity
+    }));
 
     if (callback) {
       callback();
