@@ -642,6 +642,7 @@ export default class PSAReviewRow extends React.Component<Props, State> {
   }
 
   render() {
+    if (!this.props.scores) return null;
     return (
       <ReviewRowContainer>
         {this.renderMetadata()}
