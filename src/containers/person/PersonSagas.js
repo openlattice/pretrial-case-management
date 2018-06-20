@@ -89,7 +89,6 @@ export function* watchLoadPersonDetailsRequest() :Generator<*, *, *> {
     try {
       const entitySetId :string = yield call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.PEOPLE);
       const entityKeyId = action.id;
-      const lastImportUpdate = moment('2018-05-25T19:07:58.236Z');
 
       // <HACK>
       if (action.shouldLoadCases && !__ENV_DEV__) {
@@ -97,27 +96,7 @@ export function* watchLoadPersonDetailsRequest() :Generator<*, *, *> {
         const response = yield call(SearchApi.searchEntityNeighbors, entitySetId, entityKeyId);
         const caseNums = response.filter((neighborObj) => {
           const { neighborEntitySet, neighborDetails } = neighborObj;
-          if (neighborEntitySet && neighborDetails && neighborEntitySet.name === ENTITY_SETS.PRETRIAL_CASES) {
-
-            let shouldUpdate = false;
-            if (!neighborDetails[PROPERTY_TYPES.FILE_DATE]) {
-              shouldUpdate = true;
-            }
-            else {
-              const lastUpdatedDateList = neighborDetails[PROPERTY_TYPES.LAST_UPDATED_DATE];
-              if (lastUpdatedDateList && lastUpdatedDateList.length) {
-                lastUpdatedDateList.forEach((updateDateStr) => {
-                  const updateDate = moment(updateDateStr);
-                  if (updateDate.isValid() && updateDate.isBefore(lastImportUpdate)) {
-                    shouldUpdate = true;
-                  }
-                });
-              }
-            }
-            return shouldUpdate;
-          }
-
-          return false;
+          return neighborEntitySet && neighborDetails && neighborEntitySet.name === ENTITY_SETS.PRETRIAL_CASES;
         });
 
         if (caseNums.length) {
