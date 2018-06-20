@@ -22,7 +22,7 @@ import psaEditedConfig from '../../config/formconfig/PsaEditedConfig';
 import { getScoresAndRiskFactors, calculateDMF } from '../../utils/ScoringUtils';
 import { CenteredContainer } from '../../utils/Layout';
 import { toISODateTime } from '../../utils/Utils';
-import { CONTEXT, DMF, EDIT_FIELDS, ID_FIELDS, NOTES, PSA } from '../../utils/consts/Consts';
+import { CONTEXT, DMF, EDIT_FIELDS, ID_FIELDS, NOTES, PSA, PSA_STATUSES } from '../../utils/consts/Consts';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { RESULT_CATEGORIES, formatDMFFromEntity } from '../../utils/consts/DMFResultConsts';
 import * as OverrideClassNames from '../../utils/styleoverrides/OverrideClassNames';
@@ -93,6 +93,7 @@ type Props = {
   entityKeyId :string,
   scores :Immutable.Map<*, *>,
   neighbors :Immutable.Map<*, *>,
+  hideCaseHistory? :boolean,
   caseHistory :Immutable.List<*>,
   manualCaseHistory :Immutable.List<*>,
   chargeHistory :Immutable.Map<*, *>,
@@ -155,6 +156,10 @@ const VIEWS = {
 
 export default class PSAReviewRow extends React.Component<Props, State> {
 
+  static defaultProps = {
+    hideCaseHistory: false
+  }
+
   constructor(props :Props) {
     super(props);
     this.state = {
@@ -169,7 +174,8 @@ export default class PSAReviewRow extends React.Component<Props, State> {
 
   componentWillReceiveProps(nextProps :Props) {
     this.setState({
-      dmf: this.getDMF(nextProps.neighbors)
+      dmf: this.getDMF(nextProps.neighbors),
+      riskFactors: this.getRiskFactors(nextProps.neighbors)
     });
 
   }
@@ -525,6 +531,7 @@ export default class PSAReviewRow extends React.Component<Props, State> {
 
   renderDetails = () => {
     const { open } = this.state;
+    const psaIsPending = this.props.scores.getIn([PROPERTY_TYPES.STATUS, 0], '') === PSA_STATUSES.OPEN;
 
     return (
       <Modal show={open} onHide={this.closeModal} dialogClassName={OverrideClassNames.PSA_REVIEW_MODAL}>
@@ -532,7 +539,7 @@ export default class PSAReviewRow extends React.Component<Props, State> {
           <Modal.Title>
             <div>
               <TitleHeader>{`PSA Details: ${this.getName()}`}</TitleHeader>
-              { this.props.readOnly
+              { this.props.readOnly || !psaIsPending
                 ? null
                 : <StyledButton onClick={() => this.setState({ closing: true })}>Close PSA</StyledButton>
               }
@@ -548,9 +555,13 @@ export default class PSAReviewRow extends React.Component<Props, State> {
             <Tab eventKey={VIEWS.SUMMARY} title="Summary">{this.renderSummary()}</Tab>
             <Tab eventKey={VIEWS.PSA} title="PSA">{this.renderPSADetails()}</Tab>
             <Tab eventKey={VIEWS.DMF} title="DMF">{this.renderDMFExplanation()}</Tab>
-            <Tab eventKey={VIEWS.HISTORY} title="Case History">
-              <CaseHistory caseHistory={this.props.caseHistory} chargeHistory={this.props.chargeHistory} />
-            </Tab>
+            {
+              this.props.hideCaseHistory ? null : (
+                <Tab eventKey={VIEWS.HISTORY} title="Case History">
+                  <CaseHistory caseHistory={this.props.caseHistory} chargeHistory={this.props.chargeHistory} />
+                </Tab>
+              )
+            }
           </Tabs>
         </Modal.Body>
       </Modal>

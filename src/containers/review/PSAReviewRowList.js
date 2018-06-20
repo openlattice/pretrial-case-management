@@ -18,6 +18,7 @@ import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
 
 type Props = {
   scoreSeq :Immutable.Seq,
+  hideCaseHistory? :boolean,
   actions :{
     downloadPSAReviewPDF :(values :{
       neighbors :Immutable.Map<*, *>,
@@ -74,6 +75,10 @@ const MAX_RESULTS = 10;
 
 class PSAReviewRowList extends React.Component<Props, State> {
 
+  static defaultProps = {
+    hideCaseHistory: false
+  }
+
   constructor(props :Props) {
     super(props);
     this.state = {
@@ -125,7 +130,8 @@ class PSAReviewRowList extends React.Component<Props, State> {
           sentenceHistory={sentenceHistory}
           ftaHistory={ftaHistory}
           readOnly={this.props.readOnlyPermissions}
-          key={scoreId} />
+          key={scoreId}
+          hideCaseHistory={this.props.hideCaseHistory} />
     );
   }
 
@@ -139,7 +145,8 @@ class PSAReviewRowList extends React.Component<Props, State> {
 
   renderPagination = (numResults) => {
     const { start } = this.state;
-    if (numResults <= MAX_RESULTS) return null;
+
+    if (start + MAX_RESULTS >= numResults) return null;
     const numPages = Math.ceil(numResults / MAX_RESULTS);
     const currPage = (start / MAX_RESULTS) + 1;
     return (
@@ -162,11 +169,12 @@ class PSAReviewRowList extends React.Component<Props, State> {
     const { start } = this.state;
 
     const items = scoreSeq.slice(start, start + MAX_RESULTS);
+    const numItems = scoreSeq.length || scoreSeq.size;
     return (
       <div>
-        {this.renderPagination(scoreSeq.length)}
+        {this.renderPagination(numItems)}
         {items.map(([scoreId, scores]) => this.renderRow(scoreId, scores))}
-        {this.renderPagination(scoreSeq.length)}
+        {this.renderPagination(numItems)}
       </div>
     );
   }

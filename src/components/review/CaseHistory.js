@@ -89,9 +89,11 @@ const CaseHistory = ({ caseHistory, chargeHistory } :Props) => {
 
   chargeHistory.valueSeq().forEach((chargeList) => {
     chargeList.forEach((charge) => {
-      const degreeField = charge.get(PROPERTY_TYPES.CHARGE_LEVEL, Immutable.List());
-      const chargeField = charge.get(PROPERTY_TYPES.CHARGE_STATUTE, Immutable.List());
-      const convicted = dispositionFieldIsGuilty(charge.get(PROPERTY_TYPES.DISPOSITION, Immutable.List()));
+      const degreeField = charge.get(PROPERTY_TYPES.CHARGE_LEVEL, Immutable.List()).filter(val => !!val);
+      const chargeField = charge.get(PROPERTY_TYPES.CHARGE_STATUTE, Immutable.List()).filter(val => !!val);
+      const convicted = dispositionFieldIsGuilty(
+        charge.get(PROPERTY_TYPES.DISPOSITION, Immutable.List()).filter(val => !!val)
+      );
       if (degreeFieldIsMisdemeanor(degreeField)) {
         numMisdemeanorCharges += 1;
         if (convicted) numMisdemeanorConvictions += 1;
