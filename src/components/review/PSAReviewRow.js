@@ -531,7 +531,8 @@ export default class PSAReviewRow extends React.Component<Props, State> {
 
   renderDetails = () => {
     const { open } = this.state;
-    const psaIsPending = this.props.scores.getIn([PROPERTY_TYPES.STATUS, 0], '') === PSA_STATUSES.OPEN;
+    const status = this.props.scores.getIn([PROPERTY_TYPES.STATUS, 0], '');
+    const psaIsPending = !status || status === PSA_STATUSES.OPEN;
 
     return (
       <Modal show={open} onHide={this.closeModal} dialogClassName={OverrideClassNames.PSA_REVIEW_MODAL}>

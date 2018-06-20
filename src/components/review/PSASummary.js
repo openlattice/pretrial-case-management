@@ -118,6 +118,21 @@ const renderCaseInfo = ({
   );
 };
 
+const StatusInfo = ({ scores }) => {
+  const status = scores.getIn([PROPERTY_TYPES.STATUS, 0], '');
+  const failureReasons = formatValue(scores.get(PROPERTY_TYPES.FAILURE_REASON));
+  let statusText = status;
+  if (failureReasons.length) {
+    statusText = `${statusText} (${failureReasons})`;
+  }
+
+  return (
+    <InfoRow>
+      <InfoItem><InfoHeader>PSA Status: </InfoHeader>{statusText}</InfoItem>
+    </InfoRow>
+  );
+};
+
 const PSASummary = (props :Props) => {
   const { neighbors, scores } = props;
   const dmfRiskFactors = neighbors.getIn([ENTITY_SETS.DMF_RISK_FACTORS, 'neighborDetails'], Immutable.Map());
@@ -141,6 +156,8 @@ const PSASummary = (props :Props) => {
   }
   return (
     <div>
+      <StatusInfo scores={scores} />
+      <hr />
       {renderPersonInfo(neighbors)}
       <hr />
       <CenteredContainer>
