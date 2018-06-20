@@ -25,7 +25,7 @@ import LoadingSpinner from '../../components/LoadingSpinner';
 import PersonSearchFields from '../../components/person/PersonSearchFields';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_STATUSES } from '../../utils/consts/Consts';
-import { CenteredContainer, PaddedRow, TitleLabel, StyledSelect } from '../../utils/Layout';
+import { PaddedRow, TitleLabel, StyledSelect } from '../../utils/Layout';
 import * as FormActionFactory from '../psa/FormActionFactory';
 import * as ReviewActionFactory from './ReviewActionFactory';
 import * as Routes from '../../core/router/Routes';

@@ -99,8 +99,6 @@ const DomainButton = styled(ToggleButton)`
   -webkit-appearance: none !important;
 `;
 
-const MAX_RESULTS = 10;
-
 type Props = {
   history :string[],
   scoresAsMap :Immutable.Map<*, *>,
