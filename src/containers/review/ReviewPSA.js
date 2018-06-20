@@ -10,17 +10,25 @@ import moment from 'moment';
 import styled from 'styled-components';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { ButtonToolbar, Pagination, Tab, Tabs, ToggleButton, ToggleButtonGroup } from 'react-bootstrap';
+import {
+  ButtonToolbar,
+  DropdownButton,
+  MenuItem,
+  Tab,
+  Tabs,
+  ToggleButton,
+  ToggleButtonGroup
+} from 'react-bootstrap';
 
-import PSAReviewRow from '../../components/review/PSAReviewRow';
+import PSAReviewRowList from './PSAReviewRowList';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import PersonSearchFields from '../../components/person/PersonSearchFields';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { PSA_STATUSES } from '../../utils/consts/Consts';
 import { CenteredContainer, PaddedRow, TitleLabel, StyledSelect } from '../../utils/Layout';
 import * as FormActionFactory from '../psa/FormActionFactory';
 import * as ReviewActionFactory from './ReviewActionFactory';
 import * as Routes from '../../core/router/Routes';
-import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
 
 const StyledFormViewWrapper = styled.div`
   display: flex;
@@ -125,56 +133,36 @@ const SORT_TYPES = {
   NAME: 'NAME'
 };
 
+const STATUS_OPTIONS = {
+  OPEN: {
+    value: PSA_STATUSES.OPEN,
+    label: 'Open'
+  },
+  SUCCESS: {
+    value: PSA_STATUSES.SUCCESS,
+    label: 'Successful'
+  },
+  FAILURE: {
+    value: PSA_STATUSES.FAILURE,
+    label: 'Failed'
+  },
+  ALL: {
+    value: '*',
+    label: 'All'
+  }
+};
+
 type Props = {
   history :string[],
-  scoresEntitySetId :string,
   scoresAsMap :Immutable.Map<*, *>,
   psaNeighborsByDate :Immutable.Map<*, Immutable.Map<*, *>>,
   loadingResults :boolean,
   errorMessage :string,
   actions :{
-    clearForm :() => void,
-    downloadPSAReviewPDF :(values :{
-      neighbors :Immutable.Map<*, *>,
-      scores :Immutable.Map<*, *>
-    }) => void,
-    loadCaseHistory :(values :{
-      personId :string,
-      neighbors :Immutable.Map<*, *>
-    }) => void,
-    loadPSAsByDate :() => void,
-    updateScoresAndRiskFactors :(values :{
-      scoresEntitySetId :string,
-      scoresId :string,
-      scoresEntity :Immutable.Map<*, *>,
-      riskFactorsEntitySetId :string,
-      riskFactorsId :string,
-      riskFactorsEntity :Immutable.Map<*, *>,
-      dmfEntitySetId :string,
-      dmfId :string,
-      dmfEntity :Object,
-      dmfRiskFactorsEntitySetId :string,
-      dmfRiskFactorsId :string,
-      dmfRiskFactorsEntity :Object
-    }) => void,
-    updateNotes :(value :{
-      notes :string,
-      entityId :string,
-      entitySetId :string,
-      propertyTypes :Immutable.List<*>
-    }) => void,
-    checkPSAPermissions :() => void,
-    submit :(value :{ config :Object, values :Object}) => void
+    loadPSAsByDate :(filter :string) => void
   },
   psaNeighborsById :Immutable.Map<*, *>,
-  allFilers :Immutable.Set<*>,
-  caseHistory :Immutable.List<*>,
-  manualCaseHistory :Immutable.List<*>,
-  chargeHistory :Immutable.Map<*, *>,
-  manualChargeHistory :Immutable.Map<*, *>,
-  sentenceHistory :Immutable.Map<*, *>,
-  ftaHistory :Immutable.Map<*, *>,
-  readOnly :boolean
+  allFilers :Immutable.Set<*>
 }
 
 type State = {
@@ -184,10 +172,10 @@ type State = {
     firstName :string,
     lastName :string,
     dob :string,
-    filer :string,
-    start :number
+    filer :string
   },
-  sort :string
+  sort :string,
+  status :string
 };
 
 class ReviewPSA extends React.Component<Props, State> {
@@ -202,20 +190,15 @@ class ReviewPSA extends React.Component<Props, State> {
         lastName: '',
         dob: '',
         filer: '',
-        start: 0,
         searchExecuted: false
       },
-      sort: SORT_TYPES.NAME
+      sort: SORT_TYPES.NAME,
+      status: 'OPEN'
     };
   }
 
   componentDidMount() {
-    this.props.actions.checkPSAPermissions();
-    this.props.actions.loadPSAsByDate();
-  }
-
-  componentWillUnmount() {
-    this.props.actions.clearForm();
+    this.props.actions.loadPSAsByDate(PSA_STATUSES[this.state.status].value);
   }
 
   updateFilters = (newFilters :Object) => {
@@ -225,7 +208,6 @@ class ReviewPSA extends React.Component<Props, State> {
       lastName: '',
       dob: '',
       filer: '',
-      start: 0,
       searchExecuted: true
     }, newFilters);
     this.setState({ filters });
@@ -291,7 +273,7 @@ class ReviewPSA extends React.Component<Props, State> {
 
   handleFilterRequest = () => {
     const { activeFilterKey, filters } = this.state;
-    const { start } = filters;
+    const { scoresAsMap } = this.props;
     let items = null;
     if (activeFilterKey === 1) {
       items = this.filterByDate();
@@ -311,46 +293,10 @@ class ReviewPSA extends React.Component<Props, State> {
       items = this.sortRows(items);
     }
 
-    return (
-      <div>
-        {this.renderPagination(items.length)}
-        {items.slice(start, start + MAX_RESULTS).map(([scoreId, neighbors]) => this.renderRow(scoreId, neighbors))}
-        {this.renderPagination(items.length)}
-      </div>
-    );
+    return <PSAReviewRowList scoreSeq={items.map(([id]) => ([id, scoresAsMap.get(id)]))} />;
   }
 
   renderError = () => <ErrorText>{this.props.errorMessage}</ErrorText>
-
-  renderRow = (scoreId, neighbors) => {
-    const scores = this.props.scoresAsMap.get(scoreId, Immutable.Map());
-    const personId = neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborId'], '');
-    const caseHistory = this.props.caseHistory.get(personId, Immutable.List());
-    const manualCaseHistory = this.props.manualCaseHistory.get(personId, Immutable.List());
-    const chargeHistory = this.props.chargeHistory.get(personId, Immutable.Map());
-    const manualChargeHistory = this.props.manualChargeHistory.get(personId, Immutable.Map());
-    const sentenceHistory = this.props.sentenceHistory.get(personId, Immutable.Map());
-    const ftaHistory = this.props.ftaHistory.get(personId, Immutable.Map());
-    return (
-      <PSAReviewRow
-          neighbors={neighbors}
-          scores={scores}
-          entityKeyId={scoreId}
-          downloadFn={this.props.actions.downloadPSAReviewPDF}
-          loadCaseHistoryFn={this.props.actions.loadCaseHistory}
-          updateScoresAndRiskFactors={this.props.actions.updateScoresAndRiskFactors}
-          updateNotes={this.updateNotes}
-          submitData={this.props.actions.submit}
-          caseHistory={caseHistory}
-          manualCaseHistory={manualCaseHistory}
-          chargeHistory={chargeHistory}
-          manualChargeHistory={manualChargeHistory}
-          sentenceHistory={sentenceHistory}
-          ftaHistory={ftaHistory}
-          readOnly={this.props.readOnly}
-          key={scoreId} />
-    );
-  }
 
   sortByName = rowSeq => rowSeq.sort(([id1, neighbor1], [id2, neighbor2]) => {
     const p1 = neighbor1.getIn([ENTITY_SETS.PEOPLE, 'neighborDetails'], Immutable.Map());
@@ -477,9 +423,25 @@ class ReviewPSA extends React.Component<Props, State> {
     this.updateFilters({ searchExecuted: false });
   }
 
+  changeStatus = (status) => {
+    this.setState({ status });
+    this.props.actions.loadPSAsByDate(STATUS_OPTIONS[status].value);
+  }
+
+  renderStatusDropdown = () => (
+    <DropdownButton title={STATUS_OPTIONS[this.state.status].label} id="statusDropdown">
+      {Object.keys(STATUS_OPTIONS).map(k =>
+        <MenuItem key={k} eventKey={k} onClick={() => this.changeStatus(k)}>{STATUS_OPTIONS[k].label}</MenuItem>)}
+    </DropdownButton>
+  )
+
   renderFilters = () => (
     <div>
-      <DatePickerTitle>Filter Submitted PSA Forms</DatePickerTitle>
+      <DatePickerTitle>
+        <span>Filter </span>
+        {this.renderStatusDropdown()}
+        <span> PSA Forms</span>
+      </DatePickerTitle>
       <Tabs id="filter" activeKey={this.state.activeFilterKey} onSelect={this.onFilterSelect}>
         <Tab eventKey={1} title="Date">{this.renderDateRangePicker()}</Tab>
         <Tab eventKey={2} title="Person">{this.renderPersonFilter()}</Tab>
@@ -504,43 +466,6 @@ class ReviewPSA extends React.Component<Props, State> {
       </ButtonToolbar>
     </SortContainer>
   )
-
-  updateNotes = (notes, entityId, entitySetId, propertyTypes) => {
-    this.props.actions.updateNotes({
-      notes,
-      entityId,
-      entitySetId,
-      propertyTypes
-    });
-  }
-
-  updatePage = (start) => {
-    this.setState({ filters: Object.assign({}, this.state.filters, { start }) });
-    window.scrollTo({
-      top: 0,
-      behavior: 'smooth'
-    });
-  }
-
-  renderPagination = (numResults) => {
-    const { start } = this.state.filters;
-    if (numResults <= MAX_RESULTS) return null;
-    const numPages = Math.ceil(numResults / MAX_RESULTS);
-    const currPage = (start / MAX_RESULTS) + 1;
-    return (
-      <CenteredContainer>
-        <Pagination
-            prev
-            next
-            ellipsis
-            boundaryLinks
-            items={numPages}
-            maxButtons={5}
-            activePage={currPage}
-            onSelect={page => this.updatePage((page - 1) * MAX_RESULTS)} />
-      </CenteredContainer>
-    );
-  }
 
   renderContent = () => {
     if (this.props.loadingResults) {
@@ -575,20 +500,12 @@ class ReviewPSA extends React.Component<Props, State> {
 function mapStateToProps(state) {
   const review = state.get('review');
   return {
-    scoresEntitySetId: review.get('scoresEntitySetId'),
     scoresAsMap: review.get('scoresAsMap'),
     psaNeighborsByDate: review.get('psaNeighborsByDate'),
     psaNeighborsById: review.get('psaNeighborsById'),
     allFilers: review.get('allFilers'),
-    loadingResults: review.get('loadingResults'),
-    errorMesasge: review.get('errorMesasge'),
-    caseHistory: review.get('caseHistory'),
-    manualCaseHistory: review.get('manualCaseHistory'),
-    chargeHistory: review.get('chargeHistory'),
-    manualChargeHistory: review.get('manualChargeHistory'),
-    sentenceHistory: review.get('sentenceHistory'),
-    ftaHistory: review.get('ftaHistory'),
-    readOnly: review.get('readOnly')
+    loadingResults: review.get('loadingResults') || review.get('loadingPSAData'),
+    errorMessage: review.get('errorMessage')
   };
 }
 
@@ -601,10 +518,6 @@ function mapDispatchToProps(dispatch :Function) :Object {
 
   Object.keys(ReviewActionFactory).forEach((action :string) => {
     actions[action] = ReviewActionFactory[action];
-  });
-
-  Object.keys(SubmitActionFactory).forEach((action :string) => {
-    actions[action] = SubmitActionFactory[action];
   });
 
   return {

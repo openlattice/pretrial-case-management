@@ -9,6 +9,7 @@ import { connect } from 'react-redux';
 
 import PersonDetails from '../../components/people/PersonDetails';
 import LoadingSpinner from '../../components/LoadingSpinner';
+import { ENTITY_SETS } from '../../utils/consts/DataModelConsts';
 import * as PeopleActionFactory from './PeopleActionFactory';
 import * as ReviewActionFactory from '../review/ReviewActionFactory';
 
@@ -29,6 +30,7 @@ type Props = {
       neighbors :Immutable.Map<*, *>,
       scores :Immutable.Map<*, *>
     }) => void,
+    loadPSAData :(psaIds :string[]) => void
   },
   match :{
     params :{
@@ -44,6 +46,16 @@ class PersonDetailsContainer extends React.Component<Props> {
     const { personId } = match.params;
     actions.getPersonData(personId);
     actions.getPersonNeighbors({ personId });
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if (!this.props.neighbors.size && nextProps.neighbors.size) {
+      const psaIds = nextProps.neighbors.get(ENTITY_SETS.PSA_SCORES, Immutable.List())
+        .map(neighbor => neighbor.get('neighborId'))
+        .filter(id => !!id)
+        .toJS();
+      this.props.actions.loadPSAData(psaIds);
+    }
   }
 
   render() {

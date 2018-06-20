@@ -15,6 +15,7 @@ import { Redirect, Route, Switch, withRouter } from 'react-router-dom';
 import { bindActionCreators } from 'redux';
 
 import LoadingSpinner from '../../components/LoadingSpinner';
+import StyledButton from '../../components/buttons/StyledButton';
 import ConfirmationModal from '../../components/ConfirmationModalView';
 import SearchPersonContainer from '../person/SearchPersonContainer';
 import SelectArrestContainer from '../pages/arrest/SelectArrestContainer';
@@ -24,11 +25,14 @@ import SelectedPersonInfo from '../../components/person/SelectedPersonInfo';
 import SelectedArrestInfo from '../../components/arrest/SelectedArrestInfo';
 import PSAInputForm from '../../components/psainput/PSAInputForm';
 import PSAResults from '../../components/psainput/PSAResults';
+import PSASummary from '../../components/review/PSASummary';
+import ClosePSAModal from '../../components/review/ClosePSAModal';
 import exportPDF from '../../utils/PDFUtils';
 import psaConfig from '../../config/formconfig/PsaConfig';
 
 import * as FormActionFactory from './FormActionFactory';
 import * as PersonActionFactory from '../person/PersonActionFactory';
+import * as ReviewActionFactory from '../review/ReviewActionFactory';
 import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
 import * as Routes from '../../core/router/Routes';
 
@@ -36,6 +40,7 @@ import { toISODateTime } from '../../utils/Utils';
 import { getScoresAndRiskFactors, calculateDMF, getDMFRiskFactors } from '../../utils/ScoringUtils';
 import {
   ButtonWrapper,
+  CenteredContainer,
   CloseX,
   Divider,
   RecommendationWrapper,
@@ -88,6 +93,13 @@ const Failure = styled(Status)`
   color: red;
 `;
 
+const Header = styled.h1`
+  font-size: 25px;
+  font-weight: 600;
+  margin: 0;
+  margin-bottom: 20px;
+`;
+
 const INITIAL_PERSON_FORM = Immutable.fromJS({
   id: '',
   lastName: '',
@@ -114,7 +126,8 @@ const INITIAL_STATE = Immutable.fromJS({
   dmf: {},
   scoresWereGenerated: false,
   notes: '',
-  notesId: undefined
+  notesId: undefined,
+  psaIdClosing: undefined
 });
 
 const numPages = 4;
@@ -149,7 +162,13 @@ type Props = {
     setPSAValues :(value :{
       newValues :Immutable.Map<*, *>
     }) => void,
-    submit :({ config :Object, values :Object }) => void
+    submit :({ config :Object, values :Object }) => void,
+    changePSAStatus :(values :{
+      scoresEntitySetId :string,
+      scoresId :string,
+      scoresEntity :Immutable.Map<*, *>,
+      callback? :() => void
+    }) => void
   },
   isSubmitted :boolean,
   isSubmitting :boolean,
@@ -165,6 +184,10 @@ type Props = {
   allChargesForPerson :Immutable.List<*>,
   allSentencesForPerson :Immutable.List<*>,
   allFTAs :Immutable.List<*>,
+  allManualCases :Immutable.List<*>,
+  allManualCharges :Immutable.Map<*, *>,
+  openPSAs :Immutable.Map<*, *>,
+  allPSAs :Immutable.List<*>,
   selectedPersonId :string,
   isLoadingCases :boolean,
   numCasesToLoad :number,
@@ -184,7 +207,8 @@ type State = {
   dmf :{},
   scoresWereGenerated :boolean,
   notes :string,
-  notesId :string
+  notesId :string,
+  psaIdClosing :?string,
 };
 
 class Form extends React.Component<Props, State> {
@@ -471,6 +495,74 @@ class Form extends React.Component<Props, State> {
         }} />
   );
 
+  closePSA = (scores, status, failureReason) => {
+    const { actions, selectedPersonId, entitySetLookup } = this.props;
+    const scoresId = scores.get('id');
+    let scoresEntity = scores.remove('id');
+    scoresEntity = scoresEntity.set(PROPERTY_TYPES.STATUS, Immutable.List.of(status));
+    if (failureReason.length) {
+      scoresEntity = scoresEntity.set(PROPERTY_TYPES.FAILURE_REASON, Immutable.fromJS(failureReason));
+    }
+
+    const callback = () => {
+      actions.loadNeighbors({
+        entitySetId: entitySetLookup.get(PEOPLE),
+        entityKeyId: selectedPersonId
+      });
+    };
+
+    actions.changePSAStatus({
+      scoresEntitySetId: entitySetLookup.get(PSA_SCORES),
+      scoresId,
+      scoresEntity,
+      callback
+    });
+  }
+
+  getPendingPSAs = () => {
+    const {
+      allManualCases,
+      allManualCharges,
+      allPSAs,
+      openPSAs
+    } = this.props;
+    const openPSASummaries = [];
+    const openPSAScores = allPSAs.filter(scores => openPSAs.has(scores.get('id')));
+    if (!openPSAScores.size) return null;
+    openPSAScores.forEach((scores) => {
+      const id = scores.get('id');
+
+      let neighbors = Immutable.Map();
+      openPSAs.get(id).forEach((neighbor) => {
+        const name = neighbor.getIn(['neighborEntitySet', 'name']);
+        if (name) {
+          neighbors = neighbors.set(name, neighbor);
+        }
+      });
+      openPSASummaries.push(
+        <CenteredContainer key={id}>
+          <hr />
+          <StyledButton onClick={() => this.setState({ psaIdClosing: id })}>Close</StyledButton>
+          <ClosePSAModal
+              open={this.state.psaIdClosing === id}
+              onClose={() => this.setState({ psaIdClosing: undefined })}
+              onSubmit={(status, failureReason) => this.closePSA(scores, status, failureReason)} />
+          <PSASummary
+              scores={scores}
+              neighbors={neighbors}
+              manualCaseHistory={allManualCases}
+              manualChargeHistory={allManualCharges} />
+        </CenteredContainer>
+      );
+    });
+    return (
+      <div>
+        <Header>Close Pending PSAs</Header>
+        {openPSASummaries}
+      </div>
+    );
+  }
+
   getSelectArrestSection = () => {
     const {
       selectedPersonId,
@@ -499,7 +591,9 @@ class Form extends React.Component<Props, State> {
           <ProgressBar bsStyle="success" now={progress} label={`${progress}%`} />
         </LoadingContainer>);
     }
-    return (
+
+    const pendingPSAs = this.getPendingPSAs();
+    return pendingPSAs || (
       <SelectArrestContainer
           caseOptions={arrestOptions}
           nextPage={this.nextPage}
@@ -625,6 +719,10 @@ function mapStateToProps(state :Immutable.Map<*, *>) :Object {
     allChargesForPerson: psaForm.get('allChargesForPerson'),
     allSentencesForPerson: psaForm.get('allSentencesForPerson'),
     allFTAs: psaForm.get('allFTAs'),
+    allManualCases: psaForm.get('allManualCases'),
+    allManualCharges: psaForm.get('allManualCharges'),
+    openPSAs: psaForm.get('openPSAs'),
+    allPSAs: psaForm.get('allPSAs'),
     psaForm: psaForm.get('psa'),
     isSubmitted: submit.get('submitted'),
     isSubmitting: submit.get('submitting'),
@@ -645,6 +743,9 @@ function mapDispatchToProps(dispatch :Function) :Object {
   });
   Object.keys(PersonActionFactory).forEach((action :string) => {
     actions[action] = PersonActionFactory[action];
+  });
+  Object.keys(ReviewActionFactory).forEach((action :string) => {
+    actions[action] = ReviewActionFactory[action];
   });
   Object.keys(SubmitActionFactory).forEach((action :string) => {
     actions[action] = SubmitActionFactory[action];

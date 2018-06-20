@@ -15,6 +15,7 @@ import {
   updateNotes
 } from './FormActionFactory';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { PSA_STATUSES } from '../../utils/consts/Consts';
 
 function* loadDataModelWorker(action :SequenceAction) :Generator<*, *, *> {
 
@@ -42,16 +43,32 @@ function* loadDataModelWatcher() :Generator<*, *, *> {
   yield takeEvery(LOAD_DATA_MODEL, loadDataModelWorker);
 }
 
+function* getOpenPSANeighbors(entitySetId, neighbors) :Generator<*, *, *> {
+  const ids = neighbors.filter((neighbor) => {
+    if (neighbor.neighborEntitySet && neighbor.neighborEntitySet.name === ENTITY_SETS.PSA_SCORES) {
+      const statusValues = neighbor.neighborDetails[PROPERTY_TYPES.STATUS];
+      if (statusValues && statusValues.includes(PSA_STATUSES.OPEN)) {
+        return true;
+      }
+    }
+    return false;
+  }).map(neighbor => neighbor.neighborId);
+
+  return ids.length ? yield call(SearchApi.searchEntityNeighborsBulk, entitySetId, ids) : {};
+}
+
 function* loadNeighborsWorker(action :SequenceAction) :Generator<*, *, *> {
   const { entitySetId, entityKeyId } = action.value;
 
   try {
     yield put(loadNeighbors.request(action.id));
     const neighbors = yield call(SearchApi.searchEntityNeighbors, entitySetId, entityKeyId);
-    yield put(loadNeighbors.success(action.id, { neighbors }));
+    const openPSAs = yield call(getOpenPSANeighbors, entitySetId, neighbors);
+    yield put(loadNeighbors.success(action.id, { neighbors, openPSAs }));
   }
   catch (error) {
-    yield put(loadNeighbors.failure(action.id));
+    console.error(error)
+    yield put(loadNeighbors.failure(action.id, error));
   }
   finally {
     yield put(loadNeighbors.finally(action.id));
