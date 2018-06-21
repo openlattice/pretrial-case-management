@@ -541,6 +541,8 @@ export default class PSAReviewRow extends React.Component<Props, State> {
   renderDetails = () => {
     const { open } = this.state;
 
+    const changeStatusText = this.psaClosed() ? 'Change PSA Status' : 'Close PSA';
+
     return (
       <Modal show={open} onHide={this.closeModal} dialogClassName={OverrideClassNames.PSA_REVIEW_MODAL}>
         <Modal.Header closeButton>
@@ -549,7 +551,7 @@ export default class PSAReviewRow extends React.Component<Props, State> {
               <TitleHeader>{`PSA Details: ${this.getName()}`}</TitleHeader>
               { this.props.readOnly
                 ? null
-                : <StyledButton onClick={() => this.setState({ closing: true })}>Close PSA</StyledButton>
+                : <StyledButton onClick={() => this.setState({ closing: true })}>{changeStatusText}</StyledButton>
               }
             </div>
           </Modal.Title>
