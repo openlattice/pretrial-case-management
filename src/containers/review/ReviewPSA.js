@@ -192,7 +192,7 @@ class ReviewPSA extends React.Component<Props, State> {
         searchExecuted: false
       },
       sort: SORT_TYPES.NAME,
-      status: 'OPEN'
+      status: 'ALL'
     };
   }
 
@@ -423,8 +423,14 @@ class ReviewPSA extends React.Component<Props, State> {
   }
 
   changeStatus = (status) => {
-    this.setState({ status });
-    this.props.actions.loadPSAsByDate(STATUS_OPTIONS[status].value);
+    if (status !== this.state.status) {
+      this.setState({
+        status,
+        activeFilterKey: 1
+      });
+      this.props.actions.loadPSAsByDate(STATUS_OPTIONS[status].value);
+      this.updateFilters({ date: moment().format() });
+    }
   }
 
   renderStatusDropdown = () => (
