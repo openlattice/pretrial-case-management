@@ -64,6 +64,7 @@
           "Immutable.Map",
           "Immutable.OrderedMap",
           "Immutable.Set",
+          "Immutable.Seq",
           "Immutable.OrderedSet"
         ]
       }
