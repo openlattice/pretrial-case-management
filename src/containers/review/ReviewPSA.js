@@ -396,7 +396,6 @@ class ReviewPSA extends React.Component<Props, State> {
     });
 
     return Immutable.Seq(results);
-
   }
 
   filterByFiler = () => {

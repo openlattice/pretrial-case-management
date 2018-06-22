@@ -92,7 +92,7 @@ const DashboardNav = () => (
         <StyledNavLink
             to={Routes.PEOPLE}
             name={Routes.PEOPLE}>
-          Browse People
+          Manage People
         </StyledNavLink>
         <StyledNavLink
             to={Routes.JUDGE_VIEW}

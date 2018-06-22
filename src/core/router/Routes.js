@@ -44,9 +44,9 @@ export const VOICE_ENROLLMENT = DASHBOARD + VOICE;
 /* people */
 export const PERSON = `${DASHBOARD}/person`;
 export const PEOPLE = `${DASHBOARD}/people`;
-export const CURRENT_PEOPLE = `${PEOPLE}/current`;
-export const INCOMING_PEOPLE = `${PEOPLE}/incoming`;
-export const PAST_PEOPLE = `${PEOPLE}/past`;
+export const SEARCH_PEOPLE = `${PEOPLE}/search`;
+export const MULTI_SEARCH_PEOPLE = `${PEOPLE}/multisearch`;
+export const REQUIRES_ACTION_PEOPLE = `${PEOPLE}/requires_action`;
 
 /* query params */
 export const FIRST_NAME = 'fname';
