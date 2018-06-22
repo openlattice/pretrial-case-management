@@ -135,7 +135,7 @@ const SORT_TYPES = {
 const STATUS_OPTIONS = {
   OPEN: {
     value: PSA_STATUSES.OPEN,
-    label: 'Open'
+    label: 'All Open'
   },
   SUCCESS: {
     value: PSA_STATUSES.SUCCESS,
@@ -145,9 +145,17 @@ const STATUS_OPTIONS = {
     value: PSA_STATUSES.FAILURE,
     label: 'Failed'
   },
+  CANCELLED: {
+    value: PSA_STATUSES.CANCELLED,
+    label: 'Cancelled'
+  },
   ALL: {
     value: '*',
     label: 'All'
+  },
+  REQUIRES_ACTION: {
+    value: PSA_STATUSES.OPEN,
+    label: 'Requires Action'
   }
 };
 
@@ -192,7 +200,7 @@ class ReviewPSA extends React.Component<Props, State> {
         searchExecuted: false
       },
       sort: SORT_TYPES.NAME,
-      status: 'ALL'
+      status: 'OPEN'
     };
   }
 
@@ -273,8 +281,12 @@ class ReviewPSA extends React.Component<Props, State> {
   handleFilterRequest = () => {
     const { activeFilterKey, filters } = this.state;
     const { scoresAsMap } = this.props;
+    const expiredView = this.state.status === 'REQUIRES_ACTION';
     let items = null;
-    if (activeFilterKey === 1) {
+    if (expiredView) {
+      items = this.filterExpired(items);
+    }
+    else if (activeFilterKey === 1) {
       items = this.filterByDate();
     }
     else if (activeFilterKey === 2) {
@@ -288,7 +300,7 @@ class ReviewPSA extends React.Component<Props, State> {
       return <NoResults>No results.</NoResults>;
     }
 
-    if (items && items.count()) {
+    if (items && items.count() && !expiredView) {
       items = this.sortRows(items);
     }
 
@@ -366,6 +378,27 @@ class ReviewPSA extends React.Component<Props, State> {
     return [];
   }
 
+  filterExpired = (items) => {
+    let rowsByName = Immutable.Map();
+
+    this.props.psaNeighborsById.entrySeq().forEach(([scoreId, neighbors]) => {
+      const personId = neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborDetails', PROPERTY_TYPES.PERSON_ID]);
+      if (personId) {
+        rowsByName = rowsByName.set(personId, rowsByName.get(personId, Immutable.List()).push([scoreId, neighbors]));
+      }
+    });
+
+    let results = [];
+    rowsByName.valueSeq().forEach((psaRowList) => {
+      if (psaRowList.size > 1) {
+        results = [...results, ...psaRowList.toJS()];
+      }
+    });
+
+    return Immutable.Seq(results);
+
+  }
+
   filterByFiler = () => {
     const { filer } = this.state.filters;
     if (!filer.length) return Immutable.Collection();
@@ -433,10 +466,21 @@ class ReviewPSA extends React.Component<Props, State> {
     }
   }
 
+  renderStatusItem = key =>
+    <MenuItem key={key} eventKey={key} onClick={() => this.changeStatus(key)}>{STATUS_OPTIONS[key].label}</MenuItem>
+
   renderStatusDropdown = () => (
     <DropdownButton title={STATUS_OPTIONS[this.state.status].label} id="statusDropdown">
-      {Object.keys(STATUS_OPTIONS).map(k =>
-        <MenuItem key={k} eventKey={k} onClick={() => this.changeStatus(k)}>{STATUS_OPTIONS[k].label}</MenuItem>)}
+      {this.renderStatusItem('ALL')}
+      <MenuItem divider />
+      <MenuItem header>Open</MenuItem>
+      {this.renderStatusItem('OPEN')}
+      {this.renderStatusItem('REQUIRES_ACTION')}
+      <MenuItem divider />
+      <MenuItem header>Closed</MenuItem>
+      {this.renderStatusItem('SUCCESS')}
+      {this.renderStatusItem('FAILURE')}
+      {this.renderStatusItem('CANCELLED')}
     </DropdownButton>
   )
 
@@ -447,11 +491,13 @@ class ReviewPSA extends React.Component<Props, State> {
         {this.renderStatusDropdown()}
         <span> PSA Forms</span>
       </DatePickerTitle>
-      <Tabs id="filter" activeKey={this.state.activeFilterKey} onSelect={this.onFilterSelect}>
-        <Tab eventKey={1} title="Date">{this.renderDateRangePicker()}</Tab>
-        <Tab eventKey={2} title="Person">{this.renderPersonFilter()}</Tab>
-        <Tab eventKey={3} title="Filer">{this.renderFilerFilter()}</Tab>
-      </Tabs>
+      {this.state.status === 'REQUIRES_ACTION' ? null : (
+        <Tabs id="filter" activeKey={this.state.activeFilterKey} onSelect={this.onFilterSelect}>
+          <Tab eventKey={1} title="Date">{this.renderDateRangePicker()}</Tab>
+          <Tab eventKey={2} title="Person">{this.renderPersonFilter()}</Tab>
+          <Tab eventKey={3} title="Filer">{this.renderFilerFilter()}</Tab>
+        </Tabs>
+      )}
       <hr />
     </div>
   )
@@ -460,7 +506,7 @@ class ReviewPSA extends React.Component<Props, State> {
     this.setState({ sort });
   }
 
-  renderSortChoices = () => (
+  renderSortChoices = () => (this.state.status === 'REQUIRES_ACTION' ? null : (
     <SortContainer>
       <SortText>Sort by:</SortText>
       <ButtonToolbar>
@@ -470,7 +516,7 @@ class ReviewPSA extends React.Component<Props, State> {
         </ToggleButtonGroup>
       </ButtonToolbar>
     </SortContainer>
-  )
+  ))
 
   renderContent = () => {
     if (this.props.loadingResults) {

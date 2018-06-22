@@ -242,7 +242,8 @@ export const ID_FIELDS = {
 export const PSA_STATUSES = {
   OPEN: 'Open',
   SUCCESS: 'Success',
-  FAILURE: 'Failure'
+  FAILURE: 'Failure',
+  CANCELLED: 'Cancelled'
 };
 
 export const PSA_FAILURE_REASONS = {
