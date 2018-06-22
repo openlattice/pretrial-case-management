@@ -15,7 +15,6 @@ import { Redirect, Route, Switch, withRouter } from 'react-router-dom';
 import { bindActionCreators } from 'redux';
 
 import LoadingSpinner from '../../components/LoadingSpinner';
-import StyledButton from '../../components/buttons/StyledButton';
 import ConfirmationModal from '../../components/ConfirmationModalView';
 import SearchPersonContainer from '../person/SearchPersonContainer';
 import SelectArrestContainer from '../pages/arrest/SelectArrestContainer';
@@ -25,8 +24,6 @@ import SelectedPersonInfo from '../../components/person/SelectedPersonInfo';
 import SelectedArrestInfo from '../../components/arrest/SelectedArrestInfo';
 import PSAInputForm from '../../components/psainput/PSAInputForm';
 import PSAResults from '../../components/psainput/PSAResults';
-import PSASummary from '../../components/review/PSASummary';
-import ClosePSAModal from '../../components/review/ClosePSAModal';
 import exportPDF from '../../utils/PDFUtils';
 import psaConfig from '../../config/formconfig/PsaConfig';
 
@@ -40,7 +37,6 @@ import { toISODateTime } from '../../utils/Utils';
 import { getScoresAndRiskFactors, calculateDMF, getDMFRiskFactors } from '../../utils/ScoringUtils';
 import {
   ButtonWrapper,
-  CenteredContainer,
   CloseX,
   Divider,
   RecommendationWrapper,
@@ -91,13 +87,6 @@ const Success = styled(Status)`
 
 const Failure = styled(Status)`
   color: red;
-`;
-
-const Header = styled.h1`
-  font-size: 25px;
-  font-weight: 600;
-  margin: 0;
-  margin-bottom: 20px;
 `;
 
 const INITIAL_PERSON_FORM = Immutable.fromJS({
@@ -184,10 +173,6 @@ type Props = {
   allChargesForPerson :Immutable.List<*>,
   allSentencesForPerson :Immutable.List<*>,
   allFTAs :Immutable.List<*>,
-  allManualCases :Immutable.List<*>,
-  allManualCharges :Immutable.Map<*, *>,
-  openPSAs :Immutable.Map<*, *>,
-  allPSAs :Immutable.List<*>,
   selectedPersonId :string,
   isLoadingCases :boolean,
   numCasesToLoad :number,
@@ -519,50 +504,6 @@ class Form extends React.Component<Props, State> {
     });
   }
 
-  getPendingPSAs = () => {
-    const {
-      allManualCases,
-      allManualCharges,
-      allPSAs,
-      openPSAs
-    } = this.props;
-    const openPSASummaries = [];
-    const openPSAScores = allPSAs.filter(scores => openPSAs.has(scores.get('id')));
-    if (!openPSAScores.size) return null;
-    openPSAScores.forEach((scores) => {
-      const id = scores.get('id');
-
-      let neighbors = Immutable.Map();
-      openPSAs.get(id).forEach((neighbor) => {
-        const name = neighbor.getIn(['neighborEntitySet', 'name']);
-        if (name) {
-          neighbors = neighbors.set(name, neighbor);
-        }
-      });
-      openPSASummaries.push(
-        <CenteredContainer key={id}>
-          <hr />
-          <StyledButton onClick={() => this.setState({ psaIdClosing: id })}>Close</StyledButton>
-          <ClosePSAModal
-              open={this.state.psaIdClosing === id}
-              onClose={() => this.setState({ psaIdClosing: undefined })}
-              onSubmit={(status, failureReason) => this.closePSA(scores, status, failureReason)} />
-          <PSASummary
-              scores={scores}
-              neighbors={neighbors}
-              manualCaseHistory={allManualCases}
-              manualChargeHistory={allManualCharges} />
-        </CenteredContainer>
-      );
-    });
-    return (
-      <div>
-        <Header>Close Pending PSAs</Header>
-        {openPSASummaries}
-      </div>
-    );
-  }
-
   getSelectArrestSection = () => {
     const {
       selectedPersonId,
@@ -592,8 +533,7 @@ class Form extends React.Component<Props, State> {
         </LoadingContainer>);
     }
 
-    const pendingPSAs = this.getPendingPSAs();
-    return pendingPSAs || (
+    return (
       <SelectArrestContainer
           caseOptions={arrestOptions}
           nextPage={this.nextPage}
@@ -719,10 +659,6 @@ function mapStateToProps(state :Immutable.Map<*, *>) :Object {
     allChargesForPerson: psaForm.get('allChargesForPerson'),
     allSentencesForPerson: psaForm.get('allSentencesForPerson'),
     allFTAs: psaForm.get('allFTAs'),
-    allManualCases: psaForm.get('allManualCases'),
-    allManualCharges: psaForm.get('allManualCharges'),
-    openPSAs: psaForm.get('openPSAs'),
-    allPSAs: psaForm.get('allPSAs'),
     psaForm: psaForm.get('psa'),
     isSubmitted: submit.get('submitted'),
     isSubmitting: submit.get('submitting'),

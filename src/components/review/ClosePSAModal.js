@@ -52,6 +52,7 @@ const StatusPicker = ({ status, onStatusChange }) => (
           onChange={onStatusChange}>
         <StatusButton value={PSA_STATUSES.SUCCESS}>{PSA_STATUSES.SUCCESS}</StatusButton>
         <StatusButton value={PSA_STATUSES.FAILURE}>{PSA_STATUSES.FAILURE}</StatusButton>
+        <StatusButton value={PSA_STATUSES.CANCELLED}>{PSA_STATUSES.CANCELLED}</StatusButton>
       </ToggleButtonGroup>
     </ButtonToolbar>
   </StatusContainer>
@@ -86,7 +87,7 @@ export default class ClosePSAModal extends React.Component<Props, State> {
   }
 
   onStatusChange = (status :string) => {
-    const failureReason = status === PSA_STATUSES.SUCCESS ? [] : this.state.failureReason;
+    const failureReason = status !== PSA_STATUSES.FAILURE ? [] : this.state.failureReason;
     this.setState({ status, failureReason });
   }
 
@@ -95,8 +96,9 @@ export default class ClosePSAModal extends React.Component<Props, State> {
   }
 
   isReadyToSubmit = () => {
-    let isReady = !!this.state.status;
-    if (this.state.status === PSA_STATUSES.FAILURE && !this.state.failureReason) {
+    const { status, failureReason } = this.state;
+    let isReady = !!status && status !== PSA_STATUSES.OPEN;
+    if (status === PSA_STATUSES.FAILURE && !failureReason.length) {
       isReady = false;
     }
     return isReady;
