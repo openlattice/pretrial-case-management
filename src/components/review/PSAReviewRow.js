@@ -29,7 +29,10 @@ import * as OverrideClassNames from '../../utils/styleoverrides/OverrideClassNam
 
 const ReviewRowContainer = styled.div`
   width: 100%;
-  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   &:hover {
     background: #f7f8f9;
   }
@@ -98,7 +101,8 @@ const StatusTag = styled.div`
   letter-spacing: 1px;
   color: white;
   border-radius: 2px;
-  float: right;
+  align-self: flex-end;
+  margin-bottom: -10px;
   padding: 2px 5px;
   background: ${(props) => {
     switch (props.status) {
@@ -688,8 +692,8 @@ export default class PSAReviewRow extends React.Component<Props, State> {
     if (!this.props.scores) return null;
     return (
       <ReviewRowContainer>
-        {this.renderMetadata()}
         {this.renderStatus()}
+        {this.renderMetadata()}
         <DetailsRowContainer onClick={this.openDetailsModal}>
           <ReviewRowWrapper>
             {this.renderPersonCard()}
