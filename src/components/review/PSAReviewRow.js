@@ -93,6 +93,29 @@ const Header = styled.div`
   font-weight: bold;
 `;
 
+const StatusTag = styled.div`
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: white;
+  border-radius: 2px;
+  float: right;
+  padding: 2px 5px;
+  background: ${(props) => {
+    switch (props.status) {
+      case PSA_STATUSES.OPEN:
+        return '#b898ff';
+      case PSA_STATUSES.SUCCESS:
+        return '#00be84';
+      case PSA_STATUSES.FAILURE:
+        return '#ff3c5d';
+      case PSA_STATUSES.CANCELLED:
+        return '#b6bbc7';
+      default:
+        return 'white';
+    }
+  }};
+`;
+
 type Props = {
   entityKeyId :string,
   scores :Immutable.Map<*, *>,
@@ -635,6 +658,11 @@ export default class PSAReviewRow extends React.Component<Props, State> {
     );
   }
 
+  renderStatus = () => {
+    const status = this.props.scores.getIn([PROPERTY_TYPES.STATUS, 0], '');
+    return <StatusTag status={status}>{status}</StatusTag>
+  }
+
   closeModal = () => {
     this.setState({
       open: false,
@@ -657,6 +685,7 @@ export default class PSAReviewRow extends React.Component<Props, State> {
     return (
       <ReviewRowContainer>
         {this.renderMetadata()}
+        {this.renderStatus()}
         <DetailsRowContainer onClick={this.openDetailsModal}>
           <ReviewRowWrapper>
             {this.renderPersonCard()}
