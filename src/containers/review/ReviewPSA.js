@@ -25,6 +25,7 @@ import LoadingSpinner from '../../components/LoadingSpinner';
 import PersonSearchFields from '../../components/person/PersonSearchFields';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_STATUSES, SORT_TYPES } from '../../utils/consts/Consts';
+import { DOMAIN } from '../../utils/consts/ReportDownloadTypes';
 import { PaddedRow, TitleLabel, StyledSelect } from '../../utils/Layout';
 import * as FormActionFactory from '../psa/FormActionFactory';
 import * as ReviewActionFactory from './ReviewActionFactory';
@@ -73,11 +74,20 @@ const DatePickerTitle = styled.div`
   font-size: 18px;
   margin: 15px 0;
   text-align: center;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+
+  div {
+    margin: 0 5px;
+  }
 `;
 
 const DateRangeContainer = styled.div`
   display: flex;
   flex-direction: row;
+  justify-content: center;
 `;
 
 const DatePickerGroupContainer = styled.div`
@@ -121,7 +131,7 @@ const SortText = styled.div`
   margin: -5px 0 5px 0;
 `;
 
-const SortButton = styled(ToggleButton)`
+const Toggle = styled(ToggleButton)`
   -webkit-appearance: none !important;
 `;
 
@@ -177,7 +187,8 @@ type State = {
     filer :string
   },
   sort :string,
-  status :string
+  status :string,
+  domain :string
 };
 
 class ReviewPSA extends React.Component<Props, State> {
@@ -195,7 +206,8 @@ class ReviewPSA extends React.Component<Props, State> {
         searchExecuted: false
       },
       sort: SORT_TYPES.NAME,
-      status: 'OPEN'
+      status: 'OPEN',
+      domain: ''
     };
   }
 
@@ -305,6 +317,8 @@ class ReviewPSA extends React.Component<Props, State> {
     let rowsByName = Immutable.Map();
 
     this.props.psaNeighborsById.entrySeq().forEach(([scoreId, neighbors]) => {
+      if (!this.domainMatch(neighbors)) return false;
+
       const personId = neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborDetails', PROPERTY_TYPES.PERSON_ID]);
       if (personId) {
         rowsByName = rowsByName.set(personId, rowsByName.get(personId, Immutable.List()).push([scoreId, neighbors]));
@@ -321,12 +335,24 @@ class ReviewPSA extends React.Component<Props, State> {
     return Immutable.Seq(results);
   }
 
+  domainMatch = neighbors => (
+    !this.state.domain.length
+      || neighbors.get(ENTITY_SETS.STAFF, Immutable.List()).filter((neighbor) => {
+        if (!neighbor.getIn(['neighborDetails', PROPERTY_TYPES.PERSON_ID, 0], '').endsWith(this.state.domain)) {
+          return false;
+        }
+
+        return true;
+      }).size
+  )
+
   filterByFiler = () => {
     const { filer } = this.state.filters;
     if (!filer.length) return Immutable.Collection();
     const { psaNeighborsById } = this.props;
 
     return psaNeighborsById.entrySeq().filter(([scoreId, neighbors]) => {
+      if (!this.domainMatch(neighbors)) return false;
       let includesFiler = false;
       neighbors.get(ENTITY_SETS.STAFF, Immutable.List()).forEach((neighbor) => {
         if (neighbor.getIn(['neighborDetails', PROPERTY_TYPES.PERSON_ID], Immutable.List()).includes(filer)) {
@@ -343,6 +369,8 @@ class ReviewPSA extends React.Component<Props, State> {
     const { psaNeighborsById } = this.props;
 
     return psaNeighborsById.entrySeq().filter(([scoreId, neighbors]) => {
+      if (!this.domainMatch(neighbors)) return false;
+
       const neighborFirst = neighbors.getIn(
         [ENTITY_SETS.PEOPLE, 'neighborDetails', PROPERTY_TYPES.FIRST_NAME],
         Immutable.List()
@@ -369,7 +397,9 @@ class ReviewPSA extends React.Component<Props, State> {
     const { psaNeighborsByDate } = this.props;
 
     const date = moment(this.state.filters.date).format(DATE_FORMAT);
-    return psaNeighborsByDate.get(date, Immutable.Map()).entrySeq();
+    return psaNeighborsByDate.get(date, Immutable.Map())
+      .entrySeq()
+      .filter(([scoreId, neighbors]) => this.domainMatch(neighbors));
   }
 
   onFilterSelect = (activeFilterKey) => {
@@ -406,12 +436,27 @@ class ReviewPSA extends React.Component<Props, State> {
     </DropdownButton>
   )
 
+  onDomainChange = (domain) => {
+    this.setState({ domain });
+  }
+
+  renderDomainChoices = () => (
+    <ButtonToolbar>
+      <ToggleButtonGroup type="radio" name="domainPicker" value={this.state.domain} onChange={this.onDomainChange}>
+        <Toggle value="">All</Toggle>
+        <Toggle value={DOMAIN.PENNINGTON}>Pennington</Toggle>
+        <Toggle value={DOMAIN.MINNEHAHA}>Minnehaha</Toggle>
+      </ToggleButtonGroup>
+    </ButtonToolbar>
+  )
+
   renderFilters = () => (
     <div>
       <DatePickerTitle>
         <span>Filter </span>
         {this.renderStatusDropdown()}
-        <span> PSA Forms</span>
+        <span> PSA Forms by </span>
+        {this.renderDomainChoices()}
       </DatePickerTitle>
       {this.state.status === 'REQUIRES_ACTION' ? null : (
         <Tabs id="filter" activeKey={this.state.activeFilterKey} onSelect={this.onFilterSelect}>
@@ -433,8 +478,8 @@ class ReviewPSA extends React.Component<Props, State> {
       <SortText>Sort by:</SortText>
       <ButtonToolbar>
         <ToggleButtonGroup type="radio" name="sortPicker" value={this.state.sort} onChange={this.onSortChange}>
-          <SortButton value={SORT_TYPES.NAME}>Name</SortButton>
-          <SortButton value={SORT_TYPES.DATE}>Date</SortButton>
+          <Toggle value={SORT_TYPES.NAME}>Name</Toggle>
+          <Toggle value={SORT_TYPES.DATE}>Date</Toggle>
         </ToggleButtonGroup>
       </ButtonToolbar>
     </SortContainer>

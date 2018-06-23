@@ -95,12 +95,10 @@ const INITIAL_STATE :Immutable.Map<> = Immutable.fromJS({
   allSentencesForPerson: Immutable.List(),
   allArrestCharges: Immutable.List(),
   allFTAs: Immutable.List(),
-  allPSAs: Immutable.List(),
   allManualCases: Immutable.List(),
   allManualCharges: Immutable.Map(),
   charges: Immutable.List(),
   selectedPerson: Immutable.Map(),
-  openPSAs: Immutable.Map(),
   arrestId: '',
   selectedPretrialCase: Immutable.Map(),
   psa: INITIAL_PSA_FORM,
@@ -141,7 +139,6 @@ function formReducer(state :Immutable.Map<> = INITIAL_STATE, action :Object) {
           let allManualCases = Immutable.List();
           let allManualCharges = Immutable.List();
           let allFTAs = Immutable.List();
-          let allPSAs = Immutable.List();
 
           const neighbors = Immutable.fromJS(action.value.neighbors) || Immutable.List();
           neighbors.forEach((neighbor) => {
@@ -180,9 +177,6 @@ function formReducer(state :Immutable.Map<> = INITIAL_STATE, action :Object) {
             else if (entitySetName === FTAS) {
               allFTAs = allFTAs.push(neighborObj);
             }
-            else if (entitySetName === PSA_SCORES) {
-              allPSAs = allPSAs.push(neighborObj);
-            }
           });
 
           arrestOptionsWithDate = arrestOptionsWithDate.sort((case1, case2) => {
@@ -201,9 +195,7 @@ function formReducer(state :Immutable.Map<> = INITIAL_STATE, action :Object) {
             .set('allChargesForPerson', allChargesForPerson)
             .set('allSentencesForPerson', allSentencesForPerson)
             .set('allFTAs', allFTAs)
-            .set('allPSAs', allPSAs)
             .set('allArrestCharges', allArrestCharges)
-            .set('openPSAs', Immutable.fromJS(action.value.openPSAs))
             .set('allManualCases', allManualCases)
             .set('allManualCharges', getMapByCaseId(allManualCharges, CHARGE_ID));
         }
@@ -258,10 +250,8 @@ function formReducer(state :Immutable.Map<> = INITIAL_STATE, action :Object) {
         .set('allChargesForPerson', Immutable.List())
         .set('allSentencesForPerson', Immutable.List())
         .set('allFTAs', Immutable.List())
-        .set('allPSAs', Immutable.List())
         .set('allManualCases', Immutable.List())
         .set('allManualCharges', Immutable.Map())
-        .set('openPSAs', Immutable.Map())
         .set('selectPerson', Immutable.Map())
         .set('arrestId', '')
         .set('selectedPretrialCase', Immutable.Map())
