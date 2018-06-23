@@ -242,7 +242,8 @@ export const ID_FIELDS = {
 export const PSA_STATUSES = {
   OPEN: 'Open',
   SUCCESS: 'Success',
-  FAILURE: 'Failure'
+  FAILURE: 'Failure',
+  CANCELLED: 'Cancelled'
 };
 
 export const PSA_FAILURE_REASONS = {
@@ -250,6 +251,11 @@ export const PSA_FAILURE_REASONS = {
   REARREST: 'Rearrest',
   NONCOMPLIANCE: 'Non-compliance',
   OTHER: 'Other'
+};
+
+export const SORT_TYPES = {
+  DATE: 'DATE',
+  NAME: 'NAME'
 };
 
 export const TABLE_WIDTH = 1000;

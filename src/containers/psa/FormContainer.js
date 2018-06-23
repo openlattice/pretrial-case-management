@@ -29,6 +29,7 @@ import psaConfig from '../../config/formconfig/PsaConfig';
 
 import * as FormActionFactory from './FormActionFactory';
 import * as PersonActionFactory from '../person/PersonActionFactory';
+import * as ReviewActionFactory from '../review/ReviewActionFactory';
 import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
 import * as Routes from '../../core/router/Routes';
 
@@ -114,7 +115,8 @@ const INITIAL_STATE = Immutable.fromJS({
   dmf: {},
   scoresWereGenerated: false,
   notes: '',
-  notesId: undefined
+  notesId: undefined,
+  psaIdClosing: undefined
 });
 
 const numPages = 4;
@@ -149,7 +151,13 @@ type Props = {
     setPSAValues :(value :{
       newValues :Immutable.Map<*, *>
     }) => void,
-    submit :({ config :Object, values :Object }) => void
+    submit :({ config :Object, values :Object }) => void,
+    changePSAStatus :(values :{
+      scoresEntitySetId :string,
+      scoresId :string,
+      scoresEntity :Immutable.Map<*, *>,
+      callback? :() => void
+    }) => void
   },
   isSubmitted :boolean,
   isSubmitting :boolean,
@@ -184,7 +192,8 @@ type State = {
   dmf :{},
   scoresWereGenerated :boolean,
   notes :string,
-  notesId :string
+  notesId :string,
+  psaIdClosing :?string,
 };
 
 class Form extends React.Component<Props, State> {
@@ -471,6 +480,30 @@ class Form extends React.Component<Props, State> {
         }} />
   );
 
+  closePSA = (scores, status, failureReason) => {
+    const { actions, selectedPersonId, entitySetLookup } = this.props;
+    const scoresId = scores.get('id');
+    let scoresEntity = scores.remove('id');
+    scoresEntity = scoresEntity.set(PROPERTY_TYPES.STATUS, Immutable.List.of(status));
+    if (failureReason.length) {
+      scoresEntity = scoresEntity.set(PROPERTY_TYPES.FAILURE_REASON, Immutable.fromJS(failureReason));
+    }
+
+    const callback = () => {
+      actions.loadNeighbors({
+        entitySetId: entitySetLookup.get(PEOPLE),
+        entityKeyId: selectedPersonId
+      });
+    };
+
+    actions.changePSAStatus({
+      scoresEntitySetId: entitySetLookup.get(PSA_SCORES),
+      scoresId,
+      scoresEntity,
+      callback
+    });
+  }
+
   getSelectArrestSection = () => {
     const {
       selectedPersonId,
@@ -499,6 +532,7 @@ class Form extends React.Component<Props, State> {
           <ProgressBar bsStyle="success" now={progress} label={`${progress}%`} />
         </LoadingContainer>);
     }
+
     return (
       <SelectArrestContainer
           caseOptions={arrestOptions}
@@ -645,6 +679,9 @@ function mapDispatchToProps(dispatch :Function) :Object {
   });
   Object.keys(PersonActionFactory).forEach((action :string) => {
     actions[action] = PersonActionFactory[action];
+  });
+  Object.keys(ReviewActionFactory).forEach((action :string) => {
+    actions[action] = ReviewActionFactory[action];
   });
   Object.keys(SubmitActionFactory).forEach((action :string) => {
     actions[action] = SubmitActionFactory[action];

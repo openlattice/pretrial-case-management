@@ -5,8 +5,10 @@
 import Immutable from 'immutable';
 
 import {
+  changePSAStatus,
   checkPSAPermissions,
   loadCaseHistory,
+  loadPSAData,
   loadPSAsByDate,
   updateScoresAndRiskFactors
 } from './ReviewActionFactory';
@@ -17,8 +19,9 @@ const INITIAL_STATE :Immutable.Map<*, *> = Immutable.fromJS({
   scoresAsMap: Immutable.Map(),
   psaNeighborsById: Immutable.Map(),
   psaNeighborsByDate: Immutable.Map(),
+  loadingPSAData: false,
   loadingResults: false,
-  errorMesasge: '',
+  errorMessage: '',
   allFilers: Immutable.Set(),
   caseHistory: Immutable.Map(),
   manualCaseHistory: Immutable.Map(),
@@ -31,6 +34,13 @@ const INITIAL_STATE :Immutable.Map<*, *> = Immutable.fromJS({
 
 export default function reviewReducer(state :Immutable.Map<*, *> = INITIAL_STATE, action :SequenceAction) {
   switch (action.type) {
+
+    case changePSAStatus.case(action.type): {
+      return changePSAStatus.reducer(state, action, {
+        SUCCESS: () =>
+          state.set('scoresAsMap', state.get('scoresAsMap').set(action.value.id, Immutable.fromJS(action.value.entity)))
+      });
+    }
 
     case checkPSAPermissions.case(action.type): {
       return checkPSAPermissions.reducer(state, action, {
@@ -66,24 +76,34 @@ export default function reviewReducer(state :Immutable.Map<*, *> = INITIAL_STATE
       });
     }
 
+    case loadPSAData.case(action.type): {
+      return loadPSAData.reducer(state, action, {
+        REQUEST: () => state
+          .set('loadingPSAData', true)
+          .set('errorMessage', ''),
+        SUCCESS: () => state
+          .set('psaNeighborsById', Immutable.fromJS(action.value.psaNeighborsById))
+          .set('psaNeighborsByDate', Immutable.fromJS(action.value.psaNeighborsByDate))
+          .set('allFilers', action.value.allFilers.sort())
+          .set('errorMessage', ''),
+        FAILURE: () => state
+          .set('psaNeighborsByDate', Immutable.Map())
+          .set('errorMessage', action.value),
+        FINALLY: () => state.set('loadingPSAData', false)
+      });
+    }
+
     case loadPSAsByDate.case(action.type): {
       return loadPSAsByDate.reducer(state, action, {
         REQUEST: () => state
           .set('loadingResults', true)
-          .set('errorMesasge', '')
           .set('scoresEntitySetId', ''),
         SUCCESS: () => state
           .set('scoresAsMap', Immutable.fromJS(action.value.scoresAsMap))
-          .set('scoresEntitySetId', action.value.entitySetId)
-          .set('psaNeighborsById', Immutable.fromJS(action.value.psaNeighborsById))
-          .set('psaNeighborsByDate', Immutable.fromJS(action.value.psaNeighborsByDate))
-          .set('allFilers', action.value.allFilers.sort())
-          .set('errorMesasge', ''),
+          .set('scoresEntitySetId', action.value.entitySetId),
         FAILURE: () => state
           .set('scoresEntitySetId', '')
-          .set('scoresAsMap', Immutable.Map())
-          .set('psaNeighborsByDate', Immutable.Map())
-          .set('errorMesasge', action.value.errorMesasge),
+          .set('scoresAsMap', Immutable.Map()),
         FINALLY: () => state.set('loadingResults', false)
       });
     }

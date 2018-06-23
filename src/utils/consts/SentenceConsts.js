@@ -20,19 +20,30 @@ const timeWasServed = (sentenceInfo) => {
   return daysServed > 0 || monthsServed > 0 || yearsServed > 0;
 };
 
+const getMaxFromList = (sentence, field) => {
+  let max = 0;
+  sentence.get(field, Immutable.List()).forEach((val) => {
+    const fieldNum = Number.parseInt(val, 10);
+    if (!Number.isNaN(fieldNum) && fieldNum > max) {
+      max = fieldNum;
+    }
+  });
+  return max;
+};
+
 const getSentenceInfo = (sentence) => {
-  const sentenceDays = Number.parseInt(sentence.getIn([JAIL_DAYS_SERVED, 0], 0), 10) || 0;
-  const sentenceDaysSusp = Number.parseInt(sentence.getIn([JAIL_DAYS_SUSPENDED, 0], 0), 10) || 0;
-  const sentenceMonths = Number.parseInt(sentence.getIn([JAIL_MONTHS_SERVED, 0], 0), 10) || 0;
-  const sentenceMonthsSusp = Number.parseInt(sentence.getIn([JAIL_MONTHS_SUSPENDED, 0], 0), 10) || 0;
-  const sentenceYears = Number.parseInt(sentence.getIn([JAIL_YEARS_SERVED, 0], 0), 10) || 0;
-  const sentenceYearsSusp = Number.parseInt(sentence.getIn([JAIL_YEARS_SUSPENDED, 0], 0), 10) || 0;
+  const sentenceDays = getMaxFromList(sentence, JAIL_DAYS_SERVED);
+  const sentenceDaysSusp = getMaxFromList(sentence, JAIL_DAYS_SUSPENDED);
+  const sentenceMonths = getMaxFromList(sentence, JAIL_MONTHS_SERVED);
+  const sentenceMonthsSusp = getMaxFromList(sentence, JAIL_MONTHS_SUSPENDED);
+  const sentenceYears = getMaxFromList(sentence, JAIL_YEARS_SERVED);
+  const sentenceYearsSusp = getMaxFromList(sentence, JAIL_YEARS_SUSPENDED);
 
   const daysServed = sentenceDays - sentenceDaysSusp;
   const monthsServed = sentenceMonths - sentenceMonthsSusp;
   const yearsServed = sentenceYears - sentenceYearsSusp;
   const concConsec = sentence.getIn([CONCURRENT_CONSECUTIVE, 0], '');
-  const startDate = sentence.getIn([JAIL_START_DATE, 0], '');
+  const startDate = sentence.get(JAIL_START_DATE, Immutable.List()).filter(val => val.length).get(0, '');
 
   return {
     daysServed,

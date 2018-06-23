@@ -10,17 +10,26 @@ import moment from 'moment';
 import styled from 'styled-components';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { ButtonToolbar, Pagination, Tab, Tabs, ToggleButton, ToggleButtonGroup } from 'react-bootstrap';
+import {
+  ButtonToolbar,
+  DropdownButton,
+  MenuItem,
+  Tab,
+  Tabs,
+  ToggleButton,
+  ToggleButtonGroup
+} from 'react-bootstrap';
 
-import PSAReviewRow from '../../components/review/PSAReviewRow';
+import PSAReviewRowList from './PSAReviewRowList';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import PersonSearchFields from '../../components/person/PersonSearchFields';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { CenteredContainer, PaddedRow, TitleLabel, StyledSelect } from '../../utils/Layout';
+import { PSA_STATUSES, SORT_TYPES } from '../../utils/consts/Consts';
+import { DOMAIN } from '../../utils/consts/ReportDownloadTypes';
+import { PaddedRow, TitleLabel, StyledSelect } from '../../utils/Layout';
 import * as FormActionFactory from '../psa/FormActionFactory';
 import * as ReviewActionFactory from './ReviewActionFactory';
 import * as Routes from '../../core/router/Routes';
-import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
 
 const StyledFormViewWrapper = styled.div`
   display: flex;
@@ -65,11 +74,20 @@ const DatePickerTitle = styled.div`
   font-size: 18px;
   margin: 15px 0;
   text-align: center;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+
+  div {
+    margin: 0 5px;
+  }
 `;
 
 const DateRangeContainer = styled.div`
   display: flex;
   flex-direction: row;
+  justify-content: center;
 `;
 
 const DatePickerGroupContainer = styled.div`
@@ -113,68 +131,50 @@ const SortText = styled.div`
   margin: -5px 0 5px 0;
 `;
 
-const SortButton = styled(ToggleButton)`
+const Toggle = styled(ToggleButton)`
   -webkit-appearance: none !important;
 `;
 
 const DATE_FORMAT = 'MM/DD/YYYY';
-const MAX_RESULTS = 10;
 
-const SORT_TYPES = {
-  DATE: 'DATE',
-  NAME: 'NAME'
+const STATUS_OPTIONS = {
+  OPEN: {
+    value: PSA_STATUSES.OPEN,
+    label: 'All Open'
+  },
+  SUCCESS: {
+    value: PSA_STATUSES.SUCCESS,
+    label: 'Successful'
+  },
+  FAILURE: {
+    value: PSA_STATUSES.FAILURE,
+    label: 'Failed'
+  },
+  CANCELLED: {
+    value: PSA_STATUSES.CANCELLED,
+    label: 'Cancelled'
+  },
+  ALL: {
+    value: '*',
+    label: 'All'
+  },
+  REQUIRES_ACTION: {
+    value: PSA_STATUSES.OPEN,
+    label: 'Requires Action'
+  }
 };
 
 type Props = {
   history :string[],
-  scoresEntitySetId :string,
   scoresAsMap :Immutable.Map<*, *>,
   psaNeighborsByDate :Immutable.Map<*, Immutable.Map<*, *>>,
   loadingResults :boolean,
   errorMessage :string,
   actions :{
-    clearForm :() => void,
-    downloadPSAReviewPDF :(values :{
-      neighbors :Immutable.Map<*, *>,
-      scores :Immutable.Map<*, *>
-    }) => void,
-    loadCaseHistory :(values :{
-      personId :string,
-      neighbors :Immutable.Map<*, *>
-    }) => void,
-    loadPSAsByDate :() => void,
-    updateScoresAndRiskFactors :(values :{
-      scoresEntitySetId :string,
-      scoresId :string,
-      scoresEntity :Immutable.Map<*, *>,
-      riskFactorsEntitySetId :string,
-      riskFactorsId :string,
-      riskFactorsEntity :Immutable.Map<*, *>,
-      dmfEntitySetId :string,
-      dmfId :string,
-      dmfEntity :Object,
-      dmfRiskFactorsEntitySetId :string,
-      dmfRiskFactorsId :string,
-      dmfRiskFactorsEntity :Object
-    }) => void,
-    updateNotes :(value :{
-      notes :string,
-      entityId :string,
-      entitySetId :string,
-      propertyTypes :Immutable.List<*>
-    }) => void,
-    checkPSAPermissions :() => void,
-    submit :(value :{ config :Object, values :Object}) => void
+    loadPSAsByDate :(filter :string) => void
   },
   psaNeighborsById :Immutable.Map<*, *>,
-  allFilers :Immutable.Set<*>,
-  caseHistory :Immutable.List<*>,
-  manualCaseHistory :Immutable.List<*>,
-  chargeHistory :Immutable.Map<*, *>,
-  manualChargeHistory :Immutable.Map<*, *>,
-  sentenceHistory :Immutable.Map<*, *>,
-  ftaHistory :Immutable.Map<*, *>,
-  readOnly :boolean
+  allFilers :Immutable.Set<*>
 }
 
 type State = {
@@ -184,10 +184,11 @@ type State = {
     firstName :string,
     lastName :string,
     dob :string,
-    filer :string,
-    start :number
+    filer :string
   },
-  sort :string
+  sort :string,
+  status :string,
+  domain :string
 };
 
 class ReviewPSA extends React.Component<Props, State> {
@@ -202,20 +203,16 @@ class ReviewPSA extends React.Component<Props, State> {
         lastName: '',
         dob: '',
         filer: '',
-        start: 0,
         searchExecuted: false
       },
-      sort: SORT_TYPES.NAME
+      sort: SORT_TYPES.NAME,
+      status: 'OPEN',
+      domain: ''
     };
   }
 
   componentDidMount() {
-    this.props.actions.checkPSAPermissions();
-    this.props.actions.loadPSAsByDate();
-  }
-
-  componentWillUnmount() {
-    this.props.actions.clearForm();
+    this.props.actions.loadPSAsByDate(STATUS_OPTIONS[this.state.status].value);
   }
 
   updateFilters = (newFilters :Object) => {
@@ -225,7 +222,6 @@ class ReviewPSA extends React.Component<Props, State> {
       lastName: '',
       dob: '',
       filer: '',
-      start: 0,
       searchExecuted: true
     }, newFilters);
     this.setState({ filters });
@@ -291,9 +287,13 @@ class ReviewPSA extends React.Component<Props, State> {
 
   handleFilterRequest = () => {
     const { activeFilterKey, filters } = this.state;
-    const { start } = filters;
+    const { scoresAsMap } = this.props;
+    const expiredView = this.state.status === 'REQUIRES_ACTION';
     let items = null;
-    if (activeFilterKey === 1) {
+    if (expiredView) {
+      items = this.filterExpired(items);
+    }
+    else if (activeFilterKey === 1) {
       items = this.filterByDate();
     }
     else if (activeFilterKey === 2) {
@@ -307,119 +307,44 @@ class ReviewPSA extends React.Component<Props, State> {
       return <NoResults>No results.</NoResults>;
     }
 
-    if (items && items.count()) {
-      items = this.sortRows(items);
-    }
-
-    return (
-      <div>
-        {this.renderPagination(items.length)}
-        {items.slice(start, start + MAX_RESULTS).map(([scoreId, neighbors]) => this.renderRow(scoreId, neighbors))}
-        {this.renderPagination(items.length)}
-      </div>
-    );
+    const sort = expiredView ? null : this.state.sort;
+    return <PSAReviewRowList scoreSeq={items.map(([id]) => ([id, scoresAsMap.get(id)]))} sort={sort} />;
   }
 
   renderError = () => <ErrorText>{this.props.errorMessage}</ErrorText>
 
-  renderRow = (scoreId, neighbors) => {
-    const scores = this.props.scoresAsMap.get(scoreId, Immutable.Map());
-    const personId = neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborId'], '');
-    const caseHistory = this.props.caseHistory.get(personId, Immutable.List());
-    const manualCaseHistory = this.props.manualCaseHistory.get(personId, Immutable.List());
-    const chargeHistory = this.props.chargeHistory.get(personId, Immutable.Map());
-    const manualChargeHistory = this.props.manualChargeHistory.get(personId, Immutable.Map());
-    const sentenceHistory = this.props.sentenceHistory.get(personId, Immutable.Map());
-    const ftaHistory = this.props.ftaHistory.get(personId, Immutable.Map());
-    return (
-      <PSAReviewRow
-          neighbors={neighbors}
-          scores={scores}
-          entityKeyId={scoreId}
-          downloadFn={this.props.actions.downloadPSAReviewPDF}
-          loadCaseHistoryFn={this.props.actions.loadCaseHistory}
-          updateScoresAndRiskFactors={this.props.actions.updateScoresAndRiskFactors}
-          updateNotes={this.updateNotes}
-          submitData={this.props.actions.submit}
-          caseHistory={caseHistory}
-          manualCaseHistory={manualCaseHistory}
-          chargeHistory={chargeHistory}
-          manualChargeHistory={manualChargeHistory}
-          sentenceHistory={sentenceHistory}
-          ftaHistory={ftaHistory}
-          readOnly={this.props.readOnly}
-          key={scoreId} />
-    );
-  }
+  filterExpired = (items) => {
+    let rowsByName = Immutable.Map();
 
-  sortByName = rowSeq => rowSeq.sort(([id1, neighbor1], [id2, neighbor2]) => {
-    const p1 = neighbor1.getIn([ENTITY_SETS.PEOPLE, 'neighborDetails'], Immutable.Map());
-    const p2 = neighbor2.getIn([ENTITY_SETS.PEOPLE, 'neighborDetails'], Immutable.Map());
+    this.props.psaNeighborsById.entrySeq().forEach(([scoreId, neighbors]) => {
+      if (!this.domainMatch(neighbors)) return false;
 
-    const p1Last = p1.getIn([PROPERTY_TYPES.LAST_NAME, 0], '').toLowerCase();
-    const p2Last = p2.getIn([PROPERTY_TYPES.LAST_NAME, 0], '').toLowerCase();
-    if (p1Last !== p2Last) return p1Last < p2Last ? -1 : 1;
-
-    const p1First = p1.getIn([PROPERTY_TYPES.FIRST_NAME, 0], '').toLowerCase();
-    const p2First = p2.getIn([PROPERTY_TYPES.FIRST_NAME, 0], '').toLowerCase();
-    if (p1First !== p2First) return p1First < p2First ? -1 : 1;
-
-    const p1Dob = moment(p1.getIn([PROPERTY_TYPES.DOB, 0], ''));
-    const p2Dob = moment(p2.getIn([PROPERTY_TYPES.DOB, 0], ''));
-    if (p1Dob.isValid() && p2Dob.isValid()) return p1Dob.isBefore(p2Dob) ? -1 : 1;
-
-    return 0;
-  })
-
-  sortByDate = rowSeq => rowSeq.sort(([id1, neighbor1], [id2, neighbor2]) => {
-    let latest1;
-    let latest2;
-
-    const getDate = (neighborObj, latest) => {
-      const associationName = neighborObj.getIn(['associationEntitySet', 'name']);
-      const ptFqn = associationName === ENTITY_SETS.ASSESSED_BY
-        ? PROPERTY_TYPES.COMPLETED_DATE_TIME : PROPERTY_TYPES.DATE_TIME;
-      const date = moment(neighborObj.getIn(['associationDetails', ptFqn, 0], ''));
-      if (date.isValid()) {
-        if (!latest || latest.isBefore(date)) {
-          return date;
-        }
+      const personId = neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborDetails', PROPERTY_TYPES.PERSON_ID]);
+      if (personId) {
+        rowsByName = rowsByName.set(personId, rowsByName.get(personId, Immutable.List()).push([scoreId, neighbors]));
       }
-      return null;
-    };
-
-    neighbor1.get(ENTITY_SETS.STAFF, Immutable.List()).forEach((neighborObj) => {
-      const date = getDate(neighborObj, latest1);
-      if (date) latest1 = date;
     });
 
-    neighbor2.get(ENTITY_SETS.STAFF, Immutable.List()).forEach((neighborObj) => {
-      const date = getDate(neighborObj, latest2);
-      if (date) latest2 = date;
+    let results = [];
+    rowsByName.valueSeq().forEach((psaRowList) => {
+      if (psaRowList.size > 1) {
+        results = [...results, ...psaRowList.toJS()];
+      }
     });
 
-    if (latest1 && latest2) {
-      return latest1.isAfter(latest2) ? -1 : 1;
-    }
-
-    if (latest1 || latest2) {
-      return latest1 ? -1 : 1;
-    }
-
-    return 0;
-  })
-
-  sortRows = (rowSeq) => {
-    const { sort } = this.state;
-    if (sort === SORT_TYPES.NAME) {
-      return this.sortByName(rowSeq).toArray();
-    }
-    if (sort === SORT_TYPES.DATE) {
-      return this.sortByDate(rowSeq).toArray();
-    }
-
-    return [];
+    return Immutable.Seq(results);
   }
+
+  domainMatch = neighbors => (
+    !this.state.domain.length
+      || neighbors.get(ENTITY_SETS.STAFF, Immutable.List()).filter((neighbor) => {
+        if (!neighbor.getIn(['neighborDetails', PROPERTY_TYPES.PERSON_ID, 0], '').endsWith(this.state.domain)) {
+          return false;
+        }
+
+        return true;
+      }).size
+  )
 
   filterByFiler = () => {
     const { filer } = this.state.filters;
@@ -427,6 +352,7 @@ class ReviewPSA extends React.Component<Props, State> {
     const { psaNeighborsById } = this.props;
 
     return psaNeighborsById.entrySeq().filter(([scoreId, neighbors]) => {
+      if (!this.domainMatch(neighbors)) return false;
       let includesFiler = false;
       neighbors.get(ENTITY_SETS.STAFF, Immutable.List()).forEach((neighbor) => {
         if (neighbor.getIn(['neighborDetails', PROPERTY_TYPES.PERSON_ID], Immutable.List()).includes(filer)) {
@@ -443,6 +369,8 @@ class ReviewPSA extends React.Component<Props, State> {
     const { psaNeighborsById } = this.props;
 
     return psaNeighborsById.entrySeq().filter(([scoreId, neighbors]) => {
+      if (!this.domainMatch(neighbors)) return false;
+
       const neighborFirst = neighbors.getIn(
         [ENTITY_SETS.PEOPLE, 'neighborDetails', PROPERTY_TYPES.FIRST_NAME],
         Immutable.List()
@@ -469,7 +397,9 @@ class ReviewPSA extends React.Component<Props, State> {
     const { psaNeighborsByDate } = this.props;
 
     const date = moment(this.state.filters.date).format(DATE_FORMAT);
-    return psaNeighborsByDate.get(date, Immutable.Map()).entrySeq();
+    return psaNeighborsByDate.get(date, Immutable.Map())
+      .entrySeq()
+      .filter(([scoreId, neighbors]) => this.domainMatch(neighbors));
   }
 
   onFilterSelect = (activeFilterKey) => {
@@ -477,14 +407,64 @@ class ReviewPSA extends React.Component<Props, State> {
     this.updateFilters({ searchExecuted: false });
   }
 
+  changeStatus = (status) => {
+    if (status !== this.state.status) {
+      this.setState({
+        status,
+        activeFilterKey: 1
+      });
+      this.props.actions.loadPSAsByDate(STATUS_OPTIONS[status].value);
+      this.updateFilters({ date: moment().format() });
+    }
+  }
+
+  renderStatusItem = key =>
+    <MenuItem key={key} eventKey={key} onClick={() => this.changeStatus(key)}>{STATUS_OPTIONS[key].label}</MenuItem>
+
+  renderStatusDropdown = () => (
+    <DropdownButton title={STATUS_OPTIONS[this.state.status].label} id="statusDropdown">
+      {this.renderStatusItem('ALL')}
+      <MenuItem divider />
+      <MenuItem header>Open</MenuItem>
+      {this.renderStatusItem('OPEN')}
+      {this.renderStatusItem('REQUIRES_ACTION')}
+      <MenuItem divider />
+      <MenuItem header>Closed</MenuItem>
+      {this.renderStatusItem('SUCCESS')}
+      {this.renderStatusItem('FAILURE')}
+      {this.renderStatusItem('CANCELLED')}
+    </DropdownButton>
+  )
+
+  onDomainChange = (domain) => {
+    this.setState({ domain });
+  }
+
+  renderDomainChoices = () => (
+    <ButtonToolbar>
+      <ToggleButtonGroup type="radio" name="domainPicker" value={this.state.domain} onChange={this.onDomainChange}>
+        <Toggle value="">All</Toggle>
+        <Toggle value={DOMAIN.PENNINGTON}>Pennington</Toggle>
+        <Toggle value={DOMAIN.MINNEHAHA}>Minnehaha</Toggle>
+      </ToggleButtonGroup>
+    </ButtonToolbar>
+  )
+
   renderFilters = () => (
     <div>
-      <DatePickerTitle>Filter Submitted PSA Forms</DatePickerTitle>
-      <Tabs id="filter" activeKey={this.state.activeFilterKey} onSelect={this.onFilterSelect}>
-        <Tab eventKey={1} title="Date">{this.renderDateRangePicker()}</Tab>
-        <Tab eventKey={2} title="Person">{this.renderPersonFilter()}</Tab>
-        <Tab eventKey={3} title="Filer">{this.renderFilerFilter()}</Tab>
-      </Tabs>
+      <DatePickerTitle>
+        <span>Filter </span>
+        {this.renderStatusDropdown()}
+        <span> PSA Forms by </span>
+        {this.renderDomainChoices()}
+      </DatePickerTitle>
+      {this.state.status === 'REQUIRES_ACTION' ? null : (
+        <Tabs id="filter" activeKey={this.state.activeFilterKey} onSelect={this.onFilterSelect}>
+          <Tab eventKey={1} title="Date">{this.renderDateRangePicker()}</Tab>
+          <Tab eventKey={2} title="Person">{this.renderPersonFilter()}</Tab>
+          <Tab eventKey={3} title="Filer">{this.renderFilerFilter()}</Tab>
+        </Tabs>
+      )}
       <hr />
     </div>
   )
@@ -493,54 +473,17 @@ class ReviewPSA extends React.Component<Props, State> {
     this.setState({ sort });
   }
 
-  renderSortChoices = () => (
+  renderSortChoices = () => (this.state.status === 'REQUIRES_ACTION' ? null : (
     <SortContainer>
       <SortText>Sort by:</SortText>
       <ButtonToolbar>
         <ToggleButtonGroup type="radio" name="sortPicker" value={this.state.sort} onChange={this.onSortChange}>
-          <SortButton value={SORT_TYPES.NAME}>Name</SortButton>
-          <SortButton value={SORT_TYPES.DATE}>Date</SortButton>
+          <Toggle value={SORT_TYPES.NAME}>Name</Toggle>
+          <Toggle value={SORT_TYPES.DATE}>Date</Toggle>
         </ToggleButtonGroup>
       </ButtonToolbar>
     </SortContainer>
-  )
-
-  updateNotes = (notes, entityId, entitySetId, propertyTypes) => {
-    this.props.actions.updateNotes({
-      notes,
-      entityId,
-      entitySetId,
-      propertyTypes
-    });
-  }
-
-  updatePage = (start) => {
-    this.setState({ filters: Object.assign({}, this.state.filters, { start }) });
-    window.scrollTo({
-      top: 0,
-      behavior: 'smooth'
-    });
-  }
-
-  renderPagination = (numResults) => {
-    const { start } = this.state.filters;
-    if (numResults <= MAX_RESULTS) return null;
-    const numPages = Math.ceil(numResults / MAX_RESULTS);
-    const currPage = (start / MAX_RESULTS) + 1;
-    return (
-      <CenteredContainer>
-        <Pagination
-            prev
-            next
-            ellipsis
-            boundaryLinks
-            items={numPages}
-            maxButtons={5}
-            activePage={currPage}
-            onSelect={page => this.updatePage((page - 1) * MAX_RESULTS)} />
-      </CenteredContainer>
-    );
-  }
+  ))
 
   renderContent = () => {
     if (this.props.loadingResults) {
@@ -575,20 +518,12 @@ class ReviewPSA extends React.Component<Props, State> {
 function mapStateToProps(state) {
   const review = state.get('review');
   return {
-    scoresEntitySetId: review.get('scoresEntitySetId'),
     scoresAsMap: review.get('scoresAsMap'),
     psaNeighborsByDate: review.get('psaNeighborsByDate'),
     psaNeighborsById: review.get('psaNeighborsById'),
     allFilers: review.get('allFilers'),
-    loadingResults: review.get('loadingResults'),
-    errorMesasge: review.get('errorMesasge'),
-    caseHistory: review.get('caseHistory'),
-    manualCaseHistory: review.get('manualCaseHistory'),
-    chargeHistory: review.get('chargeHistory'),
-    manualChargeHistory: review.get('manualChargeHistory'),
-    sentenceHistory: review.get('sentenceHistory'),
-    ftaHistory: review.get('ftaHistory'),
-    readOnly: review.get('readOnly')
+    loadingResults: review.get('loadingResults') || review.get('loadingPSAData'),
+    errorMessage: review.get('errorMessage')
   };
 }
 
@@ -601,10 +536,6 @@ function mapDispatchToProps(dispatch :Function) :Object {
 
   Object.keys(ReviewActionFactory).forEach((action :string) => {
     actions[action] = ReviewActionFactory[action];
-  });
-
-  Object.keys(SubmitActionFactory).forEach((action :string) => {
-    actions[action] = SubmitActionFactory[action];
   });
 
   return {

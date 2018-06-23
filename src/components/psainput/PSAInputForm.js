@@ -134,6 +134,14 @@ const CheckboxContainer = styled.div`
   margin: -50px 0 15px 0;
 `;
 
+const AnswerValue = styled.div`
+  font-size: 16px;
+  font-weight: bold;
+  color: #337ab7;
+  text-align: center;
+  margin: 10px 0;
+`;
+
 type Props = {
   handleInputChange :(event :Object) => void,
   input :Immutable.Map<*, *>,
@@ -181,16 +189,22 @@ export default class PSAInputForm extends React.Component<Props, State> {
         </NoteContainer>
       );
     }
+
+    const notesBody = this.props.viewOnly ? <PaddedExpandableText text={this.props.input.get(name)} maxLength={250} />
+      : (
+        <FormControl
+            type="text"
+            name={name}
+            value={this.props.input.get(name)}
+            onChange={this.props.handleInputChange}
+            disabled={this.props.viewOnly} />
+      );
+
     return (
       <NotesCol lg={6}>
         <NoteContainer>
           <NotesLabel>Notes</NotesLabel>
-          <FormControl
-              type="text"
-              name={name}
-              value={this.props.input.get(name)}
-              onChange={this.props.handleInputChange}
-              disabled={this.props.viewOnly} />
+          {notesBody}
         </NoteContainer>
         {justifications}
       </NotesCol>
@@ -199,6 +213,7 @@ export default class PSAInputForm extends React.Component<Props, State> {
 
   renderRadio = (name, value, label, disabledField) => (
     <Radio
+        key={`${name}-${value}`}
         name={name}
         value={`${value}`}
         checked={this.props.input.get(name) === `${value}`}
@@ -207,15 +222,22 @@ export default class PSAInputForm extends React.Component<Props, State> {
         label={label} />
   );
 
-  renderTrueFalseRadio = (name, header, disabledField) => (
-    <PSACol lg={6}>
-      <TitleLabel>{header}</TitleLabel>
-      <FormGroup>
-        {this.renderRadio(name, false, 'No', disabledField)}
-        {this.renderRadio(name, true, 'Yes', disabledField)}
-      </FormGroup>
-    </PSACol>
-  );
+  renderTrueFalseRadio = (name, header, disabledField) => {
+    const body = this.props.viewOnly
+      ? <AnswerValue>{this.props.input.get(name) === 'true' ? 'Yes' : 'No'}</AnswerValue>
+      : (
+        <FormGroup>
+          {this.renderRadio(name, false, 'No', disabledField)}
+          {this.renderRadio(name, true, 'Yes', disabledField)}
+        </FormGroup>
+      );
+    return (
+      <PSACol lg={6}>
+        <TitleLabel>{header}</TitleLabel>
+        {body}
+      </PSACol>
+    );
+  };
 
   handleCheckboxChange = (event) => {
     this.setState({ iiiChecked: event.target.checked });
@@ -236,6 +258,21 @@ export default class PSAInputForm extends React.Component<Props, State> {
       this.props.handleSubmit(e);
       this.setState({ incomplete: false });
     }
+  }
+
+  renderRadioGroup = (name, header, mappings, disabledField, optionalWidth) => {
+    const width = optionalWidth || 6;
+    const body = this.props.viewOnly ? <AnswerValue>{mappings[this.props.input.get(name)]}</AnswerValue>
+      : Object.keys(mappings).map(val => this.renderRadio(name, val, mappings[val], disabledField));
+
+    return (
+      <PSACol lg={width}>
+        <TitleLabel>{header}</TitleLabel>
+        <FormGroup>
+          {body}
+        </FormGroup>
+      </PSACol>
+    );
   }
 
   render() {
@@ -279,14 +316,11 @@ export default class PSAInputForm extends React.Component<Props, State> {
               <Header>PSA Information</Header>
 
               <QuestionRow>
-                <PSACol lg={6}>
-                  <TitleLabel>{CURRENT_AGE_PROMPT}</TitleLabel>
-                  <FormGroup>
-                    {this.renderRadio(AGE_AT_CURRENT_ARREST, 0, '20 or younger')}
-                    {this.renderRadio(AGE_AT_CURRENT_ARREST, 1, '21 or 22')}
-                    {this.renderRadio(AGE_AT_CURRENT_ARREST, 2, '23 or older')}
-                  </FormGroup>
-                </PSACol>
+                {this.renderRadioGroup(AGE_AT_CURRENT_ARREST, CURRENT_AGE_PROMPT, {
+                  0: '20 or younger',
+                  1: '21 or 22',
+                  2: '23 or older'
+                })}
                 {this.renderNotesAndJustifications(NOTES[AGE_AT_CURRENT_ARREST])}
               </QuestionRow>
 
@@ -311,27 +345,21 @@ export default class PSAInputForm extends React.Component<Props, State> {
               </QuestionRow>
 
               <QuestionRow>
-                <PSACol lg={6}>
-                  <TitleLabel>{PRIOR_VIOLENT_CONVICTION_PROMPT}</TitleLabel>
-                  <FormGroup>
-                    {this.renderRadio(PRIOR_VIOLENT_CONVICTION, 0, '0', noPriorConvictions)}
-                    {this.renderRadio(PRIOR_VIOLENT_CONVICTION, 1, '1', noPriorConvictions)}
-                    {this.renderRadio(PRIOR_VIOLENT_CONVICTION, 2, '2', noPriorConvictions)}
-                    {this.renderRadio(PRIOR_VIOLENT_CONVICTION, 3, '3 or more', noPriorConvictions)}
-                  </FormGroup>
-                </PSACol>
+                {this.renderRadioGroup(PRIOR_VIOLENT_CONVICTION, PRIOR_VIOLENT_CONVICTION_PROMPT, {
+                  0: '0',
+                  1: '1',
+                  2: '2',
+                  3: '3 or more'
+                }, noPriorConvictions)}
                 {this.renderNotesAndJustifications(NOTES[PRIOR_VIOLENT_CONVICTION], priorViolentConvictions)}
               </QuestionRow>
 
               <QuestionRow>
-                <PSACol lg={6}>
-                  <TitleLabel>{PRIOR_FAILURE_TO_APPEAR_RECENT_PROMPT}</TitleLabel>
-                  <FormGroup>
-                    {this.renderRadio(PRIOR_FAILURE_TO_APPEAR_RECENT, 0, '0')}
-                    {this.renderRadio(PRIOR_FAILURE_TO_APPEAR_RECENT, 1, '1')}
-                    {this.renderRadio(PRIOR_FAILURE_TO_APPEAR_RECENT, 2, '2 or more')}
-                  </FormGroup>
-                </PSACol>
+                {this.renderRadioGroup(PRIOR_FAILURE_TO_APPEAR_RECENT, PRIOR_FAILURE_TO_APPEAR_RECENT_PROMPT, {
+                  0: '0',
+                  1: '1',
+                  2: '2 or more'
+                })}
                 {this.renderNotesAndJustifications(NOTES[PRIOR_FAILURE_TO_APPEAR_RECENT], recentFTAs)}
               </QuestionRow>
 
@@ -370,14 +398,11 @@ export default class PSAInputForm extends React.Component<Props, State> {
               </QuestionRow>
 
               <QuestionRow>
-                <PSACol lg={12}>
-                  <TitleLabel>{COURT_OR_BOOKING_PROMPT}</TitleLabel>
-                  <FormGroup>
-                    {this.renderRadio(COURT_OR_BOOKING, CONTEXT.BOOKING, CONTEXT.BOOKING)}
-                    {this.renderRadio(COURT_OR_BOOKING, CONTEXT.COURT_PENN, CONTEXT.COURT_PENN)}
-                    {this.renderRadio(COURT_OR_BOOKING, CONTEXT.COURT_MINN, CONTEXT.COURT_MINN)}
-                  </FormGroup>
-                </PSACol>
+                {this.renderRadioGroup(COURT_OR_BOOKING, COURT_OR_BOOKING_PROMPT, {
+                  [CONTEXT.BOOKING]: CONTEXT.BOOKING,
+                  [CONTEXT.COURT_PENN]: CONTEXT.COURT_PENN,
+                  [CONTEXT.COURT_MINN]: CONTEXT.COURT_MINN
+                }, false, 12)}
               </QuestionRow>
 
               {
