@@ -16,6 +16,7 @@ import LoadingSpinner from '../../components/LoadingSpinner';
 import DateTimeRange from '../../components/datetime/DateTimeRange';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { DOMAIN } from '../../utils/consts/ReportDownloadTypes';
+import { SORT_TYPES } from '../../utils/consts/Consts';
 import * as FormActionFactory from '../psa/FormActionFactory';
 import * as ReviewActionFactory from '../review/ReviewActionFactory';
 import * as Routes from '../../core/router/Routes';
@@ -166,39 +167,16 @@ class JudgeContainer extends React.Component<Props, State> {
 
   renderFilteredPSAs = () => {
     const { scoresAsMap } = this.props;
-    let items = this.filter();
+    const items = this.filter();
 
     if (!items || !items.count()) {
       return <NoResults>No results.</NoResults>;
     }
 
-    if (items && items.count()) {
-      items = this.sortByName(items).toArray();
-    }
-
-    return <PSAReviewRowList scoreSeq={items.map(([id]) => ([id, scoresAsMap.get(id)]))} />;
+    return <PSAReviewRowList scoreSeq={items.map(([id]) => ([id, scoresAsMap.get(id)]))} sort={SORT_TYPES.NAME} />;
   }
 
   renderError = () => <ErrorText>{this.props.errorMessage}</ErrorText>
-
-  sortByName = rowSeq => rowSeq.sort(([id1, neighbor1], [id2, neighbor2]) => {
-    const p1 = neighbor1.getIn([ENTITY_SETS.PEOPLE, 'neighborDetails'], Immutable.Map());
-    const p2 = neighbor2.getIn([ENTITY_SETS.PEOPLE, 'neighborDetails'], Immutable.Map());
-
-    const p1Last = p1.getIn([PROPERTY_TYPES.LAST_NAME, 0], '').toLowerCase();
-    const p2Last = p2.getIn([PROPERTY_TYPES.LAST_NAME, 0], '').toLowerCase();
-    if (p1Last !== p2Last) return p1Last < p2Last ? -1 : 1;
-
-    const p1First = p1.getIn([PROPERTY_TYPES.FIRST_NAME, 0], '').toLowerCase();
-    const p2First = p2.getIn([PROPERTY_TYPES.FIRST_NAME, 0], '').toLowerCase();
-    if (p1First !== p2First) return p1First < p2First ? -1 : 1;
-
-    const p1Dob = moment(p1.getIn([PROPERTY_TYPES.DOB, 0], ''));
-    const p2Dob = moment(p2.getIn([PROPERTY_TYPES.DOB, 0], ''));
-    if (p1Dob.isValid() && p2Dob.isValid()) return p1Dob.isBefore(p2Dob) ? -1 : 1;
-
-    return 0;
-  })
 
   filter = () => {
 

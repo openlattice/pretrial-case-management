@@ -253,6 +253,11 @@ export const PSA_FAILURE_REASONS = {
   OTHER: 'Other'
 };
 
+export const SORT_TYPES = {
+  DATE: 'DATE',
+  NAME: 'NAME'
+};
+
 export const TABLE_WIDTH = 1000;
 export const ROW_HEIGHT = 50;
 export const TABLE_OFFSET = 2;

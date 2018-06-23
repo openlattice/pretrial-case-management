@@ -121,6 +121,7 @@ type Props = {
   scores :Immutable.Map<*, *>,
   neighbors :Immutable.Map<*, *>,
   hideCaseHistory? :boolean,
+  hideProfile? :boolean,
   caseHistory :Immutable.List<*>,
   manualCaseHistory :Immutable.List<*>,
   chargeHistory :Immutable.Map<*, *>,
@@ -184,7 +185,8 @@ const VIEWS = {
 export default class PSAReviewRow extends React.Component<Props, State> {
 
   static defaultProps = {
-    hideCaseHistory: false
+    hideCaseHistory: false,
+    hideProfile: false
   }
 
   constructor(props :Props) {
@@ -266,7 +268,9 @@ export default class PSAReviewRow extends React.Component<Props, State> {
   }
 
   renderPersonCard = () => {
-    const { neighbors } = this.props;
+    const { neighbors, hideProfile } = this.props;
+    if (hideProfile) return null;
+
     const personDetails = neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborDetails'], Immutable.Map());
     if (!personDetails.size) return <div>Person details unknown.</div>;
     return <PersonCard person={personDetails.set('id', neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborId']))} />;

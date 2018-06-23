@@ -24,7 +24,7 @@ import PSAReviewRowList from './PSAReviewRowList';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import PersonSearchFields from '../../components/person/PersonSearchFields';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { PSA_STATUSES } from '../../utils/consts/Consts';
+import { PSA_STATUSES, SORT_TYPES } from '../../utils/consts/Consts';
 import { PaddedRow, TitleLabel, StyledSelect } from '../../utils/Layout';
 import * as FormActionFactory from '../psa/FormActionFactory';
 import * as ReviewActionFactory from './ReviewActionFactory';
@@ -126,11 +126,6 @@ const SortButton = styled(ToggleButton)`
 `;
 
 const DATE_FORMAT = 'MM/DD/YYYY';
-
-const SORT_TYPES = {
-  DATE: 'DATE',
-  NAME: 'NAME'
-};
 
 const STATUS_OPTIONS = {
   OPEN: {
@@ -300,83 +295,11 @@ class ReviewPSA extends React.Component<Props, State> {
       return <NoResults>No results.</NoResults>;
     }
 
-    if (items && items.count() && !expiredView) {
-      items = this.sortRows(items);
-    }
-
-    return <PSAReviewRowList scoreSeq={items.map(([id]) => ([id, scoresAsMap.get(id)]))} />;
+    const sort = expiredView ? null : this.state.sort;
+    return <PSAReviewRowList scoreSeq={items.map(([id]) => ([id, scoresAsMap.get(id)]))} sort={sort} />;
   }
 
   renderError = () => <ErrorText>{this.props.errorMessage}</ErrorText>
-
-  sortByName = rowSeq => rowSeq.sort(([id1, neighbor1], [id2, neighbor2]) => {
-    const p1 = neighbor1.getIn([ENTITY_SETS.PEOPLE, 'neighborDetails'], Immutable.Map());
-    const p2 = neighbor2.getIn([ENTITY_SETS.PEOPLE, 'neighborDetails'], Immutable.Map());
-
-    const p1Last = p1.getIn([PROPERTY_TYPES.LAST_NAME, 0], '').toLowerCase();
-    const p2Last = p2.getIn([PROPERTY_TYPES.LAST_NAME, 0], '').toLowerCase();
-    if (p1Last !== p2Last) return p1Last < p2Last ? -1 : 1;
-
-    const p1First = p1.getIn([PROPERTY_TYPES.FIRST_NAME, 0], '').toLowerCase();
-    const p2First = p2.getIn([PROPERTY_TYPES.FIRST_NAME, 0], '').toLowerCase();
-    if (p1First !== p2First) return p1First < p2First ? -1 : 1;
-
-    const p1Dob = moment(p1.getIn([PROPERTY_TYPES.DOB, 0], ''));
-    const p2Dob = moment(p2.getIn([PROPERTY_TYPES.DOB, 0], ''));
-    if (p1Dob.isValid() && p2Dob.isValid()) return p1Dob.isBefore(p2Dob) ? -1 : 1;
-
-    return 0;
-  })
-
-  sortByDate = rowSeq => rowSeq.sort(([id1, neighbor1], [id2, neighbor2]) => {
-    let latest1;
-    let latest2;
-
-    const getDate = (neighborObj, latest) => {
-      const associationName = neighborObj.getIn(['associationEntitySet', 'name']);
-      const ptFqn = associationName === ENTITY_SETS.ASSESSED_BY
-        ? PROPERTY_TYPES.COMPLETED_DATE_TIME : PROPERTY_TYPES.DATE_TIME;
-      const date = moment(neighborObj.getIn(['associationDetails', ptFqn, 0], ''));
-      if (date.isValid()) {
-        if (!latest || latest.isBefore(date)) {
-          return date;
-        }
-      }
-      return null;
-    };
-
-    neighbor1.get(ENTITY_SETS.STAFF, Immutable.List()).forEach((neighborObj) => {
-      const date = getDate(neighborObj, latest1);
-      if (date) latest1 = date;
-    });
-
-    neighbor2.get(ENTITY_SETS.STAFF, Immutable.List()).forEach((neighborObj) => {
-      const date = getDate(neighborObj, latest2);
-      if (date) latest2 = date;
-    });
-
-    if (latest1 && latest2) {
-      return latest1.isAfter(latest2) ? -1 : 1;
-    }
-
-    if (latest1 || latest2) {
-      return latest1 ? -1 : 1;
-    }
-
-    return 0;
-  })
-
-  sortRows = (rowSeq) => {
-    const { sort } = this.state;
-    if (sort === SORT_TYPES.NAME) {
-      return this.sortByName(rowSeq).toArray();
-    }
-    if (sort === SORT_TYPES.DATE) {
-      return this.sortByDate(rowSeq).toArray();
-    }
-
-    return [];
-  }
 
   filterExpired = (items) => {
     let rowsByName = Immutable.Map();

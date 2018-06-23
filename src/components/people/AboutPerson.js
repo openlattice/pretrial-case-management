@@ -12,6 +12,8 @@ import AboutPersonGeneral from '../person/AboutPersonGeneral';
 import PSAReviewRowList from '../../containers/review/PSAReviewRowList';
 import CaseHistory from '../review/CaseHistory';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { SORT_TYPES } from '../../utils/consts/Consts';
+import { groupByStatus, sortByDate } from '../../utils/PSAUtils';
 
 const Wrapper = styled.div`
   display: flex;
@@ -76,7 +78,7 @@ const AboutPerson = ({ selectedPersonData, neighbors } :Props) => {
       .filter(neighbor => !!neighbor.get('neighborDetails'))
       .map(neighbor => [neighbor.get('neighborId'), neighbor.get('neighborDetails')]);
 
-    return <PSAReviewRowList scoreSeq={scoreSeq} hideCaseHistory />;
+    return <PSAReviewRowList scoreSeq={scoreSeq} sort={SORT_TYPES.DATE} hideCaseHistory hideProfile />;
   };
 
   const renderCaseHistory = () => {

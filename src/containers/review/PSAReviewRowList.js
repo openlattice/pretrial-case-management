@@ -11,6 +11,8 @@ import { Pagination } from 'react-bootstrap';
 import PSAReviewRow from '../../components/review/PSAReviewRow';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { ENTITY_SETS } from '../../utils/consts/DataModelConsts';
+import { SORT_TYPES } from '../../utils/consts/Consts';
+import { sortByDate, sortByName } from '../../utils/PSAUtils';
 import { CenteredContainer } from '../../utils/Layout';
 import * as FormActionFactory from '../psa/FormActionFactory';
 import * as ReviewActionFactory from './ReviewActionFactory';
@@ -19,7 +21,9 @@ import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
 
 type Props = {
   scoreSeq :Immutable.Seq,
+  sort? :?string,
   hideCaseHistory? :boolean,
+  hideProfile? :boolean,
   actions :{
     downloadPSAReviewPDF :(values :{
       neighbors :Immutable.Map<*, *>,
@@ -78,7 +82,8 @@ const MAX_RESULTS = 10;
 class PSAReviewRowList extends React.Component<Props, State> {
 
   static defaultProps = {
-    hideCaseHistory: false
+    hideCaseHistory: false,
+    hideProfile: false
   }
 
   constructor(props :Props) {
@@ -133,7 +138,8 @@ class PSAReviewRowList extends React.Component<Props, State> {
           ftaHistory={ftaHistory}
           readOnly={this.props.readOnlyPermissions}
           key={scoreId}
-          hideCaseHistory={this.props.hideCaseHistory} />
+          hideCaseHistory={this.props.hideCaseHistory}
+          hideProfile={this.props.hideProfile} />
     );
   }
 
@@ -166,6 +172,15 @@ class PSAReviewRowList extends React.Component<Props, State> {
     );
   }
 
+  sortItems = () => {
+    const { sort, scoreSeq, psaNeighborsById } = this.props;
+    if (!sort) return scoreSeq;
+    const sortFn = sort === SORT_TYPES.DATE ? sortByDate : sortByName;
+    return scoreSeq.sort(([id1], [id2]) => sortFn(
+      [id1, psaNeighborsById.get(id1, Immutable.Map())], [id2, psaNeighborsById.get(id2, Immutable.Map())]
+    ));
+  }
+
   render() {
     const { scoreSeq, loadingPSAData } = this.props;
     const { start } = this.state;
@@ -174,7 +189,7 @@ class PSAReviewRowList extends React.Component<Props, State> {
       return <LoadingSpinner />;
     }
 
-    const items = scoreSeq.slice(start, start + MAX_RESULTS);
+    const items = this.sortItems(scoreSeq).slice(start, start + MAX_RESULTS);
     const numItems = scoreSeq.length || scoreSeq.size;
     return (
       <div>
