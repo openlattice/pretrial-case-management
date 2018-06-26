@@ -475,15 +475,15 @@ function* changePSAStatusWorker(action :SequenceAction) :Generator<*, *, *> {
   const {
     scoresEntity,
     scoresId,
-    scoresEntitySetId,
     callback
   } = action.value;
 
   try {
     yield put(changePSAStatus.request(action.id));
+    const entitySetId = yield call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.PSA_SCORES);
 
-    yield call(DataApi.replaceEntityInEntitySetUsingFqns, scoresEntitySetId, scoresId, scoresEntity.toJS());
-    const newScoresEntity = yield call(DataApi.getEntity, scoresEntitySetId, scoresId);
+    yield call(DataApi.replaceEntityInEntitySetUsingFqns, entitySetId, scoresId, scoresEntity.toJS());
+    const newScoresEntity = yield call(DataApi.getEntity, entitySetId, scoresId);
 
     yield put(changePSAStatus.success(action.id, {
       id: scoresId,

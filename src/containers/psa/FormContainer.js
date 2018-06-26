@@ -153,7 +153,6 @@ type Props = {
     }) => void,
     submit :({ config :Object, values :Object }) => void,
     changePSAStatus :(values :{
-      scoresEntitySetId :string,
       scoresId :string,
       scoresEntity :Immutable.Map<*, *>,
       callback? :() => void
@@ -497,7 +496,6 @@ class Form extends React.Component<Props, State> {
     };
 
     actions.changePSAStatus({
-      scoresEntitySetId: entitySetLookup.get(PSA_SCORES),
       scoresId,
       scoresEntity,
       callback
