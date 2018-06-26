@@ -26,7 +26,7 @@ export default function devWebpackConfig(env) {
     new Webpack.HotModuleReplacementPlugin(),
     new Webpack.NamedModulesPlugin(),
     new HtmlWebpackPlugin({
-      favicon: `${APP_PATHS.ABS.SOURCE_ASSETS_IMAGES}/favicon.png`,
+      favicon: `${APP_PATHS.ABS.SOURCE_ASSETS_IMAGES}/ol_favicon.png`,
       inject: true,
       template: `${APP_PATHS.ABS.SOURCE}/${APP_CONFIG.APP_INDEX_HTML}`
     }),

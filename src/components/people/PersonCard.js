@@ -3,6 +3,7 @@
  */
 
 import React from 'react';
+import styled from 'styled-components';
 
 import StyledCard from '../../components/StyledCard';
 import * as Routes from '../../core/router/Routes';
@@ -19,6 +20,35 @@ type Props = {
   }
 };
 
+const PersonInfoSection = styled.div`
+  margin-left: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+`;
+
+const Name = styled.div`
+  font-family: 'Open Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: #2e2e34;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+`;
+
+const DobLabel = styled.span`
+  font-family: 'Open Sans', sans-serif;
+  font-size: 13px;
+  color: #8e929b;
+`;
+
+const Dob = styled.span`
+  font-family: 'Open Sans', sans-serif;
+  font-size: 13px;
+  color: #2e2e34;
+  margin-right: 5px;
+`;
+
 const PersonCard = ({ person } :Props) => {
   const {
     firstName,
@@ -28,13 +58,19 @@ const PersonCard = ({ person } :Props) => {
     identification
   } = person;
 
+  const name = `${lastName}, ${firstName}`;
+
   return (
     <UndecoratedLink to={`${Routes.PERSON_DETAILS_ROOT}/${identification}`}>
       <StyledCard>
         <Headshot photo={photo} />
-        <h3>{firstName}</h3>
-        <h3>{lastName}</h3>
-        <p>DOB: {dob}</p>
+        <PersonInfoSection>
+          <Name>{name}</Name>
+          <div>
+            <DobLabel>DOB  </DobLabel>
+            <Dob>{dob}</Dob>
+          </div>
+        </PersonInfoSection>
       </StyledCard>
     </UndecoratedLink>
   );
