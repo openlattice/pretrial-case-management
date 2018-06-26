@@ -32,12 +32,13 @@ const StyledName = styled.div`
 
 type Props = {
   path :string,
-  name :string
+  name :string,
+  icon? :string
 };
 
 const CreateFormListItem = (props :Props) => (
   <ItemWrapper to={props.path}>
-    <FormListItemIcon />
+    <FormListItemIcon icon={props.icon} />
     <StyledName>{props.name}</StyledName>
   </ItemWrapper>
 );

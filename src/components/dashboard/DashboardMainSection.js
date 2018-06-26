@@ -9,7 +9,6 @@ const StyledSectionWrapper = styled.div`
   width: 100%;
   display: flex;
   flex-direction: column;
-  padding: 55px;
 `;
 
 const StyledHeader = styled.div`
@@ -19,12 +18,12 @@ const StyledHeader = styled.div`
 
 type Props = {
   children :React.Node,
-  header :string
+  header? :string
 };
 
 const DashboardMainSection = (props :Props) => (
   <StyledSectionWrapper>
-    <StyledHeader>{props.header}</StyledHeader>
+    { props.header ? <StyledHeader>{props.header}</StyledHeader> : null }
     {props.children}
   </StyledSectionWrapper>
 );

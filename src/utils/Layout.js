@@ -49,7 +49,8 @@ export const Label = styled(ControlLabel)`
 
 export const TitleLabel = Label.extend`
   display: block;
-  line-height: 1.5;
+  font-family: 'Open Sans', sans-serif;
+  color: #555e6f;
 `;
 
 export const TableTitleLabel = TitleLabel.extend`
