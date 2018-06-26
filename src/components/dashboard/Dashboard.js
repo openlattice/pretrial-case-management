@@ -30,7 +30,6 @@ const StyledMainWrapper = styled.div`
 
 const Dashboard = () => (
   <DashboardWrapper>
-    <DashboardNav />
     <StyledMainWrapper>
       <Switch>
         <Route path={Routes.CREATE_FORMS} component={FormsContainer} />

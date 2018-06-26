@@ -15,10 +15,11 @@ import PeopleList from '../../components/people/PeopleList';
 import InnerNavLink from '../../components/InnerNavLink';
 import DashboardMainSection from '../../components/dashboard/DashboardMainSection';
 import LoadingSpinner from '../../components/LoadingSpinner';
+import NavButtonToolbar from '../../components/buttons/NavButtonToolbar';
 import { searchPeopleRequest } from '../person/PersonActionFactory';
 import { PSA_STATUSES } from '../../utils/consts/Consts';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { CenteredContainer, StyledInnerNav } from '../../utils/Layout';
+import { StyledInnerNav } from '../../utils/Layout';
 import { formatDOB } from '../../utils/Helpers';
 import * as Routes from '../../core/router/Routes';
 import * as ReviewActionFactory from '../review/ReviewActionFactory';
@@ -192,7 +193,7 @@ class PeopleContainer extends React.Component<Props, State> {
 
   renderRequiresActionPeopleComponent = () => {
     if (this.props.loadingPSAData) {
-      return <LoadingSpinner />
+      return <LoadingSpinner />;
     }
 
     const formattedPeople = this.getPeopleRequiringAction();
@@ -205,22 +206,24 @@ class PeopleContainer extends React.Component<Props, State> {
   }
 
   render() {
+    const navButtons = [
+      {
+        path: Routes.SEARCH_PEOPLE,
+        label: 'Search'
+      },
+      {
+        path: Routes.MULTI_SEARCH_PEOPLE,
+        label: 'Multi-Search'
+      },
+      {
+        path: Routes.REQUIRES_ACTION_PEOPLE,
+        label: 'Requires Action'
+      }
+    ];
+
     return (
       <DashboardMainSection header="People">
-        <StyledInnerNav>
-          <InnerNavLink
-              path={Routes.SEARCH_PEOPLE}
-              name={Routes.SEARCH_PEOPLE}
-              label="Search" />
-          <InnerNavLink
-              path={Routes.MULTI_SEARCH_PEOPLE}
-              name={Routes.MULTI_SEARCH_PEOPLE}
-              label="Multi-Search" />
-          <InnerNavLink
-              path={Routes.REQUIRES_ACTION_PEOPLE}
-              name={Routes.REQUIRES_ACTION_PEOPLE}
-              label="Requires Action" />
-        </StyledInnerNav>
+        <NavButtonToolbar options={navButtons} />
         <Switch>
           <Route path={Routes.SEARCH_PEOPLE} render={this.renderSearchPeopleComponent} />
           <Route path={Routes.MULTI_SEARCH_PEOPLE} render={this.renderMultiSearchPeopleComponent} />

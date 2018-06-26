@@ -12,7 +12,6 @@ import PersonCard from './PersonCard';
 
 const CardsWrapper = styled.div`
   align-items: center;
-  background: #f7f8f9;
   display: flex;
   flex: 1 1 auto;
   flex-wrap: wrap;
