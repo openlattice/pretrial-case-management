@@ -16,6 +16,7 @@ import { connect } from 'react-redux';
 import StyledButton from '../../components/buttons/StyledButton';
 import PersonCard from '../../components/person/PersonCard';
 import LoadingSpinner from '../../components/LoadingSpinner';
+import NoSearchResults from '../../components/people/NoSearchResults';
 import { clearSearchResults, searchPeopleRequest } from './PersonActionFactory';
 import {
   PaddedRow,
@@ -216,7 +217,7 @@ class SearchPeopleContainer extends React.Component<Props, State> {
     if (searchHasRun) {
       footer = (
         <FooterContainer>
-          { searchResults.isEmpty() ? <div>No search results.</div> : null }
+          { searchResults.isEmpty() ? <NoSearchResults /> : null }
           <StyledButton onClick={this.createNewPerson}>Create Person</StyledButton>
         </FooterContainer>
       );
