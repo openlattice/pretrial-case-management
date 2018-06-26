@@ -12,14 +12,12 @@ import { Redirect, Route, Switch } from 'react-router-dom';
 import PersonSearchFields from '../../components/person/PersonSearchFields';
 import PersonTextAreaInput from '../../components/person/PersonTextAreaInput';
 import PeopleList from '../../components/people/PeopleList';
-import InnerNavLink from '../../components/InnerNavLink';
 import DashboardMainSection from '../../components/dashboard/DashboardMainSection';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import NavButtonToolbar from '../../components/buttons/NavButtonToolbar';
 import { searchPeopleRequest } from '../person/PersonActionFactory';
 import { PSA_STATUSES } from '../../utils/consts/Consts';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { StyledInnerNav } from '../../utils/Layout';
 import { formatDOB } from '../../utils/Helpers';
 import * as Routes from '../../core/router/Routes';
 import * as ReviewActionFactory from '../review/ReviewActionFactory';
@@ -28,8 +26,7 @@ const SearchBox = styled.div`
   padding: 30px 0;
   margin-bottom: 30px;
   background: white;
-  box-shadow: 0 2px 8px -2px rgba(17,51,85,0.15);
-  border: 1px solid #ccc;
+  border: 1px solid #e1e1eb;
   border-radius: 5px;
 `;
 
@@ -208,27 +205,27 @@ class PeopleContainer extends React.Component<Props, State> {
   render() {
     const navButtons = [
       {
+        path: Routes.REQUIRES_ACTION_PEOPLE,
+        label: 'Requires Action'
+      },
+      {
         path: Routes.SEARCH_PEOPLE,
         label: 'Search'
       },
       {
         path: Routes.MULTI_SEARCH_PEOPLE,
         label: 'Multi-Search'
-      },
-      {
-        path: Routes.REQUIRES_ACTION_PEOPLE,
-        label: 'Requires Action'
       }
     ];
 
     return (
-      <DashboardMainSection header="People">
+      <DashboardMainSection>
         <NavButtonToolbar options={navButtons} />
         <Switch>
+          <Route path={Routes.REQUIRES_ACTION_PEOPLE} render={this.renderRequiresActionPeopleComponent} />
           <Route path={Routes.SEARCH_PEOPLE} render={this.renderSearchPeopleComponent} />
           <Route path={Routes.MULTI_SEARCH_PEOPLE} render={this.renderMultiSearchPeopleComponent} />
-          <Route path={Routes.REQUIRES_ACTION_PEOPLE} render={this.renderRequiresActionPeopleComponent} />
-          <Redirect from={Routes.PEOPLE} to={Routes.SEARCH_PEOPLE} />
+          <Redirect from={Routes.PEOPLE} to={Routes.REQUIRES_ACTION_PEOPLE} />
         </Switch>
       </DashboardMainSection>
     );

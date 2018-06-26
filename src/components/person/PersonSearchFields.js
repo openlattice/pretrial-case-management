@@ -4,10 +4,11 @@
 
 import React from 'react';
 import styled from 'styled-components';
-import DatePicker from 'react-bootstrap-date-picker';
 import { Col, FormControl } from 'react-bootstrap';
 
-import StyledButton from '../buttons/StyledButton';
+import StyledDatePicker from '../controls/StyledDatePicker';
+import StyledInput from '../controls/StyledInput';
+import InfoButton from '../buttons/InfoButton';
 import { PaddedRow, TitleLabel } from '../../utils/Layout';
 
 const SearchRow = styled(PaddedRow)`
@@ -64,18 +65,18 @@ export default class PersonSearchFields extends React.Component<Props, State> {
       <div>
         <SearchRow>
           <Col lg={3}>
-            <TitleLabel>Last Name</TitleLabel>
-            <FormControl name="lastName" onKeyPress={this.handleKeyPress} onChange={this.onChange} value={lastName} />
+            <TitleLabel>Last name</TitleLabel>
+            <StyledInput name="lastName" onKeyPress={this.handleKeyPress} onChange={this.onChange} value={lastName} />
           </Col>
           <Col lg={3}>
-            <TitleLabel>First Name</TitleLabel>
-            <FormControl name="firstName" onKeyPress={this.handleKeyPress} onChange={this.onChange} value={firstName} />
+            <TitleLabel>First name</TitleLabel>
+            <StyledInput name="firstName" onKeyPress={this.handleKeyPress} onChange={this.onChange} value={firstName} />
           </Col>
           <Col lg={3}>
-            <TitleLabel>Date of Birth</TitleLabel>
-            <DatePicker name="dob" onChange={this.onDobChange} value={dob} />
+            <TitleLabel>Date of birth</TitleLabel>
+            <StyledDatePicker onKeyPress={this.handleKeyPress} name="dob" onChange={this.onDobChange} value={dob} />
           </Col>
-          <StyledButton onClick={this.handleSubmit}>Filter</StyledButton>
+          <InfoButton onClick={this.handleSubmit}>Search</InfoButton>
         </SearchRow>
       </div>
     );
