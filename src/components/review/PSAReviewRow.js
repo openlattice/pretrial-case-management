@@ -157,7 +157,6 @@ type Props = {
     dmfRiskFactorsEntity :Object
   }) => void,
   changePSAStatus? :(values :{
-    scoresEntitySetId :string,
     scoresId :string,
     scoresEntity :Immutable.Map<*, *>
   }) => void,
@@ -458,12 +457,7 @@ export default class PSAReviewRow extends React.Component<Props, State> {
       .set(PROPERTY_TYPES.FAILURE_REASON, Immutable.fromJS(failureReason));
 
     const scoresId = this.props.entityKeyId;
-    const scoresEntitySetId = this.getEntitySetId(ENTITY_SETS.PSA_SCORES);
-    this.props.changePSAStatus({
-      scoresEntitySetId,
-      scoresId,
-      scoresEntity
-    });
+    this.props.changePSAStatus({ scoresId, scoresEntity });
 
     this.props.submitData({
       config: psaEditedConfig,

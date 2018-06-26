@@ -48,7 +48,6 @@ type Props = {
       dmfRiskFactorsEntity :Object
     }) => void,
     changePSAStatus :(values :{
-      scoresEntitySetId :string,
       scoresId :string,
       scoresEntity :Immutable.Map<*, *>
     }) => void,
