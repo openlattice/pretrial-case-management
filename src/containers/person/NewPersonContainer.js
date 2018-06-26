@@ -262,6 +262,13 @@ class NewPersonContainer extends React.Component<Props, State> {
               <SectionHeader>Personal Information</SectionHeader>
               <PaddedRow>
                 <Col lg={4}>
+                  <RequiredTitleLabel>*Last Name</RequiredTitleLabel>
+                  <FormControl
+                      name={LAST_NAME_VALUE}
+                      value={this.state[LAST_NAME_VALUE]}
+                      onChange={this.handleOnChangeInput} />
+                </Col>
+                <Col lg={4}>
                   <RequiredTitleLabel>*First Name</RequiredTitleLabel>
                   <FormControl
                       name={FIRST_NAME_VALUE}
@@ -273,13 +280,6 @@ class NewPersonContainer extends React.Component<Props, State> {
                   <FormControl
                       name={MIDDLE_NAME_VALUE}
                       value={this.state[MIDDLE_NAME_VALUE]}
-                      onChange={this.handleOnChangeInput} />
-                </Col>
-                <Col lg={4}>
-                  <RequiredTitleLabel>*Last Name</RequiredTitleLabel>
-                  <FormControl
-                      name={LAST_NAME_VALUE}
-                      value={this.state[LAST_NAME_VALUE]}
                       onChange={this.handleOnChangeInput} />
                 </Col>
               </PaddedRow>
