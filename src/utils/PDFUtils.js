@@ -524,7 +524,7 @@ const riskFactors = (
   }
   [y, page] = tryIncrementPage(doc, y, page, name);
 
-  doc.text(X_MARGIN, y, '7. Prior Pre-Trial Failure to Appear in the Last 2 Years');
+  doc.text(X_MARGIN, y, '7. Prior Pretrial Failure to Appear in the Last 2 Years');
   doc.text(RESPONSE_OFFSET, y, priorFailureToAppearRecent);
   y = riskFactorNotes(y, doc, riskFactorVals.get(PRIOR_FAILURE_TO_APPEAR_RECENT_NOTES));
   if (priorFailureToAppearRecent > 0) {
@@ -532,7 +532,7 @@ const riskFactors = (
   }
   [y, page] = tryIncrementPage(doc, y, page, name);
 
-  doc.text(X_MARGIN, y, '8. Prior Pre-Trial Failure to Appear Older than 2 Years');
+  doc.text(X_MARGIN, y, '8. Prior Pretrial Failure to Appear Older than 2 Years');
   doc.text(RESPONSE_OFFSET, y, getBooleanText(priorFailureToAppearOld));
   y = riskFactorNotes(y, doc, riskFactorVals.get(PRIOR_FAILURE_TO_APPEAR_OLD_NOTES));
   if (priorFailureToAppearOld) {

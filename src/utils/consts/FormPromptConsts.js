@@ -13,9 +13,9 @@ export const PRIOR_MISDEMEANOR_PROMPT = '4. Does the defendant have any prior mi
 export const PRIOR_FELONY_PROMPT = '5. Does the defendant have any prior felony convictions?';
 export const PRIOR_VIOLENT_CONVICTION_PROMPT = '6. How many prior violent convictions does the defendant have?';
 export const PRIOR_FAILURE_TO_APPEAR_RECENT_PROMPT =
-  '7. How many prior pre-trial failures to appear does the defendant have in the past 2 years?';
+  '7. How many prior pretrial failures to appear does the defendant have in the past 2 years?';
 export const PRIOR_FAILURE_TO_APPEAR_OLD_PROMPT =
-  '8. Does the defendant have any prior pre-trial failures to appear that are older than 2 years?';
+  '8. Does the defendant have any prior pretrial failures to appear that are older than 2 years?';
 export const PRIOR_SENTENCE_TO_INCARCERATION_PROMPT = '9. Does the defendant have any prior sentence to incarceration?';
 
 export const EXTRADITED_PROMPT = '10. Was the defendant extradited for any current charge?';

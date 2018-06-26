@@ -179,7 +179,7 @@ const HeaderNav = ({ logout } :Props) => (
       <div>
         <BrandLink to={Routes.DASHBOARD}>
           <Logo src={logo} role="presentation" />
-          <span>Pre-Trial Case Management</span>
+          <span>Pretrial Case Management</span>
         </BrandLink>
       </div>
       <div>
