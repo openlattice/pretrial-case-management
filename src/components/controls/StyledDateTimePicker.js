@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
-import DatePicker from 'react-bootstrap-date-picker';
+import DateTimePicker from 'react-datetime';
 
 import calendarIcon from '../../assets/svg/calendar-icon.svg';
 
@@ -17,22 +17,29 @@ const IconWrapper = styled.div`
   justify-content: center;
 `;
 
-const StyledDatePickerInput = styled(DatePicker)`
+const StyledDateTimePickerInput = styled(DateTimePicker)`
   height: 39px;
   border-radius: 3px;
-  background-color: #f9f9fd;
   border: 1px solid #dcdce7;
-  padding: 0 20px;
   box-shadow: none;
   position: absolute;
   font-family: 'Open Sans', sans-serif;
   font-size: 14px;
+  width: 100%;
 
-  &::placeholder {
+  input {
+    height: 100%;
+    border-radius: 3px;
+    background-color: #f9f9fd;
+    box-shadow: none;
+    border: none
+  }
+
+  input::placeholder {
     color: #8e929b;
   }
 
-  &:focus {
+  input:focus {
     box-shadow: inset 0 0 0 1px rebeccapurple;
     outline: none;
   }
@@ -46,7 +53,7 @@ const onKeyPress = (e, props) => {
 
 const StyledDatePicker = props => (
   <DatePickerWrapper onKeyPress={e => onKeyPress(e, props)}>
-    <StyledDatePickerInput showClearButton={false} {...props} />
+    <StyledDateTimePickerInput inputProps={{ placeholder: 'MM/DD/YYYY HH:mm' }} showClearButton={false} {...props} />
     <IconWrapper>
       <img src={calendarIcon} role="presentation" />
     </IconWrapper>

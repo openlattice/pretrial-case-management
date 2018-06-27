@@ -9,7 +9,7 @@ import styled from 'styled-components';
 import randomUUID from 'uuid/v4';
 import moment from 'moment';
 import { AuthUtils } from 'lattice-auth';
-import { Button, ProgressBar } from 'react-bootstrap';
+import { Button } from 'react-bootstrap';
 import { connect } from 'react-redux';
 import { Redirect, Route, Switch, withRouter } from 'react-router-dom';
 import { bindActionCreators } from 'redux';
@@ -24,6 +24,7 @@ import SelectedPersonInfo from '../../components/person/SelectedPersonInfo';
 import SelectedArrestInfo from '../../components/arrest/SelectedArrestInfo';
 import PSAInputForm from '../../components/psainput/PSAInputForm';
 import PSAResults from '../../components/psainput/PSAResults';
+import ProgressBar from '../../components/controls/ProgressBar';
 import exportPDF from '../../utils/PDFUtils';
 import psaConfig from '../../config/formconfig/PsaConfig';
 
@@ -59,16 +60,21 @@ import { PROPERTY_TYPES, ENTITY_SETS } from '../../utils/consts/DataModelConsts'
 const {
   PEOPLE,
   PRETRIAL_CASES,
-  PSA_SCORES,
   RELEASE_RECOMMENDATIONS
 } = ENTITY_SETS;
 
 const LoadingContainer = styled.div`
   text-align: center;
+  padding: 0 30px 30px 30px;
+  border-radius: 5px;
+  border: 1px solid #e1e1eb;
+  background-color: #ffffff;
 `;
 
 const LoadingText = styled.div`
-  font-size: 20px;
+  font-family: 'Open Sans', sans-serif;
+  font-size: 16px;
+  color: #555e6f;
   margin: 20px;
   display: inline-flex;
 `;
@@ -208,10 +214,10 @@ class Form extends React.Component<Props, State> {
   }
 
   redirectToFirstPageIfNecessary = () => {
-    const { scoresWereGenerated } = this.state;
-    if ((!this.props.selectedPerson.size || !scoresWereGenerated) && !window.location.href.endsWith('1')) {
-      this.props.history.push(`${Routes.PSA_FORM}/1`);
-    }
+    // const { scoresWereGenerated } = this.state;
+    // if ((!this.props.selectedPerson.size || !scoresWereGenerated) && !window.location.href.endsWith('1')) {
+    //   this.props.history.push(`${Routes.PSA_FORM}/1`);
+    // }
   }
 
   componentWillReceiveProps(nextProps) {
@@ -527,7 +533,7 @@ class Form extends React.Component<Props, State> {
       return (
         <LoadingContainer>
           <LoadingText>{loadingText}</LoadingText>
-          <ProgressBar bsStyle="success" now={progress} label={`${progress}%`} />
+          <ProgressBar progress={progress} />
         </LoadingContainer>);
     }
 
@@ -616,26 +622,17 @@ class Form extends React.Component<Props, State> {
 
   render() {
     return (
-      <StyledFormViewWrapper>
-        <StyledFormWrapper>
-          <StyledTitleWrapper>
-            <div>Public Safety Assessment</div>
-            <CloseX name="close" onClick={this.handleClose} />
-          </StyledTitleWrapper>
-          <StyledSectionWrapper>
-            <StyledTopFormNavBuffer />
-            <Switch>
-              <Route path={`${Routes.PSA_FORM}/1`} render={this.getSearchPeopleSection} />;
-              <Route path={`${Routes.PSA_FORM}/2`} render={this.getSelectArrestSection} />;
-              <Route path={`${Routes.PSA_FORM}/3`} render={this.getSelectChargesSection} />;
-              <Route path={`${Routes.PSA_FORM}/4`} render={this.getPsaInputForm} />;
-              <Redirect from={Routes.PSA_FORM} to={`${Routes.PSA_FORM}/1`} />
-              <Redirect from={Routes.FORMS} to={Routes.DASHBOARD} />
-            </Switch>
-            { this.renderPSAResultsModal() }
-          </StyledSectionWrapper>
-        </StyledFormWrapper>
-      </StyledFormViewWrapper>
+      <div>
+        <Switch>
+          <Route path={`${Routes.PSA_FORM}/1`} render={this.getSearchPeopleSection} />;
+          <Route path={`${Routes.PSA_FORM}/2`} render={this.getSelectArrestSection} />;
+          <Route path={`${Routes.PSA_FORM}/3`} render={this.getSelectChargesSection} />;
+          <Route path={`${Routes.PSA_FORM}/4`} render={this.getPsaInputForm} />;
+          <Redirect from={Routes.PSA_FORM} to={`${Routes.PSA_FORM}/1`} />
+          <Redirect from={Routes.FORMS} to={Routes.DASHBOARD} />
+        </Switch>
+        { this.renderPSAResultsModal() }
+      </div>
     );
   }
 }

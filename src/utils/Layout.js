@@ -391,8 +391,8 @@ export const StyledFormViewWrapper = styled.div`
 export const StyledFormWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  margin: 55px auto;
-  width: 1300px;
+  margin: 30px auto;
+  width: 960px;
 `;
 
 export const StyledTitleWrapper = styled.div`
@@ -410,7 +410,7 @@ export const StyledSectionWrapper = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 55px;
+  padding: 30px 0;
   width: 100%;
 `;
 

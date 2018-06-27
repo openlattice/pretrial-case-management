@@ -7,36 +7,58 @@ import Immutable from 'immutable';
 import styled from 'styled-components';
 import { Button } from 'react-bootstrap';
 
-import ArrestCard from '../../../components/arrest/ArrestCard';
+import ArrestTable from '../../../components/arrest/ArrestTable';
+import BasicButton from '../../../components/buttons/BasicButton';
+import SecondaryButton from '../../../components/buttons/SecondaryButton';
 
 /*
  * styled components
  */
 
-const Wrapper = styled.div`
-  display: flex;
-  flex: 1 0 auto;
-  flex-direction: column;
-  padding: 50px;
-`;
-
 const Header = styled.h1`
-  font-size: 25px;
-  font-weight: 600;
-  margin: 0;
-  margin-bottom: 20px;
+  font-family: 'Open Sans', sans-serif;
+  font-size: 18px;
+  color: #555e6f;
 `;
 
 const SearchResultsList = styled.div`
   background-color: #fefefe;
+  margin: 20px 0;
+`;
+
+const ResultsWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  margin: 20px 0;
+`;
+
+const HeaderWrapper = styled.div`
+  display: flex;
+  flex-direction: row;
+  padding: 30px;
+
+  h1 {
+    flex: 2;
+  }
+  div {
+    flex: 1;
+  }
+`;
+
+const ButtonWrapper = styled.div`
+  margin-right: 20px;
 `;
 
 const StyledNavBtnWrapper = styled.div`
   text-align: center;
   width: 100%;
+`;
+
+const ModifyButton = styled(BasicButton)`
+  width: 100%;
+  height: 39px;
+  font-size: 14px;
+  font-weight: 600;
+  margin-right: 10px;
 `;
 
 export const NavButton = styled(Button)`
@@ -83,24 +105,32 @@ const SelectArrestContainer = ({
       return renderNoResults();
     }
 
-    const caseOptionsList = caseOptions.map((caseResult :Immutable.Map<*, *>) =>
-      <ArrestCard key={caseResult.get('id')} handleSelect={handleOnSelectCase} arrest={caseResult} />);
-
     return (
-      <SearchResultsList>
-        <StyledNavBtnWrapper>
-          <NavButton onClick={nextPage}>Proceed Without Arrest</NavButton>
-        </StyledNavBtnWrapper>
-        { caseOptionsList.toSeq() }
-      </SearchResultsList>
+      <ResultsWrapper>
+        <ArrestTable arrests={caseOptions} handleSelect={handleOnSelectCase} />
+      </ResultsWrapper>
     );
   };
 
+  const renderHeader = () => {
+    return (
+      <HeaderWrapper>
+        <Header>Select an arrest</Header>
+        <ButtonWrapper>
+          <ModifyButton onClick={prevPage}>Modify Search</ModifyButton>
+        </ButtonWrapper>
+        <div>
+          <SecondaryButton onClick={nextPage}>Proceed Without Arrest</SecondaryButton>
+        </div>
+      </HeaderWrapper>
+    );
+  }
+
   return (
-    <Wrapper>
-      <Header>Select an arrest</Header>
+    <SearchResultsList>
+      { renderHeader() }
       { renderSearchResults() }
-    </Wrapper>
+    </SearchResultsList>
   );
 };
 

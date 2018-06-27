@@ -86,6 +86,10 @@ const DemoBanner = styled.div`
   margin: 15px;
 `;
 
+const FormWrapper = styled(StyledFormWrapper)`
+  width: 100%;
+`;
+
 const CHART_HEIGHT = 300;
 const CHART_WIDTH = 600;
 
@@ -318,7 +322,7 @@ class DashboardContainer extends React.Component<Props, State> {
   render() {
     return (
       <StyledFormViewWrapper>
-        <StyledFormWrapper>
+        <FormWrapper>
           <StyledTitleWrapper>
             <div>Dashboard</div>
             <CloseX name="close" onClick={this.handleClose} />
@@ -329,7 +333,7 @@ class DashboardContainer extends React.Component<Props, State> {
             {this.renderContent()}
             <StyledTopFormNavBuffer />
           </StyledSectionWrapper>
-        </StyledFormWrapper>
+        </FormWrapper>
       </StyledFormViewWrapper>
     );
   }
