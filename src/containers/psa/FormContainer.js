@@ -214,10 +214,10 @@ class Form extends React.Component<Props, State> {
   }
 
   redirectToFirstPageIfNecessary = () => {
-    // const { scoresWereGenerated } = this.state;
-    // if ((!this.props.selectedPerson.size || !scoresWereGenerated) && !window.location.href.endsWith('1')) {
-    //   this.props.history.push(`${Routes.PSA_FORM}/1`);
-    // }
+    const { scoresWereGenerated } = this.state;
+    if ((!this.props.selectedPerson.size || !scoresWereGenerated) && !window.location.href.endsWith('1')) {
+      this.props.history.push(`${Routes.PSA_FORM}/1`);
+    }
   }
 
   componentWillReceiveProps(nextProps) {
@@ -472,7 +472,7 @@ class Form extends React.Component<Props, State> {
     this.handlePageChange(Routes.DASHBOARD);
   }
 
-  handlePageChange = (path) => {
+  handlePageChange = (path :string) => {
     this.props.history.push(path);
   };
 
@@ -562,12 +562,12 @@ class Form extends React.Component<Props, State> {
   }
 
   getPsaInputForm = () => (
-    <div>
+    <StyledSectionWrapper>
       {this.renderPersonSection()}
       {this.renderPretrialCaseSection()}
       {this.renderPSAInputForm()}
       {this.renderRecommendationSection()}
-    </div>
+    </StyledSectionWrapper>
   )
 
   getPsaResults = () => {
@@ -615,7 +615,6 @@ class Form extends React.Component<Props, State> {
       <ConfirmationModal
           submissionStatus={isSubmitting || isSubmitted}
           pageContent={this.getPsaResults}
-          // Implement hard reset
           handleModalButtonClick={this.props.actions.hardRestart} />
     );
   }

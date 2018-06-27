@@ -48,9 +48,14 @@ const ButtonWrapper = styled.div`
   margin-right: 20px;
 `;
 
-const StyledNavBtnWrapper = styled.div`
+const NoResultsText = styled.div`
   text-align: center;
   width: 100%;
+  padding: 30px 0;
+  font-family: 'Open Sans', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: #8e929b;
 `;
 
 const ModifyButton = styled(BasicButton)`
@@ -89,20 +94,10 @@ const SelectArrestContainer = ({
     onSelectCase(selectedCase, entityKeyId);
   };
 
-  const renderNoResults = () => (
-    <div>
-      <SearchResultsList>No cases found.</SearchResultsList>
-      <StyledNavBtnWrapper>
-        <NavButton onClick={prevPage}>Modify Search</NavButton>
-        <NavButton onClick={nextPage}>Proceed Without Arrest</NavButton>
-      </StyledNavBtnWrapper>
-    </div>
-  );
-
   const renderSearchResults = () => {
 
     if (caseOptions.isEmpty()) {
-      return renderNoResults();
+      return <NoResultsText>No arrests found.</NoResultsText>;
     }
 
     return (
