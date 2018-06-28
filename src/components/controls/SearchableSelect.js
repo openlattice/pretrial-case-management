@@ -84,10 +84,13 @@ const DataTableWrapper = styled.div`
   background-color: #fefefe;
   border-radius: 5px;
   border: 1px solid #e1e1eb;
-  position: relative;
+  position: absolute;
+  z-index: 1;
   width: 100%;
   visibility: ${props => (props.isVisible ? 'visible' : 'hidden')}};
   box-shadow: 0 10px 20px 0 rgba(0, 0, 0, 0.1);
+  margin: ${props => (props.openAbove ? '-303px 0 0 0' : '45px 0 0 0')};
+  bottom: ${props => (props.openAbove ? '45px' : 'auto')};
 `;
 
 const SearchOption = styled.div`
@@ -122,7 +125,8 @@ type Props = {
   short :?boolean,
   value :?string,
   onClear? :?() => void,
-  transparent? :boolean
+  transparent? :boolean,
+  openAbove? :boolean
 }
 
 type State = {
@@ -141,7 +145,8 @@ class SearchableSelect extends React.Component<Props, State> {
     onSelect: () => {},
     short: false,
     value: '',
-    transparent: false
+    transparent: false,
+    openAbove: false
   };
 
   constructor(props :Props) {
@@ -240,7 +245,7 @@ class SearchableSelect extends React.Component<Props, State> {
           !this.state.isVisibleDataTable
             ? null
             : (
-              <DataTableWrapper isVisible={this.state.isVisibleDataTable}>
+              <DataTableWrapper isVisible={this.state.isVisibleDataTable} openAbove={this.props.openAbove}>
                 {this.renderTable()}
               </DataTableWrapper>
             )

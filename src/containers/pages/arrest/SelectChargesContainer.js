@@ -307,7 +307,7 @@ export default class SelectChargesContainer extends React.Component<Props, State
             onSelect={this.addCharge}
             options={this.formatChargeOptions()}
             searchPlaceholder="Select a charge"
-            transparent />
+            openAbove />
         <hr />
       </CaseDetailsWrapper>
     );
