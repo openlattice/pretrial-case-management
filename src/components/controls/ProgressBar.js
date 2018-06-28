@@ -15,7 +15,7 @@ const Bar = styled.div`
 `;
 
 const Fill = styled.div`
-  background-color: #ff77c2;
+  background-color: #8045ff;
   color: #ffffff;
   font-family: 'Open Sans', sans-serif;
   font-size: 13px;
