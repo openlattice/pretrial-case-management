@@ -13,7 +13,6 @@ import { connect } from 'react-redux';
 
 import PersonSearchFields from '../../components/person/PersonSearchFields';
 import SecondaryButton from '../../components/buttons/SecondaryButton';
-import PersonCard from '../../components/person/PersonCard';
 import PersonTable from '../../components/people/PersonTable';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import NoSearchResults from '../../components/people/NoSearchResults';
@@ -43,13 +42,15 @@ const SearchResultsList = styled.div`
   width: 100%;
 `;
 
+const NonResultsContainer = styled.div`
+  width: 100%;
+  text-align: center;
+  margin-top: 50px;
+`;
+
 const LoadingText = styled.div`
   font-size: 20px;
   margin: 15px;
-`;
-
-const FooterContainer = styled.div`
-  text-align: center;
 `;
 
 const ListSectionHeader = styled.div`
@@ -64,10 +65,10 @@ const GrayListSectionHeader = styled(ListSectionHeader)`
 `;
 
 const ErrorMessage = styled.div`
-  color: #cc0000;
+  color: #ff3c5d;
+  font-family: 'Open Sans', sans-serif;
+  font-size: 14px;
   text-align: center;
-  font-weight: bold;
-  font-size: 16px;
 `;
 
 const CreateButtonWrapper = styled(StyledFormViewWrapper)`
@@ -197,7 +198,7 @@ class SearchPeopleContainer extends React.Component<Props, State> {
           </StyledSectionWrapper>
         </StyledFormWrapper>
       </CreateButtonWrapper>
-    )
+    );
   }
 
   renderSearchResults = () => {
@@ -209,80 +210,68 @@ class SearchPeopleContainer extends React.Component<Props, State> {
       error
     } = this.props;
 
-    let content = null;
-
+    /* display loading spinner if necessary */
     if (isLoadingPeople) {
-      content = (
-        <StyledSectionWrapper>
+      return (
+        <NonResultsContainer>
           <LoadingText>Loading results...</LoadingText>
           <LoadingSpinner />
-        </StyledSectionWrapper>
+        </NonResultsContainer>
       );
     }
 
+    /* display error message if necessary */
     else if (error) {
-      content = (
-        <ErrorMessage>Unable to load search results.</ErrorMessage>
-      );
+      return <NonResultsContainer><ErrorMessage>Unable to load search results.</ErrorMessage></NonResultsContainer>;
     }
 
-    else if (searchHasRun) {
-      const footer = (
-        <FooterContainer>
-          { searchResults.isEmpty() ? <NoSearchResults /> : null }
-        </FooterContainer>
-      );
-
-      let peopleWithHistory = Immutable.List();
-      let peopleWithoutHistory = Immutable.List();
-
-      searchResults.forEach((person) => {
-        const id = person.getIn([PROPERTY_TYPES.PERSON_ID, 0], '');
-        const hasHistory = Number.parseInt(id, 10).toString() === id.toString();
-        if (hasHistory) {
-          peopleWithHistory = peopleWithHistory.push(person);
-        }
-        else {
-          peopleWithoutHistory = peopleWithoutHistory.push(person);
-        }
-      });
-
-      const body = searchHasRun ? (
-        <div>
-          {
-            peopleWithHistory.size ? (
-              <div>
-                <ListSectionHeader>People With Case History</ListSectionHeader>
-                { this.getSortedPeopleList(peopleWithHistory) }
-              </div>
-            ) : null
-          }
-          {
-            peopleWithoutHistory.size ? (
-              <div>
-                <GrayListSectionHeader>People Without Case History</GrayListSectionHeader>
-                { this.getSortedPeopleList(peopleWithoutHistory, true) }
-              </div>
-            ) : null
-          }
-        </div>
-      ) : null;
-
-      content = (
-        <SearchResultsList>
-          { body }
-          { footer }
-        </SearchResultsList>
-      );
+    /* search has not run and is not currently running -- don't display anything */
+    else if (!searchHasRun) {
+      return null;
     }
 
-    if (!content) return null;
+    /* search has finished running -- if there are no results, display the NoSearchResults component */
+    if (searchResults.isEmpty()) {
+      return <NonResultsContainer><NoSearchResults /></NonResultsContainer>;
+    }
+
+    /* search has finished running and there are results -- display the results */
+    let peopleWithHistory = Immutable.List();
+    let peopleWithoutHistory = Immutable.List();
+
+    searchResults.forEach((person) => {
+      const id = person.getIn([PROPERTY_TYPES.PERSON_ID, 0], '');
+      const hasHistory = Number.parseInt(id, 10).toString() === id.toString();
+      if (hasHistory) {
+        peopleWithHistory = peopleWithHistory.push(person);
+      }
+      else {
+        peopleWithoutHistory = peopleWithoutHistory.push(person);
+      }
+    });
 
     return (
       <StyledFormViewWrapper>
         <StyledFormWrapper>
           <SearchResultsWrapper>
-            {content}
+            <SearchResultsList>
+              {
+                peopleWithHistory.size ? (
+                  <div>
+                    <ListSectionHeader>People With Case History</ListSectionHeader>
+                    { this.getSortedPeopleList(peopleWithHistory) }
+                  </div>
+                ) : null
+              }
+              {
+                peopleWithoutHistory.size ? (
+                  <div>
+                    <GrayListSectionHeader>People Without Case History</GrayListSectionHeader>
+                    { this.getSortedPeopleList(peopleWithoutHistory, true) }
+                  </div>
+                ) : null
+              }
+            </SearchResultsList>
           </SearchResultsWrapper>
         </StyledFormWrapper>
       </StyledFormViewWrapper>
