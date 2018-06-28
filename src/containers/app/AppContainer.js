@@ -14,6 +14,7 @@ import AppConsent from '../../containers/app/AppConsent';
 import HeaderNav from '../../components/nav/HeaderNav';
 import Dashboard from '../../components/dashboard/Dashboard';
 import Forms from '../forms/Forms';
+import ContactSupport from '../../components/app/ContactSupport';
 import { termsAreAccepted } from '../../utils/AcceptTermsUtils';
 import * as Routes from '../../core/router/Routes';
 
@@ -60,6 +61,7 @@ const renderComponent = (Component, props) => (
 const AppContainer = (props :Props) => (
   <AppWrapper>
     <HeaderNav logout={props.actions.logout} />
+    <ContactSupport />
     <AppBodyWrapper>
       <Switch>
         <Route path={Routes.TERMS} component={AppConsent} />
