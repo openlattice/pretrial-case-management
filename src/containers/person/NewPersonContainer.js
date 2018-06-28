@@ -137,6 +137,21 @@ type State = {
   zipValue :?string
 }
 
+const ETHNICITIES = [
+  'Unknown',
+  'Not Hispanic',
+  'Hispanic'
+]
+
+const RACES = [
+  'American Indian or Alaska Native',
+  'Asian',
+  'Black or African American',
+  'Native Hawaiian or Other Pacific Islander',
+  'Unknown',
+  'White'
+];
+
 class NewPersonContainer extends React.Component<Props, State> {
 
   selfieWebCam :?SelfieWebCam;
@@ -242,11 +257,10 @@ class NewPersonContainer extends React.Component<Props, State> {
     this.props.actions.newPersonSubmitRequest(newPersonSubmissionConfig, values);
   }
 
+  getOptionsMap = valueList => valueList.map(value => <option key={value} value={value}>{value}</option>);
+
   render() {
 
-    const genderOptions = GENDERS.map(gender => (
-      <option key={gender} value={gender}>{gender}</option>
-    ));
 
     const stateOptions = STATES.map(state => (
       <option key={state} value={state}>{state}</option>
@@ -297,7 +311,7 @@ class NewPersonContainer extends React.Component<Props, State> {
                       value={this.state[GENDER_VALUE]}
                       onChange={this.handleOnChangeInput}>
                     <option value="">Select</option>
-                    { genderOptions }
+                    { this.getOptionsMap(GENDERS) }
                   </StyledSelect>
                 </Col>
                 <Col lg={4}>
@@ -311,17 +325,23 @@ class NewPersonContainer extends React.Component<Props, State> {
               <PaddedRow>
                 <Col lg={6}>
                   <TitleLabel>Race</TitleLabel>
-                  <FormControl
+                  <StyledSelect
                       name={RACE_VALUE}
                       value={this.state[RACE_VALUE]}
-                      onChange={this.handleOnChangeInput} />
+                      onChange={this.handleOnChangeInput}>
+                    <option value="">Select</option>
+                    { this.getOptionsMap(RACES) }
+                  </StyledSelect>
                 </Col>
                 <Col lg={6}>
                   <TitleLabel>Ethnicity</TitleLabel>
-                  <FormControl
+                  <StyledSelect
                       name={ETHNICITY_VALUE}
                       value={this.state[ETHNICITY_VALUE]}
-                      onChange={this.handleOnChangeInput} />
+                      onChange={this.handleOnChangeInput}>
+                    <option value="">Select</option>
+                    { this.getOptionsMap(ETHNICITIES) }
+                  </StyledSelect>
                 </Col>
               </PaddedRow>
             </div>
@@ -351,7 +371,7 @@ class NewPersonContainer extends React.Component<Props, State> {
                       value={this.state[STATE_VALUE]}
                       onChange={this.handleOnChangeInput}>
                     <option value="">Select</option>
-                    { stateOptions }
+                    { this.getOptionsMap(STATES) }
                   </StyledSelect>
                 </Col>
               </PaddedRow>
