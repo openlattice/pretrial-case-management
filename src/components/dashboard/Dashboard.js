@@ -6,7 +6,7 @@ import React from 'react';
 import { Redirect, Route, Switch } from 'react-router-dom';
 import styled from 'styled-components';
 
-import DashboardNav from './DashboardNav';
+import CourtContainer from '../../containers/court/CourtContainer';
 import DashboardContainer from '../../containers/dashboard/DashboardContainer';
 import FormsContainer from '../../containers/forms/FormsContainer';
 import NewPersonContainer from '../../containers/person/NewPersonContainer';
@@ -14,7 +14,6 @@ import PeopleContainer from '../../containers/people/PeopleContainer';
 import PersonDetailsContainer from '../../containers/people/PersonDetailsContainer';
 import DownloadPSA from '../../containers/download/DownloadPSA';
 import ReviewPSA from '../../containers/review/ReviewPSA';
-import JudgeContainer from '../../containers/judge/JudgeContainer';
 import EnrollVoice from '../../containers/enroll/EnrollVoice';
 import * as Routes from '../../core/router/Routes';
 
@@ -37,7 +36,7 @@ const Dashboard = () => (
         <Route path={Routes.PEOPLE} component={PeopleContainer} />
         <Route path={Routes.PERSON_DETAILS} component={PersonDetailsContainer} />
         <Route path={Routes.DOWNLOAD_FORMS} component={DownloadPSA} />
-        <Route path={Routes.JUDGE_VIEW} component={JudgeContainer} />
+        <Route path={Routes.JUDGE_VIEW} component={CourtContainer} />
         <Route path={Routes.REVIEW_FORMS} component={ReviewPSA} />
         <Route path={Routes.VOICE_ENROLLMENT} component={EnrollVoice} />
         <Route path={Routes.VISUALIZE_DASHBOARD} component={DashboardContainer} />

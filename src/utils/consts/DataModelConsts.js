@@ -18,6 +18,8 @@ export const ENTITY_SETS = {
   STAFF: 'southdakotastaff',
   SPEAKER_RECOGNITION_PROFILES: 'southdakotaspeakerverificationprofiles',
   FTAS: 'southdakotaftas',
+  HEARINGS: 'southdakotahearings',
+  JUDGES: 'southdakotajudges',
 
   // arrest entity sets
   ARREST_CASES: 'PenZuercherPretrialCase',
@@ -95,6 +97,11 @@ export const PROPERTY_TYPES = {
   JAIL_START_DATE: 'justice.incarcerationstartdate',
   CONCURRENT_CONSECUTIVE: 'justice.concurrentconsecutive',
 
+  // Hearing entity type consts
+  COURTROOM: 'justice.courtroom',
+  HEARING_TYPE: 'justice.courtcasetype',
+  UPDATE_TYPE: 'ol.update',
+
   // PSA form entity type consts
   AGE_AT_CURRENT_ARREST: 'psa.AgeAtCurrentArrest',
   CURRENT_VIOLENT_OFFENSE: 'psa.CurrentViolentOffense',
@@ -152,7 +159,7 @@ export const PROPERTY_TYPES = {
   GENERAL_ID: 'general.id',
   RELEASE_RECOMMENDATION: 'publicsafety.recommendation',
 
-  // Vocie recognition entity type consts
+  // Voice recognition entity type consts
   AUDIO_SAMPLE: 'media.audio',
   PIN: 'general.pin'
 };
