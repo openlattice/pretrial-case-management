@@ -5,7 +5,7 @@
 import styled from 'styled-components';
 
 const StyledCard = styled.div`
-  width: 300px;
+  width: 270px;
   height: 70px;
   border-radius: 7px;
   background-color: #ffffff;

@@ -5,6 +5,7 @@
 import { AuthReducer } from 'lattice-auth';
 import { combineReducers } from 'redux-immutable';
 
+import courtReducer from '../../containers/court/CourtReducer';
 import dashboardReducer from '../../containers/dashboard/DashboardReducer';
 import enrollReducer from '../../containers/enroll/EnrollReducer';
 import psaReducer from '../../containers/psa/FormReducer';
@@ -17,6 +18,7 @@ export default function reduxReducer() {
 
   return combineReducers({
     auth: AuthReducer,
+    court: courtReducer,
     dashboard: dashboardReducer,
     enroll: enrollReducer,
     psa: psaReducer,
