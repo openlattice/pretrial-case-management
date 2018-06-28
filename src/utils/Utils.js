@@ -6,7 +6,7 @@
 
 import moment from 'moment';
 
-export const TIME_FORMAT = 'HH:mm a';
+export const TIME_FORMAT = 'h:mm a';
 
 export function formatValue(rawValue :string | string[]) :string {
   if (!rawValue || (!rawValue.length && !rawValue.size)) return '';
