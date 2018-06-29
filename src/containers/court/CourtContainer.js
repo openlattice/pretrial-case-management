@@ -118,7 +118,7 @@ type State = {
   }
 }
 
-const MINN_ROOM_PREFIX = 'Courtroom ';
+const PENN_ROOM_PREFIX = 'Courtroom ';
 
 class CourtContainer extends React.Component<Props, State> {
 
@@ -179,8 +179,8 @@ class CourtContainer extends React.Component<Props, State> {
         }
 
         if (shouldInclude && county.length) {
-          const isMinn = room.startsWith(MINN_ROOM_PREFIX);
-          shouldInclude = isMinn ? county === DOMAIN.MINNEHAHA : county === DOMAIN.PENNINGTON;
+          const isPenn = room.startsWith(PENN_ROOM_PREFIX);
+          shouldInclude = isPenn ? county === DOMAIN.PENNINGTON : county === DOMAIN.MINNEHAHA;
         }
       }
       if (shouldInclude) {
@@ -236,11 +236,11 @@ class CourtContainer extends React.Component<Props, State> {
         courtrooms = courtrooms.add(room);
       }
     }));
-    const minnCoutrooms = courtrooms.filter(room => room.startsWith(MINN_ROOM_PREFIX)).toList().sort().map(value => ({
+    const pennCoutrooms = courtrooms.filter(room => room.startsWith(PENN_ROOM_PREFIX)).toList().sort().map(value => ({
       value,
       label: value
     }));
-    const pennCoutrooms = courtrooms.filter(room => !room.startsWith(MINN_ROOM_PREFIX)).toList().sort().map(value => ({
+    const minnCoutrooms = courtrooms.filter(room => !room.startsWith(PENN_ROOM_PREFIX)).toList().sort().map(value => ({
       value,
       label: value
     }));
