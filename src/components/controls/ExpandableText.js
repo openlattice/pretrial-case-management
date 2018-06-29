@@ -16,8 +16,18 @@ const ExpandButton = styled(Button)`
   color: #6124e2;
 
   &:hover {
+    text-decoration: underline;
+    color: #6124e2;
+  }
+
+  &:focus {
     text-decoration: none;
-    color: #e4d8ff;
+    color: #6124e2;
+    outline: none;
+  }
+
+  &:focus:active {
+    outline: none;
   }
 `;
 
