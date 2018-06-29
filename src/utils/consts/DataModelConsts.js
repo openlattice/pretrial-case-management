@@ -153,6 +153,7 @@ export const PROPERTY_TYPES = {
   FTA_SCALE: 'psa.ftaScale',
   TIMESTAMP: 'psa.GeneratedDate',
   STATUS: 'general.status',
+  STATUS_NOTES: 'general.statusnotes',
   FAILURE_REASON: 'justice.failurereason',
 
   // Release recommendation entity type consts

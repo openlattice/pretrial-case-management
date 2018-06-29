@@ -25,6 +25,7 @@ import { toISODateTime } from '../../utils/Utils';
 import { CONTEXT, DMF, EDIT_FIELDS, ID_FIELDS, NOTES, PSA, PSA_STATUSES } from '../../utils/consts/Consts';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { RESULT_CATEGORIES, formatDMFFromEntity } from '../../utils/consts/DMFResultConsts';
+import { psaIsClosed, getLastEditDetails } from '../../utils/PSAUtils';
 import * as OverrideClassNames from '../../utils/styleoverrides/OverrideClassNames';
 
 const ReviewRowContainer = styled.div`
@@ -114,8 +115,12 @@ const StatusTag = styled.div`
         return '#ff3c5d';
       case PSA_STATUSES.CANCELLED:
         return '#b6bbc7';
+      case PSA_STATUSES.DECLINED:
+        return '#dcdce7';
+      case PSA_STATUSES.DISMISSED:
+        return '#e1e1eb';
       default:
-        return 'white';
+        return 'transparent';
     }
   }};
 `;
@@ -449,12 +454,14 @@ export default class PSAReviewRow extends React.Component<Props, State> {
     this.setState({ editing: false });
   }
 
-  handleStatusChange = (status :string, failureReason :string[]) => {
+  handleStatusChange = (status :string, failureReason :string[], statusNotes :?string) => {
     if (!this.props.changePSAStatus) return;
+    const statusNotesList = (statusNotes && statusNotes.length) ? Immutable.List.of(statusNotes) : Immutable.List();
 
     const scoresEntity = this.props.scores
       .set(PROPERTY_TYPES.STATUS, Immutable.List.of(status))
-      .set(PROPERTY_TYPES.FAILURE_REASON, Immutable.fromJS(failureReason));
+      .set(PROPERTY_TYPES.FAILURE_REASON, Immutable.fromJS(failureReason))
+      .set(PROPERTY_TYPES.STATUS_NOTES, statusNotesList);
 
     const scoresId = this.props.entityKeyId;
     this.props.changePSAStatus({ scoresId, scoresEntity });
@@ -585,6 +592,7 @@ export default class PSAReviewRow extends React.Component<Props, State> {
           <ClosePSAModal
               open={this.state.closing}
               defaultStatus={this.props.scores.getIn([PROPERTY_TYPES.STATUS, 0])}
+              defaultStatusNotes={this.props.scores.getIn([PROPERTY_TYPES.STATUS_NOTES, 0])}
               defaultFailureReasons={this.props.scores.get(PROPERTY_TYPES.FAILURE_REASON, Immutable.List()).toJS()}
               onClose={() => this.setState({ closing: false })}
               onSubmit={this.handleStatusChange} />
@@ -644,6 +652,8 @@ export default class PSAReviewRow extends React.Component<Props, State> {
       }
     });
 
+    const editLabel = psaIsClosed(this.props.scores) ? 'Closed' : 'Edited';
+
     if (!dateCreated && !creator) return null;
 
     const dateCreatedText = dateCreated ? dateCreated.format(dateFormat) : '';
@@ -653,7 +663,7 @@ export default class PSAReviewRow extends React.Component<Props, State> {
       <div>
         <MetadataItem>{this.renderMetadataText('Created', dateCreatedText, creator)}</MetadataItem>
         { dateEdited || editor
-          ? <MetadataItem>{this.renderMetadataText('Edited', dateEditedText, editor)}</MetadataItem>
+          ? <MetadataItem>{this.renderMetadataText(editLabel, dateEditedText, editor)}</MetadataItem>
           : null
         }
       </div>
@@ -662,7 +672,7 @@ export default class PSAReviewRow extends React.Component<Props, State> {
 
   renderStatus = () => {
     const status = this.props.scores.getIn([PROPERTY_TYPES.STATUS, 0], '');
-    return <StatusTag status={status}>{status}</StatusTag>
+    return <StatusTag status={status}>{status}</StatusTag>;
   }
 
   closeModal = () => {
