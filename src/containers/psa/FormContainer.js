@@ -52,8 +52,8 @@ import { PROPERTY_TYPES, ENTITY_SETS } from '../../utils/consts/DataModelConsts'
 
 const { PEOPLE } = ENTITY_SETS;
 
-const LoadingContainer = styled.div`
-  text-align: center;
+const LoadingContainer = styled(StyledFormWrapper)`
+  align-items: center;
   padding: 0 30px 30px 30px;
   border-radius: 5px;
   border: 1px solid #e1e1eb;

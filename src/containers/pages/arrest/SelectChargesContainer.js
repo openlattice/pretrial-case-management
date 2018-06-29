@@ -23,8 +23,9 @@ import { toISODateTime } from '../../../utils/Utils';
 
 import {
   PaddedRow,
-  UnpaddedRow,
-  TitleLabel
+  StyledFormWrapper,
+  TitleLabel,
+  UnpaddedRow
 } from '../../../utils/Layout';
 
 const {
@@ -39,8 +40,7 @@ const {
   QUALIFIER
 } = CHARGE;
 
-const Container = styled.div`
-  width: 100%;
+const Container = styled(StyledFormWrapper)`
   text-align: center;
   background-color: #ffffff;
   padding: 30px;

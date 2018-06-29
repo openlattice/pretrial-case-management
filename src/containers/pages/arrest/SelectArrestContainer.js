@@ -10,6 +10,7 @@ import { Button } from 'react-bootstrap';
 import ArrestTable from '../../../components/arrest/ArrestTable';
 import BasicButton from '../../../components/buttons/BasicButton';
 import SecondaryButton from '../../../components/buttons/SecondaryButton';
+import { StyledFormWrapper } from '../../../utils/Layout';
 
 /*
  * styled components
@@ -122,10 +123,12 @@ const SelectArrestContainer = ({
   }
 
   return (
-    <SearchResultsList>
-      { renderHeader() }
-      { renderSearchResults() }
-    </SearchResultsList>
+    <StyledFormWrapper>
+      <SearchResultsList>
+        { renderHeader() }
+        { renderSearchResults() }
+      </SearchResultsList>
+    </StyledFormWrapper>
   );
 };
 
