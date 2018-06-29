@@ -154,6 +154,14 @@ const STATUS_OPTIONS = {
     value: PSA_STATUSES.CANCELLED,
     label: 'Cancelled'
   },
+  DECLINED: {
+    value: PSA_STATUSES.DECLINED,
+    label: 'Declined'
+  },
+  DISMISSED: {
+    value: PSA_STATUSES.DISMISSED,
+    label: 'Dismissed'
+  },
   ALL: {
     value: '*',
     label: 'All'
@@ -433,6 +441,8 @@ class ReviewPSA extends React.Component<Props, State> {
       {this.renderStatusItem('SUCCESS')}
       {this.renderStatusItem('FAILURE')}
       {this.renderStatusItem('CANCELLED')}
+      {this.renderStatusItem('DECLINED')}
+      {this.renderStatusItem('DISMISSED')}
     </DropdownButton>
   )
 

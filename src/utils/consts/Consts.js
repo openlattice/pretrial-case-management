@@ -243,7 +243,9 @@ export const PSA_STATUSES = {
   OPEN: 'Open',
   SUCCESS: 'Success',
   FAILURE: 'Failure',
-  CANCELLED: 'Cancelled'
+  CANCELLED: 'Cancelled',
+  DECLINED: 'Declined',
+  DISMISSED: 'Dismissed'
 };
 
 export const PSA_FAILURE_REASONS = {

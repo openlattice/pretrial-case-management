@@ -7,6 +7,7 @@ import styled from 'styled-components';
 import { ButtonToolbar, Modal, ToggleButton, ToggleButtonGroup } from 'react-bootstrap';
 
 import StyledButton from '../buttons/StyledButton';
+import StyledInput from '../../components/controls/StyledInput';
 import { CenteredContainer } from '../../utils/Layout';
 import { PSA_STATUSES, PSA_FAILURE_REASONS } from '../../utils/consts/Consts';
 
@@ -20,7 +21,7 @@ const StatusButton = styled(ToggleButton)`
   -webkit-appearance: none !important;
 `;
 
-const FailureReasonText = styled.div`
+const TextLabel = styled.div`
   font-size: 14px;
   margin: 15px 0 5px 0;
 `;
@@ -34,12 +35,14 @@ type Props = {
   onClose :() => void,
   defaultStatus? :?string,
   defaultFailureReasons? :string[],
-  onSubmit :(status :string, failureReason :string[]) => void
+  defaultStatusNotes? :?string,
+  onSubmit :(status :string, failureReason :string[], statusNotes :?string) => void
 };
 
 type State = {
   status :?string,
-  failureReason :string[]
+  failureReason :string[],
+  statusNotes :?string
 };
 
 const StatusPicker = ({ status, onStatusChange }) => (
@@ -50,9 +53,7 @@ const StatusPicker = ({ status, onStatusChange }) => (
           name="statusPicker"
           value={status}
           onChange={onStatusChange}>
-        <StatusButton value={PSA_STATUSES.SUCCESS}>{PSA_STATUSES.SUCCESS}</StatusButton>
-        <StatusButton value={PSA_STATUSES.FAILURE}>{PSA_STATUSES.FAILURE}</StatusButton>
-        <StatusButton value={PSA_STATUSES.CANCELLED}>{PSA_STATUSES.CANCELLED}</StatusButton>
+        {Object.values(PSA_STATUSES).map(value => <StatusButton value={value} key={value}>{value}</StatusButton>)}
       </ToggleButtonGroup>
     </ButtonToolbar>
   </StatusContainer>
@@ -60,7 +61,7 @@ const StatusPicker = ({ status, onStatusChange }) => (
 
 const FailureReasonPicker = ({ failureReason, onFailureReasonChange }) => (
   <StatusContainer>
-    <FailureReasonText>Reason for Failure:</FailureReasonText>
+    <TextLabel>Reason for Failure:</TextLabel>
     <ButtonToolbar>
       <ToggleButtonGroup
           type="checkbox"
@@ -76,13 +77,21 @@ const FailureReasonPicker = ({ failureReason, onFailureReasonChange }) => (
   </StatusContainer>
 );
 
+const StatusNotes = ({ statusNotes, onStatusNotesChange }) => (
+  <StatusContainer>
+    <TextLabel>Notes</TextLabel>
+    <StyledInput value={statusNotes} onChange={onStatusNotesChange} />
+  </StatusContainer>
+);
+
 export default class ClosePSAModal extends React.Component<Props, State> {
 
   constructor(props :Props) {
     super(props);
     this.state = {
       status: props.defaultStatus,
-      failureReason: props.defaultFailureReasons
+      failureReason: props.defaultFailureReasons,
+      statusNotes: props.defaultStatusNotes
     };
   }
 
@@ -95,9 +104,13 @@ export default class ClosePSAModal extends React.Component<Props, State> {
     this.setState({ failureReason });
   }
 
+  onStatusNotesChange = (e) => {
+    this.setState({ statusNotes: e.target.value });
+  }
+
   isReadyToSubmit = () => {
     const { status, failureReason } = this.state;
-    let isReady = !!status && status !== PSA_STATUSES.OPEN;
+    let isReady = !!status;
     if (status === PSA_STATUSES.FAILURE && !failureReason.length) {
       isReady = false;
     }
@@ -106,13 +119,17 @@ export default class ClosePSAModal extends React.Component<Props, State> {
 
   submit = () => {
     if (!this.state.status) return;
+    let { statusNotes } = this.state;
+    if (!statusNotes || !statusNotes.length) {
+      statusNotes = null;
+    }
 
-    this.props.onSubmit(this.state.status, this.state.failureReason);
+    this.props.onSubmit(this.state.status, this.state.failureReason, this.state.statusNotes);
     this.props.onClose();
   }
 
   render() {
-    const { status, failureReason } = this.state;
+    const { status, failureReason, statusNotes } = this.state;
     return (
       <Modal show={this.props.open} onHide={this.props.onClose}>
         <Modal.Header closeButton>
@@ -125,6 +142,7 @@ export default class ClosePSAModal extends React.Component<Props, State> {
               ? <FailureReasonPicker failureReason={failureReason} onFailureReasonChange={this.onFailureReasonChange} />
               : null
             }
+            <StatusNotes statusNotes={statusNotes} onStatusNotesChange={this.onStatusNotesChange} />
             <CloseButton disabled={!this.isReadyToSubmit()} onClick={this.submit}>Submit</CloseButton>
           </CenteredContainer>
         </Modal.Body>
