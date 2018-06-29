@@ -116,12 +116,16 @@ export default function reviewReducer(state :Immutable.Map<*, *> = INITIAL_STATE
             newScoreEntity,
             newRiskFactorsEntity,
             newDMFEntity,
-            newDMFRiskFactorsEntity
+            newDMFRiskFactorsEntity,
+            newNotesEntity
           } = action.value;
 
           let scoresAsMap = state.get('scoresAsMap');
           let psaNeighborsByDate = state.get('psaNeighborsByDate');
           scoresAsMap = scoresAsMap.set(scoresId, Immutable.fromJS(newScoreEntity));
+          const notesEntity = newNotesEntity
+            ? Immutable.fromJS(newNotesEntity)
+            : state.getIn(['psaNeighborsById', scoresId, ENTITY_SETS.RELEASE_RECOMMENDATIONS, 'neighborDetails']);
           psaNeighborsByDate.keySeq().forEach((date) => {
             if (psaNeighborsByDate.get(date).get(scoresId)) {
               psaNeighborsByDate = psaNeighborsByDate.setIn(
@@ -133,6 +137,9 @@ export default function reviewReducer(state :Immutable.Map<*, *> = INITIAL_STATE
               ).setIn(
                 [date, scoresId, ENTITY_SETS.DMF_RISK_FACTORS, 'neighborDetails'],
                 Immutable.fromJS(newDMFRiskFactorsEntity)
+              ).setIn(
+                [date, scoresId, ENTITY_SETS.RELEASE_RECOMMENDATIONS, 'neighborDetails'],
+                Immutable.fromJS(notesEntity)
               );
             }
           });
@@ -146,6 +153,9 @@ export default function reviewReducer(state :Immutable.Map<*, *> = INITIAL_STATE
             ).setIn(
               [scoresId, ENTITY_SETS.DMF_RISK_FACTORS, 'neighborDetails'],
               Immutable.fromJS(newDMFRiskFactorsEntity)
+            ).setIn(
+              [scoresId, ENTITY_SETS.RELEASE_RECOMMENDATIONS, 'neighborDetails'],
+              Immutable.fromJS(notesEntity)
             );
           return state
             .set('scoresAsMap', scoresAsMap)

@@ -13,10 +13,11 @@ const ExpandButton = styled(Button)`
   font-size: 13px;
   line-height: 18px;
   font-weight: 600;
-  color: #0870f6;
+  color: #6124e2;
 
   &:hover {
-    text-decoration: none
+    text-decoration: none;
+    color: #e4d8ff;
   }
 `;
 

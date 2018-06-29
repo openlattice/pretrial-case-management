@@ -5,12 +5,13 @@
 import React from 'react';
 import Immutable from 'immutable';
 import styled from 'styled-components';
-import { FormGroup, ControlLabel, FormControl, Col } from 'react-bootstrap';
 
-import { Header } from '../SectionView';
 import StyledCheckbox from '../controls/StyledCheckbox';
+import StyledInput from '../controls/StyledInput';
+import StyledTextArea from '../controls/StyledTextArea';
+import StyledRadioButton from '../controls/StyledRadioButton';
+import BasicButton from '../buttons/BasicButton';
 import ExpandableText from '../controls/ExpandableText';
-import Radio from '../controls/StyledRadio';
 
 import {
   getPendingCharges,
@@ -27,13 +28,8 @@ import {
 } from '../../utils/consts/ArrestChargeConsts';
 
 import {
-  PaddedRow,
-  UnpaddedRow,
-  TitleLabel,
-  SubmitButtonWrapper,
-  SubmitButton,
-  ErrorMessage,
-  Divider
+  StyledSectionWrapper,
+  ErrorMessage
 } from '../../utils/Layout';
 
 import { formatValue } from '../../utils/Utils';
@@ -78,60 +74,117 @@ const {
   SECONDARY_RELEASE_CHARGES
 } = DMF;
 
-const StyledSectionView = styled.div`
+const FormWrapper = styled(StyledSectionWrapper)`
   padding: 30px 0;
-`;
-
-const StyledFormWrapper = styled.div`
-  margin: 0 60px 0 60px;
-`;
-
-const QuestionRow = styled(PaddedRow)`
-  padding-bottom: 15px;
-  border-bottom: 1px solid #ddd;
-`;
-
-const LastQuestionRow = styled(QuestionRow)`
-  border-bottom: 1px solid #bbb;
-`;
-
-const PSACol = styled(Col)`
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
 `;
 
-const NotesCol = styled(Col)`
+const DiscardButton = styled(BasicButton)`
+  width: 140px;
+`;
+
+const SubmitButton = styled(BasicButton)`
+  align-self: center;
+  width: 340px;
+`;
+
+const Header = styled.div`
+  font-family: 'Open Sans', sans-serif;
+  font-size: 18px;
+  color: #555e6f;
+  margin-bottom: 30px;
+  align-self: flex-start;
+  padding-left: 30px;
+`;
+
+const PaddedHeader = styled(Header)`
+  margin: 30px 0 0 0;
+`;
+
+const DoublePaddedHeader = styled(Header)`
+  margin: 30px 0 20px 0;
+  padding-left: 0;
+`;
+
+const QuestionRow = styled.div`
+  padding: 30px;
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
+  border-bottom: solid 1px #e1e1eb;
 `;
 
-const NoteContainer = styled(UnpaddedRow)`
-  flex-direction: column;
+const QuestionLabels = styled.div`
+  display: flex;
+  flex-direction: row;
+
+  div {
+    width: 50%;
+    font-family: 'Open Sans', sans-serif;
+    font-size: 14px;
+    color: #555e6f;
+    margin-bottom: 10px;
+  }
+
+  div:first-child {
+    font-weight: 600;
+  }
+
+  div:last-child {
+    font-weight: 300;
+  }
+`;
+
+const Prompt = styled.div`
+  font-family: 'Open Sans', sans-serif;
+  font-size: 16px;
+  color: #555e6f;
+  padding-right: 20px;
+
+  div {
+    width: 100% !important;
+  }
 `;
 
 const PaddedExpandableText = styled(ExpandableText)`
   margin: 5px 0 10px 0;
 `;
 
-const NotesLabel = styled(ControlLabel)`
-  margin-top: -10px;
-`;
-
-const JustificationLabel = styled(ControlLabel)`
-  margin-top: 10px;
-`;
-
-const SubmitContainer = styled(SubmitButtonWrapper)`
+const PromptNotesWrapper = styled.div`
+  width: 100%;
   display: flex;
-  flex-direction: column;
-  align-items: center;
+  flex-direction: row;
+  margin-bottom: 20px;
+  justify-content: space-between;
+
+  ${Prompt} {
+    width: 50%;
+  }
+
+  input {
+    width: 50%;
+  }
+
+  div {
+    width: 50%;
+  }
+`;
+
+const PaddedErrorMessage = styled(ErrorMessage)`
+  margin-top: 20px;
 `;
 
 const CheckboxContainer = styled.div`
-  display: inline-block;
-  margin: -50px 0 15px 0;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  margin: 30px 0;
+
+  label {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 14px;
+    color: #8e929b;
+  }
 `;
 
 const AnswerValue = styled.div`
@@ -141,6 +194,56 @@ const AnswerValue = styled.div`
   text-align: center;
   margin: 10px 0;
 `;
+
+const InlineFormGroup = styled.div`
+  display: flex;
+  flex-direction: row;
+  margin-bottom: 30px;
+`;
+
+const RadioWrapper = styled.div`
+  margin-right: 20px;
+`;
+
+const WideForm = styled.div`
+  width: 100%;
+`;
+
+const Justifications = styled.div`
+  width: 100%;
+
+  h1 {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    color: #555e6f;
+    text-transform: uppercase;
+    margin-bottom: 5px;
+  }
+
+  div {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 14px;
+    color: #8e929b;
+  }
+`;
+
+const FooterContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  padding: 0 30px;
+`;
+
+const ButtonRow = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+
+  div {
+    width: 140px;
+  }
+`;
+
 
 type Props = {
   handleInputChange :(event :Object) => void,
@@ -174,70 +277,29 @@ export default class PSAInputForm extends React.Component<Props, State> {
     };
   }
 
-  renderNotesAndJustifications = (name, autofillJustifications, justificationHeader) => {
-    let justifications = null;
+  getJustificationText = (autofillJustifications, justificationHeader) => {
+    let justificationText;
     if (autofillJustifications) {
-      let justificationText = autofillJustifications.size
+      justificationText = autofillJustifications.size
         ? formatValue(autofillJustifications) : 'No matching charges.';
       if (justificationHeader) {
         justificationText = `${justificationHeader}: ${justificationText}`;
       }
-      justifications = (
-        <NoteContainer>
-          <JustificationLabel>Autofill Justification</JustificationLabel>
-          <PaddedExpandableText text={justificationText} maxLength={250} />
-        </NoteContainer>
-      );
     }
-
-    const notesBody = this.props.viewOnly ? <PaddedExpandableText text={this.props.input.get(name)} maxLength={250} />
-      : (
-        <FormControl
-            type="text"
-            name={name}
-            value={this.props.input.get(name)}
-            onChange={this.props.handleInputChange}
-            disabled={this.props.viewOnly} />
-      );
-
-    return (
-      <NotesCol lg={6}>
-        <NoteContainer>
-          <NotesLabel>Notes</NotesLabel>
-          {notesBody}
-        </NoteContainer>
-        {justifications}
-      </NotesCol>
-    );
+    return justificationText;
   };
 
   renderRadio = (name, value, label, disabledField) => (
-    <Radio
-        key={`${name}-${value}`}
-        name={name}
-        value={`${value}`}
-        checked={this.props.input.get(name) === `${value}`}
-        onChange={this.props.handleInputChange}
-        disabled={this.props.viewOnly || (disabledField && disabledField !== undefined)}
-        label={label} />
+    <RadioWrapper key={`${name}-${value}`}>
+      <StyledRadioButton
+          name={name}
+          value={`${value}`}
+          checked={this.props.input.get(name) === `${value}`}
+          onChange={this.props.handleInputChange}
+          disabled={this.props.viewOnly || (disabledField && disabledField !== undefined)}
+          label={label} />
+    </RadioWrapper>
   );
-
-  renderTrueFalseRadio = (name, header, disabledField) => {
-    const body = this.props.viewOnly
-      ? <AnswerValue>{this.props.input.get(name) === 'true' ? 'Yes' : 'No'}</AnswerValue>
-      : (
-        <FormGroup>
-          {this.renderRadio(name, false, 'No', disabledField)}
-          {this.renderRadio(name, true, 'Yes', disabledField)}
-        </FormGroup>
-      );
-    return (
-      <PSACol lg={6}>
-        <TitleLabel>{header}</TitleLabel>
-        {body}
-      </PSACol>
-    );
-  };
 
   handleCheckboxChange = (event) => {
     this.setState({ iiiChecked: event.target.checked });
@@ -260,19 +322,56 @@ export default class PSAInputForm extends React.Component<Props, State> {
     }
   }
 
-  renderRadioGroup = (name, header, mappings, disabledField, optionalWidth) => {
-    const width = optionalWidth || 6;
-    const body = this.props.viewOnly ? <AnswerValue>{mappings[this.props.input.get(name)]}</AnswerValue>
-      : Object.keys(mappings).map(val => this.renderRadio(name, val, mappings[val], disabledField));
+  renderTFQuestionRow = (num, field, prompt, justifications, disabledField, justificationHeader) => {
+    const mappings = {
+      false: 'No',
+      true: 'Yes'
+    };
+    return this.renderQuestionRow(num, field, prompt, mappings, justifications, disabledField, justificationHeader);
+  }
+
+  renderQuestionRow = (num, field, prompt, mappings, justifications, disabledField, justificationHeader) => {
+    const { viewOnly, input, handleInputChange } = this.props;
+    const rowNumFormatted = num < 10 ? `0${num}` : `${num}`;
+    const notesVal = input.get(NOTES[field]);
+    const notesBody = (viewOnly && notesVal) ? <PaddedExpandableText text={notesVal} maxLength={250} />
+      : (
+        <StyledInput
+            name={NOTES[field]}
+            value={notesVal}
+            onChange={handleInputChange}
+            disabled={viewOnly} />
+      );
+
+    const radioButtons = viewOnly ? <AnswerValue>{mappings[input.get(field)]}</AnswerValue>
+      : Object.keys(mappings).map(val => this.renderRadio(field, val, mappings[val], disabledField));
+
+    const justificationText = this.getJustificationText(justifications, justificationHeader);
 
     return (
-      <PSACol lg={width}>
-        <TitleLabel>{header}</TitleLabel>
-        <FormGroup>
-          {body}
-        </FormGroup>
-      </PSACol>
+      <QuestionRow>
+        <QuestionLabels>
+          <div>{rowNumFormatted}</div>
+          <div>Notes</div>
+        </QuestionLabels>
+        <PromptNotesWrapper>
+          <Prompt>{prompt}</Prompt>
+          {notesBody}
+        </PromptNotesWrapper>
+        <InlineFormGroup>
+          {radioButtons}
+        </InlineFormGroup>
+        {
+          justificationText ? (
+            <Justifications>
+              <h1>AUTOFILL JUSTIFICATION</h1>
+              <div><PaddedExpandableText text={justificationText} maxLength={220} /></div>
+            </Justifications>
+          ) : null
+        }
+      </QuestionRow>
     );
+
   }
 
   render() {
@@ -284,7 +383,8 @@ export default class PSAInputForm extends React.Component<Props, State> {
       allSentences,
       allCases,
       allFTAs,
-      viewOnly
+      viewOnly,
+      handleClose
     } = this.props;
 
     const noPriorConvictions = input.get(PRIOR_MISDEMEANOR) === 'false' && input.get(PRIOR_FELONY) === 'false';
@@ -309,143 +409,199 @@ export default class PSAInputForm extends React.Component<Props, State> {
 
     return (
       <div>
-        <Divider />
-        <StyledFormWrapper>
-          <form onSubmit={this.handleSubmit}>
-            <StyledSectionView>
-              <Header>PSA Information</Header>
-
-              <QuestionRow>
-                {this.renderRadioGroup(AGE_AT_CURRENT_ARREST, CURRENT_AGE_PROMPT, {
+        <FormWrapper>
+          <Header>PSA Information</Header>
+          <WideForm>
+            {
+              this.renderQuestionRow(
+                1,
+                AGE_AT_CURRENT_ARREST,
+                CURRENT_AGE_PROMPT,
+                {
                   0: '20 or younger',
                   1: '21 or 22',
                   2: '23 or older'
-                })}
-                {this.renderNotesAndJustifications(NOTES[AGE_AT_CURRENT_ARREST])}
-              </QuestionRow>
+                }
+              )
+            }
+            {
+              this.renderTFQuestionRow(
+                2,
+                CURRENT_VIOLENT_OFFENSE,
+                CURRENT_VIOLENT_OFFENSE_PROMPT,
+                currentViolentCharges
+              )
+            }
 
-              <QuestionRow>
-                {this.renderTrueFalseRadio(CURRENT_VIOLENT_OFFENSE, CURRENT_VIOLENT_OFFENSE_PROMPT)}
-                {this.renderNotesAndJustifications(NOTES[CURRENT_VIOLENT_OFFENSE], currentViolentCharges)}
-              </QuestionRow>
+            {
+              this.renderTFQuestionRow(
+                3,
+                PENDING_CHARGE,
+                PENDING_CHARGE_PROMPT,
+                pendingCharges
+              )
+            }
 
-              <QuestionRow>
-                {this.renderTrueFalseRadio(PENDING_CHARGE, PENDING_CHARGE_PROMPT)}
-                {this.renderNotesAndJustifications(NOTES[PENDING_CHARGE], pendingCharges)}
-              </QuestionRow>
+            {
+              this.renderTFQuestionRow(
+                4,
+                PRIOR_MISDEMEANOR,
+                PRIOR_MISDEMEANOR_PROMPT,
+                priorMisdemeanors
+              )
+            }
 
-              <QuestionRow>
-                {this.renderTrueFalseRadio(PRIOR_MISDEMEANOR, PRIOR_MISDEMEANOR_PROMPT)}
-                {this.renderNotesAndJustifications(NOTES[PRIOR_MISDEMEANOR], priorMisdemeanors)}
-              </QuestionRow>
+            {
+              this.renderTFQuestionRow(
+                5,
+                PRIOR_FELONY,
+                PRIOR_FELONY_PROMPT,
+                priorFelonies
+              )
+            }
 
-              <QuestionRow>
-                {this.renderTrueFalseRadio(PRIOR_FELONY, PRIOR_FELONY_PROMPT)}
-                {this.renderNotesAndJustifications(NOTES[PRIOR_FELONY], priorFelonies)}
-              </QuestionRow>
-
-              <QuestionRow>
-                {this.renderRadioGroup(PRIOR_VIOLENT_CONVICTION, PRIOR_VIOLENT_CONVICTION_PROMPT, {
+            {
+              this.renderQuestionRow(
+                6,
+                PRIOR_VIOLENT_CONVICTION,
+                PRIOR_VIOLENT_CONVICTION_PROMPT,
+                {
                   0: '0',
                   1: '1',
                   2: '2',
                   3: '3 or more'
-                }, noPriorConvictions)}
-                {this.renderNotesAndJustifications(NOTES[PRIOR_VIOLENT_CONVICTION], priorViolentConvictions)}
-              </QuestionRow>
+                },
+                priorViolentConvictions,
+                noPriorConvictions
+              )
+            }
 
-              <QuestionRow>
-                {this.renderRadioGroup(PRIOR_FAILURE_TO_APPEAR_RECENT, PRIOR_FAILURE_TO_APPEAR_RECENT_PROMPT, {
+            {
+              this.renderQuestionRow(
+                7,
+                PRIOR_FAILURE_TO_APPEAR_RECENT,
+                PRIOR_FAILURE_TO_APPEAR_RECENT_PROMPT,
+                {
                   0: '0',
                   1: '1',
                   2: '2 or more'
-                })}
-                {this.renderNotesAndJustifications(NOTES[PRIOR_FAILURE_TO_APPEAR_RECENT], recentFTAs)}
-              </QuestionRow>
+                },
+                recentFTAs
+              )
+            }
 
-              <QuestionRow>
-                {this.renderTrueFalseRadio(PRIOR_FAILURE_TO_APPEAR_OLD, PRIOR_FAILURE_TO_APPEAR_OLD_PROMPT)}
-                {this.renderNotesAndJustifications(NOTES[PRIOR_FAILURE_TO_APPEAR_OLD], oldFTAs)}
-              </QuestionRow>
+            {
+              this.renderTFQuestionRow(
+                8,
+                PRIOR_FAILURE_TO_APPEAR_OLD,
+                PRIOR_FAILURE_TO_APPEAR_OLD_PROMPT,
+                oldFTAs
+              )
+            }
 
-              <LastQuestionRow>
-                {this.renderTrueFalseRadio(
-                  PRIOR_SENTENCE_TO_INCARCERATION,
-                  PRIOR_SENTENCE_TO_INCARCERATION_PROMPT,
-                  noPriorConvictions
-                )}
-                {this.renderNotesAndJustifications(
-                  NOTES[PRIOR_SENTENCE_TO_INCARCERATION],
-                  priorSentenceToIncarceration
-                )}
-              </LastQuestionRow>
+            {
+              this.renderTFQuestionRow(
+                9,
+                PRIOR_SENTENCE_TO_INCARCERATION,
+                PRIOR_SENTENCE_TO_INCARCERATION_PROMPT,
+                priorSentenceToIncarceration,
+                noPriorConvictions
+              )
+            }
 
-              <Header>DMF Information</Header>
+            <PaddedHeader>DMF Information</PaddedHeader>
 
-              <QuestionRow>
-                {this.renderTrueFalseRadio(EXTRADITED, EXTRADITED_PROMPT)}
-                {this.renderNotesAndJustifications(NOTES[EXTRADITED])}
-              </QuestionRow>
+            {
+              this.renderTFQuestionRow(
+                10,
+                EXTRADITED,
+                EXTRADITED_PROMPT
+              )
+            }
 
-              <QuestionRow>
-                {this.renderTrueFalseRadio(STEP_2_CHARGES, STEP_2_CHARGES_PROMPT)}
-                {this.renderNotesAndJustifications(NOTES[STEP_2_CHARGES], step2Charges)}
-              </QuestionRow>
+            {
+              this.renderTFQuestionRow(
+                11,
+                STEP_2_CHARGES,
+                STEP_2_CHARGES_PROMPT,
+                step2Charges
+              )
+            }
 
-              <QuestionRow>
-                {this.renderTrueFalseRadio(STEP_4_CHARGES, STEP_4_CHARGES_PROMPT)}
-                {this.renderNotesAndJustifications(NOTES[STEP_4_CHARGES], step4Charges)}
-              </QuestionRow>
+            {
+              this.renderTFQuestionRow(
+                12,
+                STEP_4_CHARGES,
+                STEP_4_CHARGES_PROMPT,
+                step4Charges
+              )
+            }
 
-              <QuestionRow>
-                {this.renderRadioGroup(COURT_OR_BOOKING, COURT_OR_BOOKING_PROMPT, {
+            {
+              this.renderQuestionRow(
+                13,
+                COURT_OR_BOOKING,
+                COURT_OR_BOOKING_PROMPT,
+                {
                   [CONTEXT.BOOKING]: CONTEXT.BOOKING,
                   [CONTEXT.COURT_PENN]: CONTEXT.COURT_PENN,
                   [CONTEXT.COURT_MINN]: CONTEXT.COURT_MINN
-                }, false, 12)}
-              </QuestionRow>
-
-              {
-                input.get(COURT_OR_BOOKING) === CONTEXT.BOOKING ? (
-                  <QuestionRow>
-                    {this.renderTrueFalseRadio(SECONDARY_RELEASE_CHARGES, SECONDARY_RELEASE_CHARGES_PROMPT)}
-                    {this.renderNotesAndJustifications(
-                      NOTES[SECONDARY_RELEASE_CHARGES],
-                      secondaryReleaseCharges,
-                      secondaryReleaseHeader
-                    )}
-                  </QuestionRow>
-                ) : null
-              }
-
-              {
-                this.state.incomplete ? <ErrorMessage>All fields must be filled out.</ErrorMessage> : null
-              }
-
-            </StyledSectionView>
-            {
-              viewOnly ? null : (
-                <SubmitContainer>
-                  <CheckboxContainer>
-                    <StyledCheckbox
-                        name="iii"
-                        label="Interstate Identification Index (III) search completed"
-                        checked={this.state.iiiChecked}
-                        value={this.state.iiiChecked}
-                        onChange={this.handleCheckboxChange} />
-                  </CheckboxContainer>
-                  <SubmitButton
-                      type="submit"
-                      bsStyle="primary"
-                      bsSize="lg"
-                      disabled={!this.state.iiiChecked}>
-                    Score & Submit
-                  </SubmitButton>
-                </SubmitContainer>
+                }
               )
             }
-          </form>
-        </StyledFormWrapper>
+
+            {
+              input.get(COURT_OR_BOOKING) === CONTEXT.BOOKING
+                ? this.renderTFQuestionRow(
+                  14,
+                  SECONDARY_RELEASE_CHARGES,
+                  SECONDARY_RELEASE_CHARGES_PROMPT,
+                  secondaryReleaseCharges,
+                  null,
+                  secondaryReleaseHeader
+                ) : null
+            }
+            <FooterContainer>
+              <DoublePaddedHeader>Additional Notes</DoublePaddedHeader>
+              <StyledTextArea
+                  name={PSA.NOTES}
+                  value={this.props.input.get(PSA.NOTES)}
+                  disabled={viewOnly}
+                  onChange={this.props.handleInputChange} />
+
+              <CheckboxContainer>
+                <StyledCheckbox
+                    name="iii"
+                    label="Interstate Identification Index (III) search completed"
+                    checked={this.state.iiiChecked}
+                    value={this.state.iiiChecked}
+                    onChange={this.handleCheckboxChange} />
+              </CheckboxContainer>
+
+              {
+                viewOnly ? null : (
+                  <ButtonRow>
+                    <DiscardButton onClick={handleClose}>Discard</DiscardButton>
+                    <SubmitButton
+                        type="submit"
+                        bsStyle="primary"
+                        bsSize="lg"
+                        onClick={this.handleSubmit}
+                        disabled={!this.state.iiiChecked}>
+                      Score & Submit
+                    </SubmitButton>
+                    <div />
+                  </ButtonRow>
+                )
+              }
+            </FooterContainer>
+
+            {
+              this.state.incomplete ? <PaddedErrorMessage>All fields must be filled out.</PaddedErrorMessage> : null
+            }
+
+          </WideForm>
+        </FormWrapper>
       </div>
     );
   }

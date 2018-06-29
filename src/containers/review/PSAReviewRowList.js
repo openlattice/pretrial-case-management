@@ -51,12 +51,6 @@ type Props = {
       scoresId :string,
       scoresEntity :Immutable.Map<*, *>
     }) => void,
-    updateNotes :(value :{
-      notes :string,
-      entityId :string,
-      entitySetId :string,
-      propertyTypes :Immutable.List<*>
-    }) => void,
     checkPSAPermissions :() => void,
     submit :(value :{ config :Object, values :Object}) => void,
     clearForm :() => void,
@@ -100,15 +94,6 @@ class PSAReviewRowList extends React.Component<Props, State> {
     this.props.actions.clearForm();
   }
 
-  updateNotes = (notes, entityId, entitySetId, propertyTypes) => {
-    this.props.actions.updateNotes({
-      notes,
-      entityId,
-      entitySetId,
-      propertyTypes
-    });
-  }
-
   renderRow = (scoreId, scores) => {
     const neighbors = this.props.psaNeighborsById.get(scoreId, Immutable.Map());
     const personId = neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborId'], '');
@@ -127,7 +112,6 @@ class PSAReviewRowList extends React.Component<Props, State> {
           loadCaseHistoryFn={this.props.actions.loadCaseHistory}
           updateScoresAndRiskFactors={this.props.actions.updateScoresAndRiskFactors}
           changePSAStatus={this.props.actions.changePSAStatus}
-          updateNotes={this.updateNotes}
           submitData={this.props.actions.submit}
           caseHistory={caseHistory}
           manualCaseHistory={manualCaseHistory}

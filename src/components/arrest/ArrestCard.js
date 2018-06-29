@@ -17,27 +17,44 @@ const {
   NUMBER_OF_CHARGES
 } = PROPERTY_TYPES;
 
-const InfoRow = styled.tr`
+const DetailsWrapper = styled.div`
+  margin-left: 20px;
   display: flex;
-  justify-content: flex-start;
+  flex-direction: column;
+  width: 100%;
 `;
 
-const Header = styled.th`
-  width: 145px;
-  margin: 2px 5px 2px 0;
-`;
-
-const DataElem = styled.td`
-  width: 200px;
-  margin: 2px 0;
-`;
-
-const CaseResultWrapper = styled.div`
+const DetailRow = styled.div`
   display: flex;
   flex-direction: row;
-  flex: 1 0 auto;
-  margin: 10px 0;
+  justify-content: space-between;
+  width: 100%;
 `;
+
+const DetailItem = styled.div`
+  display: flex;
+  flex-direction: column;
+  width: 33%;
+
+  h1 {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    color: #8e929b;
+    text-transform: uppercase;
+  }
+
+  div {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 14px;
+    color: #2e2e34;
+  }
+`;
+
+const DetailItemWide = styled(DetailItem)`
+  width: 100%;
+`;
+
 
 type Props = {
   arrest :Immutable.Map<*, *>,
@@ -45,50 +62,38 @@ type Props = {
 };
 
 const ArrestCard = ({ arrest, handleSelect } :Props) => {
-
-  const Wrapper = styled(CaseResultWrapper)`
-    &:hover {
-      cursor: ${handleSelect ? 'pointer' : 'default'};
-    }
-  `;
-
   const caseNum = arrest.getIn([CASE_ID, 0]);
-  const arrestDate = formatDateTime(arrest.getIn([ARREST_DATE_TIME, 0],
-    arrest.getIn([ARREST_DATE, 0], '')), 'MM/DD/YYYY HH:mm');
+  const arrestDateTime = arrest.getIn([ARREST_DATE_TIME, 0], arrest.getIn([ARREST_DATE, 0], ''));
+  const arrestDate = formatDateTime(arrestDateTime, 'MM/DD/YYYY');
+  const arrestTime = formatDateTime(arrestDateTime, 'HH:mm');
   const numCharges = arrest.getIn([NUMBER_OF_CHARGES, 0]);
   const arrestAgency = arrest.getIn([ARRESTING_AGENCY, 0]);
 
   const entityKeyId :string = arrest.get('id', '');
 
   return (
-    <Wrapper
-        key={entityKeyId}
-        onClick={() => {
-          if (handleSelect) {
-            handleSelect(arrest, entityKeyId);
-          }
-        }}>
-      <table>
-        <tbody>
-          <InfoRow>
-            <Header>Case Number:</Header>
-            <DataElem>{ caseNum }</DataElem>
-          </InfoRow>
-          <InfoRow>
-            <Header>Arrest Date:</Header>
-            <DataElem>{ arrestDate }</DataElem>
-          </InfoRow>
-          <InfoRow>
-            <Header>Number of Charges:</Header>
-            <DataElem>{ numCharges }</DataElem>
-          </InfoRow>
-          <InfoRow>
-            <Header>Arresting Agency:</Header>
-            <DataElem>{ arrestAgency }</DataElem>
-          </InfoRow>
-        </tbody>
-      </table>
-    </Wrapper>
+    <DetailsWrapper>
+      <DetailRow>
+        <DetailItemWide>
+          <h1>CASE NUMBER</h1>
+          <div>{caseNum}</div>
+        </DetailItemWide>
+      </DetailRow>
+      <DetailRow>
+        <DetailItem>
+          <h1>ARREST DATE</h1>
+          <div>{arrestDate}</div>
+        </DetailItem>
+        <DetailItem>
+          <h1>ARREST TIME</h1>
+          <div>{arrestTime}</div>
+        </DetailItem>
+        <DetailItem>
+          <h1>ARRESTING AGENCY</h1>
+          <div>{arrestAgency}</div>
+        </DetailItem>
+      </DetailRow>
+    </DetailsWrapper>
   );
 };
 

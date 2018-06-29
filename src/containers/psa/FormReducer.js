@@ -72,6 +72,7 @@ const INITIAL_PSA_FORM = Immutable.fromJS({
   [STEP_4_CHARGES]: null,
   [COURT_OR_BOOKING]: null,
   [SECONDARY_RELEASE_CHARGES]: null,
+  [PSA.NOTES]: '',
 
   [NOTES[AGE_AT_CURRENT_ARREST]]: '',
   [NOTES[CURRENT_VIOLENT_OFFENSE]]: '',

@@ -14,6 +14,17 @@ const StyledTextArea = styled.textarea`
   &::placeholder {
     color: #8e929b;
   }
+
+  &:focus {
+    box-shadow: inset 0 0 0 1px rebeccapurple;
+    outline: none;
+    background-color: #ffffff;
+  }
+
+  &:disabled {
+    cursor: default;
+    background-color: #ffffff;
+  }
 `;
 
 export default StyledTextArea;

@@ -412,6 +412,7 @@ export const StyledSectionWrapper = styled.div`
   align-items: center;
   padding: 30px 0;
   width: 100%;
+  border: solid 1px #e1e1eb;
 `;
 
 export const CloseX = styled(FontAwesome)`

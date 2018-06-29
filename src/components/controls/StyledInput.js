@@ -22,6 +22,10 @@ const StyledInput = styled.input`
   &::placeholder {
     color: #8e929b;
   }
+
+  &:disabled {
+    background-color: #ffffff;
+  }
 `;
 
 export default StyledInput;

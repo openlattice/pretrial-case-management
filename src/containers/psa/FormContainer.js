@@ -14,17 +14,18 @@ import { connect } from 'react-redux';
 import { Redirect, Route, Switch, withRouter } from 'react-router-dom';
 import { bindActionCreators } from 'redux';
 
+import BasicButton from '../../components/buttons/BasicButton';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import ConfirmationModal from '../../components/ConfirmationModalView';
 import SearchPersonContainer from '../person/SearchPersonContainer';
 import SelectArrestContainer from '../pages/arrest/SelectArrestContainer';
 import SelectChargesContainer from '../pages/arrest/SelectChargesContainer';
-import InlineEditableControl from '../../components/controls/InlineEditableControl';
-import SelectedPersonInfo from '../../components/person/SelectedPersonInfo';
-import SelectedArrestInfo from '../../components/arrest/SelectedArrestInfo';
 import PSAInputForm from '../../components/psainput/PSAInputForm';
 import PSAResults from '../../components/psainput/PSAResults';
 import ProgressBar from '../../components/controls/ProgressBar';
+import PersonCard from '../../components/person/PersonCard';
+import ArrestCard from '../../components/arrest/ArrestCard';
+import ChargeTable from '../../components/charges/ChargeTable';
 import exportPDF from '../../utils/PDFUtils';
 import psaConfig from '../../config/formconfig/PsaConfig';
 
@@ -38,30 +39,18 @@ import { toISODateTime } from '../../utils/Utils';
 import { getScoresAndRiskFactors, calculateDMF, getDMFRiskFactors } from '../../utils/ScoringUtils';
 import {
   ButtonWrapper,
-  CloseX,
-  Divider,
-  RecommendationWrapper,
-  ResultsContainer,
-  SmallHeader,
-  StyledFormViewWrapper,
   StyledFormWrapper,
-  StyledSectionWrapper,
-  StyledTitleWrapper,
-  StyledTopFormNavBuffer
+  StyledSectionWrapper
 } from '../../utils/Layout';
 import {
   getNextPath,
   getPrevPath
 } from '../../utils/Helpers';
 import { tryAutofillFields } from '../../utils/AutofillUtils';
-import { CONTEXT, DMF, ID_FIELD_NAMES, NOTES, PSA, PSA_STATUSES } from '../../utils/consts/Consts';
+import { CONTEXT, DMF, ID_FIELD_NAMES, NOTES, PSA_STATUSES } from '../../utils/consts/Consts';
 import { PROPERTY_TYPES, ENTITY_SETS } from '../../utils/consts/DataModelConsts';
 
-const {
-  PEOPLE,
-  PRETRIAL_CASES,
-  RELEASE_RECOMMENDATIONS
-} = ENTITY_SETS;
+const { PEOPLE } = ENTITY_SETS;
 
 const LoadingContainer = styled.div`
   text-align: center;
@@ -95,6 +84,86 @@ const Failure = styled(Status)`
   color: red;
 `;
 
+const PaddedSectionWrapper = styled(StyledSectionWrapper)`
+  margin-bottom: 20px;
+  padding: 30px;
+`;
+
+const PSAFormTitle = styled(PaddedSectionWrapper)`
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+
+  h1 {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 18px;
+    color: #555e6f;
+  }
+`;
+
+const DiscardButton = styled(BasicButton)`
+  padding: 12px 45px;
+  font-size: 14px;
+  font-weight: 600;
+  width: 141px;
+  height: 43px;
+`;
+
+const ContextItem = styled(StyledSectionWrapper)`
+  width: 470px;
+  padding: 30px;
+`;
+
+const HeaderRow = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: ${props => (props.left ? 'flex-start' : 'space-between')};
+  align-items: center;
+  width: 100%;
+  margin-bottom: 20px;
+
+  h1 {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 18px;
+    color: #555e6f;
+  }
+
+  div {
+    display: inline-block;
+    height: 25px;
+    text-transform: uppercase;
+    font-family: 'Open Sans', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    color: #8e929b;
+    border-radius: 3px;
+    border: solid 1px #8e929b;
+    padding: 5px 7px;
+  }
+
+  span {
+    margin-left: 10px;
+    border-radius: 10px;
+    background-color: #f0f0f7;
+    color: #8e929b;
+    font-family: 'Open Sans', sans-serif;
+    font-size: 12px;
+    padding: 2px 12px;
+    font-weight: 600;
+  }
+`;
+
+const ContextRow = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  margin-bottom: 20px;
+`;
+
+const ChargeTableWrapper = styled.div`
+  margin-bottom: -20px;
+`;
+
 const INITIAL_PERSON_FORM = Immutable.fromJS({
   id: '',
   lastName: '',
@@ -120,8 +189,6 @@ const INITIAL_STATE = Immutable.fromJS({
   },
   dmf: {},
   scoresWereGenerated: false,
-  notes: '',
-  notesId: undefined,
   psaIdClosing: undefined
 });
 
@@ -146,12 +213,6 @@ type Props = {
     }) => void,
     selectPretrialCase :(value :{
       selectedPretrialCase :Immutable.Map<*, *>
-    }) => void,
-    updateNotes :(value :{
-      notes :string,
-      entityId :string,
-      entitySetId :string,
-      propertyTypes :Immutable.List<*>
     }) => void,
     loadPersonDetailsRequest :(personId :string, shouldFetchCases :boolean) => void,
     setPSAValues :(value :{
@@ -196,8 +257,6 @@ type State = {
   scores :{},
   dmf :{},
   scoresWereGenerated :boolean,
-  notes :string,
-  notesId :string,
   psaIdClosing :?string,
 };
 
@@ -285,7 +344,6 @@ class Form extends React.Component<Props, State> {
       scores.toJS(),
       dmf
     );
-    values[PSA.NOTES] = this.state.notes;
 
     values[ID_FIELD_NAMES.PSA_ID] = [randomUUID()];
     values[ID_FIELD_NAMES.RISK_FACTORS_ID] = [randomUUID()];
@@ -311,7 +369,6 @@ class Form extends React.Component<Props, State> {
     }
 
     this.props.actions.submit({ values, config });
-    this.setState({ notesId: values[ID_FIELD_NAMES.NOTES_ID][0] });
   }
 
   getFqn = propertyType => `${propertyType.getIn(['type', 'namespace'])}.${propertyType.getIn(['type', 'name'])}`
@@ -331,7 +388,7 @@ class Form extends React.Component<Props, State> {
     this.handlePageChange(prevPage);
   }
 
-  generateScores = (e) => {
+  generateScores = () => {
     const { riskFactors, scores } = getScoresAndRiskFactors(this.props.psaForm);
     const dmf = calculateDMF(this.props.psaForm, scores);
     const dmfRiskFactors = getDMFRiskFactors(this.props.psaForm);
@@ -349,65 +406,6 @@ class Form extends React.Component<Props, State> {
     this.setState(INITIAL_STATE.toJS());
     this.props.actions.clearForm();
   }
-
-  renderPersonSection = () => <SelectedPersonInfo personDetails={this.props.selectedPerson} />
-
-  renderPretrialCaseSection = () => {
-    const { selectedPretrialCase, charges } = this.props;
-    if (!selectedPretrialCase.size) return null;
-    return (
-      <div>
-        <Divider />
-        <SelectedArrestInfo
-            arrest={selectedPretrialCase}
-            charges={charges}
-            propertyTypes={this.getPropertyTypes(PRETRIAL_CASES).toJS()} />
-      </div>
-    );
-  }
-
-  renderPSAInputForm = () => (
-    <PSAInputForm
-        handleInputChange={this.handleInputChange}
-        handleSubmit={this.generateScores}
-        input={this.props.psaForm}
-        currCharges={this.props.charges}
-        currCase={this.props.selectedPretrialCase}
-        allCharges={this.props.allChargesForPerson}
-        allSentences={this.props.allSentencesForPerson}
-        allCases={this.props.allCasesForPerson}
-        allFTAs={this.props.allFTAs} />
-  )
-
-  renderPSASection = () => {
-    if (!this.state.scoresWereGenerated) return this.renderPSAInputForm();
-    return <PSAResults scores={this.state.scores} riskFactors={this.state.riskFactors} />;
-  }
-
-  handleNotesUpdate = (notes) => {
-    if (this.state.scoresWereGenerated) {
-      this.props.actions.updateNotes({
-        notes,
-        entityId: this.state.notesId,
-        entitySetId: this.props.entitySetLookup.get(RELEASE_RECOMMENDATIONS),
-        propertyTypes: this.getPropertyTypes(RELEASE_RECOMMENDATIONS)
-      });
-    }
-    this.setState({ notes });
-  }
-
-  renderRecommendationSection = () => (
-    <ResultsContainer>
-      <RecommendationWrapper>
-        <SmallHeader>Notes:</SmallHeader>
-        <InlineEditableControl
-            type="textarea"
-            value={this.state.notes}
-            onChange={this.handleNotesUpdate}
-            size="medium_small" />
-      </RecommendationWrapper>
-    </ResultsContainer>
-  )
 
   setMultimapToMap = (setMultimap) => {
     let map = Immutable.Map();
@@ -457,6 +455,8 @@ class Form extends React.Component<Props, State> {
       </ButtonWrapper>
     );
   }
+
+  renderDiscardButton = () => <DiscardButton onClick={this.handleClose}>Discard</DiscardButton>;
 
   renderClearButton = () => {
     if (!this.state.scoresWereGenerated) return null;
@@ -561,14 +561,54 @@ class Form extends React.Component<Props, State> {
     );
   }
 
-  getPsaInputForm = () => (
-    <StyledSectionWrapper>
-      {this.renderPersonSection()}
-      {this.renderPretrialCaseSection()}
-      {this.renderPSAInputForm()}
-      {this.renderRecommendationSection()}
-    </StyledSectionWrapper>
-  )
+  getPsaInputForm = () => {
+    const { selectedPerson, selectedPretrialCase, charges } = this.props;
+    const personId = selectedPerson.getIn([PROPERTY_TYPES.PERSON_ID, 0], '');
+    const hasHistory = Number.parseInt(personId, 10).toString() === personId;
+    return (
+      <StyledFormWrapper>
+        <PSAFormTitle>
+          <h1>Public Safety Assessment</h1>
+          {this.renderDiscardButton()}
+        </PSAFormTitle>
+        <ContextRow>
+          <ContextItem>
+            <HeaderRow>
+              <h1>Person</h1>
+              <div>{hasHistory ? 'Case history loaded from Odyssey' : 'No Odyssey case history'}</div>
+            </HeaderRow>
+            <div>
+              <PersonCard person={this.props.selectedPerson} />
+            </div>
+          </ContextItem>
+          <ContextItem>
+            <HeaderRow>
+              <h1>Arrest</h1>
+            </HeaderRow>
+            <ArrestCard arrest={selectedPretrialCase} />
+          </ContextItem>
+        </ContextRow>
+        <PaddedSectionWrapper>
+          <HeaderRow left>
+            <h1>Charges</h1>
+            <span>{charges.size}</span>
+          </HeaderRow>
+          <ChargeTableWrapper><ChargeTable charges={charges} disabled /></ChargeTableWrapper>
+        </PaddedSectionWrapper>
+        <PSAInputForm
+            handleInputChange={this.handleInputChange}
+            handleSubmit={this.generateScores}
+            input={this.props.psaForm}
+            currCharges={this.props.charges}
+            currCase={this.props.selectedPretrialCase}
+            allCharges={this.props.allChargesForPerson}
+            allSentences={this.props.allSentencesForPerson}
+            allCases={this.props.allCasesForPerson}
+            allFTAs={this.props.allFTAs}
+            handleClose={this.handleClose} />
+      </StyledFormWrapper>
+    );
+  }
 
   getPsaResults = () => {
     const { isSubmitting, submitError } = this.props;
@@ -599,7 +639,6 @@ class Form extends React.Component<Props, State> {
       <div>
         {header}
         <PSAResults scores={scores} riskFactors={riskFactors} dmf={dmf} />
-        {this.renderRecommendationSection()}
         {this.renderExportButton()}
       </div>
     );
