@@ -12,7 +12,8 @@ import ChargeList from '../../components/charges/ChargeList';
 import { CenteredContainer } from '../../utils/Layout';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { formatDMFFromEntity } from '../../utils/consts/DMFResultConsts';
-import { formatValue, formatDateList, formatDateTimeList } from '../../utils/Utils';
+import { formatValue, formatDate, formatDateList, formatDateTimeList } from '../../utils/Utils';
+import { psaIsClosed, getLastEditDetails } from '../../utils/PSAUtils';
 import {
   stepTwoIncrease,
   stepFourIncrease,
@@ -118,18 +119,37 @@ const renderCaseInfo = ({
   );
 };
 
-const StatusInfo = ({ scores }) => {
+const StatusInfo = ({ scores, neighbors }) => {
   const status = scores.getIn([PROPERTY_TYPES.STATUS, 0], '');
   const failureReasons = formatValue(scores.get(PROPERTY_TYPES.FAILURE_REASON));
   let statusText = status;
   if (failureReasons.length) {
     statusText = `${statusText} (${failureReasons})`;
   }
+  const statusNotes = scores.getIn([PROPERTY_TYPES.STATUS_NOTES, 0]);
+  let closeDetails = null;
+  if (psaIsClosed(scores)) {
+    const { date } = getLastEditDetails(neighbors);
+    if (date) {
+      closeDetails = <DateContainer>{`Close date: ${date.format('MM/DD/YYYY')}`}</DateContainer>;
+    }
+  }
+
 
   return (
-    <InfoRow>
-      <InfoItem><InfoHeader>PSA Status: </InfoHeader>{statusText}</InfoItem>
-    </InfoRow>
+    <CenteredContainer>
+      {closeDetails}
+      <InfoRow>
+        <InfoItem><InfoHeader>PSA Status: </InfoHeader>{statusText}</InfoItem>
+      </InfoRow>
+      {
+        statusNotes ? (
+          <InfoRow>
+            <InfoItem><InfoHeader>Notes: </InfoHeader>{statusNotes}</InfoItem>
+          </InfoRow>
+        ) : null
+      }
+    </CenteredContainer>
   );
 };
 
@@ -156,7 +176,7 @@ const PSASummary = (props :Props) => {
   }
   return (
     <div>
-      <StatusInfo scores={scores} />
+      <StatusInfo scores={scores} neighbors={neighbors} />
       <hr />
       {renderPersonInfo(neighbors)}
       <hr />

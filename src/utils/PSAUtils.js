@@ -75,3 +75,25 @@ export const groupByStatus = (scoreSeq) => {
 
   return statusMap;
 };
+
+export const psaIsClosed = (psa) => {
+  const status = psa.getIn([PROPERTY_TYPES.STATUS, 0]);
+  return status && status !== PSA_STATUSES.OPEN;
+};
+
+export const getLastEditDetails = (neighbors) => {
+  let date;
+  let user;
+  neighbors.get(ENTITY_SETS.STAFF, Immutable.List()).forEach((neighbor) => {
+    if (neighbor.getIn(['associationEntitySet', 'name']) === ENTITY_SETS.EDITED_BY) {
+      const editUser = neighbor.getIn(['neighborDetails', PROPERTY_TYPES.PERSON_ID, 0]);
+      const editDate = moment(neighbor.getIn(['associationDetails', PROPERTY_TYPES.DATE_TIME, 0], ''));
+      if (editUser && editDate.isValid() && (!date || editDate.isAfter(date))) {
+        date = editDate;
+        user = editUser;
+      }
+    }
+  });
+
+  return { date, user };
+};
