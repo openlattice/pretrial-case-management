@@ -2,18 +2,18 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
 
-export const RadioInputContainer = styled.input.attrs({
-  type: 'radio'
+export const CheckboxInputContainer = styled.input.attrs({
+  type: 'checkbox'
 })`
   position: absolute;
   opacity: 0;
 `;
 
-export const RadioContainer = styled.label`
+export const CheckboxContainer = styled.label`
   display: inline-flex;
 `;
 
-export const RadioSelection = styled.span`
+export const CheckboxSelection = styled.span`
   padding: 10px 12px;
   min-width: 84px;
   height: 38px;
@@ -28,28 +28,33 @@ export const RadioSelection = styled.span`
   align-items: center;
   position: relative;
 
-  ${RadioContainer}:hover ${RadioInputContainer}:enabled:not(:checked) ~ & {
+  ${CheckboxContainer}:hover ${CheckboxInputContainer}:enabled:not(:checked) ~ & {
     background-color: #dcdce7;
     cursor: pointer;
   }
 
-  ${RadioContainer} ${RadioInputContainer}:checked ~ & {
+  ${CheckboxContainer}:hover ${CheckboxInputContainer}:enabled:checked ~ & {
+    background-color: #e4d8ff;
+    cursor: pointer;
+  }
+
+  ${CheckboxContainer} ${CheckboxInputContainer}:checked ~ & {
     background-color: #e4d8ff;
     color: #6124e2;
   }
 
-  ${RadioContainer} ${RadioInputContainer}:disabled ~ & {
+  ${CheckboxContainer} ${CheckboxInputContainer}:disabled ~ & {
     cursor: default;
   }
 
-  ${RadioContainer} ${RadioInputContainer}:disabled:checked ~ & {
+  ${CheckboxContainer} ${CheckboxInputContainer}:disabled:checked ~ & {
     background-color: #dcdce7;
     color: #8e929b;
     cursor: default;
   }
 `;
 
-const StyledRadioButton = ({
+const StyledCheckboxButton = ({
   name,
   label,
   value,
@@ -57,18 +62,18 @@ const StyledRadioButton = ({
   onChange,
   disabled
 }) => (
-  <RadioContainer>
-    <RadioInputContainer
+  <CheckboxContainer>
+    <CheckboxInputContainer
         name={name}
         value={value}
         checked={checked}
         onChange={onChange}
         disabled={disabled} />
-    <RadioSelection>{label}</RadioSelection>
-  </RadioContainer>
+    <CheckboxSelection>{label}</CheckboxSelection>
+  </CheckboxContainer>
 );
 
-StyledRadioButton.propTypes = {
+StyledCheckboxButton.propTypes = {
   name: PropTypes.string,
   label: PropTypes.string.isRequired,
   value: PropTypes.oneOfType([
@@ -80,10 +85,10 @@ StyledRadioButton.propTypes = {
   disabled: PropTypes.bool
 };
 
-StyledRadioButton.defaultProps = {
+StyledCheckboxButton.defaultProps = {
   disabled: false,
   name: undefined,
   checked: false
 };
 
-export default StyledRadioButton;
+export default StyledCheckboxButton;

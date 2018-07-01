@@ -69,8 +69,6 @@ const ChargeRow = ({ charge, handleSelect, disabled } :Props) => {
   const chargeDescription = charge.getIn([PROPERTY_TYPES.CHARGE_DESCRIPTION, 0], '');
 
   const violent = getAllViolentCharges(Immutable.List.of(charge)).size > 0;
-  console.log(violent)
-
   const entityKeyId :string = charge.get('id', '');
 
   return (

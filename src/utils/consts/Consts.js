@@ -183,6 +183,7 @@ export const FORM_IDS = {
   PERSON_ID: 'personId',
   STAFF_ID: 'staffId',
   CONTACT_ID: 'contactId',
+  BOND_ID: 'bondId',
   TIMESTAMP: 'timestamp'
 };
 
@@ -198,7 +199,8 @@ export const EDIT_FIELDS = {
 
 export const LIST_FIELDS = {
   ENTITY_SET_ID: 'entitySetId',
-  ID: 'entityKeyId'
+  ID: 'entityKeyId',
+  RELEASE_CONDITIONS_FIELD: 'releaseConditionField'
 };
 
 export const FORM_LENGTHS = {
@@ -225,7 +227,8 @@ export const ID_FIELD_NAMES = {
   STAFF_ID: 'staffId',
   TIMESTAMP: 'timestamp',
   DMF_RISK_FACTORS_ID: 'dmfRiskFactorsId',
-  DMF_ID: 'dmfId'
+  DMF_ID: 'dmfId',
+  BOND_ID: 'bondId'
 };
 
 export const ID_FIELDS = {
@@ -258,6 +261,17 @@ export const PSA_FAILURE_REASONS = {
 export const SORT_TYPES = {
   DATE: 'DATE',
   NAME: 'NAME'
+};
+
+export const RELEASE_CONDITIONS = {
+  OUTCOME: 'outcome',
+  OTHER_OUTCOME_TEXT: 'otherOutcomeText',
+  RELEASE: 'release',
+  BOND_TYPE: 'bondType',
+  BOND_AMOUNT: 'bondAmount',
+  CONDITIONS: 'conditions',
+  CHECKIN_FREQUENCY: 'checkinFrequency',
+  C247_TYPES: 'c247Types'
 };
 
 export const TABLE_WIDTH = 1000;

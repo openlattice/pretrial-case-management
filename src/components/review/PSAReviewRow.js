@@ -16,12 +16,13 @@ import CaseHistory from '../../components/review/CaseHistory';
 import PSAScores from './PSAScores';
 import PSASummary from './PSASummary';
 import DMFExplanation from '../dmf/DMFExplanation';
+import SelectReleaseConditions from '../releaseconditions/SelectReleaseConditions';
 import ClosePSAModal from './ClosePSAModal';
 import psaEditedConfig from '../../config/formconfig/PsaEditedConfig';
 import { getScoresAndRiskFactors, calculateDMF } from '../../utils/ScoringUtils';
 import { CenteredContainer } from '../../utils/Layout';
 import { toISODateTime } from '../../utils/Utils';
-import { CONTEXT, DMF, EDIT_FIELDS, ID_FIELDS, NOTES, PSA, PSA_STATUSES } from '../../utils/consts/Consts';
+import { CONTEXT, DMF, EDIT_FIELDS, NOTES, PSA, PSA_STATUSES } from '../../utils/consts/Consts';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { RESULT_CATEGORIES, formatDMFFromEntity } from '../../utils/consts/DMFResultConsts';
 import { psaIsClosed } from '../../utils/PSAUtils';
@@ -130,6 +131,7 @@ type Props = {
   ftaHistory :Immutable.Map<*, *>,
   readOnly :boolean,
   personId? :string,
+  submitting :boolean,
   downloadFn :(values :{
     neighbors :Immutable.Map<*, *>,
     scores :Immutable.Map<*, *>
@@ -172,7 +174,8 @@ const VIEWS = {
   SUMMARY: 'SUMMARY',
   PSA: 'PSA',
   DMF: 'DMF',
-  HISTORY: 'HISTORY'
+  HISTORY: 'HISTORY',
+  INITIAL_APPEARANCE: 'INITIAL_APPEARANCE'
 };
 
 export default class PSAReviewRow extends React.Component<Props, State> {
@@ -348,8 +351,10 @@ export default class PSAReviewRow extends React.Component<Props, State> {
 
   getEntityKeyId = (name) :string => this.props.neighbors.getIn([name, 'neighborId']);
 
-  getIdValue = (name) :string =>
-    this.props.neighbors.getIn([name, 'neighborDetails', PROPERTY_TYPES.GENERAL_ID, 0]);
+  getIdValue = (name, optionalFQN) :string => {
+    const fqn = optionalFQN || PROPERTY_TYPES.GENERAL_ID;
+    return this.props.neighbors.getIn([name, 'neighborDetails', fqn, 0]);
+  }
 
   onRiskFactorEdit = (e :Object) => {
     e.preventDefault();
@@ -547,6 +552,19 @@ export default class PSAReviewRow extends React.Component<Props, State> {
     return <DMFExplanation dmf={dmf} nca={nca} fta={fta} nvca={nvca} riskFactors={riskFactors} />;
   }
 
+  renderInitialAppearance = () => (
+    <SelectReleaseConditions
+        submitting={this.props.submitting}
+        personId={this.getIdValue(ENTITY_SETS.PEOPLE, PROPERTY_TYPES.PERSON_ID)}
+        psaId={this.props.scores.getIn([PROPERTY_TYPES.GENERAL_ID, 0])}
+        dmfId={this.getIdValue(ENTITY_SETS.DMF_RESULTS)}
+        submit={this.props.submitData}
+        defaultDMF={this.props.neighbors.getIn([ENTITY_SETS.DMF_RESULTS, 'neighborDetails'], Immutable.Map())}
+        defaultBond={this.props.neighbors.getIn([ENTITY_SETS.BONDS, 'neighborDetails'], Immutable.Map())}
+        defaultConditions={this.props.neighbors.get(ENTITY_SETS.RELEASE_CONDITIONS, Immutable.List())
+          .map(neighbor => neighbor.get('neighborDetails', Immutable.Map()))} />
+  )
+
   renderDetails = () => {
     const { open } = this.state;
 
@@ -584,6 +602,7 @@ export default class PSAReviewRow extends React.Component<Props, State> {
                 </Tab>
               )
             }
+            <Tab eventKey={VIEWS.INITIAL_APPEARANCE} title="Initial Appearance">{this.renderInitialAppearance()}</Tab>
           </Tabs>
         </Modal.Body>
       </Modal>

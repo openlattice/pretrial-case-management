@@ -63,7 +63,8 @@ type Props = {
   sentenceHistory :Immutable.Map<*, *>,
   ftaHistory :Immutable.Map<*, *>,
   readOnlyPermissions :boolean,
-  loadingPSAData :boolean
+  loadingPSAData :boolean,
+  submitting :boolean
 }
 
 type State = {
@@ -122,7 +123,8 @@ class PSAReviewRowList extends React.Component<Props, State> {
           readOnly={this.props.readOnlyPermissions}
           key={scoreId}
           hideCaseHistory={this.props.hideCaseHistory}
-          hideProfile={this.props.hideProfile} />
+          hideProfile={this.props.hideProfile}
+          submitting={this.props.submitting} />
     );
   }
 
@@ -195,7 +197,8 @@ function mapStateToProps(state) {
     sentenceHistory: review.get('sentenceHistory'),
     ftaHistory: review.get('ftaHistory'),
     readOnlyPermissions: review.get('readOnly'),
-    loadingPSAData: review.get('loadingPSAData')
+    loadingPSAData: review.get('loadingPSAData'),
+    submitting: state.getIn(['submit', 'submitting'], false)
   };
 }
 

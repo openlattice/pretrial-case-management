@@ -19,6 +19,8 @@ export const ALIASES = {
   CASE: 'pretrialCase',
   MANUAL_CASE: 'manualPretrialCase',
   MANUAL_CHARGES: 'manualCharges',
+  BOND: 'bond',
+  RELEASE_CONDITION: 'releaseCondition',
 
   CONTACTED_AT: 'contactedAt',
   EMPLOYED_BY: 'employedBy',
