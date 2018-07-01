@@ -5,6 +5,7 @@ import DashboardMainSection from '../../components/dashboard/DashboardMainSectio
 import CreateFormListItem from '../../components/dashboard/CreateFormListItem';
 import psaIcon from '../../assets/svg/public-safety-icon.svg';
 import * as Routes from '../../core/router/Routes';
+import { StyledFormWrapper } from '../../utils/Layout';
 
 const FormsWrapper = styled.div`
   display: flex;
@@ -18,11 +19,13 @@ const FormsWrapper = styled.div`
 class FormsContainer extends React.Component {
   render() {
     return (
-      <DashboardMainSection header="Assessments">
-        <FormsWrapper>
-          <CreateFormListItem name="Public Safety Assessment" path={Routes.PSA_FORM} icon={psaIcon} />
-        </FormsWrapper>
-      </DashboardMainSection>
+      <StyledFormWrapper>
+        <DashboardMainSection header="Assessments">
+          <FormsWrapper>
+            <CreateFormListItem name="Public Safety Assessment" path={Routes.PSA_FORM} icon={psaIcon} />
+          </FormsWrapper>
+        </DashboardMainSection>
+      </StyledFormWrapper>
     );
   }
 }

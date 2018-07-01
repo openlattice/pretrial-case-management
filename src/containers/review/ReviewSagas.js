@@ -195,6 +195,7 @@ function* getAllSearchResults(entitySetId :string, searchTerm :string) :Generato
 function* loadPSADataWorker(action :SequenceAction) :Generator<*, *, *> {
   try {
     yield put(loadPSAData.request(action.id))
+    const listEntitySets = Immutable.List.of(ENTITY_SETS.STAFF, ENTITY_SETS.RELEASE_CONDITIONS);
     const entitySetId = yield call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.PSA_SCORES);
     let neighborsById = yield call(SearchApi.searchEntityNeighborsBulk, entitySetId, action.value);
     neighborsById = Immutable.fromJS(neighborsById);
@@ -224,7 +225,9 @@ function* loadPSADataWorker(action :SequenceAction) :Generator<*, *, *> {
               .forEach((filer) => {
                 allFilers = allFilers.add(filer);
               });
+          }
 
+          if (listEntitySets.includes(neighborName)) {
             neighborsByEntitySetName = neighborsByEntitySetName.set(
               neighborName,
               neighborsByEntitySetName.get(neighborName, Immutable.List()).push(neighbor)

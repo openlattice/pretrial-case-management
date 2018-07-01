@@ -16,6 +16,16 @@ const InfoButton = styled.button`
   &:active {
     background-color: #361876;
   }
+
+  &:disabled {
+    background-color: #f0f0f7;
+    color: #b6bbc7;
+    border: none;
+
+    &:hover {
+      cursor: default;
+    }
+  }
 `;
 
 export default InfoButton;

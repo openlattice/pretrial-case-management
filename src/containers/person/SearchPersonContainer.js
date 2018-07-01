@@ -40,6 +40,10 @@ const SearchResultsList = styled.div`
   flex-direction: column;
   padding: 30px 0;
   width: 100%;
+
+  &:last-child {
+    padding-bottom: 0;
+  }
 `;
 
 const NonResultsContainer = styled.div`
