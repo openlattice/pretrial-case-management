@@ -33,7 +33,6 @@ const SearchableSelectWrapper = styled.div`
 `;
 
 const SearchInputWrapper = styled.div`
-  border: 1px solid #c5d5e5;
   display: flex;
   flex: 0 0 auto;
   flex-direction: row;
@@ -42,7 +41,8 @@ const SearchInputWrapper = styled.div`
 `;
 
 const SearchInput = styled.input`
-  border: none;
+  border: 1px solid #dcdce7;
+  border-radius: 3px;
   color: #135;
   flex: 1 0 auto;
   font-size: 14px;
@@ -50,12 +50,15 @@ const SearchInput = styled.input`
   letter-spacing: 0px;
   line-height: 24px;
   outline: none;
-  padding: 0 30px;
+  padding: 0 20px 0 45px;
+  background-color: ${props => (props.transparent ? '#f9f9fd' : '#ffffff')};
   &:focus {
-    border-color: #95aabf;
+    border-color: #6124e2;
   }
   &::placeholder {
-    color: #687F96;
+    font-family: 'Open Sans', sans-serif;
+    font-size: 14px;
+    color: #8e929b;
   }
 `;
 
@@ -63,7 +66,7 @@ const SearchIcon = styled.div`
   align-self: center;
   color: #687F96;
   position: absolute;
-  margin-left: 10px;
+  margin: 0 20px;
 `;
 
 const CloseIcon = styled.div`
@@ -79,20 +82,27 @@ const CloseIcon = styled.div`
 
 const DataTableWrapper = styled.div`
   background-color: #fefefe;
-  border: 1px solid #c5d5e5;
-  margin-top: -1px; /* - 1 for the bottom border of SearchInputWrapper */
-  position: relative;
+  border-radius: 5px;
+  border: 1px solid #e1e1eb;
+  position: absolute;
+  z-index: 1;
   width: 100%;
   visibility: ${props => (props.isVisible ? 'visible' : 'hidden')}};
+  box-shadow: 0 10px 20px 0 rgba(0, 0, 0, 0.1);
+  margin: ${props => (props.openAbove ? '-303px 0 0 0' : '45px 0 0 0')};
+  bottom: ${props => (props.openAbove ? '45px' : 'auto')};
 `;
 
 const SearchOption = styled.div`
   padding: 10px;
-  border-bottom: 1px solid #c5d5e5;
 
   &:hover {
-    background: rgb(237, 246, 255);
+    background-color: #f0f0f7;
     cursor: pointer;
+  }
+
+  &:active {
+    background-color: #e4d8ff;
   }
 `;
 
@@ -114,7 +124,9 @@ type Props = {
   onSelect :Function,
   short :?boolean,
   value :?string,
-  onClear? :?() => void
+  onClear? :?() => void,
+  transparent? :boolean,
+  openAbove? :boolean
 }
 
 type State = {
@@ -132,7 +144,9 @@ class SearchableSelect extends React.Component<Props, State> {
     searchPlaceholder: 'Search...',
     onSelect: () => {},
     short: false,
-    value: ''
+    value: '',
+    transparent: false,
+    openAbove: false
   };
 
   constructor(props :Props) {
@@ -212,6 +226,7 @@ class SearchableSelect extends React.Component<Props, State> {
           <SearchInput
               type="text"
               placeholder={this.props.searchPlaceholder}
+              transparent={this.props.transparent}
               value={value}
               onBlur={this.hideDataTable}
               onChange={this.handleOnChangeSearchQuery}
@@ -230,7 +245,7 @@ class SearchableSelect extends React.Component<Props, State> {
           !this.state.isVisibleDataTable
             ? null
             : (
-              <DataTableWrapper isVisible={this.state.isVisibleDataTable}>
+              <DataTableWrapper isVisible={this.state.isVisibleDataTable} openAbove={this.props.openAbove}>
                 {this.renderTable()}
               </DataTableWrapper>
             )

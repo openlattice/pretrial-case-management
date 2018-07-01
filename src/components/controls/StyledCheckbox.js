@@ -35,7 +35,8 @@ const CheckboxIndicator = styled.div`
   left: 0;
   height: 20px;
   width: 20px;
-  background: #E6E6E6;
+  border-radius: 2px;
+  background: #E6E6F7;
 
   ${Control}:hover input ~ &,
   ${Control} input:focus & {
@@ -43,16 +44,16 @@ const CheckboxIndicator = styled.div`
   }
 
   ${Control} input:checked ~ & {
-    background: #2AA1C0;
+    background: #6124e2;
   }
 
   ${Control}:hover input:not([disabled]):checked ~ &,
   ${Control} input:checked:focus & {
-    background: #0E647D;
+    background: #6124e2;
   }
 
   ${Control} input:disabled ~ & {
-    background: #E6E6E6;
+    background: #E6E6F7;
     opacity: 0.6;
     pointer-events: none;
   }

@@ -16,6 +16,15 @@ const StyledInput = styled.input`
   &:focus {
     box-shadow: inset 0 0 0 1px rebeccapurple;
     outline: none;
+    background-color: #ffffff;
+  }
+
+  &::placeholder {
+    color: #8e929b;
+  }
+
+  &:disabled {
+    background-color: #ffffff;
   }
 `;
 

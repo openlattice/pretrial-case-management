@@ -140,6 +140,13 @@ const StyledIcon = styled.div`
   display: inline-block;
 `;
 
+const LogoutButton = styled(BasicButton)`
+  width: 108px;
+  height: 29px;
+  font-size: 11px;
+  padding: 0;
+`;
+
 const NavButton = ({ path, defaultIcon, selectedIcon, label }) => {
   const url = window.location.hash.includes(path) ? selectedIcon : defaultIcon;
   const ButtonWrapper = styled(StyledNavLink).attrs({
@@ -184,7 +191,7 @@ const HeaderNav = ({ logout } :Props) => (
       </div>
       <div>
         <DisplayName>{getDisplayName()}</DisplayName>
-        <BasicButton onClick={logout}>Log Out</BasicButton>
+        <LogoutButton onClick={logout}>Log Out</LogoutButton>
       </div>
     </AppHeaderWrapper>
     <AppHeaderWrapper>

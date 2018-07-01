@@ -1,8 +1,5 @@
-/*
- * @flow
- */
-
 import React from 'react';
+import PropTypes from 'prop-types';
 import styled from 'styled-components';
 
 export const RadioInputContainer = styled.input.attrs({
@@ -10,15 +7,13 @@ export const RadioInputContainer = styled.input.attrs({
 })`
   position: absolute;
   opacity: 0;
-
 `;
 
 export const RadioContainer = styled.label`
-  display: inline;
+  display: inline-flex;
   position: relative;
   padding-left: 30px;
-  margin: 12px;
-  cursor: pointer;
+  margin: 10px;
   font-size: 16px;
   -webkit-user-select: none;
   -moz-user-select: none;
@@ -33,16 +28,18 @@ export const RadioSelection = styled.span`
   left: 0;
   height: 20px;
   width: 20px;
-  background-color: white;
+  background-color: #e6e6f7;
   border-radius: 50%;
-  border: 1px solid #ddd;
+  border: 1px solid #c9c9da;
 
   ${RadioContainer}:hover ${RadioInputContainer} ~ & {
     background-color: #ccc;
+    cursor: pointer;
   }
 
   ${RadioContainer} ${RadioInputContainer}:checked ~ & {
-    background-color: #2AA1C0;
+    background-color: #6124e2;
+    border: 1px solid #6124e2;
   }
 
   ${RadioContainer} ${RadioInputContainer}:disabled ~ & {
@@ -74,28 +71,16 @@ export const RadioSelection = styled.span`
   }
 `;
 
-type Props = {
-  name :string,
-  label :string,
-  value :string,
-  checked :boolean,
-  onChange :(event :Object) => void,
-  disabled? :boolean,
-  dataSection? :string
-};
-
 const StyledRadio = ({
   name,
   label,
   value,
   checked,
   onChange,
-  disabled,
-  dataSection
-} :Props) => (
+  disabled
+}) => (
   <RadioContainer>{label}
     <RadioInputContainer
-        data-section={dataSection}
         name={name}
         value={value}
         checked={checked}
@@ -105,9 +90,22 @@ const StyledRadio = ({
   </RadioContainer>
 );
 
+StyledRadio.propTypes = {
+  name: PropTypes.string,
+  label: PropTypes.string.isRequired,
+  value: PropTypes.oneOfType([
+    PropTypes.string,
+    PropTypes.bool
+  ]).isRequired,
+  checked: PropTypes.bool,
+  onChange: PropTypes.func.isRequired,
+  disabled: PropTypes.bool
+};
+
 StyledRadio.defaultProps = {
   disabled: false,
-  dataSection: ''
+  name: undefined,
+  checked: false
 };
 
 export default StyledRadio;

@@ -9,13 +9,18 @@ import { Col, FormControl } from 'react-bootstrap';
 import StyledDatePicker from '../controls/StyledDatePicker';
 import StyledInput from '../controls/StyledInput';
 import InfoButton from '../buttons/InfoButton';
-import { PaddedRow, TitleLabel } from '../../utils/Layout';
+import { UnpaddedRow, TitleLabel } from '../../utils/Layout';
 
-const SearchRow = styled(PaddedRow)`
+const SearchRow = styled(UnpaddedRow)`
   display: flex;
   align-items: flex-end;
   justify-content: center;
   margin: 10px;
+  width: 100%;
+`;
+
+const StyledTitleLabel = styled(TitleLabel)`
+  margin-bottom: 20px;
 `;
 
 type Props = {
@@ -62,23 +67,21 @@ export default class PersonSearchFields extends React.Component<Props, State> {
     const { firstName, lastName, dob } = this.state;
 
     return (
-      <div>
-        <SearchRow>
-          <Col lg={3}>
-            <TitleLabel>Last name</TitleLabel>
-            <StyledInput name="lastName" onKeyPress={this.handleKeyPress} onChange={this.onChange} value={lastName} />
-          </Col>
-          <Col lg={3}>
-            <TitleLabel>First name</TitleLabel>
-            <StyledInput name="firstName" onKeyPress={this.handleKeyPress} onChange={this.onChange} value={firstName} />
-          </Col>
-          <Col lg={3}>
-            <TitleLabel>Date of birth</TitleLabel>
-            <StyledDatePicker onKeyPress={this.handleKeyPress} name="dob" onChange={this.onDobChange} value={dob} />
-          </Col>
-          <InfoButton onClick={this.handleSubmit}>Search</InfoButton>
-        </SearchRow>
-      </div>
+      <SearchRow>
+        <Col lg={3}>
+          <StyledTitleLabel>Last name</StyledTitleLabel>
+          <StyledInput name="lastName" onKeyPress={this.handleKeyPress} onChange={this.onChange} value={lastName} />
+        </Col>
+        <Col lg={3}>
+          <StyledTitleLabel>First name</StyledTitleLabel>
+          <StyledInput name="firstName" onKeyPress={this.handleKeyPress} onChange={this.onChange} value={firstName} />
+        </Col>
+        <Col lg={3}>
+          <StyledTitleLabel>Date of birth</StyledTitleLabel>
+          <StyledDatePicker onKeyPress={this.handleKeyPress} name="dob" onChange={this.onDobChange} value={dob} />
+        </Col>
+        <InfoButton onClick={this.handleSubmit}>Search</InfoButton>
+      </SearchRow>
     );
   }
 }

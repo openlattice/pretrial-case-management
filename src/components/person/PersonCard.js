@@ -3,12 +3,11 @@
  */
 
 import React from 'react';
-import moment from 'moment';
 import styled from 'styled-components';
 import Immutable from 'immutable';
 
-import defaultUserIcon from '../../assets/images/user-profile-icon.png';
-import { formatValue, formatDateList } from '../../utils/Utils';
+import defaultUserIcon from '../../assets/svg/profile-placeholder-rectangle.svg';
+import { formatValue, formatDate } from '../../utils/Utils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 
 const {
@@ -22,55 +21,62 @@ const {
   PICTURE
 } = PROPERTY_TYPES;
 
-const PersonResultWrapper = styled.div`
+const Wrapper = styled.div`
+  width: 410px;
   display: flex;
-  text-align: left;
   flex-direction: row;
-  flex: 1 0 auto;
-  margin: 10px 0;
+  align-items: center;
 `;
 
-const GrayPersonResultWrapper = styled(PersonResultWrapper)`
-  color: #aaa;
+const DetailsWrapper = styled.div`
+  margin-left: 20px;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
 `;
 
-const PersonPictureWrapper = styled.div`
-
+const DetailRow = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  width: 100%;
 `;
+
+const DetailItem = styled.div`
+  display: flex;
+  flex-direction: column;
+  width: 33%;
+
+  h1 {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    color: #8e929b;
+    text-transform: uppercase;
+  }
+
+  div {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 14px;
+    color: #2e2e34;
+  }
+`;
+
+const DetailItemWide = styled(DetailItem)`
+  width: 66%;
+`;
+
 
 const PersonPicture = styled.img`
   max-height: 115px;
 `;
 
-const InfoRow = styled.tr`
-  display: flex;
-  justify-content: flex-start;
-`;
-
-const Header = styled.th`
-  width: 105px;
-  margin: 2px 5px 2px 0;
-`;
-
-const DataElem = styled.td`
-  width: 200px;
-  margin: 2px 0;
-`;
-
 type Props = {
   person :Immutable.Map<*, *>,
-  handleSelect? :(person :Immutable.Map<*, *>, entityKeyId :string, id :string) => void,
-  gray? :boolean
+  handleSelect? :(person :Immutable.Map<*, *>, entityKeyId :string, id :string) => void
 };
 
-const PersonCard = ({ person, handleSelect, gray } :Props) => {
-
-  const Wrapper = styled(gray ? GrayPersonResultWrapper : PersonResultWrapper)`
-    &:hover {
-      cursor: ${handleSelect ? 'pointer' : 'default'};
-    },
-    width: 150px;
-  `;
+const PersonCard = ({ person, handleSelect } :Props) => {
 
   let pictureAsBase64 :string = person.getIn([MUGSHOT, 0]);
   if (!pictureAsBase64) pictureAsBase64 = person.getIn([PICTURE, 0]);
@@ -79,9 +85,10 @@ const PersonCard = ({ person, handleSelect, gray } :Props) => {
   const firstName = formatValue(person.get(FIRST_NAME, Immutable.List()));
   const middleName = formatValue(person.get(MIDDLE_NAME, Immutable.List()));
   const lastName = formatValue(person.get(LAST_NAME, Immutable.List()));
-  const dob = formatDateList(person.get(DOB, Immutable.List()), 'MM/DD/YYYY');
+  const dob = formatDate(person.getIn([DOB, 0], ''), 'MM/DD/YYYY');
   const suffix = formatValue(person.get(SUFFIX, Immutable.List()));
   const id :string = person.getIn([PERSON_ID, 0], '');
+  const formattedId = id.length > 24 ? `${id.substr(0, 22)}...` : id;
   const entityKeyId :string = person.getIn(['id', 0], '');
 
   return (
@@ -92,47 +99,40 @@ const PersonCard = ({ person, handleSelect, gray } :Props) => {
             handleSelect(person, entityKeyId, id);
           }
         }}>
-      <PersonPictureWrapper>
-        <PersonPicture src={pictureImgSrc} role="presentation" />
-      </PersonPictureWrapper>
-      <table>
-        <tbody>
-          <InfoRow>
-            <Header>Last Name:</Header>
-            <DataElem>{ lastName }</DataElem>
-          </InfoRow>
-          <InfoRow>
-            <Header>First Name:</Header>
-            <DataElem>{ firstName }</DataElem>
-          </InfoRow>
-          <InfoRow>
-            <Header>Middle Name:</Header>
-            <DataElem>{ middleName }</DataElem>
-          </InfoRow>
-          { suffix ? (
-            <InfoRow>
-              <Header>Suffix:</Header>
-              <DataElem>{ suffix }</DataElem>
-            </InfoRow>
-          ) : null
-          }
-          <InfoRow>
-            <Header>Date of Birth:</Header>
-            <DataElem>{ dob }</DataElem>
-          </InfoRow>
-          <InfoRow>
-            <Header>Identifier:</Header>
-            <DataElem>{ id }</DataElem>
-          </InfoRow>
-        </tbody>
-      </table>
+      <PersonPicture src={pictureImgSrc} role="presentation" />
+      <DetailsWrapper>
+        <DetailRow>
+          <DetailItem>
+            <h1>LAST NAME</h1>
+            <div>{lastName}</div>
+          </DetailItem>
+          <DetailItem>
+            <h1>FIRST NAME</h1>
+            <div>{firstName}</div>
+          </DetailItem>
+          <DetailItem>
+            <h1>MIDDLE NAME</h1>
+            <div>{middleName}</div>
+          </DetailItem>
+        </DetailRow>
+        <DetailRow>
+          <DetailItem>
+            <h1>DATE OF BIRTH</h1>
+            <div>{dob}</div>
+          </DetailItem>
+          <DetailItemWide>
+            <h1>IDENTIFIER</h1>
+            <div>{formattedId}</div>
+          </DetailItemWide>
+        </DetailRow>
+      </DetailsWrapper>
+
     </Wrapper>
   );
 };
 
 PersonCard.defaultProps = {
-  handleSelect: () => {},
-  gray: false
+  handleSelect: () => {}
 };
 
 export default PersonCard;
