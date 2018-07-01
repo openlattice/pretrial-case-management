@@ -6,7 +6,7 @@ import React from 'react';
 import styled from 'styled-components';
 import Immutable from 'immutable';
 
-import defaultUserIcon from '../../assets/svg/profile-placeholder-rectangle.svg';
+import defaultUserIcon from '../../assets/svg/profile-placeholder-rectangle-big.svg';
 import { formatValue, formatDate } from '../../utils/Utils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 
@@ -29,10 +29,10 @@ const Wrapper = styled.div`
 `;
 
 const DetailsWrapper = styled.div`
-  margin-left: 20px;
+  margin: 0 20px;
   display: flex;
   flex-direction: column;
-  width: 100%;
+  width: 300px;
 `;
 
 const DetailRow = styled.div`
@@ -42,10 +42,30 @@ const DetailRow = styled.div`
   width: 100%;
 `;
 
+const StyledTooltip = styled.div`
+  visibility: hidden;
+  position: absolute;
+  z-index: 1;
+  bottom: -40px;
+  left: 15%;
+  border-radius: 5px;
+  box-shadow: 0 10px 20px 0 rgba(0, 0, 0, 0.1);
+  background-color: #f9f9fd;
+  border: solid 1px #dcdce7;
+  max-width: 320px;
+  width: max-content;
+  font-family: 'Open Sans', sans-serif;
+  font-size: 14px;
+  color: #2e2e34;
+  padding: 8px 15px;
+  white-space: normal !important;
+`;
+
 const DetailItem = styled.div`
   display: flex;
   flex-direction: column;
-  width: 33%;
+  width: 50%;
+  position: relative;
 
   h1 {
     font-family: 'Open Sans', sans-serif;
@@ -59,11 +79,18 @@ const DetailItem = styled.div`
     font-family: 'Open Sans', sans-serif;
     font-size: 14px;
     color: #2e2e34;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &:hover ${StyledTooltip} {
+    visibility: visible;
   }
 `;
 
 const DetailItemWide = styled(DetailItem)`
-  width: 66%;
+  width: 100%;
 `;
 
 
@@ -75,6 +102,10 @@ type Props = {
   person :Immutable.Map<*, *>,
   handleSelect? :(person :Immutable.Map<*, *>, entityKeyId :string, id :string) => void
 };
+
+const Tooltip = ({ value }) => (
+  value && value.length ? <StyledTooltip>{value}</StyledTooltip> : null
+);
 
 const PersonCard = ({ person, handleSelect } :Props) => {
 
@@ -88,7 +119,6 @@ const PersonCard = ({ person, handleSelect } :Props) => {
   const dob = formatDate(person.getIn([DOB, 0], ''), 'MM/DD/YYYY');
   const suffix = formatValue(person.get(SUFFIX, Immutable.List()));
   const id :string = person.getIn([PERSON_ID, 0], '');
-  const formattedId = id.length > 24 ? `${id.substr(0, 22)}...` : id;
   const entityKeyId :string = person.getIn(['id', 0], '');
 
   return (
@@ -105,24 +135,31 @@ const PersonCard = ({ person, handleSelect } :Props) => {
           <DetailItem>
             <h1>LAST NAME</h1>
             <div>{lastName}</div>
-          </DetailItem>
-          <DetailItem>
-            <h1>FIRST NAME</h1>
-            <div>{firstName}</div>
+            <Tooltip value={lastName} />
           </DetailItem>
           <DetailItem>
             <h1>MIDDLE NAME</h1>
             <div>{middleName}</div>
+            <Tooltip value={middleName} />
           </DetailItem>
         </DetailRow>
         <DetailRow>
           <DetailItem>
+            <h1>FIRST NAME</h1>
+            <div>{firstName}</div>
+            <Tooltip value={firstName} />
+          </DetailItem>
+          <DetailItem>
             <h1>DATE OF BIRTH</h1>
             <div>{dob}</div>
+            <Tooltip value={dob} />
           </DetailItem>
+        </DetailRow>
+        <DetailRow>
           <DetailItemWide>
             <h1>IDENTIFIER</h1>
-            <div>{formattedId}</div>
+            <div>{id}</div>
+            <Tooltip value={id} />
           </DetailItemWide>
         </DetailRow>
       </DetailsWrapper>
