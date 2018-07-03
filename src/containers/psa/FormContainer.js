@@ -45,7 +45,8 @@ import {
 } from '../../utils/Layout';
 import {
   getNextPath,
-  getPrevPath
+  getPrevPath,
+  getCurrentPage
 } from '../../utils/Helpers';
 import { tryAutofillFields } from '../../utils/AutofillUtils';
 import { CONTEXT, DMF, ID_FIELD_NAMES, NOTES, PSA_STATUSES, SORT_TYPES } from '../../utils/consts/Consts';
@@ -710,10 +711,9 @@ class Form extends React.Component<Props, State> {
 
   renderPSAResultsModal = () => {
     const { isSubmitting, isSubmitted } = this.props;
-    const nextPath = getNextPath(window.location, numPages);
-    if (!nextPath) return null;
-    const nextPathPage = Number.parseInt(nextPath.substr(nextPath.length - 1), 10);
-    if ((!Number.isNaN(nextPathPage) && nextPathPage >= 3) || (!isSubmitting && !isSubmitted)) {
+    const currentPage = getCurrentPage(window.location);
+    if (!currentPage || Number.isNaN(currentPage)) return null;
+    if (currentPage < 4 || (!isSubmitting && !isSubmitted)) {
       return null;
     }
 

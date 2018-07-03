@@ -13,11 +13,11 @@ type Props = {
 };
 
 const COLOR_MAPPINGS = {
-  [COLORS.DARK_GREEN]: '#4f8901',
-  [COLORS.LIGHT_GREEN]: '#ccff66',
-  [COLORS.YELLOW]: '#ffff00',
-  [COLORS.ORANGE]: '#ff9900',
-  [COLORS.RED]: '#e5302d'
+  [COLORS.DARK_GREEN]: '#018856',
+  [COLORS.LIGHT_GREEN]: '#60d050',
+  [COLORS.YELLOW]: '#fff566',
+  [COLORS.ORANGE]: '#ffa748',
+  [COLORS.RED]: '#d02924'
 };
 
 const Condition = styled.div`
