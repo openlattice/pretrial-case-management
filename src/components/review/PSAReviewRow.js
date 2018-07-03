@@ -123,6 +123,7 @@ type Props = {
   neighbors :Immutable.Map<*, *>,
   hideCaseHistory? :boolean,
   hideProfile? :boolean,
+  onStatusChangeCallback? :() => void,
   caseHistory :Immutable.List<*>,
   manualCaseHistory :Immutable.List<*>,
   chargeHistory :Immutable.Map<*, *>,
@@ -182,7 +183,8 @@ export default class PSAReviewRow extends React.Component<Props, State> {
 
   static defaultProps = {
     hideCaseHistory: false,
-    hideProfile: false
+    hideProfile: false,
+    onStatusChangeCallback: () => {}
   }
 
   constructor(props :Props) {
@@ -400,7 +402,6 @@ export default class PSAReviewRow extends React.Component<Props, State> {
       notesEntity = this.getNotesEntity(this.state.riskFactors, notesIdValue);
     }
 
-
     this.props.updateScoresAndRiskFactors({
       scoresEntitySetId,
       scoresId,
@@ -444,10 +445,15 @@ export default class PSAReviewRow extends React.Component<Props, State> {
     const scoresEntity = this.props.scores
       .set(PROPERTY_TYPES.STATUS, Immutable.List.of(status))
       .set(PROPERTY_TYPES.FAILURE_REASON, Immutable.fromJS(failureReason))
-      .set(PROPERTY_TYPES.STATUS_NOTES, statusNotesList);
+      .set(PROPERTY_TYPES.STATUS_NOTES, statusNotesList)
+      .delete('id');
 
     const scoresId = this.props.entityKeyId;
-    this.props.changePSAStatus({ scoresId, scoresEntity });
+    this.props.changePSAStatus({
+      scoresId,
+      scoresEntity,
+      callback: this.props.onStatusChangeCallback
+    });
 
     this.props.submitData({
       config: psaEditedConfig,
