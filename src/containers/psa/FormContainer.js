@@ -26,6 +26,7 @@ import ProgressBar from '../../components/controls/ProgressBar';
 import PersonCard from '../../components/person/PersonCard';
 import ArrestCard from '../../components/arrest/ArrestCard';
 import ChargeTable from '../../components/charges/ChargeTable';
+import PSAReviewRowList from '../review/PSAReviewRowList';
 import exportPDF from '../../utils/PDFUtils';
 import psaConfig from '../../config/formconfig/PsaConfig';
 
@@ -47,7 +48,7 @@ import {
   getPrevPath
 } from '../../utils/Helpers';
 import { tryAutofillFields } from '../../utils/AutofillUtils';
-import { CONTEXT, DMF, ID_FIELD_NAMES, NOTES, PSA_STATUSES } from '../../utils/consts/Consts';
+import { CONTEXT, DMF, ID_FIELD_NAMES, NOTES, PSA_STATUSES, SORT_TYPES } from '../../utils/consts/Consts';
 import { PROPERTY_TYPES, ENTITY_SETS } from '../../utils/consts/DataModelConsts';
 
 const { PEOPLE } = ENTITY_SETS;
@@ -84,6 +85,13 @@ const Failure = styled(Status)`
   color: red;
 `;
 
+const Header = styled.h1`
+  font-size: 25px;
+  font-weight: 600;
+  margin: 0;
+  margin-bottom: 20px;
+`;
+
 const PaddedSectionWrapper = styled(StyledSectionWrapper)`
   margin-bottom: 20px;
   padding: 30px;
@@ -99,6 +107,12 @@ const PSAFormTitle = styled(PaddedSectionWrapper)`
     font-size: 18px;
     color: #555e6f;
   }
+`;
+
+const CenteredListWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 `;
 
 const DiscardButton = styled(BasicButton)`
@@ -153,6 +167,14 @@ const HeaderRow = styled.div`
   }
 `;
 
+const PSAReviewRowListContainer = styled(StyledSectionWrapper)`
+  width: 960px;
+
+  ${BasicButton} {
+    margin-bottom: 10px;
+  }
+`;
+
 const ContextRow = styled.div`
   display: flex;
   flex-direction: row;
@@ -189,7 +211,8 @@ const INITIAL_STATE = Immutable.fromJS({
   },
   dmf: {},
   scoresWereGenerated: false,
-  psaIdClosing: undefined
+  psaIdClosing: undefined,
+  skipClosePSAs: false
 });
 
 const numPages = 4;
@@ -239,7 +262,10 @@ type Props = {
   allChargesForPerson :Immutable.List<*>,
   allSentencesForPerson :Immutable.List<*>,
   allFTAs :Immutable.List<*>,
+  openPSAs :Immutable.Map<*, *>,
+  allPSAs :Immutable.List<*>,
   selectedPersonId :string,
+  isLoadingNeighbors :boolean,
   isLoadingCases :boolean,
   numCasesToLoad :number,
   numCasesLoaded :number,
@@ -258,6 +284,7 @@ type State = {
   dmf :{},
   scoresWereGenerated :boolean,
   psaIdClosing :?string,
+  skipClosePSAs :boolean
 };
 
 class Form extends React.Component<Props, State> {
@@ -508,17 +535,49 @@ class Form extends React.Component<Props, State> {
     });
   }
 
+  getPendingPSAs = () => {
+    const {
+      actions,
+      entitySetLookup,
+      selectedPersonId,
+      allPSAs,
+      openPSAs
+    } = this.props;
+    const openPSAScores = allPSAs.filter(scores => openPSAs.has(scores.get('id')));
+    if (!openPSAScores.size) return null;
+    const scoreSeq = openPSAScores.map(obj => ([obj.get('id'), obj]));
+    return (
+      <CenteredListWrapper>
+        <Header>Close Pending PSAs</Header>
+        <PSAReviewRowListContainer>
+          <BasicButton onClick={() => this.setState({ skipClosePSAs: true })}>Skip</BasicButton>
+          <PSAReviewRowList
+              hideProfile
+              scoreSeq={scoreSeq}
+              sort={SORT_TYPES.DATE}
+              onStatusChangeCallback={() => {
+                actions.loadNeighbors({
+                  entitySetId: entitySetLookup.get(PEOPLE),
+                  entityKeyId: selectedPersonId
+                });
+              }} />
+        </PSAReviewRowListContainer>
+      </CenteredListWrapper>
+    );
+  }
+
   getSelectArrestSection = () => {
     const {
       selectedPersonId,
       isLoadingCases,
+      isLoadingNeighbors,
       numCasesToLoad,
       numCasesLoaded,
       entitySetLookup,
       arrestOptions,
       actions
     } = this.props;
-    if (isLoadingCases) {
+    if (isLoadingCases && !isLoadingNeighbors) {
       if (numCasesLoaded === numCasesToLoad) {
         actions.loadPersonDetailsRequest(selectedPersonId, false);
         actions.loadNeighbors({
@@ -537,7 +596,12 @@ class Form extends React.Component<Props, State> {
         </LoadingContainer>);
     }
 
-    return (
+    if (isLoadingNeighbors) {
+      return <LoadingSpinner />;
+    }
+
+    const pendingPSAs = this.state.skipClosePSAs ? null : this.getPendingPSAs();
+    return pendingPSAs || (
       <SelectArrestContainer
           caseOptions={arrestOptions}
           nextPage={this.nextPage}
@@ -646,7 +710,10 @@ class Form extends React.Component<Props, State> {
 
   renderPSAResultsModal = () => {
     const { isSubmitting, isSubmitted } = this.props;
-    if (!isSubmitting && !isSubmitted) {
+    const nextPath = getNextPath(window.location, numPages);
+    if (!nextPath) return null;
+    const nextPathPage = Number.parseInt(nextPath.substr(nextPath.length - 1), 10);
+    if ((!Number.isNaN(nextPathPage) && nextPathPage >= 3) || (!isSubmitting && !isSubmitted)) {
       return null;
     }
 
@@ -692,7 +759,10 @@ function mapStateToProps(state :Immutable.Map<*, *>) :Object {
     allChargesForPerson: psaForm.get('allChargesForPerson'),
     allSentencesForPerson: psaForm.get('allSentencesForPerson'),
     allFTAs: psaForm.get('allFTAs'),
+    openPSAs: psaForm.get('openPSAs'),
+    allPSAs: psaForm.get('allPSAs'),
     psaForm: psaForm.get('psa'),
+    isLoadingNeighbors: psaForm.get('isLoadingNeighbors'),
     isSubmitted: submit.get('submitted'),
     isSubmitting: submit.get('submitting'),
     submitError: submit.get('error'),

@@ -12,6 +12,7 @@ import {
   loadDataModel,
   loadNeighbors
 } from './FormActionFactory';
+import { loadPSAData } from '../review/ReviewActionFactory';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_STATUSES } from '../../utils/consts/Consts';
 
@@ -41,8 +42,8 @@ function* loadDataModelWatcher() :Generator<*, *, *> {
   yield takeEvery(LOAD_DATA_MODEL, loadDataModelWorker);
 }
 
-function* getOpenPSANeighbors(entitySetId, neighbors) :Generator<*, *, *> {
-  const ids = neighbors.filter((neighbor) => {
+const getOpenPSAIds = (neighbors) => {
+  return neighbors.filter((neighbor) => {
     if (neighbor.neighborEntitySet && neighbor.neighborEntitySet.name === ENTITY_SETS.PSA_SCORES) {
       const statusValues = neighbor.neighborDetails[PROPERTY_TYPES.STATUS];
       if (statusValues && statusValues.includes(PSA_STATUSES.OPEN)) {
@@ -51,7 +52,10 @@ function* getOpenPSANeighbors(entitySetId, neighbors) :Generator<*, *, *> {
     }
     return false;
   }).map(neighbor => neighbor.neighborId);
+}
 
+function* getOpenPSANeighbors(entitySetId, neighbors) :Generator<*, *, *> {
+  const ids = getOpenPSAIds(neighbors);
   return ids.length ? yield call(SearchApi.searchEntityNeighborsBulk, entitySetId, ids) : {};
 }
 
@@ -63,6 +67,7 @@ function* loadNeighborsWorker(action :SequenceAction) :Generator<*, *, *> {
     const neighbors = yield call(SearchApi.searchEntityNeighbors, entitySetId, entityKeyId);
     const openPSAs = yield call(getOpenPSANeighbors, entitySetId, neighbors);
     yield put(loadNeighbors.success(action.id, { neighbors, openPSAs }));
+    yield put(loadPSAData(getOpenPSAIds(neighbors)));
   }
   catch (error) {
     console.error(error)

@@ -24,6 +24,7 @@ type Props = {
   sort? :?string,
   hideCaseHistory? :boolean,
   hideProfile? :boolean,
+  onStatusChangeCallback? :() => void,
   actions :{
     downloadPSAReviewPDF :(values :{
       neighbors :Immutable.Map<*, *>,
@@ -77,7 +78,8 @@ class PSAReviewRowList extends React.Component<Props, State> {
 
   static defaultProps = {
     hideCaseHistory: false,
-    hideProfile: false
+    hideProfile: false,
+    onStatusChangeCallback: () => {}
   }
 
   constructor(props :Props) {
@@ -113,6 +115,7 @@ class PSAReviewRowList extends React.Component<Props, State> {
           loadCaseHistoryFn={this.props.actions.loadCaseHistory}
           updateScoresAndRiskFactors={this.props.actions.updateScoresAndRiskFactors}
           changePSAStatus={this.props.actions.changePSAStatus}
+          onStatusChangeCallback={this.props.onStatusChangeCallback}
           submitData={this.props.actions.submit}
           caseHistory={caseHistory}
           manualCaseHistory={manualCaseHistory}
