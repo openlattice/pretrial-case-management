@@ -179,7 +179,6 @@ export default class PSAResults extends React.Component<Props, State> {
   render() {
     return (
       <div>
-        <Divider />
         <ResultsContainer>
           <ResultsWrapper>
             <ButtonWrapper>

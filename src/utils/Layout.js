@@ -330,26 +330,37 @@ export const ResultsWrapper = styled.div`
 
 export const ResultHeader = styled.div`
   margin: 20px 0;
-  font-weight: bold;
-  font-size: 16;
+  font-family: 'Open Sans', sans-serif;
+  font-size: 16px;
+  color: #555e6f;
 `;
 
 export const ScaleWrapper = styled.div`
   height: 40px;
+  display: flex;
+  flex-direction: row !important;
 `;
 
-export const ScaleBlock = styled.div`
-  vertical-align: center;
-  text-align: center;
-  display: inline;
-  padding: 15px 50px;
-  border: 1px solid gray;
+export const ScaleBlock = styled.span`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 60px;
+  width: 72px;
+  border: 1px solid #b6bbc7;
   margin: 0;
+  font-family: 'Open Sans', sans-serif;
+  font-size: 16px;
+  color: #555e6f;
 `;
 
 export const SelectedScaleBlock = styled(ScaleBlock)`
-  color: white;
-  background: black;
+  background-color: #b6bbc7;
+  font-weight: ${props => (props.isScore ? 'bold' : 'normal')};
+
+  &:not(:first-child) {
+    border-left: 1px solid #ffffff;
+  }
 `;
 
 export const RiskFactorTable = styled.table`
