@@ -21,7 +21,7 @@ import SearchPersonContainer from '../person/SearchPersonContainer';
 import SelectArrestContainer from '../pages/arrest/SelectArrestContainer';
 import SelectChargesContainer from '../pages/arrest/SelectChargesContainer';
 import PSAInputForm from '../../components/psainput/PSAInputForm';
-import PSAResults from '../../components/psainput/PSAResults';
+import PSASubmittedPage from '../../components/psainput/PSASubmittedPage';
 import ProgressBar from '../../components/controls/ProgressBar';
 import PersonCard from '../../components/person/PersonCard';
 import ArrestCard from '../../components/arrest/ArrestCard';
@@ -49,7 +49,7 @@ import {
   getCurrentPage
 } from '../../utils/Helpers';
 import { tryAutofillFields } from '../../utils/AutofillUtils';
-import { CONTEXT, DMF, ID_FIELD_NAMES, NOTES, PSA_STATUSES, SORT_TYPES } from '../../utils/consts/Consts';
+import { CONTEXT, DMF, ID_FIELD_NAMES, NOTES, PSA, PSA_STATUSES, SORT_TYPES } from '../../utils/consts/Consts';
 import { PROPERTY_TYPES, ENTITY_SETS } from '../../utils/consts/DataModelConsts';
 
 const { PEOPLE } = ENTITY_SETS;
@@ -683,29 +683,50 @@ class Form extends React.Component<Props, State> {
       riskFactors,
       dmf
     } = this.state;
-    if (!scoresWereGenerated) return null;
-    let header;
 
-    if (isSubmitting) {
-      header = (
-        <div>
-          <LoadingText>Submitting...</LoadingText>
-          <LoadingSpinner />
-        </div>);
-    }
-    else {
-      header = submitError ? (
-        <Failure>An error occurred: unable to submit PSA.</Failure>
-      ) : (
-        <Success>PSA Successfully Submitted!</Success>
-      );
-    }
+    const {
+      selectedPretrialCase,
+      charges,
+      selectedPerson,
+      arrestOptions,
+      allChargesForPerson,
+      allSentencesForPerson,
+      allFTAs,
+      psaForm
+    } = this.props;
+
+    if (!scoresWereGenerated) return null;
+
+    const data = Immutable.fromJS(this.state)
+      .set('scores', this.state.scores)
+      .set('riskFactors', this.setMultimapToMap(this.state.riskFactors))
+      .set('psaRiskFactors', Immutable.fromJS(this.state.riskFactors))
+      .set('dmfRiskFactors', Immutable.fromJS(this.state.dmfRiskFactors));
+
     return (
-      <div>
-        {header}
-        <PSAResults scores={scores} riskFactors={riskFactors} dmf={dmf} />
-        {this.renderExportButton()}
-      </div>
+      <PSASubmittedPage
+          isSubmitting={isSubmitting}
+          scores={scores}
+          riskFactors={riskFactors}
+          dmf={dmf}
+          submitSuccess={!submitError}
+          onClose={this.props.actions.hardRestart}
+          charges={this.props.charges}
+          notes={psaForm.get(PSA.NOTES)}
+          onExport={() => {
+            exportPDF(data,
+              selectedPretrialCase,
+              charges,
+              selectedPerson,
+              arrestOptions,
+              allChargesForPerson,
+              allSentencesForPerson,
+              allFTAs,
+              {
+                user: this.getStaffId(),
+                timestamp: toISODateTime(moment())
+              });
+          }} />
     );
   }
 
