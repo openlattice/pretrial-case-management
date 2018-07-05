@@ -4,21 +4,24 @@
 
 import React from 'react';
 
-import DatePicker from 'react-bootstrap-date-picker';
 import Immutable from 'immutable';
 import styled from 'styled-components';
 import qs from 'query-string';
 import uuid from 'uuid/v4';
 import moment from 'moment';
-import { Button, Col, FormControl } from 'react-bootstrap';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 
 import SelfieWebCam from '../../components/SelfieWebCam';
+import BasicButton from '../../components/buttons/BasicButton';
+import InfoButton from '../../components/buttons/InfoButton';
 import Checkbox from '../../components/controls/StyledCheckbox';
+import StyledInput from '../../components/controls/StyledInput';
+import StyledDatePicker from '../../components/controls/StyledDatePicker';
+import SearchableSelect from '../../components/controls/SearchableSelect';
 import { GENDERS, STATES } from '../../utils/consts/Consts';
 import { toISODate } from '../../utils/Utils';
-import { PaddedRow, StyledSelect, TitleLabel } from '../../utils/Layout';
+import { StyledFormWrapper, StyledSectionWrapper } from '../../utils/Layout';
 import { newPersonSubmitRequest } from './PersonActionFactory';
 import { clearForm } from '../psa/FormActionFactory';
 
@@ -47,52 +50,80 @@ import * as Routes from '../../core/router/Routes';
  * styled components
  */
 
-const ContainerOuterWrapper = styled.div`
+const FormSection = styled.div`
+  width: 100%;
+  padding: 20px 30px;
+  border-bottom: 1px solid #e1e1eb;
+
+  &:last-child {
+    margin-bottom: -30px;
+    border-bottom: none;
+  }
+`;
+
+const HeaderSection = styled(FormSection)`
+  padding-top: 0;
+  margin-top: -10px;
+  margin-bottom: 15px;
+`;
+
+const ButtonGroup = styled.div`
+  display: inline-flex;
+  width: 300px;
+  justify-content: space-between;
+  button {
+    width: 140px;
+  }
+
+  ${InfoButton} {
+    padding: 0;
+  }
+`;
+
+const PaddedRow = styled.div`
   display: flex;
-  justify-content: center;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
 `;
 
-const ContainerInnerWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  padding: 50px;
-  width: 980px;
+const UnpaddedRow = styled(PaddedRow)`
+  margin: 0;
 `;
 
-const FormWrapper = styled.div`
-  background-color: #fefefe;
-  border: 1px solid #e0e0e0;
-  display: flex;
-  flex-direction: column;
-  padding: 50px;
+const Header = styled.div`
+  font-family: 'Open Sans', sans-serif;
+  font-size: 18px;
+  color: #555e6f;
 `;
 
-const Title = styled.h1`
-  font-size: 28px;
-  font-weight: 500;
-  margin: 20px 0;
+const SubHeader = styled(Header)`
+  font-size: 16px;
+  margin-top: 15px;
 `;
 
-const Instructions = styled.div`
+const InputLabel = styled.span`
+  font-family: 'Open Sans', sans-serif;
   font-size: 14px;
-  font-style: italic;
+  color: #555e6f;
+  margin-bottom: 10px;
 `;
 
-const SectionHeader = styled.h2`
-  font-size: 20px;
-  font-weight: 500;
-  margin: 10px 0;
-`;
+const InputGroup = styled.div`
+  width: ${props => props.width};
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  padding: 0 15px;
 
-const RequiredTitleLabel = styled(TitleLabel)`
-  font-weight: bold;
-`;
+  &:first-child {
+    padding-left: 0;
+  }
 
-const CenteredSubmitButton = styled(Button).attrs({
-  type: 'submit'
-})`
-  align-self: center;
-  margin-top: 50px;
+  &:last-child {
+    padding-right: 0;
+  }
 `;
 
 const ErrorMessage = styled.div`
@@ -116,7 +147,8 @@ type Props = {
     search :string
   },
   isCreatingPerson :boolean,
-  createPersonError :boolean
+  createPersonError :boolean,
+  history :string[]
 }
 
 type State = {
@@ -141,7 +173,7 @@ const ETHNICITIES = [
   'Unknown',
   'Not Hispanic',
   'Hispanic'
-]
+];
 
 const RACES = [
   'American Indian or Alaska Native',
@@ -210,6 +242,10 @@ class NewPersonContainer extends React.Component<Props, State> {
     });
   }
 
+  handleOnSelectChange = (field, value) => {
+    this.setState({ [field]: value });
+  }
+
   handleOnChangeTakePicture = (event :SyntheticInputEvent<*>) => {
 
     this.setState({
@@ -259,176 +295,165 @@ class NewPersonContainer extends React.Component<Props, State> {
 
   getOptionsMap = valueList => valueList.map(value => <option key={value} value={value}>{value}</option>);
 
+  getAsMap = (valueList) => {
+    let options = Immutable.OrderedMap();
+    valueList.forEach((value) => {
+      options = options.set(value, value);
+    });
+    return options;
+  }
+
+  getSelect = (field, options, allowSearch) => (
+    <SearchableSelect
+        value={this.state[field]}
+        searchPlaceholder="Select"
+        onSelect={value => this.handleOnSelectChange(field, value)}
+        options={this.getAsMap(options)}
+        selectOnly={!allowSearch}
+        transparent
+        short />
+  )
+
+  renderInput = field => (
+    <StyledInput
+        name={field}
+        value={this.state[field]}
+        onChange={this.handleOnChangeInput} />
+  )
+
   render() {
-
-
-    const stateOptions = STATES.map(state => (
-      <option key={state} value={state}>{state}</option>
-    ));
-
     return (
-      <ContainerOuterWrapper>
-        <ContainerInnerWrapper>
-          <Title>Enter New Person Information</Title>
-          <Instructions>* = required field</Instructions>
-          <FormWrapper>
-            <div>
-              <SectionHeader>Personal Information</SectionHeader>
-              <PaddedRow>
-                <Col lg={4}>
-                  <RequiredTitleLabel>*Last Name</RequiredTitleLabel>
-                  <FormControl
-                      name={LAST_NAME_VALUE}
-                      value={this.state[LAST_NAME_VALUE]}
-                      onChange={this.handleOnChangeInput} />
-                </Col>
-                <Col lg={4}>
-                  <RequiredTitleLabel>*First Name</RequiredTitleLabel>
-                  <FormControl
-                      name={FIRST_NAME_VALUE}
-                      value={this.state[FIRST_NAME_VALUE]}
-                      onChange={this.handleOnChangeInput} />
-                </Col>
-                <Col lg={4}>
-                  <TitleLabel>Middle Name</TitleLabel>
-                  <FormControl
-                      name={MIDDLE_NAME_VALUE}
-                      value={this.state[MIDDLE_NAME_VALUE]}
-                      onChange={this.handleOnChangeInput} />
-                </Col>
-              </PaddedRow>
-              <PaddedRow>
-                <Col lg={4}>
-                  <RequiredTitleLabel>*Date of Birth</RequiredTitleLabel>
-                  <DatePicker
-                      value={this.state[DOB_VALUE]}
-                      onChange={this.handleOnChangeDateOfBirth} />
-                </Col>
-                <Col lg={4}>
-                  <TitleLabel>Gender</TitleLabel>
-                  <StyledSelect
-                      name={GENDER_VALUE}
-                      value={this.state[GENDER_VALUE]}
-                      onChange={this.handleOnChangeInput}>
-                    <option value="">Select</option>
-                    { this.getOptionsMap(GENDERS) }
-                  </StyledSelect>
-                </Col>
-                <Col lg={4}>
-                  <TitleLabel>Social Security Number</TitleLabel>
-                  <FormControl
-                      name={SSN_VALUE}
-                      value={this.state[SSN_VALUE]}
-                      onChange={this.handleOnChangeInput} />
-                </Col>
-              </PaddedRow>
-              <PaddedRow>
-                <Col lg={6}>
-                  <TitleLabel>Race</TitleLabel>
-                  <StyledSelect
-                      name={RACE_VALUE}
-                      value={this.state[RACE_VALUE]}
-                      onChange={this.handleOnChangeInput}>
-                    <option value="">Select</option>
-                    { this.getOptionsMap(RACES) }
-                  </StyledSelect>
-                </Col>
-                <Col lg={6}>
-                  <TitleLabel>Ethnicity</TitleLabel>
-                  <StyledSelect
-                      name={ETHNICITY_VALUE}
-                      value={this.state[ETHNICITY_VALUE]}
-                      onChange={this.handleOnChangeInput}>
-                    <option value="">Select</option>
-                    { this.getOptionsMap(ETHNICITIES) }
-                  </StyledSelect>
-                </Col>
-              </PaddedRow>
-            </div>
-            <div>
-              <SectionHeader>Mailing Address</SectionHeader>
-              <PaddedRow>
-                <Col lg={12}>
-                  <TitleLabel>Address</TitleLabel>
-                  <FormControl
-                      name={ADDRESS_VALUE}
-                      value={this.state[ADDRESS_VALUE]}
-                      onChange={this.handleOnChangeInput} />
-                </Col>
-              </PaddedRow>
-              <PaddedRow>
-                <Col lg={6}>
-                  <TitleLabel>City</TitleLabel>
-                  <FormControl
-                      name={CITY_VALUE}
-                      value={this.state[CITY_VALUE]}
-                      onChange={this.handleOnChangeInput} />
-                </Col>
-                <Col lg={6}>
-                  <TitleLabel>State</TitleLabel>
-                  <StyledSelect
-                      name={STATE_VALUE}
-                      value={this.state[STATE_VALUE]}
-                      onChange={this.handleOnChangeInput}>
-                    <option value="">Select</option>
-                    { this.getOptionsMap(STATES) }
-                  </StyledSelect>
-                </Col>
-              </PaddedRow>
-              <PaddedRow>
-                <Col lg={6}>
-                  <TitleLabel>Zip</TitleLabel>
-                  <FormControl
-                      name={ZIP_VALUE}
-                      value={this.state[ZIP_VALUE]}
-                      onChange={this.handleOnChangeInput} />
-                </Col>
-                <Col lg={6}>
-                  <TitleLabel>Country</TitleLabel>
-                  <FormControl
-                      name={COUNTRY_VALUE}
-                      value={this.state[COUNTRY_VALUE]}
-                      onChange={this.handleOnChangeInput} />
-                </Col>
-              </PaddedRow>
-            </div>
-            <div>
-              <SectionHeader>Picture</SectionHeader>
-              <Checkbox
-                  value=""
-                  name="selfie"
-                  label="Take a picture with your webcam"
-                  checked={this.state.showSelfieWebCam}
-                  onChange={this.handleOnChangeTakePicture} />
-              {
-                !this.state.showSelfieWebCam
-                  ? null
-                  : (
-                    <SelfieWebCam
-                        onSelfieCapture={this.handleOnSelfieCapture}
-                        ref={(element) => {
-                          this.selfieWebCam = element;
-                        }} />
-                  )
-              }
-            </div>
-            {
-              this.isReadyToSubmit()
-                ? (
-                  <CenteredSubmitButton onClick={this.submitNewPerson}>Submit</CenteredSubmitButton>
-                )
-                : (
-                  <CenteredSubmitButton disabled>Submit</CenteredSubmitButton>
-                )
-            }
-            {
-              this.props.createPersonError
-                ? <ErrorMessage>An error occurred: unable to create new person.</ErrorMessage>
-                : null
-            }
-          </FormWrapper>
-        </ContainerInnerWrapper>
-      </ContainerOuterWrapper>
+      <StyledFormWrapper>
+        <StyledSectionWrapper>
+          <HeaderSection>
+            <UnpaddedRow>
+              <Header>Enter New Person Information</Header>
+              <ButtonGroup>
+                <BasicButton onClick={() => this.props.history.push(Routes.CREATE_FORMS)}>Discard</BasicButton>
+                <InfoButton onClick={this.submitNewPerson} disabled={!this.isReadyToSubmit()}>Submit</InfoButton>
+              </ButtonGroup>
+            </UnpaddedRow>
+          </HeaderSection>
+
+          <FormSection>
+            <PaddedRow>
+              <Header>Personal Information</Header>
+            </PaddedRow>
+
+            <PaddedRow>
+              <SubHeader>Legal Name*</SubHeader>
+            </PaddedRow>
+
+            <PaddedRow>
+              <InputGroup width="33%">
+                <InputLabel>Last name*</InputLabel>
+                {this.renderInput(LAST_NAME_VALUE)}
+              </InputGroup>
+              <InputGroup width="33%">
+                <InputLabel>First name*</InputLabel>
+                {this.renderInput(FIRST_NAME_VALUE)}
+              </InputGroup>
+              <InputGroup width="33%">
+                <InputLabel>Middle name</InputLabel>
+                {this.renderInput(MIDDLE_NAME_VALUE)}
+              </InputGroup>
+            </PaddedRow>
+
+            <PaddedRow>
+              <InputGroup width="33%">
+                <InputLabel>Date of birth*</InputLabel>
+                <StyledDatePicker
+                    value={this.state[DOB_VALUE]}
+                    onChange={this.handleOnChangeDateOfBirth} />
+              </InputGroup>
+              <InputGroup width="33%">
+                <InputLabel>Gender</InputLabel>
+                {this.getSelect(GENDER_VALUE, GENDERS)}
+              </InputGroup>
+              <InputGroup width="33%">
+                <InputLabel>Social Security #</InputLabel>
+                {this.renderInput(SSN_VALUE)}
+              </InputGroup>
+            </PaddedRow>
+
+            <PaddedRow>
+              <InputGroup width="50%">
+                <InputLabel>Race</InputLabel>
+                {this.getSelect(RACE_VALUE, RACES)}
+              </InputGroup>
+              <InputGroup width="50%">
+                <InputLabel>Ethnicity</InputLabel>
+                {this.getSelect(ETHNICITY_VALUE, ETHNICITIES)}
+              </InputGroup>
+            </PaddedRow>
+          </FormSection>
+
+          <FormSection>
+            <PaddedRow>
+              <SubHeader>Mailing address</SubHeader>
+            </PaddedRow>
+
+            <PaddedRow>
+              <InputGroup width="66%">
+                <InputLabel>Address</InputLabel>
+                {this.renderInput(ADDRESS_VALUE)}
+              </InputGroup>
+              <InputGroup width="33%">
+                <InputLabel>City</InputLabel>
+                {this.renderInput(CITY_VALUE)}
+              </InputGroup>
+            </PaddedRow>
+
+            <PaddedRow>
+              <InputGroup width="33%">
+                <InputLabel>State</InputLabel>
+                {this.getSelect(STATE_VALUE, STATES, true)}
+              </InputGroup>
+              <InputGroup width="33%">
+                <InputLabel>Country</InputLabel>
+                {this.renderInput(COUNTRY_VALUE)}
+              </InputGroup>
+              <InputGroup width="33%">
+                <InputLabel>ZIP code</InputLabel>
+                {this.renderInput(ZIP_VALUE)}
+              </InputGroup>
+            </PaddedRow>
+          </FormSection>
+
+          <FormSection>
+            <PaddedRow>
+              <SubHeader>Picture</SubHeader>
+            </PaddedRow>
+
+            <UnpaddedRow>
+              <InputGroup width="100%">
+                <Checkbox
+                    value=""
+                    name="selfie"
+                    label="Take a picture with your webcam"
+                    checked={this.state.showSelfieWebCam}
+                    onChange={this.handleOnChangeTakePicture} />
+                {
+                  !this.state.showSelfieWebCam
+                    ? null
+                    : (
+                      <SelfieWebCam
+                          onSelfieCapture={this.handleOnSelfieCapture}
+                          ref={(element) => {
+                            this.selfieWebCam = element;
+                          }} />
+                    )
+                }
+              </InputGroup>
+            </UnpaddedRow>
+          </FormSection>
+          {
+            this.props.createPersonError
+              ? <ErrorMessage>An error occurred: unable to create new person.</ErrorMessage>
+              : null
+          }
+        </StyledSectionWrapper>
+      </StyledFormWrapper>
     );
   }
 }
