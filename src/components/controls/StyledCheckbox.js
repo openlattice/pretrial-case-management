@@ -11,8 +11,10 @@ const Control = styled.label`
   padding: 0 10px 0 30px;
   margin-bottom: 15px;
   cursor: pointer;
-  font-size: 16px;
+  font-family: 'Open Sans', sans-serif;
+  font-size: 14px;
   font-weight: normal;
+  color: #8e929b;
 
   input {
     position: absolute;
