@@ -54,7 +54,7 @@ type Props = {
     }) => void,
     checkPSAPermissions :() => void,
     submit :(value :{ config :Object, values :Object}) => void,
-    clearForm :() => void,
+    clearSubmit :() => void,
   },
   psaNeighborsById :Immutable.Map<*, *>,
   caseHistory :Immutable.List<*>,
@@ -94,7 +94,7 @@ class PSAReviewRowList extends React.Component<Props, State> {
   }
 
   componentWillUnmount() {
-    this.props.actions.clearForm();
+    this.props.actions.clearSubmit();
   }
 
   renderRow = (scoreId, scores) => {
