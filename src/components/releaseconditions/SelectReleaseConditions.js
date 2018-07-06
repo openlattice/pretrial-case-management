@@ -4,6 +4,7 @@
 
 import React from 'react';
 import Immutable from 'immutable';
+import FontAwesome from 'react-fontawesome';
 import styled from 'styled-components';
 import moment from 'moment';
 import randomUUID from 'uuid/v4';
@@ -11,6 +12,7 @@ import randomUUID from 'uuid/v4';
 import RadioButton from '../controls/StyledRadioButton';
 import CheckboxButton from '../controls/StyledCheckboxButton';
 import StyledInput from '../controls/StyledInput';
+import SearchableSelect from '../controls/SearchableSelect';
 import InfoButton from '../buttons/InfoButton';
 import releaseConditionsConfig from '../../config/formconfig/ReleaseConditionsConfig';
 import { RELEASE_CONDITIONS, LIST_FIELDS, ID_FIELD_NAMES, FORM_IDS } from '../../utils/consts/Consts';
@@ -24,7 +26,8 @@ import {
   CHECKIN_FREQUENCIES,
   C_247_LABEL,
   C_247_TYPES,
-  C_247_MAPPINGS
+  C_247_MAPPINGS,
+  NO_CONTACT_TYPES
 } from '../../utils/consts/ReleaseConditionConsts';
 
 const { RELEASE_CONDITIONS_FIELD } = LIST_FIELDS;
@@ -37,7 +40,9 @@ const {
   BOND_AMOUNT,
   CONDITIONS,
   CHECKIN_FREQUENCY,
-  C247_TYPES
+  C247_TYPES,
+  OTHER_CONDITION_TEXT,
+  NO_CONTACT_PEOPLE
 } = RELEASE_CONDITIONS;
 
 const NO_RELEASE_CONDITION = 'No release';
@@ -54,6 +59,11 @@ const Wrapper = styled.div`
     font-weight: 700;
     color: #555e6f;
   }
+`;
+
+const InlineInput = styled(StyledInput)`
+  width: 80%;
+  margin-left: 10px;
 `;
 
 const ColumnWrapper = styled.div`
@@ -115,6 +125,30 @@ const Dollar = styled.span`
   color: #8e929b;
 `;
 
+const InvisibleButton = styled.button`
+  border: none;
+`;
+
+const NoContactPeopleWrapper = styled.div`
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 10px;
+
+  th {
+    text-align: center;
+    padding-bottom: 10px;
+    font-family: 'Open Sans', sans-serif;
+    font-size: 14px;
+    color: #555e6f;
+  }
+`;
+
+const BLANK_PERSON_ROW = {
+  [PROPERTY_TYPES.PERSON_TYPE]: null,
+  [PROPERTY_TYPES.PERSON_NAME]: ''
+};
+
 type Props = {
   dmfId :string,
   psaId :string,
@@ -135,7 +169,9 @@ type State = {
   bondAmount :string,
   conditions :string[],
   checkinFrequency :?string,
-  c247Types :string[]
+  c247Types :string[],
+  otherConditionText :string,
+  noContactPeople :Object[]
 };
 
 class SelectReleaseConditions extends React.Component<Props, State> {
@@ -176,6 +212,15 @@ class SelectReleaseConditions extends React.Component<Props, State> {
         return frequency ? `${planType} ${frequency}` : planType;
       })
 
+      const noContactPeople = conditionsByType.get(CONDITION_LIST.NO_CONTACT, Immutable.List()).map((condition) => {
+        const personType = condition.getIn([PROPERTY_TYPES.PERSON_TYPE, 0]);
+        const personName = condition.getIn([PROPERTY_TYPES.PERSON_NAME, 0]);
+        return {
+          [PROPERTY_TYPES.PERSON_TYPE]: personType,
+          [PROPERTY_TYPES.PERSON_NAME]: personName
+        };
+      })
+
       return {
         [OUTCOME]: defaultDMF.getIn([PROPERTY_TYPES.OUTCOME, 0]),
         [OTHER_OUTCOME_TEXT]: defaultDMF.getIn([PROPERTY_TYPES.OTHER_TEXT, 0], ''),
@@ -185,6 +230,8 @@ class SelectReleaseConditions extends React.Component<Props, State> {
         [CONDITIONS]: conditionsByType.keySeq().toJS(),
         [CHECKIN_FREQUENCY]: conditionsByType.getIn([CONDITION_LIST.CHECKINS, 0, PROPERTY_TYPES.FREQUENCY, 0]),
         [C247_TYPES]: c247Types,
+        [OTHER_CONDITION_TEXT]: conditionsByType.getIn([CONDITION_LIST.OTHER, 0, PROPERTY_TYPES.OTHER_TEXT, 0], ''),
+        [NO_CONTACT_PEOPLE]: noContactPeople,
         disabled: true
       };
     }
@@ -197,6 +244,8 @@ class SelectReleaseConditions extends React.Component<Props, State> {
       [CONDITIONS]: [],
       [CHECKIN_FREQUENCY]: null,
       [C247_TYPES]: [],
+      [OTHER_CONDITION_TEXT]: '',
+      [NO_CONTACT_PEOPLE]: [Object.assign({}, BLANK_PERSON_ROW)],
       disabled: false
     };
   }
@@ -224,6 +273,12 @@ class SelectReleaseConditions extends React.Component<Props, State> {
       }
       if (value === CONDITION_LIST.C_247) {
         state[C247_TYPES] = [];
+      }
+      if (value === CONDITION_LIST.OTHER) {
+        state[OTHER_CONDITION_TEXT] = '';
+      }
+      if (value === CONDITION_LIST.NO_CONTACT) {
+        state[NO_CONTACT_PEOPLE] = [Object.assign({}, BLANK_PERSON_ROW)]
       }
     }
     state.conditions = conditions;
@@ -261,6 +316,8 @@ class SelectReleaseConditions extends React.Component<Props, State> {
           state[CONDITIONS] = [];
           state[CHECKIN_FREQUENCY] = null;
           state[C247_TYPES] = [];
+          state[OTHER_CONDITION_TEXT] = '';
+          state[NO_CONTACT_PEOPLE] = [Object.assign({}, BLANK_PERSON_ROW)]
         }
         break;
       }
@@ -323,7 +380,8 @@ class SelectReleaseConditions extends React.Component<Props, State> {
       bondAmount,
       conditions,
       checkinFrequency,
-      c247Types
+      c247Types,
+      otherConditionText
     } = this.state;
     if (!this.isReadyToSubmit()) {
       return;
@@ -367,12 +425,23 @@ class SelectReleaseConditions extends React.Component<Props, State> {
           conditionObj[PROPERTY_TYPES.FREQUENCY] = checkinFrequency;
         }
 
+        if (condition === CONDITION_LIST.OTHER) {
+          conditionObj[PROPERTY_TYPES.OTHER_TEXT] = otherConditionText;
+        }
+
         if (condition === CONDITION_LIST.C_247) {
           c247Types.forEach((c247Type) => {
             conditionsField.push(Object.assign({}, conditionObj, C_247_MAPPINGS[c247Type], {
               [PROPERTY_TYPES.GENERAL_ID]: randomUUID()
             }));
           });
+        }
+        else if (condition === CONDITION_LIST.NO_CONTACT) {
+          this.cleanNoContactPeopleList().forEach(noContactPerson => {
+            conditionsField.push(Object.assign({}, conditionObj, noContactPerson, {
+              [PROPERTY_TYPES.GENERAL_ID]: randomUUID()
+            }));
+          })
         }
         else {
           conditionsField.push(conditionObj);
@@ -388,6 +457,10 @@ class SelectReleaseConditions extends React.Component<Props, State> {
     });
   }
 
+  cleanNoContactPeopleList = () => {
+    return this.state.noContactPeople.filter(obj => obj[PROPERTY_TYPES.PERSON_TYPE] && obj[PROPERTY_TYPES.PERSON_NAME].length);
+  }
+
   isReadyToSubmit = () => {
     const {
       disabled,
@@ -398,7 +471,9 @@ class SelectReleaseConditions extends React.Component<Props, State> {
       bondAmount,
       conditions,
       checkinFrequency,
-      c247Types
+      c247Types,
+      otherConditionText,
+      noContactPeople
     } = this.state;
 
     if (
@@ -411,11 +486,84 @@ class SelectReleaseConditions extends React.Component<Props, State> {
       || ((bondType === BOND_TYPES.CASH_ONLY || bondType === BOND_TYPES.CASH_SURETY) && !bondAmount.length)
       || (conditions.includes(CONDITION_LIST.CHECKINS) && !checkinFrequency)
       || (conditions.includes(CONDITION_LIST.C_247) && !c247Types.length)
+      || (conditions.includes(CONDITION_LIST.OTHER) && !otherConditionText.length)
+      || (conditions.includes(CONDITION_LIST.NO_CONTACT) && !this.cleanNoContactPeopleList().length)
     ) {
       return false;
     }
 
     return true;
+  }
+
+  handleOnListChange = (field, value, index) => {
+    const noContactPeople = this.state[NO_CONTACT_PEOPLE];
+    noContactPeople[index][field] = value;
+    if (index === noContactPeople.length - 1) {
+      noContactPeople.push({
+        [PROPERTY_TYPES.PERSON_TYPE]: null,
+        [PROPERTY_TYPES.PERSON_NAME]: ''
+      });
+    }
+    this.setState({ [NO_CONTACT_PEOPLE]: noContactPeople });
+  }
+
+  removePersonRow = (index) => {
+    const noContactPeople = this.state[NO_CONTACT_PEOPLE];
+    if (noContactPeople.length > 1) {
+      noContactPeople.splice(index, 1);
+    }
+    else {
+      noContactPeople[0] = {
+        [PROPERTY_TYPES.PERSON_TYPE]: null,
+        [PROPERTY_TYPES.PERSON_NAME]: ''
+      };
+    }
+    this.setState({ [NO_CONTACT_PEOPLE]: noContactPeople });
+  }
+
+  renderNoContactPeople = () => {
+    let personTypeOptions = Immutable.OrderedMap();
+    Object.values(NO_CONTACT_TYPES).forEach((val) => {
+      personTypeOptions = personTypeOptions.set(val, val);
+    });
+    return (
+      <NoContactPeopleWrapper>
+        <table>
+          <tbody>
+            <tr>
+              <th>Person Type</th>
+              <th>Person Name</th>
+            </tr>
+            {this.state[NO_CONTACT_PEOPLE].map((person, index) => (
+              <tr key={index}>
+                <td>
+                  <SearchableSelect
+                      value={person[PROPERTY_TYPES.PERSON_TYPE]}
+                      searchPlaceholder="Select"
+                      onSelect={value => this.handleOnListChange(PROPERTY_TYPES.PERSON_TYPE, value, index)}
+                      options={personTypeOptions}
+                      disabled={this.state.disabled}
+                      selectOnly
+                      transparent
+                      short />
+                </td>
+                <td>
+                  <StyledInput
+                      value={person[PROPERTY_TYPES.PERSON_NAME]}
+                      onChange={e => this.handleOnListChange(PROPERTY_TYPES.PERSON_NAME, e.target.value, index)}
+                      disabled={this.state.disabled} />
+                </td>
+                <td>
+                  <InvisibleButton onClick={() => this.removePersonRow(index)}>
+                    <FontAwesome name="times" />
+                  </InvisibleButton>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </NoContactPeopleWrapper>
+    );
   }
 
   render() {
@@ -466,6 +614,28 @@ class SelectReleaseConditions extends React.Component<Props, State> {
               }
               <h1>Conditions</h1>
               <Row>
+                {this.renderConditionCheckbox(CONDITION_LIST.CONTACT_WITH_LAWYER)}
+                {this.renderConditionCheckbox(CONDITION_LIST.MAKE_ALL_COURT_APPEARANCES)}
+              </Row>
+              <Row>
+                {this.renderConditionCheckbox(CONDITION_LIST.NO_WEAPONS)}
+                {this.renderConditionCheckbox(CONDITION_LIST.NO_ALCOHOL)}
+                {this.renderConditionCheckbox(CONDITION_LIST.NO_DRUGS_WITHOUT_PERSCRIPTION)}
+                {this.renderConditionCheckbox(CONDITION_LIST.GOOD_BEHAVIOR)}
+              </Row>
+              <Row>
+                {this.renderConditionCheckbox(CONDITION_LIST.PRE_SENTENCE_EM)}
+                {this.renderConditionCheckbox(CONDITION_LIST.NO_CONTACT_WITH_MINORS)}
+                {this.renderConditionCheckbox(CONDITION_LIST.NO_CONTACT)}
+              </Row>
+              {
+                this.state[CONDITIONS].includes(CONDITION_LIST.NO_CONTACT) ? this.renderNoContactPeople() : null
+              }
+              <Row>
+                {this.renderConditionCheckbox(CONDITION_LIST.NO_DRIVING_WITHOUT_VALID_LICENSE)}
+                {this.renderConditionCheckbox(CONDITION_LIST.COMPLY)}
+              </Row>
+              <Row>
                 {this.renderConditionCheckbox(CONDITION_LIST.CHECKINS)}
                 {
                   this.state[CONDITIONS].includes(CONDITION_LIST.CHECKINS) ?
@@ -491,6 +661,17 @@ class SelectReleaseConditions extends React.Component<Props, State> {
                   </ColumnWrapper>
                 ) : null
               }
+              <Row>
+                {this.renderConditionCheckbox(CONDITION_LIST.OTHER)}
+                {
+                  this.state[CONDITIONS].includes(CONDITION_LIST.OTHER) ? (
+                    <InlineInput
+                        name={OTHER_CONDITION_TEXT}
+                        value={this.state[OTHER_CONDITION_TEXT]}
+                        onChange={this.handleInputChange} />
+                  ) : null
+                }
+              </Row>
             </div>
           )
         }

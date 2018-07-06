@@ -271,7 +271,9 @@ export const RELEASE_CONDITIONS = {
   BOND_AMOUNT: 'bondAmount',
   CONDITIONS: 'conditions',
   CHECKIN_FREQUENCY: 'checkinFrequency',
-  C247_TYPES: 'c247Types'
+  C247_TYPES: 'c247Types',
+  OTHER_CONDITION_TEXT: 'otherConditionText',
+  NO_CONTACT_PEOPLE: 'noContactPeople'
 };
 
 export const TABLE_WIDTH = 1000;

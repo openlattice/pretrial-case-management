@@ -4,7 +4,6 @@
 
 import React from 'react';
 import Immutable from 'immutable';
-import FontAwesome from 'react-fontawesome';
 import styled from 'styled-components';
 import moment from 'moment';
 import randomUUID from 'uuid/v4';
