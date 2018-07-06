@@ -15,6 +15,14 @@ export const CHARGE_TYPES = {
 
 export const CHARGE_VALUES = {
   [CHARGE_TYPES.STEP_TWO]: [{
+    [STATUTE]: '22-19-1',
+    [DESCRIPTION]: 'Aggravated Kidnapping With Serious Injury(FB)'
+  },
+  {
+    [STATUTE]: '22-16-4',
+    [DESCRIPTION]: 'Attempted Murder (F2)'
+  },
+  {
     [STATUTE]: '22-11A-2',
     [DESCRIPTION]: 'Escape by prisoner - 1st Degree (F4)'
   },
@@ -27,32 +35,24 @@ export const CHARGE_VALUES = {
     [DESCRIPTION]: 'Fetal Homicide(FB)'
   },
   {
-    [STATUTE]: '22-16-15',
-    [DESCRIPTION]: 'Manslaughter in First Degree-Heat of Passion(FC)'
+    [STATUTE]: '22-19-1',
+    [DESCRIPTION]: 'Kidnapping 1st Degree(FC)'
   },
   {
-    [STATUTE]: '22-16-4',
-    [DESCRIPTION]: 'Attempted Murder (F2)'
+    [STATUTE]: '22-16-15',
+    [DESCRIPTION]: 'Manslaughter in First Degree-Heat of Passion(FC)'
   },
   {
     [STATUTE]: '22-16-4',
     [DESCRIPTION]: 'Murder in First Degree/Felony Murder(FA)'
   },
   {
-    [STATUTE]: '22-16-5',
-    [DESCRIPTION]: 'Premeditated Design to Effect the Death Defined'
-  },
-  {
     [STATUTE]: '22-16-7',
     [DESCRIPTION]: 'Murder In Second Degree-Depraved Mind(FB)'
   },
   {
-    [STATUTE]: '22-19-1',
-    [DESCRIPTION]: 'Aggravated Kidnapping With Serious Injury(FB)'
-  },
-  {
-    [STATUTE]: '22-19-1',
-    [DESCRIPTION]: 'Kidnapping 1st Degree(FC)'
+    [STATUTE]: '22-16-5',
+    [DESCRIPTION]: 'Premeditated Design to Effect the Death Defined'
   },
   {
     [STATUTE]: '22-22-1',
@@ -148,12 +148,24 @@ export const CHARGE_VALUES = {
     [DESCRIPTION]: 'Commit or Attempt to Commit Felony with Firearm(F2)'
   },
   {
+    [STATUTE]: '22-14-12',
+    [DESCRIPTION]: 'Commission of felony while armed with firearms--Felony'
+  },
+  {
     [STATUTE]: '22-14-20',
     [DESCRIPTION]: 'Discharge of Firearm at Structure/Motor Vehicle (F3)'
   },
   {
+    [STATUTE]: '22-14-21',
+    [DESCRIPTION]: 'Discharge of firearm from moving motor vehicle in municipality - felony'
+  },
+  {
     [STATUTE]: '22-14-8',
     [DESCRIPTION]: 'Concealed Dangerous Weapon with Intent to do Felony(F5)'
+  },
+  {
+    [STATUTE]: '22-14-8',
+    [DESCRIPTION]: 'Concealment of a weapon with intent to commit felony'
   },
   {
     [STATUTE]: '22-16-20',
@@ -174,6 +186,10 @@ export const CHARGE_VALUES = {
   {
     [STATUTE]: '22-16-41',
     [DESCRIPTION]: 'Vehicular Homicide (F3)'
+  },
+  {
+    [STATUTE]: '22-17-6',
+    [DESCRIPTION]: 'Intentional Killing of Human Fetus by Unauthorized Injury to Mother'
   },
   {
     [STATUTE]: '22-18-1',
@@ -368,10 +384,6 @@ export const CHARGE_VALUES = {
     [DESCRIPTION]: 'Robbery in the 2nd Degree(F4)'
   },
   {
-    [STATUTE]: '22-32-1',
-    [DESCRIPTION]: 'Burglary in First Degree Inflict Injury on Another, Possess Weapon, or Nighttime(F2)'
-  },
-  {
     [STATUTE]: '22-33-3',
     [DESCRIPTION]: 'Arson-3rd Degree (REPEALED)'
   },
@@ -434,10 +446,6 @@ export const CHARGE_VALUES = {
   {
     [STATUTE]: '25-10-43',
     [DESCRIPTION]: 'Violation of No Contact with DV Victim (M1)'
-  },
-  {
-    [STATUTE]: '22-17-6',
-    [DESCRIPTION]: 'Intentional Killing of Human Fetus by Unauthorized Injury to Mother'
   }],
 
   [CHARGE_TYPES.ALL_VIOLENT]: [{
@@ -621,6 +629,10 @@ export const CHARGE_VALUES = {
     [DESCRIPTION]: 'False Imprisonment (M1)'
   },
   {
+    [STATUTE]: '22-30-7',
+    [DESCRIPTION]: 'Felony classes of robbery'
+  },
+  {
     [STATUTE]: '22-18-37',
     [DESCRIPTION]: 'Female Genital Mutilation - Felony'
   },
@@ -797,7 +809,15 @@ export const CHARGE_VALUES = {
     [DESCRIPTION]: 'Robbery in the 2nd Degree(F4)'
   },
   {
+    [STATUTE]: '22-30-7',
+    [DESCRIPTION]: 'Robbery in the 2nd Degree(F4)'
+  },
+  {
     [STATUTE]: '22-30-6',
+    [DESCRIPTION]: 'Robbery In The First Degree(F2)'
+  },
+  {
+    [STATUTE]: '22-30-7',
     [DESCRIPTION]: 'Robbery In The First Degree(F2)'
   },
   {

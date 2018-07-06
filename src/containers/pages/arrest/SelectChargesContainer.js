@@ -128,8 +128,8 @@ export default class SelectChargesContainer extends React.Component<Props, State
     const result = [];
     chargeList.forEach((charge) => {
       result.push({
-        [STATUTE]: charge.getIn([PROPERTY_TYPES.CHARGE_STATUTE, 0]),
-        [DESCRIPTION]: charge.getIn([PROPERTY_TYPES.CHARGE_DESCRIPTION, 0]),
+        [STATUTE]: charge.getIn([PROPERTY_TYPES.CHARGE_STATUTE, 0], '[no statute]'),
+        [DESCRIPTION]: charge.getIn([PROPERTY_TYPES.CHARGE_DESCRIPTION, 0], '[no description]'),
         [DEGREE]: charge.getIn([PROPERTY_TYPES.CHARGE_DEGREE, 0]),
         [DEGREE_SHORT]: charge.getIn([PROPERTY_TYPES.CHARGE_LEVEL, 0])
       });

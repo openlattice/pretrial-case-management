@@ -4,7 +4,7 @@
 
 import Immutable from 'immutable';
 
-import { submit } from './SubmitActionFactory';
+import { CLEAR_SUBMIT, submit } from './SubmitActionFactory';
 import { CLEAR_FORM } from '../../containers/psa/FormActionFactory';
 
 const INITIAL_STATE :Immutable.Map<*, *> = Immutable.Map().withMutations((map :Immutable.Map<*, *>) => {
@@ -30,6 +30,7 @@ function submitReducer(state :Immutable.Map<*, *> = INITIAL_STATE, action :Objec
       });
     }
 
+    case CLEAR_SUBMIT:
     case CLEAR_FORM:
       return INITIAL_STATE;
 
