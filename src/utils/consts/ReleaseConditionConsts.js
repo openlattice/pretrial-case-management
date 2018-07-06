@@ -21,7 +21,19 @@ export const BOND_TYPES = {
 
 export const CONDITION_LIST = {
   C_247: '24/7 Project',
-  CHECKINS: 'Check-in'
+  CHECKINS: 'Check-in',
+  NO_WEAPONS: 'No weapons',
+  NO_ALCOHOL: 'No alcohol',
+  GOOD_BEHAVIOR: 'Good behavior',
+  NO_CONTACT_WITH_MINORS: 'No contact with persons under eighteen years of age',
+  NO_DRIVING_WITHOUT_VALID_LICENSE: 'No driving without a valid license and insurance',
+  NO_DRUGS_WITHOUT_PERSCRIPTION: 'No drugs without a valid prescription',
+  COMPLY: 'Comply with probation/parole',
+  PRE_SENTENCE_EM: 'Pre-sentence EM',
+  CONTACT_WITH_LAWYER: 'Stay in contact with your lawyer',
+  MAKE_ALL_COURT_APPEARANCES: 'Make all court appearances',
+  NO_CONTACT: 'No contact with',
+  OTHER: 'Other'
 };
 
 export const CHECKIN_FREQUENCIES = {
@@ -65,4 +77,11 @@ export const C_247_MAPPINGS = {
     [PROPERTY_TYPES.PLAN_TYPE]: 'UA',
     [PROPERTY_TYPES.FREQUENCY]: '1x per week (Wed.)'
   }
+};
+
+export const NO_CONTACT_TYPES = {
+  VICTIM: 'Victim',
+  VICTIM_FAMILY: 'Victim\'s family',
+  WITNESS: 'Witness',
+  CO_DEFENDANT: 'Co-defendant'
 };
