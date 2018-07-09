@@ -13,11 +13,13 @@ import BasicButton from '../../../components/buttons/BasicButton';
 import SecondaryButton from '../../../components/buttons/SecondaryButton';
 import SearchableSelect from '../../../components/controls/SearchableSelect';
 import DateTimePicker from '../../../components/controls/StyledDateTimePicker';
-import AllChargesList from '../../../utils/consts/AllChargesList';
+import MinnehahaChargesList from '../../../utils/consts/MinnehahaChargesList';
+import PenningtonChargesList from '../../../utils/consts/PenningtonChargesList';
 import QUALIFIERS from '../../../utils/consts/QualifierConsts';
 import { CHARGE } from '../../../utils/consts/Consts';
 import type { Charge } from '../../../utils/consts/Consts';
 import { PROPERTY_TYPES } from '../../../utils/consts/DataModelConsts';
+import { DOMAIN } from '../../../utils/consts/ReportDownloadTypes';
 import { toISODateTime } from '../../../utils/Utils';
 
 import {
@@ -104,7 +106,8 @@ type Props = {
   defaultCharges :Immutable.List<*>,
   onSubmit :(pretrialCase :Immutable.Map<*, *>, charges :Immutable.List<*>) => void,
   nextPage :() => void,
-  prevPage :() => void
+  prevPage :() => void,
+  county :string
 };
 
 type State = {
@@ -217,7 +220,7 @@ export default class SelectChargesContainer extends React.Component<Props, State
 
   formatChargeOptions = () => {
     let options = Immutable.Map();
-    AllChargesList.forEach((charge) => {
+    (this.props.county === DOMAIN.PENNINGTON ? PenningtonChargesList : MinnehahaChargesList).forEach((charge) => {
       options = options.set(this.formatCharge(charge), charge);
     });
     return options;
