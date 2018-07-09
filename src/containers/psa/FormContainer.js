@@ -8,6 +8,7 @@ import Immutable from 'immutable';
 import styled from 'styled-components';
 import randomUUID from 'uuid/v4';
 import moment from 'moment';
+import qs from 'query-string';
 import { AuthUtils } from 'lattice-auth';
 import { Button } from 'react-bootstrap';
 import { connect } from 'react-redux';
@@ -51,6 +52,7 @@ import {
 import { tryAutofillFields } from '../../utils/AutofillUtils';
 import { CONTEXT, DMF, ID_FIELD_NAMES, NOTES, PSA, PSA_STATUSES, SORT_TYPES } from '../../utils/consts/Consts';
 import { PROPERTY_TYPES, ENTITY_SETS } from '../../utils/consts/DataModelConsts';
+import { DOMAIN } from '../../utils/consts/ReportDownloadTypes';
 
 const { PEOPLE } = ENTITY_SETS;
 
@@ -68,22 +70,6 @@ const LoadingText = styled.div`
   color: #555e6f;
   margin: 20px;
   display: inline-flex;
-`;
-
-const Status = styled.div`
-  width: 100%;
-  text-align: center;
-  margin: 20px;
-  font-size: 20px;
-  font-weight: bold;
-`;
-
-const Success = styled(Status)`
-  color: green;
-`;
-
-const Failure = styled(Status)`
-  color: red;
 `;
 
 const Header = styled.h1`
@@ -300,10 +286,31 @@ class Form extends React.Component<Props, State> {
     this.redirectToFirstPageIfNecessary();
   }
 
+  loadContextParams = () => {
+    const hashSplit = window.location.hash.split('?');
+    if (hashSplit.length > 1) {
+      const params = qs.parse(hashSplit[1]);
+      if (params.context) {
+        const newValues = Immutable.Map().set(DMF.COURT_OR_BOOKING, params.context);
+        this.props.actions.setPSAValues({ newValues });
+        return true;
+      }
+    }
+    return false;
+  }
+
   redirectToFirstPageIfNecessary = () => {
+    const { psaForm, history } = this.props;
     const { scoresWereGenerated } = this.state;
-    if ((!this.props.selectedPerson.size || !scoresWereGenerated) && !window.location.href.endsWith('1')) {
-      this.props.history.push(`${Routes.PSA_FORM}/1`);
+    const loadedContextParams = this.loadContextParams();
+    if (loadedContextParams) {
+      history.push(`${Routes.PSA_FORM}/1`);
+    }
+    else if (!psaForm.get(DMF.COURT_OR_BOOKING)) {
+      history.push(Routes.DASHBOARD);
+    }
+    else if ((!this.props.selectedPerson.size || !scoresWereGenerated) && !window.location.href.endsWith('1')) {
+      history.push(`${Routes.PSA_FORM}/1`);
     }
   }
 
@@ -576,6 +583,7 @@ class Form extends React.Component<Props, State> {
       numCasesLoaded,
       entitySetLookup,
       arrestOptions,
+      psaForm,
       actions
     } = this.props;
     if (isLoadingCases && !isLoadingNeighbors) {
@@ -601,7 +609,8 @@ class Form extends React.Component<Props, State> {
       return <LoadingSpinner />;
     }
 
-    const pendingPSAs = this.state.skipClosePSAs ? null : this.getPendingPSAs();
+    const pendingPSAs = (this.state.skipClosePSAs || psaForm.get(DMF.COURT_OR_BOOKING) === CONTEXT.BOOKING)
+      ? null : this.getPendingPSAs();
     return pendingPSAs || (
       <SelectArrestContainer
           caseOptions={arrestOptions}
@@ -622,7 +631,9 @@ class Form extends React.Component<Props, State> {
           defaultCharges={this.props.charges}
           nextPage={this.nextPage}
           prevPage={this.prevPage}
-          onSubmit={this.props.actions.addCaseAndCharges} />
+          onSubmit={this.props.actions.addCaseAndCharges}
+          county={this.props.psaForm.get(DMF.COURT_OR_BOOKING) === CONTEXT.COURT_MINN
+            ? DOMAIN.MINNEHAHA : DOMAIN.PENNINGTON} />
     );
   }
 
@@ -754,7 +765,7 @@ class Form extends React.Component<Props, State> {
           <Route path={`${Routes.PSA_FORM}/2`} render={this.getSelectArrestSection} />;
           <Route path={`${Routes.PSA_FORM}/3`} render={this.getSelectChargesSection} />;
           <Route path={`${Routes.PSA_FORM}/4`} render={this.getPsaInputForm} />;
-          <Redirect from={Routes.PSA_FORM} to={`${Routes.PSA_FORM}/1`} />
+          <Route path={`${Routes.PSA_FORM}`} render={this.getSearchPeopleSection} />;
           <Redirect from={Routes.FORMS} to={Routes.DASHBOARD} />
         </Switch>
         { this.renderPSAResultsModal() }

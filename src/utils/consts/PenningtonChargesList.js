@@ -1,4 +1,4 @@
-const AllChargesList = [
+const PenningtonChargesList = [
   {
     statute: '31-29-2',
     description: 'Obstruction of Highway',
@@ -10885,4 +10885,4 @@ const AllChargesList = [
   }
 ];
 
-export default AllChargesList;
+export default PenningtonChargesList;

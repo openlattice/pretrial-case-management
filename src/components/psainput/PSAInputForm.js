@@ -538,22 +538,9 @@ export default class PSAInputForm extends React.Component<Props, State> {
             }
 
             {
-              this.renderQuestionRow(
-                13,
-                COURT_OR_BOOKING,
-                COURT_OR_BOOKING_PROMPT,
-                {
-                  [CONTEXT.BOOKING]: CONTEXT.BOOKING,
-                  [CONTEXT.COURT_PENN]: CONTEXT.COURT_PENN,
-                  [CONTEXT.COURT_MINN]: CONTEXT.COURT_MINN
-                }
-              )
-            }
-
-            {
               input.get(COURT_OR_BOOKING) === CONTEXT.BOOKING
                 ? this.renderTFQuestionRow(
-                  14,
+                  13,
                   SECONDARY_RELEASE_CHARGES,
                   SECONDARY_RELEASE_CHARGES_PROMPT,
                   secondaryReleaseCharges,

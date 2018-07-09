@@ -16,6 +16,7 @@ const ItemWrapper = styled(Link)`
   display: flex;
   height: 55px;
   padding: 8px;
+  margin: 10px 0;
   width: 100%;
 
   &:hover {
