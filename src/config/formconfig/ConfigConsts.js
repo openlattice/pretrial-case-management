@@ -3,7 +3,7 @@
  */
 
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { FORM_IDS } from '../../utils/consts/Consts';
+import { FORM_IDS, ID_FIELD_NAMES } from '../../utils/consts/Consts';
 
 export const ALIASES = {
   CONTACT_INFO: 'contactinfo',
@@ -21,6 +21,7 @@ export const ALIASES = {
   MANUAL_CHARGES: 'manualCharges',
   BOND: 'bond',
   RELEASE_CONDITION: 'releaseCondition',
+  HEARING: 'hearing',
 
   CONTACTED_AT: 'contactedAt',
   EMPLOYED_BY: 'employedBy',
@@ -53,36 +54,13 @@ export const STAFF_CONFIG = {
   }
 };
 
+export const PSA_CONFIG = {
+  alias: ALIASES.PSA,
+  name: ENTITY_SETS.PSA_SCORES,
+  entityId: ID_FIELD_NAMES.PSA_ID,
+  fields: {
+    [ID_FIELD_NAMES.PSA_ID]: PROPERTY_TYPES.GENERAL_ID
+  }
+};
+
 /* ASSOCIATION CONFIG */
-
-export const REPORTED_CONFIG = {
-  alias: ALIASES.REPORTED,
-  name: ENTITY_SETS.REPORTED,
-  fields: {
-    [FORM_IDS.TIMESTAMP]: PROPERTY_TYPES.COMPLETED_DATE_TIME
-  }
-};
-
-export const TAKING_CONFIG = {
-  alias: ALIASES.TAKING,
-  name: ENTITY_SETS.TAKING,
-  fields: {
-    [FORM_IDS.TIMESTAMP]: PROPERTY_TYPES.COMPLETED_DATE_TIME
-  }
-};
-
-export const USED_CONFIG = {
-  alias: ALIASES.USED,
-  name: ENTITY_SETS.USED,
-  fields: {
-    [FORM_IDS.PERSON_ID]: PROPERTY_TYPES.PERSON_ID
-  }
-};
-
-export const HAS_CONFIG = {
-  alias: ALIASES.HAS,
-  name: ENTITY_SETS.HAS,
-  fields: {
-    [FORM_IDS.PERSON_ID]: PROPERTY_TYPES.PERSON_ID
-  }
-};

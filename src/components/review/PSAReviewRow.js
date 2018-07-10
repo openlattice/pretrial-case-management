@@ -16,8 +16,10 @@ import CaseHistory from '../../components/review/CaseHistory';
 import PSAScores from './PSAScores';
 import PSASummary from './PSASummary';
 import DMFExplanation from '../dmf/DMFExplanation';
+import SelectHearingsContainer from '../../containers/hearings/SelectHearingsContainer';
 import SelectReleaseConditions from '../releaseconditions/SelectReleaseConditions';
 import ClosePSAModal from './ClosePSAModal';
+import LoadingSpinner from '../LoadingSpinner';
 import psaEditedConfig from '../../config/formconfig/PsaEditedConfig';
 import { getScoresAndRiskFactors, calculateDMF } from '../../utils/ScoringUtils';
 import { CenteredContainer } from '../../utils/Layout';
@@ -90,8 +92,15 @@ const TitleHeader = styled.span`
 `;
 
 const StatusTag = styled.div`
+  width: 86px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  font-family: 'Open Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
   color: white;
   border-radius: 2px;
   align-self: flex-end;
@@ -100,7 +109,7 @@ const StatusTag = styled.div`
   background: ${(props) => {
     switch (props.status) {
       case PSA_STATUSES.OPEN:
-        return '#b898ff';
+        return '#8b66db';
       case PSA_STATUSES.SUCCESS:
         return '#00be84';
       case PSA_STATUSES.FAILURE:
@@ -108,13 +117,27 @@ const StatusTag = styled.div`
       case PSA_STATUSES.CANCELLED:
         return '#b6bbc7';
       case PSA_STATUSES.DECLINED:
-        return '#dcdce7';
+        return '#555e6f';
       case PSA_STATUSES.DISMISSED:
-        return '#e1e1eb';
+        return '#555e6f';
       default:
         return 'transparent';
     }
   }};
+`;
+
+const SubmittingWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  span {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 16px;
+    margin: 20px 0;
+    color: #2e2e34;
+  }
 `;
 
 type Props = {
@@ -130,9 +153,11 @@ type Props = {
   manualChargeHistory :Immutable.Map<*, *>,
   sentenceHistory :Immutable.Map<*, *>,
   ftaHistory :Immutable.Map<*, *>,
+  hearings :Immutable.List<*>,
   readOnly :boolean,
   personId? :string,
   submitting :boolean,
+  refreshingNeighbors :boolean,
   downloadFn :(values :{
     neighbors :Immutable.Map<*, *>,
     scores :Immutable.Map<*, *>
@@ -159,7 +184,8 @@ type Props = {
     scoresId :string,
     scoresEntity :Immutable.Map<*, *>
   }) => void,
-  submitData :(value :{ config :Object, values :Object }) => void
+  submitData :(value :{ config :Object, values :Object, callback :() => void }) => void,
+  refreshPSANeighbors :({ id :string }) => void
 };
 
 type State = {
@@ -207,7 +233,7 @@ export default class PSAReviewRow extends React.Component<Props, State> {
 
   }
 
-  getNotesFromNeighbors = (neighbors) =>
+  getNotesFromNeighbors = neighbors =>
     neighbors.getIn([
       ENTITY_SETS.RELEASE_RECOMMENDATIONS,
       'neighborDetails',
@@ -358,6 +384,10 @@ export default class PSAReviewRow extends React.Component<Props, State> {
     return this.props.neighbors.getIn([name, 'neighborDetails', fqn, 0]);
   }
 
+  refreshPSANeighborsCallback = () => {
+    this.props.refreshPSANeighbors({ id: this.props.entityKeyId });
+  }
+
   onRiskFactorEdit = (e :Object) => {
     e.preventDefault();
 
@@ -431,7 +461,8 @@ export default class PSAReviewRow extends React.Component<Props, State> {
           [EDIT_FIELDS.NOTES_ID]: [notesId],
           [EDIT_FIELDS.TIMESTAMP]: [toISODateTime(moment())],
           [EDIT_FIELDS.PERSON_ID]: [AuthUtils.getUserInfo().email]
-        }
+        },
+        callback: this.refreshPSANeighborsCallback
       });
     }
 
@@ -461,7 +492,8 @@ export default class PSAReviewRow extends React.Component<Props, State> {
         [EDIT_FIELDS.PSA_ID]: [scoresEntity.getIn([PROPERTY_TYPES.GENERAL_ID, 0])],
         [EDIT_FIELDS.TIMESTAMP]: [toISODateTime(moment())],
         [EDIT_FIELDS.PERSON_ID]: [AuthUtils.getUserInfo().email]
-      }
+      },
+      callback: this.refreshPSANeighborsCallback
     });
     this.setState({ editing: false });
   }
@@ -558,18 +590,39 @@ export default class PSAReviewRow extends React.Component<Props, State> {
     return <DMFExplanation dmf={dmf} nca={nca} fta={fta} nvca={nvca} riskFactors={riskFactors} />;
   }
 
-  renderInitialAppearance = () => (
-    <SelectReleaseConditions
-        submitting={this.props.submitting}
-        personId={this.getIdValue(ENTITY_SETS.PEOPLE, PROPERTY_TYPES.PERSON_ID)}
-        psaId={this.props.scores.getIn([PROPERTY_TYPES.GENERAL_ID, 0])}
-        dmfId={this.getIdValue(ENTITY_SETS.DMF_RESULTS)}
-        submit={this.props.submitData}
-        defaultDMF={this.props.neighbors.getIn([ENTITY_SETS.DMF_RESULTS, 'neighborDetails'], Immutable.Map())}
-        defaultBond={this.props.neighbors.getIn([ENTITY_SETS.BONDS, 'neighborDetails'], Immutable.Map())}
-        defaultConditions={this.props.neighbors.get(ENTITY_SETS.RELEASE_CONDITIONS, Immutable.List())
-          .map(neighbor => neighbor.get('neighborDetails', Immutable.Map()))} />
-  )
+  renderInitialAppearance = () => {
+    if (this.props.submitting || this.props.refreshingNeighbors) {
+      return (
+        <SubmittingWrapper>
+          <span>{this.props.submitting ? 'Submitting' : 'Reloading'}</span>
+          <LoadingSpinner />
+        </SubmittingWrapper>
+      );
+    }
+    if (!this.props.neighbors.get(ENTITY_SETS.HEARINGS)) {
+      return (
+        <SelectHearingsContainer
+            personId={this.props.personId}
+            psaId={this.props.scores.getIn([PROPERTY_TYPES.GENERAL_ID, 0])}
+            psaEntityKeyId={this.props.entityKeyId}
+            hearings={this.props.hearings} />
+      );
+    }
+    return (
+      <SelectReleaseConditions
+          submitting={this.props.submitting}
+          personId={this.getIdValue(ENTITY_SETS.PEOPLE, PROPERTY_TYPES.PERSON_ID)}
+          psaId={this.props.scores.getIn([PROPERTY_TYPES.GENERAL_ID, 0])}
+          dmfId={this.getIdValue(ENTITY_SETS.DMF_RESULTS)}
+          submit={this.props.submitData}
+          submitCallback={this.refreshPSANeighborsCallback}
+          hearing={this.props.neighbors.getIn([ENTITY_SETS.HEARINGS, 'neighborDetails'])}
+          defaultDMF={this.props.neighbors.getIn([ENTITY_SETS.DMF_RESULTS, 'neighborDetails'], Immutable.Map())}
+          defaultBond={this.props.neighbors.getIn([ENTITY_SETS.BONDS, 'neighborDetails'], Immutable.Map())}
+          defaultConditions={this.props.neighbors.get(ENTITY_SETS.RELEASE_CONDITIONS, Immutable.List())
+            .map(neighbor => neighbor.get('neighborDetails', Immutable.Map()))} />
+    );
+  }
 
   renderDetails = () => {
     const { open } = this.state;
@@ -686,7 +739,7 @@ export default class PSAReviewRow extends React.Component<Props, State> {
 
   openDetailsModal = () => {
     const { neighbors, loadCaseHistoryFn } = this.props;
-    const personId = this.props.personId || neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborId'], '');
+    const personId = neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborId'], '');
     loadCaseHistoryFn({ personId, neighbors });
     this.setState({
       open: true,

@@ -228,7 +228,8 @@ export const ID_FIELD_NAMES = {
   TIMESTAMP: 'timestamp',
   DMF_RISK_FACTORS_ID: 'dmfRiskFactorsId',
   DMF_ID: 'dmfId',
-  BOND_ID: 'bondId'
+  BOND_ID: 'bondId',
+  HEARING_ID: 'hearingId'
 };
 
 export const ID_FIELDS = {
@@ -240,6 +241,11 @@ export const ID_FIELDS = {
   CASE: 'caseEntityKeyId',
   CHARGE: 'chargeEntityKeyId',
   SENTENCE: 'sentenceEntityKeyId'
+};
+
+export const HEARING = {
+  DATE_TIME: 'hearingDateTime',
+  COURTROOM: 'hearingCourtroom'
 };
 
 export const PSA_STATUSES = {

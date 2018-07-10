@@ -94,7 +94,7 @@ const StyledNavLink = styled(NavLink).attrs({
   margin-right: 50px;
   font-family: 'Open Sans', sans-serif;
   font-size: 12px;
-  font-weight: 600;
+  font-weight: normal;
   color: #8e929b;
   display: flex;
   align-items: center;

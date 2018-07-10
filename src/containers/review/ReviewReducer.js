@@ -10,6 +10,7 @@ import {
   loadCaseHistory,
   loadPSAData,
   loadPSAsByDate,
+  refreshPSANeighbors,
   updateScoresAndRiskFactors
 } from './ReviewActionFactory';
 import { ENTITY_SETS } from '../../utils/consts/DataModelConsts';
@@ -29,7 +30,9 @@ const INITIAL_STATE :Immutable.Map<*, *> = Immutable.fromJS({
   manualChargeHistory: Immutable.Map(),
   sentenceHistory: Immutable.Map(),
   ftaHistory: Immutable.Map(),
-  readOnly: true
+  hearings: Immutable.Map(),
+  readOnly: true,
+  psaIdsRefreshing: Immutable.Set()
 });
 
 export default function reviewReducer(state :Immutable.Map<*, *> = INITIAL_STATE, action :SequenceAction) {
@@ -58,14 +61,16 @@ export default function reviewReducer(state :Immutable.Map<*, *> = INITIAL_STATE
           .setIn(['chargeHistory', action.value.personId], Immutable.Map())
           .setIn(['manualChargeHistory', action.value.personId], Immutable.Map())
           .setIn(['sentenceHistory', action.value.personId], Immutable.Map())
-          .setIn(['ftaHistory', action.value.personId], Immutable.List()),
+          .setIn(['ftaHistory', action.value.personId], Immutable.List())
+          .setIn(['hearings', action.value.personId], Immutable.List()),
         SUCCESS: () => state
           .setIn(['caseHistory', action.value.personId], action.value.allCases)
           .setIn(['manualCaseHistory', action.value.personId], action.value.allManualCases)
           .setIn(['chargeHistory', action.value.personId], action.value.chargesByCaseId)
           .setIn(['manualChargeHistory', action.value.personId], action.value.manualChargesByCaseId)
           .setIn(['sentenceHistory', action.value.personId], action.value.sentencesByCaseId)
-          .setIn(['ftaHistory', action.value.personId], action.value.allFTAs),
+          .setIn(['ftaHistory', action.value.personId], action.value.allFTAs)
+          .setIn(['hearings', action.value.personId], action.value.allHearings),
         FAILURE: () => state
           .setIn(['caseHistory', action.value.personId], Immutable.List())
           .setIn(['manualCaseHistory', action.value.personId], Immutable.List())
@@ -73,6 +78,7 @@ export default function reviewReducer(state :Immutable.Map<*, *> = INITIAL_STATE
           .setIn(['manualChargeHistory', action.value.personId], Immutable.Map())
           .setIn(['sentenceHistory', action.value.personId], Immutable.Map())
           .setIn(['ftaHistory', action.value.personId], Immutable.List())
+          .setIn(['hearings', action.value.personId], Immutable.List())
       });
     }
 
@@ -106,6 +112,21 @@ export default function reviewReducer(state :Immutable.Map<*, *> = INITIAL_STATE
           .set('scoresAsMap', Immutable.Map()),
         FINALLY: () => state.set('loadingResults', false)
       });
+    }
+
+    case refreshPSANeighbors.case(action.type): {
+      return refreshPSANeighbors.reducer(state, action, {
+        REQUEST: () => state.set('psaIdsRefreshing', state.get('psaIdsRefreshing').add(action.value.id)),
+        SUCCESS: () => {
+          let psaNeighborsByDate = state.get('psaNeighborsByDate');
+          let psaNeighborsById = state.get('psaNeighborsById');
+
+          psaNeighborsById = psaNeighborsById.set(action.value.id, Immutable.fromJS(action.value.neighbors));
+
+          return state.set('psaNeighborsById', psaNeighborsById);
+        },
+        FINALLY: () => state.set('psaIdsRefreshing', state.get('psaIdsRefreshing').delete(action.value.id))
+      })
     }
 
     case updateScoresAndRiskFactors.case(action.type): {

@@ -16,6 +16,7 @@ import {
   LOAD_CASE_HISTORY,
   LOAD_PSA_DATA,
   LOAD_PSAS_BY_DATE,
+  REFRESH_PSA_NEIGHBORS,
   UPDATE_SCORES_AND_RISK_FACTORS,
   changePSAStatus,
   checkPSAPermissions,
@@ -23,6 +24,7 @@ import {
   loadCaseHistory,
   loadPSAData,
   loadPSAsByDate,
+  refreshPSANeighbors,
   updateScoresAndRiskFactors
 } from './ReviewActionFactory';
 
@@ -30,6 +32,8 @@ import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts'
 import { RESULT_CATEGORIES, formatDMFFromEntity } from '../../utils/consts/DMFResultConsts';
 import { PSA_STATUSES } from '../../utils/consts/Consts';
 import { getFqnObj } from '../../utils/Utils';
+
+const LIST_ENTITY_SETS = Immutable.List.of(ENTITY_SETS.STAFF, ENTITY_SETS.RELEASE_CONDITIONS);
 
 const orderCasesByArrestDate = (case1, case2) => {
   const date1 = moment(case1.getIn([PROPERTY_TYPES.ARREST_DATE, 0], case1.getIn([PROPERTY_TYPES.FILE_DATE, 0], '')));
@@ -55,6 +59,7 @@ function* getCasesAndCharges(neighbors) {
   let allArrestCharges = Immutable.List();
   let allSentences = Immutable.List();
   let allFTAs = Immutable.List();
+  let allHearings = Immutable.List();
   personNeighbors.forEach((neighbor) => {
     const neighborDetails = Immutable.fromJS(neighbor.neighborDetails);
     const entitySet = neighbor.neighborEntitySet;
@@ -91,6 +96,9 @@ function* getCasesAndCharges(neighbors) {
       else if (name === ENTITY_SETS.FTAS) {
         allFTAs = allFTAs.push(Immutable.fromJS(neighborDetails));
       }
+      else if (name === ENTITY_SETS.HEARINGS) {
+        allHearings = allHearings.push(Immutable.fromJS(neighborDetails));
+      }
     }
   });
   pretrialCaseOptionsWithDate = pretrialCaseOptionsWithDate.sort(orderCasesByArrestDate);
@@ -102,7 +110,8 @@ function* getCasesAndCharges(neighbors) {
     allManualCharges,
     allArrestCharges,
     allSentences,
-    allFTAs
+    allFTAs,
+    allHearings
   };
 }
 
@@ -144,7 +153,8 @@ function* loadCaseHistoryWorker(action :SequenceAction) :Generator<*, *, *> {
       allCharges,
       allManualCharges,
       allSentences,
-      allFTAs
+      allFTAs,
+      allHearings
     } = yield getCasesAndCharges(neighbors);
 
     const chargesByCaseId = getMapByCaseId(allCharges, PROPERTY_TYPES.CHARGE_ID);
@@ -158,7 +168,8 @@ function* loadCaseHistoryWorker(action :SequenceAction) :Generator<*, *, *> {
       chargesByCaseId,
       manualChargesByCaseId,
       sentencesByCaseId,
-      allFTAs
+      allFTAs,
+      allHearings
     }));
 
   }
@@ -195,7 +206,6 @@ function* getAllSearchResults(entitySetId :string, searchTerm :string) :Generato
 function* loadPSADataWorker(action :SequenceAction) :Generator<*, *, *> {
   try {
     yield put(loadPSAData.request(action.id))
-    const listEntitySets = Immutable.List.of(ENTITY_SETS.STAFF, ENTITY_SETS.RELEASE_CONDITIONS);
     const entitySetId = yield call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.PSA_SCORES);
     let neighborsById = yield call(SearchApi.searchEntityNeighborsBulk, entitySetId, action.value);
     neighborsById = Immutable.fromJS(neighborsById);
@@ -227,7 +237,7 @@ function* loadPSADataWorker(action :SequenceAction) :Generator<*, *, *> {
               });
           }
 
-          if (listEntitySets.includes(neighborName)) {
+          if (LIST_ENTITY_SETS.includes(neighborName)) {
             neighborsByEntitySetName = neighborsByEntitySetName.set(
               neighborName,
               neighborsByEntitySetName.get(neighborName, Immutable.List()).push(neighbor)
@@ -483,6 +493,41 @@ function* updateScoresAndRiskFactorsWatcher() :Generator<*, *, *> {
   yield takeEvery(UPDATE_SCORES_AND_RISK_FACTORS, updateScoresAndRiskFactorsWorker);
 }
 
+function* refreshPSANeighborsWorker(action :SequenceAction) :Generator<*, *, *> {
+  const { id } = action.value;
+  try {
+    yield put(refreshPSANeighbors.request(action.id, { id }));
+    const entitySetId = yield call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.PSA_SCORES);
+    const neighborsList = yield call(SearchApi.searchEntityNeighbors, entitySetId, id);
+    let neighbors = Immutable.Map();
+    neighborsList.forEach((neighbor) => {
+      const { neighborEntitySet, neighborDetails } = neighbor;
+      if (neighborEntitySet && neighborDetails) {
+        if (LIST_ENTITY_SETS.includes(neighborEntitySet.name)) {
+          neighbors = neighbors.set(
+            neighborEntitySet.name,
+            neighbors.get(neighborEntitySet.name, Immutable.List()).push(Immutable.fromJS(neighbor))
+          );
+        }
+        else {
+          neighbors = neighbors.set(neighborEntitySet.name, Immutable.fromJS(neighbor));
+        }
+      }
+    });
+    yield put(refreshPSANeighbors.success(action.id, { id, neighbors }));
+  }
+  catch (error) {
+    yield put(refreshPSANeighbors.failure(action.id, error));
+  }
+  finally {
+    yield put(refreshPSANeighbors.finally(action.id, { id }));
+  }
+}
+
+function* refreshPSANeighborsWatcher() :Generator<*, *, *> {
+  yield takeEvery(REFRESH_PSA_NEIGHBORS, refreshPSANeighborsWorker);
+}
+
 function* changePSAStatusWorker(action :SequenceAction) :Generator<*, *, *> {
   const {
     scoresEntity,
@@ -525,5 +570,6 @@ export {
   loadCaseHistoryWatcher,
   loadPSADataWatcher,
   loadPSAsByDateWatcher,
+  refreshPSANeighborsWatcher,
   updateScoresAndRiskFactorsWatcher
 };
