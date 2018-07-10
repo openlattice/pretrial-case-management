@@ -6,9 +6,9 @@ import React from 'react';
 import styled from 'styled-components';
 import { FormControl } from 'react-bootstrap';
 
-const TextArea = styled(FormControl).attrs({
-  componentClass: 'textarea'
-})`
+import StyledTextArea from '../controls/StyledTextArea';
+
+const TextArea = styled(StyledTextArea)`
   min-height: 150px;
 `;
 

@@ -124,11 +124,11 @@ export default class PSAResults extends React.Component<Props, State> {
             <RiskFactorCell>{format(riskFactors[PRIOR_VIOLENT_CONVICTION])}</RiskFactorCell>
           </tr>
           <tr>
-            <RiskFactorCell>7. Prior Pre-trial Failure to Appear in Past 2 Years</RiskFactorCell>
+            <RiskFactorCell>7. Prior Pretrial Failure to Appear in Past 2 Years</RiskFactorCell>
             <RiskFactorCell>{format(riskFactors[PRIOR_FAILURE_TO_APPEAR_RECENT])}</RiskFactorCell>
           </tr>
           <tr>
-            <RiskFactorCell>8. Prior Pre-trial Failure to Appear Older than 2 Years</RiskFactorCell>
+            <RiskFactorCell>8. Prior Pretrial Failure to Appear Older than 2 Years</RiskFactorCell>
             <RiskFactorCell>{format(riskFactors[PRIOR_FAILURE_TO_APPEAR_OLD])}</RiskFactorCell>
           </tr>
           <tr>
@@ -179,7 +179,6 @@ export default class PSAResults extends React.Component<Props, State> {
   render() {
     return (
       <div>
-        <Divider />
         <ResultsContainer>
           <ResultsWrapper>
             <ButtonWrapper>

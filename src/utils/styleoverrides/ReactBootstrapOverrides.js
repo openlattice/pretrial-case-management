@@ -10,5 +10,17 @@ export const globals = {
   },
   [`.${OverrideClassNames.MODAL_HEADER}`]: {
     display: 'block'
+  },
+  [`.${OverrideClassNames.DATE_PICKER_SELECTED}`]: {
+    'background-color': '#e4d8ff !important',
+    border: 'solid 1px #6124e2'
+  },
+  [`.${OverrideClassNames.DATE_TIME_PICKER_SELECTED}`]: {
+    'background-color': '#e4d8ff !important',
+    border: 'solid 1px #6124e2',
+    color: '#555e6f !important'
+  },
+  [`${OverrideClassNames.rdtDay}:hover`]: {
+    'background-color': '#f0f0f7'
   }
 };

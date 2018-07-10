@@ -13,9 +13,6 @@ const loadDataModel :RequestSequence = newRequestSequence(LOAD_DATA_MODEL);
 const LOAD_NEIGHBORS :string = 'LOAD_NEIGHBORS';
 const loadNeighbors :RequestSequence = newRequestSequence(LOAD_NEIGHBORS);
 
-const UPDATE_NOTES :string = 'UPDATE_NOTES';
-const updateNotes :RequestSequence = newRequestSequence(UPDATE_NOTES);
-
 const HARD_RESTART :'HARD_RESTART' = 'HARD_RESTART';
 function hardRestart() :Object {
   return {
@@ -41,12 +38,10 @@ export {
   HARD_RESTART,
   LOAD_DATA_MODEL,
   LOAD_NEIGHBORS,
-  UPDATE_NOTES,
   addCaseAndCharges,
   hardRestart,
   loadDataModel,
   loadNeighbors,
-  updateNotes,
   CLEAR_FORM,
   SELECT_PERSON,
   SELECT_PRETRIAL_CASE,

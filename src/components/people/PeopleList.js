@@ -7,16 +7,20 @@ import styled from 'styled-components';
 import Immutable from 'immutable';
 
 import LoadingSpinner from '../../components/LoadingSpinner';
+import NoSearchResults from './NoSearchResults';
 import { StyledErrorMessage } from '../../utils/Layout';
 import PersonCard from './PersonCard';
 
 const CardsWrapper = styled.div`
   align-items: center;
-  background: #f7f8f9;
   display: flex;
   flex: 1 1 auto;
   flex-wrap: wrap;
   height: 100%;
+`;
+
+const NoSearchResultsPadded = styled(NoSearchResults)`
+  margin-top: 100px;
 `;
 
 type Props = {
@@ -33,7 +37,7 @@ const PeopleList = ({ people, isFetchingPeople, didMapPeopleToProps } :Props) =>
         return people.map(person => <PersonCard key={person.identification} person={person} />);
       }
       else if (people && people.size === 0 && didMapPeopleToProps) {
-        return <div>There are no people.</div>;
+        return <NoSearchResultsPadded />;
       }
 
       return null;

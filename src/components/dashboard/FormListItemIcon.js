@@ -11,11 +11,18 @@ const StyledIconWrapper = styled.div`
   margin-right: 8px;
   padding: 5px;
   width: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 `;
 
-const CreateFormListItem = () => (
+type Props = {
+  icon? :string
+};
+
+const CreateFormListItem = ({ icon } :Props) => (
   <StyledIconWrapper>
-    <FontAwesome name="book" size="2x" />
+    {icon ? <img src={icon} role="presentation" /> : <FontAwesome name="book" size="2x" />}
   </StyledIconWrapper>
 );
 

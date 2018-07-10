@@ -16,6 +16,7 @@ const ItemWrapper = styled(Link)`
   display: flex;
   height: 55px;
   padding: 8px;
+  margin: 10px 0;
   width: 100%;
 
   &:hover {
@@ -32,12 +33,13 @@ const StyledName = styled.div`
 
 type Props = {
   path :string,
-  name :string
+  name :string,
+  icon? :string
 };
 
 const CreateFormListItem = (props :Props) => (
   <ItemWrapper to={props.path}>
-    <FormListItemIcon />
+    <FormListItemIcon icon={props.icon} />
     <StyledName>{props.name}</StyledName>
   </ItemWrapper>
 );

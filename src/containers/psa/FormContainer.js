@@ -8,22 +8,26 @@ import Immutable from 'immutable';
 import styled from 'styled-components';
 import randomUUID from 'uuid/v4';
 import moment from 'moment';
+import qs from 'query-string';
 import { AuthUtils } from 'lattice-auth';
-import { Button, ProgressBar } from 'react-bootstrap';
+import { Button } from 'react-bootstrap';
 import { connect } from 'react-redux';
 import { Redirect, Route, Switch, withRouter } from 'react-router-dom';
 import { bindActionCreators } from 'redux';
 
+import BasicButton from '../../components/buttons/BasicButton';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import ConfirmationModal from '../../components/ConfirmationModalView';
 import SearchPersonContainer from '../person/SearchPersonContainer';
 import SelectArrestContainer from '../pages/arrest/SelectArrestContainer';
 import SelectChargesContainer from '../pages/arrest/SelectChargesContainer';
-import InlineEditableControl from '../../components/controls/InlineEditableControl';
-import SelectedPersonInfo from '../../components/person/SelectedPersonInfo';
-import SelectedArrestInfo from '../../components/arrest/SelectedArrestInfo';
 import PSAInputForm from '../../components/psainput/PSAInputForm';
-import PSAResults from '../../components/psainput/PSAResults';
+import PSASubmittedPage from '../../components/psainput/PSASubmittedPage';
+import ProgressBar from '../../components/controls/ProgressBar';
+import PersonCard from '../../components/person/PersonCard';
+import ArrestCard from '../../components/arrest/ArrestCard';
+import ChargeTable from '../../components/charges/ChargeTable';
+import PSAReviewRowList from '../review/PSAReviewRowList';
 import exportPDF from '../../utils/PDFUtils';
 import psaConfig from '../../config/formconfig/PsaConfig';
 
@@ -37,56 +41,136 @@ import { toISODateTime } from '../../utils/Utils';
 import { getScoresAndRiskFactors, calculateDMF, getDMFRiskFactors } from '../../utils/ScoringUtils';
 import {
   ButtonWrapper,
-  CloseX,
-  Divider,
-  RecommendationWrapper,
-  ResultsContainer,
-  SmallHeader,
-  StyledFormViewWrapper,
   StyledFormWrapper,
-  StyledSectionWrapper,
-  StyledTitleWrapper,
-  StyledTopFormNavBuffer
+  StyledSectionWrapper
 } from '../../utils/Layout';
 import {
   getNextPath,
-  getPrevPath
+  getPrevPath,
+  getCurrentPage
 } from '../../utils/Helpers';
 import { tryAutofillFields } from '../../utils/AutofillUtils';
-import { CONTEXT, DMF, ID_FIELD_NAMES, NOTES, PSA, PSA_STATUSES } from '../../utils/consts/Consts';
+import { CONTEXT, DMF, ID_FIELD_NAMES, NOTES, PSA, PSA_STATUSES, SORT_TYPES } from '../../utils/consts/Consts';
 import { PROPERTY_TYPES, ENTITY_SETS } from '../../utils/consts/DataModelConsts';
+import { DOMAIN } from '../../utils/consts/ReportDownloadTypes';
 
-const {
-  PEOPLE,
-  PRETRIAL_CASES,
-  PSA_SCORES,
-  RELEASE_RECOMMENDATIONS
-} = ENTITY_SETS;
+const { PEOPLE } = ENTITY_SETS;
 
-const LoadingContainer = styled.div`
-  text-align: center;
+const LoadingContainer = styled(StyledFormWrapper)`
+  align-items: center;
+  padding: 0 30px 30px 30px;
+  border-radius: 5px;
+  border: 1px solid #e1e1eb;
+  background-color: #ffffff;
 `;
 
 const LoadingText = styled.div`
-  font-size: 20px;
+  font-family: 'Open Sans', sans-serif;
+  font-size: 16px;
+  color: #555e6f;
   margin: 20px;
   display: inline-flex;
 `;
 
-const Status = styled.div`
+const Header = styled.h1`
+  font-size: 25px;
+  font-weight: 600;
+  margin: 0;
+  margin-bottom: 20px;
+`;
+
+const PaddedSectionWrapper = styled(StyledSectionWrapper)`
+  margin-bottom: 20px;
+  padding: 30px;
+`;
+
+const PSAFormTitle = styled(PaddedSectionWrapper)`
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+
+  h1 {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 18px;
+    color: #555e6f;
+  }
+`;
+
+const CenteredListWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+`;
+
+const DiscardButton = styled(BasicButton)`
+  padding: 12px 45px;
+  font-size: 14px;
+  font-weight: 600;
+  width: 141px;
+  height: 43px;
+`;
+
+const ContextItem = styled(StyledSectionWrapper)`
+  width: 470px;
+  padding: 30px;
+`;
+
+const HeaderRow = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: ${props => (props.left ? 'flex-start' : 'space-between')};
+  align-items: center;
   width: 100%;
-  text-align: center;
-  margin: 20px;
-  font-size: 20px;
-  font-weight: bold;
+  margin-bottom: 20px;
+
+  h1 {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 18px;
+    color: #555e6f;
+  }
+
+  div {
+    display: inline-block;
+    height: 25px;
+    text-transform: uppercase;
+    font-family: 'Open Sans', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    color: #8e929b;
+    border-radius: 3px;
+    border: solid 1px #8e929b;
+    padding: 5px 7px;
+  }
+
+  span {
+    margin-left: 10px;
+    border-radius: 10px;
+    background-color: #f0f0f7;
+    color: #8e929b;
+    font-family: 'Open Sans', sans-serif;
+    font-size: 12px;
+    padding: 2px 12px;
+    font-weight: 600;
+  }
 `;
 
-const Success = styled(Status)`
-  color: green;
+const PSAReviewRowListContainer = styled(StyledSectionWrapper)`
+  width: 960px;
+
+  ${BasicButton} {
+    margin-bottom: 10px;
+  }
 `;
 
-const Failure = styled(Status)`
-  color: red;
+const ContextRow = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  margin-bottom: 20px;
+`;
+
+const ChargeTableWrapper = styled.div`
+  margin-bottom: -20px;
 `;
 
 const INITIAL_PERSON_FORM = Immutable.fromJS({
@@ -114,9 +198,8 @@ const INITIAL_STATE = Immutable.fromJS({
   },
   dmf: {},
   scoresWereGenerated: false,
-  notes: '',
-  notesId: undefined,
-  psaIdClosing: undefined
+  psaIdClosing: undefined,
+  skipClosePSAs: false
 });
 
 const numPages = 4;
@@ -141,19 +224,12 @@ type Props = {
     selectPretrialCase :(value :{
       selectedPretrialCase :Immutable.Map<*, *>
     }) => void,
-    updateNotes :(value :{
-      notes :string,
-      entityId :string,
-      entitySetId :string,
-      propertyTypes :Immutable.List<*>
-    }) => void,
     loadPersonDetailsRequest :(personId :string, shouldFetchCases :boolean) => void,
     setPSAValues :(value :{
       newValues :Immutable.Map<*, *>
     }) => void,
     submit :({ config :Object, values :Object }) => void,
     changePSAStatus :(values :{
-      scoresEntitySetId :string,
       scoresId :string,
       scoresEntity :Immutable.Map<*, *>,
       callback? :() => void
@@ -173,7 +249,10 @@ type Props = {
   allChargesForPerson :Immutable.List<*>,
   allSentencesForPerson :Immutable.List<*>,
   allFTAs :Immutable.List<*>,
+  openPSAs :Immutable.Map<*, *>,
+  allPSAs :Immutable.List<*>,
   selectedPersonId :string,
+  isLoadingNeighbors :boolean,
   isLoadingCases :boolean,
   numCasesToLoad :number,
   numCasesLoaded :number,
@@ -191,9 +270,8 @@ type State = {
   scores :{},
   dmf :{},
   scoresWereGenerated :boolean,
-  notes :string,
-  notesId :string,
   psaIdClosing :?string,
+  skipClosePSAs :boolean
 };
 
 class Form extends React.Component<Props, State> {
@@ -208,10 +286,31 @@ class Form extends React.Component<Props, State> {
     this.redirectToFirstPageIfNecessary();
   }
 
+  loadContextParams = () => {
+    const hashSplit = window.location.hash.split('?');
+    if (hashSplit.length > 1) {
+      const params = qs.parse(hashSplit[1]);
+      if (params.context) {
+        const newValues = Immutable.Map().set(DMF.COURT_OR_BOOKING, params.context);
+        this.props.actions.setPSAValues({ newValues });
+        return true;
+      }
+    }
+    return false;
+  }
+
   redirectToFirstPageIfNecessary = () => {
+    const { psaForm, history } = this.props;
     const { scoresWereGenerated } = this.state;
-    if ((!this.props.selectedPerson.size || !scoresWereGenerated) && !window.location.href.endsWith('1')) {
-      this.props.history.push(`${Routes.PSA_FORM}/1`);
+    const loadedContextParams = this.loadContextParams();
+    if (loadedContextParams) {
+      history.push(`${Routes.PSA_FORM}/1`);
+    }
+    else if (!psaForm.get(DMF.COURT_OR_BOOKING)) {
+      history.push(Routes.DASHBOARD);
+    }
+    else if ((!this.props.selectedPerson.size || !scoresWereGenerated) && !window.location.href.endsWith('1')) {
+      history.push(`${Routes.PSA_FORM}/1`);
     }
   }
 
@@ -280,7 +379,6 @@ class Form extends React.Component<Props, State> {
       scores.toJS(),
       dmf
     );
-    values[PSA.NOTES] = this.state.notes;
 
     values[ID_FIELD_NAMES.PSA_ID] = [randomUUID()];
     values[ID_FIELD_NAMES.RISK_FACTORS_ID] = [randomUUID()];
@@ -306,7 +404,6 @@ class Form extends React.Component<Props, State> {
     }
 
     this.props.actions.submit({ values, config });
-    this.setState({ notesId: values[ID_FIELD_NAMES.NOTES_ID][0] });
   }
 
   getFqn = propertyType => `${propertyType.getIn(['type', 'namespace'])}.${propertyType.getIn(['type', 'name'])}`
@@ -326,7 +423,7 @@ class Form extends React.Component<Props, State> {
     this.handlePageChange(prevPage);
   }
 
-  generateScores = (e) => {
+  generateScores = () => {
     const { riskFactors, scores } = getScoresAndRiskFactors(this.props.psaForm);
     const dmf = calculateDMF(this.props.psaForm, scores);
     const dmfRiskFactors = getDMFRiskFactors(this.props.psaForm);
@@ -344,65 +441,6 @@ class Form extends React.Component<Props, State> {
     this.setState(INITIAL_STATE.toJS());
     this.props.actions.clearForm();
   }
-
-  renderPersonSection = () => <SelectedPersonInfo personDetails={this.props.selectedPerson} />
-
-  renderPretrialCaseSection = () => {
-    const { selectedPretrialCase, charges } = this.props;
-    if (!selectedPretrialCase.size) return null;
-    return (
-      <div>
-        <Divider />
-        <SelectedArrestInfo
-            arrest={selectedPretrialCase}
-            charges={charges}
-            propertyTypes={this.getPropertyTypes(PRETRIAL_CASES).toJS()} />
-      </div>
-    );
-  }
-
-  renderPSAInputForm = () => (
-    <PSAInputForm
-        handleInputChange={this.handleInputChange}
-        handleSubmit={this.generateScores}
-        input={this.props.psaForm}
-        currCharges={this.props.charges}
-        currCase={this.props.selectedPretrialCase}
-        allCharges={this.props.allChargesForPerson}
-        allSentences={this.props.allSentencesForPerson}
-        allCases={this.props.allCasesForPerson}
-        allFTAs={this.props.allFTAs} />
-  )
-
-  renderPSASection = () => {
-    if (!this.state.scoresWereGenerated) return this.renderPSAInputForm();
-    return <PSAResults scores={this.state.scores} riskFactors={this.state.riskFactors} />;
-  }
-
-  handleNotesUpdate = (notes) => {
-    if (this.state.scoresWereGenerated) {
-      this.props.actions.updateNotes({
-        notes,
-        entityId: this.state.notesId,
-        entitySetId: this.props.entitySetLookup.get(RELEASE_RECOMMENDATIONS),
-        propertyTypes: this.getPropertyTypes(RELEASE_RECOMMENDATIONS)
-      });
-    }
-    this.setState({ notes });
-  }
-
-  renderRecommendationSection = () => (
-    <ResultsContainer>
-      <RecommendationWrapper>
-        <SmallHeader>Notes:</SmallHeader>
-        <InlineEditableControl
-            type="textarea"
-            value={this.state.notes}
-            onChange={this.handleNotesUpdate}
-            size="medium_small" />
-      </RecommendationWrapper>
-    </ResultsContainer>
-  )
 
   setMultimapToMap = (setMultimap) => {
     let map = Immutable.Map();
@@ -453,6 +491,8 @@ class Form extends React.Component<Props, State> {
     );
   }
 
+  renderDiscardButton = () => <DiscardButton onClick={this.handleClose}>Discard</DiscardButton>;
+
   renderClearButton = () => {
     if (!this.state.scoresWereGenerated) return null;
     return (
@@ -467,7 +507,7 @@ class Form extends React.Component<Props, State> {
     this.handlePageChange(Routes.DASHBOARD);
   }
 
-  handlePageChange = (path) => {
+  handlePageChange = (path :string) => {
     this.props.history.push(path);
   };
 
@@ -497,24 +537,56 @@ class Form extends React.Component<Props, State> {
     };
 
     actions.changePSAStatus({
-      scoresEntitySetId: entitySetLookup.get(PSA_SCORES),
       scoresId,
       scoresEntity,
       callback
     });
   }
 
+  getPendingPSAs = () => {
+    const {
+      actions,
+      entitySetLookup,
+      selectedPersonId,
+      allPSAs,
+      openPSAs
+    } = this.props;
+    const openPSAScores = allPSAs.filter(scores => openPSAs.has(scores.get('id')));
+    if (!openPSAScores.size) return null;
+    const scoreSeq = openPSAScores.map(obj => ([obj.get('id'), obj]));
+    return (
+      <CenteredListWrapper>
+        <Header>Close Pending PSAs</Header>
+        <PSAReviewRowListContainer>
+          <BasicButton onClick={() => this.setState({ skipClosePSAs: true })}>Skip</BasicButton>
+          <PSAReviewRowList
+              hideProfile
+              scoreSeq={scoreSeq}
+              sort={SORT_TYPES.DATE}
+              onStatusChangeCallback={() => {
+                actions.loadNeighbors({
+                  entitySetId: entitySetLookup.get(PEOPLE),
+                  entityKeyId: selectedPersonId
+                });
+              }} />
+        </PSAReviewRowListContainer>
+      </CenteredListWrapper>
+    );
+  }
+
   getSelectArrestSection = () => {
     const {
       selectedPersonId,
       isLoadingCases,
+      isLoadingNeighbors,
       numCasesToLoad,
       numCasesLoaded,
       entitySetLookup,
       arrestOptions,
+      psaForm,
       actions
     } = this.props;
-    if (isLoadingCases) {
+    if (isLoadingCases && !isLoadingNeighbors) {
       if (numCasesLoaded === numCasesToLoad) {
         actions.loadPersonDetailsRequest(selectedPersonId, false);
         actions.loadNeighbors({
@@ -529,11 +601,17 @@ class Form extends React.Component<Props, State> {
       return (
         <LoadingContainer>
           <LoadingText>{loadingText}</LoadingText>
-          <ProgressBar bsStyle="success" now={progress} label={`${progress}%`} />
+          <ProgressBar progress={progress} />
         </LoadingContainer>);
     }
 
-    return (
+    if (isLoadingNeighbors) {
+      return <LoadingSpinner />;
+    }
+
+    const pendingPSAs = (this.state.skipClosePSAs || psaForm.get(DMF.COURT_OR_BOOKING) === CONTEXT.BOOKING)
+      ? null : this.getPendingPSAs();
+    return pendingPSAs || (
       <SelectArrestContainer
           caseOptions={arrestOptions}
           nextPage={this.nextPage}
@@ -553,18 +631,60 @@ class Form extends React.Component<Props, State> {
           defaultCharges={this.props.charges}
           nextPage={this.nextPage}
           prevPage={this.prevPage}
-          onSubmit={this.props.actions.addCaseAndCharges} />
+          onSubmit={this.props.actions.addCaseAndCharges}
+          county={this.props.psaForm.get(DMF.COURT_OR_BOOKING) === CONTEXT.COURT_MINN
+            ? DOMAIN.MINNEHAHA : DOMAIN.PENNINGTON} />
     );
   }
 
-  getPsaInputForm = () => (
-    <div>
-      {this.renderPersonSection()}
-      {this.renderPretrialCaseSection()}
-      {this.renderPSAInputForm()}
-      {this.renderRecommendationSection()}
-    </div>
-  )
+  getPsaInputForm = () => {
+    const { selectedPerson, selectedPretrialCase, charges } = this.props;
+    const personId = selectedPerson.getIn([PROPERTY_TYPES.PERSON_ID, 0], '');
+    const hasHistory = Number.parseInt(personId, 10).toString() === personId;
+    return (
+      <StyledFormWrapper>
+        <PSAFormTitle>
+          <h1>Public Safety Assessment</h1>
+          {this.renderDiscardButton()}
+        </PSAFormTitle>
+        <ContextRow>
+          <ContextItem>
+            <HeaderRow>
+              <h1>Person</h1>
+              <div>{hasHistory ? 'Case history loaded from Odyssey' : 'No Odyssey case history'}</div>
+            </HeaderRow>
+            <div>
+              <PersonCard person={this.props.selectedPerson} />
+            </div>
+          </ContextItem>
+          <ContextItem>
+            <HeaderRow>
+              <h1>Arrest</h1>
+            </HeaderRow>
+            <ArrestCard arrest={selectedPretrialCase} />
+          </ContextItem>
+        </ContextRow>
+        <PaddedSectionWrapper>
+          <HeaderRow left>
+            <h1>Charges</h1>
+            <span>{charges.size}</span>
+          </HeaderRow>
+          <ChargeTableWrapper><ChargeTable charges={charges} disabled /></ChargeTableWrapper>
+        </PaddedSectionWrapper>
+        <PSAInputForm
+            handleInputChange={this.handleInputChange}
+            handleSubmit={this.generateScores}
+            input={this.props.psaForm}
+            currCharges={this.props.charges}
+            currCase={this.props.selectedPretrialCase}
+            allCharges={this.props.allChargesForPerson}
+            allSentences={this.props.allSentencesForPerson}
+            allCases={this.props.allCasesForPerson}
+            allFTAs={this.props.allFTAs}
+            handleClose={this.handleClose} />
+      </StyledFormWrapper>
+    );
+  }
 
   getPsaResults = () => {
     const { isSubmitting, submitError } = this.props;
@@ -574,36 +694,58 @@ class Form extends React.Component<Props, State> {
       riskFactors,
       dmf
     } = this.state;
-    if (!scoresWereGenerated) return null;
-    let header;
 
-    if (isSubmitting) {
-      header = (
-        <div>
-          <LoadingText>Submitting...</LoadingText>
-          <LoadingSpinner />
-        </div>);
-    }
-    else {
-      header = submitError ? (
-        <Failure>An error occurred: unable to submit PSA.</Failure>
-      ) : (
-        <Success>PSA Successfully Submitted!</Success>
-      );
-    }
+    const {
+      selectedPretrialCase,
+      charges,
+      selectedPerson,
+      arrestOptions,
+      allChargesForPerson,
+      allSentencesForPerson,
+      allFTAs,
+      psaForm
+    } = this.props;
+
+    if (!scoresWereGenerated) return null;
+
+    const data = Immutable.fromJS(this.state)
+      .set('scores', this.state.scores)
+      .set('riskFactors', this.setMultimapToMap(this.state.riskFactors))
+      .set('psaRiskFactors', Immutable.fromJS(this.state.riskFactors))
+      .set('dmfRiskFactors', Immutable.fromJS(this.state.dmfRiskFactors));
+
     return (
-      <div>
-        {header}
-        <PSAResults scores={scores} riskFactors={riskFactors} dmf={dmf} />
-        {this.renderRecommendationSection()}
-        {this.renderExportButton()}
-      </div>
+      <PSASubmittedPage
+          isSubmitting={isSubmitting}
+          scores={scores}
+          riskFactors={riskFactors}
+          dmf={dmf}
+          submitSuccess={!submitError}
+          onClose={this.props.actions.hardRestart}
+          charges={this.props.charges}
+          notes={psaForm.get(PSA.NOTES)}
+          onExport={() => {
+            exportPDF(data,
+              selectedPretrialCase,
+              charges,
+              selectedPerson,
+              arrestOptions,
+              allChargesForPerson,
+              allSentencesForPerson,
+              allFTAs,
+              {
+                user: this.getStaffId(),
+                timestamp: toISODateTime(moment())
+              });
+          }} />
     );
   }
 
   renderPSAResultsModal = () => {
     const { isSubmitting, isSubmitted } = this.props;
-    if (!isSubmitting && !isSubmitted) {
+    const currentPage = getCurrentPage(window.location);
+    if (!currentPage || Number.isNaN(currentPage)) return null;
+    if (currentPage < 4 || (!isSubmitting && !isSubmitted)) {
       return null;
     }
 
@@ -611,33 +753,23 @@ class Form extends React.Component<Props, State> {
       <ConfirmationModal
           submissionStatus={isSubmitting || isSubmitted}
           pageContent={this.getPsaResults}
-          // Implement hard reset
           handleModalButtonClick={this.props.actions.hardRestart} />
     );
   }
 
   render() {
     return (
-      <StyledFormViewWrapper>
-        <StyledFormWrapper>
-          <StyledTitleWrapper>
-            <div>Public Safety Assessment</div>
-            <CloseX name="close" onClick={this.handleClose} />
-          </StyledTitleWrapper>
-          <StyledSectionWrapper>
-            <StyledTopFormNavBuffer />
-            <Switch>
-              <Route path={`${Routes.PSA_FORM}/1`} render={this.getSearchPeopleSection} />;
-              <Route path={`${Routes.PSA_FORM}/2`} render={this.getSelectArrestSection} />;
-              <Route path={`${Routes.PSA_FORM}/3`} render={this.getSelectChargesSection} />;
-              <Route path={`${Routes.PSA_FORM}/4`} render={this.getPsaInputForm} />;
-              <Redirect from={Routes.PSA_FORM} to={`${Routes.PSA_FORM}/1`} />
-              <Redirect from={Routes.FORMS} to={Routes.DASHBOARD} />
-            </Switch>
-            { this.renderPSAResultsModal() }
-          </StyledSectionWrapper>
-        </StyledFormWrapper>
-      </StyledFormViewWrapper>
+      <div>
+        <Switch>
+          <Route path={`${Routes.PSA_FORM}/1`} render={this.getSearchPeopleSection} />;
+          <Route path={`${Routes.PSA_FORM}/2`} render={this.getSelectArrestSection} />;
+          <Route path={`${Routes.PSA_FORM}/3`} render={this.getSelectChargesSection} />;
+          <Route path={`${Routes.PSA_FORM}/4`} render={this.getPsaInputForm} />;
+          <Route path={`${Routes.PSA_FORM}`} render={this.getSearchPeopleSection} />;
+          <Redirect from={Routes.FORMS} to={Routes.DASHBOARD} />
+        </Switch>
+        { this.renderPSAResultsModal() }
+      </div>
     );
   }
 }
@@ -659,7 +791,10 @@ function mapStateToProps(state :Immutable.Map<*, *>) :Object {
     allChargesForPerson: psaForm.get('allChargesForPerson'),
     allSentencesForPerson: psaForm.get('allSentencesForPerson'),
     allFTAs: psaForm.get('allFTAs'),
+    openPSAs: psaForm.get('openPSAs'),
+    allPSAs: psaForm.get('allPSAs'),
     psaForm: psaForm.get('psa'),
+    isLoadingNeighbors: psaForm.get('isLoadingNeighbors'),
     isSubmitted: submit.get('submitted'),
     isSubmitting: submit.get('submitting'),
     submitError: submit.get('error'),

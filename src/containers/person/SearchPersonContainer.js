@@ -5,23 +5,20 @@
 import React from 'react';
 
 import Immutable from 'immutable';
-import DatePicker from 'react-bootstrap-date-picker';
 import styled from 'styled-components';
 import qs from 'query-string';
 import moment from 'moment';
-import { Button, FormControl, Col } from 'react-bootstrap';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 
-import StyledButton from '../../components/buttons/StyledButton';
-import PersonCard from '../../components/person/PersonCard';
+import PersonSearchFields from '../../components/person/PersonSearchFields';
+import SecondaryButton from '../../components/buttons/SecondaryButton';
+import PersonTable from '../../components/people/PersonTable';
 import LoadingSpinner from '../../components/LoadingSpinner';
+import NoSearchResults from '../../components/people/NoSearchResults';
 import { clearSearchResults, searchPeopleRequest } from './PersonActionFactory';
-import {
-  PaddedRow,
-  TitleLabel
-} from '../../utils/Layout';
 import { toISODate } from '../../utils/Utils';
+import { StyledFormViewWrapper, StyledSectionWrapper, StyledFormWrapper } from '../../utils/Layout';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import * as Routes from '../../core/router/Routes';
 
@@ -29,30 +26,30 @@ import * as Routes from '../../core/router/Routes';
  * styled components
  */
 
-const Wrapper = styled.div`
-  display: flex;
-  flex: 1 0 auto;
-  flex-direction: column;
-  padding: 50px;
-  width: 100%;
-`;
 
-const Header = styled.h1`
-  font-size: 25px;
-  font-weight: 600;
-  margin: 0;
-  margin-bottom: 20px;
+const Wrapper = styled.div`
+ display: flex;
+ flex: 1 0 auto;
+ flex-direction: column;
+ width: 100%;
 `;
 
 const SearchResultsList = styled.div`
   background-color: #fefefe;
   display: flex;
   flex-direction: column;
-  margin: 20px 0;
+  padding: 30px 0;
+  width: 100%;
+
+  &:last-child {
+    padding-bottom: 0;
+  }
 `;
 
-const SearchRow = styled(PaddedRow)`
-  align-items: flex-end;
+const NonResultsContainer = styled.div`
+  width: 100%;
+  text-align: center;
+  margin-top: 50px;
 `;
 
 const LoadingText = styled.div`
@@ -60,31 +57,44 @@ const LoadingText = styled.div`
   margin: 15px;
 `;
 
-const ButtonWrapper = styled.div`
-  margin-top: -5px;
-  text-align: center;
-`;
-
-const FooterContainer = styled.div`
-  text-align: center;
-`;
-
 const ListSectionHeader = styled.div`
-  font-size: 20px;
-  font-weight: bold;
-  margin: 20px 0;
+  font-family: 'Open Sans', sans-serif;
+  font-size: 18px;
+  color: #555e6f;
+  padding: 0 0 30px 30px;
 `;
 
 const GrayListSectionHeader = styled(ListSectionHeader)`
-  color: #aaa;
+  padding-top: 30px;
 `;
 
 const ErrorMessage = styled.div`
-  color: #cc0000;
+  color: #ff3c5d;
+  font-family: 'Open Sans', sans-serif;
+  font-size: 14px;
   text-align: center;
-  font-weight: bold;
-  font-size: 16px;
 `;
+
+const CreateButtonWrapper = styled(StyledFormViewWrapper)`
+  margin-top: -60px;
+
+  ${StyledFormWrapper} {
+    border-top: 1px solid #e1e1eb;
+
+    ${StyledSectionWrapper} {
+      padding: 20px 30px;
+
+      ${SecondaryButton} {
+        width: 100%;
+      }
+    }
+  }
+`;
+
+const SearchResultsWrapper = styled(StyledSectionWrapper)`
+  padding: 0;
+`;
+
 
 /*
  * types
@@ -134,15 +144,10 @@ class SearchPeopleContainer extends React.Component<Props, State> {
     this.props.onSelectPerson(person, entityKeyId, personId);
   }
 
-  handleOnSubmitSearch = () => {
-
-    const {
-      firstName,
-      lastName,
-      dob
-    } = this.state;
+  handleOnSubmitSearch = (firstName, lastName, dob) => {
     if (firstName.length || lastName.length || dob) {
       this.props.actions.searchPeopleRequest(firstName, lastName, dob);
+      this.setState({ firstName, lastName, dob });
     }
   }
 
@@ -165,7 +170,7 @@ class SearchPeopleContainer extends React.Component<Props, State> {
   }
 
   getSortedPeopleList = (peopleList, gray) => {
-    return peopleList.sort((p1 :Immutable.Map<*, *>, p2 :Immutable.Map<*, *>) => {
+    const rows = peopleList.sort((p1 :Immutable.Map<*, *>, p2 :Immutable.Map<*, *>) => {
       const p1Last = p1.getIn([PROPERTY_TYPES.LAST_NAME, 0], '').toLowerCase();
       const p2Last = p2.getIn([PROPERTY_TYPES.LAST_NAME, 0], '').toLowerCase();
       if (p1Last !== p2Last) return p1Last < p2Last ? -1 : 1;
@@ -179,13 +184,25 @@ class SearchPeopleContainer extends React.Component<Props, State> {
       if (p1Dob.isValid() && p2Dob.isValid()) return p1Dob.isBefore(p2Dob) ? -1 : 1;
 
       return 0;
-    }).map((personResult :Immutable.Map<*, *>) => (
-      <PersonCard
-          key={personResult.getIn(['id', 0], '')}
-          person={personResult}
-          handleSelect={this.handleOnSelectPerson}
-          gray={gray} />
-    )).toSeq();
+    });
+
+    return <PersonTable people={rows} gray={gray} handleSelect={this.handleOnSelectPerson} />
+  }
+
+  renderCreatePersonButton = () => {
+    if (!this.props.searchHasRun) {
+      return null;
+    }
+
+    return (
+      <CreateButtonWrapper>
+        <StyledFormWrapper>
+          <StyledSectionWrapper>
+            <SecondaryButton onClick={this.createNewPerson}>Create Person</SecondaryButton>
+          </StyledSectionWrapper>
+        </StyledFormWrapper>
+      </CreateButtonWrapper>
+    );
   }
 
   renderSearchResults = () => {
@@ -197,31 +214,32 @@ class SearchPeopleContainer extends React.Component<Props, State> {
       error
     } = this.props;
 
+    /* display loading spinner if necessary */
     if (isLoadingPeople) {
       return (
-        <div>
+        <NonResultsContainer>
           <LoadingText>Loading results...</LoadingText>
           <LoadingSpinner />
-        </div>
+        </NonResultsContainer>
       );
     }
 
-    if (error) {
-      return (
-        <ErrorMessage>Unable to load search results.</ErrorMessage>
-      );
+    /* display error message if necessary */
+    else if (error) {
+      return <NonResultsContainer><ErrorMessage>Unable to load search results.</ErrorMessage></NonResultsContainer>;
     }
 
-    let footer = null;
-    if (searchHasRun) {
-      footer = (
-        <FooterContainer>
-          { searchResults.isEmpty() ? <div>No search results.</div> : null }
-          <StyledButton onClick={this.createNewPerson}>Create Person</StyledButton>
-        </FooterContainer>
-      );
+    /* search has not run and is not currently running -- don't display anything */
+    else if (!searchHasRun) {
+      return null;
     }
 
+    /* search has finished running -- if there are no results, display the NoSearchResults component */
+    if (searchResults.isEmpty()) {
+      return <NonResultsContainer><NoSearchResults /></NonResultsContainer>;
+    }
+
+    /* search has finished running and there are results -- display the results */
     let peopleWithHistory = Immutable.List();
     let peopleWithoutHistory = Immutable.List();
 
@@ -236,89 +254,45 @@ class SearchPeopleContainer extends React.Component<Props, State> {
       }
     });
 
-    const body = searchHasRun ? (
-      <div>
-        {
-          peopleWithHistory.size ? (
-            <div>
-              <ListSectionHeader>People With Case History:</ListSectionHeader>
-              { this.getSortedPeopleList(peopleWithHistory) }
-              <hr />
-            </div>
-          ) : null
-        }
-        {
-          peopleWithoutHistory.size ? (
-            <div>
-              <GrayListSectionHeader>People Without Case History:</GrayListSectionHeader>
-              { this.getSortedPeopleList(peopleWithoutHistory, true) }
-            </div>
-          ) : null
-        }
-      </div>
-    ) : null;
-
     return (
-      <SearchResultsList>
-        { body }
-        { footer }
-      </SearchResultsList>
+      <StyledFormViewWrapper>
+        <StyledFormWrapper>
+          <SearchResultsWrapper>
+            <SearchResultsList>
+              {
+                peopleWithHistory.size ? (
+                  <div>
+                    <ListSectionHeader>People With Case History</ListSectionHeader>
+                    { this.getSortedPeopleList(peopleWithHistory) }
+                  </div>
+                ) : null
+              }
+              {
+                peopleWithoutHistory.size ? (
+                  <div>
+                    <GrayListSectionHeader>People Without Case History</GrayListSectionHeader>
+                    { this.getSortedPeopleList(peopleWithoutHistory, true) }
+                  </div>
+                ) : null
+              }
+            </SearchResultsList>
+          </SearchResultsWrapper>
+        </StyledFormWrapper>
+      </StyledFormViewWrapper>
     );
   }
 
-  onInputChange = (e) => {
-    this.setState({ [e.target.name]: e.target.value });
-  }
-
-  handleKeyPress = (e) => {
-    if (e.key === 'Enter') {
-      this.handleOnSubmitSearch();
-    }
-  }
-
   render() {
-    const {
-      firstName,
-      lastName,
-      dob
-    } = this.state;
-
     return (
       <Wrapper>
-        <Header>Search for people</Header>
-        <SearchRow>
-          <Col lg={4}>
-            <TitleLabel>Last Name</TitleLabel>
-            <FormControl
-                name="lastName"
-                value={lastName}
-                onKeyPress={this.handleKeyPress}
-                onChange={this.onInputChange} />
-          </Col>
-          <Col lg={4}>
-            <TitleLabel>First Name</TitleLabel>
-            <FormControl
-                name="firstName"
-                value={firstName}
-                onKeyPress={this.handleKeyPress}
-                onChange={this.onInputChange} />
-          </Col>
-          <Col lg={4}>
-            <TitleLabel>Date of Birth</TitleLabel>
-            <DatePicker
-                value={dob}
-                onChange={(newDate) => {
-                  this.setState({ dob: newDate });
-                }} />
-          </Col>
-        </SearchRow>
-        <SearchRow>
-          <Col lg={12}>
-            <ButtonWrapper>
-              <Button onClick={this.handleOnSubmitSearch}>Search</Button>
-            </ButtonWrapper>
-          </Col>
-        </SearchRow>
+        <StyledFormViewWrapper>
+          <StyledFormWrapper>
+            <StyledSectionWrapper>
+              <PersonSearchFields handleSubmit={this.handleOnSubmitSearch} />
+            </StyledSectionWrapper>
+          </StyledFormWrapper>
+        </StyledFormViewWrapper>
+        { this.renderCreatePersonButton() }
         { this.renderSearchResults() }
       </Wrapper>
     );

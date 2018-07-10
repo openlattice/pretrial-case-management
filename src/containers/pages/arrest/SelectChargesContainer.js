@@ -4,26 +4,29 @@
 
 import React from 'react';
 import Immutable from 'immutable';
-import FontAwesome from 'react-fontawesome';
-import DateTimePicker from 'react-datetime';
 import styled from 'styled-components';
 import moment from 'moment';
 import randomUUID from 'uuid/v4';
 import { FormControl, Col } from 'react-bootstrap';
 
-import StyledButton from '../../../components/buttons/StyledButton';
+import BasicButton from '../../../components/buttons/BasicButton';
+import SecondaryButton from '../../../components/buttons/SecondaryButton';
 import SearchableSelect from '../../../components/controls/SearchableSelect';
-import AllChargesList from '../../../utils/consts/AllChargesList';
+import DateTimePicker from '../../../components/controls/StyledDateTimePicker';
+import MinnehahaChargesList from '../../../utils/consts/MinnehahaChargesList';
+import PenningtonChargesList from '../../../utils/consts/PenningtonChargesList';
 import QUALIFIERS from '../../../utils/consts/QualifierConsts';
 import { CHARGE } from '../../../utils/consts/Consts';
 import type { Charge } from '../../../utils/consts/Consts';
 import { PROPERTY_TYPES } from '../../../utils/consts/DataModelConsts';
+import { DOMAIN } from '../../../utils/consts/ReportDownloadTypes';
 import { toISODateTime } from '../../../utils/Utils';
 
 import {
   PaddedRow,
-  UnpaddedRow,
-  TitleLabel
+  StyledFormWrapper,
+  TitleLabel,
+  UnpaddedRow
 } from '../../../utils/Layout';
 
 const {
@@ -32,20 +35,45 @@ const {
   DEGREE,
   DEGREE_SHORT,
   DISPOSITION_DATE,
-  DISPOSITION,
-  PLEA_DATE,
-  PLEA,
   QUALIFIER
 } = CHARGE;
 
-const Container = styled.div`
-  width: 100%;
+const Container = styled(StyledFormWrapper)`
   text-align: center;
+  background-color: #ffffff;
+  padding: 30px;
+  border-radius: 5px;
+  border: 1px solid #e1e1eb;
+`;
+
+const HeaderWrapper = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  margin-bottom: 45px;
+
+  button {
+    width: 220px;
+  }
+`;
+
+const Title = styled.div`
+  font-family: 'Open Sans', sans-serif;
+  font-size: 18px;
+  color: #555e6f;
+  display: inline-flex;
 `;
 
 const SectionHeader = styled.div`
-  font-size: 22px;
-  margin-bottom: 15px;
+  font-family: 'Open Sans', sans-serif;
+  font-size: 16px;
+  color: #555e6f;
+  margin-bottom: 20px;
+`;
+
+const InputLabel = styled(TitleLabel)`
+  font-size: 14px;
+  margin-bottom: 10px;
 `;
 
 const CaseDetailsWrapper = styled.div`
@@ -54,40 +82,22 @@ const CaseDetailsWrapper = styled.div`
 
 const ChargeWrapper = styled.div`
   text-align: start;
-  padding: 20px;
-  background: #f6f7f8;
-  border-radius: 3px;
+  padding: 30px 0;
+  border-bottom: 1px solid #e1e1eb;
 `;
 
-const ChargeDividerWrapper = styled.div`
-  text-align: center;
+const DeleteButton = styled(BasicButton)`
   width: 100%;
-`;
-
-const ChargeDivider = styled(FontAwesome).attrs({
-  name: 'minus'
-})`
-  margin: 10px 0;
-  color: #36454F;
-`;
-
-const DeleteButton = styled.button`
-  color: #e91e63;
-  background: none;
-  border: none;
-  display: inline-block;
-  margin: auto 5px;
-  &:hover {
-    color: #b90b14;
-  }
-  &:disabled {
-    cursor: default;
-  }
+  height: 39px;
+  font-size: 14px;
+  font-weight: 600;
 `;
 
 const ChargeTitle = styled.div`
-  padding: 10px 0;
-  font-size: 18px;
+  padding-bottom: 10px;
+  font-family: 'Open Sans', sans-serif;
+  font-size: 14px;
+  color: #2e2e34;
   display: inline-block;
 `;
 
@@ -96,7 +106,8 @@ type Props = {
   defaultCharges :Immutable.List<*>,
   onSubmit :(pretrialCase :Immutable.Map<*, *>, charges :Immutable.List<*>) => void,
   nextPage :() => void,
-  prevPage :() => void
+  prevPage :() => void,
+  county :string
 };
 
 type State = {
@@ -120,8 +131,8 @@ export default class SelectChargesContainer extends React.Component<Props, State
     const result = [];
     chargeList.forEach((charge) => {
       result.push({
-        [STATUTE]: charge.getIn([PROPERTY_TYPES.CHARGE_STATUTE, 0]),
-        [DESCRIPTION]: charge.getIn([PROPERTY_TYPES.CHARGE_DESCRIPTION, 0]),
+        [STATUTE]: charge.getIn([PROPERTY_TYPES.CHARGE_STATUTE, 0], '[no statute]'),
+        [DESCRIPTION]: charge.getIn([PROPERTY_TYPES.CHARGE_DESCRIPTION, 0], '[no description]'),
         [DEGREE]: charge.getIn([PROPERTY_TYPES.CHARGE_DEGREE, 0]),
         [DEGREE_SHORT]: charge.getIn([PROPERTY_TYPES.CHARGE_LEVEL, 0])
       });
@@ -173,11 +184,10 @@ export default class SelectChargesContainer extends React.Component<Props, State
     const { arrestDate, caseDispositionDate } = this.state;
     return (
       <CaseDetailsWrapper>
-        <hr />
         <SectionHeader>Arrest Details:</SectionHeader>
         <PaddedRow>
           <Col lg={6}>
-            <TitleLabel>Arrest Date:</TitleLabel>
+            <InputLabel>Arrest Date:</InputLabel>
             <DateTimePicker
                 timeFormat="HH:mm"
                 value={arrestDate}
@@ -186,7 +196,7 @@ export default class SelectChargesContainer extends React.Component<Props, State
                 }} />
           </Col>
           <Col lg={6}>
-            <TitleLabel>Case Disposition Date:</TitleLabel>
+            <InputLabel>Case Disposition Date:</InputLabel>
             <DateTimePicker
                 value={caseDispositionDate}
                 onChange={(date) => {
@@ -194,7 +204,6 @@ export default class SelectChargesContainer extends React.Component<Props, State
                 }} />
           </Col>
         </PaddedRow>
-        <hr />
       </CaseDetailsWrapper>
     );
   }
@@ -211,7 +220,7 @@ export default class SelectChargesContainer extends React.Component<Props, State
 
   formatChargeOptions = () => {
     let options = Immutable.Map();
-    AllChargesList.forEach((charge) => {
+    (this.props.county === DOMAIN.PENNINGTON ? PenningtonChargesList : MinnehahaChargesList).forEach((charge) => {
       options = options.set(this.formatCharge(charge), charge);
     });
     return options;
@@ -266,22 +275,22 @@ export default class SelectChargesContainer extends React.Component<Props, State
     return (
       <div key={index}>
         <ChargeWrapper>
-          <DeleteButton onClick={() => this.deleteCharge(index)}><FontAwesome name="close" /></DeleteButton>
           <ChargeTitle>{this.formatCharge(charge)}</ChargeTitle>
           <UnpaddedRow>
-            <Col lg={3}>
-              <TitleLabel>Qualifier</TitleLabel>
+            <Col lg={6}>
               <SearchableSelect
                   onSelect={getOnSelect(QUALIFIER)}
                   options={this.formatSelectOptions(QUALIFIERS)}
                   searchPlaceholder="Select a qualifier"
                   value={charge[QUALIFIER]}
-                  onClear={getOnClear(QUALIFIER)}
-                  short />
+                  onClear={getOnClear(QUALIFIER)} />
+            </Col>
+            <Col lg={3} />
+            <Col lg={3}>
+              <DeleteButton onClick={() => this.deleteCharge(index)}>Remove</DeleteButton>
             </Col>
           </UnpaddedRow>
         </ChargeWrapper>
-        <ChargeDividerWrapper><ChargeDivider /></ChargeDividerWrapper>
       </div>
     );
   }
@@ -296,18 +305,26 @@ export default class SelectChargesContainer extends React.Component<Props, State
         <SearchableSelect
             onSelect={this.addCharge}
             options={this.formatChargeOptions()}
-            searchPlaceholder="Select a charge" />
+            searchPlaceholder="Select a charge"
+            openAbove />
         <hr />
       </CaseDetailsWrapper>
     );
   }
 
+  renderHeader = () => (
+    <HeaderWrapper>
+      <Title>Select an arrest</Title>
+      <SecondaryButton onClick={this.onSubmit}>Confirm Charge Details</SecondaryButton>
+    </HeaderWrapper>
+  )
+
   render() {
     return (
       <Container>
+        {this.renderHeader()}
         {this.renderCaseInfo()}
         {this.renderCharges()}
-        <StyledButton onClick={this.onSubmit}>Confirm Charge Details</StyledButton>
       </Container>
     );
   }

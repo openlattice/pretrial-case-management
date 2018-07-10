@@ -9,11 +9,10 @@ import {
   HARD_RESTART,
   LOAD_DATA_MODEL,
   LOAD_NEIGHBORS,
-  UPDATE_NOTES,
   loadDataModel,
-  loadNeighbors,
-  updateNotes
+  loadNeighbors
 } from './FormActionFactory';
+import { loadPSAData } from '../review/ReviewActionFactory';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_STATUSES } from '../../utils/consts/Consts';
 
@@ -43,8 +42,8 @@ function* loadDataModelWatcher() :Generator<*, *, *> {
   yield takeEvery(LOAD_DATA_MODEL, loadDataModelWorker);
 }
 
-function* getOpenPSANeighbors(entitySetId, neighbors) :Generator<*, *, *> {
-  const ids = neighbors.filter((neighbor) => {
+const getOpenPSAIds = (neighbors) => {
+  return neighbors.filter((neighbor) => {
     if (neighbor.neighborEntitySet && neighbor.neighborEntitySet.name === ENTITY_SETS.PSA_SCORES) {
       const statusValues = neighbor.neighborDetails[PROPERTY_TYPES.STATUS];
       if (statusValues && statusValues.includes(PSA_STATUSES.OPEN)) {
@@ -53,7 +52,10 @@ function* getOpenPSANeighbors(entitySetId, neighbors) :Generator<*, *, *> {
     }
     return false;
   }).map(neighbor => neighbor.neighborId);
+}
 
+function* getOpenPSANeighbors(entitySetId, neighbors) :Generator<*, *, *> {
+  const ids = getOpenPSAIds(neighbors);
   return ids.length ? yield call(SearchApi.searchEntityNeighborsBulk, entitySetId, ids) : {};
 }
 
@@ -65,6 +67,7 @@ function* loadNeighborsWorker(action :SequenceAction) :Generator<*, *, *> {
     const neighbors = yield call(SearchApi.searchEntityNeighbors, entitySetId, entityKeyId);
     const openPSAs = yield call(getOpenPSANeighbors, entitySetId, neighbors);
     yield put(loadNeighbors.success(action.id, { neighbors, openPSAs }));
+    yield put(loadPSAData(getOpenPSAIds(neighbors)));
   }
   catch (error) {
     console.error(error)
@@ -77,52 +80,6 @@ function* loadNeighborsWorker(action :SequenceAction) :Generator<*, *, *> {
 
 function* loadNeighborsWatcher() :Generator<*, *, *> {
   yield takeEvery(LOAD_NEIGHBORS, loadNeighborsWorker);
-}
-
-function* updateNotesWorker(action :SequenceAction) :Generator<*, *, *> {
-  const {
-    notes,
-    entityId,
-    entitySetId,
-    propertyTypes
-  } = action.value;
-
-  try {
-    yield put(updateNotes.request(action.id));
-    const fqnToId = {};
-    propertyTypes.forEach((propertyType) => {
-      const fqn = `${propertyType.getIn(['type', 'namespace'])}.${propertyType.getIn(['type', 'name'])}`;
-      fqnToId[fqn] = propertyType.get('id');
-    });
-    const searchOptions = {
-      start: 0,
-      maxHits: 1,
-      searchTerm: `${fqnToId[PROPERTY_TYPES.GENERAL_ID]}:"${entityId}"`
-    };
-    const response = yield call(SearchApi.searchEntitySetData, entitySetId, searchOptions);
-    const result = response.hits[0];
-    if (result) {
-      const entity = {};
-      Object.keys(result).forEach((fqn) => {
-        const propertyTypeId = fqnToId[fqn];
-        if (propertyTypeId) entity[propertyTypeId] = result[fqn];
-      });
-      entity[fqnToId[PROPERTY_TYPES.RELEASE_RECOMMENDATION]] = [notes];
-      yield call(DataApi.replaceEntityInEntitySet, entitySetId, result.id[0], entity);
-      yield put(updateNotes.success(action.id));
-    }
-  }
-  catch (error) {
-    console.error(error);
-    yield put(updateNotes.failure(action.id));
-  }
-  finally {
-    yield put(updateNotes.finally(action.id));
-  }
-}
-
-function* updateNotesWatcher() :Generator<*, *, *> {
-  yield takeEvery(UPDATE_NOTES, updateNotesWorker);
 }
 
 function* hardRestartWorker() :Generator<*, *, *> {
@@ -141,6 +98,5 @@ function* hardRestartWatcher() :Generator<*, *, *> {
 export {
   hardRestartWatcher,
   loadDataModelWatcher,
-  loadNeighborsWatcher,
-  updateNotesWatcher
+  loadNeighborsWatcher
 };

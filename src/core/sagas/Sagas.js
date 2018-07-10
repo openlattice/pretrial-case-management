@@ -6,6 +6,7 @@ import { AuthSagas } from 'lattice-auth';
 import { fork } from 'redux-saga/effects';
 
 import * as AppSagas from '../../containers/app/AppSagas';
+import * as CourtSagas from '../../containers/court/CourtSagas';
 import * as PersonSagas from '../../containers/person/PersonSagas';
 import * as PeopleSagas from '../../containers/people/PeopleSagas';
 import * as DashboardSagas from '../../containers/dashboard/DashboardSagas';
@@ -30,6 +31,9 @@ export default function* sagas() :Generator<*, *, *> {
     fork(AuthSagas.watchAuthFailure),
     fork(AuthSagas.watchAuthExpired),
     fork(AuthSagas.watchLogout),
+
+    // CourtSagas
+    fork(CourtSagas.loadHearingsTodayWatcher),
 
     // DashboardSagas
     fork(DashboardSagas.loadDashboardDataWatcher),
@@ -63,7 +67,6 @@ export default function* sagas() :Generator<*, *, *> {
     fork(PsaSagas.hardRestartWatcher),
     fork(PsaSagas.loadDataModelWatcher),
     fork(PsaSagas.loadNeighborsWatcher),
-    fork(PsaSagas.updateNotesWatcher),
 
     // Review Sagas
     fork(ReviewSagas.changePSAStatusWatcher),
@@ -72,6 +75,7 @@ export default function* sagas() :Generator<*, *, *> {
     fork(ReviewSagas.loadCaseHistoryWatcher),
     fork(ReviewSagas.loadPSADataWatcher),
     fork(ReviewSagas.loadPSAsByDateWatcher),
+    fork(ReviewSagas.refreshPSANeighborsWatcher),
     fork(ReviewSagas.updateScoresAndRiskFactorsWatcher)
   ];
 }

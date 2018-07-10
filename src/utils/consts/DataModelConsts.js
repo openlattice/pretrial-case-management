@@ -18,6 +18,10 @@ export const ENTITY_SETS = {
   STAFF: 'southdakotastaff',
   SPEAKER_RECOGNITION_PROFILES: 'southdakotaspeakerverificationprofiles',
   FTAS: 'southdakotaftas',
+  HEARINGS: 'southdakotahearings',
+  JUDGES: 'southdakotajudges',
+  BONDS: 'southdakotamanualbonds',
+  RELEASE_CONDITIONS: 'southdakotareleaseconditions',
 
   // arrest entity sets
   ARREST_CASES: 'PenZuercherPretrialCase',
@@ -39,6 +43,8 @@ export const PROPERTY_TYPES = {
   STRING_ID: 'general.stringid',
   COMPLETED_DATE_TIME: 'date.completeddatetime',
   DATE_TIME: 'general.datetime',
+  START_DATE: 'ol.startdate',
+  END_DATE: 'ol.enddate',
 
   FIRST_NAME: 'nc.PersonGivenName',
   LAST_NAME: 'nc.PersonSurName',
@@ -95,6 +101,11 @@ export const PROPERTY_TYPES = {
   JAIL_START_DATE: 'justice.incarcerationstartdate',
   CONCURRENT_CONSECUTIVE: 'justice.concurrentconsecutive',
 
+  // Hearing entity type consts
+  COURTROOM: 'justice.courtroom',
+  HEARING_TYPE: 'justice.courtcasetype',
+  UPDATE_TYPE: 'ol.update',
+
   // PSA form entity type consts
   AGE_AT_CURRENT_ARREST: 'psa.AgeAtCurrentArrest',
   CURRENT_VIOLENT_OFFENSE: 'psa.CurrentViolentOffense',
@@ -139,6 +150,20 @@ export const PROPERTY_TYPES = {
   CONDITION_1: 'justice.condition1',
   CONDITION_2: 'justice.condition2',
   CONDITION_3: 'justice.condition3',
+  OUTCOME: 'ol.outcome',
+
+  // Bond entity type consts
+  BOND_TYPE: 'justice.bonddescription',
+  BOND_AMOUNT: 'justice.bondamount',
+  SURETY_AMOUNT: 'justice.suretyamount',
+
+  // Release condition entity type consts
+  CONDITION_TYPE: 'ol.type',
+  FREQUENCY: 'general.frequency',
+  OTHER_TEXT: 'ol.othertext',
+  PERSON_NAME: 'general.fullname',
+  PERSON_TYPE: 'criminaljustice.persontype',
+  PLAN_TYPE: 'ol.plantype',
 
   // PSA scores entity type consts
   NVCA_FLAG: 'psa.nvcaFlag',
@@ -146,13 +171,14 @@ export const PROPERTY_TYPES = {
   FTA_SCALE: 'psa.ftaScale',
   TIMESTAMP: 'psa.GeneratedDate',
   STATUS: 'general.status',
+  STATUS_NOTES: 'general.statusnotes',
   FAILURE_REASON: 'justice.failurereason',
 
   // Release recommendation entity type consts
   GENERAL_ID: 'general.id',
   RELEASE_RECOMMENDATION: 'publicsafety.recommendation',
 
-  // Vocie recognition entity type consts
+  // Voice recognition entity type consts
   AUDIO_SAMPLE: 'media.audio',
   PIN: 'general.pin'
 };

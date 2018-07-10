@@ -10,7 +10,7 @@ import { Pagination } from 'react-bootstrap';
 
 import PSAReviewRow from '../../components/review/PSAReviewRow';
 import LoadingSpinner from '../../components/LoadingSpinner';
-import { ENTITY_SETS } from '../../utils/consts/DataModelConsts';
+import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { SORT_TYPES } from '../../utils/consts/Consts';
 import { sortByDate, sortByName } from '../../utils/PSAUtils';
 import { CenteredContainer } from '../../utils/Layout';
@@ -24,6 +24,7 @@ type Props = {
   sort? :?string,
   hideCaseHistory? :boolean,
   hideProfile? :boolean,
+  onStatusChangeCallback? :() => void,
   actions :{
     downloadPSAReviewPDF :(values :{
       neighbors :Immutable.Map<*, *>,
@@ -48,19 +49,13 @@ type Props = {
       dmfRiskFactorsEntity :Object
     }) => void,
     changePSAStatus :(values :{
-      scoresEntitySetId :string,
       scoresId :string,
       scoresEntity :Immutable.Map<*, *>
     }) => void,
-    updateNotes :(value :{
-      notes :string,
-      entityId :string,
-      entitySetId :string,
-      propertyTypes :Immutable.List<*>
-    }) => void,
     checkPSAPermissions :() => void,
+    refreshPSANeighbors :({ id :string }) => void,
     submit :(value :{ config :Object, values :Object}) => void,
-    clearForm :() => void,
+    clearSubmit :() => void,
   },
   psaNeighborsById :Immutable.Map<*, *>,
   caseHistory :Immutable.List<*>,
@@ -69,8 +64,11 @@ type Props = {
   manualChargeHistory :Immutable.Map<*, *>,
   sentenceHistory :Immutable.Map<*, *>,
   ftaHistory :Immutable.Map<*, *>,
+  hearings :Immutable.List<*>,
+  psaIdsRefreshing :Immutable.Set<*>,
   readOnlyPermissions :boolean,
-  loadingPSAData :boolean
+  loadingPSAData :boolean,
+  submitting :boolean
 }
 
 type State = {
@@ -83,7 +81,8 @@ class PSAReviewRowList extends React.Component<Props, State> {
 
   static defaultProps = {
     hideCaseHistory: false,
-    hideProfile: false
+    hideProfile: false,
+    onStatusChangeCallback: () => {}
   }
 
   constructor(props :Props) {
@@ -98,48 +97,46 @@ class PSAReviewRowList extends React.Component<Props, State> {
   }
 
   componentWillUnmount() {
-    this.props.actions.clearForm();
-  }
-
-  updateNotes = (notes, entityId, entitySetId, propertyTypes) => {
-    this.props.actions.updateNotes({
-      notes,
-      entityId,
-      entitySetId,
-      propertyTypes
-    });
+    this.props.actions.clearSubmit();
   }
 
   renderRow = (scoreId, scores) => {
     const neighbors = this.props.psaNeighborsById.get(scoreId, Immutable.Map());
     const personId = neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborId'], '');
+    const personIdValue = neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborDetails', PROPERTY_TYPES.PERSON_ID, 0], '');
     const caseHistory = this.props.caseHistory.get(personId, Immutable.List());
     const manualCaseHistory = this.props.manualCaseHistory.get(personId, Immutable.List());
     const chargeHistory = this.props.chargeHistory.get(personId, Immutable.Map());
     const manualChargeHistory = this.props.manualChargeHistory.get(personId, Immutable.Map());
     const sentenceHistory = this.props.sentenceHistory.get(personId, Immutable.Map());
     const ftaHistory = this.props.ftaHistory.get(personId, Immutable.Map());
+    const hearings = this.props.hearings.get(personId, Immutable.List());
     return (
       <PSAReviewRow
           neighbors={neighbors}
           scores={scores}
+          personId={personIdValue}
           entityKeyId={scoreId}
           downloadFn={this.props.actions.downloadPSAReviewPDF}
           loadCaseHistoryFn={this.props.actions.loadCaseHistory}
           updateScoresAndRiskFactors={this.props.actions.updateScoresAndRiskFactors}
           changePSAStatus={this.props.actions.changePSAStatus}
-          updateNotes={this.updateNotes}
+          onStatusChangeCallback={this.props.onStatusChangeCallback}
           submitData={this.props.actions.submit}
+          refreshPSANeighbors={this.props.actions.refreshPSANeighbors}
           caseHistory={caseHistory}
           manualCaseHistory={manualCaseHistory}
           chargeHistory={chargeHistory}
           manualChargeHistory={manualChargeHistory}
           sentenceHistory={sentenceHistory}
           ftaHistory={ftaHistory}
+          hearings={hearings}
+          refreshingNeighbors={this.props.psaIdsRefreshing.has(scoreId)}
           readOnly={this.props.readOnlyPermissions}
           key={scoreId}
           hideCaseHistory={this.props.hideCaseHistory}
-          hideProfile={this.props.hideProfile} />
+          hideProfile={this.props.hideProfile}
+          submitting={this.props.submitting} />
     );
   }
 
@@ -211,8 +208,11 @@ function mapStateToProps(state) {
     manualChargeHistory: review.get('manualChargeHistory'),
     sentenceHistory: review.get('sentenceHistory'),
     ftaHistory: review.get('ftaHistory'),
+    hearings: review.get('hearings'),
     readOnlyPermissions: review.get('readOnly'),
-    loadingPSAData: review.get('loadingPSAData')
+    loadingPSAData: review.get('loadingPSAData'),
+    psaIdsRefreshing: review.get('psaIdsRefreshing'),
+    submitting: state.getIn(['submit', 'submitting'], false)
   };
 }
 

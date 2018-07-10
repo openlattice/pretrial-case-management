@@ -12,19 +12,22 @@ import { AuthUtils } from 'lattice-auth';
 import PSAInputForm from '../psainput/PSAInputForm';
 import PersonCard from '../person/PersonCard';
 import StyledButton from '../buttons/StyledButton';
-import InlineEditableControl from '../controls/InlineEditableControl';
 import CaseHistory from '../../components/review/CaseHistory';
 import PSAScores from './PSAScores';
 import PSASummary from './PSASummary';
 import DMFExplanation from '../dmf/DMFExplanation';
+import SelectHearingsContainer from '../../containers/hearings/SelectHearingsContainer';
+import SelectReleaseConditions from '../releaseconditions/SelectReleaseConditions';
 import ClosePSAModal from './ClosePSAModal';
+import LoadingSpinner from '../LoadingSpinner';
 import psaEditedConfig from '../../config/formconfig/PsaEditedConfig';
 import { getScoresAndRiskFactors, calculateDMF } from '../../utils/ScoringUtils';
 import { CenteredContainer } from '../../utils/Layout';
 import { toISODateTime } from '../../utils/Utils';
-import { CONTEXT, DMF, EDIT_FIELDS, ID_FIELDS, NOTES, PSA, PSA_STATUSES } from '../../utils/consts/Consts';
+import { CONTEXT, DMF, EDIT_FIELDS, NOTES, PSA, PSA_STATUSES } from '../../utils/consts/Consts';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { RESULT_CATEGORIES, formatDMFFromEntity } from '../../utils/consts/DMFResultConsts';
+import { psaIsClosed } from '../../utils/PSAUtils';
 import * as OverrideClassNames from '../../utils/styleoverrides/OverrideClassNames';
 
 const ReviewRowContainer = styled.div`
@@ -75,10 +78,6 @@ const ImportantMetadataText = styled.span`
   color: black;
 `;
 
-const NotesContainer = styled.div`
-  text-align: left;
-`;
-
 const MetadataItem = styled.div`
   display: block;
 `;
@@ -92,13 +91,16 @@ const TitleHeader = styled.span`
   margin-right: 15px;
 `;
 
-const Header = styled.div`
-  font-weight: bold;
-`;
-
 const StatusTag = styled.div`
+  width: 86px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  font-family: 'Open Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
   color: white;
   border-radius: 2px;
   align-self: flex-end;
@@ -107,17 +109,35 @@ const StatusTag = styled.div`
   background: ${(props) => {
     switch (props.status) {
       case PSA_STATUSES.OPEN:
-        return '#b898ff';
+        return '#8b66db';
       case PSA_STATUSES.SUCCESS:
         return '#00be84';
       case PSA_STATUSES.FAILURE:
         return '#ff3c5d';
       case PSA_STATUSES.CANCELLED:
         return '#b6bbc7';
+      case PSA_STATUSES.DECLINED:
+        return '#555e6f';
+      case PSA_STATUSES.DISMISSED:
+        return '#555e6f';
       default:
-        return 'white';
+        return 'transparent';
     }
   }};
+`;
+
+const SubmittingWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  span {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 16px;
+    margin: 20px 0;
+    color: #2e2e34;
+  }
 `;
 
 type Props = {
@@ -126,14 +146,18 @@ type Props = {
   neighbors :Immutable.Map<*, *>,
   hideCaseHistory? :boolean,
   hideProfile? :boolean,
+  onStatusChangeCallback? :() => void,
   caseHistory :Immutable.List<*>,
   manualCaseHistory :Immutable.List<*>,
   chargeHistory :Immutable.Map<*, *>,
   manualChargeHistory :Immutable.Map<*, *>,
   sentenceHistory :Immutable.Map<*, *>,
   ftaHistory :Immutable.Map<*, *>,
+  hearings :Immutable.List<*>,
   readOnly :boolean,
   personId? :string,
+  submitting :boolean,
+  refreshingNeighbors :boolean,
   downloadFn :(values :{
     neighbors :Immutable.Map<*, *>,
     scores :Immutable.Map<*, *>
@@ -157,17 +181,11 @@ type Props = {
     dmfRiskFactorsEntity :Object
   }) => void,
   changePSAStatus? :(values :{
-    scoresEntitySetId :string,
     scoresId :string,
     scoresEntity :Immutable.Map<*, *>
   }) => void,
-  updateNotes :(value :{
-    notes :string,
-    entityId :string,
-    entitySetId :string,
-    propertyTypes :Immutable.List<*>
-  }) => void,
-  submitData :(value :{ config :Object, values :Object }) => void
+  submitData :(value :{ config :Object, values :Object, callback :() => void }) => void,
+  refreshPSANeighbors :({ id :string }) => void
 };
 
 type State = {
@@ -183,14 +201,16 @@ const VIEWS = {
   SUMMARY: 'SUMMARY',
   PSA: 'PSA',
   DMF: 'DMF',
-  HISTORY: 'HISTORY'
+  HISTORY: 'HISTORY',
+  INITIAL_APPEARANCE: 'INITIAL_APPEARANCE'
 };
 
 export default class PSAReviewRow extends React.Component<Props, State> {
 
   static defaultProps = {
     hideCaseHistory: false,
-    hideProfile: false
+    hideProfile: false,
+    onStatusChangeCallback: () => {}
   }
 
   constructor(props :Props) {
@@ -213,6 +233,14 @@ export default class PSAReviewRow extends React.Component<Props, State> {
 
   }
 
+  getNotesFromNeighbors = neighbors =>
+    neighbors.getIn([
+      ENTITY_SETS.RELEASE_RECOMMENDATIONS,
+      'neighborDetails',
+      PROPERTY_TYPES.RELEASE_RECOMMENDATION,
+      0
+    ], '');
+
   getRiskFactors = (neighbors :Immutable.Map<*, *>) => {
     const riskFactors = neighbors.getIn([ENTITY_SETS.PSA_RISK_FACTORS, 'neighborDetails'], Immutable.Map());
     const dmfRiskFactors = neighbors.getIn([ENTITY_SETS.DMF_RISK_FACTORS, 'neighborDetails'], Immutable.Map());
@@ -226,6 +254,7 @@ export default class PSAReviewRow extends React.Component<Props, State> {
     const priorFTA = (priorFTAVal === '2 or more') ? 2 : priorFTAVal;
 
     return Immutable.fromJS({
+      [PSA.NOTES]: this.getNotesFromNeighbors(neighbors),
       [PSA.AGE_AT_CURRENT_ARREST]: `${ageAtCurrentArrest}`,
       [PSA.CURRENT_VIOLENT_OFFENSE]: `${riskFactors.getIn([PROPERTY_TYPES.CURRENT_VIOLENT_OFFENSE, 0])}`,
       [PSA.PENDING_CHARGE]: `${riskFactors.getIn([PROPERTY_TYPES.PENDING_CHARGE, 0])}`,
@@ -286,47 +315,6 @@ export default class PSAReviewRow extends React.Component<Props, State> {
     </DownloadButtonContainer>
   )
 
-  handleNotesUpdate = (notes :string) => {
-    const neighbor = this.props.neighbors.get(ENTITY_SETS.RELEASE_RECOMMENDATIONS, Immutable.Map());
-    const entityId = neighbor.getIn(['neighborDetails', PROPERTY_TYPES.GENERAL_ID, 0]);
-    const entitySetId = neighbor.getIn(['neighborEntitySet', 'id']);
-    const propertyTypes = neighbor.get('neighborPropertyTypes');
-    this.props.updateNotes({
-      notes,
-      entityId,
-      entitySetId,
-      propertyTypes
-    });
-
-    this.props.submitData({
-      config: psaEditedConfig,
-      values: {
-        [EDIT_FIELDS.PSA_ID]: [this.props.scores.getIn([PROPERTY_TYPES.GENERAL_ID, 0])],
-        [EDIT_FIELDS.NOTES_ID]: [entityId],
-        [EDIT_FIELDS.TIMESTAMP]: [toISODateTime(moment())],
-        [EDIT_FIELDS.PERSON_ID]: [AuthUtils.getUserInfo().email]
-      }
-    });
-  }
-
-  renderNotes = () => {
-    const notes = this.props.neighbors.getIn(
-      [ENTITY_SETS.RELEASE_RECOMMENDATIONS, 'neighborDetails', PROPERTY_TYPES.RELEASE_RECOMMENDATION, 0],
-      ''
-    );
-    return (
-      <NotesContainer>
-        <Header>Notes</Header>
-        <InlineEditableControl
-            type="textarea"
-            value={notes}
-            onChange={this.handleNotesUpdate}
-            viewOnly={!this.state.editing}
-            size="medium_small" />
-      </NotesContainer>
-    );
-  }
-
   handleRiskFactorChange = (e :Object) => {
     const {
       PRIOR_MISDEMEANOR,
@@ -382,12 +370,23 @@ export default class PSAReviewRow extends React.Component<Props, State> {
     return result;
   };
 
+  getNotesEntity = (riskFactors, notesId) => ({
+    [PROPERTY_TYPES.GENERAL_ID]: [notesId],
+    [PROPERTY_TYPES.RELEASE_RECOMMENDATION]: [riskFactors.get(PSA.NOTES)]
+  });
+
   getEntitySetId = (name) :string => this.props.neighbors.getIn([name, 'neighborEntitySet', 'id']);
 
   getEntityKeyId = (name) :string => this.props.neighbors.getIn([name, 'neighborId']);
 
-  getIdValue = (name) :string =>
-    this.props.neighbors.getIn([name, 'neighborDetails', PROPERTY_TYPES.GENERAL_ID, 0]);
+  getIdValue = (name, optionalFQN) :string => {
+    const fqn = optionalFQN || PROPERTY_TYPES.GENERAL_ID;
+    return this.props.neighbors.getIn([name, 'neighborDetails', fqn, 0]);
+  }
+
+  refreshPSANeighborsCallback = () => {
+    this.props.refreshPSANeighbors({ id: this.props.entityKeyId });
+  }
 
   onRiskFactorEdit = (e :Object) => {
     e.preventDefault();
@@ -412,11 +411,26 @@ export default class PSAReviewRow extends React.Component<Props, State> {
     const scoresEntity = scores.toJS();
     if (scoreId) scoresEntity[PROPERTY_TYPES.GENERAL_ID] = [scoreId];
     if (riskFactorsIdValue) riskFactorsEntity[PROPERTY_TYPES.GENERAL_ID] = [riskFactorsIdValue];
+    const status = this.props.scores.getIn([PROPERTY_TYPES.STATUS, 0]);
+    scoresEntity[PROPERTY_TYPES.STATUS] = status ? [status] : [];
 
     const scoresId = this.props.entityKeyId;
     const scoresEntitySetId = this.getEntitySetId(ENTITY_SETS.PSA_SCORES);
     const riskFactorsEntitySetId = this.getEntitySetId(ENTITY_SETS.PSA_RISK_FACTORS);
     const riskFactorsId = this.getEntityKeyId(ENTITY_SETS.PSA_RISK_FACTORS);
+
+    let notesIdValue;
+    let notesId;
+    let notesEntitySetId;
+    let notesEntity;
+
+    const notes = this.state.riskFactors.get(PSA.NOTES);
+    if (this.getNotesFromNeighbors(this.props.neighbors) !== notes) {
+      notesIdValue = this.getIdValue(ENTITY_SETS.RELEASE_RECOMMENDATIONS);
+      notesId = this.getEntityKeyId(ENTITY_SETS.RELEASE_RECOMMENDATIONS);
+      notesEntitySetId = this.getEntitySetId(ENTITY_SETS.RELEASE_RECOMMENDATIONS);
+      notesEntity = this.getNotesEntity(this.state.riskFactors, notesIdValue);
+    }
 
     this.props.updateScoresAndRiskFactors({
       scoresEntitySetId,
@@ -430,7 +444,10 @@ export default class PSAReviewRow extends React.Component<Props, State> {
       dmfEntity,
       dmfRiskFactorsEntitySetId,
       dmfRiskFactorsId,
-      dmfRiskFactorsEntity
+      dmfRiskFactorsEntity,
+      notesEntitySetId,
+      notesId,
+      notesEntity
     });
 
     if (scoreId) {
@@ -441,28 +458,32 @@ export default class PSAReviewRow extends React.Component<Props, State> {
           [EDIT_FIELDS.RISK_FACTORS_ID]: [riskFactorsId],
           [EDIT_FIELDS.DMF_ID]: [dmfId],
           [EDIT_FIELDS.DMF_RISK_FACTORS_ID]: [dmfRiskFactorsId],
+          [EDIT_FIELDS.NOTES_ID]: [notesId],
           [EDIT_FIELDS.TIMESTAMP]: [toISODateTime(moment())],
           [EDIT_FIELDS.PERSON_ID]: [AuthUtils.getUserInfo().email]
-        }
+        },
+        callback: this.refreshPSANeighborsCallback
       });
     }
 
     this.setState({ editing: false });
   }
 
-  handleStatusChange = (status :string, failureReason :string[]) => {
+  handleStatusChange = (status :string, failureReason :string[], statusNotes :?string) => {
     if (!this.props.changePSAStatus) return;
+    const statusNotesList = (statusNotes && statusNotes.length) ? Immutable.List.of(statusNotes) : Immutable.List();
 
     const scoresEntity = this.props.scores
       .set(PROPERTY_TYPES.STATUS, Immutable.List.of(status))
-      .set(PROPERTY_TYPES.FAILURE_REASON, Immutable.fromJS(failureReason));
+      .set(PROPERTY_TYPES.FAILURE_REASON, Immutable.fromJS(failureReason))
+      .set(PROPERTY_TYPES.STATUS_NOTES, statusNotesList)
+      .delete('id');
 
     const scoresId = this.props.entityKeyId;
-    const scoresEntitySetId = this.getEntitySetId(ENTITY_SETS.PSA_SCORES);
     this.props.changePSAStatus({
-      scoresEntitySetId,
       scoresId,
-      scoresEntity
+      scoresEntity,
+      callback: this.props.onStatusChangeCallback
     });
 
     this.props.submitData({
@@ -471,7 +492,8 @@ export default class PSAReviewRow extends React.Component<Props, State> {
         [EDIT_FIELDS.PSA_ID]: [scoresEntity.getIn([PROPERTY_TYPES.GENERAL_ID, 0])],
         [EDIT_FIELDS.TIMESTAMP]: [toISODateTime(moment())],
         [EDIT_FIELDS.PERSON_ID]: [AuthUtils.getUserInfo().email]
-      }
+      },
+      callback: this.refreshPSANeighborsCallback
     });
     this.setState({ editing: false });
   }
@@ -550,7 +572,6 @@ export default class PSAReviewRow extends React.Component<Props, State> {
             allSentences={allSentences}
             allFTAs={ftaHistory}
             viewOnly={!editing || this.psaClosed()} />
-        {this.renderNotes()}
         {editButton}
       </div>
     );
@@ -567,6 +588,40 @@ export default class PSAReviewRow extends React.Component<Props, State> {
     }
 
     return <DMFExplanation dmf={dmf} nca={nca} fta={fta} nvca={nvca} riskFactors={riskFactors} />;
+  }
+
+  renderInitialAppearance = () => {
+    if (this.props.submitting || this.props.refreshingNeighbors) {
+      return (
+        <SubmittingWrapper>
+          <span>{this.props.submitting ? 'Submitting' : 'Reloading'}</span>
+          <LoadingSpinner />
+        </SubmittingWrapper>
+      );
+    }
+    if (!this.props.neighbors.get(ENTITY_SETS.HEARINGS)) {
+      return (
+        <SelectHearingsContainer
+            personId={this.props.personId}
+            psaId={this.props.scores.getIn([PROPERTY_TYPES.GENERAL_ID, 0])}
+            psaEntityKeyId={this.props.entityKeyId}
+            hearings={this.props.hearings} />
+      );
+    }
+    return (
+      <SelectReleaseConditions
+          submitting={this.props.submitting}
+          personId={this.getIdValue(ENTITY_SETS.PEOPLE, PROPERTY_TYPES.PERSON_ID)}
+          psaId={this.props.scores.getIn([PROPERTY_TYPES.GENERAL_ID, 0])}
+          dmfId={this.getIdValue(ENTITY_SETS.DMF_RESULTS)}
+          submit={this.props.submitData}
+          submitCallback={this.refreshPSANeighborsCallback}
+          hearing={this.props.neighbors.getIn([ENTITY_SETS.HEARINGS, 'neighborDetails'])}
+          defaultDMF={this.props.neighbors.getIn([ENTITY_SETS.DMF_RESULTS, 'neighborDetails'], Immutable.Map())}
+          defaultBond={this.props.neighbors.getIn([ENTITY_SETS.BONDS, 'neighborDetails'], Immutable.Map())}
+          defaultConditions={this.props.neighbors.get(ENTITY_SETS.RELEASE_CONDITIONS, Immutable.List())
+            .map(neighbor => neighbor.get('neighborDetails', Immutable.Map()))} />
+    );
   }
 
   renderDetails = () => {
@@ -591,6 +646,7 @@ export default class PSAReviewRow extends React.Component<Props, State> {
           <ClosePSAModal
               open={this.state.closing}
               defaultStatus={this.props.scores.getIn([PROPERTY_TYPES.STATUS, 0])}
+              defaultStatusNotes={this.props.scores.getIn([PROPERTY_TYPES.STATUS_NOTES, 0])}
               defaultFailureReasons={this.props.scores.get(PROPERTY_TYPES.FAILURE_REASON, Immutable.List()).toJS()}
               onClose={() => this.setState({ closing: false })}
               onSubmit={this.handleStatusChange} />
@@ -605,6 +661,7 @@ export default class PSAReviewRow extends React.Component<Props, State> {
                 </Tab>
               )
             }
+            <Tab eventKey={VIEWS.INITIAL_APPEARANCE} title="Initial Appearance">{this.renderInitialAppearance()}</Tab>
           </Tabs>
         </Modal.Body>
       </Modal>
@@ -650,6 +707,8 @@ export default class PSAReviewRow extends React.Component<Props, State> {
       }
     });
 
+    const editLabel = psaIsClosed(this.props.scores) ? 'Closed' : 'Edited';
+
     if (!dateCreated && !creator) return null;
 
     const dateCreatedText = dateCreated ? dateCreated.format(dateFormat) : '';
@@ -659,7 +718,7 @@ export default class PSAReviewRow extends React.Component<Props, State> {
       <div>
         <MetadataItem>{this.renderMetadataText('Created', dateCreatedText, creator)}</MetadataItem>
         { dateEdited || editor
-          ? <MetadataItem>{this.renderMetadataText('Edited', dateEditedText, editor)}</MetadataItem>
+          ? <MetadataItem>{this.renderMetadataText(editLabel, dateEditedText, editor)}</MetadataItem>
           : null
         }
       </div>
@@ -668,7 +727,7 @@ export default class PSAReviewRow extends React.Component<Props, State> {
 
   renderStatus = () => {
     const status = this.props.scores.getIn([PROPERTY_TYPES.STATUS, 0], '');
-    return <StatusTag status={status}>{status}</StatusTag>
+    return <StatusTag status={status}>{status}</StatusTag>;
   }
 
   closeModal = () => {
@@ -680,7 +739,7 @@ export default class PSAReviewRow extends React.Component<Props, State> {
 
   openDetailsModal = () => {
     const { neighbors, loadCaseHistoryFn } = this.props;
-    const personId = this.props.personId || neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborId'], '');
+    const personId = neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborId'], '');
     loadCaseHistoryFn({ personId, neighbors });
     this.setState({
       open: true,

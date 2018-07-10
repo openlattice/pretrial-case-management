@@ -8,13 +8,13 @@ import styled from 'styled-components';
 import { AuthActionFactory } from 'lattice-auth';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { Redirect, Route, Switch, Link } from 'react-router-dom';
+import { Redirect, Route, Switch } from 'react-router-dom';
 
 import AppConsent from '../../containers/app/AppConsent';
+import HeaderNav from '../../components/nav/HeaderNav';
 import Dashboard from '../../components/dashboard/Dashboard';
 import Forms from '../forms/Forms';
-import StyledButton from '../../components/buttons/StyledButton';
-import logo from '../../assets/images/logo.png';
+import ContactSupport from '../../components/app/ContactSupport';
 import { termsAreAccepted } from '../../utils/AcceptTermsUtils';
 import * as Routes from '../../core/router/Routes';
 
@@ -27,57 +27,19 @@ const {
  */
 
 const AppWrapper = styled.div`
-  background-color: #f7f8f9;
+  background-color: #f5f5f8;
   display: flex;
   flex-direction: column;
   min-height: 100%;
   width: 100%;
-`;
-
-const AppHeaderWrapper = styled.header`
-  align-items: center;
-  background-color: #fefefe;
-  border-bottom: 1px solid rgba(84, 110, 122, 0.2);
-  display: flex;
-  flex-direction: row;
-  min-height: 77px;
-  padding: 20px 55px;
-  position: relative;
-`;
-
-const AppTitle = styled.div`
-  font-size: 24px;
+  font-family: 'Open Sans', sans-serif;
 `;
 
 const AppBodyWrapper = styled.div`
   display: flex;
   flex: 1 0 auto;
   flex-direction: column;
-`;
-
-const StyledLogoutButton = StyledButton.extend`
-  position: absolute;
-  right: 50px;
-`;
-
-const BrandLink = styled(Link)`
-  color: inherit;
-
-  &:hover {
-    color: inherit;
-    text-decoration: none;
-  }
-
-  &:focus {
-    color: inherit;
-    text-decoration: none;
-  }
-`;
-
-const Logo = styled.img`
-  display: inline-block;
-  max-height: 45px;
-  margin: -10px 5px -10px 0;
+  padding: 30px 170px;
 `;
 
 /*
@@ -98,15 +60,8 @@ const renderComponent = (Component, props) => (
 
 const AppContainer = (props :Props) => (
   <AppWrapper>
-    <AppHeaderWrapper>
-      <AppTitle>
-        <BrandLink to={Routes.DASHBOARD}>
-          <Logo src={logo} role="presentation" />
-          Pre-Trial Case Management
-        </BrandLink>
-      </AppTitle>
-      <StyledLogoutButton onClick={props.actions.logout}>Logout</StyledLogoutButton>
-    </AppHeaderWrapper>
+    <HeaderNav logout={props.actions.logout} />
+    <ContactSupport />
     <AppBodyWrapper>
       <Switch>
         <Route path={Routes.TERMS} component={AppConsent} />

@@ -5,15 +5,14 @@
 import React from 'react';
 import styled from 'styled-components';
 
+import defaultProfile from '../assets/svg/profile-placeholder-avatar.svg';
+
 const StyledImageWrapper = styled.div`
   align-items: center;
-  border-radius: 50%;
   display: flex;
-  height: ${props => (props.size ? `${props.size}px` : '100px')};
   justify-content: center;
-  margin-bottom: 20px;
   overflow: hidden;
-  width: ${props => (props.size ? `${props.size}px` : '100px')};
+  display: inline-flex;
 
   & > img {
     flex-shrink: 0;
@@ -27,7 +26,7 @@ type Props = {
 };
 
 const Headshot = ({ photo, size } :Props) => {
-  const photoSrc = photo ? `data:image/jpeg;base64,${photo}` : '';
+  const photoSrc = photo ? `data:image/jpeg;base64,${photo}` : defaultProfile;
 
   return (
     <StyledImageWrapper size={size}>

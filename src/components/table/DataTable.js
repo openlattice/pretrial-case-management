@@ -89,7 +89,6 @@ const TableHeadCell = styled.div`
 
 const TableBodyCell = styled.div`
   align-items: center;
-  border-bottom: 1px solid ${BORDER_COLOR};
   display: flex;
   overflow-y: scroll !important;
   padding: 10px;
