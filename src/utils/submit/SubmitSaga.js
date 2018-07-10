@@ -58,7 +58,7 @@ function shouldCreateEntity(entityDescription, values, details) {
 }
 
 function* submitWorker(action :SequenceAction) :Generator<*, *, *> {
-  const { config, values } = action.value;
+  const { config, values, callback } = action.value;
 
   try {
     yield put(submit.request(action.id));
@@ -173,6 +173,10 @@ function* submitWorker(action :SequenceAction) :Generator<*, *, *> {
 
     yield call(DataApi.createEntityAndAssociationData, { syncTickets, entities, associations });
     yield put(submit.success(action.id));
+
+    if (callback) {
+      callback();
+    }
   }
   catch (error) {
     console.error(error)

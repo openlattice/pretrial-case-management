@@ -10,7 +10,7 @@ import { Pagination } from 'react-bootstrap';
 
 import PSAReviewRow from '../../components/review/PSAReviewRow';
 import LoadingSpinner from '../../components/LoadingSpinner';
-import { ENTITY_SETS } from '../../utils/consts/DataModelConsts';
+import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { SORT_TYPES } from '../../utils/consts/Consts';
 import { sortByDate, sortByName } from '../../utils/PSAUtils';
 import { CenteredContainer } from '../../utils/Layout';
@@ -53,6 +53,7 @@ type Props = {
       scoresEntity :Immutable.Map<*, *>
     }) => void,
     checkPSAPermissions :() => void,
+    refreshPSANeighbors :({ id :string }) => void,
     submit :(value :{ config :Object, values :Object}) => void,
     clearSubmit :() => void,
   },
@@ -63,6 +64,8 @@ type Props = {
   manualChargeHistory :Immutable.Map<*, *>,
   sentenceHistory :Immutable.Map<*, *>,
   ftaHistory :Immutable.Map<*, *>,
+  hearings :Immutable.List<*>,
+  psaIdsRefreshing :Immutable.Set<*>,
   readOnlyPermissions :boolean,
   loadingPSAData :boolean,
   submitting :boolean
@@ -100,16 +103,19 @@ class PSAReviewRowList extends React.Component<Props, State> {
   renderRow = (scoreId, scores) => {
     const neighbors = this.props.psaNeighborsById.get(scoreId, Immutable.Map());
     const personId = neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborId'], '');
+    const personIdValue = neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborDetails', PROPERTY_TYPES.PERSON_ID, 0], '');
     const caseHistory = this.props.caseHistory.get(personId, Immutable.List());
     const manualCaseHistory = this.props.manualCaseHistory.get(personId, Immutable.List());
     const chargeHistory = this.props.chargeHistory.get(personId, Immutable.Map());
     const manualChargeHistory = this.props.manualChargeHistory.get(personId, Immutable.Map());
     const sentenceHistory = this.props.sentenceHistory.get(personId, Immutable.Map());
     const ftaHistory = this.props.ftaHistory.get(personId, Immutable.Map());
+    const hearings = this.props.hearings.get(personId, Immutable.List());
     return (
       <PSAReviewRow
           neighbors={neighbors}
           scores={scores}
+          personId={personIdValue}
           entityKeyId={scoreId}
           downloadFn={this.props.actions.downloadPSAReviewPDF}
           loadCaseHistoryFn={this.props.actions.loadCaseHistory}
@@ -117,12 +123,15 @@ class PSAReviewRowList extends React.Component<Props, State> {
           changePSAStatus={this.props.actions.changePSAStatus}
           onStatusChangeCallback={this.props.onStatusChangeCallback}
           submitData={this.props.actions.submit}
+          refreshPSANeighbors={this.props.actions.refreshPSANeighbors}
           caseHistory={caseHistory}
           manualCaseHistory={manualCaseHistory}
           chargeHistory={chargeHistory}
           manualChargeHistory={manualChargeHistory}
           sentenceHistory={sentenceHistory}
           ftaHistory={ftaHistory}
+          hearings={hearings}
+          refreshingNeighbors={this.props.psaIdsRefreshing.has(scoreId)}
           readOnly={this.props.readOnlyPermissions}
           key={scoreId}
           hideCaseHistory={this.props.hideCaseHistory}
@@ -199,8 +208,10 @@ function mapStateToProps(state) {
     manualChargeHistory: review.get('manualChargeHistory'),
     sentenceHistory: review.get('sentenceHistory'),
     ftaHistory: review.get('ftaHistory'),
+    hearings: review.get('hearings'),
     readOnlyPermissions: review.get('readOnly'),
     loadingPSAData: review.get('loadingPSAData'),
+    psaIdsRefreshing: review.get('psaIdsRefreshing'),
     submitting: state.getIn(['submit', 'submitting'], false)
   };
 }
