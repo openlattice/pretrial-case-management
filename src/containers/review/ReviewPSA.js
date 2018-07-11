@@ -39,8 +39,7 @@ const StyledFormViewWrapper = styled.div`
 const StyledFormWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  margin: 55px auto;
-  width: 1300px;
+  width: 960px;
 `;
 
 const StyledTitleWrapper = styled.div`
@@ -54,13 +53,19 @@ const StyledTitleWrapper = styled.div`
 `;
 
 const StyledSectionWrapper = styled.div`
-  background: #fff;
+  color: #555e6f;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 55px;
-  width: 100%;
+  width: 960px;
 `;
+
+const StyledFiltersWrapper = styled.div`
+  background: #fff;
+  border-radius: 5px;
+  border: solid 1px #e1e1eb;
+  margin-bottom: 20px;
+`
 
 const CloseX = styled(FontAwesome)`
   cursor: pointer;
@@ -88,6 +93,8 @@ const DateRangeContainer = styled.div`
   display: flex;
   flex-direction: row;
   justify-content: center;
+  max-width: 123px;
+  max-height: 32px;
 `;
 
 const DatePickerGroupContainer = styled.div`
@@ -133,6 +140,7 @@ const SortText = styled.div`
 
 const Toggle = styled(ToggleButton)`
   -webkit-appearance: none !important;
+  margin: 15px 0;
 `;
 
 const DATE_FORMAT = 'MM/DD/YYYY';
@@ -246,7 +254,6 @@ class ReviewPSA extends React.Component<Props, State> {
     return (
       <DateRangeContainer>
         <DatePickerGroupContainer>
-          <div>PSA Date:</div>
           <DatePicker
               value={date}
               onChange={(newDate) => {
@@ -269,7 +276,6 @@ class ReviewPSA extends React.Component<Props, State> {
 
     return (
       <SearchRow>
-        <TitleLabel>Select a filer.</TitleLabel>
         <StyledSelect
             value={this.state.filters.filer}
             onChange={(e) => {
@@ -463,18 +469,15 @@ class ReviewPSA extends React.Component<Props, State> {
   renderFilters = () => (
     <div>
       <DatePickerTitle>
-        <span>Filter </span>
+        <span>PSA Status </span>
         {this.renderStatusDropdown()}
-        <span> PSA Forms by </span>
+        <span>County </span>
         {this.renderDomainChoices()}
+        <span>PSA Date </span>
+        {this.renderDateRangePicker()}
+        <span>Filer </span>
+        {this.renderFilerFilter()}
       </DatePickerTitle>
-      {this.state.status === 'REQUIRES_ACTION' ? null : (
-        <Tabs id="filter" activeKey={this.state.activeFilterKey} onSelect={this.onFilterSelect}>
-          <Tab eventKey={1} title="Date">{this.renderDateRangePicker()}</Tab>
-          <Tab eventKey={2} title="Person">{this.renderPersonFilter()}</Tab>
-          <Tab eventKey={3} title="Filer">{this.renderFilerFilter()}</Tab>
-        </Tabs>
-      )}
       <hr />
     </div>
   )
@@ -501,9 +504,11 @@ class ReviewPSA extends React.Component<Props, State> {
     }
     return (
       <StyledSectionWrapper>
-        {this.renderError()}
-        {this.renderFilters()}
-        {this.renderSortChoices()}
+        <StyledFiltersWrapper>
+          {this.renderError()}
+          {this.renderFilters()}
+          {this.renderSortChoices()}
+        </StyledFiltersWrapper>
         {this.handleFilterRequest()}
         <StyledTopFormNavBuffer />
       </StyledSectionWrapper>
