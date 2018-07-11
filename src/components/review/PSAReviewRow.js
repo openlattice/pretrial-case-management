@@ -14,6 +14,7 @@ import PersonCard from '../person/PersonCard';
 import StyledButton from '../buttons/StyledButton';
 import CaseHistory from '../../components/review/CaseHistory';
 import PSAScores from './PSAScores';
+import PSAStats from './PSAStats';
 import PSASummary from './PSASummary';
 import DMFExplanation from '../dmf/DMFExplanation';
 import SelectReleaseConditions from '../releaseconditions/SelectReleaseConditions';
@@ -29,7 +30,10 @@ import { psaIsClosed } from '../../utils/PSAUtils';
 import * as OverrideClassNames from '../../utils/styleoverrides/OverrideClassNames';
 
 const ReviewRowContainer = styled.div`
-  width: 100%;
+  width: 960px;
+  background-color: #ffffff;
+  border-radius: 5px;
+  border: solid 1px #e1e1eb;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -37,22 +41,36 @@ const ReviewRowContainer = styled.div`
   &:hover {
     background: #f7f8f9;
   }
-  padding: 20px;
+  padding: 10px;
 `;
 
 const DetailsRowContainer = styled.div`
+  width: 100%;
   display: flex;
   justify-content: center;
   cursor: pointer;
 `;
 
 const ReviewRowWrapper = styled.div`
+  width: 100%;
   display: inline-flex;
-  flex-direction: row;
+  flex-direction: column;
   align-items: flex-end;
-  margin: 20px 0;
+  margin: 20px 30px;
   justify-content: center;
 `;
+
+const PersonCardWrapper = styled.div`
+  width: 100%;
+  margin: 0 auto;
+`
+
+const StatsWrapper = styled.div`
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: row;
+`
 
 const DownloadButtonContainer = styled.div`
   height: 100%;
@@ -90,17 +108,23 @@ const TitleHeader = styled.span`
 `;
 
 const StatusTag = styled.div`
+  width: 86px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  font-family: 'Open Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
   color: white;
-  border-radius: 2px;
-  align-self: flex-end;
-  margin-bottom: -10px;
+  border-radius: 3px;
+  align-self: center;
   padding: 2px 5px;
   background: ${(props) => {
     switch (props.status) {
       case PSA_STATUSES.OPEN:
-        return '#b898ff';
+        return '#8b66db';
       case PSA_STATUSES.SUCCESS:
         return '#00be84';
       case PSA_STATUSES.FAILURE:
@@ -108,9 +132,9 @@ const StatusTag = styled.div`
       case PSA_STATUSES.CANCELLED:
         return '#b6bbc7';
       case PSA_STATUSES.DECLINED:
-        return '#dcdce7';
+        return '#555e6f';
       case PSA_STATUSES.DISMISSED:
-        return '#e1e1eb';
+        return '#555e6f';
       default:
         return 'transparent';
     }
@@ -285,7 +309,7 @@ export default class PSAReviewRow extends React.Component<Props, State> {
 
   renderDownloadButton = () => (
     <DownloadButtonContainer>
-      <DownloadButton onClick={this.downloadRow}>Download PDF Report</DownloadButton>
+      <DownloadButton onClick={this.downloadRow}>PDF Report</DownloadButton>
     </DownloadButtonContainer>
   )
 
@@ -698,16 +722,21 @@ export default class PSAReviewRow extends React.Component<Props, State> {
     if (!this.props.scores) return null;
     return (
       <ReviewRowContainer>
-        {this.renderStatus()}
-        {this.renderMetadata()}
         <DetailsRowContainer onClick={this.openDetailsModal}>
           <ReviewRowWrapper>
-            {this.renderPersonCard()}
-            <PSAScores scores={this.props.scores} />
-            {this.renderDownloadButton()}
+            <PersonCardWrapper>
+              {this.renderPersonCard()}
+            </PersonCardWrapper>
+            <hr/>
+            <StatsWrapper>
+              {this.renderStatus()}
+              <PSAStats scores={this.props.scores} />
+              {this.renderDownloadButton()}
+            </StatsWrapper>
           </ReviewRowWrapper>
         </DetailsRowContainer>
         {this.renderDetails()}
+        {this.renderMetadata()}
       </ReviewRowContainer>
     );
   }
