@@ -38,6 +38,7 @@ const DetailsWrapper = styled.div`
 const DetailRow = styled.div`
   display: flex;
   flex-direction: row;
+  flex-wrap: wrap;
   justify-content: space-between;
   width: 100%;
   text-transform: uppercase;
@@ -96,9 +97,7 @@ const DetailItemWide = styled(DetailItem)`
 
 
 const PersonPicture = styled.img`
-  height: 36px;
-  width: 36px;
-  border-radius: 50%;
+  height: 119px;
 `;
 
 type Props = {
@@ -140,7 +139,7 @@ const PersonCard = ({ person, handleSelect } :Props) => {
             <div>{lastName}</div>
             <Tooltip value={lastName} />
           </DetailItem>
-          
+
           <DetailItem>
           <h1>FIRST NAME</h1>
           <div>{firstName}</div>
