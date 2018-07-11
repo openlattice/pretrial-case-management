@@ -66,18 +66,35 @@ const {
 } = PROPERTY_TYPES;
 
 const LARGE_FONT_SIZE = 15;
-const MEDIUM_FONT_SIZE = 13;
+const MEDIUM_FONT_SIZE = 14;
 const FONT_SIZE = 10;
 const X_MARGIN = 10;
 const X_MAX = 200;
 const Y_INC = 5;
 const Y_INC_SMALL = 4;
+const Y_INC_LARGE = 7;
 const SCORE_OFFSET = 5;
 const RESPONSE_OFFSET = (X_MAX * 2) / 3;
 const GENERATED_RISK_FACTOR_OFFSET = X_MARGIN + 5;
 const BOX_MARGIN = X_MARGIN + 5;
-const BOX_HEIGHT = 10;
-const BOX_WIDTH = (X_MAX - (2 * BOX_MARGIN)) / 6;
+const BOX_HEIGHT = 8;
+const BOX_WIDTH = ((X_MAX / 2) - (2 * BOX_MARGIN)) / 6;
+
+const X_COL_1 = X_MARGIN;
+const X_COL_2 = (X_MAX / 2) - 30;
+const X_COL_3 = (X_MAX / 2) + 10;
+
+const detailHeaderText = (doc, y, xOffset, text) => {
+  doc.setTextColor(155, 155, 155);
+  doc.setFontSize(9);
+  doc.text(xOffset, y, text);
+};
+
+const detailValueText = (doc, y, xOffset, text) => {
+  doc.setTextColor(0);
+  doc.setFontSize(10);
+  doc.text(xOffset, y, text);
+};
 
 const newPage = (doc :Object, pageInit :number, name :string) :number[] => {
   const page = pageInit + 1;
@@ -120,18 +137,15 @@ const getMostSevChargeText = (pretrialInfo :Immutable.Map<*, *>) :string => {
 };
 
 const getChargeText = (charge :Immutable.Map<*, *>) :string => {
-  const chargeNumList = charge.get(CHARGE_STATUTE, Immutable.List());
-  const chargeDescList = charge.get(CHARGE_DESCRIPTION, Immutable.List());
-  const chargeDegList = charge.get(CHARGE_DEGREE, Immutable.List());
+  const chargeDescList = formatValue(charge.get(CHARGE_DESCRIPTION, Immutable.List()));
+  const chargeDegList = formatValue(charge.get(CHARGE_DEGREE, Immutable.List()));
 
-  if (!chargeNumList.size) return '';
-
-  let text = formatValue(chargeNumList);
-  if (chargeDescList.size) {
-    text = text.concat(` ${formatValue(chargeDescList)}`);
+  let text = '';
+  if (chargeDescList.length) {
+    text = text.concat(` ${chargeDescList}`);
   }
-  if (chargeDegList.size) {
-    text = text.concat(` (${formatValue(chargeDegList)})`);
+  if (chargeDegList.length) {
+    text = text.concat(` (${chargeDegList})`);
   }
   return text;
 };
@@ -175,24 +189,25 @@ const getBooleanText = (bool :boolean) :string => (bool ? 'Yes' : 'No');
 
 const thinLine = (doc :Object, y :number) :void => {
   doc.setLineWidth(0.1);
+  doc.setDrawColor(152);
   doc.line(X_MARGIN, y, X_MAX - X_MARGIN, y);
+  doc.setFont('helvetica', 'normal');
 };
 
 const thickLine = (doc :Object, y :number) :void => {
   doc.setLineWidth(0.5);
   doc.line(X_MARGIN, y, X_MAX - X_MARGIN, y);
+  doc.setFont('helvetica', 'normal');
 };
 
 const header = (doc :Object, yInit :number) :number => {
   let y = yInit;
-  doc.setFontSize(LARGE_FONT_SIZE);
-  doc.text(X_MARGIN, y, 'PRETRIAL SERVICES');
-  y += Y_INC * 2;
   doc.setFontSize(MEDIUM_FONT_SIZE);
   doc.text(X_MARGIN, y, 'Public Safety Assessment (PSA) Report');
   y += Y_INC;
+  doc.setFontType('normal');
   thickLine(doc, y);
-  y += Y_INC;
+  y += Y_INC_LARGE;
   return y;
 };
 
@@ -211,37 +226,60 @@ const person = (
     timestamp :string
   }
 ) :number => {
+  /* person name header section */
   let y = yInit;
-  doc.text(X_MARGIN, y, `Name: ${name}`);
-  doc.text(X_MAX / 2, y, `PSA - Court Completion Date: ${formatDate(createData.timestamp)}`);
+  detailHeaderText(doc, y, X_MARGIN, 'NAME');
   y += Y_INC;
-  doc.text(X_MARGIN, y, `DOB: ${formatDateList(selectedPerson.get(DOB))}`);
-  doc.text(X_MAX / 2, y, `Race: ${formatValue(selectedPerson.get(RACE))}`);
-  doc.text(X_MAX - 50, y, `Gender: ${formatValue(selectedPerson.get(SEX))}`);
+  doc.setTextColor(0);
+  doc.setFontSize(12);
+  doc.text(X_MARGIN, y, name);
   y += Y_INC;
-  doc.text(X_MARGIN, y, `Arrest Date: ${formatDateList(selectedPretrialCase.get(ARREST_DATE, Immutable.List()))}`);
-  doc.text(X_MAX / 2, y, `Arrest ID: ${formatValue(selectedPretrialCase.get(CASE_ID, Immutable.List()))}`);
-  y += Y_INC;
+  thickLine(doc, y);
+  y += Y_INC_LARGE;
 
-  let createdText = `Created by ${createData.user}`;
+  /* person details section */
+
+  detailHeaderText(doc, y, X_COL_1, 'DOB');
+  detailHeaderText(doc, y, X_COL_2, 'GENDER');
+  detailHeaderText(doc, y, X_COL_3, 'PSA - COURT COMPLETION DATE');
+  y += Y_INC;
+  detailValueText(doc, y, X_COL_1, formatDateList(selectedPerson.get(DOB)));
+  detailValueText(doc, y, X_COL_2, formatValue(selectedPerson.get(SEX)));
+  detailValueText(doc, y, X_COL_3, formatDate(createData.timestamp));
+  y += Y_INC_LARGE;
+
+  detailHeaderText(doc, y, X_COL_1, 'ARREST DATE');
+  detailHeaderText(doc, y, X_COL_3, 'RACE');
+  y += Y_INC;
+  detailValueText(doc, y, X_COL_1, formatDateList(selectedPretrialCase.get(ARREST_DATE_TIME, Immutable.List())));
+  detailValueText(doc, y, X_COL_3, formatValue(selectedPerson.get(RACE)));
+  y += Y_INC_LARGE;
+
+
+  let createdText = createData.user;
+  let editedText = '';
   if (createData.timestamp && moment(createData.timestamp).isValid()) {
     createdText = `${createdText} at ${formatDateTime(createData.timestamp)}`;
   }
-  doc.text(X_MARGIN, y, createdText);
-  y += Y_INC;
+
   if (updateData) {
-    let editedText = `Edited by ${updateData.user}`;
+    editedText = updateData.user;
     if (updateData.timestamp && moment(updateData.timestamp).isValid()) {
       editedText = `${editedText} at ${formatDateTime(updateData.timestamp)}`;
     }
-    doc.text(X_MARGIN, y, editedText);
-    y += Y_INC;
   }
+
+  detailHeaderText(doc, y, X_COL_1, 'CREATED BY');
+  detailHeaderText(doc, y, X_COL_3, 'EDITED_BY');
+  y += Y_INC;
+  detailValueText(doc, y, X_COL_1, createdText);
+  detailValueText(doc, y, X_COL_3, editedText);
+  y += Y_INC;
   return y;
 };
 
-const box = (doc :Object, y :number, num :number, score :number) :void => {
-  const x = BOX_MARGIN + ((num - 1) * BOX_WIDTH);
+const box = (doc :Object, y :number, xOffset :number, num :number, score :number) :void => {
+  const x = xOffset + ((num - 1) * BOX_WIDTH);
   doc.rect(x, y, BOX_WIDTH, BOX_HEIGHT, 'FD');
   const textX = x + ((BOX_WIDTH / 2) - 1);
   const textY = y + ((BOX_HEIGHT / 2) + 1);
@@ -252,56 +290,83 @@ const box = (doc :Object, y :number, num :number, score :number) :void => {
   }
 };
 
-const unselectedBox = (doc :Object, y :number, value :number, score :number) :void => {
+const unselectedBox = (doc :Object, y :number, xOffset :number, value :number, score :number) :void => {
   doc.setDrawColor(128);
   doc.setFillColor(255);
   doc.setTextColor(0);
-  box(doc, y, value, score);
+  doc.setLineWidth(0);
+  box(doc, y, xOffset, value, score);
 };
 
-const scale = (doc :Object, yInit :number, value :number) :number => {
+const selectedBox = (doc :Object, y :number, xOffset :number, value :number, score :number) :void => {
+  doc.setDrawColor(128);
+  doc.setFillColor(255);
+  doc.setTextColor(0);
+  doc.setLineWidth(0.5);
+  box(doc, y, xOffset, value, score);
+}
+
+const scale = (doc :Object, yInit :number, xOffset :number, value :number) :number => {
+  doc.setDrawColor(128);
+  doc.setFillColor(255);
+  doc.setTextColor(0);
   let y = yInit;
-  for (let i = 1; i <= value; i += 1) {
-    unselectedBox(doc, yInit, i, value);
+  for (let i = 1; i <= 7; i += 1) {
+    if (i <= value) {
+      selectedBox(doc, yInit, xOffset, i, value);
+    }
+    else {
+      unselectedBox(doc, yInit, xOffset, i, value);
+    }
   }
   doc.setTextColor(0, 0, 0);
-  y += Y_INC + BOX_HEIGHT;
+  y += Y_INC_LARGE + BOX_HEIGHT;
   return y;
 };
 
 const nvcaFlag = (doc :Object, yInit :number, value :string) :number => {
-  const flagIsTrue = value === 'Yes';
   let y = yInit;
-  if (flagIsTrue) {
-    doc.setFontSize(LARGE_FONT_SIZE);
-    doc.setFontType('bold');
-  }
+  const flagIsTrue = value === 'Yes';
+  const fontType = flagIsTrue ? 'bold' : 'normal';
+  doc.setFontType(fontType);
 
-  doc.text(X_MARGIN + SCORE_OFFSET + SCORE_OFFSET, y, value);
-  if (flagIsTrue) {
-    doc.setFontSize(FONT_SIZE);
-    doc.setFontType('regular');
-    y += Y_INC;
-  }
-  else {
-    y += Y_INC;
-  }
+  doc.setDrawColor(128);
+  doc.setFillColor(255);
+  doc.setTextColor(0);
+
+  const width = 18;
+  const height = 7;
+
+  doc.roundedRect(X_COL_1, y, width, height, 1, 1, 'FD');
+  const textXOffset = flagIsTrue ? 3 : 2;
+  const textX = X_COL_1 + ((width / 2) - textXOffset);
+  const textY = y + ((height / 2) + 1);
+  doc.text(textX, textY, value);
+  y += height + Y_INC_LARGE;
+  doc.setFontType('normal');
   return y;
+};
+
+const scoreHeader = (doc, y, xOffset, text) => {
+  doc.setFontSize(10);
+  doc.setTextColor(0);
+  doc.setFontType('bold');
+  doc.text(xOffset, y, text);
+  doc.setFontType('normal');
 };
 
 const scores = (doc :Object, yInit :number, scoreValues :Immutable.Map<*, *>) :number => {
   let y = yInit;
-  doc.text(X_MARGIN + SCORE_OFFSET, y, 'New Violent Criminal Activity Flag');
-  y += Y_INC;
+  scoreHeader(doc, y, X_COL_1, 'New Violent Criminal Activity Flag');
+  y += Y_INC_SMALL;
   y = nvcaFlag(doc, y, getBooleanText(scoreValues.getIn([PROPERTY_TYPES.NVCA_FLAG, 0])));
-  doc.text(X_MARGIN + SCORE_OFFSET, y, 'New Criminal Activity Scale');
-  y += Y_INC;
-  y = scale(doc, y, scoreValues.getIn([PROPERTY_TYPES.NCA_SCALE, 0]));
-  y += Y_INC;
-  doc.text(X_MARGIN + SCORE_OFFSET, y, 'Failure to Appear Flag');
-  y += Y_INC;
-  y = scale(doc, y, scoreValues.getIn([PROPERTY_TYPES.FTA_SCALE, 0]));
-  y += Y_INC;
+
+  scoreHeader(doc, y, X_COL_1, 'New Criminal Activity Scale');
+  scoreHeader(doc, y, X_COL_3, 'Failure to Appear Scale');
+  y += Y_INC_SMALL;
+  scale(doc, y, X_COL_1, scoreValues.getIn([PROPERTY_TYPES.NCA_SCALE, 0]));
+  y = scale(doc, y, X_COL_3, scoreValues.getIn([PROPERTY_TYPES.FTA_SCALE, 0]));
+
   return y;
 };
 
@@ -314,25 +379,11 @@ const dmf = (
   scores :Immutable.Map<*, *>
 ) :number => {
   let y = yInit;
+  doc.setFont('helvetica', 'normal');
   if (dmfValues.size) {
-    doc.text(X_MARGIN, y, 'DMF Decision:');
-    y += Y_INC;
-    thinLine(doc, y);
-    y += Y_INC;
-
-    const headerText = getHeaderText(dmfValues.toJS());
-    doc.text(X_MARGIN + SCORE_OFFSET, y, headerText);
-    y += Y_INC;
-
-    const conditionsTextList = getConditionsTextList(dmfValues.toJS());
-    doc.setFontType('italic');
-    conditionsTextList.forEach((condition, index) => {
-      doc.text(X_MARGIN * 2, y, `Condition ${index + 1}: ${condition}`);
-      y += Y_INC;
-    });
-    doc.setFontType('regular');
-
-    thinLine(doc, y);
+    scoreHeader(doc, y, X_COL_1, 'DMF Result');
+    y += Y_INC_LARGE;
+    detailValueText(doc, y, X_COL_1, getHeaderText(dmfValues.toJS()));
     y += Y_INC;
 
     let modificationText;
@@ -347,12 +398,30 @@ const dmf = (
     }
 
     if (modificationText) {
-      doc.text(X_MARGIN * 2, y, modificationText);
+      doc.setFontType('italic');
+      doc.text(X_COL_1 + 5, y, modificationText);
+      doc.setFontType('normal');
       y += Y_INC;
     }
 
-    thickLine(doc, y);
-    y += Y_INC;
+    const conditionsText = getConditionsTextList(dmfValues.toJS()).join(' - ');
+    if (conditionsText.length) {
+      doc.setDrawColor(152);
+      doc.setFillColor(255);
+      doc.setTextColor(122);
+      doc.setFontSize(10);
+      const textPadding = 5;
+      const width = (doc.getTextWidth(conditionsText) + (2 * textPadding));
+      const height = 8;
+
+      doc.rect(X_COL_1, y, width, height, 'FD');
+      const textX = X_COL_1 + textPadding;
+      const textY = y + ((height / 2) + 1);
+      doc.text(textX, textY, conditionsText);
+      doc.setFontType('regular');
+      doc.setTextColor(0);
+      y += height + Y_INC;
+    }
   }
   return y;
 };
@@ -368,46 +437,28 @@ const charges = (
 ) :number[] => {
   let y :number = yInit;
   let page :number = pageInit;
-  doc.text(X_MARGIN, y, 'Charge(s):');
-  y += Y_INC_SMALL;
-  thinLine(doc, y);
-  y += Y_INC;
-  if (!selectedCharges.size) {
-    const chargeLines = doc.splitTextToSize(getMostSevChargeText(selectedPretrialCase), X_MAX - (2 * X_MARGIN));
-    doc.text(X_MARGIN + SCORE_OFFSET, y, chargeLines);
-    y += chargeLines.length * Y_INC_SMALL;
-    thinLine(doc, y);
-    y += Y_INC;
-  }
-  else {
-    selectedCharges.forEach((charge) => {
-      if (y > 260) {
-        [y, page] = newPage(doc, page, name);
-      }
-      const chargeLines = doc.splitTextToSize(getChargeText(charge), X_MAX - (2 * X_MARGIN));
-      doc.text(X_MARGIN + SCORE_OFFSET, y, chargeLines);
-      y += chargeLines.length * (showDetails ? Y_INC : Y_INC_SMALL);
-      if (showDetails) {
-        const pleaLines = doc.splitTextToSize(getPleaText(charge), X_MAX - (2 * X_MARGIN));
-        doc.text(X_MARGIN + SCORE_OFFSET, y, pleaLines);
-        y += pleaLines.length * Y_INC;
-        const dispositionLines = doc.splitTextToSize(getDispositionText(charge), X_MAX - (2 * X_MARGIN));
-        doc.text(X_MARGIN + SCORE_OFFSET, y, dispositionLines);
-        y += dispositionLines.length * Y_INC_SMALL;
-      }
-      else {
-        const qualifierText = formatValue(charge.get(QUALIFIER, Immutable.List()));
-        if (qualifierText.length) {
-          doc.setFontType('italic');
-          doc.text(X_MARGIN * 2, y, qualifierText);
-          doc.setFontType('regular');
-          y += Y_INC_SMALL;
-        }
-      }
-      thinLine(doc, y);
-      y += Y_INC;
-    });
-  }
+  scoreHeader(doc, y, X_COL_1, 'Charges');
+  y += Y_INC_LARGE;
+  doc.setFontSize(10);
+  selectedCharges.forEach((charge) => {
+    if (y > 260) {
+      [y, page] = newPage(doc, page, name);
+    }
+    const CHARGE_OFFSET = 20;
+
+    doc.text(X_COL_1, y, formatValue(charge.get(CHARGE_STATUTE, Immutable.List())));
+    const chargeLines = doc.splitTextToSize(getChargeText(charge), X_MAX - CHARGE_OFFSET);
+    doc.text(X_COL_1 + CHARGE_OFFSET, y, chargeLines);
+    y += chargeLines.length * Y_INC;
+    if (showDetails) {
+      const pleaLines = doc.splitTextToSize(getPleaText(charge), X_MAX - (2 * X_MARGIN));
+      doc.text(X_MARGIN + SCORE_OFFSET, y, pleaLines);
+      y += pleaLines.length * Y_INC;
+      const dispositionLines = doc.splitTextToSize(getDispositionText(charge), X_MAX - (2 * X_MARGIN));
+      doc.text(X_MARGIN + SCORE_OFFSET, y, dispositionLines);
+      y += dispositionLines.length * Y_INC_SMALL;
+    }
+  });
   return [y, page];
 };
 
@@ -466,88 +517,112 @@ const riskFactors = (
   const priorFailureToAppearOld = riskFactorVals.get(PRIOR_FAILURE_TO_APPEAR_OLD);
   const priorSentenceToIncarceration = riskFactorVals.get(PRIOR_SENTENCE_TO_INCARCERATION);
 
-  doc.text(X_MARGIN, y, 'Risk Factors:');
-  doc.text(RESPONSE_OFFSET, y, 'Responses:');
-  y += Y_INC_SMALL;
+  const xCol2 = X_COL_1 + 5;
+
+  scoreHeader(doc, y, X_COL_1, 'Risk Factors');
+  detailHeaderText(doc, y, X_COL_3, 'RESPONSES');
+  y += Y_INC;
   thinLine(doc, y);
   y += Y_INC;
-  doc.text(X_MARGIN, y, '1. Age at Current Arrest');
-  doc.text(RESPONSE_OFFSET, y, ageAtCurrentArrest);
-  y = riskFactorNotes(y, doc, riskFactorVals.get(AGE_AT_CURRENT_ARREST_NOTES));
-  [y, page] = tryIncrementPage(doc, y, page, name);
+  doc.setTextColor(0);
 
-  doc.text(X_MARGIN, y, '2. Current Violent Offense');
-  doc.text(RESPONSE_OFFSET, y, getBooleanText(currentViolentOffense));
-  y = riskFactorNotes(y, doc, riskFactorVals.get(CURRENT_VIOLENT_OFFENSE_NOTES));
-  if (currentViolentOffense) {
-    y = chargeReferences(y, doc, getAllViolentCharges(currCharges));
-  }
+  doc.text(X_COL_1, y, '1');
+  doc.text(xCol2, y, 'Age at Current Arrest');
+  doc.text(X_COL_3, y, ageAtCurrentArrest);
+  //y = riskFactorNotes(y, doc, riskFactorVals.get(AGE_AT_CURRENT_ARREST_NOTES));
   [y, page] = tryIncrementPage(doc, y, page, name);
-
-  doc.text(X_MARGIN, y, '2a. Current Violent Offense & 20 Years Old or Younger');
-  doc.text(RESPONSE_OFFSET, y, getBooleanText(currentViolentOffenseAndYoung));
   y += Y_INC;
-  [y, page] = tryIncrementPage(doc, y, page, name);
 
-  doc.text(X_MARGIN, y, '3. Pending Charge at the Time of the Offense');
-  doc.text(RESPONSE_OFFSET, y, getBooleanText(pendingCharge));
-  y = riskFactorNotes(y, doc, riskFactorVals.get(PENDING_CHARGE_NOTES));
-  if (pendingCharge) {
-    y = chargeReferences(y, doc, getPendingCharges(currCaseNum, dateArrested, allCases, allCharges));
-  }
+  doc.text(X_COL_1, y, '2');
+  doc.text(xCol2, y, 'Current Violent Offense');
+  doc.text(X_COL_3, y, getBooleanText(currentViolentOffense));
+  // y = riskFactorNotes(y, doc, riskFactorVals.get(CURRENT_VIOLENT_OFFENSE_NOTES));
+  // if (currentViolentOffense) {
+  //   y = chargeReferences(y, doc, getAllViolentCharges(currCharges));
+  // }
   [y, page] = tryIncrementPage(doc, y, page, name);
-
-  doc.text(X_MARGIN, y, '4. Prior Misdemeanor Conviction');
-  doc.text(RESPONSE_OFFSET, y, getBooleanText(priorMisdemeanor));
-  y = riskFactorNotes(y, doc, riskFactorVals.get(PRIOR_MISDEMEANOR_NOTES));
-  if (priorMisdemeanor) {
-    y = chargeReferences(y, doc, getPreviousMisdemeanors(allCharges));
-  }
-  [y, page] = tryIncrementPage(doc, y, page, name);
-
-  doc.text(X_MARGIN, y, '5. Prior Felony Conviction');
-  doc.text(RESPONSE_OFFSET, y, getBooleanText(priorFelony));
-  y = riskFactorNotes(y, doc, riskFactorVals.get(PRIOR_FELONY_NOTES));
-  if (priorFelony) {
-    y = chargeReferences(y, doc, getPreviousFelonies(allCharges));
-  }
-  [y, page] = tryIncrementPage(doc, y, page, name);
-
-  doc.text(X_MARGIN, y, '5a. Prior Conviction (Prior Felony or Misdemeanor Conviction)');
-  doc.text(RESPONSE_OFFSET, y, getBooleanText(priorConviction));
   y += Y_INC;
-  doc.text(X_MARGIN, y, '6. Prior Violent Conviction');
-  doc.text(RESPONSE_OFFSET, y, priorViolentConviction);
-  y = riskFactorNotes(y, doc, riskFactorVals.get(PRIOR_VIOLENT_CONVICTION_NOTES));
-  if (priorViolentConviction > 0) {
-    y = chargeReferences(y, doc, getPreviousViolentCharges(allCharges));
-  }
-  [y, page] = tryIncrementPage(doc, y, page, name);
 
-  doc.text(X_MARGIN, y, '7. Prior Pretrial Failure to Appear in the Last 2 Years');
-  doc.text(RESPONSE_OFFSET, y, priorFailureToAppearRecent);
-  y = riskFactorNotes(y, doc, riskFactorVals.get(PRIOR_FAILURE_TO_APPEAR_RECENT_NOTES));
-  if (priorFailureToAppearRecent > 0) {
-    y = chargeReferences(y, doc, getRecentFTAs(allFTAs));
-  }
+  doc.text(X_COL_1, y, '2a');
+  doc.text(xCol2, y, 'Current Violent Offense & 20 Years Old or Younger');
+  doc.text(X_COL_3, y, getBooleanText(currentViolentOffenseAndYoung));
   [y, page] = tryIncrementPage(doc, y, page, name);
-
-  doc.text(X_MARGIN, y, '8. Prior Pretrial Failure to Appear Older than 2 Years');
-  doc.text(RESPONSE_OFFSET, y, getBooleanText(priorFailureToAppearOld));
-  y = riskFactorNotes(y, doc, riskFactorVals.get(PRIOR_FAILURE_TO_APPEAR_OLD_NOTES));
-  if (priorFailureToAppearOld) {
-    y = chargeReferences(y, doc, getOldFTAs(allFTAs));
-  }
-  [y, page] = tryIncrementPage(doc, y, page, name);
-
-  doc.text(X_MARGIN, y, '9. Prior Sentence to Incarceration');
-  doc.text(RESPONSE_OFFSET, y, getBooleanText(priorSentenceToIncarceration));
-  y = riskFactorNotes(y, doc, riskFactorVals.get(PRIOR_SENTENCE_TO_INCARCERATION_NOTES));
-  if (priorSentenceToIncarceration) {
-    y = chargeReferences(y, doc, getSentenceToIncarcerationCaseNums(allSentences));
-  }
   y += Y_INC;
+
+  doc.text(X_COL_1, y, '3');
+  doc.text(xCol2, y, 'Pending Charge at the Time of the Offense');
+  doc.text(X_COL_3, y, getBooleanText(pendingCharge));
+  // y = riskFactorNotes(y, doc, riskFactorVals.get(PENDING_CHARGE_NOTES));
+  // if (pendingCharge) {
+  //   y = chargeReferences(y, doc, getPendingCharges(currCaseNum, dateArrested, allCases, allCharges));
+  // }
   [y, page] = tryIncrementPage(doc, y, page, name);
+  y += Y_INC;
+
+  doc.text(X_COL_1, y, '4');
+  doc.text(xCol2, y, 'Prior Misdemeanor Conviction');
+  doc.text(X_COL_3, y, getBooleanText(priorMisdemeanor));
+  // y = riskFactorNotes(y, doc, riskFactorVals.get(PRIOR_MISDEMEANOR_NOTES));
+  // if (priorMisdemeanor) {
+  //   y = chargeReferences(y, doc, getPreviousMisdemeanors(allCharges));
+  // }
+  [y, page] = tryIncrementPage(doc, y, page, name);
+  y += Y_INC;
+
+  doc.text(X_COL_1, y, '5');
+  doc.text(xCol2, y, 'Prior Felony Conviction');
+  doc.text(X_COL_3, y, getBooleanText(priorFelony));
+  // y = riskFactorNotes(y, doc, riskFactorVals.get(PRIOR_FELONY_NOTES));
+  // if (priorFelony) {
+  //   y = chargeReferences(y, doc, getPreviousFelonies(allCharges));
+  // }
+  [y, page] = tryIncrementPage(doc, y, page, name);
+  y += Y_INC;
+
+  doc.text(X_COL_1, y, '5a');
+  doc.text(xCol2, y, 'Prior Conviction');
+  doc.text(X_COL_3, y, getBooleanText(priorConviction));
+  y += Y_INC;
+
+  doc.text(X_COL_1, y, '6');
+  doc.text(xCol2, y, 'Prior Violent Conviction');
+  doc.text(X_COL_3, y, priorViolentConviction);
+  // y = riskFactorNotes(y, doc, riskFactorVals.get(PRIOR_VIOLENT_CONVICTION_NOTES));
+  // if (priorViolentConviction > 0) {
+  //   y = chargeReferences(y, doc, getPreviousViolentCharges(allCharges));
+  // }
+  [y, page] = tryIncrementPage(doc, y, page, name);
+  y += Y_INC;
+
+  doc.text(X_COL_1, y, '7');
+  doc.text(xCol2, y, 'Prior Pretrial Failure to Appear in the Last 2 Years');
+  doc.text(X_COL_3, y, priorFailureToAppearRecent);
+  // y = riskFactorNotes(y, doc, riskFactorVals.get(PRIOR_FAILURE_TO_APPEAR_RECENT_NOTES));
+  // if (priorFailureToAppearRecent > 0) {
+  //   y = chargeReferences(y, doc, getRecentFTAs(allFTAs));
+  // }
+  [y, page] = tryIncrementPage(doc, y, page, name);
+  y += Y_INC;
+
+  doc.text(X_COL_1, y, '8');
+  doc.text(xCol2, y, 'Prior Pretrial Failure to Appear Older than 2 Years');
+  doc.text(X_COL_3, y, getBooleanText(priorFailureToAppearOld));
+  // y = riskFactorNotes(y, doc, riskFactorVals.get(PRIOR_FAILURE_TO_APPEAR_OLD_NOTES));
+  // if (priorFailureToAppearOld) {
+  //   y = chargeReferences(y, doc, getOldFTAs(allFTAs));
+  // }
+  [y, page] = tryIncrementPage(doc, y, page, name);
+  y += Y_INC;
+
+  doc.text(X_COL_1, y, '9');
+  doc.text(xCol2, y, 'Prior Sentence to Incarceration');
+  doc.text(X_COL_3, y, getBooleanText(priorSentenceToIncarceration));
+  // y = riskFactorNotes(y, doc, riskFactorVals.get(PRIOR_SENTENCE_TO_INCARCERATION_NOTES));
+  // if (priorSentenceToIncarceration) {
+  //   y = chargeReferences(y, doc, getSentenceToIncarcerationCaseNums(allSentences));
+  // }
+  [y, page] = tryIncrementPage(doc, y, page, name);
+  y += Y_INC;
 
   return [y, page];
 };
@@ -643,8 +718,8 @@ const exportPDF = (
   }
 ) :void => {
   const doc = new JSPDF();
-  doc.setFontType('regular');
-  let y = 20;
+  doc.setFont('helvetica', 'normal');
+  let y = 15;
   let page = 1;
   const name = getName(selectedPerson);
   const chargesByCaseNum = getChargesByCaseNum(allCharges);
@@ -656,21 +731,21 @@ const exportPDF = (
   doc.setFontSize(FONT_SIZE);
   // PERSON SECTION
   y = person(doc, y, selectedPerson, selectedPretrialCase, name, createData, updateData);
-  thickLine(doc, y);
-  y += Y_INC;
+  thinLine(doc, y);
+  y += Y_INC_LARGE;
 
   // SCORES SECTION
   y = scores(doc, y, data.get('scores'));
-  thickLine(doc, y);
-  y += Y_INC;
 
   // DMF SECTION
   y = dmf(doc, y, data.get('dmf'), data.get('dmfRiskFactors'), data.get('psaRiskFactors'), data.get('scores'));
+  thickLine(doc, y);
+  y += Y_INC_LARGE;
 
   // CHARGES SECTION
   [y, page] = charges(doc, y, page, name, selectedPretrialCase, selectedCharges, false);
   thickLine(doc, y);
-  y += Y_INC;
+  y += Y_INC_LARGE;
 
   // RISK FACTORS SECTION
   [y, page] = riskFactors(
@@ -694,7 +769,7 @@ const exportPDF = (
   y += Y_INC;
 
   // RECOMMENDATION SECTION
-  y = recommendations(doc, y, data.get('notes', data.get('recommendations', ''), ''));
+//  y = recommendations(doc, y, data.get('notes', data.get('recommendations', ''), ''));
 
   // CASE HISTORY SECCTION=
   [y, page] = caseHistory(doc, y, page, name, allCases, chargesByCaseNum);
