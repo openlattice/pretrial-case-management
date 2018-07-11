@@ -157,7 +157,7 @@ const PSAStats = ({ scores, downloadButton } :Props) => {
   `;
   const FtaScaleRight = styled(Scale)`
     width: ${WIDTH_MULTIPLIER * (1 - (ftaVal / 6))}px;
-    border-radius: -2px 2px 2px -2px;
+    border-radius: 0px 2px 2px 0px;
     margin-left: 0px;
   `;
   const NcaScaleLeft = styled(Scale)`
@@ -167,7 +167,7 @@ const PSAStats = ({ scores, downloadButton } :Props) => {
   `;
   const NcaScaleRight = styled(Scale)`
     width: ${WIDTH_MULTIPLIER * (1 - (ncaVal / 6))}px;
-    border-radius: -2px 2px 2px -2px;
+    border-radius: 0px 2px 2px 0px;
     margin-left: 0px;
   `;
 
