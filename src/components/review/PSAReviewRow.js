@@ -10,7 +10,7 @@ import { Modal, Tab, Tabs } from 'react-bootstrap';
 import { AuthUtils } from 'lattice-auth';
 
 import PSAInputForm from '../psainput/PSAInputForm';
-import PersonCard from '../person/PersonCard';
+import PersonCard from './PersonCardReview';
 import StyledButton from '../buttons/StyledButton';
 import CaseHistory from '../../components/review/CaseHistory';
 import PSAScores from './PSAScores';
@@ -38,10 +38,10 @@ const ReviewRowContainer = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  margin-bottom: 58px;
   &:hover {
     background: #f7f8f9;
   }
-  padding: 10px;
 `;
 
 const DetailsRowContainer = styled.div`
@@ -56,8 +56,15 @@ const ReviewRowWrapper = styled.div`
   display: inline-flex;
   flex-direction: column;
   align-items: flex-end;
-  margin: 20px 30px;
+  padding: 20px 30px;
   justify-content: center;
+  overflow: hidden;
+  hr {
+    margin-top: 13px;
+    margin-bottom: 13px;
+    transform: translateX(-25%);
+    width: 150%;
+  }
 `;
 
 const PersonCardWrapper = styled.div`
@@ -73,25 +80,40 @@ const StatsWrapper = styled.div`
 `
 
 const DownloadButtonContainer = styled.div`
+  width: 100%;
   height: 100%;
   display: flex;
   align-items: center !important;
 `;
 
 const DownloadButton = styled(StyledButton)`
-  height: 50px;
+  width: 100%;
+  height: 40px;
+  border-radius: 3px;
+  border: none;
+  background-color: #f0f0f7;
+  font-size: 14px;
+  text-align: center;
+  color: #8e929b;
+  position: absolute;
+  bottom: 0;
 `;
 
+const MetadataWrapper = styled.div`
+  width: 100%;
+`;
 const MetadataText = styled.div`
   width: 100%;
-  font-style: italic;
-  font-size: 12px;
-  margin: 20px 0 -15px 0;
-  color: #bbb;
+  font-family: 'Open Sans', sans-serif;
+  font-size: 13px;
+  font-weight: normal;
+  text-align: right;
+  margin: 10px 0 -30px -30px;
+  color: #8e929b;
 `;
 
 const ImportantMetadataText = styled.span`
-  color: black;
+  color: #2e2e34;
 `;
 
 const MetadataItem = styled.div`
@@ -105,40 +127,6 @@ const NoDMFContainer = styled(CenteredContainer)`
 
 const TitleHeader = styled.span`
   margin-right: 15px;
-`;
-
-const StatusTag = styled.div`
-  width: 86px;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-transform: uppercase;
-  font-family: 'Open Sans', sans-serif;
-  font-size: 13px;
-  font-weight: 600;
-  color: white;
-  border-radius: 3px;
-  align-self: center;
-  padding: 2px 5px;
-  background: ${(props) => {
-    switch (props.status) {
-      case PSA_STATUSES.OPEN:
-        return '#8b66db';
-      case PSA_STATUSES.SUCCESS:
-        return '#00be84';
-      case PSA_STATUSES.FAILURE:
-        return '#ff3c5d';
-      case PSA_STATUSES.CANCELLED:
-        return '#b6bbc7';
-      case PSA_STATUSES.DECLINED:
-        return '#555e6f';
-      case PSA_STATUSES.DISMISSED:
-        return '#555e6f';
-      default:
-        return 'transparent';
-    }
-  }};
 `;
 
 type Props = {
@@ -686,13 +674,13 @@ export default class PSAReviewRow extends React.Component<Props, State> {
     const dateEditedText = dateEdited ? dateEdited.format(dateFormat) : '';
 
     return (
-      <div>
+      <MetadataWrapper>
         <MetadataItem>{this.renderMetadataText('Created', dateCreatedText, creator)}</MetadataItem>
         { dateEdited || editor
           ? <MetadataItem>{this.renderMetadataText(editLabel, dateEditedText, editor)}</MetadataItem>
           : null
         }
-      </div>
+      </MetadataWrapper>
     );
   }
 
@@ -729,12 +717,11 @@ export default class PSAReviewRow extends React.Component<Props, State> {
             </PersonCardWrapper>
             <hr/>
             <StatsWrapper>
-              <PSAStats scores={this.props.scores} />
-              {this.renderDownloadButton()}
+              <PSAStats scores={this.props.scores} downloadButton={this.renderDownloadButton}/>
             </StatsWrapper>
           </ReviewRowWrapper>
+          {this.renderDetails()}
         </DetailsRowContainer>
-        {this.renderDetails()}
         {this.renderMetadata()}
       </ReviewRowContainer>
     );
