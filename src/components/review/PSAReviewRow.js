@@ -729,7 +729,6 @@ export default class PSAReviewRow extends React.Component<Props, State> {
             </PersonCardWrapper>
             <hr/>
             <StatsWrapper>
-              {this.renderStatus()}
               <PSAStats scores={this.props.scores} />
               {this.renderDownloadButton()}
             </StatsWrapper>
