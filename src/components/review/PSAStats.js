@@ -54,23 +54,6 @@ const DetailItem = styled.div`
   }
 `;
 
-const ScoresTable = styled.table`
-  margin: 0 50px;
-`;
-
-const ScoreHeader = styled.th`
-  text-align: center;
-  height: 15px;
-  transform: scaleY(0.7);
-  min-width: 50px;
-`;
-
-const ScoreItem = styled.td`
-  font-weight: bold;
-  font-size: 16px;
-  text-align: center;
-`;
-
 const Scale = styled.div`
   width: 30px;
   display: inline-block;
