@@ -7,8 +7,10 @@ import Immutable from 'immutable';
 import styled from 'styled-components';
 
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { PSA_STATUSES } from '../../utils/consts/Consts';
 
 const Wrapper = styled.div`
+  margin-left: 36px;
   width: 100%;
   display: flex;
   flex-direction: row;
@@ -47,7 +49,6 @@ const DetailItem = styled.div`
   div {
     font-family: 'Open Sans', sans-serif;
     font-size: 14px;
-    color: #2e2e34;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -59,12 +60,47 @@ const Scale = styled.div`
   display: inline-block;
   border-radius: 3px 3px 0 0;
   margin-bottom: -5px;
+  margin-left: 10px;
 `;
 
 const ScaleRow = styled.tr`
   vertical-align: bottom;
   border-bottom: 1px solid black;
   text-align: center;
+`;
+
+const StatusTag = styled.div`
+  width: 86px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-transform: uppercase;
+  font-family: 'Open Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: white;
+  border-radius: 3px;
+  align-self: center;
+  padding: 2px 5px;
+  background: ${(props) => {
+    switch (props.status) {
+      case PSA_STATUSES.OPEN:
+        return '#8b66db';
+      case PSA_STATUSES.SUCCESS:
+        return '#00be84';
+      case PSA_STATUSES.FAILURE:
+        return '#ff3c5d';
+      case PSA_STATUSES.CANCELLED:
+        return '#b6bbc7';
+      case PSA_STATUSES.DECLINED:
+        return '#555e6f';
+      case PSA_STATUSES.DISMISSED:
+        return '#555e6f';
+      default:
+        return 'transparent';
+    }
+  }};
 `;
 
 const colorsByScale = {
@@ -76,7 +112,7 @@ const colorsByScale = {
   6: '#dd72ca'
 };
 
-const HEIGHT_MULTIPLIER = 96;
+const WIDTH_MULTIPLIER = 96;
 
 type Props = {
   scores :Immutable.Map<*, *>
@@ -84,33 +120,30 @@ type Props = {
 
 const PSAStats = ({ scores } :Props) => {
   const status = scores.getIn([PROPERTY_TYPES.STATUS, 0], '')
+  console.log(status);
   const ftaVal = scores.getIn([PROPERTY_TYPES.FTA_SCALE, 0]);
   const ncaVal = scores.getIn([PROPERTY_TYPES.NCA_SCALE, 0]);
   const nvcaVal = scores.getIn([PROPERTY_TYPES.NVCA_FLAG, 0]);
   const nvcaDisplay = ncaVal ? 'Yes' : 'No';
-  const nvcaScaleVal = nvcaVal ? 6 : 1;
 
   const FtaScale = styled(Scale)`
     height: 20px;
-    width: ${HEIGHT_MULTIPLIER * (ftaVal / 6)}px;
+    width: ${WIDTH_MULTIPLIER * (ftaVal / 6)}px;
     background: ${colorsByScale[ftaVal]};
   `;
   const NcaScale = styled(Scale)`
     height: 20px;
-    width: ${HEIGHT_MULTIPLIER * (ncaVal / 6)}px;
+    width: ${WIDTH_MULTIPLIER * (ncaVal / 6)}px;
     background: ${colorsByScale[ncaVal]};
   `;
-  const NvcaScale = styled(Scale)`
-    height: ${HEIGHT_MULTIPLIER * nvcaScaleVal}px;
-    background: ${colorsByScale[nvcaScaleVal]};
-  `;
+
   return (
     <Wrapper>
      <DetailsWrapper>
        <DetailRow>
        <DetailItem>
          <h1>PSA Status</h1>
-         <div>{nvcaDisplay}</div>
+         <div><StatusTag status={status}>{status}</StatusTag></div>
        </DetailItem>
        <DetailItem>
          <h1>NVCA</h1>
