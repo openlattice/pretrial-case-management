@@ -203,6 +203,9 @@ export const getChargeTitle = (charge :Immutable.Map<*, *>, hideCase :boolean) :
   let val = '';
   if (!hideCase && caseNum.length) val = `${caseNum} `;
   val = `${val}${statute}`;
+  if (description) {
+    val = `${val} ${description}`;
+  }
   if (dispositionDate && dispositionDate.length) val = `${val} (${dispositionDate})`;
   return val;
 };
