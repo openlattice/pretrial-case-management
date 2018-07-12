@@ -17,6 +17,7 @@ import { getAllViolentCharges } from './consts/ArrestChargeConsts';
 import { chargeIsMostSerious, chargeIsViolent, getSummaryStats } from './consts/ChargeConsts';
 import { getSentenceToIncarcerationCaseNums } from './consts/SentenceConsts';
 import { getRecentFTAs, getOldFTAs } from './FTAUtils';
+import { sortPeopleByName } from './PSAUtils';
 import { PROPERTY_TYPES } from './consts/DataModelConsts';
 import { getHeaderText, getConditionsTextList } from './consts/DMFResultConsts';
 import { stepTwoIncrease, stepFourIncrease, dmfSecondaryReleaseDecrease } from './ScoringUtils';
@@ -144,6 +145,12 @@ const getName = (selectedPerson :Immutable.Map<*, *>) :string => {
   if (middleName.length) name = name.concat(` ${formatValue(middleName)}`);
   name = name.concat(` ${formatValue(selectedPerson.get(LAST_NAME, ''))}`);
   return name;
+};
+
+const getListName = (selectedPerson :Immutable.Map<*, *>) :string => {
+  const firstName = selectedPerson.get(FIRST_NAME, Immutable.List()).join('/');
+  const lastName = selectedPerson.get(LAST_NAME, Immutable.List()).join('/');
+  return `${lastName}, ${firstName}`;
 };
 
 const getMostSevChargeText = (pretrialInfo :Immutable.Map<*, *>) :string => {
@@ -297,9 +304,9 @@ const box = (doc :Object, y :number, xOffset :number, num :number, score :number
   const textX = x + ((BOX_WIDTH / 2) - 1);
   const textY = y + ((BOX_HEIGHT / 2) + 1);
   if (num === score) {
-    doc.setFontType('bold')
+    doc.setFontType('bold');
     doc.text(textX, textY, num.toString());
-    doc.setFontType('regular')
+    doc.setFontType('regular');
   }
 };
 
@@ -317,7 +324,7 @@ const selectedBox = (doc :Object, y :number, xOffset :number, value :number, sco
   doc.setTextColor(0);
   doc.setLineWidth(0.5);
   box(doc, y, xOffset, value, score);
-}
+};
 
 const scale = (doc :Object, yInit :number, xOffset :number, value :number) :number => {
   doc.setDrawColor(128);
@@ -391,7 +398,7 @@ const dmf = (
   dmfValues :Immutable.Map<*, *>,
   dmfRiskFactors :Immutable.Map<*, *>,
   psaRiskFactors :Immutable.Map<*, *>,
-  scores :Immutable.Map<*, *>
+  psaScores :Immutable.Map<*, *>
 ) :number => {
   let y = yInit;
   doc.setFont('helvetica', 'normal');
@@ -402,13 +409,13 @@ const dmf = (
     y += Y_INC;
 
     let modificationText;
-    if (stepTwoIncrease(dmfRiskFactors, psaRiskFactors, scores)) {
+    if (stepTwoIncrease(dmfRiskFactors, psaRiskFactors, psaScores)) {
       modificationText = 'Step two increase.';
     }
-    else if (stepFourIncrease(dmfRiskFactors, psaRiskFactors, scores)) {
+    else if (stepFourIncrease(dmfRiskFactors, psaRiskFactors, psaScores)) {
       modificationText = 'Step four increase.';
     }
-    else if (dmfSecondaryReleaseDecrease(dmfRiskFactors, scores)) {
+    else if (dmfSecondaryReleaseDecrease(dmfRiskFactors, psaScores)) {
       modificationText = 'Exception release.';
     }
 
@@ -987,7 +994,7 @@ const exportPDF = (
   doc.save(fileName);
 };
 
-const coverPage = (doc :Object, pages :Object) => {
+const coverPage = (doc :Object, selectedPeople :Immutable.Map<*, *>[]) => {
   let y = 15;
   doc.setFontType('bold');
   doc.setFontSize(12);
@@ -998,8 +1005,8 @@ const coverPage = (doc :Object, pages :Object) => {
   thickLine(doc, y);
   y += Y_INC;
 
-  pages.forEach((page) => {
-    doc.text(X_COL_1, y, getName(page.selectedPerson));
+  selectedPeople.forEach((selectedPerson) => {
+    doc.text(X_COL_1, y, getListName(selectedPerson));
     y += Y_INC;
   });
 
@@ -1021,10 +1028,14 @@ export const exportPDFList = (fileName :string, pages :{
   compact :boolean
 }[]) :void => {
   const doc = new JSPDF();
+  const sortedPages = pages;
+  sortedPages.sort((page1, page2) => {
+    return sortPeopleByName(page1.selectedPerson, page2.selectedPerson);
+  })
 
-  coverPage(doc, pages);
+  coverPage(doc, sortedPages.map(page => page.selectedPerson));
 
-  pages.forEach((page) => {
+  sortedPages.forEach((page) => {
     const {
       data,
       selectedPretrialCase,
