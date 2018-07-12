@@ -69,6 +69,7 @@ export default function* sagas() :Generator<*, *, *> {
     fork(PsaSagas.loadNeighborsWatcher),
 
     // Review Sagas
+    fork(ReviewSagas.bulkDownloadPSAReviewPDFWatcher),
     fork(ReviewSagas.changePSAStatusWatcher),
     fork(ReviewSagas.checkPSAPermissionsWatcher),
     fork(ReviewSagas.downloadPSAReviewPDFWatcher),
