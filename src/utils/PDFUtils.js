@@ -116,12 +116,14 @@ const thickLine = (doc :Object, y :number, gray? :boolean) :void => {
   doc.setFont('helvetica', 'normal');
 };
 
-const newPage = (doc :Object, pageInit :number, name :string) :number[] => {
+const newPage = (doc :Object, pageInit :number, name? :string) :number[] => {
   const page = pageInit + 1;
   doc.addPage();
-  doc.setFontSize(12);
-  doc.setFontType('normal');
-  doc.text(10, X_COL_1, `${name} - ${page}`);
+  if (name) {
+    doc.setFontSize(12);
+    doc.setFontType('normal');
+    doc.text(10, X_COL_1, `${name} - ${page}`);
+  }
   doc.setFontSize(10);
   thickLine(doc, 15);
   return [25, page];
@@ -843,7 +845,8 @@ const caseHistory = (
   return [y, page];
 };
 
-const exportPDF = (
+const getPDFContents = (
+  doc :Object,
   data :Immutable.Map<*, *>,
   selectedPretrialCase :Immutable.Map<*, *>,
   selectedCharges :Immutable.Map<*, *>,
@@ -861,8 +864,7 @@ const exportPDF = (
     timestamp :string
   },
   compact :boolean
-) :void => {
-  const doc = new JSPDF();
+) :string => {
   doc.setFont('helvetica', 'normal');
   let y = 15;
   let page = 1;
@@ -944,7 +946,92 @@ const exportPDF = (
     [y, page] = caseHistory(doc, y, page, name, allCases, chargesByCaseNum);
   }
 
-  doc.save(getPdfName(name, createData.timestamp));
+  return getPdfName(name, createData.timestamp);
+};
+
+const exportPDF = (
+  data :Immutable.Map<*, *>,
+  selectedPretrialCase :Immutable.Map<*, *>,
+  selectedCharges :Immutable.Map<*, *>,
+  selectedPerson :Immutable.Map<*, *>,
+  allCases :Immutable.List<*>,
+  allCharges :Immutable.List<*>,
+  allSentences :Immutable.List<*>,
+  allFTAs :Immutable.List<*>,
+  createData :{
+    user :string,
+    timestamp :string
+  },
+  updateData :{
+    user :string,
+    timestamp :string
+  },
+  compact :boolean
+) :void => {
+  const doc = new JSPDF();
+  const fileName = getPDFContents(
+    doc,
+    data,
+    selectedPretrialCase,
+    selectedCharges,
+    selectedPerson,
+    allCases,
+    allCharges,
+    allSentences,
+    allFTAs,
+    createData,
+    updateData,
+    compact
+  );
+
+  doc.save(fileName);
+};
+
+export const exportPDFList = (fileName :string, pages :{
+  data :Immutable.Map<*, *>,
+  selectedPretrialCase :Immutable.Map<*, *>,
+  selectedCharges :Immutable.Map<*, *>,
+  selectedPerson :Immutable.Map<*, *>,
+  createData :{
+    user :string,
+    timestamp :string
+  },
+  updateData :{
+    user :string,
+    timestamp :string
+  },
+  compact :boolean
+}[]) :void => {
+  const doc = new JSPDF();
+  pages.forEach((page, index) => {
+    const {
+      data,
+      selectedPretrialCase,
+      selectedCharges,
+      selectedPerson,
+      createData,
+      updateData
+    } = page;
+
+    getPDFContents(
+      doc,
+      data,
+      selectedPretrialCase,
+      selectedCharges,
+      selectedPerson,
+      Immutable.List(),
+      Immutable.List(),
+      Immutable.List(),
+      Immutable.List(),
+      createData,
+      updateData,
+      true
+    );
+    if (index !== pages.length - 1) {
+      doc.addPage();
+    }
+  });
+  doc.save(fileName);
 };
 
 export default exportPDF;

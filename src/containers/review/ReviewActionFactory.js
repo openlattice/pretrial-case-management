@@ -4,6 +4,9 @@
 
 import { newRequestSequence } from 'redux-reqseq';
 
+const BULK_DOWNLOAD_PSA_REVIEW_PDF :string = 'BULK_DOWNLOAD_PSA_REVIEW_PDF';
+const bulkDownloadPSAReviewPDF :RequestSequence = newRequestSequence(BULK_DOWNLOAD_PSA_REVIEW_PDF);
+
 const CHANGE_PSA_STATUS :string = 'CHANGE_PSA_STATUS';
 const changePSAStatus :RequestSequence = newRequestSequence(CHANGE_PSA_STATUS);
 
@@ -29,6 +32,7 @@ const UPDATE_SCORES_AND_RISK_FACTORS :string = 'UPDATE_SCORES_AND_RISK_FACTORS';
 const updateScoresAndRiskFactors :RequestSequence = newRequestSequence(UPDATE_SCORES_AND_RISK_FACTORS);
 
 export {
+  BULK_DOWNLOAD_PSA_REVIEW_PDF,
   CHANGE_PSA_STATUS,
   CHECK_PSA_PERMISSIONS,
   DOWNLOAD_PSA_REVIEW_PDF,
@@ -37,6 +41,7 @@ export {
   LOAD_PSAS_BY_DATE,
   REFRESH_PSA_NEIGHBORS,
   UPDATE_SCORES_AND_RISK_FACTORS,
+  bulkDownloadPSAReviewPDF,
   changePSAStatus,
   checkPSAPermissions,
   downloadPSAReviewPDF,
