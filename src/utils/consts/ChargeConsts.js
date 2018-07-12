@@ -10,8 +10,17 @@ import { formatValue, formatDateList } from '../Utils';
 const {
   CHARGE_ID,
   CHARGE_STATUTE,
-  DISPOSITION_DATE
+  CHARGE_DESCRIPTION,
+  DISPOSITION_DATE,
+  MOST_SERIOUS_CHARGE_NO
 } = PROPERTY_TYPES;
+
+type ChargeDetails = {
+  caseNum :string,
+  dispositionDate :string,
+  statute :string,
+  description :string
+};
 
 const VIOLENT_CHARGES = [
   '16-10-32',
@@ -114,6 +123,20 @@ const stripDegree = (chargeNum :string) :string => chargeNum.split('(')[0].trim(
 export const chargeIsViolent = (chargeNum :string) :boolean =>
   VIOLENT_CHARGES.includes(stripDegree(chargeNum.toLowerCase()));
 
+export const chargeIsMostSerious = (charge :Immutable.Map<*, *>, pretrialCase :Immutable.Map<*, *>) => {
+  let mostSerious = false;
+
+  const statuteField = charge.get(CHARGE_STATUTE, Immutable.List());
+  const mostSeriousNumField = pretrialCase.get(MOST_SERIOUS_CHARGE_NO, Immutable.List());
+  statuteField.forEach((chargeNum) => {
+    mostSeriousNumField.forEach((mostSeriousNum) => {
+      if (mostSeriousNum === chargeNum) mostSerious = true;
+    });
+  });
+
+  return mostSerious;
+};
+
 export const getUnique = (valueList :Immutable.List<string>) :Immutable.List<string> =>
   valueList.filter((val, index) => valueList.indexOf(val) === index);
 
@@ -156,15 +179,73 @@ export const degreeFieldIsFelony = (degreeField :Immutable.List<string>) :boolea
   return result;
 };
 
-export const getChargeTitle = (charge :Immutable.Map<*, *>) :string => {
-  const caseNum = charge.getIn([CHARGE_ID, 0], '').split('|')[0];
-  const degree = formatValue(charge.get(CHARGE_STATUTE, Immutable.List()));
+export const getChargeDetails = (charge :Immutable.Map<*, *>, ignoreCase? :boolean) :ChargeDetails => {
+  const caseNum = ignoreCase ? null : charge.getIn([CHARGE_ID, 0], '').split('|')[0];
+  const statute = formatValue(charge.get(CHARGE_STATUTE, Immutable.List()));
+  const description = formatValue(charge.get(CHARGE_DESCRIPTION, Immutable.List()));
   const dispositionDate = formatDateList(charge.get(DISPOSITION_DATE, Immutable.List()));
+  return {
+    caseNum,
+    statute,
+    description,
+    dispositionDate
+  };
+};
+
+export const getChargeTitle = (charge :Immutable.Map<*, *>, hideCase :boolean) :string => {
+  const {
+    caseNum,
+    statute,
+    description,
+    dispositionDate
+  } = getChargeDetails(charge);
+
   let val = '';
-  if (caseNum.length) val = `${caseNum} `;
-  val = `${val}${degree}`;
+  if (!hideCase && caseNum.length) val = `${caseNum} `;
+  val = `${val}${statute}`;
   if (dispositionDate && dispositionDate.length) val = `${val} (${dispositionDate})`;
   return val;
+};
+
+export const getSummaryStats = (chargesByCaseNum :Immutable.Map<*>) => {
+  let numMisdemeanorCharges = 0;
+  let numMisdemeanorConvictions = 0;
+  let numFelonyCharges = 0;
+  let numFelonyConvictions = 0;
+  let numViolentCharges = 0;
+  let numViolentConvictions = 0;
+
+  chargesByCaseNum.valueSeq().forEach((chargeList) => {
+    chargeList.forEach((charge) => {
+      const degreeField = charge.get(PROPERTY_TYPES.CHARGE_LEVEL, Immutable.List()).filter(val => !!val);
+      const chargeField = charge.get(PROPERTY_TYPES.CHARGE_STATUTE, Immutable.List()).filter(val => !!val);
+      const convicted = dispositionFieldIsGuilty(
+        charge.get(PROPERTY_TYPES.DISPOSITION, Immutable.List()).filter(val => !!val)
+      );
+      if (degreeFieldIsMisdemeanor(degreeField)) {
+        numMisdemeanorCharges += 1;
+        if (convicted) numMisdemeanorConvictions += 1;
+      }
+      else if (degreeFieldIsFelony(degreeField)) {
+        numFelonyCharges += 1;
+        if (convicted) numFelonyConvictions += 1;
+      }
+
+      if (chargeFieldIsViolent(chargeField)) {
+        numViolentCharges += 1;
+        if (convicted) numViolentConvictions += 1;
+      }
+    });
+  });
+
+  return {
+    numMisdemeanorCharges,
+    numMisdemeanorConvictions,
+    numFelonyCharges,
+    numFelonyConvictions,
+    numViolentCharges,
+    numViolentConvictions
+  };
 };
 
 export default VIOLENT_CHARGES;

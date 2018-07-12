@@ -13,7 +13,8 @@ import {
   degreeFieldIsMisdemeanor,
   dispositionFieldIsGuilty,
   getViolentChargeNums,
-  getChargeTitle
+  getChargeTitle,
+  getChargeDetails
 } from './consts/ChargeConsts';
 import { getSentenceToIncarcerationCaseNums } from './consts/SentenceConsts';
 import {
@@ -99,24 +100,33 @@ export const tryAutofillAge = (
   return ageAtCurrentArrestValue;
 };
 
-export const getPendingCharges = (
+/* Mapping util functions */
+const mapToLabels = (allCharges :Immutable.List<*>, filterFn :(allCharges :Immutable.List<*>) => Immutable.List<*>) =>
+  filterFn(allCharges).map(charge => getChargeTitle(charge));
+
+const mapToDetails = (allCharges :Immutable.List<*>, filterFn :(allCharges :Immutable.List<*>) => Immutable.List<*>) =>
+  filterFn(allCharges).map(charge => getChargeDetails(charge));
+
+/* Filter charge lists */
+const filterPendingCharges = (
   currCaseNum :string,
   dateArrested :string,
   allCases :Immutable.List<*>,
   allCharges :Immutable.List<*>
 ) :Immutable.List<*> => {
   if (!dateArrested || !dateArrested.length || !currCaseNum || !currCaseNum.length) return Immutable.List();
-  const arrest = moment(dateArrested);
-  let casesWithArrestBefore = Immutable.List();
-  let casesWithDispositionAfter = Immutable.Set();
-  if (arrest.isValid()) {
+  const arrestDate = moment(dateArrested);
+  let casesWithArrestBefore = Immutable.Set(); // Set of case numbers with an arrest date before the current one
+  let casesWithDispositionAfter = Immutable.Map(); // Map from case nums to charge list with date after current arrest
+
+  if (arrestDate.isValid()) {
     allCases.forEach((caseDetails) => {
       const prevArrestDate = moment(caseDetails.getIn([ARREST_DATE_TIME, 0],
         caseDetails.getIn([ARREST_DATE, 0],
           caseDetails.getIn([FILE_DATE, 0], ''))));
-      if (prevArrestDate.isValid() && prevArrestDate.isBefore(arrest)) {
+      if (prevArrestDate.isValid() && prevArrestDate.isBefore(arrestDate)) {
         const caseNum = caseDetails.getIn([CASE_ID, 0]);
-        if (caseNum !== currCaseNum) casesWithArrestBefore = casesWithArrestBefore.push(caseNum);
+        if (caseNum !== currCaseNum) casesWithArrestBefore = casesWithArrestBefore.add(caseNum);
       }
     });
     allCharges.forEach((chargeDetails) => {
@@ -135,55 +145,38 @@ export const getPendingCharges = (
       }
       else {
         const dispositionDate = moment(dispositionDateStr);
-        if (dispositionDate.isValid() && dispositionDate.isAfter(arrest)) {
+        if (dispositionDate.isValid() && dispositionDate.isAfter(arrestDate)) {
           shouldInclude = true;
         }
       }
 
       if (shouldInclude && caseNum) {
-        casesWithDispositionAfter = casesWithDispositionAfter.add(caseNum);
+        casesWithDispositionAfter = casesWithDispositionAfter.set(
+          caseNum,
+          casesWithDispositionAfter.get(caseNum, Immutable.List()).push(chargeDetails)
+        );
       }
     });
-    return casesWithArrestBefore
-      .filter(caseNum => casesWithDispositionAfter.has(caseNum));
+    return casesWithArrestBefore.flatMap(caseNum => casesWithDispositionAfter.get(caseNum, Immutable.List()));
   }
   return Immutable.List();
 };
 
-export const tryAutofillPendingCharge = (
-  currCaseNum :string,
-  dateArrested :string,
-  allCases :Immutable.List<*>,
-  allCharges :Immutable.List<*>,
-  defaultValue :string
-) :string => {
-  if (!dateArrested.length || !currCaseNum.length) return defaultValue;
-  return `${getPendingCharges(currCaseNum, dateArrested, allCases, allCharges).size > 0}`;
-};
-
-export const getPreviousMisdemeanors = (allCharges :Immutable.List<*>) :Immutable.List<*> => {
+const filterPreviousMisdemeanors = (allCharges :Immutable.List<*>) :Immutable.List<*> => {
   if (!allCharges.size) return Immutable.List();
   return allCharges.filter(charge =>
     dispositionFieldIsGuilty(charge.get(DISPOSITION, Immutable.List()))
-    && degreeFieldIsMisdemeanor(charge.get(CHARGE_LEVEL, Immutable.List())))
-    .map(charge => getChargeTitle(charge));
+    && degreeFieldIsMisdemeanor(charge.get(CHARGE_LEVEL, Immutable.List())));
 };
 
-export const tryAutofillPreviousMisdemeanors = (allCharges :Immutable.List<*>) :string =>
-  `${getPreviousMisdemeanors(allCharges).size > 0}`;
-
-export const getPreviousFelonies = (allCharges :Immutable.List<*>) :Immutable.List<*> => {
+const filterPreviousFelonies = (allCharges :Immutable.List<*>) :Immutable.List<*> => {
   if (!allCharges.size) return Immutable.List();
   return allCharges.filter(charge =>
     dispositionFieldIsGuilty(charge.get(DISPOSITION, Immutable.List()))
-    && degreeFieldIsFelony(charge.get(CHARGE_LEVEL, Immutable.List())))
-    .map(charge => getChargeTitle(charge));
+    && degreeFieldIsFelony(charge.get(CHARGE_LEVEL, Immutable.List())));
 };
 
-export const tryAutofillPreviousFelonies = (allCharges :Immutable.List<*>) :string =>
-  `${getPreviousFelonies(allCharges).size > 0}`;
-
-export const getPreviousViolentCharges = (allCharges :Immutable.List<*>) :Immutable.List<*> => {
+const filterPreviousViolentCharges = (allCharges :Immutable.List<*>) :Immutable.List<*> => {
   if (!allCharges.size) return Immutable.List();
 
   return allCharges
@@ -192,12 +185,67 @@ export const getPreviousViolentCharges = (allCharges :Immutable.List<*>) :Immuta
       return chargeNum.length
         && dispositionFieldIsGuilty(charge.get(DISPOSITION, Immutable.List()))
         && chargeFieldIsViolent(Immutable.List.of(chargeNum));
-    })
-    .map(charge => getChargeTitle(charge));
+    });
 };
 
+/* Transform filtered charge lists */
+
+export const getPendingChargeLabels = (
+  currCaseNum :string,
+  dateArrested :string,
+  allCases :Immutable.List<*>,
+  allCharges :Immutable.List<*>
+) =>
+  filterPendingCharges(currCaseNum, dateArrested, allCases, allCharges).map(charge => getChargeTitle(charge));
+
+export const getPendingCharges = (
+  currCaseNum :string,
+  dateArrested :string,
+  allCases :Immutable.List<*>,
+  allCharges :Immutable.List<*>
+) =>
+  filterPendingCharges(currCaseNum, dateArrested, allCases, allCharges).map(charge => getChargeDetails(charge));
+
+export const getPreviousMisdemeanorLabels = (allCharges :Immutable.List<*, *>) =>
+  mapToLabels(allCharges, filterPreviousMisdemeanors);
+
+export const getPreviousMisdemeanors = (allCharges :Immutable.List<*, *>) =>
+  mapToDetails(allCharges, filterPreviousMisdemeanors);
+
+export const getPreviousFelonyLabels = (allCharges :Immutable.List<*, *>) =>
+  mapToLabels(allCharges, filterPreviousFelonies);
+
+export const getPreviousFelonies = (allCharges :Immutable.List<*, *>) =>
+  mapToDetails(allCharges, filterPreviousFelonies);
+
+export const getPreviousViolentChargeLabels = (allCharges :Immutable.List<*>) =>
+  mapToLabels(allCharges, filterPreviousViolentCharges);
+
+export const getPreviousViolentCharges = (allCharges :Immutable.List<*>) =>
+  mapToDetails(allCharges, filterPreviousViolentCharges);
+
+/* Autofill based on filtered charge list sizes */
+
+export const tryAutofillPendingCharge = (
+  currCaseNum :string,
+  dateArrested :string,
+  allCases :Immutable.List<*>,
+  allCharges :Immutable.List<*>,
+  defaultValue :string
+) => {
+  if (!dateArrested.length || !currCaseNum.length) return defaultValue;
+  return `${filterPendingCharges(currCaseNum, dateArrested, allCases, allCharges).size > 0}`;
+};
+
+export const tryAutofillPreviousMisdemeanors = (allCharges :Immutable.List<*>) :string =>
+  `${filterPreviousMisdemeanors(allCharges).size > 0}`;
+
+export const tryAutofillPreviousFelonies = (allCharges :Immutable.List<*>) :string =>
+  `${filterPreviousFelonies(allCharges).size > 0}`;
+
+
 export const tryAutofillPreviousViolentCharge = (allCharges :Immutable.List<*>) :string => {
-  const numViolentCharges = getPreviousViolentCharges(allCharges).size;
+  const numViolentCharges = filterPreviousViolentCharges(allCharges).size;
   if (numViolentCharges > 3) return '3';
   return `${numViolentCharges}`;
 };
