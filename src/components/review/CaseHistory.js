@@ -10,12 +10,7 @@ import ChargeList from '../charges/ChargeList';
 import { formatDateList } from '../../utils/Utils';
 import { InlineBold } from '../../utils/Layout';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import {
-  chargeFieldIsViolent,
-  degreeFieldIsMisdemeanor,
-  degreeFieldIsFelony,
-  dispositionFieldIsGuilty
-} from '../../utils/consts/ChargeConsts';
+import { getSummaryStats } from '../../utils/consts/ChargeConsts';
 
 const InfoRow = styled.div`
   display: flex;
@@ -80,35 +75,14 @@ type Props = {
 
 const CaseHistory = ({ caseHistory, chargeHistory } :Props) => {
 
-  let numMisdemeanorCharges = 0;
-  let numMisdemeanorConvictions = 0;
-  let numFelonyCharges = 0;
-  let numFelonyConvictions = 0;
-  let numViolentCharges = 0;
-  let numViolentConvictions = 0;
-
-  chargeHistory.valueSeq().forEach((chargeList) => {
-    chargeList.forEach((charge) => {
-      const degreeField = charge.get(PROPERTY_TYPES.CHARGE_LEVEL, Immutable.List()).filter(val => !!val);
-      const chargeField = charge.get(PROPERTY_TYPES.CHARGE_STATUTE, Immutable.List()).filter(val => !!val);
-      const convicted = dispositionFieldIsGuilty(
-        charge.get(PROPERTY_TYPES.DISPOSITION, Immutable.List()).filter(val => !!val)
-      );
-      if (degreeFieldIsMisdemeanor(degreeField)) {
-        numMisdemeanorCharges += 1;
-        if (convicted) numMisdemeanorConvictions += 1;
-      }
-      else if (degreeFieldIsFelony(degreeField)) {
-        numFelonyCharges += 1;
-        if (convicted) numFelonyConvictions += 1;
-      }
-
-      if (chargeFieldIsViolent(chargeField)) {
-        numViolentCharges += 1;
-        if (convicted) numViolentConvictions += 1;
-      }
-    });
-  });
+  const {
+    numMisdemeanorCharges,
+    numMisdemeanorConvictions,
+    numFelonyCharges,
+    numFelonyConvictions,
+    numViolentCharges,
+    numViolentConvictions
+  } = getSummaryStats(chargeHistory);
 
   const cases = caseHistory
     .filter(caseObj => caseObj.getIn([PROPERTY_TYPES.CASE_ID, 0], '').length)
