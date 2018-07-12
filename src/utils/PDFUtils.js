@@ -987,6 +987,24 @@ const exportPDF = (
   doc.save(fileName);
 };
 
+const coverPage = (doc :Object, pages :Object) => {
+  let y = 15;
+  doc.setFontType('bold');
+  doc.setFontSize(12);
+  doc.text(X_COL_1, y, 'People Included');
+  doc.setFontType('normal');
+  doc.setFontSize(10);
+  y += Y_INC_SMALL;
+  thickLine(doc, y);
+  y += Y_INC;
+
+  pages.forEach((page) => {
+    doc.text(X_COL_1, y, getName(page.selectedPerson));
+    y += Y_INC;
+  });
+
+};
+
 export const exportPDFList = (fileName :string, pages :{
   data :Immutable.Map<*, *>,
   selectedPretrialCase :Immutable.Map<*, *>,
@@ -1003,7 +1021,10 @@ export const exportPDFList = (fileName :string, pages :{
   compact :boolean
 }[]) :void => {
   const doc = new JSPDF();
-  pages.forEach((page, index) => {
+
+  coverPage(doc, pages);
+
+  pages.forEach((page) => {
     const {
       data,
       selectedPretrialCase,
@@ -1013,6 +1034,7 @@ export const exportPDFList = (fileName :string, pages :{
       updateData
     } = page;
 
+    doc.addPage();
     getPDFContents(
       doc,
       data,
@@ -1027,9 +1049,6 @@ export const exportPDFList = (fileName :string, pages :{
       updateData,
       true
     );
-    if (index !== pages.length - 1) {
-      doc.addPage();
-    }
   });
   doc.save(fileName);
 };
