@@ -10,23 +10,15 @@ import moment from 'moment';
 import styled from 'styled-components';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import {
-  ButtonToolbar,
-  DropdownButton,
-  MenuItem,
-  Tab,
-  Tabs,
-  ToggleButton,
-  ToggleButtonGroup
-} from 'react-bootstrap';
-
+import NavButtonToolbar from '../../components/buttons/NavButtonToolbar';
 import PSAReviewRowList from './PSAReviewRowList';
 import LoadingSpinner from '../../components/LoadingSpinner';
+import DropDownMenu from '../../components/StyledSelect';
 import PersonSearchFields from '../../components/person/PersonSearchFields';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_STATUSES, SORT_TYPES } from '../../utils/consts/Consts';
 import { DOMAIN } from '../../utils/consts/ReportDownloadTypes';
-import { PaddedRow, TitleLabel, StyledSelect } from '../../utils/Layout';
+import { PaddedRow, TitleLabel } from '../../utils/Layout';
 import * as FormActionFactory from '../psa/FormActionFactory';
 import * as ReviewActionFactory from './ReviewActionFactory';
 import * as Routes from '../../core/router/Routes';
@@ -42,70 +34,74 @@ const StyledFormWrapper = styled.div`
   width: 960px;
 `;
 
-const StyledTitleWrapper = styled.div`
-  align-items: center;
-  color: #37454a;
-  display: flex;
-  font-size: 32px;
-  justify-content: space-between;
-  margin-bottom: 30px;
-  width: 100%;
-`;
-
 const StyledSectionWrapper = styled.div`
   color: #555e6f;
   display: flex;
   flex-direction: column;
-  align-items: center;
   width: 960px;
 `;
 
-const StyledFiltersWrapper = styled.div`
+const StyledSearchWrapper = styled.div`
+  width: 100%;
   background: #fff;
   border-radius: 5px;
   border: solid 1px #e1e1eb;
   margin-bottom: 20px;
 `
 
-const CloseX = styled(FontAwesome)`
-  cursor: pointer;
-`;
-
 const StyledTopFormNavBuffer = styled.div`
   height: 55px;
 `;
 
-const DatePickerTitle = styled.div`
-  font-size: 18px;
-  margin: 15px 0;
+const StyledFiltersBar = styled.div`
+  font-size: 14px;
+  margin: 15px 30px;
   text-align: center;
   display: flex;
   flex-direction: row;
   align-items: center;
-  justify-content: center;
-
-  div {
-    margin: 0 5px;
-  }
+  justify-content: space-between;
 `;
+
+const FilterWrapper = styled.div`
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  white-space: nowrap;
+  width: 25%;
+  span {
+    margin-top: 10px;
+  }
+`
 
 const DateRangeContainer = styled.div`
   display: flex;
   flex-direction: row;
   justify-content: center;
-  max-width: 123px;
-  max-height: 32px;
+  align-items: center;
+  width: 25%;
+  margin-top: 10px;
 `;
 
 const DatePickerGroupContainer = styled.div`
-  max-width: 300px;
+  max-width: 140px;
   margin: 10px;
 `;
+
+const StyledDatePicker = styled(DatePicker)`
+    width: 123px;
+    background-color: transparent;
+    border-radius: 3px;
+    border: solid 1px #dcdce7;
+
+  }
+`
 
 const NoResults = styled.div`
   width: 100%;
   font-size: 16px;
   text-align: center;
+  width: 960px;
 `;
 
 const ErrorText = styled.div`
@@ -127,58 +123,128 @@ const SearchRow = styled(PaddedRow)`
   margin: 10px;
 `;
 
-const SortContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-`;
-
-const SortText = styled.div`
-  font-size: 14px;
-  margin: -5px 0 5px 0;
-`;
-
-const Toggle = styled(ToggleButton)`
-  -webkit-appearance: none !important;
-  margin: 15px 0;
-`;
-
 const DATE_FORMAT = 'MM/DD/YYYY';
 
 const STATUS_OPTIONS = {
   OPEN: {
     value: PSA_STATUSES.OPEN,
-    label: 'All Open'
+    label: 'All Open',
   },
   SUCCESS: {
     value: PSA_STATUSES.SUCCESS,
-    label: 'Successful'
+    label: 'Successful',
   },
   FAILURE: {
     value: PSA_STATUSES.FAILURE,
-    label: 'Failed'
+    label: 'Failed',
   },
   CANCELLED: {
     value: PSA_STATUSES.CANCELLED,
-    label: 'Cancelled'
+    label: 'Cancelled',
   },
   DECLINED: {
     value: PSA_STATUSES.DECLINED,
-    label: 'Declined'
+    label: 'Declined',
   },
   DISMISSED: {
     value: PSA_STATUSES.DISMISSED,
-    label: 'Dismissed'
+    label: 'Dismissed',
   },
   ALL: {
     value: '*',
-    label: 'All'
+    label: 'All',
   },
   REQUIRES_ACTION: {
     value: PSA_STATUSES.OPEN,
-    label: 'Requires Action'
+    label: 'Requires Action',
   }
 };
+
+const openOptions = [
+  {
+    value: 'OPEN',
+    label: 'All Open',
+  },
+  {
+    value: 'REQUIRES_ACTION',
+    label: 'Requires Action',
+  }
+];
+
+const closedOptions = [
+  {
+    value: 'SUCCESS',
+    label: 'Successful',
+  },
+  {
+    value: 'FAILURE',
+    label: 'Failed',
+  },
+  {
+    value: 'CANCELLED',
+    label: 'Cancelled',
+  },
+  {
+    value: 'DECLINED',
+    label: 'Declined',
+  },
+  {
+    value: 'DISMISSED',
+    label: 'Dismissed',
+  }
+];
+
+const STATUS_OPTIONS_ARR = [
+  {
+    value: 'ALL',
+    label: 'All',
+  },
+  {
+    label: 'Open',
+    options: openOptions,
+  },
+  {
+    label: 'Closed',
+    options: closedOptions,
+  }
+];
+
+const DOMAIN_OPTIONS_ARR = [
+  {
+    value: "",
+    label: 'All'
+  },
+  {
+    value: DOMAIN.PENNINGTON,
+    label: 'Pennington',
+  },
+  {
+    value: DOMAIN.MINNEHAHA,
+    label: 'Minnehaha',
+  },
+]
+
+const SORT_OPTIONS_ARR = [
+  {
+    value: SORT_TYPES.NAME,
+    label: 'Name'
+  },
+  {
+    value: SORT_TYPES.DATE,
+    label: 'Date',
+  },
+]
+
+const NAV_OPTIONS = [
+  {
+    path: Routes.REVIEW_FORMS,
+    label: 'View All'
+  },
+  {
+    path: Routes.SEARCH_FORMS,
+    label: 'Search'
+  }
+];
 
 type Props = {
   history :string[],
@@ -232,14 +298,8 @@ class ReviewPSA extends React.Component<Props, State> {
   }
 
   updateFilters = (newFilters :Object) => {
-    const filters = Object.assign({}, {
-      date: '',
-      firstName: '',
-      lastName: '',
-      dob: '',
-      filer: '',
-      searchExecuted: true
-    }, newFilters);
+    const existingFilters = this.state.filters;
+    const filters = Object.assign({}, existingFilters, newFilters);
     this.setState({ filters });
   }
 
@@ -253,8 +313,9 @@ class ReviewPSA extends React.Component<Props, State> {
 
     return (
       <DateRangeContainer>
+        <span>PSA Date </span>
         <DatePickerGroupContainer>
-          <DatePicker
+          <StyledDatePicker
               value={date}
               onChange={(newDate) => {
                 this.updateFilters({ date: newDate });
@@ -271,20 +332,28 @@ class ReviewPSA extends React.Component<Props, State> {
     return <PersonSearchFields handleSubmit={handleSubmit} />;
   }
 
-  renderFilerFilter = () => {
-    const filerOptions = this.props.allFilers.map(filer => <option key={filer} value={filer}>{filer}</option>);
-
+  renderFilerOptions = () => {
+    const allFilers = this.props.allFilers.toArray().map(filer => {
+      return (
+        {
+          value: filer,
+          label: filer,
+        }
+      )
+    });
+    const filerOptions = [{ value: "", label: "All"}].concat(allFilers);
     return (
-      <SearchRow>
-        <StyledSelect
-            value={this.state.filters.filer}
+      <FilterWrapper>
+        <span>Filer </span>
+        <DropDownMenu
+            placeholder={"All"}
+            classNamePrefix="lattice-select"
             onChange={(e) => {
-              this.updateFilters({ filer: e.target.value });
-            }}>
-          <option value="">Select</option>
-          { filerOptions }
-        </StyledSelect>
-      </SearchRow>
+              this.updateFilters({ filer: e.value });
+            }}
+            options={filerOptions}
+          />
+      </FilterWrapper>
     );
   }
 
@@ -309,6 +378,7 @@ class ReviewPSA extends React.Component<Props, State> {
     }
     else if (activeFilterKey === 1) {
       items = this.filterByDate();
+      items.concat(this.filterByFiler());
     }
     else if (activeFilterKey === 2) {
       items = this.filterByPerson();
@@ -359,6 +429,10 @@ class ReviewPSA extends React.Component<Props, State> {
         return true;
       }).size
   )
+
+  changeFiler = (filer) => {
+
+  }
 
   filterByFiler = () => {
     const { filer } = this.state.filters;
@@ -432,54 +506,45 @@ class ReviewPSA extends React.Component<Props, State> {
     }
   }
 
-  renderStatusItem = key =>
-    <MenuItem key={key} eventKey={key} onClick={() => this.changeStatus(key)}>{STATUS_OPTIONS[key].label}</MenuItem>
-
-  renderStatusDropdown = () => (
-    <DropdownButton title={STATUS_OPTIONS[this.state.status].label} id="statusDropdown">
-      {this.renderStatusItem('ALL')}
-      <MenuItem divider />
-      <MenuItem header>Open</MenuItem>
-      {this.renderStatusItem('OPEN')}
-      {this.renderStatusItem('REQUIRES_ACTION')}
-      <MenuItem divider />
-      <MenuItem header>Closed</MenuItem>
-      {this.renderStatusItem('SUCCESS')}
-      {this.renderStatusItem('FAILURE')}
-      {this.renderStatusItem('CANCELLED')}
-      {this.renderStatusItem('DECLINED')}
-      {this.renderStatusItem('DISMISSED')}
-    </DropdownButton>
+  renderStatusOptions = () => (
+    <FilterWrapper>
+      <span>PSA Status </span>
+      <DropDownMenu
+        placeholder={"All Open"}
+        classNamePrefix="lattice-select"
+        options={STATUS_OPTIONS_ARR}
+        onChange={(e) => {
+          this.changeStatus(e.value)}
+        }
+      />
+    </FilterWrapper>
   )
 
-  onDomainChange = (domain) => {
+  changeDomain = (domain) => {
     this.setState({ domain });
   }
 
   renderDomainChoices = () => (
-    <ButtonToolbar>
-      <ToggleButtonGroup type="radio" name="domainPicker" value={this.state.domain} onChange={this.onDomainChange}>
-        <Toggle value="">All</Toggle>
-        <Toggle value={DOMAIN.PENNINGTON}>Pennington</Toggle>
-        <Toggle value={DOMAIN.MINNEHAHA}>Minnehaha</Toggle>
-      </ToggleButtonGroup>
-    </ButtonToolbar>
+    <FilterWrapper>
+      <span>County </span>
+      <DropDownMenu
+        placeholder={"All"}
+        classNamePrefix="lattice-select"
+        options={DOMAIN_OPTIONS_ARR}
+        onChange={(e) => {
+          this.changeDomain(e.value)}
+        }
+      />
+    </FilterWrapper>
   )
 
   renderFilters = () => (
-    <div>
-      <DatePickerTitle>
-        <span>PSA Status </span>
-        {this.renderStatusDropdown()}
-        <span>County </span>
+      <StyledFiltersBar>
+        {this.renderStatusOptions()}
         {this.renderDomainChoices()}
-        <span>PSA Date </span>
         {this.renderDateRangePicker()}
-        <span>Filer </span>
-        {this.renderFilerFilter()}
-      </DatePickerTitle>
-      <hr />
-    </div>
+        {this.renderFilerOptions()}
+      </StyledFiltersBar>
   )
 
   onSortChange = (sort) => {
@@ -487,15 +552,19 @@ class ReviewPSA extends React.Component<Props, State> {
   }
 
   renderSortChoices = () => (this.state.status === 'REQUIRES_ACTION' ? null : (
-    <SortContainer>
-      <SortText>Sort by:</SortText>
-      <ButtonToolbar>
-        <ToggleButtonGroup type="radio" name="sortPicker" value={this.state.sort} onChange={this.onSortChange}>
-          <Toggle value={SORT_TYPES.NAME}>Name</Toggle>
-          <Toggle value={SORT_TYPES.DATE}>Date</Toggle>
-        </ToggleButtonGroup>
-      </ButtonToolbar>
-    </SortContainer>
+    <StyledFiltersBar>
+      <FilterWrapper>
+        <span>Sort by </span>
+        <DropDownMenu
+          placeholder='Name'
+          classNamePrefix="lattice-select"
+          options={SORT_OPTIONS_ARR}
+          onChange={(e) => {
+            this.onSortChange(e.value)}
+          }
+        />
+      </FilterWrapper>
+    </StyledFiltersBar>
   ))
 
   renderContent = () => {
@@ -504,11 +573,13 @@ class ReviewPSA extends React.Component<Props, State> {
     }
     return (
       <StyledSectionWrapper>
-        <StyledFiltersWrapper>
+      <NavButtonToolbar options={NAV_OPTIONS}/>
+        <StyledSearchWrapper>
           {this.renderError()}
           {this.renderFilters()}
+          <hr/>
           {this.renderSortChoices()}
-        </StyledFiltersWrapper>
+        </StyledSearchWrapper>
         {this.handleFilterRequest()}
         <StyledTopFormNavBuffer />
       </StyledSectionWrapper>
@@ -519,10 +590,6 @@ class ReviewPSA extends React.Component<Props, State> {
     return (
       <StyledFormViewWrapper>
         <StyledFormWrapper>
-          <StyledTitleWrapper>
-            <div>Review PSA Forms</div>
-            <CloseX name="close" onClick={this.handleClose} />
-          </StyledTitleWrapper>
           {this.renderContent()}
         </StyledFormWrapper>
       </StyledFormViewWrapper>
