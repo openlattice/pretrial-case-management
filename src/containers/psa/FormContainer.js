@@ -700,6 +700,7 @@ class Form extends React.Component<Props, State> {
       charges,
       selectedPerson,
       arrestOptions,
+      allCasesForPerson,
       allChargesForPerson,
       allSentencesForPerson,
       allFTAs,
@@ -714,6 +715,12 @@ class Form extends React.Component<Props, State> {
       .set('psaRiskFactors', Immutable.fromJS(this.state.riskFactors))
       .set('dmfRiskFactors', Immutable.fromJS(this.state.dmfRiskFactors));
 
+    let chargesByCaseId = Immutable.Map();
+    allChargesForPerson.forEach((charge) => {
+      const caseNum = charge.getIn([PROPERTY_TYPES.CHARGE_ID, 0], '').split('|')[0];
+      chargesByCaseId = chargesByCaseId.set(caseNum, chargesByCaseId.get(caseNum, Immutable.List()).push(charge));
+    });
+
     return (
       <PSASubmittedPage
           isSubmitting={isSubmitting}
@@ -724,6 +731,8 @@ class Form extends React.Component<Props, State> {
           onClose={this.props.actions.hardRestart}
           charges={this.props.charges}
           notes={psaForm.get(PSA.NOTES)}
+          allCases={allCasesForPerson}
+          allCharges={chargesByCaseId}
           onExport={() => {
             exportPDF(data,
               selectedPretrialCase,
