@@ -12,7 +12,8 @@ import { AuthUtils } from 'lattice-auth';
 import PSAInputForm from '../psainput/PSAInputForm';
 import PersonCard from '../person/PersonCard';
 import StyledButton from '../buttons/StyledButton';
-import CaseHistory from '../../components/review/CaseHistory';
+import CaseHistory from '../../components/casehistory/CaseHistory';
+import CaseHistoryTimeline from '../../components/casehistory/CaseHistoryTimeline';
 import PSAScores from './PSAScores';
 import PSASummary from './PSASummary';
 import DMFExplanation from '../dmf/DMFExplanation';
@@ -138,6 +139,13 @@ const SubmittingWrapper = styled.div`
     margin: 20px 0;
     color: #2e2e34;
   }
+`;
+
+const Title = styled.div`
+  font-family: 'Open Sans', sans-serif;
+  font-size: 16px;
+  color: #555e6f;
+  margin: 20px 0;
 `;
 
 type Props = {
@@ -657,6 +665,9 @@ export default class PSAReviewRow extends React.Component<Props, State> {
             {
               this.props.hideCaseHistory ? null : (
                 <Tab eventKey={VIEWS.HISTORY} title="Case History">
+                  <Title>Timeline (past two years)</Title>
+                  <CaseHistoryTimeline caseHistory={this.props.caseHistory} chargeHistory={this.props.chargeHistory} />
+                  <Title>All cases</Title>
                   <CaseHistory caseHistory={this.props.caseHistory} chargeHistory={this.props.chargeHistory} />
                 </Tab>
               )

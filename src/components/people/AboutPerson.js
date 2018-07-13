@@ -10,7 +10,8 @@ import moment from 'moment';
 import Headshot from '../Headshot';
 import AboutPersonGeneral from '../person/AboutPersonGeneral';
 import PSAReviewRowList from '../../containers/review/PSAReviewRowList';
-import CaseHistory from '../review/CaseHistory';
+import CaseHistory from '../casehistory/CaseHistory';
+import CaseHistoryTimeline from '../casehistory/CaseHistoryTimeline';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { SORT_TYPES } from '../../utils/consts/Consts';
 import { groupByStatus, sortByDate } from '../../utils/PSAUtils';
@@ -66,6 +67,13 @@ const StyledSectionHeader = styled.div`
   letter-spacing: 1px;
 `;
 
+const Title = styled.div`
+  font-family: 'Open Sans', sans-serif;
+  font-size: 16px;
+  color: #555e6f;
+  margin-bottom: 20px;
+`;
+
 type Props = {
   selectedPersonData :Immutable.Map<*, *>,
   neighbors :Immutable.Map<*, *>,
@@ -97,7 +105,14 @@ const AboutPerson = ({ selectedPersonData, neighbors } :Props) => {
           );
         }
       });
-    return <CaseHistory caseHistory={caseHistory} chargeHistory={chargeHistory} />;
+    return (
+      <div>
+        <Title>Timeline (past two years)</Title>
+        <CaseHistoryTimeline caseHistory={caseHistory} chargeHistory={chargeHistory} />
+        <Title>All cases</Title>
+        <CaseHistory caseHistory={caseHistory} chargeHistory={chargeHistory} />
+      </div>
+    );
   };
 
   return (

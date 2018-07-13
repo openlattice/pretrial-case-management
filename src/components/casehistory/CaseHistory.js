@@ -5,6 +5,7 @@
 import React from 'react';
 import Immutable from 'immutable';
 import styled from 'styled-components';
+import moment from 'moment';
 
 import ChargeList from '../charges/ChargeList';
 import { formatDateList } from '../../utils/Utils';
@@ -85,6 +86,11 @@ const CaseHistory = ({ caseHistory, chargeHistory } :Props) => {
   } = getSummaryStats(chargeHistory);
 
   const cases = caseHistory
+    .sort((c1, c2) => {
+      const date1 = moment(c1.getIn([PROPERTY_TYPES.FILE_DATE, 0], ''));
+      const date2 = moment(c2.getIn([PROPERTY_TYPES.FILE_DATE, 0], ''));
+      return date1.isBefore(date2) ? 1 : -1;
+    })
     .filter(caseObj => caseObj.getIn([PROPERTY_TYPES.CASE_ID, 0], '').length)
     .map((caseObj) => {
       const caseNum = caseObj.getIn([PROPERTY_TYPES.CASE_ID, 0], '');
