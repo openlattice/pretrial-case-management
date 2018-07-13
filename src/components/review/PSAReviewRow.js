@@ -12,7 +12,7 @@ import { AuthUtils } from 'lattice-auth';
 import PSAInputForm from '../psainput/PSAInputForm';
 import PersonCard from '../person/PersonCard';
 import StyledButton from '../buttons/StyledButton';
-import CaseHistory from '../../components/review/CaseHistory';
+import CaseHistory from '../../components/casehistory/CaseHistory';
 import PSAScores from './PSAScores';
 import PSASummary from './PSASummary';
 import DMFExplanation from '../dmf/DMFExplanation';

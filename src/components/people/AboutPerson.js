@@ -10,7 +10,8 @@ import moment from 'moment';
 import Headshot from '../Headshot';
 import AboutPersonGeneral from '../person/AboutPersonGeneral';
 import PSAReviewRowList from '../../containers/review/PSAReviewRowList';
-import CaseHistory from '../review/CaseHistory';
+import CaseHistory from '../casehistory/CaseHistory';
+import CaseHistoryTimeline from '../casehistory/CaseHistoryTimeline';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { SORT_TYPES } from '../../utils/consts/Consts';
 import { groupByStatus, sortByDate } from '../../utils/PSAUtils';
@@ -97,7 +98,12 @@ const AboutPerson = ({ selectedPersonData, neighbors } :Props) => {
           );
         }
       });
-    return <CaseHistory caseHistory={caseHistory} chargeHistory={chargeHistory} />;
+    return (
+      <div>
+        <CaseHistoryTimeline caseHistory={caseHistory} chargeHistory={chargeHistory} />
+        <CaseHistory caseHistory={caseHistory} chargeHistory={chargeHistory} />
+      </div>
+    );
   };
 
   return (
