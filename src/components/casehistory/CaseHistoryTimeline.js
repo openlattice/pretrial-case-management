@@ -21,7 +21,7 @@ type Props = {
 };
 
 const TimelineWrapper = styled.div`
-  margin: 50px 0;
+  margin: 85px 0 30px 0;
   width: 100%;
   min-width: 900px;
   display: flex;
@@ -38,20 +38,11 @@ const TimelineBar = styled.div`
 const TagRow = styled.div`
   position: relative;
   width: 100%;
-  margin-bottom: 50px;
 `;
 
 const TagGroupWrapper = styled.div`
   position: absolute;
   left: ${props => props.left}%;
-`;
-
-const TagGroup = styled.div`
-  position: relative;
-  height: 60px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
 `;
 
 const TagMonthLabel = styled.div`
@@ -86,6 +77,19 @@ const Tag = styled.div`
   color: ${props => (props.violent ? '#ffffff;' : '#2e2e34')};
 `;
 
+const TagGroup = styled.div`
+  position: relative;
+  height: ${props => (props.tall ? '85px' : '60px')};
+  bottom: ${props => (props.tall ? '75px' : '50px')};
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  ${TagLine} {
+    height: ${props => (props.tall ? '65px' : '40px')}
+  }
+`;
+
 const ReferenceDates = styled.div`
   display: flex;
   flex-direction: row;
@@ -99,6 +103,8 @@ const ReferenceDates = styled.div`
     font-weight: 300;
   }
 `;
+
+const MONTH_FORMAT = 'MM/YYYY';
 
 export default class CaseHistoryTimeline extends React.Component<Props> {
 
@@ -137,12 +143,11 @@ export default class CaseHistoryTimeline extends React.Component<Props> {
 
     let chargeTypesByMonth = Immutable.Map();
     caseHistory
-      .filter((pretrialCase) => {
-        return this.getCaseDate(pretrialCase).isSameOrAfter(moment().startOf('day').subtract(2, 'years'));
-      })
+      .filter(pretrialCase =>
+        this.getCaseDate(pretrialCase).isSameOrAfter(moment().startOf('day').subtract(2, 'years')))
       .forEach((pretrialCase) => {
         const caseNum = pretrialCase.getIn([PROPERTY_TYPES.CASE_ID, 0], '');
-        const month = this.getCaseDate(pretrialCase).format('MM/YYYY');
+        const month = this.getCaseDate(pretrialCase).format(MONTH_FORMAT);
 
         chargeHistory.get(caseNum).forEach((charge) => {
           const dispositionField = charge.get(PROPERTY_TYPES.DISPOSITION, Immutable.List());
@@ -159,18 +164,18 @@ export default class CaseHistoryTimeline extends React.Component<Props> {
   }
 
   renderReferenceDates = () => {
-    const now = moment()
+    const now = moment();
     const oneYearAgo = moment().subtract(1, 'years');
     const twoYearsAgo = moment().subtract(2, 'years');
     return (
       <ReferenceDates>
-        <span>{twoYearsAgo.format('MM/YYYY')}</span>
+        <span>{twoYearsAgo.format(MONTH_FORMAT)}</span>
         <span>{oneYearAgo.format('YYYY')}</span>
-        <span>{oneYearAgo.format('MM/YYYY')}</span>
+        <span>{oneYearAgo.format(MONTH_FORMAT)}</span>
         <span>{now.format('YYYY')}</span>
-        <span>{now.format('MM/YYYY')}</span>
+        <span>{now.format(MONTH_FORMAT)}</span>
       </ReferenceDates>
-    )
+    );
   }
 
   formatTagLabel = (counts) => {
@@ -182,7 +187,7 @@ export default class CaseHistoryTimeline extends React.Component<Props> {
         const prefix = num > 1 ? `${num}` : '';
         labelItems.push(`${prefix}${key.toUpperCase()}`);
       }
-    }
+    };
 
     updateLabelItems('v');
     updateLabelItems('f');
@@ -191,42 +196,52 @@ export default class CaseHistoryTimeline extends React.Component<Props> {
     return labelItems.join(', ');
   }
 
-  renderTag = (leftOffset, violent, tagLabel, monthLabel) => {
+  renderTag = (leftOffset, violent, tagLabel, monthLabel, tall) => {
     return (
       <TagGroupWrapper left={leftOffset}>
-        <TagGroup>
+        <TagGroup tall={tall}>
           <Tag violent={violent}>{tagLabel}</Tag>
           <TagLine violent={violent} />
           <TagMonthLabel>{monthLabel}</TagMonthLabel>
         </TagGroup>
       </TagGroupWrapper>
-    )
+    );
   }
 
   renderTags = () => {
     const totalMonths = 24;
-
-    const chargeTypesByMonth = this.getChargeTypesByMonth();
-    chargeTypesByMonth.entrySeq().forEach(([month, counts]) => {
-    })
+    let lastLongLabelMonthMoment;
+    let lastLabelWasTall;
 
     return (
       <TagRow>
         {
-          chargeTypesByMonth.entrySeq()
+          this.getChargeTypesByMonth().entrySeq()
             .filter(([month, counts]) => counts.get('m') > 0 || counts.get('f') > 0 || counts.get('v') > 0)
+            .sort(([m1], [m2]) => (moment(m1, MONTH_FORMAT).isBefore(moment(m2, MONTH_FORMAT)) ? -1 : 1))
             .map(([month, counts]) => {
-              const monthMoment = moment(month, 'MM/YYYY');
+              let tall = false;
+              const monthMoment = moment(month, MONTH_FORMAT);
               const diff = moment().diff(monthMoment, 'months');
               const monthLabel = monthMoment.format('MMM');
               const leftOffset = ((totalMonths - diff) / 24) * 100;
               const violent = counts.get('v') > 0;
+              const tagLabel = this.formatTagLabel(counts);
+              if (tagLabel.length > 1) {
+                if (lastLongLabelMonthMoment
+                  && !lastLabelWasTall
+                  && monthMoment.diff(lastLongLabelMonthMoment, 'months') === 1) {
+                  tall = true;
+                }
+                lastLongLabelMonthMoment = monthMoment;
+              }
+              lastLabelWasTall = tall;
 
-              return this.renderTag(leftOffset, violent, this.formatTagLabel(counts), monthLabel);
+              return this.renderTag(leftOffset, violent, tagLabel, monthLabel, tall);
             })
         }
       </TagRow>
-    )
+    );
   }
 
   render() {

@@ -67,6 +67,13 @@ const StyledSectionHeader = styled.div`
   letter-spacing: 1px;
 `;
 
+const Title = styled.div`
+  font-family: 'Open Sans', sans-serif;
+  font-size: 16px;
+  color: #555e6f;
+  margin-bottom: 20px;
+`;
+
 type Props = {
   selectedPersonData :Immutable.Map<*, *>,
   neighbors :Immutable.Map<*, *>,
@@ -100,7 +107,9 @@ const AboutPerson = ({ selectedPersonData, neighbors } :Props) => {
       });
     return (
       <div>
+        <Title>Timeline (past two years)</Title>
         <CaseHistoryTimeline caseHistory={caseHistory} chargeHistory={chargeHistory} />
+        <Title>All cases</Title>
         <CaseHistory caseHistory={caseHistory} chargeHistory={chargeHistory} />
       </div>
     );
