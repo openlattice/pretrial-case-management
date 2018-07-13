@@ -47,7 +47,8 @@ const DetailRow = styled.div`
 const StyledTooltip = styled.div`
   visibility: hidden;
   position: absolute;
-  z-index: 1;
+  z-index: 10;
+  transform: translateX(-50%);
   bottom: -40px;
   left: 15%;
   border-radius: 5px;
@@ -70,7 +71,7 @@ const DetailItem = styled.div`
   position: relative;
 
   h1 {
-    font-family: 'OpenSans-Semibold', sans-serif;
+    font-family: 'Open Sans', sans-serif;
     font-size: 11px;
     font-weight: lighter;
     color: #8e929b;
@@ -79,9 +80,9 @@ const DetailItem = styled.div`
   }
 
   div {
-    font-family: 'OpenSans', sans-serif;
+    font-family: 'Open Sans', sans-serif;
     font-size: 14px;
-    font-weight: lighter;
+    font-weight: normal;
     color: #2e2e34;
     overflow: hidden;
     text-overflow: ellipsis;

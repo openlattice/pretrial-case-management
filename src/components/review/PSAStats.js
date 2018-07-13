@@ -38,7 +38,7 @@ const DetailItem = styled.div`
   position: relative;
 
   h1 {
-    font-family: 'OpenSans-Semibold', sans-serif;
+    font-family: 'Open Sans', sans-serif;
     font-size: 11px;
     font-weight: lighter;
     color: #8e929b;
@@ -46,18 +46,22 @@ const DetailItem = styled.div`
   }
 
   div {
-    font-family: 'OpenSans-Semibold', sans-serif;
+    font-family: 'Open Sans', sans-serif;
     display: flex;
     font-size: 14px;
-    font-weight: 400;
     align-items: center;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+
+    span {
+      color: #2e2e34;
+      font-weight: 600;
+    }
   }
 
   div:first-child {
-    font-family: 'OpenSans', sans-serif;
+    font-family: 'Open Sans', sans-serif;
     font-weight: normal;
     font-size: 13px;
     display: flex;
@@ -118,7 +122,7 @@ const NvcaFlag = styled.div`
   height: 28px;
   border-radius: 3px;
   border: solid 1px #555e6f;
-  font-family: OpenSans;
+  font-family: Open Sans;
   font-size: 14px;
   font-weight: 600;
   color: #2e2e34;
@@ -173,29 +177,37 @@ const PSAStats = ({ scores, downloadButton } :Props) => {
 
   return (
     <Wrapper>
-     <DetailsWrapper>
-       <DetailRow>
-       <DetailItem>
-         <h1>PSA Status</h1>
-         <div><StatusTag status={status}>{status}</StatusTag></div>
-       </DetailItem>
-       <DetailItem>
-         <h1>NVCA</h1>
-         <NvcaFlag>{nvcaDisplay}</NvcaFlag>
-       </DetailItem>
-       <DetailItem>
-         <h1>NCA</h1>
-         <div>{ncaVal}<NcaScaleLeft/><NcaScaleRight/></div>
-       </DetailItem>
-       <DetailItem>
-         <h1>FTA</h1>
-         <div>{ftaVal}<FtaScaleLeft/><FtaScaleRight/></div>
-       </DetailItem>
-       <DetailItem>
-         <div>{downloadButton()}</div>
-       </DetailItem>
-       </DetailRow>
-     </DetailsWrapper>
+       <DetailsWrapper>
+         <DetailRow>
+           <DetailItem>
+             <h1>PSA Status</h1>
+             <div><StatusTag status={status}>{status}</StatusTag></div>
+           </DetailItem>
+           <DetailItem>
+             <h1>NVCA</h1>
+             <NvcaFlag>{nvcaDisplay}</NvcaFlag>
+           </DetailItem>
+           <DetailItem>
+             <h1>NCA</h1>
+             <div>
+                <span>{ncaVal}</span>
+                <NcaScaleLeft/>
+                <NcaScaleRight/>
+             </div>
+           </DetailItem>
+           <DetailItem>
+               <h1>FTA</h1>
+               <div>
+                  <span>{ftaVal}</span>
+                  <FtaScaleLeft/>
+                  <FtaScaleRight/>
+               </div>
+           </DetailItem>
+           <DetailItem>
+             <div>{downloadButton()}</div>
+           </DetailItem>
+         </DetailRow>
+       </DetailsWrapper>
     </Wrapper>
   );
 };

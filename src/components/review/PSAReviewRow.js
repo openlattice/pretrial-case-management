@@ -106,7 +106,7 @@ const MetadataText = styled.div`
   width: 100%;
   font-family: 'Open Sans', sans-serif;
   font-size: 13px;
-  font-weight: normal;
+  font-weight: 300;
   text-align: right;
   margin: 10px 0 -30px -30px;
   color: #8e929b;
