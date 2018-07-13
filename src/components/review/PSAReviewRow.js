@@ -675,10 +675,9 @@ export default class PSAReviewRow extends React.Component<Props, State> {
 
     return (
       <MetadataWrapper>
-        <MetadataItem>{this.renderMetadataText('Created', dateCreatedText, creator)}</MetadataItem>
         { dateEdited || editor
           ? <MetadataItem>{this.renderMetadataText(editLabel, dateEditedText, editor)}</MetadataItem>
-          : null
+          : <MetadataItem>{this.renderMetadataText('Created', dateCreatedText, creator)}</MetadataItem>
         }
       </MetadataWrapper>
     );
