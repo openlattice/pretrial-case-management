@@ -346,7 +346,7 @@ class ReviewPSA extends React.Component<Props, State> {
       <FilterWrapper>
         <span>Filer </span>
         <DropDownMenu
-            placeholder={"All"}
+            placeholder={this.state.filters.filer}
             classNamePrefix="lattice-select"
             onChange={(e) => {
               this.updateFilters({ filer: e.value });
@@ -510,7 +510,7 @@ class ReviewPSA extends React.Component<Props, State> {
     <FilterWrapper>
       <span>PSA Status </span>
       <DropDownMenu
-        placeholder={"All Open"}
+        placeholder={STATUS_OPTIONS[this.state.status].label}
         classNamePrefix="lattice-select"
         options={STATUS_OPTIONS_ARR}
         onChange={(e) => {
