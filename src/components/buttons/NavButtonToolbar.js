@@ -10,9 +10,9 @@ const ToolbarWrapper = styled.div`
 
 const StyledNavButton = styled(NavLink).attrs({
   activeStyle: {
-    'background-color': '#6124e2',
+    'backgroundColor': '#6124e2',
     color: '#ffffff',
-    'text-decoration': 'none'
+    'textDecoration': 'none'
   }
 })`
   display: flex;
