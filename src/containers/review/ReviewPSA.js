@@ -371,12 +371,13 @@ class ReviewPSA extends React.Component<Props, State> {
   handleFilterRequest = () => {
     const { activeFilterKey, filters } = this.state;
     const { scoresAsMap } = this.props;
+    const { date } = this.state.filters;
     const expiredView = this.state.status === 'REQUIRES_ACTION';
     let items = null;
     if (expiredView) {
       items = this.filterExpired(items);
     }
-    else if (activeFilterKey === 1) {
+    else if (!(date === "")) {
       items = this.filterByDate();
       items.concat(this.filterByFiler());
     }
@@ -385,6 +386,8 @@ class ReviewPSA extends React.Component<Props, State> {
     }
     else if (activeFilterKey === 3) {
       items = this.filterByFiler();
+    } else {
+
     }
 
     if ((!items || !items.count()) && filters.searchExecuted) {
@@ -399,24 +402,16 @@ class ReviewPSA extends React.Component<Props, State> {
 
   filterExpired = (items) => {
     let rowsByName = Immutable.Map();
+    const date = moment(this.state.filters.date).format(DATE_FORMAT);
 
-    this.props.psaNeighborsById.entrySeq().forEach(([scoreId, neighbors]) => {
-      if (!this.domainMatch(neighbors)) return false;
+    return this.props.psaNeighborsByDate.get(date, Immutable.Map())
+      .entrySeq()
+      .filter(([scoreId, neighbors]) => {
+        if (!this.domainMatch(neighbors)) return false;
 
-      const personId = neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborDetails', PROPERTY_TYPES.PERSON_ID]);
-      if (personId) {
-        rowsByName = rowsByName.set(personId, rowsByName.get(personId, Immutable.List()).push([scoreId, neighbors]));
-      }
-    });
-
-    let results = [];
-    rowsByName.valueSeq().forEach((psaRowList) => {
-      if (psaRowList.size > 1) {
-        results = [...results, ...psaRowList.toJS()];
-      }
-    });
-
-    return Immutable.Seq(results);
+        const personId = neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborDetails', PROPERTY_TYPES.PERSON_ID]);
+        if (personId) return true;
+      });
   }
 
   domainMatch = neighbors => (
@@ -499,10 +494,10 @@ class ReviewPSA extends React.Component<Props, State> {
     if (status !== this.state.status) {
       this.setState({
         status,
-        activeFilterKey: 1
+        activeFilterKey: 1,
       });
       this.props.actions.loadPSAsByDate(STATUS_OPTIONS[status].value);
-      this.updateFilters({ date: moment().format() });
+      // this.updateFilters({ date: moment().format() });
     }
   }
 
