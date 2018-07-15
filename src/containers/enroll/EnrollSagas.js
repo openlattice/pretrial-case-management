@@ -4,7 +4,7 @@
 import axios from 'axios';
 import randomUUID from 'uuid/v4';
 import moment from 'moment';
-import { DataApi, EntityDataModelApi, SearchApi, SyncApi } from 'lattice';
+import { DataApi, DataIntegrationApi, EntityDataModelApi, SearchApi } from 'lattice';
 import { AuthUtils } from 'lattice-auth';
 import { call, put, take, all } from 'redux-saga/effects';
 
@@ -124,12 +124,6 @@ export function* getOrCreateProfile() :Generator<*, *, *> {
           call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.REGISTERED_FOR)
         ]);
 
-        const [personSyncId, voiceSyncId, registeredForSyncId] = yield all([
-          call(SyncApi.getCurrentSyncId, personEntitySetId),
-          call(SyncApi.getCurrentSyncId, voiceEntitySetId),
-          call(SyncApi.getCurrentSyncId, registeredForEntitySetId)
-        ]);
-
         const personDetails = {
           [subjectId]: [personId]
         };
@@ -145,27 +139,18 @@ export function* getOrCreateProfile() :Generator<*, *, *> {
 
         const personEntityKey = {
           entitySetId: personEntitySetId,
-          syncId: personSyncId,
           entityId: getEntityId(personDetails, [subjectId])
         };
 
         const voiceEntityKey = {
           entitySetId: voiceEntitySetId,
-          syncId: voiceSyncId,
           entityId: speakerVerificationId
         };
 
         const registeredForEntityKey = {
           entitySetId: registeredForEntitySetId,
-          syncId: registeredForSyncId,
           entityId: getEntityId(registeredForDetails, [timestampId])
         };
-
-        const syncTickets = yield all([
-          call(DataApi.acquireSyncTicket, personEntitySetId, personSyncId),
-          call(DataApi.acquireSyncTicket, voiceEntitySetId, voiceSyncId),
-          call(DataApi.acquireSyncTicket, registeredForEntitySetId, registeredForSyncId)
-        ]);
 
         const entities = [{
           key: personEntityKey,
@@ -181,7 +166,7 @@ export function* getOrCreateProfile() :Generator<*, *, *> {
           details: registeredForDetails
         }];
 
-        yield call(DataApi.createEntityAndAssociationData, { syncTickets, entities, associations });
+        yield call(DataIntegrationApi.createEntityAndAssociationData, { entities, associations });
         yield put(getProfileSuccess(speakerVerificationId, `${newPin}`, 0));
       }
       else {
@@ -219,7 +204,6 @@ export function* enrollVoiceProfile() :Generator<*, *, *> {
       ]);
 
       const entitySetId = yield call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.SPEAKER_RECOGNITION_PROFILES);
-      const syncId = yield call(SyncApi.getCurrentSyncId, entitySetId);
 
       const voiceDetails = {
         [generalId]: [profileId],
@@ -230,7 +214,7 @@ export function* enrollVoiceProfile() :Generator<*, *, *> {
         [getEntityId(voiceDetails, [generalId])]: voiceDetails
       };
 
-      yield call(DataApi.createEntityData, entitySetId, syncId, entities);
+      yield call(DataApi.createEntityData, entitySetId, entities);
 
       const profile = yield call(tryLoadProfile, profileId);
       yield put(enrollVoiceSuccess(profile.data.enrollmentsCount));

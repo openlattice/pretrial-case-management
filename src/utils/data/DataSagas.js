@@ -7,7 +7,7 @@ import { call, put, select, takeEvery } from 'redux-saga/effects';
 
 import {
   DELETE_ENTITY,
-  REPLACE_ENTITY,
+  REPLACE_ENTITY_DATA,
   deleteEntity,
   replaceEntity
 } from './DataActionFactory';
@@ -68,7 +68,7 @@ function* replaceEntityWorker(action :SequenceAction) :Generator<*, *, *> {
 }
 
 function* replaceEntityWatcher() :Generator<*, *, *> {
-  yield takeEvery(REPLACE_ENTITY, replaceEntityWorker);
+  yield takeEvery(REPLACE_ENTITY_DATA, replaceEntityWorker);
 }
 
 export {

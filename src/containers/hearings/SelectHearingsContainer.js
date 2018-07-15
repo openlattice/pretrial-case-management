@@ -3,7 +3,6 @@
  */
 
 import React from 'react';
-import FontAwesome from 'react-fontawesome';
 import Immutable from 'immutable';
 import moment from 'moment';
 import styled from 'styled-components';
@@ -12,20 +11,15 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
 import InfoButton from '../../components/buttons/InfoButton';
-import LoadingSpinner from '../../components/LoadingSpinner';
 import DateTimePicker from '../../components/controls/StyledDateTimePicker';
 import SearchableSelect from '../../components/controls/SearchableSelect';
 import HearingsTable from '../../components/hearings/HearingsTable';
 import psaHearingConfig from '../../config/formconfig/PSAHearingConfig';
-import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { FORM_IDS, ID_FIELD_NAMES, HEARING } from '../../utils/consts/Consts';
+import { getCourtroomOptions } from '../../utils/consts/HearingConsts';
 import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
 import * as ReviewActionFactory from '../review/ReviewActionFactory';
-import * as Routes from '../../core/router/Routes';
-
-const InvisibleButton = styled.button`
-  border: none;
-`;
 
 const Header = styled.div`
   width: 100%;
@@ -56,17 +50,6 @@ const InputRow = styled.div`
   }
 `;
 
-const SelectButton = styled(InfoButton)``;
-
-const COURTROOMS = [
-  '1A',
-  '6C ARRAIGNMENTS',
-  'Courtroom C1',
-  'Courtroom C4',
-  'Courtroom M1',
-  'Courtroom M2'
-];
-
 type Props = {
   personId :string,
   psaId :string,
@@ -85,7 +68,6 @@ type Props = {
 }
 
 type State = {
-  hearingsList :Immutable.List<*, *>,
   manuallyCreatingHearing :boolean,
   newHearingDateTime :?string,
   newHearingCourtroom :?string
@@ -96,36 +78,21 @@ class SelectHearingsContainer extends React.Component<Props, State> {
   constructor(props :Props) {
     super(props);
     this.state = {
-      hearingsList: props.hearings,
       manuallyCreatingHearing: false,
       newHearingDateTime: null,
       newHearingCourtroom: null
     };
   }
 
-  renderSpinner = () => (
-    <div>
-      <LoadingText>Submitting...</LoadingText>
-      <LoadingSpinner />
-    </div>
-  )
-
   onInputChange = (e) => {
     this.setState({ [e.target.name]: e.target.value });
   }
 
-  renderError = () => <ErrorText>{this.props.errorMessage}</ErrorText>
+  getSortedHearings = () => this.props.hearings.sort((h1, h2) =>
+    (moment(h1.getIn([PROPERTY_TYPES.DATE_TIME, 0], '')).isBefore(h2.getIn([PROPERTY_TYPES.DATE_TIME, 0], ''))
+      ? 1 : -1))
 
-  getSortedHearings = () => {
-    return this.props.hearings.sort((h1, h2) => {
-      return moment(h1.getIn([PROPERTY_TYPES.DATE_TIME, 0], '')).isBefore(h2.getIn([PROPERTY_TYPES.DATE_TIME, 0], ''))
-        ? 1 : -1;
-    });
-  }
-
-  isReadyToSubmit = () => {
-    return this.state.newHearingCourtroom && this.state.newHearingDateTime;
-  }
+  isReadyToSubmit = () => this.state.newHearingCourtroom && this.state.newHearingDateTime
 
   selectHearing = (hearingDetails) => {
     const { psaId, personId, psaEntityKeyId } = this.props;
@@ -154,8 +121,6 @@ class SelectHearingsContainer extends React.Component<Props, State> {
   }
 
   renderNewHearingSection = () => {
-    let courtroomOptions = Immutable.Map();
-    COURTROOMS.forEach(courtroom => courtroomOptions = courtroomOptions.set(courtroom, courtroom));
     return this.state.manuallyCreatingHearing ? (
       <CenteredContainer>
         <InputRow>
@@ -166,7 +131,7 @@ class SelectHearingsContainer extends React.Component<Props, State> {
           </section>
           <section>
             <SearchableSelect
-                options={courtroomOptions}
+                options={getCourtroomOptions()}
                 value={this.state.newHearingCourtroom}
                 onSelect={newHearingCourtroom => this.setState({ newHearingCourtroom })}
                 short />

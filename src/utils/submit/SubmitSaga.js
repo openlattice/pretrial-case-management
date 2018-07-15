@@ -2,14 +2,21 @@
  * @flow
  */
 
-import { EntityDataModelApi, SyncApi, DataApi, Models } from 'lattice';
+import { DataApi, DataIntegrationApi, EntityDataModelApi, Models } from 'lattice';
 import { call, put, takeEvery, all } from 'redux-saga/effects';
 
-import { SUBMIT, submit } from './SubmitActionFactory';
+import {
+  REPLACE_ENTITY,
+  SUBMIT,
+  replaceEntity,
+  submit
+} from './SubmitActionFactory';
 
 const {
   FullyQualifiedName
 } = Models;
+
+const ID_FIELD = 'openlattice.@id';
 
 function getEntityId(primaryKey, propertyTypesById, values, fields) {
   const fieldNamesByFqn = {};
@@ -57,6 +64,40 @@ function shouldCreateEntity(entityDescription, values, details) {
   return true;
 }
 
+function* replaceEntityWorker(action :SequenceAction) :Generator<*, *, *> {
+  try {
+    yield put(replaceEntity.request(action.id));
+    const {
+      entityKeyId,
+      entitySetName,
+      values,
+      callback
+    } = action.value;
+
+    if (values[ID_FIELD]) {
+      delete values[ID_FIELD];
+    }
+
+    const entitySetId = yield call(EntityDataModelApi.getEntitySetId, entitySetName);
+    yield call(DataApi.replaceEntityInEntitySetUsingFqns, entitySetId, entityKeyId, values);
+
+    yield put(replaceEntity.success(action.id));
+    if (callback) {
+      callback();
+    }
+  }
+  catch (error) {
+    yield put(replaceEntity.failure(action.id, error));
+  }
+  finally {
+    yield put(replaceEntity.finally(action.id));
+  }
+}
+
+function* replaceEntityWatcher() :Generator<*, *, *> {
+  yield takeEvery(REPLACE_ENTITY, replaceEntityWorker);
+}
+
 function* submitWorker(action :SequenceAction) :Generator<*, *, *> {
   const { config, values, callback } = action.value;
 
@@ -65,10 +106,6 @@ function* submitWorker(action :SequenceAction) :Generator<*, *, *> {
     const allEntitySetIdsRequest = config.entitySets.map(entitySet =>
       call(EntityDataModelApi.getEntitySetId, entitySet.name));
     const allEntitySetIds = yield all(allEntitySetIdsRequest);
-
-    const allSyncIdsRequest = allEntitySetIds.map(id =>
-      call(SyncApi.getCurrentSyncId, id));
-    const allSyncIds = yield all(allSyncIdsRequest);
 
     const edmDetailsRequest = allEntitySetIds.map(id => ({
       id,
@@ -112,7 +149,6 @@ function* submitWorker(action :SequenceAction) :Generator<*, *, *> {
             if (entityId && entityId.length) {
               const key = {
                 entitySetId,
-                syncId: allSyncIds[index],
                 entityId
               };
               const entity = { key, details };
@@ -167,11 +203,7 @@ function* submitWorker(action :SequenceAction) :Generator<*, *, *> {
       }
     });
 
-    const ticketsRequest = allEntitySetIds.map((entitySetId, index) =>
-      call(DataApi.acquireSyncTicket, entitySetId, allSyncIds[index]));
-    const syncTickets = yield all(ticketsRequest);
-
-    yield call(DataApi.createEntityAndAssociationData, { syncTickets, entities, associations });
+    yield call(DataIntegrationApi.createEntityAndAssociationData, { entities, associations });
     yield put(submit.success(action.id));
 
     if (callback) {
@@ -192,5 +224,6 @@ function* submitWatcher() :Generator<*, *, *> {
 }
 
 export {
+  replaceEntityWatcher,
   submitWatcher
 };

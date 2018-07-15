@@ -50,6 +50,7 @@ export default function* sagas() :Generator<*, *, *> {
     fork(EnrollSagas.getOrCreateProfile),
 
     // SubmitDataSaga
+    fork(SubmitSagas.replaceEntityWatcher),
     fork(SubmitSagas.submitWatcher),
 
     // PersonSagas
