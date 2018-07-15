@@ -1,8 +1,8 @@
 {
   "name": "pretrial-case-management",
   "version": "0.0.0",
-  "homepage": "https://bitbucket.org/openlattice/pretrial-case-management",
-  "description": "OpenLattice - Pre-Trial Case Management",
+  "homepage": "https://github.com/Lattice-Works/pretrial-case-management",
+  "description": "OpenLattice - Pretrial Case Management",
   "author": {
     "name": "OpenLattice, Inc.",
     "email": "support@openlattice.com",
@@ -16,7 +16,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://bitbucket.org/openlattice/pretrial-case-management"
+    "url": "git+https://github.com/Lattice-Works/pretrial-case-management"
   },
   "license": "GPLv3",
   "dependencies": {
