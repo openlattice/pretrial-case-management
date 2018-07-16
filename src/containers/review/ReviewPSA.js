@@ -128,69 +128,69 @@ const DATE_FORMAT = 'MM/DD/YYYY';
 const STATUS_OPTIONS = {
   OPEN: {
     value: PSA_STATUSES.OPEN,
-    label: 'All Open',
+    label: 'All Open'
   },
   SUCCESS: {
     value: PSA_STATUSES.SUCCESS,
-    label: 'Successful',
+    label: 'Successful'
   },
   FAILURE: {
     value: PSA_STATUSES.FAILURE,
-    label: 'Failed',
+    label: 'Failed'
   },
   CANCELLED: {
     value: PSA_STATUSES.CANCELLED,
-    label: 'Cancelled',
+    label: 'Cancelled'
   },
   DECLINED: {
     value: PSA_STATUSES.DECLINED,
-    label: 'Declined',
+    label: 'Declined'
   },
   DISMISSED: {
     value: PSA_STATUSES.DISMISSED,
-    label: 'Dismissed',
+    label: 'Dismissed'
   },
   ALL: {
     value: '*',
-    label: 'All',
+    label: 'All'
   },
   REQUIRES_ACTION: {
     value: PSA_STATUSES.OPEN,
-    label: 'Requires Action',
+    label: 'Requires Action'
   }
 };
 
 const openOptions = [
   {
     value: 'OPEN',
-    label: 'All Open',
+    label: 'All Open'
   },
   {
     value: 'REQUIRES_ACTION',
-    label: 'Requires Action',
+    label: 'Requires Action'
   }
 ];
 
 const closedOptions = [
   {
     value: 'SUCCESS',
-    label: 'Successful',
+    label: 'Successful'
   },
   {
     value: 'FAILURE',
-    label: 'Failed',
+    label: 'Failed'
   },
   {
     value: 'CANCELLED',
-    label: 'Cancelled',
+    label: 'Cancelled'
   },
   {
     value: 'DECLINED',
-    label: 'Declined',
+    label: 'Declined'
   },
   {
     value: 'DISMISSED',
-    label: 'Dismissed',
+    label: 'Dismissed'
   }
 ];
 
@@ -201,11 +201,11 @@ const STATUS_OPTIONS_ARR = [
   },
   {
     label: 'Open',
-    options: openOptions,
+    options: openOptions
   },
   {
     label: 'Closed',
-    options: closedOptions,
+    options: closedOptions
   }
 ];
 
@@ -216,11 +216,11 @@ const DOMAIN_OPTIONS_ARR = [
   },
   {
     value: DOMAIN.PENNINGTON,
-    label: 'Pennington',
+    label: 'Pennington'
   },
   {
     value: DOMAIN.MINNEHAHA,
-    label: 'Minnehaha',
+    label: 'Minnehaha'
   },
 ]
 
@@ -231,7 +231,7 @@ const SORT_OPTIONS_ARR = [
   },
   {
     value: SORT_TYPES.DATE,
-    label: 'Date',
+    label: 'Date'
   },
 ]
 
