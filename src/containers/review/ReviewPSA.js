@@ -11,7 +11,7 @@ import styled from 'styled-components';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import NavButtonToolbar from '../../components/buttons/NavButtonToolbar';
-import PSAReviewRowList from './PSAReviewRowList';
+import PSAReviewReportsRowList from './PSAReviewReportsRowList';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import DropDownMenu from '../../components/StyledSelect';
 import PersonSearchFields from '../../components/person/PersonSearchFields';
@@ -395,7 +395,7 @@ class ReviewPSA extends React.Component<Props, State> {
     }
 
     const sort = expiredView ? null : this.state.sort;
-    return <PSAReviewRowList scoreSeq={items.map(([id]) => ([id, scoresAsMap.get(id)]))} sort={sort} />;
+    return <PSAReviewReportsRowList scoreSeq={items.map(([id]) => ([id, scoresAsMap.get(id)]))} sort={sort} />;
   }
 
   renderError = () => <ErrorText>{this.props.errorMessage}</ErrorText>
