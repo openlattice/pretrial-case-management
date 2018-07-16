@@ -425,10 +425,6 @@ class ReviewPSA extends React.Component<Props, State> {
       }).size
   )
 
-  changeFiler = (filer) => {
-
-  }
-
   filterByFiler = () => {
     const { filer } = this.state.filters;
     if (!filer.length) return Immutable.Collection();
