@@ -14,16 +14,16 @@ import BasicButton from '../buttons/BasicButton';
 import ExpandableText from '../controls/ExpandableText';
 
 import {
-  getPendingCharges,
-  getPreviousMisdemeanors,
-  getPreviousFelonies,
-  getPreviousViolentCharges
+  getPendingChargeLabels,
+  getPreviousMisdemeanorLabels,
+  getPreviousFelonyLabels,
+  getPreviousViolentChargeLabels
 } from '../../utils/AutofillUtils';
 import { getSentenceToIncarcerationCaseNums } from '../../utils/consts/SentenceConsts';
 import {
-  getAllViolentCharges,
-  getAllStepTwoCharges,
-  getAllStepFourCharges,
+  getAllViolentChargeLabels,
+  getAllStepTwoChargeLabels,
+  getAllStepFourChargeLabels,
   getSecondaryReleaseChargeJustification
 } from '../../utils/consts/ArrestChargeConsts';
 
@@ -394,17 +394,17 @@ export default class PSAInputForm extends React.Component<Props, State> {
       currCase.getIn([PROPERTY_TYPES.ARREST_DATE, 0],
         currCase.getIn([PROPERTY_TYPES.FILE_DATE, 0], '')));
 
-    const currentViolentCharges = getAllViolentCharges(currCharges);
-    const pendingCharges = getPendingCharges(currCaseNum, arrestDate, allCases, allCharges);
-    const priorMisdemeanors = getPreviousMisdemeanors(allCharges);
-    const priorFelonies = getPreviousFelonies(allCharges);
-    const priorViolentConvictions = getPreviousViolentCharges(allCharges);
+    const currentViolentCharges = getAllViolentChargeLabels(currCharges);
+    const pendingCharges = getPendingChargeLabels(currCaseNum, arrestDate, allCases, allCharges);
+    const priorMisdemeanors = getPreviousMisdemeanorLabels(allCharges);
+    const priorFelonies = getPreviousFelonyLabels(allCharges);
+    const priorViolentConvictions = getPreviousViolentChargeLabels(allCharges);
     const recentFTAs = getRecentFTAs(allFTAs);
     const oldFTAs = getOldFTAs(allFTAs);
     const priorSentenceToIncarceration = getSentenceToIncarcerationCaseNums(allSentences);
 
-    const step2Charges = getAllStepTwoCharges(currCharges);
-    const step4Charges = getAllStepFourCharges(currCharges);
+    const step2Charges = getAllStepTwoChargeLabels(currCharges);
+    const step4Charges = getAllStepFourChargeLabels(currCharges);
     const [secondaryReleaseCharges, secondaryReleaseHeader] = getSecondaryReleaseChargeJustification(currCharges);
 
     return (

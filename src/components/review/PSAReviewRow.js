@@ -12,10 +12,12 @@ import { AuthUtils } from 'lattice-auth';
 import PSAInputForm from '../psainput/PSAInputForm';
 import PersonCard from '../person/PersonCard';
 import StyledButton from '../buttons/StyledButton';
-import CaseHistory from '../../components/review/CaseHistory';
+import CaseHistory from '../../components/casehistory/CaseHistory';
+import CaseHistoryTimeline from '../../components/casehistory/CaseHistoryTimeline';
 import PSAScores from './PSAScores';
 import PSASummary from './PSASummary';
 import DMFExplanation from '../dmf/DMFExplanation';
+import SelectHearingsContainer from '../../containers/hearings/SelectHearingsContainer';
 import SelectReleaseConditions from '../releaseconditions/SelectReleaseConditions';
 import ClosePSAModal from './ClosePSAModal';
 import LoadingSpinner from '../LoadingSpinner';
@@ -139,6 +141,13 @@ const SubmittingWrapper = styled.div`
   }
 `;
 
+const Title = styled.div`
+  font-family: 'Open Sans', sans-serif;
+  font-size: 16px;
+  color: #555e6f;
+  margin: 20px 0;
+`;
+
 type Props = {
   entityKeyId :string,
   scores :Immutable.Map<*, *>,
@@ -152,9 +161,11 @@ type Props = {
   manualChargeHistory :Immutable.Map<*, *>,
   sentenceHistory :Immutable.Map<*, *>,
   ftaHistory :Immutable.Map<*, *>,
+  hearings :Immutable.List<*>,
   readOnly :boolean,
   personId? :string,
   submitting :boolean,
+  refreshingNeighbors :boolean,
   downloadFn :(values :{
     neighbors :Immutable.Map<*, *>,
     scores :Immutable.Map<*, *>
@@ -181,7 +192,8 @@ type Props = {
     scoresId :string,
     scoresEntity :Immutable.Map<*, *>
   }) => void,
-  submitData :(value :{ config :Object, values :Object }) => void
+  submitData :(value :{ config :Object, values :Object, callback :() => void }) => void,
+  refreshPSANeighbors :({ id :string }) => void
 };
 
 type State = {
@@ -586,18 +598,39 @@ export default class PSAReviewRow extends React.Component<Props, State> {
     return <DMFExplanation dmf={dmf} nca={nca} fta={fta} nvca={nvca} riskFactors={riskFactors} />;
   }
 
-  renderInitialAppearance = () => (
-    <SelectReleaseConditions
-        submitting={this.props.submitting}
-        personId={this.getIdValue(ENTITY_SETS.PEOPLE, PROPERTY_TYPES.PERSON_ID)}
-        psaId={this.props.scores.getIn([PROPERTY_TYPES.GENERAL_ID, 0])}
-        dmfId={this.getIdValue(ENTITY_SETS.DMF_RESULTS)}
-        submit={this.props.submitData}
-        defaultDMF={this.props.neighbors.getIn([ENTITY_SETS.DMF_RESULTS, 'neighborDetails'], Immutable.Map())}
-        defaultBond={this.props.neighbors.getIn([ENTITY_SETS.BONDS, 'neighborDetails'], Immutable.Map())}
-        defaultConditions={this.props.neighbors.get(ENTITY_SETS.RELEASE_CONDITIONS, Immutable.List())
-          .map(neighbor => neighbor.get('neighborDetails', Immutable.Map()))} />
-  )
+  renderInitialAppearance = () => {
+    if (this.props.submitting || this.props.refreshingNeighbors) {
+      return (
+        <SubmittingWrapper>
+          <span>{this.props.submitting ? 'Submitting' : 'Reloading'}</span>
+          <LoadingSpinner />
+        </SubmittingWrapper>
+      );
+    }
+    if (!this.props.neighbors.get(ENTITY_SETS.HEARINGS)) {
+      return (
+        <SelectHearingsContainer
+            personId={this.props.personId}
+            psaId={this.props.scores.getIn([PROPERTY_TYPES.GENERAL_ID, 0])}
+            psaEntityKeyId={this.props.entityKeyId}
+            hearings={this.props.hearings} />
+      );
+    }
+    return (
+      <SelectReleaseConditions
+          submitting={this.props.submitting}
+          personId={this.getIdValue(ENTITY_SETS.PEOPLE, PROPERTY_TYPES.PERSON_ID)}
+          psaId={this.props.scores.getIn([PROPERTY_TYPES.GENERAL_ID, 0])}
+          dmfId={this.getIdValue(ENTITY_SETS.DMF_RESULTS)}
+          submit={this.props.submitData}
+          submitCallback={this.refreshPSANeighborsCallback}
+          hearing={this.props.neighbors.getIn([ENTITY_SETS.HEARINGS, 'neighborDetails'])}
+          defaultDMF={this.props.neighbors.getIn([ENTITY_SETS.DMF_RESULTS, 'neighborDetails'], Immutable.Map())}
+          defaultBond={this.props.neighbors.getIn([ENTITY_SETS.BONDS, 'neighborDetails'], Immutable.Map())}
+          defaultConditions={this.props.neighbors.get(ENTITY_SETS.RELEASE_CONDITIONS, Immutable.List())
+            .map(neighbor => neighbor.get('neighborDetails', Immutable.Map()))} />
+    );
+  }
 
   renderDetails = () => {
     const { open } = this.state;
@@ -632,6 +665,9 @@ export default class PSAReviewRow extends React.Component<Props, State> {
             {
               this.props.hideCaseHistory ? null : (
                 <Tab eventKey={VIEWS.HISTORY} title="Case History">
+                  <Title>Timeline (past two years)</Title>
+                  <CaseHistoryTimeline caseHistory={this.props.caseHistory} chargeHistory={this.props.chargeHistory} />
+                  <Title>All cases</Title>
                   <CaseHistory caseHistory={this.props.caseHistory} chargeHistory={this.props.chargeHistory} />
                 </Tab>
               )

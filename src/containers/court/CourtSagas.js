@@ -66,11 +66,14 @@ function* loadHearingsTodayWorker(action :SequenceAction) :Generator<*, *, *> {
     Object.entries(hearingNeighbors).forEach(([hearingId, neighbors]) => {
       hearingNeighborsById = hearingNeighborsById.set(hearingId, Immutable.Map());
       neighbors.forEach((neighbor) => {
-        const { neighborEntitySet, neighborDetails } = neighbor;
+        const { neighborEntitySet, neighborDetails, neighborId } = neighbor;
         if (neighborEntitySet) {
           hearingNeighborsById = hearingNeighborsById.set(
             hearingId,
-            hearingNeighborsById.get(hearingId).set(neighborEntitySet.name, Immutable.fromJS(neighborDetails))
+            hearingNeighborsById.get(hearingId).set(
+              neighborEntitySet.name,
+              Immutable.fromJS(neighborDetails).set('id', neighborId)
+            )
           );
         }
       });

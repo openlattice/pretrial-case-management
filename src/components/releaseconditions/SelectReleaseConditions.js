@@ -17,7 +17,7 @@ import InfoButton from '../buttons/InfoButton';
 import releaseConditionsConfig from '../../config/formconfig/ReleaseConditionsConfig';
 import { RELEASE_CONDITIONS, LIST_FIELDS, ID_FIELD_NAMES, FORM_IDS } from '../../utils/consts/Consts';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { toISODate, toISODateTime } from '../../utils/Utils';
+import { toISODate, toISODateTime, formatDateTime } from '../../utils/Utils';
 import {
   OUTCOMES,
   RELEASES,
@@ -144,6 +144,41 @@ const NoContactPeopleWrapper = styled.div`
   }
 `;
 
+const HearingSectionWrapper = styled.div`
+  background-color: #f0f0f7;
+  padding-bottom: 20px;
+  margin: 0 -15px;
+  border-bottom: 1px solid #e1e1eb;
+`;
+
+const HearingRow = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+
+  span {
+    font-family: 'Open Sans', sans-serif;
+  }
+
+  span:nth-child(even) {
+    margin: 0 20px 0 5px;
+
+    &:last-child {
+      margin-right: 0;
+      color: #555e6f;
+      font-size: 15px;
+    }
+  }
+
+  span:nth-child(odd) {
+    font-size: 11px;
+    font-weight: 600;
+    color: #8e929b;
+    text-transform: uppercase;
+  }
+`;
+
 const BLANK_PERSON_ROW = {
   [PROPERTY_TYPES.PERSON_TYPE]: null,
   [PROPERTY_TYPES.PERSON_NAME]: ''
@@ -154,9 +189,11 @@ type Props = {
   psaId :string,
   personId :string,
   submit :(value :{ config :Object, values :Object }) => void,
+  submitCallback :() => void,
   defaultDMF :Immutable.Map<*, *>,
   defaultBond :Immutable.Map<*, *>,
   defaultConditions :Immutable.List<*>,
+  hearing :Immutable.Map<*, *>,
   submitting :boolean
 };
 
@@ -453,7 +490,8 @@ class SelectReleaseConditions extends React.Component<Props, State> {
 
     this.props.submit({
       config: releaseConditionsConfig,
-      values: submission
+      values: submission,
+      callback: this.props.submitCallback
     });
   }
 
@@ -566,9 +604,31 @@ class SelectReleaseConditions extends React.Component<Props, State> {
     );
   }
 
+  renderHearingInfo = () => {
+    const { hearing } = this.props;
+    const dateTime = hearing.getIn([PROPERTY_TYPES.DATE_TIME, 0], '');
+    const date = formatDateTime(dateTime, 'MM/DD/YYYY');
+    const time = formatDateTime(dateTime, 'HH:mm');
+    const courtroom = hearing.getIn([PROPERTY_TYPES.COURTROOM, 0], '');
+    return (
+      <HearingRow>
+        <span>Date:</span>
+        <span>{date}</span>
+        <span>Time:</span>
+        <span>{time}</span>
+        <span>Courtroom:</span>
+        <span>{courtroom}</span>
+      </HearingRow>
+    );
+  }
+
   render() {
     return (
       <Wrapper>
+        <HearingSectionWrapper>
+          <h1>Hearing</h1>
+          {this.renderHearingInfo()}
+        </HearingSectionWrapper>
         <h1>Outcome</h1>
         <Row>
           {this.mapOptionsToRadioButtons(OUTCOMES, 'outcome')}
