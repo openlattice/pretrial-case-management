@@ -409,7 +409,7 @@ class ReviewPSA extends React.Component<Props, State> {
       .filter(([scoreId, neighbors]) => {
         if (!this.domainMatch(neighbors)) return false;
 
-        const personId = neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborDetails', PROPERTY_TYPES.PERSON_ID]);
+        const personId = neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborDetails', PROPERTY_TYPES.PERSON_ID, 0]);
         if (personId) return true;
       });
   }
