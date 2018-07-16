@@ -31,17 +31,15 @@ const Wrapper = styled.div`
 const DetailsWrapper = styled.div`
   margin: 0 20px;
   display: flex;
-  flex-direction: row;
-  width: 100%;
+  flex-direction: column;
+  width: 300px;
 `;
 
 const DetailRow = styled.div`
   display: flex;
   flex-direction: row;
-  flex-wrap: wrap;
   justify-content: space-between;
   width: 100%;
-  text-transform: uppercase;
 `;
 
 const StyledTooltip = styled.div`
@@ -97,7 +95,7 @@ const DetailItemWide = styled(DetailItem)`
 
 
 const PersonPicture = styled.img`
-  height: 119px;
+  max-height: 115px;
 `;
 
 type Props = {
@@ -139,25 +137,25 @@ const PersonCard = ({ person, handleSelect } :Props) => {
             <div>{lastName}</div>
             <Tooltip value={lastName} />
           </DetailItem>
-
-          <DetailItem>
-          <h1>FIRST NAME</h1>
-          <div>{firstName}</div>
-          <Tooltip value={firstName} />
-          </DetailItem>
-
           <DetailItem>
             <h1>MIDDLE NAME</h1>
             <div>{middleName}</div>
             <Tooltip value={middleName} />
           </DetailItem>
-
+        </DetailRow>
+        <DetailRow>
+          <DetailItem>
+            <h1>FIRST NAME</h1>
+            <div>{firstName}</div>
+            <Tooltip value={firstName} />
+          </DetailItem>
           <DetailItem>
             <h1>DATE OF BIRTH</h1>
             <div>{dob}</div>
             <Tooltip value={dob} />
           </DetailItem>
-
+        </DetailRow>
+        <DetailRow>
           <DetailItemWide>
             <h1>IDENTIFIER</h1>
             <div>{id}</div>
@@ -165,6 +163,7 @@ const PersonCard = ({ person, handleSelect } :Props) => {
           </DetailItemWide>
         </DetailRow>
       </DetailsWrapper>
+
     </Wrapper>
   );
 };
