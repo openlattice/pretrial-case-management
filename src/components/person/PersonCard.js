@@ -22,7 +22,7 @@ const {
 } = PROPERTY_TYPES;
 
 const Wrapper = styled.div`
-  width: 100%;
+  width: 410px;
   display: flex;
   flex-direction: row;
   align-items: center;
