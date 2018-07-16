@@ -1,7 +1,7 @@
-import styled, { css } from 'styled-components';
+import styled from 'styled-components';
 import Select from 'react-select';
 
-export const selectStyles = css`
+const StyledSelect = styled(Select)`
   width: 100%;
 
   .lattice-select__control {
@@ -76,10 +76,6 @@ export const selectStyles = css`
   .lattice-select__indicator-separator {
     display: none;
   }
-`;
-
-const StyledSelect = styled(Select)`
-  ${selectStyles}
 `;
 
 export default StyledSelect;
