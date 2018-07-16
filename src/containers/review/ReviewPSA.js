@@ -377,7 +377,7 @@ class ReviewPSA extends React.Component<Props, State> {
     if (expiredView) {
       items = this.filterExpired(items);
     }
-    else if (!(date === "")) {
+    else if (!(date === '')) {
       items = this.filterByDate();
       items.concat(this.filterByFiler());
     }
