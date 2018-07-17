@@ -10,17 +10,17 @@ import { Modal, Tab, Tabs } from 'react-bootstrap';
 import { AuthUtils } from 'lattice-auth';
 
 import PSAInputForm from '../psainput/PSAInputForm';
-import PersonCard from '../person/PersonCard';
+import PersonCard from './PersonCardReview';
 import StyledButton from '../buttons/StyledButton';
 import CaseHistory from '../../components/casehistory/CaseHistory';
 import CaseHistoryTimeline from '../../components/casehistory/CaseHistoryTimeline';
 import PSAScores from './PSAScores';
+import PSAStats from './PSAStats';
 import PSASummary from './PSASummary';
 import DMFExplanation from '../dmf/DMFExplanation';
 import SelectHearingsContainer from '../../containers/hearings/SelectHearingsContainer';
 import SelectReleaseConditions from '../releaseconditions/SelectReleaseConditions';
 import ClosePSAModal from './ClosePSAModal';
-import LoadingSpinner from '../LoadingSpinner';
 import psaEditedConfig from '../../config/formconfig/PsaEditedConfig';
 import { getScoresAndRiskFactors, calculateDMF } from '../../utils/ScoringUtils';
 import { CenteredContainer } from '../../utils/Layout';
@@ -32,51 +32,90 @@ import { psaIsClosed } from '../../utils/PSAUtils';
 import * as OverrideClassNames from '../../utils/styleoverrides/OverrideClassNames';
 
 const ReviewRowContainer = styled.div`
-  width: 100%;
+  width: 960px;
+  background-color: #ffffff;
+  border-radius: 5px;
+  border: solid 1px #e1e1eb;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  margin-bottom: 58px;
   &:hover {
     background: #f7f8f9;
   }
-  padding: 20px;
 `;
 
 const DetailsRowContainer = styled.div`
+  width: 100%;
   display: flex;
   justify-content: center;
   cursor: pointer;
 `;
 
 const ReviewRowWrapper = styled.div`
+  width: 100%;
   display: inline-flex;
-  flex-direction: row;
+  flex-direction: column;
   align-items: flex-end;
-  margin: 20px 0;
+  padding: 20px 30px;
   justify-content: center;
+  overflow: hidden;
+  hr {
+    margin-top: 13px;
+    margin-bottom: 13px;
+    transform: translateX(-25%);
+    width: 150%;
+  }
 `;
 
+const PersonCardWrapper = styled.div`
+  width: 100%;
+  margin: 0 auto;
+`
+
+const StatsWrapper = styled.div`
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: row;
+`
+
 const DownloadButtonContainer = styled.div`
+  width: 100%;
   height: 100%;
   display: flex;
   align-items: center !important;
 `;
 
 const DownloadButton = styled(StyledButton)`
-  height: 50px;
+  width: 100%;
+  height: 40px;
+  border-radius: 3px;
+  border: none;
+  background-color: #f0f0f7;
+  font-size: 14px;
+  text-align: center;
+  color: #8e929b;
+  position: absolute;
+  bottom: 0;
 `;
 
+const MetadataWrapper = styled.div`
+  width: 100%;
+`;
 const MetadataText = styled.div`
   width: 100%;
-  font-style: italic;
-  font-size: 12px;
-  margin: 20px 0 -15px 0;
-  color: #bbb;
+  font-family: 'Open Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 300;
+  text-align: right;
+  margin: 10px 0 -30px -30px;
+  color: #8e929b;
 `;
 
 const ImportantMetadataText = styled.span`
-  color: black;
+  color: #2e2e34;
 `;
 
 const MetadataItem = styled.div`
@@ -90,55 +129,6 @@ const NoDMFContainer = styled(CenteredContainer)`
 
 const TitleHeader = styled.span`
   margin-right: 15px;
-`;
-
-const StatusTag = styled.div`
-  width: 86px;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-transform: uppercase;
-  font-family: 'Open Sans', sans-serif;
-  font-size: 13px;
-  font-weight: 600;
-  color: white;
-  border-radius: 2px;
-  align-self: flex-end;
-  margin-bottom: -10px;
-  padding: 2px 5px;
-  background: ${(props) => {
-    switch (props.status) {
-      case PSA_STATUSES.OPEN:
-        return '#8b66db';
-      case PSA_STATUSES.SUCCESS:
-        return '#00be84';
-      case PSA_STATUSES.FAILURE:
-        return '#ff3c5d';
-      case PSA_STATUSES.CANCELLED:
-        return '#b6bbc7';
-      case PSA_STATUSES.DECLINED:
-        return '#555e6f';
-      case PSA_STATUSES.DISMISSED:
-        return '#555e6f';
-      default:
-        return 'transparent';
-    }
-  }};
-`;
-
-const SubmittingWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-
-  span {
-    font-family: 'Open Sans', sans-serif;
-    font-size: 16px;
-    margin: 20px 0;
-    color: #2e2e34;
-  }
 `;
 
 const Title = styled.div`
@@ -161,11 +151,9 @@ type Props = {
   manualChargeHistory :Immutable.Map<*, *>,
   sentenceHistory :Immutable.Map<*, *>,
   ftaHistory :Immutable.Map<*, *>,
-  hearings :Immutable.List<*>,
   readOnly :boolean,
   personId? :string,
   submitting :boolean,
-  refreshingNeighbors :boolean,
   downloadFn :(values :{
     neighbors :Immutable.Map<*, *>,
     scores :Immutable.Map<*, *>
@@ -192,7 +180,7 @@ type Props = {
     scoresId :string,
     scoresEntity :Immutable.Map<*, *>
   }) => void,
-  submitData :(value :{ config :Object, values :Object, callback :() => void }) => void,
+  submitData :(value :{ config :Object, values :Object }) => void,
   replaceEntity :(value :{ entitySetName :string, entityKeyId :string, values :Object }) => void,
   refreshPSANeighbors :({ id :string }) => void
 };
@@ -214,7 +202,7 @@ const VIEWS = {
   INITIAL_APPEARANCE: 'INITIAL_APPEARANCE'
 };
 
-export default class PSAReviewRow extends React.Component<Props, State> {
+export default class PSAReviewReportsRow extends React.Component<Props, State> {
 
   static defaultProps = {
     hideCaseHistory: false,
@@ -242,7 +230,7 @@ export default class PSAReviewRow extends React.Component<Props, State> {
 
   }
 
-  getNotesFromNeighbors = neighbors =>
+  getNotesFromNeighbors = (neighbors) =>
     neighbors.getIn([
       ENTITY_SETS.RELEASE_RECOMMENDATIONS,
       'neighborDetails',
@@ -320,7 +308,7 @@ export default class PSAReviewRow extends React.Component<Props, State> {
 
   renderDownloadButton = () => (
     <DownloadButtonContainer>
-      <DownloadButton onClick={this.downloadRow}>Download PDF Report</DownloadButton>
+      <DownloadButton onClick={this.downloadRow}>PDF Report</DownloadButton>
     </DownloadButtonContainer>
   )
 
@@ -470,8 +458,7 @@ export default class PSAReviewRow extends React.Component<Props, State> {
           [EDIT_FIELDS.NOTES_ID]: [notesId],
           [EDIT_FIELDS.TIMESTAMP]: [toISODateTime(moment())],
           [EDIT_FIELDS.PERSON_ID]: [AuthUtils.getUserInfo().email]
-        },
-        callback: this.refreshPSANeighborsCallback
+        }
       });
     }
 
@@ -501,8 +488,7 @@ export default class PSAReviewRow extends React.Component<Props, State> {
         [EDIT_FIELDS.PSA_ID]: [scoresEntity.getIn([PROPERTY_TYPES.GENERAL_ID, 0])],
         [EDIT_FIELDS.TIMESTAMP]: [toISODateTime(moment())],
         [EDIT_FIELDS.PERSON_ID]: [AuthUtils.getUserInfo().email]
-      },
-      callback: this.refreshPSANeighborsCallback
+      }
     });
     this.setState({ editing: false });
   }
@@ -729,13 +715,12 @@ export default class PSAReviewRow extends React.Component<Props, State> {
     const dateEditedText = dateEdited ? dateEdited.format(dateFormat) : '';
 
     return (
-      <div>
-        <MetadataItem>{this.renderMetadataText('Created', dateCreatedText, creator)}</MetadataItem>
+      <MetadataWrapper>
         { dateEdited || editor
           ? <MetadataItem>{this.renderMetadataText(editLabel, dateEditedText, editor)}</MetadataItem>
-          : null
+          : <MetadataItem>{this.renderMetadataText('Created', dateCreatedText, creator)}</MetadataItem>
         }
-      </div>
+      </MetadataWrapper>
     );
   }
 
@@ -765,16 +750,19 @@ export default class PSAReviewRow extends React.Component<Props, State> {
     if (!this.props.scores) return null;
     return (
       <ReviewRowContainer>
-        {this.renderStatus()}
-        {this.renderMetadata()}
         <DetailsRowContainer onClick={this.openDetailsModal}>
           <ReviewRowWrapper>
-            {this.renderPersonCard()}
-            <PSAScores scores={this.props.scores} />
-            {this.renderDownloadButton()}
+            <PersonCardWrapper>
+              {this.renderPersonCard()}
+            </PersonCardWrapper>
+            <hr />
+            <StatsWrapper>
+              <PSAStats scores={this.props.scores} downloadButton={this.renderDownloadButton} />
+            </StatsWrapper>
           </ReviewRowWrapper>
+          {this.renderDetails()}
         </DetailsRowContainer>
-        {this.renderDetails()}
+        {this.renderMetadata()}
       </ReviewRowContainer>
     );
   }

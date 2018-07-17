@@ -8,7 +8,7 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { Pagination } from 'react-bootstrap';
 
-import PSAReviewRow from '../../components/review/PSAReviewRow';
+import PSAReviewReportsRow from '../../components/review/PSAReviewReportsRow';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { SORT_TYPES } from '../../utils/consts/Consts';
@@ -78,7 +78,7 @@ type State = {
 
 const MAX_RESULTS = 10;
 
-class PSAReviewRowList extends React.Component<Props, State> {
+class PSAReviewReportsRowList extends React.Component<Props, State> {
 
   static defaultProps = {
     hideCaseHistory: false,
@@ -113,7 +113,7 @@ class PSAReviewRowList extends React.Component<Props, State> {
     const ftaHistory = this.props.ftaHistory.get(personId, Immutable.Map());
     const hearings = this.props.hearings.get(personId, Immutable.List());
     return (
-      <PSAReviewRow
+      <PSAReviewReportsRow
           neighbors={neighbors}
           scores={scores}
           personId={personIdValue}
@@ -240,4 +240,4 @@ function mapDispatchToProps(dispatch :Function) :Object {
   };
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(PSAReviewRowList);
+export default connect(mapStateToProps, mapDispatchToProps)(PSAReviewReportsRowList);

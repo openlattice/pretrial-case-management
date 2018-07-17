@@ -19,6 +19,7 @@ import {
   ToggleButtonGroup
 } from 'react-bootstrap';
 
+import SecondaryButton from '../../components/buttons/SecondaryButton';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import PersonCard from '../../components/people/PersonCard';
 import * as CourtActionFactory from './CourtActionFactory';
@@ -77,6 +78,10 @@ const HearingTime = styled.div`
 const HearingRow = styled.div`
   display: flex;
   flex-direction: row;
+
+  &:not(:last-child) {
+    margin-bottom: 50px;
+  }
 `;
 
 const Courtroom = styled.div`
@@ -84,8 +89,14 @@ const Courtroom = styled.div`
   padding: 20px;
   background-color: #f0f0f7;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+
+  span {
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
 `;
 
 const PeopleWrapper = styled.div`
@@ -107,7 +118,8 @@ type Props = {
   county :string,
   actions :{
     changeHearingFilters :({ county? :string, courtroom? :string }) => void,
-    loadHearingsToday :() => void
+    loadHearingsToday :() => void,
+    bulkDownloadPSAReviewPDF :({ peopleEntityKeyIds :string[] }) => void
   }
 };
 
@@ -150,13 +162,24 @@ class CourtContainer extends React.Component<Props, State> {
     return <PersonCard key={person.identification} person={personObj} />;
   }
 
-  renderHearingRow = (courtroom, people) => {
+  downloadPDFs = (courtroom, people, time) => {
+    const fileName = `${courtroom}-${moment().format('YYYY-MM-DD')}-${time}`;
+    this.props.actions.bulkDownloadPSAReviewPDF({
+      fileName,
+      peopleEntityKeyIds: people.valueSeq().map(person => person.get('id')).toJS()
+    });
+  }
+
+  renderHearingRow = (courtroom, people, time) => {
     return (
       <HearingRow>
-        <Courtroom>{courtroom}</Courtroom>
+        <Courtroom>
+          <span>{courtroom}</span>
+          <SecondaryButton onClick={() => this.downloadPDFs(courtroom, people, time)}>Download PDFs</SecondaryButton>
+        </Courtroom>
         <PeopleWrapper>{people.valueSeq().sort(sortPeopleByName).map(this.renderPersonCard)}</PeopleWrapper>
       </HearingRow>
-    )
+    );
   }
 
   renderHearingsAtTime = (time) => {
@@ -200,7 +223,10 @@ class CourtContainer extends React.Component<Props, State> {
     return (
       <HearingTime key={time}>
         <h1>{time}</h1>
-        {hearingsByCourtroom.entrySeq().map(([courtroom, people]) => this.renderHearingRow(courtroom, people)).toJS()}
+        {
+          hearingsByCourtroom.entrySeq()
+            .map(([room, people]) => this.renderHearingRow(room, people, time)).toJS()
+        }
       </HearingTime>
     );
   }

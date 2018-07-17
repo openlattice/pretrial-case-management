@@ -18,7 +18,7 @@ export const sortPeopleByName = (p1, p2) => {
   if (p1Dob.isValid() && p2Dob.isValid()) return p1Dob.isBefore(p2Dob) ? -1 : 1;
 
   return 0;
-}
+};
 
 export const sortByName = ([id1, neighbor1], [id2, neighbor2]) => {
   const p1 = neighbor1.getIn([ENTITY_SETS.PEOPLE, 'neighborDetails'], Immutable.Map());

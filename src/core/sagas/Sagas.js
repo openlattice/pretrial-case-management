@@ -50,6 +50,7 @@ export default function* sagas() :Generator<*, *, *> {
     fork(EnrollSagas.getOrCreateProfile),
 
     // SubmitDataSaga
+    fork(SubmitSagas.replaceEntityWatcher),
     fork(SubmitSagas.submitWatcher),
 
     // PersonSagas
@@ -69,6 +70,7 @@ export default function* sagas() :Generator<*, *, *> {
     fork(PsaSagas.loadNeighborsWatcher),
 
     // Review Sagas
+    fork(ReviewSagas.bulkDownloadPSAReviewPDFWatcher),
     fork(ReviewSagas.changePSAStatusWatcher),
     fork(ReviewSagas.checkPSAPermissionsWatcher),
     fork(ReviewSagas.downloadPSAReviewPDFWatcher),

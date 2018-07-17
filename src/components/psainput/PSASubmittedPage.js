@@ -5,13 +5,12 @@
 import React from 'react';
 import Immutable from 'immutable';
 import styled from 'styled-components';
-import moment from 'moment';
 
-import PSAResults from './PSAResults';
 import BasicButton from '../buttons/BasicButton';
 import LoadingSpinner from '../LoadingSpinner';
 import DMFCell from '../dmf/DMFCell';
 import ChargeTable from '../charges/ChargeTable';
+import CaseHistoryTimeline from '../casehistory/CaseHistoryTimeline';
 import RiskFactorsTable from '../riskfactors/RiskFactorsTable';
 import psaSuccessIcon from '../../assets/svg/psa-success.svg';
 import psaFailureIcon from '../../assets/svg/psa-failure.svg';
@@ -36,6 +35,8 @@ type Props = {
   submitSuccess :boolean,
   charges :Immutable.List<*>,
   notes :string,
+  allCases :Immutable.List<*>,
+  allCharges :Immutable.Map<*, *>,
   onExport :() => void,
   onClose :() => void
 };
@@ -186,12 +187,17 @@ const DMF = styled(WideContainer)`
   }
 `;
 
-const NotesContainer = styled.div`
+const NotesContainer = styled(WideContainer)`
   font-family: 'Open Sans', sans-serif;
   font-size: 14px;
   color: #2e2e34;
-  margin: 20px 0 0 15px;
+  border-bottom: 1px solid #e1e1eb;
+  padding-bottom: 30px;
+  padding-left: 30px;
+`;
 
+const TimelineContainer = styled.div`
+  padding: 0 15px;
 `;
 
 const PaddedResultHeader = styled(ResultHeader)`
@@ -199,7 +205,7 @@ const PaddedResultHeader = styled(ResultHeader)`
   margin-left: 15px;
 `;
 
-const ChargeResultHeader = styled(PaddedResultHeader)`
+const MinimallyPaddedResultHeader = styled(PaddedResultHeader)`
   margin-top: 30px;
 `;
 
@@ -375,7 +381,9 @@ export default class PSASubmittedPage extends React.Component<Props> {
       notes,
       charges,
       onExport,
-      onClose
+      onClose,
+      allCases,
+      allCharges
     } = this.props;
 
     return (
@@ -388,7 +396,7 @@ export default class PSASubmittedPage extends React.Component<Props> {
         {this.renderScores()}
         {this.renderDMF()}
         <div>
-          <ChargeResultHeader>Charges</ChargeResultHeader>
+          <MinimallyPaddedResultHeader>Charges</MinimallyPaddedResultHeader>
           <WideContainer>
             <ChargeTable charges={charges} disabled />
           </WideContainer>
@@ -398,6 +406,10 @@ export default class PSASubmittedPage extends React.Component<Props> {
           </WideContainer>
           <PaddedResultHeader>Notes</PaddedResultHeader>
           <NotesContainer>{notes}</NotesContainer>
+          <MinimallyPaddedResultHeader>Timeline</MinimallyPaddedResultHeader>
+          <TimelineContainer>
+            <CaseHistoryTimeline caseHistory={allCases} chargeHistory={allCharges} />
+          </TimelineContainer>
         </div>
         <FooterRow>
           <div />
