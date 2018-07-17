@@ -53,7 +53,6 @@ const NO_RELEASE_CONDITION = 'No release';
 const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
-
   h1 {
     font-size: 18px;
     text-align: center;
@@ -79,11 +78,9 @@ const ColumnWrapper = styled.div`
 const RadioWrapper = styled.div`
   display: inline-flex;
   margin: 0 3px;
-
   &:first-child {
     margin-left: 0;
   }
-
   &:last-child {
     margin-right: 0;
   }
@@ -115,7 +112,6 @@ const InputLabel = styled.span`
   display: inline-flex;
   align-items: center;
   margin-right: 10px;
-
   margin-left: ${props => (props.inline ? '10px' : '0')};
 `;
 
@@ -137,7 +133,6 @@ const NoContactPeopleWrapper = styled.div`
   display: flex;
   justify-content: center;
   margin-bottom: 10px;
-
   th {
     text-align: center;
     padding-bottom: 10px;
@@ -159,21 +154,17 @@ const HearingRow = styled.div`
   flex-direction: row;
   justify-content: center;
   align-items: center;
-
   span {
     font-family: 'Open Sans', sans-serif;
   }
-
   span:nth-child(even) {
     margin: 0 20px 0 5px;
-
     &:last-child {
       margin-right: 0;
       color: #555e6f;
       font-size: 15px;
     }
   }
-
   span:nth-child(odd) {
     font-size: 11px;
     font-weight: 600;
