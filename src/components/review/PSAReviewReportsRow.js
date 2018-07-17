@@ -131,6 +131,20 @@ const TitleHeader = styled.span`
   margin-right: 15px;
 `;
 
+const SubmittingWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  span {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 16px;
+    margin: 20px 0;
+    color: #2e2e34;
+  }
+`;
+
 const Title = styled.div`
   font-family: 'Open Sans', sans-serif;
   font-size: 16px;
