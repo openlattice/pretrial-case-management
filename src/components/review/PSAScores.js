@@ -39,12 +39,12 @@ const ScaleRow = styled.tr`
 `;
 
 const colorsByScale = {
-  1: '#3494E6',
-  2: '#598CDB',
-  3: '#7A85D0',
-  4: '#A37DC4',
-  5: '#CA75B8',
-  6: '#EC6EAD'
+  1: '#8b66db',
+  2: '#a069d7',
+  3: '#b36cd2',
+  4: '#c86fce',
+  5: '#dd72ca',
+  6: '#dd72ca'
 };
 
 const HEIGHT_MULTIPLIER = 10;

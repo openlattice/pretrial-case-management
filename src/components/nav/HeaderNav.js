@@ -84,7 +84,7 @@ const StyledNavWrapper = styled.div`
 const StyledNavLink = styled(NavLink).attrs({
   activeStyle: {
     color: '#6124e2',
-    'border-bottom': '3px solid #6124e2'
+    'borderBottom': '3px solid #6124e2'
   }
 })`
   width: auto;
