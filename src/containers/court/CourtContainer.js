@@ -78,6 +78,10 @@ const HearingTime = styled.div`
 const HearingRow = styled.div`
   display: flex;
   flex-direction: row;
+
+  &:not(:last-child) {
+    margin-bottom: 50px;
+  }
 `;
 
 const Courtroom = styled.div`

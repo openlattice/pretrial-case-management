@@ -55,6 +55,7 @@ type Props = {
     checkPSAPermissions :() => void,
     refreshPSANeighbors :({ id :string }) => void,
     submit :(value :{ config :Object, values :Object}) => void,
+    replaceEntity :(value :{ entitySetName :string, entityKeyId :string, values :Object }) => void,
     clearSubmit :() => void,
   },
   psaNeighborsById :Immutable.Map<*, *>,
@@ -123,6 +124,7 @@ class PSAReviewRowList extends React.Component<Props, State> {
           changePSAStatus={this.props.actions.changePSAStatus}
           onStatusChangeCallback={this.props.onStatusChangeCallback}
           submitData={this.props.actions.submit}
+          replaceEntity={this.props.actions.replaceEntity}
           refreshPSANeighbors={this.props.actions.refreshPSANeighbors}
           caseHistory={caseHistory}
           manualCaseHistory={manualCaseHistory}

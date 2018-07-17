@@ -5,7 +5,12 @@
 import { EntityDataModelApi, SyncApi, DataApi, Models } from 'lattice';
 import { call, put, takeEvery, all } from 'redux-saga/effects';
 
-import { SUBMIT, submit } from './SubmitActionFactory';
+import {
+  REPLACE_ENTITY,
+  SUBMIT,
+  replaceEntity,
+  submit
+} from './SubmitActionFactory';
 
 const {
   FullyQualifiedName
@@ -56,6 +61,37 @@ function shouldCreateEntity(entityDescription, values, details) {
   }
   return true;
 }
+
+function* replaceEntityWorker(action :SequenceAction) :Generator<*, *, *> {
+  try {
+    yield put(replaceEntity.request(action.id));
+    const {
+      entityKeyId,
+      entitySetName,
+      values,
+      callback
+    } = action.value;
+
+    const entitySetId = yield call(EntityDataModelApi.getEntitySetId, entitySetName);
+    yield call(DataApi.replaceEntityInEntitySetUsingFqns, entitySetId, entityKeyId, values);
+
+    yield put(replaceEntity.success(action.id));
+    if (callback) {
+      callback();
+    }
+  }
+  catch (error) {
+    yield put(replaceEntity.failure(action.id, error));
+  }
+  finally {
+    yield put(replaceEntity.finally(action.id));
+  }
+}
+
+function* replaceEntityWatcher() :Generator<*, *, *> {
+  yield takeEvery(REPLACE_ENTITY, replaceEntityWorker);
+}
+
 
 function* submitWorker(action :SequenceAction) :Generator<*, *, *> {
   const { config, values, callback } = action.value;
@@ -192,5 +228,6 @@ function* submitWatcher() :Generator<*, *, *> {
 }
 
 export {
+  replaceEntityWatcher,
   submitWatcher
 };
