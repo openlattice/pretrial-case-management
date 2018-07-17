@@ -626,7 +626,7 @@ export default class PSAReviewRow extends React.Component<Props, State> {
           submit={this.props.submitData}
           replace={this.props.replaceEntity}
           submitCallback={this.refreshPSANeighborsCallback}
-          hearing={this.props.neighbors.getIn([ENTITY_SETS.HEARINGS, 'neighborDetails'])}
+          hearing={this.props.neighbors.getIn([ENTITY_SETS.HEARINGS, 'neighborDetails'], Immutable.Map())}
           hearingId={this.props.neighbors.getIn([ENTITY_SETS.HEARINGS, 'neighborId'])}
           defaultDMF={this.props.neighbors.getIn([ENTITY_SETS.DMF_RESULTS, 'neighborDetails'], Immutable.Map())}
           defaultBond={this.props.neighbors.getIn([ENTITY_SETS.BONDS, 'neighborDetails'], Immutable.Map())}
