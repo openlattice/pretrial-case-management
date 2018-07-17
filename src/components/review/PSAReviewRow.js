@@ -193,6 +193,7 @@ type Props = {
     scoresEntity :Immutable.Map<*, *>
   }) => void,
   submitData :(value :{ config :Object, values :Object, callback :() => void }) => void,
+  replaceEntity :(value :{ entitySetName :string, entityKeyId :string, values :Object }) => void,
   refreshPSANeighbors :({ id :string }) => void
 };
 
@@ -623,8 +624,10 @@ export default class PSAReviewRow extends React.Component<Props, State> {
           psaId={this.props.scores.getIn([PROPERTY_TYPES.GENERAL_ID, 0])}
           dmfId={this.getIdValue(ENTITY_SETS.DMF_RESULTS)}
           submit={this.props.submitData}
+          replace={this.props.replaceEntity}
           submitCallback={this.refreshPSANeighborsCallback}
           hearing={this.props.neighbors.getIn([ENTITY_SETS.HEARINGS, 'neighborDetails'])}
+          hearingId={this.props.neighbors.getIn([ENTITY_SETS.HEARINGS, 'neighborId'])}
           defaultDMF={this.props.neighbors.getIn([ENTITY_SETS.DMF_RESULTS, 'neighborDetails'], Immutable.Map())}
           defaultBond={this.props.neighbors.getIn([ENTITY_SETS.BONDS, 'neighborDetails'], Immutable.Map())}
           defaultConditions={this.props.neighbors.get(ENTITY_SETS.RELEASE_CONDITIONS, Immutable.List())
