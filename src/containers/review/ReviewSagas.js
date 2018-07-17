@@ -7,6 +7,7 @@ import moment from 'moment';
 import { AuthorizationApi, DataApi, EntityDataModelApi, SearchApi } from 'lattice';
 import { all, call, put, take, takeEvery } from 'redux-saga/effects';
 
+import { stripIdField } from '../../utils/DataUtils';
 import exportPDF, { exportPDFList } from '../../utils/PDFUtils';
 import { getMapByCaseId } from '../../utils/CaseUtils';
 import {
@@ -574,13 +575,13 @@ function* updateScoresAndRiskFactorsWorker(action :SequenceAction) :Generator<*,
       notesEntity
     } = action.value;
     const updates = [
-      call(DataApi.replaceEntityInEntitySetUsingFqns, riskFactorsEntitySetId, riskFactorsId, riskFactorsEntity),
-      call(DataApi.replaceEntityInEntitySetUsingFqns, scoresEntitySetId, scoresId, scoresEntity),
-      call(DataApi.replaceEntityInEntitySetUsingFqns, dmfEntitySetId, dmfId, dmfEntity),
-      call(DataApi.replaceEntityInEntitySetUsingFqns, dmfRiskFactorsEntitySetId, dmfRiskFactorsId, dmfRiskFactorsEntity)
+      call(DataApi.replaceEntityInEntitySetUsingFqns, riskFactorsEntitySetId, riskFactorsId, stripIdField(riskFactorsEntity)),
+      call(DataApi.replaceEntityInEntitySetUsingFqns, scoresEntitySetId, scoresId, stripIdField(scoresEntity)),
+      call(DataApi.replaceEntityInEntitySetUsingFqns, dmfEntitySetId, dmfId, stripIdField(dmfEntity)),
+      call(DataApi.replaceEntityInEntitySetUsingFqns, dmfRiskFactorsEntitySetId, dmfRiskFactorsId, stripIdField(dmfRiskFactorsEntity))
     ];
     if (notesEntity && notesId && notesEntitySetId) {
-      updates.push(call(DataApi.replaceEntityInEntitySetUsingFqns, notesEntitySetId, notesId, notesEntity));
+      updates.push(call(DataApi.replaceEntityInEntitySetUsingFqns, notesEntitySetId, notesId, stripIdField(notesEntity)));
     }
     yield all(updates);
 
@@ -662,7 +663,7 @@ function* changePSAStatusWorker(action :SequenceAction) :Generator<*, *, *> {
     yield put(changePSAStatus.request(action.id));
     const entitySetId = yield call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.PSA_SCORES);
 
-    yield call(DataApi.replaceEntityInEntitySetUsingFqns, entitySetId, scoresId, scoresEntity.toJS());
+    yield call(DataApi.replaceEntityInEntitySetUsingFqns, entitySetId, scoresId, stripIdField(scoresEntity.toJS()));
     const newScoresEntity = yield call(DataApi.getEntity, entitySetId, scoresId);
 
     yield put(changePSAStatus.success(action.id, {

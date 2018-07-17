@@ -5,6 +5,7 @@
 import { DataApi, DataIntegrationApi, EntityDataModelApi, Models } from 'lattice';
 import { call, put, takeEvery, all } from 'redux-saga/effects';
 
+import { stripIdField } from '../DataUtils';
 import {
   REPLACE_ENTITY,
   SUBMIT,
@@ -15,8 +16,6 @@ import {
 const {
   FullyQualifiedName
 } = Models;
-
-const ID_FIELD = 'openlattice.@id';
 
 function getEntityId(primaryKey, propertyTypesById, values, fields) {
   const fieldNamesByFqn = {};
@@ -74,12 +73,8 @@ function* replaceEntityWorker(action :SequenceAction) :Generator<*, *, *> {
       callback
     } = action.value;
 
-    if (values[ID_FIELD]) {
-      delete values[ID_FIELD];
-    }
-
     const entitySetId = yield call(EntityDataModelApi.getEntitySetId, entitySetName);
-    yield call(DataApi.replaceEntityInEntitySetUsingFqns, entitySetId, entityKeyId, values);
+    yield call(DataApi.replaceEntityInEntitySetUsingFqns, entitySetId, entityKeyId, stripIdField(values));
 
     yield put(replaceEntity.success(action.id));
     if (callback) {
