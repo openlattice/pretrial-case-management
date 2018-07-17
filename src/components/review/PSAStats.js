@@ -151,7 +151,7 @@ const PSAStats = ({ scores, downloadButton } :Props) => {
   const ftaVal = scores.getIn([PROPERTY_TYPES.FTA_SCALE, 0]);
   const ncaVal = scores.getIn([PROPERTY_TYPES.NCA_SCALE, 0]);
   const nvcaVal = scores.getIn([PROPERTY_TYPES.NVCA_FLAG, 0]);
-  const nvcaDisplay = ncaVal ? 'Yes' : 'No';
+  const nvcaDisplay = nvcaVal ? 'Yes' : 'No';
 
 
   const FtaScaleLeft = styled(Scale)`
