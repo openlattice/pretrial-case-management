@@ -13,10 +13,12 @@ import PSAInputForm from '../psainput/PSAInputForm';
 import PersonCard from './PersonCardReview';
 import StyledButton from '../buttons/StyledButton';
 import CaseHistory from '../../components/casehistory/CaseHistory';
+import CaseHistoryTimeline from '../../components/casehistory/CaseHistoryTimeline';
 import PSAScores from './PSAScores';
 import PSAStats from './PSAStats';
 import PSASummary from './PSASummary';
 import DMFExplanation from '../dmf/DMFExplanation';
+import SelectHearingsContainer from '../../containers/hearings/SelectHearingsContainer';
 import SelectReleaseConditions from '../releaseconditions/SelectReleaseConditions';
 import ClosePSAModal from './ClosePSAModal';
 import psaEditedConfig from '../../config/formconfig/PsaEditedConfig';
@@ -129,6 +131,13 @@ const TitleHeader = styled.span`
   margin-right: 15px;
 `;
 
+const Title = styled.div`
+  font-family: 'Open Sans', sans-serif;
+  font-size: 16px;
+  color: #555e6f;
+  margin: 20px 0;
+`;
+
 type Props = {
   entityKeyId :string,
   scores :Immutable.Map<*, *>,
@@ -171,7 +180,9 @@ type Props = {
     scoresId :string,
     scoresEntity :Immutable.Map<*, *>
   }) => void,
-  submitData :(value :{ config :Object, values :Object }) => void
+  submitData :(value :{ config :Object, values :Object }) => void,
+  replaceEntity :(value :{ entitySetName :string, entityKeyId :string, values :Object }) => void,
+  refreshPSANeighbors :({ id :string }) => void
 };
 
 type State = {
@@ -368,6 +379,10 @@ export default class PSAReviewReportsRow extends React.Component<Props, State> {
   getIdValue = (name, optionalFQN) :string => {
     const fqn = optionalFQN || PROPERTY_TYPES.GENERAL_ID;
     return this.props.neighbors.getIn([name, 'neighborDetails', fqn, 0]);
+  }
+
+  refreshPSANeighborsCallback = () => {
+    this.props.refreshPSANeighbors({ id: this.props.entityKeyId });
   }
 
   onRiskFactorEdit = (e :Object) => {
@@ -570,18 +585,41 @@ export default class PSAReviewReportsRow extends React.Component<Props, State> {
     return <DMFExplanation dmf={dmf} nca={nca} fta={fta} nvca={nvca} riskFactors={riskFactors} />;
   }
 
-  renderInitialAppearance = () => (
-    <SelectReleaseConditions
-        submitting={this.props.submitting}
-        personId={this.getIdValue(ENTITY_SETS.PEOPLE, PROPERTY_TYPES.PERSON_ID)}
-        psaId={this.props.scores.getIn([PROPERTY_TYPES.GENERAL_ID, 0])}
-        dmfId={this.getIdValue(ENTITY_SETS.DMF_RESULTS)}
-        submit={this.props.submitData}
-        defaultDMF={this.props.neighbors.getIn([ENTITY_SETS.DMF_RESULTS, 'neighborDetails'], Immutable.Map())}
-        defaultBond={this.props.neighbors.getIn([ENTITY_SETS.BONDS, 'neighborDetails'], Immutable.Map())}
-        defaultConditions={this.props.neighbors.get(ENTITY_SETS.RELEASE_CONDITIONS, Immutable.List())
-          .map(neighbor => neighbor.get('neighborDetails', Immutable.Map()))} />
-  )
+  renderInitialAppearance = () => {
+    if (this.props.submitting || this.props.refreshingNeighbors) {
+      return (
+        <SubmittingWrapper>
+          <span>{this.props.submitting ? 'Submitting' : 'Reloading'}</span>
+          <LoadingSpinner />
+        </SubmittingWrapper>
+      );
+    }
+    if (!this.props.neighbors.get(ENTITY_SETS.HEARINGS)) {
+      return (
+        <SelectHearingsContainer
+            personId={this.props.personId}
+            psaId={this.props.scores.getIn([PROPERTY_TYPES.GENERAL_ID, 0])}
+            psaEntityKeyId={this.props.entityKeyId}
+            hearings={this.props.hearings} />
+      );
+    }
+    return (
+      <SelectReleaseConditions
+          submitting={this.props.submitting}
+          personId={this.getIdValue(ENTITY_SETS.PEOPLE, PROPERTY_TYPES.PERSON_ID)}
+          psaId={this.props.scores.getIn([PROPERTY_TYPES.GENERAL_ID, 0])}
+          dmfId={this.getIdValue(ENTITY_SETS.DMF_RESULTS)}
+          submit={this.props.submitData}
+          replace={this.props.replaceEntity}
+          submitCallback={this.refreshPSANeighborsCallback}
+          hearing={this.props.neighbors.getIn([ENTITY_SETS.HEARINGS, 'neighborDetails'], Immutable.Map())}
+          hearingId={this.props.neighbors.getIn([ENTITY_SETS.HEARINGS, 'neighborId'])}
+          defaultDMF={this.props.neighbors.getIn([ENTITY_SETS.DMF_RESULTS, 'neighborDetails'], Immutable.Map())}
+          defaultBond={this.props.neighbors.getIn([ENTITY_SETS.BONDS, 'neighborDetails'], Immutable.Map())}
+          defaultConditions={this.props.neighbors.get(ENTITY_SETS.RELEASE_CONDITIONS, Immutable.List())
+            .map(neighbor => neighbor.get('neighborDetails', Immutable.Map()))} />
+    );
+  }
 
   renderDetails = () => {
     const { open } = this.state;
@@ -616,6 +654,9 @@ export default class PSAReviewReportsRow extends React.Component<Props, State> {
             {
               this.props.hideCaseHistory ? null : (
                 <Tab eventKey={VIEWS.HISTORY} title="Case History">
+                  <Title>Timeline (past two years)</Title>
+                  <CaseHistoryTimeline caseHistory={this.props.caseHistory} chargeHistory={this.props.chargeHistory} />
+                  <Title>All cases</Title>
                   <CaseHistory caseHistory={this.props.caseHistory} chargeHistory={this.props.chargeHistory} />
                 </Tab>
               )
@@ -697,7 +738,7 @@ export default class PSAReviewReportsRow extends React.Component<Props, State> {
 
   openDetailsModal = () => {
     const { neighbors, loadCaseHistoryFn } = this.props;
-    const personId = this.props.personId || neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborId'], '');
+    const personId = neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborId'], '');
     loadCaseHistoryFn({ personId, neighbors });
     this.setState({
       open: true,
@@ -714,9 +755,9 @@ export default class PSAReviewReportsRow extends React.Component<Props, State> {
             <PersonCardWrapper>
               {this.renderPersonCard()}
             </PersonCardWrapper>
-            <hr/>
+            <hr />
             <StatsWrapper>
-              <PSAStats scores={this.props.scores} downloadButton={this.renderDownloadButton}/>
+              <PSAStats scores={this.props.scores} downloadButton={this.renderDownloadButton} />
             </StatsWrapper>
           </ReviewRowWrapper>
           {this.renderDetails()}
