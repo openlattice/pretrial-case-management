@@ -15,6 +15,7 @@ import StyledButton from '../buttons/StyledButton';
 import CaseHistory from '../../components/casehistory/CaseHistory';
 import CaseHistoryTimeline from '../../components/casehistory/CaseHistoryTimeline';
 import PSAScores from './PSAScores';
+import LoadingSpinner from '../LoadingSpinner'
 import PSAStats from './PSAStats';
 import PSASummary from './PSASummary';
 import DMFExplanation from '../dmf/DMFExplanation';
