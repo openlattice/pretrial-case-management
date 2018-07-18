@@ -392,12 +392,9 @@ class ReviewPSA extends React.Component<Props, State> {
     const { activeFilterKey, filters } = this.state;
     const { filer } = this.state.filters;
     const { scoresAsMap } = this.props;
-    const expiredView = this.state.status === 'REQUIRES_ACTION';
     let items = null;
-    if (expiredView) {
-      items = this.filterExpired();
-    }
-    else if (activeFilterKey === 1) {
+
+    if (activeFilterKey === 1) {
       items = this.filterByDate();
     }
     else if (activeFilterKey === 2) {
@@ -410,7 +407,7 @@ class ReviewPSA extends React.Component<Props, State> {
       return <NoResults>No results.</NoResults>;
     }
 
-    const sort = expiredView ? null : this.state.sort;
+    const sort = this.state.sort;
     return <PSAReviewReportsRowList scoreSeq={items.map(([id]) => ([id, scoresAsMap.get(id)]))} sort={sort} />;
   }
 
@@ -434,22 +431,22 @@ class ReviewPSA extends React.Component<Props, State> {
     return results.entrySeq();
   }
 
-  filterExpired = () => {
-    let rowsByName = Immutable.Map();
-    const date = moment(this.state.filters.date).format(DATE_FORMAT);
-
-    if (this.state.filters.date === '' || !this.state.filters.date) {
-      return this.filterWithoutDate();
-    }
-    return this.props.psaNeighborsByDate.get(date, Immutable.Map())
-      .entrySeq()
-      .filter(([scoreId, neighbors]) => {
-        if (!this.domainMatch(neighbors)) return false;
-
-        const personId = neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborDetails', PROPERTY_TYPES.PERSON_ID, 0]);
-        if (personId) return true;
-      });
-  }
+  // filterExpired = () => {
+  //   let rowsByName = Immutable.Map();
+  //   const date = moment(this.state.filters.date).format(DATE_FORMAT);
+  //
+  //   if (this.state.filters.date === '' || !this.state.filters.date) {
+  //     return this.filterWithoutDate();
+  //   }
+  //   return this.props.psaNeighborsByDate.get(date, Immutable.Map())
+  //     .entrySeq()
+  //     .filter(([scoreId, neighbors]) => {
+  //       if (!this.domainMatch(neighbors)) return false;
+  //
+  //       const personId = neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborDetails', PROPERTY_TYPES.PERSON_ID, 0]);
+  //       if (personId) return true;
+  //     });
+  // }
 
   domainMatch = neighbors => (
     !this.state.domain.length
