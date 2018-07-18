@@ -137,8 +137,8 @@ const SearchOptionContainer = styled.div`
 
 type Props = {
   options :Map<*, *>,
-  className :string,
-  maxHeight :number,
+  className? :string,
+  maxHeight? :number,
   searchPlaceholder :string,
   onSelect :Function,
   short :?boolean,
@@ -197,7 +197,8 @@ class SearchableSelect extends React.Component<Props, State> {
     });
   }
 
-  showDataTable = () => {
+  showDataTable = (e) => {
+    e.stopPropagation()
 
     this.setState({
       isVisibleDataTable: true,
@@ -247,7 +248,7 @@ class SearchableSelect extends React.Component<Props, State> {
                   transparent={this.props.transparent}
                   onBlur={this.hideDataTable}
                   onChange={this.handleOnChangeSearchQuery}
-                  onFocus={this.showDataTable}>
+                  onClick={this.showDataTable}>
                 {value || this.props.searchPlaceholder}
               </SearchButton>
             ) : (
@@ -257,7 +258,7 @@ class SearchableSelect extends React.Component<Props, State> {
                   value={value}
                   onBlur={this.hideDataTable}
                   onChange={this.handleOnChangeSearchQuery}
-                  onFocus={this.showDataTable} />
+                  onClick={this.showDataTable} />
             )
           }
           {
