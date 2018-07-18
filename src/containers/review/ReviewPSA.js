@@ -3,13 +3,16 @@
  */
 
 import React from 'react';
+import { bindActionCreators } from 'redux';
+import { connect } from 'react-redux';
+import { Redirect, Route, Switch } from 'react-router-dom';
+
 import FontAwesome from 'react-fontawesome';
 import DatePicker from 'react-bootstrap-date-picker';
+import StyledDatePicker from '../../components/controls/StyledDatePicker';
 import Immutable from 'immutable';
 import moment from 'moment';
 import styled from 'styled-components';
-import { connect } from 'react-redux';
-import { bindActionCreators } from 'redux';
 import NavButtonToolbar from '../../components/buttons/NavButtonToolbar';
 import PSAReviewReportsRowList from './PSAReviewReportsRowList';
 import LoadingSpinner from '../../components/LoadingSpinner';
@@ -72,6 +75,10 @@ const FilterWrapper = styled.div`
   span {
     margin-top: 10px;
   }
+`;
+
+const PersonSearchWrapper = styled.div`
+  margin: 0;
 `
 
 const DateRangeContainer = styled.div`
@@ -87,15 +94,6 @@ const DatePickerGroupContainer = styled.div`
   max-width: 140px;
   margin: 10px;
 `;
-
-const StyledDatePicker = styled(DatePicker)`
-    width: 123px;
-    background-color: transparent;
-    border-radius: 3px;
-    border: solid 1px #dcdce7;
-
-  }
-`
 
 const NoResults = styled.div`
   width: 100%;
@@ -237,7 +235,7 @@ const SORT_OPTIONS_ARR = [
 
 const NAV_OPTIONS = [
   {
-    path: Routes.REVIEW_FORMS,
+    path: Routes.REVIEW_REPORTS,
     label: 'View All'
   },
   {
@@ -297,10 +295,39 @@ class ReviewPSA extends React.Component<Props, State> {
     this.props.actions.loadPSAsByDate(STATUS_OPTIONS[this.state.status].value);
   }
 
+  componentWillReceiveProps(newProps) {
+    let activeFilterKey;
+    let date;
+    if (newProps.location.pathname === Routes.REVIEW_REPORTS) {
+      activeFilterKey = 1;
+      date = moment().format();
+    } else {
+      activeFilterKey = 2;
+      date = '';
+    }
+    if (this.props.location.pathname !== newProps.location.pathname) {
+      this.setState(
+        {
+          activeFilterKey: activeFilterKey,
+          status: 'OPEN',
+          filters: {
+              date: date,
+              firstName: '',
+              lastName: '',
+              dob: '',
+              filer: '',
+              searchExecuted: false
+          }
+        });
+      this.handleFilterRequest();
+    }
+  }
+
   updateFilters = (newFilters :Object) => {
-    const existingFilters = this.state.filters;
+    const existingFilters = this.state.filters
     const filters = Object.assign({}, existingFilters, newFilters);
     this.setState({ filters });
+    this.handleFilterRequest();
   }
 
   handleClose = () => {
@@ -325,13 +352,6 @@ class ReviewPSA extends React.Component<Props, State> {
     );
   }
 
-  renderPersonFilter = () => {
-    const handleSubmit = (firstName, lastName, dob) => {
-      this.updateFilters({ firstName, lastName, dob });
-    };
-    return <PersonSearchFields handleSubmit={handleSubmit} />;
-  }
-
   renderFilerOptions = () => {
     const allFilers = this.props.allFilers.toArray().map(filer => {
       return (
@@ -346,7 +366,7 @@ class ReviewPSA extends React.Component<Props, State> {
       <FilterWrapper>
         <span>Filer </span>
         <DropDownMenu
-            placeholder={this.state.filters.filer}
+            placeholder="All"
             classNamePrefix="lattice-select"
             onChange={(e) => {
               this.updateFilters({ filer: e.value });
@@ -370,27 +390,23 @@ class ReviewPSA extends React.Component<Props, State> {
 
   handleFilterRequest = () => {
     const { activeFilterKey, filters } = this.state;
+    const { filer } = this.state.filters;
     const { scoresAsMap } = this.props;
-    const { date } = this.state.filters;
     const expiredView = this.state.status === 'REQUIRES_ACTION';
     let items = null;
     if (expiredView) {
-      items = this.filterExpired(items);
+      items = this.filterExpired();
     }
-    else if (!(date === '')) {
+    else if (activeFilterKey === 1) {
       items = this.filterByDate();
-      items.concat(this.filterByFiler());
     }
     else if (activeFilterKey === 2) {
       items = this.filterByPerson();
     }
-    else if (activeFilterKey === 3) {
-      items = this.filterByFiler();
-    } else {
 
-    }
+    if (!!filer) items = this.filterByFiler(items);
 
-    if ((!items || !items.count()) && filters.searchExecuted) {
+    if (!items || !items.count()) {
       return <NoResults>No results.</NoResults>;
     }
 
@@ -400,10 +416,31 @@ class ReviewPSA extends React.Component<Props, State> {
 
   renderError = () => <ErrorText>{this.props.errorMessage}</ErrorText>
 
-  filterExpired = (items) => {
+  filterWithoutDate = () => {
+    let results = Immutable.Map();
+    const keys = this.props.psaNeighborsByDate.keySeq();
+
+    keys.forEach( date => {
+      results = results.merge(this.props.psaNeighborsByDate.get(date, Immutable.Map())
+        .entrySeq()
+        .filter(([scoreId, neighbors]) => {
+          if (!this.domainMatch(neighbors)) return false;
+
+          const personId = neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborDetails', PROPERTY_TYPES.PERSON_ID, 0]);
+          if (personId) return true;
+        })
+      );
+    })
+    return results.entrySeq();
+  }
+
+  filterExpired = () => {
     let rowsByName = Immutable.Map();
     const date = moment(this.state.filters.date).format(DATE_FORMAT);
 
+    if (this.state.filters.date === '' || !this.state.filters.date) {
+      return this.filterWithoutDate();
+    }
     return this.props.psaNeighborsByDate.get(date, Immutable.Map())
       .entrySeq()
       .filter(([scoreId, neighbors]) => {
@@ -425,21 +462,44 @@ class ReviewPSA extends React.Component<Props, State> {
       }).size
   )
 
-  filterByFiler = () => {
+  filterByFiler = (items) => {
     const { filer } = this.state.filters;
-    if (!filer.length) return Immutable.Collection();
-    const { psaNeighborsById } = this.props;
 
-    return psaNeighborsById.entrySeq().filter(([scoreId, neighbors]) => {
+    return items.filter(([scoreId, neighbors]) => {
       if (!this.domainMatch(neighbors)) return false;
       let includesFiler = false;
       neighbors.get(ENTITY_SETS.STAFF, Immutable.List()).forEach((neighbor) => {
-        if (neighbor.getIn(['neighborDetails', PROPERTY_TYPES.PERSON_ID], Immutable.List()).includes(filer)) {
+        if (neighbor.getIn(['neighborDetails', PROPERTY_TYPES.PERSON_ID], Immutable.List()).includes(this.state.filters.filer)) {
           includesFiler = true;
         }
       });
       return includesFiler;
     });
+  }
+  renderPersonFilter = () => {
+    const handleSubmit = (firstName, lastName, dob) => {
+      this.setState({activeFilterKey: 2});
+      this.updateFilters({ firstName, lastName, dob });
+    };
+    return (
+      <div>
+        <PersonSearchWrapper>
+        <PersonSearchFields
+          handleSubmit={handleSubmit}
+          firstName={this.state.filters.firstName}
+          lastName={this.state.filters.lastName}
+          dob={this.state.filters.dob}
+        />
+        </PersonSearchWrapper>
+        <hr/>
+        <StyledFiltersBar>
+          {this.renderStatusOptions()}
+          {this.renderDomainChoices()}
+          {this.renderFilerOptions()}
+          {this.renderSortChoices()}
+        </StyledFiltersBar>
+      </div>
+    )
   }
 
   filterByPerson = () => {
@@ -474,8 +534,12 @@ class ReviewPSA extends React.Component<Props, State> {
 
   filterByDate = () => {
     const { psaNeighborsByDate } = this.props;
-
     const date = moment(this.state.filters.date).format(DATE_FORMAT);
+
+    if (this.state.filters.date === '' || !this.state.filters.date) {
+      return this.filterWithoutDate();
+    }
+
     return psaNeighborsByDate.get(date, Immutable.Map())
       .entrySeq()
       .filter(([scoreId, neighbors]) => this.domainMatch(neighbors));
@@ -488,10 +552,7 @@ class ReviewPSA extends React.Component<Props, State> {
 
   changeStatus = (status) => {
     if (status !== this.state.status) {
-      this.setState({
-        status,
-        activeFilterKey: 1,
-      });
+      this.setState({ status });
       this.props.actions.loadPSAsByDate(STATUS_OPTIONS[status].value);
       // this.updateFilters({ date: moment().format() });
     }
@@ -529,21 +590,28 @@ class ReviewPSA extends React.Component<Props, State> {
     </FilterWrapper>
   )
 
-  renderFilters = () => (
-      <StyledFiltersBar>
-        {this.renderStatusOptions()}
-        {this.renderDomainChoices()}
-        {this.renderDateRangePicker()}
-        {this.renderFilerOptions()}
-      </StyledFiltersBar>
-  )
+  renderFilters = () => {
+    return (
+      <div>
+        <StyledFiltersBar>
+          {this.renderStatusOptions()}
+          {this.renderDomainChoices()}
+          {this.renderDateRangePicker()}
+          {this.renderFilerOptions()}
+        </StyledFiltersBar>
+        <hr/>
+        <StyledFiltersBar>
+        {this.renderSortChoices()}
+        </StyledFiltersBar>
+      </div>
+    )
+  }
 
   onSortChange = (sort) => {
     this.setState({ sort });
   }
 
   renderSortChoices = () => (this.state.status === 'REQUIRES_ACTION' ? null : (
-    <StyledFiltersBar>
       <FilterWrapper>
         <span>Sort by </span>
         <DropDownMenu
@@ -555,7 +623,6 @@ class ReviewPSA extends React.Component<Props, State> {
           }
         />
       </FilterWrapper>
-    </StyledFiltersBar>
   ))
 
   renderContent = () => {
@@ -567,9 +634,11 @@ class ReviewPSA extends React.Component<Props, State> {
       <NavButtonToolbar options={NAV_OPTIONS}/>
         <StyledSearchWrapper>
           {this.renderError()}
-          {this.renderFilters()}
-          <hr/>
-          {this.renderSortChoices()}
+          <Switch>
+            <Route path={Routes.SEARCH_FORMS} render={this.renderPersonFilter} />
+            <Route path={Routes.REVIEW_REPORTS} render={this.renderFilters} />
+            <Redirect from={Routes.REVIEW_FORMS} to={Routes.REVIEW_REPORTS} />
+          </Switch>
         </StyledSearchWrapper>
         {this.handleFilterRequest()}
         <StyledTopFormNavBuffer />
