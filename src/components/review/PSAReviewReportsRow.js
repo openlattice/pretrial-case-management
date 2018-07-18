@@ -12,6 +12,7 @@ import { AuthUtils } from 'lattice-auth';
 import PSAInputForm from '../psainput/PSAInputForm';
 import PersonCard from './PersonCardReview';
 import StyledButton from '../buttons/StyledButton';
+import DropdownButton from '../buttons/DropdownButton';
 import CaseHistory from '../../components/casehistory/CaseHistory';
 import CaseHistoryTimeline from '../../components/casehistory/CaseHistoryTimeline';
 import PSAScores from './PSAScores';
@@ -61,7 +62,6 @@ const ReviewRowWrapper = styled.div`
   align-items: flex-end;
   padding: 20px 30px;
   justify-content: center;
-  overflow: hidden;
   hr {
     margin-top: 13px;
     margin-bottom: 13px;
@@ -73,14 +73,14 @@ const ReviewRowWrapper = styled.div`
 const PersonCardWrapper = styled.div`
   width: 100%;
   margin: 0 auto;
-`
+`;
 
 const StatsWrapper = styled.div`
   width: 100%;
   margin: 0 auto;
   display: flex;
   flex-direction: row;
-`
+`;
 
 const DownloadButtonContainer = styled.div`
   width: 100%;
@@ -306,10 +306,10 @@ export default class PSAReviewReportsRow extends React.Component<Props, State> {
   getDMF = (neighbors :Immutable.Map<*, *>) =>
     formatDMFFromEntity(neighbors.getIn([ENTITY_SETS.DMF_RESULTS, 'neighborDetails'], Immutable.Map()))
 
-  downloadRow = (e) => {
+  downloadRow = (e, isCompact) => {
     e.stopPropagation();
     const { downloadFn, neighbors, scores } = this.props;
-    downloadFn({ neighbors, scores });
+    downloadFn({ neighbors, scores, isCompact });
   }
 
   renderPersonCard = () => {
@@ -323,7 +323,15 @@ export default class PSAReviewReportsRow extends React.Component<Props, State> {
 
   renderDownloadButton = () => (
     <DownloadButtonContainer>
-      <DownloadButton onClick={this.downloadRow}>PDF Report</DownloadButton>
+      <DropdownButton
+          title="PDF Report"
+          options={[{
+            label: 'Export compact version',
+            onClick: e => this.downloadRow(e, true)
+          }, {
+            label: 'Export full version',
+            onClick: e => this.downloadRow(e, false)
+          }]} />
     </DownloadButtonContainer>
   )
 

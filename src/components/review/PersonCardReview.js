@@ -84,7 +84,6 @@ const DetailItem = styled.div`
     font-size: 14px;
     font-weight: normal;
     color: #2e2e34;
-    overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
   }

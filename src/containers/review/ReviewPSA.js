@@ -88,6 +88,7 @@ const DateRangeContainer = styled.div`
 `;
 
 const DatePickerGroupContainer = styled.div`
+  width: 100%;
   max-width: 140px;
   margin: 10px;
 `;
@@ -211,7 +212,11 @@ const DOMAIN_OPTIONS_ARR = [
     value: DOMAIN.MINNEHAHA,
     label: 'Minnehaha'
   }
+<<<<<<< HEAD
 ];
+=======
+]
+>>>>>>> 7c3152b178d05bc9d0e2558d569feaf916946f79
 
 const SORT_OPTIONS_ARR = [
   {
@@ -222,7 +227,11 @@ const SORT_OPTIONS_ARR = [
     value: SORT_TYPES.DATE,
     label: 'Date'
   }
+<<<<<<< HEAD
 ];
+=======
+]
+>>>>>>> 7c3152b178d05bc9d0e2558d569feaf916946f79
 
 const NAV_OPTIONS = [
   {
@@ -405,6 +414,7 @@ class ReviewPSA extends React.Component<Props, State> {
 
   renderError = () => <ErrorText>{this.props.errorMessage}</ErrorText>
 
+
   filterWithoutDate = () => {
     let results = Immutable.Map();
     const keys = this.props.psaNeighborsByDate.keySeq();
@@ -525,7 +535,6 @@ class ReviewPSA extends React.Component<Props, State> {
     if (status !== this.state.status) {
       this.setState({ status });
       this.props.actions.loadPSAsByDate(STATUS_OPTIONS[status].value);
-      // this.updateFilters({ date: moment().format() });
     }
   }
 
@@ -537,8 +546,14 @@ class ReviewPSA extends React.Component<Props, State> {
           classNamePrefix="lattice-select"
           options={STATUS_OPTIONS_ARR}
           onChange={(e) => {
+<<<<<<< HEAD
             this.changeStatus(e.value);
           }} />
+=======
+            this.changeStatus(e.value)
+          }}
+      />
+>>>>>>> 7c3152b178d05bc9d0e2558d569feaf916946f79
     </FilterWrapper>
   )
 
