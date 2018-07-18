@@ -114,7 +114,8 @@ class SelectHearingsContainer extends React.Component<Props, State> {
     this.selectHearing({
       [ID_FIELD_NAMES.HEARING_ID]: randomUUID(),
       [HEARING.DATE_TIME]: this.state.newHearingDateTime.toISOString(true),
-      [HEARING.COURTROOM]: this.state.newHearingCourtroom
+      [HEARING.COURTROOM]: this.state.newHearingCourtroom,
+      [PROPERTY_TYPES.HEARING_TYPE]: 'Initial Appearance'
     });
   }
 
