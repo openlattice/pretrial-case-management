@@ -147,7 +147,7 @@ const onKeyPress = (e, props) => {
 
 const StyledDatePicker = props => (
   <DatePickerWrapper onKeyPress={e => onKeyPress(e, props)}>
-    <StyledDatePickerInput showClearButton={true} {...props} />
+    <StyledDatePickerInput {...props} />
     <IconWrapper>
       <img src={calendarIcon} role="presentation" />
     </IconWrapper>
