@@ -7,17 +7,37 @@ import Immutable from 'immutable';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { Pagination } from 'react-bootstrap';
+import styled from 'styled-components';
 
 import PSAReviewReportsRow from '../../components/review/PSAReviewReportsRow';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { SORT_TYPES } from '../../utils/consts/Consts';
 import { sortByDate, sortByName } from '../../utils/PSAUtils';
-import { CenteredContainer } from '../../utils/Layout';
 import * as FormActionFactory from '../psa/FormActionFactory';
 import * as ReviewActionFactory from './ReviewActionFactory';
 import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
 
+const StyledCenteredContainer = styled.div`
+  text-align: center;
+  .pagination {
+    display: inline-block;
+
+    .active a {
+      background-color: #6124e2;
+      color: white;
+    }
+  }
+
+  .pagination a {
+    color: #555e6f;
+    float: left;
+    padding: 8px 16px;
+    border: solid 1px #e1e1eb;
+    text-decoration: none;
+    }
+  }
+`
 
 type Props = {
   scoreSeq :Immutable.Seq,
@@ -76,7 +96,7 @@ type State = {
   start :number
 }
 
-const MAX_RESULTS = 10;
+const MAX_RESULTS = 4;
 
 class PSAReviewReportsRowList extends React.Component<Props, State> {
 
@@ -157,7 +177,7 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
     const numPages = Math.ceil(numResults / MAX_RESULTS);
     const currPage = (start / MAX_RESULTS) + 1;
     return (
-      <CenteredContainer>
+      <StyledCenteredContainer>
         <Pagination
             prev
             next
@@ -167,7 +187,7 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
             maxButtons={5}
             activePage={currPage}
             onSelect={page => this.updatePage((page - 1) * MAX_RESULTS)} />
-      </CenteredContainer>
+      </StyledCenteredContainer>
     );
   }
 
