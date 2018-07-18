@@ -28,6 +28,7 @@ const DetailRow = styled.div`
   display: flex;
   flex-direction: row;
   justify-content: space-between;
+  align-items: center;
   width: 100%;
 `;
 
@@ -50,7 +51,6 @@ const DetailItem = styled.div`
     display: flex;
     font-size: 14px;
     align-items: center;
-    overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 
