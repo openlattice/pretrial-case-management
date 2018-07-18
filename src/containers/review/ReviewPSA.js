@@ -47,7 +47,7 @@ const StyledSearchWrapper = styled.div`
   border-radius: 5px;
   border: solid 1px #e1e1eb;
   margin-bottom: 20px;
-`
+`;
 
 const StyledTopFormNavBuffer = styled.div`
   height: 55px;
