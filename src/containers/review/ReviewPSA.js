@@ -431,23 +431,6 @@ class ReviewPSA extends React.Component<Props, State> {
     return results.entrySeq();
   }
 
-  // filterExpired = () => {
-  //   let rowsByName = Immutable.Map();
-  //   const date = moment(this.state.filters.date).format(DATE_FORMAT);
-  //
-  //   if (this.state.filters.date === '' || !this.state.filters.date) {
-  //     return this.filterWithoutDate();
-  //   }
-  //   return this.props.psaNeighborsByDate.get(date, Immutable.Map())
-  //     .entrySeq()
-  //     .filter(([scoreId, neighbors]) => {
-  //       if (!this.domainMatch(neighbors)) return false;
-  //
-  //       const personId = neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborDetails', PROPERTY_TYPES.PERSON_ID, 0]);
-  //       if (personId) return true;
-  //     });
-  // }
-
   domainMatch = neighbors => (
     !this.state.domain.length
       || neighbors.get(ENTITY_SETS.STAFF, Immutable.List()).filter((neighbor) => {
