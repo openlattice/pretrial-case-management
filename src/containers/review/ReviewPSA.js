@@ -302,7 +302,6 @@ class ReviewPSA extends React.Component<Props, State> {
       this.setState(
         {
           activeFilterKey,
-          status: 'OPEN',
           filters: {
             date,
             firstName: '',
@@ -314,7 +313,6 @@ class ReviewPSA extends React.Component<Props, State> {
         }
       );
       this.handleFilterRequest();
-      this.props.actions.loadPSAsByDate(STATUS_OPTIONS['OPEN'].value);
     }
   }
 
