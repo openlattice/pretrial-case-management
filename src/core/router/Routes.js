@@ -24,6 +24,7 @@ export const CREATE_FORMS = DASHBOARD + CREATE;
 /* Review Report */
 const REVIEW :string = '/review';
 export const REVIEW_FORMS = DASHBOARD + REVIEW;
+export const REVIEW_REPORTS = `${REVIEW_FORMS}/reports`;
 export const SEARCH_FORMS = `${REVIEW_FORMS}/search`;
 
 /* Judge View */

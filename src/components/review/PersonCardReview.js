@@ -84,6 +84,7 @@ const DetailItem = styled.div`
     font-size: 14px;
     font-weight: normal;
     color: #2e2e34;
+    overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
@@ -117,7 +118,6 @@ const PersonCard = ({ person, handleSelect } :Props) => {
   const middleName = formatValue(person.get(MIDDLE_NAME, Immutable.List()));
   const lastName = formatValue(person.get(LAST_NAME, Immutable.List()));
   const dob = formatDate(person.getIn([DOB, 0], ''), 'MM/DD/YYYY');
-  const suffix = formatValue(person.get(SUFFIX, Immutable.List()));
   const id :string = person.getIn([PERSON_ID, 0], '');
   const entityKeyId :string = person.getIn(['id', 0], '');
 
