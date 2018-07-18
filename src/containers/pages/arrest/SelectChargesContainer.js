@@ -314,7 +314,7 @@ export default class SelectChargesContainer extends React.Component<Props, State
 
   renderHeader = () => (
     <HeaderWrapper>
-      <Title>Select an arrest</Title>
+      <Title>Add/Edit arrest charges</Title>
       <SecondaryButton onClick={this.onSubmit}>Confirm Charge Details</SecondaryButton>
     </HeaderWrapper>
   )
