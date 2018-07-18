@@ -642,6 +642,7 @@ class SelectReleaseConditions extends React.Component<Props, State> {
       const newHearing = this.props.hearing
         .set(PROPERTY_TYPES.COURTROOM, [hearingCourtroom])
         .set(PROPERTY_TYPES.DATE_TIME, [hearingDateTime.toISOString(true)])
+        .set(PROPERTY_TYPES.HEARING_TYPE, ['Initial Appearance'])
         .toJS();
 
       this.props.replace({

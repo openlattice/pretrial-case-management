@@ -686,6 +686,39 @@ class Form extends React.Component<Props, State> {
     );
   }
 
+  getOnExport = (isCompact) => {
+    const {
+      selectedPretrialCase,
+      charges,
+      selectedPerson,
+      arrestOptions,
+      allChargesForPerson,
+      allSentencesForPerson,
+      allFTAs
+    } = this.props;
+
+    const data = Immutable.fromJS(this.state)
+      .set('scores', this.state.scores)
+      .set('riskFactors', this.setMultimapToMap(this.state.riskFactors))
+      .set('psaRiskFactors', Immutable.fromJS(this.state.riskFactors))
+      .set('dmfRiskFactors', Immutable.fromJS(this.state.dmfRiskFactors));
+
+    exportPDF(data,
+      selectedPretrialCase,
+      charges,
+      selectedPerson,
+      arrestOptions,
+      allChargesForPerson,
+      allSentencesForPerson,
+      allFTAs,
+      {
+        user: this.getStaffId(),
+        timestamp: toISODateTime(moment())
+      },
+      false,
+      isCompact);
+  }
+
   getPsaResults = () => {
     const { isSubmitting, submitError } = this.props;
     const {
@@ -696,24 +729,12 @@ class Form extends React.Component<Props, State> {
     } = this.state;
 
     const {
-      selectedPretrialCase,
-      charges,
-      selectedPerson,
-      arrestOptions,
       allCasesForPerson,
       allChargesForPerson,
-      allSentencesForPerson,
-      allFTAs,
       psaForm
     } = this.props;
 
     if (!scoresWereGenerated) return null;
-
-    const data = Immutable.fromJS(this.state)
-      .set('scores', this.state.scores)
-      .set('riskFactors', this.setMultimapToMap(this.state.riskFactors))
-      .set('psaRiskFactors', Immutable.fromJS(this.state.riskFactors))
-      .set('dmfRiskFactors', Immutable.fromJS(this.state.dmfRiskFactors));
 
     let chargesByCaseId = Immutable.Map();
     allChargesForPerson.forEach((charge) => {
@@ -733,20 +754,7 @@ class Form extends React.Component<Props, State> {
           notes={psaForm.get(PSA.NOTES)}
           allCases={allCasesForPerson}
           allCharges={chargesByCaseId}
-          onExport={() => {
-            exportPDF(data,
-              selectedPretrialCase,
-              charges,
-              selectedPerson,
-              arrestOptions,
-              allChargesForPerson,
-              allSentencesForPerson,
-              allFTAs,
-              {
-                user: this.getStaffId(),
-                timestamp: toISODateTime(moment())
-              });
-          }} />
+          getOnExport={this.getOnExport} />
     );
   }
 

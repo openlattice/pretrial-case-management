@@ -14,6 +14,7 @@ import PersonCard from '../person/PersonCard';
 import StyledButton from '../buttons/StyledButton';
 import CaseHistory from '../../components/casehistory/CaseHistory';
 import CaseHistoryTimeline from '../../components/casehistory/CaseHistoryTimeline';
+import DropdownButton from '../buttons/DropdownButton';
 import PSAScores from './PSAScores';
 import PSASummary from './PSASummary';
 import DMFExplanation from '../dmf/DMFExplanation';
@@ -303,10 +304,10 @@ export default class PSAReviewRow extends React.Component<Props, State> {
   getDMF = (neighbors :Immutable.Map<*, *>) =>
     formatDMFFromEntity(neighbors.getIn([ENTITY_SETS.DMF_RESULTS, 'neighborDetails'], Immutable.Map()))
 
-  downloadRow = (e) => {
+  downloadRow = (e, isCompact) => {
     e.stopPropagation();
     const { downloadFn, neighbors, scores } = this.props;
-    downloadFn({ neighbors, scores });
+    downloadFn({ neighbors, scores, isCompact });
   }
 
   renderPersonCard = () => {
@@ -320,7 +321,15 @@ export default class PSAReviewRow extends React.Component<Props, State> {
 
   renderDownloadButton = () => (
     <DownloadButtonContainer>
-      <DownloadButton onClick={this.downloadRow}>Download PDF Report</DownloadButton>
+      <DropdownButton
+          title="PDF Report"
+          options={[{
+            label: 'Export compact version',
+            onClick: e => this.downloadRow(e, true)
+          }, {
+            label: 'Export full version',
+            onClick: e => this.downloadRow(e, false)
+          }]} />
     </DownloadButtonContainer>
   )
 

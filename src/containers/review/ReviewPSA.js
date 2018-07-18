@@ -3,13 +3,12 @@
  */
 
 import React from 'react';
-import FontAwesome from 'react-fontawesome';
-import DatePicker from 'react-bootstrap-date-picker';
 import Immutable from 'immutable';
 import moment from 'moment';
 import styled from 'styled-components';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
+import StyledDatePicker from '../../components/controls/StyledDatePicker';
 import NavButtonToolbar from '../../components/buttons/NavButtonToolbar';
 import PSAReviewReportsRowList from './PSAReviewReportsRowList';
 import LoadingSpinner from '../../components/LoadingSpinner';
@@ -18,7 +17,6 @@ import PersonSearchFields from '../../components/person/PersonSearchFields';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_STATUSES, SORT_TYPES } from '../../utils/consts/Consts';
 import { DOMAIN } from '../../utils/consts/ReportDownloadTypes';
-import { PaddedRow, TitleLabel } from '../../utils/Layout';
 import * as FormActionFactory from '../psa/FormActionFactory';
 import * as ReviewActionFactory from './ReviewActionFactory';
 import * as Routes from '../../core/router/Routes';
@@ -72,7 +70,7 @@ const FilterWrapper = styled.div`
   span {
     margin-top: 10px;
   }
-`
+`;
 
 const DateRangeContainer = styled.div`
   display: flex;
@@ -84,18 +82,10 @@ const DateRangeContainer = styled.div`
 `;
 
 const DatePickerGroupContainer = styled.div`
+  width: 100%;
   max-width: 140px;
   margin: 10px;
 `;
-
-const StyledDatePicker = styled(DatePicker)`
-    width: 123px;
-    background-color: transparent;
-    border-radius: 3px;
-    border: solid 1px #dcdce7;
-
-  }
-`
 
 const NoResults = styled.div`
   width: 100%;
@@ -115,12 +105,6 @@ const ErrorText = styled.div`
 const LoadingText = styled.div`
   font-size: 20px;
   margin: 15px;
-`;
-
-const SearchRow = styled(PaddedRow)`
-  align-items: flex-end;
-  justify-content: center;
-  margin: 10px;
 `;
 
 const DATE_FORMAT = 'MM/DD/YYYY';
@@ -197,7 +181,7 @@ const closedOptions = [
 const STATUS_OPTIONS_ARR = [
   {
     value: 'ALL',
-    label: 'All',
+    label: 'All'
   },
   {
     label: 'Open',
@@ -211,7 +195,7 @@ const STATUS_OPTIONS_ARR = [
 
 const DOMAIN_OPTIONS_ARR = [
   {
-    value: "",
+    value: '',
     label: 'All'
   },
   {
@@ -221,7 +205,7 @@ const DOMAIN_OPTIONS_ARR = [
   {
     value: DOMAIN.MINNEHAHA,
     label: 'Minnehaha'
-  },
+  }
 ]
 
 const SORT_OPTIONS_ARR = [
@@ -232,7 +216,7 @@ const SORT_OPTIONS_ARR = [
   {
     value: SORT_TYPES.DATE,
     label: 'Date'
-  },
+  }
 ]
 
 const NAV_OPTIONS = [
@@ -351,8 +335,7 @@ class ReviewPSA extends React.Component<Props, State> {
             onChange={(e) => {
               this.updateFilters({ filer: e.value });
             }}
-            options={filerOptions}
-          />
+            options={filerOptions} />
       </FilterWrapper>
     );
   }
@@ -401,7 +384,6 @@ class ReviewPSA extends React.Component<Props, State> {
   renderError = () => <ErrorText>{this.props.errorMessage}</ErrorText>
 
   filterExpired = (items) => {
-    let rowsByName = Immutable.Map();
     const date = moment(this.state.filters.date).format(DATE_FORMAT);
 
     return this.props.psaNeighborsByDate.get(date, Immutable.Map())
@@ -490,7 +472,7 @@ class ReviewPSA extends React.Component<Props, State> {
     if (status !== this.state.status) {
       this.setState({
         status,
-        activeFilterKey: 1,
+        activeFilterKey: 1
       });
       this.props.actions.loadPSAsByDate(STATUS_OPTIONS[status].value);
       // this.updateFilters({ date: moment().format() });
@@ -501,12 +483,12 @@ class ReviewPSA extends React.Component<Props, State> {
     <FilterWrapper>
       <span>PSA Status </span>
       <DropDownMenu
-        placeholder={STATUS_OPTIONS[this.state.status].label}
-        classNamePrefix="lattice-select"
-        options={STATUS_OPTIONS_ARR}
-        onChange={(e) => {
-          this.changeStatus(e.value)}
-        }
+          placeholder={STATUS_OPTIONS[this.state.status].label}
+          classNamePrefix="lattice-select"
+          options={STATUS_OPTIONS_ARR}
+          onChange={(e) => {
+            this.changeStatus(e.value)
+          }}
       />
     </FilterWrapper>
   )
@@ -530,12 +512,12 @@ class ReviewPSA extends React.Component<Props, State> {
   )
 
   renderFilters = () => (
-      <StyledFiltersBar>
-        {this.renderStatusOptions()}
-        {this.renderDomainChoices()}
-        {this.renderDateRangePicker()}
-        {this.renderFilerOptions()}
-      </StyledFiltersBar>
+    <StyledFiltersBar>
+      {this.renderStatusOptions()}
+      {this.renderDomainChoices()}
+      {this.renderDateRangePicker()}
+      {this.renderFilerOptions()}
+    </StyledFiltersBar>
   )
 
   onSortChange = (sort) => {
@@ -564,11 +546,11 @@ class ReviewPSA extends React.Component<Props, State> {
     }
     return (
       <StyledSectionWrapper>
-      <NavButtonToolbar options={NAV_OPTIONS}/>
+        <NavButtonToolbar options={NAV_OPTIONS} />
         <StyledSearchWrapper>
           {this.renderError()}
           {this.renderFilters()}
-          <hr/>
+          <hr />
           {this.renderSortChoices()}
         </StyledSearchWrapper>
         {this.handleFilterRequest()}
