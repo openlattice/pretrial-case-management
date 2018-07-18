@@ -4,7 +4,7 @@
 
 import React from 'react';
 import styled from 'styled-components';
-import { Col, FormControl } from 'react-bootstrap';
+import { Col } from 'react-bootstrap';
 
 import StyledDatePicker from '../controls/StyledDatePicker';
 import StyledInput from '../controls/StyledInput';
@@ -24,6 +24,9 @@ const StyledTitleLabel = styled(TitleLabel)`
 `;
 
 type Props = {
+  firstName :string,
+  lastName :string,
+  dob :string,
   handleSubmit :(firstName :string, lastName :string, dob :string) => void,
 };
 
@@ -41,9 +44,9 @@ export default class PersonSearchFields extends React.Component<Props, State> {
     const dob = props.dob ? props.dob : '';
     super(props);
     this.state = {
-      firstName: firstName,
-      lastName: lastName,
-      dob: dob
+      firstName,
+      lastName,
+      dob
     };
   }
 
@@ -84,7 +87,7 @@ export default class PersonSearchFields extends React.Component<Props, State> {
           <StyledDatePicker onKeyPress={this.handleKeyPress} name="dob" onChange={this.onDobChange} value={dob} />
         </Col>
         <Col lg={3}>
-        <InfoButton onClick={this.handleSubmit}>Search</InfoButton>
+          <InfoButton onClick={this.handleSubmit}>Search</InfoButton>
         </Col>
       </SearchRow>
     );

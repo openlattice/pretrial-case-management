@@ -140,9 +140,9 @@ const PersonCard = ({ person, handleSelect } :Props) => {
           </DetailItem>
 
           <DetailItem>
-          <h1>FIRST NAME</h1>
-          <div>{firstName}</div>
-          <Tooltip value={firstName} />
+            <h1>FIRST NAME</h1>
+            <div>{firstName}</div>
+            <Tooltip value={firstName} />
           </DetailItem>
 
           <DetailItem>

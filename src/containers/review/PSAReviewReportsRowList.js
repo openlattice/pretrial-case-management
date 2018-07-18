@@ -37,7 +37,7 @@ const StyledCenteredContainer = styled.div`
     text-decoration: none;
     }
   }
-`
+`;
 
 type Props = {
   scoreSeq :Immutable.Seq,
