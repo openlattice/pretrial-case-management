@@ -36,11 +36,14 @@ type State = {
 export default class PersonSearchFields extends React.Component<Props, State> {
 
   constructor(props :Props) {
+    const firstName = props.firstName ? props.firstName : '';
+    const lastName = props.lastName ? props.lastName : '';
+    const dob = props.dob ? props.dob : '';
     super(props);
     this.state = {
-      firstName: '',
-      lastName: '',
-      dob: ''
+      firstName: firstName,
+      lastName: lastName,
+      dob: dob
     };
   }
 
@@ -80,7 +83,9 @@ export default class PersonSearchFields extends React.Component<Props, State> {
           <StyledTitleLabel>Date of birth</StyledTitleLabel>
           <StyledDatePicker onKeyPress={this.handleKeyPress} name="dob" onChange={this.onDobChange} value={dob} />
         </Col>
+        <Col lg={3}>
         <InfoButton onClick={this.handleSubmit}>Search</InfoButton>
+        </Col>
       </SearchRow>
     );
   }
