@@ -320,6 +320,7 @@ class ReviewPSA extends React.Component<Props, State> {
           }
         });
       this.handleFilterRequest();
+      this.props.actions.loadPSAsByDate(STATUS_OPTIONS['OPEN'].value);
     }
   }
 
@@ -627,6 +628,7 @@ class ReviewPSA extends React.Component<Props, State> {
   }
 
   render() {
+    console.log(this.state);
     return (
       <StyledFormViewWrapper>
         <StyledFormWrapper>
