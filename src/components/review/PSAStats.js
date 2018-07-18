@@ -70,10 +70,6 @@ const DetailItem = styled.div`
   }
 `;
 
-const DetailItemWide = styled(DetailItem)`
-  width: 20%;
-`;
-
 const Scale = styled.div`
   width: 96px;
   height: 20px;
@@ -147,7 +143,7 @@ type Props = {
 };
 
 const PSAStats = ({ scores, downloadButton } :Props) => {
-  const status = scores.getIn([PROPERTY_TYPES.STATUS, 0], '')
+  const status = scores.getIn([PROPERTY_TYPES.STATUS, 0], '');
   const ftaVal = scores.getIn([PROPERTY_TYPES.FTA_SCALE, 0]);
   const ncaVal = scores.getIn([PROPERTY_TYPES.NCA_SCALE, 0]);
   const nvcaVal = scores.getIn([PROPERTY_TYPES.NVCA_FLAG, 0]);
@@ -177,37 +173,37 @@ const PSAStats = ({ scores, downloadButton } :Props) => {
 
   return (
     <Wrapper>
-       <DetailsWrapper>
-         <DetailRow>
-           <DetailItem>
-             <h1>PSA Status</h1>
-             <div><StatusTag status={status}>{status}</StatusTag></div>
-           </DetailItem>
-           <DetailItem>
-             <h1>NVCA</h1>
-             <NvcaFlag>{nvcaDisplay}</NvcaFlag>
-           </DetailItem>
-           <DetailItem>
-             <h1>NCA</h1>
-             <div>
-                <span>{ncaVal}</span>
-                <NcaScaleLeft/>
-                <NcaScaleRight/>
-             </div>
-           </DetailItem>
-           <DetailItem>
-               <h1>FTA</h1>
-               <div>
-                  <span>{ftaVal}</span>
-                  <FtaScaleLeft/>
-                  <FtaScaleRight/>
-               </div>
-           </DetailItem>
-           <DetailItem>
-             <div>{downloadButton()}</div>
-           </DetailItem>
-         </DetailRow>
-       </DetailsWrapper>
+      <DetailsWrapper>
+        <DetailRow>
+          <DetailItem>
+            <h1>PSA Status</h1>
+            <div><StatusTag status={status}>{status}</StatusTag></div>
+          </DetailItem>
+          <DetailItem>
+            <h1>NVCA</h1>
+            <NvcaFlag>{nvcaDisplay}</NvcaFlag>
+          </DetailItem>
+          <DetailItem>
+            <h1>NCA</h1>
+            <div>
+              <span>{ncaVal}</span>
+              <NcaScaleLeft />
+              <NcaScaleRight />
+            </div>
+          </DetailItem>
+          <DetailItem>
+            <h1>FTA</h1>
+            <div>
+              <span>{ftaVal}</span>
+              <FtaScaleLeft />
+              <FtaScaleRight />
+            </div>
+          </DetailItem>
+          <DetailItem>
+            <div>{downloadButton()}</div>
+          </DetailItem>
+        </DetailRow>
+      </DetailsWrapper>
     </Wrapper>
   );
 };

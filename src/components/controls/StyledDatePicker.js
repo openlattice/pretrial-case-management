@@ -5,6 +5,9 @@ import DatePicker from 'react-bootstrap-date-picker';
 import calendarIcon from '../../assets/svg/calendar-icon.svg';
 
 const DatePickerWrapper = styled.div`
+  border-radius: 3px;
+  background-color: #f9f9fd;
+  border: 1px solid #dcdce7;
   position: relative;
   height: 39px;
 `;
@@ -15,14 +18,15 @@ const IconWrapper = styled.div`
   height: 100%;
   display: flex;
   justify-content: center;
+  visibility: hidden;
 `;
 
 const StyledDatePickerInput = styled(DatePicker)`
   height: 39px;
   border-radius: 3px;
-  background-color: #f9f9fd;
+  background-color: none;
   border: 1px solid #dcdce7;
-  padding: 0 20px;
+  padding: 0 10px;
   box-shadow: none;
   position: absolute;
   font-family: 'Open Sans', sans-serif;
@@ -143,7 +147,7 @@ const onKeyPress = (e, props) => {
 
 const StyledDatePicker = props => (
   <DatePickerWrapper onKeyPress={e => onKeyPress(e, props)}>
-    <StyledDatePickerInput showClearButton={false} {...props} />
+    <StyledDatePickerInput {...props} />
     <IconWrapper>
       <img src={calendarIcon} role="presentation" />
     </IconWrapper>
