@@ -84,7 +84,6 @@ const DetailItem = styled.div`
     font-size: 14px;
     font-weight: normal;
     color: #2e2e34;
-    overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
@@ -140,9 +139,9 @@ const PersonCard = ({ person, handleSelect } :Props) => {
           </DetailItem>
 
           <DetailItem>
-          <h1>FIRST NAME</h1>
-          <div>{firstName}</div>
-          <Tooltip value={firstName} />
+            <h1>FIRST NAME</h1>
+            <div>{firstName}</div>
+            <Tooltip value={firstName} />
           </DetailItem>
 
           <DetailItem>

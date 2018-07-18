@@ -7,6 +7,7 @@ import Immutable from 'immutable';
 import styled from 'styled-components';
 
 import BasicButton from '../buttons/BasicButton';
+import DropdownButton from '../buttons/DropdownButton';
 import LoadingSpinner from '../LoadingSpinner';
 import DMFCell from '../dmf/DMFCell';
 import ChargeTable from '../charges/ChargeTable';
@@ -37,7 +38,7 @@ type Props = {
   notes :string,
   allCases :Immutable.List<*>,
   allCharges :Immutable.Map<*, *>,
-  onExport :() => void,
+  getOnExport :(isCompact :boolean) => void,
   onClose :() => void
 };
 
@@ -127,7 +128,7 @@ const FooterRow = styled(Bookend)`
   margin: 50px 0 30px 0;
 
   div {
-    width: 43px;
+    align-items: center;
   }
 
   ${BasicButton}:last-child {
@@ -376,11 +377,24 @@ export default class PSASubmittedPage extends React.Component<Props> {
     return <RiskFactorsTable rows={rows} disabled />;
   }
 
+  renderExportButton = () => (
+    <div>
+      <DropdownButton
+          title="PDF Report"
+          options={[{
+            label: 'Export compact version',
+            onClick: () => this.props.getOnExport(true)
+          }, {
+            label: 'Export full version',
+            onClick: () => this.props.getOnExport(false)
+          }]} />
+    </div>
+  )
+
   render() {
     const {
       notes,
       charges,
-      onExport,
       onClose,
       allCases,
       allCharges
@@ -391,7 +405,7 @@ export default class PSASubmittedPage extends React.Component<Props> {
         {this.renderBanner()}
         <HeaderRow>
           <span>Public Safety Assessment</span>
-          <BasicButton bsStyle="info" onClick={onExport}>Export as PDF</BasicButton>
+          {this.renderExportButton()}
         </HeaderRow>
         {this.renderScores()}
         {this.renderDMF()}
@@ -413,7 +427,7 @@ export default class PSASubmittedPage extends React.Component<Props> {
         </div>
         <FooterRow>
           <div />
-          <BasicButton onClick={onExport}>Export as PDF</BasicButton>
+          {this.renderExportButton()}
           <BasicButton onClick={onClose}><img src={closeXGrayIcon} role="presentation" /></BasicButton>
         </FooterRow>
         <ButtonWrapper>

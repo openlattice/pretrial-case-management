@@ -21,7 +21,6 @@ import PersonSearchFields from '../../components/person/PersonSearchFields';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_STATUSES, SORT_TYPES } from '../../utils/consts/Consts';
 import { DOMAIN } from '../../utils/consts/ReportDownloadTypes';
-import { PaddedRow, TitleLabel } from '../../utils/Layout';
 import * as FormActionFactory from '../psa/FormActionFactory';
 import * as ReviewActionFactory from './ReviewActionFactory';
 import * as Routes from '../../core/router/Routes';
@@ -91,6 +90,7 @@ const DateRangeContainer = styled.div`
 `;
 
 const DatePickerGroupContainer = styled.div`
+  width: 100%;
   max-width: 140px;
   margin: 10px;
 `;
@@ -113,12 +113,6 @@ const ErrorText = styled.div`
 const LoadingText = styled.div`
   font-size: 20px;
   margin: 15px;
-`;
-
-const SearchRow = styled(PaddedRow)`
-  align-items: flex-end;
-  justify-content: center;
-  margin: 10px;
 `;
 
 const DATE_FORMAT = 'MM/DD/YYYY';
@@ -195,7 +189,7 @@ const closedOptions = [
 const STATUS_OPTIONS_ARR = [
   {
     value: 'ALL',
-    label: 'All',
+    label: 'All'
   },
   {
     label: 'Open',
@@ -209,7 +203,7 @@ const STATUS_OPTIONS_ARR = [
 
 const DOMAIN_OPTIONS_ARR = [
   {
-    value: "",
+    value: '',
     label: 'All'
   },
   {
@@ -219,7 +213,7 @@ const DOMAIN_OPTIONS_ARR = [
   {
     value: DOMAIN.MINNEHAHA,
     label: 'Minnehaha'
-  },
+  }
 ]
 
 const SORT_OPTIONS_ARR = [
@@ -230,7 +224,7 @@ const SORT_OPTIONS_ARR = [
   {
     value: SORT_TYPES.DATE,
     label: 'Date'
-  },
+  }
 ]
 
 const NAV_OPTIONS = [
@@ -372,8 +366,7 @@ class ReviewPSA extends React.Component<Props, State> {
             onChange={(e) => {
               this.updateFilters({ filer: e.value });
             }}
-            options={filerOptions}
-          />
+            options={filerOptions} />
       </FilterWrapper>
     );
   }
@@ -413,6 +406,7 @@ class ReviewPSA extends React.Component<Props, State> {
   }
 
   renderError = () => <ErrorText>{this.props.errorMessage}</ErrorText>
+
 
   filterWithoutDate = () => {
     let results = Immutable.Map();
@@ -535,7 +529,6 @@ class ReviewPSA extends React.Component<Props, State> {
     if (status !== this.state.status) {
       this.setState({ status });
       this.props.actions.loadPSAsByDate(STATUS_OPTIONS[status].value);
-      // this.updateFilters({ date: moment().format() });
     }
   }
 
@@ -543,12 +536,12 @@ class ReviewPSA extends React.Component<Props, State> {
     <FilterWrapper>
       <span>PSA Status </span>
       <DropDownMenu
-        placeholder={STATUS_OPTIONS[this.state.status].label}
-        classNamePrefix="lattice-select"
-        options={STATUS_OPTIONS_ARR}
-        onChange={(e) => {
-          this.changeStatus(e.value)}
-        }
+          placeholder={STATUS_OPTIONS[this.state.status].label}
+          classNamePrefix="lattice-select"
+          options={STATUS_OPTIONS_ARR}
+          onChange={(e) => {
+            this.changeStatus(e.value)
+          }}
       />
     </FilterWrapper>
   )
@@ -612,7 +605,7 @@ class ReviewPSA extends React.Component<Props, State> {
     }
     return (
       <StyledSectionWrapper>
-      <NavButtonToolbar options={NAV_OPTIONS}/>
+        <NavButtonToolbar options={NAV_OPTIONS} />
         <StyledSearchWrapper>
           {this.renderError()}
           <Switch>
