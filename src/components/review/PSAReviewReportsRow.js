@@ -8,94 +8,87 @@ import styled from 'styled-components';
 import moment from 'moment';
 
 import PSAModal from './PSAModal';
-import PersonCard from '../person/PersonCard';
+import PersonCard from './PersonCardReview';
 import DropdownButton from '../buttons/DropdownButton';
-import PSAScores from './PSAScores';
-import { PSA_STATUSES } from '../../utils/consts/Consts';
+import PSAStats from './PSAStats';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { psaIsClosed } from '../../utils/PSAUtils';
 
 const ReviewRowContainer = styled.div`
-  width: 100%;
+  width: 960px;
+  background-color: #ffffff;
+  border-radius: 5px;
+  border: solid 1px #e1e1eb;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  margin-bottom: 58px;
   &:hover {
     background: #f7f8f9;
   }
-  padding: 20px;
 `;
 
 const DetailsRowContainer = styled.div`
+  width: 100%;
   display: flex;
   justify-content: center;
   cursor: pointer;
 `;
 
 const ReviewRowWrapper = styled.div`
+  width: 100%;
   display: inline-flex;
-  flex-direction: row;
+  flex-direction: column;
   align-items: flex-end;
-  margin: 20px 0;
+  padding: 20px 30px;
   justify-content: center;
+  hr {
+    margin-top: 13px;
+    margin-bottom: 13px;
+    transform: translateX(-25%);
+    width: 150%;
+  }
+`;
+
+const PersonCardWrapper = styled.div`
+  width: 100%;
+  margin: 0 auto;
+`;
+
+const StatsWrapper = styled.div`
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: row;
 `;
 
 const DownloadButtonContainer = styled.div`
+  width: 100%;
   height: 100%;
   display: flex;
   align-items: center !important;
 `;
 
+const MetadataWrapper = styled.div`
+  width: 100%;
+`;
 const MetadataText = styled.div`
   width: 100%;
-  font-style: italic;
-  font-size: 12px;
-  margin: 20px 0 -15px 0;
-  color: #bbb;
+  font-family: 'Open Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 300;
+  text-align: right;
+  margin: 10px 0 -30px -30px;
+  color: #8e929b;
 `;
 
 const ImportantMetadataText = styled.span`
-  color: black;
+  color: #2e2e34;
 `;
 
 const MetadataItem = styled.div`
   display: block;
-`;
-
-const StatusTag = styled.div`
-  width: 86px;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-transform: uppercase;
-  font-family: 'Open Sans', sans-serif;
-  font-size: 13px;
-  font-weight: 600;
-  color: white;
-  border-radius: 2px;
-  align-self: flex-end;
-  margin-bottom: -10px;
-  padding: 2px 5px;
-  background: ${(props) => {
-    switch (props.status) {
-      case PSA_STATUSES.OPEN:
-        return '#8b66db';
-      case PSA_STATUSES.SUCCESS:
-        return '#00be84';
-      case PSA_STATUSES.FAILURE:
-        return '#ff3c5d';
-      case PSA_STATUSES.CANCELLED:
-        return '#b6bbc7';
-      case PSA_STATUSES.DECLINED:
-        return '#555e6f';
-      case PSA_STATUSES.DISMISSED:
-        return '#555e6f';
-      default:
-        return 'transparent';
-    }
-  }};
 `;
 
 type Props = {
@@ -111,11 +104,9 @@ type Props = {
   manualChargeHistory :Immutable.Map<*, *>,
   sentenceHistory :Immutable.Map<*, *>,
   ftaHistory :Immutable.Map<*, *>,
-  hearings :Immutable.List<*>,
   readOnly :boolean,
   personId? :string,
   submitting :boolean,
-  refreshingNeighbors :boolean,
   downloadFn :(values :{
     neighbors :Immutable.Map<*, *>,
     scores :Immutable.Map<*, *>
@@ -142,7 +133,7 @@ type Props = {
     scoresId :string,
     scoresEntity :Immutable.Map<*, *>
   }) => void,
-  submitData :(value :{ config :Object, values :Object, callback :() => void }) => void,
+  submitData :(value :{ config :Object, values :Object }) => void,
   replaceEntity :(value :{ entitySetName :string, entityKeyId :string, values :Object }) => void,
   refreshPSANeighbors :({ id :string }) => void
 };
@@ -151,7 +142,7 @@ type State = {
   open :boolean
 };
 
-export default class PSAReviewRow extends React.Component<Props, State> {
+export default class PSAReviewReportsRow extends React.Component<Props, State> {
 
   static defaultProps = {
     hideCaseHistory: false,
@@ -242,42 +233,41 @@ export default class PSAReviewRow extends React.Component<Props, State> {
     const dateEditedText = dateEdited ? dateEdited.format(dateFormat) : '';
 
     return (
-      <div>
-        <MetadataItem>{this.renderMetadataText('Created', dateCreatedText, creator)}</MetadataItem>
+      <MetadataWrapper>
         { dateEdited || editor
           ? <MetadataItem>{this.renderMetadataText(editLabel, dateEditedText, editor)}</MetadataItem>
-          : null
+          : <MetadataItem>{this.renderMetadataText('Created', dateCreatedText, creator)}</MetadataItem>
         }
-      </div>
+      </MetadataWrapper>
     );
-  }
-
-  renderStatus = () => {
-    const status = this.props.scores.getIn([PROPERTY_TYPES.STATUS, 0], '');
-    return <StatusTag status={status}>{status}</StatusTag>;
   }
 
   openDetailsModal = () => {
     const { neighbors, loadCaseHistoryFn } = this.props;
     const personId = neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborId'], '');
     loadCaseHistoryFn({ personId, neighbors });
-    this.setState({ open: true });
+    this.setState({
+      open: true
+    });
   }
 
   render() {
     if (!this.props.scores) return null;
     return (
       <ReviewRowContainer>
-        {this.renderStatus()}
-        {this.renderMetadata()}
         <DetailsRowContainer onClick={this.openDetailsModal}>
           <ReviewRowWrapper>
-            {this.renderPersonCard()}
-            <PSAScores scores={this.props.scores} />
-            {this.renderDownloadButton()}
+            <PersonCardWrapper>
+              {this.renderPersonCard()}
+            </PersonCardWrapper>
+            <hr />
+            <StatsWrapper>
+              <PSAStats scores={this.props.scores} downloadButton={this.renderDownloadButton} />
+            </StatsWrapper>
           </ReviewRowWrapper>
+          <PSAModal open={this.state.open} onClose={() => this.setState({ open: false })} {...this.props} />
         </DetailsRowContainer>
-        <PSAModal open={this.state.open} onClose={() => this.setState({ open: false })} {...this.props} />
+        {this.renderMetadata()}
       </ReviewRowContainer>
     );
   }

@@ -187,14 +187,6 @@ const CheckboxContainer = styled.div`
   }
 `;
 
-const AnswerValue = styled.div`
-  font-size: 16px;
-  font-weight: bold;
-  color: #337ab7;
-  text-align: center;
-  margin: 10px 0;
-`;
-
 const InlineFormGroup = styled.div`
   display: flex;
   flex-direction: row;
@@ -343,8 +335,7 @@ export default class PSAInputForm extends React.Component<Props, State> {
             disabled={viewOnly} />
       );
 
-    const radioButtons = viewOnly ? <AnswerValue>{mappings[input.get(field)]}</AnswerValue>
-      : Object.keys(mappings).map(val => this.renderRadio(field, val, mappings[val], disabledField));
+    const radioButtons = Object.keys(mappings).map(val => this.renderRadio(field, val, mappings[val], disabledField));
 
     const justificationText = this.getJustificationText(justifications, justificationHeader);
 
@@ -562,7 +553,8 @@ export default class PSAInputForm extends React.Component<Props, State> {
                     label="Interstate Identification Index (III) search completed"
                     checked={this.state.iiiChecked}
                     value={this.state.iiiChecked}
-                    onChange={this.handleCheckboxChange} />
+                    onChange={this.handleCheckboxChange}
+                    disabled={viewOnly} />
               </CheckboxContainer>
 
               {
