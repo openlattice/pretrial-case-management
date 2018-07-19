@@ -176,12 +176,15 @@ const HearingRow = styled.div`
     max-width: 65px;
     margin: 0 10px;
   }
+
   ${InfoButton} {
     padding: 10px;
   }
+
   section {
     margin: 0 10px;
     width: 200px;
+
     span {
       margin: auto;
     }
