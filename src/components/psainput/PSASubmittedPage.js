@@ -21,7 +21,6 @@ import closeXBlackIcon from '../../assets/svg/close-x-black.svg';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { getHeaderText } from '../../utils/consts/DMFResultConsts';
 import {
-  ButtonWrapper,
   ResultHeader,
   ScaleBlock,
   SelectedScaleBlock,
@@ -430,8 +429,6 @@ export default class PSASubmittedPage extends React.Component<Props> {
           {this.renderExportButton()}
           <BasicButton onClick={onClose}><img src={closeXGrayIcon} role="presentation" /></BasicButton>
         </FooterRow>
-        <ButtonWrapper>
-        </ButtonWrapper>
       </Wrapper>
     );
   }

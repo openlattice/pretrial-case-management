@@ -10,11 +10,11 @@ const Control = styled.label`
   position: relative;
   padding: 0 10px 0 30px;
   margin-bottom: 15px;
-  cursor: pointer;
   font-family: 'Open Sans', sans-serif;
   font-size: 14px;
   font-weight: normal;
   color: #8e929b;
+  cursor: ${props => (props.disabled ? 'default' : 'pointer')};
 
   input {
     position: absolute;
@@ -111,7 +111,7 @@ const StyledCheckbox = ({
   disabled,
   dataSection
 } :Props) => (
-  <Control>{label}
+  <Control disabled={disabled}>{label}
     <CheckboxInput
         data-section={dataSection}
         name={name}
