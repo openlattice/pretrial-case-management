@@ -25,7 +25,7 @@ const StyledSelect = styled(Select)`
   }
 
   .lattice-select__value-container {
-    width: 100%;
+    width: auto;
   }
 
   .lattice-select__group-heading {
@@ -35,7 +35,7 @@ const StyledSelect = styled(Select)`
 
   .lattice-select__menu {
     transform: translateX(-20%);
-    width: 100%;
+    width: fit-content;
     text-align: left;
   }
 

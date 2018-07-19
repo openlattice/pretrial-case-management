@@ -475,7 +475,7 @@ class ReviewPSA extends React.Component<Props, State> {
       return includesFiler;
     });
   }
-  
+
   renderPersonFilter = () => {
     const handleSubmit = (firstName, lastName, dob) => {
       this.setState({ activeFilterKey: 2 });

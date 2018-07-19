@@ -23,7 +23,7 @@ const StyledCenteredContainer = styled.div`
   margin-bottom: 20px;
 
   .pagination {
-    width: 20%;
+    width: 30%;
     display: inline-block;
 
     .active a {
@@ -56,7 +56,7 @@ const StyledFiltersBar = styled.div`
   border: solid 1px #e1e1eb;
   border-top-left-radius: 0px;
   border-top-right-radius: 0px;
-  padding: 0px 30px 10px;
+  padding: 0px 0px 10px 30px;
   font-size: 14px;
   text-align: center;
   display: flex;
