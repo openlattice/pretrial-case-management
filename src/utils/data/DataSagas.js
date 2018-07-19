@@ -24,7 +24,7 @@ function* deleteEntityWorker(action :SequenceAction) :Generator<*, *, *> {
 
   try {
     yield put(deleteEntity.request(action.id));
-    yield call(DataApi.deleteEntityFromEntitySet, entitySetId, entityKeyId);
+    yield call(DataApi.clearEntityFromEntitySet, entitySetId, entityKeyId);
     yield put(deleteEntity.success(action.id, { entityKeyId }));
 
     const state = yield select();
