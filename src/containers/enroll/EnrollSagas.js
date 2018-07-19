@@ -210,11 +210,7 @@ export function* enrollVoiceProfile() :Generator<*, *, *> {
         [audioId]: [audio]
       };
 
-      const entities = {
-        [getEntityId(voiceDetails, [generalId])]: voiceDetails
-      };
-
-      yield call(DataApi.createEntityData, entitySetId, entities);
+      yield call(DataApi.createOrMergeEntityData, entitySetId, [voiceDetails]);
 
       const profile = yield call(tryLoadProfile, profileId);
       yield put(enrollVoiceSuccess(profile.data.enrollmentsCount));
