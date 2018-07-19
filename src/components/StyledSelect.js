@@ -25,7 +25,7 @@ const StyledSelect = styled(Select)`
   }
 
   .lattice-select__value-container {
-    width: auto;
+    width: 100%;
   }
 
   .lattice-select__group-heading {

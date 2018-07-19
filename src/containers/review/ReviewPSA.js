@@ -43,10 +43,6 @@ const StyledSectionWrapper = styled.div`
 
 const StyledSearchWrapper = styled.div`
   width: 100%;
-  background: #fff;
-  border-radius: 5px;
-  border: solid 1px #e1e1eb;
-  margin-bottom: 20px;
 `;
 
 const StyledTopFormNavBuffer = styled.div`
@@ -54,8 +50,15 @@ const StyledTopFormNavBuffer = styled.div`
 `;
 
 const StyledFiltersBar = styled.div`
+  width: 100%;
+  background: #fff;
+  border-radius: 5px;
+  border: solid 1px #e1e1eb;
+  border-bottom-left-radius: 0px;
+  border-bottom-right-radius: 0px;
+  border-bottom: none;
+  padding: 0px 30px;
   font-size: 14px;
-  margin: 15px 30px;
   text-align: center;
   display: flex;
   flex-direction: row;
@@ -75,8 +78,26 @@ const FilterWrapper = styled.div`
 `;
 
 const PersonSearchWrapper = styled.div`
+  width: 100%;
+  background: #fff;
+  border-radius: 5px;
+  border: solid 1px #e1e1eb;
+  border-bottom: none;
+  border-bottom-left-radius: 0px;
+  border-bottom-right-radius: 0px;
+  padding-top: 20px;
+  padding-bottom: 20px;
   margin: 0;
 `;
+
+const BottomFiltersWrapper = styled.div`
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  white-space: nowrap;
+`
 
 const DateRangeContainer = styled.div`
   display: flex;
@@ -94,7 +115,7 @@ const DatePickerGroupContainer = styled.div`
 `;
 
 const NoResults = styled.div`
-  width: 100%;
+  margin: 100px auto;
   font-size: 16px;
   text-align: center;
   width: 960px;
@@ -399,7 +420,13 @@ class ReviewPSA extends React.Component<Props, State> {
       return <NoResults>No results.</NoResults>;
     }
 
-    return <PSAReviewReportsRowList scoreSeq={items.map(([id]) => ([id, scoresAsMap.get(id)]))} sort={sort} />;
+    return (
+      <PSAReviewReportsRowList
+          scoreSeq={items.map(([id]) => ([id, scoresAsMap.get(id)]))}
+          sort={sort}
+          activeFilterKey={activeFilterKey}
+          renderBottomFilters={this.renderBottomFilters}/>
+      );
   }
 
   renderError = () => <ErrorText>{this.props.errorMessage}</ErrorText>
@@ -448,6 +475,7 @@ class ReviewPSA extends React.Component<Props, State> {
       return includesFiler;
     });
   }
+  
   renderPersonFilter = () => {
     const handleSubmit = (firstName, lastName, dob) => {
       this.setState({ activeFilterKey: 2 });
@@ -462,13 +490,6 @@ class ReviewPSA extends React.Component<Props, State> {
               lastName={this.state.filters.lastName}
               dob={this.state.filters.dob} />
         </PersonSearchWrapper>
-        <hr />
-        <StyledFiltersBar>
-          {this.renderStatusOptions()}
-          {this.renderDomainChoices()}
-          {this.renderFilerOptions()}
-          {this.renderSortChoices()}
-        </StyledFiltersBar>
       </div>
     );
   }
@@ -516,11 +537,6 @@ class ReviewPSA extends React.Component<Props, State> {
       .filter(([scoreId, neighbors]) => this.domainMatch(neighbors));
   }
 
-  onFilterSelect = (activeFilterKey) => {
-    this.setState({ activeFilterKey });
-    this.updateFilters({ searchExecuted: false });
-  }
-
   changeStatus = (status) => {
     if (status !== this.state.status) {
       this.setState({ status });
@@ -558,7 +574,7 @@ class ReviewPSA extends React.Component<Props, State> {
     </FilterWrapper>
   )
 
-  renderFilters = () => (
+  renderTopFilters = () => (
     <div>
       <StyledFiltersBar>
         {this.renderStatusOptions()}
@@ -566,12 +582,29 @@ class ReviewPSA extends React.Component<Props, State> {
         {this.renderDateRangePicker()}
         {this.renderFilerOptions()}
       </StyledFiltersBar>
-      <hr />
-      <StyledFiltersBar>
-        {this.renderSortChoices()}
-      </StyledFiltersBar>
     </div>
   );
+
+  renderBottomFilters = () => {
+    const { activeFilterKey } = this.state;
+    if (activeFilterKey === 1) {
+      return (
+        <BottomFiltersWrapper>
+          {this.renderSortChoices()}
+        </BottomFiltersWrapper>
+      );
+    }
+
+    return (
+      <BottomFiltersWrapper>
+        {this.renderStatusOptions()}
+        {this.renderDomainChoices()}
+        {this.renderFilerOptions()}
+        {this.renderSortChoices()}
+      </BottomFiltersWrapper>
+    );
+
+  }
 
   onSortChange = (sort) => {
     this.setState({ sort });
@@ -601,7 +634,7 @@ class ReviewPSA extends React.Component<Props, State> {
           {this.renderError()}
           <Switch>
             <Route path={Routes.SEARCH_FORMS} render={this.renderPersonFilter} />
-            <Route path={Routes.REVIEW_REPORTS} render={this.renderFilters} />
+            <Route path={Routes.REVIEW_REPORTS} render={this.renderTopFilters} />
             <Redirect from={Routes.REVIEW_FORMS} to={Routes.REVIEW_REPORTS} />
           </Switch>
         </StyledSearchWrapper>
