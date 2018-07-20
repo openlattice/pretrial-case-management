@@ -2,7 +2,7 @@
  * @flow
  */
 
-import { EntityDataModelApi, SearchApi, SyncApi, DataApi } from 'lattice';
+import { EntityDataModelApi, SearchApi } from 'lattice';
 import { call, put, takeEvery, all } from 'redux-saga/effects';
 
 import {

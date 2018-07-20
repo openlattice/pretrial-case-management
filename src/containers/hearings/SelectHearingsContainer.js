@@ -3,7 +3,6 @@
  */
 
 import React from 'react';
-import FontAwesome from 'react-fontawesome';
 import Immutable from 'immutable';
 import moment from 'moment';
 import styled from 'styled-components';
@@ -12,12 +11,11 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
 import InfoButton from '../../components/buttons/InfoButton';
-import LoadingSpinner from '../../components/LoadingSpinner';
 import DateTimePicker from '../../components/controls/StyledDateTimePicker';
 import SearchableSelect from '../../components/controls/SearchableSelect';
 import HearingsTable from '../../components/hearings/HearingsTable';
 import psaHearingConfig from '../../config/formconfig/PSAHearingConfig';
-import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { FORM_IDS, ID_FIELD_NAMES, HEARING } from '../../utils/consts/Consts';
 import { getCourtroomOptions } from '../../utils/consts/HearingConsts';
 import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
