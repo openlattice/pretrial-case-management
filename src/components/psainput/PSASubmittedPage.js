@@ -5,8 +5,10 @@
 import React from 'react';
 import Immutable from 'immutable';
 import styled from 'styled-components';
+import { withRouter } from 'react-router-dom';
 
 import BasicButton from '../buttons/BasicButton';
+import SecondaryButton from '../buttons/SecondaryButton';
 import DropdownButton from '../buttons/DropdownButton';
 import LoadingSpinner from '../LoadingSpinner';
 import DMFCell from '../dmf/DMFCell';
@@ -26,19 +28,22 @@ import {
   SelectedScaleBlock,
   ScaleWrapper
 } from '../../utils/Layout';
+import * as Routes from '../../core/router/Routes';
 
 type Props = {
   isSubmitting :boolean,
   scores :Immutable.Map<*, *>,
   riskFactors :Object,
   dmf :Object,
+  personId :string,
   submitSuccess :boolean,
   charges :Immutable.List<*>,
   notes :string,
   allCases :Immutable.List<*>,
   allCharges :Immutable.Map<*, *>,
   getOnExport :(isCompact :boolean) => void,
-  onClose :() => void
+  onClose :() => void,
+  history :string[]
 };
 
 const STATUSES = {
@@ -209,7 +214,23 @@ const MinimallyPaddedResultHeader = styled(PaddedResultHeader)`
   margin-top: 30px;
 `;
 
-export default class PSASubmittedPage extends React.Component<Props> {
+const ButtonRow = styled.div`
+  display: flex;
+  flex-direction: row;
+
+  button {
+    width: ${props => (props.wide ? '240px' : '154px')};
+    padding-left: 0;
+    padding-right: 0;
+    justify-content: center;
+  }
+
+  button:not(:first-child) {
+    margin-left: 20px;
+  }
+`;
+
+class PSASubmittedPage extends React.Component<Props> {
 
   renderBanner = () => {
     const { submitSuccess, isSubmitting, onClose } = this.props;
@@ -390,6 +411,15 @@ export default class PSASubmittedPage extends React.Component<Props> {
     </div>
   )
 
+  renderProfileButton = () => (
+    <SecondaryButton
+        onClick={() => {
+          this.props.history.push(Routes.PERSON_DETAILS.replace(':personId', this.props.personId));
+        }}>
+      Go to Profile
+    </SecondaryButton>
+  )
+
   render() {
     const {
       notes,
@@ -404,7 +434,10 @@ export default class PSASubmittedPage extends React.Component<Props> {
         {this.renderBanner()}
         <HeaderRow>
           <span>Public Safety Assessment</span>
-          {this.renderExportButton()}
+          <ButtonRow>
+            {this.renderExportButton()}
+            {this.renderProfileButton()}
+          </ButtonRow>
         </HeaderRow>
         {this.renderScores()}
         {this.renderDMF()}
@@ -426,10 +459,15 @@ export default class PSASubmittedPage extends React.Component<Props> {
         </div>
         <FooterRow>
           <div />
-          {this.renderExportButton()}
+          <ButtonRow wide>
+            {this.renderExportButton()}
+            {this.renderProfileButton()}
+          </ButtonRow>
           <BasicButton onClick={onClose}><img src={closeXGrayIcon} role="presentation" /></BasicButton>
         </FooterRow>
       </Wrapper>
     );
   }
 }
+
+export default withRouter(PSASubmittedPage);
