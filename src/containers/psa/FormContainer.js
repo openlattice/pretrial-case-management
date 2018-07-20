@@ -637,9 +637,11 @@ class Form extends React.Component<Props, State> {
     );
   }
 
+  getPersonIdValue = () => this.props.selectedPerson.getIn([PROPERTY_TYPES.PERSON_ID, 0], '');
+
   getPsaInputForm = () => {
-    const { selectedPerson, selectedPretrialCase, charges } = this.props;
-    const personId = selectedPerson.getIn([PROPERTY_TYPES.PERSON_ID, 0], '');
+    const { selectedPretrialCase, charges } = this.props;
+    const personId = this.getPersonIdValue();
     const hasHistory = Number.parseInt(personId, 10).toString() === personId;
     return (
       <StyledFormWrapper>
@@ -748,6 +750,7 @@ class Form extends React.Component<Props, State> {
           scores={scores}
           riskFactors={riskFactors}
           dmf={dmf}
+          personId={this.getPersonIdValue()}
           submitSuccess={!submitError}
           onClose={this.props.actions.hardRestart}
           charges={this.props.charges}
