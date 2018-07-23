@@ -209,7 +209,7 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
         <StyledFiltersBar>
           {this.props.renderBottomFilters()}
           <CustomPagination
-              numItems={numPages}
+              numPages={numPages}
               activePage={currPage}
               onChangePage={page => this.updatePage((page - 1) * MAX_RESULTS)} />
         </StyledFiltersBar>
@@ -235,12 +235,12 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
     }
 
     const items = this.sortItems(scoreSeq).slice(start, start + MAX_RESULTS);
-    const numItems = scoreSeq.length || scoreSeq.size;
+    const numPages = scoreSeq.length || scoreSeq.size;
     return (
       <div>
-        {this.renderFiltersBar(numItems)}
+        {this.renderFiltersBar(numPages)}
         {items.map(([scoreId, scores]) => this.renderRow(scoreId, scores))}
-        {this.renderFiltersBar(numItems)}
+        {this.renderFiltersBar(numPages)}
       </div>
     );
   }
