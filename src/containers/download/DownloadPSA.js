@@ -8,22 +8,40 @@ import styled from 'styled-components';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
-import StyledButton from '../../components/buttons/StyledButton';
+import BasicButton from '../../components/buttons/BasicButton';
+import InfoButton from '../../components/buttons/InfoButton';
 import DateTimeRange from '../../components/datetime/DateTimeRange';
 import * as DownloadActionFactory from './DownloadActionFactory';
 import * as Routes from '../../core/router/Routes';
 import {
-  CloseX,
   StyledFormViewWrapper,
   StyledFormWrapper,
   StyledSectionWrapper,
-  StyledTitleWrapper,
   StyledTopFormNavBuffer
 } from '../../utils/Layout';
 import { DOMAIN, SUMMARY_REPORT } from '../../utils/consts/ReportDownloadTypes';
 
-const DownloadButton = styled(StyledButton)`
+const HeaderSection = styled.div`
+  padding: 10px 30px 30px 30px;
+  font-family: 'Open Sans', sans-serif;
+  font-size: 18px;
+  color: #555e6f;
+  border-bottom: 1px solid #e1e1eb;
+  width: 100%
+`;
+
+const ButtonRow = styled.div`
+  margin-top: 30px;
+`;
+
+const BasicDownloadButton = styled(BasicButton)`
   margin: 0 6px;
+  padding: 10px 20px;
+`;
+
+const InfoDownloadButton = styled(InfoButton)`
+  margin: 0 6px;
+  padding: 10px 46px;
 `;
 
 const Error = styled.div`
@@ -109,15 +127,15 @@ class DownloadPSA extends React.Component<Props, State> {
     const { startDate, endDate } = this.state;
     if (!startDate || !endDate || this.getErrorText()) return null;
     return (
-      <div>
-        <DownloadButton onClick={() => this.download()}>Download All PSA Data</DownloadButton>
-        <DownloadButton onClick={() => this.download(SUMMARY_REPORT, DOMAIN.MINNEHAHA)}>
+      <ButtonRow>
+        <BasicDownloadButton onClick={() => this.download(SUMMARY_REPORT, DOMAIN.MINNEHAHA)}>
           Download Minnehaha Summary Report
-        </DownloadButton>
-        <DownloadButton onClick={() => this.download(SUMMARY_REPORT, DOMAIN.PENNINGTON)}>
+        </BasicDownloadButton>
+        <BasicDownloadButton onClick={() => this.download(SUMMARY_REPORT, DOMAIN.PENNINGTON)}>
           Download Pennington Summary Report
-        </DownloadButton>
-      </div>
+        </BasicDownloadButton>
+        <InfoDownloadButton onClick={() => this.download()}>Download All PSA Data</InfoDownloadButton>
+      </ButtonRow>
     );
   }
 
@@ -125,12 +143,10 @@ class DownloadPSA extends React.Component<Props, State> {
     return (
       <StyledFormViewWrapper>
         <StyledFormWrapper>
-          <StyledTitleWrapper>
-            <div>Download PSA Forms</div>
-            <CloseX name="close" onClick={this.handleClose} />
-          </StyledTitleWrapper>
           <StyledSectionWrapper>
+            <HeaderSection>Download PSA Forms</HeaderSection>
             <DateTimeRange
+                label="Set a date range to download."
                 startDate={this.state.startDate}
                 endDate={this.state.endDate}
                 onStartChange={startDate => this.setState({ startDate })}
