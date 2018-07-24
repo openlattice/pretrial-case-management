@@ -5,9 +5,6 @@ import DatePicker from 'react-bootstrap-date-picker';
 import calendarIcon from '../../assets/svg/calendar-icon.svg';
 
 const DatePickerWrapper = styled.div`
-  border-radius: 3px;
-  background-color: #f9f9fd;
-  border: 1px solid #dcdce7;
   position: relative;
   height: 39px;
 `;
