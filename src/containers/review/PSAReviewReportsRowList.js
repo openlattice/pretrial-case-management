@@ -67,7 +67,6 @@ const StyledFiltersBar1 = styled.div`
 
 const StyledFiltersBar2 = styled.div`
   width: 100%;
-  margin-bottom: 50px;
   display: flex;
   flex-direction: row;
   align-items: center;

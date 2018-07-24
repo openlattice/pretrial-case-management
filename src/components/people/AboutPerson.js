@@ -40,7 +40,7 @@ const StyledColumnRowWrapper = styled.div`
 `;
 
 const StyledColumnRow = styled.div`
-  align-items: flex-start;
+  align-items: center;
   display: flex;
   flex-wrap: wrap;
   width: 100%;
@@ -57,30 +57,42 @@ const StyledSectionHeader = styled.div`
   font-size: 22px;
   font-weight: 600;
   color: #555e6f;
+  margin-bottom: 50px;
 `;
 
-const ReviewCount = styled.div`
+const Count = styled.div`
   height: fit-content;
   padding: 0px 10px;
   margin-left: 10px;
   border-radius: 10px;
   background-color: #f0f0f7;
   font-size: 12px;
-  font-weight: bold;
-  font-style: normal;
-  font-stretch: normal;
-  line-height: normal;
-  letter-spacing: normal;
-  text-align: center;
   color: #8e929b;
 `;
 
 const Title = styled.div`
+  display: flex;
+  flex-direction: column;
   font-family: 'Open Sans', sans-serif;
   font-size: 16px;
   color: #555e6f;
   margin-bottom: 20px;
+
+  .title {
+  font-weight: 600;
+  }
 `;
+
+const CaseHistoryWrapper = styled.div`
+  padding: 30px;
+  width: 100%;
+  overflow: hidden;
+  hr {
+    width: 100%;
+    transform: translateX(-25%);
+    width: 150%;
+  }
+`
 
 type Props = {
   selectedPersonData :Immutable.Map<*, *>,
@@ -93,7 +105,7 @@ const AboutPerson = ({ selectedPersonData, neighbors } :Props) => {
     return (
       <StyledSectionHeader>
         PSA History
-        <ReviewCount>{numResults}</ReviewCount>
+        <Count>{numResults}</Count>
       </StyledSectionHeader>
     );
   }
@@ -129,13 +141,21 @@ const AboutPerson = ({ selectedPersonData, neighbors } :Props) => {
           );
         }
       });
+    console.log(caseHistory);
     return (
-      <div>
-        <Title>Timeline (past two years)</Title>
+      <CaseHistoryWrapper>
+        <StyledSectionHeader>
+          Case History
+          <Count>{caseHistory.size}</Count>
+        </StyledSectionHeader>
+        <Title>
+          <span className="title ">Timeline</span>
+          <span>Convictions in the past two years</span>
+        </Title>
         <CaseHistoryTimeline caseHistory={caseHistory} chargeHistory={chargeHistory} />
-        <Title>All cases</Title>
+        <hr />
         <CaseHistory caseHistory={caseHistory} chargeHistory={chargeHistory} />
-      </div>
+      </CaseHistoryWrapper>
     );
   };
 
@@ -153,7 +173,6 @@ const AboutPerson = ({ selectedPersonData, neighbors } :Props) => {
           </StyledColumnRow>
         </StyledColumnRowWrapper>
         <StyledColumnRowWrapper>
-          <StyledSectionHeader>Case History</StyledSectionHeader>
           <StyledColumnRow>
             {renderCaseHistory()}
           </StyledColumnRow>

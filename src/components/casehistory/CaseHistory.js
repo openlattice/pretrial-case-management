@@ -9,7 +9,6 @@ import moment from 'moment';
 
 import ChargeList from '../charges/ChargeList';
 import { formatDateList } from '../../utils/Utils';
-import { InlineBold } from '../../utils/Layout';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { getSummaryStats } from '../../utils/consts/ChargeConsts';
 
@@ -31,14 +30,12 @@ const InfoHeader = styled.span`
 const CaseHistoryContainer = styled.div`
   max-height: 750px;
   overflow-y: scroll;
-  text-align: center;
 `;
 
 const StatsContainer = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: center;
-  background: #f3f5f7;
   padding: 15px 0;
 `;
 
@@ -46,27 +43,45 @@ const StatsWrapper = styled.div`
   display: flex;
   flex-direction: row;
   justify-content: center;
-  background: #f3f5f7;
-`;
-
-const StatsTitle = styled.div`
-  font-weight: bold;
-  text-decoration: underline;
-  font-style: italic;
 `;
 
 const StatsGroup = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: baseline;
-  margin: 10px;
+  display: grid;
+  grid-template-columns: 28% 28% 28%;
+  grid-column-gap: 8%;
+  grid-template-rows: 50% 50%;
+  width: 100%;
 `;
 const StatsItem = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
   margin: 2px;
 `;
 
-const StatsCount = styled.span`
-  font-size: 18px;
+const StatLabel = styled.span`
+  font-size: 16px;
+  text-align: left;
+  color: #555e6f;
+`;
+const StatValue = styled.span`
+  font-family: OpenSans;
+  font-size: 16px;
+  font-weight: 600;
+  text-align: right;
+  color: #555e6f;
+`;
+const Title = styled.div`
+  display: flex;
+  flex-direction: column;
+  font-family: 'Open Sans', sans-serif;
+  font-size: 16px;
+  color: #555e6f;
+  margin-bottom: 20px;
+
+  .title {
+  font-weight: 600;
+  }
 `;
 
 type Props = {
@@ -84,6 +99,40 @@ const CaseHistory = ({ caseHistory, chargeHistory } :Props) => {
     numViolentCharges,
     numViolentConvictions
   } = getSummaryStats(chargeHistory);
+
+  const SUMMARY_STATS_ARR = [
+    {
+      label: '# of misdemeanor charges',
+      value: numMisdemeanorCharges
+    },
+    {
+      label: '# of felony charges',
+      value: numFelonyCharges
+    },
+    {
+      label: '# of violent charges',
+      value: numViolentCharges
+    },
+    {
+      label: '# of misdemeanor convictions',
+      value: numMisdemeanorConvictions
+    },
+    {
+      label: '# of felony convictions',
+      value: numFelonyConvictions
+    },
+    {
+      label: '# of violent convictions',
+      value: numViolentConvictions
+    }
+  ];
+
+  const SummaryStats = SUMMARY_STATS_ARR.map(stat => (
+    <StatsItem>
+      <StatLabel>{stat.label}</StatLabel>
+      <StatValue>{stat.value}</StatValue>
+    </StatsItem>
+  ));
 
   const cases = caseHistory
     .sort((c1, c2) => {
@@ -110,38 +159,14 @@ const CaseHistory = ({ caseHistory, chargeHistory } :Props) => {
 
   return (
     <CaseHistoryContainer>
+      <Title>
+        <span className="title ">Summary Statistics</span>
+        <span>All current and past cases</span>
+      </Title>
       <StatsContainer>
-        <StatsTitle>Summary Statistics:</StatsTitle>
         <StatsWrapper>
           <StatsGroup>
-            <StatsItem>
-              <InlineBold>Num misdemeanor charges: </InlineBold>
-              <StatsCount>{numMisdemeanorCharges}</StatsCount>
-            </StatsItem>
-            <StatsItem>
-              <InlineBold>Num misdemeanor convictions: </InlineBold>
-              <StatsCount>{numMisdemeanorConvictions}</StatsCount>
-            </StatsItem>
-          </StatsGroup>
-          <StatsGroup>
-            <StatsItem>
-              <InlineBold>Num felony charges: </InlineBold>
-              <StatsCount>{numFelonyCharges}</StatsCount>
-            </StatsItem>
-            <StatsItem>
-              <InlineBold>Num felony convictions: </InlineBold>
-              <StatsCount>{numFelonyConvictions}</StatsCount>
-            </StatsItem>
-          </StatsGroup>
-          <StatsGroup>
-            <StatsItem>
-              <InlineBold>Num violent charges: </InlineBold>
-              <StatsCount>{numViolentCharges}</StatsCount>
-            </StatsItem>
-            <StatsItem>
-              <InlineBold>Num violent convictions: </InlineBold>
-              <StatsCount>{numViolentConvictions}</StatsCount>
-            </StatsItem>
+            {SummaryStats}
           </StatsGroup>
         </StatsWrapper>
       </StatsContainer>
