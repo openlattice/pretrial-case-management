@@ -58,7 +58,7 @@ const PersonCardWrapper = styled.div`
 `;
 
 const StatsWrapper1 = styled.div`
-  padding-left: 36px;
+  padding-left: 56px;
   width: 100%;
   margin: 0 auto;
   display: flex;
