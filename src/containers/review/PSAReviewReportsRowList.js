@@ -76,11 +76,11 @@ const StyledFiltersBar2 = styled.div`
 const PersonWrapper = styled.div`
   padding: 30px;
   width: 100%;
-`
+`;
 
 const ReviewWrapper = styled.div`\
   width: 100%;
-`
+`;
 
 type Props = {
   scoreSeq :Immutable.Seq,
@@ -254,7 +254,7 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
           {this.renderFiltersBar(numPages)}
           {items.map(([scoreId, scores]) => this.renderRow(scoreId, scores))}
         </PersonWrapper>
-      )
+      );
     }
     return (
       <ReviewWrapper>
@@ -262,7 +262,7 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
         {items.map(([scoreId, scores]) => this.renderRow(scoreId, scores))}
         {this.renderFiltersBar(numPages)}
       </ReviewWrapper>
-    )
+    );
   }
 
   render() {

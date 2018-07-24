@@ -5,16 +5,13 @@
 import React from 'react';
 import Immutable from 'immutable';
 import styled from 'styled-components';
-import moment from 'moment';
 
-import Headshot from '../Headshot';
 import AboutPersonGeneral from '../person/AboutPersonGeneral';
 import PSAReviewPersonRowList from '../../containers/review/PSAReviewReportsRowList';
 import CaseHistory from '../casehistory/CaseHistory';
 import CaseHistoryTimeline from '../casehistory/CaseHistoryTimeline';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { SORT_TYPES } from '../../utils/consts/Consts';
-import { groupByStatus, sortByDate } from '../../utils/PSAUtils';
 
 const Wrapper = styled.div`
   display: flex;
@@ -92,7 +89,7 @@ const CaseHistoryWrapper = styled.div`
     transform: translateX(-25%);
     width: 150%;
   }
-`
+`;
 
 type Props = {
   selectedPersonData :Immutable.Map<*, *>,
@@ -101,14 +98,12 @@ type Props = {
 
 const AboutPerson = ({ selectedPersonData, neighbors } :Props) => {
 
-  const renderHeaderSection = (numResults) => {
-    return (
-      <StyledSectionHeader>
-        PSA History
-        <Count>{numResults}</Count>
-      </StyledSectionHeader>
-    );
-  }
+  const renderHeaderSection = numResults => (
+    <StyledSectionHeader>
+      PSA History
+      <Count>{numResults}</Count>
+    </StyledSectionHeader>
+  );
 
   const renderPSAs = () => {
     const scoreSeq = neighbors.get(ENTITY_SETS.PSA_SCORES, Immutable.Map())
@@ -141,7 +136,7 @@ const AboutPerson = ({ selectedPersonData, neighbors } :Props) => {
           );
         }
       });
-    console.log(caseHistory);
+
     return (
       <CaseHistoryWrapper>
         <StyledSectionHeader>
