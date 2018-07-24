@@ -6,27 +6,31 @@ import { StyledContentItalic } from '../utils/Layout';
 
 const StyledContentBlock = styled.div`
   display: flex;
-  flex-direction: ${props => (props.vertical ? 'column' : 'row')};
-  margin-bottom: ${props => (props.vertical ? '20px' : '6px')};
+  width: 100%;
+  flex-direction: column;
+  margin-bottom: 20px;
 `;
 
 const StyledContentLabel = styled.div`
-  font-weight: bold;
-  font-size: 16px;
-  margin-bottom: 4px;
-  margin-right: 6px;
+  font-family: 'OpenSans', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  font-style: normal;
+  font-stretch: normal;
+  line-height: normal;
+  letter-spacing: normal;
+  color: #8e929b;
 `;
 
 const StyledContentWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  flex-wrap: wrap;
 `;
 
 const StyledContent = styled.div`
   display: flex;
-  font-size: 16px;
-  margin-right: 40px;
+  font-family: 'OpenSans', sans-serif;
+  font-size: 18px;
+  font-weight: normal;
+  color: #2e2e34;
 `;
 
 
@@ -35,7 +39,7 @@ const ContentBlock = ({ contentBlock, vertical }) => {
     return null;
   }
 
-  const label = vertical ? contentBlock.label : `${contentBlock.label}:`;
+  const { label } = contentBlock;
 
   const renderContent = () => {
     if (!contentBlock.content.length) {

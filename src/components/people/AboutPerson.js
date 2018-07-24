@@ -9,7 +9,7 @@ import moment from 'moment';
 
 import Headshot from '../Headshot';
 import AboutPersonGeneral from '../person/AboutPersonGeneral';
-import PSAReviewRowList from '../../containers/review/PSAReviewRowList';
+import PSAReviewPersonRowList from '../../containers/review/PSAReviewRowList';
 import CaseHistory from '../casehistory/CaseHistory';
 import CaseHistoryTimeline from '../casehistory/CaseHistoryTimeline';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
@@ -41,9 +41,8 @@ const StyledColumnRight = styled.div`
 const StyledColumnRightRowWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  padding: 40px;
-  margin-bottom: 30px;
-  width: 100%;
+  margin-bottom: 50px;
+  max-width: 960px;
   background: white;
   border-radius: 5px;
 `;
@@ -53,18 +52,35 @@ const StyledColumnRightRow = styled.div`
   display: flex;
   flex-wrap: wrap;
   width: 100%;
+  border-radius: 5px;
+  background-color: #ffffff;
+  border: solid 1px #e1e1eb;
 `;
 
 const StyledSectionHeader = styled.div`
-  font-size: 20px;
-  color: #f7f8f9;
-  background: #176a90;
-  margin: -40px -40px 30px -40px;
-  padding: 20px;
-  border-radius: 5px 5px 0 0;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  font-family: 'OpenSans', sans-serif;
+  font-size: 22px;
+  font-weight: 600;
+  color: #555e6f;
+`;
+
+const ReviewCount = styled.div`
+  height: fit-content;
+  padding: 0px 10px;
+  margin-left: 10px;
+  border-radius: 10px;
+  background-color: #f0f0f7;
+  font-size: 12px;
+  font-weight: bold;
+  font-style: normal;
+  font-stretch: normal;
+  line-height: normal;
+  letter-spacing: normal;
   text-align: center;
-  text-transform: uppercase;
-  letter-spacing: 1px;
+  color: #8e929b;
 `;
 
 const Title = styled.div`
@@ -81,12 +97,28 @@ type Props = {
 
 const AboutPerson = ({ selectedPersonData, neighbors } :Props) => {
 
+  const renderHeaderSection = (numResults) => {
+    return (
+      <StyledSectionHeader>
+        PSA History
+        <ReviewCount>{numResults}</ReviewCount>
+      </StyledSectionHeader>
+    );
+  }
+
   const renderPSAs = () => {
     const scoreSeq = neighbors.get(ENTITY_SETS.PSA_SCORES, Immutable.Map())
       .filter(neighbor => !!neighbor.get('neighborDetails'))
       .map(neighbor => [neighbor.get('neighborId'), neighbor.get('neighborDetails')]);
 
-    return <PSAReviewRowList scoreSeq={scoreSeq} sort={SORT_TYPES.DATE} hideCaseHistory hideProfile />;
+    return (
+      <PSAReviewPersonRowList
+          scoreSeq={scoreSeq}
+          sort={SORT_TYPES.DATE}
+          renderContent={renderHeaderSection}
+          hideCaseHistory
+          hideProfile />
+    );
   };
 
   const renderCaseHistory = () => {
@@ -117,20 +149,13 @@ const AboutPerson = ({ selectedPersonData, neighbors } :Props) => {
 
   return (
     <Wrapper>
-      <StyledColumnLeft>
-        <Headshot
-            photo={selectedPersonData.get(PROPERTY_TYPES.PICTURE)}
-            size="180" />
-      </StyledColumnLeft>
       <StyledColumnRight>
         <StyledColumnRightRowWrapper>
-          <StyledSectionHeader>About</StyledSectionHeader>
           <StyledColumnRightRow>
             <AboutPersonGeneral selectedPersonData={selectedPersonData} />
           </StyledColumnRightRow>
         </StyledColumnRightRowWrapper>
         <StyledColumnRightRowWrapper>
-          <StyledSectionHeader>PSA History</StyledSectionHeader>
           <StyledColumnRightRow>
             {renderPSAs()}
           </StyledColumnRightRow>
