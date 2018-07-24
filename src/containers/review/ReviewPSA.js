@@ -99,6 +99,7 @@ const PersonSearchWrapper = styled.div`
 
 const BottomFiltersWrapper = styled.div`
   width: 100%;
+  max-width: 713px;
   display: flex;
   flex-direction: row;
   justify-content: space-between;
@@ -312,7 +313,7 @@ class ReviewPSA extends React.Component<Props, State> {
           scoreSeq={items.map(([id]) => ([id, scoresAsMap.get(id)]))}
           sort={sort}
           activeFilterKey={activeFilterKey}
-          renderBottomFilters={this.renderBottomFilters}/>
+          renderContent={this.renderBottomFilters}/>
       );
   }
 
