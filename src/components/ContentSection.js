@@ -23,7 +23,7 @@ const StyledSectionHeader = styled.div`
   padding: 30px;
   border-bottom: solid 1px #e1e1eb;
   width: 100%;
-  font-family: 'OpenSans', sans-serif;
+  font-family: 'Open Sans', sans-serif;
   font-size: 22px;
   font-weight: 600;
   color: #555e6f;

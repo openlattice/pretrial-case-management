@@ -65,7 +65,7 @@ const StatLabel = styled.span`
   color: #555e6f;
 `;
 const StatValue = styled.span`
-  font-family: OpenSans;
+  font-family: Open Sans;
   font-size: 16px;
   font-weight: 600;
   text-align: right;
@@ -79,8 +79,8 @@ const Title = styled.div`
   color: #555e6f;
   margin-bottom: 20px;
 
-  .title {
-  font-weight: 600;
+  span:first-child {
+    font-weight: ${props => (props.withSubtitle ? '600' : '400')};
   }
 `;
 
@@ -159,8 +159,8 @@ const CaseHistory = ({ caseHistory, chargeHistory } :Props) => {
 
   return (
     <CaseHistoryContainer>
-      <Title>
-        <span className="title ">Summary Statistics</span>
+      <Title withSubtitle >
+        <span>Summary Statistics</span>
         <span>All current and past cases</span>
       </Title>
       <StatsContainer>

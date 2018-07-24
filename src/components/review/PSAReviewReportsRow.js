@@ -57,7 +57,7 @@ const PersonCardWrapper = styled.div`
   margin: 0 auto;
 `;
 
-const StatsWrapper1 = styled.div`
+const StatsForReview = styled.div`
   padding-left: 56px;
   width: 100%;
   margin: 0 auto;
@@ -65,7 +65,7 @@ const StatsWrapper1 = styled.div`
   flex-direction: row;
 `;
 
-const StatsWrapper2 = styled.div`
+const StatsForProfile = styled.div`
   width: 100%;
   margin: 0 auto;
   display: flex;
@@ -189,18 +189,12 @@ export default class PSAReviewReportsRow extends React.Component<Props, State> {
 
   renderStats = () => {
     const { hideProfile } = this.props;
+    const StatsWrapper = hideProfile ? StatsForProfile : StatsForReview;
 
-    if (hideProfile) {
-      return (
-        <StatsWrapper2>
-          <PSAStats scores={this.props.scores} downloadButton={this.renderDownloadButton} />
-        </StatsWrapper2>
-      );
-    }
     return (
-      <StatsWrapper1>
+      <StatsWrapper>
         <PSAStats scores={this.props.scores} downloadButton={this.renderDownloadButton} />
-      </StatsWrapper1>
+      </StatsWrapper>
     );
   }
 

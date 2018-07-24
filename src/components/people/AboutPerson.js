@@ -50,7 +50,7 @@ const StyledSectionHeader = styled.div`
   display: flex;
   flex-direction: row;
   align-items: center;
-  font-family: 'OpenSans', sans-serif;
+  font-family: 'Open Sans', sans-serif;
   font-size: 22px;
   font-weight: 600;
   color: #555e6f;
@@ -75,8 +75,8 @@ const Title = styled.div`
   color: #555e6f;
   margin-bottom: 20px;
 
-  .title {
-  font-weight: 600;
+  span:first-child {
+    font-weight: ${props => (props.withSubtitle ? '600' : '400')};
   }
 `;
 
@@ -143,8 +143,8 @@ const AboutPerson = ({ selectedPersonData, neighbors } :Props) => {
           Case History
           <Count>{caseHistory.size}</Count>
         </StyledSectionHeader>
-        <Title>
-          <span className="title ">Timeline</span>
+        <Title withSubtitle>
+          <span>Timeline</span>
           <span>Convictions in the past two years</span>
         </Title>
         <CaseHistoryTimeline caseHistory={caseHistory} chargeHistory={chargeHistory} />

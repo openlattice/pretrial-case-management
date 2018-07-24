@@ -49,7 +49,7 @@ const StyledCenteredContainer = styled.div`
   }
 `;
 
-const StyledFiltersBar1 = styled.div`
+const StyledBarForReviews = styled.div`
   width: 100%;
   background: #fff;
   border-radius: 5px;
@@ -65,7 +65,7 @@ const StyledFiltersBar1 = styled.div`
   justify-content: space-between;
 `;
 
-const StyledFiltersBar2 = styled.div`
+const StyledBarForProfile = styled.div`
   width: 100%;
   display: flex;
   flex-direction: row;
@@ -78,7 +78,7 @@ const PersonWrapper = styled.div`
   width: 100%;
 `;
 
-const ReviewWrapper = styled.div`\
+const ReviewWrapper = styled.div`
   width: 100%;
 `;
 
@@ -221,17 +221,17 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
     const numPages = Math.ceil(numResults / MAX_RESULTS);
     const currPage = (start / MAX_RESULTS) + 1;
 
-    const StyledFiltersBar = hideProfile ? StyledFiltersBar2 : StyledFiltersBar1;
+    const StyledBottomBar = hideProfile ? StyledBarForProfile : StyledBarForReviews;
 
     return (
       <StyledCenteredContainer>
-        <StyledFiltersBar>
+        <StyledBottomBar>
           {this.props.renderContent(numResults)}
           <CustomPagination
               numPages={numPages}
               activePage={currPage}
               onChangePage={page => this.updatePage((page - 1) * MAX_RESULTS)} />
-        </StyledFiltersBar>
+        </StyledBottomBar>
       </StyledCenteredContainer>
     );
   }

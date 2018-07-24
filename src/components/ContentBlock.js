@@ -12,7 +12,7 @@ const StyledContentBlock = styled.div`
 `;
 
 const StyledContentLabel = styled.div`
-  font-family: 'OpenSans', sans-serif;
+  font-family: 'Open Sans', sans-serif;
   font-size: 12px;
   font-weight: 600;
   font-style: normal;
@@ -27,7 +27,7 @@ const StyledContentWrapper = styled.div`
 
 const StyledContent = styled.div`
   display: flex;
-  font-family: 'OpenSans', sans-serif;
+  font-family: 'Open Sans', sans-serif;
   font-size: 18px;
   font-weight: normal;
   color: #2e2e34;
