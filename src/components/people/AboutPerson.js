@@ -9,7 +9,7 @@ import moment from 'moment';
 
 import Headshot from '../Headshot';
 import AboutPersonGeneral from '../person/AboutPersonGeneral';
-import PSAReviewPersonRowList from '../../containers/review/PSAReviewRowList';
+import PSAReviewPersonRowList from '../../containers/review/PSAReviewReportsRowList';
 import CaseHistory from '../casehistory/CaseHistory';
 import CaseHistoryTimeline from '../casehistory/CaseHistoryTimeline';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
@@ -23,22 +23,14 @@ const Wrapper = styled.div`
   height: 100%;
 `;
 
-const StyledColumnLeft = styled.div`
+const StyledColumn = styled.div`
+  width: 960px;
   display: flex;
-  flex: 0 0 224px;
-  flex-direction: column;
-  margin-right: 30px;
-  overflow: auto;
-`;
-
-const StyledColumnRight = styled.div`
-  display: flex;
-  flex: 1 1 564px;
   flex-direction: column;
   overflow: auto;
 `;
 
-const StyledColumnRightRowWrapper = styled.div`
+const StyledColumnRowWrapper = styled.div`
   display: flex;
   flex-direction: column;
   margin-bottom: 50px;
@@ -47,7 +39,7 @@ const StyledColumnRightRowWrapper = styled.div`
   border-radius: 5px;
 `;
 
-const StyledColumnRightRow = styled.div`
+const StyledColumnRow = styled.div`
   align-items: flex-start;
   display: flex;
   flex-wrap: wrap;
@@ -149,24 +141,24 @@ const AboutPerson = ({ selectedPersonData, neighbors } :Props) => {
 
   return (
     <Wrapper>
-      <StyledColumnRight>
-        <StyledColumnRightRowWrapper>
-          <StyledColumnRightRow>
+      <StyledColumn>
+        <StyledColumnRowWrapper>
+          <StyledColumnRow>
             <AboutPersonGeneral selectedPersonData={selectedPersonData} />
-          </StyledColumnRightRow>
-        </StyledColumnRightRowWrapper>
-        <StyledColumnRightRowWrapper>
-          <StyledColumnRightRow>
+          </StyledColumnRow>
+        </StyledColumnRowWrapper>
+        <StyledColumnRowWrapper>
+          <StyledColumnRow>
             {renderPSAs()}
-          </StyledColumnRightRow>
-        </StyledColumnRightRowWrapper>
-        <StyledColumnRightRowWrapper>
+          </StyledColumnRow>
+        </StyledColumnRowWrapper>
+        <StyledColumnRowWrapper>
           <StyledSectionHeader>Case History</StyledSectionHeader>
-          <StyledColumnRightRow>
+          <StyledColumnRow>
             {renderCaseHistory()}
-          </StyledColumnRightRow>
-        </StyledColumnRightRowWrapper>
-      </StyledColumnRight>
+          </StyledColumnRow>
+        </StyledColumnRowWrapper>
+      </StyledColumn>
     </Wrapper>
   );
 };
