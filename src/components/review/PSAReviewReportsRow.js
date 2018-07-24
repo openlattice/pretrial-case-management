@@ -15,7 +15,7 @@ import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts'
 import { psaIsClosed } from '../../utils/PSAUtils';
 
 const ReviewRowContainer = styled.div`
-  width: 960px;
+  width: 100%;
   background-color: #ffffff;
   border-radius: 5px;
   border: solid 1px #e1e1eb;
@@ -43,6 +43,7 @@ const ReviewRowWrapper = styled.div`
   align-items: flex-end;
   padding: 20px 30px;
   justify-content: center;
+  overflow: hidden;
   hr {
     margin-top: 13px;
     margin-bottom: 13px;
@@ -56,7 +57,15 @@ const PersonCardWrapper = styled.div`
   margin: 0 auto;
 `;
 
-const StatsWrapper = styled.div`
+const StatsWrapper1 = styled.div`
+  padding-left: 36px;
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: row;
+`;
+
+const StatsWrapper2 = styled.div`
   width: 100%;
   margin: 0 auto;
   display: flex;
@@ -169,7 +178,30 @@ export default class PSAReviewReportsRow extends React.Component<Props, State> {
 
     const personDetails = neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborDetails'], Immutable.Map());
     if (!personDetails.size) return <div>Person details unknown.</div>;
-    return <PersonCard person={personDetails.set('id', neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborId']))} />;
+    return (
+      <PersonCardWrapper>
+        <PersonCard
+            person={personDetails.set('id', neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborId']))} />
+        <hr />
+      </PersonCardWrapper>
+    );
+  }
+
+  renderStats = () => {
+    const { hideProfile } = this.props;
+
+    if (hideProfile) {
+      return (
+        <StatsWrapper2>
+          <PSAStats scores={this.props.scores} downloadButton={this.renderDownloadButton} />
+        </StatsWrapper2>
+      );
+    }
+    return (
+      <StatsWrapper1>
+        <PSAStats scores={this.props.scores} downloadButton={this.renderDownloadButton} />
+      </StatsWrapper1>
+    );
   }
 
   renderDownloadButton = () => (
@@ -257,13 +289,8 @@ export default class PSAReviewReportsRow extends React.Component<Props, State> {
       <ReviewRowContainer>
         <DetailsRowContainer onClick={this.openDetailsModal}>
           <ReviewRowWrapper>
-            <PersonCardWrapper>
-              {this.renderPersonCard()}
-            </PersonCardWrapper>
-            <hr />
-            <StatsWrapper>
-              <PSAStats scores={this.props.scores} downloadButton={this.renderDownloadButton} />
-            </StatsWrapper>
+            {this.renderPersonCard()}
+            {this.renderStats()}
           </ReviewRowWrapper>
           <PSAModal open={this.state.open} onClose={() => this.setState({ open: false })} {...this.props} />
         </DetailsRowContainer>

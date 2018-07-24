@@ -10,7 +10,6 @@ import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_STATUSES } from '../../utils/consts/Consts';
 
 const Wrapper = styled.div`
-  margin-left: 36px;
   width: 100%;
   display: flex;
   flex-direction: row;
