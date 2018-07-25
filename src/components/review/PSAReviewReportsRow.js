@@ -43,12 +43,11 @@ const ReviewRowWrapper = styled.div`
   align-items: flex-end;
   padding: 20px 30px;
   justify-content: center;
-  overflow: hidden;
   hr {
+    height: 1px;
+    margin: -20px -30px -20px -30px;
     margin-top: 13px;
     margin-bottom: 13px;
-    transform: translateX(-25%);
-    width: 150%;
   }
 `;
 
