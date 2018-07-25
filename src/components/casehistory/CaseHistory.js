@@ -127,8 +127,8 @@ const CaseHistory = ({ caseHistory, chargeHistory } :Props) => {
     }
   ];
 
-  const SummaryStats = SUMMARY_STATS_ARR.map((stat, idx) => (
-    <StatsItem key={stat.label+idx} >
+  const SummaryStats = SUMMARY_STATS_ARR.map(stat => (
+    <StatsItem key={stat.label} >
       <StatLabel>{stat.label}</StatLabel>
       <StatValue>{stat.value}</StatValue>
     </StatsItem>
