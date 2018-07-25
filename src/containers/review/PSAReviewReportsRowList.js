@@ -6,11 +6,11 @@ import React from 'react';
 import Immutable from 'immutable';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { Pagination } from 'react-bootstrap';
 import styled from 'styled-components';
 
 import PSAReviewReportsRow from '../../components/review/PSAReviewReportsRow';
 import LoadingSpinner from '../../components/LoadingSpinner';
+import CustomPagination from '../../components/Pagination';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { SORT_TYPES } from '../../utils/consts/Consts';
 import { sortByDate, sortByName } from '../../utils/PSAUtils';
@@ -20,23 +20,49 @@ import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
 
 const StyledCenteredContainer = styled.div`
   text-align: center;
+  margin-bottom: 20px;
+
   .pagination {
+    width: 30%;
     display: inline-block;
 
     .active a {
       background-color: #6124e2;
+      border-radius: 2px;
       color: white;
+    }
+
+    .disabled {
+      visibility: hidden;
     }
   }
 
   .pagination a {
     color: #555e6f;
-    float: left;
-    padding: 8px 16px;
-    border: solid 1px #e1e1eb;
-    text-decoration: none;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: none;
     }
   }
+`;
+
+const StyledFiltersBar = styled.div`
+  width: 100%;
+  background: #fff;
+  border-radius: 5px;
+  border: solid 1px #e1e1eb;
+  border-top-left-radius: 0px;
+  border-top-right-radius: 0px;
+  padding: 0px 0px 10px 30px;
+  font-size: 14px;
+  text-align: center;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
 `;
 
 type Props = {
@@ -162,6 +188,7 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
     );
   }
 
+
   updatePage = (start) => {
     this.setState({ start });
     window.scrollTo({
@@ -170,23 +197,22 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
     });
   }
 
-  renderPagination = (numResults) => {
+  renderFiltersBar = (numResults) => {
     const { start } = this.state;
+    const { activeFilterKey } = this.props;
 
-    if (numResults <= MAX_RESULTS) return null;
     const numPages = Math.ceil(numResults / MAX_RESULTS);
     const currPage = (start / MAX_RESULTS) + 1;
+
     return (
       <StyledCenteredContainer>
-        <Pagination
-            prev
-            next
-            ellipsis
-            boundaryLinks
-            items={numPages}
-            maxButtons={5}
-            activePage={currPage}
-            onSelect={page => this.updatePage((page - 1) * MAX_RESULTS)} />
+        <StyledFiltersBar>
+          {this.props.renderBottomFilters()}
+          <CustomPagination
+              numPages={numPages}
+              activePage={currPage}
+              onChangePage={page => this.updatePage((page - 1) * MAX_RESULTS)} />
+        </StyledFiltersBar>
       </StyledCenteredContainer>
     );
   }
@@ -209,12 +235,12 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
     }
 
     const items = this.sortItems(scoreSeq).slice(start, start + MAX_RESULTS);
-    const numItems = scoreSeq.length || scoreSeq.size;
+    const numPages = scoreSeq.length || scoreSeq.size;
     return (
       <div>
-        {this.renderPagination(numItems)}
+        {this.renderFiltersBar(numPages)}
         {items.map(([scoreId, scores]) => this.renderRow(scoreId, scores))}
-        {this.renderPagination(numItems)}
+        {this.renderFiltersBar(numPages)}
       </div>
     );
   }

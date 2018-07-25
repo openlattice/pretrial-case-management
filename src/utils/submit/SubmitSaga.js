@@ -38,15 +38,28 @@ function getEntityId(primaryKey, propertyTypesById, values, fields) {
   return pKeyVals.join(',');
 }
 
+function getFormattedValue(value) {
+  const valueIsDefined = v => v !== null && v !== undefined && v !== '';
+
+  /* Value is already formatted as an array -- we should filter for undefined values */
+  if (value instanceof Array) {
+    return value.filter(valueIsDefined);
+  }
+
+  /* Value must be converted to an array if it is defined */
+  return valueIsDefined(value) ? [value] : [];
+}
+
 function getEntityDetails(entityDescription, propertyTypesByFqn, values) {
   const { fields } = entityDescription;
   const entityDetails = {};
   Object.keys(fields).forEach((field) => {
     const fqn = fields[field];
     const propertyTypeId = propertyTypesByFqn[fqn].id;
-    const value = values[field];
-    if (value instanceof Array) entityDetails[propertyTypeId] = value;
-    else if (value !== null && value !== undefined && value !== '') entityDetails[propertyTypeId] = [value];
+    const formattedArrayValue = getFormattedValue(values[field]);
+    if (formattedArrayValue.length) {
+      entityDetails[propertyTypeId] = formattedArrayValue;
+    }
   });
   return entityDetails;
 }
