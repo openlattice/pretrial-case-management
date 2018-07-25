@@ -8,7 +8,6 @@ const StyledContentBlock = styled.div`
   display: flex;
   width: 100%;
   flex-direction: column;
-  margin-bottom: 20px;
 `;
 
 const StyledContentLabel = styled.div`

@@ -29,7 +29,6 @@ const InfoHeader = styled.span`
 
 const CaseHistoryContainer = styled.div`
   max-height: 750px;
-  overflow-y: scroll;
 `;
 
 const StatsContainer = styled.div`
@@ -81,6 +80,7 @@ const Title = styled.div`
 
   span:first-child {
     font-weight: ${props => (props.withSubtitle ? '600' : '400')};
+    padding-bottom: 5px;
   }
 `;
 

@@ -12,11 +12,12 @@ const StyledSection = styled.div`
 `;
 
 const StyledContentBlockWrapper = styled.div`
+  width: 100%;
   margin-left: 50px;
   display: grid;
-  grid-template-columns: 25% 25% 25% 25%;
-  grid-template-rows: 45% 45%;
-  width: 100%;
+  grid-template-columns: 24% 24% 24% 28%;
+  grid-auto-rows: min-content;
+  grid-row-gap: 20px;
 `;
 
 const StyledSectionHeader = styled.div`
@@ -34,6 +35,7 @@ const StyledSectionBottomBarWrapper = styled.div`
   display: flex;
   flex-direction: row;
   justify-content: center;
+  align-items: center;
   flex-wrap: nowrap;
   color: #727272;
   font-size: 14px;

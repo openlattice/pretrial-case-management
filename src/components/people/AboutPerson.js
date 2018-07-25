@@ -77,6 +77,7 @@ const Title = styled.div`
 
   span:first-child {
     font-weight: ${props => (props.withSubtitle ? '600' : '400')};
+    padding-bottom: 5px;
   }
 `;
 
