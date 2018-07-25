@@ -170,6 +170,10 @@ const CaseHistory = ({ caseHistory, chargeHistory } :Props) => {
           </StatsGroup>
         </StatsWrapper>
       </StatsContainer>
+      <hr />
+      <Title>
+        <span>Case History</span>
+      </Title>
       {cases}
     </CaseHistoryContainer>
   );
