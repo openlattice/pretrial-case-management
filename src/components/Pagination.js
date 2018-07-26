@@ -56,7 +56,6 @@ const Pagination = (props :Props) => {
       end = numPages;
     }
     pages = [...Array(1 + (end - start)).keys()].map(v => start + v);
-    console.log(pages);
   }
 
 

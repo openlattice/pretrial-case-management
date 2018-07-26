@@ -5,10 +5,21 @@ import moment from 'moment';
 
 import ContentBlock from '../ContentBlock';
 import ContentSection from '../ContentSection';
+import defaultUserIcon from '../../assets/svg/profile-placeholder-rectangle-big.svg';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { formatDateList, formatValue } from '../../utils/Utils';
 import { isNonEmptyString } from '../../utils/LangUtils';
 
+const {
+  DOB,
+  FIRST_NAME,
+  MIDDLE_NAME,
+  LAST_NAME,
+  SUFFIX,
+  MUGSHOT,
+  PERSON_ID,
+  PICTURE
+} = PROPERTY_TYPES;
 
 const AboutPersonGeneral = ({ selectedPersonData, vertical }) => {
 
@@ -16,7 +27,10 @@ const AboutPersonGeneral = ({ selectedPersonData, vertical }) => {
   const title = 'General';
 
   let age = '';
-  const dobList = selectedPersonData.get(PROPERTY_TYPES.DOB, Immutable.List());
+  const firstName = formatValue(selectedPersonData.get(FIRST_NAME, Immutable.List()));
+  const middleName = formatValue(selectedPersonData.get(MIDDLE_NAME, Immutable.List()));
+  const lastName = formatValue(selectedPersonData.get(LAST_NAME, Immutable.List()));
+  const dobList = selectedPersonData.get(DOB, Immutable.List());
   const dob = formatDateList(dobList);
 
   if (dobList.size) {
@@ -26,6 +40,22 @@ const AboutPersonGeneral = ({ selectedPersonData, vertical }) => {
   try {
     if (selectedPersonData) {
       generalContent = [
+        {
+          label: 'Last Name',
+          content: [lastName]
+        },
+        {
+          label: 'Middle Name',
+          content: [middleName]
+        },
+        {
+          label: 'First Name',
+          content: [firstName]
+        },
+        {
+          label: '',
+          content: ['']
+        },
         {
           label: 'Date of Birth',
           content: [dob]
@@ -49,24 +79,21 @@ const AboutPersonGeneral = ({ selectedPersonData, vertical }) => {
     console.error(e);
   }
 
+  const content = generalContent.map((person) => {
+    return (
+      <ContentBlock
+          contentBlock={person}
+          key={person.label} />
+    );
+  });
+
   return (
-    <ContentSection title={title}>
-      <ContentBlock
-          contentBlock={generalContent[0]}
-          key={generalContent[0].label}
-          vertical={vertical} />
-      <ContentBlock
-          contentBlock={generalContent[1]}
-          key={generalContent[1].label}
-          vertical={vertical} />
-      <ContentBlock
-          contentBlock={generalContent[2]}
-          key={generalContent[2].label}
-          vertical={vertical} />
-      <ContentBlock
-          contentBlock={generalContent[3]}
-          key={generalContent[3].label}
-          vertical={vertical} />
+    <ContentSection
+        photo={defaultUserIcon}
+        firstName={firstName}
+        middleName={middleName}
+        lastName={lastName} >
+      {content}
     </ContentSection>
   );
 };

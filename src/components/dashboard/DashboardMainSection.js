@@ -7,6 +7,7 @@ import styled from 'styled-components';
 
 const StyledSectionWrapper = styled.div`
   width: 100%;
+  min-width: 960px;
   display: flex;
   flex-direction: column;
 `;

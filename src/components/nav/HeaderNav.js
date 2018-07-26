@@ -37,6 +37,16 @@ const AppHeaderWrapper = styled.header`
   position: relative;
 `;
 
+const AppHeaderSubWrapper = styled.div`
+  width: 100%;
+  max-width: 960px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: row;
+  align-self: flex-start;
+  justify-content: space-between;
+`
+
 const BrandLink = styled(Link)`
   color: inherit;
 
@@ -76,9 +86,13 @@ const Logo = styled.img`
 `;
 
 const StyledNavWrapper = styled.div`
+  width: 100%;
+  max-width: 960px;
+  margin: 0 auto;
   display: flex;
   flex-direction: row;
   align-self: flex-start;
+  justify-content: space-between;
 `;
 
 const StyledNavLink = styled(NavLink).attrs({
@@ -91,7 +105,6 @@ const StyledNavLink = styled(NavLink).attrs({
   height: auto;
   padding-bottom: 10px;
   margin-bottom: -13px;
-  margin-right: 50px;
   font-family: 'Open Sans', sans-serif;
   font-size: 12px;
   font-weight: normal;
@@ -183,16 +196,16 @@ const getDisplayName = () => {
 const HeaderNav = ({ logout } :Props) => (
   <div>
     <AppHeaderWrapper>
-      <div>
+      <AppHeaderSubWrapper>
         <BrandLink to={Routes.DASHBOARD}>
           <Logo src={logo} role="presentation" />
           <span>Pretrial Case Management</span>
         </BrandLink>
-      </div>
-      <div>
-        <DisplayName>{getDisplayName()}</DisplayName>
-        <LogoutButton onClick={logout}>Log Out</LogoutButton>
-      </div>
+        <div>
+          <DisplayName>{getDisplayName()}</DisplayName>
+          <LogoutButton onClick={logout}>Log Out</LogoutButton>
+        </div>
+      </AppHeaderSubWrapper>
     </AppHeaderWrapper>
     <AppHeaderWrapper>
       <StyledNavWrapper>
