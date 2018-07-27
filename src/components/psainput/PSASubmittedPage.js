@@ -76,6 +76,7 @@ const Banner = styled(WideContainer)`
     }
   }};
   height: 80px;
+  width: 1000px;
   display: flex;
   flex-direction: row;
   align-items: center;

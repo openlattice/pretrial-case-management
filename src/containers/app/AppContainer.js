@@ -38,6 +38,7 @@ const AppWrapper = styled.div`
 const AppBodyWrapper = styled.div`
   display: flex;
   flex: 1 0 auto;
+  margin: 0 auto;
   flex-direction: column;
   padding: 30px 170px;
 `;

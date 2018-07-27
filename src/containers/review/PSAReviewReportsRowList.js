@@ -23,8 +23,8 @@ const StyledCenteredContainer = styled.div`
   margin-bottom: 20px;
 
   .pagination {
-    width: 30%;
     display: inline-block;
+    margin-right: 30px;
 
     .active a {
       background-color: #6124e2;
@@ -49,7 +49,7 @@ const StyledCenteredContainer = styled.div`
   }
 `;
 
-const StyledFiltersBar = styled.div`
+const StyledBarForReviews = styled.div`
   width: 100%;
   background: #fff;
   border-radius: 5px;
@@ -63,6 +63,23 @@ const StyledFiltersBar = styled.div`
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
+`;
+
+const StyledBarForProfile = styled.div`
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+const PersonWrapper = styled.div`
+  padding: 30px;
+  width: 100%;
+`;
+
+const ReviewWrapper = styled.div`
+  width: 100%;
 `;
 
 type Props = {
@@ -199,20 +216,22 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
 
   renderFiltersBar = (numResults) => {
     const { start } = this.state;
-    const { activeFilterKey } = this.props;
+    const { hideProfile } = this.props;
 
     const numPages = Math.ceil(numResults / MAX_RESULTS);
     const currPage = (start / MAX_RESULTS) + 1;
 
+    const StyledBottomBar = hideProfile ? StyledBarForProfile : StyledBarForReviews;
+
     return (
       <StyledCenteredContainer>
-        <StyledFiltersBar>
-          {this.props.renderBottomFilters()}
+        <StyledBottomBar>
+          {this.props.renderContent(numResults)}
           <CustomPagination
               numPages={numPages}
               activePage={currPage}
               onChangePage={page => this.updatePage((page - 1) * MAX_RESULTS)} />
-        </StyledFiltersBar>
+        </StyledBottomBar>
       </StyledCenteredContainer>
     );
   }
@@ -226,6 +245,26 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
     ));
   }
 
+  renderContent = (items, numPages) => {
+    const { hideProfile } = this.props;
+
+    if (hideProfile) {
+      return (
+        <PersonWrapper>
+          {this.renderFiltersBar(numPages)}
+          {items.map(([scoreId, scores]) => this.renderRow(scoreId, scores))}
+        </PersonWrapper>
+      );
+    }
+    return (
+      <ReviewWrapper>
+        {this.renderFiltersBar(numPages)}
+        {items.map(([scoreId, scores]) => this.renderRow(scoreId, scores))}
+        {this.renderFiltersBar(numPages)}
+      </ReviewWrapper>
+    );
+  }
+
   render() {
     const { scoreSeq, loadingPSAData } = this.props;
     const { start } = this.state;
@@ -237,11 +276,9 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
     const items = this.sortItems(scoreSeq).slice(start, start + MAX_RESULTS);
     const numPages = scoreSeq.length || scoreSeq.size;
     return (
-      <div>
-        {this.renderFiltersBar(numPages)}
-        {items.map(([scoreId, scores]) => this.renderRow(scoreId, scores))}
-        {this.renderFiltersBar(numPages)}
-      </div>
+      <ReviewWrapper>
+        {this.renderContent(items, numPages)}
+      </ReviewWrapper>
     );
   }
 }

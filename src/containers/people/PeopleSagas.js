@@ -74,8 +74,9 @@ function* getPersonDataWatcher() :Generator<*, *, *> {
 
 function* getPersonNeighborsWorker(action) :Generator<*, *, *> {
 
+  const { personId } = action.value;
+
   try {
-    const { personId } = action.value;
     yield put(getPersonNeighbors.request(action.id));
     const entitySetId = yield call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.PEOPLE);
 
