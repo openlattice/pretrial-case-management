@@ -12,13 +12,29 @@ const StyledContentBlock = styled.div`
 
 const StyledContentLabel = styled.div`
   font-family: 'Open Sans', sans-serif;
-  font-size: 12px;
   font-weight: 600;
   font-style: normal;
   font-stretch: normal;
   line-height: normal;
   letter-spacing: normal;
+  text-transform: uppercase;
   color: #8e929b;
+  ${(props) => {
+    switch (props.component) {
+      case 'summary':
+        return (
+          'font-size: 11px;'
+        );
+      case 'FormContainer':
+        return (
+          'font-size: 11px;'
+        );
+      default:
+        return (
+          'font-size: 12px;'
+        );
+    }
+  }};
 `;
 
 const StyledContentWrapper = styled.div`
@@ -27,13 +43,28 @@ const StyledContentWrapper = styled.div`
 const StyledContent = styled.div`
   display: flex;
   font-family: 'Open Sans', sans-serif;
-  font-size: 18px;
   font-weight: normal;
   color: #2e2e34;
+  ${(props) => {
+    switch (props.component) {
+      case 'summary':
+        return (
+          'font-size: 14px;'
+        );
+      case 'FormContainer':
+        return (
+          'font-size: 14px;'
+        );
+      default:
+        return (
+          'font-size: 18px;'
+        );
+    }
+  }};
 `;
 
 
-const ContentBlock = ({ contentBlock, vertical }) => {
+const ContentBlock = ({ contentBlock, component }) => {
   if (!contentBlock) {
     return null;
   }
@@ -45,12 +76,23 @@ const ContentBlock = ({ contentBlock, vertical }) => {
       return <StyledContentItalic>None</StyledContentItalic>;
     }
 
-    return contentBlock.content.map((line, i) => <StyledContent key={`${line}-${i}`}>{line}</StyledContent>);
+    return (
+      contentBlock.content.map((line, i) => (
+        <StyledContent
+            key={`${line}-${i}`}
+            component={component} >
+          {line}
+        </StyledContent>
+      ))
+    );
   };
 
   return (
-    <StyledContentBlock vertical={vertical}>
-      <StyledContentLabel>{label}</StyledContentLabel>
+    <StyledContentBlock>
+      <StyledContentLabel
+          component={component}>
+        {label}
+      </StyledContentLabel>
       <StyledContentWrapper>
         { renderContent() }
       </StyledContentWrapper>
