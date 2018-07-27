@@ -1,99 +1,112 @@
 /*
  * @flow
  */
-
 import React from 'react';
 import Immutable from 'immutable';
 import styled from 'styled-components';
 
-import PSAScores from './PSAScores';
+import PSAStats from './PSAStats';
+import ContentBlock from '../ContentBlock';
+import PersonCardSummary from '../person/PersonCardSummary';
+import ArrestCard from '../arrest/ArrestCard';
+import PSAReportDownloadButton from './PSAReportDownloadButton'
 import DMFCell from '../dmf/DMFCell';
 import ChargeList from '../../components/charges/ChargeList';
 import { CenteredContainer } from '../../utils/Layout';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { formatDMFFromEntity } from '../../utils/consts/DMFResultConsts';
-import { formatValue, formatDate, formatDateList, formatDateTimeList } from '../../utils/Utils';
-import { psaIsClosed, getLastEditDetails } from '../../utils/PSAUtils';
+import { formatDateTimeList } from '../../utils/Utils';
 import {
   stepTwoIncrease,
   stepFourIncrease,
   dmfSecondaryReleaseDecrease
 } from '../../utils/ScoringUtils';
 
+const SummaryWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  hr {
+    color: #eeeeee;
+    width: calc(100% + 30px);
+    height: 1px;
+    margin: 0px;
+  }
+`;
+const RowWrapper = styled.div`
+  width: 100%;
+  display: grid;
+  grid-template-columns: 66% 33%;
+  margin: 30px 0px;
+`;
+
 const ScoresContainer = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: space-between;
+  border-right: ${props => (props.border ? 'solid 1px #eeeeee' : 'none')};
 `;
 
-const SummaryScores = styled.div`
+const ScoreContent = styled.div`
+  padding: 20px 30px 0px;
+  width: 100%;
   display: flex;
   flex-direction: row;
-  justify-content: center;
-  text-align: center;
+  flex-wrap: wrap;
+`;
+
+const PSADetails = styled.div`
+  margin-top: 20px;
+  width: 100%;
+  display: grid;
+  grid-template-columns: 25% 25% 46%;
+  grid-column-gap: 2%;
+`;
+
+const DownloadButtonWrapper = styled.div`
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
 `;
 
 const ScoreTitle = styled.div`
-  font-size: 14px;
-  font-weight: bold;
-  margin-bottom: 10px;
-`;
-
-const DMFIncreaseText = styled.div`
-  margin: 5px;
-  font-weight: bold;
-`;
-
-const InfoRow = styled.div`
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  margin: 15px 0;
-`;
-
-const InfoItem = styled.div`
-  margin: 0 20px;
-`;
-
-const InfoHeader = styled.span`
-  font-weight: bold;
-`;
-
-const DateContainer = styled.div`
-  font-style: italic;
-  margin: 15px;
+  width: 100%;
+  font-family: 'Open Sans', sans-serif;
+  padding: 0px 30px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #555e6f;
 `;
 
 type Props = {
   scores :Immutable.Map<*, *>,
   neighbors :Immutable.Map<*, *>,
   manualCaseHistory :Immutable.List<*>,
-  manualChargeHistory :Immutable.Map<*, *>
+  manualChargeHistory :Immutable.Map<*, *>,
+  downloadFn :(values :{
+    neighbors :Immutable.Map<*, *>,
+    scores :Immutable.Map<*, *>
+  }) => void,
 };
 
-const renderPersonInfo = (neighbors) => {
+const renderPersonInfo = ({ neighbors } :Props) => {
   const person = neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborDetails'], Immutable.Map());
-  const firstName = formatValue(person.get(PROPERTY_TYPES.FIRST_NAME));
-  const middleName = formatValue(person.get(PROPERTY_TYPES.MIDDLE_NAME));
-  const lastName = formatValue(person.get(PROPERTY_TYPES.LAST_NAME));
-  const dob = formatDateList(person.get(PROPERTY_TYPES.DOB));
-  const sex = formatValue(person.get(PROPERTY_TYPES.SEX));
-  const race = formatValue(person.get(PROPERTY_TYPES.RACE));
 
   return (
-    <div>
-      <InfoRow>
-        <InfoItem><InfoHeader>First Name: </InfoHeader>{firstName}</InfoItem>
-        <InfoItem><InfoHeader>Middle Name: </InfoHeader>{middleName}</InfoItem>
-        <InfoItem><InfoHeader>Last Name: </InfoHeader>{lastName}</InfoItem>
-      </InfoRow>
-      <InfoRow>
-        <InfoItem><InfoHeader>Date of Birth: </InfoHeader>{dob}</InfoItem>
-        <InfoItem><InfoHeader>Gender: </InfoHeader>{sex}</InfoItem>
-        <InfoItem><InfoHeader>Race: </InfoHeader>{race}</InfoItem>
-      </InfoRow>
-    </div>
+    <PersonCardSummary person={person} />
+  );
+};
+
+const renderArrestInfo = ({ neighbors, manualCaseHistory } :Props) => {
+  const caseNum = neighbors.getIn(
+    [ENTITY_SETS.MANUAL_PRETRIAL_CASES, 'neighborDetails', PROPERTY_TYPES.CASE_ID, 0], ''
+  );
+  const pretrialCase = manualCaseHistory
+    .filter(caseObj => caseObj.getIn([PROPERTY_TYPES.CASE_ID, 0], '') === caseNum);
+  return (
+    <ArrestCard arrest={pretrialCase} component="summary" />
   );
 };
 
@@ -103,54 +116,46 @@ const renderCaseInfo = ({
   neighbors
 } :Props) => {
   const caseNum = neighbors.getIn(
-    [ENTITY_SETS.MANUAL_PRETRIAL_CASES, 'neighborDetails', PROPERTY_TYPES.CASE_ID, 0],
-    ''
+    [ENTITY_SETS.MANUAL_PRETRIAL_CASES, 'neighborDetails', PROPERTY_TYPES.CASE_ID, 0], ''
   );
   const pretrialCase = manualCaseHistory
     .filter(caseObj => caseObj.getIn([PROPERTY_TYPES.CASE_ID, 0], '') === caseNum);
   const charges = manualChargeHistory.get(caseNum, Immutable.List());
-  const arrestDate = formatDateTimeList(pretrialCase.getIn([0, PROPERTY_TYPES.ARREST_DATE_TIME], Immutable.List()));
-
   return (
     <CenteredContainer>
-      { arrestDate.length ? <DateContainer>{`Arrest Date: ${arrestDate}`}</DateContainer> : null }
       <ChargeList pretrialCaseDetails={pretrialCase} charges={charges} />
     </CenteredContainer>
   );
 };
 
-const StatusInfo = ({ scores, neighbors }) => {
-  const status = scores.getIn([PROPERTY_TYPES.STATUS, 0], '');
-  const failureReasons = formatValue(scores.get(PROPERTY_TYPES.FAILURE_REASON));
-  let statusText = status;
-  if (failureReasons.length) {
-    statusText = `${statusText} (${failureReasons})`;
-  }
-  const statusNotes = scores.getIn([PROPERTY_TYPES.STATUS_NOTES, 0]);
-  let closeDetails = null;
-  if (psaIsClosed(scores)) {
-    const { date } = getLastEditDetails(neighbors);
-    if (date) {
-      closeDetails = <DateContainer>{`Close date: ${date.format('MM/DD/YYYY')}`}</DateContainer>;
-    }
-  }
-
-
-  return (
-    <CenteredContainer>
-      {closeDetails}
-      <InfoRow>
-        <InfoItem><InfoHeader>PSA Status: </InfoHeader>{statusText}</InfoItem>
-      </InfoRow>
-      {
-        statusNotes ? (
-          <InfoRow>
-            <InfoItem><InfoHeader>Notes: </InfoHeader>{statusNotes}</InfoItem>
-          </InfoRow>
-        ) : null
-      }
-    </CenteredContainer>
+const renderPSADetails = ({ neighbors } :Props) => {
+  let filer;
+  const psaDate = formatDateTimeList(
+    neighbors.getIn([ENTITY_SETS.PSA_RISK_FACTORS, 'associationDetails', PROPERTY_TYPES.TIMESTAMP], Immutable.Map())
   );
+  neighbors.get(ENTITY_SETS.STAFF, Immutable.List()).forEach((neighbor) => {
+    const associationEntitySetName = neighbor.getIn(['associationEntitySet', 'name']);
+    const personId = neighbor.getIn(['neighborDetails', PROPERTY_TYPES.PERSON_ID, 0], '');
+    if (associationEntitySetName === ENTITY_SETS.ASSESSED_BY) {
+      filer = personId;
+    }
+  });
+  return (
+    <PSADetails>
+      <ContentBlock
+          contentBlock={{ label: 'psa date', content: [psaDate] }}
+          component="summary" />
+      <ContentBlock
+          contentBlock={{ label: 'filer', content: [filer] }}
+          component="summary" />
+      <DownloadButtonWrapper>
+        <PSAReportDownloadButton
+            downloadFn
+            neighbors
+            scores />
+      </DownloadButtonWrapper>
+    </PSADetails>
+  )
 };
 
 const PSASummary = (props :Props) => {
@@ -160,9 +165,6 @@ const PSASummary = (props :Props) => {
   const dmfEntity = neighbors.getIn([ENTITY_SETS.DMF_RESULTS, 'neighborDetails'], Immutable.Map());
   const dmf = formatDMFFromEntity(dmfEntity);
 
-  const psaDate = formatDateTimeList(
-    neighbors.getIn([ENTITY_SETS.PSA_RISK_FACTORS, 'associationDetails', PROPERTY_TYPES.TIMESTAMP], Immutable.Map())
-  );
 
   let modificationText;
   if (stepTwoIncrease(dmfRiskFactors, psaRiskFactors, scores)) {
@@ -175,28 +177,30 @@ const PSASummary = (props :Props) => {
     modificationText = 'Exception release.';
   }
   return (
-    <div>
-      <StatusInfo scores={scores} neighbors={neighbors} />
+    <SummaryWrapper>
+      <RowWrapper>
+        {renderPersonInfo(props)}
+        {renderArrestInfo(props)}
+      </RowWrapper>
       <hr />
-      {renderPersonInfo(neighbors)}
-      <hr />
-      <CenteredContainer>
-        { psaDate.length ? <DateContainer>{`PSA Date: ${psaDate}`}</DateContainer> : null }
-        <SummaryScores>
-          <ScoresContainer>
-            <ScoreTitle>PSA:</ScoreTitle>
-            <PSAScores scores={scores} />
-          </ScoresContainer>
-          <ScoresContainer>
-            <ScoreTitle>DMF:</ScoreTitle>
-            <DMFIncreaseText>{modificationText}</DMFIncreaseText>
+      <RowWrapper>
+        <ScoresContainer border>
+          <ScoreTitle>PSA</ScoreTitle>
+          <ScoreContent>
+            <PSAStats scores={scores} />
+            {renderPSADetails(props)}
+          </ScoreContent>
+        </ScoresContainer>
+        <ScoresContainer>
+          <ScoreTitle>DMF</ScoreTitle>
+          <ScoreContent>
             <DMFCell dmf={dmf} selected />
-          </ScoresContainer>
-        </SummaryScores>
-      </CenteredContainer>
+          </ScoreContent>
+        </ScoresContainer>
+      </RowWrapper>
       <hr />
       {renderCaseInfo(props)}
-    </div>
+    </SummaryWrapper>
   );
 };
 
