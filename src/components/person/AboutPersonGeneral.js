@@ -8,23 +8,17 @@ import ContentSection from '../ContentSection';
 import defaultUserIcon from '../../assets/svg/profile-placeholder-rectangle-big.svg';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { formatDateList, formatValue } from '../../utils/Utils';
-import { isNonEmptyString } from '../../utils/LangUtils';
 
 const {
   DOB,
   FIRST_NAME,
   MIDDLE_NAME,
-  LAST_NAME,
-  SUFFIX,
-  MUGSHOT,
-  PERSON_ID,
-  PICTURE
+  LAST_NAME
 } = PROPERTY_TYPES;
 
-const AboutPersonGeneral = ({ selectedPersonData, vertical }) => {
+const AboutPersonGeneral = ({ selectedPersonData }) => {
 
   let generalContent = [];
-  const title = 'General';
 
   let age = '';
   const firstName = formatValue(selectedPersonData.get(FIRST_NAME, Immutable.List()));
@@ -87,23 +81,18 @@ const AboutPersonGeneral = ({ selectedPersonData, vertical }) => {
     );
   });
 
+  const header = `${firstName} ${middleName} ${lastName}`;
+
   return (
     <ContentSection
         photo={defaultUserIcon}
-        firstName={firstName}
-        middleName={middleName}
-        lastName={lastName} >
+        header={header} >
       {content}
     </ContentSection>
   );
 };
 
-AboutPersonGeneral.defaultProps = {
-  vertical: false
-};
-
 AboutPersonGeneral.propTypes = {
-  vertical: PropTypes.bool,
   selectedPersonData: PropTypes.instanceOf(Immutable.Map).isRequired
 };
 
