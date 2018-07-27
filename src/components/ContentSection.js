@@ -85,23 +85,28 @@ const StyledSectionBottomBarWrapper = styled.div`
     switch (props.component) {
       case 'summary':
         return (
-          'padding: 30px 0px 0px 30px;'
+          `padding: 30px 0px 0px 30px;
+           img {
+             margin-right: 20px;
+           }`
         );
       case 'FormContainer':
         return (
           `padding: 0px;
-           justify-content: none;`
+           justify-content: none;
+           img {
+             margin-right: 20px;
+           }`
         );
       default:
         return (
-          'padding: 30px;'
+          `padding: 30px;
+           img {
+             margin-right: 50px;
+           }`
         );
     }
   }};
-
-  img {
-    margin-right: 50px;
-  }
 `;
 
 
