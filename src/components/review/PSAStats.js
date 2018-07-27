@@ -28,6 +28,10 @@ const DetailRow = styled.div`
   justify-content: space-between;
   align-items: center;
   width: 100%;
+
+  div:last-child {
+    margin-right: ${props => (props.downloadVisible ? '20px' : '0px')};
+  }
 `;
 
 const DetailItem = styled.div`
@@ -170,17 +174,20 @@ const PSAStats = ({ scores, downloadButton } :Props) => {
   `;
 
   let renderDownloadButton;
+  let downloadVisible;
   if (downloadButton) {
     renderDownloadButton = <DetailItem>{downloadButton()}</DetailItem>;
+    downloadVisible = true;
   }
   else {
     renderDownloadButton = null;
+    downloadVisible = false;
   }
 
   return (
     <Wrapper>
       <DetailsWrapper>
-        <DetailRow>
+        <DetailRow downloadVisible={downloadVisible}>
           <DetailItem>
             <h1>PSA Status</h1>
             <div><StatusTag status={status}>{status}</StatusTag></div>
