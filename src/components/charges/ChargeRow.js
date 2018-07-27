@@ -61,7 +61,6 @@ type Props = {
 };
 
 const ChargeRow = ({ charge, handleSelect, disabled } :Props) => {
-  console.log(charge);
   const statuteField = charge.get(PROPERTY_TYPES.CHARGE_STATUTE, Immutable.List());
   const statute = statuteField.get(0, '');
   const qualifier = charge.getIn([PROPERTY_TYPES.QUALIFIER, 0], '');

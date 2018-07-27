@@ -32,7 +32,6 @@ const Headers = () => (
 );
 
 const ChargeTable = ({ charges, handleSelect, disabled }) => {
-  console.log(charges);
   return (
     <Table>
       <tbody>
