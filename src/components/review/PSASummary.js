@@ -9,10 +9,9 @@ import PSAStats from './PSAStats';
 import ContentBlock from '../ContentBlock';
 import PersonCardSummary from '../person/PersonCardSummary';
 import ArrestCard from '../arrest/ArrestCard';
-import PSAReportDownloadButton from './PSAReportDownloadButton'
+import PSAReportDownloadButton from './PSAReportDownloadButton';
 import DMFCell from '../dmf/DMFCell';
-import ChargeList from '../../components/charges/ChargeList';
-import { CenteredContainer } from '../../utils/Layout';
+import ChargeTable from '../../components/charges/ChargeTable';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { formatDMFFromEntity } from '../../utils/consts/DMFResultConsts';
 import { formatDateTimeList } from '../../utils/Utils';
@@ -27,10 +26,11 @@ const SummaryWrapper = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  margin: 0px -15px;
 
   hr {
     color: #eeeeee;
-    width: calc(100% + 30px);
+    width: 100%;
     height: 1px;
     margin: 0px;
   }
@@ -80,6 +80,33 @@ const ScoreTitle = styled.div`
   color: #555e6f;
 `;
 
+const ChargeTableContainer = styled.div`
+  text-align: center;
+  width: 100%;
+  margin: 0px;
+`;
+
+const StyledSectionHeader = styled.div`
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  font-family: 'Open Sans', sans-serif;
+  font-size: 16px;
+  padding: 30px 0px 20px 30px;
+  font-weight: 600;
+  color: #555e6f;
+`;
+
+const Count = styled.div`
+  height: fit-content;
+  padding: 0px 10px;
+  margin-left: 10px;
+  border-radius: 10px;
+  background-color: #f0f0f7;
+  font-size: 12px;
+  color: #8e929b;
+`;
+
 type Props = {
   scores :Immutable.Map<*, *>,
   neighbors :Immutable.Map<*, *>,
@@ -122,9 +149,13 @@ const renderCaseInfo = ({
     .filter(caseObj => caseObj.getIn([PROPERTY_TYPES.CASE_ID, 0], '') === caseNum);
   const charges = manualChargeHistory.get(caseNum, Immutable.List());
   return (
-    <CenteredContainer>
-      <ChargeList pretrialCaseDetails={pretrialCase} charges={charges} />
-    </CenteredContainer>
+    <ChargeTableContainer>
+      <StyledSectionHeader>
+        Charges
+        <Count>{charges.size}</Count>
+      </StyledSectionHeader>
+      <ChargeTable charges={charges} pretrialCase={pretrialCase} />
+    </ChargeTableContainer>
   );
 };
 
@@ -155,7 +186,7 @@ const renderPSADetails = ({ neighbors } :Props) => {
             scores />
       </DownloadButtonWrapper>
     </PSADetails>
-  )
+  );
 };
 
 const PSASummary = (props :Props) => {
