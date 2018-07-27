@@ -660,10 +660,9 @@ class Form extends React.Component<Props, State> {
             </div>
           </ContextItem>
           <ContextItem>
-            <HeaderRow>
-              <h1>Arrest</h1>
-            </HeaderRow>
-            <ArrestCard arrest={selectedPretrialCase} />
+            <ArrestCard
+                arrest={selectedPretrialCase}
+                component="FormContainer" />
           </ContextItem>
         </ContextRow>
         <PaddedSectionWrapper>
