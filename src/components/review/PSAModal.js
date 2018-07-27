@@ -10,7 +10,7 @@ import { Modal, Tab, Tabs } from 'react-bootstrap';
 import { AuthUtils } from 'lattice-auth';
 
 import PSAInputForm from '../psainput/PSAInputForm';
-import PersonCard from './PersonCardReview';
+import PersonCard from '../person/PersonCardReview';
 import StyledButton from '../buttons/StyledButton';
 import DropdownButton from '../buttons/DropdownButton';
 import CaseHistory from '../../components/casehistory/CaseHistory';
@@ -161,7 +161,7 @@ export default class PSAModal extends React.Component<Props, State> {
 
   }
 
-  getNotesFromNeighbors = (neighbors) =>
+  getNotesFromNeighbors = neighbors =>
     neighbors.getIn([
       ENTITY_SETS.RELEASE_RECOMMENDATIONS,
       'neighborDetails',
@@ -445,6 +445,7 @@ export default class PSAModal extends React.Component<Props, State> {
 
   renderSummary = () => (
     <PSASummary
+        downloadFn={this.props.downloadFn}
         scores={this.props.scores}
         neighbors={this.props.neighbors}
         manualCaseHistory={this.props.manualCaseHistory}
