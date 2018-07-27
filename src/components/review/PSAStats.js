@@ -39,7 +39,7 @@ const DetailItem = styled.div`
   h1 {
     font-family: 'Open Sans', sans-serif;
     font-size: 11px;
-    font-weight: lighter;
+    font-weight: 600;
     color: #8e929b;
     text-transform: uppercase;
   }
@@ -169,6 +169,14 @@ const PSAStats = ({ scores, downloadButton } :Props) => {
     margin-left: 0px;
   `;
 
+  let renderDownloadButton;
+  if (downloadButton) {
+    renderDownloadButton = <DetailItem>{downloadButton()}</DetailItem>;
+  }
+  else {
+    renderDownloadButton = null;
+  }
+
   return (
     <Wrapper>
       <DetailsWrapper>
@@ -197,9 +205,7 @@ const PSAStats = ({ scores, downloadButton } :Props) => {
               <FtaScaleRight />
             </div>
           </DetailItem>
-          <DetailItem>
-            <div>{downloadButton()}</div>
-          </DetailItem>
+          {renderDownloadButton}
         </DetailRow>
       </DetailsWrapper>
     </Wrapper>
