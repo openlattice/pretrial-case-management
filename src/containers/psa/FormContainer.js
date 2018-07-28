@@ -411,6 +411,10 @@ class Form extends React.Component<Props, State> {
   handleSelectPerson = (selectedPerson, entityKeyId) => {
     this.props.actions.selectPerson({ selectedPerson });
     this.props.actions.loadPersonDetailsRequest(entityKeyId, true);
+    this.props.actions.loadNeighbors({
+      entitySetId: this.props.entitySetLookup.get(PEOPLE),
+      entityKeyId
+    });
   }
 
   nextPage = () => {
@@ -589,10 +593,7 @@ class Form extends React.Component<Props, State> {
     if (isLoadingCases && !isLoadingNeighbors) {
       if (numCasesLoaded === numCasesToLoad) {
         actions.loadPersonDetailsRequest(selectedPersonId, false);
-        actions.loadNeighbors({
-          entitySetId: entitySetLookup.get(PEOPLE),
-          entityKeyId: selectedPersonId
-        });
+
       }
       const progress = (numCasesToLoad > 0) ? Math.floor((numCasesLoaded / numCasesToLoad) * 100) : 0;
       const loadingText = numCasesToLoad > 0
