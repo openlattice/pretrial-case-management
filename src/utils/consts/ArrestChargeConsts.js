@@ -138,6 +138,61 @@ export const CHARGE_VALUES = {
   {
     [STATUTE]: '22-30-6',
     [DESCRIPTION]: 'Robbery In The First Degree(F2)'
+  },
+
+  /* MINNEHAHA ONLY */
+
+  {
+    [STATUTE]: '22-22-1',
+    [DESCRIPTION]: 'Rape 2nd Degree - Class 1 Felony'
+  },
+  {
+    [STATUTE]: '22-22-1',
+    [DESCRIPTION]: 'Rape with Object in the 2nd Degree - Class 1 Felony'
+  },
+  {
+    [STATUTE]: '22-22-1',
+    [DESCRIPTION]: 'Sodomy Rape in 2nd Degree - Class 1 Felony'
+  },
+  {
+    [STATUTE]: '22-22-1',
+    [DESCRIPTION]: 'Rape in 3rd Degree - Class 2 Felony'
+  },
+  {
+    [STATUTE]: '22-22-1',
+    [DESCRIPTION]: 'Rape With Object in 3rd Degree - Class 2 Felony'
+  },
+  {
+    [STATUTE]: '22-22-1',
+    [DESCRIPTION]: 'Sodomy Rape in 3rd Degree - Class 2 Felony'
+  },
+  {
+    [STATUTE]: '22-22-1',
+    [DESCRIPTION]: 'Rape in 4th Degree - Class 3 Felony'
+  },
+  {
+    [STATUTE]: '22-22-1',
+    [DESCRIPTION]: 'Rape in 4th Degree - Class 3 Felony (Statutory Rape)'
+  },
+  {
+    [STATUTE]: '22-22-1',
+    [DESCRIPTION]: 'Rape with Object in 4th Degree - Class 3 Felony'
+  },
+  {
+    [STATUTE]: '22-22-1',
+    [DESCRIPTION]: 'Sodomy Rape in 4th Degree - Class 3 Felony'
+  },
+  {
+    [STATUTE]: '22-22-1',
+    [DESCRIPTION]: 'Rape in 1st Degree if Victim less than 13 - Class C Felony'
+  },
+  {
+    [STATUTE]: '22-22-1',
+    [DESCRIPTION]: 'Rape with Object in First Degree if victim less than 13 - Class C Felony'
+  },
+  {
+    [STATUTE]: '22-22-1',
+    [DESCRIPTION]: 'Sodomy Rape in 1st Degree if victim less than 13 - Class C Felony'
   }],
 
   [CHARGE_TYPES.STEP_FOUR]: [{
@@ -447,6 +502,81 @@ export const CHARGE_VALUES = {
   {
     [STATUTE]: '25-10-43',
     [DESCRIPTION]: 'Violation of No Contact with DV Victim (M1)'
+  },
+
+  /* MINNEHAHA ONLY */
+
+  {
+    [STATUTE]: '22-14-20',
+    [DESCRIPTION]: 'Discharge of Firearm-At Occupied Structure or Car= F4 - Injury'
+  },
+  {
+    [STATUTE]: '22-14-20',
+    [DESCRIPTION]: 'Discharge of Firearm- At Occupied Structure or Car=F5  No Injury'
+  },
+  {
+    [STATUTE]: '22-19A-2',
+    [DESCRIPTION]: 'Stalking - With Protection Order or No contact or Restraining in Effect'
+  },
+  {
+    [STATUTE]: '22-14-21',
+    [DESCRIPTION]: 'Discharge of Firearm From Moving Vehicle'
+  },
+  {
+    [STATUTE]: '22-18-1.05',
+    [DESCRIPTION]: 'Aggravated Assault on Law Enforcement Officer or Other Public Officer'
+  },
+  {
+    [STATUTE]: '22-18-1.3',
+    [DESCRIPTION]: 'Serious Injury to Unborn Child as Aggravated Assault'
+  },
+  {
+    [STATUTE]: '22-18-1.4',
+    [DESCRIPTION]: 'Serious Injury to an Infant as Aggravated Assault'
+  },
+  {
+    [STATUTE]: '22-18-1.5',
+    [DESCRIPTION]: 'Aggravated Assault with Intent to Disfigure - Felony'
+  },
+  {
+    [STATUTE]: '22-22-1',
+    [DESCRIPTION]: 'Rape in 4th Degree - Class 3 Felony'
+  },
+  {
+    [STATUTE]: '22-22-1',
+    [DESCRIPTION]: 'Rape in 4th Degree - Class 3 Felony (Statutory Rape)'
+  },
+  {
+    [STATUTE]: '22-22-1',
+    [DESCRIPTION]: 'Rape with Object in 4th Degree - Class 3 Felony'
+  },
+  {
+    [STATUTE]: '22-22-1',
+    [DESCRIPTION]: 'Sodomy Rape in 4th Degree - Class 3 Felony'
+  },
+  {
+    [STATUTE]: '22-22-7',
+    [DESCRIPTION]: 'Sexual Contact with Child Under 16 - Offender Less Than 5 years Older'
+  },
+  {
+    [STATUTE]: '22-22-7',
+    [DESCRIPTION]: 'Sexual Contact With Child Less Than 16 - Offender 5+ Years Older'
+  },
+  {
+    [STATUTE]: '22-22-7.4',
+    [DESCRIPTION]: 'Sexual Contact without Consent'
+  },
+  {
+    [STATUTE]: '25-10-13',
+    [DESCRIPTION]: 'Violation Of Protection or No Contact Order -Felony if Assault or Stalking Included'
+  },
+  {
+    [STATUTE]: '25-10-23',
+    [DESCRIPTION]: 'Violation of Conditional Bond No Contact in Domestic Arrest'
+  },
+  {
+    [STATUTE]: '25-10-43',
+    [DESCRIPTION]: 'Defendant prohibit contact victim prior court appearance'
   }],
 
   [CHARGE_TYPES.ALL_VIOLENT]: [{
@@ -936,6 +1066,189 @@ export const CHARGE_VALUES = {
   {
     [STATUTE]: '22-16-41',
     [DESCRIPTION]: 'Vehicular Homicide (F3)'
+  },
+
+  /* MINNEHAHA ONLY */
+
+  {
+    [STATUTE]: '22-19-1.1',
+    [DESCRIPTION]: 'Aggravated Kidnapping in the Second Degree with Serious Injury as a Class 1 Felony'
+  },
+  {
+    [STATUTE]: '22-19-1',
+    [DESCRIPTION]: 'Aggravated Kidnapping in First Degree With Serious Injury as a Class B Felony'
+  },
+  {
+    [STATUTE]: '22-18-1.5',
+    [DESCRIPTION]: 'Aggravated Assault with Intent to Disfigure - Felony'
+  },
+  {
+    [STATUTE]: '22-18-1',
+    [DESCRIPTION]: 'Simple Assault-Attempt, Has Ability'
+  },
+  {
+    [STATUTE]: '22-18-1(F6)',
+    [DESCRIPTION]: 'Simple Assault by Intimidation but Charged as Felony for 2 or more Previous Convictions'
+  },
+  {
+    [STATUTE]: '22-18-1(F6)',
+    [DESCRIPTION]: 'Simple Assault but Charged as Felony for 2 or more Previous Convictions Within past 5 years'
+  },
+  {
+    [STATUTE]: '22-16-4.2',
+    [DESCRIPTION]: 'Murder in First Degree with Other Crimes'
+  },
+  {
+    [STATUTE]: '26-10-32',
+    [DESCRIPTION]: 'Branding of a minor prohibited'
+  },
+  {
+    [STATUTE]: '26-10-1',
+    [DESCRIPTION]: 'Abuse or Cruelty to a Minor Age 7+'
+  },
+  {
+    [STATUTE]: '26-10-1',
+    [DESCRIPTION]: 'Abuse or Cruelty to a Minor Under Age 7'
+  },
+  {
+    [STATUTE]: '22-18-1.05',
+    [DESCRIPTION]: 'Aggravated Assault on Law Enforcement Officer or Other Public Officer'
+  },
+  {
+    [STATUTE]: '22-18-1.4',
+    [DESCRIPTION]: 'Serious Injury to an Infant as Aggravated Assault'
+  },
+  {
+    [STATUTE]: '22-18-1.3',
+    [DESCRIPTION]: 'Serious Injury to Unborn Child as Aggravated Assault'
+  },
+  {
+    [STATUTE]: '26-10-32',
+    [DESCRIPTION]: 'Branding of a minor prohibited - second or subsequent violation'
+  },
+  {
+    [STATUTE]: '22-33-10',
+    [DESCRIPTION]: 'Burning of Material in Structure Occupied by Lawfully Confined Subjects'
+  },
+  {
+    [STATUTE]: '22-18-1.2',
+    [DESCRIPTION]: 'Simple Assault on an Unborn Child'
+  },
+  {
+    [STATUTE]: '22-4A-1',
+    [DESCRIPTION]: 'Solicitation of an Assault Type Crime - Class 1 Felony'
+  },
+  {
+    [STATUTE]: '22-4A-1',
+    [DESCRIPTION]: 'Solicitation of an Assault Type Crime - Class 2 Felony'
+  },
+  {
+    [STATUTE]: '22-4A-1',
+    [DESCRIPTION]: 'Solicitation of an Assault Type Crime - Class 3 Felony'
+  },
+  {
+    [STATUTE]: '22-4A-1',
+    [DESCRIPTION]: 'Solicitation of an Assault Type Crime - Class 4 Felony'
+  },
+  {
+    [STATUTE]: '22-4A-1',
+    [DESCRIPTION]: 'Solicitation of an Assault Type Crime - Class 5 Felony'
+  },
+  {
+    [STATUTE]: '22-4A-1',
+    [DESCRIPTION]: 'Solicitation of an Assault Type Crime - Class 6 Felony'
+  },
+  {
+    [STATUTE]: '22-4A-1',
+    [DESCRIPTION]: 'Solicitation of an Assault Type Crime - Class 1 Misdemeanor'
+  },
+  {
+    [STATUTE]: '22-11A-2',
+    [DESCRIPTION]: 'Escape in 1st Degree'
+  },
+  {
+    [STATUTE]: '22-49-2',
+    [DESCRIPTION]: 'Human Trafficking 1st Degree'
+  },
+  {
+    [STATUTE]: '22-18-31',
+    [DESCRIPTION]: 'Intentional Exposure of Another Person to HIV Infection'
+  },
+  {
+    [STATUTE]: '22-22-1',
+    [DESCRIPTION]: 'Rape 2nd Degree - Class 1 Felony'
+  },
+  {
+    [STATUTE]: '22-22-1',
+    [DESCRIPTION]: 'Rape with Object in the 2nd Degree - Class 1 Felony'
+  },
+  {
+    [STATUTE]: '22-22-1',
+    [DESCRIPTION]: 'Sodomy Rape in 2nd Degree - Class 1 Felony'
+  },
+  {
+    [STATUTE]: '22-22-1',
+    [DESCRIPTION]: 'Rape in 3rd Degree - Class 2 Felony'
+  },
+  {
+    [STATUTE]: '22-22-1',
+    [DESCRIPTION]: 'Rape With Object in 3rd Degree - Class 2 Felony'
+  },
+  {
+    [STATUTE]: '22-22-1',
+    [DESCRIPTION]: 'Sodomy Rape in 3rd Degree - Class 2 Felony'
+  },
+  {
+    [STATUTE]: '22-22-1',
+    [DESCRIPTION]: 'Rape in 4th Degree - Class 3 Felony'
+  },
+  {
+    [STATUTE]: '22-22-1',
+    [DESCRIPTION]: 'Rape in 4th Degree - Class 3 Felony (Statutory Rape)'
+  },
+  {
+    [STATUTE]: '22-22-1',
+    [DESCRIPTION]: 'Rape with Object in 4th Degree - Class 3 Felony'
+  },
+  {
+    [STATUTE]: '22-22-1',
+    [DESCRIPTION]: 'Sodomy Rape in 4th Degree - Class 3 Felony'
+  },
+  {
+    [STATUTE]: '22-22-1',
+    [DESCRIPTION]: 'Rape in 1st Degree if Victim less than 13 - Class C Felony'
+  },
+  {
+    [STATUTE]: '22-22-1',
+    [DESCRIPTION]: 'Rape with Object in First Degree if victim less than 13 - Class C Felony'
+  },
+  {
+    [STATUTE]: '22-22-1',
+    [DESCRIPTION]: 'Sodomy Rape in 1st Degree if victim less than 13 - Class C Felony'
+  },
+  {
+    [STATUTE]: '22-22-7',
+    [DESCRIPTION]: 'Sexual Contact With Child Less Than 16 - Offender 5+ Years Older'
+  },
+  {
+    [STATUTE]: '22-22-7',
+    [DESCRIPTION]: 'Sexual Contact with Child Under 16 - Offender Less Than 5 years Older'
+  },
+  {
+    [STATUTE]: '22-22-7.4',
+    [DESCRIPTION]: 'Sexual Contact without Consent'
+  },
+  {
+    [STATUTE]: '22-18-1.05',
+    [DESCRIPTION]: 'Simple Assault on Law Enforcement Officer or Other Public Officer'
+  },
+  {
+    [STATUTE]: '22-18-1',
+    [DESCRIPTION]: 'Simple Assault but Charged as Felony for 2 or more Previous Convictions Within past 5 years'
+  },
+  {
+    [STATUTE]: '22-22-1',
+    [DESCRIPTION]: 'Rape in 4th Degree - Class 3 Felony (Statutory Rape)'
   }]
 };
 
