@@ -29,6 +29,7 @@ const InfoHeader = styled.span`
 
 const CaseHistoryContainer = styled.div`
   max-height: 750px;
+  overflow: scroll;
 `;
 
 const StatsContainer = styled.div`
@@ -158,24 +159,28 @@ const CaseHistory = ({ caseHistory, chargeHistory } :Props) => {
     });
 
   return (
-    <CaseHistoryContainer>
-      <Title withSubtitle >
-        <span>Summary Statistics</span>
-        <span>All current and past cases</span>
-      </Title>
-      <StatsContainer>
-        <StatsWrapper>
-          <StatsGroup>
-            {SummaryStats}
-          </StatsGroup>
-        </StatsWrapper>
-      </StatsContainer>
-      <hr />
-      <Title withSubtitle >
-        <span>Case History</span>
-      </Title>
-      {cases}
-    </CaseHistoryContainer>
+    <div>
+      <div>
+        <Title withSubtitle >
+          <span>Summary Statistics</span>
+          <span>All current and past cases</span>
+        </Title>
+        <StatsContainer>
+          <StatsWrapper>
+            <StatsGroup>
+              {SummaryStats}
+            </StatsGroup>
+          </StatsWrapper>
+        </StatsContainer>
+        <hr />
+      </div>
+      <CaseHistoryContainer>
+        <Title withSubtitle >
+          <span>Case History</span>
+        </Title>
+        {cases}
+      </CaseHistoryContainer>
+    </div>
   );
 };
 
