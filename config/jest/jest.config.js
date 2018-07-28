@@ -31,5 +31,6 @@ module.exports = {
     '<rootDir>/config/jest/enzyme.config.js'
   ],
   testEnvironment: '<rootDir>/config/jest/jsdom.config.js',
-  testResultsProcessor: 'jest-bamboo-reporter'
+  testResultsProcessor: 'jest-bamboo-reporter',
+  testURL: 'http://localhost/'
 };
