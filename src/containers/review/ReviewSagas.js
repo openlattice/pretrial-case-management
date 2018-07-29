@@ -364,7 +364,10 @@ const getPSADataFromNeighbors = (
 
   const selectedPerson = neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborDetails'], Immutable.Map());
 
-  let createData;
+  let createData = {
+    user: '',
+    timestamp: ''
+  };
   let updateData;
 
   neighbors.get(ENTITY_SETS.STAFF, Immutable.List()).forEach((writerNeighbor) => {
