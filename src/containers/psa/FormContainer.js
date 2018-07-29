@@ -593,7 +593,10 @@ class Form extends React.Component<Props, State> {
     if (isLoadingCases && !isLoadingNeighbors) {
       if (numCasesLoaded === numCasesToLoad) {
         actions.loadPersonDetailsRequest(selectedPersonId, false);
-
+        actions.loadNeighbors({
+          entitySetId: entitySetLookup.get(PEOPLE),
+          entityKeyId: selectedPersonId
+        })
       }
       const progress = (numCasesToLoad > 0) ? Math.floor((numCasesLoaded / numCasesToLoad) * 100) : 0;
       const loadingText = numCasesToLoad > 0
