@@ -15,12 +15,12 @@ const PersonCardWrapper = styled.div`
   border-right: solid 1px #eeeeee;
 `
 export default ({ person } :Props) => {
-  const firstName = formatValue(person.get(PROPERTY_TYPES.FIRST_NAME));
-  const middleName = formatValue(person.get(PROPERTY_TYPES.MIDDLE_NAME));
-  const lastName = formatValue(person.get(PROPERTY_TYPES.LAST_NAME));
-  const dob = formatDateList(person.get(PROPERTY_TYPES.DOB));
-  const sex = formatValue(person.get(PROPERTY_TYPES.SEX));
-  const race = formatValue(person.get(PROPERTY_TYPES.RACE));
+  const firstName = formatValue(person.get(PROPERTY_TYPES.FIRST_NAME, ''));
+  const middleName = formatValue(person.get(PROPERTY_TYPES.MIDDLE_NAME, ''));
+  const lastName = formatValue(person.get(PROPERTY_TYPES.LAST_NAME, ''));
+  const dob = formatDateList(person.get(PROPERTY_TYPES.DOB, ''));
+  const sex = formatValue(person.get(PROPERTY_TYPES.SEX, ''));
+  const race = formatValue(person.get(PROPERTY_TYPES.RACE, ''));
   const generalContent = [
     {
       label: 'Last Name',
