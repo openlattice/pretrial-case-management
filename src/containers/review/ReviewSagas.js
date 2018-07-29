@@ -209,57 +209,60 @@ function* getAllSearchResults(entitySetId :string, searchTerm :string) :Generato
 function* loadPSADataWorker(action :SequenceAction) :Generator<*, *, *> {
   try {
     yield put(loadPSAData.request(action.id));
-    const entitySetId = yield call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.PSA_SCORES);
-    let neighborsById = yield call(SearchApi.searchEntityNeighborsBulk, entitySetId, action.value);
-    neighborsById = Immutable.fromJS(neighborsById);
 
     let allFilers = Immutable.Set();
     let psaNeighborsById = Immutable.Map();
     let psaNeighborsByDate = Immutable.Map();
 
-    neighborsById.keySeq().forEach((id) => {
-      let allDatesEdited = Immutable.List();
-      let neighborsByEntitySetName = Immutable.Map();
+    if (action.value.length) {
+      const entitySetId = yield call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.PSA_SCORES);
+      let neighborsById = yield call(SearchApi.searchEntityNeighborsBulk, entitySetId, action.value);
+      neighborsById = Immutable.fromJS(neighborsById);
 
-      neighborsById.get(id).forEach((neighbor) => {
+      neighborsById.keySeq().forEach((id) => {
+        let allDatesEdited = Immutable.List();
+        let neighborsByEntitySetName = Immutable.Map();
 
-        neighbor.getIn(['associationDetails', PROPERTY_TYPES.TIMESTAMP],
-          neighbor.getIn(['associationDetails', PROPERTY_TYPES.DATE_TIME], Immutable.List())).forEach((timestamp) => {
-          const timestampMoment = moment(timestamp);
-          if (timestampMoment.isValid()) {
-            allDatesEdited = allDatesEdited.push(timestampMoment.format('MM/DD/YYYY'));
+        neighborsById.get(id).forEach((neighbor) => {
+
+          neighbor.getIn(['associationDetails', PROPERTY_TYPES.TIMESTAMP],
+            neighbor.getIn(['associationDetails', PROPERTY_TYPES.DATE_TIME], Immutable.List())).forEach((timestamp) => {
+            const timestampMoment = moment(timestamp);
+            if (timestampMoment.isValid()) {
+              allDatesEdited = allDatesEdited.push(timestampMoment.format('MM/DD/YYYY'));
+            }
+          });
+
+          const neighborName = neighbor.getIn(['neighborEntitySet', 'name']);
+          if (neighborName) {
+            if (neighborName === ENTITY_SETS.STAFF) {
+              neighbor.getIn(['neighborDetails', PROPERTY_TYPES.PERSON_ID], Immutable.List())
+                .forEach((filer) => {
+                  allFilers = allFilers.add(filer);
+                });
+            }
+
+            if (LIST_ENTITY_SETS.includes(neighborName)) {
+              neighborsByEntitySetName = neighborsByEntitySetName.set(
+                neighborName,
+                neighborsByEntitySetName.get(neighborName, Immutable.List()).push(neighbor)
+              );
+            }
+            else {
+              neighborsByEntitySetName = neighborsByEntitySetName.set(neighborName, neighbor);
+            }
           }
         });
 
-        const neighborName = neighbor.getIn(['neighborEntitySet', 'name']);
-        if (neighborName) {
-          if (neighborName === ENTITY_SETS.STAFF) {
-            neighbor.getIn(['neighborDetails', PROPERTY_TYPES.PERSON_ID], Immutable.List())
-              .forEach((filer) => {
-                allFilers = allFilers.add(filer);
-              });
-          }
-
-          if (LIST_ENTITY_SETS.includes(neighborName)) {
-            neighborsByEntitySetName = neighborsByEntitySetName.set(
-              neighborName,
-              neighborsByEntitySetName.get(neighborName, Immutable.List()).push(neighbor)
-            );
-          }
-          else {
-            neighborsByEntitySetName = neighborsByEntitySetName.set(neighborName, neighbor);
-          }
-        }
+        allDatesEdited.forEach((editDate) => {
+          psaNeighborsById = psaNeighborsById.set(id, neighborsByEntitySetName);
+          psaNeighborsByDate = psaNeighborsByDate.set(
+            editDate,
+            psaNeighborsByDate.get(editDate, Immutable.Map()).set(id, neighborsByEntitySetName)
+          );
+        });
       });
-
-      allDatesEdited.forEach((editDate) => {
-        psaNeighborsById = psaNeighborsById.set(id, neighborsByEntitySetName);
-        psaNeighborsByDate = psaNeighborsByDate.set(
-          editDate,
-          psaNeighborsByDate.get(editDate, Immutable.Map()).set(id, neighborsByEntitySetName)
-        );
-      });
-    });
+    }
 
     yield put(loadPSAData.success(action.id, {
       psaNeighborsByDate,
