@@ -13,7 +13,8 @@ import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 const PersonCardWrapper = styled.div`
   width: 100%;
   border-right: solid 1px #eeeeee;
-`
+`;
+
 export default ({ person } :Props) => {
   const firstName = formatValue(person.get(PROPERTY_TYPES.FIRST_NAME, ''));
   const middleName = formatValue(person.get(PROPERTY_TYPES.MIDDLE_NAME, ''));
