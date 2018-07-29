@@ -12,35 +12,21 @@ import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 const {
   ARRESTING_AGENCY,
   CASE_ID,
-  ARREST_DATE,
   ARREST_DATE_TIME
 } = PROPERTY_TYPES;
 
 type Props = {
   arrest :Immutable.Map<*, *>,
-  handleSelect? :(arrest :Immutable.Map<*, *>, entityKeyId :string) => void
+  component :String
 };
 
-const ArrestCard = ({ arrest, component, handleSelect } :Props) => {
-  let caseNum;
-  let arrestDateTime;
-  let arrestDate;
-  let arrestTime;
-  let arrestAgency;
-  if (component === 'FormContainer') {
-    caseNum = arrest.getIn([CASE_ID, 0]);
-    arrestDateTime = arrest.getIn([ARREST_DATE_TIME, 0], arrest.getIn([ARREST_DATE, 0], ''));
-    arrestDate = formatDateTime(arrestDateTime, 'MM/DD/YYYY');
-    arrestTime = formatDateTime(arrestDateTime, 'HH:mm');
-    arrestAgency = arrest.getIn([ARRESTING_AGENCY, 0]);
-  }
-  else if (component === 'summary') {
-    caseNum = arrest.getIn([0, CASE_ID]);
-    arrestDateTime = arrest.getIn([0, ARREST_DATE_TIME]);
-    arrestDate = formatDateTime(arrestDateTime, 'MM/DD/YYYY');
-    arrestTime = formatDateTime(arrestDateTime, 'HH:mm');
-    arrestAgency = arrest.getIn([0, PROPERTY_TYPES.ARRESTING_AGENCY]);
-  }
+const ArrestCard = ({ arrest, component } :Props) => {
+  const caseNum = arrest.getIn([CASE_ID, 0], '');
+  const arrestDateTime = arrest.getIn([ARREST_DATE_TIME, 0], '');
+  const arrestDate = formatDateTime(arrestDateTime, 'MM/DD/YYYY');
+  const arrestTime = formatDateTime(arrestDateTime, 'HH:MM');
+  const arrestAgency = arrest.getIn([ARRESTING_AGENCY, 0], '');
+
 
   const generalContent = [
     {
@@ -64,6 +50,7 @@ const ArrestCard = ({ arrest, component, handleSelect } :Props) => {
       content: [arrestAgency]
     }
   ];
+
   const content = generalContent.map((item, idx) => (
     <ContentBlock
         component={component}
@@ -78,10 +65,6 @@ const ArrestCard = ({ arrest, component, handleSelect } :Props) => {
       {content}
     </ContentSection>
   );
-};
-
-ArrestCard.defaultProps = {
-  handleSelect: () => {}
 };
 
 export default ArrestCard;

@@ -131,7 +131,8 @@ const renderArrestInfo = ({ neighbors, manualCaseHistory } :Props) => {
     [ENTITY_SETS.MANUAL_PRETRIAL_CASES, 'neighborDetails', PROPERTY_TYPES.CASE_ID, 0], ''
   );
   const pretrialCase = manualCaseHistory
-    .filter(caseObj => caseObj.getIn([PROPERTY_TYPES.CASE_ID, 0], '') === caseNum);
+    .filter(caseObj => caseObj.getIn([PROPERTY_TYPES.CASE_ID, 0], '') === caseNum)
+    .getIn([0]);
   return (
     <ArrestCard arrest={pretrialCase} component="summary" />
   );
@@ -159,7 +160,7 @@ const renderCaseInfo = ({
   );
 };
 
-const renderPSADetails = ({ neighbors } :Props) => {
+const renderPSADetails = ({ neighbors, downloadFn, scores } :Props) => {
   let filer;
   const psaDate = formatDateTimeList(
     neighbors.getIn([ENTITY_SETS.PSA_RISK_FACTORS, 'associationDetails', PROPERTY_TYPES.TIMESTAMP], Immutable.Map())
@@ -181,9 +182,9 @@ const renderPSADetails = ({ neighbors } :Props) => {
           component="summary" />
       <DownloadButtonWrapper>
         <PSAReportDownloadButton
-            downloadFn
-            neighbors
-            scores />
+            downloadFn={downloadFn}
+            neighbors={neighbors}
+            scores={scores} />
       </DownloadButtonWrapper>
     </PSADetails>
   );
