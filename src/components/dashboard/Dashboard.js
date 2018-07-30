@@ -18,6 +18,7 @@ import EnrollVoice from '../../containers/enroll/EnrollVoice';
 import * as Routes from '../../core/router/Routes';
 
 const DashboardWrapper = styled.div`
+  width: 960px;
   display: flex;
   flex: 1 1 auto;
 `;

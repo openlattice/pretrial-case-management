@@ -10,7 +10,7 @@ import { Modal, Tab, Tabs } from 'react-bootstrap';
 import { AuthUtils } from 'lattice-auth';
 
 import PSAInputForm from '../psainput/PSAInputForm';
-import PersonCard from './PersonCardReview';
+import PersonCard from '../person/PersonCardReview';
 import StyledButton from '../buttons/StyledButton';
 import DropdownButton from '../buttons/DropdownButton';
 import CaseHistory from '../../components/casehistory/CaseHistory';
@@ -37,6 +37,11 @@ const DownloadButtonContainer = styled.div`
   height: 100%;
   display: flex;
   align-items: center !important;
+`;
+
+const ModalWrapper = styled.div`
+  max-height: 80vh;
+  overflow-y: auto;
 `;
 
 const NoDMFContainer = styled(CenteredContainer)`
@@ -161,7 +166,7 @@ export default class PSAModal extends React.Component<Props, State> {
 
   }
 
-  getNotesFromNeighbors = (neighbors) =>
+  getNotesFromNeighbors = neighbors =>
     neighbors.getIn([
       ENTITY_SETS.RELEASE_RECOMMENDATIONS,
       'neighborDetails',
@@ -445,6 +450,7 @@ export default class PSAModal extends React.Component<Props, State> {
 
   renderSummary = () => (
     <PSASummary
+        downloadFn={this.props.downloadFn}
         scores={this.props.scores}
         neighbors={this.props.neighbors}
         manualCaseHistory={this.props.manualCaseHistory}
@@ -489,7 +495,7 @@ export default class PSAModal extends React.Component<Props, State> {
     const allSentences = sentenceHistory.toList().flatMap(list => list);
 
     return (
-      <div>
+      <ModalWrapper>
         <PSAInputForm
             section="review"
             input={riskFactors}
@@ -503,7 +509,7 @@ export default class PSAModal extends React.Component<Props, State> {
             allFTAs={ftaHistory}
             viewOnly={!editing || psaIsClosed(scores)} />
         {editButton}
-      </div>
+      </ModalWrapper>
     );
   }
 

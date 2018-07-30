@@ -14,6 +14,7 @@ const Cell = styled.td`
   font-family: 'Open Sans', sans-serif;
   font-size: 14px;
   color: '#2e2e34';
+  text-align: left;
 `;
 
 const ChargeDescriptionWrapper = styled.div`
@@ -38,8 +39,6 @@ const ChargeDescriptionWrapper = styled.div`
 const Row = styled.tr`
   padding: 7px 30px;
   border-bottom: 1px solid #e1e1eb;
-  border-left: 1px solid #e1e1eb;
-  border-right: 1px solid #e1e1eb;
 
   &:hover {
     cursor: ${props => (props.disabled ? 'default' : 'pointer')};
@@ -62,7 +61,6 @@ type Props = {
 };
 
 const ChargeRow = ({ charge, handleSelect, disabled } :Props) => {
-
   const statuteField = charge.get(PROPERTY_TYPES.CHARGE_STATUTE, Immutable.List());
   const statute = statuteField.get(0, '');
   const qualifier = charge.getIn([PROPERTY_TYPES.QUALIFIER, 0], '');
@@ -72,11 +70,13 @@ const ChargeRow = ({ charge, handleSelect, disabled } :Props) => {
   const entityKeyId :string = charge.get('id', '');
 
   return (
-    <Row disabled={disabled} onClick={() => {
-      if (handleSelect) {
-        handleSelect(charge, entityKeyId);
-      }
-    }}>
+    <Row
+        disabled={disabled}
+        onClick={() => {
+          if (handleSelect) {
+            handleSelect(charge, entityKeyId);
+          }
+        }}>
       <Cell>{ statute }</Cell>
       <Cell>{ qualifier }</Cell>
       <Cell>
