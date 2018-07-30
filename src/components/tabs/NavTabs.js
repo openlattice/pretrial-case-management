@@ -7,26 +7,26 @@ type Props = {
   selectedPane :number,
   panes :object,
   onTabChosen :() => void,
-  onKeyUp :() => void,
-  onKeyDown :() => void,
+  handleKeyDown :() => void,
 }
 
 const NavTabs = ({
   selectedPane,
   panes,
   onTabChosen,
-  onKeyUp,
-  onKeyDown
+  handleKeyDown
 } :Props) => {
   const selected = selectedPane;
   const navTabs = panes.map((pane, index) => {
     const { title } = pane;
-    const klass = index === selected ? 'active' : '';
+    const className = index === selected ? 'active' : '';
     return (
-      <li>
+      <li
+          className={className}
+          key={`${pane.title}-${index}`} >
         <a
-            key={index}
-            className={klass}
+            alt=""
+            className="tab-header"
             onClick={() => onTabChosen(index)} >
           {title}
         </a>
