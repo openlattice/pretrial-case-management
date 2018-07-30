@@ -39,6 +39,11 @@ const DownloadButtonContainer = styled.div`
   align-items: center !important;
 `;
 
+const ModalWrapper = styled.div`
+  max-height: 80vh;
+  overflow-y: auto;
+`;
+
 const NoDMFContainer = styled(CenteredContainer)`
   margin: 30px;
   font-size: 18px;
@@ -490,7 +495,7 @@ export default class PSAModal extends React.Component<Props, State> {
     const allSentences = sentenceHistory.toList().flatMap(list => list);
 
     return (
-      <div>
+      <ModalWrapper>
         <PSAInputForm
             section="review"
             input={riskFactors}
@@ -504,7 +509,7 @@ export default class PSAModal extends React.Component<Props, State> {
             allFTAs={ftaHistory}
             viewOnly={!editing || psaIsClosed(scores)} />
         {editButton}
-      </div>
+      </ModalWrapper>
     );
   }
 
