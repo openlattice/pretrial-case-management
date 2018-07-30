@@ -9,6 +9,7 @@ import moment from 'moment';
 import { Modal, Tab, Tabs } from 'react-bootstrap';
 import { AuthUtils } from 'lattice-auth';
 
+import CustomTabs from '../tabs/Tabs';
 import PSAInputForm from '../psainput/PSAInputForm';
 import PersonCard from '../person/PersonCardReview';
 import StyledButton from '../buttons/StyledButton';
@@ -567,6 +568,29 @@ export default class PSAModal extends React.Component<Props, State> {
 
     const changeStatusText = psaIsClosed(this.props.scores) ? 'Change PSA Status' : 'Close PSA';
 
+    const tabs = [
+      {
+        title: 'Summary',
+        content: this.renderSummary
+      },
+      {
+        title: 'PSA',
+        content: this.renderPSADetails
+      },
+      {
+        title: 'DMF',
+        content: this.renderDMFExplanation
+      },
+      {
+        title: 'DMF',
+        content: this.renderDMFExplanation
+      },
+      {
+        title: 'Initial Appearance',
+        content: this.renderInitialAppearance
+      }
+    ];
+
     return (
       <Modal show={this.props.open} onHide={this.props.onClose} dialogClassName={OverrideClassNames.PSA_REVIEW_MODAL}>
         <Modal.Header closeButton>
@@ -588,6 +612,7 @@ export default class PSAModal extends React.Component<Props, State> {
               defaultFailureReasons={this.props.scores.get(PROPERTY_TYPES.FAILURE_REASON, Immutable.List()).toJS()}
               onClose={() => this.setState({ closing: false })}
               onSubmit={this.handleStatusChange} />
+          <CustomTabs panes={tabs} />
           <Tabs id={`details-${this.props.entityKeyId}`} activeKey={this.state.view} onSelect={this.onViewSelect}>
             <Tab eventKey={VIEWS.SUMMARY} title="Summary">{this.renderSummary()}</Tab>
             <Tab eventKey={VIEWS.PSA} title="PSA">{this.renderPSADetails()}</Tab>
