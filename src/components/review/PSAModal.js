@@ -43,6 +43,7 @@ const DownloadButtonContainer = styled.div`
 const ModalWrapper = styled.div`
   max-height: 70vh;
   overflow-y: auto;
+  padding: ${props => (props.withPadding ? '30px' : '0px')};
   div:first-child {
     border: none;
   }
@@ -609,7 +610,7 @@ export default class PSAModal extends React.Component<Props, State> {
     }
 
     return (
-      <ModalWrapper>
+      <ModalWrapper withPadding >
         <DMFExplanation dmf={dmf} nca={nca} fta={fta} nvca={nvca} riskFactors={riskFactors} />
       </ModalWrapper>
     )
@@ -618,48 +619,54 @@ export default class PSAModal extends React.Component<Props, State> {
   renderCaseHistory = () => {
     const { caseHistory, chargeHistory } = this.props;
     return (
-      <div>
+      <ModalWrapper withPadding>
         <Title>Timeline (past two years)</Title>
         <CaseHistoryTimeline caseHistory={this.props.caseHistory} chargeHistory={this.props.chargeHistory} />
         <Title>All cases</Title>
         <CaseHistory caseHistory={this.props.caseHistory} chargeHistory={this.props.chargeHistory} />
-      </div>
+      </ModalWrapper>
     )
   }
 
   renderInitialAppearance = () => {
     if (this.props.submitting || this.props.refreshingNeighbors) {
       return (
-        <SubmittingWrapper>
-          <span>{this.props.submitting ? 'Submitting' : 'Reloading'}</span>
-          <LoadingSpinner />
-        </SubmittingWrapper>
+        <ModalWrapper>
+          <SubmittingWrapper>
+            <span>{this.props.submitting ? 'Submitting' : 'Reloading'}</span>
+            <LoadingSpinner />
+          </SubmittingWrapper>
+        </ModalWrapper>
       );
     }
     if (!this.props.neighbors.get(ENTITY_SETS.HEARINGS)) {
       return (
-        <SelectHearingsContainer
-            personId={this.props.personId}
-            psaId={this.props.scores.getIn([PROPERTY_TYPES.GENERAL_ID, 0])}
-            psaEntityKeyId={this.props.entityKeyId}
-            hearings={this.props.hearings} />
+        <ModalWrapper>
+          <SelectHearingsContainer
+              personId={this.props.personId}
+              psaId={this.props.scores.getIn([PROPERTY_TYPES.GENERAL_ID, 0])}
+              psaEntityKeyId={this.props.entityKeyId}
+              hearings={this.props.hearings} />
+        </ModalWrapper>
       );
     }
     return (
-      <SelectReleaseConditions
-          submitting={this.props.submitting}
-          personId={this.getIdValue(ENTITY_SETS.PEOPLE, PROPERTY_TYPES.PERSON_ID)}
-          psaId={this.props.scores.getIn([PROPERTY_TYPES.GENERAL_ID, 0])}
-          dmfId={this.getIdValue(ENTITY_SETS.DMF_RESULTS)}
-          submit={this.props.submitData}
-          replace={this.props.replaceEntity}
-          submitCallback={this.refreshPSANeighborsCallback}
-          hearing={this.props.neighbors.getIn([ENTITY_SETS.HEARINGS, 'neighborDetails'], Immutable.Map())}
-          hearingId={this.props.neighbors.getIn([ENTITY_SETS.HEARINGS, 'neighborId'])}
-          defaultDMF={this.props.neighbors.getIn([ENTITY_SETS.DMF_RESULTS, 'neighborDetails'], Immutable.Map())}
-          defaultBond={this.props.neighbors.getIn([ENTITY_SETS.BONDS, 'neighborDetails'], Immutable.Map())}
-          defaultConditions={this.props.neighbors.get(ENTITY_SETS.RELEASE_CONDITIONS, Immutable.List())
-            .map(neighbor => neighbor.get('neighborDetails', Immutable.Map()))} />
+      <ModalWrapper>
+        <SelectReleaseConditions
+            submitting={this.props.submitting}
+            personId={this.getIdValue(ENTITY_SETS.PEOPLE, PROPERTY_TYPES.PERSON_ID)}
+            psaId={this.props.scores.getIn([PROPERTY_TYPES.GENERAL_ID, 0])}
+            dmfId={this.getIdValue(ENTITY_SETS.DMF_RESULTS)}
+            submit={this.props.submitData}
+            replace={this.props.replaceEntity}
+            submitCallback={this.refreshPSANeighborsCallback}
+            hearing={this.props.neighbors.getIn([ENTITY_SETS.HEARINGS, 'neighborDetails'], Immutable.Map())}
+            hearingId={this.props.neighbors.getIn([ENTITY_SETS.HEARINGS, 'neighborId'])}
+            defaultDMF={this.props.neighbors.getIn([ENTITY_SETS.DMF_RESULTS, 'neighborDetails'], Immutable.Map())}
+            defaultBond={this.props.neighbors.getIn([ENTITY_SETS.BONDS, 'neighborDetails'], Immutable.Map())}
+            defaultConditions={this.props.neighbors.get(ENTITY_SETS.RELEASE_CONDITIONS, Immutable.List())
+              .map(neighbor => neighbor.get('neighborDetails', Immutable.Map()))} />
+      </ModalWrapper>
     );
   }
 
