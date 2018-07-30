@@ -132,7 +132,7 @@ const renderArrestInfo = ({ neighbors, manualCaseHistory } :Props) => {
   );
   const pretrialCase = manualCaseHistory
     .filter(caseObj => caseObj.getIn([PROPERTY_TYPES.CASE_ID, 0], '') === caseNum)
-    .get(0);
+    .get(0, Immutable.Map());
   return (
     <ArrestCard arrest={pretrialCase} component="summary" />
   );
