@@ -41,8 +41,11 @@ const DownloadButtonContainer = styled.div`
 `;
 
 const ModalWrapper = styled.div`
-  max-height: 80vh;
+  max-height: 70vh;
   overflow-y: auto;
+  div:first-child {
+    border: none;
+  }
 `;
 
 const NoDMFContainer = styled(CenteredContainer)`
@@ -50,8 +53,22 @@ const NoDMFContainer = styled(CenteredContainer)`
   font-size: 18px;
 `;
 
+const TitleWrapper = styled.div`
+  padding: 35px 15px;
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+`;
 const TitleHeader = styled.span`
   margin-right: 15px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #555e6f;
+  span {
+    text-transform: uppercase;
+  }
 `;
 
 const SubmittingWrapper = styled.div`
@@ -74,6 +91,73 @@ const Title = styled.div`
   color: #555e6f;
   margin: 20px 0;
 `;
+
+const StyledNavWrapper = styled.div`
+  .tabs {
+    margin: 0px -15px;
+
+    hr {
+      color: #eeeeee;
+      width: 100%;
+      height: 1px;
+      margin: 0px;
+    }
+
+    .nav-tabs {
+        border: none;
+        margin-bottom: 0px;
+        padding-left: 30px;
+        list-style: none;
+        display: flex;
+        flex-direction: row;
+        justify-content: flex-start;
+        align-items: center;
+
+      li {
+        display: inline-block;
+        width: max-content;
+        height: 100%;
+        margin-right: 40px;
+        padding: 16px 0px;
+        font-family: 'Open Sans', sans-serif;
+        font-size: 14px;
+        a {
+          color: #8e929b;
+          border: none;
+        }
+        a:hover {
+          text-decoration: none;
+          border: none;
+          cursor: pointer;
+        }
+      }
+
+      li.active {
+        border-bottom: solid 3px #6124e2;
+        a {
+          color: #6124e2;
+          border: none;
+          background-color: transparent;
+          font-size: 14px;
+          font-weight: 600;
+        }
+      }
+    }
+  }
+`;
+
+const ClosePSAButton = styled(StyledButton)`
+  font-family: 'Open Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+  color: #6124e2;
+  width: 162px;
+  height: 40px;
+  border: none;
+  border-radius: 3px;
+  background-color: #e4d8ff;
+`
 
 type Props = {
   open :boolean,
@@ -524,7 +608,23 @@ export default class PSAModal extends React.Component<Props, State> {
       return <NoDMFContainer>A DMF was not calculated for this PSA.</NoDMFContainer>;
     }
 
-    return <DMFExplanation dmf={dmf} nca={nca} fta={fta} nvca={nvca} riskFactors={riskFactors} />;
+    return (
+      <ModalWrapper>
+        <DMFExplanation dmf={dmf} nca={nca} fta={fta} nvca={nvca} riskFactors={riskFactors} />
+      </ModalWrapper>
+    )
+  }
+
+  renderCaseHistory = () => {
+    const { caseHistory, chargeHistory } = this.props;
+    return (
+      <div>
+        <Title>Timeline (past two years)</Title>
+        <CaseHistoryTimeline caseHistory={this.props.caseHistory} chargeHistory={this.props.chargeHistory} />
+        <Title>All cases</Title>
+        <CaseHistory caseHistory={this.props.caseHistory} chargeHistory={this.props.chargeHistory} />
+      </div>
+    )
   }
 
   renderInitialAppearance = () => {
@@ -582,8 +682,8 @@ export default class PSAModal extends React.Component<Props, State> {
         content: this.renderDMFExplanation
       },
       {
-        title: 'DMF',
-        content: this.renderDMFExplanation
+        title: 'Case History',
+        content: this.renderCaseHistory
       },
       {
         title: 'Initial Appearance',
@@ -594,15 +694,6 @@ export default class PSAModal extends React.Component<Props, State> {
     return (
       <Modal show={this.props.open} onHide={this.props.onClose} dialogClassName={OverrideClassNames.PSA_REVIEW_MODAL}>
         <Modal.Header closeButton>
-          <Modal.Title>
-            <div>
-              <TitleHeader>{`PSA Details: ${this.getName()}`}</TitleHeader>
-              { this.props.readOnly
-                ? null
-                : <StyledButton onClick={() => this.setState({ closing: true })}>{changeStatusText}</StyledButton>
-              }
-            </div>
-          </Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <ClosePSAModal
@@ -612,23 +703,16 @@ export default class PSAModal extends React.Component<Props, State> {
               defaultFailureReasons={this.props.scores.get(PROPERTY_TYPES.FAILURE_REASON, Immutable.List()).toJS()}
               onClose={() => this.setState({ closing: false })}
               onSubmit={this.handleStatusChange} />
-          <CustomTabs panes={tabs} />
-          <Tabs id={`details-${this.props.entityKeyId}`} activeKey={this.state.view} onSelect={this.onViewSelect}>
-            <Tab eventKey={VIEWS.SUMMARY} title="Summary">{this.renderSummary()}</Tab>
-            <Tab eventKey={VIEWS.PSA} title="PSA">{this.renderPSADetails()}</Tab>
-            <Tab eventKey={VIEWS.DMF} title="DMF">{this.renderDMFExplanation()}</Tab>
-            {
-              this.props.hideCaseHistory ? null : (
-                <Tab eventKey={VIEWS.HISTORY} title="Case History">
-                  <Title>Timeline (past two years)</Title>
-                  <CaseHistoryTimeline caseHistory={this.props.caseHistory} chargeHistory={this.props.chargeHistory} />
-                  <Title>All cases</Title>
-                  <CaseHistory caseHistory={this.props.caseHistory} chargeHistory={this.props.chargeHistory} />
-                </Tab>
-              )
+          <TitleWrapper>
+            <TitleHeader>PSA Details: <span>{`${this.getName()}`}</span></TitleHeader>
+            { this.props.readOnly
+              ? null
+              : <ClosePSAButton onClick={() => this.setState({ closing: true })}>{changeStatusText}</ClosePSAButton>
             }
-            <Tab eventKey={VIEWS.INITIAL_APPEARANCE} title="Initial Appearance">{this.renderInitialAppearance()}</Tab>
-          </Tabs>
+          </TitleWrapper>
+          <StyledNavWrapper>
+            <CustomTabs panes={tabs} />
+          </StyledNavWrapper>
         </Modal.Body>
       </Modal>
     );
