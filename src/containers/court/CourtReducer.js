@@ -4,7 +4,7 @@
 
 import Immutable from 'immutable';
 
-import { CHANGE_HEARING_FILTERS, loadHearingsToday } from './CourtActionFactory';
+import { CHANGE_HEARING_FILTERS, loadHearingsForDate } from './CourtActionFactory';
 import { ENTITY_SETS } from '../../utils/consts/DataModelConsts';
 
 const INITIAL_STATE :Immutable.Map<*, *> = Immutable.fromJS({
@@ -20,8 +20,8 @@ const INITIAL_STATE :Immutable.Map<*, *> = Immutable.fromJS({
 export default function reviewReducer(state :Immutable.Map<*, *> = INITIAL_STATE, action :SequenceAction) {
   switch (action.type) {
 
-    case loadHearingsToday.case(action.type): {
-      return loadHearingsToday.reducer(state, action, {
+    case loadHearingsForDate.case(action.type): {
+      return loadHearingsForDate.reducer(state, action, {
         REQUEST: () => state
           .set('hearingsToday', Immutable.List())
           .set('hearingsByTime', Immutable.Map())

@@ -33,7 +33,7 @@ export default function* sagas() :Generator<*, *, *> {
     fork(AuthSagas.watchLogout),
 
     // CourtSagas
-    fork(CourtSagas.loadHearingsTodayWatcher),
+    fork(CourtSagas.loadHearingsForDateWatcher),
 
     // DashboardSagas
     fork(DashboardSagas.loadDashboardDataWatcher),
