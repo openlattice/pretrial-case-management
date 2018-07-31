@@ -48,7 +48,7 @@ const inputStyle = `
   flex: 1 0 auto;
   font-size: 14px;
   font-weight: 400;
-  letter-spacing: 0px;
+  letter-spacing: 0;
   line-height: 24px;
   outline: none;
   padding: 0 45px 0 20px;

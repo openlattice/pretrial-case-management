@@ -59,7 +59,7 @@ const StyledSectionHeader = styled.div`
 
 const Count = styled.div`
   height: fit-content;
-  padding: 0px 10px;
+  padding: 0 10px;
   margin-left: 10px;
   border-radius: 10px;
   background-color: #f0f0f7;

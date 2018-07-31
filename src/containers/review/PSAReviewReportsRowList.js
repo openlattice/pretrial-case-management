@@ -54,9 +54,9 @@ const StyledBarForReviews = styled.div`
   background: #fff;
   border-radius: 5px;
   border: solid 1px #e1e1eb;
-  border-top-left-radius: 0px;
-  border-top-right-radius: 0px;
-  padding: 0px 0px 10px 30px;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+  padding: 0 0 10px 30px;
   font-size: 14px;
   text-align: center;
   display: flex;

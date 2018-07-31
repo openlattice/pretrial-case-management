@@ -43,7 +43,7 @@ const DownloadButtonContainer = styled.div`
 const ModalWrapper = styled.div`
   max-height: 70vh;
   overflow-y: auto;
-  padding: ${props => (props.withPadding ? '30px' : '0px')};
+  padding: ${props => (props.withPadding ? '30px' : '0')};
   div:first-child {
     border: none;
   }
@@ -95,18 +95,18 @@ const Title = styled.div`
 
 const StyledNavWrapper = styled.div`
   .tabs {
-    margin: 0px -15px;
+    margin: 0 -15px;
 
     hr {
       color: #eeeeee;
       width: 100%;
       height: 1px;
-      margin: 0px;
+      margin: 0;
     }
 
     .nav-tabs {
         border: none;
-        margin-bottom: 0px;
+        margin-bottom: 0;
         padding-left: 30px;
         list-style: none;
         display: flex;
@@ -119,7 +119,7 @@ const StyledNavWrapper = styled.div`
         width: max-content;
         height: 100%;
         margin-right: 40px;
-        padding: 16px 0px;
+        padding: 16px 0;
         font-family: 'Open Sans', sans-serif;
         font-size: 14px;
         a {

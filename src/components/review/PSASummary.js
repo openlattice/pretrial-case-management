@@ -98,7 +98,7 @@ const StyledSectionHeader = styled.div`
   align-items: center;
   font-family: 'Open Sans', sans-serif;
   font-size: 16px;
-  padding: 30px 0px 20px 30px;
+  padding: 30px 0 20px 30px;
   font-weight: 600;
   color: #555e6f;
 `;

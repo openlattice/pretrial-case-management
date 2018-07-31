@@ -20,7 +20,7 @@ const StyledSelect = styled(Select)`
 
     svg {
       height: 11px;
-      padding: 0px;
+      padding: 0;
     }
   }
 
@@ -40,11 +40,11 @@ const StyledSelect = styled(Select)`
   }
 
   .lattice-select__indicator {
-    padding: 0px;
+    padding: 0;
   }
 
   .lattice-select__control.lattice-select__control-is-focused {
-    box-shadow: 0 0 0 0px;
+    box-shadow: 0 0 0 0;
     background-color: #fff;
   }
 

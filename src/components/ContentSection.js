@@ -39,7 +39,7 @@ const StyledContentBlockWrapper = styled.div`
 `;
 
 const StyledSectionHeader = styled.div`
-  height: ${props => (props.renderHeader ? 'auto' : '0px')};
+  height: ${props => (props.renderHeader ? 'auto' : '0')};
   visibility: ${props => (props.renderHeader ? 'auto' : 'hidden')};
   width: 100%;
   font-family: 'Open Sans', sans-serif;
@@ -49,14 +49,14 @@ const StyledSectionHeader = styled.div`
     switch (props.component) {
       case 'summary':
         return (
-          `padding: 0px 30px 0px 30px;
+          `padding: 0 30px 0 30px;
            margin-bottom: -10px;
            font-size: 16px;
           `
         );
       case 'FormContainer':
         return (
-          `padding: 10px 30px 30px 0px;
+          `padding: 10px 30px 30px 0;
            font-size: 18px;
            font-weight: normal;`
         );
@@ -85,14 +85,14 @@ const StyledSectionBottomBarWrapper = styled.div`
     switch (props.component) {
       case 'summary':
         return (
-          `padding: 30px 0px 0px 30px;
+          `padding: 30px 0 0 30px;
            img {
              margin-right: 20px;
            }`
         );
       case 'FormContainer':
         return (
-          `padding: 0px;
+          `padding: 0;
            justify-content: none;
            img {
              margin-right: 20px;
