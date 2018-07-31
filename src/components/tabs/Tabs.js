@@ -65,7 +65,7 @@ class Tabs extends React.Component<Props, State> {
             panes={this.props.panes}
             handleKeyDown={this.handleKeyDown} />
         <hr />
-        <div className="tab-content">
+        <div>
           <article>
             {pane.content()}
           </article>
