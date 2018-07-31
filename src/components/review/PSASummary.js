@@ -13,12 +13,11 @@ import PSAReportDownloadButton from './PSAReportDownloadButton';
 import DMFCell from '../dmf/DMFCell';
 import ChargeTable from '../../components/charges/ChargeTable';
 import rightArrow from '../../assets/svg/right-arrow-dark.svg';
-import { CONTEXT, DMF, NOTES, PSA } from '../../utils/consts/Consts';
+import { CONTEXT } from '../../utils/consts/Consts';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import {
   getDMFDecision,
   increaseDMFSeverity,
-  shouldCheckForSecondaryRelease,
   formatDMFFromEntity
  } from '../../utils/consts/DMFResultConsts';
 import { formatDateTimeList } from '../../utils/Utils';
@@ -40,12 +39,6 @@ const SummaryWrapper = styled.div`
     height: 1px;
     margin: 0;
   }
-`;
-
-const DMFIncreaseText = styled.div`
-  margin-bottom: 15px;
-  font-size: 14px;
-  color: #555e6f;
 `;
 
 const RowWrapper = styled.div`
@@ -226,11 +219,9 @@ const renderDMFDetails = ({ neighbors, scores } :Props) => {
   const dmf = formatDMFFromEntity(dmfEntity);
   const nca = scores.getIn([PROPERTY_TYPES.NCA_SCALE, 0]);
   const fta = scores.getIn([PROPERTY_TYPES.FTA_SCALE, 0]);
-  const nvca = scores.getIn([PROPERTY_TYPES.NVCA_FLAG, 0]);
   const dmfDecision = getDMFDecision(nca, fta, context);
 
   if (stepTwoIncrease(dmfRiskFactors, psaRiskFactors, scores)) {
-<<<<<<< HEAD
     return (
       <ScoreContent>
         <DMFIncreaseText>Step two increase</DMFIncreaseText>
@@ -261,15 +252,6 @@ const renderDMFDetails = ({ neighbors, scores } :Props) => {
         </StepWrapper>
       </ScoreContent>
     );
-=======
-    modificationText = 'Step two increase';
-  }
-  else if (stepFourIncrease(dmfRiskFactors, psaRiskFactors, scores)) {
-    modificationText = 'Step four increase';
-  }
-  else if (dmfSecondaryReleaseDecrease(dmfRiskFactors, scores)) {
-    modificationText = 'Exception release';
->>>>>>> develop
   }
 };
 
@@ -293,14 +275,7 @@ const PSASummary = (props :Props) => {
         </ScoresContainer>
         <ScoresContainer>
           <ScoreTitle>DMF</ScoreTitle>
-<<<<<<< HEAD
           {renderDMFDetails(props)}
-=======
-          <ScoreContent>
-            <DMFIncreaseText>{modificationText}</DMFIncreaseText>
-            <DMFCell dmf={dmf} selected />
-          </ScoreContent>
->>>>>>> develop
         </ScoresContainer>
       </RowWrapper>
       <hr />
