@@ -6,15 +6,11 @@ import React from 'react';
 import Immutable from 'immutable';
 import styled from 'styled-components';
 import moment from 'moment';
-import InputRange from 'react-input-range';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
+import { NavLink } from 'react-router-dom';
 import {
   ButtonToolbar,
-  DropdownButton,
-  MenuItem,
-  Tab,
-  Tabs,
   ToggleButton,
   ToggleButtonGroup
 } from 'react-bootstrap';
@@ -22,6 +18,7 @@ import {
 import SecondaryButton from '../../components/buttons/SecondaryButton';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import PersonCard from '../../components/people/PersonCard';
+import StyledDatePicker from '../../components/controls/StyledDatePicker';
 import * as CourtActionFactory from './CourtActionFactory';
 import * as FormActionFactory from '../psa/FormActionFactory';
 import * as ReviewActionFactory from '../review/ReviewActionFactory';
@@ -37,7 +34,8 @@ const ToolbarWrapper = styled(ButtonToolbar)`
 
 const StyledFormViewWrapper = styled.div`
   display: flex;
-  width: 100%;
+  width: 1300px;
+  margin-left: -170px;
 `;
 
 const StyledFormWrapper = styled.div`
@@ -108,6 +106,22 @@ const PeopleWrapper = styled.div`
   flex-wrap: wrap;
 `;
 
+const DatePickerWrapper = styled.div`
+  width: 200px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 30px;
+`;
+
+const Label = styled.span`
+  font-family: 'Open Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 10px;
+`;
+
 type Props = {
   hearingsToday :Immutable.List<*>,
   hearingsByTime :Immutable.Map<*, *>,
@@ -118,16 +132,13 @@ type Props = {
   county :string,
   actions :{
     changeHearingFilters :({ county? :string, courtroom? :string }) => void,
-    loadHearingsToday :() => void,
+    loadHearingsForDate :(date :Object) => void,
     bulkDownloadPSAReviewPDF :({ peopleEntityKeyIds :string[] }) => void
   }
 };
 
 type State = {
-  timeRange :{
-    min :number,
-    max :number
-  }
+  date :Object
 }
 
 const PENN_ROOM_PREFIX = 'Courtroom ';
@@ -137,16 +148,13 @@ class CourtContainer extends React.Component<Props, State> {
   constructor(props :Props) {
     super(props);
     this.state = {
-      timeRange: {
-        min: 0,
-        max: 0
-      }
+      date: moment()
     };
   }
 
   componentDidMount() {
     if (!this.props.hearingsByTime.size || !this.props.hearingNeighborsById.size) {
-      this.props.actions.loadHearingsToday();
+      this.props.actions.loadHearingsForDate(this.state.date);
     }
   }
 
@@ -294,67 +302,21 @@ class CourtContainer extends React.Component<Props, State> {
     );
   }
 
-  getTimeAsNum = (time) => {
-    const hourSplit = time.split(':');
-    if (hourSplit.length > 1) {
-      const hour = Number.parseInt(hourSplit[0], 10);
-      const minutes = Number.parseInt(hourSplit[1].split(' ')[0], 10);
-
-      if (!Number.isNaN(hour) && !Number.isNaN(minutes)) {
-        return (hour * 60) + minutes;
-      }
+  handleDateChange = (dateStr) => {
+    const date = moment(dateStr);
+    if (date.isValid()) {
+      this.setState({ date });
+      this.props.actions.loadHearingsForDate(date);
     }
-    return 0;
   }
 
-  getNumAsTime = (num) => {
-    const hours = Math.floor(num / 60);
-    const hourStr = (hours < 10) ? `0${hours}` : hours.toString();
-
-    const mins = (num % 60);
-    const minStr = (mins < 10) ? `0${mins}` : mins.toString();
-
-    const a = hours > 11 ? 'pm' : 'am';
-    return `${hourStr}:${minStr} ${a}`;
-  }
-
-  renderTimeRange = () => {
-    return null;
-    let minTime;
-    let maxTime;
-    this.props.hearingsByTime.keySeq().forEach((timeStr) => {
-      const time = moment(timeStr, TIME_FORMAT);
-      if (!minTime || time.isBefore(minTime)) {
-        minTime = time;
-      }
-      if (!maxTime || time.isAfter(maxTime)) {
-        maxTime = time;
-      }
-    });
-
-    if (minTime && maxTime) {
-      const min = this.getTimeAsNum(minTime.format(TIME_FORMAT));
-      const max = this.getTimeAsNum(maxTime.format(TIME_FORMAT));
-
-      let { timeRange } = this.state;
-      if (timeRange.max === 0) {
-        timeRange = { min, max };
-        this.setState({ timeRange });
-      }
-
-      return (
-        <InputRange
-            maxValue={max}
-            minValue={min}
-            step={15}
-            formatLabel={this.getNumAsTime}
-            value={timeRange}
-            onChange={timeRange => this.setState({ timeRange })} />
-      );
-    }
-
-    return null;
-
+  renderDatePicker = () => {
+    return (
+      <DatePickerWrapper>
+        <Label>Hearing Date</Label>
+        <StyledDatePicker value={this.state.date.format('YYYY-MM-DD')} onChange={this.handleDateChange} />
+      </DatePickerWrapper>
+    );
   }
 
   renderContent = () => {
@@ -362,9 +324,8 @@ class CourtContainer extends React.Component<Props, State> {
       return <LoadingSpinner />;
     }
 
-    const timeOptions = this.props.hearingsByTime.keySeq().sort((time1, time2) => {
-      return moment(time1, TIME_FORMAT).isSameOrBefore(moment(time2, TIME_FORMAT)) ? -1 : 1;
-    });
+    const timeOptions = this.props.hearingsByTime.keySeq().sort((time1, time2) =>
+      (moment(time1, TIME_FORMAT).isSameOrBefore(moment(time2, TIME_FORMAT)) ? -1 : 1));
 
     return timeOptions.map(this.renderHearingsAtTime);
 
@@ -375,12 +336,12 @@ class CourtContainer extends React.Component<Props, State> {
       <StyledFormViewWrapper>
         <StyledFormWrapper>
           <StyledTitleWrapper>
-            <div>Initial Appearances Today</div>
+            <div>Initial Appearances</div>
           </StyledTitleWrapper>
           <StyledSectionWrapper>
+            {this.renderDatePicker()}
             {this.renderCountyChoices()}
             {this.renderCourtroomChoices()}
-            {this.renderTimeRange()}
             {this.renderContent()}
           </StyledSectionWrapper>
         </StyledFormWrapper>

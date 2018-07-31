@@ -1,19 +1,19 @@
 import Immutable from 'immutable';
 import moment from 'moment';
-import { DataApi, EntityDataModelApi, SearchApi } from 'lattice';
+import { EntityDataModelApi, SearchApi } from 'lattice';
 import { all, call, put, takeEvery } from 'redux-saga/effects';
 
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { getFqnObj, toISODate, TIME_FORMAT } from '../../utils/Utils';
 import {
-  LOAD_HEARINGS_TODAY,
-  loadHearingsToday
+  LOAD_HEARINGS_FOR_DATE,
+  loadHearingsForDate
 } from './CourtActionFactory';
 
-function* loadHearingsTodayWorker(action :SequenceAction) :Generator<*, *, *> {
+function* loadHearingsForDateWorker(action :SequenceAction) :Generator<*, *, *> {
 
   try {
-    yield put(loadHearingsToday.request(action.id));
+    yield put(loadHearingsForDate.request(action.id));
     const [entitySetId, dateTimeId, hearingTypeId] = yield all([
       call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.HEARINGS),
       call(EntityDataModelApi.getPropertyTypeId, getFqnObj(PROPERTY_TYPES.DATE_TIME)),
@@ -22,7 +22,7 @@ function* loadHearingsTodayWorker(action :SequenceAction) :Generator<*, *, *> {
 
     const searchFields = [
       {
-        searchTerm: `"${toISODate(moment())}"`,
+        searchTerm: `"${toISODate(action.value)}"`,
         property: dateTimeId,
         exact: true
       }, {
@@ -79,17 +79,17 @@ function* loadHearingsTodayWorker(action :SequenceAction) :Generator<*, *, *> {
       });
     });
 
-    yield put(loadHearingsToday.success(action.id, { hearingsToday, hearingNeighborsById, hearingsByTime }));
+    yield put(loadHearingsForDate.success(action.id, { hearingsToday, hearingNeighborsById, hearingsByTime }));
   }
   catch (error) {
     console.error(error);
-    yield put(loadHearingsToday.failure(action.id, { error }));
+    yield put(loadHearingsForDate.failure(action.id, { error }));
   }
   finally {
-    yield put(loadHearingsToday.finally(action.id));
+    yield put(loadHearingsForDate.finally(action.id));
   }
 }
 
-export function* loadHearingsTodayWatcher() :Generator<*, *, *> {
-  yield takeEvery(LOAD_HEARINGS_TODAY, loadHearingsTodayWorker);
+export function* loadHearingsForDateWatcher() :Generator<*, *, *> {
+  yield takeEvery(LOAD_HEARINGS_FOR_DATE, loadHearingsForDateWorker);
 }
