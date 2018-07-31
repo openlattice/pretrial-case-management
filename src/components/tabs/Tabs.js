@@ -6,6 +6,8 @@ import styled from 'styled-components';
 
 import NavTabs from './NavTabs';
 
+const UP_KEY = 38;
+const DOWN_KEY = 40;
 
 const NavTabsWrapper = styled.div`
   margin: 0 -15px;
@@ -40,12 +42,12 @@ class Tabs extends React.Component<Props, State> {
     const { panes } = this.props;
 
     // arrow up/down button should select next/previous list element
-    if (e.keyCode === 38 && selectedPane > 0) {
+    if (e.keyCode === UP_KEY && selectedPane > 0) {
       this.setState(prevState => ({
         selectedPane: prevState.selectedPane - 1
       }));
     }
-    else if (e.keyCode === 40 && selectedPane < panes.length - 1) {
+    else if (e.keyCode === DOWN_KEY && selectedPane < panes.length - 1) {
       this.setState(prevState => ({
         selectedPane: prevState.selectedPane + 1
       }));
