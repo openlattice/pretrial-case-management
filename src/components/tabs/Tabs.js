@@ -25,7 +25,6 @@ class Tabs extends React.Component<Props, State> {
   }
 
   handleKeyDown(e) {
-    console.log(e);
     const { selectedPane } = this.state;
     const { panes } = this.props;
 
