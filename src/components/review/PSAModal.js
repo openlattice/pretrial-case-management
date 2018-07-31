@@ -699,9 +699,11 @@ export default class PSAModal extends React.Component<Props, State> {
     ];
 
     return (
-      <Modal show={this.props.open} onHide={this.props.onClose} dialogClassName={OverrideClassNames.PSA_REVIEW_MODAL}>
-        <Modal.Header closeButton>
-        </Modal.Header>
+      <Modal
+          show={this.props.open}
+          onHide={this.props.onClose}
+          dialogClassName={OverrideClassNames.PSA_REVIEW_MODAL}
+          closeButton>
         <Modal.Body>
           <ClosePSAModal
               open={this.state.closing}
