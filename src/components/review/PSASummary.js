@@ -12,7 +12,7 @@ import ArrestCard from '../arrest/ArrestCard';
 import PSAReportDownloadButton from './PSAReportDownloadButton';
 import DMFCell from '../dmf/DMFCell';
 import ChargeTable from '../../components/charges/ChargeTable';
-import rightArrow from '../../assets/svg/right-arrow-dark.svg';
+import rightArrow from '../../assets/svg/dmf-arrow.svg';
 import { CONTEXT } from '../../utils/consts/Consts';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import {
