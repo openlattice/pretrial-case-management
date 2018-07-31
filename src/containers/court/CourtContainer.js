@@ -22,6 +22,7 @@ import StyledDatePicker from '../../components/controls/StyledDatePicker';
 import * as CourtActionFactory from './CourtActionFactory';
 import * as FormActionFactory from '../psa/FormActionFactory';
 import * as ReviewActionFactory from '../review/ReviewActionFactory';
+import * as Routes from '../../core/router/Routes';
 import { StyledSectionWrapper } from '../../utils/Layout';
 import { TIME_FORMAT, formatDate } from '../../utils/Utils';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
@@ -120,6 +121,10 @@ const Label = styled.span`
   font-size: 14px;
   font-weight: 600;
   margin-bottom: 10px;
+`;
+
+const SpinnerWrapper = styled.div`
+  margin-top: 30px;
 `;
 
 type Props = {
@@ -319,9 +324,15 @@ class CourtContainer extends React.Component<Props, State> {
     );
   }
 
+  renderSearchLink = () => {
+    return (
+      <NavLink to={Routes.SEARCH_PEOPLE} name={Routes.SEARCH_PEOPLE}>Search All People</NavLink>
+    );
+  }
+
   renderContent = () => {
     if (this.props.isLoadingHearings) {
-      return <LoadingSpinner />;
+      return <SpinnerWrapper><LoadingSpinner /></SpinnerWrapper>;
     }
 
     const timeOptions = this.props.hearingsByTime.keySeq().sort((time1, time2) =>
@@ -342,6 +353,7 @@ class CourtContainer extends React.Component<Props, State> {
             {this.renderDatePicker()}
             {this.renderCountyChoices()}
             {this.renderCourtroomChoices()}
+            {this.renderSearchLink()}
             {this.renderContent()}
           </StyledSectionWrapper>
         </StyledFormWrapper>
