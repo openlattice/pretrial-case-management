@@ -29,15 +29,13 @@ class Tabs extends React.Component<Props, State> {
     this.state = {
       selectedPane: 0
     };
-    this.selectTab = this.selectTab.bind(this);
-    this.handleKeyDown = this.handleKeyDown.bind(this);
   }
 
-  selectTab(num) {
+  selectTab = (num) => {
     this.setState({ selectedPane: num });
   }
 
-  handleKeyDown(e) {
+  handleKeyDown = (e) => {
     const { selectedPane } = this.state;
     const { panes } = this.props;
 
