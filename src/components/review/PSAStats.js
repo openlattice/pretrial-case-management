@@ -30,7 +30,7 @@ const DetailRow = styled.div`
   width: 100%;
 
   div:last-child {
-    margin-right: ${props => (props.downloadVisible ? '20px' : '0px')};
+    margin-right: ${props => (props.downloadVisible ? '20px' : '0')};
   }
 `;
 
@@ -159,8 +159,8 @@ const PSAStats = ({ scores, downloadButton } :Props) => {
   `;
   const FtaScaleRight = styled(Scale)`
     width: ${WIDTH_MULTIPLIER * (1 - (ftaVal / 6))}px;
-    border-radius: 0px 2px 2px 0px;
-    margin-left: 0px;
+    border-radius: 0 2px 2px 0;
+    margin-left: 0;
   `;
   const NcaScaleLeft = styled(Scale)`
     width: ${WIDTH_MULTIPLIER * (ncaVal / 6)}px;
@@ -169,8 +169,8 @@ const PSAStats = ({ scores, downloadButton } :Props) => {
   `;
   const NcaScaleRight = styled(Scale)`
     width: ${WIDTH_MULTIPLIER * (1 - (ncaVal / 6))}px;
-    border-radius: 0px 2px 2px 0px;
-    margin-left: 0px;
+    border-radius: 0 2px 2px 0;
+    margin-left: 0;
   `;
 
   let renderDownloadButton;

@@ -33,20 +33,26 @@ const SummaryWrapper = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  margin: 0px -15px;
 
   hr {
     color: #eeeeee;
     width: 100%;
     height: 1px;
-    margin: 0px;
+    margin: 0;
   }
 `;
+
+const DMFIncreaseText = styled.div`
+  margin-bottom: 15px;
+  font-size: 14px;
+  color: #555e6f;
+`;
+
 const RowWrapper = styled.div`
   width: 100%;
   display: grid;
   grid-template-columns: 66% 33%;
-  margin: 30px 0px;
+  margin: 30px 0;
 `;
 
 const ScoresContainer = styled.div`
@@ -57,7 +63,7 @@ const ScoresContainer = styled.div`
 `;
 
 const ScoreContent = styled.div`
-  padding: 20px 30px 0px;
+  padding: 20px 30px 0;
   width: 100%;
   display: flex;
   flex-direction: row;
@@ -81,7 +87,7 @@ const DownloadButtonWrapper = styled.div`
 const ScoreTitle = styled.div`
   width: 100%;
   font-family: 'Open Sans', sans-serif;
-  padding: 0px 30px;
+  padding: 0 30px;
   font-size: 16px;
   font-weight: 600;
   color: #555e6f;
@@ -90,7 +96,7 @@ const ScoreTitle = styled.div`
 const ChargeTableContainer = styled.div`
   text-align: center;
   width: 100%;
-  margin: 0px;
+  margin: 0;
 `;
 
 const StyledSectionHeader = styled.div`
@@ -99,14 +105,14 @@ const StyledSectionHeader = styled.div`
   align-items: center;
   font-family: 'Open Sans', sans-serif;
   font-size: 16px;
-  padding: 30px 0px 20px 30px;
+  padding: 30px 0 20px 30px;
   font-weight: 600;
   color: #555e6f;
 `;
 
 const Count = styled.div`
   height: fit-content;
-  padding: 0px 10px;
+  padding: 0 10px;
   margin-left: 10px;
   border-radius: 10px;
   background-color: #f0f0f7;
@@ -224,6 +230,7 @@ const renderDMFDetails = ({ neighbors, scores } :Props) => {
   const dmfDecision = getDMFDecision(nca, fta, context);
 
   if (stepTwoIncrease(dmfRiskFactors, psaRiskFactors, scores)) {
+<<<<<<< HEAD
     return (
       <ScoreContent>
         <DMFIncreaseText>Step two increase</DMFIncreaseText>
@@ -254,6 +261,15 @@ const renderDMFDetails = ({ neighbors, scores } :Props) => {
         </StepWrapper>
       </ScoreContent>
     );
+=======
+    modificationText = 'Step two increase';
+  }
+  else if (stepFourIncrease(dmfRiskFactors, psaRiskFactors, scores)) {
+    modificationText = 'Step four increase';
+  }
+  else if (dmfSecondaryReleaseDecrease(dmfRiskFactors, scores)) {
+    modificationText = 'Exception release';
+>>>>>>> develop
   }
 };
 
@@ -277,7 +293,14 @@ const PSASummary = (props :Props) => {
         </ScoresContainer>
         <ScoresContainer>
           <ScoreTitle>DMF</ScoreTitle>
+<<<<<<< HEAD
           {renderDMFDetails(props)}
+=======
+          <ScoreContent>
+            <DMFIncreaseText>{modificationText}</DMFIncreaseText>
+            <DMFCell dmf={dmf} selected />
+          </ScoreContent>
+>>>>>>> develop
         </ScoresContainer>
       </RowWrapper>
       <hr />
