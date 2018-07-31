@@ -12,8 +12,15 @@ import ArrestCard from '../arrest/ArrestCard';
 import PSAReportDownloadButton from './PSAReportDownloadButton';
 import DMFCell from '../dmf/DMFCell';
 import ChargeTable from '../../components/charges/ChargeTable';
+import rightArrow from '../../assets/svg/right-arrow-dark.svg';
+import { CONTEXT, DMF, NOTES, PSA } from '../../utils/consts/Consts';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { formatDMFFromEntity } from '../../utils/consts/DMFResultConsts';
+import {
+  getDMFDecision,
+  increaseDMFSeverity,
+  shouldCheckForSecondaryRelease,
+  formatDMFFromEntity
+ } from '../../utils/consts/DMFResultConsts';
 import { formatDateTimeList } from '../../utils/Utils';
 import {
   stepTwoIncrease,
@@ -107,6 +114,18 @@ const Count = styled.div`
   color: #8e929b;
 `;
 
+const StepWrapper = styled.div`
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+`;
+
+const DMFIncreaseText = styled.div`
+margin-bottom: 15px;
+font-size: 14px;
+color: #555e6f;
+`;
+
 type Props = {
   scores :Immutable.Map<*, *>,
   neighbors :Immutable.Map<*, *>,
@@ -190,24 +209,57 @@ const renderPSADetails = ({ neighbors, downloadFn, scores } :Props) => {
   );
 };
 
-const PSASummary = (props :Props) => {
-  const { neighbors, scores } = props;
+const renderDMFDetails = ({ neighbors, scores } :Props) => {
   const dmfRiskFactors = neighbors.getIn([ENTITY_SETS.DMF_RISK_FACTORS, 'neighborDetails'], Immutable.Map());
+  let context = dmfRiskFactors.getIn(['general.context', 0]);
+  if (context === 'Court') {
+    context = CONTEXT.COURT_PENN;
+  }
   const psaRiskFactors = neighbors.getIn([ENTITY_SETS.PSA_RISK_FACTORS, 'neighborDetails'], Immutable.Map());
   const dmfEntity = neighbors.getIn([ENTITY_SETS.DMF_RESULTS, 'neighborDetails'], Immutable.Map());
   const dmf = formatDMFFromEntity(dmfEntity);
+  const nca = scores.getIn([PROPERTY_TYPES.NCA_SCALE, 0]);
+  const fta = scores.getIn([PROPERTY_TYPES.FTA_SCALE, 0]);
+  const nvca = scores.getIn([PROPERTY_TYPES.NVCA_FLAG, 0]);
+  const dmfDecision = getDMFDecision(nca, fta, context);
 
-
-  let modificationText;
   if (stepTwoIncrease(dmfRiskFactors, psaRiskFactors, scores)) {
-    modificationText = 'Step two increase.';
+    return (
+      <ScoreContent>
+        <DMFIncreaseText>Step two increase</DMFIncreaseText>
+        <DMFCell dmf={dmf} selected />
+      </ScoreContent>
+    );
   }
   else if (stepFourIncrease(dmfRiskFactors, psaRiskFactors, scores)) {
-    modificationText = 'Step four increase.';
+    return (
+      <ScoreContent>
+        <DMFIncreaseText>Step four increase</DMFIncreaseText>
+        <StepWrapper>
+          <DMFCell dmf={dmfDecision} selected />
+          <img src={rightArrow} alt="" />
+          <DMFCell dmf={increaseDMFSeverity(dmfDecision, context)} selected />
+        </StepWrapper>
+      </ScoreContent>
+    );
   }
   else if (dmfSecondaryReleaseDecrease(dmfRiskFactors, scores)) {
-    modificationText = 'Exception release.';
+    return (
+      <ScoreContent>
+        <DMFIncreaseText>Step 5 Decrease</DMFIncreaseText>
+        <StepWrapper>
+          <DMFCell dmf={dmfDecision} selected />
+          <img src={rightArrow} alt="" />
+          <DMFCell dmf={dmf} selected />
+        </StepWrapper>
+      </ScoreContent>
+    );
   }
+};
+
+const PSASummary = (props :Props) => {
+  const { scores } = props;
+
   return (
     <SummaryWrapper>
       <RowWrapper>
@@ -225,9 +277,7 @@ const PSASummary = (props :Props) => {
         </ScoresContainer>
         <ScoresContainer>
           <ScoreTitle>DMF</ScoreTitle>
-          <ScoreContent>
-            <DMFCell dmf={dmf} selected />
-          </ScoreContent>
+          {renderDMFDetails(props)}
         </ScoresContainer>
       </RowWrapper>
       <hr />
