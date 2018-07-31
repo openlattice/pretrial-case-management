@@ -15,7 +15,6 @@ const {
   FIRST_NAME,
   MIDDLE_NAME,
   LAST_NAME,
-  SUFFIX,
   MUGSHOT,
   PERSON_ID,
   PICTURE
@@ -73,7 +72,7 @@ const DetailItem = styled.div`
   h1 {
     font-family: 'Open Sans', sans-serif;
     font-size: 11px;
-    font-weight: lighter;
+    font-weight: 600;
     color: #8e929b;
     text-transform: uppercase;
     margin-bottom: 2px;

@@ -8,8 +8,8 @@ import styled from 'styled-components';
 import moment from 'moment';
 
 import PSAModal from './PSAModal';
-import PersonCard from './PersonCardReview';
-import DropdownButton from '../buttons/DropdownButton';
+import PersonCard from '../person/PersonCardReview';
+import PSAReportDownloadButton from './PSAReportDownloadButton'
 import PSAStats from './PSAStats';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { psaIsClosed } from '../../utils/PSAUtils';
@@ -69,13 +69,6 @@ const StatsForProfile = styled.div`
   margin: 0 auto;
   display: flex;
   flex-direction: row;
-`;
-
-const DownloadButtonContainer = styled.div`
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center !important;
 `;
 
 const MetadataWrapper = styled.div`
@@ -165,12 +158,6 @@ export default class PSAReviewReportsRow extends React.Component<Props, State> {
     };
   }
 
-  downloadRow = (e, isCompact) => {
-    e.stopPropagation();
-    const { downloadFn, neighbors, scores } = this.props;
-    downloadFn({ neighbors, scores, isCompact });
-  }
-
   renderPersonCard = () => {
     const { neighbors, hideProfile } = this.props;
     if (hideProfile) return null;
@@ -198,17 +185,10 @@ export default class PSAReviewReportsRow extends React.Component<Props, State> {
   }
 
   renderDownloadButton = () => (
-    <DownloadButtonContainer>
-      <DropdownButton
-          title="PDF Report"
-          options={[{
-            label: 'Export compact version',
-            onClick: e => this.downloadRow(e, true)
-          }, {
-            label: 'Export full version',
-            onClick: e => this.downloadRow(e, false)
-          }]} />
-    </DownloadButtonContainer>
+    <PSAReportDownloadButton
+        downloadFn={this.props.downloadFn}
+        neighbors={this.props.neighbors}
+        scores={this.props.scores} />
   )
 
   renderMetadataText = (actionText, dateText, user) => {
