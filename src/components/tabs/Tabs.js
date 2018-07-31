@@ -2,8 +2,21 @@
  * @flow
  */
 import React from 'react';
+import styled from 'styled-components';
 
 import NavTabs from './NavTabs';
+
+
+const NavTabsWrapper = styled.div`
+  margin: 0 -15px;
+
+  hr {
+    color: #eeeeee;
+    width: 100%;
+    height: 1px;
+    margin: 0;
+  }
+`;
 
 type Props = {
   panes :object
@@ -45,21 +58,19 @@ class Tabs extends React.Component<Props, State> {
     const pane = this.props.panes[this.state.selectedPane];
 
     return (
-      <div>
-        <div className="tabs">
-          <NavTabs
-              selectedPane={this.state.selectedPane}
-              onTabChosen={this.selectTab}
-              panes={this.props.panes}
-              handleKeyDown={this.handleKeyDown} />
-          <hr />
-          <div className="tab-content">
-            <article>
-              {pane.content()}
-            </article>
-          </div>
+      <NavTabsWrapper>
+        <NavTabs
+            selectedPane={this.state.selectedPane}
+            onTabChosen={this.selectTab}
+            panes={this.props.panes}
+            handleKeyDown={this.handleKeyDown} />
+        <hr />
+        <div className="tab-content">
+          <article>
+            {pane.content()}
+          </article>
         </div>
-      </div>
+      </NavTabsWrapper>
     );
   }
 

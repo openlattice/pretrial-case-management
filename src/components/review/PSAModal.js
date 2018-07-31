@@ -93,60 +93,6 @@ const Title = styled.div`
   margin: 20px 0;
 `;
 
-const StyledNavWrapper = styled.div`
-  .tabs {
-    margin: 0 -15px;
-
-    hr {
-      color: #eeeeee;
-      width: 100%;
-      height: 1px;
-      margin: 0;
-    }
-
-    .nav-tabs {
-        border: none;
-        margin-bottom: 0;
-        padding-left: 30px;
-        list-style: none;
-        display: flex;
-        flex-direction: row;
-        justify-content: flex-start;
-        align-items: center;
-
-      li {
-        display: inline-block;
-        width: max-content;
-        height: 100%;
-        margin-right: 40px;
-        padding: 16px 0;
-        font-family: 'Open Sans', sans-serif;
-        font-size: 14px;
-        a {
-          color: #8e929b;
-          border: none;
-        }
-        a:hover {
-          text-decoration: none;
-          border: none;
-          cursor: pointer;
-        }
-      }
-
-      li.active {
-        border-bottom: solid 3px #6124e2;
-        a {
-          color: #6124e2;
-          border: none;
-          background-color: transparent;
-          font-size: 14px;
-          font-weight: 600;
-        }
-      }
-    }
-  }
-`;
-
 const ClosePSAButton = styled(StyledButton)`
   font-family: 'Open Sans', sans-serif;
   font-size: 14px;
@@ -158,7 +104,7 @@ const ClosePSAButton = styled(StyledButton)`
   border: none;
   border-radius: 3px;
   background-color: #e4d8ff;
-`
+`;
 
 type Props = {
   open :boolean,
@@ -719,9 +665,7 @@ export default class PSAModal extends React.Component<Props, State> {
               : <ClosePSAButton onClick={() => this.setState({ closing: true })}>{changeStatusText}</ClosePSAButton>
             }
           </TitleWrapper>
-          <StyledNavWrapper>
-            <CustomTabs panes={tabs} />
-          </StyledNavWrapper>
+          <CustomTabs panes={tabs} />
         </Modal.Body>
       </Modal>
     );
