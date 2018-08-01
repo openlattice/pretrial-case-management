@@ -35,6 +35,7 @@ import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts'
 import { RESULT_CATEGORIES, formatDMFFromEntity } from '../../utils/consts/DMFResultConsts';
 import { PSA_STATUSES } from '../../utils/consts/Consts';
 import { getFqnObj } from '../../utils/Utils';
+import { obfuscateEntityNeighbors, obfuscateBulkEntityNeighbors } from '../../utils/consts/DemoNames';
 
 const LIST_ENTITY_SETS = Immutable.List.of(ENTITY_SETS.STAFF, ENTITY_SETS.RELEASE_CONDITIONS);
 
@@ -217,6 +218,7 @@ function* loadPSADataWorker(action :SequenceAction) :Generator<*, *, *> {
     if (action.value.length) {
       const entitySetId = yield call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.PSA_SCORES);
       let neighborsById = yield call(SearchApi.searchEntityNeighborsBulk, entitySetId, action.value);
+      neighborsById = obfuscateBulkEntityNeighbors(neighborsById); // TODO just for demo
       neighborsById = Immutable.fromJS(neighborsById);
 
       neighborsById.keySeq().forEach((id) => {
@@ -421,7 +423,8 @@ function* bulkDownloadPSAReviewPDFWorker(action :SequenceAction) :Generator<*, *
       call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.PEOPLE),
       call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.PSA_SCORES)
     ]);
-    const peopleNeighbors = yield call(SearchApi.searchEntityNeighborsBulk, personEntitySetId, peopleEntityKeyIds);
+    let peopleNeighbors = yield call(SearchApi.searchEntityNeighborsBulk, personEntitySetId, peopleEntityKeyIds);
+    peopleNeighbors = obfuscateBulkEntityNeighbors(peopleNeighbors);
 
     let manualChargesByPersonId = Immutable.Map();
     let psasById = Immutable.Map();
@@ -471,6 +474,7 @@ function* bulkDownloadPSAReviewPDFWorker(action :SequenceAction) :Generator<*, *
     });
 
     let psaNeighborsById = yield call(SearchApi.searchEntityNeighborsBulk, psaEntitySetId, psasById.keySeq().toJS());
+    psaNeighborsById = obfuscateBulkEntityNeighbors(psaNeighborsById); // TODO just for demo
     psaNeighborsById = Immutable.fromJS(psaNeighborsById);
 
     const pageDetailsList = [];
@@ -628,7 +632,8 @@ function* refreshPSANeighborsWorker(action :SequenceAction) :Generator<*, *, *> 
   try {
     yield put(refreshPSANeighbors.request(action.id, { id }));
     const entitySetId = yield call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.PSA_SCORES);
-    const neighborsList = yield call(SearchApi.searchEntityNeighbors, entitySetId, id);
+    let neighborsList = yield call(SearchApi.searchEntityNeighbors, entitySetId, id);
+    neighborsList = obfuscateEntityNeighbors(neighborsList); // TODO just for demo
     let neighbors = Immutable.Map();
     neighborsList.forEach((neighbor) => {
       const { neighborEntitySet, neighborDetails } = neighbor;
