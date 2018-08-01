@@ -14,7 +14,6 @@ import {
   downloadPsaForms
 } from './DownloadActionFactory';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { obfuscateBulkEntityNeighbors } from '../../utils/consts/DemoNames';
 
 const getStepTwo = (neighborList, psaScores) => {
   const nvca = psaScores.getIn([PROPERTY_TYPES.NVCA_FLAG, 0], false);
@@ -84,8 +83,7 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
       scoresAsMap = scoresAsMap.set(row.id[0], Immutable.fromJS(row).delete('id'));
     });
 
-    let neighborsById = yield call(SearchApi.searchEntityNeighborsBulk, entitySetId, scoresAsMap.keySeq().toJS());
-    neighborsById = obfuscateBulkEntityNeighbors(neighborsById); // TODO just for demo
+    const neighborsById = yield call(SearchApi.searchEntityNeighborsBulk, entitySetId, scoresAsMap.keySeq().toJS());
 
     let usableNeighborsById = Immutable.Map();
 
