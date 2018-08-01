@@ -6,7 +6,7 @@ const BasicButton = styled.button`
   background-color: #f0f0f7;
   color: #8e929b;
   font-family: 'Open Sans', sans-serif;
-  padding: 12px 45px;
+  padding: 12px 35px;
   font-size: 14px;
 
   &:hover:enabled {
