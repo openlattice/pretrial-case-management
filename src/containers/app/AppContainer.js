@@ -31,16 +31,16 @@ const AppWrapper = styled.div`
   display: flex;
   flex-direction: column;
   min-height: 100%;
-  width: 100%;
+  min-width: fit-content;
   font-family: 'Open Sans', sans-serif;
 `;
 
 const AppBodyWrapper = styled.div`
   display: flex;
   flex: 1 0 auto;
-  margin: 0 auto;
   flex-direction: column;
   padding: 30px 170px;
+  margin: 0 auto;
 `;
 
 /*
