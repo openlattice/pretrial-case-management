@@ -110,18 +110,6 @@ const StatusTag = styled.div`
   }};
 `;
 
-const NvcaFlag = styled.div`
-  width: 74px;
-  height: 28px;
-  border-radius: 3px;
-  border: solid 1px #555e6f;
-  font-family: Open Sans;
-  font-size: 14px;
-  font-weight: 600;
-  color: #2e2e34;
-  justify-content: center;
-`;
-
 const SCALE_DIMS = { height: 20, width: 96 };
 const FLAG_DIMS = { height: 28, width: 74 };
 
