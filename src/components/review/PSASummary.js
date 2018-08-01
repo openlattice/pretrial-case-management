@@ -117,12 +117,16 @@ const StepWrapper = styled.div`
   display: flex;
   flex-direction: row;
   align-items: center;
+
+  img {
+    margin: 3px;
+  }
 `;
 
 const DMFIncreaseText = styled.div`
-margin-bottom: 15px;
-font-size: 14px;
-color: #555e6f;
+  margin-bottom: 15px;
+  font-size: 14px;
+  color: #555e6f;
 `;
 
 type Props = {
@@ -220,12 +224,14 @@ const renderDMFDetails = ({ neighbors, scores } :Props) => {
   const nca = scores.getIn([PROPERTY_TYPES.NCA_SCALE, 0]);
   const fta = scores.getIn([PROPERTY_TYPES.FTA_SCALE, 0]);
   const dmfDecision = getDMFDecision(nca, fta, context);
+  console.log(increaseDMFSeverity(dmfDecision, context));
+  console.log(dmfDecision);
 
   if (stepTwoIncrease(dmfRiskFactors, psaRiskFactors, scores)) {
     return (
       <ScoreContent>
         <DMFIncreaseText>Step two increase</DMFIncreaseText>
-        <DMFCell dmf={dmf} selected />
+        <DMFCell dmf={dmf} selected large />
       </ScoreContent>
     );
   }
@@ -253,6 +259,11 @@ const renderDMFDetails = ({ neighbors, scores } :Props) => {
       </ScoreContent>
     );
   }
+  return (
+    <ScoreContent>
+      <DMFCell dmf={dmf} selected large />
+    </ScoreContent>
+  );
 };
 
 const PSASummary = (props :Props) => {

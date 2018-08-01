@@ -30,25 +30,26 @@ const TEXT_COLOR_MAPPINGS = {
 };
 
 const Condition = styled.div`
-  font-weight: bold;
+  font-family: 'Open Sans', sans-serif;
+  font-size: ${props => (props.large ? '14px' : '12px')};
+  font-weight: 600;
 `;
 
 const Cell = styled.div`
   text-align: center;
   padding: 10px;
-  height: ${props => (props.large ? '100px' : '90px')};
-  width: ${props => (props.large ? '165px' : '150px')};
+  height: ${props => (props.large ? '100px' : '70px')};
+  width: ${props => (props.large ? '165px' : '116px')};
   margin: 3px;
   display: inline-flex;
   flex-direction: column;
   justify-content: space-evenly;
   border-radius: 2px;
   font-family: 'Open Sans', sans-serif;
-  font-size: 14px;
   font-weight: 600;
 `;
 
-const DMFCell = ({ selected, dmf }) :Props => {
+const DMFCell = ({ selected, dmf, large }) :Props => {
 
   const StyledCell = styled(Cell)`
     background-color: ${COLOR_MAPPINGS[dmf[RESULT_CATEGORIES.COLOR]]};
@@ -59,14 +60,14 @@ const DMFCell = ({ selected, dmf }) :Props => {
   const conditions = getConditionsTextList(dmf);
 
   return (
-    <StyledCell>
-      {conditions.map(condition => <Condition key={condition}>{condition}</Condition>)}
+    <StyledCell large={large}>
+      {conditions.map(condition => <Condition large={large} key={condition}>{condition}</Condition>)}
     </StyledCell>
   );
 };
 
 DMFCell.defaultProps = {
   large: false
-}
+};
 
 export default DMFCell;
