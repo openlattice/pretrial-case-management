@@ -31,15 +31,22 @@ const TEXT_COLOR_MAPPINGS = {
 
 const Condition = styled.div`
   font-family: 'Open Sans', sans-serif;
-  font-size: ${props => (props.large ? '14px' : '12px')};
+  font-size: 12px;
   font-weight: 600;
+  ${(props) => {
+    if (props.large) {
+      return (
+        'font-size: 14px;'
+      );
+    }
+  }}
 `;
 
 const Cell = styled.div`
   text-align: center;
   padding: 10px;
-  height: ${props => (props.large ? '100px' : '70px')};
-  width: ${props => (props.large ? '165px' : '116px')};
+  height: 70px;
+  width: 116px;
   margin: 3px;
   display: inline-flex;
   flex-direction: column;
@@ -47,9 +54,24 @@ const Cell = styled.div`
   border-radius: 2px;
   font-family: 'Open Sans', sans-serif;
   font-weight: 600;
+  ${(props) => {
+    if (props.large) {
+      return (
+        `height: 100px;
+         width: 165px;`
+      );
+    }
+    else if (props.table) {
+      return (
+        `height: 77px;
+         width: 128px;
+         margin: 0;`
+      );
+    }
+  }}
 `;
 
-const DMFCell = ({ selected, dmf, large }) :Props => {
+const DMFCell = ({ selected, dmf, large, table }) :Props => {
 
   const StyledCell = styled(Cell)`
     background-color: ${COLOR_MAPPINGS[dmf[RESULT_CATEGORIES.COLOR]]};
@@ -60,8 +82,17 @@ const DMFCell = ({ selected, dmf, large }) :Props => {
   const conditions = getConditionsTextList(dmf);
 
   return (
-    <StyledCell large={large}>
-      {conditions.map(condition => <Condition large={large} key={condition}>{condition}</Condition>)}
+    <StyledCell
+        large={large}
+        table={table}>
+      {conditions.map(condition => (
+        <Condition
+            large={large}
+            table={table}
+            key={condition}>
+          {condition}
+        </Condition>
+      ))}
     </StyledCell>
   );
 };
