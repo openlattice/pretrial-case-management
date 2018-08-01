@@ -9,6 +9,7 @@ import styled from 'styled-components';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_STATUSES } from '../../utils/consts/Consts';
 import ScoreScale from '../ScoreScale';
+import BooleanFlag from '../BooleanFlag';
 
 const Wrapper = styled.div`
   width: 100%;
@@ -119,10 +120,10 @@ const NvcaFlag = styled.div`
   font-weight: 600;
   color: #2e2e34;
   justify-content: center;
-}
 `;
 
-const WIDTH_MULTIPLIER = 96;
+const SCALE_DIMS = { height: 20, width: 96 };
+const FLAG_DIMS = { height: 28, width: 74 };
 
 type Props = {
   hideStatus :boolean,
@@ -158,20 +159,20 @@ const PSAStats = ({ scores, downloadButton, hideStatus } :Props) => {
           </DetailItem>
           <DetailItem>
             <h1>NVCA</h1>
-            <NvcaFlag>{nvcaDisplay}</NvcaFlag>
+            <BooleanFlag dims={FLAG_DIMS} value={nvcaDisplay} />
           </DetailItem>
           <DetailItem>
             <h1>NCA</h1>
             <div>
               <span>{ncaVal}</span>
-              <ScoreScale width={WIDTH_MULTIPLIER} score={ncaVal} />
+              <ScoreScale dims={SCALE_DIMS} score={ncaVal} />
             </div>
           </DetailItem>
           <DetailItem>
             <h1>FTA</h1>
             <div>
               <span>{ftaVal}</span>
-              <ScoreScale width={WIDTH_MULTIPLIER} score={ftaVal} />
+              <ScoreScale dims={SCALE_DIMS} score={ftaVal} />
             </div>
           </DetailItem>
           {renderDownloadButton}

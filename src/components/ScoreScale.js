@@ -15,7 +15,6 @@ const colorsByScale = {
 };
 
 const Scale = styled.div`
-  height: 20px;
   background: #dcdce7;
   display: inline-block;
   border-radius: 2px;
@@ -23,17 +22,17 @@ const Scale = styled.div`
 `;
 
 
-const ScoreScale = ({ score, width } :Props) => {
-
-  const WIDTH_MULTIPLIER = width;
+const ScoreScale = ({ score, dims } :Props) => {
 
   const ScaleLeft = styled(Scale)`
-    width: ${WIDTH_MULTIPLIER * (score / 6)}px;
+    width: ${dims.width * (score / 6)}px;
+    height: ${dims.height}px;
     background: ${colorsByScale[score]};
     border-radius: 2px;
   `;
   const ScaleRight = styled(Scale)`
-    width: ${WIDTH_MULTIPLIER * (1 - (score / 6))}px;
+    width: ${dims.width * (1 - (score / 6))}px;
+    height: ${dims.height}px;
     border-radius: 0 2px 2px 0;
     margin-left: 0;
   `;
