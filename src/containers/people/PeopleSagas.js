@@ -14,6 +14,7 @@ import {
   getPersonData,
   getPersonNeighbors
 } from './PeopleActionFactory';
+import { obfuscateEntity } from '../../utils/consts/DemoNames';
 
 function* getPeopleWorker(action) :Generator<*, *, *> {
 
@@ -49,7 +50,8 @@ function* getEntityKeyIdForPersonId(personId :string, entitySetId :string) :Gene
   };
 
   const response = yield call(SearchApi.searchEntitySetData, entitySetId, searchOptions)
-  return response.hits[0];
+  const person = obfuscateEntity(response.hits[0]); // TODO only for demo
+  return person;
 }
 
 function* getPersonDataWorker(action) :Generator<*, *, *> {

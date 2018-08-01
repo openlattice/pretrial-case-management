@@ -10,6 +10,8 @@ import {
   loadHearingsForDate
 } from './CourtActionFactory';
 
+import { obfuscateEntityNeighbors, obfuscateBulkEntityNeighbors } from '../../utils/consts/DemoNames';
+
 function* loadHearingsForDateWorker(action :SequenceAction) :Generator<*, *, *> {
 
   try {
@@ -61,7 +63,8 @@ function* loadHearingsForDateWorker(action :SequenceAction) :Generator<*, *, *> 
         }
       });
 
-    const hearingNeighbors = yield call(SearchApi.searchEntityNeighborsBulk, entitySetId, hearingIds);
+    let hearingNeighbors = yield call(SearchApi.searchEntityNeighborsBulk, entitySetId, hearingIds);
+    hearingNeighbors = obfuscateBulkEntityNeighbors(hearingNeighbors); // TODO just for demo
     let hearingNeighborsById = Immutable.Map();
     Object.entries(hearingNeighbors).forEach(([hearingId, neighbors]) => {
       hearingNeighborsById = hearingNeighborsById.set(hearingId, Immutable.Map());
