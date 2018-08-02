@@ -224,8 +224,6 @@ const renderDMFDetails = ({ neighbors, scores } :Props) => {
   const nca = scores.getIn([PROPERTY_TYPES.NCA_SCALE, 0]);
   const fta = scores.getIn([PROPERTY_TYPES.FTA_SCALE, 0]);
   const dmfDecision = getDMFDecision(nca, fta, context);
-  console.log(increaseDMFSeverity(dmfDecision, context));
-  console.log(dmfDecision);
 
   if (stepTwoIncrease(dmfRiskFactors, psaRiskFactors, scores)) {
     return (
