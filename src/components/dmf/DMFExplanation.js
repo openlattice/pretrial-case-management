@@ -7,9 +7,9 @@ import FontAwesome from 'react-fontawesome';
 import styled from 'styled-components';
 
 import DMFCell from './DMFCell';
-import DMFTable from './DMFTable';
 import StepOne from './DMFStepOne';
 import StepTwo from './DMFStepTwo';
+import StepThree from './DMFStepThree';
 import { CONTEXT, DMF, NOTES, PSA } from '../../utils/consts/Consts';
 import {
   getDMFDecision,
@@ -68,25 +68,6 @@ const formatTextArr = (textArr) => {
 
   text = text[0].toUpperCase().concat(text.slice(1, text.length)).concat('.');
   return text;
-};
-
-const StepThree = ({
-  shouldRender,
-  dmf,
-  nca,
-  fta,
-  context
-} :Props) => {
-  if (!shouldRender) return null;
-  return (
-    <div>
-      <hr />
-      <StepHeader>Step Three</StepHeader>
-      <StepWrapper>
-        <DMFTable dmf={dmf} nca={nca} fta={fta} context={context} />
-      </StepWrapper>
-    </div>
-  );
 };
 
 const StepFour = ({
