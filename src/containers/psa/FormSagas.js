@@ -57,7 +57,7 @@ const getOpenPSAIds = (neighbors) => {
 function* getOpenPSANeighbors(neighbors) :Generator<*, *, *> {
   const ids = getOpenPSAIds(neighbors);
   const entitySetId = yield call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.PSA_SCORES);
- return ids.length ? yield call(SearchApi.searchEntityNeighborsBulk, entitySetId, ids) : {};
+  return ids.length ? yield call(SearchApi.searchEntityNeighborsBulk, entitySetId, ids) : {};
 }
 
 function* loadNeighborsWorker(action :SequenceAction) :Generator<*, *, *> {

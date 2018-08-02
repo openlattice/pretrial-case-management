@@ -90,6 +90,11 @@ const FormWrapper = styled(StyledFormWrapper)`
   width: 100%;
 `;
 
+const DashboardWrapper = styled(StyledFormViewWrapper)`
+  width: 1300px;
+  margin-left: -170px;
+`;
+
 const CHART_HEIGHT = 300;
 const CHART_WIDTH = 600;
 
@@ -321,7 +326,7 @@ class DashboardContainer extends React.Component<Props, State> {
 
   render() {
     return (
-      <StyledFormViewWrapper>
+      <DashboardWrapper>
         <FormWrapper>
           <StyledTitleWrapper>
             <div>Dashboard</div>
@@ -334,7 +339,7 @@ class DashboardContainer extends React.Component<Props, State> {
             <StyledTopFormNavBuffer />
           </StyledSectionWrapper>
         </FormWrapper>
-      </StyledFormViewWrapper>
+      </DashboardWrapper>
     );
   }
 }

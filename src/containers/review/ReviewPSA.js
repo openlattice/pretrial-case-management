@@ -61,10 +61,10 @@ const StyledFiltersBar = styled.div`
   background: #fff;
   border-radius: 5px;
   border: solid 1px #e1e1eb;
-  border-bottom-left-radius: 0px;
-  border-bottom-right-radius: 0px;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
   border-bottom: none;
-  padding: 0px 30px;
+  padding: 0 30px;
   font-size: 14px;
   text-align: center;
   display: flex;
@@ -90,8 +90,8 @@ const PersonSearchWrapper = styled.div`
   border-radius: 5px;
   border: solid 1px #e1e1eb;
   border-bottom: none;
-  border-bottom-left-radius: 0px;
-  border-bottom-right-radius: 0px;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
   padding-top: 20px;
   padding-bottom: 20px;
   margin: 0;

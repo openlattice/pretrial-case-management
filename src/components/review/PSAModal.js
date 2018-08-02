@@ -9,6 +9,7 @@ import moment from 'moment';
 import { Modal, Tab, Tabs } from 'react-bootstrap';
 import { AuthUtils } from 'lattice-auth';
 
+import CustomTabs from '../tabs/Tabs';
 import PSAInputForm from '../psainput/PSAInputForm';
 import PersonCard from '../person/PersonCardReview';
 import StyledButton from '../buttons/StyledButton';
@@ -40,8 +41,12 @@ const DownloadButtonContainer = styled.div`
 `;
 
 const ModalWrapper = styled.div`
-  max-height: 80vh;
+  max-height: 70vh;
   overflow-y: auto;
+  padding: ${props => (props.withPadding ? '30px' : '0')};
+  div:first-child {
+    border: none;
+  }
 `;
 
 const NoDMFContainer = styled(CenteredContainer)`
@@ -49,8 +54,22 @@ const NoDMFContainer = styled(CenteredContainer)`
   font-size: 18px;
 `;
 
+const TitleWrapper = styled.div`
+  padding: 35px 15px;
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+`;
 const TitleHeader = styled.span`
   margin-right: 15px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #555e6f;
+  span {
+    text-transform: uppercase;
+  }
 `;
 
 const SubmittingWrapper = styled.div`
@@ -72,6 +91,19 @@ const Title = styled.div`
   font-size: 16px;
   color: #555e6f;
   margin: 20px 0;
+`;
+
+const ClosePSAButton = styled(StyledButton)`
+  font-family: 'Open Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+  color: #6124e2;
+  width: 162px;
+  height: 40px;
+  border: none;
+  border-radius: 3px;
+  background-color: #e4d8ff;
 `;
 
 type Props = {
@@ -523,42 +555,64 @@ export default class PSAModal extends React.Component<Props, State> {
       return <NoDMFContainer>A DMF was not calculated for this PSA.</NoDMFContainer>;
     }
 
-    return <DMFExplanation dmf={dmf} nca={nca} fta={fta} nvca={nvca} riskFactors={riskFactors} />;
+    return (
+      <ModalWrapper withPadding >
+        <DMFExplanation dmf={dmf} nca={nca} fta={fta} nvca={nvca} riskFactors={riskFactors} />
+      </ModalWrapper>
+    )
+  }
+
+  renderCaseHistory = () => {
+    const { caseHistory, chargeHistory } = this.props;
+    return (
+      <ModalWrapper withPadding>
+        <Title>Timeline (past two years)</Title>
+        <CaseHistoryTimeline caseHistory={this.props.caseHistory} chargeHistory={this.props.chargeHistory} />
+        <Title>All cases</Title>
+        <CaseHistory caseHistory={this.props.caseHistory} chargeHistory={this.props.chargeHistory} />
+      </ModalWrapper>
+    )
   }
 
   renderInitialAppearance = () => {
     if (this.props.submitting || this.props.refreshingNeighbors) {
       return (
-        <SubmittingWrapper>
-          <span>{this.props.submitting ? 'Submitting' : 'Reloading'}</span>
-          <LoadingSpinner />
-        </SubmittingWrapper>
+        <ModalWrapper>
+          <SubmittingWrapper>
+            <span>{this.props.submitting ? 'Submitting' : 'Reloading'}</span>
+            <LoadingSpinner />
+          </SubmittingWrapper>
+        </ModalWrapper>
       );
     }
     if (!this.props.neighbors.get(ENTITY_SETS.HEARINGS)) {
       return (
-        <SelectHearingsContainer
-            personId={this.props.personId}
-            psaId={this.props.scores.getIn([PROPERTY_TYPES.GENERAL_ID, 0])}
-            psaEntityKeyId={this.props.entityKeyId}
-            hearings={this.props.hearings} />
+        <ModalWrapper>
+          <SelectHearingsContainer
+              personId={this.props.personId}
+              psaId={this.props.scores.getIn([PROPERTY_TYPES.GENERAL_ID, 0])}
+              psaEntityKeyId={this.props.entityKeyId}
+              hearings={this.props.hearings} />
+        </ModalWrapper>
       );
     }
     return (
-      <SelectReleaseConditions
-          submitting={this.props.submitting}
-          personId={this.getIdValue(ENTITY_SETS.PEOPLE, PROPERTY_TYPES.PERSON_ID)}
-          psaId={this.props.scores.getIn([PROPERTY_TYPES.GENERAL_ID, 0])}
-          dmfId={this.getIdValue(ENTITY_SETS.DMF_RESULTS)}
-          submit={this.props.submitData}
-          replace={this.props.replaceEntity}
-          submitCallback={this.refreshPSANeighborsCallback}
-          hearing={this.props.neighbors.getIn([ENTITY_SETS.HEARINGS, 'neighborDetails'], Immutable.Map())}
-          hearingId={this.props.neighbors.getIn([ENTITY_SETS.HEARINGS, 'neighborId'])}
-          defaultDMF={this.props.neighbors.getIn([ENTITY_SETS.DMF_RESULTS, 'neighborDetails'], Immutable.Map())}
-          defaultBond={this.props.neighbors.getIn([ENTITY_SETS.BONDS, 'neighborDetails'], Immutable.Map())}
-          defaultConditions={this.props.neighbors.get(ENTITY_SETS.RELEASE_CONDITIONS, Immutable.List())
-            .map(neighbor => neighbor.get('neighborDetails', Immutable.Map()))} />
+      <ModalWrapper>
+        <SelectReleaseConditions
+            submitting={this.props.submitting}
+            personId={this.getIdValue(ENTITY_SETS.PEOPLE, PROPERTY_TYPES.PERSON_ID)}
+            psaId={this.props.scores.getIn([PROPERTY_TYPES.GENERAL_ID, 0])}
+            dmfId={this.getIdValue(ENTITY_SETS.DMF_RESULTS)}
+            submit={this.props.submitData}
+            replace={this.props.replaceEntity}
+            submitCallback={this.refreshPSANeighborsCallback}
+            hearing={this.props.neighbors.getIn([ENTITY_SETS.HEARINGS, 'neighborDetails'], Immutable.Map())}
+            hearingId={this.props.neighbors.getIn([ENTITY_SETS.HEARINGS, 'neighborId'])}
+            defaultDMF={this.props.neighbors.getIn([ENTITY_SETS.DMF_RESULTS, 'neighborDetails'], Immutable.Map())}
+            defaultBond={this.props.neighbors.getIn([ENTITY_SETS.BONDS, 'neighborDetails'], Immutable.Map())}
+            defaultConditions={this.props.neighbors.get(ENTITY_SETS.RELEASE_CONDITIONS, Immutable.List())
+              .map(neighbor => neighbor.get('neighborDetails', Immutable.Map()))} />
+      </ModalWrapper>
     );
   }
 
@@ -567,19 +621,34 @@ export default class PSAModal extends React.Component<Props, State> {
 
     const changeStatusText = psaIsClosed(this.props.scores) ? 'Change PSA Status' : 'Close PSA';
 
+    const tabs = [
+      {
+        title: 'Summary',
+        content: this.renderSummary
+      },
+      {
+        title: 'PSA',
+        content: this.renderPSADetails
+      },
+      {
+        title: 'DMF',
+        content: this.renderDMFExplanation
+      },
+      {
+        title: 'Case History',
+        content: this.renderCaseHistory
+      },
+      {
+        title: 'Initial Appearance',
+        content: this.renderInitialAppearance
+      }
+    ];
+
     return (
-      <Modal show={this.props.open} onHide={this.props.onClose} dialogClassName={OverrideClassNames.PSA_REVIEW_MODAL}>
-        <Modal.Header closeButton>
-          <Modal.Title>
-            <div>
-              <TitleHeader>{`PSA Details: ${this.getName()}`}</TitleHeader>
-              { this.props.readOnly
-                ? null
-                : <StyledButton onClick={() => this.setState({ closing: true })}>{changeStatusText}</StyledButton>
-              }
-            </div>
-          </Modal.Title>
-        </Modal.Header>
+      <Modal
+          show={this.props.open}
+          onHide={this.props.onClose}
+          dialogClassName={OverrideClassNames.PSA_REVIEW_MODAL}>
         <Modal.Body>
           <ClosePSAModal
               open={this.state.closing}
@@ -588,22 +657,14 @@ export default class PSAModal extends React.Component<Props, State> {
               defaultFailureReasons={this.props.scores.get(PROPERTY_TYPES.FAILURE_REASON, Immutable.List()).toJS()}
               onClose={() => this.setState({ closing: false })}
               onSubmit={this.handleStatusChange} />
-          <Tabs id={`details-${this.props.entityKeyId}`} activeKey={this.state.view} onSelect={this.onViewSelect}>
-            <Tab eventKey={VIEWS.SUMMARY} title="Summary">{this.renderSummary()}</Tab>
-            <Tab eventKey={VIEWS.PSA} title="PSA">{this.renderPSADetails()}</Tab>
-            <Tab eventKey={VIEWS.DMF} title="DMF">{this.renderDMFExplanation()}</Tab>
-            {
-              this.props.hideCaseHistory ? null : (
-                <Tab eventKey={VIEWS.HISTORY} title="Case History">
-                  <Title>Timeline (past two years)</Title>
-                  <CaseHistoryTimeline caseHistory={this.props.caseHistory} chargeHistory={this.props.chargeHistory} />
-                  <Title>All cases</Title>
-                  <CaseHistory caseHistory={this.props.caseHistory} chargeHistory={this.props.chargeHistory} />
-                </Tab>
-              )
+          <TitleWrapper>
+            <TitleHeader>PSA Details: <span>{`${this.getName()}`}</span></TitleHeader>
+            { this.props.readOnly
+              ? null
+              : <ClosePSAButton onClick={() => this.setState({ closing: true })}>{changeStatusText}</ClosePSAButton>
             }
-            <Tab eventKey={VIEWS.INITIAL_APPEARANCE} title="Initial Appearance">{this.renderInitialAppearance()}</Tab>
-          </Tabs>
+          </TitleWrapper>
+          <CustomTabs panes={tabs} />
         </Modal.Body>
       </Modal>
     );

@@ -48,7 +48,7 @@ function* getEntityKeyIdForPersonId(personId :string, entitySetId :string) :Gene
     maxHits: 1
   };
 
-  const response = yield call(SearchApi.searchEntitySetData, entitySetId, searchOptions)
+  const response = yield call(SearchApi.searchEntitySetData, entitySetId, searchOptions);
   return response.hits[0];
 }
 
