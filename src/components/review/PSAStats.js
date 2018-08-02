@@ -124,7 +124,6 @@ const PSAStats = ({ scores, downloadButton, hideStatus } :Props) => {
   const ftaVal = scores.getIn([PROPERTY_TYPES.FTA_SCALE, 0]);
   const ncaVal = scores.getIn([PROPERTY_TYPES.NCA_SCALE, 0]);
   const nvcaVal = scores.getIn([PROPERTY_TYPES.NVCA_FLAG, 0]);
-  const nvcaDisplay = nvcaVal ? 'Yes' : 'No';
 
   let renderDownloadButton;
   let downloadVisible;
@@ -147,7 +146,7 @@ const PSAStats = ({ scores, downloadButton, hideStatus } :Props) => {
           </DetailItem>
           <DetailItem>
             <h1>NVCA</h1>
-            <BooleanFlag dims={FLAG_DIMS} value={nvcaDisplay} />
+            <BooleanFlag dims={FLAG_DIMS} value={nvcaVal} />
           </DetailItem>
           <DetailItem>
             <h1>NCA</h1>

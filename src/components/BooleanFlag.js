@@ -19,6 +19,11 @@ const Flag = styled.div`
   color: #2e2e34;
 `;
 
-const BooleanFlag = ({ value, dims } :Props) => <Flag dims={dims}>{value}</Flag>;
+const BooleanFlag = ({ value, dims } :Props) => {
+  const displayValue = value ? 'Yes' : 'No'
+  return (
+    <Flag dims={dims}>{displayValue}</Flag>
+  );
+};
 
 export default BooleanFlag;
