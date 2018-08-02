@@ -6,15 +6,17 @@ import React from 'react';
 import styled from 'styled-components';
 
 const Flag = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
   width: ${props => (`${props.dims.width}px`)};
   height: ${props => (`${props.dims.height}px`)};
   border-radius: 3px;
-  border: solid 1px #555e6f;
+  border: solid 1px #555e6f !important;
   font-family: Open Sans;
   font-size: 14px;
   font-weight: 600;
   color: #2e2e34;
-  justify-content: center;
 `;
 
 const BooleanFlag = ({ value, dims } :Props) => <Flag dims={dims}>{value}</Flag>;
