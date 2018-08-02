@@ -83,7 +83,8 @@ const DMFExplanation = ({
           fta={fta}
           nvca={nvca}
           currentViolentOffense={currentViolentOffense}
-          context={context} />
+          context={context}
+          flagDims={FLAG_DIMS} />
       <StepFive
           shouldRender={!stepTwoIncrease && !stepFourIncrease}
           dmf={dmf}

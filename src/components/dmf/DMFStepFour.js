@@ -6,28 +6,29 @@ import React from 'react';
 import styled from 'styled-components';
 
 import DMFCell from './DMFCell';
+import ContentBlock from '../ContentBlock';
+import ContentSection from '../ContentSection';
+import BooleanFlag from '../BooleanFlag';
 import rightArrow from '../../assets/svg/dmf-arrow.svg';
 import {
   getDMFDecision,
   increaseDMFSeverity
 } from '../../utils/consts/DMFResultConsts';
 
-
-const StepHeader = styled.div`
-  width: 100%;
-  font-family: 'Open Sans', sans-serif;
-  padding: 30px 30px;
-  font-size: 16px;
-  font-weight: 600;
-  color: #555e6f;
-`;
-
 const StepWrapper = styled.div`
   display: flex;
   flex-direction: row;
   justify-content: flex-start;
   align-items: center;
-  margin: 30px 30px 30px;
+  margin: 0 30px 30px;
+`;
+
+const ContentsWrapper = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  margin-top: 7px;
 `;
 
 const formatTextArr = (textArr) => {
@@ -51,8 +52,45 @@ const StepFour = ({
   fta,
   nvca,
   currentViolentOffense,
-  context
+  context,
+  flagDims
 } :Props) => {
+
+  const STEP4_VALS = [
+    {
+      label: 'Listed Charges',
+      content: [<ContentsWrapper><BooleanFlag dims={flagDims} value={stepFourVal} /></ContentsWrapper>]
+    },
+    {
+      label: 'Pretrial FTA',
+      content: [<ContentsWrapper><BooleanFlag dims={flagDims} value={fta} /></ContentsWrapper>]
+    },
+    {
+      label: 'NVCA',
+      content: [<ContentsWrapper><BooleanFlag dims={flagDims} value={nvca} /></ContentsWrapper>]
+    },
+    {
+      label: 'Violent Offense',
+      content: [
+        <ContentsWrapper><BooleanFlag dims={flagDims} value={currentViolentOffense} /></ContentsWrapper>
+      ]
+    }
+  ];
+  const content = STEP4_VALS.map(item => (
+    <ContentBlock
+        component="DMF"
+        contentBlock={item}
+        key={item.label} />
+  ));
+
+  const flags = () => (
+    <ContentSection
+        component="DMF"
+        header="Step Four" >
+      {content}
+    </ContentSection>
+  );
+
   if (!shouldRender) return null;
   const textArr = [];
   let dmfTransformation;
@@ -87,8 +125,7 @@ const StepFour = ({
   return (
     <div>
       <hr />
-      <StepHeader>Step Four</StepHeader>
-      <StepWrapper>{formatTextArr(textArr)}</StepWrapper>
+      {flags()}
       {dmfTransformation}
     </div>
   );
