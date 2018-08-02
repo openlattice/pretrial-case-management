@@ -29,7 +29,7 @@ const StyledContentLabel = styled.div`
         return (
           'font-size: 11px;'
         );
-      case 'DMF-STEP1':
+      case 'DMF':
         return (
           'font-size: 11px;'
         );
@@ -59,7 +59,7 @@ const StyledContent = styled.div`
         return (
           'font-size: 14px;'
         );
-      case 'DMF-STEP1':
+      case 'DMF':
         return (
           'font-size: 16px;'
         );

@@ -28,11 +28,12 @@ const StyledContentBlockWrapper = styled.div`
            grid-auto-rows: min-content;
            grid-row-gap: 15px;`
         );
-      case 'DMF-STEP1':
+      case 'DMF':
         return (
-          `grid-template-columns: 20% 20% 20% 40%;
+          `grid-template-columns: 20% 20% 20% 20% 20%;
            grid-auto-rows: min-content;
-           grid-row-gap: 15px;`
+           grid-row-gap: 15px;
+           margin-bottom: 30px;`
         );
       default:
         return (
@@ -66,11 +67,11 @@ const StyledSectionHeader = styled.div`
            font-size: 18px;
            font-weight: normal;`
         );
-      case 'DMF-STEP1':
+      case 'DMF':
         return (
-          `padding: 0px 30px 0 30px;
+          `padding: 30px 30px 0 30px;
            font-size: 16px;
-           font-weight: normal;`
+           font-weight: 600;`
         );
       default:
         return (
@@ -110,7 +111,7 @@ const StyledSectionBottomBarWrapper = styled.div`
              margin-right: 20px;
            }`
         );
-      case 'DMF-STEP1':
+      case 'DMF':
         return (
           `padding: 30px 0 0 30px;
            img {

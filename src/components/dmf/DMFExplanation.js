@@ -10,7 +10,6 @@ import DMFCell from './DMFCell';
 import DMFTable from './DMFTable';
 import ContentBlock from '../ContentBlock';
 import ContentSection from '../ContentSection';
-import PSAStats from '../review/PSAStats';
 import ScoreScale from '../ScoreScale';
 import BooleanFlag from '../BooleanFlag';
 import { CONTEXT, DMF, NOTES, PSA } from '../../utils/consts/Consts';
@@ -36,7 +35,7 @@ const DMFWrapper = styled.div`
 const StepHeader = styled.div`
   width: 100%;
   font-family: 'Open Sans', sans-serif;
-  padding: 0 30px;
+  padding: 30px 30px;
   font-size: 16px;
   font-weight: 600;
   color: #555e6f;
@@ -48,20 +47,6 @@ const StepWrapper = styled.div`
   justify-content: flex-start;
   align-items: center;
   margin: 30px 30px 30px;
-`;
-
-const StatsWrapper = styled.div`
-  width: 60%;
-`;
-
-const Item = styled.span`
-  margin: 5px 10px;
-`;
-
-const ItemValue = styled.span`
-  font-weight: bold;
-  font-size: 14px;
-  margin: 0 5px;
 `;
 
 const ContentsWrapper = styled.div`
@@ -88,11 +73,11 @@ const StepOne = ({
   nvca,
   context
 } :Props) => {
-  const nvcaDisplay = nvca ? 'Yes' : 'No';
+
   const STATS = [
     {
       label: 'NVCA',
-      content: [<ContentsWrapper><BooleanFlag dims={FLAG_DIMS} value={nvcaDisplay} /></ContentsWrapper>]
+      content: [<ContentsWrapper><BooleanFlag dims={FLAG_DIMS} value={nvca} /></ContentsWrapper>]
     },
     {
       label: 'NCA',
@@ -110,7 +95,7 @@ const StepOne = ({
 
   const content = STATS.map(item => (
     <ContentBlock
-        component="DMF-STEP1"
+        component="DMF"
         contentBlock={item}
         key={item.label} />
   ));
@@ -118,7 +103,7 @@ const StepOne = ({
   return (
     <div>
       <ContentSection
-          component="DMF-STEP1"
+          component="DMF"
           header="Step One" >
         {content}
       </ContentSection>
@@ -137,7 +122,7 @@ const formatTextArr = (textArr) => {
 
   text = text[0].toUpperCase().concat(text.slice(1, text.length)).concat('.');
   return text;
-}
+};
 
 const StepTwo = ({
   extradited,
@@ -146,47 +131,91 @@ const StepTwo = ({
   stepTwoNotes,
   currentViolentOffense,
   nvca,
+  fta,
   context
-}) => {
-  const violent = currentViolentOffense && nvca;
-  if (!extradited && !stepTwoVal && !violent) {
-    return (
-      <div>
-        <StepHeader>Step Two</StepHeader>
-        <StepWrapper>
-          <div>
-            Defendant was not extradited, no NVCA flag and current violent offense, and
-            no charges meet the requirements to skip to maximum requirements.
-          </div>
-        </StepWrapper>
-      </div>
-    );
-  }
-  const textArr = [];
-  if (extradited) {
-    textArr.push('defendant was extradited');
-  }
-  if (violent) {
-    textArr.push('PSA resulted in NVCA flag with current violent offense');
-  }
-  if (stepTwoVal) {
-    textArr.push('current charge severity meets the requirements to skip to maximum requirements');
-  }
+} :Props) => {
 
-  const text = formatTextArr(textArr);
+  const STEP2_VALS = [
+    {
+      label: 'extradition',
+      content: [<ContentsWrapper><BooleanFlag dims={FLAG_DIMS} value={extradited} /></ContentsWrapper>]
+    },
+    {
+      label: 'Listed Charges',
+      content: [<ContentsWrapper><BooleanFlag dims={FLAG_DIMS} value={stepTwoVal} /></ContentsWrapper>]
+    },
+    {
+      label: 'Pretrial FTA',
+      content: [<ContentsWrapper><BooleanFlag dims={FLAG_DIMS} value={fta} /></ContentsWrapper>]
+    },
+    {
+      label: 'NVCA',
+      content: [<ContentsWrapper><BooleanFlag dims={FLAG_DIMS} value={nvca} /></ContentsWrapper>]
+    },
+    {
+      label: 'Violent Offense',
+      content: [
+        <ContentsWrapper><BooleanFlag dims={FLAG_DIMS} value={currentViolentOffense} /></ContentsWrapper>
+      ]
+    }
+  ];
+  const content = STEP2_VALS.map(item => (
+    <ContentBlock
+        component="DMF"
+        contentBlock={item}
+        key={item.label} />
+  ));
 
   return (
     <div>
-      <StepHeader>Step Two</StepHeader>
-      <StepWrapper>
-        <span>{text}</span>
-      </StepWrapper>
-      <StepWrapper>
-        <DMFCell dmf={getDMFDecision(6, 6, context)} selected />
-      </StepWrapper>
+      <hr />
+      <ContentSection
+          component="DMF"
+          header="Step Two" >
+        {content}
+      </ContentSection>
     </div>
   );
-}
+  //
+  // const violent = currentViolentOffense && nvca;
+  // if (!extradited && !stepTwoVal && !violent) {
+  //   return (
+  //     <div>
+  //       <StepHeader>Step Two</StepHeader>
+  //       <StepWrapper>
+  //         <div>
+  //           Defendant was not extradited, no NVCA flag and current violent offense, and
+  //           no charges meet the requirements to skip to maximum requirements.
+  //         </div>
+  //       </StepWrapper>
+  //     </div>
+  //   );
+  // }
+  // const textArr = [];
+  // if (extradited) {
+  //   textArr.push('defendant was extradited');
+  // }
+  // if (violent) {
+  //   textArr.push('PSA resulted in NVCA flag with current violent offense');
+  // }
+  // if (stepTwoVal) {
+  //   textArr.push('current charge severity meets the requirements to skip to maximum requirements');
+  // }
+  //
+  // const text = formatTextArr(textArr);
+  //
+  // return (
+  //   <div>
+  //     <StepHeader>Step Two</StepHeader>
+  //     <StepWrapper>
+  //       <span>{text}</span>
+  //     </StepWrapper>
+  //     <StepWrapper>
+  //       <DMFCell dmf={getDMFDecision(6, 6, context)} selected />
+  //     </StepWrapper>
+  //   </div>
+  // );
+};
 
 const StepThree = ({
   shouldRender,
@@ -194,17 +223,18 @@ const StepThree = ({
   nca,
   fta,
   context
-}) => {
+} :Props) => {
   if (!shouldRender) return null;
   return (
     <div>
+      <hr />
       <StepHeader>Step Three</StepHeader>
       <StepWrapper>
         <DMFTable dmf={dmf} nca={nca} fta={fta} context={context} />
       </StepWrapper>
     </div>
   );
-}
+};
 
 const StepFour = ({
   shouldRender,
@@ -215,7 +245,7 @@ const StepFour = ({
   nvca,
   currentViolentOffense,
   context
-}) => {
+} :Props) => {
   if (!shouldRender) return null;
   const textArr = [];
   let dmfTransformation;
@@ -227,7 +257,7 @@ const StepFour = ({
     textArr.push('no charges meet the requirements to increase severity');
     dmfTransformation = (
       <StepWrapper>
-        <DMFCell dmf={stepThreeDmf} selected />
+        <DMFCell dmf={stepThreeDmf} selected large />
       </StepWrapper>
     );
   }
@@ -249,12 +279,13 @@ const StepFour = ({
 
   return (
     <div>
+      <hr />
       <StepHeader>Step Four</StepHeader>
       <StepWrapper>{formatTextArr(textArr)}</StepWrapper>
       {dmfTransformation}
     </div>
   );
-}
+};
 
 const SecondaryRelease = ({
   shouldRender,
@@ -264,12 +295,12 @@ const SecondaryRelease = ({
   context,
   secondaryReleaseVal,
   secondaryReleaseNotes
-}) => {
+} :Props) => {
   if (!shouldRender || !shouldCheckForSecondaryRelease(context, nca, fta)) return null;
 
   const text = secondaryReleaseVal
     ? 'Charges qualify for a secondary release option'
-    : 'Charges do not qualify for a secondary release option.'
+    : 'Charges do not qualify for a secondary release option.';
 
   const dmfTransformation = secondaryReleaseVal
     ? (
@@ -280,24 +311,25 @@ const SecondaryRelease = ({
       </StepWrapper>
     ) : (
       <StepWrapper>
-        <DMFCell dmf={dmf} selected />
+        <DMFCell dmf={dmf} selected large />
       </StepWrapper>
     );
 
   return (
     <div>
+      <hr />
       <StepHeader>Step Five:</StepHeader>
       <StepWrapper>{text}</StepWrapper>
       {dmfTransformation}
     </div>
   );
-}
+};
 
 const DMFExplanation = ({
   dmf,
   riskFactors,
   scores
-}) => {
+} :Props) => {
   let context = riskFactors.get(DMF.COURT_OR_BOOKING);
   if (context === 'Court') {
     context = CONTEXT.COURT_PENN;
@@ -322,7 +354,6 @@ const DMFExplanation = ({
   return (
     <DMFWrapper>
       <StepOne nca={nca} fta={fta} nvca={nvca} context={context} />
-      <hr />
       <StepTwo
           extradited={extradited}
           extraditedNotes={extraditedNotes}
@@ -331,9 +362,7 @@ const DMFExplanation = ({
           currentViolentOffense={currentViolentOffense}
           nvca={nvca}
           context={context} />
-      <hr />
       <StepThree shouldRender={!stepTwoIncrease} dmf={dmf} nca={nca} fta={fta} context={context} />
-      <hr />
       <StepFour
           shouldRender={!stepTwoIncrease}
           dmf={dmf}
@@ -344,7 +373,6 @@ const DMFExplanation = ({
           nvca={nvca}
           currentViolentOffense={currentViolentOffense}
           context={context} />
-      <hr />
       <SecondaryRelease
           shouldRender={!stepTwoIncrease && !stepFourIncrease}
           dmf={dmf}
