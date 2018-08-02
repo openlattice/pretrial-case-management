@@ -29,6 +29,10 @@ const StyledContentLabel = styled.div`
         return (
           'font-size: 11px;'
         );
+      case 'DMF-STEP1':
+        return (
+          'font-size: 11px;'
+        );
       default:
         return (
           'font-size: 12px;'
@@ -54,6 +58,10 @@ const StyledContent = styled.div`
       case 'FormContainer':
         return (
           'font-size: 14px;'
+        );
+      case 'DMF-STEP1':
+        return (
+          'font-size: 16px;'
         );
       default:
         return (

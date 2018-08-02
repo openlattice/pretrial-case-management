@@ -28,6 +28,12 @@ const StyledContentBlockWrapper = styled.div`
            grid-auto-rows: min-content;
            grid-row-gap: 15px;`
         );
+      case 'DMF-STEP1':
+        return (
+          `grid-template-columns: 20% 20% 20% 40%;
+           grid-auto-rows: min-content;
+           grid-row-gap: 15px;`
+        );
       default:
         return (
           `grid-template-columns: 24% 24% 24% 28%;
@@ -58,6 +64,12 @@ const StyledSectionHeader = styled.div`
         return (
           `padding: 10px 30px 30px 0;
            font-size: 18px;
+           font-weight: normal;`
+        );
+      case 'DMF-STEP1':
+        return (
+          `padding: 0px 30px 0 30px;
+           font-size: 16px;
            font-weight: normal;`
         );
       default:
@@ -94,6 +106,13 @@ const StyledSectionBottomBarWrapper = styled.div`
         return (
           `padding: 0;
            justify-content: none;
+           img {
+             margin-right: 20px;
+           }`
+        );
+      case 'DMF-STEP1':
+        return (
+          `padding: 30px 0 0 30px;
            img {
              margin-right: 20px;
            }`
