@@ -1,30 +1,57 @@
+/*
+ * @flow
+ */
+
 import React from 'react';
 import FontAwesome from 'react-fontawesome';
 import styled from 'styled-components';
 
 import DMFCell from './DMFCell';
 import DMFTable from './DMFTable';
+import ContentBlock from '../ContentBlock';
+import ContentSection from '../ContentSection';
+import PSAStats from '../review/PSAStats';
+import ScoreScale from '../ScoreScale';
+import BooleanFlag from '../BooleanFlag';
 import { CONTEXT, DMF, NOTES, PSA } from '../../utils/consts/Consts';
 import {
   getDMFDecision,
   increaseDMFSeverity,
   shouldCheckForSecondaryRelease
 } from '../../utils/consts/DMFResultConsts';
+import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+
+const DMFWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+
+  hr {
+    color: #eeeeee;
+    width: 100%;
+    height: 1px;
+    margin: 0;
+  }
+`;
 
 const StepHeader = styled.div`
-  font-weight: bold;
-  font-size: 14px;
   width: 100%;
-  text-align: center;
-  margin-top: 10px;
+  font-family: 'Open Sans', sans-serif;
+  padding: 0 30px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #555e6f;
 `;
 
 const StepWrapper = styled.div`
   display: flex;
   flex-direction: row;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
-  margin: 10px 0 20px 0;
+  margin: 30px 30px 30px;
+`;
+
+const StatsWrapper = styled.div`
+  width: 60%;
 `;
 
 const Item = styled.span`
@@ -37,6 +64,17 @@ const ItemValue = styled.span`
   margin: 0 5px;
 `;
 
+const ContentsWrapper = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  margin-top: 7px;
+`;
+
+const FLAG_DIMS = { height: 32, width: 156 };
+const SCALE_DIMS = { height: 28, width: 136 };
+
 const Arrow = styled(FontAwesome).attrs({
   name: 'arrow-right',
   size: '2x'
@@ -44,27 +82,49 @@ const Arrow = styled(FontAwesome).attrs({
   margin: 0 10px;
 `;
 
-const StepOne = ({ nca, fta, context }) => {
+const StepOne = ({
+  nca,
+  fta,
+  nvca,
+  context
+} :Props) => {
+  const nvcaDisplay = nvca ? 'Yes' : 'No';
+  const STATS = [
+    {
+      label: 'NVCA',
+      content: [<ContentsWrapper><BooleanFlag dims={FLAG_DIMS} value={nvcaDisplay} /></ContentsWrapper>]
+    },
+    {
+      label: 'NCA',
+      content: [<ContentsWrapper>{nca}<ScoreScale dims={SCALE_DIMS} score={nca} /></ContentsWrapper>]
+    },
+    {
+      label: 'FTA',
+      content: [<ContentsWrapper>{fta}<ScoreScale dims={SCALE_DIMS} score={fta} /></ContentsWrapper>]
+    },
+    {
+      label: 'Time of PSA',
+      content: [<ContentsWrapper>{context}</ContentsWrapper>]
+    }
+  ];
+
+  const content = STATS.map(item => (
+    <ContentBlock
+        component="DMF-STEP1"
+        contentBlock={item}
+        key={item.label} />
+  ));
+
   return (
     <div>
-      <StepHeader>Step One:</StepHeader>
-      <StepWrapper>
-        <Item>
-          <span>NCA score:</span>
-          <ItemValue>{nca}</ItemValue>
-        </Item>
-        <Item>
-          <span>FTA score:</span>
-          <ItemValue>{fta}</ItemValue>
-        </Item>
-        <Item>
-          <span>Time of PSA:</span>
-          <ItemValue>{context}</ItemValue>
-        </Item>
-      </StepWrapper>
+      <ContentSection
+          component="DMF-STEP1"
+          header="Step One" >
+        {content}
+      </ContentSection>
     </div>
   );
-}
+};
 
 const formatTextArr = (textArr) => {
   let text = textArr[0];
@@ -92,7 +152,7 @@ const StepTwo = ({
   if (!extradited && !stepTwoVal && !violent) {
     return (
       <div>
-        <StepHeader>Step Two:</StepHeader>
+        <StepHeader>Step Two</StepHeader>
         <StepWrapper>
           <div>
             Defendant was not extradited, no NVCA flag and current violent offense, and
@@ -117,7 +177,7 @@ const StepTwo = ({
 
   return (
     <div>
-      <StepHeader>Step Two:</StepHeader>
+      <StepHeader>Step Two</StepHeader>
       <StepWrapper>
         <span>{text}</span>
       </StepWrapper>
@@ -138,7 +198,7 @@ const StepThree = ({
   if (!shouldRender) return null;
   return (
     <div>
-      <StepHeader>Step Three:</StepHeader>
+      <StepHeader>Step Three</StepHeader>
       <StepWrapper>
         <DMFTable dmf={dmf} nca={nca} fta={fta} context={context} />
       </StepWrapper>
@@ -189,7 +249,7 @@ const StepFour = ({
 
   return (
     <div>
-      <StepHeader>Step Four:</StepHeader>
+      <StepHeader>Step Four</StepHeader>
       <StepWrapper>{formatTextArr(textArr)}</StepWrapper>
       {dmfTransformation}
     </div>
@@ -236,9 +296,7 @@ const SecondaryRelease = ({
 const DMFExplanation = ({
   dmf,
   riskFactors,
-  nca,
-  fta,
-  nvca
+  scores
 }) => {
   let context = riskFactors.get(DMF.COURT_OR_BOOKING);
   if (context === 'Court') {
@@ -254,12 +312,17 @@ const DMFExplanation = ({
   const secondaryReleaseVal = riskFactors.get(DMF.SECONDARY_RELEASE_CHARGES) === `${true}`;
   const secondaryReleaseNotes = riskFactors.get(NOTES[DMF.SECONDARY_RELEASE_CHARGES]);
 
+  const nca = scores.getIn([PROPERTY_TYPES.NCA_SCALE, 0]);
+  const fta = scores.getIn([PROPERTY_TYPES.FTA_SCALE, 0]);
+  const nvca = scores.getIn([PROPERTY_TYPES.NVCA_FLAG, 0]);
+
   const stepTwoIncrease = extradited || stepTwoCharges || (nvca && currentViolentOffense);
   const stepFourIncrease = stepFourCharges || (nvca && !currentViolentOffense);
 
   return (
-    <div>
-      <StepOne nca={nca} fta={fta} context={context} />
+    <DMFWrapper>
+      <StepOne nca={nca} fta={fta} nvca={nvca} context={context} />
+      <hr />
       <StepTwo
           extradited={extradited}
           extraditedNotes={extraditedNotes}
@@ -268,7 +331,9 @@ const DMFExplanation = ({
           currentViolentOffense={currentViolentOffense}
           nvca={nvca}
           context={context} />
+      <hr />
       <StepThree shouldRender={!stepTwoIncrease} dmf={dmf} nca={nca} fta={fta} context={context} />
+      <hr />
       <StepFour
           shouldRender={!stepTwoIncrease}
           dmf={dmf}
@@ -279,6 +344,7 @@ const DMFExplanation = ({
           nvca={nvca}
           currentViolentOffense={currentViolentOffense}
           context={context} />
+      <hr />
       <SecondaryRelease
           shouldRender={!stepTwoIncrease && !stepFourIncrease}
           dmf={dmf}
@@ -287,7 +353,7 @@ const DMFExplanation = ({
           context={context}
           secondaryReleaseVal={secondaryReleaseVal}
           secondaryReleaseNotes={secondaryReleaseNotes} />
-    </div>
+    </DMFWrapper>
   );
 };
 
