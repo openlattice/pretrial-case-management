@@ -20,7 +20,7 @@ const Flag = styled.div`
 `;
 
 const BooleanFlag = ({ value, dims } :Props) => {
-  const displayValue = value ? 'Yes' : 'No'
+  const displayValue = value ? 'Yes' : 'No';
   return (
     <Flag dims={dims}>{displayValue}</Flag>
   );
