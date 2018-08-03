@@ -390,8 +390,8 @@ export default class PSAInputForm extends React.Component<Props, State> {
     const priorMisdemeanors = getPreviousMisdemeanorLabels(allCharges);
     const priorFelonies = getPreviousFelonyLabels(allCharges);
     const priorViolentConvictions = getPreviousViolentChargeLabels(allCharges);
-    const recentFTAs = getRecentFTAs(allFTAs);
-    const oldFTAs = getOldFTAs(allFTAs);
+    const recentFTAs = getRecentFTAs(allFTAs, allCharges);
+    const oldFTAs = getOldFTAs(allFTAs, allCharges);
     const priorSentenceToIncarceration = getSentenceToIncarcerationCaseNums(allSentences);
 
     const step2Charges = getAllStepTwoChargeLabels(currCharges);
