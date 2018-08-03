@@ -120,6 +120,9 @@ const MISDEMEANOR_CHARGE_LEVEL_CODES :Set<string> = Immutable.Set([
 
 const stripDegree = (chargeNum :string) :string => chargeNum.split('(')[0].trim();
 
+export const getCaseNumFromCharge = (charge :Immutable.Map<*, *>) =>
+  charge.getIn([PROPERTY_TYPES.CHARGE_ID, 0], '').split('|')[0];
+
 export const chargeIsViolent = (chargeNum :string) :boolean =>
   VIOLENT_CHARGES.includes(stripDegree(chargeNum.toLowerCase()));
 
@@ -180,7 +183,7 @@ export const degreeFieldIsFelony = (degreeField :Immutable.List<string>) :boolea
 };
 
 export const getChargeDetails = (charge :Immutable.Map<*, *>, ignoreCase? :boolean) :ChargeDetails => {
-  const caseNum = ignoreCase ? null : charge.getIn([CHARGE_ID, 0], '').split('|')[0];
+  const caseNum = ignoreCase ? null : getCaseNumFromCharge(charge);
   const statute = formatValue(charge.get(CHARGE_STATUTE, Immutable.List()));
   const description = formatValue(charge.get(CHARGE_DESCRIPTION, Immutable.List()));
   const dispositionDate = formatDateList(charge.get(DISPOSITION_DATE, Immutable.List()));
@@ -249,6 +252,11 @@ export const getSummaryStats = (chargesByCaseNum :Immutable.Map<*>) => {
     numViolentCharges,
     numViolentConvictions
   };
+};
+
+export const shouldIgnoreCharge = (charge :Immutable.Map<*, *>) => {
+  const severities = charge.get(PROPERTY_TYPES.CHARGE_LEVEL, Immutable.List());
+  return severities.includes('MO') || severities.includes('PO') || severities.includes('P');
 };
 
 export default VIOLENT_CHARGES;
