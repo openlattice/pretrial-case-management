@@ -19,7 +19,7 @@ import {
   StyledSectionWrapper,
   StyledTopFormNavBuffer
 } from '../../utils/Layout';
-import { DOMAIN, SUMMARY_REPORT } from '../../utils/consts/ReportDownloadTypes';
+import { DOMAIN, PENN_SUMMARY_REPORT, MINN_SUMMARY_REPORT } from '../../utils/consts/ReportDownloadTypes';
 
 const HeaderSection = styled.div`
   padding: 10px 30px 30px 30px;
@@ -128,10 +128,10 @@ class DownloadPSA extends React.Component<Props, State> {
     if (!startDate || !endDate || this.getErrorText()) return null;
     return (
       <ButtonRow>
-        <BasicDownloadButton onClick={() => this.download(SUMMARY_REPORT, DOMAIN.MINNEHAHA)}>
+        <BasicDownloadButton onClick={() => this.download(MINN_SUMMARY_REPORT, DOMAIN.MINNEHAHA)}>
           Download Minnehaha Summary Report
         </BasicDownloadButton>
-        <BasicDownloadButton onClick={() => this.download(SUMMARY_REPORT, DOMAIN.PENNINGTON)}>
+        <BasicDownloadButton onClick={() => this.download(PENN_SUMMARY_REPORT, DOMAIN.PENNINGTON)}>
           Download Pennington Summary Report
         </BasicDownloadButton>
         <InfoDownloadButton onClick={() => this.download()}>Download All PSA Data</InfoDownloadButton>

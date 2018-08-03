@@ -7,6 +7,7 @@ import calendarIcon from '../../assets/svg/calendar-icon.svg';
 const DatePickerWrapper = styled.div`
   position: relative;
   height: 39px;
+  min-width: 140px;
 `;
 
 const IconWrapper = styled.div`
@@ -15,10 +16,11 @@ const IconWrapper = styled.div`
   height: 100%;
   display: flex;
   justify-content: center;
-  visibility: hidden;
 `;
 
-const StyledDatePickerInput = styled(DatePicker)`
+const StyledDatePickerInput = styled(DatePicker).attrs({
+  showClearButton: false
+})`
   height: 39px;
   border-radius: 3px;
   background-color: none;
