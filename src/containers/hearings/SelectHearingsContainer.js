@@ -11,27 +11,35 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
 import InfoButton from '../../components/buttons/InfoButton';
-import DateTimePicker from '../../components/controls/StyledDateTimePicker';
+import BasicButton from '../../components/buttons/BasicButton';
+import DatePicker from '../../components/controls/StyledDatePicker';
 import SearchableSelect from '../../components/controls/SearchableSelect';
-import HearingsTable from '../../components/hearings/HearingsTable';
+import HearingCardsHolder from '../../components/hearings/HearingCardsHolder';
 import psaHearingConfig from '../../config/formconfig/PSAHearingConfig';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { FORM_IDS, ID_FIELD_NAMES, HEARING } from '../../utils/consts/Consts';
 import { getCourtroomOptions } from '../../utils/consts/HearingConsts';
+import { getTimeOptions } from '../../utils/consts/DateTimeConsts';
 import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
 import * as ReviewActionFactory from '../review/ReviewActionFactory';
 
-const Header = styled.div`
-  width: 100%;
-  text-align: center;
-  font-family: 'Open Sans', sans-serif;
-  font-size: 16px;
-  margin: 20px 0;
+
+const Container = styled.div`
+  padding: 30px;
 `;
 
-const DividerOr = styled(Header)`
-  font-size: 14px;
-  color: #8e929b;
+const Header = styled.div`
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  margin: 20px 0;
+
+  span {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 18px;
+    color: #555e6f;
+  }
 `;
 
 const CenteredContainer = styled.div`
@@ -39,15 +47,31 @@ const CenteredContainer = styled.div`
   text-align: center;
 `;
 
+const CreateButton = styled(InfoButton)`
+  padding-left: 0;
+  padding-right: 0;
+`;
+
 const InputRow = styled.div`
   display: inline-flex;
   flex-direction: row;
-  justify-content: space-evenly;
-  width: 700px;
+  justify-content: space-between;
+  width: 100%;
 
   section {
-    width: 30%;
+    width: 24%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
   }
+`;
+
+const InputLabel = styled.span`
+  font-family: 'Open Sans', sans-serif;
+  font-size: 14px;
+  text-align: left;
+  color: #555e6f;
+  margin-bottom: 10px;
 `;
 
 type Props = {
@@ -69,7 +93,8 @@ type Props = {
 
 type State = {
   manuallyCreatingHearing :boolean,
-  newHearingDateTime :?string,
+  newHearingDate :?string,
+  newHearingTime :?string,
   newHearingCourtroom :?string
 };
 
@@ -79,8 +104,9 @@ class SelectHearingsContainer extends React.Component<Props, State> {
     super(props);
     this.state = {
       manuallyCreatingHearing: false,
-      newHearingDateTime: null,
-      newHearingCourtroom: null
+      newHearingDate: undefined,
+      newHearingTime: undefined,
+      newHearingCourtroom: undefined
     };
   }
 
@@ -92,7 +118,7 @@ class SelectHearingsContainer extends React.Component<Props, State> {
     (moment(h1.getIn([PROPERTY_TYPES.DATE_TIME, 0], '')).isBefore(h2.getIn([PROPERTY_TYPES.DATE_TIME, 0], ''))
       ? 1 : -1))
 
-  isReadyToSubmit = () => this.state.newHearingCourtroom && this.state.newHearingDateTime
+  isReadyToSubmit = () => this.state.newHearingCourtroom && this.state.newHearingDate && this.state.newHearingTime
 
   selectHearing = (hearingDetails) => {
     const { psaId, personId, psaEntityKeyId } = this.props;
@@ -109,12 +135,19 @@ class SelectHearingsContainer extends React.Component<Props, State> {
   }
 
   selectCurrentHearing = () => {
-    this.selectHearing({
-      [ID_FIELD_NAMES.HEARING_ID]: randomUUID(),
-      [HEARING.DATE_TIME]: this.state.newHearingDateTime.toISOString(true),
-      [HEARING.COURTROOM]: this.state.newHearingCourtroom,
-      [PROPERTY_TYPES.HEARING_TYPE]: 'Initial Appearance'
-    });
+    const dateFormat = 'MM/DD/YYYY';
+    const timeFormat = 'hh:mm a';
+    const date = moment(this.state.newHearingDate);
+    const time = moment(this.state.newHearingTime, timeFormat);
+    if (date.isValid() && time.isValid()) {
+      const datetime = moment(`${date.format(dateFormat)} ${time.format(timeFormat)}`, `${dateFormat} ${timeFormat}`);
+      this.selectHearing({
+        [ID_FIELD_NAMES.HEARING_ID]: randomUUID(),
+        [HEARING.DATE_TIME]: datetime.toISOString(true),
+        [HEARING.COURTROOM]: this.state.newHearingCourtroom,
+        [PROPERTY_TYPES.HEARING_TYPE]: 'Initial Appearance'
+      });
+    }
   }
 
   selectExistingHearing = (row, hearingId) => {
@@ -126,11 +159,21 @@ class SelectHearingsContainer extends React.Component<Props, State> {
       <CenteredContainer>
         <InputRow>
           <section>
-            <DateTimePicker
-                value={this.state.newHearingDateTime}
-                onChange={newHearingDateTime => this.setState({ newHearingDateTime })} />
+            <InputLabel>Date</InputLabel>
+            <DatePicker
+                value={this.state.newHearingDate}
+                onChange={newHearingDate => this.setState({ newHearingDate })} />
           </section>
           <section>
+            <InputLabel>Time</InputLabel>
+            <SearchableSelect
+                options={getTimeOptions()}
+                value={this.state.newHearingTime}
+                onSelect={newHearingTime => this.setState({ newHearingTime })}
+                short />
+          </section>
+          <section>
+            <InputLabel>Courtroom</InputLabel>
             <SearchableSelect
                 options={getCourtroomOptions()}
                 value={this.state.newHearingCourtroom}
@@ -138,7 +181,10 @@ class SelectHearingsContainer extends React.Component<Props, State> {
                 short />
           </section>
           <section>
-            <InfoButton disabled={!this.isReadyToSubmit()} onClick={this.selectCurrentHearing}>Select</InfoButton>
+            <InputLabel />
+            <CreateButton disabled={!this.isReadyToSubmit()} onClick={this.selectCurrentHearing}>
+              Create New
+            </CreateButton>
           </section>
         </InputRow>
       </CenteredContainer>
@@ -149,15 +195,31 @@ class SelectHearingsContainer extends React.Component<Props, State> {
     );
   }
 
+  switchView = () => this.setState({ manuallyCreatingHearing: !this.state.manuallyCreatingHearing });
+
   render() {
+    const { manuallyCreatingHearing } = this.state;
+
+    if (manuallyCreatingHearing) {
+      return (
+        <Container>
+          <Header>
+            <span>Create New Hearing</span>
+            <BasicButton onClick={this.switchView}>Select from Existing</BasicButton>
+          </Header>
+          {this.renderNewHearingSection()}
+        </Container>
+      );
+    }
+
     return (
-      <div>
-        <Header>Create new hearing</Header>
-        {this.renderNewHearingSection()}
-        <DividerOr>OR</DividerOr>
-        <Header>Select existing hearing</Header>
-        <HearingsTable rows={this.getSortedHearings()} handleSelect={this.selectExistingHearing} />
-      </div>
+      <Container>
+        <Header>
+          <span>Select a Hearing</span>
+          <InfoButton onClick={this.switchView}>Create New Hearing</InfoButton>
+        </Header>
+        <HearingCardsHolder hearings={this.getSortedHearings()} handleSelect={this.selectExistingHearing} />
+      </Container>
     );
   }
 }

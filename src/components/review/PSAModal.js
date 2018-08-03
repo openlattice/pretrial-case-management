@@ -43,7 +43,7 @@ const DownloadButtonContainer = styled.div`
 
 const ModalWrapper = styled.div`
   max-height: 70vh;
-  overflow-y: auto;
+  overflow-y: ${props => (props.noScroll ? 'visible' : 'auto')};
   padding: ${props => (props.withPadding ? '30px' : '0')};
   div:first-child {
     border: none;
@@ -601,7 +601,7 @@ export default class PSAModal extends React.Component<Props, State> {
     }
     if (!this.props.neighbors.get(ENTITY_SETS.HEARINGS)) {
       return (
-        <ModalWrapper>
+        <ModalWrapper noScroll>
           <SelectHearingsContainer
               personId={this.props.personId}
               psaId={this.props.scores.getIn([PROPERTY_TYPES.GENERAL_ID, 0])}
