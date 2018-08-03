@@ -14,7 +14,8 @@ import {
   dispositionFieldIsGuilty,
   getViolentChargeNums,
   getChargeTitle,
-  getChargeDetails
+  getChargeDetails,
+  shouldIgnoreCharge
 } from './consts/ChargeConsts';
 import { getSentenceToIncarcerationCaseNums } from './consts/SentenceConsts';
 import {
@@ -129,7 +130,7 @@ const filterPendingCharges = (
         if (caseNum !== currCaseNum) casesWithArrestBefore = casesWithArrestBefore.add(caseNum);
       }
     });
-    allCharges.forEach((chargeDetails) => {
+    allCharges.filter(charge => !shouldIgnoreCharge(charge)).forEach((chargeDetails) => {
       let caseNum;
       let shouldInclude = false;
 
@@ -262,12 +263,13 @@ export const tryAutofillDMFStepFour = (currCharges :Immutable.List<*>) :string =
 export const tryAutofillDMFSecondaryReleaseCharges = (currCharges :Immutable.List<*>) :string =>
   `${getAllSecondaryReleaseCharges(currCharges).size === currCharges.size}`;
 
-export const tryAutofillRecentFTAs = (allFTAs :Immutable.List<*>) :string => {
-  const numFTAs = getRecentFTAs(allFTAs).size;
+export const tryAutofillRecentFTAs = (allFTAs :Immutable.List<*>, allCharges :Immutable.List<*>) :string => {
+  const numFTAs = getRecentFTAs(allFTAs, allCharges).size;
   return `${numFTAs > 2 ? 2 : numFTAs}`;
 }
 
-export const tryAutofillOldFTAs = (allFTAs :Immutable.List<*>) :string => `${getOldFTAs(allFTAs).size > 0}`;
+export const tryAutofillOldFTAs = (allFTAs :Immutable.List<*>, allCharges :Immutable.List<*>) :string =>
+  `${getOldFTAs(allFTAs, allCharges).size > 0}`;
 
 export const tryAutofillFields = (
   nextCase :Immutable.Map<*, *>,
@@ -336,8 +338,8 @@ export const tryAutofillFields = (
 
   psaForm = psaForm.set(PRIOR_SENTENCE_TO_INCARCERATION, tryAutofillPriorSentenceToIncarceration(allSentences));
 
-  psaForm = psaForm.set(PRIOR_FAILURE_TO_APPEAR_RECENT, tryAutofillRecentFTAs(allFTAs));
-  psaForm = psaForm.set(PRIOR_FAILURE_TO_APPEAR_OLD, tryAutofillOldFTAs(allFTAs));
+  psaForm = psaForm.set(PRIOR_FAILURE_TO_APPEAR_RECENT, tryAutofillRecentFTAs(allFTAs, allCharges));
+  psaForm = psaForm.set(PRIOR_FAILURE_TO_APPEAR_OLD, tryAutofillOldFTAs(allFTAs, allCharges));
 
   return psaForm;
 };
