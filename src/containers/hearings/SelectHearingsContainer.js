@@ -77,6 +77,7 @@ const InputLabel = styled.span`
 type Props = {
   personId :string,
   psaId :string,
+  psaEntityKeyId? :string,
   hearings :Immutable.List<*, *>,
   scoresAsMap :Immutable.Map<*, *>,
   loadingResults :boolean,
@@ -88,7 +89,8 @@ type Props = {
       callback :() => void
     }) => void,
     refreshPSANeighbors :({ id :string }) => void
-  }
+  },
+  onSubmit :(hearing :Object) => void
 }
 
 type State = {
@@ -127,10 +129,12 @@ class SelectHearingsContainer extends React.Component<Props, State> {
       [FORM_IDS.PERSON_ID]: personId
     });
 
+    const callback = psaEntityKeyId ? () => this.props.actions.refreshPSANeighbors({ id: psaEntityKeyId }) : () => {};
+
     this.props.actions.submit({
       values,
       config: psaHearingConfig,
-      callback: () => this.props.actions.refreshPSANeighbors({ id: psaEntityKeyId })
+      callback
     });
   }
 
@@ -141,17 +145,25 @@ class SelectHearingsContainer extends React.Component<Props, State> {
     const time = moment(this.state.newHearingTime, timeFormat);
     if (date.isValid() && time.isValid()) {
       const datetime = moment(`${date.format(dateFormat)} ${time.format(timeFormat)}`, `${dateFormat} ${timeFormat}`);
-      this.selectHearing({
+      const hearing = {
         [ID_FIELD_NAMES.HEARING_ID]: randomUUID(),
         [HEARING.DATE_TIME]: datetime.toISOString(true),
         [HEARING.COURTROOM]: this.state.newHearingCourtroom,
         [PROPERTY_TYPES.HEARING_TYPE]: 'Initial Appearance'
-      });
+      };
+
+      this.selectHearing(hearing);
+      this.props.onSubmit(hearing);
     }
   }
 
   selectExistingHearing = (row, hearingId) => {
-    this.selectHearing({ [ID_FIELD_NAMES.HEARING_ID]: hearingId });
+    const hearingWithOnlyId = { [ID_FIELD_NAMES.HEARING_ID]: hearingId };
+    this.selectHearing({ [ID_FIELD_NAMES.HEARING_ID]: hearingWithOnlyId });
+    this.props.onSubmit(Object.assign({}, hearingWithOnlyId, {
+      [HEARING.DATE_TIME]: row.getIn([PROPERTY_TYPES.DATE_TIME, 0], ''),
+      [HEARING.COURTROOM]: row.getIn([PROPERTY_TYPES.COURTROOM, 0], '')
+    }));
   }
 
   renderNewHearingSection = () => {
