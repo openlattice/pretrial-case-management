@@ -1,6 +1,6 @@
 import { ENTITY_SETS, PROPERTY_TYPES } from './DataModelConsts';
 
-export const PENN_SUMMARY_REPORT = {
+export const SUMMARY_REPORT = {
   [ENTITY_SETS.PEOPLE]: {
     [PROPERTY_TYPES.LAST_NAME]: 'Last Name',
     [PROPERTY_TYPES.FIRST_NAME]: 'First Name',
@@ -27,7 +27,7 @@ export const PENN_SUMMARY_REPORT = {
   }
 };
 
-export const MINN_SUMMARY_REPORT = {
+export const PSA_RESPONSE_TABLE = {
   [ENTITY_SETS.PEOPLE]: {
     [PROPERTY_TYPES.LAST_NAME]: 'Last Name',
     [PROPERTY_TYPES.FIRST_NAME]: 'First Name',
