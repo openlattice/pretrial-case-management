@@ -4,12 +4,13 @@
 
 import Immutable from 'immutable';
 import moment from 'moment';
-import { AuthorizationApi, DataApi, EntityDataModelApi, SearchApi } from 'lattice';
+import { AuthorizationApi, Constants, DataApi, EntityDataModelApi, SearchApi } from 'lattice';
 import { all, call, put, take, takeEvery } from 'redux-saga/effects';
 
 import { stripIdField } from '../../utils/DataUtils';
 import exportPDF, { exportPDFList } from '../../utils/PDFUtils';
 import { getMapByCaseId } from '../../utils/CaseUtils';
+import { getEntityKeyId, getEntitySetId, getFqnObj } from '../../utils/Utils';
 import {
   BULK_DOWNLOAD_PSA_REVIEW_PDF,
   CHANGE_PSA_STATUS,
@@ -34,7 +35,8 @@ import {
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { RESULT_CATEGORIES, formatDMFFromEntity } from '../../utils/consts/DMFResultConsts';
 import { PSA_STATUSES } from '../../utils/consts/Consts';
-import { getFqnObj } from '../../utils/Utils';
+
+const { OPENLATTICE_ID_FQN } = Constants;
 
 const LIST_ENTITY_SETS = Immutable.List.of(ENTITY_SETS.STAFF, ENTITY_SETS.RELEASE_CONDITIONS);
 
@@ -49,9 +51,9 @@ const orderCasesByArrestDate = (case1, case2) => {
 };
 
 function* getCasesAndCharges(neighbors) {
-  let personEntitySetId = neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborEntitySet', 'id']);
+  let personEntitySetId = getEntitySetId(neighbors, ENTITY_SETS.PEOPLE);
   if (!personEntitySetId) personEntitySetId = yield call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.PEOPLE);
-  const personEntityKeyId = neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborId']);
+  const personEntityKeyId = getEntityKeyId(neighbors, ENTITY_SETS.PEOPLE);
   const personNeighbors = yield call(SearchApi.searchEntityNeighbors, personEntitySetId, personEntityKeyId);
 
   let pretrialCaseOptionsWithDate = Immutable.List();
@@ -69,7 +71,7 @@ function* getCasesAndCharges(neighbors) {
     if (entitySet) {
       const { name } = entitySet;
       if (name === ENTITY_SETS.PRETRIAL_CASES) {
-        const caseObj = neighborDetails.set('id', neighbor.neighborId);
+        const caseObj = neighborDetails;
         const arrList = caseObj.get(
           PROPERTY_TYPES.ARREST_DATE,
           caseObj.get(PROPERTY_TYPES.FILE_DATE, Immutable.List())
@@ -304,7 +306,7 @@ function* loadPSAsByDateWorker(action :SequenceAction) :Generator<*, *, *> {
 
     let scoresAsMap = Immutable.Map();
     allScoreData.hits.forEach((row) => {
-      scoresAsMap = scoresAsMap.set(row.id[0], Immutable.fromJS(row).delete('id'));
+      scoresAsMap = scoresAsMap.set(row[OPENLATTICE_ID_FQN][0], stripIdField(Immutable.fromJS(row)));
     });
 
     yield put(loadPSAsByDate.success(action.id, {

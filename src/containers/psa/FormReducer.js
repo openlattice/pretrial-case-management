@@ -4,6 +4,7 @@
 
 import Immutable from 'immutable';
 import moment from 'moment';
+import { Constants } from 'lattice';
 
 import {
   ADD_CASE_AND_CHARGES,
@@ -17,6 +18,8 @@ import {
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA, NOTES, DMF } from '../../utils/consts/Consts';
 import { getMapByCaseId } from '../../utils/CaseUtils';
+
+const { OPENLATTICE_ID_FQN } = Constants;
 
 const {
   ARREST_CASES,
@@ -152,9 +155,7 @@ function formReducer(state :Immutable.Map<> = INITIAL_STATE, action :Object) {
           const neighbors = Immutable.fromJS(action.value.neighbors) || Immutable.List();
           neighbors.forEach((neighbor) => {
             const entitySetName = neighbor.getIn(['neighborEntitySet', 'name'], '');
-            const neighborObj = neighbor
-              .get('neighborDetails', Immutable.Map())
-              .set('id', neighbor.get('neighborId', ''));
+            const neighborObj = neighbor.get('neighborDetails', Immutable.Map());
 
             if (entitySetName === PRETRIAL_CASES) {
               allCasesForPerson = allCasesForPerson.push(neighborObj);

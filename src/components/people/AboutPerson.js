@@ -5,6 +5,7 @@
 import React from 'react';
 import Immutable from 'immutable';
 import styled from 'styled-components';
+import { Constants } from 'lattice';
 
 import AboutPersonGeneral from '../person/AboutPersonGeneral';
 import PSAReviewPersonRowList from '../../containers/review/PSAReviewReportsRowList';
@@ -12,6 +13,8 @@ import CaseHistory from '../casehistory/CaseHistory';
 import CaseHistoryTimeline from '../casehistory/CaseHistoryTimeline';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { SORT_TYPES } from '../../utils/consts/Consts';
+
+const { OPENLATTICE_ID_FQN } = Constants;
 
 const Wrapper = styled.div`
   display: flex;
@@ -109,7 +112,7 @@ const AboutPerson = ({ selectedPersonData, neighbors } :Props) => {
   const renderPSAs = () => {
     const scoreSeq = neighbors.get(ENTITY_SETS.PSA_SCORES, Immutable.Map())
       .filter(neighbor => !!neighbor.get('neighborDetails'))
-      .map(neighbor => [neighbor.get('neighborId'), neighbor.get('neighborDetails')]);
+      .map(neighbor => [neighbor.getIn(['neighborDetails', OPENLATTICE_ID_FQN, 0]), neighbor.get('neighborDetails')]);
 
     return (
       <PSAReviewPersonRowList

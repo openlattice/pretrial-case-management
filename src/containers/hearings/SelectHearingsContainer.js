@@ -90,7 +90,7 @@ type Props = {
     }) => void,
     refreshPSANeighbors :({ id :string }) => void
   },
-  onSubmit :(hearing :Object) => void
+  onSubmit? :(hearing :Object) => void
 }
 
 type State = {
@@ -101,6 +101,10 @@ type State = {
 };
 
 class SelectHearingsContainer extends React.Component<Props, State> {
+
+  static defaultProps = {
+    onSubmit: () => {}
+  }
 
   constructor(props :Props) {
     super(props);

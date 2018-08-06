@@ -5,10 +5,13 @@
 import React from 'react';
 import styled from 'styled-components';
 import Immutable from 'immutable';
+import { Constants } from 'lattice';
 
 import defaultUserIcon from '../../assets/svg/profile-placeholder-rectangle-big.svg';
 import { formatValue, formatDate } from '../../utils/Utils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+
+const { OPENLATTICE_ID_FQN } = Constants;
 
 const {
   DOB,
@@ -119,7 +122,7 @@ const PersonCard = ({ person, handleSelect } :Props) => {
   const dob = formatDate(person.getIn([DOB, 0], ''), 'MM/DD/YYYY');
   const suffix = formatValue(person.get(SUFFIX, Immutable.List()));
   const id :string = person.getIn([PERSON_ID, 0], '');
-  const entityKeyId :string = person.getIn(['id', 0], '');
+  const entityKeyId :string = person.getIn([OPENLATTICE_ID_FQN, 0], '');
 
   return (
     <Wrapper
