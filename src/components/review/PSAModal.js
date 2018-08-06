@@ -23,6 +23,7 @@ import SelectHearingsContainer from '../../containers/hearings/SelectHearingsCon
 import SelectReleaseConditions from '../releaseconditions/SelectReleaseConditions';
 import ClosePSAModal from './ClosePSAModal';
 import psaEditedConfig from '../../config/formconfig/PsaEditedConfig';
+import closeX from '../../assets/svg/close-x-gray.svg';
 import { getScoresAndRiskFactors, calculateDMF } from '../../utils/ScoringUtils';
 import { CenteredContainer } from '../../utils/Layout';
 import { toISODateTime } from '../../utils/Utils';
@@ -42,7 +43,7 @@ const DownloadButtonContainer = styled.div`
 
 const ModalWrapper = styled.div`
   max-height: 70vh;
-  overflow-y: auto;
+  overflow-y: ${props => (props.noScroll ? 'visible' : 'auto')};
   padding: ${props => (props.withPadding ? '30px' : '0')};
   div:first-child {
     border: none;
@@ -104,6 +105,19 @@ const ClosePSAButton = styled(StyledButton)`
   border: none;
   border-radius: 3px;
   background-color: #e4d8ff;
+`;
+
+const CloseModalX = styled.img.attrs({
+  alt: '',
+  src: closeX
+})`
+  height: 16px;
+  width: 16px;
+  margin-left: 40px;
+
+  &:hover {
+    cursor: pointer;
+  }
 `;
 
 type Props = {
@@ -584,7 +598,7 @@ export default class PSAModal extends React.Component<Props, State> {
     }
     if (!this.props.neighbors.get(ENTITY_SETS.HEARINGS)) {
       return (
-        <ModalWrapper>
+        <ModalWrapper noScroll>
           <SelectHearingsContainer
               personId={this.props.personId}
               psaId={this.props.scores.getIn([PROPERTY_TYPES.GENERAL_ID, 0])}
@@ -656,10 +670,13 @@ export default class PSAModal extends React.Component<Props, State> {
               onSubmit={this.handleStatusChange} />
           <TitleWrapper>
             <TitleHeader>PSA Details: <span>{`${this.getName()}`}</span></TitleHeader>
-            { this.props.readOnly
-              ? null
-              : <ClosePSAButton onClick={() => this.setState({ closing: true })}>{changeStatusText}</ClosePSAButton>
-            }
+            <div>
+              { this.props.readOnly
+                ? null
+                : <ClosePSAButton onClick={() => this.setState({ closing: true })}>{changeStatusText}</ClosePSAButton>
+              }
+              <CloseModalX onClick={this.props.onClose} />
+            </div>
           </TitleWrapper>
           <CustomTabs panes={tabs} />
         </Modal.Body>

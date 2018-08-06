@@ -5,8 +5,9 @@ import styled from 'styled-components';
 export const RadioInputContainer = styled.input.attrs({
   type: 'radio'
 })`
-  position: absolute;
   opacity: 0;
+  height: 0;
+  width: 0;
 `;
 
 export const RadioContainer = styled.label`
@@ -27,7 +28,6 @@ export const RadioSelection = styled.span`
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  position: relative;
 
   ${RadioContainer}:hover ${RadioInputContainer}:enabled:not(:checked) ~ & {
     background-color: #dcdce7;

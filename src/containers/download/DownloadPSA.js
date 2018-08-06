@@ -19,7 +19,7 @@ import {
   StyledSectionWrapper,
   StyledTopFormNavBuffer
 } from '../../utils/Layout';
-import { DOMAIN, SUMMARY_REPORT } from '../../utils/consts/ReportDownloadTypes';
+import { DOMAIN, PSA_RESPONSE_TABLE, SUMMARY_REPORT } from '../../utils/consts/ReportDownloadTypes';
 
 const HeaderSection = styled.div`
   padding: 10px 30px 30px 30px;
@@ -32,11 +32,12 @@ const HeaderSection = styled.div`
 
 const ButtonRow = styled.div`
   margin-top: 30px;
+  text-align: center;
 `;
 
 const BasicDownloadButton = styled(BasicButton)`
   margin: 0 6px;
-  padding: 10px 20px;
+  padding: 10px;
 `;
 
 const InfoDownloadButton = styled(InfoButton)`
@@ -127,15 +128,22 @@ class DownloadPSA extends React.Component<Props, State> {
     const { startDate, endDate } = this.state;
     if (!startDate || !endDate || this.getErrorText()) return null;
     return (
-      <ButtonRow>
-        <BasicDownloadButton onClick={() => this.download(SUMMARY_REPORT, DOMAIN.MINNEHAHA)}>
-          Download Minnehaha Summary Report
-        </BasicDownloadButton>
-        <BasicDownloadButton onClick={() => this.download(SUMMARY_REPORT, DOMAIN.PENNINGTON)}>
-          Download Pennington Summary Report
-        </BasicDownloadButton>
-        <InfoDownloadButton onClick={() => this.download()}>Download All PSA Data</InfoDownloadButton>
-      </ButtonRow>
+      <div>
+        <ButtonRow>
+          <BasicDownloadButton onClick={() => this.download(PSA_RESPONSE_TABLE, DOMAIN.MINNEHAHA)}>
+            Download Minnehaha PSA Response Table
+          </BasicDownloadButton>
+          <BasicDownloadButton onClick={() => this.download(SUMMARY_REPORT, DOMAIN.MINNEHAHA)}>
+            Download Minnehaha Summary Report
+          </BasicDownloadButton>
+          <BasicDownloadButton onClick={() => this.download(SUMMARY_REPORT, DOMAIN.PENNINGTON)}>
+            Download Pennington Summary Report
+          </BasicDownloadButton>
+        </ButtonRow>
+        <ButtonRow>
+          <InfoDownloadButton onClick={this.download}>Download All PSA Data</InfoDownloadButton>
+        </ButtonRow>
+      </div>
     );
   }
 
