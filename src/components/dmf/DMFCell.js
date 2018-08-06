@@ -45,8 +45,6 @@ const Condition = styled.div`
 const Cell = styled.div`
   text-align: center;
   padding: 10px;
-  height: 70px;
-  width: 116px;
   margin: 3px;
   display: inline-flex;
   flex-direction: column;
@@ -68,6 +66,10 @@ const Cell = styled.div`
          margin: 0;`
       );
     }
+    return (
+      `height: 70px;
+       width: 116px;`
+    );
   }}
 `;
 
