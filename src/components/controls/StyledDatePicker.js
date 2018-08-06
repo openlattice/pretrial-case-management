@@ -19,9 +19,7 @@ const IconWrapper = styled.div`
   visibility: ${props => (props.clearButton ? 'hidden' : 'visible')};
 `;
 
-const StyledDatePickerInput = styled(DatePicker).attrs({
-
-})`
+const StyledDatePickerInput = styled(DatePicker)`
   height: 39px;
   border-radius: 3px;
   background-color: none;
