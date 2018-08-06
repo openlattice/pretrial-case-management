@@ -14,6 +14,7 @@ import DMFCell from '../dmf/DMFCell';
 import ChargeTable from '../../components/charges/ChargeTable';
 import rightArrow from '../../assets/svg/dmf-arrow.svg';
 import { CONTEXT } from '../../utils/consts/Consts';
+import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import {
   getDMFDecision,
@@ -156,7 +157,7 @@ const renderArrestInfo = ({ neighbors, manualCaseHistory } :Props) => {
     .filter(caseObj => caseObj.getIn([PROPERTY_TYPES.CASE_ID, 0], '') === caseNum)
     .get(0, Immutable.Map());
   return (
-    <ArrestCard arrest={pretrialCase} component="summary" />
+    <ArrestCard arrest={pretrialCase} component={CONTENT_CONSTS.SUMMARY} />
   );
 };
 
@@ -198,10 +199,10 @@ const renderPSADetails = ({ neighbors, downloadFn, scores } :Props) => {
     <PSADetails>
       <ContentBlock
           contentBlock={{ label: 'psa date', content: [psaDate] }}
-          component="summary" />
+          component={CONTENT_CONSTS.SUMMARY} />
       <ContentBlock
           contentBlock={{ label: 'filer', content: [filer] }}
-          component="summary" />
+          component={CONTENT_CONSTS.SUMMARY} />
       <DownloadButtonWrapper>
         <PSAReportDownloadButton
             downloadFn={downloadFn}

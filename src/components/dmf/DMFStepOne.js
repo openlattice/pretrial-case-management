@@ -9,6 +9,7 @@ import ContentBlock from '../ContentBlock';
 import ContentSection from '../ContentSection';
 import ScoreScale from '../ScoreScale';
 import BooleanFlag from '../BooleanFlag';
+import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
 
 const StepOne = ({
   nca,
@@ -40,7 +41,7 @@ const StepOne = ({
 
   const content = STATS.map(item => (
     <ContentBlock
-        component="DMF"
+        component={CONTENT_CONSTS.DMF}
         contentBlock={item}
         key={item.label} />
   ));
@@ -48,7 +49,7 @@ const StepOne = ({
   return (
     <div>
       <ContentSection
-          component="DMF"
+          component={CONTENT_CONSTS.DMF}
           header="Step One" >
         {content}
       </ContentSection>

@@ -10,6 +10,7 @@ import ContentBlock from '../ContentBlock';
 import ContentSection from '../ContentSection';
 import BooleanFlag from '../BooleanFlag';
 import { getDMFDecision } from '../../utils/consts/DMFResultConsts';
+import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
 
 const StepTwo = ({
   extradited,
@@ -48,7 +49,7 @@ const StepTwo = ({
   ];
   const content = STEP2_VALS.map(item => (
     <ContentBlock
-        component="DMF"
+        component={CONTENT_CONSTS.DMF}
         contentBlock={item}
         key={item.label} />
   ));
@@ -57,7 +58,7 @@ const StepTwo = ({
     <div>
       <hr />
       <ContentSection
-          component="DMF"
+          component={CONTENT_CONSTS.DMF}
           header="Step Two" >
         {content}
       </ContentSection>

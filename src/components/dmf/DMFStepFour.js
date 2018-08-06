@@ -14,6 +14,7 @@ import {
   getDMFDecision,
   increaseDMFSeverity
 } from '../../utils/consts/DMFResultConsts';
+import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
 
 const StepFour = ({
   shouldRender,
@@ -50,14 +51,14 @@ const StepFour = ({
   ];
   const content = STEP4_VALS.map(item => (
     <ContentBlock
-        component="DMF"
+        component={CONTENT_CONSTS.DMF}
         contentBlock={item}
         key={item.label} />
   ));
 
   const flags = () => (
     <ContentSection
-        component="DMF"
+        component={CONTENT_CONSTS.DMF}
         header="Step Four" >
       {content}
     </ContentSection>
