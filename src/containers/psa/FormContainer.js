@@ -199,7 +199,8 @@ const INITIAL_STATE = Immutable.fromJS({
   dmf: {},
   scoresWereGenerated: false,
   psaIdClosing: undefined,
-  skipClosePSAs: false
+  skipClosePSAs: false,
+  psaId: undefined
 });
 
 const numPages = 4;
@@ -251,6 +252,7 @@ type Props = {
   allFTAs :Immutable.List<*>,
   openPSAs :Immutable.Map<*, *>,
   allPSAs :Immutable.List<*>,
+  allHearings :Immutable.List<*>,
   selectedPersonId :string,
   isLoadingNeighbors :boolean,
   isLoadingCases :boolean,
@@ -380,7 +382,9 @@ class Form extends React.Component<Props, State> {
       dmf
     );
 
-    values[ID_FIELD_NAMES.PSA_ID] = [randomUUID()];
+    const psaId = randomUUID()
+
+    values[ID_FIELD_NAMES.PSA_ID] = [psaId];
     values[ID_FIELD_NAMES.RISK_FACTORS_ID] = [randomUUID()];
     values[ID_FIELD_NAMES.DMF_ID] = [randomUUID()];
     values[ID_FIELD_NAMES.DMF_RISK_FACTORS_ID] = [randomUUID()];
@@ -404,6 +408,7 @@ class Form extends React.Component<Props, State> {
     }
 
     this.props.actions.submit({ values, config });
+    this.setState({ psaId });
   }
 
   getFqn = propertyType => `${propertyType.getIn(['type', 'namespace'])}.${propertyType.getIn(['type', 'name'])}`
@@ -730,12 +735,14 @@ class Form extends React.Component<Props, State> {
       scoresWereGenerated,
       scores,
       riskFactors,
-      dmf
+      dmf,
+      psaId
     } = this.state;
 
     const {
       allCasesForPerson,
       allChargesForPerson,
+      allHearings,
       psaForm
     } = this.props;
 
@@ -754,12 +761,14 @@ class Form extends React.Component<Props, State> {
           riskFactors={riskFactors}
           dmf={dmf}
           personId={this.getPersonIdValue()}
+          psaId={psaId}
           submitSuccess={!submitError}
           onClose={this.props.actions.hardRestart}
           charges={this.props.charges}
           notes={psaForm.get(PSA.NOTES)}
           allCases={allCasesForPerson}
           allCharges={chargesByCaseId}
+          allHearings={allHearings}
           getOnExport={this.getOnExport} />
     );
   }
@@ -814,6 +823,7 @@ function mapStateToProps(state :Immutable.Map<*, *>) :Object {
     allChargesForPerson: psaForm.get('allChargesForPerson'),
     allSentencesForPerson: psaForm.get('allSentencesForPerson'),
     allFTAs: psaForm.get('allFTAs'),
+    allHearings: psaForm.get('allHearings'),
     openPSAs: psaForm.get('openPSAs'),
     allPSAs: psaForm.get('allPSAs'),
     psaForm: psaForm.get('psa'),
