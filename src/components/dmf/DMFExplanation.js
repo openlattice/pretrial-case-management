@@ -69,6 +69,7 @@ const DMFExplanation = ({
           stepTwoVal={stepTwoCharges}
           stepTwoNotes={stepTwoNotes}
           currentViolentOffense={currentViolentOffense}
+          fta={fta}
           nvca={nvca}
           context={context}
           scaleDims={SCALE_DIMS}
