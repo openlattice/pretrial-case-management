@@ -2,7 +2,7 @@
  * @flow
  */
 
-import { EntityDataModelApi, SearchApi } from 'lattice';
+import { Constants, EntityDataModelApi, SearchApi } from 'lattice';
 import { call, put, takeEvery, all } from 'redux-saga/effects';
 
 import {
@@ -15,6 +15,8 @@ import {
 import { loadPSAData } from '../review/ReviewActionFactory';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_STATUSES } from '../../utils/consts/Consts';
+
+const { OPENLATTICE_ID_FQN } = Constants;
 
 function* loadDataModelWorker(action :SequenceAction) :Generator<*, *, *> {
 
@@ -51,7 +53,7 @@ const getOpenPSAIds = (neighbors) => {
       }
     }
     return false;
-  }).map(neighbor => neighbor.neighborId);
+  }).map(neighbor => neighbor.neighborDetails[OPENLATTICE_ID_FQN][0]);
 }
 
 function* getOpenPSANeighbors(neighbors) :Generator<*, *, *> {

@@ -6,12 +6,15 @@ import React from 'react';
 import Immutable from 'immutable';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
+import { Constants } from 'lattice';
 
 import PersonDetails from '../../components/people/PersonDetails';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { ENTITY_SETS } from '../../utils/consts/DataModelConsts';
 import * as PeopleActionFactory from './PeopleActionFactory';
 import * as ReviewActionFactory from '../review/ReviewActionFactory';
+
+const { OPENLATTICE_ID_FQN } = Constants;
 
 type Props = {
   selectedPersonData :Immutable.Map<*, *>,
@@ -51,7 +54,7 @@ class PersonDetailsContainer extends React.Component<Props> {
   componentWillReceiveProps(nextProps) {
     if (!this.props.neighbors.size && nextProps.neighbors.size) {
       const psaIds = nextProps.neighbors.get(ENTITY_SETS.PSA_SCORES, Immutable.List())
-        .map(neighbor => neighbor.get('neighborId'))
+        .map(neighbor => neighbor.getIn(['neighborDetails', OPENLATTICE_ID_FQN, 0]))
         .filter(id => !!id)
         .toJS();
       this.props.actions.loadPSAData(psaIds);

@@ -4,16 +4,19 @@
 import Immutable from 'immutable';
 import Papa from 'papaparse';
 import moment from 'moment';
-import { DataApi, EntityDataModelApi, SearchApi } from 'lattice';
+import { Constants, DataApi, EntityDataModelApi, SearchApi } from 'lattice';
 import { call, put, takeEvery } from 'redux-saga/effects';
 
 import FileSaver from '../../utils/FileSaver';
 import { formatDateTime } from '../../utils/Utils';
+import { stripIdField } from '../../utils/DataUtils';
 import {
   DOWNLOAD_PSA_FORMS,
   downloadPsaForms
 } from './DownloadActionFactory';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+
+const { OPENLATTICE_ID_FQN } = Constants;
 
 const getStepTwo = (neighborList, psaScores) => {
   const nvca = psaScores.getIn([PROPERTY_TYPES.NVCA_FLAG, 0], false);
@@ -80,7 +83,7 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
 
     let scoresAsMap = Immutable.Map();
     allScoreData.hits.forEach((row) => {
-      scoresAsMap = scoresAsMap.set(row.id[0], Immutable.fromJS(row).delete('id'));
+      scoresAsMap = scoresAsMap.set(row[OPENLATTICE_ID_FQN][0], stripIdField(Immutable.fromJS(row)));
     });
 
     const neighborsById = yield call(SearchApi.searchEntityNeighborsBulk, entitySetId, scoresAsMap.keySeq().toJS());

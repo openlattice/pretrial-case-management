@@ -13,6 +13,8 @@ import PSAReportDownloadButton from './PSAReportDownloadButton'
 import PSAStats from './PSAStats';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { psaIsClosed } from '../../utils/PSAUtils';
+import { getEntityKeyId } from '../../utils/Utils';
+
 
 const ReviewRowContainer = styled.div`
   width: 100%;
@@ -166,8 +168,7 @@ export default class PSAReviewReportsRow extends React.Component<Props, State> {
     if (!personDetails.size) return <div>Person details unknown.</div>;
     return (
       <PersonCardWrapper>
-        <PersonCard
-            person={personDetails.set('id', neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborId']))} />
+        <PersonCard person={personDetails} />
         <hr />
       </PersonCardWrapper>
     );
@@ -249,7 +250,7 @@ export default class PSAReviewReportsRow extends React.Component<Props, State> {
 
   openDetailsModal = () => {
     const { neighbors, loadCaseHistoryFn } = this.props;
-    const personId = neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborId'], '');
+    const personId = getEntityKeyId(neighbors, ENTITY_SETS.PEOPLE);
     loadCaseHistoryFn({ personId, neighbors });
     this.setState({
       open: true

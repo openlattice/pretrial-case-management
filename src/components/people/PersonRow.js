@@ -5,10 +5,13 @@
 import React from 'react';
 import styled from 'styled-components';
 import Immutable from 'immutable';
+import { Constants } from 'lattice';
 
 import defaultUserIcon from '../../assets/svg/profile-placeholder-round.svg';
 import { formatValue, formatDateList } from '../../utils/Utils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+
+const { OPENLATTICE_ID_FQN } = Constants;
 
 const {
   DOB,
@@ -63,7 +66,6 @@ type Props = {
 
 const PersonRow = ({ person, handleSelect, gray } :Props) => {
 
-
   let pictureAsBase64 :string = person.getIn([MUGSHOT, 0]);
   if (!pictureAsBase64) pictureAsBase64 = person.getIn([PICTURE, 0]);
   const pictureImgSrc = pictureAsBase64 ? `data:image/png;base64,${pictureAsBase64}` : defaultUserIcon;
@@ -75,7 +77,7 @@ const PersonRow = ({ person, handleSelect, gray } :Props) => {
   const suffix = formatValue(person.get(SUFFIX, Immutable.List()));
   const id :string = person.getIn([PERSON_ID, 0], '');
   const displayId = id.length <= 11 ? id : `${id.substr(0, 10)}...`;
-  const entityKeyId :string = person.getIn(['id', 0], '');
+  const entityKeyId :string = person.getIn([OPENLATTICE_ID_FQN, 0], '');
 
   return (
     <Row gray={gray} onClick={() => {
