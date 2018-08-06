@@ -18,9 +18,12 @@ import {
 const StepWrapper = styled.div`
   display: flex;
   flex-direction: row;
-  justify-content: flex-start;
+  justify-content: center;
   align-items: center;
   margin: 0 30px 30px;
+  img {
+    margin: 24.5px;
+  }
 `;
 
 const ContentsWrapper = styled.div`
@@ -31,23 +34,9 @@ const ContentsWrapper = styled.div`
   margin-top: 7px;
 `;
 
-const formatTextArr = (textArr) => {
-  let text = textArr[0];
-  if (textArr.length === 3) {
-    text = `${textArr[0]}, ${textArr[1]}, and ${textArr[2]}`;
-  }
-  else if (textArr.length === 2) {
-    text = textArr.join(' and ');
-  }
-
-  text = text[0].toUpperCase().concat(text.slice(1, text.length)).concat('.');
-  return text;
-};
-
 const StepFour = ({
   shouldRender,
   stepFourVal,
-  stepFourNotes,
   nca,
   fta,
   nvca,
@@ -56,15 +45,17 @@ const StepFour = ({
   flagDims
 } :Props) => {
 
+// TODO: Show Pretrial FTA Flag
+
   const STEP4_VALS = [
     {
       label: 'Listed Charges',
       content: [<ContentsWrapper><BooleanFlag dims={flagDims} value={stepFourVal} /></ContentsWrapper>]
     },
-    {
-      label: 'Pretrial FTA',
-      content: [<ContentsWrapper><BooleanFlag dims={flagDims} value={fta} /></ContentsWrapper>]
-    },
+    // {
+    //   label: 'Pretrial FTA',
+    //   content: [<ContentsWrapper><BooleanFlag dims={flagDims} value={fta} /></ContentsWrapper>]
+    // },
     {
       label: 'NVCA',
       content: [<ContentsWrapper><BooleanFlag dims={flagDims} value={nvca} /></ContentsWrapper>]
@@ -109,9 +100,9 @@ const StepFour = ({
   else {
     dmfTransformation = (
       <StepWrapper>
-        <DMFCell dmf={stepThreeDmf} selected />
+        <DMFCell dmf={stepThreeDmf} selected large />
         <img src={rightArrow} alt="" />
-        <DMFCell dmf={increaseDMFSeverity(stepThreeDmf, context)} selected />
+        <DMFCell dmf={increaseDMFSeverity(stepThreeDmf, context)} selected large />
       </StepWrapper>
     );
     if (stepFourVal) {
