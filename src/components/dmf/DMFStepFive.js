@@ -28,6 +28,9 @@ const StepWrapper = styled.div`
   justify-content: flex-start;
   align-items: center;
   margin: 30px 30px 30px;
+  img {
+    margin: 24.5px;
+  }
 `;
 
 const StepFive = ({
@@ -36,8 +39,7 @@ const StepFive = ({
   nca,
   fta,
   context,
-  secondaryReleaseVal,
-  secondaryReleaseNotes
+  secondaryReleaseVal
 } :Props) => {
   if (!shouldRender || !shouldCheckForSecondaryRelease(context, nca, fta)) return null;
 
