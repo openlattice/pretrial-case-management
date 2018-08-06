@@ -12,8 +12,15 @@ import ArrestCard from '../arrest/ArrestCard';
 import PSAReportDownloadButton from './PSAReportDownloadButton';
 import DMFCell from '../dmf/DMFCell';
 import ChargeTable from '../../components/charges/ChargeTable';
+import rightArrow from '../../assets/svg/dmf-arrow.svg';
+import { CONTEXT } from '../../utils/consts/Consts';
+import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { formatDMFFromEntity } from '../../utils/consts/DMFResultConsts';
+import {
+  getDMFDecision,
+  increaseDMFSeverity,
+  formatDMFFromEntity
+ } from '../../utils/consts/DMFResultConsts';
 import { formatDateTimeList } from '../../utils/Utils';
 import {
   stepTwoIncrease,
@@ -33,12 +40,6 @@ const SummaryWrapper = styled.div`
     height: 1px;
     margin: 0;
   }
-`;
-
-const DMFIncreaseText = styled.div`
-  margin-bottom: 15px;
-  font-size: 14px;
-  color: #555e6f;
 `;
 
 const RowWrapper = styled.div`
@@ -113,6 +114,22 @@ const Count = styled.div`
   color: #8e929b;
 `;
 
+const StepWrapper = styled.div`
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+
+  img {
+    margin: 3px;
+  }
+`;
+
+const DMFIncreaseText = styled.div`
+  margin-bottom: 15px;
+  font-size: 14px;
+  color: #555e6f;
+`;
+
 type Props = {
   scores :Immutable.Map<*, *>,
   neighbors :Immutable.Map<*, *>,
@@ -140,7 +157,7 @@ const renderArrestInfo = ({ neighbors, manualCaseHistory } :Props) => {
     .filter(caseObj => caseObj.getIn([PROPERTY_TYPES.CASE_ID, 0], '') === caseNum)
     .get(0, Immutable.Map());
   return (
-    <ArrestCard arrest={pretrialCase} component="summary" />
+    <ArrestCard arrest={pretrialCase} component={CONTENT_CONSTS.SUMMARY} />
   );
 };
 
@@ -182,10 +199,10 @@ const renderPSADetails = ({ neighbors, downloadFn, scores } :Props) => {
     <PSADetails>
       <ContentBlock
           contentBlock={{ label: 'psa date', content: [psaDate] }}
-          component="summary" />
+          component={CONTENT_CONSTS.SUMMARY} />
       <ContentBlock
           contentBlock={{ label: 'filer', content: [filer] }}
-          component="summary" />
+          component={CONTENT_CONSTS.SUMMARY} />
       <DownloadButtonWrapper>
         <PSAReportDownloadButton
             downloadFn={downloadFn}
@@ -196,24 +213,61 @@ const renderPSADetails = ({ neighbors, downloadFn, scores } :Props) => {
   );
 };
 
-const PSASummary = (props :Props) => {
-  const { neighbors, scores } = props;
+const renderDMFDetails = ({ neighbors, scores } :Props) => {
   const dmfRiskFactors = neighbors.getIn([ENTITY_SETS.DMF_RISK_FACTORS, 'neighborDetails'], Immutable.Map());
+  let context = dmfRiskFactors.getIn(['general.context', 0]);
+  if (context === 'Court') {
+    context = CONTEXT.COURT_PENN;
+  }
   const psaRiskFactors = neighbors.getIn([ENTITY_SETS.PSA_RISK_FACTORS, 'neighborDetails'], Immutable.Map());
   const dmfEntity = neighbors.getIn([ENTITY_SETS.DMF_RESULTS, 'neighborDetails'], Immutable.Map());
   const dmf = formatDMFFromEntity(dmfEntity);
+  const nca = scores.getIn([PROPERTY_TYPES.NCA_SCALE, 0]);
+  const fta = scores.getIn([PROPERTY_TYPES.FTA_SCALE, 0]);
+  const dmfDecision = getDMFDecision(nca, fta, context);
 
-
-  let modificationText;
   if (stepTwoIncrease(dmfRiskFactors, psaRiskFactors, scores)) {
-    modificationText = 'Step two increase';
+    return (
+      <ScoreContent>
+        <DMFIncreaseText>Step two increase</DMFIncreaseText>
+        <DMFCell dmf={dmf} selected large />
+      </ScoreContent>
+    );
   }
   else if (stepFourIncrease(dmfRiskFactors, psaRiskFactors, scores)) {
-    modificationText = 'Step four increase';
+    return (
+      <ScoreContent>
+        <DMFIncreaseText>Step four increase</DMFIncreaseText>
+        <StepWrapper>
+          <DMFCell dmf={dmfDecision} selected />
+          <img src={rightArrow} alt="" />
+          <DMFCell dmf={increaseDMFSeverity(dmfDecision, context)} selected />
+        </StepWrapper>
+      </ScoreContent>
+    );
   }
   else if (dmfSecondaryReleaseDecrease(dmfRiskFactors, scores)) {
-    modificationText = 'Exception release';
+    return (
+      <ScoreContent>
+        <DMFIncreaseText>Step 5 Decrease</DMFIncreaseText>
+        <StepWrapper>
+          <DMFCell dmf={dmfDecision} selected />
+          <img src={rightArrow} alt="" />
+          <DMFCell dmf={dmf} selected />
+        </StepWrapper>
+      </ScoreContent>
+    );
   }
+  return (
+    <ScoreContent>
+      <DMFCell dmf={dmf} selected large />
+    </ScoreContent>
+  );
+};
+
+const PSASummary = (props :Props) => {
+  const { scores } = props;
+
   return (
     <SummaryWrapper>
       <RowWrapper>
@@ -231,10 +285,7 @@ const PSASummary = (props :Props) => {
         </ScoresContainer>
         <ScoresContainer>
           <ScoreTitle>DMF</ScoreTitle>
-          <ScoreContent>
-            <DMFIncreaseText>{modificationText}</DMFIncreaseText>
-            <DMFCell dmf={dmf} selected />
-          </ScoreContent>
+          {renderDMFDetails(props)}
         </ScoresContainer>
       </RowWrapper>
       <hr />

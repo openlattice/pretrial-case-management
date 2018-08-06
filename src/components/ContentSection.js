@@ -1,7 +1,10 @@
+/*
+ * @flow
+ */
 import React from 'react';
-import PropTypes from 'prop-types';
 import styled from 'styled-components';
 
+import CONTENT_CONSTS from '../utils/consts/ContentConsts';
 import { StyledContentItalic } from '../utils/Layout';
 
 const StyledSection = styled.div`
@@ -16,23 +19,24 @@ const StyledContentBlockWrapper = styled.div`
   display: grid;
   ${(props) => {
     switch (props.component) {
-      case 'summary':
+      case CONTENT_CONSTS.DMF:
         return (
-          `grid-template-columns: 50% 50%;
+          `grid-template-columns: 20% 20% 20% 20% 20%;
            grid-auto-rows: min-content;
-           grid-row-gap: 15px;`
+           grid-row-gap: 15px;
+           margin-bottom: 30px;`
         );
-      case 'FormContainer':
-        return (
-          `grid-template-columns: 50% 50%;
-           grid-auto-rows: min-content;
-           grid-row-gap: 15px;`
-        );
-      default:
+      case CONTENT_CONSTS.PROFILE:
         return (
           `grid-template-columns: 24% 24% 24% 28%;
            grid-auto-rows: min-content;
            grid-row-gap: 20px;`
+        );
+      default:
+        return (
+          `grid-template-columns: 50% 50%;
+           grid-auto-rows: min-content;
+           grid-row-gap: 15px;`
         );
     }
   }};
@@ -47,18 +51,30 @@ const StyledSectionHeader = styled.div`
   color: #555e6f;
   ${(props) => {
     switch (props.component) {
-      case 'summary':
+      case CONTENT_CONSTS.SUMMARY:
         return (
           `padding: 0 30px 0 30px;
            margin-bottom: -10px;
            font-size: 16px;
           `
         );
-      case 'FormContainer':
+      case CONTENT_CONSTS.FORM_CONTAINER:
         return (
           `padding: 10px 30px 30px 0;
            font-size: 18px;
            font-weight: normal;`
+        );
+      case CONTENT_CONSTS.DMF:
+        return (
+          `padding: 30px 30px 0 30px;
+           font-size: 16px;
+           font-weight: 600;`
+        );
+      case CONTENT_CONSTS.PROFILE:
+        return (
+          `padding: 30px;
+           border-bottom: solid 1px #e1e1eb;
+           font-size: 22px;`
         );
       default:
         return (
@@ -83,14 +99,7 @@ const StyledSectionBottomBarWrapper = styled.div`
   margin-bottom: 12px;
   ${(props) => {
     switch (props.component) {
-      case 'summary':
-        return (
-          `padding: 30px 0 0 30px;
-           img {
-             margin-right: 20px;
-           }`
-        );
-      case 'FormContainer':
+      case CONTENT_CONSTS.FORM_CONTAINER:
         return (
           `padding: 0;
            justify-content: none;
@@ -98,11 +107,18 @@ const StyledSectionBottomBarWrapper = styled.div`
              margin-right: 20px;
            }`
         );
-      default:
+      case CONTENT_CONSTS.PROFILE:
         return (
           `padding: 30px;
            img {
              margin-right: 50px;
+           }`
+        );
+      default:
+        return (
+          `padding: 30px 0 0 30px;
+           img {
+             margin-right: 20px;
            }`
         );
     }
@@ -118,7 +134,7 @@ const ContentSection = ({
   middleName,
   lastName,
   ...props
-}) => {
+} :Props) => {
   const renderContent = () => {
     if (props.children) {
       return props.children;
@@ -141,10 +157,6 @@ const ContentSection = ({
       </StyledSectionBottomBarWrapper>
     </StyledSection>
   );
-};
-
-ContentSection.propTypes = {
-  children: PropTypes.node.isRequired
 };
 
 export default ContentSection;

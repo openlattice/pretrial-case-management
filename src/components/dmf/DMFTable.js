@@ -8,9 +8,23 @@ import styled from 'styled-components';
 import DMFCell from './DMFCell';
 import { getDMFDecision } from '../../utils/consts/DMFResultConsts';
 
+
+const Table = styled.table`
+  border-spacing: 10px;
+  border-collapse: separate
+`
 const HeaderCell = styled.th`
   text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+  color: #8e929b;
 `;
+
+const BlankCell = styled.td`
+  border-radius: 1px;
+  background-color: #f9f9fd;
+`
 
 type Props = {
   nca :number,
@@ -27,12 +41,12 @@ const getRowCells = (dmfNca, dmfFta, rowFta, context) => {
     const cellDMF = getDMFDecision(rowNca, rowFta, context);
     const key = `fta-${rowFta}-nca-${rowNca}`;
     if (!cellDMF) {
-      cells.push(<td key={key} />);
+      cells.push(<BlankCell key={key} />);
     }
     else {
       cells.push(
         <td key={key}>
-          <DMFCell dmf={cellDMF} selected={selected} />
+          <DMFCell dmf={cellDMF} selected={selected} table />
         </td>
       );
     }
@@ -57,7 +71,7 @@ const DMFTable = ({
   }
 
   return (
-    <table>
+    <Table>
       <tbody>
         <tr>
           <HeaderCell />
@@ -70,7 +84,7 @@ const DMFTable = ({
         </tr>
         {rows}
       </tbody>
-    </table>
+    </Table>
   );
 };
 

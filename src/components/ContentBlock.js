@@ -1,7 +1,10 @@
+/*
+ * @flow
+ */
 import React from 'react';
-import PropTypes from 'prop-types';
 import styled from 'styled-components';
 
+import CONTENT_CONSTS from '../utils/consts/ContentConsts';
 import { StyledContentItalic } from '../utils/Layout';
 
 const StyledContentBlock = styled.div`
@@ -19,19 +22,15 @@ const StyledContentLabel = styled.div`
   letter-spacing: normal;
   text-transform: uppercase;
   color: #8e929b;
-  ${(props) => {
+  font-size: ${(props) => {
     switch (props.component) {
-      case 'summary':
+      case CONTENT_CONSTS.PROFILE:
         return (
-          'font-size: 11px;'
-        );
-      case 'FormContainer':
-        return (
-          'font-size: 11px;'
+          '12px;'
         );
       default:
         return (
-          'font-size: 12px;'
+          '11px;'
         );
     }
   }};
@@ -45,26 +44,26 @@ const StyledContent = styled.div`
   font-family: 'Open Sans', sans-serif;
   font-weight: normal;
   color: #2e2e34;
-  ${(props) => {
+  font-size: ${(props) => {
     switch (props.component) {
-      case 'summary':
+      case CONTENT_CONSTS.DMF:
         return (
-          'font-size: 14px;'
+          '16px;'
         );
-      case 'FormContainer':
+      case CONTENT_CONSTS.PROFILE:
         return (
-          'font-size: 14px;'
+          '18px;'
         );
       default:
         return (
-          'font-size: 18px;'
+          '14px;'
         );
     }
   }};
 `;
 
 
-const ContentBlock = ({ contentBlock, component }) => {
+const ContentBlock = ({ contentBlock, component } :Props) => {
   if (!contentBlock) {
     return null;
   }
@@ -98,23 +97,6 @@ const ContentBlock = ({ contentBlock, component }) => {
       </StyledContentWrapper>
     </StyledContentBlock>
   );
-};
-
-ContentBlock.defaultProps = {
-  vertical: false
-};
-
-ContentBlock.propTypes = {
-  contentBlock: PropTypes.shape({
-    label: PropTypes.string.isRequired,
-    content: PropTypes.arrayOf(
-      PropTypes.oneOfType([
-        PropTypes.string,
-        PropTypes.number
-      ])
-    ).isRequired
-  }).isRequired,
-  vertical: PropTypes.bool
 };
 
 export default ContentBlock;
