@@ -13,13 +13,14 @@ const DatePickerWrapper = styled.div`
 const IconWrapper = styled.div`
   position: absolute;
   right: 20px;
-  height: 100%;
+  height: ${props => (props.clearButton ? '0' : '100%')};
   display: flex;
   justify-content: center;
+  visibility: ${props => (props.clearButton ? 'hidden' : 'visible')};
 `;
 
 const StyledDatePickerInput = styled(DatePicker).attrs({
-  showClearButton: false
+
 })`
   height: 39px;
   border-radius: 3px;
@@ -146,8 +147,8 @@ const onKeyPress = (e, props) => {
 
 const StyledDatePicker = props => (
   <DatePickerWrapper onKeyPress={e => onKeyPress(e, props)}>
-    <StyledDatePickerInput {...props} />
-    <IconWrapper>
+    <StyledDatePickerInput {...props} showClearButton={props.clearButton} />
+    <IconWrapper clearButton={props.clearButton} >
       <img src={calendarIcon} role="presentation" />
     </IconWrapper>
   </DatePickerWrapper>
