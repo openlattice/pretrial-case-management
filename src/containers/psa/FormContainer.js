@@ -31,6 +31,7 @@ import ChargeTable from '../../components/charges/ChargeTable';
 import PSAReviewRowList from '../review/PSAReviewRowList';
 import exportPDF from '../../utils/PDFUtils';
 import psaConfig from '../../config/formconfig/PsaConfig';
+import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
 
 import * as FormActionFactory from './FormActionFactory';
 import * as PersonActionFactory from '../person/PersonActionFactory';
@@ -674,7 +675,7 @@ class Form extends React.Component<Props, State> {
           <ContextItem>
             <ArrestCard
                 arrest={selectedPretrialCase}
-                component="FormContainer" />
+                component={CONTENT_CONSTS.FORM_CONTAINER} />
           </ContextItem>
         </ContextRow>
         <PaddedSectionWrapper>

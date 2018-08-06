@@ -105,7 +105,7 @@ const BottomFiltersWrapper = styled.div`
   justify-content: space-between;
   align-items: center;
   white-space: nowrap;
-`
+`;
 
 const DateRangeContainer = styled.div`
   display: flex;
@@ -246,6 +246,7 @@ class ReviewPSA extends React.Component<Props, State> {
         <DatePickerGroupContainer>
           <StyledDatePicker
               value={date}
+              clearButton
               onChange={(newDate) => {
                 this.updateFilters({ date: newDate });
               }} />

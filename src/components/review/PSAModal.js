@@ -561,16 +561,13 @@ export default class PSAModal extends React.Component<Props, State> {
   renderDMFExplanation = () => {
     const { scores } = this.props;
     const { dmf, riskFactors } = this.state;
-    const nca = scores.getIn([PROPERTY_TYPES.NCA_SCALE, 0]);
-    const fta = scores.getIn([PROPERTY_TYPES.FTA_SCALE, 0]);
-    const nvca = scores.getIn([PROPERTY_TYPES.NVCA_FLAG, 0]);
     if (!this.props.neighbors.getIn([ENTITY_SETS.DMF_RESULTS, 'neighborDetails'], Immutable.Map()).size) {
       return <NoDMFContainer>A DMF was not calculated for this PSA.</NoDMFContainer>;
     }
 
     return (
-      <ModalWrapper withPadding >
-        <DMFExplanation dmf={dmf} nca={nca} fta={fta} nvca={nvca} riskFactors={riskFactors} />
+      <ModalWrapper >
+        <DMFExplanation scores={scores} dmf={dmf} riskFactors={riskFactors} />
       </ModalWrapper>
     )
   }
