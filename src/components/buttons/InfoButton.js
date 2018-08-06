@@ -26,6 +26,10 @@ const InfoButton = styled.button`
       cursor: default;
     }
   }
+
+  &:focus {
+    outline: none;
+  }
 `;
 
 export default InfoButton;
