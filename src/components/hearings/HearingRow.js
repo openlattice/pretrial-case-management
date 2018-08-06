@@ -5,10 +5,13 @@
 import React from 'react';
 import styled from 'styled-components';
 import Immutable from 'immutable';
+import { Constants } from 'lattice';
 
 import InfoButton from '../../components/buttons/InfoButton';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { formatDateTime } from '../../utils/Utils';
+
+const { OPENLATTICE_ID_FQN } = Constants;
 
 const Cell = styled.td`
   padding: 15px 30px;
@@ -50,7 +53,7 @@ const HearingRow = ({ row, handleSelect, disabled } :Props) => {
   const courtroom = row.getIn([PROPERTY_TYPES.COURTROOM, 0], '');
 
   const hearingId = row.getIn([PROPERTY_TYPES.CASE_ID, 0]);
-  const entityKeyId :string = row.get('id', '');
+  const entityKeyId :string = row.getIn([OPENLATTICE_ID_FQN, 0], '');
 
   return (
     <Row disabled={disabled} onClick={() => {

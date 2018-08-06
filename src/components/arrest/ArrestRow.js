@@ -5,9 +5,12 @@
 import React from 'react';
 import styled from 'styled-components';
 import Immutable from 'immutable';
+import { Constants } from 'lattice';
 
 import { formatDateTime } from '../../utils/Utils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+
+const { OPENLATTICE_ID_FQN } = Constants;
 
 const {
   ARRESTING_AGENCY,
@@ -57,7 +60,7 @@ const ArrestRow = ({ arrest, handleSelect } :Props) => {
   const numCharges = arrest.getIn([NUMBER_OF_CHARGES, 0]);
   const arrestAgency = arrest.getIn([ARRESTING_AGENCY, 0]);
 
-  const entityKeyId :string = arrest.get('id', '');
+  const entityKeyId :string = arrest.getIn([OPENLATTICE_ID_FQN, 0], '');
 
   return (
     <Row onClick={() => {

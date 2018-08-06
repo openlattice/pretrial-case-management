@@ -5,9 +5,12 @@
 import React from 'react';
 import Immutable from 'immutable';
 import styled from 'styled-components';
+import { Constants } from 'lattice';
 
 import { formatDateTime } from '../../utils/Utils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+
+const { OPENLATTICE_ID_FQN } = Constants;
 
 const CardsHolder = styled.div`
   display: flex;
@@ -68,7 +71,7 @@ const HearingCardsHolder = ({ hearings, handleSelect } :Props) => {
     const courtroom = hearing.getIn([PROPERTY_TYPES.COURTROOM, 0], '');
 
     const hearingId = hearing.getIn([PROPERTY_TYPES.CASE_ID, 0]);
-    const entityKeyId :string = hearing.get('id', '');
+    const entityKeyId :string = hearing.getIn([OPENLATTICE_ID_FQN, 0], '');
 
     return (
       <Card

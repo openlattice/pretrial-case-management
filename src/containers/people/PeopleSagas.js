@@ -2,7 +2,7 @@
  * @flow
  */
 
-import { EntityDataModelApi, DataApi, SearchApi } from 'lattice';
+import { EntityDataModelApi, Constants, DataApi, SearchApi } from 'lattice';
 import { call, put, takeEvery } from 'redux-saga/effects';
 
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
@@ -14,6 +14,8 @@ import {
   getPersonData,
   getPersonNeighbors
 } from './PeopleActionFactory';
+
+const { OPENLATTICE_ID_FQN } = Constants;
 
 function* getPeopleWorker(action) :Generator<*, *, *> {
 
@@ -35,7 +37,7 @@ function* getPeopleWatcher() :Generator<*, *, *> {
   yield takeEvery(GET_PEOPLE, getPeopleWorker);
 }
 
-function* getEntityKeyIdForPersonId(personId :string, entitySetId :string) :Generator<*, *, *> {
+function* getEntityForPersonId(personId :string, entitySetId :string) :Generator<*, *, *> {
   const personIdFqn = PROPERTY_TYPES.PERSON_ID.split('.');
   const propertyTypeId = yield call(EntityDataModelApi.getPropertyTypeId, {
     namespace: personIdFqn[0],
@@ -57,8 +59,8 @@ function* getPersonDataWorker(action) :Generator<*, *, *> {
   try {
     yield put(getPersonData.request(action.id));
     const entitySetId = yield call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.PEOPLE);
-    const person = yield getEntityKeyIdForPersonId(action.value, entitySetId);
-    yield put(getPersonData.success(action.id, { person, entityKeyId: person.id[0] }));
+    const person = yield getEntityForPersonId(action.value, entitySetId);
+    yield put(getPersonData.success(action.id, { person, entityKeyId: person[OPENLATTICE_ID_FQN][0] }));
   }
   catch (error) {
     yield put(getPersonData.failure(action.id, error));
@@ -80,8 +82,8 @@ function* getPersonNeighborsWorker(action) :Generator<*, *, *> {
     yield put(getPersonNeighbors.request(action.id));
     const entitySetId = yield call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.PEOPLE);
 
-    const person = yield getEntityKeyIdForPersonId(personId, entitySetId);
-    const entityKeyId = person.id[0];
+    const person = yield getEntityPersonId(personId, entitySetId);
+    const entityKeyId = person[OPENLATTICE_ID_FQN][0];
     const neighbors = yield call(SearchApi.searchEntityNeighbors, entitySetId, entityKeyId);
     yield put(getPersonNeighbors.success(action.id, { personId, neighbors }));
   }
