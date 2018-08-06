@@ -26,7 +26,7 @@ const StyledDatePickerInput = styled(DatePicker).attrs({
   border-radius: 3px;
   background-color: none;
   border: 1px solid #dcdce7;
-  padding: 0 10px;
+  padding: 0 8px;
   box-shadow: none;
   position: absolute;
   font-family: 'Open Sans', sans-serif;
