@@ -106,6 +106,31 @@ const ClosePSAButton = styled(StyledButton)`
   border-radius: 3px;
   background-color: #e4d8ff;
 `;
+const EditPSAButton = styled(StyledButton)`
+  margin: ${props => (props.footer ? '-20px 0 30px' : '0')};
+  font-family: 'Open Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+  color: #8e929b;
+  width: ${props => (props.footer ? '340px' : '142px')};
+  height: ${props => (props.footer ? '42px' : '40px')};
+  border: none;
+  border-radius: 3px;
+  background-color: #f0f0f7;
+`;
+
+const PSAFormHeader = styled.div`
+  padding: 30px;
+  font-family: 'Open Sans', sans-serif;
+  font-size: 18px;
+  color: #555e6f;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: solid 1px #e1e1eb !important;
+`
 
 const CloseModalX = styled.img.attrs({
   alt: '',
@@ -515,14 +540,26 @@ export default class PSAModal extends React.Component<Props, State> {
       scores
     } = this.props;
     const { editing, riskFactors } = this.state;
-
+    const editHeader = (editing || this.props.readOnly || psaIsClosed(scores)) ? null : (
+      <CenteredContainer>
+        <PSAFormHeader>Public Safety Assessment
+          <EditPSAButton onClick={() => {
+            this.setState({ editing: true });
+          }}>
+            Edit PSA
+          </EditPSAButton>
+        </PSAFormHeader>
+      </CenteredContainer>
+    );
     const editButton = (editing || this.props.readOnly || psaIsClosed(scores)) ? null : (
       <CenteredContainer>
-        <StyledButton onClick={() => {
-          this.setState({ editing: true });
-        }}>
-          Edit
-        </StyledButton>
+        <EditPSAButton
+            footer
+            onClick={() => {
+              this.setState({ editing: true });
+            }}>
+          Edit PSA
+        </EditPSAButton>
       </CenteredContainer>
     );
 
@@ -542,6 +579,7 @@ export default class PSAModal extends React.Component<Props, State> {
 
     return (
       <ModalWrapper>
+        {editHeader}
         <PSAInputForm
             section="review"
             input={riskFactors}
