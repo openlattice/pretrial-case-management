@@ -3,29 +3,13 @@
  */
 
 import React from 'react';
-import styled from 'styled-components';
 
 import DMFCell from './DMFCell';
+import { ContentsWrapper, StepWrapper } from './DMFStyledTags';
 import ContentBlock from '../ContentBlock';
 import ContentSection from '../ContentSection';
 import BooleanFlag from '../BooleanFlag';
 import { getDMFDecision } from '../../utils/consts/DMFResultConsts';
-
-const ContentsWrapper = styled.div`
-  display: flex;
-  flex-direction: row;
-  justify-content: flex-start;
-  align-items: center;
-  margin-top: 7px;
-`;
-
-const StepWrapper = styled.div`
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  align-items: center;
-  margin: 0px 30px 30px;
-`;
 
 const StepTwo = ({
   extradited,

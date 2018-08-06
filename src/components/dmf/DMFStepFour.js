@@ -3,9 +3,9 @@
  */
 
 import React from 'react';
-import styled from 'styled-components';
 
 import DMFCell from './DMFCell';
+import { ContentsWrapper, StepWrapper } from './DMFStyledTags';
 import ContentBlock from '../ContentBlock';
 import ContentSection from '../ContentSection';
 import BooleanFlag from '../BooleanFlag';
@@ -14,25 +14,6 @@ import {
   getDMFDecision,
   increaseDMFSeverity
 } from '../../utils/consts/DMFResultConsts';
-
-const StepWrapper = styled.div`
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  align-items: center;
-  margin: 0 30px 30px;
-  img {
-    margin: 24.5px;
-  }
-`;
-
-const ContentsWrapper = styled.div`
-  display: flex;
-  flex-direction: row;
-  justify-content: flex-start;
-  align-items: center;
-  margin-top: 7px;
-`;
 
 const StepFour = ({
   shouldRender,

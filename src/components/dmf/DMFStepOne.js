@@ -3,20 +3,12 @@
  */
 
 import React from 'react';
-import styled from 'styled-components';
 
+import { ContentsWrapper } from './DMFStyledTags';
 import ContentBlock from '../ContentBlock';
 import ContentSection from '../ContentSection';
 import ScoreScale from '../ScoreScale';
 import BooleanFlag from '../BooleanFlag';
-
-const ContentsWrapper = styled.div`
-  display: flex;
-  flex-direction: row;
-  justify-content: flex-start;
-  align-items: center;
-  margin-top: 7px;
-`;
 
 const StepOne = ({
   nca,
