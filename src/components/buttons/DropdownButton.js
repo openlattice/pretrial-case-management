@@ -11,7 +11,8 @@ import BasicButton from './BasicButton';
 
 type Props = {
   title :string,
-  options :{ label :string, onClick :() => void }[]
+  options :{ label :string, onClick :() => void }[],
+  openAbove? :boolean
 }
 
 type State = {
@@ -62,12 +63,14 @@ const MenuContainer = styled.div`
   border: 1px solid #e1e1eb;
   position: absolute;
   z-index: 1;
-  width: max-content;
+  min-width: max-content;
   max-width: 400px;
   visibility: ${props => (props.open ? 'visible' : 'hidden')}};
   box-shadow: 0 10px 20px 0 rgba(0, 0, 0, 0.1);
-  top: 45px;
-  right: 0;
+  top: ${props => (props.openAbove ? 'auto' : '45px')};
+  bottom: ${props => (props.openAbove ? '45px' : 'auto')};
+  right: ${props => (props.openAbove ? 'auto' : '0')};;
+  left: ${props => (props.openAbove ? '0' : 'auto')};;
   overflow: visible;
   display: flex;
   flex-direction: column;
@@ -80,6 +83,7 @@ const MenuContainer = styled.div`
     font-size: 14px;
     color: #555e6f;
     border: none;
+    min-width: fit-content !important;
 
     &:hover {
       background-color: #e6e6f7;
@@ -88,6 +92,10 @@ const MenuContainer = styled.div`
 `;
 
 export default class DropdownButton extends React.Component<Props, State> {
+
+  static defaultProps = {
+    openAbove: false
+  };
 
   constructor(props :Props) {
     super(props);
@@ -121,7 +129,7 @@ export default class DropdownButton extends React.Component<Props, State> {
           {this.props.title}
           <img src={imgSrc} role="presentation" />
         </BaseButton>
-        <MenuContainer open={this.state.open}>
+        <MenuContainer open={this.state.open} openAbove={this.props.openAbove}>
           {this.props.options.map(option =>
             (
               <button key={option.label} onClick={this.handleOnClick} onMouseDown={option.onClick}>

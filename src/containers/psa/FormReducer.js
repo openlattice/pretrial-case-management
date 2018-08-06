@@ -23,6 +23,7 @@ const {
   ARREST_CHARGES,
   CHARGES,
   FTAS,
+  HEARINGS,
   MANUAL_CHARGES,
   MANUAL_PRETRIAL_CASES,
   PRETRIAL_CASES,
@@ -99,6 +100,7 @@ const INITIAL_STATE :Immutable.Map<> = Immutable.fromJS({
   allPSAs: Immutable.List(),
   allManualCases: Immutable.List(),
   allManualCharges: Immutable.Map(),
+  allHearings: Immutable.List(),
   charges: Immutable.List(),
   selectedPerson: Immutable.Map(),
   openPSAs: Immutable.Map(),
@@ -145,6 +147,7 @@ function formReducer(state :Immutable.Map<> = INITIAL_STATE, action :Object) {
           let allManualCharges = Immutable.List();
           let allFTAs = Immutable.List();
           let allPSAs = Immutable.List();
+          let allHearings = Immutable.List();
 
           const neighbors = Immutable.fromJS(action.value.neighbors) || Immutable.List();
           neighbors.forEach((neighbor) => {
@@ -186,6 +189,9 @@ function formReducer(state :Immutable.Map<> = INITIAL_STATE, action :Object) {
             else if (entitySetName === PSA_SCORES) {
               allPSAs = allPSAs.push(neighborObj);
             }
+            else if (entitySetName === HEARINGS) {
+              allHearings = allHearings.push(neighborObj);
+            }
           });
 
           arrestOptionsWithDate = arrestOptionsWithDate.sort((case1, case2) => {
@@ -208,7 +214,8 @@ function formReducer(state :Immutable.Map<> = INITIAL_STATE, action :Object) {
             .set('allArrestCharges', allArrestCharges)
             .set('openPSAs', Immutable.fromJS(action.value.openPSAs))
             .set('allManualCases', allManualCases)
-            .set('allManualCharges', getMapByCaseId(allManualCharges, CHARGE_ID));
+            .set('allManualCharges', getMapByCaseId(allManualCharges, CHARGE_ID))
+            .set('allHearings', allHearings);
         },
         FINALLY: () => state.set('isLoadingNeighbors', false)
       });
@@ -265,6 +272,7 @@ function formReducer(state :Immutable.Map<> = INITIAL_STATE, action :Object) {
         .set('allPSAs', Immutable.List())
         .set('allManualCases', Immutable.List())
         .set('allManualCharges', Immutable.Map())
+        .set('allHearings', Immutable.List())
         .set('openPSAs', Immutable.Map())
         .set('selectPerson', Immutable.Map())
         .set('arrestId', '')

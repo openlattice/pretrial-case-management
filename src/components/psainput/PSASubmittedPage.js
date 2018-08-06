@@ -5,16 +5,20 @@
 import React from 'react';
 import Immutable from 'immutable';
 import styled from 'styled-components';
+import moment from 'moment';
 import { withRouter } from 'react-router-dom';
 
 import BasicButton from '../buttons/BasicButton';
 import SecondaryButton from '../buttons/SecondaryButton';
+import InfoButton from '../buttons/InfoButton';
 import DropdownButton from '../buttons/DropdownButton';
 import LoadingSpinner from '../LoadingSpinner';
 import DMFCell from '../dmf/DMFCell';
 import ChargeTable from '../charges/ChargeTable';
 import CaseHistoryTimeline from '../casehistory/CaseHistoryTimeline';
 import RiskFactorsTable from '../riskfactors/RiskFactorsTable';
+import SelectHearingsContainer from '../../containers/hearings/SelectHearingsContainer';
+import SelectedHearingInfo from '../hearings/SelectedHearingInfo';
 import psaSuccessIcon from '../../assets/svg/psa-success.svg';
 import psaFailureIcon from '../../assets/svg/psa-failure.svg';
 import closeXWhiteIcon from '../../assets/svg/close-x-white.svg';
@@ -36,14 +40,21 @@ type Props = {
   riskFactors :Object,
   dmf :Object,
   personId :string,
+  psaId :string,
   submitSuccess :boolean,
   charges :Immutable.List<*>,
   notes :string,
   allCases :Immutable.List<*>,
   allCharges :Immutable.Map<*, *>,
+  allHearings :Immutable.List<*>,
   getOnExport :(isCompact :boolean) => void,
   onClose :() => void,
   history :string[]
+};
+
+type State = {
+  settingHearing :boolean,
+  selectedHearing :Object
 };
 
 const STATUSES = {
@@ -220,18 +231,45 @@ const ButtonRow = styled.div`
   flex-direction: row;
 
   button {
-    width: ${props => (props.wide ? '240px' : '154px')};
+    width: 154px !important;
+    height: 43px;
     padding-left: 0;
     padding-right: 0;
     justify-content: center;
   }
 
   button:not(:first-child) {
-    margin-left: 20px;
+    margin-left: 10px;
   }
 `;
 
-class PSASubmittedPage extends React.Component<Props> {
+const FooterButtonGroup = styled.div`
+  display: flex;
+  flex-direction: row;
+
+  button {
+    height: 43px;
+  }
+
+  ${InfoButton} {
+    width: 240px;
+  }
+
+  ${BasicButton} {
+    margin-left: 30px;
+    width: 43px;
+  }
+`;
+
+class PSASubmittedPage extends React.Component<Props, State> {
+
+  constructor(props :Props) {
+    super(props);
+    this.state = {
+      settingHearing: false,
+      selectedHearing: undefined
+    }
+  }
 
   renderBanner = () => {
     const { submitSuccess, isSubmitting, onClose } = this.props;
@@ -398,10 +436,11 @@ class PSASubmittedPage extends React.Component<Props> {
     return <RiskFactorsTable rows={rows} disabled />;
   }
 
-  renderExportButton = () => (
+  renderExportButton = (openAbove) => (
     <div>
       <DropdownButton
           title="PDF Report"
+          openAbove={openAbove}
           options={[{
             label: 'Export compact version',
             onClick: () => this.props.getOnExport(true)
@@ -413,13 +452,19 @@ class PSASubmittedPage extends React.Component<Props> {
   )
 
   renderProfileButton = () => (
-    <SecondaryButton
+    <BasicButton
         onClick={() => {
           this.props.history.push(Routes.PERSON_DETAILS.replace(':personId', this.props.personId));
         }}>
       Go to Profile
-    </SecondaryButton>
+    </BasicButton>
   )
+
+  renderSetHearingButton = () => (
+    <InfoButton onClick={() => this.setState({ settingHearing: true })}>
+      {this.state.selectedHearing ? 'View Hearing' : 'Set Hearing'}
+    </InfoButton>
+  );
 
   render() {
     const {
@@ -427,8 +472,29 @@ class PSASubmittedPage extends React.Component<Props> {
       charges,
       onClose,
       allCases,
-      allCharges
+      allCharges,
+      allHearings,
+      personId,
+      psaId
     } = this.props;
+
+    if (this.state.settingHearing) {
+      if (!this.state.selectedHearing) {
+        return (
+          <SelectHearingsContainer
+              personId={personId}
+              psaId={psaId}
+              hearings={allHearings}
+              onSubmit={selectedHearing => this.setState({ selectedHearing })} />
+        );
+      }
+
+      return (
+        <SelectedHearingInfo
+            hearing={this.state.selectedHearing}
+            onClose={() => this.setState({ settingHearing: false })} />
+      );
+    }
 
     return (
       <Wrapper>
@@ -438,6 +504,7 @@ class PSASubmittedPage extends React.Component<Props> {
           <ButtonRow>
             {this.renderExportButton()}
             {this.renderProfileButton()}
+            {this.renderSetHearingButton()}
           </ButtonRow>
         </HeaderRow>
         {this.renderScores()}
@@ -459,12 +526,14 @@ class PSASubmittedPage extends React.Component<Props> {
           </TimelineContainer>
         </div>
         <FooterRow>
-          <div />
-          <ButtonRow wide>
-            {this.renderExportButton()}
+          <ButtonRow>
+            {this.renderExportButton(true)}
             {this.renderProfileButton()}
           </ButtonRow>
-          <BasicButton onClick={onClose}><img src={closeXGrayIcon} role="presentation" /></BasicButton>
+          <FooterButtonGroup>
+            {this.renderSetHearingButton()}
+            <BasicButton onClick={onClose}><img src={closeXGrayIcon} role="presentation" /></BasicButton>
+          </FooterButtonGroup>
         </FooterRow>
       </Wrapper>
     );
