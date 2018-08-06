@@ -31,14 +31,21 @@ const TEXT_COLOR_MAPPINGS = {
 
 const Condition = styled.div`
   font-family: 'Open Sans', sans-serif;
-  font-size: 12px;
   font-weight: 600;
-  ${(props) => {
+  font-size: ${(props) => {
     if (props.large) {
       return (
-        'font-size: 14px;'
+        '14px;'
       );
     }
+    else if (props.table) {
+      return (
+        '12px;'
+      );
+    }
+    return (
+      '11px;'
+    );
   }}
 `;
 
