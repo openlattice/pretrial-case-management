@@ -82,7 +82,7 @@ function* getPersonNeighborsWorker(action) :Generator<*, *, *> {
     yield put(getPersonNeighbors.request(action.id));
     const entitySetId = yield call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.PEOPLE);
 
-    const person = yield getEntityPersonId(personId, entitySetId);
+    const person = yield getEntityForPersonId(personId, entitySetId);
     const entityKeyId = person[OPENLATTICE_ID_FQN][0];
     const neighbors = yield call(SearchApi.searchEntityNeighbors, entitySetId, entityKeyId);
     yield put(getPersonNeighbors.success(action.id, { personId, neighbors }));
