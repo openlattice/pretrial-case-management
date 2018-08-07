@@ -8,10 +8,10 @@ import moment from 'moment';
 import { PROPERTY_TYPES } from './consts/DataModelConsts';
 import { PSA, DMF } from './consts/Consts';
 import {
-  chargeFieldIsViolent,
-  degreeFieldIsFelony,
-  degreeFieldIsMisdemeanor,
-  dispositionFieldIsGuilty,
+  chargeIsViolent,
+  chargeIsFelony,
+  chargeIsMisdemeanor,
+  chargeIsGuilty,
   getViolentChargeNums,
   getChargeTitle,
   getChargeDetails,
@@ -103,10 +103,10 @@ export const tryAutofillAge = (
 
 /* Mapping util functions */
 const mapToLabels = (allCharges :Immutable.List<*>, filterFn :(allCharges :Immutable.List<*>) => Immutable.List<*>) =>
-  filterFn(allCharges).map(charge => getChargeTitle(charge));
+  filterFn(allCharges.filter(charge => !shouldIgnoreCharge(charge))).map(charge => getChargeTitle(charge));
 
 const mapToDetails = (allCharges :Immutable.List<*>, filterFn :(allCharges :Immutable.List<*>) => Immutable.List<*>) =>
-  filterFn(allCharges).map(charge => getChargeDetails(charge));
+  filterFn(allCharges.filter(charge => !shouldIgnoreCharge(charge))).map(charge => getChargeDetails(charge));
 
 /* Filter charge lists */
 const filterPendingCharges = (
@@ -165,16 +165,12 @@ const filterPendingCharges = (
 
 const filterPreviousMisdemeanors = (allCharges :Immutable.List<*>) :Immutable.List<*> => {
   if (!allCharges.size) return Immutable.List();
-  return allCharges.filter(charge =>
-    dispositionFieldIsGuilty(charge.get(DISPOSITION, Immutable.List()))
-    && degreeFieldIsMisdemeanor(charge.get(CHARGE_LEVEL, Immutable.List())));
+  return allCharges.filter(charge => chargeIsGuilty(charge) && chargeIsMisdemeanor(charge));
 };
 
 const filterPreviousFelonies = (allCharges :Immutable.List<*>) :Immutable.List<*> => {
   if (!allCharges.size) return Immutable.List();
-  return allCharges.filter(charge =>
-    dispositionFieldIsGuilty(charge.get(DISPOSITION, Immutable.List()))
-    && degreeFieldIsFelony(charge.get(CHARGE_LEVEL, Immutable.List())));
+  return allCharges.filter(charge => chargeIsGuilty(charge) && chargeIsFelony(charge));
 };
 
 const filterPreviousViolentCharges = (allCharges :Immutable.List<*>) :Immutable.List<*> => {
@@ -183,9 +179,7 @@ const filterPreviousViolentCharges = (allCharges :Immutable.List<*>) :Immutable.
   return allCharges
     .filter((charge) => {
       const chargeNum = charge.getIn([CHARGE_STATUTE, 0], '');
-      return chargeNum.length
-        && dispositionFieldIsGuilty(charge.get(DISPOSITION, Immutable.List()))
-        && chargeFieldIsViolent(Immutable.List.of(chargeNum));
+      return chargeNum.length && chargeIsGuilty(charge) && chargeIsViolent(charge);
     });
 };
 

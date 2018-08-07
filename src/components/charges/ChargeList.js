@@ -7,7 +7,7 @@ import styled from 'styled-components';
 import Immutable from 'immutable';
 
 import { getAllViolentCharges } from '../../utils/consts/ArrestChargeConsts';
-import { chargeFieldIsViolent, chargeIsMostSerious } from '../../utils/consts/ChargeConsts';
+import { chargeIsViolent, chargeIsMostSerious } from '../../utils/consts/ChargeConsts';
 import { formatValue, formatDateList } from '../../utils/Utils';
 import {
   ChargeItem,
@@ -61,10 +61,8 @@ export default class ChargeList extends React.Component<Props, *> {
 
   renderTags = (charge :Immutable.Map<*, *>) => {
     const mostSerious = chargeIsMostSerious(charge, this.props.pretrialCaseDetails);
-
-    const statuteField = charge.get(CHARGE_STATUTE, Immutable.List());
     const violent = this.props.historical
-      ? chargeFieldIsViolent(statuteField)
+      ? chargeIsViolent(charge)
       : getAllViolentCharges(Immutable.fromJS([charge])).size > 0;
 
 
