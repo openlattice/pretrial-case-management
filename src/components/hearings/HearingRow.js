@@ -56,11 +56,13 @@ const HearingRow = ({ row, handleSelect, disabled } :Props) => {
   const entityKeyId :string = row.getIn([OPENLATTICE_ID_FQN, 0], '');
 
   return (
-    <Row disabled={disabled} onClick={() => {
-      if (handleSelect) {
-        handleSelect(row, entityKeyId);
-      }
-    }}>
+    <Row
+        disabled={disabled}
+        onClick={() => {
+          if (handleSelect) {
+            handleSelect(row, entityKeyId);
+          }
+        }}>
       <Cell>{ date }</Cell>
       <Cell>{ time }</Cell>
       <Cell>{ courtroom }</Cell>
