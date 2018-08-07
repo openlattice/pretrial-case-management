@@ -38,6 +38,7 @@ const Header = styled.div`
   span {
     font-family: 'Open Sans', sans-serif;
     font-size: 18px;
+    font-weight: normal;
     color: #555e6f;
   }
 `;
@@ -47,7 +48,20 @@ const CenteredContainer = styled.div`
   text-align: center;
 `;
 
+const StyledSearchableSelect = styled(SearchableSelect)`
+  input { width: 100%; }
+`;
+
 const CreateButton = styled(InfoButton)`
+  width: 210px;
+  height: 40px;
+  padding-left: 0;
+  padding-right: 0;
+`;
+
+const ExistingButton = styled(BasicButton)`
+  width: 210px;
+  height: 40px;
   padding-left: 0;
   padding-right: 0;
 `;
@@ -59,7 +73,8 @@ const InputRow = styled.div`
   width: 100%;
 
   section {
-    width: 24%;
+    width: 25%;
+    padding: 0 2.5% 0 2.5%;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -178,11 +193,12 @@ class SelectHearingsContainer extends React.Component<Props, State> {
             <InputLabel>Date</InputLabel>
             <DatePicker
                 value={this.state.newHearingDate}
-                onChange={newHearingDate => this.setState({ newHearingDate })} />
+                onChange={newHearingDate => this.setState({ newHearingDate })}
+                clearButton={false} />
           </section>
           <section>
             <InputLabel>Time</InputLabel>
-            <SearchableSelect
+            <StyledSearchableSelect
                 options={getTimeOptions()}
                 value={this.state.newHearingTime}
                 onSelect={newHearingTime => this.setState({ newHearingTime })}
@@ -190,7 +206,7 @@ class SelectHearingsContainer extends React.Component<Props, State> {
           </section>
           <section>
             <InputLabel>Courtroom</InputLabel>
-            <SearchableSelect
+            <StyledSearchableSelect
                 options={getCourtroomOptions()}
                 value={this.state.newHearingCourtroom}
                 onSelect={newHearingCourtroom => this.setState({ newHearingCourtroom })}
@@ -221,7 +237,7 @@ class SelectHearingsContainer extends React.Component<Props, State> {
         <Container>
           <Header>
             <span>Create New Hearing</span>
-            <BasicButton onClick={this.switchView}>Select from Existing</BasicButton>
+            <ExistingButton onClick={this.switchView}>Select from Existing</ExistingButton>
           </Header>
           {this.renderNewHearingSection()}
         </Container>
@@ -232,7 +248,7 @@ class SelectHearingsContainer extends React.Component<Props, State> {
       <Container>
         <Header>
           <span>Select a Hearing</span>
-          <InfoButton onClick={this.switchView}>Create New Hearing</InfoButton>
+          <CreateButton onClick={this.switchView}>Create New Hearing</CreateButton>
         </Header>
         <HearingCardsHolder hearings={this.getSortedHearings()} handleSelect={this.selectExistingHearing} />
       </Container>
