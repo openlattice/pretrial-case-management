@@ -6,6 +6,7 @@ import styled from 'styled-components';
 
 import ContentBlock from '../ContentBlock';
 import ContentSection from '../ContentSection';
+import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
 import defaultUserIcon from '../../assets/svg/profile-placeholder-rectangle-big.svg';
 import { formatValue, formatDateList } from '../../utils/Utils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
@@ -51,7 +52,7 @@ export default ({ person } :Props) => {
 
   const content = generalContent.map(item => (
     <ContentBlock
-        component="summary"
+        component={CONTENT_CONSTS.SUMMARY}
         contentBlock={item}
         key={item.label} />
   ));
@@ -59,7 +60,7 @@ export default ({ person } :Props) => {
   return (
     <PersonCardWrapper>
       <ContentSection
-          component="summary"
+          component={CONTENT_CONSTS.SUMMARY}
           photo={defaultUserIcon}
           header="Person"
           firstName={firstName}

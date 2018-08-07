@@ -14,6 +14,7 @@ import CustomPagination from '../../components/Pagination';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { SORT_TYPES } from '../../utils/consts/Consts';
 import { sortByDate, sortByName } from '../../utils/PSAUtils';
+import { getEntityKeyId, getIdValue } from '../../utils/Utils';
 import * as FormActionFactory from '../psa/FormActionFactory';
 import * as ReviewActionFactory from './ReviewActionFactory';
 import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
@@ -166,8 +167,8 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
 
   renderRow = (scoreId, scores) => {
     const neighbors = this.props.psaNeighborsById.get(scoreId, Immutable.Map());
-    const personId = neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborId'], '');
-    const personIdValue = neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborDetails', PROPERTY_TYPES.PERSON_ID, 0], '');
+    const personId = getEntityKeyId(neighbors, ENTITY_SETS.PEOPLE);
+    const personIdValue = getIdValue(neighbors, ENTITY_SETS.PEOPLE, PROPERTY_TYPES.PERSON_ID);
     const caseHistory = this.props.caseHistory.get(personId, Immutable.List());
     const manualCaseHistory = this.props.manualCaseHistory.get(personId, Immutable.List());
     const chargeHistory = this.props.chargeHistory.get(personId, Immutable.Map());

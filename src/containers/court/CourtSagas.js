@@ -1,6 +1,6 @@
 import Immutable from 'immutable';
 import moment from 'moment';
-import { EntityDataModelApi, SearchApi } from 'lattice';
+import { Constants, EntityDataModelApi, SearchApi } from 'lattice';
 import { all, call, put, takeEvery } from 'redux-saga/effects';
 
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
@@ -9,6 +9,8 @@ import {
   LOAD_HEARINGS_FOR_DATE,
   loadHearingsForDate
 } from './CourtActionFactory';
+
+const { OPENLATTICE_ID_FQN } = Constants;
 
 function* loadHearingsForDateWorker(action :SequenceAction) :Generator<*, *, *> {
 
@@ -44,7 +46,7 @@ function* loadHearingsForDateWorker(action :SequenceAction) :Generator<*, *, *> 
     const hearingsResult = yield call(SearchApi.advancedSearchEntitySetData, entitySetId, getSearchOptions(numHits));
     const hearingsToday = Immutable.fromJS(hearingsResult.hits);
 
-    const hearingIds = hearingsToday.map(hearing => hearing.getIn(['id', 0])).filter(val => val).toJS();
+    const hearingIds = hearingsToday.map(hearing => hearing.getIn([OPENLATTICE_ID_FQN, 0])).filter(val => val).toJS();
 
     let hearingsByTime = Immutable.Map();
     hearingsToday
@@ -66,14 +68,11 @@ function* loadHearingsForDateWorker(action :SequenceAction) :Generator<*, *, *> 
     Object.entries(hearingNeighbors).forEach(([hearingId, neighbors]) => {
       hearingNeighborsById = hearingNeighborsById.set(hearingId, Immutable.Map());
       neighbors.forEach((neighbor) => {
-        const { neighborEntitySet, neighborDetails, neighborId } = neighbor;
+        const { neighborEntitySet, neighborDetails } = neighbor;
         if (neighborEntitySet) {
           hearingNeighborsById = hearingNeighborsById.set(
             hearingId,
-            hearingNeighborsById.get(hearingId).set(
-              neighborEntitySet.name,
-              Immutable.fromJS(neighborDetails).set('id', neighborId)
-            )
+            hearingNeighborsById.get(hearingId).set(neighborEntitySet.name, Immutable.fromJS(neighborDetails))
           );
         }
       });

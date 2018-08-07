@@ -14,6 +14,7 @@ import { Button } from 'react-bootstrap';
 import { connect } from 'react-redux';
 import { Redirect, Route, Switch, withRouter } from 'react-router-dom';
 import { bindActionCreators } from 'redux';
+import { Constants } from 'lattice';
 
 import BasicButton from '../../components/buttons/BasicButton';
 import LoadingSpinner from '../../components/LoadingSpinner';
@@ -30,6 +31,7 @@ import ChargeTable from '../../components/charges/ChargeTable';
 import PSAReviewRowList from '../review/PSAReviewRowList';
 import exportPDF from '../../utils/PDFUtils';
 import psaConfig from '../../config/formconfig/PsaConfig';
+import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
 
 import * as FormActionFactory from './FormActionFactory';
 import * as PersonActionFactory from '../person/PersonActionFactory';
@@ -53,6 +55,8 @@ import { tryAutofillFields } from '../../utils/AutofillUtils';
 import { CONTEXT, DMF, ID_FIELD_NAMES, NOTES, PSA, PSA_STATUSES, SORT_TYPES } from '../../utils/consts/Consts';
 import { PROPERTY_TYPES, ENTITY_SETS } from '../../utils/consts/DataModelConsts';
 import { DOMAIN } from '../../utils/consts/ReportDownloadTypes';
+
+const { OPENLATTICE_ID_FQN } = Constants;
 
 const { PEOPLE } = ENTITY_SETS;
 
@@ -531,8 +535,8 @@ class Form extends React.Component<Props, State> {
 
   closePSA = (scores, status, failureReason) => {
     const { actions, selectedPersonId, entitySetLookup } = this.props;
-    const scoresId = scores.get('id');
-    let scoresEntity = scores.remove('id');
+    const scoresId = scores.getIn([OPENLATTICE_ID_FQN, 0]);
+    let scoresEntity = scores.remove('id').remove(OPENLATTICE_ID_FQN);
     scoresEntity = scoresEntity.set(PROPERTY_TYPES.STATUS, Immutable.List.of(status));
     if (failureReason.length) {
       scoresEntity = scoresEntity.set(PROPERTY_TYPES.FAILURE_REASON, Immutable.fromJS(failureReason));
@@ -560,9 +564,9 @@ class Form extends React.Component<Props, State> {
       allPSAs,
       openPSAs
     } = this.props;
-    const openPSAScores = allPSAs.filter(scores => openPSAs.has(scores.get('id')));
+    const openPSAScores = allPSAs.filter(scores => openPSAs.has(scores.getIn([OPENLATTICE_ID_FQN, 0])));
     if (!openPSAScores.size) return null;
-    const scoreSeq = openPSAScores.map(obj => ([obj.get('id'), obj]));
+    const scoreSeq = openPSAScores.map(obj => ([obj.getIn([OPENLATTICE_ID_FQN, 0]), obj]));
     return (
       <CenteredListWrapper>
         <Header>Close Pending PSAs</Header>
@@ -671,7 +675,7 @@ class Form extends React.Component<Props, State> {
           <ContextItem>
             <ArrestCard
                 arrest={selectedPretrialCase}
-                component="FormContainer" />
+                component={CONTENT_CONSTS.FORM_CONTAINER} />
           </ContextItem>
         </ContextRow>
         <PaddedSectionWrapper>

@@ -5,9 +5,12 @@
 import React from 'react';
 import styled from 'styled-components';
 import Immutable from 'immutable';
+import { Constants } from 'lattice';
 
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { getAllViolentCharges } from '../../utils/consts/ArrestChargeConsts';
+
+const { OPENLATTICE_ID_FQN } = Constants;
 
 const Cell = styled.td`
   padding: 15px 30px;
@@ -67,7 +70,7 @@ const ChargeRow = ({ charge, handleSelect, disabled } :Props) => {
   const chargeDescription = charge.getIn([PROPERTY_TYPES.CHARGE_DESCRIPTION, 0], '');
 
   const violent = getAllViolentCharges(Immutable.List.of(charge)).size > 0;
-  const entityKeyId :string = charge.get('id', '');
+  const entityKeyId :string = charge.getIn([OPENLATTICE_ID_FQN, 0], '');
 
   return (
     <Row

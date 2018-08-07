@@ -8,6 +8,7 @@ import ContentSection from '../ContentSection';
 import defaultUserIcon from '../../assets/svg/profile-placeholder-rectangle-big.svg';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { formatDateList, formatValue } from '../../utils/Utils';
+import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
 
 const {
   DOB,
@@ -77,6 +78,7 @@ const AboutPersonGeneral = ({ selectedPersonData }) => {
     return (
       <ContentBlock
           contentBlock={person}
+          component={CONTENT_CONSTS.PROFILE}
           key={person.label} />
     );
   });
@@ -86,6 +88,7 @@ const AboutPersonGeneral = ({ selectedPersonData }) => {
   return (
     <ContentSection
         photo={defaultUserIcon}
+        component={CONTENT_CONSTS.PROFILE}
         header={header} >
       {content}
     </ContentSection>

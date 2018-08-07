@@ -8,6 +8,7 @@ import styled from 'styled-components';
 import moment from 'moment';
 import { Modal, Tab, Tabs } from 'react-bootstrap';
 import { AuthUtils } from 'lattice-auth';
+import { Constants } from 'lattice';
 
 import CustomTabs from '../tabs/Tabs';
 import PSAInputForm from '../psainput/PSAInputForm';
@@ -25,14 +26,16 @@ import ClosePSAModal from './ClosePSAModal';
 import psaEditedConfig from '../../config/formconfig/PsaEditedConfig';
 import closeX from '../../assets/svg/close-x-gray.svg';
 import { getScoresAndRiskFactors, calculateDMF } from '../../utils/ScoringUtils';
+import { stripIdField } from '../../utils/DataUtils';
 import { CenteredContainer } from '../../utils/Layout';
-import { toISODateTime } from '../../utils/Utils';
+import { getEntityKeyId, getEntitySetId, getIdValue, toISODateTime } from '../../utils/Utils';
 import { CONTEXT, DMF, EDIT_FIELDS, NOTES, PSA, PSA_STATUSES } from '../../utils/consts/Consts';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { RESULT_CATEGORIES, formatDMFFromEntity } from '../../utils/consts/DMFResultConsts';
 import { psaIsClosed } from '../../utils/PSAUtils';
 import * as OverrideClassNames from '../../utils/styleoverrides/OverrideClassNames';
 
+const { OPENLATTICE_ID_FQN } = Constants;
 
 const DownloadButtonContainer = styled.div`
   width: 100%;
@@ -106,6 +109,31 @@ const ClosePSAButton = styled(StyledButton)`
   border-radius: 3px;
   background-color: #e4d8ff;
 `;
+const EditPSAButton = styled(StyledButton)`
+  margin: ${props => (props.footer ? '-20px 0 30px' : '0')};
+  font-family: 'Open Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+  color: #8e929b;
+  width: ${props => (props.footer ? '340px' : '142px')};
+  height: ${props => (props.footer ? '42px' : '40px')};
+  border: none;
+  border-radius: 3px;
+  background-color: #f0f0f7;
+`;
+
+const PSAFormHeader = styled.div`
+  padding: 30px;
+  font-family: 'Open Sans', sans-serif;
+  font-size: 18px;
+  color: #555e6f;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: solid 1px #e1e1eb !important;
+`
 
 const CloseModalX = styled.img.attrs({
   alt: '',
@@ -285,7 +313,7 @@ export default class PSAModal extends React.Component<Props, State> {
 
     const personDetails = neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborDetails'], Immutable.Map());
     if (!personDetails.size) return <div>Person details unknown.</div>;
-    return <PersonCard person={personDetails.set('id', neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborId']))} />;
+    return <PersonCard person={personDetails} />
   }
 
   renderDownloadButton = () => (
@@ -362,14 +390,11 @@ export default class PSAModal extends React.Component<Props, State> {
     [PROPERTY_TYPES.RELEASE_RECOMMENDATION]: [riskFactors.get(PSA.NOTES)]
   });
 
-  getEntitySetId = (name) :string => this.props.neighbors.getIn([name, 'neighborEntitySet', 'id']);
+  getEntitySetId = (name) :string => getEntitySetId(this.props.neighbors, name);
 
-  getEntityKeyId = (name) :string => this.props.neighbors.getIn([name, 'neighborId']);
+  getEntityKeyId = (name) :string => getEntityKeyId(this.props.neighbors, name);
 
-  getIdValue = (name, optionalFQN) :string => {
-    const fqn = optionalFQN || PROPERTY_TYPES.GENERAL_ID;
-    return this.props.neighbors.getIn([name, 'neighborDetails', fqn, 0]);
-  }
+  getIdValue = (name, optionalFQN) :string => getIdValue(this.props.neighbors, name, optionalFQN);
 
   refreshPSANeighborsCallback = () => {
     this.props.refreshPSANeighbors({ id: this.props.entityKeyId });
@@ -459,11 +484,10 @@ export default class PSAModal extends React.Component<Props, State> {
     if (!this.props.changePSAStatus) return;
     const statusNotesList = (statusNotes && statusNotes.length) ? Immutable.List.of(statusNotes) : Immutable.List();
 
-    const scoresEntity = this.props.scores
+    const scoresEntity = stripIdField(this.props.scores
       .set(PROPERTY_TYPES.STATUS, Immutable.List.of(status))
       .set(PROPERTY_TYPES.FAILURE_REASON, Immutable.fromJS(failureReason))
-      .set(PROPERTY_TYPES.STATUS_NOTES, statusNotesList)
-      .delete('id');
+      .set(PROPERTY_TYPES.STATUS_NOTES, statusNotesList));
 
     const scoresId = this.props.entityKeyId;
     this.props.changePSAStatus({
@@ -515,14 +539,26 @@ export default class PSAModal extends React.Component<Props, State> {
       scores
     } = this.props;
     const { editing, riskFactors } = this.state;
-
+    const editHeader = (editing || this.props.readOnly || psaIsClosed(scores)) ? null : (
+      <CenteredContainer>
+        <PSAFormHeader>Public Safety Assessment
+          <EditPSAButton onClick={() => {
+            this.setState({ editing: true });
+          }}>
+            Edit PSA
+          </EditPSAButton>
+        </PSAFormHeader>
+      </CenteredContainer>
+    );
     const editButton = (editing || this.props.readOnly || psaIsClosed(scores)) ? null : (
       <CenteredContainer>
-        <StyledButton onClick={() => {
-          this.setState({ editing: true });
-        }}>
-          Edit
-        </StyledButton>
+        <EditPSAButton
+            footer
+            onClick={() => {
+              this.setState({ editing: true });
+            }}>
+          Edit PSA
+        </EditPSAButton>
       </CenteredContainer>
     );
 
@@ -542,6 +578,7 @@ export default class PSAModal extends React.Component<Props, State> {
 
     return (
       <ModalWrapper>
+        {editHeader}
         <PSAInputForm
             section="review"
             input={riskFactors}
@@ -562,16 +599,13 @@ export default class PSAModal extends React.Component<Props, State> {
   renderDMFExplanation = () => {
     const { scores } = this.props;
     const { dmf, riskFactors } = this.state;
-    const nca = scores.getIn([PROPERTY_TYPES.NCA_SCALE, 0]);
-    const fta = scores.getIn([PROPERTY_TYPES.FTA_SCALE, 0]);
-    const nvca = scores.getIn([PROPERTY_TYPES.NVCA_FLAG, 0]);
     if (!this.props.neighbors.getIn([ENTITY_SETS.DMF_RESULTS, 'neighborDetails'], Immutable.Map()).size) {
       return <NoDMFContainer>A DMF was not calculated for this PSA.</NoDMFContainer>;
     }
 
     return (
-      <ModalWrapper withPadding >
-        <DMFExplanation dmf={dmf} nca={nca} fta={fta} nvca={nvca} riskFactors={riskFactors} />
+      <ModalWrapper >
+        <DMFExplanation scores={scores} dmf={dmf} riskFactors={riskFactors} />
       </ModalWrapper>
     )
   }
@@ -621,7 +655,7 @@ export default class PSAModal extends React.Component<Props, State> {
             replace={this.props.replaceEntity}
             submitCallback={this.refreshPSANeighborsCallback}
             hearing={this.props.neighbors.getIn([ENTITY_SETS.HEARINGS, 'neighborDetails'], Immutable.Map())}
-            hearingId={this.props.neighbors.getIn([ENTITY_SETS.HEARINGS, 'neighborId'])}
+            hearingId={this.getEntityKeyId(ENTITY_SETS.HEARINGS)}
             defaultDMF={this.props.neighbors.getIn([ENTITY_SETS.DMF_RESULTS, 'neighborDetails'], Immutable.Map())}
             defaultBond={this.props.neighbors.getIn([ENTITY_SETS.BONDS, 'neighborDetails'], Immutable.Map())}
             defaultConditions={this.props.neighbors.get(ENTITY_SETS.RELEASE_CONDITIONS, Immutable.List())

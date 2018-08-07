@@ -14,6 +14,7 @@ import PSAScores from './PSAScores';
 import { PSA_STATUSES } from '../../utils/consts/Consts';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { psaIsClosed } from '../../utils/PSAUtils';
+import { getEntityKeyId } from '../../utils/Utils';
 
 const ReviewRowContainer = styled.div`
   width: 100%;
@@ -178,7 +179,7 @@ export default class PSAReviewRow extends React.Component<Props, State> {
 
     const personDetails = neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborDetails'], Immutable.Map());
     if (!personDetails.size) return <div>Person details unknown.</div>;
-    return <PersonCard person={personDetails.set('id', neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborId']))} />;
+    return <PersonCard person={personDetails} />;
   }
 
   renderDownloadButton = () => (
@@ -259,7 +260,7 @@ export default class PSAReviewRow extends React.Component<Props, State> {
 
   openDetailsModal = () => {
     const { neighbors, loadCaseHistoryFn } = this.props;
-    const personId = neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborId'], '');
+    const personId = getEntityKeyId(neighbors, ENTITY_SETS.PEOPLE);
     loadCaseHistoryFn({ personId, neighbors });
     this.setState({ open: true });
   }

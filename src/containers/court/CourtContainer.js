@@ -9,6 +9,7 @@ import moment from 'moment';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { NavLink } from 'react-router-dom';
+import { Constants } from 'lattice';
 import {
   ButtonToolbar,
   ToggleButton,
@@ -28,6 +29,8 @@ import { TIME_FORMAT, formatDate } from '../../utils/Utils';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { DOMAIN } from '../../utils/consts/ReportDownloadTypes';
 import { sortPeopleByName } from '../../utils/PSAUtils';
+
+const { OPENLATTICE_ID_FQN } = Constants;
 
 const ToolbarWrapper = styled(ButtonToolbar)`
   margin-bottom: 20px;
@@ -179,7 +182,7 @@ class CourtContainer extends React.Component<Props, State> {
     const fileName = `${courtroom}-${moment().format('YYYY-MM-DD')}-${time}`;
     this.props.actions.bulkDownloadPSAReviewPDF({
       fileName,
-      peopleEntityKeyIds: people.valueSeq().map(person => person.get('id')).toJS()
+      peopleEntityKeyIds: people.valueSeq().map(person => person.get(OPENLATTICE_ID_FQN)).toJS()
     });
   }
 
@@ -220,7 +223,7 @@ class CourtContainer extends React.Component<Props, State> {
         }
       }
       if (shouldInclude) {
-        const hearingId = hearing.getIn(['id', 0]);
+        const hearingId = hearing.getIn([OPENLATTICE_ID_FQN, 0]);
         const person = hearingNeighborsById.getIn([hearingId, ENTITY_SETS.PEOPLE], Immutable.Map());
         const personId = person.getIn([PROPERTY_TYPES.PERSON_ID, 0]);
         if (personId) {
