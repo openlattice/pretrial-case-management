@@ -462,7 +462,7 @@ const getCaseNumFromCharge = (charge :Immutable.Map<*, *>) => {
 const chargeTags = (doc :Object, yInit :number, charge :Immutable.List<*>, cases :Immutable.Map<*, *>) => {
   let y = yInit;
   const tags = [];
-  if (chargeIsViolent(charge.getIn([PROPERTY_TYPES.CHARGE_STATUTE, 0], ''))) {
+  if (chargeIsViolent(charge)) {
     tags.push('VIOLENT');
   }
   const caseNum = getCaseNumFromCharge(charge);
