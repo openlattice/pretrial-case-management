@@ -9,14 +9,20 @@ import styled from 'styled-components';
 import moment from 'moment';
 import randomUUID from 'uuid/v4';
 
+import ContentBlock from '../ContentBlock';
+import ContentSection from '../ContentSection';
+import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
 import RadioButton from '../controls/StyledRadioButton';
 import SecondaryButton from '../buttons/SecondaryButton';
 import CheckboxButton from '../controls/StyledCheckboxButton';
 import StyledInput from '../controls/StyledInput';
 import DateTimePicker from '../controls/StyledDateTimePicker';
+import DatePicker from '../../components/controls/StyledDatePicker';
 import SearchableSelect from '../controls/SearchableSelect';
 import InfoButton from '../buttons/InfoButton';
+import BasicButton from '../../components/buttons/BasicButton';
 import releaseConditionsConfig from '../../config/formconfig/ReleaseConditionsConfig';
+import { getTimeOptions } from '../../utils/consts/DateTimeConsts';
 import { RELEASE_CONDITIONS, LIST_FIELDS, ID_FIELD_NAMES, FORM_IDS } from '../../utils/consts/Consts';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { getCourtroomOptions } from '../../utils/consts/HearingConsts';
@@ -143,10 +149,12 @@ const NoContactPeopleWrapper = styled.div`
 `;
 
 const HearingSectionWrapper = styled.div`
-  background-color: #f0f0f7;
+  min-height: 160px;
+  display: grid;
+  grid-template-columns: 75% 25%;
   padding-bottom: 20px;
   margin: 0 -15px;
-  border-bottom: 1px solid #e1e1eb;
+  border-bottom: 1px solid #e1e1eb !important;
 `;
 
 const HearingRow = styled.div`
@@ -173,12 +181,13 @@ const HearingRow = styled.div`
   }
   ${SecondaryButton} {
     padding: 10px;
-    max-width: 65px;
+    width: 100%;
     margin: 0 10px;
   }
 
   ${InfoButton} {
     padding: 10px;
+    width: 100%;
   }
 
   section {
@@ -189,6 +198,46 @@ const HearingRow = styled.div`
       margin: auto;
     }
   }
+`;
+
+const HearingInfoButtons = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  button {
+    width: ${props => (props.modifyingHearing ? '45%' : '100%')};
+    padding: 0;
+  }
+  max-width: 210px;
+`;
+
+const StyledBasicButton = styled(BasicButton)`
+  width: 100%;
+  max-width: 210px;
+  height: 40px;
+  background-color: ${props => (props.update ? '#6124e2' : '#f0f0f7')};
+  color: ${props => (props.update ? '#ffffff' : '#8e929b')};
+`;
+
+const StyledSearchableSelect = styled(SearchableSelect)`
+  margin-top: 10px;
+  .SearchIcon img { margin: none; }
+  input { width: 100%; }
+`;
+
+const StyledDatePicker = styled(DatePicker)`
+  margin-top: 10px;
+  .IconWrapper {
+    margin-top: 10px;
+  }
+`;
+
+const HearingSectionAside = styled.div`
+  padding-top: 30px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
 `;
 
 const BLANK_PERSON_ROW = {
@@ -225,6 +274,8 @@ type State = {
   noContactPeople :Object[],
   modifyingHearing :boolean,
   hearingDateTime :Object,
+  newHearingDate :string,
+  newHearingTime :string,
   hearingCourtroom :string
 };
 
@@ -253,6 +304,8 @@ class SelectReleaseConditions extends React.Component<Props, State> {
     const hearingDateTimeMoment = moment(hearing.getIn([PROPERTY_TYPES.DATE_TIME, 0], ''));
     let hearingDateTime = hearingDateTimeMoment.isValid() ? hearingDateTimeMoment : null;
     let hearingCourtroom = hearing.getIn([PROPERTY_TYPES.COURTROOM, 0], '');
+    let newHearingDate;
+    let newHearingTime;
 
     if (this.state) {
       modifyingHearing = this.state.modifyingHearing;
@@ -316,6 +369,8 @@ class SelectReleaseConditions extends React.Component<Props, State> {
       [OTHER_CONDITION_TEXT]: '',
       [NO_CONTACT_PEOPLE]: [Object.assign({}, BLANK_PERSON_ROW)],
       modifyingHearing,
+      newHearingDate,
+      newHearingTime,
       hearingDateTime,
       hearingCourtroom,
       disabled: false
@@ -640,7 +695,14 @@ class SelectReleaseConditions extends React.Component<Props, State> {
 
   handleHearingUpdate = () => {
     this.setState({ modifyingHearing: false });
-    const { hearingDateTime, hearingCourtroom } = this.state;
+    const dateFormat = 'MM/DD/YYYY';
+    const timeFormat = 'hh:mm a';
+    const date = moment(this.state.newHearingDate);
+    const time = moment(this.state.newHearingTime, timeFormat);
+    const hearingDateTime = moment(
+      `${date.format(dateFormat)} ${time.format(timeFormat)}`, `${dateFormat} ${timeFormat}`
+    );
+    const { hearingCourtroom } = this.state;
     if (hearingDateTime && hearingCourtroom) {
       const newHearing = this.props.hearing
         .set(PROPERTY_TYPES.COURTROOM, [hearingCourtroom])
@@ -660,55 +722,97 @@ class SelectReleaseConditions extends React.Component<Props, State> {
   renderHearingInfo = () => {
     const { hearing } = this.props;
     const dateTime = hearing.getIn([PROPERTY_TYPES.DATE_TIME, 0], '');
-    const date = formatDateTime(dateTime, 'MM/DD/YYYY');
-    const time = formatDateTime(dateTime, 'HH:mm');
-    const courtroom = hearing.getIn([PROPERTY_TYPES.COURTROOM, 0], '');
+    let date;
+    let time;
+    let courtroom;
+    let hearingInfoButton;
     if (this.state.modifyingHearing) {
-      return (
-        <HearingRow>
-          <span>Date/Time:</span>
-          <section>
-            <DateTimePicker
-                value={this.state.hearingDateTime}
-                onChange={hearingDateTime => this.setState({ hearingDateTime })} />
-          </section>
-          <span>Courtroom:</span>
-          <section>
-            <SearchableSelect
-                options={getCourtroomOptions()}
-                value={this.state.hearingCourtroom}
-                onSelect={hearingCourtroom => this.setState({ hearingCourtroom })}
-                short />
-          </section>
-          <SecondaryButton onClick={() => this.setState({ modifyingHearing: false })}>Cancel</SecondaryButton>
-          <InfoButton onClick={this.handleHearingUpdate}>Save</InfoButton>
-        </HearingRow>
+      date = (<StyledDatePicker
+          value={this.state.hearingDateTime.toISOString(true)}
+          onChange={newHearingDate => this.setState({ newHearingDate })}
+          clearButton={false} />);
+      time = (<StyledSearchableSelect
+          options={getTimeOptions()}
+          value={`${formatDateTime(dateTime, 'HH:mm')}`}
+          onSelect={newHearingTime => this.setState({ newHearingTime })}
+          short />);
+      courtroom = (<StyledSearchableSelect
+          options={getCourtroomOptions()}
+          value={this.state.hearingCourtroom}
+          onSelect={hearingCourtroom => this.setState({ hearingCourtroom })}
+          short />);
+      hearingInfoButton = (
+        <HearingInfoButtons modifyingHearing={this.state.modifyingHearing}>
+          <StyledBasicButton onClick={() => this.setState({ modifyingHearing: false })}>Cancel</StyledBasicButton>
+          <StyledBasicButton update onClick={this.handleHearingUpdate}>Update</StyledBasicButton>
+        </HearingInfoButtons>
       );
     }
+    else {
+      date = formatDateTime(dateTime, 'MM/DD/YYYY');
+      time = formatDateTime(dateTime, 'HH:mm');
+      courtroom = hearing.getIn([PROPERTY_TYPES.COURTROOM, 0], '');
+      hearingInfoButton = (
+        this.state.disabled
+          ? null
+          : (
+            <HearingInfoButtons>
+              <StyledBasicButton
+                  onClick={() => this.setState({ modifyingHearing: true })}>
+                Edit
+              </StyledBasicButton>
+            </HearingInfoButtons>
+          )
+      );
+    }
+
+    const HEARING_ARR = [
+      {
+        label: 'Date',
+        content: [date]
+      },
+      {
+        label: 'Time',
+        content: [time]
+      },
+      {
+        label: 'Courtroom',
+        content: [courtroom]
+      }
+    ];
+
+    const hearingInfoContent = HEARING_ARR.map(hearingItem => (
+      <ContentBlock
+          component={CONTENT_CONSTS.HEARINGS}
+          contentBlock={hearingItem}
+          key={hearingItem.label} />
+    ));
+
+    const hearingInfoSection = (
+      <ContentSection
+          header="Hearing"
+          modifyingHearing={this.state.modifyingHearing}
+          component={CONTENT_CONSTS.HEARINGS} >
+        {hearingInfoContent}
+      </ContentSection>
+    );
+
     return (
-      <HearingRow>
-        <span>Date:</span>
-        <span>{date}</span>
-        <span>Time:</span>
-        <span>{time}</span>
-        <span>Courtroom:</span>
-        <span>{courtroom}</span>
-        {
-          this.state.disabled
-            ? null
-            : <SecondaryButton onClick={() => this.setState({ modifyingHearing: true })}>Edit</SecondaryButton>
-        }
-      </HearingRow>
+      <HearingSectionWrapper>
+        {hearingInfoSection}
+        <HearingSectionAside>
+          <StyledBasicButton>Back to Selection</StyledBasicButton>
+          {hearingInfoButton}
+        </HearingSectionAside>
+      </HearingSectionWrapper>
     );
   }
 
   render() {
+    console.log(this.state);
     return (
       <Wrapper>
-        <HearingSectionWrapper>
-          <h1>Hearing</h1>
-          {this.renderHearingInfo()}
-        </HearingSectionWrapper>
+        {this.renderHearingInfo()}
         <h1>Outcome</h1>
         <Row>
           {this.mapOptionsToRadioButtons(OUTCOMES, 'outcome')}
