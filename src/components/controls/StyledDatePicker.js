@@ -7,6 +7,7 @@ import calendarIcon from '../../assets/svg/calendar-icon.svg';
 const DatePickerWrapper = styled.div`
   position: relative;
   height: 39px;
+  width: 100%;
   min-width: 140px;
 `;
 
