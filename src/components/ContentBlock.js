@@ -28,6 +28,10 @@ const StyledContentLabel = styled.div`
         return (
           '12px;'
         );
+      case CONTENT_CONSTS.HEARINGS:
+        return (
+          '12px;'
+        );
       default:
         return (
           '11px;'
@@ -51,6 +55,10 @@ const StyledContent = styled.div`
           '16px;'
         );
       case CONTENT_CONSTS.PROFILE:
+        return (
+          '18px;'
+        );
+      case CONTENT_CONSTS.HEARINGS:
         return (
           '18px;'
         );
