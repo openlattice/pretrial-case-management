@@ -172,7 +172,7 @@ export const dispositionFieldIsGuilty = (dispositionField :Immutable.List<string
 };
 
 export const chargeIsGuilty = (charge :Immutable.Map<*, *>) => {
-  return dispositionIsGuilty(charge.get(PROPERTY_TYPES.DISPOSITION, Immutable.List()));
+  return dispositionFieldIsGuilty(charge.get(PROPERTY_TYPES.DISPOSITION, Immutable.List()));
 };
 
 export const degreeFieldIsMisdemeanor = (degreeField :Immutable.List<string>) :boolean => {
@@ -181,7 +181,7 @@ export const degreeFieldIsMisdemeanor = (degreeField :Immutable.List<string>) :b
     return false;
   }
 
-  return degreeField.reduce(
+  return degreeField.filter(val => val).reduce(
     (isMisdemeanor :boolean, degree :string) => (
       MISDEMEANOR_CHARGE_LEVEL_CODES.has(degree.toUpperCase()) || isMisdemeanor
     ),
@@ -191,20 +191,20 @@ export const degreeFieldIsMisdemeanor = (degreeField :Immutable.List<string>) :b
 
 export const chargeIsMisdemeanor = (charge :Immutable.Map<*, *>) => {
   if (shouldIgnoreCharge(charge)) return false;
-  return degreeFieldIsMisdemeanor(charge.get(PROPERTY_TYPES.CHARGE_LEVEL));
+  return degreeFieldIsMisdemeanor(charge.get(PROPERTY_TYPES.CHARGE_LEVEL, Immutable.List()));
 };
 
 export const degreeFieldIsFelony = (degreeField :Immutable.List<string>) :boolean => {
   let result = false;
   degreeField.forEach((degree) => {
-    if (degree.toLowerCase().startsWith('f')) result = true;
+    if (degree && degree.toLowerCase().startsWith('f')) result = true;
   });
   return result;
 };
 
 export const chargeIsFelony = (charge :Immutable.Map<*, *>) => {
   if (shouldIgnoreCharge(charge)) return false;
-  return degreeFieldIsFelony(charge.get(PROPERTY_TYPES.CHARGE_LEVEL));
+  return degreeFieldIsFelony(charge.get(PROPERTY_TYPES.CHARGE_LEVEL, Immutable.List()));
 };
 
 export const getChargeDetails = (charge :Immutable.Map<*, *>, ignoreCase? :boolean) :ChargeDetails => {
