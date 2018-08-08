@@ -183,7 +183,7 @@ class CourtContainer extends React.Component<Props, State> {
     const fileName = `${courtroom}-${moment().format('YYYY-MM-DD')}-${time}`;
     this.props.actions.bulkDownloadPSAReviewPDF({
       fileName,
-      peopleEntityKeyIds: people.valueSeq().map(person => person.get(OPENLATTICE_ID_FQN)).toJS()
+      peopleEntityKeyIds: people.valueSeq().map(person => person.getIn([OPENLATTICE_ID_FQN, 0])).toJS()
     });
   }
 
