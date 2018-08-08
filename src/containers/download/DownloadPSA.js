@@ -141,7 +141,7 @@ class DownloadPSA extends React.Component<Props, State> {
           </BasicDownloadButton>
         </ButtonRow>
         <ButtonRow>
-          <InfoDownloadButton onClick={this.download}>Download All PSA Data</InfoDownloadButton>
+          <InfoDownloadButton onClick={() => this.download()}>Download All PSA Data</InfoDownloadButton>
         </ButtonRow>
       </div>
     );

@@ -166,8 +166,9 @@ class CourtContainer extends React.Component<Props, State> {
     }
   }
 
-  renderPersonCard = (person) => {
-    const formattedDOB = formatDate(moment(person.getIn([PROPERTY_TYPES.DOB, 0], '')));
+  renderPersonCard = (person, index) => {
+    const dobMoment = moment(person.getIn([PROPERTY_TYPES.DOB, 0], ''));
+    const formattedDOB = dobMoment.isValid() ? formatDate(dobMoment) : '';
     const personObj = {
       identification: person.getIn([PROPERTY_TYPES.PERSON_ID, 0]),
       firstName: person.getIn([PROPERTY_TYPES.FIRST_NAME, 0]),
@@ -175,14 +176,14 @@ class CourtContainer extends React.Component<Props, State> {
       dob: formattedDOB,
       photo: person.getIn([PROPERTY_TYPES.PICTURE, 0])
     };
-    return <PersonCard key={person.identification} person={personObj} />;
+    return <PersonCard key={`${personObj.identification}-${index}`} person={personObj} />;
   }
 
   downloadPDFs = (courtroom, people, time) => {
     const fileName = `${courtroom}-${moment().format('YYYY-MM-DD')}-${time}`;
     this.props.actions.bulkDownloadPSAReviewPDF({
       fileName,
-      peopleEntityKeyIds: people.valueSeq().map(person => person.get(OPENLATTICE_ID_FQN)).toJS()
+      peopleEntityKeyIds: people.valueSeq().map(person => person.getIn([OPENLATTICE_ID_FQN, 0])).toJS()
     });
   }
 
