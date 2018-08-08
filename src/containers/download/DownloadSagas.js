@@ -10,6 +10,7 @@ import { call, put, takeEvery } from 'redux-saga/effects';
 import FileSaver from '../../utils/FileSaver';
 import { formatDateTime } from '../../utils/Utils';
 import { stripIdField } from '../../utils/DataUtils';
+import { obfuscateBulkEntityNeighbors } from '../../utils/consts/DemoNames';
 import {
   DOWNLOAD_PSA_FORMS,
   downloadPsaForms
@@ -86,7 +87,8 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
       scoresAsMap = scoresAsMap.set(row[OPENLATTICE_ID_FQN][0], stripIdField(Immutable.fromJS(row)));
     });
 
-    const neighborsById = yield call(SearchApi.searchEntityNeighborsBulk, entitySetId, scoresAsMap.keySeq().toJS());
+    let neighborsById = yield call(SearchApi.searchEntityNeighborsBulk, entitySetId, scoresAsMap.keySeq().toJS());
+    neighborsById = obfuscateBulkEntityNeighbors(neighborsById); // TODO just for demo
 
     let usableNeighborsById = Immutable.Map();
 
