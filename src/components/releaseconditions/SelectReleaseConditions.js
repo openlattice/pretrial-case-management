@@ -4,19 +4,20 @@
 
 import React from 'react';
 import Immutable from 'immutable';
-import FontAwesome from 'react-fontawesome';
 import styled from 'styled-components';
 import moment from 'moment';
 import randomUUID from 'uuid/v4';
 
+import OutcomeSection from './OutcomeSection';
+import DecisionSection from './DecisionSection';
+import BondTypeSection from './BondTypeSection';
+import ConditionsSection from './ConditionsSection';
 import ContentBlock from '../ContentBlock';
 import ContentSection from '../ContentSection';
 import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
 import RadioButton from '../controls/StyledRadioButton';
-import SecondaryButton from '../buttons/SecondaryButton';
 import CheckboxButton from '../controls/StyledCheckboxButton';
 import StyledInput from '../controls/StyledInput';
-import DateTimePicker from '../controls/StyledDateTimePicker';
 import DatePicker from '../../components/controls/StyledDatePicker';
 import SearchableSelect from '../controls/SearchableSelect';
 import InfoButton from '../buttons/InfoButton';
@@ -32,9 +33,6 @@ import {
   RELEASES,
   BOND_TYPES,
   CONDITION_LIST,
-  CHECKIN_FREQUENCIES,
-  C_247_LABEL,
-  C_247_TYPES,
   C_247_MAPPINGS,
   NO_CONTACT_TYPES
 } from '../../utils/consts/ReleaseConditionConsts';
@@ -59,30 +57,32 @@ const NO_RELEASE_CONDITION = 'No release';
 const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
+  justify-content: center;
+  overflow-x: hidden;
   h1 {
-    font-size: 18px;
-    text-align: center;
-    margin-top: 20px;
-    font-family: 'Open Sans', sans-serif;
-    font-weight: 700;
+    text-align: left;
+    font-size: 16px;
+    font-weight: 600;
     color: #555e6f;
   }
-`;
-
-const InlineInput = styled(StyledInput)`
-  width: 80%;
-  margin-left: 10px;
-`;
-
-const ColumnWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
+  h2 {
+    text-align: left;
+    font-size: 16px;
+    font-weight: normal;
+    color: #555e6f;
+  }
+  h3 {
+    text-align: left;
+    font-size: 14px;
+    font-weight: normal;
+    color: #555e6f;
+  }
+  div:last-child { border: none; }
 `;
 
 const RadioWrapper = styled.div`
-  display: inline-flex;
+  display: flex;
+  flex-grow: 1;
   margin: 0 3px;
   &:first-child {
     margin-left: 0;
@@ -101,51 +101,32 @@ const Row = styled.div`
   flex-wrap: wrap;
 `;
 
-const UnpaddedRow = styled(Row)`
-  padding: 0 20px;
-`;
-
-const RowWrapper = styled.div`
-  width: ${props => props.width}px;
-`;
-
-const InputLabel = styled.span`
-  font-size: 14px;
-  text-align: center;
-  font-family: 'Open Sans', sans-serif;
-  font-weight: 600;
-  color: #555e6f;
-  display: inline-flex;
-  align-items: center;
-  margin-right: 10px;
-  margin-left: ${props => (props.inline ? '10px' : '0')};
-`;
-
-const Dollar = styled.span`
-  position: absolute;
-  height: 38px;
-  display: flex;
-  align-items: center;
-  margin-left: 10px;
-  color: #8e929b;
-`;
-
-const InvisibleButton = styled.button`
-  border: none;
-`;
-
 const NoContactPeopleWrapper = styled.div`
   width: 100%;
+  padding: 15px 0 30px;
   display: flex;
-  justify-content: center;
-  margin-bottom: 10px;
-  th {
-    text-align: center;
-    padding-bottom: 10px;
-    font-family: 'Open Sans', sans-serif;
-    font-size: 14px;
-    color: #555e6f;
+  flex-direction: column;
+  hr {
+    margin-top: 10px;
   }
+`;
+
+const NoContactPeopleCell = styled.div`
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+`;
+const NoContactHeaderRow = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr;
+  grid-gap: 20px;
+`;
+const NoContactPeopleRow = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr;
+  grid-gap: 20px;
+  margin-bottom: 20px;
 `;
 
 const HearingSectionWrapper = styled.div`
@@ -155,49 +136,6 @@ const HearingSectionWrapper = styled.div`
   padding-bottom: 20px;
   margin: 0 -15px;
   border-bottom: 1px solid #e1e1eb !important;
-`;
-
-const HearingRow = styled.div`
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  align-items: center;
-  span {
-    font-family: 'Open Sans', sans-serif;
-  }
-  span:nth-child(even) {
-    margin: 0 20px 0 5px;
-    &:last-child {
-      margin-right: 0;
-      color: #555e6f;
-      font-size: 15px;
-    }
-  }
-  span:nth-child(odd) {
-    font-size: 11px;
-    font-weight: 600;
-    color: #8e929b;
-    text-transform: uppercase;
-  }
-  ${SecondaryButton} {
-    padding: 10px;
-    width: 100%;
-    margin: 0 10px;
-  }
-
-  ${InfoButton} {
-    padding: 10px;
-    width: 100%;
-  }
-
-  section {
-    margin: 0 10px;
-    width: 200px;
-
-    span {
-      margin: auto;
-    }
-  }
 `;
 
 const HearingInfoButtons = styled.div`
@@ -298,7 +236,12 @@ class SelectReleaseConditions extends React.Component<Props, State> {
   }
 
   getStateFromProps = (props :Props) :State => {
-    const { defaultDMF, defaultBond, defaultConditions, hearing } = props;
+    const {
+      defaultDMF,
+      defaultBond,
+      defaultConditions,
+      hearing
+    } = props;
 
     let modifyingHearing = false;
     const hearingDateTimeMoment = moment(hearing.getIn([PROPERTY_TYPES.DATE_TIME, 0], ''));
@@ -405,7 +348,7 @@ class SelectReleaseConditions extends React.Component<Props, State> {
         state[OTHER_CONDITION_TEXT] = '';
       }
       if (value === CONDITION_LIST.NO_CONTACT) {
-        state[NO_CONTACT_PEOPLE] = [Object.assign({}, BLANK_PERSON_ROW)]
+        state[NO_CONTACT_PEOPLE] = [Object.assign({}, BLANK_PERSON_ROW)];
       }
     }
     state.conditions = conditions;
@@ -444,7 +387,7 @@ class SelectReleaseConditions extends React.Component<Props, State> {
           state[CHECKIN_FREQUENCY] = null;
           state[C247_TYPES] = [];
           state[OTHER_CONDITION_TEXT] = '';
-          state[NO_CONTACT_PEOPLE] = [Object.assign({}, BLANK_PERSON_ROW)]
+          state[NO_CONTACT_PEOPLE] = [Object.assign({}, BLANK_PERSON_ROW)];
         }
         break;
       }
@@ -465,6 +408,7 @@ class SelectReleaseConditions extends React.Component<Props, State> {
   mapOptionsToRadioButtons = (options :{}, field :string) => Object.values(options).map(option => (
     <RadioWrapper key={option}>
       <RadioButton
+          large
           name={field}
           value={option}
           checked={this.state[field] === option}
@@ -477,6 +421,7 @@ class SelectReleaseConditions extends React.Component<Props, State> {
   mapOptionsToCheckboxButtons = (options :{}, field :string) => Object.values(options).map(option => (
     <RadioWrapper key={option}>
       <CheckboxButton
+          large
           name={field}
           value={option}
           checked={this.state[field].includes(option)}
@@ -489,6 +434,7 @@ class SelectReleaseConditions extends React.Component<Props, State> {
   renderConditionCheckbox = (condition, optionalLabel) => (
     <RadioWrapper>
       <CheckboxButton
+          large
           name="conditions"
           value={condition}
           checked={this.state.conditions.includes(condition)}
@@ -655,40 +601,38 @@ class SelectReleaseConditions extends React.Component<Props, State> {
     });
     return (
       <NoContactPeopleWrapper>
-        <table>
-          <tbody>
-            <tr>
-              <th>Person Type</th>
-              <th>Person Name</th>
-            </tr>
-            {this.state[NO_CONTACT_PEOPLE].map((person, index) => (
-              <tr key={index}>
-                <td>
-                  <SearchableSelect
-                      value={person[PROPERTY_TYPES.PERSON_TYPE]}
-                      searchPlaceholder="Select"
-                      onSelect={value => this.handleOnListChange(PROPERTY_TYPES.PERSON_TYPE, value, index)}
-                      options={personTypeOptions}
-                      disabled={this.state.disabled}
-                      selectOnly
-                      transparent
-                      short />
-                </td>
-                <td>
-                  <StyledInput
-                      value={person[PROPERTY_TYPES.PERSON_NAME]}
-                      onChange={e => this.handleOnListChange(PROPERTY_TYPES.PERSON_NAME, e.target.value, index)}
-                      disabled={this.state.disabled} />
-                </td>
-                <td>
-                  <InvisibleButton onClick={() => this.removePersonRow(index)}>
-                    <FontAwesome name="times" />
-                  </InvisibleButton>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <h2>No contact order</h2>
+        <NoContactHeaderRow>
+          <h3>Person Type</h3>
+          <h3>Person Name</h3>
+        </NoContactHeaderRow>
+        {this.state[NO_CONTACT_PEOPLE].map((person, index) => (
+          <NoContactPeopleRow key={`${person.name}-${index}`}>
+            <NoContactPeopleCell>
+              <SearchableSelect
+                  value={person[PROPERTY_TYPES.PERSON_TYPE]}
+                  searchPlaceholder="Select"
+                  onSelect={value => this.handleOnListChange(PROPERTY_TYPES.PERSON_TYPE, value, index)}
+                  options={personTypeOptions}
+                  disabled={this.state.disabled}
+                  selectOnly
+                  transparent
+                  short />
+            </NoContactPeopleCell>
+            <NoContactPeopleCell>
+              <StyledInput
+                  value={person[PROPERTY_TYPES.PERSON_NAME]}
+                  onChange={e => this.handleOnListChange(PROPERTY_TYPES.PERSON_NAME, e.target.value, index)}
+                  disabled={this.state.disabled} />
+            </NoContactPeopleCell>
+            <NoContactPeopleCell>
+              <StyledBasicButton onClick={() => this.removePersonRow(index)}>
+                Remove
+              </StyledBasicButton>
+            </NoContactPeopleCell>
+          </NoContactPeopleRow>
+        ))}
+        <hr />
       </NoContactPeopleWrapper>
     );
   }
@@ -728,12 +672,14 @@ class SelectReleaseConditions extends React.Component<Props, State> {
     let hearingInfoButton;
     if (this.state.modifyingHearing) {
       date = (<StyledDatePicker
-          value={this.state.hearingDateTime.toISOString(true)}
+          value={this.state.newHearingDate}
+          placeholder={`${formatDateTime(dateTime, 'MM/DD/YYYY')}`}
           onChange={newHearingDate => this.setState({ newHearingDate })}
           clearButton={false} />);
       time = (<StyledSearchableSelect
           options={getTimeOptions()}
-          value={`${formatDateTime(dateTime, 'HH:mm')}`}
+          value={this.state.newHearingTime}
+          placeholder={`${formatDateTime(dateTime, 'HH:mm')}`}
           onSelect={newHearingTime => this.setState({ newHearingTime })}
           short />);
       courtroom = (<StyledSearchableSelect
@@ -809,113 +755,35 @@ class SelectReleaseConditions extends React.Component<Props, State> {
   }
 
   render() {
+    const RELEASED = this.state[RELEASE] !== RELEASES.RELEASED;
     console.log(this.state);
     return (
       <Wrapper>
         {this.renderHearingInfo()}
-        <h1>Outcome</h1>
-        <Row>
-          {this.mapOptionsToRadioButtons(OUTCOMES, 'outcome')}
-        </Row>
+        <OutcomeSection
+            mapOptionsToRadioButtons={this.mapOptionsToRadioButtons}
+            outcome={this.state[OUTCOME]}
+            otherOutcome={this.state[OTHER_OUTCOME_TEXT]}
+            handleInputChange={this.handleInputChange}
+            disabled={this.state.disabled} />
+        <DecisionSection mapOptionsToRadioButtons={this.mapOptionsToRadioButtons} />
         {
-          this.state[OUTCOME] === OUTCOMES.OTHER ? (
-            <UnpaddedRow>
-              <InputLabel>Outcome: </InputLabel>
-              <StyledInput
-                  disabled={this.state.disabled}
-                  name={OTHER_OUTCOME_TEXT}
-                  value={this.state[OTHER_OUTCOME_TEXT]}
-                  onChange={this.handleInputChange} />
-            </UnpaddedRow>
-          ) : null
-        }
-        <h1>Decision</h1>
-        <Row>
-          {this.mapOptionsToRadioButtons(RELEASES, 'release')}
-        </Row>
-        {
-          this.state[RELEASE] !== RELEASES.RELEASED ? null : (
+          RELEASED ? null : (
             <div>
-              <h1>Bond Type</h1>
-              <Row>
-                {this.mapOptionsToRadioButtons(BOND_TYPES, 'bondType')}
-              </Row>
-              {
-                (this.state[BOND_TYPE] === BOND_TYPES.CASH_ONLY || this.state[BOND_TYPE] === BOND_TYPES.CASH_SURETY)
-                  ? (
-                    <UnpaddedRow>
-                      <InputLabel>Amount: </InputLabel>
-                      <RowWrapper width={150}>
-                        <Dollar>$</Dollar>
-                        <StyledInput
-                            disabled={this.state.disabled}
-                            name="bondAmount"
-                            value={this.state[BOND_AMOUNT]}
-                            onChange={this.handleNumberInputChange} />
-                      </RowWrapper>
-                    </UnpaddedRow>
-                  ) : null
-              }
-              <h1>Conditions</h1>
-              <Row>
-                {this.renderConditionCheckbox(CONDITION_LIST.CONTACT_WITH_LAWYER)}
-                {this.renderConditionCheckbox(CONDITION_LIST.MAKE_ALL_COURT_APPEARANCES)}
-              </Row>
-              <Row>
-                {this.renderConditionCheckbox(CONDITION_LIST.NO_WEAPONS)}
-                {this.renderConditionCheckbox(CONDITION_LIST.NO_ALCOHOL)}
-                {this.renderConditionCheckbox(CONDITION_LIST.NO_DRUGS_WITHOUT_PERSCRIPTION)}
-                {this.renderConditionCheckbox(CONDITION_LIST.GOOD_BEHAVIOR)}
-              </Row>
-              <Row>
-                {this.renderConditionCheckbox(CONDITION_LIST.PRE_SENTENCE_EM)}
-                {this.renderConditionCheckbox(CONDITION_LIST.NO_CONTACT_WITH_MINORS)}
-                {this.renderConditionCheckbox(CONDITION_LIST.NO_CONTACT)}
-              </Row>
-              {
-                this.state[CONDITIONS].includes(CONDITION_LIST.NO_CONTACT) ? this.renderNoContactPeople() : null
-              }
-              <Row>
-                {this.renderConditionCheckbox(CONDITION_LIST.NO_DRIVING_WITHOUT_VALID_LICENSE)}
-                {this.renderConditionCheckbox(CONDITION_LIST.COMPLY)}
-              </Row>
-              <Row>
-                {this.renderConditionCheckbox(CONDITION_LIST.CHECKINS)}
-                {
-                  this.state[CONDITIONS].includes(CONDITION_LIST.CHECKINS) ?
-                    [
-                      <InputLabel key="frequencylabel" inline>Frequency: </InputLabel>,
-                      ...this.mapOptionsToRadioButtons(CHECKIN_FREQUENCIES, 'checkinFrequency')
-                    ]
-                    : null
-                }
-              </Row>
-              <Row>
-                {this.renderConditionCheckbox(CONDITION_LIST.C_247, C_247_LABEL)}
-              </Row>
-              {
-                this.state[CONDITIONS].includes(CONDITION_LIST.C_247) ? (
-                  <ColumnWrapper>
-                    <InputLabel>24/7 Requirements</InputLabel>
-                    <RowWrapper width={700}>
-                      <UnpaddedRow>
-                        {this.mapOptionsToCheckboxButtons(C_247_TYPES, 'c247Types')}
-                      </UnpaddedRow>
-                    </RowWrapper>
-                  </ColumnWrapper>
-                ) : null
-              }
-              <Row>
-                {this.renderConditionCheckbox(CONDITION_LIST.OTHER)}
-                {
-                  this.state[CONDITIONS].includes(CONDITION_LIST.OTHER) ? (
-                    <InlineInput
-                        name={OTHER_CONDITION_TEXT}
-                        value={this.state[OTHER_CONDITION_TEXT]}
-                        onChange={this.handleInputChange} />
-                  ) : null
-                }
-              </Row>
+              <BondTypeSection
+                  mapOptionsToRadioButtons={this.mapOptionsToRadioButtons}
+                  handleNumberInputChange={this.handleNumberInputChange}
+                  bondType={this.state[BOND_TYPE]}
+                  bondAmount={this.state[BOND_AMOUNT]}
+                  disabled={this.state.disabled} />
+              <ConditionsSection
+                  mapOptionsToRadioButtons={this.mapOptionsToRadioButtons}
+                  mapOptionsToCheckboxButtons={this.mapOptionsToCheckboxButtons}
+                  handleInputChange={this.handleInputChange}
+                  renderNoContactPeople={this.renderNoContactPeople}
+                  conditions={this.state[CONDITIONS]}
+                  otherCondition={this.state[OTHER_CONDITION_TEXT]}
+                  disabled={this.state.disabled} />
             </div>
           )
         }
