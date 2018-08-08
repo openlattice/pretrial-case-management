@@ -5,6 +5,7 @@ import { all, call, put, takeEvery } from 'redux-saga/effects';
 
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { getFqnObj, toISODate, TIME_FORMAT } from '../../utils/Utils';
+import { obfuscateEntityNeighbors, obfuscateBulkEntityNeighbors } from '../../utils/consts/DemoNames';
 import {
   LOAD_HEARINGS_FOR_DATE,
   loadHearingsForDate
@@ -63,7 +64,9 @@ function* loadHearingsForDateWorker(action :SequenceAction) :Generator<*, *, *> 
         }
       });
 
-    const hearingNeighbors = yield call(SearchApi.searchEntityNeighborsBulk, entitySetId, hearingIds);
+    let hearingNeighbors = yield call(SearchApi.searchEntityNeighborsBulk, entitySetId, hearingIds);
+    hearingNeighbors = obfuscateBulkEntityNeighbors(hearingNeighbors); // TODO just for demo
+
     let hearingNeighborsById = Immutable.Map();
     Object.entries(hearingNeighbors).forEach(([hearingId, neighbors]) => {
       hearingNeighborsById = hearingNeighborsById.set(hearingId, Immutable.Map());
