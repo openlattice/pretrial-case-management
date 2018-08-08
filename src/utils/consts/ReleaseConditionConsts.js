@@ -20,19 +20,19 @@ export const BOND_TYPES = {
 };
 
 export const CONDITION_LIST = {
-  C_247: '24/7 Project',
-  CHECKINS: 'Check-in',
-  NO_WEAPONS: 'No weapons',
-  NO_ALCOHOL: 'No alcohol',
-  GOOD_BEHAVIOR: 'Good behavior',
-  NO_CONTACT_WITH_MINORS: 'No contact with persons under eighteen years of age',
-  NO_DRIVING_WITHOUT_VALID_LICENSE: 'No driving without a valid license and insurance',
-  NO_DRUGS_WITHOUT_PERSCRIPTION: 'No drugs without a valid prescription',
-  COMPLY: 'Comply with probation/parole',
-  PRE_SENTENCE_EM: 'Pre-sentence EM',
   CONTACT_WITH_LAWYER: 'Stay in contact with your lawyer',
   MAKE_ALL_COURT_APPEARANCES: 'Make all court appearances',
-  NO_CONTACT: 'No contact with',
+  NO_WEAPONS: 'No weapons',
+  NO_ALCOHOL: 'No alcohol',
+  NO_DRUGS_WITHOUT_PERSCRIPTION: 'No drugs without a valid prescription',
+  GOOD_BEHAVIOR: 'Good behavior',
+  PRE_SENTENCE_EM: 'Pre-sentence EM',
+  NO_CONTACT_WITH_MINORS: 'No contact with persons under 18 years of age',
+  NO_DRIVING_WITHOUT_VALID_LICENSE: 'No driving without a valid license and insurance',
+  COMPLY: 'Comply with probation/parole',
+  NO_CONTACT: 'No contact order',
+  CHECKINS: 'Check-in',
+  C_247: '24/7 Project',
   OTHER: 'Other'
 };
 
