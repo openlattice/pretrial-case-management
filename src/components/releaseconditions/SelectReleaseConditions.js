@@ -747,7 +747,7 @@ class SelectReleaseConditions extends React.Component<Props, State> {
       <HearingSectionWrapper>
         {hearingInfoSection}
         <HearingSectionAside>
-          <StyledBasicButton>Back to Selection</StyledBasicButton>
+          { this.state.disabled ? null : (<StyledBasicButton>Back to Selection</StyledBasicButton>)}
           {hearingInfoButton}
         </HearingSectionAside>
       </HearingSectionWrapper>
