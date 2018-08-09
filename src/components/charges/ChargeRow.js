@@ -8,7 +8,7 @@ import Immutable from 'immutable';
 import { Constants } from 'lattice';
 
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { getAllViolentCharges } from '../../utils/consts/ArrestChargeConsts';
+import { getAllViolentCharges } from '../../utils/ArrestChargeUtils';
 
 const { OPENLATTICE_ID_FQN } = Constants;
 

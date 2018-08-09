@@ -16,14 +16,14 @@ import {
   getChargeTitle,
   getChargeDetails,
   shouldIgnoreCharge
-} from './consts/ChargeConsts';
+} from './HistoricalChargeUtils';
 import { getSentenceToIncarcerationCaseNums } from './consts/SentenceConsts';
 import {
   getAllViolentCharges,
   getAllStepTwoCharges,
   getAllStepFourCharges,
   getAllSecondaryReleaseCharges
-} from './consts/ArrestChargeConsts';
+} from './ArrestChargeUtils';
 import { getRecentFTAs, getOldFTAs } from './FTAUtils';
 
 const {

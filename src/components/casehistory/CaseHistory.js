@@ -9,8 +9,8 @@ import moment from 'moment';
 
 import ChargeList from '../charges/ChargeList';
 import { formatDateList } from '../../utils/Utils';
+import { getSummaryStats } from '../../utils/HistoricalChargeUtils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { getSummaryStats } from '../../utils/consts/ChargeConsts';
 
 const InfoRow = styled.div`
   display: flex;
