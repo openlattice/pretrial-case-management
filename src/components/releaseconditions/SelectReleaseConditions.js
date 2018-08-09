@@ -178,6 +178,11 @@ const HearingSectionAside = styled.div`
   justify-content: space-around;
 `;
 
+const SubmitButton = styled(InfoButton)`
+  width: 340px;
+  height: 43px;
+`;
+
 const BLANK_PERSON_ROW = {
   [PROPERTY_TYPES.PERSON_TYPE]: null,
   [PROPERTY_TYPES.PERSON_NAME]: ''
@@ -789,7 +794,7 @@ class SelectReleaseConditions extends React.Component<Props, State> {
         {
           this.state.disabled ? null : (
             <Row>
-              <InfoButton disabled={!this.isReadyToSubmit()} onClick={this.onSubmit}>Submit</InfoButton>
+              <SubmitButton disabled={!this.isReadyToSubmit()} onClick={this.onSubmit}>Submit</SubmitButton>
             </Row>
           )
         }
