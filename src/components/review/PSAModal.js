@@ -47,9 +47,6 @@ const DownloadButtonContainer = styled.div`
 const ModalWrapper = styled.div`
   max-height: 100%;
   padding: ${props => (props.withPadding ? '30px' : '0')};
-  div:first-child {
-    border: none;
-  }
 `;
 
 const NoDMFContainer = styled(CenteredContainer)`
@@ -551,7 +548,8 @@ export default class PSAModal extends React.Component<Props, State> {
             allCases={caseHistory}
             allSentences={allSentences}
             allFTAs={ftaHistory}
-            viewOnly={!editing || psaIsClosed(scores)} />
+            viewOnly={!editing || psaIsClosed(scores)}
+            noBorders />
         {editButton}
       </ModalWrapper>
     );

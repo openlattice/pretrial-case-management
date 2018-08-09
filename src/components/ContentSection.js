@@ -89,13 +89,11 @@ const StyledSectionHeader = styled.div`
       case CONTENT_CONSTS.HEARINGS:
         return (
           `padding: 30px 0 0 50px;
-           border-bottom: solid 1px #e1e1eb;
            font-size: 16px;`
         );
       default:
         return (
           `padding: 30px;
-           border-bottom: solid 1px #e1e1eb;
            font-size: 22px;`
         );
     }

@@ -4,7 +4,7 @@ export const RowWrapper = styled.div`
   display: flex;
   flex-direction: column;
   padding: 30px 30px;
-  border-bottom: 1px solid #e1e1eb !important;
+  border-bottom: 1px solid #e1e1eb;
 `;
 
 export const OptionsGrid = styled.div`
