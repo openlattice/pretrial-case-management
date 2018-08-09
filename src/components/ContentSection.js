@@ -142,7 +142,7 @@ const StyledSectionBottomBarWrapper = styled.div`
         );
     }
   }};
-  padding-top: ${props => (props.modifyingHearing ? '8px' : '30px')}
+  ${props => (props.modifyingHearing ? 'padding-top: 8px;' : null)}
 `;
 
 
