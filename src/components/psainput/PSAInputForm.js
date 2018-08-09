@@ -25,7 +25,7 @@ import {
   getAllStepTwoChargeLabels,
   getAllStepFourChargeLabels,
   getSecondaryReleaseChargeJustification
-} from '../../utils/consts/ArrestChargeConsts';
+} from '../../utils/ArrestChargeUtils';
 
 import {
   StyledSectionWrapper,

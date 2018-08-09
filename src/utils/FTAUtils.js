@@ -6,7 +6,7 @@ import Immutable from 'immutable';
 import moment from 'moment';
 
 import { formatDate } from './Utils';
-import { shouldIgnoreCharge, getCaseNumFromCharge } from './consts/ChargeConsts';
+import { shouldIgnoreCharge, getCaseNumFromCharge } from './HistoricalChargeUtils';
 import { PROPERTY_TYPES } from './consts/DataModelConsts';
 
 const COMPARISON = {

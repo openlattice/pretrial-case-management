@@ -13,8 +13,8 @@ import {
   getPreviousFelonies,
   getPreviousViolentCharges
 } from './AutofillUtils';
-import { getAllViolentCharges } from './consts/ArrestChargeConsts';
-import { chargeIsMostSerious, chargeIsViolent, getSummaryStats } from './consts/ChargeConsts';
+import { getAllViolentCharges } from './ArrestChargeUtils';
+import { chargeIsMostSerious, chargeIsViolent, getSummaryStats } from './HistoricalChargeUtils';
 import { getSentenceToIncarcerationCaseNums } from './consts/SentenceConsts';
 import { getRecentFTAs, getOldFTAs } from './FTAUtils';
 import { sortPeopleByName } from './PSAUtils';
