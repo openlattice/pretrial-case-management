@@ -756,7 +756,6 @@ class SelectReleaseConditions extends React.Component<Props, State> {
 
   render() {
     const RELEASED = this.state[RELEASE] !== RELEASES.RELEASED;
-    console.log(this.state);
     return (
       <Wrapper>
         {this.renderHearingInfo()}
