@@ -34,7 +34,7 @@ export const getCaseNumFromCharge = (charge :Immutable.Map<*, *>) =>
 export const shouldIgnoreCharge = (charge :Immutable.Map<*, *>) => {
   const severities = charge.get(CHARGE_LEVEL, Immutable.List());
   const poaCaseNums = charge.get(CHARGE_ID, Immutable.List()).filter(caseNum => caseNum.includes('POA'));
-  return severities.includes('MO') || severities.includes('PO') || severities.includes('P') || poaCaseNums.size;
+  return severities.includes('MO') || severities.includes('PO') || severities.includes('P') || !!poaCaseNums.size;
 };
 
 export const chargeStatuteIsViolent = (chargeNum :string) :boolean =>
