@@ -24,10 +24,12 @@ const StyledInput = styled.input`
   }
 
   &:disabled {
-    background-color: #dcdce7;
+    border-radius: 3px;
+    background-color: #f9f9fd;
+    border: solid 1px #dcdce7;
     color: #8e929b;
+    font-weight: normal;
     cursor: default;
-    border: none;
   }
 `;
 
