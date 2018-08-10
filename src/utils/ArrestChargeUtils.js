@@ -2,7 +2,7 @@ import { getChargeDetails, getChargeTitle } from './HistoricalChargeUtils';
 import { PROPERTY_TYPES } from './consts/DataModelConsts';
 import { CHARGE } from './consts/Consts';
 import { PENN_BOOKING_EXCEPTIONS } from './consts/DMFExceptionsList';
-import { CHARGE_TYPES, CHARGE_VALUES } from './consts/ArrestChargeConsts';
+import { BHE_LABELS, CHARGE_TYPES, CHARGE_VALUES } from './consts/ArrestChargeConsts';
 
 const {
   STATUTE,
@@ -80,11 +80,11 @@ export const getSecondaryReleaseChargeJustification = (chargeList) => {
   const secondaryReleaseCharges = filterChargeList(chargeList, PENN_BOOKING_EXCEPTIONS)
     .map(charge => getChargeTitle(charge, true));
   if (secondaryReleaseCharges.size === chargeList.size) {
-    return [secondaryReleaseCharges, 'BHE Charges'];
+    return [secondaryReleaseCharges, BHE_LABELS.RELEASE];
   }
 
   return [
     filterChargeList(chargeList, PENN_BOOKING_EXCEPTIONS, true).map(charge => getChargeTitle(charge, true)),
-    'Non-BHE charges exist'
+    BHE_LABELS.HOLD
   ];
 };
