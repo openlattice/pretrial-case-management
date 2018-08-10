@@ -146,7 +146,8 @@ type Props = {
   onClear? :?() => void,
   transparent? :boolean,
   openAbove? :boolean,
-  selectOnly? :boolean
+  selectOnly? :boolean,
+  disabled? :boolean
 }
 
 type State = {
@@ -167,7 +168,8 @@ class SearchableSelect extends React.Component<Props, State> {
     value: '',
     transparent: false,
     openAbove: false,
-    selectOnly: false
+    selectOnly: false,
+    disabled: false,
   };
 
   constructor(props :Props) {
@@ -245,6 +247,7 @@ class SearchableSelect extends React.Component<Props, State> {
           {
             this.props.selectOnly ? (
               <SearchButton
+                  disabled={this.props.disabled}
                   transparent={this.props.transparent}
                   onBlur={this.hideDataTable}
                   onChange={this.handleOnChangeSearchQuery}
