@@ -14,6 +14,11 @@ export const CHARGE_TYPES = {
   ALL_VIOLENT: 'ALL_VIOLENT'
 };
 
+export const BHE_LABELS = {
+  RELEASE: 'BHE Charges',
+  HOLD: 'Non-BHE charges exist'
+};
+
 export const CHARGE_VALUES = {
   [CHARGE_TYPES.STEP_TWO]: [{
     [STATUTE]: '22-19-1',
