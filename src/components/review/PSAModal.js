@@ -28,7 +28,7 @@ import closeX from '../../assets/svg/close-x-gray.svg';
 import { getScoresAndRiskFactors, calculateDMF } from '../../utils/ScoringUtils';
 import { getEntityKeyId, getEntitySetId, getIdValue, stripIdField } from '../../utils/DataUtils';
 import { CenteredContainer } from '../../utils/Layout';
-import { toISODateTime } from '../utils/FormattingUtils';
+import { toISODateTime } from '../../utils/FormattingUtils';
 import { CONTEXT, DMF, EDIT_FIELDS, NOTES, PSA, PSA_STATUSES } from '../../utils/consts/Consts';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { RESULT_CATEGORIES, formatDMFFromEntity } from '../../utils/consts/DMFResultConsts';
