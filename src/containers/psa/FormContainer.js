@@ -39,7 +39,7 @@ import * as ReviewActionFactory from '../review/ReviewActionFactory';
 import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
 import * as Routes from '../../core/router/Routes';
 
-import { toISODateTime } from '../../utils/Utils';
+import { toISODateTime } from '../../utils/FormattingUtils';
 import { getScoresAndRiskFactors, calculateDMF, getDMFRiskFactors } from '../../utils/ScoringUtils';
 import {
   ButtonWrapper,

@@ -8,7 +8,7 @@ import Immutable from 'immutable';
 
 import ArrestCard from './ArrestCard';
 import ChargeList from '../charges/ChargeList';
-import { formatValue, formatDateList } from '../../utils/Utils';
+import { formatValue, formatDateList } from '../../utils/FormattingUtils';
 import {
   InlineBold,
   InfoContainer,

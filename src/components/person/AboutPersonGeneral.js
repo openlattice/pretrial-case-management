@@ -7,7 +7,7 @@ import ContentBlock from '../ContentBlock';
 import ContentSection from '../ContentSection';
 import defaultUserIcon from '../../assets/svg/profile-placeholder-rectangle-big.svg';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { formatDateList, formatValue } from '../../utils/Utils';
+import { formatDateList, formatValue } from '../../utils/FormattingUtils';
 import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
 
 const {

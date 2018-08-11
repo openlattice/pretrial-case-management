@@ -17,7 +17,7 @@ import PersonTable from '../../components/people/PersonTable';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import NoSearchResults from '../../components/people/NoSearchResults';
 import { clearSearchResults, searchPeopleRequest } from './PersonActionFactory';
-import { toISODate } from '../../utils/Utils';
+import { toISODate } from '../../utils/FormattingUtils';
 import { StyledFormViewWrapper, StyledSectionWrapper, StyledFormWrapper } from '../../utils/Layout';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import * as Routes from '../../core/router/Routes';

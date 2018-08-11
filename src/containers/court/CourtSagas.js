@@ -4,7 +4,8 @@ import { Constants, EntityDataModelApi, SearchApi } from 'lattice';
 import { all, call, put, takeEvery } from 'redux-saga/effects';
 
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { getFqnObj, toISODate, TIME_FORMAT } from '../../utils/Utils';
+import { toISODate, TIME_FORMAT } from '../../utils/FormattingUtils';
+import { getFqnObj } from '../../utils/DataUtils';
 import { obfuscateEntityNeighbors, obfuscateBulkEntityNeighbors } from '../../utils/consts/DemoNames';
 import {
   LOAD_HEARINGS_FOR_DATE,

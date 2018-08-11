@@ -8,7 +8,7 @@ import styled from 'styled-components';
 import moment from 'moment';
 
 import ChargeList from '../charges/ChargeList';
-import { formatDateList } from '../../utils/Utils';
+import { formatDateList } from '../../utils/FormattingUtils';
 import { getSummaryStats } from '../../utils/HistoricalChargeUtils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 

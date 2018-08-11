@@ -25,7 +25,7 @@ import * as FormActionFactory from '../psa/FormActionFactory';
 import * as ReviewActionFactory from '../review/ReviewActionFactory';
 import * as Routes from '../../core/router/Routes';
 import { StyledSectionWrapper } from '../../utils/Layout';
-import { TIME_FORMAT, formatDate } from '../../utils/Utils';
+import { TIME_FORMAT, formatDate } from '../../utils/FormattingUtils';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { DOMAIN } from '../../utils/consts/ReportDownloadTypes';
 import { sortPeopleByName } from '../../utils/PSAUtils';

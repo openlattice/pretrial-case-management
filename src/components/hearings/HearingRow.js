@@ -9,7 +9,7 @@ import { Constants } from 'lattice';
 
 import InfoButton from '../../components/buttons/InfoButton';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { formatDateTime } from '../../utils/Utils';
+import { formatDateTime } from '../../utils/FormattingUtils';
 
 const { OPENLATTICE_ID_FQN } = Constants;
 

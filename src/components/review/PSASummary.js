@@ -21,7 +21,7 @@ import {
   increaseDMFSeverity,
   formatDMFFromEntity
  } from '../../utils/consts/DMFResultConsts';
-import { formatDateTimeList } from '../../utils/Utils';
+import { formatDateTimeList } from '../../utils/FormattingUtils';
 import {
   stepTwoIncrease,
   stepFourIncrease,

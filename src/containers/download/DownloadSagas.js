@@ -8,7 +8,7 @@ import { Constants, DataApi, EntityDataModelApi, SearchApi } from 'lattice';
 import { call, put, takeEvery } from 'redux-saga/effects';
 
 import FileSaver from '../../utils/FileSaver';
-import { formatDateTime } from '../../utils/Utils';
+import { formatDateTime } from '../../utils/FormattingUtils';
 import { stripIdField } from '../../utils/DataUtils';
 import { obfuscateBulkEntityNeighbors } from '../../utils/consts/DemoNames';
 import {
