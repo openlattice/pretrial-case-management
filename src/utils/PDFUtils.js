@@ -6,7 +6,7 @@ import JSPDF from 'jspdf';
 import Immutable from 'immutable';
 import moment from 'moment';
 
-import { formatValue, formatDate, formatDateTime, formatDateList } from './Utils';
+import { formatValue, formatDate, formatDateTime, formatDateList } from './FormattingUtils';
 import {
   getPendingCharges,
   getPreviousMisdemeanors,

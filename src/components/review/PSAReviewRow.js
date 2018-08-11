@@ -14,7 +14,7 @@ import PSAScores from './PSAScores';
 import { PSA_STATUSES } from '../../utils/consts/Consts';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { psaIsClosed } from '../../utils/PSAUtils';
-import { getEntityKeyId } from '../../utils/Utils';
+import { getEntityKeyId } from '../../utils/DataUtils';
 
 const ReviewRowContainer = styled.div`
   width: 100%;

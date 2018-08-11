@@ -5,7 +5,7 @@
 import Immutable from 'immutable';
 import moment from 'moment';
 
-import { formatDate } from './Utils';
+import { formatDate } from './FormattingUtils';
 import { shouldIgnoreCharge, getCaseNumFromCharge } from './HistoricalChargeUtils';
 import { PROPERTY_TYPES } from './consts/DataModelConsts';
 

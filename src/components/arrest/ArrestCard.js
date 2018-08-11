@@ -6,7 +6,7 @@ import Immutable from 'immutable';
 
 import ContentBlock from '../ContentBlock';
 import ContentSection from '../ContentSection';
-import { formatDateTime } from '../../utils/Utils';
+import { formatDateTime } from '../../utils/FormattingUtils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 
 const {

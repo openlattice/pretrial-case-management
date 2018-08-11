@@ -13,7 +13,7 @@ import LoadingSpinner from '../../components/LoadingSpinner';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { SORT_TYPES } from '../../utils/consts/Consts';
 import { sortByDate, sortByName } from '../../utils/PSAUtils';
-import { getEntityKeyId, getIdValue } from '../../utils/Utils';
+import { getEntityKeyId, getIdValue } from '../../utils/DataUtils';
 import { CenteredContainer } from '../../utils/Layout';
 import * as FormActionFactory from '../psa/FormActionFactory';
 import * as ReviewActionFactory from './ReviewActionFactory';

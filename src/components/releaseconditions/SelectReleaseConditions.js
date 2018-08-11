@@ -20,7 +20,7 @@ import releaseConditionsConfig from '../../config/formconfig/ReleaseConditionsCo
 import { RELEASE_CONDITIONS, LIST_FIELDS, ID_FIELD_NAMES, FORM_IDS } from '../../utils/consts/Consts';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { getCourtroomOptions } from '../../utils/consts/HearingConsts';
-import { toISODate, toISODateTime, formatDateTime } from '../../utils/Utils';
+import { toISODate, toISODateTime, formatDateTime } from '../../utils/FormattingUtils';
 import {
   OUTCOMES,
   RELEASES,

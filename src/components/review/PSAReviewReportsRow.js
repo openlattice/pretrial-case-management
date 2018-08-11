@@ -13,7 +13,7 @@ import PSAReportDownloadButton from './PSAReportDownloadButton'
 import PSAStats from './PSAStats';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { psaIsClosed } from '../../utils/PSAUtils';
-import { getEntityKeyId } from '../../utils/Utils';
+import { getEntityKeyId } from '../../utils/DataUtils';
 
 
 const ReviewRowContainer = styled.div`

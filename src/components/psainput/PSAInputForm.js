@@ -32,7 +32,7 @@ import {
   ErrorMessage
 } from '../../utils/Layout';
 
-import { formatValue } from '../../utils/Utils';
+import { formatValue } from '../../utils/FormattingUtils';
 import { getRecentFTAs, getOldFTAs } from '../../utils/FTAUtils';
 
 import { CONTEXT, DMF, NOTES, PSA } from '../../utils/consts/Consts';

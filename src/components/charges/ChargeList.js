@@ -8,7 +8,7 @@ import Immutable from 'immutable';
 
 import { getAllViolentCharges } from '../../utils/ArrestChargeUtils';
 import { chargeIsViolent, chargeIsMostSerious } from '../../utils/HistoricalChargeUtils';
-import { formatValue, formatDateList } from '../../utils/Utils';
+import { formatValue, formatDateList } from '../../utils/FormattingUtils';
 import {
   ChargeItem,
   ChargeRow,

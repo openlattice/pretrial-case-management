@@ -6,7 +6,7 @@ import Immutable from 'immutable';
 
 import { GUILTY_DISPOSITIONS, MISDEMEANOR_CHARGE_LEVEL_CODES, VIOLENT_CHARGES } from './consts/ChargeConsts';
 import { PROPERTY_TYPES } from './consts/DataModelConsts';
-import { formatValue, formatDateList } from './Utils';
+import { formatValue, formatDateList } from './FormattingUtils';
 
 
 const {
