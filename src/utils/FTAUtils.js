@@ -35,7 +35,7 @@ const getPastTwoYearsComparison = (dateStr) => {
   return twoYearsAgo.isSameOrBefore(date) ? COMPARISON.NEW : COMPARISON.OLD;
 };
 
-const getFTALabel = (fta) => {
+export const getFTALabel = (fta) => {
   const caseNum = getCaseNumFromFTA(fta);
   const date = formatDate(fta.getIn([PROPERTY_TYPES.DATE_TIME, 0], ''));
   return date.length ? `${caseNum} (${date})` : caseNum;
