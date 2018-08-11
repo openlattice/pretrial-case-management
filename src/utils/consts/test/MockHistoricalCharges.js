@@ -1,27 +1,30 @@
 import Immutable from 'immutable';
 
-export const CASE_NUM = '51CRI345-238492';
-export const POA_CASE_NUM = '49POA345-23984723';
+import {
+  CASE_NUM,
+  POA_CASE_NUM
+} from './MockPretrialCases';
 
-export const VIOLENT_M_STATUTE = '22-18-1(1)';
-export const VIOLENT_M_STATUTE_DESC = 'DOM ABUSE SIMPLE ASSAULT ATTEMPT TO CAUSE BODILY INJURY';
+import {
+  VIOLENT_M_STATUTE,
+  VIOLENT_M_STATUTE_DESC,
 
-export const VIOLENT_F_STATUTE = '22-10-5';
-export const VIOLENT_F_STATUTE_DESC = 'AGGRAVATED RIOT';
+  VIOLENT_F_STATUTE,
+  VIOLENT_F_STATUTE_DESC,
 
-export const MISD_STATUTE = '32-12-22';
-export const MISD_STATUTE_DESC = 'NO DRIVERS LICENSE';
+  MISD_STATUTE,
+  MISD_STATUTE_DESC,
 
-export const FEL_STATUTE = '';
-export const FEL_STATUTE_DESC = 'DRIVING UNDER INFLUENCE-3RD OF';
+  FEL_STATUTE,
+  FEL_STATUTE_DESC,
 
-export const GUILTY_DISP_1 = 'Judgment on Plea of Guilty';
-export const GUILTY_DISP_2 = 'Guilty But Mentally Ill';
-export const GUILTY_DISP_3 = 'Suspended Imposition Revocation to Jail';
-export const NOT_GUILTY_DISP_1 = 'Dismissed-Motion by Prosecutor';
-export const NOT_GUILTY_DISP_2 = 'Recharged';
-export const NOT_GUILTY_DISP_3 = 'Dismissal-Reduction';
-
+  GUILTY_DISP_1,
+  GUILTY_DISP_2,
+  GUILTY_DISP_3,
+  NOT_GUILTY_DISP_1,
+  NOT_GUILTY_DISP_2,
+  NOT_GUILTY_DISP_3
+} from './MockHistoricalChargeFields';
 
 /* CONVICTED CHARGES */
 export const MOCK_GUILTY_MISDEMEANOR = Immutable.fromJS({
@@ -123,10 +126,4 @@ export const MOCK_SHOULD_IGNORE_POA = Immutable.fromJS({
   'event.ChargeLevelState': ['Class 1 Misdemeanor'],
   'justice.disposition': [GUILTY_DISP_2],
   'justice.dispositiondate': ['2018-08-01']
-});
-
-export const MOCK_PRETRIAL_CASE = Immutable.fromJS({
-  'j.CaseNumberText': [CASE_NUM],
-  'publicsafety.FileDate': ['2018-08-09'],
-  'publicsafety.MostSeriousChargeStatuteNumber': [VIOLENT_F_STATUTE]
 });

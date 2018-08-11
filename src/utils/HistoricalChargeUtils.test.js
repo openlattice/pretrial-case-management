@@ -25,10 +25,14 @@ import {
   getChargeTitle,
   getSummaryStats
 } from './HistoricalChargeUtils';
+
 import {
   CASE_NUM,
   POA_CASE_NUM,
+  MOCK_PRETRIAL_CASE
+} from './consts/test/MockPretrialCases';
 
+import {
   GUILTY_DISP_1,
   GUILTY_DISP_2,
   GUILTY_DISP_3,
@@ -39,8 +43,10 @@ import {
   VIOLENT_F_STATUTE,
   VIOLENT_M_STATUTE,
   MISD_STATUTE,
-  FEL_STATUTE,
+  FEL_STATUTE
+} from './consts/test/MockHistoricalChargeFields';
 
+import {
   MOCK_GUILTY_MISDEMEANOR,
   MOCK_GUILTY_FELONY,
   MOCK_GUILTY_M_VIOLENT,
@@ -51,9 +57,7 @@ import {
   MOCK_SHOULD_IGNORE_MO,
   MOCK_SHOULD_IGNORE_P,
   MOCK_SHOULD_IGNORE_PO,
-  MOCK_SHOULD_IGNORE_POA,
-
-  MOCK_PRETRIAL_CASE
+  MOCK_SHOULD_IGNORE_POA
 } from './consts/test/MockHistoricalCharges';
 
 describe('HistoricalChargeUtils', () => {
