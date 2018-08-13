@@ -10,7 +10,7 @@ import { EntityDataModelApi, SearchApi } from 'lattice';
 import { push } from 'react-router-redux';
 import { all, call, put, take, takeEvery } from 'redux-saga/effects';
 
-import { toISODate, formatDate } from '../../utils/Utils';
+import { toISODate, formatDate } from '../../utils/FormattingUtils';
 import { submit } from '../../utils/submit/SubmitActionFactory';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 

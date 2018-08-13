@@ -8,7 +8,7 @@ import Immutable from 'immutable';
 import { Constants } from 'lattice';
 
 import defaultUserIcon from '../../assets/svg/profile-placeholder-rectangle-big.svg';
-import { formatValue, formatDate } from '../../utils/Utils';
+import { formatValue, formatDate } from '../../utils/FormattingUtils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 
 const { OPENLATTICE_ID_FQN } = Constants;

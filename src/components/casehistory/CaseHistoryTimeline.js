@@ -13,7 +13,7 @@ import {
   chargeIsFelony,
   chargeIsMisdemeanor,
   chargeIsGuilty
-} from '../../utils/consts/ChargeConsts';
+} from '../../utils/HistoricalChargeUtils';
 
 type Props = {
   caseHistory :Immutable.List<*>,

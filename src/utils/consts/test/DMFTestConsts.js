@@ -1,6 +1,6 @@
-import { PSA, DMF, CONTEXT } from './Consts';
-import { RESULT_CATEGORIES, COLORS, RELEASE_TYPES, CONDITION_TYPES } from './DMFResultConsts';
-import { PROPERTY_TYPES } from './DataModelConsts';
+import { PSA, DMF, CONTEXT } from '../Consts';
+import { RESULT_CATEGORIES, COLORS, RELEASE_TYPES, CONDITION_TYPES } from '../DMFResultConsts';
+import { PROPERTY_TYPES } from '../DataModelConsts';
 
 const scenarios = [
   // STEP 2 DMFs

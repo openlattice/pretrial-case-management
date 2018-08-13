@@ -8,7 +8,7 @@ import ContentBlock from '../ContentBlock';
 import ContentSection from '../ContentSection';
 import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
 import defaultUserIcon from '../../assets/svg/profile-placeholder-rectangle-big.svg';
-import { formatValue, formatDateList } from '../../utils/Utils';
+import { formatValue, formatDateList } from '../../utils/FormattingUtils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 
 const PersonCardWrapper = styled.div`

@@ -7,10 +7,9 @@ import moment from 'moment';
 import { AuthorizationApi, Constants, DataApi, EntityDataModelApi, SearchApi } from 'lattice';
 import { all, call, put, take, takeEvery } from 'redux-saga/effects';
 
-import { stripIdField } from '../../utils/DataUtils';
 import exportPDF, { exportPDFList } from '../../utils/PDFUtils';
+import { getEntityKeyId, getEntitySetId, getFqnObj, stripIdField } from '../../utils/DataUtils';
 import { getMapByCaseId } from '../../utils/CaseUtils';
-import { getEntityKeyId, getEntitySetId, getFqnObj } from '../../utils/Utils';
 import {
   BULK_DOWNLOAD_PSA_REVIEW_PDF,
   CHANGE_PSA_STATUS,
@@ -31,7 +30,7 @@ import {
   refreshPSANeighbors,
   updateScoresAndRiskFactors
 } from './ReviewActionFactory';
-
+import { obfuscateEntityNeighbors, obfuscateBulkEntityNeighbors } from '../../utils/consts/DemoNames';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { RESULT_CATEGORIES, formatDMFFromEntity } from '../../utils/consts/DMFResultConsts';
 import { PSA_STATUSES } from '../../utils/consts/Consts';

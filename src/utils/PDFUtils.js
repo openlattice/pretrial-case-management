@@ -6,16 +6,16 @@ import JSPDF from 'jspdf';
 import Immutable from 'immutable';
 import moment from 'moment';
 
-import { formatValue, formatDate, formatDateTime, formatDateList } from './Utils';
+import { formatValue, formatDate, formatDateTime, formatDateList } from './FormattingUtils';
 import {
   getPendingCharges,
   getPreviousMisdemeanors,
   getPreviousFelonies,
   getPreviousViolentCharges
 } from './AutofillUtils';
-import { getAllViolentCharges } from './consts/ArrestChargeConsts';
-import { chargeIsMostSerious, chargeIsViolent, getSummaryStats } from './consts/ChargeConsts';
-import { getSentenceToIncarcerationCaseNums } from './consts/SentenceConsts';
+import { getAllViolentCharges } from './ArrestChargeUtils';
+import { chargeIsMostSerious, chargeIsViolent, getSummaryStats } from './HistoricalChargeUtils';
+import { getSentenceToIncarcerationCaseNums } from './SentenceUtils';
 import { getRecentFTAs, getOldFTAs } from './FTAUtils';
 import { sortPeopleByName } from './PSAUtils';
 import { PROPERTY_TYPES } from './consts/DataModelConsts';

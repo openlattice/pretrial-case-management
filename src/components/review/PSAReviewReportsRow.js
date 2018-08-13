@@ -7,13 +7,13 @@ import Immutable from 'immutable';
 import styled from 'styled-components';
 import moment from 'moment';
 
-import PSAModal from './PSAModal';
+import PSAModal from '../../containers/review/PSAModal';
 import PersonCard from '../person/PersonCardReview';
 import PSAReportDownloadButton from './PSAReportDownloadButton'
 import PSAStats from './PSAStats';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { psaIsClosed } from '../../utils/PSAUtils';
-import { getEntityKeyId } from '../../utils/Utils';
+import { getEntityKeyId } from '../../utils/DataUtils';
 
 
 const ReviewRowContainer = styled.div`
@@ -136,7 +136,6 @@ type Props = {
     scoresId :string,
     scoresEntity :Immutable.Map<*, *>
   }) => void,
-  submitData :(value :{ config :Object, values :Object }) => void,
   replaceEntity :(value :{ entitySetName :string, entityKeyId :string, values :Object }) => void,
   refreshPSANeighbors :({ id :string }) => void
 };

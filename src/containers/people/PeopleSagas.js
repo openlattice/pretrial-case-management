@@ -14,6 +14,7 @@ import {
   getPersonData,
   getPersonNeighbors
 } from './PeopleActionFactory';
+import { obfuscateEntity } from '../../utils/consts/DemoNames';
 
 const { OPENLATTICE_ID_FQN } = Constants;
 

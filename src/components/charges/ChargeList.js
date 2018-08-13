@@ -6,9 +6,9 @@ import React from 'react';
 import styled from 'styled-components';
 import Immutable from 'immutable';
 
-import { getAllViolentCharges } from '../../utils/consts/ArrestChargeConsts';
-import { chargeIsViolent, chargeIsMostSerious } from '../../utils/consts/ChargeConsts';
-import { formatValue, formatDateList } from '../../utils/Utils';
+import { getAllViolentCharges } from '../../utils/ArrestChargeUtils';
+import { chargeIsViolent, chargeIsMostSerious } from '../../utils/HistoricalChargeUtils';
+import { formatValue, formatDateList } from '../../utils/FormattingUtils';
 import {
   ChargeItem,
   ChargeRow,

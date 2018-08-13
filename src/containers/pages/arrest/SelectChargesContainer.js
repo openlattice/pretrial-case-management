@@ -20,7 +20,7 @@ import { CHARGE } from '../../../utils/consts/Consts';
 import type { Charge } from '../../../utils/consts/Consts';
 import { PROPERTY_TYPES } from '../../../utils/consts/DataModelConsts';
 import { DOMAIN } from '../../../utils/consts/ReportDownloadTypes';
-import { toISODateTime } from '../../../utils/Utils';
+import { toISODateTime } from '../../../utils/FormattingUtils';
 
 import {
   PaddedRow,

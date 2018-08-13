@@ -19,20 +19,20 @@ import {
   getPreviousFelonyLabels,
   getPreviousViolentChargeLabels
 } from '../../utils/AutofillUtils';
-import { getSentenceToIncarcerationCaseNums } from '../../utils/consts/SentenceConsts';
+import { getSentenceToIncarcerationCaseNums } from '../../utils/SentenceUtils';
 import {
   getAllViolentChargeLabels,
   getAllStepTwoChargeLabels,
   getAllStepFourChargeLabels,
   getSecondaryReleaseChargeJustification
-} from '../../utils/consts/ArrestChargeConsts';
+} from '../../utils/ArrestChargeUtils';
 
 import {
   StyledSectionWrapper,
   ErrorMessage
 } from '../../utils/Layout';
 
-import { formatValue } from '../../utils/Utils';
+import { formatValue } from '../../utils/FormattingUtils';
 import { getRecentFTAs, getOldFTAs } from '../../utils/FTAUtils';
 
 import { CONTEXT, DMF, NOTES, PSA } from '../../utils/consts/Consts';
