@@ -117,27 +117,7 @@ type Props = {
   loadCaseHistoryFn :(values :{
     personId :string,
     neighbors :Immutable.Map<*, *>
-  }) => void,
-  updateScoresAndRiskFactors? :(values :{
-    scoresEntitySetId :string,
-    scoresId :string,
-    scoresEntity :Immutable.Map<*, *>,
-    riskFactorsEntitySetId :string,
-    riskFactorsId :string,
-    riskFactorsEntity :Immutable.Map<*, *>,
-    dmfEntitySetId :string,
-    dmfId :string,
-    dmfEntity :Object,
-    dmfRiskFactorsEntitySetId :string,
-    dmfRiskFactorsId :string,
-    dmfRiskFactorsEntity :Object
-  }) => void,
-  changePSAStatus? :(values :{
-    scoresId :string,
-    scoresEntity :Immutable.Map<*, *>
-  }) => void,
-  replaceEntity :(value :{ entitySetName :string, entityKeyId :string, values :Object }) => void,
-  refreshPSANeighbors :({ id :string }) => void
+  }) => void
 };
 
 type State = {

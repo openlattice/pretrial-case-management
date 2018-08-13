@@ -200,7 +200,7 @@ type Props = {
   dmfId :string,
   psaId :string,
   personId :string,
-  submit :(value :{ config :Object, values :Object }) => void,
+  submit :(value :{ config :Object, values :Object, callback? :() => void }) => void,
   submitCallback :() => void,
   replace :(value :{ entitySetName :string, entityKeyId :string, values :Object }) => void,
   defaultDMF :Immutable.Map<*, *>,
