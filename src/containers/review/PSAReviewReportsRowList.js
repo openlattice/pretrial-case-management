@@ -187,7 +187,6 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
           updateScoresAndRiskFactors={this.props.actions.updateScoresAndRiskFactors}
           changePSAStatus={this.props.actions.changePSAStatus}
           onStatusChangeCallback={this.props.onStatusChangeCallback}
-          submitData={this.props.actions.submit}
           replaceEntity={this.props.actions.replaceEntity}
           refreshPSANeighbors={this.props.actions.refreshPSANeighbors}
           caseHistory={caseHistory}

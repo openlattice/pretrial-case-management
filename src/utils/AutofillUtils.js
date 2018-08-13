@@ -17,7 +17,7 @@ import {
   getChargeDetails,
   shouldIgnoreCharge
 } from './HistoricalChargeUtils';
-import { getSentenceToIncarcerationCaseNums } from './consts/SentenceConsts';
+import { getSentenceToIncarcerationCaseNums } from './SentenceUtils';
 import {
   getAllViolentCharges,
   getAllStepTwoCharges,

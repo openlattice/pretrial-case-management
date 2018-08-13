@@ -1,7 +1,7 @@
 import Immutable from 'immutable';
 import moment from 'moment';
 
-import { PROPERTY_TYPES } from './DataModelConsts';
+import { PROPERTY_TYPES } from './consts/DataModelConsts';
 
 const {
   GENERAL_ID,

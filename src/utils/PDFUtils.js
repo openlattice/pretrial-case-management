@@ -15,7 +15,7 @@ import {
 } from './AutofillUtils';
 import { getAllViolentCharges } from './ArrestChargeUtils';
 import { chargeIsMostSerious, chargeIsViolent, getSummaryStats } from './HistoricalChargeUtils';
-import { getSentenceToIncarcerationCaseNums } from './consts/SentenceConsts';
+import { getSentenceToIncarcerationCaseNums } from './SentenceUtils';
 import { getRecentFTAs, getOldFTAs } from './FTAUtils';
 import { sortPeopleByName } from './PSAUtils';
 import { PROPERTY_TYPES } from './consts/DataModelConsts';
