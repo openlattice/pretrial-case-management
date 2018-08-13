@@ -35,6 +35,8 @@ import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts'
 import { RESULT_CATEGORIES, formatDMFFromEntity } from '../../utils/consts/DMFResultConsts';
 import { psaIsClosed } from '../../utils/PSAUtils';
 import * as OverrideClassNames from '../../utils/styleoverrides/OverrideClassNames';
+import * as FormActionFactory from '../psa/FormActionFactory';
+import * as ReviewActionFactory from './ReviewActionFactory';
 import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
 
 const DownloadButtonContainer = styled.div`
@@ -163,40 +165,42 @@ type Props = {
   manualChargeHistory :Immutable.Map<*, *>,
   sentenceHistory :Immutable.Map<*, *>,
   ftaHistory :Immutable.Map<*, *>,
+  hearings :Immutable.List<*>,
   readOnly :boolean,
   personId? :string,
   submitting :boolean,
-  downloadFn :(values :{
-    neighbors :Immutable.Map<*, *>,
-    scores :Immutable.Map<*, *>
-  }) => void,
+  refreshingNeighbors :boolean,
   loadCaseHistoryFn :(values :{
     personId :string,
     neighbors :Immutable.Map<*, *>
   }) => void,
-  updateScoresAndRiskFactors? :(values :{
-    scoresEntitySetId :string,
-    scoresId :string,
-    scoresEntity :Immutable.Map<*, *>,
-    riskFactorsEntitySetId :string,
-    riskFactorsId :string,
-    riskFactorsEntity :Immutable.Map<*, *>,
-    dmfEntitySetId :string,
-    dmfId :string,
-    dmfEntity :Object,
-    dmfRiskFactorsEntitySetId :string,
-    dmfRiskFactorsId :string,
-    dmfRiskFactorsEntity :Object
-  }) => void,
-  changePSAStatus? :(values :{
-    scoresId :string,
-    scoresEntity :Immutable.Map<*, *>
-  }) => void,
-  replaceEntity :(value :{ entitySetName :string, entityKeyId :string, values :Object }) => void,
-  refreshPSANeighbors :({ id :string }) => void,
   actions: {
     clearSubmit :() => void,
     submit :(value :{ config :Object, values :Object, callback? :() => void }) => void,
+    downloadPSAReviewPDF :(values :{
+      neighbors :Immutable.Map<*, *>,
+      scores :Immutable.Map<*, *>
+    }) => void,
+    updateScoresAndRiskFactors :(values :{
+      scoresEntitySetId :string,
+      scoresId :string,
+      scoresEntity :Immutable.Map<*, *>,
+      riskFactorsEntitySetId :string,
+      riskFactorsId :string,
+      riskFactorsEntity :Immutable.Map<*, *>,
+      dmfEntitySetId :string,
+      dmfId :string,
+      dmfEntity :Object,
+      dmfRiskFactorsEntitySetId :string,
+      dmfRiskFactorsId :string,
+      dmfRiskFactorsEntity :Object
+    }) => void,
+    changePSAStatus :(values :{
+      scoresId :string,
+      scoresEntity :Immutable.Map<*, *>
+    }) => void,
+    refreshPSANeighbors :({ id :string }) => void,
+    replaceEntity :(value :{ entitySetName :string, entityKeyId :string, values :Object }) => void
   }
 };
 
@@ -306,8 +310,8 @@ class PSAModal extends React.Component<Props, State> {
 
   downloadRow = (e, isCompact) => {
     e.stopPropagation();
-    const { downloadFn, neighbors, scores } = this.props;
-    downloadFn({ neighbors, scores, isCompact });
+    const { actions, neighbors, scores } = this.props;
+    actions.downloadPSAReviewPDF({ neighbors, scores, isCompact });
   }
 
   renderPersonCard = () => {
@@ -400,7 +404,7 @@ class PSAModal extends React.Component<Props, State> {
   getIdValue = (name, optionalFQN) :string => getIdValue(this.props.neighbors, name, optionalFQN);
 
   refreshPSANeighborsCallback = () => {
-    this.props.refreshPSANeighbors({ id: this.props.entityKeyId });
+    this.props.actions.refreshPSANeighbors({ id: this.props.entityKeyId });
   }
 
   onRiskFactorEdit = (e :Object) => {
@@ -447,7 +451,7 @@ class PSAModal extends React.Component<Props, State> {
       notesEntity = this.getNotesEntity(this.state.riskFactors, notesIdValue);
     }
 
-    this.props.updateScoresAndRiskFactors({
+    this.props.actions.updateScoresAndRiskFactors({
       scoresEntitySetId,
       scoresId,
       scoresEntity,
@@ -484,7 +488,7 @@ class PSAModal extends React.Component<Props, State> {
   }
 
   handleStatusChange = (status :string, failureReason :string[], statusNotes :?string) => {
-    if (!this.props.changePSAStatus) return;
+    if (!this.props.actions.changePSAStatus) return;
     const statusNotesList = (statusNotes && statusNotes.length) ? Immutable.List.of(statusNotes) : Immutable.List();
 
     const scoresEntity = stripIdField(this.props.scores
@@ -493,7 +497,7 @@ class PSAModal extends React.Component<Props, State> {
       .set(PROPERTY_TYPES.STATUS_NOTES, statusNotesList));
 
     const scoresId = this.props.entityKeyId;
-    this.props.changePSAStatus({
+    this.props.actions.changePSAStatus({
       scoresId,
       scoresEntity,
       callback: this.props.onStatusChangeCallback
@@ -524,7 +528,7 @@ class PSAModal extends React.Component<Props, State> {
 
   renderSummary = () => (
     <PSASummary
-        downloadFn={this.props.downloadFn}
+        downloadFn={this.props.actions.downloadPSAReviewPDF}
         scores={this.props.scores}
         neighbors={this.props.neighbors}
         manualCaseHistory={this.props.manualCaseHistory}
@@ -656,7 +660,7 @@ class PSAModal extends React.Component<Props, State> {
             psaId={this.props.scores.getIn([PROPERTY_TYPES.GENERAL_ID, 0])}
             dmfId={this.getIdValue(ENTITY_SETS.DMF_RESULTS)}
             submit={this.props.actions.submit}
-            replace={this.props.replaceEntity}
+            replace={this.props.actions.replaceEntity}
             submitCallback={this.refreshPSANeighborsCallback}
             hearing={this.props.neighbors.getIn([ENTITY_SETS.HEARINGS, 'neighborDetails'], Immutable.Map())}
             hearingId={this.getEntityKeyId(ENTITY_SETS.HEARINGS)}
@@ -728,6 +732,14 @@ class PSAModal extends React.Component<Props, State> {
 
 function mapDispatchToProps(dispatch :Function) :Object {
   const actions :{ [string] :Function } = {};
+
+  Object.keys(FormActionFactory).forEach((action :string) => {
+    actions[action] = FormActionFactory[action];
+  });
+
+  Object.keys(ReviewActionFactory).forEach((action :string) => {
+    actions[action] = ReviewActionFactory[action];
+  });
 
   Object.keys(SubmitActionFactory).forEach((action :string) => {
     actions[action] = SubmitActionFactory[action];
