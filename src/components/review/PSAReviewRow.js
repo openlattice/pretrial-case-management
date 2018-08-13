@@ -7,7 +7,7 @@ import Immutable from 'immutable';
 import styled from 'styled-components';
 import moment from 'moment';
 
-import PSAModal from './PSAModal';
+import PSAModal from '../../containers/review/PSAModal';
 import PersonCard from '../person/PersonCard';
 import DropdownButton from '../buttons/DropdownButton';
 import PSAScores from './PSAScores';
@@ -143,7 +143,6 @@ type Props = {
     scoresId :string,
     scoresEntity :Immutable.Map<*, *>
   }) => void,
-  submitData :(value :{ config :Object, values :Object, callback :() => void }) => void,
   replaceEntity :(value :{ entitySetName :string, entityKeyId :string, values :Object }) => void,
   refreshPSANeighbors :({ id :string }) => void
 };

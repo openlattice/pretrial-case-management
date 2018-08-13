@@ -234,6 +234,7 @@ type Props = {
       newValues :Immutable.Map<*, *>
     }) => void,
     submit :({ config :Object, values :Object }) => void,
+    clearSubmit :() => void,
     changePSAStatus :(values :{
       scoresId :string,
       scoresEntity :Immutable.Map<*, *>,
@@ -581,6 +582,7 @@ class Form extends React.Component<Props, State> {
                   entitySetId: entitySetLookup.get(PEOPLE),
                   entityKeyId: selectedPersonId
                 });
+                actions.clearSubmit();
               }} />
         </PSAReviewRowListContainer>
       </CenteredListWrapper>

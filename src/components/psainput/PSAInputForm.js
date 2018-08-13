@@ -19,7 +19,7 @@ import {
   getPreviousFelonyLabels,
   getPreviousViolentChargeLabels
 } from '../../utils/AutofillUtils';
-import { getSentenceToIncarcerationCaseNums } from '../../utils/consts/SentenceConsts';
+import { getSentenceToIncarcerationCaseNums } from '../../utils/SentenceUtils';
 import {
   getAllViolentChargeLabels,
   getAllStepTwoChargeLabels,
