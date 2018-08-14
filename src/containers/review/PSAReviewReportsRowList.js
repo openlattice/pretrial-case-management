@@ -18,6 +18,7 @@ import { getEntityKeyId, getIdValue } from '../../utils/Utils';
 import * as FormActionFactory from '../psa/FormActionFactory';
 import * as ReviewActionFactory from './ReviewActionFactory';
 import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
+import * as DataActionFactory from '../../utils/data/DataActionFactory';
 
 const StyledCenteredContainer = styled.div`
   text-align: center;
@@ -120,6 +121,7 @@ type Props = {
     refreshPSANeighbors :({ id :string }) => void,
     submit :(value :{ config :Object, values :Object}) => void,
     replaceEntity :(value :{ entitySetName :string, entityKeyId :string, values :Object }) => void,
+    deleteEntity :(value :{ entitySetName :string, entityKeyId :string }) => void,
     clearSubmit :() => void,
   },
   psaNeighborsById :Immutable.Map<*, *>,
@@ -189,6 +191,7 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
           onStatusChangeCallback={this.props.onStatusChangeCallback}
           submitData={this.props.actions.submit}
           replaceEntity={this.props.actions.replaceEntity}
+          deleteEntity={this.props.actions.deleteEntity}
           refreshPSANeighbors={this.props.actions.refreshPSANeighbors}
           caseHistory={caseHistory}
           manualCaseHistory={manualCaseHistory}
@@ -315,6 +318,10 @@ function mapDispatchToProps(dispatch :Function) :Object {
 
   Object.keys(SubmitActionFactory).forEach((action :string) => {
     actions[action] = SubmitActionFactory[action];
+  });
+
+  Object.keys(DataActionFactory).forEach((action :string) => {
+    actions[action] = DataActionFactory[action];
   });
 
   return {
