@@ -244,13 +244,13 @@ describe('FormattingUtils', () => {
       });
 
       test('should return properly formated ISO datetime on valid moment input', () => {
-        const stripTimeZone = str => str.slice(0, str.length - 5);
+        const stripTimeZone = str => str.slice(0, str.length - 6);
 
-        expect(stripTimeZone(toISODateTime(moment('08/04/1994 10:45 AM')))).toEqual('1994-08-04T10:45:00.000-');
-        expect(stripTimeZone(toISODateTime(moment('1994-08-04 10:45 PM')))).toEqual('1994-08-04T22:45:00.000-');
-        expect(stripTimeZone(toISODateTime(moment('8-4-94 22:45')))).toEqual('1994-08-04T22:45:00.000-');
-        expect(stripTimeZone(toISODateTime(moment('August 9 1995 7:59')))).toEqual('1995-08-09T07:59:00.000-');
-        expect(stripTimeZone(toISODateTime(moment('August 9 1995 7:59:00 PM')))).toEqual('1995-08-09T19:59:00.000-');
+        expect(stripTimeZone(toISODateTime(moment('08/04/1994 10:45 AM')))).toEqual('1994-08-04T10:45:00.000');
+        expect(stripTimeZone(toISODateTime(moment('1994-08-04 10:45 PM')))).toEqual('1994-08-04T22:45:00.000');
+        expect(stripTimeZone(toISODateTime(moment('8-4-94 22:45')))).toEqual('1994-08-04T22:45:00.000');
+        expect(stripTimeZone(toISODateTime(moment('August 9 1995 7:59')))).toEqual('1995-08-09T07:59:00.000');
+        expect(stripTimeZone(toISODateTime(moment('August 9 1995 7:59:00 PM')))).toEqual('1995-08-09T19:59:00.000');
       });
 
     });
