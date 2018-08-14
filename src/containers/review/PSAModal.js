@@ -171,7 +171,7 @@ type Props = {
     personId :string,
     neighbors :Immutable.Map<*, *>
   }) => void,
-  actions: {
+  actions :{
     clearSubmit :() => void,
     submit :(value :{ config :Object, values :Object, callback? :() => void }) => void,
     downloadPSAReviewPDF :(values :{
@@ -319,7 +319,7 @@ class PSAModal extends React.Component<Props, State> {
 
     const personDetails = neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborDetails'], Immutable.Map());
     if (!personDetails.size) return <div>Person details unknown.</div>;
-    return <PersonCard person={personDetails} />
+    return <PersonCard person={personDetails} />;
   }
 
   renderDownloadButton = () => (
@@ -615,20 +615,17 @@ class PSAModal extends React.Component<Props, State> {
       <ModalWrapper >
         <DMFExplanation scores={scores} dmf={dmf} riskFactors={riskFactors} />
       </ModalWrapper>
-    )
+    );
   }
 
-  renderCaseHistory = () => {
-    const { caseHistory, chargeHistory } = this.props;
-    return (
-      <ModalWrapper withPadding>
-        <Title>Timeline (past two years)</Title>
-        <CaseHistoryTimeline caseHistory={this.props.caseHistory} chargeHistory={this.props.chargeHistory} />
-        <Title>All cases</Title>
-        <CaseHistory caseHistory={this.props.caseHistory} chargeHistory={this.props.chargeHistory} />
-      </ModalWrapper>
-    )
-  }
+  renderCaseHistory = () => (
+    <ModalWrapper withPadding>
+      <Title>Timeline (past two years)</Title>
+      <CaseHistoryTimeline caseHistory={this.props.caseHistory} chargeHistory={this.props.chargeHistory} />
+      <Title>All cases</Title>
+      <CaseHistory caseHistory={this.props.caseHistory} chargeHistory={this.props.chargeHistory} />
+    </ModalWrapper>
+  );
 
   renderInitialAppearance = () => {
     if (this.props.submitting || this.props.refreshingNeighbors) {
@@ -670,7 +667,6 @@ class PSAModal extends React.Component<Props, State> {
             replace={this.props.actions.replaceEntity}
             delete={this.props.actions.deleteEntity}
             submitCallback={this.refreshPSANeighborsCallback}
-            neightbors={this.props.neighbors}
             hearing={this.props.neighbors.getIn([ENTITY_SETS.HEARINGS, 'neighborDetails'], Immutable.Map())}
             hearingId={this.getEntityKeyId(ENTITY_SETS.HEARINGS)}
             realeaseConditionsEntitySetId={releaseConditionsEntitySetId}
