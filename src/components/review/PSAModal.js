@@ -165,6 +165,7 @@ type Props = {
   }) => void,
   submitData :(value :{ config :Object, values :Object }) => void,
   replaceEntity :(value :{ entitySetName :string, entityKeyId :string, values :Object }) => void,
+  deleteEntity :(value :{ entitySetName :string, entityKeyId :string }) => void,
   refreshPSANeighbors :({ id :string }) => void
 };
 
@@ -603,6 +604,13 @@ export default class PSAModal extends React.Component<Props, State> {
         </ModalWrapper>
       );
     }
+    const releaseConditionsEntitySetId = this.props.neighbors
+      .get(ENTITY_SETS.RELEASE_CONDITIONS, Immutable.List())
+      .map(neighbor => neighbor.getIn(['neighborEntitySet', 'id'], Immutable.Map())).get(0, '');
+    const bondTypeEntitySetId = this.props.neighbors
+      .getIn([ENTITY_SETS.BONDS, 'neighborEntitySet', 'id'], Immutable.Map());
+    const dmfTypeEntitySetId = this.props.neighbors
+      .getIn([ENTITY_SETS.DMF_RESULTS, 'neighborEntitySet', 'id'], Immutable.Map());
     return (
       <ModalWrapper>
         <SelectReleaseConditions
@@ -612,9 +620,14 @@ export default class PSAModal extends React.Component<Props, State> {
             dmfId={this.getIdValue(ENTITY_SETS.DMF_RESULTS)}
             submit={this.props.submitData}
             replace={this.props.replaceEntity}
+            delete={this.props.deleteEntity}
             submitCallback={this.refreshPSANeighborsCallback}
+            neightbors={this.props.neighbors}
             hearing={this.props.neighbors.getIn([ENTITY_SETS.HEARINGS, 'neighborDetails'], Immutable.Map())}
             hearingId={this.getEntityKeyId(ENTITY_SETS.HEARINGS)}
+            realeaseConditionsEntitySetId={releaseConditionsEntitySetId}
+            bondTypeEntitySetId={bondTypeEntitySetId}
+            dmfTypeEntitySetId={dmfTypeEntitySetId}
             defaultDMF={this.props.neighbors.getIn([ENTITY_SETS.DMF_RESULTS, 'neighborDetails'], Immutable.Map())}
             defaultBond={this.props.neighbors.getIn([ENTITY_SETS.BONDS, 'neighborDetails'], Immutable.Map())}
             defaultConditions={this.props.neighbors.get(ENTITY_SETS.RELEASE_CONDITIONS, Immutable.List())
