@@ -7,13 +7,13 @@ import Immutable from 'immutable';
 import styled from 'styled-components';
 import moment from 'moment';
 
-import PSAModal from './PSAModal';
+import PSAModal from '../../containers/review/PSAModal';
 import PersonCard from '../person/PersonCardReview';
 import PSAReportDownloadButton from './PSAReportDownloadButton'
 import PSAStats from './PSAStats';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { psaIsClosed } from '../../utils/PSAUtils';
-import { getEntityKeyId } from '../../utils/Utils';
+import { getEntityKeyId } from '../../utils/DataUtils';
 
 
 const ReviewRowContainer = styled.div`

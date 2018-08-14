@@ -14,7 +14,7 @@ import CustomPagination from '../../components/Pagination';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { SORT_TYPES } from '../../utils/consts/Consts';
 import { sortByDate, sortByName } from '../../utils/PSAUtils';
-import { getEntityKeyId, getIdValue } from '../../utils/Utils';
+import { getEntityKeyId, getIdValue } from '../../utils/DataUtils';
 import * as FormActionFactory from '../psa/FormActionFactory';
 import * as ReviewActionFactory from './ReviewActionFactory';
 import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
@@ -186,8 +186,6 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
           entityKeyId={scoreId}
           downloadFn={this.props.actions.downloadPSAReviewPDF}
           loadCaseHistoryFn={this.props.actions.loadCaseHistory}
-          updateScoresAndRiskFactors={this.props.actions.updateScoresAndRiskFactors}
-          changePSAStatus={this.props.actions.changePSAStatus}
           onStatusChangeCallback={this.props.onStatusChangeCallback}
           submitData={this.props.actions.submit}
           replaceEntity={this.props.actions.replaceEntity}

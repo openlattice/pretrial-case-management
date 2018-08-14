@@ -13,7 +13,7 @@ import LoadingSpinner from '../../components/LoadingSpinner';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { SORT_TYPES } from '../../utils/consts/Consts';
 import { sortByDate, sortByName } from '../../utils/PSAUtils';
-import { getEntityKeyId, getIdValue } from '../../utils/Utils';
+import { getEntityKeyId, getIdValue } from '../../utils/DataUtils';
 import { CenteredContainer } from '../../utils/Layout';
 import * as FormActionFactory from '../psa/FormActionFactory';
 import * as ReviewActionFactory from './ReviewActionFactory';
@@ -35,28 +35,6 @@ type Props = {
       personId :string,
       neighbors :Immutable.Map<*, *>
     }) => void,
-    updateScoresAndRiskFactors :(values :{
-      scoresEntitySetId :string,
-      scoresId :string,
-      scoresEntity :Immutable.Map<*, *>,
-      riskFactorsEntitySetId :string,
-      riskFactorsId :string,
-      riskFactorsEntity :Immutable.Map<*, *>,
-      dmfEntitySetId :string,
-      dmfId :string,
-      dmfEntity :Object,
-      dmfRiskFactorsEntitySetId :string,
-      dmfRiskFactorsId :string,
-      dmfRiskFactorsEntity :Object
-    }) => void,
-    changePSAStatus :(values :{
-      scoresId :string,
-      scoresEntity :Immutable.Map<*, *>
-    }) => void,
-    checkPSAPermissions :() => void,
-    refreshPSANeighbors :({ id :string }) => void,
-    submit :(value :{ config :Object, values :Object}) => void,
-    replaceEntity :(value :{ entitySetName :string, entityKeyId :string, values :Object }) => void,
     clearSubmit :() => void,
   },
   psaNeighborsById :Immutable.Map<*, *>,
@@ -121,12 +99,7 @@ class PSAReviewRowList extends React.Component<Props, State> {
           entityKeyId={scoreId}
           downloadFn={this.props.actions.downloadPSAReviewPDF}
           loadCaseHistoryFn={this.props.actions.loadCaseHistory}
-          updateScoresAndRiskFactors={this.props.actions.updateScoresAndRiskFactors}
-          changePSAStatus={this.props.actions.changePSAStatus}
           onStatusChangeCallback={this.props.onStatusChangeCallback}
-          submitData={this.props.actions.submit}
-          replaceEntity={this.props.actions.replaceEntity}
-          refreshPSANeighbors={this.props.actions.refreshPSANeighbors}
           caseHistory={caseHistory}
           manualCaseHistory={manualCaseHistory}
           chargeHistory={chargeHistory}

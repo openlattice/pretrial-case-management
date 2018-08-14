@@ -28,7 +28,7 @@ import { getTimeOptions } from '../../utils/consts/DateTimeConsts';
 import { RELEASE_CONDITIONS, LIST_FIELDS, ID_FIELD_NAMES, FORM_IDS } from '../../utils/consts/Consts';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { getCourtroomOptions } from '../../utils/consts/HearingConsts';
-import { toISODate, toISODateTime, formatDateTime } from '../../utils/Utils';
+import { toISODate, toISODateTime, formatDateTime } from '../../utils/FormattingUtils';
 import {
   OUTCOMES,
   RELEASES,
@@ -197,7 +197,7 @@ type Props = {
   dmfTypeEntitySetId :string,
   psaId :string,
   personId :string,
-  submit :(value :{ config :Object, values :Object }) => void,
+  submit :(value :{ config :Object, values :Object, callback? :() => void }) => void,
   submitCallback :() => void,
   replace :(value :{ entitySetName :string, entityKeyId :string, values :Object }) => void,
   delete :(value :{ entitySetName :string, entityKeyId :string }) => void,
@@ -470,7 +470,7 @@ class SelectReleaseConditions extends React.Component<Props, State> {
       c247Types,
       otherConditionText
     } = this.state;
-    console.log(this.state);
+
     const {
       defaultDMF,
       defaultBond,
@@ -820,7 +820,6 @@ class SelectReleaseConditions extends React.Component<Props, State> {
   }
 
   render() {
-    console.log(typeof (this.props.realeaseConditionsEntitySetId));
     const RELEASED = this.state[RELEASE] !== RELEASES.RELEASED;
 
     return (

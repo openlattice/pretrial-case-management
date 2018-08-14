@@ -7,7 +7,7 @@ import styled from 'styled-components';
 import Immutable from 'immutable';
 import { Constants } from 'lattice';
 
-import { formatDateTime } from '../../utils/Utils';
+import { formatDateTime } from '../../utils/FormattingUtils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 
 const { OPENLATTICE_ID_FQN } = Constants;

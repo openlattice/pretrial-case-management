@@ -6,36 +6,39 @@ import React from 'react';
 import Immutable from 'immutable';
 import styled from 'styled-components';
 import moment from 'moment';
-import { Modal, Tab, Tabs } from 'react-bootstrap';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+import { Modal } from 'react-bootstrap';
 import { AuthUtils } from 'lattice-auth';
-import { Constants } from 'lattice';
 
-import CustomTabs from '../tabs/Tabs';
-import PSAInputForm from '../psainput/PSAInputForm';
-import PersonCard from '../person/PersonCardReview';
-import StyledButton from '../buttons/StyledButton';
-import DropdownButton from '../buttons/DropdownButton';
+import CustomTabs from '../../components/tabs/Tabs';
+import PSAInputForm from '../../components/psainput/PSAInputForm';
+import PersonCard from '../../components/person/PersonCardReview';
+import StyledButton from '../../components/buttons/StyledButton';
+import DropdownButton from '../../components/buttons/DropdownButton';
 import CaseHistory from '../../components/casehistory/CaseHistory';
 import CaseHistoryTimeline from '../../components/casehistory/CaseHistoryTimeline';
-import LoadingSpinner from '../LoadingSpinner'
-import PSASummary from './PSASummary';
-import DMFExplanation from '../dmf/DMFExplanation';
-import SelectHearingsContainer from '../../containers/hearings/SelectHearingsContainer';
-import SelectReleaseConditions from '../releaseconditions/SelectReleaseConditions';
-import ClosePSAModal from './ClosePSAModal';
+import LoadingSpinner from '../../components/LoadingSpinner'
+import DMFExplanation from '../../components/dmf/DMFExplanation';
+import SelectHearingsContainer from '../hearings/SelectHearingsContainer';
+import SelectReleaseConditions from '../../components/releaseconditions/SelectReleaseConditions';
+import PSASummary from '../../components/review/PSASummary';
+import ClosePSAModal from '../../components/review/ClosePSAModal';
 import psaEditedConfig from '../../config/formconfig/PsaEditedConfig';
 import closeX from '../../assets/svg/close-x-gray.svg';
 import { getScoresAndRiskFactors, calculateDMF } from '../../utils/ScoringUtils';
-import { stripIdField } from '../../utils/DataUtils';
+import { getEntityKeyId, getEntitySetId, getIdValue, stripIdField } from '../../utils/DataUtils';
 import { CenteredContainer } from '../../utils/Layout';
-import { getEntityKeyId, getEntitySetId, getIdValue, toISODateTime } from '../../utils/Utils';
-import { CONTEXT, DMF, EDIT_FIELDS, NOTES, PSA, PSA_STATUSES } from '../../utils/consts/Consts';
+import { toISODateTime } from '../../utils/FormattingUtils';
+import { CONTEXT, DMF, EDIT_FIELDS, NOTES, PSA } from '../../utils/consts/Consts';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { RESULT_CATEGORIES, formatDMFFromEntity } from '../../utils/consts/DMFResultConsts';
 import { psaIsClosed } from '../../utils/PSAUtils';
 import * as OverrideClassNames from '../../utils/styleoverrides/OverrideClassNames';
-
-const { OPENLATTICE_ID_FQN } = Constants;
+import * as FormActionFactory from '../psa/FormActionFactory';
+import * as ReviewActionFactory from './ReviewActionFactory';
+import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
+import * as DataActionFactory from '../../utils/data/DataActionFactory';
 
 const DownloadButtonContainer = styled.div`
   width: 100%;
@@ -45,12 +48,8 @@ const DownloadButtonContainer = styled.div`
 `;
 
 const ModalWrapper = styled.div`
-  max-height: 70vh;
-  overflow-y: ${props => (props.noScroll ? 'visible' : 'auto')};
+  max-height: 100%;
   padding: ${props => (props.withPadding ? '30px' : '0')};
-  div:first-child {
-    border: none;
-  }
 `;
 
 const NoDMFContainer = styled(CenteredContainer)`
@@ -163,38 +162,45 @@ type Props = {
   manualChargeHistory :Immutable.Map<*, *>,
   sentenceHistory :Immutable.Map<*, *>,
   ftaHistory :Immutable.Map<*, *>,
+  hearings :Immutable.List<*>,
   readOnly :boolean,
   personId? :string,
   submitting :boolean,
-  downloadFn :(values :{
-    neighbors :Immutable.Map<*, *>,
-    scores :Immutable.Map<*, *>
-  }) => void,
+  refreshingNeighbors :boolean,
   loadCaseHistoryFn :(values :{
     personId :string,
     neighbors :Immutable.Map<*, *>
   }) => void,
-  updateScoresAndRiskFactors? :(values :{
-    scoresEntitySetId :string,
-    scoresId :string,
-    scoresEntity :Immutable.Map<*, *>,
-    riskFactorsEntitySetId :string,
-    riskFactorsId :string,
-    riskFactorsEntity :Immutable.Map<*, *>,
-    dmfEntitySetId :string,
-    dmfId :string,
-    dmfEntity :Object,
-    dmfRiskFactorsEntitySetId :string,
-    dmfRiskFactorsId :string,
-    dmfRiskFactorsEntity :Object
-  }) => void,
-  changePSAStatus? :(values :{
-    scoresId :string,
-    scoresEntity :Immutable.Map<*, *>
-  }) => void,
-  submitData :(value :{ config :Object, values :Object }) => void,
-  replaceEntity :(value :{ entitySetName :string, entityKeyId :string, values :Object }) => void,
-  refreshPSANeighbors :({ id :string }) => void
+  actions: {
+    clearSubmit :() => void,
+    submit :(value :{ config :Object, values :Object, callback? :() => void }) => void,
+    downloadPSAReviewPDF :(values :{
+      neighbors :Immutable.Map<*, *>,
+      scores :Immutable.Map<*, *>
+    }) => void,
+    updateScoresAndRiskFactors :(values :{
+      scoresEntitySetId :string,
+      scoresId :string,
+      scoresEntity :Immutable.Map<*, *>,
+      riskFactorsEntitySetId :string,
+      riskFactorsId :string,
+      riskFactorsEntity :Immutable.Map<*, *>,
+      dmfEntitySetId :string,
+      dmfId :string,
+      dmfEntity :Object,
+      dmfRiskFactorsEntitySetId :string,
+      dmfRiskFactorsId :string,
+      dmfRiskFactorsEntity :Object
+    }) => void,
+    changePSAStatus :(values :{
+      scoresId :string,
+      scoresEntity :Immutable.Map<*, *>
+    }) => void,
+    refreshPSANeighbors :({ id :string }) => void,
+    replaceEntity :(value :{ entitySetName :string, entityKeyId :string, values :Object }) => void,
+    deleteEntity :(value :{ entitySetName :string, entityKeyId :string }) => void,
+    submitData :(value :{ config :Object, values :Object }) => void
+  }
 };
 
 type State = {
@@ -213,7 +219,7 @@ const VIEWS = {
   INITIAL_APPEARANCE: 'INITIAL_APPEARANCE'
 };
 
-export default class PSAModal extends React.Component<Props, State> {
+class PSAModal extends React.Component<Props, State> {
 
   static defaultProps = {
     hideCaseHistory: false,
@@ -303,8 +309,8 @@ export default class PSAModal extends React.Component<Props, State> {
 
   downloadRow = (e, isCompact) => {
     e.stopPropagation();
-    const { downloadFn, neighbors, scores } = this.props;
-    downloadFn({ neighbors, scores, isCompact });
+    const { actions, neighbors, scores } = this.props;
+    actions.downloadPSAReviewPDF({ neighbors, scores, isCompact });
   }
 
   renderPersonCard = () => {
@@ -397,7 +403,7 @@ export default class PSAModal extends React.Component<Props, State> {
   getIdValue = (name, optionalFQN) :string => getIdValue(this.props.neighbors, name, optionalFQN);
 
   refreshPSANeighborsCallback = () => {
-    this.props.refreshPSANeighbors({ id: this.props.entityKeyId });
+    this.props.actions.refreshPSANeighbors({ id: this.props.entityKeyId });
   }
 
   onRiskFactorEdit = (e :Object) => {
@@ -444,7 +450,7 @@ export default class PSAModal extends React.Component<Props, State> {
       notesEntity = this.getNotesEntity(this.state.riskFactors, notesIdValue);
     }
 
-    this.props.updateScoresAndRiskFactors({
+    this.props.actions.updateScoresAndRiskFactors({
       scoresEntitySetId,
       scoresId,
       scoresEntity,
@@ -463,7 +469,7 @@ export default class PSAModal extends React.Component<Props, State> {
     });
 
     if (scoreId) {
-      this.props.submitData({
+      this.props.actions.submit({
         config: psaEditedConfig,
         values: {
           [EDIT_FIELDS.PSA_ID]: [scoreId],
@@ -481,7 +487,7 @@ export default class PSAModal extends React.Component<Props, State> {
   }
 
   handleStatusChange = (status :string, failureReason :string[], statusNotes :?string) => {
-    if (!this.props.changePSAStatus) return;
+    if (!this.props.actions.changePSAStatus) return;
     const statusNotesList = (statusNotes && statusNotes.length) ? Immutable.List.of(statusNotes) : Immutable.List();
 
     const scoresEntity = stripIdField(this.props.scores
@@ -490,19 +496,20 @@ export default class PSAModal extends React.Component<Props, State> {
       .set(PROPERTY_TYPES.STATUS_NOTES, statusNotesList));
 
     const scoresId = this.props.entityKeyId;
-    this.props.changePSAStatus({
+    this.props.actions.changePSAStatus({
       scoresId,
       scoresEntity,
       callback: this.props.onStatusChangeCallback
     });
 
-    this.props.submitData({
+    this.props.actions.submit({
       config: psaEditedConfig,
       values: {
         [EDIT_FIELDS.PSA_ID]: [scoresEntity.getIn([PROPERTY_TYPES.GENERAL_ID, 0])],
         [EDIT_FIELDS.TIMESTAMP]: [toISODateTime(moment())],
         [EDIT_FIELDS.PERSON_ID]: [AuthUtils.getUserInfo().email]
-      }
+      },
+      callback: this.props.actions.clearSubmit
     });
     this.setState({ editing: false });
   }
@@ -520,7 +527,7 @@ export default class PSAModal extends React.Component<Props, State> {
 
   renderSummary = () => (
     <PSASummary
-        downloadFn={this.props.downloadFn}
+        downloadFn={this.props.actions.downloadPSAReviewPDF}
         scores={this.props.scores}
         neighbors={this.props.neighbors}
         manualCaseHistory={this.props.manualCaseHistory}
@@ -590,7 +597,8 @@ export default class PSAModal extends React.Component<Props, State> {
             allCases={caseHistory}
             allSentences={allSentences}
             allFTAs={ftaHistory}
-            viewOnly={!editing || psaIsClosed(scores)} />
+            viewOnly={!editing || psaIsClosed(scores)}
+            noBorders />
         {editButton}
       </ModalWrapper>
     );
@@ -635,7 +643,7 @@ export default class PSAModal extends React.Component<Props, State> {
     }
     if (!this.props.neighbors.get(ENTITY_SETS.HEARINGS)) {
       return (
-        <ModalWrapper noScroll>
+        <ModalWrapper>
           <SelectHearingsContainer
               personId={this.props.personId}
               psaId={this.props.scores.getIn([PROPERTY_TYPES.GENERAL_ID, 0])}
@@ -644,6 +652,13 @@ export default class PSAModal extends React.Component<Props, State> {
         </ModalWrapper>
       );
     }
+    const releaseConditionsEntitySetId = this.props.neighbors
+      .get(ENTITY_SETS.RELEASE_CONDITIONS, Immutable.List())
+      .map(neighbor => neighbor.getIn(['neighborEntitySet', 'id'], Immutable.Map())).get(0, '');
+    const bondTypeEntitySetId = this.props.neighbors
+      .getIn([ENTITY_SETS.BONDS, 'neighborEntitySet', 'id'], Immutable.Map());
+    const dmfTypeEntitySetId = this.props.neighbors
+      .getIn([ENTITY_SETS.DMF_RESULTS, 'neighborEntitySet', 'id'], Immutable.Map());
     return (
       <ModalWrapper>
         <SelectReleaseConditions
@@ -651,11 +666,16 @@ export default class PSAModal extends React.Component<Props, State> {
             personId={this.getIdValue(ENTITY_SETS.PEOPLE, PROPERTY_TYPES.PERSON_ID)}
             psaId={this.props.scores.getIn([PROPERTY_TYPES.GENERAL_ID, 0])}
             dmfId={this.getIdValue(ENTITY_SETS.DMF_RESULTS)}
-            submit={this.props.submitData}
-            replace={this.props.replaceEntity}
+            submit={this.props.actions.submit}
+            replace={this.props.actions.replaceEntity}
+            delete={this.props.actions.deleteEntity}
             submitCallback={this.refreshPSANeighborsCallback}
+            neightbors={this.props.neighbors}
             hearing={this.props.neighbors.getIn([ENTITY_SETS.HEARINGS, 'neighborDetails'], Immutable.Map())}
             hearingId={this.getEntityKeyId(ENTITY_SETS.HEARINGS)}
+            realeaseConditionsEntitySetId={releaseConditionsEntitySetId}
+            bondTypeEntitySetId={bondTypeEntitySetId}
+            dmfTypeEntitySetId={dmfTypeEntitySetId}
             defaultDMF={this.props.neighbors.getIn([ENTITY_SETS.DMF_RESULTS, 'neighborDetails'], Immutable.Map())}
             defaultBond={this.props.neighbors.getIn([ENTITY_SETS.BONDS, 'neighborDetails'], Immutable.Map())}
             defaultConditions={this.props.neighbors.get(ENTITY_SETS.RELEASE_CONDITIONS, Immutable.List())
@@ -721,3 +741,31 @@ export default class PSAModal extends React.Component<Props, State> {
     );
   }
 }
+
+function mapDispatchToProps(dispatch :Function) :Object {
+  const actions :{ [string] :Function } = {};
+
+  Object.keys(FormActionFactory).forEach((action :string) => {
+    actions[action] = FormActionFactory[action];
+  });
+
+  Object.keys(ReviewActionFactory).forEach((action :string) => {
+    actions[action] = ReviewActionFactory[action];
+  });
+
+  Object.keys(SubmitActionFactory).forEach((action :string) => {
+    actions[action] = SubmitActionFactory[action];
+  });
+
+  Object.keys(DataActionFactory).forEach((action :string) => {
+    actions[action] = DataActionFactory[action];
+  });
+
+  return {
+    actions: {
+      ...bindActionCreators(actions, dispatch)
+    }
+  };
+}
+
+export default connect(null, mapDispatchToProps)(PSAModal);

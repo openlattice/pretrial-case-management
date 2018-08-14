@@ -9,11 +9,11 @@ import moment from 'moment';
 
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import {
-  chargeFieldIsViolent,
-  degreeFieldIsFelony,
-  degreeFieldIsMisdemeanor,
-  dispositionFieldIsGuilty
-} from '../../utils/consts/ChargeConsts';
+  chargeIsViolent,
+  chargeIsFelony,
+  chargeIsMisdemeanor,
+  chargeIsGuilty
+} from '../../utils/HistoricalChargeUtils';
 
 type Props = {
   caseHistory :Immutable.List<*>,
@@ -116,12 +116,9 @@ export default class CaseHistoryTimeline extends React.Component<Props> {
   getUpdatedCountsMap = (charge :Immutable.Map<*, *>, initMonthCounts :Immutable.Map<*, *>) => {
     let monthCounts = initMonthCounts;
 
-    const degreeField = charge.get(PROPERTY_TYPES.CHARGE_LEVEL, Immutable.List());
-    const statuteField = charge.get(PROPERTY_TYPES.CHARGE_STATUTE, Immutable.List());
-
-    const m = degreeFieldIsMisdemeanor(degreeField);
-    const f = degreeFieldIsFelony(degreeField);
-    const v = chargeFieldIsViolent(statuteField);
+    const m = chargeIsMisdemeanor(charge);
+    const f = chargeIsFelony(charge);
+    const v = chargeIsViolent(charge);
 
     if (m) {
       monthCounts = monthCounts.set('m', monthCounts.get('m') + 1);
@@ -150,9 +147,8 @@ export default class CaseHistoryTimeline extends React.Component<Props> {
         const month = this.getCaseDate(pretrialCase).format(MONTH_FORMAT);
 
         chargeHistory.get(caseNum).forEach((charge) => {
-          const dispositionField = charge.get(PROPERTY_TYPES.DISPOSITION, Immutable.List());
 
-          if (dispositionFieldIsGuilty(dispositionField)) {
+          if (chargeIsGuilty(charge)) {
             chargeTypesByMonth = chargeTypesByMonth.set(
               month,
               this.getUpdatedCountsMap(charge, chargeTypesByMonth.get(month, this.getInitializedCountsMap()))

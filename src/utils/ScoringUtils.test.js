@@ -1,6 +1,6 @@
 import Immutable from 'immutable';
-import psaScenarios from './consts/ScoringTestConsts';
-import dmfScenarios from './consts/DMFTestConsts';
+import psaScenarios from './consts/test/ScoringTestConsts';
+import dmfScenarios from './consts/test/DMFTestConsts';
 import { getScoresAndRiskFactors, calculateDMF } from './ScoringUtils';
 import { DMF } from './consts/Consts';
 import { PROPERTY_TYPES } from './consts/DataModelConsts';

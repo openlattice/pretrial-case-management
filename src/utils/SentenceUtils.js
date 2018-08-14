@@ -1,7 +1,7 @@
 import Immutable from 'immutable';
 import moment from 'moment';
 
-import { PROPERTY_TYPES } from './DataModelConsts';
+import { PROPERTY_TYPES } from './consts/DataModelConsts';
 
 const {
   GENERAL_ID,
@@ -69,8 +69,8 @@ export const caseLedToIncarceration = (sentences) => {
       let sentencesByStartDate = Immutable.Map();
       sentencesServed.forEach((sentence) => {
         const { daysServed, startDate } = sentence;
-        let maxDaysForDate = startDate;
-        const prevValueForDate = sentencesByStartDate.get(startDate);
+        let maxDaysForDate = daysServed;
+        const prevValueForDate = sentencesByStartDate.get(startDate, 0);
         if (prevValueForDate && prevValueForDate > daysServed) maxDaysForDate = prevValueForDate;
         sentencesByStartDate = sentencesByStartDate.set(startDate, maxDaysForDate);
       });

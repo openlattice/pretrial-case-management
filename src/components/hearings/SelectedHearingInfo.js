@@ -9,7 +9,7 @@ import BasicButton from '../buttons/BasicButton';
 import InfoButton from '../buttons/InfoButton';
 import closeX from '../../assets/svg/close-x-gray.svg';
 import { HEARING } from '../../utils/consts/Consts';
-import { formatDate, formatDateTime } from '../../utils/Utils';
+import { formatDate, formatDateTime } from '../../utils/FormattingUtils';
 
 type Props = {
   hearing :Object,

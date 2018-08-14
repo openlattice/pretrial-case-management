@@ -5,8 +5,8 @@
 import Immutable from 'immutable';
 import moment from 'moment';
 
-import { formatDate } from './Utils';
-import { shouldIgnoreCharge, getCaseNumFromCharge } from './consts/ChargeConsts';
+import { formatDate } from './FormattingUtils';
+import { shouldIgnoreCharge, getCaseNumFromCharge } from './HistoricalChargeUtils';
 import { PROPERTY_TYPES } from './consts/DataModelConsts';
 
 const COMPARISON = {
@@ -35,7 +35,7 @@ const getPastTwoYearsComparison = (dateStr) => {
   return twoYearsAgo.isSameOrBefore(date) ? COMPARISON.NEW : COMPARISON.OLD;
 };
 
-const getFTALabel = (fta) => {
+export const getFTALabel = (fta) => {
   const caseNum = getCaseNumFromFTA(fta);
   const date = formatDate(fta.getIn([PROPERTY_TYPES.DATE_TIME, 0], ''));
   return date.length ? `${caseNum} (${date})` : caseNum;

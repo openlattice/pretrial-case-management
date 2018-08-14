@@ -19,20 +19,20 @@ import {
   getPreviousFelonyLabels,
   getPreviousViolentChargeLabels
 } from '../../utils/AutofillUtils';
-import { getSentenceToIncarcerationCaseNums } from '../../utils/consts/SentenceConsts';
+import { getSentenceToIncarcerationCaseNums } from '../../utils/SentenceUtils';
 import {
   getAllViolentChargeLabels,
   getAllStepTwoChargeLabels,
   getAllStepFourChargeLabels,
   getSecondaryReleaseChargeJustification
-} from '../../utils/consts/ArrestChargeConsts';
+} from '../../utils/ArrestChargeUtils';
 
 import {
   StyledSectionWrapper,
   ErrorMessage
 } from '../../utils/Layout';
 
-import { formatValue } from '../../utils/Utils';
+import { formatValue } from '../../utils/FormattingUtils';
 import { getRecentFTAs, getOldFTAs } from '../../utils/FTAUtils';
 
 import { CONTEXT, DMF, NOTES, PSA } from '../../utils/consts/Consts';
@@ -112,7 +112,7 @@ const QuestionRow = styled.div`
   padding: 30px;
   display: flex;
   flex-direction: column;
-  border-bottom: solid 1px #e1e1eb;
+  border-bottom: solid 1px #e1e1eb !important;
 `;
 
 const QuestionLabels = styled.div`
@@ -179,7 +179,7 @@ const CheckboxContainer = styled.div`
   display: flex;
   flex-direction: row;
   justify-content: center;
-  margin: 30px 0;
+  margin: 30px 0 0;
 
   label {
     font-family: 'Open Sans', sans-serif;

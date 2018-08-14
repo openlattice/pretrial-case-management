@@ -20,7 +20,7 @@ import StyledInput from '../../components/controls/StyledInput';
 import StyledDatePicker from '../../components/controls/StyledDatePicker';
 import SearchableSelect from '../../components/controls/SearchableSelect';
 import { GENDERS, STATES } from '../../utils/consts/Consts';
-import { toISODate } from '../../utils/Utils';
+import { toISODate } from '../../utils/FormattingUtils';
 import { StyledFormWrapper, StyledSectionWrapper } from '../../utils/Layout';
 import { newPersonSubmitRequest } from './PersonActionFactory';
 import { clearForm } from '../psa/FormActionFactory';

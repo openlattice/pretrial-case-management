@@ -16,7 +16,8 @@ import {
   getProfileFailure
 } from './EnrollActionFactory';
 
-import { toISODateTime, getFqnObj } from '../../utils/Utils';
+import { toISODateTime } from '../../utils/FormattingUtils';
+import { getFqnObj } from '../../utils/DataUtils';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 
 const CHECKINS_BASE_URL = 'https://api.openlattice.com/checkins/voice';
