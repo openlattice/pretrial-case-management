@@ -371,7 +371,13 @@ class SelectReleaseConditions extends React.Component<Props, State> {
 
   handleCheckboxChange = (e) => {
     const { name, value, checked } = e.target;
-    const values = this.state[name];
+    let values;
+    if (Immutable.List.isList(this.state[name])) {
+      values = this.state[name].toJS();
+    }
+    else {
+      values = this.state[name];
+    }
     if (checked && !values.includes(value)) {
       values.push(value);
     }
@@ -608,7 +614,7 @@ class SelectReleaseConditions extends React.Component<Props, State> {
       || (release === RELEASES.RELEASED && !bondType)
       || ((bondType === BOND_TYPES.CASH_ONLY || bondType === BOND_TYPES.CASH_SURETY) && !bondAmount.length)
       || (conditions.includes(CONDITION_LIST.CHECKINS) && !checkinFrequency)
-      || (conditions.includes(CONDITION_LIST.C_247) && !c247Types.size)
+      || (conditions.includes(CONDITION_LIST.C_247) && !(c247Types.length || c247Types.size))
       || (conditions.includes(CONDITION_LIST.OTHER) && !otherConditionText.length)
       || (conditions.includes(CONDITION_LIST.NO_CONTACT)
         && !(this.cleanNoContactPeopleList().length || this.cleanNoContactPeopleList().size))
@@ -821,7 +827,7 @@ class SelectReleaseConditions extends React.Component<Props, State> {
 
   render() {
     const RELEASED = this.state[RELEASE] !== RELEASES.RELEASED;
-
+    console.log(this.state);
     return (
       <Wrapper>
         {this.renderHearingInfo()}
