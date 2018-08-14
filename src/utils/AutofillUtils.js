@@ -57,26 +57,6 @@ const {
   SECONDARY_RELEASE_CHARGES
 } = DMF;
 
-export const getViolentCharges = (charges :Immutable.List<*>, mostSeriousCharge :string) :Immutable.List<*> => {
-  if (!charges.size) {
-    if (!mostSeriousCharge) return Immutable.List();
-    if (getViolentChargeNums(Immutable.List.of(mostSeriousCharge)).size) {
-      return Immutable.List.of(mostSeriousCharge);
-    }
-  }
-
-  const chargesNumsToConsider = charges
-    .filter(charge => charge.get(CHARGE_STATUTE, Immutable.List()).size)
-    .map(charge => charge.getIn([CHARGE_STATUTE, 0], ''));
-  if (mostSeriousCharge && mostSeriousCharge.length) chargesNumsToConsider.push(mostSeriousCharge);
-  const violentChargeNums = getViolentChargeNums(chargesNumsToConsider);
-
-  return charges.filter((charge) => {
-    if (!charge.get(CHARGE_STATUTE, Immutable.List()).size) return false;
-    return violentChargeNums.includes(charge.getIn([CHARGE_STATUTE, 0], ''));
-  }).map(charge => getChargeTitle(charge));
-};
-
 export const tryAutofillCurrentViolentCharge = (charges :Immutable.List<*>) :string => {
   return `${getAllViolentCharges(charges).size > 0}`;
 }
@@ -117,7 +97,7 @@ const filterPendingCharges = (
 ) :Immutable.List<*> => {
   if (!dateArrested || !dateArrested.length || !currCaseNum || !currCaseNum.length) return Immutable.List();
   const arrestDate = moment(dateArrested);
-  let casesWithArrestBefore = Immutable.Set(); // Set of case numbers with an arrest date before the current one
+  let casesWithArrestBefore = Immutable.OrderedSet(); // Set of case numbers with an arrest date before the current one
   let casesWithDispositionAfter = Immutable.Map(); // Map from case nums to charge list with date after current arrest
 
   if (arrestDate.isValid()) {
