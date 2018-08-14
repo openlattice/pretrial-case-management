@@ -33,7 +33,7 @@ export function formatDateTime(dateString :string, optionalFormat :?string) :str
   if (!dateString) return '';
   const date = moment(dateString);
   if (!date || !date.isValid()) return dateString;
-  const format = optionalFormat || 'MM/DD/YYYY hh:mma';
+  const format = optionalFormat || 'MM/DD/YYYY h:mma';
   return date.format(format);
 }
 
@@ -44,7 +44,7 @@ export function formatDateTimeList(dateTimeList :string[], optionalFormat :?stri
 
 export function toISODateTime(momentObj) {
   let momentStr;
-  if (momentObj && momentObj.isValid()) {
+  if (momentObj && momentObj.isValid && momentObj.isValid()) {
     momentStr = momentObj.format('YYYY-MM-DDTHH:mm:ss.SSSZ');
   }
   return momentStr;
@@ -52,7 +52,7 @@ export function toISODateTime(momentObj) {
 
 export function toISODate(momentObj) {
   let momentStr;
-  if (momentObj && momentObj.isValid()) {
+  if (momentObj && momentObj.isValid && momentObj.isValid()) {
     momentStr = momentObj.format('YYYY-MM-DD');
   }
   return momentStr;
