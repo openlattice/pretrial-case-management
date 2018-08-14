@@ -5,6 +5,7 @@
 import Immutable from 'immutable';
 
 import { GUILTY_DISPOSITIONS, MISDEMEANOR_CHARGE_LEVEL_CODES, VIOLENT_CHARGES } from './consts/ChargeConsts';
+import { PLEAS_TO_IGNORE } from './consts/PleaConsts';
 import { PROPERTY_TYPES } from './consts/DataModelConsts';
 import { formatValue, formatDateList } from './FormattingUtils';
 
@@ -16,7 +17,8 @@ const {
   CHARGE_STATUTE,
   DISPOSITION,
   DISPOSITION_DATE,
-  MOST_SERIOUS_CHARGE_NO
+  MOST_SERIOUS_CHARGE_NO,
+  PLEA
 } = PROPERTY_TYPES;
 
 type ChargeDetails = {
@@ -33,8 +35,14 @@ export const getCaseNumFromCharge = (charge :Immutable.Map<*, *>) =>
 
 export const shouldIgnoreCharge = (charge :Immutable.Map<*, *>) => {
   const severities = charge.get(CHARGE_LEVEL, Immutable.List());
+  const pleas = charge.get(PLEA, Immutable.List());
   const poaCaseNums = charge.get(CHARGE_ID, Immutable.List()).filter(caseNum => caseNum.includes('POA'));
-  return severities.includes('MO') || severities.includes('PO') || severities.includes('P') || !!poaCaseNums.size;
+  const poaPleas = pleas.filter(plea => PLEAS_TO_IGNORE.includes(plea));
+  return severities.includes('MO')
+    || severities.includes('PO')
+    || severities.includes('P')
+    || !!poaCaseNums.size
+    || !!poaPleas.size;
 };
 
 export const chargeStatuteIsViolent = (chargeNum :string) :boolean =>
@@ -80,6 +88,7 @@ export const dispositionFieldIsGuilty = (dispositionField :Immutable.List<string
 };
 
 export const chargeIsGuilty = (charge :Immutable.Map<*, *>) => {
+  if (shouldIgnoreCharge(charge)) return false;
   return dispositionFieldIsGuilty(charge.get(DISPOSITION, Immutable.List()));
 };
 
