@@ -5,7 +5,8 @@
 import React from 'react';
 import styled from 'styled-components';
 
-import { RESULT_CATEGORIES, COLORS, getConditionsTextList } from '../../utils/consts/DMFResultConsts';
+import { RESULT_CATEGORIES, COLORS } from '../../utils/consts/DMFResultConsts';
+import { getConditionsTextList } from '../../utils/DMFUtils';
 
 type Props = {
   selected :boolean,

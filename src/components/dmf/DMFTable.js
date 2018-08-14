@@ -6,7 +6,7 @@ import React from 'react';
 import styled from 'styled-components';
 
 import DMFCell from './DMFCell';
-import { getDMFDecision } from '../../utils/consts/DMFResultConsts';
+import { getDMFDecision } from '../../utils/DMFUtils';
 
 
 const Table = styled.table`
