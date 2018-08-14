@@ -11,4 +11,8 @@ const PLEAS = [
   'Not Guilty by Reason of Insanity'
 ];
 
+export const PLEAS_TO_IGNORE = [
+  'Guilty by POA'
+];
+
 export default PLEAS;
