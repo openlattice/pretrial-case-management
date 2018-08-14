@@ -7,6 +7,7 @@ import Immutable from 'immutable';
 import styled from 'styled-components';
 import moment from 'moment';
 import randomUUID from 'uuid/v4';
+import { Constants } from 'lattice';
 
 import OutcomeSection from './OutcomeSection';
 import DecisionSection from './DecisionSection';
@@ -38,6 +39,7 @@ import {
 } from '../../utils/consts/ReleaseConditionConsts';
 
 const { RELEASE_CONDITIONS_FIELD } = LIST_FIELDS;
+const { OPENLATTICE_ID_FQN } = Constants;
 
 const {
   OUTCOME,
@@ -190,11 +192,15 @@ const BLANK_PERSON_ROW = {
 
 type Props = {
   dmfId :string,
+  realeaseConditionsEntitySetId :string,
+  bondTypeEntitySetId :string,
+  dmfTypeEntitySetId :string,
   psaId :string,
   personId :string,
   submit :(value :{ config :Object, values :Object }) => void,
   submitCallback :() => void,
   replace :(value :{ entitySetName :string, entityKeyId :string, values :Object }) => void,
+  delete :(value :{ entitySetName :string, entityKeyId :string }) => void,
   defaultDMF :Immutable.Map<*, *>,
   defaultBond :Immutable.Map<*, *>,
   defaultConditions :Immutable.List<*>,
@@ -219,7 +225,8 @@ type State = {
   hearingDateTime :Object,
   newHearingDate :string,
   newHearingTime :string,
-  hearingCourtroom :string
+  hearingCourtroom :string,
+  editingHearing :boolean
 };
 
 class SelectReleaseConditions extends React.Component<Props, State> {
@@ -254,6 +261,7 @@ class SelectReleaseConditions extends React.Component<Props, State> {
     let hearingCourtroom = hearing.getIn([PROPERTY_TYPES.COURTROOM, 0], '');
     let newHearingDate;
     let newHearingTime;
+    const editingHearing = false;
 
     if (this.state) {
       modifyingHearing = this.state.modifyingHearing;
@@ -298,7 +306,7 @@ class SelectReleaseConditions extends React.Component<Props, State> {
         [CHECKIN_FREQUENCY]: conditionsByType.getIn([CONDITION_LIST.CHECKINS, 0, PROPERTY_TYPES.FREQUENCY, 0]),
         [C247_TYPES]: c247Types,
         [OTHER_CONDITION_TEXT]: conditionsByType.getIn([CONDITION_LIST.OTHER, 0, PROPERTY_TYPES.OTHER_TEXT, 0], ''),
-        [NO_CONTACT_PEOPLE]: noContactPeople,
+        [NO_CONTACT_PEOPLE]: noContactPeople.size === 0 ? [Object.assign({}, BLANK_PERSON_ROW)] : noContactPeople,
         modifyingHearing,
         hearingDateTime,
         hearingCourtroom,
@@ -321,7 +329,8 @@ class SelectReleaseConditions extends React.Component<Props, State> {
       newHearingTime,
       hearingDateTime,
       hearingCourtroom,
-      disabled: false
+      disabled: false,
+      editingHearing
     };
   }
 
@@ -461,6 +470,19 @@ class SelectReleaseConditions extends React.Component<Props, State> {
       c247Types,
       otherConditionText
     } = this.state;
+    console.log(this.state);
+    const {
+      defaultDMF,
+      defaultBond,
+      defaultConditions
+    } = this.props;
+
+    const dmfEntityKeyId = defaultDMF.getIn([OPENLATTICE_ID_FQN, 0], []);
+
+    const ConditionEntityKeyIds = defaultConditions.map(neighbor => neighbor.getIn([OPENLATTICE_ID_FQN, 0], []));
+
+    const bondTypeEntityKeyId = defaultBond.getIn([OPENLATTICE_ID_FQN, 0], []);
+
     if (!this.isReadyToSubmit()) {
       return;
     }
@@ -515,7 +537,7 @@ class SelectReleaseConditions extends React.Component<Props, State> {
           });
         }
         else if (condition === CONDITION_LIST.NO_CONTACT) {
-          this.cleanNoContactPeopleList().forEach(noContactPerson => {
+          this.cleanNoContactPeopleList().forEach((noContactPerson) => {
             conditionsField.push(Object.assign({}, conditionObj, noContactPerson, {
               [PROPERTY_TYPES.GENERAL_ID]: randomUUID()
             }));
@@ -529,11 +551,36 @@ class SelectReleaseConditions extends React.Component<Props, State> {
 
     submission[RELEASE_CONDITIONS_FIELD] = conditionsField;
 
-    this.props.submit({
-      config: releaseConditionsConfig,
-      values: submission,
-      callback: this.props.submitCallback
-    });
+    if (this.state.editingHearing) {
+      ConditionEntityKeyIds.forEach((id) => {
+        this.props.delete({
+          entitySetId: this.props.realeaseConditionsEntitySetId,
+          entityKeyId: id
+        });
+      });
+      this.props.delete({
+        entitySetId: this.props.bondTypeEntitySetId,
+        entityKeyId: bondTypeEntityKeyId
+      });
+      this.props.delete({
+        entitySetId: this.props.dmfTypeEntitySetId,
+        entityKeyId: dmfEntityKeyId
+      });
+      this.props.submit({
+        config: releaseConditionsConfig,
+        values: submission,
+        callback: this.props.submitCallback
+      });
+      this.setState({ editingHearing: false });
+    }
+    else {
+      this.props.submit({
+        config: releaseConditionsConfig,
+        values: submission,
+        callback: this.props.submitCallback
+      });
+    }
+
   }
 
   cleanNoContactPeopleList = () => this.state.noContactPeople
@@ -550,10 +597,8 @@ class SelectReleaseConditions extends React.Component<Props, State> {
       conditions,
       checkinFrequency,
       c247Types,
-      otherConditionText,
-      noContactPeople
+      otherConditionText
     } = this.state;
-
     if (
       disabled
       || this.props.submitting
@@ -563,9 +608,10 @@ class SelectReleaseConditions extends React.Component<Props, State> {
       || (release === RELEASES.RELEASED && !bondType)
       || ((bondType === BOND_TYPES.CASH_ONLY || bondType === BOND_TYPES.CASH_SURETY) && !bondAmount.length)
       || (conditions.includes(CONDITION_LIST.CHECKINS) && !checkinFrequency)
-      || (conditions.includes(CONDITION_LIST.C_247) && !c247Types.length)
+      || (conditions.includes(CONDITION_LIST.C_247) && !c247Types.size)
       || (conditions.includes(CONDITION_LIST.OTHER) && !otherConditionText.length)
-      || (conditions.includes(CONDITION_LIST.NO_CONTACT) && !this.cleanNoContactPeopleList().length)
+      || (conditions.includes(CONDITION_LIST.NO_CONTACT)
+        && !(this.cleanNoContactPeopleList().length || this.cleanNoContactPeopleList().size))
     ) {
       return false;
     }
@@ -574,7 +620,14 @@ class SelectReleaseConditions extends React.Component<Props, State> {
   }
 
   handleOnListChange = (field, value, index) => {
-    const noContactPeople = this.state[NO_CONTACT_PEOPLE];
+    let noContactPeople;
+    if (this.state.editingHearing && this.state[NO_CONTACT_PEOPLE].toJS) {
+      noContactPeople = this.state[NO_CONTACT_PEOPLE].toJS();
+    }
+    else {
+      noContactPeople = this.state[NO_CONTACT_PEOPLE];
+    }
+
     noContactPeople[index][field] = value;
     if (index === noContactPeople.length - 1) {
       noContactPeople.push({
@@ -586,7 +639,13 @@ class SelectReleaseConditions extends React.Component<Props, State> {
   }
 
   removePersonRow = (index) => {
-    const noContactPeople = this.state[NO_CONTACT_PEOPLE];
+    let noContactPeople;
+    if (this.state.editingHearing && this.state[NO_CONTACT_PEOPLE].toJS) {
+      noContactPeople = this.state[NO_CONTACT_PEOPLE].toJS();
+    }
+    else {
+      noContactPeople = this.state[NO_CONTACT_PEOPLE];
+    }
     if (noContactPeople.length > 1) {
       noContactPeople.splice(index, 1);
     }
@@ -748,11 +807,12 @@ class SelectReleaseConditions extends React.Component<Props, State> {
       </ContentSection>
     );
 
+    // TODO: Implement back to selection button
     return (
       <HearingSectionWrapper>
         {hearingInfoSection}
         <HearingSectionAside>
-          { this.state.disabled ? null : (<StyledBasicButton>Back to Selection</StyledBasicButton>)}
+          {/* { this.state.disabled ? null : (<StyledBasicButton>Back to Selection</StyledBasicButton>)} */}
           {hearingInfoButton}
         </HearingSectionAside>
       </HearingSectionWrapper>
@@ -760,7 +820,9 @@ class SelectReleaseConditions extends React.Component<Props, State> {
   }
 
   render() {
+    console.log(typeof (this.props.realeaseConditionsEntitySetId));
     const RELEASED = this.state[RELEASE] !== RELEASES.RELEASED;
+
     return (
       <Wrapper>
         {this.renderHearingInfo()}
@@ -778,7 +840,7 @@ class SelectReleaseConditions extends React.Component<Props, State> {
                   mapOptionsToRadioButtons={this.mapOptionsToRadioButtons}
                   handleNumberInputChange={this.handleNumberInputChange}
                   bondType={this.state[BOND_TYPE]}
-                  bondAmount={this.state[BOND_AMOUNT]}
+                  bondAmount={`${this.state[BOND_AMOUNT]}`}
                   disabled={this.state.disabled} />
               <ConditionsSection
                   mapOptionsToRadioButtons={this.mapOptionsToRadioButtons}
@@ -792,11 +854,24 @@ class SelectReleaseConditions extends React.Component<Props, State> {
           )
         }
         {
-          this.state.disabled ? null : (
-            <Row>
-              <SubmitButton disabled={!this.isReadyToSubmit()} onClick={this.onSubmit}>Submit</SubmitButton>
-            </Row>
-          )
+          this.state.disabled
+            ? (
+              <Row>
+                <StyledBasicButton
+                    onClick={() => this.setState({
+                      disabled: false,
+                      editingHearing: true,
+                      bondAmount: `${this.state.bondAmount}`
+                    })}>
+                  Edit
+                </StyledBasicButton>
+              </Row>
+            )
+            : (
+              <Row>
+                <SubmitButton disabled={!this.isReadyToSubmit()} onClick={this.onSubmit}>Submit</SubmitButton>
+              </Row>
+            )
         }
       </Wrapper>
     );
