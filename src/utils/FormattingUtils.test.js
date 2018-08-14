@@ -167,14 +167,14 @@ describe('FormattingUtils', () => {
         expect(formatDateTime('August 4 1994 10:45:00')).toEqual('08/04/1994 10:45am');
         expect(formatDateTime('Aug 4 1994 13:45:00')).toEqual('08/04/1994 1:45pm');
         expect(formatDateTime('10:45 pm 1994-08-04')).toEqual('08/04/1994 10:45pm');
-        expect(formatDateTime('1994-08-04T10:45:00.000-07:00')).toEqual('08/04/1994 10:45am');
+        expect(formatDateTime('1994-08-04T10:45:00.000')).toEqual('08/04/1994 10:45am');
       });
 
       test('should format datetimes in the requested format', () => {
         expect(formatDateTime('8/4/1994 10:45 AM', 'YYYY-MM-DD hh:mm a')).toEqual('1994-08-04 10:45 am');
         expect(formatDateTime('Aug 4 1994 13:45:00', 'YYYY-MM-DD hh:mm a')).toEqual('1994-08-04 01:45 pm');
         expect(formatDateTime('August 4 1994 13:45', 'YYYY-MM-DD HH:mm')).toEqual('1994-08-04 13:45');
-        expect(formatDateTime('1994-08-04T10:45:00.000-07:00', 'HH DD MM YY mm')).toEqual('10 04 08 94 45');
+        expect(formatDateTime('1994-08-04T10:45:00.000', 'HH DD MM YY mm')).toEqual('10 04 08 94 45');
       });
 
     });
@@ -199,7 +199,7 @@ describe('FormattingUtils', () => {
         expect(formatDateTimeList([
           '11:15 08/04/1994',
           '2018-01-01 10:00:15',
-          '1995-08-09T07:59:00.000-07:00'
+          '1995-08-09T07:59:00.000'
         ])).toEqual('08/04/1994 11:15am, 01/01/2018 10:00am, 08/09/1995 7:59am');
       });
 
@@ -212,7 +212,7 @@ describe('FormattingUtils', () => {
         expect(formatDateTimeList(Immutable.List.of(
           '11:15 08/04/1994',
           '2018-01-01 10:00:15',
-          '1995-08-09T07:59:00.000-07:00'
+          '1995-08-09T07:59:00.000'
         ))).toEqual('08/04/1994 11:15am, 01/01/2018 10:00am, 08/09/1995 7:59am');
       });
 
@@ -227,7 +227,7 @@ describe('FormattingUtils', () => {
         expect(formatDateTimeList(Immutable.List.of(
           '11:15 08/04/1994',
           '2018-01-01 10:00:15',
-          '1995-08-09T07:59:00.000-07:00'
+          '1995-08-09T07:59:00.000'
         ), 'mm:HH:DD:MM:YY')).toEqual('15:11:04:08:94, 00:10:01:01:18, 59:07:09:08:95');
       });
 
@@ -244,11 +244,13 @@ describe('FormattingUtils', () => {
       });
 
       test('should return properly formated ISO datetime on valid moment input', () => {
-        expect(toISODateTime(moment('08/04/1994 10:45 AM'))).toEqual('1994-08-04T10:45:00.000-07:00');
-        expect(toISODateTime(moment('1994-08-04 10:45 PM'))).toEqual('1994-08-04T22:45:00.000-07:00');
-        expect(toISODateTime(moment('8-4-94 22:45'))).toEqual('1994-08-04T22:45:00.000-07:00');
-        expect(toISODateTime(moment('August 9 1995 7:59'))).toEqual('1995-08-09T07:59:00.000-07:00');
-        expect(toISODateTime(moment('August 9 1995 7:59:00 PM'))).toEqual('1995-08-09T19:59:00.000-07:00');
+        const stripTimeZone = str => str.slice(0, str.length - 5);
+
+        expect(stripTimeZone(toISODateTime(moment('08/04/1994 10:45 AM')))).toEqual('1994-08-04T10:45:00.000-');
+        expect(stripTimeZone(toISODateTime(moment('1994-08-04 10:45 PM')))).toEqual('1994-08-04T22:45:00.000-');
+        expect(stripTimeZone(toISODateTime(moment('8-4-94 22:45')))).toEqual('1994-08-04T22:45:00.000-');
+        expect(stripTimeZone(toISODateTime(moment('August 9 1995 7:59')))).toEqual('1995-08-09T07:59:00.000-');
+        expect(stripTimeZone(toISODateTime(moment('August 9 1995 7:59:00 PM')))).toEqual('1995-08-09T19:59:00.000-');
       });
 
     });
