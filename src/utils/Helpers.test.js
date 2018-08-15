@@ -5,7 +5,6 @@ import {
   getNextPath,
   getPrevPath,
   getIsLastPage,
-  getProgress,
   formatDOB,
   isNotNumber,
   isNotInteger
