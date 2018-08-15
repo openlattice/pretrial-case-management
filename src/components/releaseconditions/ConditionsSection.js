@@ -44,6 +44,16 @@ const render247Project = mapOptionsToCheckboxButtons => (
   </SubConditionsWrapper>
 );
 
+type Props = {
+  mapOptionsToRadioButtons :(options :{}, field :string) => void,
+  mapOptionsToCheckboxButtons :(options :{}, field :string) => void,
+  handleInputChange :(event :Object) => void,
+  renderNoContactPeople :() => void,
+  conditions :Object,
+  otherCondition :String,
+  disabled :boolean
+};
+
 const ConditionsSection = ({
   mapOptionsToRadioButtons,
   mapOptionsToCheckboxButtons,

@@ -7,7 +7,7 @@ import { RowWrapper, OptionsGrid } from './ReleaseConditionsStyledTags';
 import { RELEASES } from '../../utils/consts/ReleaseConditionConsts';
 
 type Props = {
-  mapOptionsToRadioButtons :() => void,
+  mapOptionsToRadioButtons :(options :{}, field :string) => void,
 };
 
 const DecisionSection = ({ mapOptionsToRadioButtons } :Props) => (
