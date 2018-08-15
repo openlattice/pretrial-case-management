@@ -661,8 +661,8 @@ class PSAModal extends React.Component<Props, State> {
       );
     }
 
-    const submittedOutcomes = !!this.props.neighbors.get(ENTITY_SETS.RELEASE_CONDITIONS);
-
+    const submittedOutcomes = !!this.props.neighbors
+      .getIn([ENTITY_SETS.DMF_RESULTS, 'neighborDetails', PROPERTY_TYPES.OUTCOME]);
     const releaseConditionsEntitySetId = this.props.neighbors
       .getIn([ENTITY_SETS.RELEASE_CONDITIONS, 0, 'neighborEntitySet', 'id'], '');
     const bondTypeEntitySetId = this.getEntitySetId(ENTITY_SETS.BONDS);

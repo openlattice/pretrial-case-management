@@ -777,7 +777,7 @@ class SelectReleaseConditions extends React.Component<Props, State> {
       time = formatDateTime(dateTime, 'HH:mm');
       courtroom = hearing.getIn([PROPERTY_TYPES.COURTROOM, 0], '');
       hearingInfoButton = (
-        this.state.disabled
+        this.props.submittedOutcomes
           ? null
           : (
             <HearingInfoButtons>
@@ -838,7 +838,6 @@ class SelectReleaseConditions extends React.Component<Props, State> {
 
   render() {
     const RELEASED = this.state[RELEASE] !== RELEASES.RELEASED;
-
     return (
       <Wrapper>
         {this.renderHearingInfo()}
