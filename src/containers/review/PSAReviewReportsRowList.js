@@ -84,6 +84,14 @@ const ReviewWrapper = styled.div`
   width: 100%;
 `;
 
+const SpinnerWrapper = styled.div`
+  margin: 20px;
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+`;
+
 type Props = {
   scoreSeq :Immutable.Seq,
   sort? :?string,
@@ -98,24 +106,6 @@ type Props = {
     loadCaseHistory :(values :{
       personId :string,
       neighbors :Immutable.Map<*, *>
-    }) => void,
-    updateScoresAndRiskFactors :(values :{
-      scoresEntitySetId :string,
-      scoresId :string,
-      scoresEntity :Immutable.Map<*, *>,
-      riskFactorsEntitySetId :string,
-      riskFactorsId :string,
-      riskFactorsEntity :Immutable.Map<*, *>,
-      dmfEntitySetId :string,
-      dmfId :string,
-      dmfEntity :Object,
-      dmfRiskFactorsEntitySetId :string,
-      dmfRiskFactorsId :string,
-      dmfRiskFactorsEntity :Object
-    }) => void,
-    changePSAStatus :(values :{
-      scoresId :string,
-      scoresEntity :Immutable.Map<*, *>
     }) => void,
     checkPSAPermissions :() => void,
     refreshPSANeighbors :({ id :string }) => void,
@@ -272,7 +262,7 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
     const { start } = this.state;
 
     if (loadingPSAData) {
-      return <LoadingSpinner />;
+      return <SpinnerWrapper><LoadingSpinner /></SpinnerWrapper>;
     }
 
     const items = this.sortItems(scoreSeq).slice(start, start + MAX_RESULTS);

@@ -7,6 +7,14 @@ import StyledInput from '../controls/StyledInput';
 import { RowWrapper, OptionsGrid, Row, Dollar } from './ReleaseConditionsStyledTags';
 import { BOND_TYPES } from '../../utils/consts/ReleaseConditionConsts';
 
+type Props = {
+  mapOptionsToRadioButtons :(options :{}, field :string) => void,
+  handleNumberInputChange :(event :Object) => void,
+  bondAmount :Number,
+  bondType :String,
+  disabled :boolean
+};
+
 const BondTypeSection = ({
   mapOptionsToRadioButtons,
   handleNumberInputChange,

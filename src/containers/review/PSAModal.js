@@ -530,8 +530,7 @@ class PSAModal extends React.Component<Props, State> {
 
   deleteHearing = () => {
     this.props.actions.deleteEntity({
-      entitySetId: this.props.neighbors
-        .getIn([ENTITY_SETS.HEARINGS, 'neighborEntitySet', 'id'], Immutable.Map()),
+      entitySetId: this.getEntitySetId(ENTITY_SETS.HEARINGS),
       entityKeyId: this.getEntityKeyId(ENTITY_SETS.HEARINGS)
     });
     this.props.actions.refreshPSANeighbors({ id: this.props.entityKeyId });
@@ -676,15 +675,13 @@ class PSAModal extends React.Component<Props, State> {
       );
     }
 
-    const submittedOutcomes = !!this.props.neighbors.get(ENTITY_SETS.RELEASE_CONDITIONS);
-
+    const submittedOutcomes = !!this.props.neighbors
+      .getIn([ENTITY_SETS.DMF_RESULTS, 'neighborDetails', PROPERTY_TYPES.OUTCOME]);
     const releaseConditionsEntitySetId = this.props.neighbors
-      .get(ENTITY_SETS.RELEASE_CONDITIONS, Immutable.List())
-      .map(neighbor => neighbor.getIn(['neighborEntitySet', 'id'], Immutable.Map())).get(0, '');
-    const bondTypeEntitySetId = this.props.neighbors
-      .getIn([ENTITY_SETS.BONDS, 'neighborEntitySet', 'id'], Immutable.Map());
-    const dmfTypeEntitySetId = this.props.neighbors
-      .getIn([ENTITY_SETS.DMF_RESULTS, 'neighborEntitySet', 'id'], Immutable.Map());
+      .getIn([ENTITY_SETS.RELEASE_CONDITIONS, 0, 'neighborEntitySet', 'id'], '');
+    const bondTypeEntitySetId = this.getEntitySetId(ENTITY_SETS.BONDS);
+    const dmfTypeEntitySetId = this.getEntitySetId(ENTITY_SETS.DMF_RESULTS);
+
     return (
       <ModalWrapper>
         <SelectReleaseConditions

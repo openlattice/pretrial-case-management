@@ -10,6 +10,14 @@ import { OUTCOMES } from '../../utils/consts/ReleaseConditionConsts';
 
 const { OTHER_OUTCOME_TEXT } = RELEASE_CONDITIONS;
 
+type Props = {
+  mapOptionsToRadioButtons :(options :{}, field :string) => void,
+  handleInputChange :(event :Object) => void,
+  outcome :String,
+  otherOutcome :String,
+  disabled :boolean
+};
+
 const OutcomeSection = ({
   mapOptionsToRadioButtons,
   handleInputChange,

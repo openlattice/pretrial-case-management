@@ -79,7 +79,9 @@ const Wrapper = styled.div`
     font-weight: normal;
     color: #555e6f;
   }
-  div:last-child { border: none; }
+  div:last-child {
+    border: none;
+  }
 `;
 
 const RadioWrapper = styled.div`
@@ -161,8 +163,12 @@ const StyledBasicButton = styled(BasicButton)`
 
 const StyledSearchableSelect = styled(SearchableSelect)`
   margin-top: 10px;
-  .SearchIcon img { margin: none; }
-  input { width: 100%; }
+  .SearchIcon img {
+    margin: none;
+  }
+  input {
+    width: 100%;
+  }
 `;
 
 const StyledDatePicker = styled(DatePicker)`
@@ -771,7 +777,7 @@ class SelectReleaseConditions extends React.Component<Props, State> {
       time = formatDateTime(dateTime, 'HH:mm');
       courtroom = hearing.getIn([PROPERTY_TYPES.COURTROOM, 0], '');
       hearingInfoButton = (
-        this.state.disabled
+        this.props.submittedOutcomes
           ? null
           : (
             <HearingInfoButtons>
@@ -831,8 +837,8 @@ class SelectReleaseConditions extends React.Component<Props, State> {
   }
 
   render() {
+    console.log(this.state);
     const RELEASED = this.state[RELEASE] !== RELEASES.RELEASED;
-
     return (
       <Wrapper>
         {this.renderHearingInfo()}

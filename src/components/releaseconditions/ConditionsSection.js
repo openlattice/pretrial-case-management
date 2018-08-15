@@ -18,7 +18,9 @@ const { OTHER_CONDITION_TEXT } = RELEASE_CONDITIONS;
 const SubConditionsWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  hr { margin: 20px 0 20px }
+  hr {
+    margin: 20px 0 20px
+  }
 `;
 
 const renderCheckInSection = mapOptionsToRadioButtons => (
@@ -41,6 +43,16 @@ const render247Project = mapOptionsToCheckboxButtons => (
     <hr />
   </SubConditionsWrapper>
 );
+
+type Props = {
+  mapOptionsToRadioButtons :(options :{}, field :string) => void,
+  mapOptionsToCheckboxButtons :(options :{}, field :string) => void,
+  handleInputChange :(event :Object) => void,
+  renderNoContactPeople :() => void,
+  conditions :Object,
+  otherCondition :String,
+  disabled :boolean
+};
 
 const ConditionsSection = ({
   mapOptionsToRadioButtons,

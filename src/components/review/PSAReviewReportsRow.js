@@ -9,7 +9,7 @@ import moment from 'moment';
 
 import PSAModal from '../../containers/review/PSAModal';
 import PersonCard from '../person/PersonCardReview';
-import PSAReportDownloadButton from './PSAReportDownloadButton'
+import PSAReportDownloadButton from './PSAReportDownloadButton';
 import PSAStats from './PSAStats';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { psaIsClosed } from '../../utils/PSAUtils';
@@ -117,24 +117,6 @@ type Props = {
   loadCaseHistoryFn :(values :{
     personId :string,
     neighbors :Immutable.Map<*, *>
-  }) => void,
-  updateScoresAndRiskFactors? :(values :{
-    scoresEntitySetId :string,
-    scoresId :string,
-    scoresEntity :Immutable.Map<*, *>,
-    riskFactorsEntitySetId :string,
-    riskFactorsId :string,
-    riskFactorsEntity :Immutable.Map<*, *>,
-    dmfEntitySetId :string,
-    dmfId :string,
-    dmfEntity :Object,
-    dmfRiskFactorsEntitySetId :string,
-    dmfRiskFactorsId :string,
-    dmfRiskFactorsEntity :Object
-  }) => void,
-  changePSAStatus? :(values :{
-    scoresId :string,
-    scoresEntity :Immutable.Map<*, *>
   }) => void,
   submitData :(value :{ config :Object, values :Object }) => void,
   replaceEntity :(value :{ entitySetName :string, entityKeyId :string, values :Object }) => void,

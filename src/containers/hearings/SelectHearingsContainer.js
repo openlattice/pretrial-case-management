@@ -49,7 +49,9 @@ const CenteredContainer = styled.div`
 `;
 
 const StyledSearchableSelect = styled(SearchableSelect)`
-  input { width: 100%; }
+  input {
+    width: 100%;
+  }
 `;
 
 const CreateButton = styled(InfoButton)`
