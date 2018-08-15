@@ -1,5 +1,7 @@
 import styled from 'styled-components';
 
+import { BOND_TYPES } from '../../utils/consts/ReleaseConditionConsts';
+
 export const RowWrapper = styled.div`
   display: flex;
   flex-direction: column;
@@ -15,8 +17,39 @@ export const OptionsGrid = styled.div`
 `;
 
 export const Row = styled.div`
-  width: 100%;
+  ${(props) => {
+    switch (props.type) {
+      case BOND_TYPES.CASH_ONLY:
+        return (
+          `margin-left: 25%;
+           width: 25%;
+           input {
+             transform: translateY(-50%);
+             }`
+        );
+      case BOND_TYPES.CASH_SURETY:
+        return (
+          `margin-left: 50%;
+           width: 25%;
+           input {
+             transform: translateY(-50%);
+             }`
+        );
+      default:
+        return (
+          'width: 100%'
+        );
+    }
+  }};
+  padding: 0 10px;
   display: flex;
   flex-direction: column;
   flex-wrap: wrap;
+`;
+
+export const Dollar = styled.div`
+  color: #8e929b;
+  width: fit-content;
+  z-index: 1;
+  transform: translateX(100%) translateY(50%);
 `;

@@ -4,7 +4,7 @@
 import React from 'react';
 
 import StyledInput from '../controls/StyledInput';
-import { RowWrapper, OptionsGrid, Row } from './ReleaseConditionsStyledTags';
+import { RowWrapper, OptionsGrid, Row, Dollar } from './ReleaseConditionsStyledTags';
 import { BOND_TYPES } from '../../utils/consts/ReleaseConditionConsts';
 
 const BondTypeSection = ({
@@ -22,12 +22,12 @@ const BondTypeSection = ({
     {
       (bondType === BOND_TYPES.CASH_ONLY || bondType === BOND_TYPES.CASH_SURETY)
         ? (
-          <Row>
+          <Row type={bondType} >
             <h3>Amount: </h3>
+            <Dollar>$</Dollar>
             <StyledInput
                 disabled={disabled}
                 name="bondAmount"
-                placeholder={`$${bondAmount}`}
                 value={bondAmount}
                 onChange={handleNumberInputChange} />
           </Row>
