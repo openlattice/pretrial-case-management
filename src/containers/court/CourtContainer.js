@@ -38,7 +38,7 @@ const ToolbarWrapper = styled(ButtonToolbar)`
 
 const StyledFormViewWrapper = styled.div`
   display: flex;
-  width: 1300px;
+  max-width: 960px;
   margin-left: -170px;
 `;
 
@@ -105,9 +105,9 @@ const PeopleWrapper = styled.div`
   width: 100%;
   padding: 20px 0 0 20px;
   border: 1px solid #f0f0f7;
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: 31% 31% 31%;
+  column-gap: 3%;
 `;
 
 const DatePickerWrapper = styled.div`
