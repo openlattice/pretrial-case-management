@@ -521,7 +521,8 @@ class PSAModal extends React.Component<Props, State> {
       entitySetId: this.props.neighbors
         .getIn([ENTITY_SETS.HEARINGS, 'neighborEntitySet', 'id'], Immutable.Map()),
       entityKeyId: this.getEntityKeyId(ENTITY_SETS.HEARINGS)
-    }).then(this.props.actions.refreshPSANeighbors({ id: this.props.entityKeyId }));
+    });
+    this.props.actions.refreshPSANeighbors({ id: this.props.entityKeyId });
   }
 
   getName = () => {
