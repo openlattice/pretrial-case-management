@@ -7,7 +7,7 @@ import styled from 'styled-components';
 import Immutable from 'immutable';
 
 import { getAllViolentCharges } from '../../utils/ArrestChargeUtils';
-import { chargeIsViolent, chargeIsMostSerious } from '../../utils/HistoricalChargeUtils';
+import { chargeIsViolent, chargeIsMostSerious, chargeIsGuilty } from '../../utils/HistoricalChargeUtils';
 import { formatValue, formatDateList } from '../../utils/FormattingUtils';
 import {
   ChargeItem,
@@ -16,13 +16,11 @@ import {
   ChargesWrapper,
   ChargeTag,
   ChargeTagWrapper,
-  InlineBold,
-  InfoSubHeader
+  InlineBold
 } from '../../utils/Layout';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 
 const {
-  MOST_SERIOUS_CHARGE_NO,
   CHARGE_STATUTE,
   CHARGE_DESCRIPTION,
   CHARGE_DEGREE
@@ -34,6 +32,11 @@ const MostSeriousTag = styled(ChargeTag)`
 
 const ViolentTag = styled(ChargeTag)`
   background-color: #ff3c5d;
+`;
+const ConvictedTag = styled(ChargeTag)`
+  color: #2e2e34;
+  font-weight: bold;
+  background-color: #b6bbc7;
 `;
 
 const PaddedChargeItem = styled(ChargeItem)`
@@ -81,6 +84,7 @@ export default class ChargeList extends React.Component<Props, *> {
   };
 
   renderTags = (charge :Immutable.Map<*, *>) => {
+    const convicted = chargeIsGuilty(charge);
     const mostSerious = chargeIsMostSerious(charge, this.props.pretrialCaseDetails);
     const violent = this.props.historical
       ? chargeIsViolent(charge)
@@ -91,6 +95,7 @@ export default class ChargeList extends React.Component<Props, *> {
       <ChargeTagWrapper>
         { (mostSerious) ? <MostSeriousTag>MOST SERIOUS</MostSeriousTag> : null }
         { (violent) ? <ViolentTag>VIOLENT</ViolentTag> : null }
+        { (convicted) ? <ConvictedTag>CONVICTED</ConvictedTag> : null }
       </ChargeTagWrapper>
     );
   }
