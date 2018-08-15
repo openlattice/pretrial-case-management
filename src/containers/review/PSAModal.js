@@ -132,7 +132,7 @@ const PSAFormHeader = styled.div`
   justify-content: space-between;
   align-items: center;
   border-bottom: solid 1px #e1e1eb !important;
-`
+`;
 
 const CloseModalX = styled.img.attrs({
   alt: '',
@@ -198,7 +198,7 @@ type Props = {
     }) => void,
     refreshPSANeighbors :({ id :string }) => void,
     replaceEntity :(value :{ entitySetName :string, entityKeyId :string, values :Object }) => void,
-    deleteEntity :(value :{ entitySetName :string, entityKeyId :string }) => void,
+    deleteEntity :(value :{ entitySetId :string, entityKeyId :string }) => void,
     submitData :(value :{ config :Object, values :Object }) => void
   }
 };
@@ -208,7 +208,8 @@ type State = {
   closing :boolean,
   view :string,
   riskFactors :Immutable.Map<*, *>,
-  dmf :Object
+  dmf :Object,
+  hearingExists :boolean,
 };
 
 const VIEWS = {
@@ -234,16 +235,17 @@ class PSAModal extends React.Component<Props, State> {
       closing: false,
       riskFactors: this.getRiskFactors(props.neighbors),
       view: VIEWS.SUMMARY,
-      dmf: this.getDMF(props.neighbors)
+      dmf: this.getDMF(props.neighbors),
+      hearingExists: !!this.props.neighbors.get(ENTITY_SETS.HEARINGS)
     };
   }
 
   componentWillReceiveProps(nextProps :Props) {
     this.setState({
       dmf: this.getDMF(nextProps.neighbors),
-      riskFactors: this.getRiskFactors(nextProps.neighbors)
+      riskFactors: this.getRiskFactors(nextProps.neighbors),
+      hearingExists: !!this.props.neighbors.get(ENTITY_SETS.HEARINGS)
     });
-
   }
 
   getNotesFromNeighbors = neighbors =>
@@ -514,6 +516,14 @@ class PSAModal extends React.Component<Props, State> {
     this.setState({ editing: false });
   }
 
+  deleteHearing = () => {
+    this.props.actions.deleteEntity({
+      entitySetId: this.props.neighbors
+        .getIn([ENTITY_SETS.HEARINGS, 'neighborEntitySet', 'id'], Immutable.Map()),
+      entityKeyId: this.getEntityKeyId(ENTITY_SETS.HEARINGS)
+    }).then(this.props.actions.refreshPSANeighbors({ id: this.props.entityKeyId }));
+  }
+
   getName = () => {
     const person = this.props.neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborDetails'], Immutable.Map());
     const firstName = person.getIn([PROPERTY_TYPES.FIRST_NAME, 0], '');
@@ -638,7 +648,7 @@ class PSAModal extends React.Component<Props, State> {
         </ModalWrapper>
       );
     }
-    if (!this.props.neighbors.get(ENTITY_SETS.HEARINGS)) {
+    if (!this.state.hearingExists) {
       return (
         <ModalWrapper>
           <SelectHearingsContainer
@@ -649,6 +659,9 @@ class PSAModal extends React.Component<Props, State> {
         </ModalWrapper>
       );
     }
+
+    const submittedOutcomes = !!this.props.neighbors.get(ENTITY_SETS.RELEASE_CONDITIONS);
+
     const releaseConditionsEntitySetId = this.props.neighbors
       .get(ENTITY_SETS.RELEASE_CONDITIONS, Immutable.List())
       .map(neighbor => neighbor.getIn(['neighborEntitySet', 'id'], Immutable.Map())).get(0, '');
@@ -660,6 +673,8 @@ class PSAModal extends React.Component<Props, State> {
       <ModalWrapper>
         <SelectReleaseConditions
             submitting={this.props.submitting}
+            submittedOutcomes={submittedOutcomes}
+            neighbors={this.props.neighbors}
             personId={this.getIdValue(ENTITY_SETS.PEOPLE, PROPERTY_TYPES.PERSON_ID)}
             psaId={this.props.scores.getIn([PROPERTY_TYPES.GENERAL_ID, 0])}
             dmfId={this.getIdValue(ENTITY_SETS.DMF_RESULTS)}
@@ -669,6 +684,7 @@ class PSAModal extends React.Component<Props, State> {
             submitCallback={this.refreshPSANeighborsCallback}
             hearing={this.props.neighbors.getIn([ENTITY_SETS.HEARINGS, 'neighborDetails'], Immutable.Map())}
             hearingId={this.getEntityKeyId(ENTITY_SETS.HEARINGS)}
+            deleteHearing={this.deleteHearing}
             realeaseConditionsEntitySetId={releaseConditionsEntitySetId}
             bondTypeEntitySetId={bondTypeEntitySetId}
             dmfTypeEntitySetId={dmfTypeEntitySetId}
@@ -749,12 +765,12 @@ function mapDispatchToProps(dispatch :Function) :Object {
     actions[action] = ReviewActionFactory[action];
   });
 
-  Object.keys(SubmitActionFactory).forEach((action :string) => {
-    actions[action] = SubmitActionFactory[action];
-  });
-
   Object.keys(DataActionFactory).forEach((action :string) => {
     actions[action] = DataActionFactory[action];
+  });
+
+  Object.keys(SubmitActionFactory).forEach((action :string) => {
+    actions[action] = SubmitActionFactory[action];
   });
 
   return {
