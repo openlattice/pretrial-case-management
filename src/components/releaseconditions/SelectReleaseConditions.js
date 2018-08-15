@@ -237,7 +237,12 @@ class SelectReleaseConditions extends React.Component<Props, State> {
   }
 
   componentWillReceiveProps(nextProps :Props) {
-    const { defaultDMF, defaultBond, defaultConditions } = this.props;
+    const {
+      defaultDMF,
+      defaultBond,
+      defaultConditions
+    } = this.props;
+
     if (
       !nextProps.defaultDMF.size === defaultDMF.size
       || !nextProps.defaultBond.size === defaultBond.size
@@ -723,7 +728,6 @@ class SelectReleaseConditions extends React.Component<Props, State> {
         .set(PROPERTY_TYPES.DATE_TIME, [hearingDateTime.toISOString(true)])
         .set(PROPERTY_TYPES.HEARING_TYPE, ['Initial Appearance'])
         .toJS();
-
       this.props.replace({
         entitySetName: ENTITY_SETS.HEARINGS,
         entityKeyId: this.props.hearingId,
@@ -742,14 +746,13 @@ class SelectReleaseConditions extends React.Component<Props, State> {
     let hearingInfoButton;
     if (this.state.modifyingHearing) {
       date = (<StyledDatePicker
-          value={this.state.newHearingDate}
+          value={this.state.newHearingDate || dateTime}
           placeholder={`${formatDateTime(dateTime, 'MM/DD/YYYY')}`}
           onChange={newHearingDate => this.setState({ newHearingDate })}
           clearButton={false} />);
       time = (<StyledSearchableSelect
           options={getTimeOptions()}
-          value={this.state.newHearingTime}
-          placeholder={`${formatDateTime(dateTime, 'HH:mm')}`}
+          value={this.state.newHearingTime || formatDateTime(dateTime, 'HH:mm')}
           onSelect={newHearingTime => this.setState({ newHearingTime })}
           short />);
       courtroom = (<StyledSearchableSelect
@@ -797,6 +800,9 @@ class SelectReleaseConditions extends React.Component<Props, State> {
       }
     ];
 
+    const backToSelectionButton = !this.props.submittedOutcomes ?
+      <StyledBasicButton onClick={this.props.deleteHearing}>Back to Selection</StyledBasicButton> : null;
+
     const hearingInfoContent = HEARING_ARR.map(hearingItem => (
       <ContentBlock
           component={CONTENT_CONSTS.HEARINGS}
@@ -818,7 +824,7 @@ class SelectReleaseConditions extends React.Component<Props, State> {
       <HearingSectionWrapper>
         {hearingInfoSection}
         <HearingSectionAside>
-          {/* { this.state.disabled ? null : (<StyledBasicButton>Back to Selection</StyledBasicButton>)} */}
+          {backToSelectionButton}
           {hearingInfoButton}
         </HearingSectionAside>
       </HearingSectionWrapper>
