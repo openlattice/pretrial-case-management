@@ -22,6 +22,7 @@ export const Row = styled.div`
       case BOND_TYPES.CASH_ONLY:
         return (
           `margin-left: 25%;
+           margin-bottom: -15px;
            width: 25%;
            input {
              transform: translateY(-50%);
@@ -30,6 +31,7 @@ export const Row = styled.div`
       case BOND_TYPES.CASH_SURETY:
         return (
           `margin-left: 50%;
+           margin-bottom: -15px;
            width: 25%;
            input {
              transform: translateY(-50%);
