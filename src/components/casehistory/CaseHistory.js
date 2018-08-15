@@ -153,7 +153,6 @@ const CaseHistory = ({ caseHistory, chargeHistory } :Props) => {
             <InfoItem>{`File Date: ${fileDate}`}</InfoItem>
           </InfoRow>
           <ChargeList pretrialCaseDetails={caseObj} charges={charges} detailed historical />
-          <hr />
         </InfoHeaderWrapper>
       );
     });
