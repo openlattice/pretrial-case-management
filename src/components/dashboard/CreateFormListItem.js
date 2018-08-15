@@ -18,6 +18,8 @@ const ItemWrapper = styled(Link)`
   padding: 8px;
   margin: 10px 0;
   width: 100%;
+  border: 1px solid #e1e1eb;
+  border-radius: 5px;
 
   &:hover {
     background: #dcdcdc;
