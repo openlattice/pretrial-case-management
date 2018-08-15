@@ -79,7 +79,9 @@ const Wrapper = styled.div`
     font-weight: normal;
     color: #555e6f;
   }
-  div:last-child { border: none; }
+  div:last-child {
+    border: none;
+  }
 `;
 
 const RadioWrapper = styled.div`
@@ -161,8 +163,12 @@ const StyledBasicButton = styled(BasicButton)`
 
 const StyledSearchableSelect = styled(SearchableSelect)`
   margin-top: 10px;
-  .SearchIcon img { margin: none; }
-  input { width: 100%; }
+  .SearchIcon img {
+    margin: none;
+  }
+  input {
+    width: 100%;
+  }
 `;
 
 const StyledDatePicker = styled(DatePicker)`

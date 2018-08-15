@@ -18,7 +18,9 @@ const { OTHER_CONDITION_TEXT } = RELEASE_CONDITIONS;
 const SubConditionsWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  hr { margin: 20px 0 20px }
+  hr {
+    margin: 20px 0 20px
+  }
 `;
 
 const renderCheckInSection = mapOptionsToRadioButtons => (
