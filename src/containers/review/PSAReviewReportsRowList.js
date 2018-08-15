@@ -99,24 +99,6 @@ type Props = {
       personId :string,
       neighbors :Immutable.Map<*, *>
     }) => void,
-    updateScoresAndRiskFactors :(values :{
-      scoresEntitySetId :string,
-      scoresId :string,
-      scoresEntity :Immutable.Map<*, *>,
-      riskFactorsEntitySetId :string,
-      riskFactorsId :string,
-      riskFactorsEntity :Immutable.Map<*, *>,
-      dmfEntitySetId :string,
-      dmfId :string,
-      dmfEntity :Object,
-      dmfRiskFactorsEntitySetId :string,
-      dmfRiskFactorsId :string,
-      dmfRiskFactorsEntity :Object
-    }) => void,
-    changePSAStatus :(values :{
-      scoresId :string,
-      scoresEntity :Immutable.Map<*, *>
-    }) => void,
     checkPSAPermissions :() => void,
     refreshPSANeighbors :({ id :string }) => void,
     submit :(value :{ config :Object, values :Object}) => void,
