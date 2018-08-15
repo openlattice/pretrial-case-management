@@ -51,7 +51,7 @@ export const formatDOB = (dob :string) :string => {
   return dobMoment.format('MM/DD/YYYY');
 };
 
-export const isNotNumber = (number :string|number) :boolean => {
+export const isNotNumber = (number :string | number) :boolean => {
   if (number === null || number === undefined) return true;
   let formattedStr = `${number}`;
   const suffix = formattedStr.match(/\.0*$/);
@@ -62,7 +62,7 @@ export const isNotNumber = (number :string|number) :boolean => {
   return Number.isNaN(floatVal) || floatVal.toString() !== formattedStr;
 };
 
-export const isNotInteger = (number :string|number) :boolean => {
+export const isNotInteger = (number :string | number) :boolean => {
   if (number === null || number === undefined) return true;
   const numberStr = `${number}`;
   const intVal = parseInt(numberStr, 10);
