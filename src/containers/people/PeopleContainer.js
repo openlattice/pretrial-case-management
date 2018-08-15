@@ -56,7 +56,7 @@ const FilterWrapper = styled.div`
   flex-direction: row;
   align-items: center;
   white-space: nowrap;
-  width: 25%;
+  width: 13%;
   margin-top: -10px;
 `;
 
