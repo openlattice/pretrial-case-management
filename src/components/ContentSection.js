@@ -32,6 +32,16 @@ const StyledContentBlockWrapper = styled.div`
            grid-auto-rows: min-content;
            grid-row-gap: 20px;`
         );
+      case CONTENT_CONSTS.HEARINGS:
+        return (
+          `grid-template-columns: 32% 32% 32%;
+           grid-auto-rows: min-content;
+           grid-column-gap: 2%;
+           grid-row-gap: 20px;
+           :nth-last-child(4) {
+             justify-content: flex-end;
+           }`
+        );
       default:
         return (
           `grid-template-columns: 50% 50%;
@@ -76,10 +86,14 @@ const StyledSectionHeader = styled.div`
            border-bottom: solid 1px #e1e1eb;
            font-size: 22px;`
         );
+      case CONTENT_CONSTS.HEARINGS:
+        return (
+          `padding: 30px 0 0 50px;
+           font-size: 16px;`
+        );
       default:
         return (
           `padding: 30px;
-           border-bottom: solid 1px #e1e1eb;
            font-size: 22px;`
         );
     }
@@ -87,7 +101,6 @@ const StyledSectionHeader = styled.div`
 `;
 const StyledSectionBottomBarWrapper = styled.div`
   width: 100%;
-  padding: 30px;
   display: flex;
   flex-direction: row;
   justify-content: center;
@@ -114,6 +127,10 @@ const StyledSectionBottomBarWrapper = styled.div`
              margin-right: 50px;
            }`
         );
+      case CONTENT_CONSTS.HEARINGS:
+        return (
+          'padding: 30px 50px 0 50px;'
+        );
       default:
         return (
           `padding: 30px 0 0 30px;
@@ -123,6 +140,7 @@ const StyledSectionBottomBarWrapper = styled.div`
         );
     }
   }};
+  ${props => (props.modifyingHearing ? 'padding-top: 8px;' : '')}
 `;
 
 
@@ -133,6 +151,7 @@ const ContentSection = ({
   firstName,
   middleName,
   lastName,
+  modifyingHearing,
   ...props
 } :Props) => {
   const renderContent = () => {
@@ -149,7 +168,7 @@ const ContentSection = ({
   return (
     <StyledSection>
       <StyledSectionHeader renderHeader component={component}>{renderHeader}</StyledSectionHeader>
-      <StyledSectionBottomBarWrapper component={component}>
+      <StyledSectionBottomBarWrapper component={component} modifyingHearing={modifyingHearing} >
         {renderPhoto}
         <StyledContentBlockWrapper component={component}>
           { renderContent() }

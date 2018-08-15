@@ -11,23 +11,26 @@ export const RadioInputContainer = styled.input.attrs({
 `;
 
 export const RadioContainer = styled.label`
-  display: inline-flex;
+  display: flex;
+  width: 100%;
 `;
 
 export const RadioSelection = styled.span`
   padding: 10px 12px;
+  width: 100%;
   min-width: 84px;
-  height: 38px;
+  height: ${props => (props.large ? '56px' : '38px')};
   border-radius: 3px;
   background-color: #f9f9fd;
   font-family: 'Open Sans', sans-serif;
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 13.5px;
+  font-weight: normal;
   color: #8e929b;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  text-align: center;
 
   ${RadioContainer}:hover ${RadioInputContainer}:enabled:not(:checked) ~ & {
     background-color: #dcdce7;
@@ -37,6 +40,7 @@ export const RadioSelection = styled.span`
   ${RadioContainer} ${RadioInputContainer}:checked ~ & {
     background-color: #e4d8ff;
     color: #6124e2;
+    border: solid 1px #b092f1;
   }
 
   ${RadioContainer} ${RadioInputContainer}:disabled ~ & {
@@ -47,6 +51,7 @@ export const RadioSelection = styled.span`
     background-color: #dcdce7;
     color: #8e929b;
     cursor: default;
+    border: none;
   }
 `;
 
@@ -56,7 +61,8 @@ const StyledRadioButton = ({
   value,
   checked,
   onChange,
-  disabled
+  disabled,
+  large
 }) => (
   <RadioContainer>
     <RadioInputContainer
@@ -65,7 +71,7 @@ const StyledRadioButton = ({
         checked={checked}
         onChange={onChange}
         disabled={disabled} />
-    <RadioSelection>{label}</RadioSelection>
+    <RadioSelection large={large}>{label}</RadioSelection>
   </RadioContainer>
 );
 
@@ -78,13 +84,15 @@ StyledRadioButton.propTypes = {
   ]).isRequired,
   checked: PropTypes.bool,
   onChange: PropTypes.func.isRequired,
-  disabled: PropTypes.bool
+  disabled: PropTypes.bool,
+  large: PropTypes.bool
 };
 
 StyledRadioButton.defaultProps = {
   disabled: false,
   name: undefined,
-  checked: false
+  checked: false,
+  large: false
 };
 
 export default StyledRadioButton;

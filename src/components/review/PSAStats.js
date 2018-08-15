@@ -40,9 +40,8 @@ const DetailRow = styled.div`
 const DetailItem = styled.div`
   display: flex;
   flex-direction: column;
-  width: ${props => (props.hideStatus ? '0' : '20%')};
+  width: 20%;
   position: relative;
-  visibility: ${props => (props.hideStatus ? 'hidden' : 'auto')};
 
   h1 {
     font-family: 'Open Sans', sans-serif;
@@ -114,12 +113,11 @@ const SCALE_DIMS = { height: 20, width: 96 };
 const FLAG_DIMS = { height: 28, width: 74 };
 
 type Props = {
-  hideStatus :boolean,
   scores :Immutable.Map<*, *>,
   downloadButton :() => void
 };
 
-const PSAStats = ({ scores, downloadButton, hideStatus } :Props) => {
+const PSAStats = ({ scores, downloadButton } :Props) => {
   const status = scores.getIn([PROPERTY_TYPES.STATUS, 0], '');
   const ftaVal = scores.getIn([PROPERTY_TYPES.FTA_SCALE, 0]);
   const ncaVal = scores.getIn([PROPERTY_TYPES.NCA_SCALE, 0]);
@@ -139,8 +137,8 @@ const PSAStats = ({ scores, downloadButton, hideStatus } :Props) => {
   return (
     <Wrapper>
       <DetailsWrapper>
-        <DetailRow downloadVisible={downloadVisible} hideStatus={hideStatus}>
-          <DetailItem hideStatus={hideStatus}>
+        <DetailRow downloadVisible={downloadVisible}>
+          <DetailItem>
             <h1>PSA Status</h1>
             <div><StatusTag status={status}>{status}</StatusTag></div>
           </DetailItem>

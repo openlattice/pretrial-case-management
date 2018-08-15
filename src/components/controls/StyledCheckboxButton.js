@@ -10,23 +10,26 @@ export const CheckboxInputContainer = styled.input.attrs({
 `;
 
 export const CheckboxContainer = styled.label`
-  display: inline-flex;
+  display: flex;
+  width: 100%;
 `;
 
 export const CheckboxSelection = styled.span`
-  padding: 10px 12px;
+  padding: 9px 22px;
+  width: 100%;
   min-width: 84px;
-  height: 38px;
+  height: ${props => (props.large ? '56px' : '38px')};
   border-radius: 3px;
   background-color: #f9f9fd;
   font-family: 'Open Sans', sans-serif;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: normal;
   color: #8e929b;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  text-align: center;
   position: relative;
 
   ${CheckboxContainer}:hover ${CheckboxInputContainer}:enabled:not(:checked) ~ & {
@@ -52,6 +55,7 @@ export const CheckboxSelection = styled.span`
     background-color: #dcdce7;
     color: #8e929b;
     cursor: default;
+    border: none;
   }
 `;
 
@@ -61,7 +65,8 @@ const StyledCheckboxButton = ({
   value,
   checked,
   onChange,
-  disabled
+  disabled,
+  large
 }) => (
   <CheckboxContainer>
     <CheckboxInputContainer
@@ -70,7 +75,7 @@ const StyledCheckboxButton = ({
         checked={checked}
         onChange={onChange}
         disabled={disabled} />
-    <CheckboxSelection>{label}</CheckboxSelection>
+    <CheckboxSelection large={large} >{label}</CheckboxSelection>
   </CheckboxContainer>
 );
 
@@ -83,13 +88,15 @@ StyledCheckboxButton.propTypes = {
   ]).isRequired,
   checked: PropTypes.bool,
   onChange: PropTypes.func.isRequired,
-  disabled: PropTypes.bool
+  disabled: PropTypes.bool,
+  large: PropTypes.bool
 };
 
 StyledCheckboxButton.defaultProps = {
   disabled: false,
   name: undefined,
-  checked: false
+  checked: false,
+  large: false
 };
 
 export default StyledCheckboxButton;

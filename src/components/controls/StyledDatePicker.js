@@ -7,6 +7,7 @@ import calendarIcon from '../../assets/svg/calendar-icon.svg';
 const DatePickerWrapper = styled.div`
   position: relative;
   height: 39px;
+  width: 100%;
   min-width: 140px;
 `;
 
@@ -17,6 +18,10 @@ const IconWrapper = styled.div`
   display: flex;
   justify-content: center;
   visibility: ${props => (props.clearButton ? 'hidden' : 'visible')};
+
+  img {
+    margin-top: ${props => (props.paddingTop ? '20px' : '0')};
+  }
 `;
 
 const StyledDatePickerInput = styled(DatePicker)`
@@ -146,7 +151,7 @@ const onKeyPress = (e, props) => {
 const StyledDatePicker = props => (
   <DatePickerWrapper onKeyPress={e => onKeyPress(e, props)}>
     <StyledDatePickerInput {...props} showClearButton={props.clearButton} />
-    <IconWrapper clearButton={props.clearButton} >
+    <IconWrapper clearButton={props.clearButton} paddingTop={props.paddingTop}>
       <img src={calendarIcon} role="presentation" />
     </IconWrapper>
   </DatePickerWrapper>
