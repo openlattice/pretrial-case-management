@@ -64,6 +64,10 @@ type Props = {
 
 const HearingCardsHolder = ({ hearings, handleSelect } :Props) => {
 
+  if (!hearings.size) {
+    return <div>No hearings found.</div>
+  }
+
   const hearingOptions = hearings.map((hearing) => {
     const dateTime = hearing.getIn([PROPERTY_TYPES.DATE_TIME, 0], '');
     const date = formatDateTime(dateTime, 'MM/DD/YYYY');
