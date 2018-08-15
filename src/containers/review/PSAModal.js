@@ -51,6 +51,10 @@ const DownloadButtonContainer = styled.div`
 const ModalWrapper = styled.div`
   max-height: 100%;
   padding: ${props => (props.withPadding ? '30px' : '0')};
+  hr {
+    margin: ${props => (props.withPadding ? '30px -30px' : '15px 0')};
+    width: ${props => (props.withPadding ? 'calc(100% + 60px)' : '100%')};
+  }
 `;
 
 const NoDMFContainer = styled(CenteredContainer)`
@@ -91,10 +95,17 @@ const SubmittingWrapper = styled.div`
 `;
 
 const Title = styled.div`
+  display: flex;
+  flex-direction: column;
   font-family: 'Open Sans', sans-serif;
   font-size: 16px;
   color: #555e6f;
   margin: 20px 0;
+
+  span:first-child {
+    font-weight: ${props => (props.withSubtitle ? '600' : '400')};
+    padding-bottom: 5px;
+  }
 `;
 
 const ClosePSAButton = styled(StyledButton)`
@@ -632,9 +643,12 @@ class PSAModal extends React.Component<Props, State> {
 
   renderCaseHistory = () => (
     <ModalWrapper withPadding>
-      <Title>Timeline (past two years)</Title>
+      <Title withSubtitle>
+        <span>Timeline</span>
+        <span>Convictions in past two years</span>
+      </Title>
       <CaseHistoryTimeline caseHistory={this.props.caseHistory} chargeHistory={this.props.chargeHistory} />
-      <Title>All cases</Title>
+      <hr />
       <CaseHistory modal caseHistory={this.props.caseHistory} chargeHistory={this.props.chargeHistory} />
     </ModalWrapper>
   );
