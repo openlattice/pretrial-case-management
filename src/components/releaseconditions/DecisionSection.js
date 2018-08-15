@@ -6,7 +6,7 @@ import React from 'react';
 import { RowWrapper, OptionsGrid } from './ReleaseConditionsStyledTags';
 import { RELEASES } from '../../utils/consts/ReleaseConditionConsts';
 
-const DecisionSection = ({ mapOptionsToRadioButtons } :Props) => (
+const DecisionSection = mapOptionsToRadioButtons => (
   <RowWrapper>
     <h1>Decision</h1>
     <OptionsGrid numColumns={2}>
