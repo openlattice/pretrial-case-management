@@ -10,7 +10,7 @@ import rightArrow from '../../assets/svg/dmf-arrow.svg';
 import {
   getDMFDecision,
   shouldCheckForSecondaryRelease
-} from '../../utils/consts/DMFResultConsts';
+} from '../../utils/DMFUtils';
 
 const StepFive = ({
   shouldRender,

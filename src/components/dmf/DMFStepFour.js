@@ -13,7 +13,7 @@ import rightArrow from '../../assets/svg/dmf-arrow.svg';
 import {
   getDMFDecision,
   increaseDMFSeverity
-} from '../../utils/consts/DMFResultConsts';
+} from '../../utils/DMFUtils';
 import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
 
 const StepFour = ({

@@ -6,7 +6,7 @@ import React from 'react';
 import { Button } from 'react-bootstrap';
 
 import DMFCell from '../../components/dmf/DMFCell';
-import { getHeaderText } from '../../utils/consts/DMFResultConsts';
+import { getHeaderText } from '../../utils/DMFUtils';
 import {
   ButtonWrapper,
   CenteredContainer,
