@@ -746,6 +746,7 @@ class SelectReleaseConditions extends React.Component<Props, State> {
     let hearingInfoButton;
     if (this.state.modifyingHearing) {
       date = (<StyledDatePicker
+          paddingTop
           value={this.state.newHearingDate || dateTime}
           placeholder={`${formatDateTime(dateTime, 'MM/DD/YYYY')}`}
           onChange={newHearingDate => this.setState({ newHearingDate })}
