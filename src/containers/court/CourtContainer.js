@@ -39,14 +39,13 @@ const ToolbarWrapper = styled(ButtonToolbar)`
 const StyledFormViewWrapper = styled.div`
   display: flex;
   max-width: 960px;
-  margin-left: -170px;
 `;
 
 const StyledFormWrapper = styled.div`
   display: flex;
   flex-direction: column;
   margin: 55px auto;
-  width: 1300px;
+  width: 100%;
 `;
 
 const StyledTitleWrapper = styled.div`
