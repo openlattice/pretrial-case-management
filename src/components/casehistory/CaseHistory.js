@@ -13,23 +13,23 @@ import { getSummaryStats } from '../../utils/HistoricalChargeUtils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 
 const InfoRow = styled.div`
+  background-color: #f5f5f8;
   display: flex;
   flex-direction: row;
-  justify-content: center;
-  margin: 15px 0;
+  padding: 15px 0;
+  margin: 0 -30px;
 `;
 
 const InfoItem = styled.div`
   margin: 0 20px;
+  color: #555e6f;
 `;
 
-const InfoHeader = styled.span`
-  font-weight: bold;
+const InfoHeaderWrapper = styled.span`
 `;
 
 const CaseHistoryContainer = styled.div`
-  max-height: 750px;
-  overflow: scroll;
+  height: 100%;
 `;
 
 const StatsContainer = styled.div`
@@ -147,14 +147,14 @@ const CaseHistory = ({ caseHistory, chargeHistory } :Props) => {
       const charges = chargeHistory.get(caseNum);
       const fileDate = formatDateList(caseObj.get(PROPERTY_TYPES.FILE_DATE, Immutable.List()));
       return (
-        <div key={caseNum}>
+        <InfoHeaderWrapper key={caseNum}>
           <InfoRow>
-            <InfoItem><InfoHeader>Case #: </InfoHeader>{caseNum}</InfoItem>
-            <InfoItem><InfoHeader>File Date: </InfoHeader>{fileDate}</InfoItem>
+            <InfoItem>{`Case Number: ${caseNum}`}</InfoItem>
+            <InfoItem>{`File Date: ${fileDate}`}</InfoItem>
           </InfoRow>
           <ChargeList pretrialCaseDetails={caseObj} charges={charges} detailed historical />
           <hr />
-        </div>
+        </InfoHeaderWrapper>
       );
     });
 
