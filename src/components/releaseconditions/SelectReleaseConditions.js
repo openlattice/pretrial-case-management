@@ -276,9 +276,7 @@ class SelectReleaseConditions extends React.Component<Props, State> {
 
     if (defaultBond.size || defaultConditions.size) {
       const bondType = defaultBond.getIn([PROPERTY_TYPES.BOND_TYPE, 0]);
-      const bondAmount = bondType === BOND_TYPES.CASH_ONLY
-        ? defaultBond.getIn([PROPERTY_TYPES.BOND_AMOUNT, 0], '')
-        : defaultBond.getIn([PROPERTY_TYPES.SURETY_AMOUNT, 0], '');
+      const bondAmount = defaultBond.getIn([PROPERTY_TYPES.BOND_AMOUNT, 0], '');
 
       let conditionsByType = Immutable.Map();
       defaultConditions.forEach((condition) => {
@@ -834,7 +832,7 @@ class SelectReleaseConditions extends React.Component<Props, State> {
 
   render() {
     const RELEASED = this.state[RELEASE] !== RELEASES.RELEASED;
-    console.log(this.state);
+
     return (
       <Wrapper>
         {this.renderHearingInfo()}
