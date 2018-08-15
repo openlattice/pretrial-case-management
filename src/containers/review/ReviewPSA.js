@@ -143,6 +143,7 @@ const LoadingText = styled.div`
   font-size: 16px;
   text-align: center;
   width: 960px;
+  margin-bottom: 20px;
 `;
 
 type Props = {

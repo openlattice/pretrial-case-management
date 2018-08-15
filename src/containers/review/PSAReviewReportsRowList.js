@@ -84,6 +84,14 @@ const ReviewWrapper = styled.div`
   width: 100%;
 `;
 
+const SpinnerWrapper = styled.div`
+  margin: 20px;
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+`;
+
 type Props = {
   scoreSeq :Immutable.Seq,
   sort? :?string,
@@ -254,7 +262,7 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
     const { start } = this.state;
 
     if (loadingPSAData) {
-      return <LoadingSpinner />;
+      return <SpinnerWrapper><LoadingSpinner /></SpinnerWrapper>;
     }
 
     const items = this.sortItems(scoreSeq).slice(start, start + MAX_RESULTS);

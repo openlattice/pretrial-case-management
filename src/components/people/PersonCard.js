@@ -20,6 +20,10 @@ type Props = {
   }
 };
 
+const StyledPersonCard = styled(StyledCard)`
+  width: 100%;
+`
+
 const PersonInfoSection = styled.div`
   margin-left: 20px;
   display: flex;
@@ -62,7 +66,7 @@ const PersonCard = ({ person } :Props) => {
 
   return (
     <UndecoratedLink to={`${Routes.PERSON_DETAILS_ROOT}/${identification}`}>
-      <StyledCard>
+      <StyledPersonCard>
         <Headshot photo={photo} />
         <PersonInfoSection>
           <Name>{name}</Name>
@@ -71,7 +75,7 @@ const PersonCard = ({ person } :Props) => {
             <Dob>{dob}</Dob>
           </div>
         </PersonInfoSection>
-      </StyledCard>
+      </StyledPersonCard>
     </UndecoratedLink>
   );
 };
