@@ -15,9 +15,11 @@ import PeopleList from '../../components/people/PeopleList';
 import DashboardMainSection from '../../components/dashboard/DashboardMainSection';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import NavButtonToolbar from '../../components/buttons/NavButtonToolbar';
+import DropDownMenu from '../../components/StyledSelect';
 import { searchPeopleRequest } from '../person/PersonActionFactory';
 import { PSA_STATUSES } from '../../utils/consts/Consts';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { DOMAIN_OPTIONS_ARR } from '../../utils/consts/ReviewPSAConsts';
 import { formatDOB } from '../../utils/Helpers';
 import * as Routes from '../../core/router/Routes';
 import * as ReviewActionFactory from '../review/ReviewActionFactory';
@@ -42,6 +44,22 @@ const ErrorHeader = styled.div`
   text-decoration: underline;
 `;
 
+const ToolbarWrapper = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: flex-start;
+`;
+
+const FilterWrapper = styled.div`
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  white-space: nowrap;
+  width: 25%;
+  margin-top: -10px;
+`;
+
 type Props = {
   isFetchingPeople :boolean,
   peopleResults :Immutable.List<*>,
@@ -56,6 +74,7 @@ type Props = {
 
 type State = {
   didMapPeopleToProps :boolean,
+  countyFilter :string,
   peopleList :string[]
 };
 
@@ -65,6 +84,7 @@ class PeopleContainer extends React.Component<Props, State> {
 
     this.state = {
       didMapPeopleToProps: false,
+      countyFilter: '',
       peopleList: []
     };
   }
@@ -168,13 +188,20 @@ class PeopleContainer extends React.Component<Props, State> {
   }
 
   getPeopleRequiringAction = () => {
+    const { countyFilter } = this.state;
+
     let peopleById = Immutable.Map();
 
     this.props.psaNeighborsById.valueSeq().forEach((neighbors) => {
-      const neighbor = neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborDetails'], Immutable.Map());
-      const personId = neighbor.get(PROPERTY_TYPES.PERSON_ID);
-      if (personId) {
-        peopleById = peopleById.set(personId, peopleById.get(personId, Immutable.List()).push(neighbor));
+      const staffMatchingFilter = neighbors.get(ENTITY_SETS.STAFF, Immutable.List()).filter(neighbor =>
+        neighbor.getIn(['neighborDetails', PROPERTY_TYPES.PERSON_ID, 0], '').includes(countyFilter));
+
+      if (!countyFilter.length || staffMatchingFilter.size) {
+        const neighbor = neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborDetails'], Immutable.Map());
+        const personId = neighbor.get(PROPERTY_TYPES.PERSON_ID);
+        if (personId) {
+          peopleById = peopleById.set(personId, peopleById.get(personId, Immutable.List()).push(neighbor));
+        }
       }
     });
 
@@ -202,6 +229,21 @@ class PeopleContainer extends React.Component<Props, State> {
     );
   }
 
+  renderCountyDropdown = () => {
+    if (!window.location.href.includes(Routes.REQUIRES_ACTION_PEOPLE)) {
+      return null;
+    }
+    return (
+      <FilterWrapper>
+        <DropDownMenu
+            placeholder="All counties"
+            classNamePrefix="lattice-select"
+            options={DOMAIN_OPTIONS_ARR}
+            onChange={e => this.setState({ countyFilter: e.value })} />
+      </FilterWrapper>
+    );
+  }
+
   render() {
     const navButtons = [
       {
@@ -220,7 +262,10 @@ class PeopleContainer extends React.Component<Props, State> {
 
     return (
       <DashboardMainSection>
-        <NavButtonToolbar options={navButtons} />
+        <ToolbarWrapper>
+          <NavButtonToolbar options={navButtons} />
+          {this.renderCountyDropdown()}
+        </ToolbarWrapper>
         <Switch>
           <Route path={Routes.REQUIRES_ACTION_PEOPLE} render={this.renderRequiresActionPeopleComponent} />
           <Route path={Routes.SEARCH_PEOPLE} render={this.renderSearchPeopleComponent} />

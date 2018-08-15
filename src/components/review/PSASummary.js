@@ -20,7 +20,7 @@ import {
   getDMFDecision,
   increaseDMFSeverity,
   formatDMFFromEntity
-} from '../../utils/consts/DMFResultConsts';
+} from '../../utils/DMFUtils';
 import { formatDateTimeList } from '../../utils/FormattingUtils';
 import {
   stepTwoIncrease,

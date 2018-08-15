@@ -45,26 +45,26 @@ export const getIsLastPage = (location :Location, optionalNumPages :?number) :bo
   return getPage(splitStr) === numPages;
 };
 
-export const getProgress = (location :Location, numPages :number) :{} => {
-  const splitStr = getSplitStr(location);
-  const page = getPage(splitStr);
-  const num = Math.ceil(((page - 1) / (numPages - 1)) * 100);
-  const percentage = `${num.toString()}%`;
-  return num === 0 ? { num: 5, percentage } : { num, percentage };
+export const formatDOB = (dob :string) :string => {
+  const dobMoment = moment(dob);
+  if (!dobMoment.isValid()) return dob;
+  return dobMoment.format('MM/DD/YYYY');
 };
 
-export const formatDOB = (dob :string) :string => moment(dob).format('MM/DD/YYYY');
-
-export const isNotNumber = (number :number) :boolean => {
-  if (!number) return true;
+export const isNotNumber = (number :string | number) :boolean => {
+  if (number === null || number === undefined) return true;
   let formattedStr = `${number}`;
-  if (formattedStr.endsWith('.')) formattedStr = formattedStr.substring(0, formattedStr.length - 1);
+  const suffix = formattedStr.match(/\.0*$/);
+  if (suffix) {
+    formattedStr = formattedStr.slice(0, suffix.index);
+  }
   const floatVal = parseFloat(formattedStr);
   return Number.isNaN(floatVal) || floatVal.toString() !== formattedStr;
 };
 
-export const isNotInteger = (number :string) :boolean => {
-  if (!number) return true;
-  const intVal = parseInt(number, 10);
-  return Number.isNaN(intVal) || intVal.toString() !== number;
+export const isNotInteger = (number :string | number) :boolean => {
+  if (number === null || number === undefined) return true;
+  const numberStr = `${number}`;
+  const intVal = parseInt(numberStr, 10);
+  return Number.isNaN(intVal) || intVal.toString() !== numberStr;
 };

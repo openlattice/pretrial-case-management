@@ -6,6 +6,7 @@ import JSPDF from 'jspdf';
 import Immutable from 'immutable';
 import moment from 'moment';
 
+import { PROPERTY_TYPES } from './consts/DataModelConsts';
 import { formatValue, formatDate, formatDateTime, formatDateList } from './FormattingUtils';
 import {
   getPendingCharges,
@@ -18,8 +19,7 @@ import { chargeIsMostSerious, chargeIsViolent, getSummaryStats } from './Histori
 import { getSentenceToIncarcerationCaseNums } from './SentenceUtils';
 import { getRecentFTAs, getOldFTAs } from './FTAUtils';
 import { sortPeopleByName } from './PSAUtils';
-import { PROPERTY_TYPES } from './consts/DataModelConsts';
-import { getHeaderText, getConditionsTextList } from './consts/DMFResultConsts';
+import { getHeaderText, getConditionsTextList } from './DMFUtils';
 import { stepTwoIncrease, stepFourIncrease, dmfSecondaryReleaseDecrease } from './ScoringUtils';
 
 const {

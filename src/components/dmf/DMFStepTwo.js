@@ -5,11 +5,11 @@
 import React from 'react';
 
 import DMFCell from './DMFCell';
-import { ContentsWrapper, StepWrapper } from './DMFStyledTags';
 import ContentBlock from '../ContentBlock';
 import ContentSection from '../ContentSection';
 import BooleanFlag from '../BooleanFlag';
-import { getDMFDecision } from '../../utils/consts/DMFResultConsts';
+import { getDMFDecision } from '../../utils/DMFUtils';
+import { ContentsWrapper, StepWrapper } from './DMFStyledTags';
 import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
 
 const StepTwo = ({

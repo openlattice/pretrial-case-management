@@ -137,3 +137,14 @@ export const MOCK_SHOULD_IGNORE_POA = Immutable.fromJS({
   'justice.disposition': [GUILTY_DISP_2],
   'justice.dispositiondate': [DATE_3]
 });
+
+export const MOCK_GUILTY_BY_POA_MISDEMEANOR = Immutable.fromJS({
+  'justice.ArrestTrackingNumber': [`${CASE_NUM}|1`],
+  'event.OffenseLocalDescription': [MISD_STATUTE_DESC],
+  'event.OffenseLocalCodeSection': [MISD_STATUTE],
+  'event.ChargeLevel': ['M2'],
+  'event.ChargeLevelState': ['Class 2 Misdemeanor'],
+  'justice.disposition': [GUILTY_DISP_1],
+  'justice.dispositiondate': [DATE_2],
+  'justice.plea': ['Guilty by POA']
+});
