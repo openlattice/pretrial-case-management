@@ -635,7 +635,7 @@ class PSAModal extends React.Component<Props, State> {
       <Title>Timeline (past two years)</Title>
       <CaseHistoryTimeline caseHistory={this.props.caseHistory} chargeHistory={this.props.chargeHistory} />
       <Title>All cases</Title>
-      <CaseHistory caseHistory={this.props.caseHistory} chargeHistory={this.props.chargeHistory} />
+      <CaseHistory modal caseHistory={this.props.caseHistory} chargeHistory={this.props.chargeHistory} />
     </ModalWrapper>
   );
 

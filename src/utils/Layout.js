@@ -267,7 +267,7 @@ export const ChargesWrapper = styled.div`
   padding: 0 0 15px;
   margin: 0 -30px;
   display: inline-block;
-  width: 110%;
+  width: ${props => (props.modal ? 'calc(100% + 60px)' : '110%')};
 `;
 
 export const ChargesTable = styled.table`

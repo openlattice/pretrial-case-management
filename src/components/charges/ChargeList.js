@@ -68,14 +68,16 @@ type Props = {
   charges :Immutable.List<*>,
   pretrialCaseDetails :Immutable.Map<*, *>,
   detailed? :boolean,
-  historical? :boolean
+  historical? :boolean,
+  modal? :modal
 };
 
 export default class ChargeList extends React.Component<Props, *> {
 
   static defaultProps = {
     detailed: false,
-    historical: false
+    historical: false,
+    modal: false
   };
 
   renderTags = (charge :Immutable.Map<*, *>) => {
@@ -159,7 +161,7 @@ export default class ChargeList extends React.Component<Props, *> {
     if (!this.props.charges || !this.props.charges.size) return null;
     return (
       <div>
-        <ChargesWrapper>
+        <ChargesWrapper modal={this.props.modal}>
           {this.getChargeList()}
         </ChargesWrapper>
         <br />

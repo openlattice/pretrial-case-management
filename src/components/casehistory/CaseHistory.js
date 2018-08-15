@@ -12,6 +12,13 @@ import { formatDateList } from '../../utils/FormattingUtils';
 import { getSummaryStats } from '../../utils/HistoricalChargeUtils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 
+const CaseHistoryWrapper = styled.div`
+  hr {
+    margin: ${props => (props.modal ? '30px -30px' : '15px 0')};
+    width: ${props => (props.modal ? 'calc(100% + 60px)' : '100%')};
+  }
+`;
+
 const InfoRow = styled.div`
   background-color: #f5f5f8;
   display: flex;
@@ -21,7 +28,7 @@ const InfoRow = styled.div`
 `;
 
 const InfoItem = styled.div`
-  margin: 0 20px;
+  margin: 0 30px;
   color: #555e6f;
 `;
 
@@ -87,10 +94,11 @@ const Title = styled.div`
 
 type Props = {
   caseHistory :Immutable.List<*>,
-  chargeHistory :Immutable.Map<*, *>
+  chargeHistory :Immutable.Map<*, *>,
+  modal :boolean
 };
 
-const CaseHistory = ({ caseHistory, chargeHistory } :Props) => {
+const CaseHistory = ({ caseHistory, chargeHistory, modal } :Props) => {
 
   const {
     numMisdemeanorCharges,
@@ -152,13 +160,13 @@ const CaseHistory = ({ caseHistory, chargeHistory } :Props) => {
             <InfoItem>{`Case Number: ${caseNum}`}</InfoItem>
             <InfoItem>{`File Date: ${fileDate}`}</InfoItem>
           </InfoRow>
-          <ChargeList pretrialCaseDetails={caseObj} charges={charges} detailed historical />
+          <ChargeList modal={modal} pretrialCaseDetails={caseObj} charges={charges} detailed historical />
         </InfoHeaderWrapper>
       );
     });
 
   return (
-    <div>
+    <CaseHistoryWrapper modal={modal}>
       <div>
         <Title withSubtitle >
           <span>Summary Statistics</span>
@@ -179,7 +187,7 @@ const CaseHistory = ({ caseHistory, chargeHistory } :Props) => {
         </Title>
         {cases}
       </CaseHistoryContainer>
-    </div>
+    </CaseHistoryWrapper>
   );
 };
 
