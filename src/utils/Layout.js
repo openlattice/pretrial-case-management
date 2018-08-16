@@ -264,9 +264,9 @@ export const InfoItem = styled.div`
 export const ChargesWrapper = styled.div`
   font-size: 14px;
   text-align: left;
-  margin-bottom: 30px;
+  margin: 0 -30px -5px;
   display: inline-block;
-  width: 100%;
+  width: ${props => (props.modal ? 'calc(100% + 60px)' : '110%')};
 `;
 
 export const ChargesTable = styled.table`
@@ -274,38 +274,32 @@ export const ChargesTable = styled.table`
 `;
 
 export const ChargeRow = styled.tr`
-  border-top: 1px solid #bbb;
+  border-bottom: 1px solid #e1e1eb;
   padding: 15px 0;
 
   &:last-child {
-    border-bottom: 1px solid #bbb;
+    border-bottom: none;
   }
 `;
 
 export const ChargeItem = styled.td`
-  padding: 15px 15px 0 15px;
-  border-left: 1px solid #bbb;
-
-  &:first-child {
-    border-left: none;
-  }
+  padding: 25px 15px;
 `;
 
 export const ChargeTag = styled.div`
   display: inline-block;
-  border-radius: 5px;
-  padding: 7px;
-  margin: 5px;
-  font-size: 10px;
-  letter-spacing: 1px;
-  width: 100px;
+  border-radius: 3px;
+  padding: 1px 5px;
+  font-size: 11px;
+  text-align: center;
   color: white;
-  margin-bottom: -15px;
+  margin-right: 10px;
 `;
 
 export const ChargeTagWrapper = styled.div`
-  text-align: center;
-  margin-bottom: 15px;
+  position: absolute;
+  transform: translateY(-22px);
+  margin: 0;
 `;
 
 export const Divider = styled.hr`

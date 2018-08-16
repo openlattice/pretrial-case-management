@@ -16,13 +16,6 @@ import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 const DMFWrapper = styled.div`
   display: flex;
   flex-direction: column;
-
-  hr {
-    color: #eeeeee;
-    width: 100%;
-    height: 1px;
-    margin: 0;
-  }
 `;
 
 const FLAG_DIMS = { height: 32, width: 156 };
