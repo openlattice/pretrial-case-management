@@ -30,10 +30,10 @@ import {
   refreshPSANeighbors,
   updateScoresAndRiskFactors
 } from './ReviewActionFactory';
-import { obfuscateEntityNeighbors, obfuscateBulkEntityNeighbors } from '../../utils/consts/DemoNames';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { RESULT_CATEGORIES, formatDMFFromEntity } from '../../utils/consts/DMFResultConsts';
 import { PSA_STATUSES } from '../../utils/consts/Consts';
+import { obfuscateEntityNeighbors, obfuscateBulkEntityNeighbors } from '../../utils/consts/DemoNames';
+import { formatDMFFromEntity } from '../../utils/DMFUtils';
 
 const { OPENLATTICE_ID_FQN } = Constants;
 

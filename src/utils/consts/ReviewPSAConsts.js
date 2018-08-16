@@ -91,7 +91,7 @@ export const STATUS_OPTIONS_ARR = [
 export const DOMAIN_OPTIONS_ARR = [
   {
     value: '',
-    label: 'All'
+    label: 'All counties'
   },
   {
     value: DOMAIN.PENNINGTON,

@@ -69,8 +69,8 @@ export const caseLedToIncarceration = (sentences) => {
       let sentencesByStartDate = Immutable.Map();
       sentencesServed.forEach((sentence) => {
         const { daysServed, startDate } = sentence;
-        let maxDaysForDate = startDate;
-        const prevValueForDate = sentencesByStartDate.get(startDate);
+        let maxDaysForDate = daysServed;
+        const prevValueForDate = sentencesByStartDate.get(startDate, 0);
         if (prevValueForDate && prevValueForDate > daysServed) maxDaysForDate = prevValueForDate;
         sentencesByStartDate = sentencesByStartDate.set(startDate, maxDaysForDate);
       });

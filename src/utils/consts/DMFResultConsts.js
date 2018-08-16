@@ -1,5 +1,4 @@
 import { CONTEXT } from './Consts';
-import { PROPERTY_TYPES } from './DataModelConsts';
 
 export const COLORS = {
   DARK_GREEN: 'DARK_GREEN',
@@ -27,7 +26,6 @@ export const CONDITION_TYPES = {
   IF_APPLICABLE_247: 'IF_APPLICABLE_247',
   HOLD_PENDING_JUDICIAL_REVIEW: 'HOLD_PENDING_JUDICIAL_REVIEW'
 };
-// TODO what are the exceptions list supplementary conditions?
 
 export const RESULT_CATEGORIES = {
   COLOR: 'COLOR',
@@ -38,147 +36,24 @@ export const RESULT_CATEGORIES = {
   CONDITION_3: 'CONDITION_3'
 };
 
-export const getHeaderText = (dmf) => {
-  const releaseType = dmf[RESULT_CATEGORIES.RELEASE_TYPE];
-  const conditionsLevel = dmf[RESULT_CATEGORIES.CONDITIONS_LEVEL];
-  switch (releaseType) {
-    case RELEASE_TYPES.RELEASE:
-      return 'Release';
-    case RELEASE_TYPES.RELEASE_WITH_CONDITIONS:
-      return `Release with Conditions (Level ${conditionsLevel})`;
-    case RELEASE_TYPES.MAXIMUM_CONDITIONS:
-      return 'Maximum conditions for any Release';
-    default:
-      return '';
-  }
+export const HEADER_LABELS = {
+  [RELEASE_TYPES.RELEASE]: 'Release',
+  [RELEASE_TYPES.RELEASE_WITH_CONDITIONS]: 'Release with Conditions',
+  [RELEASE_TYPES.MAXIMUM_CONDITIONS]: 'Maximum conditions for any Release'
 };
 
-export const getConditionText = (condition) => {
-  switch (condition) {
-    case CONDITION_TYPES.PR:
-      return 'PR';
-
-    case CONDITION_TYPES.PR_RELEASE:
-      return 'PR - Release';
-
-    case CONDITION_TYPES.EM_OR_BOND:
-      return 'EM or $ Bond';
-
-    case CONDITION_TYPES.EM_AND_BOND:
-      return 'EM and $ Bond';
-
-    case CONDITION_TYPES.CHECKIN_WEEKLY:
-      return 'Weekly check-in';
-
-    case CONDITION_TYPES.CHECKIN_WEEKLY_AT_LEAST:
-      return 'At least weekly check-in';
-
-    case CONDITION_TYPES.CHECKIN_MONTHLY:
-      return '1/month check-in';
-
-    case CONDITION_TYPES.CHECKIN_TWICE_MONTHLY:
-      return '2/month check-in';
-
-    case CONDITION_TYPES.IF_APPLICABLE_247:
-      return '24/7, if applicable';
-
-    case CONDITION_TYPES.HOLD_PENDING_JUDICIAL_REVIEW:
-      return 'Hold pending judicial review';
-
-    default:
-      return '';
-  }
+export const CONDITION_LABELS = {
+  [CONDITION_TYPES.PR]: 'PR',
+  [CONDITION_TYPES.PR_RELEASE]: 'PR - Release',
+  [CONDITION_TYPES.EM_OR_BOND]: 'EM or $ Bond',
+  [CONDITION_TYPES.EM_AND_BOND]: 'EM and $ Bond',
+  [CONDITION_TYPES.CHECKIN_WEEKLY]: 'Weekly check-in',
+  [CONDITION_TYPES.CHECKIN_WEEKLY_AT_LEAST]: 'At least weekly check-in',
+  [CONDITION_TYPES.CHECKIN_MONTHLY]: '1/month check-in',
+  [CONDITION_TYPES.CHECKIN_TWICE_MONTHLY]: '2/month check-in',
+  [CONDITION_TYPES.IF_APPLICABLE_247]: '24/7, if applicable',
+  [CONDITION_TYPES.HOLD_PENDING_JUDICIAL_REVIEW]: 'Hold pending judicial review'
 };
-
-export const getConditionsTextList = (dmf) => {
-  const condition1 = getConditionText(dmf[RESULT_CATEGORIES.CONDITION_1]);
-  const condition2 = getConditionText(dmf[RESULT_CATEGORIES.CONDITION_2]);
-  const condition3 = getConditionText(dmf[RESULT_CATEGORIES.CONDITION_3]);
-
-  return [condition1, condition2, condition3].filter(val => val.length);
-};
-
-export const increaseDMFSeverity = (dmfResult, context) => {
-  const increasedValues = {};
-  let newColor = dmfResult[RESULT_CATEGORIES.COLOR];
-  let conditionsLevel;
-  switch (newColor) {
-    case COLORS.DARK_GREEN:
-      newColor = COLORS.LIGHT_GREEN;
-      conditionsLevel = 1;
-      break;
-
-    case COLORS.LIGHT_GREEN:
-      newColor = COLORS.YELLOW;
-      conditionsLevel = 2;
-      break;
-
-    case COLORS.YELLOW:
-      newColor = COLORS.ORANGE;
-      conditionsLevel = 3;
-      break;
-
-    case COLORS.ORANGE:
-      newColor = COLORS.RED;
-      break;
-
-    default:
-      break;
-  }
-  if (newColor) {
-    increasedValues[RESULT_CATEGORIES.COLOR] = newColor;
-  }
-  increasedValues[RESULT_CATEGORIES.CONDITIONS_LEVEL] = conditionsLevel;
-
-  let releaseType = dmfResult[RESULT_CATEGORIES.RELEASE_TYPE];
-  switch (releaseType) {
-    case RELEASE_TYPES.RELEASE:
-      releaseType = RELEASE_TYPES.RELEASE_WITH_CONDITIONS;
-      break;
-
-    case RELEASE_TYPES.RELEASE_WITH_CONDITIONS:
-      if (dmfResult[RESULT_CATEGORIES.CONDITIONS_LEVEL] === 3) {
-        releaseType = RELEASE_TYPES.MAXIMUM_CONDITIONS;
-      }
-      break;
-
-    default:
-      break;
-  }
-  if (releaseType) {
-    increasedValues[RESULT_CATEGORIES.RELEASE_TYPE] = releaseType;
-  }
-
-  if (context === CONTEXT.BOOKING) {
-    increasedValues[RESULT_CATEGORIES.CONDITION_1] = CONDITION_TYPES.HOLD_PENDING_JUDICIAL_REVIEW;
-  }
-
-  return Object.assign({}, dmfResult, increasedValues);
-};
-
-export const shouldCheckForSecondaryRelease = (context, ncaScore, ftaScore) => {
-  if (context === CONTEXT.BOOKING) {
-    if (ncaScore === 2 && ftaScore === 5) return true;
-    if (ncaScore === 3) return true;
-    if (ncaScore === 4 && ftaScore <= 4) return true;
-  }
-  return false;
-};
-
-export const updateDMFSecondaryRelease = (dmfResult) => {
-  const newDmf = Object.assign({}, dmfResult);
-  newDmf[RESULT_CATEGORIES.CONDITION_1] = CONDITION_TYPES.PR_RELEASE;
-  return newDmf;
-};
-
-export const formatDMFFromEntity = dmfEntity => ({
-  [RESULT_CATEGORIES.COLOR]: dmfEntity.getIn([PROPERTY_TYPES.COLOR, 0]),
-  [RESULT_CATEGORIES.RELEASE_TYPE]: dmfEntity.getIn([PROPERTY_TYPES.RELEASE_TYPE, 0]),
-  [RESULT_CATEGORIES.CONDITIONS_LEVEL]: dmfEntity.getIn([PROPERTY_TYPES.CONDITIONS_LEVEL, 0]),
-  [RESULT_CATEGORIES.CONDITION_1]: dmfEntity.getIn([PROPERTY_TYPES.CONDITION_1, 0]),
-  [RESULT_CATEGORIES.CONDITION_2]: dmfEntity.getIn([PROPERTY_TYPES.CONDITION_2, 0]),
-  [RESULT_CATEGORIES.CONDITION_3]: dmfEntity.getIn([PROPERTY_TYPES.CONDITION_3, 0])
-});
 
 // NCA score -> FTA score -> PSA CONTEXT
 export const DMF_RESULTS = {
@@ -711,10 +586,4 @@ export const DMF_RESULTS = {
       }
     }
   }
-};
-
-export const getDMFDecision = (ncaScore, ftaScore, initContext) => {
-  const context = (initContext === 'Court') ? CONTEXT.COURT_PENN : initContext;
-  if (!DMF_RESULTS[ncaScore] || !DMF_RESULTS[ncaScore][ftaScore]) return null;
-  return DMF_RESULTS[ncaScore][ftaScore][context];
 };

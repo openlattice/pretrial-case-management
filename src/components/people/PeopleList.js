@@ -13,9 +13,9 @@ import PersonCard from './PersonCard';
 
 const CardsWrapper = styled.div`
   align-items: center;
-  display: flex;
-  flex: 1 1 auto;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: 31% 31% 31%;
+  column-gap: 3%;
   height: 100%;
 `;
 

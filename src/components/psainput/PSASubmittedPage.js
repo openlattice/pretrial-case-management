@@ -25,7 +25,7 @@ import closeXWhiteIcon from '../../assets/svg/close-x-white.svg';
 import closeXGrayIcon from '../../assets/svg/close-x-gray.svg';
 import closeXBlackIcon from '../../assets/svg/close-x-black.svg';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { getHeaderText } from '../../utils/consts/DMFResultConsts';
+import { getHeaderText } from '../../utils/DMFUtils';
 import {
   ResultHeader,
   ScaleBlock,

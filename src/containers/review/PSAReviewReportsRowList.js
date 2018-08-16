@@ -18,6 +18,7 @@ import { getEntityKeyId, getIdValue } from '../../utils/DataUtils';
 import * as FormActionFactory from '../psa/FormActionFactory';
 import * as ReviewActionFactory from './ReviewActionFactory';
 import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
+import * as DataActionFactory from '../../utils/data/DataActionFactory';
 
 const StyledCenteredContainer = styled.div`
   text-align: center;
@@ -83,6 +84,14 @@ const ReviewWrapper = styled.div`
   width: 100%;
 `;
 
+const SpinnerWrapper = styled.div`
+  margin: 20px;
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+`;
+
 type Props = {
   scoreSeq :Immutable.Seq,
   sort? :?string,
@@ -98,28 +107,11 @@ type Props = {
       personId :string,
       neighbors :Immutable.Map<*, *>
     }) => void,
-    updateScoresAndRiskFactors :(values :{
-      scoresEntitySetId :string,
-      scoresId :string,
-      scoresEntity :Immutable.Map<*, *>,
-      riskFactorsEntitySetId :string,
-      riskFactorsId :string,
-      riskFactorsEntity :Immutable.Map<*, *>,
-      dmfEntitySetId :string,
-      dmfId :string,
-      dmfEntity :Object,
-      dmfRiskFactorsEntitySetId :string,
-      dmfRiskFactorsId :string,
-      dmfRiskFactorsEntity :Object
-    }) => void,
-    changePSAStatus :(values :{
-      scoresId :string,
-      scoresEntity :Immutable.Map<*, *>
-    }) => void,
     checkPSAPermissions :() => void,
     refreshPSANeighbors :({ id :string }) => void,
     submit :(value :{ config :Object, values :Object}) => void,
     replaceEntity :(value :{ entitySetName :string, entityKeyId :string, values :Object }) => void,
+    deleteEntity :(value :{ entitySetName :string, entityKeyId :string }) => void,
     clearSubmit :() => void,
   },
   psaNeighborsById :Immutable.Map<*, *>,
@@ -184,10 +176,10 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
           entityKeyId={scoreId}
           downloadFn={this.props.actions.downloadPSAReviewPDF}
           loadCaseHistoryFn={this.props.actions.loadCaseHistory}
-          updateScoresAndRiskFactors={this.props.actions.updateScoresAndRiskFactors}
-          changePSAStatus={this.props.actions.changePSAStatus}
           onStatusChangeCallback={this.props.onStatusChangeCallback}
+          submitData={this.props.actions.submit}
           replaceEntity={this.props.actions.replaceEntity}
+          deleteEntity={this.props.actions.deleteEntity}
           refreshPSANeighbors={this.props.actions.refreshPSANeighbors}
           caseHistory={caseHistory}
           manualCaseHistory={manualCaseHistory}
@@ -270,7 +262,7 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
     const { start } = this.state;
 
     if (loadingPSAData) {
-      return <LoadingSpinner />;
+      return <SpinnerWrapper><LoadingSpinner /></SpinnerWrapper>;
     }
 
     const items = this.sortItems(scoreSeq).slice(start, start + MAX_RESULTS);
@@ -314,6 +306,10 @@ function mapDispatchToProps(dispatch :Function) :Object {
 
   Object.keys(SubmitActionFactory).forEach((action :string) => {
     actions[action] = SubmitActionFactory[action];
+  });
+
+  Object.keys(DataActionFactory).forEach((action :string) => {
+    actions[action] = DataActionFactory[action];
   });
 
   return {

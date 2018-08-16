@@ -9,7 +9,7 @@ import {
   increaseDMFSeverity,
   shouldCheckForSecondaryRelease,
   updateDMFSecondaryRelease
-} from './consts/DMFResultConsts';
+} from './DMFUtils';
 
 const {
   AGE_AT_CURRENT_ARREST,

@@ -78,6 +78,7 @@ const FormWrapper = styled(StyledSectionWrapper)`
   padding: 30px 0;
   display: flex;
   flex-direction: column;
+  ${props => (props.noBorders ? 'border: none' : '')}
 `;
 
 const DiscardButton = styled(BasicButton)`
@@ -375,7 +376,8 @@ export default class PSAInputForm extends React.Component<Props, State> {
       allCases,
       allFTAs,
       viewOnly,
-      handleClose
+      handleClose,
+      noBorders
     } = this.props;
 
     const noPriorConvictions = input.get(PRIOR_MISDEMEANOR) === 'false' && input.get(PRIOR_FELONY) === 'false';
@@ -400,7 +402,7 @@ export default class PSAInputForm extends React.Component<Props, State> {
 
     return (
       <div>
-        <FormWrapper>
+        <FormWrapper noBorders={noBorders}>
           <Header>PSA Information</Header>
           <WideForm>
             {

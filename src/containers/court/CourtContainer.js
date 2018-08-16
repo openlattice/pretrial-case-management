@@ -38,15 +38,14 @@ const ToolbarWrapper = styled(ButtonToolbar)`
 
 const StyledFormViewWrapper = styled.div`
   display: flex;
-  width: 1300px;
-  margin-left: -170px;
+  max-width: 960px;
 `;
 
 const StyledFormWrapper = styled.div`
   display: flex;
   flex-direction: column;
   margin: 55px auto;
-  width: 1300px;
+  width: 100%;
 `;
 
 const StyledTitleWrapper = styled.div`
@@ -105,9 +104,9 @@ const PeopleWrapper = styled.div`
   width: 100%;
   padding: 20px 0 0 20px;
   border: 1px solid #f0f0f7;
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: 31% 31% 31%;
+  column-gap: 3%;
 `;
 
 const DatePickerWrapper = styled.div`
@@ -138,6 +137,7 @@ type Props = {
   loadingError :boolean,
   courtroom :string,
   county :string,
+  peopleWithOpenPsas :Immutable.Set<*>,
   actions :{
     changeHearingFilters :({ county? :string, courtroom? :string }) => void,
     loadHearingsForDate :(date :Object) => void,
@@ -176,7 +176,8 @@ class CourtContainer extends React.Component<Props, State> {
       dob: formattedDOB,
       photo: person.getIn([PROPERTY_TYPES.PICTURE, 0])
     };
-    return <PersonCard key={`${personObj.identification}-${index}`} person={personObj} />;
+    const hasOpenPSA = this.props.peopleWithOpenPsas.has(person.getIn([OPENLATTICE_ID_FQN, 0]));
+    return <PersonCard key={`${personObj.identification}-${index}`} person={personObj} hasOpenPSA={hasOpenPSA} />;
   }
 
   downloadPDFs = (courtroom, people, time) => {
@@ -375,7 +376,8 @@ function mapStateToProps(state) {
     isLoadingHearings: court.get('isLoadingHearings'),
     loadingError: court.get('loadingError'),
     county: court.get('county'),
-    courtroom: court.get('courtroom')
+    courtroom: court.get('courtroom'),
+    peopleWithOpenPsas: court.get('peopleWithOpenPsas')
   };
 }
 

@@ -54,6 +54,8 @@ import {
   MOCK_NOT_GUILTY_FELONY,
   MOCK_NOT_GUILTY_F_VIOLENT,
 
+  MOCK_GUILTY_BY_POA_MISDEMEANOR,
+
   MOCK_SHOULD_IGNORE_MO,
   MOCK_SHOULD_IGNORE_P,
   MOCK_SHOULD_IGNORE_PO,
@@ -80,6 +82,10 @@ describe('HistoricalChargeUtils', () => {
         expect(shouldIgnoreCharge(MOCK_SHOULD_IGNORE_PO)).toEqual(true);
         expect(shouldIgnoreCharge(MOCK_SHOULD_IGNORE_P)).toEqual(true);
         expect(shouldIgnoreCharge(MOCK_SHOULD_IGNORE_POA)).toEqual(true);
+      });
+
+      test('should ignore charges with Guilty by POA pleas', () => {
+        expect(shouldIgnoreCharge(MOCK_GUILTY_BY_POA_MISDEMEANOR)).toEqual(true);
       });
 
       test('should not ignore charges that are not MO, PO, P, or POA', () => {
@@ -379,6 +385,10 @@ describe('HistoricalChargeUtils', () => {
         expect(chargeIsGuilty(MOCK_NOT_GUILTY_MISDEMEANOR)).toEqual(false);
         expect(chargeIsGuilty(MOCK_NOT_GUILTY_FELONY)).toEqual(false);
         expect(chargeIsGuilty(MOCK_NOT_GUILTY_F_VIOLENT)).toEqual(false);
+      });
+
+      test('should identify charges with pleas of "Guilty by POA" as not guilty', () => {
+        expect(chargeIsGuilty(MOCK_GUILTY_BY_POA_MISDEMEANOR)).toEqual(false);
       });
 
     });

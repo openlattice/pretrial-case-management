@@ -7,7 +7,7 @@ import styled from 'styled-components';
 import Immutable from 'immutable';
 
 import { getAllViolentCharges } from '../../utils/ArrestChargeUtils';
-import { chargeIsViolent, chargeIsMostSerious } from '../../utils/HistoricalChargeUtils';
+import { chargeIsViolent, chargeIsMostSerious, chargeIsGuilty } from '../../utils/HistoricalChargeUtils';
 import { formatValue, formatDateList } from '../../utils/FormattingUtils';
 import {
   ChargeItem,
@@ -16,13 +16,11 @@ import {
   ChargesWrapper,
   ChargeTag,
   ChargeTagWrapper,
-  InlineBold,
-  InfoSubHeader
+  InlineBold
 } from '../../utils/Layout';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 
 const {
-  MOST_SERIOUS_CHARGE_NO,
   CHARGE_STATUTE,
   CHARGE_DESCRIPTION,
   CHARGE_DEGREE
@@ -33,33 +31,60 @@ const MostSeriousTag = styled(ChargeTag)`
 `;
 
 const ViolentTag = styled(ChargeTag)`
-  background-color: #992619;
+  background-color: #ff3c5d;
+`;
+const ConvictedTag = styled(ChargeTag)`
+  color: #2e2e34;
+  font-weight: bold;
+  background-color: #b6bbc7;
 `;
 
 const PaddedChargeItem = styled(ChargeItem)`
-  padding-bottom: 15px;
+  vertical-align: top;
+  padding: 30px;
+
 `;
 
 const ChargeHeaderItem = styled(PaddedChargeItem)`
-  width: 100px;
-  font-weight: bold;
+  width: 152px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #2e2e34;
+  padding-left: 25px 30px;
+`;
+
+const ChargeDescriptionTitle = styled.div`
+  span {
+    font-size: 14px;
+    font-weight: 600;
+    color: #2e2e34;
+  }
+`;
+
+const ChargeDetail = styled.div`
+  padding: 5px 0;
+  font-size: 14px;
+  color: #2e2e34;
 `;
 
 type Props = {
   charges :Immutable.List<*>,
   pretrialCaseDetails :Immutable.Map<*, *>,
   detailed? :boolean,
-  historical? :boolean
+  historical? :boolean,
+  modal? :modal
 };
 
 export default class ChargeList extends React.Component<Props, *> {
 
   static defaultProps = {
     detailed: false,
-    historical: false
+    historical: false,
+    modal: false
   };
 
   renderTags = (charge :Immutable.Map<*, *>) => {
+    const convicted = chargeIsGuilty(charge);
     const mostSerious = chargeIsMostSerious(charge, this.props.pretrialCaseDetails);
     const violent = this.props.historical
       ? chargeIsViolent(charge)
@@ -70,6 +95,7 @@ export default class ChargeList extends React.Component<Props, *> {
       <ChargeTagWrapper>
         { (mostSerious) ? <MostSeriousTag>MOST SERIOUS</MostSeriousTag> : null }
         { (violent) ? <ViolentTag>VIOLENT</ViolentTag> : null }
+        { (convicted) ? <ConvictedTag>CONVICTED</ConvictedTag> : null }
       </ChargeTagWrapper>
     );
   }
@@ -83,10 +109,8 @@ export default class ChargeList extends React.Component<Props, *> {
     const dispositionDate = formatDateList(charge.get(PROPERTY_TYPES.DISPOSITION_DATE, Immutable.List()));
     return (
       <div>
-        <div><InlineBold>Plea: </InlineBold>{plea}</div>
-        <div><InlineBold>Plea Date: </InlineBold>{pleaDate}</div>
-        <div><InlineBold>Disposition: </InlineBold>{disposition}</div>
-        <div><InlineBold>Disposition Date: </InlineBold>{dispositionDate}</div>
+        <ChargeDetail>{`Plea: ${pleaDate} — ${plea}`}</ChargeDetail>
+        <ChargeDetail>{`Disposition: ${dispositionDate} — ${disposition}`}</ChargeDetail>
       </div>
     );
   }
@@ -108,10 +132,10 @@ export default class ChargeList extends React.Component<Props, *> {
       const chargeNum = charge.get(CHARGE_STATUTE, Immutable.List());
 
       const description = (
-        <div>
+        <ChargeDescriptionTitle>
           { chargeDescription.size ? <span> {formatValue(chargeDescription)}</span> : null }
-          { chargeDegree.size ? <i> ({formatValue(chargeDegree)})</i> : null }
-        </div>
+          { chargeDegree.size ? <span> ({formatValue(chargeDegree)})</span> : null }
+        </ChargeDescriptionTitle>
       );
 
       const styledDescription = this.props.detailed
@@ -121,9 +145,9 @@ export default class ChargeList extends React.Component<Props, *> {
         <ChargeRow key={index}>
           <ChargeHeaderItem>{formatValue(chargeNum.toJS())}</ChargeHeaderItem>
           <ChargeItem>
+            {this.renderTags(charge)}
             {styledDescription}
             {this.renderChargeDetails(charge)}
-            {this.renderTags(charge)}
           </ChargeItem>
           {this.renderQualifier(charge)}
         </ChargeRow>
@@ -142,11 +166,9 @@ export default class ChargeList extends React.Component<Props, *> {
     if (!this.props.charges || !this.props.charges.size) return null;
     return (
       <div>
-        <InfoSubHeader>Charges:</InfoSubHeader>
-        <ChargesWrapper>
+        <ChargesWrapper modal={this.props.modal}>
           {this.getChargeList()}
         </ChargesWrapper>
-        <br />
       </div>
     );
   }

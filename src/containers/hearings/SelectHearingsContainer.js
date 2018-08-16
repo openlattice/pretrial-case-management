@@ -38,6 +38,7 @@ const Header = styled.div`
   span {
     font-family: 'Open Sans', sans-serif;
     font-size: 18px;
+    font-weight: normal;
     color: #555e6f;
   }
 `;
@@ -47,7 +48,22 @@ const CenteredContainer = styled.div`
   text-align: center;
 `;
 
+const StyledSearchableSelect = styled(SearchableSelect)`
+  input {
+    width: 100%;
+  }
+`;
+
 const CreateButton = styled(InfoButton)`
+  width: 210px;
+  height: 40px;
+  padding-left: 0;
+  padding-right: 0;
+`;
+
+const ExistingButton = styled(BasicButton)`
+  width: 210px;
+  height: 40px;
   padding-left: 0;
   padding-right: 0;
 `;
@@ -59,7 +75,8 @@ const InputRow = styled.div`
   width: 100%;
 
   section {
-    width: 24%;
+    width: 25%;
+    padding: 0 2.5% 0 2.5%;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -134,7 +151,6 @@ class SelectHearingsContainer extends React.Component<Props, State> {
     });
 
     const callback = psaEntityKeyId ? () => this.props.actions.refreshPSANeighbors({ id: psaEntityKeyId }) : () => {};
-
     this.props.actions.submit({
       values,
       config: psaHearingConfig,
@@ -170,46 +186,41 @@ class SelectHearingsContainer extends React.Component<Props, State> {
     }));
   }
 
-  renderNewHearingSection = () => {
-    return this.state.manuallyCreatingHearing ? (
-      <CenteredContainer>
-        <InputRow>
-          <section>
-            <InputLabel>Date</InputLabel>
-            <DatePicker
-                value={this.state.newHearingDate}
-                onChange={newHearingDate => this.setState({ newHearingDate })} />
-          </section>
-          <section>
-            <InputLabel>Time</InputLabel>
-            <SearchableSelect
-                options={getTimeOptions()}
-                value={this.state.newHearingTime}
-                onSelect={newHearingTime => this.setState({ newHearingTime })}
-                short />
-          </section>
-          <section>
-            <InputLabel>Courtroom</InputLabel>
-            <SearchableSelect
-                options={getCourtroomOptions()}
-                value={this.state.newHearingCourtroom}
-                onSelect={newHearingCourtroom => this.setState({ newHearingCourtroom })}
-                short />
-          </section>
-          <section>
-            <InputLabel />
-            <CreateButton disabled={!this.isReadyToSubmit()} onClick={this.selectCurrentHearing}>
-              Create New
-            </CreateButton>
-          </section>
-        </InputRow>
-      </CenteredContainer>
-    ) : (
-      <CenteredContainer>
-        <InfoButton onClick={() => this.setState({ manuallyCreatingHearing: true })}>New</InfoButton>
-      </CenteredContainer>
-    );
-  }
+  renderNewHearingSection = () => (
+    <CenteredContainer>
+      <InputRow>
+        <section>
+          <InputLabel>Date</InputLabel>
+          <DatePicker
+              value={this.state.newHearingDate}
+              onChange={newHearingDate => this.setState({ newHearingDate })}
+              clearButton={false} />
+        </section>
+        <section>
+          <InputLabel>Time</InputLabel>
+          <StyledSearchableSelect
+              options={getTimeOptions()}
+              value={this.state.newHearingTime}
+              onSelect={newHearingTime => this.setState({ newHearingTime })}
+              short />
+        </section>
+        <section>
+          <InputLabel>Courtroom</InputLabel>
+          <StyledSearchableSelect
+              options={getCourtroomOptions()}
+              value={this.state.newHearingCourtroom}
+              onSelect={newHearingCourtroom => this.setState({ newHearingCourtroom })}
+              short />
+        </section>
+        <section>
+          <InputLabel />
+          <CreateButton disabled={!this.isReadyToSubmit()} onClick={this.selectCurrentHearing}>
+            Create New
+          </CreateButton>
+        </section>
+      </InputRow>
+    </CenteredContainer>
+  )
 
   switchView = () => this.setState({ manuallyCreatingHearing: !this.state.manuallyCreatingHearing });
 
@@ -221,7 +232,7 @@ class SelectHearingsContainer extends React.Component<Props, State> {
         <Container>
           <Header>
             <span>Create New Hearing</span>
-            <BasicButton onClick={this.switchView}>Select from Existing</BasicButton>
+            <ExistingButton onClick={this.switchView}>Select from Existing</ExistingButton>
           </Header>
           {this.renderNewHearingSection()}
         </Container>
@@ -232,7 +243,7 @@ class SelectHearingsContainer extends React.Component<Props, State> {
       <Container>
         <Header>
           <span>Select a Hearing</span>
-          <InfoButton onClick={this.switchView}>Create New Hearing</InfoButton>
+          <CreateButton onClick={this.switchView}>Create New Hearing</CreateButton>
         </Header>
         <HearingCardsHolder hearings={this.getSortedHearings()} handleSelect={this.selectExistingHearing} />
       </Container>
