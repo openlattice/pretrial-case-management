@@ -17,8 +17,14 @@ type Props = {
     dob :string,
     photo :string,
     identification :string
-  }
+  },
+  hasOpenPSA? :string
 };
+
+const StyledUndecoratedLink = styled(UndecoratedLink)`
+  display: flex;
+  flex-direction: column;
+`;
 
 const StyledPersonCard = styled(StyledCard)`
   width: 100%;
@@ -53,7 +59,31 @@ const Dob = styled.span`
   margin-right: 5px;
 `;
 
-const PersonCard = ({ person } :Props) => {
+const OpenPSATag = styled.span`
+  z-index: 1;
+  margin-left: 85px;
+  margin-bottom: -8px;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  width: 65px;
+  height: 16px;
+  border-radius: 3px;
+  background-color: #8b66db;
+  padding: 2px;
+  text-transform: uppercase;
+  color: #ffffff;
+  font-family: 'Open Sans', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+`;
+
+const TagPlaceholder = styled.span`
+  height: 8px;
+`;
+
+const PersonCard = ({ person, hasOpenPSA } :Props) => {
   const {
     firstName,
     lastName,
@@ -65,7 +95,8 @@ const PersonCard = ({ person } :Props) => {
   const name = `${lastName}, ${firstName}`;
 
   return (
-    <UndecoratedLink to={`${Routes.PERSON_DETAILS_ROOT}/${identification}`}>
+    <StyledUndecoratedLink to={`${Routes.PERSON_DETAILS_ROOT}/${identification}`}>
+      {hasOpenPSA ? <OpenPSATag>Open PSA</OpenPSATag> : <TagPlaceholder />}
       <StyledPersonCard>
         <Headshot photo={photo} />
         <PersonInfoSection>
@@ -76,8 +107,12 @@ const PersonCard = ({ person } :Props) => {
           </div>
         </PersonInfoSection>
       </StyledPersonCard>
-    </UndecoratedLink>
+    </StyledUndecoratedLink>
   );
+};
+
+PersonCard.defaultProps = {
+  hasOpenPSA: false
 };
 
 export default PersonCard;

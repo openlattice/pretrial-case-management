@@ -33,6 +33,7 @@ export default function* sagas() :Generator<*, *, *> {
     fork(AuthSagas.watchLogout),
 
     // CourtSagas
+    fork(CourtSagas.filterPeopleIdsWithOpenPSAsWatcher),
     fork(CourtSagas.loadHearingsForDateWatcher),
 
     // DashboardSagas
