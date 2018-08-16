@@ -169,7 +169,6 @@ export default class ChargeList extends React.Component<Props, *> {
         <ChargesWrapper modal={this.props.modal}>
           {this.getChargeList()}
         </ChargesWrapper>
-        <br />
       </div>
     );
   }

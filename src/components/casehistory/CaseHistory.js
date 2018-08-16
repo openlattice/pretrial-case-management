@@ -32,9 +32,6 @@ const InfoItem = styled.div`
   color: #555e6f;
 `;
 
-const InfoHeaderWrapper = styled.span`
-`;
-
 const CaseHistoryContainer = styled.div`
   height: 100%;
 `;
@@ -155,13 +152,13 @@ const CaseHistory = ({ caseHistory, chargeHistory, modal } :Props) => {
       const charges = chargeHistory.get(caseNum);
       const fileDate = formatDateList(caseObj.get(PROPERTY_TYPES.FILE_DATE, Immutable.List()));
       return (
-        <InfoHeaderWrapper key={caseNum}>
+        <div key={caseNum}>
           <InfoRow>
             <InfoItem>{`Case Number: ${caseNum}`}</InfoItem>
             <InfoItem>{`File Date: ${fileDate}`}</InfoItem>
           </InfoRow>
           <ChargeList modal={modal} pretrialCaseDetails={caseObj} charges={charges} detailed historical />
-        </InfoHeaderWrapper>
+        </div>
       );
     });
 
