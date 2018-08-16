@@ -137,6 +137,7 @@ type Props = {
   loadingError :boolean,
   courtroom :string,
   county :string,
+  peopleWithOpenPsas :Immutable.Set<*>,
   actions :{
     changeHearingFilters :({ county? :string, courtroom? :string }) => void,
     loadHearingsForDate :(date :Object) => void,
@@ -175,7 +176,8 @@ class CourtContainer extends React.Component<Props, State> {
       dob: formattedDOB,
       photo: person.getIn([PROPERTY_TYPES.PICTURE, 0])
     };
-    return <PersonCard key={`${personObj.identification}-${index}`} person={personObj} />;
+    const hasOpenPSA = this.props.peopleWithOpenPsas.has(person.getIn([OPENLATTICE_ID_FQN, 0]));
+    return <PersonCard key={`${personObj.identification}-${index}`} person={personObj} hasOpenPSA={hasOpenPSA} />;
   }
 
   downloadPDFs = (courtroom, people, time) => {
@@ -374,7 +376,8 @@ function mapStateToProps(state) {
     isLoadingHearings: court.get('isLoadingHearings'),
     loadingError: court.get('loadingError'),
     county: court.get('county'),
-    courtroom: court.get('courtroom')
+    courtroom: court.get('courtroom'),
+    peopleWithOpenPsas: court.get('peopleWithOpenPsas')
   };
 }
 
