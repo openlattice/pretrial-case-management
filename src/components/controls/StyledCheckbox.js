@@ -13,7 +13,7 @@ const Control = styled.label`
   font-family: 'Open Sans', sans-serif;
   font-size: 14px;
   font-weight: normal;
-  color: #8e929b;
+  color: #2e2e34;
   cursor: ${props => (props.disabled ? 'default' : 'pointer')};
 
   input {
