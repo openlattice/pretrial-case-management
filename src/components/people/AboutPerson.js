@@ -115,8 +115,7 @@ class AboutPerson extends React.Component<Props, State> {
         PSA_STATUSES.SUCCESS,
         PSA_STATUSES.FAILURE,
         PSA_STATUSES.DECLINED,
-        PSA_STATUSES.DISMISSED,
-        PSA_STATUSES.CANCELLED
+        PSA_STATUSES.DISMISSED
       ]
     };
   }
