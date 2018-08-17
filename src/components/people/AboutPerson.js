@@ -9,10 +9,12 @@ import { Constants } from 'lattice';
 
 import AboutPersonGeneral from '../person/AboutPersonGeneral';
 import PSAReviewPersonRowList from '../../containers/review/PSAReviewReportsRowList';
+import MultiSelectCheckbox from '../MultiSelectCheckbox';
 import CaseHistory from '../casehistory/CaseHistory';
 import CaseHistoryTimeline from '../casehistory/CaseHistoryTimeline';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { SORT_TYPES } from '../../utils/consts/Consts';
+import { STATUS_OPTION_CHECKBOXES } from '../../utils/consts/ReviewPSAConsts';
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
@@ -63,7 +65,7 @@ const StyledSectionHeader = styled.div`
 const Count = styled.div`
   height: fit-content;
   padding: 0 10px;
-  margin-left: 10px;
+  margin: 0 10px;
   border-radius: 10px;
   background-color: #f0f0f7;
   font-size: 12px;
@@ -95,36 +97,80 @@ const CaseHistoryWrapper = styled.div`
   }
 `;
 
-type Props = {
-  selectedPersonData :Immutable.Map<*, *>,
-  neighbors :Immutable.Map<*, *>,
-};
+const FilterWrapper = styled.div`
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  white-space: nowrap;
+  width: 25%;
+  span {
+    margin-top: 10px;
+  }
+`;
 
-const AboutPerson = ({ selectedPersonData, neighbors } :Props) => {
+class AboutPerson extends React.Component<Props, State> {
+  constructor(props :Props) {
+    super(props);
+    this.state = {
+      statusFilters: ['Open', 'Success', 'Failure', 'Declined', 'Dismissed']
+    };
+  }
 
-  const renderHeaderSection = numResults => (
+  handleCheckboxChange = (e) => {
+    const { value, checked } = e.target;
+    const values = this.state.statusFilters;
+
+    if (checked && !values.includes(value)) {
+      values.push(value);
+    }
+    if (!checked && values.includes(value)) {
+      values.splice(values.indexOf(value), 1);
+    }
+
+    this.setState({ statusFilters: values });
+    console.log(this.state.statusFilters);
+  }
+
+  renderHeaderSection = numResults => (
     <StyledSectionHeader>
       PSA History
       <Count>{numResults}</Count>
+      {this.renderStatusOptions()}
     </StyledSectionHeader>
   );
 
-  const renderPSAs = () => {
+  renderStatusOptions = () => {
+    const statusOptions = Object.values(STATUS_OPTION_CHECKBOXES);
+    return (
+      <FilterWrapper>
+        <MultiSelectCheckbox
+            displayTitle="Filter Status"
+            options={statusOptions}
+            onChange={this.handleCheckboxChange}
+            selected={this.state.statusFilters} />
+      </FilterWrapper>
+    );
+  }
+
+  renderPSAs = () => {
+    const { neighbors } = this.props;
     const scoreSeq = neighbors.get(ENTITY_SETS.PSA_SCORES, Immutable.Map())
-      .filter(neighbor => !!neighbor.get('neighborDetails'))
+      .filter(neighbor => !!neighbor.get('neighborDetails') &&
+        this.state.statusFilters.includes(neighbor.getIn(['neighborDetails', PROPERTY_TYPES.STATUS, 0])))
       .map(neighbor => [neighbor.getIn(['neighborDetails', OPENLATTICE_ID_FQN, 0]), neighbor.get('neighborDetails')]);
 
     return (
       <PSAReviewPersonRowList
           scoreSeq={scoreSeq}
           sort={SORT_TYPES.DATE}
-          renderContent={renderHeaderSection}
+          renderContent={this.renderHeaderSection}
           hideCaseHistory
           hideProfile />
     );
   };
 
-  const renderCaseHistory = () => {
+  renderCaseHistory = () => {
+    const { neighbors } = this.props;
     const caseHistory = neighbors.get(ENTITY_SETS.PRETRIAL_CASES, Immutable.List())
       .map(neighborObj => neighborObj.get('neighborDetails', Immutable.Map()));
 
@@ -157,28 +203,31 @@ const AboutPerson = ({ selectedPersonData, neighbors } :Props) => {
       </CaseHistoryWrapper>
     );
   };
+  render() {
+    const { selectedPersonData } = this.props;
 
-  return (
-    <Wrapper>
-      <StyledColumn>
-        <StyledColumnRowWrapper>
-          <StyledColumnRow>
-            <AboutPersonGeneral selectedPersonData={selectedPersonData} />
-          </StyledColumnRow>
-        </StyledColumnRowWrapper>
-        <StyledColumnRowWrapper>
-          <StyledColumnRow>
-            {renderPSAs()}
-          </StyledColumnRow>
-        </StyledColumnRowWrapper>
-        <StyledColumnRowWrapper>
-          <StyledColumnRow>
-            {renderCaseHistory()}
-          </StyledColumnRow>
-        </StyledColumnRowWrapper>
-      </StyledColumn>
-    </Wrapper>
-  );
-};
+    return (
+      <Wrapper>
+        <StyledColumn>
+          <StyledColumnRowWrapper>
+            <StyledColumnRow>
+              <AboutPersonGeneral selectedPersonData={selectedPersonData} />
+            </StyledColumnRow>
+          </StyledColumnRowWrapper>
+          <StyledColumnRowWrapper>
+            <StyledColumnRow>
+              {this.renderPSAs()}
+            </StyledColumnRow>
+          </StyledColumnRowWrapper>
+          <StyledColumnRowWrapper>
+            <StyledColumnRow>
+              {this.renderCaseHistory()}
+            </StyledColumnRow>
+          </StyledColumnRowWrapper>
+        </StyledColumn>
+      </Wrapper>
+    );
+  }
+}
 
 export default AboutPerson;
