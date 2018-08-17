@@ -137,7 +137,7 @@ export default class MultiSelectCheckbox extends Component<Props, State> {
               {displayTitle}
             </SearchButton>
             <SearchIcon>
-              <img src={downArrowIcon} alt="presentation" />
+              <img src={downArrowIcon} alt="" />
             </SearchIcon>
           </SearchInputWrapper>
           {
