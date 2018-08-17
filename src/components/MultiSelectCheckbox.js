@@ -14,7 +14,6 @@ import StyledCheckbox from './controls/StyledCheckbox';
 
 const SearchableSelectWrapper = styled.div`
   border: none;
-  }}
   display: flex;
   flex: 1 0 auto;
   flex-direction: column;
@@ -36,7 +35,7 @@ const SearchIcon = styled.div`
   color: #687F96;
   position: absolute;
   margin: 0 20px;
-  right: 0
+  right: 0;
 `;
 
 
@@ -86,17 +85,32 @@ export default class MultiSelectCheckbox extends Component<Props, State> {
     };
   }
 
-    toggleDataTable = (e) => {
-      e.stopPropagation();
+  componentWillMount() {
+    document.addEventListener('mousedown', this.closeDataTable, false);
+  }
 
-      this.setState({
-        isVisibleDataTable: !this.state.isVisibleDataTable
-      });
-    }
+  componentWillUnmount() {
+    document.removeEventListener('mousedown', this.closeDataTable, false);
+  }
 
-    handleOnSelect = (label :string) => {
-      this.props.onSelect(this.props.options.get(label));
+  closeDataTable = (e) => {
+    if (this.node.contains(e.target)) {
+      return;
     }
+    this.setState({ isVisibleDataTable: false });
+  }
+
+  toggleDataTable = (e) => {
+    e.stopPropagation();
+
+    this.setState({
+      isVisibleDataTable: !this.state.isVisibleDataTable
+    });
+  }
+
+  handleOnSelect = (label :string) => {
+    this.props.onSelect(this.props.options.get(label));
+  }
 
   renderTable = () => {
     const tableOptions = this.props.options.map(option => (
@@ -112,29 +126,33 @@ export default class MultiSelectCheckbox extends Component<Props, State> {
   render() {
     const { displayTitle } = this.props;
     return (
-      <SearchableSelectWrapper isVisibleDataTable={this.state.isVisibleDataTable} className={this.props.className}>
-        <SearchInputWrapper short={this.props.short}>
-          <SearchButton
-              transparent={this.props.transparent}
-              onClick={this.toggleDataTable}>
-            {displayTitle}
-          </SearchButton>
-          <SearchIcon>
-            <img src={downArrowIcon} alt="presentation" />
-          </SearchIcon>
-        </SearchInputWrapper>
-        {
-          !this.state.isVisibleDataTable
-            ? null
-            : (
-              <DataTableWrapper
-                  isVisible={this.state.isVisibleDataTable}
-                  openAbove={this.props.openAbove} >
-                {this.renderTable()}
-              </DataTableWrapper>
-            )
-        }
-      </SearchableSelectWrapper>
+      <div ref={node => this.node = node}>
+        <SearchableSelectWrapper
+            isVisibleDataTable={this.state.isVisibleDataTable}
+            className={this.props.className}>
+          <SearchInputWrapper short={this.props.short}>
+            <SearchButton
+                transparent={this.props.transparent}
+                onClick={this.toggleDataTable}>
+              {displayTitle}
+            </SearchButton>
+            <SearchIcon>
+              <img src={downArrowIcon} alt="presentation" />
+            </SearchIcon>
+          </SearchInputWrapper>
+          {
+            !this.state.isVisibleDataTable
+              ? null
+              : (
+                <DataTableWrapper
+                    isVisible={this.state.isVisibleDataTable}
+                    openAbove={this.props.openAbove}>
+                  {this.renderTable()}
+                </DataTableWrapper>
+              )
+          }
+        </SearchableSelectWrapper>
+      </div>
     );
   }
 
