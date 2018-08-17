@@ -124,3 +124,30 @@ export const NAV_OPTIONS = [
     label: 'Search'
   }
 ];
+
+export const STATUS_OPTION_CHECKBOXES = [
+  {
+    value: 'Open',
+    label: 'Open'
+  },
+  {
+    value: 'Success',
+    label: 'Success'
+  },
+  {
+    value: 'Failure',
+    label: 'Failure'
+  },
+  {
+    value: 'Declined',
+    label: 'Declined'
+  },
+  {
+    value: 'Dismissed',
+    label: 'Dismissed'
+  },
+  {
+    value: 'Cancelled',
+    label: 'Cancelled'
+  }
+];
