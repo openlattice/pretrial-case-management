@@ -1,33 +1,93 @@
 /*
  * @flow
  */
-
 import React from 'react';
 import styled from 'styled-components';
-import { ButtonToolbar, Modal, ToggleButton, ToggleButtonGroup } from 'react-bootstrap';
+import { Modal } from 'react-bootstrap';
 
-import StyledButton from '../buttons/StyledButton';
+import RadioButton from '../controls/StyledRadioButton';
+import Checkbox from '../controls/StyledCheckbox';
 import StyledInput from '../../components/controls/StyledInput';
+import InfoButton from '../buttons/InfoButton';
+import closeX from '../../assets/svg/close-x-gray.svg';
 import { CenteredContainer } from '../../utils/Layout';
 import { PSA_STATUSES, PSA_FAILURE_REASONS } from '../../utils/consts/Consts';
 
-const StatusContainer = styled.div`
+
+const ModalWrapper = styled(CenteredContainer)`
+  margin-top: -15px;
+  padding: 15px;
+  width: 100%;
+  color: #555e6f;
+  font-family: 'Open Sans', sans-serif;
+  justify-content: center;
+  h1, h2, h3 {
+    width: 100%;
+    text-align: left;
+  }
+  h1 {
+    font-size: 18px;
+    margin: 30px 0;
+  }
+  h2 {
+    font-size: 16px;
+    margin: 20px 0;
+  }
+  h3 {
+    font-size: 14px;
+    margin: 10px 0;
+  }
+`;
+
+const TitleWrapper = styled.div`
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+`;
+
+const SubmitButton = styled(InfoButton)`
+  width: 340px;
+  height: 43px;
+  margin-top: 30px;
+`;
+
+const CloseModalX = styled.img.attrs({
+  alt: '',
+  src: closeX
+})`
+  height: 16px;
+  width: 16px;
+  margin-left: 40px;
+
+  &:hover {
+    cursor: pointer;
+  }
+`;
+
+const StatusNotes = styled.div`
+  text-align: left;
   display: flex;
   flex-direction: column;
   align-items: center;
 `;
 
-const StatusButton = styled(ToggleButton)`
-  -webkit-appearance: none !important;
+const RadioWrapper = styled.div`
+  display: flex;
+  flex-grow: 1;
 `;
 
-const TextLabel = styled.div`
-  font-size: 14px;
-  margin: 15px 0 5px 0;
+export const OptionsGrid = styled.div`
+  display: grid;
+  grid-template-columns: ${props => (`repeat(${props.numColumns}, 1fr)`)};
+  grid-gap: ${props => (`${props.gap}px`)};
 `;
 
-const CloseButton = styled(StyledButton)`
-  margin-top: 15px;
+const FailureReasonsWrapper = styled.div`
+  font-size: 16px;
+  text-align: left;
+  color: #555e6f;
 `;
 
 type Props = {
@@ -45,46 +105,31 @@ type State = {
   statusNotes :?string
 };
 
-const StatusPicker = ({ status, onStatusChange }) => (
-  <StatusContainer>
-    <ButtonToolbar>
-      <ToggleButtonGroup
-          type="radio"
-          name="statusPicker"
-          value={status}
-          onChange={onStatusChange}>
-        {Object.values(PSA_STATUSES).map(value => <StatusButton value={value} key={value}>{value}</StatusButton>)}
-      </ToggleButtonGroup>
-    </ButtonToolbar>
-  </StatusContainer>
-);
-
-const FailureReasonPicker = ({ failureReason, onFailureReasonChange }) => (
-  <StatusContainer>
-    <TextLabel>Reason for Failure:</TextLabel>
-    <ButtonToolbar>
-      <ToggleButtonGroup
-          type="checkbox"
-          name="failureReasonPicker"
-          value={failureReason}
-          onChange={onFailureReasonChange}>
-        <StatusButton value={PSA_FAILURE_REASONS.FTA}>{PSA_FAILURE_REASONS.FTA}</StatusButton>
-        <StatusButton value={PSA_FAILURE_REASONS.REARREST}>{PSA_FAILURE_REASONS.REARREST}</StatusButton>
-        <StatusButton value={PSA_FAILURE_REASONS.NONCOMPLIANCE}>{PSA_FAILURE_REASONS.NONCOMPLIANCE}</StatusButton>
-        <StatusButton value={PSA_FAILURE_REASONS.OTHER}>{PSA_FAILURE_REASONS.OTHER}</StatusButton>
-      </ToggleButtonGroup>
-    </ButtonToolbar>
-  </StatusContainer>
-);
-
-const StatusNotes = ({ statusNotes, onStatusNotesChange }) => (
-  <StatusContainer>
-    <TextLabel>Notes</TextLabel>
-    <StyledInput value={statusNotes} onChange={onStatusNotesChange} />
-  </StatusContainer>
-);
-
 export default class ClosePSAModal extends React.Component<Props, State> {
+
+  mapOptionsToRadioButtons = (options :{}, field :string) => Object.values(options).map(option => (
+    <RadioWrapper key={option}>
+      <RadioButton
+          name={field}
+          value={option}
+          checked={this.state[field] === option}
+          onChange={this.onStatusChange}
+          disabled={this.state.disabled}
+          label={option} />
+    </RadioWrapper>
+  ))
+
+  mapOptionsToCheckboxs = (options :{}, field :string) => Object.values(options).map(option => (
+    <RadioWrapper key={option}>
+      <Checkbox
+          name={field}
+          value={option}
+          checked={this.state[field].includes(option)}
+          onChange={this.handleCheckboxChange}
+          disabled={this.state.disabled}
+          label={option} />
+    </RadioWrapper>
+  ))
 
   constructor(props :Props) {
     super(props);
@@ -95,13 +140,24 @@ export default class ClosePSAModal extends React.Component<Props, State> {
     };
   }
 
-  onStatusChange = (status :string) => {
-    const failureReason = status !== PSA_STATUSES.FAILURE ? [] : this.state.failureReason;
-    this.setState({ status, failureReason });
+  onStatusChange = (e) => {
+    const { name, value } = e.target;
+    const state :State = Object.assign({}, this.state, { [name]: value });
+    this.setState(state);
   }
 
-  onFailureReasonChange = (failureReason :string[]) => {
-    this.setState({ failureReason });
+  handleCheckboxChange = (e) => {
+    const { name, value, checked } = e.target;
+    const values = this.state[name];
+
+    if (checked && !values.includes(value)) {
+      values.push(value);
+    }
+    if (!checked && values.includes(value)) {
+      values.splice(values.indexOf(value), 1);
+    }
+
+    this.setState({ [name]: values });
   }
 
   onStatusNotesChange = (e) => {
@@ -129,22 +185,35 @@ export default class ClosePSAModal extends React.Component<Props, State> {
   }
 
   render() {
-    const { status, failureReason, statusNotes } = this.state;
+    const { status, statusNotes } = this.state;
     return (
       <Modal show={this.props.open} onHide={this.props.onClose}>
-        <Modal.Header closeButton>
-          <Modal.Title>Select PSA Resolution</Modal.Title>
-        </Modal.Header>
         <Modal.Body>
-          <CenteredContainer>
-            <StatusPicker status={status} onStatusChange={this.onStatusChange} />
+          <ModalWrapper>
+            <TitleWrapper>
+              <h1>Select PSA Resolution</h1>
+              <CloseModalX onClick={this.props.onClose} />
+            </TitleWrapper>
+            <OptionsGrid numColumns={3} gap={5}>
+              {this.mapOptionsToRadioButtons(PSA_STATUSES, 'status')}
+            </OptionsGrid>
             { status === PSA_STATUSES.FAILURE
-              ? <FailureReasonPicker failureReason={failureReason} onFailureReasonChange={this.onFailureReasonChange} />
+              ? (
+                <FailureReasonsWrapper>
+                  <h2>Reason(s) for failure</h2>
+                  <OptionsGrid numColumns={2} gap={10}>
+                    {this.mapOptionsToCheckboxs(PSA_FAILURE_REASONS, 'failureReason')}
+                  </OptionsGrid>
+                </FailureReasonsWrapper>
+              )
               : null
             }
-            <StatusNotes statusNotes={statusNotes} onStatusNotesChange={this.onStatusNotesChange} />
-            <CloseButton disabled={!this.isReadyToSubmit()} onClick={this.submit}>Submit</CloseButton>
-          </CenteredContainer>
+            <h3>Notes</h3>
+            <StatusNotes>
+              <StyledInput value={statusNotes} onChange={this.onStatusNotesChange} />
+            </StatusNotes>
+            <SubmitButton disabled={!this.isReadyToSubmit()} onClick={this.submit}>Update</SubmitButton>
+          </ModalWrapper>
         </Modal.Body>
       </Modal>
     );
