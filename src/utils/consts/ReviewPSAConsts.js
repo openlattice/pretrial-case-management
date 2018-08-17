@@ -127,27 +127,27 @@ export const NAV_OPTIONS = [
 
 export const STATUS_OPTION_CHECKBOXES = [
   {
-    value: 'Open',
+    value: PSA_STATUSES.OPEN,
     label: 'Open'
   },
   {
-    value: 'Success',
+    value: PSA_STATUSES.SUCCESS,
     label: 'Success'
   },
   {
-    value: 'Failure',
+    value: PSA_STATUSES.FAILURE,
     label: 'Failure'
   },
   {
-    value: 'Declined',
+    value: PSA_STATUSES.DECLINED,
     label: 'Declined'
   },
   {
-    value: 'Dismissed',
+    value: PSA_STATUSES.DISMISSED,
     label: 'Dismissed'
   },
   {
-    value: 'Cancelled',
+    value: PSA_STATUSES.CANCELLED,
     label: 'Cancelled'
   }
 ];
