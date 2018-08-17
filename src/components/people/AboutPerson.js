@@ -13,7 +13,7 @@ import MultiSelectCheckbox from '../MultiSelectCheckbox';
 import CaseHistory from '../casehistory/CaseHistory';
 import CaseHistoryTimeline from '../casehistory/CaseHistoryTimeline';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { SORT_TYPES } from '../../utils/consts/Consts';
+import { SORT_TYPES, PSA_STATUSES } from '../../utils/consts/Consts';
 import { STATUS_OPTION_CHECKBOXES } from '../../utils/consts/ReviewPSAConsts';
 
 const { OPENLATTICE_ID_FQN } = Constants;
@@ -42,7 +42,6 @@ const StyledColumnRowWrapper = styled.div`
 `;
 
 const StyledColumnRow = styled.div`
-  align-items: center;
   display: flex;
   flex-wrap: wrap;
   width: 100%;
@@ -99,20 +98,26 @@ const CaseHistoryWrapper = styled.div`
 
 const FilterWrapper = styled.div`
   display: flex;
+  z-index: 1;
   flex-direction: row;
-  align-items: center;
   white-space: nowrap;
   width: 25%;
-  span {
-    margin-top: 10px;
-  }
+  position: absolute;
+  transform: translateX(45%) translateY(50%);
 `;
 
 class AboutPerson extends React.Component<Props, State> {
   constructor(props :Props) {
     super(props);
     this.state = {
-      statusFilters: ['Open', 'Success', 'Failure', 'Declined', 'Dismissed']
+      statusFilters: [
+        PSA_STATUSES.OPEN,
+        PSA_STATUSES.SUCCESS,
+        PSA_STATUSES.FAILURE,
+        PSA_STATUSES.DECLINED,
+        PSA_STATUSES.DISMISSED,
+        PSA_STATUSES.CANCELLED
+      ]
     };
   }
 
@@ -128,14 +133,12 @@ class AboutPerson extends React.Component<Props, State> {
     }
 
     this.setState({ statusFilters: values });
-    console.log(this.state.statusFilters);
   }
 
   renderHeaderSection = numResults => (
     <StyledSectionHeader>
       PSA History
       <Count>{numResults}</Count>
-      {this.renderStatusOptions()}
     </StyledSectionHeader>
   );
 
@@ -216,6 +219,7 @@ class AboutPerson extends React.Component<Props, State> {
           </StyledColumnRowWrapper>
           <StyledColumnRowWrapper>
             <StyledColumnRow>
+              {this.renderStatusOptions()}
               {this.renderPSAs()}
             </StyledColumnRow>
           </StyledColumnRowWrapper>
