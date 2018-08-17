@@ -107,6 +107,12 @@ type State = {
 
 export default class ClosePSAModal extends React.Component<Props, State> {
 
+  static defaultProps = {
+    defaultStatus: '',
+    defaultFailureReasons: '',
+    defaultStatusNotes: ''
+  }
+
   mapOptionsToRadioButtons = (options :{}, field :string) => Object.values(options).map(option => (
     <RadioWrapper key={option}>
       <RadioButton
