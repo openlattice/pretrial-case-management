@@ -18,7 +18,7 @@ import StyledButton from '../../components/buttons/StyledButton';
 import DropdownButton from '../../components/buttons/DropdownButton';
 import CaseHistory from '../../components/casehistory/CaseHistory';
 import CaseHistoryTimeline from '../../components/casehistory/CaseHistoryTimeline';
-import LoadingSpinner from '../../components/LoadingSpinner'
+import LoadingSpinner from '../../components/LoadingSpinner';
 import DMFExplanation from '../../components/dmf/DMFExplanation';
 import SelectHearingsContainer from '../hearings/SelectHearingsContainer';
 import SelectReleaseConditions from '../../components/releaseconditions/SelectReleaseConditions';
