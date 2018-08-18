@@ -124,3 +124,30 @@ export const NAV_OPTIONS = [
     label: 'Search'
   }
 ];
+
+export const STATUS_OPTION_CHECKBOXES = [
+  {
+    value: PSA_STATUSES.OPEN,
+    label: 'Open'
+  },
+  {
+    value: PSA_STATUSES.SUCCESS,
+    label: 'Success'
+  },
+  {
+    value: PSA_STATUSES.FAILURE,
+    label: 'Failure'
+  },
+  {
+    value: PSA_STATUSES.DECLINED,
+    label: 'Declined'
+  },
+  {
+    value: PSA_STATUSES.DISMISSED,
+    label: 'Dismissed'
+  },
+  {
+    value: PSA_STATUSES.CANCELLED,
+    label: 'Cancelled'
+  }
+];
