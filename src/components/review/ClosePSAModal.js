@@ -109,7 +109,7 @@ export default class ClosePSAModal extends React.Component<Props, State> {
 
   static defaultProps = {
     defaultStatus: '',
-    defaultFailureReasons: '',
+    defaultFailureReasons: [],
     defaultStatusNotes: ''
   }
 
@@ -125,7 +125,7 @@ export default class ClosePSAModal extends React.Component<Props, State> {
     </RadioWrapper>
   ))
 
-  mapOptionsToCheckboxs = (options :{}, field :string) => Object.values(options).map(option => (
+  mapOptionsToCheckboxes = (options :{}, field :string) => Object.values(options).map(option => (
     <RadioWrapper key={option}>
       <Checkbox
           name={field}
@@ -213,7 +213,7 @@ export default class ClosePSAModal extends React.Component<Props, State> {
                 <FailureReasonsWrapper>
                   <h2>Reason(s) for failure</h2>
                   <OptionsGrid numColumns={2} gap={10}>
-                    {this.mapOptionsToCheckboxs(PSA_FAILURE_REASONS, 'failureReason')}
+                    {this.mapOptionsToCheckboxes(PSA_FAILURE_REASONS, 'failureReason')}
                   </OptionsGrid>
                 </FailureReasonsWrapper>
               )
