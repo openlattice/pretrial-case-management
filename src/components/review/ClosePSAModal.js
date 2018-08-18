@@ -147,8 +147,13 @@ export default class ClosePSAModal extends React.Component<Props, State> {
   }
 
   onStatusChange = (e) => {
+    const { status } = this.state;
     const { name, value } = e.target;
-    const state :State = Object.assign({}, this.state, { [name]: value });
+    const failureReason = status !== PSA_STATUSES.FAILURE ? [] : this.state.failureReason;
+    const state :State = Object.assign({}, this.state, {
+      [name]: value,
+      failureReason
+    });
     this.setState(state);
   }
 
