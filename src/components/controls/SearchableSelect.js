@@ -267,7 +267,7 @@ class SearchableSelect extends React.Component<Props, State> {
           {
             (this.props.onClear && value) ? null : (
               <SearchIcon floatRight={this.props.selectOnly}>
-                <img src={downArrowIcon} role="presentation" />
+                <img src={downArrowIcon} alt="" />
               </SearchIcon>
             )
           }

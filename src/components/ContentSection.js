@@ -162,7 +162,7 @@ const ContentSection = ({
     return <StyledContentItalic>Information not available</StyledContentItalic>;
   };
 
-  const renderPhoto = photo ? <img src={photo} alt="presentation" /> : null;
+  const renderPhoto = photo ? <img src={photo} alt="" /> : null;
   const renderHeader = header || null;
 
   return (

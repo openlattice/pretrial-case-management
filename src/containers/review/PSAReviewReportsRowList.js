@@ -92,6 +92,13 @@ const SpinnerWrapper = styled.div`
   justify-content: center;
 `;
 
+const NoResults = styled.div`
+  margin: 0 -30px 30px;
+  font-size: 16px;
+  text-align: center;
+  width: 960px;
+`;
+
 type Props = {
   scoreSeq :Immutable.Seq,
   sort? :?string,
@@ -237,10 +244,18 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
     ));
   }
 
-  renderContent = (items, numPages) => {
+  renderContent = (items, numPages, noResults) => {
     const { hideProfile } = this.props;
 
     if (hideProfile) {
+      if (noResults) {
+        return (
+          <PersonWrapper>
+            {this.renderFiltersBar(numPages)}
+            <NoResults>No Results</NoResults>
+          </PersonWrapper>
+        );
+      }
       return (
         <PersonWrapper>
           {this.renderFiltersBar(numPages)}
@@ -267,9 +282,12 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
 
     const items = this.sortItems(scoreSeq).slice(start, start + MAX_RESULTS);
     const numPages = scoreSeq.length || scoreSeq.size;
+
+    const noResults = numPages === 0;
+
     return (
       <ReviewWrapper>
-        {this.renderContent(items, numPages)}
+        {this.renderContent(items, numPages, noResults)}
       </ReviewWrapper>
     );
   }
