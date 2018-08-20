@@ -52,8 +52,7 @@ function* getEntityForPersonId(personId :string, entitySetId :string) :Generator
   };
 
   const response = yield call(SearchApi.searchEntitySetData, entitySetId, searchOptions);
-  const person = obfuscateEntity(response.hits[0]); // TODO only for demo
-  return person;
+  return response.hits[0];
 }
 
 function* getPersonDataWorker(action) :Generator<*, *, *> {
