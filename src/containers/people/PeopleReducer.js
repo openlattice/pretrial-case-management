@@ -37,7 +37,6 @@ export default function peopleReducer(state = INITIAL_STATE, action) {
             }
             return neighborObj;
           });
-          console.log(nextNeighbors);
           return state.setIn(['peopleNeighbors', personId, ENTITY_SETS.PSA_SCORES], nextNeighbors);
         }
       });
