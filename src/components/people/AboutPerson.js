@@ -106,6 +106,11 @@ const FilterWrapper = styled.div`
   transform: translateX(45%) translateY(50%);
 `;
 
+type Props = {
+  selectedPersonData :Immutable.Map<*, *>,
+  neighbors :Immutable.Map<*, *>
+}
+
 class AboutPerson extends React.Component<Props, State> {
   constructor(props :Props) {
     super(props);
@@ -160,14 +165,14 @@ class AboutPerson extends React.Component<Props, State> {
       .filter(neighbor => !!neighbor.get('neighborDetails') &&
         this.state.statusFilters.includes(neighbor.getIn(['neighborDetails', PROPERTY_TYPES.STATUS, 0])))
       .map(neighbor => [neighbor.getIn(['neighborDetails', OPENLATTICE_ID_FQN, 0]), neighbor.get('neighborDetails')]);
-
     return (
       <PSAReviewPersonRowList
           scoreSeq={scoreSeq}
           sort={SORT_TYPES.DATE}
           renderContent={this.renderHeaderSection}
           hideCaseHistory
-          hideProfile />
+          hideProfile
+          personProfile />
     );
   };
 
