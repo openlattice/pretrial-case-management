@@ -10,7 +10,7 @@ import {
   getPersonNeighbors
 } from './PeopleActionFactory';
 import { changePSAStatus } from '../review/ReviewActionFactory';
-import { ENTITY_SETS } from '../../utils/consts/DataModelConsts';
+import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 
 const { OPENLATTICE_ID_FQN } = Constants;
 const INITIAL_STATE = Immutable.fromJS({
@@ -27,7 +27,7 @@ export default function peopleReducer(state = INITIAL_STATE, action) {
     case changePSAStatus.case(action.type): {
       return changePSAStatus.reducer(state, action, {
         SUCCESS: () => {
-          const personId = state.getIn(['selectedPersonData', 'nc.SubjectIdentification', 0], '');
+          const personId = state.getIn(['selectedPersonData', PROPERTY_TYPES.PERSON_ID, 0], '');
           const neighbors = state.getIn(['peopleNeighbors', personId, ENTITY_SETS.PSA_SCORES], Immutable.Map());
           const nextNeighbors = Immutable.fromJS(neighbors).map((neighborObj) => {
             const neighborId = neighborObj.getIn(['neighborDetails', OPENLATTICE_ID_FQN, 0]);
