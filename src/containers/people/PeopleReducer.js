@@ -1,14 +1,18 @@
 /*
  * @flow
  */
-
+import { Constants } from 'lattice';
 import Immutable from 'immutable';
+
 import {
   getPeople,
   getPersonData,
   getPersonNeighbors
 } from './PeopleActionFactory';
+import { changePSAStatus } from '../review/ReviewActionFactory';
+import { ENTITY_SETS } from '../../utils/consts/DataModelConsts';
 
+const { OPENLATTICE_ID_FQN } = Constants;
 const INITIAL_STATE = Immutable.fromJS({
   peopleResults: Immutable.List(),
   selectedPersonData: Immutable.Map(),
@@ -20,7 +24,24 @@ const INITIAL_STATE = Immutable.fromJS({
 
 export default function peopleReducer(state = INITIAL_STATE, action) {
   switch (action.type) {
-
+    case changePSAStatus.case(action.type): {
+      return changePSAStatus.reducer(state, action, {
+        SUCCESS: () => {
+          const personId = state.getIn(['selectedPersonData', 'nc.SubjectIdentification', 0], '');
+          const neighbors = state.getIn(['peopleNeighbors', personId, ENTITY_SETS.PSA_SCORES], Immutable.Map());
+          const nextNeighbors = Immutable.fromJS(neighbors).map((neighborObj) => {
+            const neighborId = neighborObj.getIn(['neighborDetails', OPENLATTICE_ID_FQN, 0]);
+            if (neighborId === action.value.id) {
+              const newObject = neighborObj.set('neighborDetails', Immutable.fromJS(action.value.entity));
+              return newObject;
+            }
+            return neighborObj;
+          });
+          console.log(nextNeighbors);
+          return state.setIn(['peopleNeighbors', personId, ENTITY_SETS.PSA_SCORES], nextNeighbors);
+        }
+      });
+    }
     case getPeople.case(action.type): {
       return getPeople.reducer(state, action, {
         REQUEST: () => state.set('isFetchingPeople', true),
