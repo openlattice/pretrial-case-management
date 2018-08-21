@@ -146,7 +146,7 @@ export default class CaseHistoryTimeline extends React.Component<Props> {
         const caseNum = pretrialCase.getIn([PROPERTY_TYPES.CASE_ID, 0], '');
         const month = this.getCaseDate(pretrialCase).format(MONTH_FORMAT);
 
-        chargeHistory.get(caseNum).forEach((charge) => {
+        chargeHistory.get(caseNum, Immutable.List()).forEach((charge) => {
 
           if (chargeIsGuilty(charge)) {
             chargeTypesByMonth = chargeTypesByMonth.set(
