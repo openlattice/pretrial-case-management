@@ -15,6 +15,7 @@ import {
   loadDataModel,
   loadNeighbors
 } from './FormActionFactory';
+import { changePSAStatus } from '../review/ReviewActionFactory';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA, NOTES, DMF } from '../../utils/consts/Consts';
 import { getMapByCaseId } from '../../utils/CaseUtils';
@@ -120,6 +121,22 @@ const INITIAL_STATE :Immutable.Map<> = Immutable.fromJS({
 
 function formReducer(state :Immutable.Map<> = INITIAL_STATE, action :Object) {
   switch (action.type) {
+
+    case changePSAStatus.case(action.type): {
+      return changePSAStatus.reducer(state, action, {
+        SUCCESS: () => {
+          const neighbors = state.getIn(['allPSAs'], Immutable.Map());
+          const nextNeighbors = Immutable.fromJS(neighbors).map((neighborObj) => {
+            const neighborId = neighborObj.getIn([OPENLATTICE_ID_FQN, 0]);
+            if (neighborId === action.value.id) {
+              return Immutable.fromJS(action.value.entity);
+            }
+            return neighborObj;
+          });
+          return state.setIn(['allPSAs'], nextNeighbors);
+        }
+      });
+    }
 
     case loadDataModel.case(action.type): {
       return loadDataModel.reducer(state, action, {
