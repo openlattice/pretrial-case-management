@@ -39,6 +39,17 @@ export const STATUS_OPTIONS = {
   }
 };
 
+export const STATUS_OPTIONS_FOR_PENDING_PSAS = {
+  OPEN: {
+    value: PSA_STATUSES.OPEN,
+    label: 'Open'
+  },
+  ALL: {
+    value: '*',
+    label: 'All'
+  }
+};
+
 export const openOptions = [
   {
     value: 'OPEN',
