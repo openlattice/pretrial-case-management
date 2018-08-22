@@ -55,7 +55,19 @@ const getOpenPSAIds = (neighbors) => {
     }
     return false;
   }).map(neighbor => neighbor.neighborDetails[OPENLATTICE_ID_FQN][0]);
-}
+};
+
+const getAllPSAIds = (neighbors) => {
+  return neighbors.filter((neighbor) => {
+    if (neighbor.neighborEntitySet && neighbor.neighborEntitySet.name === ENTITY_SETS.PSA_SCORES) {
+      const statusValues = neighbor.neighborDetails[PROPERTY_TYPES.STATUS];
+      if (statusValues) {
+        return true;
+      }
+    }
+    return false;
+  }).map(neighbor => neighbor.neighborDetails[OPENLATTICE_ID_FQN][0]);
+};
 
 function* getOpenPSANeighbors(neighbors) :Generator<*, *, *> {
   const ids = getOpenPSAIds(neighbors);
@@ -69,12 +81,13 @@ function* loadNeighborsWorker(action :SequenceAction) :Generator<*, *, *> {
   try {
     yield put(loadNeighbors.request(action.id));
     const neighbors = yield call(SearchApi.searchEntityNeighbors, entitySetId, entityKeyId);
-    const openPSAs = yield call(getOpenPSANeighbors, neighbors);
-    yield put(loadNeighbors.success(action.id, { neighbors, openPSAs }));
-    yield put(loadPSAData(getOpenPSAIds(neighbors)));
+    // const openPSAs = yield call(getOpenPSANeighbors, neighbors);
+    const allPSAs = yield call(getAllPSAIds, neighbors);
+    yield put(loadNeighbors.success(action.id, { neighbors, allPSAs }));
+    yield put(loadPSAData(getAllPSAIds(neighbors)));
   }
   catch (error) {
-    console.error(error)
+    console.error(error);
     yield put(loadNeighbors.failure(action.id, error));
   }
   finally {
