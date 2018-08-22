@@ -12,6 +12,7 @@ import PSAReviewPersonRowList from '../../containers/review/PSAReviewReportsRowL
 import MultiSelectCheckbox from '../MultiSelectCheckbox';
 import CaseHistory from '../casehistory/CaseHistory';
 import CaseHistoryTimeline from '../casehistory/CaseHistoryTimeline';
+import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { SORT_TYPES, PSA_STATUSES } from '../../utils/consts/Consts';
 import { STATUS_OPTION_CHECKBOXES } from '../../utils/consts/ReviewPSAConsts';
@@ -170,6 +171,7 @@ class AboutPerson extends React.Component<Props, State> {
           scoreSeq={scoreSeq}
           sort={SORT_TYPES.DATE}
           renderContent={this.renderHeaderSection}
+          component={CONTENT_CONSTS.PROFILE}
           hideCaseHistory
           hideProfile
           personProfile />
