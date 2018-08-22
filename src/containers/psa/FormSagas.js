@@ -81,9 +81,8 @@ function* loadNeighborsWorker(action :SequenceAction) :Generator<*, *, *> {
   try {
     yield put(loadNeighbors.request(action.id));
     const neighbors = yield call(SearchApi.searchEntityNeighbors, entitySetId, entityKeyId);
-    // const openPSAs = yield call(getOpenPSANeighbors, neighbors);
-    const allPSAs = yield call(getAllPSAIds, neighbors);
-    yield put(loadNeighbors.success(action.id, { neighbors, allPSAs }));
+    const openPSAs = yield call(getOpenPSANeighbors, neighbors);
+    yield put(loadNeighbors.success(action.id, { neighbors, openPSAs }));
     yield put(loadPSAData(getAllPSAIds(neighbors)));
   }
   catch (error) {
