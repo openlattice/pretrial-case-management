@@ -224,14 +224,6 @@ type State = {
   hearingExists :boolean,
 };
 
-const VIEWS = {
-  SUMMARY: 'SUMMARY',
-  PSA: 'PSA',
-  DMF: 'DMF',
-  HISTORY: 'HISTORY',
-  INITIAL_APPEARANCE: 'INITIAL_APPEARANCE'
-};
-
 class PSAModal extends React.Component<Props, State> {
 
   static defaultProps = {
@@ -246,7 +238,6 @@ class PSAModal extends React.Component<Props, State> {
       editing: false,
       closing: false,
       riskFactors: this.getRiskFactors(props.neighbors),
-      view: VIEWS.SUMMARY,
       dmf: this.getDMF(props.neighbors),
       hearingExists: !!this.props.neighbors.get(ENTITY_SETS.HEARINGS)
     };
