@@ -29,6 +29,7 @@ import PersonCard from '../../components/person/PersonCard';
 import ArrestCard from '../../components/arrest/ArrestCard';
 import ChargeTable from '../../components/charges/ChargeTable';
 import PSAReviewRowList from '../review/PSAReviewRowList';
+import PSAReviewReportsRowList from '../review/PSAReviewReportsRowList';
 import exportPDF from '../../utils/PDFUtils';
 import psaConfig from '../../config/formconfig/PsaConfig';
 import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
@@ -60,6 +61,23 @@ const { OPENLATTICE_ID_FQN } = Constants;
 
 const { PEOPLE } = ENTITY_SETS;
 
+const PSARowListHeader = styled.div`
+  width: 100%;
+  background: #fff;
+  border-radius: 5px;
+  border: solid 1px #e1e1eb;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  border-bottom: none;
+  padding: 0 30px;
+  font-size: 14px;
+  text-align: center;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+`;
+
 const LoadingContainer = styled(StyledFormWrapper)`
   align-items: center;
   padding: 0 30px 30px 30px;
@@ -77,10 +95,8 @@ const LoadingText = styled.div`
 `;
 
 const Header = styled.h1`
-  font-size: 25px;
-  font-weight: 600;
-  margin: 0;
-  margin-bottom: 20px;
+  font-size: 18px;
+  margin: 30px 0;
 `;
 
 const PaddedSectionWrapper = styled(StyledSectionWrapper)`
@@ -557,6 +573,13 @@ class Form extends React.Component<Props, State> {
     });
   }
 
+  renderPendingPSAsHeader = () => (
+    <PSARowListHeader>
+      <Header>Close Pending PSAs</Header>
+      <BasicButton onClick={() => this.setState({ skipClosePSAs: true })}>Skip</BasicButton>
+    </PSARowListHeader>
+  )
+
   getPendingPSAs = () => {
     const {
       actions,
@@ -565,12 +588,15 @@ class Form extends React.Component<Props, State> {
       allPSAs,
       openPSAs
     } = this.props;
+    // console.log(selectedPersonId);
+    // console.log(allPSAs.toJS());
+    // console.log(this.props);
     const openPSAScores = allPSAs.filter(scores => openPSAs.has(scores.getIn([OPENLATTICE_ID_FQN, 0])));
     if (!openPSAScores.size) return null;
     const scoreSeq = openPSAScores.map(obj => ([obj.getIn([OPENLATTICE_ID_FQN, 0]), obj]));
     return (
       <CenteredListWrapper>
-        <Header>Close Pending PSAs</Header>
+        {this.renderPendingPSAsHeader()}
         <PSAReviewRowListContainer>
           <BasicButton onClick={() => this.setState({ skipClosePSAs: true })}>Skip</BasicButton>
           <PSAReviewRowList
@@ -816,6 +842,7 @@ function mapStateToProps(state :Immutable.Map<*, *>) :Object {
   const psaForm = state.get('psa');
   const search = state.get('search');
   const submit = state.get('submit');
+  console.log(state.toJS());
 
   return {
     dataModel: psaForm.get('dataModel'),
