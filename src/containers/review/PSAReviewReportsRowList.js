@@ -234,7 +234,8 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
           key={scoreId}
           hideCaseHistory={this.props.hideCaseHistory}
           hideProfile={hideProfile}
-          submitting={this.props.submitting} />
+          submitting={this.props.submitting}
+          component={this.props.component} />
     );
   }
 
