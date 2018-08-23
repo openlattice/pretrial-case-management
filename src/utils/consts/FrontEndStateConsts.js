@@ -1,10 +1,14 @@
 // General PSA
-export const PSA = {
-  NEIGHBOR_ID: 'neighborId',
-  NEIGHBOR_DETAILS: 'neighborDetails',
-  NEIGHBOR_ENTITY_SET: 'neighborEntitySet',
-  ASSOCIATION_DETAILS: 'associationDetails',
-  ASSOCIATION_ENTITY_SET: 'associationEntitySet'
+
+export const PSA_NEIGHBOR = {
+  ID: 'neighborId',
+  DETAILS: 'neighborDetails',
+  ENTITY_SET: 'neighborEntitySet'
+};
+
+export const PSA_ASSOCIATION = {
+  DETAILS: 'associationDetails',
+  ENTITY_SET: 'associationEntitySet'
 };
 
 // ReviewPSA

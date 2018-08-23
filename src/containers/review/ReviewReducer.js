@@ -14,7 +14,7 @@ import {
   updateScoresAndRiskFactors
 } from './ReviewActionFactory';
 import { ENTITY_SETS } from '../../utils/consts/DataModelConsts';
-import { PSA, REVIEW_PSA } from '../../utils/consts/FrontEndStateConsts';
+import { PSA_NEIGHBOR, REVIEW_PSA } from '../../utils/consts/FrontEndStateConsts';
 
 const INITIAL_STATE :Immutable.Map<*, *> = Immutable.fromJS({
   scoresEntitySetId: '',
@@ -161,38 +161,38 @@ export default function reviewReducer(state :Immutable.Map<*, *> = INITIAL_STATE
               REVIEW_PSA.NEIGHBORS_BY_ID,
               scoresId,
               ENTITY_SETS.RELEASE_RECOMMENDATIONS,
-              PSA.NEIGHBOR_DETAILS
+              PSA_NEIGHBOR.DETAILS
             ]);
           psaNeighborsByDate.keySeq().forEach((date) => {
             if (psaNeighborsByDate.get(date).get(scoresId)) {
               psaNeighborsByDate = psaNeighborsByDate.setIn(
-                [date, scoresId, ENTITY_SETS.PSA_RISK_FACTORS, PSA.NEIGHBOR_DETAILS],
+                [date, scoresId, ENTITY_SETS.PSA_RISK_FACTORS, PSA_NEIGHBOR.DETAILS],
                 Immutable.fromJS(newRiskFactorsEntity)
               ).setIn(
-                [date, scoresId, ENTITY_SETS.DMF_RESULTS, PSA.NEIGHBOR_DETAILS],
+                [date, scoresId, ENTITY_SETS.DMF_RESULTS, PSA_NEIGHBOR.DETAILS],
                 Immutable.fromJS(newDMFEntity)
               ).setIn(
-                [date, scoresId, ENTITY_SETS.DMF_RISK_FACTORS, PSA.NEIGHBOR_DETAILS],
+                [date, scoresId, ENTITY_SETS.DMF_RISK_FACTORS, PSA_NEIGHBOR.DETAILS],
                 Immutable.fromJS(newDMFRiskFactorsEntity)
               ).setIn(
-                [date, scoresId, ENTITY_SETS.RELEASE_RECOMMENDATIONS, PSA.NEIGHBOR_DETAILS],
+                [date, scoresId, ENTITY_SETS.RELEASE_RECOMMENDATIONS, PSA_NEIGHBOR.DETAILS],
                 Immutable.fromJS(notesEntity)
               );
             }
           });
           const psaNeighborsById = state.get(REVIEW_PSA.NEIGHBORS_BY_ID)
             .setIn(
-              [scoresId, ENTITY_SETS.PSA_RISK_FACTORS, PSA.NEIGHBOR_DETAILS],
+              [scoresId, ENTITY_SETS.PSA_RISK_FACTORS, PSA_NEIGHBOR.DETAILS],
               Immutable.fromJS(newRiskFactorsEntity)
             ).setIn(
-              [scoresId, ENTITY_SETS.DMF_RESULTS, PSA.NEIGHBOR_DETAILS],
+              [scoresId, ENTITY_SETS.DMF_RESULTS, PSA_NEIGHBOR.DETAILS],
               Immutable.fromJS(newDMFEntity)
             ).setIn(
-              [scoresId, ENTITY_SETS.DMF_RISK_FACTORS, PSA.NEIGHBOR_DETAILS],
+              [scoresId, ENTITY_SETS.DMF_RISK_FACTORS, PSA_NEIGHBOR.DETAILS],
               Immutable.fromJS(newDMFRiskFactorsEntity)
             )
             .setIn(
-              [scoresId, ENTITY_SETS.RELEASE_RECOMMENDATIONS, PSA.NEIGHBOR_DETAILS],
+              [scoresId, ENTITY_SETS.RELEASE_RECOMMENDATIONS, PSA_NEIGHBOR.DETAILS],
               Immutable.fromJS(notesEntity)
             );
           return state

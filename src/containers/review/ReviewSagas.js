@@ -33,7 +33,7 @@ import {
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_STATUSES } from '../../utils/consts/Consts';
 import { formatDMFFromEntity } from '../../utils/DMFUtils';
-import { PSA } from '../../utils/consts/FrontEndStateConsts';
+import { PSA_NEIGHBOR, PSA_ASSOCIATION } from '../../utils/consts/FrontEndStateConsts';
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
@@ -226,9 +226,9 @@ function* loadPSADataWorker(action :SequenceAction) :Generator<*, *, *> {
 
         neighborsById.get(id).forEach((neighbor) => {
 
-          neighbor.getIn([PSA.ASSOCIATION_DETAILS, PROPERTY_TYPES.TIMESTAMP],
+          neighbor.getIn([PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.TIMESTAMP],
             neighbor.getIn([
-              PSA.ASSOCIATION_DETAILS,
+              PSA_ASSOCIATION.DETAILS,
               PROPERTY_TYPES.DATE_TIME
             ], Immutable.List())).forEach((timestamp) => {
             const timestampMoment = moment(timestamp);
@@ -237,10 +237,10 @@ function* loadPSADataWorker(action :SequenceAction) :Generator<*, *, *> {
             }
           });
 
-          const neighborName = neighbor.getIn([PSA.NEIGHBOR_ENTITY_SET, 'name']);
+          const neighborName = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'name']);
           if (neighborName) {
             if (neighborName === ENTITY_SETS.STAFF) {
-              neighbor.getIn([PSA.NEIGHBOR_DETAILS, PROPERTY_TYPES.PERSON_ID], Immutable.List())
+              neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.PERSON_ID], Immutable.List())
                 .forEach((filer) => {
                   allFilers = allFilers.add(filer);
                 });
@@ -340,17 +340,17 @@ const getPSADataFromNeighbors = (
 
   const recommendationText = neighbors.getIn([
     ENTITY_SETS.RELEASE_RECOMMENDATIONS,
-    PSA.NEIGHBOR_DETAILS,
+    PSA_NEIGHBOR.DETAILS,
     PROPERTY_TYPES.RELEASE_RECOMMENDATION
   ], Immutable.List()).join(', ');
 
-  const dmf = neighbors.getIn([ENTITY_SETS.DMF_RESULTS, PSA.NEIGHBOR_DETAILS], Immutable.Map());
+  const dmf = neighbors.getIn([ENTITY_SETS.DMF_RESULTS, PSA_NEIGHBOR.DETAILS], Immutable.Map());
   const formattedDMF = Immutable.fromJS(formatDMFFromEntity(dmf)).filter(val => !!val);
 
   const setMultimapToMap = (entitySetName) => {
     let map = Immutable.Map();
-    neighbors.getIn([entitySetName, PSA.NEIGHBOR_DETAILS], Immutable.Map()).keySeq().forEach((fqn) => {
-      map = map.set(fqn, neighbors.getIn([entitySetName, PSA.NEIGHBOR_DETAILS, fqn, 0]));
+    neighbors.getIn([entitySetName, PSA_NEIGHBOR.DETAILS], Immutable.Map()).keySeq().forEach((fqn) => {
+      map = map.set(fqn, neighbors.getIn([entitySetName, PSA_NEIGHBOR.DETAILS, fqn, 0]));
     });
     return map;
   };
@@ -359,20 +359,20 @@ const getPSADataFromNeighbors = (
     .set('scores', scores)
     .set('notes', recommendationText)
     .set('riskFactors', setMultimapToMap(ENTITY_SETS.PSA_RISK_FACTORS))
-    .set('psaRiskFactors', neighbors.getIn([ENTITY_SETS.PSA_RISK_FACTORS, PSA.NEIGHBOR_DETAILS], Immutable.Map()))
-    .set('dmfRiskFactors', neighbors.getIn([ENTITY_SETS.DMF_RISK_FACTORS, PSA.NEIGHBOR_DETAILS], Immutable.Map()))
+    .set('psaRiskFactors', neighbors.getIn([ENTITY_SETS.PSA_RISK_FACTORS, PSA_NEIGHBOR.DETAILS], Immutable.Map()))
+    .set('dmfRiskFactors', neighbors.getIn([ENTITY_SETS.DMF_RISK_FACTORS, PSA_NEIGHBOR.DETAILS], Immutable.Map()))
     .set('dmf', formattedDMF);
 
   const selectedPretrialCase = neighbors.getIn([
     ENTITY_SETS.MANUAL_PRETRIAL_CASES,
-    PSA.NEIGHBOR_DETAILS
+    PSA_NEIGHBOR.DETAILS
   ], Immutable.Map());
   const caseId = selectedPretrialCase.getIn([PROPERTY_TYPES.CASE_ID, 0], '');
 
   const selectedCharges = allManualCharges
     .filter(chargeObj => chargeObj.getIn([PROPERTY_TYPES.CHARGE_ID, 0], '').split('|')[0] === caseId);
 
-  const selectedPerson = neighbors.getIn([ENTITY_SETS.PEOPLE, PSA.NEIGHBOR_DETAILS], Immutable.Map());
+  const selectedPerson = neighbors.getIn([ENTITY_SETS.PEOPLE, PSA_NEIGHBOR.DETAILS], Immutable.Map());
 
   let createData = {
     user: '',
@@ -381,17 +381,17 @@ const getPSADataFromNeighbors = (
   let updateData;
 
   neighbors.get(ENTITY_SETS.STAFF, Immutable.List()).forEach((writerNeighbor) => {
-    const name = writerNeighbor.getIn([PSA.ASSOCIATION_ENTITY_SET, 'name']);
-    const user = writerNeighbor.getIn([PSA.NEIGHBOR_DETAILS, PROPERTY_TYPES.PERSON_ID, 0], '');
+    const name = writerNeighbor.getIn([PSA_ASSOCIATION.ENTITY_SET, 'name']);
+    const user = writerNeighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.PERSON_ID, 0], '');
 
     if (name === ENTITY_SETS.ASSESSED_BY) {
       createData = {
-        timestamp: writerNeighbor.getIn([PSA.ASSOCIATION_DETAILS, PROPERTY_TYPES.COMPLETED_DATE_TIME, 0], ''),
+        timestamp: writerNeighbor.getIn([PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.COMPLETED_DATE_TIME, 0], ''),
         user
       };
     }
     else if (name === ENTITY_SETS.EDITED_BY) {
-      const timestamp = writerNeighbor.getIn([PSA.ASSOCIATION_DETAILS, PROPERTY_TYPES.DATE_TIME, 0], '');
+      const timestamp = writerNeighbor.getIn([PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.DATE_TIME, 0], '');
       const newUpdateData = { timestamp, user };
       if (!updateData) {
         updateData = newUpdateData;
@@ -484,7 +484,7 @@ function* bulkDownloadPSAReviewPDFWorker(action :SequenceAction) :Generator<*, *
     psaNeighborsById.entrySeq().forEach(([psaId, neighborList]) => {
       let neighbors = Immutable.Map();
       neighborList.forEach((neighbor) => {
-        const neighborName = neighbor.getIn([PSA.NEIGHBOR_ENTITY_SET, 'name']);
+        const neighborName = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'name']);
         if (LIST_ENTITY_SETS.includes(neighborName)) {
           neighbors = neighbors.set(
             neighborName,
@@ -497,7 +497,7 @@ function* bulkDownloadPSAReviewPDFWorker(action :SequenceAction) :Generator<*, *
       });
 
       const scores = Immutable.fromJS(psasById.get(psaId));
-      const personId = neighbors.getIn([ENTITY_SETS.PEOPLE, PSA.NEIGHBOR_ID]);
+      const personId = neighbors.getIn([ENTITY_SETS.PEOPLE, PSA_NEIGHBOR.ID]);
       const allManualCharges = manualChargesByPersonId.get(personId, Immutable.List());
       pageDetailsList.push(getPSADataFromNeighbors(scores, neighbors, allManualCharges));
     });
