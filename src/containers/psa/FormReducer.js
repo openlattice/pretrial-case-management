@@ -38,8 +38,7 @@ const {
 const {
   ARREST_DATE_TIME,
   CHARGE_ID,
-  CASE_ID,
-  FILE_DATE
+  CASE_ID
 } = PROPERTY_TYPES;
 
 const {
