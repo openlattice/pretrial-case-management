@@ -1,10 +1,8 @@
 /*
  * @flow
  */
-
 import Immutable from 'immutable';
 import moment from 'moment';
-import { Constants } from 'lattice';
 
 import {
   ADD_CASE_AND_CHARGES,
@@ -18,8 +16,7 @@ import {
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA, NOTES, DMF } from '../../utils/consts/Consts';
 import { getMapByCaseId } from '../../utils/CaseUtils';
-
-const { OPENLATTICE_ID_FQN } = Constants;
+import { PSA_NEIGHBOR, PSA_FORM } from '../../utils/consts/FrontEndStateConsts';
 
 const {
   ARREST_CASES,
@@ -37,8 +34,7 @@ const {
 const {
   ARREST_DATE_TIME,
   CHARGE_ID,
-  CASE_ID,
-  FILE_DATE
+  CASE_ID
 } = PROPERTY_TYPES;
 
 const {
@@ -130,15 +126,15 @@ function formReducer(state :Immutable.Map<> = INITIAL_STATE, action :Object) {
             entitySetLookup[entitySet.name] = entitySet.id;
           });
           return state
-            .set('dataModel', Immutable.fromJS(dataModel))
-            .set('entitySetLookup', Immutable.fromJS(entitySetLookup));
+            .set(PSA_FORM.DATA_MODEL, Immutable.fromJS(dataModel))
+            .set(PSA_FORM.ENTITY_SET_LOOKUP, Immutable.fromJS(entitySetLookup));
         }
       });
     }
 
     case loadNeighbors.case(action.type): {
       return loadNeighbors.reducer(state, action, {
-        REQUEST: () => state.set('isLoadingNeighbors', true),
+        REQUEST: () => state.set(PSA_FORM.LOADING_NEIGHBORS, true),
         SUCCESS: () => {
           let allCasesForPerson = Immutable.List();
           let arrestOptionsWithDate = Immutable.List();
@@ -154,8 +150,8 @@ function formReducer(state :Immutable.Map<> = INITIAL_STATE, action :Object) {
 
           const neighbors = Immutable.fromJS(action.value.neighbors) || Immutable.List();
           neighbors.forEach((neighbor) => {
-            const entitySetName = neighbor.getIn(['neighborEntitySet', 'name'], '');
-            const neighborObj = neighbor.get('neighborDetails', Immutable.Map());
+            const entitySetName = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'name'], '');
+            const neighborObj = neighbor.get(PSA_NEIGHBOR.DETAILS, Immutable.Map());
 
             if (entitySetName === PRETRIAL_CASES) {
               allCasesForPerson = allCasesForPerson.push(neighborObj);
@@ -206,36 +202,36 @@ function formReducer(state :Immutable.Map<> = INITIAL_STATE, action :Object) {
           });
 
           return state
-            .set('arrestOptions', arrestOptionsWithDate.concat(arrestOptionsWithoutDate))
-            .set('allCasesForPerson', allCasesForPerson)
-            .set('allChargesForPerson', allChargesForPerson)
-            .set('allSentencesForPerson', allSentencesForPerson)
-            .set('allFTAs', allFTAs)
-            .set('allPSAs', allPSAs)
-            .set('allArrestCharges', allArrestCharges)
-            .set('openPSAs', Immutable.fromJS(action.value.openPSAs))
-            .set('allManualCases', allManualCases)
-            .set('allManualCharges', getMapByCaseId(allManualCharges, CHARGE_ID))
-            .set('allHearings', allHearings);
+            .set(PSA_FORM.ARREST_OPTIONS, arrestOptionsWithDate.concat(arrestOptionsWithoutDate))
+            .set(PSA_FORM.ALL_CASES, allCasesForPerson)
+            .set(PSA_FORM.ALL_CHARGES, allChargesForPerson)
+            .set(PSA_FORM.ALL_SENTENCES, allSentencesForPerson)
+            .set(PSA_FORM.ALL_FTAS, allFTAs)
+            .set(PSA_FORM.ALL_PSAS, allPSAs)
+            .set(PSA_FORM.ALL_ARREST_CHARGES, allArrestCharges)
+            .set(PSA_FORM.OPEN_PSAS, Immutable.fromJS(action.value.openPSAs))
+            .set(PSA_FORM.ALL_MANUAL_CASES, allManualCases)
+            .set(PSA_FORM.ALL_MANUAL_CHARGES, getMapByCaseId(allManualCharges, CHARGE_ID))
+            .set(PSA_FORM.ALL_HEARINGS, allHearings);
         },
-        FINALLY: () => state.set('isLoadingNeighbors', false)
+        FINALLY: () => state.set(PSA_FORM.LOADING_NEIGHBORS, false)
       });
     }
 
     case ADD_CASE_AND_CHARGES: {
-      let allChargesForPerson = state.get('allChargesForPerson', Immutable.List());
+      let allChargesForPerson = state.get(PSA_FORM.ALL_CHARGES, Immutable.List());
       action.value.charges.forEach((charge) => {
         allChargesForPerson = allChargesForPerson.push(charge);
       });
       return state
-        .set('arrestOptions', state.get('arrestOptions').unshift(action.value.pretrialCase))
-        .set('allChargesForPerson', allChargesForPerson)
-        .set('charges', action.value.charges)
-        .set('selectedPretrialCase', action.value.pretrialCase);
+        .set(PSA_FORM.ARREST_OPTIONS, state.get(PSA_FORM.ARREST_OPTIONS).unshift(action.value.pretrialCase))
+        .set(PSA_FORM.ALL_CHARGES, allChargesForPerson)
+        .set(PSA_FORM.CHARGES, action.value.charges)
+        .set(PSA_FORM.SELECT_PRETRIAL_CASE, action.value.pretrialCase);
     }
 
     case SELECT_PERSON:
-      return state.set('selectedPerson', action.value.selectedPerson);
+      return state.set(PSA_FORM.SELECT_PERSON, action.value.selectedPerson);
 
     case SELECT_PRETRIAL_CASE: {
       const getCaseAndChargeNum :Function = (charge) => {
@@ -246,43 +242,43 @@ function formReducer(state :Immutable.Map<> = INITIAL_STATE, action :Object) {
       const { selectedPretrialCase } = action.value;
 
       const selectedCaseIdList = selectedPretrialCase.get(CASE_ID, Immutable.List());
-      const charges = state.get('allArrestCharges')
+      const charges = state.get(PSA_FORM.ALL_ARREST_CHARGES)
         .filter(charge => getCaseAndChargeNum(charge)[0] === selectedCaseIdList.get(0))
         .sort((c1, c2) => getCaseAndChargeNum(c1)[1] > getCaseAndChargeNum(c2)[1]);
       return state
-        .set('selectedPretrialCase', selectedPretrialCase)
-        .set('charges', charges)
-        .set('arrestId', selectedCaseIdList.get(0, ''));
+        .set(PSA_FORM.SELECT_PRETRIAL_CASE, selectedPretrialCase)
+        .set(PSA_FORM.CHARGES, charges)
+        .set(PSA_FORM.ARREST_ID, selectedCaseIdList.get(0, ''));
     }
 
     case SET_PSA_VALUES: {
-      let psa = state.get('psa').merge(action.value.newValues);
+      let psa = state.get(PSA_FORM.PSA).merge(action.value.newValues);
       if (psa.get(PRIOR_MISDEMEANOR) === 'false' && psa.get(PRIOR_FELONY) === 'false') {
         psa = psa.set(PRIOR_VIOLENT_CONVICTION, '0').set(PRIOR_SENTENCE_TO_INCARCERATION, 'false');
       }
-      return state.set('psa', psa);
+      return state.set(PSA_FORM.PSA, psa);
     }
 
     case CLEAR_FORM:
       return state
-        .set('arrestOptions', Immutable.List())
-        .set('allCasesForPerson', Immutable.List())
-        .set('allChargesForPerson', Immutable.List())
-        .set('allSentencesForPerson', Immutable.List())
-        .set('allFTAs', Immutable.List())
-        .set('allPSAs', Immutable.List())
-        .set('allManualCases', Immutable.List())
-        .set('allManualCharges', Immutable.Map())
-        .set('allHearings', Immutable.List())
-        .set('openPSAs', Immutable.Map())
-        .set('selectPerson', Immutable.Map())
-        .set('arrestId', '')
-        .set('selectedPretrialCase', Immutable.Map())
-        .set('charges', Immutable.List())
-        .set('psa', INITIAL_PSA_FORM)
-        .set('isSubmitted', false)
-        .set('isSubmitting', false)
-        .set('submitError', false);
+        .set(PSA_FORM.ARREST_OPTIONS, Immutable.List())
+        .set(PSA_FORM.ALL_CASES, Immutable.List())
+        .set(PSA_FORM.ALL_CHARGES, Immutable.List())
+        .set(PSA_FORM.ALL_SENTENCES, Immutable.List())
+        .set(PSA_FORM.ALL_FTAS, Immutable.List())
+        .set(PSA_FORM.ALL_PSAS, Immutable.List())
+        .set(PSA_FORM.ALL_MANUAL_CASES, Immutable.List())
+        .set(PSA_FORM.ALL_MANUAL_CHARGES, Immutable.Map())
+        .set(PSA_FORM.ALL_HEARINGS, Immutable.List())
+        .set(PSA_FORM.OPEN_PSAS, Immutable.Map())
+        .set(PSA_FORM.SELECT_PERSON, Immutable.Map())
+        .set(PSA_FORM.ARREST_ID, '')
+        .set(PSA_FORM.SELECT_PRETRIAL_CASE, Immutable.Map())
+        .set(PSA_FORM.CHARGES, Immutable.List())
+        .set(PSA_FORM.PSA, INITIAL_PSA_FORM)
+        .set(PSA_FORM.SUBMITTED, false)
+        .set(PSA_FORM.SUBMITTING, false)
+        .set(PSA_FORM.SUBMIT_ERROR, false);
 
 
     default:
