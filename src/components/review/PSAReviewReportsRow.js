@@ -21,17 +21,11 @@ import { getEntityKeyId } from '../../utils/DataUtils';
 
 const ReviewRowContainer = styled.div`
   width: 100%;
-  background-color: #ffffff;
-  border-radius: 5px;
-  border: solid 1px #e1e1eb;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   margin-bottom: 58px;
-  &:hover {
-    background: #f7f8f9;
-  }
 `;
 
 const DetailsRowContainer = styled.div`
@@ -48,6 +42,12 @@ const ReviewRowWrapper = styled.div`
   align-items: flex-end;
   padding: 20px 30px;
   justify-content: center;
+  background-color: #ffffff;
+  border-radius: 5px;
+  border: solid 1px #e1e1eb;
+  &:hover {
+    background: #f7f8f9;
+  }
   hr {
     height: 1px;
     margin: -20px -30px -20px -30px;
@@ -79,6 +79,9 @@ const StatsForProfile = styled.div`
 const MetadataWrapper = styled.div`
   width: 100%;
 `;
+const MetadataSubWrapper = styled.div`
+  width: 100%;
+`;
 const MetadataText = styled.div`
   width: 100%;
   font-family: 'Open Sans', sans-serif;
@@ -94,6 +97,7 @@ const ImportantMetadataText = styled.span`
 `;
 
 const MetadataItem = styled.div`
+  height: 10px;
   display: block;
 `;
 
@@ -254,6 +258,7 @@ export default class PSAReviewReportsRow extends React.Component<Props, State> {
   }
 
   renderMetadata = () => {
+    const { component } = this.props;
     const dateFormat = 'MM/DD/YYYY hh:mm a';
     let dateCreated;
     let creator;
@@ -281,17 +286,30 @@ export default class PSAReviewReportsRow extends React.Component<Props, State> {
         }
       }
     });
+
+    const isClosed = psaIsClosed(this.props.scores);
     const editLabel = psaIsClosed(this.props.scores) ? 'Closed' : 'Edited';
     if (!(dateCreated || dateEdited) && !(creator || editor)) return null;
 
     const dateCreatedText = dateCreated ? dateCreated.format(dateFormat) : '';
     const dateEditedText = dateEdited ? dateEdited.format(dateFormat) : '';
 
+    const openMetadata = (dateEdited || editor)
+      ? <MetadataItem>{this.renderMetadataText(editLabel, dateEditedText, editor)}</MetadataItem>
+      : <MetadataItem>{this.renderMetadataText('Created', dateCreatedText, creator)}</MetadataItem>;
+
     return (
       <MetadataWrapper>
-        { dateEdited || editor
-          ? <MetadataItem>{this.renderMetadataText(editLabel, dateEditedText, editor)}</MetadataItem>
-          : <MetadataItem>{this.renderMetadataText('Created', dateCreatedText, creator)}</MetadataItem>
+        {
+          isClosed && (component === CONTENT_CONSTS.PENDING_PSAS) ?
+            <MetadataSubWrapper>
+              <MetadataItem>{this.renderMetadataText('Created', dateCreatedText, creator)}</MetadataItem>
+              <MetadataItem>{this.renderMetadataText(editLabel, dateEditedText, editor)}</MetadataItem>
+            </MetadataSubWrapper>
+            :
+            <MetadataSubWrapper>
+              {openMetadata}
+            </MetadataSubWrapper>
         }
       </MetadataWrapper>
     );
