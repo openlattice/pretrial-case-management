@@ -1,18 +1,32 @@
 /*
  * @flow
  */
+
 import React from 'react';
 import styled from 'styled-components';
+import Immutable from 'immutable';
+import moment from 'moment';
+import { connect } from 'react-redux';
 import { Modal } from 'react-bootstrap';
+import { AuthUtils } from 'lattice-auth';
+import { bindActionCreators } from 'redux';
 
 import RadioButton from '../controls/StyledRadioButton';
 import Checkbox from '../controls/StyledCheckbox';
 import StyledInput from '../../components/controls/StyledInput';
 import InfoButton from '../buttons/InfoButton';
 import closeX from '../../assets/svg/close-x-gray.svg';
+import psaEditedConfig from '../../config/formconfig/PsaEditedConfig';
+import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { CenteredContainer } from '../../utils/Layout';
-import { PSA_STATUSES, PSA_FAILURE_REASONS } from '../../utils/consts/Consts';
+import { PSA_STATUSES, PSA_FAILURE_REASONS, EDIT_FIELDS } from '../../utils/consts/Consts';
+import { stripIdField } from '../../utils/DataUtils';
+import { toISODateTime } from '../../utils/FormattingUtils';
 
+import * as FormActionFactory from '../../containers/psa/FormActionFactory';
+import * as ReviewActionFactory from '../../containers/review/ReviewActionFactory';
+import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
+import * as DataActionFactory from '../../utils/data/DataActionFactory';
 
 const ModalWrapper = styled(CenteredContainer)`
   margin-top: -15px;
@@ -92,11 +106,26 @@ const FailureReasonsWrapper = styled.div`
 
 type Props = {
   open :boolean,
+  scores :Immutable.Map<*, *>,
   onClose :() => void,
   defaultStatus? :?string,
+  entityKeyId :?string,
   defaultFailureReasons? :string[],
   defaultStatusNotes? :?string,
-  onSubmit :(status :string, failureReason :string[], statusNotes :?string) => void
+  onSubmit :() => void,
+  onStatusChangeCallback :() => void,
+  actions :{
+    clearSubmit :() => void,
+    submit :(value :{ config :Object, values :Object, callback? :() => void }) => void,
+    downloadPSAReviewPDF :(values :{
+      neighbors :Immutable.Map<*, *>,
+      scores :Immutable.Map<*, *>
+    }) => void,
+    changePSAStatus :(values :{
+      scoresId :string,
+      scoresEntity :Immutable.Map<*, *>
+    }) => void
+  }
 };
 
 type State = {
@@ -105,7 +134,15 @@ type State = {
   statusNotes :?string
 };
 
-export default class ClosePSAModal extends React.Component<Props, State> {
+class ClosePSAModal extends React.Component<Props, State> {
+  constructor(props :Props) {
+    super(props);
+    this.state = {
+      status: props.defaultStatus,
+      failureReason: props.defaultFailureReasons,
+      statusNotes: props.defaultStatusNotes
+    };
+  }
 
   static defaultProps = {
     defaultStatus: '',
@@ -137,14 +174,6 @@ export default class ClosePSAModal extends React.Component<Props, State> {
     </RadioWrapper>
   ))
 
-  constructor(props :Props) {
-    super(props);
-    this.state = {
-      status: props.defaultStatus,
-      failureReason: props.defaultFailureReasons,
-      statusNotes: props.defaultStatusNotes
-    };
-  }
 
   onStatusChange = (e) => {
     const { status } = this.state;
@@ -184,6 +213,35 @@ export default class ClosePSAModal extends React.Component<Props, State> {
     return isReady;
   }
 
+  handleStatusChange = (status :string, failureReason :string[], statusNotes :?string) => {
+    if (!this.props.actions.changePSAStatus) return;
+    const statusNotesList = (statusNotes && statusNotes.length) ? Immutable.List.of(statusNotes) : Immutable.List();
+
+    const scoresEntity = stripIdField(this.props.scores
+      .set(PROPERTY_TYPES.STATUS, Immutable.List.of(status))
+      .set(PROPERTY_TYPES.FAILURE_REASON, Immutable.fromJS(failureReason))
+      .set(PROPERTY_TYPES.STATUS_NOTES, statusNotesList));
+
+    const scoresId = this.props.entityKeyId;
+    this.props.actions.changePSAStatus({
+      scoresId,
+      scoresEntity,
+      callback: this.props.onStatusChangeCallback
+    });
+
+    this.props.actions.submit({
+      config: psaEditedConfig,
+      values: {
+        [EDIT_FIELDS.PSA_ID]: [scoresEntity.getIn([PROPERTY_TYPES.GENERAL_ID, 0])],
+        [EDIT_FIELDS.TIMESTAMP]: [toISODateTime(moment())],
+        [EDIT_FIELDS.PERSON_ID]: [AuthUtils.getUserInfo().email]
+      },
+      callback: this.props.actions.clearSubmit
+    });
+    this.props.onSubmit();
+    this.setState({ editing: false });
+  }
+
   submit = () => {
     if (!this.state.status) return;
     let { statusNotes } = this.state;
@@ -191,7 +249,7 @@ export default class ClosePSAModal extends React.Component<Props, State> {
       statusNotes = null;
     }
 
-    this.props.onSubmit(this.state.status, this.state.failureReason, this.state.statusNotes);
+    this.handleStatusChange(this.state.status, this.state.failureReason, this.state.statusNotes);
     this.props.onClose();
   }
 
@@ -230,3 +288,31 @@ export default class ClosePSAModal extends React.Component<Props, State> {
     );
   }
 }
+
+function mapDispatchToProps(dispatch :Function) :Object {
+  const actions :{ [string] :Function } = {};
+
+  Object.keys(FormActionFactory).forEach((action :string) => {
+    actions[action] = FormActionFactory[action];
+  });
+
+  Object.keys(ReviewActionFactory).forEach((action :string) => {
+    actions[action] = ReviewActionFactory[action];
+  });
+
+  Object.keys(DataActionFactory).forEach((action :string) => {
+    actions[action] = DataActionFactory[action];
+  });
+
+  Object.keys(SubmitActionFactory).forEach((action :string) => {
+    actions[action] = SubmitActionFactory[action];
+  });
+
+  return {
+    actions: {
+      ...bindActionCreators(actions, dispatch)
+    }
+  };
+}
+
+export default connect(null, mapDispatchToProps)(ClosePSAModal);

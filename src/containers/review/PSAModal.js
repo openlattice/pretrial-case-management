@@ -27,7 +27,7 @@ import ClosePSAModal from '../../components/review/ClosePSAModal';
 import psaEditedConfig from '../../config/formconfig/PsaEditedConfig';
 import closeX from '../../assets/svg/close-x-gray.svg';
 import { getScoresAndRiskFactors, calculateDMF } from '../../utils/ScoringUtils';
-import { getEntityKeyId, getEntitySetId, getIdValue, stripIdField } from '../../utils/DataUtils';
+import { getEntityKeyId, getEntitySetId, getIdValue } from '../../utils/DataUtils';
 import { CenteredContainer } from '../../utils/Layout';
 import { toISODateTime } from '../../utils/FormattingUtils';
 import { CONTEXT, DMF, EDIT_FIELDS, NOTES, PSA } from '../../utils/consts/Consts';
@@ -167,7 +167,6 @@ type Props = {
   neighbors :Immutable.Map<*, *>,
   hideCaseHistory? :boolean,
   hideProfile? :boolean,
-  onStatusChangeCallback? :() => void,
   caseHistory :Immutable.List<*>,
   manualCaseHistory :Immutable.List<*>,
   chargeHistory :Immutable.Map<*, *>,
@@ -491,31 +490,7 @@ class PSAModal extends React.Component<Props, State> {
     this.setState({ editing: false });
   }
 
-  handleStatusChange = (status :string, failureReason :string[], statusNotes :?string) => {
-    if (!this.props.actions.changePSAStatus) return;
-    const statusNotesList = (statusNotes && statusNotes.length) ? Immutable.List.of(statusNotes) : Immutable.List();
-
-    const scoresEntity = stripIdField(this.props.scores
-      .set(PROPERTY_TYPES.STATUS, Immutable.List.of(status))
-      .set(PROPERTY_TYPES.FAILURE_REASON, Immutable.fromJS(failureReason))
-      .set(PROPERTY_TYPES.STATUS_NOTES, statusNotesList));
-
-    const scoresId = this.props.entityKeyId;
-    this.props.actions.changePSAStatus({
-      scoresId,
-      scoresEntity,
-      callback: this.props.onStatusChangeCallback
-    });
-
-    this.props.actions.submit({
-      config: psaEditedConfig,
-      values: {
-        [EDIT_FIELDS.PSA_ID]: [scoresEntity.getIn([PROPERTY_TYPES.GENERAL_ID, 0])],
-        [EDIT_FIELDS.TIMESTAMP]: [toISODateTime(moment())],
-        [EDIT_FIELDS.PERSON_ID]: [AuthUtils.getUserInfo().email]
-      },
-      callback: this.props.actions.clearSubmit
-    });
+  handleStatusChange = () => {
     this.setState({ editing: false });
   }
 
@@ -532,10 +507,6 @@ class PSAModal extends React.Component<Props, State> {
     const firstName = person.getIn([PROPERTY_TYPES.FIRST_NAME, 0], '');
     const lastName = person.getIn([PROPERTY_TYPES.LAST_NAME, 0], '');
     return `${firstName} ${lastName}`;
-  }
-
-  onViewSelect = (view :string) => {
-    this.setState({ view });
   }
 
   renderSummary = () => (
@@ -740,7 +711,9 @@ class PSAModal extends React.Component<Props, State> {
               defaultStatusNotes={this.props.scores.getIn([PROPERTY_TYPES.STATUS_NOTES, 0])}
               defaultFailureReasons={this.props.scores.get(PROPERTY_TYPES.FAILURE_REASON, Immutable.List()).toJS()}
               onClose={() => this.setState({ closing: false })}
-              onSubmit={this.handleStatusChange} />
+              onSubmit={this.handleStatusChange}
+              scores={this.props.scores}
+              entityKeyId={this.props.entityKeyId} />
           <TitleWrapper>
             <TitleHeader>PSA Details: <span>{`${this.getName()}`}</span></TitleHeader>
             <div>
