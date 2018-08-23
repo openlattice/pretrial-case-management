@@ -165,7 +165,6 @@ type Props = {
   entityKeyId :string,
   scores :Immutable.Map<*, *>,
   neighbors :Immutable.Map<*, *>,
-  hideCaseHistory? :boolean,
   hideProfile? :boolean,
   caseHistory :Immutable.List<*>,
   manualCaseHistory :Immutable.List<*>,
@@ -178,10 +177,6 @@ type Props = {
   personId? :string,
   submitting :boolean,
   refreshingNeighbors :boolean,
-  loadCaseHistoryFn :(values :{
-    personId :string,
-    neighbors :Immutable.Map<*, *>
-  }) => void,
   actions :{
     clearSubmit :() => void,
     submit :(value :{ config :Object, values :Object, callback? :() => void }) => void,
