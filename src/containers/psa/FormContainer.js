@@ -428,7 +428,7 @@ class Form extends React.Component<Props, State> {
       dmf
     );
 
-    const psaId = randomUUID()
+    const psaId = randomUUID();
 
     values[ID_FIELD_NAMES.PSA_ID] = [psaId];
     values[ID_FIELD_NAMES.RISK_FACTORS_ID] = [randomUUID()];
