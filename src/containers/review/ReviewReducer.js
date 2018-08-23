@@ -118,7 +118,6 @@ export default function reviewReducer(state :Immutable.Map<*, *> = INITIAL_STATE
       return refreshPSANeighbors.reducer(state, action, {
         REQUEST: () => state.set('psaIdsRefreshing', state.get('psaIdsRefreshing').add(action.value.id)),
         SUCCESS: () => {
-          let psaNeighborsByDate = state.get('psaNeighborsByDate');
           let psaNeighborsById = state.get('psaNeighborsById');
 
           psaNeighborsById = psaNeighborsById.set(action.value.id, Immutable.fromJS(action.value.neighbors));
@@ -126,7 +125,7 @@ export default function reviewReducer(state :Immutable.Map<*, *> = INITIAL_STATE
           return state.set('psaNeighborsById', psaNeighborsById);
         },
         FINALLY: () => state.set('psaIdsRefreshing', state.get('psaIdsRefreshing').delete(action.value.id))
-      })
+      });
     }
 
     case updateScoresAndRiskFactors.case(action.type): {
@@ -168,13 +167,16 @@ export default function reviewReducer(state :Immutable.Map<*, *> = INITIAL_STATE
             .setIn(
               [scoresId, ENTITY_SETS.PSA_RISK_FACTORS, 'neighborDetails'],
               Immutable.fromJS(newRiskFactorsEntity)
-            ).setIn(
+            )
+            .setIn(
               [scoresId, ENTITY_SETS.DMF_RESULTS, 'neighborDetails'],
               Immutable.fromJS(newDMFEntity)
-            ).setIn(
+            )
+            .setIn(
               [scoresId, ENTITY_SETS.DMF_RISK_FACTORS, 'neighborDetails'],
               Immutable.fromJS(newDMFRiskFactorsEntity)
-            ).setIn(
+            )
+            .setIn(
               [scoresId, ENTITY_SETS.RELEASE_RECOMMENDATIONS, 'neighborDetails'],
               Immutable.fromJS(notesEntity)
             );

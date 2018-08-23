@@ -174,7 +174,7 @@ type Props = {
   ftaHistory :Immutable.Map<*, *>,
   hearings :Immutable.List<*>,
   readOnly :boolean,
-  personId? :string,
+  personId :string,
   submitting :boolean,
   refreshingNeighbors :boolean,
   actions :{
