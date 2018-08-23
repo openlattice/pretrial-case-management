@@ -54,7 +54,7 @@ import {
   getCurrentPage
 } from '../../utils/Helpers';
 import { tryAutofillFields } from '../../utils/AutofillUtils';
-import { CONTEXT, DMF, ID_FIELD_NAMES, NOTES, PSA, PSA_STATUSES, SORT_TYPES } from '../../utils/consts/Consts';
+import { CONTEXT, DMF, ID_FIELD_NAMES, NOTES, PSA, PSA_STATUSES } from '../../utils/consts/Consts';
 import { PROPERTY_TYPES, ENTITY_SETS } from '../../utils/consts/DataModelConsts';
 import { STATUS_OPTIONS_FOR_PENDING_PSAS } from '../../utils/consts/ReviewPSAConsts';
 import { DOMAIN } from '../../utils/consts/ReportDownloadTypes';
@@ -614,7 +614,7 @@ class Form extends React.Component<Props, State> {
             classNamePrefix="lattice-select"
             options={Object.values(STATUS_OPTIONS_FOR_PENDING_PSAS)}
             onChange={
-              e => (this.setState({ status: e.value }))
+              e => (this.setState({ status: e.label }))
             } />
       </FilterWrapper>
     </PSARowListSubHeader>
@@ -633,8 +633,7 @@ class Form extends React.Component<Props, State> {
       openPSAs
     } = this.props;
     const { status } = this.state;
-    console.log(this.props.allPSAs.toJS());
-    const PSAScores = status === PSA_STATUSES.OPEN ?
+    const PSAScores = status === STATUS_OPTIONS_FOR_PENDING_PSAS.OPEN.label ?
       allPSAs.filter(scores => openPSAs.has(scores.getIn([OPENLATTICE_ID_FQN, 0]))) :
       this.props.allPSAs;
     if (!PSAScores.size) return null;
@@ -710,18 +709,16 @@ class Form extends React.Component<Props, State> {
     );
   }
 
-  getSelectChargesSection = () => {
-    return (
-      <SelectChargesContainer
-          defaultArrest={this.props.selectedPretrialCase}
-          defaultCharges={this.props.charges}
-          nextPage={this.nextPage}
-          prevPage={this.prevPage}
-          onSubmit={this.props.actions.addCaseAndCharges}
-          county={this.props.psaForm.get(DMF.COURT_OR_BOOKING) === CONTEXT.COURT_MINN
-            ? DOMAIN.MINNEHAHA : DOMAIN.PENNINGTON} />
-    );
-  }
+  getSelectChargesSection = () => (
+    <SelectChargesContainer
+        defaultArrest={this.props.selectedPretrialCase}
+        defaultCharges={this.props.charges}
+        nextPage={this.nextPage}
+        prevPage={this.prevPage}
+        onSubmit={this.props.actions.addCaseAndCharges}
+        county={this.props.psaForm.get(DMF.COURT_OR_BOOKING) === CONTEXT.COURT_MINN
+          ? DOMAIN.MINNEHAHA : DOMAIN.PENNINGTON} />
+  );
 
   getPersonIdValue = () => this.props.selectedPerson.getIn([PROPERTY_TYPES.PERSON_ID, 0], '');
 
