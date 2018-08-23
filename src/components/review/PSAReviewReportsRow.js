@@ -8,9 +8,12 @@ import styled from 'styled-components';
 import moment from 'moment';
 
 import PSAModal from '../../containers/review/PSAModal';
+import ClosePSAModal from '../../components/review/ClosePSAModal';
+import BasicButton from '../../components/buttons/StyledButton';
 import PersonCard from '../person/PersonCardReview';
 import PSAReportDownloadButton from './PSAReportDownloadButton';
 import PSAStats from './PSAStats';
+import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { psaIsClosed } from '../../utils/PSAUtils';
 import { getEntityKeyId } from '../../utils/DataUtils';
@@ -94,6 +97,21 @@ const MetadataItem = styled.div`
   display: block;
 `;
 
+const ClosePSAButton = styled(BasicButton)`
+  font-family: 'Open Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+  color: #6124e2;
+  width: 162px;
+  height: 40px;
+  border: none;
+  border-radius: 3px;
+  background-color: #f0f0f7;
+  color: #8e929b;
+  z-index: 10;
+`;
+
 type Props = {
   entityKeyId :string,
   scores :Immutable.Map<*, *>,
@@ -109,6 +127,7 @@ type Props = {
   ftaHistory :Immutable.Map<*, *>,
   readOnly :boolean,
   personId? :string,
+  component :string,
   submitting :boolean,
   downloadFn :(values :{
     neighbors :Immutable.Map<*, *>,
@@ -125,7 +144,9 @@ type Props = {
 };
 
 type State = {
-  open :boolean
+  open :boolean,
+  closing :boolean,
+  closePSAButtonActive :boolean
 };
 
 export default class PSAReviewReportsRow extends React.Component<Props, State> {
@@ -139,7 +160,9 @@ export default class PSAReviewReportsRow extends React.Component<Props, State> {
   constructor(props :Props) {
     super(props);
     this.state = {
-      open: false
+      open: false,
+      closing: false,
+      closePSAButtonActive: false
     };
   }
 
@@ -168,15 +191,57 @@ export default class PSAReviewReportsRow extends React.Component<Props, State> {
     );
   }
 
-  renderDownloadButton = () => (
-    <PSAReportDownloadButton
-        downloadFn={this.props.downloadFn}
-        neighbors={this.props.neighbors}
-        scores={this.props.scores} />
-  )
+  handleStatusChange = () => {
+    this.setState({ closing: false });
+  }
+
+  renderDownloadButton = () => {
+    const { component } = this.props;
+
+    const button = component === CONTENT_CONSTS.PENDING_PSAS
+      ?
+      (
+        <ClosePSAButton
+            onClick={() => this.setState({ closePSAButtonActive: true, closing: true })}>
+          Close PSA
+        </ClosePSAButton>
+      )
+      :
+      (
+        <PSAReportDownloadButton
+            downloadFn={this.props.downloadFn}
+            neighbors={this.props.neighbors}
+            scores={this.props.scores} />
+      );
+    return button;
+  }
+
+  renderModal = () => {
+    const { closePSAButtonActive } = this.state;
+
+    const modal = closePSAButtonActive === true
+      ?
+      (
+        <ClosePSAModal
+            scores={this.props.scores}
+            entityKeyId={this.props.entityKeyId}
+            open={this.state.closing}
+            defaultStatus={this.props.scores.getIn([PROPERTY_TYPES.STATUS, 0])}
+            defaultStatusNotes={this.props.scores.getIn([PROPERTY_TYPES.STATUS_NOTES, 0])}
+            defaultFailureReasons={this.props.scores.get(PROPERTY_TYPES.FAILURE_REASON, Immutable.List()).toJS()}
+            onClose={() => this.setState({ closePSAButtonActive: false, closing: false, open: false })}
+            onSubmit={this.handleStatusChange} />
+      )
+      :
+      (
+        <PSAModal open={this.state.open} onClose={() => this.setState({ open: false })} {...this.props} />
+      );
+    return modal;
+  }
 
   renderMetadataText = (actionText, dateText, user) => {
     const text = [actionText];
+
     if (dateText.length) {
       text.push(' on ');
       text.push(<ImportantMetadataText key={`${actionText}-${dateText}`}>{dateText}</ImportantMetadataText>);
@@ -198,13 +263,16 @@ export default class PSAReviewReportsRow extends React.Component<Props, State> {
     this.props.neighbors.get(ENTITY_SETS.STAFF, Immutable.List()).forEach((neighbor) => {
       const associationEntitySetName = neighbor.getIn(['associationEntitySet', 'name']);
       const personId = neighbor.getIn(['neighborDetails', PROPERTY_TYPES.PERSON_ID, 0], '');
+
       if (associationEntitySetName === ENTITY_SETS.ASSESSED_BY) {
         creator = personId;
         const maybeDate = moment(neighbor.getIn(['associationDetails', PROPERTY_TYPES.COMPLETED_DATE_TIME, 0], ''));
+
         if (maybeDate.isValid()) dateCreated = maybeDate;
       }
       if (associationEntitySetName === ENTITY_SETS.EDITED_BY) {
         const maybeDate = moment(neighbor.getIn(['associationDetails', PROPERTY_TYPES.DATE_TIME, 0], ''));
+
         if (maybeDate.isValid()) {
           if (!dateEdited || dateEdited.isBefore(maybeDate)) {
             dateEdited = maybeDate;
@@ -213,10 +281,8 @@ export default class PSAReviewReportsRow extends React.Component<Props, State> {
         }
       }
     });
-
     const editLabel = psaIsClosed(this.props.scores) ? 'Closed' : 'Edited';
-
-    if (!dateCreated && !creator) return null;
+    if (!(dateCreated || dateEdited) && !(creator || editor)) return null;
 
     const dateCreatedText = dateCreated ? dateCreated.format(dateFormat) : '';
     const dateEditedText = dateEdited ? dateEdited.format(dateFormat) : '';
@@ -249,7 +315,7 @@ export default class PSAReviewReportsRow extends React.Component<Props, State> {
             {this.renderPersonCard()}
             {this.renderStats()}
           </ReviewRowWrapper>
-          <PSAModal open={this.state.open} onClose={() => this.setState({ open: false })} {...this.props} />
+          {this.renderModal()}
         </DetailsRowContainer>
         {this.renderMetadata()}
       </ReviewRowContainer>
