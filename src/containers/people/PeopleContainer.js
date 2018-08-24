@@ -253,7 +253,7 @@ class PeopleContainer extends React.Component<Props, State> {
       },
       {
         path: Routes.SEARCH_PEOPLE,
-        label: STATE.SEARCH
+        label: 'Search'
       },
       {
         path: Routes.MULTI_SEARCH_PEOPLE,
