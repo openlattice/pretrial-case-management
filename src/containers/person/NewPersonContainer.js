@@ -24,6 +24,8 @@ import { toISODate } from '../../utils/FormattingUtils';
 import { StyledFormWrapper, StyledSectionWrapper } from '../../utils/Layout';
 import { newPersonSubmitRequest } from './PersonActionFactory';
 import { clearForm } from '../psa/FormActionFactory';
+import { STATE, SEARCH } from '../../utils/consts/FrontEndStateConsts';
+
 
 import {
   ADDRESS_VALUE,
@@ -459,10 +461,11 @@ class NewPersonContainer extends React.Component<Props, State> {
 }
 
 function mapStateToProps(state :Immutable.Map<*, *>) :Object {
+  const search = state.get(STATE.SEARCH);
 
   return {
-    isCreatingPerson: state.getIn(['search', 'isCreatingPerson']),
-    createPersonError: state.getIn(['search', 'createPersonError'])
+    [SEARCH.CREATING_PERSON]: search.get(SEARCH.CREATING_PERSON),
+    [SEARCH.CREATE_PERSON_ERROR]: search.get(SEARCH.CREATE_PERSON_ERROR)
   };
 }
 

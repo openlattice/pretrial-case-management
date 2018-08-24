@@ -20,6 +20,7 @@ import { clearSearchResults, searchPeopleRequest } from './PersonActionFactory';
 import { toISODate } from '../../utils/FormattingUtils';
 import { StyledFormViewWrapper, StyledSectionWrapper, StyledFormWrapper } from '../../utils/Layout';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { STATE, SEARCH } from '../../utils/consts/FrontEndStateConsts';
 import * as Routes from '../../core/router/Routes';
 
 /*
@@ -300,12 +301,13 @@ class SearchPeopleContainer extends React.Component<Props, State> {
 }
 
 function mapStateToProps(state :Immutable.Map<*, *>) :Object {
-
+  const search = state.get(STATE.SEARCH);
+  // TODO: error is not in SearchReducer
   return {
-    searchResults: state.getIn(['search', 'searchResults'], Immutable.List()),
-    isLoadingPeople: state.getIn(['search', 'isLoadingPeople'], false),
-    searchHasRun: state.getIn(['search', 'searchHasRun'], false),
-    error: state.getIn(['search', 'searchError'], false)
+    [SEARCH.SEARCH_RESULTS]: search.get(SEARCH.SEARCH_RESULTS, Immutable.List()),
+    [SEARCH.LOADING]: search.get(SEARCH.LOADING, false),
+    [SEARCH.SEARCH_HAS_RUN]: search.get(SEARCH.SEARCH_HAS_RUN, false),
+    error: search.get('searchError', false)
   };
 }
 
