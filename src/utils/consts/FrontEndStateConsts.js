@@ -95,7 +95,7 @@ export const PEOPLE = {
   NEIGHBORS: 'peopleNeighbors'
 };
 
-// ReviewPSA
+// Review
 
 export const REVIEW = {
   ENTITY_SET_ID: 'scoresEntitySetId',
@@ -117,6 +117,7 @@ export const REVIEW = {
   PSA_IDS_REFRESHING: 'psaIdsRefreshing'
 };
 
+// Search
 
 export const SEARCH = {
   LOADING: 'isLoadingPeople',
@@ -130,4 +131,13 @@ export const SEARCH = {
   SEARCH_HAS_RUN: 'searchHasRun',
   CREATING_PERSON: 'isCreatingPerson',
   CREATE_PERSON_ERROR: 'createPersonError'
+};
+
+// Submit
+
+export const SUBMIT = {
+  SUBMITTING: 'submitting',
+  SUCCESS: 'submitSuccess',
+  SUBMITTED: 'submitted',
+  ERROR: 'error'
 };
