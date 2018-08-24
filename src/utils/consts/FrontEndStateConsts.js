@@ -25,6 +25,14 @@ export const PSA_ASSOCIATION = {
   ENTITY_SET: 'associationEntitySet'
 };
 
+// Dashboard
+
+export const DASHBOARD = {
+  DATA: 'dashboardData',
+  LOADING: 'isLoading',
+  ERROR: 'error'
+};
+
 // Enroll
 
 export const ENROLL = {

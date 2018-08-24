@@ -4,11 +4,13 @@
 
 import Immutable from 'immutable';
 import { loadDashboardData } from './DashboardActionFactory';
+import { DASHBOARD } from '../../utils/consts/FrontEndStateConsts';
+
 
 const INITIAL_STATE = Immutable.fromJS({
-  dashboardData: Immutable.Map(),
-  isLoading: false,
-  error: false
+  [DASHBOARD.DATA]: Immutable.Map(),
+  [DASHBOARD.LOADING]: false,
+  [DASHBOARD.ERROR]: false
 });
 
 export default function peopleReducer(state = INITIAL_STATE, action) {
@@ -16,10 +18,13 @@ export default function peopleReducer(state = INITIAL_STATE, action) {
 
     case loadDashboardData.case(action.type): {
       return loadDashboardData.reducer(state, action, {
-        REQUEST: () => state.set('dashboardData', Immutable.Map()).set('isLoading', true).set('error', false),
-        SUCCESS: () => state.set('dashboardData', Immutable.fromJS(action.value)).set('error', false),
-        FAILURE: () => state.set('dashboardData', Immutable.Map()).set('error', true),
-        FINALLY: () => state.set('isLoading', false)
+        REQUEST: () => state.set(DASHBOARD.DATA, Immutable.Map())
+          .set(DASHBOARD.LOADING, true).set(DASHBOARD.ERROR, false),
+        SUCCESS: () => state.set(DASHBOARD.DATA, Immutable.fromJS(action.value))
+          .set(DASHBOARD.ERROR, false),
+        FAILURE: () => state.set(DASHBOARD.DATA, Immutable.Map())
+          .set(DASHBOARD.ERROR, true),
+        FINALLY: () => state.set(DASHBOARD.LOADING, false)
       });
     }
 
