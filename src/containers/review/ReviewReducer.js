@@ -17,25 +17,24 @@ import { ENTITY_SETS } from '../../utils/consts/DataModelConsts';
 import { PSA_NEIGHBOR, REVIEW_PSA } from '../../utils/consts/FrontEndStateConsts';
 
 const INITIAL_STATE :Immutable.Map<*, *> = Immutable.fromJS({
-  scoresEntitySetId: '',
-  scoresAsMap: Immutable.Map(),
-  psaNeighborsById: Immutable.Map(),
-  psaNeighborsByDate: Immutable.Map(),
-  loadingPSAData: false,
-  loadingResults: false,
-  errorMessage: '',
-  allFilers: Immutable.Set(),
-  caseHistory: Immutable.Map(),
-  manualCaseHistory: Immutable.Map(),
-  chargeHistory: Immutable.Map(),
-  manualChargeHistory: Immutable.Map(),
-  sentenceHistory: Immutable.Map(),
-  ftaHistory: Immutable.Map(),
-  hearings: Immutable.Map(),
-  readOnly: true,
-  psaIdsRefreshing: Immutable.Set()
+  [REVIEW_PSA.ENTITY_SET_ID]: '',
+  [REVIEW_PSA.SCORES]: Immutable.Map(),
+  [REVIEW_PSA.NEIGHBORS_BY_ID]: Immutable.Map(),
+  [REVIEW_PSA.NEIGHBORS_BY_DATE]: Immutable.Map(),
+  [REVIEW_PSA.LOADING_DATA]: false,
+  [REVIEW_PSA.LOADING_RESULTS]: false,
+  [REVIEW_PSA.ERROR]: '',
+  [REVIEW_PSA.ALL_FILERS]: Immutable.Set(),
+  [REVIEW_PSA.CASE_HISTORY]: Immutable.Map(),
+  [REVIEW_PSA.MANUAL_CASE_HISTORY]: Immutable.Map(),
+  [REVIEW_PSA.CHARGE_HISTORY]: Immutable.Map(),
+  [REVIEW_PSA.MANUAL_CHARGE_HISTORY]: Immutable.Map(),
+  [REVIEW_PSA.SENTENCE_HISTORY]: Immutable.Map(),
+  [REVIEW_PSA.FTA_HISTORY]: Immutable.Map(),
+  [REVIEW_PSA.HEARINGS]: Immutable.Map(),
+  [REVIEW_PSA.READ_ONLY]: true,
+  [REVIEW_PSA.PSA_IDS_REFRESHING]: Immutable.Set()
 });
-
 
 export default function reviewReducer(state :Immutable.Map<*, *> = INITIAL_STATE, action :SequenceAction) {
   switch (action.type) {
