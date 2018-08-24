@@ -59,3 +59,17 @@ export const PSA_FORM = {
   LOADING_NEIGHBORS: 'isLoadingNeighbors',
   SUBMIT_ERROR: 'submitError'
 };
+
+export const PSA_PERSON = {
+  LOADING: 'isLoadingPeople',
+  SEARCH_RESULTS: 'searchResults',
+  SEARCH_ERROR: 'searchError',
+  SELECTED_PERSON_ID: 'selectedPersonId',
+  PERSON_DETAILS: 'personDetails',
+  LOADING_CASES: 'loadingCases',
+  NUM_CASES_TO_LOAD: 'numCasesToLoad',
+  NUM_CASES_LOADED: 'numCasesLoaded',
+  SEARCH_HAS_RUN: 'searchHasRun',
+  CREATING_PERSON: 'isCreatingPerson',
+  CREATE_PERSON_ERROR: 'createPersonError'
+};
