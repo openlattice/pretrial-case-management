@@ -165,7 +165,7 @@ class PeopleContainer extends React.Component<Props, State> {
     return (
       <div>
         <SearchBox>
-          <PersonTextAreaInput onChange={(peopleList) => this.setState({ peopleList })} />
+          <PersonTextAreaInput onChange={peopleList => this.setState({ peopleList })} />
           {
             missingPeople.size && !this.props.loadingPSAData ? (
               <MissingNamesContainer>
