@@ -1,3 +1,17 @@
+// Redux Reducer
+
+export const STATE = {
+  AUTH: 'auth',
+  COURT: 'court',
+  DASHBOARD: 'dashboard',
+  ENROLL: 'enroll',
+  PSA: 'psa',
+  PEOPLE: 'people',
+  REVIEW: 'review',
+  SEARCH: 'search',
+  SUBMIT: 'submit'
+};
+
 // General PSA
 
 export const PSA_NEIGHBOR = {
@@ -13,7 +27,7 @@ export const PSA_ASSOCIATION = {
 
 // ReviewPSA
 
-export const REVIEW_PSA = {
+export const REVIEW = {
   ENTITY_SET_ID: 'scoresEntitySetId',
   SCORES: 'scoresAsMap',
   NEIGHBORS_BY_ID: 'psaNeighborsById',
