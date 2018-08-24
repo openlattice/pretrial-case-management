@@ -25,6 +25,19 @@ export const PSA_ASSOCIATION = {
   ENTITY_SET: 'associationEntitySet'
 };
 
+// Court
+
+export const COURT = {
+  HEARINGS_TODAY: 'hearingsToday',
+  HEARINGS_BY_TIME: 'hearingsByTime',
+  HEARINGS_NEIGHBORS_BY_ID: 'hearingNeighborsById',
+  PEOPLE_WITH_OPEN_PSAS: 'peopleWithOpenPsas',
+  LOADING_HEARINGS: 'isLoadingHearings',
+  LOADING_ERROR: 'loadingError',
+  COUNTY: 'county',
+  COURTROOM: 'courtroom'
+};
+
 // Dashboard
 
 export const DASHBOARD = {
