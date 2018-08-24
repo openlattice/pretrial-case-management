@@ -74,7 +74,7 @@ export const PSA_FORM = {
   SUBMIT_ERROR: 'submitError'
 };
 
-export const PSA_PERSON = {
+export const SEARCH = {
   LOADING: 'isLoadingPeople',
   SEARCH_RESULTS: 'searchResults',
   SEARCH_ERROR: 'searchError',
