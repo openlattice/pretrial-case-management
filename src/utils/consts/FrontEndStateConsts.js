@@ -25,6 +25,17 @@ export const PSA_ASSOCIATION = {
   ENTITY_SET: 'associationEntitySet'
 };
 
+// Enroll
+
+export const ENROLL = {
+  LOADING_PROFILE: 'loadingProfile',
+  PROFILE_ID: 'profileId',
+  PIN: 'pin',
+  SUBMITTING_AUDIO: 'submittingAudio',
+  NUM_SUBMISSIONS: 'numSubmissions',
+  ERROR: 'errorMessage'
+};
+
 // People
 
 export const PEOPLE = {
