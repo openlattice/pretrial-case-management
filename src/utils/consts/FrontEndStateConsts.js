@@ -57,6 +57,33 @@ export const ENROLL = {
   ERROR: 'errorMessage'
 };
 
+// PSA
+
+export const PSA_FORM = {
+  ARREST_OPTIONS: 'arrestOptions',
+  ALL_CASES: 'allCasesForPerson',
+  ALL_CHARGES: 'allChargesForPerson',
+  ALL_SENTENCES: 'allSentencesForPerson',
+  ALL_ARREST_CHARGES: 'allArrestCharges',
+  ALL_FTAS: 'allFTAs',
+  ALL_PSAS: 'allPSAs',
+  ALL_MANUAL_CASES: 'allManualCases',
+  ALL_MANUAL_CHARGES: 'allManualCharges',
+  ALL_HEARINGS: 'allHearings',
+  CHARGES: 'charges',
+  SELECT_PERSON: 'selectedPerson',
+  OPEN_PSAS: 'openPSAs',
+  ARREST_ID: 'arrestId',
+  SELECT_PRETRIAL_CASE: 'selectedPretrialCase',
+  PSA: 'psa',
+  DATA_MODEL: 'dataModel',
+  ENTITY_SET_LOOKUP: 'entitySetLookup',
+  SUBMITTED: 'isSubmitted',
+  SUBMITTING: 'isSubmitting',
+  LOADING_NEIGHBORS: 'isLoadingNeighbors',
+  SUBMIT_ERROR: 'submitError'
+};
+
 // People
 
 export const PEOPLE = {
@@ -90,32 +117,6 @@ export const REVIEW = {
   PSA_IDS_REFRESHING: 'psaIdsRefreshing'
 };
 
-// Form
-
-export const PSA_FORM = {
-  ARREST_OPTIONS: 'arrestOptions',
-  ALL_CASES: 'allCasesForPerson',
-  ALL_CHARGES: 'allChargesForPerson',
-  ALL_SENTENCES: 'allSentencesForPerson',
-  ALL_ARREST_CHARGES: 'allArrestCharges',
-  ALL_FTAS: 'allFTAs',
-  ALL_PSAS: 'allPSAs',
-  ALL_MANUAL_CASES: 'allManualCases',
-  ALL_MANUAL_CHARGES: 'allManualCharges',
-  ALL_HEARINGS: 'allHearings',
-  CHARGES: 'charges',
-  SELECT_PERSON: 'selectedPerson',
-  OPEN_PSAS: 'openPSAs',
-  ARREST_ID: 'arrestId',
-  SELECT_PRETRIAL_CASE: 'selectedPretrialCase',
-  PSA: 'psa',
-  DATA_MODEL: 'dataModel',
-  ENTITY_SET_LOOKUP: 'entitySetLookup',
-  SUBMITTED: 'isSubmitted',
-  SUBMITTING: 'isSubmitting',
-  LOADING_NEIGHBORS: 'isLoadingNeighbors',
-  SUBMIT_ERROR: 'submitError'
-};
 
 export const SEARCH = {
   LOADING: 'isLoadingPeople',
