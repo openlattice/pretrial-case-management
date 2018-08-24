@@ -25,6 +25,17 @@ export const PSA_ASSOCIATION = {
   ENTITY_SET: 'associationEntitySet'
 };
 
+// People
+
+export const PEOPLE = {
+  RESULTS: 'peopleResults',
+  PERSON_DATA: 'selectedPersonData',
+  PERSON_ENTITY_KEY_ID: 'selectedPersonEntityKeyId',
+  FETCHING_PEOPLE: 'isFetchingPeople',
+  FETCHING_PERSON_DATA: 'isFetchingPersonData',
+  NEIGHBORS: 'peopleNeighbors'
+};
+
 // ReviewPSA
 
 export const REVIEW = {
