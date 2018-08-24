@@ -3,6 +3,8 @@ import moment from 'moment';
 
 import { ENTITY_SETS, PROPERTY_TYPES } from './consts/DataModelConsts';
 import { PSA_STATUSES } from './consts/Consts';
+import { PSA_NEIGHBOR, PSA_ASSOCIATION } from './consts/FrontEndStateConsts';
+
 
 export const sortPeopleByName = (p1, p2) => {
   const p1Last = p1.getIn([PROPERTY_TYPES.LAST_NAME, 0], '').toLowerCase();
@@ -21,8 +23,8 @@ export const sortPeopleByName = (p1, p2) => {
 };
 
 export const sortByName = ([id1, neighbor1], [id2, neighbor2]) => {
-  const p1 = neighbor1.getIn([ENTITY_SETS.PEOPLE, 'neighborDetails'], Immutable.Map());
-  const p2 = neighbor2.getIn([ENTITY_SETS.PEOPLE, 'neighborDetails'], Immutable.Map());
+  const p1 = neighbor1.getIn([ENTITY_SETS.PEOPLE, PSA_NEIGHBOR.DETAILS], Immutable.Map());
+  const p2 = neighbor2.getIn([ENTITY_SETS.PEOPLE, PSA_NEIGHBOR.DETAILS], Immutable.Map());
 
   return sortPeopleByName(p1, p2);
 };
@@ -32,10 +34,10 @@ export const sortByDate = ([id1, neighbor1], [id2, neighbor2]) => {
   let latest2;
 
   const getDate = (neighborObj, latest) => {
-    const associationName = neighborObj.getIn(['associationEntitySet', 'name']);
+    const associationName = neighborObj.getIn([PSA_ASSOCIATION.ENTITY_SET, 'name']);
     const ptFqn = associationName === ENTITY_SETS.ASSESSED_BY
       ? PROPERTY_TYPES.COMPLETED_DATE_TIME : PROPERTY_TYPES.DATE_TIME;
-    const date = moment(neighborObj.getIn(['associationDetails', ptFqn, 0], ''));
+    const date = moment(neighborObj.getIn([PSA_ASSOCIATION.DETAILS, ptFqn, 0], ''));
     if (date.isValid()) {
       if (!latest || latest.isBefore(date)) {
         return date;
@@ -85,9 +87,9 @@ export const getLastEditDetails = (neighbors) => {
   let date;
   let user;
   neighbors.get(ENTITY_SETS.STAFF, Immutable.List()).forEach((neighbor) => {
-    if (neighbor.getIn(['associationEntitySet', 'name']) === ENTITY_SETS.EDITED_BY) {
-      const editUser = neighbor.getIn(['neighborDetails', PROPERTY_TYPES.PERSON_ID, 0]);
-      const editDate = moment(neighbor.getIn(['associationDetails', PROPERTY_TYPES.DATE_TIME, 0], ''));
+    if (neighbor.getIn([PSA_ASSOCIATION.ENTITY_SET, 'name']) === ENTITY_SETS.EDITED_BY) {
+      const editUser = neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.PERSON_ID, 0]);
+      const editDate = moment(neighbor.getIn([PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.DATE_TIME, 0], ''));
       if (editUser && editDate.isValid() && (!date || editDate.isAfter(date))) {
         date = editDate;
         user = editUser;
