@@ -4,6 +4,8 @@
 
 import Immutable from 'immutable';
 
+import { ENTITY_SETS } from '../../utils/consts/DataModelConsts';
+import { PSA_NEIGHBOR, REVIEW } from '../../utils/consts/FrontEndStateConsts';
 import {
   changePSAStatus,
   checkPSAPermissions,
@@ -13,27 +15,25 @@ import {
   refreshPSANeighbors,
   updateScoresAndRiskFactors
 } from './ReviewActionFactory';
-import { ENTITY_SETS } from '../../utils/consts/DataModelConsts';
-import { PSA_NEIGHBOR, REVIEW_PSA } from '../../utils/consts/FrontEndStateConsts';
 
 const INITIAL_STATE :Immutable.Map<*, *> = Immutable.fromJS({
-  [REVIEW_PSA.ENTITY_SET_ID]: '',
-  [REVIEW_PSA.SCORES]: Immutable.Map(),
-  [REVIEW_PSA.NEIGHBORS_BY_ID]: Immutable.Map(),
-  [REVIEW_PSA.NEIGHBORS_BY_DATE]: Immutable.Map(),
-  [REVIEW_PSA.LOADING_DATA]: false,
-  [REVIEW_PSA.LOADING_RESULTS]: false,
-  [REVIEW_PSA.ERROR]: '',
-  [REVIEW_PSA.ALL_FILERS]: Immutable.Set(),
-  [REVIEW_PSA.CASE_HISTORY]: Immutable.Map(),
-  [REVIEW_PSA.MANUAL_CASE_HISTORY]: Immutable.Map(),
-  [REVIEW_PSA.CHARGE_HISTORY]: Immutable.Map(),
-  [REVIEW_PSA.MANUAL_CHARGE_HISTORY]: Immutable.Map(),
-  [REVIEW_PSA.SENTENCE_HISTORY]: Immutable.Map(),
-  [REVIEW_PSA.FTA_HISTORY]: Immutable.Map(),
-  [REVIEW_PSA.HEARINGS]: Immutable.Map(),
-  [REVIEW_PSA.READ_ONLY]: true,
-  [REVIEW_PSA.PSA_IDS_REFRESHING]: Immutable.Set()
+  [REVIEW.ENTITY_SET_ID]: '',
+  [REVIEW.SCORES]: Immutable.Map(),
+  [REVIEW.NEIGHBORS_BY_ID]: Immutable.Map(),
+  [REVIEW.NEIGHBORS_BY_DATE]: Immutable.Map(),
+  [REVIEW.LOADING_DATA]: false,
+  [REVIEW.LOADING_RESULTS]: false,
+  [REVIEW.ERROR]: '',
+  [REVIEW.ALL_FILERS]: Immutable.Set(),
+  [REVIEW.CASE_HISTORY]: Immutable.Map(),
+  [REVIEW.MANUAL_CASE_HISTORY]: Immutable.Map(),
+  [REVIEW.CHARGE_HISTORY]: Immutable.Map(),
+  [REVIEW.MANUAL_CHARGE_HISTORY]: Immutable.Map(),
+  [REVIEW.SENTENCE_HISTORY]: Immutable.Map(),
+  [REVIEW.FTA_HISTORY]: Immutable.Map(),
+  [REVIEW.HEARINGS]: Immutable.Map(),
+  [REVIEW.READ_ONLY]: true,
+  [REVIEW.PSA_IDS_REFRESHING]: Immutable.Set()
 });
 
 export default function reviewReducer(state :Immutable.Map<*, *> = INITIAL_STATE, action :SequenceAction) {
@@ -43,98 +43,98 @@ export default function reviewReducer(state :Immutable.Map<*, *> = INITIAL_STATE
       return changePSAStatus.reducer(state, action, {
         SUCCESS: () =>
           state.set(
-            REVIEW_PSA.SCORES,
-            state.get(REVIEW_PSA.SCORES).set(action.value.id, Immutable.fromJS(action.value.entity))
+            REVIEW.SCORES,
+            state.get(REVIEW.SCORES).set(action.value.id, Immutable.fromJS(action.value.entity))
           )
       });
     }
 
     case checkPSAPermissions.case(action.type): {
       return checkPSAPermissions.reducer(state, action, {
-        REQUEST: () => state.set(REVIEW_PSA.READ_ONLY, true),
-        SUCCESS: () => state.set(REVIEW_PSA.READ_ONLY, action.value.readOnly),
-        FAILURE: () => state.set(REVIEW_PSA.READ_ONLY, true)
+        REQUEST: () => state.set(REVIEW.READ_ONLY, true),
+        SUCCESS: () => state.set(REVIEW.READ_ONLY, action.value.readOnly),
+        FAILURE: () => state.set(REVIEW.READ_ONLY, true)
       });
     }
 
     case loadCaseHistory.case(action.type): {
       return loadCaseHistory.reducer(state, action, {
         REQUEST: () => state
-          .setIn([REVIEW_PSA.CASE_HISTORY, action.value.personId], Immutable.List())
-          .setIn([REVIEW_PSA.MANUAL_CASE_HISTORY, action.value.personId], Immutable.List())
-          .setIn([REVIEW_PSA.CHARGE_HISTORY, action.value.personId], Immutable.Map())
-          .setIn([REVIEW_PSA.MANUAL_CHARGE_HISTORY, action.value.personId], Immutable.Map())
-          .setIn([REVIEW_PSA.SENTENCE_HISTORY, action.value.personId], Immutable.Map())
-          .setIn([REVIEW_PSA.FTA_HISTORY, action.value.personId], Immutable.List())
-          .setIn([REVIEW_PSA.HEARINGS, action.value.personId], Immutable.List()),
+          .setIn([REVIEW.CASE_HISTORY, action.value.personId], Immutable.List())
+          .setIn([REVIEW.MANUAL_CASE_HISTORY, action.value.personId], Immutable.List())
+          .setIn([REVIEW.CHARGE_HISTORY, action.value.personId], Immutable.Map())
+          .setIn([REVIEW.MANUAL_CHARGE_HISTORY, action.value.personId], Immutable.Map())
+          .setIn([REVIEW.SENTENCE_HISTORY, action.value.personId], Immutable.Map())
+          .setIn([REVIEW.FTA_HISTORY, action.value.personId], Immutable.List())
+          .setIn([REVIEW.HEARINGS, action.value.personId], Immutable.List()),
         SUCCESS: () => state
-          .setIn([REVIEW_PSA.CASE_HISTORY, action.value.personId], action.value.allCases)
-          .setIn([REVIEW_PSA.MANUAL_CASE_HISTORY, action.value.personId], action.value.allManualCases)
-          .setIn([REVIEW_PSA.CHARGE_HISTORY, action.value.personId], action.value.chargesByCaseId)
-          .setIn([REVIEW_PSA.MANUAL_CHARGE_HISTORY, action.value.personId], action.value.manualChargesByCaseId)
-          .setIn([REVIEW_PSA.SENTENCE_HISTORY, action.value.personId], action.value.sentencesByCaseId)
-          .setIn([REVIEW_PSA.FTA_HISTORY, action.value.personId], action.value.allFTAs)
-          .setIn([REVIEW_PSA.HEARINGS, action.value.personId], action.value.allHearings),
+          .setIn([REVIEW.CASE_HISTORY, action.value.personId], action.value.allCases)
+          .setIn([REVIEW.MANUAL_CASE_HISTORY, action.value.personId], action.value.allManualCases)
+          .setIn([REVIEW.CHARGE_HISTORY, action.value.personId], action.value.chargesByCaseId)
+          .setIn([REVIEW.MANUAL_CHARGE_HISTORY, action.value.personId], action.value.manualChargesByCaseId)
+          .setIn([REVIEW.SENTENCE_HISTORY, action.value.personId], action.value.sentencesByCaseId)
+          .setIn([REVIEW.FTA_HISTORY, action.value.personId], action.value.allFTAs)
+          .setIn([REVIEW.HEARINGS, action.value.personId], action.value.allHearings),
         FAILURE: () => state
-          .setIn([REVIEW_PSA.CASE_HISTORY, action.value.personId], Immutable.List())
-          .setIn([REVIEW_PSA.MANUAL_CASE_HISTORY, action.value.personId], Immutable.List())
-          .setIn([REVIEW_PSA.CHARGE_HISTORY, action.value.personId], Immutable.Map())
-          .setIn([REVIEW_PSA.MANUAL_CHARGE_HISTORY, action.value.personId], Immutable.Map())
-          .setIn([REVIEW_PSA.SENTENCE_HISTORY, action.value.personId], Immutable.Map())
-          .setIn([REVIEW_PSA.FTA_HISTORY, action.value.personId], Immutable.List())
-          .setIn([REVIEW_PSA.HEARINGS, action.value.personId], Immutable.List())
+          .setIn([REVIEW.CASE_HISTORY, action.value.personId], Immutable.List())
+          .setIn([REVIEW.MANUAL_CASE_HISTORY, action.value.personId], Immutable.List())
+          .setIn([REVIEW.CHARGE_HISTORY, action.value.personId], Immutable.Map())
+          .setIn([REVIEW.MANUAL_CHARGE_HISTORY, action.value.personId], Immutable.Map())
+          .setIn([REVIEW.SENTENCE_HISTORY, action.value.personId], Immutable.Map())
+          .setIn([REVIEW.FTA_HISTORY, action.value.personId], Immutable.List())
+          .setIn([REVIEW.HEARINGS, action.value.personId], Immutable.List())
       });
     }
 
     case loadPSAData.case(action.type): {
       return loadPSAData.reducer(state, action, {
         REQUEST: () => state
-          .set(REVIEW_PSA.LOADING_DATA, true)
-          .set(REVIEW_PSA.ERROR, ''),
+          .set(REVIEW.LOADING_DATA, true)
+          .set(REVIEW.ERROR, ''),
         SUCCESS: () => state
-          .set(REVIEW_PSA.NEIGHBORS_BY_ID, Immutable.fromJS(action.value.psaNeighborsById))
-          .set(REVIEW_PSA.NEIGHBORS_BY_DATE, Immutable.fromJS(action.value.psaNeighborsByDate))
-          .set(REVIEW_PSA.ALL_FILERS, action.value.allFilers.sort())
-          .set(REVIEW_PSA.ERROR, ''),
+          .set(REVIEW.NEIGHBORS_BY_ID, Immutable.fromJS(action.value.psaNeighborsById))
+          .set(REVIEW.NEIGHBORS_BY_DATE, Immutable.fromJS(action.value.psaNeighborsByDate))
+          .set(REVIEW.ALL_FILERS, action.value.allFilers.sort())
+          .set(REVIEW.ERROR, ''),
         FAILURE: () => state
-          .set(REVIEW_PSA.NEIGHBORS_BY_DATE, Immutable.Map())
-          .set(REVIEW_PSA.ERROR, action.value),
-        FINALLY: () => state.set(REVIEW_PSA.LOADING_DATA, false)
+          .set(REVIEW.NEIGHBORS_BY_DATE, Immutable.Map())
+          .set(REVIEW.ERROR, action.value),
+        FINALLY: () => state.set(REVIEW.LOADING_DATA, false)
       });
     }
 
     case loadPSAsByDate.case(action.type): {
       return loadPSAsByDate.reducer(state, action, {
         REQUEST: () => state
-          .set(REVIEW_PSA.LOADING_RESULTS, true)
-          .set(REVIEW_PSA.ENTITY_SET_ID, ''),
+          .set(REVIEW.LOADING_RESULTS, true)
+          .set(REVIEW.ENTITY_SET_ID, ''),
         SUCCESS: () => state
-          .set(REVIEW_PSA.SCORES, Immutable.fromJS(action.value.scoresAsMap))
-          .set(REVIEW_PSA.ENTITY_SET_ID, action.value.entitySetId),
+          .set(REVIEW.SCORES, Immutable.fromJS(action.value.scoresAsMap))
+          .set(REVIEW.ENTITY_SET_ID, action.value.entitySetId),
         FAILURE: () => state
-          .set(REVIEW_PSA.ENTITY_SET_ID, '')
-          .set(REVIEW_PSA.SCORES, Immutable.Map()),
-        FINALLY: () => state.set(REVIEW_PSA.LOADING_RESULTS, false)
+          .set(REVIEW.ENTITY_SET_ID, '')
+          .set(REVIEW.SCORES, Immutable.Map()),
+        FINALLY: () => state.set(REVIEW.LOADING_RESULTS, false)
       });
     }
 
     case refreshPSANeighbors.case(action.type): {
       return refreshPSANeighbors.reducer(state, action, {
         REQUEST: () => state.set(
-          REVIEW_PSA.PSA_IDS_REFRESHING,
-          state.get(REVIEW_PSA.PSA_IDS_REFRESHING).add(action.value.id)
+          REVIEW.PSA_IDS_REFRESHING,
+          state.get(REVIEW.PSA_IDS_REFRESHING).add(action.value.id)
         ),
         SUCCESS: () => {
-          let psaNeighborsByDate = state.get(REVIEW_PSA.NEIGHBORS_BY_DATE);
-          let psaNeighborsById = state.get(REVIEW_PSA.NEIGHBORS_BY_ID);
+          let psaNeighborsByDate = state.get(REVIEW.NEIGHBORS_BY_DATE);
+          let psaNeighborsById = state.get(REVIEW.NEIGHBORS_BY_ID);
 
           psaNeighborsById = psaNeighborsById.set(action.value.id, Immutable.fromJS(action.value.neighbors));
 
-          return state.set(REVIEW_PSA.NEIGHBORS_BY_ID, psaNeighborsById);
+          return state.set(REVIEW.NEIGHBORS_BY_ID, psaNeighborsById);
         },
         FINALLY: () => state.set(
-          REVIEW_PSA.PSA_IDS_REFRESHING,
-          state.get(REVIEW_PSA.PSA_IDS_REFRESHING).delete(action.value.id)
+          REVIEW.PSA_IDS_REFRESHING,
+          state.get(REVIEW.PSA_IDS_REFRESHING).delete(action.value.id)
         )
       });
     }
@@ -151,13 +151,13 @@ export default function reviewReducer(state :Immutable.Map<*, *> = INITIAL_STATE
             newNotesEntity
           } = action.value;
 
-          let scoresAsMap = state.get(REVIEW_PSA.SCORES);
-          let psaNeighborsByDate = state.get(REVIEW_PSA.NEIGHBORS_BY_DATE);
+          let scoresAsMap = state.get(REVIEW.SCORES);
+          let psaNeighborsByDate = state.get(REVIEW.NEIGHBORS_BY_DATE);
           scoresAsMap = scoresAsMap.set(scoresId, Immutable.fromJS(newScoreEntity));
           const notesEntity = newNotesEntity
             ? Immutable.fromJS(newNotesEntity)
             : state.getIn([
-              REVIEW_PSA.NEIGHBORS_BY_ID,
+              REVIEW.NEIGHBORS_BY_ID,
               scoresId,
               ENTITY_SETS.RELEASE_RECOMMENDATIONS,
               PSA_NEIGHBOR.DETAILS
@@ -179,7 +179,7 @@ export default function reviewReducer(state :Immutable.Map<*, *> = INITIAL_STATE
               );
             }
           });
-          const psaNeighborsById = state.get(REVIEW_PSA.NEIGHBORS_BY_ID)
+          const psaNeighborsById = state.get(REVIEW.NEIGHBORS_BY_ID)
             .setIn(
               [scoresId, ENTITY_SETS.PSA_RISK_FACTORS, PSA_NEIGHBOR.DETAILS],
               Immutable.fromJS(newRiskFactorsEntity)
@@ -195,9 +195,9 @@ export default function reviewReducer(state :Immutable.Map<*, *> = INITIAL_STATE
               Immutable.fromJS(notesEntity)
             );
           return state
-            .set(REVIEW_PSA.SCORES, scoresAsMap)
-            .set(REVIEW_PSA.NEIGHBORS_BY_ID, psaNeighborsById)
-            .set(REVIEW_PSA.NEIGHBORS_BY_DATE, psaNeighborsByDate);
+            .set(REVIEW.SCORES, scoresAsMap)
+            .set(REVIEW.NEIGHBORS_BY_ID, psaNeighborsById)
+            .set(REVIEW.NEIGHBORS_BY_DATE, psaNeighborsByDate);
         }
       });
     }
