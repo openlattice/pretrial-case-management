@@ -13,6 +13,7 @@ import StyledButton from '../../components/buttons/StyledButton';
 import VOICE_PROMPT from './Consts';
 import * as ActionFactory from './EnrollActionFactory';
 import * as Routes from '../../core/router/Routes';
+import { STATE, ENROLL } from '../../utils/consts/FrontEndStateConsts';
 import {
   CloseX,
   StyledFormViewWrapper,
@@ -270,15 +271,15 @@ class EnrollVoice extends React.Component {
 }
 
 function mapStateToProps(state :Map<>) :Object {
-  const enroll = state.get('enroll');
+  const enroll = state.get(STATE.ENROLL);
 
   return {
-    loadingProfile: enroll.get('loadingProfile'),
-    profileId: enroll.get('profileId'),
-    pin: enroll.get('pin'),
-    submittingAudio: enroll.get('submittingAudio'),
-    numSubmissions: enroll.get('numSubmissions'),
-    errorMessage: enroll.get('errorMessage')
+    [ENROLL.LOADING_PROFILE]: enroll.get(ENROLL.LOADING_PROFILE),
+    [ENROLL.PROFILE_ID]: enroll.get(ENROLL.PROFILE_ID),
+    [ENROLL.PIN]: enroll.get(ENROLL.PIN),
+    [ENROLL.SUBMITTING_AUDIO]: enroll.get(ENROLL.SUBMITTING_AUDIO),
+    [ENROLL.NUM_SUBMISSIONS]: enroll.get(ENROLL.NUM_SUBMISSIONS),
+    [ENROLL.ERROR]: enroll.get(ENROLL.ERROR)
   };
 }
 

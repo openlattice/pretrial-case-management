@@ -26,6 +26,7 @@ import {
 
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { DOMAIN } from '../../utils/consts/ReportDownloadTypes';
+import { STATE, DASHBOARD } from '../../utils/consts/FrontEndStateConsts';
 import {
   CloseX,
   StyledFormViewWrapper,
@@ -345,11 +346,11 @@ class DashboardContainer extends React.Component<Props, State> {
 }
 
 function mapStateToProps(state) {
-  const dashboard = state.get('dashboard');
+  const dashboard = state.get(STATE.DASHBOARD);
   return {
-    dashboardData: dashboard.get('dashboardData'),
-    isLoading: dashboard.get('isLoading'),
-    error: dashboard.get('error')
+    [DASHBOARD.DATA]: dashboard.get(DASHBOARD.DATA),
+    [DASHBOARD.LOADING]: dashboard.get(DASHBOARD.LOADING),
+    [DASHBOARD.ERROR]: dashboard.get(DASHBOARD.ERROR)
   };
 }
 

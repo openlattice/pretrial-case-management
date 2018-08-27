@@ -11,6 +11,7 @@ import { Constants } from 'lattice';
 import AboutPerson from '../../components/people/AboutPerson';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { ENTITY_SETS } from '../../utils/consts/DataModelConsts';
+import { STATE, PEOPLE, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import * as PeopleActionFactory from './PeopleActionFactory';
 import * as ReviewActionFactory from '../review/ReviewActionFactory';
 
@@ -53,7 +54,7 @@ class PersonDetailsContainer extends React.Component<Props, State> {
 
   componentWillReceiveProps(nextProps) {
     const psaIds = nextProps.neighbors.get(ENTITY_SETS.PSA_SCORES, Immutable.List())
-      .map(neighbor => neighbor.getIn(['neighborDetails', OPENLATTICE_ID_FQN, 0]))
+      .map(neighbor => neighbor.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0]))
       .filter(id => !!id)
       .toJS();
     if (!this.props.neighbors.size && nextProps.neighbors.size) {
@@ -64,8 +65,8 @@ class PersonDetailsContainer extends React.Component<Props, State> {
   render() {
     const { neighbors } = this.props;
     const scoreSeq = neighbors.get(ENTITY_SETS.PSA_SCORES, Immutable.Map())
-      .filter(neighbor => !!neighbor.get('neighborDetails'))
-      .map(neighbor => [neighbor.getIn(['neighborDetails', OPENLATTICE_ID_FQN, 0]), neighbor.get('neighborDetails')]);
+      .filter(neighbor => !!neighbor.get(PSA_NEIGHBOR.DETAILS))
+      .map(neighbor => [neighbor.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0]), neighbor.get(PSA_NEIGHBOR.DETAILS)]);
     return (
       <div>
         {
@@ -84,9 +85,9 @@ class PersonDetailsContainer extends React.Component<Props, State> {
 
 function mapStateToProps(state, ownProps) {
   const { personId } = ownProps.match.params;
-  const isFetchingPersonData = state.getIn(['people', 'isFetchingPersonData'], true);
-  const selectedPersonData = state.getIn(['people', 'selectedPersonData'], Immutable.List());
-  const neighbors = state.getIn(['people', 'peopleNeighbors', personId], Immutable.Map());
+  const isFetchingPersonData = state.getIn([STATE.PEOPLE, PEOPLE.FETCHING_PERSON_DATA], true);
+  const selectedPersonData = state.getIn([STATE.PEOPLE, PEOPLE.PERSON_DATA], Immutable.List());
+  const neighbors = state.getIn([STATE.PEOPLE, PEOPLE.NEIGHBORS, personId], Immutable.Map());
 
   return {
     selectedPersonData,
