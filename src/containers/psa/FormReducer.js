@@ -125,12 +125,12 @@ function formReducer(state :Immutable.Map<> = INITIAL_STATE, action :Object) {
       return changePSAStatus.reducer(state, action, {
         SUCCESS: () => {
           const neighbors = state.getIn(['allPSAs'], Immutable.Map());
-          const nextNeighbors = Immutable.fromJS(neighbors).map((neighborObj) => {
+          const nextNeighbors = Immutable.fromJS(neighbors).filter((neighborObj) => {
             const neighborId = neighborObj.getIn([OPENLATTICE_ID_FQN, 0]);
             if (neighborId === action.value.id) {
-              return Immutable.fromJS(action.value.entity);
+              return false;
             }
-            return neighborObj;
+            return true;
           });
           return state.setIn(['allPSAs'], nextNeighbors);
         }
