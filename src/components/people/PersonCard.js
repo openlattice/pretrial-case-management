@@ -86,13 +86,14 @@ const TagPlaceholder = styled.span`
 const PersonCard = ({ person, hasOpenPSA } :Props) => {
   const {
     firstName,
+    middleName,
     lastName,
     dob,
     photo,
     identification
   } = person;
 
-  const name = `${lastName}, ${firstName}`;
+  const name = `${lastName}, ${firstName} ${middleName || ''}`;
 
   return (
     <StyledUndecoratedLink to={`${Routes.PERSON_DETAILS_ROOT}/${identification}`}>
