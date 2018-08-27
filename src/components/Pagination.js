@@ -3,9 +3,40 @@
  */
 
 import React from 'react';
+import styled from 'styled-components';
 
 import leftArrow from '../assets/svg/left-arrow-dark.svg';
 import rightArrow from '../assets/svg/right-arrow-dark.svg';
+
+const PageList = styled.ul`
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  align-items: center;
+  list-style: none;
+  margin: 0 30px;
+
+  li:last-child {
+    width: 24px;
+  }
+`;
+
+const PageListItem = styled.li`
+  width: ${props => ((props.disabled) ? '0' : 'auto')};
+  visibility: ${props => ((props.disabled) ? 'hidden' : '')};
+
+  a {
+    color: ${props => (props.active ? 'white' : '#555e6f')};
+    background-color: ${props => (props.active ? '#6124e2' : '')};
+    border-radius: ${props => (props.active ? '2px' : '')};
+    width: 24px;
+    height: 24px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: none;
+  }
+`;
 
 type Props = {
   onChangePage :() => void,
@@ -16,16 +47,20 @@ type Props = {
 // pagination start page is START_PAGE
 const START_PAGE = 1;
 // only MAX_PAGE_DISPLAY pages are displayed in the pagination controls.
-const MAX_PAGE_DISPLAY = 5;
+const MAX_PAGE_DISPLAY = 4;
 // if the active page is less than SHIFT_THRESHOLD,
 // the pages displayed in the pagination controls does not shift.
-const SHIFT_THRESHOLD = 4;
+const SHIFT_THRESHOLD = 3;
 
 const Pagination = (props :Props) => {
 
   const { numPages } = props;
   const { activePage } = props;
   const { onChangePage } = props;
+  const frontArrowDisabled = activePage === 1;
+  const frontJumpDisabled = (activePage < MAX_PAGE_DISPLAY) || (numPages < MAX_PAGE_DISPLAY);
+  const backArrowDisabled = activePage === numPages;
+  const backJumpDisabled = (activePage > numPages - SHIFT_THRESHOLD) || (numPages < MAX_PAGE_DISPLAY);
 
   if (!numPages || numPages <= 1) {
     return null;
@@ -59,28 +94,42 @@ const Pagination = (props :Props) => {
   }
 
 
-  const indices = pages.map((page, index) => {
+  const indices = pages.map((page) => {
+    const active = activePage === page;
+
     return (
-      <li key={index} className={activePage === page ? 'active' : ''}>
+      <PageListItem key={page} active={active}>
         <a onClick={() => onChangePage(page)}>{page}</a>
-      </li>
+      </PageListItem>
     );
   });
 
   return (
-    <ul className="pagination">
-      <li className={activePage === 1 ? 'disabled' : ''}>
+    <PageList>
+      <PageListItem disabled={frontArrowDisabled}>
         <a onClick={() => onChangePage(activePage - 1)}>
           <img src={leftArrow} alt="" />
         </a>
-      </li>
+      </PageListItem>
+      <PageListItem disabled={frontJumpDisabled}>
+        <a onClick={() => onChangePage(1)}>1</a>
+      </PageListItem>
+      <PageListItem disabled={frontJumpDisabled}>
+        <a onClick={() => onChangePage(activePage - 1)}>...</a>
+      </PageListItem>
       {indices}
-      <li className={activePage === numPages ? 'disabled' : ''}>
+      <PageListItem disabled={backJumpDisabled}>
+        <a onClick={() => onChangePage(activePage + 1)}>...</a>
+      </PageListItem>
+      <PageListItem disabled={backJumpDisabled}>
+        <a onClick={() => onChangePage(numPages)}>{numPages}</a>
+      </PageListItem>
+      <PageListItem disabled={backArrowDisabled}>
         <a onClick={() => onChangePage(activePage + 1)}>
           <img src={rightArrow} alt="" />
         </a>
-      </li>
-    </ul>
+      </PageListItem>
+    </PageList>
   );
 };
 
