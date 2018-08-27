@@ -25,32 +25,6 @@ import * as DataActionFactory from '../../utils/data/DataActionFactory';
 const StyledCenteredContainer = styled.div`
   text-align: center;
   margin-bottom: 20px;
-
-  .pagination {
-    display: inline-block;
-    margin-right: 30px;
-
-    .active a {
-      background-color: #6124e2;
-      border-radius: 2px;
-      color: white;
-    }
-
-    .disabled {
-      visibility: hidden;
-    }
-  }
-
-  .pagination a {
-    color: #555e6f;
-    width: 24px;
-    height: 24px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    border: none;
-    }
-  }
 `;
 
 const StyledBarForReviews = styled.div`
