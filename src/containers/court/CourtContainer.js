@@ -372,14 +372,14 @@ class CourtContainer extends React.Component<Props, State> {
 function mapStateToProps(state) {
   const court = state.get(STATE.COURT);
   return {
-    [COURT.HEARINGS_TODAY]: court.get('hearingsToday'),
-    [COURT.HEARINGS_BY_TIME]: court.get('hearingsByTime'),
-    [COURT.HEARINGS_NEIGHBORS_BY_ID]: court.get('hearingNeighborsById'),
-    [COURT.PEOPLE_WITH_OPEN_PSAS]: court.get('peopleWithOpenPsas'),
-    [COURT.LOADING_HEARINGS]: court.get('isLoadingHearings'),
-    [COURT.LOADING_ERROR]: court.get('loadingError'),
-    [COURT.COUNTY]: court.get('county'),
-    [COURT.COURTROOM]: court.get('courtroom')
+    [COURT.HEARINGS_TODAY]: court.get(COURT.HEARINGS_TODAY),
+    [COURT.HEARINGS_BY_TIME]: court.get(COURT.HEARINGS_BY_TIME),
+    [COURT.HEARINGS_NEIGHBORS_BY_ID]: court.get(COURT.HEARINGS_NEIGHBORS_BY_ID),
+    [COURT.PEOPLE_WITH_OPEN_PSAS]: court.get(COURT.PEOPLE_WITH_OPEN_PSAS),
+    [COURT.LOADING_HEARINGS]: court.get(COURT.LOADING_HEARINGS),
+    [COURT.LOADING_ERROR]: court.get(COURT.LOADING_ERROR),
+    [COURT.COUNTY]: court.get(COURT.COUNTY),
+    [COURT.COURTROOM]: court.get(COURT.COURTROOM)
   };
 }
 

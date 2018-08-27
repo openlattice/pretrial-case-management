@@ -16,7 +16,14 @@ import PSAReviewReportsRowList from './PSAReviewReportsRowList';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import DropDownMenu from '../../components/StyledSelect';
 import PersonSearchFields from '../../components/person/PersonSearchFields';
+import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
+import * as FormActionFactory from '../psa/FormActionFactory';
+import * as ReviewActionFactory from './ReviewActionFactory';
+import * as Routes from '../../core/router/Routes';
+
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { STATE, REVIEW, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
+import { SORT_TYPES } from '../../utils/consts/Consts';
 import {
   DATE_FORMAT,
   STATUS_OPTIONS,
@@ -25,11 +32,6 @@ import {
   SORT_OPTIONS_ARR,
   NAV_OPTIONS
 } from '../../utils/consts/ReviewPSAConsts';
-import { SORT_TYPES } from '../../utils/consts/Consts';
-import { STATE, REVIEW, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
-import * as FormActionFactory from '../psa/FormActionFactory';
-import * as ReviewActionFactory from './ReviewActionFactory';
-import * as Routes from '../../core/router/Routes';
 
 const StyledFormViewWrapper = styled.div`
   display: flex;
@@ -316,7 +318,8 @@ class ReviewPSA extends React.Component<Props, State> {
           scoreSeq={items.map(([id]) => ([id, scoresAsMap.get(id)]))}
           sort={sort}
           activeFilterKey={activeFilterKey}
-          renderContent={this.renderBottomFilters} />
+          renderContent={this.renderBottomFilters}
+          component={CONTENT_CONSTS.REVIEW} />
     );
   }
 
