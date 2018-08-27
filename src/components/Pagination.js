@@ -58,9 +58,9 @@ const Pagination = (props :Props) => {
   const { activePage } = props;
   const { onChangePage } = props;
   const frontArrowDisabled = activePage === 1;
-  const frontJumpDisabled = (activePage < MAX_PAGE_DISPLAY) || (numPages < MAX_PAGE_DISPLAY);
+  const frontJumpDisabled = (activePage <= SHIFT_THRESHOLD) || (numPages <= MAX_PAGE_DISPLAY);
   const backArrowDisabled = activePage === numPages;
-  const backJumpDisabled = (activePage > numPages - SHIFT_THRESHOLD) || (numPages < MAX_PAGE_DISPLAY);
+  const backJumpDisabled = (activePage > numPages - SHIFT_THRESHOLD) || (numPages <= MAX_PAGE_DISPLAY);
 
   if (!numPages || numPages <= 1) {
     return null;
@@ -84,7 +84,9 @@ const Pagination = (props :Props) => {
   // `pages` shifts based on an offset from the current page. The offset is half of the MAX_PAGE_DISPLAY.
   else {
     start = activePage - Math.floor(MAX_PAGE_DISPLAY / 2);
+    if (!frontJumpDisabled) start += 1;
     end = activePage + Math.floor(MAX_PAGE_DISPLAY / 2);
+    if (!backJumpDisabled) end -= 1;
     // if the last page number is displayed, `pages` will no longer shift;
     if (end > numPages) {
       start = numPages - SHIFT_THRESHOLD;
@@ -111,17 +113,17 @@ const Pagination = (props :Props) => {
           <img src={leftArrow} alt="" />
         </a>
       </PageListItem>
-      <PageListItem disabled={frontJumpDisabled}>
+      <PageListItem disabled={frontJumpDisabled || frontArrowDisabled}>
         <a onClick={() => onChangePage(1)}>1</a>
       </PageListItem>
-      <PageListItem disabled={frontJumpDisabled}>
+      <PageListItem disabled={frontJumpDisabled || frontArrowDisabled}>
         <a onClick={() => onChangePage(activePage - 1)}>...</a>
       </PageListItem>
       {indices}
-      <PageListItem disabled={backJumpDisabled}>
+      <PageListItem disabled={backJumpDisabled || backArrowDisabled}>
         <a onClick={() => onChangePage(activePage + 1)}>...</a>
       </PageListItem>
-      <PageListItem disabled={backJumpDisabled}>
+      <PageListItem disabled={backJumpDisabled || backArrowDisabled}>
         <a onClick={() => onChangePage(numPages)}>{numPages}</a>
       </PageListItem>
       <PageListItem disabled={backArrowDisabled}>
