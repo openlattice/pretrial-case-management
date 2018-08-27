@@ -717,11 +717,15 @@ class SelectReleaseConditions extends React.Component<Props, State> {
   }
 
   handleHearingUpdate = () => {
+    const { hearing } = this.props;
+    const dateTime = hearing.getIn([PROPERTY_TYPES.DATE_TIME, 0], '');
+    const rawTime = this.state.newHearingTime || formatDateTime(dateTime, 'HH:mm A');
+
     this.setState({ modifyingHearing: false });
     const dateFormat = 'MM/DD/YYYY';
     const timeFormat = 'hh:mm a';
     const date = moment(this.state.newHearingDate);
-    const time = moment(this.state.newHearingTime, timeFormat);
+    const time = moment(rawTime, timeFormat);
     const hearingDateTime = moment(
       `${date.format(dateFormat)} ${time.format(timeFormat)}`, `${dateFormat} ${timeFormat}`
     );
@@ -757,7 +761,7 @@ class SelectReleaseConditions extends React.Component<Props, State> {
           clearButton={false} />);
       time = (<StyledSearchableSelect
           options={getTimeOptions()}
-          value={this.state.newHearingTime || formatDateTime(dateTime, 'HH:mm')}
+          value={this.state.newHearingTime || formatDateTime(dateTime, 'HH:mm A')}
           onSelect={newHearingTime => this.setState({ newHearingTime })}
           short />);
       courtroom = (<StyledSearchableSelect
