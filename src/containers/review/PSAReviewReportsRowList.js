@@ -16,6 +16,8 @@ import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts'
 import { SORT_TYPES } from '../../utils/consts/Consts';
 import { sortByDate, sortByName } from '../../utils/PSAUtils';
 import { getEntityKeyId, getIdValue } from '../../utils/DataUtils';
+import { STATE, REVIEW, SUBMIT } from '../../utils/consts/FrontEndStateConsts';
+
 import * as FormActionFactory from '../psa/FormActionFactory';
 import * as ReviewActionFactory from './ReviewActionFactory';
 import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
@@ -24,32 +26,6 @@ import * as DataActionFactory from '../../utils/data/DataActionFactory';
 const StyledCenteredContainer = styled.div`
   text-align: center;
   margin-bottom: 20px;
-
-  .pagination {
-    display: inline-block;
-    margin-right: 30px;
-
-    .active a {
-      background-color: #6124e2;
-      border-radius: 2px;
-      color: white;
-    }
-
-    .disabled {
-      visibility: hidden;
-    }
-  }
-
-  .pagination a {
-    color: #555e6f;
-    width: 24px;
-    height: 24px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    border: none;
-    }
-  }
 `;
 
 const StyledSubHeaderBar = styled.div`
@@ -350,20 +326,23 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
 }
 
 function mapStateToProps(state) {
-  const review = state.get('review');
+  const review = state.get(STATE.REVIEW);
+  const submit = state.get(STATE.SUBMIT);
+  // TODO: Address prop names so that consts can be used as keys
   return {
-    psaNeighborsById: review.get('psaNeighborsById'),
-    caseHistory: review.get('caseHistory'),
-    manualCaseHistory: review.get('manualCaseHistory'),
-    chargeHistory: review.get('chargeHistory'),
-    manualChargeHistory: review.get('manualChargeHistory'),
-    sentenceHistory: review.get('sentenceHistory'),
-    ftaHistory: review.get('ftaHistory'),
-    hearings: review.get('hearings'),
-    readOnlyPermissions: review.get('readOnly'),
-    loadingPSAData: review.get('loadingPSAData'),
-    psaIdsRefreshing: review.get('psaIdsRefreshing'),
-    submitting: state.getIn(['submit', 'submitting'], false)
+    [REVIEW.NEIGHBORS_BY_ID]: review.get(REVIEW.NEIGHBORS_BY_ID),
+    [REVIEW.CASE_HISTORY]: review.get(REVIEW.CASE_HISTORY),
+    [REVIEW.MANUAL_CASE_HISTORY]: review.get(REVIEW.MANUAL_CASE_HISTORY),
+    [REVIEW.CHARGE_HISTORY]: review.get(REVIEW.CHARGE_HISTORY),
+    [REVIEW.MANUAL_CHARGE_HISTORY]: review.get(REVIEW.MANUAL_CHARGE_HISTORY),
+    [REVIEW.SENTENCE_HISTORY]: review.get(REVIEW.SENTENCE_HISTORY),
+    [REVIEW.FTA_HISTORY]: review.get(REVIEW.FTA_HISTORY),
+    [REVIEW.HEARINGS]: review.get(REVIEW.HEARINGS),
+    [REVIEW.LOADING_DATA]: review.get(REVIEW.LOADING_DATA),
+    [REVIEW.PSA_IDS_REFRESHING]: review.get(REVIEW.PSA_IDS_REFRESHING),
+    readOnlyPermissions: review.get(REVIEW.READ_ONLY),
+
+    [SUBMIT.SUBMITTING]: submit.get(SUBMIT.SUBMITTING, false)
   };
 }
 

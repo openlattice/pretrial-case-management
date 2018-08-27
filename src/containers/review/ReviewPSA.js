@@ -22,6 +22,7 @@ import * as ReviewActionFactory from './ReviewActionFactory';
 import * as Routes from '../../core/router/Routes';
 
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { STATE, REVIEW, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { SORT_TYPES } from '../../utils/consts/Consts';
 import {
   DATE_FORMAT,
@@ -336,7 +337,7 @@ class ReviewPSA extends React.Component<Props, State> {
 
           if (!this.domainMatch(neighbors)) return false;
 
-          const personId = neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborDetails', PROPERTY_TYPES.PERSON_ID, 0]);
+          const personId = neighbors.getIn([ENTITY_SETS.PEOPLE, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.PERSON_ID, 0]);
           if (personId) return true;
         }));
     });
@@ -346,7 +347,7 @@ class ReviewPSA extends React.Component<Props, State> {
   domainMatch = neighbors => (
     !this.state.domain.length
       || neighbors.get(ENTITY_SETS.STAFF, Immutable.List()).filter((neighbor) => {
-        if (!neighbor.getIn(['neighborDetails', PROPERTY_TYPES.PERSON_ID, 0], '').endsWith(this.state.domain)) {
+        if (!neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.PERSON_ID, 0], '').endsWith(this.state.domain)) {
           return false;
         }
 
@@ -361,7 +362,7 @@ class ReviewPSA extends React.Component<Props, State> {
       if (!this.domainMatch(neighbors)) return false;
       let includesFiler = false;
       neighbors.get(ENTITY_SETS.STAFF, Immutable.List()).forEach((neighbor) => {
-        if (neighbor.getIn(['neighborDetails', PROPERTY_TYPES.PERSON_ID], Immutable.List()).includes(filer)) {
+        if (neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.PERSON_ID], Immutable.List()).includes(filer)) {
           includesFiler = true;
         }
       });
@@ -396,15 +397,15 @@ class ReviewPSA extends React.Component<Props, State> {
       if (!this.domainMatch(neighbors)) return false;
 
       const neighborFirst = neighbors.getIn(
-        [ENTITY_SETS.PEOPLE, 'neighborDetails', PROPERTY_TYPES.FIRST_NAME],
+        [ENTITY_SETS.PEOPLE, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.FIRST_NAME],
         Immutable.List()
       );
       const neighborLast = neighbors.getIn(
-        [ENTITY_SETS.PEOPLE, 'neighborDetails', PROPERTY_TYPES.LAST_NAME],
+        [ENTITY_SETS.PEOPLE, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.LAST_NAME],
         Immutable.List()
       );
       const neighborDob = neighbors.getIn(
-        [ENTITY_SETS.PEOPLE, 'neighborDetails', PROPERTY_TYPES.DOB],
+        [ENTITY_SETS.PEOPLE, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.DOB],
         Immutable.List()
       );
 
@@ -549,14 +550,14 @@ class ReviewPSA extends React.Component<Props, State> {
 }
 
 function mapStateToProps(state) {
-  const review = state.get('review');
+  const review = state.get(STATE.REVIEW);
   return {
-    scoresAsMap: review.get('scoresAsMap'),
-    psaNeighborsByDate: review.get('psaNeighborsByDate'),
-    psaNeighborsById: review.get('psaNeighborsById'),
-    allFilers: review.get('allFilers'),
-    loadingResults: review.get('loadingResults') || review.get('loadingPSAData'),
-    errorMessage: review.get('errorMessage')
+    [REVIEW.SCORES]: review.get(REVIEW.SCORES),
+    [REVIEW.NEIGHBORS_BY_DATE]: review.get(REVIEW.NEIGHBORS_BY_DATE),
+    [REVIEW.NEIGHBORS_BY_ID]: review.get(REVIEW.NEIGHBORS_BY_ID),
+    [REVIEW.ALL_FILERS]: review.get(REVIEW.ALL_FILERS),
+    [REVIEW.LOADING_RESULTS]: review.get(REVIEW.LOADING_RESULTS) || review.get(REVIEW.LOADING_DATA),
+    [REVIEW.ERROR]: review.get(REVIEW.ERROR)
   };
 }
 

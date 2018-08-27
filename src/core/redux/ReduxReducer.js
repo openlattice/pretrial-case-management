@@ -14,17 +14,19 @@ import reviewReducer from '../../containers/review/ReviewReducer';
 import searchReducer from '../../containers/person/SearchReducer';
 import submitReducer from '../../utils/submit/SubmitReducer';
 
+import { STATE } from '../../utils/consts/FrontEndStateConsts';
+
 export default function reduxReducer() {
 
   return combineReducers({
-    auth: AuthReducer,
-    court: courtReducer,
-    dashboard: dashboardReducer,
-    enroll: enrollReducer,
-    psa: psaReducer,
-    people: peopleReducer,
-    review: reviewReducer,
-    search: searchReducer,
-    submit: submitReducer
+    [STATE.AUTH]: AuthReducer,
+    [STATE.COURT]: courtReducer,
+    [STATE.DASHBOARD]: dashboardReducer,
+    [STATE.ENROLL]: enrollReducer,
+    [STATE.PSA]: psaReducer,
+    [STATE.PEOPLE]: peopleReducer,
+    [STATE.REVIEW]: reviewReducer,
+    [STATE.SEARCH]: searchReducer,
+    [STATE.SUBMIT]: submitReducer
   });
 }

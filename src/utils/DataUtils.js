@@ -2,12 +2,11 @@
 * @flow
 */
 
-import Immutable from 'immutable';
-
+import Immutable, { isImmutable } from 'immutable';
 import { Constants } from 'lattice';
-import { isImmutable } from 'immutable';
 
 import { PROPERTY_TYPES } from './consts/DataModelConsts';
+import { PSA_NEIGHBOR } from './consts/FrontEndStateConsts';
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
@@ -35,12 +34,12 @@ export const getFqnObj = (fqnStr) => {
 };
 
 export const getEntitySetId = (neighbors :Immutable.Map<*, *>, name :string) :string =>
-  neighbors.getIn([name, 'neighborEntitySet', 'id'], '');
+  neighbors.getIn([name, PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
 
 export const getEntityKeyId = (neighbors :Immutable.Map<*, *>, name :string) :string =>
-  neighbors.getIn([name, 'neighborDetails', OPENLATTICE_ID_FQN, 0], '');
+  neighbors.getIn([name, PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0], '');
 
 export const getIdValue = (neighbors :Immutable.Map<*, *>, name :string, optionalFQN :?string) :string => {
   const fqn = optionalFQN || PROPERTY_TYPES.GENERAL_ID;
-  return neighbors.getIn([name, 'neighborDetails', fqn, 0], '');
+  return neighbors.getIn([name, PSA_NEIGHBOR.DETAILS, fqn, 0], '');
 };

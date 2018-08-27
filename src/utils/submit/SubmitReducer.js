@@ -6,12 +6,14 @@ import Immutable from 'immutable';
 
 import { CLEAR_SUBMIT, replaceEntity, submit } from './SubmitActionFactory';
 import { CLEAR_FORM } from '../../containers/psa/FormActionFactory';
+import { SUBMIT } from '../../utils/consts/FrontEndStateConsts';
+
 
 const INITIAL_STATE :Immutable.Map<*, *> = Immutable.Map().withMutations((map :Immutable.Map<*, *>) => {
-  map.set('submitting', false);
-  map.set('submitSuccess', false);
-  map.set('submitted', false)
-  map.set('error', '')
+  map.set(SUBMIT.SUBMITTING, false);
+  map.set(SUBMIT.SUCCESS, false);
+  map.set(SUBMIT.SUBMITTED, false);
+  map.set(SUBMIT.ERROR, '');
 });
 
 function submitReducer(state :Immutable.Map<*, *> = INITIAL_STATE, action :Object) {
@@ -20,26 +22,26 @@ function submitReducer(state :Immutable.Map<*, *> = INITIAL_STATE, action :Objec
     case replaceEntity.case(action.type): {
       return replaceEntity.reducer(state, action, {
         REQUEST: () => state
-          .set('submitting', true)
-          .set('submitted', false)
-          .set('submitSuccess', false)
-          .set('error', ''),
-        SUCCESS: () => state.set('submitSuccess', true).set('error', ''),
-        FAILURE: () => state.set('submitSuccess', false).set('error', action.value),
-        FINALLY: () => state.set('submitting', false).set('submitted', true)
+          .set(SUBMIT.SUBMITTING, true)
+          .set(SUBMIT.SUBMITTED, false)
+          .set(SUBMIT.SUCCESS, false)
+          .set(SUBMIT.ERROR, ''),
+        SUCCESS: () => state.set(SUBMIT.SUCCESS, true).set(SUBMIT.ERROR, ''),
+        FAILURE: () => state.set(SUBMIT.SUCCESS, false).set(SUBMIT.ERROR, action.value),
+        FINALLY: () => state.set(SUBMIT.SUBMITTING, false).set(SUBMIT.SUBMITTED, true)
       });
     }
 
     case submit.case(action.type): {
       return submit.reducer(state, action, {
         REQUEST: () => state
-          .set('submitting', true)
-          .set('submitted', false)
-          .set('submitSuccess', false)
-          .set('error', ''),
-        SUCCESS: () => state.set('submitSuccess', true).set('error', ''),
-        FAILURE: () => state.set('submitSuccess', false).set('error', action.value),
-        FINALLY: () => state.set('submitting', false).set('submitted', true)
+          .set(SUBMIT.SUBMITTING, true)
+          .set(SUBMIT.SUBMITTED, false)
+          .set(SUBMIT.SUCCESS, false)
+          .set(SUBMIT.ERROR, ''),
+        SUCCESS: () => state.set(SUBMIT.SUCCESS, true).set(SUBMIT.ERROR, ''),
+        FAILURE: () => state.set(SUBMIT.SUCCESS, false).set(SUBMIT.ERROR, action.value),
+        FINALLY: () => state.set(SUBMIT.SUBMITTING, false).set(SUBMIT.SUBMITTED, true)
       });
     }
 

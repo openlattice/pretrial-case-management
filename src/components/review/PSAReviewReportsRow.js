@@ -17,6 +17,7 @@ import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { psaIsClosed } from '../../utils/PSAUtils';
 import { getEntityKeyId } from '../../utils/DataUtils';
+import { PSA_NEIGHBOR, PSA_ASSOCIATION } from '../../utils/consts/FrontEndStateConsts';
 
 
 const ReviewRowContainer = styled.div`
@@ -174,7 +175,7 @@ export default class PSAReviewReportsRow extends React.Component<Props, State> {
     const { neighbors, hideProfile } = this.props;
     if (hideProfile) return null;
 
-    const personDetails = neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborDetails'], Immutable.Map());
+    const personDetails = neighbors.getIn([ENTITY_SETS.PEOPLE, PSA_NEIGHBOR.DETAILS], Immutable.Map());
     if (!personDetails.size) return <div>Person details unknown.</div>;
     return (
       <PersonCardWrapper>
@@ -277,7 +278,6 @@ export default class PSAReviewReportsRow extends React.Component<Props, State> {
       }
       if (associationEntitySetName === ENTITY_SETS.EDITED_BY) {
         const maybeDate = moment(neighbor.getIn(['associationDetails', PROPERTY_TYPES.DATE_TIME, 0], ''));
-
         if (maybeDate.isValid()) {
           if (!dateEdited || dateEdited.isBefore(maybeDate)) {
             dateEdited = maybeDate;

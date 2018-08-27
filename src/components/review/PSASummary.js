@@ -16,6 +16,7 @@ import rightArrow from '../../assets/svg/dmf-arrow.svg';
 import { CONTEXT } from '../../utils/consts/Consts';
 import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { PSA_NEIGHBOR, PSA_ASSOCIATION } from '../../utils/consts/FrontEndStateConsts';
 import {
   getDMFDecision,
   increaseDMFSeverity,
@@ -142,7 +143,7 @@ type Props = {
 };
 
 const renderPersonInfo = ({ neighbors } :Props) => {
-  const person = neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborDetails'], Immutable.Map());
+  const person = neighbors.getIn([ENTITY_SETS.PEOPLE, PSA_NEIGHBOR.DETAILS], Immutable.Map());
 
   return (
     <PersonCardSummary person={person} />
@@ -151,7 +152,7 @@ const renderPersonInfo = ({ neighbors } :Props) => {
 
 const renderArrestInfo = ({ neighbors, manualCaseHistory } :Props) => {
   const caseNum = neighbors.getIn(
-    [ENTITY_SETS.MANUAL_PRETRIAL_CASES, 'neighborDetails', PROPERTY_TYPES.CASE_ID, 0], ''
+    [ENTITY_SETS.MANUAL_PRETRIAL_CASES, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.CASE_ID, 0], ''
   );
   const pretrialCase = manualCaseHistory
     .filter(caseObj => caseObj.getIn([PROPERTY_TYPES.CASE_ID, 0], '') === caseNum)
@@ -167,7 +168,7 @@ const renderCaseInfo = ({
   neighbors
 } :Props) => {
   const caseNum = neighbors.getIn(
-    [ENTITY_SETS.MANUAL_PRETRIAL_CASES, 'neighborDetails', PROPERTY_TYPES.CASE_ID, 0], ''
+    [ENTITY_SETS.MANUAL_PRETRIAL_CASES, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.CASE_ID, 0], ''
   );
   const pretrialCase = manualCaseHistory
     .filter(caseObj => caseObj.getIn([PROPERTY_TYPES.CASE_ID, 0], '') === caseNum);
@@ -186,11 +187,11 @@ const renderCaseInfo = ({
 const renderPSADetails = ({ neighbors, downloadFn, scores } :Props) => {
   let filer;
   const psaDate = formatDateTimeList(
-    neighbors.getIn([ENTITY_SETS.PSA_RISK_FACTORS, 'associationDetails', PROPERTY_TYPES.TIMESTAMP], Immutable.Map())
+    neighbors.getIn([ENTITY_SETS.PSA_RISK_FACTORS, PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.TIMESTAMP], Immutable.Map())
   );
   neighbors.get(ENTITY_SETS.STAFF, Immutable.List()).forEach((neighbor) => {
-    const associationEntitySetName = neighbor.getIn(['associationEntitySet', 'name']);
-    const personId = neighbor.getIn(['neighborDetails', PROPERTY_TYPES.PERSON_ID, 0], '');
+    const associationEntitySetName = neighbor.getIn([PSA_ASSOCIATION.ENTITY_SET, 'name']);
+    const personId = neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.PERSON_ID, 0], '');
     if (associationEntitySetName === ENTITY_SETS.ASSESSED_BY) {
       filer = personId;
     }
@@ -214,13 +215,13 @@ const renderPSADetails = ({ neighbors, downloadFn, scores } :Props) => {
 };
 
 const renderDMFDetails = ({ neighbors, scores } :Props) => {
-  const dmfRiskFactors = neighbors.getIn([ENTITY_SETS.DMF_RISK_FACTORS, 'neighborDetails'], Immutable.Map());
-  let context = dmfRiskFactors.getIn(['general.context', 0]);
+  const dmfRiskFactors = neighbors.getIn([ENTITY_SETS.DMF_RISK_FACTORS, PSA_NEIGHBOR.DETAILS], Immutable.Map());
+  let context = dmfRiskFactors.getIn([PROPERTY_TYPES.CONTEXT, 0]);
   if (context === 'Court') {
     context = CONTEXT.COURT_PENN;
   }
-  const psaRiskFactors = neighbors.getIn([ENTITY_SETS.PSA_RISK_FACTORS, 'neighborDetails'], Immutable.Map());
-  const dmfEntity = neighbors.getIn([ENTITY_SETS.DMF_RESULTS, 'neighborDetails'], Immutable.Map());
+  const psaRiskFactors = neighbors.getIn([ENTITY_SETS.PSA_RISK_FACTORS, PSA_NEIGHBOR.DETAILS], Immutable.Map());
+  const dmfEntity = neighbors.getIn([ENTITY_SETS.DMF_RESULTS, PSA_NEIGHBOR.DETAILS], Immutable.Map());
   const dmf = formatDMFFromEntity(dmfEntity);
   const nca = scores.getIn([PROPERTY_TYPES.NCA_SCALE, 0]);
   const fta = scores.getIn([PROPERTY_TYPES.FTA_SCALE, 0]);

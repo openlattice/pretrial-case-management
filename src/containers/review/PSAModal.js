@@ -35,6 +35,7 @@ import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts'
 import { RESULT_CATEGORIES } from '../../utils/consts/DMFResultConsts';
 import { formatDMFFromEntity } from '../../utils/DMFUtils';
 import { psaIsClosed } from '../../utils/PSAUtils';
+import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import * as OverrideClassNames from '../../utils/styleoverrides/OverrideClassNames';
 import * as FormActionFactory from '../psa/FormActionFactory';
 import * as ReviewActionFactory from './ReviewActionFactory';
@@ -248,14 +249,14 @@ class PSAModal extends React.Component<Props, State> {
   getNotesFromNeighbors = neighbors =>
     neighbors.getIn([
       ENTITY_SETS.RELEASE_RECOMMENDATIONS,
-      'neighborDetails',
+      PSA_NEIGHBOR.DETAILS,
       PROPERTY_TYPES.RELEASE_RECOMMENDATION,
       0
     ], '');
 
   getRiskFactors = (neighbors :Immutable.Map<*, *>) => {
-    const riskFactors = neighbors.getIn([ENTITY_SETS.PSA_RISK_FACTORS, 'neighborDetails'], Immutable.Map());
-    const dmfRiskFactors = neighbors.getIn([ENTITY_SETS.DMF_RISK_FACTORS, 'neighborDetails'], Immutable.Map());
+    const riskFactors = neighbors.getIn([ENTITY_SETS.PSA_RISK_FACTORS, PSA_NEIGHBOR.DETAILS], Immutable.Map());
+    const dmfRiskFactors = neighbors.getIn([ENTITY_SETS.DMF_RISK_FACTORS, PSA_NEIGHBOR.DETAILS], Immutable.Map());
     const ageAtCurrentArrestVal = riskFactors.getIn([PROPERTY_TYPES.AGE_AT_CURRENT_ARREST, 0]);
     let ageAtCurrentArrest = 0;
     if (ageAtCurrentArrestVal === '21 or 22') ageAtCurrentArrest = 1;
@@ -304,7 +305,7 @@ class PSAModal extends React.Component<Props, State> {
   }
 
   getDMF = (neighbors :Immutable.Map<*, *>) =>
-    formatDMFFromEntity(neighbors.getIn([ENTITY_SETS.DMF_RESULTS, 'neighborDetails'], Immutable.Map()))
+    formatDMFFromEntity(neighbors.getIn([ENTITY_SETS.DMF_RESULTS, PSA_NEIGHBOR.DETAILS], Immutable.Map()))
 
   downloadRow = (e, isCompact) => {
     e.stopPropagation();
@@ -316,7 +317,7 @@ class PSAModal extends React.Component<Props, State> {
     const { neighbors, hideProfile } = this.props;
     if (hideProfile) return null;
 
-    const personDetails = neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborDetails'], Immutable.Map());
+    const personDetails = neighbors.getIn([ENTITY_SETS.PEOPLE, PSA_NEIGHBOR.DETAILS], Immutable.Map());
     if (!personDetails.size) return <div>Person details unknown.</div>;
     return <PersonCard person={personDetails} />;
   }
@@ -498,7 +499,7 @@ class PSAModal extends React.Component<Props, State> {
   }
 
   getName = () => {
-    const person = this.props.neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborDetails'], Immutable.Map());
+    const person = this.props.neighbors.getIn([ENTITY_SETS.PEOPLE, PSA_NEIGHBOR.DETAILS], Immutable.Map());
     const firstName = person.getIn([PROPERTY_TYPES.FIRST_NAME, 0], '');
     const lastName = person.getIn([PROPERTY_TYPES.LAST_NAME, 0], '');
     return `${firstName} ${lastName}`;
@@ -549,9 +550,9 @@ class PSAModal extends React.Component<Props, State> {
     );
 
     const caseNum = neighbors.getIn(
-      [ENTITY_SETS.PRETRIAL_CASES, 'neighborDetails', PROPERTY_TYPES.CASE_ID, 0],
+      [ENTITY_SETS.PRETRIAL_CASES, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.CASE_ID, 0],
       neighbors.getIn(
-        [ENTITY_SETS.MANUAL_PRETRIAL_CASES, 'neighborDetails', PROPERTY_TYPES.CASE_ID, 0],
+        [ENTITY_SETS.MANUAL_PRETRIAL_CASES, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.CASE_ID, 0],
         ''
       )
     );
@@ -586,7 +587,7 @@ class PSAModal extends React.Component<Props, State> {
   renderDMFExplanation = () => {
     const { scores } = this.props;
     const { dmf, riskFactors } = this.state;
-    if (!this.props.neighbors.getIn([ENTITY_SETS.DMF_RESULTS, 'neighborDetails'], Immutable.Map()).size) {
+    if (!this.props.neighbors.getIn([ENTITY_SETS.DMF_RESULTS, PSA_NEIGHBOR.DETAILS], Immutable.Map()).size) {
       return <NoDMFContainer>A DMF was not calculated for this PSA.</NoDMFContainer>;
     }
 
@@ -633,9 +634,9 @@ class PSAModal extends React.Component<Props, State> {
     }
 
     const submittedOutcomes = !!this.props.neighbors
-      .getIn([ENTITY_SETS.DMF_RESULTS, 'neighborDetails', PROPERTY_TYPES.OUTCOME]);
+      .getIn([ENTITY_SETS.DMF_RESULTS, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.OUTCOME]);
     const releaseConditionsEntitySetId = this.props.neighbors
-      .getIn([ENTITY_SETS.RELEASE_CONDITIONS, 0, 'neighborEntitySet', 'id'], '');
+      .getIn([ENTITY_SETS.RELEASE_CONDITIONS, 0, PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
     const bondTypeEntitySetId = this.getEntitySetId(ENTITY_SETS.BONDS);
     const dmfTypeEntitySetId = this.getEntitySetId(ENTITY_SETS.DMF_RESULTS);
 
@@ -652,16 +653,16 @@ class PSAModal extends React.Component<Props, State> {
             replace={this.props.actions.replaceEntity}
             delete={this.props.actions.deleteEntity}
             submitCallback={this.refreshPSANeighborsCallback}
-            hearing={this.props.neighbors.getIn([ENTITY_SETS.HEARINGS, 'neighborDetails'], Immutable.Map())}
+            hearing={this.props.neighbors.getIn([ENTITY_SETS.HEARINGS, PSA_NEIGHBOR.DETAILS], Immutable.Map())}
             hearingId={this.getEntityKeyId(ENTITY_SETS.HEARINGS)}
             deleteHearing={this.deleteHearing}
             realeaseConditionsEntitySetId={releaseConditionsEntitySetId}
             bondTypeEntitySetId={bondTypeEntitySetId}
             dmfTypeEntitySetId={dmfTypeEntitySetId}
-            defaultDMF={this.props.neighbors.getIn([ENTITY_SETS.DMF_RESULTS, 'neighborDetails'], Immutable.Map())}
-            defaultBond={this.props.neighbors.getIn([ENTITY_SETS.BONDS, 'neighborDetails'], Immutable.Map())}
+            defaultDMF={this.props.neighbors.getIn([ENTITY_SETS.DMF_RESULTS, PSA_NEIGHBOR.DETAILS], Immutable.Map())}
+            defaultBond={this.props.neighbors.getIn([ENTITY_SETS.BONDS, PSA_NEIGHBOR.DETAILS], Immutable.Map())}
             defaultConditions={this.props.neighbors.get(ENTITY_SETS.RELEASE_CONDITIONS, Immutable.List())
-              .map(neighbor => neighbor.get('neighborDetails', Immutable.Map()))} />
+              .map(neighbor => neighbor.get(PSA_NEIGHBOR.DETAILS, Immutable.Map()))} />
       </ModalWrapper>
     );
   }

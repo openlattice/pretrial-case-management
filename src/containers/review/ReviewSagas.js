@@ -32,8 +32,8 @@ import {
 } from './ReviewActionFactory';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_STATUSES } from '../../utils/consts/Consts';
-import { obfuscateEntityNeighbors, obfuscateBulkEntityNeighbors } from '../../utils/consts/DemoNames';
 import { formatDMFFromEntity } from '../../utils/DMFUtils';
+import { PSA_NEIGHBOR, PSA_ASSOCIATION } from '../../utils/consts/FrontEndStateConsts';
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
@@ -129,7 +129,7 @@ function* checkPSAPermissionsWorker(action :SequenceAction) :Generator<*, *, *> 
       aclKey: [entitySetId],
       permissions: ['WRITE']
     }]);
-    yield put(checkPSAPermissions.success(action.id, { readOnly: !permissions[0].permissions.WRITE }))
+    yield put(checkPSAPermissions.success(action.id, { readOnly: !permissions[0].permissions.WRITE }));
   }
   catch (error) {
     console.error(error);
@@ -226,18 +226,21 @@ function* loadPSADataWorker(action :SequenceAction) :Generator<*, *, *> {
 
         neighborsById.get(id).forEach((neighbor) => {
 
-          neighbor.getIn(['associationDetails', PROPERTY_TYPES.TIMESTAMP],
-            neighbor.getIn(['associationDetails', PROPERTY_TYPES.DATE_TIME], Immutable.List())).forEach((timestamp) => {
+          neighbor.getIn([PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.TIMESTAMP],
+            neighbor.getIn([
+              PSA_ASSOCIATION.DETAILS,
+              PROPERTY_TYPES.DATE_TIME
+            ], Immutable.List())).forEach((timestamp) => {
             const timestampMoment = moment(timestamp);
             if (timestampMoment.isValid()) {
               allDatesEdited = allDatesEdited.push(timestampMoment.format('MM/DD/YYYY'));
             }
           });
 
-          const neighborName = neighbor.getIn(['neighborEntitySet', 'name']);
+          const neighborName = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'name']);
           if (neighborName) {
             if (neighborName === ENTITY_SETS.STAFF) {
-              neighbor.getIn(['neighborDetails', PROPERTY_TYPES.PERSON_ID], Immutable.List())
+              neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.PERSON_ID], Immutable.List())
                 .forEach((filer) => {
                   allFilers = allFilers.add(filer);
                 });
@@ -337,17 +340,17 @@ const getPSADataFromNeighbors = (
 
   const recommendationText = neighbors.getIn([
     ENTITY_SETS.RELEASE_RECOMMENDATIONS,
-    'neighborDetails',
+    PSA_NEIGHBOR.DETAILS,
     PROPERTY_TYPES.RELEASE_RECOMMENDATION
   ], Immutable.List()).join(', ');
 
-  const dmf = neighbors.getIn([ENTITY_SETS.DMF_RESULTS, 'neighborDetails'], Immutable.Map());
+  const dmf = neighbors.getIn([ENTITY_SETS.DMF_RESULTS, PSA_NEIGHBOR.DETAILS], Immutable.Map());
   const formattedDMF = Immutable.fromJS(formatDMFFromEntity(dmf)).filter(val => !!val);
 
   const setMultimapToMap = (entitySetName) => {
     let map = Immutable.Map();
-    neighbors.getIn([entitySetName, 'neighborDetails'], Immutable.Map()).keySeq().forEach((fqn) => {
-      map = map.set(fqn, neighbors.getIn([entitySetName, 'neighborDetails', fqn, 0]));
+    neighbors.getIn([entitySetName, PSA_NEIGHBOR.DETAILS], Immutable.Map()).keySeq().forEach((fqn) => {
+      map = map.set(fqn, neighbors.getIn([entitySetName, PSA_NEIGHBOR.DETAILS, fqn, 0]));
     });
     return map;
   };
@@ -356,17 +359,20 @@ const getPSADataFromNeighbors = (
     .set('scores', scores)
     .set('notes', recommendationText)
     .set('riskFactors', setMultimapToMap(ENTITY_SETS.PSA_RISK_FACTORS))
-    .set('psaRiskFactors', neighbors.getIn([ENTITY_SETS.PSA_RISK_FACTORS, 'neighborDetails'], Immutable.Map()))
-    .set('dmfRiskFactors', neighbors.getIn([ENTITY_SETS.DMF_RISK_FACTORS, 'neighborDetails'], Immutable.Map()))
+    .set('psaRiskFactors', neighbors.getIn([ENTITY_SETS.PSA_RISK_FACTORS, PSA_NEIGHBOR.DETAILS], Immutable.Map()))
+    .set('dmfRiskFactors', neighbors.getIn([ENTITY_SETS.DMF_RISK_FACTORS, PSA_NEIGHBOR.DETAILS], Immutable.Map()))
     .set('dmf', formattedDMF);
 
-  const selectedPretrialCase = neighbors.getIn([ENTITY_SETS.MANUAL_PRETRIAL_CASES, 'neighborDetails'], Immutable.Map());
+  const selectedPretrialCase = neighbors.getIn([
+    ENTITY_SETS.MANUAL_PRETRIAL_CASES,
+    PSA_NEIGHBOR.DETAILS
+  ], Immutable.Map());
   const caseId = selectedPretrialCase.getIn([PROPERTY_TYPES.CASE_ID, 0], '');
 
   const selectedCharges = allManualCharges
     .filter(chargeObj => chargeObj.getIn([PROPERTY_TYPES.CHARGE_ID, 0], '').split('|')[0] === caseId);
 
-  const selectedPerson = neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborDetails'], Immutable.Map());
+  const selectedPerson = neighbors.getIn([ENTITY_SETS.PEOPLE, PSA_NEIGHBOR.DETAILS], Immutable.Map());
 
   let createData = {
     user: '',
@@ -375,17 +381,17 @@ const getPSADataFromNeighbors = (
   let updateData;
 
   neighbors.get(ENTITY_SETS.STAFF, Immutable.List()).forEach((writerNeighbor) => {
-    const name = writerNeighbor.getIn(['associationEntitySet', 'name']);
-    const user = writerNeighbor.getIn(['neighborDetails', PROPERTY_TYPES.PERSON_ID, 0], '');
+    const name = writerNeighbor.getIn([PSA_ASSOCIATION.ENTITY_SET, 'name']);
+    const user = writerNeighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.PERSON_ID, 0], '');
 
     if (name === ENTITY_SETS.ASSESSED_BY) {
       createData = {
-        timestamp: writerNeighbor.getIn(['associationDetails', PROPERTY_TYPES.COMPLETED_DATE_TIME, 0], ''),
+        timestamp: writerNeighbor.getIn([PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.COMPLETED_DATE_TIME, 0], ''),
         user
       };
     }
     else if (name === ENTITY_SETS.EDITED_BY) {
-      const timestamp = writerNeighbor.getIn(['associationDetails', PROPERTY_TYPES.DATE_TIME, 0], '');
+      const timestamp = writerNeighbor.getIn([PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.DATE_TIME, 0], '');
       const newUpdateData = { timestamp, user };
       if (!updateData) {
         updateData = newUpdateData;
@@ -478,7 +484,7 @@ function* bulkDownloadPSAReviewPDFWorker(action :SequenceAction) :Generator<*, *
     psaNeighborsById.entrySeq().forEach(([psaId, neighborList]) => {
       let neighbors = Immutable.Map();
       neighborList.forEach((neighbor) => {
-        const neighborName = neighbor.getIn(['neighborEntitySet', 'name']);
+        const neighborName = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'name']);
         if (LIST_ENTITY_SETS.includes(neighborName)) {
           neighbors = neighbors.set(
             neighborName,
@@ -488,10 +494,10 @@ function* bulkDownloadPSAReviewPDFWorker(action :SequenceAction) :Generator<*, *
         else {
           neighbors = neighbors.set(neighborName, neighbor);
         }
-      })
+      });
 
       const scores = Immutable.fromJS(psasById.get(psaId));
-      const personId = neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborId']);
+      const personId = neighbors.getIn([ENTITY_SETS.PEOPLE, PSA_NEIGHBOR.ID]);
       const allManualCharges = manualChargesByPersonId.get(personId, Immutable.List());
       pageDetailsList.push(getPSADataFromNeighbors(scores, neighbors, allManualCharges));
     });
@@ -582,13 +588,28 @@ function* updateScoresAndRiskFactorsWorker(action :SequenceAction) :Generator<*,
       notesEntity
     } = action.value;
     const updates = [
-      call(DataApi.replaceEntityInEntitySetUsingFqns, riskFactorsEntitySetId, riskFactorsId, stripIdField(riskFactorsEntity)),
-      call(DataApi.replaceEntityInEntitySetUsingFqns, scoresEntitySetId, scoresId, stripIdField(scoresEntity)),
-      call(DataApi.replaceEntityInEntitySetUsingFqns, dmfEntitySetId, dmfId, stripIdField(dmfEntity)),
-      call(DataApi.replaceEntityInEntitySetUsingFqns, dmfRiskFactorsEntitySetId, dmfRiskFactorsId, stripIdField(dmfRiskFactorsEntity))
+      call(DataApi.replaceEntityInEntitySetUsingFqns,
+        riskFactorsEntitySetId,
+        riskFactorsId,
+        stripIdField(riskFactorsEntity)),
+      call(DataApi.replaceEntityInEntitySetUsingFqns,
+        scoresEntitySetId,
+        scoresId,
+        stripIdField(scoresEntity)),
+      call(DataApi.replaceEntityInEntitySetUsingFqns,
+        dmfEntitySetId,
+        dmfId,
+        stripIdField(dmfEntity)),
+      call(DataApi.replaceEntityInEntitySetUsingFqns,
+        dmfRiskFactorsEntitySetId,
+        dmfRiskFactorsId,
+        stripIdField(dmfRiskFactorsEntity))
     ];
     if (notesEntity && notesId && notesEntitySetId) {
-      updates.push(call(DataApi.replaceEntityInEntitySetUsingFqns, notesEntitySetId, notesId, stripIdField(notesEntity)));
+      updates.push(call(DataApi.replaceEntityInEntitySetUsingFqns,
+        notesEntitySetId,
+        notesId,
+        stripIdField(notesEntity)));
     }
     yield all(updates);
 

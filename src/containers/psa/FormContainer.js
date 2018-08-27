@@ -34,6 +34,7 @@ import PSAReviewReportsRowList from '../review/PSAReviewReportsRowList';
 import exportPDF from '../../utils/PDFUtils';
 import psaConfig from '../../config/formconfig/PsaConfig';
 import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
+import { STATE, PSA_FORM, SUBMIT, SEARCH } from '../../utils/consts/FrontEndStateConsts';
 
 import * as FormActionFactory from './FormActionFactory';
 import * as PersonActionFactory from '../person/PersonActionFactory';
@@ -881,35 +882,36 @@ class Form extends React.Component<Props, State> {
 }
 
 function mapStateToProps(state :Immutable.Map<*, *>) :Object {
-  const psaForm = state.get('psa');
-  const search = state.get('search');
-  const submit = state.get('submit');
-
+  const psaForm = state.get(STATE.PSA);
+  const search = state.get(STATE.SEARCH);
+  const submit = state.get(STATE.SUBMIT);
+  // TODO: review these state names so that consts can be used in all cases (psaForm & isLoadingCases)
   return {
-    dataModel: psaForm.get('dataModel'),
-    entitySetLookup: psaForm.get('entitySetLookup'),
-    arrestOptions: psaForm.get('arrestOptions'),
-    charges: psaForm.get('charges'),
-    selectedPerson: psaForm.get('selectedPerson'),
-    arrestId: psaForm.get('arrestId'),
-    selectedPretrialCase: psaForm.get('selectedPretrialCase'),
-    allCasesForPerson: psaForm.get('allCasesForPerson'),
-    allChargesForPerson: psaForm.get('allChargesForPerson'),
-    allSentencesForPerson: psaForm.get('allSentencesForPerson'),
-    allFTAs: psaForm.get('allFTAs'),
-    allHearings: psaForm.get('allHearings'),
-    openPSAs: psaForm.get('openPSAs'),
-    allPSAs: psaForm.get('allPSAs'),
-    psaForm: psaForm.get('psa'),
-    isLoadingNeighbors: psaForm.get('isLoadingNeighbors'),
-    isSubmitted: submit.get('submitted'),
-    isSubmitting: submit.get('submitting'),
-    submitError: submit.get('error'),
+    [PSA_FORM.ARREST_OPTIONS]: psaForm.get(PSA_FORM.ARREST_OPTIONS),
+    [PSA_FORM.ALL_CASES]: psaForm.get(PSA_FORM.ALL_CASES),
+    [PSA_FORM.ALL_CHARGES]: psaForm.get(PSA_FORM.ALL_CHARGES),
+    [PSA_FORM.ALL_SENTENCES]: psaForm.get(PSA_FORM.ALL_SENTENCES),
+    [PSA_FORM.ALL_FTAS]: psaForm.get(PSA_FORM.ALL_FTAS),
+    [PSA_FORM.ALL_PSAS]: psaForm.get(PSA_FORM.ALL_PSAS),
+    [PSA_FORM.ALL_HEARINGS]: psaForm.get(PSA_FORM.ALL_HEARINGS),
+    [PSA_FORM.CHARGES]: psaForm.get(PSA_FORM.CHARGES),
+    [PSA_FORM.SELECT_PERSON]: psaForm.get(PSA_FORM.SELECT_PERSON),
+    [PSA_FORM.OPEN_PSAS]: psaForm.get(PSA_FORM.OPEN_PSAS),
+    [PSA_FORM.ARREST_ID]: psaForm.get(PSA_FORM.ARREST_ID),
+    [PSA_FORM.SELECT_PRETRIAL_CASE]: psaForm.get(PSA_FORM.SELECT_PRETRIAL_CASE),
+    psaForm: psaForm.get(PSA_FORM.PSA),
+    [PSA_FORM.DATA_MODEL]: psaForm.get(PSA_FORM.DATA_MODEL),
+    [PSA_FORM.ENTITY_SET_LOOKUP]: psaForm.get(PSA_FORM.ENTITY_SET_LOOKUP),
+    [PSA_FORM.LOADING_NEIGHBORS]: psaForm.get(PSA_FORM.LOADING_NEIGHBORS),
 
-    selectedPersonId: search.get('selectedPersonId'),
-    isLoadingCases: search.get('loadingCases'),
-    numCasesToLoad: search.get('numCasesToLoad'),
-    numCasesLoaded: search.get('numCasesLoaded')
+    [PSA_FORM.SUBMITTED]: submit.get(SUBMIT.SUBMITTED),
+    [PSA_FORM.SUBMITTING]: submit.get(SUBMIT.SUBMITTING),
+    [PSA_FORM.ERROR]: submit.get(SUBMIT.ERROR),
+
+    [SEARCH.SELECTED_PERSON_ID]: search.get(SEARCH.SELECTED_PERSON_ID),
+    isLoadingCases: search.get(SEARCH.LOADING_CASES),
+    [SEARCH.NUM_CASES_TO_LOAD]: search.get(SEARCH.NUM_CASES_TO_LOAD),
+    [SEARCH.NUM_CASES_LOADED]: search.get(SEARCH.NUM_CASES_LOADED)
   };
 }
 
