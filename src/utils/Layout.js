@@ -450,3 +450,8 @@ export const StyledSelect = styled.select`
 export const CenteredContainer = styled.div`
   text-align: center;
 `;
+
+export const FullWidthContainer = styled.div`
+  display: flex;
+  width: 100%;
+`;

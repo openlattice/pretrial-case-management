@@ -5,11 +5,9 @@ import React from 'react';
 import styled from 'styled-components';
 
 import CONTENT_CONSTS from '../utils/consts/ContentConsts';
-import { StyledContentItalic } from '../utils/Layout';
+import { StyledContentItalic, FullWidthContainer } from '../utils/Layout';
 
-const StyledContentBlock = styled.div`
-  display: flex;
-  width: 100%;
+const StyledContentBlock = styled(FullWidthContainer)`
   flex-direction: column;
 `;
 
