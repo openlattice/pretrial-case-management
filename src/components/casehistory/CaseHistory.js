@@ -8,6 +8,7 @@ import styled from 'styled-components';
 import moment from 'moment';
 
 import ChargeList from '../charges/ChargeList';
+import { TitleWithSubtitle } from '../../utils/Layout';
 import { formatDateList } from '../../utils/FormattingUtils';
 import { getSummaryStats } from '../../utils/HistoricalChargeUtils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
@@ -68,25 +69,13 @@ const StatLabel = styled.span`
   text-align: left;
   color: #555e6f;
 `;
+
 const StatValue = styled.span`
   font-family: Open Sans;
   font-size: 16px;
   font-weight: 600;
   text-align: right;
   color: #555e6f;
-`;
-const Title = styled.div`
-  display: flex;
-  flex-direction: column;
-  font-family: 'Open Sans', sans-serif;
-  font-size: 16px;
-  color: #555e6f;
-  margin-bottom: 20px;
-
-  span:first-child {
-    font-weight: ${props => (props.withSubtitle ? '600' : '400')};
-    padding-bottom: 5px;
-  }
 `;
 
 type Props = {
@@ -165,10 +154,10 @@ const CaseHistory = ({ caseHistory, chargeHistory, modal } :Props) => {
   return (
     <CaseHistoryWrapper modal={modal}>
       <div>
-        <Title withSubtitle >
+        <TitleWithSubtitle withSubtitle >
           <span>Summary Statistics</span>
           <span>All current and past cases</span>
-        </Title>
+        </TitleWithSubtitle>
         <StatsContainer>
           <StatsWrapper>
             <StatsGroup>
@@ -179,9 +168,9 @@ const CaseHistory = ({ caseHistory, chargeHistory, modal } :Props) => {
         <hr />
       </div>
       <CaseHistoryContainer>
-        <Title withSubtitle >
+        <TitleWithSubtitle withSubtitle >
           <span>Case History</span>
-        </Title>
+        </TitleWithSubtitle>
         {cases}
       </CaseHistoryContainer>
     </CaseHistoryWrapper>

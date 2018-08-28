@@ -28,7 +28,7 @@ import psaEditedConfig from '../../config/formconfig/PsaEditedConfig';
 import closeX from '../../assets/svg/close-x-gray.svg';
 import { getScoresAndRiskFactors, calculateDMF } from '../../utils/ScoringUtils';
 import { getEntityKeyId, getEntitySetId, getIdValue } from '../../utils/DataUtils';
-import { CenteredContainer } from '../../utils/Layout';
+import { CenteredContainer, TitleWithSubtitle } from '../../utils/Layout';
 import { toISODateTime } from '../../utils/FormattingUtils';
 import { CONTEXT, DMF, EDIT_FIELDS, NOTES, PSA } from '../../utils/consts/Consts';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
@@ -92,20 +92,6 @@ const SubmittingWrapper = styled.div`
     font-size: 16px;
     margin: 20px 0;
     color: #2e2e34;
-  }
-`;
-
-const Title = styled.div`
-  display: flex;
-  flex-direction: column;
-  font-family: 'Open Sans', sans-serif;
-  font-size: 16px;
-  color: #555e6f;
-  margin: 20px 0;
-
-  span:first-child {
-    font-weight: ${props => (props.withSubtitle ? '600' : '400')};
-    padding-bottom: 5px;
   }
 `;
 
@@ -600,10 +586,10 @@ class PSAModal extends React.Component<Props, State> {
 
   renderCaseHistory = () => (
     <ModalWrapper withPadding>
-      <Title withSubtitle>
+      <TitleWithSubtitle withSubtitle>
         <span>Timeline</span>
         <span>Convictions in past two years</span>
-      </Title>
+      </TitleWithSubtitle>
       <CaseHistoryTimeline caseHistory={this.props.caseHistory} chargeHistory={this.props.chargeHistory} />
       <hr />
       <CaseHistory modal caseHistory={this.props.caseHistory} chargeHistory={this.props.chargeHistory} />

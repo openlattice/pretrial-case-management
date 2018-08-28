@@ -455,3 +455,17 @@ export const FullWidthContainer = styled.div`
   display: flex;
   width: 100%;
 `;
+
+export const TitleWithSubtitle = styled.div`
+  display: flex;
+  flex-direction: column;
+  font-family: 'Open Sans', sans-serif;
+  font-size: 16px;
+  color: #555e6f;
+  margin: 20px 0;
+
+  span:first-child {
+    font-weight: ${props => (props.withSubtitle ? '600' : '400')};
+    padding-bottom: 5px;
+  }
+`;
