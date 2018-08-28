@@ -212,7 +212,8 @@ type Props = {
   defaultConditions :Immutable.List<*>,
   hearing :Immutable.Map<*, *>,
   hearingId :string,
-  submitting :boolean
+  submitting :boolean,
+  submittedOutcomes :boolean
 };
 
 type State = {
