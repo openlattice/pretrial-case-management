@@ -95,7 +95,7 @@ const PersonCard = ({ person, hasOpenPSA } :Props) => {
 
   const midName = middleName ? ` ${middleName}` : '';
 
-  const name = `${lastName}, ${firstName} ${midName}`;
+  const name = `${lastName}, ${firstName}${midName}`;
 
   return (
     <StyledUndecoratedLink to={`${Routes.PERSON_DETAILS_ROOT}/${identification}`}>
