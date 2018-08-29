@@ -24,6 +24,7 @@ import SearchableSelect from '../controls/SearchableSelect';
 import InfoButton from '../buttons/InfoButton';
 import BasicButton from '../../components/buttons/BasicButton';
 import releaseConditionsConfig from '../../config/formconfig/ReleaseConditionsConfig';
+import { NoContactRow } from './ReleaseConditionsStyledTags';
 import { getTimeOptions } from '../../utils/consts/DateTimeConsts';
 import { RELEASE_CONDITIONS, LIST_FIELDS, ID_FIELD_NAMES, FORM_IDS } from '../../utils/consts/Consts';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
@@ -121,15 +122,8 @@ const NoContactPeopleCell = styled.div`
   flex-direction: column;
   justify-content: flex-end;
 `;
-const NoContactHeaderRow = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 2fr 1fr;
-  grid-gap: 20px;
-`;
-const NoContactPeopleRow = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 2fr 1fr;
-  grid-gap: 20px;
+
+const StyledNoContactRow = styled(NoContactRow)`
   margin-bottom: 20px;
 `;
 
@@ -682,12 +676,12 @@ class SelectReleaseConditions extends React.Component<Props, State> {
     return (
       <NoContactPeopleWrapper>
         <h2>No contact order</h2>
-        <NoContactHeaderRow>
+        <NoContactRow>
           <h3>Person Type</h3>
           <h3>Person Name</h3>
-        </NoContactHeaderRow>
+        </NoContactRow>
         {this.state[NO_CONTACT_PEOPLE].map((person, index) => (
-          <NoContactPeopleRow key={`${person.name}-${index}`}>
+          <StyledNoContactRow key={`${person.name}-${index}`}>
             <NoContactPeopleCell>
               <SearchableSelect
                   value={person[PROPERTY_TYPES.PERSON_TYPE]}
@@ -710,7 +704,7 @@ class SelectReleaseConditions extends React.Component<Props, State> {
                 Remove
               </StyledBasicButton>
             </NoContactPeopleCell>
-          </NoContactPeopleRow>
+          </StyledNoContactRow>
         ))}
         <hr />
       </NoContactPeopleWrapper>

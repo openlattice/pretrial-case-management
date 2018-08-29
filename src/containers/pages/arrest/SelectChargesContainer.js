@@ -26,7 +26,8 @@ import {
   PaddedRow,
   StyledFormWrapper,
   TitleLabel,
-  UnpaddedRow
+  UnpaddedRow,
+  Title
 } from '../../../utils/Layout';
 
 const {
@@ -57,10 +58,8 @@ const HeaderWrapper = styled.div`
   }
 `;
 
-const Title = styled.div`
-  font-family: 'Open Sans', sans-serif;
+const StyledTitle = styled(Title)`
   font-size: 18px;
-  color: #555e6f;
   display: inline-flex;
 `;
 
@@ -314,7 +313,7 @@ export default class SelectChargesContainer extends React.Component<Props, State
 
   renderHeader = () => (
     <HeaderWrapper>
-      <Title>Add/Edit arrest charges</Title>
+      <StyledTitle>Add/Edit arrest charges</StyledTitle>
       <SecondaryButton onClick={this.onSubmit}>Confirm Charge Details</SecondaryButton>
     </HeaderWrapper>
   )

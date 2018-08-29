@@ -65,14 +65,12 @@ const StepFour = ({
   );
 
   if (!shouldRender) return null;
-  const textArr = [];
   let dmfTransformation;
 
   const stepThreeDmf = getDMFDecision(nca, fta, context);
 
   const violentRisk = nvca && !currentViolentOffense;
   if (!stepFourVal && !violentRisk) {
-    textArr.push('no charges meet the requirements to increase severity');
     dmfTransformation = (
       <StepWrapper>
         <DMFCell dmf={stepThreeDmf} selected large />
@@ -87,12 +85,6 @@ const StepFour = ({
         <DMFCell dmf={increaseDMFSeverity(stepThreeDmf, context)} selected large />
       </StepWrapper>
     );
-    if (stepFourVal) {
-      textArr.push('charges meet the requirements to increase severity');
-    }
-    if (violentRisk) {
-      textArr.push('PSA resulted in NVCA flag and current offense is not violent');
-    }
   }
 
   return (
