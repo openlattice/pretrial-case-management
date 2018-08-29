@@ -1,6 +1,6 @@
 import styled from 'styled-components';
 
-export const Wrapper = styled.div`
+export const PersonCardWrapper = styled.div`
   width: 410px;
   display: flex;
   flex-direction: row;
