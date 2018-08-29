@@ -195,4 +195,6 @@ function* downloadPSAsWatcher() :Generator<*, *, *> {
   yield takeEvery(DOWNLOAD_PSA_FORMS, downloadPSAsWorker);
 }
 
-export default downloadPSAsWatcher;
+export {
+  downloadPSAsWatcher
+};
