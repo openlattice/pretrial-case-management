@@ -11,7 +11,7 @@ import defaultUserIcon from '../../assets/svg/profile-placeholder-round.svg';
 import { formatValue, formatDate } from '../../utils/FormattingUtils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import {
-  Wrapper,
+  PersonCardWrapper,
   DetailsWrapper,
   DetailRow,
   StyledTooltip,
@@ -30,7 +30,7 @@ const {
   PICTURE
 } = PROPERTY_TYPES;
 
-const StyledWrapper = styled(Wrapper)`
+const StyledPersonCardWrapper = styled(PersonCardWrapper)`
   width: 100%;
 `;
 
@@ -88,7 +88,7 @@ const PersonCard = ({ person, handleSelect } :Props) => {
   const entityKeyId :string = person.getIn([OPENLATTICE_ID_FQN, 0], '');
 
   return (
-    <StyledWrapper
+    <StyledPersonCardWrapper
         key={id}
         onClick={() => {
           if (handleSelect) {
@@ -129,7 +129,7 @@ const PersonCard = ({ person, handleSelect } :Props) => {
           </StyledDetailItem>
         </StyledDetailRow>
       </StyledDetailsWrapper>
-    </StyledWrapper>
+    </StyledPersonCardWrapper>
   );
 };
 
