@@ -28,7 +28,7 @@ import psaEditedConfig from '../../config/formconfig/PsaEditedConfig';
 import closeX from '../../assets/svg/close-x-gray.svg';
 import { getScoresAndRiskFactors, calculateDMF } from '../../utils/ScoringUtils';
 import { getEntityKeyId, getEntitySetId, getIdValue } from '../../utils/DataUtils';
-import { CenteredContainer, TitleWithSubtitle } from '../../utils/Layout';
+import { CenteredContainer, Title } from '../../utils/Layout';
 import { toISODateTime } from '../../utils/FormattingUtils';
 import { CONTEXT, DMF, EDIT_FIELDS, NOTES, PSA } from '../../utils/consts/Consts';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
@@ -586,10 +586,10 @@ class PSAModal extends React.Component<Props, State> {
 
   renderCaseHistory = () => (
     <ModalWrapper withPadding>
-      <TitleWithSubtitle withSubtitle>
+      <Title withSubtitle>
         <span>Timeline</span>
         <span>Convictions in past two years</span>
-      </TitleWithSubtitle>
+      </Title>
       <CaseHistoryTimeline caseHistory={this.props.caseHistory} chargeHistory={this.props.chargeHistory} />
       <hr />
       <CaseHistory modal caseHistory={this.props.caseHistory} chargeHistory={this.props.chargeHistory} />

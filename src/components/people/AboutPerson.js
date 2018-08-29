@@ -13,7 +13,7 @@ import MultiSelectCheckbox from '../MultiSelectCheckbox';
 import CaseHistory from '../casehistory/CaseHistory';
 import CaseHistoryTimeline from '../casehistory/CaseHistoryTimeline';
 import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
-import { TitleWithSubtitle } from '../../utils/Layout';
+import { Title } from '../../utils/Layout';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { SORT_TYPES, PSA_STATUSES } from '../../utils/consts/Consts';
 import { STATUS_OPTION_CHECKBOXES } from '../../utils/consts/ReviewPSAConsts';
@@ -194,10 +194,10 @@ class AboutPerson extends React.Component<Props, State> {
           Case History
           <Count>{caseHistory.size}</Count>
         </StyledSectionHeader>
-        <TitleWithSubtitle withSubtitle>
+        <Title withSubtitle>
           <span>Timeline</span>
           <span>Convictions in the past two years</span>
-        </TitleWithSubtitle>
+        </Title>
         <CaseHistoryTimeline caseHistory={caseHistory} chargeHistory={chargeHistory} />
         <hr />
         <CaseHistory caseHistory={caseHistory} chargeHistory={chargeHistory} />

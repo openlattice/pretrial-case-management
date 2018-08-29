@@ -8,7 +8,7 @@ import styled from 'styled-components';
 import moment from 'moment';
 
 import ChargeList from '../charges/ChargeList';
-import { TitleWithSubtitle } from '../../utils/Layout';
+import { Title } from '../../utils/Layout';
 import { formatDateList } from '../../utils/FormattingUtils';
 import { getSummaryStats } from '../../utils/HistoricalChargeUtils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
@@ -154,10 +154,10 @@ const CaseHistory = ({ caseHistory, chargeHistory, modal } :Props) => {
   return (
     <CaseHistoryWrapper modal={modal}>
       <div>
-        <TitleWithSubtitle withSubtitle >
+        <Title withSubtitle >
           <span>Summary Statistics</span>
           <span>All current and past cases</span>
-        </TitleWithSubtitle>
+        </Title>
         <StatsContainer>
           <StatsWrapper>
             <StatsGroup>
@@ -168,9 +168,9 @@ const CaseHistory = ({ caseHistory, chargeHistory, modal } :Props) => {
         <hr />
       </div>
       <CaseHistoryContainer>
-        <TitleWithSubtitle withSubtitle >
+        <Title withSubtitle >
           <span>Case History</span>
-        </TitleWithSubtitle>
+        </Title>
         {cases}
       </CaseHistoryContainer>
     </CaseHistoryWrapper>
