@@ -8,6 +8,7 @@ import styled from 'styled-components';
 import moment from 'moment';
 
 import ChargeList from '../charges/ChargeList';
+import { Title } from '../../utils/Layout';
 import { formatDateList } from '../../utils/FormattingUtils';
 import { getSummaryStats } from '../../utils/HistoricalChargeUtils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
@@ -68,25 +69,13 @@ const StatLabel = styled.span`
   text-align: left;
   color: #555e6f;
 `;
+
 const StatValue = styled.span`
   font-family: Open Sans;
   font-size: 16px;
   font-weight: 600;
   text-align: right;
   color: #555e6f;
-`;
-const Title = styled.div`
-  display: flex;
-  flex-direction: column;
-  font-family: 'Open Sans', sans-serif;
-  font-size: 16px;
-  color: #555e6f;
-  margin-bottom: 20px;
-
-  span:first-child {
-    font-weight: ${props => (props.withSubtitle ? '600' : '400')};
-    padding-bottom: 5px;
-  }
 `;
 
 type Props = {

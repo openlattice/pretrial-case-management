@@ -186,13 +186,6 @@ export const TitleContainer = styled.div`
   align-items: center;
 `;
 
-export const Title = styled.h1`
-  text-align: center;
-  color: #37454A;
-  font-size: 40px;
-  display: flex;
-`;
-
 export const Logo = styled.img`
   display: flex;
   max-height: 60px;
@@ -449,4 +442,23 @@ export const StyledSelect = styled.select`
 
 export const CenteredContainer = styled.div`
   text-align: center;
+`;
+
+export const FullWidthContainer = styled.div`
+  display: flex;
+  width: 100%;
+`;
+
+export const Title = styled.div`
+  display: flex;
+  flex-direction: column;
+  font-family: 'Open Sans', sans-serif;
+  font-size: 16px;
+  color: #555e6f;
+  margin: 20px 0;
+
+  span:first-child {
+    font-weight: ${props => (props.withSubtitle ? '600' : '400')};
+    padding-bottom: 5px;
+  }
 `;
