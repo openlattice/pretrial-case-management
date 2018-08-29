@@ -66,6 +66,7 @@ export default function peopleReducer(state = INITIAL_STATE, action) {
         REQUEST: () => state.setIn([PEOPLE.NEIGHBORS, action.personId], Immutable.Map()),
         FAILURE: () => state.setIn([PEOPLE.NEIGHBORS, action.personId], Immutable.Map()),
         SUCCESS: () => {
+          const caseNums = [];
           const { personId, neighbors } = action.value;
           let neighborsByEntitySet = Immutable.Map();
           Immutable.fromJS(neighbors).forEach((neighborObj) => {
@@ -75,7 +76,17 @@ export default function peopleReducer(state = INITIAL_STATE, action) {
               neighborsByEntitySet.get(entitySetName, Immutable.List()).push(neighborObj)
             );
           });
-          return state.setIn([PEOPLE.NEIGHBORS, personId], neighborsByEntitySet);
+          const uniqNeighborsByEntitySet = neighborsByEntitySet.set(ENTITY_SETS.PRETRIAL_CASES,
+            neighborsByEntitySet.get(ENTITY_SETS.PRETRIAL_CASES)
+              .filter((neighbor) => {
+                const caseNum = neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.CASE_ID, 0]);
+                if (!caseNums.includes(caseNum)) {
+                  caseNums.push(caseNum);
+                  return true;
+                }
+                return false;
+              }));
+          return state.setIn([PEOPLE.NEIGHBORS, personId], uniqNeighborsByEntitySet);
         }
       });
     }
