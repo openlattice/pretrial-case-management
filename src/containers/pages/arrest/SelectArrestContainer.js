@@ -89,7 +89,7 @@ const SelectArrestContainer = ({
   onSelectCase,
   nextPage,
   prevPage
-}) :Props => {
+} :Props) => {
 
   const handleOnSelectCase = (selectedCase :Immutable.Map<*, *>, entityKeyId :string) => {
     onSelectCase(selectedCase, entityKeyId);
@@ -120,7 +120,7 @@ const SelectArrestContainer = ({
         </div>
       </HeaderWrapper>
     );
-  }
+  };
 
   return (
     <StyledFormWrapper>
@@ -130,10 +130,6 @@ const SelectArrestContainer = ({
       </SearchResultsList>
     </StyledFormWrapper>
   );
-};
-
-SelectArrestContainer.defaultProps = {
-  onSelectCase: () => {}
 };
 
 export default SelectArrestContainer;
