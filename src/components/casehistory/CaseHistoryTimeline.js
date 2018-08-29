@@ -194,7 +194,7 @@ export default class CaseHistoryTimeline extends React.Component<Props> {
 
   renderTag = (leftOffset, violent, tagLabel, monthLabel, tall) => {
     return (
-      <TagGroupWrapper left={leftOffset}>
+      <TagGroupWrapper key={tagLabel} left={leftOffset}>
         <TagGroup tall={tall}>
           <Tag violent={violent}>{tagLabel}</Tag>
           <TagLine violent={violent} />
