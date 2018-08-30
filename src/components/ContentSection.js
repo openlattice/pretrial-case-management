@@ -5,12 +5,9 @@ import React from 'react';
 import styled from 'styled-components';
 
 import CONTENT_CONSTS from '../utils/consts/ContentConsts';
-import { StyledContentItalic } from '../utils/Layout';
+import { StyledContentItalic, FullWidthContainer } from '../utils/Layout';
 
-const StyledSection = styled.div`
-  display: flex;
-  width: 100%;
-  flex-direction: row;
+const StyledSection = styled(FullWidthContainer)`
   flex-wrap: wrap;
 `;
 

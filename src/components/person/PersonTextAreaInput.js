@@ -4,7 +4,6 @@
 
 import React from 'react';
 import styled from 'styled-components';
-import { FormControl } from 'react-bootstrap';
 
 import StyledTextArea from '../controls/StyledTextArea';
 

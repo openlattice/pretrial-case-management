@@ -5,7 +5,6 @@
 import React from 'react';
 import styled from 'styled-components';
 
-import BasicButton from '../buttons/BasicButton';
 import InfoButton from '../buttons/InfoButton';
 import closeX from '../../assets/svg/close-x-gray.svg';
 import { HEARING } from '../../utils/consts/Consts';

@@ -39,7 +39,7 @@ function* loadDashboardDataWorker(action :SequenceAction) :Generator<*, *, *> {
 }
 
 function* loadDashboardDataWatcher() :Generator<*, *, *> {
-  yield takeEvery(LOAD_DASHBOARD_DATA, loadDashboardDataWorker)
+  yield takeEvery(LOAD_DASHBOARD_DATA, loadDashboardDataWorker);
 }
 
 export { loadDashboardDataWatcher };

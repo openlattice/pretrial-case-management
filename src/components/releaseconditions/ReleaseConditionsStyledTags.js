@@ -55,3 +55,9 @@ export const Dollar = styled.div`
   z-index: 1;
   transform: translateX(100%) translateY(50%);
 `;
+
+export const NoContactRow = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr;
+  grid-gap: 20px;
+`;

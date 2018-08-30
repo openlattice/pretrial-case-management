@@ -12,7 +12,7 @@ import { getDMFDecision } from '../../utils/DMFUtils';
 const Table = styled.table`
   border-spacing: 10px;
   border-collapse: separate
-`
+`;
 const HeaderCell = styled.th`
   text-align: center;
   font-size: 14px;
@@ -24,7 +24,7 @@ const HeaderCell = styled.th`
 const BlankCell = styled.td`
   border-radius: 1px;
   background-color: #f9f9fd;
-`
+`;
 
 type Props = {
   nca :number,
@@ -34,7 +34,7 @@ type Props = {
 
 const getRowCells = (dmfNca, dmfFta, rowFta, context) => {
   const cells = [];
-  cells.push(<HeaderCell key={`fta-${rowFta}-nca-0`}>{`FTA ${rowFta}`}</HeaderCell>)
+  cells.push(<HeaderCell key={`fta-${rowFta}-nca-0`}>{`FTA ${rowFta}`}</HeaderCell>);
 
   for (let rowNca = 1; rowNca <= 6; rowNca += 1) {
     const selected = dmfFta === rowFta && dmfNca === rowNca;
@@ -55,12 +55,7 @@ const getRowCells = (dmfNca, dmfFta, rowFta, context) => {
   return cells;
 };
 
-const DMFTable = ({
-  nca,
-  fta,
-  context
-}) :Props => {
-
+const DMFTable = ({ nca, fta, context } :Props) => {
   const rows = [];
   for (let ftaScore = 1; ftaScore <= 6; ftaScore += 1) {
     rows.push(

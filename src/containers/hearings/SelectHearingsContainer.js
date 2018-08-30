@@ -97,9 +97,6 @@ type Props = {
   psaId :string,
   psaEntityKeyId? :string,
   hearings :Immutable.List<*, *>,
-  scoresAsMap :Immutable.Map<*, *>,
-  loadingResults :boolean,
-  errorMessage :string,
   actions :{
     submit :(values :{
       config :Immutable.Map<*, *>,

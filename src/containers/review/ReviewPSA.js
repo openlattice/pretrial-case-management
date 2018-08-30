@@ -15,6 +15,7 @@ import NavButtonToolbar from '../../components/buttons/NavButtonToolbar';
 import PSAReviewReportsRowList from './PSAReviewReportsRowList';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import DropDownMenu from '../../components/StyledSelect';
+import { FullWidthContainer } from '../../utils/Layout';
 import PersonSearchFields from '../../components/person/PersonSearchFields';
 import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
 import * as FormActionFactory from '../psa/FormActionFactory';
@@ -32,11 +33,6 @@ import {
   SORT_OPTIONS_ARR,
   NAV_OPTIONS
 } from '../../utils/consts/ReviewPSAConsts';
-
-const StyledFormViewWrapper = styled.div`
-  display: flex;
-  width: 100%;
-`;
 
 const StyledFormWrapper = styled.div`
   display: flex;
@@ -127,8 +123,8 @@ const DatePickerGroupContainer = styled.div`
 
 const NoResults = styled.div`
   margin: 100px auto;
-  font-size: 16px;
   text-align: center;
+  font-size: 16px;
   width: 960px;
 `;
 
@@ -540,11 +536,11 @@ class ReviewPSA extends React.Component<Props, State> {
 
   render() {
     return (
-      <StyledFormViewWrapper>
+      <FullWidthContainer>
         <StyledFormWrapper>
           {this.renderContent()}
         </StyledFormWrapper>
-      </StyledFormViewWrapper>
+      </FullWidthContainer>
     );
   }
 }
