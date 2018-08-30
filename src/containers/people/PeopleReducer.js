@@ -67,7 +67,6 @@ export default function peopleReducer(state = INITIAL_STATE, action) {
         FAILURE: () => state.setIn([PEOPLE.NEIGHBORS, action.personId], Immutable.Map()),
         SUCCESS: () => {
           let caseNums = Immutable.Set();
-          let uniqNeighborsByEntitySet;
           const { personId, neighbors } = action.value;
           let neighborsByEntitySet = Immutable.Map();
           Immutable.fromJS(neighbors).forEach((neighborObj) => {
@@ -77,21 +76,17 @@ export default function peopleReducer(state = INITIAL_STATE, action) {
               neighborsByEntitySet.get(entitySetName, Immutable.List()).push(neighborObj)
             );
           });
-          if (neighborsByEntitySet.get(ENTITY_SETS.PRETRIAL_CASES)) {
-            uniqNeighborsByEntitySet = neighborsByEntitySet.set(ENTITY_SETS.PRETRIAL_CASES,
-              neighborsByEntitySet.get(ENTITY_SETS.PRETRIAL_CASES)
-                .filter((neighbor) => {
-                  const caseNum = neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.CASE_ID, 0]);
-                  if (!caseNums.has(caseNum)) {
-                    caseNums = caseNums.add(caseNum);
-                    return true;
-                  }
-                  return false;
-                }));
-          }
-          else {
-            uniqNeighborsByEntitySet = neighborsByEntitySet;
-          }
+
+          const uniqNeighborsByEntitySet = neighborsByEntitySet.set(ENTITY_SETS.PRETRIAL_CASES,
+            neighborsByEntitySet.get(ENTITY_SETS.PRETRIAL_CASES, Immutable.List())
+              .filter((neighbor) => {
+                const caseNum = neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.CASE_ID, 0]);
+                if (!caseNums.has(caseNum)) {
+                  caseNums = caseNums.add(caseNum);
+                  return true;
+                }
+                return false;
+              }), neighborsByEntitySet);
           return state.setIn([PEOPLE.NEIGHBORS, personId], uniqNeighborsByEntitySet);
         }
       });
