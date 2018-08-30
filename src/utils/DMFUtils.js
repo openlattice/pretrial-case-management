@@ -37,6 +37,7 @@ export const getConditionsTextList = (dmf) => {
 };
 
 export const increaseDMFSeverity = (dmfResult, context) => {
+
   const increasedValues = {};
   let newColor = dmfResult[RESULT_CATEGORIES.COLOR];
   let conditionsLevel;
@@ -89,6 +90,10 @@ export const increaseDMFSeverity = (dmfResult, context) => {
 
   if (context === CONTEXT.BOOKING) {
     increasedValues[RESULT_CATEGORIES.CONDITION_1] = CONDITION_TYPES.HOLD_PENDING_JUDICIAL_REVIEW;
+  }
+
+  if (newColor === COLORS.YELLOW && context === CONTEXT.COURT_MINN) {
+    increasedValues[RESULT_CATEGORIES.CONDITION_1] = CONDITION_TYPES.CHECKIN_WEEKLY;
   }
 
   return Object.assign({}, dmfResult, increasedValues);
