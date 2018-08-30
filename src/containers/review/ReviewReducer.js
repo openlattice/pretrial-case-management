@@ -67,14 +67,17 @@ export default function reviewReducer(state :Immutable.Map<*, *> = INITIAL_STATE
           .setIn([REVIEW.SENTENCE_HISTORY, action.value.personId], Immutable.Map())
           .setIn([REVIEW.FTA_HISTORY, action.value.personId], Immutable.List())
           .setIn([REVIEW.HEARINGS, action.value.personId], Immutable.List()),
-        SUCCESS: () => state
-          .setIn([REVIEW.CASE_HISTORY, action.value.personId], action.value.allCases)
-          .setIn([REVIEW.MANUAL_CASE_HISTORY, action.value.personId], action.value.allManualCases)
-          .setIn([REVIEW.CHARGE_HISTORY, action.value.personId], action.value.chargesByCaseId)
-          .setIn([REVIEW.MANUAL_CHARGE_HISTORY, action.value.personId], action.value.manualChargesByCaseId)
-          .setIn([REVIEW.SENTENCE_HISTORY, action.value.personId], action.value.sentencesByCaseId)
-          .setIn([REVIEW.FTA_HISTORY, action.value.personId], action.value.allFTAs)
-          .setIn([REVIEW.HEARINGS, action.value.personId], action.value.allHearings),
+        SUCCESS: () => {
+          const uniqCases = action.value.allCases.toSet().toList();
+          return state
+            .setIn([REVIEW.CASE_HISTORY, action.value.personId], uniqCases)
+            .setIn([REVIEW.MANUAL_CASE_HISTORY, action.value.personId], action.value.allManualCases)
+            .setIn([REVIEW.CHARGE_HISTORY, action.value.personId], action.value.chargesByCaseId)
+            .setIn([REVIEW.MANUAL_CHARGE_HISTORY, action.value.personId], action.value.manualChargesByCaseId)
+            .setIn([REVIEW.SENTENCE_HISTORY, action.value.personId], action.value.sentencesByCaseId)
+            .setIn([REVIEW.FTA_HISTORY, action.value.personId], action.value.allFTAs)
+            .setIn([REVIEW.HEARINGS, action.value.personId], action.value.allHearings);
+        },
         FAILURE: () => state
           .setIn([REVIEW.CASE_HISTORY, action.value.personId], Immutable.List())
           .setIn([REVIEW.MANUAL_CASE_HISTORY, action.value.personId], Immutable.List())

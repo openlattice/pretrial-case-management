@@ -3,6 +3,7 @@
  */
 import Immutable from 'immutable';
 import moment from 'moment';
+import { Constants } from 'lattice';
 
 import {
   ADD_CASE_AND_CHARGES,
@@ -57,6 +58,8 @@ const {
   COURT_OR_BOOKING,
   SECONDARY_RELEASE_CHARGES
 } = DMF;
+
+const { OPENLATTICE_ID_FQN } = Constants;
 
 const INITIAL_PSA_FORM = Immutable.fromJS({
   [AGE_AT_CURRENT_ARREST]: null,
