@@ -66,7 +66,7 @@ export default function peopleReducer(state = INITIAL_STATE, action) {
         REQUEST: () => state.setIn([PEOPLE.NEIGHBORS, action.personId], Immutable.Map()),
         FAILURE: () => state.setIn([PEOPLE.NEIGHBORS, action.personId], Immutable.Map()),
         SUCCESS: () => {
-          const caseNums = [];
+          let caseNums = Immutable.Set();
           const { personId, neighbors } = action.value;
           let neighborsByEntitySet = Immutable.Map();
           Immutable.fromJS(neighbors).forEach((neighborObj) => {
@@ -80,8 +80,8 @@ export default function peopleReducer(state = INITIAL_STATE, action) {
             neighborsByEntitySet.get(ENTITY_SETS.PRETRIAL_CASES)
               .filter((neighbor) => {
                 const caseNum = neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.CASE_ID, 0]);
-                if (!caseNums.includes(caseNum)) {
-                  caseNums.push(caseNum);
+                if (!caseNums.has(caseNum)) {
+                  caseNums = caseNums.add(caseNum);
                   return true;
                 }
                 return false;
