@@ -497,7 +497,9 @@ class PSAModal extends React.Component<Props, State> {
         scores={this.props.scores}
         neighbors={this.props.neighbors}
         manualCaseHistory={this.props.manualCaseHistory}
-        manualChargeHistory={this.props.manualChargeHistory} />
+        chargeHistory={this.props.chargeHistory}
+        manualChargeHistory={this.props.manualChargeHistory}
+        notes={this.state.riskFactors.get(PSA.NOTES)} />
   )
 
   renderPSADetails = () => {
@@ -655,7 +657,6 @@ class PSAModal extends React.Component<Props, State> {
 
   render() {
     if (!this.props.scores) return null;
-
     const changeStatusText = psaIsClosed(this.props.scores) ? 'Change PSA Status' : 'Close PSA';
 
     const tabs = [
