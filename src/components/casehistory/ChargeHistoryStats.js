@@ -8,6 +8,15 @@ import styled from 'styled-components';
 import { Title } from '../../utils/Layout';
 import { getSummaryStats } from '../../utils/HistoricalChargeUtils';
 
+const ChargeHistoryStatsWrapper = styled.div`
+  padding: ${props => (props.padding ? '0 30px' : '0')};
+  width: 100%;
+  hr {
+    margin: ${props => (props.padding ? '0 -30px' : '15px 0')};
+    width: ${props => (props.padding ? 'calc(100% + 60px)' : '100%')};
+  }
+`;
+
 const StatsContainer = styled.div`
   display: flex;
   flex-direction: column;
@@ -50,10 +59,11 @@ const StatValue = styled.span`
 `;
 
 type Props = {
-  chargeHistory :Immutable.Map<*, *>
+  chargeHistory :Immutable.Map<*, *>,
+  padding :boolean
 };
 
-const ChargeHistoryStats = ({ chargeHistory } :Props) => {
+const ChargeHistoryStats = ({ chargeHistory, padding } :Props) => {
 
   const {
     numMisdemeanorCharges,
@@ -99,7 +109,7 @@ const ChargeHistoryStats = ({ chargeHistory } :Props) => {
   ));
 
   return (
-    <div>
+    <ChargeHistoryStatsWrapper padding={padding}>
       <Title withSubtitle >
         <span>Summary Statistics</span>
         <span>All current and past cases</span>
@@ -112,7 +122,7 @@ const ChargeHistoryStats = ({ chargeHistory } :Props) => {
         </StatsWrapper>
       </StatsContainer>
       <hr />
-    </div>
+    </ChargeHistoryStatsWrapper>
   );
 };
 
