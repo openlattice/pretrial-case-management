@@ -2,6 +2,7 @@ export default {
 
   // Multiuse
   PROFILE: 'Profile',
+  ARREST: 'Arrest',
 
   // PSA Modal
   SUMMARY: 'Summary',
