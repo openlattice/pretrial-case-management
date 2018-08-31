@@ -7,7 +7,7 @@ import styled from 'styled-components';
 import ContentBlock from '../ContentBlock';
 import ContentSection from '../ContentSection';
 import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
-import defaultUserIcon from '../../assets/svg/profile-placeholder-rectangle-big.svg';
+import defaultUserIcon from '../../assets/svg/profile-placeholder-round.svg';
 import { formatValue, formatDateList } from '../../utils/FormattingUtils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 
@@ -39,15 +39,15 @@ export default ({ person } :Props) => {
     {
       label: 'Date of Birth',
       content: [dob]
-    },
-    {
-      label: 'Gender',
-      content: [sex]
-    },
-    {
-      label: 'Race',
-      content: [race]
     }
+    // {
+    //   label: 'Gender',
+    //   content: [sex]
+    // },
+    // {
+    //   label: 'Race',
+    //   content: [race]
+    // }
   ];
 
   const content = generalContent.map(item => (
