@@ -128,7 +128,10 @@ const NotesWrapper = styled.div`
 const DMFIncreaseText = styled.div`
   margin-bottom: 15px;
   font-size: 14px;
-  color: #555e6f;
+  color: black;
+  text-transform: uppercase;
+  text-align: center;
+  width: 100%;
 `;
 
 type Props = {
