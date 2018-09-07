@@ -145,7 +145,12 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
     let jsonResults = Immutable.List();
     let allHeaders = Immutable.Set();
     usableNeighborsById.keySeq().forEach((id) => {
-      let combinedEntity = getUpdatedEntity(Immutable.Map(), 'PSA Scores', ENTITY_SETS.PSA_SCORES, scoresAsMap.get(id));
+      let combinedEntity = getUpdatedEntity(
+        Immutable.Map(),
+        'South Dakota PSA Scores',
+        ENTITY_SETS.PSA_SCORES,
+        scoresAsMap.get(id)
+      );
 
       usableNeighborsById.get(id).forEach((neighbor) => {
         combinedEntity = getUpdatedEntity(
