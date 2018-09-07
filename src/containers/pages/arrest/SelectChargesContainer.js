@@ -55,6 +55,7 @@ const HeaderWrapper = styled.div`
 
   button {
     width: 220px;
+    margin: 20px 0;
   }
 `;
 

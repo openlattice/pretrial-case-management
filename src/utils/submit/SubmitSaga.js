@@ -170,13 +170,9 @@ function* submitWorker(action :SequenceAction) :Generator<*, *, *> {
 
     const associationAliases = {};
     config.associations.forEach((associationDescription) => {
-      const { src, dst, association } = associationDescription;
-      const completeAssociation = associationAliases[association] || {
-        src: [],
-        dst: []
-      };
-      if (!completeAssociation.src.includes(src)) completeAssociation.src.push(src);
-      if (!completeAssociation.dst.includes(dst)) completeAssociation.dst.push(dst);
+      const { association } = associationDescription;
+      const completeAssociation = associationAliases[association] || [];
+      completeAssociation.push(associationDescription);
       associationAliases[association] = completeAssociation;
     });
 
@@ -186,19 +182,23 @@ function* submitWorker(action :SequenceAction) :Generator<*, *, *> {
     Object.keys(mappedEntities).forEach((alias) => {
       if (associationAliases[alias]) {
         mappedEntities[alias].forEach((associationEntityDescription) => {
-          const associationDescription = associationAliases[alias];
-          associationDescription.src.forEach((srcAlias) => {
-            mappedEntities[srcAlias].forEach((srcEntity) => {
-              associationDescription.dst.forEach((dstAlias) => {
-                mappedEntities[dstAlias].forEach((dstEntity) => {
-                  const src = srcEntity.key;
-                  const dst = dstEntity.key;
+          const associationDescriptions = associationAliases[alias];
 
-                  if (src && dst) {
-                    const association = Object.assign({}, associationEntityDescription, { src, dst });
-                    associations.push(association);
-                  }
-                });
+          associationDescriptions.forEach((associationDescription) => {
+            const { src, dst } = associationDescription;
+
+            mappedEntities[src].forEach((srcEntity) => {
+              mappedEntities[dst].forEach((dstEntity) => {
+
+                const srcKey = srcEntity.key;
+                const dstKey = dstEntity.key;
+                if (srcKey && dstKey) {
+                  const association = Object.assign({}, associationEntityDescription, {
+                    src: srcKey,
+                    dst: dstKey
+                  });
+                  associations.push(association);
+                }
               });
             });
           });

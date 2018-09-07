@@ -178,6 +178,11 @@ const psaConfig = {
     },
     {
       src: ALIASES.PSA,
+      dst: ALIASES.DMF_RISK_FACTORS,
+      association: ALIASES.CALCULATED_FOR
+    },
+    {
+      src: ALIASES.PSA,
       dst: ALIASES.CASE,
       association: ALIASES.CALCULATED_FOR
     },
