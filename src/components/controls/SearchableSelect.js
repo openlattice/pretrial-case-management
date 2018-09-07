@@ -4,11 +4,10 @@
 
 import React from 'react';
 
-import FontAwesome from 'react-fontawesome';
-import FontAwesomeIcon from '@fortawesome/react-fontawesome';
 import Immutable from 'immutable';
 import styled, { css } from 'styled-components';
-import { faSearch } from '@fortawesome/fontawesome-pro-regular';
+import { faTimes } from '@fortawesome/pro-regular-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import downArrowIcon from '../../assets/svg/down-arrow.svg';
 
 /*
@@ -276,7 +275,7 @@ class SearchableSelect extends React.Component<Props, State> {
               ? null
               : (
                 <CloseIcon onClick={this.props.onClear}>
-                  <FontAwesome name="close" />
+                  <FontAwesomeIcon icon={faTimes} />
                 </CloseIcon>
               )
           }

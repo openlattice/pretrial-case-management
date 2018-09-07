@@ -6,8 +6,9 @@
 
 import React from 'react';
 
-import FontAwesome from 'react-fontawesome';
 import styled, { css, keyframes } from 'styled-components';
+import { faCamera, faSyncAlt } from '@fortawesome/pro-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 /*
  * constants
@@ -291,10 +292,10 @@ class SelfieWebCam extends React.Component<Props, State> {
               src={this.state.selfieSource} />
           <ControlsWrapper>
             <ResetIcon isActive={selfieCaptured} onClick={this.handleOnClickReset}>
-              <FontAwesome name="refresh" />
+              <FontAwesomeIcon icon={faSyncAlt} />
             </ResetIcon>
             <CaptureIcon isActive={!selfieCaptured} onClick={this.handleOnClickCapture}>
-              <FontAwesome name="camera" />
+              <FontAwesomeIcon icon={faCamera} />
             </CaptureIcon>
           </ControlsWrapper>
         </InnerWrapper>

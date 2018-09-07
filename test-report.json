@@ -1,0 +1,2522 @@
+{
+  "stats": {
+    "tests": 418,
+    "passes": 418,
+    "failures": 0,
+    "duration": 7758,
+    "start": "2018-09-07T22:50:42.216Z",
+    "end": "2018-09-07T22:50:49.974Z"
+  },
+  "failures": [],
+  "passes": [
+    {
+      "title": "FormattingUtils – Generic value formatting – formatValue – should return an empty string on invalid inputs",
+      "fullTitle": "FormattingUtils",
+      "duration": 2401,
+      "errorCount": 0
+    },
+    {
+      "title": "FormattingUtils – Generic value formatting – formatValue – should return string inputs as they are passed in",
+      "fullTitle": "FormattingUtils",
+      "duration": 2401,
+      "errorCount": 0
+    },
+    {
+      "title": "FormattingUtils – Generic value formatting – formatValue – should format array values as comma separated list",
+      "fullTitle": "FormattingUtils",
+      "duration": 2401,
+      "errorCount": 0
+    },
+    {
+      "title": "FormattingUtils – Generic value formatting – formatValue – should format Immutable list values as comma separated list",
+      "fullTitle": "FormattingUtils",
+      "duration": 2401,
+      "errorCount": 0
+    },
+    {
+      "title": "FormattingUtils – Date formatting – formatDate – should return an empty string on invalid date inputs",
+      "fullTitle": "FormattingUtils",
+      "duration": 2401,
+      "errorCount": 0
+    },
+    {
+      "title": "FormattingUtils – Date formatting – formatDate – should return input param if present but cannot be parsed as a date",
+      "fullTitle": "FormattingUtils",
+      "duration": 2401,
+      "errorCount": 0
+    },
+    {
+      "title": "FormattingUtils – Date formatting – formatDate – should format dates in the default format",
+      "fullTitle": "FormattingUtils",
+      "duration": 2401,
+      "errorCount": 0
+    },
+    {
+      "title": "FormattingUtils – Date formatting – formatDate – should format dates in the requested format",
+      "fullTitle": "FormattingUtils",
+      "duration": 2401,
+      "errorCount": 0
+    },
+    {
+      "title": "FormattingUtils – Date formatting – formatDateList – should return empty string on invalid or empty input",
+      "fullTitle": "FormattingUtils",
+      "duration": 2401,
+      "errorCount": 0
+    },
+    {
+      "title": "FormattingUtils – Date formatting – formatDateList – should return comma separated list of supplied date arrays",
+      "fullTitle": "FormattingUtils",
+      "duration": 2401,
+      "errorCount": 0
+    },
+    {
+      "title": "FormattingUtils – Date formatting – formatDateList – should return comma separated list of supplied Immutable date lists",
+      "fullTitle": "FormattingUtils",
+      "duration": 2401,
+      "errorCount": 0
+    },
+    {
+      "title": "FormattingUtils – Date formatting – formatDateList – should return dates formatted as requested",
+      "fullTitle": "FormattingUtils",
+      "duration": 2401,
+      "errorCount": 0
+    },
+    {
+      "title": "FormattingUtils – Date formatting – toISODate – should return undefined if the input param is not a valid moment object",
+      "fullTitle": "FormattingUtils",
+      "duration": 2401,
+      "errorCount": 0
+    },
+    {
+      "title": "FormattingUtils – Date formatting – toISODate – should return properly formated ISO date on valid moment input",
+      "fullTitle": "FormattingUtils",
+      "duration": 2401,
+      "errorCount": 0
+    },
+    {
+      "title": "FormattingUtils – DateTime formatting – formatDateTime – should return an empty string on invalid datetime inputs",
+      "fullTitle": "FormattingUtils",
+      "duration": 2401,
+      "errorCount": 0
+    },
+    {
+      "title": "FormattingUtils – DateTime formatting – formatDateTime – should return input param if present but cannot be parsed as a datetime",
+      "fullTitle": "FormattingUtils",
+      "duration": 2401,
+      "errorCount": 0
+    },
+    {
+      "title": "FormattingUtils – DateTime formatting – formatDateTime – should format datetimes in the default format",
+      "fullTitle": "FormattingUtils",
+      "duration": 2401,
+      "errorCount": 0
+    },
+    {
+      "title": "FormattingUtils – DateTime formatting – formatDateTime – should format datetimes in the requested format",
+      "fullTitle": "FormattingUtils",
+      "duration": 2401,
+      "errorCount": 0
+    },
+    {
+      "title": "FormattingUtils – DateTime formatting – formatDateTimeList – should return empty string on invalid or empty input",
+      "fullTitle": "FormattingUtils",
+      "duration": 2401,
+      "errorCount": 0
+    },
+    {
+      "title": "FormattingUtils – DateTime formatting – formatDateTimeList – should return comma separated list of supplied datetime arrays",
+      "fullTitle": "FormattingUtils",
+      "duration": 2401,
+      "errorCount": 0
+    },
+    {
+      "title": "FormattingUtils – DateTime formatting – formatDateTimeList – should return comma separated list of supplied Immutable datetime lists",
+      "fullTitle": "FormattingUtils",
+      "duration": 2401,
+      "errorCount": 0
+    },
+    {
+      "title": "FormattingUtils – DateTime formatting – formatDateTimeList – should return datetime lists formatted as requested",
+      "fullTitle": "FormattingUtils",
+      "duration": 2401,
+      "errorCount": 0
+    },
+    {
+      "title": "FormattingUtils – DateTime formatting – toISODateTime – should return undefined if the input param is not a valid moment object",
+      "fullTitle": "FormattingUtils",
+      "duration": 2401,
+      "errorCount": 0
+    },
+    {
+      "title": "FormattingUtils – DateTime formatting – toISODateTime – should return properly formated ISO datetime on valid moment input",
+      "fullTitle": "FormattingUtils",
+      "duration": 2401,
+      "errorCount": 0
+    },
+    {
+      "title": "HistoricalChargeUtils – Generic util functions – getCaseNumFromCharge – should correctly return case number",
+      "fullTitle": "HistoricalChargeUtils",
+      "duration": 2770,
+      "errorCount": 0
+    },
+    {
+      "title": "HistoricalChargeUtils – Generic util functions – shouldIgnoreCharge – should ignore MO, PO, P, and POA charges",
+      "fullTitle": "HistoricalChargeUtils",
+      "duration": 2770,
+      "errorCount": 0
+    },
+    {
+      "title": "HistoricalChargeUtils – Generic util functions – shouldIgnoreCharge – should ignore charges with Guilty by POA pleas",
+      "fullTitle": "HistoricalChargeUtils",
+      "duration": 2770,
+      "errorCount": 0
+    },
+    {
+      "title": "HistoricalChargeUtils – Generic util functions – shouldIgnoreCharge – should not ignore charges that are not MO, PO, P, or POA",
+      "fullTitle": "HistoricalChargeUtils",
+      "duration": 2770,
+      "errorCount": 0
+    },
+    {
+      "title": "HistoricalChargeUtils – Generic util functions – chargeIsMostSerious – should correctly identify most serious charge as most serious",
+      "fullTitle": "HistoricalChargeUtils",
+      "duration": 2770,
+      "errorCount": 0
+    },
+    {
+      "title": "HistoricalChargeUtils – Generic util functions – chargeIsMostSerious – should correctly identify not most serious charge as not most serious",
+      "fullTitle": "HistoricalChargeUtils",
+      "duration": 2770,
+      "errorCount": 0
+    },
+    {
+      "title": "HistoricalChargeUtils – Generic util functions – getUnique – should remove duplicates from list",
+      "fullTitle": "HistoricalChargeUtils",
+      "duration": 2770,
+      "errorCount": 0
+    },
+    {
+      "title": "HistoricalChargeUtils – Violent charge utils – chargeStatuteIsViolent – should correctly identify violent statutes as violent",
+      "fullTitle": "HistoricalChargeUtils",
+      "duration": 2770,
+      "errorCount": 0
+    },
+    {
+      "title": "HistoricalChargeUtils – Violent charge utils – chargeStatuteIsViolent – should correctly identify nonviolent statutes as nonviolent",
+      "fullTitle": "HistoricalChargeUtils",
+      "duration": 2770,
+      "errorCount": 0
+    },
+    {
+      "title": "HistoricalChargeUtils – Violent charge utils – chargeFieldIsViolent – should correctly identify violent statute fields as violent",
+      "fullTitle": "HistoricalChargeUtils",
+      "duration": 2770,
+      "errorCount": 0
+    },
+    {
+      "title": "HistoricalChargeUtils – Violent charge utils – chargeFieldIsViolent – should correctly identify nonviolent statute fields as nonviolent",
+      "fullTitle": "HistoricalChargeUtils",
+      "duration": 2770,
+      "errorCount": 0
+    },
+    {
+      "title": "HistoricalChargeUtils – Violent charge utils – chargeIsViolent – should correctly identify violent charges as violent",
+      "fullTitle": "HistoricalChargeUtils",
+      "duration": 2770,
+      "errorCount": 0
+    },
+    {
+      "title": "HistoricalChargeUtils – Violent charge utils – chargeIsViolent – should correctly identify nonviolent charges as nonviolent",
+      "fullTitle": "HistoricalChargeUtils",
+      "duration": 2770,
+      "errorCount": 0
+    },
+    {
+      "title": "HistoricalChargeUtils – Violent charge utils – getViolentChargeNums – should return violent charge statutes from a list",
+      "fullTitle": "HistoricalChargeUtils",
+      "duration": 2770,
+      "errorCount": 0
+    },
+    {
+      "title": "HistoricalChargeUtils – Misdemeanor charge utils – degreeFieldIsMisdemeanor – should correctly identify misdemeanor fields as misdemeanors",
+      "fullTitle": "HistoricalChargeUtils",
+      "duration": 2770,
+      "errorCount": 0
+    },
+    {
+      "title": "HistoricalChargeUtils – Misdemeanor charge utils – degreeFieldIsMisdemeanor – should correctly identify non-misdemeanor fields as non-misdemeanors",
+      "fullTitle": "HistoricalChargeUtils",
+      "duration": 2770,
+      "errorCount": 0
+    },
+    {
+      "title": "HistoricalChargeUtils – Misdemeanor charge utils – chargeIsMisdemeanor – should correctly identify misdemeanor charges as misdemeanors",
+      "fullTitle": "HistoricalChargeUtils",
+      "duration": 2770,
+      "errorCount": 0
+    },
+    {
+      "title": "HistoricalChargeUtils – Misdemeanor charge utils – chargeIsMisdemeanor – should correctly identify non-misdemeanor charges as non-misdemeanors",
+      "fullTitle": "HistoricalChargeUtils",
+      "duration": 2770,
+      "errorCount": 0
+    },
+    {
+      "title": "HistoricalChargeUtils – Felony charge utils – degreeFieldIsFelony – should correctly identify felony fields as felonies",
+      "fullTitle": "HistoricalChargeUtils",
+      "duration": 2770,
+      "errorCount": 0
+    },
+    {
+      "title": "HistoricalChargeUtils – Felony charge utils – degreeFieldIsFelony – should correctly identify non-felony fields as non-felonies",
+      "fullTitle": "HistoricalChargeUtils",
+      "duration": 2770,
+      "errorCount": 0
+    },
+    {
+      "title": "HistoricalChargeUtils – Felony charge utils – chargeIsFelony – should correctly identify felony charges as felonies",
+      "fullTitle": "HistoricalChargeUtils",
+      "duration": 2770,
+      "errorCount": 0
+    },
+    {
+      "title": "HistoricalChargeUtils – Felony charge utils – chargeIsFelony – should correctly identify non-felony charges as non-felonies",
+      "fullTitle": "HistoricalChargeUtils",
+      "duration": 2770,
+      "errorCount": 0
+    },
+    {
+      "title": "HistoricalChargeUtils – Convicted charge utils – dispositionIsGuilty – should correctly identify guilty dispositions as guilty",
+      "fullTitle": "HistoricalChargeUtils",
+      "duration": 2770,
+      "errorCount": 0
+    },
+    {
+      "title": "HistoricalChargeUtils – Convicted charge utils – dispositionIsGuilty – should correctly identify not guilty dispositions as not guilty",
+      "fullTitle": "HistoricalChargeUtils",
+      "duration": 2770,
+      "errorCount": 0
+    },
+    {
+      "title": "HistoricalChargeUtils – Convicted charge utils – dispositionFieldIsGuilty – should correctly identify guilty disposition fields as guilty",
+      "fullTitle": "HistoricalChargeUtils",
+      "duration": 2770,
+      "errorCount": 0
+    },
+    {
+      "title": "HistoricalChargeUtils – Convicted charge utils – dispositionFieldIsGuilty – should correctly identify not guilty disposition fields as not guilty",
+      "fullTitle": "HistoricalChargeUtils",
+      "duration": 2770,
+      "errorCount": 0
+    },
+    {
+      "title": "HistoricalChargeUtils – Convicted charge utils – chargeIsGuilty – should correctly identify guilty charges as guilty",
+      "fullTitle": "HistoricalChargeUtils",
+      "duration": 2770,
+      "errorCount": 0
+    },
+    {
+      "title": "HistoricalChargeUtils – Convicted charge utils – chargeIsGuilty – should correctly identify not guilty charges as not guilty",
+      "fullTitle": "HistoricalChargeUtils",
+      "duration": 2770,
+      "errorCount": 0
+    },
+    {
+      "title": "HistoricalChargeUtils – Convicted charge utils – chargeIsGuilty – should identify charges with pleas of \"Guilty by POA\" as not guilty",
+      "fullTitle": "HistoricalChargeUtils",
+      "duration": 2770,
+      "errorCount": 0
+    },
+    {
+      "title": "Helpers – Path validation/utils – getCurrentPage – should return current page when path ends with number",
+      "fullTitle": "Helpers",
+      "duration": 2752,
+      "errorCount": 0
+    },
+    {
+      "title": "Helpers – Path validation/utils – getCurrentPage – should return NaN when no current page is found",
+      "fullTitle": "Helpers",
+      "duration": 2752,
+      "errorCount": 0
+    },
+    {
+      "title": "Helpers – Path validation/utils – getNextPath – should return next path incrementing current page number",
+      "fullTitle": "Helpers",
+      "duration": 2752,
+      "errorCount": 0
+    },
+    {
+      "title": "Helpers – Path validation/utils – getNextPath – should return null if next page number is greater than total pages",
+      "fullTitle": "Helpers",
+      "duration": 2752,
+      "errorCount": 0
+    },
+    {
+      "title": "Helpers – Path validation/utils – getNextPath – should return null when no current page is found",
+      "fullTitle": "Helpers",
+      "duration": 2752,
+      "errorCount": 0
+    },
+    {
+      "title": "Helpers – Path validation/utils – getPrevPath – should return previous path decrementing current page number",
+      "fullTitle": "Helpers",
+      "duration": 2752,
+      "errorCount": 0
+    },
+    {
+      "title": "Helpers – Path validation/utils – getPrevPath – should return null if previous page is less than 1",
+      "fullTitle": "Helpers",
+      "duration": 2752,
+      "errorCount": 0
+    },
+    {
+      "title": "Helpers – Path validation/utils – getPrevPath – should return null when no current page is found",
+      "fullTitle": "Helpers",
+      "duration": 2752,
+      "errorCount": 0
+    },
+    {
+      "title": "Helpers – Path validation/utils – getIsLastPage – should return true if current page is last page",
+      "fullTitle": "Helpers",
+      "duration": 2752,
+      "errorCount": 0
+    },
+    {
+      "title": "Helpers – Path validation/utils – getIsLastPage – should return false if current page is not last page",
+      "fullTitle": "Helpers",
+      "duration": 2752,
+      "errorCount": 0
+    },
+    {
+      "title": "Helpers – Path validation/utils – getIsLastPage – should return false when no current page found",
+      "fullTitle": "Helpers",
+      "duration": 2752,
+      "errorCount": 0
+    },
+    {
+      "title": "Helpers – Date formatting – formatDOB – should format DOB in the expected format",
+      "fullTitle": "Helpers",
+      "duration": 2752,
+      "errorCount": 0
+    },
+    {
+      "title": "Helpers – Date formatting – formatDOB – should return invalid dates as they were input",
+      "fullTitle": "Helpers",
+      "duration": 2752,
+      "errorCount": 0
+    },
+    {
+      "title": "Helpers – Number validation – isNotNumber – should return false on valid number input",
+      "fullTitle": "Helpers",
+      "duration": 2752,
+      "errorCount": 0
+    },
+    {
+      "title": "Helpers – Number validation – isNotNumber – should return true on invalid number input",
+      "fullTitle": "Helpers",
+      "duration": 2752,
+      "errorCount": 0
+    },
+    {
+      "title": "Helpers – Number validation – isNotInteger – should return false on valid integer input",
+      "fullTitle": "Helpers",
+      "duration": 2752,
+      "errorCount": 0
+    },
+    {
+      "title": "Helpers – Number validation – isNotInteger – should return true on invalid integer input",
+      "fullTitle": "Helpers",
+      "duration": 2752,
+      "errorCount": 0
+    },
+    {
+      "title": "DataUtils – stripIdField – should remove all id fields from javascript objects",
+      "fullTitle": "DataUtils",
+      "duration": 3023,
+      "errorCount": 0
+    },
+    {
+      "title": "DataUtils – stripIdField – should remove all id fields from Immutable Maps",
+      "fullTitle": "DataUtils",
+      "duration": 3023,
+      "errorCount": 0
+    },
+    {
+      "title": "DataUtils – getFqnObj – should return an FQN object with namespace and name field on properly formatted input",
+      "fullTitle": "DataUtils",
+      "duration": 3023,
+      "errorCount": 0
+    },
+    {
+      "title": "DataUtils – getEntitySetId – should return entity set id from neighbor map",
+      "fullTitle": "DataUtils",
+      "duration": 3023,
+      "errorCount": 0
+    },
+    {
+      "title": "DataUtils – getEntitySetId – should return empty string if neighbor entity set is not present",
+      "fullTitle": "DataUtils",
+      "duration": 3023,
+      "errorCount": 0
+    },
+    {
+      "title": "DataUtils – getEntityKeyId – should return entity key id from neighbor details obj",
+      "fullTitle": "DataUtils",
+      "duration": 3023,
+      "errorCount": 0
+    },
+    {
+      "title": "DataUtils – getEntityKeyId – should return empty string if neighbor entity key id not present",
+      "fullTitle": "DataUtils",
+      "duration": 3023,
+      "errorCount": 0
+    },
+    {
+      "title": "DataUtils – getIdValue – should return id for default property general_id",
+      "fullTitle": "DataUtils",
+      "duration": 3023,
+      "errorCount": 0
+    },
+    {
+      "title": "DataUtils – getIdValue – should return id for custom FQN",
+      "fullTitle": "DataUtils",
+      "duration": 3023,
+      "errorCount": 0
+    },
+    {
+      "title": "DataUtils – getIdValue – should return empty string if id value is not present",
+      "fullTitle": "DataUtils",
+      "duration": 3023,
+      "errorCount": 0
+    },
+    {
+      "title": "FTAUtils – Generic util functions – getCaseNumFromFTA – should return case number",
+      "fullTitle": "FTAUtils",
+      "duration": 386,
+      "errorCount": 0
+    },
+    {
+      "title": "FTAUtils – Load FTA list functions – getRecentFTAs – should return list of FTAs from past two years",
+      "fullTitle": "FTAUtils",
+      "duration": 386,
+      "errorCount": 0
+    },
+    {
+      "title": "FTAUtils – Load FTA list functions – getRecentFTAs – should ignore FTAs from past two years associated with POAs/charges to ignore",
+      "fullTitle": "FTAUtils",
+      "duration": 386,
+      "errorCount": 0
+    },
+    {
+      "title": "FTAUtils – Load FTA list functions – getOldFTAs – should return list of FTAs over two years old",
+      "fullTitle": "FTAUtils",
+      "duration": 386,
+      "errorCount": 0
+    },
+    {
+      "title": "FTAUtils – Load FTA list functions – getOldFTAs – should return list of FTAs over two years old associated with POAs/charges to ignore",
+      "fullTitle": "FTAUtils",
+      "duration": 386,
+      "errorCount": 0
+    },
+    {
+      "title": "SentenceUtils – caseLedToIncarceration – should correctly output whether or not there was an incarceration of >=14 days",
+      "fullTitle": "SentenceUtils",
+      "duration": 398,
+      "errorCount": 0
+    },
+    {
+      "title": "SentenceUtils – caseLedToIncarceration – should discount suspended time from total time served",
+      "fullTitle": "SentenceUtils",
+      "duration": 398,
+      "errorCount": 0
+    },
+    {
+      "title": "SentenceUtils – caseLedToIncarceration – should not count overlapping sentences as double time",
+      "fullTitle": "SentenceUtils",
+      "duration": 398,
+      "errorCount": 0
+    },
+    {
+      "title": "SentenceUtils – caseLedToIncarceration – should sum time from consecutive sentences",
+      "fullTitle": "SentenceUtils",
+      "duration": 398,
+      "errorCount": 0
+    },
+    {
+      "title": "SentenceUtils – getSentenceToIncarcerationCaseNums – should return case num for sentences >= 14 days",
+      "fullTitle": "SentenceUtils",
+      "duration": 398,
+      "errorCount": 0
+    },
+    {
+      "title": "SentenceUtils – getSentenceToIncarcerationCaseNums – should return case num for time served taking into account suspended time",
+      "fullTitle": "SentenceUtils",
+      "duration": 398,
+      "errorCount": 0
+    },
+    {
+      "title": "SentenceUtils – getSentenceToIncarcerationCaseNums – should not return case nums for cases with overlapping sentences",
+      "fullTitle": "SentenceUtils",
+      "duration": 398,
+      "errorCount": 0
+    },
+    {
+      "title": "SentenceUtils – getSentenceToIncarcerationCaseNums – should return case nums with consecutive sentences where time sums to >= 14 days",
+      "fullTitle": "SentenceUtils",
+      "duration": 398,
+      "errorCount": 0
+    },
+    {
+      "title": "CaseUtils – getMapByCaseId – should return an immutable map based with case ids as keys",
+      "fullTitle": "CaseUtils",
+      "duration": 199,
+      "errorCount": 0
+    },
+    {
+      "title": "CaseUtils – getMapByCaseId – should return an immutable map based with case ids as keys with multiple elements from same case",
+      "fullTitle": "CaseUtils",
+      "duration": 199,
+      "errorCount": 0
+    },
+    {
+      "title": "CaseUtils – getMapByCaseId – should ignore missing or malformed keys from map",
+      "fullTitle": "CaseUtils",
+      "duration": 199,
+      "errorCount": 0
+    },
+    {
+      "title": "DMFUtils – getHeaderText – should return correct header text depending on DMF result",
+      "fullTitle": "DMFUtils",
+      "duration": 3817,
+      "errorCount": 0
+    },
+    {
+      "title": "DMFUtils – getHeaderText – should return empty string on malformed input",
+      "fullTitle": "DMFUtils",
+      "duration": 3817,
+      "errorCount": 0
+    },
+    {
+      "title": "DMFUtils – getConditionText – should return correct condition text for each condition",
+      "fullTitle": "DMFUtils",
+      "duration": 3817,
+      "errorCount": 0
+    },
+    {
+      "title": "DMFUtils – getConditionText – should return empty string on malformed/nonexistent condition input",
+      "fullTitle": "DMFUtils",
+      "duration": 3817,
+      "errorCount": 0
+    },
+    {
+      "title": "DMFUtils – getConditionsTextList – should return formatted list of conditions text from dmf",
+      "fullTitle": "DMFUtils",
+      "duration": 3817,
+      "errorCount": 0
+    },
+    {
+      "title": "DMFUtils – shouldCheckForSecondaryRelease – should return false if context is not booking",
+      "fullTitle": "DMFUtils",
+      "duration": 3817,
+      "errorCount": 0
+    },
+    {
+      "title": "DMFUtils – shouldCheckForSecondaryRelease – should return false if scores are not within the required ranges",
+      "fullTitle": "DMFUtils",
+      "duration": 3817,
+      "errorCount": 0
+    },
+    {
+      "title": "DMFUtils – shouldCheckForSecondaryRelease – should return true if context is booking and scores are within required ranges",
+      "fullTitle": "DMFUtils",
+      "duration": 3817,
+      "errorCount": 0
+    },
+    {
+      "title": "DMFUtils – updateDMFSecondaryRelease – should set condition 1 to PR Release",
+      "fullTitle": "DMFUtils",
+      "duration": 3817,
+      "errorCount": 0
+    },
+    {
+      "title": "DMFUtils – getDMFDecision – should return correct DMF for scores and context",
+      "fullTitle": "DMFUtils",
+      "duration": 3817,
+      "errorCount": 0
+    },
+    {
+      "title": "DMFUtils – formatDMFFromEntity – should map DMF entities to a DMF object",
+      "fullTitle": "DMFUtils",
+      "duration": 3817,
+      "errorCount": 0
+    },
+    {
+      "title": "DMFUtils – increaseDMFSeverity – should increase color, release type, and conditions level for step 4 increase, if possible",
+      "fullTitle": "DMFUtils",
+      "duration": 3817,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Score DMFs – should correctly score DMF scenario 0 with context Court (Pennington)",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Score DMFs – should correctly score DMF scenario 0 with context Court (Minnehaha)",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Score DMFs – should correctly score DMF scenario 0 with context Booking",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Score DMFs – should correctly score DMF scenario 1 with context Court (Pennington)",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Score DMFs – should correctly score DMF scenario 1 with context Court (Minnehaha)",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Score DMFs – should correctly score DMF scenario 1 with context Booking",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Score DMFs – should correctly score DMF scenario 2 with context Court (Pennington)",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Score DMFs – should correctly score DMF scenario 2 with context Court (Minnehaha)",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Score DMFs – should correctly score DMF scenario 2 with context Booking",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Score DMFs – should correctly score DMF scenario 3 with context Court (Pennington)",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Score DMFs – should correctly score DMF scenario 3 with context Court (Minnehaha)",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Score DMFs – should correctly score DMF scenario 3 with context Booking",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Score DMFs – should correctly score DMF scenario 4 with context Court (Pennington)",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Score DMFs – should correctly score DMF scenario 4 with context Court (Minnehaha)",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Score DMFs – should correctly score DMF scenario 4 with context Booking",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Score DMFs – should correctly score DMF scenario 5 with context Court (Pennington)",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Score DMFs – should correctly score DMF scenario 5 with context Court (Minnehaha)",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Score DMFs – should correctly score DMF scenario 5 with context Booking",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Score DMFs – should correctly score DMF scenario 6 with context Court (Pennington)",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Score DMFs – should correctly score DMF scenario 6 with context Court (Minnehaha)",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Score DMFs – should correctly score DMF scenario 6 with context Booking",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Score DMFs – should correctly score DMF scenario 7 with context Court (Pennington)",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Score DMFs – should correctly score DMF scenario 7 with context Court (Minnehaha)",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Score DMFs – should correctly score DMF scenario 7 with context Booking",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Score DMFs – should correctly score DMF scenario 8 with context Court (Pennington)",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Score DMFs – should correctly score DMF scenario 8 with context Court (Minnehaha)",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Score DMFs – should correctly score DMF scenario 8 with context Booking",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Score DMFs – should correctly score DMF scenario 9 with context Court (Pennington)",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Score DMFs – should correctly score DMF scenario 9 with context Court (Minnehaha)",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Score DMFs – should correctly score DMF scenario 9 with context Booking",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Score DMFs – should correctly score DMF scenario 10 with context Court (Pennington)",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Score DMFs – should correctly score DMF scenario 10 with context Court (Minnehaha)",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Score DMFs – should correctly score DMF scenario 10 with context Booking",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Score DMFs – should correctly score DMF scenario 11 with context Court (Pennington)",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Score DMFs – should correctly score DMF scenario 11 with context Court (Minnehaha)",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Score DMFs – should correctly score DMF scenario 11 with context Booking",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Score DMFs – should correctly score DMF scenario 12 with context Court (Pennington)",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Score DMFs – should correctly score DMF scenario 12 with context Court (Minnehaha)",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Score DMFs – should correctly score DMF scenario 12 with context Booking",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Score DMFs – should correctly score DMF scenario 13 with context Court (Pennington)",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Score DMFs – should correctly score DMF scenario 13 with context Court (Minnehaha)",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Score DMFs – should correctly score DMF scenario 13 with context Booking",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Score DMFs – should correctly score DMF scenario 14 with context Court (Pennington)",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Score DMFs – should correctly score DMF scenario 14 with context Court (Minnehaha)",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Score DMFs – should correctly score DMF scenario 14 with context Booking",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Score DMFs – should correctly score DMF scenario 15 with context Court (Pennington)",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Score DMFs – should correctly score DMF scenario 15 with context Court (Minnehaha)",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Score DMFs – should correctly score DMF scenario 15 with context Booking",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Score DMFs – should correctly score DMF scenario 16 with context Court (Pennington)",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Score DMFs – should correctly score DMF scenario 16 with context Court (Minnehaha)",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Score DMFs – should correctly score DMF scenario 16 with context Booking",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Score DMFs – should correctly score DMF scenario 17 with context Court (Pennington)",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Score DMFs – should correctly score DMF scenario 17 with context Court (Minnehaha)",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Score DMFs – should correctly score DMF scenario 17 with context Booking",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Score DMFs – should correctly score DMF scenario 18 with context Court (Pennington)",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Score DMFs – should correctly score DMF scenario 18 with context Court (Minnehaha)",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Score DMFs – should correctly score DMF scenario 18 with context Booking",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Score DMFs – should correctly score DMF scenario 19 with context Court (Pennington)",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Score DMFs – should correctly score DMF scenario 19 with context Court (Minnehaha)",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Score DMFs – should correctly score DMF scenario 19 with context Booking",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Score DMFs – should correctly score DMF scenario 20 with context Court (Pennington)",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Score DMFs – should correctly score DMF scenario 20 with context Court (Minnehaha)",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Score DMFs – should correctly score DMF scenario 20 with context Booking",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 5",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 21",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 35",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 45",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 56",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 66",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 82",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 89",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 108",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 117",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 127",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 140",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 162",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 197",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 216",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 217",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 231",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 250",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 259",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 274",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 285",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 297",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 310",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 324",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 337",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 352",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 374",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 388",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 408",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 409",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 410",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 411",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 421",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 439",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 451",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 465",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 478",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 490",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 503",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 514",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 527",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 576",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 577",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 593",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 611",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 623",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 632",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 647",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 658",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 666",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 683",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 689",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 705",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 715",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 776",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 787",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 802",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 816",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 824",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 830",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 840",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 849",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 856",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 867",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 881",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 904",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 930",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 938",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 958",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 965",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 983",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 993",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1008",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1017",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1027",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1039",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1041",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1043",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1054",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1064",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1076",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1082",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1096",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1152",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1153",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1159",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1179",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1196",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1214",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1221",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1236",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1237",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1249",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1250",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1251",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1252",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1253",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1254",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1255",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1256",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1257",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1258",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1259",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1260",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1267",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1283",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1291",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1315",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1340",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1352",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1360",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1371",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1385",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1401",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1411",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1420",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1436",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1442",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1463",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1474",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1484",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1503",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1510",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1537",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1546",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1558",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1566",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1576",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1583",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1589",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1599",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1615",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1624",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1634",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1639",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1646",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1659",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1678",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1681",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1726",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1737",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1744",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1764",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1765",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1777",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1778",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1779",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1780",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1781",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1782",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1783",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1784",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1785",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1786",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1787",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1788",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1796",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1809",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1823",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1834",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1864",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1895",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1928",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1940",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1954",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1961",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1969",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1989",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1991",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 1995",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 2011",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 2028",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 2038",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 2051",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 2063",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 2078",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 2112",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 2113",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 2122",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 2133",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 2142",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 2157",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 2172",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 2173",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 2192",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 2203",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 2220",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 2221",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 2235",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 3270",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 3626",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 3806",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 4190",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 4390",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 4391",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 4498",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 4573",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 4574",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 4575",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 4578",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 4579",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 4582",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 4583",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ScoringUtils – Score values – Provided PSA scenarios – should correctly score Scenario 4584",
+      "fullTitle": "ScoringUtils",
+      "duration": 1821,
+      "errorCount": 0
+    },
+    {
+      "title": "ArrestChargeUtils – Violent charge functions – getAllViolentChargeLabels – should return list of violent charge labels",
+      "fullTitle": "ArrestChargeUtils",
+      "duration": 5358,
+      "errorCount": 0
+    },
+    {
+      "title": "ArrestChargeUtils – Violent charge functions – getAllViolentCharges – should return list of violent charge details",
+      "fullTitle": "ArrestChargeUtils",
+      "duration": 5358,
+      "errorCount": 0
+    },
+    {
+      "title": "ArrestChargeUtils – Step two charge utils – getAllStepTwoChargeLabels – should return list of step two charge labels",
+      "fullTitle": "ArrestChargeUtils",
+      "duration": 5358,
+      "errorCount": 0
+    },
+    {
+      "title": "ArrestChargeUtils – Step two charge utils – getAllStepTwoCharges – should return list of step two charge details",
+      "fullTitle": "ArrestChargeUtils",
+      "duration": 5358,
+      "errorCount": 0
+    },
+    {
+      "title": "ArrestChargeUtils – Step four charge utils – getAllStepFourChargeLabels – should return list of step four charge labels",
+      "fullTitle": "ArrestChargeUtils",
+      "duration": 5358,
+      "errorCount": 0
+    },
+    {
+      "title": "ArrestChargeUtils – Step four charge utils – getAllStepFourCharges – should return list of step four charge details",
+      "fullTitle": "ArrestChargeUtils",
+      "duration": 5358,
+      "errorCount": 0
+    },
+    {
+      "title": "ArrestChargeUtils – Step four charge utils – BHE/Secondary release charge utils – getAllSecondaryReleaseChargeLabels – should return list of BHE charge labels",
+      "fullTitle": "ArrestChargeUtils",
+      "duration": 5358,
+      "errorCount": 0
+    },
+    {
+      "title": "ArrestChargeUtils – Step four charge utils – BHE/Secondary release charge utils – getAllSecondaryReleaseCharges – should return list of BHE charge details",
+      "fullTitle": "ArrestChargeUtils",
+      "duration": 5358,
+      "errorCount": 0
+    },
+    {
+      "title": "ArrestChargeUtils – Step four charge utils – BHE/Secondary release charge utils – getAllSecondaryReleaseCharges – should return appropriate BHE or non-BHE charges for justification",
+      "fullTitle": "ArrestChargeUtils",
+      "duration": 5358,
+      "errorCount": 0
+    },
+    {
+      "title": "AutofillUtils – Q1 Age logic – tryAutofillAge – should output 0, 1, or 2 depending on person's age",
+      "fullTitle": "AutofillUtils",
+      "duration": 5560,
+      "errorCount": 0
+    },
+    {
+      "title": "AutofillUtils – Q2 Current violent charge logic – tryAutofillCurrentViolentCharge – should output true or false depending whether there is a current violent charge",
+      "fullTitle": "AutofillUtils",
+      "duration": 5560,
+      "errorCount": 0
+    },
+    {
+      "title": "AutofillUtils – Q3 Pending charge at time of arrest – getPendingChargeLabels – should return labels for all pending charges",
+      "fullTitle": "AutofillUtils",
+      "duration": 5560,
+      "errorCount": 0
+    },
+    {
+      "title": "AutofillUtils – Q3 Pending charge at time of arrest – getPendingChargeLabels – should ignore non-applicable pending charge labels",
+      "fullTitle": "AutofillUtils",
+      "duration": 5560,
+      "errorCount": 0
+    },
+    {
+      "title": "AutofillUtils – Q3 Pending charge at time of arrest – getPendingCharges – should return details for all pending charges",
+      "fullTitle": "AutofillUtils",
+      "duration": 5560,
+      "errorCount": 0
+    },
+    {
+      "title": "AutofillUtils – Q3 Pending charge at time of arrest – getPendingCharges – should ignore non-applicable pending charges",
+      "fullTitle": "AutofillUtils",
+      "duration": 5560,
+      "errorCount": 0
+    },
+    {
+      "title": "AutofillUtils – Q3 Pending charge at time of arrest – tryAutofillPendingCharge – should return true or false depending whether there is a pending chage",
+      "fullTitle": "AutofillUtils",
+      "duration": 5560,
+      "errorCount": 0
+    },
+    {
+      "title": "AutofillUtils – Q3 Pending charge at time of arrest – tryAutofillPendingCharge – should ignore non-applicable pending charges from autofill",
+      "fullTitle": "AutofillUtils",
+      "duration": 5560,
+      "errorCount": 0
+    },
+    {
+      "title": "AutofillUtils – Q4 Prior misdemeanor logic – getPreviousMisdemeanorLabels – should return labels from all prior misdemeanors",
+      "fullTitle": "AutofillUtils",
+      "duration": 5560,
+      "errorCount": 0
+    },
+    {
+      "title": "AutofillUtils – Q4 Prior misdemeanor logic – getPreviousMisdemeanorLabels – should ignore non-applicable misdemeanor labels",
+      "fullTitle": "AutofillUtils",
+      "duration": 5560,
+      "errorCount": 0
+    },
+    {
+      "title": "AutofillUtils – Q4 Prior misdemeanor logic – getPreviousMisdemeanors – should return details from all prior misdemeanors",
+      "fullTitle": "AutofillUtils",
+      "duration": 5560,
+      "errorCount": 0
+    },
+    {
+      "title": "AutofillUtils – Q4 Prior misdemeanor logic – getPreviousMisdemeanors – should ignore non-applicable misdemeanors",
+      "fullTitle": "AutofillUtils",
+      "duration": 5560,
+      "errorCount": 0
+    },
+    {
+      "title": "AutofillUtils – Q4 Prior misdemeanor logic – tryAutofillPreviousMisdemeanors – should return true or false depending whether there are prior misdemeanors",
+      "fullTitle": "AutofillUtils",
+      "duration": 5560,
+      "errorCount": 0
+    },
+    {
+      "title": "AutofillUtils – Q4 Prior misdemeanor logic – tryAutofillPreviousMisdemeanors – should ignore non-applicable misdemeanors from autofill",
+      "fullTitle": "AutofillUtils",
+      "duration": 5560,
+      "errorCount": 0
+    },
+    {
+      "title": "AutofillUtils – Q5 Prior felony logic – getPreviousFelonyLabels – should return labels from all prior felonies",
+      "fullTitle": "AutofillUtils",
+      "duration": 5560,
+      "errorCount": 0
+    },
+    {
+      "title": "AutofillUtils – Q5 Prior felony logic – getPreviousFelonyLabels – should ignore non-applicable felony labels",
+      "fullTitle": "AutofillUtils",
+      "duration": 5560,
+      "errorCount": 0
+    },
+    {
+      "title": "AutofillUtils – Q5 Prior felony logic – getPreviousFelonies – should return details from all prior felonies",
+      "fullTitle": "AutofillUtils",
+      "duration": 5560,
+      "errorCount": 0
+    },
+    {
+      "title": "AutofillUtils – Q5 Prior felony logic – getPreviousFelonies – should ignore non-applicable felonies",
+      "fullTitle": "AutofillUtils",
+      "duration": 5560,
+      "errorCount": 0
+    },
+    {
+      "title": "AutofillUtils – Q5 Prior felony logic – tryAutofillPreviousFelonies – should return true or false depending on whether there are prior felonies",
+      "fullTitle": "AutofillUtils",
+      "duration": 5560,
+      "errorCount": 0
+    },
+    {
+      "title": "AutofillUtils – Q5 Prior felony logic – tryAutofillPreviousFelonies – should ignore non-applicable felonies from autofill",
+      "fullTitle": "AutofillUtils",
+      "duration": 5560,
+      "errorCount": 0
+    },
+    {
+      "title": "AutofillUtils – Q6 Prior violent convictions logic – getPreviousViolentChargeLabels – should return labels from all prior violent convictions",
+      "fullTitle": "AutofillUtils",
+      "duration": 5560,
+      "errorCount": 0
+    },
+    {
+      "title": "AutofillUtils – Q6 Prior violent convictions logic – getPreviousViolentChargeLabels – should ignore non-applicable charges labels",
+      "fullTitle": "AutofillUtils",
+      "duration": 5560,
+      "errorCount": 0
+    },
+    {
+      "title": "AutofillUtils – Q6 Prior violent convictions logic – getPreviousViolentCharges – should return details from all prior violent convictions",
+      "fullTitle": "AutofillUtils",
+      "duration": 5560,
+      "errorCount": 0
+    },
+    {
+      "title": "AutofillUtils – Q6 Prior violent convictions logic – getPreviousViolentCharges – should ignore non-applicable charges details",
+      "fullTitle": "AutofillUtils",
+      "duration": 5560,
+      "errorCount": 0
+    },
+    {
+      "title": "AutofillUtils – Q6 Prior violent convictions logic – tryAutofillPreviousViolentCharge – should return 0, 1, 2, or 3, depending on number of violent convictions",
+      "fullTitle": "AutofillUtils",
+      "duration": 5560,
+      "errorCount": 0
+    },
+    {
+      "title": "AutofillUtils – Q7 FTAs within the past two years – tryAutofillRecentFTAs – should return 0, 1, or 2, depending on the number of FTAs within two years",
+      "fullTitle": "AutofillUtils",
+      "duration": 5560,
+      "errorCount": 0
+    },
+    {
+      "title": "AutofillUtils – Q7 FTAs within the past two years – tryAutofillRecentFTAs – should ignore recent FTAs associated with non-applicable charges",
+      "fullTitle": "AutofillUtils",
+      "duration": 5560,
+      "errorCount": 0
+    },
+    {
+      "title": "AutofillUtils – Q8 FTAs older than two years – tryAutofillOldFTAs – should return true or false depending whether there are any FTAs more than two years old",
+      "fullTitle": "AutofillUtils",
+      "duration": 5560,
+      "errorCount": 0
+    },
+    {
+      "title": "AutofillUtils – Q8 FTAs older than two years – tryAutofillOldFTAs – should ignore old FTAs associated with non-applicable charges",
+      "fullTitle": "AutofillUtils",
+      "duration": 5560,
+      "errorCount": 0
+    },
+    {
+      "title": "AutofillUtils – Q9 Prior sentence to incarceration – tryAutofillPriorSentenceToIncarceration – should return true or false depending whether there is a prior incarceration",
+      "fullTitle": "AutofillUtils",
+      "duration": 5560,
+      "errorCount": 0
+    },
+    {
+      "title": "AutofillUtils – Q11 DMF Step two charge logic – tryAutofillDMFStepTwo – should return true or false depending whether any charges match the step 2 list",
+      "fullTitle": "AutofillUtils",
+      "duration": 5560,
+      "errorCount": 0
+    },
+    {
+      "title": "AutofillUtils – Q12 DMF Step four charge logic – tryAutofillDMFStepFour – should return true or false depending whether any charges match the step 4 list",
+      "fullTitle": "AutofillUtils",
+      "duration": 5560,
+      "errorCount": 0
+    },
+    {
+      "title": "AutofillUtils – Q13 BHE secondary release charge logic – tryAutofillDMFSecondaryReleaseCharges – should return true or false depending whether any charges match the BHE list",
+      "fullTitle": "AutofillUtils",
+      "duration": 5560,
+      "errorCount": 0
+    }
+  ],
+  "skipped": []
+}

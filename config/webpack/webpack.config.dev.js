@@ -1,51 +1,42 @@
 /* eslint-disable import/no-extraneous-dependencies, import/extensions */
 
-import HtmlWebpackPlugin from 'html-webpack-plugin';
-import Webpack from 'webpack';
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const Webpack = require('webpack');
 
-import APP_CONFIG from '../app/app.config.js';
-import APP_PATHS from '../app/paths.config.js';
+const APP_PATHS = require('../app/paths.config.js');
+const baseWebpackConfig = require('./webpack.config.base.js');
 
-import baseWebpackConfig from './webpack.config.base.js';
-
-export default function devWebpackConfig(env) {
-
-  const baseConfig = baseWebpackConfig(env);
+module.exports = (env) => {
 
   const DEV_SERVER_PORT = 9000;
-
-  const entry = [
-    APP_PATHS.ABS.APP_ENTRY
-  ];
+  const baseConfig = baseWebpackConfig(env);
 
   const output = Object.assign({}, baseConfig.output, {
-    filename: `${APP_PATHS.REL.STATIC_JS}/${APP_CONFIG.APP_JS}`
+    filename: `${APP_PATHS.REL.STATIC_JS}/index.js`,
   });
 
   const plugins = [
-    new Webpack.HotModuleReplacementPlugin(),
-    new Webpack.NamedModulesPlugin(),
     new HtmlWebpackPlugin({
-      favicon: `${APP_PATHS.ABS.SOURCE_ASSETS_IMAGES}/ol_favicon.png`,
+      favicon: `${APP_PATHS.ABS.SOURCE_ASSETS_IMAGES}/favicon.png`,
       inject: true,
-      template: `${APP_PATHS.ABS.SOURCE}/${APP_CONFIG.APP_INDEX_HTML}`
+      template: `${APP_PATHS.ABS.SOURCE}/index.html`,
     }),
+    new Webpack.HotModuleReplacementPlugin(),
     ...baseConfig.plugins
   ];
 
   return Object.assign({}, baseConfig, {
-    entry,
     output,
     plugins,
     devServer: {
-      hot: true,
-      historyApiFallback: {
-        index: baseConfig.output.publicPath
-      },
-      port: DEV_SERVER_PORT,
       contentBase: APP_PATHS.ABS.BUILD,
-      publicPath: baseConfig.output.publicPath
+      historyApiFallback: {
+        index: baseConfig.output.publicPath,
+      },
+      hot: true,
+      port: DEV_SERVER_PORT,
+      publicPath: baseConfig.output.publicPath,
     },
-    devtool: false
+    devtool: false,
   });
-}
+};

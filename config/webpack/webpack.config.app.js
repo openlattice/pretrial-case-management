@@ -1,19 +1,17 @@
-/* eslint-disable import/extensions */
+/* eslint-disable const/extensions */
 
-import devWebpackConfig from './webpack.config.dev.js';
-import prodWebpackConfig from './webpack.config.prod.js';
-
-import { isDev, isProd } from '../app/env.config.js';
+const devWebpackConfig = require('./webpack.config.dev.js');
+const prodWebpackConfig = require('./webpack.config.prod.js');
 
 module.exports = (env) => {
 
   const appWebpackConfig = {};
   const webpackEnvironment = env || {};
 
-  if (isProd) {
+  if (webpackEnvironment.production) {
     Object.assign(appWebpackConfig, prodWebpackConfig(webpackEnvironment));
   }
-  else if (isDev) {
+  else {
     Object.assign(appWebpackConfig, devWebpackConfig(webpackEnvironment));
   }
 

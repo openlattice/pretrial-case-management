@@ -4,8 +4,9 @@
 
 import React from 'react';
 
-import FontAwesome from 'react-fontawesome';
 import styled from 'styled-components';
+import { faCheck, faPencil } from '@fortawesome/pro-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 import { isNonEmptyString } from '../../utils/LangUtils';
 
@@ -357,14 +358,14 @@ export default class InlineEditableControl extends React.Component<Props, State>
     if (!this.props.viewOnly && this.state.editable) {
       return (
         <SaveIcon className="icon" onClick={this.toggleEditable}>
-          <FontAwesome name="check" />
+          <FontAwesomeIcon icon={faCheck} />
         </SaveIcon>
       );
     }
 
     return (
       <EditIcon className="icon" onClick={this.toggleEditable}>
-        <FontAwesome name="pencil" />
+        <FontAwesomeIcon icon={faPencil} />
       </EditIcon>
     );
   }
