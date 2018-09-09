@@ -243,7 +243,9 @@ const renderDMFDetails = ({ neighbors, scores } :Props) => {
     return (
       <ScoreContent>
         <DMFIncreaseText>Step two increase</DMFIncreaseText>
-        <DMFCell dmf={dmf} selected large />
+        <DMFCell dmf={dmfDecision} selected />
+        <img src={rightArrow} alt="" />
+        <DMFCell dmf={getDMFDecision(6, 6, context)} selected />
       </ScoreContent>
     );
   }
@@ -281,8 +283,6 @@ const renderDMFDetails = ({ neighbors, scores } :Props) => {
 const PSASummary = (props :Props) => {
   const { scores } = props;
   const { chargeHistory } = props;
-  console.log(props.neighbors.toJS());
-
 
   return (
     <SummaryWrapper>
