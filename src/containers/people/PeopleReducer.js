@@ -76,8 +76,9 @@ export default function peopleReducer(state = INITIAL_STATE, action) {
               neighborsByEntitySet.get(entitySetName, Immutable.List()).push(neighborObj)
             );
           });
+
           const uniqNeighborsByEntitySet = neighborsByEntitySet.set(ENTITY_SETS.PRETRIAL_CASES,
-            neighborsByEntitySet.get(ENTITY_SETS.PRETRIAL_CASES)
+            neighborsByEntitySet.get(ENTITY_SETS.PRETRIAL_CASES, Immutable.List())
               .filter((neighbor) => {
                 const caseNum = neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.CASE_ID, 0]);
                 if (!caseNums.has(caseNum)) {
@@ -85,7 +86,7 @@ export default function peopleReducer(state = INITIAL_STATE, action) {
                   return true;
                 }
                 return false;
-              }));
+              }), neighborsByEntitySet);
           return state.setIn([PEOPLE.NEIGHBORS, personId], uniqNeighborsByEntitySet);
         }
       });
