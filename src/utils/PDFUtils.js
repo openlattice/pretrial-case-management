@@ -516,11 +516,19 @@ const charges = (
     if (y > MAX_Y) {
       [y, page] = newPage(doc, page, name);
     }
+
+    const qualifierText = formatValue(charge.get(QUALIFIER, ''));
     const CHARGE_OFFSET = 20;
     y = chargeTags(doc, y, charge, casesByCaseNum);
 
     doc.text(xIndent, y, formatValue(charge.get(CHARGE_STATUTE, Immutable.List())));
-    const chargeLines = doc.splitTextToSize(getChargeText(charge), xWidth);
+    let chargeLines = '';
+    if (qualifierText) {
+      chargeLines = doc.splitTextToSize(` ${qualifierText} -${getChargeText(charge)}`, xWidth);
+    }
+    else {
+      chargeLines = doc.splitTextToSize(getChargeText(charge), xWidth);
+    }
     doc.text(xIndent + CHARGE_OFFSET, y, chargeLines);
     y += chargeLines.length * Y_INC;
     if (showDetails) {
