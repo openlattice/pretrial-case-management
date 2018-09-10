@@ -28,7 +28,7 @@ const StyledUndecoratedLink = styled(UndecoratedLink)`
 
 const StyledPersonCard = styled(StyledCard)`
   width: 100%;
-`
+`;
 
 const PersonInfoSection = styled.div`
   margin-left: 20px;

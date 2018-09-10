@@ -564,6 +564,7 @@ class Form extends React.Component<Props, State> {
   }
 
   handlePageChange = (path :string) => {
+    this.props.actions.clearSubmit();
     this.props.history.push(path);
   };
 
@@ -699,6 +700,7 @@ class Form extends React.Component<Props, State> {
       ? null : this.getPendingPSAs();
     return pendingPSAs || (
       <SelectArrestContainer
+          clearSubmit={this.props.actions.clearSubmit}
           caseOptions={arrestOptions}
           nextPage={this.nextPage}
           prevPage={this.prevPage}
@@ -859,6 +861,7 @@ class Form extends React.Component<Props, State> {
     return (
       <ConfirmationModal
           submissionStatus={isSubmitting || isSubmitted}
+          open={isSubmitted}
           pageContent={this.getPsaResults}
           handleModalButtonClick={this.props.actions.hardRestart} />
     );
