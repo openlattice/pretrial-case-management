@@ -87,7 +87,34 @@ export const increaseDMFSeverity = (dmfResult, context) => {
     increasedValues[RESULT_CATEGORIES.RELEASE_TYPE] = releaseType;
   }
 
-  if (context === CONTEXT.COURT_MINN || context === CONTEXT.COURT_PENN) {
+  if (context === CONTEXT.COURT_PENN) {
+
+    switch (newColor) {
+      case COLORS.LIGHT_GREEN:
+        increasedValues[RESULT_CATEGORIES.CONDITION_1] = CONDITION_TYPES.PR;
+        increasedValues[RESULT_CATEGORIES.CONDITION_2] = CONDITION_TYPES.CHECKIN_MONTHLY;
+        break;
+      case COLORS.YELLOW:
+        increasedValues[RESULT_CATEGORIES.CONDITION_1] = CONDITION_TYPES.PR;
+        increasedValues[RESULT_CATEGORIES.CONDITION_2] = CONDITION_TYPES.CHECKIN_TWICE_MONTHLY;
+        increasedValues[RESULT_CATEGORIES.CONDITION_3] = CONDITION_TYPES.IF_APPLICABLE_247;
+        break;
+      case COLORS.ORANGE:
+        increasedValues[RESULT_CATEGORIES.CONDITION_1] = CONDITION_TYPES.EM_OR_BOND;
+        increasedValues[RESULT_CATEGORIES.CONDITION_2] = CONDITION_TYPES.CHECKIN_WEEKLY;
+        increasedValues[RESULT_CATEGORIES.CONDITION_3] = CONDITION_TYPES.IF_APPLICABLE_247;
+        break;
+      case COLORS.RED:
+        increasedValues[RESULT_CATEGORIES.CONDITION_1] = CONDITION_TYPES.EM_AND_BOND;
+        increasedValues[RESULT_CATEGORIES.CONDITION_2] = CONDITION_TYPES.CHECKIN_WEEKLY_AT_LEAST;
+        increasedValues[RESULT_CATEGORIES.CONDITION_3] = CONDITION_TYPES.IF_APPLICABLE_247;
+        break;
+      default:
+        break;
+    }
+  }
+
+  if (context === CONTEXT.COURT_MINN) {
 
     switch (newColor) {
       case COLORS.LIGHT_GREEN:
