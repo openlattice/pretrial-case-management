@@ -564,7 +564,6 @@ class Form extends React.Component<Props, State> {
   }
 
   handlePageChange = (path :string) => {
-    console.log(this.props.actions.clearSubmit);
     this.props.actions.clearSubmit();
     this.props.history.push(path);
   };
@@ -869,7 +868,6 @@ class Form extends React.Component<Props, State> {
   }
 
   render() {
-    console.log(this.props);
     return (
       <div>
         <Switch>
