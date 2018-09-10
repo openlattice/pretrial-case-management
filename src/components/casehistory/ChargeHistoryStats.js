@@ -51,7 +51,7 @@ const StatLabel = styled.span`
 `;
 
 const StatValue = styled.span`
-  font-family: Open Sans;
+  font-family: 'Open Sans', sans-serif;
   font-size: 16px;
   font-weight: 600;
   text-align: right;
