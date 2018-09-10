@@ -80,12 +80,15 @@ const PersonRow = ({ person, handleSelect, gray } :Props) => {
   const entityKeyId :string = person.getIn([OPENLATTICE_ID_FQN, 0], '');
 
   return (
-    <Row gray={gray} onClick={() => {
-      if (handleSelect) {
-        handleSelect(person, entityKeyId, id);
-      }
-    }}>
-      <Cell><img src={pictureImgSrc} role="presentation" /></Cell>
+    <Row
+        gray={gray}
+        onClick={() => {
+          if (handleSelect) {
+            handleSelect(person, entityKeyId, id);
+          }
+        }
+        }>
+      <Cell><img src={pictureImgSrc} alt="" /></Cell>
       <Cell>{ lastName }</Cell>
       <Cell>{ firstName }</Cell>
       <Cell>{ middleName }</Cell>

@@ -16,6 +16,12 @@ const StyledContentBlockWrapper = styled.div`
   display: grid;
   ${(props) => {
     switch (props.component) {
+      case CONTENT_CONSTS.SUMMARY:
+        return (
+          `grid-template-columns: 25% 25% 25% 25%;
+           grid-auto-rows: min-content;
+          `
+        );
       case CONTENT_CONSTS.DMF:
         return (
           `grid-template-columns: 20% 20% 20% 20% 20%;
@@ -59,6 +65,13 @@ const StyledSectionHeader = styled.div`
   ${(props) => {
     switch (props.component) {
       case CONTENT_CONSTS.SUMMARY:
+        return (
+          `padding: 0 30px 0 30px;
+           margin-bottom: -10px;
+           font-size: 16px;
+          `
+        );
+      case CONTENT_CONSTS.ARREST:
         return (
           `padding: 0 30px 0 30px;
            margin-bottom: -10px;
