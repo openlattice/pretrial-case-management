@@ -587,6 +587,7 @@ function* updateScoresAndRiskFactorsWorker(action :SequenceAction) :Generator<*,
       notesId,
       notesEntity
     } = action.value;
+
     const updates = [
       call(DataApi.replaceEntityInEntitySetUsingFqns,
         riskFactorsEntitySetId,
@@ -605,21 +606,34 @@ function* updateScoresAndRiskFactorsWorker(action :SequenceAction) :Generator<*,
         dmfRiskFactorsId,
         stripIdField(dmfRiskFactorsEntity))
     ];
-    if (notesEntity && notesId && notesEntitySetId) {
-      updates.push(call(DataApi.replaceEntityInEntitySetUsingFqns,
-        notesEntitySetId,
-        notesId,
-        stripIdField(notesEntity)));
-    }
-    yield all(updates);
 
-    const [newScoreEntity, newRiskFactorsEntity, newDMFEntity, newDMFRiskFactorsEntity, newNotesEntity] = yield all([
+    const reloads = [
       call(DataApi.getEntity, scoresEntitySetId, scoresId),
       call(DataApi.getEntity, riskFactorsEntitySetId, riskFactorsId),
       call(DataApi.getEntity, dmfEntitySetId, dmfId),
-      call(DataApi.getEntity, dmfRiskFactorsEntitySetId, dmfRiskFactorsId),
-      call(DataApi.getEntity, notesEntitySetId, notesId)
-    ]);
+      call(DataApi.getEntity, dmfRiskFactorsEntitySetId, dmfRiskFactorsId)
+    ];
+
+    if (notesEntity && notesId && notesEntitySetId) {
+      updates.push(
+        call(DataApi.replaceEntityInEntitySetUsingFqns,
+          notesEntitySetId,
+          notesId,
+          stripIdField(notesEntity))
+      );
+
+      reloads.push(call(DataApi.getEntity, notesEntitySetId, notesId));
+    }
+
+    yield all(updates);
+
+    const [
+      newScoreEntity,
+      newRiskFactorsEntity,
+      newDMFEntity,
+      newDMFRiskFactorsEntity,
+      newNotesEntity
+    ] = yield all(reloads);
 
     yield put(updateScoresAndRiskFactors.success(action.id, {
       scoresId,
@@ -631,6 +645,7 @@ function* updateScoresAndRiskFactorsWorker(action :SequenceAction) :Generator<*,
       newDMFRiskFactorsEntity,
       newNotesEntity
     }));
+
   }
   catch (error) {
     console.error(error);
