@@ -16,7 +16,7 @@ import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts'
 import { SORT_TYPES } from '../../utils/consts/Consts';
 import { sortByDate, sortByName } from '../../utils/PSAUtils';
 import { getEntityKeyId, getIdValue } from '../../utils/DataUtils';
-import { STATE, REVIEW, SUBMIT } from '../../utils/consts/FrontEndStateConsts';
+import { STATE, REVIEW, SUBMIT, PEOPLE } from '../../utils/consts/FrontEndStateConsts';
 
 import * as FormActionFactory from '../psa/FormActionFactory';
 import * as ReviewActionFactory from './ReviewActionFactory';
@@ -327,11 +327,12 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
 }
 
 function mapStateToProps(state) {
+  const people = state.get(STATE.PEOPLE);
   const review = state.get(STATE.REVIEW);
   const submit = state.get(STATE.SUBMIT);
   // TODO: Address prop names so that consts can be used as keys
   return {
-    [REVIEW.ENTITY_SET_ID]: review.get(REVIEW.ENTITY_SET_ID),
+    [REVIEW.ENTITY_SET_ID]: review.get(REVIEW.ENTITY_SET_ID) || people.get(PEOPLE.SCORES_ENTITY_SET_ID),
     [REVIEW.NEIGHBORS_BY_ID]: review.get(REVIEW.NEIGHBORS_BY_ID),
     [REVIEW.CASE_HISTORY]: review.get(REVIEW.CASE_HISTORY),
     [REVIEW.MANUAL_CASE_HISTORY]: review.get(REVIEW.MANUAL_CASE_HISTORY),
