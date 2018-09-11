@@ -175,7 +175,7 @@ const getChargeText = (charge :Immutable.Map<*, *>) :string => {
 
   let text = '';
   if (chargeDescList.length) {
-    text = text.concat(` ${chargeDescList}`);
+    text = text.concat(`${chargeDescList}`);
   }
   if (chargeDegList.length) {
     text = text.concat(` (${chargeDegList})`);
@@ -524,7 +524,7 @@ const charges = (
     doc.text(xIndent, y, formatValue(charge.get(CHARGE_STATUTE, Immutable.List())));
     let chargeLines = '';
     if (qualifierText) {
-      chargeLines = doc.splitTextToSize(` ${qualifierText} -${getChargeText(charge)}`, xWidth);
+      chargeLines = doc.splitTextToSize(`${qualifierText} - ${getChargeText(charge)}`, xWidth);
     }
     else {
       chargeLines = doc.splitTextToSize(getChargeText(charge), xWidth);
