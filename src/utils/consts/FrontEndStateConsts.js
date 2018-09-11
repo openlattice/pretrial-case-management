@@ -87,6 +87,7 @@ export const PSA_FORM = {
 // People
 
 export const PEOPLE = {
+  SCORES_ENTITY_SET_ID: 'scoresEntitySetId',
   RESULTS: 'peopleResults',
   PERSON_DATA: 'selectedPersonData',
   PERSON_ENTITY_KEY_ID: 'selectedPersonEntityKeyId',
