@@ -189,6 +189,7 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
       <PSAReviewReportsRow
           neighbors={neighbors}
           scores={scores}
+          scoresEntitySetId={this.props[REVIEW.ENTITY_SET_ID]}
           personId={personIdValue}
           entityKeyId={scoreId}
           downloadFn={this.props.actions.downloadPSAReviewPDF}
@@ -330,6 +331,7 @@ function mapStateToProps(state) {
   const submit = state.get(STATE.SUBMIT);
   // TODO: Address prop names so that consts can be used as keys
   return {
+    [REVIEW.ENTITY_SET_ID]: review.get(REVIEW.ENTITY_SET_ID),
     [REVIEW.NEIGHBORS_BY_ID]: review.get(REVIEW.NEIGHBORS_BY_ID),
     [REVIEW.CASE_HISTORY]: review.get(REVIEW.CASE_HISTORY),
     [REVIEW.MANUAL_CASE_HISTORY]: review.get(REVIEW.MANUAL_CASE_HISTORY),
