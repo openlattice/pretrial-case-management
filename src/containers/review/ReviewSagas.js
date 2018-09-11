@@ -606,6 +606,7 @@ function* updateScoresAndRiskFactorsWorker(action :SequenceAction) :Generator<*,
         dmfRiskFactorsId,
         stripIdField(dmfRiskFactorsEntity))
     ];
+    let newNotesEntity;
     if (notesEntity && notesId && notesEntitySetId) {
       updates.push(
         call(DataApi.replaceEntityInEntitySetUsingFqns,
@@ -614,47 +615,29 @@ function* updateScoresAndRiskFactorsWorker(action :SequenceAction) :Generator<*,
           stripIdField(notesEntity))
       );
 
-      yield all(updates);
-
-      const [newScoreEntity, newRiskFactorsEntity, newDMFEntity, newDMFRiskFactorsEntity, newNotesEntity] = yield all([
-        call(DataApi.getEntity, scoresEntitySetId, scoresId),
-        call(DataApi.getEntity, riskFactorsEntitySetId, riskFactorsId),
-        call(DataApi.getEntity, dmfEntitySetId, dmfId),
-        call(DataApi.getEntity, dmfRiskFactorsEntitySetId, dmfRiskFactorsId),
-        call(DataApi.getEntity, notesEntitySetId, notesId)
-      ]);
-
-      yield put(updateScoresAndRiskFactors.success(action.id, {
-        scoresId,
-        newScoreEntity,
-        riskFactorsId,
-        newRiskFactorsEntity,
-        dmfId,
-        newDMFEntity,
-        newDMFRiskFactorsEntity,
-        newNotesEntity
-      }));
+      newNotesEntity = yield call(DataApi.getEntity, notesEntitySetId, notesId);
     }
-    else {
-      yield all(updates);
 
-      const [newScoreEntity, newRiskFactorsEntity, newDMFEntity, newDMFRiskFactorsEntity] = yield all([
-        call(DataApi.getEntity, scoresEntitySetId, scoresId),
-        call(DataApi.getEntity, riskFactorsEntitySetId, riskFactorsId),
-        call(DataApi.getEntity, dmfEntitySetId, dmfId),
-        call(DataApi.getEntity, dmfRiskFactorsEntitySetId, dmfRiskFactorsId)
-      ]);
+    yield all(updates);
 
-      yield put(updateScoresAndRiskFactors.success(action.id, {
-        scoresId,
-        newScoreEntity,
-        riskFactorsId,
-        newRiskFactorsEntity,
-        dmfId,
-        newDMFEntity,
-        newDMFRiskFactorsEntity
-      }));
-    }
+    const [newScoreEntity, newRiskFactorsEntity, newDMFEntity, newDMFRiskFactorsEntity] = yield all([
+      call(DataApi.getEntity, scoresEntitySetId, scoresId),
+      call(DataApi.getEntity, riskFactorsEntitySetId, riskFactorsId),
+      call(DataApi.getEntity, dmfEntitySetId, dmfId),
+      call(DataApi.getEntity, dmfRiskFactorsEntitySetId, dmfRiskFactorsId)
+    ]);
+
+    yield put(updateScoresAndRiskFactors.success(action.id, {
+      scoresId,
+      newScoreEntity,
+      riskFactorsId,
+      newRiskFactorsEntity,
+      dmfId,
+      newDMFEntity,
+      newDMFRiskFactorsEntity,
+      newNotesEntity
+    }));
+
   }
   catch (error) {
     console.error(error);
