@@ -180,7 +180,7 @@ const getChargeText = (charge :Immutable.Map<*, *>) :string => {
   if (chargeDegList.length) {
     text = text.concat(` (${chargeDegList})`);
   }
-  return text;
+  return text.trim();
 };
 
 const getPleaText = (charge :Immutable.Map<*, *>) :string => {
