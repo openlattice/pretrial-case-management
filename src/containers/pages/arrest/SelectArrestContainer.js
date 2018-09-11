@@ -81,34 +81,39 @@ type Props = {
   caseOptions :Immutable.List<Map<*, *>>,
   onSelectCase :Function,
   nextPage :Function,
-  prevPage :Function
+  prevPage :Function,
+  clearSubmit :Function
 }
 
-const SelectArrestContainer = ({
-  caseOptions,
-  onSelectCase,
-  nextPage,
-  prevPage
-}) :Props => {
+class SelectArrestContainer extends React.Component<Props, State> {
 
-  const handleOnSelectCase = (selectedCase :Immutable.Map<*, *>, entityKeyId :string) => {
-    onSelectCase(selectedCase, entityKeyId);
+  componentDidMount() {
+    this.props.clearSubmit();
+  }
+
+  componentWillUnmount() {
+    this.props.clearSubmit();
+  }
+
+  handleOnSelectCase = (selectedCase :Immutable.Map<*, *>, entityKeyId :string) => {
+    this.props.onSelectCase(selectedCase, entityKeyId);
   };
 
-  const renderSearchResults = () => {
-
+  renderSearchResults = () => {
+    const { caseOptions } = this.props
     if (caseOptions.isEmpty()) {
       return <NoResultsText>No arrests found.</NoResultsText>;
     }
 
     return (
       <ResultsWrapper>
-        <ArrestTable arrests={caseOptions} handleSelect={handleOnSelectCase} />
+        <ArrestTable arrests={caseOptions} handleSelect={this.handleOnSelectCase} />
       </ResultsWrapper>
     );
   };
 
-  const renderHeader = () => {
+  renderHeader = () => {
+    const { prevPage, nextPage } = this.props;
     return (
       <HeaderWrapper>
         <Header>Select an arrest</Header>
@@ -120,20 +125,18 @@ const SelectArrestContainer = ({
         </div>
       </HeaderWrapper>
     );
+  };
+
+  render() {
+    return (
+      <StyledFormWrapper>
+        <SearchResultsList>
+          { this.renderHeader() }
+          { this.renderSearchResults() }
+        </SearchResultsList>
+      </StyledFormWrapper>
+    );
   }
-
-  return (
-    <StyledFormWrapper>
-      <SearchResultsList>
-        { renderHeader() }
-        { renderSearchResults() }
-      </SearchResultsList>
-    </StyledFormWrapper>
-  );
-};
-
-SelectArrestContainer.defaultProps = {
-  onSelectCase: () => {}
 };
 
 export default SelectArrestContainer;

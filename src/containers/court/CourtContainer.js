@@ -28,6 +28,7 @@ import { StyledSectionWrapper } from '../../utils/Layout';
 import { TIME_FORMAT, formatDate } from '../../utils/FormattingUtils';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { DOMAIN } from '../../utils/consts/ReportDownloadTypes';
+import { STATE, COURT } from '../../utils/consts/FrontEndStateConsts';
 import { sortPeopleByName } from '../../utils/PSAUtils';
 
 const { OPENLATTICE_ID_FQN } = Constants;
@@ -172,6 +173,7 @@ class CourtContainer extends React.Component<Props, State> {
     const personObj = {
       identification: person.getIn([PROPERTY_TYPES.PERSON_ID, 0]),
       firstName: person.getIn([PROPERTY_TYPES.FIRST_NAME, 0]),
+      middleName: person.getIn([PROPERTY_TYPES.MIDDLE_NAME, 0]),
       lastName: person.getIn([PROPERTY_TYPES.LAST_NAME, 0]),
       dob: formattedDOB,
       photo: person.getIn([PROPERTY_TYPES.PICTURE, 0])
@@ -368,16 +370,16 @@ class CourtContainer extends React.Component<Props, State> {
 }
 
 function mapStateToProps(state) {
-  const court = state.get('court');
+  const court = state.get(STATE.COURT);
   return {
-    hearingsToday: court.get('hearingsToday'),
-    hearingsByTime: court.get('hearingsByTime'),
-    hearingNeighborsById: court.get('hearingNeighborsById'),
-    isLoadingHearings: court.get('isLoadingHearings'),
-    loadingError: court.get('loadingError'),
-    county: court.get('county'),
-    courtroom: court.get('courtroom'),
-    peopleWithOpenPsas: court.get('peopleWithOpenPsas')
+    [COURT.HEARINGS_TODAY]: court.get(COURT.HEARINGS_TODAY),
+    [COURT.HEARINGS_BY_TIME]: court.get(COURT.HEARINGS_BY_TIME),
+    [COURT.HEARINGS_NEIGHBORS_BY_ID]: court.get(COURT.HEARINGS_NEIGHBORS_BY_ID),
+    [COURT.PEOPLE_WITH_OPEN_PSAS]: court.get(COURT.PEOPLE_WITH_OPEN_PSAS),
+    [COURT.LOADING_HEARINGS]: court.get(COURT.LOADING_HEARINGS),
+    [COURT.LOADING_ERROR]: court.get(COURT.LOADING_ERROR),
+    [COURT.COUNTY]: court.get(COURT.COUNTY),
+    [COURT.COURTROOM]: court.get(COURT.COURTROOM)
   };
 }
 

@@ -28,7 +28,7 @@ const StyledUndecoratedLink = styled(UndecoratedLink)`
 
 const StyledPersonCard = styled(StyledCard)`
   width: 100%;
-`
+`;
 
 const PersonInfoSection = styled.div`
   margin-left: 20px;
@@ -86,13 +86,16 @@ const TagPlaceholder = styled.span`
 const PersonCard = ({ person, hasOpenPSA } :Props) => {
   const {
     firstName,
+    middleName,
     lastName,
     dob,
     photo,
     identification
   } = person;
 
-  const name = `${lastName}, ${firstName}`;
+  const midName = middleName ? ` ${middleName}` : '';
+
+  const name = `${lastName}, ${firstName}${midName}`;
 
   return (
     <StyledUndecoratedLink to={`${Routes.PERSON_DETAILS_ROOT}/${identification}`}>

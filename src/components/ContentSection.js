@@ -5,12 +5,9 @@ import React from 'react';
 import styled from 'styled-components';
 
 import CONTENT_CONSTS from '../utils/consts/ContentConsts';
-import { StyledContentItalic } from '../utils/Layout';
+import { StyledContentItalic, FullWidthContainer } from '../utils/Layout';
 
-const StyledSection = styled.div`
-  display: flex;
-  width: 100%;
-  flex-direction: row;
+const StyledSection = styled(FullWidthContainer)`
   flex-wrap: wrap;
 `;
 
@@ -19,6 +16,12 @@ const StyledContentBlockWrapper = styled.div`
   display: grid;
   ${(props) => {
     switch (props.component) {
+      case CONTENT_CONSTS.SUMMARY:
+        return (
+          `grid-template-columns: 25% 25% 25% 25%;
+           grid-auto-rows: min-content;
+          `
+        );
       case CONTENT_CONSTS.DMF:
         return (
           `grid-template-columns: 20% 20% 20% 20% 20%;
@@ -62,6 +65,13 @@ const StyledSectionHeader = styled.div`
   ${(props) => {
     switch (props.component) {
       case CONTENT_CONSTS.SUMMARY:
+        return (
+          `padding: 0 30px 0 30px;
+           margin-bottom: -10px;
+           font-size: 16px;
+          `
+        );
+      case CONTENT_CONSTS.ARREST:
         return (
           `padding: 0 30px 0 30px;
            margin-bottom: -10px;

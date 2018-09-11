@@ -6,6 +6,7 @@ import Immutable from 'immutable';
 
 import ContentBlock from '../ContentBlock';
 import ContentSection from '../ContentSection';
+import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
 import { formatDateTime } from '../../utils/FormattingUtils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 
@@ -27,29 +28,44 @@ const ArrestCard = ({ arrest, component } :Props) => {
   const arrestTime = formatDateTime(arrestDateTime, 'HH:MM');
   const arrestAgency = arrest.getIn([ARRESTING_AGENCY, 0], '');
 
+  let generalContent;
 
-  const generalContent = [
-    {
-      label: 'Case Number',
-      content: [caseNum]
-    },
-    {
-      label: '',
-      content: ['']
-    },
-    {
-      label: 'Arrest Date',
-      content: [arrestDate]
-    },
-    {
-      label: 'Arrest Time',
-      content: [arrestTime]
-    },
-    {
-      label: 'Arresting Agency',
-      content: [arrestAgency]
-    }
-  ];
+  if (component === CONTENT_CONSTS.FORM_CONTAINER) {
+    generalContent = [
+      {
+        label: 'Case Number',
+        content: [caseNum]
+      },
+      {
+        label: '',
+        content: ['']
+      },
+      {
+        label: 'Arrest Date',
+        content: [arrestDate]
+      },
+      {
+        label: 'Arrest Time',
+        content: [arrestTime]
+      },
+      {
+        label: 'Arresting Agency',
+        content: [arrestAgency]
+      }
+    ];
+  }
+  else {
+    generalContent = [
+      {
+        label: 'Arrest Date',
+        content: [arrestDate]
+      },
+      {
+        label: 'Arrest Time',
+        content: [arrestTime]
+      }
+    ];
+  }
 
   const content = generalContent.map((item, idx) => (
     <ContentBlock

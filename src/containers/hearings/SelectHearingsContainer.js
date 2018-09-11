@@ -20,6 +20,7 @@ import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { FORM_IDS, ID_FIELD_NAMES, HEARING } from '../../utils/consts/Consts';
 import { getCourtroomOptions } from '../../utils/consts/HearingConsts';
 import { getTimeOptions } from '../../utils/consts/DateTimeConsts';
+import { STATE, REVIEW } from '../../utils/consts/FrontEndStateConsts';
 import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
 import * as ReviewActionFactory from '../review/ReviewActionFactory';
 
@@ -96,9 +97,6 @@ type Props = {
   psaId :string,
   psaEntityKeyId? :string,
   hearings :Immutable.List<*, *>,
-  scoresAsMap :Immutable.Map<*, *>,
-  loadingResults :boolean,
-  errorMessage :string,
   actions :{
     submit :(values :{
       config :Immutable.Map<*, *>,
@@ -252,12 +250,12 @@ class SelectHearingsContainer extends React.Component<Props, State> {
 }
 
 function mapStateToProps(state) {
-  const review = state.get('review');
+  const review = state.get(STATE.REVIEW);
   return {
-    scoresAsMap: review.get('scoresAsMap'),
-    psaNeighborsById: review.get('psaNeighborsById'),
-    loadingResults: review.get('loadingResults'),
-    errorMessage: review.get('errorMessage')
+    [REVIEW.SCORES]: review.get(REVIEW.SCORES),
+    [REVIEW.NEIGHBORS_BY_ID]: review.get(REVIEW.NEIGHBORS_BY_ID),
+    [REVIEW.LOADING_RESULTS]: review.get(REVIEW.LOADING_RESULTS),
+    [REVIEW.ERROR]: review.get(REVIEW.ERROR)
   };
 }
 

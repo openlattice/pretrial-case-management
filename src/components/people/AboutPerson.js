@@ -12,9 +12,13 @@ import PSAReviewPersonRowList from '../../containers/review/PSAReviewReportsRowL
 import MultiSelectCheckbox from '../MultiSelectCheckbox';
 import CaseHistory from '../casehistory/CaseHistory';
 import CaseHistoryTimeline from '../casehistory/CaseHistoryTimeline';
+import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
+import { Title } from '../../utils/Layout';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { SORT_TYPES, PSA_STATUSES } from '../../utils/consts/Consts';
 import { STATUS_OPTION_CHECKBOXES } from '../../utils/consts/ReviewPSAConsts';
+import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
+
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
@@ -71,20 +75,6 @@ const Count = styled.div`
   color: #8e929b;
 `;
 
-const Title = styled.div`
-  display: flex;
-  flex-direction: column;
-  font-family: 'Open Sans', sans-serif;
-  font-size: 16px;
-  color: #555e6f;
-  margin-bottom: 20px;
-
-  span:first-child {
-    font-weight: ${props => (props.withSubtitle ? '600' : '400')};
-    padding-bottom: 5px;
-  }
-`;
-
 const CaseHistoryWrapper = styled.div`
   padding: 30px;
   width: 100%;
@@ -105,6 +95,11 @@ const FilterWrapper = styled.div`
   position: absolute;
   transform: translateX(45%) translateY(50%);
 `;
+
+type Props = {
+  selectedPersonData :Immutable.Map<*, *>,
+  neighbors :Immutable.Map<*, *>
+}
 
 class AboutPerson extends React.Component<Props, State> {
   constructor(props :Props) {
@@ -157,34 +152,38 @@ class AboutPerson extends React.Component<Props, State> {
   renderPSAs = () => {
     const { neighbors } = this.props;
     const scoreSeq = neighbors.get(ENTITY_SETS.PSA_SCORES, Immutable.Map())
-      .filter(neighbor => !!neighbor.get('neighborDetails') &&
-        this.state.statusFilters.includes(neighbor.getIn(['neighborDetails', PROPERTY_TYPES.STATUS, 0])))
-      .map(neighbor => [neighbor.getIn(['neighborDetails', OPENLATTICE_ID_FQN, 0]), neighbor.get('neighborDetails')]);
-
+      .filter(neighbor => !!neighbor.get(PSA_NEIGHBOR.DETAILS) &&
+        this.state.statusFilters.includes(neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.STATUS, 0])))
+      .map(neighbor => [
+        neighbor.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0]),
+        neighbor.get(PSA_NEIGHBOR.DETAILS)
+      ]);
     return (
       <PSAReviewPersonRowList
           scoreSeq={scoreSeq}
           sort={SORT_TYPES.DATE}
           renderContent={this.renderHeaderSection}
+          component={CONTENT_CONSTS.PROFILE}
           hideCaseHistory
-          hideProfile />
+          hideProfile
+          personProfile />
     );
   };
 
   renderCaseHistory = () => {
     const { neighbors } = this.props;
     const caseHistory = neighbors.get(ENTITY_SETS.PRETRIAL_CASES, Immutable.List())
-      .map(neighborObj => neighborObj.get('neighborDetails', Immutable.Map()));
+      .map(neighborObj => neighborObj.get(PSA_NEIGHBOR.DETAILS, Immutable.Map()));
 
     let chargeHistory = Immutable.Map();
     neighbors.get(ENTITY_SETS.CHARGES, Immutable.List())
       .forEach((chargeNeighbor) => {
-        const chargeIdArr = chargeNeighbor.getIn(['neighborDetails', PROPERTY_TYPES.CHARGE_ID, 0], '').split('|');
+        const chargeIdArr = chargeNeighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.CHARGE_ID, 0], '').split('|');
         if (chargeIdArr.length) {
           const caseId = chargeIdArr[0];
           chargeHistory = chargeHistory.set(
             caseId,
-            chargeHistory.get(caseId, Immutable.List()).push(chargeNeighbor.get('neighborDetails', Immutable.Map()))
+            chargeHistory.get(caseId, Immutable.List()).push(chargeNeighbor.get(PSA_NEIGHBOR.DETAILS, Immutable.Map()))
           );
         }
       });

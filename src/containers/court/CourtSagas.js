@@ -1,3 +1,7 @@
+/*
+ * @flow
+ */
+
 import Immutable from 'immutable';
 import moment from 'moment';
 import { Constants, EntityDataModelApi, SearchApi } from 'lattice';

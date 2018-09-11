@@ -22,16 +22,19 @@ import ConfirmationModal from '../../components/ConfirmationModalView';
 import SearchPersonContainer from '../person/SearchPersonContainer';
 import SelectArrestContainer from '../pages/arrest/SelectArrestContainer';
 import SelectChargesContainer from '../pages/arrest/SelectChargesContainer';
+import StyledSelect from '../../components/StyledSelect';
 import PSAInputForm from '../../components/psainput/PSAInputForm';
 import PSASubmittedPage from '../../components/psainput/PSASubmittedPage';
 import ProgressBar from '../../components/controls/ProgressBar';
 import PersonCard from '../../components/person/PersonCard';
+import PendingPSAsPersonCard from '../../components/person/PersonCardReview';
 import ArrestCard from '../../components/arrest/ArrestCard';
 import ChargeTable from '../../components/charges/ChargeTable';
-import PSAReviewRowList from '../review/PSAReviewRowList';
+import PSAReviewReportsRowList from '../review/PSAReviewReportsRowList';
 import exportPDF from '../../utils/PDFUtils';
 import psaConfig from '../../config/formconfig/PsaConfig';
 import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
+import { STATE, PSA_FORM, SUBMIT, SEARCH } from '../../utils/consts/FrontEndStateConsts';
 
 import * as FormActionFactory from './FormActionFactory';
 import * as PersonActionFactory from '../person/PersonActionFactory';
@@ -52,13 +55,41 @@ import {
   getCurrentPage
 } from '../../utils/Helpers';
 import { tryAutofillFields } from '../../utils/AutofillUtils';
-import { CONTEXT, DMF, ID_FIELD_NAMES, NOTES, PSA, PSA_STATUSES, SORT_TYPES } from '../../utils/consts/Consts';
+import { CONTEXT, DMF, ID_FIELD_NAMES, NOTES, PSA, PSA_STATUSES } from '../../utils/consts/Consts';
 import { PROPERTY_TYPES, ENTITY_SETS } from '../../utils/consts/DataModelConsts';
+import { STATUS_OPTIONS_FOR_PENDING_PSAS } from '../../utils/consts/ReviewPSAConsts';
 import { DOMAIN } from '../../utils/consts/ReportDownloadTypes';
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
 const { PEOPLE } = ENTITY_SETS;
+
+const PSARowListHeader = styled.div`
+  width: 100%;
+  background: #fff;
+  border-radius: 5px;
+  border: solid 1px #e1e1eb;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  border-bottom: none;
+  padding: 0 30px;
+  font-size: 14px;
+  text-align: center;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+const PSARowListSubHeader = styled.div`
+  width: 100%;
+  max-width: 713px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  white-space: nowrap;
+`;
 
 const LoadingContainer = styled(StyledFormWrapper)`
   align-items: center;
@@ -77,10 +108,8 @@ const LoadingText = styled.div`
 `;
 
 const Header = styled.h1`
-  font-size: 25px;
-  font-weight: 600;
-  margin: 0;
-  margin-bottom: 20px;
+  font-size: 18px;
+  margin: 30px 0;
 `;
 
 const PaddedSectionWrapper = styled(StyledSectionWrapper)`
@@ -158,9 +187,9 @@ const HeaderRow = styled.div`
   }
 `;
 
-const PSAReviewRowListContainer = styled(StyledSectionWrapper)`
+const PSAReviewRowListContainer = styled.div`
   width: 960px;
-
+  padding: 0;
   ${BasicButton} {
     margin-bottom: 10px;
   }
@@ -177,6 +206,17 @@ const ChargeTableWrapper = styled.div`
   margin-bottom: -20px;
 `;
 
+const FilterWrapper = styled.div`
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  white-space: nowrap;
+  width: 25%;
+  span {
+    margin-top: 10px;
+  }
+`;
+
 const INITIAL_PERSON_FORM = Immutable.fromJS({
   id: '',
   lastName: '',
@@ -189,6 +229,7 @@ const INITIAL_PERSON_FORM = Immutable.fromJS({
 });
 
 const INITIAL_STATE = Immutable.fromJS({
+  status: STATUS_OPTIONS_FOR_PENDING_PSAS.OPEN.value,
   personForm: INITIAL_PERSON_FORM,
   riskFactors: {},
   dmfRiskFactors: {},
@@ -271,6 +312,7 @@ type Props = {
 };
 
 type State = {
+  state :string,
   personForm :Immutable.Map<*, *>,
   riskFactors :{},
   dmfRiskFactors :{},
@@ -387,7 +429,7 @@ class Form extends React.Component<Props, State> {
       dmf
     );
 
-    const psaId = randomUUID()
+    const psaId = randomUUID();
 
     values[ID_FIELD_NAMES.PSA_ID] = [psaId];
     values[ID_FIELD_NAMES.RISK_FACTORS_ID] = [randomUUID()];
@@ -522,6 +564,7 @@ class Form extends React.Component<Props, State> {
   }
 
   handlePageChange = (path :string) => {
+    this.props.actions.clearSubmit();
     this.props.history.push(path);
   };
 
@@ -557,6 +600,32 @@ class Form extends React.Component<Props, State> {
     });
   }
 
+  renderPendingPSAsHeader = () => (
+    <PSARowListHeader>
+      <Header>Close Pending PSAs</Header>
+      <BasicButton onClick={() => this.setState({ skipClosePSAs: true })}>Skip</BasicButton>
+    </PSARowListHeader>
+  )
+
+  renderPendingPSAListContent = () => (
+    <PSARowListSubHeader>
+      <FilterWrapper>
+        <span>PSA Status </span>
+        <StyledSelect
+            placeholder={this.state.status}
+            classNamePrefix="lattice-select"
+            options={Object.values(STATUS_OPTIONS_FOR_PENDING_PSAS)}
+            onChange={
+              e => (this.setState({ status: e.label }))
+            } />
+      </FilterWrapper>
+    </PSARowListSubHeader>
+  )
+
+  renderPendingPSASubContent = () => (
+    <PendingPSAsPersonCard person={this.props.selectedPerson} />
+  )
+
   getPendingPSAs = () => {
     const {
       actions,
@@ -565,18 +634,21 @@ class Form extends React.Component<Props, State> {
       allPSAs,
       openPSAs
     } = this.props;
-    const openPSAScores = allPSAs.filter(scores => openPSAs.has(scores.getIn([OPENLATTICE_ID_FQN, 0])));
-    if (!openPSAScores.size) return null;
-    const scoreSeq = openPSAScores.map(obj => ([obj.getIn([OPENLATTICE_ID_FQN, 0]), obj]));
+    const { status } = this.state;
+    const PSAScores = status === STATUS_OPTIONS_FOR_PENDING_PSAS.OPEN.label ?
+      allPSAs.filter(scores => openPSAs.has(scores.getIn([OPENLATTICE_ID_FQN, 0]))) :
+      this.props.allPSAs;
+    if (!PSAScores.size) return null;
+    const scoreSeq = PSAScores.map(obj => ([obj.getIn([OPENLATTICE_ID_FQN, 0]), obj]));
     return (
       <CenteredListWrapper>
-        <Header>Close Pending PSAs</Header>
+        {this.renderPendingPSAsHeader()}
         <PSAReviewRowListContainer>
-          <BasicButton onClick={() => this.setState({ skipClosePSAs: true })}>Skip</BasicButton>
-          <PSAReviewRowList
-              hideProfile
+          <PSAReviewReportsRowList
               scoreSeq={scoreSeq}
-              sort={SORT_TYPES.DATE}
+              renderContent={this.renderPendingPSAListContent}
+              renderSubContent={this.renderPendingPSASubContent}
+              component={CONTENT_CONSTS.PENDING_PSAS}
               onStatusChangeCallback={() => {
                 actions.loadNeighbors({
                   entitySetId: entitySetLookup.get(PEOPLE),
@@ -607,7 +679,7 @@ class Form extends React.Component<Props, State> {
         actions.loadNeighbors({
           entitySetId: entitySetLookup.get(PEOPLE),
           entityKeyId: selectedPersonId
-        })
+        });
       }
       const progress = (numCasesToLoad > 0) ? Math.floor((numCasesLoaded / numCasesToLoad) * 100) : 0;
       const loadingText = numCasesToLoad > 0
@@ -628,6 +700,7 @@ class Form extends React.Component<Props, State> {
       ? null : this.getPendingPSAs();
     return pendingPSAs || (
       <SelectArrestContainer
+          clearSubmit={this.props.actions.clearSubmit}
           caseOptions={arrestOptions}
           nextPage={this.nextPage}
           prevPage={this.prevPage}
@@ -639,18 +712,16 @@ class Form extends React.Component<Props, State> {
     );
   }
 
-  getSelectChargesSection = () => {
-    return (
-      <SelectChargesContainer
-          defaultArrest={this.props.selectedPretrialCase}
-          defaultCharges={this.props.charges}
-          nextPage={this.nextPage}
-          prevPage={this.prevPage}
-          onSubmit={this.props.actions.addCaseAndCharges}
-          county={this.props.psaForm.get(DMF.COURT_OR_BOOKING) === CONTEXT.COURT_MINN
-            ? DOMAIN.MINNEHAHA : DOMAIN.PENNINGTON} />
-    );
-  }
+  getSelectChargesSection = () => (
+    <SelectChargesContainer
+        defaultArrest={this.props.selectedPretrialCase}
+        defaultCharges={this.props.charges}
+        nextPage={this.nextPage}
+        prevPage={this.prevPage}
+        onSubmit={this.props.actions.addCaseAndCharges}
+        county={this.props.psaForm.get(DMF.COURT_OR_BOOKING) === CONTEXT.COURT_MINN
+          ? DOMAIN.MINNEHAHA : DOMAIN.PENNINGTON} />
+  );
 
   getPersonIdValue = () => this.props.selectedPerson.getIn([PROPERTY_TYPES.PERSON_ID, 0], '');
 
@@ -790,6 +861,7 @@ class Form extends React.Component<Props, State> {
     return (
       <ConfirmationModal
           submissionStatus={isSubmitting || isSubmitted}
+          open={isSubmitted}
           pageContent={this.getPsaResults}
           handleModalButtonClick={this.props.actions.hardRestart} />
     );
@@ -813,35 +885,36 @@ class Form extends React.Component<Props, State> {
 }
 
 function mapStateToProps(state :Immutable.Map<*, *>) :Object {
-  const psaForm = state.get('psa');
-  const search = state.get('search');
-  const submit = state.get('submit');
-
+  const psaForm = state.get(STATE.PSA);
+  const search = state.get(STATE.SEARCH);
+  const submit = state.get(STATE.SUBMIT);
+  // TODO: review these state names so that consts can be used in all cases (psaForm & isLoadingCases)
   return {
-    dataModel: psaForm.get('dataModel'),
-    entitySetLookup: psaForm.get('entitySetLookup'),
-    arrestOptions: psaForm.get('arrestOptions'),
-    charges: psaForm.get('charges'),
-    selectedPerson: psaForm.get('selectedPerson'),
-    arrestId: psaForm.get('arrestId'),
-    selectedPretrialCase: psaForm.get('selectedPretrialCase'),
-    allCasesForPerson: psaForm.get('allCasesForPerson'),
-    allChargesForPerson: psaForm.get('allChargesForPerson'),
-    allSentencesForPerson: psaForm.get('allSentencesForPerson'),
-    allFTAs: psaForm.get('allFTAs'),
-    allHearings: psaForm.get('allHearings'),
-    openPSAs: psaForm.get('openPSAs'),
-    allPSAs: psaForm.get('allPSAs'),
-    psaForm: psaForm.get('psa'),
-    isLoadingNeighbors: psaForm.get('isLoadingNeighbors'),
-    isSubmitted: submit.get('submitted'),
-    isSubmitting: submit.get('submitting'),
-    submitError: submit.get('error'),
+    [PSA_FORM.ARREST_OPTIONS]: psaForm.get(PSA_FORM.ARREST_OPTIONS),
+    [PSA_FORM.ALL_CASES]: psaForm.get(PSA_FORM.ALL_CASES),
+    [PSA_FORM.ALL_CHARGES]: psaForm.get(PSA_FORM.ALL_CHARGES),
+    [PSA_FORM.ALL_SENTENCES]: psaForm.get(PSA_FORM.ALL_SENTENCES),
+    [PSA_FORM.ALL_FTAS]: psaForm.get(PSA_FORM.ALL_FTAS),
+    [PSA_FORM.ALL_PSAS]: psaForm.get(PSA_FORM.ALL_PSAS),
+    [PSA_FORM.ALL_HEARINGS]: psaForm.get(PSA_FORM.ALL_HEARINGS),
+    [PSA_FORM.CHARGES]: psaForm.get(PSA_FORM.CHARGES),
+    [PSA_FORM.SELECT_PERSON]: psaForm.get(PSA_FORM.SELECT_PERSON),
+    [PSA_FORM.OPEN_PSAS]: psaForm.get(PSA_FORM.OPEN_PSAS),
+    [PSA_FORM.ARREST_ID]: psaForm.get(PSA_FORM.ARREST_ID),
+    [PSA_FORM.SELECT_PRETRIAL_CASE]: psaForm.get(PSA_FORM.SELECT_PRETRIAL_CASE),
+    psaForm: psaForm.get(PSA_FORM.PSA),
+    [PSA_FORM.DATA_MODEL]: psaForm.get(PSA_FORM.DATA_MODEL),
+    [PSA_FORM.ENTITY_SET_LOOKUP]: psaForm.get(PSA_FORM.ENTITY_SET_LOOKUP),
+    [PSA_FORM.LOADING_NEIGHBORS]: psaForm.get(PSA_FORM.LOADING_NEIGHBORS),
 
-    selectedPersonId: search.get('selectedPersonId'),
-    isLoadingCases: search.get('loadingCases'),
-    numCasesToLoad: search.get('numCasesToLoad'),
-    numCasesLoaded: search.get('numCasesLoaded')
+    [PSA_FORM.SUBMITTED]: submit.get(SUBMIT.SUBMITTED),
+    [PSA_FORM.SUBMITTING]: submit.get(SUBMIT.SUBMITTING),
+    [PSA_FORM.ERROR]: submit.get(SUBMIT.ERROR),
+
+    [SEARCH.SELECTED_PERSON_ID]: search.get(SEARCH.SELECTED_PERSON_ID),
+    isLoadingCases: search.get(SEARCH.LOADING_CASES),
+    [SEARCH.NUM_CASES_TO_LOAD]: search.get(SEARCH.NUM_CASES_TO_LOAD),
+    [SEARCH.NUM_CASES_LOADED]: search.get(SEARCH.NUM_CASES_LOADED)
   };
 }
 

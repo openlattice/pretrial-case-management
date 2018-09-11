@@ -1,5 +1,9 @@
+/*
+ * @flow
+ */
 import React from 'react';
 import styled from 'styled-components';
+import Immutable from 'immutable';
 
 import PersonRow from './PersonRow';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
@@ -31,10 +35,15 @@ const Headers = () => (
     <HeaderElement>DATE OF BIRTH</HeaderElement>
     <HeaderElement>IDENTIFIER</HeaderElement>
   </HeaderRow>
-)
+);
 
-const PersonTable = ({ people, handleSelect, gray }) => {
+type Props = {
+  people :Immutable.List<*, *>,
+  gray :boolean,
+  handleSelect :(person :Immutable.Map, entityKeyId :string, personId :string) => void,
+};
 
+const PersonTable = ({ people, handleSelect, gray } :Props) => {
   return (
     <Table>
       <tbody>

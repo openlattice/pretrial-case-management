@@ -5,17 +5,20 @@ import React from 'react';
 import Immutable from 'immutable';
 import styled from 'styled-components';
 
-import PSAStats from './PSAStats';
-import ContentBlock from '../ContentBlock';
-import PersonCardSummary from '../person/PersonCardSummary';
 import ArrestCard from '../arrest/ArrestCard';
-import PSAReportDownloadButton from './PSAReportDownloadButton';
-import DMFCell from '../dmf/DMFCell';
+import ChargeHistoryStats from '../casehistory/ChargeHistoryStats';
 import ChargeTable from '../../components/charges/ChargeTable';
-import rightArrow from '../../assets/svg/dmf-arrow.svg';
-import { CONTEXT } from '../../utils/consts/Consts';
 import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
+import ContentBlock from '../ContentBlock';
+import DMFCell from '../dmf/DMFCell';
+import PersonCardSummary from '../person/PersonCardSummary';
+import PSAReportDownloadButton from './PSAReportDownloadButton';
+import PSAStats from './PSAStats';
+import rightArrow from '../../assets/svg/dmf-arrow.svg';
+import { Title } from '../../utils/Layout';
+import { CONTEXT } from '../../utils/consts/Consts';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { PSA_NEIGHBOR, PSA_ASSOCIATION } from '../../utils/consts/FrontEndStateConsts';
 import {
   getDMFDecision,
   increaseDMFSeverity,
@@ -33,13 +36,6 @@ const SummaryWrapper = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: center;
-
-  hr {
-    color: #eeeeee;
-    width: 100%;
-    height: 1px;
-    margin: 0;
-  }
 `;
 
 const RowWrapper = styled.div`
@@ -124,16 +120,26 @@ const StepWrapper = styled.div`
   }
 `;
 
+const NotesWrapper = styled.div`
+  width: 100%;
+  padding: 0 30px 30px;
+`;
+
 const DMFIncreaseText = styled.div`
   margin-bottom: 15px;
   font-size: 14px;
-  color: #555e6f;
+  color: black;
+  text-transform: uppercase;
+  text-align: center;
+  width: 100%;
 `;
 
 type Props = {
+  notes :string,
   scores :Immutable.Map<*, *>,
   neighbors :Immutable.Map<*, *>,
   manualCaseHistory :Immutable.List<*>,
+  chargeHistory :Immutable.List<*>,
   manualChargeHistory :Immutable.Map<*, *>,
   downloadFn :(values :{
     neighbors :Immutable.Map<*, *>,
@@ -141,8 +147,15 @@ type Props = {
   }) => void,
 };
 
+const renderNotes = ({ notes } :Props) => (
+  <NotesWrapper>
+    <Title withSubtitle ><span>Notes</span></Title>
+    {notes}
+  </NotesWrapper>
+);
+
 const renderPersonInfo = ({ neighbors } :Props) => {
-  const person = neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborDetails'], Immutable.Map());
+  const person = neighbors.getIn([ENTITY_SETS.PEOPLE, PSA_NEIGHBOR.DETAILS], Immutable.Map());
 
   return (
     <PersonCardSummary person={person} />
@@ -151,13 +164,13 @@ const renderPersonInfo = ({ neighbors } :Props) => {
 
 const renderArrestInfo = ({ neighbors, manualCaseHistory } :Props) => {
   const caseNum = neighbors.getIn(
-    [ENTITY_SETS.MANUAL_PRETRIAL_CASES, 'neighborDetails', PROPERTY_TYPES.CASE_ID, 0], ''
+    [ENTITY_SETS.MANUAL_PRETRIAL_CASES, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.CASE_ID, 0], ''
   );
   const pretrialCase = manualCaseHistory
     .filter(caseObj => caseObj.getIn([PROPERTY_TYPES.CASE_ID, 0], '') === caseNum)
     .get(0, Immutable.Map());
   return (
-    <ArrestCard arrest={pretrialCase} component={CONTENT_CONSTS.SUMMARY} />
+    <ArrestCard arrest={pretrialCase} component={CONTENT_CONSTS.ARREST} />
   );
 };
 
@@ -167,7 +180,7 @@ const renderCaseInfo = ({
   neighbors
 } :Props) => {
   const caseNum = neighbors.getIn(
-    [ENTITY_SETS.MANUAL_PRETRIAL_CASES, 'neighborDetails', PROPERTY_TYPES.CASE_ID, 0], ''
+    [ENTITY_SETS.MANUAL_PRETRIAL_CASES, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.CASE_ID, 0], ''
   );
   const pretrialCase = manualCaseHistory
     .filter(caseObj => caseObj.getIn([PROPERTY_TYPES.CASE_ID, 0], '') === caseNum);
@@ -186,11 +199,11 @@ const renderCaseInfo = ({
 const renderPSADetails = ({ neighbors, downloadFn, scores } :Props) => {
   let filer;
   const psaDate = formatDateTimeList(
-    neighbors.getIn([ENTITY_SETS.PSA_RISK_FACTORS, 'associationDetails', PROPERTY_TYPES.TIMESTAMP], Immutable.Map())
+    neighbors.getIn([ENTITY_SETS.PSA_RISK_FACTORS, PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.TIMESTAMP], Immutable.Map())
   );
   neighbors.get(ENTITY_SETS.STAFF, Immutable.List()).forEach((neighbor) => {
-    const associationEntitySetName = neighbor.getIn(['associationEntitySet', 'name']);
-    const personId = neighbor.getIn(['neighborDetails', PROPERTY_TYPES.PERSON_ID, 0], '');
+    const associationEntitySetName = neighbor.getIn([PSA_ASSOCIATION.ENTITY_SET, 'name']);
+    const personId = neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.PERSON_ID, 0], '');
     if (associationEntitySetName === ENTITY_SETS.ASSESSED_BY) {
       filer = personId;
     }
@@ -214,13 +227,13 @@ const renderPSADetails = ({ neighbors, downloadFn, scores } :Props) => {
 };
 
 const renderDMFDetails = ({ neighbors, scores } :Props) => {
-  const dmfRiskFactors = neighbors.getIn([ENTITY_SETS.DMF_RISK_FACTORS, 'neighborDetails'], Immutable.Map());
-  let context = dmfRiskFactors.getIn(['general.context', 0]);
+  const dmfRiskFactors = neighbors.getIn([ENTITY_SETS.DMF_RISK_FACTORS, PSA_NEIGHBOR.DETAILS], Immutable.Map());
+  let context = dmfRiskFactors.getIn([PROPERTY_TYPES.CONTEXT, 0]);
   if (context === 'Court') {
     context = CONTEXT.COURT_PENN;
   }
-  const psaRiskFactors = neighbors.getIn([ENTITY_SETS.PSA_RISK_FACTORS, 'neighborDetails'], Immutable.Map());
-  const dmfEntity = neighbors.getIn([ENTITY_SETS.DMF_RESULTS, 'neighborDetails'], Immutable.Map());
+  const psaRiskFactors = neighbors.getIn([ENTITY_SETS.PSA_RISK_FACTORS, PSA_NEIGHBOR.DETAILS], Immutable.Map());
+  const dmfEntity = neighbors.getIn([ENTITY_SETS.DMF_RESULTS, PSA_NEIGHBOR.DETAILS], Immutable.Map());
   const dmf = formatDMFFromEntity(dmfEntity);
   const nca = scores.getIn([PROPERTY_TYPES.NCA_SCALE, 0]);
   const fta = scores.getIn([PROPERTY_TYPES.FTA_SCALE, 0]);
@@ -230,7 +243,9 @@ const renderDMFDetails = ({ neighbors, scores } :Props) => {
     return (
       <ScoreContent>
         <DMFIncreaseText>Step two increase</DMFIncreaseText>
-        <DMFCell dmf={dmf} selected large />
+        <DMFCell dmf={dmfDecision} selected />
+        <img src={rightArrow} alt="" />
+        <DMFCell dmf={getDMFDecision(6, 6, context)} selected />
       </ScoreContent>
     );
   }
@@ -267,6 +282,7 @@ const renderDMFDetails = ({ neighbors, scores } :Props) => {
 
 const PSASummary = (props :Props) => {
   const { scores } = props;
+  const { chargeHistory } = props;
 
   return (
     <SummaryWrapper>
@@ -289,6 +305,9 @@ const PSASummary = (props :Props) => {
         </ScoresContainer>
       </RowWrapper>
       <hr />
+      {props.notes ? renderNotes(props) : null}
+      {props.notes ? <hr /> : null}
+      <ChargeHistoryStats padding chargeHistory={chargeHistory} />
       {renderCaseInfo(props)}
     </SummaryWrapper>
   );

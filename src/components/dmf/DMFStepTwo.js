@@ -5,14 +5,25 @@
 import React from 'react';
 
 import DMFCell from './DMFCell';
-import ContentBlock from '../ContentBlock';
-import ContentSection from '../ContentSection';
 import BooleanFlag from '../BooleanFlag';
+import rightArrow from '../../assets/svg/dmf-arrow.svg';
 import { getDMFDecision } from '../../utils/DMFUtils';
-import { ContentsWrapper, StepWrapper } from './DMFStyledTags';
-import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
+import {
+  ContentsWrapper,
+  StepIncreaseWrapper,
+  StyledSection,
+  Flags,
+  StyledContentBlock,
+  StyledContentLabel,
+  StyledContent,
+  DMFIncreaseText,
+  DMFIncreaseCell
+} from './DMFStyledTags';
+import { Title, FullWidthContainer } from '../../utils/Layout';
 
 const StepTwo = ({
+  nca,
+  fta,
   extradited,
   stepTwoVal,
   currentViolentOffense,
@@ -20,64 +31,69 @@ const StepTwo = ({
   context,
   flagDims
 } :Props) => {
-
   // TODO: Show Pretrial FTA Flag
 
   const STEP2_VALS = [
     {
-      label: 'extradition',
+      label: 'Extradited for current charge?',
       content: [<ContentsWrapper><BooleanFlag dims={flagDims} value={extradited} /></ContentsWrapper>]
     },
     {
-      label: 'Listed Charges',
+      label: 'Does current charge match listed charges?',
       content: [<ContentsWrapper><BooleanFlag dims={flagDims} value={stepTwoVal} /></ContentsWrapper>]
     },
-    // {
-    //   label: 'Pretrial FTA',
-    //   content: [<ContentsWrapper><BooleanFlag dims={flagDims} value={fta} /></ContentsWrapper>]
-    // },
     {
-      label: 'NVCA',
-      content: [<ContentsWrapper><BooleanFlag dims={flagDims} value={nvca} /></ContentsWrapper>]
-    },
-    {
-      label: 'Violent Offense',
+      label: 'Current charge is violent and PSA resulted in NVCA flag?',
       content: [
-        <ContentsWrapper><BooleanFlag dims={flagDims} value={currentViolentOffense} /></ContentsWrapper>
+        <ContentsWrapper><BooleanFlag dims={flagDims} value={nvca && currentViolentOffense} /></ContentsWrapper>
       ]
     }
   ];
-  const content = STEP2_VALS.map(item => (
-    <ContentBlock
-        component={CONTENT_CONSTS.DMF}
-        contentBlock={item}
-        key={item.label} />
-  ));
 
   const flags = () => (
-    <div>
-      <hr />
-      <ContentSection
-          component={CONTENT_CONSTS.DMF}
-          header="Step Two" >
-        {content}
-      </ContentSection>
-    </div>
+    <Flags>
+      {
+        STEP2_VALS.map(item => (
+          <StyledContentBlock>
+            <StyledContentLabel>{item.label}</StyledContentLabel>
+            <StyledContent>{item.content}</StyledContent>
+          </StyledContentBlock>
+        ))
+      }
+    </Flags>
   );
 
   const StepTwoDecision = extradited || stepTwoVal || (nvca && currentViolentOffense);
 
   const displayDMF = StepTwoDecision ? (
-    <StepWrapper>
-      <DMFCell dmf={getDMFDecision(6, 6, context)} selected large />
-    </StepWrapper>
-  ) : null;
+    <StyledSection>
+      <DMFIncreaseText>
+        STEP TWO INCREASE APPLIED
+        <span>maximum conditions for any release</span>
+      </DMFIncreaseText>
+      <DMFIncreaseCell>
+        <DMFCell dmf={getDMFDecision(nca, fta, context)} selected large />
+        <img src={rightArrow} alt="" />
+        <DMFCell dmf={getDMFDecision(6, 6, context)} selected large />
+      </DMFIncreaseCell>
+    </StyledSection>
+  ) :
+    (
+      <StyledSection>
+        <DMFIncreaseText>
+          STEP TWO INCREASE NOT APPLICABLE
+        </DMFIncreaseText>
+      </StyledSection>
+    );
 
   return (
-    <div>
-      {flags()}
-      {displayDMF}
-    </div>
+    <StepIncreaseWrapper>
+      <Title withSubtitle><span>Step Two</span></Title>
+      <FullWidthContainer>
+        {flags()}
+        {displayDMF}
+      </FullWidthContainer>
+    </StepIncreaseWrapper>
   );
 };
 

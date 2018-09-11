@@ -11,10 +11,13 @@ import styled from 'styled-components';
 import PSAReviewReportsRow from '../../components/review/PSAReviewReportsRow';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import CustomPagination from '../../components/Pagination';
+import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { SORT_TYPES } from '../../utils/consts/Consts';
 import { sortByDate, sortByName } from '../../utils/PSAUtils';
 import { getEntityKeyId, getIdValue } from '../../utils/DataUtils';
+import { STATE, REVIEW, SUBMIT } from '../../utils/consts/FrontEndStateConsts';
+
 import * as FormActionFactory from '../psa/FormActionFactory';
 import * as ReviewActionFactory from './ReviewActionFactory';
 import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
@@ -23,56 +26,42 @@ import * as DataActionFactory from '../../utils/data/DataActionFactory';
 const StyledCenteredContainer = styled.div`
   text-align: center;
   margin-bottom: 20px;
-
-  .pagination {
-    display: inline-block;
-    margin-right: 30px;
-
-    .active a {
-      background-color: #6124e2;
-      border-radius: 2px;
-      color: white;
-    }
-
-    .disabled {
-      visibility: hidden;
-    }
-  }
-
-  .pagination a {
-    color: #555e6f;
-    width: 24px;
-    height: 24px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    border: none;
-    }
-  }
 `;
 
-const StyledBarForReviews = styled.div`
-  width: 100%;
-  background: #fff;
-  border-radius: 5px;
-  border: solid 1px #e1e1eb;
-  border-top-left-radius: 0;
-  border-top-right-radius: 0;
-  padding: 0 0 10px 30px;
-  font-size: 14px;
-  text-align: center;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-between;
-`;
-
-const StyledBarForProfile = styled.div`
+const StyledSubHeaderBar = styled.div`
   width: 100%;
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
+  ${(props) => {
+    switch (props.component) {
+      case CONTENT_CONSTS.REVIEW:
+        return (
+          `background: #fff;
+           border-radius: 5px;
+           border: solid 1px #e1e1eb;
+           border-top-left-radius: 0;
+           border-top-right-radius: 0;
+           padding: 0 0 10px 30px;
+           font-size: 14px;
+           text-align: center;`
+        );
+      case CONTENT_CONSTS.PENDING_PSAS:
+        return (
+          `background: #fff;
+           border-radius: 5px;
+           border: solid 1px #e1e1eb;
+           border-top-left-radius: 0;
+           border-top-right-radius: 0;
+           padding: 0 0 10px 30px;
+           font-size: 14px;
+           text-align: center;`
+        );
+      default:
+        return '';
+    }
+  }};
 `;
 
 const PersonWrapper = styled.div`
@@ -99,12 +88,27 @@ const NoResults = styled.div`
   width: 960px;
 `;
 
+const ReviewRowWrapper = styled.div`
+  padding-left: 30px;
+`;
+
+const SubContentWrapper = styled.div`
+  width: 100%;
+  background: #fff;
+  border-radius: 5px;
+  border: solid 1px #e1e1eb;
+  padding: 20px 30px;
+  margin-bottom: 30px;
+`;
+
 type Props = {
   scoreSeq :Immutable.Seq,
   sort? :?string,
+  component :?string,
   hideCaseHistory? :boolean,
-  hideProfile? :boolean,
   onStatusChangeCallback? :() => void,
+  renderContent :?(() => void),
+  renderSubContent :?(() => void),
   actions :{
     downloadPSAReviewPDF :(values :{
       neighbors :Immutable.Map<*, *>,
@@ -144,8 +148,8 @@ const MAX_RESULTS = 4;
 class PSAReviewReportsRowList extends React.Component<Props, State> {
 
   static defaultProps = {
+    sort: SORT_TYPES.DATE,
     hideCaseHistory: false,
-    hideProfile: false,
     onStatusChangeCallback: () => {}
   }
 
@@ -175,6 +179,12 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
     const sentenceHistory = this.props.sentenceHistory.get(personId, Immutable.Map());
     const ftaHistory = this.props.ftaHistory.get(personId, Immutable.Map());
     const hearings = this.props.hearings.get(personId, Immutable.List());
+    const { component } = this.props;
+
+    const hideProfile = (
+      component === CONTENT_CONSTS.PROFILE ||
+      component === CONTENT_CONSTS.PENDING_PSAS
+    );
     return (
       <PSAReviewReportsRow
           neighbors={neighbors}
@@ -199,8 +209,9 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
           readOnly={this.props.readOnlyPermissions}
           key={scoreId}
           hideCaseHistory={this.props.hideCaseHistory}
-          hideProfile={this.props.hideProfile}
-          submitting={this.props.submitting} />
+          hideProfile={hideProfile}
+          submitting={this.props.submitting}
+          component={this.props.component} />
     );
   }
 
@@ -213,26 +224,24 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
     });
   }
 
-  renderFiltersBar = (numResults) => {
+  renderHeaderBar = (numResults) => {
     const { start } = this.state;
-    const { hideProfile } = this.props;
 
     const numPages = Math.ceil(numResults / MAX_RESULTS);
     const currPage = (start / MAX_RESULTS) + 1;
 
-    const StyledBottomBar = hideProfile ? StyledBarForProfile : StyledBarForReviews;
-
     return (
       <StyledCenteredContainer>
-        <StyledBottomBar>
+        <StyledSubHeaderBar component={this.props.component}>
           {this.props.renderContent(numResults)}
           <CustomPagination
               numPages={numPages}
               activePage={currPage}
               onChangePage={page => this.updatePage((page - 1) * MAX_RESULTS)} />
-        </StyledBottomBar>
+        </StyledSubHeaderBar>
       </StyledCenteredContainer>
     );
+
   }
 
   sortItems = () => {
@@ -245,31 +254,54 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
   }
 
   renderContent = (items, numPages, noResults) => {
-    const { hideProfile } = this.props;
+    const { component } = this.props;
 
-    if (hideProfile) {
-      if (noResults) {
+    switch (component) {
+      case CONTENT_CONSTS.REVIEW:
+        return (
+          <ReviewWrapper>
+            {this.renderHeaderBar(numPages)}
+            {items.map(([scoreId, scores]) => this.renderRow(scoreId, scores))}
+            {this.renderHeaderBar(numPages)}
+          </ReviewWrapper>
+        );
+      case CONTENT_CONSTS.PENDING_PSAS:
+        return (
+          <ReviewWrapper>
+            {this.renderHeaderBar(numPages)}
+            <SubContentWrapper>
+              {this.props.renderSubContent()}
+            </SubContentWrapper>
+            <ReviewRowWrapper>
+              {items.map(([scoreId, scores]) => this.renderRow(scoreId, scores))}
+            </ReviewRowWrapper>
+            {this.renderHeaderBar(numPages)}
+          </ReviewWrapper>
+        );
+      case CONTENT_CONSTS.PROFILE:
+        if (noResults) {
+          return (
+            <PersonWrapper>
+              {this.renderHeaderBar(numPages)}
+              <NoResults>No Results</NoResults>
+            </PersonWrapper>
+          );
+        }
         return (
           <PersonWrapper>
-            {this.renderFiltersBar(numPages)}
-            <NoResults>No Results</NoResults>
+            {this.renderHeaderBar(numPages)}
+            {items.map(([scoreId, scores]) => this.renderRow(scoreId, scores))}
           </PersonWrapper>
         );
-      }
-      return (
-        <PersonWrapper>
-          {this.renderFiltersBar(numPages)}
-          {items.map(([scoreId, scores]) => this.renderRow(scoreId, scores))}
-        </PersonWrapper>
-      );
+      default:
+        return (
+          <ReviewWrapper>
+            {this.renderHeaderBar(numPages)}
+            {items.map(([scoreId, scores]) => this.renderRow(scoreId, scores))}
+            {this.renderHeaderBar(numPages)}
+          </ReviewWrapper>
+        );
     }
-    return (
-      <ReviewWrapper>
-        {this.renderFiltersBar(numPages)}
-        {items.map(([scoreId, scores]) => this.renderRow(scoreId, scores))}
-        {this.renderFiltersBar(numPages)}
-      </ReviewWrapper>
-    );
   }
 
   render() {
@@ -294,20 +326,23 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
 }
 
 function mapStateToProps(state) {
-  const review = state.get('review');
+  const review = state.get(STATE.REVIEW);
+  const submit = state.get(STATE.SUBMIT);
+  // TODO: Address prop names so that consts can be used as keys
   return {
-    psaNeighborsById: review.get('psaNeighborsById'),
-    caseHistory: review.get('caseHistory'),
-    manualCaseHistory: review.get('manualCaseHistory'),
-    chargeHistory: review.get('chargeHistory'),
-    manualChargeHistory: review.get('manualChargeHistory'),
-    sentenceHistory: review.get('sentenceHistory'),
-    ftaHistory: review.get('ftaHistory'),
-    hearings: review.get('hearings'),
-    readOnlyPermissions: review.get('readOnly'),
-    loadingPSAData: review.get('loadingPSAData'),
-    psaIdsRefreshing: review.get('psaIdsRefreshing'),
-    submitting: state.getIn(['submit', 'submitting'], false)
+    [REVIEW.NEIGHBORS_BY_ID]: review.get(REVIEW.NEIGHBORS_BY_ID),
+    [REVIEW.CASE_HISTORY]: review.get(REVIEW.CASE_HISTORY),
+    [REVIEW.MANUAL_CASE_HISTORY]: review.get(REVIEW.MANUAL_CASE_HISTORY),
+    [REVIEW.CHARGE_HISTORY]: review.get(REVIEW.CHARGE_HISTORY),
+    [REVIEW.MANUAL_CHARGE_HISTORY]: review.get(REVIEW.MANUAL_CHARGE_HISTORY),
+    [REVIEW.SENTENCE_HISTORY]: review.get(REVIEW.SENTENCE_HISTORY),
+    [REVIEW.FTA_HISTORY]: review.get(REVIEW.FTA_HISTORY),
+    [REVIEW.HEARINGS]: review.get(REVIEW.HEARINGS),
+    [REVIEW.LOADING_DATA]: review.get(REVIEW.LOADING_DATA),
+    [REVIEW.PSA_IDS_REFRESHING]: review.get(REVIEW.PSA_IDS_REFRESHING),
+    readOnlyPermissions: review.get(REVIEW.READ_ONLY),
+
+    [SUBMIT.SUBMITTING]: submit.get(SUBMIT.SUBMITTING, false)
   };
 }
 

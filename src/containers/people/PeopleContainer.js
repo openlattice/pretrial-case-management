@@ -18,6 +18,7 @@ import NavButtonToolbar from '../../components/buttons/NavButtonToolbar';
 import DropDownMenu from '../../components/StyledSelect';
 import { searchPeopleRequest } from '../person/PersonActionFactory';
 import { PSA_STATUSES } from '../../utils/consts/Consts';
+import { STATE, SEARCH, REVIEW, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { DOMAIN_OPTIONS_ARR } from '../../utils/consts/ReviewPSAConsts';
 import { formatDOB } from '../../utils/Helpers';
@@ -104,6 +105,7 @@ class PeopleContainer extends React.Component<Props, State> {
     return {
       identification: person.getIn([PROPERTY_TYPES.PERSON_ID, 0]),
       firstName: person.getIn([PROPERTY_TYPES.FIRST_NAME, 0]),
+      middleName: person.getIn([PROPERTY_TYPES.MIDDLE_NAME, 0]),
       lastName: person.getIn([PROPERTY_TYPES.LAST_NAME, 0]),
       dob: formattedDOB,
       photo: person.getIn([PROPERTY_TYPES.PICTURE, 0])
@@ -137,7 +139,7 @@ class PeopleContainer extends React.Component<Props, State> {
     let missingPeople = Immutable.Set(peopleList);
 
     this.props.psaNeighborsById.valueSeq().forEach((neighbors) => {
-      const neighbor = neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborDetails'], Immutable.Map());
+      const neighbor = neighbors.getIn([ENTITY_SETS.PEOPLE, PSA_NEIGHBOR.DETAILS], Immutable.Map());
       const firstNameList = neighbor.get(PROPERTY_TYPES.FIRST_NAME, Immutable.List()).map(val => val.toLowerCase());
       const lastNameList = neighbor.get(PROPERTY_TYPES.LAST_NAME, Immutable.List()).map(val => val.toLowerCase());
       const id = neighbor.get(PROPERTY_TYPES.PERSON_ID);
@@ -164,7 +166,7 @@ class PeopleContainer extends React.Component<Props, State> {
     return (
       <div>
         <SearchBox>
-          <PersonTextAreaInput onChange={(peopleList) => this.setState({ peopleList })} />
+          <PersonTextAreaInput onChange={peopleList => this.setState({ peopleList })} />
           {
             missingPeople.size && !this.props.loadingPSAData ? (
               <MissingNamesContainer>
@@ -194,10 +196,10 @@ class PeopleContainer extends React.Component<Props, State> {
 
     this.props.psaNeighborsById.valueSeq().forEach((neighbors) => {
       const staffMatchingFilter = neighbors.get(ENTITY_SETS.STAFF, Immutable.List()).filter(neighbor =>
-        neighbor.getIn(['neighborDetails', PROPERTY_TYPES.PERSON_ID, 0], '').includes(countyFilter));
+        neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.PERSON_ID, 0], '').includes(countyFilter));
 
       if (!countyFilter.length || staffMatchingFilter.size) {
-        const neighbor = neighbors.getIn([ENTITY_SETS.PEOPLE, 'neighborDetails'], Immutable.Map());
+        const neighbor = neighbors.getIn([ENTITY_SETS.PEOPLE, PSA_NEIGHBOR.DETAILS], Immutable.Map());
         const personId = neighbor.get(PROPERTY_TYPES.PERSON_ID);
         if (personId) {
           peopleById = peopleById.set(personId, peopleById.get(personId, Immutable.List()).push(neighbor));
@@ -279,11 +281,11 @@ class PeopleContainer extends React.Component<Props, State> {
 
 
 function mapStateToProps(state) {
-  const peopleResults = state.getIn(['search', 'searchResults'], Immutable.List());
-  const isFetchingPeople = state.getIn(['search', 'isLoadingPeople'], false);
-  const loadingPSAData = state.getIn(['review', 'loadingPSAData'], false);
-  const openPSAs = state.getIn(['review', 'scoresAsMap'], Immutable.Map());
-  const psaNeighborsById = state.getIn(['review', 'psaNeighborsById'], Immutable.Map());
+  const peopleResults = state.getIn([STATE.SEARCH, SEARCH.SEARCH_RESULTS], Immutable.List());
+  const isFetchingPeople = state.getIn([STATE.SEARCH, SEARCH.LOADING], false);
+  const loadingPSAData = state.getIn([STATE.REVIEW, REVIEW.LOADING_DATA], false);
+  const openPSAs = state.getIn([STATE.REVIEW, REVIEW.SCORES], Immutable.Map());
+  const psaNeighborsById = state.getIn([STATE.REVIEW, REVIEW.NEIGHBORS_BY_ID], Immutable.Map());
   return {
     peopleResults,
     isFetchingPeople,

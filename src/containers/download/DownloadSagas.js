@@ -16,6 +16,7 @@ import {
   downloadPsaForms
 } from './DownloadActionFactory';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { PSA_NEIGHBOR, PSA_ASSOCIATION } from '../../utils/consts/FrontEndStateConsts';
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
@@ -26,8 +27,8 @@ const getStepTwo = (neighborList, psaScores) => {
   let currentViolentOffense = false;
 
   neighborList.forEach((neighbor) => {
-    const name = neighbor.getIn(['neighborEntitySet', 'name'], '');
-    const data = neighbor.get('neighborDetails', Immutable.Map());
+    const name = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'name'], '');
+    const data = neighbor.get(PSA_NEIGHBOR.DETAILS, Immutable.Map());
     if (name === ENTITY_SETS.DMF_RISK_FACTORS) {
       extradited = data.getIn([PROPERTY_TYPES.EXTRADITED, 0], false);
       step2Charges = data.getIn([PROPERTY_TYPES.DMF_STEP_2_CHARGES, 0], false);
@@ -46,8 +47,8 @@ const getStepFour = (neighborList, psaScores) => {
   let currentViolentOffense = false;
 
   neighborList.forEach((neighbor) => {
-    const name = neighbor.getIn(['neighborEntitySet', 'name'], '');
-    const data = neighbor.get('neighborDetails', Immutable.Map());
+    const name = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'name'], '');
+    const data = neighbor.get(PSA_NEIGHBOR.DETAILS, Immutable.Map());
     if (name === ENTITY_SETS.DMF_RISK_FACTORS) {
       step4Charges = data.getIn([PROPERTY_TYPES.DMF_STEP_4_CHARGES, 0], false);
     }
@@ -144,20 +145,25 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
     let jsonResults = Immutable.List();
     let allHeaders = Immutable.Set();
     usableNeighborsById.keySeq().forEach((id) => {
-      let combinedEntity = getUpdatedEntity(Immutable.Map(), 'PSA Scores', ENTITY_SETS.PSA_SCORES, scoresAsMap.get(id));
+      let combinedEntity = getUpdatedEntity(
+        Immutable.Map(),
+        'South Dakota PSA Scores',
+        ENTITY_SETS.PSA_SCORES,
+        scoresAsMap.get(id)
+      );
 
       usableNeighborsById.get(id).forEach((neighbor) => {
         combinedEntity = getUpdatedEntity(
           combinedEntity,
-          neighbor.getIn(['associationEntitySet', 'title']),
-          neighbor.getIn(['associationEntitySet', 'name']),
-          neighbor.get('associationDetails')
+          neighbor.getIn([PSA_ASSOCIATION.ENTITY_SET, 'title']),
+          neighbor.getIn([PSA_ASSOCIATION.ENTITY_SET, 'name']),
+          neighbor.get(PSA_ASSOCIATION.DETAILS)
         );
         combinedEntity = getUpdatedEntity(
           combinedEntity,
-          neighbor.getIn(['neighborEntitySet', 'title']),
-          neighbor.getIn(['neighborEntitySet', 'name']),
-          neighbor.get('neighborDetails', Immutable.Map())
+          neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'title']),
+          neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'name']),
+          neighbor.get(PSA_NEIGHBOR.DETAILS, Immutable.Map())
         );
         allHeaders = allHeaders.union(combinedEntity.keys());
       });

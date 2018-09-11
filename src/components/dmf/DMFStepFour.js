@@ -1,20 +1,27 @@
 /*
  * @flow
  */
-
 import React from 'react';
 
 import DMFCell from './DMFCell';
-import { ContentsWrapper, StepWrapper } from './DMFStyledTags';
-import ContentBlock from '../ContentBlock';
-import ContentSection from '../ContentSection';
 import BooleanFlag from '../BooleanFlag';
 import rightArrow from '../../assets/svg/dmf-arrow.svg';
 import {
   getDMFDecision,
   increaseDMFSeverity
 } from '../../utils/DMFUtils';
-import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
+import {
+  ContentsWrapper,
+  StepIncreaseWrapper,
+  StyledSection,
+  Flags,
+  StyledContentBlock,
+  StyledContentLabel,
+  StyledContent,
+  DMFIncreaseText,
+  DMFIncreaseCell
+} from './DMFStyledTags';
+import { Title, FullWidthContainer } from '../../utils/Layout';
 
 const StepFour = ({
   shouldRender,
@@ -31,76 +38,75 @@ const StepFour = ({
 
   const STEP4_VALS = [
     {
-      label: 'Listed Charges',
+      label: 'Does current charge match listed charges?',
       content: [<ContentsWrapper><BooleanFlag dims={flagDims} value={stepFourVal} /></ContentsWrapper>]
     },
-    // {
-    //   label: 'Pretrial FTA',
-    //   content: [<ContentsWrapper><BooleanFlag dims={flagDims} value={fta} /></ContentsWrapper>]
-    // },
     {
-      label: 'NVCA',
-      content: [<ContentsWrapper><BooleanFlag dims={flagDims} value={nvca} /></ContentsWrapper>]
+      label: 'Current charge is violent and PSA resulted in NVCA flag?',
+      content: [
+        <ContentsWrapper><BooleanFlag dims={flagDims} value={nvca && currentViolentOffense} /></ContentsWrapper>
+      ]
     },
     {
-      label: 'Violent Offense',
-      content: [
-        <ContentsWrapper><BooleanFlag dims={flagDims} value={currentViolentOffense} /></ContentsWrapper>
-      ]
+      label: '',
+      content: []
     }
   ];
-  const content = STEP4_VALS.map(item => (
-    <ContentBlock
-        component={CONTENT_CONSTS.DMF}
-        contentBlock={item}
-        key={item.label} />
-  ));
 
   const flags = () => (
-    <ContentSection
-        component={CONTENT_CONSTS.DMF}
-        header="Step Four" >
-      {content}
-    </ContentSection>
+    <Flags>
+      {
+        STEP4_VALS.map(item => (
+          <StyledContentBlock>
+            <StyledContentLabel>{item.label}</StyledContentLabel>
+            <StyledContent>{item.content}</StyledContent>
+          </StyledContentBlock>
+        ))
+      }
+    </Flags>
   );
 
   if (!shouldRender) return null;
-  const textArr = [];
   let dmfTransformation;
 
   const stepThreeDmf = getDMFDecision(nca, fta, context);
+  const stepFourDmf = increaseDMFSeverity(stepThreeDmf, context);
 
   const violentRisk = nvca && !currentViolentOffense;
   if (!stepFourVal && !violentRisk) {
-    textArr.push('no charges meet the requirements to increase severity');
     dmfTransformation = (
-      <StepWrapper>
+      <StyledSection>
+        <DMFIncreaseText>
+          STEP FOUR INCREASE NOT APPLICABLE
+        </DMFIncreaseText>
         <DMFCell dmf={stepThreeDmf} selected large />
-      </StepWrapper>
+      </StyledSection>
     );
   }
   else {
     dmfTransformation = (
-      <StepWrapper>
-        <DMFCell dmf={stepThreeDmf} selected large />
-        <img src={rightArrow} alt="" />
-        <DMFCell dmf={increaseDMFSeverity(stepThreeDmf, context)} selected large />
-      </StepWrapper>
+      <StyledSection>
+        <DMFIncreaseText>
+          STEP FOUR INCREASE APPLIED
+          <span>increased conditions for release</span>
+        </DMFIncreaseText>
+        <DMFIncreaseCell>
+          <DMFCell dmf={stepThreeDmf} selected large />
+          <img src={rightArrow} alt="" />
+          <DMFCell dmf={stepFourDmf} selected large />
+        </DMFIncreaseCell>
+      </StyledSection>
     );
-    if (stepFourVal) {
-      textArr.push('charges meet the requirements to increase severity');
-    }
-    if (violentRisk) {
-      textArr.push('PSA resulted in NVCA flag and current offense is not violent');
-    }
   }
 
   return (
-    <div>
-      <hr />
-      {flags()}
-      {dmfTransformation}
-    </div>
+    <StepIncreaseWrapper>
+      <Title withSubtitle><span>Step Four</span></Title>
+      <FullWidthContainer>
+        {flags()}
+        {dmfTransformation}
+      </FullWidthContainer>
+    </StepIncreaseWrapper>
   );
 };
 
