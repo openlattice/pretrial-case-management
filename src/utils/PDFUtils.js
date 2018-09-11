@@ -517,7 +517,7 @@ const charges = (
       [y, page] = newPage(doc, page, name);
     }
 
-    const qualifierText = formatValue(charge.get(QUALIFIER, ''));
+    const qualifierText = formatValue(charge.get(QUALIFIER, Immutable.List()));
     const CHARGE_OFFSET = 20;
     y = chargeTags(doc, y, charge, casesByCaseNum);
 
