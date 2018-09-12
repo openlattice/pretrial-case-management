@@ -24,11 +24,12 @@ import * as CourtActionFactory from './CourtActionFactory';
 import * as FormActionFactory from '../psa/FormActionFactory';
 import * as ReviewActionFactory from '../review/ReviewActionFactory';
 import * as Routes from '../../core/router/Routes';
+import { PSA_STATUSES } from '../../utils/consts/Consts';
 import { StyledSectionWrapper } from '../../utils/Layout';
 import { TIME_FORMAT, formatDate } from '../../utils/FormattingUtils';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { DOMAIN } from '../../utils/consts/ReportDownloadTypes';
-import { STATE, COURT } from '../../utils/consts/FrontEndStateConsts';
+import { STATE, COURT, REVIEW, SEARCH } from '../../utils/consts/FrontEndStateConsts';
 import { sortPeopleByName } from '../../utils/PSAUtils';
 
 const { OPENLATTICE_ID_FQN } = Constants;
@@ -140,6 +141,8 @@ type Props = {
   county :string,
   peopleWithOpenPsas :Immutable.Set<*>,
   actions :{
+    loadPSAsByDate :(filter :string) => void,
+    searchPeopleRequest :(firstName :string, lastName :string, dob :string) => void,
     changeHearingFilters :({ county? :string, courtroom? :string }) => void,
     loadHearingsForDate :(date :Object) => void,
     bulkDownloadPSAReviewPDF :({ peopleEntityKeyIds :string[] }) => void
@@ -162,6 +165,7 @@ class CourtContainer extends React.Component<Props, State> {
   }
 
   componentDidMount() {
+    this.props.actions.loadPSAsByDate(PSA_STATUSES.OPEN);
     if (!this.props.hearingsByTime.size || !this.props.hearingNeighborsById.size) {
       this.props.actions.loadHearingsForDate(this.state.date);
     }
@@ -371,6 +375,8 @@ class CourtContainer extends React.Component<Props, State> {
 
 function mapStateToProps(state) {
   const court = state.get(STATE.COURT);
+  const review = state.get(STATE.REVIEW);
+  const search = state.get(STATE.SEARCH);
   return {
     [COURT.HEARINGS_TODAY]: court.get(COURT.HEARINGS_TODAY),
     [COURT.HEARINGS_BY_TIME]: court.get(COURT.HEARINGS_BY_TIME),
@@ -379,7 +385,11 @@ function mapStateToProps(state) {
     [COURT.LOADING_HEARINGS]: court.get(COURT.LOADING_HEARINGS),
     [COURT.LOADING_ERROR]: court.get(COURT.LOADING_ERROR),
     [COURT.COUNTY]: court.get(COURT.COUNTY),
-    [COURT.COURTROOM]: court.get(COURT.COURTROOM)
+    [COURT.COURTROOM]: court.get(COURT.COURTROOM),
+    [COURT.OPEN_PSAS]: review.get(REVIEW.SCORES),
+    [SEARCH.SEARCH_RESULTS]: search.get(SEARCH.SEARCH_RESULTS),
+    [SEARCH.LOADING]: search.get(SEARCH.LOADING, false),
+    [SEARCH.LOADING_DATA]: search.get(SEARCH.LOADING_DATA, false)
   };
 }
 
