@@ -104,11 +104,15 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
         }
 
         const { neighborEntitySet } = neighbor;
-        const entitySetName = neighborEntitySet.name;
-        const shouldNotIgnore = (
-          entitySetName !== ENTITY_SETS.RELEASE_CONDITIONS
-          && entitySetName !== ENTITY_SETS.BONDS
-        );
+        let shouldNotIgnore = true;
+        if (neighborEntitySet) {
+          const entitySetName = neighborEntitySet.name;
+          shouldNotIgnore = (
+            entitySetName !== ENTITY_SETS.RELEASE_CONDITIONS
+            && entitySetName !== ENTITY_SETS.BONDS
+          );
+        }
+
         const timestampList = neighbor.associationDetails[PROPERTY_TYPES.TIMESTAMP]
           || neighbor.associationDetails[PROPERTY_TYPES.COMPLETED_DATE_TIME];
         if (timestampList && timestampList.length && shouldNotIgnore) {
