@@ -57,7 +57,7 @@ const StepFour = ({
     <Flags>
       {
         STEP4_VALS.map(item => (
-          <StyledContentBlock>
+          <StyledContentBlock key={item.label}>
             <StyledContentLabel>{item.label}</StyledContentLabel>
             <StyledContent>{item.content}</StyledContent>
           </StyledContentBlock>
