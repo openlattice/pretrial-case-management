@@ -54,7 +54,7 @@ const StepTwo = ({
     <Flags>
       {
         STEP2_VALS.map(item => (
-          <StyledContentBlock key={`${item.label}`}>
+          <StyledContentBlock key={item.label}>
             <StyledContentLabel>{item.label}</StyledContentLabel>
             <StyledContent>{item.content}</StyledContent>
           </StyledContentBlock>
