@@ -261,6 +261,7 @@ export const PSA_FAILURE_REASONS = {
   FTA: 'Failure to Appear',
   NONCOMPLIANCE: 'Non-compliance',
   REARREST: 'Rearrest',
+  REARREST_VA: 'Rearrest (Violent Offense)',
   OTHER: 'Other'
 };
 
