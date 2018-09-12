@@ -35,7 +35,8 @@ export const COURT = {
   LOADING_HEARINGS: 'isLoadingHearings',
   LOADING_ERROR: 'loadingError',
   COUNTY: 'county',
-  COURTROOM: 'courtroom'
+  COURTROOM: 'courtroom',
+  OPEN_PSAS: 'openPSAs'
 };
 
 // Dashboard
