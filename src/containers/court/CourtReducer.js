@@ -12,13 +12,14 @@ const INITIAL_STATE :Immutable.Map<*, *> = Immutable.fromJS({
   [COURT.HEARINGS_BY_TIME]: Immutable.Map(),
   [COURT.HEARINGS_NEIGHBORS_BY_ID]: Immutable.Map(),
   [COURT.PEOPLE_WITH_OPEN_PSAS]: Immutable.Set(),
+  [COURT.OPEN_PSAS]: Immutable.Map(),
   [COURT.LOADING_HEARINGS]: false,
   [COURT.LOADING_ERROR]: false,
   [COURT.COUNTY]: '',
   [COURT.COURTROOM]: ''
 });
 
-export default function reviewReducer(state :Immutable.Map<*, *> = INITIAL_STATE, action :SequenceAction) {
+export default function courtReducer(state :Immutable.Map<*, *> = INITIAL_STATE, action :SequenceAction) {
   switch (action.type) {
 
     case filterPeopleIdsWithOpenPSAs.case(action.type): {
