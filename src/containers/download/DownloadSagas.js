@@ -104,7 +104,7 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
         }
 
         const { neighborEntitySet } = neighbor;
-        let shouldNotIgnore = true;
+        let shouldNotIgnore = false;
         if (neighborEntitySet) {
           const entitySetName = neighborEntitySet.name;
           shouldNotIgnore = (
