@@ -89,7 +89,6 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
     });
 
     const neighborsById = yield call(SearchApi.searchEntityNeighborsBulk, entitySetId, scoresAsMap.keySeq().toJS());
-
     let usableNeighborsById = Immutable.Map();
 
     Object.keys(neighborsById).forEach((id) => {
@@ -103,9 +102,20 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
             domainMatch = false;
           }
         }
+
+        const { neighborEntitySet } = neighbor;
+        let shouldNotIgnore = false;
+        if (neighborEntitySet) {
+          const entitySetName = neighborEntitySet.name;
+          shouldNotIgnore = (
+            entitySetName !== ENTITY_SETS.RELEASE_CONDITIONS
+            && entitySetName !== ENTITY_SETS.BONDS
+          );
+        }
+
         const timestampList = neighbor.associationDetails[PROPERTY_TYPES.TIMESTAMP]
           || neighbor.associationDetails[PROPERTY_TYPES.COMPLETED_DATE_TIME];
-        if (timestampList && timestampList.length) {
+        if (timestampList && timestampList.length && shouldNotIgnore) {
           const timestamp = moment(timestampList[0]);
           if (timestamp.isSameOrAfter(start) && timestamp.isSameOrBefore(end)) {
             usableNeighbors = usableNeighbors.push(Immutable.fromJS(neighbor));
