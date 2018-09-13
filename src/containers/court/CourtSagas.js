@@ -28,6 +28,7 @@ function* filterPeopleIdsWithOpenPSAsWorker(action :SequenceAction) :Generator<*
     yield put(filterPeopleIdsWithOpenPSAs.request(action.id));
 
     let filteredPersonIds = Immutable.Set();
+    let neighborsForOpenPSAs = Immutable.Map();
     if (personEntitySetId) {
       const neighborsById = yield call(SearchApi.searchEntityNeighborsBulk, personEntitySetId, personIds.toJS());
       filteredPersonIds = personIds.filter((id) => {
@@ -36,7 +37,10 @@ function* filterPeopleIdsWithOpenPSAsWorker(action :SequenceAction) :Generator<*
             const { neighborEntitySet, neighborDetails } = neighbor;
             if (neighborEntitySet && neighborEntitySet.name === ENTITY_SETS.PSA_SCORES) {
               const statusList = neighborDetails[PROPERTY_TYPES.STATUS] || [];
-              return statusList.includes(PSA_STATUSES.OPEN);
+              if (statusList.includes(PSA_STATUSES.OPEN)) {
+                neighborsForOpenPSAs = neighborsForOpenPSAs.set(id, neighborsById[id]);
+                return true;
+              }
             }
             return false;
           });
@@ -44,10 +48,9 @@ function* filterPeopleIdsWithOpenPSAsWorker(action :SequenceAction) :Generator<*
         }
         return false;
       });
-
     }
 
-    yield put(filterPeopleIdsWithOpenPSAs.success(action.id, filteredPersonIds));
+    yield put(filterPeopleIdsWithOpenPSAs.success(action.id, { filteredPersonIds, neighborsForOpenPSAs }));
   }
   catch (error) {
     yield put(filterPeopleIdsWithOpenPSAs.failure(action.id, error));
@@ -139,7 +142,8 @@ function* loadHearingsForDateWorker(action :SequenceAction) :Generator<*, *, *> 
     });
 
     yield put(loadHearingsForDate.success(action.id, { hearingsToday, hearingNeighborsById, hearingsByTime }));
-    yield put(filterPeopleIdsWithOpenPSAs({ personEntitySetId, personIds }));
+    const peopleIdsWithOpenPSAs = filterPeopleIdsWithOpenPSAs({ personEntitySetId, personIds });
+    yield put(peopleIdsWithOpenPSAs);
   }
   catch (error) {
     console.error(error);
