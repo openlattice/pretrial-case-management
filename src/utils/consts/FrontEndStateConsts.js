@@ -36,7 +36,8 @@ export const COURT = {
   LOADING_ERROR: 'loadingError',
   COUNTY: 'county',
   COURTROOM: 'courtroom',
-  OPEN_PSAS: 'openPSAs'
+  OPEN_PSAS: 'openPSAs',
+  OPEN_PSA_NEIGHBORS: 'openPSANeighbors'
 };
 
 // Dashboard
