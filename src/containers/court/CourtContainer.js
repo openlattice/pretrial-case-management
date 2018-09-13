@@ -24,7 +24,6 @@ import * as CourtActionFactory from './CourtActionFactory';
 import * as FormActionFactory from '../psa/FormActionFactory';
 import * as ReviewActionFactory from '../review/ReviewActionFactory';
 import * as Routes from '../../core/router/Routes';
-import { PSA_STATUSES } from '../../utils/consts/Consts';
 import { StyledSectionWrapper } from '../../utils/Layout';
 import { TIME_FORMAT, formatDate } from '../../utils/FormattingUtils';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
@@ -165,7 +164,6 @@ class CourtContainer extends React.Component<Props, State> {
   }
 
   componentDidMount() {
-    this.props.actions.loadPSAsByDate(PSA_STATUSES.OPEN);
     if (!this.props.hearingsByTime.size || !this.props.hearingNeighborsById.size) {
       this.props.actions.loadHearingsForDate(this.state.date);
     }
@@ -387,6 +385,7 @@ function mapStateToProps(state) {
     [COURT.COUNTY]: court.get(COURT.COUNTY),
     [COURT.COURTROOM]: court.get(COURT.COURTROOM),
     [COURT.OPEN_PSAS]: review.get(REVIEW.SCORES),
+    [COURT.OPEN_PSA_NEIGHBORS]: court.get(COURT.OPEN_PSA_NEIGHBORS),
     [SEARCH.SEARCH_RESULTS]: search.get(SEARCH.SEARCH_RESULTS),
     [SEARCH.LOADING]: search.get(SEARCH.LOADING, false),
     [SEARCH.LOADING_DATA]: search.get(SEARCH.LOADING_DATA, false)
