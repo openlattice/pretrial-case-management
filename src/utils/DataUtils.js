@@ -43,3 +43,19 @@ export const getIdValue = (neighbors :Immutable.Map<*, *>, name :string, optiona
   const fqn = optionalFQN || PROPERTY_TYPES.GENERAL_ID;
   return neighbors.getIn([name, PSA_NEIGHBOR.DETAILS, fqn, 0], '');
 };
+
+export const getFilteredNeighbor = neighborObj => Object.assign({}, ...[
+  'associationEntitySet',
+  'associationDetails',
+  'neighborEntitySet',
+  'neighborDetails'
+].map(key => ({ [key]: neighborObj[key] })));
+
+export const getFilteredNeighborsById = (neighborValues) => {
+  let neighborsById = Immutable.Map();
+  Object.keys(neighborValues).forEach((id) => {
+    neighborsById = neighborsById.set(id, Immutable.fromJS(neighborValues[id].map(getFilteredNeighbor)));
+  });
+
+  return neighborsById;
+};

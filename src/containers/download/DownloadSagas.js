@@ -9,7 +9,7 @@ import { call, put, takeEvery } from 'redux-saga/effects';
 
 import FileSaver from '../../utils/FileSaver';
 import { formatDateTime } from '../../utils/FormattingUtils';
-import { stripIdField } from '../../utils/DataUtils';
+import { getFilteredNeighbor, stripIdField } from '../../utils/DataUtils';
 import { obfuscateBulkEntityNeighbors } from '../../utils/consts/DemoNames';
 import {
   DOWNLOAD_PSA_FORMS,
@@ -95,7 +95,8 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
       let usableNeighbors = Immutable.List();
       const neighborList = neighborsById[id];
       let domainMatch = true;
-      neighborList.forEach((neighbor) => {
+      neighborList.forEach((neighborObj) => {
+        const neighbor = getFilteredNeighbor(neighborObj);
         if (domain && neighbor.neighborEntitySet && neighbor.neighborEntitySet.name === ENTITY_SETS.STAFF) {
           const filer = neighbor.neighborDetails[PROPERTY_TYPES.PERSON_ID][0];
           if (!filer.toLowerCase().endsWith(domain)) {
