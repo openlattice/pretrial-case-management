@@ -33,6 +33,7 @@ export const COURT = {
   HEARINGS_NEIGHBORS_BY_ID: 'hearingNeighborsById',
   PEOPLE_WITH_OPEN_PSAS: 'peopleWithOpenPsas',
   LOADING_HEARINGS: 'isLoadingHearings',
+  LOADING_PSAS: 'isLoadingPSAs',
   LOADING_ERROR: 'loadingError',
   COUNTY: 'county',
   COURTROOM: 'courtroom',
