@@ -20,16 +20,19 @@ import SecondaryButton from '../../components/buttons/SecondaryButton';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import PersonCard from '../../components/people/PersonCard';
 import StyledDatePicker from '../../components/controls/StyledDatePicker';
-import * as CourtActionFactory from './CourtActionFactory';
-import * as FormActionFactory from '../psa/FormActionFactory';
-import * as ReviewActionFactory from '../review/ReviewActionFactory';
 import * as Routes from '../../core/router/Routes';
 import { StyledSectionWrapper } from '../../utils/Layout';
 import { TIME_FORMAT, formatDate } from '../../utils/FormattingUtils';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { DOMAIN } from '../../utils/consts/ReportDownloadTypes';
-import { STATE, COURT, REVIEW, SEARCH } from '../../utils/consts/FrontEndStateConsts';
+import { STATE, COURT, REVIEW, SUBMIT, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { sortPeopleByName } from '../../utils/PSAUtils';
+
+import * as CourtActionFactory from './CourtActionFactory';
+import * as FormActionFactory from '../psa/FormActionFactory';
+import * as ReviewActionFactory from '../review/ReviewActionFactory';
+import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
+import * as DataActionFactory from '../../utils/data/DataActionFactory';
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
@@ -135,16 +138,41 @@ type Props = {
   hearingsByTime :Immutable.Map<*, *>,
   hearingNeighborsById :Immutable.Map<*, *>,
   isLoadingHearings :boolean,
+  isLoadingPSAs :boolean,
   loadingError :boolean,
   courtroom :string,
   county :string,
   peopleWithOpenPsas :Immutable.Set<*>,
+  openPSANeighbors :Immutable.Map<*>,
+  caseHistory :Immutable.List<*>,
+  manualCaseHistory :Immutable.List<*>,
+  chargeHistory :Immutable.Map<*, *>,
+  manualChargeHistory :Immutable.Map<*, *>,
+  sentenceHistory :Immutable.Map<*, *>,
+  ftaHistory :Immutable.Map<*, *>,
+  hearings :Immutable.List<*>,
+  loadingPSAData :boolean,
+  submitting :boolean,
   actions :{
-    loadPSAsByDate :(filter :string) => void,
-    searchPeopleRequest :(firstName :string, lastName :string, dob :string) => void,
+    bulkDownloadPSAReviewPDF :({ peopleEntityKeyIds :string[] }) => void,
     changeHearingFilters :({ county? :string, courtroom? :string }) => void,
+    checkPSAPermissions :() => void,
+    clearSubmit :() => void,
+    deleteEntity :(value :{ entitySetName :string, entityKeyId :string }) => void,
+    downloadPSAReviewPDF :(values :{
+      neighbors :Immutable.Map<*, *>,
+      scores :Immutable.Map<*, *>
+    }) => void,
+    loadCaseHistory :(values :{
+      personId :string,
+      neighbors :Immutable.Map<*, *>
+    }) => void,
     loadHearingsForDate :(date :Object) => void,
-    bulkDownloadPSAReviewPDF :({ peopleEntityKeyIds :string[] }) => void
+    loadPSAsByDate :(filter :string) => void,
+    refreshPSANeighbors :({ id :string }) => void,
+    replaceEntity :(value :{ entitySetName :string, entityKeyId :string, values :Object }) => void,
+    searchPeopleRequest :(firstName :string, lastName :string, dob :string) => void,
+    submit :(value :{ config :Object, values :Object}) => void,
   }
 };
 
@@ -164,24 +192,65 @@ class CourtContainer extends React.Component<Props, State> {
   }
 
   componentDidMount() {
+    this.props.actions.checkPSAPermissions();
     if (!this.props.hearingsByTime.size || !this.props.hearingNeighborsById.size) {
       this.props.actions.loadHearingsForDate(this.state.date);
     }
   }
 
+  componentWillUnmount() {
+    this.props.actions.clearSubmit();
+  }
+
+
   renderPersonCard = (person, index) => {
+    const personId = person.getIn([PROPERTY_TYPES.PERSON_ID, 0]);
+    const personOlId = person.getIn([OPENLATTICE_ID_FQN, 0]);
     const dobMoment = moment(person.getIn([PROPERTY_TYPES.DOB, 0], ''));
     const formattedDOB = dobMoment.isValid() ? formatDate(dobMoment) : '';
+    const caseHistory = this.props.caseHistory.get(personOlId, Immutable.List());
+    const manualCaseHistory = this.props.manualCaseHistory.get(personOlId, Immutable.List());
+    const chargeHistory = this.props.chargeHistory.get(personOlId, Immutable.Map());
+    const manualChargeHistory = this.props.manualChargeHistory.get(personOlId, Immutable.Map());
+    const sentenceHistory = this.props.sentenceHistory.get(personOlId, Immutable.Map());
+    const ftaHistory = this.props.ftaHistory.get(personOlId, Immutable.Map());
+    const hearings = this.props.hearings.get(personOlId, Immutable.List());
+    const hasOpenPSA = this.props.peopleWithOpenPsas.has(person.getIn([OPENLATTICE_ID_FQN, 0]));
+    const neighbors = this.props.openPSANeighbors.get(personOlId, Immutable.Map())
+      .setIn([ENTITY_SETS.PEOPLE, PSA_NEIGHBOR.DETAILS], Immutable.fromJS(person));
     const personObj = {
-      identification: person.getIn([PROPERTY_TYPES.PERSON_ID, 0]),
+      identification: personId,
       firstName: person.getIn([PROPERTY_TYPES.FIRST_NAME, 0]),
       middleName: person.getIn([PROPERTY_TYPES.MIDDLE_NAME, 0]),
       lastName: person.getIn([PROPERTY_TYPES.LAST_NAME, 0]),
       dob: formattedDOB,
       photo: person.getIn([PROPERTY_TYPES.PICTURE, 0])
     };
-    const hasOpenPSA = this.props.peopleWithOpenPsas.has(person.getIn([OPENLATTICE_ID_FQN, 0]));
-    return <PersonCard key={`${personObj.identification}-${index}`} person={personObj} hasOpenPSA={hasOpenPSA} />;
+    const scores = neighbors.getIn([ENTITY_SETS.PSA_SCORES, 0, PSA_NEIGHBOR.DETAILS], Immutable.Map());
+    const entityKeyId = scores.getIn([OPENLATTICE_ID_FQN, 0]);
+    return (
+      <PersonCard
+          key={`${personObj.identification}-${index}`}
+          entityKeyId={entityKeyId}
+          person={person}
+          personObj={personObj}
+          hasOpenPSA={hasOpenPSA}
+          scores={scores}
+          neighbors={neighbors}
+          downloadFn={this.props.actions.downloadPSAReviewPDF}
+          loadCaseHistoryFn={this.props.actions.loadCaseHistory}
+          submitData={this.props.actions.submit}
+          replaceEntity={this.props.actions.replaceEntity}
+          deleteEntity={this.props.actions.deleteEntity}
+          caseHistory={caseHistory}
+          manualCaseHistory={manualCaseHistory}
+          chargeHistory={chargeHistory}
+          manualChargeHistory={manualChargeHistory}
+          sentenceHistory={sentenceHistory}
+          ftaHistory={ftaHistory}
+          hearings={hearings}
+          judgesview />
+    );
   }
 
   downloadPDFs = (courtroom, people, time) => {
@@ -193,13 +262,14 @@ class CourtContainer extends React.Component<Props, State> {
   }
 
   renderHearingRow = (courtroom, people, time) => {
+    const persons = people.toList().sort(sortPeopleByName);
     return (
       <HearingRow>
         <Courtroom>
           <span>{courtroom}</span>
           <SecondaryButton onClick={() => this.downloadPDFs(courtroom, people, time)}>Download PDFs</SecondaryButton>
         </Courtroom>
-        <PeopleWrapper>{people.valueSeq().sort(sortPeopleByName).map(this.renderPersonCard)}</PeopleWrapper>
+        <PeopleWrapper>{persons.map(this.renderPersonCard)}</PeopleWrapper>
       </HearingRow>
     );
   }
@@ -340,7 +410,7 @@ class CourtContainer extends React.Component<Props, State> {
   }
 
   renderContent = () => {
-    if (this.props.isLoadingHearings) {
+    if (this.props.isLoadingPSAs) {
       return <SpinnerWrapper><LoadingSpinner /></SpinnerWrapper>;
     }
 
@@ -352,6 +422,7 @@ class CourtContainer extends React.Component<Props, State> {
   }
 
   render() {
+    console.log(this.props[REVIEW.HEARINGS].toJS());
     return (
       <StyledFormViewWrapper>
         <StyledFormWrapper>
@@ -374,21 +445,30 @@ class CourtContainer extends React.Component<Props, State> {
 function mapStateToProps(state) {
   const court = state.get(STATE.COURT);
   const review = state.get(STATE.REVIEW);
-  const search = state.get(STATE.SEARCH);
+  const submit = state.get(STATE.SUBMIT);
   return {
     [COURT.HEARINGS_TODAY]: court.get(COURT.HEARINGS_TODAY),
     [COURT.HEARINGS_BY_TIME]: court.get(COURT.HEARINGS_BY_TIME),
     [COURT.HEARINGS_NEIGHBORS_BY_ID]: court.get(COURT.HEARINGS_NEIGHBORS_BY_ID),
     [COURT.PEOPLE_WITH_OPEN_PSAS]: court.get(COURT.PEOPLE_WITH_OPEN_PSAS),
     [COURT.LOADING_HEARINGS]: court.get(COURT.LOADING_HEARINGS),
+    [COURT.LOADING_PSAS]: court.get(COURT.LOADING_PSAS),
     [COURT.LOADING_ERROR]: court.get(COURT.LOADING_ERROR),
     [COURT.COUNTY]: court.get(COURT.COUNTY),
     [COURT.COURTROOM]: court.get(COURT.COURTROOM),
-    [COURT.OPEN_PSAS]: review.get(REVIEW.SCORES),
     [COURT.OPEN_PSA_NEIGHBORS]: court.get(COURT.OPEN_PSA_NEIGHBORS),
-    [SEARCH.SEARCH_RESULTS]: search.get(SEARCH.SEARCH_RESULTS),
-    [SEARCH.LOADING]: search.get(SEARCH.LOADING, false),
-    [SEARCH.LOADING_DATA]: search.get(SEARCH.LOADING_DATA, false)
+
+    [REVIEW.CASE_HISTORY]: review.get(REVIEW.CASE_HISTORY),
+    [REVIEW.MANUAL_CASE_HISTORY]: review.get(REVIEW.MANUAL_CASE_HISTORY),
+    [REVIEW.CHARGE_HISTORY]: review.get(REVIEW.CHARGE_HISTORY),
+    [REVIEW.MANUAL_CHARGE_HISTORY]: review.get(REVIEW.MANUAL_CHARGE_HISTORY),
+    [REVIEW.SENTENCE_HISTORY]: review.get(REVIEW.SENTENCE_HISTORY),
+    [REVIEW.FTA_HISTORY]: review.get(REVIEW.FTA_HISTORY),
+    [REVIEW.HEARINGS]: review.get(REVIEW.HEARINGS),
+    [REVIEW.LOADING_DATA]: review.get(REVIEW.LOADING_DATA),
+    [REVIEW.PSA_IDS_REFRESHING]: review.get(REVIEW.PSA_IDS_REFRESHING),
+
+    [SUBMIT.SUBMITTING]: submit.get(SUBMIT.SUBMITTING, false)
   };
 }
 
@@ -405,6 +485,14 @@ function mapDispatchToProps(dispatch :Function) :Object {
 
   Object.keys(ReviewActionFactory).forEach((action :string) => {
     actions[action] = ReviewActionFactory[action];
+  });
+
+  Object.keys(SubmitActionFactory).forEach((action :string) => {
+    actions[action] = SubmitActionFactory[action];
+  });
+
+  Object.keys(DataActionFactory).forEach((action :string) => {
+    actions[action] = DataActionFactory[action];
   });
 
   return {
