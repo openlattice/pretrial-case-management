@@ -56,7 +56,7 @@ export const HEADERS = {
   CONDITION_1: 'justice.condition1|South Dakota DMF Decisions',
   CONDITION_2: 'justice.condition2|South Dakota DMF Decisions',
   CONDITION_3: 'justice.condition3|South Dakota DMF Decisions',
-  STATUS: 'general.status|PSA Scores',
+  STATUS: 'general.status|South Dakota PSA Scores',
   STATUS_NOTES: 'general.statusnotes|South Dakota PSA Scores',
   FAILURE_REASON: 'justice.failurereason|PSA Scores'
 };
