@@ -3,25 +3,24 @@
  */
 
 import React from 'react';
+import Immutable from 'immutable';
 import styled from 'styled-components';
 
-import StyledCard from '../../components/StyledCard';
-import * as Routes from '../../core/router/Routes';
-import { UndecoratedLink } from '../../utils/Layout';
 import Headshot from '../Headshot';
+import PSAModal from '../../containers/review/PSAModal';
+import StyledCard from '../../components/StyledCard';
+import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { getEntityKeyId } from '../../utils/DataUtils';
+import { UndecoratedLink } from '../../utils/Layout';
 
-type Props = {
-  person :{
-    firstName :string,
-    lastName :string,
-    dob :string,
-    photo :string,
-    identification :string
-  },
-  hasOpenPSA? :string
-};
+import * as Routes from '../../core/router/Routes';
 
 const StyledUndecoratedLink = styled(UndecoratedLink)`
+  display: flex;
+  flex-direction: column;
+`;
+
+const CardWrapper = styled.div`
   display: flex;
   flex-direction: column;
 `;
@@ -83,39 +82,129 @@ const TagPlaceholder = styled.span`
   height: 8px;
 `;
 
-const PersonCard = ({ person, hasOpenPSA } :Props) => {
-  const {
-    firstName,
-    middleName,
-    lastName,
-    dob,
-    photo,
-    identification
-  } = person;
-
-  const midName = middleName ? ` ${middleName}` : '';
-
-  const name = `${lastName}, ${firstName}${midName}`;
-
-  return (
-    <StyledUndecoratedLink to={`${Routes.PERSON_DETAILS_ROOT}/${identification}`}>
-      {hasOpenPSA ? <OpenPSATag>Open PSA</OpenPSATag> : <TagPlaceholder />}
-      <StyledPersonCard>
-        <Headshot photo={photo} />
-        <PersonInfoSection>
-          <Name>{name}</Name>
-          <div>
-            <DobLabel>DOB  </DobLabel>
-            <Dob>{dob}</Dob>
-          </div>
-        </PersonInfoSection>
-      </StyledPersonCard>
-    </StyledUndecoratedLink>
-  );
+type Props = {
+  personObj :{
+    firstName :string,
+    middleName :string,
+    lastName :string,
+    dob :string,
+    photo :string,
+    identification :string
+  },
+  scores :Immutable.Map<*, *>,
+  neighbors :Immutable.Map<*, *>,
+  hasOpenPSA? :boolean,
+  judgesview? :boolean,
+  loadCaseHistoryFn :(values :{
+    personId :string,
+    neighbors :Immutable.Map<*, *>
+  }) => void,
 };
 
-PersonCard.defaultProps = {
-  hasOpenPSA: false
+type State = {
+  open :boolean,
+  closing :boolean,
+  closePSAButtonActive :boolean
 };
+
+class PersonCard extends React.Component<Props, State> {
+
+  static defaultProps = {
+    hasOpenPSA: false,
+    judgesview: false,
+    neighbors: Immutable.Map()
+  }
+
+  constructor(props :Props) {
+    super(props);
+    this.state = {
+      open: false,
+      closing: false
+    };
+  }
+
+  handleStatusChange = () => {
+    this.setState({ closing: false });
+  }
+
+  renderModal = () => {
+    const modalProps = {};
+    Object.keys(this.props).forEach(prop => (modalProps[prop] = Immutable.fromJS(this.props[prop])));
+    return (
+      <PSAModal
+          open={this.state.open}
+          onClose={() => this.setState({ open: false })}
+          {...modalProps} />
+    )
+  }
+
+
+  openDetailsModal = () => {
+    const { neighbors, loadCaseHistoryFn } = this.props;
+    const personId = getEntityKeyId(Immutable.fromJS(neighbors), ENTITY_SETS.PEOPLE);
+    loadCaseHistoryFn({ personId, neighbors: Immutable.fromJS(neighbors) });
+    this.setState({
+      open: true
+    });
+  }
+
+  renderContent = () => {
+    const {
+      firstName,
+      middleName,
+      lastName,
+      dob,
+      photo,
+      identification
+    } = this.props.personObj;
+    const { hasOpenPSA, judgesview } = this.props;
+
+    const midName = middleName ? ` ${middleName}` : '';
+    const name = `${lastName}, ${firstName}${midName}`;
+
+    return hasOpenPSA && judgesview ?
+      (
+        <CardWrapper onClick={this.openDetailsModal}>
+          { this.renderModal() }
+          <OpenPSATag>Open PSA</OpenPSATag>
+          <StyledPersonCard>
+            <Headshot photo={photo} />
+            <PersonInfoSection>
+              <Name>{name}</Name>
+              <div>
+                <DobLabel>DOB  </DobLabel>
+                <Dob>{dob}</Dob>
+              </div>
+            </PersonInfoSection>
+          </StyledPersonCard>
+        </CardWrapper>
+      )
+      :
+      (
+        <StyledUndecoratedLink to={`${Routes.PERSON_DETAILS_ROOT}/${identification}`}>
+          <TagPlaceholder />
+          <StyledPersonCard>
+            <Headshot photo={photo} />
+            <PersonInfoSection>
+              <Name>{name}</Name>
+              <div>
+                <DobLabel>DOB  </DobLabel>
+                <Dob>{dob}</Dob>
+              </div>
+            </PersonInfoSection>
+          </StyledPersonCard>
+        </StyledUndecoratedLink>
+      );
+  }
+
+  render() {
+    return (
+      <div>
+        {this.renderContent()}
+      </div>
+    );
+  }
+}
+
 
 export default PersonCard;
