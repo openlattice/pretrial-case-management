@@ -518,7 +518,7 @@ const charges = (
     }
 
     const qualifierText = formatValue(charge.get(QUALIFIER, Immutable.List()));
-    const CHARGE_OFFSET = 20;
+    const CHARGE_OFFSET = 25;
     y = chargeTags(doc, y, charge, casesByCaseNum);
 
     doc.text(xIndent, y, formatValue(charge.get(CHARGE_STATUTE, Immutable.List())));
