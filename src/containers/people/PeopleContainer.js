@@ -18,7 +18,7 @@ import NavButtonToolbar from '../../components/buttons/NavButtonToolbar';
 import DropDownMenu from '../../components/StyledSelect';
 import { searchPeopleRequest } from '../person/PersonActionFactory';
 import { PSA_STATUSES } from '../../utils/consts/Consts';
-import { STATE, SEARCH, REVIEW, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
+import { STATE, SEARCH, PEOPLE, REVIEW, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { DOMAIN_OPTIONS_ARR } from '../../utils/consts/ReviewPSAConsts';
 import { formatDOB } from '../../utils/Helpers';
@@ -291,7 +291,8 @@ function mapStateToProps(state) {
     isFetchingPeople,
     loadingPSAData,
     openPSAs,
-    psaNeighborsById
+    psaNeighborsById,
+    [PEOPLE.SCORES_ENTITY_SET_ID]: state.getIn([STATE.REVIEW, REVIEW.ENTITY_SET_ID], Immutable.Map())
   };
 }
 

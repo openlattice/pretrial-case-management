@@ -9,6 +9,7 @@ import { all, call, put, takeEvery } from 'redux-saga/effects';
 
 import { PSA_STATUSES } from '../../utils/consts/Consts';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { PSA_NEIGHBOR, PSA_ASSOCIATION } from '../../utils/consts/FrontEndStateConsts';
 import { toISODate, TIME_FORMAT } from '../../utils/FormattingUtils';
 import { getFqnObj } from '../../utils/DataUtils';
 import { obfuscateEntityNeighbors, obfuscateBulkEntityNeighbors } from '../../utils/consts/DemoNames';
@@ -26,17 +27,29 @@ function* filterPeopleIdsWithOpenPSAsWorker(action :SequenceAction) :Generator<*
   try {
     const { personEntitySetId, personIds } = action.value;
     yield put(filterPeopleIdsWithOpenPSAs.request(action.id));
-
     let filteredPersonIds = Immutable.Set();
+    let neighborsForOpenPSAs = Immutable.Map();
     if (personEntitySetId) {
       const neighborsById = yield call(SearchApi.searchEntityNeighborsBulk, personEntitySetId, personIds.toJS());
       filteredPersonIds = personIds.filter((id) => {
         if (neighborsById[id]) {
           const openPSANeighbors = neighborsById[id].filter((neighbor) => {
-            const { neighborEntitySet, neighborDetails } = neighbor;
+            const { neighborEntitySet, neighborDetails, associationDetails } = neighbor;
+            const statusList = neighborDetails[PROPERTY_TYPES.STATUS] || [];
+            const associationEntitySetId = associationDetails[OPENLATTICE_ID_FQN][0];
             if (neighborEntitySet && neighborEntitySet.name === ENTITY_SETS.PSA_SCORES) {
-              const statusList = neighborDetails[PROPERTY_TYPES.STATUS] || [];
-              return statusList.includes(PSA_STATUSES.OPEN);
+              const psaNeighbors = neighborsById[id].filter((possibleNeighbor) => {
+                const associationId = possibleNeighbor[PSA_ASSOCIATION.DETAILS][OPENLATTICE_ID_FQN][0];
+                return (
+                  associationId === associationEntitySetId ||
+                  possibleNeighbor[PSA_NEIGHBOR.ENTITY_SET].name === ENTITY_SETS.MANUAL_PRETRIAL_CASES ||
+                  possibleNeighbor[PSA_NEIGHBOR.ENTITY_SET].name === ENTITY_SETS.HEARINGS
+                );
+              });
+              if (statusList.includes(PSA_STATUSES.OPEN)) {
+                neighborsForOpenPSAs = neighborsForOpenPSAs.set(id, Immutable.fromJS(psaNeighbors));
+                return true;
+              }
             }
             return false;
           });
@@ -44,10 +57,8 @@ function* filterPeopleIdsWithOpenPSAsWorker(action :SequenceAction) :Generator<*
         }
         return false;
       });
-
     }
-
-    yield put(filterPeopleIdsWithOpenPSAs.success(action.id, filteredPersonIds));
+    yield put(filterPeopleIdsWithOpenPSAs.success(action.id, { filteredPersonIds, neighborsForOpenPSAs }));
   }
   catch (error) {
     yield put(filterPeopleIdsWithOpenPSAs.failure(action.id, error));
@@ -139,7 +150,8 @@ function* loadHearingsForDateWorker(action :SequenceAction) :Generator<*, *, *> 
     });
 
     yield put(loadHearingsForDate.success(action.id, { hearingsToday, hearingNeighborsById, hearingsByTime }));
-    yield put(filterPeopleIdsWithOpenPSAs({ personEntitySetId, personIds }));
+    const peopleIdsWithOpenPSAs = filterPeopleIdsWithOpenPSAs({ personEntitySetId, personIds });
+    yield put(peopleIdsWithOpenPSAs);
   }
   catch (error) {
     console.error(error);

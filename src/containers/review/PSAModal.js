@@ -35,7 +35,7 @@ import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts'
 import { RESULT_CATEGORIES } from '../../utils/consts/DMFResultConsts';
 import { formatDMFFromEntity } from '../../utils/DMFUtils';
 import { psaIsClosed } from '../../utils/PSAUtils';
-import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
+import { PSA_NEIGHBOR, REVIEW } from '../../utils/consts/FrontEndStateConsts';
 import * as OverrideClassNames from '../../utils/styleoverrides/OverrideClassNames';
 import * as FormActionFactory from '../psa/FormActionFactory';
 import * as ReviewActionFactory from './ReviewActionFactory';
@@ -419,7 +419,7 @@ class PSAModal extends React.Component<Props, State> {
     scoresEntity[PROPERTY_TYPES.STATUS] = status ? [status] : [];
 
     const scoresId = this.props.entityKeyId;
-    const scoresEntitySetId = this.getEntitySetId(ENTITY_SETS.PSA_SCORES);
+    const scoresEntitySetId = this.props[REVIEW.ENTITY_SET_ID];
     const riskFactorsEntitySetId = this.getEntitySetId(ENTITY_SETS.PSA_RISK_FACTORS);
     const riskFactorsId = this.getEntityKeyId(ENTITY_SETS.PSA_RISK_FACTORS);
 

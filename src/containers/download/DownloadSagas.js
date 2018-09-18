@@ -9,7 +9,7 @@ import { call, put, takeEvery } from 'redux-saga/effects';
 
 import FileSaver from '../../utils/FileSaver';
 import { formatDateTime } from '../../utils/FormattingUtils';
-import { stripIdField } from '../../utils/DataUtils';
+import { getFilteredNeighbor, stripIdField } from '../../utils/DataUtils';
 import { obfuscateBulkEntityNeighbors } from '../../utils/consts/DemoNames';
 import {
   DOWNLOAD_PSA_FORMS,
@@ -89,23 +89,34 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
     });
 
     const neighborsById = yield call(SearchApi.searchEntityNeighborsBulk, entitySetId, scoresAsMap.keySeq().toJS());
-
     let usableNeighborsById = Immutable.Map();
 
     Object.keys(neighborsById).forEach((id) => {
       let usableNeighbors = Immutable.List();
       const neighborList = neighborsById[id];
       let domainMatch = true;
-      neighborList.forEach((neighbor) => {
+      neighborList.forEach((neighborObj) => {
+        const neighbor = getFilteredNeighbor(neighborObj);
         if (domain && neighbor.neighborEntitySet && neighbor.neighborEntitySet.name === ENTITY_SETS.STAFF) {
           const filer = neighbor.neighborDetails[PROPERTY_TYPES.PERSON_ID][0];
           if (!filer.toLowerCase().endsWith(domain)) {
             domainMatch = false;
           }
         }
+
+        const { neighborEntitySet } = neighbor;
+        let shouldNotIgnore = false;
+        if (neighborEntitySet) {
+          const entitySetName = neighborEntitySet.name;
+          shouldNotIgnore = (
+            entitySetName !== ENTITY_SETS.RELEASE_CONDITIONS
+            && entitySetName !== ENTITY_SETS.BONDS
+          );
+        }
+
         const timestampList = neighbor.associationDetails[PROPERTY_TYPES.TIMESTAMP]
           || neighbor.associationDetails[PROPERTY_TYPES.COMPLETED_DATE_TIME];
-        if (timestampList && timestampList.length) {
+        if (timestampList && timestampList.length && shouldNotIgnore) {
           const timestamp = moment(timestampList[0]);
           if (timestamp.isSameOrAfter(start) && timestamp.isSameOrBefore(end)) {
             usableNeighbors = usableNeighbors.push(Immutable.fromJS(neighbor));
