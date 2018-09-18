@@ -15,7 +15,6 @@ export const HEADERS = {
   REFERRED_BY: 'criminaljustice.arrestagency|Pennington Pretrial status case proceedings',
   NUM_CHGS: 'publicsafety.NumberOfCharges|South Dakota Manually Created Pretrial Cases',
   ARREST_CASE_NO: 'j.CaseNumberText|Pennington Pretrial status case proceedings',
-  ARREST_DATE_Z: 'ol.arrestdatetime|Pennington Pretrial status case proceedings',
   ARREST_DATE: 'ol.arrestdatetime|South Dakota Manually Created Pretrial Cases',
   PSA_TYPE: 'general.context|South Dakota DMF Risk Factors',
   FILER: 'nc.SubjectIdentification|South Dakota Staff',
@@ -126,10 +125,6 @@ export const HEADERS_OBJ = {
   [HEADERS.ARREST_CASE_NO]: {
     label: 'ARREST CASE NO',
     value: HEADERS.ARREST_CASE_NO
-  },
-  [HEADERS.ARREST_DATE_Z]: {
-    label: 'ARREST DATE_Z',
-    value: HEADERS.ARREST_DATE_Z
   },
   [HEADERS.ARREST_DATE]: {
     label: 'ARREST_DATE',
@@ -326,7 +321,6 @@ export const POSITIONS = {
   'REFERRED BY': 14,
   '# CHGS': 15,
   'ARREST CASE NO': 16,
-  'ARREST DATE_Z': 17,
   ARREST_DATE: 18,
   'PSA TYPE': 19,
   FILER: 20,
