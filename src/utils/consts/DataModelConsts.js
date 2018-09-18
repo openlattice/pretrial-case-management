@@ -59,6 +59,9 @@ export const PROPERTY_TYPES = {
   SSN: 'nc.SSN',
   AGE: 'person.age',
   MUGSHOT: 'publicsafety.mugshot',
+  HEIGHT: 'nc.PersonHeightMeasure',
+  WEIGHT: 'nc.PersonWeightMeasure',
+  EYE: 'nc.PersonEyeColorText',
 
   // location-specific fields
   ADDRESS: 'location.Address',
