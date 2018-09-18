@@ -16,6 +16,7 @@ import {
   downloadPsaForms
 } from './DownloadActionFactory';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { HEADERS_OBJ, POSITIONS } from '../../utils/consts/CSVConsts';
 import { PSA_NEIGHBOR, PSA_ASSOCIATION } from '../../utils/consts/FrontEndStateConsts';
 
 const { OPENLATTICE_ID_FQN } = Constants;
@@ -133,7 +134,10 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
 
       let combinedEntity = combinedEntityInit;
       details.keySeq().forEach((fqn) => {
-        const header = filters ? filters[entitySetName][fqn] : `${fqn}|${entitySetTitle}`;
+        const headerString = HEADERS_OBJ[`${fqn}|${entitySetTitle}`] ?
+          HEADERS_OBJ[`${fqn}|${entitySetTitle}`].label :
+          HEADERS_OBJ[`${fqn}|${entitySetTitle}`];
+        const header = filters ? filters[entitySetName][fqn] : headerString;
         if (header) {
           let newArrayValues = combinedEntity.get(header, Immutable.List());
           details.get(fqn).forEach((val) => {
@@ -176,7 +180,8 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
           neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'name']),
           neighbor.get(PSA_NEIGHBOR.DETAILS, Immutable.Map())
         );
-        allHeaders = allHeaders.union(combinedEntity.keys());
+        allHeaders = allHeaders.union(combinedEntity.keys())
+          .sort((header1, header2) => (POSITIONS[header1] >= POSITIONS[header2] ? 1 : -1));
       });
 
       combinedEntity = combinedEntity.set('S2', getStepTwo(usableNeighborsById.get(id), scoresAsMap.get(id)));
