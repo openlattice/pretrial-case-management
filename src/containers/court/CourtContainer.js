@@ -264,7 +264,7 @@ class CourtContainer extends React.Component<Props, State> {
   renderHearingRow = (courtroom, people, time) => {
     const persons = people.toList().sort(sortPeopleByName);
     return (
-      <HearingRow>
+      <HearingRow key={`${time}-${courtroom}`}>
         <Courtroom>
           <span>{courtroom}</span>
           <SecondaryButton onClick={() => this.downloadPDFs(courtroom, people, time)}>Download PDFs</SecondaryButton>
@@ -417,12 +417,12 @@ class CourtContainer extends React.Component<Props, State> {
     const timeOptions = this.props.hearingsByTime.keySeq().sort((time1, time2) =>
       (moment(time1, TIME_FORMAT).isSameOrBefore(moment(time2, TIME_FORMAT)) ? -1 : 1));
 
+
     return timeOptions.map(this.renderHearingsAtTime);
 
   }
 
   render() {
-    console.log(this.props[REVIEW.HEARINGS].toJS());
     return (
       <StyledFormViewWrapper>
         <StyledFormWrapper>
