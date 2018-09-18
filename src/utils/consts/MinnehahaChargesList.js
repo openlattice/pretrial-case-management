@@ -1783,7 +1783,7 @@ const MinnehahaChargesList = [
   },
   {
     statute: '22-10-1',
-    description: 'Riot',
+    description: 'Riot (F4)',
     degree: 'Felony Class 4',
     degreeShort: 'F4'
   },
@@ -1795,7 +1795,7 @@ const MinnehahaChargesList = [
   },
   {
     statute: '22-10-5',
-    description: 'Aggravated Riot (Carrying Dangerous Weapon)',
+    description: 'Aggravated Riot (Carrying Dangerous Weapon) (F3)',
     degree: 'Felony Class 3',
     degreeShort: 'F3'
   },
@@ -2023,7 +2023,7 @@ const MinnehahaChargesList = [
   },
   {
     statute: '22-14-20',
-    description: 'Discharge of firearm at occupied structure or motor vehicle',
+    description: 'Discharge of Firearm at Structure/Motor Vehicle (F3)',
     degree: 'Felony Class 3',
     degreeShort: 'F3'
   },
@@ -2113,7 +2113,7 @@ const MinnehahaChargesList = [
   },
   {
     statute: '22-14A-20',
-    description: 'Placement of explosive or device as to endanger human life or safety',
+    description: 'Placement of Explosive or Device as to Endanger Human Life or Safety(F4)',
     degree: 'Felony Class 4',
     degreeShort: 'F4'
   },
@@ -2143,25 +2143,25 @@ const MinnehahaChargesList = [
   },
   {
     statute: '22-14A-5',
-    description: 'Carry or Place Explosives on Vehicle or in Baggage',
+    description: 'Carry or Place Explosives on Vehicle or in Baggage(F2)',
     degree: 'Felony Class 2',
     degreeShort: 'F2'
   },
   {
     statute: '22-14A-6',
-    description: 'Possession of Explosives with Intent to Destroy Property',
+    description: 'Possession of Explosives with Intent to Injure, Intimidate, or Destroy Property(F3)',
     degree: 'Felony Class 3',
     degreeShort: 'F3'
   },
   {
     statute: '22-16-15',
-    description: 'Manslaughter in First Degree-Heat of Passion',
+    description: 'Manslaughter in First Degree-Heat of Passion(FC)',
     degree: 'Class C Felony',
     degreeShort: 'FC'
   },
   {
     statute: '22-16-20',
-    description: 'Manslaughter in Second-Recklessly Killing',
+    description: 'Manslaughter in Second-Recklessly Killing (F4)',
     degree: 'Felony Class 4',
     degreeShort: 'F4'
   },
@@ -2191,13 +2191,13 @@ const MinnehahaChargesList = [
   },
   {
     statute: '22-16-4',
-    description: 'Murder in First Degree/Felony Murder',
+    description: 'Murder in First Degree/Felony Murder(FA)',
     degree: 'Class A Felony',
     degreeShort: 'FA'
   },
   {
     statute: '22-16-41',
-    description: 'Vehicular Homicide',
+    description: 'Vehicular Homicide (F3)',
     degree: 'Felony Class 4',
     degreeShort: 'F4'
   },
@@ -2215,7 +2215,7 @@ const MinnehahaChargesList = [
   },
   {
     statute: '22-16-7',
-    description: 'Murder In Second Degree-Depraved Mind',
+    description: 'Murder In Second Degree-Depraved Mind(FB)',
     degree: 'Class B Felony',
     degreeShort: 'FB'
   },
@@ -2233,7 +2233,7 @@ const MinnehahaChargesList = [
   },
   {
     statute: '22-18-1',
-    description: 'Simple Assault Domestic',
+    description: 'Simple Assault Domestic (M1)',
     degree: 'Misdemeanor Class 1',
     degreeShort: 'M1'
   },
@@ -2245,7 +2245,7 @@ const MinnehahaChargesList = [
   },
   {
     statute: '22-18-1',
-    description: 'Simple Assault Intimidation',
+    description: 'Simple Assault Intimidation (M1)',
     degree: 'Misdemeanor Class 1',
     degreeShort: 'M1'
   },
@@ -2269,7 +2269,7 @@ const MinnehahaChargesList = [
   },
   {
     statute: '22-18-1.1',
-    description: 'Aggravated Assault Domestic',
+    description: 'Aggravated Assault Domestic(F3)',
     degree: 'Felony Class 3',
     degreeShort: 'F3'
   },
@@ -2329,7 +2329,7 @@ const MinnehahaChargesList = [
   },
   {
     statute: '22-18-26',
-    description: 'Assault By Convicted Dept of Corrections Inmate-Int. Cause Contact w/Bodily Fluids-Sliming',
+    description: 'Assault By Convicted Dept of Corrections Inmate-Int. Cause Contact w/Bodily Fluids (F6)',
     degree: 'Felony Class 6',
     degreeShort: 'F6'
   },
@@ -2341,13 +2341,13 @@ const MinnehahaChargesList = [
   },
   {
     statute: '22-18-29',
-    description: 'Assault by a Prisoner in County Jail w/bodily fluids',
+    description: 'Assault By Adult confined in Jail w/Body Fluids(F6)',
     degree: 'Felony Class 6',
     degreeShort: 'F6'
   },
   {
     statute: '22-18-29.1',
-    description: 'Contact by Sliming, Bodily Fluids, Human Waste by Juvenile at Juvenile Facility',
+    description: 'Assault By Juvenile confined in Detention facility w/Body Fluids(F6)',
     degree: 'Felony Class 6',
     degreeShort: 'F6'
   },
@@ -2389,7 +2389,7 @@ const MinnehahaChargesList = [
   },
   {
     statute: '22-19-17',
-    description: 'False Imprisonment - Misd',
+    description: 'False Imprisonment (M1)',
     degree: 'Misdemeanor Class 1',
     degreeShort: 'M1'
   },
@@ -2431,13 +2431,13 @@ const MinnehahaChargesList = [
   },
   {
     statute: '22-19A-1',
-    description: 'Stalking',
+    description: 'Stalking(M1)',
     degree: 'Misdemeanor Class 1',
     degreeShort: 'M1'
   },
   {
     statute: '22-19A-1',
-    description: 'Stalking Domestic',
+    description: 'Stalking Domestic - 1st offense (M1)',
     degree: 'Misdemeanor Class 1',
     degreeShort: 'M1'
   },
@@ -2491,7 +2491,7 @@ const MinnehahaChargesList = [
   },
   {
     statute: '22-19A-7',
-    description: 'Stalking - Child 12 or Younger',
+    description: 'Stalking - Child 12 or Younger(F6)',
     degree: 'Felony Class 6',
     degreeShort: 'F6'
   },
@@ -2641,7 +2641,7 @@ const MinnehahaChargesList = [
   },
   {
     statute: '22-22-24.3',
-    description: 'Sexual Exploitation of Minor',
+    description: 'Sexual Exploitation of Minor (F6)',
     degree: 'Felony Class 6',
     degreeShort: 'F6'
   },
@@ -2707,7 +2707,7 @@ const MinnehahaChargesList = [
   },
   {
     statute: '22-22-7.2',
-    description: 'Sexual Contact - Victim Incapable of Consent and Over 16',
+    description: 'Sexual Contact-Victim Incapable of Consent and Over 16(F4)',
     degree: 'Felony Class 4',
     degreeShort: 'F4'
   },
@@ -2857,7 +2857,7 @@ const MinnehahaChargesList = [
   },
   {
     statute: '22-24A-5',
-    description: 'Solicitation of a Minor',
+    description: 'Solicitation of a Minor (F4)',
     degree: 'Felony Class 6',
     degreeShort: 'F6'
   },
@@ -3667,7 +3667,7 @@ const MinnehahaChargesList = [
   },
   {
     statute: '22-32-1',
-    description: 'Burglary in First Degree Inflict Injury on Another, Weapon, or Nighttime',
+    description: 'Burglary in First Degree Inflict Injury on Another, Possess Weapon, or Nighttime(F2)',
     degree: 'Felony Class 2',
     degreeShort: 'F2'
   },
@@ -3739,7 +3739,7 @@ const MinnehahaChargesList = [
   },
   {
     statute: '22-33-9.1',
-    description: 'Arson 1st Degree-Any person who starts a fire with the intent to destroy an occupied structure of another',
+    description: 'Arson 1st Degree(F2)',
     degree: 'Felony Class 2',
     degreeShort: 'F2'
   },
@@ -4237,7 +4237,7 @@ const MinnehahaChargesList = [
   },
   {
     statute: '22-46-2',
-    description: 'Abuse or Neglect of Disabled Adult',
+    description: 'Abuse or Neglect of Disabled Adult (F6)',
     degree: 'Felony Class 6',
     degreeShort: 'F6'
   },
@@ -4261,13 +4261,13 @@ const MinnehahaChargesList = [
   },
   {
     statute: '22-49-2',
-    description: 'Human Trafficking 1st  Degree',
+    description: 'Human Trafficking 1st Degree',
     degree: 'Felony Class 2',
     degreeShort: 'F2'
   },
   {
     statute: '22-49-3',
-    description: 'Human Trafficking 2nd Degree',
+    description: 'Second Degree Human Trafficking - Felony',
     degree: 'Felony Class 4',
     degreeShort: 'F4'
   },
@@ -4633,7 +4633,7 @@ const MinnehahaChargesList = [
   },
   {
     statute: '26-10-30',
-    description: 'Permitting Physical or Sexual Abuse of a Child',
+    description: 'Parent/Guardian Permit Physical/Sexual Abuse of Child (F6)',
     degree: 'Felony Class 6',
     degreeShort: 'F6'
   },
