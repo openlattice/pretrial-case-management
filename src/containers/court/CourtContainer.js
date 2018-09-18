@@ -192,7 +192,7 @@ class CourtContainer extends React.Component<Props, State> {
 
   renderHearingRow = (courtroom, people, time) => {
     return (
-      <HearingRow>
+      <HearingRow key={`${courtroom}-${time}`}>
         <Courtroom>
           <span>{courtroom}</span>
           <SecondaryButton onClick={() => this.downloadPDFs(courtroom, people, time)}>Download PDFs</SecondaryButton>
