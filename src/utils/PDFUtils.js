@@ -931,6 +931,9 @@ const getPDFContents = (
   thickLine(doc, y);
   y += Y_INC;
 
+  // RECOMMENDATION SECTION
+  y = recommendations(doc, y, data.get('notes', data.get('recommendations', ''), ''));
+
   if (!compact) {
 
     [y, page] = riskFactors(
@@ -954,8 +957,6 @@ const getPDFContents = (
     thickLine(doc, y, true);
     y += Y_INC;
 
-    // RECOMMENDATION SECTION
-    y = recommendations(doc, y, data.get('notes', data.get('recommendations', ''), ''));
 
     // CASE HISTORY SECCTION=
     [y, page] = caseHistory(doc, y, page, name, allCases, chargesByCaseNum);
