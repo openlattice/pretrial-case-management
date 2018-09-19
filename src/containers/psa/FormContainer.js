@@ -861,7 +861,6 @@ class Form extends React.Component<Props, State> {
     return (
       <ConfirmationModal
           submissionStatus={isSubmitting || isSubmitted}
-          open={isSubmitted}
           pageContent={this.getPsaResults}
           handleModalButtonClick={this.props.actions.hardRestart} />
     );

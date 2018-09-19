@@ -518,7 +518,7 @@ const charges = (
     }
 
     const qualifierText = formatValue(charge.get(QUALIFIER, Immutable.List()));
-    const CHARGE_OFFSET = 20;
+    const CHARGE_OFFSET = 25;
     y = chargeTags(doc, y, charge, casesByCaseNum);
 
     doc.text(xIndent, y, formatValue(charge.get(CHARGE_STATUTE, Immutable.List())));
@@ -931,6 +931,9 @@ const getPDFContents = (
   thickLine(doc, y);
   y += Y_INC;
 
+  // RECOMMENDATION SECTION
+  y = recommendations(doc, y, data.get('notes', data.get('recommendations', ''), ''));
+
   if (!compact) {
 
     [y, page] = riskFactors(
@@ -954,8 +957,6 @@ const getPDFContents = (
     thickLine(doc, y, true);
     y += Y_INC;
 
-    // RECOMMENDATION SECTION
-    y = recommendations(doc, y, data.get('notes', data.get('recommendations', ''), ''));
 
     // CASE HISTORY SECCTION=
     [y, page] = caseHistory(doc, y, page, name, allCases, chargesByCaseNum);

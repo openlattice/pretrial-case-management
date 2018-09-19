@@ -66,7 +66,8 @@ class PersonDetailsContainer extends React.Component<Props, State> {
     const { neighbors } = this.props;
     const scoreSeq = neighbors.get(ENTITY_SETS.PSA_SCORES, Immutable.Map())
       .filter(neighbor => !!neighbor.get(PSA_NEIGHBOR.DETAILS))
-      .map(neighbor => [neighbor.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0]), neighbor.get(PSA_NEIGHBOR.DETAILS)]);
+      .map(neighbor => [neighbor
+        .getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0]), neighbor.get(PSA_NEIGHBOR.DETAILS)]);
     return (
       <div>
         {

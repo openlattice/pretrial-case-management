@@ -8,7 +8,13 @@ import { AuthorizationApi, Constants, DataApi, EntityDataModelApi, SearchApi } f
 import { all, call, put, take, takeEvery } from 'redux-saga/effects';
 
 import exportPDF, { exportPDFList } from '../../utils/PDFUtils';
-import { getEntityKeyId, getEntitySetId, getFqnObj, stripIdField } from '../../utils/DataUtils';
+import {
+  getEntityKeyId,
+  getEntitySetId,
+  getFilteredNeighborsById,
+  getFqnObj,
+  stripIdField
+} from '../../utils/DataUtils';
 import { getMapByCaseId } from '../../utils/CaseUtils';
 import {
   BULK_DOWNLOAD_PSA_REVIEW_PDF,
@@ -218,7 +224,7 @@ function* loadPSADataWorker(action :SequenceAction) :Generator<*, *, *> {
     if (action.value.length) {
       const entitySetId = yield call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.PSA_SCORES);
       let neighborsById = yield call(SearchApi.searchEntityNeighborsBulk, entitySetId, action.value);
-      neighborsById = Immutable.fromJS(neighborsById);
+      neighborsById = getFilteredNeighborsById(neighborsById);
 
       neighborsById.keySeq().forEach((id) => {
         let allDatesEdited = Immutable.List();
@@ -478,7 +484,7 @@ function* bulkDownloadPSAReviewPDFWorker(action :SequenceAction) :Generator<*, *
     });
 
     let psaNeighborsById = yield call(SearchApi.searchEntityNeighborsBulk, psaEntitySetId, psasById.keySeq().toJS());
-    psaNeighborsById = Immutable.fromJS(psaNeighborsById);
+    psaNeighborsById = getFilteredNeighborsById(psaNeighborsById);
 
     const pageDetailsList = [];
     psaNeighborsById.entrySeq().forEach(([psaId, neighborList]) => {
