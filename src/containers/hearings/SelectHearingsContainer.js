@@ -177,7 +177,7 @@ class SelectHearingsContainer extends React.Component<Props, State> {
 
   selectExistingHearing = (row, hearingId) => {
     const hearingWithOnlyId = { [ID_FIELD_NAMES.HEARING_ID]: hearingId };
-    this.selectHearing({ [ID_FIELD_NAMES.HEARING_ID]: hearingWithOnlyId });
+    this.selectHearing(hearingWithOnlyId);
     this.props.onSubmit(Object.assign({}, hearingWithOnlyId, {
       [HEARING.DATE_TIME]: row.getIn([PROPERTY_TYPES.DATE_TIME, 0], ''),
       [HEARING.COURTROOM]: row.getIn([PROPERTY_TYPES.COURTROOM, 0], '')
