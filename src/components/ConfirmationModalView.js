@@ -12,7 +12,8 @@ function getBody(submissionStatus, pageContent) {
   If there continues to be an issue, contact help@openlattice.com.`;
 }
 
-function ConfirmationModal({ open, submissionStatus, pageContent }) {
+function ConfirmationModal({ submissionStatus, pageContent }) {
+  const open = true;
   return (
     <Modal show={open} dialogClassName={OverrideClassNames.PSA_REVIEW_MODAL}>
       <Modal.Body>
@@ -24,8 +25,7 @@ function ConfirmationModal({ open, submissionStatus, pageContent }) {
 
 ConfirmationModal.propTypes = {
   pageContent: PropTypes.func.isRequired,
-  submissionStatus: PropTypes.bool.isRequired,
-  open: PropTypes.bool.isRequired
+  submissionStatus: PropTypes.bool.isRequired
 };
 
 export default ConfirmationModal;
