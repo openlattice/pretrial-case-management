@@ -16,6 +16,7 @@ import {
   downloadPsaForms
 } from './DownloadActionFactory';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { HEADERS_OBJ, POSITIONS } from '../../utils/consts/CSVConsts';
 import { PSA_NEIGHBOR, PSA_ASSOCIATION } from '../../utils/consts/FrontEndStateConsts';
 
 const { OPENLATTICE_ID_FQN } = Constants;
@@ -130,10 +131,11 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
 
     const getUpdatedEntity = (combinedEntityInit, entitySetTitle, entitySetName, details) => {
       if (filters && !filters[entitySetName]) return combinedEntityInit;
-
       let combinedEntity = combinedEntityInit;
       details.keySeq().forEach((fqn) => {
-        const header = filters ? filters[entitySetName][fqn] : `${fqn}|${entitySetTitle}`;
+        const keyString = `${fqn}|${entitySetName}`;
+        const headerString = HEADERS_OBJ[keyString];
+        const header = filters ? filters[entitySetName][fqn] : headerString;
         if (header) {
           let newArrayValues = combinedEntity.get(header, Immutable.List());
           details.get(fqn).forEach((val) => {
@@ -152,7 +154,6 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
       });
       return combinedEntity;
     };
-
     let jsonResults = Immutable.List();
     let allHeaders = Immutable.Set();
     usableNeighborsById.keySeq().forEach((id) => {
@@ -176,7 +177,8 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
           neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'name']),
           neighbor.get(PSA_NEIGHBOR.DETAILS, Immutable.Map())
         );
-        allHeaders = allHeaders.union(combinedEntity.keys());
+        allHeaders = allHeaders.union(combinedEntity.keys())
+          .sort((header1, header2) => (POSITIONS.indexOf(header1) >= POSITIONS.indexOf(header2) ? 1 : -1));
       });
 
       combinedEntity = combinedEntity.set('S2', getStepTwo(usableNeighborsById.get(id), scoresAsMap.get(id)));
