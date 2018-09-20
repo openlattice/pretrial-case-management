@@ -36,16 +36,16 @@ const StepTwo = ({
   const STEP2_VALS = [
     {
       label: 'Extradited for current charge?',
-      content: [<ContentsWrapper><BooleanFlag dims={flagDims} value={extradited} /></ContentsWrapper>]
+      content: [<ContentsWrapper key={1}><BooleanFlag dims={flagDims} value={extradited} /></ContentsWrapper>]
     },
     {
       label: 'Does current charge match listed charges?',
-      content: [<ContentsWrapper><BooleanFlag dims={flagDims} value={stepTwoVal} /></ContentsWrapper>]
+      content: [<ContentsWrapper key={2}><BooleanFlag dims={flagDims} value={stepTwoVal} /></ContentsWrapper>]
     },
     {
       label: 'Current charge is violent and PSA resulted in NVCA flag?',
       content: [
-        <ContentsWrapper><BooleanFlag dims={flagDims} value={nvca && currentViolentOffense} /></ContentsWrapper>
+        <ContentsWrapper key={3}><BooleanFlag dims={flagDims} value={nvca && currentViolentOffense} /></ContentsWrapper>
       ]
     }
   ];
@@ -54,7 +54,7 @@ const StepTwo = ({
     <Flags>
       {
         STEP2_VALS.map(item => (
-          <StyledContentBlock>
+          <StyledContentBlock key={item.label}>
             <StyledContentLabel>{item.label}</StyledContentLabel>
             <StyledContent>{item.content}</StyledContent>
           </StyledContentBlock>

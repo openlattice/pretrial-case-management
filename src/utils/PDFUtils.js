@@ -175,12 +175,12 @@ const getChargeText = (charge :Immutable.Map<*, *>) :string => {
 
   let text = '';
   if (chargeDescList.length) {
-    text = text.concat(` ${chargeDescList}`);
+    text = text.concat(`${chargeDescList}`);
   }
   if (chargeDegList.length) {
     text = text.concat(` (${chargeDegList})`);
   }
-  return text;
+  return text.trim();
 };
 
 const getPleaText = (charge :Immutable.Map<*, *>) :string => {
@@ -516,11 +516,19 @@ const charges = (
     if (y > MAX_Y) {
       [y, page] = newPage(doc, page, name);
     }
-    const CHARGE_OFFSET = 20;
+
+    const qualifierText = formatValue(charge.get(QUALIFIER, Immutable.List()));
+    const CHARGE_OFFSET = 25;
     y = chargeTags(doc, y, charge, casesByCaseNum);
 
     doc.text(xIndent, y, formatValue(charge.get(CHARGE_STATUTE, Immutable.List())));
-    const chargeLines = doc.splitTextToSize(getChargeText(charge), xWidth);
+    let chargeLines = '';
+    if (qualifierText) {
+      chargeLines = doc.splitTextToSize(`${qualifierText} - ${getChargeText(charge)}`, xWidth);
+    }
+    else {
+      chargeLines = doc.splitTextToSize(getChargeText(charge), xWidth);
+    }
     doc.text(xIndent + CHARGE_OFFSET, y, chargeLines);
     y += chargeLines.length * Y_INC;
     if (showDetails) {
@@ -923,6 +931,9 @@ const getPDFContents = (
   thickLine(doc, y);
   y += Y_INC;
 
+  // RECOMMENDATION SECTION
+  y = recommendations(doc, y, data.get('notes', data.get('recommendations', ''), ''));
+
   if (!compact) {
 
     [y, page] = riskFactors(
@@ -946,8 +957,6 @@ const getPDFContents = (
     thickLine(doc, y, true);
     y += Y_INC;
 
-    // RECOMMENDATION SECTION
-    y = recommendations(doc, y, data.get('notes', data.get('recommendations', ''), ''));
 
     // CASE HISTORY SECCTION=
     [y, page] = caseHistory(doc, y, page, name, allCases, chargesByCaseNum);

@@ -9,12 +9,13 @@ import {
   getPersonData,
   getPersonNeighbors
 } from './PeopleActionFactory';
-import { changePSAStatus } from '../review/ReviewActionFactory';
+import { changePSAStatus, updateScoresAndRiskFactors } from '../review/ReviewActionFactory';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PEOPLE, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 
 const { OPENLATTICE_ID_FQN } = Constants;
 const INITIAL_STATE = Immutable.fromJS({
+  [PEOPLE.SCORES_ENTITY_SET_ID]: '',
   [PEOPLE.RESULTS]: Immutable.List(),
   [PEOPLE.PERSON_DATA]: Immutable.Map(),
   [PEOPLE.PERSON_ENTITY_KEY_ID]: '',
@@ -87,7 +88,34 @@ export default function peopleReducer(state = INITIAL_STATE, action) {
                 }
                 return false;
               }), neighborsByEntitySet);
-          return state.setIn([PEOPLE.NEIGHBORS, personId], uniqNeighborsByEntitySet);
+          const scoresEntitySetId = uniqNeighborsByEntitySet.getIn(
+            [ENTITY_SETS.PSA_SCORES, 0, PSA_NEIGHBOR.ENTITY_SET, 'id'],
+            ''
+          );
+          return (
+            state.setIn([PEOPLE.NEIGHBORS, personId], uniqNeighborsByEntitySet)
+              .set(PEOPLE.SCORES_ENTITY_SET_ID, scoresEntitySetId)
+          );
+        }
+      });
+    }
+
+    case updateScoresAndRiskFactors.case(action.type): {
+      return updateScoresAndRiskFactors.reducer(state, action, {
+        SUCCESS: () => {
+          const personId = state.getIn([PEOPLE.PERSON_DATA, PROPERTY_TYPES.PERSON_ID, 0], '');
+          const { newScoreEntity } = action.value;
+          const olID = newScoreEntity[OPENLATTICE_ID_FQN][0];
+          const newPSAs = state.getIn([PEOPLE.NEIGHBORS, personId, ENTITY_SETS.PSA_SCORES], Immutable.Map())
+            .map((psa) => {
+              const psaNeighborID = psa.get(PSA_NEIGHBOR.ID);
+              if (psaNeighborID === olID) {
+                return psa.set(PSA_NEIGHBOR.DETAILS, Immutable.fromJS(newScoreEntity));
+              }
+              return psa;
+            });
+          const newState = state.setIn([PEOPLE.NEIGHBORS, personId, ENTITY_SETS.PSA_SCORES], newPSAs);
+          return newState;
         }
       });
     }

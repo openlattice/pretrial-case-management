@@ -33,9 +33,12 @@ export const COURT = {
   HEARINGS_NEIGHBORS_BY_ID: 'hearingNeighborsById',
   PEOPLE_WITH_OPEN_PSAS: 'peopleWithOpenPsas',
   LOADING_HEARINGS: 'isLoadingHearings',
+  LOADING_PSAS: 'isLoadingPSAs',
   LOADING_ERROR: 'loadingError',
   COUNTY: 'county',
-  COURTROOM: 'courtroom'
+  COURTROOM: 'courtroom',
+  OPEN_PSAS: 'openPSAs',
+  OPEN_PSA_NEIGHBORS: 'openPSANeighbors'
 };
 
 // Dashboard
@@ -87,6 +90,7 @@ export const PSA_FORM = {
 // People
 
 export const PEOPLE = {
+  SCORES_ENTITY_SET_ID: 'scoresEntitySetId',
   RESULTS: 'peopleResults',
   PERSON_DATA: 'selectedPersonData',
   PERSON_ENTITY_KEY_ID: 'selectedPersonEntityKeyId',

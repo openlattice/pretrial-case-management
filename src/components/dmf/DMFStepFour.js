@@ -39,12 +39,12 @@ const StepFour = ({
   const STEP4_VALS = [
     {
       label: 'Does current charge match listed charges?',
-      content: [<ContentsWrapper><BooleanFlag dims={flagDims} value={stepFourVal} /></ContentsWrapper>]
+      content: [<ContentsWrapper key={1}><BooleanFlag dims={flagDims} value={stepFourVal} /></ContentsWrapper>]
     },
     {
       label: 'Current charge is violent and PSA resulted in NVCA flag?',
       content: [
-        <ContentsWrapper><BooleanFlag dims={flagDims} value={nvca && currentViolentOffense} /></ContentsWrapper>
+        <ContentsWrapper key={2}><BooleanFlag dims={flagDims} value={nvca && currentViolentOffense} /></ContentsWrapper>
       ]
     },
     {
@@ -57,7 +57,7 @@ const StepFour = ({
     <Flags>
       {
         STEP4_VALS.map(item => (
-          <StyledContentBlock>
+          <StyledContentBlock key={item.label}>
             <StyledContentLabel>{item.label}</StyledContentLabel>
             <StyledContent>{item.content}</StyledContent>
           </StyledContentBlock>
