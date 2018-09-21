@@ -32,6 +32,7 @@ import { CenteredContainer, Title } from '../../utils/Layout';
 import { toISODateTime } from '../../utils/FormattingUtils';
 import { CONTEXT, DMF, EDIT_FIELDS, NOTES, PSA } from '../../utils/consts/Consts';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import CONTENT from '../../utils/consts/ContentConsts';
 import { RESULT_CATEGORIES } from '../../utils/consts/DMFResultConsts';
 import { formatDMFFromEntity } from '../../utils/DMFUtils';
 import { psaIsClosed } from '../../utils/PSAUtils';
@@ -675,12 +676,17 @@ class PSAModal extends React.Component<Props, State> {
       {
         title: 'Case History',
         content: this.renderCaseHistory
-      },
-      {
-        title: 'Initial Appearance',
-        content: this.renderInitialAppearance
       }
     ];
+
+    if (this.props.view !== CONTENT.JUDGES) {
+      tabs.push(
+        {
+          title: 'Initial Appearance',
+          content: this.renderInitialAppearance
+        }
+      )
+    }
 
     return (
       <Modal
