@@ -268,10 +268,16 @@ class NewPersonContainer extends React.Component<Props, State> {
   }
 
   submitNewPerson = () => {
+    let firstName;
+    let middleName;
+    let lastName;
 
     if (this.selfieWebCam) {
       this.selfieWebCam.closeMediaStream();
     }
+    this.state[FIRST_NAME_VALUE] ? firstName = this.state[FIRST_NAME_VALUE].toUpperCase() : null;
+    this.state[MIDDLE_NAME_VALUE] ? middleName = this.state[MIDDLE_NAME_VALUE].toUpperCase() : null;
+    this.state[LAST_NAME_VALUE] ? lastName = this.state[LAST_NAME_VALUE].toUpperCase() : null;
 
     const values = {
       [ADDRESS_VALUE]: this.state[ADDRESS_VALUE] || null,
@@ -279,10 +285,10 @@ class NewPersonContainer extends React.Component<Props, State> {
       [COUNTRY_VALUE]: this.state[COUNTRY_VALUE] || null,
       [DOB_VALUE]: this.state[DOB_VALUE] || null,
       [ETHNICITY_VALUE]: this.state[ETHNICITY_VALUE] || null,
-      [FIRST_NAME_VALUE]: this.state[FIRST_NAME_VALUE].toUpperCase() || null,
+      [FIRST_NAME_VALUE]: firstName,
       [GENDER_VALUE]: this.state[GENDER_VALUE] || null,
-      [LAST_NAME_VALUE]: this.state[LAST_NAME_VALUE].toUpperCase() || null,
-      [MIDDLE_NAME_VALUE]: this.state[MIDDLE_NAME_VALUE].toUpperCase() || null,
+      [LAST_NAME_VALUE]: lastName,
+      [MIDDLE_NAME_VALUE]: middleName,
       [PICTURE_VALUE]: this.state[PICTURE_VALUE] || null,
       [RACE_VALUE]: this.state[RACE_VALUE] || null,
       [SSN_VALUE]: this.state[SSN_VALUE] || null,
@@ -291,6 +297,7 @@ class NewPersonContainer extends React.Component<Props, State> {
       [ID_VALUE]: uuid(),
       [LIVES_AT_ID_VALUE]: uuid()
     };
+    console.log(values);
 
     this.props.actions.newPersonSubmitRequest(newPersonSubmissionConfig, values);
   }
