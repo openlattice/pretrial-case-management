@@ -10,6 +10,7 @@ import Headshot from '../Headshot';
 import PSAModal from '../../containers/review/PSAModal';
 import StyledCard from '../../components/StyledCard';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import CONTENT from '../../utils/consts/ContentConsts';
 import { getEntityKeyId } from '../../utils/DataUtils';
 import { UndecoratedLink } from '../../utils/Layout';
 
@@ -133,6 +134,7 @@ class PersonCard extends React.Component<Props, State> {
     return (
       <PSAModal
           open={this.state.open}
+          view={CONTENT.JUDGES}
           onClose={() => this.setState({ open: false })}
           {...modalProps} />
     )
