@@ -10,6 +10,10 @@ export default {
   DMF: 'DMF',
   HEARINGS: 'Hearings',
 
+  // User Portal Views
+  JUDGES: 'Judges',
+  STAFF: 'Staff',
+
   // PSAReviewRowList
   REVIEW: 'Review',
   PENDING_PSAS: 'Pending PSAs'
