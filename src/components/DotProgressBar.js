@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import FontAwesome from 'react-fontawesome';
 import styled from 'styled-components';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 const GRAY = '#9F9FA3';
 const GREEN = '#4BB543';
@@ -76,7 +76,7 @@ const CompleteProgressBarIcon = styled(ProgressBarIcon)`
   background-color: ${GREEN};
 `;
 
-const Check = styled(FontAwesome).attrs({
+const Check = styled(FontAwesomeIcon).attrs({
   name: 'check'
 })`
   margin-top: 4px;

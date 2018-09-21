@@ -6,6 +6,7 @@ import React from 'react';
 import Immutable from 'immutable';
 import moment from 'moment';
 import styled from 'styled-components';
+import { faTimes } from '@fortawesome/pro-regular-svg-icons';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { ButtonToolbar, ToggleButton, ToggleButtonGroup } from 'react-bootstrap';
@@ -331,7 +332,7 @@ class DashboardContainer extends React.Component<Props, State> {
         <FormWrapper>
           <StyledTitleWrapper>
             <div>Dashboard</div>
-            <CloseX name="close" onClick={this.handleClose} />
+            <CloseX icon={faTimes} onClick={this.handleClose} />
           </StyledTitleWrapper>
           <StyledSectionWrapper>
             {this.renderDemoBanner()}

@@ -2,8 +2,6 @@
  * @flow
  */
 
-import 'babel-polyfill';
-
 import React from 'react';
 import ReactDOM from 'react-dom';
 
@@ -18,6 +16,7 @@ import initializeReduxStore from './core/redux/ReduxStore';
 import initializeRouterHistory from './core/router/RouterHistory';
 import { globals } from './utils/styleoverrides/ReactBootstrapOverrides';
 import * as Routes from './core/router/Routes';
+import { getLatticeConfigBaseUrl } from './utils/Utils';
 
 // injected by Webpack.DefinePlugin
 declare var __AUTH0_CLIENT_ID__ :string;
@@ -53,16 +52,11 @@ injectGlobal`
  * // !!! MUST HAPPEN FIRST !!!
  */
 
-let baseUrl = 'localhost';
-if (!__ENV_DEV__) {
-  baseUrl = window.location.host.startsWith('staging') ? 'staging' : 'production';
-}
-
 LatticeAuth.configure({
   auth0ClientId: __AUTH0_CLIENT_ID__,
   auth0Domain: __AUTH0_DOMAIN__,
   authToken: AuthUtils.getAuthToken(),
-  baseUrl
+  baseUrl: getLatticeConfigBaseUrl(),
 });
 
 /*
@@ -72,11 +66,14 @@ LatticeAuth.configure({
 const routerHistory = initializeRouterHistory();
 const reduxStore = initializeReduxStore(routerHistory);
 
-ReactDOM.render(
-  <Provider store={reduxStore}>
-    <ConnectedRouter history={routerHistory}>
-      <AuthRoute path={Routes.ROOT} component={AppContainer} redirectToLogin />
-    </ConnectedRouter>
-  </Provider>,
-  document.getElementById('app')
-);
+const APP_ROOT_NODE = document.getElementById('app');
+if (APP_ROOT_NODE) {
+  ReactDOM.render(
+    <Provider store={reduxStore}>
+      <ConnectedRouter history={routerHistory}>
+        <AuthRoute path={Routes.ROOT} component={AppContainer} redirectToLogin />
+      </ConnectedRouter>
+    </Provider>,
+    APP_ROOT_NODE
+  );
+}

@@ -4,8 +4,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import FontAwesome from 'react-fontawesome';
 import styled from 'styled-components';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 import StyledButton from './buttons/StyledButton';
 
@@ -302,7 +302,7 @@ class AudioRecorder extends React.Component {
       border: ${border};
     `;
 
-    const Icon = styled(FontAwesome).attrs({
+    const Icon = styled(FontAwesomeIcon).attrs({
       name: 'hourglass-half'
     })`
       margin-right: 7px;
@@ -324,7 +324,7 @@ class AudioRecorder extends React.Component {
         </UnsupportedBrowserText>
       );
     }
-    const RecordIcon = styled(FontAwesome).attrs({
+    const RecordIcon = styled(FontAwesomeIcon).attrs({
       name: 'circle'
     })`
       color: ${this.state.recording ? '#b80000' : 'black'}

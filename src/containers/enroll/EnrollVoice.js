@@ -1,7 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
-import FontAwesome from 'react-fontawesome';
+import { faTimes } from '@fortawesome/pro-regular-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
@@ -36,14 +37,14 @@ const PromptHeaderText = styled.div`
   font-size: 16px;
 `;
 
-const QuoteLeft = styled(FontAwesome).attrs({
+const QuoteLeft = styled(FontAwesomeIcon).attrs({
   name: 'quote-left'
 })`
   margin: 0 6px 0 -20px;
   color: #36454f;
 `;
 
-const QuoteRight = styled(FontAwesome).attrs({
+const QuoteRight = styled(FontAwesomeIcon).attrs({
   name: 'quote-right'
 })`
   margin: 0 -20px 0 6px;
@@ -258,7 +259,7 @@ class EnrollVoice extends React.Component {
         <StyledFormWrapper>
           <StyledTitleWrapper>
             <div>Enroll Voice Profile</div>
-            <CloseX name="close" onClick={this.handleClose} />
+            <CloseX icon={faTimes} onClick={this.handleClose} />
           </StyledTitleWrapper>
           <StyledSectionWrapper>
             {this.renderContent()}
