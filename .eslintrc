@@ -19,14 +19,14 @@
     },
     "import/resolver": {
       "webpack": {
-        "config": "config/webpack/webpack.config.babel.js"
+        "config": "config/webpack/webpack.config.app.js"
       }
     }
   },
   "rules": {
-    "arrow-body-style": ["warn", "as-needed"],
+    "arrow-body-style": ["error", "as-needed"],
     "brace-style": ["error", "stroustrup"],
-    "comma-dangle": ["error", "never"],
+    "comma-dangle": ["error", "only-multiline"],
     "function-paren-newline": ["error", "consistent"],
     "indent": [
       "error",
@@ -44,6 +44,7 @@
         "ignoredNodes": ["JSXAttribute"]
       }
     ],
+    "lines-between-class-members": "off",
     "max-len": [
       "error",
       {
@@ -58,14 +59,20 @@
       {
         "capIsNewExceptions": [
           "Axios",
-          "Immutable.Collection",
           "Immutable.List",
           "Immutable.OrderedList",
           "Immutable.Map",
           "Immutable.OrderedMap",
           "Immutable.Set",
-          "Immutable.Seq",
-          "Immutable.OrderedSet"
+          "Immutable.OrderedSet",
+          "List",
+          "OrderedList",
+          "Map",
+          "OrderedMap",
+          "Set",
+          "OrderedSet",
+          "SortableContainer",
+          "SortableElement"
         ]
       }
     ],
@@ -83,6 +90,7 @@
       {
         "devDependencies": [
           "config/**",
+          "src/utils/testing/**",
           "**/*.test.js"
         ]
       }
@@ -118,7 +126,14 @@
       }
     ],
     "react/jsx-indent-props": ["error", 4],
+    "react/jsx-one-expression-per-line": "warn",
     "react/prefer-stateless-function": "warn",
+    "react/require-default-props": [
+      "error",
+      {
+        "forbidDefaultForRequired": false,
+      }
+    ],
     "react/sort-comp": "off"
   }
 }

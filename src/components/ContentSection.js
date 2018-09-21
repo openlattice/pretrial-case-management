@@ -5,7 +5,7 @@ import React from 'react';
 import styled from 'styled-components';
 
 import CONTENT_CONSTS from '../utils/consts/ContentConsts';
-import { StyledContentItalic, FullWidthContainer } from '../utils/Layout';
+import { FullWidthContainer } from '../utils/Layout';
 
 const StyledSection = styled(FullWidthContainer)`
   flex-wrap: wrap;
@@ -169,7 +169,7 @@ const ContentSection = ({
       return props.children;
     }
 
-    return <StyledContentItalic>Information not available</StyledContentItalic>;
+    return <StyledSectionHeader>Information not available</StyledSectionHeader>;
   };
 
   const renderPhoto = photo ? <img src={photo} alt="" /> : null;

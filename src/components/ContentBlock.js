@@ -5,7 +5,7 @@ import React from 'react';
 import styled from 'styled-components';
 
 import CONTENT_CONSTS from '../utils/consts/ContentConsts';
-import { StyledContentItalic, FullWidthContainer } from '../utils/Layout';
+import { FullWidthContainer } from '../utils/Layout';
 
 const StyledContentBlock = styled(FullWidthContainer)`
   flex-direction: column;
@@ -78,7 +78,7 @@ const ContentBlock = ({ contentBlock, component } :Props) => {
 
   const renderContent = () => {
     if (!contentBlock.content.length) {
-      return <StyledContentItalic>None</StyledContentItalic>;
+      return <StyledContent>None</StyledContent>;
     }
 
     return (

@@ -5,8 +5,9 @@
 import * as React from 'react';
 
 import Immutable from 'immutable';
-import FontAwesome from 'react-fontawesome';
 import styled, { css } from 'styled-components';
+import { faSort } from '@fortawesome/pro-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Grid, ScrollSync } from 'react-virtualized';
 
 /*
@@ -415,7 +416,7 @@ class DataTable extends React.Component<Props, State> {
             sortDataByColumn(params.columnIndex);
           }}>
         <SortIcon>
-          <FontAwesome name="sort" />
+          <FontAwesomeIcon icon={faSort} />
         </SortIcon>
         <HeaderText>
           {this.props.headers.getIn([params.columnIndex, 'value'])}

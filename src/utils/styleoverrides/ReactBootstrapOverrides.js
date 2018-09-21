@@ -26,7 +26,7 @@ export const globals = {
     border: 'solid 1px #6124e2',
     color: '#555e6f !important'
   },
-  [`.${OverrideClassNames.rdtDay}:hover`]: {
+  [`.${OverrideClassNames.DATE_TIME_PICKER_DAY}:hover`]: {
     'background-color': '#f0f0f7'
   },
   [`.${OverrideClassNames.MODAL_BACKDROP}`]: {

@@ -3,7 +3,7 @@
  */
 
 import styled from 'styled-components';
-import FontAwesome from 'react-fontawesome';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Link } from 'react-router-dom';
 import {
   Button,
@@ -413,7 +413,7 @@ export const StyledSectionWrapper = styled.div`
   border: solid 1px #e1e1eb;
 `;
 
-export const CloseX = styled(FontAwesome)`
+export const CloseX = styled(FontAwesomeIcon)`
   cursor: pointer;
 `;
 

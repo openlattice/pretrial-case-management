@@ -1,55 +1,29 @@
-/* eslint-disable import/extensions */
+const path = require('path');
 
-import path from 'path';
-
-import APP_CONFIG from './app.config.js';
-
-/*
- * absolute paths
- */
+const ASSETS = 'assets';
+const BUILD = 'build';
+const CSS = 'css';
+const IMAGES = 'images';
+const JS = 'js';
+const NODE = 'node_modules';
+const SOURCE = 'src';
+const STATIC = 'static';
 
 const ROOT = path.resolve(__dirname, '../..');
 
-const BUILD = path.resolve(ROOT, 'build');
-const NODE = path.resolve(ROOT, 'node_modules');
-const SOURCE = path.resolve(ROOT, 'src');
-const TEST = path.resolve(ROOT, 'test');
-
-const APP_ENTRY = path.resolve(SOURCE, APP_CONFIG.APP_JS);
-const BUILD_STATIC = path.resolve(BUILD, 'static');
-const BUILD_STATIC_ASSETS = path.resolve(BUILD_STATIC, 'assets');
-const BUILD_STATIC_CSS = path.resolve(BUILD_STATIC, 'css');
-const BUILD_STATIC_JS = path.resolve(BUILD_STATIC, 'js');
-
-const SOURCE_ASSETS_IMAGES = path.resolve(SOURCE, 'assets/images');
-
-/*
- * relative paths
- */
-
-const STATIC = 'static';
-const STATIC_ASSETS = path.join(STATIC, 'assets');
-const STATIC_ASSETS_IMAGES = path.join(STATIC_ASSETS, 'images');
-const STATIC_CSS = path.join(STATIC, 'css');
-const STATIC_JS = path.join(STATIC, 'js');
-
-export default {
+module.exports = {
   ABS: {
-    APP_ENTRY,
-    BUILD,
-    BUILD_STATIC,
-    BUILD_STATIC_ASSETS,
-    BUILD_STATIC_CSS,
-    BUILD_STATIC_JS,
-    NODE,
-    ROOT,
-    SOURCE,
-    SOURCE_ASSETS_IMAGES,
-    TEST
+    APP: path.resolve(ROOT, `${SOURCE}/index.js`),
+    BUILD: path.resolve(ROOT, BUILD),
+    BUILD_STATIC_CSS: path.resolve(ROOT, `${BUILD}/${STATIC}/${CSS}`),
+    BUILD_STATIC_JS: path.resolve(ROOT, `${BUILD}/${STATIC}/${JS}`),
+    NODE: path.resolve(ROOT, NODE),
+    SOURCE: path.resolve(ROOT, SOURCE),
+    SOURCE_ASSETS_IMAGES: path.resolve(ROOT, `${SOURCE}/${ASSETS}/${IMAGES}`),
   },
   REL: {
-    STATIC_ASSETS_IMAGES,
-    STATIC_CSS,
-    STATIC_JS
+    STATIC_ASSETS_IMAGES: path.join(STATIC, `${ASSETS}/${IMAGES}`),
+    STATIC_CSS: path.join(STATIC, CSS),
+    STATIC_JS: path.join(STATIC, JS),
   }
 };

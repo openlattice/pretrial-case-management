@@ -1,5 +1,5 @@
-// flow-typed signature: ed8e53f40d350cb63a7f201d38c0e1ec
-// flow-typed version: fd6d313c44/redux-saga_v0.16.x/flow_>=v0.56.0
+// flow-typed signature: 81155af144282e14c13e73c7ec3f203b
+// flow-typed version: 0dda5b292f/redux-saga_v0.16.x/flow_>=v0.56.0
 
 // @flow
 
@@ -61,7 +61,7 @@ declare module "redux-saga" {
   declare export var channel: (buffer?: Buffer) => Channel;
   declare export var END: { +type: "@@redux-saga/CHANNEL_END" };
   declare export var CANCEL: Symbol;
-  declare export var delay: (timeout: number) => Promise<void>;
+  declare export var delay: (timeout: number, val?: any) => Promise<any>;
 
   declare type RunSagaOptions = {
     +subscribe?: (emit: (input: any) => any) => () => void,
@@ -290,7 +290,7 @@ declare module "redux-saga" {
     +CANCEL: T
   };
 
-  declare export type SelectEffect<Fn: Function, Args: $ReadOnlyArray<*>> = {
+  declare export type SelectEffect<Fn: Function | void, Args: $ReadOnlyArray<*>> = {
     +"@@redux-saga/IO": true,
     +SELECT: {
       +selector: Fn,
@@ -394,7 +394,11 @@ declare module "redux-saga/effects" {
 
   declare export var put: {
     <A: Object>(action: A): PutEffect<A, null>,
-    <A: Object>(channel: Channel, action: A): PutEffect<A, Channel>
+    <A: Object>(channel: Channel, action: A): PutEffect<A, Channel>,
+    resolve: {
+      <A: Object>(action: A): PutEffect<A, null>,
+      <A: Object>(channel: Channel, action: A): PutEffect<A, Channel>,
+    }
   };
 
   declare export var call: {
@@ -977,6 +981,7 @@ declare module "redux-saga/effects" {
   };
 
   declare export var select: {
+    (): SelectEffect<void, []>,
     <S, R, Fn: (state: S) => R>(fn: Fn): SelectEffect<Fn, []>,
     <S, R, T1, Fn: (state: S, t1: T1) => R>(
       fn: Fn,
@@ -1229,6 +1234,164 @@ declare module "redux-saga/effects" {
   };
 
   declare export var takeLatest: {
+    // normal calls
+    <A, R, Fn: (action: A) => Saga<R>>(
+      pattern: Pattern,
+      fn: Fn
+    ): ForkEffect<null, Function, $ReadOnlyArray<any>>,
+    <A, R, T1, Fn: (t1: T1, action: A) => Saga<R>>(
+      pattern: Pattern,
+      fn: Fn,
+      t1: T1
+    ): ForkEffect<null, Function, $ReadOnlyArray<any>>,
+    <A, R, T1, T2, Fn: (t1: T1, t2: T2, action: A) => Saga<R>>(
+      pattern: Pattern,
+      fn: Fn,
+      t1: T1,
+      t2: T2
+    ): ForkEffect<null, Function, $ReadOnlyArray<any>>,
+    <A, R, T1, T2, T3, Fn: (t1: T1, t2: T2, t3: T3, action: A) => Saga<R>>(
+      pattern: Pattern,
+      fn: Fn,
+      t1: T1,
+      t2: T2,
+      t3: T3
+    ): ForkEffect<null, Function, $ReadOnlyArray<any>>,
+    <
+      A,
+      R,
+      T1,
+      T2,
+      T3,
+      T4,
+      Fn: (t1: T1, t2: T2, t3: T3, t4: T4, action: A) => Saga<R>
+    >(
+      pattern: Pattern,
+      fn: Fn,
+      t1: T1,
+      t2: T2,
+      t3: T3,
+      t4: T4
+    ): ForkEffect<null, Function, $ReadOnlyArray<any>>,
+    <
+      A,
+      R,
+      T1,
+      T2,
+      T3,
+      T4,
+      T5,
+      Fn: (t1: T1, t2: T2, t3: T3, t4: T4, t5: T5, action: A) => Saga<R>
+    >(
+      pattern: Pattern,
+      fn: Fn,
+      t1: T1,
+      t2: T2,
+      t3: T3,
+      t4: T4,
+      t5: T5
+    ): ForkEffect<null, Function, $ReadOnlyArray<any>>,
+    <
+      A,
+      R,
+      T1,
+      T2,
+      T3,
+      T4,
+      T5,
+      T6,
+      Fn: (t1: T1, t2: T2, t3: T3, t4: T4, t5: T5, t6: T6, action: A) => Saga<R>
+    >(
+      pattern: Pattern,
+      fn: Fn,
+      t1: T1,
+      t2: T2,
+      t3: T3,
+      t4: T4,
+      t5: T5,
+      t6: T6
+    ): ForkEffect<null, Function, $ReadOnlyArray<any>>,
+
+    // with channel
+    <A, R, Fn: (action: A) => Saga<R>>(
+      channel: Channel,
+      fn: Fn
+    ): ForkEffect<null, Function, $ReadOnlyArray<any>>,
+    <A, R, T1, Fn: (t1: T1, action: A) => Saga<R>>(
+      channel: Channel,
+      fn: Fn,
+      t1: T1
+    ): ForkEffect<null, Function, $ReadOnlyArray<any>>,
+    <A, R, T1, T2, Fn: (t1: T1, t2: T2, action: A) => Saga<R>>(
+      channel: Channel,
+      fn: Fn,
+      t1: T1,
+      t2: T2
+    ): ForkEffect<null, Function, $ReadOnlyArray<any>>,
+    <A, R, T1, T2, T3, Fn: (t1: T1, t2: T2, t3: T3, action: A) => Saga<R>>(
+      channel: Channel,
+      fn: Fn,
+      t1: T1,
+      t2: T2,
+      t3: T3
+    ): ForkEffect<null, Function, $ReadOnlyArray<any>>,
+    <
+      A,
+      R,
+      T1,
+      T2,
+      T3,
+      T4,
+      Fn: (t1: T1, t2: T2, t3: T3, t4: T4, action: A) => Saga<R>
+    >(
+      channel: Channel,
+      fn: Fn,
+      t1: T1,
+      t2: T2,
+      t3: T3,
+      t4: T4
+    ): ForkEffect<null, Function, $ReadOnlyArray<any>>,
+    <
+      A,
+      R,
+      T1,
+      T2,
+      T3,
+      T4,
+      T5,
+      Fn: (t1: T1, t2: T2, t3: T3, t4: T4, t5: T5, action: A) => Saga<R>
+    >(
+      channel: Channel,
+      fn: Fn,
+      t1: T1,
+      t2: T2,
+      t3: T3,
+      t4: T4,
+      t5: T5
+    ): ForkEffect<null, Function, $ReadOnlyArray<any>>,
+    <
+      A,
+      R,
+      T1,
+      T2,
+      T3,
+      T4,
+      T5,
+      T6,
+      Fn: (t1: T1, t2: T2, t3: T3, t4: T4, t5: T5, t6: T6, action: A) => Saga<R>
+    >(
+      channel: Channel,
+      fn: Fn,
+      t1: T1,
+      t2: T2,
+      t3: T3,
+      t4: T4,
+      t5: T5,
+      t6: T6
+    ): ForkEffect<null, Function, $ReadOnlyArray<any>>
+  };
+
+  declare export var takeLeading: {
     // normal calls
     <A, R, Fn: (action: A) => Saga<R>>(
       pattern: Pattern,

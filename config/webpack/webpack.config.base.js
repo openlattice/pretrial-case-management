@@ -1,22 +1,27 @@
 /* eslint-disable no-underscore-dangle, import/no-extraneous-dependencies, import/extensions */
 
-import Webpack from 'webpack';
+const path = require('path');
+const Webpack = require('webpack');
 
-import PACKAGE from '../../package.json';
+const APP_CONFIG = require('../app/app.config.js');
+const APP_PATHS = require('../app/paths.config.js');
+const PACKAGE = require('../../package.json');
+const {
+  AUTH0_CLIENT_ID_DEV,
+  AUTH0_CLIENT_ID_PROD,
+  AUTH0_DOMAIN,
+} = require('../auth/auth0.config.js');
 
-import APP_CONFIG from '../app/app.config.js';
-import APP_PATHS from '../app/paths.config.js';
-
-import { ifDev, ifProd, isDev, isProd, isTest } from '../app/env.config.js';
-import { AUTH0_CLIENT_ID, AUTH0_DOMAIN } from '../auth/auth0.config.js';
-
-export default function baseWebpackConfig(env) {
+module.exports = (env) => {
 
   /*
    * constants
    */
 
+  const BABEL_CONFIG = path.resolve(__dirname, '../babel/babel.config.js');
   const BASE_PATH = `/${env.basePath || 'psa'}/`;
+  const ENV_DEV = 'development';
+  const ENV_PROD = 'production';
 
   /*
    * loaders
@@ -27,9 +32,13 @@ export default function baseWebpackConfig(env) {
     exclude: /node_modules/,
     include: [
       APP_PATHS.ABS.SOURCE,
-      APP_PATHS.ABS.TEST
     ],
-    use: ['babel-loader']
+    use: {
+      loader: 'babel-loader',
+      options: {
+        configFile: BABEL_CONFIG,
+      },
+    },
   };
 
   const FILE_LOADER_ASSETS_IMAGES = {
@@ -38,7 +47,8 @@ export default function baseWebpackConfig(env) {
     use: [{
       loader: 'file-loader',
       options: {
-        name: `${APP_PATHS.REL.STATIC_ASSETS_IMAGES}/[name].[hash:8].[ext]`
+        name: '[name].[hash:8].[ext]',
+        outputPath: `${APP_PATHS.REL.STATIC_ASSETS_IMAGES}/`,
       }
     }]
   };
@@ -49,18 +59,17 @@ export default function baseWebpackConfig(env) {
 
   const BANNER_PLUGIN = new Webpack.BannerPlugin({
     banner: APP_CONFIG.BANNER,
-    entryOnly: true
+    entryOnly: true,
   });
 
   const DEFINE_PLUGIN = new Webpack.DefinePlugin({
-    __AUTH0_CLIENT_ID__: JSON.stringify(AUTH0_CLIENT_ID),
+    __AUTH0_CLIENT_ID__: JSON.stringify(env.production ? AUTH0_CLIENT_ID_PROD : AUTH0_CLIENT_ID_DEV),
     __AUTH0_DOMAIN__: JSON.stringify(AUTH0_DOMAIN),
     __BASE_PATH__: JSON.stringify(BASE_PATH),
-    __ENV_DEV__: JSON.stringify(isDev),
-    __ENV_PROD__: JSON.stringify(isProd),
-    __ENV_TEST__: JSON.stringify(isTest),
+    __ENV_DEV__: JSON.stringify(!!env.development),
+    __ENV_PROD__: JSON.stringify(!!env.production),
     __PACKAGE__: JSON.stringify(PACKAGE.name),
-    __VERSION__: JSON.stringify(`v${PACKAGE.version}`)
+    __VERSION__: JSON.stringify(`v${PACKAGE.version}`),
   });
 
   /*
@@ -70,39 +79,39 @@ export default function baseWebpackConfig(env) {
   return {
     bail: true,
     entry: [
-      APP_PATHS.ABS.APP_ENTRY
+      '@babel/polyfill',
+      APP_PATHS.ABS.APP,
     ],
-    mode: ifDev('development', 'production'),
+    mode: env.production ? ENV_PROD : ENV_DEV,
     module: {
       rules: [
         BABEL_LOADER,
-        FILE_LOADER_ASSETS_IMAGES
-      ]
+        FILE_LOADER_ASSETS_IMAGES,
+      ],
     },
     node: {
-      fs: 'empty',
-      net: 'empty'
+      net: 'empty',
     },
     optimization: {
-      minimize: ifProd(true, false)
+      minimize: !!env.production,
     },
     output: {
       path: APP_PATHS.ABS.BUILD,
-      publicPath: BASE_PATH
+      publicPath: BASE_PATH,
     },
     performance: {
-      hints: false // disable performance hints for now
+      hints: false, // disable performance hints for now
     },
     plugins: [
       DEFINE_PLUGIN,
-      BANNER_PLUGIN
+      BANNER_PLUGIN,
     ],
     resolve: {
       extensions: ['.js', '.css'],
       modules: [
         APP_PATHS.ABS.SOURCE,
-        APP_PATHS.ABS.NODE
-      ]
-    }
+        APP_PATHS.ABS.NODE,
+      ],
+    },
   };
-}
+};

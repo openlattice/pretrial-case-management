@@ -3,9 +3,10 @@
  */
 
 import React from 'react';
-import FontAwesome from 'react-fontawesome';
 import Immutable from 'immutable';
 import styled from 'styled-components';
+import { faTimes } from '@fortawesome/pro-regular-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Button, Col, FormControl } from 'react-bootstrap';
 
 import {
@@ -146,7 +147,7 @@ export default class AbstractListComponent extends React.Component<Props, *> {
           <DeleteButton
               disabled={isLastPage}
               onClick={deleteFn}>
-            <FontAwesome name="close" size="2x" />
+            <FontAwesomeIcon icon={faTimes} size="2x" />
           </DeleteButton>
         </Col>
         {rows}
