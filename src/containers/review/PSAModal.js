@@ -676,17 +676,12 @@ class PSAModal extends React.Component<Props, State> {
       {
         title: 'Case History',
         content: this.renderCaseHistory
+      },
+      {
+        title: 'Initial Appearance',
+        content: this.renderInitialAppearance
       }
     ];
-
-    if (this.props.view !== CONTENT.JUDGES) {
-      tabs.push(
-        {
-          title: 'Initial Appearance',
-          content: this.renderInitialAppearance
-        }
-      )
-    }
 
     return (
       <Modal
