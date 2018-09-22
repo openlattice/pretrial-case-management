@@ -4,7 +4,8 @@
 
 import React from 'react';
 import styled from 'styled-components';
-import FontAwesome from 'react-fontawesome';
+import { faBook } from '@fortawesome/pro-regular-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 const StyledIconWrapper = styled.div`
   height: 40px;
@@ -22,7 +23,7 @@ type Props = {
 
 const CreateFormListItem = ({ icon } :Props) => (
   <StyledIconWrapper>
-    {icon ? <img src={icon} role="presentation" /> : <FontAwesome name="book" size="2x" />}
+    {icon ? <img src={icon} role="presentation" /> : <FontAwesomeIcon icon={faBook} size="2x" />}
   </StyledIconWrapper>
 );
 

@@ -37,15 +37,15 @@ const AboutPersonGeneral = ({ selectedPersonData }) => {
       generalContent = [
         {
           label: 'Last Name',
-          content: [lastName]
+          content: [(lastName ? lastName.charAt(0).toUpperCase() + lastName.slice(1).toLowerCase() : lastName)]
         },
         {
           label: 'Middle Name',
-          content: [middleName]
+          content: [(middleName ? middleName.charAt(0).toUpperCase() + middleName.slice(1).toLowerCase() : middleName)]
         },
         {
           label: 'First Name',
-          content: [firstName]
+          content: [(firstName ? firstName.charAt(0).toUpperCase() + firstName.slice(1).toLowerCase() : firstName)]
         },
         {
           label: '',

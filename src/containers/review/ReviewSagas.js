@@ -16,6 +16,7 @@ import {
   stripIdField
 } from '../../utils/DataUtils';
 import { getMapByCaseId } from '../../utils/CaseUtils';
+import { obfuscateEntityNeighbors, obfuscateBulkEntityNeighbors } from '../../utils/consts/DemoNames';
 import {
   BULK_DOWNLOAD_PSA_REVIEW_PDF,
   CHANGE_PSA_STATUS,
@@ -224,7 +225,7 @@ function* loadPSADataWorker(action :SequenceAction) :Generator<*, *, *> {
     if (action.value.length) {
       const entitySetId = yield call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.PSA_SCORES);
       let neighborsById = yield call(SearchApi.searchEntityNeighborsBulk, entitySetId, action.value);
-      neighborsById = getFilteredNeighborsById(neighborsById);
+      neighborsById = Immutable.fromJS(neighborsById);
 
       neighborsById.keySeq().forEach((id) => {
         let allDatesEdited = Immutable.List();
@@ -484,7 +485,7 @@ function* bulkDownloadPSAReviewPDFWorker(action :SequenceAction) :Generator<*, *
     });
 
     let psaNeighborsById = yield call(SearchApi.searchEntityNeighborsBulk, psaEntitySetId, psasById.keySeq().toJS());
-    psaNeighborsById = getFilteredNeighborsById(psaNeighborsById);
+    psaNeighborsById = Immutable.fromJS(psaNeighborsById);
 
     const pageDetailsList = [];
     psaNeighborsById.entrySeq().forEach(([psaId, neighborList]) => {

@@ -13,6 +13,7 @@ import {
   loadNeighbors
 } from './FormActionFactory';
 import { loadPSAData } from '../review/ReviewActionFactory';
+import { obfuscateBulkEntityNeighbors } from '../../utils/consts/DemoNames';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_STATUSES } from '../../utils/consts/Consts';
 

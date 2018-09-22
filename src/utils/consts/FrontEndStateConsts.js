@@ -38,7 +38,9 @@ export const COURT = {
   COUNTY: 'county',
   COURTROOM: 'courtroom',
   OPEN_PSAS: 'openPSAs',
-  OPEN_PSA_NEIGHBORS: 'openPSANeighbors'
+  OPEN_PSA_NEIGHBORS: 'openPSANeighbors',
+  OPEN_PSA_IDS: 'openPSAIds',
+  PEOPLE_IDS_TO_OPEN_PSA_IDS: 'peopleIdsToOpenPSAIds'
 };
 
 // Dashboard
