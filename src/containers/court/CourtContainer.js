@@ -173,6 +173,7 @@ type Props = {
     replaceEntity :(value :{ entitySetName :string, entityKeyId :string, values :Object }) => void,
     searchPeopleRequest :(firstName :string, lastName :string, dob :string) => void,
     submit :(value :{ config :Object, values :Object}) => void,
+    loadPSAData :(psaIds :string[]) => void
   }
 };
 
@@ -198,6 +199,13 @@ class CourtContainer extends React.Component<Props, State> {
     }
   }
 
+  componentWillReceiveProps(nextProps) {
+    const { openPSAIds } = this.props;
+    if (openPSAIds.size !== nextProps.openPSAIds.size) {
+      this.props.actions.loadPSAData(nextProps.openPSAIds.toJS());
+    }
+  }
+
   componentWillUnmount() {
     this.props.actions.clearSubmit();
   }
@@ -206,6 +214,7 @@ class CourtContainer extends React.Component<Props, State> {
   renderPersonCard = (person, index) => {
     const personId = person.getIn([PROPERTY_TYPES.PERSON_ID, 0]);
     const personOlId = person.getIn([OPENLATTICE_ID_FQN, 0]);
+    const openPSAId = this.props.peopleIdsToOpenPSAIds.get(personOlId, '');
     const dobMoment = moment(person.getIn([PROPERTY_TYPES.DOB, 0], ''));
     const formattedDOB = dobMoment.isValid() ? formatDate(dobMoment) : '';
     const caseHistory = this.props.caseHistory.get(personOlId, Immutable.List());
@@ -216,8 +225,8 @@ class CourtContainer extends React.Component<Props, State> {
     const ftaHistory = this.props.ftaHistory.get(personOlId, Immutable.Map());
     const hearings = this.props.hearings.get(personOlId, Immutable.List());
     const hasOpenPSA = this.props.peopleWithOpenPsas.has(person.getIn([OPENLATTICE_ID_FQN, 0]));
-    const neighbors = this.props.openPSANeighbors.get(personOlId, Immutable.Map())
-      .setIn([ENTITY_SETS.PEOPLE, PSA_NEIGHBOR.DETAILS], Immutable.fromJS(person));
+    const scores = this.props.openPSANeighbors.getIn([personOlId, ENTITY_SETS.PSA_SCORES, 0, PSA_NEIGHBOR.DETAILS], Immutable.Map());
+    const neighbors = this.props.psaNeighborsById.get(openPSAId, Immutable.Map());
     const personObj = {
       identification: personId,
       firstName: person.getIn([PROPERTY_TYPES.FIRST_NAME, 0]),
@@ -226,7 +235,6 @@ class CourtContainer extends React.Component<Props, State> {
       dob: formattedDOB,
       photo: person.getIn([PROPERTY_TYPES.PICTURE, 0])
     };
-    const scores = neighbors.getIn([ENTITY_SETS.PSA_SCORES, 0, PSA_NEIGHBOR.DETAILS], Immutable.Map());
     const entityKeyId = scores.getIn([OPENLATTICE_ID_FQN, 0]);
     return (
       <PersonCard
@@ -410,7 +418,7 @@ class CourtContainer extends React.Component<Props, State> {
   }
 
   renderContent = () => {
-    if (this.props.isLoadingPSAs) {
+    if (this.props.loadingPSAData) {
       return <SpinnerWrapper><LoadingSpinner /></SpinnerWrapper>;
     }
 
@@ -457,6 +465,8 @@ function mapStateToProps(state) {
     [COURT.COUNTY]: court.get(COURT.COUNTY),
     [COURT.COURTROOM]: court.get(COURT.COURTROOM),
     [COURT.OPEN_PSA_NEIGHBORS]: court.get(COURT.OPEN_PSA_NEIGHBORS),
+    [COURT.OPEN_PSA_IDS]: court.get(COURT.OPEN_PSA_IDS),
+    [COURT.PEOPLE_IDS_TO_OPEN_PSA_IDS]: court.get(COURT.PEOPLE_IDS_TO_OPEN_PSA_IDS),
 
     [REVIEW.CASE_HISTORY]: review.get(REVIEW.CASE_HISTORY),
     [REVIEW.MANUAL_CASE_HISTORY]: review.get(REVIEW.MANUAL_CASE_HISTORY),
@@ -467,6 +477,9 @@ function mapStateToProps(state) {
     [REVIEW.HEARINGS]: review.get(REVIEW.HEARINGS),
     [REVIEW.LOADING_DATA]: review.get(REVIEW.LOADING_DATA),
     [REVIEW.PSA_IDS_REFRESHING]: review.get(REVIEW.PSA_IDS_REFRESHING),
+    [REVIEW.NEIGHBORS_BY_ID]: review.get(REVIEW.NEIGHBORS_BY_ID),
+    [REVIEW.NEIGHBORS_BY_DATE]: review.get(REVIEW.NEIGHBORS_BY_DATE),
+    [REVIEW.ALL_FILERS]: review.get(REVIEW.ALL_FILERS),
 
     [SUBMIT.SUBMITTING]: submit.get(SUBMIT.SUBMITTING, false)
   };
