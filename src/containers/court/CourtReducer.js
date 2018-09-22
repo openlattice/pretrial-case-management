@@ -4,6 +4,7 @@
 
 import Immutable from 'immutable';
 import moment from 'moment';
+import { Constants } from 'lattice';
 
 import { sortByDate } from '../../utils/PSAUtils';
 import {
@@ -15,6 +16,7 @@ import { COURT, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_STATUSES } from '../../utils/consts/Consts';
 
+const { OPENLATTICE_ID_FQN } = Constants;
 
 const INITIAL_STATE :Immutable.Map<*, *> = Immutable.fromJS({
   [COURT.HEARINGS_TODAY]: Immutable.List(),
@@ -22,6 +24,8 @@ const INITIAL_STATE :Immutable.Map<*, *> = Immutable.fromJS({
   [COURT.HEARINGS_NEIGHBORS_BY_ID]: Immutable.Map(),
   [COURT.PEOPLE_WITH_OPEN_PSAS]: Immutable.Set(),
   [COURT.OPEN_PSAS]: Immutable.Map(),
+  [COURT.OPEN_PSA_IDS]: Immutable.Set(),
+  [COURT.PEOPLE_IDS_TO_OPEN_PSA_IDS]: Immutable.Map(),
   [COURT.OPEN_PSA_NEIGHBORS]: Immutable.Map(),
   [COURT.LOADING_HEARINGS]: false,
   [COURT.LOADING_PSAS]: false,
@@ -40,17 +44,21 @@ export default function courtReducer(state :Immutable.Map<*, *> = INITIAL_STATE,
           .set(COURT.LOADING_PSAS, true),
         SUCCESS: () => {
           const { filteredPersonIds, neighborsForOpenPSAs } = action.value;
+          let openPSAIds = Immutable.Set();
+          let personIdsToPSAIds = Immutable.Map();
           let sortedNeighborsForOpenPSAs = Immutable.Map();
           filteredPersonIds.forEach((id) => {
             let neighborsByEntitySet = Immutable.Map();
-            let latestCaseDate;
-            let latestHearingDate;
             const allNeighbors = neighborsForOpenPSAs.get(id, Immutable.List());
             allNeighbors.forEach((neighbor) => {
               const entitySetName = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'name'], '');
               if (entitySetName === ENTITY_SETS.PSA_SCORES) {
                 const status = Immutable.fromJS(neighbor).getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.STATUS, 0], '');
                 if (status === PSA_STATUSES.OPEN) {
+                  if (neighbor.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0])) {
+                    openPSAIds = openPSAIds.add(neighbor.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0]));
+                  }
+
                   neighborsByEntitySet = neighborsByEntitySet.set(
                     entitySetName,
                     neighborsByEntitySet.get(entitySetName, Immutable.List())
@@ -59,37 +67,18 @@ export default function courtReducer(state :Immutable.Map<*, *> = INITIAL_STATE,
                         [2, neighbor2]
                       ))
                   );
+                  personIdsToPSAIds = personIdsToPSAIds.set(id,
+                    neighborsByEntitySet.getIn([entitySetName, 0, PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0]));
                 }
-              }
-              else if (entitySetName === ENTITY_SETS.MANUAL_PRETRIAL_CASES) {
-                const caseDate =
-                  neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.ARREST_DATE_TIME, 0]) ||
-                  neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.FILE_DATE, 0]);
-                if (!latestCaseDate || moment(caseDate).isAfter(moment(latestCaseDate))) {
-                  neighborsByEntitySet = neighborsByEntitySet.set(entitySetName, Immutable.fromJS(neighbor));
-                  latestCaseDate = caseDate;
-                }
-              }
-              else if (entitySetName === ENTITY_SETS.HEARINGS) {
-                const hearingDate =
-                  neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.DATE_TIME, 0], '');
-                if (!latestCaseDate || moment(hearingDate).isAfter(moment(latestHearingDate))) {
-                  neighborsByEntitySet = neighborsByEntitySet.set(entitySetName, Immutable.fromJS(neighbor));
-                  latestHearingDate = hearingDate;
-                }
-              }
-              else {
-                neighborsByEntitySet = neighborsByEntitySet.set(
-                  entitySetName,
-                  neighborsByEntitySet.get(entitySetName, Immutable.fromJS(neighbor))
-                );
               }
             });
             sortedNeighborsForOpenPSAs = sortedNeighborsForOpenPSAs.set(id, Immutable.fromJS(neighborsByEntitySet));
 
           });
           return state.set(COURT.PEOPLE_WITH_OPEN_PSAS, Immutable.fromJS(action.value.filteredPersonIds))
-            .set(COURT.OPEN_PSA_NEIGHBORS, sortedNeighborsForOpenPSAs);
+            .set(COURT.OPEN_PSA_NEIGHBORS, sortedNeighborsForOpenPSAs)
+            .set(COURT.OPEN_PSA_IDS, openPSAIds)
+            .set(COURT.PEOPLE_IDS_TO_OPEN_PSA_IDS, personIdsToPSAIds);
         },
         FAILURE: () => state.set(COURT.PEOPLE_WITH_OPEN_PSAS, Immutable.Set())
           .set(COURT.OPEN_PSA_NEIGHBORS, Immutable.Map()),
