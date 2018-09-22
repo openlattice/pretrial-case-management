@@ -41,9 +41,7 @@ function* filterPeopleIdsWithOpenPSAsWorker(action :SequenceAction) :Generator<*
               const psaNeighbors = neighborsById[id].filter((possibleNeighbor) => {
                 const associationId = possibleNeighbor[PSA_ASSOCIATION.DETAILS][OPENLATTICE_ID_FQN][0];
                 return (
-                  associationId === associationEntitySetId ||
-                  possibleNeighbor[PSA_NEIGHBOR.ENTITY_SET].name === ENTITY_SETS.MANUAL_PRETRIAL_CASES ||
-                  possibleNeighbor[PSA_NEIGHBOR.ENTITY_SET].name === ENTITY_SETS.HEARINGS
+                  associationId === associationEntitySetId
                 );
               });
               if (statusList.includes(PSA_STATUSES.OPEN)) {
