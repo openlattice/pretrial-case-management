@@ -2263,7 +2263,7 @@ const MinnehahaChargesList = [
   },
   {
     statute: '22-18-1.1',
-    description: 'Aggravated Assault',
+    description: 'Aggravated Assault (F3)',
     degree: 'Felony Class 3',
     degreeShort: 'F3'
   },
