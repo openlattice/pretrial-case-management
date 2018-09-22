@@ -418,7 +418,7 @@ class CourtContainer extends React.Component<Props, State> {
   }
 
   renderContent = () => {
-    if (this.props.loadingPSAData) {
+    if (this.props.loadingPSAData || this.props.isLoadingPSAs) {
       return <SpinnerWrapper><LoadingSpinner /></SpinnerWrapper>;
     }
 
