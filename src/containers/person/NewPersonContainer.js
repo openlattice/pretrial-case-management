@@ -297,7 +297,6 @@ class NewPersonContainer extends React.Component<Props, State> {
       [ID_VALUE]: uuid(),
       [LIVES_AT_ID_VALUE]: uuid()
     };
-    console.log(values);
 
     this.props.actions.newPersonSubmitRequest(newPersonSubmissionConfig, values);
   }
