@@ -105,19 +105,9 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
           }
         }
 
-        const { neighborEntitySet } = neighbor;
-        let shouldNotIgnore = false;
-        if (neighborEntitySet) {
-          const entitySetName = neighborEntitySet.name;
-          shouldNotIgnore = (
-            entitySetName !== ENTITY_SETS.RELEASE_CONDITIONS
-            && entitySetName !== ENTITY_SETS.BONDS
-          );
-        }
-
         const timestampList = neighbor.associationDetails[PROPERTY_TYPES.TIMESTAMP]
           || neighbor.associationDetails[PROPERTY_TYPES.COMPLETED_DATE_TIME];
-        if (timestampList && timestampList.length && shouldNotIgnore) {
+        if (timestampList && timestampList.length) {
           const timestamp = moment(timestampList[0]);
           if (timestamp.isSameOrAfter(start) && timestamp.isSameOrBefore(end)) {
             usableNeighbors = usableNeighbors.push(Immutable.fromJS(neighbor));
@@ -157,33 +147,36 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
     let jsonResults = Immutable.List();
     let allHeaders = Immutable.Set();
     usableNeighborsById.keySeq().forEach((id) => {
-      let combinedEntity = getUpdatedEntity(
-        Immutable.Map(),
-        'South Dakota PSA Scores',
-        ENTITY_SETS.PSA_SCORES,
-        scoresAsMap.get(id)
-      );
+      // If the PSA includes more than only scores, judge outcome, bonds, and release conditions the size will be greater than four.
+      if (usableNeighborsById.get(id).size > 4) {
+        let combinedEntity = getUpdatedEntity(
+          Immutable.Map(),
+          'South Dakota PSA Scores',
+          ENTITY_SETS.PSA_SCORES,
+          scoresAsMap.get(id)
+        );
 
-      usableNeighborsById.get(id).forEach((neighbor) => {
-        combinedEntity = getUpdatedEntity(
-          combinedEntity,
-          neighbor.getIn([PSA_ASSOCIATION.ENTITY_SET, 'title']),
-          neighbor.getIn([PSA_ASSOCIATION.ENTITY_SET, 'name']),
-          neighbor.get(PSA_ASSOCIATION.DETAILS)
-        );
-        combinedEntity = getUpdatedEntity(
-          combinedEntity,
-          neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'title']),
-          neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'name']),
-          neighbor.get(PSA_NEIGHBOR.DETAILS, Immutable.Map())
-        );
-        allHeaders = allHeaders.union(combinedEntity.keys())
+        usableNeighborsById.get(id).forEach((neighbor) => {
+          combinedEntity = getUpdatedEntity(
+            combinedEntity,
+            neighbor.getIn([PSA_ASSOCIATION.ENTITY_SET, 'title']),
+            neighbor.getIn([PSA_ASSOCIATION.ENTITY_SET, 'name']),
+            neighbor.get(PSA_ASSOCIATION.DETAILS)
+          );
+          combinedEntity = getUpdatedEntity(
+            combinedEntity,
+            neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'title']),
+            neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'name']),
+            neighbor.get(PSA_NEIGHBOR.DETAILS, Immutable.Map())
+          );
+          allHeaders = allHeaders.union(combinedEntity.keys())
           .sort((header1, header2) => (POSITIONS.indexOf(header1) >= POSITIONS.indexOf(header2) ? 1 : -1));
-      });
+        });
 
-      combinedEntity = combinedEntity.set('S2', getStepTwo(usableNeighborsById.get(id), scoresAsMap.get(id)));
-      combinedEntity = combinedEntity.set('S4', getStepFour(usableNeighborsById.get(id), scoresAsMap.get(id)));
-      jsonResults = jsonResults.push(combinedEntity);
+        combinedEntity = combinedEntity.set('S2', getStepTwo(usableNeighborsById.get(id), scoresAsMap.get(id)));
+        combinedEntity = combinedEntity.set('S4', getStepFour(usableNeighborsById.get(id), scoresAsMap.get(id)));
+        jsonResults = jsonResults.push(combinedEntity);
+      }
     });
 
     const fields = filters
