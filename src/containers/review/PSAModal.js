@@ -186,6 +186,9 @@ type Props = {
       dmfRiskFactorsId :string,
       dmfRiskFactorsEntity :Object
     }) => void,
+    updateOutcomesAndReleaseCondtions :(values :{
+      allEntitySetIds :string[]
+    }) => void,
     changePSAStatus :(values :{
       scoresId :string,
       scoresEntity :Immutable.Map<*, *>
@@ -642,6 +645,7 @@ class PSAModal extends React.Component<Props, State> {
             replace={this.props.actions.replaceEntity}
             delete={this.props.actions.deleteEntity}
             submitCallback={this.refreshPSANeighborsCallback}
+            updateFqn={this.props.actions.updateOutcomesAndReleaseCondtions}
             hearing={this.props.neighbors.getIn([ENTITY_SETS.HEARINGS, PSA_NEIGHBOR.DETAILS], Immutable.Map())}
             hearingId={this.getEntityKeyId(ENTITY_SETS.HEARINGS)}
             deleteHearing={this.deleteHearing}
