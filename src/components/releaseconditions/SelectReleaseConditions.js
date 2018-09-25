@@ -29,6 +29,7 @@ import { getTimeOptions } from '../../utils/consts/DateTimeConsts';
 import { RELEASE_CONDITIONS, LIST_FIELDS, ID_FIELD_NAMES, FORM_IDS } from '../../utils/consts/Consts';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { getCourtroomOptions } from '../../utils/consts/HearingConsts';
+import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { toISODate, toISODateTime, formatDateTime } from '../../utils/FormattingUtils';
 import {
   OUTCOMES,
@@ -201,6 +202,9 @@ type Props = {
   submitCallback :() => void,
   replace :(value :{ entitySetName :string, entityKeyId :string, values :Object }) => void,
   delete :(value :{ entitySetName :string, entityKeyId :string }) => void,
+  updateFqn :(values :{
+    allEntitySetIds :string[]
+  }) => void,
   defaultDMF :Immutable.Map<*, *>,
   defaultBond :Immutable.Map<*, *>,
   defaultConditions :Immutable.List<*>,
@@ -487,17 +491,33 @@ class SelectReleaseConditions extends React.Component<Props, State> {
       defaultConditions
     } = this.props;
 
+    const {
+      dmfTypeEntitySetId,
+      bondTypeEntitySetId,
+      realeaseConditionsEntitySetId
+    } = this.props;
+
+    const allEntitySetIds = {
+      dmfTypeEntitySetId: dmfTypeEntitySetId,
+      bondTypeEntitySetId: bondTypeEntitySetId,
+      realeaseConditionsEntitySetId: realeaseConditionsEntitySetId
+    };
+    const { dmfId } = this.props;
     const dmfEntityKeyId = defaultDMF.getIn([OPENLATTICE_ID_FQN, 0], []);
 
-    const ConditionEntityKeyIds = defaultConditions.map(neighbor => neighbor.getIn([OPENLATTICE_ID_FQN, 0], []));
+    const conditionEntityKeyIds = defaultConditions.map(neighbor => neighbor.getIn([OPENLATTICE_ID_FQN, 0], []));
+
+    const bondTypeId = this.props.neighbors.getIn([ENTITY_SETS.BONDS, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.GENERAL_ID, 0], '');
 
     const bondTypeEntityKeyId = defaultBond.getIn([OPENLATTICE_ID_FQN, 0], []);
+
 
     if (!this.isReadyToSubmit()) {
       return;
     }
 
     const startDate = toISODate(moment());
+    let bondEntity;
 
     const submission = {
       [FORM_IDS.PERSON_ID]: this.props.personId,
@@ -510,13 +530,29 @@ class SelectReleaseConditions extends React.Component<Props, State> {
       [PROPERTY_TYPES.COMPLETED_DATE_TIME]: toISODateTime(moment())
     };
 
+    const conditionSubmit = {
+      [FORM_IDS.PERSON_ID]: this.props.personId,
+      [ID_FIELD_NAMES.DMF_ID]: this.props.dmfId,
+      [ID_FIELD_NAMES.PSA_ID]: this.props.psaId,
+      [PROPERTY_TYPES.COMPLETED_DATE_TIME]: toISODateTime(moment())
+    };
+
+    const dmfEntity = {
+      [PROPERTY_TYPES.OUTCOME]: outcome,
+      [PROPERTY_TYPES.OTHER_TEXT]: otherOutcomeText
+    }
+
     if (bondType) {
+      bondEntity = {
+        [PROPERTY_TYPES.BOND_TYPE]: bondType,
+        [PROPERTY_TYPES.BOND_AMOUNT]: bondAmount
+      };
       submission[ID_FIELD_NAMES.BOND_ID] = randomUUID();
     }
 
-    const conditionsField = [];
+    const conditionsEntity = [];
     if (release === RELEASES.HELD) {
-      conditionsField.push({
+      conditionsEntity.push({
         [PROPERTY_TYPES.CONDITION_TYPE]: NO_RELEASE_CONDITION,
         [PROPERTY_TYPES.START_DATE]: startDate,
         [PROPERTY_TYPES.GENERAL_ID]: randomUUID()
@@ -541,46 +577,58 @@ class SelectReleaseConditions extends React.Component<Props, State> {
 
         if (condition === CONDITION_LIST.C_247) {
           c247Types.forEach((c247Type) => {
-            conditionsField.push(Object.assign({}, conditionObj, C_247_MAPPINGS[c247Type], {
+            conditionsEntity.push(Object.assign({}, conditionObj, C_247_MAPPINGS[c247Type], {
               [PROPERTY_TYPES.GENERAL_ID]: randomUUID()
             }));
           });
         }
         else if (condition === CONDITION_LIST.NO_CONTACT) {
           this.cleanNoContactPeopleList().forEach((noContactPerson) => {
-            conditionsField.push(Object.assign({}, conditionObj, noContactPerson, {
+            conditionsEntity.push(Object.assign({}, conditionObj, noContactPerson, {
               [PROPERTY_TYPES.GENERAL_ID]: randomUUID()
             }));
           })
         }
         else {
-          conditionsField.push(conditionObj);
+          conditionsEntity.push(conditionObj);
         }
       });
     }
-
-    submission[RELEASE_CONDITIONS_FIELD] = conditionsField;
+    submission[RELEASE_CONDITIONS_FIELD] = conditionsEntity;
+    conditionSubmit[RELEASE_CONDITIONS_FIELD] = conditionsEntity;
 
     if (this.state.editingHearing) {
-      ConditionEntityKeyIds.forEach((id) => {
-        this.props.delete({
-          entitySetId: this.props.realeaseConditionsEntitySetId,
-          entityKeyId: id
-        });
+      this.props.updateFqn({
+        psaId: this.props.psaId,
+        allEntitySetIds,
+        conditionSubmit,
+        conditionEntityKeyIds,
+        bondEntity,
+        bondTypeEntityKeyId,
+        bondTypeId,
+        dmfEntity,
+        dmfEntityKeyId,
+        dmfId
       });
-      this.props.delete({
-        entitySetId: this.props.bondTypeEntitySetId,
-        entityKeyId: bondTypeEntityKeyId
-      });
-      this.props.delete({
-        entitySetId: this.props.dmfTypeEntitySetId,
-        entityKeyId: dmfEntityKeyId
-      });
-      this.props.submit({
-        config: releaseConditionsConfig,
-        values: submission,
-        callback: this.props.submitCallback
-      });
+      // ConditionEntityKeyIds.forEach((id) => {
+      //   this.props.delete({
+      //     entitySetId: this.props.realeaseConditionsEntitySetId,
+      //     entityKeyId: id
+      //   });
+      // });
+      // this.props.delete({
+      //   entitySetId: this.props.bondTypeEntitySetId,
+      //   entityKeyId: bondTypeEntityKeyId
+      // });
+      // this.props.delete({
+      //   entitySetId: this.props.dmfTypeEntitySetId,
+      //   entityKeyId: dmfEntityKeyId
+      // });
+      // this.props.submit({
+      //   config: releaseConditionsConfig,
+      //   values: conditionSubmit,
+      //   callback: this.props.submitCallback
+      // });
       this.setState({ editingHearing: false });
     }
     else {
