@@ -1,5 +1,10 @@
 import { ENTITY_SETS, PROPERTY_TYPES } from './DataModelConsts';
 
+export const DEMO_PATH = '/psademo/';
+
+export const isDemoPath = window.location.pathname === DEMO_PATH;
+
+
 const {
   FIRST_NAME,
   LAST_NAME,
@@ -9471,9 +9476,10 @@ export const getRandomPerson = () => {
   return DEMO_PEOPLE[randomIndex];
 };
 
-export const obfuscateEntity = entity => Object.assign({}, entity, getRandomPerson());
+export const obfuscateEntity = entity => isDemoPath ? Object.assign({}, entity, getRandomPerson()) : entity;
 
 export const obfuscateEntityNeighbors = (neighbors) => {
+  if (!isDemoPath) return neighbors;
   return neighbors.map((neighbor) => {
     const { neighborEntitySet, neighborDetails } = neighbor;
     if (!neighborEntitySet || neighborEntitySet.name !== ENTITY_SETS.PEOPLE) {
@@ -9485,6 +9491,7 @@ export const obfuscateEntityNeighbors = (neighbors) => {
 };
 
 export const obfuscateBulkEntityNeighbors = (neighborsById) => {
+  if (!isDemoPath) return neighborsById;
   const result = {};
   Object.keys(neighborsById).forEach((id) => {
     result[id] = obfuscateEntityNeighbors(neighborsById[id]);
