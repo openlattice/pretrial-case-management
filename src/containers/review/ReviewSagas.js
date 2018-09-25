@@ -230,6 +230,7 @@ function* loadPSADataWorker(action :SequenceAction) :Generator<*, *, *> {
     if (action.value.length) {
       const entitySetId = yield call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.PSA_SCORES);
       let neighborsById = yield call(SearchApi.searchEntityNeighborsBulk, entitySetId, action.value);
+      neighborsById = obfuscateBulkEntityNeighbors(neighborsById); // TODO just for demo
       neighborsById = Immutable.fromJS(neighborsById);
 
       neighborsById.keySeq().forEach((id) => {
@@ -440,7 +441,8 @@ function* bulkDownloadPSAReviewPDFWorker(action :SequenceAction) :Generator<*, *
       call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.PEOPLE),
       call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.PSA_SCORES)
     ]);
-    const peopleNeighbors = yield call(SearchApi.searchEntityNeighborsBulk, personEntitySetId, peopleEntityKeyIds);
+    let peopleNeighbors = yield call(SearchApi.searchEntityNeighborsBulk, personEntitySetId, peopleEntityKeyIds);
+    peopleNeighbors = obfuscateBulkEntityNeighbors(peopleNeighbors); // TODO just for demo
 
     let manualChargesByPersonId = Immutable.Map();
     let psasById = Immutable.Map();
@@ -490,6 +492,7 @@ function* bulkDownloadPSAReviewPDFWorker(action :SequenceAction) :Generator<*, *
     });
 
     let psaNeighborsById = yield call(SearchApi.searchEntityNeighborsBulk, psaEntitySetId, psasById.keySeq().toJS());
+    psaNeighborsById = obfuscateBulkEntityNeighbors(psaNeighborsById); // TODO just for demo
     psaNeighborsById = Immutable.fromJS(psaNeighborsById);
 
     const pageDetailsList = [];
@@ -779,7 +782,8 @@ function* refreshPSANeighborsWorker(action :SequenceAction) :Generator<*, *, *> 
   try {
     yield put(refreshPSANeighbors.request(action.id, { id }));
     const entitySetId = yield call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.PSA_SCORES);
-    const neighborsList = yield call(SearchApi.searchEntityNeighbors, entitySetId, id);
+    let neighborsList = yield call(SearchApi.searchEntityNeighbors, entitySetId, id);
+    neighborsList = obfuscateEntityNeighbors(neighborsList); // TODO just for demo
     let neighbors = Immutable.Map();
     neighborsList.forEach((neighbor) => {
       const { neighborEntitySet, neighborDetails } = neighbor;

@@ -919,14 +919,14 @@ class SelectReleaseConditions extends React.Component<Props, State> {
           this.state.disabled
             ? (
               <Row>
-                <StyledBasicButton
+                {/* <StyledBasicButton
                     onClick={() => this.setState({
                       disabled: false,
                       editingHearing: true,
                       bondAmount: `${this.state.bondAmount}`
                     })}>
                   Edit
-                </StyledBasicButton>
+                </StyledBasicButton> */}
               </Row>
             )
             : (
