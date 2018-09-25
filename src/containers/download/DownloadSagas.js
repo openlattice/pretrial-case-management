@@ -89,7 +89,8 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
       scoresAsMap = scoresAsMap.set(row[OPENLATTICE_ID_FQN][0], stripIdField(Immutable.fromJS(row)));
     });
 
-    const neighborsById = yield call(SearchApi.searchEntityNeighborsBulk, entitySetId, scoresAsMap.keySeq().toJS());
+    let neighborsById = yield call(SearchApi.searchEntityNeighborsBulk, entitySetId, scoresAsMap.keySeq().toJS());
+    neighborsById = obfuscateBulkEntityNeighbors(neighborsById); // TODO just for demo
     let usableNeighborsById = Immutable.Map();
 
     Object.keys(neighborsById).forEach((id) => {
