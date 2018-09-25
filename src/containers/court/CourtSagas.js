@@ -121,7 +121,8 @@ function* loadHearingsForDateWorker(action :SequenceAction) :Generator<*, *, *> 
         }
       });
 
-    const hearingNeighbors = yield call(SearchApi.searchEntityNeighborsBulk, entitySetId, hearingIds);
+    let hearingNeighbors = yield call(SearchApi.searchEntityNeighborsBulk, entitySetId, hearingIds);
+    hearingNeighbors = obfuscateBulkEntityNeighbors(hearingNeighbors); // TODO just for demo
 
     let personEntitySetId;
     let personIds = Immutable.Set();
