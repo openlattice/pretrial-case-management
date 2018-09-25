@@ -1,4 +1,4 @@
-/* eslint-disable const/extensions */
+/* eslint-disable import/extensions */
 
 const devWebpackConfig = require('./webpack.config.dev.js');
 const prodWebpackConfig = require('./webpack.config.prod.js');
