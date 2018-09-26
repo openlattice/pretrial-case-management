@@ -1,4 +1,4 @@
-/* eslint-disable import/no-extraneous-dependencies, import/extensions */
+/* eslint-disable import/extensions */
 
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const Webpack = require('webpack');
