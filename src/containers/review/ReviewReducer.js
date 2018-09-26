@@ -211,7 +211,7 @@ export default function reviewReducer(state :Immutable.Map<*, *> = INITIAL_STATE
       return updateOutcomesAndReleaseCondtions.reducer(state, action, {
         REQUEST: () => state.set(
           REVIEW.PSA_IDS_REFRESHING,
-          state.get(REVIEW.PSA_IDS_REFRESHING).add(action.value.id)
+          state.get(REVIEW.PSA_IDS_REFRESHING)
         ),
         SUCCESS: () => {
           const {
@@ -251,7 +251,7 @@ export default function reviewReducer(state :Immutable.Map<*, *> = INITIAL_STATE
         },
         FINALLY: () => state.set(
           REVIEW.PSA_IDS_REFRESHING,
-          state.get(REVIEW.PSA_IDS_REFRESHING).delete(action.value.id)
+          state.get(REVIEW.PSA_IDS_REFRESHING)
         )
       });
     }
