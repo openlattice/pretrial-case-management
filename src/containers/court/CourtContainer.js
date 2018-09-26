@@ -210,7 +210,6 @@ class CourtContainer extends React.Component<Props, State> {
     this.props.actions.clearSubmit();
   }
 
-
   renderPersonCard = (person, index) => {
     const personId = person.getIn([PROPERTY_TYPES.PERSON_ID, 0]);
     const personOlId = person.getIn([OPENLATTICE_ID_FQN, 0]);
@@ -257,6 +256,8 @@ class CourtContainer extends React.Component<Props, State> {
           sentenceHistory={sentenceHistory}
           ftaHistory={ftaHistory}
           hearings={hearings}
+          submitting={this.props.submitting}
+          refreshingNeighbors={this.props.psaIdsRefreshing.has(entityKeyId)}
           judgesview />
     );
   }
