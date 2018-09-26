@@ -4,7 +4,7 @@
 
 import Immutable from 'immutable';
 import moment from 'moment';
-import { AuthorizationApi, Constants, DataApi, EntityDataModelApi, SearchApi } from 'lattice';
+import { AuthorizationApi, Constants, DataApi, EntityDataModelApi, SearchApi, Models } from 'lattice';
 import { all, call, put, take, takeEvery } from 'redux-saga/effects';
 
 import exportPDF, { exportPDFList } from '../../utils/PDFUtils';
@@ -16,6 +16,7 @@ import {
   stripIdField
 } from '../../utils/DataUtils';
 import { getMapByCaseId } from '../../utils/CaseUtils';
+import releaseConditionsConfig from '../../config/formconfig/ReleaseConditionsConfig';
 import { obfuscateEntityNeighbors, obfuscateBulkEntityNeighbors } from '../../utils/consts/DemoNames';
 import {
   BULK_DOWNLOAD_PSA_REVIEW_PDF,
@@ -27,6 +28,7 @@ import {
   LOAD_PSAS_BY_DATE,
   REFRESH_PSA_NEIGHBORS,
   UPDATE_SCORES_AND_RISK_FACTORS,
+  UPDATE_OUTCOMES_AND_RELEASE_CONDITIONS,
   bulkDownloadPSAReviewPDF,
   changePSAStatus,
   checkPSAPermissions,
@@ -35,12 +37,15 @@ import {
   loadPSAData,
   loadPSAsByDate,
   refreshPSANeighbors,
-  updateScoresAndRiskFactors
+  updateScoresAndRiskFactors,
+  updateOutcomesAndReleaseCondtions
 } from './ReviewActionFactory';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_STATUSES } from '../../utils/consts/Consts';
 import { formatDMFFromEntity } from '../../utils/DMFUtils';
 import { PSA_NEIGHBOR, PSA_ASSOCIATION } from '../../utils/consts/FrontEndStateConsts';
+
+const { FullyQualifiedName } = Models;
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
@@ -670,6 +675,123 @@ function* updateScoresAndRiskFactorsWatcher() :Generator<*, *, *> {
   yield takeEvery(UPDATE_SCORES_AND_RISK_FACTORS, updateScoresAndRiskFactorsWorker);
 }
 
+const getMapFromEntityKeysToPropertyKeys = (entity, entityKeyId, propertyTypesByFqn) => {
+  let entityObject = Immutable.Map();
+  Object.keys(entity).forEach((key) => {
+    const propertyTypeKeyId = propertyTypesByFqn[key].id;
+    const property = entity[key] ? [entity[key]] : [];
+    entityObject = entityObject.setIn([entityKeyId, propertyTypeKeyId], property);
+  });
+  return entityObject;
+}
+
+function* updateOutcomesAndReleaseCondtionsWorker(action :SequenceAction) :Generator<*, *, *> {
+  try {
+    const {
+      psaId,
+      allEntitySetIds,
+      conditionSubmit,
+      conditionEntityKeyIds,
+      bondEntity,
+      bondEntityKeyId,
+      dmfEntity,
+      dmfEntityKeyId,
+      callback,
+      submitCallback
+    } = action.value;
+
+    const edmDetailsRequest = Object.values(allEntitySetIds)
+      .filter(id => !!(id))
+      .map(id => {
+        if (id) {
+          return (
+            {
+              id,
+              type: 'EntitySet',
+              include: [
+                'EntitySet',
+                'EntityType',
+                'PropertyTypeInEntitySet'
+              ]
+            }
+          )
+        }
+      });
+
+    let updates = [];
+    let updatedEntities = [];
+
+    conditionEntityKeyIds.toJS().forEach(entityKeyId => {
+      updates.push(call(DataApi.clearEntityFromEntitySet, allEntitySetIds.realeaseConditionsEntitySetId, entityKeyId));
+    });
+
+    const edmDetails =  yield call(EntityDataModelApi.getEntityDataModelProjection, edmDetailsRequest);
+
+    const propertyTypesByFqn = {};
+    Object.values(edmDetails.propertyTypes).forEach((propertyType) => {
+      const fqn = new FullyQualifiedName(propertyType.type).getFullyQualifiedName();
+      propertyTypesByFqn[fqn] = propertyType;
+    });
+
+    if (bondEntityKeyId) {
+      const bondEntityOject = getMapFromEntityKeysToPropertyKeys(bondEntity, bondEntityKeyId, propertyTypesByFqn);
+      updates.push(
+        call(DataApi.replaceEntityData,
+          allEntitySetIds.bondTypeEntitySetId,
+          bondEntityOject.toJS(),
+          false)
+        );
+
+      updatedEntities.push(call(DataApi.getEntityData, allEntitySetIds.bondTypeEntitySetId, bondEntityKeyId));
+    }
+
+    const dmfEntityObject = getMapFromEntityKeysToPropertyKeys(dmfEntity, dmfEntityKeyId, propertyTypesByFqn);
+    updates.push(
+      call(DataApi.replaceEntityData,
+        allEntitySetIds.dmfTypeEntitySetId,
+        dmfEntityObject.toJS(),
+        false)
+      );
+
+    updatedEntities.push(call(DataApi.getEntityData, allEntitySetIds.dmfTypeEntitySetId, dmfEntityKeyId));
+
+    yield all(updates);
+
+    let newBondTypeEntity;
+    let newDmfTypeEntity;
+    if (bondEntityKeyId) {
+      [newBondTypeEntity, newDmfTypeEntity] = yield all(updatedEntities);
+    }
+    else {
+      newDmfTypeEntity = yield all(updatedEntities);
+    }
+
+    callback({
+      config: releaseConditionsConfig,
+      values: conditionSubmit,
+      callback: submitCallback
+    })
+
+    yield put(updateOutcomesAndReleaseCondtions.success(action.id, {
+      psaId,
+      edmDetails,
+      newBondTypeEntity,
+      newDmfTypeEntity
+    }));
+  }
+  catch (error) {
+    console.error(error);
+    yield put(updateOutcomesAndReleaseCondtions.failure(action.id, { error }));
+  }
+  finally {
+    yield put(updateOutcomesAndReleaseCondtions.finally(action.id));
+  }
+}
+
+function* updateOutcomesAndReleaseCondtionsWatcher() :Generator<*, *, *> {
+  yield takeEvery(UPDATE_OUTCOMES_AND_RELEASE_CONDITIONS, updateOutcomesAndReleaseCondtionsWorker);
+}
+
 function* refreshPSANeighborsWorker(action :SequenceAction) :Generator<*, *, *> {
   const { id } = action.value;
   try {
@@ -750,5 +872,6 @@ export {
   loadPSADataWatcher,
   loadPSAsByDateWatcher,
   refreshPSANeighborsWatcher,
-  updateScoresAndRiskFactorsWatcher
+  updateScoresAndRiskFactorsWatcher,
+  updateOutcomesAndReleaseCondtionsWatcher
 };

@@ -13,7 +13,8 @@ import {
   loadPSAData,
   loadPSAsByDate,
   refreshPSANeighbors,
-  updateScoresAndRiskFactors
+  updateScoresAndRiskFactors,
+  updateOutcomesAndReleaseCondtions
 } from './ReviewActionFactory';
 
 const INITIAL_STATE :Immutable.Map<*, *> = Immutable.fromJS({
@@ -203,6 +204,52 @@ export default function reviewReducer(state :Immutable.Map<*, *> = INITIAL_STATE
             .set(REVIEW.NEIGHBORS_BY_ID, psaNeighborsById)
             .set(REVIEW.NEIGHBORS_BY_DATE, psaNeighborsByDate);
         }
+      });
+    }
+
+    case updateOutcomesAndReleaseCondtions.case(action.type): {
+      return updateOutcomesAndReleaseCondtions.reducer(state, action, {
+        REQUEST: () => state.set(
+          REVIEW.PSA_IDS_REFRESHING,
+          state.get(REVIEW.PSA_IDS_REFRESHING)
+        ),
+        SUCCESS: () => {
+          const {
+            psaId,
+            edmDetails,
+            newBondTypeEntity,
+            newDmfTypeEntity
+          } = action.value;
+
+          let psaNeighborsByDate = state.get(REVIEW.NEIGHBORS_BY_DATE);
+
+          psaNeighborsByDate.keySeq().forEach((date) => {
+            if (psaNeighborsByDate.get(date).get(psaId)) {
+              psaNeighborsByDate = psaNeighborsByDate.setIn(
+                [date, psaId, ENTITY_SETS.DMF_RESULTS, PSA_NEIGHBOR.DETAILS],
+                Immutable.fromJS(newDmfTypeEntity)
+              ).setIn(
+                [date, psaId, ENTITY_SETS.BONDS, PSA_NEIGHBOR.DETAILS],
+                Immutable.fromJS(newBondTypeEntity)
+              );
+            }
+          });
+          const psaNeighborsById = state.get(REVIEW.NEIGHBORS_BY_ID)
+            .setIn(
+              [psaId, ENTITY_SETS.DMF_RESULTS, PSA_NEIGHBOR.DETAILS],
+              Immutable.fromJS(newDmfTypeEntity)
+            ).setIn(
+              [psaId, ENTITY_SETS.BONDS, PSA_NEIGHBOR.DETAILS],
+              Immutable.fromJS(newBondTypeEntity)
+            );
+          return state
+            .set(REVIEW.NEIGHBORS_BY_ID, psaNeighborsById)
+            .set(REVIEW.NEIGHBORS_BY_DATE, psaNeighborsByDate);
+        },
+        FINALLY: () => state.set(
+          REVIEW.PSA_IDS_REFRESHING,
+          state.get(REVIEW.PSA_IDS_REFRESHING)
+        )
       });
     }
 
