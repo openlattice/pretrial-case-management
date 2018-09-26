@@ -56,6 +56,13 @@ const psaConfig = {
       fields: {
         [PROPERTY_TYPES.COMPLETED_DATE_TIME]: PROPERTY_TYPES.COMPLETED_DATE_TIME
       }
+    },
+    {
+      name: ENTITY_SETS.REGISTERED_FOR,
+      alias: ALIASES.REGISTERED_FOR_TWO,
+      fields: {
+        bonddate: PROPERTY_TYPES.COMPLETED_DATE_TIME
+      }
     }
   ],
   associations: [
@@ -63,17 +70,17 @@ const psaConfig = {
     {
       src: ALIASES.BOND,
       dst: ALIASES.PERSON,
-      association: ALIASES.REGISTERED_FOR
+      association: ALIASES.REGISTERED_FOR_TWO
     },
     {
       src: ALIASES.BOND,
       dst: ALIASES.DMF,
-      association: ALIASES.REGISTERED_FOR
+      association: ALIASES.REGISTERED_FOR_TWO
     },
     {
       src: ALIASES.BOND,
       dst: ALIASES.PSA,
-      association: ALIASES.REGISTERED_FOR
+      association: ALIASES.REGISTERED_FOR_TWO
     },
 
     // Release conditions registered for _____
