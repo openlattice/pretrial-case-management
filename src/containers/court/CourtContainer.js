@@ -407,7 +407,10 @@ class CourtContainer extends React.Component<Props, State> {
     return (
       <DatePickerWrapper>
         <Label>Hearing Date</Label>
-        <StyledDatePicker value={this.state.date.format('YYYY-MM-DD')} onChange={this.handleDateChange} />
+        <StyledDatePicker
+            value={this.state.date.format('YYYY-MM-DD')}
+            onChange={this.handleDateChange}
+            clearButton={false} />
       </DatePickerWrapper>
     );
   }
