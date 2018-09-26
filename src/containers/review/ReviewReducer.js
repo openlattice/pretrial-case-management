@@ -220,9 +220,6 @@ export default function reviewReducer(state :Immutable.Map<*, *> = INITIAL_STATE
             newBondTypeEntity,
             newDmfTypeEntity
           } = action.value;
-          console.log(edmDetails);
-          console.log(newBondTypeEntity);
-          console.log(newDmfTypeEntity);
 
           let psaNeighborsByDate = state.get(REVIEW.NEIGHBORS_BY_DATE);
 
