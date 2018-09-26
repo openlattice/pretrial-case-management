@@ -372,7 +372,8 @@ class NewPersonContainer extends React.Component<Props, State> {
                 <InputLabel>Date of birth*</InputLabel>
                 <StyledDatePicker
                     value={this.state[DOB_VALUE]}
-                    onChange={this.handleOnChangeDateOfBirth} />
+                    onChange={this.handleOnChangeDateOfBirth}
+                    clearButton={false} />
               </InputGroup>
               <InputGroup width="33%">
                 <InputLabel>Gender</InputLabel>
