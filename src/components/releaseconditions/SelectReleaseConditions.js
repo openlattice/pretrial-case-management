@@ -488,10 +488,10 @@ class SelectReleaseConditions extends React.Component<Props, State> {
     const {
       defaultDMF,
       defaultBond,
-      defaultConditions
-    } = this.props;
-
-    const {
+      defaultConditions,
+      dmfId,
+      psaId,
+      personId,
       dmfTypeEntitySetId,
       bondTypeEntitySetId,
       realeaseConditionsEntitySetId
@@ -502,15 +502,10 @@ class SelectReleaseConditions extends React.Component<Props, State> {
       bondTypeEntitySetId: bondTypeEntitySetId,
       realeaseConditionsEntitySetId: realeaseConditionsEntitySetId
     };
-    const { dmfId } = this.props;
+
     const dmfEntityKeyId = defaultDMF.getIn([OPENLATTICE_ID_FQN, 0], []);
-
     const conditionEntityKeyIds = defaultConditions.map(neighbor => neighbor.getIn([OPENLATTICE_ID_FQN, 0], []));
-
-    const bondTypeId = this.props.neighbors.getIn([ENTITY_SETS.BONDS, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.GENERAL_ID, 0], '');
-
-    const bondTypeEntityKeyId = defaultBond.getIn([OPENLATTICE_ID_FQN, 0], []);
-
+    const bondEntityKeyId = defaultBond.getIn([OPENLATTICE_ID_FQN, 0], []);
 
     if (!this.isReadyToSubmit()) {
       return;
@@ -519,21 +514,21 @@ class SelectReleaseConditions extends React.Component<Props, State> {
     const startDate = toISODate(moment());
     let bondEntity;
 
+    const conditionSubmit = {
+      [FORM_IDS.PERSON_ID]: personId,
+      [ID_FIELD_NAMES.DMF_ID]: dmfId,
+      [ID_FIELD_NAMES.PSA_ID]: psaId,
+      [PROPERTY_TYPES.COMPLETED_DATE_TIME]: toISODateTime(moment())
+    };
+
     const submission = {
-      [FORM_IDS.PERSON_ID]: this.props.personId,
-      [ID_FIELD_NAMES.DMF_ID]: this.props.dmfId,
-      [ID_FIELD_NAMES.PSA_ID]: this.props.psaId,
+      [FORM_IDS.PERSON_ID]: personId,
+      [ID_FIELD_NAMES.DMF_ID]: dmfId,
+      [ID_FIELD_NAMES.PSA_ID]: psaId,
       [PROPERTY_TYPES.OUTCOME]: outcome,
       [PROPERTY_TYPES.OTHER_TEXT]: otherOutcomeText,
       [PROPERTY_TYPES.BOND_TYPE]: bondType,
       [PROPERTY_TYPES.BOND_AMOUNT]: bondAmount,
-      [PROPERTY_TYPES.COMPLETED_DATE_TIME]: toISODateTime(moment())
-    };
-
-    const conditionSubmit = {
-      [FORM_IDS.PERSON_ID]: this.props.personId,
-      [ID_FIELD_NAMES.DMF_ID]: this.props.dmfId,
-      [ID_FIELD_NAMES.PSA_ID]: this.props.psaId,
       [PROPERTY_TYPES.COMPLETED_DATE_TIME]: toISODateTime(moment())
     };
 
@@ -596,6 +591,7 @@ class SelectReleaseConditions extends React.Component<Props, State> {
     }
     submission[RELEASE_CONDITIONS_FIELD] = conditionsEntity;
     conditionSubmit[RELEASE_CONDITIONS_FIELD] = conditionsEntity;
+    submission.bonddate = moment().add(1, 'ms').toISOString(true);
 
     if (this.state.editingHearing) {
       this.props.updateFqn({
@@ -604,31 +600,13 @@ class SelectReleaseConditions extends React.Component<Props, State> {
         conditionSubmit,
         conditionEntityKeyIds,
         bondEntity,
-        bondTypeEntityKeyId,
-        bondTypeId,
+        bondEntityKeyId,
         dmfEntity,
         dmfEntityKeyId,
-        dmfId
+        callback: this.props.submit,
+        submitCallback: this.props.submitCallback
       });
-      // ConditionEntityKeyIds.forEach((id) => {
-      //   this.props.delete({
-      //     entitySetId: this.props.realeaseConditionsEntitySetId,
-      //     entityKeyId: id
-      //   });
-      // });
-      // this.props.delete({
-      //   entitySetId: this.props.bondTypeEntitySetId,
-      //   entityKeyId: bondTypeEntityKeyId
-      // });
-      // this.props.delete({
-      //   entitySetId: this.props.dmfTypeEntitySetId,
-      //   entityKeyId: dmfEntityKeyId
-      // });
-      // this.props.submit({
-      //   config: releaseConditionsConfig,
-      //   values: conditionSubmit,
-      //   callback: this.props.submitCallback
-      // });
+
       this.setState({ editingHearing: false });
     }
     else {
@@ -919,14 +897,14 @@ class SelectReleaseConditions extends React.Component<Props, State> {
           this.state.disabled
             ? (
               <Row>
-                {/* <StyledBasicButton
+                <StyledBasicButton
                     onClick={() => this.setState({
                       disabled: false,
                       editingHearing: true,
                       bondAmount: `${this.state.bondAmount}`
                     })}>
                   Edit
-                </StyledBasicButton> */}
+                </StyledBasicButton>
               </Row>
             )
             : (
