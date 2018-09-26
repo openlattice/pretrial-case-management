@@ -675,14 +675,14 @@ function* updateScoresAndRiskFactorsWatcher() :Generator<*, *, *> {
   yield takeEvery(UPDATE_SCORES_AND_RISK_FACTORS, updateScoresAndRiskFactorsWorker);
 }
 
-const getMapFromEntityKeysToPropertyKeys = (Entity, EntityKeyId, propertyTypesByFqn) => {
-  let EntityObject = Immutable.Map();
-  Object.keys(Entity).forEach((key) => {
+const getMapFromEntityKeysToPropertyKeys = (entity, entityKeyId, propertyTypesByFqn) => {
+  let entityObject = Immutable.Map();
+  Object.keys(entity).forEach((key) => {
     const propertyTypeKeyId = propertyTypesByFqn[key].id;
-    const property = Entity[key] ? [Entity[key]] : [];
-    EntityObject = EntityObject.setIn([EntityKeyId, propertyTypeKeyId], property);
+    const property = entity[key] ? [entity[key]] : [];
+    entityObject = entityObject.setIn([entityKeyId, propertyTypeKeyId], property);
   });
-  return EntityObject;
+  return entityObject;
 }
 
 function* updateOutcomesAndReleaseCondtionsWorker(action :SequenceAction) :Generator<*, *, *> {
