@@ -683,13 +683,12 @@ const getMapFromEntityKeysToPropertyKeys = (entity, entityKeyId, propertyTypesBy
     entityObject = entityObject.setIn([entityKeyId, propertyTypeKeyId], property);
   });
   return entityObject;
-}
+};
 
 function* updateOutcomesAndReleaseCondtionsWorker(action :SequenceAction) :Generator<*, *, *> {
   try {
     const {
       psaId,
-      allEntitySetIds,
       conditionSubmit,
       conditionEntityKeyIds,
       bondEntity,
@@ -700,32 +699,32 @@ function* updateOutcomesAndReleaseCondtionsWorker(action :SequenceAction) :Gener
       submitCallback
     } = action.value;
 
-    const edmDetailsRequest = Object.values(allEntitySetIds)
-      .filter(id => !!(id))
-      .map(id => {
-        if (id) {
-          return (
-            {
-              id,
-              type: 'EntitySet',
-              include: [
-                'EntitySet',
-                'EntityType',
-                'PropertyTypeInEntitySet'
-              ]
-            }
-          )
-        }
-      });
+    const releaseConditionEntitySetId = yield call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.RELEASE_CONDITIONS);
+    const bondEntitySetId = yield call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.BONDS);
+    const dmfEntitySetId = yield call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.DMF_RESULTS);
 
-    let updates = [];
-    let updatedEntities = [];
+    const allEntitySetIds = { releaseConditionEntitySetId, bondEntitySetId, dmfEntitySetId };
 
-    conditionEntityKeyIds.toJS().forEach(entityKeyId => {
-      updates.push(call(DataApi.clearEntityFromEntitySet, allEntitySetIds.realeaseConditionsEntitySetId, entityKeyId));
+    const edmDetailsRequest = Object.values(allEntitySetIds).map(id => (
+      {
+        id,
+        type: 'EntitySet',
+        include: [
+          'EntitySet',
+          'EntityType',
+          'PropertyTypeInEntitySet'
+        ]
+      }
+    ));
+
+    const updates = [];
+    const updatedEntities = [];
+
+    conditionEntityKeyIds.toJS().forEach((entityKeyId) => {
+      updates.push(call(DataApi.clearEntityFromEntitySet, allEntitySetIds.releaseConditionEntitySetId, entityKeyId));
     });
 
-    const edmDetails =  yield call(EntityDataModelApi.getEntityDataModelProjection, edmDetailsRequest);
+    const edmDetails = yield call(EntityDataModelApi.getEntityDataModelProjection, edmDetailsRequest);
 
     const propertyTypesByFqn = {};
     Object.values(edmDetails.propertyTypes).forEach((propertyType) => {
@@ -737,23 +736,23 @@ function* updateOutcomesAndReleaseCondtionsWorker(action :SequenceAction) :Gener
       const bondEntityOject = getMapFromEntityKeysToPropertyKeys(bondEntity, bondEntityKeyId, propertyTypesByFqn);
       updates.push(
         call(DataApi.replaceEntityData,
-          allEntitySetIds.bondTypeEntitySetId,
+          allEntitySetIds.bondEntitySetId,
           bondEntityOject.toJS(),
           false)
-        );
+      );
 
-      updatedEntities.push(call(DataApi.getEntityData, allEntitySetIds.bondTypeEntitySetId, bondEntityKeyId));
+      updatedEntities.push(call(DataApi.getEntityData, allEntitySetIds.bondEntitySetId, bondEntityKeyId));
     }
 
     const dmfEntityObject = getMapFromEntityKeysToPropertyKeys(dmfEntity, dmfEntityKeyId, propertyTypesByFqn);
     updates.push(
       call(DataApi.replaceEntityData,
-        allEntitySetIds.dmfTypeEntitySetId,
+        allEntitySetIds.dmfEntitySetId,
         dmfEntityObject.toJS(),
         false)
-      );
+    );
 
-    updatedEntities.push(call(DataApi.getEntityData, allEntitySetIds.dmfTypeEntitySetId, dmfEntityKeyId));
+    updatedEntities.push(call(DataApi.getEntityData, allEntitySetIds.dmfEntitySetId, dmfEntityKeyId));
 
     yield all(updates);
 
@@ -770,7 +769,7 @@ function* updateOutcomesAndReleaseCondtionsWorker(action :SequenceAction) :Gener
       config: releaseConditionsConfig,
       values: conditionSubmit,
       callback: submitCallback
-    })
+    });
 
     yield put(updateOutcomesAndReleaseCondtions.success(action.id, {
       psaId,
