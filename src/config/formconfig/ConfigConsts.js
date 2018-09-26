@@ -35,7 +35,8 @@ export const ALIASES = {
   ASSESSED_BY: 'assessedBy',
   EDITED_BY: 'editedBy',
   CHARGED_WITH: 'chargedWith',
-  APPEARS_IN: 'appearsIn'
+  APPEARS_IN: 'appearsIn',
+  REGISTERED_FOR_TWO: 'registeredfor2'
 };
 
 export const PERSON_CONFIG = {
