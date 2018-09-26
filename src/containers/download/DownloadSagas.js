@@ -4,7 +4,12 @@
 import Immutable from 'immutable';
 import Papa from 'papaparse';
 import moment from 'moment';
-import { Constants, DataApi, EntityDataModelApi, SearchApi } from 'lattice';
+import {
+  Constants,
+  DataApi,
+  EntityDataModelApi,
+  SearchApi
+} from 'lattice';
 import { call, put, takeEvery } from 'redux-saga/effects';
 
 import FileSaver from '../../utils/FileSaver';
@@ -169,12 +174,14 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
           neighbor.get(PSA_NEIGHBOR.DETAILS, Immutable.Map())
         );
         allHeaders = allHeaders.union(combinedEntity.keys())
-        .sort((header1, header2) => (POSITIONS.indexOf(header1) >= POSITIONS.indexOf(header2) ? 1 : -1));
+          .sort((header1, header2) => (POSITIONS.indexOf(header1) >= POSITIONS.indexOf(header2) ? 1 : -1));
       });
 
       combinedEntity = combinedEntity.set('S2', getStepTwo(usableNeighborsById.get(id), scoresAsMap.get(id)));
       combinedEntity = combinedEntity.set('S4', getStepFour(usableNeighborsById.get(id), scoresAsMap.get(id)));
-      if (combinedEntity.get('FIRST') || combinedEntity.get('MIDDLE') || combinedEntity.get('LAST')) jsonResults = jsonResults.push(combinedEntity);
+      if (combinedEntity.get('FIRST') || combinedEntity.get('MIDDLE') || combinedEntity.get('LAST')) {
+        jsonResults = jsonResults.push(combinedEntity);
+      }
     });
 
     const fields = filters
