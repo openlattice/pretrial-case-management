@@ -675,6 +675,16 @@ function* updateScoresAndRiskFactorsWatcher() :Generator<*, *, *> {
   yield takeEvery(UPDATE_SCORES_AND_RISK_FACTORS, updateScoresAndRiskFactorsWorker);
 }
 
+const getMapFromEntityKeysToPropertyKeys = (Entity, EntityKeyId, propertyTypesByFqn) => {
+  let EntityObject = Immutable.Map();
+  Object.keys(Entity).forEach((key) => {
+    const propertyTypeKeyId = propertyTypesByFqn[key].id;
+    const property = Entity[key] ? [Entity[key]] : [];
+    EntityObject = EntityObject.setIn([EntityKeyId, propertyTypeKeyId], property);
+  });
+  return EntityObject;
+}
+
 function* updateOutcomesAndReleaseCondtionsWorker(action :SequenceAction) :Generator<*, *, *> {
   try {
     const {
@@ -683,25 +693,34 @@ function* updateOutcomesAndReleaseCondtionsWorker(action :SequenceAction) :Gener
       conditionSubmit,
       conditionEntityKeyIds,
       bondEntity,
-      bondTypeEntityKeyId,
-      bondTypeId,
+      bondEntityKeyId,
       dmfEntity,
       dmfEntityKeyId,
-      dmfId
+      callback,
+      submitCallback
     } = action.value;
 
-    const edmDetailsRequest = Object.values(allEntitySetIds).map(id => ({
-      id,
-      type: 'EntitySet',
-      include: [
-        'EntitySet',
-        'EntityType',
-        'PropertyTypeInEntitySet'
-      ]
-    }));
+    const edmDetailsRequest = Object.values(allEntitySetIds)
+      .filter(id => !!(id))
+      .map(id => {
+        if (id) {
+          return (
+            {
+              id,
+              type: 'EntitySet',
+              include: [
+                'EntitySet',
+                'EntityType',
+                'PropertyTypeInEntitySet'
+              ]
+            }
+          )
+        }
+      });
 
     let updates = [];
     let updatedEntities = [];
+
     conditionEntityKeyIds.toJS().forEach(entityKeyId => {
       updates.push(call(DataApi.clearEntityFromEntitySet, allEntitySetIds.realeaseConditionsEntitySetId, entityKeyId));
     });
@@ -714,48 +733,44 @@ function* updateOutcomesAndReleaseCondtionsWorker(action :SequenceAction) :Gener
       propertyTypesByFqn[fqn] = propertyType;
     });
 
-    let bondEntityOject = Immutable.Map();
-    let dmfEntityObject = Immutable.Map();
-    if (bondTypeId) {
-      Object.keys(bondEntity).forEach((bondKey) => {
-        const propertyTypeKeyId = propertyTypesByFqn[bondKey].id;
-        if (bondEntity[bondKey]) bondEntityOject = bondEntityOject.setIn([bondTypeEntityKeyId, propertyTypeKeyId], [bondEntity[bondKey]]);
-      });
-
+    if (bondEntityKeyId) {
+      const bondEntityOject = getMapFromEntityKeysToPropertyKeys(bondEntity, bondEntityKeyId, propertyTypesByFqn);
       updates.push(
         call(DataApi.replaceEntityData,
           allEntitySetIds.bondTypeEntitySetId,
           bondEntityOject.toJS(),
-          true)
+          false)
         );
 
-      updatedEntities.push(call(DataApi.getEntity, allEntitySetIds.bondTypeEntitySetId, bondTypeEntityKeyId));
+      updatedEntities.push(call(DataApi.getEntityData, allEntitySetIds.bondTypeEntitySetId, bondEntityKeyId));
     }
 
-    Object.keys(dmfEntity).forEach((dmfKey) => {
-      const propertyTypeKeyId = propertyTypesByFqn[dmfKey].id;
-      if (dmfEntity[dmfKey]) dmfEntityObject = dmfEntityObject.setIn([dmfEntityKeyId, propertyTypeKeyId], [dmfEntity[dmfKey]]);
-    });
-
+    const dmfEntityObject = getMapFromEntityKeysToPropertyKeys(dmfEntity, dmfEntityKeyId, propertyTypesByFqn);
     updates.push(
       call(DataApi.replaceEntityData,
         allEntitySetIds.dmfTypeEntitySetId,
         dmfEntityObject.toJS(),
-        true)
+        false)
       );
 
-    updatedEntities.push(call(DataApi.getEntity, allEntitySetIds.dmfTypeEntitySetId, dmfEntityKeyId));
+    updatedEntities.push(call(DataApi.getEntityData, allEntitySetIds.dmfTypeEntitySetId, dmfEntityKeyId));
 
     yield all(updates);
 
     let newBondTypeEntity;
     let newDmfTypeEntity;
-    if (bondTypeId) {
+    if (bondEntityKeyId) {
       [newBondTypeEntity, newDmfTypeEntity] = yield all(updatedEntities);
     }
     else {
       newDmfTypeEntity = yield all(updatedEntities);
     }
+
+    callback({
+      config: releaseConditionsConfig,
+      values: conditionSubmit,
+      callback: submitCallback
+    })
 
     yield put(updateOutcomesAndReleaseCondtions.success(action.id, {
       psaId,
