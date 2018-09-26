@@ -174,7 +174,7 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
 
       combinedEntity = combinedEntity.set('S2', getStepTwo(usableNeighborsById.get(id), scoresAsMap.get(id)));
       combinedEntity = combinedEntity.set('S4', getStepFour(usableNeighborsById.get(id), scoresAsMap.get(id)));
-      if (!!combinedEntity.get('FIRST') || !!combinedEntity.get('MIDDLE') || !!combinedEntity.get('LAST')) jsonResults = jsonResults.push(combinedEntity);
+      if (combinedEntity.get('FIRST') || combinedEntity.get('MIDDLE') || combinedEntity.get('LAST')) jsonResults = jsonResults.push(combinedEntity);
     });
 
     const fields = filters
