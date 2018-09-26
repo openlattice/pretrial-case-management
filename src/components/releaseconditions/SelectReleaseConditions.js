@@ -867,10 +867,6 @@ class SelectReleaseConditions extends React.Component<Props, State> {
   }
 
   render() {
-    const bondTime = this.props.neighbors.getIn([ENTITY_SETS.BONDS, PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.COMPLETED_DATE_TIME, 0]);
-    const conditionsTime = this.props.neighbors.getIn([ENTITY_SETS.RELEASE_CONDITIONS, 0, PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.COMPLETED_DATE_TIME, 0]);
-    console.log(bondTime);
-    console.log(conditionsTime);
     const RELEASED = this.state[RELEASE] !== RELEASES.RELEASED;
     return (
       <Wrapper>
