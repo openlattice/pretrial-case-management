@@ -3580,5 +3580,13 @@ export const PENN_BOOKING_RELEASE_EXCEPTIONS = [
   {
     [STATUTE]: '22-42-7',
     [DESCRIPTION]: 'Possession with Intent to Distribute Marijuana 1oz but less than 1/2 lb (F5)'
+  },
+  {
+    [STATUTE]: '22-14-5',
+    [DESCRIPTION]: 'Possession of Firearm with Altered Serial Number(F6)'
+  },
+  {
+    [STATUTE]: '37-17-1',
+    [DESCRIPTION]: 'Sale After Remove/Alter Serial Number - $1000 or more(F4)'
   }
 ];
