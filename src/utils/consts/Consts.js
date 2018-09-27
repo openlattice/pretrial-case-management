@@ -129,7 +129,8 @@ export const DMF = {
   STEP_2_CHARGES: 'dmfStepTwoCharges',
   STEP_4_CHARGES: 'dmfStepFourCharges',
   COURT_OR_BOOKING: 'courtOrBooking',
-  SECONDARY_RELEASE_CHARGES: 'dmfSecondaryReleaseCharges'
+  SECONDARY_RELEASE_CHARGES: 'dmfSecondaryReleaseCharges',
+  SECONDARY_HOLD_CHARGES: 'dmfSecondaryHoldCharges'
 };
 
 export const NOTES = {
