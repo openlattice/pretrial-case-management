@@ -4,7 +4,12 @@
 import Immutable from 'immutable';
 import Papa from 'papaparse';
 import moment from 'moment';
-import { Constants, DataApi, EntityDataModelApi, SearchApi } from 'lattice';
+import {
+  Constants,
+  DataApi,
+  EntityDataModelApi,
+  SearchApi
+} from 'lattice';
 import { call, put, takeEvery } from 'redux-saga/effects';
 
 import FileSaver from '../../utils/FileSaver';
@@ -115,19 +120,9 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
           }
         }
 
-        const { neighborEntitySet } = neighbor;
-        let shouldNotIgnore = false;
-        if (neighborEntitySet) {
-          const entitySetName = neighborEntitySet.name;
-          shouldNotIgnore = (
-            entitySetName !== ENTITY_SETS.RELEASE_CONDITIONS
-            && entitySetName !== ENTITY_SETS.BONDS
-          );
-        }
-
         const timestampList = neighbor.associationDetails[PROPERTY_TYPES.TIMESTAMP]
           || neighbor.associationDetails[PROPERTY_TYPES.COMPLETED_DATE_TIME];
-        if (timestampList && timestampList.length && shouldNotIgnore) {
+        if (timestampList && timestampList.length) {
           const timestamp = moment(timestampList[0]);
           if (timestamp.isSameOrAfter(start) && timestamp.isSameOrBefore(end)) {
             usableNeighbors = usableNeighbors.push(Immutable.fromJS(neighbor));
@@ -193,7 +188,9 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
 
       combinedEntity = combinedEntity.set('S2', getStepTwo(usableNeighborsById.get(id), scoresAsMap.get(id)));
       combinedEntity = combinedEntity.set('S4', getStepFour(usableNeighborsById.get(id), scoresAsMap.get(id)));
-      jsonResults = jsonResults.push(combinedEntity);
+      if (combinedEntity.get('FIRST') || combinedEntity.get('MIDDLE') || combinedEntity.get('LAST')) {
+        jsonResults = jsonResults.push(combinedEntity);
+      }
     });
 
     const fields = filters
