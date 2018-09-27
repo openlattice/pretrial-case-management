@@ -147,7 +147,7 @@ export const NOTES = {
   [DMF.STEP_2_CHARGES]: 'dmfStep2ChargesNotes',
   [DMF.STEP_4_CHARGES]: 'dmfStep4ChargesNotes',
   [DMF.SECONDARY_RELEASE_CHARGES]: 'dmfSecondaryReleaseChargesNotes',
-  [DMF.SECONDARY_RELEASE_CHARGES]: 'dmfSecondaryHoldChargesNotes'
+  [DMF.SECONDARY_HOLD_CHARGES]: 'dmfSecondaryHoldChargesNotes'
 };
 
 export const CONTEXT = {
