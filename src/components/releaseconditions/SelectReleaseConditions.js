@@ -29,7 +29,7 @@ import { getTimeOptions } from '../../utils/consts/DateTimeConsts';
 import { RELEASE_CONDITIONS, LIST_FIELDS, ID_FIELD_NAMES, FORM_IDS } from '../../utils/consts/Consts';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { getCourtroomOptions } from '../../utils/consts/HearingConsts';
-import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
+import { PSA_NEIGHBOR, PSA_ASSOCIATION } from '../../utils/consts/FrontEndStateConsts';
 import { toISODate, toISODateTime, formatDateTime } from '../../utils/FormattingUtils';
 import {
   OUTCOMES,
@@ -211,7 +211,8 @@ type Props = {
   hearing :Immutable.Map<*, *>,
   hearingId :string,
   submitting :boolean,
-  submittedOutcomes :boolean
+  submittedOutcomes :boolean,
+  neighbors :Immutable.Map<*, *>,
 };
 
 type State = {
@@ -493,19 +494,17 @@ class SelectReleaseConditions extends React.Component<Props, State> {
       psaId,
       personId,
       dmfTypeEntitySetId,
-      bondTypeEntitySetId,
-      realeaseConditionsEntitySetId
+      neighbors
     } = this.props;
 
-    const allEntitySetIds = {
-      dmfTypeEntitySetId: dmfTypeEntitySetId,
-      bondTypeEntitySetId: bondTypeEntitySetId,
-      realeaseConditionsEntitySetId: realeaseConditionsEntitySetId
-    };
+    const bondTime = neighbors
+      .getIn([ENTITY_SETS.BONDS, PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.COMPLETED_DATE_TIME, 0]);
+    const conditionsTime = neighbors
+      .getIn([ENTITY_SETS.RELEASE_CONDITIONS, 0, PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.COMPLETED_DATE_TIME, 0]);
 
-    const dmfEntityKeyId = defaultDMF.getIn([OPENLATTICE_ID_FQN, 0], []);
+    const dmfEntityKeyId = defaultDMF.getIn([OPENLATTICE_ID_FQN, 0], '');
     const conditionEntityKeyIds = defaultConditions.map(neighbor => neighbor.getIn([OPENLATTICE_ID_FQN, 0], []));
-    const bondEntityKeyId = defaultBond.getIn([OPENLATTICE_ID_FQN, 0], []);
+    const bondEntityKeyId = defaultBond.getIn([OPENLATTICE_ID_FQN, 0], '');
 
     if (!this.isReadyToSubmit()) {
       return;
@@ -521,6 +520,13 @@ class SelectReleaseConditions extends React.Component<Props, State> {
       [PROPERTY_TYPES.COMPLETED_DATE_TIME]: toISODateTime(moment())
     };
 
+    if (!bondTime || bondTime === conditionsTime) {
+      conditionSubmit[PROPERTY_TYPES.BOND_TYPE] = bondType;
+      conditionSubmit[PROPERTY_TYPES.BOND_AMOUNT] = bondAmount;
+      conditionSubmit[ID_FIELD_NAMES.BOND_ID] = randomUUID();
+      conditionSubmit.bonddate = moment().add(1, 'ms').toISOString(true);
+    }
+
     const submission = {
       [FORM_IDS.PERSON_ID]: personId,
       [ID_FIELD_NAMES.DMF_ID]: dmfId,
@@ -535,7 +541,7 @@ class SelectReleaseConditions extends React.Component<Props, State> {
     const dmfEntity = {
       [PROPERTY_TYPES.OUTCOME]: outcome,
       [PROPERTY_TYPES.OTHER_TEXT]: otherOutcomeText
-    }
+    };
 
     if (bondType) {
       bondEntity = {
@@ -595,8 +601,7 @@ class SelectReleaseConditions extends React.Component<Props, State> {
 
     if (this.state.editingHearing) {
       this.props.updateFqn({
-        psaId: this.props.psaId,
-        allEntitySetIds,
+        psaId,
         conditionSubmit,
         conditionEntityKeyIds,
         bondEntity,
