@@ -1,7 +1,12 @@
 import { ALIASES } from './ConfigConsts';
-import { PSA, DMF, NOTES, ID_FIELD_NAMES, ID_FIELDS } from '../../utils/consts/Consts';
 import { RESULT_CATEGORIES } from '../../utils/consts/DMFResultConsts';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import {
+  PSA,
+  DMF,
+  NOTES,
+  ID_FIELD_NAMES
+} from '../../utils/consts/Consts';
 
 const psaConfig = {
   entitySets: [
