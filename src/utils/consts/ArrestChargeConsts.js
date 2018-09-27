@@ -205,6 +205,10 @@ export const CHARGE_VALUES = {
     [DESCRIPTION]: 'Aggravated Riot (Carrying Dangerous Weapon) (F3)'
   },
   {
+    [STATUTE]: '25-10-13(M1)',
+    [DESCRIPTION]: 'Violation of Protection or No Contact Order'
+  },
+  {
     [STATUTE]: '22-14-12',
     [DESCRIPTION]: 'Commit or Attempt to Commit Felony with Firearm(F2)'
   },
@@ -1254,5 +1258,13 @@ export const CHARGE_VALUES = {
   {
     [STATUTE]: '22-22-1',
     [DESCRIPTION]: 'Rape in 4th Degree - Class 3 Felony (Statutory Rape)'
+  },
+  {
+    [STATUTE]: '22-18-1.05(F6)',
+    [DESCRIPTION]: 'Simple Assault on Law Enforcement Officer or Other Public Officer'
+  },
+  {
+    [STATUTE]: '26-10-1(F3)',
+    [DESCRIPTION]: 'Abuse or Cruelty to a Minor Under Age 7'
   }]
 };
