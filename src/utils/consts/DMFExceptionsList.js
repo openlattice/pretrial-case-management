@@ -5,7 +5,7 @@ const {
   DESCRIPTION
 } = CHARGE;
 
-export const PENN_BOOKING_EXCEPTIONS = [
+export const PENN_BOOKING_HOLD_EXCEPTIONS = [
   {
     [STATUTE]: '4.1',
     [DESCRIPTION]: 'County - Keeping of a Dangerous Animal (M2)'
@@ -3513,5 +3513,72 @@ export const PENN_BOOKING_EXCEPTIONS = [
   {
     [STATUTE]: '99-2-9',
     [DESCRIPTION]: 'Municipal Park Ordinances'
+  }
+];
+
+export const PENN_BOOKING_RELEASE_EXCEPTIONS = [
+  {
+    [STATUTE]: '22-42-2',
+    [DESCRIPTION]: 'Distribute/Manufacture of Controlled Drug(F4)'
+  },
+  {
+    [STATUTE]: '22-42-2',
+    [DESCRIPTION]: 'Distribute/Manufacture of Controlled Drug/Schedule I to Minor (F2)'
+  },
+  {
+    [STATUTE]: '22-42-2',
+    [DESCRIPTION]: 'Distribute/Manufacture of Controlled Drug/Schedule II to Minor (F2)'
+  },
+  {
+    [STATUTE]: '22-42-2',
+    [DESCRIPTION]: 'Distribute/Manufacture of Controlled Substance Schedule I (F4)'
+  },
+  {
+    [STATUTE]: '22-42-2',
+    [DESCRIPTION]: 'Distribute/Manufacture of Controlled Substance Schedule II (F4)'
+  },
+  {
+    [STATUTE]: '22-42-3',
+    [DESCRIPTION]: 'Possess, Distribute, or Manufacture Schedule II to a Minor(F3)'
+  },
+  {
+    [STATUTE]: '22-42-3',
+    [DESCRIPTION]: 'Possess, Distribute, or Manufacture Schedule III Drugs(F5)'
+  },
+  {
+    [STATUTE]: '22-42-4',
+    [DESCRIPTION]: 'Possess, Distribute, or Manufacture Schedule IV Drugs to a Minor (F4)'
+  },
+  {
+    [STATUTE]: '22-42-4',
+    [DESCRIPTION]: 'Possess, Distribute, or Manufacture Schedule IV Drugs(F5)'
+  },
+  {
+    [STATUTE]: '22-42-7',
+    [DESCRIPTION]: 'Possession w/Intent to Dist Marijuana Any Amount to Minor (F4)'
+  },
+  {
+    [STATUTE]: '22-42-7',
+    [DESCRIPTION]: 'Possession with Intent to Distribute 1 Lb or More Marijuana (F3)'
+  },
+  {
+    [STATUTE]: '22-42-7',
+    [DESCRIPTION]: 'Possession with Intent to Distribute 1/2 oz to 1oz (F6)'
+  },
+  {
+    [STATUTE]: '22-42-2',
+    [DESCRIPTION]: 'Possession with Intent to Distribute Controlled Substance Schedule 1(F4)'
+  },
+  {
+    [STATUTE]: '22-42-2',
+    [DESCRIPTION]: 'Possession with Intent to Distribute Controlled Substance Schedule II(F4)'
+  },
+  {
+    [STATUTE]: '22-42-7',
+    [DESCRIPTION]: 'Possession with Intent to Distribute Marijuana 1/2 lb to 1 lb (F4)'
+  },
+  {
+    [STATUTE]: '22-42-7',
+    [DESCRIPTION]: 'Possession with Intent to Distribute Marijuana 1oz but less than 1/2 lb (F5)'
   }
 ];

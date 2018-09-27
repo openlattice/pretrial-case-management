@@ -1,6 +1,6 @@
 import { PROPERTY_TYPES } from './DataModelConsts';
 import { CHARGE } from './Consts';
-import { PENN_BOOKING_EXCEPTIONS } from './DMFExceptionsList';
+import { PENN_BOOKING_HOLD_EXCEPTIONS } from './DMFExceptionsList';
 import { getChargeDetails, getChargeTitle } from '../HistoricalChargeUtils';
 
 const {

@@ -1,7 +1,7 @@
 import { getChargeDetails, getChargeTitle } from './HistoricalChargeUtils';
 import { PROPERTY_TYPES } from './consts/DataModelConsts';
 import { CHARGE } from './consts/Consts';
-import { PENN_BOOKING_EXCEPTIONS } from './consts/DMFExceptionsList';
+import { PENN_BOOKING_HOLD_EXCEPTIONS } from './consts/DMFExceptionsList';
 import { BHE_LABELS, CHARGE_TYPES, CHARGE_VALUES } from './consts/ArrestChargeConsts';
 
 const {
@@ -69,22 +69,22 @@ export const getAllStepFourCharges = (chargeList) => {
 };
 
 export const getAllSecondaryReleaseChargeLabels = (chargeList) => {
-  return filterChargeList(chargeList, PENN_BOOKING_EXCEPTIONS).map(charge => getChargeTitle(charge, true));
+  return filterChargeList(chargeList, PENN_BOOKING_HOLD_EXCEPTIONS).map(charge => getChargeTitle(charge, true));
 };
 
 export const getAllSecondaryReleaseCharges = (chargeList) => {
-  return filterChargeList(chargeList, PENN_BOOKING_EXCEPTIONS).map(charge => getChargeDetails(charge, true));
+  return filterChargeList(chargeList, PENN_BOOKING_HOLD_EXCEPTIONS).map(charge => getChargeDetails(charge, true));
 };
 
 export const getSecondaryReleaseChargeJustification = (chargeList) => {
-  const secondaryReleaseCharges = filterChargeList(chargeList, PENN_BOOKING_EXCEPTIONS)
+  const secondaryReleaseCharges = filterChargeList(chargeList, PENN_BOOKING_HOLD_EXCEPTIONS)
     .map(charge => getChargeTitle(charge, true));
   if (secondaryReleaseCharges.size === chargeList.size) {
     return [secondaryReleaseCharges, BHE_LABELS.RELEASE];
   }
 
   return [
-    filterChargeList(chargeList, PENN_BOOKING_EXCEPTIONS, true).map(charge => getChargeTitle(charge, true)),
+    filterChargeList(chargeList, PENN_BOOKING_HOLD_EXCEPTIONS, true).map(charge => getChargeTitle(charge, true)),
     BHE_LABELS.HOLD
   ];
 };
