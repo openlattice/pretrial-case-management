@@ -307,7 +307,7 @@ export default class PSAInputForm extends React.Component<Props, State> {
     e.preventDefault();
 
     const requiredFields = (this.props.input.get(DMF.COURT_OR_BOOKING) === CONTEXT.BOOKING)
-      ? this.props.input : this.props.input.remove(DMF.SECONDARY_RELEASE_CHARGES);
+      ? this.props.input : this.props.input.remove(DMF.SECONDARY_RELEASE_CHARGES).remove(DMF.SECONDARY_HOLD_CHARGES);
 
     if (requiredFields.valueSeq().filter(this.invalidValue).toList().size) {
       this.setState({ incomplete: true });
@@ -540,7 +540,7 @@ export default class PSAInputForm extends React.Component<Props, State> {
                   13,
                   SECONDARY_RELEASE_CHARGES,
                   SECONDARY_RELEASE_CHARGES_PROMPT,
-                  secondaryHoldCharges,
+                  secondaryReleaseCharges,
                   null,
                   secondaryReleaseHeader
                 ) : null
@@ -551,7 +551,7 @@ export default class PSAInputForm extends React.Component<Props, State> {
                   14,
                   SECONDARY_HOLD_CHARGES,
                   SECONDARY_HOLD_CHARGES_PROMPT,
-                  secondaryReleaseCharges,
+                  secondaryHoldCharges,
                   null,
                   secondaryHoldHeader
                 ) : null
