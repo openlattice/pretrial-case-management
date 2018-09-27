@@ -11,13 +11,22 @@ import FileSaver from '../../utils/FileSaver';
 import { formatDateTime } from '../../utils/FormattingUtils';
 import { getFilteredNeighbor, stripIdField } from '../../utils/DataUtils';
 import { obfuscateBulkEntityNeighbors } from '../../utils/consts/DemoNames';
-import {
-  DOWNLOAD_PSA_FORMS,
-  downloadPsaForms
-} from './DownloadActionFactory';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { HEADERS_OBJ, POSITIONS } from '../../utils/consts/CSVConsts';
 import { PSA_NEIGHBOR, PSA_ASSOCIATION } from '../../utils/consts/FrontEndStateConsts';
+import { CHARGE } from '../../utils/consts/Consts';
+import MinnehahaChargesList from '../../utils/consts/MinnehahaChargesList';
+import PenningtonChargesList from '../../utils/consts/PenningtonChargesList';
+import { PENN_BOOKING_EXCEPTIONS } from '../../utils/consts/DMFExceptionsList';
+import { CHARGE_TYPES, BHE_LABELS, CHARGE_VALUES } from '../../utils/consts/ArrestChargeConsts';
+import { VIOLENT_CHARGES } from '../../utils/consts/ChargeConsts';
+import { DOMAIN } from '../../utils/consts/ReportDownloadTypes';
+import {
+  DOWNLOAD_PSA_FORMS,
+  DOWNLOAD_CHARGE_LISTS,
+  downloadPsaForms,
+  downloadChargeLists
+} from './DownloadActionFactory';
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
@@ -214,6 +223,98 @@ function* downloadPSAsWatcher() :Generator<*, *, *> {
   yield takeEvery(DOWNLOAD_PSA_FORMS, downloadPSAsWorker);
 }
 
+function* downloadChargeListsWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  try {
+    yield put(downloadChargeLists.request(action.id));
+
+    const { jurisdiction } = action.value;
+
+    const chargesList = jurisdiction === DOMAIN.MINNEHAHA ? MinnehahaChargesList : PenningtonChargesList;
+
+    let jsonResults = Immutable.List();
+    const chargeHeaders = Immutable.List(
+      ['statute', 'description', 'degree', 'degreeShort']
+    );
+
+    const chargeIsHeaders = Immutable.List(
+      [
+        CHARGE_TYPES.STEP_TWO,
+        CHARGE_TYPES.STEP_FOUR,
+        CHARGE_TYPES.ALL_VIOLENT,
+        BHE_LABELS.RELEASE,
+        'Zuercher Violent List'
+      ]
+    );
+    const step2ChargeValues = CHARGE_VALUES[CHARGE_TYPES.STEP_TWO]
+      .map(charge => `${charge.statute}|${charge.description}`);
+    const step4ChargeValues = CHARGE_VALUES[CHARGE_TYPES.STEP_FOUR]
+      .map(charge => `${charge.statute}|${charge.description}`);
+    const violentChargeValues = CHARGE_VALUES[CHARGE_TYPES.ALL_VIOLENT]
+      .map(charge => `${charge.statute}|${charge.description}`);
+    const pennBookingExceptions = PENN_BOOKING_EXCEPTIONS
+      .map(charge => `${charge.statute}|${charge.description}`);
+
+
+    chargesList.forEach((charge) => {
+      let row = Immutable.Map();
+      const { statute, description } = charge;
+      chargeHeaders.forEach((header) => {
+        row = row.set(header, charge[header]);
+      });
+      row = row.set(
+        CHARGE_TYPES.STEP_TWO,
+        step2ChargeValues.includes(`${statute}|${description}`)
+      )
+        .set(
+          CHARGE_TYPES.STEP_FOUR,
+          step4ChargeValues.includes(`${statute}|${description}`)
+        )
+        .set(
+          CHARGE_TYPES.ALL_VIOLENT,
+          violentChargeValues.includes(`${statute}|${description}`)
+        )
+        .set(
+          BHE_LABELS.RELEASE,
+          pennBookingExceptions.includes(`${statute}|${description}`)
+        )
+        .set(
+          'Odyssey Violent List',
+          VIOLENT_CHARGES.includes(statute)
+        );
+
+      jsonResults = jsonResults.push(row);
+    });
+
+    const allHeaders = chargeHeaders.concat(chargeIsHeaders);
+
+
+    const fields = allHeaders.toJS();
+    const csv = Papa.unparse({
+      fields,
+      data: jsonResults.toJS()
+    });
+
+    const name = `${jurisdiction}-Master Charge List`;
+
+    FileSaver.saveFile(csv, name, 'csv');
+
+    yield put(downloadChargeLists.success(action.id));
+  }
+  catch (error) {
+    console.error(error);
+    yield put(downloadChargeLists.failure(action.id, { error }));
+  }
+  finally {
+    yield put(downloadChargeLists.finally(action.id));
+  }
+}
+
+function* downloadChargeListsWatcher() :Generator<*, *, *> {
+  yield takeEvery(DOWNLOAD_CHARGE_LISTS, downloadChargeListsWorker);
+}
+
 export {
-  downloadPSAsWatcher
+  downloadPSAsWatcher,
+  downloadChargeListsWatcher
 };

@@ -59,6 +59,9 @@ type Props = {
       startDate :string,
       endDate :string,
       filters? :Object
+    }) => void,
+    downloadChargeLists :(value :{
+      jurisdiction :string
     }) => void
   },
   history :string[]
@@ -124,6 +127,13 @@ class DownloadPSA extends React.Component<Props, State> {
     }
   }
 
+  downloadCharges = (jurisdiction) => {
+    console.log(jurisdiction);
+    this.props.actions.downloadChargeLists({
+      jurisdiction
+    });
+  }
+
   renderDownload = () => {
     const { startDate, endDate } = this.state;
     if (!startDate || !endDate || this.getErrorText()) return null;
@@ -163,6 +173,12 @@ class DownloadPSA extends React.Component<Props, State> {
             {this.renderError()}
             {this.renderDownload()}
             <StyledTopFormNavBuffer />
+            <BasicDownloadButton onClick={() => this.downloadCharges(DOMAIN.PENNINGTON)}>
+              Download Pennington Charges
+            </BasicDownloadButton>
+            <BasicDownloadButton onClick={() => this.downloadCharges(DOMAIN.MINNEHAHA)}>
+              Download Minnehaha Charges
+            </BasicDownloadButton>
           </StyledSectionWrapper>
         </StyledFormWrapper>
       </StyledFormViewWrapper>
