@@ -19,6 +19,11 @@ export const BHE_LABELS = {
   HOLD: 'Non-BHE charges exist'
 };
 
+export const BRE_LABELS = {
+  HOLD: 'BRE Charges',
+  RELEASE: 'Non-BRE charges exist'
+};
+
 export const CHARGE_VALUES = {
   [CHARGE_TYPES.STEP_TWO]: [{
     [STATUTE]: '22-19-1',
