@@ -21,6 +21,7 @@ export const PRIOR_SENTENCE_TO_INCARCERATION_PROMPT = 'Does the defendant have a
 export const EXTRADITED_PROMPT = 'Was the defendant extradited for any current charge?';
 export const COURT_OR_BOOKING_PROMPT = 'Is the PSA being administered at the time of booking or court date?';
 export const SECONDARY_RELEASE_CHARGES_PROMPT = 'Does the booking hold exception list apply?';
+export const SECONDARY_HOLD_CHARGES_PROMPT = 'Does the booking release exception list apply?';
 
 export const STEP_2_CHARGES_PROMPT = (
   <div>
