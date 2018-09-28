@@ -46,7 +46,7 @@ const StepFiveRelease = ({
   return (
     <div>
       <hr />
-      <StepHeader>BOOKINGS EXCEPTION:</StepHeader>
+      <StepHeader>Bookings Exception</StepHeader>
       <StepWrapper>{text}</StepWrapper>
       {dmfTransformation}
     </div>
