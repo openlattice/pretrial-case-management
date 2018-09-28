@@ -12,7 +12,7 @@ import {
   shouldCheckForSecondaryRelease
 } from '../../utils/DMFUtils';
 
-const StepFive = ({
+const StepFiveRelease = ({
   shouldRender,
   dmf,
   nca,
@@ -29,9 +29,9 @@ const StepFive = ({
   const dmfTransformation = secondaryReleaseVal
     ? (
       <StepWrapper>
-        <DMFCell dmf={getDMFDecision(nca, fta, context)} selected />
+        <DMFCell dmf={getDMFDecision(nca, fta, context)} selected large />
         <img src={rightArrow} alt="" />
-        <DMFCell dmf={dmf} selected />
+        <DMFCell dmf={dmf} selected large />
       </StepWrapper>
     ) : (
       <StepWrapper>
@@ -49,4 +49,4 @@ const StepFive = ({
   );
 };
 
-export default StepFive;
+export default StepFiveRelease;
