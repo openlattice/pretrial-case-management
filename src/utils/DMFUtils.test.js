@@ -26,6 +26,7 @@ import {
   getConditionsTextList,
   shouldCheckForSecondaryRelease,
   updateDMFSecondaryRelease,
+  updateDMFSecondaryHold,
   formatDMFFromEntity,
   getDMFDecision,
   increaseDMFSeverity
@@ -238,6 +239,34 @@ describe('DMFUtils', () => {
       })).toEqual({
         [RESULT_CATEGORIES.COLOR]: COLORS.DARK_GREEN,
         [RESULT_CATEGORIES.CONDITION_1]: CONDITION_TYPES.PR_RELEASE
+      });
+
+    });
+
+  });
+
+  describe('updateDMFSecondaryHold', () => {
+
+    test('should set condition 1 to PR Release', () => {
+
+      expect(updateDMFSecondaryHold({})).toEqual({
+        [RESULT_CATEGORIES.COLOR]: COLORS.RED,
+        [RESULT_CATEGORIES.CONDITION_1]: CONDITION_TYPES.HOLD_PENDING_JUDICIAL_REVIEW
+      });
+
+      expect(updateDMFSecondaryHold({
+        [RESULT_CATEGORIES.COLOR]: [COLORS.YELLOW]
+      })).toEqual({
+        [RESULT_CATEGORIES.COLOR]: COLORS.RED,
+        [RESULT_CATEGORIES.CONDITION_1]: CONDITION_TYPES.HOLD_PENDING_JUDICIAL_REVIEW
+      });
+
+      expect(updateDMFSecondaryHold({
+        [RESULT_CATEGORIES.COLOR]: [COLORS.YELLOW],
+        [RESULT_CATEGORIES.CONDITION_1]: CONDITION_TYPES.EM_AND_BOND
+      })).toEqual({
+        [RESULT_CATEGORIES.COLOR]: COLORS.RED,
+        [RESULT_CATEGORIES.CONDITION_1]: CONDITION_TYPES.HOLD_PENDING_JUDICIAL_REVIEW
       });
 
     });
