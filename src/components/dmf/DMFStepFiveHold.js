@@ -47,7 +47,7 @@ const StepFiveHold = ({
   return (
     <div>
       <hr />
-      <StepHeader>Step Five:</StepHeader>
+      <StepHeader>BOOKINGS EXCEPTION:</StepHeader>
       <StepWrapper>{text}</StepWrapper>
       {dmfTransformation}
     </div>
