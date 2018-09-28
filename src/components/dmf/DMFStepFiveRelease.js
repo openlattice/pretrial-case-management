@@ -5,8 +5,12 @@
 import React from 'react';
 
 import DMFCell from './DMFCell';
-import { StepHeader, StepWrapper } from './DMFStyledTags';
 import rightArrow from '../../assets/svg/dmf-arrow.svg';
+import {
+  StepHeader,
+  StepWrapper,
+  DMFIncreaseText
+} from './DMFStyledTags';
 import {
   getDMFDecision,
   shouldCheckForSecondaryRelease
@@ -23,8 +27,8 @@ const StepFiveRelease = ({
   if (!shouldRender || !shouldCheckForSecondaryRelease(context, nca, fta)) return null;
 
   const text = secondaryReleaseVal
-    ? 'Charges qualify for a secondary release option'
-    : 'Charges do not qualify for a secondary release option.';
+    ? <DMFIncreaseText>Charges qualify for a secondary release option</DMFIncreaseText>
+    : <DMFIncreaseText>Charges do not qualify for a secondary release option</DMFIncreaseText>;
 
   const dmfTransformation = secondaryReleaseVal
     ? (

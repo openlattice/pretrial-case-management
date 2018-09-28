@@ -5,8 +5,12 @@
 import React from 'react';
 
 import DMFCell from './DMFCell';
-import { StepHeader, StepWrapper } from './DMFStyledTags';
 import rightArrow from '../../assets/svg/dmf-arrow.svg';
+import {
+  StepHeader,
+  StepWrapper,
+  DMFIncreaseText
+} from './DMFStyledTags';
 import {
   getDMFDecision,
   shouldCheckForSecondaryHold,
@@ -24,8 +28,8 @@ const StepFiveHold = ({
   if (!shouldRender || !shouldCheckForSecondaryHold(context, nca, fta)) return null;
 
   const text = secondaryHoldVal
-    ? 'Charges qualify for a secondary hold option'
-    : 'Charges do not qualify for a secondary hold option.';
+    ? <DMFIncreaseText>Charges qualify for a secondary hold option</DMFIncreaseText>
+    : <DMFIncreaseText>Charges do not qualify for a secondary hold option</DMFIncreaseText>;
 
   const dmfTransformation = secondaryHoldVal
     ? (
