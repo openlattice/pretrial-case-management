@@ -221,13 +221,14 @@ describe('DMFUtils', () => {
     test('should set condition 1 to PR Release', () => {
 
       expect(updateDMFSecondaryRelease({})).toEqual({
+        [RESULT_CATEGORIES.COLOR]: COLORS.DARK_GREEN,
         [RESULT_CATEGORIES.CONDITION_1]: CONDITION_TYPES.PR_RELEASE
       });
 
       expect(updateDMFSecondaryRelease({
         [RESULT_CATEGORIES.COLOR]: [COLORS.YELLOW]
       })).toEqual({
-        [RESULT_CATEGORIES.COLOR]: [COLORS.YELLOW],
+        [RESULT_CATEGORIES.COLOR]: COLORS.DARK_GREEN,
         [RESULT_CATEGORIES.CONDITION_1]: CONDITION_TYPES.PR_RELEASE
       });
 
@@ -235,7 +236,7 @@ describe('DMFUtils', () => {
         [RESULT_CATEGORIES.COLOR]: [COLORS.YELLOW],
         [RESULT_CATEGORIES.CONDITION_1]: CONDITION_TYPES.EM_AND_BOND
       })).toEqual({
-        [RESULT_CATEGORIES.COLOR]: [COLORS.YELLOW],
+        [RESULT_CATEGORIES.COLOR]: COLORS.DARK_GREEN,
         [RESULT_CATEGORIES.CONDITION_1]: CONDITION_TYPES.PR_RELEASE
       });
 
