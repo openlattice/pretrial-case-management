@@ -155,7 +155,22 @@ export const shouldCheckForSecondaryRelease = (context, ncaScore, ftaScore) => {
 
 export const updateDMFSecondaryRelease = (dmfResult) => {
   const newDmf = Object.assign({}, dmfResult);
+  newDmf[RESULT_CATEGORIES.COLOR] = COLORS.DARK_GREEN;
   newDmf[RESULT_CATEGORIES.CONDITION_1] = CONDITION_TYPES.PR_RELEASE;
+  return newDmf;
+};
+
+export const shouldCheckForSecondaryHold = (context, ncaScore, ftaScore) => {
+  if (context === CONTEXT.BOOKING) {
+    if (ncaScore < 6 && ftaScore < 6) return true;
+  }
+  return false;
+};
+
+export const updateDMFSecondaryHold = (dmfResult) => {
+  const newDmf = Object.assign({}, dmfResult);
+  newDmf[RESULT_CATEGORIES.COLOR] = COLORS.RED;
+  newDmf[RESULT_CATEGORIES.CONDITION_1] = CONDITION_TYPES.HOLD_PENDING_JUDICIAL_REVIEW;
   return newDmf;
 };
 
