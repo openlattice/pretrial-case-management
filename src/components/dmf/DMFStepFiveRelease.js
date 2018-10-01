@@ -5,14 +5,18 @@
 import React from 'react';
 
 import DMFCell from './DMFCell';
-import { StepHeader, StepWrapper } from './DMFStyledTags';
 import rightArrow from '../../assets/svg/dmf-arrow.svg';
+import {
+  StepHeader,
+  StepWrapper,
+  DMFIncreaseText
+} from './DMFStyledTags';
 import {
   getDMFDecision,
   shouldCheckForSecondaryRelease
 } from '../../utils/DMFUtils';
 
-const StepFive = ({
+const StepFiveRelease = ({
   shouldRender,
   dmf,
   nca,
@@ -23,15 +27,15 @@ const StepFive = ({
   if (!shouldRender || !shouldCheckForSecondaryRelease(context, nca, fta)) return null;
 
   const text = secondaryReleaseVal
-    ? 'Charges qualify for a secondary release option'
-    : 'Charges do not qualify for a secondary release option.';
+    ? <DMFIncreaseText>Charges qualify for a secondary release option</DMFIncreaseText>
+    : <DMFIncreaseText>Charges do not qualify for a secondary release option</DMFIncreaseText>;
 
   const dmfTransformation = secondaryReleaseVal
     ? (
       <StepWrapper>
-        <DMFCell dmf={getDMFDecision(nca, fta, context)} selected />
+        <DMFCell dmf={getDMFDecision(nca, fta, context)} selected large />
         <img src={rightArrow} alt="" />
-        <DMFCell dmf={dmf} selected />
+        <DMFCell dmf={dmf} selected large />
       </StepWrapper>
     ) : (
       <StepWrapper>
@@ -42,11 +46,11 @@ const StepFive = ({
   return (
     <div>
       <hr />
-      <StepHeader>Step Five:</StepHeader>
+      <StepHeader>Bookings Exception</StepHeader>
       <StepWrapper>{text}</StepWrapper>
       {dmfTransformation}
     </div>
   );
 };
 
-export default StepFive;
+export default StepFiveRelease;

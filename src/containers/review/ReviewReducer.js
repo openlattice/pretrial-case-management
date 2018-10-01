@@ -42,14 +42,12 @@ export default function reviewReducer(state :Immutable.Map<*, *> = INITIAL_STATE
 
     case changePSAStatus.case(action.type): {
       return changePSAStatus.reducer(state, action, {
-        SUCCESS: () =>
-          state.set(
-            REVIEW.SCORES,
-            state.get(REVIEW.SCORES).set(action.value.id, Immutable.fromJS(action.value.entity))
-          )
+        SUCCESS: () => state.set(
+          REVIEW.SCORES,
+          state.get(REVIEW.SCORES).set(action.value.id, Immutable.fromJS(action.value.entity))
+        )
       });
     }
-
     case checkPSAPermissions.case(action.type): {
       return checkPSAPermissions.reducer(state, action, {
         REQUEST: () => state.set(REVIEW.READ_ONLY, true),

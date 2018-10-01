@@ -26,6 +26,8 @@ import { Title, FullWidthContainer } from '../../utils/Layout';
 const StepFour = ({
   shouldRender,
   stepFourVal,
+  secondaryReleaseVal,
+  secondaryHoldVal,
   nca,
   fta,
   nvca,
@@ -33,8 +35,6 @@ const StepFour = ({
   context,
   flagDims
 } :Props) => {
-
-// TODO: Show Pretrial FTA Flag
 
   const STEP4_VALS = [
     {
@@ -71,6 +71,10 @@ const StepFour = ({
 
   const stepThreeDmf = getDMFDecision(nca, fta, context);
   const stepFourDmf = increaseDMFSeverity(stepThreeDmf, context);
+  const shouldDisplayDMFCell = !(
+    (context === 'Booking')
+    && (secondaryReleaseVal || secondaryHoldVal)
+  );
 
   const violentRisk = nvca && !currentViolentOffense;
   if (!stepFourVal && !violentRisk) {
@@ -79,7 +83,10 @@ const StepFour = ({
         <DMFIncreaseText>
           STEP FOUR INCREASE NOT APPLICABLE
         </DMFIncreaseText>
-        <DMFCell dmf={stepThreeDmf} selected large />
+        { shouldDisplayDMFCell
+          ? <DMFCell dmf={stepThreeDmf} selected large />
+          : null
+        }
       </StyledSection>
     );
   }

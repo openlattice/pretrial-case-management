@@ -22,13 +22,16 @@ import { PSA_NEIGHBOR, PSA_ASSOCIATION } from '../../utils/consts/FrontEndStateC
 import {
   getDMFDecision,
   increaseDMFSeverity,
-  formatDMFFromEntity
+  formatDMFFromEntity,
+  updateDMFSecondaryRelease,
+  updateDMFSecondaryHold
 } from '../../utils/DMFUtils';
 import { formatDateTimeList } from '../../utils/FormattingUtils';
 import {
   stepTwoIncrease,
   stepFourIncrease,
-  dmfSecondaryReleaseDecrease
+  dmfSecondaryReleaseDecrease,
+  dmfSecondaryHoldIncrease
 } from '../../utils/ScoringUtils';
 
 const SummaryWrapper = styled.div`
@@ -238,9 +241,10 @@ const renderDMFDetails = ({ neighbors, scores } :Props) => {
   const nca = scores.getIn([PROPERTY_TYPES.NCA_SCALE, 0]);
   const fta = scores.getIn([PROPERTY_TYPES.FTA_SCALE, 0]);
   const dmfDecision = getDMFDecision(nca, fta, context);
+  let dmfCell;
 
   if (stepTwoIncrease(dmfRiskFactors, psaRiskFactors, scores)) {
-    return (
+    dmfCell = (
       <ScoreContent>
         <DMFIncreaseText>Step two increase</DMFIncreaseText>
         <DMFCell dmf={dmfDecision} selected />
@@ -250,7 +254,7 @@ const renderDMFDetails = ({ neighbors, scores } :Props) => {
     );
   }
   else if (stepFourIncrease(dmfRiskFactors, psaRiskFactors, scores)) {
-    return (
+    dmfCell = (
       <ScoreContent>
         <DMFIncreaseText>Step four increase</DMFIncreaseText>
         <StepWrapper>
@@ -262,22 +266,37 @@ const renderDMFDetails = ({ neighbors, scores } :Props) => {
     );
   }
   else if (dmfSecondaryReleaseDecrease(dmfRiskFactors, scores)) {
-    return (
+    dmfCell = (
       <ScoreContent>
-        <DMFIncreaseText>Step 5 Decrease</DMFIncreaseText>
+        <DMFIncreaseText>Hold Exception Applies</DMFIncreaseText>
         <StepWrapper>
           <DMFCell dmf={dmfDecision} selected />
           <img src={rightArrow} alt="" />
-          <DMFCell dmf={dmf} selected />
+          <DMFCell dmf={updateDMFSecondaryRelease(dmf)} selected />
         </StepWrapper>
       </ScoreContent>
     );
   }
-  return (
-    <ScoreContent>
-      <DMFCell dmf={dmf} selected large />
-    </ScoreContent>
-  );
+  else if (dmfSecondaryHoldIncrease(dmfRiskFactors, scores)) {
+    dmfCell = (
+      <ScoreContent>
+        <DMFIncreaseText>Release Exception Applies</DMFIncreaseText>
+        <StepWrapper>
+          <DMFCell dmf={dmfDecision} selected />
+          <img src={rightArrow} alt="" />
+          <DMFCell dmf={updateDMFSecondaryHold(dmf)} selected />
+        </StepWrapper>
+      </ScoreContent>
+    );
+  }
+  else {
+    dmfCell = (
+      <ScoreContent>
+        <DMFCell dmf={dmf} selected large />
+      </ScoreContent>
+    );
+  }
+  return dmfCell;
 };
 
 const PSASummary = (props :Props) => {
