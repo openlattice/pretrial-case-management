@@ -623,10 +623,10 @@ function* updateScoresAndRiskFactorsWorker(action :SequenceAction) :Generator<*,
     ];
 
     const reloads = [
-      call(DataApi.getEntity, scoresEntitySetId, scoresId),
-      call(DataApi.getEntity, riskFactorsEntitySetId, riskFactorsId),
-      call(DataApi.getEntity, dmfEntitySetId, dmfId),
-      call(DataApi.getEntity, dmfRiskFactorsEntitySetId, dmfRiskFactorsId)
+      call(DataApi.getEntityData, scoresEntitySetId, scoresId),
+      call(DataApi.getEntityData, riskFactorsEntitySetId, riskFactorsId),
+      call(DataApi.getEntityData, dmfEntitySetId, dmfId),
+      call(DataApi.getEntityData, dmfRiskFactorsEntitySetId, dmfRiskFactorsId)
     ];
 
     if (notesEntity && notesId && notesEntitySetId) {
@@ -637,7 +637,7 @@ function* updateScoresAndRiskFactorsWorker(action :SequenceAction) :Generator<*,
           stripIdField(notesEntity))
       );
 
-      reloads.push(call(DataApi.getEntity, notesEntitySetId, notesId));
+      reloads.push(call(DataApi.getEntityData, notesEntitySetId, notesId));
     }
 
     yield all(updates);
@@ -839,7 +839,7 @@ function* changePSAStatusWorker(action :SequenceAction) :Generator<*, *, *> {
     const entitySetId = yield call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.PSA_SCORES);
 
     yield call(DataApi.replaceEntityInEntitySetUsingFqns, entitySetId, scoresId, stripIdField(scoresEntity.toJS()));
-    const newScoresEntity = yield call(DataApi.getEntity, entitySetId, scoresId);
+    const newScoresEntity = yield call(DataApi.getEntityData, entitySetId, scoresId);
 
     yield put(changePSAStatus.success(action.id, {
       id: scoresId,

@@ -236,13 +236,12 @@ class PSAModal extends React.Component<Props, State> {
     });
   }
 
-  getNotesFromNeighbors = neighbors =>
-    neighbors.getIn([
-      ENTITY_SETS.RELEASE_RECOMMENDATIONS,
-      PSA_NEIGHBOR.DETAILS,
-      PROPERTY_TYPES.RELEASE_RECOMMENDATION,
-      0
-    ], '');
+  getNotesFromNeighbors = neighbors => neighbors.getIn([
+    ENTITY_SETS.RELEASE_RECOMMENDATIONS,
+    PSA_NEIGHBOR.DETAILS,
+    PROPERTY_TYPES.RELEASE_RECOMMENDATION,
+    0
+  ], '');
 
   getRiskFactors = (neighbors :Immutable.Map<*, *>) => {
     const riskFactors = neighbors.getIn([ENTITY_SETS.PSA_RISK_FACTORS, PSA_NEIGHBOR.DETAILS], Immutable.Map());
@@ -286,11 +285,14 @@ class PSAModal extends React.Component<Props, State> {
       [DMF.STEP_4_CHARGES]: `${dmfRiskFactors.getIn([PROPERTY_TYPES.DMF_STEP_4_CHARGES, 0])}`,
       [DMF.COURT_OR_BOOKING]: `${dmfRiskFactors.getIn([PROPERTY_TYPES.CONTEXT, 0])}`,
       [DMF.SECONDARY_RELEASE_CHARGES]: `${dmfRiskFactors.getIn([PROPERTY_TYPES.DMF_SECONDARY_RELEASE_CHARGES, 0])}`,
+      [DMF.SECONDARY_HOLD_CHARGES]: `${dmfRiskFactors.getIn([PROPERTY_TYPES.DMF_SECONDARY_HOLD_CHARGES, 0])}`,
       [NOTES[DMF.EXTRADITED]]: `${dmfRiskFactors.getIn([PROPERTY_TYPES.EXTRADITED_NOTES, 0], '')}`,
       [NOTES[DMF.STEP_2_CHARGES]]: `${dmfRiskFactors.getIn([PROPERTY_TYPES.DMF_STEP_2_CHARGES_NOTES, 0], '')}`,
       [NOTES[DMF.STEP_4_CHARGES]]: `${dmfRiskFactors.getIn([PROPERTY_TYPES.DMF_STEP_4_CHARGES_NOTES, 0], '')}`,
       [NOTES[DMF.SECONDARY_RELEASE_CHARGES]]:
-        `${dmfRiskFactors.getIn([PROPERTY_TYPES.DMF_SECONDARY_RELEASE_CHARGES_NOTES, 0], '')}`
+        `${dmfRiskFactors.getIn([PROPERTY_TYPES.DMF_SECONDARY_RELEASE_CHARGES_NOTES, 0], '')}`,
+      [NOTES[DMF.SECONDARY_HOLD_CHARGES]]:
+        `${dmfRiskFactors.getIn([PROPERTY_TYPES.DMF_SECONDARY_HOLD_CHARGES_NOTES, 0], '')}`
     });
   }
 
@@ -375,8 +377,11 @@ class PSAModal extends React.Component<Props, State> {
     };
     if (riskFactors.get(DMF.COURT_OR_BOOKING) === CONTEXT.BOOKING) {
       result[PROPERTY_TYPES.DMF_SECONDARY_RELEASE_CHARGES] = [riskFactors.get(DMF.SECONDARY_RELEASE_CHARGES)];
-      result[PROPERTY_TYPES.DMF_SECONDARY_RELEASE_CHARGES_NOTES]
-        = [riskFactors.get(NOTES[DMF.SECONDARY_RELEASE_CHARGES])];
+      result[PROPERTY_TYPES.DMF_SECONDARY_RELEASE_CHARGES_NOTES] =
+        [riskFactors.get(NOTES[DMF.SECONDARY_RELEASE_CHARGES])];
+      result[PROPERTY_TYPES.DMF_SECONDARY_HOLD_CHARGES] = [riskFactors.get(DMF.SECONDARY_HOLD_CHARGES)];
+      result[PROPERTY_TYPES.DMF_SECONDARY_HOLD_CHARGES_NOTES] =
+        [riskFactors.get(NOTES[DMF.SECONDARY_HOLD_CHARGES])];
     }
     return result;
   };
@@ -570,7 +575,6 @@ class PSAModal extends React.Component<Props, State> {
     const currCharges = manualChargeHistory.get(caseNum, Immutable.List());
     const allCharges = chargeHistory.toList().flatMap(list => list);
     const allSentences = sentenceHistory.toList().flatMap(list => list);
-
     return (
       <ModalWrapper>
         {editHeader}

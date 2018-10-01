@@ -129,7 +129,8 @@ export const DMF = {
   STEP_2_CHARGES: 'dmfStepTwoCharges',
   STEP_4_CHARGES: 'dmfStepFourCharges',
   COURT_OR_BOOKING: 'courtOrBooking',
-  SECONDARY_RELEASE_CHARGES: 'dmfSecondaryReleaseCharges'
+  SECONDARY_RELEASE_CHARGES: 'dmfSecondaryReleaseCharges',
+  SECONDARY_HOLD_CHARGES: 'dmfSecondaryHoldCharges'
 };
 
 export const NOTES = {
@@ -145,7 +146,8 @@ export const NOTES = {
   [DMF.EXTRADITED]: 'extraditedNotes',
   [DMF.STEP_2_CHARGES]: 'dmfStep2ChargesNotes',
   [DMF.STEP_4_CHARGES]: 'dmfStep4ChargesNotes',
-  [DMF.SECONDARY_RELEASE_CHARGES]: 'dmfSecondaryReleaseChargesNotes'
+  [DMF.SECONDARY_RELEASE_CHARGES]: 'dmfSecondaryReleaseChargesNotes',
+  [DMF.SECONDARY_HOLD_CHARGES]: 'dmfSecondaryHoldChargesNotes'
 };
 
 export const CONTEXT = {
