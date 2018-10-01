@@ -479,9 +479,6 @@ class PSASubmittedPage extends React.Component<Props, State> {
       psaId
     } = this.props;
 
-    console.log(this.props);
-    console.log(this.props.riskFactors);
-
     if (this.state.settingHearing) {
       if (!this.state.selectedHearing) {
         return (
