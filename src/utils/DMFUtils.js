@@ -156,6 +156,7 @@ export const shouldCheckForSecondaryRelease = (context, ncaScore, ftaScore) => {
 export const updateDMFSecondaryRelease = (dmfResult) => {
   const newDmf = Object.assign({}, dmfResult);
   newDmf[RESULT_CATEGORIES.COLOR] = COLORS.DARK_GREEN;
+  newDmf[RESULT_CATEGORIES.RELEASE_TYPE] = RELEASE_TYPES.RELEASE;
   newDmf[RESULT_CATEGORIES.CONDITION_1] = CONDITION_TYPES.PR_RELEASE;
   return newDmf;
 };
