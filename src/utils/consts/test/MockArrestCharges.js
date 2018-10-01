@@ -39,3 +39,13 @@ export const MOCK_BHE_CHARGE_2 = Immutable.fromJS({
   'event.OffenseLocalCodeSection': ['41:05:05:03'],
   'event.OffenseLocalDescription': ['Boating - Fire Extinguisher Required (M2)']
 });
+
+export const MOCK_BRE_CHARGE_1 = Immutable.fromJS({
+  'event.OffenseLocalCodeSection': ['22-42-7'],
+  'event.OffenseLocalDescription': ['Possession with Intent to Distribute Marijuana 1/2 lb to 1 lb (F4)']
+});
+
+export const MOCK_BRE_CHARGE_2 = Immutable.fromJS({
+  'event.OffenseLocalCodeSection': ['22-14-5'],
+  'event.OffenseLocalDescription': ['Possession of Firearm with Altered Serial Number(F6)']
+});

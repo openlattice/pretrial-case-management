@@ -1,6 +1,6 @@
 import { PROPERTY_TYPES } from './DataModelConsts';
 import { CHARGE } from './Consts';
-import { PENN_BOOKING_EXCEPTIONS } from './DMFExceptionsList';
+import { PENN_BOOKING_HOLD_EXCEPTIONS } from './DMFExceptionsList';
 import { getChargeDetails, getChargeTitle } from '../HistoricalChargeUtils';
 
 const {
@@ -17,6 +17,11 @@ export const CHARGE_TYPES = {
 export const BHE_LABELS = {
   RELEASE: 'BHE Charges',
   HOLD: 'Non-BHE charges exist'
+};
+
+export const BRE_LABELS = {
+  HOLD: 'BRE Charges',
+  RELEASE: 'Non-BRE charges exist'
 };
 
 export const CHARGE_VALUES = {

@@ -236,13 +236,12 @@ class PSAModal extends React.Component<Props, State> {
     });
   }
 
-  getNotesFromNeighbors = neighbors =>
-    neighbors.getIn([
-      ENTITY_SETS.RELEASE_RECOMMENDATIONS,
-      PSA_NEIGHBOR.DETAILS,
-      PROPERTY_TYPES.RELEASE_RECOMMENDATION,
-      0
-    ], '');
+  getNotesFromNeighbors = neighbors => neighbors.getIn([
+    ENTITY_SETS.RELEASE_RECOMMENDATIONS,
+    PSA_NEIGHBOR.DETAILS,
+    PROPERTY_TYPES.RELEASE_RECOMMENDATION,
+    0
+  ], '');
 
   getRiskFactors = (neighbors :Immutable.Map<*, *>) => {
     const riskFactors = neighbors.getIn([ENTITY_SETS.PSA_RISK_FACTORS, PSA_NEIGHBOR.DETAILS], Immutable.Map());
@@ -286,11 +285,14 @@ class PSAModal extends React.Component<Props, State> {
       [DMF.STEP_4_CHARGES]: `${dmfRiskFactors.getIn([PROPERTY_TYPES.DMF_STEP_4_CHARGES, 0])}`,
       [DMF.COURT_OR_BOOKING]: `${dmfRiskFactors.getIn([PROPERTY_TYPES.CONTEXT, 0])}`,
       [DMF.SECONDARY_RELEASE_CHARGES]: `${dmfRiskFactors.getIn([PROPERTY_TYPES.DMF_SECONDARY_RELEASE_CHARGES, 0])}`,
+      [DMF.SECONDARY_HOLD_CHARGES]: `${dmfRiskFactors.getIn([PROPERTY_TYPES.DMF_SECONDARY_HOLD_CHARGES, 0])}`,
       [NOTES[DMF.EXTRADITED]]: `${dmfRiskFactors.getIn([PROPERTY_TYPES.EXTRADITED_NOTES, 0], '')}`,
       [NOTES[DMF.STEP_2_CHARGES]]: `${dmfRiskFactors.getIn([PROPERTY_TYPES.DMF_STEP_2_CHARGES_NOTES, 0], '')}`,
       [NOTES[DMF.STEP_4_CHARGES]]: `${dmfRiskFactors.getIn([PROPERTY_TYPES.DMF_STEP_4_CHARGES_NOTES, 0], '')}`,
       [NOTES[DMF.SECONDARY_RELEASE_CHARGES]]:
-        `${dmfRiskFactors.getIn([PROPERTY_TYPES.DMF_SECONDARY_RELEASE_CHARGES_NOTES, 0], '')}`
+        `${dmfRiskFactors.getIn([PROPERTY_TYPES.DMF_SECONDARY_RELEASE_CHARGES_NOTES, 0], '')}`,
+      [NOTES[DMF.SECONDARY_HOLD_CHARGES]]:
+        `${dmfRiskFactors.getIn([PROPERTY_TYPES.DMF_SECONDARY_HOLD_CHARGES_NOTES, 0], '')}`
     });
   }
 
@@ -375,8 +377,11 @@ class PSAModal extends React.Component<Props, State> {
     };
     if (riskFactors.get(DMF.COURT_OR_BOOKING) === CONTEXT.BOOKING) {
       result[PROPERTY_TYPES.DMF_SECONDARY_RELEASE_CHARGES] = [riskFactors.get(DMF.SECONDARY_RELEASE_CHARGES)];
-      result[PROPERTY_TYPES.DMF_SECONDARY_RELEASE_CHARGES_NOTES]
-        = [riskFactors.get(NOTES[DMF.SECONDARY_RELEASE_CHARGES])];
+      result[PROPERTY_TYPES.DMF_SECONDARY_RELEASE_CHARGES_NOTES] =
+        [riskFactors.get(NOTES[DMF.SECONDARY_RELEASE_CHARGES])];
+      result[PROPERTY_TYPES.DMF_SECONDARY_HOLD_CHARGES] = [riskFactors.get(DMF.SECONDARY_HOLD_CHARGES)];
+      result[PROPERTY_TYPES.DMF_SECONDARY_HOLD_CHARGES_NOTES] =
+        [riskFactors.get(NOTES[DMF.SECONDARY_HOLD_CHARGES])];
     }
     return result;
   };
@@ -481,30 +486,45 @@ class PSAModal extends React.Component<Props, State> {
   }
 
   deleteHearing = () => {
-    this.props.actions.deleteEntity({
+    const { actions, entityKeyId } = this.props;
+    actions.deleteEntity({
       entitySetId: this.getEntitySetId(ENTITY_SETS.HEARINGS),
       entityKeyId: this.getEntityKeyId(ENTITY_SETS.HEARINGS)
     });
-    this.props.actions.refreshPSANeighbors({ id: this.props.entityKeyId });
+    actions.refreshPSANeighbors({ id: entityKeyId });
   }
 
   getName = () => {
-    const person = this.props.neighbors.getIn([ENTITY_SETS.PEOPLE, PSA_NEIGHBOR.DETAILS], Immutable.Map());
+    const { neighbors } = this.props;
+    const person = neighbors.getIn([ENTITY_SETS.PEOPLE, PSA_NEIGHBOR.DETAILS], Immutable.Map());
     const firstName = person.getIn([PROPERTY_TYPES.FIRST_NAME, 0], '');
     const lastName = person.getIn([PROPERTY_TYPES.LAST_NAME, 0], '');
     return `${firstName} ${lastName}`;
   }
 
-  renderSummary = () => (
-    <PSASummary
-        downloadFn={this.props.actions.downloadPSAReviewPDF}
-        scores={this.props.scores}
-        neighbors={this.props.neighbors}
-        manualCaseHistory={this.props.manualCaseHistory}
-        chargeHistory={this.props.chargeHistory}
-        manualChargeHistory={this.props.manualChargeHistory}
-        notes={this.state.riskFactors.get(PSA.NOTES)} />
-  )
+  renderSummary = () => {
+    const {
+      neighbors,
+      scores,
+      manualCaseHistory,
+      chargeHistory,
+      manualChargeHistory,
+      actions
+    } = this.props;
+
+    const { riskFactors } = this.state;
+
+    return (
+      <PSASummary
+          downloadFn={actions.downloadPSAReviewPDF}
+          scores={scores}
+          neighbors={neighbors}
+          manualCaseHistory={manualCaseHistory}
+          chargeHistory={chargeHistory}
+          manualChargeHistory={manualChargeHistory}
+          notes={riskFactors.get(PSA.NOTES)} />
+    )
+  }
 
   renderPSADetails = () => {
     const {
@@ -515,10 +535,11 @@ class PSAModal extends React.Component<Props, State> {
       sentenceHistory,
       ftaHistory,
       neighbors,
-      scores
+      scores,
+      readOnly
     } = this.props;
     const { editing, riskFactors } = this.state;
-    const editHeader = (editing || this.props.readOnly || psaIsClosed(scores)) ? null : (
+    const editHeader = (editing || readOnly || psaIsClosed(scores)) ? null : (
       <CenteredContainer>
         <PSAFormHeader>Public Safety Assessment
           <EditPSAButton onClick={() => {
@@ -529,7 +550,7 @@ class PSAModal extends React.Component<Props, State> {
         </PSAFormHeader>
       </CenteredContainer>
     );
-    const editButton = (editing || this.props.readOnly || psaIsClosed(scores)) ? null : (
+    const editButton = (editing || readOnly || psaIsClosed(scores)) ? null : (
       <CenteredContainer>
         <EditPSAButton
             footer
@@ -554,7 +575,6 @@ class PSAModal extends React.Component<Props, State> {
     const currCharges = manualChargeHistory.get(caseNum, Immutable.List());
     const allCharges = chargeHistory.toList().flatMap(list => list);
     const allSentences = sentenceHistory.toList().flatMap(list => list);
-
     return (
       <ModalWrapper>
         {editHeader}
@@ -577,92 +597,125 @@ class PSAModal extends React.Component<Props, State> {
   }
 
   renderDMFExplanation = () => {
-    const { scores } = this.props;
+    const { scores, neighbors } = this.props;
     const { dmf, riskFactors } = this.state;
-    if (!this.props.neighbors.getIn([ENTITY_SETS.DMF_RESULTS, PSA_NEIGHBOR.DETAILS], Immutable.Map()).size) {
+    if (!neighbors.getIn([ENTITY_SETS.DMF_RESULTS, PSA_NEIGHBOR.DETAILS], Immutable.Map()).size) {
       return <NoDMFContainer>A DMF was not calculated for this PSA.</NoDMFContainer>;
     }
 
     return (
-      <ModalWrapper >
+      <ModalWrapper>
         <DMFExplanation scores={scores} dmf={dmf} riskFactors={riskFactors} />
       </ModalWrapper>
     );
   }
 
-  renderCaseHistory = () => (
-    <ModalWrapper withPadding>
-      <Title withSubtitle>
-        <span>Timeline</span>
-        <span>Convictions in past two years</span>
-      </Title>
-      <CaseHistoryTimeline caseHistory={this.props.caseHistory} chargeHistory={this.props.chargeHistory} />
-      <hr />
-      <CaseHistory modal caseHistory={this.props.caseHistory} chargeHistory={this.props.chargeHistory} />
-    </ModalWrapper>
-  );
+  renderCaseHistory = () => {
+    const { caseHistory, chargeHistory } = this.props;
+    return (
+      <ModalWrapper withPadding>
+        <Title withSubtitle>
+          <span>Timeline</span>
+          <span>Convictions in past two years</span>
+        </Title>
+        <CaseHistoryTimeline caseHistory={caseHistory} chargeHistory={chargeHistory} />
+        <hr />
+        <CaseHistory modal caseHistory={caseHistory} chargeHistory={chargeHistory} />
+      </ModalWrapper>
+    )
+  };
 
   renderInitialAppearance = () => {
-    if (this.props.submitting || this.props.refreshingNeighbors) {
+    const {
+      neighbors,
+      submitting,
+      refreshingNeighbors,
+      personId,
+      scores,
+      entityKeyId,
+      hearings,
+      actions
+    } = this.props;
+
+    const {
+      submit,
+      replaceEntity,
+      deleteEntity,
+      updateOutcomesAndReleaseCondtions
+    } = actions;
+
+    const { hearingExists } = this.state;
+
+    const submittedOutcomes = !!neighbors
+      .getIn([ENTITY_SETS.DMF_RESULTS, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.OUTCOME]);
+    const releaseConditionsEntitySetId = neighbors
+      .getIn([ENTITY_SETS.RELEASE_CONDITIONS, 0, PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
+    const bondTypeEntitySetId = this.getEntitySetId(ENTITY_SETS.BONDS);
+    const dmfTypeEntitySetId = this.getEntitySetId(ENTITY_SETS.DMF_RESULTS);
+
+    if (submitting || refreshingNeighbors) {
       return (
         <ModalWrapper>
           <SubmittingWrapper>
-            <span>{this.props.submitting ? 'Submitting' : 'Reloading'}</span>
+            <span>{ submitting ? 'Submitting' : 'Reloading' }</span>
             <LoadingSpinner />
           </SubmittingWrapper>
         </ModalWrapper>
       );
     }
-    if (!this.state.hearingExists) {
+    if (!hearingExists) {
       return (
         <ModalWrapper>
           <SelectHearingsContainer
-              personId={this.props.personId}
-              psaId={this.props.scores.getIn([PROPERTY_TYPES.GENERAL_ID, 0])}
-              psaEntityKeyId={this.props.entityKeyId}
-              hearings={this.props.hearings} />
+              personId={personId}
+              psaId={scores.getIn([PROPERTY_TYPES.GENERAL_ID, 0])}
+              psaEntityKeyId={entityKeyId}
+              hearings={hearings} />
         </ModalWrapper>
       );
     }
 
-    const submittedOutcomes = !!this.props.neighbors
-      .getIn([ENTITY_SETS.DMF_RESULTS, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.OUTCOME]);
-    const releaseConditionsEntitySetId = this.props.neighbors
-      .getIn([ENTITY_SETS.RELEASE_CONDITIONS, 0, PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
-    const bondTypeEntitySetId = this.getEntitySetId(ENTITY_SETS.BONDS);
-    const dmfTypeEntitySetId = this.getEntitySetId(ENTITY_SETS.DMF_RESULTS);
-
     return (
       <ModalWrapper>
         <SelectReleaseConditions
-            submitting={this.props.submitting}
+            submitting={submitting}
             submittedOutcomes={submittedOutcomes}
-            neighbors={this.props.neighbors}
+            neighbors={neighbors}
             personId={this.getIdValue(ENTITY_SETS.PEOPLE, PROPERTY_TYPES.PERSON_ID)}
-            psaId={this.props.scores.getIn([PROPERTY_TYPES.GENERAL_ID, 0])}
+            psaId={scores.getIn([PROPERTY_TYPES.GENERAL_ID, 0])}
             dmfId={this.getIdValue(ENTITY_SETS.DMF_RESULTS)}
-            submit={this.props.actions.submit}
-            replace={this.props.actions.replaceEntity}
-            delete={this.props.actions.deleteEntity}
+            submit={submit}
+            replace={replaceEntity}
+            delete={deleteEntity}
             submitCallback={this.refreshPSANeighborsCallback}
-            updateFqn={this.props.actions.updateOutcomesAndReleaseCondtions}
-            hearing={this.props.neighbors.getIn([ENTITY_SETS.HEARINGS, PSA_NEIGHBOR.DETAILS], Immutable.Map())}
+            updateFqn={updateOutcomesAndReleaseCondtions}
+            hearing={neighbors.getIn([ENTITY_SETS.HEARINGS, PSA_NEIGHBOR.DETAILS], Immutable.Map())}
             hearingId={this.getEntityKeyId(ENTITY_SETS.HEARINGS)}
             deleteHearing={this.deleteHearing}
             realeaseConditionsEntitySetId={releaseConditionsEntitySetId}
             bondTypeEntitySetId={bondTypeEntitySetId}
             dmfTypeEntitySetId={dmfTypeEntitySetId}
-            defaultDMF={this.props.neighbors.getIn([ENTITY_SETS.DMF_RESULTS, PSA_NEIGHBOR.DETAILS], Immutable.Map())}
-            defaultBond={this.props.neighbors.getIn([ENTITY_SETS.BONDS, PSA_NEIGHBOR.DETAILS], Immutable.Map())}
-            defaultConditions={this.props.neighbors.get(ENTITY_SETS.RELEASE_CONDITIONS, Immutable.List())
+            defaultDMF={neighbors.getIn([ENTITY_SETS.DMF_RESULTS, PSA_NEIGHBOR.DETAILS], Immutable.Map())}
+            defaultBond={neighbors.getIn([ENTITY_SETS.BONDS, PSA_NEIGHBOR.DETAILS], Immutable.Map())}
+            defaultConditions={neighbors.get(ENTITY_SETS.RELEASE_CONDITIONS, Immutable.List())
               .map(neighbor => neighbor.get(PSA_NEIGHBOR.DETAILS, Immutable.Map()))} />
       </ModalWrapper>
     );
   }
 
   render() {
-    if (!this.props.scores) return null;
-    const changeStatusText = psaIsClosed(this.props.scores) ? 'Change PSA Status' : 'Close PSA';
+    const {
+      scores,
+      open,
+      onClose,
+      entityKeyId,
+      readOnly
+    } = this.props;
+
+    const { closing } = this.state;
+
+    if (!scores) return null;
+    const changeStatusText = psaIsClosed(scores) ? 'Change PSA Status' : 'Close PSA';
 
     const tabs = [
       {
@@ -689,27 +742,27 @@ class PSAModal extends React.Component<Props, State> {
 
     return (
       <Modal
-          show={this.props.open}
-          onHide={this.props.onClose}
+          show={open}
+          onHide={onClose}
           dialogClassName={OverrideClassNames.PSA_REVIEW_MODAL}>
         <Modal.Body>
           <ClosePSAModal
-              open={this.state.closing}
-              defaultStatus={this.props.scores.getIn([PROPERTY_TYPES.STATUS, 0])}
-              defaultStatusNotes={this.props.scores.getIn([PROPERTY_TYPES.STATUS_NOTES, 0])}
-              defaultFailureReasons={this.props.scores.get(PROPERTY_TYPES.FAILURE_REASON, Immutable.List()).toJS()}
+              open={closing}
+              defaultStatus={scores.getIn([PROPERTY_TYPES.STATUS, 0])}
+              defaultStatusNotes={scores.getIn([PROPERTY_TYPES.STATUS_NOTES, 0])}
+              defaultFailureReasons={scores.get(PROPERTY_TYPES.FAILURE_REASON, Immutable.List()).toJS()}
               onClose={() => this.setState({ closing: false })}
               onSubmit={this.handleStatusChange}
-              scores={this.props.scores}
-              entityKeyId={this.props.entityKeyId} />
+              scores={scores}
+              entityKeyId={entityKeyId} />
           <TitleWrapper>
             <TitleHeader>PSA Details: <span>{`${this.getName()}`}</span></TitleHeader>
             <div>
-              { this.props.readOnly
+              { readOnly
                 ? null
                 : <ClosePSAButton onClick={() => this.setState({ closing: true })}>{changeStatusText}</ClosePSAButton>
               }
-              <CloseModalX onClick={this.props.onClose} />
+              <CloseModalX onClick={onClose} />
             </div>
           </TitleWrapper>
           <CustomTabs panes={tabs} />

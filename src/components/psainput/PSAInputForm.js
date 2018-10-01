@@ -24,7 +24,8 @@ import {
   getAllViolentChargeLabels,
   getAllStepTwoChargeLabels,
   getAllStepFourChargeLabels,
-  getSecondaryReleaseChargeJustification
+  getSecondaryReleaseChargeJustification,
+  getSecondaryHoldChargeJustification
 } from '../../utils/ArrestChargeUtils';
 
 import {
@@ -51,7 +52,8 @@ import {
   STEP_2_CHARGES_PROMPT,
   STEP_4_CHARGES_PROMPT,
   COURT_OR_BOOKING_PROMPT,
-  SECONDARY_RELEASE_CHARGES_PROMPT
+  SECONDARY_RELEASE_CHARGES_PROMPT,
+  SECONDARY_HOLD_CHARGES_PROMPT
 } from '../../utils/consts/FormPromptConsts';
 
 const {
@@ -71,7 +73,8 @@ const {
   STEP_2_CHARGES,
   STEP_4_CHARGES,
   COURT_OR_BOOKING,
-  SECONDARY_RELEASE_CHARGES
+  SECONDARY_RELEASE_CHARGES,
+  SECONDARY_HOLD_CHARGES
 } = DMF;
 
 const FormWrapper = styled(StyledSectionWrapper)`
@@ -304,7 +307,7 @@ export default class PSAInputForm extends React.Component<Props, State> {
     e.preventDefault();
 
     const requiredFields = (this.props.input.get(DMF.COURT_OR_BOOKING) === CONTEXT.BOOKING)
-      ? this.props.input : this.props.input.remove(DMF.SECONDARY_RELEASE_CHARGES);
+      ? this.props.input : this.props.input.remove(DMF.SECONDARY_RELEASE_CHARGES).remove(DMF.SECONDARY_HOLD_CHARGES);
 
     if (requiredFields.valueSeq().filter(this.invalidValue).toList().size) {
       this.setState({ incomplete: true });
@@ -399,6 +402,7 @@ export default class PSAInputForm extends React.Component<Props, State> {
     const step2Charges = getAllStepTwoChargeLabels(currCharges);
     const step4Charges = getAllStepFourChargeLabels(currCharges);
     const [secondaryReleaseCharges, secondaryReleaseHeader] = getSecondaryReleaseChargeJustification(currCharges);
+    const [secondaryHoldCharges, secondaryHoldHeader] = getSecondaryHoldChargeJustification(currCharges);
 
     return (
       <div>
@@ -539,6 +543,17 @@ export default class PSAInputForm extends React.Component<Props, State> {
                   secondaryReleaseCharges,
                   null,
                   secondaryReleaseHeader
+                ) : null
+            }
+            {
+              input.get(COURT_OR_BOOKING) === CONTEXT.BOOKING
+                ? this.renderTFQuestionRow(
+                  14,
+                  SECONDARY_HOLD_CHARGES,
+                  SECONDARY_HOLD_CHARGES_PROMPT,
+                  secondaryHoldCharges,
+                  null,
+                  secondaryHoldHeader
                 ) : null
             }
             <FooterContainer>

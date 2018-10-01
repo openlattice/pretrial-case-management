@@ -20,7 +20,9 @@ import {
   MOCK_STEP_4_CHARGE_NV,
   MOCK_STEP_4_CHARGE_V,
   MOCK_BHE_CHARGE_1,
-  MOCK_BHE_CHARGE_2
+  MOCK_BHE_CHARGE_2,
+  MOCK_BRE_CHARGE_1,
+  MOCK_BRE_CHARGE_2
 } from './consts/test/MockArrestCharges';
 
 import {
@@ -114,6 +116,8 @@ import {
   tryAutofillDMFStepFour,
 
   tryAutofillDMFSecondaryReleaseCharges,
+
+  tryAutofillDMFSecondaryHoldCharges,
 
   tryAutofillFields
 } from './AutofillUtils';
@@ -1366,6 +1370,57 @@ describe('AutofillUtils', () => {
 
   });
 
+  describe('Q14 BHE secondary hold charge logic', () => {
+
+    describe('tryAutofillDMFSecondaryHoldCharges', () => {
+
+      test('should return true or false depending whether any charges match the BRE list', () => {
+
+        expect(tryAutofillDMFSecondaryHoldCharges(Immutable.List.of(
+          MOCK_VIOLENT_CHARGE_1,
+          MOCK_VIOLENT_CHARGE_2,
+          MOCK_STEP_2_CHARGE_V_1,
+          MOCK_STEP_2_CHARGE_V_2,
+          MOCK_STEP_4_CHARGE_NV,
+          MOCK_STEP_4_CHARGE_V,
+          MOCK_BRE_CHARGE_1,
+          MOCK_BRE_CHARGE_2
+        ))).toEqual('false');
+
+        expect(tryAutofillDMFSecondaryHoldCharges(Immutable.List.of(
+          MOCK_VIOLENT_CHARGE_1,
+          MOCK_VIOLENT_CHARGE_2,
+          MOCK_STEP_2_CHARGE_V_1,
+          MOCK_STEP_2_CHARGE_V_2,
+          MOCK_STEP_4_CHARGE_NV,
+          MOCK_STEP_4_CHARGE_V
+        ))).toEqual('false');
+
+        expect(tryAutofillDMFSecondaryHoldCharges(Immutable.List.of(
+          MOCK_BRE_CHARGE_1
+        ))).toEqual('true');
+
+        expect(tryAutofillDMFSecondaryHoldCharges(Immutable.List.of(
+          MOCK_BRE_CHARGE_2
+        ))).toEqual('true');
+
+        expect(tryAutofillDMFSecondaryHoldCharges(Immutable.List.of(
+          MOCK_BRE_CHARGE_1,
+          MOCK_BRE_CHARGE_2
+        ))).toEqual('true');
+
+        expect(tryAutofillDMFSecondaryHoldCharges(Immutable.List.of(
+          MOCK_BRE_CHARGE_1,
+          MOCK_BRE_CHARGE_1
+        ))).toEqual('true');
+
+        expect(tryAutofillDMFSecondaryHoldCharges(Immutable.List())).toEqual('true');
+
+      });
+    });
+
+  });
+
   describe('Full PSA autofill', () => {
 
     describe('tryAutofillFields', () => {
@@ -1425,7 +1480,8 @@ describe('AutofillUtils', () => {
         [PSA.PRIOR_SENTENCE_TO_INCARCERATION]: 'true',
         [DMF.STEP_2_CHARGES]: 'false',
         [DMF.STEP_4_CHARGES]: 'true',
-        [DMF.SECONDARY_RELEASE_CHARGES]: 'false'
+        [DMF.SECONDARY_RELEASE_CHARGES]: 'false',
+        [DMF.SECONDARY_HOLD_CHARGES]: 'false'
       }));
 
       expect(tryAutofillFields(
@@ -1469,14 +1525,17 @@ describe('AutofillUtils', () => {
         [PSA.PRIOR_SENTENCE_TO_INCARCERATION]: 'false',
         [DMF.STEP_2_CHARGES]: 'true',
         [DMF.STEP_4_CHARGES]: 'false',
-        [DMF.SECONDARY_RELEASE_CHARGES]: 'false'
+        [DMF.SECONDARY_RELEASE_CHARGES]: 'false',
+        [DMF.SECONDARY_HOLD_CHARGES]: 'false'
       }));
 
       expect(tryAutofillFields(
         arrestCaseDate1,
         Immutable.List.of(
           MOCK_BHE_CHARGE_1,
-          MOCK_BHE_CHARGE_2
+          MOCK_BHE_CHARGE_2,
+          MOCK_BRE_CHARGE_1,
+          MOCK_BRE_CHARGE_2
         ),
         Immutable.List.of(MOCK_PRETRIAL_CASE, MOCK_PRETRIAL_POA_CASE_DATE_2),
         Immutable.List.of(
@@ -1504,7 +1563,8 @@ describe('AutofillUtils', () => {
         [PSA.PRIOR_SENTENCE_TO_INCARCERATION]: 'false',
         [DMF.STEP_2_CHARGES]: 'false',
         [DMF.STEP_4_CHARGES]: 'false',
-        [DMF.SECONDARY_RELEASE_CHARGES]: 'true'
+        [DMF.SECONDARY_RELEASE_CHARGES]: 'false',
+        [DMF.SECONDARY_HOLD_CHARGES]: 'false'
       }));
 
       expect(tryAutofillFields(
@@ -1517,7 +1577,9 @@ describe('AutofillUtils', () => {
           MOCK_STEP_4_CHARGE_NV,
           MOCK_STEP_4_CHARGE_V,
           MOCK_BHE_CHARGE_1,
-          MOCK_BHE_CHARGE_2
+          MOCK_BHE_CHARGE_2,
+          MOCK_BRE_CHARGE_1,
+          MOCK_BRE_CHARGE_2
         ),
         Immutable.List.of(MOCK_PRETRIAL_CASE, MOCK_PRETRIAL_POA_CASE_DATE_2),
         Immutable.List.of(
@@ -1555,7 +1617,8 @@ describe('AutofillUtils', () => {
         [PSA.PRIOR_SENTENCE_TO_INCARCERATION]: 'true',
         [DMF.STEP_2_CHARGES]: 'true',
         [DMF.STEP_4_CHARGES]: 'true',
-        [DMF.SECONDARY_RELEASE_CHARGES]: 'false'
+        [DMF.SECONDARY_RELEASE_CHARGES]: 'false',
+        [DMF.SECONDARY_HOLD_CHARGES]: 'false'
       }));
 
     });
