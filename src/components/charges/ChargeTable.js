@@ -26,6 +26,7 @@ const HeaderElement = styled.th`
 const Headers = () => (
   <HeaderRow>
     <HeaderElement>STATUTE</HeaderElement>
+    <HeaderElement>NUMBER OF COUNTS</HeaderElement>
     <HeaderElement>QUALIFIER</HeaderElement>
     <HeaderElement>CHARGE</HeaderElement>
   </HeaderRow>

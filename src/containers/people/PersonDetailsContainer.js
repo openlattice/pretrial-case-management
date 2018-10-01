@@ -63,7 +63,11 @@ class PersonDetailsContainer extends React.Component<Props, State> {
   }
 
   render() {
-    const { neighbors } = this.props;
+    const {
+      neighbors,
+      isFetchingPersonData,
+      selectedPersonData
+    } = this.props;
     const scoreSeq = neighbors.get(ENTITY_SETS.PSA_SCORES, Immutable.Map())
       .filter(neighbor => !!neighbor.get(PSA_NEIGHBOR.DETAILS))
       .map(neighbor => [neighbor
@@ -71,13 +75,15 @@ class PersonDetailsContainer extends React.Component<Props, State> {
     return (
       <div>
         {
-          this.props.isFetchingPersonData
+          isFetchingPersonData
             ? <LoadingSpinner /> :
-            <AboutPerson
-                selectedPersonData={this.props.selectedPersonData}
-                isFetchingPersonData={this.props.isFetchingPersonData}
-                scoreSeq={scoreSeq}
-                neighbors={this.props.neighbors} />
+            (
+              <AboutPerson
+                  selectedPersonData={selectedPersonData}
+                  isFetchingPersonData={isFetchingPersonData}
+                  scoreSeq={scoreSeq}
+                  neighbors={neighbors} />
+            )
         }
       </div>
     );
