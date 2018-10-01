@@ -178,7 +178,8 @@ export const CHARGE = {
   DISPOSITION: 'disposition',
   PLEA_DATE: 'pleaDate',
   PLEA: 'plea',
-  QUALIFIER: 'qualifier'
+  QUALIFIER: 'qualifier',
+  NUMBER_OF_COUNTS: 'counts'
 };
 
 export const FORM_IDS = {
