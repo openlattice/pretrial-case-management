@@ -162,7 +162,7 @@ export const updateDMFSecondaryRelease = (dmfResult) => {
 
 export const shouldCheckForSecondaryHold = (context, ncaScore, ftaScore) => {
   if (context === CONTEXT.BOOKING) {
-    if (ncaScore < 6 && ftaScore < 6) return true;
+    return (ncaScore < 6 && ftaScore < 6);
   }
   return false;
 };
