@@ -95,7 +95,7 @@ const InputLabel = styled.span`
 type Props = {
   personId :string,
   psaId :string,
-  psaEntityKeyId? :string,
+  psaEntityKeyId :string,
   hearings :Immutable.List<*, *>,
   actions :{
     submit :(values :{
@@ -135,21 +135,32 @@ class SelectHearingsContainer extends React.Component<Props, State> {
     this.setState({ [e.target.name]: e.target.value });
   }
 
-  getSortedHearings = () => this.props.hearings.sort((h1, h2) =>
-    (moment(h1.getIn([PROPERTY_TYPES.DATE_TIME, 0], '')).isBefore(h2.getIn([PROPERTY_TYPES.DATE_TIME, 0], ''))
-      ? 1 : -1))
+  getSortedHearings = () => {
+    const { hearings } = this.props;
+    return hearings.sort((h1, h2) => (moment(h1.getIn([PROPERTY_TYPES.DATE_TIME, 0], ''))
+      .isBefore(h2.getIn([PROPERTY_TYPES.DATE_TIME, 0], '')) ? 1 : -1));
+  }
 
-  isReadyToSubmit = () => this.state.newHearingCourtroom && this.state.newHearingDate && this.state.newHearingTime
+  isReadyToSubmit = () => {
+    const { newHearingCourtroom, newHearingDate, newHearingTime } = this.state;
+    return (newHearingCourtroom && newHearingDate && newHearingTime);
+  }
 
   selectHearing = (hearingDetails) => {
-    const { psaId, personId, psaEntityKeyId } = this.props;
+    const {
+      psaId,
+      personId,
+      psaEntityKeyId,
+      actions
+    } = this.props;
+
     const values = Object.assign({}, hearingDetails, {
       [ID_FIELD_NAMES.PSA_ID]: psaId,
       [FORM_IDS.PERSON_ID]: personId
     });
 
-    const callback = psaEntityKeyId ? () => this.props.actions.refreshPSANeighbors({ id: psaEntityKeyId }) : () => {};
-    this.props.actions.submit({
+    const callback = psaEntityKeyId ? () => actions.refreshPSANeighbors({ id: psaEntityKeyId }) : () => {};
+    actions.submit({
       values,
       config: psaHearingConfig,
       callback
@@ -157,70 +168,79 @@ class SelectHearingsContainer extends React.Component<Props, State> {
   }
 
   selectCurrentHearing = () => {
+    const { onSubmit } = this.props;
+    const { newHearingDate, newHearingTime, newHearingCourtroom } = this.state;
     const dateFormat = 'MM/DD/YYYY';
     const timeFormat = 'hh:mm a';
-    const date = moment(this.state.newHearingDate);
-    const time = moment(this.state.newHearingTime, timeFormat);
+    const date = moment(newHearingDate);
+    const time = moment(newHearingTime, timeFormat);
     if (date.isValid() && time.isValid()) {
       const datetime = moment(`${date.format(dateFormat)} ${time.format(timeFormat)}`, `${dateFormat} ${timeFormat}`);
       const hearing = {
         [ID_FIELD_NAMES.HEARING_ID]: randomUUID(),
         [HEARING.DATE_TIME]: datetime.toISOString(true),
-        [HEARING.COURTROOM]: this.state.newHearingCourtroom,
+        [HEARING.COURTROOM]: newHearingCourtroom,
         [PROPERTY_TYPES.HEARING_TYPE]: 'Initial Appearance'
       };
 
       this.selectHearing(hearing);
-      this.props.onSubmit(hearing);
+      onSubmit(hearing);
     }
   }
 
   selectExistingHearing = (row, hearingId) => {
+    const { onSubmit } = this.props;
     const hearingWithOnlyId = { [ID_FIELD_NAMES.HEARING_ID]: hearingId };
     this.selectHearing(hearingWithOnlyId);
-    this.props.onSubmit(Object.assign({}, hearingWithOnlyId, {
+    onSubmit(Object.assign({}, hearingWithOnlyId, {
       [HEARING.DATE_TIME]: row.getIn([PROPERTY_TYPES.DATE_TIME, 0], ''),
       [HEARING.COURTROOM]: row.getIn([PROPERTY_TYPES.COURTROOM, 0], '')
     }));
   }
 
-  renderNewHearingSection = () => (
-    <CenteredContainer>
-      <InputRow>
-        <section>
-          <InputLabel>Date</InputLabel>
-          <DatePicker
-              value={this.state.newHearingDate}
-              onChange={newHearingDate => this.setState({ newHearingDate })}
-              clearButton={false} />
-        </section>
-        <section>
-          <InputLabel>Time</InputLabel>
-          <StyledSearchableSelect
-              options={getTimeOptions()}
-              value={this.state.newHearingTime}
-              onSelect={newHearingTime => this.setState({ newHearingTime })}
-              short />
-        </section>
-        <section>
-          <InputLabel>Courtroom</InputLabel>
-          <StyledSearchableSelect
-              options={getCourtroomOptions()}
-              value={this.state.newHearingCourtroom}
-              onSelect={newHearingCourtroom => this.setState({ newHearingCourtroom })}
-              short />
-        </section>
-        <section>
-          <InputLabel />
-          <CreateButton disabled={!this.isReadyToSubmit()} onClick={this.selectCurrentHearing}>
-            Create New
-          </CreateButton>
-        </section>
-      </InputRow>
-    </CenteredContainer>
-  )
+  renderNewHearingSection = () => {
+    const { newHearingDate, newHearingTime, newHearingCourtroom } = this.state;
+    return (
+      <CenteredContainer>
+        <InputRow>
+          <section>
+            <InputLabel>Date</InputLabel>
+            <DatePicker
+                value={newHearingDate}
+                onChange={hearingDate => this.setState({ newHearingDate: hearingDate })}
+                clearButton={false} />
+          </section>
+          <section>
+            <InputLabel>Time</InputLabel>
+            <StyledSearchableSelect
+                options={getTimeOptions()}
+                value={newHearingTime}
+                onSelect={hearingTime => this.setState({ newHearingTime: hearingTime })}
+                short />
+          </section>
+          <section>
+            <InputLabel>Courtroom</InputLabel>
+            <StyledSearchableSelect
+                options={getCourtroomOptions()}
+                value={newHearingCourtroom}
+                onSelect={hearingCourtroom => this.setState({ newHearingCourtroom: hearingCourtroom })}
+                short />
+          </section>
+          <section>
+            <InputLabel />
+            <CreateButton disabled={!this.isReadyToSubmit()} onClick={this.selectCurrentHearing}>
+              Create New
+            </CreateButton>
+          </section>
+        </InputRow>
+      </CenteredContainer>
+    )
+  }
 
-  switchView = () => this.setState({ manuallyCreatingHearing: !this.state.manuallyCreatingHearing });
+  switchView = () => {
+    const { manuallyCreatingHearing } = this.state;
+    this.setState({ manuallyCreatingHearing: !manuallyCreatingHearing })
+  };
 
   render() {
     const { manuallyCreatingHearing } = this.state;
