@@ -66,6 +66,7 @@ type Props = {
 const ChargeRow = ({ charge, handleSelect, disabled } :Props) => {
   const statuteField = charge.get(PROPERTY_TYPES.CHARGE_STATUTE, Immutable.List());
   const statute = statuteField.get(0, '');
+  const numberOfCounts = charge.getIn([PROPERTY_TYPES.NUMBER_OF_COUNTS, 0], '');
   const qualifier = charge.getIn([PROPERTY_TYPES.QUALIFIER, 0], '');
   const chargeDescription = charge.getIn([PROPERTY_TYPES.CHARGE_DESCRIPTION, 0], '');
 
@@ -81,6 +82,7 @@ const ChargeRow = ({ charge, handleSelect, disabled } :Props) => {
           }
         }}>
       <Cell>{ statute }</Cell>
+      <Cell>{ numberOfCounts }</Cell>
       <Cell>{ qualifier }</Cell>
       <Cell>
         <ChargeDescriptionWrapper>

@@ -93,6 +93,7 @@ export const PROPERTY_TYPES = {
   PLEA: 'justice.plea',
   PLEA_DATE: 'justice.pleadate',
   QUALIFIER: 'j.OffenseQualifierText',
+  NUMBER_OF_COUNTS: 'ol.numberofcounts',
 
   // Sentence entity type consts
   JAIL_DAYS_SERVED: 'justice.incarcerationdays',
