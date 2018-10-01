@@ -170,6 +170,7 @@ export const shouldCheckForSecondaryHold = (context, ncaScore, ftaScore) => {
 export const updateDMFSecondaryHold = (dmfResult) => {
   const newDmf = Object.assign({}, dmfResult);
   newDmf[RESULT_CATEGORIES.COLOR] = COLORS.RED;
+  newDmf[RESULT_CATEGORIES.RELEASE_TYPE] = RELEASE_TYPES.MAXIMUM_CONDITIONS;
   newDmf[RESULT_CATEGORIES.CONDITION_1] = CONDITION_TYPES.HOLD_PENDING_JUDICIAL_REVIEW;
   return newDmf;
 };

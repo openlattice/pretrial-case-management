@@ -5,11 +5,9 @@
 import React from 'react';
 import Immutable from 'immutable';
 import styled from 'styled-components';
-import moment from 'moment';
 import { withRouter } from 'react-router-dom';
 
 import BasicButton from '../buttons/BasicButton';
-import SecondaryButton from '../buttons/SecondaryButton';
 import InfoButton from '../buttons/InfoButton';
 import DropdownButton from '../buttons/DropdownButton';
 import LoadingSpinner from '../LoadingSpinner';
@@ -295,7 +293,7 @@ class PSASubmittedPage extends React.Component<Props, State> {
 
       content = (
         <div>
-          <img src={iconSrc} role="presentation" />
+          <img src={iconSrc} alt="" />
           <span>{headerText}</span>
         </div>
       );
@@ -306,7 +304,7 @@ class PSASubmittedPage extends React.Component<Props, State> {
         <span />
         {content}
         <button onClick={onClose}>
-          <img src={closeIconSrc} role="presentation" />
+          <img src={closeIconSrc} alt="" />
         </button>
       </Banner>
     );
@@ -331,10 +329,11 @@ class PSASubmittedPage extends React.Component<Props, State> {
   }
 
   renderScaleItem = (fqn, label) => {
+    const { scores } = this.props;
     return (
       <div>
         <ResultHeader>{label}</ResultHeader>
-        {this.renderScale(this.props.scores.getIn([fqn, 0]))}
+        {this.renderScale(scores.getIn([fqn, 0]))}
       </div>
     )
   }
@@ -348,16 +347,18 @@ class PSASubmittedPage extends React.Component<Props, State> {
           {this.renderScaleItem(PROPERTY_TYPES.FTA_SCALE, 'Failure to Appear Scale')}
         </InlineScores>
       </ScoresContainer>
-    )
+    );
   }
 
   renderDMF = () => {
+    const { dmf } = this.props;
+
     return (
       <DMF>
         <ResultHeader>DMF Result</ResultHeader>
         <section>
-          <DMFCell dmf={this.props.dmf} selected large />
-          <span>{getHeaderText(this.props.dmf)}</span>
+          <DMFCell dmf={dmf} selected large />
+          <span>{getHeaderText(dmf)}</span>
         </section>
       </DMF>
     );
@@ -477,6 +478,9 @@ class PSASubmittedPage extends React.Component<Props, State> {
       personId,
       psaId
     } = this.props;
+
+    console.log(this.props);
+    console.log(this.props.riskFactors);
 
     if (this.state.settingHearing) {
       if (!this.state.selectedHearing) {
