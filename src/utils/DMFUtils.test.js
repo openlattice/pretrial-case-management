@@ -250,7 +250,7 @@ describe('DMFUtils', () => {
 
   describe('updateDMFSecondaryHold', () => {
 
-    test('should set condition 1 to PR Release', () => {
+    test('should set condition 1 to Hold Pending Judicial Review', () => {
 
       expect(updateDMFSecondaryHold({})).toEqual({
         [RESULT_CATEGORIES.COLOR]: COLORS.RED,
