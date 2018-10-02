@@ -13,23 +13,20 @@ import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 const { OPENLATTICE_ID_FQN } = Constants;
 
 const CardsHolder = styled.div`
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  overflow-y: scroll;
-  max-height: 500px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-gap: 20px;
+  margin-bottom: 30px
 `;
 
 const Card = styled.div`
   display: flex;
   flex-direction: row;
   justify-content: space-between;
-  width: 49%;
+  width: 100%;
   border-radius: 5px;
   border: 1px solid #e1e1eb !important;
   padding: 15px 60px;
-  margin-bottom: 20px;
 
   &:hover {
     background-color: #f7f8f9;
@@ -65,7 +62,7 @@ type Props = {
 const HearingCardsHolder = ({ hearings, handleSelect } :Props) => {
 
   if (!hearings.size) {
-    return <div>No hearings found.</div>
+    return <div>No hearings found.</div>;
   }
 
   const hearingOptions = hearings.map((hearing) => {
@@ -80,7 +77,7 @@ const HearingCardsHolder = ({ hearings, handleSelect } :Props) => {
     return (
       <Card
           onClick={() => handleSelect(hearing, hearingId, entityKeyId)}
-          key={hearing.getIn([PROPERTY_TYPES.CASE_ID, 0], '')}>
+          key={`${dateTime}${courtroom}${entityKeyId}`}>
         <div>
           <span>Date</span>
           <div>{ date }</div>
