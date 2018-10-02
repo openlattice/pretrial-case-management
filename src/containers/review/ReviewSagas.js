@@ -49,7 +49,7 @@ const { FullyQualifiedName } = Models;
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
-const LIST_ENTITY_SETS = Immutable.List.of(ENTITY_SETS.STAFF, ENTITY_SETS.RELEASE_CONDITIONS);
+const LIST_ENTITY_SETS = Immutable.List.of(ENTITY_SETS.STAFF, ENTITY_SETS.RELEASE_CONDITIONS, ENTITY_SETS.HEARINGS);
 
 const orderCasesByArrestDate = (case1, case2) => {
   const date1 = moment(case1.getIn([PROPERTY_TYPES.ARREST_DATE, 0], case1.getIn([PROPERTY_TYPES.FILE_DATE, 0], '')));
@@ -260,10 +260,19 @@ function* loadPSADataWorker(action :SequenceAction) :Generator<*, *, *> {
             }
 
             if (LIST_ENTITY_SETS.includes(neighborName)) {
-              neighborsByEntitySetName = neighborsByEntitySetName.set(
-                neighborName,
-                neighborsByEntitySetName.get(neighborName, Immutable.List()).push(neighbor)
-              );
+              if (neighborName === ENTITY_SETS.HEARINGS) {
+                const neighborDetails = neighbor.get(PSA_NEIGHBOR.DETAILS, Immutable.Map());
+                neighborsByEntitySetName = neighborsByEntitySetName.set(
+                  neighborName,
+                  neighborsByEntitySetName.get(neighborName, Immutable.List()).push(neighborDetails)
+                );
+              }
+              else {
+                neighborsByEntitySetName = neighborsByEntitySetName.set(
+                  neighborName,
+                  neighborsByEntitySetName.get(neighborName, Immutable.List()).push(neighbor)
+                );
+              }
             }
             else {
               neighborsByEntitySetName = neighborsByEntitySetName.set(neighborName, neighbor);
@@ -803,10 +812,18 @@ function* refreshPSANeighborsWorker(action :SequenceAction) :Generator<*, *, *> 
       const { neighborEntitySet, neighborDetails } = neighbor;
       if (neighborEntitySet && neighborDetails) {
         if (LIST_ENTITY_SETS.includes(neighborEntitySet.name)) {
-          neighbors = neighbors.set(
-            neighborEntitySet.name,
-            neighbors.get(neighborEntitySet.name, Immutable.List()).push(Immutable.fromJS(neighbor))
-          );
+          if (neighborEntitySet.name === ENTITY_SETS.HEARINGS) {
+            neighbors = neighbors.set(
+              neighborEntitySet.name,
+              neighbors.get(neighborEntitySet.name, Immutable.List()).push(Immutable.fromJS(neighborDetails))
+            );
+          }
+          else {
+            neighbors = neighbors.set(
+              neighborEntitySet.name,
+              neighbors.get(neighborEntitySet.name, Immutable.List()).push(Immutable.fromJS(neighbor))
+            );
+          }
         }
         else {
           neighbors = neighbors.set(neighborEntitySet.name, Immutable.fromJS(neighbor));
