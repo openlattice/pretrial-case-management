@@ -3,10 +3,10 @@
  */
 
 import React from 'react';
-import { List, Map } from 'immutable';
 import moment from 'moment';
 import styled from 'styled-components';
 import randomUUID from 'uuid/v4';
+import Immutable, { List, Map, Set } from 'immutable';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
@@ -16,6 +16,7 @@ import DatePicker from '../../components/controls/StyledDatePicker';
 import SearchableSelect from '../../components/controls/SearchableSelect';
 import HearingCardsHolder from '../../components/hearings/HearingCardsHolder';
 import psaHearingConfig from '../../config/formconfig/PSAHearingConfig';
+import LoadingSpinner from '../../components/LoadingSpinner';
 import SelectReleaseConditions from '../../components/releaseconditions/SelectReleaseConditions';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { FORM_IDS, ID_FIELD_NAMES, HEARING } from '../../utils/consts/Consts';
@@ -28,17 +29,16 @@ import * as ReviewActionFactory from '../review/ReviewActionFactory';
 
 
 const Container = styled.div`
-  padding: 30px;
+  hr {
+    margin: 30px -30px;
+    width: calc(100% + 60px);
+  }
 `;
 
 
-const ModalWrapper = styled.div`
+const Wrapper = styled.div`
   max-height: 100%;
-  padding: ${props => (props.withPadding ? '30px' : '0')};
-  hr {
-    margin: ${props => (props.withPadding ? '30px -30px' : '15px 0')};
-    width: ${props => (props.withPadding ? 'calc(100% + 60px)' : '100%')};
-  }
+  margin: -30px;
 `;
 
 const Header = styled.div`
@@ -78,11 +78,19 @@ const CreateButton = styled(InfoButton)`
   padding-right: 0;
 `;
 
-const ExistingButton = styled(BasicButton)`
-  width: 210px;
-  height: 40px;
-  padding-left: 0;
-  padding-right: 0;
+
+const SubmittingWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  span {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 16px;
+    margin: 20px 0;
+    color: #2e2e34;
+  }
 `;
 
 const InputRow = styled.div`
@@ -100,6 +108,11 @@ const InputRow = styled.div`
   }
 `;
 
+const ButtonWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
+
 const InputLabel = styled.span`
   font-family: 'Open Sans', sans-serif;
   font-size: 14px;
@@ -109,24 +122,28 @@ const InputLabel = styled.span`
 `;
 
 type Props = {
-  defaultConditions :Map<*, *>,
   defaultBond :Map<*, *>,
+  defaultConditions :Map<*, *>,
   defaultDMF :Map<*, *>,
   dmfId :string,
   hearings :List<*, *>,
+  hearingIdsRefreshing :Set<*, *>,
+  hearingNeighborsById :Map<*, *>,
   neighbors :Map<*, *>,
   psaId :string,
   psaNeighborsById :Map<*, *>,
   psaEntityKeyId :string,
   personId :string,
   submitting :boolean,
+  refreshingNeighbors :boolean,
   actions :{
     submit :(values :{
       config :Map<*, *>,
       values :Map<*, *>,
       callback :() => void
     }) => void,
-    refreshPSANeighbors :({ id :string }) => void
+    refreshPSANeighbors :({ id :string }) => void,
+    refreshHearingNeighbors :({ id :string }) => void
   },
   refreshPSANeighborsCallback :() => void,
   onSubmit? :(hearing :Object) => void
@@ -228,6 +245,7 @@ class SelectHearingsContainer extends React.Component<Props, State> {
 
   renderNewHearingSection = () => {
     const { newHearingDate, newHearingTime, newHearingCourtroom } = this.state;
+
     return (
       <CenteredContainer>
         <InputRow>
@@ -271,23 +289,29 @@ class SelectHearingsContainer extends React.Component<Props, State> {
   };
 
   selectingReleaseConditions = (row, hearingId, entityKeyId) => {
-    const { selectingReleaseConditions } = this.state;
     this.setState({
-      selectingReleaseConditions: !selectingReleaseConditions,
+      selectingReleaseConditions: true,
       selectedHearing: { row, hearingId, entityKeyId }
     });
   };
 
   backToHearingSelection = () => {
-    const { selectingReleaseConditions } = this.state;
     this.setState({
-      selectingReleaseConditions: !selectingReleaseConditions,
+      selectingReleaseConditions: false,
       selectedHearing: Map()
     });
   }
+
+  refreshHearingsNeighborsCallback = () => {
+    const { selectedHearing } = this.state;
+    const { actions } = this.props;
+    actions.refreshHearingNeighbors({ id: selectedHearing.entityKeyId });
+  }
+
   renderSelectReleaseCondtions = (selectedHearing) => {
     const {
       actions,
+      hearingNeighborsById,
       defaultBond,
       defaultConditions,
       defaultDMF,
@@ -296,8 +320,10 @@ class SelectHearingsContainer extends React.Component<Props, State> {
       personId,
       psaId,
       refreshPSANeighborsCallback,
+      hearingIdsRefreshing,
       submitting
     } = this.props;
+    console.log(hearingNeighborsById.toJS());
 
     const {
       deleteEntity,
@@ -306,11 +332,16 @@ class SelectHearingsContainer extends React.Component<Props, State> {
       updateOutcomesAndReleaseCondtions
     } = actions;
 
-    const submittedOutcomes = !!neighbors
-      .getIn([ENTITY_SETS.DMF_RESULTS, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.OUTCOME]);
+    const oldDataOutcome = defaultDMF.getIn([PROPERTY_TYPES.OUTCOME, 0]);
+    const { row, hearingId, entityKeyId } = selectedHearing
+    const outcome = hearingNeighborsById.getIn([entityKeyId, ENTITY_SETS.OUTCOMES], defaultDMF);
+    const bond = hearingNeighborsById.getIn([entityKeyId, ENTITY_SETS.BONDS], (defaultBond || Map()));
+    const conditions = hearingNeighborsById
+      .getIn([entityKeyId, ENTITY_SETS.RELEASE_CONDITIONS], (defaultConditions || Map()));
+    const submittedOutcomes = !!(hearingNeighborsById.getIn([entityKeyId, ENTITY_SETS.OUTCOMES]) || oldDataOutcome);
 
     return (
-      <ModalWrapper>
+      <Wrapper withPadding>
         <SelectReleaseConditions
             submitting={submitting}
             submittedOutcomes={submittedOutcomes}
@@ -323,25 +354,72 @@ class SelectHearingsContainer extends React.Component<Props, State> {
             delete={deleteEntity}
             submitCallback={refreshPSANeighborsCallback}
             updateFqn={updateOutcomesAndReleaseCondtions}
-            hearing={selectedHearing.row}
+            refreshHearingsNeighborsCallback={this.refreshHearingsNeighborsCallback}
+            hearingIdsRefreshing={hearingIdsRefreshing}
+            hearingId={hearingId}
+            hearingEntityKeyId={entityKeyId}
+            hearing={row}
             backToSelection={this.backToHearingSelection}
+            defaultOutcome={outcome}
             defaultDMF={defaultDMF}
-            defaultBond={defaultBond}
-            defaultConditions={defaultConditions} />
-      </ModalWrapper>
+            defaultBond={bond}
+            defaultConditions={conditions} />
+      </Wrapper>
     );
   }
 
+  renderAvailableHearings = manuallyCreatingHearing => (
+    <div>
+      <Header>
+        <StyledTitle with withSubtitle>
+          <span>Available Hearings</span>
+          Select a hearing to add it to the defendant's schedule
+        </StyledTitle>
+        {
+          !manuallyCreatingHearing
+            ? <CreateButton onClick={this.manuallyCreateHearing}>Create New Hearing</CreateButton>
+            : <CreateButton onClick={this.manuallyCreateHearing}>Back to Selection</CreateButton>
+        }
+      </Header>
+      {
+        manuallyCreatingHearing
+          ? this.renderNewHearingSection()
+          : (
+            <HearingCardsHolder
+                hearings={this.getSortedHearings()}
+                handleSelect={this.selectExistingHearing} />
+          )
+      }
+    </div>
+  );
+
   render() {
     const { manuallyCreatingHearing, selectingReleaseConditions, selectedHearing } = this.state;
-    const { psaEntityKeyId, psaNeighborsById } = this.props;
+    const {
+      psaEntityKeyId,
+      psaNeighborsById,
+      hearingIdsRefreshing,
+      submitting,
+      refreshingNeighbors,
+      hearingNeighborsById
+    } = this.props;
 
-    const scheduledHearings = psaNeighborsById.getIn([psaEntityKeyId, ENTITY_SETS.HEARINGS], Map());
+    const hearingIds = Object.keys(hearingNeighborsById.toJS());
+    const hearingsWithOutcomes = hearingIds.filter(id => hearingNeighborsById.getIn([id, ENTITY_SETS.OUTCOMES]));
+    const scheduledHearings = psaNeighborsById.getIn([psaEntityKeyId, ENTITY_SETS.HEARINGS], Map())
+      .sort((h1, h2) => (moment(h1.getIn([PROPERTY_TYPES.DATE_TIME, 0], ''))
+        .isBefore(h2.getIn([PROPERTY_TYPES.DATE_TIME, 0], '')) ? 1 : -1));
 
-    if (selectingReleaseConditions) {
-      return this.renderSelectReleaseCondtions(selectedHearing);
+    if (submitting || refreshingNeighbors || hearingIdsRefreshing.size) {
+      return (
+        <Wrapper>
+          <SubmittingWrapper>
+            <span>{ submitting ? 'Submitting' : 'Reloading' }</span>
+            <LoadingSpinner />
+          </SubmittingWrapper>
+        </Wrapper>
+      );
     }
-
     return (
       <Container>
         <Header>
@@ -349,22 +427,15 @@ class SelectHearingsContainer extends React.Component<Props, State> {
             <span>Scheduled Hearings</span>
           </StyledTitle>
         </Header>
-        <HearingCardsHolder hearings={scheduledHearings} handleSelect={this.selectingReleaseConditions} />
-        <Header>
-          <StyledTitle with withSubtitle>
-            <span>Available Hearings</span>
-            Select a hearing to add it to the defendant's schedule
-          </StyledTitle>
-          {
-            !manuallyCreatingHearing
-              ? <CreateButton onClick={this.manuallyCreateHearing}>Create New Hearing</CreateButton>
-              : null
-          }
-        </Header>
-        {
-          manuallyCreatingHearing
-            ? this.renderNewHearingSection()
-            : <HearingCardsHolder hearings={this.getSortedHearings()} handleSelect={this.selectExistingHearing} />
+        <HearingCardsHolder
+            hearings={scheduledHearings}
+            handleSelect={this.selectingReleaseConditions}
+            selectedHearing={selectedHearing}
+            hearingsWithOutcomes={hearingsWithOutcomes} />
+        <hr />
+        { selectingReleaseConditions
+          ? this.renderSelectReleaseCondtions(selectedHearing)
+          : this.renderAvailableHearings(manuallyCreatingHearing)
         }
       </Container>
     );
@@ -376,6 +447,8 @@ function mapStateToProps(state) {
   return {
     [REVIEW.SCORES]: review.get(REVIEW.SCORES),
     [REVIEW.NEIGHBORS_BY_ID]: review.get(REVIEW.NEIGHBORS_BY_ID),
+    [REVIEW.HEARINGS_NEIGHBORS_BY_ID]: review.get(REVIEW.HEARINGS_NEIGHBORS_BY_ID),
+    [REVIEW.HEARING_IDS_REFRESHING]: review.get(REVIEW.HEARING_IDS_REFRESHING),
     [REVIEW.LOADING_RESULTS]: review.get(REVIEW.LOADING_RESULTS),
     [REVIEW.ERROR]: review.get(REVIEW.ERROR)
   };
