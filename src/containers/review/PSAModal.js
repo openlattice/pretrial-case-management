@@ -21,7 +21,6 @@ import CaseHistoryTimeline from '../../components/casehistory/CaseHistoryTimelin
 import LoadingSpinner from '../../components/LoadingSpinner';
 import DMFExplanation from '../../components/dmf/DMFExplanation';
 import SelectHearingsContainer from '../hearings/SelectHearingsContainer';
-import SelectReleaseConditions from '../../components/releaseconditions/SelectReleaseConditions';
 import PSASummary from '../../components/review/PSASummary';
 import ClosePSAModal from '../../components/review/ClosePSAModal';
 import psaEditedConfig from '../../config/formconfig/PsaEditedConfig';
@@ -79,20 +78,6 @@ const TitleHeader = styled.span`
   color: #555e6f;
   span {
     text-transform: uppercase;
-  }
-`;
-
-const SubmittingWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-
-  span {
-    font-family: 'Open Sans', sans-serif;
-    font-size: 16px;
-    margin: 20px 0;
-    color: #2e2e34;
   }
 `;
 
@@ -655,20 +640,11 @@ class PSAModal extends React.Component<Props, State> {
       hearings
     } = this.props;
 
-    if (submitting || refreshingNeighbors) {
-      return (
-        <ModalWrapper>
-          <SubmittingWrapper>
-            <span>{ submitting ? 'Submitting' : 'Reloading' }</span>
-            <LoadingSpinner />
-          </SubmittingWrapper>
-        </ModalWrapper>
-      );
-    }
-
     return (
-      <ModalWrapper>
+      <ModalWrapper withPadding>
         <SelectHearingsContainer
+            submitting={submitting}
+            refreshingNeighbors={refreshingNeighbors}
             psaId={scores.getIn([PROPERTY_TYPES.GENERAL_ID, 0])}
             dmfId={this.getIdValue(ENTITY_SETS.DMF_RESULTS)}
             psaEntityKeyId={entityKeyId}
@@ -676,6 +652,7 @@ class PSAModal extends React.Component<Props, State> {
             refreshPSANeighborsCallback={this.refreshPSANeighborsCallback}
             hearingId={this.getEntityKeyId(ENTITY_SETS.HEARINGS)}
             hearings={hearings}
+            defaultOutcome={neighbors.getIn([ENTITY_SETS.OUTCOMES, PSA_NEIGHBOR.DETAILS], Map())}
             defaultDMF={neighbors.getIn([ENTITY_SETS.DMF_RESULTS, PSA_NEIGHBOR.DETAILS], Map())}
             defaultBond={neighbors.getIn([ENTITY_SETS.BONDS, PSA_NEIGHBOR.DETAILS], Map())}
             defaultConditions={neighbors.get(ENTITY_SETS.RELEASE_CONDITIONS, List())
