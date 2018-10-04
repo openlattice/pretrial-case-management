@@ -19,6 +19,7 @@ export const ENTITY_SETS = {
   SPEAKER_RECOGNITION_PROFILES: 'southdakotaspeakerverificationprofiles',
   FTAS: 'southdakotaftas',
   HEARINGS: 'southdakotahearings',
+  OUTCOMES: 'southdakotapsaoutcomes',
   JUDGES: 'southdakotajudges',
   BONDS: 'southdakotamanualbonds',
   RELEASE_CONDITIONS: 'southdakotareleaseconditions',
@@ -109,6 +110,9 @@ export const PROPERTY_TYPES = {
   COURTROOM: 'justice.courtroom',
   HEARING_TYPE: 'justice.courtcasetype',
   UPDATE_TYPE: 'ol.update',
+
+  // PSA Outcomes entity Type Consts
+  JUDGE_ACCEPTED: 'justice.judgeacceptedrecommendation',
 
   // PSA form entity type consts
   AGE_AT_CURRENT_ARREST: 'psa.AgeAtCurrentArrest',
