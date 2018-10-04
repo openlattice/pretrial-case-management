@@ -5,6 +5,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import moment from 'moment';
+import { Constants } from 'lattice';
 import Immutable, { List, Map } from 'immutable';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -18,10 +19,10 @@ import StyledButton from '../../components/buttons/StyledButton';
 import DropdownButton from '../../components/buttons/DropdownButton';
 import CaseHistory from '../../components/casehistory/CaseHistory';
 import CaseHistoryTimeline from '../../components/casehistory/CaseHistoryTimeline';
-import LoadingSpinner from '../../components/LoadingSpinner';
 import DMFExplanation from '../../components/dmf/DMFExplanation';
 import SelectHearingsContainer from '../hearings/SelectHearingsContainer';
 import PSASummary from '../../components/review/PSASummary';
+import ReleaseConditionsSummary from '../../components/releaseconditions/ReleaseConditionsSummary';
 import ClosePSAModal from '../../components/review/ClosePSAModal';
 import psaEditedConfig from '../../config/formconfig/PsaEditedConfig';
 import closeX from '../../assets/svg/close-x-gray.svg';
@@ -29,18 +30,26 @@ import { getScoresAndRiskFactors, calculateDMF } from '../../utils/ScoringUtils'
 import { getEntityKeyId, getEntitySetId, getIdValue } from '../../utils/DataUtils';
 import { CenteredContainer, Title } from '../../utils/Layout';
 import { toISODateTime } from '../../utils/FormattingUtils';
-import { CONTEXT, DMF, EDIT_FIELDS, NOTES, PSA } from '../../utils/consts/Consts';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import CONTENT from '../../utils/consts/ContentConsts';
 import { RESULT_CATEGORIES } from '../../utils/consts/DMFResultConsts';
 import { formatDMFFromEntity } from '../../utils/DMFUtils';
 import { psaIsClosed } from '../../utils/PSAUtils';
-import { PSA_NEIGHBOR, REVIEW } from '../../utils/consts/FrontEndStateConsts';
+import { PSA_NEIGHBOR, STATE, REVIEW } from '../../utils/consts/FrontEndStateConsts';
+import {
+  CONTEXT,
+  DMF,
+  EDIT_FIELDS,
+  NOTES,
+  PSA
+} from '../../utils/consts/Consts';
+
 import * as OverrideClassNames from '../../utils/styleoverrides/OverrideClassNames';
 import * as FormActionFactory from '../psa/FormActionFactory';
 import * as ReviewActionFactory from './ReviewActionFactory';
 import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
 import * as DataActionFactory from '../../utils/data/DataActionFactory';
+
+const { OPENLATTICE_ID_FQN } = Constants;
 
 const DownloadButtonContainer = styled.div`
   width: 100%;
@@ -209,17 +218,14 @@ class PSAModal extends React.Component<Props, State> {
       editing: false,
       closing: false,
       riskFactors: this.getRiskFactors(props.neighbors),
-      dmf: this.getDMF(props.neighbors),
-      hearingExists: !!props.neighbors.get(ENTITY_SETS.HEARINGS)
+      dmf: this.getDMF(props.neighbors)
     };
   }
 
   componentWillReceiveProps(nextProps :Props) {
-    const { neighbors } = this.props;
     this.setState({
       dmf: this.getDMF(nextProps.neighbors),
-      riskFactors: this.getRiskFactors(nextProps.neighbors),
-      hearingExists: !!neighbors.get(ENTITY_SETS.HEARINGS)
+      riskFactors: this.getRiskFactors(nextProps.neighbors)
     });
   }
 
@@ -630,6 +636,22 @@ class PSAModal extends React.Component<Props, State> {
     );
   };
 
+  renderReleaseCondtionsSummary = () => {
+    const { neighbors, hearingNeighborsById } = this.props;
+    const psaHearings = neighbors.get(ENTITY_SETS.HEARINGS, List());
+    const hearingsWithOutcomes = psaHearings.filter((hearing) => {
+      const entityKeyId = hearing.getIn([OPENLATTICE_ID_FQN, 0]);
+      return !!hearingNeighborsById.getIn([entityKeyId, ENTITY_SETS.OUTCOMES]);
+    }).sort((h1, h2) => (moment(h1.getIn([PROPERTY_TYPES.DATE_TIME, 0], ''))
+      .isBefore(h2.getIn([PROPERTY_TYPES.DATE_TIME, 0], '')) ? 1 : -1));
+
+    return (
+      <ReleaseConditionsSummary
+          completedHearings={hearingsWithOutcomes}
+          hearingNeighborsById={hearingNeighborsById} />
+    );
+  }
+
   renderHearings = () => {
     const {
       neighbors,
@@ -696,6 +718,10 @@ class PSAModal extends React.Component<Props, State> {
       {
         title: 'Hearings',
         content: this.renderHearings
+      },
+      {
+        title: 'Release Conditions',
+        content: this.renderReleaseCondtionsSummary
       }
     ];
 
@@ -731,6 +757,13 @@ class PSAModal extends React.Component<Props, State> {
   }
 }
 
+function mapStateToProps(state) {
+  const review = state.get(STATE.REVIEW);
+  return {
+    [REVIEW.HEARINGS_NEIGHBORS_BY_ID]: review.get(REVIEW.HEARINGS_NEIGHBORS_BY_ID),
+  };
+}
+
 function mapDispatchToProps(dispatch :Function) :Object {
   const actions :{ [string] :Function } = {};
 
@@ -757,4 +790,4 @@ function mapDispatchToProps(dispatch :Function) :Object {
   };
 }
 
-export default connect(null, mapDispatchToProps)(PSAModal);
+export default connect(mapStateToProps, mapDispatchToProps)(PSAModal);
