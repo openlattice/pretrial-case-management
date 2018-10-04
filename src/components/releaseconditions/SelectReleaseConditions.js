@@ -19,14 +19,19 @@ import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
 import RadioButton from '../controls/StyledRadioButton';
 import CheckboxButton from '../controls/StyledCheckboxButton';
 import StyledInput from '../controls/StyledInput';
-import DatePicker from '../../components/controls/StyledDatePicker';
+import DatePicker from '../controls/StyledDatePicker';
 import SearchableSelect from '../controls/SearchableSelect';
 import InfoButton from '../buttons/InfoButton';
-import BasicButton from '../../components/buttons/BasicButton';
+import BasicButton from '../buttons/BasicButton';
 import releaseConditionsConfig from '../../config/formconfig/ReleaseConditionsConfig';
 import { NoContactRow } from './ReleaseConditionsStyledTags';
 import { getTimeOptions } from '../../utils/consts/DateTimeConsts';
-import { RELEASE_CONDITIONS, LIST_FIELDS, ID_FIELD_NAMES, FORM_IDS } from '../../utils/consts/Consts';
+import {
+  RELEASE_CONDITIONS,
+  LIST_FIELDS,
+  ID_FIELD_NAMES,
+  FORM_IDS
+} from '../../utils/consts/Consts';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { getCourtroomOptions } from '../../utils/consts/HearingConsts';
 import { PSA_NEIGHBOR, PSA_ASSOCIATION } from '../../utils/consts/FrontEndStateConsts';
@@ -192,47 +197,45 @@ const BLANK_PERSON_ROW = {
 };
 
 type Props = {
-  dmfId :string,
-  realeaseConditionsEntitySetId :string,
-  bondTypeEntitySetId :string,
-  dmfTypeEntitySetId :string,
-  psaId :string,
-  personId :string,
-  submit :(value :{ config :Object, values :Object, callback? :() => void }) => void,
-  submitCallback :() => void,
-  replace :(value :{ entitySetName :string, entityKeyId :string, values :Object }) => void,
-  delete :(value :{ entitySetName :string, entityKeyId :string }) => void,
-  updateFqn :(values :{
-    allEntitySetIds :string[]
-  }) => void,
-  defaultDMF :Immutable.Map<*, *>,
+  backToSelection :() => void,
   defaultBond :Immutable.Map<*, *>,
   defaultConditions :Immutable.List<*>,
+  defaultDMF :Immutable.Map<*, *>,
+  defaultOutcome :Immutable.Map<*, *>,
+  dmfId :string,
   hearing :Immutable.Map<*, *>,
   hearingId :string,
+  hearingEntityKeyId :string,
+  neighbors :Immutable.Map<*, *>,
+  personId :string,
+  psaId :string,
+  replace :(value :{ entitySetName :string, entityKeyId :string, values :Object }) => void,
+  submit :(value :{ config :Object, values :Object, callback? :() => void }) => void,
+  submitCallback :() => void,
+  refreshHearingsNeighborsCallback :() => void,
   submitting :boolean,
   submittedOutcomes :boolean,
-  neighbors :Immutable.Map<*, *>,
+  updateFqn :(values :{ allEntitySetIds :string[] }) => void,
 };
 
 type State = {
-  disabled :boolean,
-  outcome :?string,
-  otherOutcomeText :string,
-  release :?string,
-  bondType :?string,
   bondAmount :string,
-  conditions :string[],
-  checkinFrequency :?string,
+  bondType :?string,
   c247Types :string[],
-  otherConditionText :string,
-  noContactPeople :Object[],
-  modifyingHearing :boolean,
+  checkinFrequency :?string,
+  conditions :string[],
+  disabled :boolean,
+  editingHearing :boolean,
+  hearingCourtroom :string,
   hearingDateTime :Object,
+  modifyingHearing :boolean,
   newHearingDate :string,
   newHearingTime :string,
-  hearingCourtroom :string,
-  editingHearing :boolean
+  noContactPeople :Object[],
+  otherConditionText :string,
+  otherOutcomeText :string,
+  outcome :?string,
+  release :?string,
 };
 
 class SelectReleaseConditions extends React.Component<Props, State> {
@@ -245,25 +248,32 @@ class SelectReleaseConditions extends React.Component<Props, State> {
   componentWillReceiveProps(nextProps :Props) {
     const {
       defaultDMF,
+      defaultOutcome,
       defaultBond,
-      defaultConditions
+      defaultConditions,
+      hearingEntityKeyId
     } = this.props;
 
     if (
-      !nextProps.defaultDMF.size === defaultDMF.size
-      || !nextProps.defaultBond.size === defaultBond.size
-      || !nextProps.defaultConditions.size === defaultConditions.size
+      nextProps.defaultDMF.getIn !== defaultDMF.size
+      || nextProps.defaultOutcome.size !== defaultOutcome.size
+      || nextProps.defaultBond.size !== defaultBond.size
+      || nextProps.defaultConditions.size !== defaultConditions.size
+      || nextProps.hearingEntityKeyId !== hearingEntityKeyId
     ) {
       this.setState(this.getStateFromProps(nextProps));
     }
   }
 
+
   getStateFromProps = (props :Props) :State => {
     const {
       defaultDMF,
+      defaultOutcome,
       defaultBond,
       defaultConditions,
-      hearing
+      hearing,
+      submittedOutcomes
     } = props;
 
     let modifyingHearing = false;
@@ -280,25 +290,48 @@ class SelectReleaseConditions extends React.Component<Props, State> {
       hearingCourtroom = this.state.hearingCourtroom;
     }
 
-    if (defaultBond.size || defaultConditions.size) {
-      const bondType = defaultBond.getIn([PROPERTY_TYPES.BOND_TYPE, 0]);
-      const bondAmount = defaultBond.getIn([PROPERTY_TYPES.BOND_AMOUNT, 0], '');
+    if (submittedOutcomes) {
+      const bondType = defaultBond.getIn(
+        [PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.BOND_TYPE, 0],
+        defaultBond.getIn([PROPERTY_TYPES.BOND_TYPE, 0]) // check for old data
+      );
+      const bondAmount = defaultBond.getIn(
+        [PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.BOND_AMOUNT, 0],
+        defaultBond.getIn([PROPERTY_TYPES.BOND_AMOUNT, 0], '') // check for old data
+      );
 
       let conditionsByType = Immutable.Map();
       defaultConditions.forEach((condition) => {
-        const type = condition.getIn([PROPERTY_TYPES.CONDITION_TYPE, 0]);
-        conditionsByType = conditionsByType.set(type, conditionsByType.get(type, Immutable.List()).push(condition));
+        const type = condition.getIn(
+          [PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.CONDITION_TYPE, 0],
+          condition.getIn([PROPERTY_TYPES.CONDITION_TYPE, 0]) // check for old data
+        );
+        conditionsByType = conditionsByType.set(type, conditionsByType.get(type, Immutable.List()).push(
+          condition.get(PSA_NEIGHBOR.DETAILS, (condition || Immutable.Map())) // check for old data
+        ));
       });
 
       const c247Types = conditionsByType.get(CONDITION_LIST.C_247, Immutable.List()).map((condition) => {
-        const planType = condition.getIn([PROPERTY_TYPES.PLAN_TYPE, 0]);
-        const frequency = condition.getIn([PROPERTY_TYPES.FREQUENCY, 0]);
+        const planType = condition.getIn(
+          [PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.PLAN_TYPE, 0],
+          condition.getIn([PROPERTY_TYPES.PLAN_TYPE, 0]) // check for old data
+        );
+        const frequency = condition.getIn(
+          [PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.FREQUENCY, 0],
+          condition.getIn([PROPERTY_TYPES.FREQUENCY, 0]) // check for old data
+        );
         return frequency ? `${planType} ${frequency}` : planType;
       });
 
       const noContactPeople = conditionsByType.get(CONDITION_LIST.NO_CONTACT, Immutable.List()).map((condition) => {
-        const personType = condition.getIn([PROPERTY_TYPES.PERSON_TYPE, 0]);
-        const personName = condition.getIn([PROPERTY_TYPES.PERSON_NAME, 0]);
+        const personType = condition.getIn(
+          [PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.PERSON_TYPE, 0],
+          condition.getIn([PROPERTY_TYPES.PERSON_TYPE, 0]) // check for old data
+        );
+        const personName = condition.getIn(
+          [PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.PERSON_NAME, 0],
+          condition.getIn([PROPERTY_TYPES.PERSON_NAME, 0]) // check for old data
+        );
         return {
           [PROPERTY_TYPES.PERSON_TYPE]: personType,
           [PROPERTY_TYPES.PERSON_NAME]: personName
@@ -306,15 +339,23 @@ class SelectReleaseConditions extends React.Component<Props, State> {
       });
 
       return {
-        [OUTCOME]: defaultDMF.getIn([PROPERTY_TYPES.OUTCOME, 0]),
-        [OTHER_OUTCOME_TEXT]: defaultDMF.getIn([PROPERTY_TYPES.OTHER_TEXT, 0], ''),
+        [OUTCOME]: defaultOutcome.getIn(
+          [PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.OUTCOME, 0],
+          defaultDMF.getIn([PROPERTY_TYPES.OUTCOME, 0])
+        ),
+        [OTHER_OUTCOME_TEXT]: defaultOutcome.getIn(
+          [PROPERTY_TYPES.OTHER_TEXT, 0],
+          defaultDMF.getIn([PROPERTY_TYPES.OTHER_TEXT, 0], '')
+        ),
         [RELEASE]: defaultBond.size ? RELEASES.RELEASED : RELEASES.HELD,
         [BOND_TYPE]: bondType,
         [BOND_AMOUNT]: bondAmount,
         [CONDITIONS]: conditionsByType.keySeq().toJS(),
-        [CHECKIN_FREQUENCY]: conditionsByType.getIn([CONDITION_LIST.CHECKINS, 0, PROPERTY_TYPES.FREQUENCY, 0]),
+        [CHECKIN_FREQUENCY]: conditionsByType
+          .getIn([CONDITION_LIST.CHECKINS, 0, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.FREQUENCY, 0]),
         [C247_TYPES]: c247Types,
-        [OTHER_CONDITION_TEXT]: conditionsByType.getIn([CONDITION_LIST.OTHER, 0, PROPERTY_TYPES.OTHER_TEXT, 0], ''),
+        [OTHER_CONDITION_TEXT]: conditionsByType
+          .getIn([CONDITION_LIST.OTHER, 0, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.OTHER_TEXT, 0], ''),
         [NO_CONTACT_PEOPLE]: noContactPeople.size === 0 ? [Object.assign({}, BLANK_PERSON_ROW)] : noContactPeople,
         modifyingHearing,
         hearingDateTime,
@@ -346,8 +387,8 @@ class SelectReleaseConditions extends React.Component<Props, State> {
   handleNumberInputChange = (e) => {
     const { name, value } = e.target;
     const valueNum = Number.parseFloat(value);
-    if (!value.length ||
-      (!Number.isNaN(valueNum) && (`${valueNum}` === `${value}` || `${valueNum}.` === `${value}`))) {
+    if (!value.length
+      || (!Number.isNaN(valueNum) && (`${valueNum}` === `${value}` || `${valueNum}.` === `${value}`))) {
       this.setState({ [name]: value });
     }
   }
@@ -380,12 +421,13 @@ class SelectReleaseConditions extends React.Component<Props, State> {
 
   handleCheckboxChange = (e) => {
     const { name, value, checked } = e.target;
+    const { state } = this;
     let values;
-    if (Immutable.List.isList(this.state[name])) {
-      values = this.state[name].toJS();
+    if (Immutable.List.isList(state[name])) {
+      values = state[name].toJS();
     }
     else {
-      values = this.state[name];
+      values = state[name];
     }
     if (checked && !values.includes(value)) {
       values.push(value);
@@ -434,44 +476,57 @@ class SelectReleaseConditions extends React.Component<Props, State> {
     this.setState(state);
   }
 
-  mapOptionsToRadioButtons = (options :{}, field :string) => Object.values(options).map(option => (
-    <RadioWrapper key={option}>
-      <RadioButton
-          large
-          name={field}
-          value={option}
-          checked={this.state[field] === option}
-          onChange={this.handleInputChange}
-          disabled={this.state.disabled}
-          label={option} />
-    </RadioWrapper>
-  ))
+  mapOptionsToRadioButtons = (options :{}, field :string) => {
+    const { disabled } = this.state;
+    return (
+      Object.values(options).map(option => (
+        <RadioWrapper key={option}>
+          <RadioButton
+              large
+              name={field}
+              value={option}
+              checked={this.state[field] === option}
+              onChange={this.handleInputChange}
+              disabled={disabled}
+              label={option} />
+        </RadioWrapper>
+      ))
+    );
+  }
 
-  mapOptionsToCheckboxButtons = (options :{}, field :string) => Object.values(options).map(option => (
-    <RadioWrapper key={option}>
-      <CheckboxButton
-          large
-          name={field}
-          value={option}
-          checked={this.state[field].includes(option)}
-          onChange={this.handleCheckboxChange}
-          disabled={this.state.disabled}
-          label={option} />
-    </RadioWrapper>
-  ))
+  mapOptionsToCheckboxButtons = (options :{}, field :string) => {
+    const { disabled } = this.state;
+    return (
+      Object.values(options).map(option => (
+        <RadioWrapper key={option}>
+          <CheckboxButton
+              large
+              name={field}
+              value={option}
+              checked={this.state[field] .includes(option)}
+              onChange={this.handleCheckboxChange}
+              disabled={disabled}
+              label={option} />
+        </RadioWrapper>
+      ))
+    );
+  }
 
-  renderConditionCheckbox = (condition, optionalLabel) => (
-    <RadioWrapper>
-      <CheckboxButton
-          large
-          name="conditions"
-          value={condition}
-          checked={this.state.conditions.includes(condition)}
-          label={optionalLabel || condition}
-          disabled={this.state.disabled}
-          onChange={this.handleConditionChange} />
-    </RadioWrapper>
-  )
+  renderConditionCheckbox = (condition, optionalLabel) => {
+    const { conditions, disabled } = this.state;
+    return (
+      <RadioWrapper>
+        <CheckboxButton
+            large
+            name="conditions"
+            value={condition}
+            checked={conditions.includes(condition)}
+            label={optionalLabel || condition}
+            disabled={disabled}
+            onChange={this.handleConditionChange} />
+      </RadioWrapper>
+    );
+  }
 
   onSubmit = () => {
     const {
@@ -483,28 +538,55 @@ class SelectReleaseConditions extends React.Component<Props, State> {
       conditions,
       checkinFrequency,
       c247Types,
-      otherConditionText
+      otherConditionText,
+      editingHearing
     } = this.state;
 
     const {
+      defaultOutcome,
       defaultDMF,
       defaultBond,
       defaultConditions,
       dmfId,
       psaId,
       personId,
-      dmfTypeEntitySetId,
-      neighbors
+      neighbors,
+      submit,
+      refreshHearingsNeighborsCallback,
+      updateFqn,
+      hearingId,
+      hearingEntityKeyId
     } = this.props;
 
-    const bondTime = neighbors
-      .getIn([ENTITY_SETS.BONDS, PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.COMPLETED_DATE_TIME, 0]);
-    const conditionsTime = neighbors
-      .getIn([ENTITY_SETS.RELEASE_CONDITIONS, 0, PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.COMPLETED_DATE_TIME, 0]);
 
-    const dmfEntityKeyId = defaultDMF.getIn([OPENLATTICE_ID_FQN, 0], '');
-    const conditionEntityKeyIds = defaultConditions.map(neighbor => neighbor.getIn([OPENLATTICE_ID_FQN, 0], []));
-    const bondEntityKeyId = defaultBond.getIn([OPENLATTICE_ID_FQN, 0], '');
+    const bondTime = defaultBond.getIn([PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.COMPLETED_DATE_TIME, 0],
+      neighbors.getIn([ENTITY_SETS.BONDS, PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.COMPLETED_DATE_TIME, 0]));
+    const conditionsTime = defaultConditions.getIn([0, PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.COMPLETED_DATE_TIME, 0],
+      neighbors.getIn(
+        [ENTITY_SETS.RELEASE_CONDITIONS, 0, PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.COMPLETED_DATE_TIME, 0]
+      ));
+
+    const bondShouldsubmit = !(defaultBond.getIn([PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.COMPLETED_DATE_TIME, 0]))
+      || !bondTime
+      || bondTime === conditionsTime;
+    const outcomeShouldSubmit = !!defaultOutcome.getIn([PROPERTY_TYPES.OUTCOME, 0]);
+    const outcomeShouldReplace = !outcomeShouldSubmit;
+
+    const releaseType = defaultDMF.getIn([PROPERTY_TYPES.RELEASE_TYPE, 0], '');
+    const judgeAccepted = (outcome === OUTCOMES.ACCEPTED);
+
+    const outcomeEntityKeyId = defaultOutcome.getIn(
+      [PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0],
+      defaultOutcome.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0], '')
+    );
+    const conditionEntityKeyIds = defaultConditions.map(neighbor => neighbor.getIn(
+      [PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0],
+      neighbor.getIn([OPENLATTICE_ID_FQN, 0], [])
+    ));
+    const bondEntityKeyId = defaultBond.getIn(
+      [PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0],
+      defaultBond.getIn([OPENLATTICE_ID_FQN, 0], '')
+    );
 
     if (!this.isReadyToSubmit()) {
       return;
@@ -512,36 +594,59 @@ class SelectReleaseConditions extends React.Component<Props, State> {
 
     const startDate = toISODate(moment());
     let bondEntity;
+    let outcomeEntity;
 
     const conditionSubmit = {
       [FORM_IDS.PERSON_ID]: personId,
       [ID_FIELD_NAMES.DMF_ID]: dmfId,
       [ID_FIELD_NAMES.PSA_ID]: psaId,
+      [ID_FIELD_NAMES.HEARING_ID]: hearingId,
       [PROPERTY_TYPES.COMPLETED_DATE_TIME]: toISODateTime(moment())
     };
 
-    if (!bondTime || bondTime === conditionsTime) {
+    if (bondShouldsubmit) {
+      conditionSubmit[ID_FIELD_NAMES.BOND_ID] = randomUUID();
       conditionSubmit[PROPERTY_TYPES.BOND_TYPE] = bondType;
       conditionSubmit[PROPERTY_TYPES.BOND_AMOUNT] = bondAmount;
-      conditionSubmit[ID_FIELD_NAMES.BOND_ID] = randomUUID();
       conditionSubmit.bonddate = moment().add(1, 'ms').toISOString(true);
+    }
+
+    if (outcomeShouldSubmit) {
+      conditionSubmit[ID_FIELD_NAMES.OUTCOME_ID] = randomUUID();
+      conditionSubmit[PROPERTY_TYPES.OUTCOME] = outcome;
+      conditionSubmit[PROPERTY_TYPES.OTHER_TEXT] = otherOutcomeText;
+      conditionSubmit[PROPERTY_TYPES.RELEASE_TYPE] = releaseType;
+      conditionSubmit[PROPERTY_TYPES.JUDGE_ACCEPTED] = judgeAccepted;
+      conditionSubmit.outcomedate = moment().add(2, 'ms').toISOString(true);
     }
 
     const submission = {
       [FORM_IDS.PERSON_ID]: personId,
       [ID_FIELD_NAMES.DMF_ID]: dmfId,
       [ID_FIELD_NAMES.PSA_ID]: psaId,
+      [ID_FIELD_NAMES.HEARING_ID]: hearingId,
+
+      // Outcome
+      [ID_FIELD_NAMES.OUTCOME_ID]: randomUUID(),
       [PROPERTY_TYPES.OUTCOME]: outcome,
       [PROPERTY_TYPES.OTHER_TEXT]: otherOutcomeText,
+      [PROPERTY_TYPES.RELEASE_TYPE]: releaseType,
+      [PROPERTY_TYPES.JUDGE_ACCEPTED]: judgeAccepted,
+
+      // Bond
       [PROPERTY_TYPES.BOND_TYPE]: bondType,
       [PROPERTY_TYPES.BOND_AMOUNT]: bondAmount,
       [PROPERTY_TYPES.COMPLETED_DATE_TIME]: toISODateTime(moment())
     };
 
-    const dmfEntity = {
-      [PROPERTY_TYPES.OUTCOME]: outcome,
-      [PROPERTY_TYPES.OTHER_TEXT]: otherOutcomeText
-    };
+    if (outcomeShouldReplace) {
+      outcomeEntity = {
+        [PROPERTY_TYPES.OUTCOME]: outcome,
+        [PROPERTY_TYPES.OTHER_TEXT]: otherOutcomeText,
+        [PROPERTY_TYPES.RELEASE_TYPE]: releaseType,
+        [PROPERTY_TYPES.JUDGE_ACCEPTED]: judgeAccepted,
+      };
+    }
 
     if (bondType) {
       bondEntity = {
@@ -588,7 +693,7 @@ class SelectReleaseConditions extends React.Component<Props, State> {
             conditionsEntity.push(Object.assign({}, conditionObj, noContactPerson, {
               [PROPERTY_TYPES.GENERAL_ID]: randomUUID()
             }));
-          })
+          });
         }
         else {
           conditionsEntity.push(conditionObj);
@@ -598,51 +703,55 @@ class SelectReleaseConditions extends React.Component<Props, State> {
     submission[RELEASE_CONDITIONS_FIELD] = conditionsEntity;
     conditionSubmit[RELEASE_CONDITIONS_FIELD] = conditionsEntity;
     submission.bonddate = moment().add(1, 'ms').toISOString(true);
+    submission.outcomedate = moment().add(2, 'ms').toISOString(true);
 
-    if (this.state.editingHearing) {
-      this.props.updateFqn({
+    if (editingHearing) {
+      updateFqn({
         psaId,
+        hearingEntityKeyId,
         conditionSubmit,
         conditionEntityKeyIds,
         bondEntity,
         bondEntityKeyId,
-        dmfEntity,
-        dmfEntityKeyId,
-        callback: this.props.submit,
-        submitCallback: this.props.submitCallback
+        outcomeEntity,
+        outcomeEntityKeyId,
+        callback: submit,
+        refreshHearingsNeighborsCallback
       });
 
       this.setState({ editingHearing: false });
     }
     else {
-      this.props.submit({
+      submit({
         config: releaseConditionsConfig,
         values: submission,
-        callback: this.props.submitCallback
+        callback: refreshHearingsNeighborsCallback
       });
     }
 
   }
 
-  cleanNoContactPeopleList = () => this.state.noContactPeople
-    .filter(obj => obj[PROPERTY_TYPES.PERSON_TYPE] && obj[PROPERTY_TYPES.PERSON_NAME].length)
-
+  cleanNoContactPeopleList = () => {
+    const { noContactPeople } = this.state;
+    return noContactPeople.filter(obj => obj[PROPERTY_TYPES.PERSON_TYPE] && obj[PROPERTY_TYPES.PERSON_NAME].length);
+  }
   isReadyToSubmit = () => {
+    const { submitting } = this.props;
     const {
+      bondAmount,
+      bondType,
+      c247Types,
+      checkinFrequency,
+      conditions,
       disabled,
       outcome,
+      otherConditionText,
       otherOutcomeText,
-      release,
-      bondType,
-      bondAmount,
-      conditions,
-      checkinFrequency,
-      c247Types,
-      otherConditionText
+      release
     } = this.state;
     if (
       disabled
-      || this.props.submitting
+      || submitting
       || !outcome
       || !release
       || (outcome === OUTCOMES.OTHER && !otherOutcomeText.length)
@@ -661,45 +770,48 @@ class SelectReleaseConditions extends React.Component<Props, State> {
   }
 
   handleOnListChange = (field, value, index) => {
-    let noContactPeople;
-    if (this.state.editingHearing && this.state[NO_CONTACT_PEOPLE].toJS) {
-      noContactPeople = this.state[NO_CONTACT_PEOPLE].toJS();
+    const { noContactPeople, editingHearing } = this.State;
+    let newContactPeople;
+    if (editingHearing && noContactPeople.toJS()) {
+      newContactPeople = noContactPeople.toJS();
     }
     else {
-      noContactPeople = this.state[NO_CONTACT_PEOPLE];
+      newContactPeople = noContactPeople;
     }
 
-    noContactPeople[index][field] = value;
-    if (index === noContactPeople.length - 1) {
-      noContactPeople.push({
+    newContactPeople[index][field] = value;
+    if (index === newContactPeople.length - 1) {
+      newContactPeople.push({
         [PROPERTY_TYPES.PERSON_TYPE]: null,
         [PROPERTY_TYPES.PERSON_NAME]: ''
       });
     }
-    this.setState({ [NO_CONTACT_PEOPLE]: noContactPeople });
+    this.setState({ [NO_CONTACT_PEOPLE]: newContactPeople });
   }
 
   removePersonRow = (index) => {
-    let noContactPeople;
-    if (this.state.editingHearing && this.state[NO_CONTACT_PEOPLE].toJS) {
-      noContactPeople = this.state[NO_CONTACT_PEOPLE].toJS();
+    const { noContactPeople, editingHearing } = this.State;
+    let newContactPeople;
+    if (editingHearing && noContactPeople.toJS()) {
+      newContactPeople = noContactPeople.toJS();
     }
     else {
-      noContactPeople = this.state[NO_CONTACT_PEOPLE];
+      newContactPeople = noContactPeople;
     }
-    if (noContactPeople.length > 1) {
-      noContactPeople.splice(index, 1);
+    if (newContactPeople.length > 1) {
+      newContactPeople.splice(index, 1);
     }
     else {
-      noContactPeople[0] = {
+      newContactPeople[0] = {
         [PROPERTY_TYPES.PERSON_TYPE]: null,
         [PROPERTY_TYPES.PERSON_NAME]: ''
       };
     }
-    this.setState({ [NO_CONTACT_PEOPLE]: noContactPeople });
+    this.setState({ [NO_CONTACT_PEOPLE]: newContactPeople });
   }
 
   renderNoContactPeople = () => {
+    const { disabled, noContactPeople } = this.state;
     let personTypeOptions = Immutable.OrderedMap();
     Object.values(NO_CONTACT_TYPES).forEach((val) => {
       personTypeOptions = personTypeOptions.set(val, val);
@@ -711,7 +823,7 @@ class SelectReleaseConditions extends React.Component<Props, State> {
           <h3>Person Type</h3>
           <h3>Person Name</h3>
         </NoContactRow>
-        {this.state[NO_CONTACT_PEOPLE].map((person, index) => (
+        {noContactPeople.map((person, index) => (
           <StyledNoContactRow key={`${person.name}-${index}`}>
             <NoContactPeopleCell>
               <SearchableSelect
@@ -719,7 +831,7 @@ class SelectReleaseConditions extends React.Component<Props, State> {
                   searchPlaceholder="Select"
                   onSelect={value => this.handleOnListChange(PROPERTY_TYPES.PERSON_TYPE, value, index)}
                   options={personTypeOptions}
-                  disabled={this.state.disabled}
+                  disabled={disabled}
                   selectOnly
                   transparent
                   short />
@@ -728,7 +840,7 @@ class SelectReleaseConditions extends React.Component<Props, State> {
               <StyledInput
                   value={person[PROPERTY_TYPES.PERSON_NAME]}
                   onChange={e => this.handleOnListChange(PROPERTY_TYPES.PERSON_NAME, e.target.value, index)}
-                  disabled={this.state.disabled} />
+                  disabled={disabled} />
             </NoContactPeopleCell>
             <NoContactPeopleCell>
               <StyledBasicButton onClick={() => this.removePersonRow(index)}>
@@ -743,60 +855,80 @@ class SelectReleaseConditions extends React.Component<Props, State> {
   }
 
   handleHearingUpdate = () => {
-    const { hearing } = this.props;
+    const {
+      hearing,
+      replace,
+      submitCallback,
+      hearingEntityKeyId
+    } = this.props;
+    const { newHearingDate, newHearingTime, hearingCourtroom } = this.state;
     const dateTime = hearing.getIn([PROPERTY_TYPES.DATE_TIME, 0], '');
-    const rawTime = this.state.newHearingTime || formatDateTime(dateTime, 'HH:mm A');
+    const rawTime = newHearingTime || formatDateTime(dateTime, 'HH:mm A');
 
     this.setState({ modifyingHearing: false });
     const dateFormat = 'MM/DD/YYYY';
     const timeFormat = 'hh:mm a';
-    const date = moment(this.state.newHearingDate);
+    const date = moment(newHearingDate);
     const time = moment(rawTime, timeFormat);
     const hearingDateTime = moment(
       `${date.format(dateFormat)} ${time.format(timeFormat)}`, `${dateFormat} ${timeFormat}`
     );
-    const { hearingCourtroom } = this.state;
     if (hearingDateTime && hearingCourtroom) {
-      const newHearing = this.props.hearing
+      const newHearing = hearing
         .set(PROPERTY_TYPES.COURTROOM, [hearingCourtroom])
         .set(PROPERTY_TYPES.DATE_TIME, [hearingDateTime.toISOString(true)])
         .set(PROPERTY_TYPES.HEARING_TYPE, ['Initial Appearance'])
         .toJS();
-      this.props.replace({
+      replace({
         entitySetName: ENTITY_SETS.HEARINGS,
-        entityKeyId: this.props.hearingId,
+        entityKeyId: hearingEntityKeyId,
         values: newHearing,
-        callback: this.props.submitCallback
+        callback: submitCallback
       });
     }
   }
 
   renderHearingInfo = () => {
-    const { hearing } = this.props;
+    const { hearing, submittedOutcomes, backToSelection } = this.props;
+    const {
+      newHearingDate,
+      newHearingTime,
+      hearingCourtroom,
+      modifyingHearing
+    } = this.state;
     const dateTime = hearing.getIn([PROPERTY_TYPES.DATE_TIME, 0], '');
     let date;
     let time;
     let courtroom;
     let hearingInfoButton;
-    if (this.state.modifyingHearing) {
-      date = (<StyledDatePicker
-          paddingTop
-          value={this.state.newHearingDate || dateTime}
-          placeholder={`${formatDateTime(dateTime, 'MM/DD/YYYY')}`}
-          onChange={newHearingDate => this.setState({ newHearingDate })}
-          clearButton={false} />);
-      time = (<StyledSearchableSelect
-          options={getTimeOptions()}
-          value={this.state.newHearingTime || formatDateTime(dateTime, 'HH:mm A')}
-          onSelect={newHearingTime => this.setState({ newHearingTime })}
-          short />);
-      courtroom = (<StyledSearchableSelect
-          options={getCourtroomOptions()}
-          value={this.state.hearingCourtroom}
-          onSelect={hearingCourtroom => this.setState({ hearingCourtroom })}
-          short />);
+
+    const backToSelectionButton = <StyledBasicButton onClick={backToSelection}>Back to Selection</StyledBasicButton>;
+
+    if (modifyingHearing) {
+      date = (
+        <StyledDatePicker
+            paddingTop
+            value={newHearingDate || dateTime}
+            placeholder={`${formatDateTime(dateTime, 'MM/DD/YYYY')}`}
+            onChange={newDate => this.setState({ newHearingDate: newDate })}
+            clearButton={false} />
+      );
+      time = (
+        <StyledSearchableSelect
+            options={getTimeOptions()}
+            value={newHearingTime || formatDateTime(dateTime, 'HH:mm A')}
+            onSelect={newTime => this.setState({ newHearingTime: newTime })}
+            short />
+      );
+      courtroom = (
+        <StyledSearchableSelect
+            options={getCourtroomOptions()}
+            value={hearingCourtroom}
+            onSelect={newCourtroom => this.setState({ hearingCourtroom: newCourtroom })}
+            short />
+      );
       hearingInfoButton = (
-        <HearingInfoButtons modifyingHearing={this.state.modifyingHearing}>
+        <HearingInfoButtons modifyingHearing>
           <StyledBasicButton onClick={() => this.setState({ modifyingHearing: false })}>Cancel</StyledBasicButton>
           <StyledBasicButton update onClick={this.handleHearingUpdate}>Update</StyledBasicButton>
         </HearingInfoButtons>
@@ -807,7 +939,7 @@ class SelectReleaseConditions extends React.Component<Props, State> {
       time = formatDateTime(dateTime, 'HH:mm');
       courtroom = hearing.getIn([PROPERTY_TYPES.COURTROOM, 0], '');
       hearingInfoButton = (
-        this.props.submittedOutcomes
+        submittedOutcomes
           ? null
           : (
             <HearingInfoButtons>
@@ -835,9 +967,6 @@ class SelectReleaseConditions extends React.Component<Props, State> {
       }
     ];
 
-    const backToSelectionButton = !this.props.submittedOutcomes ?
-      <StyledBasicButton onClick={this.props.deleteHearing}>Back to Selection</StyledBasicButton> : null;
-
     const hearingInfoContent = HEARING_ARR.map(hearingItem => (
       <ContentBlock
           component={CONTENT_CONSTS.HEARINGS}
@@ -848,13 +977,12 @@ class SelectReleaseConditions extends React.Component<Props, State> {
     const hearingInfoSection = (
       <ContentSection
           header="Hearing"
-          modifyingHearing={this.state.modifyingHearing}
-          component={CONTENT_CONSTS.HEARINGS} >
+          modifyingHearing={modifyingHearing}
+          component={CONTENT_CONSTS.HEARINGS}>
         {hearingInfoContent}
       </ContentSection>
     );
 
-    // TODO: Implement back to selection button
     return (
       <HearingSectionWrapper>
         {hearingInfoSection}
@@ -867,16 +995,19 @@ class SelectReleaseConditions extends React.Component<Props, State> {
   }
 
   render() {
-    const RELEASED = this.state[RELEASE] !== RELEASES.RELEASED;
+    const { state } = this;
+
+    const RELEASED = state[RELEASE] !== RELEASES.RELEASED;
+
     return (
       <Wrapper>
         {this.renderHearingInfo()}
         <OutcomeSection
             mapOptionsToRadioButtons={this.mapOptionsToRadioButtons}
-            outcome={this.state[OUTCOME]}
-            otherOutcome={this.state[OTHER_OUTCOME_TEXT]}
+            outcome={state[OUTCOME]}
+            otherOutcome={state[OTHER_OUTCOME_TEXT]}
             handleInputChange={this.handleInputChange}
-            disabled={this.state.disabled} />
+            disabled={state.disabled} />
         <DecisionSection mapOptionsToRadioButtons={this.mapOptionsToRadioButtons} />
         {
           RELEASED ? null : (
@@ -884,29 +1015,29 @@ class SelectReleaseConditions extends React.Component<Props, State> {
               <BondTypeSection
                   mapOptionsToRadioButtons={this.mapOptionsToRadioButtons}
                   handleNumberInputChange={this.handleNumberInputChange}
-                  bondType={this.state[BOND_TYPE]}
-                  bondAmount={`${this.state[BOND_AMOUNT]}`}
-                  disabled={this.state.disabled} />
+                  bondType={state[BOND_TYPE]}
+                  bondAmount={`${state[BOND_AMOUNT]}`}
+                  disabled={state.disabled} />
               <ConditionsSection
                   mapOptionsToRadioButtons={this.mapOptionsToRadioButtons}
                   mapOptionsToCheckboxButtons={this.mapOptionsToCheckboxButtons}
                   handleInputChange={this.handleInputChange}
                   renderNoContactPeople={this.renderNoContactPeople}
-                  conditions={this.state[CONDITIONS]}
-                  otherCondition={this.state[OTHER_CONDITION_TEXT]}
-                  disabled={this.state.disabled} />
+                  conditions={state[CONDITIONS]}
+                  otherCondition={state[OTHER_CONDITION_TEXT]}
+                  disabled={state.disabled} />
             </div>
           )
         }
         {
-          this.state.disabled
+          state.disabled
             ? (
               <Row>
                 <StyledBasicButton
                     onClick={() => this.setState({
                       disabled: false,
                       editingHearing: true,
-                      bondAmount: `${this.state.bondAmount}`
+                      bondAmount: `${state.bondAmount}`
                     })}>
                   Edit
                 </StyledBasicButton>
