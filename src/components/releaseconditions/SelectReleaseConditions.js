@@ -344,7 +344,7 @@ class SelectReleaseConditions extends React.Component<Props, State> {
           defaultDMF.getIn([PROPERTY_TYPES.OUTCOME, 0])
         ),
         [OTHER_OUTCOME_TEXT]: defaultOutcome.getIn(
-          [PROPERTY_TYPES.OTHER_TEXT, 0],
+          [PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.OTHER_TEXT, 0],
           defaultDMF.getIn([PROPERTY_TYPES.OTHER_TEXT, 0], '')
         ),
         [RELEASE]: defaultBond.size ? RELEASES.RELEASED : RELEASES.HELD,
