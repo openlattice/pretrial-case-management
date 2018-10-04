@@ -146,26 +146,20 @@ const HearingSummary = ({ hearing }) => {
     };
   });
 
-  const renderHeaders = () => (
-    <Headers>
-      <RowItem>Start Date</RowItem>
-      <RowItem>Condtion</RowItem>
-      <RowItem>Type</RowItem>
-    </Headers>
-  );
-
   const listItems = Object.keys(conditionsByType.toJS()).map((condition) => {
     let listItem;
     const startDate = conditionsByType.getIn([condition, 0, PROPERTY_TYPES.START_DATE], '');
     if (condition === CONDITION_LIST.NO_CONTACT) {
       listItem = (
-        <li>
+        <li key={condition}>
           <Row>
             <RowItem>{startDate}</RowItem>
             <RowItem>{condition}</RowItem>
             <RowItem>
               { noContactPeople.map(person => (
-                <RowItem>{`${person[PROPERTY_TYPES.PERSON_TYPE]} - ${person[PROPERTY_TYPES.PERSON_NAME]}`}</RowItem>
+                <RowItem key={`${person[PROPERTY_TYPES.PERSON_TYPE]} - ${person[PROPERTY_TYPES.PERSON_NAME]}`}>
+                  {`${person[PROPERTY_TYPES.PERSON_TYPE]} - ${person[PROPERTY_TYPES.PERSON_NAME]}`}
+                </RowItem>
               ))}
             </RowItem>
           </Row>
@@ -175,7 +169,7 @@ const HearingSummary = ({ hearing }) => {
     else if (condition === CONDITION_LIST.CHECKINS) {
       const frequency = conditionsByType.getIn([condition, 0, PROPERTY_TYPES.FREQUENCY], '');
       listItem = (
-        <li>
+        <li key={condition}>
           <Row>
             <RowItem>{startDate}</RowItem>
             <RowItem>{condition}</RowItem>
@@ -186,13 +180,13 @@ const HearingSummary = ({ hearing }) => {
     }
     else if (condition === CONDITION_LIST.C_247) {
       listItem = (
-        <li>
+        <li key={condition}>
           <Row>
             <RowItem>{startDate}</RowItem>
             <RowItem>{condition}</RowItem>
             <RowItem>
               { c247Types.map(Type => (
-                <RowItem>{Type}</RowItem>
+                <RowItem key={Type}>{Type}</RowItem>
               ))}
             </RowItem>
           </Row>
@@ -202,7 +196,7 @@ const HearingSummary = ({ hearing }) => {
     else if (condition === CONDITION_LIST.OTHER) {
       const otherText = conditionsByType.getIn([condition, 0, PROPERTY_TYPES.OTHER_TEXT], '');
       listItem = (
-        <li>
+        <li key={condition}>
           <Row>
             <RowItem>{startDate}</RowItem>
             <RowItem>{condition}</RowItem>
@@ -213,7 +207,7 @@ const HearingSummary = ({ hearing }) => {
     }
     else {
       listItem = (
-        <li>
+        <li key={condition}>
           <Row>
             <RowItem>{startDate}</RowItem>
             <RowItem>{condition}</RowItem>
@@ -290,7 +284,7 @@ const HearingSummary = ({ hearing }) => {
   ));
 
   return (
-    <SummaryWrapper>
+    <SummaryWrapper key={`${date}-${time}`}>
       <HearingItems>
         {hearingContent}
       </HearingItems>
