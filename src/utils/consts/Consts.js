@@ -232,7 +232,8 @@ export const ID_FIELD_NAMES = {
   DMF_RISK_FACTORS_ID: 'dmfRiskFactorsId',
   DMF_ID: 'dmfId',
   BOND_ID: 'bondId',
-  HEARING_ID: 'hearingId'
+  HEARING_ID: 'hearingId',
+  OUTCOME_ID: 'outcomeId'
 };
 
 export const ID_FIELDS = {
