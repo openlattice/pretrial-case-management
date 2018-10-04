@@ -13,6 +13,7 @@ import {
   loadPSAData,
   loadPSAsByDate,
   refreshPSANeighbors,
+  refreshHearingNeighbors,
   updateScoresAndRiskFactors,
   updateOutcomesAndReleaseCondtions
 } from './ReviewActionFactory';
@@ -33,8 +34,10 @@ const INITIAL_STATE :Immutable.Map<*, *> = Immutable.fromJS({
   [REVIEW.SENTENCE_HISTORY]: Immutable.Map(),
   [REVIEW.FTA_HISTORY]: Immutable.Map(),
   [REVIEW.HEARINGS]: Immutable.Map(),
+  [REVIEW.HEARINGS_NEIGHBORS_BY_ID]: Immutable.Map(),
   [REVIEW.READ_ONLY]: true,
-  [REVIEW.PSA_IDS_REFRESHING]: Immutable.Set()
+  [REVIEW.PSA_IDS_REFRESHING]: Immutable.Set(),
+  [REVIEW.HEARING_IDS_REFRESHING]: Immutable.Set()
 });
 
 export default function reviewReducer(state :Immutable.Map<*, *> = INITIAL_STATE, action :SequenceAction) {
@@ -93,11 +96,38 @@ export default function reviewReducer(state :Immutable.Map<*, *> = INITIAL_STATE
         REQUEST: () => state
           .set(REVIEW.LOADING_DATA, true)
           .set(REVIEW.ERROR, ''),
-        SUCCESS: () => state
-          .set(REVIEW.NEIGHBORS_BY_ID, Immutable.fromJS(action.value.psaNeighborsById))
-          .set(REVIEW.NEIGHBORS_BY_DATE, Immutable.fromJS(action.value.psaNeighborsByDate))
-          .set(REVIEW.ALL_FILERS, action.value.allFilers.sort())
-          .set(REVIEW.ERROR, ''),
+        SUCCESS: () => {
+          const { hearingNeighborsById } = action.value;
+          let hearingNeighborsMapById = Immutable.Map();
+          const hearingIds = Object.keys(hearingNeighborsById.toJS());
+          hearingIds.forEach((id) => {
+            if (hearingNeighborsById.get(id)) {
+              let hearingNeighborsMap = Immutable.Map();
+              const neighbors = hearingNeighborsById.get(id);
+              neighbors.forEach(((neighbor) => {
+                const entitySetName = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'name']);
+                if (entitySetName === ENTITY_SETS.RELEASE_CONDITIONS) {
+                  hearingNeighborsMap = hearingNeighborsMap.set(
+                    entitySetName,
+                    hearingNeighborsMap.get(entitySetName, Immutable.List()).push(Immutable.fromJS(neighbor))
+                  );
+                }
+                else {
+                  hearingNeighborsMap = hearingNeighborsMap.set(
+                    entitySetName,
+                    Immutable.fromJS(neighbor)
+                  );
+                }
+              }));
+              hearingNeighborsMapById = hearingNeighborsMapById.set(id, hearingNeighborsMap);
+            }
+          });
+          return state.set(REVIEW.NEIGHBORS_BY_ID, Immutable.fromJS(action.value.psaNeighborsById))
+            .set(REVIEW.NEIGHBORS_BY_DATE, Immutable.fromJS(action.value.psaNeighborsByDate))
+            .set(REVIEW.ALL_FILERS, action.value.allFilers.sort())
+            .set(REVIEW.HEARINGS_NEIGHBORS_BY_ID, Immutable.fromJS(hearingNeighborsMapById))
+            .set(REVIEW.ERROR, '');
+        },
         FAILURE: () => state
           .set(REVIEW.NEIGHBORS_BY_DATE, Immutable.Map())
           .set(REVIEW.ERROR, action.value),
@@ -128,7 +158,6 @@ export default function reviewReducer(state :Immutable.Map<*, *> = INITIAL_STATE
         ),
         SUCCESS: () => {
 
-          let psaNeighborsByDate = state.get(REVIEW.NEIGHBORS_BY_DATE);
           let psaNeighborsById = state.get(REVIEW.NEIGHBORS_BY_ID);
 
           psaNeighborsById = psaNeighborsById.set(action.value.id, Immutable.fromJS(action.value.neighbors));
@@ -138,6 +167,27 @@ export default function reviewReducer(state :Immutable.Map<*, *> = INITIAL_STATE
         FINALLY: () => state.set(
           REVIEW.PSA_IDS_REFRESHING,
           state.get(REVIEW.PSA_IDS_REFRESHING).delete(action.value.id)
+        )
+      });
+    }
+
+    case refreshHearingNeighbors.case(action.type): {
+      return refreshHearingNeighbors.reducer(state, action, {
+        REQUEST: () => state.set(
+          REVIEW.HEARING_IDS_REFRESHING,
+          state.get(REVIEW.HEARING_IDS_REFRESHING).add(action.value.id)
+        ),
+        SUCCESS: () => {
+
+          let hearingNeighborsById = state.get(REVIEW.HEARINGS_NEIGHBORS_BY_ID);
+
+          hearingNeighborsById = hearingNeighborsById.set(action.value.id, Immutable.fromJS(action.value.neighbors));
+
+          return state.set(REVIEW.HEARINGS_NEIGHBORS_BY_ID, hearingNeighborsById);
+        },
+        FINALLY: () => state.set(
+          REVIEW.HEARING_IDS_REFRESHING,
+          state.get(REVIEW.HEARING_IDS_REFRESHING).delete(action.value.id)
         )
       });
     }
@@ -214,9 +264,8 @@ export default function reviewReducer(state :Immutable.Map<*, *> = INITIAL_STATE
         SUCCESS: () => {
           const {
             psaId,
-            edmDetails,
-            newBondTypeEntity,
-            newDmfTypeEntity
+            newBondEntity,
+            newOutcomeEntity
           } = action.value;
 
           let psaNeighborsByDate = state.get(REVIEW.NEIGHBORS_BY_DATE);
@@ -224,21 +273,21 @@ export default function reviewReducer(state :Immutable.Map<*, *> = INITIAL_STATE
           psaNeighborsByDate.keySeq().forEach((date) => {
             if (psaNeighborsByDate.get(date).get(psaId)) {
               psaNeighborsByDate = psaNeighborsByDate.setIn(
-                [date, psaId, ENTITY_SETS.DMF_RESULTS, PSA_NEIGHBOR.DETAILS],
-                Immutable.fromJS(newDmfTypeEntity)
+                [date, psaId, ENTITY_SETS.OUTCOMES, PSA_NEIGHBOR.DETAILS],
+                Immutable.fromJS(newOutcomeEntity)
               ).setIn(
                 [date, psaId, ENTITY_SETS.BONDS, PSA_NEIGHBOR.DETAILS],
-                Immutable.fromJS(newBondTypeEntity)
+                Immutable.fromJS(newBondEntity)
               );
             }
           });
           const psaNeighborsById = state.get(REVIEW.NEIGHBORS_BY_ID)
             .setIn(
-              [psaId, ENTITY_SETS.DMF_RESULTS, PSA_NEIGHBOR.DETAILS],
-              Immutable.fromJS(newDmfTypeEntity)
+              [psaId, ENTITY_SETS.OUTCOMES, PSA_NEIGHBOR.DETAILS],
+              Immutable.fromJS(newOutcomeEntity)
             ).setIn(
               [psaId, ENTITY_SETS.BONDS, PSA_NEIGHBOR.DETAILS],
-              Immutable.fromJS(newBondTypeEntity)
+              Immutable.fromJS(newBondEntity)
             );
           return state
             .set(REVIEW.NEIGHBORS_BY_ID, psaNeighborsById)
