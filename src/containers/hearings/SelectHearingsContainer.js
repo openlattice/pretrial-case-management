@@ -6,12 +6,11 @@ import React from 'react';
 import moment from 'moment';
 import styled from 'styled-components';
 import randomUUID from 'uuid/v4';
-import Immutable, { List, Map, Set } from 'immutable';
+import { List, Map, Set } from 'immutable';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
 import InfoButton from '../../components/buttons/InfoButton';
-import BasicButton from '../../components/buttons/BasicButton';
 import DatePicker from '../../components/controls/StyledDatePicker';
 import SearchableSelect from '../../components/controls/SearchableSelect';
 import HearingCardsHolder from '../../components/hearings/HearingCardsHolder';
@@ -22,7 +21,7 @@ import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts'
 import { FORM_IDS, ID_FIELD_NAMES, HEARING } from '../../utils/consts/Consts';
 import { getCourtroomOptions } from '../../utils/consts/HearingConsts';
 import { getTimeOptions } from '../../utils/consts/DateTimeConsts';
-import { PSA_NEIGHBOR, STATE, REVIEW } from '../../utils/consts/FrontEndStateConsts';
+import { STATE, REVIEW } from '../../utils/consts/FrontEndStateConsts';
 import { Title } from '../../utils/Layout';
 import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
 import * as ReviewActionFactory from '../review/ReviewActionFactory';
@@ -323,7 +322,6 @@ class SelectHearingsContainer extends React.Component<Props, State> {
       hearingIdsRefreshing,
       submitting
     } = this.props;
-    console.log(hearingNeighborsById.toJS());
 
     const {
       deleteEntity,
@@ -333,7 +331,7 @@ class SelectHearingsContainer extends React.Component<Props, State> {
     } = actions;
 
     const oldDataOutcome = defaultDMF.getIn([PROPERTY_TYPES.OUTCOME, 0]);
-    const { row, hearingId, entityKeyId } = selectedHearing
+    const { row, hearingId, entityKeyId } = selectedHearing;
     const outcome = hearingNeighborsById.getIn([entityKeyId, ENTITY_SETS.OUTCOMES], defaultDMF);
     const bond = hearingNeighborsById.getIn([entityKeyId, ENTITY_SETS.BONDS], (defaultBond || Map()));
     const conditions = hearingNeighborsById
