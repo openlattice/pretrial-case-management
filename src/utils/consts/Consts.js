@@ -249,7 +249,8 @@ export const ID_FIELDS = {
 
 export const HEARING = {
   DATE_TIME: 'hearingDateTime',
-  COURTROOM: 'hearingCourtroom'
+  COURTROOM: 'hearingCourtroom',
+  JUDGE: 'hearingJudge'
 };
 
 export const PSA_STATUSES = {
