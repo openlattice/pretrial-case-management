@@ -120,7 +120,9 @@ export const REVIEW = {
   FTA_HISTORY: 'ftaHistory',
   HEARINGS: 'hearings',
   READ_ONLY: 'readOnly',
-  PSA_IDS_REFRESHING: 'psaIdsRefreshing'
+  PSA_IDS_REFRESHING: 'psaIdsRefreshing',
+  HEARINGS_NEIGHBORS_BY_ID: 'hearingNeighborsById',
+  HEARING_IDS_REFRESHING: 'hearingIdsRefreshing'
 };
 
 // Search
