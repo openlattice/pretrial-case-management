@@ -352,10 +352,10 @@ class SelectReleaseConditions extends React.Component<Props, State> {
         [BOND_AMOUNT]: bondAmount,
         [CONDITIONS]: conditionsByType.keySeq().toJS(),
         [CHECKIN_FREQUENCY]: conditionsByType
-          .getIn([CONDITION_LIST.CHECKINS, 0, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.FREQUENCY, 0]),
+          .getIn([CONDITION_LIST.CHECKINS, 0, PROPERTY_TYPES.FREQUENCY, 0]),
         [C247_TYPES]: c247Types,
         [OTHER_CONDITION_TEXT]: conditionsByType
-          .getIn([CONDITION_LIST.OTHER, 0, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.OTHER_TEXT, 0], ''),
+          .getIn([CONDITION_LIST.OTHER, 0, PROPERTY_TYPES.OTHER_TEXT, 0], ''),
         [NO_CONTACT_PEOPLE]: noContactPeople.size === 0 ? [Object.assign({}, BLANK_PERSON_ROW)] : noContactPeople,
         modifyingHearing,
         hearingDateTime,
@@ -770,7 +770,7 @@ class SelectReleaseConditions extends React.Component<Props, State> {
   }
 
   handleOnListChange = (field, value, index) => {
-    const { noContactPeople, editingHearing } = this.State;
+    const { noContactPeople, editingHearing } = this.state;
     let newContactPeople;
     if (editingHearing && noContactPeople.toJS()) {
       newContactPeople = noContactPeople.toJS();
