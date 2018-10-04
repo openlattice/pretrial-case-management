@@ -630,7 +630,7 @@ class PSAModal extends React.Component<Props, State> {
     );
   };
 
-  renderInitialAppearance = () => {
+  renderHearings = () => {
     const {
       neighbors,
       submitting,
@@ -694,8 +694,8 @@ class PSAModal extends React.Component<Props, State> {
         content: this.renderCaseHistory
       },
       {
-        title: 'Initial Appearance',
-        content: this.renderInitialAppearance
+        title: 'Hearings',
+        content: this.renderHearings
       }
     ];
 
