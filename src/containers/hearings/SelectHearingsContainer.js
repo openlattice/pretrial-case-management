@@ -330,13 +330,17 @@ class SelectHearingsContainer extends React.Component<Props, State> {
       updateOutcomesAndReleaseCondtions
     } = actions;
 
-    const oldDataOutcome = defaultDMF.getIn([PROPERTY_TYPES.OUTCOME, 0]);
     const { row, hearingId, entityKeyId } = selectedHearing;
+    const hasMultipleHearings = hearingNeighborsById.size > 1;
+    const oldDataOutcome = defaultDMF.getIn([PROPERTY_TYPES.OUTCOME, 0]);
+    const onlyOldExists = oldDataOutcome && !hearingNeighborsById.getIn([entityKeyId, ENTITY_SETS.OUTCOMES]);
     const outcome = hearingNeighborsById.getIn([entityKeyId, ENTITY_SETS.OUTCOMES], defaultDMF);
     const bond = hearingNeighborsById.getIn([entityKeyId, ENTITY_SETS.BONDS], (defaultBond || Map()));
     const conditions = hearingNeighborsById
       .getIn([entityKeyId, ENTITY_SETS.RELEASE_CONDITIONS], (defaultConditions || Map()));
-    const submittedOutcomes = !!(hearingNeighborsById.getIn([entityKeyId, ENTITY_SETS.OUTCOMES]) || oldDataOutcome);
+    const submittedOutcomes = (onlyOldExists && hasMultipleHearings)
+      ? false
+      : !!(hearingNeighborsById.getIn([entityKeyId, ENTITY_SETS.OUTCOMES]) || oldDataOutcome);
 
     return (
       <Wrapper withPadding>
@@ -401,6 +405,7 @@ class SelectHearingsContainer extends React.Component<Props, State> {
       refreshingNeighbors,
       hearingNeighborsById
     } = this.props;
+    console.log(hearingNeighborsById.toJS());
 
     const hearingsWithOutcomes = hearingNeighborsById
       .keySeq().filter(id => hearingNeighborsById.getIn([id, ENTITY_SETS.OUTCOMES]));
