@@ -21,6 +21,14 @@ const NoResults = styled.div`
   width: 100%;
 `;
 
+const Header = styled.div`
+  padding: 30px 0 0 30px;
+  font-family: 'Open Sans',sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: #555e6f;
+`;
+
 const { OPENLATTICE_ID_FQN } = Constants;
 
 const ReleaseConditionsSummary = ({ completedHearings, hearingNeighborsById }) => {
@@ -57,7 +65,10 @@ const ReleaseConditionsSummary = ({ completedHearings, hearingNeighborsById }) =
   }
 
   return (
-    <div>{HearingSummaries}</div>
+    <div>
+      <Header>Release Conditions By Hearing</Header>
+      {HearingSummaries}
+    </div>
   );
 
 };
