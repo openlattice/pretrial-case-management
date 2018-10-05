@@ -577,17 +577,17 @@ const riskFactors = (
 ) :number[] => {
   let [y, page] = withReferences ? newPage(doc, pageInit, name) : tryIncrementPage(doc, yInit, pageInit, name);
 
-  const ageAtCurrentArrest = riskFactorVals.get(AGE_AT_CURRENT_ARREST);
-  const currentViolentOffense = riskFactorVals.get(CURRENT_VIOLENT_OFFENSE);
-  const currentViolentOffenseAndYoung = riskFactorVals.get(CURRENT_VIOLENT_OFFENSE_AND_YOUNG);
-  const pendingCharge = riskFactorVals.get(PENDING_CHARGE);
-  const priorMisdemeanor = riskFactorVals.get(PRIOR_MISDEMEANOR);
-  const priorFelony = riskFactorVals.get(PRIOR_FELONY);
-  const priorConviction = riskFactorVals.get(PRIOR_CONVICTION);
-  const priorViolentConviction = riskFactorVals.get(PRIOR_VIOLENT_CONVICTION);
-  const priorFailureToAppearRecent = riskFactorVals.get(PRIOR_FAILURE_TO_APPEAR_RECENT);
-  const priorFailureToAppearOld = riskFactorVals.get(PRIOR_FAILURE_TO_APPEAR_OLD);
-  const priorSentenceToIncarceration = riskFactorVals.get(PRIOR_SENTENCE_TO_INCARCERATION);
+  const ageAtCurrentArrest = riskFactorVals.get(AGE_AT_CURRENT_ARREST, '');
+  const currentViolentOffense = riskFactorVals.get(CURRENT_VIOLENT_OFFENSE, '');
+  const currentViolentOffenseAndYoung = riskFactorVals.get(CURRENT_VIOLENT_OFFENSE_AND_YOUNG, '');
+  const pendingCharge = riskFactorVals.get(PENDING_CHARGE, '');
+  const priorMisdemeanor = riskFactorVals.get(PRIOR_MISDEMEANOR, '');
+  const priorFelony = riskFactorVals.get(PRIOR_FELONY, '');
+  const priorConviction = riskFactorVals.get(PRIOR_CONVICTION, '');
+  const priorViolentConviction = riskFactorVals.get(PRIOR_VIOLENT_CONVICTION, '');
+  const priorFailureToAppearRecent = riskFactorVals.get(PRIOR_FAILURE_TO_APPEAR_RECENT, '');
+  const priorFailureToAppearOld = riskFactorVals.get(PRIOR_FAILURE_TO_APPEAR_OLD, '');
+  const priorSentenceToIncarceration = riskFactorVals.get(PRIOR_SENTENCE_TO_INCARCERATION, '');
 
   const xCol2 = X_COL_1 + 5;
 

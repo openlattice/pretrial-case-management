@@ -111,10 +111,9 @@ function* submitWorker(action :SequenceAction) :Generator<*, *, *> {
 
   try {
     yield put(submit.request(action.id));
-    const allEntitySetIdsRequest = config.entitySets.map(entitySet =>
-      call(EntityDataModelApi.getEntitySetId, entitySet.name));
+    const allEntitySetIdsRequest = config
+      .entitySets.map(entitySet => call(EntityDataModelApi.getEntitySetId, entitySet.name));
     const allEntitySetIds = yield all(allEntitySetIdsRequest);
-
     const edmDetailsRequest = allEntitySetIds.map(id => ({
       id,
       type: 'EntitySet',
@@ -167,7 +166,6 @@ function* submitWorker(action :SequenceAction) :Generator<*, *, *> {
         mappedEntities[entityDescription.alias] = entitiesForAlias;
       }
     });
-
     const associationAliases = {};
     config.associations.forEach((associationDescription) => {
       const { association } = associationDescription;
@@ -210,7 +208,6 @@ function* submitWorker(action :SequenceAction) :Generator<*, *, *> {
         });
       }
     });
-
     yield call(DataIntegrationApi.createEntityAndAssociationData, { entities, associations });
     yield put(submit.success(action.id));
 
