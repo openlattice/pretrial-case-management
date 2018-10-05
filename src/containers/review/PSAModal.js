@@ -160,6 +160,7 @@ type Props = {
   scoresEntitySetId :string,
   sentenceHistory :Map<*, *>,
   submitting :boolean,
+  judgesview :boolean,
   actions :{
     clearSubmit :() => void,
     deleteEntity :(value :{ entitySetId :string, entityKeyId :string }) => void,
@@ -659,7 +660,8 @@ class PSAModal extends React.Component<Props, State> {
       refreshingNeighbors,
       scores,
       entityKeyId,
-      hearings
+      hearings,
+      view
     } = this.props;
 
     return (
@@ -674,6 +676,7 @@ class PSAModal extends React.Component<Props, State> {
             refreshPSANeighborsCallback={this.refreshPSANeighborsCallback}
             hearingId={this.getEntityKeyId(ENTITY_SETS.HEARINGS)}
             hearings={hearings}
+            judgesview={view}
             defaultOutcome={neighbors.getIn([ENTITY_SETS.OUTCOMES, PSA_NEIGHBOR.DETAILS], Map())}
             defaultDMF={neighbors.getIn([ENTITY_SETS.DMF_RESULTS, PSA_NEIGHBOR.DETAILS], Map())}
             defaultBond={neighbors.getIn([ENTITY_SETS.BONDS, PSA_NEIGHBOR.DETAILS], Map())}
@@ -690,7 +693,8 @@ class PSAModal extends React.Component<Props, State> {
       open,
       onClose,
       entityKeyId,
-      readOnly
+      readOnly,
+      view
     } = this.props;
 
     const { closing } = this.state;

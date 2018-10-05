@@ -22,6 +22,7 @@ import { FORM_IDS, ID_FIELD_NAMES, HEARING } from '../../utils/consts/Consts';
 import { getCourtroomOptions } from '../../utils/consts/HearingConsts';
 import { getTimeOptions } from '../../utils/consts/DateTimeConsts';
 import { STATE, REVIEW } from '../../utils/consts/FrontEndStateConsts';
+import CONTENT from '../../utils/consts/ContentConsts';
 import { Title } from '../../utils/Layout';
 import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
 import * as ReviewActionFactory from '../review/ReviewActionFactory';
@@ -135,6 +136,7 @@ type Props = {
   personId :string,
   submitting :boolean,
   refreshingNeighbors :boolean,
+  view :string,
   actions :{
     submit :(values :{
       config :Map<*, *>,
@@ -370,30 +372,34 @@ class SelectHearingsContainer extends React.Component<Props, State> {
     );
   }
 
-  renderAvailableHearings = manuallyCreatingHearing => (
-    <div>
-      <Header>
-        <StyledTitle with withSubtitle>
-          <span>Available Hearings</span>
-          Select a hearing to add it to the defendant's schedule
-        </StyledTitle>
+  renderAvailableHearings = (manuallyCreatingHearing) => {
+    const { view } = this.props;
+    if (view === CONTENT.JUDGES) return null;
+    return (
+      <div>
+        <Header>
+          <StyledTitle with withSubtitle>
+            <span>Available Hearings</span>
+            Select a hearing to add it to the defendant's schedule
+          </StyledTitle>
+          {
+            !manuallyCreatingHearing
+              ? <CreateButton onClick={this.manuallyCreateHearing}>Create New Hearing</CreateButton>
+              : <CreateButton onClick={this.manuallyCreateHearing}>Back to Selection</CreateButton>
+          }
+        </Header>
         {
-          !manuallyCreatingHearing
-            ? <CreateButton onClick={this.manuallyCreateHearing}>Create New Hearing</CreateButton>
-            : <CreateButton onClick={this.manuallyCreateHearing}>Back to Selection</CreateButton>
+          manuallyCreatingHearing
+            ? this.renderNewHearingSection()
+            : (
+              <HearingCardsHolder
+                  hearings={this.getSortedHearings()}
+                  handleSelect={this.selectExistingHearing} />
+            )
         }
-      </Header>
-      {
-        manuallyCreatingHearing
-          ? this.renderNewHearingSection()
-          : (
-            <HearingCardsHolder
-                hearings={this.getSortedHearings()}
-                handleSelect={this.selectExistingHearing} />
-          )
-      }
-    </div>
-  );
+      </div>
+    );
+  }
 
   render() {
     const { manuallyCreatingHearing, selectingReleaseConditions, selectedHearing } = this.state;
