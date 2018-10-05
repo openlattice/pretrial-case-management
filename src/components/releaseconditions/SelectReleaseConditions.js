@@ -503,7 +503,7 @@ class SelectReleaseConditions extends React.Component<Props, State> {
               large
               name={field}
               value={option}
-              checked={this.state[field] .includes(option)}
+              checked={this.state[field].includes(option)}
               onChange={this.handleCheckboxChange}
               disabled={disabled}
               label={option} />
@@ -566,7 +566,7 @@ class SelectReleaseConditions extends React.Component<Props, State> {
         [ENTITY_SETS.RELEASE_CONDITIONS, 0, PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.COMPLETED_DATE_TIME, 0]
       ));
 
-    const bondShouldsubmit = !(defaultBond.getIn([PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.COMPLETED_DATE_TIME, 0]))
+    const bondShouldSubmit = !(defaultBond.getIn([PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.COMPLETED_DATE_TIME, 0]))
       || !bondTime
       || bondTime === conditionsTime;
     const outcomeShouldSubmit = !!defaultOutcome.getIn([PROPERTY_TYPES.OUTCOME, 0]);
@@ -604,7 +604,7 @@ class SelectReleaseConditions extends React.Component<Props, State> {
       [PROPERTY_TYPES.COMPLETED_DATE_TIME]: toISODateTime(moment())
     };
 
-    if (bondShouldsubmit) {
+    if (bondShouldSubmit) {
       conditionSubmit[ID_FIELD_NAMES.BOND_ID] = randomUUID();
       conditionSubmit[PROPERTY_TYPES.BOND_TYPE] = bondType;
       conditionSubmit[PROPERTY_TYPES.BOND_AMOUNT] = bondAmount;
@@ -863,7 +863,7 @@ class SelectReleaseConditions extends React.Component<Props, State> {
     } = this.props;
     const { newHearingDate, newHearingTime, hearingCourtroom } = this.state;
     const dateTime = hearing.getIn([PROPERTY_TYPES.DATE_TIME, 0], '');
-    const rawTime = newHearingTime || formatDateTime(dateTime, 'HH:mm A');
+    const rawTime = newHearingTime || formatDateTime(dateTime, 'HH:mm');
 
     this.setState({ modifyingHearing: false });
     const dateFormat = 'MM/DD/YYYY';
