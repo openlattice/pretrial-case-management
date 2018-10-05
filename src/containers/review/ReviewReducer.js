@@ -109,23 +109,23 @@ export default function reviewReducer(state :Immutable.Map<*, *> = INITIAL_STATE
                 if (entitySetName === ENTITY_SETS.RELEASE_CONDITIONS) {
                   hearingNeighborsMap = hearingNeighborsMap.set(
                     entitySetName,
-                    hearingNeighborsMap.get(entitySetName, Immutable.List()).push(Immutable.fromJS(neighbor))
+                    hearingNeighborsMap.get(entitySetName, Immutable.List()).push(neighbor)
                   );
                 }
                 else {
                   hearingNeighborsMap = hearingNeighborsMap.set(
                     entitySetName,
-                    Immutable.fromJS(neighbor)
+                    neighbor
                   );
                 }
               }));
               hearingNeighborsMapById = hearingNeighborsMapById.set(id, hearingNeighborsMap);
             }
           });
-          return state.set(REVIEW.NEIGHBORS_BY_ID, Immutable.fromJS(action.value.psaNeighborsById))
-            .set(REVIEW.NEIGHBORS_BY_DATE, Immutable.fromJS(action.value.psaNeighborsByDate))
+          return state.set(REVIEW.NEIGHBORS_BY_ID, action.value.psaNeighborsById)
+            .set(REVIEW.NEIGHBORS_BY_DATE, action.value.psaNeighborsByDate)
             .set(REVIEW.ALL_FILERS, action.value.allFilers.sort())
-            .set(REVIEW.HEARINGS_NEIGHBORS_BY_ID, Immutable.fromJS(hearingNeighborsMapById))
+            .set(REVIEW.HEARINGS_NEIGHBORS_BY_ID, hearingNeighborsMapById)
             .set(REVIEW.ERROR, '');
         },
         FAILURE: () => state
@@ -181,7 +181,7 @@ export default function reviewReducer(state :Immutable.Map<*, *> = INITIAL_STATE
 
           let hearingNeighborsById = state.get(REVIEW.HEARINGS_NEIGHBORS_BY_ID);
 
-          hearingNeighborsById = hearingNeighborsById.set(action.value.id, Immutable.fromJS(action.value.neighbors));
+          hearingNeighborsById = hearingNeighborsById.set(action.value.id, action.value.neighbors);
 
           return state.set(REVIEW.HEARINGS_NEIGHBORS_BY_ID, hearingNeighborsById);
         },

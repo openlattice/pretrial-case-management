@@ -402,8 +402,8 @@ class SelectHearingsContainer extends React.Component<Props, State> {
       hearingNeighborsById
     } = this.props;
 
-    const hearingIds = Object.keys(hearingNeighborsById.toJS());
-    const hearingsWithOutcomes = hearingIds.filter(id => hearingNeighborsById.getIn([id, ENTITY_SETS.OUTCOMES]));
+    const hearingsWithOutcomes = hearingNeighborsById
+      .keySeq().filter(id => hearingNeighborsById.getIn([id, ENTITY_SETS.OUTCOMES]));
     const scheduledHearings = psaNeighborsById.getIn([psaEntityKeyId, ENTITY_SETS.HEARINGS], Map())
       .sort((h1, h2) => (moment(h1.getIn([PROPERTY_TYPES.DATE_TIME, 0], ''))
         .isBefore(h2.getIn([PROPERTY_TYPES.DATE_TIME, 0], '')) ? 1 : -1));
