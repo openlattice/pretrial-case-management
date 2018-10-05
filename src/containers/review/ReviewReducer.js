@@ -99,8 +99,7 @@ export default function reviewReducer(state :Immutable.Map<*, *> = INITIAL_STATE
         SUCCESS: () => {
           const { hearingNeighborsById } = action.value;
           let hearingNeighborsMapById = Immutable.Map();
-          const hearingIds = Object.keys(hearingNeighborsById.toJS());
-          hearingIds.forEach((id) => {
+          hearingNeighborsById.keySeq().forEach((id) => {
             if (hearingNeighborsById.get(id)) {
               let hearingNeighborsMap = Immutable.Map();
               const neighbors = hearingNeighborsById.get(id);
