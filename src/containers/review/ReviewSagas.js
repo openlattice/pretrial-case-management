@@ -297,8 +297,11 @@ function* loadPSADataWorker(action :SequenceAction) :Generator<*, *, *> {
     }
 
     const hearingEntitySetId = yield call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.HEARINGS);
-    hearingNeighborsById = yield call(SearchApi.searchEntityNeighborsBulk, hearingEntitySetId, hearingIds.toJS());
+    hearingNeighborsById = hearingIds.size
+      ? yield call(SearchApi.searchEntityNeighborsBulk, hearingEntitySetId, hearingIds.toJS())
+      : Immutable.Map();
     hearingNeighborsById = Immutable.fromJS(hearingNeighborsById);
+
     yield put(loadPSAData.success(action.id, {
       psaNeighborsByDate,
       psaNeighborsById,
@@ -321,10 +324,8 @@ function* loadPSADataWatcher() :Generator<*, *, *> {
 
 function takeReqSeqSuccessFailure(reqseq :RequestSequence, seqAction :SequenceAction) {
   return take(
-    (anAction :Object) => {
-      return (anAction.type === reqseq.SUCCESS && anAction.id === seqAction.id)
-        || (anAction.type === reqseq.FAILURE && anAction.id === seqAction.id);
-    }
+    (anAction :Object) => (anAction.type === reqseq.SUCCESS && anAction.id === seqAction.id)
+        || (anAction.type === reqseq.FAILURE && anAction.id === seqAction.id)
   );
 }
 
