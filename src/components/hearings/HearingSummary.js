@@ -109,15 +109,17 @@ const HearingSummary = ({ hearing }) => {
   }
 
   let conditionsByType = Immutable.Map();
-  hearingConditions.forEach((condition) => {
-    const type = condition.getIn(
-      [PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.CONDITION_TYPE, 0],
-      condition.getIn([PROPERTY_TYPES.CONDITION_TYPE, 0]) // check for old data
-    );
-    conditionsByType = conditionsByType.set(type, conditionsByType.get(type, Immutable.List()).push(
-      condition.get(PSA_NEIGHBOR.DETAILS, (condition || Immutable.Map())) // check for old data
-    ));
-  });
+  if (hearingConditions) {
+    hearingConditions.forEach((condition) => {
+      const type = condition.getIn(
+        [PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.CONDITION_TYPE, 0],
+        condition.getIn([PROPERTY_TYPES.CONDITION_TYPE, 0]) // check for old data
+      );
+      conditionsByType = conditionsByType.set(type, conditionsByType.get(type, Immutable.List()).push(
+        condition.get(PSA_NEIGHBOR.DETAILS, (condition || Immutable.Map())) // check for old data
+      ));
+    });
+  }
 
   const c247Types = conditionsByType.get(CONDITION_LIST.C_247, Immutable.List()).map((condition) => {
     const planType = condition.getIn(
@@ -291,14 +293,19 @@ const HearingSummary = ({ hearing }) => {
       <OutcomeItems>
         {outcomeContent}
       </OutcomeItems>
-      <CondtionList>
-        <Headers>
-          <RowItem>Start Date</RowItem>
-          <RowItem>Condition</RowItem>
-          <RowItem>Type</RowItem>
-        </Headers>
-        {listItems}
-      </CondtionList>
+      { hearingConditions
+        ? (
+          <CondtionList>
+            <Headers>
+              <RowItem>Start Date</RowItem>
+              <RowItem>Condition</RowItem>
+              <RowItem>Type</RowItem>
+            </Headers>
+            {listItems}
+          </CondtionList>
+        )
+        : null
+      }
     </SummaryWrapper>
   );
 
