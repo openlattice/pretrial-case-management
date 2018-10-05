@@ -91,7 +91,7 @@ const HearingCardsHolder = ({
 
     const hearingId = hearing.getIn([PROPERTY_TYPES.CASE_ID, 0]);
     const entityKeyId :string = hearing.getIn([OPENLATTICE_ID_FQN, 0], '');
-    const selected = selectedHearing ? (hearingId === selectedHearing.hearingId) : false;
+    const selected = selectedHearing && hearingId === selectedHearing.hearingId;
     const needsAttention = hearingsWithOutcomes
       ? !hearingsWithOutcomes.includes(entityKeyId)
       : false;
