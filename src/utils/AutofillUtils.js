@@ -116,6 +116,7 @@ const filterPendingCharges = (
     allCharges.filter(charge => !shouldIgnoreCharge(charge)).forEach((chargeDetails) => {
       let caseNum;
       let shouldInclude = false;
+      const chargeDescription = chargeDetails.getIn([PROPERTY_TYPES.CHARGE_DESCRIPTION, 0]);
 
       const chargeId = chargeDetails.getIn([CHARGE_ID, 0], '');
       const caseNums = chargeId.split('|');
@@ -133,6 +134,8 @@ const filterPendingCharges = (
           shouldInclude = true;
         }
       }
+
+      if (chargeDescription === 'PROBATION VIOLATION') shouldInclude = false;
 
       if (shouldInclude && caseNum) {
         casesWithDispositionAfter = casesWithDispositionAfter.set(
