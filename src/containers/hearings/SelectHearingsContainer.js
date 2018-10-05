@@ -405,7 +405,6 @@ class SelectHearingsContainer extends React.Component<Props, State> {
       refreshingNeighbors,
       hearingNeighborsById
     } = this.props;
-    console.log(hearingNeighborsById.toJS());
 
     const hearingsWithOutcomes = hearingNeighborsById
       .keySeq().filter(id => hearingNeighborsById.getIn([id, ENTITY_SETS.OUTCOMES]));
