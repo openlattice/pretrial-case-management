@@ -661,9 +661,8 @@ class PSAModal extends React.Component<Props, State> {
       scores,
       entityKeyId,
       hearings,
-      view
+      readOnly
     } = this.props;
-
     return (
       <ModalWrapper withPadding>
         <SelectHearingsContainer
@@ -676,7 +675,7 @@ class PSAModal extends React.Component<Props, State> {
             refreshPSANeighborsCallback={this.refreshPSANeighborsCallback}
             hearingId={this.getEntityKeyId(ENTITY_SETS.HEARINGS)}
             hearings={hearings}
-            judgesview={view}
+            readOnly={readOnly}
             defaultOutcome={neighbors.getIn([ENTITY_SETS.OUTCOMES, PSA_NEIGHBOR.DETAILS], Map())}
             defaultDMF={neighbors.getIn([ENTITY_SETS.DMF_RESULTS, PSA_NEIGHBOR.DETAILS], Map())}
             defaultBond={neighbors.getIn([ENTITY_SETS.BONDS, PSA_NEIGHBOR.DETAILS], Map())}
@@ -694,7 +693,6 @@ class PSAModal extends React.Component<Props, State> {
       onClose,
       entityKeyId,
       readOnly,
-      view
     } = this.props;
 
     const { closing } = this.state;
@@ -765,6 +763,7 @@ function mapStateToProps(state) {
   const review = state.get(STATE.REVIEW);
   return {
     [REVIEW.HEARINGS_NEIGHBORS_BY_ID]: review.get(REVIEW.HEARINGS_NEIGHBORS_BY_ID),
+    [REVIEW.READ_ONLY]: review.get(REVIEW.READ_ONLY)
   };
 }
 
