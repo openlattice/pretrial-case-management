@@ -136,7 +136,7 @@ type Props = {
   personId :string,
   submitting :boolean,
   refreshingNeighbors :boolean,
-  view :string,
+  readOnly :boolean,
   actions :{
     submit :(values :{
       config :Map<*, *>,
@@ -181,9 +181,20 @@ class SelectHearingsContainer extends React.Component<Props, State> {
     this.setState({ [e.target.name]: e.target.value });
   }
 
-  getSortedHearings = () => {
+  getSortedHearings = (scheduledHearings) => {
     const { hearings } = this.props;
-    return hearings.sort((h1, h2) => (moment(h1.getIn([PROPERTY_TYPES.DATE_TIME, 0], ''))
+    let scheduledHearingMap = Map();
+    scheduledHearings.forEach((scheduledHearing) => {
+      const dateTime = scheduledHearing.getIn([PROPERTY_TYPES.DATE_TIME, 0]);
+      const courtroom = scheduledHearing.getIn([PROPERTY_TYPES.COURTROOM, 0]);
+      scheduledHearingMap = scheduledHearingMap.set(dateTime, courtroom);
+    });
+    const unusedHearings = hearings.filter((hearing) => {
+      const hearingDateTime = hearing.getIn([PROPERTY_TYPES.DATE_TIME, 0], '');
+      const hearingCourtroom = hearing.getIn([PROPERTY_TYPES.COURTROOM, 0], '');
+      return !(scheduledHearingMap.get(hearingDateTime) === hearingCourtroom);
+    });
+    return unusedHearings.sort((h1, h2) => (moment(h1.getIn([PROPERTY_TYPES.DATE_TIME, 0], ''))
       .isBefore(h2.getIn([PROPERTY_TYPES.DATE_TIME, 0], '')) ? 1 : -1));
   }
 
@@ -372,9 +383,10 @@ class SelectHearingsContainer extends React.Component<Props, State> {
     );
   }
 
-  renderAvailableHearings = (manuallyCreatingHearing) => {
-    const { view } = this.props;
-    if (view === CONTENT.JUDGES) return null;
+  renderAvailableHearings = (manuallyCreatingHearing, scheduledHearings) => {
+    const { readOnly } = this.props;
+    console.log(readOnly);
+    if (readOnly) return null;
     return (
       <div>
         <Header>
@@ -393,7 +405,7 @@ class SelectHearingsContainer extends React.Component<Props, State> {
             ? this.renderNewHearingSection()
             : (
               <HearingCardsHolder
-                  hearings={this.getSortedHearings()}
+                  hearings={this.getSortedHearings(scheduledHearings)}
                   handleSelect={this.selectExistingHearing} />
             )
         }
@@ -443,7 +455,7 @@ class SelectHearingsContainer extends React.Component<Props, State> {
         <hr />
         { selectingReleaseConditions
           ? this.renderSelectReleaseCondtions(selectedHearing)
-          : this.renderAvailableHearings(manuallyCreatingHearing)
+          : this.renderAvailableHearings(manuallyCreatingHearing, scheduledHearings)
         }
       </Container>
     );
