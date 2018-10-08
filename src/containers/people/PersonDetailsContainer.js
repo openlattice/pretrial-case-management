@@ -53,12 +53,13 @@ class PersonDetailsContainer extends React.Component<Props, State> {
   }
 
   componentWillReceiveProps(nextProps) {
+    const { neighbors, actions } = this.props;
     const psaIds = nextProps.neighbors.get(ENTITY_SETS.PSA_SCORES, Immutable.List())
       .map(neighbor => neighbor.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0]))
       .filter(id => !!id)
       .toJS();
-    if (!this.props.neighbors.size && nextProps.neighbors.size) {
-      this.props.actions.loadPSAData(psaIds);
+    if (psaIds.length && !neighbors.size && nextProps.neighbors.size) {
+      actions.loadPSAData(psaIds);
     }
   }
 

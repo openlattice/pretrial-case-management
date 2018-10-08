@@ -275,7 +275,7 @@ export default class SelectChargesContainer extends React.Component<Props, State
 
   renderInputField = (charge :Charge, field :string, onChange :(event :Object) => void) => (
     <CountsInput
-        placeholder="Nuber of Counts"
+        placeholder="Number of Counts"
         name={field}
         value={charge[field]}
         onChange={onChange} />

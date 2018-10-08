@@ -22,6 +22,7 @@ export const ALIASES = {
   BOND: 'bond',
   RELEASE_CONDITION: 'releaseCondition',
   HEARING: 'hearing',
+  OUTCOME: 'outcome',
 
   CONTACTED_AT: 'contactedAt',
   EMPLOYED_BY: 'employedBy',
@@ -36,7 +37,8 @@ export const ALIASES = {
   EDITED_BY: 'editedBy',
   CHARGED_WITH: 'chargedWith',
   APPEARS_IN: 'appearsIn',
-  REGISTERED_FOR_TWO: 'registeredfor2'
+  REGISTERED_FOR_TWO: 'registeredfor2',
+  REGISTERED_FOR_THREE: 'registeredfor3'
 };
 
 export const PERSON_CONFIG = {

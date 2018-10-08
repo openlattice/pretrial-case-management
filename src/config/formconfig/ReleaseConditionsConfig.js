@@ -1,7 +1,6 @@
 import { ALIASES, PERSON_CONFIG } from './ConfigConsts';
-import { PSA, DMF, NOTES, ID_FIELD_NAMES, FORM_IDS, LIST_FIELDS } from '../../utils/consts/Consts';
-import { RESULT_CATEGORIES } from '../../utils/consts/DMFResultConsts';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { ID_FIELD_NAMES, LIST_FIELDS } from '../../utils/consts/Consts';
 
 const psaConfig = {
   entitySets: [
@@ -12,7 +11,6 @@ const psaConfig = {
       entityId: ID_FIELD_NAMES.DMF_ID,
       fields: {
         [ID_FIELD_NAMES.DMF_ID]: PROPERTY_TYPES.GENERAL_ID,
-        [PROPERTY_TYPES.OUTCOME]: PROPERTY_TYPES.OUTCOME,
         [PROPERTY_TYPES.OTHER_TEXT]: PROPERTY_TYPES.OTHER_TEXT
       }
     },
@@ -22,6 +20,26 @@ const psaConfig = {
       entityId: ID_FIELD_NAMES.PSA_ID,
       fields: {
         [ID_FIELD_NAMES.PSA_ID]: PROPERTY_TYPES.GENERAL_ID
+      }
+    },
+    {
+      name: ENTITY_SETS.HEARINGS,
+      alias: ALIASES.HEARING,
+      entityId: ID_FIELD_NAMES.HEARING_ID,
+      fields: {
+        [ID_FIELD_NAMES.HEARING_ID]: PROPERTY_TYPES.CASE_ID
+      }
+    },
+    {
+      name: ENTITY_SETS.OUTCOMES,
+      alias: ALIASES.OUTCOME,
+      entityId: ID_FIELD_NAMES.OUTCOME_ID,
+      fields: {
+        [ID_FIELD_NAMES.OUTCOME_ID]: PROPERTY_TYPES.GENERAL_ID,
+        [PROPERTY_TYPES.RELEASE_TYPE]: PROPERTY_TYPES.RELEASE_TYPE,
+        [PROPERTY_TYPES.OUTCOME]: PROPERTY_TYPES.OUTCOME,
+        [PROPERTY_TYPES.JUDGE_ACCEPTED]: PROPERTY_TYPES.JUDGE_ACCEPTED,
+        [PROPERTY_TYPES.OTHER_TEXT]: PROPERTY_TYPES.OTHER_TEXT
       }
     },
     {
@@ -59,6 +77,13 @@ const psaConfig = {
     },
     {
       name: ENTITY_SETS.REGISTERED_FOR,
+      alias: ALIASES.REGISTERED_FOR_THREE,
+      fields: {
+        outcomedate: PROPERTY_TYPES.COMPLETED_DATE_TIME
+      }
+    },
+    {
+      name: ENTITY_SETS.REGISTERED_FOR,
       alias: ALIASES.REGISTERED_FOR_TWO,
       fields: {
         bonddate: PROPERTY_TYPES.COMPLETED_DATE_TIME
@@ -82,6 +107,33 @@ const psaConfig = {
       dst: ALIASES.PSA,
       association: ALIASES.REGISTERED_FOR_TWO
     },
+    {
+      src: ALIASES.BOND,
+      dst: ALIASES.HEARING,
+      association: ALIASES.REGISTERED_FOR_TWO
+    },
+
+    // Outcome registered for _____
+    {
+      src: ALIASES.OUTCOME,
+      dst: ALIASES.PERSON,
+      association: ALIASES.REGISTERED_FOR_THREE
+    },
+    {
+      src: ALIASES.OUTCOME,
+      dst: ALIASES.DMF,
+      association: ALIASES.REGISTERED_FOR_THREE
+    },
+    {
+      src: ALIASES.OUTCOME,
+      dst: ALIASES.PSA,
+      association: ALIASES.REGISTERED_FOR_THREE
+    },
+    {
+      src: ALIASES.OUTCOME,
+      dst: ALIASES.HEARING,
+      association: ALIASES.REGISTERED_FOR_THREE
+    },
 
     // Release conditions registered for _____
     {
@@ -101,7 +153,17 @@ const psaConfig = {
     },
     {
       src: ALIASES.RELEASE_CONDITION,
+      dst: ALIASES.OUTCOME,
+      association: ALIASES.REGISTERED_FOR
+    },
+    {
+      src: ALIASES.RELEASE_CONDITION,
       dst: ALIASES.BOND,
+      association: ALIASES.REGISTERED_FOR
+    },
+    {
+      src: ALIASES.RELEASE_CONDITION,
+      dst: ALIASES.HEARING,
       association: ALIASES.REGISTERED_FOR
     }
   ]
