@@ -66,7 +66,7 @@ function* filterPeopleIdsWithOpenPSAsWorker(action :SequenceAction) :Generator<*
     yield put(filterPeopleIdsWithOpenPSAs.success(action.id, { filteredPersonIds, neighborsForOpenPSAs }));
   }
   catch (error) {
-    console.log(error);
+    console.error(error);
     yield put(filterPeopleIdsWithOpenPSAs.failure(action.id, error));
   }
   finally {
@@ -194,7 +194,7 @@ function* loadHearingNeighborsWorker(action :SequenceAction) :Generator<*, *, *>
 
   }
   catch (error) {
-    console.log(error);
+    console.error(error);
     yield put(loadHearingNeighbors.failure(action.id, error));
   }
   finally {
@@ -231,7 +231,7 @@ function* refreshHearingNeighborsWorker(action :SequenceAction) :Generator<*, *,
     yield put(refreshHearingNeighbors.success(action.id, { id, neighbors }));
   }
   catch (error) {
-    console.log(error);
+    console.error(error);
     yield put(refreshHearingNeighbors.failure(action.id, error));
   }
   finally {
