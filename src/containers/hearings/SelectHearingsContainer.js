@@ -390,7 +390,6 @@ class SelectHearingsContainer extends React.Component<Props, State> {
 
   renderAvailableHearings = (manuallyCreatingHearing, scheduledHearings) => {
     const { readOnly } = this.props;
-    console.log(readOnly);
     if (readOnly) return null;
     return (
       <div>

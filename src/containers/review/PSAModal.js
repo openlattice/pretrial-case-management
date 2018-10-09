@@ -395,17 +395,17 @@ class PSAModal extends React.Component<Props, State> {
 
   getEntitySetId = (name) :string => {
     const { neighbors } = this.props;
-    getEntitySetId(neighbors, name);
+    return getEntitySetId(neighbors, name);
   };
 
   getEntityKeyId = (name) :string => {
     const { neighbors } = this.props;
-    getEntityKeyId(neighbors, name);
+    return getEntityKeyId(neighbors, name);
   };
 
   getIdValue = (name, optionalFQN) :string => {
     const { neighbors } = this.props;
-    getIdValue(neighbors, name, optionalFQN);
+    return getIdValue(neighbors, name, optionalFQN);
   };
 
   refreshPSANeighborsCallback = () => {
@@ -424,9 +424,9 @@ class PSAModal extends React.Component<Props, State> {
     } = this.props;
     const { riskFactors } = this.state;
 
-    const { formattedScores, formattedRiskFactors } = getScoresAndRiskFactors(riskFactors);
-    const riskFactorsEntity = Object.assign({}, formattedRiskFactors);
-    const dmf = calculateDMF(riskFactors, formattedScores);
+    const scoresAndRiskFactors = getScoresAndRiskFactors(riskFactors);
+    const riskFactorsEntity = Object.assign({}, scoresAndRiskFactors.riskFactors);
+    const dmf = calculateDMF(riskFactors, scoresAndRiskFactors.scores);
 
     const scoreId = scores.getIn([PROPERTY_TYPES.GENERAL_ID, 0]);
     const riskFactorsIdValue = this.getIdValue(ENTITY_SETS.PSA_RISK_FACTORS);
@@ -441,7 +441,7 @@ class PSAModal extends React.Component<Props, State> {
     const dmfRiskFactorsEntitySetId = this.getEntitySetId(ENTITY_SETS.DMF_RISK_FACTORS);
     const dmfRiskFactorsEntity = this.getDMFRiskFactorsEntity(riskFactors, dmfRiskFactorsIdValue);
 
-    const scoresEntity = formattedScores.toJS();
+    const scoresEntity = scoresAndRiskFactors.scores.toJS();
     if (scoreId) scoresEntity[PROPERTY_TYPES.GENERAL_ID] = [scoreId];
     if (riskFactorsIdValue) riskFactorsEntity[PROPERTY_TYPES.GENERAL_ID] = [riskFactorsIdValue];
     const status = scores.getIn([PROPERTY_TYPES.STATUS, 0]);
