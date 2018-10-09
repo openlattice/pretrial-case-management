@@ -233,7 +233,7 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
           entityKeyId={scoreId}
           downloadFn={downloadPSAReviewPDF}
           loadCaseHistoryFn={loadCaseHistory}
-          loadHearingsFn={loadHearingNeighbors}
+          loadHearingNeighbors={loadHearingNeighbors}
           onStatusChangeCallback={onStatusChangeCallback}
           submitData={submit}
           replaceEntity={replaceEntity}
