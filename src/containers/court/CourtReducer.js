@@ -154,7 +154,7 @@ export default function courtReducer(state :Immutable.Map<*, *> = INITIAL_STATE,
       return refreshHearingNeighbors.reducer(state, action, {
         REQUEST: () => state.set(
           COURT.HEARING_IDS_REFRESHING,
-          state.get(COURT.HEARING_IDS_REFRESHING).add(action.value.id)
+          state.get(COURT.HEARING_IDS_REFRESHING)
         ),
         SUCCESS: () => {
           let hearingNeighborsById = state.get(COURT.HEARINGS_NEIGHBORS_BY_ID);
@@ -165,7 +165,7 @@ export default function courtReducer(state :Immutable.Map<*, *> = INITIAL_STATE,
         },
         FINALLY: () => state.set(
           COURT.HEARING_IDS_REFRESHING,
-          state.get(COURT.HEARING_IDS_REFRESHING).delete(action.value.id)
+          state.get(COURT.HEARING_IDS_REFRESHING)
         )
       });
     }
