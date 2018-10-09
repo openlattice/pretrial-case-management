@@ -37,7 +37,7 @@ import { psaIsClosed } from '../../utils/PSAUtils';
 import {
   PSA_NEIGHBOR,
   STATE,
-  HEARINGS,
+  REVIEW,
   COURT
 } from '../../utils/consts/FrontEndStateConsts';
 import {
@@ -668,9 +668,8 @@ class PSAModal extends React.Component<Props, State> {
       scores,
       entityKeyId,
       hearings,
-      view
+      readOnly
     } = this.props;
-
     return (
       <ModalWrapper withPadding>
         <SelectHearingsContainer
@@ -683,7 +682,7 @@ class PSAModal extends React.Component<Props, State> {
             refreshPSANeighborsCallback={this.refreshPSANeighborsCallback}
             hearingId={this.getEntityKeyId(ENTITY_SETS.HEARINGS)}
             hearings={hearings}
-            judgesview={view}
+            readOnly={readOnly}
             defaultOutcome={neighbors.getIn([ENTITY_SETS.OUTCOMES, PSA_NEIGHBOR.DETAILS], Map())}
             defaultDMF={neighbors.getIn([ENTITY_SETS.DMF_RESULTS, PSA_NEIGHBOR.DETAILS], Map())}
             defaultBond={neighbors.getIn([ENTITY_SETS.BONDS, PSA_NEIGHBOR.DETAILS], Map())}
@@ -769,8 +768,10 @@ class PSAModal extends React.Component<Props, State> {
 
 function mapStateToProps(state) {
   const court = state.get(STATE.COURT);
+  const review = state.get(STATE.REVIEW);
   return {
-    [COURT.HEARINGS_NEIGHBORS_BY_ID]: court.get(COURT.HEARINGS_NEIGHBORS_BY_ID)
+    [COURT.HEARINGS_NEIGHBORS_BY_ID]: court.get(COURT.HEARINGS_NEIGHBORS_BY_ID),
+    [REVIEW.READ_ONLY]: review.get(REVIEW.READ_ONLY)
   };
 }
 
