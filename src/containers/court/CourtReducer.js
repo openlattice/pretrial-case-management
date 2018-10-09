@@ -3,14 +3,15 @@
  */
 
 import Immutable from 'immutable';
-import moment from 'moment';
 import { Constants } from 'lattice';
 
 import { sortByDate } from '../../utils/PSAUtils';
 import {
   CHANGE_HEARING_FILTERS,
   filterPeopleIdsWithOpenPSAs,
-  loadHearingsForDate
+  loadHearingsForDate,
+  loadHearingNeighbors,
+  refreshHearingNeighbors
 } from './CourtActionFactory';
 import { COURT, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
@@ -19,17 +20,28 @@ import { PSA_STATUSES } from '../../utils/consts/Consts';
 const { OPENLATTICE_ID_FQN } = Constants;
 
 const INITIAL_STATE :Immutable.Map<*, *> = Immutable.fromJS({
+  // Hearings
+  [COURT.LOADING_HEARINGS]: false,
   [COURT.HEARINGS_TODAY]: Immutable.List(),
   [COURT.HEARINGS_BY_TIME]: Immutable.Map(),
+  [COURT.LOADING_ERROR]: false,
+
+  // Hearings Neighbors
+  [COURT.LOADING_HEARING_NEIGHBORS]: Immutable.Map(),
   [COURT.HEARINGS_NEIGHBORS_BY_ID]: Immutable.Map(),
+  [COURT.HEARING_IDS_REFRESHING]: false,
+  [COURT.LOADING_HEARINGS_ERROR]: false,
+
+  // People
   [COURT.PEOPLE_WITH_OPEN_PSAS]: Immutable.Set(),
+  [COURT.PEOPLE_IDS_TO_OPEN_PSA_IDS]: Immutable.Map(),
+
+  // Open PSAs + Neighbors
+  [COURT.LOADING_PSAS]: false,
   [COURT.OPEN_PSAS]: Immutable.Map(),
   [COURT.OPEN_PSA_IDS]: Immutable.Set(),
-  [COURT.PEOPLE_IDS_TO_OPEN_PSA_IDS]: Immutable.Map(),
   [COURT.OPEN_PSA_NEIGHBORS]: Immutable.Map(),
-  [COURT.LOADING_HEARINGS]: false,
-  [COURT.LOADING_PSAS]: false,
-  [COURT.LOADING_ERROR]: false,
+
   [COURT.COUNTY]: '',
   [COURT.COURTROOM]: ''
 });
@@ -91,18 +103,15 @@ export default function courtReducer(state :Immutable.Map<*, *> = INITIAL_STATE,
         REQUEST: () => state
           .set(COURT.HEARINGS_TODAY, Immutable.List())
           .set(COURT.HEARINGS_BY_TIME, Immutable.Map())
-          .set(COURT.HEARINGS_NEIGHBORS_BY_ID, Immutable.Map())
           .set(COURT.LOADING_HEARINGS, true)
           .set(COURT.LOADING_ERROR, false),
         SUCCESS: () => state
           .set(COURT.HEARINGS_TODAY, action.value.hearingsToday)
           .set(COURT.HEARINGS_BY_TIME, action.value.hearingsByTime)
-          .set(COURT.HEARINGS_NEIGHBORS_BY_ID, action.value.hearingNeighborsById)
           .set(COURT.LOADING_ERROR, false),
         FAILURE: () => state
           .set(COURT.HEARINGS_TODAY, Immutable.List())
           .set(COURT.HEARINGS_BY_TIME, Immutable.Map())
-          .set(COURT.HEARINGS_NEIGHBORS_BY_ID, Immutable.Map())
           .set(COURT.LOADING_ERROR, false),
         FINALLY: () => state.set(COURT.LOADING_HEARINGS, false)
       });
@@ -118,6 +127,47 @@ export default function courtReducer(state :Immutable.Map<*, *> = INITIAL_STATE,
         newState = newState.set(COURT.COURTROOM, courtroom);
       }
       return newState;
+    }
+
+    case loadHearingNeighbors.case(action.type): {
+      return loadHearingNeighbors.reducer(state, action, {
+        REQUEST: () => state
+          .set(COURT.LOADING_HEARING_NEIGHBORS, true)
+          .set(COURT.LOADING_HEARINGS_ERROR, false),
+        SUCCESS: () => {
+          const currentState = state.get(COURT.HEARINGS_NEIGHBORS_BY_ID);
+          const newState = currentState.merge(action.value.hearingNeighborsById);
+          return (
+            state
+              .set(COURT.HEARINGS_NEIGHBORS_BY_ID, newState)
+              .set(COURT.LOADING_HEARINGS_ERROR, false)
+          );
+        },
+        FAILURE: () => state
+          .set(COURT.HEARINGS_NEIGHBORS_BY_ID, Immutable.Map())
+          .set(COURT.LOADING_HEARINGS_ERROR, false),
+        FINALLY: () => state.set(COURT.LOADING_HEARING_NEIGHBORS, false)
+      });
+    }
+
+    case refreshHearingNeighbors.case(action.type): {
+      return refreshHearingNeighbors.reducer(state, action, {
+        REQUEST: () => state.set(
+          COURT.HEARING_IDS_REFRESHING,
+          state.get(COURT.HEARING_IDS_REFRESHING).add(action.value.id)
+        ),
+        SUCCESS: () => {
+          let hearingNeighborsById = state.get(COURT.HEARINGS_NEIGHBORS_BY_ID);
+
+          hearingNeighborsById = hearingNeighborsById.set(action.value.id, action.value.neighbors);
+
+          return state.set(COURT.HEARINGS_NEIGHBORS_BY_ID, hearingNeighborsById);
+        },
+        FINALLY: () => state.set(
+          COURT.HEARING_IDS_REFRESHING,
+          state.get(COURT.HEARING_IDS_REFRESHING).delete(action.value.id)
+        )
+      });
     }
 
     default:
