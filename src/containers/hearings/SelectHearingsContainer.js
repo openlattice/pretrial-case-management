@@ -21,11 +21,16 @@ import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts'
 import { FORM_IDS, ID_FIELD_NAMES, HEARING } from '../../utils/consts/Consts';
 import { getCourtroomOptions } from '../../utils/consts/HearingConsts';
 import { getTimeOptions } from '../../utils/consts/DateTimeConsts';
-import { STATE, REVIEW } from '../../utils/consts/FrontEndStateConsts';
+import {
+  STATE,
+  REVIEW,
+  COURT
+} from '../../utils/consts/FrontEndStateConsts';
 import CONTENT from '../../utils/consts/ContentConsts';
 import { Title } from '../../utils/Layout';
 import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
 import * as ReviewActionFactory from '../review/ReviewActionFactory';
+import * as CourtActionFactory from '../court/CourtActionFactory';
 
 
 const Container = styled.div`
@@ -452,11 +457,13 @@ class SelectHearingsContainer extends React.Component<Props, State> {
 
 function mapStateToProps(state) {
   const review = state.get(STATE.REVIEW);
+  const court = state.get(STATE.COURT);
   return {
     [REVIEW.SCORES]: review.get(REVIEW.SCORES),
     [REVIEW.NEIGHBORS_BY_ID]: review.get(REVIEW.NEIGHBORS_BY_ID),
-    [REVIEW.HEARINGS_NEIGHBORS_BY_ID]: review.get(REVIEW.HEARINGS_NEIGHBORS_BY_ID),
-    [REVIEW.HEARING_IDS_REFRESHING]: review.get(REVIEW.HEARING_IDS_REFRESHING),
+    [COURT.LOADING_HEARING_NEIGHBORS]: court.get(COURT.LOADING_HEARING_NEIGHBORS),
+    [COURT.HEARINGS_NEIGHBORS_BY_ID]: court.get(COURT.HEARINGS_NEIGHBORS_BY_ID),
+    [COURT.HEARING_IDS_REFRESHING]: court.get(COURT.HEARING_IDS_REFRESHING),
     [REVIEW.LOADING_RESULTS]: review.get(REVIEW.LOADING_RESULTS),
     [REVIEW.ERROR]: review.get(REVIEW.ERROR)
   };
@@ -471,6 +478,10 @@ function mapDispatchToProps(dispatch :Function) :Object {
 
   Object.keys(ReviewActionFactory).forEach((action :string) => {
     actions[action] = ReviewActionFactory[action];
+  });
+
+  Object.keys(CourtActionFactory).forEach((action :string) => {
+    actions[action] = CourtActionFactory[action];
   });
 
   return {
