@@ -5,16 +5,20 @@
 import React from 'react';
 import Immutable from 'immutable';
 import styled from 'styled-components';
+import { Constants } from 'lattice';
 
 import Headshot from '../Headshot';
 import PSAModal from '../../containers/review/PSAModal';
-import StyledCard from '../../components/StyledCard';
-import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import StyledCard from '../StyledCard';
+import { ENTITY_SETS } from '../../utils/consts/DataModelConsts';
+import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import CONTENT from '../../utils/consts/ContentConsts';
 import { getEntityKeyId } from '../../utils/DataUtils';
 import { UndecoratedLink } from '../../utils/Layout';
-
 import * as Routes from '../../core/router/Routes';
+
+const { OPENLATTICE_ID_FQN } = Constants;
+
 
 const StyledUndecoratedLink = styled(UndecoratedLink)`
   display: flex;
@@ -100,6 +104,7 @@ type Props = {
     personId :string,
     neighbors :Immutable.Map<*, *>
   }) => void,
+  loadHearingNeighbors :(hearingIds :string[]) => void,
 };
 
 type State = {
@@ -129,11 +134,12 @@ class PersonCard extends React.Component<Props, State> {
   }
 
   renderModal = () => {
+    const { open } = this.state;
     const modalProps = {};
     Object.keys(this.props).forEach(prop => (modalProps[prop] = Immutable.fromJS(this.props[prop])));
     return (
       <PSAModal
-          open={this.state.open}
+          open={open}
           view={CONTENT.JUDGES}
           onClose={() => this.setState({ open: false })}
           {...modalProps} />
@@ -142,15 +148,22 @@ class PersonCard extends React.Component<Props, State> {
 
 
   openDetailsModal = () => {
-    const { neighbors, loadCaseHistoryFn } = this.props;
+    const { neighbors, loadCaseHistoryFn, loadHearingNeighbors } = this.props;
+    const hearingIds = Immutable.fromJS(neighbors).get(ENTITY_SETS.HEARINGS, Immutable.List())
+      .map(neighbor => neighbor.getIn([OPENLATTICE_ID_FQN, 0]))
+      .filter(id => !!id)
+      .toJS();
+    const loadPersonData = false;
     const personId = getEntityKeyId(Immutable.fromJS(neighbors), ENTITY_SETS.PEOPLE);
     loadCaseHistoryFn({ personId, neighbors: Immutable.fromJS(neighbors) });
+    loadHearingNeighbors({ hearingIds, loadPersonData });
     this.setState({
       open: true
     });
   }
 
   renderContent = () => {
+    const { personObj } = this.props;
     const {
       firstName,
       middleName,
@@ -158,14 +171,14 @@ class PersonCard extends React.Component<Props, State> {
       dob,
       photo,
       identification
-    } = this.props.personObj;
+    } = personObj;
     const { hasOpenPSA, judgesview } = this.props;
 
     const midName = middleName ? ` ${middleName}` : '';
     const name = `${lastName}, ${firstName}${midName}`;
 
-    return hasOpenPSA && judgesview ?
-      (
+    return hasOpenPSA && judgesview
+      ? (
         <CardWrapper onClick={this.openDetailsModal}>
           { this.renderModal() }
           <OpenPSATag>Open PSA</OpenPSATag>
@@ -181,8 +194,7 @@ class PersonCard extends React.Component<Props, State> {
           </StyledPersonCard>
         </CardWrapper>
       )
-      :
-      (
+      : (
         <StyledUndecoratedLink to={`${Routes.PERSON_DETAILS_ROOT}/${identification}`}>
           <TagPlaceholder />
           <StyledPersonCard>
