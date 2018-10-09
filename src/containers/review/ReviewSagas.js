@@ -296,16 +296,9 @@ function* loadPSADataWorker(action :SequenceAction) :Generator<*, *, *> {
       });
     }
 
-    const hearingEntitySetId = yield call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.HEARINGS);
-    hearingNeighborsById = hearingIds.size
-      ? yield call(SearchApi.searchEntityNeighborsBulk, hearingEntitySetId, hearingIds.toJS())
-      : Immutable.Map();
-    hearingNeighborsById = Immutable.fromJS(hearingNeighborsById);
-
     yield put(loadPSAData.success(action.id, {
       psaNeighborsByDate,
       psaNeighborsById,
-      hearingNeighborsById,
       allFilers
     }));
   }
@@ -870,43 +863,6 @@ function* refreshPSANeighborsWatcher() :Generator<*, *, *> {
   yield takeEvery(REFRESH_PSA_NEIGHBORS, refreshPSANeighborsWorker);
 }
 
-function* refreshHearingNeighborsWorker(action :SequenceAction) :Generator<*, *, *> {
-  const { id } = action.value;
-  try {
-    yield put(refreshHearingNeighbors.request(action.id, { id }));
-    const entitySetId = yield call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.HEARINGS);
-    const neighborsList = yield call(SearchApi.searchEntityNeighbors, entitySetId, id);
-    let neighbors = Immutable.Map();
-    neighborsList.forEach((neighbor) => {
-      const entitySetName = Immutable.fromJS(neighbor).getIn([PSA_NEIGHBOR.ENTITY_SET, 'name']);
-      if (entitySetName === ENTITY_SETS.RELEASE_CONDITIONS) {
-        neighbors = neighbors.set(
-          entitySetName,
-          neighbors.get(entitySetName, Immutable.List()).push(Immutable.fromJS(neighbor))
-        );
-      }
-      else {
-        neighbors = neighbors.set(
-          entitySetName,
-          Immutable.fromJS(neighbor)
-        );
-      }
-    });
-    yield put(refreshHearingNeighbors.success(action.id, { id, neighbors }));
-  }
-  catch (error) {
-    console.log(error);
-    yield put(refreshHearingNeighbors.failure(action.id, error));
-  }
-  finally {
-    yield put(refreshHearingNeighbors.finally(action.id, { id }));
-  }
-}
-
-function* refreshHearingNeighborsWatcher() :Generator<*, *, *> {
-  yield takeEvery(REFRESH_HEARING_NEIGHBORS, refreshHearingNeighborsWorker);
-}
-
 function* changePSAStatusWorker(action :SequenceAction) :Generator<*, *, *> {
   const {
     scoresEntity,
@@ -951,7 +907,6 @@ export {
   loadPSADataWatcher,
   loadPSAsByDateWatcher,
   refreshPSANeighborsWatcher,
-  refreshHearingNeighborsWatcher,
   updateScoresAndRiskFactorsWatcher,
   updateOutcomesAndReleaseCondtionsWatcher
 };
