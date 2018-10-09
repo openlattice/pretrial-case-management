@@ -16,8 +16,12 @@ import { obfuscateEntityNeighbors, obfuscateBulkEntityNeighbors } from '../../ut
 import {
   FILTER_PEOPLE_IDS_WITH_OPEN_PSAS,
   LOAD_HEARINGS_FOR_DATE,
+  LOAD_HEARING_NEIGHBORS,
+  REFRESH_HEARING_NEIGHBORS,
   filterPeopleIdsWithOpenPSAs,
-  loadHearingsForDate
+  loadHearingsForDate,
+  loadHearingNeighbors,
+  refreshHearingNeighbors
 } from './CourtActionFactory';
 
 const { OPENLATTICE_ID_FQN } = Constants;
@@ -25,12 +29,14 @@ const { OPENLATTICE_ID_FQN } = Constants;
 function* filterPeopleIdsWithOpenPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
 
   try {
-    const { personEntitySetId, personIds } = action.value;
+    const peopleEntitySetId = yield call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.PEOPLE);
+    const { personIds } = action.value;
+
     yield put(filterPeopleIdsWithOpenPSAs.request(action.id));
     let filteredPersonIds = Immutable.Set();
     let neighborsForOpenPSAs = Immutable.Map();
-    if (personEntitySetId) {
-      const neighborsById = yield call(SearchApi.searchEntityNeighborsBulk, personEntitySetId, personIds.toJS());
+    if (personIds.size) {
+      const neighborsById = yield call(SearchApi.searchEntityNeighborsBulk, peopleEntitySetId, personIds.toJS());
       filteredPersonIds = personIds.filter((id) => {
         if (neighborsById[id]) {
           const openPSANeighbors = neighborsById[id].filter((neighbor) => {
@@ -59,6 +65,7 @@ function* filterPeopleIdsWithOpenPSAsWorker(action :SequenceAction) :Generator<*
     yield put(filterPeopleIdsWithOpenPSAs.success(action.id, { filteredPersonIds, neighborsForOpenPSAs }));
   }
   catch (error) {
+    console.log(error);
     yield put(filterPeopleIdsWithOpenPSAs.failure(action.id, error));
   }
   finally {
@@ -66,7 +73,7 @@ function* filterPeopleIdsWithOpenPSAsWorker(action :SequenceAction) :Generator<*
   }
 }
 
-export function* filterPeopleIdsWithOpenPSAsWatcher() :Generator<*, *, *> {
+function* filterPeopleIdsWithOpenPSAsWatcher() :Generator<*, *, *> {
   yield takeEvery(FILTER_PEOPLE_IDS_WITH_OPEN_PSAS, filterPeopleIdsWithOpenPSAsWorker);
 }
 
@@ -120,37 +127,10 @@ function* loadHearingsForDateWorker(action :SequenceAction) :Generator<*, *, *> 
           hearingsByTime = hearingsByTime.set(time, hearingsByTime.get(time, Immutable.List()).push(hearing));
         }
       });
-
-    let hearingNeighbors = yield call(SearchApi.searchEntityNeighborsBulk, entitySetId, hearingIds);
-    hearingNeighbors = obfuscateBulkEntityNeighbors(hearingNeighbors); // TODO just for demo
-
-    let personEntitySetId;
-    let personIds = Immutable.Set();
-
-    let hearingNeighborsById = Immutable.Map();
-    Object.entries(hearingNeighbors).forEach(([hearingId, neighbors]) => {
-      hearingNeighborsById = hearingNeighborsById.set(hearingId, Immutable.Map());
-      neighbors.forEach((neighbor) => {
-        const { neighborEntitySet, neighborDetails } = neighbor;
-        if (neighborEntitySet) {
-          hearingNeighborsById = hearingNeighborsById.set(
-            hearingId,
-            hearingNeighborsById.get(hearingId).set(neighborEntitySet.name, Immutable.fromJS(neighborDetails))
-          );
-
-          if (neighborEntitySet.name === ENTITY_SETS.PEOPLE) {
-            if (!personEntitySetId) {
-              personEntitySetId = neighborEntitySet.id;
-            }
-            personIds = personIds.add(neighborDetails[OPENLATTICE_ID_FQN][0]);
-          }
-        }
-      });
-    });
-
-    yield put(loadHearingsForDate.success(action.id, { hearingsToday, hearingNeighborsById, hearingsByTime }));
-    const peopleIdsWithOpenPSAs = filterPeopleIdsWithOpenPSAs({ personEntitySetId, personIds });
-    yield put(peopleIdsWithOpenPSAs);
+    const loadPersonData = true;
+    const hearinNeighbors = loadHearingNeighbors({ hearingIds, loadPersonData });
+    yield put(loadHearingsForDate.success(action.id, { hearingsToday, hearingsByTime }));
+    yield put(hearinNeighbors);
   }
   catch (error) {
     console.error(error);
@@ -161,6 +141,110 @@ function* loadHearingsForDateWorker(action :SequenceAction) :Generator<*, *, *> 
   }
 }
 
-export function* loadHearingsForDateWatcher() :Generator<*, *, *> {
+function* loadHearingsForDateWatcher() :Generator<*, *, *> {
   yield takeEvery(LOAD_HEARINGS_FOR_DATE, loadHearingsForDateWorker);
 }
+
+function* loadHearingNeighborsWorker(action :SequenceAction) :Generator<*, *, *> {
+  try {
+    yield put(loadHearingNeighbors.request(action.id));
+
+    const { hearingIds, loadPersonData } = action.value;
+
+    let hearingNeighborsById = Immutable.Map();
+    let personIds = Immutable.Set();
+
+    if (hearingIds.length) {
+      const hearingEntitySetId = yield call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.HEARINGS);
+      let neighborsById = yield call(SearchApi.searchEntityNeighborsBulk, hearingEntitySetId, hearingIds);
+      neighborsById = Immutable.fromJS(neighborsById);
+
+      neighborsById.keySeq().forEach((id) => {
+        if (neighborsById.get(id)) {
+          let hearingNeighborsMap = Immutable.Map();
+          const neighbors = neighborsById.get(id);
+          neighbors.forEach(((neighbor) => {
+            const entitySetName = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'name']);
+            if (entitySetName === ENTITY_SETS.RELEASE_CONDITIONS) {
+              hearingNeighborsMap = hearingNeighborsMap.set(
+                entitySetName,
+                hearingNeighborsMap.get(entitySetName, Immutable.List()).push(neighbor)
+              );
+            }
+            else {
+              if (entitySetName === ENTITY_SETS.PEOPLE) {
+                personIds = personIds.add(neighbor.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0]));
+              }
+              hearingNeighborsMap = hearingNeighborsMap.set(
+                entitySetName,
+                neighbor
+              );
+            }
+          }));
+          hearingNeighborsById = hearingNeighborsById.set(id, hearingNeighborsMap);
+        }
+      });
+    }
+    yield put(loadHearingNeighbors.success(action.id, { hearingNeighborsById, loadPersonData }));
+    if (loadPersonData) {
+      const peopleIdsWithOpenPSAs = filterPeopleIdsWithOpenPSAs({ personIds });
+      yield put(peopleIdsWithOpenPSAs);
+    }
+
+  }
+  catch (error) {
+    console.log(error);
+    yield put(loadHearingNeighbors.failure(action.id, error));
+  }
+  finally {
+    yield put(loadHearingNeighbors.finally(action.id));
+  }
+}
+
+function* loadHearingNeighborsWatcher() :Generator<*, *, *> {
+  yield takeEvery(LOAD_HEARING_NEIGHBORS, loadHearingNeighborsWorker);
+}
+
+function* refreshHearingNeighborsWorker(action :SequenceAction) :Generator<*, *, *> {
+  const { id } = action.value;
+  try {
+    yield put(refreshHearingNeighbors.request(action.id, { id }));
+    const entitySetId = yield call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.HEARINGS);
+    const neighborsList = yield call(SearchApi.searchEntityNeighbors, entitySetId, id);
+    let neighbors = Immutable.Map();
+    neighborsList.forEach((neighbor) => {
+      const entitySetName = Immutable.fromJS(neighbor).getIn([PSA_NEIGHBOR.ENTITY_SET, 'name']);
+      if (entitySetName === ENTITY_SETS.RELEASE_CONDITIONS) {
+        neighbors = neighbors.set(
+          entitySetName,
+          neighbors.get(entitySetName, Immutable.List()).push(Immutable.fromJS(neighbor))
+        );
+      }
+      else {
+        neighbors = neighbors.set(
+          entitySetName,
+          Immutable.fromJS(neighbor)
+        );
+      }
+    });
+    yield put(refreshHearingNeighbors.success(action.id, { id, neighbors }));
+  }
+  catch (error) {
+    console.log(error);
+    yield put(refreshHearingNeighbors.failure(action.id, error));
+  }
+  finally {
+    yield put(refreshHearingNeighbors.finally(action.id, { id }));
+  }
+}
+
+function* refreshHearingNeighborsWatcher() :Generator<*, *, *> {
+  yield takeEvery(REFRESH_HEARING_NEIGHBORS, refreshHearingNeighborsWorker);
+}
+
+export {
+  filterPeopleIdsWithOpenPSAsWatcher,
+  loadHearingsForDateWatcher,
+  loadHearingNeighborsWatcher,
+  refreshHearingNeighborsWatcher
+};
