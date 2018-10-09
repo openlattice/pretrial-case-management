@@ -29,10 +29,11 @@ const { OPENLATTICE_ID_FQN } = Constants;
 function* filterPeopleIdsWithOpenPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
 
   try {
+    yield put(filterPeopleIdsWithOpenPSAs.request(action.id));
+
     const peopleEntitySetId = yield call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.PEOPLE);
     const { personIds } = action.value;
 
-    yield put(filterPeopleIdsWithOpenPSAs.request(action.id));
     let filteredPersonIds = Immutable.Set();
     let neighborsForOpenPSAs = Immutable.Map();
     if (personIds.size) {
