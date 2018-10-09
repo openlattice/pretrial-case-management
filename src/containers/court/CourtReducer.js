@@ -27,7 +27,7 @@ const INITIAL_STATE :Immutable.Map<*, *> = Immutable.fromJS({
   [COURT.LOADING_ERROR]: false,
 
   // Hearings Neighbors
-  [COURT.LOADING_HEARING_NEIGHBORS]: Immutable.Map(),
+  [COURT.LOADING_HEARING_NEIGHBORS]: false,
   [COURT.HEARINGS_NEIGHBORS_BY_ID]: Immutable.Map(),
   [COURT.HEARING_IDS_REFRESHING]: false,
   [COURT.LOADING_HEARINGS_ERROR]: false,
