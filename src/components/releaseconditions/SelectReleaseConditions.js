@@ -771,7 +771,6 @@ class SelectReleaseConditions extends React.Component<Props, State> {
 
   handleOnListChange = (field, value, index) => {
     const { noContactPeople, editingHearing } = this.state;
-    console.log(noContactPeople);
     let newContactPeople;
     if (editingHearing && noContactPeople.size) {
       newContactPeople = noContactPeople.toJS();
