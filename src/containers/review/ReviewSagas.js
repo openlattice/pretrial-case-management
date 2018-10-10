@@ -27,6 +27,7 @@ import {
   LOAD_PSA_DATA,
   LOAD_PSAS_BY_DATE,
   REFRESH_PSA_NEIGHBORS,
+  REFRESH_HEARING_NEIGHBORS,
   UPDATE_SCORES_AND_RISK_FACTORS,
   UPDATE_OUTCOMES_AND_RELEASE_CONDITIONS,
   bulkDownloadPSAReviewPDF,
@@ -37,6 +38,7 @@ import {
   loadPSAData,
   loadPSAsByDate,
   refreshPSANeighbors,
+  refreshHearingNeighbors,
   updateScoresAndRiskFactors,
   updateOutcomesAndReleaseCondtions
 } from './ReviewActionFactory';
@@ -49,7 +51,7 @@ const { FullyQualifiedName } = Models;
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
-const LIST_ENTITY_SETS = Immutable.List.of(ENTITY_SETS.STAFF, ENTITY_SETS.RELEASE_CONDITIONS);
+const LIST_ENTITY_SETS = Immutable.List.of(ENTITY_SETS.STAFF, ENTITY_SETS.RELEASE_CONDITIONS, ENTITY_SETS.HEARINGS);
 
 const orderCasesByArrestDate = (case1, case2) => {
   const date1 = moment(case1.getIn([PROPERTY_TYPES.ARREST_DATE, 0], case1.getIn([PROPERTY_TYPES.FILE_DATE, 0], '')));
@@ -224,8 +226,10 @@ function* loadPSADataWorker(action :SequenceAction) :Generator<*, *, *> {
     yield put(loadPSAData.request(action.id));
 
     let allFilers = Immutable.Set();
+    let hearingNeighborsById = Immutable.Map();
     let psaNeighborsById = Immutable.Map();
     let psaNeighborsByDate = Immutable.Map();
+    let hearingIds = Immutable.Set();
 
     if (action.value.length) {
       const entitySetId = yield call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.PSA_SCORES);
@@ -260,10 +264,21 @@ function* loadPSADataWorker(action :SequenceAction) :Generator<*, *, *> {
             }
 
             if (LIST_ENTITY_SETS.includes(neighborName)) {
-              neighborsByEntitySetName = neighborsByEntitySetName.set(
-                neighborName,
-                neighborsByEntitySetName.get(neighborName, Immutable.List()).push(neighbor)
-              );
+              if (neighborName === ENTITY_SETS.HEARINGS) {
+                const neighborDetails = neighbor.get(PSA_NEIGHBOR.DETAILS, Immutable.Map());
+                const hearingEntityKeyId = neighborDetails.getIn([OPENLATTICE_ID_FQN, 0]);
+                if (hearingEntityKeyId) hearingIds = hearingIds.add(neighborDetails.getIn([OPENLATTICE_ID_FQN, 0]));
+                neighborsByEntitySetName = neighborsByEntitySetName.set(
+                  neighborName,
+                  neighborsByEntitySetName.get(neighborName, Immutable.List()).push(neighborDetails)
+                );
+              }
+              else {
+                neighborsByEntitySetName = neighborsByEntitySetName.set(
+                  neighborName,
+                  neighborsByEntitySetName.get(neighborName, Immutable.List()).push(neighbor)
+                );
+              }
             }
             else {
               neighborsByEntitySetName = neighborsByEntitySetName.set(neighborName, neighbor);
@@ -281,9 +296,16 @@ function* loadPSADataWorker(action :SequenceAction) :Generator<*, *, *> {
       });
     }
 
+    const hearingEntitySetId = yield call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.HEARINGS);
+    hearingNeighborsById = hearingIds.size
+      ? yield call(SearchApi.searchEntityNeighborsBulk, hearingEntitySetId, hearingIds.toJS())
+      : Immutable.Map();
+    hearingNeighborsById = Immutable.fromJS(hearingNeighborsById);
+
     yield put(loadPSAData.success(action.id, {
       psaNeighborsByDate,
       psaNeighborsById,
+      hearingNeighborsById,
       allFilers
     }));
   }
@@ -302,10 +324,8 @@ function* loadPSADataWatcher() :Generator<*, *, *> {
 
 function takeReqSeqSuccessFailure(reqseq :RequestSequence, seqAction :SequenceAction) {
   return take(
-    (anAction :Object) => {
-      return (anAction.type === reqseq.SUCCESS && anAction.id === seqAction.id)
-        || (anAction.type === reqseq.FAILURE && anAction.id === seqAction.id);
-    }
+    (anAction :Object) => (anAction.type === reqseq.SUCCESS && anAction.id === seqAction.id)
+        || (anAction.type === reqseq.FAILURE && anAction.id === seqAction.id)
   );
 }
 
@@ -623,10 +643,10 @@ function* updateScoresAndRiskFactorsWorker(action :SequenceAction) :Generator<*,
     ];
 
     const reloads = [
-      call(DataApi.getEntity, scoresEntitySetId, scoresId),
-      call(DataApi.getEntity, riskFactorsEntitySetId, riskFactorsId),
-      call(DataApi.getEntity, dmfEntitySetId, dmfId),
-      call(DataApi.getEntity, dmfRiskFactorsEntitySetId, dmfRiskFactorsId)
+      call(DataApi.getEntityData, scoresEntitySetId, scoresId),
+      call(DataApi.getEntityData, riskFactorsEntitySetId, riskFactorsId),
+      call(DataApi.getEntityData, dmfEntitySetId, dmfId),
+      call(DataApi.getEntityData, dmfRiskFactorsEntitySetId, dmfRiskFactorsId)
     ];
 
     if (notesEntity && notesId && notesEntitySetId) {
@@ -637,7 +657,7 @@ function* updateScoresAndRiskFactorsWorker(action :SequenceAction) :Generator<*,
           stripIdField(notesEntity))
       );
 
-      reloads.push(call(DataApi.getEntity, notesEntitySetId, notesId));
+      reloads.push(call(DataApi.getEntityData, notesEntitySetId, notesId));
     }
 
     yield all(updates);
@@ -689,21 +709,23 @@ function* updateOutcomesAndReleaseCondtionsWorker(action :SequenceAction) :Gener
   try {
     const {
       psaId,
+      hearingEntityKeyId,
       conditionSubmit,
       conditionEntityKeyIds,
       bondEntity,
       bondEntityKeyId,
-      dmfEntity,
-      dmfEntityKeyId,
+      outcomeEntity,
+      outcomeEntityKeyId,
       callback,
-      submitCallback
+      refreshHearingsNeighborsCallback
     } = action.value;
 
     const releaseConditionEntitySetId = yield call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.RELEASE_CONDITIONS);
     const bondEntitySetId = yield call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.BONDS);
-    const dmfEntitySetId = yield call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.DMF_RESULTS);
+    const outcomeEntitySetId = yield call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.OUTCOMES);
 
-    const allEntitySetIds = { releaseConditionEntitySetId, bondEntitySetId, dmfEntitySetId };
+
+    const allEntitySetIds = { releaseConditionEntitySetId, bondEntitySetId, outcomeEntitySetId };
 
     const edmDetailsRequest = Object.values(allEntitySetIds).map(id => (
       {
@@ -733,7 +755,11 @@ function* updateOutcomesAndReleaseCondtionsWorker(action :SequenceAction) :Gener
     });
 
     if (bondEntityKeyId) {
-      const bondEntityOject = getMapFromEntityKeysToPropertyKeys(bondEntity, bondEntityKeyId, propertyTypesByFqn);
+      const bondEntityOject = getMapFromEntityKeysToPropertyKeys(
+        bondEntity,
+        bondEntityKeyId,
+        propertyTypesByFqn
+      );
       updates.push(
         call(DataApi.replaceEntityData,
           allEntitySetIds.bondEntitySetId,
@@ -744,38 +770,47 @@ function* updateOutcomesAndReleaseCondtionsWorker(action :SequenceAction) :Gener
       updatedEntities.push(call(DataApi.getEntityData, allEntitySetIds.bondEntitySetId, bondEntityKeyId));
     }
 
-    const dmfEntityObject = getMapFromEntityKeysToPropertyKeys(dmfEntity, dmfEntityKeyId, propertyTypesByFqn);
-    updates.push(
-      call(DataApi.replaceEntityData,
-        allEntitySetIds.dmfEntitySetId,
-        dmfEntityObject.toJS(),
-        false)
-    );
+    if (outcomeEntityKeyId) {
+      const outcomeEntityOject = getMapFromEntityKeysToPropertyKeys(
+        outcomeEntity,
+        outcomeEntityKeyId,
+        propertyTypesByFqn
+      );
+      updates.push(
+        call(DataApi.replaceEntityData,
+          allEntitySetIds.outcomeEntitySetId,
+          outcomeEntityOject.toJS(),
+          false)
+      );
 
-    updatedEntities.push(call(DataApi.getEntityData, allEntitySetIds.dmfEntitySetId, dmfEntityKeyId));
+      updatedEntities.push(call(DataApi.getEntityData, allEntitySetIds.outcomeEntitySetId, outcomeEntityKeyId));
+    }
 
     yield all(updates);
 
-    let newBondTypeEntity;
-    let newDmfTypeEntity;
-    if (bondEntityKeyId) {
-      [newBondTypeEntity, newDmfTypeEntity] = yield all(updatedEntities);
+    let newBondEntity;
+    let newOutcomeEntity;
+    if (bondEntityKeyId && outcomeEntityKeyId) {
+      [newBondEntity, newOutcomeEntity] = yield all(updatedEntities);
     }
-    else {
-      newDmfTypeEntity = yield all(updatedEntities);
+    else if (bondEntityKeyId && !outcomeEntityKeyId) {
+      newBondEntity = yield all(updatedEntities);
+    }
+    else if (!bondEntityKeyId && outcomeEntityKeyId) {
+      newOutcomeEntity = yield all(updatedEntities);
     }
 
     callback({
       config: releaseConditionsConfig,
       values: conditionSubmit,
-      callback: submitCallback
+      callback: refreshHearingsNeighborsCallback
     });
 
     yield put(updateOutcomesAndReleaseCondtions.success(action.id, {
       psaId,
       edmDetails,
-      newBondTypeEntity,
-      newDmfTypeEntity
+      newBondEntity,
+      newOutcomeEntity
     }));
   }
   catch (error) {
@@ -803,10 +838,18 @@ function* refreshPSANeighborsWorker(action :SequenceAction) :Generator<*, *, *> 
       const { neighborEntitySet, neighborDetails } = neighbor;
       if (neighborEntitySet && neighborDetails) {
         if (LIST_ENTITY_SETS.includes(neighborEntitySet.name)) {
-          neighbors = neighbors.set(
-            neighborEntitySet.name,
-            neighbors.get(neighborEntitySet.name, Immutable.List()).push(Immutable.fromJS(neighbor))
-          );
+          if (neighborEntitySet.name === ENTITY_SETS.HEARINGS) {
+            neighbors = neighbors.set(
+              neighborEntitySet.name,
+              neighbors.get(neighborEntitySet.name, Immutable.List()).push(Immutable.fromJS(neighborDetails))
+            );
+          }
+          else {
+            neighbors = neighbors.set(
+              neighborEntitySet.name,
+              neighbors.get(neighborEntitySet.name, Immutable.List()).push(Immutable.fromJS(neighbor))
+            );
+          }
         }
         else {
           neighbors = neighbors.set(neighborEntitySet.name, Immutable.fromJS(neighbor));
@@ -827,6 +870,43 @@ function* refreshPSANeighborsWatcher() :Generator<*, *, *> {
   yield takeEvery(REFRESH_PSA_NEIGHBORS, refreshPSANeighborsWorker);
 }
 
+function* refreshHearingNeighborsWorker(action :SequenceAction) :Generator<*, *, *> {
+  const { id } = action.value;
+  try {
+    yield put(refreshHearingNeighbors.request(action.id, { id }));
+    const entitySetId = yield call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.HEARINGS);
+    const neighborsList = yield call(SearchApi.searchEntityNeighbors, entitySetId, id);
+    let neighbors = Immutable.Map();
+    neighborsList.forEach((neighbor) => {
+      const entitySetName = Immutable.fromJS(neighbor).getIn([PSA_NEIGHBOR.ENTITY_SET, 'name']);
+      if (entitySetName === ENTITY_SETS.RELEASE_CONDITIONS) {
+        neighbors = neighbors.set(
+          entitySetName,
+          neighbors.get(entitySetName, Immutable.List()).push(Immutable.fromJS(neighbor))
+        );
+      }
+      else {
+        neighbors = neighbors.set(
+          entitySetName,
+          Immutable.fromJS(neighbor)
+        );
+      }
+    });
+    yield put(refreshHearingNeighbors.success(action.id, { id, neighbors }));
+  }
+  catch (error) {
+    console.log(error);
+    yield put(refreshHearingNeighbors.failure(action.id, error));
+  }
+  finally {
+    yield put(refreshHearingNeighbors.finally(action.id, { id }));
+  }
+}
+
+function* refreshHearingNeighborsWatcher() :Generator<*, *, *> {
+  yield takeEvery(REFRESH_HEARING_NEIGHBORS, refreshHearingNeighborsWorker);
+}
+
 function* changePSAStatusWorker(action :SequenceAction) :Generator<*, *, *> {
   const {
     scoresEntity,
@@ -839,7 +919,7 @@ function* changePSAStatusWorker(action :SequenceAction) :Generator<*, *, *> {
     const entitySetId = yield call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.PSA_SCORES);
 
     yield call(DataApi.replaceEntityInEntitySetUsingFqns, entitySetId, scoresId, stripIdField(scoresEntity.toJS()));
-    const newScoresEntity = yield call(DataApi.getEntity, entitySetId, scoresId);
+    const newScoresEntity = yield call(DataApi.getEntityData, entitySetId, scoresId);
 
     yield put(changePSAStatus.success(action.id, {
       id: scoresId,
@@ -871,6 +951,7 @@ export {
   loadPSADataWatcher,
   loadPSAsByDateWatcher,
   refreshPSANeighborsWatcher,
+  refreshHearingNeighborsWatcher,
   updateScoresAndRiskFactorsWatcher,
   updateOutcomesAndReleaseCondtionsWatcher
 };

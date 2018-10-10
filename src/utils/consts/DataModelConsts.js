@@ -19,6 +19,7 @@ export const ENTITY_SETS = {
   SPEAKER_RECOGNITION_PROFILES: 'southdakotaspeakerverificationprofiles',
   FTAS: 'southdakotaftas',
   HEARINGS: 'southdakotahearings',
+  OUTCOMES: 'southdakotapsaoutcomes',
   JUDGES: 'southdakotajudges',
   BONDS: 'southdakotamanualbonds',
   RELEASE_CONDITIONS: 'southdakotareleaseconditions',
@@ -93,6 +94,7 @@ export const PROPERTY_TYPES = {
   PLEA: 'justice.plea',
   PLEA_DATE: 'justice.pleadate',
   QUALIFIER: 'j.OffenseQualifierText',
+  NUMBER_OF_COUNTS: 'ol.numberofcounts',
 
   // Sentence entity type consts
   JAIL_DAYS_SERVED: 'justice.incarcerationdays',
@@ -108,6 +110,9 @@ export const PROPERTY_TYPES = {
   COURTROOM: 'justice.courtroom',
   HEARING_TYPE: 'justice.courtcasetype',
   UPDATE_TYPE: 'ol.update',
+
+  // PSA Outcomes entity Type Consts
+  JUDGE_ACCEPTED: 'justice.judgeacceptedrecommendation',
 
   // PSA form entity type consts
   AGE_AT_CURRENT_ARREST: 'psa.AgeAtCurrentArrest',
@@ -138,6 +143,7 @@ export const PROPERTY_TYPES = {
   DMF_STEP_2_CHARGES: 'justice.dmfstep2',
   DMF_STEP_4_CHARGES: 'justice.dmfstep4',
   DMF_SECONDARY_RELEASE_CHARGES: 'justice.dmfsecondaryreleasecharges',
+  DMF_SECONDARY_HOLD_CHARGES: 'justice.dmfsecondaryholdcharges',
   CONTEXT: 'general.context',
 
   // DMF risk factor notes entity type consts
@@ -145,6 +151,7 @@ export const PROPERTY_TYPES = {
   DMF_STEP_2_CHARGES_NOTES: 'justice.dmfstep2notes',
   DMF_STEP_4_CHARGES_NOTES: 'justice.dmfstep4notes',
   DMF_SECONDARY_RELEASE_CHARGES_NOTES: 'justice.dmfsecondaryreleasechargesnotes',
+  DMF_SECONDARY_HOLD_CHARGES_NOTES: 'justice.dmfsecondaryholdchargesnotes',
 
   // DMF result entity type consts
   COLOR: 'general.color',

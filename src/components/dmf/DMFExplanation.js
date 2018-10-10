@@ -9,9 +9,15 @@ import StepOne from './DMFStepOne';
 import StepTwo from './DMFStepTwo';
 import StepThree from './DMFStepThree';
 import StepFour from './DMFStepFour';
-import StepFive from './DMFStepFive';
-import { CONTEXT, DMF, NOTES, PSA } from '../../utils/consts/Consts';
+import StepFiveRelease from './DMFStepFiveRelease';
+import StepFiveHold from './DMFStepFiveHold';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import {
+  CONTEXT,
+  DMF,
+  NOTES,
+  PSA
+} from '../../utils/consts/Consts';
 
 const DMFWrapper = styled.div`
   display: flex;
@@ -39,6 +45,8 @@ const DMFExplanation = ({
   const stepFourNotes = riskFactors.get(NOTES[DMF.STEP_4_CHARGES]);
   const secondaryReleaseVal = riskFactors.get(DMF.SECONDARY_RELEASE_CHARGES) === `${true}`;
   const secondaryReleaseNotes = riskFactors.get(NOTES[DMF.SECONDARY_RELEASE_CHARGES]);
+  const secondaryHoldVal = riskFactors.get(DMF.SECONDARY_HOLD_CHARGES) === `${true}`;
+  const secondaryHoldNotes = riskFactors.get(NOTES[DMF.SECONDARY_HOLD_CHARGES]);
 
   const nca = scores.getIn([PROPERTY_TYPES.NCA_SCALE, 0]);
   const fta = scores.getIn([PROPERTY_TYPES.FTA_SCALE, 0]);
@@ -74,13 +82,15 @@ const DMFExplanation = ({
           dmf={dmf}
           stepFourVal={stepFourCharges}
           stepFourNotes={stepFourNotes}
+          secondaryReleaseVal={secondaryReleaseVal}
+          secondaryHoldVal={secondaryHoldVal}
           nca={nca}
           fta={fta}
           nvca={nvca}
           currentViolentOffense={currentViolentOffense}
           context={context}
           flagDims={FLAG_DIMS} />
-      <StepFive
+      <StepFiveRelease
           shouldRender={!stepTwoIncrease && !stepFourIncrease}
           dmf={dmf}
           nca={nca}
@@ -88,6 +98,14 @@ const DMFExplanation = ({
           context={context}
           secondaryReleaseVal={secondaryReleaseVal}
           secondaryReleaseNotes={secondaryReleaseNotes} />
+      <StepFiveHold
+          shouldRender={!stepTwoIncrease && !stepFourIncrease && !secondaryReleaseVal}
+          dmf={dmf}
+          nca={nca}
+          fta={fta}
+          context={context}
+          secondaryHoldVal={secondaryHoldVal}
+          secondaryHoldNotes={secondaryHoldNotes} />
     </DMFWrapper>
   );
 };

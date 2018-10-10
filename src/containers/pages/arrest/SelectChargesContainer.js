@@ -7,7 +7,6 @@ import Immutable from 'immutable';
 import styled from 'styled-components';
 import moment from 'moment';
 import randomUUID from 'uuid/v4';
-import { FormControl, Col } from 'react-bootstrap';
 
 import BasicButton from '../../../components/buttons/BasicButton';
 import SecondaryButton from '../../../components/buttons/SecondaryButton';
@@ -23,10 +22,8 @@ import { DOMAIN } from '../../../utils/consts/ReportDownloadTypes';
 import { toISODateTime } from '../../../utils/FormattingUtils';
 
 import {
-  PaddedRow,
   StyledFormWrapper,
   TitleLabel,
-  UnpaddedRow,
   Title
 } from '../../../utils/Layout';
 
@@ -36,11 +33,12 @@ const {
   DEGREE,
   DEGREE_SHORT,
   DISPOSITION_DATE,
-  QUALIFIER
+  QUALIFIER,
+  NUMBER_OF_COUNTS
 } = CHARGE;
 
 const Container = styled(StyledFormWrapper)`
-  text-align: center;
+  text-align: left;
   background-color: #ffffff;
   padding: 30px;
   border-radius: 5px;
@@ -57,6 +55,16 @@ const HeaderWrapper = styled.div`
     width: 220px;
     margin: 20px 0;
   }
+`;
+
+const CountsInput = styled.input.attrs({ type: 'number' })`
+  height: 100%;
+  border: 1px solid #dcdce7;
+  border-radius: 3px;
+  color: #135;
+  font-size: 14px;
+  align-items: center;
+  padding-left: 20px;
 `;
 
 const StyledTitle = styled(Title)`
@@ -78,12 +86,29 @@ const InputLabel = styled(TitleLabel)`
 
 const CaseDetailsWrapper = styled.div`
   text-align: start;
+  margin-bottom: 30px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-gap: 30px;
+`;
+
+const ChargeSearch = styled(SearchableSelect)`
+  margin-top: 30px;
 `;
 
 const ChargeWrapper = styled.div`
-  text-align: start;
   padding: 30px 0;
   border-bottom: 1px solid #e1e1eb;
+`;
+
+const ChargeOptionsWrapper = styled.div`
+  text-align: start;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-gap: 20px;
+  button {
+    height: 100%;
+  }
 `;
 
 const DeleteButton = styled(BasicButton)`
@@ -134,7 +159,8 @@ export default class SelectChargesContainer extends React.Component<Props, State
         [STATUTE]: charge.getIn([PROPERTY_TYPES.CHARGE_STATUTE, 0], '[no statute]'),
         [DESCRIPTION]: charge.getIn([PROPERTY_TYPES.CHARGE_DESCRIPTION, 0], '[no description]'),
         [DEGREE]: charge.getIn([PROPERTY_TYPES.CHARGE_DEGREE, 0]),
-        [DEGREE_SHORT]: charge.getIn([PROPERTY_TYPES.CHARGE_LEVEL, 0])
+        [DEGREE_SHORT]: charge.getIn([PROPERTY_TYPES.CHARGE_LEVEL, 0]),
+        [NUMBER_OF_COUNTS]: 1
       });
     });
     return result;
@@ -151,6 +177,7 @@ export default class SelectChargesContainer extends React.Component<Props, State
   }
 
   onSubmit = () => {
+    const { onSubmit, nextPage } = this.props;
     const { arrestDate, caseDispositionDate, charges } = this.state;
     const caseId = randomUUID();
     const caseEntity = {
@@ -162,49 +189,51 @@ export default class SelectChargesContainer extends React.Component<Props, State
     if (arrestDate) caseEntity[PROPERTY_TYPES.ARREST_DATE_TIME] = [this.getDateTime(arrestDate)];
 
     const chargeEntities = charges.map((charge, index) => {
+      const counts = charge.counts ? charge.counts : 1;
       const chargeEntity = {
         [PROPERTY_TYPES.CHARGE_ID]: [`${caseId}|${index + 1}`],
         [PROPERTY_TYPES.CHARGE_STATUTE]: [charge[STATUTE]],
         [PROPERTY_TYPES.CHARGE_DESCRIPTION]: [charge[DESCRIPTION]],
         [PROPERTY_TYPES.CHARGE_DEGREE]: [charge[DEGREE]],
-        [PROPERTY_TYPES.CHARGE_LEVEL]: [charge[DEGREE_SHORT]]
+        [PROPERTY_TYPES.CHARGE_LEVEL]: [charge[DEGREE_SHORT]],
+        [PROPERTY_TYPES.NUMBER_OF_COUNTS]: counts
       };
       if (charge[QUALIFIER]) chargeEntity[PROPERTY_TYPES.QUALIFIER] = [charge[QUALIFIER]];
       return chargeEntity;
     });
 
-    this.props.onSubmit({
+    onSubmit({
       pretrialCase: Immutable.fromJS(caseEntity),
       charges: Immutable.fromJS(chargeEntities)
     });
-    this.props.nextPage();
+    nextPage();
   }
 
   renderCaseInfo = () => {
     const { arrestDate, caseDispositionDate } = this.state;
     return (
-      <CaseDetailsWrapper>
+      <div>
         <SectionHeader>Arrest Details:</SectionHeader>
-        <PaddedRow>
-          <Col lg={6}>
-            <InputLabel>Arrest Date:</InputLabel>
+        <CaseDetailsWrapper>
+          <InputLabel>
+            Arrest Date
             <DateTimePicker
                 timeFormat="HH:mm"
                 value={arrestDate}
                 onChange={(date) => {
                   this.setState({ arrestDate: date });
                 }} />
-          </Col>
-          <Col lg={6}>
-            <InputLabel>Case Disposition Date:</InputLabel>
+          </InputLabel>
+          <InputLabel>
+            Case Disposition Date
             <DateTimePicker
                 value={caseDispositionDate}
                 onChange={(date) => {
                   this.setState({ caseDispositionDate: date });
                 }} />
-          </Col>
-        </PaddedRow>
-      </CaseDetailsWrapper>
+          </InputLabel>
+        </CaseDetailsWrapper>
+      </div>
     );
   }
 
@@ -219,8 +248,9 @@ export default class SelectChargesContainer extends React.Component<Props, State
   formatCharge = (charge :Charge) => `${charge.statute} ${charge.description}`;
 
   formatChargeOptions = () => {
+    const { county } = this.props;
     let options = Immutable.Map();
-    (this.props.county === DOMAIN.PENNINGTON ? PenningtonChargesList : MinnehahaChargesList).forEach((charge) => {
+    (county === DOMAIN.PENNINGTON ? PenningtonChargesList : MinnehahaChargesList).forEach((charge) => {
       options = options.set(this.formatCharge(charge), charge);
     });
     return options;
@@ -244,7 +274,8 @@ export default class SelectChargesContainer extends React.Component<Props, State
   }
 
   renderInputField = (charge :Charge, field :string, onChange :(event :Object) => void) => (
-    <FormControl
+    <CountsInput
+        placeholder="Number of Counts"
         name={field}
         value={charge[field]}
         onChange={onChange} />
@@ -264,34 +295,28 @@ export default class SelectChargesContainer extends React.Component<Props, State
   }
 
   renderSingleCharge = (charge :Charge, index :number) => {
+
     const onChange = (e) => {
       this.handleChargeInputChange(e, index);
     };
 
     const getOnSelect = field => newVal => this.handleChargeInputChange(newVal, index, field);
-
     const getOnClear = field => () => this.handleChargeInputChange(undefined, index, field);
 
     return (
-      <div key={index}>
-        <ChargeWrapper>
-          <ChargeTitle>{this.formatCharge(charge)}</ChargeTitle>
-          <UnpaddedRow>
-            <Col lg={6}>
-              <SearchableSelect
-                  onSelect={getOnSelect(QUALIFIER)}
-                  options={this.formatSelectOptions(QUALIFIERS)}
-                  searchPlaceholder="Select a qualifier"
-                  value={charge[QUALIFIER]}
-                  onClear={getOnClear(QUALIFIER)} />
-            </Col>
-            <Col lg={3} />
-            <Col lg={3}>
-              <DeleteButton onClick={() => this.deleteCharge(index)}>Remove</DeleteButton>
-            </Col>
-          </UnpaddedRow>
-        </ChargeWrapper>
-      </div>
+      <ChargeWrapper>
+        <ChargeTitle>{this.formatCharge(charge)}</ChargeTitle>
+        <ChargeOptionsWrapper>
+          <SearchableSelect
+              onSelect={getOnSelect(QUALIFIER)}
+              options={this.formatSelectOptions(QUALIFIERS)}
+              searchPlaceholder="Select a qualifier"
+              value={charge[QUALIFIER]}
+              onClear={getOnClear(QUALIFIER)} />
+          {this.renderInputField(charge, NUMBER_OF_COUNTS, onChange)}
+          <DeleteButton onClick={() => this.deleteCharge(index)}>Remove</DeleteButton>
+        </ChargeOptionsWrapper>
+      </ChargeWrapper>
     );
   }
 
@@ -299,22 +324,22 @@ export default class SelectChargesContainer extends React.Component<Props, State
     const { charges } = this.state;
     const chargeItems = charges.map(this.renderSingleCharge);
     return (
-      <CaseDetailsWrapper>
-        <SectionHeader>Charges:</SectionHeader>
+      <div>
+        <SectionHeader>Charges</SectionHeader>
         {chargeItems}
-        <SearchableSelect
+        <ChargeSearch
             onSelect={this.addCharge}
             options={this.formatChargeOptions()}
             searchPlaceholder="Select a charge"
             openAbove />
         <hr />
-      </CaseDetailsWrapper>
+      </div>
     );
   }
 
   renderHeader = () => (
     <HeaderWrapper>
-      <StyledTitle>Add/Edit arrest charges</StyledTitle>
+      <StyledTitle>Add/Edit Arrest Charges</StyledTitle>
       <SecondaryButton onClick={this.onSubmit}>Confirm Charge Details</SecondaryButton>
     </HeaderWrapper>
   )

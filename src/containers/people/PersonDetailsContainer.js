@@ -53,17 +53,22 @@ class PersonDetailsContainer extends React.Component<Props, State> {
   }
 
   componentWillReceiveProps(nextProps) {
+    const { neighbors, actions } = this.props;
     const psaIds = nextProps.neighbors.get(ENTITY_SETS.PSA_SCORES, Immutable.List())
       .map(neighbor => neighbor.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0]))
       .filter(id => !!id)
       .toJS();
-    if (!this.props.neighbors.size && nextProps.neighbors.size) {
-      this.props.actions.loadPSAData(psaIds);
+    if (psaIds.length && !neighbors.size && nextProps.neighbors.size) {
+      actions.loadPSAData(psaIds);
     }
   }
 
   render() {
-    const { neighbors } = this.props;
+    const {
+      neighbors,
+      isFetchingPersonData,
+      selectedPersonData
+    } = this.props;
     const scoreSeq = neighbors.get(ENTITY_SETS.PSA_SCORES, Immutable.Map())
       .filter(neighbor => !!neighbor.get(PSA_NEIGHBOR.DETAILS))
       .map(neighbor => [neighbor
@@ -71,13 +76,15 @@ class PersonDetailsContainer extends React.Component<Props, State> {
     return (
       <div>
         {
-          this.props.isFetchingPersonData
+          isFetchingPersonData
             ? <LoadingSpinner /> :
-            <AboutPerson
-                selectedPersonData={this.props.selectedPersonData}
-                isFetchingPersonData={this.props.isFetchingPersonData}
-                scoreSeq={scoreSeq}
-                neighbors={this.props.neighbors} />
+            (
+              <AboutPerson
+                  selectedPersonData={selectedPersonData}
+                  isFetchingPersonData={isFetchingPersonData}
+                  scoreSeq={scoreSeq}
+                  neighbors={neighbors} />
+            )
         }
       </div>
     );

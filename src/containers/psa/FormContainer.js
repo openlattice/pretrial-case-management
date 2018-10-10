@@ -452,6 +452,8 @@ class Form extends React.Component<Props, State> {
     if (values[DMF.COURT_OR_BOOKING] !== CONTEXT.BOOKING) {
       delete values[DMF.SECONDARY_RELEASE_CHARGES];
       delete values[NOTES[DMF.SECONDARY_RELEASE_CHARGES]];
+      delete values[DMF.SECONDARY_HOLD_CHARGES];
+      delete values[NOTES[DMF.SECONDARY_HOLD_CHARGES]];
     }
 
     this.props.actions.submit({ values, config });

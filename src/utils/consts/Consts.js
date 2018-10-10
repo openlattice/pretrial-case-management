@@ -129,7 +129,8 @@ export const DMF = {
   STEP_2_CHARGES: 'dmfStepTwoCharges',
   STEP_4_CHARGES: 'dmfStepFourCharges',
   COURT_OR_BOOKING: 'courtOrBooking',
-  SECONDARY_RELEASE_CHARGES: 'dmfSecondaryReleaseCharges'
+  SECONDARY_RELEASE_CHARGES: 'dmfSecondaryReleaseCharges',
+  SECONDARY_HOLD_CHARGES: 'dmfSecondaryHoldCharges'
 };
 
 export const NOTES = {
@@ -145,7 +146,8 @@ export const NOTES = {
   [DMF.EXTRADITED]: 'extraditedNotes',
   [DMF.STEP_2_CHARGES]: 'dmfStep2ChargesNotes',
   [DMF.STEP_4_CHARGES]: 'dmfStep4ChargesNotes',
-  [DMF.SECONDARY_RELEASE_CHARGES]: 'dmfSecondaryReleaseChargesNotes'
+  [DMF.SECONDARY_RELEASE_CHARGES]: 'dmfSecondaryReleaseChargesNotes',
+  [DMF.SECONDARY_HOLD_CHARGES]: 'dmfSecondaryHoldChargesNotes'
 };
 
 export const CONTEXT = {
@@ -176,7 +178,8 @@ export const CHARGE = {
   DISPOSITION: 'disposition',
   PLEA_DATE: 'pleaDate',
   PLEA: 'plea',
-  QUALIFIER: 'qualifier'
+  QUALIFIER: 'qualifier',
+  NUMBER_OF_COUNTS: 'counts'
 };
 
 export const FORM_IDS = {
@@ -229,7 +232,8 @@ export const ID_FIELD_NAMES = {
   DMF_RISK_FACTORS_ID: 'dmfRiskFactorsId',
   DMF_ID: 'dmfId',
   BOND_ID: 'bondId',
-  HEARING_ID: 'hearingId'
+  HEARING_ID: 'hearingId',
+  OUTCOME_ID: 'outcomeId'
 };
 
 export const ID_FIELDS = {
@@ -245,7 +249,8 @@ export const ID_FIELDS = {
 
 export const HEARING = {
   DATE_TIME: 'hearingDateTime',
-  COURTROOM: 'hearingCourtroom'
+  COURTROOM: 'hearingCourtroom',
+  JUDGE: 'hearingJudge'
 };
 
 export const PSA_STATUSES = {

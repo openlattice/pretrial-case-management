@@ -26,6 +26,7 @@ import {
   getConditionsTextList,
   shouldCheckForSecondaryRelease,
   updateDMFSecondaryRelease,
+  updateDMFSecondaryHold,
   formatDMFFromEntity,
   getDMFDecision,
   increaseDMFSeverity
@@ -221,13 +222,16 @@ describe('DMFUtils', () => {
     test('should set condition 1 to PR Release', () => {
 
       expect(updateDMFSecondaryRelease({})).toEqual({
+        [RESULT_CATEGORIES.COLOR]: COLORS.DARK_GREEN,
+        [RESULT_CATEGORIES.RELEASE_TYPE]: RELEASE_TYPES.RELEASE,
         [RESULT_CATEGORIES.CONDITION_1]: CONDITION_TYPES.PR_RELEASE
       });
 
       expect(updateDMFSecondaryRelease({
         [RESULT_CATEGORIES.COLOR]: [COLORS.YELLOW]
       })).toEqual({
-        [RESULT_CATEGORIES.COLOR]: [COLORS.YELLOW],
+        [RESULT_CATEGORIES.COLOR]: COLORS.DARK_GREEN,
+        [RESULT_CATEGORIES.RELEASE_TYPE]: RELEASE_TYPES.RELEASE,
         [RESULT_CATEGORIES.CONDITION_1]: CONDITION_TYPES.PR_RELEASE
       });
 
@@ -235,8 +239,40 @@ describe('DMFUtils', () => {
         [RESULT_CATEGORIES.COLOR]: [COLORS.YELLOW],
         [RESULT_CATEGORIES.CONDITION_1]: CONDITION_TYPES.EM_AND_BOND
       })).toEqual({
-        [RESULT_CATEGORIES.COLOR]: [COLORS.YELLOW],
+        [RESULT_CATEGORIES.COLOR]: COLORS.DARK_GREEN,
+        [RESULT_CATEGORIES.RELEASE_TYPE]: RELEASE_TYPES.RELEASE,
         [RESULT_CATEGORIES.CONDITION_1]: CONDITION_TYPES.PR_RELEASE
+      });
+
+    });
+
+  });
+
+  describe('updateDMFSecondaryHold', () => {
+
+    test('should set condition 1 to Hold Pending Judicial Review', () => {
+
+      expect(updateDMFSecondaryHold({})).toEqual({
+        [RESULT_CATEGORIES.COLOR]: COLORS.RED,
+        [RESULT_CATEGORIES.RELEASE_TYPE]: RELEASE_TYPES.MAXIMUM_CONDITIONS,
+        [RESULT_CATEGORIES.CONDITION_1]: CONDITION_TYPES.HOLD_PENDING_JUDICIAL_REVIEW
+      });
+
+      expect(updateDMFSecondaryHold({
+        [RESULT_CATEGORIES.COLOR]: [COLORS.YELLOW]
+      })).toEqual({
+        [RESULT_CATEGORIES.COLOR]: COLORS.RED,
+        [RESULT_CATEGORIES.RELEASE_TYPE]: RELEASE_TYPES.MAXIMUM_CONDITIONS,
+        [RESULT_CATEGORIES.CONDITION_1]: CONDITION_TYPES.HOLD_PENDING_JUDICIAL_REVIEW
+      });
+
+      expect(updateDMFSecondaryHold({
+        [RESULT_CATEGORIES.COLOR]: [COLORS.YELLOW],
+        [RESULT_CATEGORIES.CONDITION_1]: CONDITION_TYPES.EM_AND_BOND
+      })).toEqual({
+        [RESULT_CATEGORIES.COLOR]: COLORS.RED,
+        [RESULT_CATEGORIES.RELEASE_TYPE]: RELEASE_TYPES.MAXIMUM_CONDITIONS,
+        [RESULT_CATEGORIES.CONDITION_1]: CONDITION_TYPES.HOLD_PENDING_JUDICIAL_REVIEW
       });
 
     });

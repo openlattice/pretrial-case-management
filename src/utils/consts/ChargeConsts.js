@@ -94,7 +94,6 @@ export const GUILTY_DISPOSITIONS = [
   'Guilty But Mentally Ill',
   'Jail',
   'Judgment on Plea of Guilty',
-  'No Formal Action',
   'Punishment Enhanced by Part II Information',
   'Restitution',
   'Stipulate to Facts-Found Guilty',
