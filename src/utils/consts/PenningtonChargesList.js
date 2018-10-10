@@ -2502,6 +2502,12 @@ const PenningtonChargesList = [
     degreeShort: 'F4'
   },
   {
+    statute: '22-14A-19',
+    description: 'Use of explosive or Device to Endanger Human Life or Safety - Felony',
+    degree: 'Felony Class 3',
+    degreeShort: 'F3'
+  },
+  {
     statute: '22-14A-20',
     description: 'Placement of Explosive or Device as to Endanger Human Life or Safety(F4)',
     degree: 'Felony 4',
