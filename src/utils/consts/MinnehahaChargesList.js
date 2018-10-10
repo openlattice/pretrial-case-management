@@ -2035,7 +2035,7 @@ const MinnehahaChargesList = [
   },
   {
     statute: '22-14-20(F5)',
-    description: 'Discharge of Firearm- At Occupied Structure or Car=F5  No Injury',
+    description: 'Discharge of Firearm- At Occupied Structure or Car=F5 No Injury',
     degree: 'Felony Class 5',
     degreeShort: 'F5'
   },
@@ -2110,6 +2110,12 @@ const MinnehahaChargesList = [
     description: 'Use of explosive or device to destroy anothers property',
     degree: 'Felony Class 4',
     degreeShort: 'F4'
+  },
+  {
+    statute: '22-14A-19',
+    description: 'Use of explosive or Device to Endanger Human Life or Safety - Felony',
+    degree: 'Felony Class 3',
+    degreeShort: 'F3'
   },
   {
     statute: '22-14A-20',
@@ -2239,7 +2245,7 @@ const MinnehahaChargesList = [
   },
   {
     statute: '22-18-1',
-    description: 'Simple Assault Domestic Intimidation',
+    description: 'Simple Assault Domestic Intimidation (M1)',
     degree: 'Misdemeanor Class 1',
     degreeShort: 'M1'
   },
