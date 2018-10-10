@@ -204,7 +204,6 @@ class SelectHearingsContainer extends React.Component<Props, State> {
       const hasOutcome = !!hearingNeighborsById.getIn([id, ENTITY_SETS.OUTCOMES]);
       return !((scheduledHearingMap.get(hearingDateTime) === hearingCourtroom) || !hasOutcome);
     });
-    console.log(unusedHearings.toJS());
     return unusedHearings.sort((h1, h2) => (moment(h1.getIn([PROPERTY_TYPES.DATE_TIME, 0], ''))
       .isBefore(h2.getIn([PROPERTY_TYPES.DATE_TIME, 0], '')) ? 1 : -1));
   }
