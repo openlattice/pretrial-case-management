@@ -393,6 +393,34 @@ export const CHARGE_VALUES = {
       [DESCRIPTION]: 'Stalking - Child 12 or Younger(F6)'
     },
     {
+      [STATUTE]: '22-19A-16(F6)',
+      [DESCRIPTION]: 'Violation of Stalking Protection Order Including Aggravated Assault'
+    },
+    {
+      [STATUTE]: '22-19A-16(F6)',
+      [DESCRIPTION]: 'Violation of Stalking Protection Order Prior Including Aggravated Assault Domestic'
+    },
+    {
+      [STATUTE]: '22-19A-16(M1)',
+      [DESCRIPTION]: 'Violation of a Stalking Protection Order'
+    },
+    {
+      [STATUTE]: '22-19A-16(M1)',
+      [DESCRIPTION]: 'Violation of Stalking Protection Order Domestic'
+    },
+    {
+      [STATUTE]: '22-19A-17',
+      [DESCRIPTION]: 'Violation of No Contact Prior to Court Appearance'
+    },
+    {
+      [STATUTE]: '22-19A-17',
+      [DESCRIPTION]: 'Violation of No Contact Prior to Court Appearance Domestic'
+    },
+    {
+      [STATUTE]: '22-19A-18',
+      [DESCRIPTION]: 'Bond-No contact terms'
+    },
+    {
       [STATUTE]: '22-22-1',
       [DESCRIPTION]: 'Rape - Female/Female - V = 13, but < 16, and S at least 3 yrs older than V (4th Deg, Class 3 Felony)(F3)'
     },
@@ -1252,34 +1280,6 @@ export const CHARGE_VALUES = {
     {
       [STATUTE]: '22-19-1(CFel)',
       [DESCRIPTION]: 'Kidnapping in the First Degree as a Class C Felony'
-    },
-    {
-      [STATUTE]: '22-19A-16(F6)',
-      [DESCRIPTION]: 'Violation of Stalking Protection Order Including Aggravated Assault'
-    },
-    {
-      [STATUTE]: '22-19A-16(F6)',
-      [DESCRIPTION]: 'Violation of Stalking Protection Order Prior Including Aggravated Assault Domestic'
-    },
-    {
-      [STATUTE]: '22-19A-16(M1)',
-      [DESCRIPTION]: 'Violation of a Stalking Protection Order'
-    },
-    {
-      [STATUTE]: '22-19A-16(M1)',
-      [DESCRIPTION]: 'Violation of Stalking Protection Order Domestic'
-    },
-    {
-      [STATUTE]: '22-19A-17',
-      [DESCRIPTION]: 'Violation of No Contact Prior to Court Appearance'
-    },
-    {
-      [STATUTE]: '22-19A-17',
-      [DESCRIPTION]: 'Violation of No Contact Prior to Court Appearance Domestic'
-    },
-    {
-      [STATUTE]: '22-19A-18',
-      [DESCRIPTION]: 'Bond-No contact terms'
     },
     {
       [STATUTE]: '22-19A-2',

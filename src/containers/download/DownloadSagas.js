@@ -250,14 +250,15 @@ function* downloadChargeListsWorker(action :SequenceAction) :Generator<*, *, *> 
         'Zuercher Violent List'
       ]
     );
+    console.log(CHARGE_VALUES);
     const step2ChargeValues = CHARGE_VALUES[CHARGE_TYPES.STEP_TWO]
       .map(charge => `${charge.statute}|${charge.description}`);
     const step4ChargeValues = CHARGE_VALUES[CHARGE_TYPES.STEP_FOUR]
       .map(charge => `${charge.statute}|${charge.description}`);
     const violentChargeValues = CHARGE_VALUES[CHARGE_TYPES.ALL_VIOLENT]
       .map(charge => `${charge.statute}|${charge.description}`);
-    const pennBookingExceptions = PENN_BOOKING_EXCEPTIONS
-      .map(charge => `${charge.statute}|${charge.description}`);
+    // const pennBookingExceptions = PENN_BOOKING_EXCEPTIONS
+    //   .map(charge => `${charge.statute}|${charge.description}`);
 
 
     chargesList.forEach((charge) => {
@@ -278,10 +279,10 @@ function* downloadChargeListsWorker(action :SequenceAction) :Generator<*, *, *> 
           CHARGE_TYPES.ALL_VIOLENT,
           violentChargeValues.includes(`${statute}|${description}`)
         )
-        .set(
-          BHE_LABELS.RELEASE,
-          pennBookingExceptions.includes(`${statute}|${description}`)
-        )
+        // .set(
+        //   BHE_LABELS.RELEASE,
+        //   pennBookingExceptions.includes(`${statute}|${description}`)
+        // )
         .set(
           'Odyssey Violent List',
           VIOLENT_CHARGES.includes(statute)
