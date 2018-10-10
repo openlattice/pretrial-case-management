@@ -9,6 +9,7 @@ import randomUUID from 'uuid/v4';
 import { List, Map, Set } from 'immutable';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
+import { Constants } from 'lattice';
 
 import InfoButton from '../../components/buttons/InfoButton';
 import DatePicker from '../../components/controls/StyledDatePicker';
@@ -31,6 +32,8 @@ import { Title } from '../../utils/Layout';
 import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
 import * as ReviewActionFactory from '../review/ReviewActionFactory';
 import * as CourtActionFactory from '../court/CourtActionFactory';
+
+const { OPENLATTICE_ID_FQN } = Constants;
 
 
 const Container = styled.div`
@@ -187,7 +190,7 @@ class SelectHearingsContainer extends React.Component<Props, State> {
   }
 
   getSortedHearings = (scheduledHearings) => {
-    const { hearings } = this.props;
+    const { hearings, hearingNeighborsById } = this.props;
     let scheduledHearingMap = Map();
     scheduledHearings.forEach((scheduledHearing) => {
       const dateTime = scheduledHearing.getIn([PROPERTY_TYPES.DATE_TIME, 0]);
@@ -197,8 +200,11 @@ class SelectHearingsContainer extends React.Component<Props, State> {
     const unusedHearings = hearings.filter((hearing) => {
       const hearingDateTime = hearing.getIn([PROPERTY_TYPES.DATE_TIME, 0], '');
       const hearingCourtroom = hearing.getIn([PROPERTY_TYPES.COURTROOM, 0], '');
-      return !(scheduledHearingMap.get(hearingDateTime) === hearingCourtroom);
+      const id = hearing.getIn([OPENLATTICE_ID_FQN, 0]);
+      const hasOutcome = !!hearingNeighborsById.getIn([id, ENTITY_SETS.OUTCOMES]);
+      return !((scheduledHearingMap.get(hearingDateTime) === hearingCourtroom) || !hasOutcome);
     });
+    console.log(unusedHearings.toJS());
     return unusedHearings.sort((h1, h2) => (moment(h1.getIn([PROPERTY_TYPES.DATE_TIME, 0], ''))
       .isBefore(h2.getIn([PROPERTY_TYPES.DATE_TIME, 0], '')) ? 1 : -1));
   }
