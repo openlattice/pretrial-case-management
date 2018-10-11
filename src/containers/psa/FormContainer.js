@@ -910,7 +910,7 @@ function mapStateToProps(state :Immutable.Map<*, *>) :Object {
 
     [PSA_FORM.SUBMITTED]: submit.get(SUBMIT.SUBMITTED),
     [PSA_FORM.SUBMITTING]: submit.get(SUBMIT.SUBMITTING),
-    [PSA_FORM.ERROR]: submit.get(SUBMIT.ERROR),
+    [PSA_FORM.SUBMIT_ERROR]: submit.get(SUBMIT.ERROR),
 
     [SEARCH.SELECTED_PERSON_ID]: search.get(SEARCH.SELECTED_PERSON_ID),
     isLoadingCases: search.get(SEARCH.LOADING_CASES),
