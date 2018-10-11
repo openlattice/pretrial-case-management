@@ -129,9 +129,9 @@ function* loadHearingsForDateWorker(action :SequenceAction) :Generator<*, *, *> 
         }
       });
     const loadPersonData = true;
-    const hearinNeighbors = loadHearingNeighbors({ hearingIds, loadPersonData });
+    const hearingNeighbors = loadHearingNeighbors({ hearingIds, loadPersonData });
     yield put(loadHearingsForDate.success(action.id, { hearingsToday, hearingsByTime }));
-    yield put(hearinNeighbors);
+    yield put(hearingNeighbors);
   }
   catch (error) {
     console.error(error);
