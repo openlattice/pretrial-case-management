@@ -255,7 +255,7 @@ class CourtContainer extends React.Component<Props, State> {
     const personSentenceHistory = sentenceHistory.get(personOlId, Immutable.Map());
     const personFTAHistory = ftaHistory.get(personOlId, Immutable.Map());
     const personHearings = hearings.get(personOlId, Immutable.List());
-    const hasOpenPSA = peopleWithOpenPsas.has(person.getIn([OPENLATTICE_ID_FQN, 0]));
+    const hasOpenPSA = peopleWithOpenPsas.has(personOlId);
     const scores = openPSANeighbors
       .getIn([personOlId, ENTITY_SETS.PSA_SCORES, 0, PSA_NEIGHBOR.DETAILS], Immutable.Map());
     const neighbors = psaNeighborsById.get(openPSAId, Immutable.Map());
