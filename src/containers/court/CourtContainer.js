@@ -25,8 +25,14 @@ import { StyledSectionWrapper } from '../../utils/Layout';
 import { TIME_FORMAT, formatDate } from '../../utils/FormattingUtils';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { DOMAIN } from '../../utils/consts/ReportDownloadTypes';
-import { STATE, COURT, REVIEW, SUBMIT, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { sortPeopleByName } from '../../utils/PSAUtils';
+import {
+  STATE,
+  COURT,
+  REVIEW,
+  SUBMIT,
+  PSA_NEIGHBOR
+} from '../../utils/consts/FrontEndStateConsts';
 
 import * as CourtActionFactory from './CourtActionFactory';
 import * as FormActionFactory from '../psa/FormActionFactory';
@@ -135,7 +141,9 @@ const SpinnerWrapper = styled.div`
 
 type Props = {
   hearingsToday :Immutable.List<*>,
+  openPSAIds :Immutable.List<*>,
   hearingsByTime :Immutable.Map<*, *>,
+  psaNeighborsById :Immutable.Map<*, *>,
   hearingNeighborsById :Immutable.Map<*, *>,
   isLoadingHearings :boolean,
   isLoadingPSAs :boolean,
@@ -143,6 +151,7 @@ type Props = {
   courtroom :string,
   county :string,
   peopleWithOpenPsas :Immutable.Set<*>,
+  peopleIdsToOpenPSAIds :Immutable.Map<*>,
   openPSANeighbors :Immutable.Map<*>,
   caseHistory :Immutable.List<*>,
   manualCaseHistory :Immutable.List<*>,
@@ -153,6 +162,7 @@ type Props = {
   hearings :Immutable.List<*>,
   loadingPSAData :boolean,
   submitting :boolean,
+  psaIdsRefreshing :boolean,
   actions :{
     bulkDownloadPSAReviewPDF :({ peopleEntityKeyIds :string[] }) => void,
     changeHearingFilters :({ county? :string, courtroom? :string }) => void,
@@ -167,6 +177,7 @@ type Props = {
       personId :string,
       neighbors :Immutable.Map<*, *>
     }) => void,
+    loadHearingNeighbors :(hearingIds :string[]) => void,
     loadHearingsForDate :(date :Object) => void,
     loadPSAsByDate :(filter :string) => void,
     refreshPSANeighbors :({ id :string }) => void,
@@ -193,39 +204,61 @@ class CourtContainer extends React.Component<Props, State> {
   }
 
   componentDidMount() {
-    this.props.actions.checkPSAPermissions();
-    if (!this.props.hearingsByTime.size || !this.props.hearingNeighborsById.size) {
-      this.props.actions.loadHearingsForDate(this.state.date);
+    const { date } = this.state;
+    const { actions, hearingsByTime, hearingNeighborsById } = this.props;
+    const { checkPSAPermissions, loadHearingsForDate } = actions;
+    checkPSAPermissions();
+    if (!hearingsByTime.size || !hearingNeighborsById.size) {
+      loadHearingsForDate(date);
     }
   }
 
   componentWillReceiveProps(nextProps) {
-    const { openPSAIds } = this.props;
+    const { openPSAIds, actions } = this.props;
     if (openPSAIds.size !== nextProps.openPSAIds.size) {
-      this.props.actions.loadPSAData(nextProps.openPSAIds.toJS());
+      actions.loadPSAData(nextProps.openPSAIds.toJS());
     }
   }
 
   componentWillUnmount() {
-    this.props.actions.clearSubmit();
+    const { actions } = this.props;
+    actions.clearSubmit();
   }
 
   renderPersonCard = (person, index) => {
+    const {
+      actions,
+      peopleIdsToOpenPSAIds,
+      caseHistory,
+      manualCaseHistory,
+      chargeHistory,
+      manualChargeHistory,
+      sentenceHistory,
+      ftaHistory,
+      hearings,
+      peopleWithOpenPsas,
+      openPSANeighbors,
+      psaNeighborsById,
+      submitting,
+      psaIdsRefreshing
+    } = this.props;
+
     const personId = person.getIn([PROPERTY_TYPES.PERSON_ID, 0]);
     const personOlId = person.getIn([OPENLATTICE_ID_FQN, 0]);
-    const openPSAId = this.props.peopleIdsToOpenPSAIds.get(personOlId, '');
+    const openPSAId = peopleIdsToOpenPSAIds.get(personOlId, '');
     const dobMoment = moment(person.getIn([PROPERTY_TYPES.DOB, 0], ''));
     const formattedDOB = dobMoment.isValid() ? formatDate(dobMoment) : '';
-    const caseHistory = this.props.caseHistory.get(personOlId, Immutable.List());
-    const manualCaseHistory = this.props.manualCaseHistory.get(personOlId, Immutable.List());
-    const chargeHistory = this.props.chargeHistory.get(personOlId, Immutable.Map());
-    const manualChargeHistory = this.props.manualChargeHistory.get(personOlId, Immutable.Map());
-    const sentenceHistory = this.props.sentenceHistory.get(personOlId, Immutable.Map());
-    const ftaHistory = this.props.ftaHistory.get(personOlId, Immutable.Map());
-    const hearings = this.props.hearings.get(personOlId, Immutable.List());
-    const hasOpenPSA = this.props.peopleWithOpenPsas.has(person.getIn([OPENLATTICE_ID_FQN, 0]));
-    const scores = this.props.openPSANeighbors.getIn([personOlId, ENTITY_SETS.PSA_SCORES, 0, PSA_NEIGHBOR.DETAILS], Immutable.Map());
-    const neighbors = this.props.psaNeighborsById.get(openPSAId, Immutable.Map());
+    const personCaseHistory = caseHistory.get(personOlId, Immutable.List());
+    const personManualCaseHistory = manualCaseHistory.get(personOlId, Immutable.List());
+    const personChargeHistory = chargeHistory.get(personOlId, Immutable.Map());
+    const personManualChargeHistory = manualChargeHistory.get(personOlId, Immutable.Map());
+    const personSentenceHistory = sentenceHistory.get(personOlId, Immutable.Map());
+    const personFTAHistory = ftaHistory.get(personOlId, Immutable.Map());
+    const personHearings = hearings.get(personOlId, Immutable.List());
+    const hasOpenPSA = peopleWithOpenPsas.has(personOlId);
+    const scores = openPSANeighbors
+      .getIn([personOlId, ENTITY_SETS.PSA_SCORES, 0, PSA_NEIGHBOR.DETAILS], Immutable.Map());
+    const neighbors = psaNeighborsById.get(openPSAId, Immutable.Map());
     const personObj = {
       identification: personId,
       firstName: person.getIn([PROPERTY_TYPES.FIRST_NAME, 0]),
@@ -244,27 +277,29 @@ class CourtContainer extends React.Component<Props, State> {
           hasOpenPSA={hasOpenPSA}
           scores={scores}
           neighbors={neighbors}
-          downloadFn={this.props.actions.downloadPSAReviewPDF}
-          loadCaseHistoryFn={this.props.actions.loadCaseHistory}
-          submitData={this.props.actions.submit}
-          replaceEntity={this.props.actions.replaceEntity}
-          deleteEntity={this.props.actions.deleteEntity}
-          caseHistory={caseHistory}
-          manualCaseHistory={manualCaseHistory}
-          chargeHistory={chargeHistory}
-          manualChargeHistory={manualChargeHistory}
-          sentenceHistory={sentenceHistory}
-          ftaHistory={ftaHistory}
-          hearings={hearings}
-          submitting={this.props.submitting}
-          refreshingNeighbors={this.props.psaIdsRefreshing.has(entityKeyId)}
+          downloadFn={actions.downloadPSAReviewPDF}
+          loadCaseHistoryFn={actions.loadCaseHistory}
+          loadHearingNeighbors={actions.loadHearingNeighbors}
+          submitData={actions.submit}
+          replaceEntity={actions.replaceEntity}
+          deleteEntity={actions.deleteEntity}
+          caseHistory={personCaseHistory}
+          manualCaseHistory={personManualCaseHistory}
+          chargeHistory={personChargeHistory}
+          manualChargeHistory={personManualChargeHistory}
+          sentenceHistory={personSentenceHistory}
+          ftaHistory={personFTAHistory}
+          hearings={personHearings}
+          submitting={submitting}
+          refreshingNeighbors={psaIdsRefreshing.has(entityKeyId)}
           judgesview />
     );
   }
 
   downloadPDFs = (courtroom, people, time) => {
+    const { actions } = this.props;
     const fileName = `${courtroom}-${moment().format('YYYY-MM-DD')}-${time}`;
-    this.props.actions.bulkDownloadPSAReviewPDF({
+    actions.bulkDownloadPSAReviewPDF({
       fileName,
       peopleEntityKeyIds: people.valueSeq().map(person => person.getIn([OPENLATTICE_ID_FQN, 0])).toJS()
     });
@@ -309,7 +344,8 @@ class CourtContainer extends React.Component<Props, State> {
       }
       if (shouldInclude) {
         const hearingId = hearing.getIn([OPENLATTICE_ID_FQN, 0]);
-        const person = hearingNeighborsById.getIn([hearingId, ENTITY_SETS.PEOPLE], Immutable.Map());
+        const person = hearingNeighborsById
+          .getIn([hearingId, ENTITY_SETS.PEOPLE, PSA_NEIGHBOR.DETAILS], Immutable.Map());
         const personId = person.getIn([PROPERTY_TYPES.PERSON_ID, 0]);
         if (personId) {
           hearingsByCourtroom = hearingsByCourtroom
@@ -320,7 +356,6 @@ class CourtContainer extends React.Component<Props, State> {
 
 
     if (!hearingsByCourtroom.size) return null;
-
     return (
       <HearingTime key={time}>
         <h1>{time}</h1>
@@ -333,14 +368,16 @@ class CourtContainer extends React.Component<Props, State> {
   }
 
   onCountyChange = (county) => {
-    this.props.actions.changeHearingFilters({
+    const { actions } = this.props;
+    actions.changeHearingFilters({
       county,
       courtroom: ''
     });
   }
 
   onCourtroomChange = (courtroom) => {
-    this.props.actions.changeHearingFilters({ courtroom });
+    const { actions } = this.props;
+    actions.changeHearingFilters({ courtroom });
   }
 
   renderCountyChoices = () => (
@@ -396,38 +433,39 @@ class CourtContainer extends React.Component<Props, State> {
   }
 
   handleDateChange = (dateStr) => {
+    const { actions } = this.props;
     const date = moment(dateStr);
     if (date.isValid()) {
       this.setState({ date });
-      this.props.actions.loadHearingsForDate(date);
+      actions.loadHearingsForDate(date);
     }
   }
 
   renderDatePicker = () => {
+    const { date } = this.state;
     return (
       <DatePickerWrapper>
         <Label>Hearing Date</Label>
         <StyledDatePicker
-            value={this.state.date.format('YYYY-MM-DD')}
+            value={date.format('YYYY-MM-DD')}
             onChange={this.handleDateChange}
             clearButton={false} />
       </DatePickerWrapper>
     );
   }
 
-  renderSearchLink = () => {
-    return (
-      <NavLink to={Routes.SEARCH_PEOPLE} name={Routes.SEARCH_PEOPLE}>Search All People</NavLink>
-    );
-  }
+  renderSearchLink = () => (
+    <NavLink to={Routes.SEARCH_PEOPLE} name={Routes.SEARCH_PEOPLE}>Search All People</NavLink>
+  )
 
   renderContent = () => {
-    if (this.props.loadingPSAData || this.props.isLoadingPSAs) {
+    const { loadingPSAData, isLoadingPSAs, hearingsByTime } = this.props;
+    if (loadingPSAData || isLoadingPSAs) {
       return <SpinnerWrapper><LoadingSpinner /></SpinnerWrapper>;
     }
 
-    const timeOptions = this.props.hearingsByTime.keySeq().sort((time1, time2) =>
-      (moment(time1, TIME_FORMAT).isSameOrBefore(moment(time2, TIME_FORMAT)) ? -1 : 1));
+    const timeOptions = hearingsByTime.keySeq().sort((time1, time2) => (
+      moment(time1, TIME_FORMAT).isSameOrBefore(moment(time2, TIME_FORMAT)) ? -1 : 1));
 
 
     return timeOptions.map(this.renderHearingsAtTime);
@@ -461,7 +499,10 @@ function mapStateToProps(state) {
   return {
     [COURT.HEARINGS_TODAY]: court.get(COURT.HEARINGS_TODAY),
     [COURT.HEARINGS_BY_TIME]: court.get(COURT.HEARINGS_BY_TIME),
+    [COURT.LOADING_HEARING_NEIGHBORS]: court.get(COURT.LOADING_HEARING_NEIGHBORS),
     [COURT.HEARINGS_NEIGHBORS_BY_ID]: court.get(COURT.HEARINGS_NEIGHBORS_BY_ID),
+    [COURT.HEARING_IDS_REFRESHING]: court.get(COURT.HEARING_IDS_REFRESHING),
+    [COURT.LOADING_HEARINGS_ERROR]: court.get(COURT.LOADING_HEARINGS_ERROR),
     [COURT.PEOPLE_WITH_OPEN_PSAS]: court.get(COURT.PEOPLE_WITH_OPEN_PSAS),
     [COURT.LOADING_HEARINGS]: court.get(COURT.LOADING_HEARINGS),
     [COURT.LOADING_PSAS]: court.get(COURT.LOADING_PSAS),

@@ -28,9 +28,6 @@ const loadPSAsByDate :RequestSequence = newRequestSequence(LOAD_PSAS_BY_DATE);
 const REFRESH_PSA_NEIGHBORS :string = 'REFRESH_PSA_NEIGHBORS';
 const refreshPSANeighbors :RequestSequence = newRequestSequence(REFRESH_PSA_NEIGHBORS);
 
-const REFRESH_HEARING_NEIGHBORS :string = 'REFRESH_HEARING_NEIGHBORS';
-const refreshHearingNeighbors :RequestSequence = newRequestSequence(REFRESH_HEARING_NEIGHBORS);
-
 const UPDATE_SCORES_AND_RISK_FACTORS :string = 'UPDATE_SCORES_AND_RISK_FACTORS';
 const updateScoresAndRiskFactors :RequestSequence = newRequestSequence(UPDATE_SCORES_AND_RISK_FACTORS);
 
@@ -46,7 +43,6 @@ export {
   LOAD_PSA_DATA,
   LOAD_PSAS_BY_DATE,
   REFRESH_PSA_NEIGHBORS,
-  REFRESH_HEARING_NEIGHBORS,
   UPDATE_SCORES_AND_RISK_FACTORS,
   UPDATE_OUTCOMES_AND_RELEASE_CONDITIONS,
   bulkDownloadPSAReviewPDF,
@@ -57,7 +53,6 @@ export {
   loadPSAData,
   loadPSAsByDate,
   refreshPSANeighbors,
-  refreshHearingNeighbors,
   updateScoresAndRiskFactors,
   updateOutcomesAndReleaseCondtions
 };
