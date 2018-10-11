@@ -6,10 +6,11 @@ import React from 'react';
 import Immutable from 'immutable';
 import styled from 'styled-components';
 import moment from 'moment';
+import { Constants } from 'lattice';
 
 import PSAModal from '../../containers/review/PSAModal';
-import ClosePSAModal from '../../components/review/ClosePSAModal';
-import BasicButton from '../../components/buttons/StyledButton';
+import ClosePSAModal from './ClosePSAModal';
+import BasicButton from '../buttons/StyledButton';
 import PersonCard from '../person/PersonCardReview';
 import PSAReportDownloadButton from './PSAReportDownloadButton';
 import PSAStats from './PSAStats';
@@ -18,6 +19,8 @@ import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts'
 import { psaIsClosed } from '../../utils/PSAUtils';
 import { getEntityKeyId } from '../../utils/DataUtils';
 import { PSA_NEIGHBOR, PSA_ASSOCIATION } from '../../utils/consts/FrontEndStateConsts';
+
+const { OPENLATTICE_ID_FQN } = Constants;
 
 
 const ReviewRowContainer = styled.div`
@@ -186,12 +189,12 @@ export default class PSAReviewReportsRow extends React.Component<Props, State> {
   }
 
   renderStats = () => {
-    const { hideProfile } = this.props;
+    const { hideProfile, scores } = this.props;
     const StatsWrapper = hideProfile ? StatsForProfile : StatsForReview;
 
     return (
       <StatsWrapper>
-        <PSAStats scores={this.props.scores} downloadButton={this.renderDownloadButton} />
+        <PSAStats scores={scores} downloadButton={this.renderDownloadButton} />
       </StatsWrapper>
     );
   }
@@ -201,45 +204,50 @@ export default class PSAReviewReportsRow extends React.Component<Props, State> {
   }
 
   renderDownloadButton = () => {
-    const { component } = this.props;
+    const {
+      component,
+      downloadFn,
+      neighbors,
+      scores
+    } = this.props;
 
     const button = component === CONTENT_CONSTS.PENDING_PSAS
-      ?
-      (
+      ? (
         <ClosePSAButton
             onClick={() => this.setState({ closePSAButtonActive: true, closing: true })}>
           Close PSA
         </ClosePSAButton>
       )
-      :
-      (
+      : (
         <PSAReportDownloadButton
-            downloadFn={this.props.downloadFn}
-            neighbors={this.props.neighbors}
-            scores={this.props.scores} />
+            downloadFn={downloadFn}
+            neighbors={neighbors}
+            scores={scores} />
       );
     return button;
   }
 
   renderModal = () => {
-    const { closePSAButtonActive } = this.state;
+    const { closePSAButtonActive, closing, open } = this.state;
+    const {
+      entityKeyId,
+      scores
+    } = this.props;
 
     const modal = closePSAButtonActive === true
-      ?
-      (
+      ? (
         <ClosePSAModal
-            scores={this.props.scores}
-            entityKeyId={this.props.entityKeyId}
-            open={this.state.closing}
-            defaultStatus={this.props.scores.getIn([PROPERTY_TYPES.STATUS, 0])}
-            defaultStatusNotes={this.props.scores.getIn([PROPERTY_TYPES.STATUS_NOTES, 0])}
-            defaultFailureReasons={this.props.scores.get(PROPERTY_TYPES.FAILURE_REASON, Immutable.List()).toJS()}
+            scores={scores}
+            entityKeyId={entityKeyId}
+            open={closing}
+            defaultStatus={scores.getIn([PROPERTY_TYPES.STATUS, 0])}
+            defaultStatusNotes={scores.getIn([PROPERTY_TYPES.STATUS_NOTES, 0])}
+            defaultFailureReasons={scores.get(PROPERTY_TYPES.FAILURE_REASON, Immutable.List()).toJS()}
             onClose={() => this.setState({ closePSAButtonActive: false, closing: false, open: false })}
             onSubmit={this.handleStatusChange} />
       )
-      :
-      (
-        <PSAModal open={this.state.open} onClose={() => this.setState({ open: false })} {...this.props} />
+      : (
+        <PSAModal open={open} onClose={() => this.setState({ open: false })} {...this.props} />
       );
     return modal;
   }
@@ -259,14 +267,14 @@ export default class PSAReviewReportsRow extends React.Component<Props, State> {
   }
 
   renderMetadata = () => {
-    const { component } = this.props;
+    const { component, neighbors, scores } = this.props;
     const dateFormat = 'MM/DD/YYYY hh:mm a';
     let dateCreated;
     let creator;
     let dateEdited;
     let editor;
 
-    this.props.neighbors.get(ENTITY_SETS.STAFF, Immutable.List()).forEach((neighbor) => {
+    neighbors.get(ENTITY_SETS.STAFF, Immutable.List()).forEach((neighbor) => {
       const associationEntitySetName = neighbor.getIn([PSA_ASSOCIATION.ENTITY_SET, 'name']);
       const personId = neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.PERSON_ID, 0], '');
 
@@ -287,8 +295,8 @@ export default class PSAReviewReportsRow extends React.Component<Props, State> {
       }
     });
 
-    const isClosed = psaIsClosed(this.props.scores);
-    const editLabel = psaIsClosed(this.props.scores) ? 'Closed' : 'Edited';
+    const isClosed = psaIsClosed(scores);
+    const editLabel = psaIsClosed(scores) ? 'Closed' : 'Edited';
     if (!(dateCreated || dateEdited) && !(creator || editor)) return null;
 
     const dateCreatedText = dateCreated ? dateCreated.format(dateFormat) : '';
@@ -301,31 +309,40 @@ export default class PSAReviewReportsRow extends React.Component<Props, State> {
     return (
       <MetadataWrapper>
         {
-          isClosed && (component === CONTENT_CONSTS.PENDING_PSAS) ?
-            <MetadataSubWrapper>
-              <MetadataItem>{this.renderMetadataText('Created', dateCreatedText, creator)}</MetadataItem>
-              <MetadataItem>{this.renderMetadataText(editLabel, dateEditedText, editor)}</MetadataItem>
-            </MetadataSubWrapper>
-            :
-            <MetadataSubWrapper>
-              {openMetadata}
-            </MetadataSubWrapper>
+          isClosed && (component === CONTENT_CONSTS.PENDING_PSAS)
+            ? (
+              <MetadataSubWrapper>
+                <MetadataItem>{this.renderMetadataText('Created', dateCreatedText, creator)}</MetadataItem>
+                <MetadataItem>{this.renderMetadataText(editLabel, dateEditedText, editor)}</MetadataItem>
+              </MetadataSubWrapper>
+            )
+            : (
+              <MetadataSubWrapper>
+                {openMetadata}
+              </MetadataSubWrapper>
+            )
         }
       </MetadataWrapper>
     );
   }
 
   openDetailsModal = () => {
-    const { neighbors, loadCaseHistoryFn } = this.props;
+    const { neighbors, loadCaseHistoryFn, loadHearingNeighbors } = this.props;
+    const hearingIds = neighbors.get(ENTITY_SETS.HEARINGS, Immutable.List())
+      .map(neighbor => neighbor.getIn([OPENLATTICE_ID_FQN, 0]))
+      .filter(id => !!id)
+      .toJS();
     const personId = getEntityKeyId(neighbors, ENTITY_SETS.PEOPLE);
     loadCaseHistoryFn({ personId, neighbors });
+    loadHearingNeighbors({ hearingIds, loadPersonData: false });
     this.setState({
       open: true
     });
   }
 
   render() {
-    if (!this.props.scores) return null;
+    const { scores } = this.props;
+    if (!scores) return null;
     return (
       <ReviewRowContainer>
         <DetailsRowContainer onClick={this.openDetailsModal}>

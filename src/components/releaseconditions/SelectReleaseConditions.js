@@ -772,7 +772,7 @@ class SelectReleaseConditions extends React.Component<Props, State> {
   handleOnListChange = (field, value, index) => {
     const { noContactPeople, editingHearing } = this.state;
     let newContactPeople;
-    if (editingHearing && noContactPeople.toJS()) {
+    if (editingHearing && noContactPeople.size) {
       newContactPeople = noContactPeople.toJS();
     }
     else {
@@ -792,7 +792,7 @@ class SelectReleaseConditions extends React.Component<Props, State> {
   removePersonRow = (index) => {
     const { noContactPeople, editingHearing } = this.State;
     let newContactPeople;
-    if (editingHearing && noContactPeople.toJS()) {
+    if (editingHearing && !!noContactPeople.size) {
       newContactPeople = noContactPeople.toJS();
     }
     else {
