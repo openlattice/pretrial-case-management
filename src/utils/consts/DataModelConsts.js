@@ -24,6 +24,10 @@ export const ENTITY_SETS = {
   BONDS: 'southdakotamanualbonds',
   RELEASE_CONDITIONS: 'southdakotareleaseconditions',
 
+  // judge entity sets
+  MIN_PEN_PEOPLE: 'MinPenPeople',
+  UJS_EMPLOYEES: 'UJSEmployees',
+
   // arrest entity sets
   ARREST_CASES: 'PenZuercherPretrialCase',
   ARREST_CHARGES: 'PenZuercherCharge',
