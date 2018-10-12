@@ -257,7 +257,7 @@ function* loadJudgesWorker(action :SequenceAction) :Generator<*, *, *> {
     };
 
     const allJudgeData = yield call(SearchApi.searchEntitySetData, entitySetId, options);
-    const allJudges = allJudgeData.hits;
+    const allJudges = Immutable.fromJS(allJudgeData.hits);
     yield put(loadJudges.success(action.id, { allJudges }));
   }
   catch (error) {
