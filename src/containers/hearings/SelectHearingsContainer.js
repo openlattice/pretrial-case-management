@@ -130,6 +130,7 @@ const InputLabel = styled.span`
 `;
 
 type Props = {
+  allJudges :List<*, *>,
   defaultBond :Map<*, *>,
   defaultConditions :Map<*, *>,
   defaultDMF :Map<*, *>,
@@ -479,6 +480,7 @@ function mapStateToProps(state) {
     [REVIEW.NEIGHBORS_BY_ID]: review.get(REVIEW.NEIGHBORS_BY_ID),
     [COURT.LOADING_HEARING_NEIGHBORS]: court.get(COURT.LOADING_HEARING_NEIGHBORS),
     [COURT.HEARINGS_NEIGHBORS_BY_ID]: court.get(COURT.HEARINGS_NEIGHBORS_BY_ID),
+    [COURT.ALL_JUDGES]: court.get(COURT.ALL_JUDGES),
     [COURT.HEARING_IDS_REFRESHING]: court.get(COURT.HEARING_IDS_REFRESHING),
     [REVIEW.LOADING_RESULTS]: review.get(REVIEW.LOADING_RESULTS),
     [REVIEW.ERROR]: review.get(REVIEW.ERROR)
