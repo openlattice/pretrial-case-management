@@ -11,7 +11,8 @@ import {
   filterPeopleIdsWithOpenPSAs,
   loadHearingsForDate,
   loadHearingNeighbors,
-  refreshHearingNeighbors
+  refreshHearingNeighbors,
+  loadJudges
 } from './CourtActionFactory';
 import { COURT, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
@@ -167,6 +168,19 @@ export default function courtReducer(state :Immutable.Map<*, *> = INITIAL_STATE,
           COURT.HEARING_IDS_REFRESHING,
           state.get(COURT.HEARING_IDS_REFRESHING)
         )
+      });
+    }
+    case loadJudges.case(action.type): {
+      return loadJudges.reducer(state, action, {
+        REQUEST: () => state.set(COURT.LOADING_JUDGES, true),
+        SUCCESS: () => {
+          const { allJudges } = action.value;
+          return state.set(COURT.ALL_JUDGES, allJudges);
+        },
+        FAILURE: () => state
+          .set(COURT.ALL_JUDGES, Immutable.Map())
+          .set(COURT.LOADING_JUDGES_ERROR, action.error),
+        FINALLY: () => state.set(COURT.LOADING_JUDGES, false)
       });
     }
 
