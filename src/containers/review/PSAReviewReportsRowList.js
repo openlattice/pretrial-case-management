@@ -172,7 +172,7 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
 
   componentDidMount() {
     const { actions } = this.props;
-    actions.heckPSAPermissions();
+    actions.checkPSAPermissions();
     actions.loadJudges();
   }
 
