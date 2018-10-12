@@ -179,6 +179,7 @@ type Props = {
     }) => void,
     loadHearingNeighbors :(hearingIds :string[]) => void,
     loadHearingsForDate :(date :Object) => void,
+    loadJudges :() => void,
     loadPSAsByDate :(filter :string) => void,
     refreshPSANeighbors :({ id :string }) => void,
     replaceEntity :(value :{ entitySetName :string, entityKeyId :string, values :Object }) => void,
@@ -206,8 +207,9 @@ class CourtContainer extends React.Component<Props, State> {
   componentDidMount() {
     const { date } = this.state;
     const { actions, hearingsByTime, hearingNeighborsById } = this.props;
-    const { checkPSAPermissions, loadHearingsForDate } = actions;
+    const { checkPSAPermissions, loadHearingsForDate, loadJudges } = actions;
     checkPSAPermissions();
+    loadJudges();
     if (!hearingsByTime.size || !hearingNeighborsById.size) {
       loadHearingsForDate(date);
     }
@@ -473,6 +475,7 @@ class CourtContainer extends React.Component<Props, State> {
   }
 
   render() {
+    console.log(this.props);
     return (
       <StyledFormViewWrapper>
         <StyledFormWrapper>
@@ -512,6 +515,7 @@ function mapStateToProps(state) {
     [COURT.OPEN_PSA_NEIGHBORS]: court.get(COURT.OPEN_PSA_NEIGHBORS),
     [COURT.OPEN_PSA_IDS]: court.get(COURT.OPEN_PSA_IDS),
     [COURT.PEOPLE_IDS_TO_OPEN_PSA_IDS]: court.get(COURT.PEOPLE_IDS_TO_OPEN_PSA_IDS),
+    [COURT.ALL_JUDGES]: court.get(COURT.ALL_JUDGES),
 
     [REVIEW.CASE_HISTORY]: review.get(REVIEW.CASE_HISTORY),
     [REVIEW.MANUAL_CASE_HISTORY]: review.get(REVIEW.MANUAL_CASE_HISTORY),
