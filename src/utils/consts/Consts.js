@@ -233,7 +233,8 @@ export const ID_FIELD_NAMES = {
   DMF_ID: 'dmfId',
   BOND_ID: 'bondId',
   HEARING_ID: 'hearingId',
-  OUTCOME_ID: 'outcomeId'
+  OUTCOME_ID: 'outcomeId',
+  EMPLOYEE_ID: 'employeeId'
 };
 
 export const ID_FIELDS = {
