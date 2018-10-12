@@ -4,7 +4,7 @@
 
 import Immutable from 'immutable';
 import moment from 'moment';
-import { Constants, EntityDataModelApi, SearchApi } from 'lattice';
+import { Constants, EntityDataModelApi, SearchApi, DataApi } from 'lattice';
 import { all, call, put, takeEvery } from 'redux-saga/effects';
 
 import { PSA_STATUSES } from '../../utils/consts/Consts';
@@ -18,10 +18,12 @@ import {
   LOAD_HEARINGS_FOR_DATE,
   LOAD_HEARING_NEIGHBORS,
   REFRESH_HEARING_NEIGHBORS,
+  LOAD_JUDGES,
   filterPeopleIdsWithOpenPSAs,
   loadHearingsForDate,
   loadHearingNeighbors,
-  refreshHearingNeighbors
+  refreshHearingNeighbors,
+  loadJudges
 } from './CourtActionFactory';
 
 const { OPENLATTICE_ID_FQN } = Constants;
@@ -243,9 +245,38 @@ function* refreshHearingNeighborsWatcher() :Generator<*, *, *> {
   yield takeEvery(REFRESH_HEARING_NEIGHBORS, refreshHearingNeighborsWorker);
 }
 
+function* loadJudgesWorker(action :SequenceAction) :Generator<*, *, *> {
+  try {
+    yield put(loadJudges.request(action.id));
+    const entitySetId = yield call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.MIN_PEN_PEOPLE);
+    const entitySetSize = yield call(DataApi.getEntitySetSize, entitySetId);
+    const options = {
+      searchTerm: '*',
+      start: 0,
+      maxHits: entitySetSize
+    };
+
+    const allJudgeData = yield call(SearchApi.searchEntitySetData, entitySetId, options);
+    const allJudges = allJudgeData.hits;
+    yield put(loadJudges.success(action.id, { allJudges }));
+  }
+  catch (error) {
+    console.error(error);
+    yield put(loadJudges.failure(action.id, error));
+  }
+  finally {
+    yield put(loadJudges.finally(action.id));
+  }
+}
+
+function* loadJudgesWatcher() :Generator<*, *, *> {
+  yield takeEvery(LOAD_JUDGES, loadJudgesWorker);
+}
+
 export {
   filterPeopleIdsWithOpenPSAsWatcher,
   loadHearingsForDateWatcher,
   loadHearingNeighborsWatcher,
-  refreshHearingNeighborsWatcher
+  refreshHearingNeighborsWatcher,
+  loadJudgesWatcher
 };
