@@ -126,6 +126,7 @@ type Props = {
       neighbors :Immutable.Map<*, *>
     }) => void,
     loadHearingNeighbors :(hearingIds :string[]) => void,
+    loadJudges :() => void,
     checkPSAPermissions :() => void,
     refreshPSANeighbors :({ id :string }) => void,
     submit :(value :{ config :Object, values :Object}) => void,
@@ -171,7 +172,8 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
 
   componentDidMount() {
     const { actions } = this.props;
-    actions.checkPSAPermissions();
+    actions.heckPSAPermissions();
+    actions.loadJudges();
   }
 
   componentWillUnmount() {
@@ -390,6 +392,7 @@ function mapStateToProps(state) {
     [COURT.LOADING_HEARING_NEIGHBORS]: court.get(COURT.LOADING_HEARING_NEIGHBORS),
     [COURT.HEARINGS_NEIGHBORS_BY_ID]: court.get(COURT.HEARINGS_NEIGHBORS_BY_ID),
     [COURT.HEARING_IDS_REFRESHING]: court.get(COURT.HEARING_IDS_REFRESHING),
+    [COURT.ALL_JUDGES]: court.get(COURT.ALL_JUDGES),
 
     [SUBMIT.SUBMITTING]: submit.get(SUBMIT.SUBMITTING, false)
   };
