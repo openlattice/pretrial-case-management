@@ -60,7 +60,7 @@ const ReleaseConditionsSummary = ({ completedHearings, hearingNeighborsById }) =
 
   if (!completedHearings.size) {
     return (
-      <NoResults>No outcomes have been submitted for hearings assosiated with this PSA.</NoResults>
+      <NoResults>No outcomes have been submitted for hearings associated with this PSA.</NoResults>
     );
   }
 

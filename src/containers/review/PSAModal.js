@@ -34,7 +34,12 @@ import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts'
 import { RESULT_CATEGORIES } from '../../utils/consts/DMFResultConsts';
 import { formatDMFFromEntity } from '../../utils/DMFUtils';
 import { psaIsClosed } from '../../utils/PSAUtils';
-import { PSA_NEIGHBOR, STATE, REVIEW } from '../../utils/consts/FrontEndStateConsts';
+import {
+  PSA_NEIGHBOR,
+  STATE,
+  REVIEW,
+  COURT
+} from '../../utils/consts/FrontEndStateConsts';
 import {
   CONTEXT,
   DMF,
@@ -46,6 +51,7 @@ import {
 import * as OverrideClassNames from '../../utils/styleoverrides/OverrideClassNames';
 import * as FormActionFactory from '../psa/FormActionFactory';
 import * as ReviewActionFactory from './ReviewActionFactory';
+import * as CourtActionFactory from '../court/CourtActionFactory';
 import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
 import * as DataActionFactory from '../../utils/data/DataActionFactory';
 
@@ -192,7 +198,8 @@ type Props = {
     changePSAStatus :(values :{
       scoresId :string,
       scoresEntity :Map<*, *>
-    }) => void
+    }) => void,
+    loadHearingNeighbors :(hearingIds :string[]) => void
   }
 };
 
@@ -692,7 +699,7 @@ class PSAModal extends React.Component<Props, State> {
       open,
       onClose,
       entityKeyId,
-      readOnly,
+      readOnly
     } = this.props;
 
     const { closing } = this.state;
@@ -718,14 +725,19 @@ class PSAModal extends React.Component<Props, State> {
         content: this.renderCaseHistory
       },
       {
-        title: 'Hearings',
-        content: this.renderHearings
-      },
-      {
         title: 'Release Conditions',
         content: this.renderReleaseCondtionsSummary
       }
     ];
+
+    const hearingTab = {
+      title: 'Hearings',
+      content: this.renderHearings
+    };
+
+    if (!psaIsClosed(scores)) {
+      tabs.splice(4, 0, hearingTab);
+    }
 
     return (
       <Modal
@@ -760,9 +772,10 @@ class PSAModal extends React.Component<Props, State> {
 }
 
 function mapStateToProps(state) {
+  const court = state.get(STATE.COURT);
   const review = state.get(STATE.REVIEW);
   return {
-    [REVIEW.HEARINGS_NEIGHBORS_BY_ID]: review.get(REVIEW.HEARINGS_NEIGHBORS_BY_ID),
+    [COURT.HEARINGS_NEIGHBORS_BY_ID]: court.get(COURT.HEARINGS_NEIGHBORS_BY_ID),
     [REVIEW.READ_ONLY]: review.get(REVIEW.READ_ONLY)
   };
 }
@@ -776,6 +789,10 @@ function mapDispatchToProps(dispatch :Function) :Object {
 
   Object.keys(ReviewActionFactory).forEach((action :string) => {
     actions[action] = ReviewActionFactory[action];
+  });
+
+  Object.keys(CourtActionFactory).forEach((action :string) => {
+    actions[action] = CourtActionFactory[action];
   });
 
   Object.keys(DataActionFactory).forEach((action :string) => {

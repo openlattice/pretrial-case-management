@@ -33,8 +33,11 @@ export const COURT = {
   HEARINGS_NEIGHBORS_BY_ID: 'hearingNeighborsById',
   PEOPLE_WITH_OPEN_PSAS: 'peopleWithOpenPsas',
   LOADING_HEARINGS: 'isLoadingHearings',
+  LOADING_HEARING_NEIGHBORS: 'isLoadingHearingsNeighbors',
+  HEARING_IDS_REFRESHING: 'hearingIdsRefreshing',
   LOADING_PSAS: 'isLoadingPSAs',
   LOADING_ERROR: 'loadingError',
+  LOADING_HEARINGS_ERROR: 'loadingHearingError',
   COUNTY: 'county',
   COURTROOM: 'courtroom',
   OPEN_PSAS: 'openPSAs',
@@ -120,9 +123,7 @@ export const REVIEW = {
   FTA_HISTORY: 'ftaHistory',
   HEARINGS: 'hearings',
   READ_ONLY: 'readOnly',
-  PSA_IDS_REFRESHING: 'psaIdsRefreshing',
-  HEARINGS_NEIGHBORS_BY_ID: 'hearingNeighborsById',
-  HEARING_IDS_REFRESHING: 'hearingIdsRefreshing'
+  PSA_IDS_REFRESHING: 'psaIdsRefreshing'
 };
 
 // Search

@@ -71,10 +71,8 @@ const StepFour = ({
 
   const stepThreeDmf = getDMFDecision(nca, fta, context);
   const stepFourDmf = increaseDMFSeverity(stepThreeDmf, context);
-  const shouldDisplayDMFCell = !(
-    (context === 'Booking')
-    && (secondaryReleaseVal || secondaryHoldVal)
-  );
+  const shouldDisplayDMFCell = context !== 'Booking'
+    || (secondaryReleaseVal || secondaryHoldVal);
 
   const violentRisk = nvca && !currentViolentOffense;
   if (!stepFourVal && !violentRisk) {
