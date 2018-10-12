@@ -2,7 +2,7 @@
  * @flow
  */
 
-import Immutable from 'immutable';
+import Immutable, { Map, Set, List } from 'immutable';
 import { Constants } from 'lattice';
 
 import { sortByDate } from '../../utils/PSAUtils';
@@ -42,6 +42,11 @@ const INITIAL_STATE :Immutable.Map<*, *> = Immutable.fromJS({
   [COURT.OPEN_PSAS]: Immutable.Map(),
   [COURT.OPEN_PSA_IDS]: Immutable.Set(),
   [COURT.OPEN_PSA_NEIGHBORS]: Immutable.Map(),
+
+  // JUDGES
+  [COURT.ALL_JUDGES]: Immutable.Map(),
+  [COURT.LOADING_JUDGES]: false,
+  [COURT.LOADING_JUDGES_ERROR]: false,
 
   [COURT.COUNTY]: '',
   [COURT.COURTROOM]: ''
