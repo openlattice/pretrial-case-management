@@ -725,14 +725,19 @@ class PSAModal extends React.Component<Props, State> {
         content: this.renderCaseHistory
       },
       {
-        title: 'Hearings',
-        content: this.renderHearings
-      },
-      {
         title: 'Release Conditions',
         content: this.renderReleaseCondtionsSummary
       }
     ];
+
+    const hearingTab = {
+      title: 'Hearings',
+      content: this.renderHearings
+    };
+
+    if (!psaIsClosed(scores)) {
+      tabs.splice(4, 0, hearingTab);
+    }
 
     return (
       <Modal
