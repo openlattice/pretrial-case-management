@@ -289,6 +289,12 @@ export const RELEASE_CONDITIONS = {
   NO_CONTACT_PEOPLE: 'noContactPeople'
 };
 
+export const JURISDICTION = {
+  [CONTEXT.COURT_PENN]: 'Pennington County, South Dakota',
+  [CONTEXT.COURT_MINN]: 'Minnehaha County, South Dakota',
+  [CONTEXT.BOOKING]: 'Pennington County, South Dakota'
+}
+
 export const TABLE_WIDTH = 1000;
 export const ROW_HEIGHT = 50;
 export const TABLE_OFFSET = 2;
