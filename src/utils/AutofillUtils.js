@@ -257,12 +257,21 @@ export const tryAutofillDMFSecondaryReleaseCharges = (currCharges :Immutable.Lis
     : 'false'
 );
 
-export const tryAutofillDMFSecondaryHoldCharges = (currCharges :Immutable.List<*>) :string => (
-  getAllSecondaryHoldCharges(currCharges).size
-    ? `${getAllSecondaryHoldCharges(currCharges).size
-      === (currCharges.size - getAllSecondaryReleaseCharges(currCharges).size)}`
-    : 'false'
-);
+export const tryAutofillDMFSecondaryHoldCharges = (currCharges :Immutable.List<*>) :string => {
+  let result = 'false';
+  if ((getAllSecondaryHoldCharges(currCharges).size + getAllSecondaryReleaseCharges(currCharges).size)
+    === currCharges.size) {
+    result = `${getAllSecondaryHoldCharges(currCharges).size
+      === (currCharges.size - getAllSecondaryReleaseCharges(currCharges).size)}`;
+  }
+  else if (getAllSecondaryHoldCharges(currCharges).size) {
+    result = 'true';
+  }
+  else {
+    result = false;
+  }
+  return result;
+};
 
 export const tryAutofillRecentFTAs = (allFTAs :Immutable.List<*>, allCharges :Immutable.List<*>) :string => {
   const numFTAs = getRecentFTAs(allFTAs, allCharges).size;
