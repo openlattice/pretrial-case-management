@@ -1334,7 +1334,7 @@ describe('AutofillUtils', () => {
           MOCK_STEP_4_CHARGE_V,
           MOCK_BHE_CHARGE_1,
           MOCK_BHE_CHARGE_2
-        ))).toEqual('false');
+        ))).toEqual('true');
 
         expect(tryAutofillDMFSecondaryReleaseCharges(Immutable.List.of(
           MOCK_VIOLENT_CHARGE_1,
@@ -1385,7 +1385,7 @@ describe('AutofillUtils', () => {
           MOCK_STEP_4_CHARGE_V,
           MOCK_BRE_CHARGE_1,
           MOCK_BRE_CHARGE_2
-        ))).toEqual('false');
+        ))).toEqual('true');
 
         expect(tryAutofillDMFSecondaryHoldCharges(Immutable.List.of(
           MOCK_VIOLENT_CHARGE_1,
