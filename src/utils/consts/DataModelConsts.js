@@ -67,6 +67,7 @@ export const PROPERTY_TYPES = {
   HEIGHT: 'nc.PersonHeightMeasure',
   WEIGHT: 'nc.PersonWeightMeasure',
   EYE: 'nc.PersonEyeColorText',
+  JURISDICTION: 'ol.idjurisdiction',
 
   // location-specific fields
   ADDRESS: 'location.Address',
