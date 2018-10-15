@@ -3588,5 +3588,13 @@ export const PENN_BOOKING_RELEASE_EXCEPTIONS = [
   {
     [STATUTE]: '37-17-1',
     [DESCRIPTION]: 'Sale After Remove/Alter Serial Number - $1000 or more(F4)'
-  }
+  },
+  {
+    [STATUTE]: '37-17-1',
+    [DESCRIPTION]: 'Sale After Remove/Alter Serial Number $400 - $1000(M1)'
+  },
+  {
+    [STATUTE]: '37-17-1',
+    [DESCRIPTION]: 'Sale After Remove/Alter Serial number - $400 or less(M2)'
+  },
 ];
