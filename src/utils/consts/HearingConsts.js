@@ -1,5 +1,7 @@
 import Immutable from 'immutable';
 
+import { PROPERTY_TYPES } from './DataModelConsts';
+
 export const COURTROOMS = [
   '1A',
   '6C ARRAIGNMENTS',
@@ -15,4 +17,21 @@ export const getCourtroomOptions = () => {
     courtroomOptions = courtroomOptions.set(courtroom, courtroom);
   });
   return courtroomOptions;
+};
+
+export const getJudgeOptions = (allJudges, jurisdiction) => {
+  let judgeOptions = Immutable.Map();
+
+  allJudges.forEach((judge) => {
+    if (judge.getIn([PROPERTY_TYPES.JURISDICTION, 0]) === jurisdiction) {
+      const firstName = judge.getIn([PROPERTY_TYPES.FIRST_NAME, 0]);
+      let middleName = judge.getIn([PROPERTY_TYPES.MIDDLE_NAME, 0]);
+      let lastName = judge.getIn([PROPERTY_TYPES.LAST_NAME, 0]);
+      middleName = middleName ? ` ${middleName}` : '';
+      lastName = lastName ? ` ${lastName}` : '';
+      const fullNameString = firstName + middleName + lastName;
+      judgeOptions = judgeOptions.set(fullNameString, judge.set('fullName', fullNameString));
+    }
+  });
+  return judgeOptions;
 };
