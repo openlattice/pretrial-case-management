@@ -18,17 +18,24 @@ import HearingCardsHolder from '../../components/hearings/HearingCardsHolder';
 import psaHearingConfig from '../../config/formconfig/PSAHearingConfig';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import SelectReleaseConditions from '../../components/releaseconditions/SelectReleaseConditions';
+
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { FORM_IDS, ID_FIELD_NAMES, HEARING } from '../../utils/consts/Consts';
-import { getCourtroomOptions } from '../../utils/consts/HearingConsts';
+import { getCourtroomOptions, getJudgeOptions } from '../../utils/consts/HearingConsts';
 import { getTimeOptions } from '../../utils/consts/DateTimeConsts';
+import { Title } from '../../utils/Layout';
+import {
+  FORM_IDS,
+  ID_FIELD_NAMES,
+  HEARING,
+  JURISDICTION
+} from '../../utils/consts/Consts';
 import {
   STATE,
   REVIEW,
-  COURT
+  COURT,
+  PSA_NEIGHBOR
 } from '../../utils/consts/FrontEndStateConsts';
-import CONTENT from '../../utils/consts/ContentConsts';
-import { Title } from '../../utils/Layout';
+
 import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
 import * as ReviewActionFactory from '../review/ReviewActionFactory';
 import * as CourtActionFactory from '../court/CourtActionFactory';
@@ -104,7 +111,7 @@ const SubmittingWrapper = styled.div`
 const InputRow = styled.div`
   display: inline-flex;
   flex-direction: row;
-  justify-content: space-between;
+  margin-bottom: 20px;
   width: 100%;
 
   section {
@@ -165,6 +172,8 @@ type State = {
   newHearingTime :?string,
   newHearingCourtroom :?string,
   selectedHearing :Object,
+  judge :string,
+  otherJudgeText :string,
   selectingReleaseConditions :boolean
 };
 
@@ -181,6 +190,8 @@ class SelectHearingsContainer extends React.Component<Props, State> {
       newHearingCourtroom: undefined,
       newHearingDate: undefined,
       newHearingTime: undefined,
+      judge: '',
+      otherJudgeText: '',
       selectedHearing: Map(),
       selectingReleaseConditions: false
     };
@@ -267,7 +278,19 @@ class SelectHearingsContainer extends React.Component<Props, State> {
   }
 
   renderNewHearingSection = () => {
-    const { newHearingDate, newHearingTime, newHearingCourtroom } = this.state;
+    const { neighbors, allJudges } = this.props;
+    const {
+      newHearingDate,
+      newHearingTime,
+      newHearingCourtroom,
+      judge,
+      judgeId,
+      otherJudgeText
+    } = this.state;
+    const psaContext = neighbors
+      .getIn([ENTITY_SETS.DMF_RISK_FACTORS, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.CONTEXT, 0]);
+    const jurisdiction = JURISDICTION[psaContext];
+    console.log(this.state);
 
     return (
       <CenteredContainer>
@@ -300,6 +323,30 @@ class SelectHearingsContainer extends React.Component<Props, State> {
             <CreateButton disabled={!this.isReadyToSubmit()} onClick={this.selectCurrentHearing}>
               Create New
             </CreateButton>
+          </section>
+        </InputRow>
+        <InputRow>
+          <section>
+            <InputLabel>Judge</InputLabel>
+            <StyledSearchableSelect
+                options={getJudgeOptions(allJudges, jurisdiction)}
+                value={judge}
+                onSelect={(judgeOption) => {
+                  console.log(judgeOption.toJS())
+                  this.setState({
+                    judge: judgeOption.get('fullName'),
+                    judgeId: judgeOption.getIn(['id', 0])
+                  })
+                }}
+                short />
+          </section>
+          <section>
+            <InputLabel>Courtroom</InputLabel>
+            <StyledSearchableSelect
+                options={getCourtroomOptions()}
+                value={newHearingCourtroom}
+                onSelect={hearingCourtroom => this.setState({ newHearingCourtroom: hearingCourtroom })}
+                short />
           </section>
         </InputRow>
       </CenteredContainer>
@@ -431,9 +478,9 @@ class SelectHearingsContainer extends React.Component<Props, State> {
       hearingIdsRefreshing,
       submitting,
       refreshingNeighbors,
-      hearingNeighborsById
+      hearingNeighborsById,
     } = this.props;
-
+    console.log(this.state);
     const hearingsWithOutcomes = hearingNeighborsById
       .keySeq().filter(id => hearingNeighborsById.getIn([id, ENTITY_SETS.OUTCOMES]));
     const scheduledHearings = psaNeighborsById.getIn([psaEntityKeyId, ENTITY_SETS.HEARINGS], Map())
