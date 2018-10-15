@@ -1334,7 +1334,7 @@ describe('AutofillUtils', () => {
           MOCK_STEP_4_CHARGE_V,
           MOCK_BHE_CHARGE_1,
           MOCK_BHE_CHARGE_2
-        ))).toEqual('false');
+        ))).toEqual('true');
 
         expect(tryAutofillDMFSecondaryReleaseCharges(Immutable.List.of(
           MOCK_VIOLENT_CHARGE_1,
