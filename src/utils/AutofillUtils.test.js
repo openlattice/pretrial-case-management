@@ -1528,7 +1528,7 @@ describe('AutofillUtils', () => {
           [PSA.PRIOR_SENTENCE_TO_INCARCERATION]: 'false',
           [DMF.STEP_2_CHARGES]: 'true',
           [DMF.STEP_4_CHARGES]: 'false',
-          [DMF.SECONDARY_RELEASE_CHARGES]: 'false',
+          [DMF.SECONDARY_RELEASE_CHARGES]: 'true',
           [DMF.SECONDARY_HOLD_CHARGES]: 'false'
         }));
       });
@@ -1624,8 +1624,8 @@ describe('AutofillUtils', () => {
           [PSA.PRIOR_SENTENCE_TO_INCARCERATION]: 'true',
           [DMF.STEP_2_CHARGES]: 'true',
           [DMF.STEP_4_CHARGES]: 'true',
-          [DMF.SECONDARY_RELEASE_CHARGES]: 'false',
-          [DMF.SECONDARY_HOLD_CHARGES]: 'false'
+          [DMF.SECONDARY_RELEASE_CHARGES]: 'true',
+          [DMF.SECONDARY_HOLD_CHARGES]: 'true'
         }));
       });
 

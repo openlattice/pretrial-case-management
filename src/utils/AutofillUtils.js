@@ -250,25 +250,24 @@ export const tryAutofillDMFStepFour = (currCharges :Immutable.List<*>) :string =
   `${getAllStepFourCharges(currCharges).size > 0}`
 );
 
-export const tryAutofillDMFSecondaryReleaseCharges = (currCharges :Immutable.List<*>) :string => (
-  getAllSecondaryReleaseCharges(currCharges).size
-    ? `${getAllSecondaryReleaseCharges(currCharges).size
-      === (currCharges.size - getAllSecondaryHoldCharges(currCharges).size)}`
-    : 'false'
-);
-
-export const tryAutofillDMFSecondaryHoldCharges = (currCharges :Immutable.List<*>) :string => {
+export const tryAutofillDMFSecondaryReleaseCharges = (currCharges :Immutable.List<*>) :string => {
   let result = 'false';
-  if ((getAllSecondaryHoldCharges(currCharges).size + getAllSecondaryReleaseCharges(currCharges).size)
-    === currCharges.size) {
-    result = `${getAllSecondaryHoldCharges(currCharges).size
-      === (currCharges.size - getAllSecondaryReleaseCharges(currCharges).size)}`;
-  }
-  else if (getAllSecondaryHoldCharges(currCharges).size) {
+  if (getAllSecondaryReleaseCharges(currCharges).size) {
     result = 'true';
   }
   else {
-    result = false;
+    result = 'false';
+  }
+  return result;
+};
+
+export const tryAutofillDMFSecondaryHoldCharges = (currCharges :Immutable.List<*>) :string => {
+  let result = 'false';
+  if (getAllSecondaryHoldCharges(currCharges).size) {
+    result = 'true';
+  }
+  else {
+    result = 'false';
   }
   return result;
 };
