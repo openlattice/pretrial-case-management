@@ -20,8 +20,7 @@ export const BHE_LABELS = {
 };
 
 export const BRE_LABELS = {
-  HOLD: 'BRE Charges',
-  RELEASE: 'Non-BRE charges exist'
+  HOLD: 'BRE Charges'
 };
 
 export const CHARGE_VALUES = {
