@@ -339,7 +339,6 @@ class SelectHearingsContainer extends React.Component<Props, State> {
     const psaContext = neighbors
       .getIn([ENTITY_SETS.DMF_RISK_FACTORS, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.CONTEXT, 0]);
     const jurisdiction = JURISDICTION[psaContext];
-    console.log(this.state);
 
     return (
       <CenteredContainer>
@@ -381,10 +380,9 @@ class SelectHearingsContainer extends React.Component<Props, State> {
                 options={getJudgeOptions(allJudges, jurisdiction)}
                 value={judge}
                 onSelect={(judgeOption) => {
-                  console.log(judgeOption.toJS());
                   this.setState({
                     judge: judgeOption.get('fullName'),
-                    judgeId: judgeOption.getIn(['id', 0])
+                    judgeId: judgeOption.getIn([PROPERTY_TYPES.PERSON_ID, 0])
                   });
                 }}
                 short />
@@ -534,7 +532,6 @@ class SelectHearingsContainer extends React.Component<Props, State> {
       refreshingNeighbors,
       hearingNeighborsById,
     } = this.props;
-    console.log(this.state);
     const hearingsWithOutcomes = hearingNeighborsById
       .keySeq().filter(id => hearingNeighborsById.getIn([id, ENTITY_SETS.OUTCOMES]));
     const scheduledHearings = psaNeighborsById.getIn([psaEntityKeyId, ENTITY_SETS.HEARINGS], Map())
