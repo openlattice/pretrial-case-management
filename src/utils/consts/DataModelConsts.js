@@ -115,6 +115,7 @@ export const PROPERTY_TYPES = {
   COURTROOM: 'justice.courtroom',
   HEARING_TYPE: 'justice.courtcasetype',
   UPDATE_TYPE: 'ol.update',
+  HEARING_COMMENTS: 'event.comments',
 
   // PSA Outcomes entity Type Consts
   JUDGE_ACCEPTED: 'justice.judgeacceptedrecommendation',
