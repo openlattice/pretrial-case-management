@@ -234,7 +234,8 @@ export const ID_FIELD_NAMES = {
   BOND_ID: 'bondId',
   HEARING_ID: 'hearingId',
   OUTCOME_ID: 'outcomeId',
-  EMPLOYEE_ID: 'employeeId'
+  EMPLOYEE_ID: 'employeeId',
+  JUDGE_ID: 'judgeId'
 };
 
 export const ID_FIELDS = {
@@ -251,7 +252,8 @@ export const ID_FIELDS = {
 export const HEARING = {
   DATE_TIME: 'hearingDateTime',
   COURTROOM: 'hearingCourtroom',
-  JUDGE: 'hearingJudge'
+  JUDGE: 'hearingJudge',
+  COMMENTS: 'hearingComments'
 };
 
 export const PSA_STATUSES = {
