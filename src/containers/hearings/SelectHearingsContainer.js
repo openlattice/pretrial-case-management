@@ -6,21 +6,27 @@ import React from 'react';
 import moment from 'moment';
 import styled from 'styled-components';
 import randomUUID from 'uuid/v4';
-import { List, Map, Set } from 'immutable';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { Constants } from 'lattice';
+import {
+  List,
+  Map,
+  Set,
+  fromJS
+} from 'immutable';
 
 import InfoButton from '../../components/buttons/InfoButton';
 import DatePicker from '../../components/controls/StyledDatePicker';
 import SearchableSelect from '../../components/controls/SearchableSelect';
 import HearingCardsHolder from '../../components/hearings/HearingCardsHolder';
+import NewHearingSection from '../../components/hearings/NewHearingSection';
 import psaHearingConfig from '../../config/formconfig/PSAHearingConfig';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import SelectReleaseConditions from '../../components/releaseconditions/SelectReleaseConditions';
 
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { getCourtroomOptions, getJudgeOptions } from '../../utils/consts/HearingConsts';
+import { getCourtroomOptions, getJudgeOptions, HEARING_CONSTS } from '../../utils/consts/HearingConsts';
 import { getTimeOptions } from '../../utils/consts/DateTimeConsts';
 import { Title } from '../../utils/Layout';
 import {
@@ -320,10 +326,41 @@ class SelectHearingsContainer extends React.Component<Props, State> {
     }));
   }
 
-  nameInputChange = (e) => {
+  onInputChange = (e) => {
     const { name, value } = e.target;
     const state :State = Object.assign({}, this.state, { [name]: value });
     this.setState(state);
+  }
+
+  onSelectChange = (option) => {
+    const optionMap = fromJS(option);
+    switch (optionMap.get(HEARING_CONSTS.FIELD)) {
+      case HEARING_CONSTS.JUDGE: {
+        this.setState({
+          [HEARING_CONSTS.JUDGE]: optionMap.get(HEARING_CONSTS.FULL_NAME),
+          [HEARING_CONSTS.JUDGE_ID]: optionMap.getIn([PROPERTY_TYPES.PERSON_ID, 0])
+        });
+        break;
+      }
+      case HEARING_CONSTS.NEW_HEARING_TIME: {
+        this.setState({
+          [HEARING_CONSTS.NEW_HEARING_TIME]: optionMap.get(HEARING_CONSTS.NEW_HEARING_TIME)
+        });
+        break;
+      }
+      case HEARING_CONSTS.NEW_HEARING_COURTROOM: {
+        this.setState({
+          [HEARING_CONSTS.NEW_HEARING_COURTROOM]: optionMap.get(HEARING_CONSTS.NEW_HEARING_COURTROOM)
+        });
+        break;
+      }
+      default:
+        break;
+    }
+  }
+
+  onDateChange = (hearingDate) => {
+    this.setState({ [HEARING_CONSTS.NEW_HEARING_DATE]: hearingDate });
   }
 
   renderNewHearingSection = () => {
@@ -333,75 +370,33 @@ class SelectHearingsContainer extends React.Component<Props, State> {
       newHearingTime,
       newHearingCourtroom,
       judge,
-      judgeId,
       otherJudgeText
     } = this.state;
+    const {
+      onDateChange,
+      onSelectChange,
+      onInputChange,
+      isReadyToSubmit,
+      selectCurrentHearing
+    } = this;
     const psaContext = neighbors
       .getIn([ENTITY_SETS.DMF_RISK_FACTORS, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.CONTEXT, 0]);
     const jurisdiction = JURISDICTION[psaContext];
 
     return (
-      <CenteredContainer>
-        <InputRow>
-          <section>
-            <InputLabel>Date</InputLabel>
-            <DatePicker
-                value={newHearingDate}
-                onChange={hearingDate => this.setState({ newHearingDate: hearingDate })}
-                clearButton={false} />
-          </section>
-          <section>
-            <InputLabel>Time</InputLabel>
-            <StyledSearchableSelect
-                options={getTimeOptions()}
-                value={newHearingTime}
-                onSelect={hearingTime => this.setState({ newHearingTime: hearingTime })}
-                short />
-          </section>
-          <section>
-            <InputLabel>Courtroom</InputLabel>
-            <StyledSearchableSelect
-                options={getCourtroomOptions()}
-                value={newHearingCourtroom}
-                onSelect={hearingCourtroom => this.setState({ newHearingCourtroom: hearingCourtroom })}
-                short />
-          </section>
-          <section>
-            <InputLabel />
-            <CreateButton disabled={!this.isReadyToSubmit()} onClick={this.selectCurrentHearing}>
-              Create New
-            </CreateButton>
-          </section>
-        </InputRow>
-        <InputRow>
-          <section>
-            <InputLabel>Judge</InputLabel>
-            <StyledSearchableSelect
-                options={getJudgeOptions(allJudges, jurisdiction)}
-                value={judge}
-                onSelect={(judgeOption) => {
-                  this.setState({
-                    judge: judgeOption.get('fullName'),
-                    judgeId: judgeOption.getIn([PROPERTY_TYPES.PERSON_ID, 0])
-                  });
-                }}
-                short />
-          </section>
-          {
-            judge === 'Other'
-              ? (
-                <section>
-                  <InputLabel>Other Judge's Name</InputLabel>
-                  <NameInput
-                      onChange={e => (this.nameInputChange(e))}
-                      name="otherJudgeText"
-                      value={otherJudgeText} />
-                </section>
-              )
-              : null
-          }
-        </InputRow>
-      </CenteredContainer>
+      <NewHearingSection
+          allJudges={allJudges}
+          newHearingDate={newHearingDate}
+          newHearingTime={newHearingTime}
+          newHearingCourtroom={newHearingCourtroom}
+          judge={judge}
+          otherJudgeText={otherJudgeText}
+          jurisdiction={jurisdiction}
+          onDateChange={onDateChange}
+          onSelectChange={onSelectChange}
+          onInputChange={onInputChange}
+          isReadyToSubmit={isReadyToSubmit}
+          selectCurrentHearing={selectCurrentHearing} />
     );
   }
 
@@ -523,6 +518,7 @@ class SelectHearingsContainer extends React.Component<Props, State> {
   }
 
   render() {
+    console.log(this.state);
     const { manuallyCreatingHearing, selectingReleaseConditions, selectedHearing } = this.state;
     const {
       psaEntityKeyId,
