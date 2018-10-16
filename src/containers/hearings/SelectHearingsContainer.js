@@ -136,6 +136,20 @@ const InputLabel = styled.span`
   margin-bottom: 10px;
 `;
 
+const NameInput = styled.input.attrs({
+  type: 'otherJudgeText'
+})`
+  width: 189px;
+  height: 40px;
+  border: 1px solid #dcdce7;
+  border-radius: 3px;
+  color: #135;
+  font-size: 14px;
+  font-weight: 400;
+  padding: 0 45px 0 20px;
+  background-color: #ffffff;
+`;
+
 type Props = {
   allJudges :List<*, *>,
   defaultBond :Map<*, *>,
@@ -277,6 +291,12 @@ class SelectHearingsContainer extends React.Component<Props, State> {
     }));
   }
 
+  nameInputChange = (e) => {
+    const { name, value } = e.target;
+    const state :State = Object.assign({}, this.state, { [name]: value });
+    this.setState(state);
+  }
+
   renderNewHearingSection = () => {
     const { neighbors, allJudges } = this.props;
     const {
@@ -332,22 +352,27 @@ class SelectHearingsContainer extends React.Component<Props, State> {
                 options={getJudgeOptions(allJudges, jurisdiction)}
                 value={judge}
                 onSelect={(judgeOption) => {
-                  console.log(judgeOption.toJS())
+                  console.log(judgeOption.toJS());
                   this.setState({
                     judge: judgeOption.get('fullName'),
                     judgeId: judgeOption.getIn(['id', 0])
-                  })
+                  });
                 }}
                 short />
           </section>
-          <section>
-            <InputLabel>Courtroom</InputLabel>
-            <StyledSearchableSelect
-                options={getCourtroomOptions()}
-                value={newHearingCourtroom}
-                onSelect={hearingCourtroom => this.setState({ newHearingCourtroom: hearingCourtroom })}
-                short />
-          </section>
+          {
+            judge === 'Other'
+              ? (
+                <section>
+                  <InputLabel>Other Judge's Name</InputLabel>
+                  <NameInput
+                      onChange={e => (this.nameInputChange(e))}
+                      name="otherJudgeText"
+                      value={otherJudgeText} />
+                </section>
+              )
+              : null
+          }
         </InputRow>
       </CenteredContainer>
     );
