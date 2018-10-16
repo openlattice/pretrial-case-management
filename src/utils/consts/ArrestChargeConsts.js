@@ -20,7 +20,7 @@ export const BHE_LABELS = {
 };
 
 export const BRE_LABELS = {
-  HOLD: 'BRE Charges'
+  LABEL: 'BRE Charges'
 };
 
 export const CHARGE_VALUES = {
