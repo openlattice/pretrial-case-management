@@ -1,4 +1,4 @@
-import Immutable from 'immutable';
+import { Map, toOrderedMap } from 'immutable';
 
 import { PROPERTY_TYPES } from './DataModelConsts';
 
@@ -12,7 +12,7 @@ export const COURTROOMS = [
 ];
 
 export const getCourtroomOptions = () => {
-  let courtroomOptions = Immutable.Map();
+  let courtroomOptions = Map();
   COURTROOMS.forEach((courtroom) => {
     courtroomOptions = courtroomOptions.set(courtroom, courtroom);
   });
@@ -20,7 +20,7 @@ export const getCourtroomOptions = () => {
 };
 
 export const getJudgeOptions = (allJudges, jurisdiction) => {
-  let judgeOptions = Immutable.Map();
+  let judgeOptions = Map();
 
   allJudges.forEach((judge) => {
     if (judge.getIn([PROPERTY_TYPES.JURISDICTION, 0]) === jurisdiction) {
@@ -33,5 +33,6 @@ export const getJudgeOptions = (allJudges, jurisdiction) => {
       judgeOptions = judgeOptions.set(fullNameString, judge.set('fullName', fullNameString));
     }
   });
-  return judgeOptions;
+  judgeOptions = judgeOptions.set('Other', Map({ fullName: 'Other' }));
+  return judgeOptions.toOrderedMap().sortBy((k, _) => k);
 };
