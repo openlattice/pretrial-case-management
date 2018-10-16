@@ -235,8 +235,20 @@ class SelectHearingsContainer extends React.Component<Props, State> {
   }
 
   isReadyToSubmit = () => {
-    const { newHearingCourtroom, newHearingDate, newHearingTime } = this.state;
-    return (newHearingCourtroom && newHearingDate && newHearingTime);
+    const {
+      newHearingCourtroom,
+      newHearingDate,
+      newHearingTime,
+      judgeId,
+      otherJudgeText
+    } = this.state;
+    const judgeInfoPresent = (judgeId || otherJudgeText);
+    return (
+      newHearingCourtroom
+      && newHearingDate
+      && newHearingTime
+      && judgeInfoPresent
+    );
   }
 
   selectHearing = (hearingDetails) => {
@@ -262,20 +274,37 @@ class SelectHearingsContainer extends React.Component<Props, State> {
 
   selectCurrentHearing = () => {
     const { onSubmit } = this.props;
-    const { newHearingDate, newHearingTime, newHearingCourtroom } = this.state;
+    const {
+      newHearingDate,
+      newHearingTime,
+      newHearingCourtroom,
+      otherJudgeText,
+      judge,
+      judgeId
+    } = this.state;
     const dateFormat = 'MM/DD/YYYY';
     const timeFormat = 'hh:mm a';
     const date = moment(newHearingDate);
     const time = moment(newHearingTime, timeFormat);
     if (date.isValid() && time.isValid()) {
       const datetime = moment(`${date.format(dateFormat)} ${time.format(timeFormat)}`, `${dateFormat} ${timeFormat}`);
-      const hearing = {
+      let hearing = {
         [ID_FIELD_NAMES.HEARING_ID]: randomUUID(),
         [HEARING.DATE_TIME]: datetime.toISOString(true),
         [HEARING.COURTROOM]: newHearingCourtroom,
         [PROPERTY_TYPES.HEARING_TYPE]: 'Initial Appearance'
       };
-
+      if (judge === 'Other') {
+        hearing = Object.assign({}, hearing, {
+          [PROPERTY_TYPES.HEARING_COMMENTS]: otherJudgeText
+        });
+      }
+      else {
+        hearing = Object.assign({}, hearing, {
+          [ID_FIELD_NAMES.JUDGE_ID]: judgeId,
+          [PROPERTY_TYPES.HEARING_COMMENTS]: judge
+        });
+      }
       this.selectHearing(hearing);
       onSubmit(hearing);
     }
