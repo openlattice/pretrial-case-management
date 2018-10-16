@@ -441,11 +441,14 @@ class PSAModal extends React.Component<Props, State> {
     const dmfRiskFactorsEntitySetId = this.getEntitySetId(ENTITY_SETS.DMF_RISK_FACTORS);
     const dmfRiskFactorsEntity = this.getDMFRiskFactorsEntity(riskFactors, dmfRiskFactorsIdValue);
 
-    const scoresEntity = scoresAndRiskFactors.scores.toJS();
-    if (scoreId) scoresEntity[PROPERTY_TYPES.GENERAL_ID] = [scoreId];
+    const newScores = scoresAndRiskFactors.scores;
+    const scoresEntity = scores
+      .set(PROPERTY_TYPES.FTA_SCALE, newScores.get(PROPERTY_TYPES.FTA_SCALE))
+      .set(PROPERTY_TYPES.NCA_SCALE, newScores.get(PROPERTY_TYPES.NCA_SCALE))
+      .set(PROPERTY_TYPES.NVCA_FLAG, newScores.get(PROPERTY_TYPES.NVCA_FLAG))
+      .toJS();
+
     if (riskFactorsIdValue) riskFactorsEntity[PROPERTY_TYPES.GENERAL_ID] = [riskFactorsIdValue];
-    const status = scores.getIn([PROPERTY_TYPES.STATUS, 0]);
-    scoresEntity[PROPERTY_TYPES.STATUS] = status ? [status] : [];
 
     const scoresId = entityKeyId;
     const riskFactorsEntitySetId = this.getEntitySetId(ENTITY_SETS.PSA_RISK_FACTORS);
