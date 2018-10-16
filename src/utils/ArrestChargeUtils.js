@@ -1,3 +1,4 @@
+import Immutable from 'immutable';
 import { getChargeDetails, getChargeTitle } from './HistoricalChargeUtils';
 import { PROPERTY_TYPES } from './consts/DataModelConsts';
 import { CHARGE } from './consts/Consts';
@@ -106,6 +107,8 @@ export const getSecondaryHoldChargeJustification = (chargeList) => {
   const secondaryHoldCharges = filterChargeList(chargeList, PENN_BOOKING_RELEASE_EXCEPTIONS)
     .map(charge => getChargeTitle(charge, true));
   if (secondaryHoldCharges.size) {
-    return [secondaryHoldCharges, BRE_LABELS.HOLD];
+    return [secondaryHoldCharges, BRE_LABELS.LABEL];
   }
+
+  return [Immutable.List(), BRE_LABELS.LABEL];
 };
