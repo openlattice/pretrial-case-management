@@ -23,6 +23,7 @@ export const ALIASES = {
   RELEASE_CONDITION: 'releaseCondition',
   HEARING: 'hearing',
   OUTCOME: 'outcome',
+  JUDGE: 'judge',
 
   CONTACTED_AT: 'contactedAt',
   EMPLOYED_BY: 'employedBy',
