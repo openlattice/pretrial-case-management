@@ -18,8 +18,31 @@ const StyledContentLabel = styled.div`
   font-stretch: normal;
   line-height: normal;
   letter-spacing: normal;
-  text-transform: uppercase;
+  text-transform: ${(props) => {
+    switch (props.component) {
+      case CONTENT_CONSTS.CREATING_HEARING:
+        return (
+          'none;'
+        );
+      default:
+        return (
+          'uppercase;'
+        );
+    }
+  }};
   color: #8e929b;
+  margin-bottom: ${(props) => {
+    switch (props.component) {
+      case CONTENT_CONSTS.CREATING_HEARING:
+        return (
+          '5px;'
+        );
+      default:
+        return (
+          '0;'
+        );
+    }
+  }};
   font-size: ${(props) => {
     switch (props.component) {
       case CONTENT_CONSTS.PROFILE:
@@ -29,6 +52,10 @@ const StyledContentLabel = styled.div`
       case CONTENT_CONSTS.HEARINGS:
         return (
           '12px;'
+        );
+      case CONTENT_CONSTS.CREATING_HEARING:
+        return (
+          '14px;'
         );
       default:
         return (
@@ -57,6 +84,10 @@ const StyledContent = styled.div`
           '18px;'
         );
       case CONTENT_CONSTS.HEARINGS:
+        return (
+          '18px;'
+        );
+      case CONTENT_CONSTS.CREATING_HEARING:
         return (
           '18px;'
         );
