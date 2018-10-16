@@ -18,6 +18,13 @@ const psaHearingConfig = {
       }
     },
     {
+      name: ENTITY_SETS.MIN_PEN_PEOPLE,
+      alias: ALIASES.JUDGE,
+      fields: {
+        [ID_FIELD_NAMES.JUDGE_ID]: PROPERTY_TYPES.PERSON_ID
+      }
+    },
+    {
       name: ENTITY_SETS.APPEARS_IN,
       alias: ALIASES.APPEARS_IN,
       fields: {
@@ -33,6 +40,11 @@ const psaHearingConfig = {
     },
     {
       src: ALIASES.PSA,
+      dst: ALIASES.HEARING,
+      association: ALIASES.APPEARS_IN
+    },
+    {
+      src: ALIASES.JUDGE,
       dst: ALIASES.HEARING,
       association: ALIASES.APPEARS_IN
     }
