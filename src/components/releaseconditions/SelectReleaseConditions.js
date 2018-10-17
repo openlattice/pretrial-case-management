@@ -167,7 +167,7 @@ const StyledSearchableSelect = styled(SearchableSelect)`
     margin: none;
   }
   input {
-    width: 100%;
+    width: 215px;
   }
 `;
 
@@ -179,7 +179,7 @@ const StyledDatePicker = styled(DatePicker)`
 `;
 
 const HearingSectionAside = styled.div`
-  padding-top: 30px;
+  padding-top: 60px;
   width: 100%;
   display: flex;
   flex-direction: column;
@@ -189,6 +189,21 @@ const HearingSectionAside = styled.div`
 const SubmitButton = styled(InfoButton)`
   width: 340px;
   height: 43px;
+`;
+
+const NameInput = styled.input.attrs({
+  type: 'text'
+})`
+  width: 215px;
+  height: 40px;
+  border: 1px solid #dcdce7;
+  border-radius: 3px;
+  color: #135;
+  font-size: 14px;
+  font-weight: 400;
+  padding: 0 45px 0 20px;
+  margin-top: 10px;
+  background-color: #ffffff;
 `;
 
 const BLANK_PERSON_ROW = {
@@ -293,9 +308,9 @@ class SelectReleaseConditions extends React.Component<Props, State> {
     const hearingDateTimeMoment = moment(hearing.getIn([PROPERTY_TYPES.DATE_TIME, 0], ''));
     let hearingDateTime = hearingDateTimeMoment.isValid() ? hearingDateTimeMoment : null;
     let hearingCourtroom = hearing.getIn([PROPERTY_TYPES.COURTROOM, 0], '');
-    let otherJudgeText = hearing.getIn([PROPERTY_TYPES.HEARING_COMMENTS, 0], '');
-    let judgeId = judgeEntity ? judgeEntity.getIn([PROPERTY_TYPES.PERSON_ID, 0]) : null;
-    let judge = judgeName || otherJudgeText;
+    const otherJudgeText = hearing.getIn([PROPERTY_TYPES.HEARING_COMMENTS, 0], '');
+    const judgeId = judgeEntity ? judgeEntity.getIn([PROPERTY_TYPES.PERSON_ID, 0]) : null;
+    const judge = judgeName || otherJudgeText;
     let newHearingDate;
     let newHearingTime;
     const editingHearing = false;
@@ -304,9 +319,6 @@ class SelectReleaseConditions extends React.Component<Props, State> {
       modifyingHearing = this.state.modifyingHearing;
       hearingDateTime = this.state.hearingDateTime;
       hearingCourtroom = this.state.hearingCourtroom;
-      otherJudgeText = this.state.otherJudgeText;
-      judgeId = this.state.judgeId;
-      judge = this.state.judge;
     }
 
     if (submittedOutcomes) {
@@ -886,7 +898,13 @@ class SelectReleaseConditions extends React.Component<Props, State> {
       submitCallback,
       hearingEntityKeyId
     } = this.props;
-    const { newHearingDate, newHearingTime, hearingCourtroom } = this.state;
+    const {
+      judge,
+      newHearingDate,
+      newHearingTime,
+      hearingCourtroom,
+      otherJudgeText
+    } = this.state;
     const dateTime = hearing.getIn([PROPERTY_TYPES.DATE_TIME, 0], '');
     const rawTime = newHearingTime || formatDateTime(dateTime, 'HH:mm');
 
@@ -913,6 +931,12 @@ class SelectReleaseConditions extends React.Component<Props, State> {
     }
   }
 
+  onInputChange = (e) => {
+    const { name, value } = e.target;
+    const state :State = Object.assign({}, this.state, { [name]: value });
+    this.setState(state);
+  }
+
   renderHearingInfo = () => {
     const {
       judgeName,
@@ -926,14 +950,17 @@ class SelectReleaseConditions extends React.Component<Props, State> {
       newHearingDate,
       newHearingTime,
       hearingCourtroom,
-      modifyingHearing
+      modifyingHearing,
+      otherJudgeText,
+      judge
     } = this.state;
     const dateTime = hearing.getIn([PROPERTY_TYPES.DATE_TIME, 0], '');
     let date;
     let time;
     let courtroom;
-    let judge;
+    let judgeSelect;
     let hearingInfoButton;
+    let otherJudge;
 
     const backToSelectionButton = <StyledBasicButton onClick={backToSelection}>Back to Selection</StyledBasicButton>;
 
@@ -960,12 +987,21 @@ class SelectReleaseConditions extends React.Component<Props, State> {
             onSelect={newCourtroom => this.setState({ hearingCourtroom: newCourtroom })}
             short />
       );
-      judge = (
+      judgeSelect = (
         <StyledSearchableSelect
             options={getJudgeOptions(allJudges, jurisdiction)}
-            value={judgeName}
-            onSelect={newCourtroom => this.setState({ hearingCourtroom: newCourtroom })}
+            value={judge}
+            onSelect={judgeOption => this.setState({
+              [HEARING_CONSTS.JUDGE]: judgeOption.get(HEARING_CONSTS.FULL_NAME),
+              [HEARING_CONSTS.JUDGE_ID]: judgeOption.getIn([PROPERTY_TYPES.PERSON_ID, 0])
+            })}
             short />
+      );
+      otherJudge = (
+        <NameInput
+            onChange={e => (this.onInputChange(e))}
+            name="otherJudgeText"
+            value={otherJudgeText} />
       );
       hearingInfoButton = (
         <HearingInfoButtons modifyingHearing>
@@ -978,7 +1014,8 @@ class SelectReleaseConditions extends React.Component<Props, State> {
       date = formatDateTime(dateTime, 'MM/DD/YYYY');
       time = formatDateTime(dateTime, 'HH:mm');
       courtroom = hearing.getIn([PROPERTY_TYPES.COURTROOM, 0], '');
-      judge = judgeName || 'NA';
+      judgeSelect = judgeName || 'NA';
+      otherJudge = otherJudgeText;
       hearingInfoButton = (
         submittedOutcomes
           ? null
@@ -1008,9 +1045,18 @@ class SelectReleaseConditions extends React.Component<Props, State> {
       },
       {
         label: 'Judge',
-        content: [judge]
+        content: [judgeSelect]
       }
     ];
+
+    if (judge === 'Other') {
+      HEARING_ARR.push(
+        {
+          label: "Other Judge's Name",
+          content: [otherJudge]
+        }
+      );
+    }
 
     const hearingInfoContent = HEARING_ARR.map(hearingItem => (
       <ContentBlock
@@ -1041,7 +1087,6 @@ class SelectReleaseConditions extends React.Component<Props, State> {
 
   render() {
     const { state } = this;
-    console.log(state);
 
     const RELEASED = state[RELEASE] !== RELEASES.RELEASED;
 
