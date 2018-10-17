@@ -31,6 +31,13 @@ const psaHearingConfig = {
       fields: {
         [ID_FIELD_NAMES.HEARING_ID]: PROPERTY_TYPES.STRING_ID
       }
+    },
+    {
+      name: ENTITY_SETS.ASSESSED_BY,
+      alias: ALIASES.ASSESSED_BY_JUDGE,
+      fields: {
+        [ID_FIELD_NAMES.TIMESTAMP]: PROPERTY_TYPES.COMPLETED_DATE_TIME
+      }
     }
   ],
   associations: [
@@ -44,10 +51,11 @@ const psaHearingConfig = {
       dst: ALIASES.HEARING,
       association: ALIASES.APPEARS_IN
     },
+    // _____ assessed by judge
     {
       src: ALIASES.JUDGE,
       dst: ALIASES.HEARING,
-      association: ALIASES.APPEARS_IN
+      association: ALIASES.ASSESSED_BY_JUDGE
     }
   ]
 };
