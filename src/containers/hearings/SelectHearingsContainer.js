@@ -443,7 +443,6 @@ class SelectHearingsContainer extends React.Component<Props, State> {
       hearingIdsRefreshing,
       submitting
     } = this.props;
-
     const {
       deleteEntity,
       replaceEntity,
@@ -484,11 +483,16 @@ class SelectHearingsContainer extends React.Component<Props, State> {
       judgeName = judgeFromHearingComments;
     }
 
+    const psaContext = neighbors
+      .getIn([ENTITY_SETS.DMF_RISK_FACTORS, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.CONTEXT, 0]);
+    const jurisdiction = JURISDICTION[psaContext];
+
     return (
       <Wrapper withPadding>
         <SelectReleaseConditions
             submitting={submitting}
             submittedOutcomes={submittedOutcomes}
+            jurisdiction={jurisdiction}
             judgeEntity={judgeFromJudgeEntity}
             judgeName={judgeName}
             allJudges={allJudges}
