@@ -57,8 +57,12 @@ const HeaderWrapper = styled.div`
   }
 `;
 
-const CountsInput = styled.input.attrs({ type: 'number' })`
-  height: 100%;
+const CountsInput = styled.input.attrs({
+  type: 'number',
+  min: 1
+})`
+  height: 45px;
+  width: 286px;
   border: 1px solid #dcdce7;
   border-radius: 3px;
   color: #135;
@@ -304,7 +308,7 @@ export default class SelectChargesContainer extends React.Component<Props, State
     const getOnClear = field => () => this.handleChargeInputChange(undefined, index, field);
 
     return (
-      <ChargeWrapper>
+      <ChargeWrapper key={`${charge.statute}-${charge.qualifier}-${index}`}>
         <ChargeTitle>{this.formatCharge(charge)}</ChargeTitle>
         <ChargeOptionsWrapper>
           <SearchableSelect
