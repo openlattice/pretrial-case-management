@@ -366,10 +366,11 @@ class SelectHearingsContainer extends React.Component<Props, State> {
   renderNewHearingSection = () => {
     const { neighbors, allJudges } = this.props;
     const {
+      judge,
+      manuallyCreatingHearing,
       newHearingDate,
       newHearingTime,
       newHearingCourtroom,
-      judge,
       otherJudgeText
     } = this.state;
     const {
@@ -385,6 +386,7 @@ class SelectHearingsContainer extends React.Component<Props, State> {
 
     return (
       <NewHearingSection
+          manuallyCreatingHearing={manuallyCreatingHearing}
           allJudges={allJudges}
           newHearingDate={newHearingDate}
           newHearingTime={newHearingTime}
@@ -427,6 +429,7 @@ class SelectHearingsContainer extends React.Component<Props, State> {
 
   renderSelectReleaseCondtions = (selectedHearing) => {
     const {
+      allJudges,
       actions,
       hearingNeighborsById,
       defaultBond,
@@ -448,6 +451,7 @@ class SelectHearingsContainer extends React.Component<Props, State> {
       updateOutcomesAndReleaseCondtions
     } = actions;
 
+    let judgeName;
     const { row, hearingId, entityKeyId } = selectedHearing;
     const hasMultipleHearings = hearingNeighborsById.size > 1;
     const oldDataOutcome = defaultDMF.getIn([PROPERTY_TYPES.OUTCOME, 0]);
@@ -460,11 +464,34 @@ class SelectHearingsContainer extends React.Component<Props, State> {
       ? false
       : !!(hearingNeighborsById.getIn([entityKeyId, ENTITY_SETS.OUTCOMES]) || oldDataOutcome);
 
+    const judgeFromJudgeEntity = hearingNeighborsById.getIn([
+      entityKeyId,
+      ENTITY_SETS.MIN_PEN_PEOPLE,
+      PSA_NEIGHBOR.DETAILS
+    ]);
+    const judgeFromHearingComments = row.getIn([PROPERTY_TYPES.HEARING_COMMENTS, 0]);
+    if (judgeFromJudgeEntity) {
+      const firstName = judgeFromJudgeEntity.getIn([PROPERTY_TYPES.FIRST_NAME, 0]);
+      let middleName = judgeFromJudgeEntity.getIn([PROPERTY_TYPES.MIDDLE_NAME, 0]);
+      let lastName = judgeFromJudgeEntity.getIn([PROPERTY_TYPES.LAST_NAME, 0]);
+      middleName = middleName ? ` ${middleName}` : '';
+      lastName = lastName ? ` ${lastName}` : '';
+      if (firstName && lastName) {
+        judgeName = firstName + middleName + lastName;
+      }
+    }
+    else {
+      judgeName = judgeFromHearingComments;
+    }
+
     return (
       <Wrapper withPadding>
         <SelectReleaseConditions
             submitting={submitting}
             submittedOutcomes={submittedOutcomes}
+            judgeEntity={judgeFromJudgeEntity}
+            judgeName={judgeName}
+            allJudges={allJudges}
             neighbors={neighbors}
             personId={personId}
             psaId={psaId}
@@ -518,7 +545,6 @@ class SelectHearingsContainer extends React.Component<Props, State> {
   }
 
   render() {
-    console.log(this.state);
     const { manuallyCreatingHearing, selectingReleaseConditions, selectedHearing } = this.state;
     const {
       psaEntityKeyId,
