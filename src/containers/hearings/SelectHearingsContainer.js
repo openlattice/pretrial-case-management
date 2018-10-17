@@ -307,6 +307,7 @@ class SelectHearingsContainer extends React.Component<Props, State> {
       }
       else {
         hearing = Object.assign({}, hearing, {
+          [ID_FIELD_NAMES.TIMESTAMP]: moment().toISOString(true),
           [ID_FIELD_NAMES.JUDGE_ID]: judgeId,
           [PROPERTY_TYPES.HEARING_COMMENTS]: judge
         });
