@@ -32,7 +32,7 @@ const CreateButton = styled(InfoButton)`
 `;
 
 const NameInput = styled.input.attrs({
-  type: 'otherJudgeText'
+  type: 'text'
 })`
   width: 189px;
   height: 40px;
