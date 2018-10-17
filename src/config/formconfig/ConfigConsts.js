@@ -35,6 +35,7 @@ export const ALIASES = {
   USED: 'used',
   CALCULATED_FOR: 'calculatedFor',
   ASSESSED_BY: 'assessedBy',
+  ASSESSED_BY_JUDGE: 'assessedByJudge',
   EDITED_BY: 'editedBy',
   CHARGED_WITH: 'chargedWith',
   APPEARS_IN: 'appearsIn',
