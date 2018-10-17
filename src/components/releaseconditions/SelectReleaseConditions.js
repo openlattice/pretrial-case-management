@@ -33,7 +33,7 @@ import {
   FORM_IDS
 } from '../../utils/consts/Consts';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { getCourtroomOptions } from '../../utils/consts/HearingConsts';
+import { getCourtroomOptions, getJudgeOptions, HEARING_CONSTS } from '../../utils/consts/HearingConsts';
 import { PSA_NEIGHBOR, PSA_ASSOCIATION } from '../../utils/consts/FrontEndStateConsts';
 import { toISODate, toISODateTime, formatDateTime } from '../../utils/FormattingUtils';
 import {
@@ -197,6 +197,7 @@ const BLANK_PERSON_ROW = {
 };
 
 type Props = {
+  allJudges :Immutable.Map<*, *>,
   backToSelection :() => void,
   defaultBond :Immutable.Map<*, *>,
   defaultConditions :Immutable.List<*>,
@@ -206,6 +207,9 @@ type Props = {
   hearing :Immutable.Map<*, *>,
   hearingId :string,
   hearingEntityKeyId :string,
+  judgeEntity :Immutable.Map<*, *>,
+  judgeName :string,
+  jurisdiction :string,
   neighbors :Immutable.Map<*, *>,
   personId :string,
   psaId :string,
@@ -228,11 +232,14 @@ type State = {
   editingHearing :boolean,
   hearingCourtroom :string,
   hearingDateTime :Object,
+  judge :string,
+  judgeId :string,
   modifyingHearing :boolean,
   newHearingDate :string,
   newHearingTime :string,
   noContactPeople :Object[],
   otherConditionText :string,
+  otherJudgeText :string,
   otherOutcomeText :string,
   outcome :?string,
   release :?string,
@@ -251,15 +258,19 @@ class SelectReleaseConditions extends React.Component<Props, State> {
       defaultOutcome,
       defaultBond,
       defaultConditions,
-      hearingEntityKeyId
+      hearingEntityKeyId,
+      judgeName,
+      judgeEntity
     } = this.props;
 
     if (
-      nextProps.defaultDMF.getIn !== defaultDMF.size
+      nextProps.defaultDMF.size !== defaultDMF.size
       || nextProps.defaultOutcome.size !== defaultOutcome.size
       || nextProps.defaultBond.size !== defaultBond.size
       || nextProps.defaultConditions.size !== defaultConditions.size
       || nextProps.hearingEntityKeyId !== hearingEntityKeyId
+      || nextProps.judgeName !== judgeName
+      || nextProps.judgeEntity !== judgeEntity
     ) {
       this.setState(this.getStateFromProps(nextProps));
     }
@@ -273,13 +284,18 @@ class SelectReleaseConditions extends React.Component<Props, State> {
       defaultBond,
       defaultConditions,
       hearing,
-      submittedOutcomes
+      submittedOutcomes,
+      judgeEntity,
+      judgeName
     } = props;
 
     let modifyingHearing = false;
     const hearingDateTimeMoment = moment(hearing.getIn([PROPERTY_TYPES.DATE_TIME, 0], ''));
     let hearingDateTime = hearingDateTimeMoment.isValid() ? hearingDateTimeMoment : null;
     let hearingCourtroom = hearing.getIn([PROPERTY_TYPES.COURTROOM, 0], '');
+    let otherJudgeText = hearing.getIn([PROPERTY_TYPES.HEARING_COMMENTS, 0], '');
+    let judgeId = judgeEntity ? judgeEntity.getIn([PROPERTY_TYPES.PERSON_ID, 0]) : null;
+    let judge = judgeName || otherJudgeText;
     let newHearingDate;
     let newHearingTime;
     const editingHearing = false;
@@ -288,6 +304,9 @@ class SelectReleaseConditions extends React.Component<Props, State> {
       modifyingHearing = this.state.modifyingHearing;
       hearingDateTime = this.state.hearingDateTime;
       hearingCourtroom = this.state.hearingCourtroom;
+      otherJudgeText = this.state.otherJudgeText;
+      judgeId = this.state.judgeId;
+      judge = this.state.judge;
     }
 
     if (submittedOutcomes) {
@@ -360,6 +379,9 @@ class SelectReleaseConditions extends React.Component<Props, State> {
         modifyingHearing,
         hearingDateTime,
         hearingCourtroom,
+        otherJudgeText,
+        judge,
+        judgeId,
         disabled: true
       };
     }
@@ -379,6 +401,9 @@ class SelectReleaseConditions extends React.Component<Props, State> {
       newHearingTime,
       hearingDateTime,
       hearingCourtroom,
+      otherJudgeText,
+      judge,
+      judgeId,
       disabled: false,
       editingHearing
     };
@@ -889,7 +914,14 @@ class SelectReleaseConditions extends React.Component<Props, State> {
   }
 
   renderHearingInfo = () => {
-    const { hearing, submittedOutcomes, backToSelection } = this.props;
+    const {
+      judgeName,
+      allJudges,
+      hearing,
+      jurisdiction,
+      submittedOutcomes,
+      backToSelection
+    } = this.props;
     const {
       newHearingDate,
       newHearingTime,
@@ -900,6 +932,7 @@ class SelectReleaseConditions extends React.Component<Props, State> {
     let date;
     let time;
     let courtroom;
+    let judge;
     let hearingInfoButton;
 
     const backToSelectionButton = <StyledBasicButton onClick={backToSelection}>Back to Selection</StyledBasicButton>;
@@ -927,6 +960,13 @@ class SelectReleaseConditions extends React.Component<Props, State> {
             onSelect={newCourtroom => this.setState({ hearingCourtroom: newCourtroom })}
             short />
       );
+      judge = (
+        <StyledSearchableSelect
+            options={getJudgeOptions(allJudges, jurisdiction)}
+            value={judgeName}
+            onSelect={newCourtroom => this.setState({ hearingCourtroom: newCourtroom })}
+            short />
+      );
       hearingInfoButton = (
         <HearingInfoButtons modifyingHearing>
           <StyledBasicButton onClick={() => this.setState({ modifyingHearing: false })}>Cancel</StyledBasicButton>
@@ -938,6 +978,7 @@ class SelectReleaseConditions extends React.Component<Props, State> {
       date = formatDateTime(dateTime, 'MM/DD/YYYY');
       time = formatDateTime(dateTime, 'HH:mm');
       courtroom = hearing.getIn([PROPERTY_TYPES.COURTROOM, 0], '');
+      judge = judgeName || 'NA';
       hearingInfoButton = (
         submittedOutcomes
           ? null
@@ -964,6 +1005,10 @@ class SelectReleaseConditions extends React.Component<Props, State> {
       {
         label: 'Courtroom',
         content: [courtroom]
+      },
+      {
+        label: 'Judge',
+        content: [judge]
       }
     ];
 
@@ -996,6 +1041,7 @@ class SelectReleaseConditions extends React.Component<Props, State> {
 
   render() {
     const { state } = this;
+    console.log(state);
 
     const RELEASED = state[RELEASE] !== RELEASES.RELEASED;
 
