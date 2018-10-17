@@ -7,9 +7,10 @@ import Immutable from 'immutable';
 import styled from 'styled-components';
 
 import ContentBlock from '../ContentBlock';
-import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { CONDITION_LIST, BOND_TYPES, RELEASES } from '../../utils/consts/ReleaseConditionConsts';
+import { HEADER_LABELS } from '../../utils/consts/DMFResultConsts';
 
 const { HELD, RELEASED } = RELEASES;
 
@@ -98,7 +99,7 @@ const HearingSummary = ({ hearing }) => {
   let bondType;
   let bondAmount;
   let decision = HELD;
-  const reccomendation = hearingOutcome.getIn([PROPERTY_TYPES.RELEASE_TYPE, 0]);
+  const reccomendation = HEADER_LABELS[hearingOutcome.getIn([PROPERTY_TYPES.RELEASE_TYPE, 0])];
   const outcome = hearingOutcome.getIn([PROPERTY_TYPES.OUTCOME, 0]);
   if (hearingBond) {
     bondType = hearingBond.getIn([PROPERTY_TYPES.BOND_TYPE, 0]);
