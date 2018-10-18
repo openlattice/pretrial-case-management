@@ -399,7 +399,9 @@ class SelectHearingsContainer extends React.Component<Props, State> {
       psaId,
       refreshPSANeighborsCallback,
       hearingIdsRefreshing,
-      submitting
+      submitting,
+      psaEntityKeyId,
+      psaNeighborsById,
     } = this.props;
     const {
       deleteEntity,
@@ -414,6 +416,10 @@ class SelectHearingsContainer extends React.Component<Props, State> {
 
     let judgeName;
     const { row, hearingId, entityKeyId } = selectedHearing;
+    const hearing = psaNeighborsById.getIn([psaEntityKeyId, ENTITY_SETS.HEARINGS])
+      .filter(hearingObj => (hearingObj.getIn([OPENLATTICE_ID_FQN, 0]) === entityKeyId))
+      .get(0);
+
     const hasMultipleHearings = hearingNeighborsById.size > 1;
     const oldDataOutcome = defaultDMF.getIn([PROPERTY_TYPES.OUTCOME, 0]);
     const onlyOldExists = oldDataOutcome && !hearingNeighborsById.getIn([entityKeyId, ENTITY_SETS.OUTCOMES]);
@@ -479,7 +485,7 @@ class SelectHearingsContainer extends React.Component<Props, State> {
             hearingIdsRefreshing={hearingIdsRefreshing}
             hearingId={hearingId}
             hearingEntityKeyId={entityKeyId}
-            hearing={row}
+            hearing={hearing}
             backToSelection={this.backToHearingSelection}
             defaultOutcome={outcome}
             defaultDMF={defaultDMF}
@@ -535,7 +541,7 @@ class SelectHearingsContainer extends React.Component<Props, State> {
       .sort((h1, h2) => (moment(h1.getIn([PROPERTY_TYPES.DATE_TIME, 0], ''))
         .isBefore(h2.getIn([PROPERTY_TYPES.DATE_TIME, 0], '')) ? 1 : -1));
 
-    if (submitting || refreshingNeighbors || hearingIdsRefreshing.size) {
+    if (submitting || refreshingNeighbors || hearingIdsRefreshing) {
       return (
         <Wrapper>
           <SubmittingWrapper>
