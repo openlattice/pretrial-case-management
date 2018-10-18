@@ -475,7 +475,6 @@ class CourtContainer extends React.Component<Props, State> {
   }
 
   render() {
-    console.log(this.props);
     return (
       <StyledFormViewWrapper>
         <StyledFormWrapper>
