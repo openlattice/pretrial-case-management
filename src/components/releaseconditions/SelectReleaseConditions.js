@@ -230,6 +230,16 @@ type Props = {
   psaId :string,
   replace :(value :{ entitySetName :string, entityKeyId :string, values :Object }) => void,
   submit :(value :{ config :Object, values :Object, callback? :() => void }) => void,
+  replaceAssociation :(values :{
+    associationEntity :Map<*, *>,
+    associationEntityName :string,
+    associationEntityKeyId :string,
+    srcEntityName :string,
+    srcEntityKeyId :string,
+    dstEntityName :string,
+    dstEntityKeyId :string,
+    callback :() => void
+  }) => void,
   submitCallback :() => void,
   refreshHearingsNeighborsCallback :() => void,
   submitting :boolean,
@@ -275,7 +285,8 @@ class SelectReleaseConditions extends React.Component<Props, State> {
       defaultConditions,
       hearingEntityKeyId,
       judgeName,
-      judgeEntity
+      judgeEntity,
+      hearing
     } = this.props;
 
     if (
@@ -286,6 +297,8 @@ class SelectReleaseConditions extends React.Component<Props, State> {
       || nextProps.hearingEntityKeyId !== hearingEntityKeyId
       || nextProps.judgeName !== judgeName
       || nextProps.judgeEntity !== judgeEntity
+      || nextProps.hearing.getIn([PROPERTY_TYPES.DATE_TIME, 0]) !== hearing.getIn([PROPERTY_TYPES.DATE_TIME, 0])
+      || nextProps.hearing.getIn([PROPERTY_TYPES.COURTROOM, 0]) !== hearing.getIn([PROPERTY_TYPES.COURTROOM, 0])
     ) {
       this.setState(this.getStateFromProps(nextProps));
     }
@@ -308,8 +321,8 @@ class SelectReleaseConditions extends React.Component<Props, State> {
     const hearingDateTimeMoment = moment(hearing.getIn([PROPERTY_TYPES.DATE_TIME, 0], ''));
     let hearingDateTime = hearingDateTimeMoment.isValid() ? hearingDateTimeMoment : null;
     let hearingCourtroom = hearing.getIn([PROPERTY_TYPES.COURTROOM, 0], '');
-    const otherJudgeText = hearing.getIn([PROPERTY_TYPES.HEARING_COMMENTS, 0], '');
-    const judgeId = judgeEntity ? judgeEntity.getIn([PROPERTY_TYPES.PERSON_ID, 0]) : null;
+    const otherJudgeText = '';
+    const judgeId = judgeEntity ? judgeEntity.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.PERSON_ID, 0]) : null;
     const judge = judgeName || otherJudgeText;
     let newHearingDate;
     let newHearingTime;
@@ -896,10 +909,15 @@ class SelectReleaseConditions extends React.Component<Props, State> {
       hearing,
       replace,
       submitCallback,
-      hearingEntityKeyId
+      hearingEntityKeyId,
+      judgeEntity,
+      judgeName,
+      replaceAssociation,
+      refreshHearingsNeighborsCallback
     } = this.props;
     const {
       judge,
+      judgeId,
       newHearingDate,
       newHearingTime,
       hearingCourtroom,
@@ -907,6 +925,8 @@ class SelectReleaseConditions extends React.Component<Props, State> {
     } = this.state;
     const dateTime = hearing.getIn([PROPERTY_TYPES.DATE_TIME, 0], '');
     const rawTime = newHearingTime || formatDateTime(dateTime, 'HH:mm');
+    const judgeNameEdited = judge !== judgeName;
+    const judgeText = judge === 'Other' ? [otherJudgeText] : [];
 
     this.setState({ modifyingHearing: false });
     const dateFormat = 'MM/DD/YYYY';
@@ -916,11 +936,35 @@ class SelectReleaseConditions extends React.Component<Props, State> {
     const hearingDateTime = moment(
       `${date.format(dateFormat)} ${time.format(timeFormat)}`, `${dateFormat} ${timeFormat}`
     );
+    if (judgeNameEdited && judgeId) {
+      const associationEntityName = ENTITY_SETS.ASSESSED_BY;
+      const associationEntityKeyId = judgeEntity
+        ? judgeEntity.getIn([PSA_ASSOCIATION.DETAILS, OPENLATTICE_ID_FQN, 0])
+        : null;
+      const srcEntityName = ENTITY_SETS.MIN_PEN_PEOPLE;
+      const srcEntityKeyId = judgeId;
+      const dstEntityName = ENTITY_SETS.HEARINGS;
+      const dstEntityKeyId = hearingEntityKeyId;
+      const associationEntity = {
+        [PROPERTY_TYPES.COMPLETED_DATE_TIME]: moment().toISOString(true),
+      };
+      replaceAssociation({
+        associationEntity,
+        associationEntityName,
+        associationEntityKeyId,
+        srcEntityName,
+        srcEntityKeyId,
+        dstEntityName,
+        dstEntityKeyId,
+        callback: refreshHearingsNeighborsCallback()
+      });
+    }
     if (hearingDateTime && hearingCourtroom) {
       const newHearing = hearing
         .set(PROPERTY_TYPES.COURTROOM, [hearingCourtroom])
         .set(PROPERTY_TYPES.DATE_TIME, [hearingDateTime.toISOString(true)])
         .set(PROPERTY_TYPES.HEARING_TYPE, ['Initial Appearance'])
+        .set(PROPERTY_TYPES.HEARING_COMMENTS, judgeText)
         .toJS();
       replace({
         entitySetName: ENTITY_SETS.HEARINGS,
@@ -993,7 +1037,7 @@ class SelectReleaseConditions extends React.Component<Props, State> {
             value={judge}
             onSelect={judgeOption => this.setState({
               [HEARING_CONSTS.JUDGE]: judgeOption.get(HEARING_CONSTS.FULL_NAME),
-              [HEARING_CONSTS.JUDGE_ID]: judgeOption.getIn([PROPERTY_TYPES.PERSON_ID, 0])
+              [HEARING_CONSTS.JUDGE_ID]: judgeOption.getIn([OPENLATTICE_ID_FQN, 0])
             })}
             short />
       );
