@@ -22,11 +22,11 @@ const StyledContentLabel = styled.div`
     switch (props.component) {
       case CONTENT_CONSTS.CREATING_HEARING:
         return (
-          'none;'
+          'none'
         );
       default:
         return (
-          'uppercase;'
+          'uppercase'
         );
     }
   }};
