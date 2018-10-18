@@ -100,7 +100,7 @@ export const getAllSecondaryHoldChargeLabels = chargeList => (
 );
 
 export const getAllSecondaryHoldCharges = chargeList => (
-  filterChargeList(chargeList, PENN_BOOKING_HOLD_EXCEPTIONS).map(charge => getChargeDetails(charge, true))
+  filterChargeList(chargeList, PENN_BOOKING_RELEASE_EXCEPTIONS).map(charge => getChargeDetails(charge, true))
 );
 
 export const getSecondaryHoldChargeJustification = (chargeList) => {
