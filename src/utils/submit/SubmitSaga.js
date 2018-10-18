@@ -130,11 +130,7 @@ function* submitWorker(action :SequenceAction) :Generator<*, *, *> {
     const edmDetailsRequest = allEntitySetIds.map(id => ({
       id,
       type: 'EntitySet',
-      include: [
-        'EntitySet',
-        'EntityType',
-        'PropertyTypeInEntitySet'
-      ]
+      include: ['PropertyTypeInEntitySet']
     }));
     const edmDetails = yield call(EntityDataModelApi.getEntityDataModelProjection, edmDetailsRequest);
 
@@ -255,11 +251,11 @@ const getMapFromPropertyIdsToValues = (entity, propertyTypesByFqn) => {
 function* replaceAssociationWorker(action :SequenceAction) :Generator<*, *, *> {
   const {
     associationEntity,
-    associationEntityName,
+    associationEntitySetName,
     associationEntityKeyId,
-    srcEntityName,
+    srcEntitySetName,
     srcEntityKeyId,
-    dstEntityName,
+    dstEntitySetName,
     dstEntityKeyId,
     callback
   } = action.value;
@@ -268,9 +264,9 @@ function* replaceAssociationWorker(action :SequenceAction) :Generator<*, *, *> {
     yield put(replaceAssociation.request(action.id));
 
     // Collect Entity Set Ids for association, src, and dst
-    const associationEntitySetId = yield call(EntityDataModelApi.getEntitySetId, associationEntityName);
-    const srcEntitySetId = yield call(EntityDataModelApi.getEntitySetId, srcEntityName);
-    const dstEntitySetId = yield call(EntityDataModelApi.getEntitySetId, dstEntityName);
+    const associationEntitySetId = yield call(EntityDataModelApi.getEntitySetId, associationEntitySetName);
+    const srcEntitySetId = yield call(EntityDataModelApi.getEntitySetId, srcEntitySetName);
+    const dstEntitySetId = yield call(EntityDataModelApi.getEntitySetId, dstEntitySetName);
 
     const allEntitySetIds = [associationEntitySetId, srcEntitySetId, dstEntitySetId];
 
