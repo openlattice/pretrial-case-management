@@ -301,16 +301,7 @@ function* replaceAssociationWorker(action :SequenceAction) :Generator<*, *, *> {
       yield call(DataApi.clearEntityFromEntitySet, associationEntitySetId, associationEntityKeyId);
     }
 
-    // // Create new association entity
-    // const newAssociationEntityKeyId = yield call(
-    //   DataApi.createOrMergeEntityData,
-    //   associationEntitySetId,
-    //   [associationEntityOject.toJS()]
-    // );
-    //
-    // console.log(newAssociationEntityKeyId);
-
-    // Create new association between src and dst with newAssociationEntityKeyId
+    // Create new association
     yield call(
       DataApi.createAssociations,
       {
