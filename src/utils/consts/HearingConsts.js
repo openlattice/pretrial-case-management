@@ -22,6 +22,19 @@ export const HEARING_CONSTS = {
   OTHER_JUDGE: 'Other'
 };
 
+export const formatJudgeName = (judge) => {
+  const firstName = judge.getIn([PROPERTY_TYPES.FIRST_NAME, 0]);
+  let middleName = judge.getIn([PROPERTY_TYPES.MIDDLE_NAME, 0]);
+  let lastName = judge.getIn([PROPERTY_TYPES.LAST_NAME, 0]);
+  middleName = middleName ? ` ${middleName}` : '';
+  lastName = lastName ? ` ${lastName}` : '';
+  const fullNameString = firstName + middleName + lastName;
+  if (firstName && lastName) {
+    return fullNameString;
+  }
+  return null;
+}
+
 export const getCourtroomOptions = () => {
   let courtroomOptions = Map();
   COURTROOMS.forEach((courtroom) => {
@@ -35,12 +48,7 @@ export const getJudgeOptions = (allJudges, jurisdiction) => {
 
   allJudges.forEach((judge) => {
     if (judge.getIn([PROPERTY_TYPES.JURISDICTION, 0]) === jurisdiction) {
-      const firstName = judge.getIn([PROPERTY_TYPES.FIRST_NAME, 0]);
-      let middleName = judge.getIn([PROPERTY_TYPES.MIDDLE_NAME, 0]);
-      let lastName = judge.getIn([PROPERTY_TYPES.LAST_NAME, 0]);
-      middleName = middleName ? ` ${middleName}` : '';
-      lastName = lastName ? ` ${lastName}` : '';
-      const fullNameString = firstName + middleName + lastName;
+      const fullNameString = formatJudgeName(judge);
       judgeOptions = judgeOptions.set(
         fullNameString,
         judge
