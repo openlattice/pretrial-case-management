@@ -118,6 +118,7 @@ type Props = {
   refreshingNeighbors :boolean,
   readOnly :boolean,
   actions :{
+    loadHearingNeighbors :(hearingIds :string[]) => void,
     submit :(values :{
       config :Map<*, *>,
       values :Map<*, *>,
@@ -169,6 +170,22 @@ class SelectHearingsContainer extends React.Component<Props, State> {
       selectedHearing: Map(),
       selectingReleaseConditions: false
     };
+  }
+
+  componentWillReceiveProps = (nextProps) => {
+    const { neighbors, actions } = this.props;
+    const { loadHearingNeighbors } = actions;
+    const currentHearingIds = neighbors.get(ENTITY_SETS.HEARINGS, List())
+      .map(neighbor => neighbor.getIn([OPENLATTICE_ID_FQN, 0]))
+      .filter(id => !!id)
+      .toJS();
+    const hearingIds = nextProps.neighbors.get(ENTITY_SETS.HEARINGS, List())
+      .map(neighbor => neighbor.getIn([OPENLATTICE_ID_FQN, 0]))
+      .filter(id => !!id)
+      .toJS();
+    if (currentHearingIds.length !== hearingIds.length) {
+      loadHearingNeighbors({ hearingIds });
+    }
   }
 
   onInputChange = (e) => {
@@ -267,6 +284,7 @@ class SelectHearingsContainer extends React.Component<Props, State> {
       }
       this.selectHearing(hearing);
       onSubmit(hearing);
+      this.setState({ manuallyCreatingHearing: false });
     }
   }
 
