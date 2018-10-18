@@ -24,7 +24,7 @@ import LoadingSpinner from '../../components/LoadingSpinner';
 import SelectReleaseConditions from '../../components/releaseconditions/SelectReleaseConditions';
 
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { HEARING_CONSTS } from '../../utils/consts/HearingConsts';
+import { HEARING_CONSTS, formatJudgeName } from '../../utils/consts/HearingConsts';
 import { Title } from '../../utils/Layout';
 import {
   FORM_IDS,
@@ -445,14 +445,8 @@ class SelectHearingsContainer extends React.Component<Props, State> {
     ]);
     const judgeFromHearingComments = row.getIn([PROPERTY_TYPES.HEARING_COMMENTS, 0]);
     if (judgeFromJudgeEntity) {
-      const firstName = judgeFromJudgeEntity.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.FIRST_NAME, 0]);
-      let middleName = judgeFromJudgeEntity.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.MIDDLE_NAME, 0]);
-      let lastName = judgeFromJudgeEntity.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.LAST_NAME, 0]);
-      middleName = middleName ? ` ${middleName}` : '';
-      lastName = lastName ? ` ${lastName}` : '';
-      if (firstName && lastName) {
-        judgeName = firstName + middleName + lastName;
-      }
+      const judgeEntity = judgeFromJudgeEntity.get(PSA_NEIGHBOR.DETAILS);
+      judgeName = formatJudgeName(judgeEntity);
     }
     else {
       judgeName = judgeFromHearingComments;
