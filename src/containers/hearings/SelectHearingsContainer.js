@@ -128,11 +128,11 @@ type Props = {
     refreshHearingNeighbors :({ id :string }) => void,
     replaceAssociation :(values :{
       associationEntity :Map<*, *>,
-      associationEntityName :string,
+      associationEntitySetName :string,
       associationEntityKeyId :string,
-      srcEntityName :string,
+      srcEntitySetName :string,
       srcEntityKeyId :string,
-      dstEntityName :string,
+      dstEntitySetName :string,
       dstEntityKeyId :string,
       callback :() => void
     }) => void
@@ -272,6 +272,7 @@ class SelectHearingsContainer extends React.Component<Props, State> {
         [PROPERTY_TYPES.HEARING_TYPE]: 'Initial Appearance'
       };
       if (judge === 'Other') {
+        this.setState({ judgeId: '' });
         hearing = Object.assign({}, hearing, {
           [PROPERTY_TYPES.HEARING_COMMENTS]: otherJudgeText
         });
