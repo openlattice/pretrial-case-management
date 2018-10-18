@@ -128,11 +128,11 @@ type Props = {
     refreshHearingNeighbors :({ id :string }) => void,
     replaceAssociation :(values :{
       associationEntity :Map<*, *>,
-      associationEntitySetName :string,
+      associationEntityName :string,
       associationEntityKeyId :string,
-      srcEntitySetName :string,
+      srcEntityName :string,
       srcEntityKeyId :string,
-      dstEntitySetName :string,
+      dstEntityName :string,
       dstEntityKeyId :string,
       callback :() => void
     }) => void
@@ -189,7 +189,8 @@ class SelectHearingsContainer extends React.Component<Props, State> {
   }
 
   onInputChange = (e) => {
-    this.setState({ [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    this.setState({ [name]: value });
   }
 
   getSortedHearings = (scheduledHearings) => {
@@ -297,12 +298,6 @@ class SelectHearingsContainer extends React.Component<Props, State> {
       [HEARING.DATE_TIME]: row.getIn([PROPERTY_TYPES.DATE_TIME, 0], ''),
       [HEARING.COURTROOM]: row.getIn([PROPERTY_TYPES.COURTROOM, 0], '')
     }));
-  }
-
-  onInputChange = (e) => {
-    const { name, value } = e.target;
-    const state :State = Object.assign({}, this.state, { [name]: value });
-    this.setState(state);
   }
 
   onSelectChange = (option) => {
