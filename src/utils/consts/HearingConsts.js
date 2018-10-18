@@ -23,16 +23,18 @@ export const HEARING_CONSTS = {
 };
 
 export const formatJudgeName = (judge) => {
-  const firstName = judge.getIn([PROPERTY_TYPES.FIRST_NAME, 0]);
-  let middleName = judge.getIn([PROPERTY_TYPES.MIDDLE_NAME, 0]);
-  let lastName = judge.getIn([PROPERTY_TYPES.LAST_NAME, 0]);
-  middleName = middleName ? ` ${middleName}` : '';
-  lastName = lastName ? ` ${lastName}` : '';
-  const fullNameString = firstName + middleName + lastName;
-  if (firstName && lastName) {
-    return fullNameString;
+  if (judge) {
+    const firstName = judge.getIn([PROPERTY_TYPES.FIRST_NAME, 0]);
+    let middleName = judge.getIn([PROPERTY_TYPES.MIDDLE_NAME, 0]);
+    let lastName = judge.getIn([PROPERTY_TYPES.LAST_NAME, 0]);
+    middleName = middleName ? ` ${middleName}` : '';
+    lastName = lastName ? ` ${lastName}` : '';
+    const fullNameString = firstName + middleName + lastName;
+    if (firstName && lastName) {
+      return fullNameString;
+    }
   }
-  return null;
+  return 'NA';
 }
 
 export const getCourtroomOptions = () => {
