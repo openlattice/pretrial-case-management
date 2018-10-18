@@ -232,11 +232,11 @@ type Props = {
   submit :(value :{ config :Object, values :Object, callback? :() => void }) => void,
   replaceAssociation :(values :{
     associationEntity :Map<*, *>,
-    associationEntityName :string,
+    associationEntitySetName :string,
     associationEntityKeyId :string,
-    srcEntityName :string,
+    srcEntitySetName :string,
     srcEntityKeyId :string,
-    dstEntityName :string,
+    dstEntitySetName :string,
     dstEntityKeyId :string,
     callback :() => void
   }) => void,
@@ -926,7 +926,14 @@ class SelectReleaseConditions extends React.Component<Props, State> {
     const dateTime = hearing.getIn([PROPERTY_TYPES.DATE_TIME, 0], '');
     const rawTime = newHearingTime || formatDateTime(dateTime, 'HH:mm');
     const judgeNameEdited = judge !== judgeName;
-    const judgeText = judge === 'Other' ? [otherJudgeText] : [];
+    let judgeText;
+    if (judge === 'Other') {
+      this.setState({ judgeId: '' });
+      judgeText = [otherJudgeText];
+    }
+    else {
+      judgeText = [];
+    }
 
     this.setState({ modifyingHearing: false });
     const dateFormat = 'MM/DD/YYYY';
@@ -937,24 +944,24 @@ class SelectReleaseConditions extends React.Component<Props, State> {
       `${date.format(dateFormat)} ${time.format(timeFormat)}`, `${dateFormat} ${timeFormat}`
     );
     if (judgeNameEdited && judgeId) {
-      const associationEntityName = ENTITY_SETS.ASSESSED_BY;
+      const associationEntitySetName = ENTITY_SETS.ASSESSED_BY;
       const associationEntityKeyId = judgeEntity
         ? judgeEntity.getIn([PSA_ASSOCIATION.DETAILS, OPENLATTICE_ID_FQN, 0])
         : null;
-      const srcEntityName = ENTITY_SETS.MIN_PEN_PEOPLE;
+      const srcEntitySetName = ENTITY_SETS.MIN_PEN_PEOPLE;
       const srcEntityKeyId = judgeId;
-      const dstEntityName = ENTITY_SETS.HEARINGS;
+      const dstEntitySetName = ENTITY_SETS.HEARINGS;
       const dstEntityKeyId = hearingEntityKeyId;
       const associationEntity = {
         [PROPERTY_TYPES.COMPLETED_DATE_TIME]: moment().toISOString(true),
       };
       replaceAssociation({
         associationEntity,
-        associationEntityName,
+        associationEntitySetName,
         associationEntityKeyId,
-        srcEntityName,
+        srcEntitySetName,
         srcEntityKeyId,
-        dstEntityName,
+        dstEntitySetName,
         dstEntityKeyId,
         callback: refreshHearingsNeighborsCallback()
       });
@@ -977,8 +984,7 @@ class SelectReleaseConditions extends React.Component<Props, State> {
 
   onInputChange = (e) => {
     const { name, value } = e.target;
-    const state :State = Object.assign({}, this.state, { [name]: value });
-    this.setState(state);
+    this.setState({ [name]: value });
   }
 
   renderHearingInfo = () => {
