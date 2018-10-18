@@ -130,7 +130,11 @@ function* submitWorker(action :SequenceAction) :Generator<*, *, *> {
     const edmDetailsRequest = allEntitySetIds.map(id => ({
       id,
       type: 'EntitySet',
-      include: ['PropertyTypeInEntitySet']
+      include: [
+        'EntitySet',
+        'EntityType',
+        'PropertyTypeInEntitySet'
+      ]
     }));
     const edmDetails = yield call(EntityDataModelApi.getEntityDataModelProjection, edmDetailsRequest);
 
@@ -273,11 +277,7 @@ function* replaceAssociationWorker(action :SequenceAction) :Generator<*, *, *> {
     const edmDetailsRequest = allEntitySetIds.map(id => ({
       id,
       type: 'EntitySet',
-      include: [
-        'EntitySet',
-        'EntityType',
-        'PropertyTypeInEntitySet'
-      ]
+      include: ['PropertyTypeInEntitySet']
     }));
     const edmDetails = yield call(EntityDataModelApi.getEntityDataModelProjection, edmDetailsRequest);
 
