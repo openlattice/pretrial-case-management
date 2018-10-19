@@ -3523,7 +3523,15 @@ export const PENN_BOOKING_RELEASE_EXCEPTIONS = [
   },
   {
     [STATUTE]: '22-42-2',
+    [DESCRIPTION]: 'Distribute/Manufacture of Controlled Drug/Schedule I (F3)'
+  },
+  {
+    [STATUTE]: '22-42-2',
     [DESCRIPTION]: 'Distribute/Manufacture of Controlled Drug/Schedule I to Minor (F2)'
+  },
+  {
+    [STATUTE]: '22-42-2',
+    [DESCRIPTION]: 'Distribute/Manufacture of Controlled Drug/Schedule II (F3)'
   },
   {
     [STATUTE]: '22-42-2',
