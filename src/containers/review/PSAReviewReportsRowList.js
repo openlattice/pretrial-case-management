@@ -16,10 +16,17 @@ import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts'
 import { SORT_TYPES } from '../../utils/consts/Consts';
 import { sortByDate, sortByName } from '../../utils/PSAUtils';
 import { getEntityKeyId, getIdValue } from '../../utils/DataUtils';
-import { STATE, REVIEW, SUBMIT, PEOPLE } from '../../utils/consts/FrontEndStateConsts';
+import {
+  STATE,
+  REVIEW,
+  SUBMIT,
+  PEOPLE,
+  COURT
+} from '../../utils/consts/FrontEndStateConsts';
 
 import * as FormActionFactory from '../psa/FormActionFactory';
 import * as ReviewActionFactory from './ReviewActionFactory';
+import * as CourtActionFactory from '../court/CourtActionFactory';
 import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
 import * as DataActionFactory from '../../utils/data/DataActionFactory';
 
@@ -118,6 +125,7 @@ type Props = {
       personId :string,
       neighbors :Immutable.Map<*, *>
     }) => void,
+    loadHearingNeighbors :(hearingIds :string[]) => void,
     checkPSAPermissions :() => void,
     refreshPSANeighbors :({ id :string }) => void,
     submit :(value :{ config :Object, values :Object}) => void,
@@ -136,6 +144,7 @@ type Props = {
   psaIdsRefreshing :Immutable.Set<*>,
   readOnlyPermissions :boolean,
   loadingPSAData :boolean,
+  scoresEntitySetId :string,
   submitting :boolean
 }
 
@@ -161,25 +170,55 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
   }
 
   componentDidMount() {
-    this.props.actions.checkPSAPermissions();
+    const { actions } = this.props;
+    actions.checkPSAPermissions();
   }
 
   componentWillUnmount() {
-    this.props.actions.clearSubmit();
+    const { actions } = this.props;
+    actions.clearSubmit();
   }
 
   renderRow = (scoreId, scores) => {
-    const neighbors = this.props.psaNeighborsById.get(scoreId, Immutable.Map());
+    const {
+      psaNeighborsById,
+      caseHistory,
+      manualCaseHistory,
+      chargeHistory,
+      manualChargeHistory,
+      sentenceHistory,
+      ftaHistory,
+      hearings,
+      component,
+      scoresEntitySetId,
+      actions,
+      onStatusChangeCallback,
+      psaIdsRefreshing,
+      readOnlyPermissions,
+      hideCaseHistory,
+      submitting
+    } = this.props;
+
+    const {
+      downloadPSAReviewPDF,
+      loadCaseHistory,
+      loadHearingNeighbors,
+      submit,
+      replaceEntity,
+      deleteEntity,
+      refreshPSANeighbors
+    } = actions;
+
+    const neighbors = psaNeighborsById.get(scoreId, Immutable.Map());
     const personId = getEntityKeyId(neighbors, ENTITY_SETS.PEOPLE);
     const personIdValue = getIdValue(neighbors, ENTITY_SETS.PEOPLE, PROPERTY_TYPES.PERSON_ID);
-    const caseHistory = this.props.caseHistory.get(personId, Immutable.List());
-    const manualCaseHistory = this.props.manualCaseHistory.get(personId, Immutable.List());
-    const chargeHistory = this.props.chargeHistory.get(personId, Immutable.Map());
-    const manualChargeHistory = this.props.manualChargeHistory.get(personId, Immutable.Map());
-    const sentenceHistory = this.props.sentenceHistory.get(personId, Immutable.Map());
-    const ftaHistory = this.props.ftaHistory.get(personId, Immutable.Map());
-    const hearings = this.props.hearings.get(personId, Immutable.List());
-    const { component } = this.props;
+    const personCaseHistory = caseHistory.get(personId, Immutable.List());
+    const personManualCaseHistory = manualCaseHistory.get(personId, Immutable.List());
+    const personChargeHistory = chargeHistory.get(personId, Immutable.Map());
+    const personManualChargeHistory = manualChargeHistory.get(personId, Immutable.Map());
+    const personSentenceHistory = sentenceHistory.get(personId, Immutable.Map());
+    const personFTAHistory = ftaHistory.get(personId, Immutable.Map());
+    const personHearings = hearings.get(personId, Immutable.List());
 
     const hideProfile = (
       component === CONTENT_CONSTS.PROFILE ||
@@ -189,30 +228,31 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
       <PSAReviewReportsRow
           neighbors={neighbors}
           scores={scores}
-          scoresEntitySetId={this.props[REVIEW.ENTITY_SET_ID]}
+          scoresEntitySetId={scoresEntitySetId}
           personId={personIdValue}
           entityKeyId={scoreId}
-          downloadFn={this.props.actions.downloadPSAReviewPDF}
-          loadCaseHistoryFn={this.props.actions.loadCaseHistory}
-          onStatusChangeCallback={this.props.onStatusChangeCallback}
-          submitData={this.props.actions.submit}
-          replaceEntity={this.props.actions.replaceEntity}
-          deleteEntity={this.props.actions.deleteEntity}
-          refreshPSANeighbors={this.props.actions.refreshPSANeighbors}
-          caseHistory={caseHistory}
-          manualCaseHistory={manualCaseHistory}
-          chargeHistory={chargeHistory}
-          manualChargeHistory={manualChargeHistory}
-          sentenceHistory={sentenceHistory}
-          ftaHistory={ftaHistory}
-          hearings={hearings}
-          refreshingNeighbors={this.props.psaIdsRefreshing.has(scoreId)}
-          readOnly={this.props.readOnlyPermissions}
+          downloadFn={downloadPSAReviewPDF}
+          loadCaseHistoryFn={loadCaseHistory}
+          loadHearingNeighbors={loadHearingNeighbors}
+          onStatusChangeCallback={onStatusChangeCallback}
+          submitData={submit}
+          replaceEntity={replaceEntity}
+          deleteEntity={deleteEntity}
+          refreshPSANeighbors={refreshPSANeighbors}
+          caseHistory={personCaseHistory}
+          manualCaseHistory={personManualCaseHistory}
+          chargeHistory={personChargeHistory}
+          manualChargeHistory={personManualChargeHistory}
+          sentenceHistory={personSentenceHistory}
+          ftaHistory={personFTAHistory}
+          hearings={personHearings}
+          refreshingNeighbors={psaIdsRefreshing.has(scoreId)}
+          readOnly={readOnlyPermissions}
           key={scoreId}
-          hideCaseHistory={this.props.hideCaseHistory}
+          hideCaseHistory={hideCaseHistory}
           hideProfile={hideProfile}
-          submitting={this.props.submitting}
-          component={this.props.component} />
+          submitting={submitting}
+          component={component} />
     );
   }
 
@@ -227,14 +267,15 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
 
   renderHeaderBar = (numResults) => {
     const { start } = this.state;
+    const { component, renderContent } = this.props;
 
     const numPages = Math.ceil(numResults / MAX_RESULTS);
     const currPage = (start / MAX_RESULTS) + 1;
 
     return (
       <StyledCenteredContainer>
-        <StyledSubHeaderBar component={this.props.component}>
-          {this.props.renderContent(numResults)}
+        <StyledSubHeaderBar component={component}>
+          {renderContent(numResults)}
           <CustomPagination
               numPages={numPages}
               activePage={currPage}
@@ -255,7 +296,7 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
   }
 
   renderContent = (items, numPages, noResults) => {
-    const { component } = this.props;
+    const { component, renderSubContent } = this.props;
 
     switch (component) {
       case CONTENT_CONSTS.REVIEW:
@@ -271,7 +312,7 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
           <ReviewWrapper>
             {this.renderHeaderBar(numPages)}
             <SubContentWrapper>
-              {this.props.renderSubContent()}
+              {renderSubContent()}
             </SubContentWrapper>
             <ReviewRowWrapper>
               {items.map(([scoreId, scores]) => this.renderRow(scoreId, scores))}
@@ -329,6 +370,7 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
 function mapStateToProps(state) {
   const people = state.get(STATE.PEOPLE);
   const review = state.get(STATE.REVIEW);
+  const court = state.get(STATE.COURT);
   const submit = state.get(STATE.SUBMIT);
   // TODO: Address prop names so that consts can be used as keys
   return {
@@ -341,10 +383,13 @@ function mapStateToProps(state) {
     [REVIEW.SENTENCE_HISTORY]: review.get(REVIEW.SENTENCE_HISTORY),
     [REVIEW.FTA_HISTORY]: review.get(REVIEW.FTA_HISTORY),
     [REVIEW.HEARINGS]: review.get(REVIEW.HEARINGS),
-    [REVIEW.HEARINGS_NEIGHBORS_BY_ID]: review.get(REVIEW.HEARINGS_NEIGHBORS_BY_ID),
     [REVIEW.LOADING_DATA]: review.get(REVIEW.LOADING_DATA),
     [REVIEW.PSA_IDS_REFRESHING]: review.get(REVIEW.PSA_IDS_REFRESHING),
     readOnlyPermissions: review.get(REVIEW.READ_ONLY),
+
+    [COURT.LOADING_HEARING_NEIGHBORS]: court.get(COURT.LOADING_HEARING_NEIGHBORS),
+    [COURT.HEARINGS_NEIGHBORS_BY_ID]: court.get(COURT.HEARINGS_NEIGHBORS_BY_ID),
+    [COURT.HEARING_IDS_REFRESHING]: court.get(COURT.HEARING_IDS_REFRESHING),
 
     [SUBMIT.SUBMITTING]: submit.get(SUBMIT.SUBMITTING, false)
   };
@@ -359,6 +404,10 @@ function mapDispatchToProps(dispatch :Function) :Object {
 
   Object.keys(ReviewActionFactory).forEach((action :string) => {
     actions[action] = ReviewActionFactory[action];
+  });
+
+  Object.keys(CourtActionFactory).forEach((action :string) => {
+    actions[action] = CourtActionFactory[action];
   });
 
   Object.keys(SubmitActionFactory).forEach((action :string) => {

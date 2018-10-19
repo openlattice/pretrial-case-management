@@ -9,6 +9,7 @@ import randomUUID from 'uuid/v4';
 import { List, Map, Set } from 'immutable';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
+import { Constants } from 'lattice';
 
 import InfoButton from '../../components/buttons/InfoButton';
 import DatePicker from '../../components/controls/StyledDatePicker';
@@ -21,11 +22,18 @@ import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts'
 import { FORM_IDS, ID_FIELD_NAMES, HEARING } from '../../utils/consts/Consts';
 import { getCourtroomOptions } from '../../utils/consts/HearingConsts';
 import { getTimeOptions } from '../../utils/consts/DateTimeConsts';
-import { STATE, REVIEW } from '../../utils/consts/FrontEndStateConsts';
+import {
+  STATE,
+  REVIEW,
+  COURT
+} from '../../utils/consts/FrontEndStateConsts';
 import CONTENT from '../../utils/consts/ContentConsts';
 import { Title } from '../../utils/Layout';
 import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
 import * as ReviewActionFactory from '../review/ReviewActionFactory';
+import * as CourtActionFactory from '../court/CourtActionFactory';
+
+const { OPENLATTICE_ID_FQN } = Constants;
 
 
 const Container = styled.div`
@@ -182,7 +190,7 @@ class SelectHearingsContainer extends React.Component<Props, State> {
   }
 
   getSortedHearings = (scheduledHearings) => {
-    const { hearings } = this.props;
+    const { hearings, hearingNeighborsById } = this.props;
     let scheduledHearingMap = Map();
     scheduledHearings.forEach((scheduledHearing) => {
       const dateTime = scheduledHearing.getIn([PROPERTY_TYPES.DATE_TIME, 0]);
@@ -192,7 +200,9 @@ class SelectHearingsContainer extends React.Component<Props, State> {
     const unusedHearings = hearings.filter((hearing) => {
       const hearingDateTime = hearing.getIn([PROPERTY_TYPES.DATE_TIME, 0], '');
       const hearingCourtroom = hearing.getIn([PROPERTY_TYPES.COURTROOM, 0], '');
-      return !(scheduledHearingMap.get(hearingDateTime) === hearingCourtroom);
+      const id = hearing.getIn([OPENLATTICE_ID_FQN, 0]);
+      const hasOutcome = !!hearingNeighborsById.getIn([id, ENTITY_SETS.OUTCOMES]);
+      return !((scheduledHearingMap.get(hearingDateTime) === hearingCourtroom) || !hasOutcome);
     });
     return unusedHearings.sort((h1, h2) => (moment(h1.getIn([PROPERTY_TYPES.DATE_TIME, 0], ''))
       .isBefore(h2.getIn([PROPERTY_TYPES.DATE_TIME, 0], '')) ? 1 : -1));
@@ -342,15 +352,26 @@ class SelectHearingsContainer extends React.Component<Props, State> {
       submit,
       updateOutcomesAndReleaseCondtions
     } = actions;
+    let outcome;
+    let bond;
+    let conditions;
 
     const { row, hearingId, entityKeyId } = selectedHearing;
     const hasMultipleHearings = hearingNeighborsById.size > 1;
     const oldDataOutcome = defaultDMF.getIn([PROPERTY_TYPES.OUTCOME, 0]);
     const onlyOldExists = oldDataOutcome && !hearingNeighborsById.getIn([entityKeyId, ENTITY_SETS.OUTCOMES]);
-    const outcome = hearingNeighborsById.getIn([entityKeyId, ENTITY_SETS.OUTCOMES], defaultDMF);
-    const bond = hearingNeighborsById.getIn([entityKeyId, ENTITY_SETS.BONDS], (defaultBond || Map()));
-    const conditions = hearingNeighborsById
-      .getIn([entityKeyId, ENTITY_SETS.RELEASE_CONDITIONS], (defaultConditions || Map()));
+
+    if (onlyOldExists) {
+      outcome = defaultDMF;
+      bond = defaultBond;
+      conditions = defaultConditions;
+    }
+    else {
+      outcome = hearingNeighborsById.getIn([entityKeyId, ENTITY_SETS.OUTCOMES], Map());
+      bond = hearingNeighborsById.getIn([entityKeyId, ENTITY_SETS.BONDS], Map());
+      conditions = hearingNeighborsById
+        .getIn([entityKeyId, ENTITY_SETS.RELEASE_CONDITIONS], Map());
+    }
     const submittedOutcomes = (onlyOldExists && hasMultipleHearings)
       ? false
       : !!(hearingNeighborsById.getIn([entityKeyId, ENTITY_SETS.OUTCOMES]) || oldDataOutcome);
@@ -463,11 +484,13 @@ class SelectHearingsContainer extends React.Component<Props, State> {
 
 function mapStateToProps(state) {
   const review = state.get(STATE.REVIEW);
+  const court = state.get(STATE.COURT);
   return {
     [REVIEW.SCORES]: review.get(REVIEW.SCORES),
     [REVIEW.NEIGHBORS_BY_ID]: review.get(REVIEW.NEIGHBORS_BY_ID),
-    [REVIEW.HEARINGS_NEIGHBORS_BY_ID]: review.get(REVIEW.HEARINGS_NEIGHBORS_BY_ID),
-    [REVIEW.HEARING_IDS_REFRESHING]: review.get(REVIEW.HEARING_IDS_REFRESHING),
+    [COURT.LOADING_HEARING_NEIGHBORS]: court.get(COURT.LOADING_HEARING_NEIGHBORS),
+    [COURT.HEARINGS_NEIGHBORS_BY_ID]: court.get(COURT.HEARINGS_NEIGHBORS_BY_ID),
+    [COURT.HEARING_IDS_REFRESHING]: court.get(COURT.HEARING_IDS_REFRESHING),
     [REVIEW.LOADING_RESULTS]: review.get(REVIEW.LOADING_RESULTS),
     [REVIEW.ERROR]: review.get(REVIEW.ERROR)
   };
@@ -482,6 +505,10 @@ function mapDispatchToProps(dispatch :Function) :Object {
 
   Object.keys(ReviewActionFactory).forEach((action :string) => {
     actions[action] = ReviewActionFactory[action];
+  });
+
+  Object.keys(CourtActionFactory).forEach((action :string) => {
+    actions[action] = CourtActionFactory[action];
   });
 
   return {

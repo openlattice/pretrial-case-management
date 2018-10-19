@@ -1323,7 +1323,7 @@ describe('AutofillUtils', () => {
 
     describe('tryAutofillDMFSecondaryReleaseCharges', () => {
 
-      test('should return true or false depending whether any charges match the BHE list', () => {
+      test('should return true or false depending whether all charges match the BHE list', () => {
 
         expect(tryAutofillDMFSecondaryReleaseCharges(Immutable.List.of(
           MOCK_VIOLENT_CHARGE_1,
@@ -1385,7 +1385,7 @@ describe('AutofillUtils', () => {
           MOCK_STEP_4_CHARGE_V,
           MOCK_BRE_CHARGE_1,
           MOCK_BRE_CHARGE_2
-        ))).toEqual('false');
+        ))).toEqual('true');
 
         expect(tryAutofillDMFSecondaryHoldCharges(Immutable.List.of(
           MOCK_VIOLENT_CHARGE_1,
@@ -1568,7 +1568,7 @@ describe('AutofillUtils', () => {
           [PSA.PRIOR_SENTENCE_TO_INCARCERATION]: 'false',
           [DMF.STEP_2_CHARGES]: 'false',
           [DMF.STEP_4_CHARGES]: 'false',
-          [DMF.SECONDARY_RELEASE_CHARGES]: 'true',
+          [DMF.SECONDARY_RELEASE_CHARGES]: 'false',
           [DMF.SECONDARY_HOLD_CHARGES]: 'true'
         }));
       });
@@ -1625,7 +1625,7 @@ describe('AutofillUtils', () => {
           [DMF.STEP_2_CHARGES]: 'true',
           [DMF.STEP_4_CHARGES]: 'true',
           [DMF.SECONDARY_RELEASE_CHARGES]: 'false',
-          [DMF.SECONDARY_HOLD_CHARGES]: 'false'
+          [DMF.SECONDARY_HOLD_CHARGES]: 'true'
         }));
       });
 
