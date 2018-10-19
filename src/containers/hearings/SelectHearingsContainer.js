@@ -36,10 +36,12 @@ import {
   STATE,
   REVIEW,
   COURT,
-  PSA_NEIGHBOR
+  PSA_NEIGHBOR,
+  PSA_ASSOCIATION
 } from '../../utils/consts/FrontEndStateConsts';
 
 import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
+import * as DataActionFactory from '../../utils/data/DataActionFactory';
 import * as ReviewActionFactory from '../review/ReviewActionFactory';
 import * as CourtActionFactory from '../court/CourtActionFactory';
 
@@ -118,6 +120,10 @@ type Props = {
   refreshingNeighbors :boolean,
   readOnly :boolean,
   actions :{
+    deleteEntity :(values :{
+      entitySetId :string,
+      entityKeyId :string
+    }) => void,
     loadHearingNeighbors :(hearingIds :string[]) => void,
     submit :(values :{
       config :Map<*, *>,
@@ -429,6 +435,7 @@ class SelectHearingsContainer extends React.Component<Props, State> {
     let conditions;
 
     let judgeName;
+    let judgeEntitySetId;
     const { row, hearingId, entityKeyId } = selectedHearing;
     const hearing = psaNeighborsById.getIn([psaEntityKeyId, ENTITY_SETS.HEARINGS])
       .filter(hearingObj => (hearingObj.getIn([OPENLATTICE_ID_FQN, 0]) === entityKeyId))
@@ -457,10 +464,11 @@ class SelectHearingsContainer extends React.Component<Props, State> {
       entityKeyId,
       ENTITY_SETS.MIN_PEN_PEOPLE
     ]);
-    const judgeFromHearingComments = row.getIn([PROPERTY_TYPES.HEARING_COMMENTS, 0]);
+    const judgeFromHearingComments = hearing.getIn([PROPERTY_TYPES.HEARING_COMMENTS, 0]);
     if (judgeFromJudgeEntity) {
       const judgeEntity = judgeFromJudgeEntity.get(PSA_NEIGHBOR.DETAILS);
       judgeName = formatJudgeName(judgeEntity);
+      judgeEntitySetId = judgeFromJudgeEntity.getIn([PSA_ASSOCIATION.ENTITY_SET, 'id']);
     }
     else {
       judgeName = judgeFromHearingComments;
@@ -477,6 +485,7 @@ class SelectHearingsContainer extends React.Component<Props, State> {
             submittedOutcomes={submittedOutcomes}
             jurisdiction={jurisdiction}
             judgeEntity={judgeFromJudgeEntity}
+            judgeEntitySetId={judgeEntitySetId}
             judgeName={judgeName}
             allJudges={allJudges}
             neighbors={neighbors}
@@ -486,7 +495,7 @@ class SelectHearingsContainer extends React.Component<Props, State> {
             submit={submit}
             replace={replaceEntity}
             replaceAssociation={replaceAssociation}
-            delete={deleteEntity}
+            deleteEntity={deleteEntity}
             submitCallback={refreshPSANeighborsCallback}
             updateFqn={updateOutcomesAndReleaseCondtions}
             refreshHearingsNeighborsCallback={this.refreshHearingsNeighborsCallback}
@@ -542,7 +551,6 @@ class SelectHearingsContainer extends React.Component<Props, State> {
       refreshingNeighbors,
       hearingNeighborsById
     } = this.props;
-
     const hearingsWithOutcomes = hearingNeighborsById
       .keySeq().filter(id => hearingNeighborsById.getIn([id, ENTITY_SETS.OUTCOMES]));
     const scheduledHearings = psaNeighborsById.getIn([psaEntityKeyId, ENTITY_SETS.HEARINGS], Map())
@@ -598,6 +606,10 @@ function mapStateToProps(state) {
 
 function mapDispatchToProps(dispatch :Function) :Object {
   const actions :{ [string] :Function } = {};
+
+  Object.keys(DataActionFactory).forEach((action :string) => {
+    actions[action] = DataActionFactory[action];
+  });
 
   Object.keys(SubmitActionFactory).forEach((action :string) => {
     actions[action] = SubmitActionFactory[action];
