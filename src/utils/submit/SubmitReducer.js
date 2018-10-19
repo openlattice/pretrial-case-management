@@ -4,9 +4,14 @@
 
 import Immutable from 'immutable';
 
-import { CLEAR_SUBMIT, replaceEntity, submit } from './SubmitActionFactory';
 import { CLEAR_FORM } from '../../containers/psa/FormActionFactory';
-import { SUBMIT } from '../../utils/consts/FrontEndStateConsts';
+import { SUBMIT } from '../consts/FrontEndStateConsts';
+import {
+  CLEAR_SUBMIT,
+  replaceAssociation,
+  replaceEntity,
+  submit
+} from './SubmitActionFactory';
 
 
 const INITIAL_STATE :Immutable.Map<*, *> = Immutable.Map().withMutations((map :Immutable.Map<*, *>) => {
@@ -34,6 +39,19 @@ function submitReducer(state :Immutable.Map<*, *> = INITIAL_STATE, action :Objec
 
     case submit.case(action.type): {
       return submit.reducer(state, action, {
+        REQUEST: () => state
+          .set(SUBMIT.SUBMITTING, true)
+          .set(SUBMIT.SUBMITTED, false)
+          .set(SUBMIT.SUCCESS, false)
+          .set(SUBMIT.ERROR, ''),
+        SUCCESS: () => state.set(SUBMIT.SUCCESS, true).set(SUBMIT.ERROR, ''),
+        FAILURE: () => state.set(SUBMIT.SUCCESS, false).set(SUBMIT.ERROR, action.value),
+        FINALLY: () => state.set(SUBMIT.SUBMITTING, false).set(SUBMIT.SUBMITTED, true)
+      });
+    }
+
+    case replaceAssociation.case(action.type): {
+      return replaceAssociation.reducer(state, action, {
         REQUEST: () => state
           .set(SUBMIT.SUBMITTING, true)
           .set(SUBMIT.SUBMITTED, false)

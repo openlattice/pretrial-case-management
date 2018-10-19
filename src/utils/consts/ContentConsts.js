@@ -9,6 +9,7 @@ export default {
   FORM_CONTAINER: 'Form Container',
   DMF: 'DMF',
   HEARINGS: 'Hearings',
+  CREATING_HEARING: 'Creating Hearing',
 
   // User Portal Views
   JUDGES: 'Judges',

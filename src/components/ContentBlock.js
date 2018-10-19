@@ -18,24 +18,51 @@ const StyledContentLabel = styled.div`
   font-stretch: normal;
   line-height: normal;
   letter-spacing: normal;
-  text-transform: uppercase;
+  text-transform: ${(props) => {
+    switch (props.component) {
+      case CONTENT_CONSTS.CREATING_HEARING:
+        return (
+          'none'
+        );
+      default:
+        return (
+          'uppercase'
+        );
+    }
+  }};
   color: #8e929b;
+  margin-bottom: ${(props) => {
+    switch (props.component) {
+      case CONTENT_CONSTS.CREATING_HEARING:
+        return (
+          5
+        );
+      default:
+        return (
+          0
+        );
+    }
+  }}px;
   font-size: ${(props) => {
     switch (props.component) {
       case CONTENT_CONSTS.PROFILE:
         return (
-          '12px;'
+          12
         );
       case CONTENT_CONSTS.HEARINGS:
         return (
-          '12px;'
+          12
+        );
+      case CONTENT_CONSTS.CREATING_HEARING:
+        return (
+          14
         );
       default:
         return (
-          '11px;'
+          11
         );
     }
-  }};
+  }}px;
 `;
 
 const StyledContentWrapper = styled.div`
@@ -50,22 +77,26 @@ const StyledContent = styled.div`
     switch (props.component) {
       case CONTENT_CONSTS.DMF:
         return (
-          '16px;'
+          16
         );
       case CONTENT_CONSTS.PROFILE:
         return (
-          '18px;'
+          18
         );
       case CONTENT_CONSTS.HEARINGS:
         return (
-          '18px;'
+          18
+        );
+      case CONTENT_CONSTS.CREATING_HEARING:
+        return (
+          18
         );
       default:
         return (
-          '14px;'
+          14
         );
     }
-  }};
+  }}px;
 `;
 
 

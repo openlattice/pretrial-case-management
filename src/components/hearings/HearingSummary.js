@@ -233,6 +233,10 @@ const HearingSummary = ({ hearing }) => {
     {
       label: 'Courtroom',
       content: [courtroom]
+    },
+    {
+      label: 'Judge',
+      content: [judge]
     }
   ];
 

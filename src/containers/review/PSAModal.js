@@ -686,6 +686,7 @@ class PSAModal extends React.Component<Props, State> {
             hearingId={this.getEntityKeyId(ENTITY_SETS.HEARINGS)}
             hearings={hearings}
             readOnly={readOnly}
+            neighbors={neighbors}
             defaultOutcome={neighbors.getIn([ENTITY_SETS.OUTCOMES, PSA_NEIGHBOR.DETAILS], Map())}
             defaultDMF={neighbors.getIn([ENTITY_SETS.DMF_RESULTS, PSA_NEIGHBOR.DETAILS], Map())}
             defaultBond={neighbors.getIn([ENTITY_SETS.BONDS, PSA_NEIGHBOR.DETAILS], Map())}

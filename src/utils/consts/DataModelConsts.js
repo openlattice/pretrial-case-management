@@ -24,6 +24,10 @@ export const ENTITY_SETS = {
   BONDS: 'southdakotamanualbonds',
   RELEASE_CONDITIONS: 'southdakotareleaseconditions',
 
+  // judge entity sets
+  MIN_PEN_PEOPLE: 'MinPenPeople',
+  UJS_EMPLOYEES: 'UJSEmployees',
+
   // arrest entity sets
   ARREST_CASES: 'PenZuercherPretrialCase',
   ARREST_CHARGES: 'PenZuercherCharge',
@@ -63,6 +67,7 @@ export const PROPERTY_TYPES = {
   HEIGHT: 'nc.PersonHeightMeasure',
   WEIGHT: 'nc.PersonWeightMeasure',
   EYE: 'nc.PersonEyeColorText',
+  JURISDICTION: 'ol.idjurisdiction',
 
   // location-specific fields
   ADDRESS: 'location.Address',
@@ -110,6 +115,7 @@ export const PROPERTY_TYPES = {
   COURTROOM: 'justice.courtroom',
   HEARING_TYPE: 'justice.courtcasetype',
   UPDATE_TYPE: 'ol.update',
+  HEARING_COMMENTS: 'event.comments',
 
   // PSA Outcomes entity Type Consts
   JUDGE_ACCEPTED: 'justice.judgeacceptedrecommendation',
