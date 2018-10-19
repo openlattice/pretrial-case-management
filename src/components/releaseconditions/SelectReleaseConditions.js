@@ -218,10 +218,15 @@ type Props = {
   defaultConditions :Immutable.List<*>,
   defaultDMF :Immutable.Map<*, *>,
   defaultOutcome :Immutable.Map<*, *>,
+  deleteEntity :(values :{
+    entitySetId :string,
+    entityKeyId :string
+  }) => void,
   dmfId :string,
   hearing :Immutable.Map<*, *>,
   hearingId :string,
   hearingEntityKeyId :string,
+  judgeEntitySetId :string,
   judgeEntity :Immutable.Map<*, *>,
   judgeName :string,
   jurisdiction :string,
@@ -910,10 +915,12 @@ class SelectReleaseConditions extends React.Component<Props, State> {
       replace,
       submitCallback,
       hearingEntityKeyId,
+      judgeEntitySetId,
       judgeEntity,
       judgeName,
       replaceAssociation,
-      refreshHearingsNeighborsCallback
+      refreshHearingsNeighborsCallback,
+      deleteEntity
     } = this.props;
     const {
       judge,
@@ -923,11 +930,10 @@ class SelectReleaseConditions extends React.Component<Props, State> {
       hearingCourtroom,
       otherJudgeText
     } = this.state;
-    const dateTime = hearing.getIn([PROPERTY_TYPES.DATE_TIME, 0], '');
-    const rawTime = newHearingTime || formatDateTime(dateTime, 'HH:mm');
     const judgeNameEdited = judge !== judgeName;
+    const judgeIsOther = (judge === 'Other');
     let judgeText;
-    if (judge === 'Other') {
+    if (judgeIsOther) {
       this.setState({ judgeId: '' });
       judgeText = [otherJudgeText];
     }
@@ -935,6 +941,8 @@ class SelectReleaseConditions extends React.Component<Props, State> {
       judgeText = [];
     }
 
+    const dateTime = hearing.getIn([PROPERTY_TYPES.DATE_TIME, 0], '');
+    const rawTime = newHearingTime || formatDateTime(dateTime, 'HH:mm');
     this.setState({ modifyingHearing: false });
     const dateFormat = 'MM/DD/YYYY';
     const timeFormat = 'hh:mm a';
@@ -943,15 +951,23 @@ class SelectReleaseConditions extends React.Component<Props, State> {
     const hearingDateTime = moment(
       `${date.format(dateFormat)} ${time.format(timeFormat)}`, `${dateFormat} ${timeFormat}`
     );
-    if (judgeNameEdited && judgeId) {
-      const associationEntitySetName = ENTITY_SETS.ASSESSED_BY;
-      const associationEntityKeyId = judgeEntity
-        ? judgeEntity.getIn([PSA_ASSOCIATION.DETAILS, OPENLATTICE_ID_FQN, 0])
-        : null;
-      const srcEntitySetName = ENTITY_SETS.MIN_PEN_PEOPLE;
-      const srcEntityKeyId = judgeId;
-      const dstEntitySetName = ENTITY_SETS.HEARINGS;
-      const dstEntityKeyId = hearingEntityKeyId;
+    const associationEntitySetName = ENTITY_SETS.ASSESSED_BY;
+    const associationEntityKeyId = judgeEntity
+      ? judgeEntity.getIn([PSA_ASSOCIATION.DETAILS, OPENLATTICE_ID_FQN, 0])
+      : null;
+    const srcEntitySetName = ENTITY_SETS.MIN_PEN_PEOPLE;
+    const srcEntityKeyId = judgeId;
+    const dstEntitySetName = ENTITY_SETS.HEARINGS;
+    const dstEntityKeyId = hearingEntityKeyId;
+    if (judgeIsOther && judgeEntitySetId) {
+      deleteEntity({
+        entitySetId: judgeEntitySetId,
+        entityKeyId: associationEntityKeyId
+      });
+      refreshHearingsNeighborsCallback();
+      submitCallback();
+    }
+    if (judgeNameEdited && judgeId && !judgeIsOther) {
       const associationEntity = {
         [PROPERTY_TYPES.COMPLETED_DATE_TIME]: moment().toISOString(true),
       };
@@ -966,7 +982,7 @@ class SelectReleaseConditions extends React.Component<Props, State> {
         callback: refreshHearingsNeighborsCallback
       });
     }
-    if (hearingDateTime && hearingCourtroom) {
+    if ((hearingDateTime && hearingCourtroom) || judgeIsOther) {
       const newHearing = hearing
         .set(PROPERTY_TYPES.COURTROOM, [hearingCourtroom])
         .set(PROPERTY_TYPES.DATE_TIME, [hearingDateTime.toISOString(true)])
@@ -1139,7 +1155,6 @@ class SelectReleaseConditions extends React.Component<Props, State> {
     const { state } = this;
 
     const RELEASED = state[RELEASE] !== RELEASES.RELEASED;
-
     return (
       <Wrapper>
         {this.renderHearingInfo()}
