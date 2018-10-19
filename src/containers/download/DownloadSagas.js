@@ -22,10 +22,15 @@ import { PSA_NEIGHBOR, PSA_ASSOCIATION } from '../../utils/consts/FrontEndStateC
 import { CHARGE } from '../../utils/consts/Consts';
 import MinnehahaChargesList from '../../utils/consts/MinnehahaChargesList';
 import PenningtonChargesList from '../../utils/consts/PenningtonChargesList';
-import { PENN_BOOKING_EXCEPTIONS } from '../../utils/consts/DMFExceptionsList';
-import { CHARGE_TYPES, BHE_LABELS, CHARGE_VALUES } from '../../utils/consts/ArrestChargeConsts';
+import { PENN_BOOKING_HOLD_EXCEPTIONS, PENN_BOOKING_RELEASE_EXCEPTIONS } from '../../utils/consts/DMFExceptionsList';
 import { VIOLENT_CHARGES } from '../../utils/consts/ChargeConsts';
 import { DOMAIN } from '../../utils/consts/ReportDownloadTypes';
+import {
+  CHARGE_TYPES,
+  BHE_LABELS,
+  BRE_LABELS,
+  CHARGE_VALUES
+} from '../../utils/consts/ArrestChargeConsts';
 import {
   DOWNLOAD_PSA_FORMS,
   DOWNLOAD_CHARGE_LISTS,
@@ -241,13 +246,19 @@ function* downloadChargeListsWorker(action :SequenceAction) :Generator<*, *, *> 
       ['statute', 'description', 'degree', 'degreeShort']
     );
 
-    const chargeIsHeaders = Immutable.List(
+    const chargeDMFHeaders = Immutable.List(
       [
         CHARGE_TYPES.STEP_TWO,
         CHARGE_TYPES.STEP_FOUR,
         CHARGE_TYPES.ALL_VIOLENT,
         BHE_LABELS.RELEASE,
         'Zuercher Violent List'
+      ]
+    );
+    const exceptionHeaders = Immutable.List(
+      [
+        BHE_LABELS.RELEASE,
+        BRE_LABELS.LABEL
       ]
     );
     console.log(CHARGE_VALUES);
@@ -257,8 +268,10 @@ function* downloadChargeListsWorker(action :SequenceAction) :Generator<*, *, *> 
       .map(charge => `${charge.statute}|${charge.description}`);
     const violentChargeValues = CHARGE_VALUES[CHARGE_TYPES.ALL_VIOLENT]
       .map(charge => `${charge.statute}|${charge.description}`);
-    // const pennBookingExceptions = PENN_BOOKING_EXCEPTIONS
-    //   .map(charge => `${charge.statute}|${charge.description}`);
+    const pennBookingHoldExceptions = PENN_BOOKING_HOLD_EXCEPTIONS
+      .map(charge => `${charge.statute}|${charge.description}`);
+    const pennBookingReleaseExceptions = PENN_BOOKING_RELEASE_EXCEPTIONS
+      .map(charge => `${charge.statute}|${charge.description}`);
 
 
     chargesList.forEach((charge) => {
@@ -279,10 +292,14 @@ function* downloadChargeListsWorker(action :SequenceAction) :Generator<*, *, *> 
           CHARGE_TYPES.ALL_VIOLENT,
           violentChargeValues.includes(`${statute}|${description}`)
         )
-        // .set(
-        //   BHE_LABELS.RELEASE,
-        //   pennBookingExceptions.includes(`${statute}|${description}`)
-        // )
+        .set(
+          BHE_LABELS.RELEASE,
+          pennBookingHoldExceptions.includes(`${statute}|${description}`)
+        )
+        .set(
+          BRE_LABELS.LABEL,
+          pennBookingReleaseExceptions.includes(`${statute}|${description}`)
+        )
         .set(
           'Odyssey Violent List',
           VIOLENT_CHARGES.includes(statute)
@@ -291,7 +308,8 @@ function* downloadChargeListsWorker(action :SequenceAction) :Generator<*, *, *> 
       jsonResults = jsonResults.push(row);
     });
 
-    const allHeaders = chargeHeaders.concat(chargeIsHeaders);
+    let allHeaders = chargeHeaders.concat(chargeDMFHeaders);
+    if (jurisdiction === DOMAIN.PENNINGTON) allHeaders = allHeaders.concat(exceptionHeaders);
 
 
     const fields = allHeaders.toJS();
