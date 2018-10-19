@@ -4675,9 +4675,21 @@ const PenningtonChargesList = [
   },
   {
     statute: '22-42-2',
+    description: 'Distribute/Manufacture of Controlled Drug/Schedule II (F3)',
+    degree: 'Felony 3',
+    degreeShort: 'F3'
+  },
+  {
+    statute: '22-42-2',
     description: 'Distribute/Manufacture of Controlled Drug/Schedule II to Minor (F2)',
     degree: 'Felony 2',
     degreeShort: 'F2'
+  },
+  {
+    statute: '22-42-2',
+    description: 'Distribute/Manufacture of Controlled Drug/Schedule I (F3)',
+    degree: 'Felony 3',
+    degreeShort: 'F3'
   },
   {
     statute: '22-42-2',
