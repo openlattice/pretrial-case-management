@@ -963,7 +963,7 @@ class SelectReleaseConditions extends React.Component<Props, State> {
         srcEntityKeyId,
         dstEntitySetName,
         dstEntityKeyId,
-        callback: refreshHearingsNeighborsCallback()
+        callback: refreshHearingsNeighborsCallback
       });
     }
     if (hearingDateTime && hearingCourtroom) {
