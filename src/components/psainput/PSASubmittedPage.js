@@ -33,6 +33,7 @@ import {
 import * as Routes from '../../core/router/Routes';
 
 type Props = {
+  allJudges :Immutable.Map<*, *>,
   isSubmitting :boolean,
   scores :Immutable.Map<*, *>,
   riskFactors :Object,
@@ -42,6 +43,7 @@ type Props = {
   submitSuccess :boolean,
   charges :Immutable.List<*>,
   notes :string,
+  context :string,
   allCases :Immutable.List<*>,
   allCharges :Immutable.Map<*, *>,
   allHearings :Immutable.List<*>,
@@ -475,17 +477,24 @@ class PSASubmittedPage extends React.Component<Props, State> {
       allCases,
       allCharges,
       allHearings,
+      allJudges,
       personId,
-      psaId
+      psaId,
+      isSubmitting,
+      context
     } = this.props;
 
     if (this.state.settingHearing) {
       if (!this.state.selectedHearing) {
         return (
           <SelectHearingsContainer
+              PSASubmittedPage
+              submitting={isSubmitting}
+              context={context}
               personId={personId}
               psaId={psaId}
               hearings={allHearings}
+              allJudges={allJudges}
               onSubmit={selectedHearing => this.setState({ selectedHearing })} />
         );
       }
