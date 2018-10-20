@@ -17,7 +17,9 @@ import { formatDateTime } from '../../utils/FormattingUtils';
 import { getFilteredNeighbor, stripIdField } from '../../utils/DataUtils';
 import { obfuscateBulkEntityNeighbors } from '../../utils/consts/DemoNames';
 import {
+  DOWNLOAD_PSA_BY_HEARING_DATE,
   DOWNLOAD_PSA_FORMS,
+  downloadPSAsByHearingDate,
   downloadPsaForms
 } from './DownloadActionFactory';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
@@ -218,6 +220,159 @@ function* downloadPSAsWatcher() :Generator<*, *, *> {
   yield takeEvery(DOWNLOAD_PSA_FORMS, downloadPSAsWorker);
 }
 
+function* downloadPSAsByHearingDateWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  try {
+    yield put(downloadPSAsByHearingDate.request(action.id));
+    const {
+      startDate,
+      endDate,
+      filters,
+      domain
+    } = action.value;
+
+    // const start = moment(startDate);
+    // const end = moment(endDate);
+    // const entitySetId = yield call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.PSA_SCORES);
+    // const entitySetSize = yield call(DataApi.getEntitySetSize, entitySetId);
+    // const options = {
+    //   searchTerm: '*',
+    //   start: 0,
+    //   maxHits: entitySetSize
+    // };
+    //
+    // const allScoreData = yield call(SearchApi.searchEntitySetData, entitySetId, options);
+    //
+    // let scoresAsMap = Immutable.Map();
+    // allScoreData.hits.forEach((row) => {
+    //   scoresAsMap = scoresAsMap.set(row[OPENLATTICE_ID_FQN][0], stripIdField(Immutable.fromJS(row)));
+    // });
+    //
+    // let neighborsById = yield call(SearchApi.searchEntityNeighborsBulk, entitySetId, scoresAsMap.keySeq().toJS());
+    // neighborsById = obfuscateBulkEntityNeighbors(neighborsById); // TODO just for demo
+    // let usableNeighborsById = Immutable.Map();
+    //
+    // Object.keys(neighborsById).forEach((id) => {
+    //   let usableNeighbors = Immutable.List();
+    //   const neighborList = neighborsById[id];
+    //   let domainMatch = true;
+    //   neighborList.forEach((neighborObj) => {
+    //     const neighbor = getFilteredNeighbor(neighborObj);
+    //     if (domain && neighbor.neighborEntitySet && neighbor.neighborEntitySet.name === ENTITY_SETS.STAFF) {
+    //       const filer = neighbor.neighborDetails[PROPERTY_TYPES.PERSON_ID][0];
+    //       if (!filer.toLowerCase().endsWith(domain)) {
+    //         domainMatch = false;
+    //       }
+    //     }
+    //
+    //     const timestampList = neighbor.associationDetails[PROPERTY_TYPES.TIMESTAMP]
+    //       || neighbor.associationDetails[PROPERTY_TYPES.COMPLETED_DATE_TIME];
+    //     if (timestampList && timestampList.length) {
+    //       const timestamp = moment(timestampList[0]);
+    //       if (timestamp.isSameOrAfter(start) && timestamp.isSameOrBefore(end)) {
+    //         usableNeighbors = usableNeighbors.push(Immutable.fromJS(neighbor));
+    //       }
+    //     }
+    //   });
+    //   if (domainMatch && usableNeighbors.size > 0) {
+    //     usableNeighborsById = usableNeighborsById.set(id, usableNeighbors);
+    //   }
+    // });
+    //
+    // const getUpdatedEntity = (combinedEntityInit, entitySetTitle, entitySetName, details) => {
+    //   if (filters && !filters[entitySetName]) return combinedEntityInit;
+    //   let combinedEntity = combinedEntityInit;
+    //   details.keySeq().forEach((fqn) => {
+    //     const keyString = `${fqn}|${entitySetName}`;
+    //     const headerString = HEADERS_OBJ[keyString];
+    //     const header = filters ? filters[entitySetName][fqn] : headerString;
+    //     if (header) {
+    //       let newArrayValues = combinedEntity.get(header, Immutable.List());
+    //       details.get(fqn).forEach((val) => {
+    //         let newVal = val;
+    //         if (fqn === PROPERTY_TYPES.TIMESTAMP
+    //           || fqn === PROPERTY_TYPES.COMPLETED_DATE_TIME
+    //           || fqn === PROPERTY_TYPES.DATE_TIME) {
+    //           newVal = formatDateTime(val, 'YYYY-MM-DD hh:mma');
+    //         }
+    //         if (!newArrayValues.includes(val)) {
+    //           newArrayValues = newArrayValues.push(newVal);
+    //         }
+    //       });
+    //       combinedEntity = combinedEntity.set(header, newArrayValues);
+    //     }
+    //   });
+    //   return combinedEntity;
+    // };
+    // let jsonResults = Immutable.List();
+    // let allHeaders = Immutable.Set();
+    // usableNeighborsById.keySeq().forEach((id) => {
+    //   let combinedEntity = getUpdatedEntity(
+    //     Immutable.Map(),
+    //     'South Dakota PSA Scores',
+    //     ENTITY_SETS.PSA_SCORES,
+    //     scoresAsMap.get(id)
+    //   );
+    //
+    //   usableNeighborsById.get(id).forEach((neighbor) => {
+    //     combinedEntity = getUpdatedEntity(
+    //       combinedEntity,
+    //       neighbor.getIn([PSA_ASSOCIATION.ENTITY_SET, 'title']),
+    //       neighbor.getIn([PSA_ASSOCIATION.ENTITY_SET, 'name']),
+    //       neighbor.get(PSA_ASSOCIATION.DETAILS)
+    //     );
+    //     combinedEntity = getUpdatedEntity(
+    //       combinedEntity,
+    //       neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'title']),
+    //       neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'name']),
+    //       neighbor.get(PSA_NEIGHBOR.DETAILS, Immutable.Map())
+    //     );
+    //     allHeaders = allHeaders.union(combinedEntity.keys())
+    //       .sort((header1, header2) => (POSITIONS.indexOf(header1) >= POSITIONS.indexOf(header2) ? 1 : -1));
+    //   });
+    //
+    //   combinedEntity = combinedEntity.set('S2', getStepTwo(usableNeighborsById.get(id), scoresAsMap.get(id)));
+    //   combinedEntity = combinedEntity.set('S4', getStepFour(usableNeighborsById.get(id), scoresAsMap.get(id)));
+    //
+    //   if (
+    //     combinedEntity.get('FIRST')
+    //     || combinedEntity.get('MIDDLE')
+    //     || combinedEntity.get('LAST')
+    //     || combinedEntity.get('Last Name')
+    //     || combinedEntity.get('First Name')
+    //   ) {
+    //     jsonResults = jsonResults.push(combinedEntity);
+    //   }
+    // });
+    //
+    // const fields = filters
+    //   ? Object.values(filters).reduce((es1, es2) => [...Object.values(es1), ...Object.values(es2)])
+    //   : allHeaders.toJS();
+    // const csv = Papa.unparse({
+    //   fields,
+    //   data: jsonResults.toJS()
+    // });
+    //
+    // const name = `PSAs-${start.format('MM-DD-YYYY')}-to-${end.format('MM-DD-YYYY')}`;
+    //
+    // FileSaver.saveFile(csv, name, 'csv');
+
+    yield put(downloadPSAsByHearingDate.success(action.id));
+  }
+  catch (error) {
+    console.error(error);
+    yield put(downloadPSAsByHearingDate.failure(action.id, { error }));
+  }
+  finally {
+    yield put(downloadPSAsByHearingDate.finally(action.id));
+  }
+}
+
+function* downloadPSAsByHearingDateWatcher() :Generator<*, *, *> {
+  yield takeEvery(DOWNLOAD_PSA_BY_HEARING_DATE, downloadPSAsByHearingDateWorker);
+}
+
 export {
-  downloadPSAsWatcher
+  downloadPSAsWatcher,
+  downloadPSAsByHearingDateWatcher
 };
