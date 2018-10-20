@@ -885,7 +885,6 @@ class Form extends React.Component<Props, State> {
   }
 
   render() {
-    console.log(this.props);
     return (
       <div>
         <Switch>
