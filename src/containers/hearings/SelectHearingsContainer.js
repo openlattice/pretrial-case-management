@@ -76,6 +76,10 @@ const Header = styled.div`
   }
 `;
 
+const SubmittedPSAWrapper = styled.div`
+  margin: 30px;
+`
+
 const StyledTitle = styled(Title)`
   margin: 0;
 `;
@@ -117,6 +121,8 @@ type Props = {
   psaEntityKeyId :string,
   personId :string,
   submitting :boolean,
+  PSASubmittedPage :boolean,
+  context :string,
   refreshingNeighbors :boolean,
   readOnly :boolean,
   actions :{
@@ -345,7 +351,12 @@ class SelectHearingsContainer extends React.Component<Props, State> {
   }
 
   renderNewHearingSection = () => {
-    const { neighbors, allJudges } = this.props;
+    const {
+      PSASubmittedPage,
+      neighbors,
+      allJudges,
+      context
+    } = this.props;
     const {
       judge,
       manuallyCreatingHearing,
@@ -362,12 +373,13 @@ class SelectHearingsContainer extends React.Component<Props, State> {
       selectCurrentHearing
     } = this;
     const psaContext = neighbors
-      .getIn([ENTITY_SETS.DMF_RISK_FACTORS, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.CONTEXT, 0]);
+      ? neighbors.getIn([ENTITY_SETS.DMF_RISK_FACTORS, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.CONTEXT, 0])
+      : context;
     const jurisdiction = JURISDICTION[psaContext];
 
     return (
       <NewHearingSection
-          manuallyCreatingHearing={manuallyCreatingHearing}
+          manuallyCreatingHearing={manuallyCreatingHearing || PSASubmittedPage}
           allJudges={allJudges}
           newHearingDate={newHearingDate}
           newHearingTime={newHearingTime}
@@ -443,7 +455,7 @@ class SelectHearingsContainer extends React.Component<Props, State> {
 
     let judgeName;
     let judgeEntitySetId;
-    const { row, hearingId, entityKeyId } = selectedHearing;
+    const { hearingId, entityKeyId } = selectedHearing;
     const hearing = psaNeighborsById.getIn([psaEntityKeyId, ENTITY_SETS.HEARINGS])
       .filter(hearingObj => (hearingObj.getIn([OPENLATTICE_ID_FQN, 0]) === entityKeyId))
       .get(0);
@@ -556,7 +568,8 @@ class SelectHearingsContainer extends React.Component<Props, State> {
       hearingIdsRefreshing,
       submitting,
       refreshingNeighbors,
-      hearingNeighborsById
+      hearingNeighborsById,
+      PSASubmittedPage
     } = this.props;
     const hearingsWithOutcomes = hearingNeighborsById
       .keySeq().filter(id => hearingNeighborsById.getIn([id, ENTITY_SETS.OUTCOMES]));
@@ -572,6 +585,14 @@ class SelectHearingsContainer extends React.Component<Props, State> {
             <LoadingSpinner />
           </SubmittingWrapper>
         </Wrapper>
+      );
+    }
+
+    if (PSASubmittedPage) {
+      return (
+        <SubmittedPSAWrapper>
+          {this.renderNewHearingSection()}
+        </SubmittedPSAWrapper>
       );
     }
     return (
