@@ -544,7 +544,7 @@ class SelectHearingsContainer extends React.Component<Props, State> {
           {
             !manuallyCreatingHearing
               ? <CreateButton onClick={this.manuallyCreateHearing}>Create New Hearing</CreateButton>
-              : <CreateButton onClick={this.manuallyCreateHearing}>Back to Selection</CreateButton>
+              : <CreateButton onClick={this.backToHearingSelection}>Back to Selection</CreateButton>
           }
         </Header>
         {
