@@ -29,6 +29,16 @@ const HeaderSection = styled.div`
   border-bottom: 1px solid #e1e1eb;
   width: 100%
 `;
+const SubHeaderSection = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: 'Open Sans', sans-serif;
+  font-size: 14px;
+  color: #555e6f;
+  border-bottom: 1px solid #e1e1eb;
+  width: 100%
+`;
 
 const ButtonRow = styled.div`
   margin-top: 30px;
@@ -124,11 +134,36 @@ class DownloadPSA extends React.Component<Props, State> {
     }
   }
 
-  renderDownload = () => {
+  renderDownloadByPSADate = () => {
     const { startDate, endDate } = this.state;
     if (!startDate || !endDate || this.getErrorText()) return null;
     return (
       <div>
+        <SubHeaderSection>Dowload by PSA Date</SubHeaderSection>
+        <ButtonRow>
+          <BasicDownloadButton onClick={() => this.download(PSA_RESPONSE_TABLE, DOMAIN.MINNEHAHA)}>
+            Download Minnehaha PSA Response Table
+          </BasicDownloadButton>
+          <BasicDownloadButton onClick={() => this.download(SUMMARY_REPORT, DOMAIN.MINNEHAHA)}>
+            Download Minnehaha Summary Report
+          </BasicDownloadButton>
+          <BasicDownloadButton onClick={() => this.download(SUMMARY_REPORT, DOMAIN.PENNINGTON)}>
+            Download Pennington Summary Report
+          </BasicDownloadButton>
+        </ButtonRow>
+        <ButtonRow>
+          <InfoDownloadButton onClick={() => this.download()}>Download All PSA Data</InfoDownloadButton>
+        </ButtonRow>
+      </div>
+    );
+  }
+
+  renderDownloadByHearingDate = () => {
+    const { startDate, endDate } = this.state;
+    if (!startDate || !endDate || this.getErrorText()) return null;
+    return (
+      <div>
+        <SubHeaderSection>Dowload by Hearing Date</SubHeaderSection>
         <ButtonRow>
           <BasicDownloadButton onClick={() => this.download(PSA_RESPONSE_TABLE, DOMAIN.MINNEHAHA)}>
             Download Minnehaha PSA Response Table
@@ -161,7 +196,8 @@ class DownloadPSA extends React.Component<Props, State> {
                 onEndChange={endDate => this.setState({ endDate })}
                 format24HourClock />
             {this.renderError()}
-            {this.renderDownload()}
+            {this.renderDownloadByPSADate()}
+            {this.renderDownloadByHearingDate()}
             <StyledTopFormNavBuffer />
           </StyledSectionWrapper>
         </StyledFormWrapper>
