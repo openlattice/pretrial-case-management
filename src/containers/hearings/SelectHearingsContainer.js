@@ -76,6 +76,10 @@ const Header = styled.div`
   }
 `;
 
+const SubmittedPSAWrapper = styled.div`
+  margin: 30px;
+`
+
 const StyledTitle = styled(Title)`
   margin: 0;
 `;
@@ -117,6 +121,8 @@ type Props = {
   psaEntityKeyId :string,
   personId :string,
   submitting :boolean,
+  PSASubmittedPage :boolean,
+  context :string,
   refreshingNeighbors :boolean,
   readOnly :boolean,
   actions :{
@@ -270,6 +276,7 @@ class SelectHearingsContainer extends React.Component<Props, State> {
     const timeFormat = 'hh:mm a';
     const date = moment(newHearingDate);
     const time = moment(newHearingTime, timeFormat);
+    let judgeName = judge;
     if (date.isValid() && time.isValid()) {
       const datetime = moment(`${date.format(dateFormat)} ${time.format(timeFormat)}`, `${dateFormat} ${timeFormat}`);
       let hearing = {
@@ -280,6 +287,7 @@ class SelectHearingsContainer extends React.Component<Props, State> {
       };
       if (judge === 'Other') {
         this.setState({ judgeId: '' });
+        judgeName = otherJudgeText;
         hearing = Object.assign({}, hearing, {
           [PROPERTY_TYPES.HEARING_COMMENTS]: otherJudgeText
         });
@@ -291,7 +299,8 @@ class SelectHearingsContainer extends React.Component<Props, State> {
         });
       }
       this.selectHearing(hearing);
-      onSubmit(hearing);
+      const hearingForRender = Object.assign({}, hearing, { judgeName });
+      onSubmit(hearingForRender);
       this.setState({
         manuallyCreatingHearing: false,
         newHearingCourtroom: undefined,
@@ -345,7 +354,12 @@ class SelectHearingsContainer extends React.Component<Props, State> {
   }
 
   renderNewHearingSection = () => {
-    const { neighbors, allJudges } = this.props;
+    const {
+      PSASubmittedPage,
+      neighbors,
+      allJudges,
+      context
+    } = this.props;
     const {
       judge,
       manuallyCreatingHearing,
@@ -362,12 +376,13 @@ class SelectHearingsContainer extends React.Component<Props, State> {
       selectCurrentHearing
     } = this;
     const psaContext = neighbors
-      .getIn([ENTITY_SETS.DMF_RISK_FACTORS, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.CONTEXT, 0]);
+      ? neighbors.getIn([ENTITY_SETS.DMF_RISK_FACTORS, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.CONTEXT, 0])
+      : context;
     const jurisdiction = JURISDICTION[psaContext];
 
     return (
       <NewHearingSection
-          manuallyCreatingHearing={manuallyCreatingHearing}
+          manuallyCreatingHearing={manuallyCreatingHearing || PSASubmittedPage}
           allJudges={allJudges}
           newHearingDate={newHearingDate}
           newHearingTime={newHearingTime}
@@ -443,7 +458,7 @@ class SelectHearingsContainer extends React.Component<Props, State> {
 
     let judgeName;
     let judgeEntitySetId;
-    const { row, hearingId, entityKeyId } = selectedHearing;
+    const { hearingId, entityKeyId } = selectedHearing;
     const hearing = psaNeighborsById.getIn([psaEntityKeyId, ENTITY_SETS.HEARINGS])
       .filter(hearingObj => (hearingObj.getIn([OPENLATTICE_ID_FQN, 0]) === entityKeyId))
       .get(0);
@@ -532,7 +547,7 @@ class SelectHearingsContainer extends React.Component<Props, State> {
           {
             !manuallyCreatingHearing
               ? <CreateButton onClick={this.manuallyCreateHearing}>Create New Hearing</CreateButton>
-              : <CreateButton onClick={this.manuallyCreateHearing}>Back to Selection</CreateButton>
+              : <CreateButton onClick={this.backToHearingSelection}>Back to Selection</CreateButton>
           }
         </Header>
         {
@@ -556,7 +571,8 @@ class SelectHearingsContainer extends React.Component<Props, State> {
       hearingIdsRefreshing,
       submitting,
       refreshingNeighbors,
-      hearingNeighborsById
+      hearingNeighborsById,
+      PSASubmittedPage
     } = this.props;
     const hearingsWithOutcomes = hearingNeighborsById
       .keySeq().filter(id => hearingNeighborsById.getIn([id, ENTITY_SETS.OUTCOMES]));
@@ -572,6 +588,14 @@ class SelectHearingsContainer extends React.Component<Props, State> {
             <LoadingSpinner />
           </SubmittingWrapper>
         </Wrapper>
+      );
+    }
+
+    if (PSASubmittedPage) {
+      return (
+        <SubmittedPSAWrapper>
+          {this.renderNewHearingSection()}
+        </SubmittedPSAWrapper>
       );
     }
     return (

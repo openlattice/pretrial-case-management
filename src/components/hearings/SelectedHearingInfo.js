@@ -95,6 +95,10 @@ const SelectedHearingInfo = ({ hearing, onClose } :Props) => (
           <span>Courtroom</span>
           <div>{hearing[HEARING.COURTROOM]}</div>
         </InfoItem>
+        <InfoItem>
+          <span>Judge</span>
+          <div>{hearing.judgeName}</div>
+        </InfoItem>
       </InfoRow>
 
       <InfoRow center>
