@@ -276,6 +276,7 @@ class SelectHearingsContainer extends React.Component<Props, State> {
     const timeFormat = 'hh:mm a';
     const date = moment(newHearingDate);
     const time = moment(newHearingTime, timeFormat);
+    let judgeName = judge;
     if (date.isValid() && time.isValid()) {
       const datetime = moment(`${date.format(dateFormat)} ${time.format(timeFormat)}`, `${dateFormat} ${timeFormat}`);
       let hearing = {
@@ -286,6 +287,7 @@ class SelectHearingsContainer extends React.Component<Props, State> {
       };
       if (judge === 'Other') {
         this.setState({ judgeId: '' });
+        judgeName = otherJudgeText;
         hearing = Object.assign({}, hearing, {
           [PROPERTY_TYPES.HEARING_COMMENTS]: otherJudgeText
         });
@@ -297,7 +299,8 @@ class SelectHearingsContainer extends React.Component<Props, State> {
         });
       }
       this.selectHearing(hearing);
-      onSubmit(hearing);
+      const hearingForRender = Object.assign({}, hearing, { judgeName });
+      onSubmit(hearingForRender);
       this.setState({
         manuallyCreatingHearing: false,
         newHearingCourtroom: undefined,
