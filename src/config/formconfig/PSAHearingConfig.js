@@ -14,7 +14,15 @@ const psaHearingConfig = {
         [ID_FIELD_NAMES.HEARING_ID]: PROPERTY_TYPES.CASE_ID,
         [HEARING.DATE_TIME]: PROPERTY_TYPES.DATE_TIME,
         [HEARING.COURTROOM]: PROPERTY_TYPES.COURTROOM,
-        [PROPERTY_TYPES.HEARING_TYPE]: PROPERTY_TYPES.HEARING_TYPE
+        [PROPERTY_TYPES.HEARING_TYPE]: PROPERTY_TYPES.HEARING_TYPE,
+        [PROPERTY_TYPES.HEARING_COMMENTS]: PROPERTY_TYPES.HEARING_COMMENTS
+      }
+    },
+    {
+      name: ENTITY_SETS.MIN_PEN_PEOPLE,
+      alias: ALIASES.JUDGE,
+      fields: {
+        [ID_FIELD_NAMES.JUDGE_ID]: PROPERTY_TYPES.PERSON_ID
       }
     },
     {
@@ -22,6 +30,13 @@ const psaHearingConfig = {
       alias: ALIASES.APPEARS_IN,
       fields: {
         [ID_FIELD_NAMES.HEARING_ID]: PROPERTY_TYPES.STRING_ID
+      }
+    },
+    {
+      name: ENTITY_SETS.ASSESSED_BY,
+      alias: ALIASES.ASSESSED_BY_JUDGE,
+      fields: {
+        [ID_FIELD_NAMES.TIMESTAMP]: PROPERTY_TYPES.COMPLETED_DATE_TIME
       }
     }
   ],
@@ -35,6 +50,12 @@ const psaHearingConfig = {
       src: ALIASES.PSA,
       dst: ALIASES.HEARING,
       association: ALIASES.APPEARS_IN
+    },
+    // _____ assessed by judge
+    {
+      src: ALIASES.JUDGE,
+      dst: ALIASES.HEARING,
+      association: ALIASES.ASSESSED_BY_JUDGE
     }
   ]
 };

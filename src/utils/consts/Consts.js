@@ -233,7 +233,9 @@ export const ID_FIELD_NAMES = {
   DMF_ID: 'dmfId',
   BOND_ID: 'bondId',
   HEARING_ID: 'hearingId',
-  OUTCOME_ID: 'outcomeId'
+  OUTCOME_ID: 'outcomeId',
+  EMPLOYEE_ID: 'employeeId',
+  JUDGE_ID: 'judgeId'
 };
 
 export const ID_FIELDS = {
@@ -250,7 +252,8 @@ export const ID_FIELDS = {
 export const HEARING = {
   DATE_TIME: 'hearingDateTime',
   COURTROOM: 'hearingCourtroom',
-  JUDGE: 'hearingJudge'
+  JUDGE: 'hearingJudge',
+  COMMENTS: 'hearingComments'
 };
 
 export const PSA_STATUSES = {
@@ -287,6 +290,12 @@ export const RELEASE_CONDITIONS = {
   OTHER_CONDITION_TEXT: 'otherConditionText',
   NO_CONTACT_PEOPLE: 'noContactPeople'
 };
+
+export const JURISDICTION = {
+  [CONTEXT.COURT_PENN]: 'Pennington County, South Dakota',
+  [CONTEXT.COURT_MINN]: 'Minnehaha County, South Dakota',
+  [CONTEXT.BOOKING]: 'Pennington County, South Dakota'
+}
 
 export const TABLE_WIDTH = 1000;
 export const ROW_HEIGHT = 50;

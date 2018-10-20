@@ -6,6 +6,7 @@ import styled from 'styled-components';
 import { Constants } from 'lattice';
 
 import HearingSummary from '../hearings/HearingSummary';
+import { formatJudgeName } from '../../utils/consts/HearingConsts';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { formatDateTime } from '../../utils/FormattingUtils';
@@ -39,7 +40,7 @@ const ReleaseConditionsSummary = ({ completedHearings, hearingNeighborsById }) =
     const date = dateTime[0];
     const time = dateTime[1];
     const courtroom = hearing.getIn([PROPERTY_TYPES.COURTROOM, 0], '');
-    // const judge = ''; // TODO: Add judge to hearing object
+    const judge = formatJudgeName(hearingNeighbors.getIn([ENTITY_SETS.MIN_PEN_PEOPLE, PSA_NEIGHBOR.DETAILS]));
     const hearingOutcome = hearingNeighbors.getIn([ENTITY_SETS.OUTCOMES, PSA_NEIGHBOR.DETAILS]);
     const hearingBond = hearingNeighbors.getIn([ENTITY_SETS.BONDS, PSA_NEIGHBOR.DETAILS]);
     const hearingConditions = hearingNeighbors.get(ENTITY_SETS.RELEASE_CONDITIONS);
@@ -49,6 +50,7 @@ const ReleaseConditionsSummary = ({ completedHearings, hearingNeighborsById }) =
       date,
       time,
       courtroom,
+      judge,
       hearingOutcome,
       hearingBond,
       hearingConditions,
