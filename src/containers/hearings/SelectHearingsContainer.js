@@ -292,7 +292,14 @@ class SelectHearingsContainer extends React.Component<Props, State> {
       }
       this.selectHearing(hearing);
       onSubmit(hearing);
-      this.setState({ manuallyCreatingHearing: false });
+      this.setState({
+        manuallyCreatingHearing: false,
+        newHearingCourtroom: undefined,
+        newHearingDate: undefined,
+        newHearingTime: undefined,
+        judge: '',
+        otherJudgeText: ''
+      });
     }
   }
 
