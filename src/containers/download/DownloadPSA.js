@@ -181,6 +181,7 @@ class DownloadPSA extends React.Component<Props, State> {
         <ButtonRow>
           <InfoDownloadButton onClick={() => this.downloadbyPSADate()}>Download All PSA Data</InfoDownloadButton>
         </ButtonRow>
+        <SubHeaderSection>Download Charge Lists</SubHeaderSection>
         <ButtonRow>
           <BasicDownloadButton onClick={() => this.downloadCharges(DOMAIN.PENNINGTON)}>
             Download Pennington Charges
@@ -207,7 +208,7 @@ class DownloadPSA extends React.Component<Props, State> {
                 onEndChange={endDate => this.setState({ endDate })}
                 format24HourClock />
             {this.renderError()}
-            {this.renderDownloadByPSADate()}
+            {this.renderDownload()}
             <StyledTopFormNavBuffer />
           </StyledSectionWrapper>
         </StyledFormWrapper>
