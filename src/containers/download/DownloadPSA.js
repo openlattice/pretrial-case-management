@@ -30,13 +30,13 @@ const HeaderSection = styled.div`
   width: 100%
 `;
 const SubHeaderSection = styled.div`
+  padding-top: 30px;
   display: flex;
   justify-content: center;
   align-items: center;
   font-family: 'Open Sans', sans-serif;
   font-size: 14px;
   color: #555e6f;
-  border-bottom: 1px solid #e1e1eb;
   width: 100%
 `;
 
@@ -156,7 +156,7 @@ class DownloadPSA extends React.Component<Props, State> {
     if (!startDate || !endDate || this.getErrorText()) return null;
     return (
       <div>
-        <SubHeaderSection>Dowloads by Hearing Date</SubHeaderSection>
+        <SubHeaderSection>Downloads by Hearing Date</SubHeaderSection>
         <ButtonRow>
           <BasicDownloadButton onClick={() => this.downloadByHearingDate(PSA_RESPONSE_TABLE, DOMAIN.MINNEHAHA)}>
             Download Minnehaha PSA Response Table
@@ -168,7 +168,7 @@ class DownloadPSA extends React.Component<Props, State> {
             Download Pennington Summary Report
           </BasicDownloadButton>
         </ButtonRow>
-        <SubHeaderSection>Dowloads by PSA Date</SubHeaderSection>
+        <SubHeaderSection>Download All PSA Data by PSA Date</SubHeaderSection>
         <ButtonRow>
           <InfoDownloadButton onClick={() => this.download()}>Download All PSA Data</InfoDownloadButton>
         </ButtonRow>
