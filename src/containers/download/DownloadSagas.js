@@ -260,7 +260,8 @@ function* downloadPSAsByHearingDateWorker(action :SequenceAction) :Generator<*, 
     const allHearingData = yield call(SearchApi.searchEntitySetData, hearingEntitySetId, hearingOptions);
     if (allHearingData.hits.length) {
       allHearingData.hits.forEach((hearing) => {
-        hearingIds = hearingIds.add(hearing[OPENLATTICE_ID_FQN][0]);
+        const hearingType = hearing[PROPERTY_TYPES.HEARING_TYPE][0];
+        if (hearingType === 'Initial Appearance') hearingIds = hearingIds.add(hearing[OPENLATTICE_ID_FQN][0]);
       });
     }
 
