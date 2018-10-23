@@ -3,7 +3,12 @@
  */
 
 import { DataApi } from 'lattice';
-import { call, put, select, takeEvery } from 'redux-saga/effects';
+import {
+  call,
+  put,
+  select,
+  takeEvery
+} from 'redux-saga/effects';
 
 import {
   DELETE_ENTITY,

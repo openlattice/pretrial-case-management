@@ -34,12 +34,19 @@ import PSAReviewReportsRowList from '../review/PSAReviewReportsRowList';
 import exportPDF from '../../utils/PDFUtils';
 import psaConfig from '../../config/formconfig/PsaConfig';
 import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
-import { STATE, PSA_FORM, SUBMIT, SEARCH } from '../../utils/consts/FrontEndStateConsts';
+import {
+  STATE,
+  PSA_FORM,
+  SUBMIT,
+  SEARCH,
+  COURT
+} from '../../utils/consts/FrontEndStateConsts';
 
 import * as FormActionFactory from './FormActionFactory';
 import * as PersonActionFactory from '../person/PersonActionFactory';
 import * as ReviewActionFactory from '../review/ReviewActionFactory';
 import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
+import * as CourtActionFactory from '../court/CourtActionFactory';
 import * as Routes from '../../core/router/Routes';
 
 import { toISODateTime } from '../../utils/FormattingUtils';
@@ -274,6 +281,7 @@ type Props = {
     setPSAValues :(value :{
       newValues :Immutable.Map<*, *>
     }) => void,
+    loadJudges :() => void,
     submit :({ config :Object, values :Object }) => void,
     clearSubmit :() => void,
     changePSAStatus :(values :{
@@ -290,6 +298,7 @@ type Props = {
   selectedPerson :Immutable.Map<*, *>,
   arrestId :string,
   selectedPretrialCase :Immutable.Map<*, *>,
+  allJudges :Immutable.List<*>,
   arrestOptions :Immutable.List<*>,
   charges :Immutable.List<*>,
   allCasesForPerson :Immutable.List<*>,
@@ -331,7 +340,9 @@ class Form extends React.Component<Props, State> {
   }
 
   componentDidMount() {
-    this.props.actions.loadDataModel();
+    const { actions } = this.props;
+    actions.loadDataModel();
+    actions.loadJudges();
     this.redirectToFirstPageIfNecessary();
   }
 
@@ -822,10 +833,13 @@ class Form extends React.Component<Props, State> {
       allCasesForPerson,
       allChargesForPerson,
       allHearings,
+      allJudges,
       psaForm
     } = this.props;
 
     if (!scoresWereGenerated) return null;
+
+    const context = psaForm.get('courtOrBooking');
 
     let chargesByCaseId = Immutable.Map();
     allChargesForPerson.forEach((charge) => {
@@ -838,6 +852,7 @@ class Form extends React.Component<Props, State> {
           isSubmitting={isSubmitting}
           scores={scores}
           riskFactors={riskFactors}
+          context={context}
           dmf={dmf}
           personId={this.getPersonIdValue()}
           psaId={psaId}
@@ -848,6 +863,7 @@ class Form extends React.Component<Props, State> {
           allCases={allCasesForPerson}
           allCharges={chargesByCaseId}
           allHearings={allHearings}
+          allJudges={allJudges}
           getOnExport={this.getOnExport} />
     );
   }
@@ -889,6 +905,7 @@ function mapStateToProps(state :Immutable.Map<*, *>) :Object {
   const psaForm = state.get(STATE.PSA);
   const search = state.get(STATE.SEARCH);
   const submit = state.get(STATE.SUBMIT);
+  const court = state.get(STATE.COURT);
   // TODO: review these state names so that consts can be used in all cases (psaForm & isLoadingCases)
   return {
     [PSA_FORM.ARREST_OPTIONS]: psaForm.get(PSA_FORM.ARREST_OPTIONS),
@@ -907,6 +924,8 @@ function mapStateToProps(state :Immutable.Map<*, *>) :Object {
     [PSA_FORM.DATA_MODEL]: psaForm.get(PSA_FORM.DATA_MODEL),
     [PSA_FORM.ENTITY_SET_LOOKUP]: psaForm.get(PSA_FORM.ENTITY_SET_LOOKUP),
     [PSA_FORM.LOADING_NEIGHBORS]: psaForm.get(PSA_FORM.LOADING_NEIGHBORS),
+
+    [COURT.ALL_JUDGES]: court.get(COURT.ALL_JUDGES),
 
     [PSA_FORM.SUBMITTED]: submit.get(SUBMIT.SUBMITTED),
     [PSA_FORM.SUBMITTING]: submit.get(SUBMIT.SUBMITTING),
@@ -930,6 +949,9 @@ function mapDispatchToProps(dispatch :Function) :Object {
   });
   Object.keys(ReviewActionFactory).forEach((action :string) => {
     actions[action] = ReviewActionFactory[action];
+  });
+  Object.keys(CourtActionFactory).forEach((action :string) => {
+    actions[action] = CourtActionFactory[action];
   });
   Object.keys(SubmitActionFactory).forEach((action :string) => {
     actions[action] = SubmitActionFactory[action];

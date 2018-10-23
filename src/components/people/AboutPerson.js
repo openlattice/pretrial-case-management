@@ -93,7 +93,7 @@ const FilterWrapper = styled.div`
   white-space: nowrap;
   width: 25%;
   position: absolute;
-  transform: translateX(45%) translateY(50%);
+  transform: translateX(200px) translateY(50%);
 `;
 
 type Props = {

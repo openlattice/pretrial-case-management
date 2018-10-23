@@ -19,15 +19,20 @@ const loadHearingNeighbors :RequestSequence = newRequestSequence(LOAD_HEARING_NE
 const REFRESH_HEARING_NEIGHBORS :string = 'REFRESH_HEARING_NEIGHBORS';
 const refreshHearingNeighbors :RequestSequence = newRequestSequence(REFRESH_HEARING_NEIGHBORS);
 
+const LOAD_JUDGES :string = 'LOAD_JUDGES';
+const loadJudges :RequestSequence = newRequestSequence(LOAD_JUDGES);
+
 export {
   CHANGE_HEARING_FILTERS,
   FILTER_PEOPLE_IDS_WITH_OPEN_PSAS,
   LOAD_HEARINGS_FOR_DATE,
   LOAD_HEARING_NEIGHBORS,
   REFRESH_HEARING_NEIGHBORS,
+  LOAD_JUDGES,
   changeHearingFilters,
   filterPeopleIdsWithOpenPSAs,
   loadHearingsForDate,
   loadHearingNeighbors,
-  refreshHearingNeighbors
+  refreshHearingNeighbors,
+  loadJudges
 };

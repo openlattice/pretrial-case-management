@@ -45,6 +45,16 @@ const StyledContentBlockWrapper = styled.div`
              justify-content: flex-end;
            }`
         );
+      case CONTENT_CONSTS.CREATING_HEARING:
+        return (
+          `grid-template-columns: 32% 32% 32%;
+           grid-auto-rows: min-content;
+           grid-column-gap: 2%;
+           grid-row-gap: 20px;
+           :nth-last-child(4) {
+             justify-content: flex-end;
+           }`
+        );
       default:
         return (
           `grid-template-columns: 50% 50%;
@@ -101,6 +111,11 @@ const StyledSectionHeader = styled.div`
           `padding: 30px 0 0 50px;
            font-size: 16px;`
         );
+      case CONTENT_CONSTS.CREATING_HEARING:
+        return (
+          `padding-left: 15px;
+           font-size: 16px;`
+        );
       default:
         return (
           `padding: 30px;
@@ -140,6 +155,10 @@ const StyledSectionBottomBarWrapper = styled.div`
       case CONTENT_CONSTS.HEARINGS:
         return (
           'padding: 30px 50px 0 50px;'
+        );
+      case CONTENT_CONSTS.CREATING_HEARING:
+        return (
+          'padding: 30px 50px 0 15px;'
         );
       default:
         return (

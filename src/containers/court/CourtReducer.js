@@ -2,7 +2,7 @@
  * @flow
  */
 
-import Immutable from 'immutable';
+import Immutable, { Map, Set, List } from 'immutable';
 import { Constants } from 'lattice';
 
 import { sortByDate } from '../../utils/PSAUtils';
@@ -11,7 +11,8 @@ import {
   filterPeopleIdsWithOpenPSAs,
   loadHearingsForDate,
   loadHearingNeighbors,
-  refreshHearingNeighbors
+  refreshHearingNeighbors,
+  loadJudges
 } from './CourtActionFactory';
 import { COURT, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
@@ -41,6 +42,11 @@ const INITIAL_STATE :Immutable.Map<*, *> = Immutable.fromJS({
   [COURT.OPEN_PSAS]: Immutable.Map(),
   [COURT.OPEN_PSA_IDS]: Immutable.Set(),
   [COURT.OPEN_PSA_NEIGHBORS]: Immutable.Map(),
+
+  // JUDGES
+  [COURT.ALL_JUDGES]: Immutable.Map(),
+  [COURT.LOADING_JUDGES]: false,
+  [COURT.LOADING_JUDGES_ERROR]: false,
 
   [COURT.COUNTY]: '',
   [COURT.COURTROOM]: ''
@@ -152,10 +158,7 @@ export default function courtReducer(state :Immutable.Map<*, *> = INITIAL_STATE,
 
     case refreshHearingNeighbors.case(action.type): {
       return refreshHearingNeighbors.reducer(state, action, {
-        REQUEST: () => state.set(
-          COURT.HEARING_IDS_REFRESHING,
-          state.get(COURT.HEARING_IDS_REFRESHING)
-        ),
+        REQUEST: () => state.set(COURT.HEARING_IDS_REFRESHING, true),
         SUCCESS: () => {
           let hearingNeighborsById = state.get(COURT.HEARINGS_NEIGHBORS_BY_ID);
 
@@ -163,10 +166,20 @@ export default function courtReducer(state :Immutable.Map<*, *> = INITIAL_STATE,
 
           return state.set(COURT.HEARINGS_NEIGHBORS_BY_ID, hearingNeighborsById);
         },
-        FINALLY: () => state.set(
-          COURT.HEARING_IDS_REFRESHING,
-          state.get(COURT.HEARING_IDS_REFRESHING)
-        )
+        FINALLY: () => state.set(COURT.HEARING_IDS_REFRESHING, false),
+      });
+    }
+    case loadJudges.case(action.type): {
+      return loadJudges.reducer(state, action, {
+        REQUEST: () => state.set(COURT.LOADING_JUDGES, true),
+        SUCCESS: () => {
+          const { allJudges } = action.value;
+          return state.set(COURT.ALL_JUDGES, allJudges);
+        },
+        FAILURE: () => state
+          .set(COURT.ALL_JUDGES, Immutable.Map())
+          .set(COURT.LOADING_JUDGES_ERROR, action.error),
+        FINALLY: () => state.set(COURT.LOADING_JUDGES, false)
       });
     }
 
