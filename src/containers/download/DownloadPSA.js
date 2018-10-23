@@ -121,7 +121,7 @@ class DownloadPSA extends React.Component<Props, State> {
     });
   }
 
-  download = (filters, domain) => {
+  downloadbyPSADate = (filters, domain) => {
     const { startDate, endDate } = this.state;
     if (startDate && endDate) {
       this.props.actions.downloadPsaForms({
@@ -140,18 +140,18 @@ class DownloadPSA extends React.Component<Props, State> {
     return (
       <div>
         <ButtonRow>
-          <BasicDownloadButton onClick={() => this.download(PSA_RESPONSE_TABLE, DOMAIN.MINNEHAHA)}>
+          <BasicDownloadButton onClick={() => this.downloadbyPSADate(PSA_RESPONSE_TABLE, DOMAIN.MINNEHAHA)}>
             Download Minnehaha PSA Response Table
           </BasicDownloadButton>
-          <BasicDownloadButton onClick={() => this.download(SUMMARY_REPORT, DOMAIN.MINNEHAHA)}>
+          <BasicDownloadButton onClick={() => this.downloadbyPSADate(SUMMARY_REPORT, DOMAIN.MINNEHAHA)}>
             Download Minnehaha Summary Report
           </BasicDownloadButton>
-          <BasicDownloadButton onClick={() => this.download(SUMMARY_REPORT, DOMAIN.PENNINGTON)}>
+          <BasicDownloadButton onClick={() => this.downloadbyPSADate(SUMMARY_REPORT, DOMAIN.PENNINGTON)}>
             Download Pennington Summary Report
           </BasicDownloadButton>
         </ButtonRow>
         <ButtonRow>
-          <InfoDownloadButton onClick={() => this.download()}>Download All PSA Data</InfoDownloadButton>
+          <InfoDownloadButton onClick={() => this.downloadbyPSADate()}>Download All PSA Data</InfoDownloadButton>
         </ButtonRow>
         <ButtonRow>
           <BasicDownloadButton onClick={() => this.downloadCharges(DOMAIN.PENNINGTON)}>
