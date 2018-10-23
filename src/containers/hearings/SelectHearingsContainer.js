@@ -30,6 +30,7 @@ import {
   FORM_IDS,
   ID_FIELD_NAMES,
   HEARING,
+  HEARING_TYPES,
   JURISDICTION
 } from '../../utils/consts/Consts';
 import {
@@ -284,7 +285,7 @@ class SelectHearingsContainer extends React.Component<Props, State> {
         [ID_FIELD_NAMES.HEARING_ID]: randomUUID(),
         [HEARING.DATE_TIME]: datetime.toISOString(true),
         [HEARING.COURTROOM]: newHearingCourtroom,
-        [PROPERTY_TYPES.HEARING_TYPE]: 'Initial Appearance'
+        [PROPERTY_TYPES.HEARING_TYPE]: HEARING_TYPES.INITIAL_APPEARANCE
       };
       if (judge === 'Other') {
         this.setState({ judgeId: '' });
