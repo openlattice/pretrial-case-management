@@ -69,6 +69,11 @@ type Props = {
       startDate :string,
       endDate :string,
       filters? :Object
+    }) => void,
+    downloadPSAsByHearingDate :(value :{
+      startDate :string,
+      endDate :string,
+      filters? :Object
     }) => void
   },
   history :string[]
@@ -134,47 +139,36 @@ class DownloadPSA extends React.Component<Props, State> {
     }
   }
 
+  downloadByHearingDate = (filters, domain) => {
+    const { startDate, endDate } = this.state;
+    if (startDate && endDate) {
+      this.props.actions.downloadPSAsByHearingDate({
+        startDate,
+        endDate,
+        filters,
+        domain
+      });
+    }
+  }
+
   renderDownloadByPSADate = () => {
     const { startDate, endDate } = this.state;
     if (!startDate || !endDate || this.getErrorText()) return null;
     return (
       <div>
-        <SubHeaderSection>Dowload by PSA Date</SubHeaderSection>
+        <SubHeaderSection>Dowloads by Hearing Date</SubHeaderSection>
         <ButtonRow>
-          <BasicDownloadButton onClick={() => this.download(PSA_RESPONSE_TABLE, DOMAIN.MINNEHAHA)}>
+          <BasicDownloadButton onClick={() => this.downloadByHearingDate(PSA_RESPONSE_TABLE, DOMAIN.MINNEHAHA)}>
             Download Minnehaha PSA Response Table
           </BasicDownloadButton>
-          <BasicDownloadButton onClick={() => this.download(SUMMARY_REPORT, DOMAIN.MINNEHAHA)}>
+          <BasicDownloadButton onClick={() => this.downloadByHearingDate(SUMMARY_REPORT, DOMAIN.MINNEHAHA)}>
             Download Minnehaha Summary Report
           </BasicDownloadButton>
-          <BasicDownloadButton onClick={() => this.download(SUMMARY_REPORT, DOMAIN.PENNINGTON)}>
+          <BasicDownloadButton onClick={() => this.downloadByHearingDate(SUMMARY_REPORT, DOMAIN.PENNINGTON)}>
             Download Pennington Summary Report
           </BasicDownloadButton>
         </ButtonRow>
-        <ButtonRow>
-          <InfoDownloadButton onClick={() => this.download()}>Download All PSA Data</InfoDownloadButton>
-        </ButtonRow>
-      </div>
-    );
-  }
-
-  renderDownloadByHearingDate = () => {
-    const { startDate, endDate } = this.state;
-    if (!startDate || !endDate || this.getErrorText()) return null;
-    return (
-      <div>
-        <SubHeaderSection>Dowload by Hearing Date</SubHeaderSection>
-        <ButtonRow>
-          <BasicDownloadButton onClick={() => this.download(PSA_RESPONSE_TABLE, DOMAIN.MINNEHAHA)}>
-            Download Minnehaha PSA Response Table
-          </BasicDownloadButton>
-          <BasicDownloadButton onClick={() => this.download(SUMMARY_REPORT, DOMAIN.MINNEHAHA)}>
-            Download Minnehaha Summary Report
-          </BasicDownloadButton>
-          <BasicDownloadButton onClick={() => this.download(SUMMARY_REPORT, DOMAIN.PENNINGTON)}>
-            Download Pennington Summary Report
-          </BasicDownloadButton>
-        </ButtonRow>
+        <SubHeaderSection>Dowloads by PSA Date</SubHeaderSection>
         <ButtonRow>
           <InfoDownloadButton onClick={() => this.download()}>Download All PSA Data</InfoDownloadButton>
         </ButtonRow>
@@ -197,7 +191,6 @@ class DownloadPSA extends React.Component<Props, State> {
                 format24HourClock />
             {this.renderError()}
             {this.renderDownloadByPSADate()}
-            {this.renderDownloadByHearingDate()}
             <StyledTopFormNavBuffer />
           </StyledSectionWrapper>
         </StyledFormWrapper>
