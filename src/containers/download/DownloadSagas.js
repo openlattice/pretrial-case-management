@@ -8,7 +8,8 @@ import {
   Constants,
   DataApi,
   EntityDataModelApi,
-  SearchApi
+  SearchApi,
+  Models
 } from 'lattice';
 import { call, put, takeEvery } from 'redux-saga/effects';
 
@@ -32,13 +33,16 @@ import {
   CHARGE_VALUES
 } from '../../utils/consts/ArrestChargeConsts';
 import {
-  DOWNLOAD_PSA_FORMS,
   DOWNLOAD_CHARGE_LISTS,
-  downloadPsaForms,
-  downloadChargeLists
+  DOWNLOAD_PSA_BY_HEARING_DATE,
+  DOWNLOAD_PSA_FORMS,
+  downloadChargeLists,
+  downloadPSAsByHearingDate,
+  downloadPsaForms
 } from './DownloadActionFactory';
 
 const { OPENLATTICE_ID_FQN } = Constants;
+const { FullyQualifiedName } = Models;
 
 function* downloadChargeListsWorker(action :SequenceAction) :Generator<*, *, *> {
 
@@ -337,7 +341,258 @@ function* downloadPSAsWatcher() :Generator<*, *, *> {
   yield takeEvery(DOWNLOAD_PSA_FORMS, downloadPSAsWorker);
 }
 
+function* downloadPSAsByHearingDateWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  try {
+    yield put(downloadPSAsByHearingDate.request(action.id));
+    const {
+      startDate,
+      endDate,
+      filters,
+      domain
+    } = action.value;
+
+    let usableNeighborsById = Immutable.Map();
+    let hearingIds = Immutable.Set();
+    let hearingIdsToPSAIds = Immutable.Map();
+    let personIdsToHearingIds = Immutable.Map();
+    let scoresAsMap = Immutable.Map();
+
+    const start = startDate.toISOString(true);
+    const end = endDate.toISOString(true);
+
+    const hearingEntitySetId = yield call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.HEARINGS);
+    const psaEntitySetId = yield call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.PSA_SCORES);
+    const peopleEntitySetId = yield call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.PEOPLE);
+
+    const ceiling = yield call(DataApi.getEntitySetSize, hearingEntitySetId);
+    const DATE_TIME_FQN = new FullyQualifiedName(PROPERTY_TYPES.DATE_TIME);
+    const datePropertyTypeId = yield call(EntityDataModelApi.getPropertyTypeId, DATE_TIME_FQN);
+
+    const hearingOptions = {
+      searchTerm: `${datePropertyTypeId}: [${start} TO ${end}]`,
+      start: 0,
+      maxHits: ceiling,
+      fuzzy: false
+    };
+
+    const allHearingData = yield call(SearchApi.searchEntitySetData, hearingEntitySetId, hearingOptions);
+    if (allHearingData.hits.length) {
+      allHearingData.hits.forEach((hearing) => {
+        const hearingType = hearing[PROPERTY_TYPES.HEARING_TYPE][0];
+        if (hearingType === 'Initial Appearance') hearingIds = hearingIds.add(hearing[OPENLATTICE_ID_FQN][0]);
+      });
+    }
+
+    let hearingNeighborsById = yield call(SearchApi.searchEntityNeighborsBulk, hearingEntitySetId, hearingIds.toJS());
+    hearingNeighborsById = Immutable.fromJS(hearingNeighborsById);
+    hearingIds.forEach((hearingId) => {
+      let hasPerson = false;
+      let hasPSA = false;
+      let personId;
+      hearingNeighborsById.get(hearingId).forEach((neighbor) => {
+        const entitySetName = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'name']);
+        if (entitySetName === ENTITY_SETS.PSA_SCORES) {
+          hasPSA = true;
+          scoresAsMap = scoresAsMap.set(
+            neighbor.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0]),
+            neighbor.get(PSA_NEIGHBOR.DETAILS)
+          );
+          hearingIdsToPSAIds = hearingIdsToPSAIds.set(
+            hearingId,
+            neighbor.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0])
+          );
+        }
+        if (entitySetName === ENTITY_SETS.PEOPLE) {
+          hasPerson = true;
+          personId = neighbor.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0]);
+        }
+      });
+      if (hasPerson && !hasPSA) {
+        personIdsToHearingIds = personIdsToHearingIds.set(
+          personId,
+          hearingId
+        );
+      }
+    });
+
+    let peopleNeighborsById = yield call(
+      SearchApi.searchEntityNeighborsBulk,
+      peopleEntitySetId,
+      personIdsToHearingIds.keySeq().toJS()
+    );
+
+    peopleNeighborsById = Immutable.fromJS(peopleNeighborsById);
+    peopleNeighborsById.keySeq().forEach((id) => {
+      let hasValidHearing = false;
+      let mostCurrentPSA;
+      peopleNeighborsById.get(id).forEach((neighbor) => {
+        const entitySetName = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'name']);
+
+        if (entitySetName === ENTITY_SETS.HEARINGS) {
+          const hearingDate = neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.DATE_TIME, 0]);
+          const hearingDateInRange = moment(hearingDate).isAfter(startDate)
+            && moment(hearingDate).isBefore(endDate);
+          if (hearingDateInRange) {
+            hasValidHearing = true;
+          }
+        }
+
+        if (entitySetName === ENTITY_SETS.PSA_SCORES) {
+          if (!mostCurrentPSA) {
+            mostCurrentPSA = neighbor;
+          }
+          else {
+            const currentPSADateTime = moment(mostCurrentPSA
+              .getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.DATE_TIME, 0]));
+            const psaDateTime = moment(neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.DATE_TIME, 0]));
+            if (currentPSADateTime.isBefore(psaDateTime)) {
+              mostCurrentPSA = neighbor;
+            }
+          }
+        }
+      });
+
+      if (hasValidHearing && mostCurrentPSA) {
+        scoresAsMap = scoresAsMap.set(
+          mostCurrentPSA.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0]),
+          mostCurrentPSA.get(PSA_NEIGHBOR.DETAILS)
+        );
+        hearingIdsToPSAIds = hearingIdsToPSAIds.set(
+          personIdsToHearingIds.get(id),
+          mostCurrentPSA.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0])
+        );
+      }
+    });
+
+    const psaNeighborsById = yield call(
+      SearchApi.searchEntityNeighborsBulk,
+      psaEntitySetId,
+      hearingIdsToPSAIds.valueSeq().toJS()
+    );
+
+    Object.keys(psaNeighborsById).forEach((id) => {
+      const neighborList = psaNeighborsById[id];
+      let domainMatch = true;
+      neighborList.forEach((neighborObj) => {
+        const neighbor = getFilteredNeighbor(neighborObj);
+        if (domain && neighbor.neighborEntitySet && neighbor.neighborEntitySet.name === ENTITY_SETS.STAFF) {
+          const filer = neighbor.neighborDetails[PROPERTY_TYPES.PERSON_ID][0];
+          if (!filer.toLowerCase().endsWith(domain)) {
+            domainMatch = false;
+          }
+        }
+      });
+      if (domainMatch) {
+        usableNeighborsById = usableNeighborsById.set(
+          id,
+          Immutable.fromJS(neighborList)
+        );
+      }
+    });
+
+    const getUpdatedEntity = (combinedEntityInit, entitySetTitle, entitySetName, details) => {
+      if (filters && !filters[entitySetName]) return combinedEntityInit;
+      let combinedEntity = combinedEntityInit;
+      details.keySeq().forEach((fqn) => {
+        const keyString = `${fqn}|${entitySetName}`;
+        const headerString = HEADERS_OBJ[keyString];
+        const header = filters ? filters[entitySetName][fqn] : headerString;
+        if (header) {
+          let newArrayValues = combinedEntity.get(header, Immutable.List());
+          details.get(fqn).forEach((val) => {
+            let newVal = val;
+            if (fqn === PROPERTY_TYPES.TIMESTAMP
+              || fqn === PROPERTY_TYPES.COMPLETED_DATE_TIME
+              || fqn === PROPERTY_TYPES.DATE_TIME) {
+              newVal = formatDateTime(val, 'YYYY-MM-DD hh:mma');
+            }
+            if (!newArrayValues.includes(val)) {
+              newArrayValues = newArrayValues.push(newVal);
+            }
+          });
+          combinedEntity = combinedEntity.set(header, newArrayValues);
+        }
+      });
+      return combinedEntity;
+    };
+
+    let jsonResults = Immutable.List();
+    let allHeaders = Immutable.Set();
+    usableNeighborsById.keySeq().forEach((id) => {
+      let combinedEntity = getUpdatedEntity(
+        Immutable.Map(),
+        'South Dakota PSA Scores',
+        ENTITY_SETS.PSA_SCORES,
+        scoresAsMap.get(id)
+      );
+
+      usableNeighborsById.get(id).forEach((neighbor) => {
+        combinedEntity = getUpdatedEntity(
+          combinedEntity,
+          neighbor.getIn([PSA_ASSOCIATION.ENTITY_SET, 'title']),
+          neighbor.getIn([PSA_ASSOCIATION.ENTITY_SET, 'name']),
+          neighbor.get(PSA_ASSOCIATION.DETAILS)
+        );
+        combinedEntity = getUpdatedEntity(
+          combinedEntity,
+          neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'title']),
+          neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'name']),
+          neighbor.get(PSA_NEIGHBOR.DETAILS, Immutable.Map())
+        );
+        allHeaders = allHeaders.union(combinedEntity.keys())
+          .sort((header1, header2) => (POSITIONS.indexOf(header1) >= POSITIONS.indexOf(header2) ? 1 : -1));
+      });
+
+      combinedEntity = combinedEntity.set('S2', getStepTwo(usableNeighborsById.get(id), scoresAsMap.get(id)));
+      combinedEntity = combinedEntity.set('S4', getStepFour(usableNeighborsById.get(id), scoresAsMap.get(id)));
+
+      if (
+        combinedEntity.get('FIRST')
+        || combinedEntity.get('MIDDLE')
+        || combinedEntity.get('LAST')
+        || combinedEntity.get('Last Name')
+        || combinedEntity.get('First Name')
+      ) {
+        jsonResults = jsonResults.push(combinedEntity);
+      }
+
+
+    });
+
+    if (filters) {
+      jsonResults = yield jsonResults.sortBy(psa => psa.get('First Name')).sortBy(psa => psa.get('Last Name'));
+    }
+
+    const fields = filters
+      ? Object.values(filters).reduce((es1, es2) => [...Object.values(es1), ...Object.values(es2)])
+      : allHeaders.toJS();
+    const csv = Papa.unparse({
+      fields,
+      data: jsonResults.toJS()
+    });
+
+    const name = `PSAs-With-Hearing-Dates-From-${startDate.format('MM-DD-YYYY')}-to-${endDate.format('MM-DD-YYYY')}`;
+
+    FileSaver.saveFile(csv, name, 'csv');
+
+    yield put(downloadPSAsByHearingDate.success(action.id));
+  }
+  catch (error) {
+    console.error(error);
+    yield put(downloadPSAsByHearingDate.failure(action.id, { error }));
+  }
+  finally {
+    yield put(downloadPSAsByHearingDate.finally(action.id));
+  }
+}
+
+function* downloadPSAsByHearingDateWatcher() :Generator<*, *, *> {
+  yield takeEvery(DOWNLOAD_PSA_BY_HEARING_DATE, downloadPSAsByHearingDateWorker);
+}
+
 export {
+  downloadChargeListsWatcher,
   downloadPSAsWatcher,
-  downloadChargeListsWatcher
+  downloadPSAsByHearingDateWatcher
 };

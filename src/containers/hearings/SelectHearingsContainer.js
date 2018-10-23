@@ -213,12 +213,13 @@ class SelectHearingsContainer extends React.Component<Props, State> {
       const courtroom = scheduledHearing.getIn([PROPERTY_TYPES.COURTROOM, 0]);
       scheduledHearingMap = scheduledHearingMap.set(dateTime, courtroom);
     });
+
     const unusedHearings = hearings.filter((hearing) => {
       const hearingDateTime = hearing.getIn([PROPERTY_TYPES.DATE_TIME, 0], '');
       const hearingCourtroom = hearing.getIn([PROPERTY_TYPES.COURTROOM, 0], '');
       const id = hearing.getIn([OPENLATTICE_ID_FQN, 0]);
       const hasOutcome = !!hearingNeighborsById.getIn([id, ENTITY_SETS.OUTCOMES]);
-      return !((scheduledHearingMap.get(hearingDateTime) === hearingCourtroom) || !hasOutcome);
+      return !((scheduledHearingMap.get(hearingDateTime) === hearingCourtroom) || hasOutcome);
     });
     return unusedHearings.sort((h1, h2) => (moment(h1.getIn([PROPERTY_TYPES.DATE_TIME, 0], ''))
       .isBefore(h2.getIn([PROPERTY_TYPES.DATE_TIME, 0], '')) ? 1 : -1));
@@ -574,6 +575,7 @@ class SelectHearingsContainer extends React.Component<Props, State> {
       hearingNeighborsById,
       PSASubmittedPage
     } = this.props;
+
     const hearingsWithOutcomes = hearingNeighborsById
       .keySeq().filter(id => hearingNeighborsById.getIn([id, ENTITY_SETS.OUTCOMES]));
     const scheduledHearings = psaNeighborsById.getIn([psaEntityKeyId, ENTITY_SETS.HEARINGS], Map())

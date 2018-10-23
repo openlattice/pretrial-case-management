@@ -29,6 +29,16 @@ const HeaderSection = styled.div`
   border-bottom: 1px solid #e1e1eb;
   width: 100%
 `;
+const SubHeaderSection = styled.div`
+  padding-top: 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: 'Open Sans', sans-serif;
+  font-size: 14px;
+  color: #555e6f;
+  width: 100%
+`;
 
 const ButtonRow = styled.div`
   margin-top: 30px;
@@ -62,6 +72,11 @@ type Props = {
     }) => void,
     downloadChargeLists :(value :{
       jurisdiction :string
+    }) => void,
+    downloadPSAsByHearingDate :(value :{
+      startDate :string,
+      endDate :string,
+      filters? :Object
     }) => void
   },
   history :string[]
@@ -133,23 +148,36 @@ class DownloadPSA extends React.Component<Props, State> {
     }
   }
 
+  downloadByHearingDate = (filters, domain) => {
+    const { startDate, endDate } = this.state;
+    if (startDate && endDate) {
+      this.props.actions.downloadPSAsByHearingDate({
+        startDate,
+        endDate,
+        filters,
+        domain
+      });
+    }
+  }
 
   renderDownload = () => {
     const { startDate, endDate } = this.state;
     if (!startDate || !endDate || this.getErrorText()) return null;
     return (
       <div>
+        <SubHeaderSection>Downloads by Hearing Date</SubHeaderSection>
         <ButtonRow>
-          <BasicDownloadButton onClick={() => this.downloadbyPSADate(PSA_RESPONSE_TABLE, DOMAIN.MINNEHAHA)}>
+          <BasicDownloadButton onClick={() => this.downloadByHearingDate(PSA_RESPONSE_TABLE, DOMAIN.MINNEHAHA)}>
             Download Minnehaha PSA Response Table
           </BasicDownloadButton>
-          <BasicDownloadButton onClick={() => this.downloadbyPSADate(SUMMARY_REPORT, DOMAIN.MINNEHAHA)}>
+          <BasicDownloadButton onClick={() => this.downloadByHearingDate(SUMMARY_REPORT, DOMAIN.MINNEHAHA)}>
             Download Minnehaha Summary Report
           </BasicDownloadButton>
-          <BasicDownloadButton onClick={() => this.downloadbyPSADate(SUMMARY_REPORT, DOMAIN.PENNINGTON)}>
+          <BasicDownloadButton onClick={() => this.downloadByHearingDate(SUMMARY_REPORT, DOMAIN.PENNINGTON)}>
             Download Pennington Summary Report
           </BasicDownloadButton>
         </ButtonRow>
+        <SubHeaderSection>Download All PSA Data by PSA Date</SubHeaderSection>
         <ButtonRow>
           <InfoDownloadButton onClick={() => this.downloadbyPSADate()}>Download All PSA Data</InfoDownloadButton>
         </ButtonRow>
@@ -179,7 +207,7 @@ class DownloadPSA extends React.Component<Props, State> {
                 onEndChange={endDate => this.setState({ endDate })}
                 format24HourClock />
             {this.renderError()}
-            {this.renderDownload()}
+            {this.renderDownloadByPSADate()}
             <StyledTopFormNavBuffer />
           </StyledSectionWrapper>
         </StyledFormWrapper>
