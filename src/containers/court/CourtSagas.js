@@ -95,10 +95,6 @@ function* loadHearingsForDateWorker(action :SequenceAction) :Generator<*, *, *> 
         searchTerm: `"${toISODate(action.value)}"`,
         property: dateTimeId,
         exact: true
-      }, {
-        searchTerm: '"Initial Appearance"',
-        property: hearingTypeId,
-        exact: true
       }
     ];
 
