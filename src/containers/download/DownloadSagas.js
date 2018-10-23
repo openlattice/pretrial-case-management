@@ -251,8 +251,7 @@ function* downloadChargeListsWorker(action :SequenceAction) :Generator<*, *, *> 
         CHARGE_TYPES.STEP_TWO,
         CHARGE_TYPES.STEP_FOUR,
         CHARGE_TYPES.ALL_VIOLENT,
-        BHE_LABELS.RELEASE,
-        'Zuercher Violent List'
+        'Odyssey Violent List',
       ]
     );
     const exceptionHeaders = Immutable.List(
@@ -261,7 +260,7 @@ function* downloadChargeListsWorker(action :SequenceAction) :Generator<*, *, *> 
         BRE_LABELS.LABEL
       ]
     );
-    console.log(CHARGE_VALUES);
+
     const step2ChargeValues = CHARGE_VALUES[CHARGE_TYPES.STEP_TWO]
       .map(charge => `${charge.statute}|${charge.description}`);
     const step4ChargeValues = CHARGE_VALUES[CHARGE_TYPES.STEP_FOUR]
