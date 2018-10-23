@@ -35,7 +35,7 @@ const SubHeaderSection = styled.div`
   justify-content: center;
   align-items: center;
   font-family: 'Open Sans', sans-serif;
-  font-size: 14px;
+  font-size: 16px;
   color: #555e6f;
   width: 100%
 `;
@@ -181,15 +181,6 @@ class DownloadPSA extends React.Component<Props, State> {
         <ButtonRow>
           <InfoDownloadButton onClick={() => this.downloadbyPSADate()}>Download All PSA Data</InfoDownloadButton>
         </ButtonRow>
-        <SubHeaderSection>Download Charge Lists</SubHeaderSection>
-        <ButtonRow>
-          <BasicDownloadButton onClick={() => this.downloadCharges(DOMAIN.PENNINGTON)}>
-            Download Pennington Charges
-          </BasicDownloadButton>
-          <BasicDownloadButton onClick={() => this.downloadCharges(DOMAIN.MINNEHAHA)}>
-            Download Minnehaha Charges
-          </BasicDownloadButton>
-        </ButtonRow>
       </div>
     );
   }
@@ -200,8 +191,17 @@ class DownloadPSA extends React.Component<Props, State> {
         <StyledFormWrapper>
           <StyledSectionWrapper>
             <HeaderSection>Download PSA Forms</HeaderSection>
+            <SubHeaderSection>Download Charge Lists</SubHeaderSection>
+            <ButtonRow>
+              <BasicDownloadButton onClick={() => this.downloadCharges(DOMAIN.PENNINGTON)}>
+                Download Pennington Charges
+              </BasicDownloadButton>
+              <BasicDownloadButton onClick={() => this.downloadCharges(DOMAIN.MINNEHAHA)}>
+                Download Minnehaha Charges
+              </BasicDownloadButton>
+            </ButtonRow>
             <DateTimeRange
-                label="Set a date range to download."
+                label="PSA Downloads"
                 startDate={this.state.startDate}
                 endDate={this.state.endDate}
                 onStartChange={startDate => this.setState({ startDate })}
