@@ -256,6 +256,10 @@ export const HEARING = {
   COMMENTS: 'hearingComments'
 };
 
+export const HEARING_TYPES = {
+  INITIAL_APPEARANCE: 'Initial Appearance'
+};
+
 export const PSA_STATUSES = {
   OPEN: 'Open',
   SUCCESS: 'Success',
