@@ -20,7 +20,7 @@ import {
 
 import { HEARING_TYPES, PSA_STATUSES } from '../../utils/consts/Consts';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { PSA_NEIGHBOR, PSA_ASSOCIATION } from '../../utils/consts/FrontEndStateConsts';
+import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { toISODate, TIME_FORMAT } from '../../utils/FormattingUtils';
 import { getFqnObj } from '../../utils/DataUtils';
 import { obfuscateEntityNeighbors, obfuscateBulkEntityNeighbors } from '../../utils/consts/DemoNames';
@@ -101,7 +101,6 @@ function* filterPeopleIdsWithOpenPSAsWorker(action :SequenceAction) :Generator<*
             mostCurrentPSA.get(PSA_NEIGHBOR.DETAILS)
           );
           if (hearingId) {
-            console.log(hearingId);
             hearingNeighborsById = hearingNeighborsById.setIn(
               [hearingId, ENTITY_SETS.PSA_SCORES],
               mostCurrentPSA
@@ -163,9 +162,19 @@ function* loadHearingsForDateWorker(action :SequenceAction) :Generator<*, *, *> 
     const hearingsToday = Immutable.fromJS(allHearingData.hits);
     if (hearingsToday.size) {
       hearingsToday.forEach((hearing) => {
+        const hearingDateTime = hearing.getIn([PROPERTY_TYPES.DATE_TIME, 0]);
+        const hearingExists = !!hearingDateTime;
+        const hearingOnDateSelected = toISODate(moment(hearing.getIn([PROPERTY_TYPES.DATE_TIME, 0])))
+          === toISODate(action.value);
         const hearingType = hearing.getIn([PROPERTY_TYPES.HEARING_TYPE, 0]);
         const hearingId = hearing.getIn([OPENLATTICE_ID_FQN, 0]);
-        if (hearingType && hearingType === HEARING_TYPES.INITIAL_APPEARANCE) hearingIds = hearingIds.add(hearingId);
+        const hearingHasBeenCancelled = hearing.getIn([PROPERTY_TYPES.UPDATE_TYPE, 0], '')
+          .toLowerCase().trim() === 'cancelled';
+        if (hearingType
+          && hearingExists
+          && hearingOnDateSelected
+          && !hearingHasBeenCancelled
+        ) hearingIds = hearingIds.add(hearingId);
       });
     }
 
