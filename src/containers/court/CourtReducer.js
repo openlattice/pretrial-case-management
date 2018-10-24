@@ -1,11 +1,6 @@
 /*
  * @flow
  */
-
-import Immutable, { Map, Set, List } from 'immutable';
-import { Constants } from 'lattice';
-
-import { sortByDate } from '../../utils/PSAUtils';
 import {
   CHANGE_HEARING_FILTERS,
   filterPeopleIdsWithOpenPSAs,
@@ -14,11 +9,7 @@ import {
   refreshHearingNeighbors,
   loadJudges
 } from './CourtActionFactory';
-import { COURT, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
-import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { PSA_STATUSES } from '../../utils/consts/Consts';
-
-const { OPENLATTICE_ID_FQN } = Constants;
+import { COURT } from '../../utils/consts/FrontEndStateConsts';
 
 const INITIAL_STATE :Immutable.Map<*, *> = Immutable.fromJS({
   // Hearings
@@ -41,7 +32,7 @@ const INITIAL_STATE :Immutable.Map<*, *> = Immutable.fromJS({
   [COURT.LOADING_PSAS]: false,
   [COURT.OPEN_PSAS]: Immutable.Map(),
   [COURT.OPEN_PSA_IDS]: Immutable.Set(),
-  [COURT.OPEN_PSA_NEIGHBORS]: Immutable.Map(),
+  [COURT.SCORES_AS_MAP]: Immutable.Map(),
 
   // JUDGES
   [COURT.ALL_JUDGES]: Immutable.Map(),
@@ -58,37 +49,27 @@ export default function courtReducer(state :Immutable.Map<*, *> = INITIAL_STATE,
     case filterPeopleIdsWithOpenPSAs.case(action.type): {
       return filterPeopleIdsWithOpenPSAs.reducer(state, action, {
         REQUEST: () => state.set(COURT.PEOPLE_WITH_OPEN_PSAS, Immutable.Set())
-          .set(COURT.OPEN_PSA_NEIGHBORS, Immutable.Map())
+          .set(COURT.SCORES_AS_MAP, Immutable.Map())
           .set(COURT.LOADING_PSAS, true),
         SUCCESS: () => {
           const {
             filteredPersonIds,
-            personWithOpenPSANeighbors,
+            scoresAsMap,
             personIdsToOpenPSAIds,
-            openPSAIds
+            openPSAIds,
+            hearingNeighborsById
           } = action.value;
-          let sortedNeighborsForOpenPSAs = Immutable.Map();
-          personWithOpenPSANeighbors.entrySeq().forEach(([id, neighbors]) => {
-            let neighborsByEntitySet = Immutable.Map();
-            neighbors.forEach((neighbor) => {
-              const entitySetName = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'name'], '');
-              if (entitySetName === ENTITY_SETS.PSA_SCORES) {
-                neighborsByEntitySet = neighborsByEntitySet.set(
-                  entitySetName,
-                  neighborsByEntitySet.get(entitySetName, Immutable.List())
-                    .push(Immutable.fromJS(neighbor))
-                );
-              }
-            });
-            sortedNeighborsForOpenPSAs = sortedNeighborsForOpenPSAs.set(id, Immutable.fromJS(neighborsByEntitySet));
-          });
-          return state.set(COURT.PEOPLE_WITH_OPEN_PSAS, Immutable.fromJS(filteredPersonIds))
-            .set(COURT.OPEN_PSA_NEIGHBORS, sortedNeighborsForOpenPSAs)
+          const currentHearingNeighborsState = state.get(COURT.HEARINGS_NEIGHBORS_BY_ID);
+          const newHearingNeighborsState = currentHearingNeighborsState.merge(hearingNeighborsById);
+          return state
+            .set(COURT.HEARINGS_NEIGHBORS_BY_ID, newHearingNeighborsState)
+            .set(COURT.PEOPLE_WITH_OPEN_PSAS, Immutable.fromJS(filteredPersonIds))
+            .set(COURT.SCORES_AS_MAP, scoresAsMap)
             .set(COURT.OPEN_PSA_IDS, openPSAIds)
             .set(COURT.PEOPLE_IDS_TO_OPEN_PSA_IDS, personIdsToOpenPSAIds);
         },
         FAILURE: () => state.set(COURT.PEOPLE_WITH_OPEN_PSAS, Immutable.Set())
-          .set(COURT.OPEN_PSA_NEIGHBORS, Immutable.Map()),
+          .set(COURT.SCORES_AS_MAP, Immutable.Map()),
         FINALLY: () => state.set(COURT.LOADING_PSAS, false)
       });
     }
