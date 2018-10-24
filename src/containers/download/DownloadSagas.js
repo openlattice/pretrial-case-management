@@ -392,7 +392,7 @@ function* downloadPSAsByHearingDateWorker(action :SequenceAction) :Generator<*, 
     if (allHearingData.hits.length) {
       allHearingData.hits.forEach((hearing) => {
         const hearingType = hearing[PROPERTY_TYPES.HEARING_TYPE][0];
-        if (hearingType === HEARING_TYPES.INITIAL_APPEARANCE) {
+        if (hearingType && hearingType === HEARING_TYPES.INITIAL_APPEARANCE) {
           hearingIds = hearingIds.add(hearing[OPENLATTICE_ID_FQN][0]);
         }
       });
