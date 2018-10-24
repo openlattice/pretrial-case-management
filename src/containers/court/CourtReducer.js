@@ -1,6 +1,14 @@
 /*
  * @flow
  */
+
+import {
+  Map,
+  Set,
+  List,
+  fromJS
+} from 'immutable';
+
 import {
   CHANGE_HEARING_FILTERS,
   filterPeopleIdsWithOpenPSAs,
@@ -11,31 +19,31 @@ import {
 } from './CourtActionFactory';
 import { COURT } from '../../utils/consts/FrontEndStateConsts';
 
-const INITIAL_STATE :Immutable.Map<*, *> = Immutable.fromJS({
+const INITIAL_STATE :Map<*, *> = fromJS({
   // Hearings
   [COURT.LOADING_HEARINGS]: false,
-  [COURT.HEARINGS_TODAY]: Immutable.List(),
-  [COURT.HEARINGS_BY_TIME]: Immutable.Map(),
+  [COURT.HEARINGS_TODAY]: List(),
+  [COURT.HEARINGS_BY_TIME]: Map(),
   [COURT.LOADING_ERROR]: false,
 
   // Hearings Neighbors
   [COURT.LOADING_HEARING_NEIGHBORS]: false,
-  [COURT.HEARINGS_NEIGHBORS_BY_ID]: Immutable.Map(),
+  [COURT.HEARINGS_NEIGHBORS_BY_ID]: Map(),
   [COURT.HEARING_IDS_REFRESHING]: false,
   [COURT.LOADING_HEARINGS_ERROR]: false,
 
   // People
-  [COURT.PEOPLE_WITH_OPEN_PSAS]: Immutable.Set(),
-  [COURT.PEOPLE_IDS_TO_OPEN_PSA_IDS]: Immutable.Map(),
+  [COURT.PEOPLE_WITH_OPEN_PSAS]: Set(),
+  [COURT.PEOPLE_IDS_TO_OPEN_PSA_IDS]: Map(),
 
   // Open PSAs + Neighbors
   [COURT.LOADING_PSAS]: false,
-  [COURT.OPEN_PSAS]: Immutable.Map(),
-  [COURT.OPEN_PSA_IDS]: Immutable.Set(),
-  [COURT.SCORES_AS_MAP]: Immutable.Map(),
+  [COURT.OPEN_PSAS]: Map(),
+  [COURT.OPEN_PSA_IDS]: Set(),
+  [COURT.SCORES_AS_MAP]: Map(),
 
   // JUDGES
-  [COURT.ALL_JUDGES]: Immutable.Map(),
+  [COURT.ALL_JUDGES]: Map(),
   [COURT.LOADING_JUDGES]: false,
   [COURT.LOADING_JUDGES_ERROR]: false,
 
@@ -43,13 +51,15 @@ const INITIAL_STATE :Immutable.Map<*, *> = Immutable.fromJS({
   [COURT.COURTROOM]: ''
 });
 
-export default function courtReducer(state :Immutable.Map<*, *> = INITIAL_STATE, action :SequenceAction) {
+export default function courtReducer(state :Map<*, *> = INITIAL_STATE, action :SequenceAction) {
   switch (action.type) {
 
     case filterPeopleIdsWithOpenPSAs.case(action.type): {
       return filterPeopleIdsWithOpenPSAs.reducer(state, action, {
-        REQUEST: () => state.set(COURT.PEOPLE_WITH_OPEN_PSAS, Immutable.Set())
-          .set(COURT.SCORES_AS_MAP, Immutable.Map())
+        REQUEST: () => state
+          .set(COURT.HEARINGS_NEIGHBORS_BY_ID, Map())
+          .set(COURT.PEOPLE_WITH_OPEN_PSAS, Set())
+          .set(COURT.SCORES_AS_MAP, Map())
           .set(COURT.LOADING_PSAS, true),
         SUCCESS: () => {
           const {
@@ -63,13 +73,13 @@ export default function courtReducer(state :Immutable.Map<*, *> = INITIAL_STATE,
           const newHearingNeighborsState = currentHearingNeighborsState.merge(hearingNeighborsById);
           return state
             .set(COURT.HEARINGS_NEIGHBORS_BY_ID, newHearingNeighborsState)
-            .set(COURT.PEOPLE_WITH_OPEN_PSAS, Immutable.fromJS(filteredPersonIds))
+            .set(COURT.PEOPLE_WITH_OPEN_PSAS, fromJS(filteredPersonIds))
             .set(COURT.SCORES_AS_MAP, scoresAsMap)
             .set(COURT.OPEN_PSA_IDS, openPSAIds)
             .set(COURT.PEOPLE_IDS_TO_OPEN_PSA_IDS, personIdsToOpenPSAIds);
         },
-        FAILURE: () => state.set(COURT.PEOPLE_WITH_OPEN_PSAS, Immutable.Set())
-          .set(COURT.SCORES_AS_MAP, Immutable.Map()),
+        FAILURE: () => state.set(COURT.PEOPLE_WITH_OPEN_PSAS, Set())
+          .set(COURT.SCORES_AS_MAP, Map()),
         FINALLY: () => state.set(COURT.LOADING_PSAS, false)
       });
     }
@@ -77,8 +87,8 @@ export default function courtReducer(state :Immutable.Map<*, *> = INITIAL_STATE,
     case loadHearingsForDate.case(action.type): {
       return loadHearingsForDate.reducer(state, action, {
         REQUEST: () => state
-          .set(COURT.HEARINGS_TODAY, Immutable.List())
-          .set(COURT.HEARINGS_BY_TIME, Immutable.Map())
+          .set(COURT.HEARINGS_TODAY, List())
+          .set(COURT.HEARINGS_BY_TIME, Map())
           .set(COURT.LOADING_HEARINGS, true)
           .set(COURT.LOADING_ERROR, false),
         SUCCESS: () => state
@@ -86,8 +96,8 @@ export default function courtReducer(state :Immutable.Map<*, *> = INITIAL_STATE,
           .set(COURT.HEARINGS_BY_TIME, action.value.hearingsByTime)
           .set(COURT.LOADING_ERROR, false),
         FAILURE: () => state
-          .set(COURT.HEARINGS_TODAY, Immutable.List())
-          .set(COURT.HEARINGS_BY_TIME, Immutable.Map())
+          .set(COURT.HEARINGS_TODAY, List())
+          .set(COURT.HEARINGS_BY_TIME, Map())
           .set(COURT.LOADING_ERROR, false),
         FINALLY: () => state.set(COURT.LOADING_HEARINGS, false)
       });
@@ -120,7 +130,7 @@ export default function courtReducer(state :Immutable.Map<*, *> = INITIAL_STATE,
           );
         },
         FAILURE: () => state
-          .set(COURT.HEARINGS_NEIGHBORS_BY_ID, Immutable.Map())
+          .set(COURT.HEARINGS_NEIGHBORS_BY_ID, Map())
           .set(COURT.LOADING_HEARINGS_ERROR, false),
         FINALLY: () => state.set(COURT.LOADING_HEARING_NEIGHBORS, false)
       });
@@ -147,7 +157,7 @@ export default function courtReducer(state :Immutable.Map<*, *> = INITIAL_STATE,
           return state.set(COURT.ALL_JUDGES, allJudges);
         },
         FAILURE: () => state
-          .set(COURT.ALL_JUDGES, Immutable.Map())
+          .set(COURT.ALL_JUDGES, Map())
           .set(COURT.LOADING_JUDGES_ERROR, action.error),
         FINALLY: () => state.set(COURT.LOADING_JUDGES, false)
       });
