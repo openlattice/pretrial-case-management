@@ -448,6 +448,7 @@ function* downloadPSAsByHearingDateWorker(action :SequenceAction) :Generator<*, 
     peopleNeighborsById.entrySeq().forEach(([id, neighbors]) => {
       let hasValidHearing = false;
       let mostCurrentPSA;
+      let currentPSADateTime;
       let mostCurrentPSAEntityKeyId;
       neighbors.forEach((neighbor) => {
         const entitySetName = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'name']);
@@ -465,18 +466,10 @@ function* downloadPSAsByHearingDateWorker(action :SequenceAction) :Generator<*, 
 
         if (entitySetName === ENTITY_SETS.PSA_SCORES
             && neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.STATUS, 0]) === PSA_STATUSES.OPEN) {
-          if (!mostCurrentPSA) {
+          if (!mostCurrentPSA || currentPSADateTime.isBefore(entityDateTime)) {
             mostCurrentPSA = neighbor;
             mostCurrentPSAEntityKeyId = entityKeyId;
-          }
-          else {
-            const currentPSADateTime = moment(mostCurrentPSA
-              .getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.DATE_TIME, 0]));
-            const psaDateTime = entityDateTime;
-            if (currentPSADateTime.isBefore(psaDateTime)) {
-              mostCurrentPSA = neighbor;
-              mostCurrentPSAEntityKeyId = entityKeyId;
-            }
+            currentPSADateTime = entityDateTime;
           }
         }
       });
