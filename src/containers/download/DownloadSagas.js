@@ -49,6 +49,16 @@ import {
 const { OPENLATTICE_ID_FQN } = Constants;
 const { FullyQualifiedName } = Models;
 
+const getChargeString = charge => `${charge.statute}|${charge.description}`;
+
+const getChargeValues = chargeType => (
+  CHARGE_VALUES[chargeType].map(charge => getChargeString(charge))
+);
+
+const getExceptions = exceptions => (
+  exceptions.map(charge => getChargeString(charge))
+);
+
 function* downloadChargeListsWorker(action :SequenceAction) :Generator<*, *, *> {
 
   try {
@@ -78,44 +88,40 @@ function* downloadChargeListsWorker(action :SequenceAction) :Generator<*, *, *> 
       ]
     );
 
-    const step2ChargeValues = CHARGE_VALUES[CHARGE_TYPES.STEP_TWO]
-      .map(charge => `${charge.statute}|${charge.description}`);
-    const step4ChargeValues = CHARGE_VALUES[CHARGE_TYPES.STEP_FOUR]
-      .map(charge => `${charge.statute}|${charge.description}`);
-    const violentChargeValues = CHARGE_VALUES[CHARGE_TYPES.ALL_VIOLENT]
-      .map(charge => `${charge.statute}|${charge.description}`);
-    const pennBookingHoldExceptions = PENN_BOOKING_HOLD_EXCEPTIONS
-      .map(charge => `${charge.statute}|${charge.description}`);
-    const pennBookingReleaseExceptions = PENN_BOOKING_RELEASE_EXCEPTIONS
-      .map(charge => `${charge.statute}|${charge.description}`);
+    const step2ChargeValues = getChargeValues(CHARGE_TYPES.STEP_TWO);
+    const step4ChargeValues = getChargeValues(CHARGE_TYPES.STEP_FOUR);
+    const violentChargeValues = getChargeValues(CHARGE_TYPES.ALL_VIOLENT);
+    const pennBookingHoldExceptions = getExceptions(PENN_BOOKING_HOLD_EXCEPTIONS);
+    const pennBookingReleaseExceptions = getExceptions(PENN_BOOKING_RELEASE_EXCEPTIONS);
 
 
     chargesList.forEach((charge) => {
       let row = Immutable.Map();
       const { statute, description } = charge;
+      const chargeString = `${statute}|${description}`;
       chargeHeaders.forEach((header) => {
         row = row.set(header, charge[header]);
       });
       row = row
         .set(
           CHARGE_TYPES.STEP_TWO,
-          step2ChargeValues.includes(`${statute}|${description}`)
+          step2ChargeValues.includes(chargeString)
         )
         .set(
           CHARGE_TYPES.STEP_FOUR,
-          step4ChargeValues.includes(`${statute}|${description}`)
+          step4ChargeValues.includes(chargeString)
         )
         .set(
           CHARGE_TYPES.ALL_VIOLENT,
-          violentChargeValues.includes(`${statute}|${description}`)
+          violentChargeValues.includes(chargeString)
         )
         .set(
           BHE_LABELS.RELEASE,
-          pennBookingHoldExceptions.includes(`${statute}|${description}`)
+          pennBookingHoldExceptions.includes(chargeString)
         )
         .set(
           BRE_LABELS.LABEL,
-          pennBookingReleaseExceptions.includes(`${statute}|${description}`)
+          pennBookingReleaseExceptions.includes(chargeString)
         )
         .set(
           'Odyssey Violent List',
