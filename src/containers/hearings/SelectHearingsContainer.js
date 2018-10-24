@@ -220,7 +220,14 @@ class SelectHearingsContainer extends React.Component<Props, State> {
       const hearingCourtroom = hearing.getIn([PROPERTY_TYPES.COURTROOM, 0], '');
       const id = hearing.getIn([OPENLATTICE_ID_FQN, 0]);
       const hasOutcome = !!hearingNeighborsById.getIn([id, ENTITY_SETS.OUTCOMES]);
-      return !((scheduledHearingMap.get(hearingDateTime) === hearingCourtroom) || hasOutcome);
+      const hearingHasBeenCancelled = hearing.getIn([PROPERTY_TYPES.UPDATE_TYPE, 0], '')
+        .toLowerCase().trim() === 'cancelled';
+      const hearingIsInPast = moment(hearingDateTime).isBefore(moment());
+      return !((scheduledHearingMap.get(hearingDateTime) === hearingCourtroom)
+      || hasOutcome
+      || hearingHasBeenCancelled
+      || hearingIsInPast
+      );
     });
     return unusedHearings.sort((h1, h2) => (moment(h1.getIn([PROPERTY_TYPES.DATE_TIME, 0], ''))
       .isBefore(h2.getIn([PROPERTY_TYPES.DATE_TIME, 0], '')) ? 1 : -1));
