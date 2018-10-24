@@ -11,7 +11,12 @@ import {
   SearchApi,
   Models
 } from 'lattice';
-import { call, put, takeEvery } from 'redux-saga/effects';
+import {
+  all,
+  call,
+  put,
+  takeEvery
+} from 'redux-saga/effects';
 
 import FileSaver from '../../utils/FileSaver';
 import { formatDateTime } from '../../utils/FormattingUtils';
@@ -20,9 +25,9 @@ import { obfuscateBulkEntityNeighbors } from '../../utils/consts/DemoNames';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { HEADERS_OBJ, POSITIONS } from '../../utils/consts/CSVConsts';
 import { PSA_NEIGHBOR, PSA_ASSOCIATION } from '../../utils/consts/FrontEndStateConsts';
-import { CHARGE } from '../../utils/consts/Consts';
 import MinnehahaChargesList from '../../utils/consts/MinnehahaChargesList';
 import PenningtonChargesList from '../../utils/consts/PenningtonChargesList';
+import { HEARING_TYPES, PSA_STATUSES } from '../../utils/consts/Consts';
 import { PENN_BOOKING_HOLD_EXCEPTIONS, PENN_BOOKING_RELEASE_EXCEPTIONS } from '../../utils/consts/DMFExceptionsList';
 import { VIOLENT_CHARGES } from '../../utils/consts/ChargeConsts';
 import { DOMAIN } from '../../utils/consts/ReportDownloadTypes';
@@ -360,14 +365,21 @@ function* downloadPSAsByHearingDateWorker(action :SequenceAction) :Generator<*, 
 
     const start = startDate.toISOString(true);
     const end = endDate.toISOString(true);
+    const DATE_TIME_FQN = new FullyQualifiedName(PROPERTY_TYPES.DATE_TIME);
 
-    const hearingEntitySetId = yield call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.HEARINGS);
-    const psaEntitySetId = yield call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.PSA_SCORES);
-    const peopleEntitySetId = yield call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.PEOPLE);
+    const [
+      datePropertyTypeId,
+      hearingEntitySetId,
+      peopleEntitySetId,
+      psaEntitySetId
+    ] = yield all([
+      call(EntityDataModelApi.getPropertyTypeId, DATE_TIME_FQN),
+      call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.HEARINGS),
+      call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.PEOPLE),
+      call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.PSA_SCORES)
+    ]);
 
     const ceiling = yield call(DataApi.getEntitySetSize, hearingEntitySetId);
-    const DATE_TIME_FQN = new FullyQualifiedName(PROPERTY_TYPES.DATE_TIME);
-    const datePropertyTypeId = yield call(EntityDataModelApi.getPropertyTypeId, DATE_TIME_FQN);
 
     const hearingOptions = {
       searchTerm: `${datePropertyTypeId}: [${start} TO ${end}]`,
@@ -380,32 +392,36 @@ function* downloadPSAsByHearingDateWorker(action :SequenceAction) :Generator<*, 
     if (allHearingData.hits.length) {
       allHearingData.hits.forEach((hearing) => {
         const hearingType = hearing[PROPERTY_TYPES.HEARING_TYPE][0];
-        if (hearingType === 'Initial Appearance') hearingIds = hearingIds.add(hearing[OPENLATTICE_ID_FQN][0]);
+        if (hearingType === HEARING_TYPES.INITIAL_APPEARANCE) {
+          hearingIds = hearingIds.add(hearing[OPENLATTICE_ID_FQN][0]);
+        }
       });
     }
 
     let hearingNeighborsById = yield call(SearchApi.searchEntityNeighborsBulk, hearingEntitySetId, hearingIds.toJS());
     hearingNeighborsById = Immutable.fromJS(hearingNeighborsById);
-    hearingIds.forEach((hearingId) => {
+    hearingNeighborsById.entrySeq().forEach(([hearingId, neighbors]) => {
       let hasPerson = false;
       let hasPSA = false;
       let personId;
-      hearingNeighborsById.get(hearingId).forEach((neighbor) => {
+      neighbors.forEach((neighbor) => {
         const entitySetName = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'name']);
-        if (entitySetName === ENTITY_SETS.PSA_SCORES) {
+        const neighborEntityKeyId = neighbor.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0]);
+        if (entitySetName === ENTITY_SETS.PSA_SCORES
+            && neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.STATUS, 0]) === PSA_STATUSES.OPEN) {
           hasPSA = true;
           scoresAsMap = scoresAsMap.set(
-            neighbor.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0]),
+            neighborEntityKeyId,
             neighbor.get(PSA_NEIGHBOR.DETAILS)
           );
           hearingIdsToPSAIds = hearingIdsToPSAIds.set(
             hearingId,
-            neighbor.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0])
+            neighborEntityKeyId
           );
         }
         if (entitySetName === ENTITY_SETS.PEOPLE) {
           hasPerson = true;
-          personId = neighbor.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0]);
+          personId = neighborEntityKeyId
         }
       });
       if (hasPerson && !hasPSA) {
@@ -423,44 +439,50 @@ function* downloadPSAsByHearingDateWorker(action :SequenceAction) :Generator<*, 
     );
 
     peopleNeighborsById = Immutable.fromJS(peopleNeighborsById);
-    peopleNeighborsById.keySeq().forEach((id) => {
+    peopleNeighborsById.entrySeq().forEach(([id, neighbors]) => {
       let hasValidHearing = false;
       let mostCurrentPSA;
-      peopleNeighborsById.get(id).forEach((neighbor) => {
+      let mostCurrentPSAEntityKeyId;
+      neighbors.forEach((neighbor) => {
         const entitySetName = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'name']);
+        const entityKeyId = neighbor.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0]);
+        const entityDateTime = moment(neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.DATE_TIME, 0]));
 
         if (entitySetName === ENTITY_SETS.HEARINGS) {
-          const hearingDate = neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.DATE_TIME, 0]);
-          const hearingDateInRange = moment(hearingDate).isAfter(startDate)
-            && moment(hearingDate).isBefore(endDate);
+          const hearingDate = entityDateTime;
+          const hearingDateInRange = hearingDate.isAfter(startDate)
+            && hearingDate.isBefore(endDate);
           if (hearingDateInRange) {
             hasValidHearing = true;
           }
         }
 
-        if (entitySetName === ENTITY_SETS.PSA_SCORES) {
+        if (entitySetName === ENTITY_SETS.PSA_SCORES
+            && neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.STATUS, 0]) === PSA_STATUSES.OPEN) {
           if (!mostCurrentPSA) {
             mostCurrentPSA = neighbor;
+            mostCurrentPSAEntityKeyId = entityKeyId;
           }
           else {
             const currentPSADateTime = moment(mostCurrentPSA
               .getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.DATE_TIME, 0]));
-            const psaDateTime = moment(neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.DATE_TIME, 0]));
+            const psaDateTime = entityDateTime;
             if (currentPSADateTime.isBefore(psaDateTime)) {
               mostCurrentPSA = neighbor;
+              mostCurrentPSAEntityKeyId = entityKeyId;
             }
           }
         }
       });
 
-      if (hasValidHearing && mostCurrentPSA) {
+      if (hasValidHearing && mostCurrentPSAEntityKeyId) {
         scoresAsMap = scoresAsMap.set(
-          mostCurrentPSA.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0]),
+          mostCurrentPSAEntityKeyId,
           mostCurrentPSA.get(PSA_NEIGHBOR.DETAILS)
         );
         hearingIdsToPSAIds = hearingIdsToPSAIds.set(
           personIdsToHearingIds.get(id),
-          mostCurrentPSA.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0])
+          mostCurrentPSAEntityKeyId
         );
       }
     });
@@ -471,14 +493,13 @@ function* downloadPSAsByHearingDateWorker(action :SequenceAction) :Generator<*, 
       hearingIdsToPSAIds.valueSeq().toJS()
     );
 
-    Object.keys(psaNeighborsById).forEach((id) => {
-      const neighborList = psaNeighborsById[id];
+    Object.entries(psaNeighborsById).forEach(([id, neighborList]) => {
       let domainMatch = true;
       neighborList.forEach((neighborObj) => {
         const neighbor = getFilteredNeighbor(neighborObj);
         if (domain && neighbor.neighborEntitySet && neighbor.neighborEntitySet.name === ENTITY_SETS.STAFF) {
           const filer = neighbor.neighborDetails[PROPERTY_TYPES.PERSON_ID][0];
-          if (!filer.toLowerCase().endsWith(domain)) {
+          if (!filer || !filer.toLowerCase().endsWith(domain)) {
             domainMatch = false;
           }
         }
@@ -494,13 +515,13 @@ function* downloadPSAsByHearingDateWorker(action :SequenceAction) :Generator<*, 
     const getUpdatedEntity = (combinedEntityInit, entitySetTitle, entitySetName, details) => {
       if (filters && !filters[entitySetName]) return combinedEntityInit;
       let combinedEntity = combinedEntityInit;
-      details.keySeq().forEach((fqn) => {
+      details.entrySeq().forEach(([fqn, valueList]) => {
         const keyString = `${fqn}|${entitySetName}`;
         const headerString = HEADERS_OBJ[keyString];
         const header = filters ? filters[entitySetName][fqn] : headerString;
         if (header) {
           let newArrayValues = combinedEntity.get(header, Immutable.List());
-          details.get(fqn).forEach((val) => {
+          valueList.forEach((val) => {
             let newVal = val;
             if (fqn === PROPERTY_TYPES.TIMESTAMP
               || fqn === PROPERTY_TYPES.COMPLETED_DATE_TIME
