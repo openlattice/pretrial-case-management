@@ -152,7 +152,7 @@ type Props = {
   county :string,
   peopleWithOpenPsas :Immutable.Set<*>,
   peopleIdsToOpenPSAIds :Immutable.Map<*>,
-  openPSANeighbors :Immutable.Map<*>,
+  scoresAsMap :Immutable.Map<*>,
   caseHistory :Immutable.List<*>,
   manualCaseHistory :Immutable.List<*>,
   chargeHistory :Immutable.Map<*, *>,
@@ -239,7 +239,7 @@ class CourtContainer extends React.Component<Props, State> {
       ftaHistory,
       hearings,
       peopleWithOpenPsas,
-      openPSANeighbors,
+      scoresAsMap,
       psaNeighborsById,
       submitting,
       psaIdsRefreshing
@@ -258,8 +258,7 @@ class CourtContainer extends React.Component<Props, State> {
     const personFTAHistory = ftaHistory.get(personOlId, Immutable.Map());
     const personHearings = hearings.get(personOlId, Immutable.List());
     const hasOpenPSA = peopleWithOpenPsas.has(personOlId);
-    const scores = openPSANeighbors
-      .getIn([personOlId, ENTITY_SETS.PSA_SCORES, 0, PSA_NEIGHBOR.DETAILS], Immutable.Map());
+    const scores = scoresAsMap.get(openPSAId, Immutable.Map());
     const neighbors = psaNeighborsById.get(openPSAId, Immutable.Map());
     const personObj = {
       identification: personId,
@@ -511,7 +510,7 @@ function mapStateToProps(state) {
     [COURT.LOADING_ERROR]: court.get(COURT.LOADING_ERROR),
     [COURT.COUNTY]: court.get(COURT.COUNTY),
     [COURT.COURTROOM]: court.get(COURT.COURTROOM),
-    [COURT.OPEN_PSA_NEIGHBORS]: court.get(COURT.OPEN_PSA_NEIGHBORS),
+    [COURT.SCORES_AS_MAP]: court.get(COURT.SCORES_AS_MAP),
     [COURT.OPEN_PSA_IDS]: court.get(COURT.OPEN_PSA_IDS),
     [COURT.PEOPLE_IDS_TO_OPEN_PSA_IDS]: court.get(COURT.PEOPLE_IDS_TO_OPEN_PSA_IDS),
     [COURT.ALL_JUDGES]: court.get(COURT.ALL_JUDGES),
