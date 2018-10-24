@@ -46,10 +46,17 @@ function* filterPeopleIdsWithOpenPSAsWorker(action :SequenceAction) :Generator<*
 
   try {
     yield put(filterPeopleIdsWithOpenPSAs.request(action.id));
-    const { personIds, hearingDateTime } = action.value;
+    const {
+      personIds,
+      hearingDateTime,
+      personIdsToHearingIds
+    } = action.value;
+    let { scoresAsMap, hearingNeighborsById } = action.value;
+    if (!scoresAsMap) {
+      scoresAsMap = Immutable.Map();
+    }
     const hearingDateTimeMoment = toISODate(moment(hearingDateTime).format(DATE_FORMAT));
     let filteredPersonIds = Immutable.Set();
-    let personWithOpenPSANeighbors = Immutable.Map();
     let openPSAIds = Immutable.Set();
     let personIdsToOpenPSAIds = Immutable.Map();
 
@@ -78,12 +85,7 @@ function* filterPeopleIdsWithOpenPSAsWorker(action :SequenceAction) :Generator<*
 
           if (entitySetName === ENTITY_SETS.PSA_SCORES
               && neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.STATUS, 0]) === PSA_STATUSES.OPEN) {
-            if (!mostCurrentPSA) {
-              mostCurrentPSA = neighbor;
-              mostCurrentPSAEntityKeyId = entityKeyId;
-              currentPSADateTime = entityDateTime;
-            }
-            else if (currentPSADateTime.isBefore(entityDateTime)) {
+            if (!mostCurrentPSA || currentPSADateTime.isBefore(entityDateTime)) {
               mostCurrentPSA = neighbor;
               mostCurrentPSAEntityKeyId = entityKeyId;
               currentPSADateTime = entityDateTime;
@@ -93,7 +95,18 @@ function* filterPeopleIdsWithOpenPSAsWorker(action :SequenceAction) :Generator<*
         });
 
         if (hasValidHearing && mostCurrentPSAEntityKeyId) {
-          personWithOpenPSANeighbors = personWithOpenPSANeighbors.set(id, Immutable.fromJS(neighbors));
+          const hearingId = personIdsToHearingIds.get(id);
+          scoresAsMap = scoresAsMap.set(
+            mostCurrentPSAEntityKeyId,
+            mostCurrentPSA.get(PSA_NEIGHBOR.DETAILS)
+          );
+          if (hearingId) {
+            console.log(hearingId);
+            hearingNeighborsById = hearingNeighborsById.setIn(
+              [hearingId, ENTITY_SETS.PSA_SCORES],
+              mostCurrentPSA
+            );
+          }
           filteredPersonIds = filteredPersonIds.add(id);
           personIdsToOpenPSAIds = personIdsToOpenPSAIds.set(id, mostCurrentPSAEntityKeyId);
         }
@@ -101,9 +114,10 @@ function* filterPeopleIdsWithOpenPSAsWorker(action :SequenceAction) :Generator<*
     }
     yield put(filterPeopleIdsWithOpenPSAs.success(action.id, {
       filteredPersonIds,
-      personWithOpenPSANeighbors,
+      scoresAsMap,
       personIdsToOpenPSAIds,
-      openPSAIds
+      openPSAIds,
+      hearingNeighborsById
     }));
   }
   catch (error) {
@@ -201,18 +215,24 @@ function* loadHearingNeighborsWorker(action :SequenceAction) :Generator<*, *, *>
     const { hearingIds, hearingDateTime } = action.value;
 
     let hearingNeighborsById = Immutable.Map();
+    let personIdsToHearingIds = Immutable.Map();
     let personIds = Immutable.Set();
+    let scoresAsMap = Immutable.Map();
 
     if (hearingIds.length) {
       const hearingEntitySetId = yield call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.HEARINGS);
       let neighborsById = yield call(SearchApi.searchEntityNeighborsBulk, hearingEntitySetId, hearingIds);
       neighborsById = Immutable.fromJS(neighborsById);
 
-      neighborsById.entrySeq().forEach(([id, neighbors]) => {
+      neighborsById.entrySeq().forEach(([hearingId, neighbors]) => {
         if (neighbors) {
+          let hasPerson = false;
+          let hasPSA = false;
+          let personId;
           let hearingNeighborsMap = Immutable.Map();
           neighbors.forEach(((neighbor) => {
             const entitySetName = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'name']);
+            const entityKeyId = neighbor.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0]);
             if (entitySetName === ENTITY_SETS.RELEASE_CONDITIONS) {
               hearingNeighborsMap = hearingNeighborsMap.set(
                 entitySetName,
@@ -221,8 +241,17 @@ function* loadHearingNeighborsWorker(action :SequenceAction) :Generator<*, *, *>
             }
             else {
               if (entitySetName === ENTITY_SETS.PEOPLE) {
-                const personId = neighbor.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0]);
+                hasPerson = true;
+                personId = entityKeyId;
                 personIds = personIds.add(personId);
+              }
+              if (entitySetName === ENTITY_SETS.PSA_SCORES
+                  && neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.STATUS, 0]) === PSA_STATUSES.OPEN) {
+                hasPSA = true;
+                scoresAsMap = scoresAsMap.set(
+                  entityKeyId,
+                  neighbor.get(PSA_NEIGHBOR.DETAILS)
+                );
               }
               hearingNeighborsMap = hearingNeighborsMap.set(
                 entitySetName,
@@ -230,13 +259,25 @@ function* loadHearingNeighborsWorker(action :SequenceAction) :Generator<*, *, *>
               );
             }
           }));
-          hearingNeighborsById = hearingNeighborsById.set(id, hearingNeighborsMap);
+          if (hasPerson && !hasPSA) {
+            personIdsToHearingIds = personIdsToHearingIds.set(
+              personId,
+              hearingId
+            );
+          }
+          hearingNeighborsById = hearingNeighborsById.set(hearingId, hearingNeighborsMap);
         }
       });
     }
     yield put(loadHearingNeighbors.success(action.id, { hearingNeighborsById, hearingDateTime }));
     if (hearingDateTime) {
-      const peopleIdsWithOpenPSAs = filterPeopleIdsWithOpenPSAs({ personIds, hearingDateTime });
+      const peopleIdsWithOpenPSAs = filterPeopleIdsWithOpenPSAs({
+        personIds,
+        hearingDateTime,
+        scoresAsMap,
+        personIdsToHearingIds,
+        hearingNeighborsById
+      });
       yield put(peopleIdsWithOpenPSAs);
     }
 
