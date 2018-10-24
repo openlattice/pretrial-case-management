@@ -18,7 +18,7 @@ import {
   takeEvery
 } from 'redux-saga/effects';
 
-import { PSA_STATUSES } from '../../utils/consts/Consts';
+import { HEARING_TYPES, PSA_STATUSES } from '../../utils/consts/Consts';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_NEIGHBOR, PSA_ASSOCIATION } from '../../utils/consts/FrontEndStateConsts';
 import { toISODate, TIME_FORMAT } from '../../utils/FormattingUtils';
@@ -151,7 +151,7 @@ function* loadHearingsForDateWorker(action :SequenceAction) :Generator<*, *, *> 
       hearingsToday.forEach((hearing) => {
         const hearingType = hearing.getIn([PROPERTY_TYPES.HEARING_TYPE, 0]);
         const hearingId = hearing.getIn([OPENLATTICE_ID_FQN, 0]);
-        if (hearingType && hearingType === 'Initial Appearance') hearingIds = hearingIds.add(hearingId);
+        if (hearingType && hearingType === HEARING_TYPES.INITIAL_APPEARANCE) hearingIds = hearingIds.add(hearingId);
       });
     }
 
