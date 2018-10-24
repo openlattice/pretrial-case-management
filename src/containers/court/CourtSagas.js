@@ -55,7 +55,8 @@ function* filterPeopleIdsWithOpenPSAsWorker(action :SequenceAction) :Generator<*
     if (!scoresAsMap) {
       scoresAsMap = Immutable.Map();
     }
-    const hearingDateTimeMoment = toISODate(moment(hearingDateTime).format(DATE_FORMAT));
+
+    const hearingDateTimeMoment = toISODate(moment(hearingDateTime));
     let filteredPersonIds = Immutable.Set();
     let openPSAIds = Immutable.Set();
     let personIdsToOpenPSAIds = Immutable.Map();
@@ -76,7 +77,7 @@ function* filterPeopleIdsWithOpenPSAsWorker(action :SequenceAction) :Generator<*
           const entityDateTime = moment(neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.DATE_TIME, 0]));
 
           if (entitySetName === ENTITY_SETS.HEARINGS) {
-            const hearingDate = toISODate(moment(entityDateTime).format(DATE_FORMAT));
+            const hearingDate = toISODate(moment(entityDateTime));
             const hearingDateIsValid = hearingDate === hearingDateTimeMoment;
             if (hearingDateIsValid) {
               hasValidHearing = true;
