@@ -394,12 +394,16 @@ function* downloadPSAsByHearingDateWorker(action :SequenceAction) :Generator<*, 
       fuzzy: false
     };
 
-    const allHearingData = yield call(SearchApi.searchEntitySetData, hearingEntitySetId, hearingOptions);
-    if (allHearingData.hits.length) {
-      allHearingData.hits.forEach((hearing) => {
-        const hearingType = hearing[PROPERTY_TYPES.HEARING_TYPE][0];
-        if (hearingType && hearingType === HEARING_TYPES.INITIAL_APPEARANCE) {
-          hearingIds = hearingIds.add(hearing[OPENLATTICE_ID_FQN][0]);
+    let allHearingData = yield call(SearchApi.searchEntitySetData, hearingEntitySetId, hearingOptions);
+    allHearingData = Immutable.fromJS(allHearingData.hits);
+    if (allHearingData.size) {
+      allHearingData.forEach((hearing) => {
+        const hearingId = hearing.getIn([OPENLATTICE_ID_FQN, 0]);
+        const hearingType = hearing.getIn([PROPERTY_TYPES.HEARING_TYPE, 0]);
+        const hearingHasBeenCancelled = hearing.getIn([PROPERTY_TYPES.UPDATE_TYPE, 0], '')
+          .toLowerCase().trim() === 'cancelled';
+        if (hearingType && !hearingHasBeenCancelled) {
+          hearingIds = hearingIds.add(hearingId);
         }
       });
     }
