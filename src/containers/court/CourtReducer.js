@@ -49,7 +49,8 @@ const INITIAL_STATE :Immutable.Map<*, *> = Immutable.fromJS({
   [COURT.LOADING_JUDGES_ERROR]: false,
 
   [COURT.COUNTY]: '',
-  [COURT.COURTROOM]: ''
+  [COURT.COURTROOM]: '',
+  [COURT.COURTROOMS]: Immutable.Set()
 });
 
 export default function courtReducer(state :Immutable.Map<*, *> = INITIAL_STATE, action :SequenceAction) {
@@ -109,15 +110,18 @@ export default function courtReducer(state :Immutable.Map<*, *> = INITIAL_STATE,
         REQUEST: () => state
           .set(COURT.HEARINGS_TODAY, Immutable.List())
           .set(COURT.HEARINGS_BY_TIME, Immutable.Map())
+          .set(COURT.COURTROOMS, Immutable.Set())
           .set(COURT.LOADING_HEARINGS, true)
           .set(COURT.LOADING_ERROR, false),
         SUCCESS: () => state
           .set(COURT.HEARINGS_TODAY, action.value.hearingsToday)
           .set(COURT.HEARINGS_BY_TIME, action.value.hearingsByTime)
+          .set(COURT.COURTROOMS, action.value.courtrooms)
           .set(COURT.LOADING_ERROR, false),
         FAILURE: () => state
           .set(COURT.HEARINGS_TODAY, Immutable.List())
           .set(COURT.HEARINGS_BY_TIME, Immutable.Map())
+          .set(COURT.COURTROOMS, Immutable.Set())
           .set(COURT.LOADING_ERROR, false),
         FINALLY: () => state.set(COURT.LOADING_HEARINGS, false)
       });
