@@ -4,12 +4,23 @@
 
 import Immutable from 'immutable';
 import moment from 'moment';
-import { Constants, EntityDataModelApi, SearchApi, DataApi } from 'lattice';
-import { all, call, put, takeEvery } from 'redux-saga/effects';
+import {
+  Constants,
+  EntityDataModelApi,
+  SearchApi,
+  DataApi,
+  Models
+} from 'lattice';
+import {
+  all,
+  call,
+  put,
+  takeEvery
+} from 'redux-saga/effects';
 
-import { PSA_STATUSES } from '../../utils/consts/Consts';
+import { HEARING_TYPES, PSA_STATUSES } from '../../utils/consts/Consts';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { PSA_NEIGHBOR, PSA_ASSOCIATION } from '../../utils/consts/FrontEndStateConsts';
+import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { toISODate, TIME_FORMAT } from '../../utils/FormattingUtils';
 import { getFqnObj } from '../../utils/DataUtils';
 import { obfuscateEntityNeighbors, obfuscateBulkEntityNeighbors } from '../../utils/consts/DemoNames';
@@ -26,46 +37,88 @@ import {
   loadJudges
 } from './CourtActionFactory';
 
+const DATE_FORMAT = 'YYYY-MM-DD';
+
 const { OPENLATTICE_ID_FQN } = Constants;
+const { FullyQualifiedName } = Models;
 
 function* filterPeopleIdsWithOpenPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
 
   try {
     yield put(filterPeopleIdsWithOpenPSAs.request(action.id));
+    const {
+      personIds,
+      hearingDateTime,
+      personIdsToHearingIds
+    } = action.value;
+    let { scoresAsMap, hearingNeighborsById } = action.value;
+    if (!scoresAsMap) {
+      scoresAsMap = Immutable.Map();
+    }
+
+    const hearingDateTimeMoment = toISODate(moment(hearingDateTime));
+    let filteredPersonIds = Immutable.Set();
+    let openPSAIds = Immutable.Set();
+    let personIdsToOpenPSAIds = Immutable.Map();
 
     const peopleEntitySetId = yield call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.PEOPLE);
-    const { personIds } = action.value;
 
-    let filteredPersonIds = Immutable.Set();
-    let neighborsForOpenPSAs = Immutable.Map();
     if (personIds.size) {
-      const neighborsById = yield call(SearchApi.searchEntityNeighborsBulk, peopleEntitySetId, personIds.toJS());
-      filteredPersonIds = personIds.filter((id) => {
-        if (neighborsById[id]) {
-          const openPSANeighbors = neighborsById[id].filter((neighbor) => {
-            const { neighborEntitySet, neighborDetails, associationDetails } = neighbor;
-            const statusList = neighborDetails[PROPERTY_TYPES.STATUS] || [];
-            const associationEntitySetId = associationDetails[OPENLATTICE_ID_FQN][0];
-            if (neighborEntitySet && neighborEntitySet.name === ENTITY_SETS.PSA_SCORES) {
-              const psaNeighbors = neighborsById[id].filter((possibleNeighbor) => {
-                const associationId = possibleNeighbor[PSA_ASSOCIATION.DETAILS][OPENLATTICE_ID_FQN][0];
-                return (
-                  associationId === associationEntitySetId
-                );
-              });
-              if (statusList.includes(PSA_STATUSES.OPEN)) {
-                neighborsForOpenPSAs = neighborsForOpenPSAs.set(id, Immutable.fromJS(psaNeighbors));
-                return true;
-              }
+      let peopleNeighborsById = yield call(SearchApi.searchEntityNeighborsBulk, peopleEntitySetId, personIds.toJS());
+      peopleNeighborsById = Immutable.fromJS(peopleNeighborsById);
+      peopleNeighborsById.entrySeq().forEach(([id, neighbors]) => {
+        let hasValidHearing = false;
+        let mostCurrentPSA;
+        let currentPSADateTime;
+        let mostCurrentPSAEntityKeyId;
+        neighbors.forEach((neighbor) => {
+          const entitySetName = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'name']);
+          const entityKeyId = neighbor.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0]);
+          const entityDateTime = moment(neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.DATE_TIME, 0]));
+
+          if (entitySetName === ENTITY_SETS.HEARINGS) {
+            const hearingDate = toISODate(moment(entityDateTime));
+            const hearingDateIsValid = hearingDate === hearingDateTimeMoment;
+            if (hearingDateIsValid) {
+              hasValidHearing = true;
             }
-            return false;
-          });
-          return openPSANeighbors.length;
+          }
+
+          if (entitySetName === ENTITY_SETS.PSA_SCORES
+              && neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.STATUS, 0]) === PSA_STATUSES.OPEN) {
+            if (!mostCurrentPSA || currentPSADateTime.isBefore(entityDateTime)) {
+              mostCurrentPSA = neighbor;
+              mostCurrentPSAEntityKeyId = entityKeyId;
+              currentPSADateTime = entityDateTime;
+            }
+            openPSAIds = openPSAIds.add(entityKeyId);
+          }
+        });
+
+        if (hasValidHearing && mostCurrentPSAEntityKeyId) {
+          const hearingId = personIdsToHearingIds.get(id);
+          scoresAsMap = scoresAsMap.set(
+            mostCurrentPSAEntityKeyId,
+            mostCurrentPSA.get(PSA_NEIGHBOR.DETAILS)
+          );
+          if (hearingId) {
+            hearingNeighborsById = hearingNeighborsById.setIn(
+              [hearingId, ENTITY_SETS.PSA_SCORES],
+              mostCurrentPSA
+            );
+          }
+          filteredPersonIds = filteredPersonIds.add(id);
+          personIdsToOpenPSAIds = personIdsToOpenPSAIds.set(id, mostCurrentPSAEntityKeyId);
         }
-        return false;
       });
     }
-    yield put(filterPeopleIdsWithOpenPSAs.success(action.id, { filteredPersonIds, neighborsForOpenPSAs }));
+    yield put(filterPeopleIdsWithOpenPSAs.success(action.id, {
+      filteredPersonIds,
+      scoresAsMap,
+      personIdsToOpenPSAIds,
+      openPSAIds,
+      hearingNeighborsById
+    }));
   }
   catch (error) {
     console.error(error);
@@ -84,61 +137,76 @@ function* loadHearingsForDateWorker(action :SequenceAction) :Generator<*, *, *> 
 
   try {
     yield put(loadHearingsForDate.request(action.id));
+
     let courtrooms = Immutable.Set();
-    const [entitySetId, dateTimeId, hearingTypeId] = yield all([
-      call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.HEARINGS),
-      call(EntityDataModelApi.getPropertyTypeId, getFqnObj(PROPERTY_TYPES.DATE_TIME)),
-      call(EntityDataModelApi.getPropertyTypeId, getFqnObj(PROPERTY_TYPES.HEARING_TYPE))
+    let hearingIds = Immutable.Set();
+    let hearingsByTime = Immutable.Map();
+
+    const DATE_TIME_FQN = new FullyQualifiedName(PROPERTY_TYPES.DATE_TIME);
+
+    const [
+      datePropertyTypeId,
+      hearingEntitySetId
+    ] = yield all([
+      call(EntityDataModelApi.getPropertyTypeId, DATE_TIME_FQN),
+      call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.HEARINGS)
     ]);
 
-    const searchFields = [
-      {
-        searchTerm: `"${toISODate(action.value)}"`,
-        property: dateTimeId,
-        exact: true
-      }, {
-        searchTerm: '"Initial Appearance"',
-        property: hearingTypeId,
-        exact: true
-      }
-    ];
+    const ceiling = yield call(DataApi.getEntitySetSize, hearingEntitySetId);
 
-    const getSearchOptions = maxHits => ({
-      searchFields,
-      maxHits,
-      start: 0
-    });
+    const hearingOptions = {
+      searchTerm: `${datePropertyTypeId}: ${toISODate(action.value)}`,
+      start: 0,
+      maxHits: ceiling,
+      fuzzy: false
+    };
 
-    const numHitsResult = yield call(SearchApi.advancedSearchEntitySetData, entitySetId, getSearchOptions(0));
-    const { numHits } = numHitsResult;
+    const allHearingData = yield call(SearchApi.searchEntitySetData, hearingEntitySetId, hearingOptions);
+    const hearingsToday = Immutable.fromJS(allHearingData.hits);
+    if (hearingsToday.size) {
+      hearingsToday.forEach((hearing) => {
+        const hearingDateTime = hearing.getIn([PROPERTY_TYPES.DATE_TIME, 0]);
+        const hearingExists = !!hearingDateTime;
+        const hearingOnDateSelected = toISODate(moment(hearing.getIn([PROPERTY_TYPES.DATE_TIME, 0])))
+          === toISODate(action.value);
+        const hearingType = hearing.getIn([PROPERTY_TYPES.HEARING_TYPE, 0]);
+        const hearingId = hearing.getIn([OPENLATTICE_ID_FQN, 0]);
+        const hearingHasBeenCancelled = hearing.getIn([PROPERTY_TYPES.UPDATE_TYPE, 0], '')
+          .toLowerCase().trim() === 'cancelled';
+        if (hearingType
+          && hearingExists
+          && hearingOnDateSelected
+          && !hearingHasBeenCancelled
+        ) hearingIds = hearingIds.add(hearingId);
+      });
+    }
 
-    const hearingsResult = yield call(SearchApi.advancedSearchEntitySetData, entitySetId, getSearchOptions(numHits));
-    const hearingsToday = Immutable.fromJS(hearingsResult.hits);
-
-    const hearingIds = hearingsToday.map(hearing => hearing.getIn([OPENLATTICE_ID_FQN, 0])).filter(val => val).toJS();
-
-    let hearingsByTime = Immutable.Map();
-    hearingsToday
-      .filter((hearing) => {
-        if (!moment(hearing.getIn([PROPERTY_TYPES.DATE_TIME, 0], '')).isValid()) return false;
-        if (hearing.getIn([PROPERTY_TYPES.UPDATE_TYPE, 0], '').toLowerCase().trim() === 'cancelled') return false;
-        return true;
-      })
+    hearingsToday.filter((hearing) => {
+      const hearingHasValidDateTime = moment(hearing.getIn([PROPERTY_TYPES.DATE_TIME, 0], '')).isValid();
+      const hearingHasBeenCancelled = hearing
+        .getIn([PROPERTY_TYPES.UPDATE_TYPE, 0], '').toLowerCase().trim() === 'cancelled';
+      if (!hearingHasValidDateTime) return false;
+      if (hearingHasBeenCancelled) return false;
+      return true;
+    })
       .forEach((hearing) => {
-        const timeMoment = moment(hearing.getIn([PROPERTY_TYPES.DATE_TIME, 0], ''));
-        if (timeMoment.isValid()) {
-          const time = timeMoment.format(TIME_FORMAT);
-          hearingsByTime = hearingsByTime.set(time, hearingsByTime.get(time, Immutable.List()).push(hearing));
+        const hearingDateTime = moment(hearing.getIn([PROPERTY_TYPES.DATE_TIME, 0], ''));
+        if (hearingDateTime.isValid()) {
+          const time = hearingDateTime.format(TIME_FORMAT);
+          hearingsByTime = hearingsByTime.set(
+            time,
+            hearingsByTime.get(time, Immutable.List()).push(hearing)
+          );
         }
         const courtroom = hearing.getIn([PROPERTY_TYPES.COURTROOM, 0], '');
         if (courtroom) courtrooms = courtrooms.add(courtroom);
       });
-    const loadPersonData = true;
-    const hearingNeighbors = loadHearingNeighbors({ hearingIds, loadPersonData });
-    yield put(loadHearingsForDate.success(
-      action.id,
-      { hearingsToday, hearingsByTime, courtrooms }
-    ));
+
+    hearingIds = hearingIds.toJS();
+    const hearingDateTime = action.value;
+    const hearingNeighbors = loadHearingNeighbors({ hearingIds, hearingDateTime });
+
+    yield put(loadHearingsForDate.success(action.id, { hearingsToday, hearingsByTime, courtrooms }));
     yield put(hearingNeighbors);
   }
   catch (error) {
@@ -158,22 +226,27 @@ function* loadHearingNeighborsWorker(action :SequenceAction) :Generator<*, *, *>
   try {
     yield put(loadHearingNeighbors.request(action.id));
 
-    const { hearingIds, loadPersonData } = action.value;
+    const { hearingIds, hearingDateTime } = action.value;
 
     let hearingNeighborsById = Immutable.Map();
+    let personIdsToHearingIds = Immutable.Map();
     let personIds = Immutable.Set();
+    let scoresAsMap = Immutable.Map();
 
     if (hearingIds.length) {
       const hearingEntitySetId = yield call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.HEARINGS);
       let neighborsById = yield call(SearchApi.searchEntityNeighborsBulk, hearingEntitySetId, hearingIds);
       neighborsById = Immutable.fromJS(neighborsById);
 
-      neighborsById.keySeq().forEach((id) => {
-        if (neighborsById.get(id)) {
+      neighborsById.entrySeq().forEach(([hearingId, neighbors]) => {
+        if (neighbors) {
+          let hasPerson = false;
+          let hasPSA = false;
+          let personId;
           let hearingNeighborsMap = Immutable.Map();
-          const neighbors = neighborsById.get(id);
           neighbors.forEach(((neighbor) => {
             const entitySetName = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'name']);
+            const entityKeyId = neighbor.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0]);
             if (entitySetName === ENTITY_SETS.RELEASE_CONDITIONS) {
               hearingNeighborsMap = hearingNeighborsMap.set(
                 entitySetName,
@@ -182,7 +255,17 @@ function* loadHearingNeighborsWorker(action :SequenceAction) :Generator<*, *, *>
             }
             else {
               if (entitySetName === ENTITY_SETS.PEOPLE) {
-                personIds = personIds.add(neighbor.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0]));
+                hasPerson = true;
+                personId = entityKeyId;
+                personIds = personIds.add(personId);
+              }
+              if (entitySetName === ENTITY_SETS.PSA_SCORES
+                  && neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.STATUS, 0]) === PSA_STATUSES.OPEN) {
+                hasPSA = true;
+                scoresAsMap = scoresAsMap.set(
+                  entityKeyId,
+                  neighbor.get(PSA_NEIGHBOR.DETAILS)
+                );
               }
               hearingNeighborsMap = hearingNeighborsMap.set(
                 entitySetName,
@@ -190,13 +273,25 @@ function* loadHearingNeighborsWorker(action :SequenceAction) :Generator<*, *, *>
               );
             }
           }));
-          hearingNeighborsById = hearingNeighborsById.set(id, hearingNeighborsMap);
+          if (hasPerson && !hasPSA) {
+            personIdsToHearingIds = personIdsToHearingIds.set(
+              personId,
+              hearingId
+            );
+          }
+          hearingNeighborsById = hearingNeighborsById.set(hearingId, hearingNeighborsMap);
         }
       });
     }
-    yield put(loadHearingNeighbors.success(action.id, { hearingNeighborsById, loadPersonData }));
-    if (loadPersonData) {
-      const peopleIdsWithOpenPSAs = filterPeopleIdsWithOpenPSAs({ personIds });
+    yield put(loadHearingNeighbors.success(action.id, { hearingNeighborsById, hearingDateTime }));
+    if (hearingDateTime) {
+      const peopleIdsWithOpenPSAs = filterPeopleIdsWithOpenPSAs({
+        personIds,
+        hearingDateTime,
+        scoresAsMap,
+        personIdsToHearingIds,
+        hearingNeighborsById
+      });
       yield put(peopleIdsWithOpenPSAs);
     }
 

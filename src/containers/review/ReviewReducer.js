@@ -93,11 +93,18 @@ export default function reviewReducer(state :Immutable.Map<*, *> = INITIAL_STATE
         REQUEST: () => state
           .set(REVIEW.LOADING_DATA, true)
           .set(REVIEW.ERROR, ''),
-        SUCCESS: () => state
-          .set(REVIEW.NEIGHBORS_BY_ID, action.value.psaNeighborsById)
-          .set(REVIEW.NEIGHBORS_BY_DATE, action.value.psaNeighborsByDate)
-          .set(REVIEW.ALL_FILERS, action.value.allFilers.sort())
-          .set(REVIEW.ERROR, ''),
+        SUCCESS: () => {
+          const { psaNeighborsById, psaNeighborsByDate } = action.value;
+          const currentNeighborsByIdState = state.get(REVIEW.NEIGHBORS_BY_ID);
+          const currentNeighborsByDate = state.get(REVIEW.NEIGHBORS_BY_ID);
+          const newNeighborsByIdState = currentNeighborsByIdState.merge(psaNeighborsById);
+          const newNeighborsByDate = currentNeighborsByDate.merge(psaNeighborsByDate);
+          return state
+            .set(REVIEW.NEIGHBORS_BY_ID, newNeighborsByIdState)
+            .set(REVIEW.NEIGHBORS_BY_DATE, newNeighborsByDate)
+            .set(REVIEW.ALL_FILERS, action.value.allFilers.sort())
+            .set(REVIEW.ERROR, '')
+        },
         FAILURE: () => state
           .set(REVIEW.NEIGHBORS_BY_DATE, Immutable.Map())
           .set(REVIEW.ERROR, action.value),
