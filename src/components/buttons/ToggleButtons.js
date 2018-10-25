@@ -58,7 +58,7 @@ const ToggleButtonsGroup = ({
   onSelect
 } :Props) => {
   const selected = selectedOption;
-  const navTabs = options.map((option) => {
+  const buttons = options.map((option) => {
     const { label, value } = option;
     const active = value === selected;
     return (
@@ -74,7 +74,7 @@ const ToggleButtonsGroup = ({
 
   return (
     <ToggleButtonGroup>
-      {navTabs}
+      {buttons}
     </ToggleButtonGroup>
   );
 };
