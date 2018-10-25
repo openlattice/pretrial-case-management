@@ -84,6 +84,7 @@ function* loadHearingsForDateWorker(action :SequenceAction) :Generator<*, *, *> 
 
   try {
     yield put(loadHearingsForDate.request(action.id));
+    let courtrooms = Immutable.Set();
     const [entitySetId, dateTimeId, hearingTypeId] = yield all([
       call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.HEARINGS),
       call(EntityDataModelApi.getPropertyTypeId, getFqnObj(PROPERTY_TYPES.DATE_TIME)),
@@ -129,10 +130,15 @@ function* loadHearingsForDateWorker(action :SequenceAction) :Generator<*, *, *> 
           const time = timeMoment.format(TIME_FORMAT);
           hearingsByTime = hearingsByTime.set(time, hearingsByTime.get(time, Immutable.List()).push(hearing));
         }
+        const courtroom = hearing.getIn([PROPERTY_TYPES.COURTROOM, 0], '');
+        if (courtroom) courtrooms = courtrooms.add(courtroom);
       });
     const loadPersonData = true;
     const hearingNeighbors = loadHearingNeighbors({ hearingIds, loadPersonData });
-    yield put(loadHearingsForDate.success(action.id, { hearingsToday, hearingsByTime }));
+    yield put(loadHearingsForDate.success(
+      action.id,
+      { hearingsToday, hearingsByTime, courtrooms }
+    ));
     yield put(hearingNeighbors);
   }
   catch (error) {
