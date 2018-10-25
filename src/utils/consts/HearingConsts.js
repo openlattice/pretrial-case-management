@@ -1,4 +1,4 @@
-import { Map } from 'immutable';
+import { OrderedMap, Map } from 'immutable';
 
 import { PROPERTY_TYPES } from './DataModelConsts';
 
@@ -46,14 +46,9 @@ export const formatJudgeName = (judge) => {
 };
 
 export const getCourtroomOptions = () => {
-  let courtroomOptions = Map();
+  let courtroomOptions = OrderedMap();
   COURTROOMS.forEach((courtroom) => {
-    courtroomOptions = courtroomOptions.set(courtroom, courtroom).toOrderedMap().sortBy((k, _) => {
-      if (k.startsWith('Courtroom')) {
-        return parseInt(k.slice(10), 10);
-      }
-      return k;
-    });
+    courtroomOptions = courtroomOptions.set(courtroom, courtroom);
   });
   return courtroomOptions;
 };
