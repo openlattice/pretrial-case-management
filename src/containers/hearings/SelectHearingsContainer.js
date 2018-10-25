@@ -30,6 +30,7 @@ import {
   FORM_IDS,
   ID_FIELD_NAMES,
   HEARING,
+  HEARING_TYPES,
   JURISDICTION
 } from '../../utils/consts/Consts';
 import {
@@ -213,12 +214,20 @@ class SelectHearingsContainer extends React.Component<Props, State> {
       const courtroom = scheduledHearing.getIn([PROPERTY_TYPES.COURTROOM, 0]);
       scheduledHearingMap = scheduledHearingMap.set(dateTime, courtroom);
     });
+
     const unusedHearings = hearings.filter((hearing) => {
       const hearingDateTime = hearing.getIn([PROPERTY_TYPES.DATE_TIME, 0], '');
       const hearingCourtroom = hearing.getIn([PROPERTY_TYPES.COURTROOM, 0], '');
       const id = hearing.getIn([OPENLATTICE_ID_FQN, 0]);
       const hasOutcome = !!hearingNeighborsById.getIn([id, ENTITY_SETS.OUTCOMES]);
-      return !((scheduledHearingMap.get(hearingDateTime) === hearingCourtroom) || !hasOutcome);
+      const hearingHasBeenCancelled = hearing.getIn([PROPERTY_TYPES.UPDATE_TYPE, 0], '')
+        .toLowerCase().trim() === 'cancelled';
+      const hearingIsInPast = moment(hearingDateTime).isBefore(moment());
+      return !((scheduledHearingMap.get(hearingDateTime) === hearingCourtroom)
+      || hasOutcome
+      || hearingHasBeenCancelled
+      || hearingIsInPast
+      );
     });
     return unusedHearings.sort((h1, h2) => (moment(h1.getIn([PROPERTY_TYPES.DATE_TIME, 0], ''))
       .isBefore(h2.getIn([PROPERTY_TYPES.DATE_TIME, 0], '')) ? 1 : -1));
@@ -283,7 +292,7 @@ class SelectHearingsContainer extends React.Component<Props, State> {
         [ID_FIELD_NAMES.HEARING_ID]: randomUUID(),
         [HEARING.DATE_TIME]: datetime.toISOString(true),
         [HEARING.COURTROOM]: newHearingCourtroom,
-        [PROPERTY_TYPES.HEARING_TYPE]: 'Initial Appearance'
+        [PROPERTY_TYPES.HEARING_TYPE]: HEARING_TYPES.INITIAL_APPEARANCE
       };
       if (judge === 'Other') {
         this.setState({ judgeId: '' });
@@ -574,6 +583,7 @@ class SelectHearingsContainer extends React.Component<Props, State> {
       hearingNeighborsById,
       PSASubmittedPage
     } = this.props;
+
     const hearingsWithOutcomes = hearingNeighborsById
       .keySeq().filter(id => hearingNeighborsById.getIn([id, ENTITY_SETS.OUTCOMES]));
     const scheduledHearings = psaNeighborsById.getIn([psaEntityKeyId, ENTITY_SETS.HEARINGS], Map())
