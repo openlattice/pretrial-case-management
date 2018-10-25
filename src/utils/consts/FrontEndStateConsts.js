@@ -40,6 +40,7 @@ export const COURT = {
   LOADING_HEARINGS_ERROR: 'loadingHearingError',
   COUNTY: 'county',
   COURTROOM: 'courtroom',
+  COURTROOMS: 'courtrooms',
   OPEN_PSAS: 'openPSAs',
   OPEN_PSA_NEIGHBORS: 'openPSANeighbors',
   OPEN_PSA_IDS: 'openPSAIds',
