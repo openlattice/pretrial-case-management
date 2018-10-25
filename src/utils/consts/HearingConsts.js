@@ -6,9 +6,17 @@ export const COURTROOMS = [
   '1A',
   '6C ARRAIGNMENTS',
   'Courtroom C1',
+  'Courtroom C2',
+  'Courtroom C3',
   'Courtroom C4',
+  'Courtroom C5',
+  'Courtroom C6',
+  'Courtroom C7',
+  'Courtroom C8',
+  'Courtroom C9',
+  'Courtroom C10',
   'Courtroom M1',
-  'Courtroom M2'
+  'Courtroom M2',
 ];
 
 export const HEARING_CONSTS = {
@@ -40,7 +48,12 @@ export const formatJudgeName = (judge) => {
 export const getCourtroomOptions = () => {
   let courtroomOptions = Map();
   COURTROOMS.forEach((courtroom) => {
-    courtroomOptions = courtroomOptions.set(courtroom, courtroom);
+    courtroomOptions = courtroomOptions.set(courtroom, courtroom).toOrderedMap().sortBy((k, _) => {
+      if (k.startsWith('Courtroom')) {
+        return parseInt(k.slice(10), 10);
+      }
+      return k;
+    });
   });
   return courtroomOptions;
 };
