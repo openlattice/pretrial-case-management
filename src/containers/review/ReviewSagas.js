@@ -67,7 +67,8 @@ function* getCasesAndCharges(neighbors) {
   let personEntitySetId = getEntitySetId(neighbors, ENTITY_SETS.PEOPLE);
   if (!personEntitySetId) personEntitySetId = yield call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.PEOPLE);
   const personEntityKeyId = getEntityKeyId(neighbors, ENTITY_SETS.PEOPLE);
-  const personNeighbors = yield call(SearchApi.searchEntityNeighbors, personEntitySetId, personEntityKeyId);
+  let personNeighbors = yield call(SearchApi.searchEntityNeighbors, personEntitySetId, personEntityKeyId);
+  personNeighbors = obfuscateEntityNeighbors(personNeighbors);
 
   let pretrialCaseOptionsWithDate = Immutable.List();
   let pretrialCaseOptionsWithoutDate = Immutable.List();

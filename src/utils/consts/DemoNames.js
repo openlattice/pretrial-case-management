@@ -1,3 +1,5 @@
+import randomUUID from 'uuid/v4';
+import { Map } from 'immutable';
 import { ENTITY_SETS, PROPERTY_TYPES } from './DataModelConsts';
 
 export const DEMO_PATH = '/psademo/';
@@ -9475,17 +9477,65 @@ export const getRandomPerson = () => {
   return DEMO_PEOPLE[randomIndex];
 };
 
-export const obfuscateEntity = entity => isDemoPath() ? Object.assign({}, entity, getRandomPerson()) : entity;
+export const obfuscateEntity = entity => (isDemoPath() ? Object.assign({}, entity, getRandomPerson()) : entity);
 
 export const obfuscateEntityNeighbors = (neighbors) => {
   if (!isDemoPath()) return neighbors;
-  return neighbors.map((neighbor) => {
+  let caseNums = Map();
+
+  const neighborsStep1 = neighbors.map((neighbor) => {
     const { neighborEntitySet, neighborDetails } = neighbor;
-    if (!neighborEntitySet || neighborEntitySet.name !== ENTITY_SETS.PEOPLE) {
-      return neighbor;
+
+    if (neighborEntitySet) {
+      const { name } = neighborEntitySet;
+
+      if (name === ENTITY_SETS.PEOPLE) {
+        return Object.assign({}, neighbor, { neighborDetails: obfuscateEntity(neighborDetails) });
+      }
+
+      if (name === ENTITY_SETS.PRETRIAL_CASES) {
+        const caseNum = randomUUID();
+        if (neighborDetails[PROPERTY_TYPES.CASE_ID] && neighborDetails[PROPERTY_TYPES.CASE_ID].length) {
+          caseNums = caseNums.set(neighborDetails[PROPERTY_TYPES.CASE_ID][0], caseNum);
+        }
+        const newNeighborDetails = Object.assign({}, neighborDetails, { [PROPERTY_TYPES.CASE_ID]: [caseNum] });
+        return Object.assign({}, neighbor, { neighborDetails: newNeighborDetails });
+      }
     }
 
-    return Object.assign({}, neighbor, { neighborDetails: obfuscateEntity(neighborDetails) });
+    return neighbor;
+  });
+
+
+  return neighborsStep1.map((neighbor) => {
+    const { neighborEntitySet, neighborDetails } = neighbor;
+
+    const getUpdatedNeighbor = (fqn) => {
+      const splitStr = neighborDetails[fqn] ? neighborDetails[fqn][0].split('|') : [''];
+      const caseNum = splitStr[0];
+      const newCaseNum = caseNums.get(caseNum) || randomUUID();
+      const newValue = splitStr.length > 1 ? `${newCaseNum}|${splitStr[1]}` : `${newCaseNum}|1`;
+      const newNeighborDetails = Object.assign({}, neighborDetails, { [PROPERTY_TYPES.CHARGE_ID]: [newValue] });
+      return Object.assign({}, neighbor, { neighborDetails: newNeighborDetails });
+    };
+
+    if (neighborEntitySet) {
+      const { name } = neighborEntitySet;
+
+      if (name === ENTITY_SETS.CHARGES) {
+        return getUpdatedNeighbor(PROPERTY_TYPES.CHARGE_ID);
+      }
+
+      if (name === ENTITY_SETS.SENTENCES) {
+        return getUpdatedNeighbor(PROPERTY_TYPES.GENERAL_ID);
+      }
+
+      if (name === ENTITY_SETS.FTAS) {
+        return getUpdatedNeighbor(PROPERTY_TYPES.GENERAL_ID);
+      }
+    }
+
+    return neighbor;
   });
 };
 

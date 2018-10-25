@@ -65,6 +65,7 @@ function* filterPeopleIdsWithOpenPSAsWorker(action :SequenceAction) :Generator<*
 
     if (personIds.size) {
       let peopleNeighborsById = yield call(SearchApi.searchEntityNeighborsBulk, peopleEntitySetId, personIds.toJS());
+      peopleNeighborsById = obfuscateBulkEntityNeighbors(peopleNeighborsById);
       peopleNeighborsById = Immutable.fromJS(peopleNeighborsById);
       peopleNeighborsById.entrySeq().forEach(([id, neighbors]) => {
         let hasValidHearing = false;
@@ -236,6 +237,7 @@ function* loadHearingNeighborsWorker(action :SequenceAction) :Generator<*, *, *>
     if (hearingIds.length) {
       const hearingEntitySetId = yield call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.HEARINGS);
       let neighborsById = yield call(SearchApi.searchEntityNeighborsBulk, hearingEntitySetId, hearingIds);
+      neighborsById = obfuscateBulkEntityNeighbors(neighborsById);
       neighborsById = Immutable.fromJS(neighborsById);
 
       neighborsById.entrySeq().forEach(([hearingId, neighbors]) => {
@@ -314,7 +316,8 @@ function* refreshHearingNeighborsWorker(action :SequenceAction) :Generator<*, *,
   try {
     yield put(refreshHearingNeighbors.request(action.id, { id }));
     const entitySetId = yield call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.HEARINGS);
-    const neighborsList = yield call(SearchApi.searchEntityNeighbors, entitySetId, id);
+    let neighborsList = yield call(SearchApi.searchEntityNeighbors, entitySetId, id);
+    neighborsList = obfuscateEntityNeighbors(neighborsList);
     let neighbors = Immutable.Map();
     neighborsList.forEach((neighbor) => {
       const entitySetName = Immutable.fromJS(neighbor).getIn([PSA_NEIGHBOR.ENTITY_SET, 'name']);
