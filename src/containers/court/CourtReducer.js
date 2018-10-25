@@ -48,7 +48,8 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [COURT.LOADING_JUDGES_ERROR]: false,
 
   [COURT.COUNTY]: '',
-  [COURT.COURTROOM]: ''
+  [COURT.COURTROOM]: '',
+  [COURT.COURTROOMS]: Set()
 });
 
 export default function courtReducer(state :Map<*, *> = INITIAL_STATE, action :SequenceAction) {
@@ -89,15 +90,18 @@ export default function courtReducer(state :Map<*, *> = INITIAL_STATE, action :S
         REQUEST: () => state
           .set(COURT.HEARINGS_TODAY, List())
           .set(COURT.HEARINGS_BY_TIME, Map())
+          .set(COURT.COURTROOMS, Set())
           .set(COURT.LOADING_HEARINGS, true)
           .set(COURT.LOADING_ERROR, false),
         SUCCESS: () => state
           .set(COURT.HEARINGS_TODAY, action.value.hearingsToday)
           .set(COURT.HEARINGS_BY_TIME, action.value.hearingsByTime)
+          .set(COURT.COURTROOMS, action.value.courtrooms)
           .set(COURT.LOADING_ERROR, false),
         FAILURE: () => state
           .set(COURT.HEARINGS_TODAY, List())
           .set(COURT.HEARINGS_BY_TIME, Map())
+          .set(COURT.COURTROOMS, Set())
           .set(COURT.LOADING_ERROR, false),
         FINALLY: () => state.set(COURT.LOADING_HEARINGS, false)
       });

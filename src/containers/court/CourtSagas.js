@@ -137,6 +137,8 @@ function* loadHearingsForDateWorker(action :SequenceAction) :Generator<*, *, *> 
 
   try {
     yield put(loadHearingsForDate.request(action.id));
+
+    let courtrooms = Immutable.Set();
     let hearingIds = Immutable.Set();
     let hearingsByTime = Immutable.Map();
 
@@ -196,13 +198,15 @@ function* loadHearingsForDateWorker(action :SequenceAction) :Generator<*, *, *> 
             hearingsByTime.get(time, Immutable.List()).push(hearing)
           );
         }
+        const courtroom = hearing.getIn([PROPERTY_TYPES.COURTROOM, 0], '');
+        if (courtroom) courtrooms = courtrooms.add(courtroom);
       });
 
     hearingIds = hearingIds.toJS();
     const hearingDateTime = action.value;
     const hearingNeighbors = loadHearingNeighbors({ hearingIds, hearingDateTime });
 
-    yield put(loadHearingsForDate.success(action.id, { hearingsToday, hearingsByTime }));
+    yield put(loadHearingsForDate.success(action.id, { hearingsToday, hearingsByTime, courtrooms }));
     yield put(hearingNeighbors);
   }
   catch (error) {
