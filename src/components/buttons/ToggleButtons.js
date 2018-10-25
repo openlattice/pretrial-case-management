@@ -14,17 +14,15 @@ const ToggleButtonGroup = styled.ul`
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
+  justify-content: center;
   padding: 0;
-  justify-content: space-between;
   height: 100%;
   width: max-content;
-  border-radius: 4px;
-  border: solid 1px #ceced9;
+  max-width: 900px;
   font-family: 'Open Sans', sans-serif;
   font-size: 14px;
   color: #8e929b;
   li:first-child {
-    border: none;
     border-radius: 4px 0 0 4px;
   }
   li:last-child {
@@ -33,11 +31,13 @@ const ToggleButtonGroup = styled.ul`
 `;
 
 const ToggleButton = styled.li`
+  margin-bottom: 10px;
   cursor: pointer;
   display: block;
   justify-content: center;
   align-items: center;
-  border-left: solid 1px #ceced9;
+  border: solid 1px #ceced9;
+  margin-right: -1px;
   padding: 10px;
   height: 100%;
   ${(props) => {
