@@ -2,13 +2,14 @@ import React from 'react';
 import styled from 'styled-components';
 
 import supportIcon from '../../assets/svg/support-icon.svg';
+import { OL } from '../../utils/consts/Colors';
 
 const SupportButton = styled.a`
   width: 139px;
   height: 37px;
   border-radius: 5px;
-  background-color: #ffffff;
-  border: solid 1px #e1e1eb;
+  background-color: ${OL.WHITE};
+  border: solid 1px ${OL.GREY11};
   box-shadow: none;
   position: fixed;
   bottom: 30px;
@@ -29,7 +30,7 @@ const SupportButton = styled.a`
     font-size: 12px;
     font-weight: 600;
     text-align: center;
-    color: #8e929b;
+    color: ${OL.GREY02};
     margin-left: 5px;
   }
 `;
