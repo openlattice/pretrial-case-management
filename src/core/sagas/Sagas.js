@@ -48,6 +48,8 @@ export default function* sagas() :Generator<*, *, *> {
 
     // DownloadSagas
     fork(DownloadSagas.downloadPSAsWatcher),
+    fork(DownloadSagas.downloadChargeListsWatcher),
+    fork(DownloadSagas.downloadPSAsByHearingDateWatcher),
 
     // EnrollSagas
     fork(EnrollSagas.enrollVoiceProfile),

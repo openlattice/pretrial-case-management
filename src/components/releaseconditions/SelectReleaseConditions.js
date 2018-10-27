@@ -30,7 +30,8 @@ import {
   RELEASE_CONDITIONS,
   LIST_FIELDS,
   ID_FIELD_NAMES,
-  FORM_IDS
+  FORM_IDS,
+  HEARING_TYPES
 } from '../../utils/consts/Consts';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { getCourtroomOptions, getJudgeOptions, HEARING_CONSTS } from '../../utils/consts/HearingConsts';
@@ -986,7 +987,7 @@ class SelectReleaseConditions extends React.Component<Props, State> {
       const newHearing = hearing
         .set(PROPERTY_TYPES.COURTROOM, [hearingCourtroom])
         .set(PROPERTY_TYPES.DATE_TIME, [hearingDateTime.toISOString(true)])
-        .set(PROPERTY_TYPES.HEARING_TYPE, ['Initial Appearance'])
+        .set(PROPERTY_TYPES.HEARING_TYPE, [HEARING_TYPES.INITIAL_APPEARANCE])
         .set(PROPERTY_TYPES.HEARING_COMMENTS, judgeText)
         .toJS();
       replace({

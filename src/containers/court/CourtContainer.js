@@ -3,9 +3,9 @@
  */
 
 import React from 'react';
-import Immutable from 'immutable';
 import styled from 'styled-components';
 import moment from 'moment';
+import { Map, List, Set } from 'immutable';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { NavLink } from 'react-router-dom';
@@ -17,6 +17,7 @@ import {
 } from 'react-bootstrap';
 
 import SecondaryButton from '../../components/buttons/SecondaryButton';
+import ToggleButtonsGroup from '../../components/buttons/ToggleButtons';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import PersonCard from '../../components/people/PersonCard';
 import StyledDatePicker from '../../components/controls/StyledDatePicker';
@@ -139,27 +140,36 @@ const SpinnerWrapper = styled.div`
   margin-top: 30px;
 `;
 
+const ToggleWrapper = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  margin: 5px;
+`
+
 type Props = {
-  hearingsToday :Immutable.List<*>,
-  openPSAIds :Immutable.List<*>,
-  hearingsByTime :Immutable.Map<*, *>,
-  psaNeighborsById :Immutable.Map<*, *>,
-  hearingNeighborsById :Immutable.Map<*, *>,
+  hearingsToday :List<*>,
+  openPSAIds :List<*>,
+  hearingsByTime :Map<*, *>,
+  psaNeighborsById :Map<*, *>,
+  hearingNeighborsById :Map<*, *>,
   isLoadingHearings :boolean,
   isLoadingPSAs :boolean,
   loadingError :boolean,
   courtroom :string,
+  courtrooms :List<*>,
   county :string,
-  peopleWithOpenPsas :Immutable.Set<*>,
-  peopleIdsToOpenPSAIds :Immutable.Map<*>,
-  openPSANeighbors :Immutable.Map<*>,
-  caseHistory :Immutable.List<*>,
-  manualCaseHistory :Immutable.List<*>,
-  chargeHistory :Immutable.Map<*, *>,
-  manualChargeHistory :Immutable.Map<*, *>,
-  sentenceHistory :Immutable.Map<*, *>,
-  ftaHistory :Immutable.Map<*, *>,
-  hearings :Immutable.List<*>,
+  peopleWithOpenPsas :Set<*>,
+  peopleIdsToOpenPSAIds :Map<*>,
+  scoresAsMap :Map<*>,
+  caseHistory :List<*>,
+  manualCaseHistory :List<*>,
+  chargeHistory :Map<*, *>,
+  manualChargeHistory :Map<*, *>,
+  sentenceHistory :Map<*, *>,
+  ftaHistory :Map<*, *>,
+  hearings :List<*>,
   loadingPSAData :boolean,
   submitting :boolean,
   psaIdsRefreshing :boolean,
@@ -170,12 +180,12 @@ type Props = {
     clearSubmit :() => void,
     deleteEntity :(value :{ entitySetName :string, entityKeyId :string }) => void,
     downloadPSAReviewPDF :(values :{
-      neighbors :Immutable.Map<*, *>,
-      scores :Immutable.Map<*, *>
+      neighbors :Map<*, *>,
+      scores :Map<*, *>
     }) => void,
     loadCaseHistory :(values :{
       personId :string,
-      neighbors :Immutable.Map<*, *>
+      neighbors :Map<*, *>
     }) => void,
     loadHearingNeighbors :(hearingIds :string[]) => void,
     loadHearingsForDate :(date :Object) => void,
@@ -239,7 +249,7 @@ class CourtContainer extends React.Component<Props, State> {
       ftaHistory,
       hearings,
       peopleWithOpenPsas,
-      openPSANeighbors,
+      scoresAsMap,
       psaNeighborsById,
       submitting,
       psaIdsRefreshing
@@ -250,17 +260,16 @@ class CourtContainer extends React.Component<Props, State> {
     const openPSAId = peopleIdsToOpenPSAIds.get(personOlId, '');
     const dobMoment = moment(person.getIn([PROPERTY_TYPES.DOB, 0], ''));
     const formattedDOB = dobMoment.isValid() ? formatDate(dobMoment) : '';
-    const personCaseHistory = caseHistory.get(personOlId, Immutable.List());
-    const personManualCaseHistory = manualCaseHistory.get(personOlId, Immutable.List());
-    const personChargeHistory = chargeHistory.get(personOlId, Immutable.Map());
-    const personManualChargeHistory = manualChargeHistory.get(personOlId, Immutable.Map());
-    const personSentenceHistory = sentenceHistory.get(personOlId, Immutable.Map());
-    const personFTAHistory = ftaHistory.get(personOlId, Immutable.Map());
-    const personHearings = hearings.get(personOlId, Immutable.List());
+    const personCaseHistory = caseHistory.get(personOlId, List());
+    const personManualCaseHistory = manualCaseHistory.get(personOlId, List());
+    const personChargeHistory = chargeHistory.get(personOlId, Map());
+    const personManualChargeHistory = manualChargeHistory.get(personOlId, Map());
+    const personSentenceHistory = sentenceHistory.get(personOlId, Map());
+    const personFTAHistory = ftaHistory.get(personOlId, Map());
+    const personHearings = hearings.get(personOlId, List());
     const hasOpenPSA = peopleWithOpenPsas.has(personOlId);
-    const scores = openPSANeighbors
-      .getIn([personOlId, ENTITY_SETS.PSA_SCORES, 0, PSA_NEIGHBOR.DETAILS], Immutable.Map());
-    const neighbors = psaNeighborsById.get(openPSAId, Immutable.Map());
+    const scores = scoresAsMap.get(openPSAId, Map());
+    const neighbors = psaNeighborsById.get(openPSAId, Map());
     const personObj = {
       identification: personId,
       firstName: person.getIn([PROPERTY_TYPES.FIRST_NAME, 0]),
@@ -327,7 +336,7 @@ class CourtContainer extends React.Component<Props, State> {
       hearingsByTime,
       hearingNeighborsById
     } = this.props;
-    let hearingsByCourtroom = Immutable.Map();
+    let hearingsByCourtroom = Map();
 
     hearingsByTime.get(time).forEach((hearing) => {
       let shouldInclude = true;
@@ -347,11 +356,11 @@ class CourtContainer extends React.Component<Props, State> {
       if (shouldInclude) {
         const hearingId = hearing.getIn([OPENLATTICE_ID_FQN, 0]);
         const person = hearingNeighborsById
-          .getIn([hearingId, ENTITY_SETS.PEOPLE, PSA_NEIGHBOR.DETAILS], Immutable.Map());
+          .getIn([hearingId, ENTITY_SETS.PEOPLE, PSA_NEIGHBOR.DETAILS], Map());
         const personId = person.getIn([PROPERTY_TYPES.PERSON_ID, 0]);
         if (personId) {
           hearingsByCourtroom = hearingsByCourtroom
-            .set(room, hearingsByCourtroom.get(room, Immutable.Map()).set(personId, person));
+            .set(room, hearingsByCourtroom.get(room, Map()).set(personId, person));
         }
       }
     });
@@ -382,26 +391,30 @@ class CourtContainer extends React.Component<Props, State> {
     actions.changeHearingFilters({ courtroom });
   }
 
-  renderCountyChoices = () => (
-    <ToolbarWrapper>
-      <ToggleButtonGroup type="radio" name="countyPicker" value={this.props.county} onChange={this.onCountyChange}>
-        <Toggle value="">All</Toggle>
-        <Toggle value={DOMAIN.PENNINGTON}>Pennington</Toggle>
-        <Toggle value={DOMAIN.MINNEHAHA}>Minnehaha</Toggle>
-      </ToggleButtonGroup>
-    </ToolbarWrapper>
-  )
+  renderCountyChoices = () => {
+    const { county } = this.props;
+    const countyOptions = [
+      { value: '', label: 'All' },
+      { value: DOMAIN.PENNINGTON, label: 'Pennington' },
+      { value: DOMAIN.MINNEHAHA, label: 'Minnehaha' },
+    ]
+    return (
+      <ToggleWrapper>
+        <ToggleButtonsGroup
+            options={countyOptions}
+            selectedOption={county}
+            onSelect={this.onCountyChange} />
+      </ToggleWrapper>
+    )
+  }
 
   renderCourtroomChoices = () => {
-    const { county, courtroom, hearingsByTime } = this.props;
+    const {
+      county,
+      courtroom,
+      courtrooms
+    } = this.props;
 
-    let courtrooms = Immutable.Set();
-    hearingsByTime.valueSeq().forEach(hearingList => hearingList.forEach((hearing) => {
-      const room = hearing.getIn([PROPERTY_TYPES.COURTROOM, 0]);
-      if (room) {
-        courtrooms = courtrooms.add(room);
-      }
-    }));
     const pennCoutrooms = courtrooms.filter(room => room.startsWith(PENN_ROOM_PREFIX)).toList().sort().map(value => ({
       value,
       label: value
@@ -426,11 +439,12 @@ class CourtContainer extends React.Component<Props, State> {
     }
 
     return (
-      <ToolbarWrapper>
-        <ToggleButtonGroup type="radio" name="roomPicker" value={courtroom} onChange={this.onCourtroomChange}>
-          {roomOptions.map(room => <Toggle key={room.value} value={room.value}>{room.label}</Toggle>)}
-        </ToggleButtonGroup>
-      </ToolbarWrapper>
+      <ToggleWrapper>
+        <ToggleButtonsGroup
+            options={roomOptions}
+            selectedOption={courtroom}
+            onSelect={this.onCourtroomChange} />
+      </ToggleWrapper>
     );
   }
 
@@ -511,7 +525,8 @@ function mapStateToProps(state) {
     [COURT.LOADING_ERROR]: court.get(COURT.LOADING_ERROR),
     [COURT.COUNTY]: court.get(COURT.COUNTY),
     [COURT.COURTROOM]: court.get(COURT.COURTROOM),
-    [COURT.OPEN_PSA_NEIGHBORS]: court.get(COURT.OPEN_PSA_NEIGHBORS),
+    [COURT.COURTROOMS]: court.get(COURT.COURTROOMS),
+    [COURT.SCORES_AS_MAP]: court.get(COURT.SCORES_AS_MAP),
     [COURT.OPEN_PSA_IDS]: court.get(COURT.OPEN_PSA_IDS),
     [COURT.PEOPLE_IDS_TO_OPEN_PSA_IDS]: court.get(COURT.PEOPLE_IDS_TO_OPEN_PSA_IDS),
     [COURT.ALL_JUDGES]: court.get(COURT.ALL_JUDGES),
