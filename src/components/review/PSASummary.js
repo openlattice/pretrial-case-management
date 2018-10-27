@@ -15,7 +15,7 @@ import PersonCardSummary from '../person/PersonCardSummary';
 import PSAReportDownloadButton from './PSAReportDownloadButton';
 import PSAStats from './PSAStats';
 import rightArrow from '../../assets/svg/dmf-arrow.svg';
-import { Title } from '../../utils/Layout';
+import { Title, PendingChargeStatus, AlternateSectionHeader } from '../../utils/Layout';
 import { CONTEXT } from '../../utils/consts/Consts';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_NEIGHBOR, PSA_ASSOCIATION } from '../../utils/consts/FrontEndStateConsts';
@@ -39,6 +39,11 @@ const SummaryWrapper = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: center;
+`;
+
+const StyledChargeStatus = styled(PendingChargeStatus)`
+    position: relative;
+    transform: translateX(395px) translateY(50px);
 `;
 
 const RowWrapper = styled.div`
@@ -92,17 +97,6 @@ const ChargeTableContainer = styled.div`
   margin: 0;
 `;
 
-const StyledSectionHeader = styled.div`
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  font-family: 'Open Sans', sans-serif;
-  font-size: 16px;
-  padding: 30px 0 20px 30px;
-  font-weight: 600;
-  color: #555e6f;
-`;
-
 const Count = styled.div`
   height: fit-content;
   padding: 0 10px;
@@ -138,6 +132,7 @@ const DMFIncreaseText = styled.div`
 `;
 
 type Props = {
+  pendingCharges :boolean,
   notes :string,
   scores :Immutable.Map<*, *>,
   neighbors :Immutable.Map<*, *>,
@@ -190,10 +185,10 @@ const renderCaseInfo = ({
   const charges = manualChargeHistory.get(caseNum, Immutable.List());
   return (
     <ChargeTableContainer>
-      <StyledSectionHeader>
+      <AlternateSectionHeader>
         Charges
         <Count>{charges.size}</Count>
-      </StyledSectionHeader>
+      </AlternateSectionHeader>
       <ChargeTable charges={charges} pretrialCase={pretrialCase} />
     </ChargeTableContainer>
   );
@@ -299,9 +294,21 @@ const renderDMFDetails = ({ neighbors, scores } :Props) => {
   return dmfCell;
 };
 
+const renderPendingChargeStatus = (pendingCharges) => {
+  const statusText = pendingCharges.size
+    ? `${pendingCharges.size} Pending Charges`
+    : 'No Pending Charges';
+  return (
+    <StyledChargeStatus pendingCharges={pendingCharges.size}>
+      {statusText}
+    </StyledChargeStatus>
+  );
+};
+
 const PSASummary = (props :Props) => {
-  const { scores } = props;
+  const { scores, pendingCharges } = props;
   const { chargeHistory } = props;
+
 
   return (
     <SummaryWrapper>
@@ -326,6 +333,7 @@ const PSASummary = (props :Props) => {
       <hr />
       {props.notes ? renderNotes(props) : null}
       {props.notes ? <hr /> : null}
+      {(chargeHistory.size) ? renderPendingChargeStatus(pendingCharges) : null}
       <ChargeHistoryStats padding chargeHistory={chargeHistory} />
       {renderCaseInfo(props)}
     </SummaryWrapper>
