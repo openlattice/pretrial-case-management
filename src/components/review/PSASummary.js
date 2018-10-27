@@ -7,7 +7,7 @@ import styled from 'styled-components';
 
 import ArrestCard from '../arrest/ArrestCard';
 import ChargeHistoryStats from '../casehistory/ChargeHistoryStats';
-import ChargeTable from '../../components/charges/ChargeTable';
+import ChargeTable from '../charges/ChargeTable';
 import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
 import ContentBlock from '../ContentBlock';
 import DMFCell from '../dmf/DMFCell';
@@ -296,7 +296,7 @@ const renderDMFDetails = ({ neighbors, scores } :Props) => {
 
 const renderPendingChargeStatus = (pendingCharges) => {
   const statusText = pendingCharges.size
-    ? `${pendingCharges.size} Pending Charges`
+    ? `${pendingCharges.size} Pending Charge${pendingCharges.size > 1 ? 's' : ''}`
     : 'No Pending Charges';
   return (
     <StyledChargeStatus pendingCharges={pendingCharges.size}>
