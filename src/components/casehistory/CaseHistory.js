@@ -18,7 +18,11 @@ const CaseHistoryWrapper = styled.div`
 `;
 
 const StyledChargeStatus = styled(PendingChargeStatus)`
-    transform: translateX(765px) translateY(5px);
+    transform: ${props => (
+    props.modal
+      ? 'translateX(792px) translateY(5px)'
+      : 'translateX(750px) translateY(5px)'
+  )};
 `;
 
 type Props = {
@@ -47,7 +51,7 @@ const CaseHistory = ({
       ? `${pendingCharges} Pending Charges`
       : 'No Pending Charges';
     return (
-      <StyledChargeStatus pendingCharges={pendingCharges}>
+      <StyledChargeStatus modal={modal} pendingCharges={pendingCharges}>
         {statusText}
       </StyledChargeStatus>
     );

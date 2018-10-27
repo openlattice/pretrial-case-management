@@ -43,7 +43,7 @@ const SummaryWrapper = styled.div`
 
 const StyledChargeStatus = styled(PendingChargeStatus)`
     position: relative;
-    transform: translateX(395px) translateY(50px);
+    transform: translateX(400px) translateY(50px);
 `;
 
 const RowWrapper = styled.div`
