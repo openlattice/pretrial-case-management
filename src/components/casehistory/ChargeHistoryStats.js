@@ -121,7 +121,6 @@ const ChargeHistoryStats = ({ chargeHistory, padding } :Props) => {
           </StatsGroup>
         </StatsWrapper>
       </StatsContainer>
-      <hr />
     </ChargeHistoryStatsWrapper>
   );
 };
