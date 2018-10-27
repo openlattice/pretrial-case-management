@@ -145,6 +145,7 @@ type Props = {
   psaIdsRefreshing :Immutable.Set<*>,
   readOnlyPermissions :boolean,
   loadingPSAData :boolean,
+  loading :loading,
   scoresEntitySetId :string,
   submitting :boolean
 }
@@ -349,10 +350,10 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
   }
 
   render() {
-    const { scoreSeq, loadingPSAData } = this.props;
+    const { scoreSeq, loadingPSAData, loading } = this.props;
     const { start } = this.state;
 
-    if (loadingPSAData) {
+    if (loadingPSAData || loading) {
       return <SpinnerWrapper><LoadingSpinner /></SpinnerWrapper>;
     }
 
