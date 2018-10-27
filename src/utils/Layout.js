@@ -462,3 +462,37 @@ export const Title = styled.div`
     padding-bottom: 5px;
   }
 `;
+
+export const Count = styled.div`
+  height: fit-content;
+  padding: 0 10px;
+  margin: 0 10px;
+  border-radius: 10px;
+  background-color: #f0f0f7;
+  font-size: 12px;
+  color: #8e929b;
+`;
+
+export const PendingChargeStatus = styled.div`
+  position: absolute;
+  border-radius: 3px;
+  text-transform: uppercase;
+  padding: 5px;
+  background-color: ${props => (props.pendingCharges ? '#ff3c5d' : '#00be84')};
+  font-family: 'Open Sans', sans-serif;
+  font-size: 12px;
+  font-weight: bold;
+  text-align: center;
+  color: #ffffff;
+`;
+
+export const AlternateSectionHeader = styled.div`
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  font-family: 'Open Sans', sans-serif;
+  font-size: 16px;
+  padding: 30px 0 20px 30px;
+  font-weight: 600;
+  color: #555e6f;
+`;
