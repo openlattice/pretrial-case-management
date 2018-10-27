@@ -7,7 +7,8 @@ import styled from 'styled-components';
 import moment from 'moment';
 
 import ChargeList from '../charges/ChargeList';
-import { Title } from '../../utils/Layout';
+import LoadingSpinner from '../LoadingSpinner';
+import { Title, Count } from '../../utils/Layout';
 import { formatDateList } from '../../utils/FormattingUtils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 
@@ -19,6 +20,28 @@ const InfoRow = styled.div`
   margin: 0 -30px;
 `;
 
+const NoResults = styled.div`
+  margin: 0 -30px 30px;
+  font-size: 18px;
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100px;
+  width: 100%;
+`;
+
+const TitleWrapper = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  border-bottom: 1px solid #555e6f;
+  border-top: 1px solid #555e6f;
+  padding-left: 30px;
+  margin: 20px -30px 0;
+`;
+
 const InfoItem = styled.div`
   margin: 0 30px;
   color: #555e6f;
@@ -28,14 +51,31 @@ const CaseHistoryContainer = styled.div`
   height: 100%;
 `;
 
+const StyledSpinner = styled(LoadingSpinner)`
+  margin: 0 -30px 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100px;
+  width: 100%;
+`
+
 type Props = {
   caseHistory :Immutable.List<*>,
   chargeHistory :Immutable.Map<*, *>,
-  modal :boolean
+  loading :boolean,
+  modal :boolean,
+  title :string,
 };
 
-const CaseHistoryList = ({ caseHistory, chargeHistory, modal } :Props) => {
-
+const CaseHistoryList = ({
+  title,
+  caseHistory,
+  chargeHistory,
+  loading,
+  modal
+} :Props) => {
+  const caseCount = caseHistory.size;
   const cases = caseHistory
     .sort((c1, c2) => {
       const date1 = moment(c1.getIn([PROPERTY_TYPES.FILE_DATE, 0], ''));
@@ -57,13 +97,23 @@ const CaseHistoryList = ({ caseHistory, chargeHistory, modal } :Props) => {
         </div>
       );
     });
+  const casesDisplay = cases.size
+    ? cases
+    : <NoResults>No Cases Found</NoResults>;
 
   return (
     <CaseHistoryContainer>
-      <Title withSubtitle >
-        <span>Case History</span>
-      </Title>
-      {cases}
+      <TitleWrapper>
+        <Title withSubtitle>
+          <span>{title}</span>
+        </Title>
+        <Count>{caseCount}</Count>
+      </TitleWrapper>
+      {
+        loading
+          ? <StyledSpinner />
+          : casesDisplay
+      }
     </CaseHistoryContainer>
   );
 };
