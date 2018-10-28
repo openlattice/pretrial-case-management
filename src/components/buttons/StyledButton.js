@@ -4,14 +4,15 @@
 
 import styled from 'styled-components';
 
-// border-top + border-bottom + padding-top + padding-bottom + line-height = 40px
+import { OL } from '../../utils/consts/Colors';
+
 const StyledButton = styled.button`
-  background-color: #fff;
-  border-color: #c5d5e5;
+  background-color: ${OL.WHITE};
+  border-color: ${OL.GREY17};
   border-radius: 4px;
   border-style: solid;
   border-width: 1px;
-  color: #135;
+  color: ${OL.BLUE03};
   cursor: pointer;
   font-size: 14px;
   line-height: 18px;
@@ -22,12 +23,12 @@ const StyledButton = styled.button`
   white-space: nowrap;
 
   &:hover {
-    border-color: #95aabf;
+    border-color: ${OL.BLUE04};
   }
 
   &:disabled {
-    border-color: #d9e3ec;
-    color: #a3acb5;
+    border-color: ${OL.BLUE05};
+    color: ${OL.BLUE06};
     cursor: not-allowed;
   }
 `;
