@@ -7,7 +7,7 @@ import styled from 'styled-components';
 
 import ArrestCard from '../arrest/ArrestCard';
 import ChargeHistoryStats from '../casehistory/ChargeHistoryStats';
-import ChargeTable from '../../components/charges/ChargeTable';
+import ChargeTable from '../charges/ChargeTable';
 import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
 import ContentBlock from '../ContentBlock';
 import DMFCell from '../dmf/DMFCell';
@@ -18,6 +18,7 @@ import rightArrow from '../../assets/svg/dmf-arrow.svg';
 import { Title } from '../../utils/Layout';
 import { CONTEXT } from '../../utils/consts/Consts';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { OL } from '../../utils/consts/Colors';
 import { PSA_NEIGHBOR, PSA_ASSOCIATION } from '../../utils/consts/FrontEndStateConsts';
 import {
   getDMFDecision,
@@ -52,7 +53,7 @@ const ScoresContainer = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  border-right: ${props => (props.border ? 'solid 1px #eeeeee' : 'none')};
+  border-right: ${props => (props.border ? `solid 1px ${OL.GREY28}` : 'none')};
 `;
 
 const ScoreContent = styled.div`
@@ -83,7 +84,7 @@ const ScoreTitle = styled.div`
   padding: 0 30px;
   font-size: 16px;
   font-weight: 600;
-  color: #555e6f;
+  color: ${OL.GREY01};
 `;
 
 const ChargeTableContainer = styled.div`
@@ -100,7 +101,7 @@ const StyledSectionHeader = styled.div`
   font-size: 16px;
   padding: 30px 0 20px 30px;
   font-weight: 600;
-  color: #555e6f;
+  color: ${OL.GREY01};
 `;
 
 const Count = styled.div`
@@ -108,9 +109,9 @@ const Count = styled.div`
   padding: 0 10px;
   margin-left: 10px;
   border-radius: 10px;
-  background-color: #f0f0f7;
+  background-color: ${OL.GREY08};
   font-size: 12px;
-  color: #8e929b;
+  color: ${OL.GREY02};
 `;
 
 const StepWrapper = styled.div`
@@ -300,8 +301,7 @@ const renderDMFDetails = ({ neighbors, scores } :Props) => {
 };
 
 const PSASummary = (props :Props) => {
-  const { scores } = props;
-  const { chargeHistory } = props;
+  const { scores, notes, chargeHistory } = props;
 
   return (
     <SummaryWrapper>
@@ -324,8 +324,8 @@ const PSASummary = (props :Props) => {
         </ScoresContainer>
       </RowWrapper>
       <hr />
-      {props.notes ? renderNotes(props) : null}
-      {props.notes ? <hr /> : null}
+      {notes ? renderNotes(props) : null}
+      {notes ? <hr /> : null}
       <ChargeHistoryStats padding chargeHistory={chargeHistory} />
       {renderCaseInfo(props)}
     </SummaryWrapper>

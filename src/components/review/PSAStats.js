@@ -6,6 +6,7 @@ import React from 'react';
 import Immutable from 'immutable';
 import styled from 'styled-components';
 
+import { OL, STATUS } from '../../utils/consts/Colors';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_STATUSES } from '../../utils/consts/Consts';
 import ScoreScale from '../ScoreScale';
@@ -47,7 +48,7 @@ const DetailItem = styled.div`
     font-family: 'Open Sans', sans-serif;
     font-size: 11px;
     font-weight: 600;
-    color: #8e929b;
+    color: ${OL.GREY02};
     text-transform: uppercase;
   }
 
@@ -60,7 +61,7 @@ const DetailItem = styled.div`
     white-space: nowrap;
 
     span {
-      color: #2e2e34;
+      color: ${OL.GREY15};
       font-weight: 600;
     }
   }
@@ -92,17 +93,17 @@ const StatusTag = styled.div`
   background: ${(props) => {
     switch (props.status) {
       case PSA_STATUSES.OPEN:
-        return '#8b66db';
+        return STATUS.OPEN;
       case PSA_STATUSES.SUCCESS:
-        return '#00be84';
+        return STATUS.SUCCESS;
       case PSA_STATUSES.FAILURE:
-        return '#ff3c5d';
+        return STATUS.FAILURE;
       case PSA_STATUSES.CANCELLED:
-        return '#b6bbc7';
+        return STATUS.CANCELLED;
       case PSA_STATUSES.DECLINED:
-        return '#555e6f';
+        return STATUS.DECLINED;
       case PSA_STATUSES.DISMISSED:
-        return '#555e6f';
+        return STATUS.DISMISSED;
       default:
         return 'transparent';
     }

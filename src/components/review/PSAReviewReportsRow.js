@@ -16,8 +16,9 @@ import PSAReportDownloadButton from './PSAReportDownloadButton';
 import PSAStats from './PSAStats';
 import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { psaIsClosed } from '../../utils/PSAUtils';
 import { getEntityKeyId } from '../../utils/DataUtils';
+import { OL } from '../../utils/consts/Colors';
+import { psaIsClosed } from '../../utils/PSAUtils';
 import { PSA_NEIGHBOR, PSA_ASSOCIATION } from '../../utils/consts/FrontEndStateConsts';
 
 const { OPENLATTICE_ID_FQN } = Constants;
@@ -46,11 +47,11 @@ const ReviewRowWrapper = styled.div`
   align-items: flex-end;
   padding: 20px 30px;
   justify-content: center;
-  background-color: #ffffff;
+  background-color: ${OL.WHITE};
   border-radius: 5px;
-  border: solid 1px #e1e1eb;
+  border: solid 1px ${OL.GREY11};
   &:hover {
-    background: #f7f8f9;
+    background: ${OL.GREY12};
   }
   hr {
     height: 1px;
@@ -93,11 +94,11 @@ const MetadataText = styled.div`
   font-weight: 300;
   text-align: right;
   margin: 10px 0 -30px -30px;
-  color: #8e929b;
+  color: ${OL.GREY02};
 `;
 
 const ImportantMetadataText = styled.span`
-  color: #2e2e34;
+  color: ${OL.GREY15};
 `;
 
 const MetadataItem = styled.div`
@@ -115,8 +116,8 @@ const ClosePSAButton = styled(BasicButton)`
   height: 40px;
   border: none;
   border-radius: 3px;
-  background-color: #f0f0f7;
-  color: #8e929b;
+  background-color: ${OL.GREY08};
+  color: ${OL.GREY02};
   z-index: 10;
 `;
 
