@@ -7,6 +7,7 @@ import styled from 'styled-components';
 import Immutable from 'immutable';
 import { Constants } from 'lattice';
 
+import { OL } from '../../utils/consts/Colors';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { getAllViolentCharges } from '../../utils/ArrestChargeUtils';
 
@@ -16,7 +17,7 @@ const Cell = styled.td`
   padding: 15px 30px;
   font-family: 'Open Sans', sans-serif;
   font-size: 14px;
-  color: '#2e2e34';
+  color: ${OL.GREY15};
   text-align: left;
 `;
 
@@ -28,12 +29,12 @@ const ChargeDescriptionWrapper = styled.div`
     width: 58px;
     height: 16px;
     border-radius: 3px;
-    background-color: #ff3c5d;
+    background-color: ${OL.RED01};
     font-family: 'Open Sans', sans-serif;
     font-size: 11px;
     font-weight: bold;
     text-align: center;
-    color: #ffffff;
+    color: ${OL.WHITE};
     margin-top: -8px;
     text-transform: uppercase;
   }
@@ -41,15 +42,15 @@ const ChargeDescriptionWrapper = styled.div`
 
 const Row = styled.tr`
   padding: 7px 30px;
-  border-bottom: 1px solid #e1e1eb;
+  border-bottom: 1px solid ${OL.GREY11};
 
   &:hover {
     cursor: ${props => (props.disabled ? 'default' : 'pointer')};
-    background: ${props => (props.disabled ? '#ffffff' : '#f8f8fc')};
+    background: ${props => (props.disabled ? OL.WHITE : OL.GREY14)};
   }
 
   &:active {
-    background-color: #f0f0f7;
+    background-color: ${OL.GREY08};;
   }
 
   &:last-child {
