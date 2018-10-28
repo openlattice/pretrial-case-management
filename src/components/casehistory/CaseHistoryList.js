@@ -7,12 +7,13 @@ import styled from 'styled-components';
 import moment from 'moment';
 
 import ChargeList from '../charges/ChargeList';
+import { OL } from '../../utils/consts/Colors';
 import { Title } from '../../utils/Layout';
 import { formatDateList } from '../../utils/FormattingUtils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 
 const InfoRow = styled.div`
-  background-color: #f5f5f8;
+  background-color: ${OL.GREY09};
   display: flex;
   flex-direction: row;
   padding: 15px 0;
@@ -21,7 +22,7 @@ const InfoRow = styled.div`
 
 const InfoItem = styled.div`
   margin: 0 30px;
-  color: #555e6f;
+  color: ${OL.GREY01};
 `;
 
 const CaseHistoryContainer = styled.div`
