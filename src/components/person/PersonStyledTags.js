@@ -1,5 +1,7 @@
 import styled from 'styled-components';
 
+import { OL } from '../../utils/consts/Colors';
+
 export const PersonCardWrapper = styled.div`
   width: 410px;
   display: flex;
@@ -29,13 +31,13 @@ export const StyledTooltip = styled.div`
   left: 15%;
   border-radius: 5px;
   box-shadow: 0 10px 20px 0 rgba(0, 0, 0, 0.1);
-  background-color: #f9f9fd;
-  border: solid 1px #dcdce7;
+  background-color: ${OL.GREY08};
+  border: solid 1px ${OL.GREY05};
   max-width: 320px;
   width: max-content;
   font-family: 'Open Sans', sans-serif;
   font-size: 14px;
-  color: #2e2e34;
+  color: ${OL.GREY15};
   padding: 8px 15px;
   white-space: normal !important;
 `;
@@ -50,14 +52,14 @@ export const DetailItem = styled.div`
     font-family: 'Open Sans', sans-serif;
     font-size: 11px;
     font-weight: 600;
-    color: #8e929b;
+    color: ${OL.GREY02};
     text-transform: uppercase;
   }
 
   div {
     font-family: 'Open Sans', sans-serif;
     font-size: 14px;
-    color: #2e2e34;
+    color: ${OL.GREY15};
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
