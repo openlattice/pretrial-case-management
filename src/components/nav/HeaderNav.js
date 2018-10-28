@@ -23,6 +23,7 @@ import newPerson from '../../assets/svg/new-person.svg';
 import newPersonSelected from '../../assets/svg/new-person-selected.svg';
 import reviewReports from '../../assets/svg/review-reports.svg';
 import reviewReportsSelected from '../../assets/svg/review-reports-selected.svg';
+import { OL } from '../../utils/consts/Colors';
 
 import * as Routes from '../../core/router/Routes';
 
@@ -30,8 +31,8 @@ const AppHeaderWrapper = styled.header`
   align-items: center;
   justify-content: space-between;
   padding: 13px 170px;
-  background-color: #fefefe;
-  border-bottom: 1px solid #e6e6eb;
+  background-color: ${OL.GREY16};
+  border-bottom: 1px solid ${OL.GREY29};
   display: flex;
   flex-direction: row;
   position: relative;
@@ -58,7 +59,7 @@ const BrandLink = styled(Link)`
     font-stretch: normal;
     line-height: normal;
     letter-spacing: normal;
-    color: #2e2e34;
+    color: ${OL.GREY15};
     margin-left: 10px;
   }
 
@@ -77,7 +78,7 @@ const DisplayName = styled.span`
   margin-right: 10px;
   font-family: 'Open Sans', sans-serif;
   font-size: 12px;
-  color: #2e2e34;
+  color: ${OL.GREY15};
 `;
 
 const Logo = styled.img`
@@ -97,8 +98,8 @@ const StyledNavWrapper = styled.div`
 
 const StyledNavLink = styled(NavLink).attrs({
   activeStyle: {
-    color: '#6124e2',
-    'borderBottom': '3px solid #6124e2'
+    color: OL.PURPLE02,
+    borderBottom: `3px solid #${OL.PURPLE02}`
   }
 })`
   width: auto;
@@ -160,7 +161,12 @@ const LogoutButton = styled(BasicButton)`
   padding: 0;
 `;
 
-const NavButton = ({ path, defaultIcon, selectedIcon, label }) => {
+const NavButton = ({
+  path,
+  defaultIcon,
+  selectedIcon,
+  label
+}) => {
   const url = window.location.hash.includes(path) ? selectedIcon : defaultIcon;
   const ButtonWrapper = styled(StyledNavLink).attrs({
     to: path,
