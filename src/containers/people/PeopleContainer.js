@@ -18,10 +18,18 @@ import NavButtonToolbar from '../../components/buttons/NavButtonToolbar';
 import DropDownMenu from '../../components/StyledSelect';
 import { searchPeopleRequest } from '../person/PersonActionFactory';
 import { PSA_STATUSES } from '../../utils/consts/Consts';
-import { STATE, SEARCH, PEOPLE, REVIEW, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { DOMAIN_OPTIONS_ARR } from '../../utils/consts/ReviewPSAConsts';
 import { formatDOB } from '../../utils/Helpers';
+import { OL } from '../../utils/consts/Colors';
+import {
+  STATE,
+  SEARCH,
+  PEOPLE,
+  REVIEW,
+  PSA_NEIGHBOR
+} from '../../utils/consts/FrontEndStateConsts';
+
 import * as Routes from '../../core/router/Routes';
 import * as ReviewActionFactory from '../review/ReviewActionFactory';
 
@@ -29,13 +37,13 @@ const SearchBox = styled.div`
   padding: 30px 0;
   margin-bottom: 30px;
   background: white;
-  border: 1px solid #e1e1eb;
+  border: 1px solid ${OL.GREY11};
   border-radius: 5px;
 `;
 
 const MissingNamesContainer = styled.div`
   text-align: center;
-  color: #ff3c5d;
+  color: ${OL.RED01};
 `;
 
 const ErrorHeader = styled.div`

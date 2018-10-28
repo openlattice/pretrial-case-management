@@ -10,11 +10,6 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { NavLink } from 'react-router-dom';
 import { Constants } from 'lattice';
-import {
-  ButtonToolbar,
-  ToggleButton,
-  ToggleButtonGroup
-} from 'react-bootstrap';
 
 import SecondaryButton from '../../components/buttons/SecondaryButton';
 import ToggleButtonsGroup from '../../components/buttons/ToggleButtons';

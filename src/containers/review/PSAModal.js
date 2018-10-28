@@ -33,6 +33,7 @@ import { toISODateTime } from '../../utils/FormattingUtils';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { RESULT_CATEGORIES } from '../../utils/consts/DMFResultConsts';
 import { formatDMFFromEntity } from '../../utils/DMFUtils';
+import { OL } from '../../utils/consts/Colors';
 import { psaIsClosed } from '../../utils/PSAUtils';
 import {
   PSA_NEIGHBOR,
@@ -90,7 +91,7 @@ const TitleHeader = styled.span`
   margin-right: 15px;
   font-size: 18px;
   font-weight: 600;
-  color: #555e6f;
+  color: ${OL.GREY01};
   span {
     text-transform: uppercase;
   }
@@ -101,12 +102,12 @@ const ClosePSAButton = styled(StyledButton)`
   font-size: 14px;
   font-weight: 600;
   text-align: center;
-  color: #6124e2;
+  color: ${OL.PURPLE02};
   width: 162px;
   height: 40px;
   border: none;
   border-radius: 3px;
-  background-color: #e4d8ff;
+  background-color: ${OL.PURPLE06};
 `;
 const EditPSAButton = styled(StyledButton)`
   margin: ${props => (props.footer ? '-20px 0 30px' : '0')};
@@ -114,24 +115,24 @@ const EditPSAButton = styled(StyledButton)`
   font-size: 14px;
   font-weight: 600;
   text-align: center;
-  color: #8e929b;
+  color: ${OL.GREY02};
   width: ${props => (props.footer ? '340px' : '142px')};
   height: ${props => (props.footer ? '42px' : '40px')};
   border: none;
   border-radius: 3px;
-  background-color: #f0f0f7;
+  background-color: ${OL.GREY08};
 `;
 
 const PSAFormHeader = styled.div`
   padding: 30px;
   font-family: 'Open Sans', sans-serif;
   font-size: 18px;
-  color: #555e6f;
+  color: ${OL.GREY01};
   display: flex;
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
-  border-bottom: solid 1px #e1e1eb !important;
+  border-bottom: solid 1px ${OL.GREY11} !important;
 `;
 
 const CloseModalX = styled.img.attrs({
