@@ -1,5 +1,10 @@
+/*
+ * @flow
+ */
 import React from 'react';
 import styled from 'styled-components';
+
+import { OL } from '../../utils/consts/Colors';
 
 const Wrapper = styled.div`
   width: 100%;
@@ -10,13 +15,13 @@ const Wrapper = styled.div`
 const Bar = styled.div`
   width: 100%;
   height: 100%;
-  background-color: #dcdce7;
+  background-color: ${OL.GREY05};
   position: absolute;
 `;
 
 const Fill = styled.div`
-  background-color: #8045ff;
-  color: #ffffff;
+  background-color: ${OL.PURPLE03};
+  color: ${OL.WHITE};
   font-family: 'Open Sans', sans-serif;
   font-size: 13px;
   font-weight: 600;
@@ -33,7 +38,7 @@ const Fill = styled.div`
   transition: width 1s ease;
 `;
 
-const ProgressBar = ({ progress }) => {
+const ProgressBar = ({ progress } :Props) => {
   const label = !progress ? '' : `${progress}%`;
 
   return (
