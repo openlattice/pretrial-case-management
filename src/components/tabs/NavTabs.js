@@ -4,7 +4,7 @@
 import React from 'react';
 import styled from 'styled-components';
 
-import { OL, STATUS } from '../../utils/consts/Colors';
+import { OL } from '../../utils/consts/Colors';
 
 type Props = {
   selectedPane :number,
