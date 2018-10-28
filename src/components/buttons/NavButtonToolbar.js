@@ -2,6 +2,8 @@ import React from 'react';
 import styled from 'styled-components';
 import { NavLink } from 'react-router-dom';
 
+import { OL } from '../../utils/consts/Colors';
+
 const ToolbarWrapper = styled.div`
   display: flex;
   flex-direction: row;
@@ -10,30 +12,30 @@ const ToolbarWrapper = styled.div`
 
 const StyledNavButton = styled(NavLink).attrs({
   activeStyle: {
-    'backgroundColor': '#6124e2',
-    color: '#ffffff',
-    'textDecoration': 'none'
+    backgroundColor: OL.PURPLE02,
+    color: OL.WHITE,
+    textDecoration: 'none'
   }
 })`
   display: flex;
   justify-content: center;
-  border-top: 1px solid #ceced9;
-  border-bottom: 1px solid #ceced9;
-  border-right: 1px solid #ceced9;
+  border-top: 1px solid ${OL.GREY13};
+  border-bottom: 1px solid ${OL.GREY13};
+  border-right: 1px solid ${OL.GREY13};
   color: #8e929b;
   text-decoration: none;
   padding: 7px 20px;
   min-width: 130px;
 
   &:hover {
-    color: #6124e2;
-    background-color: #e4d8ff;
+    color: ${OL.PURPLE02};
+    background-color: ${OL.PURPLE06};
     text-decoration: none;
   }
 
   &:first-child {
     border-radius: 4px 0 0 4px;
-    border-left: 1px solid #ceced9;
+    border-left: 1px solid ${OL.GREY13};
   }
 
   &:last-child {
