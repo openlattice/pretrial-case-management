@@ -7,6 +7,7 @@ import Immutable from 'immutable';
 import styled from 'styled-components';
 import { Constants } from 'lattice';
 
+import { OL } from '../../utils/consts/Colors';
 import { formatDateTime } from '../../utils/FormattingUtils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 
@@ -25,13 +26,13 @@ const Card = styled.div`
   justify-content: space-between;
   width: 100%;
   border-radius: 5px;
-  border: 1px solid #e1e1eb !important;
+  border: 1px solid ${OL.GREY11} !important;
   padding: 15px 60px;
-  background-color: ${props => (props.selected ? '#e4d8ff' : 'transparent')};
+  background-color: ${props => (props.selected ? OL.PURPLE06 : 'transparent')};
 
 
   &:hover {
-    background-color: ${props => (props.selected ? '#e4d8ff' : '#f7f8f9')};
+    background-color: ${props => (props.selected ? OL.PURPLE06 : OL.GREY12)};
     cursor: pointer;
   }
 
@@ -43,7 +44,7 @@ const Card = styled.div`
       font-family: 'Open Sans', sans-serif;
       font-size: 11px;
       font-weight: 600;
-      color: ${props => (props.selected ? '#6124e2' : '#8e929b')};
+      color: ${props => (props.selected ? OL.PURPLE02 : OL.GREY02)};
       text-transform: uppercase;
       margin-bottom: 2px;
     }
@@ -51,7 +52,7 @@ const Card = styled.div`
     div {
       font-family: 'Open Sans', sans-serif;
       font-size: 14px;
-      color: #2e2e34;
+      color: ${OL.GREY15};
     }
   }
 `;
@@ -59,7 +60,7 @@ const Card = styled.div`
 const Notification = styled.div`
   height: 20px;
   width: 20px;
-  background-color: #6124e2;
+  background-color: ${OL.PURPLE02};
   border-radius: 50%;
   position: absolute;
   transform: translateX(-200%) translateY(40%);
