@@ -7,14 +7,15 @@ import Immutable from 'immutable';
 import styled from 'styled-components';
 import { Constants } from 'lattice';
 
+import CONTENT from '../../utils/consts/ContentConsts';
 import Headshot from '../Headshot';
 import PSAModal from '../../containers/review/PSAModal';
 import StyledCard from '../StyledCard';
 import { ENTITY_SETS } from '../../utils/consts/DataModelConsts';
-import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
-import CONTENT from '../../utils/consts/ContentConsts';
 import { getEntityKeyId } from '../../utils/DataUtils';
+import { OL } from '../../utils/consts/Colors';
 import { UndecoratedLink } from '../../utils/Layout';
+
 import * as Routes from '../../core/router/Routes';
 
 const { OPENLATTICE_ID_FQN } = Constants;
@@ -45,7 +46,7 @@ const Name = styled.div`
   font-family: 'Open Sans', sans-serif;
   font-size: 13px;
   font-weight: 600;
-  color: #2e2e34;
+  color: ${OL.GREY15};
   margin-bottom: 4px;
   text-transform: uppercase;
 `;
@@ -53,13 +54,13 @@ const Name = styled.div`
 const DobLabel = styled.span`
   font-family: 'Open Sans', sans-serif;
   font-size: 13px;
-  color: #8e929b;
+  color: ${OL.GREY02};
 `;
 
 const Dob = styled.span`
   font-family: 'Open Sans', sans-serif;
   font-size: 13px;
-  color: #2e2e34;
+  color: ${OL.GREY15};
   margin-right: 5px;
 `;
 
@@ -74,10 +75,10 @@ const OpenPSATag = styled.span`
   width: 65px;
   height: 16px;
   border-radius: 3px;
-  background-color: #8b66db;
+  background-color: ${OL.PURPLE07};
   padding: 2px;
   text-transform: uppercase;
-  color: #ffffff;
+  color: ${OL.WHITE};
   font-family: 'Open Sans', sans-serif;
   font-size: 11px;
   font-weight: 600;
