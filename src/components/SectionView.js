@@ -5,6 +5,8 @@
 import * as React from 'react';
 import styled from 'styled-components';
 
+import { OL } from '../utils/consts/Colors';
+
 const SectionWrapper = styled.div`
   padding: 40px 0;
   border-bottom: 1px solid lightgray;
@@ -13,7 +15,7 @@ const SectionWrapper = styled.div`
 export const Header = styled.div`
   font-size: 24px;
   margin-bottom: 20px;
-  color: #37454A;
+  color: ${OL.GREY34};
   font-weight: bold;
 `;
 
