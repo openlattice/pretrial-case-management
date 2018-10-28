@@ -2,6 +2,7 @@ import React from 'react';
 import styled from 'styled-components';
 import DateTimePicker from 'react-datetime';
 
+import { OL } from '../../utils/consts/Colors';
 import calendarIcon from '../../assets/svg/calendar-icon.svg';
 
 const DatePickerWrapper = styled.div`
@@ -20,7 +21,7 @@ const IconWrapper = styled.div`
 const StyledDateTimePickerInput = styled(DateTimePicker)`
   height: 39px;
   border-radius: 3px;
-  border: 1px solid #dcdce7;
+  border: 1px solid ${OL.GREY05};
   box-shadow: none;
   position: absolute;
   font-family: 'Open Sans', sans-serif;
@@ -30,7 +31,7 @@ const StyledDateTimePickerInput = styled(DateTimePicker)`
   input {
     height: 100%;
     border-radius: 3px;
-    background-color: #f9f9fd;
+    background-color: ${OL.GREY10};
     box-shadow: none;
     border: none;
   }
@@ -42,13 +43,13 @@ const StyledDateTimePickerInput = styled(DateTimePicker)`
   input:focus {
     box-shadow: inset 0 0 0 1px rebeccapurple;
     outline: none;
-    background-color: #ffffff;
+    background-color: ${OL.WHITE};
   }
 
   div {
     padding: 20px;
-    background-color: #ffffff;
-    border: solid 1px #e1e1eb !important;
+    background-color: ${OL.WHITE};
+    border: solid 1px ${OL.GREY11} !important;
     box-shadow: 0 10px 20px 0 rgba(0, 0, 0, 0.1) !important;
     min-width: 300px;
 
@@ -65,7 +66,7 @@ const StyledDateTimePickerInput = styled(DateTimePicker)`
             font-family: 'Open Sans', sans-serif;
             font-size: 14px;
             font-weight: bold;
-            color: #555e6f;
+            color: ${OL.GREY01}
 
             th {
               span {
@@ -81,7 +82,7 @@ const StyledDateTimePickerInput = styled(DateTimePicker)`
                 padding: 10px 12px;
 
                 &:hover {
-                  background-color: #f0f0f7;
+                  background-color: ${OL.GREY08}
                 }
               }
             }
@@ -92,7 +93,7 @@ const StyledDateTimePickerInput = styled(DateTimePicker)`
             font-family: 'Open Sans', sans-serif;
             font-size: 11px;
             font-weight: bold;
-            color: #8e929b;
+            color: ${OL.GREY02}
           }
         }
 
@@ -105,7 +106,7 @@ const StyledDateTimePickerInput = styled(DateTimePicker)`
               font-size: 12px;
               font-weight: 600;
               text-align: center;
-              color: #555e6f;
+              color: ${OL.GREY01}
               border-radius: 2px !important;
 
               div {
