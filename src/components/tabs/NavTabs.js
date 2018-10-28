@@ -4,6 +4,8 @@
 import React from 'react';
 import styled from 'styled-components';
 
+import { OL, STATUS } from '../../utils/consts/Colors';
+
 type Props = {
   selectedPane :number,
   panes :object,
@@ -30,17 +32,13 @@ const NavTabHeader = styled.li`
   padding: 16px 0;
   font-family: 'Open Sans', sans-serif;
   font-size: 14px;
-  ${(props) => {
-    if (props.active) {
-      return (
-        'border-bottom: solid 3px #6124e2;'
-      );
-    }
-  }};
+  border-bottom: ${props => (props.active
+    ? `solid 3px ${OL.PURPLE02}`
+    : 'none')};
 `;
 
 const HeaderText = styled.a`
-  color: #8e929b;
+  color: ${OL.GREY02};
   border: none;
   :hover {
     text-decoration: none;
@@ -50,7 +48,7 @@ const HeaderText = styled.a`
   ${(props) => {
     if (props.active) {
       return (
-        `color: #6124e2;
+        `color: ${OL.PURPLE02};
         border: none;
         background-color: transparent;
         font-size: 14px;
