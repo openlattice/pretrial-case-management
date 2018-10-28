@@ -25,6 +25,7 @@ import InfoButton from '../buttons/InfoButton';
 import BasicButton from '../buttons/BasicButton';
 import releaseConditionsConfig from '../../config/formconfig/ReleaseConditionsConfig';
 import { NoContactRow } from './ReleaseConditionsStyledTags';
+import { OL } from '../../utils/consts/Colors';
 import { getTimeOptions } from '../../utils/consts/DateTimeConsts';
 import {
   RELEASE_CONDITIONS,
@@ -69,23 +70,21 @@ const Wrapper = styled.div`
   flex-direction: column;
   justify-content: center;
   overflow-x: hidden;
+  color: ${OL.GREY01};
   h1 {
     text-align: left;
     font-size: 16px;
     font-weight: 600;
-    color: #555e6f;
   }
   h2 {
     text-align: left;
     font-size: 16px;
     font-weight: normal;
-    color: #555e6f;
   }
   h3 {
     text-align: left;
     font-size: 14px;
     font-weight: normal;
-    color: #555e6f;
   }
   div:last-child {
     border: none;
@@ -140,7 +139,7 @@ const HearingSectionWrapper = styled.div`
   grid-template-columns: 75% 25%;
   padding-bottom: 20px;
   margin: 0 -15px;
-  border-bottom: 1px solid #e1e1eb !important;
+  border-bottom: 1px solid ${OL.GREY11} !important;
 `;
 
 const HearingInfoButtons = styled.div`
@@ -158,8 +157,8 @@ const StyledBasicButton = styled(BasicButton)`
   width: 100%;
   max-width: 210px;
   height: 40px;
-  background-color: ${props => (props.update ? '#6124e2' : '#f0f0f7')};
-  color: ${props => (props.update ? '#ffffff' : '#8e929b')};
+  background-color: ${props => (props.update ? OL.PURPLE02 : OL.GREY08)};
+  color: ${props => (props.update ? OL.WHITE : OL.GREY02)};
 `;
 
 const StyledSearchableSelect = styled(SearchableSelect)`
@@ -197,14 +196,14 @@ const NameInput = styled.input.attrs({
 })`
   width: 215px;
   height: 40px;
-  border: 1px solid #dcdce7;
+  border: 1px solid ${OL.GREY05};
   border-radius: 3px;
   color: #135;
   font-size: 14px;
   font-weight: 400;
   padding: 0 45px 0 20px;
   margin-top: 10px;
-  background-color: #ffffff;
+  background-color: ${OL.WHITE};
 `;
 
 const BLANK_PERSON_ROW = {
