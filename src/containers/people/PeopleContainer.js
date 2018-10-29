@@ -18,10 +18,17 @@ import NavButtonToolbar from '../../components/buttons/NavButtonToolbar';
 import DropDownMenu from '../../components/StyledSelect';
 import { searchPeopleRequest } from '../person/PersonActionFactory';
 import { PSA_STATUSES } from '../../utils/consts/Consts';
-import { STATE, SEARCH, PEOPLE, REVIEW, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { DOMAIN_OPTIONS_ARR } from '../../utils/consts/ReviewPSAConsts';
 import { formatDOB } from '../../utils/Helpers';
+import {
+  STATE,
+  SEARCH,
+  PEOPLE,
+  REVIEW,
+  PSA_NEIGHBOR
+} from '../../utils/consts/FrontEndStateConsts';
+
 import * as Routes from '../../core/router/Routes';
 import * as ReviewActionFactory from '../review/ReviewActionFactory';
 
@@ -91,11 +98,13 @@ class PeopleContainer extends React.Component<Props, State> {
   }
 
   componentDidMount() {
-    this.props.actions.loadPSAsByDate(PSA_STATUSES.OPEN);
+    const { actions } = this.props;
+    actions.loadPSAsByDate(PSA_STATUSES.OPEN);
   }
 
   componentWillReceiveProps(nextProps) {
-    if (nextProps.peopleResults !== this.props.peopleResults) {
+    const { peopleResults } = this.props;
+    if (nextProps.peopleResults !== peopleResults) {
       this.setState({ didMapPeopleToProps: true });
     }
   }
@@ -119,26 +128,29 @@ class PeopleContainer extends React.Component<Props, State> {
   }
 
   renderSearchPeopleComponent = () => {
-    const formattedPeople = this.getFormattedPeople(this.props.peopleResults);
+    const { didMapPeopleToProps } = this.state;
+    const { peopleResults, actions, isFetchingPeople } = this.props;
+    const formattedPeople = this.getFormattedPeople(peopleResults);
     return (
       <div>
         <SearchBox>
-          <PersonSearchFields handleSubmit={this.props.actions.searchPeopleRequest} />
+          <PersonSearchFields handleSubmit={actions.searchPeopleRequest} />
         </SearchBox>
         <PeopleList
             people={formattedPeople}
-            isFetchingPeople={this.props.isFetchingPeople}
-            didMapPeopleToProps={this.state.didMapPeopleToProps} />
+            isFetchingPeople={isFetchingPeople}
+            didMapPeopleToProps={didMapPeopleToProps} />
       </div>
     );
   }
 
   getFilteredPeopleList = () => {
+    const { psaNeighborsById } = this.props;
     const { peopleList } = this.state;
     let peopleById = Immutable.Map();
     let missingPeople = Immutable.Set(peopleList);
 
-    this.props.psaNeighborsById.valueSeq().forEach((neighbors) => {
+    psaNeighborsById.valueSeq().forEach((neighbors) => {
       const neighbor = neighbors.getIn([ENTITY_SETS.PEOPLE, PSA_NEIGHBOR.DETAILS], Immutable.Map());
       const firstNameList = neighbor.get(PROPERTY_TYPES.FIRST_NAME, Immutable.List()).map(val => val.toLowerCase());
       const lastNameList = neighbor.get(PROPERTY_TYPES.LAST_NAME, Immutable.List()).map(val => val.toLowerCase());
@@ -161,6 +173,8 @@ class PeopleContainer extends React.Component<Props, State> {
   }
 
   renderMultiSearchPeopleComponent = () => {
+    const { loadingPSAData, isFetchingPeople } = this.props;
+    const { didMapPeopleToProps } = this.state;
     const { formattedPeople, missingPeople } = this.getFilteredPeopleList();
 
     return (
@@ -168,7 +182,7 @@ class PeopleContainer extends React.Component<Props, State> {
         <SearchBox>
           <PersonTextAreaInput onChange={peopleList => this.setState({ peopleList })} />
           {
-            missingPeople.size && !this.props.loadingPSAData ? (
+            missingPeople.size && !loadingPSAData ? (
               <MissingNamesContainer>
                 <ErrorHeader>Missing names:</ErrorHeader>
                 {missingPeople.map(person =>
@@ -178,11 +192,11 @@ class PeopleContainer extends React.Component<Props, State> {
           }
         </SearchBox>
         {
-          this.props.loadingPSAData ? <LoadingSpinner /> : (
+          loadingPSAData ? <LoadingSpinner /> : (
             <PeopleList
                 people={formattedPeople}
-                isFetchingPeople={this.props.isFetchingPeople}
-                didMapPeopleToProps={this.state.didMapPeopleToProps} />
+                isFetchingPeople={isFetchingPeople}
+                didMapPeopleToProps={didMapPeopleToProps} />
           )
         }
       </div>
@@ -190,13 +204,15 @@ class PeopleContainer extends React.Component<Props, State> {
   }
 
   getPeopleRequiringAction = () => {
+    const { psaNeighborsById } = this.props;
     const { countyFilter } = this.state;
 
     let peopleById = Immutable.Map();
 
-    this.props.psaNeighborsById.valueSeq().forEach((neighbors) => {
-      const staffMatchingFilter = neighbors.get(ENTITY_SETS.STAFF, Immutable.List()).filter(neighbor =>
-        neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.PERSON_ID, 0], '').includes(countyFilter));
+    psaNeighborsById.valueSeq().forEach((neighbors) => {
+      const staffMatchingFilter = neighbors
+        .get(ENTITY_SETS.STAFF, Immutable.List()).filter(neighbor => neighbor
+          .getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.PERSON_ID, 0], '').includes(countyFilter));
 
       if (!countyFilter.length || staffMatchingFilter.size) {
         const neighbor = neighbors.getIn([ENTITY_SETS.PEOPLE, PSA_NEIGHBOR.DETAILS], Immutable.Map());
@@ -218,7 +234,9 @@ class PeopleContainer extends React.Component<Props, State> {
   }
 
   renderRequiresActionPeopleComponent = () => {
-    if (this.props.loadingPSAData) {
+    const { loadingPSAData, isFetchingPeople } = this.props;
+    const { didMapPeopleToProps } = this.state;
+    if (loadingPSAData) {
       return <LoadingSpinner />;
     }
 
@@ -226,8 +244,8 @@ class PeopleContainer extends React.Component<Props, State> {
     return (
       <PeopleList
           people={formattedPeople}
-          isFetchingPeople={this.props.isFetchingPeople}
-          didMapPeopleToProps={this.state.didMapPeopleToProps} />
+          isFetchingPeople={isFetchingPeople}
+          didMapPeopleToProps={didMapPeopleToProps} />
     );
   }
 
@@ -249,16 +267,16 @@ class PeopleContainer extends React.Component<Props, State> {
   render() {
     const navButtons = [
       {
-        path: Routes.REQUIRES_ACTION_PEOPLE,
-        label: 'Requires Action'
-      },
-      {
         path: Routes.SEARCH_PEOPLE,
         label: 'Search'
       },
       {
         path: Routes.MULTI_SEARCH_PEOPLE,
         label: 'Multi-Search'
+      },
+      {
+        path: Routes.REQUIRES_ACTION_PEOPLE,
+        label: 'Requires Action'
       }
     ];
 
@@ -269,10 +287,10 @@ class PeopleContainer extends React.Component<Props, State> {
           {this.renderCountyDropdown()}
         </ToolbarWrapper>
         <Switch>
-          <Route path={Routes.REQUIRES_ACTION_PEOPLE} render={this.renderRequiresActionPeopleComponent} />
           <Route path={Routes.SEARCH_PEOPLE} render={this.renderSearchPeopleComponent} />
           <Route path={Routes.MULTI_SEARCH_PEOPLE} render={this.renderMultiSearchPeopleComponent} />
-          <Redirect from={Routes.PEOPLE} to={Routes.REQUIRES_ACTION_PEOPLE} />
+          <Route path={Routes.REQUIRES_ACTION_PEOPLE} render={this.renderRequiresActionPeopleComponent} />
+          <Redirect from={Routes.PEOPLE} to={Routes.SEARCH_PEOPLE} />
         </Switch>
       </DashboardMainSection>
     );
