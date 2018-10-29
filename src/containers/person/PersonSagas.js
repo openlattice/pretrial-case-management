@@ -13,6 +13,7 @@ import { all, call, put, take, takeEvery } from 'redux-saga/effects';
 import { toISODate, formatDate } from '../../utils/FormattingUtils';
 import { submit } from '../../utils/submit/SubmitActionFactory';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { obfuscateEntityNeighbors } from '../../utils/consts/DemoNames';
 
 import {
   LOAD_PERSON_DETAILS_REQUEST,
@@ -115,7 +116,8 @@ export function* watchLoadPersonDetailsRequest() :Generator<*, *, *> {
       // </HACK>
 
       else {
-        const response = yield call(SearchApi.searchEntityNeighbors, entitySetId, entityKeyId);
+        let response = yield call(SearchApi.searchEntityNeighbors, entitySetId, entityKeyId);
+        response = obfuscateEntityNeighbors(response);
         yield put(loadPersonDetailsSuccess(response));
       }
     }
