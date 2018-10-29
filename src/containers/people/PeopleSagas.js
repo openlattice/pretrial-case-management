@@ -14,7 +14,7 @@ import {
   getPersonData,
   getPersonNeighbors
 } from './PeopleActionFactory';
-import { obfuscateEntity } from '../../utils/consts/DemoNames';
+import { obfuscateEntity, obfuscateEntityNeighbors } from '../../utils/consts/DemoNames';
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
@@ -86,7 +86,8 @@ function* getPersonNeighborsWorker(action) :Generator<*, *, *> {
 
     const person = yield getEntityForPersonId(personId, entitySetId);
     const entityKeyId = person[OPENLATTICE_ID_FQN][0];
-    const neighbors = yield call(SearchApi.searchEntityNeighbors, entitySetId, entityKeyId);
+    let neighbors = yield call(SearchApi.searchEntityNeighbors, entitySetId, entityKeyId);
+    neighbors = obfuscateEntityNeighbors(neighbors);
     yield put(getPersonNeighbors.success(action.id, { personId, neighbors }));
   }
   catch (error) {
