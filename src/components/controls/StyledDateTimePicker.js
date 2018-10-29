@@ -66,7 +66,7 @@ const StyledDateTimePickerInput = styled(DateTimePicker)`
             font-family: 'Open Sans', sans-serif;
             font-size: 14px;
             font-weight: bold;
-            color: ${OL.GREY01}
+            color: ${OL.GREY01};
 
             th {
               span {
@@ -82,7 +82,7 @@ const StyledDateTimePickerInput = styled(DateTimePicker)`
                 padding: 10px 12px;
 
                 &:hover {
-                  background-color: ${OL.GREY08}
+                  background-color: ${OL.GREY08};
                 }
               }
             }
@@ -93,7 +93,7 @@ const StyledDateTimePickerInput = styled(DateTimePicker)`
             font-family: 'Open Sans', sans-serif;
             font-size: 11px;
             font-weight: bold;
-            color: ${OL.GREY02}
+            color: ${OL.GREY02};
           }
         }
 
