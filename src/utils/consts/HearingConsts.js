@@ -1,4 +1,4 @@
-import { Map } from 'immutable';
+import { OrderedMap, Map } from 'immutable';
 
 import { PROPERTY_TYPES } from './DataModelConsts';
 
@@ -6,9 +6,17 @@ export const COURTROOMS = [
   '1A',
   '6C ARRAIGNMENTS',
   'Courtroom C1',
+  'Courtroom C2',
+  'Courtroom C3',
   'Courtroom C4',
+  'Courtroom C5',
+  'Courtroom C6',
+  'Courtroom C7',
+  'Courtroom C8',
+  'Courtroom C9',
+  'Courtroom C10',
   'Courtroom M1',
-  'Courtroom M2'
+  'Courtroom M2',
 ];
 
 export const HEARING_CONSTS = {
@@ -38,7 +46,7 @@ export const formatJudgeName = (judge) => {
 };
 
 export const getCourtroomOptions = () => {
-  let courtroomOptions = Map();
+  let courtroomOptions = OrderedMap();
   COURTROOMS.forEach((courtroom) => {
     courtroomOptions = courtroomOptions.set(courtroom, courtroom);
   });
