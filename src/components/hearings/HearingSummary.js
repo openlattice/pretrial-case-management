@@ -46,7 +46,7 @@ const ContentBox = styled.div`
   height: 56px;
   border-radius: 3px;
   background-color: ${OL.GREY05};
-  color: #8e929b;
+  color: ${OL.GREY02};
   font-family: 'Open Sans',sans-serif;
   font-size: 13.5px;
   font-weight: normal;

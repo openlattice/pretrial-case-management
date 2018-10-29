@@ -104,7 +104,7 @@ const StyledSectionHeader = styled.div`
       case CONTENT_CONSTS.PROFILE:
         return (
           `padding: 30px;
-           border-bottom: solid 1px #e1e1eb;
+           border-bottom: solid 1px ${OL.GREY11};;
            font-size: 22px;`
         );
       case CONTENT_CONSTS.HEARINGS:

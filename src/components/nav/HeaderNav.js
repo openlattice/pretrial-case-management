@@ -99,7 +99,7 @@ const StyledNavWrapper = styled.div`
 const StyledNavLink = styled(NavLink).attrs({
   activeStyle: {
     color: OL.PURPLE02,
-    borderBottom: `3px solid #${OL.PURPLE02}`
+    borderBottom: `3px solid ${OL.PURPLE02}`
   }
 })`
   width: auto;
@@ -109,28 +109,28 @@ const StyledNavLink = styled(NavLink).attrs({
   font-family: 'Open Sans', sans-serif;
   font-size: 12px;
   font-weight: normal;
-  color: #8e929b;
+  color: ${OL.GREY02};
   display: flex;
   align-items: center;
 
 
   &:hover {
-    color: #6124e2;
+    color: ${OL.PURPLE02};
     text-decoration: none;
 
     svg {
       g {
-        fill: #6124e2;
+        fill: ${OL.PURPLE02};
       }
     }
   }
 
   &:active {
-    color: #361876;
+    color: ${OL.PURPLE01};
 
     svg {
       g {
-        fill: #361876;
+        fill: ${OL.PURPLE01};
       }
     }
   }
@@ -140,7 +140,7 @@ const StyledNavLink = styled(NavLink).attrs({
     text-decoration: none;
     svg {
       g {
-        fill: #6124e2;
+        fill: ${OL.PURPLE02};
       }
     }
 

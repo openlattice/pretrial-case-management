@@ -26,7 +26,7 @@ export const CheckboxSelection = styled.span`
   font-family: 'Open Sans', sans-serif;
   font-size: 14px;
   font-weight: normal;
-  color: #8e929b;
+  color: ${OL.GREY02};
   display: flex;
   flex-direction: column;
   justify-content: center;

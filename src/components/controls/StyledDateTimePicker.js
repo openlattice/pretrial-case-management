@@ -37,7 +37,7 @@ const StyledDateTimePickerInput = styled(DateTimePicker)`
   }
 
   input::placeholder {
-    color: #8e929b;
+    color: ${OL.GREY02};
   }
 
   input:focus {

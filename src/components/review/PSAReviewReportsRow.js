@@ -111,7 +111,7 @@ const ClosePSAButton = styled(BasicButton)`
   font-size: 14px;
   font-weight: 600;
   text-align: center;
-  color: #6124e2;
+  color: ${OL.PURPLE02};
   width: 162px;
   height: 40px;
   border: none;

@@ -22,7 +22,7 @@ const StyledNavButton = styled(NavLink).attrs({
   border-top: 1px solid ${OL.GREY13};
   border-bottom: 1px solid ${OL.GREY13};
   border-right: 1px solid ${OL.GREY13};
-  color: #8e929b;
+  color: ${OL.GREY02};
   text-decoration: none;
   padding: 7px 20px;
   min-width: 130px;

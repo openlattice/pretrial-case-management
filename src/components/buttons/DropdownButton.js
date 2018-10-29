@@ -87,7 +87,7 @@ const MenuContainer = styled.div`
     min-width: fit-content !important;
 
     &:hover {
-      background-color: #e6e6f7;
+      background-color: ${OL.GREY06};
     }
   }
 `;

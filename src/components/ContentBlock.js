@@ -31,7 +31,7 @@ const StyledContentLabel = styled.div`
         );
     }
   }};
-  color: #8e929b;
+  color: ${OL.GREY02};
   margin-bottom: ${(props) => {
     switch (props.component) {
       case CONTENT_CONSTS.CREATING_HEARING:

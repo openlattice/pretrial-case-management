@@ -20,7 +20,7 @@ export const NavButton = styled(Button)`
 
 export const NextButton = NavButton.extend`
   background: ${OL.BLUE09};
-  color: #fff;
+  color: ${OL.WHITE};
 `;
 
 export const SubmitButton = NextButton.extend.attrs({

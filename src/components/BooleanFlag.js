@@ -19,7 +19,7 @@ const Flag = styled.div`
   font-family: Open Sans;
   font-size: 14px;
   font-weight: 600;
-  color: #2e2e34;
+  color: ${OL.GREY15};
 `;
 
 const BooleanFlag = ({ value, dims } :Props) => {

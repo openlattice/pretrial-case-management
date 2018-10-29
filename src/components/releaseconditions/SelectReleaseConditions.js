@@ -198,7 +198,7 @@ const NameInput = styled.input.attrs({
   height: 40px;
   border: 1px solid ${OL.GREY05};
   border-radius: 3px;
-  color: #135;
+  color: ${OL.BLUE03};
   font-size: 14px;
   font-weight: 400;
   padding: 0 45px 0 20px;

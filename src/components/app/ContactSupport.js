@@ -22,7 +22,7 @@ const SupportButton = styled.a`
 
   &:hover {
     text-decoration: none;
-    background-color: #f8f8fc;
+    background-color: ${OL.GREY14};
   }
 
   span {
