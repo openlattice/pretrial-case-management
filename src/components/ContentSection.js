@@ -104,7 +104,7 @@ const StyledSectionHeader = styled.div`
       case CONTENT_CONSTS.PROFILE:
         return (
           `padding: 30px;
-           border-bottom: solid 1px ${OL.GREY11};;
+           border-bottom: solid 1px ${OL.GREY11};
            font-size: 22px;`
         );
       case CONTENT_CONSTS.HEARINGS:
@@ -132,7 +132,7 @@ const StyledSectionBottomBarWrapper = styled.div`
   justify-content: center;
   align-items: center;
   flex-wrap: nowrap;
-  color: ${OL.GREY26};;
+  color: ${OL.GREY26};
   font-size: 14px;
   font-weight: bold;
   margin-bottom: 12px;

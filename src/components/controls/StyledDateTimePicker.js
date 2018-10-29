@@ -106,7 +106,7 @@ const StyledDateTimePickerInput = styled(DateTimePicker)`
               font-size: 12px;
               font-weight: 600;
               text-align: center;
-              color: ${OL.GREY01}
+              color: ${OL.GREY01};
               border-radius: 2px !important;
 
               div {

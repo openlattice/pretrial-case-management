@@ -46,7 +46,7 @@ const ToggleButton = styled.li`
     if (props.active) {
       return (
         `
-          color: ${OL.WHITE}
+          color: ${OL.WHITE};
           background-color: ${OL.PURPLE02};
         `
       );

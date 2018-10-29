@@ -50,7 +50,7 @@ const Row = styled.tr`
   }
 
   &:active {
-    background-color: ${OL.GREY08};;
+    background-color: ${OL.GREY08};
   }
 
   &:last-child {
