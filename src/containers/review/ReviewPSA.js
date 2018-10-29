@@ -43,7 +43,7 @@ const StyledFormWrapper = styled.div`
 `;
 
 const StyledSectionWrapper = styled.div`
-  color:  v
+  color:  ${OL.GREY01};
   display: flex;
   flex-direction: column;
   width: 960px;

@@ -320,7 +320,7 @@ export const ResultHeader = styled.div`
   margin: 20px 0;
   font-family: 'Open Sans', sans-serif;
   font-size: 16px;
-  color: ${OL.GREY11};
+  color: ${OL.GREY01};
 `;
 
 export const ScaleWrapper = styled.div`
@@ -405,7 +405,7 @@ export const StyledTitleWrapper = styled.div`
 `;
 
 export const StyledSectionWrapper = styled.div`
-  background: ${OL.WHTIE};
+  background: ${OL.WHITE};
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -455,7 +455,7 @@ export const Title = styled.div`
   flex-direction: column;
   font-family: 'Open Sans', sans-serif;
   font-size: 16px;
-  color: ${OL.GREY11};
+  color: ${OL.GREY01};
   margin: 20px 0;
 
   span:first-child {
