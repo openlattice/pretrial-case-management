@@ -9,6 +9,7 @@ import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { Redirect, Route, Switch } from 'react-router-dom';
 
+import RequiresActionList from './RequiresActionList';
 import PersonSearchFields from '../../components/person/PersonSearchFields';
 import PersonTextAreaInput from '../../components/person/PersonTextAreaInput';
 import PeopleList from '../../components/people/PeopleList';
@@ -16,11 +17,10 @@ import DashboardMainSection from '../../components/dashboard/DashboardMainSectio
 import LoadingSpinner from '../../components/LoadingSpinner';
 import NavButtonToolbar from '../../components/buttons/NavButtonToolbar';
 import DropDownMenu from '../../components/StyledSelect';
+import { getFormattedPeople } from '../../utils/PeopleUtils';
 import { searchPeopleRequest } from '../person/PersonActionFactory';
-import { PSA_STATUSES } from '../../utils/consts/Consts';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { DOMAIN_OPTIONS_ARR } from '../../utils/consts/ReviewPSAConsts';
-import { formatDOB } from '../../utils/Helpers';
 import {
   STATE,
   SEARCH,
@@ -30,7 +30,6 @@ import {
 } from '../../utils/consts/FrontEndStateConsts';
 
 import * as Routes from '../../core/router/Routes';
-import * as ReviewActionFactory from '../review/ReviewActionFactory';
 
 const SearchBox = styled.div`
   padding: 30px 0;
@@ -72,7 +71,6 @@ type Props = {
   isFetchingPeople :boolean,
   peopleResults :Immutable.List<*>,
   loadingPSAData :boolean,
-  openPSAs :Immutable.Map<*, *>,
   psaNeighborsById :Immutable.Map<*, *>,
   actions :{
     loadPSAsByDate :(filter :string) => void,
@@ -97,11 +95,6 @@ class PeopleContainer extends React.Component<Props, State> {
     };
   }
 
-  componentDidMount() {
-    const { actions } = this.props;
-    actions.loadPSAsByDate(PSA_STATUSES.OPEN);
-  }
-
   componentWillReceiveProps(nextProps) {
     const { peopleResults } = this.props;
     if (nextProps.peopleResults !== peopleResults) {
@@ -109,28 +102,10 @@ class PeopleContainer extends React.Component<Props, State> {
     }
   }
 
-  formatPeopleInfo = (person) => {
-    const formattedDOB = formatDOB(person.getIn([PROPERTY_TYPES.DOB, 0]));
-    return {
-      identification: person.getIn([PROPERTY_TYPES.PERSON_ID, 0]),
-      firstName: person.getIn([PROPERTY_TYPES.FIRST_NAME, 0]),
-      middleName: person.getIn([PROPERTY_TYPES.MIDDLE_NAME, 0]),
-      lastName: person.getIn([PROPERTY_TYPES.LAST_NAME, 0]),
-      dob: formattedDOB,
-      photo: person.getIn([PROPERTY_TYPES.PICTURE, 0])
-    };
-  }
-
-  getFormattedPeople = (peopleList) => {
-    const formattedPeople = peopleList.map(person => this.formatPeopleInfo(person));
-
-    return formattedPeople;
-  }
-
   renderSearchPeopleComponent = () => {
     const { didMapPeopleToProps } = this.state;
     const { peopleResults, actions, isFetchingPeople } = this.props;
-    const formattedPeople = this.getFormattedPeople(peopleResults);
+    const formattedPeople = getFormattedPeople(peopleResults);
     return (
       <div>
         <SearchBox>
@@ -167,7 +142,7 @@ class PeopleContainer extends React.Component<Props, State> {
       }
     });
 
-    const formattedPeople = this.getFormattedPeople(peopleById.valueSeq());
+    const formattedPeople = getFormattedPeople(peopleById.valueSeq());
 
     return { formattedPeople, missingPeople };
   }
@@ -185,8 +160,13 @@ class PeopleContainer extends React.Component<Props, State> {
             missingPeople.size && !loadingPSAData ? (
               <MissingNamesContainer>
                 <ErrorHeader>Missing names:</ErrorHeader>
-                {missingPeople.map(person =>
-                  (<div key={`${person.firstName}|${person.lastName}`}>{person.firstName} {person.lastName}</div>))}
+                {missingPeople
+                  .map(person => (
+                    <div key={`${person.firstName}|${person.lastName}`}>
+                      {person.firstName}
+                      {person.lastName}
+                    </div>
+                  ))}
               </MissingNamesContainer>
             ) : null
           }
@@ -203,49 +183,15 @@ class PeopleContainer extends React.Component<Props, State> {
     );
   }
 
-  getPeopleRequiringAction = () => {
-    const { psaNeighborsById } = this.props;
-    const { countyFilter } = this.state;
-
-    let peopleById = Immutable.Map();
-
-    psaNeighborsById.valueSeq().forEach((neighbors) => {
-      const staffMatchingFilter = neighbors
-        .get(ENTITY_SETS.STAFF, Immutable.List()).filter(neighbor => neighbor
-          .getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.PERSON_ID, 0], '').includes(countyFilter));
-
-      if (!countyFilter.length || staffMatchingFilter.size) {
-        const neighbor = neighbors.getIn([ENTITY_SETS.PEOPLE, PSA_NEIGHBOR.DETAILS], Immutable.Map());
-        const personId = neighbor.get(PROPERTY_TYPES.PERSON_ID);
-        if (personId) {
-          peopleById = peopleById.set(personId, peopleById.get(personId, Immutable.List()).push(neighbor));
-        }
-      }
-    });
-
-    let people = Immutable.List();
-    peopleById.valueSeq().forEach((personList) => {
-      if (personList.size > 1) {
-        people = people.push(personList.get(0));
-      }
-    });
-
-    return this.getFormattedPeople(people);
-  }
-
   renderRequiresActionPeopleComponent = () => {
     const { loadingPSAData, isFetchingPeople } = this.props;
-    const { didMapPeopleToProps } = this.state;
-    if (loadingPSAData) {
-      return <LoadingSpinner />;
-    }
-
-    const formattedPeople = this.getPeopleRequiringAction();
+    const { didMapPeopleToProps, countyFilter } = this.state;
     return (
-      <PeopleList
-          people={formattedPeople}
-          isFetchingPeople={isFetchingPeople}
-          didMapPeopleToProps={didMapPeopleToProps} />
+      <RequiresActionList
+          countyFilter={countyFilter}
+          didMapPeopleToProps={didMapPeopleToProps}
+          isLoadingPeople={isFetchingPeople}
+          loadingPSAData={loadingPSAData} />
     );
   }
 
@@ -316,10 +262,6 @@ function mapStateToProps(state) {
 
 function mapDispatchToProps(dispatch) {
   const actions :{ [string] :Function } = { searchPeopleRequest };
-
-  Object.keys(ReviewActionFactory).forEach((action :string) => {
-    actions[action] = ReviewActionFactory[action];
-  });
 
   return {
     actions: {
