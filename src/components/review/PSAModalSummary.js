@@ -8,7 +8,7 @@ import styled from 'styled-components';
 import ChargeHistoryStats from '../casehistory/ChargeHistoryStats';
 import ChargeTable from '../charges/ChargeTable';
 import PSASummary from './PSASummary';
-import { PendingChargeStatus } from '../../utils/Layout';
+import { AlternateSectionHeader, PendingChargeStatus, Count } from '../../utils/Layout';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
 import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
@@ -24,27 +24,6 @@ const ChargeTableContainer = styled.div`
   text-align: center;
   width: 100%;
   margin: 0;
-`;
-
-const StyledSectionHeader = styled.div`
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  font-family: 'Open Sans', sans-serif;
-  font-size: 16px;
-  padding: 30px 0 20px 30px;
-  font-weight: 600;
-  color: ${OL.GREY01};
-`;
-
-const Count = styled.div`
-  height: fit-content;
-  padding: 0 10px;
-  margin-left: 10px;
-  border-radius: 10px;
-  background-color: ${OL.GREY08};
-  font-size: 12px;
-  color: ${OL.GREY02};
 `;
 
 const StyledChargeStatus = styled(PendingChargeStatus)`
@@ -82,10 +61,10 @@ class PSAModalSummary extends React.Component<Props, *> {
     const charges = manualChargeHistory.get(caseNum, Immutable.List());
     return (
       <ChargeTableContainer>
-        <StyledSectionHeader>
+        <AlternateSectionHeader>
           Charges
           <Count>{charges.size}</Count>
-        </StyledSectionHeader>
+        </AlternateSectionHeader>
         <ChargeTable charges={charges} pretrialCase={pretrialCase} />
       </ChargeTableContainer>
     );
