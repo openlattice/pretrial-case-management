@@ -10,12 +10,8 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { NavLink } from 'react-router-dom';
 import { Constants } from 'lattice';
-import {
-  ButtonToolbar,
-  ToggleButton,
-  ToggleButtonGroup
-} from 'react-bootstrap';
 
+import { formatPeopleInfo } from '../../utils/PeopleUtils';
 import SecondaryButton from '../../components/buttons/SecondaryButton';
 import ToggleButtonsGroup from '../../components/buttons/ToggleButtons';
 import LoadingSpinner from '../../components/LoadingSpinner';
@@ -23,7 +19,7 @@ import PersonCard from '../../components/people/PersonCard';
 import StyledDatePicker from '../../components/controls/StyledDatePicker';
 import * as Routes from '../../core/router/Routes';
 import { StyledSectionWrapper } from '../../utils/Layout';
-import { TIME_FORMAT, formatDate } from '../../utils/FormattingUtils';
+import { TIME_FORMAT } from '../../utils/FormattingUtils';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { DOMAIN } from '../../utils/consts/ReportDownloadTypes';
 import { sortPeopleByName } from '../../utils/PSAUtils';
@@ -42,10 +38,6 @@ import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
 import * as DataActionFactory from '../../utils/data/DataActionFactory';
 
 const { OPENLATTICE_ID_FQN } = Constants;
-
-const ToolbarWrapper = styled(ButtonToolbar)`
-  margin-bottom: 20px;
-`;
 
 const StyledFormViewWrapper = styled.div`
   display: flex;
@@ -67,10 +59,6 @@ const StyledTitleWrapper = styled.div`
   justify-content: space-between;
   margin-bottom: 30px;
   width: 100%;
-`;
-
-const Toggle = styled(ToggleButton)`
-  -webkit-appearance: none !important;
 `;
 
 const HearingTime = styled.div`
@@ -254,12 +242,8 @@ class CourtContainer extends React.Component<Props, State> {
       submitting,
       psaIdsRefreshing
     } = this.props;
-
-    const personId = person.getIn([PROPERTY_TYPES.PERSON_ID, 0]);
     const personOlId = person.getIn([OPENLATTICE_ID_FQN, 0]);
     const openPSAId = peopleIdsToOpenPSAIds.get(personOlId, '');
-    const dobMoment = moment(person.getIn([PROPERTY_TYPES.DOB, 0], ''));
-    const formattedDOB = dobMoment.isValid() ? formatDate(dobMoment) : '';
     const personCaseHistory = caseHistory.get(personOlId, List());
     const personManualCaseHistory = manualCaseHistory.get(personOlId, List());
     const personChargeHistory = chargeHistory.get(personOlId, Map());
@@ -270,14 +254,7 @@ class CourtContainer extends React.Component<Props, State> {
     const hasOpenPSA = peopleWithOpenPsas.has(personOlId);
     const scores = scoresAsMap.get(openPSAId, Map());
     const neighbors = psaNeighborsById.get(openPSAId, Map());
-    const personObj = {
-      identification: personId,
-      firstName: person.getIn([PROPERTY_TYPES.FIRST_NAME, 0]),
-      middleName: person.getIn([PROPERTY_TYPES.MIDDLE_NAME, 0]),
-      lastName: person.getIn([PROPERTY_TYPES.LAST_NAME, 0]),
-      dob: formattedDOB,
-      photo: person.getIn([PROPERTY_TYPES.PICTURE, 0])
-    };
+    const personObj = formatPeopleInfo(person);
     const entityKeyId = scores.getIn([OPENLATTICE_ID_FQN, 0]);
     return (
       <PersonCard
@@ -397,7 +374,7 @@ class CourtContainer extends React.Component<Props, State> {
       { value: '', label: 'All' },
       { value: DOMAIN.PENNINGTON, label: 'Pennington' },
       { value: DOMAIN.MINNEHAHA, label: 'Minnehaha' },
-    ]
+    ];
     return (
       <ToggleWrapper>
         <ToggleButtonsGroup
@@ -405,7 +382,7 @@ class CourtContainer extends React.Component<Props, State> {
             selectedOption={county}
             onSelect={this.onCountyChange} />
       </ToggleWrapper>
-    )
+    );
   }
 
   renderCourtroomChoices = () => {
