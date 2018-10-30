@@ -3,7 +3,7 @@
  */
 
 import React from 'react';
-import Immutable from 'immutable';
+import { Map, List } from 'immutable';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { Constants } from 'lattice';
@@ -25,12 +25,14 @@ import * as ReviewActionFactory from '../review/ReviewActionFactory';
 const { OPENLATTICE_ID_FQN } = Constants;
 
 type Props = {
-  selectedPersonData :Immutable.Map<*, *>,
+  selectedPersonData :Map<*, *>,
   isFetchingPersonData :boolean,
-  neighbors :Immutable.Map<*, *>,
-  psaNeighborsById :Immutable.Map<*, *>,
-  mostRecentPSA :Immutable.Map<*, *>,
+  loadingPSAData :boolean,
+  loadingPSAResults :boolean,
+  mostRecentPSA :Map<*, *>,
   mostRecentPSAEntityKeyId :string,
+  neighbors :Map<*, *>,
+  psaNeighborsById :Map<*, *>,
   actions :{
     getPersonData :(personId :string) => void,
     getPersonNeighbors :(value :{
@@ -38,11 +40,11 @@ type Props = {
     }) => void,
     loadCaseHistory :(values :{
       personId :string,
-      neighbors :Immutable.Map<*, *>
+      neighbors :Map<*, *>
     }) => void,
     downloadPSAReviewPDF :(values :{
-      neighbors :Immutable.Map<*, *>,
-      scores :Immutable.Map<*, *>
+      neighbors :Map<*, *>,
+      scores :Map<*, *>
     }) => void,
     loadPSAData :(psaIds :string[]) => void
   },
@@ -64,7 +66,7 @@ class PersonDetailsContainer extends React.Component<Props, State> {
 
   componentWillReceiveProps(nextProps) {
     const { neighbors, actions } = this.props;
-    const psaIds = nextProps.neighbors.get(ENTITY_SETS.PSA_SCORES, Immutable.List())
+    const psaIds = nextProps.neighbors.get(ENTITY_SETS.PSA_SCORES, List())
       .map(neighbor => neighbor.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0]))
       .filter(id => !!id)
       .toJS();
@@ -100,7 +102,7 @@ class PersonDetailsContainer extends React.Component<Props, State> {
       ''
     );
 
-    const scoreSeq = neighbors.get(ENTITY_SETS.PSA_SCORES, Immutable.Map())
+    const scoreSeq = neighbors.get(ENTITY_SETS.PSA_SCORES, Map())
       .filter(neighbor => !!neighbor.get(PSA_NEIGHBOR.DETAILS))
       .map(neighbor => [neighbor
         .getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0]), neighbor.get(PSA_NEIGHBOR.DETAILS)]);
@@ -132,24 +134,18 @@ class PersonDetailsContainer extends React.Component<Props, State> {
 
 function mapStateToProps(state, ownProps) {
   const { personId } = ownProps.match.params;
-  const psaNeighborsById = state.getIn([STATE.REVIEW, REVIEW.NEIGHBORS_BY_ID], true);
-  const loadingPSAData = state.getIn([STATE.REVIEW, REVIEW.LOADING_DATA], true);
-  const loadingPSAResults = state.getIn([STATE.REVIEW, REVIEW.LOADING_RESULTS], true);
-  const isFetchingPersonData = state.getIn([STATE.PEOPLE, PEOPLE.FETCHING_PERSON_DATA], true);
-  const selectedPersonData = state.getIn([STATE.PEOPLE, PEOPLE.PERSON_DATA], Immutable.List());
-  const neighbors = state.getIn([STATE.PEOPLE, PEOPLE.NEIGHBORS, personId], Immutable.Map());
-  const mostRecentPSA = state.getIn([STATE.PEOPLE, PEOPLE.MOST_RECENT_PSA], Immutable.Map());
-  const mostRecentPSAEntityKeyId = state.getIn([STATE.PEOPLE, PEOPLE.MOST_RECENT_PSA_ENTITY_KEY], '');
+  const review = state.get(STATE.REVIEW);
+  const people = state.get(STATE.PEOPLE);
 
   return {
-    loadingPSAData,
-    loadingPSAResults,
-    psaNeighborsById,
-    selectedPersonData,
-    isFetchingPersonData,
-    neighbors,
-    mostRecentPSA,
-    mostRecentPSAEntityKeyId
+    [REVIEW.NEIGHBORS_BY_ID]: review.get(REVIEW.NEIGHBORS_BY_ID),
+    [REVIEW.LOADING_DATA]: review.get(REVIEW.LOADING_DATA),
+    [REVIEW.LOADING_RESULTS]: review.get(REVIEW.LOADING_RESULTS),
+    [PEOPLE.FETCHING_PERSON_DATA]: people.get(PEOPLE.FETCHING_PERSON_DATA),
+    [PEOPLE.PERSON_DATA]: people.get(PEOPLE.PERSON_DATA),
+    [PEOPLE.NEIGHBORS]: people.getIn([PEOPLE.NEIGHBORS, personId], Map()),
+    [PEOPLE.MOST_RECENT_PSA]: people.get(PEOPLE.MOST_RECENT_PSA),
+    [PEOPLE.MOST_RECENT_PSA_ENTITY_KEY]: people.get(PEOPLE.MOST_RECENT_PSA_ENTITY_KEY)
   };
 }
 
