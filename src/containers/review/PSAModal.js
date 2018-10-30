@@ -30,6 +30,7 @@ import { getScoresAndRiskFactors, calculateDMF } from '../../utils/ScoringUtils'
 import { getEntityKeyId, getEntitySetId, getIdValue } from '../../utils/DataUtils';
 import { CenteredContainer, Title } from '../../utils/Layout';
 import { toISODateTime } from '../../utils/FormattingUtils';
+import { getCasesForPSA, currentPendingCharges } from '../../utils/CaseUtils';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { RESULT_CATEGORIES } from '../../utils/consts/DMFResultConsts';
 import { formatDMFFromEntity } from '../../utils/DMFUtils';
@@ -37,6 +38,7 @@ import { OL } from '../../utils/consts/Colors';
 import { psaIsClosed } from '../../utils/PSAUtils';
 import {
   PSA_NEIGHBOR,
+  PSA_ASSOCIATION,
   STATE,
   REVIEW,
   COURT
@@ -531,11 +533,29 @@ class PSAModal extends React.Component<Props, State> {
       scores,
       manualCaseHistory,
       chargeHistory,
+      caseHistory,
       manualChargeHistory,
       actions
     } = this.props;
-
     const { riskFactors } = this.state;
+    const arrestDate = neighbors.getIn(
+      [ENTITY_SETS.MANUAL_PRETRIAL_CASES, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.ARREST_DATE_TIME, 0],
+      ''
+    );
+    const lastEditDateForPSA = neighbors.getIn(
+      [ENTITY_SETS.STAFF, 0, PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.DATE_TIME, 0],
+      ''
+    );
+    const { chargeHistoryForMostRecentPSA } = getCasesForPSA(
+      caseHistory,
+      chargeHistory,
+      scores,
+      arrestDate,
+      lastEditDateForPSA
+    );
+
+    const pendingCharges = currentPendingCharges(chargeHistoryForMostRecentPSA);
+    console.log(pendingCharges);
 
     return (
       <PSASummary
@@ -545,7 +565,8 @@ class PSAModal extends React.Component<Props, State> {
           manualCaseHistory={manualCaseHistory}
           chargeHistory={chargeHistory}
           manualChargeHistory={manualChargeHistory}
-          notes={riskFactors.get(PSA.NOTES)} />
+          notes={riskFactors.get(PSA.NOTES)}
+          pendingCharges={pendingCharges} />
     );
   }
 
@@ -634,7 +655,32 @@ class PSAModal extends React.Component<Props, State> {
   }
 
   renderCaseHistory = () => {
-    const { caseHistory, chargeHistory } = this.props;
+    const {
+      caseHistory,
+      chargeHistory,
+      scores,
+      neighbors
+    } = this.props;
+    const arrestDate = neighbors.getIn(
+      [ENTITY_SETS.MANUAL_PRETRIAL_CASES, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.ARREST_DATE_TIME, 0],
+      ''
+    );
+    const lastEditDateForPSA = neighbors.getIn(
+      [ENTITY_SETS.STAFF, 0, PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.DATE_TIME, 0],
+      ''
+    );
+    const {
+      caseHistoryForMostRecentPSA,
+      chargeHistoryForMostRecentPSA,
+      caseHistoryNotForMostRecentPSA,
+      chargeHistoryNotForMostRecentPSA
+    } = getCasesForPSA(
+      caseHistory,
+      chargeHistory,
+      scores,
+      arrestDate,
+      lastEditDateForPSA
+    );
     return (
       <ModalWrapper withPadding>
         <Title withSubtitle>
@@ -643,7 +689,13 @@ class PSAModal extends React.Component<Props, State> {
         </Title>
         <CaseHistoryTimeline caseHistory={caseHistory} chargeHistory={chargeHistory} />
         <hr />
-        <CaseHistory modal caseHistory={caseHistory} chargeHistory={chargeHistory} />
+        <CaseHistory
+            modal
+            caseHistoryForMostRecentPSA={caseHistoryForMostRecentPSA}
+            chargeHistoryForMostRecentPSA={chargeHistoryForMostRecentPSA}
+            caseHistoryNotForMostRecentPSA={caseHistoryNotForMostRecentPSA}
+            chargeHistoryNotForMostRecentPSA={chargeHistoryNotForMostRecentPSA}
+            chargeHistory={chargeHistory} />
       </ModalWrapper>
     );
   };
@@ -704,7 +756,10 @@ class PSAModal extends React.Component<Props, State> {
       open,
       onClose,
       entityKeyId,
-      readOnly
+      readOnly,
+      caseHistory,
+      chargeHistory,
+      neighbors
     } = this.props;
 
     const { closing } = this.state;

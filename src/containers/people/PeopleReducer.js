@@ -1,17 +1,15 @@
 /*
  * @flow
  */
-import { Constants } from 'lattice';
 import Immutable from 'immutable';
+import moment from 'moment';
+import { Constants } from 'lattice';
 
-import {
-  getPeople,
-  getPersonData,
-  getPersonNeighbors
-} from './PeopleActionFactory';
 import { changePSAStatus, updateScoresAndRiskFactors } from '../review/ReviewActionFactory';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { getPeople, getPersonData, getPersonNeighbors } from './PeopleActionFactory';
 import { PEOPLE, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
+import { PSA_STATUSES } from '../../utils/consts/Consts';
 
 const { OPENLATTICE_ID_FQN } = Constants;
 const INITIAL_STATE = Immutable.fromJS({
@@ -21,7 +19,9 @@ const INITIAL_STATE = Immutable.fromJS({
   [PEOPLE.PERSON_ENTITY_KEY_ID]: '',
   [PEOPLE.FETCHING_PEOPLE]: false,
   [PEOPLE.FETCHING_PERSON_DATA]: false,
-  [PEOPLE.NEIGHBORS]: Immutable.Map()
+  [PEOPLE.NEIGHBORS]: Immutable.Map(),
+  [PEOPLE.MOST_RECENT_PSA]: Immutable.Map(),
+  [PEOPLE.MOST_RECENT_PSA_ENTITY_KEY]: ''
 });
 
 export default function peopleReducer(state = INITIAL_STATE, action) {
@@ -68,10 +68,25 @@ export default function peopleReducer(state = INITIAL_STATE, action) {
         FAILURE: () => state.setIn([PEOPLE.NEIGHBORS, action.personId], Immutable.Map()),
         SUCCESS: () => {
           let caseNums = Immutable.Set();
-          const { personId, neighbors } = action.value;
           let neighborsByEntitySet = Immutable.Map();
+          let mostRecentPSA;
+          let mostRecentPSAEntityKeyId;
+          let currentPSADateTime;
+
+          const { personId, neighbors } = action.value;
+
           Immutable.fromJS(neighbors).forEach((neighborObj) => {
             const entitySetName = neighborObj.getIn([PSA_NEIGHBOR.ENTITY_SET, 'name'], '');
+            const entityDateTime = moment(neighborObj.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.DATE_TIME, 0]));
+            const entityKeyId = neighborObj.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0], '');
+            if (entitySetName === ENTITY_SETS.PSA_SCORES
+                && neighborObj.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.STATUS, 0]) === PSA_STATUSES.OPEN) {
+              if (!mostRecentPSA || currentPSADateTime.isBefore(entityDateTime)) {
+                mostRecentPSA = neighborObj;
+                mostRecentPSAEntityKeyId = entityKeyId;
+                currentPSADateTime = entityDateTime;
+              }
+            }
             neighborsByEntitySet = neighborsByEntitySet.set(
               entitySetName,
               neighborsByEntitySet.get(entitySetName, Immutable.List()).push(neighborObj)
@@ -95,6 +110,8 @@ export default function peopleReducer(state = INITIAL_STATE, action) {
           return (
             state.setIn([PEOPLE.NEIGHBORS, personId], uniqNeighborsByEntitySet)
               .set(PEOPLE.SCORES_ENTITY_SET_ID, scoresEntitySetId)
+              .set(PEOPLE.MOST_RECENT_PSA, mostRecentPSA)
+              .set(PEOPLE.MOST_RECENT_PSA_ENTITY_KEY, mostRecentPSAEntityKeyId)
           );
         }
       });

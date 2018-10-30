@@ -34,7 +34,7 @@ const StepOne = ({
       content: [<ContentsWrapper>{fta}<ScoreScale dims={scaleDims} score={fta} /></ContentsWrapper>]
     },
     {
-      label: 'Time of PSA',
+      label: 'Type of PSA',
       content: [<ContentsWrapper>{context}</ContentsWrapper>]
     }
   ];
