@@ -56,7 +56,7 @@ const CaseHistory = ({
           chargeHistory={chargeHistoryNotForMostRecentPSA}
           modal={modal} />
     </CaseHistoryWrapper>
-  )
+  );
 };
 
 export default CaseHistory;
