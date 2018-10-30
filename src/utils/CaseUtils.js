@@ -39,21 +39,29 @@ export const getCaseHistory = (neighbors) => {
   return caseHistory;
 };
 
-const getPendingCharges = (caseNum, chargeHistory, arrestDate, psaClosureDate) => (
-  chargeHistory.get(caseNum)
-    .filter((charge) => {
-      const dispositionDate = moment(charge.getIn([PROPERTY_TYPES.DISPOSITION_DATE, 0], ''));
-      return dispositionDate.isBetween(arrestDate, psaClosureDate, null, '[]');
-    })
-);
+const getPendingCharges = (caseNum, chargeHistory, arrestDate, psaClosureDate) => {
+  let pendingCharges = Map();
+  if (chargeHistory.get(caseNum)) {
+    pendingCharges = chargeHistory.get(caseNum)
+      .filter((charge) => {
+        const dispositionDate = moment(charge.getIn([PROPERTY_TYPES.DISPOSITION_DATE, 0], ''));
+        return dispositionDate.isBetween(arrestDate, psaClosureDate, null, '[]');
+      });
+  }
+  return pendingCharges;
+};
 
-const getNonPendingCharges = (caseNum, chargeHistory, arrestDate, psaClosureDate) => (
-  chargeHistory.get(caseNum)
-    .filter((charge) => {
-      const dispositionDate = moment(charge.getIn([PROPERTY_TYPES.DISPOSITION_DATE, 0], ''));
-      return !dispositionDate.isBetween(arrestDate, psaClosureDate, null, '[]');
-    })
-);
+const getNonPendingCharges = (caseNum, chargeHistory, arrestDate, psaClosureDate) => {
+  let nonPendingCharges = Map();
+  if (chargeHistory.get(caseNum)) {
+    nonPendingCharges = chargeHistory.get(caseNum)
+      .filter((charge) => {
+        const dispositionDate = moment(charge.getIn([PROPERTY_TYPES.DISPOSITION_DATE, 0], ''));
+        return !dispositionDate.isBetween(arrestDate, psaClosureDate, null, '[]');
+      });
+  }
+  return nonPendingCharges;
+};
 
 export const currentPendingCharges = (charges) => {
   let pendingCharges = List();
