@@ -8,9 +8,8 @@ import styled from 'styled-components';
 import ChargeHistoryStats from '../casehistory/ChargeHistoryStats';
 import ChargeTable from '../charges/ChargeTable';
 import PSASummary from './PSASummary';
-import { AlternateSectionHeader, PendingChargeStatus, Count } from '../../utils/Layout';
+import { AlternateSectionHeader, Count } from '../../utils/Layout';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { OL } from '../../utils/consts/Colors';
 import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 
 const SummaryWrapper = styled.div`
@@ -24,11 +23,6 @@ const ChargeTableContainer = styled.div`
   text-align: center;
   width: 100%;
   margin: 0;
-`;
-
-const StyledChargeStatus = styled(PendingChargeStatus)`
-    position: relative;
-    transform: translateX(400px) translateY(50px);
 `;
 
 type Props = {
@@ -70,26 +64,15 @@ class PSAModalSummary extends React.Component<Props, *> {
     );
   }
 
-  renderPendingChargeStatus = () => {
-    const { pendingCharges } = this.props;
-    const statusText = pendingCharges.size
-      ? `${pendingCharges.size} Pending Charge${pendingCharges.size > 1 ? 's' : ''}`
-      : 'No Pending Charges';
-    return (
-      <StyledChargeStatus pendingCharges={pendingCharges.size}>
-        {statusText}
-      </StyledChargeStatus>
-    );
-  }
-
   render() {
     const {
-      scores,
-      notes,
       chargeHistory,
-      neighbors,
+      downloadFn,
       manualCaseHistory,
-      downloadFn
+      neighbors,
+      notes,
+      pendingCharges,
+      scores
     } = this.props;
 
     return (
@@ -100,8 +83,10 @@ class PSAModalSummary extends React.Component<Props, *> {
             neighbors={neighbors}
             manualCaseHistory={manualCaseHistory}
             downloadFn={downloadFn} />
-        {(chargeHistory.size) ? this.renderPendingChargeStatus() : null}
-        <ChargeHistoryStats padding chargeHistory={chargeHistory} />
+        <ChargeHistoryStats
+            padding
+            pendingCharges={pendingCharges}
+            chargeHistory={chargeHistory} />
         {this.renderCaseInfo()}
       </SummaryWrapper>
     );
