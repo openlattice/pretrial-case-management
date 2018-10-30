@@ -475,7 +475,6 @@ export const Count = styled.div`
 `;
 
 export const PendingChargeStatus = styled.div`
-  position: absolute;
   border-radius: 3px;
   text-transform: uppercase;
   padding: 5px;
