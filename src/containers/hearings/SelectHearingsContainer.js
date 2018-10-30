@@ -22,7 +22,7 @@ import NewHearingSection from '../../components/hearings/NewHearingSection';
 import psaHearingConfig from '../../config/formconfig/PSAHearingConfig';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import SelectReleaseConditions from '../../components/releaseconditions/SelectReleaseConditions';
-
+import { OL } from '../../utils/consts/Colors';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { HEARING_CONSTS, formatJudgeName } from '../../utils/consts/HearingConsts';
 import { Title } from '../../utils/Layout';
@@ -73,7 +73,7 @@ const Header = styled.div`
     font-family: 'Open Sans', sans-serif;
     font-size: 16px;
     font-weight: 600;
-    color: #555e6f;
+    color: ${OL.GREY01};
   }
 `;
 
@@ -103,7 +103,7 @@ const SubmittingWrapper = styled.div`
     font-family: 'Open Sans', sans-serif;
     font-size: 16px;
     margin: 20px 0;
-    color: #2e2e34;
+    color: ${OL.GREY15};
   }
 `;
 

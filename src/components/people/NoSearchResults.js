@@ -2,6 +2,7 @@ import React from 'react';
 import styled from 'styled-components';
 
 import noPersonIcon from '../../assets/svg/no-person-icon.svg';
+import { OL } from '../../utils/consts/Colors';
 
 const NoResultsContainer = styled.div`
   display: flex;
@@ -14,7 +15,7 @@ const NoResultsContainer = styled.div`
     font-family: 'Open Sans', sans-serif;
     font-size: 16px;
     font-weight: 600;
-    color: #8e929b;
+    color: ${OL.GREY02};
   }
 `;
 

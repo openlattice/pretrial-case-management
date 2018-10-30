@@ -2,6 +2,7 @@ import React from 'react';
 import styled from 'styled-components';
 import DatePicker from 'react-bootstrap-date-picker';
 
+import { OL } from '../../utils/consts/Colors';
 import calendarIcon from '../../assets/svg/calendar-icon.svg';
 
 const DatePickerWrapper = styled.div`
@@ -28,7 +29,7 @@ const StyledDatePickerInput = styled(DatePicker)`
   height: 39px;
   border-radius: 3px;
   background-color: none;
-  border: 1px solid #dcdce7;
+  border: 1px solid ${OL.GREY05};
   padding: 0 8px;
   box-shadow: none;
   position: absolute;
@@ -36,11 +37,11 @@ const StyledDatePickerInput = styled(DatePicker)`
   font-size: 14px;
 
   &::placeholder {
-    color: #8e929b;
+    color: ${OL.GREY02};
   }
 
   &:focus {
-    background-color: #ffffff;
+    background-color: ${OL.WHITE};
     box-shadow: inset 0 0 0 1px rebeccapurple;
     outline: none;
   }
@@ -50,7 +51,7 @@ const StyledDatePickerInput = styled(DatePicker)`
 
       div {
         min-width: 300px;
-        border: solid 1px #e1e1eb;
+        border: solid 1px ${OL.GREY11};
         box-shadow: 0 10px 20px 0 rgba(0, 0, 0, 0.1);
 
         div {
@@ -60,7 +61,7 @@ const StyledDatePickerInput = styled(DatePicker)`
         }
 
         h3 {
-          background-color: #ffffff;
+          background-color: ${OL.WHITE};
           padding: 20px 15px 0 15px;
           border: none;
 
@@ -74,7 +75,7 @@ const StyledDatePickerInput = styled(DatePicker)`
               font-family: 'Open Sans', sans-serif;
               font-size: 14px;
               font-weight: bold;
-              color: #555e6f;
+              color: ${OL.GREY01};
             }
 
             div {
@@ -90,7 +91,7 @@ const StyledDatePickerInput = styled(DatePicker)`
               padding: 10px 12px;
 
               &:hover {
-                background-color: #f0f0f7;
+                background-color: ${OL.GREY08};
               }
             }
           }
@@ -110,7 +111,7 @@ const StyledDatePickerInput = styled(DatePicker)`
                   font-family: 'Open Sans', sans-serif;
                   font-size: 11px;
                   font-weight: bold;
-                  color: #8e929b;
+                  color: ${OL.GREY02};
                 }
               }
             }
@@ -124,12 +125,12 @@ const StyledDatePickerInput = styled(DatePicker)`
                   font-size: 12px;
                   font-weight: 600;
                   text-align: center;
-                  color: #555e6f;
+                  color: ${OL.GREY01};
                   padding: 5px 16px;
                   border-radius: 2px !important;
 
                   &:hover {
-                    background-color: #f0f0f7;
+                    background-color: ${OL.GREY08};
                   }
                 }
               }

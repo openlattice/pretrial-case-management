@@ -28,6 +28,7 @@ import {
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { DOMAIN } from '../../utils/consts/ReportDownloadTypes';
 import { STATE, DASHBOARD } from '../../utils/consts/FrontEndStateConsts';
+import { OL } from '../../utils/consts/Colors';
 import {
   CloseX,
   StyledFormViewWrapper,
@@ -74,7 +75,7 @@ const ChartTitle = styled.div`
 `;
 
 const ErrorMessage = styled.div`
-  color: #cc0000;
+  color: ${OL.RED03};
   font-size: 18px;
   font-weight: bold;
   text-align: center;

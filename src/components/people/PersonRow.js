@@ -9,6 +9,7 @@ import { Constants } from 'lattice';
 
 import defaultUserIcon from '../../assets/svg/profile-placeholder-round.svg';
 import { formatValue, formatDateList } from '../../utils/FormattingUtils';
+import { OL } from '../../utils/consts/Colors';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 
 const { OPENLATTICE_ID_FQN } = Constants;
@@ -32,12 +33,12 @@ const Cell = styled.td`
 
 const Row = styled.tr`
   padding: 7px 30px;
-  border-bottom: 1px solid #e1e1eb;
-  border-left: 1px solid #e1e1eb;
-  border-right: 1px solid #e1e1eb;
+  border-bottom: 1px solid ${OL.GREY11};
+  border-left: 1px solid ${OL.GREY11};
+  border-right: 1px solid ${OL.GREY11};
 
   ${Cell} {
-    color: ${props => (props.gray ? '#8e929b' : '#2e2e34')};
+    color: ${props => (props.gray ? OL.GREY02 : OL.GREY15)};
   }
 
   ${Cell}:first-child {
@@ -50,11 +51,11 @@ const Row = styled.tr`
 
   &:hover {
     cursor: pointer;
-    background: #f8f8fc;
+    background: ${OL.GREY14};
   }
 
   &:active {
-    background-color: #f0f0f7;
+    background-color: ${OL.GREY08};
   }
 `;
 

@@ -17,8 +17,9 @@ import StyledInput from '../../components/controls/StyledInput';
 import InfoButton from '../buttons/InfoButton';
 import closeX from '../../assets/svg/close-x-gray.svg';
 import psaEditedConfig from '../../config/formconfig/PsaEditedConfig';
-import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { CenteredContainer } from '../../utils/Layout';
+import { OL } from '../../utils/consts/Colors';
+import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_STATUSES, PSA_FAILURE_REASONS, EDIT_FIELDS } from '../../utils/consts/Consts';
 import { stripIdField } from '../../utils/DataUtils';
 import { toISODateTime } from '../../utils/FormattingUtils';
@@ -32,7 +33,7 @@ const ModalWrapper = styled(CenteredContainer)`
   margin-top: -15px;
   padding: 15px;
   width: 100%;
-  color: #555e6f;
+  color: ${OL.GREY01};
   font-family: 'Open Sans', sans-serif;
   justify-content: center;
   h1, h2, h3 {
@@ -101,7 +102,7 @@ export const OptionsGrid = styled.div`
 const FailureReasonsWrapper = styled.div`
   font-size: 16px;
   text-align: left;
-  color: #555e6f;
+  color: ${OL.GREY01};
 `;
 
 type Props = {

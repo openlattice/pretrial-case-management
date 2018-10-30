@@ -5,6 +5,7 @@ import React from 'react';
 import Immutable from 'immutable';
 import styled from 'styled-components';
 
+import { OL } from '../../utils/consts/Colors';
 import { Title } from '../../utils/Layout';
 import { getSummaryStats } from '../../utils/HistoricalChargeUtils';
 
@@ -47,7 +48,7 @@ const StatsItem = styled.div`
 const StatLabel = styled.span`
   font-size: 16px;
   text-align: left;
-  color: #555e6f;
+  color: ${OL.GREY01};
 `;
 
 const StatValue = styled.span`
@@ -55,7 +56,7 @@ const StatValue = styled.span`
   font-size: 16px;
   font-weight: 600;
   text-align: right;
-  color: #555e6f;
+  color: ${OL.GREY01};
 `;
 
 type Props = {

@@ -2,7 +2,7 @@ import React from 'react';
 import styled from 'styled-components';
 
 import RiskFactorRow from './RiskFactorRow';
-import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { OL } from '../../utils/consts/Colors';
 
 const Table = styled.table`
   width: 100%;
@@ -10,15 +10,15 @@ const Table = styled.table`
 `;
 
 const HeaderRow = styled.tr`
-  background-color: #f0f0f7;
-  border: 1px solid #f0f0f7;
+  background-color: ${OL.GREY08};
+  border: 1px solid ${OL.GREY08};
 `;
 
 const HeaderElement = styled.th`
   font-size: 11px;
   font-weight: 600;
   font-family: 'Open Sans', sans-serif;
-  color: #8e929b;
+  color: ${OL.GREY02};
   text-transform: uppercase;
   padding: 12px 30px;
 `;

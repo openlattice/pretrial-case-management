@@ -5,29 +5,31 @@
 import React from 'react';
 import styled from 'styled-components';
 
+import { OL } from '../../utils/consts/Colors';
 import { RESULT_CATEGORIES, COLORS } from '../../utils/consts/DMFResultConsts';
 import { getConditionsTextList } from '../../utils/DMFUtils';
 
 type Props = {
   selected :boolean,
   dmf :Object,
-  large? :boolean
+  large? :boolean,
+  table :boolean
 };
 
 const COLOR_MAPPINGS = {
-  [COLORS.DARK_GREEN]: '#018856',
-  [COLORS.LIGHT_GREEN]: '#60d050',
-  [COLORS.YELLOW]: '#fff566',
-  [COLORS.ORANGE]: '#ffa748',
-  [COLORS.RED]: '#d02924'
+  [COLORS.DARK_GREEN]: OL.GREEN04,
+  [COLORS.LIGHT_GREEN]: OL.GREEN05,
+  [COLORS.YELLOW]: OL.YELLOW03,
+  [COLORS.ORANGE]: OL.ORANGE02,
+  [COLORS.RED]: OL.RED02,
 };
 
 const TEXT_COLOR_MAPPINGS = {
-  [COLORS.DARK_GREEN]: '#ffffff',
-  [COLORS.LIGHT_GREEN]: '#2e2e34',
-  [COLORS.YELLOW]: '#2e2e34',
-  [COLORS.ORANGE]: '#2e2e34',
-  [COLORS.RED]: '#ffffff'
+  [COLORS.DARK_GREEN]: OL.WHITE,
+  [COLORS.LIGHT_GREEN]: OL.GREY15,
+  [COLORS.YELLOW]: OL.GREY15,
+  [COLORS.ORANGE]: OL.GREY15,
+  [COLORS.RED]: OL.WHITE
 };
 
 const Condition = styled.div`
@@ -39,7 +41,7 @@ const Condition = styled.div`
         '14px;'
       );
     }
-    else if (props.table) {
+    if (props.table) {
       return (
         '12px;'
       );
@@ -67,7 +69,7 @@ const Cell = styled.div`
          width: 165px;`
       );
     }
-    else if (props.table) {
+    if (props.table) {
       return (
         `height: 77px;
          width: 128px;
@@ -81,7 +83,12 @@ const Cell = styled.div`
   }}
 `;
 
-const DMFCell = ({ selected, dmf, large, table }) :Props => {
+const DMFCell = ({
+  selected,
+  dmf,
+  large,
+  table
+} :Props) => {
 
   const StyledCell = styled(Cell)`
     background-color: ${COLOR_MAPPINGS[dmf[RESULT_CATEGORIES.COLOR]]};

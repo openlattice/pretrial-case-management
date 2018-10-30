@@ -25,7 +25,7 @@ import { StyledFormWrapper, StyledSectionWrapper } from '../../utils/Layout';
 import { newPersonSubmitRequest } from './PersonActionFactory';
 import { clearForm } from '../psa/FormActionFactory';
 import { STATE, SEARCH } from '../../utils/consts/FrontEndStateConsts';
-
+import { OL } from '../../utils/consts/Colors';
 
 import {
   ADDRESS_VALUE,
@@ -55,7 +55,7 @@ import * as Routes from '../../core/router/Routes';
 const FormSection = styled.div`
   width: 100%;
   padding: 20px 30px;
-  border-bottom: 1px solid #e1e1eb;
+  border-bottom: 1px solid ${OL.GREY11};
 
   &:last-child {
     margin-bottom: -30px;
@@ -97,7 +97,7 @@ const UnpaddedRow = styled(PaddedRow)`
 const Header = styled.div`
   font-family: 'Open Sans', sans-serif;
   font-size: 18px;
-  color: #555e6f;
+  color: ${OL.GREY01};
 `;
 
 const SubHeader = styled(Header)`
@@ -108,7 +108,7 @@ const SubHeader = styled(Header)`
 const InputLabel = styled.span`
   font-family: 'Open Sans', sans-serif;
   font-size: 14px;
-  color: #555e6f;
+  color: ${OL.GREY01};
   margin-bottom: 10px;
 `;
 
@@ -129,7 +129,7 @@ const InputGroup = styled.div`
 `;
 
 const ErrorMessage = styled.div`
-  color: #cc0000;
+  color: ${OL.RED03};
   font-size: 16px;
   font-weight: bold;
   margin-top: 20px;

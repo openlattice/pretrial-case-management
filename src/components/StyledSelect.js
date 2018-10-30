@@ -1,6 +1,8 @@
 import styled from 'styled-components';
 import Select from 'react-select';
 
+import { OL } from '../utils/consts/Colors';
+
 const StyledSelect = styled(Select)`
   width: 100%;
 
@@ -14,7 +16,7 @@ const StyledSelect = styled(Select)`
     font-family: 'Open Sans', sans-serif;
     font-size: 14px;
     text-align: left;
-    color: #2e2e34;
+    color: ${OL.GREY15};
     box-shadow: none;
     padding-right: 10%;
 
@@ -30,7 +32,7 @@ const StyledSelect = styled(Select)`
 
   .lattice-select__group-heading {
     padding-top: 14px;
-    border-top: solid 1px #e1e1eb;
+    border-top: solid 1px ${OL.GREY11};
   }
 
   .lattice-select__menu {
@@ -44,30 +46,30 @@ const StyledSelect = styled(Select)`
 
   .lattice-select__control.lattice-select__control-is-focused {
     box-shadow: 0 0 0 0;
-    background-color: #fff;
+    background-color: ${OL.WHITE};
   }
 
   .lattice-select__option {
-    color: #555e6f;
+    color: ${OL.GREY01};
     font-size: 14px;
     line-height: 19px;
 
     :active {
-      background-color: #e6e6f7;
+      background-color: ${OL.GREY06};
     }
   }
 
   .lattice-select__option--is-focused {
-    background-color: #f0f0f7;
+    background-color: ${OL.GREY08};
   }
 
   .lattice-select__option--is-selected {
-    background-color: #e6e6f7;;
-    color: #2e2e34;
+    background-color: ${OL.GREY06};
+    color: ${OL.GREY15};
   }
 
   .lattice-select__single-value {
-    color: #2e2e34;
+    color: ${OL.GREY15};
     font-size: 14px;
     line-height: 19px;
   }

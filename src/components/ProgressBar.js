@@ -5,9 +5,10 @@
 import React from 'react';
 import styled from 'styled-components';
 import { ProgressBar } from 'react-bootstrap';
+import { OL } from '../utils/consts/Colors';
 
 const Bar = styled(ProgressBar)`
-  background: white;
+  background: ${OL.WHITE};
   width: 100%;
 `;
 

@@ -3,6 +3,7 @@
  */
 import styled from 'styled-components';
 
+import { OL } from '../../utils/consts/Colors';
 import { FullWidthContainer } from '../../utils/Layout';
 
 export const ContentsWrapper = styled.div`
@@ -19,7 +20,7 @@ export const StepHeader = styled.div`
   padding: 30px 30px;
   font-size: 16px;
   font-weight: 600;
-  color: #555e6f;
+  color: ${OL.GREY01};
 `;
 
 export const StepWrapper = styled.div`
@@ -38,7 +39,7 @@ export const StepIncreaseWrapper = styled(FullWidthContainer)`
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  border-top: solid 1px #eeeeee;
+  border-top: solid 1px ${OL.GREY28};
 `;
 
 export const StyledSection = styled.div`
@@ -57,7 +58,7 @@ export const Flags = styled(StyledSection)`
   display: grid;
   grid-template-columns: 100%;
   grid-template-rows: 40px 40px 40px;
-  border-right: solid 1px #eeeeee;
+  border-right: solid 1px ${OL.GREY28};
 `;
 
 export const StyledContentBlock = styled(FullWidthContainer)`
@@ -72,7 +73,7 @@ export const StyledContentLabel = styled.div`
   display: flex;
   text-transform: uppercase;
   align-items: center;
-  color: #8e929b;
+  color: ${OL.GREY02};
   font-size: 12px;
 `;
 
@@ -81,7 +82,7 @@ export const StyledContent = styled.div`
   align-items: center;
   font-family: 'Open Sans', sans-serif;
   font-weight: normal;
-  color: #2e2e34;
+  color: ${OL.GREY15};
   font-size: 16px;
 `;
 

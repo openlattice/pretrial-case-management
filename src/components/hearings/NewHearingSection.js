@@ -11,7 +11,7 @@ import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
 import InfoButton from '../buttons/InfoButton';
 import DatePicker from '../controls/StyledDatePicker';
 import SearchableSelect from '../controls/SearchableSelect';
-
+import { OL } from '../../utils/consts/Colors';
 import { getCourtroomOptions, getJudgeOptions, HEARING_CONSTS } from '../../utils/consts/HearingConsts';
 import { getTimeOptions } from '../../utils/consts/DateTimeConsts';
 
@@ -36,13 +36,13 @@ const NameInput = styled.input.attrs({
 })`
   width: 189px;
   height: 40px;
-  border: 1px solid #dcdce7;
+  border: 1px solid ${OL.GREY05};
   border-radius: 3px;
-  color: #135;
+  color: ${OL.BLUE03};
   font-size: 14px;
   font-weight: 400;
   padding: 0 45px 0 20px;
-  background-color: #ffffff;
+  background-color: ${OL.WHITE};
 `;
 
 const HearingSectionAside = styled.div`

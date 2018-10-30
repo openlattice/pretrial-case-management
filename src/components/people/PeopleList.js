@@ -6,10 +6,11 @@ import React from 'react';
 import styled from 'styled-components';
 import Immutable from 'immutable';
 
-import LoadingSpinner from '../../components/LoadingSpinner';
+import LoadingSpinner from '../LoadingSpinner';
 import NoSearchResults from './NoSearchResults';
-import { StyledErrorMessage } from '../../utils/Layout';
 import PersonCard from './PersonCard';
+import { StyledErrorMessage } from '../../utils/Layout';
+
 
 const CardsWrapper = styled.div`
   align-items: center;

@@ -12,6 +12,8 @@ import StyledTextArea from '../controls/StyledTextArea';
 import StyledRadioButton from '../controls/StyledRadioButton';
 import BasicButton from '../buttons/BasicButton';
 import ExpandableText from '../controls/ExpandableText';
+import { OL } from '../../utils/consts/Colors';
+
 
 import {
   getPendingChargeLabels,
@@ -36,7 +38,12 @@ import {
 import { formatValue } from '../../utils/FormattingUtils';
 import { getRecentFTAs, getOldFTAs } from '../../utils/FTAUtils';
 
-import { CONTEXT, DMF, NOTES, PSA } from '../../utils/consts/Consts';
+import {
+  CONTEXT,
+  DMF,
+  NOTES,
+  PSA
+} from '../../utils/consts/Consts';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import {
   CURRENT_AGE_PROMPT,
@@ -96,7 +103,7 @@ const SubmitButton = styled(BasicButton)`
 const Header = styled.div`
   font-family: 'Open Sans', sans-serif;
   font-size: 18px;
-  color: #555e6f;
+  color: ${OL.GREY01};
   margin-bottom: 30px;
   align-self: flex-start;
   padding-left: 30px;
@@ -115,7 +122,7 @@ const QuestionRow = styled.div`
   padding: 30px;
   display: flex;
   flex-direction: column;
-  border-bottom: solid 1px #e1e1eb !important;
+  border-bottom: solid 1px ${OL.GREY11} !important;
 `;
 
 const QuestionLabels = styled.div`
@@ -126,7 +133,7 @@ const QuestionLabels = styled.div`
     width: 50%;
     font-family: 'Open Sans', sans-serif;
     font-size: 14px;
-    color: #555e6f;
+    color: ${OL.GREY01};
     margin-bottom: 10px;
   }
 
@@ -142,7 +149,7 @@ const QuestionLabels = styled.div`
 const Prompt = styled.div`
   font-family: 'Open Sans', sans-serif;
   font-size: 16px;
-  color: #555e6f;
+  color: ${OL.GREY01};
   padding-right: 20px;
 
   div {
@@ -187,7 +194,7 @@ const CheckboxContainer = styled.div`
   label {
     font-family: 'Open Sans', sans-serif;
     font-size: 14px;
-    color: #8e929b;
+    color: ${OL.GREY02};
   }
 `;
 
@@ -212,7 +219,7 @@ const Justifications = styled.div`
     font-family: 'Open Sans', sans-serif;
     font-size: 12px;
     font-weight: 600;
-    color: #555e6f;
+    color: ${OL.GREY01};
     text-transform: uppercase;
     margin-bottom: 5px;
   }
@@ -220,7 +227,7 @@ const Justifications = styled.div`
   div {
     font-family: 'Open Sans', sans-serif;
     font-size: 14px;
-    color: #8e929b;
+    color: ${OL.GREY02};
   }
 `;
 

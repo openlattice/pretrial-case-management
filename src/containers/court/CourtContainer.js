@@ -23,6 +23,7 @@ import { TIME_FORMAT } from '../../utils/FormattingUtils';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { DOMAIN } from '../../utils/consts/ReportDownloadTypes';
 import { sortPeopleByName } from '../../utils/PSAUtils';
+import { OL } from '../../utils/consts/Colors';
 import {
   STATE,
   COURT,
@@ -53,7 +54,7 @@ const StyledFormWrapper = styled.div`
 
 const StyledTitleWrapper = styled.div`
   align-items: center;
-  color: #37454a;
+  color: ${OL.GREY34};
   display: flex;
   font-size: 32px;
   justify-content: space-between;
@@ -62,7 +63,7 @@ const StyledTitleWrapper = styled.div`
 `;
 
 const HearingTime = styled.div`
-  border-bottom: 1px solid #e1e1eb;
+  border-bottom: 1px solid ${OL.GREY11};
   padding: 30px;
   text-align: left;
   width: 100%;
@@ -70,7 +71,7 @@ const HearingTime = styled.div`
   h1 {
     font-family: 'Open Sans', sans-serif;
     font-size: 18px;
-    color: #555e6f;
+    color: ${OL.GREY01};
     padding-bottom: 30px;
   }
 `;
@@ -87,7 +88,7 @@ const HearingRow = styled.div`
 const Courtroom = styled.div`
   width: 200px;
   padding: 20px;
-  background-color: #f0f0f7;
+  background-color: ${OL.GREY08};
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -102,7 +103,7 @@ const Courtroom = styled.div`
 const PeopleWrapper = styled.div`
   width: 100%;
   padding: 20px 0 0 20px;
-  border: 1px solid #f0f0f7;
+  border: 1px solid ${OL.GREY08};
   display: grid;
   grid-template-columns: 31% 31% 31%;
   column-gap: 3%;

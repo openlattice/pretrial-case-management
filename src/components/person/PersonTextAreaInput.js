@@ -6,6 +6,7 @@ import React from 'react';
 import styled from 'styled-components';
 
 import StyledTextArea from '../controls/StyledTextArea';
+import { OL } from '../../utils/consts/Colors';
 
 const TextArea = styled(StyledTextArea)`
   min-height: 150px;
@@ -17,7 +18,7 @@ const InputContainer = styled.div`
 `;
 
 const Error = styled.div`
-  color: #ff3c5d;
+  color: ${OL.RED01};
   margin-top: 15px;
 `;
 

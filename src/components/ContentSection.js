@@ -6,6 +6,7 @@ import styled from 'styled-components';
 
 import CONTENT_CONSTS from '../utils/consts/ContentConsts';
 import { FullWidthContainer } from '../utils/Layout';
+import { OL } from '../utils/consts/Colors';
 
 const StyledSection = styled(FullWidthContainer)`
   flex-wrap: wrap;
@@ -71,7 +72,7 @@ const StyledSectionHeader = styled.div`
   width: 100%;
   font-family: 'Open Sans', sans-serif;
   font-weight: 600;
-  color: #555e6f;
+  color: ${OL.GREY01};
   ${(props) => {
     switch (props.component) {
       case CONTENT_CONSTS.SUMMARY:
@@ -103,7 +104,7 @@ const StyledSectionHeader = styled.div`
       case CONTENT_CONSTS.PROFILE:
         return (
           `padding: 30px;
-           border-bottom: solid 1px #e1e1eb;
+           border-bottom: solid 1px ${OL.GREY11};
            font-size: 22px;`
         );
       case CONTENT_CONSTS.HEARINGS:
@@ -131,7 +132,7 @@ const StyledSectionBottomBarWrapper = styled.div`
   justify-content: center;
   align-items: center;
   flex-wrap: nowrap;
-  color: #727272;
+  color: ${OL.GREY26};
   font-size: 14px;
   font-weight: bold;
   margin-bottom: 12px;
@@ -183,9 +184,10 @@ const ContentSection = ({
   modifyingHearing,
   ...props
 } :Props) => {
+  const { children } = props;
   const renderContent = () => {
-    if (props.children) {
-      return props.children;
+    if (children) {
+      return children;
     }
 
     return <StyledSectionHeader>Information not available</StyledSectionHeader>;
