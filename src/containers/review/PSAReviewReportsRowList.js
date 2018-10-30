@@ -145,7 +145,7 @@ type Props = {
   psaIdsRefreshing :Immutable.Set<*>,
   readOnlyPermissions :boolean,
   loadingPSAData :boolean,
-  loading :loading,
+  loading :boolean,
   scoresEntitySetId :string,
   submitting :boolean
 }
