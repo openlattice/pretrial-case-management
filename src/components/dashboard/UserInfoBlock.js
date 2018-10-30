@@ -6,6 +6,8 @@ import React from 'react';
 import styled from 'styled-components';
 import { AuthUtils } from 'lattice-auth';
 
+import { OL } from '../../utils/consts/Colors';
+
 const StyledWrapper = styled.div`
   min-height: 100px;
   overflow: auto;
@@ -14,7 +16,7 @@ const StyledWrapper = styled.div`
 `;
 
 const StyledName = styled.div`
-  color: #474747;
+  color: ${OL.GREY27};
   font-size: 16px;
   word-wrap: break-word; /* not ideal */
 `;

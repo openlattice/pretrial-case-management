@@ -7,6 +7,7 @@ import styled from 'styled-components';
 
 import InfoButton from '../buttons/InfoButton';
 import closeX from '../../assets/svg/close-x-gray.svg';
+import { OL } from '../../utils/consts/Colors';
 import { HEARING } from '../../utils/consts/Consts';
 import { formatDate, formatDateTime } from '../../utils/FormattingUtils';
 
@@ -48,7 +49,7 @@ const InfoRow = styled.div`
     font-family: 'Open Sans', sans-serif;
     font-size: 18px;
     font-weight: 600;
-    color: #555e6f;
+    color: ${OL.GREY01};
   }
 `;
 
@@ -60,7 +61,7 @@ const InfoItem = styled.div`
     font-family: 'Open Sans', sans-serif;
     font-size: 12px;
     font-weight: 600;
-    color: #8e929b;
+    color: ${OL.GREY02};
     text-transform: uppercase;
     margin-bottom: 5px;
   }
@@ -68,7 +69,7 @@ const InfoItem = styled.div`
   div {
     font-family: 'Open Sans';
     font-size: 18px;
-    color: #2e2e34;
+    color: ${OL.GREY15};
   }
 `;
 

@@ -7,6 +7,7 @@ import styled from 'styled-components';
 
 import leftArrow from '../assets/svg/left-arrow-dark.svg';
 import rightArrow from '../assets/svg/right-arrow-dark.svg';
+import { OL } from '../utils/consts/Colors';
 
 const PageList = styled.ul`
   display: flex;
@@ -26,8 +27,8 @@ const PageListItem = styled.li`
   visibility: ${props => ((props.disabled) ? 'hidden' : '')};
 
   a {
-    color: ${props => (props.active ? 'white' : '#555e6f')};
-    background-color: ${props => (props.active ? '#6124e2' : '')};
+    color: ${props => (props.active ? OL.WHITE : OL.GREY01)};
+    background-color: ${props => (props.active ? OL.PURPLE02 : '')};
     border-radius: ${props => (props.active ? '2px' : '')};
     width: 24px;
     height: 24px;

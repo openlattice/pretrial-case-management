@@ -20,13 +20,14 @@ import {
   StyledTopFormNavBuffer
 } from '../../utils/Layout';
 import { DOMAIN, PSA_RESPONSE_TABLE, SUMMARY_REPORT } from '../../utils/consts/ReportDownloadTypes';
+import { OL } from '../../utils/consts/Colors';
 
 const HeaderSection = styled.div`
   padding: 10px 30px 30px 30px;
   font-family: 'Open Sans', sans-serif;
   font-size: 18px;
-  color: #555e6f;
-  border-bottom: 1px solid #e1e1eb;
+  color: ${OL.GREY01};
+  border-bottom: 1px solid ${OL.GREY11};
   width: 100%
 `;
 const SubHeaderSection = styled.div`
@@ -36,7 +37,7 @@ const SubHeaderSection = styled.div`
   align-items: center;
   font-family: 'Open Sans', sans-serif;
   font-size: 16px;
-  color: #555e6f;
+  color: ${OL.GREY01};
   width: 100%
 `;
 
@@ -98,11 +99,12 @@ class DownloadPSA extends React.Component<Props, State> {
   }
 
   handleClose = () => {
+    const { history } = this.props;
     this.setState({
       startDate: undefined,
       endDate: undefined
     });
-    this.props.history.push(Routes.DASHBOARD);
+    history.push(Routes.DASHBOARD);
   }
 
   getErrorText = () => {
@@ -131,15 +133,17 @@ class DownloadPSA extends React.Component<Props, State> {
   renderError = () => <Error>{this.getErrorText()}</Error>
 
   downloadCharges = (jurisdiction) => {
-    this.props.actions.downloadChargeLists({
+    const { actions } = this.props;
+    actions.downloadChargeLists({
       jurisdiction
     });
   }
 
   downloadbyPSADate = (filters, domain) => {
     const { startDate, endDate } = this.state;
+    const { actions } = this.props;
     if (startDate && endDate) {
-      this.props.actions.downloadPsaForms({
+      actions.downloadPsaForms({
         startDate,
         endDate,
         filters,
@@ -150,8 +154,9 @@ class DownloadPSA extends React.Component<Props, State> {
 
   downloadByHearingDate = (filters, domain) => {
     const { startDate, endDate } = this.state;
+    const { actions } = this.props;
     if (startDate && endDate) {
-      this.props.actions.downloadPSAsByHearingDate({
+      actions.downloadPSAsByHearingDate({
         startDate,
         endDate,
         filters,

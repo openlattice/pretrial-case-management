@@ -9,6 +9,7 @@ import styled, { css } from 'styled-components';
 import { faSort } from '@fortawesome/pro-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Grid, ScrollSync } from 'react-virtualized';
+import { OL } from '../../utils/consts/Colors';
 
 /*
  * constants
@@ -23,10 +24,10 @@ const COLUMN_MIN_WIDTH = 100;
 // TODO: what about ROW_MAX_HEIGHT?
 const ROW_MIN_HEIGHT = 50;
 
-const BORDER_COLOR = '#eeeeee';
-const HEAD_BG_COLOR = '#f8f9fa';
-const HEAD_COLOR = '#334455';
-const CELL_HOV_COLOR = '#f8f8f8';
+const BORDER_COLOR = OL.GREY28;
+const HEAD_BG_COLOR = OL.GREY30;
+const HEAD_COLOR = OL.GREY31;
+const CELL_HOV_COLOR = OL.GREY32;
 
 /*
  * styled components

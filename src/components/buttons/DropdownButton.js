@@ -5,6 +5,7 @@
 import React from 'react';
 import styled, { css } from 'styled-components';
 
+import { OL } from '../../utils/consts/Colors';
 import downArrowIcon from '../../assets/svg/down-arrow.svg';
 import selectedDownArrowIcon from '../../assets/svg/down-arrow-white.svg';
 import BasicButton from './BasicButton';
@@ -48,19 +49,19 @@ const BaseButton = styled(BasicButton)`
     margin-left: 10px;
   }
 
-  background-color: ${props => (props.open ? '#8e929b' : '#f0f0f7')};
-  color: ${props => (props.open ? '#ffffff' : '#8e929b')};
+  background-color: ${props => (props.open ? OL.GREY02 : OL.GREY08)};
+  color: ${props => (props.open ? OL.WHITE : OL.GREY02)};
 
   &:hover {
-    background-color: ${props => (props.open ? '#8e929b' : '#f0f0f7')} !important;
-    color: ${props => (props.open ? '#ffffff' : '#8e929b')} !important;
+    background-color: ${props => (props.open ? OL.GREY02 : OL.GREY08)} !important;
+    color: ${props => (props.open ? OL.WHITE : OL.GREY02)} !important;
   }
 `;
 
 const MenuContainer = styled.div`
-  background-color: #fefefe;
+  background-color: ${OL.GREY16};
   border-radius: 5px;
-  border: 1px solid #e1e1eb;
+  border: 1px solid ${OL.GREY11};
   position: absolute;
   z-index: 1;
   min-width: max-content;
@@ -81,12 +82,12 @@ const MenuContainer = styled.div`
     text-transform: none;
     font-family: 'Open Sans', sans-serif;
     font-size: 14px;
-    color: #555e6f;
+    color: ${OL.GREY01};
     border: none;
     min-width: fit-content !important;
 
     &:hover {
-      background-color: #e6e6f7;
+      background-color: ${OL.GREY06};
     }
   }
 `;
@@ -105,15 +106,14 @@ export default class DropdownButton extends React.Component<Props, State> {
   }
 
   toggleDropdown = (e) => {
+    const { open } = this.state;
     e.stopPropagation();
-    this.setState({ open: !this.state.open });
+    this.setState({ open: !open });
   };
 
-  getOptionFn = (optionFn) => {
-    return (e) => {
-      e.stopPropagation();
-      optionFn(e);
-    }
+  getOptionFn = optionFn => (e) => {
+    e.stopPropagation();
+    optionFn(e);
   }
 
   handleOnClick = (e) => {
@@ -122,19 +122,23 @@ export default class DropdownButton extends React.Component<Props, State> {
   }
 
   render() {
-    const imgSrc = this.state.open ? selectedDownArrowIcon : downArrowIcon;
+    const { title, options, openAbove } = this.props;
+    const { open } = this.state;
+    const imgSrc = open ? selectedDownArrowIcon : downArrowIcon;
     return (
-      <DropdownButtonWrapper open={this.state.open}>
-        <BaseButton open={this.state.open} onClick={this.toggleDropdown} onBlur={this.toggleDropdown}>
-          {this.props.title}
-          <img src={imgSrc} role="presentation" />
+      <DropdownButtonWrapper open={open}>
+        <BaseButton open={open} onClick={this.toggleDropdown} onBlur={this.toggleDropdown}>
+          {title}
+          <img src={imgSrc} alt="presentation" />
         </BaseButton>
-        <MenuContainer open={this.state.open} openAbove={this.props.openAbove}>
-          {this.props.options.map(option =>
-            (
-              <button key={option.label} onClick={this.handleOnClick} onMouseDown={option.onClick}>
-                {option.label}
-              </button>))
+        <MenuContainer open={open} openAbove={openAbove}>
+          {options.map(option => (
+            <button
+                key={option.label}
+                onClick={this.handleOnClick}
+                onMouseDown={option.onClick}>
+              {option.label}
+            </button>))
           }
         </MenuContainer>
       </DropdownButtonWrapper>

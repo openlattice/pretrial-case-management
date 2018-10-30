@@ -21,6 +21,7 @@ import { getFormattedPeople } from '../../utils/PeopleUtils';
 import { searchPeopleRequest } from '../person/PersonActionFactory';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { DOMAIN_OPTIONS_ARR } from '../../utils/consts/ReviewPSAConsts';
+import { OL } from '../../utils/consts/Colors';
 import {
   STATE,
   SEARCH,
@@ -35,13 +36,13 @@ const SearchBox = styled.div`
   padding: 30px 0;
   margin-bottom: 30px;
   background: white;
-  border: 1px solid #e1e1eb;
+  border: 1px solid ${OL.GREY11};
   border-radius: 5px;
 `;
 
 const MissingNamesContainer = styled.div`
   text-align: center;
-  color: #ff3c5d;
+  color: ${OL.RED01};
 `;
 
 const ErrorHeader = styled.div`

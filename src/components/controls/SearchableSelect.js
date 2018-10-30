@@ -3,11 +3,12 @@
  */
 
 import React from 'react';
-
 import Immutable from 'immutable';
 import styled, { css } from 'styled-components';
 import { faTimes } from '@fortawesome/pro-regular-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+
+import { OL } from '../../utils/consts/Colors';
 import downArrowIcon from '../../assets/svg/down-arrow.svg';
 
 /*
@@ -41,9 +42,9 @@ const SearchInputWrapper = styled.div`
 `;
 
 const inputStyle = `
-  border: 1px solid #dcdce7;
+  border: 1px solid ${OL.GREY05};
   border-radius: 3px;
-  color: #135;
+  color: ${OL.BLUE03};
   flex: 1 0 auto;
   font-size: 14px;
   font-weight: 400;
@@ -52,12 +53,12 @@ const inputStyle = `
   outline: none;
   padding: 0 45px 0 20px;
   &:focus {
-    border-color: #6124e2;
+    border-color: ${OL.PURPLE02};
   }
   &::placeholder {
     font-family: 'Open Sans', sans-serif;
     font-size: 14px;
-    color: #8e929b;
+    color: ${OL.GREY02};
   }
 `;
 
@@ -65,12 +66,12 @@ const SearchInput = styled.input.attrs({
   type: 'text'
 })`
   ${inputStyle}
-  background-color: ${props => (props.transparent ? '#f9f9fd' : '#ffffff')};
+  background-color: ${props => (props.transparent ? OL.GREY10 : OL.WHITE)};
 `;
 
 const SearchIcon = styled.div`
   align-self: center;
-  color: #687F96;
+  color: ${OL.GREY20};
   position: absolute;
   margin: 0 20px;
   right: 0
@@ -80,12 +81,12 @@ const SearchIcon = styled.div`
 const SearchButton = styled.button`
   ${inputStyle}
   text-align: left;
-  background-color: ${props => (props.transparent ? '#f9f9fd' : '#ffffff')};
+  background-color: ${props => (props.transparent ? OL.GREY10 : OL.WHITE)};
 `;
 
 const CloseIcon = styled.div`
   align-self: center;
-  color: #687F96;
+  color: ${OL.GREY20};
   position: absolute;
   right: 20px;
 
@@ -95,9 +96,9 @@ const CloseIcon = styled.div`
 `;
 
 const DataTableWrapper = styled.div`
-  background-color: #fefefe;
+  background-color: ${OL.GREY16};
   border-radius: 5px;
-  border: 1px solid #e1e1eb;
+  border: 1px solid ${OL.GREY11};
   position: absolute;
   z-index: 1;
   width: 100%;
@@ -111,12 +112,12 @@ const SearchOption = styled.div`
   padding: 10px 20px;
 
   &:hover {
-    background-color: #f0f0f7;
+    background-color: ${OL.GREY08};
     cursor: pointer;
   }
 
   &:active {
-    background-color: #e4d8ff;
+    background-color: ${OL.PURPLE06};
   }
 `;
 
@@ -208,16 +209,17 @@ class SearchableSelect extends React.Component<Props, State> {
   }
 
   handleOnSelect = (label :string) => {
-
-    this.props.onSelect(this.props.options.get(label));
+    const { onSelect, options } = this.props;
+    onSelect(options.get(label));
     this.setState({
       searchQuery: ''
     });
   }
 
-  filterResults = (value :string) =>
-    this.props.options.filter((obj, label) => label.toLowerCase().includes(value.toLowerCase()))
-
+  filterResults = (value :string) => {
+    const { options } = this.props;
+    return options.filter((obj, label) => label.toLowerCase().includes(value.toLowerCase()));
+  }
   handleOnChangeSearchQuery = (event :SyntheticInputEvent<*>) => {
 
     this.setState({
@@ -227,7 +229,8 @@ class SearchableSelect extends React.Component<Props, State> {
   }
 
   renderTable = () => {
-    const options = this.state.filteredTypes.map(type => (
+    const { filteredTypes } = this.state;
+    const options = filteredTypes.map(type => (
       <SearchOption
           key={type}
           onMouseDown={() => this.handleOnSelect(type)}>
@@ -238,25 +241,36 @@ class SearchableSelect extends React.Component<Props, State> {
   }
 
   render() {
-    const value = this.state.isVisibleDataTable ? this.state.searchQuery : this.props.value;
+    const { isVisibleDataTable, searchQuery } = this.state;
+    let { value } = this.props;
+    const {
+      className,
+      disabled,
+      onClear,
+      searchPlaceholder,
+      selectOnly,
+      short,
+      transparent
+    } = this.props;
+    value = isVisibleDataTable ? searchQuery : value;
 
     return (
-      <SearchableSelectWrapper isVisibleDataTable={this.state.isVisibleDataTable} className={this.props.className}>
-        <SearchInputWrapper short={this.props.short}>
+      <SearchableSelectWrapper isVisibleDataTable={isVisibleDataTable} className={className}>
+        <SearchInputWrapper short={short}>
           {
-            this.props.selectOnly ? (
+            selectOnly ? (
               <SearchButton
-                  disabled={this.props.disabled}
-                  transparent={this.props.transparent}
+                  disabled={disabled}
+                  transparent={transparent}
                   onBlur={this.hideDataTable}
                   onChange={this.handleOnChangeSearchQuery}
                   onClick={this.showDataTable}>
-                {value || this.props.searchPlaceholder}
+                {value || searchPlaceholder}
               </SearchButton>
             ) : (
               <SearchInput
-                  placeholder={this.props.searchPlaceholder}
-                  transparent={this.props.transparent}
+                  placeholder={searchPlaceholder}
+                  transparent={transparent}
                   value={value}
                   onBlur={this.hideDataTable}
                   onChange={this.handleOnChangeSearchQuery}
@@ -264,27 +278,27 @@ class SearchableSelect extends React.Component<Props, State> {
             )
           }
           {
-            (this.props.onClear && value) ? null : (
-              <SearchIcon floatRight={this.props.selectOnly}>
+            (onClear && value) ? null : (
+              <SearchIcon floatRight={selectOnly}>
                 <img src={downArrowIcon} alt="" />
               </SearchIcon>
             )
           }
           {
-            !this.props.onClear || !value
+            !onClear || !value
               ? null
               : (
-                <CloseIcon onClick={this.props.onClear}>
+                <CloseIcon onClick={onClear}>
                   <FontAwesomeIcon icon={faTimes} />
                 </CloseIcon>
               )
           }
         </SearchInputWrapper>
         {
-          !this.state.isVisibleDataTable
+          !isVisibleDataTable
             ? null
             : (
-              <DataTableWrapper isVisible={this.state.isVisibleDataTable} openAbove={this.props.openAbove}>
+              <DataTableWrapper isVisible={isVisibleDataTable} openAbove={this.props.openAbove}>
                 {this.renderTable()}
               </DataTableWrapper>
             )

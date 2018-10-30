@@ -22,6 +22,7 @@ import psaFailureIcon from '../../assets/svg/psa-failure.svg';
 import closeXWhiteIcon from '../../assets/svg/close-x-white.svg';
 import closeXGrayIcon from '../../assets/svg/close-x-gray.svg';
 import closeXBlackIcon from '../../assets/svg/close-x-black.svg';
+import { OL } from '../../utils/consts/Colors';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { getHeaderText } from '../../utils/DMFUtils';
 import {
@@ -79,11 +80,11 @@ const Banner = styled(WideContainer)`
   background-color: ${(props) => {
     switch (props.status) {
       case STATUSES.SUCCESS:
-        return '#00be84';
+        return OL.GREEN02;
       case STATUSES.FAILURE:
-        return '#ffe25c';
+        return OL.YELLOW04;
       default:
-        return '#f0f0f7';
+        return OL.GREY08;
     }
   }};
   height: 80px;
@@ -102,7 +103,7 @@ const Banner = styled(WideContainer)`
       font-family: 'Open Sans', sans-serif;
       font-size: 18px;
       font-weight: 600;
-      color: ${props => (props.status === STATUSES.SUCCESS ? '#ffffff' : '#2e2e34')};
+      color: ${props => (props.status === STATUSES.SUCCESS ? OL.WHITE : OL.GREY15)};
       margin-left: 15px;
     }
   }
@@ -136,7 +137,7 @@ const HeaderRow = styled(Bookend)`
   span {
     font-family: 'Open Sans', sans-serif;
     font-size: 18px;
-    color: #555e6f;
+    color: ${OL.GREY01};
   }
 `;
 
@@ -157,11 +158,11 @@ const Flag = styled.span`
   width: 86px;
   height: 32px;
   border-radius: 3px;
-  border: solid 1px #555e6f;
+  border: solid 1px ${OL.GREY01};
   font-family: 'Open Sans', sans-serif;
   font-size: 16px;
   font-weight: 600;
-  color: #555e6f;
+  color: ${OL.GREY01};
   padding: 5px 30px;
 `;
 
@@ -183,8 +184,8 @@ const ScoresContainer = styled.div`
 `;
 
 const DMF = styled(WideContainer)`
-  border-top: 1px solid #e1e1eb;
-  border-bottom: 1px solid #e1e1eb;
+  border-top: 1px solid ${OL.GREY11};
+  border-bottom: 1px solid ${OL.GREY11};
   margin-top: 30px;
   padding: 15px 30px;
 
@@ -199,7 +200,7 @@ const DMF = styled(WideContainer)`
       font-family: 'Open Sans', sans-serif;
       font-size: 16px;
       font-weight: 600;
-      color: #555e6f;
+      color: ${OL.GREY01};
     }
   }
 `;
@@ -207,8 +208,8 @@ const DMF = styled(WideContainer)`
 const NotesContainer = styled(WideContainer)`
   font-family: 'Open Sans', sans-serif;
   font-size: 14px;
-  color: #2e2e34;
-  border-bottom: 1px solid #e1e1eb;
+  color: ${OL.GREY15};
+  border-bottom: 1px solid ${OL.GREY11};
   padding-bottom: 30px;
   padding-left: 30px;
 `;

@@ -6,6 +6,7 @@ import React from 'react';
 import styled from 'styled-components';
 
 import DMFCell from './DMFCell';
+import { OL } from '../../utils/consts/Colors';
 import { getDMFDecision } from '../../utils/DMFUtils';
 
 
@@ -18,12 +19,12 @@ const HeaderCell = styled.th`
   font-size: 14px;
   font-weight: 600;
   text-align: center;
-  color: #8e929b;
+  color: ${OL.GREY02};
 `;
 
 const BlankCell = styled.td`
   border-radius: 1px;
-  background-color: #f9f9fd;
+  background-color: ${OL.GREY10};
 `;
 
 type Props = {

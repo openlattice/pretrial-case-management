@@ -27,6 +27,7 @@ import {
   getCaseHistory,
   getCasesForPSA
 } from '../../utils/CaseUtils';
+import { OL } from '../../utils/consts/Colors';
 
 
 const { OPENLATTICE_ID_FQN } = Constants;
@@ -50,7 +51,7 @@ const StyledColumnRowWrapper = styled.div`
   flex-direction: column;
   margin-bottom: 50px;
   max-width: 960px;
-  background: white;
+  background: ${OL.WHITE};
   border-radius: 5px;
 `;
 
@@ -59,8 +60,8 @@ const StyledColumnRow = styled.div`
   flex-wrap: wrap;
   width: 100%;
   border-radius: 5px;
-  background-color: #ffffff;
-  border: solid 1px #e1e1eb;
+  background-color: ${OL.WHITE};
+  border: solid 1px ${OL.GREY11};
 `;
 
 const StyledSectionHeader = styled(AlternateSectionHeader)`
@@ -151,8 +152,8 @@ class AboutPerson extends React.Component<Props, State> {
     const { neighbors, loading } = this.props;
     const { statusFilters } = this.state;
     const scoreSeq = neighbors.get(ENTITY_SETS.PSA_SCORES, Immutable.Map())
-      .filter(neighbor => !!neighbor.get(PSA_NEIGHBOR.DETAILS) &&
-        statusFilters.includes(neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.STATUS, 0])))
+      .filter(neighbor => !!neighbor.get(PSA_NEIGHBOR.DETAILS)
+        && statusFilters.includes(neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.STATUS, 0])))
       .map(neighbor => [
         neighbor.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0]),
         neighbor.get(PSA_NEIGHBOR.DETAILS)

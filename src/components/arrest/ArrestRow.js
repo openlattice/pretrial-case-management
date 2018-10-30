@@ -7,6 +7,7 @@ import styled from 'styled-components';
 import Immutable from 'immutable';
 import { Constants } from 'lattice';
 
+import { OL } from '../../utils/consts/Colors';
 import { formatDateTime } from '../../utils/FormattingUtils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 
@@ -24,22 +25,22 @@ const Cell = styled.td`
   padding: 15px 30px;
   font-family: 'Open Sans', sans-serif;
   font-size: 14px;
-  color: '#2e2e34';
+  color: ${OL.GREY15};
 `;
 
 const Row = styled.tr`
   padding: 7px 30px;
-  border-bottom: 1px solid #e1e1eb;
-  border-left: 1px solid #e1e1eb;
-  border-right: 1px solid #e1e1eb;
+  border-bottom: 1px solid ${OL.GREY11};
+  border-left: 1px solid ${OL.GREY11};
+  border-right: 1px solid ${OL.GREY11};
 
   &:hover {
     cursor: pointer;
-    background: #f8f8fc;
+    background: ${OL.GREY14};
   }
 
   &:active {
-    background-color: #f0f0f7;
+    background-color: ${OL.GREY08};
   }
 `;
 

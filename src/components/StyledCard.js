@@ -3,20 +3,22 @@
  */
 
 import styled from 'styled-components';
+import { OL } from '../utils/consts/Colors';
+
 
 const StyledCard = styled.div`
   width: 270px;
   height: 70px;
   border-radius: 7px;
-  background-color: #ffffff;
-  border: solid 1px #e1e1eb;
+  background-color: ${OL.WHITE};
+  border: solid 1px ${OL.GREY11};
   margin: 0 30px 20px 0;
   display: flex;
   flex-direction: row;
 
   &:hover {
     cursor: pointer;
-    background: #f8f8fc;
+    background: ${OL.GREY14};
   }
 `;
 

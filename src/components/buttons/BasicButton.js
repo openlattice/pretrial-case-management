@@ -1,22 +1,24 @@
 import styled from 'styled-components';
+import { OL } from '../../utils/consts/Colors';
+
 
 const BasicButton = styled.button`
   border: none;
   border-radius: 3px;
-  background-color: #f0f0f7;
-  color: #8e929b;
+  background-color: ${OL.GREY08};
+  color: ${OL.GREY02};
   font-family: 'Open Sans', sans-serif;
   padding: 12px 35px;
   font-size: 14px;
 
   &:hover:enabled {
-    background-color: #dcdce7;
+    background-color: ${OL.GREY05};
     cursor: pointer;
   }
 
   &:active {
-    background-color: #b6bbc7;
-    color: #ffffff;
+    background-color: ${OL.GREY03};
+    color: ${OL.WHITE};
   }
 
   &:focus {
@@ -24,7 +26,7 @@ const BasicButton = styled.button`
   }
 
   &:disabled {
-    color: #b6bbc7;
+    color: ${OL.GREY03};
   }
 `;
 

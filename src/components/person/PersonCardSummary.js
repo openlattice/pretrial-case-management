@@ -9,11 +9,12 @@ import ContentSection from '../ContentSection';
 import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
 import defaultUserIcon from '../../assets/svg/profile-placeholder-round.svg';
 import { formatValue, formatDateList } from '../../utils/FormattingUtils';
+import { OL } from '../../utils/consts/Colors';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 
 const PersonCardWrapper = styled.div`
   width: 100%;
-  border-right: solid 1px #eeeeee;
+  border-right: solid 1px ${OL.GREY28};
 `;
 
 export default ({ person } :Props) => {

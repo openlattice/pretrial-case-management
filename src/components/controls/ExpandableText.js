@@ -6,6 +6,8 @@ import React from 'react';
 import styled from 'styled-components';
 import { Button } from 'react-bootstrap';
 
+import { OL } from '../../utils/consts/Colors';
+
 const ExpandButton = styled(Button)`
   padding: 0;
   border: 0;
@@ -13,16 +15,16 @@ const ExpandButton = styled(Button)`
   font-size: 13px;
   line-height: 18px;
   font-weight: 600;
-  color: #6124e2;
+  color: ${OL.PURPLE02};
 
   &:hover {
     text-decoration: underline;
-    color: #6124e2;
+    color: ${OL.PURPLE02};
   }
 
   &:focus {
     text-decoration: none;
-    color: #6124e2;
+    color: ${OL.PURPLE02};
     outline: none;
   }
 
@@ -50,7 +52,8 @@ export default class ExpandableText extends React.Component<Props, State> {
   }
 
   switchState = () => {
-    this.setState({ isOpen: !this.state.isOpen });
+    const { isOpen } = this.state;
+    this.setState({ isOpen: !isOpen });
   }
 
   render() {

@@ -1,10 +1,12 @@
 import React from 'react';
 import styled from 'styled-components';
 
+import { OL } from '../../utils/consts/Colors';
+
 const SecondaryButton = styled.button`
   border-radius: 3px;
-  background-color: #e4d8ff;
-  color: #6124e2;
+  background-color: ${OL.PURPLE06};
+  color: ${OL.PURPLE02};
   font-family: 'Open Sans', sans-serif;
   font-size: 14px;
   font-weight: 600;
@@ -13,11 +15,11 @@ const SecondaryButton = styled.button`
   border: none;
 
   &:hover {
-    background-color: #d0bbff;
+    background-color: ${OL.PURPLE05};
   }
 
   &:active {
-    background-color: #b898ff;
+    background-color: ${OL.PURPLE04};
   }
 
 `;

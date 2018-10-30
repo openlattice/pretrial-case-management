@@ -7,9 +7,10 @@ import Immutable from 'immutable';
 import styled from 'styled-components';
 
 import ContentBlock from '../ContentBlock';
+import { CONDITION_LIST, BOND_TYPES, RELEASES } from '../../utils/consts/ReleaseConditionConsts';
+import { OL } from '../../utils/consts/Colors';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
-import { CONDITION_LIST, BOND_TYPES, RELEASES } from '../../utils/consts/ReleaseConditionConsts';
 import { HEADER_LABELS } from '../../utils/consts/DMFResultConsts';
 
 const { HELD, RELEASED } = RELEASES;
@@ -17,7 +18,7 @@ const { HELD, RELEASED } = RELEASES;
 const SummaryWrapper = styled.div`
   margin: 30px;
   padding: 20px;
-  border: 1px solid #dcdce7;
+  border: 1px solid ${OL.GREY05};
   border-radius: 3px;
 `;
 const HearingItems = styled.div`
@@ -44,8 +45,8 @@ const ContentBox = styled.div`
   min-width: 84px;
   height: 56px;
   border-radius: 3px;
-  background-color: #dcdce7;
-  color: #8e929b;
+  background-color: ${OL.GREY05};
+  color: ${OL.GREY02};
   font-family: 'Open Sans',sans-serif;
   font-size: 13.5px;
   font-weight: normal;
@@ -59,20 +60,20 @@ const Headers = styled.div`
   font-family: 'Open Sans',sans-serif;
   font-weight: 600;
   text-transform: uppercase;
-  color: #8e929b;
+  color: ${OL.GREY02};
   font-size: 11px;
 }
 `;
 const Row = styled.div`
   font-family: 'Open Sans',sans-serif;
   font-weight: normal;
-  color: #2e2e34;
+  color: ${OL.GREY15};
   font-size: 14px;
   display: grid;
   grid-template-columns: 10% 35% 25%;
   grid-gap: 20px;
   padding: 10px 0;
-  border-top: 1px solid #dcdce7;
+  border-top: 1px solid ${OL.GREY05};
 `;
 
 const RowItem = styled.div`

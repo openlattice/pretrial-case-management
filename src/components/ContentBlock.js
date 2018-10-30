@@ -6,6 +6,7 @@ import styled from 'styled-components';
 
 import CONTENT_CONSTS from '../utils/consts/ContentConsts';
 import { FullWidthContainer } from '../utils/Layout';
+import { OL } from '../utils/consts/Colors';
 
 const StyledContentBlock = styled(FullWidthContainer)`
   flex-direction: column;
@@ -30,7 +31,7 @@ const StyledContentLabel = styled.div`
         );
     }
   }};
-  color: #8e929b;
+  color: ${OL.GREY02};
   margin-bottom: ${(props) => {
     switch (props.component) {
       case CONTENT_CONSTS.CREATING_HEARING:
@@ -72,7 +73,7 @@ const StyledContent = styled.div`
   display: flex;
   font-family: 'Open Sans', sans-serif;
   font-weight: normal;
-  color: #2e2e34;
+  color: ${OL.GREY15};
   font-size: ${(props) => {
     switch (props.component) {
       case CONTENT_CONSTS.DMF:

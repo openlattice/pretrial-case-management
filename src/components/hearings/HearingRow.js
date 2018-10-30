@@ -7,7 +7,8 @@ import styled from 'styled-components';
 import Immutable from 'immutable';
 import { Constants } from 'lattice';
 
-import InfoButton from '../../components/buttons/InfoButton';
+import InfoButton from '../buttons/InfoButton';
+import { OL } from '../../utils/consts/Colors';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { formatDateTime } from '../../utils/FormattingUtils';
 
@@ -17,22 +18,22 @@ const Cell = styled.td`
   padding: 15px 30px;
   font-family: 'Open Sans', sans-serif;
   font-size: 14px;
-  color: '#2e2e34';
+  color: ${OL.GREY15};
 `;
 
 const Row = styled.tr`
   padding: 7px 30px;
-  border-bottom: 1px solid #e1e1eb;
-  border-left: 1px solid #e1e1eb;
-  border-right: 1px solid #e1e1eb;
+  border-bottom: 1px solid ${OL.GREY11};
+  border-left: 1px solid ${OL.GREY11};
+  border-right: 1px solid ${OL.GREY11};
 
   &:hover {
     cursor: ${props => (props.disabled ? 'default' : 'pointer')};
-    background: ${props => (props.disabled ? '#ffffff' : '#f8f8fc')};
+    background: ${props => (props.disabled ? OL.WHITE : OL.GREY14)};
   }
 
   &:active {
-    background-color: #f0f0f7;
+    background-color: ${OL.GREY08};
   }
 
   &:last-child {

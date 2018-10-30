@@ -1,6 +1,10 @@
+/*
+ * @flow
+ */
 import React from 'react';
 import styled from 'styled-components';
 
+import { OL } from '../../utils/consts/Colors';
 import ChargeRow from './ChargeRow';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 
@@ -10,15 +14,15 @@ const Table = styled.table`
 `;
 
 const HeaderRow = styled.tr`
-  background-color: #f0f0f7;
-  border: 1px solid #f0f0f7;
+  background-color: ${OL.GREY08};
+  border: 1px solid ${OL.GREY08};
 `;
 
 const HeaderElement = styled.th`
   font-size: 11px;
   font-weight: 600;
   font-family: 'Open Sans', sans-serif;
-  color: #8e929b;
+  color: ${OL.GREY02};
   text-transform: uppercase;
   padding: 12px 30px;
 `;
@@ -32,21 +36,19 @@ const Headers = () => (
   </HeaderRow>
 );
 
-const ChargeTable = ({ charges, handleSelect, disabled }) => {
-  return (
-    <Table>
-      <tbody>
-        <Headers />
-        {charges.map((charge => (
-          <ChargeRow
-              key={charge.getIn([PROPERTY_TYPES.CHARGE_ID, 0], '')}
-              charge={charge}
-              handleSelect={handleSelect}
-              disabled={disabled} />
-        )))}
-      </tbody>
-    </Table>
-  );
-};
+const ChargeTable = ({ charges, handleSelect, disabled } :Props) => (
+  <Table>
+    <tbody>
+      <Headers />
+      {charges.map((charge => (
+        <ChargeRow
+            key={charge.getIn([PROPERTY_TYPES.CHARGE_ID, 0], '')}
+            charge={charge}
+            handleSelect={handleSelect}
+            disabled={disabled} />
+      )))}
+    </tbody>
+  </Table>
+);
 
 export default ChargeTable;
