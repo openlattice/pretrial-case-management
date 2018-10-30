@@ -18,7 +18,7 @@ const CaseHistoryWrapper = styled.div`
 `;
 
 const StyledChargeStatus = styled(PendingChargeStatus)`
-    transform: translateX(${props => (props.modal ? 792 : 750)}px) translateY(5px);
+    transform: translateX(${props => (props.modal ? 800 : 765)}px) translateY(5px);
 `;
 
 type Props = {
