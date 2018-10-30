@@ -21,7 +21,7 @@ import CaseHistory from '../../components/casehistory/CaseHistory';
 import CaseHistoryTimeline from '../../components/casehistory/CaseHistoryTimeline';
 import DMFExplanation from '../../components/dmf/DMFExplanation';
 import SelectHearingsContainer from '../hearings/SelectHearingsContainer';
-import PSASummary from '../../components/review/PSASummary';
+import PSAModalSummary from '../../components/review/PSAModalSummary';
 import ReleaseConditionsSummary from '../../components/releaseconditions/ReleaseConditionsSummary';
 import ClosePSAModal from '../../components/review/ClosePSAModal';
 import psaEditedConfig from '../../config/formconfig/PsaEditedConfig';
@@ -558,7 +558,7 @@ class PSAModal extends React.Component<Props, State> {
     console.log(pendingCharges);
 
     return (
-      <PSASummary
+      <PSAModalSummary
           downloadFn={actions.downloadPSAReviewPDF}
           scores={scores}
           neighbors={neighbors}
