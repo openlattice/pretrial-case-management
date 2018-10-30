@@ -8,6 +8,7 @@ import styled from 'styled-components';
 import ChargeHistoryStats from '../casehistory/ChargeHistoryStats';
 import ChargeTable from '../charges/ChargeTable';
 import PSASummary from './PSASummary';
+import { PendingChargeStatus } from '../../utils/Layout';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
 import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
@@ -46,6 +47,11 @@ const Count = styled.div`
   color: ${OL.GREY02};
 `;
 
+const StyledChargeStatus = styled(PendingChargeStatus)`
+    position: relative;
+    transform: translateX(400px) translateY(50px);
+`;
+
 type Props = {
   notes :string,
   scores :Immutable.Map<*, *>,
@@ -53,6 +59,7 @@ type Props = {
   manualCaseHistory :Immutable.List<*>,
   chargeHistory :Immutable.List<*>,
   manualChargeHistory :Immutable.Map<*, *>,
+  pendingCharges :Immutable.List<*>,
   downloadFn :(values :{
     neighbors :Immutable.Map<*, *>,
     scores :Immutable.Map<*, *>
@@ -84,6 +91,18 @@ class PSAModalSummary extends React.Component<Props, *> {
     );
   }
 
+  renderPendingChargeStatus = () => {
+    const { pendingCharges } = this.props;
+    const statusText = pendingCharges.size
+      ? `${pendingCharges.size} Pending Charge${pendingCharges.size > 1 ? 's' : ''}`
+      : 'No Pending Charges';
+    return (
+      <StyledChargeStatus pendingCharges={pendingCharges.size}>
+        {statusText}
+      </StyledChargeStatus>
+    );
+  }
+
   render() {
     const {
       scores,
@@ -102,6 +121,7 @@ class PSAModalSummary extends React.Component<Props, *> {
             neighbors={neighbors}
             manualCaseHistory={manualCaseHistory}
             downloadFn={downloadFn} />
+        {(chargeHistory.size) ? this.renderPendingChargeStatus() : null}
         <ChargeHistoryStats padding chargeHistory={chargeHistory} />
         {this.renderCaseInfo()}
       </SummaryWrapper>
