@@ -51,7 +51,7 @@ const CaseHistory = ({
         {statusText}
       </StyledChargeStatus>
     );
-  }
+  };
 
   return (
     <CaseHistoryWrapper modal={modal}>
