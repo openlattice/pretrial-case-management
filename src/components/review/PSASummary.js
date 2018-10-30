@@ -77,6 +77,7 @@ const NotesWrapper = styled.div`
 `;
 
 type Props = {
+  pendingCharges :boolean,
   notes :string,
   scores :Immutable.Map<*, *>,
   neighbors :Immutable.Map<*, *>,
