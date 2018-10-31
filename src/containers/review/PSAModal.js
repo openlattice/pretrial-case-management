@@ -555,7 +555,6 @@ class PSAModal extends React.Component<Props, State> {
     );
 
     const pendingCharges = currentPendingCharges(chargeHistoryForMostRecentPSA);
-    console.log(pendingCharges);
 
     return (
       <PSAModalSummary
