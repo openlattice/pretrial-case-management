@@ -124,7 +124,7 @@ export default class ChargeList extends React.Component<Props, *> {
     ))
 
   getChargeList = () => {
-    const { charges, detailed } = this.props;
+    const { charges, detailed, modal } = this.props;
     const rows = charges.map((charge, index) => {
       if (!charge.get(CHARGE_STATUTE, Immutable.List()).size) {
         return (
@@ -158,7 +158,7 @@ export default class ChargeList extends React.Component<Props, *> {
       );
     });
     return (
-      <ChargesTable>
+      <ChargesTable modal={modal}>
         <tbody>
           {rows}
         </tbody>
