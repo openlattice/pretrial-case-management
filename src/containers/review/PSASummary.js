@@ -6,38 +6,30 @@ import Immutable from 'immutable';
 import styled from 'styled-components';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { Constants } from 'lattice';
 
 import ArrestCard from '../../components/arrest/ArrestCard';
+import BasicButton from '../../components/buttons/BasicButton';
 import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
 import ContentBlock from '../../components/ContentBlock';
 import PersonCardSummary from '../../components/person/PersonCardSummary';
-import PSAModal from './PSAModal';
-import ClosePSAModal from '../../components/review/ClosePSAModal';
 import PSAReportDownloadButton from '../../components/review/PSAReportDownloadButton';
 import PSAStats from '../../components/review/PSAStats';
 import SummaryDMFDetails from '../../components/dmf/SummaryDMFDetails';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { formatDateTimeList } from '../../utils/FormattingUtils';
-import { getEntityKeyId, getTimeStamp, getNeighborDetailsForEntitySet } from '../../utils/DataUtils';
+import { getTimeStamp, getNeighborDetailsForEntitySet } from '../../utils/DataUtils';
 import { OL } from '../../utils/consts/Colors';
-import { Title } from '../../utils/Layout';
+import { Title, SummaryRowWrapper } from '../../utils/Layout';
 import {
   STATE,
   REVIEW,
-  SUBMIT,
   PEOPLE,
-  COURT,
   PSA_NEIGHBOR,
   PSA_ASSOCIATION
 } from '../../utils/consts/FrontEndStateConsts';
 
 import * as Routes from '../../core/router/Routes';
-import * as PeopleActionFactory from '../people/PeopleActionFactory';
-import * as CourtActionFactory from '../court/CourtActionFactory';
 import * as ReviewActionFactory from './ReviewActionFactory';
-
-const { OPENLATTICE_ID_FQN } = Constants;
 
 
 const SummaryWrapper = styled.div`
@@ -52,17 +44,19 @@ const SummaryWrapper = styled.div`
   }
 `;
 
+const TitleRowWrapper = styled.div`
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding: 30px 30px 0;
+`;
+
 const NoStyleWrapper = styled.div`
   width: 100%;
   display: flex;
   flex-direction: column;
-`;
-
-const RowWrapper = styled.div`
-  width: 100%;
-  display: grid;
-  grid-template-columns: 66% 33%;
-  margin: 30px 0;
 `;
 
 const ScoresContainer = styled.div`
@@ -105,7 +99,7 @@ const ScoreTitle = styled.div`
 
 const NotesTitle = styled(Title)`
   margin-top: 0;
-`
+`;
 
 const NotesWrapper = styled.div`
   width: 100%;
@@ -113,28 +107,24 @@ const NotesWrapper = styled.div`
   border-right: ${props => (props.profile ? `solid 1px ${OL.GREY28}` : 'none')};
 `;
 
+const ViewPSADetailsButton = styled(BasicButton)`
+  width: 210px;
+  height: 40px;
+  padding-left: 0;
+  padding-right: 0;
+`;
+
 type Props = {
   notes :string,
   scores :Immutable.Map<*, *>,
   neighbors :Immutable.Map<*, *>,
   profile :boolean,
+  openDetailsModal :() => void,
   actions :{
     downloadPSAReviewPDF :(values :{
       neighbors :Immutable.Map<*, *>,
       scores :Immutable.Map<*, *>
     }) => void,
-    loadCaseHistory :(values :{
-      personId :string,
-      neighbors :Immutable.Map<*, *>
-    }) => void,
-    loadHearingNeighbors :(hearingIds :string[]) => void,
-    loadJudges :() => void,
-    checkPSAPermissions :() => void,
-    refreshPSANeighbors :({ id :string }) => void,
-    submit :(value :{ config :Object, values :Object}) => void,
-    replaceEntity :(value :{ entitySetName :string, entityKeyId :string, values :Object }) => void,
-    deleteEntity :(value :{ entitySetName :string, entityKeyId :string }) => void,
-    clearSubmit :() => void,
   },
 };
 
@@ -167,24 +157,19 @@ class PSASummary extends React.Component<Props, *> {
     );
   }
 
-  renderProfileHeader = () => {
-
+  viewPSADetailsButton = () => {
+    const { openDetailsModal } = this.props;
+    return (
+      <ViewPSADetailsButton onClick={openDetailsModal}>View PSA Details</ViewPSADetailsButton>
+    );
   }
 
-  openDetailsModal = () => {
-    const { neighbors, actions } = this.props;
-    const { loadCaseHistory, loadHearingNeighbors } = actions;
-    const hearingIds = neighbors.get(ENTITY_SETS.HEARINGS, Immutable.List())
-      .map(neighbor => neighbor.getIn([OPENLATTICE_ID_FQN, 0]))
-      .filter(id => !!id)
-      .toJS();
-    const personId = getEntityKeyId(neighbors, ENTITY_SETS.PEOPLE);
-    loadCaseHistory({ personId, neighbors });
-    loadHearingNeighbors({ hearingIds, loadPersonData: false });
-    this.setState({
-      open: true
-    });
-  }
+  renderProfileHeader = () => (
+    <TitleRowWrapper>
+      <Title withSubtitle><span>PSA Summary</span></Title>
+      { this.viewPSADetailsButton() }
+    </TitleRowWrapper>
+  )
 
   renderPSADetails = () => {
     const { neighbors, actions, scores } = this.props;
@@ -224,29 +209,29 @@ class PSASummary extends React.Component<Props, *> {
       profile
     } = this.props;
 
-    const topRow = profile ? <Title withSubtitle>PSA Summary</Title>
+    const topRow = profile ? this.renderProfileHeader()
       : (
         <NoStyleWrapper>
-          <RowWrapper>
+          <SummaryRowWrapper>
             {this.renderPersonInfo()}
             {this.renderArrestInfo()}
-          </RowWrapper>
+          </SummaryRowWrapper>
           <hr />
         </NoStyleWrapper>
       );
 
     const bottomRow = !profile ? null
       : (
-        <RowWrapper>
+        <SummaryRowWrapper>
           {this.renderNotes()}
           {this.renderArrestInfo()}
-        </RowWrapper>
+        </SummaryRowWrapper>
       );
 
     return (
       <SummaryWrapper>
         { topRow }
-        <RowWrapper>
+        <SummaryRowWrapper>
           <ScoresContainer border>
             <ScoreTitle>PSA</ScoreTitle>
             <ScoreContent>
@@ -258,7 +243,7 @@ class PSASummary extends React.Component<Props, *> {
             <ScoreTitle>DMF</ScoreTitle>
             <SummaryDMFDetails neighbors={neighbors} scores={scores} />
           </ScoresContainer>
-        </RowWrapper>
+        </SummaryRowWrapper>
         <hr />
         {(!profile && notes) ? this.renderNotes() : null}
         {(!profile && notes) ? <hr /> : null}
@@ -268,19 +253,16 @@ class PSASummary extends React.Component<Props, *> {
   }
 }
 
-function mapStateToProps(state, ownProps) {
-  const { personId } = ownProps.match.params;
+function mapStateToProps(state) {
   const review = state.get(STATE.REVIEW);
   const people = state.get(STATE.PEOPLE);
 
   return {
-    personId,
     [REVIEW.NEIGHBORS_BY_ID]: review.get(REVIEW.NEIGHBORS_BY_ID),
     [REVIEW.LOADING_DATA]: review.get(REVIEW.LOADING_DATA),
     [REVIEW.LOADING_RESULTS]: review.get(REVIEW.LOADING_RESULTS),
     [PEOPLE.FETCHING_PERSON_DATA]: people.get(PEOPLE.FETCHING_PERSON_DATA),
     [PEOPLE.PERSON_DATA]: people.get(PEOPLE.PERSON_DATA),
-    [PEOPLE.NEIGHBORS]: people.getIn([PEOPLE.NEIGHBORS, personId], Map()),
     [PEOPLE.MOST_RECENT_PSA]: people.get(PEOPLE.MOST_RECENT_PSA),
     [PEOPLE.MOST_RECENT_PSA_ENTITY_KEY]: people.get(PEOPLE.MOST_RECENT_PSA_ENTITY_KEY)
   };
@@ -288,14 +270,6 @@ function mapStateToProps(state, ownProps) {
 
 function mapDispatchToProps(dispatch) {
   const actions :{ [string] :Function } = {};
-
-  Object.keys(CourtActionFactory).forEach((action :string) => {
-    actions[action] = CourtActionFactory[action];
-  });
-
-  Object.keys(PeopleActionFactory).forEach((action :string) => {
-    actions[action] = PeopleActionFactory[action];
-  });
 
   Object.keys(ReviewActionFactory).forEach((action :string) => {
     actions[action] = ReviewActionFactory[action];
