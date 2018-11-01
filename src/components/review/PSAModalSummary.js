@@ -7,7 +7,7 @@ import styled from 'styled-components';
 
 import ChargeHistoryStats from '../casehistory/ChargeHistoryStats';
 import ChargeTable from '../charges/ChargeTable';
-import PSASummary from './PSASummary';
+import PSASummary from '../../containers/review/PSASummary';
 import { AlternateSectionHeader, Count } from '../../utils/Layout';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
