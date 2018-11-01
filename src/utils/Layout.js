@@ -455,11 +455,11 @@ export const Title = styled.div`
   display: flex;
   flex-direction: column;
   font-family: 'Open Sans', sans-serif;
-  font-size: 16px;
   color: ${OL.GREY01};
   margin: 20px 0;
 
   span:first-child {
+    font-size: 20px;
     font-weight: ${props => (props.withSubtitle ? '600' : '400')};
     padding-bottom: 5px;
   }
@@ -528,4 +528,11 @@ export const StyledColumnRow = styled.div`
   border-radius: 5px;
   background-color: ${OL.WHITE};
   border: solid 1px ${OL.GREY11};
+`;
+
+export const SummaryRowWrapper = styled.div`
+  width: 100%;
+  display: grid;
+  grid-template-columns: 66% 33%;
+  margin: 30px 0;
 `;
