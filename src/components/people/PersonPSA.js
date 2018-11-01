@@ -58,12 +58,6 @@ type Props = {
   mostRecentPSAEntityKeyId :string,
   loading :boolean,
   openDetailsModal :() => void;
-  actions :{
-    downloadPSAReviewPDF :(values :{
-      neighbors :Map<*, *>,
-      scores :Map<*, *>
-    }) => void,
-  }
 }
 
 class PersonOverview extends React.Component<Props, State> {
@@ -141,14 +135,12 @@ class PersonOverview extends React.Component<Props, State> {
 
   render() {
     const {
-      actions,
       loading,
       mostRecentPSA,
       mostRecentPSAEntityKeyId,
       psaNeighborsById,
       openDetailsModal
     } = this.props;
-    const { downloadPSAReviewPDF } = actions;
     const mostRecentPSANeighbors = psaNeighborsById.get(mostRecentPSAEntityKeyId, Map());
     const scores = mostRecentPSA.get(PSA_NEIGHBOR.DETAILS, Map());
     const notes = getIdOrValue(
@@ -167,7 +159,6 @@ class PersonOverview extends React.Component<Props, State> {
                   notes={notes}
                   scores={scores}
                   neighbors={mostRecentPSANeighbors}
-                  downloadFn={downloadPSAReviewPDF}
                   openDetailsModal={openDetailsModal} />
             </StyledColumnRow>
           </StyledColumnRowWrapper>

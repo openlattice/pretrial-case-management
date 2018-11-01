@@ -42,10 +42,6 @@ type Props = {
   neighbors :Map<*, *>,
   openDetailsModal :() => void,
   personId :string,
-  downloadPSAReviewPDF :(values :{
-    neighbors :Map<*, *>,
-    scores :Map<*, *>
-  }) => void
 }
 
 const StyledViewMoreLink = styled(ViewMoreLink)`
@@ -53,7 +49,6 @@ const StyledViewMoreLink = styled(ViewMoreLink)`
 `;
 
 const PersonOverview = ({
-  downloadPSAReviewPDF,
   loading,
   mostRecentPSA,
   mostRecentPSAEntityKeyId,
@@ -111,7 +106,6 @@ const PersonOverview = ({
                 notes={notes}
                 scores={scores}
                 neighbors={mostRecentPSANeighbors}
-                downloadFn={downloadPSAReviewPDF}
                 openDetailsModal={openDetailsModal} />
           </StyledColumnRow>
         </StyledColumnRowWrapper>
