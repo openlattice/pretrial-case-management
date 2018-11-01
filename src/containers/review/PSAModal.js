@@ -27,7 +27,7 @@ import ClosePSAModal from '../../components/review/ClosePSAModal';
 import psaEditedConfig from '../../config/formconfig/PsaEditedConfig';
 import closeX from '../../assets/svg/close-x-gray.svg';
 import { getScoresAndRiskFactors, calculateDMF } from '../../utils/ScoringUtils';
-import { getEntityKeyId, getEntitySetId, getIdValue } from '../../utils/DataUtils';
+import { getEntityKeyId, getEntitySetId, getIdOrValue } from '../../utils/DataUtils';
 import { CenteredContainer, Title } from '../../utils/Layout';
 import { toISODateTime } from '../../utils/FormattingUtils';
 import { getCasesForPSA, currentPendingCharges } from '../../utils/CaseUtils';
@@ -406,9 +406,9 @@ class PSAModal extends React.Component<Props, State> {
     return getEntityKeyId(neighbors, name);
   };
 
-  getIdValue = (name, optionalFQN) :string => {
+  getIdOrValue = (name, optionalFQN) :string => {
     const { neighbors } = this.props;
-    return getIdValue(neighbors, name, optionalFQN);
+    return getIdOrValue(neighbors, name, optionalFQN);
   };
 
   refreshPSANeighborsCallback = () => {
@@ -432,14 +432,14 @@ class PSAModal extends React.Component<Props, State> {
     const dmf = calculateDMF(riskFactors, scoresAndRiskFactors.scores);
 
     const scoreId = scores.getIn([PROPERTY_TYPES.GENERAL_ID, 0]);
-    const riskFactorsIdValue = this.getIdValue(ENTITY_SETS.PSA_RISK_FACTORS);
+    const riskFactorsIdValue = this.getIdOrValue(ENTITY_SETS.PSA_RISK_FACTORS);
 
-    const dmfIdValue = this.getIdValue(ENTITY_SETS.DMF_RESULTS);
+    const dmfIdValue = this.getIdOrValue(ENTITY_SETS.DMF_RESULTS);
     const dmfId = this.getEntityKeyId(ENTITY_SETS.DMF_RESULTS);
     const dmfEntitySetId = this.getEntitySetId(ENTITY_SETS.DMF_RESULTS);
     const dmfEntity = this.getDMFEntity(dmf, dmfIdValue);
 
-    const dmfRiskFactorsIdValue = this.getIdValue(ENTITY_SETS.DMF_RISK_FACTORS);
+    const dmfRiskFactorsIdValue = this.getIdOrValue(ENTITY_SETS.DMF_RISK_FACTORS);
     const dmfRiskFactorsId = this.getEntityKeyId(ENTITY_SETS.DMF_RISK_FACTORS);
     const dmfRiskFactorsEntitySetId = this.getEntitySetId(ENTITY_SETS.DMF_RISK_FACTORS);
     const dmfRiskFactorsEntity = this.getDMFRiskFactorsEntity(riskFactors, dmfRiskFactorsIdValue);
@@ -464,7 +464,7 @@ class PSAModal extends React.Component<Props, State> {
 
     const notes = riskFactors.get(PSA.NOTES);
     if (this.getNotesFromNeighbors(neighbors) !== notes) {
-      notesIdValue = this.getIdValue(ENTITY_SETS.RELEASE_RECOMMENDATIONS);
+      notesIdValue = this.getIdOrValue(ENTITY_SETS.RELEASE_RECOMMENDATIONS);
       notesId = this.getEntityKeyId(ENTITY_SETS.RELEASE_RECOMMENDATIONS);
       notesEntitySetId = this.getEntitySetId(ENTITY_SETS.RELEASE_RECOMMENDATIONS);
       notesEntity = this.getNotesEntity(riskFactors, notesIdValue);
@@ -731,7 +731,7 @@ class PSAModal extends React.Component<Props, State> {
             submitting={submitting}
             refreshingNeighbors={refreshingNeighbors}
             psaId={scores.getIn([PROPERTY_TYPES.GENERAL_ID, 0])}
-            dmfId={this.getIdValue(ENTITY_SETS.DMF_RESULTS)}
+            dmfId={this.getIdOrValue(ENTITY_SETS.DMF_RESULTS)}
             psaEntityKeyId={entityKeyId}
             deleteHearing={this.deleteHearing}
             refreshPSANeighborsCallback={this.refreshPSANeighborsCallback}
@@ -755,10 +755,7 @@ class PSAModal extends React.Component<Props, State> {
       open,
       onClose,
       entityKeyId,
-      readOnly,
-      caseHistory,
-      chargeHistory,
-      neighbors
+      readOnly
     } = this.props;
 
     const { closing } = this.state;
@@ -814,7 +811,10 @@ class PSAModal extends React.Component<Props, State> {
               scores={scores}
               entityKeyId={entityKeyId} />
           <TitleWrapper>
-            <TitleHeader>PSA Details: <span>{`${this.getName()}`}</span></TitleHeader>
+            <TitleHeader>
+              PSA Details:
+              <span>{` ${this.getName()}`}</span>
+            </TitleHeader>
             <div>
               { readOnly
                 ? null
