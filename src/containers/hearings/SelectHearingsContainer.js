@@ -79,7 +79,7 @@ const Header = styled.div`
 
 const SubmittedPSAWrapper = styled.div`
   margin: 30px;
-`
+`;
 
 const StyledTitle = styled(Title)`
   margin: 0;
