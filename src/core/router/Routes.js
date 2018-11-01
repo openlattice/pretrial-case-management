@@ -14,7 +14,7 @@ export const FORMS :string = '/forms';
 
 export const TERMS :string = '/terms';
 
-const PSA :string = '/psa';
+export const PSA :string = '/psa';
 export const PSA_FORM :string = FORMS + PSA;
 
 /* Create Report */
@@ -56,5 +56,6 @@ export const LAST_NAME = 'lname';
 export const DOB = 'dob';
 
 /* Person Details */
-export const ABOUT = 'about';
-export const ABOUT_PERSON = `${PERSON_DETAILS}/${ABOUT}`;
+export const OVERVIEW = '/overview';
+export const CASES = '/cases';
+export const ABOUT_PERSON = `${PERSON_DETAILS}`;
