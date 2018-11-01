@@ -117,6 +117,13 @@ const StyledSectionHeader = styled.div`
           `padding-left: 15px;
            font-size: 16px;`
         );
+      case `${CONTENT_CONSTS.PROFILE}|${CONTENT_CONSTS.ARREST}`:
+        return (
+          `padding: 0 0 30px 30px;
+           margin-bottom: -10px;
+           font-size: 16px;
+          `
+        );
       default:
         return (
           `padding: 30px;
@@ -160,6 +167,10 @@ const StyledSectionBottomBarWrapper = styled.div`
       case CONTENT_CONSTS.CREATING_HEARING:
         return (
           'padding: 30px 50px 0 15px;'
+        );
+      case `${CONTENT_CONSTS.PROFILE}|${CONTENT_CONSTS.ARREST}`:
+        return (
+          'padding: 0 30px 0 30px;'
         );
       default:
         return (
