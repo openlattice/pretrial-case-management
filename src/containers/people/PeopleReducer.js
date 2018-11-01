@@ -9,7 +9,6 @@ import { changePSAStatus, updateScoresAndRiskFactors } from '../review/ReviewAct
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { getPeople, getPersonData, getPersonNeighbors } from './PeopleActionFactory';
 import { PEOPLE, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
-import { PSA_STATUSES } from '../../utils/consts/Consts';
 
 const { OPENLATTICE_ID_FQN } = Constants;
 const INITIAL_STATE = Immutable.fromJS({
@@ -29,17 +28,25 @@ export default function peopleReducer(state = INITIAL_STATE, action) {
     case changePSAStatus.case(action.type): {
       return changePSAStatus.reducer(state, action, {
         SUCCESS: () => {
+          const { id, entity } = action.value;
+          let mostRecentPSA = state.get(PEOPLE.MOST_RECENT_PSA, Immutable.Map());
+          const mostRecentPSAEntityKeyId = state.get(PEOPLE.MOST_RECENT_PSA_ENTITY_KEY, '');
+          if (id === mostRecentPSAEntityKeyId) {
+            mostRecentPSA = mostRecentPSA.set(PSA_NEIGHBOR.DETAILS, Immutable.fromJS(entity));
+          }
           const personId = state.getIn([PEOPLE.PERSON_DATA, PROPERTY_TYPES.PERSON_ID, 0], '');
           const neighbors = state.getIn([PEOPLE.NEIGHBORS, personId, ENTITY_SETS.PSA_SCORES], Immutable.Map());
           const nextNeighbors = Immutable.fromJS(neighbors).map((neighborObj) => {
             const neighborId = neighborObj.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0]);
-            if (neighborId === action.value.id) {
-              const newObject = neighborObj.set(PSA_NEIGHBOR.DETAILS, Immutable.fromJS(action.value.entity));
+            if (neighborId === id) {
+              const newObject = neighborObj.set(PSA_NEIGHBOR.DETAILS, Immutable.fromJS(entity));
               return newObject;
             }
             return neighborObj;
           });
-          return state.setIn([PEOPLE.NEIGHBORS, personId, ENTITY_SETS.PSA_SCORES], nextNeighbors);
+          return state
+            .setIn([PEOPLE.NEIGHBORS, personId, ENTITY_SETS.PSA_SCORES], nextNeighbors)
+            .set(PEOPLE.MOST_RECENT_PSA, mostRecentPSA);
         }
       });
     }
@@ -64,8 +71,9 @@ export default function peopleReducer(state = INITIAL_STATE, action) {
 
     case getPersonNeighbors.case(action.type): {
       return getPersonNeighbors.reducer(state, action, {
-        REQUEST: () => state.setIn([PEOPLE.NEIGHBORS, action.personId], Immutable.Map()),
-        FAILURE: () => state.setIn([PEOPLE.NEIGHBORS, action.personId], Immutable.Map()),
+        REQUEST: () => state
+          .setIn([PEOPLE.NEIGHBORS, action.personId], Immutable.Map())
+          .set(PEOPLE.FETCHING_PEOPLE, true),
         SUCCESS: () => {
           let caseNums = Immutable.Set();
           let neighborsByEntitySet = Immutable.Map();
@@ -79,8 +87,7 @@ export default function peopleReducer(state = INITIAL_STATE, action) {
             const entitySetName = neighborObj.getIn([PSA_NEIGHBOR.ENTITY_SET, 'name'], '');
             const entityDateTime = moment(neighborObj.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.DATE_TIME, 0]));
             const entityKeyId = neighborObj.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0], '');
-            if (entitySetName === ENTITY_SETS.PSA_SCORES
-                && neighborObj.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.STATUS, 0]) === PSA_STATUSES.OPEN) {
+            if (entitySetName === ENTITY_SETS.PSA_SCORES) {
               if (!mostRecentPSA || currentPSADateTime.isBefore(entityDateTime)) {
                 mostRecentPSA = neighborObj;
                 mostRecentPSAEntityKeyId = entityKeyId;
@@ -113,16 +120,26 @@ export default function peopleReducer(state = INITIAL_STATE, action) {
               .set(PEOPLE.MOST_RECENT_PSA, mostRecentPSA)
               .set(PEOPLE.MOST_RECENT_PSA_ENTITY_KEY, mostRecentPSAEntityKeyId)
           );
-        }
+        },
+        FAILURE: () => state
+          .setIn([PEOPLE.NEIGHBORS, action.personId], Immutable.Map())
+          .set(PEOPLE.FETCHING_PEOPLE, false),
+        FINALLY: () => state.set(PEOPLE.FETCHING_PERSON_DATA, false)
       });
     }
 
     case updateScoresAndRiskFactors.case(action.type): {
       return updateScoresAndRiskFactors.reducer(state, action, {
         SUCCESS: () => {
+          let mostRecentPSA = state.get(PEOPLE.MOST_RECENT_PSA, Immutable.Map());
+          const mostRecentPSAEntityKeyId = state.get(PEOPLE.MOST_RECENT_PSA_ENTITY_KEY, '');
           const personId = state.getIn([PEOPLE.PERSON_DATA, PROPERTY_TYPES.PERSON_ID, 0], '');
           const { newScoreEntity } = action.value;
           const olID = newScoreEntity[OPENLATTICE_ID_FQN][0];
+          if (olID === mostRecentPSAEntityKeyId) {
+            mostRecentPSA = mostRecentPSA.set(PSA_NEIGHBOR.DETAILS, Immutable.fromJS(newScoreEntity));
+          }
+
           const newPSAs = state.getIn([PEOPLE.NEIGHBORS, personId, ENTITY_SETS.PSA_SCORES], Immutable.Map())
             .map((psa) => {
               const psaNeighborID = psa.get(PSA_NEIGHBOR.ID);
@@ -131,7 +148,9 @@ export default function peopleReducer(state = INITIAL_STATE, action) {
               }
               return psa;
             });
-          const newState = state.setIn([PEOPLE.NEIGHBORS, personId, ENTITY_SETS.PSA_SCORES], newPSAs);
+          const newState = state
+            .setIn([PEOPLE.NEIGHBORS, personId, ENTITY_SETS.PSA_SCORES], newPSAs)
+            .set(PEOPLE.MOST_RECENT_PSA, mostRecentPSA);
           return newState;
         }
       });
