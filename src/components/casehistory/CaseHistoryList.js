@@ -18,7 +18,7 @@ const InfoRow = styled.div`
   display: flex;
   flex-direction: row;
   padding: 15px 0;
-  margin: 0 -30px;
+  margin: ${props => (props.modal ? '0 -30px' : 0)};
 `;
 
 const NoResults = styled.div`
@@ -37,23 +37,25 @@ const TitleWrapper = styled.div`
   flex-direction: row;
   justify-content: flex-start;
   align-items: center;
-  border-bottom: 1px solid #555e6f;
-  border-top: 1px solid #555e6f;
+  border-bottom: ${props => (props.modal ? `1px solid ${OL.GREY01}` : 'none')};
+  border-top: ${props => (props.modal ? `1px solid ${OL.GREY01}` : 'none')};
   padding-left: 30px;
-  margin: 20px -30px 0;
+  margin: ${props => (props.modal ? '20px -30px 0' : 0)};
 `;
 
 const InfoItem = styled.div`
-  margin: 0 30px;
+  margin: ${props => (props.modal ? '0 30px' : 0)};
+  padding: ${props => (props.modal ? 0 : '0 30px')};
   color: ${OL.GREY01};
 `;
 
 const CaseHistoryContainer = styled.div`
+  width: ${props => (props.modal ? 'auto' : '100%')};
   height: 100%;
 `;
 
 const StyledSpinner = styled(LoadingSpinner)`
-  margin: 0 -30px 30px;
+  margin: ${props => (props.modal ? '0 -30px 30px' : 0)};
   display: flex;
   justify-content: center;
   align-items: center;
@@ -90,9 +92,9 @@ const CaseHistoryList = ({
       const fileDate = formatDateList(caseObj.get(PROPERTY_TYPES.FILE_DATE, Immutable.List()));
       return (
         <div key={caseNum}>
-          <InfoRow>
-            <InfoItem>{`Case Number: ${caseNum}`}</InfoItem>
-            <InfoItem>{`File Date: ${fileDate}`}</InfoItem>
+          <InfoRow modal={modal}>
+            <InfoItem modal={modal}>{`Case Number: ${caseNum}`}</InfoItem>
+            <InfoItem modal={modal}>{`File Date: ${fileDate}`}</InfoItem>
           </InfoRow>
           <ChargeList modal={modal} pretrialCaseDetails={caseObj} charges={charges} detailed historical />
         </div>
@@ -104,7 +106,7 @@ const CaseHistoryList = ({
 
   return (
     <CaseHistoryContainer>
-      <TitleWrapper>
+      <TitleWrapper modal={modal}>
         <Title withSubtitle>
           <span>{title}</span>
         </Title>
