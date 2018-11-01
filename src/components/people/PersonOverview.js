@@ -3,6 +3,7 @@
  */
 
 import React from 'react';
+import styled from 'styled-components';
 import { Map } from 'immutable';
 
 import AboutPersonGeneral from '../person/AboutPersonGeneral';
@@ -10,6 +11,7 @@ import CaseHistoryList from '../casehistory/CaseHistoryList';
 import ChargeHistoryStats from '../casehistory/ChargeHistoryStats';
 import LoadingSpinner from '../LoadingSpinner';
 import PSASummary from '../../containers/review/PSASummary';
+import ViewMoreLink from '../buttons/ViewMoreLink';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { getIdOrValue } from '../../utils/DataUtils';
 import {
@@ -29,18 +31,26 @@ import {
   PSA_ASSOCIATION
 } from '../../utils/consts/FrontEndStateConsts';
 
+import * as Routes from '../../core/router/Routes';
+
 type Props = {
   psaNeighborsById :Map<*, *>,
   selectedPersonData :Map<*, *>,
-  neighbors :Map<*, *>,
+  loading :boolean,
   mostRecentPSA :Map<*, *>,
   mostRecentPSAEntityKeyId :string,
-  loading :boolean,
+  neighbors :Map<*, *>,
+  openDetailsModal :() => void,
+  personId :string,
   downloadPSAReviewPDF :(values :{
     neighbors :Map<*, *>,
     scores :Map<*, *>
   }) => void
 }
+
+const StyledViewMoreLink = styled(ViewMoreLink)`
+  transform: translateX(830px) translateY(50px);
+`;
 
 const PersonOverview = ({
   downloadPSAReviewPDF,
@@ -48,8 +58,10 @@ const PersonOverview = ({
   mostRecentPSA,
   mostRecentPSAEntityKeyId,
   neighbors,
+  personId,
   psaNeighborsById,
-  selectedPersonData
+  selectedPersonData,
+  openDetailsModal
 } :Props) => {
   const mostRecentPSANeighbors = psaNeighborsById.get(mostRecentPSAEntityKeyId, Map());
   const arrestDate = getIdOrValue(
@@ -99,11 +111,15 @@ const PersonOverview = ({
                 notes={notes}
                 scores={scores}
                 neighbors={mostRecentPSANeighbors}
-                downloadFn={downloadPSAReviewPDF} />
+                downloadFn={downloadPSAReviewPDF}
+                openDetailsModal={openDetailsModal} />
           </StyledColumnRow>
         </StyledColumnRowWrapper>
         <StyledColumnRowWrapper>
           <StyledColumnRow>
+            <StyledViewMoreLink to={`${Routes.PERSON_DETAILS_ROOT}/${personId}${Routes.CASES}`}>
+              View more
+            </StyledViewMoreLink>
             <CaseHistoryList
                 loading={loading}
                 title="Case Summary"
