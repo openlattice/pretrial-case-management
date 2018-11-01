@@ -3,10 +3,10 @@
  */
 
 import React from 'react';
+import styled from 'styled-components';
 import Immutable from 'immutable';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import styled from 'styled-components';
 
 import PSAReviewReportsRow from '../../components/review/PSAReviewReportsRow';
 import LoadingSpinner from '../../components/LoadingSpinner';
@@ -15,7 +15,7 @@ import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { SORT_TYPES } from '../../utils/consts/Consts';
 import { sortByDate, sortByName } from '../../utils/PSAUtils';
-import { getEntityKeyId, getIdValue } from '../../utils/DataUtils';
+import { getEntityKeyId, getIdOrValue } from '../../utils/DataUtils';
 import { OL } from '../../utils/consts/Colors';
 import {
   STATE,
@@ -215,7 +215,7 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
 
     const neighbors = psaNeighborsById.get(scoreId, Immutable.Map());
     const personId = getEntityKeyId(neighbors, ENTITY_SETS.PEOPLE);
-    const personIdValue = getIdValue(neighbors, ENTITY_SETS.PEOPLE, PROPERTY_TYPES.PERSON_ID);
+    const personIdValue = getIdOrValue(neighbors, ENTITY_SETS.PEOPLE, PROPERTY_TYPES.PERSON_ID);
     const personCaseHistory = caseHistory.get(personId, Immutable.List());
     const personManualCaseHistory = manualCaseHistory.get(personId, Immutable.List());
     const personChargeHistory = chargeHistory.get(personId, Immutable.Map());
