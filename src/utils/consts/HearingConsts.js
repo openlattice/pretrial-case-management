@@ -1,6 +1,10 @@
+import moment from 'moment';
 import { OrderedMap, Map } from 'immutable';
+import { Constants } from 'lattice';
 
-import { PROPERTY_TYPES } from './DataModelConsts';
+import { ENTITY_SETS, PROPERTY_TYPES } from './DataModelConsts';
+
+const { OPENLATTICE_ID_FQN } = Constants;
 
 export const COURTROOMS = [
   '1A',
@@ -72,4 +76,39 @@ export const getJudgeOptions = (allJudges, jurisdiction) => {
     [HEARING_CONSTS.FIELD]: HEARING_CONSTS.JUDGE
   }));
   return judgeOptions.toOrderedMap().sortBy((k, _) => k);
+};
+
+// Get hearings from psa neighbors
+export const getHearingsFromNeighbors = psaNeighbors => (
+  psaNeighbors.get(ENTITY_SETS.HEARINGS, Map())
+);
+
+// Get hearing ids from psa neighbors
+export const getHearingsIdsFromNeighbors = psaNeighbors => (
+  getHearingsFromNeighbors(psaNeighbors)
+    .map(hearing => hearing.getIn([OPENLATTICE_ID_FQN, 0]))
+    .filter(id => !!id)
+    .toJS()
+);
+
+// Get future hearings in sequential order from psa neighbors
+export const getScheduledHearings = (psaNeighbors) => {
+  const todaysDate = moment().startOf('day');
+  return (
+    getHearingsFromNeighbors(psaNeighbors)
+      .filter(hearing => todaysDate.isBefore(hearing.getIn([PROPERTY_TYPES.DATE_TIME, 0], '')))
+      .sort((h1, h2) => (moment(h1.getIn([PROPERTY_TYPES.DATE_TIME, 0], ''))
+        .isBefore(h2.getIn([PROPERTY_TYPES.DATE_TIME, 0], '')) ? 1 : -1))
+  );
+};
+
+// Get past hearings in sequential order from psa neighbors
+export const getPastHearings = (psaNeighbors) => {
+  const todaysDate = moment().startOf('day');
+  return (
+    getHearingsFromNeighbors(psaNeighbors)
+      .filter(hearing => todaysDate.isAfter(hearing.getIn([PROPERTY_TYPES.DATE_TIME, 0], '')))
+      .sort((h1, h2) => (moment(h1.getIn([PROPERTY_TYPES.DATE_TIME, 0], ''))
+        .isBefore(h2.getIn([PROPERTY_TYPES.DATE_TIME, 0], '')) ? 1 : -1))
+  );
 };
