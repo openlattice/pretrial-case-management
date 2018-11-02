@@ -58,4 +58,5 @@ export const DOB = 'dob';
 /* Person Details */
 export const OVERVIEW = '/overview';
 export const CASES = '/cases';
+export const HEARINGS = '/hearings';
 export const ABOUT_PERSON = `${PERSON_DETAILS}`;
