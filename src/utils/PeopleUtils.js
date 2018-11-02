@@ -1,5 +1,13 @@
-import { PROPERTY_TYPES } from './consts/DataModelConsts';
+
+import { List } from 'immutable';
+import { Constants } from 'lattice';
+
+
+import { ENTITY_SETS, PROPERTY_TYPES } from './consts/DataModelConsts';
+import { PSA_NEIGHBOR } from './consts/FrontEndStateConsts';
 import { formatDOB } from './Helpers';
+
+const { OPENLATTICE_ID_FQN } = Constants;
 
 
 export const formatPeopleInfo = (person) => {
@@ -16,4 +24,12 @@ export const formatPeopleInfo = (person) => {
 
 export const getFormattedPeople = peopleList => (
   peopleList.map(person => formatPeopleInfo(person))
+);
+
+// Get PSA Ids from person Neighbors
+export const getPSAIdsFromNeighbors = peopleNeighbors => (
+  peopleNeighbors.get(ENTITY_SETS.PSA_SCORES, List())
+    .map(neighbor => neighbor.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0]))
+    .filter(id => !!id)
+    .toJS()
 );
