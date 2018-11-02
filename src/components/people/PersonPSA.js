@@ -156,6 +156,7 @@ class PersonOverview extends React.Component<Props, State> {
             <StyledColumnRow>
               <PSASummary
                   profile
+                  fileNewPSA
                   notes={notes}
                   scores={scores}
                   neighbors={mostRecentPSANeighbors}
