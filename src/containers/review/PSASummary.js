@@ -103,7 +103,7 @@ const NotesTitle = styled(Title)`
 
 const NotesWrapper = styled.div`
   width: 100%;
-  padding: ${props => (props.profile ? '0 30px 0' : '0 30px 30px')};
+  padding: ${props => (props.profile ? '0 30px 0' : '30px')};
   border-right: ${props => (props.profile ? `solid 1px ${OL.GREY28}` : 'none')};
 `;
 
