@@ -134,7 +134,7 @@ class ChargeHistoryStats extends React.Component<Props, *> {
         <SectionHeader>
           <Title withSubtitle>
             <span>Summary Statistics</span>
-            <span>All current and past cases</span>
+            All current and past cases
           </Title>
           {pendingCharges.size ? this.renderPendingChargeStatus() : null}
         </SectionHeader>
