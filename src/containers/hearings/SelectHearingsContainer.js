@@ -25,8 +25,14 @@ import LoadingSpinner from '../../components/LoadingSpinner';
 import SelectReleaseConditions from '../../components/releaseconditions/SelectReleaseConditions';
 import { OL } from '../../utils/consts/Colors';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { HEARING_CONSTS, formatJudgeName } from '../../utils/consts/HearingConsts';
 import { Title } from '../../utils/Layout';
+import {
+  HEARING_CONSTS,
+  formatJudgeName,
+  getHearingsIdsFromNeighbors,
+  getScheduledHearings,
+  getPastHearings
+} from '../../utils/consts/HearingConsts';
 import {
   FORM_IDS,
   ID_FIELD_NAMES,
@@ -189,15 +195,9 @@ class SelectHearingsContainer extends React.Component<Props, State> {
   componentWillReceiveProps = (nextProps) => {
     const { neighbors, actions } = this.props;
     const { loadHearingNeighbors } = actions;
-    const currentHearingIds = neighbors.get(ENTITY_SETS.HEARINGS, List())
-      .map(neighbor => neighbor.getIn([OPENLATTICE_ID_FQN, 0]))
-      .filter(id => !!id)
-      .toJS();
-    const hearingIds = nextProps.neighbors.get(ENTITY_SETS.HEARINGS, List())
-      .map(neighbor => neighbor.getIn([OPENLATTICE_ID_FQN, 0]))
-      .filter(id => !!id)
-      .toJS();
-    if (currentHearingIds.length !== hearingIds.length) {
+    const nextNeighbors = nextProps.neighbors;
+    if (neighbors.size !== nextNeighbors.size) {
+      const hearingIds = getHearingsIdsFromNeighbors(nextNeighbors);
       loadHearingNeighbors({ hearingIds });
     }
   }
@@ -234,94 +234,6 @@ class SelectHearingsContainer extends React.Component<Props, State> {
       .isBefore(h2.getIn([PROPERTY_TYPES.DATE_TIME, 0], '')) ? 1 : -1));
   }
 
-  isReadyToSubmit = () => {
-    const {
-      newHearingCourtroom,
-      newHearingDate,
-      newHearingTime,
-      judgeId,
-      otherJudgeText
-    } = this.state;
-    const judgeInfoPresent = (judgeId || otherJudgeText);
-    return (
-      newHearingCourtroom
-      && newHearingDate
-      && newHearingTime
-      && judgeInfoPresent
-    );
-  }
-
-  selectHearing = (hearingDetails) => {
-    const {
-      psaId,
-      personId,
-      psaEntityKeyId,
-      actions
-    } = this.props;
-
-    const values = Object.assign({}, hearingDetails, {
-      [ID_FIELD_NAMES.PSA_ID]: psaId,
-      [FORM_IDS.PERSON_ID]: personId
-    });
-
-    const callback = psaEntityKeyId ? () => actions.refreshPSANeighbors({ id: psaEntityKeyId }) : () => {};
-    actions.submit({
-      values,
-      config: psaHearingConfig,
-      callback
-    });
-  }
-
-  selectCurrentHearing = () => {
-    const { onSubmit } = this.props;
-    const {
-      newHearingDate,
-      newHearingTime,
-      newHearingCourtroom,
-      otherJudgeText,
-      judge,
-      judgeId
-    } = this.state;
-    const dateFormat = 'MM/DD/YYYY';
-    const timeFormat = 'hh:mm a';
-    const date = moment(newHearingDate);
-    const time = moment(newHearingTime, timeFormat);
-    let judgeName = judge;
-    if (date.isValid() && time.isValid()) {
-      const datetime = moment(`${date.format(dateFormat)} ${time.format(timeFormat)}`, `${dateFormat} ${timeFormat}`);
-      let hearing = {
-        [ID_FIELD_NAMES.HEARING_ID]: randomUUID(),
-        [HEARING.DATE_TIME]: datetime.toISOString(true),
-        [HEARING.COURTROOM]: newHearingCourtroom,
-        [PROPERTY_TYPES.HEARING_TYPE]: HEARING_TYPES.INITIAL_APPEARANCE
-      };
-      if (judge === 'Other') {
-        this.setState({ judgeId: '' });
-        judgeName = otherJudgeText;
-        hearing = Object.assign({}, hearing, {
-          [PROPERTY_TYPES.HEARING_COMMENTS]: otherJudgeText
-        });
-      }
-      else {
-        hearing = Object.assign({}, hearing, {
-          [ID_FIELD_NAMES.TIMESTAMP]: moment().toISOString(true),
-          [ID_FIELD_NAMES.JUDGE_ID]: judgeId
-        });
-      }
-      this.selectHearing(hearing);
-      const hearingForRender = Object.assign({}, hearing, { judgeName });
-      onSubmit(hearingForRender);
-      this.setState({
-        manuallyCreatingHearing: false,
-        newHearingCourtroom: undefined,
-        newHearingDate: undefined,
-        newHearingTime: undefined,
-        judge: '',
-        otherJudgeText: ''
-      });
-    }
-  }
-
   selectExistingHearing = (row, hearingId) => {
     const { onSubmit } = this.props;
     const hearingWithOnlyId = { [ID_FIELD_NAMES.HEARING_ID]: hearingId };
@@ -332,59 +244,17 @@ class SelectHearingsContainer extends React.Component<Props, State> {
     }));
   }
 
-  onSelectChange = (option) => {
-    const optionMap = fromJS(option);
-    switch (optionMap.get(HEARING_CONSTS.FIELD)) {
-      case HEARING_CONSTS.JUDGE: {
-        this.setState({
-          [HEARING_CONSTS.JUDGE]: optionMap.get(HEARING_CONSTS.FULL_NAME),
-          [HEARING_CONSTS.JUDGE_ID]: optionMap.getIn([PROPERTY_TYPES.PERSON_ID, 0])
-        });
-        break;
-      }
-      case HEARING_CONSTS.NEW_HEARING_TIME: {
-        this.setState({
-          [HEARING_CONSTS.NEW_HEARING_TIME]: optionMap.get(HEARING_CONSTS.NEW_HEARING_TIME)
-        });
-        break;
-      }
-      case HEARING_CONSTS.NEW_HEARING_COURTROOM: {
-        this.setState({
-          [HEARING_CONSTS.NEW_HEARING_COURTROOM]: optionMap.get(HEARING_CONSTS.NEW_HEARING_COURTROOM)
-        });
-        break;
-      }
-      default:
-        break;
-    }
-  }
-
-  onDateChange = (hearingDate) => {
-    this.setState({ [HEARING_CONSTS.NEW_HEARING_DATE]: hearingDate });
-  }
-
   renderNewHearingSection = () => {
+    const { manuallyCreatingHearing } = this.state;
     const {
       PSASubmittedPage,
       neighbors,
       allJudges,
-      context
+      context,
+      personId,
+      psaId,
+      psaEntityKeyId
     } = this.props;
-    const {
-      judge,
-      manuallyCreatingHearing,
-      newHearingDate,
-      newHearingTime,
-      newHearingCourtroom,
-      otherJudgeText
-    } = this.state;
-    const {
-      onDateChange,
-      onSelectChange,
-      onInputChange,
-      isReadyToSubmit,
-      selectCurrentHearing
-    } = this;
     const psaContext = neighbors
       ? neighbors.getIn([ENTITY_SETS.DMF_RISK_FACTORS, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.CONTEXT, 0])
       : context;
@@ -392,19 +262,12 @@ class SelectHearingsContainer extends React.Component<Props, State> {
 
     return (
       <NewHearingSection
+          personId={personId}
+          psaEntityKeyId={psaEntityKeyId}
+          psaId={psaId}
           manuallyCreatingHearing={manuallyCreatingHearing || PSASubmittedPage}
           allJudges={allJudges}
-          newHearingDate={newHearingDate}
-          newHearingTime={newHearingTime}
-          newHearingCourtroom={newHearingCourtroom}
-          judge={judge}
-          otherJudgeText={otherJudgeText}
-          jurisdiction={jurisdiction}
-          onDateChange={onDateChange}
-          onSelectChange={onSelectChange}
-          onInputChange={onInputChange}
-          isReadyToSubmit={isReadyToSubmit}
-          selectCurrentHearing={selectCurrentHearing} />
+          jurisdiction={jurisdiction} />
     );
   }
 
@@ -585,17 +448,11 @@ class SelectHearingsContainer extends React.Component<Props, State> {
       PSASubmittedPage
     } = this.props;
 
-    const todaysDate = moment().startOf('day');
+    const psaNeighbors = psaNeighborsById.get(psaEntityKeyId, Map());
     const hearingsWithOutcomes = hearingNeighborsById
       .keySeq().filter(id => hearingNeighborsById.getIn([id, ENTITY_SETS.OUTCOMES]));
-    const scheduledHearings = psaNeighborsById.getIn([psaEntityKeyId, ENTITY_SETS.HEARINGS], Map())
-      .filter(hearing => todaysDate.isBefore(hearing.getIn([PROPERTY_TYPES.DATE_TIME, 0], '')))
-      .sort((h1, h2) => (moment(h1.getIn([PROPERTY_TYPES.DATE_TIME, 0], ''))
-        .isBefore(h2.getIn([PROPERTY_TYPES.DATE_TIME, 0], '')) ? 1 : -1));
-    const pastHearings = psaNeighborsById.getIn([psaEntityKeyId, ENTITY_SETS.HEARINGS], Map())
-      .filter(hearing => todaysDate.isAfter(hearing.getIn([PROPERTY_TYPES.DATE_TIME, 0], '')))
-      .sort((h1, h2) => (moment(h1.getIn([PROPERTY_TYPES.DATE_TIME, 0], ''))
-        .isBefore(h2.getIn([PROPERTY_TYPES.DATE_TIME, 0], '')) ? 1 : -1));
+    const scheduledHearings = getScheduledHearings(psaNeighbors);
+    const pastHearings = getPastHearings(psaNeighbors);
 
     if (submitting || refreshingNeighbors || hearingIdsRefreshing) {
       return (
