@@ -455,11 +455,13 @@ export const Title = styled.div`
   display: flex;
   flex-direction: column;
   font-family: 'Open Sans', sans-serif;
+  font-size: 16px;
+  font-weight: 400;
   color: ${OL.GREY01};
   margin: 20px 0;
 
   span:first-child {
-    font-size: 20px;
+    font-size: ${props => (props.withSubtitle ? 16 : 20)}px;
     font-weight: ${props => (props.withSubtitle ? '600' : '400')};
     padding-bottom: 5px;
   }
