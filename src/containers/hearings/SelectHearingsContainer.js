@@ -17,6 +17,7 @@ import {
 } from 'immutable';
 
 import InfoButton from '../../components/buttons/InfoButton';
+import HearingCardsWithTitle from '../../components/hearings/HearingCardsWithTitle';
 import HearingCardsHolder from '../../components/hearings/HearingCardsHolder';
 import NewHearingSection from '../../components/hearings/NewHearingSection';
 import psaHearingConfig from '../../config/formconfig/PSAHearingConfig';
@@ -584,9 +585,15 @@ class SelectHearingsContainer extends React.Component<Props, State> {
       PSASubmittedPage
     } = this.props;
 
+    const todaysDate = moment().startOf('day');
     const hearingsWithOutcomes = hearingNeighborsById
       .keySeq().filter(id => hearingNeighborsById.getIn([id, ENTITY_SETS.OUTCOMES]));
     const scheduledHearings = psaNeighborsById.getIn([psaEntityKeyId, ENTITY_SETS.HEARINGS], Map())
+      .filter(hearing => todaysDate.isBefore(hearing.getIn([PROPERTY_TYPES.DATE_TIME, 0], '')))
+      .sort((h1, h2) => (moment(h1.getIn([PROPERTY_TYPES.DATE_TIME, 0], ''))
+        .isBefore(h2.getIn([PROPERTY_TYPES.DATE_TIME, 0], '')) ? 1 : -1));
+    const pastHearings = psaNeighborsById.getIn([psaEntityKeyId, ENTITY_SETS.HEARINGS], Map())
+      .filter(hearing => todaysDate.isAfter(hearing.getIn([PROPERTY_TYPES.DATE_TIME, 0], '')))
       .sort((h1, h2) => (moment(h1.getIn([PROPERTY_TYPES.DATE_TIME, 0], ''))
         .isBefore(h2.getIn([PROPERTY_TYPES.DATE_TIME, 0], '')) ? 1 : -1));
 
@@ -610,13 +617,15 @@ class SelectHearingsContainer extends React.Component<Props, State> {
     }
     return (
       <Container>
-        <Header>
-          <StyledTitle with withSubtitle>
-            <span>Scheduled Hearings</span>
-          </StyledTitle>
-        </Header>
-        <HearingCardsHolder
+        <HearingCardsWithTitle
+            title="Scheduled Hearings"
             hearings={scheduledHearings}
+            handleSelect={this.selectingReleaseConditions}
+            selectedHearing={selectedHearing}
+            hearingsWithOutcomes={hearingsWithOutcomes} />
+        <HearingCardsWithTitle
+            title="Past Hearings"
+            hearings={pastHearings}
             handleSelect={this.selectingReleaseConditions}
             selectedHearing={selectedHearing}
             hearingsWithOutcomes={hearingsWithOutcomes} />
