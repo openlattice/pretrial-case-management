@@ -127,7 +127,7 @@ class PersonDetailsContainer extends React.Component<Props, State> {
     this.setState({ closing: false });
   }
 
-  renderModal = () => {
+  renderPSADetailsModal = () => {
     const { closePSAButtonActive, closing, open } = this.state;
     const {
       actions,
@@ -226,7 +226,7 @@ class PersonDetailsContainer extends React.Component<Props, State> {
           selectedPersonData={selectedPersonData}
           neighbors={neighbors}
           openDetailsModal={this.openDetailsModal}
-          renderModal={this.renderModal} />
+          renderModal={this.renderPSADetailsModal} />
     );
   }
 
@@ -250,6 +250,20 @@ class PersonDetailsContainer extends React.Component<Props, State> {
           mostRecentPSAEntityKeyId={mostRecentPSAEntityKeyId}
           neighbors={neighbors}
           psaNeighborsById={psaNeighborsById} />
+    );
+  }
+
+  renderHearings = () => {
+    const {
+      isFetchingPersonData,
+      loadingPSAData,
+      loadingPSAResults
+    } = this.props;
+
+    const isLoading = (loadingPSAData || loadingPSAResults || isFetchingPersonData);
+
+    return (
+      <div />
     );
   }
 
@@ -285,18 +299,26 @@ class PersonDetailsContainer extends React.Component<Props, State> {
 
   render() {
     const { personId } = this.props;
+    const overviewRoute = `${Routes.PERSON_DETAILS_ROOT}/${personId}${Routes.OVERVIEW}`;
+    const psaRoute = `${Routes.PERSON_DETAILS_ROOT}/${personId}${Routes.PSA}`;
+    const hearingsRoute = `${Routes.PERSON_DETAILS_ROOT}/${personId}${Routes.HEARINGS}`;
+    const casesRoute = `${Routes.PERSON_DETAILS_ROOT}/${personId}${Routes.CASES}`;
 
     const navButtons = [
       {
-        path: `${Routes.PERSON_DETAILS_ROOT}/${personId}${Routes.OVERVIEW}`,
+        path: overviewRoute,
         label: 'Overview'
       },
       {
-        path: `${Routes.PERSON_DETAILS_ROOT}/${personId}${Routes.PSA}`,
+        path: psaRoute,
         label: 'PSA'
       },
       {
-        path: `${Routes.PERSON_DETAILS_ROOT}/${personId}${Routes.CASES}`,
+        path: hearingsRoute,
+        label: 'Hearings'
+      },
+      {
+        path: casesRoute,
         label: 'Cases'
       }
     ];
@@ -306,18 +328,15 @@ class PersonDetailsContainer extends React.Component<Props, State> {
         <ToolbarWrapper>
           <NavButtonToolbar options={navButtons} />
         </ToolbarWrapper>
-        { this.renderModal() }
+        { this.renderPSADetailsModal() }
         <Switch>
-          <Route path={`${Routes.PERSON_DETAILS_ROOT}/${personId}${Routes.OVERVIEW}`} render={this.renderOverview} />
-          <Route path={`${Routes.PERSON_DETAILS_ROOT}/${personId}${Routes.PSA}`} render={this.renderPSA} />
-          <Route path={`${Routes.PERSON_DETAILS_ROOT}/${personId}${Routes.CASES}`} render={this.renderCases} />
-          <Redirect from={Routes.PEOPLE} to={`${Routes.PERSON_DETAILS_ROOT}/${personId}${Routes.OVERVIEW}`} />
-          <Redirect
-              from={Routes.PERSON_DETAILS_ROOT}
-              to={`${Routes.PERSON_DETAILS_ROOT}/${personId}${Routes.OVERVIEW}`} />
-          <Redirect
-              from={`${Routes.PERSON_DETAILS_ROOT}/${personId}`}
-              to={`${Routes.PERSON_DETAILS_ROOT}/${personId}${Routes.OVERVIEW}`} />
+          <Route path={overviewRoute} render={this.renderOverview} />
+          <Route path={psaRoute} render={this.renderPSA} />
+          <Route path={hearingsRoute} render={this.renderHearings} />
+          <Route path={casesRoute} render={this.renderCases} />
+          <Redirect from={Routes.PEOPLE} to={overviewRoute} />
+          <Redirect from={Routes.PERSON_DETAILS_ROOT} to={overviewRoute} />
+          <Redirect from={`${Routes.PERSON_DETAILS_ROOT}/${personId}`} to={overviewRoute} />
         </Switch>
       </DashboardMainSection>
     );
