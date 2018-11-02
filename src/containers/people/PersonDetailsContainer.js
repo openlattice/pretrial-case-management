@@ -180,6 +180,7 @@ class PersonDetailsContainer extends React.Component<Props, State> {
             open={open}
             onClose={() => this.setState({ open: false })}
             scores={scores}
+            personId={personId}
             sentenceHistory={personSentenceHistory}
             {...actions} />
       );
