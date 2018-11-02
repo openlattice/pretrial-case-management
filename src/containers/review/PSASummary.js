@@ -9,6 +9,7 @@ import { bindActionCreators } from 'redux';
 
 import ArrestCard from '../../components/arrest/ArrestCard';
 import BasicButton from '../../components/buttons/BasicButton';
+import InfoLink from '../../components/buttons/InfoLink';
 import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
 import ContentBlock from '../../components/ContentBlock';
 import PersonCardSummary from '../../components/person/PersonCardSummary';
@@ -31,6 +32,11 @@ import {
 import * as Routes from '../../core/router/Routes';
 import * as ReviewActionFactory from './ReviewActionFactory';
 
+const ButtonWrapper = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+`;
 
 const SummaryWrapper = styled.div`
   display: flex;
@@ -108,16 +114,15 @@ const NotesWrapper = styled.div`
 `;
 
 const ViewPSADetailsButton = styled(BasicButton)`
-  width: 210px;
+  width: 180px;
   height: 40px;
-  padding-left: 0;
-  padding-right: 0;
 `;
 
 type Props = {
   notes :string,
   scores :Immutable.Map<*, *>,
   neighbors :Immutable.Map<*, *>,
+  fileNewPSA :boolean,
   profile :boolean,
   openDetailsModal :() => void,
   actions :{
@@ -164,12 +169,18 @@ class PSASummary extends React.Component<Props, *> {
     );
   }
 
-  renderProfileHeader = () => (
-    <TitleRowWrapper>
-      <Title withSubtitle><span>PSA Summary</span></Title>
-      { this.viewPSADetailsButton() }
-    </TitleRowWrapper>
-  )
+  renderProfileHeader = () => {
+    const { fileNewPSA } = this.props;
+    return (
+      <TitleRowWrapper>
+        <Title withSubtitle><span>PSA Summary</span></Title>
+        <ButtonWrapper>
+          { this.viewPSADetailsButton() }
+          { fileNewPSA ? <InfoLink to={Routes.DASHBOARD}>File New PSA</InfoLink> : null}
+        </ButtonWrapper>
+      </TitleRowWrapper>
+    )
+  }
 
   renderPSADetails = () => {
     const { neighbors, actions, scores } = this.props;
