@@ -103,8 +103,8 @@ type Props = {
       callback :() => void
     }) => void
   },
-  refreshPSANeighborsCallback :() => void,
-  onSubmit? :(hearing :Object) => void
+  onSubmit? :(hearing :Object) => void,
+  afterSubmit :() => void
 }
 
 class NewHearingSection extends React.Component<Props, State> {
@@ -129,7 +129,8 @@ class NewHearingSection extends React.Component<Props, State> {
       psaId,
       personId,
       psaEntityKeyId,
-      actions
+      actions,
+      afterSubmit
     } = this.props;
 
     const values = Object.assign({}, hearingDetails, {
@@ -143,6 +144,7 @@ class NewHearingSection extends React.Component<Props, State> {
       config: psaHearingConfig,
       callback
     });
+    afterSubmit();
   }
 
   selectCurrentHearing = () => {
