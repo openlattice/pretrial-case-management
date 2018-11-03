@@ -112,3 +112,31 @@ export const getPastHearings = (psaNeighbors) => {
         .isBefore(h2.getIn([PROPERTY_TYPES.DATE_TIME, 0], '')) ? 1 : -1))
   );
 };
+
+// Get hearings for available hearings - hearings that are of type 'initial appearance', have no outcomes,
+// haven't been cancelled, and are in the future.
+export const getAvailableHearings = (personHearings, scheduledHearings, hearingNeighborsById) => {
+  let scheduledHearingMap = Map();
+  scheduledHearings.forEach((scheduledHearing) => {
+    const dateTime = scheduledHearing.getIn([PROPERTY_TYPES.DATE_TIME, 0]);
+    const courtroom = scheduledHearing.getIn([PROPERTY_TYPES.COURTROOM, 0]);
+    scheduledHearingMap = scheduledHearingMap.set(dateTime, courtroom);
+  });
+
+  const unusedHearings = personHearings.filter((hearing) => {
+    const hearingDateTime = hearing.getIn([PROPERTY_TYPES.DATE_TIME, 0], '');
+    const hearingCourtroom = hearing.getIn([PROPERTY_TYPES.COURTROOM, 0], '');
+    const id = hearing.getIn([OPENLATTICE_ID_FQN, 0]);
+    const hasOutcome = !!hearingNeighborsById.getIn([id, ENTITY_SETS.OUTCOMES]);
+    const hearingHasBeenCancelled = hearing.getIn([PROPERTY_TYPES.UPDATE_TYPE, 0], '')
+      .toLowerCase().trim() === 'cancelled';
+    const hearingIsInPast = moment(hearingDateTime).isBefore(moment());
+    return !((scheduledHearingMap.get(hearingDateTime) === hearingCourtroom)
+    || hasOutcome
+    || hearingHasBeenCancelled
+    || hearingIsInPast
+    );
+  });
+  return unusedHearings.sort((h1, h2) => (moment(h1.getIn([PROPERTY_TYPES.DATE_TIME, 0], ''))
+    .isBefore(h2.getIn([PROPERTY_TYPES.DATE_TIME, 0], '')) ? 1 : -1));
+}
