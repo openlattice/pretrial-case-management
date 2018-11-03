@@ -15,9 +15,19 @@ import DashboardMainSection from '../../components/dashboard/DashboardMainSectio
 import NavButtonToolbar from '../../components/buttons/NavButtonToolbar';
 import PersonOverview from '../../components/people/PersonOverview';
 import PersonPSA from '../../components/people/PersonPSA';
+import PersonHearings from '../../components/people/PersonHearings';
 import PersonCases from '../../components/people/PersonCases';
 import PSAModal from '../review/PSAModal';
+import { getPSAIdsFromNeighbors } from '../../utils/PeopleUtils';
+import { JURISDICTION } from '../../utils/consts/Consts';
+import { getIdOrValue } from '../../utils/DataUtils';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import {
+  getScheduledHearings,
+  getPastHearings,
+  getAvailableHearings,
+  getHearingsIdsFromNeighbors
+} from '../../utils/consts/HearingConsts';
 import {
   COURT,
   STATE,
@@ -46,6 +56,7 @@ const ToolbarWrapper = styled.div`
 `;
 
 type Props = {
+  hearings :List<*, *>,
   selectedPersonData :Map<*, *>,
   isFetchingPersonData :boolean,
   loadingPSAData :boolean,
@@ -108,13 +119,21 @@ class PersonDetailsContainer extends React.Component<Props, State> {
   }
 
   componentWillReceiveProps(nextProps) {
-    const { neighbors, actions } = this.props;
-    const psaIds = nextProps.neighbors.get(ENTITY_SETS.PSA_SCORES, List())
-      .map(neighbor => neighbor.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0]))
-      .filter(id => !!id)
-      .toJS();
+    const {
+      actions,
+      mostRecentPSAEntityKeyId,
+      neighbors,
+      psaNeighborsById
+    } = this.props;
+    const initialMostRecentPSANeighbors = psaNeighborsById.get(mostRecentPSAEntityKeyId, Map());
+    const nextMostRecentPSANeighbors = nextProps.psaNeighborsById.get(mostRecentPSAEntityKeyId, Map());
+    const hearingIds = getHearingsIdsFromNeighbors(nextMostRecentPSANeighbors);
+    const psaIds = getPSAIdsFromNeighbors(nextProps.neighbors);
     if (psaIds.length && !neighbors.size && nextProps.neighbors.size) {
       actions.loadPSAData(psaIds);
+    }
+    if (hearingIds.length && (initialMostRecentPSANeighbors.size !== nextMostRecentPSANeighbors.size)) {
+      actions.loadHearingNeighbors({ hearingIds });
     }
   }
 
@@ -216,7 +235,7 @@ class PersonDetailsContainer extends React.Component<Props, State> {
       selectedPersonData
     } = this.props;
 
-    const isLoading = (!neighbors.size || loadingPSAData || loadingPSAResults || isFetchingPersonData);
+    const isLoading = (loadingPSAData || loadingPSAResults || isFetchingPersonData);
 
     return (
       <PersonPSA
@@ -255,15 +274,48 @@ class PersonDetailsContainer extends React.Component<Props, State> {
 
   renderHearings = () => {
     const {
-      isFetchingPersonData,
+      hearingNeighborsById,
+      hearings,
+      isLoadingHearingsNeighbors,
+      isLoadingJudges,
       loadingPSAData,
-      loadingPSAResults
+      loadingPSAResults,
+      isFetchingPersonData,
+      personId,
+      psaNeighborsById,
+      mostRecentPSAEntityKeyId,
+      mostRecentPSA
     } = this.props;
+    const neighborsForMostRecentPSA = psaNeighborsById.get(mostRecentPSAEntityKeyId, Map());
+    const psaId = mostRecentPSA.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.GENERAL_ID, 0], '');
+    const context = getIdOrValue(neighborsForMostRecentPSA, ENTITY_SETS.DMF_RISK_FACTORS, PROPERTY_TYPES.CONTEXT);
+    const jurisdiction = JURISDICTION[context];
+    const hearingsWithOutcomes = hearingNeighborsById
+      .keySeq().filter(id => hearingNeighborsById.getIn([id, ENTITY_SETS.OUTCOMES]));
+    const scheduledHearings = getScheduledHearings(neighborsForMostRecentPSA);
+    const pastHearings = getPastHearings(neighborsForMostRecentPSA);
+    const availableHearings = getAvailableHearings(hearings, scheduledHearings, hearingNeighborsById);
 
-    const isLoading = (loadingPSAData || loadingPSAResults || isFetchingPersonData);
+    const isLoading = (
+      isLoadingHearingsNeighbors
+      || isLoadingJudges
+      || loadingPSAData
+      || loadingPSAResults
+      || isFetchingPersonData
+    );
 
     return (
-      <div />
+      <PersonHearings
+          hearingsWithOutcomes={hearingsWithOutcomes}
+          scheduledHearings={scheduledHearings}
+          pastHearings={pastHearings}
+          availableHearings={availableHearings}
+          loading={isLoading}
+          jurisdiction={jurisdiction}
+          personId={personId}
+          psaEntityKeyId={mostRecentPSAEntityKeyId}
+          psaId={psaId}
+          neighbors={neighborsForMostRecentPSA} />
     );
   }
 
