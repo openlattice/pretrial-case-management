@@ -2448,6 +2448,12 @@ const MinnehahaChargesList = [
     degreeShort: 'M1'
   },
   {
+    statute: '22-19A-1',
+    description: 'Stalking Domestic',
+    degree: 'Misdemeanor Class 1',
+    degreeShort: 'M1'
+  },
+  {
     statute: '22-19A-16(F6)',
     description: 'Violation of Stalking Protection Order Including Aggravated Assault',
     degree: 'Felony Class 6',
@@ -3746,6 +3752,12 @@ const MinnehahaChargesList = [
   {
     statute: '22-33-9.1',
     description: 'Arson 1st Degree(F2)',
+    degree: 'Felony Class 2',
+    degreeShort: 'F2'
+  },
+  {
+    statute: '22-33-9.1',
+    description: 'Arson 1st Degree-Any person who starts a fire with the intent to destroy an occupied structure of another',
     degree: 'Felony Class 2',
     degreeShort: 'F2'
   },
