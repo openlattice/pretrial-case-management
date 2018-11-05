@@ -11,6 +11,7 @@ import { Title } from '../../utils/Layout';
 
 const Wrapper = styled.div`
   width: 100%;
+  padding-bottom: 30px;
 `;
 
 type Props = {
