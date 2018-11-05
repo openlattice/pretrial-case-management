@@ -124,7 +124,6 @@ type Props = {
   psaEntityKeyId :string,
   personId :string,
   submitting :boolean,
-  PSASubmittedPage :boolean,
   context :string,
   refreshingNeighbors :boolean,
   readOnly :boolean,
@@ -200,7 +199,6 @@ class SelectHearingsContainer extends React.Component<Props, State> {
   renderNewHearingSection = () => {
     const { manuallyCreatingHearing } = this.state;
     const {
-      PSASubmittedPage,
       neighbors,
       context,
       personId,
@@ -217,7 +215,7 @@ class SelectHearingsContainer extends React.Component<Props, State> {
           personId={personId}
           psaEntityKeyId={psaEntityKeyId}
           psaId={psaId}
-          manuallyCreatingHearing={manuallyCreatingHearing || PSASubmittedPage}
+          manuallyCreatingHearing={manuallyCreatingHearing}
           jurisdiction={jurisdiction}
           afterSubmit={this.backToSelection} />
     );
@@ -426,8 +424,7 @@ class SelectHearingsContainer extends React.Component<Props, State> {
       hearingIdsRefreshing,
       submitting,
       refreshingNeighbors,
-      hearingNeighborsById,
-      PSASubmittedPage
+      hearingNeighborsById
     } = this.props;
 
     const psaNeighbors = psaNeighborsById.get(psaEntityKeyId, Map());
@@ -447,13 +444,6 @@ class SelectHearingsContainer extends React.Component<Props, State> {
       );
     }
 
-    if (PSASubmittedPage) {
-      return (
-        <SubmittedPSAWrapper>
-          {this.renderNewHearingSection()}
-        </SubmittedPSAWrapper>
-      );
-    }
     return (
       <Container>
         <HearingCardsWithTitle
