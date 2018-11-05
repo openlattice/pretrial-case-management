@@ -144,7 +144,7 @@ class NewHearingSection extends React.Component<Props, State> {
       config: psaHearingConfig,
       callback
     });
-    afterSubmit();
+    if (afterSubmit) afterSubmit();
   }
 
   selectCurrentHearing = () => {
