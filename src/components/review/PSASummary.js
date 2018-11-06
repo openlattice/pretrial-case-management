@@ -6,45 +6,24 @@ import Immutable from 'immutable';
 import styled from 'styled-components';
 
 import ArrestCard from '../arrest/ArrestCard';
-import ChargeHistoryStats from '../casehistory/ChargeHistoryStats';
-import ChargeTable from '../charges/ChargeTable';
 import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
 import ContentBlock from '../ContentBlock';
-import DMFCell from '../dmf/DMFCell';
 import PersonCardSummary from '../person/PersonCardSummary';
 import PSAReportDownloadButton from './PSAReportDownloadButton';
 import PSAStats from './PSAStats';
-import rightArrow from '../../assets/svg/dmf-arrow.svg';
-import { Title, PendingChargeStatus, AlternateSectionHeader } from '../../utils/Layout';
-import { CONTEXT } from '../../utils/consts/Consts';
+import SummaryDMFDetails from '../dmf/SummaryDMFDetails';
+import { Title } from '../../utils/Layout';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
 import { PSA_NEIGHBOR, PSA_ASSOCIATION } from '../../utils/consts/FrontEndStateConsts';
-import {
-  getDMFDecision,
-  increaseDMFSeverity,
-  formatDMFFromEntity,
-  updateDMFSecondaryRelease,
-  updateDMFSecondaryHold
-} from '../../utils/DMFUtils';
 import { formatDateTimeList } from '../../utils/FormattingUtils';
-import {
-  stepTwoIncrease,
-  stepFourIncrease,
-  dmfSecondaryReleaseDecrease,
-  dmfSecondaryHoldIncrease
-} from '../../utils/ScoringUtils';
+
 
 const SummaryWrapper = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-`;
-
-const StyledChargeStatus = styled(PendingChargeStatus)`
-    position: relative;
-    transform: translateX(400px) translateY(50px);
 `;
 
 const RowWrapper = styled.div`
@@ -92,257 +71,121 @@ const ScoreTitle = styled.div`
   color: ${OL.GREY01};
 `;
 
-const ChargeTableContainer = styled.div`
-  text-align: center;
-  width: 100%;
-  margin: 0;
-`;
-
-const Count = styled.div`
-  height: fit-content;
-  padding: 0 10px;
-  margin-left: 10px;
-  border-radius: 10px;
-  background-color: ${OL.GREY08};
-  font-size: 12px;
-  color: ${OL.GREY02};
-`;
-
-const StepWrapper = styled.div`
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-
-  img {
-    margin: 3px;
-  }
-`;
-
 const NotesWrapper = styled.div`
   width: 100%;
   padding: 0 30px 30px;
 `;
 
-const DMFIncreaseText = styled.div`
-  margin-bottom: 15px;
-  font-size: 14px;
-  color: black;
-  text-transform: uppercase;
-  text-align: center;
-  width: 100%;
-`;
-
 type Props = {
-  pendingCharges :boolean,
   notes :string,
   scores :Immutable.Map<*, *>,
   neighbors :Immutable.Map<*, *>,
   manualCaseHistory :Immutable.List<*>,
-  chargeHistory :Immutable.List<*>,
-  manualChargeHistory :Immutable.Map<*, *>,
   downloadFn :(values :{
     neighbors :Immutable.Map<*, *>,
     scores :Immutable.Map<*, *>
   }) => void,
 };
 
-const renderNotes = ({ notes } :Props) => (
-  <NotesWrapper>
-    <Title withSubtitle ><span>Notes</span></Title>
-    {notes}
-  </NotesWrapper>
-);
+class PSASummary extends React.Component<Props, *> {
 
-const renderPersonInfo = ({ neighbors } :Props) => {
-  const person = neighbors.getIn([ENTITY_SETS.PEOPLE, PSA_NEIGHBOR.DETAILS], Immutable.Map());
+  renderArrestInfo = () => {
+    const { neighbors, manualCaseHistory } = this.props;
+    const caseNum = neighbors.getIn(
+      [ENTITY_SETS.MANUAL_PRETRIAL_CASES, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.CASE_ID, 0], ''
+    );
+    const pretrialCase = manualCaseHistory
+      .filter(caseObj => caseObj.getIn([PROPERTY_TYPES.CASE_ID, 0], '') === caseNum)
+      .get(0, Immutable.Map());
+    return (
+      <ArrestCard arrest={pretrialCase} component={CONTENT_CONSTS.ARREST} />
+    );
+  };
 
-  return (
-    <PersonCardSummary person={person} />
-  );
-};
+  renderNotes = () => {
+    const { notes } = this.props;
+    return (
+      <NotesWrapper>
+        <Title withSubtitle><span>Notes</span></Title>
+        {notes}
+      </NotesWrapper>
+    );
+  };
 
-const renderArrestInfo = ({ neighbors, manualCaseHistory } :Props) => {
-  const caseNum = neighbors.getIn(
-    [ENTITY_SETS.MANUAL_PRETRIAL_CASES, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.CASE_ID, 0], ''
-  );
-  const pretrialCase = manualCaseHistory
-    .filter(caseObj => caseObj.getIn([PROPERTY_TYPES.CASE_ID, 0], '') === caseNum)
-    .get(0, Immutable.Map());
-  return (
-    <ArrestCard arrest={pretrialCase} component={CONTENT_CONSTS.ARREST} />
-  );
-};
+  renderPersonInfo = () => {
+    const { neighbors } = this.props;
+    const person = neighbors.getIn([ENTITY_SETS.PEOPLE, PSA_NEIGHBOR.DETAILS], Immutable.Map());
 
-const renderCaseInfo = ({
-  manualCaseHistory,
-  manualChargeHistory,
-  neighbors
-} :Props) => {
-  const caseNum = neighbors.getIn(
-    [ENTITY_SETS.MANUAL_PRETRIAL_CASES, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.CASE_ID, 0], ''
-  );
-  const pretrialCase = manualCaseHistory
-    .filter(caseObj => caseObj.getIn([PROPERTY_TYPES.CASE_ID, 0], '') === caseNum);
-  const charges = manualChargeHistory.get(caseNum, Immutable.List());
-  return (
-    <ChargeTableContainer>
-      <AlternateSectionHeader>
-        Charges
-        <Count>{charges.size}</Count>
-      </AlternateSectionHeader>
-      <ChargeTable charges={charges} pretrialCase={pretrialCase} />
-    </ChargeTableContainer>
-  );
-};
+    return (
+      <PersonCardSummary person={person} />
+    );
+  };
 
-const renderPSADetails = ({ neighbors, downloadFn, scores } :Props) => {
-  let filer;
-  const psaDate = formatDateTimeList(
-    neighbors.getIn([ENTITY_SETS.PSA_RISK_FACTORS, PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.TIMESTAMP], Immutable.Map())
-  );
-  neighbors.get(ENTITY_SETS.STAFF, Immutable.List()).forEach((neighbor) => {
-    const associationEntitySetName = neighbor.getIn([PSA_ASSOCIATION.ENTITY_SET, 'name']);
-    const personId = neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.PERSON_ID, 0], '');
-    if (associationEntitySetName === ENTITY_SETS.ASSESSED_BY) {
-      filer = personId;
-    }
-  });
-  return (
-    <PSADetails>
-      <ContentBlock
-          contentBlock={{ label: 'psa date', content: [psaDate] }}
-          component={CONTENT_CONSTS.SUMMARY} />
-      <ContentBlock
-          contentBlock={{ label: 'filer', content: [filer] }}
-          component={CONTENT_CONSTS.SUMMARY} />
-      <DownloadButtonWrapper>
-        <PSAReportDownloadButton
-            downloadFn={downloadFn}
-            neighbors={neighbors}
-            scores={scores} />
-      </DownloadButtonWrapper>
-    </PSADetails>
-  );
-};
+  renderPSADetails = () => {
+    const { neighbors, downloadFn, scores } = this.props;
+    let filer;
+    const psaDate = formatDateTimeList(
+      neighbors.getIn(
+        [ENTITY_SETS.PSA_RISK_FACTORS, PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.TIMESTAMP], Immutable.Map()
+      )
+    );
+    neighbors.get(ENTITY_SETS.STAFF, Immutable.List()).forEach((neighbor) => {
+      const associationEntitySetName = neighbor.getIn([PSA_ASSOCIATION.ENTITY_SET, 'name']);
+      const personId = neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.PERSON_ID, 0], '');
+      if (associationEntitySetName === ENTITY_SETS.ASSESSED_BY) {
+        filer = personId;
+      }
+    });
+    return (
+      <PSADetails>
+        <ContentBlock
+            contentBlock={{ label: 'psa date', content: [psaDate] }}
+            component={CONTENT_CONSTS.SUMMARY} />
+        <ContentBlock
+            contentBlock={{ label: 'filer', content: [filer] }}
+            component={CONTENT_CONSTS.SUMMARY} />
+        <DownloadButtonWrapper>
+          <PSAReportDownloadButton
+              downloadFn={downloadFn}
+              neighbors={neighbors}
+              scores={scores} />
+        </DownloadButtonWrapper>
+      </PSADetails>
+    );
+  };
+  render() {
+    const {
+      neighbors,
+      notes,
+      scores
+    } = this.props;
 
-const renderDMFDetails = ({ neighbors, scores } :Props) => {
-  const dmfRiskFactors = neighbors.getIn([ENTITY_SETS.DMF_RISK_FACTORS, PSA_NEIGHBOR.DETAILS], Immutable.Map());
-  let context = dmfRiskFactors.getIn([PROPERTY_TYPES.CONTEXT, 0]);
-  if (context === 'Court') {
-    context = CONTEXT.COURT_PENN;
-  }
-  const psaRiskFactors = neighbors.getIn([ENTITY_SETS.PSA_RISK_FACTORS, PSA_NEIGHBOR.DETAILS], Immutable.Map());
-  const dmfEntity = neighbors.getIn([ENTITY_SETS.DMF_RESULTS, PSA_NEIGHBOR.DETAILS], Immutable.Map());
-  const dmf = formatDMFFromEntity(dmfEntity);
-  const nca = scores.getIn([PROPERTY_TYPES.NCA_SCALE, 0]);
-  const fta = scores.getIn([PROPERTY_TYPES.FTA_SCALE, 0]);
-  const dmfDecision = getDMFDecision(nca, fta, context);
-  let dmfCell;
-
-  if (stepTwoIncrease(dmfRiskFactors, psaRiskFactors, scores)) {
-    dmfCell = (
-      <ScoreContent>
-        <DMFIncreaseText>Step two increase</DMFIncreaseText>
-        <DMFCell dmf={dmfDecision} selected />
-        <img src={rightArrow} alt="" />
-        <DMFCell dmf={getDMFDecision(6, 6, context)} selected />
-      </ScoreContent>
+    return (
+      <SummaryWrapper>
+        <RowWrapper>
+          {this.renderPersonInfo()}
+          {this.renderArrestInfo()}
+        </RowWrapper>
+        <hr />
+        <RowWrapper>
+          <ScoresContainer border>
+            <ScoreTitle>PSA</ScoreTitle>
+            <ScoreContent>
+              <PSAStats scores={scores} />
+              {this.renderPSADetails()}
+            </ScoreContent>
+          </ScoresContainer>
+          <ScoresContainer>
+            <ScoreTitle>DMF</ScoreTitle>
+            <SummaryDMFDetails neighbors={neighbors} scores={scores} />
+          </ScoresContainer>
+        </RowWrapper>
+        <hr />
+        {notes ? this.renderNotes() : null}
+        {notes ? <hr /> : null}
+      </SummaryWrapper>
     );
   }
-  else if (stepFourIncrease(dmfRiskFactors, psaRiskFactors, scores)) {
-    dmfCell = (
-      <ScoreContent>
-        <DMFIncreaseText>Step four increase</DMFIncreaseText>
-        <StepWrapper>
-          <DMFCell dmf={dmfDecision} selected />
-          <img src={rightArrow} alt="" />
-          <DMFCell dmf={increaseDMFSeverity(dmfDecision, context)} selected />
-        </StepWrapper>
-      </ScoreContent>
-    );
-  }
-  else if (dmfSecondaryReleaseDecrease(dmfRiskFactors, scores)) {
-    dmfCell = (
-      <ScoreContent>
-        <DMFIncreaseText>Hold Exception Applies</DMFIncreaseText>
-        <StepWrapper>
-          <DMFCell dmf={dmfDecision} selected />
-          <img src={rightArrow} alt="" />
-          <DMFCell dmf={updateDMFSecondaryRelease(dmf)} selected />
-        </StepWrapper>
-      </ScoreContent>
-    );
-  }
-  else if (dmfSecondaryHoldIncrease(dmfRiskFactors, scores)) {
-    dmfCell = (
-      <ScoreContent>
-        <DMFIncreaseText>Release Exception Applies</DMFIncreaseText>
-        <StepWrapper>
-          <DMFCell dmf={dmfDecision} selected />
-          <img src={rightArrow} alt="" />
-          <DMFCell dmf={updateDMFSecondaryHold(dmf)} selected />
-        </StepWrapper>
-      </ScoreContent>
-    );
-  }
-  else {
-    dmfCell = (
-      <ScoreContent>
-        <DMFCell dmf={dmf} selected large />
-      </ScoreContent>
-    );
-  }
-  return dmfCell;
-};
-
-const renderPendingChargeStatus = (pendingCharges) => {
-  const statusText = pendingCharges.size
-    ? `${pendingCharges.size} Pending Charge${pendingCharges.size > 1 ? 's' : ''}`
-    : 'No Pending Charges';
-  return (
-    <StyledChargeStatus pendingCharges={pendingCharges.size}>
-      {statusText}
-    </StyledChargeStatus>
-  );
-};
-
-const PSASummary = (props :Props) => {
-  const {
-    scores,
-    notes,
-    chargeHistory,
-    pendingCharges
-  } = props;
-
-
-  return (
-    <SummaryWrapper>
-      <RowWrapper>
-        {renderPersonInfo(props)}
-        {renderArrestInfo(props)}
-      </RowWrapper>
-      <hr />
-      <RowWrapper>
-        <ScoresContainer border>
-          <ScoreTitle>PSA</ScoreTitle>
-          <ScoreContent>
-            <PSAStats scores={scores} />
-            {renderPSADetails(props)}
-          </ScoreContent>
-        </ScoresContainer>
-        <ScoresContainer>
-          <ScoreTitle>DMF</ScoreTitle>
-          {renderDMFDetails(props)}
-        </ScoresContainer>
-      </RowWrapper>
-      <hr />
-      {notes ? renderNotes(props) : null}
-      {notes ? <hr /> : null}
-      {(chargeHistory.size) ? renderPendingChargeStatus(pendingCharges) : null}
-      <ChargeHistoryStats padding chargeHistory={chargeHistory} />
-      {renderCaseInfo(props)}
-    </SummaryWrapper>
-  );
-};
+}
 
 export default PSASummary;

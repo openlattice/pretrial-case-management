@@ -8,17 +8,12 @@ import { List, Map } from 'immutable';
 import ChargeHistoryStats from './ChargeHistoryStats';
 import CaseHistoryList from './CaseHistoryList';
 import { currentPendingCharges } from '../../utils/CaseUtils';
-import { PendingChargeStatus } from '../../utils/Layout';
 
 const CaseHistoryWrapper = styled.div`
   hr {
     margin: ${props => (props.modal ? '30px -30px' : '15px 0')};
     width: ${props => (props.modal ? 'calc(100% + 60px)' : '100%')};
   }
-`;
-
-const StyledChargeStatus = styled(PendingChargeStatus)`
-    transform: translateX(${props => (props.modal ? 800 : 765)}px) translateY(5px);
 `;
 
 type Props = {
@@ -41,22 +36,13 @@ const CaseHistory = ({
   modal
 } :Props) => {
 
-  const renderPendingChargeStatus = () => {
-    const pendingCharges = currentPendingCharges(chargeHistoryForMostRecentPSA).size;
-    const statusText = pendingCharges
-      ? `${pendingCharges} Pending Charges`
-      : 'No Pending Charges';
-    return (
-      <StyledChargeStatus modal={modal} pendingCharges={pendingCharges}>
-        {statusText}
-      </StyledChargeStatus>
-    );
-  };
+  const pendingCharges = currentPendingCharges(chargeHistoryForMostRecentPSA);
 
   return (
     <CaseHistoryWrapper modal={modal}>
-      {(chargeHistory.size && !loading) ? renderPendingChargeStatus() : null}
-      <ChargeHistoryStats chargeHistory={chargeHistory} />
+      <ChargeHistoryStats
+          pendingCharges={pendingCharges}
+          chargeHistory={chargeHistory} />
       <CaseHistoryList
           loading={loading}
           title="Pending Cases on Arrest Date for Current PSA"
@@ -70,7 +56,7 @@ const CaseHistory = ({
           chargeHistory={chargeHistoryNotForMostRecentPSA}
           modal={modal} />
     </CaseHistoryWrapper>
-  )
+  );
 };
 
 export default CaseHistory;
