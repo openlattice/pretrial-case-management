@@ -755,10 +755,7 @@ class PSAModal extends React.Component<Props, State> {
       open,
       onClose,
       entityKeyId,
-      readOnly,
-      caseHistory,
-      chargeHistory,
-      neighbors
+      readOnly
     } = this.props;
 
     const { closing } = this.state;
