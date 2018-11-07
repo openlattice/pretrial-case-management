@@ -391,7 +391,7 @@ class SelectHearingsContainer extends React.Component<Props, State> {
         <Header>
           <StyledTitle with withSubtitle>
             <span>Available Hearings</span>
-            Select a hearing to add it to the defendant's schedule
+            {'Select a hearing to add it to the defendant\'s schedule'}
           </StyledTitle>
           {
             !manuallyCreatingHearing
