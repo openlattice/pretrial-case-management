@@ -20,7 +20,7 @@ import PersonCases from '../../components/people/PersonCases';
 import PSAModal from '../review/PSAModal';
 import { getPSAIdsFromNeighbors } from '../../utils/PeopleUtils';
 import { JURISDICTION } from '../../utils/consts/Consts';
-import { getIdOrValue } from '../../utils/DataUtils';
+import { getIdOrValue, getNeighborDetailsForEntitySet } from '../../utils/DataUtils';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import {
   getScheduledHearings,
@@ -288,6 +288,7 @@ class PersonDetailsContainer extends React.Component<Props, State> {
     } = this.props;
     const neighborsForMostRecentPSA = psaNeighborsById.get(mostRecentPSAEntityKeyId, Map());
     const psaId = mostRecentPSA.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.GENERAL_ID, 0], '');
+    const dmfId = getIdOrValue(neighborsForMostRecentPSA, ENTITY_SETS.DMF_RESULTS);
     const context = getIdOrValue(neighborsForMostRecentPSA, ENTITY_SETS.DMF_RISK_FACTORS, PROPERTY_TYPES.CONTEXT);
     const jurisdiction = JURISDICTION[context];
     const hearingsWithOutcomes = hearingNeighborsById
@@ -295,6 +296,11 @@ class PersonDetailsContainer extends React.Component<Props, State> {
     const scheduledHearings = getScheduledHearings(neighborsForMostRecentPSA);
     const pastHearings = getPastHearings(neighborsForMostRecentPSA);
     const availableHearings = getAvailableHearings(hearings, scheduledHearings, hearingNeighborsById);
+    const defaultOutcome = getNeighborDetailsForEntitySet(neighborsForMostRecentPSA, ENTITY_SETS.OUTCOMES);
+    const defaultDMF = getNeighborDetailsForEntitySet(neighborsForMostRecentPSA, ENTITY_SETS.DMF_RESULTS);
+    const defaultBond = getNeighborDetailsForEntitySet(neighborsForMostRecentPSA, ENTITY_SETS.BONDS);
+    const defaultConditions = neighborsForMostRecentPSA.get(ENTITY_SETS.RELEASE_CONDITIONS, List())
+      .map(neighbor => neighbor.get(PSA_NEIGHBOR.DETAILS, Map()));
 
     const isLoading = (
       isLoadingHearingsNeighbors
@@ -306,16 +312,22 @@ class PersonDetailsContainer extends React.Component<Props, State> {
 
     return (
       <PersonHearings
-          hearingsWithOutcomes={hearingsWithOutcomes}
-          scheduledHearings={scheduledHearings}
-          pastHearings={pastHearings}
           availableHearings={availableHearings}
-          loading={isLoading}
+          defaultBond={defaultBond}
+          defaultConditions={defaultConditions}
+          defaultDMF={defaultDMF}
+          defaultOutcome={defaultOutcome}
+          dmfId={dmfId}
+          hearings={hearings}
+          hearingsWithOutcomes={hearingsWithOutcomes}
           jurisdiction={jurisdiction}
+          loading={isLoading}
+          scheduledHearings={scheduledHearings}
+          neighbors={neighborsForMostRecentPSA}
+          pastHearings={pastHearings}
           personId={personId}
           psaEntityKeyId={mostRecentPSAEntityKeyId}
-          psaId={psaId}
-          neighbors={neighborsForMostRecentPSA} />
+          psaId={psaId} />
     );
   }
 
