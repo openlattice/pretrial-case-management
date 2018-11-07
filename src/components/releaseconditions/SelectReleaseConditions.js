@@ -179,11 +179,11 @@ const StyledDatePicker = styled(DatePicker)`
 `;
 
 const HearingSectionAside = styled.div`
-  padding-top: 60px;
+  padding-top: ${props => (props.backToSelection ? 60 : 85)}px;
   width: 100%;
   display: flex;
   flex-direction: column;
-  justify-content: space-around;
+  justify-content: ${props => (props.backToSelection ? 'space-around' : 'flex-start')};
 `;
 
 const SubmitButton = styled(InfoButton)`
@@ -759,7 +759,6 @@ class SelectReleaseConditions extends React.Component<Props, State> {
     conditionSubmit[RELEASE_CONDITIONS_FIELD] = conditionsEntity;
     submission.bonddate = moment().add(1, 'ms').toISOString(true);
     submission.outcomedate = moment().add(2, 'ms').toISOString(true);
-
     if (editingHearing) {
       updateFqn({
         psaId,
@@ -1140,11 +1139,12 @@ class SelectReleaseConditions extends React.Component<Props, State> {
       </ContentSection>
     );
 
+
     return (
       <HearingSectionWrapper>
         {hearingInfoSection}
-        <HearingSectionAside>
-          {backToSelectionButton}
+        <HearingSectionAside backToSelection={backToSelection}>
+          {backToSelection ? backToSelectionButton : null}
           {hearingInfoButton}
         </HearingSectionAside>
       </HearingSectionWrapper>
