@@ -107,6 +107,14 @@ type Props = {
   afterSubmit :() => void
 }
 
+const INITIAL_STATE = {
+  newHearingCourtroom: undefined,
+  newHearingDate: undefined,
+  newHearingTime: undefined,
+  judge: '',
+  otherJudgeText: '',
+};
+
 class NewHearingSection extends React.Component<Props, State> {
 
   static defaultProps = {
@@ -115,13 +123,7 @@ class NewHearingSection extends React.Component<Props, State> {
 
   constructor(props :Props) {
     super(props);
-    this.state = {
-      newHearingCourtroom: undefined,
-      newHearingDate: undefined,
-      newHearingTime: undefined,
-      judge: '',
-      otherJudgeText: '',
-    };
+    this.state = INITIAL_STATE;
   }
 
   selectHearing = (hearingDetails) => {
@@ -186,13 +188,7 @@ class NewHearingSection extends React.Component<Props, State> {
       this.selectHearing(hearing);
       const hearingForRender = Object.assign({}, hearing, { judgeName });
       onSubmit(hearingForRender);
-      this.setState({
-        newHearingCourtroom: undefined,
-        newHearingDate: undefined,
-        newHearingTime: undefined,
-        judge: '',
-        otherJudgeText: ''
-      });
+      this.setState(INITIAL_STATE);
     }
   }
 
@@ -227,7 +223,7 @@ class NewHearingSection extends React.Component<Props, State> {
     return (
       <DatePicker
           value={newHearingDate}
-          onChange={hearingDate => this.onDateChange(hearingDate)}
+          onChange={this.onDateChange}
           clearButton={false} />
     );
   }
@@ -294,7 +290,7 @@ class NewHearingSection extends React.Component<Props, State> {
       <StyledSearchableSelect
           options={getJudgeOptions(allJudges, jurisdiction)}
           value={judge}
-          onSelect={judgeOption => this.onSelectChange(judgeOption)}
+          onSelect={this.onSelectChange}
           short />
     );
   }
@@ -303,7 +299,7 @@ class NewHearingSection extends React.Component<Props, State> {
     const { otherJudgeText } = this.state;
     return (
       <NameInput
-          onChange={e => (this.onInputChange(e))}
+          onChange={this.onInputChange}
           name="otherJudgeText"
           value={otherJudgeText} />
     );
