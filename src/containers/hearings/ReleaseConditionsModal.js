@@ -112,13 +112,11 @@ class ReleaseConditionsModal extends React.Component<Props, State> {
   refreshHearingsNeighborsCallback = () => {
     const { selectedHearing } = this.props;
     const { actions } = this.props;
-    console.log(selectedHearing);
     actions.refreshHearingNeighbors({ id: selectedHearing.entityKeyId });
   }
   refreshPSANeighborsCallback = () => {
     const { psaEntityKeyId } = this.props;
     const { actions } = this.props;
-    console.log(psaEntityKeyId);
     actions.refreshPSANeighbors({ id: psaEntityKeyId });
   }
 
@@ -153,8 +151,6 @@ class ReleaseConditionsModal extends React.Component<Props, State> {
     } = actions;
 
     const refreshingNeighbors = psaIdsRefreshing.has(psaEntityKeyId);
-    console.log(`refreshingNeighbors ${refreshingNeighbors}`);
-    console.log(`hearingIdsRefreshing ${hearingIdsRefreshing}`)
 
     const loading = (hearingIdsRefreshing || submitting || refreshingNeighbors);
 
