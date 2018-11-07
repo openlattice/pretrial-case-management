@@ -6,8 +6,10 @@ import React from 'react';
 import styled from 'styled-components';
 import { NavLink } from 'react-router-dom';
 
-import * as Routes from '../../core/router/Routes';
 import UserInfoBlock from './UserInfoBlock';
+import { OL } from '../../utils/consts/Colors';
+
+import * as Routes from '../../core/router/Routes';
 
 const DashboardNavWrapper = styled.div`
   display: flex;
@@ -45,7 +47,7 @@ const linkStyle = `
   text-align: center;
 
   &:hover {
-    color: #5bc0de;
+    color: ${OL.BLUE09};
     text-decoration: none;
   }
 
@@ -58,7 +60,7 @@ const linkStyle = `
 const StyledNavLink = styled(NavLink).attrs({
   activeStyle: {
     fontWeight: 'bold',
-    color: '#5bc0de'
+    color: OL.BLUE09
   }
 })`${linkStyle}`;
 

@@ -34,6 +34,21 @@ import PSAReviewReportsRowList from '../review/PSAReviewReportsRowList';
 import exportPDF from '../../utils/PDFUtils';
 import psaConfig from '../../config/formconfig/PsaConfig';
 import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
+import { OL } from '../../utils/consts/Colors';
+import { toISODateTime } from '../../utils/FormattingUtils';
+import { getScoresAndRiskFactors, calculateDMF, getDMFRiskFactors } from '../../utils/ScoringUtils';
+import { tryAutofillFields } from '../../utils/AutofillUtils';
+import { PROPERTY_TYPES, ENTITY_SETS } from '../../utils/consts/DataModelConsts';
+import { STATUS_OPTIONS_FOR_PENDING_PSAS } from '../../utils/consts/ReviewPSAConsts';
+import { DOMAIN } from '../../utils/consts/ReportDownloadTypes';
+import {
+  CONTEXT,
+  DMF,
+  ID_FIELD_NAMES,
+  NOTES,
+  PSA,
+  PSA_STATUSES
+} from '../../utils/consts/Consts';
 import {
   STATE,
   PSA_FORM,
@@ -41,16 +56,6 @@ import {
   SEARCH,
   COURT
 } from '../../utils/consts/FrontEndStateConsts';
-
-import * as FormActionFactory from './FormActionFactory';
-import * as PersonActionFactory from '../person/PersonActionFactory';
-import * as ReviewActionFactory from '../review/ReviewActionFactory';
-import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
-import * as CourtActionFactory from '../court/CourtActionFactory';
-import * as Routes from '../../core/router/Routes';
-
-import { toISODateTime } from '../../utils/FormattingUtils';
-import { getScoresAndRiskFactors, calculateDMF, getDMFRiskFactors } from '../../utils/ScoringUtils';
 import {
   ButtonWrapper,
   StyledFormWrapper,
@@ -61,11 +66,14 @@ import {
   getPrevPath,
   getCurrentPage
 } from '../../utils/Helpers';
-import { tryAutofillFields } from '../../utils/AutofillUtils';
-import { CONTEXT, DMF, ID_FIELD_NAMES, NOTES, PSA, PSA_STATUSES } from '../../utils/consts/Consts';
-import { PROPERTY_TYPES, ENTITY_SETS } from '../../utils/consts/DataModelConsts';
-import { STATUS_OPTIONS_FOR_PENDING_PSAS } from '../../utils/consts/ReviewPSAConsts';
-import { DOMAIN } from '../../utils/consts/ReportDownloadTypes';
+
+import * as FormActionFactory from './FormActionFactory';
+import * as PersonActionFactory from '../person/PersonActionFactory';
+import * as ReviewActionFactory from '../review/ReviewActionFactory';
+import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
+import * as CourtActionFactory from '../court/CourtActionFactory';
+import * as Routes from '../../core/router/Routes';
+
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
@@ -73,9 +81,9 @@ const { PEOPLE } = ENTITY_SETS;
 
 const PSARowListHeader = styled.div`
   width: 100%;
-  background: #fff;
+  background: ${OL.WHITE};
   border-radius: 5px;
-  border: solid 1px #e1e1eb;
+  border: solid 1px ${OL.GREY11};
   border-bottom-left-radius: 0;
   border-bottom-right-radius: 0;
   border-bottom: none;
@@ -102,14 +110,14 @@ const LoadingContainer = styled(StyledFormWrapper)`
   align-items: center;
   padding: 0 30px 30px 30px;
   border-radius: 5px;
-  border: 1px solid #e1e1eb;
-  background-color: #ffffff;
+  border: 1px solid ${OL.GREY11};
+  background-color: ${OL.WHITE};
 `;
 
 const LoadingText = styled.div`
   font-family: 'Open Sans', sans-serif;
   font-size: 16px;
-  color: #555e6f;
+  color: ${OL.GREY01};
   margin: 20px;
   display: inline-flex;
 `;
@@ -132,7 +140,7 @@ const PSAFormTitle = styled(PaddedSectionWrapper)`
   h1 {
     font-family: 'Open Sans', sans-serif;
     font-size: 18px;
-    color: #555e6f;
+    color: ${OL.GREY01};
   }
 `;
 
@@ -166,7 +174,7 @@ const HeaderRow = styled.div`
   h1 {
     font-family: 'Open Sans', sans-serif;
     font-size: 18px;
-    color: #555e6f;
+    color: ${OL.GREY01};
   }
 
   div {
@@ -176,17 +184,17 @@ const HeaderRow = styled.div`
     font-family: 'Open Sans', sans-serif;
     font-size: 11px;
     font-weight: 600;
-    color: #8e929b;
+    color: ${OL.GREY02};
     border-radius: 3px;
-    border: solid 1px #8e929b;
+    border: solid 1px ${OL.GREY02};
     padding: 5px 7px;
   }
 
   span {
     margin-left: 10px;
     border-radius: 10px;
-    background-color: #f0f0f7;
-    color: #8e929b;
+    background-color: ${OL.GREY08};
+    color: ${OL.GREY02};
     font-family: 'Open Sans', sans-serif;
     font-size: 12px;
     padding: 2px 12px;

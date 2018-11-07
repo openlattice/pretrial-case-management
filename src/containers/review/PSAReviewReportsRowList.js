@@ -16,6 +16,7 @@ import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts'
 import { SORT_TYPES } from '../../utils/consts/Consts';
 import { sortByDate, sortByName } from '../../utils/PSAUtils';
 import { getEntityKeyId, getIdValue } from '../../utils/DataUtils';
+import { OL } from '../../utils/consts/Colors';
 import {
   STATE,
   REVIEW,
@@ -45,9 +46,9 @@ const StyledSubHeaderBar = styled.div`
     switch (props.component) {
       case CONTENT_CONSTS.REVIEW:
         return (
-          `background: #fff;
+          `background: ${OL.WHITE};
            border-radius: 5px;
-           border: solid 1px #e1e1eb;
+           border: solid 1px ${OL.GREY11};
            border-top-left-radius: 0;
            border-top-right-radius: 0;
            padding: 0 0 10px 30px;
@@ -56,9 +57,9 @@ const StyledSubHeaderBar = styled.div`
         );
       case CONTENT_CONSTS.PENDING_PSAS:
         return (
-          `background: #fff;
+          `background: ${OL.WHITE};
            border-radius: 5px;
-           border: solid 1px #e1e1eb;
+           border: solid 1px ${OL.GREY11};
            border-top-left-radius: 0;
            border-top-right-radius: 0;
            padding: 0 0 10px 30px;
@@ -101,9 +102,9 @@ const ReviewRowWrapper = styled.div`
 
 const SubContentWrapper = styled.div`
   width: 100%;
-  background: #fff;
+  background: ${OL.WHITE};
   border-radius: 5px;
-  border: solid 1px #e1e1eb;
+  border: solid 1px ${OL.GREY11};
   padding: 20px 30px;
   margin-bottom: 30px;
 `;
@@ -145,6 +146,7 @@ type Props = {
   psaIdsRefreshing :Immutable.Set<*>,
   readOnlyPermissions :boolean,
   loadingPSAData :boolean,
+  loading :boolean,
   scoresEntitySetId :string,
   submitting :boolean
 }
@@ -349,10 +351,10 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
   }
 
   render() {
-    const { scoreSeq, loadingPSAData } = this.props;
+    const { scoreSeq, loadingPSAData, loading } = this.props;
     const { start } = this.state;
 
-    if (loadingPSAData) {
+    if (loadingPSAData || loading) {
       return <SpinnerWrapper><LoadingSpinner /></SpinnerWrapper>;
     }
 

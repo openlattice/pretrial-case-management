@@ -9,6 +9,7 @@ import React from 'react';
 import styled, { css, keyframes } from 'styled-components';
 import { faCamera, faSyncAlt } from '@fortawesome/pro-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { OL } from '../utils/consts/Colors';
 
 /*
  * constants
@@ -48,7 +49,7 @@ const ControlsWrapper = styled.div`
 const CaptureIcon = styled.div`
   align-items: center;
   border-radius: 56px;
-  color: #fff;
+  color: ${OL.WHITE};
   display: flex;
   font-size: 20px;
   height: 56px;
@@ -84,7 +85,7 @@ const CaptureIcon = styled.div`
 const ResetIcon = styled.div`
   align-items: center;
   border-radius: 44px;
-  color: #fff;
+  color: ${OL.WHITE};
   display: flex;
   font-size: 14px;
   height: 44px;

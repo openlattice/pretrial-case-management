@@ -7,6 +7,7 @@ import styled from 'styled-components';
 
 import downArrowIcon from '../assets/svg/down-arrow.svg';
 import StyledCheckbox from './controls/StyledCheckbox';
+import { OL } from '../utils/consts/Colors';
 
 /*
  * styled components
@@ -32,7 +33,7 @@ const SearchInputWrapper = styled.div`
 
 const SearchIcon = styled.div`
   align-self: center;
-  color: #687F96;
+  color: ${OL.GREY20};
   position: absolute;
   margin: 0 20px;
   right: 0;
@@ -41,7 +42,7 @@ const SearchIcon = styled.div`
 
 const SearchButton = styled.button`
   font-family: 'Open Sans', sans-serif;
-  color: #555e6f;
+  color: ${OL.GREY01};
   flex: 1 0 auto;
   font-size: 14px;
   letter-spacing: 0;
@@ -49,13 +50,13 @@ const SearchButton = styled.button`
   padding: 0 45px 0 20px;
   outline: none;
   border: none;
-  background-color: ${props => (props.transparent ? '#f9f9fd' : '#ffffff')};
+  background-color: ${props => (props.transparent ? OL.GREY10 : OL.WHITE)};
 `;
 
 const DataTableWrapper = styled.div`
-  background-color: #fefefe;
+  background-color: ${OL.GREY16};
   border-radius: 5px;
-  border: 1px solid #e1e1eb;
+  border: 1px solid ${OL.GREY11};
   position: absolute;
   z-index: 1;
   width: 100%;
@@ -101,38 +102,48 @@ export default class MultiSelectCheckbox extends Component<Props, State> {
   }
 
   toggleDataTable = (e) => {
+    const { isVisibleDataTable } = this.state;
     e.stopPropagation();
 
     this.setState({
-      isVisibleDataTable: !this.state.isVisibleDataTable
+      isVisibleDataTable: !isVisibleDataTable
     });
   }
 
   handleOnSelect = (label :string) => {
-    this.props.onSelect(this.props.options.get(label));
+    const { onSelect, options } = this.props;
+    onSelect(options.get(label));
   }
 
   renderTable = () => {
-    const tableOptions = this.props.options.map(option => (
+    const { onChange, options, selected } = this.props;
+    const tableOptions = options.map(option => (
       <StyledCheckbox
-          onChange={this.props.onChange}
+          onChange={onChange}
           label={option.label}
           value={option.value}
-          checked={this.props.selected.includes(option.value)} />
+          checked={selected.includes(option.value)} />
     ));
     return <SearchOptionContainer>{tableOptions}</SearchOptionContainer>;
   }
 
   render() {
-    const { displayTitle } = this.props;
+    const {
+      displayTitle,
+      className,
+      short,
+      transparent,
+      openAbove
+    } = this.props;
+    const { isVisibleDataTable } = this.state;
     return (
       <div ref={node => this.node = node}>
         <SearchableSelectWrapper
-            isVisibleDataTable={this.state.isVisibleDataTable}
-            className={this.props.className}>
-          <SearchInputWrapper short={this.props.short}>
+            isVisibleDataTable={isVisibleDataTable}
+            className={className}>
+          <SearchInputWrapper short={short}>
             <SearchButton
-                transparent={this.props.transparent}
+                transparent={transparent}
                 onClick={this.toggleDataTable}>
               {displayTitle}
             </SearchButton>
@@ -141,12 +152,12 @@ export default class MultiSelectCheckbox extends Component<Props, State> {
             </SearchIcon>
           </SearchInputWrapper>
           {
-            !this.state.isVisibleDataTable
+            !isVisibleDataTable
               ? null
               : (
                 <DataTableWrapper
-                    isVisible={this.state.isVisibleDataTable}
-                    openAbove={this.props.openAbove}>
+                    isVisible={isVisibleDataTable}
+                    openAbove={openAbove}>
                   {this.renderTable()}
                 </DataTableWrapper>
               )

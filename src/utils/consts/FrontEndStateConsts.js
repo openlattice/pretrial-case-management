@@ -109,7 +109,9 @@ export const PEOPLE = {
   PERSON_ENTITY_KEY_ID: 'selectedPersonEntityKeyId',
   FETCHING_PEOPLE: 'isFetchingPeople',
   FETCHING_PERSON_DATA: 'isFetchingPersonData',
-  NEIGHBORS: 'peopleNeighbors'
+  NEIGHBORS: 'neighbors',
+  MOST_RECENT_PSA: 'mostRecentPSA',
+  MOST_RECENT_PSA_ENTITY_KEY: 'mostRecentPSAEntityKeyId'
 };
 
 // Review

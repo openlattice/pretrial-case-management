@@ -4,6 +4,8 @@
 import React from 'react';
 import styled from 'styled-components';
 
+import { OL } from '../../utils/consts/Colors';
+
 type Props = {
   selectedOption :number,
   options :object,
@@ -21,7 +23,7 @@ const ToggleButtonGroup = styled.ul`
   max-width: 900px;
   font-family: 'Open Sans', sans-serif;
   font-size: 14px;
-  color: #8e929b;
+  color: ${OL.GREY02};
   li:first-child {
     border-radius: 4px 0 0 4px;
   }
@@ -36,7 +38,7 @@ const ToggleButton = styled.li`
   display: block;
   justify-content: center;
   align-items: center;
-  border: solid 1px #ceced9;
+  border: solid 1px ${OL.GREY13};
   margin-right: -1px;
   padding: 10px;
   height: 100%;
@@ -44,8 +46,8 @@ const ToggleButton = styled.li`
     if (props.active) {
       return (
         `
-          color: #ffffff
-          background-color: #6124e2;
+          color: ${OL.WHITE};
+          background-color: ${OL.PURPLE02};
         `
       );
     }

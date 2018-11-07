@@ -2,6 +2,8 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
 
+import { OL } from '../../utils/consts/Colors';
+
 export const RadioInputContainer = styled.input.attrs({
   type: 'radio'
 })`
@@ -28,22 +30,22 @@ export const RadioSelection = styled.span`
   left: 0;
   height: 20px;
   width: 20px;
-  background-color: #e6e6f7;
+  background-color: ${OL.GREY06};
   border-radius: 50%;
-  border: 1px solid #c9c9da;
+  border: 1px solid ${OL.GREY24};
 
   ${RadioContainer}:hover ${RadioInputContainer} ~ & {
-    background-color: #ccc;
+    background-color: ${OL.GREY22};
     cursor: pointer;
   }
 
   ${RadioContainer} ${RadioInputContainer}:checked ~ & {
-    background-color: #6124e2;
-    border: 1px solid #6124e2;
+    background-color: ${OL.PURPLE02};
+    border: 1px solid ${OL.PURPLE02};
   }
 
   ${RadioContainer} ${RadioInputContainer}:disabled ~ & {
-    background-color: white;
+    background-color: ${OL.WHITE};
     cursor: default;
   }
 
@@ -63,11 +65,11 @@ export const RadioSelection = styled.span`
     width: 6px;
     height: 6px;
     border-radius: 50%;
-    background-color: white;
+    background-color: ${OL.WHITE};
   }
 
   ${RadioContainer} ${RadioInputContainer}:disabled ~ &:after {
-    background-color: #ccc;
+    background-color: ${OL.GREY22};
   }
 `;
 

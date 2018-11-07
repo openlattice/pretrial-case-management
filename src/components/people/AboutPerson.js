@@ -13,11 +13,21 @@ import MultiSelectCheckbox from '../MultiSelectCheckbox';
 import CaseHistory from '../casehistory/CaseHistory';
 import CaseHistoryTimeline from '../casehistory/CaseHistoryTimeline';
 import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
-import { Title } from '../../utils/Layout';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { SORT_TYPES, PSA_STATUSES } from '../../utils/consts/Consts';
 import { STATUS_OPTION_CHECKBOXES } from '../../utils/consts/ReviewPSAConsts';
 import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
+import {
+  Title,
+  Count,
+  AlternateSectionHeader
+} from '../../utils/Layout';
+import {
+  getChargeHistory,
+  getCaseHistory,
+  getCasesForPSA
+} from '../../utils/CaseUtils';
+import { OL } from '../../utils/consts/Colors';
 
 
 const { OPENLATTICE_ID_FQN } = Constants;
@@ -41,7 +51,7 @@ const StyledColumnRowWrapper = styled.div`
   flex-direction: column;
   margin-bottom: 50px;
   max-width: 960px;
-  background: white;
+  background: ${OL.WHITE};
   border-radius: 5px;
 `;
 
@@ -50,29 +60,12 @@ const StyledColumnRow = styled.div`
   flex-wrap: wrap;
   width: 100%;
   border-radius: 5px;
-  background-color: #ffffff;
-  border: solid 1px #e1e1eb;
+  background-color: ${OL.WHITE};
+  border: solid 1px ${OL.GREY11};
 `;
 
-const StyledSectionHeader = styled.div`
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  font-family: 'Open Sans', sans-serif;
-  font-size: 22px;
-  font-weight: 600;
-  color: #555e6f;
-  margin-bottom: 50px;
-`;
-
-const Count = styled.div`
-  height: fit-content;
-  padding: 0 10px;
-  margin: 0 10px;
-  border-radius: 10px;
-  background-color: #f0f0f7;
-  font-size: 12px;
-  color: #8e929b;
+const StyledSectionHeader = styled(AlternateSectionHeader)`
+  padding: 0;
 `;
 
 const CaseHistoryWrapper = styled.div`
@@ -98,7 +91,11 @@ const FilterWrapper = styled.div`
 
 type Props = {
   selectedPersonData :Immutable.Map<*, *>,
-  neighbors :Immutable.Map<*, *>
+  neighbors :Immutable.Map<*, *>,
+  mostRecentPSA :Immutable.Map<*, *>,
+  lastEditDateForPSA :string,
+  arrestDate :string,
+  loading :boolean
 }
 
 class AboutPerson extends React.Component<Props, State> {
@@ -117,7 +114,8 @@ class AboutPerson extends React.Component<Props, State> {
 
   handleCheckboxChange = (e) => {
     const { value, checked } = e.target;
-    const values = this.state.statusFilters;
+    const { statusFilters } = this.state;
+    const values = statusFilters;
 
     if (checked && !values.includes(value)) {
       values.push(value);
@@ -137,6 +135,7 @@ class AboutPerson extends React.Component<Props, State> {
   );
 
   renderStatusOptions = () => {
+    const { statusFilters } = this.state;
     const statusOptions = Object.values(STATUS_OPTION_CHECKBOXES);
     return (
       <FilterWrapper>
@@ -144,22 +143,24 @@ class AboutPerson extends React.Component<Props, State> {
             displayTitle="Filter Status"
             options={statusOptions}
             onChange={this.handleCheckboxChange}
-            selected={this.state.statusFilters} />
+            selected={statusFilters} />
       </FilterWrapper>
     );
   }
 
   renderPSAs = () => {
-    const { neighbors } = this.props;
+    const { neighbors, loading } = this.props;
+    const { statusFilters } = this.state;
     const scoreSeq = neighbors.get(ENTITY_SETS.PSA_SCORES, Immutable.Map())
-      .filter(neighbor => !!neighbor.get(PSA_NEIGHBOR.DETAILS) &&
-        this.state.statusFilters.includes(neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.STATUS, 0])))
+      .filter(neighbor => !!neighbor.get(PSA_NEIGHBOR.DETAILS)
+        && statusFilters.includes(neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.STATUS, 0])))
       .map(neighbor => [
         neighbor.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0]),
         neighbor.get(PSA_NEIGHBOR.DETAILS)
       ]);
     return (
       <PSAReviewPersonRowList
+          loading={loading}
           scoreSeq={scoreSeq}
           sort={SORT_TYPES.DATE}
           renderContent={this.renderHeaderSection}
@@ -170,24 +171,15 @@ class AboutPerson extends React.Component<Props, State> {
     );
   };
 
-  renderCaseHistory = () => {
-    const { neighbors } = this.props;
-    const caseHistory = neighbors.get(ENTITY_SETS.PRETRIAL_CASES, Immutable.List())
-      .map(neighborObj => neighborObj.get(PSA_NEIGHBOR.DETAILS, Immutable.Map()));
-
-    let chargeHistory = Immutable.Map();
-    neighbors.get(ENTITY_SETS.CHARGES, Immutable.List())
-      .forEach((chargeNeighbor) => {
-        const chargeIdArr = chargeNeighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.CHARGE_ID, 0], '').split('|');
-        if (chargeIdArr.length) {
-          const caseId = chargeIdArr[0];
-          chargeHistory = chargeHistory.set(
-            caseId,
-            chargeHistory.get(caseId, Immutable.List()).push(chargeNeighbor.get(PSA_NEIGHBOR.DETAILS, Immutable.Map()))
-          );
-        }
-      });
-
+  renderCaseHistory = (
+    caseHistoryForMostRecentPSA,
+    chargeHistoryForMostRecentPSA,
+    caseHistoryNotForMostRecentPSA,
+    chargeHistoryNotForMostRecentPSA,
+    chargeHistory,
+    caseHistory
+  ) => {
+    const { loading } = this.props;
     return (
       <CaseHistoryWrapper>
         <StyledSectionHeader>
@@ -200,13 +192,41 @@ class AboutPerson extends React.Component<Props, State> {
         </Title>
         <CaseHistoryTimeline caseHistory={caseHistory} chargeHistory={chargeHistory} />
         <hr />
-        <CaseHistory caseHistory={caseHistory} chargeHistory={chargeHistory} />
+        <CaseHistory
+            loading={loading}
+            caseHistoryForMostRecentPSA={caseHistoryForMostRecentPSA}
+            chargeHistoryForMostRecentPSA={chargeHistoryForMostRecentPSA}
+            caseHistoryNotForMostRecentPSA={caseHistoryNotForMostRecentPSA}
+            chargeHistoryNotForMostRecentPSA={chargeHistoryNotForMostRecentPSA}
+            chargeHistory={chargeHistory} />
       </CaseHistoryWrapper>
-    );
+    )
   };
-  render() {
-    const { selectedPersonData } = this.props;
 
+  render() {
+    const {
+      arrestDate,
+      lastEditDateForPSA,
+      loading,
+      mostRecentPSA,
+      neighbors,
+      selectedPersonData
+    } = this.props;
+    const caseHistory = getCaseHistory(neighbors);
+    const scores = mostRecentPSA.getIn([PSA_NEIGHBOR.DETAILS], Immutable.Map());
+    const chargeHistory = getChargeHistory(neighbors);
+    const {
+      caseHistoryForMostRecentPSA,
+      chargeHistoryForMostRecentPSA,
+      caseHistoryNotForMostRecentPSA,
+      chargeHistoryNotForMostRecentPSA
+    } = getCasesForPSA(
+      caseHistory,
+      chargeHistory,
+      scores,
+      arrestDate,
+      lastEditDateForPSA
+    );
     return (
       <Wrapper>
         <StyledColumn>
@@ -217,13 +237,20 @@ class AboutPerson extends React.Component<Props, State> {
           </StyledColumnRowWrapper>
           <StyledColumnRowWrapper>
             <StyledColumnRow>
-              {this.renderStatusOptions()}
+              {(!loading) ? this.renderStatusOptions() : null}
               {this.renderPSAs()}
             </StyledColumnRow>
           </StyledColumnRowWrapper>
           <StyledColumnRowWrapper>
             <StyledColumnRow>
-              {this.renderCaseHistory()}
+              {this.renderCaseHistory(
+                caseHistoryForMostRecentPSA,
+                chargeHistoryForMostRecentPSA,
+                caseHistoryNotForMostRecentPSA,
+                chargeHistoryNotForMostRecentPSA,
+                chargeHistory,
+                caseHistory
+              )}
             </StyledColumnRow>
           </StyledColumnRowWrapper>
         </StyledColumn>

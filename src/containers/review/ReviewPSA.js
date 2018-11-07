@@ -18,13 +18,10 @@ import DropDownMenu from '../../components/StyledSelect';
 import { FullWidthContainer } from '../../utils/Layout';
 import PersonSearchFields from '../../components/person/PersonSearchFields';
 import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
-import * as FormActionFactory from '../psa/FormActionFactory';
-import * as ReviewActionFactory from './ReviewActionFactory';
-import * as Routes from '../../core/router/Routes';
-
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { STATE, REVIEW, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { SORT_TYPES } from '../../utils/consts/Consts';
+import { OL } from '../../utils/consts/Colors';
 import {
   DATE_FORMAT,
   STATUS_OPTIONS,
@@ -34,6 +31,11 @@ import {
   NAV_OPTIONS
 } from '../../utils/consts/ReviewPSAConsts';
 
+import * as FormActionFactory from '../psa/FormActionFactory';
+import * as ReviewActionFactory from './ReviewActionFactory';
+import * as Routes from '../../core/router/Routes';
+
+
 const StyledFormWrapper = styled.div`
   display: flex;
   flex-direction: column;
@@ -41,7 +43,7 @@ const StyledFormWrapper = styled.div`
 `;
 
 const StyledSectionWrapper = styled.div`
-  color: #555e6f;
+  color:  ${OL.GREY01};
   display: flex;
   flex-direction: column;
   width: 960px;
@@ -57,9 +59,9 @@ const StyledTopFormNavBuffer = styled.div`
 
 const StyledFiltersBar = styled.div`
   width: 100%;
-  background: #fff;
+  background: ${OL.WHITE};
   border-radius: 5px;
-  border: solid 1px #e1e1eb;
+  border: solid 1px ${OL.GREY11};
   border-bottom-left-radius: 0;
   border-bottom-right-radius: 0;
   border-bottom: none;
@@ -85,9 +87,9 @@ const FilterWrapper = styled.div`
 
 const PersonSearchWrapper = styled.div`
   width: 100%;
-  background: #fff;
+  background: ${OL.WHITE};
   border-radius: 5px;
-  border: solid 1px #e1e1eb;
+  border: solid 1px ${OL.GREY11};
   border-bottom: none;
   border-bottom-left-radius: 0;
   border-bottom-right-radius: 0;

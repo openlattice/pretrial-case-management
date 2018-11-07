@@ -5,6 +5,8 @@
 import React from 'react';
 import styled from 'styled-components';
 
+import { OL } from '../../utils/consts/Colors';
+
 const Control = styled.label`
   display: block;
   position: relative;
@@ -13,7 +15,7 @@ const Control = styled.label`
   font-family: 'Open Sans', sans-serif;
   font-size: 14px;
   font-weight: normal;
-  color: ${props => (props.checked ? '#2e2e34' : '#8e929b')};
+  color: ${props => (props.checked ? OL.GREY15 : OL.GREY02)};
   cursor: ${props => (props.disabled ? 'default' : 'pointer')};
 
   input {
@@ -38,24 +40,24 @@ const CheckboxIndicator = styled.div`
   height: 20px;
   width: 20px;
   border-radius: 2px;
-  background: #E6E6F7;
+  background: ${OL.GREY21};
 
   ${Control}:hover input ~ &,
   ${Control} input:focus & {
-    background: #CCCCCC;
+    background: ${OL.GREY22};
   }
 
   ${Control} input:checked ~ & {
-    background: #6124e2;
+    background: ${OL.PURPLE02};
   }
 
   ${Control}:hover input:not([disabled]):checked ~ &,
   ${Control} input:checked:focus & {
-    background: #6124e2;
+    background: ${OL.PURPLE02};
   }
 
   ${Control} input:disabled ~ & {
-    background: #E6E6F7;
+    background: ${OL.GREY21};
     opacity: 0.6;
     pointer-events: none;
   }
@@ -68,7 +70,7 @@ const CheckboxIndicator = styled.div`
     top: 4px;
     width: 3px;
     height: 8px;
-    border solid: #FFFFFF;
+    border: solid ${OL.WHITE};
     border-width: 0 2px 2px 0;
     transform: rotate(45deg);
 
@@ -81,13 +83,13 @@ const CheckboxIndicator = styled.div`
       top: 4px;
       width: 5px;
       height: 10px;
-      border: solid #FFFFFF;
+      border: solid ${OL.WHITE};
       border-width: 0 2px 2px 0;
       transform: rotate(45deg);
     }
 
     ${Control} input:disabled ~ & {
-      border-color: #7B7B7B;
+      border-color: ${OL.GREY23};
     }
   }
 `;

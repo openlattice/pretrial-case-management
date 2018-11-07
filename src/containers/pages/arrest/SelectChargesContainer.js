@@ -20,6 +20,7 @@ import type { Charge } from '../../../utils/consts/Consts';
 import { PROPERTY_TYPES } from '../../../utils/consts/DataModelConsts';
 import { DOMAIN } from '../../../utils/consts/ReportDownloadTypes';
 import { toISODateTime } from '../../../utils/FormattingUtils';
+import { OL } from '../../../utils/consts/Colors';
 
 import {
   StyledFormWrapper,
@@ -39,10 +40,10 @@ const {
 
 const Container = styled(StyledFormWrapper)`
   text-align: left;
-  background-color: #ffffff;
+  background-color: ${OL.WHITE};
   padding: 30px;
   border-radius: 5px;
-  border: 1px solid #e1e1eb;
+  border: 1px solid ${OL.GREY11};
 `;
 
 const HeaderWrapper = styled.div`
@@ -63,9 +64,9 @@ const CountsInput = styled.input.attrs({
 })`
   height: 45px;
   width: 286px;
-  border: 1px solid #dcdce7;
+  border: 1px solid ${OL.GREY05};
   border-radius: 3px;
-  color: #135;
+  color: ${OL.BLUE03};
   font-size: 14px;
   align-items: center;
   padding-left: 20px;
@@ -79,7 +80,7 @@ const StyledTitle = styled(Title)`
 const SectionHeader = styled.div`
   font-family: 'Open Sans', sans-serif;
   font-size: 16px;
-  color: #555e6f;
+  color: ${OL.GREY01};
   margin-bottom: 20px;
 `;
 
@@ -102,7 +103,7 @@ const ChargeSearch = styled(SearchableSelect)`
 
 const ChargeWrapper = styled.div`
   padding: 30px 0;
-  border-bottom: 1px solid #e1e1eb;
+  border-bottom: 1px solid ${OL.GREY11};
 `;
 
 const ChargeOptionsWrapper = styled.div`
@@ -126,7 +127,7 @@ const ChargeTitle = styled.div`
   padding-bottom: 10px;
   font-family: 'Open Sans', sans-serif;
   font-size: 14px;
-  color: #2e2e34;
+  color: ${OL.GREY15};
   display: inline-block;
 `;
 

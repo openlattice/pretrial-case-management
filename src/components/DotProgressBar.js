@@ -2,13 +2,14 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { OL } from '../utils/consts/Colors';
 
-const GRAY = '#9F9FA3';
-const GREEN = '#4BB543';
-const YELLOW_GREEN = '#B9D800';
-const BLUE = '#00637C';
-const LIGHT_BLUE = '#7fb1bd';
-const WHITE = '#DBF1FF';
+const GRAY = OL.GREY33;
+const GREEN = OL.GREEN06;
+const YELLOW_GREEN = OL.GREEN07;
+const BLUE = OL.BLUE07;
+const LIGHT_BLUE = OL.BLUE08;
+const { WHITE } = OL;
 
 const ProgressBar = styled.ol`
   margin: 0 auto;
@@ -110,10 +111,11 @@ export default class DotProgressBar extends React.Component {
   };
 
   renderDots = () => {
+    const { numSteps, current } = this.props;
     const dots = [];
-    for (let i = 0; i < this.props.numSteps; i++) {
-      const isCurrent = i === this.props.current;
-      const isCompleted = i < this.props.current;
+    for (let i = 0; i < numSteps; i++) {
+      const isCurrent = i === current;
+      const isCompleted = i < current;
       const ProgressBarStep = getProgressBarStep(isCurrent, isCompleted);
 
       let StyledProgressBarIcon = ProgressBarIcon;

@@ -17,6 +17,7 @@ import {
   ToggleButton,
   ToggleButtonGroup
 } from 'react-bootstrap';
+import { OL } from './consts/Colors';
 
 import { FLEX } from './consts/Consts';
 
@@ -42,7 +43,7 @@ export const TableFormControl = styled(FormControl)`
 `;
 
 export const Label = styled(ControlLabel)`
-  color: #37454a;
+  color: ${OL.GREY34};
   font-size: 16px;
   font-weight: 400;
 `;
@@ -50,7 +51,7 @@ export const Label = styled(ControlLabel)`
 export const TitleLabel = Label.extend`
   display: block;
   font-family: 'Open Sans', sans-serif;
-  color: #555e6f;
+  color: ${OL.GREY01};
 `;
 
 export const TableTitleLabel = TitleLabel.extend`
@@ -116,14 +117,14 @@ export const ImportantText = styled.div`
 `;
 
 export const DeleteButton = styled.button`
-  color: #e91e63;
+  color: ${OL.PINK02};
   background: none;
   border: none;
   display: flex;
   flex: 0;
   margin: auto 5px;
   &:hover {
-    color: #b90b14;
+    color: ${OL.RED04};
   }
   &:disabled {
     cursor: default;
@@ -168,7 +169,7 @@ export const StyledToggleButton = styled(ToggleButton)`
 // from original PSA app
 
 export const Page = styled.div`
-  background: #F4F4F4;
+  background: ${OL.GREY35};
   padding-bottom: 30px;
 `;
 
@@ -195,7 +196,7 @@ export const Logo = styled.img`
 export const Description = styled.div`
   text-align: center;
   font-size: 24px;
-  color: #37454A;
+  color: ${OL.GREY34};
 `;
 
 export const FormWrapper = styled.div`
@@ -215,11 +216,11 @@ export const SubmitButtonWrapper = ButtonWrapper.extend`
 export const SubmitButton = styled(Button).attrs({
   type: props => props.type || 'submit'
 })`
-  background-color: #2AA1C0;
+  background-color: ${OL.BLUE10};
   border: none;
 
   &:hover {
-    background-color: #0E647D;
+    background-color: ${OL.BLUE11};
   }
 `;
 
@@ -267,7 +268,7 @@ export const ChargesTable = styled.table`
 `;
 
 export const ChargeRow = styled.tr`
-  border-bottom: 1px solid #e1e1eb;
+  border-bottom: 1px solid ${OL.GREY11};
   padding: 15px 0;
 
   &:last-child {
@@ -296,7 +297,7 @@ export const ChargeTagWrapper = styled.div`
 `;
 
 export const Divider = styled.hr`
-  border-top: 1px solid #bbb;
+  border-top: 1px solid ${OL.GREY36};
   width: 100%;
 `;
 
@@ -319,7 +320,7 @@ export const ResultHeader = styled.div`
   margin: 20px 0;
   font-family: 'Open Sans', sans-serif;
   font-size: 16px;
-  color: #555e6f;
+  color: ${OL.GREY01};
 `;
 
 export const ScaleWrapper = styled.div`
@@ -334,19 +335,19 @@ export const ScaleBlock = styled.span`
   justify-content: center;
   height: 60px;
   width: 72px;
-  border: 1px solid #b6bbc7;
+  border: 1px solid ${OL.GREY03};
   margin: 0;
   font-family: 'Open Sans', sans-serif;
   font-size: 16px;
-  color: #555e6f;
+  color: ${OL.GREY01};
 `;
 
 export const SelectedScaleBlock = styled(ScaleBlock)`
-  background-color: #b6bbc7;
+  background-color: ${OL.GREY03}
   font-weight: ${props => (props.isScore ? 'bold' : 'normal')};
 
   &:not(:first-child) {
-    border-left: 1px solid #ffffff;
+    border-left: 1px solid ${OL.WHITE};
   }
 `;
 
@@ -356,7 +357,7 @@ export const RiskFactorTable = styled.table`
 
 export const RiskFactorHeaderCell = styled.th`
   padding: 3px 10px;
-  border-bottom: 1px solid #aaa;
+  border-bottom: 1px solid ${OL.GREY37};
 `;
 
 export const RiskFactorCell = styled.td`
@@ -395,7 +396,7 @@ export const StyledFormWrapper = styled.div`
 
 export const StyledTitleWrapper = styled.div`
   align-items: center;
-  color: #37454a;
+  color: ${OL.GREY34};
   display: flex;
   font-size: 32px;
   justify-content: space-between;
@@ -404,13 +405,13 @@ export const StyledTitleWrapper = styled.div`
 `;
 
 export const StyledSectionWrapper = styled.div`
-  background: #fff;
+  background: ${OL.WHITE};
   display: flex;
   flex-direction: column;
   align-items: center;
   padding: 30px 0;
   width: 100%;
-  border: solid 1px #e1e1eb;
+  border: solid 1px ${OL.GREY11};
 `;
 
 export const CloseX = styled(FontAwesomeIcon)`
@@ -434,7 +435,7 @@ export const StyledSelect = styled.select`
   box-shadow: rgba(0, 0, 0, 0.075) 0 1px 1px inset;
 
   &:focus {
-    border-color: #66afe9;
+    border-color: ${OL.GREY12};
     outline: 0;
     box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(102,175,233,.6);
   }
@@ -454,11 +455,44 @@ export const Title = styled.div`
   flex-direction: column;
   font-family: 'Open Sans', sans-serif;
   font-size: 16px;
-  color: #555e6f;
+  color: ${OL.GREY01};
   margin: 20px 0;
 
   span:first-child {
     font-weight: ${props => (props.withSubtitle ? '600' : '400')};
     padding-bottom: 5px;
   }
+`;
+
+export const Count = styled.div`
+  height: fit-content;
+  padding: 0 10px;
+  margin: 0 10px;
+  border-radius: 10px;
+  background-color: #f0f0f7;
+  font-size: 12px;
+  color: #8e929b;
+`;
+
+export const PendingChargeStatus = styled.div`
+  border-radius: 3px;
+  text-transform: uppercase;
+  padding: 5px;
+  background-color: ${props => (props.pendingCharges ? '#ff3c5d' : '#00be84')};
+  font-family: 'Open Sans', sans-serif;
+  font-size: 12px;
+  font-weight: bold;
+  text-align: center;
+  color: #ffffff;
+`;
+
+export const AlternateSectionHeader = styled.div`
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  font-family: 'Open Sans', sans-serif;
+  font-size: 16px;
+  padding: 30px 0 20px 30px;
+  font-weight: 600;
+  color: #555e6f;
 `;
