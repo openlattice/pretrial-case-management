@@ -110,8 +110,7 @@ export const PEOPLE = {
   FETCHING_PEOPLE: 'isFetchingPeople',
   FETCHING_PERSON_DATA: 'isFetchingPersonData',
   NEIGHBORS: 'neighbors',
-  MOST_RECENT_PSA: 'mostRecentPSA',
-  MOST_RECENT_PSA_ENTITY_KEY: 'mostRecentPSAEntityKeyId'
+  MOST_RECENT_PSA: 'mostRecentPSA'
 };
 
 // Review
