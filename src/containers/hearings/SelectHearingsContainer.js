@@ -79,10 +79,6 @@ const Header = styled.div`
   }
 `;
 
-const SubmittedPSAWrapper = styled.div`
-  margin: 30px;
-`;
-
 const StyledTitle = styled(Title)`
   margin: 0;
 `;
@@ -254,7 +250,6 @@ class SelectHearingsContainer extends React.Component<Props, State> {
     const {
       allJudges,
       actions,
-      hearingNeighborsById,
       defaultBond,
       defaultConditions,
       defaultDMF,
@@ -263,6 +258,7 @@ class SelectHearingsContainer extends React.Component<Props, State> {
       personId,
       psaId,
       refreshPSANeighborsCallback,
+      hearingNeighborsById,
       hearingIdsRefreshing,
       submitting,
       psaEntityKeyId,
