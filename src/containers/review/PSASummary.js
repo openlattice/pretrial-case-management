@@ -179,7 +179,7 @@ class PSASummary extends React.Component<Props, *> {
           { fileNewPSA ? <InfoLink to={Routes.DASHBOARD}>File New PSA</InfoLink> : null}
         </ButtonWrapper>
       </TitleRowWrapper>
-    )
+    );
   }
 
   renderPSADetails = () => {
@@ -274,8 +274,7 @@ function mapStateToProps(state) {
     [REVIEW.LOADING_RESULTS]: review.get(REVIEW.LOADING_RESULTS),
     [PEOPLE.FETCHING_PERSON_DATA]: people.get(PEOPLE.FETCHING_PERSON_DATA),
     [PEOPLE.PERSON_DATA]: people.get(PEOPLE.PERSON_DATA),
-    [PEOPLE.MOST_RECENT_PSA]: people.get(PEOPLE.MOST_RECENT_PSA),
-    [PEOPLE.MOST_RECENT_PSA_ENTITY_KEY]: people.get(PEOPLE.MOST_RECENT_PSA_ENTITY_KEY)
+    [PEOPLE.MOST_RECENT_PSA]: people.get(PEOPLE.MOST_RECENT_PSA)
   };
 }
 
