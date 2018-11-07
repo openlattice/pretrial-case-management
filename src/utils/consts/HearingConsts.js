@@ -2,6 +2,7 @@ import moment from 'moment';
 import { OrderedMap, Map } from 'immutable';
 import { Constants } from 'lattice';
 
+import { sortByDate } from '../DataUtils';
 import { ENTITY_SETS, PROPERTY_TYPES } from './DataModelConsts';
 
 const { OPENLATTICE_ID_FQN } = Constants;
@@ -97,8 +98,7 @@ export const getScheduledHearings = (psaNeighbors) => {
   return (
     getHearingsFromNeighbors(psaNeighbors)
       .filter(hearing => todaysDate.isBefore(hearing.getIn([PROPERTY_TYPES.DATE_TIME, 0], '')))
-      .sort((h1, h2) => (moment(h1.getIn([PROPERTY_TYPES.DATE_TIME, 0], ''))
-        .isBefore(h2.getIn([PROPERTY_TYPES.DATE_TIME, 0], '')) ? 1 : -1))
+      .sort((h1, h2) => sortByDate(h1, h2, PROPERTY_TYPES.DATE_TIME))
   );
 };
 
@@ -108,8 +108,7 @@ export const getPastHearings = (psaNeighbors) => {
   return (
     getHearingsFromNeighbors(psaNeighbors)
       .filter(hearing => todaysDate.isAfter(hearing.getIn([PROPERTY_TYPES.DATE_TIME, 0], '')))
-      .sort((h1, h2) => (moment(h1.getIn([PROPERTY_TYPES.DATE_TIME, 0], ''))
-        .isBefore(h2.getIn([PROPERTY_TYPES.DATE_TIME, 0], '')) ? 1 : -1))
+      .sort((h1, h2) => sortByDate(h1, h2, PROPERTY_TYPES.DATE_TIME))
   );
 };
 
@@ -137,6 +136,5 @@ export const getAvailableHearings = (personHearings, scheduledHearings, hearingN
     || hearingIsInPast
     );
   });
-  return unusedHearings.sort((h1, h2) => (moment(h1.getIn([PROPERTY_TYPES.DATE_TIME, 0], ''))
-    .isBefore(h2.getIn([PROPERTY_TYPES.DATE_TIME, 0], '')) ? 1 : -1));
-}
+  return unusedHearings.sort((h1, h2) => sortByDate(h1, h2, PROPERTY_TYPES.DATE_TIME));
+};
