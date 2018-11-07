@@ -13,6 +13,7 @@ import closeX from '../../assets/svg/close-x-gray.svg';
 import HearingCardsWithTitle from '../hearings/HearingCardsWithTitle';
 import InfoButton from '../buttons/InfoButton';
 import NewHearingSection from '../hearings/NewHearingSection';
+import ReleaseConditionsModal from '../../containers/hearings/ReleaseConditionsModal';
 import LoadingSpinner from '../LoadingSpinner';
 import psaHearingConfig from '../../config/formconfig/PSAHearingConfig';
 import { FORM_IDS, ID_FIELD_NAMES } from '../../utils/consts/Consts';
@@ -35,6 +36,7 @@ import * as ReviewActionFactory from '../../containers/review/ReviewActionFactor
 import * as CourtActionFactory from '../../containers/court/CourtActionFactory';
 
 const PaddedStyledColumnRow = styled(StyledColumnRow)`
+  display: block;
   padding: 30px;
   hr {
     height: 1px;
@@ -43,6 +45,7 @@ const PaddedStyledColumnRow = styled(StyledColumnRow)`
     margin: 0 -30px;
   }
 `;
+
 const NoBorderStyledColumnRow = styled(PaddedStyledColumnRow)`
   padding: 30px;
   border: none;
@@ -76,15 +79,20 @@ const StyledInfoButton = styled(InfoButton)`
 `;
 
 type Props = {
+  availableHearings :List<*, *>,
+  defaultBond :Map<*, *>,
+  defaultConditions :Map<*, *>,
+  defaultDMF :Map<*, *>,
+  dmfId :string,
+  hearingsWithOutcomes :List<*, *>,
   jurisdiction :?string,
   loading :boolean,
-  scheduledHearings :List<*, *>,
+  neighbors :Map<*, *>,
   pastHearings :List<*, *>,
-  hearingsWithOutcomes :List<*, *>,
-  availableHearings :List<*, *>,
   personId :?string,
   psaEntityKeyId :Map<*, *>,
   psaId :?string,
+  scheduledHearings :List<*, *>,
   actions :{
     deleteEntity :(values :{
       entitySetId :string,
@@ -125,7 +133,8 @@ class PersonHearings extends React.Component<Props, State> {
     this.state = {
       manuallyCreatingHearing: false,
       newHearingModalOpen: false,
-      selectingReleaseConditions: false
+      releaseConditionsModalOpen: false,
+      selectedHearing: Map()
     };
   }
 
@@ -133,6 +142,7 @@ class PersonHearings extends React.Component<Props, State> {
 
   onClose = () => this.setState({
     newHearingModalOpen: false,
+    releaseConditionsModalOpen: false,
     manuallyCreatingHearing: false
   })
 
@@ -170,6 +180,50 @@ class PersonHearings extends React.Component<Props, State> {
   selectExistingHearing = (row, hearingId) => {
     const hearingWithOnlyId = { [ID_FIELD_NAMES.HEARING_ID]: hearingId };
     this.selectHearing(hearingWithOnlyId);
+  }
+
+  selectingReleaseConditions = (row, hearingId, entityKeyId) => {
+    this.setState({
+      manuallyCreatingHearing: false,
+      releaseConditionsModalOpen: true,
+      selectedHearing: { row, hearingId, entityKeyId }
+    });
+  };
+
+  renderReleaseConditionsModal = () => {
+    const {
+      defaultBond,
+      defaultConditions,
+      defaultDMF,
+      dmfId,
+      jurisdiction,
+      loading,
+      neighbors,
+      psaEntityKeyId,
+      psaId,
+      personId,
+    } = this.props;
+    const { releaseConditionsModalOpen, selectedHearing } = this.state;
+    const { hearingId, entityKeyId } = selectedHearing;
+
+    return (
+      <ReleaseConditionsModal
+          open={releaseConditionsModalOpen}
+          defaultBond={defaultBond}
+          defaultConditions={defaultConditions}
+          defaultDMF={defaultDMF}
+          dmfId={dmfId}
+          hearingId={hearingId}
+          hearingEntityKeyId={entityKeyId}
+          jurisdiction={jurisdiction}
+          neighbors={neighbors}
+          loading={loading}
+          onClose={this.onClose}
+          personId={personId}
+          psaEntityKeyId={psaEntityKeyId}
+          psaId={psaId}
+          selectedHearing={selectedHearing} />
+    );
   }
 
   renderNewHearingModal = () => {
@@ -263,6 +317,7 @@ class PersonHearings extends React.Component<Props, State> {
         <StyledColumn>
           { this.renderScheduledAndPastHearings() }
           { this.renderNewHearingModal() }
+          { this.renderReleaseConditionsModal() }
         </StyledColumn>
       </Wrapper>
     );
