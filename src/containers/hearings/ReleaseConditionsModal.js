@@ -166,6 +166,9 @@ class ReleaseConditionsModal extends React.Component<Props, State> {
     const hasMultipleHearings = hearingNeighborsById.size > 1;
     const oldDataOutcome = defaultDMF.getIn([PROPERTY_TYPES.OUTCOME, 0]);
     const onlyOldExists = oldDataOutcome && !hearingNeighborsById.getIn([hearingEntityKeyId, ENTITY_SETS.OUTCOMES]);
+    const hasOldOrNewOutcome = !!(
+      hearingNeighborsById.getIn([hearingEntityKeyId, ENTITY_SETS.OUTCOMES]) || oldDataOutcome
+    );
 
     if (onlyOldExists) {
       outcome = defaultDMF;
@@ -180,7 +183,7 @@ class ReleaseConditionsModal extends React.Component<Props, State> {
     }
     const submittedOutcomes = (onlyOldExists && hasMultipleHearings)
       ? false
-      : !!(hearingNeighborsById.getIn([hearingEntityKeyId, ENTITY_SETS.OUTCOMES]) || oldDataOutcome);
+      : hasOldOrNewOutcome;
 
     const judgeFromJudgeEntity = hearingNeighborsById.getIn([
       hearingEntityKeyId,
