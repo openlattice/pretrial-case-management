@@ -1,8 +1,8 @@
 /*
 * @flow
 */
-
-import { isImmutable, Map } from 'immutable';
+import moment from 'moment';
+import { isImmutable, Map, fromJS } from 'immutable';
 import { Constants } from 'lattice';
 
 import { PROPERTY_TYPES } from './consts/DataModelConsts';
@@ -33,12 +33,16 @@ export const getFqnObj = (fqnStr) => {
   };
 };
 
-export const getEntitySetId = (neighbors :Map<*, *>, name :string) :string => (
-  neighbors.getIn([name, PSA_NEIGHBOR.ENTITY_SET, 'id'], '')
-);
-export const getEntityKeyId = (neighbors :Map<*, *>, name :string) :string => (
-  neighbors.getIn([name, PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0], '')
-);
+export const getEntitySetId = (neighbors :Map<*, *>, name :string) :string => {
+  const entity = name ? neighbors.getIn([name, PSA_NEIGHBOR.ENTITY_SET], Map()) : neighbors;
+  return entity.get('id', '');
+};
+
+export const getEntityKeyId = (neighbors :Map<*, *>, name :?string) :string => {
+  const entity = name ? neighbors.getIn([name, PSA_NEIGHBOR.DETAILS], Map()) : neighbors;
+  return entity.getIn([OPENLATTICE_ID_FQN, 0], '');
+};
+
 export const getIdOrValue = (neighbors :Map<*, *>, entitySetName :string, optionalFQN :?string) :string => {
   const fqn = optionalFQN || PROPERTY_TYPES.GENERAL_ID;
   return neighbors.getIn([entitySetName, PSA_NEIGHBOR.DETAILS, fqn, 0], '');
@@ -65,3 +69,7 @@ export const getFilteredNeighborsById = (neighborValues) => {
 
   return neighborsById;
 };
+
+export const sortByDate = (d1, d2, fqn) => (
+  moment(d1.getIn([fqn, 0], '')).isBefore(moment(d2.getIn([fqn, 0], ''))) ? 1 : -1
+);
