@@ -15,10 +15,12 @@ const Wrapper = styled.div`
 `;
 
 type Props = {
+  handleSelect :(row :Immutable.Map<*, *>, hearingId :string, entityKeyId :string) => void,
   hearings :Immutable.List<*>,
   hearingsWithOutcomes :Immutable.List<*>,
+  readOnly :boolean,
+  noHearingsMessage :string,
   selectedHearing :Object,
-  handleSelect :(row :Immutable.Map<*, *>, hearingId :string, entityKeyId :string) => void,
   title :string,
   subtitle :string
 }
@@ -27,6 +29,8 @@ const HearingCardsWithTitle = ({
   hearings,
   hearingsWithOutcomes,
   handleSelect,
+  readOnly,
+  noHearingsMessage,
   selectedHearing,
   title,
   subtitle
@@ -39,6 +43,8 @@ const HearingCardsWithTitle = ({
     <HearingCardsHolder
         hearings={hearings}
         hearingsWithOutcomes={hearingsWithOutcomes}
+        readOnly={readOnly}
+        noHearingsMessage={noHearingsMessage}
         selectedHearing={selectedHearing}
         handleSelect={handleSelect} />
   </Wrapper>
