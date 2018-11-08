@@ -9,7 +9,7 @@ import moment from 'moment';
 import ChargeList from '../charges/ChargeList';
 import LoadingSpinner from '../LoadingSpinner';
 import { OL } from '../../utils/consts/Colors';
-import { Title, Count } from '../../utils/Layout';
+import { NoResults, Title, Count } from '../../utils/Layout';
 import { formatDateList } from '../../utils/FormattingUtils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 
@@ -19,17 +19,6 @@ const InfoRow = styled.div`
   flex-direction: row;
   padding: 15px 0;
   margin: ${props => (props.modal ? '0 -30px' : 0)};
-`;
-
-const NoResults = styled.div`
-  margin: 0 -30px 30px;
-  font-size: 18px;
-  text-align: center;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100px;
-  width: 100%;
 `;
 
 const TitleWrapper = styled.div`
@@ -61,7 +50,7 @@ const StyledSpinner = styled(LoadingSpinner)`
   align-items: center;
   height: 100px;
   width: 100%;
-`
+`;
 
 type Props = {
   caseHistory :Immutable.List<*>,

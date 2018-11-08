@@ -7,22 +7,12 @@ import { List, Map } from 'immutable';
 import { Constants } from 'lattice';
 
 import HearingSummary from '../hearings/HearingSummary';
+import { NoResults } from '../../utils/Layout';
 import { formatJudgeName } from '../../utils/consts/HearingConsts';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
 import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { formatDateTime } from '../../utils/FormattingUtils';
-
-const NoResults = styled.div`
-  margin: 0 -30px 30px;
-  font-size: 18px;
-  text-align: center;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 300px;
-  width: 100%;
-`;
 
 const Header = styled.div`
   padding: 30px 0 0 30px;

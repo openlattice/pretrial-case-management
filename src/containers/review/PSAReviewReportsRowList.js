@@ -12,6 +12,7 @@ import PSAReviewReportsRow from '../../components/review/PSAReviewReportsRow';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import CustomPagination from '../../components/Pagination';
 import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
+import { NoResults } from '../../utils/Layout';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { SORT_TYPES } from '../../utils/consts/Consts';
 import { sortByDate, sortByName } from '../../utils/PSAUtils';
@@ -87,13 +88,6 @@ const SpinnerWrapper = styled.div`
   display: flex;
   flex-direction: row;
   justify-content: center;
-`;
-
-const NoResults = styled.div`
-  margin: 0 -30px 30px;
-  font-size: 16px;
-  text-align: center;
-  width: 960px;
 `;
 
 const ReviewRowWrapper = styled.div`

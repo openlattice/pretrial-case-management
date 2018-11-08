@@ -4,9 +4,10 @@
 
 import React from 'react';
 import styled from 'styled-components';
-import { Map } from 'immutable';
+import { Map, List } from 'immutable';
 
 import AboutPersonGeneral from '../person/AboutPersonGeneral';
+import HearingCardsWithTitle from '../hearings/HearingCardsWithTitle';
 import CaseHistoryList from '../casehistory/CaseHistoryList';
 import ChargeHistoryStats from '../casehistory/ChargeHistoryStats';
 import LoadingSpinner from '../LoadingSpinner';
@@ -42,10 +43,20 @@ type Props = {
   neighbors :Map<*, *>,
   openDetailsModal :() => void,
   personId :string,
+  scheduledHearings :List,
 }
 
-const StyledViewMoreLink = styled(ViewMoreLink)`
-  transform: translateX(830px) translateY(50px);
+const StyledViewMoreLinkForCases = styled(ViewMoreLink)`
+  position: absolute;
+  transform: translateX(830px) translateY(15px);
+`;
+
+const StyledViewMoreLinkForHearings = styled(StyledViewMoreLinkForCases)`
+  transform: translateX(800px) translateY(20px);
+`;
+
+const StyledColumnRowWithPadding = styled(StyledColumnRow)`
+  padding: 20px 30px 30px;
 `;
 
 const PersonOverview = ({
@@ -55,6 +66,7 @@ const PersonOverview = ({
   neighbors,
   personId,
   psaNeighborsById,
+  scheduledHearings,
   selectedPersonData,
   openDetailsModal
 } :Props) => {
@@ -110,10 +122,22 @@ const PersonOverview = ({
           </StyledColumnRow>
         </StyledColumnRowWrapper>
         <StyledColumnRowWrapper>
-          <StyledColumnRow>
-            <StyledViewMoreLink to={`${Routes.PERSON_DETAILS_ROOT}/${personId}${Routes.CASES}`}>
+          <StyledColumnRowWithPadding>
+            <StyledViewMoreLinkForHearings to={`${Routes.PERSON_DETAILS_ROOT}/${personId}${Routes.HEARINGS}`}>
               View more
-            </StyledViewMoreLink>
+            </StyledViewMoreLinkForHearings>
+            <HearingCardsWithTitle
+                viewOnly
+                title="Upcoming Hearings"
+                hearings={scheduledHearings}
+                noHearingsMessage="There are no upcoming hearings." />
+          </StyledColumnRowWithPadding>
+        </StyledColumnRowWrapper>
+        <StyledColumnRowWrapper>
+          <StyledColumnRow>
+            <StyledViewMoreLinkForCases to={`${Routes.PERSON_DETAILS_ROOT}/${personId}${Routes.CASES}`}>
+              View more
+            </StyledViewMoreLinkForCases>
             <CaseHistoryList
                 loading={loading}
                 title="Case Summary"

@@ -20,7 +20,7 @@ import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts'
 import { formatDateTimeList } from '../../utils/FormattingUtils';
 import { getTimeStamp, getNeighborDetailsForEntitySet } from '../../utils/DataUtils';
 import { OL } from '../../utils/consts/Colors';
-import { Title, SummaryRowWrapper } from '../../utils/Layout';
+import { NoResults, Title, SummaryRowWrapper } from '../../utils/Layout';
 import {
   STATE,
   REVIEW,
@@ -39,6 +39,7 @@ const ButtonWrapper = styled.div`
 `;
 
 const SummaryWrapper = styled.div`
+  width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -163,10 +164,10 @@ class PSASummary extends React.Component<Props, *> {
   }
 
   viewPSADetailsButton = () => {
-    const { openDetailsModal } = this.props;
-    return (
-      <ViewPSADetailsButton onClick={openDetailsModal}>View PSA Details</ViewPSADetailsButton>
-    );
+    const { openDetailsModal, neighbors } = this.props;
+    return neighbors.size
+      ? <ViewPSADetailsButton onClick={openDetailsModal}>View PSA Details</ViewPSADetailsButton>
+      : null;
   }
 
   renderProfileHeader = () => {
@@ -231,6 +232,22 @@ class PSASummary extends React.Component<Props, *> {
         </NoStyleWrapper>
       );
 
+    const middleRow = (
+      <SummaryRowWrapper>
+        <ScoresContainer border>
+          <ScoreTitle>PSA</ScoreTitle>
+          <ScoreContent>
+            <PSAStats scores={scores} />
+            {this.renderPSADetails()}
+          </ScoreContent>
+        </ScoresContainer>
+        <ScoresContainer>
+          <ScoreTitle>DMF</ScoreTitle>
+          <SummaryDMFDetails neighbors={neighbors} scores={scores} />
+        </ScoresContainer>
+      </SummaryRowWrapper>
+    );
+
     const bottomRow = !profile ? null
       : (
         <SummaryRowWrapper>
@@ -242,23 +259,19 @@ class PSASummary extends React.Component<Props, *> {
     return (
       <SummaryWrapper>
         { topRow }
-        <SummaryRowWrapper>
-          <ScoresContainer border>
-            <ScoreTitle>PSA</ScoreTitle>
-            <ScoreContent>
-              <PSAStats scores={scores} />
-              {this.renderPSADetails()}
-            </ScoreContent>
-          </ScoresContainer>
-          <ScoresContainer>
-            <ScoreTitle>DMF</ScoreTitle>
-            <SummaryDMFDetails neighbors={neighbors} scores={scores} />
-          </ScoresContainer>
-        </SummaryRowWrapper>
-        <hr />
-        {(!profile && notes) ? this.renderNotes() : null}
-        {(!profile && notes) ? <hr /> : null}
-        { bottomRow }
+        {
+          scores.size
+            ? (
+              <NoStyleWrapper>
+                { middleRow }
+                <hr />
+                {(!profile && notes) ? this.renderNotes() : null}
+                {(!profile && notes) ? <hr /> : null}
+                { bottomRow }
+              </NoStyleWrapper>
+            )
+            : <NoResults>No PSA</NoResults>
+        }
       </SummaryWrapper>
     );
   }
