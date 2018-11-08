@@ -107,7 +107,7 @@ class DownloadPSA extends React.Component<Props, State> {
     history.push(Routes.DASHBOARD);
   }
 
-  getErrorText = () => {
+  getErrorText = (downloads) => {
     const { startDate, endDate } = this.state;
     let errorText;
 
@@ -120,7 +120,7 @@ class DownloadPSA extends React.Component<Props, State> {
       if (!start.isValid() || !end.isValid()) {
         errorText = 'At least one of the selected dates is invalid.';
       }
-      else if (start.isAfter(today)) {
+      else if (downloads === 'psas' && start.isAfter(today)) {
         errorText = 'The selected start date cannot be later than today.';
       }
       else if (end.isBefore(start)) {
@@ -165,9 +165,10 @@ class DownloadPSA extends React.Component<Props, State> {
     }
   }
 
-  renderDownload = () => {
+  renderDownloadByHearing = () => {
     const { startDate, endDate } = this.state;
-    if (!startDate || !endDate || this.getErrorText()) return null;
+    const downloads = 'hearings';
+    if (!startDate || !endDate || this.getErrorText(downloads)) return null;
     return (
       <div>
         <SubHeaderSection>Downloads by Hearing Date</SubHeaderSection>
@@ -182,6 +183,16 @@ class DownloadPSA extends React.Component<Props, State> {
             Download Pennington Summary Report
           </BasicDownloadButton>
         </ButtonRow>
+      </div>
+    );
+  }
+
+  renderDownloadByPSA = () => {
+    const { startDate, endDate } = this.state;
+    const downloads = 'psas';
+    if (!startDate || !endDate || this.getErrorText(downloads)) return null;
+    return (
+      <div>
         <SubHeaderSection>Downloads by PSA Date</SubHeaderSection>
         <ButtonRow>
           <BasicDownloadButton onClick={() => this.downloadbyPSADate(PSA_RESPONSE_TABLE, DOMAIN.MINNEHAHA)}>
@@ -225,7 +236,8 @@ class DownloadPSA extends React.Component<Props, State> {
                 onEndChange={endDate => this.setState({ endDate })}
                 format24HourClock />
             {this.renderError()}
-            {this.renderDownload()}
+            {this.renderDownloadByHearing()}
+            {this.renderDownloadByPSA()}
             <StyledTopFormNavBuffer />
           </StyledSectionWrapper>
         </StyledFormWrapper>
