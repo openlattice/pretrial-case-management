@@ -48,7 +48,7 @@ type Props = {
 
 const StyledViewMoreLinkForCases = styled(ViewMoreLink)`
   position: absolute;
-  transform: translateX(830px) translateY(50px);
+  transform: translateX(830px) translateY(15px);
 `;
 
 const StyledViewMoreLinkForHearings = styled(StyledViewMoreLinkForCases)`
