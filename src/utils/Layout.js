@@ -538,3 +538,11 @@ export const SummaryRowWrapper = styled.div`
   grid-template-columns: 66% 33%;
   margin: 30px 0;
 `;
+
+export const NoResults = styled.div`
+  color: ${OL.GREY01};
+  font-size: 16px;
+  text-align: center;
+  width: 100%;
+  padding: 50px 0;
+`;
