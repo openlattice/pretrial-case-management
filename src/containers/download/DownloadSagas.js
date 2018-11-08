@@ -27,9 +27,8 @@ import { HEADERS_OBJ, POSITIONS } from '../../utils/consts/CSVConsts';
 import { PSA_NEIGHBOR, PSA_ASSOCIATION } from '../../utils/consts/FrontEndStateConsts';
 import MinnehahaChargesList from '../../utils/consts/MinnehahaChargesList';
 import PenningtonChargesList from '../../utils/consts/PenningtonChargesList';
-import { HEARING_TYPES, PSA_STATUSES } from '../../utils/consts/Consts';
+import { PSA_STATUSES } from '../../utils/consts/Consts';
 import { PENN_BOOKING_HOLD_EXCEPTIONS, PENN_BOOKING_RELEASE_EXCEPTIONS } from '../../utils/consts/DMFExceptionsList';
-import { VIOLENT_CHARGES } from '../../utils/consts/ChargeConsts';
 import { DOMAIN } from '../../utils/consts/ReportDownloadTypes';
 import {
   CHARGE_TYPES,
@@ -77,8 +76,7 @@ function* downloadChargeListsWorker(action :SequenceAction) :Generator<*, *, *> 
       [
         CHARGE_TYPES.STEP_TWO,
         CHARGE_TYPES.STEP_FOUR,
-        CHARGE_TYPES.ALL_VIOLENT,
-        'Odyssey Violent List',
+        CHARGE_TYPES.ALL_VIOLENT
       ]
     );
     const exceptionHeaders = Immutable.List(
@@ -122,10 +120,6 @@ function* downloadChargeListsWorker(action :SequenceAction) :Generator<*, *, *> 
         .set(
           BRE_LABELS.LABEL,
           pennBookingReleaseExceptions.includes(chargeString)
-        )
-        .set(
-          'Odyssey Violent List',
-          VIOLENT_CHARGES.includes(statute)
         );
 
       jsonResults = jsonResults.push(row);
