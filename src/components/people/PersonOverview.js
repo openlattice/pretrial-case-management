@@ -52,7 +52,7 @@ const StyledViewMoreLinkForCases = styled(ViewMoreLink)`
 `;
 
 const StyledViewMoreLinkForHearings = styled(StyledViewMoreLinkForCases)`
-  transform: translateX(800px)translateY(20px);
+  transform: translateX(800px) translateY(20px);
 `;
 
 const StyledColumnRowWithPadding = styled(StyledColumnRow)`
