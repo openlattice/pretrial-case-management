@@ -15,7 +15,7 @@ import NavButtonToolbar from '../../components/buttons/NavButtonToolbar';
 import PSAReviewReportsRowList from './PSAReviewReportsRowList';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import DropDownMenu from '../../components/StyledSelect';
-import { FullWidthContainer } from '../../utils/Layout';
+import { FullWidthContainer, NoResults } from '../../utils/Layout';
 import PersonSearchFields from '../../components/person/PersonSearchFields';
 import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
@@ -121,13 +121,6 @@ const DatePickerGroupContainer = styled.div`
   width: 100%;
   max-width: 140px;
   margin: 10px;
-`;
-
-const NoResults = styled.div`
-  margin: 100px auto;
-  text-align: center;
-  font-size: 16px;
-  width: 960px;
 `;
 
 const ErrorText = styled.div`
