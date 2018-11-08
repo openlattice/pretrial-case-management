@@ -5,6 +5,12 @@
 import Immutable from 'immutable';
 
 export const ODYSSEY_VIOLENT_CHARGES = {
+  '22-4-1': [
+    'ATTEMPTS TO COMMIT CRIME'
+  ],
+  '22-4-2': [
+    'ATTEMPT RESULTING IN COMMISSION OF OTHER CRIME'
+  ],
   '22-8-12': [
     'TERRORISM'
   ],
@@ -13,6 +19,10 @@ export const ODYSSEY_VIOLENT_CHARGES = {
   ],
   '22-10-5': [
     'AGGRAVATED RIOT'
+  ],
+  '22-10-5.1': [
+    'ATTEMPTED RIOT',
+    'ATTEMPTED AGGRAVATED RIOT'
   ],
   '22-10-6': [
     'SOLICIT VIOLENCE/PARTICIPANT'
@@ -41,12 +51,18 @@ export const ODYSSEY_VIOLENT_CHARGES = {
   '22-14a-20': [
     'CARRY OR PLACE EXPLOSIVES SO AS TO ENDANGER LIFE'
   ],
+  '22-16-1': [
+    'HOMICIDE DEFINED'
+  ],
   '22-16-1.1': [
     'FETAL HOMICIDE'
   ],
   '22-16-4': [
     'MURDER-1ST DEGREE (FELONY)',
     'DOM ABUSE - MURDER- 1ST DEGREE (FELONY)'
+  ],
+  '22-16-5': [
+    'PREMEDITATED DESIGN TO EFFECT THE DEATH DEFINED'
   ],
   '22-16-7': [
     'FETAL HOMICIDE',
@@ -134,6 +150,9 @@ export const ODYSSEY_VIOLENT_CHARGES = {
   '22-18-31': [
     'INTENTIONAL EXPOSURE TO HIV INFECTION'
   ],
+  '22-18-37': [
+    'FEMALE GENITAL MUTILATION - degreeFieldIsFelony'
+  ],
   '22-19-1.1': [
     'AGGRAVATED KIDNAPPING-2ND DEGREE',
     'DOM ABUSE - AGGRAVATED KIDNAPPING - 2ND DEGREE',
@@ -199,6 +218,13 @@ export const ODYSSEY_VIOLENT_CHARGES = {
   '22-24a-5': [
     'SOLICITATION OF A MINOR'
   ],
+  '22-30-1': [
+    'ROBBERY DEFINED'
+  ],
+  '22-30-6': [
+    'ROBBERY IN THE 2ND DEGREE(F4)',
+    'ROBBERY IN THE FIRST DEGREE(F2)'
+  ],
   '22-30-7': [
     'DOM ABUSE - ROBBERY - 1ST DEGREE',
     'DOM ABUSE - ROBBERY - 2ND DEGREE',
@@ -218,6 +244,9 @@ export const ODYSSEY_VIOLENT_CHARGES = {
   ],
   '22-46-2': [
     'ABUSE OR NEGLECTS A DISABLED ADULT OR ELDER'
+  ],
+  '22-49-1': [
+    'HUMAN TRAFFICKING PROHIBITED'
   ],
   '22-49-2': [
     'FIRST DEGREE HUMAN TRAFFICKING'
@@ -284,6 +313,3 @@ export const MISDEMEANOR_CHARGE_LEVEL_CODES :Set<string> = Immutable.Set([
   'M1',
   'M2'
 ]);
-
-
-export default VIOLENT_CHARGES;
