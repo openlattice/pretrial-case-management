@@ -7,6 +7,9 @@ import Immutable from 'immutable';
 import styled from 'styled-components';
 import { Constants } from 'lattice';
 
+import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
+import ContentBlock from '../ContentBlock';
+import ContentSection from '../ContentSection';
 import { OL } from '../../utils/consts/Colors';
 import { formatDateTime } from '../../utils/FormattingUtils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
@@ -35,26 +38,6 @@ const Card = styled.div`
     background-color: ${props => (props.selected ? OL.PURPLE06 : OL.GREY12)};
     cursor: pointer;
   }
-
-  div {
-    display: flex;
-    flex-direction: column;
-
-    span {
-      font-family: 'Open Sans', sans-serif;
-      font-size: 11px;
-      font-weight: 600;
-      color: ${props => (props.selected ? OL.PURPLE02 : OL.GREY02)};
-      text-transform: uppercase;
-      margin-bottom: 2px;
-    }
-
-    div {
-      font-family: 'Open Sans', sans-serif;
-      font-size: 14px;
-      color: ${OL.GREY15};
-    }
-  }
 `;
 
 const Notification = styled.div`
@@ -64,6 +47,12 @@ const Notification = styled.div`
   border-radius: 50%;
   position: absolute;
   transform: translateX(-200%) translateY(40%);
+`;
+
+const NoHearings = styled.div`
+  width: 100%
+  font-size: 16px;
+  color: ${OL.GREY01};
 `;
 
 type Props = {
@@ -95,31 +84,43 @@ const HearingCardsHolder = ({
     const selected = selectedHearing && hearingId === selectedHearing.hearingId;
     const needsAttention = hearingsWithOutcomes && !hearingsWithOutcomes.includes(entityKeyId);
 
+    const generalContent = [
+      {
+        label: 'Date',
+        content: [date]
+      },
+      {
+        label: 'Time',
+        content: [time]
+      },
+      {
+        label: 'Courtroom',
+        content: [courtroom]
+      }
+    ];
+
+    const content = generalContent.map(item => (
+      <ContentBlock
+          contentBlock={item}
+          key={item.label} />
+    ));
+
     return (
       <Card
           onClick={() => handleSelect(hearing, hearingId, entityKeyId)}
           key={`${dateTime}${courtroom}${entityKeyId}`}
           selected={selected}>
         { needsAttention ? <Notification /> : null }
-        <div>
-          <span>Date</span>
-          <div>{ date }</div>
-        </div>
-        <div>
-          <span>Time</span>
-          <div>{ time }</div>
-        </div>
-        <div>
-          <span>Courtroom</span>
-          <div>{ courtroom }</div>
-        </div>
+        <ContentSection component={CONTENT_CONSTS.HEARING_CARD}>
+          {content}
+        </ContentSection>
       </Card>
     );
   });
 
   return (
     <CardsHolder>
-      {hearingOptions}
+      { hearingOptions.size ? hearingOptions : <NoHearings>No hearings found.</NoHearings> }
     </CardsHolder>
   );
 };

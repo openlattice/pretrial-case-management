@@ -52,60 +52,61 @@ const SummaryDMFDetails = ({ neighbors, scores } :Props) => {
   const nca = scores.getIn([PROPERTY_TYPES.NCA_SCALE, 0]);
   const fta = scores.getIn([PROPERTY_TYPES.FTA_SCALE, 0]);
   const dmfDecision = getDMFDecision(nca, fta, context);
-  let dmfCell;
-
-  if (stepTwoIncrease(dmfRiskFactors, psaRiskFactors, scores)) {
-    dmfCell = (
-      <ScoreContent>
-        <DMFIncreaseText>Step two increase</DMFIncreaseText>
-        <DMFCell dmf={dmfDecision} selected />
-        <img src={rightArrow} alt="" />
-        <DMFCell dmf={getDMFDecision(6, 6, context)} selected />
-      </ScoreContent>
-    );
-  }
-  else if (stepFourIncrease(dmfRiskFactors, psaRiskFactors, scores)) {
-    dmfCell = (
-      <ScoreContent>
-        <DMFIncreaseText>Step four increase</DMFIncreaseText>
-        <StyledStepWrapper>
+  let dmfCell = null;
+  if (dmfDecision) {
+    if (stepTwoIncrease(dmfRiskFactors, psaRiskFactors, scores)) {
+      dmfCell = (
+        <ScoreContent>
+          <DMFIncreaseText>Step two increase</DMFIncreaseText>
           <DMFCell dmf={dmfDecision} selected />
           <img src={rightArrow} alt="" />
-          <DMFCell dmf={increaseDMFSeverity(dmfDecision, context)} selected />
-        </StyledStepWrapper>
-      </ScoreContent>
-    );
-  }
-  else if (dmfSecondaryReleaseDecrease(dmfRiskFactors, scores)) {
-    dmfCell = (
-      <ScoreContent>
-        <DMFIncreaseText>Hold Exception Applies</DMFIncreaseText>
-        <StyledStepWrapper>
-          <DMFCell dmf={dmfDecision} selected />
-          <img src={rightArrow} alt="" />
-          <DMFCell dmf={updateDMFSecondaryRelease(dmf)} selected />
-        </StyledStepWrapper>
-      </ScoreContent>
-    );
-  }
-  else if (dmfSecondaryHoldIncrease(dmfRiskFactors, scores)) {
-    dmfCell = (
-      <ScoreContent>
-        <DMFIncreaseText>Release Exception Applies</DMFIncreaseText>
-        <StyledStepWrapper>
-          <DMFCell dmf={dmfDecision} selected />
-          <img src={rightArrow} alt="" />
-          <DMFCell dmf={updateDMFSecondaryHold(dmf)} selected />
-        </StyledStepWrapper>
-      </ScoreContent>
-    );
-  }
-  else {
-    dmfCell = (
-      <ScoreContent>
-        <DMFCell dmf={dmf} selected large />
-      </ScoreContent>
-    );
+          <DMFCell dmf={getDMFDecision(6, 6, context)} selected />
+        </ScoreContent>
+      );
+    }
+    else if (stepFourIncrease(dmfRiskFactors, psaRiskFactors, scores)) {
+      dmfCell = (
+        <ScoreContent>
+          <DMFIncreaseText>Step four increase</DMFIncreaseText>
+          <StyledStepWrapper>
+            <DMFCell dmf={dmfDecision} selected />
+            <img src={rightArrow} alt="" />
+            <DMFCell dmf={increaseDMFSeverity(dmfDecision, context)} selected />
+          </StyledStepWrapper>
+        </ScoreContent>
+      );
+    }
+    else if (dmfSecondaryReleaseDecrease(dmfRiskFactors, scores)) {
+      dmfCell = (
+        <ScoreContent>
+          <DMFIncreaseText>Hold Exception Applies</DMFIncreaseText>
+          <StyledStepWrapper>
+            <DMFCell dmf={dmfDecision} selected />
+            <img src={rightArrow} alt="" />
+            <DMFCell dmf={updateDMFSecondaryRelease(dmf)} selected />
+          </StyledStepWrapper>
+        </ScoreContent>
+      );
+    }
+    else if (dmfSecondaryHoldIncrease(dmfRiskFactors, scores)) {
+      dmfCell = (
+        <ScoreContent>
+          <DMFIncreaseText>Release Exception Applies</DMFIncreaseText>
+          <StyledStepWrapper>
+            <DMFCell dmf={dmfDecision} selected />
+            <img src={rightArrow} alt="" />
+            <DMFCell dmf={updateDMFSecondaryHold(dmf)} selected />
+          </StyledStepWrapper>
+        </ScoreContent>
+      );
+    }
+    else {
+      dmfCell = (
+        <ScoreContent>
+          <DMFCell dmf={dmf} selected large />
+        </ScoreContent>
+      );
+    }
   }
   return dmfCell;
 };

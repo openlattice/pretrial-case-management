@@ -3,17 +3,34 @@
  */
 
 import React from 'react';
+import moment from 'moment';
 import styled from 'styled-components';
+import randomUUID from 'uuid/v4';
+import { fromJS } from 'immutable';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
 
 import ContentBlock from '../ContentBlock';
 import ContentSection from '../ContentSection';
 import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
-import InfoButton from '../buttons/InfoButton';
 import DatePicker from '../controls/StyledDatePicker';
+import InfoButton from '../buttons/InfoButton';
+import psaHearingConfig from '../../config/formconfig/PSAHearingConfig';
 import SearchableSelect from '../controls/SearchableSelect';
+import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
 import { getCourtroomOptions, getJudgeOptions, HEARING_CONSTS } from '../../utils/consts/HearingConsts';
 import { getTimeOptions } from '../../utils/consts/DateTimeConsts';
+import { STATE, REVIEW, COURT } from '../../utils/consts/FrontEndStateConsts';
+import {
+  FORM_IDS,
+  ID_FIELD_NAMES,
+  HEARING,
+  HEARING_TYPES
+} from '../../utils/consts/Consts';
+
+import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
+import * as ReviewActionFactory from '../../containers/review/ReviewActionFactory';
 
 const StyledSearchableSelect = styled(SearchableSelect)`
   width: 200px;
@@ -60,130 +77,343 @@ const HearingSectionWrapper = styled.div`
   margin: 0 -15px;
 `;
 
-const NewHearingSection = ({
-  allJudges,
-  manuallyCreatingHearing,
-  newHearingDate,
-  newHearingTime,
-  newHearingCourtroom,
-  judge,
-  otherJudgeText,
-  jurisdiction,
-  onDateChange,
-  onSelectChange,
-  onInputChange,
-  isReadyToSubmit,
-  selectCurrentHearing
-} :Props) => {
-  let date;
-  let time;
-  let courtroom;
-  let judgeSelect;
-  let otherJudge;
-  let createHearingButton;
+type Props = {
+  allJudges :List<*, *>,
+  jurisdiction :string,
+  manuallyCreatingHearing :boolean,
+  psaId :string,
+  psaEntityKeyId :string,
+  personId :string,
+  actions :{
+    submit :(values :{
+      config :Map<*, *>,
+      values :Map<*, *>,
+      callback :() => void
+    }) => void,
+    refreshPSANeighbors :({ id :string }) => void,
+    refreshHearingNeighbors :({ id :string }) => void,
+    replaceAssociation :(values :{
+      associationEntity :Map<*, *>,
+      associationEntityName :string,
+      associationEntityKeyId :string,
+      srcEntityName :string,
+      srcEntityKeyId :string,
+      dstEntityName :string,
+      dstEntityKeyId :string,
+      callback :() => void
+    }) => void
+  },
+  onSubmit? :(hearing :Object) => void,
+  afterSubmit :() => void
+}
 
-  if (manuallyCreatingHearing) {
-    date = (
+const INITIAL_STATE = {
+  newHearingCourtroom: undefined,
+  newHearingDate: undefined,
+  newHearingTime: undefined,
+  judge: '',
+  otherJudgeText: '',
+};
+
+class NewHearingSection extends React.Component<Props, State> {
+
+  static defaultProps = {
+    onSubmit: () => {}
+  }
+
+  constructor(props :Props) {
+    super(props);
+    this.state = INITIAL_STATE;
+  }
+
+  selectHearing = (hearingDetails) => {
+    const {
+      psaId,
+      personId,
+      psaEntityKeyId,
+      actions,
+      afterSubmit
+    } = this.props;
+
+    const values = Object.assign({}, hearingDetails, {
+      [ID_FIELD_NAMES.PSA_ID]: psaId,
+      [FORM_IDS.PERSON_ID]: personId
+    });
+
+    const callback = psaEntityKeyId ? () => actions.refreshPSANeighbors({ id: psaEntityKeyId }) : () => {};
+    actions.submit({
+      values,
+      config: psaHearingConfig,
+      callback
+    });
+    if (afterSubmit) afterSubmit();
+  }
+
+  selectCurrentHearing = () => {
+    const { onSubmit } = this.props;
+    const {
+      newHearingDate,
+      newHearingTime,
+      newHearingCourtroom,
+      otherJudgeText,
+      judge,
+      judgeId
+    } = this.state;
+    const dateFormat = 'MM/DD/YYYY';
+    const timeFormat = 'hh:mm a';
+    const date = moment(newHearingDate);
+    const time = moment(newHearingTime, timeFormat);
+    let judgeName = judge;
+    if (date.isValid() && time.isValid()) {
+      const datetime = moment(`${date.format(dateFormat)} ${time.format(timeFormat)}`, `${dateFormat} ${timeFormat}`);
+      let hearing = {
+        [ID_FIELD_NAMES.HEARING_ID]: randomUUID(),
+        [HEARING.DATE_TIME]: datetime.toISOString(true),
+        [HEARING.COURTROOM]: newHearingCourtroom,
+        [PROPERTY_TYPES.HEARING_TYPE]: HEARING_TYPES.INITIAL_APPEARANCE
+      };
+      if (judge === 'Other') {
+        this.setState({ judgeId: '' });
+        judgeName = otherJudgeText;
+        hearing = Object.assign({}, hearing, {
+          [PROPERTY_TYPES.HEARING_COMMENTS]: otherJudgeText
+        });
+      }
+      else {
+        hearing = Object.assign({}, hearing, {
+          [ID_FIELD_NAMES.TIMESTAMP]: moment().toISOString(true),
+          [ID_FIELD_NAMES.JUDGE_ID]: judgeId
+        });
+      }
+      this.selectHearing(hearing);
+      const hearingForRender = Object.assign({}, hearing, { judgeName });
+      onSubmit(hearingForRender);
+      this.setState(INITIAL_STATE);
+    }
+  }
+
+  isReadyToSubmit = () => {
+    const {
+      newHearingCourtroom,
+      newHearingDate,
+      newHearingTime,
+      judgeId,
+      otherJudgeText
+    } = this.state;
+    const judgeInfoPresent = (judgeId || otherJudgeText);
+    return (
+      newHearingCourtroom
+      && newHearingDate
+      && newHearingTime
+      && judgeInfoPresent
+    );
+  }
+
+  onInputChange = (e) => {
+    const { name, value } = e.target;
+    this.setState({ [name]: value });
+  }
+
+  onDateChange = (hearingDate) => {
+    this.setState({ [HEARING_CONSTS.NEW_HEARING_DATE]: hearingDate });
+  }
+
+  renderDatePicker = () => {
+    const { newHearingDate } = this.state;
+    return (
       <DatePicker
           value={newHearingDate}
-          onChange={hearingDate => onDateChange(hearingDate)}
+          onChange={this.onDateChange}
           clearButton={false} />
     );
+  }
 
-    time = (
+  onSelectChange = (option) => {
+    const optionMap = fromJS(option);
+    switch (optionMap.get(HEARING_CONSTS.FIELD)) {
+      case HEARING_CONSTS.JUDGE: {
+        this.setState({
+          [HEARING_CONSTS.JUDGE]: optionMap.get(HEARING_CONSTS.FULL_NAME),
+          [HEARING_CONSTS.JUDGE_ID]: optionMap.getIn([PROPERTY_TYPES.PERSON_ID, 0])
+        });
+        break;
+      }
+      case HEARING_CONSTS.NEW_HEARING_TIME: {
+        this.setState({
+          [HEARING_CONSTS.NEW_HEARING_TIME]: optionMap.get(HEARING_CONSTS.NEW_HEARING_TIME)
+        });
+        break;
+      }
+      case HEARING_CONSTS.NEW_HEARING_COURTROOM: {
+        this.setState({
+          [HEARING_CONSTS.NEW_HEARING_COURTROOM]: optionMap.get(HEARING_CONSTS.NEW_HEARING_COURTROOM)
+        });
+        break;
+      }
+      default:
+        break;
+    }
+  }
+
+  renderTimeOptions = () => {
+    const { newHearingTime } = this.state;
+    return (
       <StyledSearchableSelect
           options={getTimeOptions()}
           value={newHearingTime}
-          onSelect={hearingTime => onSelectChange({
+          onSelect={hearingTime => this.onSelectChange({
             [HEARING_CONSTS.FIELD]: HEARING_CONSTS.NEW_HEARING_TIME,
             [HEARING_CONSTS.NEW_HEARING_TIME]: hearingTime
           })}
           short />
     );
+  }
 
-    courtroom = (
+  renderCourtoomOptions = () => {
+    const { newHearingCourtroom } = this.state;
+    return (
       <StyledSearchableSelect
           options={getCourtroomOptions()}
           value={newHearingCourtroom}
-          onSelect={hearingCourtroom => onSelectChange({
+          onSelect={hearingCourtroom => this.onSelectChange({
             [HEARING_CONSTS.FIELD]: HEARING_CONSTS.NEW_HEARING_COURTROOM,
             [HEARING_CONSTS.NEW_HEARING_COURTROOM]: hearingCourtroom
           })}
           short />
     );
+  }
 
-    judgeSelect = (
+  renderJudgeOptions = () => {
+    const { allJudges, jurisdiction } = this.props;
+    const { judge } = this.state;
+    return (
       <StyledSearchableSelect
           options={getJudgeOptions(allJudges, jurisdiction)}
           value={judge}
-          onSelect={judgeOption => onSelectChange(judgeOption)}
+          onSelect={this.onSelectChange}
           short />
     );
+  }
 
-    createHearingButton = (
-      <CreateButton disabled={!isReadyToSubmit()} onClick={selectCurrentHearing}>
-        Create New
-      </CreateButton>
-    );
-
-    otherJudge = (
+  renderOtherJudgeTextField = () => {
+    const { otherJudgeText } = this.state;
+    return (
       <NameInput
-          onChange={e => (onInputChange(e))}
+          onChange={this.onInputChange}
           name="otherJudgeText"
           value={otherJudgeText} />
     );
   }
 
-  const HEARING_ARR = [
-    {
-      label: 'Date',
-      content: [date]
-    },
-    {
-      label: 'Time',
-      content: [time]
-    },
-    {
-      label: 'Courtroom',
-      content: [courtroom]
-    },
-    {
-      label: 'Judge',
-      content: [judgeSelect]
+  renderCreateHearingButton = () => (
+    <CreateButton disabled={!this.isReadyToSubmit()} onClick={this.selectCurrentHearing}>
+      Create New
+    </CreateButton>
+  );
+
+  render() {
+    const { manuallyCreatingHearing } = this.props;
+    const { judge } = this.state;
+    let date;
+    let time;
+    let courtroom;
+    let judgeSelect;
+    let otherJudge;
+    let createHearingButton;
+
+    if (manuallyCreatingHearing) {
+      date = this.renderDatePicker();
+      time = this.renderTimeOptions();
+      courtroom = this.renderCourtoomOptions();
+      judgeSelect = this.renderJudgeOptions();
+      createHearingButton = this.renderCreateHearingButton();
+      otherJudge = this.renderOtherJudgeTextField();
     }
-  ];
-  if (judge === 'Other') {
-    HEARING_ARR.push(
+
+    const HEARING_ARR = [
       {
-        label: "Other Judge's Name",
-        content: [otherJudge]
+        label: 'Date',
+        content: [date]
+      },
+      {
+        label: 'Time',
+        content: [time]
+      },
+      {
+        label: 'Courtroom',
+        content: [courtroom]
+      },
+      {
+        label: 'Judge',
+        content: [judgeSelect]
       }
+    ];
+    if (judge === 'Other') {
+      HEARING_ARR.push(
+        {
+          label: "Other Judge's Name",
+          content: [otherJudge]
+        }
+      );
+    }
+    const hearingInfoContent = HEARING_ARR.map(hearingItem => (
+      <ContentBlock
+          component={CONTENT_CONSTS.CREATING_HEARING}
+          contentBlock={hearingItem}
+          key={hearingItem.label} />
+    ));
+
+    const hearingInfoSection = (
+      <ContentSection
+          header="Create New Hearing"
+          modifyingHearing={manuallyCreatingHearing}
+          component={CONTENT_CONSTS.CREATING_HEARING}>
+        {hearingInfoContent}
+      </ContentSection>
+    );
+
+    return (
+      <HearingSectionWrapper>
+        {hearingInfoSection}
+        <HearingSectionAside>
+          {createHearingButton}
+        </HearingSectionAside>
+      </HearingSectionWrapper>
     );
   }
-  const hearingInfoContent = HEARING_ARR.map(hearingItem => (
-    <ContentBlock
-        component={CONTENT_CONSTS.CREATING_HEARING}
-        contentBlock={hearingItem}
-        key={hearingItem.label} />
-  ));
+}
 
-  const hearingInfoSection = (
-    <ContentSection
-        header="Create New Hearing"
-        modifyingHearing={manuallyCreatingHearing}
-        component={CONTENT_CONSTS.CREATING_HEARING}>
-      {hearingInfoContent}
-    </ContentSection>
-  );
+function mapStateToProps(state) {
+  const review = state.get(STATE.REVIEW);
+  const court = state.get(STATE.COURT);
+  return {
+    [REVIEW.SCORES]: review.get(REVIEW.SCORES),
+    [REVIEW.NEIGHBORS_BY_ID]: review.get(REVIEW.NEIGHBORS_BY_ID),
+    [COURT.LOADING_HEARING_NEIGHBORS]: court.get(COURT.LOADING_HEARING_NEIGHBORS),
+    [COURT.HEARINGS_NEIGHBORS_BY_ID]: court.get(COURT.HEARINGS_NEIGHBORS_BY_ID),
+    [COURT.ALL_JUDGES]: court.get(COURT.ALL_JUDGES),
+    [COURT.HEARING_IDS_REFRESHING]: court.get(COURT.HEARING_IDS_REFRESHING),
+    [REVIEW.LOADING_RESULTS]: review.get(REVIEW.LOADING_RESULTS),
+    [REVIEW.ERROR]: review.get(REVIEW.ERROR)
+  };
+}
 
-  return (
-    <HearingSectionWrapper>
-      {hearingInfoSection}
-      <HearingSectionAside>
-        {createHearingButton}
-      </HearingSectionAside>
-    </HearingSectionWrapper>
-  );
-};
+function mapDispatchToProps(dispatch :Function) :Object {
+  const actions :{ [string] :Function } = {};
 
-export default NewHearingSection;
+  Object.keys(SubmitActionFactory).forEach((action :string) => {
+    actions[action] = SubmitActionFactory[action];
+  });
+
+  Object.keys(ReviewActionFactory).forEach((action :string) => {
+    actions[action] = ReviewActionFactory[action];
+  });
+
+  return {
+    actions: {
+      ...bindActionCreators(actions, dispatch)
+    }
+  };
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(NewHearingSection);

@@ -15,7 +15,7 @@ import DMFCell from '../dmf/DMFCell';
 import ChargeTable from '../charges/ChargeTable';
 import CaseHistoryTimeline from '../casehistory/CaseHistoryTimeline';
 import RiskFactorsTable from '../riskfactors/RiskFactorsTable';
-import SelectHearingsContainer from '../../containers/hearings/SelectHearingsContainer';
+import NewHearingSection from '../hearings/NewHearingSection';
 import SelectedHearingInfo from '../hearings/SelectedHearingInfo';
 import psaSuccessIcon from '../../assets/svg/psa-success.svg';
 import psaFailureIcon from '../../assets/svg/psa-failure.svg';
@@ -25,6 +25,7 @@ import closeXBlackIcon from '../../assets/svg/close-x-black.svg';
 import { OL } from '../../utils/consts/Colors';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { getHeaderText } from '../../utils/DMFUtils';
+import { JURISDICTION } from '../../utils/consts/Consts';
 import {
   ResultHeader,
   ScaleBlock,
@@ -34,7 +35,6 @@ import {
 import * as Routes from '../../core/router/Routes';
 
 type Props = {
-  allJudges :Immutable.Map<*, *>,
   isSubmitting :boolean,
   scores :Immutable.Map<*, *>,
   riskFactors :Object,
@@ -269,7 +269,7 @@ class PSASubmittedPage extends React.Component<Props, State> {
     this.state = {
       settingHearing: false,
       selectedHearing: undefined
-    }
+    };
   }
 
   renderBanner = () => {
@@ -313,12 +313,15 @@ class PSASubmittedPage extends React.Component<Props, State> {
     );
   }
 
-  renderNvca = () => (
-    <div>
-      <ResultHeader>New Violent Criminal Activity Flag</ResultHeader>
-      <Flag>{this.props.scores.getIn([PROPERTY_TYPES.NVCA_FLAG, 0]) ? 'Yes' : 'No'}</Flag>
-    </div>
-  )
+  renderNvca = () => {
+    const { scores } = this.props;
+    return (
+      <div>
+        <ResultHeader>New Violent Criminal Activity Flag</ResultHeader>
+        <Flag>{scores.getIn([PROPERTY_TYPES.NVCA_FLAG, 0]) ? 'Yes' : 'No'}</Flag>
+      </div>
+    )
+  }
 
   renderScale = (val :number) => {
     const scale = [];
@@ -440,35 +443,44 @@ class PSASubmittedPage extends React.Component<Props, State> {
     return <RiskFactorsTable rows={rows} disabled />;
   }
 
-  renderExportButton = (openAbove) => (
-    <div>
-      <DropdownButton
-          title="PDF Report"
-          openAbove={openAbove}
-          options={[{
-            label: 'Export compact version',
-            onClick: () => this.props.getOnExport(true)
-          }, {
-            label: 'Export full version',
-            onClick: () => this.props.getOnExport(false)
-          }]} />
-    </div>
-  )
+  renderExportButton = (openAbove) => {
+    const { getOnExport } = this.props;
+    return (
+      <div>
+        <DropdownButton
+            title="PDF Report"
+            openAbove={openAbove}
+            options={[{
+              label: 'Export compact version',
+              onClick: () => getOnExport(true)
+            }, {
+              label: 'Export full version',
+              onClick: () => getOnExport(false)
+            }]} />
+      </div>
+    );
+  }
 
-  renderProfileButton = () => (
-    <BasicButton
-        onClick={() => {
-          this.props.history.push(Routes.PERSON_DETAILS.replace(':personId', this.props.personId));
-        }}>
-      Go to Profile
-    </BasicButton>
-  )
+  renderProfileButton = () => {
+    const { history, personId } = this.props;
+    return (
+      <BasicButton
+          onClick={() => {
+            history.push(Routes.PERSON_DETAILS.replace(':personId', personId));
+          }}>
+        Go to Profile
+      </BasicButton>
+    );
+  }
 
-  renderSetHearingButton = () => (
-    <InfoButton onClick={() => this.setState({ settingHearing: true })}>
-      {this.state.selectedHearing ? 'View Hearing' : 'Set Hearing'}
-    </InfoButton>
-  );
+  renderSetHearingButton = () => {
+    const { selectedHearing } = this.state;
+    return (
+      <InfoButton onClick={() => this.setState({ settingHearing: true })}>
+        {selectedHearing ? 'View Hearing' : 'Set Hearing'}
+      </InfoButton>
+    );
+  };
 
   render() {
     const {
@@ -478,31 +490,30 @@ class PSASubmittedPage extends React.Component<Props, State> {
       allCases,
       allCharges,
       allHearings,
-      allJudges,
       personId,
       psaId,
       isSubmitting,
       context
     } = this.props;
-
-    if (this.state.settingHearing) {
-      if (!this.state.selectedHearing) {
+    const { settingHearing, selectedHearing } = this.state;
+    const jurisdiction = JURISDICTION[context];
+    if (settingHearing) {
+      if (!selectedHearing) {
         return (
-          <SelectHearingsContainer
-              PSASubmittedPage
+          <NewHearingSection
               submitting={isSubmitting}
-              context={context}
+              jurisdiction={jurisdiction}
               personId={personId}
               psaId={psaId}
               hearings={allHearings}
-              allJudges={allJudges}
-              onSubmit={selectedHearing => this.setState({ selectedHearing })} />
+              manuallyCreatingHearing
+              onSubmit={hearing => this.setState({ selectedHearing: hearing })} />
         );
       }
 
       return (
         <SelectedHearingInfo
-            hearing={this.state.selectedHearing}
+            hearing={selectedHearing}
             onClose={() => this.setState({ settingHearing: false })} />
       );
     }
@@ -543,7 +554,7 @@ class PSASubmittedPage extends React.Component<Props, State> {
           </ButtonRow>
           <FooterButtonGroup>
             {this.renderSetHearingButton()}
-            <BasicButton onClick={onClose}><img src={closeXGrayIcon} role="presentation" /></BasicButton>
+            <BasicButton onClick={onClose}><img src={closeXGrayIcon} alt="" /></BasicButton>
           </FooterButtonGroup>
         </FooterRow>
       </Wrapper>

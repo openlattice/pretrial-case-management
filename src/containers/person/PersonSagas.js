@@ -8,7 +8,13 @@ import LatticeAuth from 'lattice-auth';
 
 import { EntityDataModelApi, SearchApi } from 'lattice';
 import { push } from 'react-router-redux';
-import { all, call, put, take, takeEvery } from 'redux-saga/effects';
+import {
+  all,
+  call,
+  put,
+  take,
+  takeEvery
+} from 'redux-saga/effects';
 
 import { toISODate, formatDate } from '../../utils/FormattingUtils';
 import { submit } from '../../utils/submit/SubmitActionFactory';

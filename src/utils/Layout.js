@@ -258,12 +258,13 @@ export const InfoItem = styled.div`
 export const ChargesWrapper = styled.div`
   font-size: 14px;
   text-align: left;
-  margin: 0 -30px -5px;
+  margin: ${props => (props.modal ? '0 -30px -5px' : 0)};
   display: inline-block;
-  width: ${props => (props.modal ? 'calc(100% + 60px)' : '110%')};
+  width: ${props => (props.modal ? 'calc(100% + 60px)' : '100%')};
 `;
 
 export const ChargesTable = styled.table`
+  padding: ${props => (props.modal ? 0 : '0 30px')};
   width: 100%;
 `;
 
@@ -455,10 +456,12 @@ export const Title = styled.div`
   flex-direction: column;
   font-family: 'Open Sans', sans-serif;
   font-size: 16px;
+  font-weight: 400;
   color: ${OL.GREY01};
   margin: 20px 0;
 
   span:first-child {
+    font-size: ${props => (props.withSubtitle ? 16 : 20)}px;
     font-weight: ${props => (props.withSubtitle ? '600' : '400')};
     padding-bottom: 5px;
   }
@@ -495,4 +498,43 @@ export const AlternateSectionHeader = styled.div`
   padding: 30px 0 20px 30px;
   font-weight: 600;
   color: #555e6f;
+`;
+
+export const Wrapper = styled.div`
+  display: flex;
+  flex: 1 1 auto;
+  flex-wrap: wrap;
+  height: 100%;
+`;
+
+export const StyledColumn = styled.div`
+  width: 960px;
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+`;
+
+export const StyledColumnRowWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 20px;
+  max-width: 960px;
+  background: ${OL.WHITE};
+  border-radius: 5px;
+`;
+
+export const StyledColumnRow = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  width: 100%;
+  border-radius: 5px;
+  background-color: ${OL.WHITE};
+  border: solid 1px ${OL.GREY11};
+`;
+
+export const SummaryRowWrapper = styled.div`
+  width: 100%;
+  display: grid;
+  grid-template-columns: 66% 33%;
+  margin: 30px 0;
 `;

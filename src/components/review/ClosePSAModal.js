@@ -13,7 +13,7 @@ import { bindActionCreators } from 'redux';
 
 import RadioButton from '../controls/StyledRadioButton';
 import Checkbox from '../controls/StyledCheckbox';
-import StyledInput from '../../components/controls/StyledInput';
+import StyledInput from '../controls/StyledInput';
 import InfoButton from '../buttons/InfoButton';
 import closeX from '../../assets/svg/close-x-gray.svg';
 import psaEditedConfig from '../../config/formconfig/PsaEditedConfig';

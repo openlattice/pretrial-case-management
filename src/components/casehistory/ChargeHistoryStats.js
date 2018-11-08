@@ -10,7 +10,7 @@ import { Title, AlternateSectionHeader, PendingChargeStatus } from '../../utils/
 import { getSummaryStats } from '../../utils/HistoricalChargeUtils';
 
 const ChargeHistoryStatsWrapper = styled.div`
-  padding: ${props => (props.padding ? '0 30px' : '0')};
+  padding: ${props => (props.padding ? '30px 30px' : '0')};
   width: 100%;
   hr {
     margin: ${props => (props.padding ? '0 -30px' : '15px 0')};
@@ -134,7 +134,7 @@ class ChargeHistoryStats extends React.Component<Props, *> {
         <SectionHeader>
           <Title withSubtitle>
             <span>Summary Statistics</span>
-            <span>All current and past cases</span>
+            All current and past cases
           </Title>
           {pendingCharges.size ? this.renderPendingChargeStatus() : null}
         </SectionHeader>

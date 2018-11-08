@@ -24,6 +24,7 @@ type Props = {
   chargeHistory :Map<*, *>,
   loading :boolean,
   modal :boolean,
+  overview :boolean,
 };
 
 const CaseHistory = ({
@@ -33,16 +34,22 @@ const CaseHistory = ({
   chargeHistoryNotForMostRecentPSA,
   chargeHistory,
   loading,
-  modal
+  modal,
+  overview
 } :Props) => {
 
   const pendingCharges = currentPendingCharges(chargeHistoryForMostRecentPSA);
 
   return (
     <CaseHistoryWrapper modal={modal}>
-      <ChargeHistoryStats
-          pendingCharges={pendingCharges}
-          chargeHistory={chargeHistory} />
+      { overview
+        ? null
+        : (
+          <ChargeHistoryStats
+              pendingCharges={pendingCharges}
+              chargeHistory={chargeHistory} />
+        )
+      }
       <CaseHistoryList
           loading={loading}
           title="Pending Cases on Arrest Date for Current PSA"

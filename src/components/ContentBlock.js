@@ -9,6 +9,7 @@ import { FullWidthContainer } from '../utils/Layout';
 import { OL } from '../utils/consts/Colors';
 
 const StyledContentBlock = styled(FullWidthContainer)`
+  display: flex;
   flex-direction: column;
 `;
 
@@ -19,6 +20,7 @@ const StyledContentLabel = styled.div`
   font-stretch: normal;
   line-height: normal;
   letter-spacing: normal;
+  color: ${OL.GREY02};
   text-transform: ${(props) => {
     switch (props.component) {
       case CONTENT_CONSTS.CREATING_HEARING:
@@ -31,7 +33,6 @@ const StyledContentLabel = styled.div`
         );
     }
   }};
-  color: ${OL.GREY02};
   margin-bottom: ${(props) => {
     switch (props.component) {
       case CONTENT_CONSTS.CREATING_HEARING:

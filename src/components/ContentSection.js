@@ -56,6 +56,16 @@ const StyledContentBlockWrapper = styled.div`
              justify-content: flex-end;
            }`
         );
+      case CONTENT_CONSTS.HEARING_CARD:
+        return (
+          `grid-template-columns: repeat(3, 1fr);
+           grid-auto-rows: min-content;
+           grid-column-gap: 2%;
+           grid-row-gap: 20px;
+           :nth-last-child(4) {
+             justify-content: flex-end;
+           }`
+        );
       default:
         return (
           `grid-template-columns: 50% 50%;
@@ -117,6 +127,13 @@ const StyledSectionHeader = styled.div`
           `padding-left: 15px;
            font-size: 16px;`
         );
+      case `${CONTENT_CONSTS.PROFILE}|${CONTENT_CONSTS.ARREST}`:
+        return (
+          `padding: 0 0 30px 30px;
+           margin-bottom: -10px;
+           font-size: 16px;
+          `
+        );
       default:
         return (
           `padding: 30px;
@@ -161,6 +178,15 @@ const StyledSectionBottomBarWrapper = styled.div`
         return (
           'padding: 30px 50px 0 15px;'
         );
+      case `${CONTENT_CONSTS.PROFILE}|${CONTENT_CONSTS.ARREST}`:
+        return (
+          'padding: 0 30px 0 30px;'
+        );
+      case CONTENT_CONSTS.HEARING_CARD:
+        return (
+          `padding: 0;
+           margin-bottom: 0;`
+        );
       default:
         return (
           `padding: 30px 0 0 30px;
@@ -198,7 +224,11 @@ const ContentSection = ({
 
   return (
     <StyledSection>
-      <StyledSectionHeader renderHeader component={component}>{renderHeader}</StyledSectionHeader>
+      {
+        renderHeader
+          ? <StyledSectionHeader renderHeader component={component}>{renderHeader}</StyledSectionHeader>
+          : null
+      }
       <StyledSectionBottomBarWrapper component={component} modifyingHearing={modifyingHearing} >
         {renderPhoto}
         <StyledContentBlockWrapper component={component}>

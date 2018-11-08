@@ -77,7 +77,7 @@ const ArrestCard = ({ arrest, component } :Props) => {
   return (
     <ContentSection
         component={component}
-        header="Arrest" >
+        header="Arrest">
       {content}
     </ContentSection>
   );

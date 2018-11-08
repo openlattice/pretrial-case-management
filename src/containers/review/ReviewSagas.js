@@ -600,22 +600,22 @@ function* updateScoresAndRiskFactorsWorker(action :SequenceAction) :Generator<*,
 
   try {
     const {
-      scoresEntitySetId,
       scoresId,
       scoresEntity,
-      riskFactorsEntitySetId,
       riskFactorsId,
       riskFactorsEntity,
-      dmfEntitySetId,
       dmfId,
       dmfEntity,
-      dmfRiskFactorsEntitySetId,
       dmfRiskFactorsId,
       dmfRiskFactorsEntity,
-      notesEntitySetId,
       notesId,
       notesEntity
     } = action.value;
+    const scoresEntitySetId = yield call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.PSA_SCORES);
+    const riskFactorsEntitySetId = yield call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.PSA_RISK_FACTORS);
+    const dmfEntitySetId = yield call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.DMF_RESULTS);
+    const dmfRiskFactorsEntitySetId = yield call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.DMF_RISK_FACTORS);
+    const notesEntitySetId = yield call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.RELEASE_RECOMMENDATIONS);
 
     const updates = [
       call(DataApi.replaceEntityInEntitySetUsingFqns,
