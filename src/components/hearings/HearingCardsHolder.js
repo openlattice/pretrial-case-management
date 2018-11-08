@@ -10,6 +10,7 @@ import { Constants } from 'lattice';
 import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
 import ContentBlock from '../ContentBlock';
 import ContentSection from '../ContentSection';
+import { NoResults } from '../../utils/Layout';
 import { OL } from '../../utils/consts/Colors';
 import { formatDateTime } from '../../utils/FormattingUtils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
@@ -35,7 +36,7 @@ const Card = styled.div`
 
 
   &:hover {
-    background-color: ${props => (props.selected ? OL.PURPLE06 : OL.GREY12)};
+    background-color: ${props => (props.selected && !props.readOnly ? OL.PURPLE06 : OL.GREY12)};
     cursor: pointer;
   }
 `;
@@ -58,6 +59,8 @@ const NoHearings = styled.div`
 type Props = {
   hearings :Immutable.List<*>,
   hearingsWithOutcomes :Immutable.List<*>,
+  readOnly :boolean,
+  noHearingsMessage :string,
   selectedHearing :Object,
   handleSelect :(row :Immutable.Map<*, *>, hearingId :string, entityKeyId :string) => void
 }
@@ -65,12 +68,14 @@ type Props = {
 const HearingCardsHolder = ({
   hearings,
   handleSelect,
+  readOnly,
+  noHearingsMessage,
   selectedHearing,
   hearingsWithOutcomes
 } :Props) => {
 
   if (!hearings.size) {
-    return <div>No hearings found.</div>;
+    return <NoResults>{noHearingsMessage || 'No hearings found.'}</NoResults>;
   }
 
   const hearingOptions = hearings.map((hearing) => {
@@ -109,6 +114,7 @@ const HearingCardsHolder = ({
       <Card
           onClick={() => handleSelect(hearing, hearingId, entityKeyId)}
           key={`${dateTime}${courtroom}${entityKeyId}`}
+          readOnly={readOnly}
           selected={selected}>
         { needsAttention ? <Notification /> : null }
         <ContentSection component={CONTENT_CONSTS.HEARING_CARD}>
