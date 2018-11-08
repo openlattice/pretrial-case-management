@@ -130,7 +130,7 @@ const PersonOverview = ({
                 viewOnly
                 title="Upcoming Hearings"
                 hearings={scheduledHearings}
-                noHearingsMessage="No Future Hearings" />
+                noHearingsMessage="There are no upcoming hearings." />
           </StyledColumnRowWithPadding>
         </StyledColumnRowWrapper>
         <StyledColumnRowWrapper>
