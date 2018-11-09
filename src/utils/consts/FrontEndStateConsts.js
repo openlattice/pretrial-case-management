@@ -148,7 +148,8 @@ export const SEARCH = {
   NUM_CASES_LOADED: 'numCasesLoaded',
   SEARCH_HAS_RUN: 'searchHasRun',
   CREATING_PERSON: 'isCreatingPerson',
-  CREATE_PERSON_ERROR: 'createPersonError'
+  CREATE_PERSON_ERROR: 'createPersonError',
+  CASE_LOADS_COMPLETE: 'caseLoadsComplete'
 };
 
 // Submit
