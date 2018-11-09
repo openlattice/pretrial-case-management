@@ -16,7 +16,7 @@ import SecondaryButton from '../../components/buttons/SecondaryButton';
 import PersonTable from '../../components/people/PersonTable';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import NoSearchResults from '../../components/people/NoSearchResults';
-import { clearSearchResults, searchPeopleRequest } from './PersonActionFactory';
+import { clearSearchResults, searchPeople } from './PersonActionFactory';
 import { toISODate } from '../../utils/FormattingUtils';
 import { StyledFormViewWrapper, StyledSectionWrapper, StyledFormWrapper } from '../../utils/Layout';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
@@ -106,7 +106,7 @@ const SearchResultsWrapper = styled(StyledSectionWrapper)`
 type Props = {
   actions :{
     clearSearchResults :Function,
-    searchPeopleRequest :Function
+    searchPeople :Function
   },
   isLoadingPeople :boolean,
   searchHasRun :boolean,
@@ -147,10 +147,10 @@ class SearchPeopleContainer extends React.Component<Props, State> {
     onSelectPerson(person, entityKeyId, personId);
   }
 
-  handleOnSubmitSearch = (firstName, lastName, dob) => {
+  handleOnSubmitSearch = ({ firstName, lastName, dob }) => {
     const { actions } = this.props;
     if (firstName.length || lastName.length || dob) {
-      actions.searchPeopleRequest(firstName, lastName, dob);
+      actions.searchPeople({ firstName, lastName, dob });
       this.setState({ firstName, lastName, dob });
     }
   }
@@ -317,7 +317,7 @@ function mapStateToProps(state :Immutable.Map<*, *>) :Object {
 function mapDispatchToProps(dispatch :Function) :Object {
 
   return {
-    actions: bindActionCreators({ clearSearchResults, searchPeopleRequest }, dispatch)
+    actions: bindActionCreators({ clearSearchResults, searchPeople }, dispatch)
   };
 }
 
