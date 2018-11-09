@@ -28,8 +28,7 @@ type Props = {
   loadingPSAData :boolean,
   psaNeighborsById :Immutable.Map<*, *>,
   actions :{
-    loadPSAsByDate :(filter :string) => void,
-    searchPeopleRequest :(firstName :string, lastName :string, dob :string) => void
+    loadPSAsByDate :(filter :string) => void
   }
 };
 
