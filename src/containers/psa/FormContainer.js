@@ -313,6 +313,7 @@ type Props = {
   selectedPretrialCase :Immutable.Map<*, *>,
   allJudges :Immutable.List<*>,
   arrestOptions :Immutable.List<*>,
+  caseLoadsComplete :boolean,
   charges :Immutable.List<*>,
   allCasesForPerson :Immutable.List<*>,
   allChargesForPerson :Immutable.List<*>,
@@ -719,6 +720,7 @@ class Form extends React.Component<Props, State> {
 
   getSelectArrestSection = () => {
     const {
+      caseLoadsComplete,
       selectedPersonId,
       isLoadingCases,
       isLoadingNeighbors,
@@ -752,7 +754,7 @@ class Form extends React.Component<Props, State> {
         </LoadingContainer>);
     }
 
-    if (isLoadingNeighbors) {
+    if (isLoadingNeighbors || !caseLoadsComplete) {
       return <LoadingSpinner />;
     }
 
@@ -1004,7 +1006,8 @@ function mapStateToProps(state :Immutable.Map<*, *>) :Object {
     [SEARCH.SELECTED_PERSON_ID]: search.get(SEARCH.SELECTED_PERSON_ID),
     isLoadingCases: search.get(SEARCH.LOADING_CASES),
     [SEARCH.NUM_CASES_TO_LOAD]: search.get(SEARCH.NUM_CASES_TO_LOAD),
-    [SEARCH.NUM_CASES_LOADED]: search.get(SEARCH.NUM_CASES_LOADED)
+    [SEARCH.NUM_CASES_LOADED]: search.get(SEARCH.NUM_CASES_LOADED),
+    [SEARCH.CASE_LOADS_COMPLETE]: search.get(SEARCH.CASE_LOADS_COMPLETE)
   };
 }
 
