@@ -23,9 +23,10 @@ const INITIAL_STATE :Immutable.Map<*, *> = Immutable.fromJS({
   [SEARCH.LOADING_CASES]: false,
   [SEARCH.NUM_CASES_TO_LOAD]: 0,
   [SEARCH.NUM_CASES_LOADED]: 0,
+  [SEARCH.CASE_LOADS_COMPLETE]: false,
   [SEARCH.SEARCH_HAS_RUN]: false,
   [SEARCH.CREATING_PERSON]: false,
-  [SEARCH.CREATE_PERSON_ERROR]: false
+  [SEARCH.CREATE_PERSON_ERROR]: false,
 });
 
 export default function searchReducer(state = INITIAL_STATE, action) {
@@ -102,6 +103,7 @@ export default function searchReducer(state = INITIAL_STATE, action) {
           if (numCasesToLoad === numCasesLoaded) {
             newState = state
               .set(SEARCH.LOADING_CASES, false)
+              .set(SEARCH.CASE_LOADS_COMPLETE, true)
               .set(SEARCH.NUM_CASES_TO_LOAD, 0)
               .set(SEARCH.NUM_CASES_LOADED, 0);
           }
