@@ -18,7 +18,7 @@ import LoadingSpinner from '../../components/LoadingSpinner';
 import NavButtonToolbar from '../../components/buttons/NavButtonToolbar';
 import DropDownMenu from '../../components/StyledSelect';
 import { getFormattedPeople } from '../../utils/PeopleUtils';
-import { searchPeopleRequest } from '../person/PersonActionFactory';
+import { searchPeople } from '../person/PersonActionFactory';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { DOMAIN_OPTIONS_ARR } from '../../utils/consts/ReviewPSAConsts';
 import { OL } from '../../utils/consts/Colors';
@@ -75,7 +75,7 @@ type Props = {
   psaNeighborsById :Immutable.Map<*, *>,
   actions :{
     loadPSAsByDate :(filter :string) => void,
-    searchPeopleRequest :(firstName :string, lastName :string, dob :string) => void
+    searchPeople :(value :{firstName :string, lastName :string, dob :string}) => void
   }
 };
 
@@ -110,7 +110,7 @@ class PeopleContainer extends React.Component<Props, State> {
     return (
       <div>
         <SearchBox>
-          <PersonSearchFields handleSubmit={actions.searchPeopleRequest} />
+          <PersonSearchFields handleSubmit={actions.searchPeople} />
         </SearchBox>
         <PeopleList
             people={formattedPeople}
@@ -262,7 +262,7 @@ function mapStateToProps(state) {
 }
 
 function mapDispatchToProps(dispatch) {
-  const actions :{ [string] :Function } = { searchPeopleRequest };
+  const actions :{ [string] :Function } = { searchPeople };
 
   return {
     actions: {

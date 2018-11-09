@@ -182,7 +182,6 @@ type Props = {
     loadPSAsByDate :(filter :string) => void,
     refreshPSANeighbors :({ id :string }) => void,
     replaceEntity :(value :{ entitySetName :string, entityKeyId :string, values :Object }) => void,
-    searchPeopleRequest :(firstName :string, lastName :string, dob :string) => void,
     submit :(value :{ config :Object, values :Object}) => void,
     loadPSAData :(psaIds :string[]) => void
   }

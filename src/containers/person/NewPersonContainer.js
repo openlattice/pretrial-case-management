@@ -22,7 +22,7 @@ import SearchableSelect from '../../components/controls/SearchableSelect';
 import { GENDERS, STATES } from '../../utils/consts/Consts';
 import { toISODate } from '../../utils/FormattingUtils';
 import { StyledFormWrapper, StyledSectionWrapper } from '../../utils/Layout';
-import { newPersonSubmitRequest } from './PersonActionFactory';
+import { newPersonSubmit } from './PersonActionFactory';
 import { clearForm } from '../psa/FormActionFactory';
 import { STATE, SEARCH } from '../../utils/consts/FrontEndStateConsts';
 import { OL } from '../../utils/consts/Colors';
@@ -142,7 +142,7 @@ const ErrorMessage = styled.div`
 
 type Props = {
   actions :{
-    newPersonSubmitRequest :Function,
+    newPersonSubmit :Function,
     clearForm :Function
   },
   location :{
@@ -268,37 +268,38 @@ class NewPersonContainer extends React.Component<Props, State> {
   }
 
   submitNewPerson = () => {
-    let firstName;
-    let middleName;
-    let lastName;
+    const { actions } = this.props;
+    const { state } = this;
+    const config = newPersonSubmissionConfig;
 
     if (this.selfieWebCam) {
       this.selfieWebCam.closeMediaStream();
     }
-    this.state[FIRST_NAME_VALUE] ? firstName = this.state[FIRST_NAME_VALUE].toUpperCase() : null;
-    this.state[MIDDLE_NAME_VALUE] ? middleName = this.state[MIDDLE_NAME_VALUE].toUpperCase() : null;
-    this.state[LAST_NAME_VALUE] ? lastName = this.state[LAST_NAME_VALUE].toUpperCase() : null;
+
+    const firstName = state[FIRST_NAME_VALUE] ? state[FIRST_NAME_VALUE].toUpperCase() : undefined;
+    const middleName = state[MIDDLE_NAME_VALUE] ? state[MIDDLE_NAME_VALUE].toUpperCase() : undefined;
+    const lastName = state[LAST_NAME_VALUE] ? state[LAST_NAME_VALUE].toUpperCase() : undefined;
 
     const values = {
-      [ADDRESS_VALUE]: this.state[ADDRESS_VALUE] || null,
-      [CITY_VALUE]: this.state[CITY_VALUE],
-      [COUNTRY_VALUE]: this.state[COUNTRY_VALUE] || null,
-      [DOB_VALUE]: this.state[DOB_VALUE] || null,
-      [ETHNICITY_VALUE]: this.state[ETHNICITY_VALUE] || null,
+      [ADDRESS_VALUE]: state[ADDRESS_VALUE] || null,
+      [CITY_VALUE]: state[CITY_VALUE],
+      [COUNTRY_VALUE]: state[COUNTRY_VALUE] || null,
+      [DOB_VALUE]: state[DOB_VALUE] || null,
+      [ETHNICITY_VALUE]: state[ETHNICITY_VALUE] || null,
       [FIRST_NAME_VALUE]: firstName,
-      [GENDER_VALUE]: this.state[GENDER_VALUE] || null,
+      [GENDER_VALUE]: state[GENDER_VALUE] || null,
       [LAST_NAME_VALUE]: lastName,
       [MIDDLE_NAME_VALUE]: middleName,
-      [PICTURE_VALUE]: this.state[PICTURE_VALUE] || null,
-      [RACE_VALUE]: this.state[RACE_VALUE] || null,
-      [SSN_VALUE]: this.state[SSN_VALUE] || null,
-      [STATE_VALUE]: this.state[STATE_VALUE] || null,
-      [ZIP_VALUE]: this.state[ZIP_VALUE] || null,
+      [PICTURE_VALUE]: state[PICTURE_VALUE] || null,
+      [RACE_VALUE]: state[RACE_VALUE] || null,
+      [SSN_VALUE]: state[SSN_VALUE] || null,
+      [STATE_VALUE]: state[STATE_VALUE] || null,
+      [ZIP_VALUE]: state[ZIP_VALUE] || null,
       [ID_VALUE]: uuid(),
       [LIVES_AT_ID_VALUE]: uuid()
     };
 
-    this.props.actions.newPersonSubmitRequest(newPersonSubmissionConfig, values);
+    actions.newPersonSubmit({ config, values });
   }
 
   getOptionsMap = valueList => valueList.map(value => <option key={value} value={value}>{value}</option>);
@@ -479,7 +480,7 @@ function mapStateToProps(state :Immutable.Map<*, *>) :Object {
 function mapDispatchToProps(dispatch :Function) :Object {
 
   return {
-    actions: bindActionCreators({ newPersonSubmitRequest, clearForm }, dispatch)
+    actions: bindActionCreators({ newPersonSubmit, clearForm }, dispatch)
   };
 }
 
