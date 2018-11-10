@@ -276,9 +276,9 @@ class NewPersonContainer extends React.Component<Props, State> {
       this.selfieWebCam.closeMediaStream();
     }
 
-    const firstName = state[FIRST_NAME_VALUE] ? state[FIRST_NAME_VALUE].toUpperCase() : undefined;
-    const middleName = state[MIDDLE_NAME_VALUE] ? state[MIDDLE_NAME_VALUE].toUpperCase() : undefined;
-    const lastName = state[LAST_NAME_VALUE] ? state[LAST_NAME_VALUE].toUpperCase() : undefined;
+    const firstName = state[FIRST_NAME_VALUE] ? state[FIRST_NAME_VALUE].toUpperCase() : null;
+    const middleName = state[MIDDLE_NAME_VALUE] ? state[MIDDLE_NAME_VALUE].toUpperCase() : null;
+    const lastName = state[LAST_NAME_VALUE] ? state[LAST_NAME_VALUE].toUpperCase() : null;
 
     const values = {
       [ADDRESS_VALUE]: state[ADDRESS_VALUE] || null,
