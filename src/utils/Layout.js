@@ -344,7 +344,7 @@ export const ScaleBlock = styled.span`
 `;
 
 export const SelectedScaleBlock = styled(ScaleBlock)`
-  background-color: ${OL.GREY03}
+  background-color: ${OL.GREY03};
   font-weight: ${props => (props.isScore ? 'bold' : 'normal')};
 
   &:not(:first-child) {
