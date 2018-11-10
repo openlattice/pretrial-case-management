@@ -87,7 +87,7 @@ function* loadPersonDetailsWorker(action) :Generator<*, *, *> {
     if (shouldLoadCases && !__ENV_DEV__) {
       yield call(loadCaseHistory, entityKeyId);
       const response = yield call(SearchApi.searchEntityNeighbors, entitySetId, entityKeyId);
-      const caseNums = response.filter((neighborObj) => {
+      const caseNums = (response || []).filter((neighborObj) => {
         const { neighborEntitySet, neighborDetails } = neighborObj;
         return neighborEntitySet && neighborDetails && neighborEntitySet.name === ENTITY_SETS.PRETRIAL_CASES;
       });
