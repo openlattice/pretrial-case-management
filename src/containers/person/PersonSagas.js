@@ -77,14 +77,14 @@ function* loadPersonId(person) :Generator<*, *, *> {
 }
 
 function* loadPersonDetailsWorker(action) :Generator<*, *, *> {
-  // while (true) {
+
   try {
     const { entityKeyId, shouldLoadCases } = action.value;
     yield put(loadPersonDetails.request(action.id, { entityKeyId }));
     const entitySetId :string = yield call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.PEOPLE);
 
     // <HACK>
-    if (shouldLoadCases) {
+    if (shouldLoadCases && !__ENV_DEV__) {
       yield call(loadCaseHistory, entityKeyId);
       const response = yield call(SearchApi.searchEntityNeighbors, entitySetId, entityKeyId);
       const caseNums = response.filter((neighborObj) => {
@@ -99,7 +99,8 @@ function* loadPersonDetailsWorker(action) :Generator<*, *, *> {
           .filter((caseNum, index, arr) => arr.indexOf(caseNum) === index);
 
         let caseNumSearchBlocks = [];
-        const searchSize = 20;
+        const MAX_PARALLEL_SEARCHES = 20;
+        const searchSize = Math.ceil(caseNumRequests.length / MAX_PARALLEL_SEARCHES);
         let i = 0;
         for (i = 0; i < caseNumRequests.length; i += searchSize) {
           const subArr = caseNumRequests.slice(i, i + searchSize);
@@ -125,7 +126,6 @@ function* loadPersonDetailsWorker(action) :Generator<*, *, *> {
     console.error(error);
     yield put(loadPersonDetails.failure(action.id, error));
   }
-  // }
 
 }
 
