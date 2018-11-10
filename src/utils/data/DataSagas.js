@@ -17,7 +17,7 @@ import {
   replaceEntity
 } from './DataActionFactory';
 
-import { loadPersonDetailsRequest } from '../../containers/person/PersonActionFactory';
+import { loadPersonDetails } from '../../containers/person/PersonActionFactory';
 import { STATE, SEARCH } from '../consts/FrontEndStateConsts';
 
 function* deleteEntityWorker(action :SequenceAction) :Generator<*, *, *> {
@@ -33,7 +33,7 @@ function* deleteEntityWorker(action :SequenceAction) :Generator<*, *, *> {
 
     const state = yield select();
     const personId = state.getIn([STATE.SEARCH, SEARCH.SELECTED_PERSON_ID], '');
-    if (personId) yield put(loadPersonDetailsRequest(personId, false));
+    if (personId) yield put(loadPersonDetails({ entityKeyId: personId, shouldLoadCases: false }));
   }
   catch (error) {
     yield put(deleteEntity.failure(action.id, { entityKeyId, error }));
@@ -61,7 +61,7 @@ function* replaceEntityWorker(action :SequenceAction) :Generator<*, *, *> {
 
     const state = yield select();
     const personId = state.getIn([STATE.SEARCH, SEARCH.SELECTED_PERSON_ID], '');
-    if (personId) yield put(loadPersonDetailsRequest(personId, false));
+    if (personId) yield put(loadPersonDetails({ entityKeyId: personId, shouldLoadCases: false }));
   }
   catch (error) {
     yield put(replaceEntity.failure(action.id, { entityKeyId, error }));

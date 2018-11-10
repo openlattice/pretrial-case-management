@@ -5,23 +5,16 @@
 import Immutable from 'immutable';
 
 import {
-  CLEAR_SEARCH_RESULTS,
-  LOAD_PERSON_DETAILS_FAILURE,
-  LOAD_PERSON_DETAILS_REQUEST,
-  LOAD_PERSON_DETAILS_SUCCESS,
-  NEW_PERSON_SUBMIT_FAILURE,
-  NEW_PERSON_SUBMIT_REQUEST,
-  NEW_PERSON_SUBMIT_SUCCESS,
-  SEARCH_PEOPLE_FAILURE,
-  SEARCH_PEOPLE_REQUEST,
-  SEARCH_PEOPLE_SUCCESS,
-  UPDATE_CASE_FAILURE,
-  UPDATE_CASE_REQUEST,
-  UPDATE_CASE_SUCCESS
+  clearSearchResults,
+  loadPersonDetails,
+  newPersonSubmit,
+  searchPeople,
+  updateCases,
 } from './PersonActionFactory';
 
-import type { Action } from './PersonActionFactory';
 import { SEARCH } from '../../utils/consts/FrontEndStateConsts';
+
+declare var __ENV_DEV__ :boolean;
 
 const INITIAL_STATE :Immutable.Map<*, *> = Immutable.fromJS({
   [SEARCH.LOADING]: false,
@@ -32,72 +25,113 @@ const INITIAL_STATE :Immutable.Map<*, *> = Immutable.fromJS({
   [SEARCH.LOADING_CASES]: false,
   [SEARCH.NUM_CASES_TO_LOAD]: 0,
   [SEARCH.NUM_CASES_LOADED]: 0,
+  [SEARCH.CASE_LOADS_COMPLETE]: false,
   [SEARCH.SEARCH_HAS_RUN]: false,
   [SEARCH.CREATING_PERSON]: false,
-  [SEARCH.CREATE_PERSON_ERROR]: false
+  [SEARCH.CREATE_PERSON_ERROR]: false,
 });
 
-export default function searchReducer(state :Immutable.Map<*, *> = INITIAL_STATE, action :Action) {
+export default function searchReducer(state = INITIAL_STATE, action) {
 
   switch (action.type) {
 
-    case CLEAR_SEARCH_RESULTS:
-      return state
-        .set(SEARCH.SEARCH_RESULTS, Immutable.List())
-        .set(SEARCH.PERSON_DETAILS, Immutable.List())
-        .set(SEARCH.SEARCH_HAS_RUN, false)
-        .set(SEARCH.LOADING, false);
+    case clearSearchResults.case(action.type): {
+      return clearSearchResults.reducer(state, action, {
+        SUCCESS: () => state
+          .set(SEARCH.SEARCH_RESULTS, Immutable.List())
+          .set(SEARCH.PERSON_DETAILS, Immutable.List())
+          .set(SEARCH.SEARCH_HAS_RUN, false)
+          .set(SEARCH.LOADING, false)
+      });
+    }
 
-    case SEARCH_PEOPLE_REQUEST:
-      return state.set(SEARCH.LOADING, true).set(SEARCH.SEARCH_ERROR, false);
+    case searchPeople.case(action.type): {
+      return searchPeople.reducer(state, action, {
+        REQUEST: () => state
+          .set(SEARCH.LOADING, true)
+          .set(SEARCH.SEARCH_ERROR, false),
+        SUCCESS: () => state
+          .set(SEARCH.SEARCH_RESULTS, Immutable.fromJS(action.value.hits))
+          .set(SEARCH.LOADING, false)
+          .set(SEARCH.SEARCH_HAS_RUN, true)
+          .set(SEARCH.SEARCH_ERROR, false),
+        FAILURE: () => state
+          .set(SEARCH.LOADING, false)
+          .set(SEARCH.SEARCH_ERROR, true),
+        FINALLY: () => state.set(SEARCH.LOADING, false)
+      });
+    }
 
-    case SEARCH_PEOPLE_FAILURE:
-      return state.set(SEARCH.LOADING, false).set(SEARCH.SEARCH_ERROR, true);
+    case loadPersonDetails.case(action.type): {
+      return loadPersonDetails.reducer(state, action, {
+        REQUEST: () => {
+          const { entityKeyId } = action.value;
+          return state.set(SEARCH.SELECTED_PERSON_ID, entityKeyId);
+        },
+        SUCCESS: () => {
+          const { response } = action.value;
+          let newState = state.set(SEARCH.PERSON_DETAILS, Immutable.fromJS(response));
+          if (__ENV_DEV__) {
+            newState = newState.set(SEARCH.CASE_LOADS_COMPLETE, true);
+          }
+          return newState;
+        },
+        FAILURE: () => state
+          .set(SEARCH.PERSON_DETAILS, Immutable.List())
+          .set(SEARCH.LOADING_CASES, false)
+          .set(SEARCH.NUM_CASES_TO_LOAD, 0)
+          .set(SEARCH.NUM_CASES_LOADED, 0),
+      });
+    }
 
-    case SEARCH_PEOPLE_SUCCESS:
-      return state
-        .set(SEARCH.SEARCH_RESULTS, Immutable.fromJS(action.searchResults.hits))
-        .set(SEARCH.LOADING, false)
-        .set(SEARCH.SEARCH_HAS_RUN, true)
-        .set(SEARCH.SEARCH_ERROR, false);
+    case updateCases.case(action.type): {
+      return updateCases.reducer(state, action, {
+        REQUEST: () => {
+          const { cases } = action.value;
+          return state
+            .set(SEARCH.NUM_CASES_TO_LOAD, state.get(SEARCH.NUM_CASES_TO_LOAD) + cases.length)
+            .set(SEARCH.LOADING_CASES, true);
+        },
+        SUCCESS: () => {
+          const { cases } = action.value;
+          return state
+            .set(SEARCH.NUM_CASES_LOADED, state.get(SEARCH.NUM_CASES_LOADED) + cases.length)
+            .set(SEARCH.LOADING_CASES, true);
+        },
+        FAILURE: () => {
+          const { cases } = action.value;
+          return state.set(SEARCH.NUM_CASES_LOADED, state.get(SEARCH.NUM_CASES_LOADED) + cases.length);
+        },
+        FINALLY: () => {
+          let newState = state;
+          const numCasesToLoad = state.get(SEARCH.NUM_CASES_TO_LOAD);
+          const numCasesLoaded = state.get(SEARCH.NUM_CASES_LOADED);
+          if (numCasesToLoad === numCasesLoaded) {
+            newState = state
+              .set(SEARCH.LOADING_CASES, false)
+              .set(SEARCH.CASE_LOADS_COMPLETE, true)
+              .set(SEARCH.NUM_CASES_TO_LOAD, 0)
+              .set(SEARCH.NUM_CASES_LOADED, 0);
+          }
+          return newState;
+        }
+      });
+    }
 
-    case LOAD_PERSON_DETAILS_REQUEST:
-      return state.set(SEARCH.SELECTED_PERSON_ID, action.id).set(SEARCH.LOADING_CASES, true);
-
-    case LOAD_PERSON_DETAILS_SUCCESS:
-      return state
-        .set(SEARCH.PERSON_DETAILS, Immutable.fromJS(action.details))
-        .set(SEARCH.LOADING_CASES, false)
-        .set(SEARCH.NUM_CASES_TO_LOAD, 0)
-        .set(SEARCH.NUM_CASES_LOADED, 0);
-
-    case LOAD_PERSON_DETAILS_FAILURE:
-      return state
-        .set(SEARCH.PERSON_DETAILS, Immutable.List())
-        .set(SEARCH.LOADING_CASES, false)
-        .set(SEARCH.NUM_CASES_TO_LOAD, 0)
-        .set(SEARCH.NUM_CASES_LOADED, 0);
-
-
-    case UPDATE_CASE_REQUEST:
-      return state
-        .set(SEARCH.NUM_CASES_TO_LOAD, state.get(SEARCH.NUM_CASES_TO_LOAD) + 1)
-        .set(SEARCH.LOADING_CASES, true);
-
-    case UPDATE_CASE_SUCCESS:
-      return state.set(SEARCH.NUM_CASES_LOADED, state.get(SEARCH.NUM_CASES_LOADED) + 1);
-
-    case UPDATE_CASE_FAILURE:
-      return state.set(SEARCH.NUM_CASES_LOADED, state.get(SEARCH.NUM_CASES_LOADED) + 1);
-
-    case NEW_PERSON_SUBMIT_FAILURE:
-      return state.set(SEARCH.CREATING_PERSON, false).set(SEARCH.CREATE_PERSON_ERROR, true);
-
-    case NEW_PERSON_SUBMIT_REQUEST:
-      return state.set(SEARCH.CREATING_PERSON, true).set(SEARCH.CREATE_PERSON_ERROR, false);
-
-    case NEW_PERSON_SUBMIT_SUCCESS:
-      return state.set(SEARCH.CREATING_PERSON, false).set(SEARCH.CREATE_PERSON_ERROR, false);
+    case newPersonSubmit.case(action.type): {
+      return newPersonSubmit.reducer(state, action, {
+        REQUEST: () => state
+          .set(SEARCH.CREATING_PERSON, true)
+          .set(SEARCH.CREATE_PERSON_ERROR, false),
+        SUCCESS: () => state
+          .set(SEARCH.CREATING_PERSON, false)
+          .set(SEARCH.CREATE_PERSON_ERROR, false),
+        FAILURE: () => state
+          .set(SEARCH.CREATING_PERSON, false)
+          .set(SEARCH.CREATE_PERSON_ERROR, true),
+        FINALLY: () => state.set(SEARCH.CREATING_PERSON, false)
+      });
+    }
 
     default:
       return state;

@@ -27,7 +27,7 @@ type Props = {
   firstName :string,
   lastName :string,
   dob :string,
-  handleSubmit :(firstName :string, lastName :string, dob :string) => void,
+  handleSubmit :(value :{firstName :string, lastName :string, dob :string}) => void,
 };
 
 type State = {
@@ -51,8 +51,9 @@ export default class PersonSearchFields extends React.Component<Props, State> {
   }
 
   handleSubmit = () => {
+    const { handleSubmit } = this.props;
     const { firstName, lastName, dob } = this.state;
-    this.props.handleSubmit(firstName, lastName, dob);
+    handleSubmit({ firstName, lastName, dob });
   }
 
   handleKeyPress = (e) => {
