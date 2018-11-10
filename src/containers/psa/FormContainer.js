@@ -40,6 +40,7 @@ import exportPDF from '../../utils/PDFUtils';
 import psaConfig from '../../config/formconfig/PsaConfig';
 import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
 import { OL } from '../../utils/consts/Colors';
+import { getEntityKeyId } from '../../utils/DataUtils';
 import { toISODateTime } from '../../utils/FormattingUtils';
 import { getScoresAndRiskFactors, calculateDMF, getDMFRiskFactors } from '../../utils/ScoringUtils';
 import { tryAutofillFields } from '../../utils/AutofillUtils';
@@ -693,10 +694,10 @@ class Form extends React.Component<Props, State> {
     } = this.props;
     const { status } = this.state;
     const PSAScores = status === STATUS_OPTIONS_FOR_PENDING_PSAS.OPEN.label
-      ? allPSAs.filter(scores => openPSAs.has(scores.getIn([OPENLATTICE_ID_FQN, 0])))
+      ? allPSAs.filter(scores => openPSAs.has(getEntityKeyId(scores)))
       : allPSAs;
     if (!PSAScores.size) return null;
-    const scoreSeq = PSAScores.map(obj => ([obj.getIn([OPENLATTICE_ID_FQN, 0]), obj]));
+    const scoreSeq = PSAScores.map(scores => ([getEntityKeyId(scores), scores]));
     return (
       <CenteredListWrapper>
         {this.renderPendingPSAsHeader()}
