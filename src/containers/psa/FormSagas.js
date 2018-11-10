@@ -1,7 +1,7 @@
 /*
  * @flow
  */
-
+import { List } from 'immutable';
 import { Constants, EntityDataModelApi, SearchApi } from 'lattice';
 import { call, put, takeEvery, all } from 'redux-saga/effects';
 
@@ -46,6 +46,7 @@ function* loadDataModelWatcher() :Generator<*, *, *> {
 }
 
 const getOpenPSAIds = (neighbors) => {
+  if (!neighbors) return [];
   return neighbors.filter((neighbor) => {
     if (neighbor.neighborEntitySet && neighbor.neighborEntitySet.name === ENTITY_SETS.PSA_SCORES) {
       const statusValues = neighbor.neighborDetails[PROPERTY_TYPES.STATUS];
@@ -58,6 +59,7 @@ const getOpenPSAIds = (neighbors) => {
 };
 
 const getAllPSAIds = (neighbors) => {
+  if (!neighbors) return [];
   return neighbors.filter((neighbor) => {
     if (neighbor.neighborEntitySet && neighbor.neighborEntitySet.name === ENTITY_SETS.PSA_SCORES) {
       const statusValues = neighbor.neighborDetails[PROPERTY_TYPES.STATUS];
