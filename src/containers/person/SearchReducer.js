@@ -14,6 +14,8 @@ import {
 
 import { SEARCH } from '../../utils/consts/FrontEndStateConsts';
 
+declare var __ENV_DEV__ :boolean;
+
 const INITIAL_STATE :Immutable.Map<*, *> = Immutable.fromJS({
   [SEARCH.LOADING]: false,
   [SEARCH.SEARCH_RESULTS]: Immutable.List(),
@@ -68,7 +70,11 @@ export default function searchReducer(state = INITIAL_STATE, action) {
         },
         SUCCESS: () => {
           const { response } = action.value;
-          return state.set(SEARCH.PERSON_DETAILS, Immutable.fromJS(response));
+          let newState = state.set(SEARCH.PERSON_DETAILS, Immutable.fromJS(response));
+          if (__ENV_DEV__) {
+            newState = newState.set(SEARCH.CASE_LOADS_COMPLETE, true);
+          }
+          return newState;
         },
         FAILURE: () => state
           .set(SEARCH.PERSON_DETAILS, Immutable.List())
