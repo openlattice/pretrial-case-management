@@ -2,262 +2,32 @@
  * @flow
  */
 
-const LOAD_PERSON_DETAILS_FAILURE :'LOAD_PERSON_DETAILS_FAILURE' = 'LOAD_PERSON_DETAILS_FAILURE';
-const LOAD_PERSON_DETAILS_REQUEST :'LOAD_PERSON_DETAILS_REQUEST' = 'LOAD_PERSON_DETAILS_REQUEST';
-const LOAD_PERSON_DETAILS_SUCCESS :'LOAD_PERSON_DETAILS_SUCCESS' = 'LOAD_PERSON_DETAILS_SUCCESS';
+import { newRequestSequence } from 'redux-reqseq';
 
-type LoadPersonDetailsFailureAction = {
-  error :any,
-  type :typeof LOAD_PERSON_DETAILS_FAILURE
-};
+const CLEAR_SEARCH_RESULTS = 'CLEAR_SEARCH_RESULTS';
+const clearSearchResults = newRequestSequence('CLEAR_SEARCH_RESULTS');
 
-function loadPersonDetailsFailure(error :any) :LoadPersonDetailsFailureAction {
+const LOAD_PERSON_DETAILS = 'LOAD_PERSON_DETAILS';
+const loadPersonDetails = newRequestSequence('LOAD_PERSON_DETAILS');
 
-  return {
-    error,
-    type: LOAD_PERSON_DETAILS_FAILURE
-  };
-}
+const NEW_PERSON_SUBMIT = 'NEW_PERSON_SUBMIT';
+const newPersonSubmit = newRequestSequence('NEW_PERSON_SUBMIT');
 
-type LoadPersonDetailsRequestAction = {
-  id :UUID,
-  shouldLoadCases :boolean,
-  type :typeof LOAD_PERSON_DETAILS_REQUEST
-};
+const SEARCH_PEOPLE = 'SEARCH_PEOPLE';
+const searchPeople = newRequestSequence('SEARCH_PEOPLE');
 
-function loadPersonDetailsRequest(id :UUID, shouldLoadCases :boolean) :LoadPersonDetailsRequestAction {
-
-  return {
-    id,
-    shouldLoadCases,
-    type: LOAD_PERSON_DETAILS_REQUEST
-  };
-}
-
- type LoadPersonDetailsSuccessAction = {
-   details :Object[],
-   type :typeof LOAD_PERSON_DETAILS_SUCCESS
- };
-
-function loadPersonDetailsSuccess(details :Object[]) :LoadPersonDetailsSuccessAction {
-
-  return {
-    details,
-    type: LOAD_PERSON_DETAILS_SUCCESS
-  };
-}
-
-const NEW_PERSON_SUBMIT_FAILURE :'NEW_PERSON_SUBMIT_FAILURE' = 'NEW_PERSON_SUBMIT_FAILURE';
-const NEW_PERSON_SUBMIT_REQUEST :'NEW_PERSON_SUBMIT_REQUEST' = 'NEW_PERSON_SUBMIT_REQUEST';
-const NEW_PERSON_SUBMIT_SUCCESS :'NEW_PERSON_SUBMIT_SUCCESS' = 'NEW_PERSON_SUBMIT_SUCCESS';
-
-type NewPersonSubmitFailureAction = {
-  error :any,
-  type :typeof NEW_PERSON_SUBMIT_FAILURE
-};
-
-function newPersonSubmitFailure(error :any) :NewPersonSubmitFailureAction {
-
-  return {
-    error,
-    type: NEW_PERSON_SUBMIT_FAILURE
-  };
-}
-
-type NewPersonSubmitRequestAction = {
-  config :Object,
-  type :typeof NEW_PERSON_SUBMIT_REQUEST,
-  values :Object
-};
-
-function newPersonSubmitRequest(config :Object, values :Object) :NewPersonSubmitRequestAction {
-
-  return {
-    config,
-    values,
-    type: NEW_PERSON_SUBMIT_REQUEST
-  };
-}
-
-type NewPersonSubmitSuccessAction = {
-  type :typeof NEW_PERSON_SUBMIT_SUCCESS
-};
-
-function newPersonSubmitSuccess() :NewPersonSubmitSuccessAction {
-
-  return {
-    type: NEW_PERSON_SUBMIT_SUCCESS
-  };
-}
-
-const SEARCH_PEOPLE_FAILURE :'SEARCH_PEOPLE_FAILURE' = 'SEARCH_PEOPLE_FAILURE';
-const SEARCH_PEOPLE_REQUEST :'SEARCH_PEOPLE_REQUEST' = 'SEARCH_PEOPLE_REQUEST';
-const SEARCH_PEOPLE_SUCCESS :'SEARCH_PEOPLE_SUCCESS' = 'SEARCH_PEOPLE_SUCCESS';
-
-type SearchPeopleFailureAction = {
-  error :any,
-  type :typeof SEARCH_PEOPLE_FAILURE
-};
-
-function searchPeopleFailure(error :any) :SearchPeopleFailureAction {
-
-  return {
-    error,
-    type: SEARCH_PEOPLE_FAILURE
-  };
-}
-
-type SearchPeopleRequestAction = {
-  firstName :string,
-  lastName :string,
-  dob :?string,
-  type :typeof SEARCH_PEOPLE_REQUEST
-};
-
-function searchPeopleRequest(
-  firstName :string,
-  lastName :string,
-  dob :?string,
-) :SearchPeopleRequestAction {
-
-  return {
-    firstName,
-    lastName,
-    dob,
-    type: SEARCH_PEOPLE_REQUEST
-  };
-}
-
-type SearchPeopleSuccessAction = {
-  searchResults :Object,
-  type :typeof SEARCH_PEOPLE_SUCCESS
-};
-
-function searchPeopleSuccess(searchResults :Object) :SearchPeopleSuccessAction {
-
-  return {
-    searchResults,
-    type: SEARCH_PEOPLE_SUCCESS
-  };
-}
-
-const UPDATE_CASE_FAILURE :'UPDATE_CASE_FAILURE' = 'UPDATE_CASE_FAILURE';
-const UPDATE_CASE_REQUEST :'UPDATE_CASE_REQUEST' = 'UPDATE_CASE_REQUEST';
-const UPDATE_CASE_SUCCESS :'UPDATE_CASE_SUCCESS' = 'UPDATE_CASE_SUCCESS';
-
-type UpdateCaseFailureAction = {
-  caseNum :string,
-  error :any,
-  type :typeof UPDATE_CASE_FAILURE
-};
-
-function updateCaseFailure(caseNum :string, error :any) :UpdateCaseFailureAction {
-
-  return {
-    caseNum,
-    error,
-    type: UPDATE_CASE_FAILURE
-  };
-}
-
-type UpdateCaseRequestAction = {
-  caseNum :string,
-  type :typeof UPDATE_CASE_REQUEST
-};
-
-function updateCaseRequest(caseNum :string) :UpdateCaseRequestAction {
-
-  return {
-    caseNum,
-    type: UPDATE_CASE_REQUEST
-  };
-}
-
-type UpdateCaseSuccessAction = {
-  caseNum :string,
-  type :typeof UPDATE_CASE_SUCCESS
-};
-
-function updateCaseSuccess(caseNum :string) :UpdateCaseSuccessAction {
-
-  return {
-    caseNum,
-    type: UPDATE_CASE_SUCCESS
-  };
-}
-
-const CLEAR_SEARCH_RESULTS :'CLEAR_SEARCH_RESULTS' = 'CLEAR_SEARCH_RESULTS';
-
-type ClearSearchResultsAction = {
-  type :typeof CLEAR_SEARCH_RESULTS
-};
-
-function clearSearchResults() :ClearSearchResultsAction {
-
-  return {
-    type: CLEAR_SEARCH_RESULTS
-  };
-}
+const UPDATE_CASES = 'UPDATE_CASES';
+const updateCases = newRequestSequence('UPDATE_CASES');
 
 export {
   CLEAR_SEARCH_RESULTS,
-  LOAD_PERSON_DETAILS_FAILURE,
-  LOAD_PERSON_DETAILS_REQUEST,
-  LOAD_PERSON_DETAILS_SUCCESS,
-  NEW_PERSON_SUBMIT_FAILURE,
-  NEW_PERSON_SUBMIT_REQUEST,
-  NEW_PERSON_SUBMIT_SUCCESS,
-  SEARCH_PEOPLE_FAILURE,
-  SEARCH_PEOPLE_REQUEST,
-  SEARCH_PEOPLE_SUCCESS,
-  UPDATE_CASE_FAILURE,
-  UPDATE_CASE_REQUEST,
-  UPDATE_CASE_SUCCESS
-};
-
-export {
+  LOAD_PERSON_DETAILS,
+  NEW_PERSON_SUBMIT,
+  SEARCH_PEOPLE,
+  UPDATE_CASES,
   clearSearchResults,
-  loadPersonDetailsFailure,
-  loadPersonDetailsRequest,
-  loadPersonDetailsSuccess,
-  newPersonSubmitFailure,
-  newPersonSubmitRequest,
-  newPersonSubmitSuccess,
-  searchPeopleFailure,
-  searchPeopleRequest,
-  searchPeopleSuccess,
-  updateCaseFailure,
-  updateCaseRequest,
-  updateCaseSuccess
+  loadPersonDetails,
+  newPersonSubmit,
+  searchPeople,
+  updateCases
 };
-
-export type {
-  ClearSearchResultsAction,
-  LoadPersonDetailsFailureAction,
-  LoadPersonDetailsRequestAction,
-  LoadPersonDetailsSuccessAction,
-  NewPersonSubmitFailureAction,
-  NewPersonSubmitRequestAction,
-  NewPersonSubmitSuccessAction,
-  SearchPeopleFailureAction,
-  SearchPeopleRequestAction,
-  SearchPeopleSuccessAction,
-  UpdateCaseFailureAction,
-  UpdateCaseRequestAction,
-  UpdateCaseSuccessAction
-};
-
-export type Action =
-  | ClearSearchResultsAction
-  | LoadPersonDetailsFailureAction
-  | LoadPersonDetailsRequestAction
-  | LoadPersonDetailsSuccessAction
-  | NewPersonSubmitFailureAction
-  | NewPersonSubmitRequestAction
-  | NewPersonSubmitSuccessAction
-  | SearchPeopleFailureAction
-  | SearchPeopleRequestAction
-  | SearchPeopleSuccessAction
-  | UpdateCaseFailureAction
-  | UpdateCaseRequestAction
-  | UpdateCaseSuccessAction;

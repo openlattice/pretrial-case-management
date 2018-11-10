@@ -18,11 +18,10 @@ import {
   takeEvery
 } from 'redux-saga/effects';
 
-import { HEARING_TYPES, PSA_STATUSES } from '../../utils/consts/Consts';
+import { PSA_STATUSES } from '../../utils/consts/Consts';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { toISODate, TIME_FORMAT } from '../../utils/FormattingUtils';
-import { getFqnObj } from '../../utils/DataUtils';
 import { obfuscateEntityNeighbors, obfuscateBulkEntityNeighbors } from '../../utils/consts/DemoNames';
 import {
   FILTER_PEOPLE_IDS_WITH_OPEN_PSAS,
@@ -36,8 +35,6 @@ import {
   refreshHearingNeighbors,
   loadJudges
 } from './CourtActionFactory';
-
-const DATE_FORMAT = 'YYYY-MM-DD';
 
 const { OPENLATTICE_ID_FQN } = Constants;
 const { FullyQualifiedName } = Models;

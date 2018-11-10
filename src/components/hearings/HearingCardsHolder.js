@@ -7,6 +7,11 @@ import Immutable from 'immutable';
 import styled from 'styled-components';
 import { Constants } from 'lattice';
 
+import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
+import ContentBlock from '../ContentBlock';
+import ContentSection from '../ContentSection';
+import { NoResults } from '../../utils/Layout';
+import { OL } from '../../utils/consts/Colors';
 import { formatDateTime } from '../../utils/FormattingUtils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 
@@ -25,49 +30,37 @@ const Card = styled.div`
   justify-content: space-between;
   width: 100%;
   border-radius: 5px;
-  border: 1px solid #e1e1eb !important;
+  border: 1px solid ${OL.GREY11} !important;
   padding: 15px 60px;
-  background-color: ${props => (props.selected ? '#e4d8ff' : 'transparent')};
+  background-color: ${props => (props.selected ? OL.PURPLE06 : 'transparent')};
 
 
   &:hover {
-    background-color: ${props => (props.selected ? '#e4d8ff' : '#f7f8f9')};
+    background-color: ${props => (props.selected && !props.readOnly ? OL.PURPLE06 : OL.GREY12)};
     cursor: pointer;
-  }
-
-  div {
-    display: flex;
-    flex-direction: column;
-
-    span {
-      font-family: 'Open Sans', sans-serif;
-      font-size: 11px;
-      font-weight: 600;
-      color: ${props => (props.selected ? '#6124e2' : '#8e929b')};
-      text-transform: uppercase;
-      margin-bottom: 2px;
-    }
-
-    div {
-      font-family: 'Open Sans', sans-serif;
-      font-size: 14px;
-      color: #2e2e34;
-    }
   }
 `;
 
 const Notification = styled.div`
   height: 20px;
   width: 20px;
-  background-color: #6124e2;
+  background-color: ${OL.PURPLE02};
   border-radius: 50%;
   position: absolute;
   transform: translateX(-200%) translateY(40%);
 `;
 
+const NoHearings = styled.div`
+  width: 100%
+  font-size: 16px;
+  color: ${OL.GREY01};
+`;
+
 type Props = {
   hearings :Immutable.List<*>,
   hearingsWithOutcomes :Immutable.List<*>,
+  readOnly :boolean,
+  noHearingsMessage :string,
   selectedHearing :Object,
   handleSelect :(row :Immutable.Map<*, *>, hearingId :string, entityKeyId :string) => void
 }
@@ -75,12 +68,14 @@ type Props = {
 const HearingCardsHolder = ({
   hearings,
   handleSelect,
+  readOnly,
+  noHearingsMessage,
   selectedHearing,
   hearingsWithOutcomes
 } :Props) => {
 
   if (!hearings.size) {
-    return <div>No hearings found.</div>;
+    return <NoResults>{noHearingsMessage || 'No hearings found.'}</NoResults>;
   }
 
   const hearingOptions = hearings.map((hearing) => {
@@ -94,31 +89,44 @@ const HearingCardsHolder = ({
     const selected = selectedHearing && hearingId === selectedHearing.hearingId;
     const needsAttention = hearingsWithOutcomes && !hearingsWithOutcomes.includes(entityKeyId);
 
+    const generalContent = [
+      {
+        label: 'Date',
+        content: [date]
+      },
+      {
+        label: 'Time',
+        content: [time]
+      },
+      {
+        label: 'Courtroom',
+        content: [courtroom]
+      }
+    ];
+
+    const content = generalContent.map(item => (
+      <ContentBlock
+          contentBlock={item}
+          key={item.label} />
+    ));
+
     return (
       <Card
           onClick={() => handleSelect(hearing, hearingId, entityKeyId)}
           key={`${dateTime}${courtroom}${entityKeyId}`}
+          readOnly={readOnly}
           selected={selected}>
         { needsAttention ? <Notification /> : null }
-        <div>
-          <span>Date</span>
-          <div>{ date }</div>
-        </div>
-        <div>
-          <span>Time</span>
-          <div>{ time }</div>
-        </div>
-        <div>
-          <span>Courtroom</span>
-          <div>{ courtroom }</div>
-        </div>
+        <ContentSection component={CONTENT_CONSTS.HEARING_CARD}>
+          {content}
+        </ContentSection>
       </Card>
     );
   });
 
   return (
     <CardsHolder>
-      {hearingOptions}
+      { hearingOptions.size ? hearingOptions : <NoHearings>No hearings found.</NoHearings> }
     </CardsHolder>
   );
 };

@@ -3,11 +3,11 @@
  */
 
 import React from 'react';
-
 import styled from 'styled-components';
 import { faCheck, faPencil } from '@fortawesome/pro-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
+import { OL } from '../../utils/consts/Colors';
 import { isNonEmptyString } from '../../utils/LangUtils';
 
 const ControlWrapper = styled.div`
@@ -21,7 +21,7 @@ const EditableControlWrapper = styled(ControlWrapper)`
   &:hover {
     cursor: pointer;
     .control {
-      border: 1px solid #cfd8dc;
+      border: 1px solid ${OL.GREY19};
     }
     .icon {
       visibility: visible;
@@ -44,15 +44,15 @@ const Icon = styled.div`
 `;
 
 const EditIcon = styled(Icon)`
-  background-color: #ffffff;
-  border-color: #cfd8dc;
+  background-color: ${OL.WHITE};
+  border-color: ${OL.GREY19};
   visibility: hidden;
 `;
 
 const SaveIcon = styled(Icon)`
-  background-color: #4203c5;
-  border-color: #4203c5;
-  color: #ffffff;
+  background-color: ${OL.PURPLE12};
+  border-color: ${OL.PURPLE12};
+  color: ${OL.WHITE};
   visibility: visible;
 `;
 
@@ -66,7 +66,7 @@ const TextControl = styled.div`
 `;
 
 const TextInputControl = styled.input`
-  border: 1px solid #4203c5;
+  border: 1px solid ${OL.PURPLE12};
   margin: 0;
   width: 100%;
   font-size: ${props => props.styleMap.inputFontSize};
@@ -79,7 +79,7 @@ const TextInputControl = styled.input`
 `;
 
 const TextAreaControl = styled.textarea`
-  border: 1px solid #4203c5;
+  border: 1px solid ${OL.PURPLE12};
   margin: 0;
   min-height: 100px;
   width: 100%;
@@ -168,8 +168,8 @@ export default class InlineEditableControl extends React.Component<Props, State>
   constructor(props :Props) {
 
     super(props);
-
-    const initialValue = isNonEmptyString(this.props.value) ? this.props.value : '';
+    const { value } = this.props;
+    const initialValue = isNonEmptyString(value) ? value : '';
     const initializeAsEditable = !isNonEmptyString(initialValue);
 
     this.control = null;
@@ -182,21 +182,22 @@ export default class InlineEditableControl extends React.Component<Props, State>
   }
 
   componentDidUpdate(prevProps :Object, prevState :Object) {
-
+    const { onChangeConfirm, onChange } = this.props;
+    const { editable, currentValue } = this.state;
     if (this.control
         && prevState.editable === false
-        && this.state.editable === true) {
+        && editable === true) {
       // BUG: if there's multiple InlineEditableControl components on the page, the focus might not be on the desired
       // element. perhaps need to take in a prop to indicate focus
       this.control.focus();
     }
 
     // going from editable to not editable should invoke the onChange callback only if the value actually changed
-    if (prevState.previousValue !== this.state.currentValue
+    if (prevState.previousValue !== currentValue
         && prevState.editable === true
-        && this.state.editable === false) {
-      if (this.props.onChangeConfirm) {
-        this.props.onChangeConfirm(this.state.currentValue)
+        && editable === false) {
+      if (onChangeConfirm) {
+        onChangeConfirm(currentValue)
           .then((success) => {
             if (!success) {
               this.setState({
@@ -207,14 +208,14 @@ export default class InlineEditableControl extends React.Component<Props, State>
           });
       }
       else {
-        this.props.onChange(this.state.currentValue);
+        onChange(currentValue);
       }
     }
   }
 
   componentWillReceiveProps(nextProps :Object) {
-
-    if (this.props.value !== nextProps.value) {
+    const { value } = this.props;
+    if (value !== nextProps.value) {
       const newValue = isNonEmptyString(nextProps.value) ? nextProps.value : '';
       const initializeAsEditable = !isNonEmptyString(newValue);
       this.setState({
@@ -226,18 +227,19 @@ export default class InlineEditableControl extends React.Component<Props, State>
   }
 
   toggleEditable = () => {
-
-    if (this.props.viewOnly) {
+    const { viewOnly } = this.props;
+    const { currentValue, editable } = this.state;
+    if (viewOnly) {
       return;
     }
 
-    if (!isNonEmptyString(this.state.currentValue)) {
+    if (!isNonEmptyString(currentValue)) {
       return;
     }
 
     this.setState({
-      editable: !this.state.editable,
-      previousValue: this.state.currentValue
+      editable: !editable,
+      previousValue: currentValue
     });
   }
 
@@ -266,17 +268,19 @@ export default class InlineEditableControl extends React.Component<Props, State>
   }
 
   getPlaceholder = () => {
-    return this.props.viewOnly ? '' : this.props.placeholder;
+    const { viewOnly, placeholder } = this.props;
+    return viewOnly ? '' : placeholder;
   }
 
   renderTextControl = () => {
-
-    if (!this.props.viewOnly && this.state.editable) {
+    const { viewOnly, size } = this.props;
+    const { currentValue, editable } = this.state;
+    if (!viewOnly && editable) {
       return (
         <TextInputControl
-            styleMap={STYLE_MAP[this.props.size]}
+            styleMap={STYLE_MAP[size]}
             placeholder={this.getPlaceholder()}
-            value={this.state.currentValue}
+            value={currentValue}
             onBlur={this.handleOnBlur}
             onChange={this.handleOnChange}
             onKeyDown={this.handleOnKeyDown}
@@ -289,14 +293,14 @@ export default class InlineEditableControl extends React.Component<Props, State>
     return (
       <TextControl
           className="control"
-          styleMap={STYLE_MAP[this.props.size]}
+          styleMap={STYLE_MAP[size]}
           onClick={this.toggleEditable}
           innerRef={(element) => {
             this.control = element;
           }}>
         {
-          isNonEmptyString(this.state.currentValue)
-            ? this.state.currentValue
+          isNonEmptyString(currentValue)
+            ? currentValue
             : this.getPlaceholder()
         }
       </TextControl>
@@ -304,17 +308,18 @@ export default class InlineEditableControl extends React.Component<Props, State>
   }
 
   renderTextAreaControl = () => {
-
-    if (!this.props.viewOnly && this.state.editable) {
+    const { viewOnly, size } = this.props;
+    const { currentValue, editable } = this.state;
+    if (!viewOnly && editable) {
       if (this.control) {
         // +2 1px border
-        STYLE_MAP[this.props.size].height = `${Math.ceil(this.control.clientHeight) + 2}px`;
+        STYLE_MAP[size].height = `${Math.ceil(this.control.clientHeight) + 2}px`;
       }
       return (
         <TextAreaControl
-            styleMap={STYLE_MAP[this.props.size]}
+            styleMap={STYLE_MAP[size]}
             placeholder={this.getPlaceholder()}
-            value={this.state.currentValue}
+            value={currentValue}
             onBlur={this.handleOnBlur}
             onChange={this.handleOnChange}
             onKeyDown={this.handleOnKeyDown}
@@ -327,14 +332,14 @@ export default class InlineEditableControl extends React.Component<Props, State>
     return (
       <TextControl
           className="control"
-          styleMap={STYLE_MAP[this.props.size]}
+          styleMap={STYLE_MAP[size]}
           onClick={this.toggleEditable}
           innerRef={(element) => {
             this.control = element;
           }}>
         {
-          isNonEmptyString(this.state.currentValue)
-            ? this.state.currentValue
+          isNonEmptyString(currentValue)
+            ? currentValue
             : this.getPlaceholder()
         }
       </TextControl>
@@ -342,8 +347,8 @@ export default class InlineEditableControl extends React.Component<Props, State>
   };
 
   getControl = () => {
-
-    switch (this.props.type) {
+    const { type } = this.props;
+    switch (type) {
       case TYPES.TEXT:
         return this.renderTextControl();
       case TYPES.TEXT_AREA:
@@ -354,8 +359,9 @@ export default class InlineEditableControl extends React.Component<Props, State>
   }
 
   getEditButton = () => {
-
-    if (!this.props.viewOnly && this.state.editable) {
+    const { viewOnly } = this.props;
+    const { editable } = this.state;
+    if (!viewOnly && editable) {
       return (
         <SaveIcon className="icon" onClick={this.toggleEditable}>
           <FontAwesomeIcon icon={faCheck} />
@@ -371,11 +377,11 @@ export default class InlineEditableControl extends React.Component<Props, State>
   }
 
   render() {
-
+    const { viewOnly } = this.props;
     const control = this.getControl();
     const editButton = this.getEditButton();
 
-    if (this.props.viewOnly) {
+    if (viewOnly) {
       return (
         <ControlWrapper>
           { control }

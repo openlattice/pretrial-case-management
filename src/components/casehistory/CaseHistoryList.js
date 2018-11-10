@@ -7,35 +7,67 @@ import styled from 'styled-components';
 import moment from 'moment';
 
 import ChargeList from '../charges/ChargeList';
-import { Title } from '../../utils/Layout';
+import LoadingSpinner from '../LoadingSpinner';
+import { OL } from '../../utils/consts/Colors';
+import { NoResults, Title, Count } from '../../utils/Layout';
 import { formatDateList } from '../../utils/FormattingUtils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 
 const InfoRow = styled.div`
-  background-color: #f5f5f8;
+  background-color: ${OL.GREY09};
   display: flex;
   flex-direction: row;
   padding: 15px 0;
-  margin: 0 -30px;
+  margin: ${props => (props.modal ? '0 -30px' : 0)};
+`;
+
+const TitleWrapper = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  border-bottom: ${props => (props.modal ? `1px solid ${OL.GREY01}` : 'none')};
+  border-top: ${props => (props.modal ? `1px solid ${OL.GREY01}` : 'none')};
+  padding-left: 30px;
+  margin: ${props => (props.modal ? '20px -30px 0' : 0)};
 `;
 
 const InfoItem = styled.div`
-  margin: 0 30px;
-  color: #555e6f;
+  margin: ${props => (props.modal ? '0 30px' : 0)};
+  padding: ${props => (props.modal ? 0 : '0 30px')};
+  color: ${OL.GREY01};
 `;
 
 const CaseHistoryContainer = styled.div`
+  width: ${props => (props.modal ? 'auto' : '100%')};
   height: 100%;
+`;
+
+const StyledSpinner = styled(LoadingSpinner)`
+  margin: ${props => (props.modal ? '0 -30px 30px' : 0)};
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100px;
+  width: 100%;
 `;
 
 type Props = {
   caseHistory :Immutable.List<*>,
   chargeHistory :Immutable.Map<*, *>,
-  modal :boolean
+  loading :boolean,
+  modal :boolean,
+  title :string,
 };
 
-const CaseHistoryList = ({ caseHistory, chargeHistory, modal } :Props) => {
-
+const CaseHistoryList = ({
+  title,
+  caseHistory,
+  chargeHistory,
+  loading,
+  modal
+} :Props) => {
+  const caseCount = caseHistory.size;
   const cases = caseHistory
     .sort((c1, c2) => {
       const date1 = moment(c1.getIn([PROPERTY_TYPES.FILE_DATE, 0], ''));
@@ -49,21 +81,31 @@ const CaseHistoryList = ({ caseHistory, chargeHistory, modal } :Props) => {
       const fileDate = formatDateList(caseObj.get(PROPERTY_TYPES.FILE_DATE, Immutable.List()));
       return (
         <div key={caseNum}>
-          <InfoRow>
-            <InfoItem>{`Case Number: ${caseNum}`}</InfoItem>
-            <InfoItem>{`File Date: ${fileDate}`}</InfoItem>
+          <InfoRow modal={modal}>
+            <InfoItem modal={modal}>{`Case Number: ${caseNum}`}</InfoItem>
+            <InfoItem modal={modal}>{`File Date: ${fileDate}`}</InfoItem>
           </InfoRow>
           <ChargeList modal={modal} pretrialCaseDetails={caseObj} charges={charges} detailed historical />
         </div>
       );
     });
+  const casesDisplay = cases.size
+    ? cases
+    : <NoResults>No Cases Found</NoResults>;
 
   return (
     <CaseHistoryContainer>
-      <Title withSubtitle >
-        <span>Case History</span>
-      </Title>
-      {cases}
+      <TitleWrapper modal={modal}>
+        <Title withSubtitle>
+          <span>{title}</span>
+        </Title>
+        <Count>{caseCount}</Count>
+      </TitleWrapper>
+      {
+        loading
+          ? <StyledSpinner />
+          : casesDisplay
+      }
     </CaseHistoryContainer>
   );
 };

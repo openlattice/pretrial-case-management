@@ -16,11 +16,13 @@ import SecondaryButton from '../../components/buttons/SecondaryButton';
 import PersonTable from '../../components/people/PersonTable';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import NoSearchResults from '../../components/people/NoSearchResults';
-import { clearSearchResults, searchPeopleRequest } from './PersonActionFactory';
+import { clearSearchResults, searchPeople } from './PersonActionFactory';
 import { toISODate } from '../../utils/FormattingUtils';
 import { StyledFormViewWrapper, StyledSectionWrapper, StyledFormWrapper } from '../../utils/Layout';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { STATE, SEARCH } from '../../utils/consts/FrontEndStateConsts';
+import { OL } from '../../utils/consts/Colors';
+
 import * as Routes from '../../core/router/Routes';
 
 /*
@@ -36,7 +38,7 @@ const Wrapper = styled.div`
 `;
 
 const SearchResultsList = styled.div`
-  background-color: #fefefe;
+  background-color: ${OL.GREY16};
   display: flex;
   flex-direction: column;
   padding: 30px 0;
@@ -61,7 +63,7 @@ const LoadingText = styled.div`
 const ListSectionHeader = styled.div`
   font-family: 'Open Sans', sans-serif;
   font-size: 18px;
-  color: #555e6f;
+  color: ${OL.GREY01};
   padding: 0 0 30px 30px;
 `;
 
@@ -70,7 +72,7 @@ const GrayListSectionHeader = styled(ListSectionHeader)`
 `;
 
 const ErrorMessage = styled.div`
-  color: #ff3c5d;
+  color: ${OL.RED01};
   font-family: 'Open Sans', sans-serif;
   font-size: 14px;
   text-align: center;
@@ -80,7 +82,7 @@ const CreateButtonWrapper = styled(StyledFormViewWrapper)`
   margin-top: -60px;
 
   ${StyledFormWrapper} {
-    border-top: 1px solid #e1e1eb;
+    border-top: 1px solid ${OL.GREY11};
 
     ${StyledSectionWrapper} {
       padding: 20px 30px;
@@ -104,7 +106,7 @@ const SearchResultsWrapper = styled(StyledSectionWrapper)`
 type Props = {
   actions :{
     clearSearchResults :Function,
-    searchPeopleRequest :Function
+    searchPeople :Function
   },
   isLoadingPeople :boolean,
   searchHasRun :boolean,
@@ -136,24 +138,25 @@ class SearchPeopleContainer extends React.Component<Props, State> {
   }
 
   componentWillUnmount() {
-
-    this.props.actions.clearSearchResults();
+    const { actions } = this.props;
+    actions.clearSearchResults();
   }
 
   handleOnSelectPerson = (person :Immutable.Map, entityKeyId :string, personId :string) => {
-
-    this.props.onSelectPerson(person, entityKeyId, personId);
+    const { onSelectPerson } = this.props;
+    onSelectPerson(person, entityKeyId, personId);
   }
 
-  handleOnSubmitSearch = (firstName, lastName, dob) => {
+  handleOnSubmitSearch = ({ firstName, lastName, dob }) => {
+    const { actions } = this.props;
     if (firstName.length || lastName.length || dob) {
-      this.props.actions.searchPeopleRequest(firstName, lastName, dob);
+      actions.searchPeople({ firstName, lastName, dob });
       this.setState({ firstName, lastName, dob });
     }
   }
 
   createNewPerson = () => {
-
+    const { history } = this.props;
     const {
       firstName,
       lastName,
@@ -167,7 +170,7 @@ class SearchPeopleContainer extends React.Component<Props, State> {
       params[Routes.DOB] = toISODate(moment(dob));
     }
 
-    this.props.history.push(`${Routes.NEW_PERSON}?${qs.stringify(params)}`);
+    history.push(`${Routes.NEW_PERSON}?${qs.stringify(params)}`);
   }
 
   getSortedPeopleList = (peopleList, gray) => {
@@ -314,7 +317,7 @@ function mapStateToProps(state :Immutable.Map<*, *>) :Object {
 function mapDispatchToProps(dispatch :Function) :Object {
 
   return {
-    actions: bindActionCreators({ clearSearchResults, searchPeopleRequest }, dispatch)
+    actions: bindActionCreators({ clearSearchResults, searchPeople }, dispatch)
   };
 }
 

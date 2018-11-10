@@ -6,6 +6,8 @@ import React from 'react';
 import styled from 'styled-components';
 import { Button } from 'react-bootstrap';
 
+import { OL } from '../utils/consts/Colors';
+
 const StyledNavBtnWrapper = styled.div`
   text-align: center;
   width: 100%;
@@ -17,8 +19,8 @@ export const NavButton = styled(Button)`
 `;
 
 export const NextButton = NavButton.extend`
-  background: #5bc0de;
-  color: #fff;
+  background: ${OL.BLUE09};
+  color: ${OL.WHITE};
 `;
 
 export const SubmitButton = NextButton.extend.attrs({

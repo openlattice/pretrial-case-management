@@ -2,8 +2,13 @@
  * @flow
  */
 
-import { EntityDataModelApi, Constants, DataApi, SearchApi } from 'lattice';
 import { call, put, takeEvery } from 'redux-saga/effects';
+import {
+  EntityDataModelApi,
+  Constants,
+  DataApi,
+  SearchApi
+} from 'lattice';
 
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import {
@@ -87,6 +92,7 @@ function* getPersonNeighborsWorker(action) :Generator<*, *, *> {
     const person = yield getEntityForPersonId(personId, entitySetId);
     const entityKeyId = person[OPENLATTICE_ID_FQN][0];
     let neighbors = yield call(SearchApi.searchEntityNeighbors, entitySetId, entityKeyId);
+
     neighbors = obfuscateEntityNeighbors(neighbors);
     yield put(getPersonNeighbors.success(action.id, { personId, neighbors }));
   }

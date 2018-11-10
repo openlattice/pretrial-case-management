@@ -11,6 +11,7 @@ import ArrestTable from '../../../components/arrest/ArrestTable';
 import BasicButton from '../../../components/buttons/BasicButton';
 import SecondaryButton from '../../../components/buttons/SecondaryButton';
 import { StyledFormWrapper } from '../../../utils/Layout';
+import { OL } from '../../../utils/consts/Colors';
 
 /*
  * styled components
@@ -19,11 +20,11 @@ import { StyledFormWrapper } from '../../../utils/Layout';
 const Header = styled.h1`
   font-family: 'Open Sans', sans-serif;
   font-size: 18px;
-  color: #555e6f;
+  color: ${OL.GREY01};
 `;
 
 const SearchResultsList = styled.div`
-  background-color: #fefefe;
+  background-color: ${OL.GREY16};
   margin: 20px 0;
 `;
 
@@ -56,7 +57,7 @@ const NoResultsText = styled.div`
   font-family: 'Open Sans', sans-serif;
   font-size: 16px;
   font-weight: 600;
-  color: #8e929b;
+  color: ${OL.GREY02};
 `;
 
 const ModifyButton = styled(BasicButton)`
@@ -88,15 +89,18 @@ type Props = {
 class SelectArrestContainer extends React.Component<Props, State> {
 
   componentDidMount() {
-    this.props.clearSubmit();
+    const { clearSubmit } = this.props;
+    clearSubmit();
   }
 
   componentWillUnmount() {
-    this.props.clearSubmit();
+    const { clearSubmit } = this.props;
+    clearSubmit();
   }
 
   handleOnSelectCase = (selectedCase :Immutable.Map<*, *>, entityKeyId :string) => {
-    this.props.onSelectCase(selectedCase, entityKeyId);
+    const { onSelectCase } = this.props;
+    onSelectCase(selectedCase, entityKeyId);
   };
 
   renderSearchResults = () => {

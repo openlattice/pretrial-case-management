@@ -109,7 +109,8 @@ export const PEOPLE = {
   PERSON_ENTITY_KEY_ID: 'selectedPersonEntityKeyId',
   FETCHING_PEOPLE: 'isFetchingPeople',
   FETCHING_PERSON_DATA: 'isFetchingPersonData',
-  NEIGHBORS: 'peopleNeighbors'
+  NEIGHBORS: 'neighbors',
+  MOST_RECENT_PSA: 'mostRecentPSA'
 };
 
 // Review
@@ -147,7 +148,8 @@ export const SEARCH = {
   NUM_CASES_LOADED: 'numCasesLoaded',
   SEARCH_HAS_RUN: 'searchHasRun',
   CREATING_PERSON: 'isCreatingPerson',
-  CREATE_PERSON_ERROR: 'createPersonError'
+  CREATE_PERSON_ERROR: 'createPersonError',
+  CASE_LOADS_COMPLETE: 'caseLoadsComplete'
 };
 
 // Submit

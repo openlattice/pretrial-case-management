@@ -2,12 +2,16 @@
  * @flow
  */
 
-import Immutable from 'immutable';
+import { Map, List } from 'immutable';
 
-import { GUILTY_DISPOSITIONS, MISDEMEANOR_CHARGE_LEVEL_CODES, VIOLENT_CHARGES } from './consts/ChargeConsts';
 import { PLEAS_TO_IGNORE } from './consts/PleaConsts';
 import { PROPERTY_TYPES } from './consts/DataModelConsts';
 import { formatValue, formatDateList } from './FormattingUtils';
+import {
+  GUILTY_DISPOSITIONS,
+  MISDEMEANOR_CHARGE_LEVEL_CODES,
+  ODYSSEY_VIOLENT_CHARGES
+} from './consts/ChargeConsts';
 
 
 const {
@@ -28,15 +32,28 @@ type ChargeDetails = {
   description :string
 };
 
+
 const stripDegree = (chargeNum :string) :string => chargeNum.split('(')[0].trim();
 
-export const getCaseNumFromCharge = (charge :Immutable.Map<*, *>) =>
-  charge.getIn([CHARGE_ID, 0], '').split('|')[0];
+export const getCaseNumFromCharge = (charge :Map<*, *>) => charge.getIn([CHARGE_ID, 0], '').split('|')[0];
 
-export const shouldIgnoreCharge = (charge :Immutable.Map<*, *>) => {
-  const severities = charge.get(CHARGE_LEVEL, Immutable.List());
-  const pleas = charge.get(PLEA, Immutable.List());
-  const poaCaseNums = charge.get(CHARGE_ID, Immutable.List()).filter(caseNum => caseNum.includes('POA'));
+export const getChargeDetails = (charge :Map<*, *>, ignoreCase? :boolean) :ChargeDetails => {
+  const caseNum :string = ignoreCase ? null : getCaseNumFromCharge(charge);
+  const statute :string = formatValue(charge.get(CHARGE_STATUTE, List()));
+  const description :string = formatValue(charge.get(CHARGE_DESCRIPTION, List()));
+  const dispositionDate :string = formatDateList(charge.get(DISPOSITION_DATE, List()));
+  return {
+    caseNum,
+    statute,
+    description,
+    dispositionDate
+  };
+};
+
+export const shouldIgnoreCharge = (charge :Map<*, *>) => {
+  const severities = charge.get(CHARGE_LEVEL, List());
+  const pleas = charge.get(PLEA, List());
+  const poaCaseNums = charge.get(CHARGE_ID, List()).filter(caseNum => caseNum.includes('POA'));
   const poaPleas = pleas.filter(plea => PLEAS_TO_IGNORE.includes(plea));
   return severities.includes('MO')
     || severities.includes('PO')
@@ -45,14 +62,23 @@ export const shouldIgnoreCharge = (charge :Immutable.Map<*, *>) => {
     || !!poaPleas.size;
 };
 
-export const chargeStatuteIsViolent = (chargeNum :string) :boolean =>
-  VIOLENT_CHARGES.includes(stripDegree(chargeNum.toLowerCase()));
+export const chargeStatuteIsViolent = (chargeNum :string) :boolean => (
+  Object.keys(ODYSSEY_VIOLENT_CHARGES).includes(stripDegree(chargeNum.toLowerCase()))
+);
 
-export const chargeIsMostSerious = (charge :Immutable.Map<*, *>, pretrialCase :Immutable.Map<*, *>) => {
+export const chargeIsViolent = (charge :Map<*, *>) :boolean => {
+  if (shouldIgnoreCharge(charge)) return false;
+  const { statute, description } = getChargeDetails(charge);
+  return !!(charge
+    && ODYSSEY_VIOLENT_CHARGES[stripDegree(statute)]
+    && ODYSSEY_VIOLENT_CHARGES[stripDegree(statute)].includes(description));
+};
+
+export const chargeIsMostSerious = (charge :Map<*, *>, pretrialCase :Map<*, *>) => {
   let mostSerious = false;
 
-  const statuteField = charge.get(CHARGE_STATUTE, Immutable.List());
-  const mostSeriousNumField = pretrialCase.get(MOST_SERIOUS_CHARGE_NO, Immutable.List());
+  const statuteField = charge.get(CHARGE_STATUTE, List());
+  const mostSeriousNumField = pretrialCase.get(MOST_SERIOUS_CHARGE_NO, List());
   statuteField.forEach((chargeNum) => {
     mostSeriousNumField.forEach((mostSeriousNum) => {
       if (mostSeriousNum === chargeNum) mostSerious = true;
@@ -62,22 +88,17 @@ export const chargeIsMostSerious = (charge :Immutable.Map<*, *>, pretrialCase :I
   return mostSerious;
 };
 
-export const getUnique = (valueList :Immutable.List<string>) :Immutable.List<string> =>
-  valueList.filter((val, index) => valueList.indexOf(val) === index);
-
-export const getViolentChargeNums = (chargeFields :Immutable.List<string>) :Immutable.List<string> =>
-  getUnique(chargeFields.filter(charge => charge && chargeStatuteIsViolent(charge)));
-
-export const chargeFieldIsViolent = (chargeField :Immutable.List<string>) => getViolentChargeNums(chargeField).size > 0;
-
-export const chargeIsViolent = (charge :Immutable.Map<*, *>) => {
-  if (shouldIgnoreCharge(charge)) return false;
-  return chargeFieldIsViolent(charge.get(CHARGE_STATUTE, Immutable.List()));
-};
+export const getUnique = (valueList :List<string>) :List<string> => (
+  valueList.filter((val, index) => valueList.indexOf(val) === index)
+);
+export const getViolentChargeNums = (chargeFields :List<string>) :List<string> => (
+  getUnique(chargeFields.filter(charge => charge && chargeStatuteIsViolent(charge)))
+);
+export const chargeFieldIsViolent = (chargeField :List<string>) => getViolentChargeNums(chargeField).size > 0;
 
 export const dispositionIsGuilty = (disposition :string) :boolean => GUILTY_DISPOSITIONS.includes(disposition);
 
-export const dispositionFieldIsGuilty = (dispositionField :Immutable.List<string>) :boolean => {
+export const dispositionFieldIsGuilty = (dispositionField :List<string>) :boolean => {
   let guilty = false;
   if (dispositionField.size) {
     dispositionField.forEach((disposition) => {
@@ -87,12 +108,12 @@ export const dispositionFieldIsGuilty = (dispositionField :Immutable.List<string
   return guilty;
 };
 
-export const chargeIsGuilty = (charge :Immutable.Map<*, *>) => {
+export const chargeIsGuilty = (charge :Map<*, *>) => {
   if (shouldIgnoreCharge(charge)) return false;
-  return dispositionFieldIsGuilty(charge.get(DISPOSITION, Immutable.List()));
+  return dispositionFieldIsGuilty(charge.get(DISPOSITION, List()));
 };
 
-export const degreeFieldIsMisdemeanor = (degreeField :Immutable.List<string>) :boolean => {
+export const degreeFieldIsMisdemeanor = (degreeField :List<string>) :boolean => {
 
   if (!degreeField || degreeField.isEmpty()) {
     return false;
@@ -106,12 +127,12 @@ export const degreeFieldIsMisdemeanor = (degreeField :Immutable.List<string>) :b
   );
 };
 
-export const chargeIsMisdemeanor = (charge :Immutable.Map<*, *>) => {
+export const chargeIsMisdemeanor = (charge :Map<*, *>) => {
   if (shouldIgnoreCharge(charge)) return false;
-  return degreeFieldIsMisdemeanor(charge.get(PROPERTY_TYPES.CHARGE_LEVEL, Immutable.List()));
+  return degreeFieldIsMisdemeanor(charge.get(PROPERTY_TYPES.CHARGE_LEVEL, List()));
 };
 
-export const degreeFieldIsFelony = (degreeField :Immutable.List<string>) :boolean => {
+export const degreeFieldIsFelony = (degreeField :List<string>) :boolean => {
   let result = false;
   degreeField.forEach((degree) => {
     if (degree && degree.toLowerCase().startsWith('f')) result = true;
@@ -119,25 +140,12 @@ export const degreeFieldIsFelony = (degreeField :Immutable.List<string>) :boolea
   return result;
 };
 
-export const chargeIsFelony = (charge :Immutable.Map<*, *>) => {
+export const chargeIsFelony = (charge :Map<*, *>) => {
   if (shouldIgnoreCharge(charge)) return false;
-  return degreeFieldIsFelony(charge.get(PROPERTY_TYPES.CHARGE_LEVEL, Immutable.List()));
+  return degreeFieldIsFelony(charge.get(PROPERTY_TYPES.CHARGE_LEVEL, List()));
 };
 
-export const getChargeDetails = (charge :Immutable.Map<*, *>, ignoreCase? :boolean) :ChargeDetails => {
-  const caseNum :string = ignoreCase ? null : getCaseNumFromCharge(charge);
-  const statute :string = formatValue(charge.get(CHARGE_STATUTE, Immutable.List()));
-  const description :string = formatValue(charge.get(CHARGE_DESCRIPTION, Immutable.List()));
-  const dispositionDate :string = formatDateList(charge.get(DISPOSITION_DATE, Immutable.List()));
-  return {
-    caseNum,
-    statute,
-    description,
-    dispositionDate
-  };
-};
-
-export const getChargeTitle = (charge :Immutable.Map<*, *>, hideCase :boolean) :string => {
+export const getChargeTitle = (charge :Map<*, *>, hideCase :boolean) :string => {
   const {
     caseNum,
     statute,
@@ -155,7 +163,7 @@ export const getChargeTitle = (charge :Immutable.Map<*, *>, hideCase :boolean) :
   return val;
 };
 
-export const getSummaryStats = (chargesByCaseNum :Immutable.Map<*>) => {
+export const getSummaryStats = (chargesByCaseNum :Map<*>) => {
   let numMisdemeanorCharges = 0;
   let numMisdemeanorConvictions = 0;
   let numFelonyCharges = 0;
@@ -165,10 +173,10 @@ export const getSummaryStats = (chargesByCaseNum :Immutable.Map<*>) => {
 
   chargesByCaseNum.valueSeq().forEach((chargeList) => {
     chargeList.forEach((charge) => {
-      const degreeField = charge.get(CHARGE_LEVEL, Immutable.List()).filter(val => !!val);
-      const chargeField = charge.get(CHARGE_STATUTE, Immutable.List()).filter(val => !!val);
+      const degreeField = charge.get(CHARGE_LEVEL, List()).filter(val => !!val);
+      const chargeField = charge.get(CHARGE_STATUTE, List()).filter(val => !!val);
       const convicted = dispositionFieldIsGuilty(
-        charge.get(DISPOSITION, Immutable.List()).filter(val => !!val)
+        charge.get(DISPOSITION, List()).filter(val => !!val)
       );
       if (degreeFieldIsMisdemeanor(degreeField)) {
         numMisdemeanorCharges += 1;

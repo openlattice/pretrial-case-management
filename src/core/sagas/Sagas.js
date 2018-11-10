@@ -61,10 +61,10 @@ export default function* sagas() :Generator<*, *, *> {
     fork(SubmitSagas.submitWatcher),
 
     // PersonSagas
-    fork(PersonSagas.watchLoadPersonDetailsRequest),
-    fork(PersonSagas.watchNewPersonSubmitRequest),
-    fork(PersonSagas.watchSearchPeopleRequest),
-    fork(PersonSagas.watchUpdateCaseRequest),
+    fork(PersonSagas.loadPersonDetailsWatcher),
+    fork(PersonSagas.newPersonSubmitWatcher),
+    fork(PersonSagas.searchPeopleWatcher),
+    fork(PersonSagas.updateCasesWatcher),
 
     // PeopleSagas
     fork(PeopleSagas.getPeopleWatcher),

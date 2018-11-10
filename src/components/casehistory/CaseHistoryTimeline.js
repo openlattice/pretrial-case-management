@@ -7,6 +7,7 @@ import Immutable from 'immutable';
 import styled from 'styled-components';
 import moment from 'moment';
 
+import { OL } from '../../utils/consts/Colors';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import {
   chargeIsViolent,
@@ -31,7 +32,7 @@ const TimelineWrapper = styled.div`
 const TimelineBar = styled.div`
   width: 100%;
   height: 10px;
-  background-color: #f0f0f7;
+  background-color: ${OL.GREY08};
   border-radius: 1px;
 `;
 
@@ -51,9 +52,9 @@ const TagMonthLabel = styled.div`
   font-family: 'Open Sans', sans-serif;
   font-size: 11px;
   font-weight: 600;
-  background-color: #ffffff;
+  background-color: ${OL.WHITE};
   z-index: 1;
-  color: #555e6f;
+  color: ${OL.GREY01};
   text-transform: uppercase;
 `;
 
@@ -62,7 +63,7 @@ const TagLine = styled.div`
   bottom: 0;
   height: 40px;
   width: 1px;
-  border-left: 1px solid ${props => (props.violent ? '#ff3c5d' : '#555e6f')};
+  border-left: 1px solid ${props => (props.violent ? OL.RED01 : OL.GREY01)};
 `;
 
 const Tag = styled.div`
@@ -73,8 +74,8 @@ const Tag = styled.div`
   font-family: 'Open Sans', sans-serif;
   font-size: 12px;
   font-weight: 600;
-  background-color: ${props => (props.violent ? '#ff3c5d;' : '#dcdce7')};
-  color: ${props => (props.violent ? '#ffffff;' : '#2e2e34')};
+  background-color: ${props => (props.violent ? OL.RED01 : OL.GREY05)};
+  color: ${props => (props.violent ? OL.WHITE : OL.GREY15)};
 `;
 
 const TagGroup = styled.div`
@@ -99,7 +100,7 @@ const ReferenceDates = styled.div`
   span {
     font-family: 'Open Sans', sans-serif;
     font-size: 12px;
-    color: #8e929b;
+    color: ${OL.GREY02};
     font-weight: 300;
   }
 `;

@@ -5,6 +5,8 @@ import React from 'react';
 import styled from 'styled-components';
 
 import NavTabs from './NavTabs';
+import { OL } from '../../utils/consts/Colors';
+
 
 const UP_KEY = 38;
 const DOWN_KEY = 40;
@@ -13,7 +15,7 @@ const NavTabsWrapper = styled.div`
   margin: 0 -15px;
 
   hr {
-    color: #eeeeee;
+    color: ${OL.GREY28};
     width: 100%;
     height: 1px;
     margin: 0;
@@ -55,14 +57,16 @@ class Tabs extends React.Component<Props, State> {
   }
 
   render() {
-    const pane = this.props.panes[this.state.selectedPane];
+    const { panes } = this.props;
+    const { selectedPane } = this.state;
+    const pane = panes[selectedPane];
 
     return (
       <NavTabsWrapper>
         <NavTabs
-            selectedPane={this.state.selectedPane}
+            selectedPane={selectedPane}
             onTabChosen={this.selectTab}
-            panes={this.props.panes}
+            panes={panes}
             handleKeyDown={this.handleKeyDown} />
         <hr />
         <div>

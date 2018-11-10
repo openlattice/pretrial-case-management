@@ -1,12 +1,13 @@
 import styled from 'styled-components';
 
 import { BOND_TYPES } from '../../utils/consts/ReleaseConditionConsts';
+import { OL } from '../../utils/consts/Colors';
 
 export const RowWrapper = styled.div`
   display: flex;
   flex-direction: column;
   padding: 30px 30px;
-  border-bottom: 1px solid #e1e1eb;
+  border-bottom: 1px solid ${OL.GREY11};
 `;
 
 export const OptionsGrid = styled.div`
@@ -50,7 +51,7 @@ export const Row = styled.div`
 `;
 
 export const Dollar = styled.div`
-  color: #8e929b;
+  color: ${OL.GREY02};
   width: fit-content;
   z-index: 1;
   transform: translateX(100%) translateY(50%);

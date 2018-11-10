@@ -12,9 +12,14 @@ import qs from 'query-string';
 import { AuthUtils } from 'lattice-auth';
 import { Button } from 'react-bootstrap';
 import { connect } from 'react-redux';
-import { Redirect, Route, Switch, withRouter } from 'react-router-dom';
 import { bindActionCreators } from 'redux';
 import { Constants } from 'lattice';
+import {
+  Redirect,
+  Route,
+  Switch,
+  withRouter
+} from 'react-router-dom';
 
 import BasicButton from '../../components/buttons/BasicButton';
 import LoadingSpinner from '../../components/LoadingSpinner';
@@ -34,6 +39,22 @@ import PSAReviewReportsRowList from '../review/PSAReviewReportsRowList';
 import exportPDF from '../../utils/PDFUtils';
 import psaConfig from '../../config/formconfig/PsaConfig';
 import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
+import { OL } from '../../utils/consts/Colors';
+import { getEntityKeyId } from '../../utils/DataUtils';
+import { toISODateTime } from '../../utils/FormattingUtils';
+import { getScoresAndRiskFactors, calculateDMF, getDMFRiskFactors } from '../../utils/ScoringUtils';
+import { tryAutofillFields } from '../../utils/AutofillUtils';
+import { PROPERTY_TYPES, ENTITY_SETS } from '../../utils/consts/DataModelConsts';
+import { STATUS_OPTIONS_FOR_PENDING_PSAS } from '../../utils/consts/ReviewPSAConsts';
+import { DOMAIN } from '../../utils/consts/ReportDownloadTypes';
+import {
+  CONTEXT,
+  DMF,
+  ID_FIELD_NAMES,
+  NOTES,
+  PSA,
+  PSA_STATUSES
+} from '../../utils/consts/Consts';
 import {
   STATE,
   PSA_FORM,
@@ -41,16 +62,6 @@ import {
   SEARCH,
   COURT
 } from '../../utils/consts/FrontEndStateConsts';
-
-import * as FormActionFactory from './FormActionFactory';
-import * as PersonActionFactory from '../person/PersonActionFactory';
-import * as ReviewActionFactory from '../review/ReviewActionFactory';
-import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
-import * as CourtActionFactory from '../court/CourtActionFactory';
-import * as Routes from '../../core/router/Routes';
-
-import { toISODateTime } from '../../utils/FormattingUtils';
-import { getScoresAndRiskFactors, calculateDMF, getDMFRiskFactors } from '../../utils/ScoringUtils';
 import {
   ButtonWrapper,
   StyledFormWrapper,
@@ -61,11 +72,14 @@ import {
   getPrevPath,
   getCurrentPage
 } from '../../utils/Helpers';
-import { tryAutofillFields } from '../../utils/AutofillUtils';
-import { CONTEXT, DMF, ID_FIELD_NAMES, NOTES, PSA, PSA_STATUSES } from '../../utils/consts/Consts';
-import { PROPERTY_TYPES, ENTITY_SETS } from '../../utils/consts/DataModelConsts';
-import { STATUS_OPTIONS_FOR_PENDING_PSAS } from '../../utils/consts/ReviewPSAConsts';
-import { DOMAIN } from '../../utils/consts/ReportDownloadTypes';
+
+import * as FormActionFactory from './FormActionFactory';
+import * as PersonActionFactory from '../person/PersonActionFactory';
+import * as ReviewActionFactory from '../review/ReviewActionFactory';
+import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
+import * as CourtActionFactory from '../court/CourtActionFactory';
+import * as Routes from '../../core/router/Routes';
+
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
@@ -73,9 +87,9 @@ const { PEOPLE } = ENTITY_SETS;
 
 const PSARowListHeader = styled.div`
   width: 100%;
-  background: #fff;
+  background: ${OL.WHITE};
   border-radius: 5px;
-  border: solid 1px #e1e1eb;
+  border: solid 1px ${OL.GREY11};
   border-bottom-left-radius: 0;
   border-bottom-right-radius: 0;
   border-bottom: none;
@@ -102,14 +116,14 @@ const LoadingContainer = styled(StyledFormWrapper)`
   align-items: center;
   padding: 0 30px 30px 30px;
   border-radius: 5px;
-  border: 1px solid #e1e1eb;
-  background-color: #ffffff;
+  border: 1px solid ${OL.GREY11};
+  background-color: ${OL.WHITE};
 `;
 
 const LoadingText = styled.div`
   font-family: 'Open Sans', sans-serif;
   font-size: 16px;
-  color: #555e6f;
+  color: ${OL.GREY01};
   margin: 20px;
   display: inline-flex;
 `;
@@ -132,7 +146,7 @@ const PSAFormTitle = styled(PaddedSectionWrapper)`
   h1 {
     font-family: 'Open Sans', sans-serif;
     font-size: 18px;
-    color: #555e6f;
+    color: ${OL.GREY01};
   }
 `;
 
@@ -166,7 +180,7 @@ const HeaderRow = styled.div`
   h1 {
     font-family: 'Open Sans', sans-serif;
     font-size: 18px;
-    color: #555e6f;
+    color: ${OL.GREY01};
   }
 
   div {
@@ -176,17 +190,17 @@ const HeaderRow = styled.div`
     font-family: 'Open Sans', sans-serif;
     font-size: 11px;
     font-weight: 600;
-    color: #8e929b;
+    color: ${OL.GREY02};
     border-radius: 3px;
-    border: solid 1px #8e929b;
+    border: solid 1px ${OL.GREY02};
     padding: 5px 7px;
   }
 
   span {
     margin-left: 10px;
     border-radius: 10px;
-    background-color: #f0f0f7;
-    color: #8e929b;
+    background-color: ${OL.GREY08};
+    color: ${OL.GREY02};
     font-family: 'Open Sans', sans-serif;
     font-size: 12px;
     padding: 2px 12px;
@@ -277,7 +291,7 @@ type Props = {
     selectPretrialCase :(value :{
       selectedPretrialCase :Immutable.Map<*, *>
     }) => void,
-    loadPersonDetailsRequest :(personId :string, shouldFetchCases :boolean) => void,
+    loadPersonDetails :(value :{personId :string, shouldLoadCases :boolean}) => void,
     setPSAValues :(value :{
       newValues :Immutable.Map<*, *>
     }) => void,
@@ -300,6 +314,7 @@ type Props = {
   selectedPretrialCase :Immutable.Map<*, *>,
   allJudges :Immutable.List<*>,
   arrestOptions :Immutable.List<*>,
+  caseLoadsComplete :boolean,
   charges :Immutable.List<*>,
   allCasesForPerson :Immutable.List<*>,
   allChargesForPerson :Immutable.List<*>,
@@ -347,12 +362,13 @@ class Form extends React.Component<Props, State> {
   }
 
   loadContextParams = () => {
+    const { actions } = this.props;
     const hashSplit = window.location.hash.split('?');
     if (hashSplit.length > 1) {
       const params = qs.parse(hashSplit[1]);
       if (params.context) {
         const newValues = Immutable.Map().set(DMF.COURT_OR_BOOKING, params.context);
-        this.props.actions.setPSAValues({ newValues });
+        actions.setPSAValues({ newValues });
         return true;
       }
     }
@@ -360,7 +376,7 @@ class Form extends React.Component<Props, State> {
   }
 
   redirectToFirstPageIfNecessary = () => {
-    const { psaForm, history } = this.props;
+    const { psaForm, history, selectedPerson } = this.props;
     const { scoresWereGenerated } = this.state;
     const loadedContextParams = this.loadContextParams();
     if (loadedContextParams) {
@@ -369,12 +385,13 @@ class Form extends React.Component<Props, State> {
     else if (!psaForm.get(DMF.COURT_OR_BOOKING)) {
       history.push(Routes.DASHBOARD);
     }
-    else if ((!this.props.selectedPerson.size || !scoresWereGenerated) && !window.location.href.endsWith('1')) {
+    else if ((!selectedPerson.size || !scoresWereGenerated) && !window.location.href.endsWith('1')) {
       history.push(`${Routes.PSA_FORM}/1`);
     }
   }
 
   componentWillReceiveProps(nextProps) {
+    const { location, selectedPerson } = this.props;
     const {
       selectedPretrialCase,
       charges,
@@ -384,9 +401,8 @@ class Form extends React.Component<Props, State> {
       allFTAs,
       psaForm,
       actions,
-      location
     } = nextProps;
-    if (location.pathname.endsWith('4') && !this.props.location.pathname.endsWith('4')) {
+    if (nextProps.location.pathname.endsWith('4') && !location.pathname.endsWith('4')) {
       actions.setPSAValues({
         newValues: tryAutofillFields(
           selectedPretrialCase,
@@ -395,7 +411,7 @@ class Form extends React.Component<Props, State> {
           allChargesForPerson,
           allSentencesForPerson,
           allFTAs,
-          this.props.selectedPerson,
+          selectedPerson,
           psaForm
         )
       });
@@ -407,8 +423,9 @@ class Form extends React.Component<Props, State> {
   }
 
   handleInputChange = (e) => {
+    const { actions } = this.props;
     const newValues = Immutable.fromJS({ [e.target.name]: e.target.value });
-    this.props.actions.setPSAValues({ newValues });
+    actions.setPSAValues({ newValues });
   }
 
   getPropertyTypes = (entitySetName) => {
@@ -431,10 +448,18 @@ class Form extends React.Component<Props, State> {
 
   submitEntities = (scores, riskFactors, dmf) => {
     const staffId = this.getStaffId();
+    const {
+      actions,
+      arrestId,
+      charges,
+      psaForm,
+      selectedPerson,
+      selectedPretrialCase
+    } = this.props;
 
     const values = Object.assign(
       {},
-      this.props.psaForm.toJS(),
+      psaForm.toJS(),
       riskFactors,
       scores.toJS(),
       dmf
@@ -447,15 +472,15 @@ class Form extends React.Component<Props, State> {
     values[ID_FIELD_NAMES.DMF_ID] = [randomUUID()];
     values[ID_FIELD_NAMES.DMF_RISK_FACTORS_ID] = [randomUUID()];
     values[ID_FIELD_NAMES.NOTES_ID] = [randomUUID()];
-    values[ID_FIELD_NAMES.PERSON_ID] = [this.props.selectedPerson.getIn([PROPERTY_TYPES.PERSON_ID, 0])];
+    values[ID_FIELD_NAMES.PERSON_ID] = [selectedPerson.getIn([PROPERTY_TYPES.PERSON_ID, 0])];
     values[ID_FIELD_NAMES.STAFF_ID] = [staffId];
 
     values[ID_FIELD_NAMES.TIMESTAMP] = toISODateTime(moment());
 
-    Object.assign(values, this.props.selectedPretrialCase.toJS());
-    values.charges = this.props.charges.toJS();
-    if (this.props.arrestId.length) {
-      values[ID_FIELD_NAMES.ARREST_ID] = [this.props.arrestId];
+    Object.assign(values, selectedPretrialCase.toJS());
+    values.charges = charges.toJS();
+    if (arrestId.length) {
+      values[ID_FIELD_NAMES.ARREST_ID] = [arrestId];
     }
 
     const config = psaConfig;
@@ -467,17 +492,18 @@ class Form extends React.Component<Props, State> {
       delete values[NOTES[DMF.SECONDARY_HOLD_CHARGES]];
     }
 
-    this.props.actions.submit({ values, config });
+    actions.submit({ values, config });
     this.setState({ psaId });
   }
 
   getFqn = propertyType => `${propertyType.getIn(['type', 'namespace'])}.${propertyType.getIn(['type', 'name'])}`
 
   handleSelectPerson = (selectedPerson, entityKeyId) => {
-    this.props.actions.selectPerson({ selectedPerson });
-    this.props.actions.loadPersonDetailsRequest(entityKeyId, true);
-    this.props.actions.loadNeighbors({
-      entitySetId: this.props.entitySetLookup.get(PEOPLE),
+    const { actions, entitySetLookup } = this.props;
+    actions.selectPerson({ selectedPerson });
+    actions.loadPersonDetails({ entityKeyId, shouldLoadCases: true });
+    actions.loadNeighbors({
+      entitySetId: entitySetLookup.get(PEOPLE),
       entityKeyId
     });
   }
@@ -493,9 +519,10 @@ class Form extends React.Component<Props, State> {
   }
 
   generateScores = () => {
-    const { riskFactors, scores } = getScoresAndRiskFactors(this.props.psaForm);
-    const dmf = calculateDMF(this.props.psaForm, scores);
-    const dmfRiskFactors = getDMFRiskFactors(this.props.psaForm);
+    const { psaForm } = this.props;
+    const { riskFactors, scores } = getScoresAndRiskFactors(psaForm);
+    const dmf = calculateDMF(psaForm, scores);
+    const dmfRiskFactors = getDMFRiskFactors(psaForm);
     this.setState({
       riskFactors,
       dmfRiskFactors,
@@ -507,8 +534,9 @@ class Form extends React.Component<Props, State> {
   }
 
   clear = () => {
+    const { actions } = this.props;
     this.setState(INITIAL_STATE.toJS());
-    this.props.actions.clearForm();
+    actions.clearForm();
   }
 
   setMultimapToMap = (setMultimap) => {
@@ -520,7 +548,6 @@ class Form extends React.Component<Props, State> {
   };
 
   renderExportButton = () => {
-    if (!this.state.scoresWereGenerated) return null;
     const {
       selectedPretrialCase,
       charges,
@@ -531,11 +558,19 @@ class Form extends React.Component<Props, State> {
       allFTAs
     } = this.props;
 
+    const {
+      dmfRiskFactors,
+      riskFactors,
+      scores,
+      scoresWereGenerated
+    } = this.state;
+
+    if (!scoresWereGenerated) return null;
     const data = Immutable.fromJS(this.state)
-      .set('scores', this.state.scores)
-      .set('riskFactors', this.setMultimapToMap(this.state.riskFactors))
-      .set('psaRiskFactors', Immutable.fromJS(this.state.riskFactors))
-      .set('dmfRiskFactors', Immutable.fromJS(this.state.dmfRiskFactors));
+      .set('scores', scores)
+      .set('riskFactors', this.setMultimapToMap(riskFactors))
+      .set('psaRiskFactors', Immutable.fromJS(riskFactors))
+      .set('dmfRiskFactors', Immutable.fromJS(dmfRiskFactors));
 
     return (
       <ButtonWrapper>
@@ -554,7 +589,8 @@ class Form extends React.Component<Props, State> {
                   user: this.getStaffId(),
                   timestamp: toISODateTime(moment())
                 });
-            }}>Export as PDF
+            }}>
+            Export as PDF
         </Button>
       </ButtonWrapper>
     );
@@ -563,7 +599,8 @@ class Form extends React.Component<Props, State> {
   renderDiscardButton = () => <DiscardButton onClick={this.handleClose}>Discard</DiscardButton>;
 
   renderClearButton = () => {
-    if (!this.state.scoresWereGenerated) return null;
+    const { scoresWereGenerated } = this.state;
+    if (!scoresWereGenerated) return null;
     return (
       <ButtonWrapper>
         <Button bsStyle="primary" bsSize="small" onClick={this.clear}>Restart</Button>
@@ -577,18 +614,22 @@ class Form extends React.Component<Props, State> {
   }
 
   handlePageChange = (path :string) => {
-    this.props.actions.clearSubmit();
-    this.props.history.push(path);
+    const { actions, history } = this.props;
+    actions.clearSubmit();
+    history.push(path);
   };
 
-  getSearchPeopleSection = () => (
-    <SearchPersonContainer
-        history={this.props.history}
-        onSelectPerson={(person, entityKeyId) => {
-          this.handleSelectPerson(person, entityKeyId);
-          this.nextPage();
-        }} />
-  );
+  getSearchPeopleSection = () => {
+    const { history } = this.props;
+    return (
+      <SearchPersonContainer
+          history={history}
+          onSelectPerson={(person, entityKeyId) => {
+            this.handleSelectPerson(person, entityKeyId);
+            this.nextPage();
+          }} />
+    );
+  }
 
   closePSA = (scores, status, failureReason) => {
     const { actions, selectedPersonId, entitySetLookup } = this.props;
@@ -620,24 +661,28 @@ class Form extends React.Component<Props, State> {
     </PSARowListHeader>
   )
 
-  renderPendingPSAListContent = () => (
-    <PSARowListSubHeader>
-      <FilterWrapper>
-        <span>PSA Status </span>
-        <StyledSelect
-            placeholder={this.state.status}
-            classNamePrefix="lattice-select"
-            options={Object.values(STATUS_OPTIONS_FOR_PENDING_PSAS)}
-            onChange={
-              e => (this.setState({ status: e.label }))
-            } />
-      </FilterWrapper>
-    </PSARowListSubHeader>
-  )
+  renderPendingPSAListContent = () => {
+    const { status } = this.state;
+    return (
+      <PSARowListSubHeader>
+        <FilterWrapper>
+          <span>PSA Status </span>
+          <StyledSelect
+              placeholder={status}
+              classNamePrefix="lattice-select"
+              options={Object.values(STATUS_OPTIONS_FOR_PENDING_PSAS)}
+              onChange={
+                e => (this.setState({ status: e.label }))
+              } />
+        </FilterWrapper>
+      </PSARowListSubHeader>
+    );
+  }
 
-  renderPendingPSASubContent = () => (
-    <PendingPSAsPersonCard person={this.props.selectedPerson} />
-  )
+  renderPendingPSASubContent = () => {
+    const { selectedPerson } = this.props;
+    return <PendingPSAsPersonCard person={selectedPerson} />;
+  }
 
   getPendingPSAs = () => {
     const {
@@ -648,11 +693,11 @@ class Form extends React.Component<Props, State> {
       openPSAs
     } = this.props;
     const { status } = this.state;
-    const PSAScores = status === STATUS_OPTIONS_FOR_PENDING_PSAS.OPEN.label ?
-      allPSAs.filter(scores => openPSAs.has(scores.getIn([OPENLATTICE_ID_FQN, 0]))) :
-      this.props.allPSAs;
+    const PSAScores = status === STATUS_OPTIONS_FOR_PENDING_PSAS.OPEN.label
+      ? allPSAs.filter(scores => openPSAs.has(getEntityKeyId(scores)))
+      : allPSAs;
     if (!PSAScores.size) return null;
-    const scoreSeq = PSAScores.map(obj => ([obj.getIn([OPENLATTICE_ID_FQN, 0]), obj]));
+    const scoreSeq = PSAScores.map(scores => ([getEntityKeyId(scores), scores]));
     return (
       <CenteredListWrapper>
         {this.renderPendingPSAsHeader()}
@@ -676,6 +721,7 @@ class Form extends React.Component<Props, State> {
 
   getSelectArrestSection = () => {
     const {
+      caseLoadsComplete,
       selectedPersonId,
       isLoadingCases,
       isLoadingNeighbors,
@@ -686,9 +732,13 @@ class Form extends React.Component<Props, State> {
       psaForm,
       actions
     } = this.props;
+    const { skipClosePSAs } = this.state;
     if (isLoadingCases && !isLoadingNeighbors) {
       if (numCasesLoaded === numCasesToLoad) {
-        actions.loadPersonDetailsRequest(selectedPersonId, false);
+        actions.loadPersonDetails({
+          entityKeyId: selectedPersonId,
+          shouldLoadCases: false
+        });
         actions.loadNeighbors({
           entitySetId: entitySetLookup.get(PEOPLE),
           entityKeyId: selectedPersonId
@@ -705,19 +755,19 @@ class Form extends React.Component<Props, State> {
         </LoadingContainer>);
     }
 
-    if (isLoadingNeighbors) {
+    if (isLoadingNeighbors || !caseLoadsComplete) {
       return <LoadingSpinner />;
     }
 
-    const pendingPSAs = (this.state.skipClosePSAs || psaForm.get(DMF.COURT_OR_BOOKING) === CONTEXT.BOOKING)
+    const pendingPSAs = (skipClosePSAs || psaForm.get(DMF.COURT_OR_BOOKING) === CONTEXT.BOOKING)
       ? null : this.getPendingPSAs();
     return pendingPSAs || (
       <SelectArrestContainer
-          clearSubmit={this.props.actions.clearSubmit}
+          clearSubmit={actions.clearSubmit}
           caseOptions={arrestOptions}
           nextPage={this.nextPage}
           prevPage={this.prevPage}
-          onManualEntry={this.props.actions.addCaseAndCharges}
+          onManualEntry={actions.addCaseAndCharges}
           onSelectCase={(selectedCase) => {
             actions.selectPretrialCase({ selectedPretrialCase: selectedCase });
             this.nextPage();
@@ -725,21 +775,41 @@ class Form extends React.Component<Props, State> {
     );
   }
 
-  getSelectChargesSection = () => (
-    <SelectChargesContainer
-        defaultArrest={this.props.selectedPretrialCase}
-        defaultCharges={this.props.charges}
-        nextPage={this.nextPage}
-        prevPage={this.prevPage}
-        onSubmit={this.props.actions.addCaseAndCharges}
-        county={this.props.psaForm.get(DMF.COURT_OR_BOOKING) === CONTEXT.COURT_MINN
-          ? DOMAIN.MINNEHAHA : DOMAIN.PENNINGTON} />
-  );
+  getSelectChargesSection = () => {
+    const {
+      actions,
+      charges,
+      psaForm,
+      selectedPretrialCase
+    } = this.props;
+    return (
+      <SelectChargesContainer
+          defaultArrest={selectedPretrialCase}
+          defaultCharges={charges}
+          nextPage={this.nextPage}
+          prevPage={this.prevPage}
+          onSubmit={actions.addCaseAndCharges}
+          county={psaForm.get(DMF.COURT_OR_BOOKING) === CONTEXT.COURT_MINN
+            ? DOMAIN.MINNEHAHA : DOMAIN.PENNINGTON} />
+    );
+  };
 
-  getPersonIdValue = () => this.props.selectedPerson.getIn([PROPERTY_TYPES.PERSON_ID, 0], '');
+  getPersonIdValue = () => {
+    const { selectedPerson } = this.props;
+    return selectedPerson.getIn([PROPERTY_TYPES.PERSON_ID, 0], '');
+  }
 
   getPsaInputForm = () => {
-    const { selectedPretrialCase, charges } = this.props;
+    const {
+      allCasesForPerson,
+      allChargesForPerson,
+      allFTAs,
+      allSentencesForPerson,
+      charges,
+      psaForm,
+      selectedPerson,
+      selectedPretrialCase
+    } = this.props;
     const personId = this.getPersonIdValue();
     const hasHistory = Number.parseInt(personId, 10).toString() === personId;
     return (
@@ -755,7 +825,7 @@ class Form extends React.Component<Props, State> {
               <div>{hasHistory ? 'Case history loaded from Odyssey' : 'No Odyssey case history'}</div>
             </HeaderRow>
             <div>
-              <PersonCard person={this.props.selectedPerson} />
+              <PersonCard person={selectedPerson} />
             </div>
           </ContextItem>
           <ContextItem>
@@ -774,13 +844,13 @@ class Form extends React.Component<Props, State> {
         <PSAInputForm
             handleInputChange={this.handleInputChange}
             handleSubmit={this.generateScores}
-            input={this.props.psaForm}
-            currCharges={this.props.charges}
-            currCase={this.props.selectedPretrialCase}
-            allCharges={this.props.allChargesForPerson}
-            allSentences={this.props.allSentencesForPerson}
-            allCases={this.props.allCasesForPerson}
-            allFTAs={this.props.allFTAs}
+            input={psaForm}
+            currCharges={charges}
+            currCase={selectedPretrialCase}
+            allCharges={allChargesForPerson}
+            allSentences={allSentencesForPerson}
+            allCases={allCasesForPerson}
+            allFTAs={allFTAs}
             handleClose={this.handleClose} />
       </StyledFormWrapper>
     );
@@ -796,12 +866,13 @@ class Form extends React.Component<Props, State> {
       allSentencesForPerson,
       allFTAs
     } = this.props;
+    const { dmfRiskFactors, riskFactors, scores } = this.state;
 
     const data = Immutable.fromJS(this.state)
-      .set('scores', this.state.scores)
-      .set('riskFactors', this.setMultimapToMap(this.state.riskFactors))
-      .set('psaRiskFactors', Immutable.fromJS(this.state.riskFactors))
-      .set('dmfRiskFactors', Immutable.fromJS(this.state.dmfRiskFactors));
+      .set('scores', scores)
+      .set('riskFactors', this.setMultimapToMap(riskFactors))
+      .set('psaRiskFactors', Immutable.fromJS(riskFactors))
+      .set('dmfRiskFactors', Immutable.fromJS(dmfRiskFactors));
 
     exportPDF(data,
       selectedPretrialCase,
@@ -830,10 +901,12 @@ class Form extends React.Component<Props, State> {
     } = this.state;
 
     const {
+      actions,
       allCasesForPerson,
       allChargesForPerson,
       allHearings,
       allJudges,
+      charges,
       psaForm
     } = this.props;
 
@@ -857,8 +930,8 @@ class Form extends React.Component<Props, State> {
           personId={this.getPersonIdValue()}
           psaId={psaId}
           submitSuccess={!submitError}
-          onClose={this.props.actions.hardRestart}
-          charges={this.props.charges}
+          onClose={actions.hardRestart}
+          charges={charges}
           notes={psaForm.get(PSA.NOTES)}
           allCases={allCasesForPerson}
           allCharges={chargesByCaseId}
@@ -869,7 +942,7 @@ class Form extends React.Component<Props, State> {
   }
 
   renderPSAResultsModal = () => {
-    const { isSubmitting, isSubmitted } = this.props;
+    const { actions, isSubmitting, isSubmitted } = this.props;
     const currentPage = getCurrentPage(window.location);
     if (!currentPage || Number.isNaN(currentPage)) return null;
     if (currentPage < 4 || (!isSubmitting && !isSubmitted)) {
@@ -880,7 +953,7 @@ class Form extends React.Component<Props, State> {
       <ConfirmationModal
           submissionStatus={isSubmitting || isSubmitted}
           pageContent={this.getPsaResults}
-          handleModalButtonClick={this.props.actions.hardRestart} />
+          handleModalButtonClick={actions.hardRestart} />
     );
   }
 
@@ -888,11 +961,11 @@ class Form extends React.Component<Props, State> {
     return (
       <div>
         <Switch>
-          <Route path={`${Routes.PSA_FORM}/1`} render={this.getSearchPeopleSection} />;
-          <Route path={`${Routes.PSA_FORM}/2`} render={this.getSelectArrestSection} />;
-          <Route path={`${Routes.PSA_FORM}/3`} render={this.getSelectChargesSection} />;
-          <Route path={`${Routes.PSA_FORM}/4`} render={this.getPsaInputForm} />;
-          <Route path={`${Routes.PSA_FORM}`} render={this.getSearchPeopleSection} />;
+          <Route path={`${Routes.PSA_FORM}/1`} render={this.getSearchPeopleSection} />
+          <Route path={`${Routes.PSA_FORM}/2`} render={this.getSelectArrestSection} />
+          <Route path={`${Routes.PSA_FORM}/3`} render={this.getSelectChargesSection} />
+          <Route path={`${Routes.PSA_FORM}/4`} render={this.getPsaInputForm} />
+          <Route path={`${Routes.PSA_FORM}`} render={this.getSearchPeopleSection} />
           <Redirect from={Routes.FORMS} to={Routes.DASHBOARD} />
         </Switch>
         { this.renderPSAResultsModal() }
@@ -934,7 +1007,8 @@ function mapStateToProps(state :Immutable.Map<*, *>) :Object {
     [SEARCH.SELECTED_PERSON_ID]: search.get(SEARCH.SELECTED_PERSON_ID),
     isLoadingCases: search.get(SEARCH.LOADING_CASES),
     [SEARCH.NUM_CASES_TO_LOAD]: search.get(SEARCH.NUM_CASES_TO_LOAD),
-    [SEARCH.NUM_CASES_LOADED]: search.get(SEARCH.NUM_CASES_LOADED)
+    [SEARCH.NUM_CASES_LOADED]: search.get(SEARCH.NUM_CASES_LOADED),
+    [SEARCH.CASE_LOADS_COMPLETE]: search.get(SEARCH.CASE_LOADS_COMPLETE)
   };
 }
 

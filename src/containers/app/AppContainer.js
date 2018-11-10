@@ -10,13 +10,14 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { Redirect, Route, Switch } from 'react-router-dom';
 
-import AppConsent from '../../containers/app/AppConsent';
+import AppConsent from './AppConsent';
 import HeaderNav from '../../components/nav/HeaderNav';
 import Dashboard from '../../components/dashboard/Dashboard';
 import Forms from '../forms/Forms';
 import ContactSupport from '../../components/app/ContactSupport';
 import { termsAreAccepted } from '../../utils/AcceptTermsUtils';
 import * as Routes from '../../core/router/Routes';
+import { OL } from '../../utils/consts/Colors';
 
 const {
   logout
@@ -27,7 +28,7 @@ const {
  */
 
 const AppWrapper = styled.div`
-  background-color: #f5f5f8;
+  background-color: ${OL.GREY09};
   display: flex;
   flex-direction: column;
   min-height: 100%;

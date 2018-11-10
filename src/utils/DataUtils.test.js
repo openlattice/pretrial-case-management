@@ -7,7 +7,7 @@ import {
   getFqnObj,
   getEntitySetId,
   getEntityKeyId,
-  getIdValue
+  getIdOrValue
 } from './DataUtils';
 
 const ID = 'id';
@@ -308,11 +308,11 @@ describe('DataUtils', () => {
 
   });
 
-  describe('getIdValue', () => {
+  describe('getIdOrValue', () => {
 
     test('should return id for default property general.id', () => {
 
-      expect(getIdValue(Immutable.fromJS({
+      expect(getIdOrValue(Immutable.fromJS({
         esName: {
           neighborDetails: {
             pt1: ['val1'],
@@ -323,7 +323,7 @@ describe('DataUtils', () => {
         }
       }), 'esName')).toEqual('eid_1');
 
-      expect(getIdValue(Immutable.fromJS({
+      expect(getIdOrValue(Immutable.fromJS({
         esName: {
           neighborEntitySet: {
             id: 'es_id_1'
@@ -337,7 +337,7 @@ describe('DataUtils', () => {
         }
       }), 'esName')).toEqual('eid_1');
 
-      expect(getIdValue(Immutable.fromJS({
+      expect(getIdOrValue(Immutable.fromJS({
         esName: {
           neighborEntitySet: {
             id: 'es_id_1'
@@ -355,7 +355,7 @@ describe('DataUtils', () => {
 
     test('should return id for custom FQN', () => {
 
-      expect(getIdValue(Immutable.fromJS({
+      expect(getIdOrValue(Immutable.fromJS({
         esName: {
           neighborDetails: {
             'pt.1': ['val1'],
@@ -366,7 +366,7 @@ describe('DataUtils', () => {
         }
       }), 'esName', 'pt.1')).toEqual('val1');
 
-      expect(getIdValue(Immutable.fromJS({
+      expect(getIdOrValue(Immutable.fromJS({
         esName: {
           neighborEntitySet: {
             id: 'es_id_1'
@@ -380,7 +380,7 @@ describe('DataUtils', () => {
         }
       }), 'esName', 'pt.2')).toEqual('val2');
 
-      expect(getIdValue(Immutable.fromJS({
+      expect(getIdOrValue(Immutable.fromJS({
         esName: {
           neighborEntitySet: {
             id: 'es_id_1'
@@ -398,7 +398,7 @@ describe('DataUtils', () => {
 
     test('should return empty string if id value is not present', () => {
 
-      expect(getIdValue(Immutable.fromJS({
+      expect(getIdOrValue(Immutable.fromJS({
         esName: {
           neighborDetails: {
             'pt.1': [],
@@ -409,7 +409,7 @@ describe('DataUtils', () => {
         }
       }), 'esName', 'pt.1')).toEqual('');
 
-      expect(getIdValue(Immutable.fromJS({
+      expect(getIdOrValue(Immutable.fromJS({
         esName: {
           neighborEntitySet: {
             id: 'es_id_1'
@@ -422,7 +422,7 @@ describe('DataUtils', () => {
         }
       }), 'esName', 'pt.2')).toEqual('');
 
-      expect(getIdValue(Immutable.fromJS({
+      expect(getIdOrValue(Immutable.fromJS({
         esName: {
           neighborEntitySet: {
             id: 'es_id_1'
@@ -430,7 +430,7 @@ describe('DataUtils', () => {
         }
       }), 'esName', PROPERTY_TYPES.GENERAL_ID)).toEqual('');
 
-      expect(getIdValue(Immutable.fromJS({
+      expect(getIdOrValue(Immutable.fromJS({
         esName2: {
           neighborEntitySet: {
             id: 'es_id_1'
@@ -438,7 +438,7 @@ describe('DataUtils', () => {
         }
       }), 'esName', PROPERTY_TYPES.GENERAL_ID)).toEqual('');
 
-      expect(getIdValue(Immutable.fromJS({
+      expect(getIdOrValue(Immutable.fromJS({
         esName: {
           neighborDetails: {
             'pt.1': ['val1'],
@@ -449,7 +449,7 @@ describe('DataUtils', () => {
         }
       }), 'esName')).toEqual('');
 
-      expect(getIdValue(Immutable.fromJS({
+      expect(getIdOrValue(Immutable.fromJS({
         esName: {
           neighborEntitySet: {
             id: 'es_id_1'
@@ -461,7 +461,7 @@ describe('DataUtils', () => {
         }
       }), 'esName', 'pt.2')).toEqual('');
 
-      expect(getIdValue(Immutable.fromJS({
+      expect(getIdOrValue(Immutable.fromJS({
         esName: {
           neighborEntitySet: {
             id: 'es_id_1'
@@ -469,7 +469,7 @@ describe('DataUtils', () => {
         }
       }), 'esName')).toEqual('');
 
-      expect(getIdValue(Immutable.fromJS({
+      expect(getIdOrValue(Immutable.fromJS({
         esName2: {
           neighborEntitySet: {
             id: 'es_id_1'

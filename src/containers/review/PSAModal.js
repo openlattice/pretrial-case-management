@@ -21,21 +21,24 @@ import CaseHistory from '../../components/casehistory/CaseHistory';
 import CaseHistoryTimeline from '../../components/casehistory/CaseHistoryTimeline';
 import DMFExplanation from '../../components/dmf/DMFExplanation';
 import SelectHearingsContainer from '../hearings/SelectHearingsContainer';
-import PSASummary from '../../components/review/PSASummary';
+import PSAModalSummary from '../../components/review/PSAModalSummary';
 import ReleaseConditionsSummary from '../../components/releaseconditions/ReleaseConditionsSummary';
 import ClosePSAModal from '../../components/review/ClosePSAModal';
 import psaEditedConfig from '../../config/formconfig/PsaEditedConfig';
 import closeX from '../../assets/svg/close-x-gray.svg';
 import { getScoresAndRiskFactors, calculateDMF } from '../../utils/ScoringUtils';
-import { getEntityKeyId, getEntitySetId, getIdValue } from '../../utils/DataUtils';
+import { getEntityKeyId, getEntitySetId, getIdOrValue } from '../../utils/DataUtils';
 import { CenteredContainer, Title } from '../../utils/Layout';
 import { toISODateTime } from '../../utils/FormattingUtils';
+import { getCasesForPSA, currentPendingCharges } from '../../utils/CaseUtils';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { RESULT_CATEGORIES } from '../../utils/consts/DMFResultConsts';
 import { formatDMFFromEntity } from '../../utils/DMFUtils';
+import { OL } from '../../utils/consts/Colors';
 import { psaIsClosed } from '../../utils/PSAUtils';
 import {
   PSA_NEIGHBOR,
+  PSA_ASSOCIATION,
   STATE,
   REVIEW,
   COURT
@@ -90,7 +93,7 @@ const TitleHeader = styled.span`
   margin-right: 15px;
   font-size: 18px;
   font-weight: 600;
-  color: #555e6f;
+  color: ${OL.GREY01};
   span {
     text-transform: uppercase;
   }
@@ -101,12 +104,12 @@ const ClosePSAButton = styled(StyledButton)`
   font-size: 14px;
   font-weight: 600;
   text-align: center;
-  color: #6124e2;
+  color: ${OL.PURPLE02};
   width: 162px;
   height: 40px;
   border: none;
   border-radius: 3px;
-  background-color: #e4d8ff;
+  background-color: ${OL.PURPLE06};
 `;
 const EditPSAButton = styled(StyledButton)`
   margin: ${props => (props.footer ? '-20px 0 30px' : '0')};
@@ -114,24 +117,24 @@ const EditPSAButton = styled(StyledButton)`
   font-size: 14px;
   font-weight: 600;
   text-align: center;
-  color: #8e929b;
+  color: ${OL.GREY02};
   width: ${props => (props.footer ? '340px' : '142px')};
   height: ${props => (props.footer ? '42px' : '40px')};
   border: none;
   border-radius: 3px;
-  background-color: #f0f0f7;
+  background-color: ${OL.GREY08};
 `;
 
 const PSAFormHeader = styled.div`
   padding: 30px;
   font-family: 'Open Sans', sans-serif;
   font-size: 18px;
-  color: #555e6f;
+  color: ${OL.GREY01};
   display: flex;
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
-  border-bottom: solid 1px #e1e1eb !important;
+  border-bottom: solid 1px ${OL.GREY11} !important;
 `;
 
 const CloseModalX = styled.img.attrs({
@@ -403,9 +406,9 @@ class PSAModal extends React.Component<Props, State> {
     return getEntityKeyId(neighbors, name);
   };
 
-  getIdValue = (name, optionalFQN) :string => {
+  getIdOrValue = (name, optionalFQN) :string => {
     const { neighbors } = this.props;
-    return getIdValue(neighbors, name, optionalFQN);
+    return getIdOrValue(neighbors, name, optionalFQN);
   };
 
   refreshPSANeighborsCallback = () => {
@@ -429,14 +432,14 @@ class PSAModal extends React.Component<Props, State> {
     const dmf = calculateDMF(riskFactors, scoresAndRiskFactors.scores);
 
     const scoreId = scores.getIn([PROPERTY_TYPES.GENERAL_ID, 0]);
-    const riskFactorsIdValue = this.getIdValue(ENTITY_SETS.PSA_RISK_FACTORS);
+    const riskFactorsIdValue = this.getIdOrValue(ENTITY_SETS.PSA_RISK_FACTORS);
 
-    const dmfIdValue = this.getIdValue(ENTITY_SETS.DMF_RESULTS);
+    const dmfIdValue = this.getIdOrValue(ENTITY_SETS.DMF_RESULTS);
     const dmfId = this.getEntityKeyId(ENTITY_SETS.DMF_RESULTS);
     const dmfEntitySetId = this.getEntitySetId(ENTITY_SETS.DMF_RESULTS);
     const dmfEntity = this.getDMFEntity(dmf, dmfIdValue);
 
-    const dmfRiskFactorsIdValue = this.getIdValue(ENTITY_SETS.DMF_RISK_FACTORS);
+    const dmfRiskFactorsIdValue = this.getIdOrValue(ENTITY_SETS.DMF_RISK_FACTORS);
     const dmfRiskFactorsId = this.getEntityKeyId(ENTITY_SETS.DMF_RISK_FACTORS);
     const dmfRiskFactorsEntitySetId = this.getEntitySetId(ENTITY_SETS.DMF_RISK_FACTORS);
     const dmfRiskFactorsEntity = this.getDMFRiskFactorsEntity(riskFactors, dmfRiskFactorsIdValue);
@@ -461,7 +464,7 @@ class PSAModal extends React.Component<Props, State> {
 
     const notes = riskFactors.get(PSA.NOTES);
     if (this.getNotesFromNeighbors(neighbors) !== notes) {
-      notesIdValue = this.getIdValue(ENTITY_SETS.RELEASE_RECOMMENDATIONS);
+      notesIdValue = this.getIdOrValue(ENTITY_SETS.RELEASE_RECOMMENDATIONS);
       notesId = this.getEntityKeyId(ENTITY_SETS.RELEASE_RECOMMENDATIONS);
       notesEntitySetId = this.getEntitySetId(ENTITY_SETS.RELEASE_RECOMMENDATIONS);
       notesEntity = this.getNotesEntity(riskFactors, notesIdValue);
@@ -530,21 +533,39 @@ class PSAModal extends React.Component<Props, State> {
       scores,
       manualCaseHistory,
       chargeHistory,
+      caseHistory,
       manualChargeHistory,
       actions
     } = this.props;
-
     const { riskFactors } = this.state;
+    const arrestDate = neighbors.getIn(
+      [ENTITY_SETS.MANUAL_PRETRIAL_CASES, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.ARREST_DATE_TIME, 0],
+      ''
+    );
+    const lastEditDateForPSA = neighbors.getIn(
+      [ENTITY_SETS.STAFF, 0, PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.DATE_TIME, 0],
+      ''
+    );
+    const { chargeHistoryForMostRecentPSA } = getCasesForPSA(
+      caseHistory,
+      chargeHistory,
+      scores,
+      arrestDate,
+      lastEditDateForPSA
+    );
+
+    const pendingCharges = currentPendingCharges(chargeHistoryForMostRecentPSA);
 
     return (
-      <PSASummary
+      <PSAModalSummary
           downloadFn={actions.downloadPSAReviewPDF}
           scores={scores}
           neighbors={neighbors}
           manualCaseHistory={manualCaseHistory}
           chargeHistory={chargeHistory}
           manualChargeHistory={manualChargeHistory}
-          notes={riskFactors.get(PSA.NOTES)} />
+          notes={riskFactors.get(PSA.NOTES)}
+          pendingCharges={pendingCharges} />
     );
   }
 
@@ -633,7 +654,32 @@ class PSAModal extends React.Component<Props, State> {
   }
 
   renderCaseHistory = () => {
-    const { caseHistory, chargeHistory } = this.props;
+    const {
+      caseHistory,
+      chargeHistory,
+      scores,
+      neighbors
+    } = this.props;
+    const arrestDate = neighbors.getIn(
+      [ENTITY_SETS.MANUAL_PRETRIAL_CASES, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.ARREST_DATE_TIME, 0],
+      ''
+    );
+    const lastEditDateForPSA = neighbors.getIn(
+      [ENTITY_SETS.STAFF, 0, PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.DATE_TIME, 0],
+      ''
+    );
+    const {
+      caseHistoryForMostRecentPSA,
+      chargeHistoryForMostRecentPSA,
+      caseHistoryNotForMostRecentPSA,
+      chargeHistoryNotForMostRecentPSA
+    } = getCasesForPSA(
+      caseHistory,
+      chargeHistory,
+      scores,
+      arrestDate,
+      lastEditDateForPSA
+    );
     return (
       <ModalWrapper withPadding>
         <Title withSubtitle>
@@ -642,7 +688,13 @@ class PSAModal extends React.Component<Props, State> {
         </Title>
         <CaseHistoryTimeline caseHistory={caseHistory} chargeHistory={chargeHistory} />
         <hr />
-        <CaseHistory modal caseHistory={caseHistory} chargeHistory={chargeHistory} />
+        <CaseHistory
+            modal
+            caseHistoryForMostRecentPSA={caseHistoryForMostRecentPSA}
+            chargeHistoryForMostRecentPSA={chargeHistoryForMostRecentPSA}
+            caseHistoryNotForMostRecentPSA={caseHistoryNotForMostRecentPSA}
+            chargeHistoryNotForMostRecentPSA={chargeHistoryNotForMostRecentPSA}
+            chargeHistory={chargeHistory} />
       </ModalWrapper>
     );
   };
@@ -679,7 +731,7 @@ class PSAModal extends React.Component<Props, State> {
             submitting={submitting}
             refreshingNeighbors={refreshingNeighbors}
             psaId={scores.getIn([PROPERTY_TYPES.GENERAL_ID, 0])}
-            dmfId={this.getIdValue(ENTITY_SETS.DMF_RESULTS)}
+            dmfId={this.getIdOrValue(ENTITY_SETS.DMF_RESULTS)}
             psaEntityKeyId={entityKeyId}
             deleteHearing={this.deleteHearing}
             refreshPSANeighborsCallback={this.refreshPSANeighborsCallback}
@@ -759,7 +811,10 @@ class PSAModal extends React.Component<Props, State> {
               scores={scores}
               entityKeyId={entityKeyId} />
           <TitleWrapper>
-            <TitleHeader>PSA Details: <span>{`${this.getName()}`}</span></TitleHeader>
+            <TitleHeader>
+              PSA Details:
+              <span>{` ${this.getName()}`}</span>
+            </TitleHeader>
             <div>
               { readOnly
                 ? null

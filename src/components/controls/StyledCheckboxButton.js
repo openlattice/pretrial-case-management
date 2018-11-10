@@ -2,6 +2,8 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
 
+import { OL } from '../../utils/consts/Colors';
+
 export const CheckboxInputContainer = styled.input.attrs({
   type: 'checkbox'
 })`
@@ -20,11 +22,11 @@ export const CheckboxSelection = styled.span`
   min-width: 84px;
   height: ${props => (props.large ? '56px' : '38px')};
   border-radius: 3px;
-  background-color: #f9f9fd;
+  background-color: ${OL.GREY10};
   font-family: 'Open Sans', sans-serif;
   font-size: 14px;
   font-weight: normal;
-  color: #8e929b;
+  color: ${OL.GREY02};
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -33,18 +35,18 @@ export const CheckboxSelection = styled.span`
   position: relative;
 
   ${CheckboxContainer}:hover ${CheckboxInputContainer}:enabled:not(:checked) ~ & {
-    background-color: #dcdce7;
+    background-color: ${OL.GREY10};
     cursor: pointer;
   }
 
   ${CheckboxContainer}:hover ${CheckboxInputContainer}:enabled:checked ~ & {
-    background-color: #e4d8ff;
+    background-color: ${OL.PURPLE06};
     cursor: pointer;
   }
 
   ${CheckboxContainer} ${CheckboxInputContainer}:checked ~ & {
-    background-color: #e4d8ff;
-    color: #6124e2;
+    background-color: ${OL.PURPLE06};
+    color: ${OL.PURPLE02};
   }
 
   ${CheckboxContainer} ${CheckboxInputContainer}:disabled ~ & {
@@ -52,8 +54,8 @@ export const CheckboxSelection = styled.span`
   }
 
   ${CheckboxContainer} ${CheckboxInputContainer}:disabled:checked ~ & {
-    background-color: #dcdce7;
-    color: #8e929b;
+    background-color: ${OL.GREY05};
+    color: ${OL.GREY02};
     cursor: default;
     border: none;
   }

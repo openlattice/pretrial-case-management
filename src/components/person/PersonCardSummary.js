@@ -9,11 +9,12 @@ import ContentSection from '../ContentSection';
 import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
 import defaultUserIcon from '../../assets/svg/profile-placeholder-round.svg';
 import { formatValue, formatDateList } from '../../utils/FormattingUtils';
+import { OL } from '../../utils/consts/Colors';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 
 const PersonCardWrapper = styled.div`
   width: 100%;
-  border-right: solid 1px #eeeeee;
+  border-right: solid 1px ${OL.GREY28};
 `;
 
 export default ({ person } :Props) => {
@@ -21,8 +22,6 @@ export default ({ person } :Props) => {
   const middleName = formatValue(person.get(PROPERTY_TYPES.MIDDLE_NAME, ''));
   const lastName = formatValue(person.get(PROPERTY_TYPES.LAST_NAME, ''));
   const dob = formatDateList(person.get(PROPERTY_TYPES.DOB, ''));
-  const sex = formatValue(person.get(PROPERTY_TYPES.SEX, ''));
-  const race = formatValue(person.get(PROPERTY_TYPES.RACE, ''));
   const generalContent = [
     {
       label: 'Last Name',
@@ -40,14 +39,6 @@ export default ({ person } :Props) => {
       label: 'Date of Birth',
       content: [dob]
     }
-    // {
-    //   label: 'Gender',
-    //   content: [sex]
-    // },
-    // {
-    //   label: 'Race',
-    //   content: [race]
-    // }
   ];
 
   const content = generalContent.map(item => (
@@ -65,7 +56,7 @@ export default ({ person } :Props) => {
           header="Person"
           firstName={firstName}
           middleName={middleName}
-          lastName={lastName} >
+          lastName={lastName}>
         {content}
       </ContentSection>
     </PersonCardWrapper>

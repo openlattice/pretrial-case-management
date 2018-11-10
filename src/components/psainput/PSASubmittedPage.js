@@ -15,15 +15,17 @@ import DMFCell from '../dmf/DMFCell';
 import ChargeTable from '../charges/ChargeTable';
 import CaseHistoryTimeline from '../casehistory/CaseHistoryTimeline';
 import RiskFactorsTable from '../riskfactors/RiskFactorsTable';
-import SelectHearingsContainer from '../../containers/hearings/SelectHearingsContainer';
+import NewHearingSection from '../hearings/NewHearingSection';
 import SelectedHearingInfo from '../hearings/SelectedHearingInfo';
 import psaSuccessIcon from '../../assets/svg/psa-success.svg';
 import psaFailureIcon from '../../assets/svg/psa-failure.svg';
 import closeXWhiteIcon from '../../assets/svg/close-x-white.svg';
 import closeXGrayIcon from '../../assets/svg/close-x-gray.svg';
 import closeXBlackIcon from '../../assets/svg/close-x-black.svg';
+import { OL } from '../../utils/consts/Colors';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { getHeaderText } from '../../utils/DMFUtils';
+import { JURISDICTION } from '../../utils/consts/Consts';
 import {
   ResultHeader,
   ScaleBlock,
@@ -33,7 +35,6 @@ import {
 import * as Routes from '../../core/router/Routes';
 
 type Props = {
-  allJudges :Immutable.Map<*, *>,
   isSubmitting :boolean,
   scores :Immutable.Map<*, *>,
   riskFactors :Object,
@@ -79,11 +80,11 @@ const Banner = styled(WideContainer)`
   background-color: ${(props) => {
     switch (props.status) {
       case STATUSES.SUCCESS:
-        return '#00be84';
+        return OL.GREEN02;
       case STATUSES.FAILURE:
-        return '#ffe25c';
+        return OL.YELLOW04;
       default:
-        return '#f0f0f7';
+        return OL.GREY08;
     }
   }};
   height: 80px;
@@ -102,7 +103,7 @@ const Banner = styled(WideContainer)`
       font-family: 'Open Sans', sans-serif;
       font-size: 18px;
       font-weight: 600;
-      color: ${props => (props.status === STATUSES.SUCCESS ? '#ffffff' : '#2e2e34')};
+      color: ${props => (props.status === STATUSES.SUCCESS ? OL.WHITE : OL.GREY15)};
       margin-left: 15px;
     }
   }
@@ -136,7 +137,7 @@ const HeaderRow = styled(Bookend)`
   span {
     font-family: 'Open Sans', sans-serif;
     font-size: 18px;
-    color: #555e6f;
+    color: ${OL.GREY01};
   }
 `;
 
@@ -157,11 +158,11 @@ const Flag = styled.span`
   width: 86px;
   height: 32px;
   border-radius: 3px;
-  border: solid 1px #555e6f;
+  border: solid 1px ${OL.GREY01};
   font-family: 'Open Sans', sans-serif;
   font-size: 16px;
   font-weight: 600;
-  color: #555e6f;
+  color: ${OL.GREY01};
   padding: 5px 30px;
 `;
 
@@ -183,8 +184,8 @@ const ScoresContainer = styled.div`
 `;
 
 const DMF = styled(WideContainer)`
-  border-top: 1px solid #e1e1eb;
-  border-bottom: 1px solid #e1e1eb;
+  border-top: 1px solid ${OL.GREY11};
+  border-bottom: 1px solid ${OL.GREY11};
   margin-top: 30px;
   padding: 15px 30px;
 
@@ -199,7 +200,7 @@ const DMF = styled(WideContainer)`
       font-family: 'Open Sans', sans-serif;
       font-size: 16px;
       font-weight: 600;
-      color: #555e6f;
+      color: ${OL.GREY01};
     }
   }
 `;
@@ -207,8 +208,8 @@ const DMF = styled(WideContainer)`
 const NotesContainer = styled(WideContainer)`
   font-family: 'Open Sans', sans-serif;
   font-size: 14px;
-  color: #2e2e34;
-  border-bottom: 1px solid #e1e1eb;
+  color: ${OL.GREY15};
+  border-bottom: 1px solid ${OL.GREY11};
   padding-bottom: 30px;
   padding-left: 30px;
 `;
@@ -268,7 +269,7 @@ class PSASubmittedPage extends React.Component<Props, State> {
     this.state = {
       settingHearing: false,
       selectedHearing: undefined
-    }
+    };
   }
 
   renderBanner = () => {
@@ -312,12 +313,15 @@ class PSASubmittedPage extends React.Component<Props, State> {
     );
   }
 
-  renderNvca = () => (
-    <div>
-      <ResultHeader>New Violent Criminal Activity Flag</ResultHeader>
-      <Flag>{this.props.scores.getIn([PROPERTY_TYPES.NVCA_FLAG, 0]) ? 'Yes' : 'No'}</Flag>
-    </div>
-  )
+  renderNvca = () => {
+    const { scores } = this.props;
+    return (
+      <div>
+        <ResultHeader>New Violent Criminal Activity Flag</ResultHeader>
+        <Flag>{scores.getIn([PROPERTY_TYPES.NVCA_FLAG, 0]) ? 'Yes' : 'No'}</Flag>
+      </div>
+    )
+  }
 
   renderScale = (val :number) => {
     const scale = [];
@@ -439,35 +443,44 @@ class PSASubmittedPage extends React.Component<Props, State> {
     return <RiskFactorsTable rows={rows} disabled />;
   }
 
-  renderExportButton = (openAbove) => (
-    <div>
-      <DropdownButton
-          title="PDF Report"
-          openAbove={openAbove}
-          options={[{
-            label: 'Export compact version',
-            onClick: () => this.props.getOnExport(true)
-          }, {
-            label: 'Export full version',
-            onClick: () => this.props.getOnExport(false)
-          }]} />
-    </div>
-  )
+  renderExportButton = (openAbove) => {
+    const { getOnExport } = this.props;
+    return (
+      <div>
+        <DropdownButton
+            title="PDF Report"
+            openAbove={openAbove}
+            options={[{
+              label: 'Export compact version',
+              onClick: () => getOnExport(true)
+            }, {
+              label: 'Export full version',
+              onClick: () => getOnExport(false)
+            }]} />
+      </div>
+    );
+  }
 
-  renderProfileButton = () => (
-    <BasicButton
-        onClick={() => {
-          this.props.history.push(Routes.PERSON_DETAILS.replace(':personId', this.props.personId));
-        }}>
-      Go to Profile
-    </BasicButton>
-  )
+  renderProfileButton = () => {
+    const { history, personId } = this.props;
+    return (
+      <BasicButton
+          onClick={() => {
+            history.push(Routes.PERSON_DETAILS.replace(':personId', personId));
+          }}>
+        Go to Profile
+      </BasicButton>
+    );
+  }
 
-  renderSetHearingButton = () => (
-    <InfoButton onClick={() => this.setState({ settingHearing: true })}>
-      {this.state.selectedHearing ? 'View Hearing' : 'Set Hearing'}
-    </InfoButton>
-  );
+  renderSetHearingButton = () => {
+    const { selectedHearing } = this.state;
+    return (
+      <InfoButton onClick={() => this.setState({ settingHearing: true })}>
+        {selectedHearing ? 'View Hearing' : 'Set Hearing'}
+      </InfoButton>
+    );
+  };
 
   render() {
     const {
@@ -477,31 +490,30 @@ class PSASubmittedPage extends React.Component<Props, State> {
       allCases,
       allCharges,
       allHearings,
-      allJudges,
       personId,
       psaId,
       isSubmitting,
       context
     } = this.props;
-
-    if (this.state.settingHearing) {
-      if (!this.state.selectedHearing) {
+    const { settingHearing, selectedHearing } = this.state;
+    const jurisdiction = JURISDICTION[context];
+    if (settingHearing) {
+      if (!selectedHearing) {
         return (
-          <SelectHearingsContainer
-              PSASubmittedPage
+          <NewHearingSection
               submitting={isSubmitting}
-              context={context}
+              jurisdiction={jurisdiction}
               personId={personId}
               psaId={psaId}
               hearings={allHearings}
-              allJudges={allJudges}
-              onSubmit={selectedHearing => this.setState({ selectedHearing })} />
+              manuallyCreatingHearing
+              onSubmit={hearing => this.setState({ selectedHearing: hearing })} />
         );
       }
 
       return (
         <SelectedHearingInfo
-            hearing={this.state.selectedHearing}
+            hearing={selectedHearing}
             onClose={() => this.setState({ settingHearing: false })} />
       );
     }
@@ -542,7 +554,7 @@ class PSASubmittedPage extends React.Component<Props, State> {
           </ButtonRow>
           <FooterButtonGroup>
             {this.renderSetHearingButton()}
-            <BasicButton onClick={onClose}><img src={closeXGrayIcon} role="presentation" /></BasicButton>
+            <BasicButton onClick={onClose}><img src={closeXGrayIcon} alt="" /></BasicButton>
           </FooterButtonGroup>
         </FooterRow>
       </Wrapper>

@@ -5,6 +5,8 @@
 import React from 'react';
 import styled from 'styled-components';
 
+import { OL } from '../../utils/consts/Colors';
+
 import DateTimePicker from '../controls/StyledDateTimePicker';
 
 type Props = {
@@ -25,7 +27,7 @@ const DatePickerTitle = styled.div`
   margin: 28px 0 20px 0;
   text-align: center;
   font-family: 'Open Sans', sans-serif;
-  color: #555e6f;
+  color: ${OL.GREY01};
 `;
 
 const DateRangeContainer = styled.div`
@@ -43,7 +45,7 @@ const DatePickerGroupContainer = styled.div`
 const DatePickerLabel = styled.div`
   font-family: 'Open Sans', sans-serif;
   font-size: 14px;
-  color: #555e6f;
+  color: ${OL.GREY01};
   margin-bottom: 10px;
 `;
 

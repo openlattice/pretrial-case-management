@@ -5,11 +5,12 @@ import React from 'react';
 import Immutable from 'immutable';
 import styled from 'styled-components';
 
-import { Title } from '../../utils/Layout';
+import { OL } from '../../utils/consts/Colors';
+import { Title, AlternateSectionHeader, PendingChargeStatus } from '../../utils/Layout';
 import { getSummaryStats } from '../../utils/HistoricalChargeUtils';
 
 const ChargeHistoryStatsWrapper = styled.div`
-  padding: ${props => (props.padding ? '0 30px' : '0')};
+  padding: ${props => (props.padding ? '30px 30px' : '0')};
   width: 100%;
   hr {
     margin: ${props => (props.padding ? '0 -30px' : '15px 0')};
@@ -47,7 +48,7 @@ const StatsItem = styled.div`
 const StatLabel = styled.span`
   font-size: 16px;
   text-align: left;
-  color: #555e6f;
+  color: ${OL.GREY01};
 `;
 
 const StatValue = styled.span`
@@ -55,75 +56,98 @@ const StatValue = styled.span`
   font-size: 16px;
   font-weight: 600;
   text-align: right;
-  color: #555e6f;
+  color: ${OL.GREY01};
+`;
+
+const SectionHeader = styled(AlternateSectionHeader)`
+  padding: 0;
+  justify-content: space-between;
 `;
 
 type Props = {
   chargeHistory :Immutable.Map<*, *>,
+  pendingCharges :Immutable.List<*, *>,
   padding :boolean
 };
 
-const ChargeHistoryStats = ({ chargeHistory, padding } :Props) => {
+class ChargeHistoryStats extends React.Component<Props, *> {
 
-  const {
-    numMisdemeanorCharges,
-    numMisdemeanorConvictions,
-    numFelonyCharges,
-    numFelonyConvictions,
-    numViolentCharges,
-    numViolentConvictions
-  } = getSummaryStats(chargeHistory);
+  renderPendingChargeStatus = () => {
+    const { pendingCharges } = this.props;
+    const statusText = pendingCharges.size
+      ? `${pendingCharges.size} Pending Charge${pendingCharges.size > 1 ? 's' : ''}`
+      : 'No Pending Charges';
+    return (
+      <PendingChargeStatus pendingCharges={pendingCharges.size}>
+        {statusText}
+      </PendingChargeStatus>
+    );
+  }
 
-  const SUMMARY_STATS_ARR = [
-    {
-      label: '# of misdemeanor charges',
-      value: numMisdemeanorCharges
-    },
-    {
-      label: '# of felony charges',
-      value: numFelonyCharges
-    },
-    {
-      label: '# of violent charges',
-      value: numViolentCharges
-    },
-    {
-      label: '# of misdemeanor convictions',
-      value: numMisdemeanorConvictions
-    },
-    {
-      label: '# of felony convictions',
-      value: numFelonyConvictions
-    },
-    {
-      label: '# of violent convictions',
-      value: numViolentConvictions
-    }
-  ];
+  render() {
+    const { chargeHistory, padding, pendingCharges } = this.props;
+    const {
+      numMisdemeanorCharges,
+      numMisdemeanorConvictions,
+      numFelonyCharges,
+      numFelonyConvictions,
+      numViolentCharges,
+      numViolentConvictions
+    } = getSummaryStats(chargeHistory);
 
-  const SummaryStats = SUMMARY_STATS_ARR.map(stat => (
-    <StatsItem key={stat.label} >
-      <StatLabel>{stat.label}</StatLabel>
-      <StatValue>{stat.value}</StatValue>
-    </StatsItem>
-  ));
+    const SUMMARY_STATS_ARR = [
+      {
+        label: '# of misdemeanor charges',
+        value: numMisdemeanorCharges
+      },
+      {
+        label: '# of felony charges',
+        value: numFelonyCharges
+      },
+      {
+        label: '# of violent charges',
+        value: numViolentCharges
+      },
+      {
+        label: '# of misdemeanor convictions',
+        value: numMisdemeanorConvictions
+      },
+      {
+        label: '# of felony convictions',
+        value: numFelonyConvictions
+      },
+      {
+        label: '# of violent convictions',
+        value: numViolentConvictions
+      }
+    ];
 
-  return (
-    <ChargeHistoryStatsWrapper padding={padding}>
-      <Title withSubtitle >
-        <span>Summary Statistics</span>
-        <span>All current and past cases</span>
-      </Title>
-      <StatsContainer>
-        <StatsWrapper>
-          <StatsGroup>
-            {SummaryStats}
-          </StatsGroup>
-        </StatsWrapper>
-      </StatsContainer>
-      <hr />
-    </ChargeHistoryStatsWrapper>
-  );
-};
+    const SummaryStats = SUMMARY_STATS_ARR.map(stat => (
+      <StatsItem key={stat.label}>
+        <StatLabel>{stat.label}</StatLabel>
+        <StatValue>{stat.value}</StatValue>
+      </StatsItem>
+    ));
+
+    return (
+      <ChargeHistoryStatsWrapper padding={padding}>
+        <SectionHeader>
+          <Title withSubtitle>
+            <span>Summary Statistics</span>
+            All current and past cases
+          </Title>
+          {pendingCharges.size ? this.renderPendingChargeStatus() : null}
+        </SectionHeader>
+        <StatsContainer>
+          <StatsWrapper>
+            <StatsGroup>
+              {SummaryStats}
+            </StatsGroup>
+          </StatsWrapper>
+        </StatsContainer>
+      </ChargeHistoryStatsWrapper>
+    );
+  }
+}
 
 export default ChargeHistoryStats;
