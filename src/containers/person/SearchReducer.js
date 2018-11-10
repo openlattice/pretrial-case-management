@@ -71,7 +71,7 @@ export default function searchReducer(state = INITIAL_STATE, action) {
         SUCCESS: () => {
           const { response } = action.value;
           let newState = state.set(SEARCH.PERSON_DETAILS, Immutable.fromJS(response));
-          if (state.get(SEARCH.NUM_CASES_TO_LOAD) === 0) {
+          if (!state.get(SEARCH.LOADING_CASES)) {
             newState = newState.set(SEARCH.CASE_LOADS_COMPLETE, true);
           }
           return newState;
