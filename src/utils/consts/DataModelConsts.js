@@ -23,6 +23,7 @@ export const ENTITY_SETS = {
   JUDGES: 'southdakotajudges',
   BONDS: 'southdakotamanualbonds',
   RELEASE_CONDITIONS: 'southdakotareleaseconditions',
+  CONTACT_INFORMATION: 'southdakotacontactinformation',
 
   // judge entity sets
   MIN_PEN_PEOPLE: 'MinPenPeople',
@@ -68,6 +69,12 @@ export const PROPERTY_TYPES = {
   WEIGHT: 'nc.PersonWeightMeasure',
   EYE: 'nc.PersonEyeColorText',
   JURISDICTION: 'ol.idjurisdiction',
+
+  // contact information fields
+  EMAIL: 'staff.email',
+  PHONE: 'contact.phonenumber',
+  IS_MOBILE: 'contact.cellphone',
+
 
   // location-specific fields
   ADDRESS: 'location.Address',
