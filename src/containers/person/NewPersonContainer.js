@@ -25,6 +25,7 @@ import { StyledFormWrapper, StyledSectionWrapper } from '../../utils/Layout';
 import { newPersonSubmit } from './PersonActionFactory';
 import { clearForm } from '../psa/FormActionFactory';
 import { STATE, SEARCH } from '../../utils/consts/FrontEndStateConsts';
+import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
 
 import {
@@ -51,6 +52,13 @@ import * as Routes from '../../core/router/Routes';
 /*
  * styled components
  */
+
+ export const InputRow = styled.div`
+   margin-top: 20px;
+   display: grid;
+   grid-template-columns: ${props => (props.numColumns ? `repeat(${props.numColumns}, 1fr)` : props.other)};
+   grid-gap: 15px;
+ `;
 
 const FormSection = styled.div`
   width: 100%;
@@ -91,6 +99,12 @@ const PaddedRow = styled.div`
 `;
 
 const UnpaddedRow = styled(PaddedRow)`
+  margin: 0;
+`;
+
+const SubRow = styled(PaddedRow)`
+  justify-content: flex-start;
+  align-items: flex-end;
   margin: 0;
 `;
 
@@ -215,6 +229,9 @@ class NewPersonContainer extends React.Component<Props, State> {
       [SSN_VALUE]: '',
       [STATE_VALUE]: '',
       [ZIP_VALUE]: '',
+      [PROPERTY_TYPES.EMAIL]: '',
+      [PROPERTY_TYPES.PHONE]: '',
+      [PROPERTY_TYPES.IS_MOBILE]: false,
       showSelfieWebCam: false
     };
   }
@@ -246,6 +263,12 @@ class NewPersonContainer extends React.Component<Props, State> {
 
   handleOnSelectChange = (field, value) => {
     this.setState({ [field]: value });
+  }
+
+  handleCheckboxChange = (e) => {
+    this.setState({
+      [PROPERTY_TYPES.IS_MOBILE]: e.target.checked || false
+    });
   }
 
   handleOnChangeTakePicture = (event :SyntheticInputEvent<*>) => {
@@ -296,7 +319,11 @@ class NewPersonContainer extends React.Component<Props, State> {
       [STATE_VALUE]: state[STATE_VALUE] || null,
       [ZIP_VALUE]: state[ZIP_VALUE] || null,
       [ID_VALUE]: uuid(),
-      [LIVES_AT_ID_VALUE]: uuid()
+      [LIVES_AT_ID_VALUE]: uuid(),
+      [PROPERTY_TYPES.GENERAL_ID]: uuid(),
+      [PROPERTY_TYPES.EMAIL]: state[PROPERTY_TYPES.EMAIL] || null,
+      [PROPERTY_TYPES.PHONE]: state[PROPERTY_TYPES.PHONE] || null,
+      [PROPERTY_TYPES.IS_MOBILE]: state[PROPERTY_TYPES.IS_MOBILE] || null
     };
 
     actions.newPersonSubmit({ config, values });
@@ -329,8 +356,27 @@ class NewPersonContainer extends React.Component<Props, State> {
         value={this.state[field]}
         onChange={this.handleOnChangeInput} />
   )
+  renderPhoneInput = field => (
+    <StyledInput
+        type="tel"
+        pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}"
+        name={field}
+        value={this.state[field]}
+        onChange={this.handleOnChangeInput} />
+  )
+  renderEmailInput = field => (
+    <StyledInput
+        type="email"
+        pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$"
+        name={field}
+        value={this.state[field]}
+        onChange={this.handleOnChangeInput} />
+  )
 
   render() {
+    const { history } = this.props;
+    const { state } = this;
+    console.log(state);
     return (
       <StyledFormWrapper>
         <StyledSectionWrapper>
@@ -338,7 +384,7 @@ class NewPersonContainer extends React.Component<Props, State> {
             <UnpaddedRow>
               <Header>Enter New Person Information</Header>
               <ButtonGroup>
-                <BasicButton onClick={() => this.props.history.push(Routes.CREATE_FORMS)}>Discard</BasicButton>
+                <BasicButton onClick={() => history.push(Routes.CREATE_FORMS)}>Discard</BasicButton>
                 <InfoButton onClick={this.submitNewPerson} disabled={!this.isReadyToSubmit()}>Submit</InfoButton>
               </ButtonGroup>
             </UnpaddedRow>
@@ -353,49 +399,74 @@ class NewPersonContainer extends React.Component<Props, State> {
               <SubHeader>Legal Name*</SubHeader>
             </PaddedRow>
 
-            <PaddedRow>
-              <InputGroup width="33%">
+            <InputRow numColumns={3}>
+              <InputGroup>
                 <InputLabel>Last name*</InputLabel>
                 {this.renderInput(LAST_NAME_VALUE)}
               </InputGroup>
-              <InputGroup width="33%">
+              <InputGroup>
                 <InputLabel>First name*</InputLabel>
                 {this.renderInput(FIRST_NAME_VALUE)}
               </InputGroup>
-              <InputGroup width="33%">
+              <InputGroup>
                 <InputLabel>Middle name</InputLabel>
                 {this.renderInput(MIDDLE_NAME_VALUE)}
               </InputGroup>
-            </PaddedRow>
+            </InputRow>
 
-            <PaddedRow>
-              <InputGroup width="33%">
+            <InputRow numColumns={3}>
+              <InputGroup>
                 <InputLabel>Date of birth*</InputLabel>
                 <StyledDatePicker
-                    value={this.state[DOB_VALUE]}
+                    value={state[DOB_VALUE]}
                     onChange={this.handleOnChangeDateOfBirth}
                     clearButton={false} />
               </InputGroup>
-              <InputGroup width="33%">
+              <InputGroup>
                 <InputLabel>Gender</InputLabel>
                 {this.getSelect(GENDER_VALUE, GENDERS)}
               </InputGroup>
-              <InputGroup width="33%">
+              <InputGroup>
                 <InputLabel>Social Security #</InputLabel>
                 {this.renderInput(SSN_VALUE)}
               </InputGroup>
-            </PaddedRow>
+            </InputRow>
 
-            <PaddedRow>
-              <InputGroup width="50%">
+            <InputRow numColumns={2}>
+              <InputGroup>
                 <InputLabel>Race</InputLabel>
                 {this.getSelect(RACE_VALUE, RACES)}
               </InputGroup>
-              <InputGroup width="50%">
+              <InputGroup>
                 <InputLabel>Ethnicity</InputLabel>
                 {this.getSelect(ETHNICITY_VALUE, ETHNICITIES)}
               </InputGroup>
+            </InputRow>
+          </FormSection>
+
+          <FormSection>
+            <PaddedRow>
+              <SubHeader>Contact Information</SubHeader>
             </PaddedRow>
+
+            <InputRow numColumns={2}>
+              <InputGroup>
+                <InputLabel>Email</InputLabel>
+                {this.renderEmailInput(PROPERTY_TYPES.EMAIL)}
+              </InputGroup>
+              <SubRow>
+                <InputGroup>
+                  <InputLabel>Phone</InputLabel>
+                  {this.renderPhoneInput(PROPERTY_TYPES.PHONE)}
+                </InputGroup>
+                <Checkbox
+                    value=""
+                    name="mobileCheckBox"
+                    label="Mobile?"
+                    checked={state[PROPERTY_TYPES.IS_MOBILE]}
+                    onChange={this.handleCheckboxChange} />
+              </SubRow>
+            </InputRow>
           </FormSection>
 
           <FormSection>
@@ -403,31 +474,31 @@ class NewPersonContainer extends React.Component<Props, State> {
               <SubHeader>Mailing address</SubHeader>
             </PaddedRow>
 
-            <PaddedRow>
-              <InputGroup width="66%">
+            <InputRow other="66% 33%">
+              <InputGroup>
                 <InputLabel>Address</InputLabel>
                 {this.renderInput(ADDRESS_VALUE)}
               </InputGroup>
-              <InputGroup width="33%">
+              <InputGroup>
                 <InputLabel>City</InputLabel>
                 {this.renderInput(CITY_VALUE)}
               </InputGroup>
-            </PaddedRow>
+            </InputRow>
 
-            <PaddedRow>
-              <InputGroup width="33%">
+            <InputRow numColumns={3}>
+              <InputGroup>
                 <InputLabel>State</InputLabel>
                 {this.getSelect(STATE_VALUE, STATES, true)}
               </InputGroup>
-              <InputGroup width="33%">
+              <InputGroup>
                 <InputLabel>Country</InputLabel>
                 {this.renderInput(COUNTRY_VALUE)}
               </InputGroup>
-              <InputGroup width="33%">
+              <InputGroup>
                 <InputLabel>ZIP code</InputLabel>
                 {this.renderInput(ZIP_VALUE)}
               </InputGroup>
-            </PaddedRow>
+            </InputRow>
           </FormSection>
 
           <FormSection>
