@@ -22,6 +22,7 @@ export const SSN_VALUE :'ssnValue' = 'ssnValue';
 export const STATE_VALUE :'stateValue' = 'stateValue';
 export const ZIP_VALUE :'zipValue' = 'zipValue';
 
+
 export const newPersonSubmissionConfig = {
   entitySets: [
     {
@@ -51,6 +52,16 @@ export const newPersonSubmissionConfig = {
       }
     },
     {
+      alias: ALIASES.CONTACT_INFO,
+      name: ENTITY_SETS.CONTACT_INFORMATION,
+      fields: {
+        [PROPERTY_TYPES.GENERAL_ID]: PROPERTY_TYPES.GENERAL_ID,
+        [PROPERTY_TYPES.EMAIL]: PROPERTY_TYPES.EMAIL,
+        [PROPERTY_TYPES.PHONE]: PROPERTY_TYPES.PHONE,
+        [PROPERTY_TYPES.IS_MOBILE]: PROPERTY_TYPES.IS_MOBILE
+      }
+    },
+    {
       alias: ALIASES.LIVES_AT,
       name: ENTITY_SETS.LIVES_AT,
       fields: {
@@ -63,6 +74,11 @@ export const newPersonSubmissionConfig = {
       src: ALIASES.PERSON,
       dst: ALIASES.PERSON_ADDRESSES,
       association: ALIASES.LIVES_AT
+    },
+    {
+      src: ALIASES.PERSON,
+      dst: ALIASES.CONTACT_INFO,
+      association: ALIASES.CONTACTED_AT
     }
   ]
 };
