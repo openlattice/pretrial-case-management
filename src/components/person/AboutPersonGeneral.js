@@ -17,7 +17,7 @@ const {
   LAST_NAME
 } = PROPERTY_TYPES;
 
-const AboutPersonGeneral = ({ selectedPersonData }) => {
+const AboutPersonGeneral = ({ selectedPersonData, contactInfo }) => {
 
   let generalContent = [];
 
@@ -27,6 +27,9 @@ const AboutPersonGeneral = ({ selectedPersonData }) => {
   const lastName = formatValue(selectedPersonData.get(LAST_NAME, Immutable.List()));
   const dobList = selectedPersonData.get(DOB, Immutable.List());
   const dob = formatDateList(dobList);
+
+  const phone = contactInfo.getIn([PROPERTY_TYPES.PHONE, 0], '');
+  const isMobile = contactInfo.get(PROPERTY_TYPES.IS_MOBILE, '');
 
   if (dobList.size) {
     age = moment().diff(moment(dobList.get(0, '')), 'years');
@@ -48,8 +51,8 @@ const AboutPersonGeneral = ({ selectedPersonData }) => {
           content: [(firstName ? firstName.charAt(0).toUpperCase() + firstName.slice(1).toLowerCase() : firstName)]
         },
         {
-          label: '',
-          content: ['']
+          label: (isMobile ? 'Phone (mobile)' : 'Phone'),
+          content: [(phone || 'NA')]
         },
         {
           label: 'Date of Birth',
