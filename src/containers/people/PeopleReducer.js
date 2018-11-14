@@ -82,7 +82,7 @@ export default function peopleReducer(state = INITIAL_STATE, action) {
         SUCCESS: () => {
           let caseNums = Set();
           let neighborsByEntitySet = Map();
-          let mostRecentPSA;
+          let mostRecentPSA = Map();
           let currentPSADateTime;
 
           const { personId, neighbors } = action.value;
