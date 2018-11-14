@@ -2,13 +2,13 @@
  * @flow
  */
 
-import { call, put, takeEvery } from 'redux-saga/effects';
 import {
   EntityDataModelApi,
   Constants,
   DataApi,
   SearchApi
 } from 'lattice';
+import { call, put, takeEvery } from 'redux-saga/effects';
 
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import {
