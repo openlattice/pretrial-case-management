@@ -165,7 +165,7 @@ class PersonDetailsContainer extends React.Component<Props, State> {
     } = this.props;
 
     const scores = mostRecentPSA.get(PSA_NEIGHBOR.DETAILS, Map());
-    const mostRecentPSAEntityKeyId = getEntityKeyId(mostRecentPSA.get(PSA_NEIGHBOR.DETAILS, Map()));
+    const mostRecentPSAEntityKeyId = getEntityKeyId(scores);
     const neighborsForMostRecentPSA = psaNeighborsById.get(mostRecentPSAEntityKeyId, Map());
     const caseHistory = getCaseHistory(neighbors);
     const personManualCaseHistory = manualCaseHistory.get(personId, List());
