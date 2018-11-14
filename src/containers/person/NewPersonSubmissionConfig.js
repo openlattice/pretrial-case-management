@@ -67,6 +67,13 @@ export const newPersonSubmissionConfig = {
       fields: {
         [LIVES_AT_ID_VALUE]: PROPERTY_TYPES.STRING_ID
       }
+    },
+    {
+      alias: ALIASES.CONTACT_GIVEN_FOR,
+      name: ENTITY_SETS.CONTACT_INFO_GIVEN,
+      fields: {
+        [PROPERTY_TYPES.CONTACT_INFO_GIVEN_ID]: PROPERTY_TYPES.CONTACT_INFO_GIVEN_ID
+      }
     }
   ],
   associations: [
@@ -78,7 +85,7 @@ export const newPersonSubmissionConfig = {
     {
       src: ALIASES.PERSON,
       dst: ALIASES.CONTACT_INFO,
-      association: ALIASES.CONTACTED_AT
+      association: ALIASES.CONTACT_GIVEN_FOR
     }
   ]
 };
