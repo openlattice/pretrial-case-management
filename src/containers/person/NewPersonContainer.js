@@ -19,9 +19,9 @@ import Checkbox from '../../components/controls/StyledCheckbox';
 import StyledInput from '../../components/controls/StyledInput';
 import StyledDatePicker from '../../components/controls/StyledDatePicker';
 import SearchableSelect from '../../components/controls/SearchableSelect';
+import PersonContactInfo from '../../components/person/PersonContactInfo';
 import { GENDERS, STATES } from '../../utils/consts/Consts';
 import { toISODate } from '../../utils/FormattingUtils';
-import { StyledFormWrapper, StyledSectionWrapper } from '../../utils/Layout';
 import { newPersonSubmit } from './PersonActionFactory';
 import { clearForm } from '../psa/FormActionFactory';
 import { STATE, SEARCH } from '../../utils/consts/FrontEndStateConsts';
@@ -48,99 +48,26 @@ import {
   newPersonSubmissionConfig
 } from './NewPersonSubmissionConfig';
 import * as Routes from '../../core/router/Routes';
+import {
+  StyledFormWrapper,
+  StyledSectionWrapper
+} from '../../utils/Layout';
+import {
+  ButtonGroup,
+  HeaderSection,
+  FormSection,
+  InputRow,
+  InputGroup,
+  InputLabel,
+  PaddedRow,
+  UnpaddedRow,
+  Header,
+  SubHeader
+} from '../../components/person/PersonFormTags';
 
 /*
  * styled components
  */
-
- export const InputRow = styled.div`
-   margin-top: 20px;
-   display: grid;
-   grid-template-columns: ${props => (props.numColumns ? `repeat(${props.numColumns}, 1fr)` : props.other)};
-   grid-gap: 15px;
- `;
-
-const FormSection = styled.div`
-  width: 100%;
-  padding: 20px 30px;
-  border-bottom: 1px solid ${OL.GREY11};
-
-  &:last-child {
-    margin-bottom: -30px;
-    border-bottom: none;
-  }
-`;
-
-const HeaderSection = styled(FormSection)`
-  padding-top: 0;
-  margin-top: -10px;
-  margin-bottom: 15px;
-`;
-
-const ButtonGroup = styled.div`
-  display: inline-flex;
-  width: 300px;
-  justify-content: space-between;
-  button {
-    width: 140px;
-  }
-
-  ${InfoButton} {
-    padding: 0;
-  }
-`;
-
-const PaddedRow = styled.div`
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 30px;
-`;
-
-const UnpaddedRow = styled(PaddedRow)`
-  margin: 0;
-`;
-
-const SubRow = styled(PaddedRow)`
-  justify-content: flex-start;
-  align-items: flex-end;
-  margin: 0;
-`;
-
-const Header = styled.div`
-  font-family: 'Open Sans', sans-serif;
-  font-size: 18px;
-  color: ${OL.GREY01};
-`;
-
-const SubHeader = styled(Header)`
-  font-size: 16px;
-  margin-top: 15px;
-`;
-
-const InputLabel = styled.span`
-  font-family: 'Open Sans', sans-serif;
-  font-size: 14px;
-  color: ${OL.GREY01};
-  margin-bottom: 10px;
-`;
-
-const InputGroup = styled.div`
-  width: ${props => props.width};
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  padding: 0 15px;
-
-  &:first-child {
-    padding-left: 0;
-  }
-
-  &:last-child {
-    padding-right: 0;
-  }
-`;
 
 const ErrorMessage = styled.div`
   color: ${OL.RED03};
@@ -237,13 +164,23 @@ class NewPersonContainer extends React.Component<Props, State> {
   }
 
   componentWillUnmount() {
-    this.props.actions.clearForm();
+    const { actions } = this.props;
+    actions.clearForm();
   }
 
-  isReadyToSubmit = () :boolean => !!this.state[DOB_VALUE]
-        && !!this.state[FIRST_NAME_VALUE]
-        && !!this.state[LAST_NAME_VALUE]
-        && !this.props.isCreatingPerson
+  isReadyToSubmit = () :boolean => {
+    const { isCreatingPerson } = this.props;
+    const { state } = this;
+    const hasDOB = !!state[DOB_VALUE];
+    const hasName = !!state[FIRST_NAME_VALUE] && !!state[LAST_NAME_VALUE];
+    const phoneFormatIsCorrect = state[PROPERTY_TYPES.PHONE]
+      ? !this.phoneIsValid()
+      : true;
+    const emailFormatIsCorrect = state[PROPERTY_TYPES.EMAIL]
+      ? !this.emailIsValid()
+      : true;
+    return !isCreatingPerson && hasDOB && hasName && phoneFormatIsCorrect && emailFormatIsCorrect;
+  }
 
   handleOnChangeDateOfBirth = (dob :?string) => {
     const dobMoment = dob ? moment(dob) : null;
@@ -254,8 +191,23 @@ class NewPersonContainer extends React.Component<Props, State> {
     });
   }
 
-  handleOnChangeInput = (event :SyntheticInputEvent<*>) => {
+  phoneIsValid = () => {
+    const { state } = this;
+    const phone = state[PROPERTY_TYPES.PHONE];
+    return (
+      phone ? !phone.match(/^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/) : false
+    );
+  }
 
+  emailIsValid = () => {
+    const { state } = this;
+    const email = state[PROPERTY_TYPES.EMAIL];
+    return (
+      email ? !email.match(/^([a-zA-Z0-9_\-\.]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})$/) : false
+    );
+  }
+
+  handleOnChangeInput = (event :SyntheticInputEvent<*>) => {
     this.setState({
       [event.target.name]: event.target.value || ''
     });
@@ -323,7 +275,8 @@ class NewPersonContainer extends React.Component<Props, State> {
       [PROPERTY_TYPES.GENERAL_ID]: uuid(),
       [PROPERTY_TYPES.EMAIL]: state[PROPERTY_TYPES.EMAIL] || null,
       [PROPERTY_TYPES.PHONE]: state[PROPERTY_TYPES.PHONE] || null,
-      [PROPERTY_TYPES.IS_MOBILE]: state[PROPERTY_TYPES.IS_MOBILE] || null
+      [PROPERTY_TYPES.IS_MOBILE]: state[PROPERTY_TYPES.IS_MOBILE] || null,
+      [PROPERTY_TYPES.CONTACT_INFO_GIVEN_ID]: uuid()
     };
 
     actions.newPersonSubmit({ config, values });
@@ -356,27 +309,10 @@ class NewPersonContainer extends React.Component<Props, State> {
         value={this.state[field]}
         onChange={this.handleOnChangeInput} />
   )
-  renderPhoneInput = field => (
-    <StyledInput
-        type="tel"
-        pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}"
-        name={field}
-        value={this.state[field]}
-        onChange={this.handleOnChangeInput} />
-  )
-  renderEmailInput = field => (
-    <StyledInput
-        type="email"
-        pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$"
-        name={field}
-        value={this.state[field]}
-        onChange={this.handleOnChangeInput} />
-  )
 
   render() {
     const { history } = this.props;
     const { state } = this;
-    console.log(state);
     return (
       <StyledFormWrapper>
         <StyledSectionWrapper>
@@ -444,30 +380,14 @@ class NewPersonContainer extends React.Component<Props, State> {
             </InputRow>
           </FormSection>
 
-          <FormSection>
-            <PaddedRow>
-              <SubHeader>Contact Information</SubHeader>
-            </PaddedRow>
-
-            <InputRow numColumns={2}>
-              <InputGroup>
-                <InputLabel>Email</InputLabel>
-                {this.renderEmailInput(PROPERTY_TYPES.EMAIL)}
-              </InputGroup>
-              <SubRow>
-                <InputGroup>
-                  <InputLabel>Phone</InputLabel>
-                  {this.renderPhoneInput(PROPERTY_TYPES.PHONE)}
-                </InputGroup>
-                <Checkbox
-                    value=""
-                    name="mobileCheckBox"
-                    label="Mobile?"
-                    checked={state[PROPERTY_TYPES.IS_MOBILE]}
-                    onChange={this.handleCheckboxChange} />
-              </SubRow>
-            </InputRow>
-          </FormSection>
+          <PersonContactInfo
+              phone={state[PROPERTY_TYPES.PHONE]}
+              phoneIsValid={this.phoneIsValid()}
+              email={state[PROPERTY_TYPES.EMAIL]}
+              emailIsValid={this.emailIsValid()}
+              isMobile={state[PROPERTY_TYPES.IS_MOBILE]}
+              handleOnChangeInput={this.handleOnChangeInput}
+              handleCheckboxChange={this.handleCheckboxChange} />
 
           <FormSection>
             <PaddedRow>
