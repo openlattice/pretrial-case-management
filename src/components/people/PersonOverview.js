@@ -91,7 +91,9 @@ const PersonOverview = ({
     arrestDate,
     lastEditDateForPSA
   );
+  const contactInfo = neighbors.getIn([ENTITY_SETS.CONTACT_INFORMATION, 0, PSA_NEIGHBOR.DETAILS], Map());
   const pendingCharges = currentPendingCharges(chargeHistory);
+
   if (loading) {
     return <LoadingSpinner />;
   }
@@ -100,7 +102,9 @@ const PersonOverview = ({
       <StyledColumn>
         <StyledColumnRowWrapper>
           <StyledColumnRow>
-            <AboutPersonGeneral selectedPersonData={selectedPersonData} />
+            <AboutPersonGeneral
+                selectedPersonData={selectedPersonData}
+                contactInfo={contactInfo} />
           </StyledColumnRow>
         </StyledColumnRowWrapper>
         <StyledColumnRowWrapper>
