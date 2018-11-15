@@ -96,10 +96,18 @@ export default function peopleReducer(state = INITIAL_STATE, action) {
                 currentPSADateTime = entityDateTime;
               }
             }
-            neighborsByEntitySet = neighborsByEntitySet.set(
-              entitySetName,
-              neighborsByEntitySet.get(entitySetName, List()).push(neighborObj)
-            );
+            if (entitySetName === ENTITY_SETS.CONTACT_INFORMATION) {
+              neighborsByEntitySet = neighborsByEntitySet.set(
+                entitySetName,
+                neighborObj
+              );
+            }
+            else {
+              neighborsByEntitySet = neighborsByEntitySet.set(
+                entitySetName,
+                neighborsByEntitySet.get(entitySetName, List()).push(neighborObj)
+              );
+            }
           });
 
           const uniqNeighborsByEntitySet = neighborsByEntitySet.set(ENTITY_SETS.PRETRIAL_CASES,
