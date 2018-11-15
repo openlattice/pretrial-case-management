@@ -261,6 +261,7 @@ class PersonDetailsContainer extends React.Component<Props, State> {
       loadingPSAResults,
       mostRecentPSA,
       neighbors,
+      personId,
       selectedPersonData
     } = this.props;
 
@@ -275,6 +276,7 @@ class PersonDetailsContainer extends React.Component<Props, State> {
           selectedPersonData={selectedPersonData}
           neighbors={neighbors}
           openDetailsModal={this.openDetailsModal}
+          personId={personId}
           renderModal={this.renderPSADetailsModal} />
     );
   }
