@@ -13,8 +13,13 @@ import {
 import { getEntityKeyId } from '../../utils/DataUtils';
 import { changePSAStatus, updateScoresAndRiskFactors } from '../review/ReviewActionFactory';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { getPeople, getPersonData, getPersonNeighbors } from './PeopleActionFactory';
 import { PEOPLE, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
+import {
+  getPeople,
+  getPersonData,
+  getPersonNeighbors,
+  refreshPersonNeighbors
+} from './PeopleActionFactory';
 
 const { OPENLATTICE_ID_FQN } = Constants;
 const INITIAL_STATE = fromJS({
@@ -25,6 +30,7 @@ const INITIAL_STATE = fromJS({
   [PEOPLE.FETCHING_PEOPLE]: false,
   [PEOPLE.FETCHING_PERSON_DATA]: false,
   [PEOPLE.NEIGHBORS]: Map(),
+  [PEOPLE.REFRESHING_PERSON_NEIGHBORS]: false,
   [PEOPLE.MOST_RECENT_PSA]: Map()
 });
 
@@ -134,6 +140,31 @@ export default function peopleReducer(state = INITIAL_STATE, action) {
           .setIn([PEOPLE.NEIGHBORS, action.personId], Map())
           .set(PEOPLE.FETCHING_PEOPLE, false),
         FINALLY: () => state.set(PEOPLE.FETCHING_PERSON_DATA, false)
+      });
+    }
+
+    case refreshPersonNeighbors.case(action.type): {
+      return refreshPersonNeighbors.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([PEOPLE.NEIGHBORS, action.personId], Map())
+          .set(PEOPLE.REFRESHING_PERSON_NEIGHBORS, true),
+        SUCCESS: () => {
+          const {
+            personId,
+            mostRecentPSA,
+            neighbors,
+            scoresEntitySetId
+          } = action.value;
+          return (
+            state.setIn([PEOPLE.NEIGHBORS, personId], neighbors)
+              .set(PEOPLE.SCORES_ENTITY_SET_ID, scoresEntitySetId)
+              .set(PEOPLE.MOST_RECENT_PSA, mostRecentPSA)
+          );
+        },
+        FAILURE: () => state
+          .setIn([PEOPLE.NEIGHBORS, action.personId], Map())
+          .set(PEOPLE.REFRESHING_PERSON_NEIGHBORS, false),
+        FINALLY: () => state.set(PEOPLE.REFRESHING_PERSON_NEIGHBORS, false)
       });
     }
 
