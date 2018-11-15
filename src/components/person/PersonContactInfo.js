@@ -20,7 +20,7 @@ import {
 } from './PersonFormTags';
 
 const StyledFormSection = styled(FormSection)`
-  border-bottom: ${props => (props.noBorder ? 'none' : `border-bottom: 1px solid ${OL.GREY11}`)};
+  border-bottom: ${props => (props.modal ? 'none' : `border-bottom: 1px solid ${OL.GREY11}`)};
 `;
 
 const StyledInputWithErrors = styled(StyledInput)`
@@ -37,7 +37,7 @@ type Props = {
   handleCheckboxChange :() => void,
   handleOnChangeInput :() => void,
   isMobile :boolean,
-  noBorder :boolean,
+  modal :boolean,
   phone :string,
   phoneIsValid :boolean,
 }
@@ -69,19 +69,28 @@ class PersonContactInfo extends React.Component<Props, *> {
     );
   }
 
+  renderHeader = () => {
+    const { modal } = this.props;
+    return modal
+      ? null
+      : (
+        <PaddedRow>
+          <SubHeader>Contact Information</SubHeader>
+        </PaddedRow>
+      );
+  }
+
   render() {
     const {
       emailIsValid,
       handleCheckboxChange,
       isMobile,
-      noBorder,
+      modal,
       phoneIsValid,
     } = this.props;
     return (
-      <StyledFormSection noBorder={noBorder}>
-        <PaddedRow>
-          <SubHeader>Contact Information</SubHeader>
-        </PaddedRow>
+      <StyledFormSection modal={modal}>
+        { this.renderHeader() }
 
         <InputRow numColumns={2}>
           <InputGroup>
