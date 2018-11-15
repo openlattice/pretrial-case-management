@@ -68,7 +68,6 @@ const DetailItem = styled.div`
 
   div:first-child {
     font-family: 'Open Sans', sans-serif;
-    font-weight: normal;
     font-size: 13px;
     display: flex;
     text-transform: uppercase;
@@ -85,8 +84,8 @@ const StatusTag = styled.div`
   text-transform: uppercase;
   font-family: 'Open Sans', sans-serif;
   font-size: 13px;
-  font-weight: 600;
-  color: white;
+  font-weight: bold;
+  color: ${OL.WHITE};
   border-radius: 3px;
   align-self: center;
   padding: 2px 5px;
