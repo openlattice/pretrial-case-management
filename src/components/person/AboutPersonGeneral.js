@@ -64,7 +64,7 @@ class AboutPersonGeneral extends React.Component<Props, *> {
     const dobList = selectedPersonData.get(DOB, Immutable.List());
     const dob = formatDateList(dobList);
     const phone = contactInfo.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.PHONE, 0], '');
-    const isMobile = contactInfo.get([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.IS_MOBILE], '');
+    const isMobile = contactInfo.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.IS_MOBILE, 0], '');
 
     if (dobList.size) {
       age = moment().diff(moment(dobList.get(0, '')), 'years');
