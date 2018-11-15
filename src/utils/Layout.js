@@ -547,6 +547,8 @@ export const NoResults = styled.div`
   padding: 50px 0;
 `;
 
+// Stats Styled Tags
+
 export const StatsWrapper = styled.div`
   padding: ${props => (props.padding ? '30px 30px' : '0')};
   width: 100%;
