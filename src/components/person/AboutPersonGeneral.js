@@ -52,6 +52,10 @@ class AboutPersonGeneral extends React.Component<Props, *> {
     );
   };
 
+  formatName = name => (
+    name.split(' ').map(n => (n.charAt(0).toUpperCase() + n.slice(1).toLowerCase())).join(' ')
+  )
+
   render() {
     const { selectedPersonData, contactInfo } = this.props;
 
@@ -59,8 +63,11 @@ class AboutPersonGeneral extends React.Component<Props, *> {
 
     let age = '';
     const firstName = formatValue(selectedPersonData.get(FIRST_NAME, Immutable.List()));
+    const formattedFirstName = this.formatName(firstName);
     const middleName = formatValue(selectedPersonData.get(MIDDLE_NAME, Immutable.List()));
+    const formattedMiddleName = this.formatName(middleName);
     const lastName = formatValue(selectedPersonData.get(LAST_NAME, Immutable.List()));
+    const formattedLastName = this.formatName(lastName);
     const dobList = selectedPersonData.get(DOB, Immutable.List());
     const dob = formatDateList(dobList);
     const phone = contactInfo.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.PHONE, 0], '');
@@ -75,17 +82,17 @@ class AboutPersonGeneral extends React.Component<Props, *> {
         generalContent = [
           {
             label: 'Last Name',
-            content: [(lastName ? lastName.charAt(0).toUpperCase() + lastName.slice(1).toLowerCase() : lastName)]
+            content: [(lastName ? formattedLastName : lastName)]
           },
           {
             label: 'Middle Name',
             content: [
-              (middleName ? middleName.charAt(0).toUpperCase() + middleName.slice(1).toLowerCase() : middleName)
+              (middleName ? formattedMiddleName : middleName)
             ]
           },
           {
             label: 'First Name',
-            content: [(firstName ? firstName.charAt(0).toUpperCase() + firstName.slice(1).toLowerCase() : firstName)]
+            content: [(firstName ? formattedFirstName : firstName)]
           },
           {
             label: (isMobile ? 'Phone (mobile)' : 'Phone'),
