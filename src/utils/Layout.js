@@ -546,3 +546,60 @@ export const NoResults = styled.div`
   width: 100%;
   padding: 50px 0;
 `;
+
+// Stats Styled Tags
+
+export const StatsWrapper = styled.div`
+  padding: ${props => (props.padding ? '30px 30px' : '0')};
+  width: 100%;
+  hr {
+    margin: ${props => (props.padding ? '0 -30px' : '15px 0')};
+    width: ${props => (props.padding ? 'calc(100% + 60px)' : '100%')};
+  }
+`;
+
+export const StatsContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 15px 0;
+`;
+
+export const StatsSubWrapper = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+`;
+
+export const StatsGroup = styled.div`
+  display: grid;
+  grid-template-columns: 28% 28% 28%;
+  grid-column-gap: 8%;
+  grid-template-rows: 50% 50%;
+  width: 100%;
+`;
+export const StatsItem = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  margin: 2px;
+`;
+
+export const StatLabel = styled.span`
+  font-size: 16px;
+  text-align: left;
+  color: ${OL.GREY01};
+`;
+
+export const StatValue = styled.span`
+  font-family: 'Open Sans', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  text-align: right;
+  color: ${OL.GREY01};
+`;
+
+export const StatsSectionHeader = styled(AlternateSectionHeader)`
+  padding: 0;
+  justify-content: space-between;
+`;

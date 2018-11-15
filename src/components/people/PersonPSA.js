@@ -111,7 +111,7 @@ class PersonOverview extends React.Component<Props, State> {
   }
 
   renderPSAs = () => {
-    const { neighbors, loading } = this.props;
+    const { neighbors, loading, personId } = this.props;
     const { statusFilters } = this.state;
     const scoreSeq = neighbors.get(ENTITY_SETS.PSA_SCORES, Map())
       .filter(neighbor => !!neighbor.get(PSA_NEIGHBOR.DETAILS)
@@ -129,6 +129,7 @@ class PersonOverview extends React.Component<Props, State> {
           component={CONTENT_CONSTS.PROFILE}
           hideCaseHistory
           hideProfile
+          personId={personId}
           personProfile />
     );
   };
