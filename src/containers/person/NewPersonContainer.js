@@ -174,10 +174,10 @@ class NewPersonContainer extends React.Component<Props, State> {
     const hasDOB = !!state[DOB_VALUE];
     const hasName = !!state[FIRST_NAME_VALUE] && !!state[LAST_NAME_VALUE];
     const phoneFormatIsCorrect = state[PROPERTY_TYPES.PHONE]
-      ? !this.phoneIsValid()
+      ? this.phoneIsValid()
       : true;
     const emailFormatIsCorrect = state[PROPERTY_TYPES.EMAIL]
-      ? !this.emailIsValid()
+      ? this.emailIsValid()
       : true;
     return !isCreatingPerson && hasDOB && hasName && phoneFormatIsCorrect && emailFormatIsCorrect;
   }
@@ -195,7 +195,7 @@ class NewPersonContainer extends React.Component<Props, State> {
     const { state } = this;
     const phone = state[PROPERTY_TYPES.PHONE];
     return (
-      phone ? !phone.match(/^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/) : false
+      phone ? phone.match(/^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/) : false
     );
   }
 
@@ -203,7 +203,7 @@ class NewPersonContainer extends React.Component<Props, State> {
     const { state } = this;
     const email = state[PROPERTY_TYPES.EMAIL];
     return (
-      email ? !email.match(/^([a-zA-Z0-9_\-\.]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})$/) : false
+      email ? email.match(/^([a-zA-Z0-9_\-\.]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})$/) : false
     );
   }
 
