@@ -19,6 +19,10 @@ import {
   SubHeader
 } from './PersonFormTags';
 
+const StyledFormSection = styled(FormSection)`
+  border-bottom: ${props => (props.noBorder ? 'none' : `border-bottom: 1px solid ${OL.GREY11}`)};
+`;
+
 const StyledInputWithErrors = styled(StyledInput)`
   border: ${props => (props.invalid ? `1px solid ${OL.RED01}` : 'auto')};
 `;
@@ -26,6 +30,17 @@ const StyledInputWithErrors = styled(StyledInput)`
 const InputLabelWithWarning = styled(InputLabel)`
   color: ${props => (props.invalid ? OL.RED01 : OL.GREY15)};
 `;
+
+type Props = {
+  email :string,
+  emailIsValid :boolean,
+  handleCheckboxChange :() => void,
+  handleOnChangeInput :() => void,
+  isMobile :boolean,
+  noBorder :boolean,
+  phone :string,
+  phoneIsValid :boolean,
+}
 
 class PersonContactInfo extends React.Component<Props, *> {
 
@@ -56,13 +71,14 @@ class PersonContactInfo extends React.Component<Props, *> {
 
   render() {
     const {
-      isMobile,
+      emailIsValid,
       handleCheckboxChange,
+      isMobile,
+      noBorder,
       phoneIsValid,
-      emailIsValid
     } = this.props;
     return (
-      <FormSection>
+      <StyledFormSection noBorder={noBorder}>
         <PaddedRow>
           <SubHeader>Contact Information</SubHeader>
         </PaddedRow>
@@ -85,7 +101,7 @@ class PersonContactInfo extends React.Component<Props, *> {
                 onChange={handleCheckboxChange} />
           </SubRow>
         </InputRow>
-      </FormSection>
+      </StyledFormSection>
     );
   }
 }
