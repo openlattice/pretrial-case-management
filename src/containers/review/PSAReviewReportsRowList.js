@@ -4,17 +4,18 @@
 
 import React from 'react';
 import styled from 'styled-components';
-import Immutable from 'immutable';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
+import { Map, List, Set } from 'immutable';
 
+import PSAFailureStats from '../../components/review/PSAFailureStats';
 import PSAReviewReportsRow from '../../components/review/PSAReviewReportsRow';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import CustomPagination from '../../components/Pagination';
 import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
 import { NoResults } from '../../utils/Layout';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { SORT_TYPES } from '../../utils/consts/Consts';
+import { PSA_FAILURE_REASONS, PSA_STATUSES, SORT_TYPES } from '../../utils/consts/Consts';
 import { sortByDate, sortByName } from '../../utils/PSAUtils';
 import { getEntityKeyId, getIdOrValue } from '../../utils/DataUtils';
 import { OL } from '../../utils/consts/Colors';
@@ -23,6 +24,7 @@ import {
   REVIEW,
   SUBMIT,
   PEOPLE,
+  PSA_NEIGHBOR,
   COURT
 } from '../../utils/consts/FrontEndStateConsts';
 
@@ -104,7 +106,7 @@ const SubContentWrapper = styled.div`
 `;
 
 type Props = {
-  scoreSeq :Immutable.Seq,
+  scoreSeq :Seq,
   sort? :?string,
   component :?string,
   hideCaseHistory? :boolean,
@@ -113,12 +115,12 @@ type Props = {
   renderSubContent :?(() => void),
   actions :{
     downloadPSAReviewPDF :(values :{
-      neighbors :Immutable.Map<*, *>,
-      scores :Immutable.Map<*, *>
+      neighbors :Map<*, *>,
+      scores :Map<*, *>
     }) => void,
     loadCaseHistory :(values :{
       personId :string,
-      neighbors :Immutable.Map<*, *>
+      neighbors :Map<*, *>
     }) => void,
     loadHearingNeighbors :(hearingIds :string[]) => void,
     loadJudges :() => void,
@@ -129,15 +131,17 @@ type Props = {
     deleteEntity :(value :{ entitySetName :string, entityKeyId :string }) => void,
     clearSubmit :() => void,
   },
-  psaNeighborsById :Immutable.Map<*, *>,
-  caseHistory :Immutable.List<*>,
-  manualCaseHistory :Immutable.List<*>,
-  chargeHistory :Immutable.Map<*, *>,
-  manualChargeHistory :Immutable.Map<*, *>,
-  sentenceHistory :Immutable.Map<*, *>,
-  ftaHistory :Immutable.Map<*, *>,
-  hearings :Immutable.List<*>,
-  psaIdsRefreshing :Immutable.Set<*>,
+  psaNeighborsById :Map<*, *>,
+  caseHistory :List<*>,
+  manualCaseHistory :List<*>,
+  neighbors :Map<*, *>,
+  chargeHistory :Map<*, *>,
+  manualChargeHistory :Map<*, *>,
+  sentenceHistory :Map<*, *>,
+  ftaHistory :Map<*, *>,
+  hearings :List<*>,
+  psaIdsRefreshing :Set<*>,
+  personId :string,
   readOnlyPermissions :boolean,
   loadingPSAData :boolean,
   loading :boolean,
@@ -207,20 +211,19 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
       refreshPSANeighbors
     } = actions;
 
-    const neighbors = psaNeighborsById.get(scoreId, Immutable.Map());
+    const neighbors = psaNeighborsById.get(scoreId, Map());
     const personId = getEntityKeyId(neighbors, ENTITY_SETS.PEOPLE);
     const personIdValue = getIdOrValue(neighbors, ENTITY_SETS.PEOPLE, PROPERTY_TYPES.PERSON_ID);
-    const personCaseHistory = caseHistory.get(personId, Immutable.List());
-    const personManualCaseHistory = manualCaseHistory.get(personId, Immutable.List());
-    const personChargeHistory = chargeHistory.get(personId, Immutable.Map());
-    const personManualChargeHistory = manualChargeHistory.get(personId, Immutable.Map());
-    const personSentenceHistory = sentenceHistory.get(personId, Immutable.Map());
-    const personFTAHistory = ftaHistory.get(personId, Immutable.Map());
-    const personHearings = hearings.get(personId, Immutable.List());
+    const personCaseHistory = caseHistory.get(personId, List());
+    const personManualCaseHistory = manualCaseHistory.get(personId, List());
+    const personChargeHistory = chargeHistory.get(personId, Map());
+    const personManualChargeHistory = manualChargeHistory.get(personId, Map());
+    const personSentenceHistory = sentenceHistory.get(personId, Map());
+    const personFTAHistory = ftaHistory.get(personId, Map());
+    const personHearings = hearings.get(personId, List());
 
     const hideProfile = (
-      component === CONTENT_CONSTS.PROFILE ||
-      component === CONTENT_CONSTS.PENDING_PSAS
+      component === CONTENT_CONSTS.PROFILE || component === CONTENT_CONSTS.PENDING_PSAS
     );
     return (
       <PSAReviewReportsRow
@@ -281,7 +284,26 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
         </StyledSubHeaderBar>
       </StyledCenteredContainer>
     );
+  }
 
+  renderFTAStats = () => {
+    const { neighbors, personId } = this.props;
+    if (personId && neighbors.size) {
+      const personPSAs = neighbors.getIn([personId, ENTITY_SETS.PSA_SCORES], Map());
+      let psaFailures = 0;
+      let ftas = 0;
+      personPSAs.forEach((psa) => {
+        const psaDetails = psa.get(PSA_NEIGHBOR.DETAILS, Map());
+        const failure = psaDetails.getIn([PROPERTY_TYPES.STATUS, 0], '') === PSA_STATUSES.FAILURE;
+        const failureIsFTA = psaDetails.getIn([PROPERTY_TYPES.FAILURE_REASON, 0], '') === PSA_FAILURE_REASONS.FTA;
+        if (failure) psaFailures += 1;
+        if (failureIsFTA) ftas += 1;
+      });
+      return (
+        <PSAFailureStats failures={psaFailures} ftas={ftas} />
+      );
+    }
+    return null;
   }
 
   sortItems = () => {
@@ -289,7 +311,7 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
     if (!sort) return scoreSeq;
     const sortFn = sort === SORT_TYPES.DATE ? sortByDate : sortByName;
     return scoreSeq.sort(([id1], [id2]) => sortFn(
-      [id1, psaNeighborsById.get(id1, Immutable.Map())], [id2, psaNeighborsById.get(id2, Immutable.Map())]
+      [id1, psaNeighborsById.get(id1, Map())], [id2, psaNeighborsById.get(id2, Map())]
     ));
   }
 
@@ -330,6 +352,7 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
         return (
           <PersonWrapper>
             {this.renderHeaderBar(numPages)}
+            { this.renderFTAStats() }
             {items.map(([scoreId, scores]) => this.renderRow(scoreId, scores))}
           </PersonWrapper>
         );
@@ -384,6 +407,9 @@ function mapStateToProps(state) {
     [REVIEW.LOADING_DATA]: review.get(REVIEW.LOADING_DATA),
     [REVIEW.PSA_IDS_REFRESHING]: review.get(REVIEW.PSA_IDS_REFRESHING),
     readOnlyPermissions: review.get(REVIEW.READ_ONLY),
+
+    [PEOPLE.PERSON_DATA]: people.get(PEOPLE.PERSON_DATA),
+    [PEOPLE.NEIGHBORS]: people.get(PEOPLE.NEIGHBORS, Map()),
 
     [COURT.LOADING_HEARING_NEIGHBORS]: court.get(COURT.LOADING_HEARING_NEIGHBORS),
     [COURT.HEARINGS_NEIGHBORS_BY_ID]: court.get(COURT.HEARINGS_NEIGHBORS_BY_ID),
