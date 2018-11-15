@@ -11,6 +11,7 @@ import { Constants } from 'lattice';
 import { Redirect, Route, Switch } from 'react-router-dom';
 
 import ClosePSAModal from '../../components/review/ClosePSAModal';
+import UpdateContactInfoModal from '../person/UpdateContactInfoModal';
 import DashboardMainSection from '../../components/dashboard/DashboardMainSection';
 import NavButtonToolbar from '../../components/buttons/NavButtonToolbar';
 import PersonOverview from '../../components/people/PersonOverview';
@@ -107,7 +108,8 @@ class PersonDetailsContainer extends React.Component<Props, State> {
     this.state = {
       open: false,
       closing: false,
-      closePSAButtonActive: false
+      closePSAButtonActive: false,
+      updateContactModalOpen: false
     };
   }
 
@@ -206,6 +208,31 @@ class PersonDetailsContainer extends React.Component<Props, State> {
             {...actions} />
       );
     return modal;
+  }
+
+  openUpdateContactModal = () => this.setState({ updateContactModalOpen: true });
+  closeUpdateContactModal = () => this.setState({ updateContactModalOpen: false });
+
+  renderContactInfoModal = () => {
+    const { updateContactModalOpen } = this.state;
+    const { neighbors, selectedPersonData } = this.props;
+    const personId = selectedPersonData.getIn([PROPERTY_TYPES.PERSON_ID, 0], '');
+    const contactInfo = neighbors.get(ENTITY_SETS.CONTACT_INFORMATION, Map());
+    const email = getIdOrValue(neighbors, ENTITY_SETS.CONTACT_INFORMATION, PROPERTY_TYPES.EMAIL);
+    const phone = getIdOrValue(neighbors, ENTITY_SETS.CONTACT_INFORMATION, PROPERTY_TYPES.PHONE);
+    const isMobile = getIdOrValue(neighbors, ENTITY_SETS.CONTACT_INFORMATION, PROPERTY_TYPES.IS_MOBILE);
+    const updatingExisting = !!contactInfo.size;
+    return (
+      <UpdateContactInfoModal
+          contactEntity={contactInfo}
+          email={email}
+          isMobile={isMobile}
+          personId={personId}
+          phone={phone}
+          updatingExisting={updatingExisting}
+          onClose={this.closeUpdateContactModal}
+          open={updateContactModalOpen} />
+    );
   }
 
   openDetailsModal = () => {
@@ -348,12 +375,14 @@ class PersonDetailsContainer extends React.Component<Props, State> {
       selectedPersonData
     } = this.props;
     const { downloadPSAReviewPDF } = actions;
+    const contactInfo = neighbors.get(ENTITY_SETS.CONTACT_INFORMATION, Map());
     const mostRecentPSAEntityKeyId = getEntityKeyId(mostRecentPSA.get(PSA_NEIGHBOR.DETAILS, Map()));
     const neighborsForMostRecentPSA = psaNeighborsById.get(mostRecentPSAEntityKeyId, Map());
     const scheduledHearings = getScheduledHearings(neighborsForMostRecentPSA);
     const isLoading = (isLoadingJudges || loadingPSAData || loadingPSAResults || isFetchingPersonData);
     return (
       <PersonOverview
+          contactInfo={contactInfo}
           downloadPSAReviewPDF={downloadPSAReviewPDF}
           loading={isLoading}
           mostRecentPSA={mostRecentPSA}
@@ -363,7 +392,8 @@ class PersonDetailsContainer extends React.Component<Props, State> {
           psaNeighborsById={psaNeighborsById}
           scheduledHearings={scheduledHearings}
           selectedPersonData={selectedPersonData}
-          openDetailsModal={this.openDetailsModal} />
+          openDetailsModal={this.openDetailsModal}
+          openUpdateContactModal={this.openUpdateContactModal} />
     );
   }
 
@@ -399,6 +429,7 @@ class PersonDetailsContainer extends React.Component<Props, State> {
           <NavButtonToolbar options={navButtons} />
         </ToolbarWrapper>
         { this.renderPSADetailsModal() }
+        { this.renderContactInfoModal() }
         <Switch>
           <Route path={overviewRoute} render={this.renderOverview} />
           <Route path={psaRoute} render={this.renderPSA} />
