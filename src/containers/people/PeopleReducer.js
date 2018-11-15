@@ -97,7 +97,7 @@ export default function peopleReducer(state = INITIAL_STATE, action) {
             const entitySetName = neighborObj.getIn([PSA_NEIGHBOR.ENTITY_SET, 'name'], '');
             const entityDateTime = moment(neighborObj.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.DATE_TIME, 0]));
             if (entitySetName === ENTITY_SETS.PSA_SCORES) {
-              if (!mostRecentPSA || currentPSADateTime.isBefore(entityDateTime)) {
+              if (!mostRecentPSA || !currentPSADateTime || currentPSADateTime.isBefore(entityDateTime)) {
                 mostRecentPSA = neighborObj;
                 currentPSADateTime = entityDateTime;
               }

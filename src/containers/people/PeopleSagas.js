@@ -140,7 +140,7 @@ function* refreshPersonNeighborsWorker(action) :Generator<*, *, *> {
       const entitySetName = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'name'], '');
       const entityDateTime = moment(neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.DATE_TIME, 0]));
       if (entitySetName === ENTITY_SETS.PSA_SCORES) {
-        if (!mostRecentPSA || currentPSADateTime.isBefore(entityDateTime)) {
+        if (!mostRecentPSA || !currentPSADateTime || currentPSADateTime.isBefore(entityDateTime)) {
           mostRecentPSA = neighbor;
           currentPSADateTime = entityDateTime;
         }
