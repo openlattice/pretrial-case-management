@@ -29,21 +29,22 @@ import {
 } from '../../utils/Layout';
 
 import * as OverrideClassNames from '../../utils/styleoverrides/OverrideClassNames';
+import * as PeopleActionFactory from '../people/PeopleActionFactory';
 import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
 
 const CreateButton = styled(InfoButton)`
   width: 210px;
   height: 40px;
-  margin: 30px;
+  margin: 20px 30px;
   padding-left: 0;
   padding-right: 0;
 `;
 const Body = styled.div`
   border: none;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   justify-content: center;
-  align-items: center;
+  align-items: flex-end;
   margin: 0 -15px;
   width: calc(100% + 30px);
 `;
@@ -63,6 +64,9 @@ type Props = {
       config :Map<*, *>,
       values :Map<*, *>,
       callback :() => void
+    }) => void,
+    refreshPersonNeighbors :(value :{
+      personId :string
     }) => void,
     replaceEntity :(value :{ entitySetName :string, entityKeyId :string, values :Object }) => void,
   },
@@ -101,6 +105,11 @@ class NewHearingSection extends React.Component<Props, State> {
     });
   }
 
+  refreshPersonNeighborsCallBack = () => {
+    const { actions, personId } = this.props;
+    actions.refreshPersonNeighbors({ personId });
+  }
+
   updateContact = () => {
     const { state } = this;
     const {
@@ -125,7 +134,8 @@ class NewHearingSection extends React.Component<Props, State> {
       replaceEntity({
         entityKeyId,
         entitySetName: ENTITY_SETS.CONTACT_INFORMATION,
-        values: newContactFields
+        values: newContactFields,
+        callback: this.refreshPersonNeighborsCallBack
       });
     }
     else {
@@ -137,6 +147,7 @@ class NewHearingSection extends React.Component<Props, State> {
       submit({
         config: addPersonContactInfoConfig,
         values: newContactFields,
+        callback: this.refreshPersonNeighborsCallBack
       });
     }
     onClose();
@@ -189,7 +200,7 @@ class NewHearingSection extends React.Component<Props, State> {
   );
 
   render() {
-    const { open, onClose, personId } = this.props;
+    const { open, onClose } = this.props;
     const { state } = this;
     return (
       <Wrapper>
@@ -213,7 +224,7 @@ class NewHearingSection extends React.Component<Props, State> {
                   isMobile={state[PROPERTY_TYPES.IS_MOBILE]}
                   handleOnChangeInput={this.onInputChange}
                   handleCheckboxChange={this.handleCheckboxChange}
-                  noBorder />
+                  modal />
               { this.renderSubmitButton() }
             </Body>
           </Modal.Body>
@@ -237,6 +248,10 @@ function mapStateToProps(state) {
 
 function mapDispatchToProps(dispatch :Function) :Object {
   const actions :{ [string] :Function } = {};
+
+  Object.keys(PeopleActionFactory).forEach((action :string) => {
+    actions[action] = PeopleActionFactory[action];
+  });
 
   Object.keys(SubmitActionFactory).forEach((action :string) => {
     actions[action] = SubmitActionFactory[action];
