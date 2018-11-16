@@ -182,7 +182,7 @@ class NewHearingSection extends React.Component<Props, State> {
 
   handleCheckboxChange = (e) => {
     this.setState({
-      [PROPERTY_TYPES.IS_MOBILE]: e.target.checked || false
+      [PROPERTY_TYPES.IS_MOBILE]: e.target.checked
     });
   }
 
