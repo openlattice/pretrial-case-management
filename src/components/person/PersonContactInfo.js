@@ -48,7 +48,7 @@ class PersonContactInfo extends React.Component<Props, *> {
     const { phone, handleOnChangeInput, phoneIsValid } = this.props;
     return (
       <StyledInputWithErrors
-          invalid={phoneIsValid}
+          invalid={!phoneIsValid}
           type="tel"
           pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}"
           name={PROPERTY_TYPES.PHONE}
@@ -60,7 +60,7 @@ class PersonContactInfo extends React.Component<Props, *> {
     const { email, handleOnChangeInput, emailIsValid } = this.props;
     return (
       <StyledInputWithErrors
-          invalid={emailIsValid}
+          invalid={!emailIsValid}
           type="email"
           pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$"
           name={PROPERTY_TYPES.EMAIL}
@@ -94,12 +94,12 @@ class PersonContactInfo extends React.Component<Props, *> {
 
         <InputRow numColumns={2}>
           <InputGroup>
-            <InputLabelWithWarning invalid={emailIsValid}>Email</InputLabelWithWarning>
+            <InputLabelWithWarning invalid={!emailIsValid}>Email</InputLabelWithWarning>
             {this.renderEmailInput()}
           </InputGroup>
           <SubRow>
             <InputGroup>
-              <InputLabelWithWarning invalid={phoneIsValid}>Phone</InputLabelWithWarning>
+              <InputLabelWithWarning invalid={!phoneIsValid}>Phone</InputLabelWithWarning>
               {this.renderPhoneInput()}
             </InputGroup>
             <Checkbox
