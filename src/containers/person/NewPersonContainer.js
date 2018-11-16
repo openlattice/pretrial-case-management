@@ -22,6 +22,7 @@ import SearchableSelect from '../../components/controls/SearchableSelect';
 import PersonContactInfo from '../../components/person/PersonContactInfo';
 import { GENDERS, STATES } from '../../utils/consts/Consts';
 import { toISODate } from '../../utils/FormattingUtils';
+import { phoneIsValid, emailIsValid } from '../../utils/PeopleUtils';
 import { newPersonSubmit } from './PersonActionFactory';
 import { clearForm } from '../psa/FormActionFactory';
 import { STATE, SEARCH } from '../../utils/consts/FrontEndStateConsts';
@@ -173,12 +174,8 @@ class NewPersonContainer extends React.Component<Props, State> {
     const { state } = this;
     const hasDOB = !!state[DOB_VALUE];
     const hasName = !!state[FIRST_NAME_VALUE] && !!state[LAST_NAME_VALUE];
-    const phoneFormatIsCorrect = state[PROPERTY_TYPES.PHONE]
-      ? this.phoneIsValid()
-      : true;
-    const emailFormatIsCorrect = state[PROPERTY_TYPES.EMAIL]
-      ? this.emailIsValid()
-      : true;
+    const phoneFormatIsCorrect = !!state[PROPERTY_TYPES.PHONE] || this.phoneNumValid();
+    const emailFormatIsCorrect = !!state[PROPERTY_TYPES.EMAIL] || this.emailAddValid();
     return !isCreatingPerson && hasDOB && hasName && phoneFormatIsCorrect && emailFormatIsCorrect;
   }
 
@@ -191,20 +188,16 @@ class NewPersonContainer extends React.Component<Props, State> {
     });
   }
 
-  phoneIsValid = () => {
+  phoneNumValid = () => {
     const { state } = this;
     const phone = state[PROPERTY_TYPES.PHONE];
-    return (
-      phone ? phone.match(/^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/) : false
-    );
+    return phoneIsValid(phone);
   }
 
-  emailIsValid = () => {
+  emailAddValid = () => {
     const { state } = this;
     const email = state[PROPERTY_TYPES.EMAIL];
-    return (
-      email ? email.match(/^([a-zA-Z0-9_\-\.]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})$/) : false
-    );
+    return emailIsValid(email);
   }
 
   handleOnChangeInput = (event :SyntheticInputEvent<*>) => {
@@ -219,7 +212,7 @@ class NewPersonContainer extends React.Component<Props, State> {
 
   handleCheckboxChange = (e) => {
     this.setState({
-      [PROPERTY_TYPES.IS_MOBILE]: e.target.checked || false
+      [PROPERTY_TYPES.IS_MOBILE]: e.target.checked
     });
   }
 
@@ -382,9 +375,9 @@ class NewPersonContainer extends React.Component<Props, State> {
 
           <PersonContactInfo
               phone={state[PROPERTY_TYPES.PHONE]}
-              phoneIsValid={this.phoneIsValid()}
+              phoneIsValid={this.phoneNumValid()}
               email={state[PROPERTY_TYPES.EMAIL]}
-              emailIsValid={this.emailIsValid()}
+              emailIsValid={this.emailAddValid()}
               isMobile={state[PROPERTY_TYPES.IS_MOBILE]}
               handleOnChangeInput={this.handleOnChangeInput}
               handleCheckboxChange={this.handleCheckboxChange} />
