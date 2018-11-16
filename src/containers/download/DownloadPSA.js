@@ -12,16 +12,19 @@ import StyledCheckbox from '../../components/controls/StyledCheckbox';
 import BasicButton from '../../components/buttons/BasicButton';
 import InfoButton from '../../components/buttons/InfoButton';
 import DateTimeRange from '../../components/datetime/DateTimeRange';
-import * as DownloadActionFactory from './DownloadActionFactory';
-import * as Routes from '../../core/router/Routes';
+import { DOMAIN, PSA_RESPONSE_TABLE, SUMMARY_REPORT } from '../../utils/consts/ReportDownloadTypes';
+import SearchableSelect from '../../components/controls/SearchableSelect';
+import { getCourtroomOptions } from '../../utils/consts/HearingConsts';
+import { OL } from '../../utils/consts/Colors';
 import {
   StyledFormViewWrapper,
   StyledFormWrapper,
   StyledSectionWrapper,
   StyledTopFormNavBuffer
 } from '../../utils/Layout';
-import { DOMAIN, PSA_RESPONSE_TABLE, SUMMARY_REPORT } from '../../utils/consts/ReportDownloadTypes';
-import { OL } from '../../utils/consts/Colors';
+
+import * as DownloadActionFactory from './DownloadActionFactory';
+import * as Routes from '../../core/router/Routes';
 
 const HeaderSection = styled.div`
   padding: 10px 30px 30px 30px;
@@ -42,8 +45,15 @@ const SubHeaderSection = styled.div`
   width: 100%
 `;
 
+const StyledSearchableSelect = styled(SearchableSelect)`
+  width: 250px;
+`;
+
 const ButtonRow = styled.div`
-  margin-top: 30px;
+  width: 100%;
+  margin: 30px;
+  padding-top: 30px;
+  border-top: 1px solid ${OL.GREY11};
   text-align: center;
 `;
 
@@ -63,10 +73,29 @@ const SelectionWrapper = styled.div`
   flex-direction: row;
   justify-content: space-around;
   align-items: flex-end;
+  padding-bottom: 20px;
   label {
     width: 25%;
     margin-bottom: 20px;
   }
+`;
+
+const HearingSelectionWrapper = styled(SelectionWrapper)`
+  flex-direction: column;
+  align
+`;
+
+const CourtroomOptionsWrapper = styled.div`
+  width: 100%;
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: baseline;
+`;
+
+const CourtOptionTitle = styled.div`
+  margin: 0 10px 10px 0;
 `;
 
 const Error = styled.div`
@@ -109,7 +138,8 @@ class DownloadPSA extends React.Component<Props, State> {
       startDate: undefined,
       endDate: undefined,
       byHearingDate: true,
-      byPSADate: false
+      byPSADate: false,
+      courtroom: ''
     };
   }
 
@@ -180,6 +210,17 @@ class DownloadPSA extends React.Component<Props, State> {
     }
   }
 
+  renderCourtoomOptions = () => {
+    const { courtroom } = this.state;
+    return (
+      <StyledSearchableSelect
+          options={getCourtroomOptions()}
+          value={courtroom}
+          onSelect={newCourtroom => this.setState({ courtroom: newCourtroom })}
+          short />
+    );
+  }
+
   renderDownloadByHearing = () => {
     const { startDate, endDate, byHearingDate } = this.state;
     const downloads = 'hearings';
@@ -190,17 +231,25 @@ class DownloadPSA extends React.Component<Props, State> {
             (!startDate || !endDate || this.getErrorText(downloads))
               ? this.renderError(downloads)
               : (
-                <ButtonRow>
-                  <BasicDownloadButton onClick={() => this.downloadByHearingDate(PSA_RESPONSE_TABLE, DOMAIN.MINNEHAHA)}>
-                    Download Minnehaha PSA Response Table
-                  </BasicDownloadButton>
-                  <BasicDownloadButton onClick={() => this.downloadByHearingDate(SUMMARY_REPORT, DOMAIN.MINNEHAHA)}>
-                    Download Minnehaha Summary Report
-                  </BasicDownloadButton>
-                  <BasicDownloadButton onClick={() => this.downloadByHearingDate(SUMMARY_REPORT, DOMAIN.PENNINGTON)}>
-                    Download Pennington Summary Report
-                  </BasicDownloadButton>
-                </ButtonRow>
+                <HearingSelectionWrapper>
+                  <CourtroomOptionsWrapper>
+                    <CourtOptionTitle>Filter By Courtroom</CourtOptionTitle>
+                    { this.renderCourtoomOptions() }
+                  </CourtroomOptionsWrapper>
+                  <ButtonRow>
+                    <BasicDownloadButton
+                        onClick={() => this.downloadByHearingDate(PSA_RESPONSE_TABLE, DOMAIN.MINNEHAHA)}>
+                      Download Minnehaha PSA Response Table
+                    </BasicDownloadButton>
+                    <BasicDownloadButton
+                        onClick={() => this.downloadByHearingDate(SUMMARY_REPORT, DOMAIN.MINNEHAHA)}>
+                      Download Minnehaha Summary Report
+                    </BasicDownloadButton>
+                    <BasicDownloadButton onClick={() => this.downloadByHearingDate(SUMMARY_REPORT, DOMAIN.PENNINGTON)}>
+                      Download Pennington Summary Report
+                    </BasicDownloadButton>
+                  </ButtonRow>
+                </HearingSelectionWrapper>
               )
           }
         </div>
@@ -246,7 +295,6 @@ class DownloadPSA extends React.Component<Props, State> {
                       Download Pennington Summary Report
                     </BasicDownloadButton>
                   </ButtonRow>
-                  <SubHeaderSection>Download All PSA Data by PSA Date</SubHeaderSection>
                   <ButtonRow>
                     <InfoDownloadButton onClick={() => this.downloadbyPSADate()}>
                       Download All PSA Data
