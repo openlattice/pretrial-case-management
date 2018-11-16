@@ -1,7 +1,6 @@
 /*
  * @flow
  */
-
 import styled from 'styled-components';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Link } from 'react-router-dom';
@@ -17,8 +16,9 @@ import {
   ToggleButton,
   ToggleButtonGroup
 } from 'react-bootstrap';
-import { OL } from './consts/Colors';
+import closeX from '../assets/svg/close-x-gray.svg';
 
+import { OL } from './consts/Colors';
 import { FLEX } from './consts/Consts';
 
 export const PaddedRow = styled(Row)`
@@ -547,6 +547,33 @@ export const NoResults = styled.div`
   padding: 50px 0;
 `;
 
+export const PaddedStyledColumnRow = styled(StyledColumnRow)`
+  border: none;
+  margin: 0 -15px;
+  width: calc(100% + 30px);
+`;
+
+export const TitleWrapper = styled.div`
+  padding: 0 15px;
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+`;
+
+export const CloseModalX = styled.img.attrs({
+  alt: '',
+  src: closeX
+})`
+  height: 16px;
+  width: 16px;
+  margin-left: 40px;
+
+  &:hover {
+    cursor: pointer;
+  }
+`;
 // Stats Styled Tags
 
 export const StatsWrapper = styled.div`

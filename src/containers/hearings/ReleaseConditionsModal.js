@@ -3,19 +3,22 @@
  */
 
 import React from 'react';
-import styled from 'styled-components';
 import { Constants } from 'lattice';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { Modal } from 'react-bootstrap';
 import { Map, List } from 'immutable';
 
-import closeX from '../../assets/svg/close-x-gray.svg';
 import SelectReleaseConditions from '../../components/releaseconditions/SelectReleaseConditions';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { formatJudgeName } from '../../utils/consts/HearingConsts';
-import { StyledColumnRow, Wrapper } from '../../utils/Layout';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import {
+  Wrapper,
+  PaddedStyledColumnRow,
+  TitleWrapper,
+  CloseModalX
+} from '../../utils/Layout';
 import {
   COURT,
   PSA_ASSOCIATION,
@@ -32,34 +35,6 @@ import * as ReviewActionFactory from '../review/ReviewActionFactory';
 import * as CourtActionFactory from '../court/CourtActionFactory';
 
 const { OPENLATTICE_ID_FQN } = Constants;
-
-const PaddedStyledColumnRow = styled(StyledColumnRow)`
-  border: none;
-  margin: 0 -15px;
-  width: calc(100% + 30px);
-`;
-
-const TitleWrapper = styled.div`
-  padding: 0 15px;
-  width: 100%;
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-`;
-
-const CloseModalX = styled.img.attrs({
-  alt: '',
-  src: closeX
-})`
-  height: 16px;
-  width: 16px;
-  margin-left: 40px;
-
-  &:hover {
-    cursor: pointer;
-  }
-`;
 
 type Props = {
   allJudges :List<*, *>,
