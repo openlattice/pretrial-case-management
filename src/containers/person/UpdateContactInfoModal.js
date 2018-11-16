@@ -14,6 +14,7 @@ import PersonContactInfo from '../../components/person/PersonContactInfo';
 import InfoButton from '../../components/buttons/InfoButton';
 import addPersonContactInfoConfig from '../../config/formconfig/PersonAddContactInfoConfig';
 import { getEntityKeyId } from '../../utils/DataUtils';
+import { phoneIsValid, emailIsValid } from '../../utils/PeopleUtils';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { FORM_IDS } from '../../utils/consts/Consts';
 import {
@@ -89,9 +90,9 @@ class NewHearingSection extends React.Component<Props, State> {
 
   componentWillReceiveProps(nextProps) {
     const { phone, email, isMobile } = this.props;
-    const areDifferent = !(phone === nextProps.phone)
-      || !(email === nextProps.email)
-      || !(isMobile === nextProps.isMobile);
+    const areDifferent = phone !== nextProps.phone
+      || email !== nextProps.email
+      || isMobile !== nextProps.isMobile;
     if (areDifferent) {
       this.updateState(nextProps.phone, nextProps.email, nextProps.isMobile);
     }
@@ -154,31 +155,23 @@ class NewHearingSection extends React.Component<Props, State> {
   }
 
 
-  phoneIsValid = () => {
+  phoneNumValid = () => {
     const { state } = this;
     const phone = state[PROPERTY_TYPES.PHONE];
-    return (
-      phone ? !phone.match(/^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/) : false
-    );
+    return phoneIsValid(phone);
   }
 
-  emailIsValid = () => {
+  emailAddValid = () => {
     const { state } = this;
     const email = state[PROPERTY_TYPES.EMAIL];
-    return (
-      email ? !email.match(/^([a-zA-Z0-9_\-\.]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})$/) : false
-    );
+    return emailIsValid(email);
   }
 
   isReadyToSubmit = () :boolean => {
     const { isCreatingPerson } = this.props;
     const { state } = this;
-    const phoneFormatIsCorrect = state[PROPERTY_TYPES.PHONE]
-      ? !this.phoneIsValid()
-      : true;
-    const emailFormatIsCorrect = state[PROPERTY_TYPES.EMAIL]
-      ? !this.emailIsValid()
-      : true;
+    const phoneFormatIsCorrect = !!state[PROPERTY_TYPES.PHONE] || this.phoneNumValid();
+    const emailFormatIsCorrect = !!state[PROPERTY_TYPES.EMAIL] || this.emailAddValid();
     return !isCreatingPerson && phoneFormatIsCorrect && emailFormatIsCorrect;
   }
 
@@ -218,9 +211,9 @@ class NewHearingSection extends React.Component<Props, State> {
             <Body>
               <PersonContactInfo
                   phone={state[PROPERTY_TYPES.PHONE]}
-                  phoneIsValid={this.phoneIsValid()}
+                  phoneIsValid={this.phoneNumValid()}
                   email={state[PROPERTY_TYPES.EMAIL]}
-                  emailIsValid={this.emailIsValid()}
+                  emailIsValid={this.emailAddValid()}
                   isMobile={state[PROPERTY_TYPES.IS_MOBILE]}
                   handleOnChangeInput={this.onInputChange}
                   handleCheckboxChange={this.handleCheckboxChange}
