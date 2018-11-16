@@ -70,6 +70,7 @@ export default function* sagas() :Generator<*, *, *> {
     fork(PeopleSagas.getPeopleWatcher),
     fork(PeopleSagas.getPersonDataWatcher),
     fork(PeopleSagas.getPersonNeighborsWatcher),
+    fork(PeopleSagas.refreshPersonNeighborsWatcher),
 
     // PSA Sagas
     fork(PsaSagas.hardRestartWatcher),

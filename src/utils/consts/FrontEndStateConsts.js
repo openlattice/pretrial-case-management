@@ -110,6 +110,7 @@ export const PEOPLE = {
   FETCHING_PEOPLE: 'isFetchingPeople',
   FETCHING_PERSON_DATA: 'isFetchingPersonData',
   NEIGHBORS: 'neighbors',
+  REFRESHING_PERSON_NEIGHBORS: 'refreshingPersonNeighbors',
   MOST_RECENT_PSA: 'mostRecentPSA'
 };
 

@@ -25,6 +25,7 @@ export const ALIASES = {
   OUTCOME: 'outcome',
   JUDGE: 'judge',
 
+  CONTACT_GIVEN_FOR: 'contactInfoGivenFor',
   CONTACTED_AT: 'contactedAt',
   EMPLOYED_BY: 'employedBy',
   HAS: 'has',

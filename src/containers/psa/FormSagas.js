@@ -1,9 +1,13 @@
 /*
  * @flow
  */
-import { List } from 'immutable';
 import { Constants, EntityDataModelApi, SearchApi } from 'lattice';
-import { call, put, takeEvery, all } from 'redux-saga/effects';
+import {
+  call,
+  put,
+  takeEvery,
+  all
+} from 'redux-saga/effects';
 
 import {
   HARD_RESTART,
@@ -23,8 +27,9 @@ function* loadDataModelWorker(action :SequenceAction) :Generator<*, *, *> {
 
   try {
     yield put(loadDataModel.request(action.id));
-    const entitySetIds = yield all(Object.values(ENTITY_SETS).map(entitySetName =>
-      call(EntityDataModelApi.getEntitySetId, entitySetName)));
+    const entitySetIds = yield all(Object.values(ENTITY_SETS).map(entitySetName => call(
+      EntityDataModelApi.getEntitySetId, entitySetName
+    )));
     const selectors = entitySetIds.map(id => ({
       id,
       type: 'EntitySet',

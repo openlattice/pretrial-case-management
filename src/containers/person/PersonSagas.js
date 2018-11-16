@@ -191,6 +191,7 @@ function* newPersonSubmitWorker(action) :Generator<*, *, *> {
     }
   }
   catch (error) {
+    console.error(error);
     yield put(newPersonSubmit.failure(error));
   }
 }
