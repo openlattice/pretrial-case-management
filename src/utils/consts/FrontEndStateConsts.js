@@ -4,6 +4,7 @@ export const STATE = {
   AUTH: 'auth',
   COURT: 'court',
   DASHBOARD: 'dashboard',
+  DOWNLOAD: 'download',
   ENROLL: 'enroll',
   PSA: 'psa',
   PEOPLE: 'people',
@@ -41,6 +42,8 @@ export const COURT = {
   COUNTY: 'county',
   COURTROOM: 'courtroom',
   COURTROOMS: 'courtrooms',
+  COURTROOM_OPTIONS: 'courtroomOptions',
+  LOADING_COURTROOM_OPTIONS: 'loadingCoutrooms',
   OPEN_PSAS: 'openPSAs',
   SCORES_AS_MAP: 'scoresAsMap',
   OPEN_PSA_IDS: 'openPSAIds',
@@ -60,6 +63,16 @@ export const DASHBOARD = {
   DATA: 'dashboardData',
   LOADING: 'isLoading',
   ERROR: 'error'
+};
+
+// Download
+
+export const DOWNLOAD = {
+  DOWNLOADING_REPORTS: 'downloadingReports',
+  COURTROOM_OPTIONS: 'courtroomOptions',
+  ALL_HEARING_DATA: 'allHearingData',
+  ERROR: 'downloadError',
+  HEARING_IDS: 'hearingIds'
 };
 
 // Enroll
