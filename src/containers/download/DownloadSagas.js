@@ -40,9 +40,11 @@ import {
   DOWNLOAD_CHARGE_LISTS,
   DOWNLOAD_PSA_BY_HEARING_DATE,
   DOWNLOAD_PSA_FORMS,
+  GET_DOWNLOAD_FILTERS,
   downloadChargeLists,
   downloadPSAsByHearingDate,
-  downloadPsaForms
+  downloadPsaForms,
+  getDownloadFilters
 } from './DownloadActionFactory';
 
 const { OPENLATTICE_ID_FQN } = Constants;
@@ -353,6 +355,8 @@ function* downloadPSAsByHearingDateWorker(action :SequenceAction) :Generator<*, 
     const {
       startDate,
       endDate,
+      allHearingData,
+      courtroom,
       filters,
       domain
     } = action.value;
@@ -363,40 +367,22 @@ function* downloadPSAsByHearingDateWorker(action :SequenceAction) :Generator<*, 
     let personIdsToHearingIds = Immutable.Map();
     let scoresAsMap = Immutable.Map();
 
-    const start = startDate.toISOString(true);
-    const end = endDate.toISOString(true);
-    const DATE_TIME_FQN = new FullyQualifiedName(PROPERTY_TYPES.DATE_TIME);
-
     const [
-      datePropertyTypeId,
       hearingEntitySetId,
       peopleEntitySetId,
       psaEntitySetId
     ] = yield all([
-      call(EntityDataModelApi.getPropertyTypeId, DATE_TIME_FQN),
       call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.HEARINGS),
       call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.PEOPLE),
       call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.PSA_SCORES)
     ]);
 
-    const ceiling = yield call(DataApi.getEntitySetSize, hearingEntitySetId);
-
-    const hearingOptions = {
-      searchTerm: `${datePropertyTypeId}: [${start} TO ${end}]`,
-      start: 0,
-      maxHits: ceiling,
-      fuzzy: false
-    };
-
-    let allHearingData = yield call(SearchApi.searchEntitySetData, hearingEntitySetId, hearingOptions);
-    allHearingData = Immutable.fromJS(allHearingData.hits);
     if (allHearingData.size) {
       allHearingData.forEach((hearing) => {
         const hearingId = hearing.getIn([OPENLATTICE_ID_FQN, 0]);
-        const hearingType = hearing.getIn([PROPERTY_TYPES.HEARING_TYPE, 0]);
-        const hearingHasBeenCancelled = hearing.getIn([PROPERTY_TYPES.UPDATE_TYPE, 0], '')
-          .toLowerCase().trim() === 'cancelled';
-        if (hearingType && !hearingHasBeenCancelled) {
+        const hearingCourtroom = hearing.getIn([PROPERTY_TYPES.COURTROOM, 0]);
+        const hearingMatchesCourtroom = courtroom ? hearingCourtroom === courtroom : true;
+        if (hearingMatchesCourtroom) {
           hearingIds = hearingIds.add(hearingId);
         }
       });
@@ -425,7 +411,7 @@ function* downloadPSAsByHearingDateWorker(action :SequenceAction) :Generator<*, 
         }
         if (entitySetName === ENTITY_SETS.PEOPLE) {
           hasPerson = true;
-          personId = neighborEntityKeyId
+          personId = neighborEntityKeyId;
         }
       });
       if (hasPerson && !hasPSA) {
@@ -597,7 +583,6 @@ function* downloadPSAsByHearingDateWorker(action :SequenceAction) :Generator<*, 
     yield put(downloadPSAsByHearingDate.success(action.id));
   }
   catch (error) {
-    console.error(error);
     yield put(downloadPSAsByHearingDate.failure(action.id, { error }));
   }
   finally {
@@ -609,8 +594,65 @@ function* downloadPSAsByHearingDateWatcher() :Generator<*, *, *> {
   yield takeEvery(DOWNLOAD_PSA_BY_HEARING_DATE, downloadPSAsByHearingDateWorker);
 }
 
+// TODO: repetative code, but could be made more robust upon client request
+function* getDownloadFiltersWorker(action :SequenceAction) :Generator<*, *, *> {
+  try {
+    yield put(getDownloadFilters.request(action.id));
+    let courtrooms = Immutable.Map();
+    const { startDate, endDate } = action.value;
+
+    const start = startDate.toISOString(true);
+    const end = endDate.toISOString(true);
+    const DATE_TIME_FQN = new FullyQualifiedName(PROPERTY_TYPES.DATE_TIME);
+
+    const [datePropertyTypeId, hearingEntitySetId] = yield all([
+      call(EntityDataModelApi.getPropertyTypeId, DATE_TIME_FQN),
+      call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.HEARINGS)
+    ]);
+
+    const ceiling = yield call(DataApi.getEntitySetSize, hearingEntitySetId);
+
+    const hearingOptions = {
+      searchTerm: `${datePropertyTypeId}: [${start} TO ${end}]`,
+      start: 0,
+      maxHits: ceiling,
+      fuzzy: false
+    };
+
+    let allHearingData = yield call(SearchApi.searchEntitySetData, hearingEntitySetId, hearingOptions);
+    allHearingData = Immutable.fromJS(allHearingData.hits);
+    if (allHearingData.size) {
+      allHearingData.forEach((hearing) => {
+        const hearingId = hearing.getIn([OPENLATTICE_ID_FQN, 0]);
+        const hearingType = hearing.getIn([PROPERTY_TYPES.HEARING_TYPE, 0]);
+        const hearingCourtroom = hearing.getIn([PROPERTY_TYPES.COURTROOM, 0]);
+        const hearingHasBeenCancelled = hearing.getIn([PROPERTY_TYPES.UPDATE_TYPE, 0], '')
+          .toLowerCase().trim() === 'cancelled';
+        if (hearingId && hearingType && !hearingHasBeenCancelled) {
+          courtrooms = courtrooms.set(hearingCourtroom, hearingCourtroom);
+        }
+      });
+    }
+
+    yield put(getDownloadFilters.success(action.id, { courtrooms, allHearingData }));
+  }
+  catch (error) {
+    console.error(error);
+    yield put(getDownloadFilters.failure(action.id, { error }));
+  }
+  finally {
+    yield put(getDownloadFilters.finally(action.id));
+  }
+}
+
+
+function* getDownloadFiltersWatcher() :Generator<*, *, *> {
+  yield takeEvery(GET_DOWNLOAD_FILTERS, getDownloadFiltersWorker);
+}
+
 export {
   downloadChargeListsWatcher,
   downloadPSAsWatcher,
-  downloadPSAsByHearingDateWatcher
+  downloadPSAsByHearingDateWatcher,
+  getDownloadFiltersWatcher
 };
