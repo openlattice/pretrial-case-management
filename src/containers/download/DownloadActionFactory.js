@@ -13,11 +13,16 @@ const downloadPSAsByHearingDate :RequestSequence = newRequestSequence(DOWNLOAD_P
 const DOWNLOAD_PSA_FORMS :string = 'DOWNLOAD_PSA_FORMS';
 const downloadPsaForms :RequestSequence = newRequestSequence(DOWNLOAD_PSA_FORMS);
 
+const GET_DOWNLOAD_FILTERS :string = 'GET_DOWNLOAD_FILTERS';
+const getDownloadFilters :RequestSequence = newRequestSequence(GET_DOWNLOAD_FILTERS);
+
 export {
   DOWNLOAD_CHARGE_LISTS,
   DOWNLOAD_PSA_BY_HEARING_DATE,
   DOWNLOAD_PSA_FORMS,
+  GET_DOWNLOAD_FILTERS,
   downloadChargeLists,
   downloadPSAsByHearingDate,
-  downloadPsaForms
+  downloadPsaForms,
+  getDownloadFilters
 };
