@@ -5,9 +5,11 @@
 import React from 'react';
 import moment from 'moment';
 import styled from 'styled-components';
+import { Map } from 'immutable';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
+import LoadingSpinner from '../../components/LoadingSpinner';
 import StyledCheckbox from '../../components/controls/StyledCheckbox';
 import BasicButton from '../../components/buttons/BasicButton';
 import InfoButton from '../../components/buttons/InfoButton';
@@ -16,6 +18,7 @@ import { DOMAIN, PSA_RESPONSE_TABLE, SUMMARY_REPORT } from '../../utils/consts/R
 import SearchableSelect from '../../components/controls/SearchableSelect';
 import { getCourtroomOptions } from '../../utils/consts/HearingConsts';
 import { OL } from '../../utils/consts/Colors';
+import { STATE, COURT, DOWNLOAD } from '../../utils/consts/FrontEndStateConsts';
 import {
   StyledFormViewWrapper,
   StyledFormWrapper,
@@ -49,11 +52,15 @@ const StyledSearchableSelect = styled(SearchableSelect)`
   width: 250px;
 `;
 
+const DownloadSection = styled.div`
+  width: 100%;
+  padding: 30px;
+  border-bottom: 1px solid ${OL.GREY11};
+`;
+
 const ButtonRow = styled.div`
   width: 100%;
-  margin: 30px;
-  padding-top: 30px;
-  border-top: 1px solid ${OL.GREY11};
+  margin-top: 30px;
   text-align: center;
 `;
 
@@ -80,16 +87,19 @@ const SelectionWrapper = styled.div`
   }
 `;
 
-const HearingSelectionWrapper = styled(SelectionWrapper)`
+const SubSelectionWrapper = styled(SelectionWrapper)`
+  width: 100%;
+  padding-top: 30px;
   flex-direction: column;
-  align
+  align-items: flex-start;
+  border-top: 1px solid ${OL.GREY11};
 `;
 
 const CourtroomOptionsWrapper = styled.div`
-  width: 100%;
-  padding-left: 20px;
+  width: 400px;
+  margin: 0 auto;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   justify-content: center;
   align-items: baseline;
 `;
@@ -120,9 +130,16 @@ type Props = {
       startDate :string,
       endDate :string,
       filters? :Object
+    }) => void,
+    getDownloadFilters :(value :{
+      startDate :string,
+      endDate :string
     }) => void
   },
-  history :string[]
+  allHearingData :Map<*, *>,
+  history :string[],
+  loadingHearingData :boolean,
+  courtroomOptions :Map<*, *>,
 };
 
 type State = {
@@ -198,10 +215,12 @@ class DownloadPSA extends React.Component<Props, State> {
   }
 
   downloadByHearingDate = (filters, domain) => {
-    const { startDate, endDate } = this.state;
-    const { actions } = this.props;
+    const { startDate, endDate, courtroom } = this.state;
+    const { actions, allHearingData } = this.props;
     if (startDate && endDate) {
       actions.downloadPSAsByHearingDate({
+        allHearingData,
+        courtroom,
         startDate,
         endDate,
         filters,
@@ -212,18 +231,44 @@ class DownloadPSA extends React.Component<Props, State> {
 
   renderCourtoomOptions = () => {
     const { courtroom } = this.state;
+    const { courtroomOptions } = this.props;
+    const options = courtroomOptions.sortBy(([k, _]) => k).set('All', '');
     return (
       <StyledSearchableSelect
-          options={getCourtroomOptions()}
+          options={options}
           value={courtroom}
           onSelect={newCourtroom => this.setState({ courtroom: newCourtroom })}
           short />
     );
   }
 
+  onDateChange = (dates) => {
+    const { actions } = this.props;
+    const { startDate, endDate, byHearingDate } = this.state;
+    const { start, end } = dates;
+    const nextStart = start || startDate;
+    const nextEnd = end || endDate;
+    if (byHearingDate && !!nextStart && !!nextEnd) {
+      const startChanged = startDate ? !startDate.isSame(start) : false;
+      const endChanged = endDate ? !endDate.isSame(end) : false;
+      if (startChanged || endChanged) {
+        actions.getDownloadFilters({
+          startDate: nextStart,
+          endDate: nextEnd
+        });
+      }
+    }
+    this.setState({
+      startDate: nextStart,
+      endDate: nextEnd
+    });
+  }
+
   renderDownloadByHearing = () => {
+    const { loadingHearingData } = this.props;
     const { startDate, endDate, byHearingDate } = this.state;
     const downloads = 'hearings';
+    if (loadingHearingData) return <LoadingSpinner />
     return byHearingDate
       ? (
         <div>
@@ -231,7 +276,7 @@ class DownloadPSA extends React.Component<Props, State> {
             (!startDate || !endDate || this.getErrorText(downloads))
               ? this.renderError(downloads)
               : (
-                <HearingSelectionWrapper>
+                <SubSelectionWrapper>
                   <CourtroomOptionsWrapper>
                     <CourtOptionTitle>Filter By Courtroom</CourtOptionTitle>
                     { this.renderCourtoomOptions() }
@@ -249,7 +294,7 @@ class DownloadPSA extends React.Component<Props, State> {
                       Download Pennington Summary Report
                     </BasicDownloadButton>
                   </ButtonRow>
-                </HearingSelectionWrapper>
+                </SubSelectionWrapper>
               )
           }
         </div>
@@ -283,7 +328,7 @@ class DownloadPSA extends React.Component<Props, State> {
             (!startDate || !endDate || this.getErrorText(downloads))
               ? this.renderError(downloads)
               : (
-                <div>
+                <SubSelectionWrapper>
                   <ButtonRow>
                     <BasicDownloadButton onClick={() => this.downloadbyPSADate(PSA_RESPONSE_TABLE, DOMAIN.MINNEHAHA)}>
                       Download Minnehaha PSA Response Table
@@ -300,7 +345,7 @@ class DownloadPSA extends React.Component<Props, State> {
                       Download All PSA Data
                     </InfoDownloadButton>
                   </ButtonRow>
-                </div>
+                </SubSelectionWrapper>
               )
           }
         </div>
@@ -315,44 +360,51 @@ class DownloadPSA extends React.Component<Props, State> {
       startDate,
       endDate
     } = this.state;
+    console.log(this.props[DOWNLOAD.ERROR].toJS());
     return (
       <StyledFormViewWrapper>
         <StyledFormWrapper>
           <StyledSectionWrapper>
-            <HeaderSection>Download PSA Forms</HeaderSection>
-            <SubHeaderSection>Download Charge Lists</SubHeaderSection>
-            <ButtonRow>
-              <BasicDownloadButton onClick={() => this.downloadCharges(DOMAIN.PENNINGTON)}>
-                Download Pennington Charges
-              </BasicDownloadButton>
-              <BasicDownloadButton onClick={() => this.downloadCharges(DOMAIN.MINNEHAHA)}>
-                Download Minnehaha Charges
-              </BasicDownloadButton>
-            </ButtonRow>
-            <SubHeaderSection>PSA Downloads</SubHeaderSection>
-            <SelectionWrapper>
-              <DateTimeRange
-                  noLabel
-                  startDate={startDate}
-                  endDate={endDate}
-                  onStartChange={date => this.setState({ startDate: date })}
-                  onEndChange={date => this.setState({ endDate: date })}
-                  format24HourClock />
-              <StyledCheckbox
-                  name="hearing"
-                  label="By Hearing Date"
-                  checked={byHearingDate}
-                  value={byHearingDate}
-                  onChange={this.handleCheckboxChange} />
-              <StyledCheckbox
-                  name="psa"
-                  label="By PSA Date"
-                  checked={byPSADate}
-                  value={byPSADate}
-                  onChange={this.handleCheckboxChange} />
-            </SelectionWrapper>
-            {this.renderDownloadByHearing()}
-            {this.renderDownloadByPSA()}
+            <DownloadSection>
+              <HeaderSection>Download PSA Forms</HeaderSection>
+              <SubHeaderSection>Download Charge Lists</SubHeaderSection>
+              <ButtonRow>
+                <BasicDownloadButton onClick={() => this.downloadCharges(DOMAIN.PENNINGTON)}>
+                  Download Pennington Charges
+                </BasicDownloadButton>
+                <BasicDownloadButton onClick={() => this.downloadCharges(DOMAIN.MINNEHAHA)}>
+                  Download Minnehaha Charges
+                </BasicDownloadButton>
+              </ButtonRow>
+            </DownloadSection>
+            <DownloadSection>
+              <SubHeaderSection>PSA Downloads</SubHeaderSection>
+              <SelectionWrapper>
+                <DateTimeRange
+                    noLabel
+                    startDate={startDate}
+                    endDate={endDate}
+                    onStartChange={start => this.onDateChange({ start })}
+                    onEndChange={end => this.onDateChange({ end })}
+                    format24HourClock />
+                <StyledCheckbox
+                    name="hearing"
+                    label="By Hearing Date"
+                    checked={byHearingDate}
+                    value={byHearingDate}
+                    onChange={this.handleCheckboxChange} />
+                <StyledCheckbox
+                    name="psa"
+                    label="By PSA Date"
+                    checked={byPSADate}
+                    value={byPSADate}
+                    onChange={this.handleCheckboxChange} />
+              </SelectionWrapper>
+              <SelectionWrapper>
+                {this.renderDownloadByHearing()}
+                {this.renderDownloadByPSA()}
+              </SelectionWrapper>
+            </DownloadSection>
             <StyledTopFormNavBuffer />
           </StyledSectionWrapper>
         </StyledFormWrapper>
@@ -360,6 +412,17 @@ class DownloadPSA extends React.Component<Props, State> {
     );
   }
 
+}
+
+function mapStateToProps(state) {
+  const download = state.get(STATE.DOWNLOAD);
+  return {
+    [DOWNLOAD.DOWNLOADING_REPORTS]: download.get(DOWNLOAD.DOWNLOADING_REPORTS),
+    [DOWNLOAD.COURTROOM_OPTIONS]: download.get(DOWNLOAD.COURTROOM_OPTIONS),
+    [DOWNLOAD.ERROR]: download.get(DOWNLOAD.ERROR),
+    [DOWNLOAD.ALL_HEARING_DATA]: download.get(DOWNLOAD.ALL_HEARING_DATA),
+    [DOWNLOAD.LOADING_HEARING_DATA]: download.get(DOWNLOAD.LOADING_HEARING_DATA)
+  };
 }
 
 function mapDispatchToProps(dispatch :Function) :Object {
@@ -376,4 +439,4 @@ function mapDispatchToProps(dispatch :Function) :Object {
   };
 }
 
-export default connect(null, mapDispatchToProps)(DownloadPSA);
+export default connect(mapStateToProps, mapDispatchToProps)(DownloadPSA);
