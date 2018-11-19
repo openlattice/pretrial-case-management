@@ -351,7 +351,6 @@ function* downloadPSAsWatcher() :Generator<*, *, *> {
 function* downloadPSAsByHearingDateWorker(action :SequenceAction) :Generator<*, *, *> {
 
   try {
-    yield put(downloadPSAsByHearingDate.request(action.id));
     const {
       startDate,
       endDate,
@@ -360,12 +359,14 @@ function* downloadPSAsByHearingDateWorker(action :SequenceAction) :Generator<*, 
       filters,
       domain
     } = action.value;
-
+    let noResults = false;
     let usableNeighborsById = Immutable.Map();
     let hearingIds = Immutable.Set();
     let hearingIdsToPSAIds = Immutable.Map();
     let personIdsToHearingIds = Immutable.Map();
     let scoresAsMap = Immutable.Map();
+
+    yield put(downloadPSAsByHearingDate.request(action.id, { noResults }));
 
     const [
       hearingEntitySetId,
@@ -470,117 +471,130 @@ function* downloadPSAsByHearingDateWorker(action :SequenceAction) :Generator<*, 
       }
     });
 
-    const psaNeighborsById = yield call(
-      SearchApi.searchEntityNeighborsBulk,
-      psaEntitySetId,
-      hearingIdsToPSAIds.valueSeq().toJS()
-    );
-
-    Object.entries(psaNeighborsById).forEach(([id, neighborList]) => {
-      let domainMatch = true;
-      neighborList.forEach((neighborObj) => {
-        const neighbor = getFilteredNeighbor(neighborObj);
-        if (domain && neighbor.neighborEntitySet && neighbor.neighborEntitySet.name === ENTITY_SETS.STAFF) {
-          const filer = neighbor.neighborDetails[PROPERTY_TYPES.PERSON_ID][0];
-          if (!filer || !filer.toLowerCase().endsWith(domain)) {
-            domainMatch = false;
-          }
-        }
-      });
-      if (domainMatch) {
-        usableNeighborsById = usableNeighborsById.set(
-          id,
-          Immutable.fromJS(neighborList)
-        );
-      }
-    });
-
-    const getUpdatedEntity = (combinedEntityInit, entitySetTitle, entitySetName, details) => {
-      if (filters && !filters[entitySetName]) return combinedEntityInit;
-      let combinedEntity = combinedEntityInit;
-      details.entrySeq().forEach(([fqn, valueList]) => {
-        const keyString = `${fqn}|${entitySetName}`;
-        const headerString = HEADERS_OBJ[keyString];
-        const header = filters ? filters[entitySetName][fqn] : headerString;
-        if (header) {
-          let newArrayValues = combinedEntity.get(header, Immutable.List());
-          valueList.forEach((val) => {
-            let newVal = val;
-            if (fqn === PROPERTY_TYPES.TIMESTAMP
-              || fqn === PROPERTY_TYPES.COMPLETED_DATE_TIME
-              || fqn === PROPERTY_TYPES.DATE_TIME) {
-              newVal = formatDateTime(val, 'YYYY-MM-DD hh:mma');
-            }
-            if (!newArrayValues.includes(val)) {
-              newArrayValues = newArrayValues.push(newVal);
-            }
-          });
-          combinedEntity = combinedEntity.set(header, newArrayValues);
-        }
-      });
-      return combinedEntity;
-    };
-
-    let jsonResults = Immutable.List();
-    let allHeaders = Immutable.Set();
-    usableNeighborsById.keySeq().forEach((id) => {
-      let combinedEntity = getUpdatedEntity(
-        Immutable.Map(),
-        'South Dakota PSA Scores',
-        ENTITY_SETS.PSA_SCORES,
-        scoresAsMap.get(id)
+    if (hearingIdsToPSAIds.size) {
+      const psaNeighborsById = yield call(
+        SearchApi.searchEntityNeighborsBulk,
+        psaEntitySetId,
+        hearingIdsToPSAIds.valueSeq().toJS()
       );
 
-      usableNeighborsById.get(id).forEach((neighbor) => {
-        combinedEntity = getUpdatedEntity(
-          combinedEntity,
-          neighbor.getIn([PSA_ASSOCIATION.ENTITY_SET, 'title']),
-          neighbor.getIn([PSA_ASSOCIATION.ENTITY_SET, 'name']),
-          neighbor.get(PSA_ASSOCIATION.DETAILS)
-        );
-        combinedEntity = getUpdatedEntity(
-          combinedEntity,
-          neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'title']),
-          neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'name']),
-          neighbor.get(PSA_NEIGHBOR.DETAILS, Immutable.Map())
-        );
-        allHeaders = allHeaders.union(combinedEntity.keys())
-          .sort((header1, header2) => (POSITIONS.indexOf(header1) >= POSITIONS.indexOf(header2) ? 1 : -1));
+      Object.entries(psaNeighborsById).forEach(([id, neighborList]) => {
+        let domainMatch = true;
+        neighborList.forEach((neighborObj) => {
+          const neighbor = getFilteredNeighbor(neighborObj);
+          if (domain && neighbor.neighborEntitySet && neighbor.neighborEntitySet.name === ENTITY_SETS.STAFF) {
+            const filer = neighbor.neighborDetails[PROPERTY_TYPES.PERSON_ID][0];
+            if (!filer || !filer.toLowerCase().endsWith(domain)) {
+              domainMatch = false;
+            }
+          }
+        });
+        if (domainMatch) {
+          usableNeighborsById = usableNeighborsById.set(
+            id,
+            Immutable.fromJS(neighborList)
+          );
+        }
       });
+      if (usableNeighborsById.size) {
+        const getUpdatedEntity = (combinedEntityInit, entitySetTitle, entitySetName, details) => {
+          if (filters && !filters[entitySetName]) return combinedEntityInit;
+          let combinedEntity = combinedEntityInit;
+          details.entrySeq().forEach(([fqn, valueList]) => {
+            const keyString = `${fqn}|${entitySetName}`;
+            const headerString = HEADERS_OBJ[keyString];
+            const header = filters ? filters[entitySetName][fqn] : headerString;
+            if (header) {
+              let newArrayValues = combinedEntity.get(header, Immutable.List());
+              valueList.forEach((val) => {
+                let newVal = val;
+                if (fqn === PROPERTY_TYPES.TIMESTAMP
+                  || fqn === PROPERTY_TYPES.COMPLETED_DATE_TIME
+                  || fqn === PROPERTY_TYPES.DATE_TIME) {
+                  newVal = formatDateTime(val, 'YYYY-MM-DD hh:mma');
+                }
+                if (!newArrayValues.includes(val)) {
+                  newArrayValues = newArrayValues.push(newVal);
+                }
+              });
+              combinedEntity = combinedEntity.set(header, newArrayValues);
+            }
+          });
+          return combinedEntity;
+        };
 
-      combinedEntity = combinedEntity.set('S2', getStepTwo(usableNeighborsById.get(id), scoresAsMap.get(id)));
-      combinedEntity = combinedEntity.set('S4', getStepFour(usableNeighborsById.get(id), scoresAsMap.get(id)));
+        let jsonResults = Immutable.List();
+        let allHeaders = Immutable.Set();
+        usableNeighborsById.keySeq().forEach((id) => {
+          let combinedEntity = getUpdatedEntity(
+            Immutable.Map(),
+            'South Dakota PSA Scores',
+            ENTITY_SETS.PSA_SCORES,
+            scoresAsMap.get(id)
+          );
 
-      if (
-        combinedEntity.get('FIRST')
-        || combinedEntity.get('MIDDLE')
-        || combinedEntity.get('LAST')
-        || combinedEntity.get('Last Name')
-        || combinedEntity.get('First Name')
-      ) {
-        jsonResults = jsonResults.push(combinedEntity);
+          usableNeighborsById.get(id).forEach((neighbor) => {
+            combinedEntity = getUpdatedEntity(
+              combinedEntity,
+              neighbor.getIn([PSA_ASSOCIATION.ENTITY_SET, 'title']),
+              neighbor.getIn([PSA_ASSOCIATION.ENTITY_SET, 'name']),
+              neighbor.get(PSA_ASSOCIATION.DETAILS)
+            );
+            combinedEntity = getUpdatedEntity(
+              combinedEntity,
+              neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'title']),
+              neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'name']),
+              neighbor.get(PSA_NEIGHBOR.DETAILS, Immutable.Map())
+            );
+            allHeaders = allHeaders.union(combinedEntity.keys())
+              .sort((header1, header2) => (POSITIONS.indexOf(header1) >= POSITIONS.indexOf(header2) ? 1 : -1));
+          });
+
+          combinedEntity = combinedEntity.set('S2', getStepTwo(usableNeighborsById.get(id), scoresAsMap.get(id)));
+          combinedEntity = combinedEntity.set('S4', getStepFour(usableNeighborsById.get(id), scoresAsMap.get(id)));
+
+          if (
+            combinedEntity.get('FIRST')
+            || combinedEntity.get('MIDDLE')
+            || combinedEntity.get('LAST')
+            || combinedEntity.get('Last Name')
+            || combinedEntity.get('First Name')
+          ) {
+            jsonResults = jsonResults.push(combinedEntity);
+          }
+
+        });
+
+        if (filters) {
+          jsonResults = yield jsonResults.sortBy(psa => psa.get('First Name')).sortBy(psa => psa.get('Last Name'));
+        }
+
+        const fields = filters
+          ? Object.values(filters).reduce((es1, es2) => [...Object.values(es1), ...Object.values(es2)])
+          : allHeaders.toJS();
+        const csv = Papa.unparse({
+          fields,
+          data: jsonResults.toJS()
+        });
+
+        const name = courtroom
+          ? `psas_${courtroom}_hearing_dates_from_${startDate.format('MM-DD-YYYY')}-to-${endDate.format('MM-DD-YYYY')}`
+          : `all_psas_with_hearing_dates_from_${startDate.format('MM-DD-YYYY')}_to_${endDate.format('MM-DD-YYYY')}`;
+
+        FileSaver.saveFile(csv, name, 'csv');
+
+      }
+      else {
+        noResults = true;
       }
 
 
-    });
-
-    if (filters) {
-      jsonResults = yield jsonResults.sortBy(psa => psa.get('First Name')).sortBy(psa => psa.get('Last Name'));
+      yield put(downloadPSAsByHearingDate.success(action.id, { noResults }));
     }
-
-    const fields = filters
-      ? Object.values(filters).reduce((es1, es2) => [...Object.values(es1), ...Object.values(es2)])
-      : allHeaders.toJS();
-    const csv = Papa.unparse({
-      fields,
-      data: jsonResults.toJS()
-    });
-
-    const name = `PSAs-With-Hearing-Dates-From-${startDate.format('MM-DD-YYYY')}-to-${endDate.format('MM-DD-YYYY')}`;
-
-    FileSaver.saveFile(csv, name, 'csv');
-
-    yield put(downloadPSAsByHearingDate.success(action.id));
+    else {
+      noResults = true;
+      yield put(downloadPSAsByHearingDate.success(action.id, { noResults }));
+    }
   }
   catch (error) {
     yield put(downloadPSAsByHearingDate.failure(action.id, { error }));
@@ -599,6 +613,7 @@ function* getDownloadFiltersWorker(action :SequenceAction) :Generator<*, *, *> {
   try {
     yield put(getDownloadFilters.request(action.id));
     let courtrooms = Immutable.Map();
+    let noResults = false;
     const { startDate, endDate } = action.value;
 
     const start = startDate.toISOString(true);
@@ -633,8 +648,8 @@ function* getDownloadFiltersWorker(action :SequenceAction) :Generator<*, *, *> {
         }
       });
     }
-
-    yield put(getDownloadFilters.success(action.id, { courtrooms, allHearingData }));
+    if (!allHearingData.size) noResults = true;
+    yield put(getDownloadFilters.success(action.id, { courtrooms, allHearingData, noResults }));
   }
   catch (error) {
     console.error(error);
