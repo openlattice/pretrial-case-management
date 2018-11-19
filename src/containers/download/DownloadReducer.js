@@ -19,6 +19,7 @@ import {
 import { DOWNLOAD } from '../../utils/consts/FrontEndStateConsts';
 
 const INITIAL_STATE :Map<*, *> = fromJS({
+  [DOWNLOAD.NO_RESULTS]: false,
   [DOWNLOAD.DOWNLOADING_REPORTS]: false,
   [DOWNLOAD.COURTROOM_OPTIONS]: Map(),
   [DOWNLOAD.LOADING_HEARING_DATA]: false,
@@ -40,8 +41,12 @@ export default function downloadReducer(state :Map<*, *> = INITIAL_STATE, action
 
     case downloadPSAsByHearingDate.case(action.type): {
       return downloadPSAsByHearingDate.reducer(state, action, {
-        REQUEST: () => state.set(DOWNLOAD.DOWNLOADING_REPORTS, true),
-        SUCCESS: () => state.set(DOWNLOAD.ERROR, List()),
+        REQUEST: () => state
+          .set(DOWNLOAD.DOWNLOADING_REPORTS, true)
+          .set(DOWNLOAD.NO_RESULTS, action.value.noResults),
+        SUCCESS: () => state
+          .set(DOWNLOAD.ERROR, List())
+          .set(DOWNLOAD.NO_RESULTS, action.value.noResults),
         FAILURE: () => state.set(DOWNLOAD.ERROR, List([action.value.error])),
         FINALLY: () => state.set(DOWNLOAD.DOWNLOADING_REPORTS, false)
       });
@@ -61,7 +66,8 @@ export default function downloadReducer(state :Map<*, *> = INITIAL_STATE, action
         REQUEST: () => state.set(DOWNLOAD.LOADING_HEARING_DATA, true),
         SUCCESS: () => state
           .set(DOWNLOAD.COURTROOM_OPTIONS, action.value.courtrooms)
-          .set(DOWNLOAD.ALL_HEARING_DATA, action.value.allHearingData),
+          .set(DOWNLOAD.ALL_HEARING_DATA, action.value.allHearingData)
+          .set(DOWNLOAD.NO_RESULTS, action.value.noResults),
         FAILURE: () => state.set(DOWNLOAD.LOADING_HEARING_DATA, false),
         FINALLY: () => state.set(DOWNLOAD.LOADING_HEARING_DATA, false)
       });
