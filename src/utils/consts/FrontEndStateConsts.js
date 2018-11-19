@@ -68,6 +68,7 @@ export const DASHBOARD = {
 // Download
 
 export const DOWNLOAD = {
+  NO_RESULTS: 'noHearingResults',
   DOWNLOADING_REPORTS: 'downloadingReports',
   COURTROOM_OPTIONS: 'courtroomOptions',
   ALL_HEARING_DATA: 'allHearingData',
