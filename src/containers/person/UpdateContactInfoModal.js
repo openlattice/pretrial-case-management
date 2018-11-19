@@ -169,9 +169,8 @@ class NewHearingSection extends React.Component<Props, State> {
 
   isReadyToSubmit = () :boolean => {
     const { isCreatingPerson } = this.props;
-    const { state } = this;
-    const phoneFormatIsCorrect = !!state[PROPERTY_TYPES.PHONE] || this.phoneNumValid();
-    const emailFormatIsCorrect = !!state[PROPERTY_TYPES.EMAIL] || this.emailAddValid();
+    const phoneFormatIsCorrect = this.phoneNumValid();
+    const emailFormatIsCorrect = this.emailAddValid();
     return !isCreatingPerson && phoneFormatIsCorrect && emailFormatIsCorrect;
   }
 
