@@ -335,13 +335,13 @@ class DownloadPSA extends React.Component<Props, State> {
 
   handleCheckboxChange = (e) => {
     const { name } = e.target;
-    if (name === 'hearing') {
+    if (name === REPORT_TYPES.BY_HEARING) {
       this.setState({
         byHearingDate: true,
         byPSADate: false
       });
     }
-    else if (name === 'psa') {
+    else if (name === REPORT_TYPES.BY_PSA) {
       this.setState({
         byHearingDate: false,
         byPSADate: true
@@ -436,13 +436,13 @@ class DownloadPSA extends React.Component<Props, State> {
                     onEndChange={end => this.onDateChange({ end })}
                     format24HourClock />
                 <StyledCheckbox
-                    name="hearing"
+                    name={REPORT_TYPES.BY_HEARING}
                     label="By Hearing Date"
                     checked={byHearingDate}
                     value={byHearingDate}
                     onChange={this.handleCheckboxChange} />
                 <StyledCheckbox
-                    name="psa"
+                    name={REPORT_TYPES.BY_PSA}
                     label="By PSA Date"
                     checked={byPSADate}
                     value={byPSADate}
