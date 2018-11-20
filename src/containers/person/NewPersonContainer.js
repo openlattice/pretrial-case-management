@@ -174,8 +174,8 @@ class NewPersonContainer extends React.Component<Props, State> {
     const { state } = this;
     const hasDOB = !!state[DOB_VALUE];
     const hasName = !!state[FIRST_NAME_VALUE] && !!state[LAST_NAME_VALUE];
-    const phoneFormatIsCorrect = !!state[PROPERTY_TYPES.PHONE] || this.phoneNumValid();
-    const emailFormatIsCorrect = !!state[PROPERTY_TYPES.EMAIL] || this.emailAddValid();
+    const phoneFormatIsCorrect = this.phoneNumValid();
+    const emailFormatIsCorrect = this.emailAddValid();
     return !isCreatingPerson && hasDOB && hasName && phoneFormatIsCorrect && emailFormatIsCorrect;
   }
 
