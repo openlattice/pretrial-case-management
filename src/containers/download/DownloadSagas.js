@@ -382,8 +382,9 @@ function* downloadPSAsByHearingDateWorker(action :SequenceAction) :Generator<*, 
       allHearingData.forEach((hearing) => {
         const hearingId = hearing.getIn([OPENLATTICE_ID_FQN, 0]);
         const hearingCourtroom = hearing.getIn([PROPERTY_TYPES.COURTROOM, 0]);
-        const hearingMatchesCourtroom = courtroom ? hearingCourtroom === courtroom : true;
-        if (hearingMatchesCourtroom) {
+        const hearingMatchesCourtroom = hearingCourtroom === courtroom;
+        const shouldIncludeHearing = courtroom ? hearingMatchesCourtroom : true;
+        if (shouldIncludeHearing) {
           hearingIds = hearingIds.add(hearingId);
         }
       });
