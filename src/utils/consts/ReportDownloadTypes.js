@@ -53,3 +53,8 @@ export const DOMAIN = {
   MINNEHAHA: '@minnehahacounty.org',
   PENNINGTON: '@pennco.org'
 };
+
+export const REPORT_TYPES = {
+  BY_PSA: 'psas',
+  BY_HEARING: 'hearings'
+};

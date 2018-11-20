@@ -7,6 +7,7 @@ import { combineReducers } from 'redux-immutable';
 
 import courtReducer from '../../containers/court/CourtReducer';
 import dashboardReducer from '../../containers/dashboard/DashboardReducer';
+import downloadReducer from '../../containers/download/DownloadReducer';
 import enrollReducer from '../../containers/enroll/EnrollReducer';
 import psaReducer from '../../containers/psa/FormReducer';
 import peopleReducer from '../../containers/people/PeopleReducer';
@@ -22,6 +23,7 @@ export default function reduxReducer() {
     [STATE.AUTH]: AuthReducer,
     [STATE.COURT]: courtReducer,
     [STATE.DASHBOARD]: dashboardReducer,
+    [STATE.DOWNLOAD]: downloadReducer,
     [STATE.ENROLL]: enrollReducer,
     [STATE.PSA]: psaReducer,
     [STATE.PEOPLE]: peopleReducer,
