@@ -50,6 +50,8 @@ import {
 const { OPENLATTICE_ID_FQN } = Constants;
 const { FullyQualifiedName } = Models;
 
+const DATETIME_FQNS = [PROPERTY_TYPES.TIMESTAMP, PROPERTY_TYPES.COMPLETED_DATE_TIME, PROPERTY_TYPES.DATE_TIME];
+
 const getChargeString = charge => `${charge.statute}|${charge.description}`;
 
 const getChargeValues = chargeType => (
@@ -509,9 +511,7 @@ function* downloadPSAsByHearingDateWorker(action :SequenceAction) :Generator<*, 
               let newArrayValues = combinedEntity.get(header, Immutable.List());
               valueList.forEach((val) => {
                 let newVal = val;
-                if (fqn === PROPERTY_TYPES.TIMESTAMP
-                  || fqn === PROPERTY_TYPES.COMPLETED_DATE_TIME
-                  || fqn === PROPERTY_TYPES.DATE_TIME) {
+                if (DATETIME_FQNS.includes(fqn)) {
                   newVal = formatDateTime(val, 'YYYY-MM-DD hh:mma');
                 }
                 if (!newArrayValues.includes(val)) {
