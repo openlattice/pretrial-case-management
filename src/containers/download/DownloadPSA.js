@@ -15,9 +15,14 @@ import InfoButton from '../../components/buttons/InfoButton';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import SearchableSelect from '../../components/controls/SearchableSelect';
 import StyledCheckbox from '../../components/controls/StyledCheckbox';
-import { DOMAIN, PSA_RESPONSE_TABLE, SUMMARY_REPORT } from '../../utils/consts/ReportDownloadTypes';
 import { OL } from '../../utils/consts/Colors';
 import { STATE, DOWNLOAD } from '../../utils/consts/FrontEndStateConsts';
+import {
+  REPORT_TYPES,
+  DOMAIN,
+  PSA_RESPONSE_TABLE,
+  SUMMARY_REPORT
+} from '../../utils/consts/ReportDownloadTypes';
 import {
   StyledFormViewWrapper,
   StyledFormWrapper,
@@ -197,7 +202,7 @@ class DownloadPSA extends React.Component<Props, State> {
       if (!start.isValid() || !end.isValid()) {
         errorText = 'At least one of the selected dates is invalid.';
       }
-      else if (downloads === 'psas' && start.isAfter(today)) {
+      else if ((downloads === REPORT_TYPES.BY_PSA) && start.isAfter(today)) {
         errorText = 'The selected start date cannot be later than today.';
       }
       else if (end.isBefore(start)) {
@@ -282,7 +287,7 @@ class DownloadPSA extends React.Component<Props, State> {
   renderDownloadByHearing = () => {
     const { loadingHearingData, downloadingReports } = this.props;
     const { startDate, endDate, byHearingDate } = this.state;
-    const downloads = 'hearings';
+    const downloads = REPORT_TYPES.BY_HEARING;
     if (loadingHearingData) return <LoadingSpinner />;
     return (byHearingDate && startDate && endDate)
       ? (
@@ -347,7 +352,7 @@ class DownloadPSA extends React.Component<Props, State> {
   renderDownloadByPSA = () => {
     const { downloadingReports } = this.props;
     const { startDate, endDate, byPSADate } = this.state;
-    const downloads = 'psas';
+    const downloads = REPORT_TYPES.BY_PSA;
     return (byPSADate && startDate && endDate)
       ? (
         <SubSelectionWrapper>
