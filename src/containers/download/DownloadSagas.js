@@ -19,14 +19,14 @@ import {
 } from 'redux-saga/effects';
 
 import FileSaver from '../../utils/FileSaver';
+import MinnehahaChargesList from '../../utils/consts/MinnehahaChargesList';
+import PenningtonChargesList from '../../utils/consts/PenningtonChargesList';
 import { formatDateTime } from '../../utils/FormattingUtils';
 import { getFilteredNeighbor, stripIdField } from '../../utils/DataUtils';
 import { obfuscateBulkEntityNeighbors } from '../../utils/consts/DemoNames';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { HEADERS_OBJ, POSITIONS } from '../../utils/consts/CSVConsts';
 import { PSA_NEIGHBOR, PSA_ASSOCIATION } from '../../utils/consts/FrontEndStateConsts';
-import MinnehahaChargesList from '../../utils/consts/MinnehahaChargesList';
-import PenningtonChargesList from '../../utils/consts/PenningtonChargesList';
 import { PSA_STATUSES } from '../../utils/consts/Consts';
 import { PENN_BOOKING_HOLD_EXCEPTIONS, PENN_BOOKING_RELEASE_EXCEPTIONS } from '../../utils/consts/DMFExceptionsList';
 import { DOMAIN } from '../../utils/consts/ReportDownloadTypes';

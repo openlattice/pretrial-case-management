@@ -5,17 +5,17 @@
 import React from 'react';
 import moment from 'moment';
 import styled from 'styled-components';
-import { Map } from 'immutable';
-import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
+import { connect } from 'react-redux';
+import { Map } from 'immutable';
 
-import LoadingSpinner from '../../components/LoadingSpinner';
-import StyledCheckbox from '../../components/controls/StyledCheckbox';
 import BasicButton from '../../components/buttons/BasicButton';
-import InfoButton from '../../components/buttons/InfoButton';
 import DateTimeRange from '../../components/datetime/DateTimeRange';
-import { DOMAIN, PSA_RESPONSE_TABLE, SUMMARY_REPORT } from '../../utils/consts/ReportDownloadTypes';
+import InfoButton from '../../components/buttons/InfoButton';
+import LoadingSpinner from '../../components/LoadingSpinner';
 import SearchableSelect from '../../components/controls/SearchableSelect';
+import StyledCheckbox from '../../components/controls/StyledCheckbox';
+import { DOMAIN, PSA_RESPONSE_TABLE, SUMMARY_REPORT } from '../../utils/consts/ReportDownloadTypes';
 import { OL } from '../../utils/consts/Colors';
 import { STATE, DOWNLOAD } from '../../utils/consts/FrontEndStateConsts';
 import {
