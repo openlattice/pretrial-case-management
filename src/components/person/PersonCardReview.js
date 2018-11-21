@@ -10,7 +10,7 @@ import { Constants } from 'lattice';
 import defaultUserIcon from '../../assets/svg/profile-placeholder-round.svg';
 import { formatValue, formatDate } from '../../utils/FormattingUtils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { PersonMugshot } from '../../utils/Layout';
+import { PersonPicture, PersonMugshot } from '../../utils/Layout';
 import {
   PersonCardWrapper,
   DetailsWrapper,
@@ -60,11 +60,6 @@ const StyledDetailItem = styled(DetailItem)`
   &:hover ${StyledReviewTooltip} {
     visibility: visible;
   }
-`;
-
-const PersonPicture = styled.img`
-  width: 36px;
-  height: auto;
 `;
 
 type Props = {
