@@ -639,8 +639,9 @@ export const PersonPicture = styled.img`
 `;
 
 export const PersonMugshot = styled.div`
+  margin-right: 20px;
   border-radius: 50%;
-  width: 39.34px;
+  min-width: 36px;
   height: 36px;
   position: relative;
   overflow: hidden;
