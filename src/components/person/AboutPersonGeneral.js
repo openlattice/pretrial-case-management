@@ -75,8 +75,9 @@ class AboutPersonGeneral extends React.Component<Props, *> {
     const dob = formatDateList(dobList);
     const phone = contactInfo.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.PHONE, 0], '');
     const isMobile = contactInfo.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.IS_MOBILE, 0], '');
-    let mugshot :string = selectedPersonData.getIn([MUGSHOT, 0]);
-    if (!mugshot) mugshot = selectedPersonData.getIn([PICTURE, 0]);
+    const mugshot :string = selectedPersonData.getIn([MUGSHOT, 0])
+      || selectedPersonData.getIn([PICTURE, 0])
+      || defaultUserIcon;
 
     if (dobList.size) {
       age = moment().diff(moment(dobList.get(0, '')), 'years');
