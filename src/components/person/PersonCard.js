@@ -8,7 +8,7 @@ import Immutable from 'immutable';
 import { Constants } from 'lattice';
 
 import defaultUserIcon from '../../assets/svg/profile-placeholder-rectangle-big.svg';
-import { PersonPicture, PersonMugshot } from '../../utils/Layout';
+import { PersonPicture } from '../../utils/Layout';
 import { formatValue, formatDate } from '../../utils/FormattingUtils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import {
@@ -51,8 +51,7 @@ const Tooltip = ({ value }) => (
 
 const PersonCard = ({ person, handleSelect } :Props) => {
 
-  let mugshot :string = person.getIn([MUGSHOT, 0]);
-  if (!mugshot) mugshot = person.getIn([PICTURE, 0]);
+  let mugshot = person.getIn([MUGSHOT, 0]) || person.getIn([PICTURE, 0]);
   mugshot = mugshot
     ? <StyledPersonPicture src={mugshot} alt="" />
     : <StyledPersonPicture src={defaultUserIcon} alt="" />;
