@@ -22,8 +22,9 @@ export default ({ person } :Props) => {
   const middleName = formatValue(person.get(PROPERTY_TYPES.MIDDLE_NAME, ''));
   const lastName = formatValue(person.get(PROPERTY_TYPES.LAST_NAME, ''));
   const dob = formatDateList(person.get(PROPERTY_TYPES.DOB, ''));
-  let mugshot :string = person.getIn([PROPERTY_TYPES.MUGSHOT, 0]);
-  if (!mugshot) mugshot = person.getIn([PROPERTY_TYPES.PICTURE, 0]);
+  const mugshot :string = person.getIn([PROPERTY_TYPES.MUGSHOT, 0])
+    || person.getIn([PROPERTY_TYPES.PICTURE, 0])
+    || defaultUserIcon;
   const generalContent = [
     {
       label: 'Last Name',
