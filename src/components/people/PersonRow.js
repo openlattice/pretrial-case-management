@@ -68,8 +68,7 @@ type Props = {
 
 const PersonRow = ({ person, handleSelect, gray } :Props) => {
 
-  let mugshot :string = person.getIn([MUGSHOT, 0]);
-  if (!mugshot) mugshot = person.getIn([PICTURE, 0]);
+  let mugshot :string = person.getIn([MUGSHOT, 0]) || person.getIn([PICTURE, 0]);
   mugshot = mugshot
     ? (
       <PersonMugshot>
