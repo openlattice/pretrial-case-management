@@ -156,6 +156,7 @@ class SelfieWebCam extends React.Component<Props, State> {
   }
 
   componentDidMount() {
+    const { hasMedia } = this.state;
 
     const mediaSupport :boolean = !!(
       navigator.getUserMedia
@@ -169,7 +170,7 @@ class SelfieWebCam extends React.Component<Props, State> {
       return;
     }
 
-    if (!this.state.hasMedia) {
+    if (!hasMedia) {
       this.requestUserMedia();
     }
   }
@@ -191,7 +192,10 @@ class SelfieWebCam extends React.Component<Props, State> {
       navigator.getUserMedia(
         {
           audio: false,
-          video: true
+          video: {
+            width: { min: 400, max: 400 },
+            height: { min: 560, max: 560 }
+          },
         },
         (stream) => {
           this.handleUserMedia(null, stream);
@@ -269,11 +273,13 @@ class SelfieWebCam extends React.Component<Props, State> {
 
   render() {
 
-    if (!this.state.hasMedia) {
+    const { hasMedia, videoSource, selfieSource } = this.state;
+
+    if (!hasMedia) {
       return null;
     }
 
-    const selfieCaptured :boolean = !!this.state.selfieSource;
+    const selfieCaptured :boolean = !!selfieSource;
 
     return (
       <OuterWrapper>
@@ -283,14 +289,14 @@ class SelfieWebCam extends React.Component<Props, State> {
               muted
               height={450}
               isVisible={!selfieCaptured}
-              src={this.state.videoSource}
+              src={videoSource}
               innerRef={(element) => {
                 this.video = element;
               }} />
           <StyledImageElement
               alt="selfie"
               isVisible={selfieCaptured}
-              src={this.state.selfieSource} />
+              src={selfieSource} />
           <ControlsWrapper>
             <ResetIcon isActive={selfieCaptured} onClick={this.handleOnClickReset}>
               <FontAwesomeIcon icon={faSyncAlt} />
