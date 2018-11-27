@@ -10,6 +10,7 @@ import ContentBlock from '../ContentBlock';
 import InfoButton from '../buttons/InfoButton';
 import ContentSection from '../ContentSection';
 import defaultUserIcon from '../../assets/svg/profile-placeholder-rectangle-big.svg';
+import { PersonPicture, PersonMugshot } from '../../utils/Layout';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { formatDateList, formatValue } from '../../utils/FormattingUtils';
@@ -19,7 +20,9 @@ const {
   DOB,
   FIRST_NAME,
   MIDDLE_NAME,
-  LAST_NAME
+  LAST_NAME,
+  MUGSHOT,
+  PICTURE
 } = PROPERTY_TYPES;
 
 const EditContactButton = styled(InfoButton)`
@@ -72,6 +75,9 @@ class AboutPersonGeneral extends React.Component<Props, *> {
     const dob = formatDateList(dobList);
     const phone = contactInfo.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.PHONE, 0], '');
     const isMobile = contactInfo.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.IS_MOBILE, 0], '');
+    const mugshot :string = selectedPersonData.getIn([MUGSHOT, 0])
+      || selectedPersonData.getIn([PICTURE, 0])
+      || defaultUserIcon;
 
     if (dobList.size) {
       age = moment().diff(moment(dobList.get(0, '')), 'years');
@@ -137,7 +143,7 @@ class AboutPersonGeneral extends React.Component<Props, *> {
 
     return (
       <ContentSection
-          photo={defaultUserIcon}
+          photo={mugshot}
           component={CONTENT_CONSTS.PROFILE}
           header={header}>
         {content}

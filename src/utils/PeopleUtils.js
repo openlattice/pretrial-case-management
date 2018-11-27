@@ -18,7 +18,7 @@ export const formatPeopleInfo = (person) => {
     middleName: person.getIn([PROPERTY_TYPES.MIDDLE_NAME, 0]),
     lastName: person.getIn([PROPERTY_TYPES.LAST_NAME, 0]),
     dob: formattedDOB,
-    photo: person.getIn([PROPERTY_TYPES.PICTURE, 0])
+    photo: person.getIn([PROPERTY_TYPES.PICTURE, 0]) || person.getIn([PROPERTY_TYPES.MUGSHOT, 0])
   };
 };
 

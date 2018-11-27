@@ -630,3 +630,24 @@ export const StatsSectionHeader = styled(AlternateSectionHeader)`
   padding: 0;
   justify-content: space-between;
 `;
+
+// mugshot wrapper
+
+export const PersonPicture = styled.img`
+  width: 36px;
+  height: auto;
+`;
+
+export const PersonMugshot = styled.div`
+  margin-right: 20px;
+  border-radius: 50%;
+  min-width: 36px;
+  height: 36px;
+  position: relative;
+  overflow: hidden;
+
+  img {
+      display: inline;
+      margin: 0 auto;
+  }
+`;

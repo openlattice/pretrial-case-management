@@ -8,7 +8,7 @@ import styled from 'styled-components';
 import { Constants } from 'lattice';
 
 import CONTENT from '../../utils/consts/ContentConsts';
-import Headshot from '../Headshot';
+import defaultProfile from '../../assets/svg/profile-placeholder-avatar.svg';
 import PSAModal from '../../containers/review/PSAModal';
 import StyledCard from '../StyledCard';
 import { ENTITY_SETS } from '../../utils/consts/DataModelConsts';
@@ -86,6 +86,11 @@ const OpenPSATag = styled.span`
 
 const TagPlaceholder = styled.span`
   height: 8px;
+`;
+
+const MugShot = styled.img`
+  height: 100%;
+  border-radius: 7px 0 0 7px;
 `;
 
 type Props = {
@@ -184,7 +189,7 @@ class PersonCard extends React.Component<Props, State> {
           { this.renderModal() }
           <OpenPSATag>Open PSA</OpenPSATag>
           <StyledPersonCard>
-            <Headshot photo={photo} />
+            <MugShot src={photo || defaultProfile} />
             <PersonInfoSection>
               <Name>{name}</Name>
               <div>
@@ -199,7 +204,7 @@ class PersonCard extends React.Component<Props, State> {
         <StyledUndecoratedLink to={`${Routes.PERSON_DETAILS_ROOT}/${identification}`}>
           <TagPlaceholder />
           <StyledPersonCard>
-            <Headshot photo={photo} />
+            <MugShot src={photo || defaultProfile} />
             <PersonInfoSection>
               <Name>{name}</Name>
               <div>

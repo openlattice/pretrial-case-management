@@ -8,6 +8,7 @@ import Immutable from 'immutable';
 import { Constants } from 'lattice';
 
 import defaultUserIcon from '../../assets/svg/profile-placeholder-rectangle-big.svg';
+import { PersonPicture } from '../../utils/Layout';
 import { formatValue, formatDate } from '../../utils/FormattingUtils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import {
@@ -35,7 +36,7 @@ const DetailItemWide = styled(DetailItem)`
   width: 100%;
 `;
 
-const PersonPicture = styled.img`
+const StyledPersonPicture = styled(PersonPicture)`
   max-height: 115px;
 `;
 
@@ -50,9 +51,10 @@ const Tooltip = ({ value }) => (
 
 const PersonCard = ({ person, handleSelect } :Props) => {
 
-  let pictureAsBase64 :string = person.getIn([MUGSHOT, 0]);
-  if (!pictureAsBase64) pictureAsBase64 = person.getIn([PICTURE, 0]);
-  const pictureImgSrc = pictureAsBase64 ? `data:image/png;base64,${pictureAsBase64}` : defaultUserIcon;
+  let mugshot = person.getIn([MUGSHOT, 0]) || person.getIn([PICTURE, 0]);
+  mugshot = mugshot
+    ? <StyledPersonPicture src={mugshot} alt="" />
+    : <StyledPersonPicture src={defaultUserIcon} alt="" />;
 
   const firstName = formatValue(person.get(FIRST_NAME, Immutable.List()));
   const middleName = formatValue(person.get(MIDDLE_NAME, Immutable.List()));
@@ -70,7 +72,7 @@ const PersonCard = ({ person, handleSelect } :Props) => {
             handleSelect(person, entityKeyId, id);
           }
         }}>
-      <PersonPicture src={pictureImgSrc} role="presentation" />
+      { mugshot }
       <DetailsWrapper>
         <DetailRow>
           <DetailItem>
