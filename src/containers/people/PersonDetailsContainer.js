@@ -431,7 +431,7 @@ class PersonDetailsContainer extends React.Component<Props, State> {
           <NavButtonToolbar options={navButtons} />
         </ToolbarWrapper>
         { this.renderPSADetailsModal() }
-        { this.renderContactInfoModal() }
+        {/* { this.renderContactInfoModal() } */}
         <Switch>
           <Route path={overviewRoute} render={this.renderOverview} />
           <Route path={psaRoute} render={this.renderPSA} />
