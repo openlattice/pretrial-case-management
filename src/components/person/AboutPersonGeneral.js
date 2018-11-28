@@ -10,7 +10,6 @@ import ContentBlock from '../ContentBlock';
 import InfoButton from '../buttons/InfoButton';
 import ContentSection from '../ContentSection';
 import defaultUserIcon from '../../assets/svg/profile-placeholder-rectangle-big.svg';
-import { PersonPicture, PersonMugshot } from '../../utils/Layout';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { formatDateList, formatValue } from '../../utils/FormattingUtils';
@@ -100,10 +99,10 @@ class AboutPersonGeneral extends React.Component<Props, *> {
             label: 'First Name',
             content: [(firstName ? formattedFirstName : firstName)]
           },
-          {
-            label: (isMobile ? 'Phone (mobile)' : 'Phone'),
-            content: [(phone || 'NA')]
-          },
+          // {
+          //   label: (isMobile ? 'Phone (mobile)' : 'Phone'),
+          //   content: [(phone || 'NA')]
+          // },
           {
             label: 'Date of Birth',
             content: [dob]
@@ -137,7 +136,7 @@ class AboutPersonGeneral extends React.Component<Props, *> {
     const header = (
       <HeaderWrapper>
         {`${firstName} ${middleName} ${lastName}`}
-        { this.renderContactModal() }
+        {/* { this.renderContactModal() } */}
       </HeaderWrapper>
     );
 

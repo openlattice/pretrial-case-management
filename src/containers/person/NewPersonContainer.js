@@ -373,14 +373,14 @@ class NewPersonContainer extends React.Component<Props, State> {
             </InputRow>
           </FormSection>
 
-          <PersonContactInfo
+          {/* <PersonContactInfo
               phone={state[PROPERTY_TYPES.PHONE]}
               phoneIsValid={this.phoneNumValid()}
               email={state[PROPERTY_TYPES.EMAIL]}
               emailIsValid={this.emailAddValid()}
               isMobile={state[PROPERTY_TYPES.IS_MOBILE]}
               handleOnChangeInput={this.handleOnChangeInput}
-              handleCheckboxChange={this.handleCheckboxChange} />
+              handleCheckboxChange={this.handleCheckboxChange} /> */}
 
           <FormSection>
             <PaddedRow>
