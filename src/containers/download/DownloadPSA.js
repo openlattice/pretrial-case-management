@@ -313,17 +313,17 @@ class DownloadPSA extends React.Component<Props, State> {
           </CourtroomOptionsWrapper>
           <ButtonRow>
             <BasicDownloadButton
-                disabled={downloadingReports || this.getErrorText(downloads)}
+                disabled={downloadingReports}
                 onClick={() => this.downloadByHearingDate(PSA_RESPONSE_TABLE, DOMAIN.MINNEHAHA)}>
               Download Minnehaha PSA Response Table
             </BasicDownloadButton>
             <BasicDownloadButton
-                disabled={downloadingReports || this.getErrorText(downloads)}
+                disabled={downloadingReports}
                 onClick={() => this.downloadByHearingDate(SUMMARY_REPORT, DOMAIN.MINNEHAHA)}>
               Download Minnehaha Summary Report
             </BasicDownloadButton>
             <BasicDownloadButton
-                disabled={downloadingReports || this.getErrorText(downloads)}
+                disabled={downloadingReports}
                 onClick={() => this.downloadByHearingDate(SUMMARY_REPORT, DOMAIN.PENNINGTON)}>
               Download Pennington Summary Report
             </BasicDownloadButton>
