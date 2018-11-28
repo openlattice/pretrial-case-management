@@ -267,10 +267,17 @@ class DownloadPSA extends React.Component<Props, State> {
 
   onDateChange = (dates) => {
     const { actions } = this.props;
-    const { startDate, endDate, byHearingDate } = this.state;
+    const { byHearingDate } = this.state;
+    let { startDate, endDate } = this.state;
     const { start, end } = dates;
-    const nextStart = start || startDate;
-    const nextEnd = end || endDate;
+
+    let nextStart = start || startDate;
+    nextStart = nextStart ? moment(nextStart) : nextStart;
+    let nextEnd = end || endDate;
+    nextEnd = nextEnd ? moment(nextEnd) : nextEnd;
+
+    startDate = startDate ? moment(startDate) : startDate;
+    endDate = endDate ? moment(endDate) : endDate;
     if (byHearingDate && !!nextStart && !!nextEnd) {
       const startChanged = startDate ? !startDate.isSame(start) : false;
       const endChanged = endDate ? !endDate.isSame(end) : false;
