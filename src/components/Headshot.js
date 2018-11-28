@@ -26,7 +26,7 @@ type Props = {
 };
 
 const Headshot = ({ photo, size } :Props) => {
-  const photoSrc = photo ? `data:image/jpeg;base64,${photo}` : defaultProfile;
+  const photoSrc = photo || defaultProfile;
 
   return (
     <StyledImageWrapper size={size}>

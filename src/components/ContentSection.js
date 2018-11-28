@@ -5,7 +5,7 @@ import React from 'react';
 import styled from 'styled-components';
 
 import CONTENT_CONSTS from '../utils/consts/ContentConsts';
-import { FullWidthContainer } from '../utils/Layout';
+import { FullWidthContainer, PersonPicture, PersonMugshot } from '../utils/Layout';
 import { OL } from '../utils/consts/Colors';
 
 const StyledSection = styled(FullWidthContainer)`
@@ -163,6 +163,10 @@ const StyledSectionBottomBarWrapper = styled.div`
              margin-right: 20px;
            }`
         );
+      case CONTENT_CONSTS.SUMMARY:
+        return (
+          'padding: 30px 0 0 30px;'
+        );
       case CONTENT_CONSTS.PROFILE:
         return (
           `padding: 30px;
@@ -199,6 +203,11 @@ const StyledSectionBottomBarWrapper = styled.div`
   ${props => (props.modifyingHearing ? 'padding-top: 8px;' : '')}
 `;
 
+const PersonPhoto = styled.img`
+  width: 120px;
+  height: auto;
+`;
+
 
 const ContentSection = ({
   component,
@@ -219,8 +228,21 @@ const ContentSection = ({
     return <StyledSectionHeader>Information not available</StyledSectionHeader>;
   };
 
-  const renderPhoto = photo ? <img src={photo} alt="" /> : null;
   const renderHeader = header || null;
+  let renderPhoto;
+  if (!photo) {
+    renderPhoto = null;
+  }
+  else if (component === CONTENT_CONSTS.SUMMARY) {
+    renderPhoto = (
+      <PersonMugshot>
+        <PersonPicture src={photo} alt="" />
+      </PersonMugshot>
+    );
+  }
+  else {
+    renderPhoto = <PersonPhoto src={photo} alt="" />;
+  }
 
   return (
     <StyledSection>
@@ -229,7 +251,7 @@ const ContentSection = ({
           ? <StyledSectionHeader renderHeader component={component}>{renderHeader}</StyledSectionHeader>
           : null
       }
-      <StyledSectionBottomBarWrapper component={component} modifyingHearing={modifyingHearing} >
+      <StyledSectionBottomBarWrapper component={component} modifyingHearing={modifyingHearing}>
         {renderPhoto}
         <StyledContentBlockWrapper component={component}>
           { renderContent() }

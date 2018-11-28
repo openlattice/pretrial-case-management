@@ -35,6 +35,7 @@ import {
 import * as Routes from '../../core/router/Routes';
 
 type Props = {
+  contactInfo :Map<*, *>,
   psaNeighborsById :Map<*, *>,
   selectedPersonData :Map<*, *>,
   loading :boolean,
@@ -42,6 +43,7 @@ type Props = {
   mostRecentPSAEntityKeyId :string,
   neighbors :Map<*, *>,
   openDetailsModal :() => void,
+  openUpdateContactModal :() => void,
   personId :string,
   scheduledHearings :List,
 }
@@ -60,6 +62,7 @@ const StyledColumnRowWithPadding = styled(StyledColumnRow)`
 `;
 
 const PersonOverview = ({
+  contactInfo,
   loading,
   mostRecentPSA,
   mostRecentPSAEntityKeyId,
@@ -68,7 +71,8 @@ const PersonOverview = ({
   psaNeighborsById,
   scheduledHearings,
   selectedPersonData,
-  openDetailsModal
+  openDetailsModal,
+  openUpdateContactModal
 } :Props) => {
   const mostRecentPSANeighbors = psaNeighborsById.get(mostRecentPSAEntityKeyId, Map());
   const arrestDate = getIdOrValue(
@@ -92,6 +96,7 @@ const PersonOverview = ({
     lastEditDateForPSA
   );
   const pendingCharges = currentPendingCharges(chargeHistory);
+
   if (loading) {
     return <LoadingSpinner />;
   }
@@ -100,7 +105,10 @@ const PersonOverview = ({
       <StyledColumn>
         <StyledColumnRowWrapper>
           <StyledColumnRow>
-            <AboutPersonGeneral selectedPersonData={selectedPersonData} />
+            <AboutPersonGeneral
+                selectedPersonData={selectedPersonData}
+                contactInfo={contactInfo}
+                openUpdateContactModal={openUpdateContactModal} />
           </StyledColumnRow>
         </StyledColumnRowWrapper>
         <StyledColumnRowWrapper>

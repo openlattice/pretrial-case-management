@@ -27,7 +27,6 @@ import {
   LOAD_PSA_DATA,
   LOAD_PSAS_BY_DATE,
   REFRESH_PSA_NEIGHBORS,
-  REFRESH_HEARING_NEIGHBORS,
   UPDATE_SCORES_AND_RISK_FACTORS,
   UPDATE_OUTCOMES_AND_RELEASE_CONDITIONS,
   bulkDownloadPSAReviewPDF,
@@ -38,7 +37,6 @@ import {
   loadPSAData,
   loadPSAsByDate,
   refreshPSANeighbors,
-  refreshHearingNeighbors,
   updateScoresAndRiskFactors,
   updateOutcomesAndReleaseCondtions
 } from './ReviewActionFactory';

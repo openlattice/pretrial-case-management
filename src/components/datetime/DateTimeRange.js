@@ -38,7 +38,7 @@ const DateRangeContainer = styled.div`
 
 const DatePickerGroupContainer = styled.div`
   width: 100%;
-  max-width: 300px;
+  max-width: 250px;
   margin: 10px;
 `;
 
@@ -56,12 +56,13 @@ const DateTimeRange = ({
   format24HourClock,
   onStartChange,
   onEndChange,
-  label
+  label,
+  noLabel
 } :Props) => {
   const timeFormat = format24HourClock ? 'HH:mm' : 'hh:mm A';
   return (
     <WideWrapper>
-      <DatePickerTitle>{label}</DatePickerTitle>
+      { noLabel ? null : <DatePickerTitle>{label}</DatePickerTitle>}
       <DateRangeContainer>
         <DatePickerGroupContainer>
           <DatePickerLabel>Start Date</DatePickerLabel>
@@ -78,7 +79,8 @@ const DateTimeRange = ({
 
 DateTimeRange.defaultProps = {
   format24HourClock: false,
-  label: 'Choose a date range.'
+  label: 'Choose a date range.',
+  noLabel: false
 };
 
 export default DateTimeRange;

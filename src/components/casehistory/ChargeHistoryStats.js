@@ -3,66 +3,20 @@
  */
 import React from 'react';
 import Immutable from 'immutable';
-import styled from 'styled-components';
 
-import { OL } from '../../utils/consts/Colors';
-import { Title, AlternateSectionHeader, PendingChargeStatus } from '../../utils/Layout';
 import { getSummaryStats } from '../../utils/HistoricalChargeUtils';
-
-const ChargeHistoryStatsWrapper = styled.div`
-  padding: ${props => (props.padding ? '30px 30px' : '0')};
-  width: 100%;
-  hr {
-    margin: ${props => (props.padding ? '0 -30px' : '15px 0')};
-    width: ${props => (props.padding ? 'calc(100% + 60px)' : '100%')};
-  }
-`;
-
-const StatsContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  padding: 15px 0;
-`;
-
-const StatsWrapper = styled.div`
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-`;
-
-const StatsGroup = styled.div`
-  display: grid;
-  grid-template-columns: 28% 28% 28%;
-  grid-column-gap: 8%;
-  grid-template-rows: 50% 50%;
-  width: 100%;
-`;
-const StatsItem = styled.div`
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  margin: 2px;
-`;
-
-const StatLabel = styled.span`
-  font-size: 16px;
-  text-align: left;
-  color: ${OL.GREY01};
-`;
-
-const StatValue = styled.span`
-  font-family: 'Open Sans', sans-serif;
-  font-size: 16px;
-  font-weight: 600;
-  text-align: right;
-  color: ${OL.GREY01};
-`;
-
-const SectionHeader = styled(AlternateSectionHeader)`
-  padding: 0;
-  justify-content: space-between;
-`;
+import {
+  Title,
+  PendingChargeStatus,
+  StatsContainer,
+  StatsWrapper,
+  StatsSubWrapper,
+  StatsGroup,
+  StatsItem,
+  StatLabel,
+  StatValue,
+  StatsSectionHeader
+} from '../../utils/Layout';
 
 type Props = {
   chargeHistory :Immutable.Map<*, *>,
@@ -130,22 +84,22 @@ class ChargeHistoryStats extends React.Component<Props, *> {
     ));
 
     return (
-      <ChargeHistoryStatsWrapper padding={padding}>
-        <SectionHeader>
+      <StatsWrapper padding={padding}>
+        <StatsSectionHeader>
           <Title withSubtitle>
             <span>Summary Statistics</span>
             All current and past cases
           </Title>
           {pendingCharges.size ? this.renderPendingChargeStatus() : null}
-        </SectionHeader>
+        </StatsSectionHeader>
         <StatsContainer>
-          <StatsWrapper>
+          <StatsSubWrapper>
             <StatsGroup>
               {SummaryStats}
             </StatsGroup>
-          </StatsWrapper>
+          </StatsSubWrapper>
         </StatsContainer>
-      </ChargeHistoryStatsWrapper>
+      </StatsWrapper>
     );
   }
 }
