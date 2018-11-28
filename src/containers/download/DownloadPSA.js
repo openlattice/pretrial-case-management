@@ -115,7 +115,7 @@ const Error = styled.div`
   text-align: center;
   font-size: 16px;
   color: firebrick;
-  margin-top: 15px;
+  margin-top: 30px;
 `;
 
 const LoadingReports = styled.div`
@@ -267,10 +267,17 @@ class DownloadPSA extends React.Component<Props, State> {
 
   onDateChange = (dates) => {
     const { actions } = this.props;
-    const { startDate, endDate, byHearingDate } = this.state;
+    const { byHearingDate } = this.state;
+    let { startDate, endDate } = this.state;
     const { start, end } = dates;
-    const nextStart = start || startDate;
-    const nextEnd = end || endDate;
+
+    let nextStart = start || startDate;
+    if (nextStart) nextStart = moment(nextStart);
+    let nextEnd = end || endDate;
+    if (nextEnd) nextEnd = moment(nextEnd);
+
+    startDate = startDate ? moment(startDate) : startDate;
+    endDate = endDate ? moment(endDate) : endDate;
     if (byHearingDate && !!nextStart && !!nextEnd) {
       const startChanged = startDate ? !startDate.isSame(start) : false;
       const endChanged = endDate ? !endDate.isSame(end) : false;
@@ -306,17 +313,17 @@ class DownloadPSA extends React.Component<Props, State> {
           </CourtroomOptionsWrapper>
           <ButtonRow>
             <BasicDownloadButton
-                disabled={downloadingReports || this.getErrorText(downloads)}
+                disabled={downloadingReports}
                 onClick={() => this.downloadByHearingDate(PSA_RESPONSE_TABLE, DOMAIN.MINNEHAHA)}>
               Download Minnehaha PSA Response Table
             </BasicDownloadButton>
             <BasicDownloadButton
-                disabled={downloadingReports || this.getErrorText(downloads)}
+                disabled={downloadingReports}
                 onClick={() => this.downloadByHearingDate(SUMMARY_REPORT, DOMAIN.MINNEHAHA)}>
               Download Minnehaha Summary Report
             </BasicDownloadButton>
             <BasicDownloadButton
-                disabled={downloadingReports || this.getErrorText(downloads)}
+                disabled={downloadingReports}
                 onClick={() => this.downloadByHearingDate(SUMMARY_REPORT, DOMAIN.PENNINGTON)}>
               Download Pennington Summary Report
             </BasicDownloadButton>
