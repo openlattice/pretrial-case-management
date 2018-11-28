@@ -115,7 +115,7 @@ const Error = styled.div`
   text-align: center;
   font-size: 16px;
   color: firebrick;
-  margin-top: 15px;
+  margin-top: 30px;
 `;
 
 const LoadingReports = styled.div`
@@ -272,9 +272,9 @@ class DownloadPSA extends React.Component<Props, State> {
     const { start, end } = dates;
 
     let nextStart = start || startDate;
-    nextStart = nextStart ? moment(nextStart) : nextStart;
+    if (nextStart) nextStart = moment(nextStart);
     let nextEnd = end || endDate;
-    nextEnd = nextEnd ? moment(nextEnd) : nextEnd;
+    if (nextEnd) nextEnd = moment(nextStart);
 
     startDate = startDate ? moment(startDate) : startDate;
     endDate = endDate ? moment(endDate) : endDate;
