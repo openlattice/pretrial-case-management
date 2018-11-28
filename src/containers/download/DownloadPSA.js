@@ -274,7 +274,7 @@ class DownloadPSA extends React.Component<Props, State> {
     let nextStart = start || startDate;
     if (nextStart) nextStart = moment(nextStart);
     let nextEnd = end || endDate;
-    if (nextEnd) nextEnd = moment(nextStart);
+    if (nextEnd) nextEnd = moment(nextEnd);
 
     startDate = startDate ? moment(startDate) : startDate;
     endDate = endDate ? moment(endDate) : endDate;
