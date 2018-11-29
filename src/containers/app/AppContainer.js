@@ -15,13 +15,23 @@ import HeaderNav from '../../components/nav/HeaderNav';
 import Dashboard from '../../components/dashboard/Dashboard';
 import Forms from '../forms/Forms';
 import ContactSupport from '../../components/app/ContactSupport';
+import { APP, CHARGES, STATE } from '../../utils/consts/FrontEndStateConsts';
+import { APP_TYPES_FQNS } from '../../utils/consts/Consts';
 import { termsAreAccepted } from '../../utils/AcceptTermsUtils';
-import * as Routes from '../../core/router/Routes';
 import { OL } from '../../utils/consts/Colors';
+
+import * as Routes from '../../core/router/Routes';
+import * as AppActionFactory from './AppActionFactory';
+import * as ChargesActionFactory from '../charges/ChargesActionFactory';
 
 const {
   logout
 } = AuthActionFactory;
+
+const {
+  ARREST_CHARGE_LIST,
+  COURT_CHARGE_LIST
+} = APP_TYPES_FQNS;
 
 /*
  * styled components
@@ -50,36 +60,100 @@ const AppBodyWrapper = styled.div`
 
 type Props = {
   actions :{
+    loadApp :RequestSequence;
+    loadHospitals :RequestSequence;
+    switchOrganization :(orgId :string) => Object;
     logout :() => void;
   };
 };
 
-const renderComponent = (Component, props) => (
-  termsAreAccepted()
-    ? <Component {...props} />
-    : <Redirect to={Routes.TERMS} />
-);
+class AppContainer extends React.Component<Props, *> {
 
-const AppContainer = (props :Props) => (
-  <AppWrapper>
-    <HeaderNav logout={props.actions.logout} />
-    <ContactSupport />
-    <AppBodyWrapper>
-      <Switch>
-        <Route path={Routes.TERMS} component={AppConsent} />
-        <Route path={Routes.DASHBOARD} render={() => renderComponent(Dashboard)} />
-        <Route path={Routes.FORMS} render={() => renderComponent(Forms)} />
-        <Redirect to={Routes.DASHBOARD} />
-      </Switch>
-    </AppBodyWrapper>
-  </AppWrapper>
-);
+  componentDidMount() {
+    const { actions } = this.props;
+    actions.loadApp();
+  }
 
-function mapDispatchToProps(dispatch :Function) :Object {
+  componentWillReceiveProps(nextProps) {
+
+    const { app, actions } = this.props;
+    const prevOrg = app.get(APP.ORGS);
+    const nextOrg = nextProps.app.get(APP.ORGS);
+    if (prevOrg.size !== nextOrg.size) {
+      nextOrg.keySeq().forEach((id) => {
+        const selectedOrgId :string = id;
+        const arrestChargesEntitySetId = nextProps.app.getIn(
+          [ARREST_CHARGE_LIST.toString(), APP.ENTITY_SETS_BY_ORG, selectedOrgId]
+        );
+        const courtChargesEntitySetId = nextProps.app.getIn(
+          [COURT_CHARGE_LIST.toString(), APP.ENTITY_SETS_BY_ORG, selectedOrgId]
+        );
+        if (arrestChargesEntitySetId && courtChargesEntitySetId) {
+          actions.loadCharges({
+            arrestChargesEntitySetId,
+            courtChargesEntitySetId,
+            selectedOrgId
+          });
+        }
+      });
+    }
+  }
+
+  renderComponent = (Component, props) => (
+    termsAreAccepted()
+      ? <Component {...props} />
+      : <Redirect to={Routes.TERMS} />
+  );
+
+  render() {
+    const { actions } = this.props;
+    return (
+      <AppWrapper>
+        <HeaderNav logout={actions.logout} />
+        <ContactSupport />
+        <AppBodyWrapper>
+          <Switch>
+            <Route path={Routes.TERMS} component={AppConsent} />
+            <Route path={Routes.DASHBOARD} render={() => this.renderComponent(Dashboard)} />
+            <Route path={Routes.FORMS} render={() => this.renderComponent(Forms)} />
+            <Redirect to={Routes.DASHBOARD} />
+          </Switch>
+        </AppBodyWrapper>
+      </AppWrapper>
+    );
+  }
+}
+
+function mapStateToProps(state) {
+  const app = state.get(STATE.APP);
+  const charges = state.get(STATE.CHARGES);
 
   return {
-    actions: bindActionCreators({ logout }, dispatch)
+    app,
+    [CHARGES.ARREST]: charges.get(CHARGES.ARREST),
+    [CHARGES.COURT]: charges.get(CHARGES.COURT),
+    [CHARGES.LOADING]: charges.get(CHARGES.LOADING)
   };
 }
 
-export default connect(null, mapDispatchToProps)(AppContainer);
+function mapDispatchToProps(dispatch :Function) :Object {
+  const actions :{ [string] :Function } = {};
+
+  Object.keys(AppActionFactory).forEach((action :string) => {
+    actions[action] = AppActionFactory[action];
+  });
+
+  Object.keys(ChargesActionFactory).forEach((action :string) => {
+    actions[action] = ChargesActionFactory[action];
+  });
+
+  actions.logout = logout;
+
+  return {
+    actions: {
+      ...bindActionCreators(actions, dispatch)
+    }
+  };
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(AppContainer);
