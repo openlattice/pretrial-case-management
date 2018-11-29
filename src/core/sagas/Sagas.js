@@ -6,6 +6,7 @@ import { AuthSagas } from 'lattice-auth';
 import { fork } from 'redux-saga/effects';
 
 import * as AppSagas from '../../containers/app/AppSagas';
+import * as ChargesSagas from '../../containers/charges/ChargesSagas';
 import * as CourtSagas from '../../containers/court/CourtSagas';
 import * as PersonSagas from '../../containers/person/PersonSagas';
 import * as PeopleSagas from '../../containers/people/PeopleSagas';
@@ -24,6 +25,7 @@ export default function* sagas() :Generator<*, *, *> {
     fork(AppSagas.authExpirationCleanupWatcher),
     fork(AppSagas.authFailureCleanupWatcher),
     fork(AppSagas.logoutCleanupWatcher),
+    fork(AppSagas.loadAppWatcher),
 
     // AuthSagas
     fork(AuthSagas.watchAuthAttempt),
@@ -31,6 +33,9 @@ export default function* sagas() :Generator<*, *, *> {
     fork(AuthSagas.watchAuthFailure),
     fork(AuthSagas.watchAuthExpired),
     fork(AuthSagas.watchLogout),
+
+    // ChargesSagas
+    fork(ChargesSagas.loadChargesWatcher),
 
     // CourtSagas
     fork(CourtSagas.filterPeopleIdsWithOpenPSAsWatcher),
