@@ -1,6 +1,17 @@
 /*
  * @flow
  */
+import { Models } from 'lattice';
+
+const { FullyQualifiedName } = Models;
+
+export const APP_NAME = 'psa';
+
+export const APP_TYPES_FQNS = {
+  ARREST_CHARGE_LIST: new FullyQualifiedName('publicsafety.arrestchargelist'),
+  COURT_CHARGE_LIST: new FullyQualifiedName('publicsafety.courtchargelist'),
+  APP_SETTINGS: new FullyQualifiedName('app.settings')
+};
 
 export const MAX_PAGE = 5;
 
@@ -299,7 +310,7 @@ export const JURISDICTION = {
   [CONTEXT.COURT_PENN]: 'Pennington County, South Dakota',
   [CONTEXT.COURT_MINN]: 'Minnehaha County, South Dakota',
   [CONTEXT.BOOKING]: 'Pennington County, South Dakota'
-}
+};
 
 export const TABLE_WIDTH = 1000;
 export const ROW_HEIGHT = 50;
