@@ -1,8 +1,10 @@
 // Redux Reducer
 
 export const STATE = {
+  APP: 'app',
   AUTH: 'auth',
   COURT: 'court',
+  CHARGES: 'charges',
   DASHBOARD: 'dashboard',
   DOWNLOAD: 'download',
   ENROLL: 'enroll',
@@ -24,6 +26,28 @@ export const PSA_NEIGHBOR = {
 export const PSA_ASSOCIATION = {
   DETAILS: 'associationDetails',
   ENTITY_SET: 'associationEntitySet'
+};
+
+// App
+export const APP = {
+  ACTIONS: 'actions',
+  APP: 'app',
+  APP_TYPES: 'appTypes',
+  ENTITY_SETS_BY_ORG: 'entitySetsByOrganization',
+  ERRORS: 'errors',
+  LOADING: 'isLoadingApp',
+  LOAD_APP: 'loadApp',
+  ORGS: 'organizations',
+  PRIMARY_KEYS: 'primaryKeys',
+  PROPERTY_TYPES: 'propertyTypes',
+  SELECTED_ORG_ID: 'selectedOrganizationId'
+};
+
+// CHARGES
+export const CHARGES = {
+  ARREST: 'arrestCharges',
+  COURT: 'courtCharges',
+  LOADING: 'loadingCharges'
 };
 
 // Court
