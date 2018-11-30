@@ -46,6 +46,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [APP.LOADING]: true,
   [APP.ORGS]: Map(),
   [APP.SELECTED_ORG_ID]: '',
+  [APP.SELECTED_ORG_TITLE]: '',
 });
 
 const getEntityTypePropertyTypes = (edm :Object, entityTypeId :string) :Object => {
@@ -60,8 +61,11 @@ export default function appReducer(state :Map<*, *> = INITIAL_STATE, action :Seq
 
   switch (action.type) {
 
-    case SWITCH_ORGANIZATION:
-      return state.set(APP.SELECTED_ORG_ID, action.orgId);
+    case SWITCH_ORGANIZATION: {
+      return state
+        .set(APP.SELECTED_ORG_ID, action.org.orgId)
+        .set(APP.SELECTED_ORG_TITLE, action.org.title);
+    }
 
     case loadApp.case(action.type): {
       return loadApp.reducer(state, action, {
@@ -106,8 +110,10 @@ export default function appReducer(state :Map<*, *> = INITIAL_STATE, action :Seq
           });
 
           let selectedOrganizationId :string = '';
+          let selectedOrganizationTitle :string = '';
           if (appConfigs.length && !selectedOrganizationId.length) {
             selectedOrganizationId = appConfigs[0].organization.id;
+            selectedOrganizationTitle = appConfigs[0].organization.title;
           }
           const storedOrganizationId :?string = AccountUtils.retrieveOrganizationId();
           if (storedOrganizationId) {
@@ -126,7 +132,8 @@ export default function appReducer(state :Map<*, *> = INITIAL_STATE, action :Seq
           return newState
             .set(APP.APP, app)
             .set(APP.ORGS, fromJS(organizations))
-            .set(APP.SELECTED_ORG_ID, selectedOrganizationId);
+            .set(APP.SELECTED_ORG_ID, selectedOrganizationId)
+            .set(APP.SELECTED_ORG_TITLE, selectedOrganizationTitle);
         },
         FAILURE: () => {
           const error = {};
@@ -142,7 +149,8 @@ export default function appReducer(state :Map<*, *> = INITIAL_STATE, action :Seq
             .setIn([appSettingsFqn, APP.PROPERTY_TYPES], Map())
             .setIn([APP.ERRORS, APP.LOAD_APP], fromJS(error))
             .set(APP.ORGS, Map())
-            .set(APP.SELECTED_ORG_ID, '');
+            .set(APP.SELECTED_ORG_ID, '')
+            .set(APP.SELECTED_ORG_TITLE, '');
         },
         FINALLY: () => state
           .set(APP.LOADING, false)
