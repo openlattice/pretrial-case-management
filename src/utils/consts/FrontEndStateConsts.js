@@ -40,7 +40,8 @@ export const APP = {
   ORGS: 'organizations',
   PRIMARY_KEYS: 'primaryKeys',
   PROPERTY_TYPES: 'propertyTypes',
-  SELECTED_ORG_ID: 'selectedOrganizationId'
+  SELECTED_ORG_ID: 'selectedOrganizationId',
+  SELECTED_ORG_TITLE: 'selectedOrganizationTitle'
 };
 
 // CHARGES
