@@ -25,8 +25,8 @@ export default function chargesReducer(state :Map<*, *> = INITIAL_STATE, action 
         SUCCESS: () => {
           const { arrestCharges, courtCharges, selectedOrgId } = action.value;
           return state
-            .setIn([CHARGES.ARREST, selectedOrgId], arrestCharges)
-            .setIn([CHARGES.COURT, selectedOrgId], courtCharges);
+            .setIn([CHARGES.ARREST, selectedOrgId], fromJS(arrestCharges))
+            .setIn([CHARGES.COURT, selectedOrgId], fromJS(courtCharges));
         },
         FAILURE: () => state
           .set(CHARGES.ARREST, Map())
