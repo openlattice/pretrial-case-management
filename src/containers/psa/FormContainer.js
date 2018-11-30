@@ -56,11 +56,13 @@ import {
   PSA_STATUSES
 } from '../../utils/consts/Consts';
 import {
-  STATE,
+  APP,
+  CHARGES,
+  COURT,
   PSA_FORM,
-  SUBMIT,
   SEARCH,
-  COURT
+  STATE,
+  SUBMIT
 } from '../../utils/consts/FrontEndStateConsts';
 import {
   ButtonWrapper,
@@ -330,6 +332,8 @@ type Props = {
   numCasesLoaded :number,
   psaForm :Immutable.Map<*, *>,
   history :string[],
+  selectedOrganizationId :string,
+  selectedOrganizationTitle :string,
   location :{
     pathname :string
   }
@@ -975,12 +979,24 @@ class Form extends React.Component<Props, State> {
 }
 
 function mapStateToProps(state :Immutable.Map<*, *>) :Object {
+  const app = state.get(STATE.APP);
   const psaForm = state.get(STATE.PSA);
   const search = state.get(STATE.SEARCH);
   const submit = state.get(STATE.SUBMIT);
   const court = state.get(STATE.COURT);
+  const charges = state.get(STATE.CHARGES);
   // TODO: review these state names so that consts can be used in all cases (psaForm & isLoadingCases)
   return {
+    // App
+    [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
+    [APP.SELECTED_ORG_TITLE]: app.get(APP.SELECTED_ORG_TITLE),
+
+    // Charges
+    [CHARGES.ARREST]: charges.get(CHARGES.ARREST),
+    [CHARGES.COURT]: charges.get(CHARGES.COURT),
+    [CHARGES.LOADING]: charges.get(CHARGES.LOADING),
+
+    // PSA Form
     [PSA_FORM.ARREST_OPTIONS]: psaForm.get(PSA_FORM.ARREST_OPTIONS),
     [PSA_FORM.ALL_CASES]: psaForm.get(PSA_FORM.ALL_CASES),
     [PSA_FORM.ALL_CHARGES]: psaForm.get(PSA_FORM.ALL_CHARGES),
@@ -997,13 +1013,14 @@ function mapStateToProps(state :Immutable.Map<*, *>) :Object {
     [PSA_FORM.DATA_MODEL]: psaForm.get(PSA_FORM.DATA_MODEL),
     [PSA_FORM.ENTITY_SET_LOOKUP]: psaForm.get(PSA_FORM.ENTITY_SET_LOOKUP),
     [PSA_FORM.LOADING_NEIGHBORS]: psaForm.get(PSA_FORM.LOADING_NEIGHBORS),
-
-    [COURT.ALL_JUDGES]: court.get(COURT.ALL_JUDGES),
-
     [PSA_FORM.SUBMITTED]: submit.get(SUBMIT.SUBMITTED),
     [PSA_FORM.SUBMITTING]: submit.get(SUBMIT.SUBMITTING),
     [PSA_FORM.SUBMIT_ERROR]: submit.get(SUBMIT.ERROR),
 
+    // Court
+    [COURT.ALL_JUDGES]: court.get(COURT.ALL_JUDGES),
+
+    // Search
     [SEARCH.SELECTED_PERSON_ID]: search.get(SEARCH.SELECTED_PERSON_ID),
     isLoadingCases: search.get(SEARCH.LOADING_CASES),
     [SEARCH.NUM_CASES_TO_LOAD]: search.get(SEARCH.NUM_CASES_TO_LOAD),
