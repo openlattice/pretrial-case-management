@@ -3,7 +3,6 @@
  */
 
 import React from 'react';
-
 import styled from 'styled-components';
 import { AuthActionFactory } from 'lattice-auth';
 import { connect } from 'react-redux';
@@ -61,7 +60,7 @@ const AppBodyWrapper = styled.div`
 type Props = {
   actions :{
     loadApp :RequestSequence;
-    loadHospitals :RequestSequence;
+    loadCharges :RequestSequence;
     switchOrganization :(orgId :string) => Object;
     logout :() => void;
   };
@@ -99,6 +98,14 @@ class AppContainer extends React.Component<Props, *> {
     }
   }
 
+  switchOrganization = (organization) => {
+    const { actions, app } = this.props;
+    const selectedOrganizationId = app.get(APP.SELECTED_ORG_ID);
+    if (organization.value !== selectedOrganizationId) {
+      actions.switchOrganization(organization.value);
+    }
+  }
+
   renderComponent = (Component, props) => (
     termsAreAccepted()
       ? <Component {...props} />
@@ -106,10 +113,21 @@ class AppContainer extends React.Component<Props, *> {
   );
 
   render() {
-    const { actions, arrestCharges, app } = this.props;
+    const { actions, app } = this.props;
+    const loading = app.get(APP.LOADING, false);
+    const selectedOrg = app.get(APP.SELECTED_ORG_ID, '');
+    const orgList = app.get(APP.ORGS).entrySeq().map(([value, organization]) => {
+      const label = organization.get('title', '');
+      return { label, value };
+    });
     return (
       <AppWrapper>
-        <HeaderNav logout={actions.logout} />
+        <HeaderNav
+            loading={loading}
+            logout={actions.logout}
+            organizations={orgList}
+            selectedOrg={selectedOrg}
+            switchOrg={this.switchOrganization} />
         <ContactSupport />
         <AppBodyWrapper>
           <Switch>

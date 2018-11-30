@@ -7,7 +7,7 @@ import { newRequestSequence } from 'redux-reqseq';
 const LOAD_APP :string = 'LOAD_APP';
 const loadApp :RequestSequence = newRequestSequence(LOAD_APP);
 
-const SWITCH_ORGANIZATION :'SWITCH_ORGANIZATION' = 'SWITCH_ORGANIZATION';
+const SWITCH_ORGANIZATION :string = 'SWITCH_ORGANIZATION';
 const switchOrganization = (orgId :string) :Object => ({
   orgId,
   type: SWITCH_ORGANIZATION
