@@ -106,7 +106,7 @@ class AppContainer extends React.Component<Props, *> {
   );
 
   render() {
-    const { actions } = this.props;
+    const { actions, arrestCharges, app } = this.props;
     return (
       <AppWrapper>
         <HeaderNav logout={actions.logout} />
