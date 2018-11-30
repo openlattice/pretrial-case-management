@@ -10,7 +10,8 @@ const {
   FIRST_NAME,
   LAST_NAME,
   DOB,
-  SEX
+  SEX,
+  MUGSHOT
 } = PROPERTY_TYPES;
 
 export const DEMO_PEOPLE = [
@@ -9474,7 +9475,7 @@ export const DEMO_PEOPLE = [
 
 export const getRandomPerson = () => {
   const randomIndex = Math.floor(Math.random() * DEMO_PEOPLE.length);
-  return DEMO_PEOPLE[randomIndex];
+  return Object.assign({}, DEMO_PEOPLE[randomIndex], { [MUGSHOT]: [] });
 };
 
 export const obfuscateEntity = entity => (isDemoPath() ? Object.assign({}, entity, getRandomPerson()) : entity);
