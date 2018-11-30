@@ -385,9 +385,6 @@ class ReviewPSA extends React.Component<Props, State> {
   filterByPerson = () => {
     const { filters } = this.state;
     const { firstName, lastName, dob } = filters;
-    console.log(firstName);
-    console.log(lastName);
-    console.log(dob);
     if (!firstName.length && !lastName.length) return Immutable.Collection();
     const { psaNeighborsById } = this.props;
 
