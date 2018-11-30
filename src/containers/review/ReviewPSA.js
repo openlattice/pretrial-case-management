@@ -251,7 +251,8 @@ class ReviewPSA extends React.Component<Props, State> {
   }
 
   renderFilerOptions = () => {
-    const allFilers = this.props.allFilers.toArray().map(filer => (
+    let { allFilers } = this.props;
+    allFilers = allFilers.toArray().map(filer => (
       {
         value: filer,
         label: filer
@@ -284,8 +285,8 @@ class ReviewPSA extends React.Component<Props, State> {
   }
 
   handleFilterRequest = () => {
-    const { activeFilterKey } = this.state;
-    const { filer } = this.state.filters;
+    const { activeFilterKey, filters } = this.state;
+    const { filer } = filters;
     const { scoresAsMap } = this.props;
     const { sort } = this.state;
 
@@ -318,11 +319,12 @@ class ReviewPSA extends React.Component<Props, State> {
 
 
   filterWithoutDate = () => {
+    const { psaNeighborsByDate } = this.props;
     let results = Immutable.Map();
-    const keys = this.props.psaNeighborsByDate.keySeq();
+    const keys = psaNeighborsByDate.keySeq();
 
     keys.forEach((date) => {
-      results = results.merge(this.props.psaNeighborsByDate.get(date, Immutable.Map())
+      results = results.merge(psaNeighborsByDate.get(date, Immutable.Map())
         .entrySeq()
         .filter(([scoreId, neighbors]) => {
 
@@ -362,7 +364,8 @@ class ReviewPSA extends React.Component<Props, State> {
   }
 
   renderPersonFilter = () => {
-    const handleSubmit = (firstName, lastName, dob) => {
+    const { filters } = this.state;
+    const handleSubmit = ({ firstName, lastName, dob }) => {
       this.setState({ activeFilterKey: 2 });
       this.updateFilters({ firstName, lastName, dob });
     };
@@ -371,16 +374,20 @@ class ReviewPSA extends React.Component<Props, State> {
         <PersonSearchWrapper>
           <PersonSearchFields
               handleSubmit={handleSubmit}
-              firstName={this.state.filters.firstName}
-              lastName={this.state.filters.lastName}
-              dob={this.state.filters.dob} />
+              firstName={filters.firstName}
+              lastName={filters.lastName}
+              dob={filters.dob} />
         </PersonSearchWrapper>
       </div>
     );
   }
 
   filterByPerson = () => {
-    const { firstName, lastName, dob } = this.state.filters;
+    const { filters } = this.state;
+    const { firstName, lastName, dob } = filters;
+    console.log(firstName);
+    console.log(lastName);
+    console.log(dob);
     if (!firstName.length && !lastName.length) return Immutable.Collection();
     const { psaNeighborsById } = this.props;
 
@@ -411,9 +418,10 @@ class ReviewPSA extends React.Component<Props, State> {
 
   filterByDate = () => {
     const { psaNeighborsByDate } = this.props;
-    const date = moment(this.state.filters.date).format(DATE_FORMAT);
+    const { filters } = this.state;
+    const date = moment(filters.date).format(DATE_FORMAT);
 
-    if (this.state.filters.date === '' || !this.state.filters.date) {
+    if (filters.date === '' || !filters.date) {
       return this.filterWithoutDate();
     }
 
@@ -422,10 +430,12 @@ class ReviewPSA extends React.Component<Props, State> {
       .filter(([scoreId, neighbors]) => this.domainMatch(neighbors));
   }
 
-  changeStatus = (status) => {
-    if (status !== this.state.status) {
-      this.setState({ status });
-      this.props.actions.loadPSAsByDate(STATUS_OPTIONS[status].value);
+  changeStatus = (nextStatus) => {
+    const { actions } = this.props;
+    const { status } = this.state;
+    if (nextStatus !== status) {
+      this.setState({ status: nextStatus });
+      actions.loadPSAsByDate(STATUS_OPTIONS[nextStatus].value);
     }
   }
 
@@ -509,7 +519,8 @@ class ReviewPSA extends React.Component<Props, State> {
   ))
 
   renderContent = () => {
-    if (this.props.loadingResults) {
+    const { loadingResults } = this.props;
+    if (loadingResults) {
       return <StyledSectionWrapper>{this.renderSpinner()}</StyledSectionWrapper>;
     }
     return (
