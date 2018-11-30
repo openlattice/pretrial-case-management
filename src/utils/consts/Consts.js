@@ -13,6 +13,11 @@ export const APP_TYPES_FQNS = {
   APP_SETTINGS: new FullyQualifiedName('app.settings')
 };
 
+export const ORG_TITLES = {
+  PENNINGTON_SD: 'Pennington County, SD',
+  MINNEHAHA_SD: 'Minnehaha County, SD'
+};
+
 export const MAX_PAGE = 5;
 
 export const FORM_PATHS = {
