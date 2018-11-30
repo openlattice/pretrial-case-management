@@ -8,8 +8,8 @@ const LOAD_APP :string = 'LOAD_APP';
 const loadApp :RequestSequence = newRequestSequence(LOAD_APP);
 
 const SWITCH_ORGANIZATION :string = 'SWITCH_ORGANIZATION';
-const switchOrganization = (orgId :string) :Object => ({
-  orgId,
+const switchOrganization = (org :Object) :Object => ({
+  org,
   type: SWITCH_ORGANIZATION
 });
 
