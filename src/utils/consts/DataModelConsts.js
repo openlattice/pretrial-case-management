@@ -79,6 +79,13 @@ export const PROPERTY_TYPES = {
   // contact info given id
   CONTACT_INFO_GIVEN_ID: 'ol.id',
 
+  // Charges
+  REFERENCE_CHARGE_STATUTE: 'ol.id',
+  REFERENCE_CHARGE_DESCRIPTION: 'ol.name',
+  REFERENCE_CHARGE_LEVEL: 'ol.level',
+  REFERENCE_CHARGE_DEGREE: 'ol.levelstate',
+  BHE: 'ol.bheindicator',
+  BRE: 'ol.breindicator',
 
   // location-specific fields
   ADDRESS: 'location.Address',
