@@ -3,10 +3,11 @@
  */
 
 import React from 'react';
-import Immutable from 'immutable';
+import Immutable, { List, Map } from 'immutable';
 import styled from 'styled-components';
 import moment from 'moment';
 import randomUUID from 'uuid/v4';
+import { connect } from 'react-redux';
 
 import BasicButton from '../../../components/buttons/BasicButton';
 import SecondaryButton from '../../../components/buttons/SecondaryButton';
@@ -17,6 +18,7 @@ import PenningtonChargesList from '../../../utils/consts/PenningtonChargesList';
 import QUALIFIERS from '../../../utils/consts/QualifierConsts';
 import { CHARGE } from '../../../utils/consts/Consts';
 import type { Charge } from '../../../utils/consts/Consts';
+import { APP, CHARGES, STATE } from '../../../utils/consts/FrontEndStateConsts';
 import { PROPERTY_TYPES } from '../../../utils/consts/DataModelConsts';
 import { DOMAIN } from '../../../utils/consts/ReportDownloadTypes';
 import { toISODateTime } from '../../../utils/FormattingUtils';
@@ -132,6 +134,8 @@ const ChargeTitle = styled.div`
 `;
 
 type Props = {
+  arrestCharges :List<*, *>,
+  selectedOrganizationId :string,
   defaultArrest :Immutable.Map<*, *>,
   defaultCharges :Immutable.List<*>,
   onSubmit :(pretrialCase :Immutable.Map<*, *>, charges :Immutable.List<*>) => void,
@@ -146,7 +150,7 @@ type State = {
   charges :Charge[]
 };
 
-export default class SelectChargesContainer extends React.Component<Props, State> {
+class SelectChargesContainer extends React.Component<Props, State> {
 
   constructor(props :Props) {
     super(props);
@@ -251,14 +255,25 @@ export default class SelectChargesContainer extends React.Component<Props, State
   }
 
   formatCharge = (charge :Charge) => `${charge.statute} ${charge.description}`;
+  formatArrestCharge = charge => (
+    `${
+      charge.getIn([PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE, 0], '')
+    } ${
+      charge.getIn([PROPERTY_TYPES.REFERENCE_CHARGE_DESCRIPTION, 0], '')
+    }`
+  );
 
   formatChargeOptions = () => {
-    const { county } = this.props;
-    let options = Immutable.Map();
-    (county === DOMAIN.PENNINGTON ? PenningtonChargesList : MinnehahaChargesList).forEach((charge) => {
-      options = options.set(this.formatCharge(charge), charge);
+    const {
+      arrestCharges,
+      selectedOrganizationId
+    } = this.props;
+    const orgArrestCharges = arrestCharges.get(selectedOrganizationId, List());
+    let arrestChargeOptions = Map();
+    orgArrestCharges.forEach((charge) => {
+      arrestChargeOptions = arrestChargeOptions.set(this.formatArrestCharge(charge), charge);
     });
-    return options;
+    return arrestChargeOptions.sortBy((statute, _) => statute);
   }
 
   formatSelectOptions = (optionValues) => {
@@ -359,3 +374,21 @@ export default class SelectChargesContainer extends React.Component<Props, State
     );
   }
 }
+
+function mapStateToProps(state) {
+  const app = state.get(STATE.APP);
+  const charges = state.get(STATE.CHARGES);
+
+  return {
+    // App
+    [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
+    [APP.SELECTED_ORG_TITLE]: app.get(APP.SELECTED_ORG_TITLE),
+
+    // Charges
+    [CHARGES.ARREST]: charges.get(CHARGES.ARREST),
+    [CHARGES.COURT]: charges.get(CHARGES.COURT),
+    [CHARGES.LOADING]: charges.get(CHARGES.LOADING),
+  };
+}
+
+export default connect(mapStateToProps, null)(SelectChargesContainer);
