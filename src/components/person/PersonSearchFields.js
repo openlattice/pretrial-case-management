@@ -72,7 +72,6 @@ export default class PersonSearchFields extends React.Component<Props, State> {
 
   render() {
     const { firstName, lastName, dob } = this.state;
-
     return (
       <SearchRow>
         <Col lg={3}>
@@ -85,7 +84,12 @@ export default class PersonSearchFields extends React.Component<Props, State> {
         </Col>
         <Col lg={3}>
           <StyledTitleLabel>Date of birth</StyledTitleLabel>
-          <StyledDatePicker onKeyPress={this.handleKeyPress} name="dob" onChange={this.onDobChange} value={dob} clearButton={false} />
+          <StyledDatePicker
+              onKeyPress={this.handleKeyPress}
+              name="dob"
+              onChange={this.onDobChange}
+              value={dob}
+              clearButton={false} />
         </Col>
         <Col lg={3}>
           <InfoButton onClick={this.handleSubmit}>Search</InfoButton>
