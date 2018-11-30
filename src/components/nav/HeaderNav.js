@@ -3,8 +3,10 @@
  */
 
 import React from 'react';
+import Select from 'react-select';
 import styled from 'styled-components';
-import { Link, NavLink } from 'react-router-dom';
+import { Map } from 'immutable';
+import { Link } from 'react-router-dom';
 import { AuthUtils } from 'lattice-auth';
 
 import BasicButton from '../buttons/BasicButton';
@@ -15,6 +17,7 @@ import dashboard from '../../assets/svg/dashboard.svg';
 import dashboardSelected from '../../assets/svg/dashboard-selected.svg';
 import downloads from '../../assets/svg/downloads.svg';
 import downloadsSelected from '../../assets/svg/downloads-selected.svg';
+import NavButton from './NavButton';
 import judges from '../../assets/svg/judges.svg';
 import judgesSelected from '../../assets/svg/judges-selected.svg';
 import managePeople from '../../assets/svg/manage-people.svg';
@@ -26,6 +29,38 @@ import reviewReportsSelected from '../../assets/svg/review-reports-selected.svg'
 import { OL } from '../../utils/consts/Colors';
 
 import * as Routes from '../../core/router/Routes';
+
+const orgSelectStyles = {
+  container: styles => ({
+    ...styles,
+    width: '200px',
+  }),
+  control: (styles, { isFocused, isSelected }) => ({
+    ...styles,
+    backgroundColor: (isFocused || isSelected) ? OL.WHITE : OL.GREY09,
+    borderColor: (isFocused || isSelected) ? OL.PURPLE02 : styles.borderColor,
+    boxShadow: 'none',
+    color: OL.GREY02,
+    fontSize: '12px',
+    lineHeight: 'normal',
+    height: '30px',
+    minHeight: '30px',
+    ':hover': {
+      borderColor: (isFocused || isSelected) ? OL.PURPLE06 : styles.borderColor,
+      color: OL.WHITE,
+    },
+  }),
+  menu: styles => ({ ...styles, width: '300px' }),
+  option: styles => ({
+    ...styles,
+    backgroundColor: OL.WHITE,
+    color: OL.GREY02,
+    fontSize: '12px',
+    ':hover': {
+      backgroundColor: OL.PURPLE06,
+    },
+  }),
+};
 
 const AppHeaderWrapper = styled.header`
   align-items: center;
@@ -46,7 +81,7 @@ const AppHeaderSubWrapper = styled.div`
   flex-direction: row;
   align-self: flex-start;
   justify-content: space-between;
-`
+`;
 
 const BrandLink = styled(Link)`
   color: inherit;
@@ -96,64 +131,6 @@ const StyledNavWrapper = styled.div`
   justify-content: space-between;
 `;
 
-const StyledNavLink = styled(NavLink).attrs({
-  activeStyle: {
-    color: OL.PURPLE02,
-    borderBottom: `3px solid ${OL.PURPLE02}`
-  }
-})`
-  width: auto;
-  height: auto;
-  padding-bottom: 10px;
-  margin-bottom: -13px;
-  font-family: 'Open Sans', sans-serif;
-  font-size: 12px;
-  font-weight: normal;
-  color: ${OL.GREY02};
-  display: flex;
-  align-items: center;
-
-
-  &:hover {
-    color: ${OL.PURPLE02};
-    text-decoration: none;
-
-    svg {
-      g {
-        fill: ${OL.PURPLE02};
-      }
-    }
-  }
-
-  &:active {
-    color: ${OL.PURPLE01};
-
-    svg {
-      g {
-        fill: ${OL.PURPLE01};
-      }
-    }
-  }
-
-  &:focus {
-    outline: none;
-    text-decoration: none;
-    svg {
-      g {
-        fill: ${OL.PURPLE02};
-      }
-    }
-
-  }
-`;
-
-const StyledIcon = styled.div`
-  margin-right: 10px;
-  height: 16px;
-  width: 16px;
-  display: inline-block;
-`;
-
 const LogoutButton = styled(BasicButton)`
   width: 108px;
   height: 29px;
@@ -161,98 +138,108 @@ const LogoutButton = styled(BasicButton)`
   padding: 0;
 `;
 
-const NavButton = ({
-  path,
-  defaultIcon,
-  selectedIcon,
-  label
-}) => {
-  const url = window.location.hash.includes(path) ? selectedIcon : defaultIcon;
-  const ButtonWrapper = styled(StyledNavLink).attrs({
-    to: path,
-    name: path
-  })`
-    div {
-      background: url("${url}");
-    }
-    &:hover {
-      div {
-        background: url("${selectedIcon}");
-      }
-    }
-  `;
-
-  return (
-    <ButtonWrapper to={path} name={path}>
-      <StyledIcon />
-      <span>{label}</span>
-    </ButtonWrapper>
-  );
-};
+const Controls = styled.div`
+  width: 50%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+`;
 
 type Props = {
-  logout :() => void
+  loading :boolean,
+  organizations :Map<*, *>,
+  selectedOrg :string,
+  logout :() => void,
+  switchOrg :(orgId :string) => Object
 }
 
-const getDisplayName = () => {
-  const userInfo = AuthUtils.getUserInfo();
-  return (userInfo.email && userInfo.email.length > 0) ? userInfo.email : '';
-};
+class HeaderNav extends React.Component<Props, *> {
 
-const HeaderNav = ({ logout } :Props) => (
-  <div>
-    <AppHeaderWrapper>
-      <AppHeaderSubWrapper>
-        <BrandLink to={Routes.DASHBOARD}>
-          <Logo src={logo} role="presentation" />
-          <span>Pretrial Case Management</span>
-        </BrandLink>
-        <div>
-          <DisplayName>{getDisplayName()}</DisplayName>
-          <LogoutButton onClick={logout}>Log Out</LogoutButton>
-        </div>
-      </AppHeaderSubWrapper>
-    </AppHeaderWrapper>
-    <AppHeaderWrapper>
-      <StyledNavWrapper>
-        <NavButton
-            path={Routes.PEOPLE}
-            defaultIcon={managePeople}
-            selectedIcon={managePeopleSelected}
-            label="Manage People" />
-        <NavButton
-            path={Routes.CREATE_FORMS}
-            defaultIcon={createReport}
-            selectedIcon={createReportSelected}
-            label="Create Report" />
-        <NavButton
-            path={Routes.REVIEW_FORMS}
-            defaultIcon={reviewReports}
-            selectedIcon={reviewReportsSelected}
-            label="Review Reports" />
-        <NavButton
-            path={Routes.NEW_PERSON}
-            defaultIcon={newPerson}
-            selectedIcon={newPersonSelected}
-            label="New Person" />
-        <NavButton
-            path={Routes.JUDGE_VIEW}
-            defaultIcon={judges}
-            selectedIcon={judgesSelected}
-            label="Judges" />
-        <NavButton
-            path={Routes.DOWNLOAD_FORMS}
-            defaultIcon={downloads}
-            selectedIcon={downloadsSelected}
-            label="Downloads" />
-        <NavButton
-            path={Routes.VISUALIZE_DASHBOARD}
-            defaultIcon={dashboard}
-            selectedIcon={dashboardSelected}
-            label="Dashboard" />
-      </StyledNavWrapper>
-    </AppHeaderWrapper>
-  </div>
-);
+  getDisplayName = () => {
+    const userInfo = AuthUtils.getUserInfo();
+    return (userInfo.email && userInfo.email.length > 0) ? userInfo.email : '';
+  };
+
+  renderOrgSelector = () => {
+    const {
+      organizations,
+      selectedOrg,
+      switchOrg,
+      loading
+    } = this.props;
+
+    return (
+      <Select
+          value={organizations.find(option => option.value === selectedOrg)}
+          isClearable={false}
+          isLoading={loading}
+          isMulti={false}
+          onChange={switchOrg}
+          options={organizations.toJS()}
+          placeholder="Select..."
+          styles={orgSelectStyles} />
+    );
+  }
+
+  render() {
+    const { logout } = this.props;
+    return (
+      <div>
+        <AppHeaderWrapper>
+          <AppHeaderSubWrapper>
+            <BrandLink to={Routes.DASHBOARD}>
+              <Logo src={logo} role="presentation" />
+              <span>Pretrial Case Management</span>
+            </BrandLink>
+            <Controls>
+              <DisplayName>{this.getDisplayName()}</DisplayName>
+              <div>{ this.renderOrgSelector() }</div>
+              <LogoutButton onClick={logout}>Log Out</LogoutButton>
+            </Controls>
+          </AppHeaderSubWrapper>
+        </AppHeaderWrapper>
+        <AppHeaderWrapper>
+          <StyledNavWrapper>
+            <NavButton
+                path={Routes.PEOPLE}
+                defaultIcon={managePeople}
+                selectedIcon={managePeopleSelected}
+                label="Manage People" />
+            <NavButton
+                path={Routes.CREATE_FORMS}
+                defaultIcon={createReport}
+                selectedIcon={createReportSelected}
+                label="Create Report" />
+            <NavButton
+                path={Routes.REVIEW_FORMS}
+                defaultIcon={reviewReports}
+                selectedIcon={reviewReportsSelected}
+                label="Review Reports" />
+            <NavButton
+                path={Routes.NEW_PERSON}
+                defaultIcon={newPerson}
+                selectedIcon={newPersonSelected}
+                label="New Person" />
+            <NavButton
+                path={Routes.JUDGE_VIEW}
+                defaultIcon={judges}
+                selectedIcon={judgesSelected}
+                label="Judges" />
+            <NavButton
+                path={Routes.DOWNLOAD_FORMS}
+                defaultIcon={downloads}
+                selectedIcon={downloadsSelected}
+                label="Downloads" />
+            <NavButton
+                path={Routes.VISUALIZE_DASHBOARD}
+                defaultIcon={dashboard}
+                selectedIcon={dashboardSelected}
+                label="Dashboard" />
+          </StyledNavWrapper>
+        </AppHeaderWrapper>
+      </div>
+    );
+  }
+}
 
 export default HeaderNav;
