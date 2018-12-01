@@ -84,6 +84,9 @@ export const PROPERTY_TYPES = {
   REFERENCE_CHARGE_DESCRIPTION: 'ol.name',
   REFERENCE_CHARGE_LEVEL: 'ol.level',
   REFERENCE_CHARGE_DEGREE: 'ol.levelstate',
+  CHARGE_IS_VIOLENT: 'ol.violent',
+  CHARGE_DMF_STEP_2: 'ol.dmfstep2indicator',
+  CHARGE_DMF_STEP_4: 'ol.dmfstep2indicator',
   BHE: 'ol.bheindicator',
   BRE: 'ol.breindicator',
 
