@@ -198,16 +198,21 @@ class SelectChargesContainer extends React.Component<Props, State> {
     if (arrestDate) caseEntity[PROPERTY_TYPES.ARREST_DATE_TIME] = [this.getDateTime(arrestDate)];
 
     const chargeEntities = charges.map((charge, index) => {
+      const statute = charge.getIn([PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE, 0], '');
+      const description = charge.getIn([PROPERTY_TYPES.REFERENCE_CHARGE_DESCRIPTION, 0], '');
+      const degree = charge.getIn([PROPERTY_TYPES.REFERENCE_CHARGE_DEGREE, 0], '');
+      const degreeShort = charge.getIn([PROPERTY_TYPES.REFERENCE_CHARGE_LEVEL, 0], '');
+      const qualifier = charge.get(QUALIFIER, '');
       const counts = charge.counts ? charge.counts : 1;
       const chargeEntity = {
         [PROPERTY_TYPES.CHARGE_ID]: [`${caseId}|${index + 1}`],
-        [PROPERTY_TYPES.CHARGE_STATUTE]: [charge[STATUTE]],
-        [PROPERTY_TYPES.CHARGE_DESCRIPTION]: [charge[DESCRIPTION]],
-        [PROPERTY_TYPES.CHARGE_DEGREE]: [charge[DEGREE]],
-        [PROPERTY_TYPES.CHARGE_LEVEL]: [charge[DEGREE_SHORT]],
+        [PROPERTY_TYPES.CHARGE_STATUTE]: [statute],
+        [PROPERTY_TYPES.CHARGE_DESCRIPTION]: [description],
+        [PROPERTY_TYPES.CHARGE_DEGREE]: [degree],
+        [PROPERTY_TYPES.CHARGE_LEVEL]: [degreeShort],
         [PROPERTY_TYPES.NUMBER_OF_COUNTS]: counts
       };
-      if (charge[QUALIFIER]) chargeEntity[PROPERTY_TYPES.QUALIFIER] = [charge[QUALIFIER]];
+      if (qualifier) chargeEntity[PROPERTY_TYPES.QUALIFIER] = [qualifier];
       return chargeEntity;
     });
 
@@ -254,8 +259,8 @@ class SelectChargesContainer extends React.Component<Props, State> {
     this.setState({ charges });
   }
 
-  formatCharge = (charge :Charge) => `${charge.statute} ${charge.description}`;
-  formatArrestCharge = charge => (
+  // formatCharge = (charge :Charge) => `${charge.statute} ${charge.description}`;
+  formatCharge = charge => (
     `${
       charge.getIn([PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE, 0], '')
     } ${
@@ -271,7 +276,7 @@ class SelectChargesContainer extends React.Component<Props, State> {
     const orgArrestCharges = arrestCharges.get(selectedOrganizationId, List());
     let arrestChargeOptions = Map();
     orgArrestCharges.forEach((charge) => {
-      arrestChargeOptions = arrestChargeOptions.set(this.formatArrestCharge(charge), charge);
+      arrestChargeOptions = arrestChargeOptions.set(this.formatCharge(charge), charge);
     });
     return arrestChargeOptions.sortBy((statute, _) => statute);
   }
@@ -288,7 +293,7 @@ class SelectChargesContainer extends React.Component<Props, State> {
     const { charges } = this.state;
     const field = optionalField || e.target.name;
     const value = optionalField ? e : e.target.value;
-    const newChargeObj = Object.assign({}, charges[index], { [field]: value });
+    const newChargeObj = charges[index].set(field, value);
     charges[index] = newChargeObj;
     this.setState({ charges });
   }
@@ -315,7 +320,8 @@ class SelectChargesContainer extends React.Component<Props, State> {
   }
 
   renderSingleCharge = (charge :Charge, index :number) => {
-
+    const statute = charge.getIn([PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE, 0], '');
+    const qualifier = charge.get(QUALIFIER, '');
     const onChange = (e) => {
       this.handleChargeInputChange(e, index);
     };
@@ -324,14 +330,14 @@ class SelectChargesContainer extends React.Component<Props, State> {
     const getOnClear = field => () => this.handleChargeInputChange(undefined, index, field);
 
     return (
-      <ChargeWrapper key={`${charge.statute}-${charge.qualifier}-${index}`}>
+      <ChargeWrapper key={`${statute}-${qualifier}-${index}`}>
         <ChargeTitle>{this.formatCharge(charge)}</ChargeTitle>
         <ChargeOptionsWrapper>
           <SearchableSelect
               onSelect={getOnSelect(QUALIFIER)}
               options={this.formatSelectOptions(QUALIFIERS)}
               searchPlaceholder="Select a qualifier"
-              value={charge[QUALIFIER]}
+              value={qualifier}
               onClear={getOnClear(QUALIFIER)} />
           {this.renderInputField(charge, NUMBER_OF_COUNTS, onChange)}
           <DeleteButton onClick={() => this.deleteCharge(index)}>Remove</DeleteButton>
