@@ -985,6 +985,7 @@ function mapStateToProps(state :Immutable.Map<*, *>) :Object {
   const submit = state.get(STATE.SUBMIT);
   const court = state.get(STATE.COURT);
   const charges = state.get(STATE.CHARGES);
+  console.log(charges.toJS());
   // TODO: review these state names so that consts can be used in all cases (psaForm & isLoadingCases)
   return {
     // App
@@ -994,6 +995,12 @@ function mapStateToProps(state :Immutable.Map<*, *>) :Object {
     // Charges
     [CHARGES.ARREST]: charges.get(CHARGES.ARREST),
     [CHARGES.COURT]: charges.get(CHARGES.COURT),
+    [CHARGES.ARREST_VIOLENT]: charges.get(CHARGES.ARREST),
+    [CHARGES.COURT_VIOLENT]: charges.get(CHARGES.COURT),
+    [CHARGES.DMF_STEP_2]: charges.get(CHARGES.ARREST),
+    [CHARGES.DMF_STEP_4]: charges.get(CHARGES.COURT),
+    [CHARGES.BRE]: charges.get(CHARGES.ARREST),
+    [CHARGES.BHE]: charges.get(CHARGES.COURT),
     [CHARGES.LOADING]: charges.get(CHARGES.LOADING),
 
     // PSA Form
