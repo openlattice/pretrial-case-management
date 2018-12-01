@@ -48,6 +48,12 @@ export const APP = {
 export const CHARGES = {
   ARREST: 'arrestCharges',
   COURT: 'courtCharges',
+  ARREST_VIOLENT: 'violentArrestCharges',
+  COURT_VIOLENT: 'violentCourtCharges',
+  DMF_STEP_2: 'dmfStep2Charges',
+  DMF_STEP_4: 'dmfStep4Charges',
+  BRE: 'bookingReleaseExceptionCharges',
+  BHE: 'bookingHoldExceptionCharges',
   LOADING: 'loadingCharges'
 };
 
