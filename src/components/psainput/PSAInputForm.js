@@ -407,7 +407,7 @@ export default class PSAInputForm extends React.Component<Props, State> {
     const priorSentenceToIncarceration = getSentenceToIncarcerationCaseNums(allSentences);
 
     // psaDate will be undefined if the report is being filled out for the first time.
-    // If this is the case, it will default to the current datetime.
+    // If this is the case, it will default to the current datetime. See FTAUtils.js.
     const recentFTAs = getRecentFTAs(allFTAs, allCharges, psaDate);
     const oldFTAs = getOldFTAs(allFTAs, allCharges, psaDate);
 
