@@ -309,6 +309,7 @@ class PSAInputForm extends React.Component<Props, State> {
     charges.forEach((charge) => {
       const statute = charge.getIn([PROPERTY_TYPES.CHARGE_STATUTE, 0], '');
       const description = charge.getIn([PROPERTY_TYPES.CHARGE_DESCRIPTION, 0], '');
+
       const isViolent = violentChargeList.get(statute, Set()).includes(description);
       const isStep2 = dmfStep2ChargeList.get(statute, Set()).includes(description);
       const isStep4 = dmfStep4ChargeList.get(statute, Set()).includes(description);
