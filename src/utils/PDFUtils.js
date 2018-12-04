@@ -1013,6 +1013,7 @@ const coverPage = (doc :Object, selectedPeople :Immutable.Map<*, *>[]) => {
   y += Y_INC_SMALL;
   thickLine(doc, y);
   y += Y_INC;
+  // TODO: Should come up with a solution that works for any number of names.
   selectedPeople.slice(0, 50).forEach((selectedPerson) => {
     doc.text(X_COL_1, y, getListName(selectedPerson));
     y += Y_INC;
