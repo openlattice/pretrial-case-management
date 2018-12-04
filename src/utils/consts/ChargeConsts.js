@@ -290,6 +290,7 @@ export const GUILTY_DISPOSITIONS = [
   'Convicted at Trial',
   'Convicted at Trial/Punishment Enhanced by Part II Info',
   'Conviction-Death Penalty',
+  'Deferred Imposition of Sentence',
   'Guilty But Mentally Ill',
   'Jail',
   'Judgment on Plea of Guilty',
