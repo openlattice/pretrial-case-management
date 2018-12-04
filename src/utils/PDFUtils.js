@@ -1013,16 +1013,15 @@ const coverPage = (doc :Object, selectedPeople :Immutable.Map<*, *>[]) => {
   y += Y_INC_SMALL;
   thickLine(doc, y);
   y += Y_INC;
-
   selectedPeople.slice(0, 50).forEach((selectedPerson) => {
     doc.text(X_COL_1, y, getListName(selectedPerson));
     y += Y_INC;
   });
+  y = 15 + Y_INC_SMALL + Y_INC;
   selectedPeople.slice(50).forEach((selectedPerson) => {
-    doc.text(X_COL_2, y, getListName(selectedPerson));
+    doc.text(X_COL_3, y, getListName(selectedPerson));
     y += Y_INC;
   });
-
 };
 
 export const exportPDFList = (fileName :string, pages :{
