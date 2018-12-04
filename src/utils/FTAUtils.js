@@ -28,8 +28,9 @@ const matchesValidCharges = (fta, allCharges) => {
   return validCaseNums.has(getCaseNumFromFTA(fta));
 };
 
-const getPastTwoYearsComparison = (dateStr) => {
-  const twoYearsAgo = moment().subtract(2, 'years');
+const getPastTwoYearsComparison = (dateStr, psaDate) => {
+  const psaCompletedDate = psaDate ? moment(psaDate) : moment();
+  const twoYearsAgo = psaCompletedDate.subtract(2, 'years');
   const date = moment(dateStr);
   if (!date.isValid()) return COMPARISON.INVALID;
   return twoYearsAgo.isSameOrBefore(date) ? COMPARISON.NEW : COMPARISON.OLD;
@@ -41,14 +42,20 @@ export const getFTALabel = (fta) => {
   return date.length ? `${caseNum} (${date})` : caseNum;
 };
 
-export const getRecentFTAs = (allFTAs :Immutable.List<*>, allCharges :Immutable.List<*>) :Immutable.List<*> =>
+export const getRecentFTAs = (
+  allFTAs :Immutable.List<*>,
+  allCharges :Immutable.List<*>,
+  psaDate :string
+) :Immutable.List<*> => (
   allFTAs
-    .filter(fta => getPastTwoYearsComparison(fta.getIn([PROPERTY_TYPES.DATE_TIME, 0])) === COMPARISON.NEW)
+    .filter(fta => getPastTwoYearsComparison(fta.getIn([PROPERTY_TYPES.DATE_TIME, 0]), psaDate) === COMPARISON.NEW)
     .filter(fta => matchesValidCharges(fta, allCharges))
-    .map(fta => getFTALabel(fta));
+    .map(fta => getFTALabel(fta))
+);
 
-export const getOldFTAs = (allFTAs :Immutable.List<*>, allCharges :Immutable.List<*>) :Immutable.List<*> =>
+export const getOldFTAs = (allFTAs :Immutable.List<*>, allCharges :Immutable.List<*>, psaDate) :Immutable.List<*> => (
   allFTAs
-    .filter(fta => getPastTwoYearsComparison(fta.getIn([PROPERTY_TYPES.DATE_TIME, 0])) === COMPARISON.OLD)
+    .filter(fta => getPastTwoYearsComparison(fta.getIn([PROPERTY_TYPES.DATE_TIME, 0]), psaDate) === COMPARISON.OLD)
     .filter(fta => matchesValidCharges(fta, allCharges))
-    .map(fta => getFTALabel(fta));
+    .map(fta => getFTALabel(fta))
+);

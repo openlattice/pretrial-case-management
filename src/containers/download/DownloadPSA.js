@@ -115,7 +115,7 @@ const Error = styled.div`
   text-align: center;
   font-size: 16px;
   color: firebrick;
-  margin-top: 15px;
+  margin-top: 30px;
 `;
 
 const LoadingReports = styled.div`
@@ -188,10 +188,6 @@ class DownloadPSA extends React.Component<Props, State> {
     const { startDate, endDate } = this.state;
     let errorText;
 
-    if (noHearingResults) {
-      errorText = 'No PSAs match the criteria selected.';
-      return errorText;
-    }
 
     if (startDate && endDate) {
 
@@ -199,6 +195,9 @@ class DownloadPSA extends React.Component<Props, State> {
       const end = moment(endDate);
       const today = moment();
 
+      if ((downloads === REPORT_TYPES.BY_HEARING) && noHearingResults) {
+        errorText = 'No PSAs match the criteria selected.';
+      }
       if (!start.isValid() || !end.isValid()) {
         errorText = 'At least one of the selected dates is invalid.';
       }
@@ -208,7 +207,11 @@ class DownloadPSA extends React.Component<Props, State> {
       else if (end.isBefore(start)) {
         errorText = 'The selected end date must be after the selected start date.';
       }
+      else if ((downloads === REPORT_TYPES.BY_PSA) && end.isSame(start)) {
+        errorText = 'The selected start and end dates must be different for reports by PSA date.';
+      }
     }
+
     return errorText;
   }
 
@@ -264,14 +267,26 @@ class DownloadPSA extends React.Component<Props, State> {
 
   onDateChange = (dates) => {
     const { actions } = this.props;
-    const { startDate, endDate, byHearingDate } = this.state;
+    const { byHearingDate } = this.state;
+    let { startDate, endDate } = this.state;
     const { start, end } = dates;
-    const nextStart = start || startDate;
-    const nextEnd = end || endDate;
+
+    let nextStart = start || startDate;
+    if (nextStart) nextStart = moment(nextStart);
+    let nextEnd = end || endDate;
+    if (nextEnd) nextEnd = moment(nextEnd);
+
+    startDate = startDate ? moment(startDate) : startDate;
+    endDate = endDate ? moment(endDate) : endDate;
     if (byHearingDate && !!nextStart && !!nextEnd) {
       const startChanged = startDate ? !startDate.isSame(start) : false;
       const endChanged = endDate ? !endDate.isSame(end) : false;
-      if (startChanged || endChanged) {
+      if (
+        startChanged
+        || endChanged
+        || !this.getErrorText(REPORT_TYPES.BY_HEARING)
+        || !this.getErrorText(REPORT_TYPES.BY_PSA)
+      ) {
         actions.getDownloadFilters({
           startDate: nextStart,
           endDate: nextEnd
@@ -338,13 +353,17 @@ class DownloadPSA extends React.Component<Props, State> {
     if (name === REPORT_TYPES.BY_HEARING) {
       this.setState({
         byHearingDate: true,
-        byPSADate: false
+        byPSADate: false,
+        startDate: undefined,
+        endDate: undefined,
       });
     }
     else if (name === REPORT_TYPES.BY_PSA) {
       this.setState({
         byHearingDate: false,
-        byPSADate: true
+        byPSADate: true,
+        startDate: undefined,
+        endDate: undefined,
       });
     }
   }
@@ -358,24 +377,24 @@ class DownloadPSA extends React.Component<Props, State> {
         <SubSelectionWrapper>
           <ButtonRow>
             <BasicDownloadButton
-                disabled={downloadingReports}
+                disabled={downloadingReports || this.getErrorText(downloads)}
                 onClick={() => this.downloadbyPSADate(PSA_RESPONSE_TABLE, DOMAIN.MINNEHAHA)}>
               Download Minnehaha PSA Response Table
             </BasicDownloadButton>
             <BasicDownloadButton
-                disabled={downloadingReports}
+                disabled={downloadingReports || this.getErrorText(downloads)}
                 onClick={() => this.downloadbyPSADate(SUMMARY_REPORT, DOMAIN.MINNEHAHA)}>
               Download Minnehaha Summary Report
             </BasicDownloadButton>
             <BasicDownloadButton
-                disabled={downloadingReports}
+                disabled={downloadingReports || this.getErrorText(downloads)}
                 onClick={() => this.downloadbyPSADate(SUMMARY_REPORT, DOMAIN.PENNINGTON)}>
               Download Pennington Summary Report
             </BasicDownloadButton>
           </ButtonRow>
           <ButtonRow>
             <InfoDownloadButton
-                disabled={downloadingReports}
+                disabled={downloadingReports || this.getErrorText(downloads)}
                 onClick={() => this.downloadbyPSADate()}>
               Download All PSA Data
             </InfoDownloadButton>

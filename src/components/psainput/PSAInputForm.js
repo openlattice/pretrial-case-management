@@ -262,6 +262,7 @@ type Props = {
   allSentences :Immutable.List<*>,
   allCases :Immutable.List<*>,
   allFTAs :Immutable.List<*>,
+  psaDate :string,
   viewOnly? :boolean
 };
 
@@ -440,7 +441,8 @@ class PSAInputForm extends React.Component<Props, State> {
       allFTAs,
       viewOnly,
       handleClose,
-      noBorders
+      noBorders,
+      psaDate
     } = this.props;
 
     const {
@@ -462,9 +464,12 @@ class PSAInputForm extends React.Component<Props, State> {
     const priorMisdemeanors = getPreviousMisdemeanorLabels(allCharges);
     const priorFelonies = getPreviousFelonyLabels(allCharges);
     const priorViolentConvictions = getPreviousViolentChargeLabels(allCharges);
-    const recentFTAs = getRecentFTAs(allFTAs, allCharges);
-    const oldFTAs = getOldFTAs(allFTAs, allCharges);
     const priorSentenceToIncarceration = getSentenceToIncarcerationCaseNums(allSentences);
+
+    // psaDate will be undefined if the report is being filled out for the first time.
+    // If this is the case, it will default to the current datetime. See FTAUtils.js.
+    const recentFTAs = getRecentFTAs(allFTAs, allCharges, psaDate);
+    const oldFTAs = getOldFTAs(allFTAs, allCharges, psaDate);
 
     let secondaryReleaseHeader;
     let secondaryReleaseCharges;
