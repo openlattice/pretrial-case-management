@@ -10,7 +10,6 @@ import { formatValue, formatDateList } from './FormattingUtils';
 import {
   GUILTY_DISPOSITIONS,
   MISDEMEANOR_CHARGE_LEVEL_CODES,
-  ODYSSEY_VIOLENT_CHARGES,
   ODYSSEY_VIOLENT_STATUTES,
   ODYSSEY_EXCEPTION_DESCRIPTIONS
 } from './consts/ChargeConsts';
