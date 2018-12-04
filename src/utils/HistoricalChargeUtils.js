@@ -10,7 +10,9 @@ import { formatValue, formatDateList } from './FormattingUtils';
 import {
   GUILTY_DISPOSITIONS,
   MISDEMEANOR_CHARGE_LEVEL_CODES,
-  ODYSSEY_VIOLENT_CHARGES
+  ODYSSEY_VIOLENT_CHARGES,
+  ODYSSEY_VIOLENT_STATUTES,
+  ODYSSEY_EXCEPTION_DESCRIPTIONS
 } from './consts/ChargeConsts';
 
 
@@ -63,15 +65,20 @@ export const shouldIgnoreCharge = (charge :Map<*, *>) => {
 };
 
 export const chargeStatuteIsViolent = (chargeNum :string) :boolean => (
-  Object.keys(ODYSSEY_VIOLENT_CHARGES).includes(stripDegree(chargeNum.toLowerCase()))
+  ODYSSEY_VIOLENT_STATUTES.includes(stripDegree(chargeNum.toLowerCase()))
 );
 
 export const chargeIsViolent = (charge :Map<*, *>) :boolean => {
   if (shouldIgnoreCharge(charge)) return false;
   const { statute, description } = getChargeDetails(charge);
-  return !!(charge
-    && ODYSSEY_VIOLENT_CHARGES[stripDegree(statute)]
-    && ODYSSEY_VIOLENT_CHARGES[stripDegree(statute)].includes(description));
+  const exception = (ODYSSEY_EXCEPTION_DESCRIPTIONS[stripDegree(statute)])
+    ? ODYSSEY_EXCEPTION_DESCRIPTIONS[stripDegree(statute)].includes(description) :
+    false;
+  return !!(
+    charge
+    && ODYSSEY_VIOLENT_STATUTES.includes(stripDegree(statute))
+    && !exception
+  );
 };
 
 export const chargeIsMostSerious = (charge :Map<*, *>, pretrialCase :Map<*, *>) => {
