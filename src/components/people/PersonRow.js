@@ -31,6 +31,9 @@ const Cell = styled.td`
   font-family: 'Open Sans', sans-serif;
   font-size: 14px;
 `;
+const StyledPersonMugshot = styled(PersonMugshot)`
+  width: 36px;
+`;
 
 const Row = styled.tr`
   padding: 7px 30px;
@@ -71,9 +74,9 @@ const PersonRow = ({ person, handleSelect, gray } :Props) => {
   let mugshot :string = person.getIn([MUGSHOT, 0]) || person.getIn([PICTURE, 0]);
   mugshot = mugshot
     ? (
-      <PersonMugshot>
+      <StyledPersonMugshot>
         <PersonPicture src={mugshot} alt="" />
-      </PersonMugshot>
+      </StyledPersonMugshot>
     ) : <PersonPicture src={defaultUserIcon} alt="" />;
 
   const firstName = formatValue(person.get(FIRST_NAME, Immutable.List()));
