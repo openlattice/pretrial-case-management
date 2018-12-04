@@ -70,12 +70,14 @@ export const chargeStatuteIsViolent = (chargeNum :string) :boolean => (
 export const chargeIsViolent = (charge :Map<*, *>) :boolean => {
   if (shouldIgnoreCharge(charge)) return false;
   const { statute, description } = getChargeDetails(charge);
-  const exception = (ODYSSEY_EXCEPTION_DESCRIPTIONS[stripDegree(statute)])
-    ? ODYSSEY_EXCEPTION_DESCRIPTIONS[stripDegree(statute)].includes(description) :
-    false;
+  const strippedStatute = stripDegree(statute.toLowerCase());
+  const exception = (ODYSSEY_EXCEPTION_DESCRIPTIONS[strippedStatute])
+    ? ODYSSEY_EXCEPTION_DESCRIPTIONS[strippedStatute].includes(description)
+    : false;
+
   return !!(
     charge
-    && ODYSSEY_VIOLENT_STATUTES.includes(stripDegree(statute))
+    && chargeStatuteIsViolent(statute)
     && !exception
   );
 };
