@@ -11,7 +11,7 @@ import {
 } from 'immutable';
 
 import { getEntityKeyId } from '../../utils/DataUtils';
-import { changePSAStatus, updateScoresAndRiskFactors } from '../review/ReviewActionFactory';
+import { changePSAStatus, updateScoresAndRiskFactors, loadPSAData } from '../review/ReviewActionFactory';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PEOPLE, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import {
@@ -75,7 +75,12 @@ export default function peopleReducer(state = INITIAL_STATE, action) {
         SUCCESS: () => state
           .set(PEOPLE.PERSON_DATA, fromJS(action.value.person)
             .set(PEOPLE.PERSON_ENTITY_KEY_ID, action.value.entityKeyId)),
-        FAILURE: () => state.set(PEOPLE.PERSON_DATA, Map()),
+        FAILURE: () => state.set(PEOPLE.PERSON_DATA, Map())
+      });
+    }
+
+    case loadPSAData.case(action.type): {
+      return loadPSAData.reducer(state, action, {
         FINALLY: () => state.set(PEOPLE.FETCHING_PERSON_DATA, false)
       });
     }

@@ -581,6 +581,7 @@ class PSAModal extends React.Component<Props, State> {
       scores,
       readOnly
     } = this.props;
+    const psaDate = scores.getIn([PROPERTY_TYPES.DATE_TIME, 0], '');
     const { editing, riskFactors } = this.state;
     const editHeader = (editing || readOnly || psaIsClosed(scores)) ? null : (
       <CenteredContainer>
@@ -633,7 +634,8 @@ class PSAModal extends React.Component<Props, State> {
             allSentences={allSentences}
             allFTAs={ftaHistory}
             viewOnly={!editing || psaIsClosed(scores)}
-            noBorders />
+            noBorders
+            psaDate={psaDate} />
         {editButton}
       </ModalWrapper>
     );
