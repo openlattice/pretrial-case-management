@@ -1014,8 +1014,12 @@ const coverPage = (doc :Object, selectedPeople :Immutable.Map<*, *>[]) => {
   thickLine(doc, y);
   y += Y_INC;
 
-  selectedPeople.forEach((selectedPerson) => {
+  selectedPeople.slice(0, 50).forEach((selectedPerson) => {
     doc.text(X_COL_1, y, getListName(selectedPerson));
+    y += Y_INC;
+  });
+  selectedPeople.slice(50).forEach((selectedPerson) => {
+    doc.text(X_COL_2, y, getListName(selectedPerson));
     y += Y_INC;
   });
 
