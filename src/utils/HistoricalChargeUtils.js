@@ -72,8 +72,7 @@ export const chargeIsViolent = (charge :Map<*, *>) :boolean => {
   const { statute, description } = getChargeDetails(charge);
   const strippedStatute = stripDegree(statute.toLowerCase());
   const exception = (ODYSSEY_EXCEPTION_DESCRIPTIONS[strippedStatute])
-    ? ODYSSEY_EXCEPTION_DESCRIPTIONS[strippedStatute].includes(description)
-    : false;
+    && ODYSSEY_EXCEPTION_DESCRIPTIONS[strippedStatute].includes(description);
 
   return !!(
     charge
