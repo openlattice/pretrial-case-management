@@ -333,6 +333,7 @@ export default class SelectChargesContainer extends React.Component<Props, State
         <SectionHeader>Charges</SectionHeader>
         {chargeItems}
         <ChargeSearch
+            scrollVisible
             onSelect={this.addCharge}
             options={this.formatChargeOptions()}
             searchPlaceholder="Select a charge"

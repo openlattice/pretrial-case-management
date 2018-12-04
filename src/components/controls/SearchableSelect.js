@@ -126,9 +126,16 @@ const SearchOptionContainer = styled.div`
   overflow-x: auto;
   overflow-y: scroll;
 
-  &::-webkit-scrollbar {
-    display: none;
+  &::-webkit-scrollbar-thumb {
+    background-color: ${props => (props.scrollVisible ? OL.GREY03 : 'transparent')};
+    border-radius: ${props => (props.scrollVisible ? 3 : 0)}px;
   }
+
+  &::-webkit-scrollbar {
+    width: ${props => (props.scrollVisible ? 10 : 0)}px;
+    display: ${props => (props.scrollVisible ? 'initial' : 'none')};
+  }
+
 `;
 
 /*
@@ -147,6 +154,7 @@ type Props = {
   transparent? :boolean,
   openAbove? :boolean,
   selectOnly? :boolean,
+  scrollVisible? :boolean,
   disabled? :boolean
 }
 
@@ -169,6 +177,7 @@ class SearchableSelect extends React.Component<Props, State> {
     transparent: false,
     openAbove: false,
     selectOnly: false,
+    scrollVisible: false,
     disabled: false,
   };
 
@@ -229,6 +238,7 @@ class SearchableSelect extends React.Component<Props, State> {
   }
 
   renderTable = () => {
+    const { scrollVisible } = this.props;
     const { filteredTypes } = this.state;
     const options = filteredTypes.map(type => (
       <SearchOption
@@ -237,7 +247,7 @@ class SearchableSelect extends React.Component<Props, State> {
         {type}
       </SearchOption>
     ));
-    return <SearchOptionContainer>{options}</SearchOptionContainer>;
+    return <SearchOptionContainer scrollVisible={scrollVisible}>{options}</SearchOptionContainer>;
   }
 
   render() {
