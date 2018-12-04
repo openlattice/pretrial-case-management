@@ -553,7 +553,7 @@ export default class PSAInputForm extends React.Component<Props, State> {
                   SECONDARY_RELEASE_CHARGES,
                   SECONDARY_RELEASE_CHARGES_PROMPT,
                   secondaryReleaseCharges,
-                  true, // Client Asked for these to be disabled
+                  true, // requested to be disabled by client
                   secondaryReleaseHeader
                 ) : null
             }
@@ -564,7 +564,7 @@ export default class PSAInputForm extends React.Component<Props, State> {
                   SECONDARY_HOLD_CHARGES,
                   SECONDARY_HOLD_CHARGES_PROMPT,
                   secondaryHoldCharges,
-                  true, // Client Asked for these to be disabled
+                  true, // requested to be disabled by client
                   secondaryHoldHeader
                 ) : null
             }
