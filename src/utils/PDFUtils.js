@@ -1005,6 +1005,7 @@ const exportPDF = (
 
 const coverPage = (doc :Object, selectedPeople :Immutable.Map<*, *>[]) => {
   let y = 15;
+  let page = 1;
   doc.setFontType('bold');
   doc.setFontSize(12);
   doc.text(X_COL_1, y, 'People Included');
@@ -1015,10 +1016,10 @@ const coverPage = (doc :Object, selectedPeople :Immutable.Map<*, *>[]) => {
   y += Y_INC;
 
   selectedPeople.forEach((selectedPerson) => {
+    [y, page] = tryIncrementPage(doc, y, page, '');
     doc.text(X_COL_1, y, getListName(selectedPerson));
     y += Y_INC;
   });
-
 };
 
 export const exportPDFList = (fileName :string, pages :{
