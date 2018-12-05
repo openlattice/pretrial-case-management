@@ -38,17 +38,14 @@ export const chargeIsInList = (chargesToMatch, statuteNum, description) => {
   return result;
 };
 
-const filterChargeList = (charges, chargesToMatch, negated) => {
-  return charges.filter((charge) => {
+const filterChargeList = (charges, chargesToMatch, negated) => (
+  charges.filter((charge) => {
     const statuteNum = charge.getIn([PROPERTY_TYPES.CHARGE_STATUTE, 0], '');
     const description = charge.getIn([PROPERTY_TYPES.CHARGE_DESCRIPTION, 0], '');
     const present = chargeIsInList(chargesToMatch, statuteNum, description);
     return negated ? !present : present;
-  });
-  // .map((charge) => {
-  //   return charge.getIn([PROPERTY_TYPES.CHARGE_STATUTE, 0], '');
-  // });
-};
+  })
+);
 
 export const getAllViolentChargeLabels = chargeList => (
   filterChargeList(chargeList, violentCharges).map(charge => getChargeTitle(charge, true))
