@@ -4237,6 +4237,12 @@ const PenningtonChargesList = [
   },
   {
     statute: '22-30A-17',
+    description: 'Theft of a Motor Vehicle Over $5000 < $100,000 (F4)',
+    degree: 'Felony 4',
+    degreeShort: 'F4'
+  },
+  {
+    statute: '22-30A-17',
     description: 'Theft of Motor Vehicle Parts and Accessories Over $1000(F6)',
     degree: 'Felony 6',
     degreeShort: 'F6'
