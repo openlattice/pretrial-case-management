@@ -1,6 +1,12 @@
-import Immutable from 'immutable';
+import Immutable, { Map, Set, fromJS } from 'immutable';
 
+import { CHARGE, PSA, DMF } from './consts/Consts';
 import { PROPERTY_TYPES } from './consts/DataModelConsts';
+import { CHARGE_VALUES } from './consts/ArrestChargeConsts';
+import {
+  PENN_BOOKING_HOLD_EXCEPTIONS,
+  PENN_BOOKING_RELEASE_EXCEPTIONS,
+} from './consts/DMFExceptionsList';
 
 import {
   DATE_1,
@@ -77,8 +83,6 @@ import {
   S_CONSEC_SHORT_1B
 } from './consts/test/MockSentences';
 
-import { PSA, DMF } from './consts/Consts';
-
 import {
   getChargeTitle,
   getChargeDetails
@@ -121,6 +125,60 @@ import {
 
   tryAutofillFields
 } from './AutofillUtils';
+
+
+const { STATUTE, DESCRIPTION } = CHARGE;
+const { STEP_TWO, STEP_FOUR, ALL_VIOLENT } = CHARGE_VALUES;
+let violentChargeList = Map();
+let dmfStep2ChargeList = Map();
+let dmfStep4ChargeList = Map();
+let bookingReleaseExceptionChargeList = Map();
+let bookingHoldExceptionChargeList = Map();
+
+fromJS(STEP_TWO).forEach((charge) => {
+  const statute = charge.get(STATUTE);
+  const description = charge.get(DESCRIPTION);
+  dmfStep2ChargeList = dmfStep2ChargeList.set(
+    statute,
+    dmfStep2ChargeList.get(statute, Set()).add(description)
+  );
+});
+
+fromJS(STEP_FOUR).forEach((charge) => {
+  const statute = charge.get(STATUTE);
+  const description = charge.get(DESCRIPTION);
+  dmfStep4ChargeList = dmfStep4ChargeList.set(
+    statute,
+    dmfStep4ChargeList.get(statute, Set()).add(description)
+  );
+});
+
+fromJS(ALL_VIOLENT).forEach((charge) => {
+  const statute = charge.get(STATUTE);
+  const description = charge.get(DESCRIPTION);
+  violentChargeList = violentChargeList.set(
+    statute,
+    violentChargeList.get(statute, Set()).add(description)
+  );
+});
+
+fromJS(PENN_BOOKING_HOLD_EXCEPTIONS).forEach((charge) => {
+  const statute = charge.get(STATUTE);
+  const description = charge.get(DESCRIPTION);
+  bookingHoldExceptionChargeList = bookingHoldExceptionChargeList.set(
+    statute,
+    bookingHoldExceptionChargeList.get(statute, Set()).add(description)
+  );
+});
+
+fromJS(PENN_BOOKING_RELEASE_EXCEPTIONS).forEach((charge) => {
+  const statute = charge.get(STATUTE);
+  const description = charge.get(DESCRIPTION);
+  bookingReleaseExceptionChargeList = bookingReleaseExceptionChargeList.set(
+    statute,
+    bookingReleaseExceptionChargeList.get(statute, Set()).add(description)
+  );
+});
 
 describe('AutofillUtils', () => {
 
@@ -1468,7 +1526,12 @@ describe('AutofillUtils', () => {
             MOCK_FTA_3_YEARS_AGO
           ),
           person,
-          Immutable.Map()
+          Immutable.Map(),
+          violentChargeList,
+          dmfStep2ChargeList,
+          dmfStep4ChargeList,
+          bookingReleaseExceptionChargeList,
+          bookingHoldExceptionChargeList
         )).toEqual(Immutable.fromJS({
           [PSA.AGE_AT_CURRENT_ARREST]: '2',
           [PSA.CURRENT_VIOLENT_OFFENSE]: 'true',
@@ -1515,7 +1578,12 @@ describe('AutofillUtils', () => {
             MOCK_POA_FTA_1_DAY_AGO
           ),
           person,
-          Immutable.Map()
+          Immutable.Map(),
+          violentChargeList,
+          dmfStep2ChargeList,
+          dmfStep4ChargeList,
+          bookingReleaseExceptionChargeList,
+          bookingHoldExceptionChargeList
         )).toEqual(Immutable.fromJS({
           [PSA.AGE_AT_CURRENT_ARREST]: '2',
           [PSA.CURRENT_VIOLENT_OFFENSE]: 'true',
@@ -1555,7 +1623,12 @@ describe('AutofillUtils', () => {
             MOCK_POA_FTA_3_YEARS_AGO
           ),
           person,
-          Immutable.Map()
+          Immutable.Map(),
+          violentChargeList,
+          dmfStep2ChargeList,
+          dmfStep4ChargeList,
+          bookingReleaseExceptionChargeList,
+          bookingHoldExceptionChargeList
         )).toEqual(Immutable.fromJS({
           [PSA.AGE_AT_CURRENT_ARREST]: '2',
           [PSA.CURRENT_VIOLENT_OFFENSE]: 'false',
@@ -1611,7 +1684,12 @@ describe('AutofillUtils', () => {
             MOCK_POA_FTA_4_YEARS_AGO
           ),
           person,
-          Immutable.Map()
+          Immutable.Map(),
+          violentChargeList,
+          dmfStep2ChargeList,
+          dmfStep4ChargeList,
+          bookingReleaseExceptionChargeList,
+          bookingHoldExceptionChargeList
         )).toEqual(Immutable.fromJS({
           [PSA.AGE_AT_CURRENT_ARREST]: '2',
           [PSA.CURRENT_VIOLENT_OFFENSE]: 'true',
@@ -1659,7 +1737,13 @@ describe('AutofillUtils', () => {
             MOCK_POA_FTA_4_YEARS_AGO
           ),
           person,
-          Immutable.Map()
+          Immutable.Map(),
+          violentChargeList,
+          null,
+          dmfStep2ChargeList,
+          dmfStep4ChargeList,
+          bookingReleaseExceptionChargeList,
+          bookingHoldExceptionChargeList
         )).toEqual(Immutable.fromJS({
           [PSA.AGE_AT_CURRENT_ARREST]: '2',
           [PSA.CURRENT_VIOLENT_OFFENSE]: 'false',
@@ -1707,7 +1791,12 @@ describe('AutofillUtils', () => {
             MOCK_POA_FTA_4_YEARS_AGO
           ),
           person,
-          Immutable.Map()
+          Immutable.Map(),
+          violentChargeList,
+          dmfStep2ChargeList,
+          dmfStep4ChargeList,
+          bookingReleaseExceptionChargeList,
+          bookingHoldExceptionChargeList
         )).toEqual(Immutable.fromJS({
           [PSA.AGE_AT_CURRENT_ARREST]: '2',
           [PSA.CURRENT_VIOLENT_OFFENSE]: 'false',
