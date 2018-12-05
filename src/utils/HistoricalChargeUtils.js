@@ -210,3 +210,15 @@ export const getSummaryStats = (chargesByCaseNum :Map<*>) => {
     numViolentConvictions
   };
 };
+
+export const historicalChargeIsViolent = ({
+  charge,
+  violentChargeList
+}) => {
+  const statute = charge.getIn([PROPERTY_TYPES.CHARGE_STATUTE, 0], '');
+  const description = charge.getIn([PROPERTY_TYPES.CHARGE_DESCRIPTION, 0], '');
+
+  const isViolent = violentChargeList.get(statute, Set()).includes(description);
+
+  return isViolent;
+};
