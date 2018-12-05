@@ -18,7 +18,7 @@ export function formatValue(rawValue :string | string[]) :string {
 
 export function formatDate(dateString :string, optionalFormat :?string) :string {
   if (!dateString) return '';
-  const date = moment.utc(dateString);
+  const date = moment(dateString);
   if (!date || !date.isValid()) return dateString;
   const format = optionalFormat || 'MM/DD/YYYY';
   return date.format(format);

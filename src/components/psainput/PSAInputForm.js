@@ -627,7 +627,7 @@ class PSAInputForm extends React.Component<Props, State> {
                   SECONDARY_RELEASE_CHARGES,
                   SECONDARY_RELEASE_CHARGES_PROMPT,
                   secondaryReleaseCharges,
-                  null,
+                  true, // requested to be disabled by client
                   secondaryReleaseHeader
                 ) : null
             }
@@ -638,7 +638,7 @@ class PSAInputForm extends React.Component<Props, State> {
                   SECONDARY_HOLD_CHARGES,
                   SECONDARY_HOLD_CHARGES_PROMPT,
                   currentBRECharges,
-                  null,
+                  true, // requested to be disabled by client
                   secondaryHoldHeader
                 ) : null
             }
