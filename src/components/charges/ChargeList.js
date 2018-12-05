@@ -108,7 +108,7 @@ class ChargeList extends React.Component<Props, *> {
     const violent = historical
       ? chargeIsViolent(charge)
       : getAllViolentCharges(fromJS([charge])).size > 0;
-    // TODO: NEED TO UPDATE TO fn below when we release the manage charges UI.
+    // TODO: NEED TO UPDATE TO const below when we release the manage charges UI.
     // const violent = historical
     //   ? historicalChargeIsViolent({charge, violentChargeList})
     //   : getViolentChargeLabels(fromJS([charge])).size > 0;
