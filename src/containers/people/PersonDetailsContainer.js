@@ -115,6 +115,7 @@ class PersonDetailsContainer extends React.Component<Props, State> {
 
   componentDidMount() {
     const { actions, personId } = this.props;
+    actions.checkPSAPermissions();
     actions.loadJudges();
     actions.getPersonData(personId);
     actions.getPersonNeighbors({ personId });
