@@ -18,8 +18,7 @@ import { APP, CHARGES, STATE } from '../../utils/consts/FrontEndStateConsts';
 import { BHE_LABELS, BRE_LABELS } from '../../utils/consts/ArrestChargeConsts';
 import { getChargeTitle } from '../../utils/HistoricalChargeUtils';
 import { OL } from '../../utils/consts/Colors';
-
-
+import { getAllViolentChargeLabels } from '../../utils/ArrestChargeUtils';
 import {
   getPendingChargeLabels,
   getPreviousMisdemeanorLabels,
@@ -290,6 +289,7 @@ class PSAInputForm extends React.Component<Props, State> {
     let step2Charges = List();
     let step4Charges = List();
     let currentBHECharges = List();
+    let currentNonBHECharges = List();
     let currentBRECharges = List();
 
     const {
@@ -321,6 +321,7 @@ class PSAInputForm extends React.Component<Props, State> {
       if (isStep2) step2Charges = step2Charges.push(getChargeTitle(charge, true));
       if (isStep4) step4Charges = step4Charges.push(getChargeTitle(charge, true));
       if (isBHE) currentBHECharges = currentBHECharges.push(getChargeTitle(charge, true));
+      if (!isBHE) currentNonBHECharges = currentNonBHECharges.push(getChargeTitle(charge, true));
       if (isBRE) currentBRECharges = currentBRECharges.push(getChargeTitle(charge, true));
     });
 
@@ -329,6 +330,7 @@ class PSAInputForm extends React.Component<Props, State> {
       step2Charges,
       step4Charges,
       currentBHECharges,
+      currentNonBHECharges,
       currentBRECharges
     };
   }
@@ -446,10 +448,13 @@ class PSAInputForm extends React.Component<Props, State> {
     } = this.props;
 
     const {
+      // TODO: Will use currentViolentCharges instead of currentViolentChargesFromJSON
+      // when we release manage charges UI.
       currentViolentCharges,
       step2Charges,
       step4Charges,
       currentBHECharges,
+      currentNonBHECharges,
       currentBRECharges
     } = this.getChargeLabels(currCharges);
 
@@ -460,6 +465,8 @@ class PSAInputForm extends React.Component<Props, State> {
       currCase.getIn([PROPERTY_TYPES.ARREST_DATE, 0],
         currCase.getIn([PROPERTY_TYPES.FILE_DATE, 0], '')));
 
+    // TODO: NEED TO UPDATE TO currentViolentCharges when we release manage charges UI.
+    const currentViolentChargesFromJSON = getAllViolentChargeLabels(currCharges);
     const pendingCharges = getPendingChargeLabels(currCaseNum, arrestDate, allCases, allCharges);
     const priorMisdemeanors = getPreviousMisdemeanorLabels(allCharges);
     const priorFelonies = getPreviousFelonyLabels(allCharges);
@@ -479,7 +486,7 @@ class PSAInputForm extends React.Component<Props, State> {
     }
     else {
       secondaryReleaseHeader = BHE_LABELS.HOLD;
-      secondaryReleaseCharges = currentBRECharges;
+      secondaryReleaseCharges = currentNonBHECharges;
     }
     const secondaryHoldHeader = BRE_LABELS.LABEL;
     return (
@@ -504,7 +511,8 @@ class PSAInputForm extends React.Component<Props, State> {
                 2,
                 CURRENT_VIOLENT_OFFENSE,
                 CURRENT_VIOLENT_OFFENSE_PROMPT,
-                currentViolentCharges
+                // TODO: NEED TO UPDATE TO currentViolentCharges when we release manage charges UI.
+                currentViolentChargesFromJSON
               )
             }
 
