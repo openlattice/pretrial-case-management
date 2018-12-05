@@ -3,7 +3,7 @@
  */
 
 import React from 'react';
-import Immutable, { Map, List, Set } from 'immutable';
+import Immutable, { Map } from 'immutable';
 import styled from 'styled-components';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
@@ -16,9 +16,13 @@ import BasicButton from '../buttons/BasicButton';
 import ExpandableText from '../controls/ExpandableText';
 import { APP, CHARGES, STATE } from '../../utils/consts/FrontEndStateConsts';
 import { BHE_LABELS, BRE_LABELS } from '../../utils/consts/ArrestChargeConsts';
-import { getChargeTitle } from '../../utils/HistoricalChargeUtils';
 import { OL } from '../../utils/consts/Colors';
-import { getAllViolentChargeLabels } from '../../utils/ArrestChargeUtils';
+import {
+  getAllViolentChargeLabels,
+  getViolentChargeLabels,
+  getDMFStepChargeLabels,
+  getBHEAndBREChargeLabels
+} from '../../utils/ArrestChargeUtils';
 import {
   getPendingChargeLabels,
   getPreviousMisdemeanorLabels,
@@ -284,58 +288,6 @@ class PSAInputForm extends React.Component<Props, State> {
     };
   }
 
-  getChargeLabels = (charges) => {
-    let currentViolentCharges = List();
-    let step2Charges = List();
-    let step4Charges = List();
-    let currentBHECharges = List();
-    let currentNonBHECharges = List();
-    let currentBRECharges = List();
-
-    const {
-      bookingHoldExceptionCharges,
-      bookingReleaseExceptionCharges,
-      dmfStep2Charges,
-      dmfStep4Charges,
-      selectedOrganizationId,
-      violentArrestCharges
-    } = this.props;
-
-    const violentChargeList = violentArrestCharges.get(selectedOrganizationId, Map());
-    const dmfStep2ChargeList = dmfStep2Charges.get(selectedOrganizationId, Map());
-    const dmfStep4ChargeList = dmfStep4Charges.get(selectedOrganizationId, Map());
-    const bookingReleaseExceptionChargeList = bookingReleaseExceptionCharges.get(selectedOrganizationId, Map());
-    const bookingHoldExceptionChargeList = bookingHoldExceptionCharges.get(selectedOrganizationId, Map());
-
-    charges.forEach((charge) => {
-      const statute = charge.getIn([PROPERTY_TYPES.CHARGE_STATUTE, 0], '');
-      const description = charge.getIn([PROPERTY_TYPES.CHARGE_DESCRIPTION, 0], '');
-
-      const isViolent = violentChargeList.get(statute, Set()).includes(description);
-      const isStep2 = dmfStep2ChargeList.get(statute, Set()).includes(description);
-      const isStep4 = dmfStep4ChargeList.get(statute, Set()).includes(description);
-      const isBRE = bookingReleaseExceptionChargeList.get(statute, Set()).includes(description);
-      const isBHE = bookingHoldExceptionChargeList.get(statute, Set()).includes(description);
-
-      if (isViolent) currentViolentCharges = currentViolentCharges.push(getChargeTitle(charge, true));
-      if (isStep2) step2Charges = step2Charges.push(getChargeTitle(charge, true));
-      if (isStep4) step4Charges = step4Charges.push(getChargeTitle(charge, true));
-      if (isBHE) currentBHECharges = currentBHECharges.push(getChargeTitle(charge, true));
-      if (!isBHE) currentNonBHECharges = currentNonBHECharges.push(getChargeTitle(charge, true));
-      if (isBRE) currentBRECharges = currentBRECharges.push(getChargeTitle(charge, true));
-    });
-
-    return {
-      currentViolentCharges,
-      step2Charges,
-      step4Charges,
-      currentBHECharges,
-      currentNonBHECharges,
-      currentBRECharges
-    };
-  }
-
-
   getJustificationText = (autofillJustifications, justificationHeader) => {
     let justificationText;
     if (autofillJustifications) {
@@ -434,29 +386,47 @@ class PSAInputForm extends React.Component<Props, State> {
 
   render() {
     const {
-      input,
-      currCharges,
-      currCase,
-      allCharges,
-      allSentences,
       allCases,
+      allCharges,
       allFTAs,
-      viewOnly,
+      allSentences,
+      bookingHoldExceptionCharges,
+      bookingReleaseExceptionCharges,
+      currCase,
+      currCharges,
+      dmfStep2Charges,
+      dmfStep4Charges,
       handleClose,
+      input,
       noBorders,
-      psaDate
+      psaDate,
+      selectedOrganizationId,
+      viewOnly,
+      violentArrestCharges,
     } = this.props;
 
+    const violentChargeList = violentArrestCharges.get(selectedOrganizationId, Map());
+    const dmfStep2ChargeList = dmfStep2Charges.get(selectedOrganizationId, Map());
+    const dmfStep4ChargeList = dmfStep4Charges.get(selectedOrganizationId, Map());
+    const bookingReleaseExceptionChargeList = bookingReleaseExceptionCharges.get(selectedOrganizationId, Map());
+    const bookingHoldExceptionChargeList = bookingHoldExceptionCharges.get(selectedOrganizationId, Map());
+
+    // TODO: Will use currentViolentCharges instead of currentViolentChargesFromJSON
+    // when we release manage charges UI.
+    const currentViolentCharges = getViolentChargeLabels({ currCharges, violentChargeList });
     const {
-      // TODO: Will use currentViolentCharges instead of currentViolentChargesFromJSON
-      // when we release manage charges UI.
-      currentViolentCharges,
       step2Charges,
-      step4Charges,
+      step4Charges
+    } = getDMFStepChargeLabels({ currCharges, dmfStep2ChargeList, dmfStep4ChargeList });
+    const {
       currentBHECharges,
       currentNonBHECharges,
       currentBRECharges
-    } = this.getChargeLabels(currCharges);
+    } = getBHEAndBREChargeLabels({
+      currCharges,
+      bookingReleaseExceptionChargeList,
+      bookingHoldExceptionChargeList
+    });
 
     const noPriorConvictions = input.get(PRIOR_MISDEMEANOR) === 'false' && input.get(PRIOR_FELONY) === 'false';
 
