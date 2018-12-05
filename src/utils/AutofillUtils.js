@@ -2,13 +2,14 @@
  * @flow
  */
 
-import Immutable from 'immutable';
+import Immutable, { Map } from 'immutable';
 import moment from 'moment';
 
 import { PROPERTY_TYPES } from './consts/DataModelConsts';
 import { PSA, DMF } from './consts/Consts';
 import {
   chargeIsViolent,
+  historicalChargeIsViolent,
   chargeIsFelony,
   chargeIsMisdemeanor,
   chargeIsGuilty,
@@ -23,7 +24,10 @@ import {
   getAllStepTwoCharges,
   getAllStepFourCharges,
   getAllSecondaryReleaseCharges,
-  getAllSecondaryHoldCharges
+  getAllSecondaryHoldCharges,
+  getViolentChargeLabels,
+  getDMFStepChargeLabels,
+  getBHEAndBREChargeLabels
 } from './ArrestChargeUtils';
 import { getRecentFTAs, getOldFTAs } from './FTAUtils';
 
@@ -59,9 +63,12 @@ const {
   SECONDARY_HOLD_CHARGES
 } = DMF;
 
-export const tryAutofillCurrentViolentCharge = (charges :Immutable.List<*>) :string => {
-  return `${getAllViolentCharges(charges).size > 0}`;
-}
+export const tryAutofillCurrentViolentCharge = (
+  charges :Immutable.List<*>,
+  violentArrestChargeList :Immutable.Map<*, *>
+) :string => `${getAllViolentCharges(charges).size > 0}`;
+// TODO: NEED TO UPDATE TO return value below when we release the manage charges UI.
+// ) :string => `${getViolentChargeLabels({charges, violentArrestChargeList}).size > 0}`;
 
 export const tryAutofillAge = (
   dateArrested :string,
@@ -159,13 +166,18 @@ const filterPreviousFelonies = (allCharges :Immutable.List<*>) :Immutable.List<*
   return allCharges.filter(charge => chargeIsGuilty(charge) && chargeIsFelony(charge));
 };
 
-const filterPreviousViolentCharges = (allCharges :Immutable.List<*>) :Immutable.List<*> => {
+const filterPreviousViolentCharges = (
+  allCharges :Immutable.List<*>,
+  violentChargeList :Map<*, *>
+) :Immutable.List<*> => {
   if (!allCharges.size) return Immutable.List();
 
   return allCharges
     .filter((charge) => {
       const chargeNum = charge.getIn([CHARGE_STATUTE, 0], '');
       return chargeNum.length && chargeIsGuilty(charge) && chargeIsViolent(charge);
+      // TODO: NEED TO UPDATE TO return value below when we release the manage charges UI.
+      // return chargeNum.length && chargeIsGuilty(charge) && historicalChargeIsViolent({charge, violentChargeList});
     });
 };
 
@@ -253,10 +265,11 @@ export const tryAutofillDMFStepFour = (currCharges :Immutable.List<*>) :string =
 export const tryAutofillDMFSecondaryReleaseCharges = (currCharges :Immutable.List<*>) :string => {
   const bheCharges = getAllSecondaryReleaseCharges(currCharges);
   return `${!!bheCharges.size && bheCharges.size === currCharges.size}`;
-}
+};
 
-export const tryAutofillDMFSecondaryHoldCharges = (currCharges :Immutable.List<*>) :string =>
-  `${!!getAllSecondaryHoldCharges(currCharges).size}`;
+export const tryAutofillDMFSecondaryHoldCharges = (currCharges :Immutable.List<*>) :string => (
+  `${!!getAllSecondaryHoldCharges(currCharges).size}`
+);
 
 export const tryAutofillRecentFTAs = (allFTAs :Immutable.List<*>, allCharges :Immutable.List<*>) :string => {
   const numFTAs = getRecentFTAs(allFTAs, allCharges).size;
@@ -275,8 +288,20 @@ export const tryAutofillFields = (
   allSentences :Immutable.List<*>,
   allFTAs :Immutable.List<*>,
   selectedPerson :Immutable.Map<*, *>,
-  psaFormValues :Immutable.Map<*, *>
+  psaFormValues :Immutable.Map<*, *>,
+  violentArrestChargeList :Immutable.Map<*, *>,
+  violentCourtChargeList :Immutable.Map<*, *>,
+  dmfStep2ChargeList :Immutable.Map<*, *>,
+  dmfStep4ChargeList :Immutable.Map<*, *>,
+  bookingReleaseExceptionChargeList :Immutable.Map<*, *>,
+  bookingHoldExceptionChargeList :Immutable.Map<*, *>
 ) :Immutable.Map<*, *> => {
+  console.log(violentArrestChargeList.size);
+  console.log(violentCourtChargeList.size);
+  console.log(dmfStep2ChargeList.size);
+  console.log(dmfStep4ChargeList.size);
+  console.log(bookingReleaseExceptionChargeList.size);
+  console.log(bookingHoldExceptionChargeList.size);
 
   let psaForm = psaFormValues;
 
@@ -298,14 +323,45 @@ export const tryAutofillFields = (
   if (nextCharges.size) {
     psaForm = psaForm.set(
       CURRENT_VIOLENT_OFFENSE,
-      tryAutofillCurrentViolentCharge(nextCharges)
+      tryAutofillCurrentViolentCharge(nextCharges, violentArrestChargeList)
     );
 
     // DMF
-    psaForm = psaForm.set(STEP_2_CHARGES, tryAutofillDMFStepTwo(nextCharges));
-    psaForm = psaForm.set(STEP_4_CHARGES, tryAutofillDMFStepFour(nextCharges));
-    psaForm = psaForm.set(SECONDARY_RELEASE_CHARGES, tryAutofillDMFSecondaryReleaseCharges(nextCharges));
-    psaForm = psaForm.set(SECONDARY_HOLD_CHARGES, tryAutofillDMFSecondaryHoldCharges(nextCharges));
+    const { step2Charges, step4Charges } = getDMFStepChargeLabels({
+      currCharges: nextCharges,
+      dmfStep2ChargeList,
+      dmfStep4ChargeList
+    });
+    // psaForm = psaForm.set(STEP_2_CHARGES, tryAutofillDMFStepTwo(nextCharges, dmfStep2ChargeList));
+    // psaForm = psaForm.set(STEP_4_CHARGES, tryAutofillDMFStepFour(nextCharges, dmfStep4ChargeList));
+    psaForm = psaForm.set(STEP_2_CHARGES, `${step2Charges.size > 0}`);
+    psaForm = psaForm.set(STEP_4_CHARGES, `${step4Charges.size > 0}`);
+
+    // Booking
+    const {
+      currentBHECharges,
+      currentBRECharges
+    } = getBHEAndBREChargeLabels({
+      currCharges: nextCharges,
+      bookingReleaseExceptionChargeList,
+      bookingHoldExceptionChargeList
+    });
+    // psaForm = psaForm.set(
+    //   SECONDARY_RELEASE_CHARGES,
+    //   tryAutofillDMFSecondaryReleaseCharges(nextCharges, bookingReleaseExceptionChargeList)
+    // );
+    // psaForm = psaForm.set(
+    //   SECONDARY_HOLD_CHARGES,
+    //   tryAutofillDMFSecondaryHoldCharges(nextCharges, bookingHoldExceptionChargeList)
+    // );
+    psaForm = psaForm.set(
+      SECONDARY_RELEASE_CHARGES,
+      `${!!currentBHECharges.size && (currentBHECharges.size === nextCharges.size)}`
+    );
+    psaForm = psaForm.set(
+      SECONDARY_HOLD_CHARGES,
+      `${!!currentBRECharges.size}`
+    );
   }
 
   // pending charge
@@ -330,7 +386,10 @@ export const tryAutofillFields = (
     psaForm = psaForm.set(PRIOR_SENTENCE_TO_INCARCERATION, 'false');
   }
   else {
-    psaForm = psaForm.set(PRIOR_VIOLENT_CONVICTION, tryAutofillPreviousViolentCharge(allCharges));
+    psaForm = psaForm.set(
+      PRIOR_VIOLENT_CONVICTION,
+      tryAutofillPreviousViolentCharge(allCharges, violentCourtChargeList)
+    );
     psaForm = psaForm.set(PRIOR_SENTENCE_TO_INCARCERATION, tryAutofillPriorSentenceToIncarceration(allSentences));
   }
 
