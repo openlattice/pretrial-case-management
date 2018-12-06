@@ -433,7 +433,7 @@ class DownloadPSA extends React.Component<Props, State> {
             <DownloadSection>
               <HeaderSection>Download PSA Forms</HeaderSection>
             </DownloadSection>
-            <DownloadSection>
+            {/* <DownloadSection>
               <SubHeaderSection>Download Charge Lists</SubHeaderSection>
               <ButtonRow>
                 <BasicDownloadButton onClick={() => this.downloadCharges(DOMAIN.PENNINGTON)}>
@@ -443,7 +443,7 @@ class DownloadPSA extends React.Component<Props, State> {
                   Download Minnehaha Charges
                 </BasicDownloadButton>
               </ButtonRow>
-            </DownloadSection>
+            </DownloadSection> */}
             <DownloadSection>
               <SubHeaderSection>PSA Downloads</SubHeaderSection>
               <SelectionWrapper>
