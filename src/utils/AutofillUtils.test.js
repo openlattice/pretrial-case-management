@@ -1528,6 +1528,8 @@ describe('AutofillUtils', () => {
           person,
           Immutable.Map(),
           violentChargeList,
+          // TODO: Update the map below to violentCourtChargeList with manage charges UI.
+          Immutable.Map(),
           dmfStep2ChargeList,
           dmfStep4ChargeList,
           bookingReleaseExceptionChargeList,
@@ -1580,6 +1582,8 @@ describe('AutofillUtils', () => {
           person,
           Immutable.Map(),
           violentChargeList,
+          // TODO: Update the map below to violentCourtChargeList with manage charges UI.
+          Immutable.Map(),
           dmfStep2ChargeList,
           dmfStep4ChargeList,
           bookingReleaseExceptionChargeList,
@@ -1625,6 +1629,8 @@ describe('AutofillUtils', () => {
           person,
           Immutable.Map(),
           violentChargeList,
+          // TODO: Update the map below to violentCourtChargeList with manage charges UI.
+          Immutable.Map(),
           dmfStep2ChargeList,
           dmfStep4ChargeList,
           bookingReleaseExceptionChargeList,
@@ -1686,6 +1692,8 @@ describe('AutofillUtils', () => {
           person,
           Immutable.Map(),
           violentChargeList,
+          // TODO: Update the map below to violentCourtChargeList with manage charges UI.
+          Immutable.Map(),
           dmfStep2ChargeList,
           dmfStep4ChargeList,
           bookingReleaseExceptionChargeList,
@@ -1739,7 +1747,8 @@ describe('AutofillUtils', () => {
           person,
           Immutable.Map(),
           violentChargeList,
-          null,
+          // TODO: Update the map below to violentCourtChargeList with manage charges UI.
+          Immutable.Map(),
           dmfStep2ChargeList,
           dmfStep4ChargeList,
           bookingReleaseExceptionChargeList,
@@ -1793,6 +1802,8 @@ describe('AutofillUtils', () => {
           person,
           Immutable.Map(),
           violentChargeList,
+          // TODO: Update the map below to violentCourtChargeList with manage charges UI.
+          Immutable.Map(),
           dmfStep2ChargeList,
           dmfStep4ChargeList,
           bookingReleaseExceptionChargeList,
