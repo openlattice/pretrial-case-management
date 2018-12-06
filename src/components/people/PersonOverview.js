@@ -148,7 +148,7 @@ const PersonOverview = ({
             </StyledViewMoreLinkForCases>
             <CaseHistoryList
                 loading={loading}
-                title="Case Summary"
+                title="Pending Cases on Arrest Date for Current PSA"
                 caseHistory={caseHistoryForMostRecentPSA}
                 chargeHistory={chargeHistoryForMostRecentPSA} />
           </StyledColumnRow>
