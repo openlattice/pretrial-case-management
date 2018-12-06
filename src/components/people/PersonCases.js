@@ -78,7 +78,7 @@ const PersonCases = ({
     caseHistory,
     chargeHistory,
     scores,
-    (arrestDate),
+    arrestDate,
     lastEditDateForPSA
   );
   const pendingCharges = currentPendingCharges(chargeHistory);
