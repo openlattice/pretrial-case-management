@@ -1,7 +1,7 @@
 /*
 * @flow
 */
-import Immutable, { Map, Set, List } from 'immutable';
+import Immutable, { Set, List } from 'immutable';
 import { getChargeDetails, getChargeTitle } from './HistoricalChargeUtils';
 import { PROPERTY_TYPES } from './consts/DataModelConsts';
 import { CHARGE } from './consts/Consts';
