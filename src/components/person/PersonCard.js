@@ -37,7 +37,8 @@ const DetailItemWide = styled(DetailItem)`
 `;
 
 const StyledPersonPicture = styled(PersonPicture)`
-  max-height: 115px;
+  height: 140px;
+  width: auto;
 `;
 
 type Props = {
