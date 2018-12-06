@@ -4,6 +4,7 @@
 
 import React from 'react';
 import styled from 'styled-components';
+import moment from 'moment';
 import { Map } from 'immutable';
 
 import CaseHistoryTimeline from '../casehistory/CaseHistoryTimeline';
@@ -12,6 +13,7 @@ import CaseHistoryList from '../casehistory/CaseHistoryList';
 import LoadingSpinner from '../LoadingSpinner';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { getIdOrValue } from '../../utils/DataUtils';
+import { formatDate } from '../../utils/FormattingUtils';
 import {
   Title,
   StyledColumn,
@@ -59,12 +61,13 @@ const PersonCases = ({
   const mostRecentPSANeighbors = psaNeighborsById.get(mostRecentPSAEntityKeyId, Map());
   const scores = mostRecentPSA.get(PSA_NEIGHBOR.DETAILS, Map());
   const caseHistory = getCaseHistory(neighbors);
-  const arrestDate = getIdOrValue(
+  let arrestDate = getIdOrValue(
     mostRecentPSANeighbors, ENTITY_SETS.MANUAL_PRETRIAL_CASES, PROPERTY_TYPES.ARREST_DATE_TIME
   );
+  if (!arrestDate) arrestDate = formatDate(moment());
   const lastEditDateForPSA = psaNeighborsById.getIn(
     [mostRecentPSAEntityKeyId, ENTITY_SETS.STAFF, 0, PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.DATE_TIME, 0],
-    ''
+    formatDate(moment())
   );
   const {
     caseHistoryForMostRecentPSA,
@@ -75,7 +78,7 @@ const PersonCases = ({
     caseHistory,
     chargeHistory,
     scores,
-    arrestDate,
+    (arrestDate),
     lastEditDateForPSA
   );
   const pendingCharges = currentPendingCharges(chargeHistory);
