@@ -296,12 +296,6 @@ export const tryAutofillFields = (
   bookingReleaseExceptionChargeList :Immutable.Map<*, *>,
   bookingHoldExceptionChargeList :Immutable.Map<*, *>
 ) :Immutable.Map<*, *> => {
-  console.log(violentArrestChargeList.size);
-  console.log(violentCourtChargeList.size);
-  console.log(dmfStep2ChargeList.size);
-  console.log(dmfStep4ChargeList.size);
-  console.log(bookingReleaseExceptionChargeList.size);
-  console.log(bookingHoldExceptionChargeList.size);
 
   let psaForm = psaFormValues;
 
