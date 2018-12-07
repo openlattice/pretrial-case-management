@@ -106,3 +106,20 @@ export const MISDEMEANOR_CHARGE_LEVEL_CODES :Set<string> = Immutable.Set([
   'M1',
   'M2'
 ]);
+
+export const CHARGE_TYPES = {
+  ARREST: 'arrest',
+  COURT: 'court'
+};
+
+export const CHARGE_HEADERS = {
+  STATUTE: 'Statute',
+  DESCRIPTION: 'Description',
+  DEGREE: 'Degree',
+  DEGREE_SHORT: '(short)',
+  VIOLENT: 'Violent',
+  STEP_2: 'Step 2',
+  STEP_4: 'Step 4',
+  BHE: 'BHE',
+  BRE: 'BRE'
+};
