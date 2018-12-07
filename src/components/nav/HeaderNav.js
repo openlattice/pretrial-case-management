@@ -22,6 +22,8 @@ import judges from '../../assets/svg/judges.svg';
 import judgesSelected from '../../assets/svg/judges-selected.svg';
 import managePeople from '../../assets/svg/manage-people.svg';
 import managePeopleSelected from '../../assets/svg/manage-people-selected.svg';
+import manageCharges from '../../assets/svg/manage-charges.svg';
+import manageChargesSelected from '../../assets/svg/manage-charges-selected.svg';
 import newPerson from '../../assets/svg/new-person.svg';
 import newPersonSelected from '../../assets/svg/new-person-selected.svg';
 import reviewReports from '../../assets/svg/review-reports.svg';
@@ -216,10 +218,10 @@ class HeaderNav extends React.Component<Props, *> {
                 selectedIcon={reviewReportsSelected}
                 label="Review Reports" />
             <NavButton
-                path={Routes.NEW_PERSON}
-                defaultIcon={newPerson}
-                selectedIcon={newPersonSelected}
-                label="New Person" />
+                path={Routes.MANAGE_CHARGES}
+                defaultIcon={manageCharges}
+                selectedIcon={manageChargesSelected}
+                label="Manage Charges" />
             <NavButton
                 path={Routes.JUDGE_VIEW}
                 defaultIcon={judges}
