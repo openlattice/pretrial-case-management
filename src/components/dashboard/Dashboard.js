@@ -9,6 +9,7 @@ import styled from 'styled-components';
 import CourtContainer from '../../containers/court/CourtContainer';
 import DashboardContainer from '../../containers/dashboard/DashboardContainer';
 import FormsContainer from '../../containers/forms/FormsContainer';
+import ManageChargesContainer from '../../containers/charges/ChargesContainer';
 import NewPersonContainer from '../../containers/person/NewPersonContainer';
 import PeopleContainer from '../../containers/people/PeopleContainer';
 import PersonDetailsContainer from '../../containers/people/PersonDetailsContainer';
@@ -34,6 +35,7 @@ const Dashboard = () => (
       <Switch>
         <Route path={Routes.CREATE_FORMS} component={FormsContainer} />
         <Route path={Routes.NEW_PERSON} component={NewPersonContainer} />
+        <Route path={Routes.MANAGE_CHARGES} component={ManageChargesContainer} />
         <Route path={Routes.PEOPLE} component={PeopleContainer} />
         <Route path={Routes.PERSON_DETAILS} component={PersonDetailsContainer} />
         <Route path={Routes.DOWNLOAD_FORMS} component={DownloadPSA} />
