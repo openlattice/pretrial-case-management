@@ -24,8 +24,6 @@ import managePeople from '../../assets/svg/manage-people.svg';
 import managePeopleSelected from '../../assets/svg/manage-people-selected.svg';
 import manageCharges from '../../assets/svg/manage-charges.svg';
 import manageChargesSelected from '../../assets/svg/manage-charges-selected.svg';
-import newPerson from '../../assets/svg/new-person.svg';
-import newPersonSelected from '../../assets/svg/new-person-selected.svg';
 import reviewReports from '../../assets/svg/review-reports.svg';
 import reviewReportsSelected from '../../assets/svg/review-reports-selected.svg';
 import { OL } from '../../utils/consts/Colors';
