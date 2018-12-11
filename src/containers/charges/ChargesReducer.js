@@ -4,7 +4,7 @@
 import { Map, fromJS } from 'immutable';
 
 import { CHARGES } from '../../utils/consts/FrontEndStateConsts';
-import { loadCharges } from './ChargesActionFactory';
+import { deleteCharge, loadCharges, updateCharge } from './ChargesActionFactory';
 
 const INITIAL_STATE :Map<*, *> = fromJS({
   [CHARGES.ARREST]: Map(),
@@ -21,19 +21,46 @@ const INITIAL_STATE :Map<*, *> = fromJS({
 export default function chargesReducer(state :Map<*, *> = INITIAL_STATE, action :SequenceAction) {
   switch (action.type) {
 
+    case deleteCharge.case(action.type): {
+      return deleteCharge.reducer(state, action, {
+        SUCCESS: () => {
+          const { entityKeyId, selectedOrganizationId, chargePropertyType } = action.value;
+          return state.deleteIn([chargePropertyType, selectedOrganizationId, entityKeyId]);
+        }
+      });
+    }
+
+    case updateCharge.case(action.type): {
+      return updateCharge.reducer(state, action, {
+        SUCCESS: () => {
+          const {
+            entity,
+            entityKeyId,
+            selectedOrganizationId,
+            chargePropertyType
+          } = action.value;
+          return state.setIn([chargePropertyType, selectedOrganizationId, entityKeyId], fromJS(entity));
+        }
+      });
+    }
+
     case loadCharges.case(action.type): {
       return loadCharges.reducer(state, action, {
-        REQUEST: () => state
-          .set(CHARGES.ARREST, Map())
-          .set(CHARGES.COURT, Map())
-          .set(CHARGES.LOADING, true),
+        REQUEST: () => {
+          const updating = !!state.get(CHARGES.ARREST).size && !!state.get(CHARGES.COURT).size;
+          if (updating) return state;
+          return state
+            .set(CHARGES.ARREST, Map())
+            .set(CHARGES.COURT, Map())
+            .set(CHARGES.LOADING, true);
+        },
 
         SUCCESS: () => {
           const {
-            arrestCharges,
+            arrestChargesByEntityKeyId,
             bookingHoldExceptionCharges,
             bookingReleaseExceptionCharges,
-            courtCharges,
+            courtChargesByEntityKeyId,
             dmfStep2Charges,
             dmfStep4Charges,
             selectedOrgId,
@@ -41,10 +68,10 @@ export default function chargesReducer(state :Map<*, *> = INITIAL_STATE, action 
             violentCourtCharges
           } = action.value;
           return state
-            .setIn([CHARGES.ARREST, selectedOrgId], arrestCharges)
+            .setIn([CHARGES.ARREST, selectedOrgId], arrestChargesByEntityKeyId)
             .setIn([CHARGES.BHE, selectedOrgId], bookingHoldExceptionCharges)
             .setIn([CHARGES.BRE, selectedOrgId], bookingReleaseExceptionCharges)
-            .setIn([CHARGES.COURT, selectedOrgId], courtCharges)
+            .setIn([CHARGES.COURT, selectedOrgId], courtChargesByEntityKeyId)
             .setIn([CHARGES.DMF_STEP_2, selectedOrgId], dmfStep2Charges)
             .setIn([CHARGES.DMF_STEP_4, selectedOrgId], dmfStep4Charges)
             .setIn([CHARGES.ARREST_VIOLENT, selectedOrgId], violentArrestCharges)
