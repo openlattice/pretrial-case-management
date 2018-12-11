@@ -58,10 +58,18 @@ function* filterPeopleIdsWithOpenPSAsWorker(action :SequenceAction) :Generator<*
     let openPSAIds = Immutable.Set();
     let personIdsToOpenPSAIds = Immutable.Map();
 
-    const peopleEntitySetId = yield call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.PEOPLE);
+    const [peopleEntitySetId, hearingsEntitySetId, psaEntitySetId] = yield all([
+      call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.PEOPLE),
+      call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.HEARINGS),
+      call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.PSA_SCORES)
+    ]);
 
     if (personIds.size) {
-      let peopleNeighborsById = yield call(SearchApi.searchEntityNeighborsBulk, peopleEntitySetId, personIds.toJS());
+      let peopleNeighborsById = yield call(SearchApi.searchEntityNeighborsWithFilter, peopleEntitySetId, {
+        entityKeyIds: personIds.toJS(),
+        sourceEntitySetIds: [psaEntitySetId],
+        destinationEntitySetIds: [hearingsEntitySetId]
+      });
       peopleNeighborsById = obfuscateBulkEntityNeighbors(peopleNeighborsById);
       peopleNeighborsById = Immutable.fromJS(peopleNeighborsById);
       peopleNeighborsById.entrySeq().forEach(([id, neighbors]) => {
@@ -82,7 +90,7 @@ function* filterPeopleIdsWithOpenPSAsWorker(action :SequenceAction) :Generator<*
             }
           }
 
-          if (entitySetName === ENTITY_SETS.PSA_SCORES
+          else if (entitySetName === ENTITY_SETS.PSA_SCORES
               && neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.STATUS, 0]) === PSA_STATUSES.OPEN) {
             if (!mostCurrentPSA || currentPSADateTime.isBefore(entityDateTime)) {
               mostCurrentPSA = neighbor;
@@ -233,7 +241,9 @@ function* loadHearingNeighborsWorker(action :SequenceAction) :Generator<*, *, *>
 
     if (hearingIds.length) {
       const hearingEntitySetId = yield call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.HEARINGS);
-      let neighborsById = yield call(SearchApi.searchEntityNeighborsBulk, hearingEntitySetId, hearingIds);
+      let neighborsById = yield call(SearchApi.searchEntityNeighborsWithFilter, hearingEntitySetId, {
+        entityKeyIds: hearingIds
+      });
       neighborsById = obfuscateBulkEntityNeighbors(neighborsById);
       neighborsById = Immutable.fromJS(neighborsById);
 
