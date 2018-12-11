@@ -1,0 +1,42 @@
+import { ALIASES } from './ConfigConsts';
+import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+
+export const arrestChargeConfig = entitySetName => (
+  {
+    entitySets: [
+      {
+        name: entitySetName,
+        alias: ALIASES.CHARGE,
+        fields: {
+          [PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE]: PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE,
+          [PROPERTY_TYPES.REFERENCE_CHARGE_DESCRIPTION]: PROPERTY_TYPES.REFERENCE_CHARGE_DESCRIPTION,
+          [PROPERTY_TYPES.CHARGE_IS_VIOLENT]: PROPERTY_TYPES.CHARGE_IS_VIOLENT,
+          [PROPERTY_TYPES.REFERENCE_CHARGE_DEGREE]: PROPERTY_TYPES.REFERENCE_CHARGE_DEGREE,
+          [PROPERTY_TYPES.REFERENCE_CHARGE_LEVEL]: PROPERTY_TYPES.REFERENCE_CHARGE_LEVEL,
+          [PROPERTY_TYPES.CHARGE_DMF_STEP_2]: PROPERTY_TYPES.CHARGE_DMF_STEP_2,
+          [PROPERTY_TYPES.CHARGE_DMF_STEP_4]: PROPERTY_TYPES.CHARGE_DMF_STEP_4,
+          [PROPERTY_TYPES.BHE]: PROPERTY_TYPES.BHE,
+          [PROPERTY_TYPES.BRE]: PROPERTY_TYPES.BRE
+        }
+      }
+    ],
+    associations: []
+  }
+);
+
+export const courtChargeConfig = entitySetName => (
+  {
+    entitySets: [
+      {
+        name: entitySetName,
+        alias: ALIASES.CHARGE,
+        fields: {
+          [PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE]: PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE,
+          [PROPERTY_TYPES.REFERENCE_CHARGE_DESCRIPTION]: PROPERTY_TYPES.REFERENCE_CHARGE_DESCRIPTION,
+          [PROPERTY_TYPES.CHARGE_IS_VIOLENT]: PROPERTY_TYPES.CHARGE_IS_VIOLENT,
+        }
+      }
+    ],
+    associations: []
+  }
+);
