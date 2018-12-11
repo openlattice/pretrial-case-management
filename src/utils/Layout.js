@@ -39,7 +39,7 @@ export const PrimaryButton = styled(BasicButton)`
 export const SecondaryButton = styled(BasicButton)`
   border-radius: 3px;
   background-color: ${OL.PURPLE06};
-  color: ${OL.PURPLE02};
+  color: ${OL.PURPLE02} !important;
   height: 36px;
   width: 200px;
   :hover {
