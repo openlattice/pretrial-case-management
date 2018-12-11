@@ -134,7 +134,7 @@ const ChargeTitle = styled.div`
 `;
 
 type Props = {
-  arrestCharges :List<*, *>,
+  arrestCharges :Map<*, *>,
   selectedOrganizationId :string,
   defaultArrest :Immutable.Map<*, *>,
   defaultCharges :Immutable.List<*>,
@@ -273,7 +273,7 @@ class SelectChargesContainer extends React.Component<Props, State> {
       arrestCharges,
       selectedOrganizationId
     } = this.props;
-    const orgArrestCharges = arrestCharges.get(selectedOrganizationId, List());
+    const orgArrestCharges = arrestCharges.get(selectedOrganizationId, Map()).valueSeq();
     let arrestChargeOptions = Map();
     orgArrestCharges.forEach((charge) => {
       arrestChargeOptions = arrestChargeOptions.set(this.formatCharge(charge), charge);
