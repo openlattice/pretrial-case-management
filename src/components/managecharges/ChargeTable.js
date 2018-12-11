@@ -30,8 +30,11 @@ const HeaderElement = styled.th`
   font-family: 'Open Sans', sans-serif;
   color: ${OL.GREY02};
   text-transform: uppercase;
+  padding: 10px 5px;
+`;
+
+const CenteredHeaderElement = styled(HeaderElement)`
   text-align: center;
-  padding: 10px;
 `;
 
 class ChargeTable extends React.Component<Props, *> {
@@ -42,24 +45,26 @@ class ChargeTable extends React.Component<Props, *> {
     if (chargeType === CHARGE_TYPES.ARREST) {
       headers = (
         <HeaderRow>
+          <div />
           <HeaderElement>{CHARGE_HEADERS.STATUTE}</HeaderElement>
           <HeaderElement>{CHARGE_HEADERS.DESCRIPTION}</HeaderElement>
           <HeaderElement>{CHARGE_HEADERS.DEGREE}</HeaderElement>
           <HeaderElement>{CHARGE_HEADERS.DEGREE_SHORT}</HeaderElement>
-          <HeaderElement>{CHARGE_HEADERS.VIOLENT}</HeaderElement>
-          <HeaderElement>{CHARGE_HEADERS.STEP_2}</HeaderElement>
-          <HeaderElement>{CHARGE_HEADERS.STEP_4}</HeaderElement>
-          <HeaderElement>{CHARGE_HEADERS.BHE}</HeaderElement>
-          <HeaderElement>{CHARGE_HEADERS.BRE}</HeaderElement>
+          <CenteredHeaderElement>{CHARGE_HEADERS.VIOLENT}</CenteredHeaderElement>
+          <CenteredHeaderElement>{CHARGE_HEADERS.STEP_2}</CenteredHeaderElement>
+          <CenteredHeaderElement>{CHARGE_HEADERS.STEP_4}</CenteredHeaderElement>
+          <CenteredHeaderElement>{CHARGE_HEADERS.BHE}</CenteredHeaderElement>
+          <CenteredHeaderElement>{CHARGE_HEADERS.BRE}</CenteredHeaderElement>
         </HeaderRow>
       );
     }
     else if (chargeType === CHARGE_TYPES.COURT) {
       headers = (
         <HeaderRow>
+          <div />
           <HeaderElement>{CHARGE_HEADERS.STATUTE}</HeaderElement>
           <HeaderElement>{CHARGE_HEADERS.DESCRIPTION}</HeaderElement>
-          <HeaderElement>{CHARGE_HEADERS.VIOLENT}</HeaderElement>
+          <CenteredHeaderElement>{CHARGE_HEADERS.VIOLENT}</CenteredHeaderElement>
         </HeaderRow>
       );
     }
