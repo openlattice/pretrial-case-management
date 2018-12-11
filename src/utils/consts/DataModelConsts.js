@@ -43,7 +43,11 @@ export const ENTITY_SETS = {
   CHARGED_WITH: 'southdakotachargedwith',
   REGISTERED_FOR: 'southdakotaregisteredfor',
   EDITED_BY: 'southdakotaeditedby',
-  CONTACT_INFO_GIVEN: 'southdakotacontactinfogiven'
+  CONTACT_INFO_GIVEN: 'southdakotacontactinfogiven',
+
+  // charge List SUFFIX
+  ARREST_CHARGE_LIST_SUFFIX: 'arrestcharges',
+  COURT_CHARGE_LIST_SUFFIX: 'courtcharges'
 };
 
 export const PROPERTY_TYPES = {
@@ -86,7 +90,7 @@ export const PROPERTY_TYPES = {
   REFERENCE_CHARGE_DEGREE: 'ol.levelstate',
   CHARGE_IS_VIOLENT: 'ol.violent',
   CHARGE_DMF_STEP_2: 'ol.dmfstep2indicator',
-  CHARGE_DMF_STEP_4: 'ol.dmfstep2indicator',
+  CHARGE_DMF_STEP_4: 'ol.dmfstep4indicator',
   BHE: 'ol.bheindicator',
   BRE: 'ol.breindicator',
 
