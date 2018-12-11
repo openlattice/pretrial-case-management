@@ -4,15 +4,19 @@
 
 import React from 'react';
 import styled from 'styled-components';
-import { Map, List } from 'immutable';
+import { Map } from 'immutable';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { Redirect, Route, Switch } from 'react-router-dom';
 
+import SearchBar from '../../components/PSASearchBar';
+import NewChargeModal from './NewChargeModal';
 import ChargeTable from '../../components/managecharges/ChargeTable';
 import DashboardMainSection from '../../components/dashboard/DashboardMainSection';
 import NavButtonToolbar from '../../components/buttons/NavButtonToolbar';
 import { APP, CHARGES, STATE } from '../../utils/consts/FrontEndStateConsts';
+import { PrimaryButton } from '../../utils/Layout';
+import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { CHARGE_TYPES } from '../../utils/consts/ChargeConsts';
 
 import * as Routes from '../../core/router/Routes';
@@ -31,6 +35,7 @@ type Props = {
   arrestCharges :Map<*, *>,
   courtCharges :Map<*, *>,
   selectedOrganizationId :string,
+  location :Object,
   actions :{
     loadApp :RequestSequence;
     loadCharges :RequestSequence;
@@ -39,24 +44,109 @@ type Props = {
   };
 };
 
-class ManageChargesContainer extends React.Component<Props, *> {
+class ManageChargesContainer extends React.Component<Props, State> {
+  constructor(props :Props) {
+    super(props);
+    this.state = {
+      chargeType: CHARGE_TYPES.ARREST,
+      newChargeModalOpen: false,
+      editing: false,
+      searchQuery: ''
+    };
+  }
+
+  switchToArrestChargeType = () => (this.setState({ chargeType: CHARGE_TYPES.ARREST }))
+  switchToCourtChargeType = () => (this.setState({ chargeType: CHARGE_TYPES.COURT }))
+
+  componentWillReceiveProps(nextProps) {
+    const { location } = nextProps;
+    const path = location.pathname;
+    if (path.endsWith(Routes.ARREST_CHARGES)) {
+      this.switchToArrestChargeType();
+    }
+    else if (path.endsWith(Routes.COURT_CHARGES)) {
+      this.switchToCourtChargeType();
+    }
+  }
+
+  editCharges = () => (this.setState({ editing: true }));
+  cancelEditCharges = () => (this.setState({ editing: false }));
+
+  renderCreateButton = () => (
+    <PrimaryButton onClick={this.openChargeModal}>
+      Add New Charge
+    </PrimaryButton>
+  )
+
+  handleOnChangeSearchQuery = (event :SyntheticInputEvent<*>) => {
+    this.setState({
+      searchQuery: event.target.value
+    });
+  }
+
+  openChargeModal = () => (this.setState({ newChargeModalOpen: true }))
+  closeChargeModal = () => (this.setState({ newChargeModalOpen: false }))
+
+  renderNewChargeModal = () => {
+    const { newChargeModalOpen, chargeType } = this.state;
+    return (
+      <NewChargeModal
+          chargeType={chargeType}
+          creatingNew
+          onClose={this.closeChargeModal}
+          open={newChargeModalOpen} />
+    );
+  }
+
+
+  handleFilterRequest = (charges) => {
+    const { searchQuery } = this.state;
+    let matchesStatute;
+    let matchesDescription;
+    if (!searchQuery) return charges;
+    return charges.filter((charge) => {
+      const statute = charge.getIn([PROPERTY_TYPES.REFERENCE_CHARGE_DESCRIPTION, 0]);
+      const description = charge.getIn([PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE, 0]);
+      if (statute) {
+        matchesStatute = statute.toLowerCase().includes(searchQuery.toLowerCase());
+      }
+      if (description) {
+        matchesDescription = description.toLowerCase().includes(searchQuery.toLowerCase());
+      }
+      return matchesStatute || matchesDescription;
+    });
+  }
+
+  renderChargeSearch = () => (
+    <SearchBar onChange={this.handleOnChangeSearchQuery} />
+  )
+
 
   renderArrestCharges = () => {
+    const { editing } = this.state;
     const { arrestCharges, selectedOrganizationId } = this.props;
+    const charges = this.handleFilterRequest(
+      arrestCharges.get(selectedOrganizationId, Map()).valueSeq()
+    );
+
     return (
       <ChargeTable
-          charges={arrestCharges.get(selectedOrganizationId, List())}
+          charges={charges}
           chargeType={CHARGE_TYPES.ARREST}
-          disabled />
+          disabled={!editing} />
     );
   }
   renderCourtCharges = () => {
+    const { editing } = this.state;
     const { courtCharges, selectedOrganizationId } = this.props;
+    const charges = this.handleFilterRequest(
+      courtCharges.get(selectedOrganizationId, Map()).valueSeq()
+    );
     return (
       <ChargeTable
-          charges={courtCharges.get(selectedOrganizationId, List())}
+          charges={charges}
           chargeType={CHARGE_TYPES.COURT}
-          disabled />
+          disabled={!editing} />
     );
   }
 
@@ -77,8 +167,14 @@ class ManageChargesContainer extends React.Component<Props, *> {
 
     return (
       <DashboardMainSection>
+        { this.renderNewChargeModal() }
         <ToolbarWrapper>
           <NavButtonToolbar options={navButtons} />
+          {/* { this.renderEditButtons() } */}
+        </ToolbarWrapper>
+        <ToolbarWrapper>
+          { this.renderChargeSearch() }
+          { this.renderCreateButton() }
         </ToolbarWrapper>
         <Switch>
           <Route path={arrestRoute} render={this.renderArrestCharges} />
@@ -96,6 +192,7 @@ function mapStateToProps(state) {
 
   return {
     // App
+    [APP.ORGS]: app.get(APP.ORGS),
     [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
     [APP.SELECTED_ORG_TITLE]: app.get(APP.SELECTED_ORG_TITLE),
 
