@@ -14,6 +14,7 @@ import NewChargeModal from './NewChargeModal';
 import ChargeTable from '../../components/managecharges/ChargeTable';
 import DashboardMainSection from '../../components/dashboard/DashboardMainSection';
 import NavButtonToolbar from '../../components/buttons/NavButtonToolbar';
+import Pagination from '../../components/Pagination';
 import { APP, CHARGES, STATE } from '../../utils/consts/FrontEndStateConsts';
 import { PrimaryButton } from '../../utils/Layout';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
@@ -28,7 +29,7 @@ const ToolbarWrapper = styled.div`
   display: flex;
   flex-direction: row;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: baseline;
 `;
 
 type Props = {
@@ -44,19 +45,21 @@ type Props = {
   };
 };
 
+const MAX_RESULTS = 20;
+
 class ManageChargesContainer extends React.Component<Props, State> {
   constructor(props :Props) {
     super(props);
     this.state = {
       chargeType: CHARGE_TYPES.ARREST,
       newChargeModalOpen: false,
-      editing: false,
-      searchQuery: ''
+      searchQuery: '',
+      start: 0
     };
   }
 
-  switchToArrestChargeType = () => (this.setState({ chargeType: CHARGE_TYPES.ARREST }))
-  switchToCourtChargeType = () => (this.setState({ chargeType: CHARGE_TYPES.COURT }))
+  switchToArrestChargeType = () => (this.setState({ chargeType: CHARGE_TYPES.ARREST, start: 0 }))
+  switchToCourtChargeType = () => (this.setState({ chargeType: CHARGE_TYPES.COURT, start: 0 }))
 
   componentWillReceiveProps(nextProps) {
     const { location } = nextProps;
@@ -69,9 +72,6 @@ class ManageChargesContainer extends React.Component<Props, State> {
     }
   }
 
-  editCharges = () => (this.setState({ editing: true }));
-  cancelEditCharges = () => (this.setState({ editing: false }));
-
   renderCreateButton = () => (
     <PrimaryButton onClick={this.openChargeModal}>
       Add New Charge
@@ -79,8 +79,13 @@ class ManageChargesContainer extends React.Component<Props, State> {
   )
 
   handleOnChangeSearchQuery = (event :SyntheticInputEvent<*>) => {
+    let { start } = this.state;
+    const { numPages } = this.getChargeList();
+    const currPage = (start / MAX_RESULTS) + 1;
+    if (currPage > numPages) start = (numPages - 2) * MAX_RESULTS;
     this.setState({
-      searchQuery: event.target.value
+      searchQuery: event.target.value,
+      start
     });
   }
 
@@ -98,55 +103,83 @@ class ManageChargesContainer extends React.Component<Props, State> {
     );
   }
 
-
   handleFilterRequest = (charges) => {
     const { searchQuery } = this.state;
     let matchesStatute;
     let matchesDescription;
-    if (!searchQuery) return charges;
-    return charges.filter((charge) => {
-      const statute = charge.getIn([PROPERTY_TYPES.REFERENCE_CHARGE_DESCRIPTION, 0]);
-      const description = charge.getIn([PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE, 0]);
-      if (statute) {
-        matchesStatute = statute.toLowerCase().includes(searchQuery.toLowerCase());
-      }
-      if (description) {
-        matchesDescription = description.toLowerCase().includes(searchQuery.toLowerCase());
-      }
-      return matchesStatute || matchesDescription;
-    });
+    let nextCharges = charges
+      .sortBy(charge => charge.getIn([PROPERTY_TYPES.REFERENCE_CHARGE_DESCRIPTION, 0], ''))
+      .sortBy(charge => charge.getIn([PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE, 0], ''));
+    if (searchQuery) {
+      nextCharges = nextCharges.filter((charge) => {
+        const statute = charge.getIn([PROPERTY_TYPES.REFERENCE_CHARGE_DESCRIPTION, 0]);
+        const description = charge.getIn([PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE, 0]);
+        if (statute) {
+          matchesStatute = statute.toLowerCase().includes(searchQuery.toLowerCase());
+        }
+        if (description) {
+          matchesDescription = description.toLowerCase().includes(searchQuery.toLowerCase());
+        }
+        return matchesStatute || matchesDescription;
+      });
+    }
+    return nextCharges;
   }
 
   renderChargeSearch = () => (
     <SearchBar onChange={this.handleOnChangeSearchQuery} />
   )
 
+  updatePage = (start) => {
+    this.setState({ start });
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+  }
 
-  renderArrestCharges = () => {
-    const { editing } = this.state;
-    const { arrestCharges, selectedOrganizationId } = this.props;
-    const charges = this.handleFilterRequest(
-      arrestCharges.get(selectedOrganizationId, Map()).valueSeq()
-    );
-
+  renderPagination = () => {
+    const { start } = this.state;
+    const { numPages } = this.getChargeList();
+    const currPage = (start / MAX_RESULTS) + 1;
     return (
-      <ChargeTable
-          charges={charges}
-          chargeType={CHARGE_TYPES.ARREST}
-          disabled={!editing} />
+      <Pagination
+          numPages={numPages}
+          activePage={currPage}
+          updateStart={this.updateStart}
+          onChangePage={page => this.updatePage((page - 1) * MAX_RESULTS)} />
     );
   }
-  renderCourtCharges = () => {
-    const { editing } = this.state;
-    const { courtCharges, selectedOrganizationId } = this.props;
-    const charges = this.handleFilterRequest(
-      courtCharges.get(selectedOrganizationId, Map()).valueSeq()
-    );
+
+  getChargeList = () => {
+    const { chargeType } = this.state;
+    const { arrestCharges, courtCharges, selectedOrganizationId } = this.props;
+    let charges;
+    if (chargeType === CHARGE_TYPES.ARREST) {
+      charges = arrestCharges.get(selectedOrganizationId, Map());
+    }
+    else if (chargeType === CHARGE_TYPES.COURT) {
+      charges = courtCharges.get(selectedOrganizationId, Map());
+    }
+    charges = this.handleFilterRequest(charges);
+    const numResults = charges.length || charges.size;
+    const numPages = Math.ceil(numResults / MAX_RESULTS);
+    return { charges, numResults, numPages };
+  }
+
+
+  renderCharges = () => {
+    const {
+      chargeType,
+      start
+    } = this.state;
+    const { charges } = this.getChargeList();
+    const pageOfCharges = charges.slice(start, start + MAX_RESULTS);
     return (
       <ChargeTable
-          charges={charges}
-          chargeType={CHARGE_TYPES.COURT}
-          disabled={!editing} />
+          noResults={!charges.size}
+          charges={pageOfCharges}
+          chargeType={chargeType} />
     );
   }
 
@@ -170,17 +203,21 @@ class ManageChargesContainer extends React.Component<Props, State> {
         { this.renderNewChargeModal() }
         <ToolbarWrapper>
           <NavButtonToolbar options={navButtons} />
-          {/* { this.renderEditButtons() } */}
+          { this.renderCreateButton() }
         </ToolbarWrapper>
         <ToolbarWrapper>
           { this.renderChargeSearch() }
-          { this.renderCreateButton() }
+          { this.renderPagination() }
         </ToolbarWrapper>
         <Switch>
-          <Route path={arrestRoute} render={this.renderArrestCharges} />
-          <Route path={courtRoute} render={this.renderCourtCharges} />
+          <Route path={arrestRoute} render={this.renderCharges} />
+          <Route path={courtRoute} render={this.renderCharges} />
           <Redirect from={Routes.MANAGE_CHARGES} to={arrestRoute} />
         </Switch>
+        <ToolbarWrapper>
+          <div />
+          { this.renderPagination() }
+        </ToolbarWrapper>
       </DashboardMainSection>
     );
   }
