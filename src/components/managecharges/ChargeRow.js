@@ -6,10 +6,9 @@ import React from 'react';
 import styled from 'styled-components';
 import Immutable from 'immutable';
 
-import CheckboxButton from '../controls/StyledCheckboxButton';
 import NewChargeModal from '../../containers/charges/NewChargeModal';
 import { OL } from '../../utils/consts/Colors';
-import { CHARGE_TYPES, CHARGE_HEADERS, getChargeConsts } from '../../utils/consts/ChargeConsts';
+import { CHARGE_TYPES, getChargeConsts } from '../../utils/consts/ChargeConsts';
 
 const Cell = styled.td`
   font-family: 'Open Sans', sans-serif;
@@ -34,6 +33,24 @@ const Row = styled.tr`
   &:last-child {
     border-bottom: none;
   }
+`;
+
+const BooleanDisplay = styled.div`
+  padding: 9px 22px;
+  width: 100%;
+  height: 100%;
+  border-radius: 3px;
+  background-color: ${props => (props.checked ? OL.GREY05 : OL.GREY10)};
+  font-family: 'Open Sans', sans-serif;
+  font-size: 11px;
+  font-weight: normal;
+  color: ${OL.GREY02};
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  position: relative;
 `;
 
 type Props = {
@@ -94,7 +111,7 @@ class ChargeRow extends React.Component<Props, State> {
   }
 
   renderRow = () => {
-    const { charge, chargeType, disabled } = this.props;
+    const { charge, chargeType } = this.props;
     const {
       degree,
       degreeShort,
@@ -122,54 +139,19 @@ class ChargeRow extends React.Component<Props, State> {
           <DegreeCell>{ degree }</DegreeCell>
           <Cell>{ degreeShort }</Cell>
           <Cell>
-            <CheckboxButton
-                xSmall
-                name={CHARGE_HEADERS.VIOLENT}
-                value={CHARGE_HEADERS.VIOLENT}
-                checked={isViolent}
-                onChange={null}
-                disabled
-                label={isViolentLabel} />
+            <BooleanDisplay checked={isViolent}>{isViolentLabel}</BooleanDisplay>
           </Cell>
           <Cell>
-            <CheckboxButton
-                xSmall
-                name={CHARGE_HEADERS.STEP_2}
-                value={CHARGE_HEADERS.STEP_2}
-                checked={isStep2}
-                onChange={null}
-                disabled
-                label={isStep2Label} />
+            <BooleanDisplay checked={isStep2}>{isStep2Label}</BooleanDisplay>
           </Cell>
           <Cell>
-            <CheckboxButton
-                xSmall
-                name={CHARGE_HEADERS.STEP_4}
-                value={CHARGE_HEADERS.STEP_4}
-                checked={isStep4}
-                onChange={null}
-                disabled
-                label={isStep4Label} />
+            <BooleanDisplay checked={isStep4}>{isStep4Label}</BooleanDisplay>
           </Cell>
           <Cell>
-            <CheckboxButton
-                xSmall
-                name={CHARGE_HEADERS.BHE}
-                value={CHARGE_HEADERS.BHE}
-                checked={isBHE}
-                onChange={null}
-                disabled
-                label={isBHELabel} />
+            <BooleanDisplay checked={isBHE}>{isBHELabel}</BooleanDisplay>
           </Cell>
           <Cell>
-            <CheckboxButton
-                xSmall
-                name={CHARGE_HEADERS.BRE}
-                value={CHARGE_HEADERS.BRE}
-                checked={isBRE}
-                onChange={null}
-                disabled
-                label={isBRELabel} />
+            <BooleanDisplay checked={isBRE}>{isBRELabel}</BooleanDisplay>
           </Cell>
         </Row>
       );
@@ -181,14 +163,7 @@ class ChargeRow extends React.Component<Props, State> {
           <Cell>{ statute }</Cell>
           <Cell>{ description }</Cell>
           <Cell>
-            <CheckboxButton
-                xSmall
-                name={CHARGE_HEADERS.VIOLENT}
-                value={CHARGE_HEADERS.VIOLENT}
-                checked={isViolent}
-                onChange={null}
-                disabled
-                label={isViolentLabel} />
+            <BooleanDisplay checked={isViolent}>{isViolentLabel}</BooleanDisplay>
           </Cell>
         </Row>
       );
