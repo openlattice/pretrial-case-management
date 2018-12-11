@@ -6,17 +6,18 @@ import styled from 'styled-components';
 import { Constants } from 'lattice';
 
 import ChargeRow from './ChargeRow';
+import { NoResults } from '../../utils/Layout';
 import { CHARGE_TYPES, CHARGE_HEADERS } from '../../utils/consts/ChargeConsts';
-import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
 const Table = styled.table`
-width: 100%;
-min-width: 960px;
-max-height: 70vh !important;
-border: 1px solid ${OL.GREY08};
+  width: 100%;
+  min-width: 960px;
+  max-height: 70vh !important;
+  border: 1px solid ${OL.GREY08};
+  margin-bottom: 10px;
 `;
 
 const HeaderRow = styled.tr`
@@ -37,8 +38,7 @@ const CenteredHeaderElement = styled(HeaderElement)`
   text-align: center;
 `;
 
-class ChargeTable extends React.Component<Props, *> {
-
+class ChargeTable extends React.Component<Props, State> {
   renderHeaders = () => {
     const { chargeType } = this.props;
     let headers;
@@ -72,11 +72,13 @@ class ChargeTable extends React.Component<Props, *> {
   }
 
   render() {
-    let { charges } = this.props;
-    const { chargeType, disabled } = this.props;
-    charges = charges
-      .sortBy(charge => charge.getIn([PROPERTY_TYPES.REFERENCE_CHARGE_DESCRIPTION, 0], ''))
-      .sortBy(charge => charge.getIn([PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE, 0], ''));
+    const {
+      charges,
+      chargeType,
+      disabled,
+      noResults
+    } = this.props;
+    if (noResults) return <NoResults>No Results</NoResults>;
     return (
       <Table>
         <tbody>
