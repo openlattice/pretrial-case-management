@@ -5,11 +5,54 @@ import { DataApiActions, DataApiSagas } from 'lattice-sagas';
 import { Map, Set, fromJS } from 'immutable';
 import { call, put, takeEvery } from 'redux-saga/effects';
 
+import { getEntityKeyId } from '../../utils/DataUtils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { LOAD_CHARGES, loadCharges } from './ChargesActionFactory';
+import {
+  DELETE_CHARGE,
+  LOAD_CHARGES,
+  UPDATE_CHARGE,
+  deleteCharge,
+  loadCharges,
+  updateCharge
+} from './ChargesActionFactory';
 
 const { getEntitySetData } = DataApiActions;
 const { getEntitySetDataWorker } = DataApiSagas;
+
+/*
+ * deleteCharge()
+ */
+
+function* deleteChargeWorker(action :SequenceAction) :Generator<*, *, *> {
+  const { entityKeyId, selectedOrganizationId, chargePropertyType } = action.value;
+  yield put(deleteCharge.success(action.id, { entityKeyId, selectedOrganizationId, chargePropertyType }));
+}
+function* deleteChargesWatcher() :Generator<*, *, *> {
+  yield takeEvery(DELETE_CHARGE, deleteChargeWorker);
+}
+
+/*
+ * updateCharge()
+ */
+
+
+function* updateChargeWorker(action :SequenceAction) :Generator<*, *, *> {
+  const {
+    entity,
+    entityKeyId,
+    selectedOrganizationId,
+    chargePropertyType
+  } = action.value;
+  yield put(updateCharge.success(action.id, {
+    entity,
+    entityKeyId,
+    selectedOrganizationId,
+    chargePropertyType
+  }));
+}
+function* updateChargesWatcher() :Generator<*, *, *> {
+  yield takeEvery(UPDATE_CHARGE, updateChargeWorker);
+}
 
 /*
  * loadCharges()
@@ -31,6 +74,8 @@ function* loadChargesWorker(action :SequenceAction) :Generator<*, *, *> {
 
   try {
     yield put(loadCharges.request(action.id));
+    let arrestChargesByEntityKeyId = Map();
+    let courtChargesByEntityKeyId = Map();
 
     let arrestCharges = yield call(
       getEntitySetDataWorker,
@@ -43,9 +88,21 @@ function* loadChargesWorker(action :SequenceAction) :Generator<*, *, *> {
     const chargeError = arrestCharges.error || courtCharges.error;
     if (chargeError) throw chargeError;
 
+
     // reset values to data
     arrestCharges = fromJS(arrestCharges.data);
     courtCharges = fromJS(courtCharges.data);
+
+    // Map charges by EnityKeyId for easy state update
+    arrestCharges.forEach((charge) => {
+      const entityKeyId = getEntityKeyId(charge);
+      arrestChargesByEntityKeyId = arrestChargesByEntityKeyId.set(entityKeyId, charge);
+    });
+
+    courtCharges.forEach((charge) => {
+      const entityKeyId = getEntityKeyId(charge);
+      courtChargesByEntityKeyId = courtChargesByEntityKeyId.set(entityKeyId, charge);
+    });
 
     // Collect violent, dmf, bhe and bre lists for arrest charges
     arrestCharges.forEach((charge) => {
@@ -97,9 +154,11 @@ function* loadChargesWorker(action :SequenceAction) :Generator<*, *, *> {
 
     yield put(loadCharges.success(action.id, {
       arrestCharges,
+      arrestChargesByEntityKeyId,
       bookingHoldExceptionCharges,
       bookingReleaseExceptionCharges,
       courtCharges,
+      courtChargesByEntityKeyId,
       dmfStep2Charges,
       dmfStep4Charges,
       selectedOrgId,
@@ -108,6 +167,7 @@ function* loadChargesWorker(action :SequenceAction) :Generator<*, *, *> {
     }));
   }
   catch (error) {
+    console.error(error);
     yield put(loadCharges.failure(action.id, error));
   }
   finally {
@@ -120,5 +180,7 @@ function* loadChargesWatcher() :Generator<*, *, *> {
 }
 
 export {
-  loadChargesWatcher
+  deleteChargesWatcher,
+  loadChargesWatcher,
+  updateChargesWatcher
 };
