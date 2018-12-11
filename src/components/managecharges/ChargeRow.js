@@ -7,16 +7,20 @@ import styled from 'styled-components';
 import Immutable from 'immutable';
 
 import CheckboxButton from '../controls/StyledCheckboxButton';
+import NewChargeModal from '../../containers/charges/NewChargeModal';
 import { OL } from '../../utils/consts/Colors';
-import { CHARGE_TYPES, CHARGE_HEADERS } from '../../utils/consts/ChargeConsts';
-import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { CHARGE_TYPES, CHARGE_HEADERS, getChargeConsts } from '../../utils/consts/ChargeConsts';
 
 const Cell = styled.td`
   font-family: 'Open Sans', sans-serif;
-  font-size: 11px;
+  font-size: 10px;
   color: ${OL.GREY15};
   text-align: left;
-  padding: 10px;
+  padding: 5px;
+`;
+
+const DegreeCell = styled(Cell)`
+  min-width: 100px;
 `;
 
 const Row = styled.tr`
@@ -24,12 +28,7 @@ const Row = styled.tr`
   border-bottom: 1px solid ${OL.GREY11};
 
   &:hover {
-    cursor: ${props => (props.disabled ? 'default' : 'pointer')};
     background: ${props => (props.disabled ? OL.WHITE : OL.GREY14)};
-  }
-
-  &:active {
-    background-color: ${OL.GREY08};
   }
 
   &:last-child {
@@ -44,50 +43,69 @@ type Props = {
 };
 
 class ChargeRow extends React.Component<Props, State> {
+  constructor(props :Props) {
+    super(props);
+    this.state = {
+      chargeModalOpen: false
+    };
+  }
+
   static defaultProps = {
     disabled: false
   };
 
-  getChargeConsts = () => {
-    const { charge } = this.props;
-    const statute = charge.getIn([PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE, 0], '');
-    const description = charge.getIn([PROPERTY_TYPES.REFERENCE_CHARGE_DESCRIPTION, 0], '');
-    const degree = charge.getIn([PROPERTY_TYPES.REFERENCE_CHARGE_LEVEL, 0], '');
-    const degreeShort = charge.getIn([PROPERTY_TYPES.REFERENCE_CHARGE_DEGREE, 0], '');
-    const isViolent = charge.getIn([PROPERTY_TYPES.CHARGE_IS_VIOLENT], false);
-    const isStep2 = charge.getIn([PROPERTY_TYPES.CHARGE_DMF_STEP_2], false);
-    const isStep4 = charge.getIn([PROPERTY_TYPES.CHARGE_DMF_STEP_4], false);
-    const isBRE = charge.getIn([PROPERTY_TYPES.BRE, 0], false);
-    const isBHE = charge.getIn([PROPERTY_TYPES.BHE, 0], false);
-    return {
-      statute,
-      description,
-      degree,
-      degreeShort,
-      isViolent,
-      isStep2,
-      isStep4,
-      isBRE,
-      isBHE
-    };
-  }
-
   formatBooleanLabel = boolean => (boolean ? 'Yes' : 'No');
 
-  renderRow = () => {
-    const { chargeType, disabled } = this.props;
+  openChargeModal = () => (this.setState({ chargeModalOpen: true }))
+  closeChargeModal = () => (this.setState({ chargeModalOpen: false }))
+
+  renderChargeModal = () => {
+    const { charge, chargeType } = this.props;
+    const { chargeModalOpen } = this.state;
     const {
-      statute,
-      description,
       degree,
       degreeShort,
+      description,
+      entityKeyId,
       isViolent,
       isStep2,
       isStep4,
       isBRE,
-      isBHE
-    } = this.getChargeConsts();
+      isBHE,
+      statute
+    } = getChargeConsts(charge);
+    return (
+      <NewChargeModal
+          chargeType={chargeType}
+          degree={degree}
+          degreeShort={degreeShort}
+          description={description}
+          existingCharge
+          entityKeyId={entityKeyId}
+          isViolent={isViolent}
+          isStep2={isStep2}
+          isStep4={isStep4}
+          isBRE={isBRE}
+          isBHE={isBHE}
+          onClose={this.closeChargeModal}
+          open={chargeModalOpen}
+          statute={statute} />
+    );
+  }
 
+  renderRow = () => {
+    const { charge, chargeType, disabled } = this.props;
+    const {
+      degree,
+      degreeShort,
+      description,
+      isViolent,
+      isStep2,
+      isStep4,
+      isBRE,
+      isBHE,
+      statute
+    } = getChargeConsts(charge);
     const isViolentLabel = this.formatBooleanLabel(isViolent);
     const isStep2Label = this.formatBooleanLabel(isStep2);
     const isStep4Label = this.formatBooleanLabel(isStep4);
@@ -97,10 +115,11 @@ class ChargeRow extends React.Component<Props, State> {
     let row;
     if (chargeType === CHARGE_TYPES.ARREST) {
       row = (
-        <Row disabled={disabled}>
+        <Row disabled onClick={this.openChargeModal}>
+          { this.renderChargeModal() }
           <Cell>{ statute }</Cell>
           <Cell>{ description }</Cell>
-          <Cell>{ degree }</Cell>
+          <DegreeCell>{ degree }</DegreeCell>
           <Cell>{ degreeShort }</Cell>
           <Cell>
             <CheckboxButton
@@ -108,8 +127,8 @@ class ChargeRow extends React.Component<Props, State> {
                 name={CHARGE_HEADERS.VIOLENT}
                 value={CHARGE_HEADERS.VIOLENT}
                 checked={isViolent}
-                onChange={this.handleCheckboxChange}
-                disabled={disabled}
+                onChange={null}
+                disabled
                 label={isViolentLabel} />
           </Cell>
           <Cell>
@@ -118,8 +137,8 @@ class ChargeRow extends React.Component<Props, State> {
                 name={CHARGE_HEADERS.STEP_2}
                 value={CHARGE_HEADERS.STEP_2}
                 checked={isStep2}
-                onChange={this.handleCheckboxChange}
-                disabled={disabled}
+                onChange={null}
+                disabled
                 label={isStep2Label} />
           </Cell>
           <Cell>
@@ -128,8 +147,8 @@ class ChargeRow extends React.Component<Props, State> {
                 name={CHARGE_HEADERS.STEP_4}
                 value={CHARGE_HEADERS.STEP_4}
                 checked={isStep4}
-                onChange={this.handleCheckboxChange}
-                disabled={disabled}
+                onChange={null}
+                disabled
                 label={isStep4Label} />
           </Cell>
           <Cell>
@@ -138,8 +157,8 @@ class ChargeRow extends React.Component<Props, State> {
                 name={CHARGE_HEADERS.BHE}
                 value={CHARGE_HEADERS.BHE}
                 checked={isBHE}
-                onChange={this.handleCheckboxChange}
-                disabled={disabled}
+                onChange={null}
+                disabled
                 label={isBHELabel} />
           </Cell>
           <Cell>
@@ -148,8 +167,8 @@ class ChargeRow extends React.Component<Props, State> {
                 name={CHARGE_HEADERS.BRE}
                 value={CHARGE_HEADERS.BRE}
                 checked={isBRE}
-                onChange={this.handleCheckboxChange}
-                disabled={disabled}
+                onChange={null}
+                disabled
                 label={isBRELabel} />
           </Cell>
         </Row>
@@ -157,7 +176,8 @@ class ChargeRow extends React.Component<Props, State> {
     }
     else if (chargeType === CHARGE_TYPES.COURT) {
       row = (
-        <Row disabled={disabled}>
+        <Row disabled onClick={this.openChargeModal}>
+          { this.renderChargeModal() }
           <Cell>{ statute }</Cell>
           <Cell>{ description }</Cell>
           <Cell>
@@ -166,9 +186,9 @@ class ChargeRow extends React.Component<Props, State> {
                 name={CHARGE_HEADERS.VIOLENT}
                 value={CHARGE_HEADERS.VIOLENT}
                 checked={isViolent}
-                onChange={this.handleCheckboxChange}
-                disabled={disabled}
-                label={`${isViolent}`} />
+                onChange={null}
+                disabled
+                label={isViolentLabel} />
           </Cell>
         </Row>
       );
