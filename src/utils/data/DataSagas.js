@@ -2,7 +2,7 @@
  * @flow
  */
 
-import { DataApi } from 'lattice';
+import { DataApi, EntityDataModelApi } from 'lattice';
 import {
   call,
   put,
@@ -21,15 +21,16 @@ import { loadPersonDetails } from '../../containers/person/PersonActionFactory';
 import { STATE, SEARCH } from '../consts/FrontEndStateConsts';
 
 function* deleteEntityWorker(action :SequenceAction) :Generator<*, *, *> {
-  const {
-    entitySetId,
-    entityKeyId
-  } = action.value;
+  const { entityKeyId, entitySetName, callback } = action.value;
+  let { entitySetId } = action.value;
 
   try {
     yield put(deleteEntity.request(action.id));
+    if (!entitySetId) entitySetId = yield call(EntityDataModelApi.getEntitySetId, entitySetName);
     yield call(DataApi.clearEntityFromEntitySet, entitySetId, entityKeyId);
     yield put(deleteEntity.success(action.id, { entityKeyId }));
+
+    if (callback) callback();
 
     const state = yield select();
     const personId = state.getIn([STATE.SEARCH, SEARCH.SELECTED_PERSON_ID], '');
