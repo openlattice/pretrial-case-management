@@ -97,8 +97,8 @@ export default function appReducer(state :Map<*, *> = INITIAL_STATE, action :Seq
 
             const { organization } :Object = appConfig;
             const orgId :string = organization.id;
-            organizations[orgId] = organization;
             if (fromJS(appConfig.config).size) {
+              organizations[orgId] = organization;
               const arrestChargeListConfig = appConfig.config[arrestChargeListFqn];
               const courtChargeListConfig = appConfig.config[courtChargeListFqn];
               const appSettingsConfig = appConfig.config[appSettingsFqn];
@@ -111,9 +111,9 @@ export default function appReducer(state :Map<*, *> = INITIAL_STATE, action :Seq
 
           let selectedOrganizationId :string = '';
           let selectedOrganizationTitle :string = '';
-          if (appConfigs.length && !selectedOrganizationId.length) {
-            selectedOrganizationId = appConfigs[0].organization.id;
-            selectedOrganizationTitle = appConfigs[0].organization.title;
+          if (organizations.length && !selectedOrganizationId.length) {
+            selectedOrganizationId = organizations[0].organization.id;
+            selectedOrganizationTitle = organizations[0].organization.title;
           }
           const storedOrganizationId :?string = AccountUtils.retrieveOrganizationId();
           if (storedOrganizationId) {
