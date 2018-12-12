@@ -2,7 +2,7 @@
  * @flow
  */
 
-import { Map, List } from 'immutable';
+import { Map, List, Set } from 'immutable';
 
 import { PLEAS_TO_IGNORE } from './consts/PleaConsts';
 import { PROPERTY_TYPES } from './consts/DataModelConsts';
