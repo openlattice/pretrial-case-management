@@ -837,8 +837,11 @@ class Form extends React.Component<Props, State> {
       charges,
       psaForm,
       selectedPerson,
-      selectedPretrialCase
+      selectedPretrialCase,
+      selectedOrganizationId,
+      violentArrestCharges
     } = this.props;
+    const violentChargeList = violentArrestCharges.get(selectedOrganizationId, Map());
     const personId = this.getPersonIdValue();
     const hasHistory = Number.parseInt(personId, 10).toString() === personId;
     return (
@@ -868,7 +871,9 @@ class Form extends React.Component<Props, State> {
             <h1>Charges</h1>
             <span>{charges.size}</span>
           </HeaderRow>
-          <ChargeTableWrapper><ChargeTable charges={charges} disabled /></ChargeTableWrapper>
+          <ChargeTableWrapper>
+            <ChargeTable charges={charges} violentChargeList={violentChargeList} disabled />
+          </ChargeTableWrapper>
         </PaddedSectionWrapper>
         <PSAInputForm
             handleInputChange={this.handleInputChange}
