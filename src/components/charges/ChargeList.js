@@ -83,6 +83,7 @@ type Props = {
   historical? :boolean,
   modal? :modal,
   selectedOrganizationId :string,
+  violentArrestCharges :Map<*, *>,
   violentCourtCharges :Map<*, *>
 };
 
@@ -98,16 +99,27 @@ class ChargeList extends React.Component<Props, *> {
     const {
       historical,
       pretrialCaseDetails,
-      selectedOrganizationId,
+      selectedOrganizationId
+    } = this.props;
+    let {
+      violentArrestCharges,
       violentCourtCharges
     } = this.props;
 
-    const violentChargeList = violentCourtCharges.get(selectedOrganizationId, Map());
+    violentArrestCharges = violentArrestCharges.get(selectedOrganizationId, Map());
+    violentCourtCharges = violentCourtCharges.get(selectedOrganizationId, Map());
     const convicted = chargeIsGuilty(charge);
     const mostSerious = chargeIsMostSerious(charge, pretrialCaseDetails);
+    const currCharges = fromJS([charge]);
     const violent = historical
-      ? historicalChargeIsViolent({ charge, violentChargeList })
-      : getViolentChargeLabels(fromJS([charge])).size > 0;
+      ? historicalChargeIsViolent({
+        charge,
+        violentChargeList: violentCourtCharges
+      })
+      : getViolentChargeLabels({
+        currCharges,
+        violentChargeList: violentArrestCharges
+      }).size > 0;
 
 
     return (
