@@ -477,7 +477,6 @@ class PSAInputForm extends React.Component<Props, State> {
                 2,
                 CURRENT_VIOLENT_OFFENSE,
                 CURRENT_VIOLENT_OFFENSE_PROMPT,
-                // TODO: NEED TO UPDATE TO currentViolentCharges when we release manage charges UI.
                 currentViolentCharges
               )
             }
