@@ -64,8 +64,6 @@ type Props = {
   open :boolean,
   statute :string,
   selectedOrganizationId :string,
-  selectedOrganizationTitle :string,
-  updatingExisting :boolean,
   actions :{
     deleteCharge :(values :{
       entityKeyId :string,
@@ -213,6 +211,23 @@ class NewChargeModal extends React.Component<Props, State> {
     return newChargeFields;
   }
 
+  getChargeListEntitySetId = () => {
+    const {
+      arrestEntitySetsByOrganization,
+      courtEntitySetsByOrganization,
+      chargeType,
+      selectedOrganizationId
+    } = this.props;
+    let entitySetId;
+    if (chargeType === CHARGE_TYPES.COURT) {
+      entitySetId = courtEntitySetsByOrganization.get(selectedOrganizationId, '');
+    }
+    if (chargeType === CHARGE_TYPES.ARREST) {
+      entitySetId = arrestEntitySetsByOrganization.get(selectedOrganizationId, '');
+    }
+    return entitySetId;
+  }
+
   reloadChargesCallback = () => {
     const {
       actions,
@@ -237,20 +252,17 @@ class NewChargeModal extends React.Component<Props, State> {
       chargeType,
       entityKeyId,
       onClose,
-      existingCharge,
-      selectedOrganizationTitle
+      existingCharge
     } = this.props;
     const { replaceEntity, submit } = actions;
-    const county = selectedOrganizationTitle.toLowerCase().split(' ')[0];
-    let entitySetName;
+    const entitySetId = this.getChargeListEntitySetId();
     let config;
     // TODO: We propbably want to change the name of these entity sets so that they capture county and state
-    entitySetName = `${county}${ENTITY_SETS.COURT_CHARGE_LIST_SUFFIX}`;
-    config = courtChargeConfig(entitySetName);
-
+    if (chargeType === CHARGE_TYPES.COURT) {
+      config = courtChargeConfig(entitySetId);
+    }
     if (chargeType === CHARGE_TYPES.ARREST) {
-      entitySetName = `${county}${ENTITY_SETS.ARREST_CHARGE_LIST_SUFFIX}`;
-      config = arrestChargeConfig(entitySetName);
+      config = arrestChargeConfig(entitySetId);
     }
 
     const newChargeFields = this.getChargeFields();
@@ -258,7 +270,7 @@ class NewChargeModal extends React.Component<Props, State> {
     if (existingCharge) {
       replaceEntity({
         entityKeyId,
-        entitySetName,
+        entitySetId,
         values: newChargeFields,
         callback: this.updateChargeCallback
       });
@@ -292,18 +304,13 @@ class NewChargeModal extends React.Component<Props, State> {
   deleteCharge = () => {
     const {
       actions,
-      chargeType,
       entityKeyId,
       onClose,
-      selectedOrganizationTitle
     } = this.props;
     const { deleteEntity } = actions;
-    const county = selectedOrganizationTitle.toLowerCase().split(' ')[0];
-    let entitySetName;
-    // TODO: We propbably want to change the name of these entity sets so that they capture county and state
-    if (chargeType === CHARGE_TYPES.COURT) entitySetName = `${county}${ENTITY_SETS.COURT_CHARGE_LIST_SUFFIX}`;
-    if (chargeType === CHARGE_TYPES.ARREST) entitySetName = `${county}${ENTITY_SETS.ARREST_CHARGE_LIST_SUFFIX}`;
-    deleteEntity({ entityKeyId, entitySetName, callback: this.deleteChargeCallback });
+    const entitySetId = this.getChargeListEntitySetId();
+
+    deleteEntity({ entityKeyId, entitySetId, callback: this.deleteChargeCallback });
     onClose();
   }
 
