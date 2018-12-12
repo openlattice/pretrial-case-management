@@ -98,7 +98,7 @@ function* loadAppWatcher() :Generator<*, *, *> {
 }
 
 function* switchOrganizationWorker(action :Object) :Generator<*, *, *> {
-  AccountUtils.storeOrganizationId(action.orgId);
+  AccountUtils.storeOrganizationId(action.org.orgId);
   yield put(push(Routes.CREATE_FORMS));
 }
 
