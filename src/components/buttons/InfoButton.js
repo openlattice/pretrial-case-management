@@ -8,6 +8,7 @@ const InfoButton = styled.button`
   color: ${OL.WHITE};
   font-family: 'Open Sans', sans-serif;
   padding: 10px 0;
+  width: 190px;
   margin: 0 auto;
 
   &:hover {
