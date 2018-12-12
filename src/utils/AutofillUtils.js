@@ -8,19 +8,16 @@ import moment from 'moment';
 import { PROPERTY_TYPES } from './consts/DataModelConsts';
 import { PSA, DMF } from './consts/Consts';
 import {
-  chargeIsViolent,
   historicalChargeIsViolent,
   chargeIsFelony,
   chargeIsMisdemeanor,
   chargeIsGuilty,
-  getViolentChargeNums,
   getChargeTitle,
   getChargeDetails,
   shouldIgnoreCharge
 } from './HistoricalChargeUtils';
 import { getSentenceToIncarcerationCaseNums } from './SentenceUtils';
 import {
-  getAllViolentCharges,
   getAllStepTwoCharges,
   getAllStepFourCharges,
   getAllSecondaryReleaseCharges,
@@ -38,8 +35,6 @@ const {
   CHARGE_STATUTE,
   CASE_ID,
   CHARGE_ID,
-  CHARGE_LEVEL,
-  DISPOSITION,
   DISPOSITION_DATE,
   FILE_DATE
 } = PROPERTY_TYPES;
@@ -64,11 +59,9 @@ const {
 } = DMF;
 
 export const tryAutofillCurrentViolentCharge = (
-  charges :Immutable.List<*>,
-  violentArrestChargeList :Immutable.Map<*, *>
-) :string => `${getAllViolentCharges(charges).size > 0}`;
-// TODO: NEED TO UPDATE TO return value below when we release the manage charges UI.
-// ) :string => `${getViolentChargeLabels({charges, violentArrestChargeList}).size > 0}`;
+  currCharges :Immutable.List<*>,
+  violentChargeList :Immutable.Map<*, *>
+) :string => `${getViolentChargeLabels({ currCharges, violentChargeList }).size > 0}`;
 
 export const tryAutofillAge = (
   dateArrested :string,
@@ -175,9 +168,7 @@ const filterPreviousViolentCharges = (
   return allCharges
     .filter((charge) => {
       const chargeNum = charge.getIn([CHARGE_STATUTE, 0], '');
-      return chargeNum.length && chargeIsGuilty(charge) && chargeIsViolent(charge);
-      // TODO: NEED TO UPDATE TO return value below when we release the manage charges UI.
-      // return chargeNum.length && chargeIsGuilty(charge) && historicalChargeIsViolent({charge, violentChargeList});
+      return chargeNum.length && chargeIsGuilty(charge) && historicalChargeIsViolent({ charge, violentChargeList });
     });
 };
 
@@ -216,12 +207,18 @@ export const getPreviousFelonies = (allCharges :Immutable.List<*, *>) => (
   mapToDetails(allCharges, filterPreviousFelonies)
 );
 
-export const getPreviousViolentChargeLabels = (allCharges :Immutable.List<*>) => (
-  mapToLabels(allCharges, filterPreviousViolentCharges)
+export const getPreviousViolentChargeLabels = (allCharges :Immutable.List<*>, violentChargeList :Map<*, *>) => (
+  filterPreviousViolentCharges(
+    allCharges.filter(charge => !shouldIgnoreCharge(charge)),
+    violentChargeList
+  ).map(charge => getChargeTitle(charge))
 );
 
-export const getPreviousViolentCharges = (allCharges :Immutable.List<*>) => (
-  mapToDetails(allCharges, filterPreviousViolentCharges)
+export const getPreviousViolentCharges = (allCharges :Immutable.List<*>, violentChargeList :Map<*, *>) => (
+  filterPreviousViolentCharges(
+    allCharges.filter(charge => !shouldIgnoreCharge(charge)),
+    violentChargeList
+  ).map(charge => getChargeDetails(charge))
 );
 
 /* Autofill based on filtered charge list sizes */
@@ -244,8 +241,8 @@ export const tryAutofillPreviousFelonies = (allCharges :Immutable.List<*>) :stri
   `${filterPreviousFelonies(allCharges).size > 0}`
 );
 
-export const tryAutofillPreviousViolentCharge = (allCharges :Immutable.List<*>) :string => {
-  const numViolentCharges = filterPreviousViolentCharges(allCharges).size;
+export const tryAutofillPreviousViolentCharge = (allCharges :Immutable.List<*>, violentChargeList :Immutable.Map<*, *>) :string => {
+  const numViolentCharges = filterPreviousViolentCharges(allCharges, violentChargeList).size;
   if (numViolentCharges > 3) return '3';
   return `${numViolentCharges}`;
 };
@@ -326,8 +323,6 @@ export const tryAutofillFields = (
       dmfStep2ChargeList,
       dmfStep4ChargeList
     });
-    // psaForm = psaForm.set(STEP_2_CHARGES, tryAutofillDMFStepTwo(nextCharges, dmfStep2ChargeList));
-    // psaForm = psaForm.set(STEP_4_CHARGES, tryAutofillDMFStepFour(nextCharges, dmfStep4ChargeList));
     psaForm = psaForm.set(STEP_2_CHARGES, `${step2Charges.size > 0}`);
     psaForm = psaForm.set(STEP_4_CHARGES, `${step4Charges.size > 0}`);
 
@@ -340,14 +335,6 @@ export const tryAutofillFields = (
       bookingReleaseExceptionChargeList,
       bookingHoldExceptionChargeList
     });
-    // psaForm = psaForm.set(
-    //   SECONDARY_RELEASE_CHARGES,
-    //   tryAutofillDMFSecondaryReleaseCharges(nextCharges, bookingReleaseExceptionChargeList)
-    // );
-    // psaForm = psaForm.set(
-    //   SECONDARY_HOLD_CHARGES,
-    //   tryAutofillDMFSecondaryHoldCharges(nextCharges, bookingHoldExceptionChargeList)
-    // );
     psaForm = psaForm.set(
       SECONDARY_RELEASE_CHARGES,
       `${!!currentBHECharges.size && (currentBHECharges.size === nextCharges.size)}`
