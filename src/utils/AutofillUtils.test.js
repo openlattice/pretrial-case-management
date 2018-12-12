@@ -3,6 +3,7 @@ import Immutable, { Map, Set, fromJS } from 'immutable';
 import { CHARGE, PSA, DMF } from './consts/Consts';
 import { PROPERTY_TYPES } from './consts/DataModelConsts';
 import { CHARGE_VALUES } from './consts/ArrestChargeConsts';
+import { ODYSSEY_VIOLENT_CHARGES } from './consts/ChargeConsts';
 import {
   PENN_BOOKING_HOLD_EXCEPTIONS,
   PENN_BOOKING_RELEASE_EXCEPTIONS,
@@ -129,6 +130,7 @@ import {
 
 const { STATUTE, DESCRIPTION } = CHARGE;
 const { STEP_TWO, STEP_FOUR, ALL_VIOLENT } = CHARGE_VALUES;
+const violentCourtChargeList = fromJS(ODYSSEY_VIOLENT_CHARGES);
 let violentChargeList = Map();
 let dmfStep2ChargeList = Map();
 let dmfStep4ChargeList = Map();
@@ -226,27 +228,36 @@ describe('AutofillUtils', () => {
     describe('tryAutofillCurrentViolentCharge', () => {
 
       test('should output true or false depending whether there is a current violent charge', () => {
-        expect(tryAutofillCurrentViolentCharge(Immutable.List.of(
-          MOCK_VIOLENT_CHARGE_1,
-          MOCK_VIOLENT_CHARGE_2,
-          MOCK_STEP_2_CHARGE_V_1,
-          MOCK_STEP_2_CHARGE_V_2,
-          MOCK_STEP_4_CHARGE_NV,
-          MOCK_STEP_4_CHARGE_V,
-          MOCK_BHE_CHARGE_1,
-          MOCK_BHE_CHARGE_2
-        ))).toEqual('true');
+        expect(tryAutofillCurrentViolentCharge(
+          Immutable.List.of(
+            MOCK_VIOLENT_CHARGE_1,
+            MOCK_VIOLENT_CHARGE_2,
+            MOCK_STEP_2_CHARGE_V_1,
+            MOCK_STEP_2_CHARGE_V_2,
+            MOCK_STEP_4_CHARGE_NV,
+            MOCK_STEP_4_CHARGE_V,
+            MOCK_BHE_CHARGE_1,
+            MOCK_BHE_CHARGE_2
+          ),
+          violentChargeList
+        )).toEqual('true');
 
-        expect(tryAutofillCurrentViolentCharge(Immutable.List.of(
-          MOCK_VIOLENT_CHARGE_1,
-          MOCK_VIOLENT_CHARGE_1
-        ))).toEqual('true');
+        expect(tryAutofillCurrentViolentCharge(
+          Immutable.List.of(
+            MOCK_VIOLENT_CHARGE_1,
+            MOCK_VIOLENT_CHARGE_1
+          ),
+          violentChargeList
+        )).toEqual('true');
 
-        expect(tryAutofillCurrentViolentCharge(Immutable.List.of(
-          MOCK_STEP_4_CHARGE_NV,
-          MOCK_BHE_CHARGE_1,
-          MOCK_BHE_CHARGE_2
-        ))).toEqual('false');
+        expect(tryAutofillCurrentViolentCharge(
+          Immutable.List.of(
+            MOCK_STEP_4_CHARGE_NV,
+            MOCK_BHE_CHARGE_1,
+            MOCK_BHE_CHARGE_2
+          ),
+          violentChargeList
+        )).toEqual('false');
 
         expect(tryAutofillCurrentViolentCharge(Immutable.List())).toEqual('false');
       });
@@ -869,53 +880,71 @@ describe('AutofillUtils', () => {
 
       test('should return labels from all prior violent convictions', () => {
 
-        expect(getPreviousViolentChargeLabels(Immutable.List.of(
-          MOCK_NOT_GUILTY_MISDEMEANOR,
-          MOCK_GUILTY_MISDEMEANOR,
-          MOCK_GUILTY_M_VIOLENT,
-          MOCK_NOT_GUILTY_FELONY,
-          MOCK_GUILTY_FELONY,
-          MOCK_NOT_GUILTY_F_VIOLENT
-        ))).toEqual(Immutable.List.of(
+        expect(getPreviousViolentChargeLabels(
+          Immutable.List.of(
+            MOCK_NOT_GUILTY_MISDEMEANOR,
+            MOCK_GUILTY_MISDEMEANOR,
+            MOCK_GUILTY_M_VIOLENT,
+            MOCK_NOT_GUILTY_FELONY,
+            MOCK_GUILTY_FELONY,
+            MOCK_NOT_GUILTY_F_VIOLENT
+          ),
+          violentCourtChargeList
+        )).toEqual(Immutable.List.of(
           getChargeTitle(MOCK_GUILTY_M_VIOLENT)
         ));
 
-        expect(getPreviousViolentChargeLabels(Immutable.List.of(
-          MOCK_GUILTY_M_VIOLENT,
-          MOCK_GUILTY_M_VIOLENT
-        ))).toEqual(Immutable.List.of(
+        expect(getPreviousViolentChargeLabels(
+          Immutable.List.of(
+            MOCK_GUILTY_M_VIOLENT,
+            MOCK_GUILTY_M_VIOLENT
+          ),
+          violentCourtChargeList
+        )).toEqual(Immutable.List.of(
           getChargeTitle(MOCK_GUILTY_M_VIOLENT),
           getChargeTitle(MOCK_GUILTY_M_VIOLENT)
         ));
 
-        expect(getPreviousViolentChargeLabels(Immutable.List.of(
-          MOCK_NOT_GUILTY_MISDEMEANOR,
-          MOCK_GUILTY_MISDEMEANOR,
-          MOCK_NOT_GUILTY_FELONY,
-          MOCK_GUILTY_FELONY,
-          MOCK_NOT_GUILTY_F_VIOLENT
-        ))).toEqual(Immutable.List());
+        expect(getPreviousViolentChargeLabels(
+          Immutable.List.of(
+            MOCK_NOT_GUILTY_MISDEMEANOR,
+            MOCK_GUILTY_MISDEMEANOR,
+            MOCK_NOT_GUILTY_FELONY,
+            MOCK_GUILTY_FELONY,
+            MOCK_NOT_GUILTY_F_VIOLENT
+          ),
+          violentCourtChargeList
+        )).toEqual(Immutable.List());
 
-        expect(getPreviousViolentChargeLabels(Immutable.List())).toEqual(Immutable.List());
+        expect(getPreviousViolentChargeLabels(
+          Immutable.List(),
+          violentCourtChargeList
+        )).toEqual(Immutable.List());
 
       });
 
       test('should ignore non-applicable charges labels', () => {
 
-        expect(getPreviousViolentChargeLabels(Immutable.List.of(
-          MOCK_SHOULD_IGNORE_MO,
-          MOCK_SHOULD_IGNORE_P,
-          MOCK_SHOULD_IGNORE_PO,
-          MOCK_SHOULD_IGNORE_POA
-        ))).toEqual(Immutable.List());
+        expect(getPreviousViolentChargeLabels(
+          Immutable.List.of(
+            MOCK_SHOULD_IGNORE_MO,
+            MOCK_SHOULD_IGNORE_P,
+            MOCK_SHOULD_IGNORE_PO,
+            MOCK_SHOULD_IGNORE_POA
+          ),
+          violentCourtChargeList
+        )).toEqual(Immutable.List());
 
-        expect(getPreviousViolentChargeLabels(Immutable.List.of(
-          MOCK_SHOULD_IGNORE_MO,
-          MOCK_SHOULD_IGNORE_P,
-          MOCK_SHOULD_IGNORE_PO,
-          MOCK_SHOULD_IGNORE_POA,
-          MOCK_GUILTY_M_VIOLENT
-        ))).toEqual(Immutable.List.of(
+        expect(getPreviousViolentChargeLabels(
+          Immutable.List.of(
+            MOCK_SHOULD_IGNORE_MO,
+            MOCK_SHOULD_IGNORE_P,
+            MOCK_SHOULD_IGNORE_PO,
+            MOCK_SHOULD_IGNORE_POA,
+            MOCK_GUILTY_M_VIOLENT
+          ),
+          violentCourtChargeList
+        )).toEqual(Immutable.List.of(
           getChargeTitle(MOCK_GUILTY_M_VIOLENT)
         ));
 
@@ -927,53 +956,71 @@ describe('AutofillUtils', () => {
 
       test('should return details from all prior violent convictions', () => {
 
-        expect(getPreviousViolentCharges(Immutable.List.of(
-          MOCK_NOT_GUILTY_MISDEMEANOR,
-          MOCK_GUILTY_MISDEMEANOR,
-          MOCK_GUILTY_M_VIOLENT,
-          MOCK_NOT_GUILTY_FELONY,
-          MOCK_GUILTY_FELONY,
-          MOCK_NOT_GUILTY_F_VIOLENT
-        ))).toEqual(Immutable.List.of(
+        expect(getPreviousViolentCharges(
+          Immutable.List.of(
+            MOCK_NOT_GUILTY_MISDEMEANOR,
+            MOCK_GUILTY_MISDEMEANOR,
+            MOCK_GUILTY_M_VIOLENT,
+            MOCK_NOT_GUILTY_FELONY,
+            MOCK_GUILTY_FELONY,
+            MOCK_NOT_GUILTY_F_VIOLENT
+          ),
+          violentCourtChargeList
+        )).toEqual(Immutable.List.of(
           getChargeDetails(MOCK_GUILTY_M_VIOLENT)
         ));
 
-        expect(getPreviousViolentCharges(Immutable.List.of(
-          MOCK_GUILTY_M_VIOLENT,
-          MOCK_GUILTY_M_VIOLENT
-        ))).toEqual(Immutable.List.of(
+        expect(getPreviousViolentCharges(
+          Immutable.List.of(
+            MOCK_GUILTY_M_VIOLENT,
+            MOCK_GUILTY_M_VIOLENT
+          ),
+          violentCourtChargeList
+        )).toEqual(Immutable.List.of(
           getChargeDetails(MOCK_GUILTY_M_VIOLENT),
           getChargeDetails(MOCK_GUILTY_M_VIOLENT)
         ));
 
-        expect(getPreviousViolentCharges(Immutable.List.of(
-          MOCK_NOT_GUILTY_MISDEMEANOR,
-          MOCK_GUILTY_MISDEMEANOR,
-          MOCK_NOT_GUILTY_FELONY,
-          MOCK_GUILTY_FELONY,
-          MOCK_NOT_GUILTY_F_VIOLENT
-        ))).toEqual(Immutable.List());
+        expect(getPreviousViolentCharges(
+          Immutable.List.of(
+            MOCK_NOT_GUILTY_MISDEMEANOR,
+            MOCK_GUILTY_MISDEMEANOR,
+            MOCK_NOT_GUILTY_FELONY,
+            MOCK_GUILTY_FELONY,
+            MOCK_NOT_GUILTY_F_VIOLENT
+          ),
+          violentCourtChargeList
+        )).toEqual(Immutable.List());
 
-        expect(getPreviousViolentCharges(Immutable.List())).toEqual(Immutable.List());
+        expect(getPreviousViolentCharges(
+          Immutable.List(),
+          violentCourtChargeList
+        )).toEqual(Immutable.List());
 
       });
 
       test('should ignore non-applicable charges details', () => {
 
-        expect(getPreviousViolentCharges(Immutable.List.of(
-          MOCK_SHOULD_IGNORE_MO,
-          MOCK_SHOULD_IGNORE_P,
-          MOCK_SHOULD_IGNORE_PO,
-          MOCK_SHOULD_IGNORE_POA
-        ))).toEqual(Immutable.List());
+        expect(getPreviousViolentCharges(
+          Immutable.List.of(
+            MOCK_SHOULD_IGNORE_MO,
+            MOCK_SHOULD_IGNORE_P,
+            MOCK_SHOULD_IGNORE_PO,
+            MOCK_SHOULD_IGNORE_POA
+          ),
+          violentCourtChargeList
+        )).toEqual(Immutable.List());
 
-        expect(getPreviousViolentCharges(Immutable.List.of(
-          MOCK_SHOULD_IGNORE_MO,
-          MOCK_SHOULD_IGNORE_P,
-          MOCK_SHOULD_IGNORE_PO,
-          MOCK_SHOULD_IGNORE_POA,
-          MOCK_GUILTY_M_VIOLENT
-        ))).toEqual(Immutable.List.of(
+        expect(getPreviousViolentCharges(
+          Immutable.List.of(
+            MOCK_SHOULD_IGNORE_MO,
+            MOCK_SHOULD_IGNORE_P,
+            MOCK_SHOULD_IGNORE_PO,
+            MOCK_SHOULD_IGNORE_POA,
+            MOCK_GUILTY_M_VIOLENT
+          ),
+          violentCourtChargeList
+        )).toEqual(Immutable.List.of(
           getChargeDetails(MOCK_GUILTY_M_VIOLENT)
         ));
 
@@ -985,57 +1032,81 @@ describe('AutofillUtils', () => {
 
       test('should return 0, 1, 2, or 3, depending on number of violent convictions', () => {
 
-        expect(tryAutofillPreviousViolentCharge(Immutable.List.of(
-          MOCK_NOT_GUILTY_MISDEMEANOR,
-          MOCK_GUILTY_MISDEMEANOR,
-          MOCK_GUILTY_M_VIOLENT,
-          MOCK_NOT_GUILTY_FELONY,
-          MOCK_GUILTY_FELONY,
-          MOCK_NOT_GUILTY_F_VIOLENT
-        ))).toEqual('1');
+        expect(tryAutofillPreviousViolentCharge(
+          Immutable.List.of(
+            MOCK_NOT_GUILTY_MISDEMEANOR,
+            MOCK_GUILTY_MISDEMEANOR,
+            MOCK_GUILTY_M_VIOLENT,
+            MOCK_NOT_GUILTY_FELONY,
+            MOCK_GUILTY_FELONY,
+            MOCK_NOT_GUILTY_F_VIOLENT
+          ),
+          violentCourtChargeList
+        )).toEqual('1');
 
-        expect(tryAutofillPreviousViolentCharge(Immutable.List.of(
-          MOCK_GUILTY_M_VIOLENT,
-          MOCK_GUILTY_M_VIOLENT
-        ))).toEqual('2');
+        expect(tryAutofillPreviousViolentCharge(
+          Immutable.List.of(
+            MOCK_GUILTY_M_VIOLENT,
+            MOCK_GUILTY_M_VIOLENT
+          ),
+          violentCourtChargeList
+        )).toEqual('2');
 
-        expect(tryAutofillPreviousViolentCharge(Immutable.List.of(
-          MOCK_GUILTY_M_VIOLENT,
-          MOCK_GUILTY_M_VIOLENT,
-          MOCK_GUILTY_M_VIOLENT
-        ))).toEqual('3');
+        expect(tryAutofillPreviousViolentCharge(
+          Immutable.List.of(
+            MOCK_GUILTY_M_VIOLENT,
+            MOCK_GUILTY_M_VIOLENT,
+            MOCK_GUILTY_M_VIOLENT
+          ),
+          violentCourtChargeList
+        )).toEqual('3');
 
-        expect(tryAutofillPreviousViolentCharge(Immutable.List.of(
-          MOCK_GUILTY_M_VIOLENT,
-          MOCK_GUILTY_M_VIOLENT,
-          MOCK_GUILTY_M_VIOLENT,
-          MOCK_GUILTY_M_VIOLENT
-        ))).toEqual('3');
+        expect(tryAutofillPreviousViolentCharge(
+          Immutable.List.of(
+            MOCK_GUILTY_M_VIOLENT,
+            MOCK_GUILTY_M_VIOLENT,
+            MOCK_GUILTY_M_VIOLENT,
+            MOCK_GUILTY_M_VIOLENT
+          ),
+          violentCourtChargeList
+        )).toEqual('3');
 
-        expect(tryAutofillPreviousViolentCharge(Immutable.List.of(
-          MOCK_NOT_GUILTY_MISDEMEANOR,
-          MOCK_GUILTY_MISDEMEANOR,
-          MOCK_NOT_GUILTY_FELONY,
-          MOCK_GUILTY_FELONY,
-          MOCK_NOT_GUILTY_F_VIOLENT
-        ))).toEqual('0');
+        expect(tryAutofillPreviousViolentCharge(
+          Immutable.List.of(
+            MOCK_NOT_GUILTY_MISDEMEANOR,
+            MOCK_GUILTY_MISDEMEANOR,
+            MOCK_NOT_GUILTY_FELONY,
+            MOCK_GUILTY_FELONY,
+            MOCK_NOT_GUILTY_F_VIOLENT
+          ),
+          violentCourtChargeList
+        )).toEqual('0');
 
-        expect(tryAutofillPreviousViolentCharge(Immutable.List())).toEqual('0');
+        expect(tryAutofillPreviousViolentCharge(
+          Immutable.List(),
+          violentCourtChargeList
+        )).toEqual('0');
 
-        expect(tryAutofillPreviousViolentCharge(Immutable.List.of(
-          MOCK_SHOULD_IGNORE_MO,
-          MOCK_SHOULD_IGNORE_P,
-          MOCK_SHOULD_IGNORE_PO,
-          MOCK_SHOULD_IGNORE_POA
-        ))).toEqual('0');
+        expect(tryAutofillPreviousViolentCharge(
+          Immutable.List.of(
+            MOCK_SHOULD_IGNORE_MO,
+            MOCK_SHOULD_IGNORE_P,
+            MOCK_SHOULD_IGNORE_PO,
+            MOCK_SHOULD_IGNORE_POA
+          ),
+          violentCourtChargeList
+        )).toEqual('0');
 
-        expect(tryAutofillPreviousViolentCharge(Immutable.List.of(
-          MOCK_SHOULD_IGNORE_MO,
-          MOCK_SHOULD_IGNORE_P,
-          MOCK_SHOULD_IGNORE_PO,
-          MOCK_SHOULD_IGNORE_POA,
-          MOCK_GUILTY_M_VIOLENT
-        ))).toEqual('1');
+        expect(tryAutofillPreviousViolentCharge(
+          Immutable.List.of(
+            MOCK_SHOULD_IGNORE_MO,
+            MOCK_SHOULD_IGNORE_P,
+            MOCK_SHOULD_IGNORE_PO,
+            MOCK_SHOULD_IGNORE_POA,
+            MOCK_GUILTY_M_VIOLENT
+          ),
+          violentCourtChargeList
+        )).toEqual('1');
 
       });
 
@@ -1528,8 +1599,7 @@ describe('AutofillUtils', () => {
           person,
           Immutable.Map(),
           violentChargeList,
-          // TODO: Update the map below to violentCourtChargeList with manage charges UI.
-          Immutable.Map(),
+          violentCourtChargeList,
           dmfStep2ChargeList,
           dmfStep4ChargeList,
           bookingReleaseExceptionChargeList,
@@ -1582,8 +1652,7 @@ describe('AutofillUtils', () => {
           person,
           Immutable.Map(),
           violentChargeList,
-          // TODO: Update the map below to violentCourtChargeList with manage charges UI.
-          Immutable.Map(),
+          violentCourtChargeList,
           dmfStep2ChargeList,
           dmfStep4ChargeList,
           bookingReleaseExceptionChargeList,
@@ -1629,8 +1698,7 @@ describe('AutofillUtils', () => {
           person,
           Immutable.Map(),
           violentChargeList,
-          // TODO: Update the map below to violentCourtChargeList with manage charges UI.
-          Immutable.Map(),
+          violentCourtChargeList,
           dmfStep2ChargeList,
           dmfStep4ChargeList,
           bookingReleaseExceptionChargeList,
@@ -1692,8 +1760,7 @@ describe('AutofillUtils', () => {
           person,
           Immutable.Map(),
           violentChargeList,
-          // TODO: Update the map below to violentCourtChargeList with manage charges UI.
-          Immutable.Map(),
+          violentCourtChargeList,
           dmfStep2ChargeList,
           dmfStep4ChargeList,
           bookingReleaseExceptionChargeList,
@@ -1747,8 +1814,7 @@ describe('AutofillUtils', () => {
           person,
           Immutable.Map(),
           violentChargeList,
-          // TODO: Update the map below to violentCourtChargeList with manage charges UI.
-          Immutable.Map(),
+          violentCourtChargeList,
           dmfStep2ChargeList,
           dmfStep4ChargeList,
           bookingReleaseExceptionChargeList,
@@ -1802,8 +1868,7 @@ describe('AutofillUtils', () => {
           person,
           Immutable.Map(),
           violentChargeList,
-          // TODO: Update the map below to violentCourtChargeList with manage charges UI.
-          Immutable.Map(),
+          violentCourtChargeList,
           dmfStep2ChargeList,
           dmfStep4ChargeList,
           bookingReleaseExceptionChargeList,
