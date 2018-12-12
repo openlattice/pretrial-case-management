@@ -43,11 +43,7 @@ export const ENTITY_SETS = {
   CHARGED_WITH: 'southdakotachargedwith',
   REGISTERED_FOR: 'southdakotaregisteredfor',
   EDITED_BY: 'southdakotaeditedby',
-  CONTACT_INFO_GIVEN: 'southdakotacontactinfogiven',
-
-  // charge List SUFFIX
-  ARREST_CHARGE_LIST_SUFFIX: 'arrestcharges',
-  COURT_CHARGE_LIST_SUFFIX: 'courtcharges'
+  CONTACT_INFO_GIVEN: 'southdakotacontactinfogiven'
 };
 
 export const PROPERTY_TYPES = {
