@@ -118,6 +118,7 @@ export default function appReducer(state :Map<*, *> = INITIAL_STATE, action :Seq
           const storedOrganizationId :?string = AccountUtils.retrieveOrganizationId();
           if (storedOrganizationId) {
             selectedOrganizationId = storedOrganizationId;
+            selectedOrganizationTitle = organizations[selectedOrganizationId].title;
           }
 
           appTypes.forEach((appType :Object) => {
