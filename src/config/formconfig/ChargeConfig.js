@@ -1,11 +1,11 @@
 import { ALIASES } from './ConfigConsts';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 
-export const arrestChargeConfig = entitySetName => (
+export const arrestChargeConfig = entitySetId => (
   {
     entitySets: [
       {
-        name: entitySetName,
+        entitySetId,
         alias: ALIASES.CHARGE,
         fields: {
           [PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE]: PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE,
@@ -24,11 +24,11 @@ export const arrestChargeConfig = entitySetName => (
   }
 );
 
-export const courtChargeConfig = entitySetName => (
+export const courtChargeConfig = entitySetId => (
   {
     entitySets: [
       {
-        name: entitySetName,
+        entitySetId,
         alias: ALIASES.CHARGE,
         fields: {
           [PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE]: PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE,
