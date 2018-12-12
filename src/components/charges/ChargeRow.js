@@ -9,7 +9,7 @@ import { Constants } from 'lattice';
 
 import { OL } from '../../utils/consts/Colors';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { getAllViolentCharges, getViolentChargeLabels } from '../../utils/ArrestChargeUtils';
+import { getViolentChargeLabels } from '../../utils/ArrestChargeUtils';
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
@@ -71,9 +71,7 @@ const ChargeRow = ({ charge, handleSelect, disabled } :Props) => {
     .getIn([PROPERTY_TYPES.NUMBER_OF_COUNTS, 0], charge.get(PROPERTY_TYPES.NUMBER_OF_COUNTS, '1'));
   const qualifier = charge.getIn([PROPERTY_TYPES.QUALIFIER, 0], '');
   const chargeDescription = charge.getIn([PROPERTY_TYPES.CHARGE_DESCRIPTION, 0], '');
-  const violent = getAllViolentCharges(Immutable.List.of(charge)).size > 0;
-  // TODO: NEED TO UPDATE TO const below when we release the manage charges UI.
-  // const violent = getViolentChargeLabels(Immutable.List.of(charge)).size > 0;
+  const violent = getViolentChargeLabels(Immutable.List.of(charge)).size > 0;
   const entityKeyId :string = charge.getIn([OPENLATTICE_ID_FQN, 0], '');
 
   return (
