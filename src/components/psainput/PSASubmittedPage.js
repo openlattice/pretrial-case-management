@@ -3,8 +3,9 @@
  */
 
 import React from 'react';
-import Immutable from 'immutable';
+import Immutable, { Map } from 'immutable';
 import styled from 'styled-components';
+import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 
 import BasicButton from '../buttons/BasicButton';
@@ -23,6 +24,7 @@ import closeXWhiteIcon from '../../assets/svg/close-x-white.svg';
 import closeXGrayIcon from '../../assets/svg/close-x-gray.svg';
 import closeXBlackIcon from '../../assets/svg/close-x-black.svg';
 import { OL } from '../../utils/consts/Colors';
+import { APP, CHARGES, STATE } from '../../utils/consts/FrontEndStateConsts';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { getHeaderText } from '../../utils/DMFUtils';
 import { JURISDICTION } from '../../utils/consts/Consts';
@@ -50,7 +52,9 @@ type Props = {
   allHearings :Immutable.List<*>,
   getOnExport :(isCompact :boolean) => void,
   onClose :() => void,
-  history :string[]
+  history :string[],
+  violentArrestCharges :Immutable.Map<*, *>,
+  selectedOrganizationId :string
 };
 
 type State = {
@@ -493,7 +497,9 @@ class PSASubmittedPage extends React.Component<Props, State> {
       personId,
       psaId,
       isSubmitting,
-      context
+      context,
+      violentArrestCharges,
+      selectedOrganizationId
     } = this.props;
     const { settingHearing, selectedHearing } = this.state;
     const jurisdiction = JURISDICTION[context];
@@ -534,7 +540,10 @@ class PSASubmittedPage extends React.Component<Props, State> {
         <div>
           <MinimallyPaddedResultHeader>Charges</MinimallyPaddedResultHeader>
           <WideContainer>
-            <ChargeTable charges={charges} disabled />
+            <ChargeTable
+                charges={charges}
+                violentChargeList={violentArrestCharges.get(selectedOrganizationId, Map())}
+                disabled />
           </WideContainer>
           <PaddedResultHeader>Risk Factors</PaddedResultHeader>
           <WideContainer>
@@ -562,4 +571,18 @@ class PSASubmittedPage extends React.Component<Props, State> {
   }
 }
 
-export default withRouter(PSASubmittedPage);
+function mapStateToProps(state :Immutable.Map<*, *>) :Object {
+  const app = state.get(STATE.APP);
+  const charges = state.get(STATE.CHARGES);
+  return {
+    // App
+    [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
+    [APP.SELECTED_ORG_TITLE]: app.get(APP.SELECTED_ORG_TITLE),
+
+    // Charges
+    [CHARGES.ARREST_VIOLENT]: charges.get(CHARGES.ARREST_VIOLENT),
+    [CHARGES.COURT_VIOLENT]: charges.get(CHARGES.COURT_VIOLENT)
+  };
+}
+
+export default withRouter(connect(mapStateToProps, null)(PSASubmittedPage));
