@@ -32,6 +32,10 @@ const ToolbarWrapper = styled.div`
   align-items: baseline;
 `;
 
+const SubToolbarWrapper = styled(ToolbarWrapper)`
+  margin-right: -30px;
+`
+
 type Props = {
   arrestCharges :Map<*, *>,
   courtCharges :Map<*, *>,
@@ -205,19 +209,19 @@ class ManageChargesContainer extends React.Component<Props, State> {
           <NavButtonToolbar options={navButtons} />
           { this.renderCreateButton() }
         </ToolbarWrapper>
-        <ToolbarWrapper>
+        <SubToolbarWrapper>
           { this.renderChargeSearch() }
           { this.renderPagination() }
-        </ToolbarWrapper>
+        </SubToolbarWrapper>
         <Switch>
           <Route path={arrestRoute} render={this.renderCharges} />
           <Route path={courtRoute} render={this.renderCharges} />
           <Redirect from={Routes.MANAGE_CHARGES} to={arrestRoute} />
         </Switch>
-        <ToolbarWrapper>
+        <SubToolbarWrapper>
           <div />
           { this.renderPagination() }
-        </ToolbarWrapper>
+        </SubToolbarWrapper>
       </DashboardMainSection>
     );
   }
