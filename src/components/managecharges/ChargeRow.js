@@ -133,7 +133,7 @@ class ChargeRow extends React.Component<Props, State> {
     if (chargeType === CHARGE_TYPES.ARREST) {
       row = (
         <Row disabled onClick={this.openChargeModal}>
-          { this.renderChargeModal() }
+          <td>{ this.renderChargeModal() }</td>
           <Cell>{ statute }</Cell>
           <Cell>{ description }</Cell>
           <DegreeCell>{ degree }</DegreeCell>
@@ -159,7 +159,7 @@ class ChargeRow extends React.Component<Props, State> {
     else if (chargeType === CHARGE_TYPES.COURT) {
       row = (
         <Row disabled onClick={this.openChargeModal}>
-          { this.renderChargeModal() }
+          <td>{ this.renderChargeModal() }</td>
           <Cell>{ statute }</Cell>
           <Cell>{ description }</Cell>
           <Cell>

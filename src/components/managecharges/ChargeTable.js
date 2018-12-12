@@ -45,7 +45,7 @@ class ChargeTable extends React.Component<Props, State> {
     if (chargeType === CHARGE_TYPES.ARREST) {
       headers = (
         <HeaderRow>
-          <div />
+          <th />
           <HeaderElement>{CHARGE_HEADERS.STATUTE}</HeaderElement>
           <HeaderElement>{CHARGE_HEADERS.DESCRIPTION}</HeaderElement>
           <HeaderElement>{CHARGE_HEADERS.DEGREE}</HeaderElement>
@@ -61,7 +61,7 @@ class ChargeTable extends React.Component<Props, State> {
     else if (chargeType === CHARGE_TYPES.COURT) {
       headers = (
         <HeaderRow>
-          <div />
+          <th />
           <HeaderElement>{CHARGE_HEADERS.STATUTE}</HeaderElement>
           <HeaderElement>{CHARGE_HEADERS.DESCRIPTION}</HeaderElement>
           <CenteredHeaderElement>{CHARGE_HEADERS.VIOLENT}</CenteredHeaderElement>
@@ -79,17 +79,18 @@ class ChargeTable extends React.Component<Props, State> {
       noResults
     } = this.props;
     if (noResults) return <NoResults>No Results</NoResults>;
+    const chargeSeq = charges.map((charge => (
+      <ChargeRow
+          key={charge.getIn([OPENLATTICE_ID_FQN, 0], '')}
+          charge={charge}
+          chargeType={chargeType}
+          disabled={disabled} />
+    )));
     return (
       <Table>
         <tbody>
           { this.renderHeaders() }
-          {charges.map((charge => (
-            <ChargeRow
-                key={charge.getIn([OPENLATTICE_ID_FQN, 0], '')}
-                charge={charge}
-                chargeType={chargeType}
-                disabled={disabled} />
-          )))}
+          { chargeSeq }
         </tbody>
       </Table>
     );
