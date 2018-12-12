@@ -26,6 +26,7 @@ export default function* sagas() :Generator<*, *, *> {
     fork(AppSagas.authFailureCleanupWatcher),
     fork(AppSagas.logoutCleanupWatcher),
     fork(AppSagas.loadAppWatcher),
+    fork(AppSagas.switchOrganizationWatcher),
 
     // AuthSagas
     fork(AuthSagas.watchAuthAttempt),
