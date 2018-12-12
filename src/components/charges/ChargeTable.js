@@ -3,9 +3,11 @@
  */
 import React from 'react';
 import styled from 'styled-components';
+import { fromJS } from 'immutable';
 
-import { OL } from '../../utils/consts/Colors';
 import ChargeRow from './ChargeRow';
+import { getViolentChargeLabels } from '../../utils/ArrestChargeUtils';
+import { OL } from '../../utils/consts/Colors';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 
 const Table = styled.table`
@@ -36,17 +38,29 @@ const Headers = () => (
   </HeaderRow>
 );
 
-const ChargeTable = ({ charges, handleSelect, disabled } :Props) => (
+const ChargeTable = ({
+  charges,
+  handleSelect,
+  violentChargeList,
+  disabled
+} :Props) => (
   <Table>
     <tbody>
       <Headers />
-      {charges.map((charge => (
-        <ChargeRow
-            key={charge.getIn([PROPERTY_TYPES.CHARGE_ID, 0], '')}
-            charge={charge}
-            handleSelect={handleSelect}
-            disabled={disabled} />
-      )))}
+      {
+        charges.map((charge) => {
+          const currCharges = fromJS([charge]);
+          const isViolent = getViolentChargeLabels({ currCharges, violentChargeList }).size > 0;
+          return (
+            <ChargeRow
+                key={charge.getIn([PROPERTY_TYPES.CHARGE_ID, 0], '')}
+                isViolent={isViolent}
+                charge={charge}
+                handleSelect={handleSelect}
+                disabled={disabled} />
+          );
+        })
+      }
     </tbody>
   </Table>
 );
