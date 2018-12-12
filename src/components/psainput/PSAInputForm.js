@@ -411,8 +411,6 @@ class PSAInputForm extends React.Component<Props, State> {
     const bookingReleaseExceptionChargeList = bookingReleaseExceptionCharges.get(selectedOrganizationId, Map());
     const bookingHoldExceptionChargeList = bookingHoldExceptionCharges.get(selectedOrganizationId, Map());
 
-    // TODO: Will use currentViolentCharges instead of currentViolentChargesFromJSON
-    // when we release manage charges UI.
     const currentViolentCharges = getViolentChargeLabels({ currCharges, violentChargeList });
     const {
       step2Charges,
@@ -435,8 +433,6 @@ class PSAInputForm extends React.Component<Props, State> {
       currCase.getIn([PROPERTY_TYPES.ARREST_DATE, 0],
         currCase.getIn([PROPERTY_TYPES.FILE_DATE, 0], '')));
 
-    // TODO: NEED TO UPDATE TO currentViolentCharges when we release manage charges UI.
-    const currentViolentChargesFromJSON = getAllViolentChargeLabels(currCharges);
     const pendingCharges = getPendingChargeLabels(currCaseNum, arrestDate, allCases, allCharges);
     const priorMisdemeanors = getPreviousMisdemeanorLabels(allCharges);
     const priorFelonies = getPreviousFelonyLabels(allCharges);
@@ -482,7 +478,7 @@ class PSAInputForm extends React.Component<Props, State> {
                 CURRENT_VIOLENT_OFFENSE,
                 CURRENT_VIOLENT_OFFENSE_PROMPT,
                 // TODO: NEED TO UPDATE TO currentViolentCharges when we release manage charges UI.
-                currentViolentChargesFromJSON
+                currentViolentCharges
               )
             }
 
