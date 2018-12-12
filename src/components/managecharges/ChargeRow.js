@@ -12,7 +12,7 @@ import { CHARGE_TYPES, getChargeConsts } from '../../utils/consts/ChargeConsts';
 
 const Cell = styled.td`
   font-family: 'Open Sans', sans-serif;
-  font-size: 10px;
+  font-size: 11px;
   color: ${OL.GREY15};
   text-align: left;
   padding: 5px;
