@@ -98,8 +98,9 @@ function* replaceEntityWorker(action :SequenceAction) :Generator<*, *, *> {
       values,
       callback
     } = action.value;
+    let { entitySetId } = action.value;
 
-    const entitySetId = yield call(EntityDataModelApi.getEntitySetId, entitySetName);
+    if (!entitySetId) entitySetId = yield call(EntityDataModelApi.getEntitySetId, entitySetName);
     yield call(DataApi.replaceEntityInEntitySetUsingFqns, entitySetId, entityKeyId, stripIdField(values));
 
     yield put(replaceEntity.success(action.id));
@@ -108,6 +109,7 @@ function* replaceEntityWorker(action :SequenceAction) :Generator<*, *, *> {
     }
   }
   catch (error) {
+    console.error(error);
     yield put(replaceEntity.failure(action.id, error));
   }
   finally {
@@ -121,12 +123,33 @@ function* replaceEntityWatcher() :Generator<*, *, *> {
 
 function* submitWorker(action :SequenceAction) :Generator<*, *, *> {
   const { config, values, callback } = action.value;
-
   try {
     yield put(submit.request(action.id));
-    const allEntitySetIdsRequest = config
-      .entitySets.map(entitySet => call(EntityDataModelApi.getEntitySetId, entitySet.name));
-    const allEntitySetIds = yield all(allEntitySetIdsRequest);
+    // TODO: Yuck! Will refactor how we collect entitySetIds once we have appTypes for each Entity Set
+    const allEntitySetIds = [];
+    const allEntitySetIdsRequest = [];
+    const requestIndices = [];
+    let index = 0;
+    config.entitySets.forEach((entitySet) => {
+      if (entitySet.entitySetId) {
+        allEntitySetIds[index] = entitySet.entitySetId;
+      }
+      else {
+        requestIndices.push(index);
+        allEntitySetIdsRequest.push(call(EntityDataModelApi.getEntitySetId, entitySet.name));
+      }
+      index += 1;
+    });
+    index = 0;
+    let entitySetIdsFromEntitySetName;
+    if (allEntitySetIdsRequest.length) {
+      entitySetIdsFromEntitySetName = yield all(allEntitySetIdsRequest);
+      entitySetIdsFromEntitySetName.forEach((id) => {
+        const placementIndex = requestIndices[index];
+        allEntitySetIds[placementIndex] = id;
+        index += 1;
+      });
+    }
     const edmDetailsRequest = allEntitySetIds.map(id => ({
       id,
       type: 'EntitySet',
