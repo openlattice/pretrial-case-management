@@ -116,7 +116,7 @@ export default function appReducer(state :Map<*, *> = INITIAL_STATE, action :Seq
             selectedOrganizationTitle = fromJS(organizations).valueSeq().getIn([0, 'title'], '');
           }
           const storedOrganizationId :?string = AccountUtils.retrieveOrganizationId();
-          if (storedOrganizationId && organizations[selectedOrganizationId]) {
+          if (storedOrganizationId && organizations[storedOrganizationId]) {
             selectedOrganizationId = storedOrganizationId;
             selectedOrganizationTitle = organizations[selectedOrganizationId].title;
           }
