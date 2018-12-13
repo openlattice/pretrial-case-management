@@ -13,9 +13,9 @@ export const APP_TYPES_FQNS = {
   APP_SETTINGS: new FullyQualifiedName('app.settings')
 };
 
-export const ORG_TITLES = {
-  PENNINGTON_SD: 'Pennington County, SD',
-  MINNEHAHA_SD: 'Minnehaha County, SD'
+export const ORG_IDS = {
+  PENNINGTON_SD: '67d555b4-7495-414e-a259-ef82ba71779a',
+  MINNEHAHA_SD: 'e558ee21-8fec-4c65-aeda-039924ba9a92'
 };
 
 export const MAX_PAGE = 5;

@@ -10,7 +10,7 @@ import DashboardMainSection from '../../components/dashboard/DashboardMainSectio
 import CreateFormListItem from '../../components/dashboard/CreateFormListItem';
 import psaIcon from '../../assets/svg/public-safety-icon.svg';
 import { APP, STATE } from '../../utils/consts/FrontEndStateConsts';
-import { CONTEXT, ORG_TITLES } from '../../utils/consts/Consts';
+import { CONTEXT, ORG_IDS } from '../../utils/consts/Consts';
 import { OL } from '../../utils/consts/Colors';
 import { StyledFormWrapper } from '../../utils/Layout';
 import * as Routes from '../../core/router/Routes';
@@ -35,14 +35,14 @@ class FormsContainer extends React.Component<Props, *> {
   getPSAPath = context => `${Routes.PSA_FORM}?${qs.stringify({ context })}`;
 
   render() {
-    const { selectedOrganizationTitle } = this.props;
+    const { selectedOrganizationTitle, selectedOrganizationId } = this.props;
     // TODO: This is yucky. We will want to rework once we phase out different contexts for different orgs.
     let jurisdiction;
-    switch (selectedOrganizationTitle) {
-      case ORG_TITLES.PENNINGTON_SD:
+    switch (selectedOrganizationId) {
+      case ORG_IDS.PENNINGTON_SD:
         jurisdiction = COURT_PENN;
         break;
-      case ORG_TITLES.MINNEHAHA_SD:
+      case ORG_IDS.MINNEHAHA_SD:
         jurisdiction = COURT_MINN;
         break;
       default:
