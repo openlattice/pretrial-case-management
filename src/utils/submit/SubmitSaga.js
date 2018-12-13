@@ -16,6 +16,7 @@ import {
   all
 } from 'redux-saga/effects';
 
+import { APP } from '../consts/FrontEndStateConsts';
 import { stripIdField } from '../DataUtils';
 import {
   REPLACE_ASSOCIATION,
@@ -122,33 +123,29 @@ function* replaceEntityWatcher() :Generator<*, *, *> {
 }
 
 function* submitWorker(action :SequenceAction) :Generator<*, *, *> {
-  const { config, values, callback } = action.value;
+  const {
+    app,
+    config,
+    values,
+    callback
+  } = action.value;
   try {
     yield put(submit.request(action.id));
+    let allEntitySetIds;
     // TODO: Yuck! Will refactor how we collect entitySetIds once we have appTypes for each Entity Set
-    const allEntitySetIds = [];
-    const allEntitySetIdsRequest = [];
-    const requestIndices = [];
-    let index = 0;
-    config.entitySets.forEach((entitySet) => {
-      if (entitySet.entitySetId) {
-        allEntitySetIds[index] = entitySet.entitySetId;
-      }
-      else {
-        requestIndices.push(index);
-        allEntitySetIdsRequest.push(call(EntityDataModelApi.getEntitySetId, entitySet.name));
-      }
-      index += 1;
-    });
-    index = 0;
-    let entitySetIdsFromEntitySetName;
-    if (allEntitySetIdsRequest.length) {
-      entitySetIdsFromEntitySetName = yield all(allEntitySetIdsRequest);
-      entitySetIdsFromEntitySetName.forEach((id) => {
-        const placementIndex = requestIndices[index];
-        allEntitySetIds[placementIndex] = id;
-        index += 1;
-      });
+    if (app) {
+      const selectedOrganizationId = app.get(APP.SELECTED_ORG_ID);
+      allEntitySetIds = config.entitySets.map(({ name }) => app.getIn([
+        name,
+        'entitySetsByOrganization',
+        selectedOrganizationId
+      ]));
+    }
+    else {
+      const allEntitySetIdsRequest = config.entitySets.map(entitySet => (
+        call(EntityDataModelApi.getEntitySetId, entitySet.name)
+      ));
+      allEntitySetIds = yield all(allEntitySetIdsRequest);
     }
     const edmDetailsRequest = allEntitySetIds.map(id => ({
       id,
