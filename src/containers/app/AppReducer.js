@@ -111,9 +111,9 @@ export default function appReducer(state :Map<*, *> = INITIAL_STATE, action :Seq
 
           let selectedOrganizationId :string = '';
           let selectedOrganizationTitle :string = '';
-          if (organizations.length && !selectedOrganizationId.length) {
-            selectedOrganizationId = organizations[0].organization.id;
-            selectedOrganizationTitle = organizations[0].organization.title;
+          if (fromJS(organizations).size && !selectedOrganizationId.length) {
+            selectedOrganizationId = fromJS(organizations).valueSeq().getIn([0, 'id'], '');
+            selectedOrganizationTitle = fromJS(organizations).valueSeq().getIn([0, 'title'], '');
           }
           const storedOrganizationId :?string = AccountUtils.retrieveOrganizationId();
           if (storedOrganizationId) {
