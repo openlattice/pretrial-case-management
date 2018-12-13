@@ -1,22 +1,6 @@
 /*
  * @flow
  */
-import { Models } from 'lattice';
-
-const { FullyQualifiedName } = Models;
-
-export const APP_NAME = 'psa';
-
-export const APP_TYPES_FQNS = {
-  ARREST_CHARGE_LIST: new FullyQualifiedName('publicsafety.arrestchargelist'),
-  COURT_CHARGE_LIST: new FullyQualifiedName('publicsafety.courtchargelist'),
-  APP_SETTINGS: new FullyQualifiedName('app.settings')
-};
-
-export const ORG_IDS = {
-  PENNINGTON_SD: '67d555b4-7495-414e-a259-ef82ba71779a',
-  MINNEHAHA_SD: 'e558ee21-8fec-4c65-aeda-039924ba9a92'
-};
 
 export const MAX_PAGE = 5;
 
