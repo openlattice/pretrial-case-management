@@ -46,6 +46,7 @@ const Body = styled.div`
 
 type Props = {
   arrestEntitySetsByOrganization :Map<*, *>,
+  app :Map<*, *>,
   chargeType :string,
   courtEntitySetsByOrganization :Map<*, *>,
   creatingNew :boolean,
@@ -247,6 +248,7 @@ class NewChargeModal extends React.Component<Props, State> {
 
   updateCharge = () => {
     const {
+      app,
       actions,
       chargeType,
       entityKeyId,
@@ -258,10 +260,10 @@ class NewChargeModal extends React.Component<Props, State> {
     let config;
     // TODO: We propbably want to change the name of these entity sets so that they capture county and state
     if (chargeType === CHARGE_TYPES.COURT) {
-      config = courtChargeConfig(entitySetId);
+      config = courtChargeConfig();
     }
     if (chargeType === CHARGE_TYPES.ARREST) {
-      config = arrestChargeConfig(entitySetId);
+      config = arrestChargeConfig();
     }
 
     const newChargeFields = this.getChargeFields();
@@ -276,6 +278,7 @@ class NewChargeModal extends React.Component<Props, State> {
     }
     else {
       submit({
+        app,
         config,
         values: newChargeFields,
         callback: this.reloadChargesCallback
@@ -388,6 +391,7 @@ function mapStateToProps(state) {
 
   return {
     // App
+    app,
     arrestEntitySetsByOrganization: app.getIn([ARREST_CHARGE_LIST.toString(), APP.ENTITY_SETS_BY_ORG], Map()),
     courtEntitySetsByOrganization: app.getIn([COURT_CHARGE_LIST.toString(), APP.ENTITY_SETS_BY_ORG], Map()),
     [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
