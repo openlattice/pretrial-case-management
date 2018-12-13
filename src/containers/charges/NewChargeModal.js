@@ -13,9 +13,8 @@ import { bindActionCreators } from 'redux';
 import NewChargeForm from '../../components/managecharges/NewChargeForm';
 import { arrestChargeConfig, courtChargeConfig } from '../../config/formconfig/ChargeConfig';
 import { CHARGE_TYPES } from '../../utils/consts/ChargeConsts';
-import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { Wrapper, TitleWrapper, CloseModalX } from '../../utils/Layout';
-import { APP_TYPES_FQNS } from '../../utils/consts/Consts';
 import {
   APP,
   STATE,

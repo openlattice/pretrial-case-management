@@ -15,7 +15,7 @@ import Dashboard from '../../components/dashboard/Dashboard';
 import Forms from '../forms/Forms';
 import ContactSupport from '../../components/app/ContactSupport';
 import { APP, CHARGES, STATE } from '../../utils/consts/FrontEndStateConsts';
-import { APP_TYPES_FQNS } from '../../utils/consts/Consts';
+import { APP_TYPES_FQNS } from '../../utils/consts/DataModelConsts';
 import { termsAreAccepted } from '../../utils/AcceptTermsUtils';
 import { OL } from '../../utils/consts/Colors';
 

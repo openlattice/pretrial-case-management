@@ -20,7 +20,7 @@ import {
   takeEvery
 } from 'redux-saga/effects';
 
-import { APP_NAME } from '../../utils/consts/Consts';
+import { APP_NAME } from '../../utils/consts/DataModelConsts';
 import { removeTermsToken } from '../../utils/AcceptTermsUtils';
 import * as Routes from '../../core/router/Routes';
 

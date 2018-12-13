@@ -6,7 +6,7 @@ import { Models } from 'lattice';
 import { List, Map, fromJS } from 'immutable';
 import { AccountUtils } from 'lattice-auth';
 
-import { APP_TYPES_FQNS } from '../../utils/consts/Consts';
+import { APP_TYPES_FQNS } from '../../utils/consts/DataModelConsts';
 import { APP } from '../../utils/consts/FrontEndStateConsts';
 import {
   loadApp,

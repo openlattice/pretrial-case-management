@@ -10,7 +10,8 @@ import DashboardMainSection from '../../components/dashboard/DashboardMainSectio
 import CreateFormListItem from '../../components/dashboard/CreateFormListItem';
 import psaIcon from '../../assets/svg/public-safety-icon.svg';
 import { APP, STATE } from '../../utils/consts/FrontEndStateConsts';
-import { CONTEXT, ORG_IDS } from '../../utils/consts/Consts';
+import { CONTEXT } from '../../utils/consts/Consts';
+import { ORG_IDS } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
 import { StyledFormWrapper } from '../../utils/Layout';
 import * as Routes from '../../core/router/Routes';
