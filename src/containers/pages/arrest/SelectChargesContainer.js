@@ -24,7 +24,6 @@ import { OL } from '../../../utils/consts/Colors';
 
 import {
   StyledFormWrapper,
-  TitleLabel,
   Title
 } from '../../../utils/Layout';
 
@@ -84,7 +83,7 @@ const SectionHeader = styled.div`
   margin-bottom: 20px;
 `;
 
-const InputLabel = styled(TitleLabel)`
+const InputLabel = styled.div`
   font-size: 14px;
   margin-bottom: 10px;
 `;
@@ -93,8 +92,8 @@ const CaseDetailsWrapper = styled.div`
   text-align: start;
   margin-bottom: 30px;
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  grid-gap: 30px;
+  grid-template-columns: 45% 45%;
+  grid-gap: 10%;
 `;
 
 const ChargeSearch = styled(SearchableSelect)`
@@ -130,6 +129,10 @@ const ChargeTitle = styled.div`
   color: ${OL.GREY15};
   display: inline-block;
 `;
+
+const CaseInfoWrapper = styled.div`
+  width: 100%;
+`
 
 type Props = {
   defaultArrest :Immutable.Map<*, *>,
@@ -217,7 +220,7 @@ export default class SelectChargesContainer extends React.Component<Props, State
   renderCaseInfo = () => {
     const { arrestDate, caseDispositionDate } = this.state;
     return (
-      <div>
+      <CaseInfoWrapper>
         <SectionHeader>Arrest Details:</SectionHeader>
         <CaseDetailsWrapper>
           <InputLabel>
@@ -239,7 +242,7 @@ export default class SelectChargesContainer extends React.Component<Props, State
                 }} />
           </InputLabel>
         </CaseDetailsWrapper>
-      </div>
+      </CaseInfoWrapper>
     );
   }
 
@@ -346,7 +349,6 @@ export default class SelectChargesContainer extends React.Component<Props, State
   )
 
   render() {
-    console.log(this.state);
     return (
       <Container>
         {this.renderHeader()}
