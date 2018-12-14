@@ -162,11 +162,9 @@ type Props = {
       endDate :string
     }) => void
   },
-  allHearingData :Map<*, *>,
   courtroomTimes :Map<*, *>,
   history :string[],
   loadingHearingData :boolean,
-  courtroomOptions :Map<*, *>,
   downloadingReports :boolean,
   noHearingResults :boolean
 };
