@@ -29,6 +29,7 @@ const StyledDatePicker = ({
   return (
     <DatePickerWrapper onKeyPress={e => onKeyPressFn(e, onKeyPress)}>
       <DatePicker
+          hideIcon
           value={value}
           onChange={onChange}
           placeholder={placeholder}
