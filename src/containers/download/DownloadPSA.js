@@ -34,7 +34,6 @@ import {
 } from '../../utils/Layout';
 
 import * as DownloadActionFactory from './DownloadActionFactory';
-import * as Routes from '../../core/router/Routes';
 
 const HeaderSection = styled.div`
   font-family: 'Open Sans', sans-serif;
@@ -103,10 +102,10 @@ const SubSelectionWrapper = styled(SelectionWrapper)`
 const CourtroomOptionsWrapper = styled.div`
   width: 100%;
   display: grid;
-  grid-template-columns: 40% 50%;
+  grid-template-columns: 45% 50%;
   padding: 30px 0 10;
   margin: 10px;
-  column-gap: 10%;
+  column-gap: 5%;
 `;
 
 const OptionsWrapper = styled.div`
