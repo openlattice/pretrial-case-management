@@ -655,8 +655,8 @@ function* getDownloadFiltersWorker(action :SequenceAction) :Generator<*, *, *> {
     }
 
     courtTimeOptions = options
-      .sortBy(hearings => hearings.get(0).getIn([PROPERTY_TYPES.DATE_TIME, 0]))
-      .sortBy(hearings => hearings.get(0).getIn([PROPERTY_TYPES.COURTROOM, 0]));
+      .sortBy(hearings => hearings.getIn([0, PROPERTY_TYPES.DATE_TIME, 0]))
+      .sortBy(hearings => hearings.getIn([0, PROPERTY_TYPES.COURTROOM, 0]));
 
     if (!allHearingData.size) noResults = true;
     yield put(getDownloadFilters.success(action.id, {

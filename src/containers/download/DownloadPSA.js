@@ -268,10 +268,9 @@ class DownloadPSA extends React.Component<Props, State> {
   }
 
   handleCourtAndTimeSelection = (option) => {
-    const hearing = option.get(0, Map());
-    const courtTime = hearing.getIn([PROPERTY_TYPES.DATE_TIME, 0]);
+    const courtTime = option.getIn([0, PROPERTY_TYPES.DATE_TIME, 0], '');
     const formattedTime = moment(courtTime).format(('HH:mm'));
-    const hearingCourtroom = hearing.getIn([PROPERTY_TYPES.COURTROOM, 0]);
+    const hearingCourtroom = option.getIn([0, PROPERTY_TYPES.COURTROOM, 0]);
     this.setState({
       courtTime: `${hearingCourtroom} - ${formattedTime}`,
       selectedHearingData: option
