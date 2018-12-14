@@ -11,7 +11,7 @@ import randomUUID from 'uuid/v4';
 import BasicButton from '../../../components/buttons/BasicButton';
 import SecondaryButton from '../../../components/buttons/SecondaryButton';
 import SearchableSelect from '../../../components/controls/SearchableSelect';
-import DateTimePicker from '../../../components/controls/StyledDateTimePicker';
+import DateTimePicker from '../../../components/datetime/DateTimePicker';
 import MinnehahaChargesList from '../../../utils/consts/MinnehahaChargesList';
 import PenningtonChargesList from '../../../utils/consts/PenningtonChargesList';
 import QUALIFIERS from '../../../utils/consts/QualifierConsts';
@@ -24,7 +24,6 @@ import { OL } from '../../../utils/consts/Colors';
 
 import {
   StyledFormWrapper,
-  TitleLabel,
   Title
 } from '../../../utils/Layout';
 
@@ -84,7 +83,7 @@ const SectionHeader = styled.div`
   margin-bottom: 20px;
 `;
 
-const InputLabel = styled(TitleLabel)`
+const InputLabel = styled.div`
   font-size: 14px;
   margin-bottom: 10px;
 `;
@@ -93,8 +92,8 @@ const CaseDetailsWrapper = styled.div`
   text-align: start;
   margin-bottom: 30px;
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  grid-gap: 30px;
+  grid-template-columns: 45% 45%;
+  grid-gap: 10%;
 `;
 
 const ChargeSearch = styled(SearchableSelect)`
@@ -131,6 +130,10 @@ const ChargeTitle = styled.div`
   display: inline-block;
 `;
 
+const CaseInfoWrapper = styled.div`
+  width: 100%;
+`
+
 type Props = {
   defaultArrest :Immutable.Map<*, *>,
   defaultCharges :Immutable.List<*>,
@@ -152,7 +155,7 @@ export default class SelectChargesContainer extends React.Component<Props, State
     super(props);
     this.state = {
       arrestDate: moment(props.defaultArrest.getIn([PROPERTY_TYPES.ARREST_DATE_TIME, 0])),
-      caseDispositionDate: null,
+      caseDispositionDate: moment(),
       charges: this.formatChargeList(props.defaultCharges)
     };
   }
@@ -217,28 +220,29 @@ export default class SelectChargesContainer extends React.Component<Props, State
   renderCaseInfo = () => {
     const { arrestDate, caseDispositionDate } = this.state;
     return (
-      <div>
+      <CaseInfoWrapper>
         <SectionHeader>Arrest Details:</SectionHeader>
         <CaseDetailsWrapper>
           <InputLabel>
             Arrest Date
             <DateTimePicker
-                timeFormat="HH:mm"
+                name="arrestDate"
                 value={arrestDate}
-                onChange={(date) => {
-                  this.setState({ arrestDate: date });
+                onChange={(arrdate) => {
+                  this.setState({ arrestDate: arrdate });
                 }} />
           </InputLabel>
           <InputLabel>
             Case Disposition Date
             <DateTimePicker
+                name="caseDispositionDate"
                 value={caseDispositionDate}
                 onChange={(date) => {
                   this.setState({ caseDispositionDate: date });
                 }} />
           </InputLabel>
         </CaseDetailsWrapper>
-      </div>
+      </CaseInfoWrapper>
     );
   }
 
@@ -286,12 +290,6 @@ export default class SelectChargesContainer extends React.Component<Props, State
         onChange={onChange} />
   )
 
-  renderDatePicker = (charge :Charge, field :string, onChange :(event :Object) => void) => (
-    <DateTimePicker
-        name={field}
-        value={charge[field]}
-        onChange={onChange} />
-  )
 
   deleteCharge = (index :number) => {
     const { charges } = this.state;
