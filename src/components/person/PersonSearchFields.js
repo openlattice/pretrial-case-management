@@ -6,7 +6,8 @@ import React from 'react';
 import styled from 'styled-components';
 import { Col } from 'react-bootstrap';
 
-import StyledDatePicker from '../controls/StyledDatePicker';
+// import StyledDatePicker from '../controls/StyledDatePicker';
+import DatePicker from '../datetime/DatePicker';
 import StyledInput from '../controls/StyledInput';
 import InfoButton from '../buttons/InfoButton';
 import { UnpaddedRow, TitleLabel } from '../../utils/Layout';
@@ -84,12 +85,11 @@ export default class PersonSearchFields extends React.Component<Props, State> {
         </Col>
         <Col lg={3}>
           <StyledTitleLabel>Date of birth</StyledTitleLabel>
-          <StyledDatePicker
+          <DatePicker
               onKeyPress={this.handleKeyPress}
               name="dob"
               onChange={this.onDobChange}
-              value={dob}
-              clearButton={false} />
+              value={dob} />
         </Col>
         <Col lg={3}>
           <InfoButton onClick={this.handleSubmit}>Search</InfoButton>

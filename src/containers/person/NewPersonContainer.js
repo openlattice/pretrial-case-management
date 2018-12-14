@@ -17,7 +17,8 @@ import BasicButton from '../../components/buttons/BasicButton';
 import InfoButton from '../../components/buttons/InfoButton';
 import Checkbox from '../../components/controls/StyledCheckbox';
 import StyledInput from '../../components/controls/StyledInput';
-import StyledDatePicker from '../../components/controls/StyledDatePicker';
+// import StyledDatePicker from '../../components/controls/StyledDatePicker';
+import DatePicker from '../../components/datetime/DatePicker';
 import SearchableSelect from '../../components/controls/SearchableSelect';
 import PersonContactInfo from '../../components/person/PersonContactInfo';
 import { GENDERS, STATES } from '../../utils/consts/Consts';
@@ -346,10 +347,9 @@ class NewPersonContainer extends React.Component<Props, State> {
             <InputRow numColumns={3}>
               <InputGroup>
                 <InputLabel>Date of birth*</InputLabel>
-                <StyledDatePicker
+                <DatePicker
                     value={state[DOB_VALUE]}
-                    onChange={this.handleOnChangeDateOfBirth}
-                    clearButton={false} />
+                    onChange={this.handleOnChangeDateOfBirth} />
               </InputGroup>
               <InputGroup>
                 <InputLabel>Gender</InputLabel>

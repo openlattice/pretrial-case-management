@@ -11,7 +11,7 @@ import randomUUID from 'uuid/v4';
 import BasicButton from '../../../components/buttons/BasicButton';
 import SecondaryButton from '../../../components/buttons/SecondaryButton';
 import SearchableSelect from '../../../components/controls/SearchableSelect';
-import DateTimePicker from '../../../components/controls/StyledDateTimePicker';
+import DateTimePicker from '../../../components/datetime/DateTimePicker';
 import MinnehahaChargesList from '../../../utils/consts/MinnehahaChargesList';
 import PenningtonChargesList from '../../../utils/consts/PenningtonChargesList';
 import QUALIFIERS from '../../../utils/consts/QualifierConsts';
@@ -152,7 +152,7 @@ export default class SelectChargesContainer extends React.Component<Props, State
     super(props);
     this.state = {
       arrestDate: moment(props.defaultArrest.getIn([PROPERTY_TYPES.ARREST_DATE_TIME, 0])),
-      caseDispositionDate: null,
+      caseDispositionDate: moment(),
       charges: this.formatChargeList(props.defaultCharges)
     };
   }
@@ -223,15 +223,16 @@ export default class SelectChargesContainer extends React.Component<Props, State
           <InputLabel>
             Arrest Date
             <DateTimePicker
-                timeFormat="HH:mm"
+                name="arrestDate"
                 value={arrestDate}
-                onChange={(date) => {
-                  this.setState({ arrestDate: date });
+                onChange={(arrdate) => {
+                  this.setState({ arrestDate: arrdate });
                 }} />
           </InputLabel>
           <InputLabel>
             Case Disposition Date
             <DateTimePicker
+                name="caseDispositionDate"
                 value={caseDispositionDate}
                 onChange={(date) => {
                   this.setState({ caseDispositionDate: date });
@@ -286,12 +287,6 @@ export default class SelectChargesContainer extends React.Component<Props, State
         onChange={onChange} />
   )
 
-  renderDatePicker = (charge :Charge, field :string, onChange :(event :Object) => void) => (
-    <DateTimePicker
-        name={field}
-        value={charge[field]}
-        onChange={onChange} />
-  )
 
   deleteCharge = (index :number) => {
     const { charges } = this.state;
@@ -351,6 +346,7 @@ export default class SelectChargesContainer extends React.Component<Props, State
   )
 
   render() {
+    console.log(this.state);
     return (
       <Container>
         {this.renderHeader()}
