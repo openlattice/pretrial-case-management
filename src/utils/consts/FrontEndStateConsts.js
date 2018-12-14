@@ -102,6 +102,7 @@ export const DOWNLOAD = {
   NO_RESULTS: 'noHearingResults',
   DOWNLOADING_REPORTS: 'downloadingReports',
   COURTROOM_OPTIONS: 'courtroomOptions',
+  COURTROOM_TIMES: 'courtroomTimes',
   ALL_HEARING_DATA: 'allHearingData',
   ERROR: 'downloadError',
   HEARING_IDS: 'hearingIds'

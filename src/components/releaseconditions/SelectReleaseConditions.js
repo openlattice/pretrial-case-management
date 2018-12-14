@@ -19,7 +19,8 @@ import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
 import RadioButton from '../controls/StyledRadioButton';
 import CheckboxButton from '../controls/StyledCheckboxButton';
 import StyledInput from '../controls/StyledInput';
-import DatePicker from '../controls/StyledDatePicker';
+// import DatePicker from '../controls/StyledDatePicker';
+import DatePicker from '../datetime/DatePicker';
 import SearchableSelect from '../controls/SearchableSelect';
 import InfoButton from '../buttons/InfoButton';
 import BasicButton from '../buttons/BasicButton';
@@ -1031,7 +1032,7 @@ class SelectReleaseConditions extends React.Component<Props, State> {
 
     if (modifyingHearing) {
       date = (
-        <StyledDatePicker
+        <DatePicker
             paddingTop
             value={newHearingDate || dateTime}
             placeholder={`${formatDateTime(dateTime, 'MM/DD/YYYY')}`}

@@ -7,15 +7,17 @@ import moment from 'moment';
 import styled from 'styled-components';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
-import { Map } from 'immutable';
+import { Map, Set, List } from 'immutable';
 
 import BasicButton from '../../components/buttons/BasicButton';
-import DateTimeRange from '../../components/datetime/DateTimeRange';
+import DateTimeRangePicker from '../../components/datetime/DateTimeRangePicker';
+import DatePicker from '../../components/datetime/DatePicker';
 import InfoButton from '../../components/buttons/InfoButton';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import SearchableSelect from '../../components/controls/SearchableSelect';
 import StyledCheckbox from '../../components/controls/StyledCheckbox';
 import { OL } from '../../utils/consts/Colors';
+import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { STATE, DOWNLOAD } from '../../utils/consts/FrontEndStateConsts';
 import {
   REPORT_TYPES,
@@ -24,6 +26,7 @@ import {
   SUMMARY_REPORT
 } from '../../utils/consts/ReportDownloadTypes';
 import {
+  NoResults,
   StyledFormViewWrapper,
   StyledFormWrapper,
   StyledSectionWrapper,
@@ -31,7 +34,6 @@ import {
 } from '../../utils/Layout';
 
 import * as DownloadActionFactory from './DownloadActionFactory';
-import * as Routes from '../../core/router/Routes';
 
 const HeaderSection = styled.div`
   font-family: 'Open Sans', sans-serif;
@@ -91,19 +93,31 @@ const SelectionWrapper = styled.div`
 
 const SubSelectionWrapper = styled(SelectionWrapper)`
   width: 100%;
-  padding-top: 30px;
+  padding: 20px 0 0;
   flex-direction: column;
   align-items: flex-start;
   border-top: 1px solid ${OL.GREY11};
 `;
 
 const CourtroomOptionsWrapper = styled.div`
-  width: 400px;
-  margin: 0 auto;
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  align-items: baseline;
+  width: 100%;
+  display: grid;
+  grid-template-columns: 45% 50%;
+  padding: 30px 0 10;
+  margin: 10px;
+  column-gap: 5%;
+`;
+
+const OptionsWrapper = styled.div`
+  width: 100%;
+  min-height: 94px;
+  display: grid;
+  grid-template-columns: 60% 18% 15%;
+  column-gap: 10px;
+  align-items: flex-end;
+  label {
+    width: 100%;
+  }
 `;
 
 const CourtOptionTitle = styled.div`
@@ -148,10 +162,9 @@ type Props = {
       endDate :string
     }) => void
   },
-  allHearingData :Map<*, *>,
+  courtroomTimes :Map<*, *>,
   history :string[],
   loadingHearingData :boolean,
-  courtroomOptions :Map<*, *>,
   downloadingReports :boolean,
   noHearingResults :boolean
 };
@@ -166,21 +179,24 @@ class DownloadPSA extends React.Component<Props, State> {
   constructor(props :Props) {
     super(props);
     this.state = {
-      startDate: undefined,
-      endDate: undefined,
-      byHearingDate: true,
+      startDate: '',
+      endDate: '',
+      hearingDate: moment(),
+      selectedHearingData: List(),
+      byHearingDate: false,
       byPSADate: false,
-      courtroom: ''
+      courtTime: ''
     };
   }
 
-  handleClose = () => {
-    const { history } = this.props;
-    this.setState({
-      startDate: undefined,
-      endDate: undefined
-    });
-    history.push(Routes.DASHBOARD);
+  componentDidMount() {
+    const { actions } = this.props;
+    let { hearingDate } = this.state;
+    hearingDate = moment(hearingDate);
+    if (hearingDate.isValid()) {
+      this.setState({ hearingDate });
+      actions.getDownloadFilters({ hearingDate });
+    }
   }
 
   getErrorText = (downloads) => {
@@ -238,36 +254,51 @@ class DownloadPSA extends React.Component<Props, State> {
   }
 
   downloadByHearingDate = (filters, domain) => {
-    const { startDate, endDate, courtroom } = this.state;
-    const { actions, allHearingData } = this.props;
-    if (startDate && endDate) {
+    const { courtTime, hearingDate, selectedHearingData } = this.state;
+    const { actions } = this.props;
+    if (hearingDate) {
       actions.downloadPSAsByHearingDate({
-        allHearingData,
-        courtroom,
-        startDate,
-        endDate,
+        courtTime,
+        enteredHearingDate: hearingDate,
+        selectedHearingData,
         filters,
         domain
       });
     }
   }
 
-  renderCourtoomOptions = () => {
-    const { courtroom } = this.state;
-    const { courtroomOptions } = this.props;
-    const options = courtroomOptions.sortBy(([k, _]) => k).set('All', '');
+  handleCourtAndTimeSelection = (option) => {
+    const courtTime = option.getIn([0, PROPERTY_TYPES.DATE_TIME, 0], '');
+    const formattedTime = moment(courtTime).format(('HH:mm'));
+    const hearingCourtroom = option.getIn([0, PROPERTY_TYPES.COURTROOM, 0]);
+    this.setState({
+      courtTime: `${hearingCourtroom} - ${formattedTime}`,
+      selectedHearingData: option
+    });
+  }
+
+  renderCourtTimeOptions = () => {
+    const { courtTime } = this.state;
+    const { courtroomTimes } = this.props;
     return (
       <StyledSearchableSelect
-          options={options}
-          value={courtroom}
-          onSelect={newCourtroom => this.setState({ courtroom: newCourtroom })}
+          options={courtroomTimes}
+          value={courtTime}
+          onSelect={option => this.handleCourtAndTimeSelection(option)}
           short />
     );
   }
 
-  onDateChange = (dates) => {
+  onHearingDateChange = (dateStr) => {
     const { actions } = this.props;
-    const { byHearingDate } = this.state;
+    const hearingDate = moment(dateStr);
+    if (hearingDate.isValid()) {
+      this.setState({ hearingDate });
+      actions.getDownloadFilters({ hearingDate });
+    }
+  }
+
+  onDateChange = (dates) => {
     let { startDate, endDate } = this.state;
     const { start, end } = dates;
 
@@ -275,24 +306,8 @@ class DownloadPSA extends React.Component<Props, State> {
     if (nextStart) nextStart = moment(nextStart);
     let nextEnd = end || endDate;
     if (nextEnd) nextEnd = moment(nextEnd);
-
     startDate = startDate ? moment(startDate) : startDate;
     endDate = endDate ? moment(endDate) : endDate;
-    if (byHearingDate && !!nextStart && !!nextEnd) {
-      const startChanged = startDate ? !startDate.isSame(start) : false;
-      const endChanged = endDate ? !endDate.isSame(end) : false;
-      if (
-        startChanged
-        || endChanged
-        || !this.getErrorText(REPORT_TYPES.BY_HEARING)
-        || !this.getErrorText(REPORT_TYPES.BY_PSA)
-      ) {
-        actions.getDownloadFilters({
-          startDate: nextStart,
-          endDate: nextEnd
-        });
-      }
-    }
     this.setState({
       startDate: nextStart,
       endDate: nextEnd
@@ -300,37 +315,38 @@ class DownloadPSA extends React.Component<Props, State> {
   }
 
   renderDownloadByHearing = () => {
-    const { loadingHearingData, downloadingReports } = this.props;
-    const { startDate, endDate, byHearingDate } = this.state;
+    const { loadingHearingData, downloadingReports, noHearingResults } = this.props;
+    const { hearingDate, byHearingDate, courtTime } = this.state;
     const downloads = REPORT_TYPES.BY_HEARING;
     if (loadingHearingData) return <LoadingSpinner />;
-    return (byHearingDate && startDate && endDate)
+    return (byHearingDate && hearingDate)
       ? (
         <SubSelectionWrapper>
-          <CourtroomOptionsWrapper>
-            <CourtOptionTitle>Filter By Courtroom</CourtOptionTitle>
-            { this.renderCourtoomOptions() }
-          </CourtroomOptionsWrapper>
           <ButtonRow>
             <BasicDownloadButton
-                disabled={downloadingReports}
+                disabled={downloadingReports || !courtTime}
                 onClick={() => this.downloadByHearingDate(PSA_RESPONSE_TABLE, DOMAIN.MINNEHAHA)}>
               Download Minnehaha PSA Response Table
             </BasicDownloadButton>
             <BasicDownloadButton
-                disabled={downloadingReports}
+                disabled={downloadingReports || !courtTime}
                 onClick={() => this.downloadByHearingDate(SUMMARY_REPORT, DOMAIN.MINNEHAHA)}>
               Download Minnehaha Summary Report
             </BasicDownloadButton>
             <BasicDownloadButton
-                disabled={downloadingReports}
+                disabled={downloadingReports || !courtTime}
                 onClick={() => this.downloadByHearingDate(SUMMARY_REPORT, DOMAIN.PENNINGTON)}>
               Download Pennington Summary Report
             </BasicDownloadButton>
           </ButtonRow>
           {
-            (!startDate || !endDate || this.getErrorText(downloads))
+            (!hearingDate || !downloadingReports || this.getErrorText(downloads))
               ? this.renderError(downloads)
+              : null
+          }
+          {
+            noHearingResults
+              ? <NoResults>There are no open PSAs associated to the criteria selected above.</NoResults>
               : null
           }
           {
@@ -354,16 +370,18 @@ class DownloadPSA extends React.Component<Props, State> {
       this.setState({
         byHearingDate: true,
         byPSADate: false,
-        startDate: undefined,
-        endDate: undefined,
+        hearingDate: moment(),
+        startDate: '',
+        endDate: '',
       });
     }
     else if (name === REPORT_TYPES.BY_PSA) {
       this.setState({
         byHearingDate: false,
+        hearingDate: moment(),
         byPSADate: true,
-        startDate: undefined,
-        endDate: undefined,
+        startDate: '',
+        endDate: '',
       });
     }
   }
@@ -400,7 +418,7 @@ class DownloadPSA extends React.Component<Props, State> {
             </InfoDownloadButton>
           </ButtonRow>
           {
-            (!startDate || !endDate || this.getErrorText(downloads))
+            (!startDate || !endDate || !downloadingReports || this.getErrorText(downloads))
               ? this.renderError(downloads)
               : null
           }
@@ -423,6 +441,7 @@ class DownloadPSA extends React.Component<Props, State> {
     const {
       byHearingDate,
       byPSADate,
+      hearingDate,
       startDate,
       endDate
     } = this.state;
@@ -447,25 +466,39 @@ class DownloadPSA extends React.Component<Props, State> {
             <DownloadSection>
               <SubHeaderSection>PSA Downloads</SubHeaderSection>
               <SelectionWrapper>
-                <DateTimeRange
-                    noLabel
-                    startDate={startDate}
-                    endDate={endDate}
-                    onStartChange={start => this.onDateChange({ start })}
-                    onEndChange={end => this.onDateChange({ end })}
-                    format24HourClock />
-                <StyledCheckbox
-                    name={REPORT_TYPES.BY_HEARING}
-                    label="By Hearing Date"
-                    checked={byHearingDate}
-                    value={byHearingDate}
-                    onChange={this.handleCheckboxChange} />
-                <StyledCheckbox
-                    name={REPORT_TYPES.BY_PSA}
-                    label="By PSA Date"
-                    checked={byPSADate}
-                    value={byPSADate}
-                    onChange={this.handleCheckboxChange} />
+                <OptionsWrapper>
+                  {
+                    byHearingDate
+                      ? (
+                        <CourtroomOptionsWrapper>
+                          <DatePicker
+                              value={hearingDate.format('YYYY-MM-DD')}
+                              onChange={date => this.onHearingDateChange(date)} />
+                          { this.renderCourtTimeOptions() }
+                        </CourtroomOptionsWrapper>
+                      )
+                      : (
+                        <DateTimeRangePicker
+                            startDate={startDate}
+                            endDate={endDate}
+                            onStartChange={start => this.onDateChange({ start })}
+                            onEndChange={end => this.onDateChange({ end })}
+                            format24HourClock />
+                      )
+                  }
+                  <StyledCheckbox
+                      name={REPORT_TYPES.BY_HEARING}
+                      label="By Hearing Date"
+                      checked={byHearingDate}
+                      value={byHearingDate}
+                      onChange={this.handleCheckboxChange} />
+                  <StyledCheckbox
+                      name={REPORT_TYPES.BY_PSA}
+                      label="By PSA Date"
+                      checked={byPSADate}
+                      value={byPSADate}
+                      onChange={this.handleCheckboxChange} />
+                </OptionsWrapper>
               </SelectionWrapper>
               <SelectionWrapper>
                 {this.renderDownloadByHearing()}
@@ -486,6 +519,7 @@ function mapStateToProps(state) {
   return {
     [DOWNLOAD.DOWNLOADING_REPORTS]: download.get(DOWNLOAD.DOWNLOADING_REPORTS),
     [DOWNLOAD.COURTROOM_OPTIONS]: download.get(DOWNLOAD.COURTROOM_OPTIONS),
+    [DOWNLOAD.COURTROOM_TIMES]: download.get(DOWNLOAD.COURTROOM_TIMES),
     [DOWNLOAD.ERROR]: download.get(DOWNLOAD.ERROR),
     [DOWNLOAD.NO_RESULTS]: download.get(DOWNLOAD.NO_RESULTS),
     [DOWNLOAD.ALL_HEARING_DATA]: download.get(DOWNLOAD.ALL_HEARING_DATA),
