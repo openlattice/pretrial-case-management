@@ -13,7 +13,7 @@ import { bindActionCreators } from 'redux';
 import ContentBlock from '../ContentBlock';
 import ContentSection from '../ContentSection';
 import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
-import DatePicker from '../controls/StyledDatePicker';
+import DatePicker from '../datetime/DatePicker';
 import InfoButton from '../buttons/InfoButton';
 import psaHearingConfig from '../../config/formconfig/PSAHearingConfig';
 import SearchableSelect from '../controls/SearchableSelect';
@@ -223,8 +223,7 @@ class NewHearingSection extends React.Component<Props, State> {
     return (
       <DatePicker
           value={newHearingDate}
-          onChange={this.onDateChange}
-          clearButton={false} />
+          onChange={this.onDateChange} />
     );
   }
 
