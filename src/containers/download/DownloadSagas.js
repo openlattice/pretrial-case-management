@@ -21,7 +21,7 @@ import {
 import FileSaver from '../../utils/FileSaver';
 import MinnehahaChargesList from '../../utils/consts/MinnehahaChargesList';
 import PenningtonChargesList from '../../utils/consts/PenningtonChargesList';
-import { formatDateTime } from '../../utils/FormattingUtils';
+import { toISODate, formatDateTime } from '../../utils/FormattingUtils';
 import { getFilteredNeighbor, stripIdField } from '../../utils/DataUtils';
 import { obfuscateBulkEntityNeighbors } from '../../utils/consts/DemoNames';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
@@ -354,10 +354,9 @@ function* downloadPSAsByHearingDateWorker(action :SequenceAction) :Generator<*, 
 
   try {
     const {
-      startDate,
-      endDate,
-      allHearingData,
-      courtroom,
+      courtTime,
+      enteredHearingDate,
+      selectedHearingData,
       filters,
       domain
     } = action.value;
@@ -380,13 +379,10 @@ function* downloadPSAsByHearingDateWorker(action :SequenceAction) :Generator<*, 
       call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.PSA_SCORES)
     ]);
 
-    if (allHearingData.size) {
-      allHearingData.forEach((hearing) => {
+    if (selectedHearingData.size) {
+      selectedHearingData.forEach((hearing) => {
         const hearingId = hearing.getIn([OPENLATTICE_ID_FQN, 0]);
-        const hearingCourtroom = hearing.getIn([PROPERTY_TYPES.COURTROOM, 0]);
-        const hearingMatchesCourtroom = hearingCourtroom === courtroom;
-        const shouldIncludeHearing = courtroom ? hearingMatchesCourtroom : true;
-        if (shouldIncludeHearing) {
+        if (hearingId) {
           hearingIds = hearingIds.add(hearingId);
         }
       });
@@ -445,8 +441,7 @@ function* downloadPSAsByHearingDateWorker(action :SequenceAction) :Generator<*, 
 
         if (entitySetName === ENTITY_SETS.HEARINGS) {
           const hearingDate = entityDateTime;
-          const hearingDateInRange = hearingDate.isAfter(startDate)
-            && hearingDate.isBefore(endDate);
+          const hearingDateInRange = hearingDate.isSame(enteredHearingDate);
           if (hearingDateInRange) {
             hasValidHearing = true;
           }
@@ -578,9 +573,7 @@ function* downloadPSAsByHearingDateWorker(action :SequenceAction) :Generator<*, 
           data: jsonResults.toJS()
         });
 
-        const name = courtroom
-          ? `psas_${courtroom}_hearing_dates_from_${startDate.format('MM-DD-YYYY')}-to-${endDate.format('MM-DD-YYYY')}`
-          : `all_psas_with_hearing_dates_from_${startDate.format('MM-DD-YYYY')}_to_${endDate.format('MM-DD-YYYY')}`;
+        const name = `psas_${courtTime}`;
 
         FileSaver.saveFile(csv, name, 'csv');
 
@@ -614,11 +607,13 @@ function* getDownloadFiltersWorker(action :SequenceAction) :Generator<*, *, *> {
   try {
     yield put(getDownloadFilters.request(action.id));
     let courtrooms = Immutable.Map();
+    let options = Immutable.Map();
+    let courtTimeOptions = Immutable.Map();
     let noResults = false;
-    const { startDate, endDate } = action.value;
+    const { hearingDate } = action.value;
 
-    const start = startDate.toISOString(true);
-    const end = endDate.toISOString(true);
+    const start = toISODate(hearingDate);
+
     const DATE_TIME_FQN = new FullyQualifiedName(PROPERTY_TYPES.DATE_TIME);
 
     const [datePropertyTypeId, hearingEntitySetId] = yield all([
@@ -629,7 +624,7 @@ function* getDownloadFiltersWorker(action :SequenceAction) :Generator<*, *, *> {
     const ceiling = yield call(DataApi.getEntitySetSize, hearingEntitySetId);
 
     const hearingOptions = {
-      searchTerm: `${datePropertyTypeId}: [${start} TO ${end}]`,
+      searchTerm: `${datePropertyTypeId}: ${start}`,
       start: 0,
       maxHits: ceiling,
       fuzzy: false
@@ -639,18 +634,38 @@ function* getDownloadFiltersWorker(action :SequenceAction) :Generator<*, *, *> {
     allHearingData = Immutable.fromJS(allHearingData.hits);
     if (allHearingData.size) {
       allHearingData.forEach((hearing) => {
+        const courtTime = hearing.getIn([PROPERTY_TYPES.DATE_TIME, 0]);
+        const sameAshearingDate = (hearingDate.isSame(courtTime, 'day'));
         const hearingId = hearing.getIn([OPENLATTICE_ID_FQN, 0]);
         const hearingType = hearing.getIn([PROPERTY_TYPES.HEARING_TYPE, 0]);
         const hearingCourtroom = hearing.getIn([PROPERTY_TYPES.COURTROOM, 0]);
         const hearingHasBeenCancelled = hearing.getIn([PROPERTY_TYPES.UPDATE_TYPE, 0], '')
           .toLowerCase().trim() === 'cancelled';
         if (hearingId && hearingType && !hearingHasBeenCancelled) {
+          if (courtTime && sameAshearingDate) {
+            const formattedTime = moment(courtTime).format(('HH:mm'));
+            options = options.set(
+              `${hearingCourtroom} - ${formattedTime}`,
+              options.get(`${hearingCourtroom} - ${formattedTime}`, Immutable.List()).push(hearing)
+            );
+          }
           courtrooms = courtrooms.set(hearingCourtroom, hearingCourtroom);
         }
       });
     }
+
+    courtTimeOptions = options
+      .sortBy(hearings => hearings.get(0).getIn([PROPERTY_TYPES.DATE_TIME, 0]))
+      .sortBy(hearings => hearings.get(0).getIn([PROPERTY_TYPES.COURTROOM, 0]));
+
     if (!allHearingData.size) noResults = true;
-    yield put(getDownloadFilters.success(action.id, { courtrooms, allHearingData, noResults }));
+    yield put(getDownloadFilters.success(action.id, {
+      courtrooms,
+      courtTimeOptions,
+      options,
+      allHearingData,
+      noResults
+    }));
   }
   catch (error) {
     console.error(error);
