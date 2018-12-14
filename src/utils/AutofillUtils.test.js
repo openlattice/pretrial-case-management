@@ -2,12 +2,7 @@ import Immutable, { Map, Set, fromJS } from 'immutable';
 
 import { CHARGE, PSA, DMF } from './consts/Consts';
 import { PROPERTY_TYPES } from './consts/DataModelConsts';
-import { CHARGE_VALUES } from './consts/ArrestChargeConsts';
 import { ODYSSEY_VIOLENT_CHARGES } from './consts/ChargeConsts';
-import {
-  PENN_BOOKING_HOLD_EXCEPTIONS,
-  PENN_BOOKING_RELEASE_EXCEPTIONS,
-} from './consts/DMFExceptionsList';
 
 import {
   DATE_1,
@@ -29,7 +24,10 @@ import {
   MOCK_BHE_CHARGE_1,
   MOCK_BHE_CHARGE_2,
   MOCK_BRE_CHARGE_1,
-  MOCK_BRE_CHARGE_2
+  MOCK_BRE_CHARGE_2,
+  CHARGE_VALUES,
+  PENN_BOOKING_HOLD_EXCEPTIONS,
+  PENN_BOOKING_RELEASE_EXCEPTIONS
 } from './consts/test/MockArrestCharges';
 
 import {
