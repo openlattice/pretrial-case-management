@@ -22,6 +22,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [DOWNLOAD.NO_RESULTS]: false,
   [DOWNLOAD.DOWNLOADING_REPORTS]: false,
   [DOWNLOAD.COURTROOM_OPTIONS]: Map(),
+  [DOWNLOAD.COURTROOM_TIMES]: Map(),
   [DOWNLOAD.LOADING_HEARING_DATA]: false,
   [DOWNLOAD.ERROR]: List(),
   [DOWNLOAD.ALL_HEARING_DATA]: Set()
@@ -67,6 +68,7 @@ export default function downloadReducer(state :Map<*, *> = INITIAL_STATE, action
         SUCCESS: () => state
           .set(DOWNLOAD.COURTROOM_OPTIONS, action.value.courtrooms)
           .set(DOWNLOAD.ALL_HEARING_DATA, action.value.allHearingData)
+          .set(DOWNLOAD.COURTROOM_TIMES, action.value.courtTimeOptions)
           .set(DOWNLOAD.NO_RESULTS, action.value.noResults),
         FAILURE: () => state.set(DOWNLOAD.LOADING_HEARING_DATA, false),
         FINALLY: () => state.set(DOWNLOAD.LOADING_HEARING_DATA, false)
