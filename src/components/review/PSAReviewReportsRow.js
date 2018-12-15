@@ -351,8 +351,8 @@ export default class PSAReviewReportsRow extends React.Component<Props, State> {
             {this.renderPersonCard()}
             {this.renderStats()}
           </ReviewRowWrapper>
-          {this.renderModal()}
         </DetailsRowContainer>
+        {this.renderModal()}
         {this.renderMetadata()}
       </ReviewRowContainer>
     );
