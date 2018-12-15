@@ -16,7 +16,6 @@ import SecondaryButton from '../../components/buttons/SecondaryButton';
 import ToggleButtonsGroup from '../../components/buttons/ToggleButtons';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import PersonCard from '../../components/people/PersonCard';
-// import StyledDatePicker from '../../components/controls/StyledDatePicker';
 import DatePicker from '../../components/datetime/DatePicker';
 import * as Routes from '../../core/router/Routes';
 import { StyledSectionWrapper } from '../../utils/Layout';
