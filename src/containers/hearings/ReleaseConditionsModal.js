@@ -6,7 +6,7 @@ import React from 'react';
 import { Constants } from 'lattice';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { Modal } from 'react-bootstrap';
+import Modal, { ModalTransition } from '@atlaskit/modal-dialog';
 import { Map, List } from 'immutable';
 
 import SelectReleaseConditions from '../../components/releaseconditions/SelectReleaseConditions';
@@ -28,7 +28,6 @@ import {
   SUBMIT
 } from '../../utils/consts/FrontEndStateConsts';
 
-import * as OverrideClassNames from '../../utils/styleoverrides/OverrideClassNames';
 import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
 import * as DataActionFactory from '../../utils/data/DataActionFactory';
 import * as ReviewActionFactory from '../review/ReviewActionFactory';
@@ -81,6 +80,10 @@ type Props = {
     }) => void
   }
 }
+
+
+const MODAL_WIDTH = '975px';
+const MODAL_HEIGHT = 'max-content';
 
 class ReleaseConditionsModal extends React.Component<Props, State> {
 
@@ -176,54 +179,63 @@ class ReleaseConditionsModal extends React.Component<Props, State> {
 
     return (
       <Wrapper>
-        <Modal
-            show={open}
-            onHide={onClose}
-            dialogClassName={OverrideClassNames.PSA_REVIEW_MODAL}>
-          <Modal.Body>
-            <TitleWrapper>
-              <h1>Hearing Details</h1>
-              <div>
-                <CloseModalX onClick={onClose} />
-              </div>
-            </TitleWrapper>
-            <PaddedStyledColumnRow>
-              {
-                loading
-                  ? <LoadingSpinner />
-                  : (
-                    <SelectReleaseConditions
-                        submitting={submitting}
-                        submittedOutcomes={submittedOutcomes}
-                        jurisdiction={jurisdiction}
-                        judgeEntity={judgeFromJudgeEntity}
-                        judgeEntitySetId={judgeEntitySetId}
-                        judgeName={judgeName}
-                        allJudges={allJudges}
-                        neighbors={neighbors}
-                        personId={personId}
-                        psaId={psaId}
-                        dmfId={dmfId}
-                        submit={submit}
-                        replace={replaceEntity}
-                        replaceAssociation={replaceAssociation}
-                        deleteEntity={deleteEntity}
-                        submitCallback={this.refreshPSANeighborsCallback}
-                        updateFqn={updateOutcomesAndReleaseCondtions}
-                        refreshHearingsNeighborsCallback={this.refreshHearingsNeighborsCallback}
-                        hearingIdsRefreshing={hearingIdsRefreshing}
-                        hearingId={hearingId}
-                        hearingEntityKeyId={hearingEntityKeyId}
-                        hearing={hearing}
-                        defaultOutcome={outcome}
-                        defaultDMF={defaultDMF}
-                        defaultBond={bond}
-                        defaultConditions={conditions} />
-                  )
-              }
-            </PaddedStyledColumnRow>
-          </Modal.Body>
-        </Modal>
+        <ModalTransition>
+          {
+            open
+            && (
+              <Modal
+                  scrollBehavior="outside"
+                  onClose={() => onClose()}
+                  width={MODAL_WIDTH}
+                  height={MODAL_HEIGHT}
+                  max-height={MODAL_HEIGHT}
+                  shouldCloseOnOverlayClick
+                  stackIndex={2}>
+                <TitleWrapper>
+                  <h1>Hearing Details</h1>
+                  <div>
+                    <CloseModalX onClick={onClose} />
+                  </div>
+                </TitleWrapper>
+                <PaddedStyledColumnRow>
+                  {
+                    loading
+                      ? <LoadingSpinner />
+                      : (
+                        <SelectReleaseConditions
+                            submitting={submitting}
+                            submittedOutcomes={submittedOutcomes}
+                            jurisdiction={jurisdiction}
+                            judgeEntity={judgeFromJudgeEntity}
+                            judgeEntitySetId={judgeEntitySetId}
+                            judgeName={judgeName}
+                            allJudges={allJudges}
+                            neighbors={neighbors}
+                            personId={personId}
+                            psaId={psaId}
+                            dmfId={dmfId}
+                            submit={submit}
+                            replace={replaceEntity}
+                            replaceAssociation={replaceAssociation}
+                            deleteEntity={deleteEntity}
+                            submitCallback={this.refreshPSANeighborsCallback}
+                            updateFqn={updateOutcomesAndReleaseCondtions}
+                            refreshHearingsNeighborsCallback={this.refreshHearingsNeighborsCallback}
+                            hearingIdsRefreshing={hearingIdsRefreshing}
+                            hearingId={hearingId}
+                            hearingEntityKeyId={hearingEntityKeyId}
+                            hearing={hearing}
+                            defaultOutcome={outcome}
+                            defaultDMF={defaultDMF}
+                            defaultBond={bond}
+                            defaultConditions={conditions} />
+                      )
+                  }
+                </PaddedStyledColumnRow>
+              </Modal>
+            )
+          }
+        </ModalTransition>
       </Wrapper>
     );
   }
