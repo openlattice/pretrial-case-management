@@ -151,6 +151,9 @@ class PersonDetailsContainer extends React.Component<Props, State> {
     this.setState({ closing: false });
   }
 
+  closeModal = () => (this.setState({ open: false }));
+  openModal = () => (this.setState({ open: true }));
+
   renderPSADetailsModal = () => {
     const { closePSAButtonActive, closing, open } = this.state;
     const {
@@ -187,6 +190,7 @@ class PersonDetailsContainer extends React.Component<Props, State> {
             defaultStatus={scores.getIn([PROPERTY_TYPES.STATUS, 0])}
             defaultStatusNotes={scores.getIn([PROPERTY_TYPES.STATUS_NOTES, 0])}
             defaultFailureReasons={scores.get(PROPERTY_TYPES.FAILURE_REASON, List()).toJS()}
+            openModal={this.openModal}
             onClose={() => this.setState({ closePSAButtonActive: false, closing: false, open: false })}
             onSubmit={this.handleStatusChange}
             onStatusChangeCallback={this.refreshPSANeighborsCallback} />
@@ -202,7 +206,8 @@ class PersonDetailsContainer extends React.Component<Props, State> {
             manualChargeHistory={personManualChargeHistory}
             neighbors={neighborsForMostRecentPSA}
             open={open}
-            onClose={() => this.setState({ open: false })}
+            openModal={this.openModal}
+            onClose={this.closeModal}
             scores={scores}
             personId={personId}
             sentenceHistory={personSentenceHistory}
@@ -252,7 +257,7 @@ class PersonDetailsContainer extends React.Component<Props, State> {
       .toJS();
     loadCaseHistory({ personId, neighbors: neighborsForMostRecentPSA });
     loadHearingNeighbors({ hearingIds, loadPersonData: false });
-    this.setState({ open: true });
+    this.openModal();
   }
 
   renderPSA = () => {

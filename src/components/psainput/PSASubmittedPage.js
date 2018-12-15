@@ -79,7 +79,7 @@ const Wrapper = styled.div`
 `;
 
 const Banner = styled(WideContainer)`
-  margin-top: -35px;
+  margin: 0 -20px;
   padding: 30px;
   background-color: ${(props) => {
     switch (props.status) {
@@ -92,7 +92,7 @@ const Banner = styled(WideContainer)`
     }
   }};
   height: 80px;
-  width: 1000px;
+  width: 1010px;
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -185,6 +185,10 @@ const InlineScores = styled.div`
 
 const ScoresContainer = styled.div`
   padding: 0 15px;
+`;
+
+const CreateHearingWrapper = styled.div`
+  padding-top: 30px;
 `;
 
 const DMF = styled(WideContainer)`
@@ -477,35 +481,35 @@ class PSASubmittedPage extends React.Component<Props, State> {
     );
   }
 
+  setHearing = () => this.setState({
+    settingHearing: true,
+    selectedHearing: undefined
+  });
+
   renderSetHearingButton = () => {
-    const { selectedHearing } = this.state;
+    const { settingHearing, selectedHearing } = this.state;
     return (
-      <InfoButton onClick={() => this.setState({ settingHearing: true })}>
+      <InfoButton
+          onClick={() => this.setState({ settingHearing: true })}
+          disabled={settingHearing}>
         {selectedHearing ? 'View Hearing' : 'Set Hearing'}
       </InfoButton>
     );
   };
 
-  render() {
+  renderHearingNewHearingSection = () => {
     const {
-      notes,
-      charges,
-      onClose,
-      allCases,
-      allCharges,
       allHearings,
       personId,
       psaId,
       isSubmitting,
-      context,
-      violentArrestCharges,
-      selectedOrganizationId
+      context
     } = this.props;
-    const { settingHearing, selectedHearing } = this.state;
+    const { selectedHearing } = this.state;
     const jurisdiction = JURISDICTION[context];
-    if (settingHearing) {
-      if (!selectedHearing) {
-        return (
+    if (!selectedHearing) {
+      return (
+        <CreateHearingWrapper>
           <NewHearingSection
               submitting={isSubmitting}
               jurisdiction={jurisdiction}
@@ -514,29 +518,32 @@ class PSASubmittedPage extends React.Component<Props, State> {
               hearings={allHearings}
               manuallyCreatingHearing
               onSubmit={hearing => this.setState({ selectedHearing: hearing })} />
-        );
-      }
-
-      return (
-        <SelectedHearingInfo
-            hearing={selectedHearing}
-            onClose={() => this.setState({ settingHearing: false })} />
+        </CreateHearingWrapper>
       );
     }
+    return (
+      <SelectedHearingInfo
+          hearing={selectedHearing}
+          setHearing={this.setHearing}
+          onClose={() => this.setState({
+            settingHearing: false,
+            selectedHearing: undefined
+          })} />
+    );
+  }
+
+  renderContent = () => {
+    const {
+      notes,
+      charges,
+      allCases,
+      allCharges,
+      violentArrestCharges,
+      selectedOrganizationId
+    } = this.props;
 
     return (
-      <Wrapper>
-        {this.renderBanner()}
-        <HeaderRow>
-          <span>Public Safety Assessment</span>
-          <ButtonRow>
-            {this.renderExportButton()}
-            {this.renderProfileButton()}
-            {this.renderSetHearingButton()}
-          </ButtonRow>
-        </HeaderRow>
-        {this.renderScores()}
-        {this.renderDMF()}
+      <div>
         <div>
           <MinimallyPaddedResultHeader>Charges</MinimallyPaddedResultHeader>
           <WideContainer>
@@ -556,6 +563,32 @@ class PSASubmittedPage extends React.Component<Props, State> {
             <CaseHistoryTimeline caseHistory={allCases} chargeHistory={allCharges} />
           </TimelineContainer>
         </div>
+      </div>
+    );
+  }
+
+  render() {
+    const { onClose } = this.props;
+    const { settingHearing } = this.state;
+
+    return (
+      <Wrapper>
+        {this.renderBanner()}
+        <HeaderRow>
+          <span>Public Safety Assessment</span>
+          <ButtonRow>
+            {this.renderExportButton()}
+            {this.renderProfileButton()}
+            {this.renderSetHearingButton()}
+          </ButtonRow>
+        </HeaderRow>
+        {this.renderScores()}
+        {this.renderDMF()}
+        {
+          settingHearing
+            ? this.renderHearingNewHearingSection()
+            : this.renderContent()
+        }
         <FooterRow>
           <ButtonRow>
             {this.renderExportButton(true)}
