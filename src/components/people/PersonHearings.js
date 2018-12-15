@@ -273,7 +273,7 @@ class PersonHearings extends React.Component<Props, State> {
                     : (
                       <HearingCardsWithTitle
                           title="Available Hearings"
-                          subtitle="Select a hearing ato add it to the defendant's schedule"
+                          subtitle="Select a hearing to add it to the defendant's schedule"
                           hearings={availableHearings}
                           handleSelect={this.selectExistingHearing} />
                     )
