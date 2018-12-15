@@ -9,7 +9,7 @@ import { Constants } from 'lattice';
 import Immutable, { List, Map } from 'immutable';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { Modal } from 'react-bootstrap';
+import Modal, { ModalTransition } from '@atlaskit/modal-dialog';
 import { AuthUtils } from 'lattice-auth';
 
 import CustomTabs from '../../components/tabs/Tabs';
@@ -51,7 +51,6 @@ import {
   PSA
 } from '../../utils/consts/Consts';
 
-import * as OverrideClassNames from '../../utils/styleoverrides/OverrideClassNames';
 import * as FormActionFactory from '../psa/FormActionFactory';
 import * as ReviewActionFactory from './ReviewActionFactory';
 import * as CourtActionFactory from '../court/CourtActionFactory';
@@ -206,8 +205,11 @@ type Props = {
   }
 };
 
+const MODAL_WIDTH = '975px';
+const MODAL_HEIGHT = 'max-content';
+
 type State = {
-  closing :boolean,
+  closingPSAModalOpen :boolean,
   dmf :Object,
   editing :boolean,
   hearingExists :boolean,
@@ -227,7 +229,7 @@ class PSAModal extends React.Component<Props, State> {
     super(props);
     this.state = {
       editing: false,
-      closing: false,
+      closingPSAModalOpen: false,
       riskFactors: this.getRiskFactors(props.neighbors),
       dmf: this.getDMF(props.neighbors)
     };
@@ -585,7 +587,8 @@ class PSAModal extends React.Component<Props, State> {
     const { editing, riskFactors } = this.state;
     const editHeader = (editing || readOnly || psaIsClosed(scores)) ? null : (
       <CenteredContainer>
-        <PSAFormHeader>Public Safety Assessment
+        <PSAFormHeader>
+          Public Safety Assessment
           <EditPSAButton onClick={() => {
             this.setState({ editing: true });
           }}>
@@ -751,6 +754,10 @@ class PSAModal extends React.Component<Props, State> {
     );
   }
 
+  renderHeader = () => {
+
+  }
+
   render() {
     const {
       scores,
@@ -760,7 +767,7 @@ class PSAModal extends React.Component<Props, State> {
       readOnly
     } = this.props;
 
-    const { closing } = this.state;
+    const { closingPSAModalOpen } = this.state;
 
     if (!scores) return null;
     const changeStatusText = psaIsClosed(scores) ? 'Change PSA Status' : 'Close PSA';
@@ -798,36 +805,46 @@ class PSAModal extends React.Component<Props, State> {
     }
 
     return (
-      <Modal
-          show={open}
-          onHide={onClose}
-          dialogClassName={OverrideClassNames.PSA_REVIEW_MODAL}>
-        <Modal.Body>
-          <ClosePSAModal
-              open={closing}
-              defaultStatus={scores.getIn([PROPERTY_TYPES.STATUS, 0])}
-              defaultStatusNotes={scores.getIn([PROPERTY_TYPES.STATUS_NOTES, 0])}
-              defaultFailureReasons={scores.get(PROPERTY_TYPES.FAILURE_REASON, List()).toJS()}
-              onClose={() => this.setState({ closing: false })}
-              onSubmit={this.handleStatusChange}
-              scores={scores}
-              entityKeyId={entityKeyId} />
-          <TitleWrapper>
-            <TitleHeader>
-              PSA Details:
-              <span>{` ${this.getName()}`}</span>
-            </TitleHeader>
-            <div>
-              { readOnly
-                ? null
-                : <ClosePSAButton onClick={() => this.setState({ closing: true })}>{changeStatusText}</ClosePSAButton>
-              }
-              <CloseModalX onClick={onClose} />
-            </div>
-          </TitleWrapper>
-          <CustomTabs panes={tabs} />
-        </Modal.Body>
-      </Modal>
+      <ModalTransition>
+        { open && (
+          <Modal
+              scrollBehavior="outside"
+              onClose={() => onClose()}
+              width={MODAL_WIDTH}
+              height={MODAL_HEIGHT}
+              max-height={MODAL_HEIGHT}
+              shouldCloseOnOverlayClick
+              stackIndex={1}>
+            <ClosePSAModal
+                open={closingPSAModalOpen}
+                defaultStatus={scores.getIn([PROPERTY_TYPES.STATUS, 0])}
+                defaultStatusNotes={scores.getIn([PROPERTY_TYPES.STATUS_NOTES, 0])}
+                defaultFailureReasons={scores.get(PROPERTY_TYPES.FAILURE_REASON, List()).toJS()}
+                onClose={() => this.setState({ closingPSAModalOpen: false })}
+                onSubmit={this.handleStatusChange}
+                scores={scores}
+                entityKeyId={entityKeyId} />
+            <TitleWrapper>
+              <TitleHeader>
+                PSA Details:
+                <span>{` ${this.getName()}`}</span>
+              </TitleHeader>
+              <div>
+                { readOnly
+                  ? null
+                  : (
+                    <ClosePSAButton onClick={() => this.setState({ closingPSAModalOpen: true })}>
+                      {changeStatusText}
+                    </ClosePSAButton>
+                  )
+                }
+                <CloseModalX onClick={() => onClose()} />
+              </div>
+            </TitleWrapper>
+            <CustomTabs panes={tabs} />
+          </Modal>
+        )}
+      </ModalTransition>
     );
   }
 }

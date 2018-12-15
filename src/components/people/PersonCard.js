@@ -114,8 +114,8 @@ type Props = {
 };
 
 type State = {
-  open :boolean,
-  closing :boolean,
+  psaModalOpen :boolean,
+  closingPSAModalOpen :boolean,
   closePSAButtonActive :boolean
 };
 
@@ -130,26 +130,26 @@ class PersonCard extends React.Component<Props, State> {
   constructor(props :Props) {
     super(props);
     this.state = {
-      open: false,
-      closing: false
+      psaModalOpen: false
     };
   }
 
-  handleStatusChange = () => {
-    this.setState({ closing: false });
-  }
+  onClose = () => (this.setState({ psaModalOpen: false }));
 
   renderModal = () => {
-    const { open } = this.state;
+    const { props } = this;
+    const { psaModalOpen } = this.state;
     const modalProps = {};
-    Object.keys(this.props).forEach(prop => (modalProps[prop] = Immutable.fromJS(this.props[prop])));
+    Object.keys(this.props).forEach((prop) => {
+      (modalProps[prop] = Immutable.fromJS(props[prop]));
+    });
     return (
       <PSAModal
-          open={open}
+          open={psaModalOpen}
           view={CONTENT.JUDGES}
-          onClose={() => this.setState({ open: false })}
+          onClose={this.onClose}
           {...modalProps} />
-    )
+    );
   }
 
 
@@ -163,9 +163,7 @@ class PersonCard extends React.Component<Props, State> {
     const personId = getEntityKeyId(Immutable.fromJS(neighbors), ENTITY_SETS.PEOPLE);
     loadCaseHistoryFn({ personId, neighbors: Immutable.fromJS(neighbors) });
     loadHearingNeighbors({ hearingIds, loadPersonData });
-    this.setState({
-      open: true
-    });
+    this.setState({ psaModalOpen: true });
   }
 
   renderContent = () => {
@@ -185,10 +183,10 @@ class PersonCard extends React.Component<Props, State> {
 
     return hasOpenPSA && judgesview
       ? (
-        <CardWrapper onClick={this.openDetailsModal}>
+        <CardWrapper>
           { this.renderModal() }
           <OpenPSATag>Open PSA</OpenPSATag>
-          <StyledPersonCard>
+          <StyledPersonCard onClick={this.openDetailsModal}>
             <MugShot src={photo || defaultProfile} />
             <PersonInfoSection>
               <Name>{name}</Name>

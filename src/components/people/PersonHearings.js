@@ -6,7 +6,7 @@ import React from 'react';
 import styled from 'styled-components';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { Modal } from 'react-bootstrap';
+import Modal, { ModalTransition } from '@atlaskit/modal-dialog';
 import { Map } from 'immutable';
 
 import closeX from '../../assets/svg/close-x-gray.svg';
@@ -29,7 +29,6 @@ import {
   Wrapper
 } from '../../utils/Layout';
 
-import * as OverrideClassNames from '../../utils/styleoverrides/OverrideClassNames';
 import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
 import * as DataActionFactory from '../../utils/data/DataActionFactory';
 import * as ReviewActionFactory from '../../containers/review/ReviewActionFactory';
@@ -126,6 +125,9 @@ type State = {
   selectedHearing :Object,
   selectingReleaseConditions :boolean
 };
+
+const MODAL_WIDTH = '975px';
+const MODAL_HEIGHT = 'max-content';
 
 class PersonHearings extends React.Component<Props, State> {
   constructor(props :Props) {
@@ -237,41 +239,50 @@ class PersonHearings extends React.Component<Props, State> {
     const { newHearingModalOpen, manuallyCreatingHearing } = this.state;
 
     return (
-      <Modal
-          show={newHearingModalOpen}
-          onHide={this.onClose}
-          dialogClassName={OverrideClassNames.PSA_REVIEW_MODAL}>
-        <Modal.Body>
-          <NoBorderStyledColumnRow>
-            <TitleWrapper>
-              <h1>Add New Hearing</h1>
-              <div>
-                { manuallyCreatingHearing ? null : this.renderCreateHearingButton() }
-                <CloseModalX onClick={this.onClose} />
-              </div>
-            </TitleWrapper>
-            {
-              manuallyCreatingHearing
-                ? (
-                  <NewHearingSection
-                      personId={personId}
-                      psaEntityKeyId={psaEntityKeyId}
-                      psaId={psaId}
-                      manuallyCreatingHearing
-                      jurisdiction={jurisdiction}
-                      afterSubmit={this.onClose} />
-                )
-                : (
-                  <HearingCardsWithTitle
-                      title="Available Hearings"
-                      subtitle="Select a hearing ato add it to the defendant's schedule"
-                      hearings={availableHearings}
-                      handleSelect={this.selectExistingHearing} />
-                )
-            }
-          </NoBorderStyledColumnRow>
-        </Modal.Body>
-      </Modal>
+      <ModalTransition>
+        {
+          newHearingModalOpen
+          && (
+            <Modal
+                scrollBehavior="outside"
+                onClose={() => this.onClose()}
+                width={MODAL_WIDTH}
+                height={MODAL_HEIGHT}
+                max-height={MODAL_HEIGHT}
+                shouldCloseOnOverlayClick
+                stackIndex={2}>
+              <NoBorderStyledColumnRow>
+                <TitleWrapper>
+                  <h1>Add New Hearing</h1>
+                  <div>
+                    { manuallyCreatingHearing ? null : this.renderCreateHearingButton() }
+                    <CloseModalX onClick={this.onClose} />
+                  </div>
+                </TitleWrapper>
+                {
+                  manuallyCreatingHearing
+                    ? (
+                      <NewHearingSection
+                          personId={personId}
+                          psaEntityKeyId={psaEntityKeyId}
+                          psaId={psaId}
+                          manuallyCreatingHearing
+                          jurisdiction={jurisdiction}
+                          afterSubmit={this.onClose} />
+                    )
+                    : (
+                      <HearingCardsWithTitle
+                          title="Available Hearings"
+                          subtitle="Select a hearing to add it to the defendant's schedule"
+                          hearings={availableHearings}
+                          handleSelect={this.selectExistingHearing} />
+                    )
+                }
+              </NoBorderStyledColumnRow>
+            </Modal>
+          )
+        }
+      </ModalTransition>
     );
   }
 

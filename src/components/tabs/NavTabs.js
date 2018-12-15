@@ -44,6 +44,7 @@ const HeaderText = styled.a`
     text-decoration: none;
     border: none;
     cursor: pointer;
+    color: ${OL.PURPLE02}
   }
   ${(props) => {
     if (props.active) {

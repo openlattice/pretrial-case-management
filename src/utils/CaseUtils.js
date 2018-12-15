@@ -44,8 +44,8 @@ const getPendingCharges = (caseNum, chargeHistory, arrestDate, psaClosureDate) =
   if (chargeHistory.get(caseNum)) {
     pendingCharges = chargeHistory.get(caseNum)
       .filter((charge) => {
-        const dispositionDate = moment(charge.getIn([PROPERTY_TYPES.DISPOSITION_DATE, 0], ''));
-        return dispositionDate.isBetween(arrestDate, psaClosureDate, null, '[]');
+        const dispositionDate = moment(charge.getIn([PROPERTY_TYPES.DISPOSITION_DATE, 0], []));
+        return dispositionDate.isBetween(arrestDate, psaClosureDate, null, []);
       });
   }
   return pendingCharges;
@@ -56,8 +56,8 @@ const getNonPendingCharges = (caseNum, chargeHistory, arrestDate, psaClosureDate
   if (chargeHistory.get(caseNum)) {
     nonPendingCharges = chargeHistory.get(caseNum)
       .filter((charge) => {
-        const dispositionDate = moment(charge.getIn([PROPERTY_TYPES.DISPOSITION_DATE, 0], ''));
-        return !dispositionDate.isBetween(arrestDate, psaClosureDate, null, '[]');
+        const dispositionDate = moment(charge.getIn([PROPERTY_TYPES.DISPOSITION_DATE, 0], []));
+        return !dispositionDate.isBetween(arrestDate, psaClosureDate, null, []);
       });
   }
   return nonPendingCharges;

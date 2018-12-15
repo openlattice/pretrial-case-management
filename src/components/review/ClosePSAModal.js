@@ -7,7 +7,7 @@ import styled from 'styled-components';
 import Immutable from 'immutable';
 import moment from 'moment';
 import { connect } from 'react-redux';
-import { Modal } from 'react-bootstrap';
+import Modal, { ModalTransition } from '@atlaskit/modal-dialog';
 import { AuthUtils } from 'lattice-auth';
 import { bindActionCreators } from 'redux';
 
@@ -255,37 +255,42 @@ class ClosePSAModal extends React.Component<Props, State> {
   }
 
   render() {
+    const { open, onClose } = this.props;
     const { status, statusNotes } = this.state;
     return (
-      <Modal show={this.props.open} onHide={this.props.onClose}>
-        <Modal.Body>
-          <ModalWrapper>
-            <TitleWrapper>
-              <h1>Select PSA Resolution</h1>
-              <CloseModalX onClick={this.props.onClose} />
-            </TitleWrapper>
-            <OptionsGrid numColumns={3} gap={5}>
-              {this.mapOptionsToRadioButtons(PSA_STATUSES, 'status')}
-            </OptionsGrid>
-            { status === PSA_STATUSES.FAILURE
-              ? (
-                <FailureReasonsWrapper>
-                  <h2>Reason(s) for failure</h2>
-                  <OptionsGrid numColumns={2} gap={10}>
-                    {this.mapOptionsToCheckboxes(PSA_FAILURE_REASONS, 'failureReason')}
-                  </OptionsGrid>
-                </FailureReasonsWrapper>
-              )
-              : null
-            }
-            <h3>Notes</h3>
-            <StatusNotes>
-              <StyledInput value={statusNotes} onChange={this.onStatusNotesChange} />
-            </StatusNotes>
-            <SubmitButton disabled={!this.isReadyToSubmit()} onClick={this.submit}>Update</SubmitButton>
-          </ModalWrapper>
-        </Modal.Body>
-      </Modal>
+      <ModalTransition>
+        { open
+          && (
+            <Modal onClose={() => onClose()} shouldCloseOnOverlayClick stackIndex={2}>
+              <ModalWrapper>
+                <TitleWrapper>
+                  <h1>Select PSA Resolution</h1>
+                  <CloseModalX onClick={() => onClose()} />
+                </TitleWrapper>
+                <OptionsGrid numColumns={3} gap={5}>
+                  {this.mapOptionsToRadioButtons(PSA_STATUSES, 'status')}
+                </OptionsGrid>
+                { status === PSA_STATUSES.FAILURE
+                  ? (
+                    <FailureReasonsWrapper>
+                      <h2>Reason(s) for failure</h2>
+                      <OptionsGrid numColumns={2} gap={10}>
+                        {this.mapOptionsToCheckboxes(PSA_FAILURE_REASONS, 'failureReason')}
+                      </OptionsGrid>
+                    </FailureReasonsWrapper>
+                  )
+                  : null
+                }
+                <h3>Notes</h3>
+                <StatusNotes>
+                  <StyledInput value={statusNotes} onChange={this.onStatusNotesChange} />
+                </StatusNotes>
+                <SubmitButton disabled={!this.isReadyToSubmit()} onClick={this.submit}>Update</SubmitButton>
+              </ModalWrapper>
+            </Modal>
+          )
+        }
+      </ModalTransition>
     );
   }
 }
