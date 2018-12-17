@@ -244,7 +244,7 @@ class PersonContactInfo extends React.Component<Props, State> {
         {
           (chargeType === CHARGE_TYPES.ARREST)
             ? (
-              <InputRow numColumns={6}>
+              <InputRow numColumns={5}>
                 <InputGroup>
                   <InputLabel>Violent</InputLabel>
                   {this.renderCheckboxInput(
@@ -280,7 +280,7 @@ class PersonContactInfo extends React.Component<Props, State> {
               </InputRow>
             )
             : (
-              <InputRow numColumns={6}>
+              <InputRow numColumns={5}>
                 <InputGroup>
                   <InputLabel>Violent</InputLabel>
                   {this.renderCheckboxInput(
