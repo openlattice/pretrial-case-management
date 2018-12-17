@@ -10,10 +10,9 @@ import { withRouter } from 'react-router-dom';
 
 import { APP, CHARGES, STATE } from '../../utils/consts/FrontEndStateConsts';
 import { OL } from '../../utils/consts/Colors';
-import { getAllViolentCharges, getViolentChargeLabels } from '../../utils/ArrestChargeUtils';
+import { getViolentChargeLabels } from '../../utils/ArrestChargeUtils';
 import { formatValue, formatDateList } from '../../utils/FormattingUtils';
 import {
-  chargeIsViolent,
   chargeIsMostSerious,
   chargeIsGuilty,
   historicalChargeIsViolent
