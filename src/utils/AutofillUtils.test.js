@@ -2,7 +2,6 @@ import Immutable, { Map, Set, fromJS } from 'immutable';
 
 import { CHARGE, PSA, DMF } from './consts/Consts';
 import { PROPERTY_TYPES } from './consts/DataModelConsts';
-import { ODYSSEY_VIOLENT_CHARGES } from './consts/ChargeConsts';
 
 import {
   DATE_1,
@@ -42,7 +41,9 @@ import {
   MOCK_SHOULD_IGNORE_MO,
   MOCK_SHOULD_IGNORE_P,
   MOCK_SHOULD_IGNORE_PO,
-  MOCK_SHOULD_IGNORE_POA
+  MOCK_SHOULD_IGNORE_POA,
+
+  ODYSSEY_VIOLENT_CHARGES
 } from './consts/test/MockHistoricalCharges';
 
 import {
@@ -125,8 +126,6 @@ import {
   tryAutofillFields
 } from './AutofillUtils';
 
-
-const { STATUTE, DESCRIPTION } = CHARGE;
 const { STEP_TWO, STEP_FOUR, ALL_VIOLENT } = CHARGE_VALUES;
 const violentCourtChargeList = fromJS(ODYSSEY_VIOLENT_CHARGES);
 let violentChargeList = Map();
@@ -136,8 +135,8 @@ let bookingReleaseExceptionChargeList = Map();
 let bookingHoldExceptionChargeList = Map();
 
 fromJS(STEP_TWO).forEach((charge) => {
-  const statute = charge.get(STATUTE);
-  const description = charge.get(DESCRIPTION);
+  const statute = charge.getIn([PROPERTY_TYPES.CHARGE_STATUTE, 0], '');
+  const description = charge.getIn([PROPERTY_TYPES.CHARGE_DESCRIPTION, 0], '');
   dmfStep2ChargeList = dmfStep2ChargeList.set(
     statute,
     dmfStep2ChargeList.get(statute, Set()).add(description)
@@ -145,8 +144,8 @@ fromJS(STEP_TWO).forEach((charge) => {
 });
 
 fromJS(STEP_FOUR).forEach((charge) => {
-  const statute = charge.get(STATUTE);
-  const description = charge.get(DESCRIPTION);
+  const statute = charge.getIn([PROPERTY_TYPES.CHARGE_STATUTE, 0], '');
+  const description = charge.getIn([PROPERTY_TYPES.CHARGE_DESCRIPTION, 0], '');
   dmfStep4ChargeList = dmfStep4ChargeList.set(
     statute,
     dmfStep4ChargeList.get(statute, Set()).add(description)
@@ -154,8 +153,8 @@ fromJS(STEP_FOUR).forEach((charge) => {
 });
 
 fromJS(ALL_VIOLENT).forEach((charge) => {
-  const statute = charge.get(STATUTE);
-  const description = charge.get(DESCRIPTION);
+  const statute = charge.getIn([PROPERTY_TYPES.CHARGE_STATUTE, 0], '');
+  const description = charge.getIn([PROPERTY_TYPES.CHARGE_DESCRIPTION, 0], '');
   violentChargeList = violentChargeList.set(
     statute,
     violentChargeList.get(statute, Set()).add(description)
@@ -163,8 +162,8 @@ fromJS(ALL_VIOLENT).forEach((charge) => {
 });
 
 fromJS(PENN_BOOKING_HOLD_EXCEPTIONS).forEach((charge) => {
-  const statute = charge.get(STATUTE);
-  const description = charge.get(DESCRIPTION);
+  const statute = charge.getIn([PROPERTY_TYPES.CHARGE_STATUTE, 0], '');
+  const description = charge.getIn([PROPERTY_TYPES.CHARGE_DESCRIPTION, 0], '');
   bookingHoldExceptionChargeList = bookingHoldExceptionChargeList.set(
     statute,
     bookingHoldExceptionChargeList.get(statute, Set()).add(description)
@@ -172,8 +171,8 @@ fromJS(PENN_BOOKING_HOLD_EXCEPTIONS).forEach((charge) => {
 });
 
 fromJS(PENN_BOOKING_RELEASE_EXCEPTIONS).forEach((charge) => {
-  const statute = charge.get(STATUTE);
-  const description = charge.get(DESCRIPTION);
+  const statute = charge.getIn([PROPERTY_TYPES.CHARGE_STATUTE, 0], '');
+  const description = charge.getIn([PROPERTY_TYPES.CHARGE_DESCRIPTION, 0], '');
   bookingReleaseExceptionChargeList = bookingReleaseExceptionChargeList.set(
     statute,
     bookingReleaseExceptionChargeList.get(statute, Set()).add(description)
@@ -1364,39 +1363,54 @@ describe('AutofillUtils', () => {
 
   describe('Q11 DMF Step two charge logic', () => {
 
-    describe('tryAutofillDMFStepTwo', () => {
+    describe('tryStepTwo', () => {
 
       test('should return true or false depending whether any charges match the step 2 list', () => {
 
-        expect(tryAutofillDMFStepTwo(Immutable.List.of(
-          MOCK_VIOLENT_CHARGE_1,
-          MOCK_VIOLENT_CHARGE_2,
-          MOCK_STEP_2_CHARGE_V_1,
-          MOCK_STEP_2_CHARGE_V_2,
-          MOCK_STEP_4_CHARGE_NV,
-          MOCK_STEP_4_CHARGE_V,
-          MOCK_BHE_CHARGE_1,
-          MOCK_BHE_CHARGE_2
-        ))).toEqual('true');
+        expect(tryAutofillDMFStepTwo(
+          Immutable.List.of(
+            MOCK_VIOLENT_CHARGE_1,
+            MOCK_VIOLENT_CHARGE_2,
+            MOCK_STEP_2_CHARGE_V_1,
+            MOCK_STEP_2_CHARGE_V_2,
+            MOCK_STEP_4_CHARGE_NV,
+            MOCK_STEP_4_CHARGE_V,
+            MOCK_BHE_CHARGE_1,
+            MOCK_BHE_CHARGE_2
+          ),
+          dmfStep2ChargeList
+        )).toEqual('true');
 
-        expect(tryAutofillDMFStepTwo(Immutable.List.of(
-          MOCK_VIOLENT_CHARGE_1,
-          MOCK_VIOLENT_CHARGE_2,
-          MOCK_STEP_4_CHARGE_NV,
-          MOCK_STEP_4_CHARGE_V,
-          MOCK_BHE_CHARGE_1,
-          MOCK_BHE_CHARGE_2
-        ))).toEqual('false');
+        expect(tryAutofillDMFStepTwo(
+          Immutable.List.of(
+            MOCK_VIOLENT_CHARGE_1,
+            MOCK_VIOLENT_CHARGE_2,
+            MOCK_STEP_4_CHARGE_NV,
+            MOCK_STEP_4_CHARGE_V,
+            MOCK_BHE_CHARGE_1,
+            MOCK_BHE_CHARGE_2
+          ),
+          dmfStep2ChargeList
+        )).toEqual('false');
 
-        expect(tryAutofillDMFStepTwo(Immutable.List.of(
-          MOCK_STEP_2_CHARGE_V_1
-        ))).toEqual('true');
+        expect(tryAutofillDMFStepTwo(
+          Immutable.List.of(
+            MOCK_STEP_2_CHARGE_V_1
+          ),
+          dmfStep2ChargeList
+        )).toEqual('true');
 
-        expect(tryAutofillDMFStepTwo(Immutable.List.of(
-          MOCK_STEP_2_CHARGE_V_2
-        ))).toEqual('true');
+        expect(tryAutofillDMFStepTwo(
+          Immutable.List.of(
+            MOCK_STEP_2_CHARGE_V_2
+          ),
+          dmfStep2ChargeList
+        )).toEqual('true');
 
-        expect(tryAutofillDMFStepTwo(Immutable.List())).toEqual('false');
+        expect(tryAutofillDMFStepTwo(
+          Immutable.List(),
+          dmfStep2ChargeList
+        )).toEqual('false');
 
       });
 
@@ -1410,35 +1424,50 @@ describe('AutofillUtils', () => {
 
       test('should return true or false depending whether any charges match the step 4 list', () => {
 
-        expect(tryAutofillDMFStepFour(Immutable.List.of(
-          MOCK_VIOLENT_CHARGE_1,
-          MOCK_VIOLENT_CHARGE_2,
-          MOCK_STEP_2_CHARGE_V_1,
-          MOCK_STEP_2_CHARGE_V_2,
-          MOCK_STEP_4_CHARGE_NV,
-          MOCK_STEP_4_CHARGE_V,
-          MOCK_BHE_CHARGE_1,
-          MOCK_BHE_CHARGE_2
-        ))).toEqual('true');
+        expect(tryAutofillDMFStepFour(
+          Immutable.List.of(
+            MOCK_VIOLENT_CHARGE_1,
+            MOCK_VIOLENT_CHARGE_2,
+            MOCK_STEP_2_CHARGE_V_1,
+            MOCK_STEP_2_CHARGE_V_2,
+            MOCK_STEP_4_CHARGE_NV,
+            MOCK_STEP_4_CHARGE_V,
+            MOCK_BHE_CHARGE_1,
+            MOCK_BHE_CHARGE_2
+          ),
+          dmfStep4ChargeList
+        )).toEqual('true');
 
-        expect(tryAutofillDMFStepFour(Immutable.List.of(
-          MOCK_VIOLENT_CHARGE_1,
-          MOCK_VIOLENT_CHARGE_2,
-          MOCK_STEP_2_CHARGE_V_1,
-          MOCK_STEP_2_CHARGE_V_2,
-          MOCK_BHE_CHARGE_1,
-          MOCK_BHE_CHARGE_2
-        ))).toEqual('false');
+        expect(tryAutofillDMFStepFour(
+          Immutable.List.of(
+            MOCK_VIOLENT_CHARGE_1,
+            MOCK_VIOLENT_CHARGE_2,
+            MOCK_STEP_2_CHARGE_V_1,
+            MOCK_STEP_2_CHARGE_V_2,
+            MOCK_BHE_CHARGE_1,
+            MOCK_BHE_CHARGE_2
+          ),
+          dmfStep4ChargeList
+        )).toEqual('false');
 
-        expect(tryAutofillDMFStepFour(Immutable.List.of(
-          MOCK_STEP_4_CHARGE_NV
-        ))).toEqual('true');
+        expect(tryAutofillDMFStepFour(
+          Immutable.List.of(
+            MOCK_STEP_4_CHARGE_NV
+          ),
+          dmfStep4ChargeList
+        )).toEqual('true');
 
-        expect(tryAutofillDMFStepFour(Immutable.List.of(
-          MOCK_STEP_4_CHARGE_V
-        ))).toEqual('true');
+        expect(tryAutofillDMFStepFour(
+          Immutable.List.of(
+            MOCK_STEP_4_CHARGE_V
+          ),
+          dmfStep4ChargeList
+        )).toEqual('true');
 
-        expect(tryAutofillDMFStepFour(Immutable.List())).toEqual('false');
+        expect(tryAutofillDMFStepFour(
+          Immutable.List(),
+          dmfStep4ChargeList
+        )).toEqual('false');
 
       });
 
@@ -1452,45 +1481,67 @@ describe('AutofillUtils', () => {
 
       test('should return true or false depending whether all charges match the BHE list', () => {
 
-        expect(tryAutofillDMFSecondaryReleaseCharges(Immutable.List.of(
-          MOCK_VIOLENT_CHARGE_1,
-          MOCK_VIOLENT_CHARGE_2,
-          MOCK_STEP_2_CHARGE_V_1,
-          MOCK_STEP_2_CHARGE_V_2,
-          MOCK_STEP_4_CHARGE_NV,
-          MOCK_STEP_4_CHARGE_V,
-          MOCK_BHE_CHARGE_1,
-          MOCK_BHE_CHARGE_2
-        ))).toEqual('false');
+        expect(tryAutofillDMFSecondaryReleaseCharges(
+          Immutable.List.of(
+            MOCK_VIOLENT_CHARGE_1,
+            MOCK_VIOLENT_CHARGE_2,
+            MOCK_STEP_2_CHARGE_V_1,
+            MOCK_STEP_2_CHARGE_V_2,
+            MOCK_STEP_4_CHARGE_NV,
+            MOCK_STEP_4_CHARGE_V,
+            MOCK_BHE_CHARGE_1,
+            MOCK_BHE_CHARGE_2
+          ),
+          bookingHoldExceptionChargeList
+        )).toEqual('false');
 
-        expect(tryAutofillDMFSecondaryReleaseCharges(Immutable.List.of(
-          MOCK_VIOLENT_CHARGE_1,
-          MOCK_VIOLENT_CHARGE_2,
-          MOCK_STEP_2_CHARGE_V_1,
-          MOCK_STEP_2_CHARGE_V_2,
-          MOCK_STEP_4_CHARGE_NV,
-          MOCK_STEP_4_CHARGE_V
-        ))).toEqual('false');
+        expect(tryAutofillDMFSecondaryReleaseCharges(
+          Immutable.List.of(
+            MOCK_VIOLENT_CHARGE_1,
+            MOCK_VIOLENT_CHARGE_2,
+            MOCK_STEP_2_CHARGE_V_1,
+            MOCK_STEP_2_CHARGE_V_2,
+            MOCK_STEP_4_CHARGE_NV,
+            MOCK_STEP_4_CHARGE_V
+          ),
+          bookingHoldExceptionChargeList
+        )).toEqual('false');
 
-        expect(tryAutofillDMFSecondaryReleaseCharges(Immutable.List.of(
-          MOCK_BHE_CHARGE_1
-        ))).toEqual('true');
+        expect(tryAutofillDMFSecondaryReleaseCharges(
+          Immutable.List.of(
+            MOCK_BHE_CHARGE_1
+          ),
+          bookingHoldExceptionChargeList
+        )).toEqual('true');
 
-        expect(tryAutofillDMFSecondaryReleaseCharges(Immutable.List.of(
-          MOCK_BHE_CHARGE_2
-        ))).toEqual('true');
 
-        expect(tryAutofillDMFSecondaryReleaseCharges(Immutable.List.of(
-          MOCK_BHE_CHARGE_1,
-          MOCK_BHE_CHARGE_2
-        ))).toEqual('true');
+        expect(tryAutofillDMFSecondaryReleaseCharges(
+          Immutable.List.of(
+            MOCK_BHE_CHARGE_2
+          ),
+          bookingHoldExceptionChargeList
+        )).toEqual('true');
 
-        expect(tryAutofillDMFSecondaryReleaseCharges(Immutable.List.of(
-          MOCK_BHE_CHARGE_1,
-          MOCK_BHE_CHARGE_1
-        ))).toEqual('true');
+        expect(tryAutofillDMFSecondaryReleaseCharges(
+          Immutable.List.of(
+            MOCK_BHE_CHARGE_1,
+            MOCK_BHE_CHARGE_2
+          ),
+          bookingHoldExceptionChargeList
+        )).toEqual('true');
 
-        expect(tryAutofillDMFSecondaryReleaseCharges(Immutable.List())).toEqual('false');
+        expect(tryAutofillDMFSecondaryReleaseCharges(
+          Immutable.List.of(
+            MOCK_BHE_CHARGE_1,
+            MOCK_BHE_CHARGE_1
+          ),
+          bookingHoldExceptionChargeList
+        )).toEqual('true');
+
+        expect(tryAutofillDMFSecondaryReleaseCharges(
+          Immutable.List(),
+          bookingHoldExceptionChargeList
+        )).toEqual('false');
 
       });
     });
@@ -1503,45 +1554,64 @@ describe('AutofillUtils', () => {
 
       test('should return true or false depending whether any charges match the BRE list', () => {
 
-        expect(tryAutofillDMFSecondaryHoldCharges(Immutable.List.of(
-          MOCK_VIOLENT_CHARGE_1,
-          MOCK_VIOLENT_CHARGE_2,
-          MOCK_STEP_2_CHARGE_V_1,
-          MOCK_STEP_2_CHARGE_V_2,
-          MOCK_STEP_4_CHARGE_NV,
-          MOCK_STEP_4_CHARGE_V,
-          MOCK_BRE_CHARGE_1,
-          MOCK_BRE_CHARGE_2
-        ))).toEqual('true');
+        expect(tryAutofillDMFSecondaryHoldCharges(
+          Immutable.List.of(
+            MOCK_VIOLENT_CHARGE_1,
+            MOCK_VIOLENT_CHARGE_2,
+            MOCK_STEP_2_CHARGE_V_1,
+            MOCK_STEP_2_CHARGE_V_2,
+            MOCK_STEP_4_CHARGE_NV,
+            MOCK_STEP_4_CHARGE_V,
+            MOCK_BRE_CHARGE_1,
+            MOCK_BRE_CHARGE_2
+          ),
+          bookingReleaseExceptionChargeList
+        )).toEqual('true');
 
-        expect(tryAutofillDMFSecondaryHoldCharges(Immutable.List.of(
-          MOCK_VIOLENT_CHARGE_1,
-          MOCK_VIOLENT_CHARGE_2,
-          MOCK_STEP_2_CHARGE_V_1,
-          MOCK_STEP_2_CHARGE_V_2,
-          MOCK_STEP_4_CHARGE_NV,
-          MOCK_STEP_4_CHARGE_V
-        ))).toEqual('false');
+        expect(tryAutofillDMFSecondaryHoldCharges(
+          Immutable.List.of(
+            MOCK_VIOLENT_CHARGE_1,
+            MOCK_VIOLENT_CHARGE_2,
+            MOCK_STEP_2_CHARGE_V_1,
+            MOCK_STEP_2_CHARGE_V_2,
+            MOCK_STEP_4_CHARGE_NV,
+            MOCK_STEP_4_CHARGE_V
+          ),
+          bookingReleaseExceptionChargeList
+        )).toEqual('false');
 
-        expect(tryAutofillDMFSecondaryHoldCharges(Immutable.List.of(
-          MOCK_BRE_CHARGE_1
-        ))).toEqual('true');
+        expect(tryAutofillDMFSecondaryHoldCharges(
+          Immutable.List.of(
+            MOCK_BRE_CHARGE_1
+          ),
+          bookingReleaseExceptionChargeList
+        )).toEqual('true');
 
-        expect(tryAutofillDMFSecondaryHoldCharges(Immutable.List.of(
-          MOCK_BRE_CHARGE_2
-        ))).toEqual('true');
+        expect(tryAutofillDMFSecondaryHoldCharges(
+          Immutable.List.of(
+            MOCK_BRE_CHARGE_2
+          ),
+          bookingReleaseExceptionChargeList
+        )).toEqual('true');
 
-        expect(tryAutofillDMFSecondaryHoldCharges(Immutable.List.of(
-          MOCK_BRE_CHARGE_1,
-          MOCK_BRE_CHARGE_2
-        ))).toEqual('true');
+        expect(tryAutofillDMFSecondaryHoldCharges(
+          Immutable.List.of(
+            MOCK_BRE_CHARGE_1,
+            MOCK_BRE_CHARGE_2
+          ),
+          bookingReleaseExceptionChargeList
+        )).toEqual('true');
 
-        expect(tryAutofillDMFSecondaryHoldCharges(Immutable.List.of(
-          MOCK_BRE_CHARGE_1,
-          MOCK_BRE_CHARGE_1
-        ))).toEqual('true');
+        expect(tryAutofillDMFSecondaryHoldCharges(
+          Immutable.List.of(
+            MOCK_BRE_CHARGE_1,
+            MOCK_BRE_CHARGE_1
+          ),
+          bookingReleaseExceptionChargeList
+        )).toEqual('true');
 
-        expect(tryAutofillDMFSecondaryHoldCharges(Immutable.List())).toEqual('false');
+        expect(tryAutofillDMFSecondaryHoldCharges(
+          Immutable.List())).toEqual('false');
 
       });
     });
