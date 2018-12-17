@@ -89,7 +89,7 @@ export const getLastEditDetails = (neighbors) => {
   neighbors.get(ENTITY_SETS.STAFF, Immutable.List()).forEach((neighbor) => {
     if (neighbor.getIn([PSA_ASSOCIATION.ENTITY_SET, 'name']) === ENTITY_SETS.EDITED_BY) {
       const editUser = neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.PERSON_ID, 0]);
-      const editDate = moment(neighbor.getIn([PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.DATE_TIME, 0], []));
+      const editDate = moment(neighbor.getIn([PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.DATE_TIME, 0], ''));
       if (editUser && editDate.isValid() && (!date || editDate.isAfter(date))) {
         date = editDate;
         user = editUser;

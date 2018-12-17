@@ -281,12 +281,12 @@ export default class PSAReviewReportsRow extends React.Component<Props, State> {
 
       if (associationEntitySetName === ENTITY_SETS.ASSESSED_BY) {
         creator = personId;
-        const maybeDate = moment(neighbor.getIn([PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.COMPLETED_DATE_TIME, 0], []));
+        const maybeDate = moment(neighbor.getIn([PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.COMPLETED_DATE_TIME, 0], ''));
 
         if (maybeDate.isValid()) dateCreated = maybeDate;
       }
       if (associationEntitySetName === ENTITY_SETS.EDITED_BY) {
-        const maybeDate = moment(neighbor.getIn([PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.DATE_TIME, 0], []));
+        const maybeDate = moment(neighbor.getIn([PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.DATE_TIME, 0], ''));
         if (maybeDate.isValid()) {
           if (!dateEdited || dateEdited.isBefore(maybeDate)) {
             dateEdited = maybeDate;

@@ -79,7 +79,7 @@ class AboutPersonGeneral extends React.Component<Props, *> {
       || defaultUserIcon;
 
     if (dobList.size) {
-      age = moment().diff(moment(dobList.get(0, [])), 'years');
+      age = moment().diff(moment(dobList.get(0, '')), 'years');
     }
 
     try {
