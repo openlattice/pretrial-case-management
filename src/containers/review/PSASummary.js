@@ -110,8 +110,8 @@ const NotesTitle = styled(Title)`
 
 const NotesWrapper = styled.div`
   width: 100%;
-  padding: ${props => (props.profile ? '0 30px 0' : '30px')};
-  border-right: ${props => (props.profile ? `solid 1px ${OL.GREY28}` : 'none')};
+  padding: ${props => (props.isProfile ? '0 30px 0' : '30px')};
+  border-right: ${props => (props.isProfile ? `solid 1px ${OL.GREY28}` : 'none')};
 `;
 
 const ViewPSADetailsButton = styled(BasicButton)`
@@ -141,14 +141,14 @@ class PSASummary extends React.Component<Props, *> {
     const component = profile ? `${CONTENT_CONSTS.PROFILE}|${CONTENT_CONSTS.ARREST}` : CONTENT_CONSTS.ARREST;
     const pretrialCase = getNeighborDetailsForEntitySet(neighbors, ENTITY_SETS.MANUAL_PRETRIAL_CASES);
     return (
-      <ArrestCard profile arrest={pretrialCase} component={component} />
+      <ArrestCard arrest={pretrialCase} component={component} />
     );
   };
 
   renderNotes = () => {
     const { notes, profile } = this.props;
     return (
-      <NotesWrapper profile={profile}>
+      <NotesWrapper isProfile={profile}>
         <NotesTitle withSubtitle><span>Notes</span></NotesTitle>
         {notes || 'No Notes'}
       </NotesWrapper>

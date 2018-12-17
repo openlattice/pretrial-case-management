@@ -318,16 +318,17 @@ class PSAInputForm extends React.Component<Props, State> {
   invalidValue = (val :string) => val === null || val === undefined || val === 'null' || val === 'undefined';
 
   handleSubmit = (e) => {
+    const { input, handleSubmit } = this.props;
     e.preventDefault();
 
-    const requiredFields = (this.props.input.get(DMF.COURT_OR_BOOKING) === CONTEXT.BOOKING)
-      ? this.props.input : this.props.input.remove(DMF.SECONDARY_RELEASE_CHARGES).remove(DMF.SECONDARY_HOLD_CHARGES);
+    const requiredFields = (input.get(DMF.COURT_OR_BOOKING) === CONTEXT.BOOKING)
+      ? input : input.remove(DMF.SECONDARY_RELEASE_CHARGES).remove(DMF.SECONDARY_HOLD_CHARGES);
 
     if (requiredFields.valueSeq().filter(this.invalidValue).toList().size) {
       this.setState({ incomplete: true });
     }
     else {
-      this.props.handleSubmit(e);
+      handleSubmit(e);
       this.setState({ incomplete: false });
     }
   }
@@ -402,9 +403,11 @@ class PSAInputForm extends React.Component<Props, State> {
       selectedOrganizationId,
       viewOnly,
       violentArrestCharges,
+      violentCourtCharges,
     } = this.props;
 
     const violentChargeList = violentArrestCharges.get(selectedOrganizationId, Map());
+    const violentCourtChargeList = violentCourtCharges.get(selectedOrganizationId, Map());
     const dmfStep2ChargeList = dmfStep2Charges.get(selectedOrganizationId, Map());
     const dmfStep4ChargeList = dmfStep4Charges.get(selectedOrganizationId, Map());
     const bookingReleaseExceptionChargeList = bookingReleaseExceptionCharges.get(selectedOrganizationId, Map());
@@ -435,7 +438,7 @@ class PSAInputForm extends React.Component<Props, State> {
     const pendingCharges = getPendingChargeLabels(currCaseNum, arrestDate, allCases, allCharges);
     const priorMisdemeanors = getPreviousMisdemeanorLabels(allCharges);
     const priorFelonies = getPreviousFelonyLabels(allCharges);
-    const priorViolentConvictions = getPreviousViolentChargeLabels(allCharges);
+    const priorViolentConvictions = getPreviousViolentChargeLabels(allCharges, violentCourtChargeList);
     const priorSentenceToIncarceration = getSentenceToIncarcerationCaseNums(allSentences);
 
     // psaDate will be undefined if the report is being filled out for the first time.
