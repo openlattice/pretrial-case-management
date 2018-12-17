@@ -34,11 +34,13 @@ const ToolbarWrapper = styled.div`
 
 const SubToolbarWrapper = styled(ToolbarWrapper)`
   margin-right: -30px;
-`
+`;
 
 type Props = {
   arrestCharges :Map<*, *>,
+  arrestChargePermissions :boolean,
   courtCharges :Map<*, *>,
+  courtChargePermissions :boolean,
   selectedOrganizationId :string,
   location :Object,
   actions :{
@@ -76,11 +78,26 @@ class ManageChargesContainer extends React.Component<Props, State> {
     }
   }
 
-  renderCreateButton = () => (
-    <PrimaryButton onClick={this.openChargeModal}>
-      Add New Charge
-    </PrimaryButton>
-  )
+  getChargePermission = () => {
+    const { chargeType } = this.state;
+    const { arrestChargePermissions, courtChargePermissions } = this.props;
+    const hasArrestPermission = (chargeType === CHARGE_TYPES.ARREST && arrestChargePermissions);
+    const hasCourtPermission = (chargeType === CHARGE_TYPES.COURT && courtChargePermissions);
+    return (hasArrestPermission || hasCourtPermission);
+  }
+
+  renderCreateButton = () => {
+    let button = null;
+    const hasPermission = this.getChargePermission();
+    if (hasPermission) {
+      button = (
+        <PrimaryButton onClick={this.openChargeModal}>
+          Add New Charge
+        </PrimaryButton>
+      );
+    }
+    return button;
+  }
 
   handleOnChangeSearchQuery = (event :SyntheticInputEvent<*>) => {
     let { start } = this.state;
@@ -179,8 +196,10 @@ class ManageChargesContainer extends React.Component<Props, State> {
     } = this.state;
     const { charges } = this.getChargeList();
     const pageOfCharges = charges.slice(start, start + MAX_RESULTS);
+    const hasPermission = this.getChargePermission();
     return (
       <ChargeTable
+          hasPermission={hasPermission}
           noResults={!charges.size}
           charges={pageOfCharges}
           chargeType={chargeType} />
@@ -239,7 +258,9 @@ function mapStateToProps(state) {
 
     // Charges
     [CHARGES.ARREST]: charges.get(CHARGES.ARREST),
-    [CHARGES.COURT]: charges.get(CHARGES.COURT)
+    [CHARGES.ARREST_PERMISSIONS]: charges.get(CHARGES.ARREST_PERMISSIONS),
+    [CHARGES.COURT]: charges.get(CHARGES.COURT),
+    [CHARGES.COURT_PERMISSIONS]: charges.get(CHARGES.COURT_PERMISSIONS)
   };
 }
 
