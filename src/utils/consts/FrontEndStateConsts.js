@@ -47,7 +47,9 @@ export const APP = {
 // CHARGES
 export const CHARGES = {
   ARREST: 'arrestCharges',
+  ARREST_PERMISSIONS: 'arrestChargePermissions',
   COURT: 'courtCharges',
+  COURT_PERMISSIONS: 'courtChargePermissions',
   ARREST_VIOLENT: 'violentArrestCharges',
   COURT_VIOLENT: 'violentCourtCharges',
   DMF_STEP_2: 'dmfStep2Charges',
