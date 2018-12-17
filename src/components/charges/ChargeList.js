@@ -4,12 +4,19 @@
 
 import React from 'react';
 import styled from 'styled-components';
-import Immutable from 'immutable';
+import { fromJS, Map, List } from 'immutable';
+import { connect } from 'react-redux';
+import { withRouter } from 'react-router-dom';
 
+import { APP, CHARGES, STATE } from '../../utils/consts/FrontEndStateConsts';
 import { OL } from '../../utils/consts/Colors';
-import { getAllViolentCharges } from '../../utils/ArrestChargeUtils';
-import { chargeIsViolent, chargeIsMostSerious, chargeIsGuilty } from '../../utils/HistoricalChargeUtils';
+import { getViolentChargeLabels } from '../../utils/ArrestChargeUtils';
 import { formatValue, formatDateList } from '../../utils/FormattingUtils';
+import {
+  chargeIsMostSerious,
+  chargeIsGuilty,
+  historicalChargeIsViolent
+} from '../../utils/HistoricalChargeUtils';
 import {
   ChargeItem,
   ChargeRow,
@@ -69,14 +76,17 @@ const ChargeDetail = styled.div`
 `;
 
 type Props = {
-  charges :Immutable.List<*>,
-  pretrialCaseDetails :Immutable.Map<*, *>,
+  charges :List<*>,
+  pretrialCaseDetails :Map<*, *>,
   detailed? :boolean,
   historical? :boolean,
-  modal? :modal
+  modal? :modal,
+  selectedOrganizationId :string,
+  violentArrestCharges :Map<*, *>,
+  violentCourtCharges :Map<*, *>
 };
 
-export default class ChargeList extends React.Component<Props, *> {
+class ChargeList extends React.Component<Props, *> {
 
   static defaultProps = {
     detailed: false,
@@ -84,13 +94,31 @@ export default class ChargeList extends React.Component<Props, *> {
     modal: false
   };
 
-  renderTags = (charge :Immutable.Map<*, *>) => {
-    const { historical, pretrialCaseDetails } = this.props;
+  renderTags = (charge :Map<*, *>) => {
+    const {
+      historical,
+      pretrialCaseDetails,
+      selectedOrganizationId
+    } = this.props;
+    let {
+      violentArrestCharges,
+      violentCourtCharges
+    } = this.props;
+
+    violentArrestCharges = violentArrestCharges.get(selectedOrganizationId, Map());
+    violentCourtCharges = violentCourtCharges.get(selectedOrganizationId, Map());
     const convicted = chargeIsGuilty(charge);
     const mostSerious = chargeIsMostSerious(charge, pretrialCaseDetails);
+    const currCharges = fromJS([charge]);
     const violent = historical
-      ? chargeIsViolent(charge)
-      : getAllViolentCharges(Immutable.fromJS([charge])).size > 0;
+      ? historicalChargeIsViolent({
+        charge,
+        violentChargeList: violentCourtCharges
+      })
+      : getViolentChargeLabels({
+        currCharges,
+        violentChargeList: violentArrestCharges
+      }).size > 0;
 
 
     return (
@@ -102,14 +130,14 @@ export default class ChargeList extends React.Component<Props, *> {
     );
   }
 
-  renderChargeDetails = (charge :Immutable.Map<*, *>) => {
+  renderChargeDetails = (charge :Map<*, *>) => {
     const { detailed } = this.props;
     if (!detailed) return null;
 
-    const plea = formatValue(charge.get(PROPERTY_TYPES.PLEA, Immutable.List()));
-    const pleaDate = formatDateList(charge.get(PROPERTY_TYPES.PLEA_DATE, Immutable.List()));
-    const disposition = formatValue(charge.get(PROPERTY_TYPES.DISPOSITION, Immutable.List()));
-    const dispositionDate = formatDateList(charge.get(PROPERTY_TYPES.DISPOSITION_DATE, Immutable.List()));
+    const plea = formatValue(charge.get(PROPERTY_TYPES.PLEA, List()));
+    const pleaDate = formatDateList(charge.get(PROPERTY_TYPES.PLEA_DATE, List()));
+    const disposition = formatValue(charge.get(PROPERTY_TYPES.DISPOSITION, List()));
+    const dispositionDate = formatDateList(charge.get(PROPERTY_TYPES.DISPOSITION_DATE, List()));
     return (
       <div>
         <ChargeDetail>{`Plea: ${pleaDate} — ${plea}`}</ChargeDetail>
@@ -118,22 +146,22 @@ export default class ChargeList extends React.Component<Props, *> {
     );
   }
 
-  renderQualifier = (charge :Immutable.Map<*, *>) => (
+  renderQualifier = (charge :Map<*, *>) => (
     this.props.historical ? null : (
-      <PaddedChargeItem>{formatValue(charge.get(PROPERTY_TYPES.QUALIFIER, Immutable.List()))}</PaddedChargeItem>
+      <PaddedChargeItem>{formatValue(charge.get(PROPERTY_TYPES.QUALIFIER, List()))}</PaddedChargeItem>
     ))
 
   getChargeList = () => {
     const { charges, detailed, modal } = this.props;
     const rows = charges.map((charge, index) => {
-      if (!charge.get(CHARGE_STATUTE, Immutable.List()).size) {
+      if (!charge.get(CHARGE_STATUTE, List()).size) {
         return (
           <ChargeRow key={index}><ChargeItem /></ChargeRow>
         );
       }
-      const chargeDescription = charge.get(CHARGE_DESCRIPTION, Immutable.List());
-      const chargeDegree = charge.get(CHARGE_DEGREE, Immutable.List());
-      const chargeNum = charge.get(CHARGE_STATUTE, Immutable.List());
+      const chargeDescription = charge.get(CHARGE_DESCRIPTION, List());
+      const chargeDegree = charge.get(CHARGE_DEGREE, List());
+      const chargeNum = charge.get(CHARGE_STATUTE, List());
 
       const description = (
         <ChargeDescriptionTitle>
@@ -178,3 +206,26 @@ export default class ChargeList extends React.Component<Props, *> {
     );
   }
 }
+
+function mapStateToProps(state :Map<*, *>) :Object {
+  const app = state.get(STATE.APP);
+  const charges = state.get(STATE.CHARGES);
+  return {
+    // App
+    [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
+    [APP.SELECTED_ORG_TITLE]: app.get(APP.SELECTED_ORG_TITLE),
+
+    // Charges
+    [CHARGES.ARREST]: charges.get(CHARGES.ARREST),
+    [CHARGES.COURT]: charges.get(CHARGES.COURT),
+    [CHARGES.ARREST_VIOLENT]: charges.get(CHARGES.ARREST_VIOLENT),
+    [CHARGES.COURT_VIOLENT]: charges.get(CHARGES.COURT_VIOLENT),
+    [CHARGES.DMF_STEP_2]: charges.get(CHARGES.DMF_STEP_2),
+    [CHARGES.DMF_STEP_4]: charges.get(CHARGES.DMF_STEP_4),
+    [CHARGES.BRE]: charges.get(CHARGES.BRE),
+    [CHARGES.BHE]: charges.get(CHARGES.BHE),
+    [CHARGES.LOADING]: charges.get(CHARGES.LOADING),
+  };
+}
+
+export default withRouter(connect(mapStateToProps, null)(ChargeList));

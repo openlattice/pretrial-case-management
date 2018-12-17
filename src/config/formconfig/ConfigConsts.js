@@ -6,6 +6,7 @@ import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts'
 import { FORM_IDS, ID_FIELD_NAMES } from '../../utils/consts/Consts';
 
 export const ALIASES = {
+  CHARGE: 'charge',
   CONTACT_INFO: 'contactinfo',
   EMPLOYER: 'employer',
   PERSON: 'person',

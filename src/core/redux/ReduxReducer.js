@@ -5,6 +5,8 @@
 import { AuthReducer } from 'lattice-auth';
 import { combineReducers } from 'redux-immutable';
 
+import appReducer from '../../containers/app/AppReducer';
+import chargesReducer from '../../containers/charges/ChargesReducer';
 import courtReducer from '../../containers/court/CourtReducer';
 import dashboardReducer from '../../containers/dashboard/DashboardReducer';
 import downloadReducer from '../../containers/download/DownloadReducer';
@@ -20,7 +22,9 @@ import { STATE } from '../../utils/consts/FrontEndStateConsts';
 export default function reduxReducer() {
 
   return combineReducers({
+    [STATE.APP]: appReducer,
     [STATE.AUTH]: AuthReducer,
+    [STATE.CHARGES]: chargesReducer,
     [STATE.COURT]: courtReducer,
     [STATE.DASHBOARD]: dashboardReducer,
     [STATE.DOWNLOAD]: downloadReducer,

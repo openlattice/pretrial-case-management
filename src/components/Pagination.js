@@ -55,9 +55,7 @@ const SHIFT_THRESHOLD = 3;
 
 const Pagination = (props :Props) => {
 
-  const { numPages } = props;
-  const { activePage } = props;
-  const { onChangePage } = props;
+  const { numPages, activePage, onChangePage } = props;
   const frontArrowDisabled = activePage === 1;
   const frontJumpDisabled = (activePage <= SHIFT_THRESHOLD) || (numPages <= MAX_PAGE_DISPLAY);
   const backArrowDisabled = activePage === numPages;

@@ -3,20 +3,20 @@
  */
 
 import React from 'react';
-import Immutable from 'immutable';
+import Immutable, { Map } from 'immutable';
 import styled from 'styled-components';
 import moment from 'moment';
 import randomUUID from 'uuid/v4';
+import { connect } from 'react-redux';
 
 import BasicButton from '../../../components/buttons/BasicButton';
 import SecondaryButton from '../../../components/buttons/SecondaryButton';
 import SearchableSelect from '../../../components/controls/SearchableSelect';
 import DateTimePicker from '../../../components/datetime/DateTimePicker';
-import MinnehahaChargesList from '../../../utils/consts/MinnehahaChargesList';
-import PenningtonChargesList from '../../../utils/consts/PenningtonChargesList';
 import QUALIFIERS from '../../../utils/consts/QualifierConsts';
 import { CHARGE } from '../../../utils/consts/Consts';
 import type { Charge } from '../../../utils/consts/Consts';
+import { APP, CHARGES, STATE } from '../../../utils/consts/FrontEndStateConsts';
 import { PROPERTY_TYPES } from '../../../utils/consts/DataModelConsts';
 import { DOMAIN } from '../../../utils/consts/ReportDownloadTypes';
 import { toISODateTime } from '../../../utils/FormattingUtils';
@@ -135,6 +135,8 @@ const CaseInfoWrapper = styled.div`
 `
 
 type Props = {
+  arrestCharges :Map<*, *>,
+  selectedOrganizationId :string,
   defaultArrest :Immutable.Map<*, *>,
   defaultCharges :Immutable.List<*>,
   onSubmit :(pretrialCase :Immutable.Map<*, *>, charges :Immutable.List<*>) => void,
@@ -149,7 +151,7 @@ type State = {
   charges :Charge[]
 };
 
-export default class SelectChargesContainer extends React.Component<Props, State> {
+class SelectChargesContainer extends React.Component<Props, State> {
 
   constructor(props :Props) {
     super(props);
@@ -197,16 +199,21 @@ export default class SelectChargesContainer extends React.Component<Props, State
     if (arrestDate) caseEntity[PROPERTY_TYPES.ARREST_DATE_TIME] = [this.getDateTime(arrestDate)];
 
     const chargeEntities = charges.map((charge, index) => {
+      const statute = charge.getIn([PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE, 0], '');
+      const description = charge.getIn([PROPERTY_TYPES.REFERENCE_CHARGE_DESCRIPTION, 0], '');
+      const degree = charge.getIn([PROPERTY_TYPES.REFERENCE_CHARGE_DEGREE, 0], '');
+      const degreeShort = charge.getIn([PROPERTY_TYPES.REFERENCE_CHARGE_LEVEL, 0], '');
+      const qualifier = charge.get(QUALIFIER, '');
       const counts = charge.counts ? charge.counts : 1;
       const chargeEntity = {
         [PROPERTY_TYPES.CHARGE_ID]: [`${caseId}|${index + 1}`],
-        [PROPERTY_TYPES.CHARGE_STATUTE]: [charge[STATUTE]],
-        [PROPERTY_TYPES.CHARGE_DESCRIPTION]: [charge[DESCRIPTION]],
-        [PROPERTY_TYPES.CHARGE_DEGREE]: [charge[DEGREE]],
-        [PROPERTY_TYPES.CHARGE_LEVEL]: [charge[DEGREE_SHORT]],
+        [PROPERTY_TYPES.CHARGE_STATUTE]: [statute],
+        [PROPERTY_TYPES.CHARGE_DESCRIPTION]: [description],
+        [PROPERTY_TYPES.CHARGE_DEGREE]: [degree],
+        [PROPERTY_TYPES.CHARGE_LEVEL]: [degreeShort],
         [PROPERTY_TYPES.NUMBER_OF_COUNTS]: counts
       };
-      if (charge[QUALIFIER]) chargeEntity[PROPERTY_TYPES.QUALIFIER] = [charge[QUALIFIER]];
+      if (qualifier) chargeEntity[PROPERTY_TYPES.QUALIFIER] = [qualifier];
       return chargeEntity;
     });
 
@@ -254,15 +261,26 @@ export default class SelectChargesContainer extends React.Component<Props, State
     this.setState({ charges });
   }
 
-  formatCharge = (charge :Charge) => `${charge.statute} ${charge.description}`;
+  // formatCharge = (charge :Charge) => `${charge.statute} ${charge.description}`;
+  formatCharge = charge => (
+    `${
+      charge.getIn([PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE, 0], '')
+    } ${
+      charge.getIn([PROPERTY_TYPES.REFERENCE_CHARGE_DESCRIPTION, 0], '')
+    }`
+  );
 
   formatChargeOptions = () => {
-    const { county } = this.props;
-    let options = Immutable.Map();
-    (county === DOMAIN.PENNINGTON ? PenningtonChargesList : MinnehahaChargesList).forEach((charge) => {
-      options = options.set(this.formatCharge(charge), charge);
+    const {
+      arrestCharges,
+      selectedOrganizationId
+    } = this.props;
+    const orgArrestCharges = arrestCharges.get(selectedOrganizationId, Map()).valueSeq();
+    let arrestChargeOptions = Map();
+    orgArrestCharges.forEach((charge) => {
+      arrestChargeOptions = arrestChargeOptions.set(this.formatCharge(charge), charge);
     });
-    return options;
+    return arrestChargeOptions.sortBy((statute, _) => statute);
   }
 
   formatSelectOptions = (optionValues) => {
@@ -277,7 +295,7 @@ export default class SelectChargesContainer extends React.Component<Props, State
     const { charges } = this.state;
     const field = optionalField || e.target.name;
     const value = optionalField ? e : e.target.value;
-    const newChargeObj = Object.assign({}, charges[index], { [field]: value });
+    const newChargeObj = charges[index].set(field, value);
     charges[index] = newChargeObj;
     this.setState({ charges });
   }
@@ -298,7 +316,8 @@ export default class SelectChargesContainer extends React.Component<Props, State
   }
 
   renderSingleCharge = (charge :Charge, index :number) => {
-
+    const statute = charge.getIn([PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE, 0], '');
+    const qualifier = charge.get(QUALIFIER, '');
     const onChange = (e) => {
       this.handleChargeInputChange(e, index);
     };
@@ -307,14 +326,14 @@ export default class SelectChargesContainer extends React.Component<Props, State
     const getOnClear = field => () => this.handleChargeInputChange(undefined, index, field);
 
     return (
-      <ChargeWrapper key={`${charge.statute}-${charge.qualifier}-${index}`}>
+      <ChargeWrapper key={`${statute}-${qualifier}-${index}`}>
         <ChargeTitle>{this.formatCharge(charge)}</ChargeTitle>
         <ChargeOptionsWrapper>
           <SearchableSelect
               onSelect={getOnSelect(QUALIFIER)}
               options={this.formatSelectOptions(QUALIFIERS)}
               searchPlaceholder="Select a qualifier"
-              value={charge[QUALIFIER]}
+              value={qualifier}
               onClear={getOnClear(QUALIFIER)} />
           {this.renderInputField(charge, NUMBER_OF_COUNTS, onChange)}
           <DeleteButton onClick={() => this.deleteCharge(index)}>Remove</DeleteButton>
@@ -358,3 +377,21 @@ export default class SelectChargesContainer extends React.Component<Props, State
     );
   }
 }
+
+function mapStateToProps(state) {
+  const app = state.get(STATE.APP);
+  const charges = state.get(STATE.CHARGES);
+
+  return {
+    // App
+    [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
+    [APP.SELECTED_ORG_TITLE]: app.get(APP.SELECTED_ORG_TITLE),
+
+    // Charges
+    [CHARGES.ARREST]: charges.get(CHARGES.ARREST),
+    [CHARGES.COURT]: charges.get(CHARGES.COURT),
+    [CHARGES.LOADING]: charges.get(CHARGES.LOADING),
+  };
+}
+
+export default connect(mapStateToProps, null)(SelectChargesContainer);

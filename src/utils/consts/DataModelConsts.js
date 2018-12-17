@@ -1,6 +1,43 @@
 /*
  * @flow
  */
+import { Models } from 'lattice';
+
+const { FullyQualifiedName } = Models;
+
+export const APP_NAME = 'psa';
+
+export const APP_TYPES_FQNS = {
+  ARREST_CHARGE_LIST: new FullyQualifiedName('publicsafety.arrestchargelist'),
+  COURT_CHARGE_LIST: new FullyQualifiedName('publicsafety.courtchargelist'),
+  APP_SETTINGS: new FullyQualifiedName('app.settings')
+};
+
+export const ORG_IDS = {
+  PENNINGTON_SD: '67d555b4-7495-414e-a259-ef82ba71779a',
+  MINNEHAHA_SD: 'e558ee21-8fec-4c65-aeda-039924ba9a92'
+};
+
+/*
+ * Charge FQNs
+ */
+
+export const CHARGE_FQNS = {
+  STATUTE: new FullyQualifiedName('ol.id'),
+  LEVEL: new FullyQualifiedName('ol.level'),
+  DEGREE: new FullyQualifiedName('ol.levelstate'),
+  DESCRIPTION: new FullyQualifiedName('ol.name'),
+  NO_COUNTS: new FullyQualifiedName('ol.numberofcounts'),
+  SEX_CRIME: new FullyQualifiedName('ol.sexcrime'),
+  INVOLVING_JUVENILES: new FullyQualifiedName('ol.juveniles'),
+  PROTECTIVE_CUSTODY: new FullyQualifiedName('ol.protectivecustody'),
+  ATTEMPTED_COMPLETED: new FullyQualifiedName('ol.attemptedcompleted'),
+  VIOLENT: new FullyQualifiedName('ol.violent'),
+  STEP_2: new FullyQualifiedName('ol.dmfstep2indicator'),
+  STEP_4: new FullyQualifiedName('ol.dmfstep4indicator'),
+  BHE: new FullyQualifiedName('ol.bheindicator'),
+  BRE: new FullyQualifiedName('ol.breindicator'),
+};
 
 export const ENTITY_SETS = {
   PEOPLE: 'southdakotapeople',
@@ -79,6 +116,16 @@ export const PROPERTY_TYPES = {
   // contact info given id
   CONTACT_INFO_GIVEN_ID: 'ol.id',
 
+  // Charges
+  REFERENCE_CHARGE_STATUTE: 'ol.id',
+  REFERENCE_CHARGE_DESCRIPTION: 'ol.name',
+  REFERENCE_CHARGE_LEVEL: 'ol.level',
+  REFERENCE_CHARGE_DEGREE: 'ol.levelstate',
+  CHARGE_IS_VIOLENT: 'ol.violent',
+  CHARGE_DMF_STEP_2: 'ol.dmfstep2indicator',
+  CHARGE_DMF_STEP_4: 'ol.dmfstep4indicator',
+  BHE: 'ol.bheindicator',
+  BRE: 'ol.breindicator',
 
   // location-specific fields
   ADDRESS: 'location.Address',

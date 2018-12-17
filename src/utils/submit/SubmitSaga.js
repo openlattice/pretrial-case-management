@@ -16,6 +16,7 @@ import {
   all
 } from 'redux-saga/effects';
 
+import { APP } from '../consts/FrontEndStateConsts';
 import { stripIdField } from '../DataUtils';
 import {
   REPLACE_ASSOCIATION,
@@ -98,8 +99,9 @@ function* replaceEntityWorker(action :SequenceAction) :Generator<*, *, *> {
       values,
       callback
     } = action.value;
+    let { entitySetId } = action.value;
 
-    const entitySetId = yield call(EntityDataModelApi.getEntitySetId, entitySetName);
+    if (!entitySetId) entitySetId = yield call(EntityDataModelApi.getEntitySetId, entitySetName);
     yield call(DataApi.replaceEntityInEntitySetUsingFqns, entitySetId, entityKeyId, stripIdField(values));
 
     yield put(replaceEntity.success(action.id));
@@ -108,6 +110,7 @@ function* replaceEntityWorker(action :SequenceAction) :Generator<*, *, *> {
     }
   }
   catch (error) {
+    console.error(error);
     yield put(replaceEntity.failure(action.id, error));
   }
   finally {
@@ -120,13 +123,30 @@ function* replaceEntityWatcher() :Generator<*, *, *> {
 }
 
 function* submitWorker(action :SequenceAction) :Generator<*, *, *> {
-  const { config, values, callback } = action.value;
-
+  const {
+    app,
+    config,
+    values,
+    callback
+  } = action.value;
   try {
     yield put(submit.request(action.id));
-    const allEntitySetIdsRequest = config
-      .entitySets.map(entitySet => call(EntityDataModelApi.getEntitySetId, entitySet.name));
-    const allEntitySetIds = yield all(allEntitySetIdsRequest);
+    let allEntitySetIds;
+    // TODO: Yuck! Will refactor how we collect entitySetIds once we have appTypes for each Entity Set
+    if (app) {
+      const selectedOrganizationId = app.get(APP.SELECTED_ORG_ID);
+      allEntitySetIds = config.entitySets.map(({ name }) => app.getIn([
+        name,
+        'entitySetsByOrganization',
+        selectedOrganizationId
+      ]));
+    }
+    else {
+      const allEntitySetIdsRequest = config.entitySets.map(entitySet => (
+        call(EntityDataModelApi.getEntitySetId, entitySet.name)
+      ));
+      allEntitySetIds = yield all(allEntitySetIdsRequest);
+    }
     const edmDetailsRequest = allEntitySetIds.map(id => ({
       id,
       type: 'EntitySet',

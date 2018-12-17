@@ -19,12 +19,12 @@ export const CheckboxContainer = styled.label`
 export const CheckboxSelection = styled.span`
   padding: 9px 22px;
   width: 100%;
-  min-width: 84px;
+  min-width: ${props => (props.xSmall ? '60' : '84')}px;
   height: ${props => (props.large ? '56px' : '38px')};
   border-radius: 3px;
   background-color: ${OL.GREY10};
   font-family: 'Open Sans', sans-serif;
-  font-size: 14px;
+  font-size: ${props => (props.xSmall ? '11' : '14')}px;
   font-weight: normal;
   color: ${OL.GREY02};
   display: flex;
@@ -68,7 +68,8 @@ const StyledCheckboxButton = ({
   checked,
   onChange,
   disabled,
-  large
+  large,
+  xSmall
 }) => (
   <CheckboxContainer>
     <CheckboxInputContainer
@@ -77,7 +78,7 @@ const StyledCheckboxButton = ({
         checked={checked}
         onChange={onChange}
         disabled={disabled} />
-    <CheckboxSelection large={large} >{label}</CheckboxSelection>
+    <CheckboxSelection large={large} xSmall={xSmall}>{label}</CheckboxSelection>
   </CheckboxContainer>
 );
 
@@ -91,14 +92,16 @@ StyledCheckboxButton.propTypes = {
   checked: PropTypes.bool,
   onChange: PropTypes.func.isRequired,
   disabled: PropTypes.bool,
-  large: PropTypes.bool
+  large: PropTypes.bool,
+  xSmall: PropTypes.bool
 };
 
 StyledCheckboxButton.defaultProps = {
   disabled: false,
   name: undefined,
   checked: false,
-  large: false
+  large: false,
+  xSmall: false
 };
 
 export default StyledCheckboxButton;

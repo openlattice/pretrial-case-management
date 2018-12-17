@@ -19,8 +19,6 @@ import {
 } from 'redux-saga/effects';
 
 import FileSaver from '../../utils/FileSaver';
-import MinnehahaChargesList from '../../utils/consts/MinnehahaChargesList';
-import PenningtonChargesList from '../../utils/consts/PenningtonChargesList';
 import { toISODate, formatDateTime } from '../../utils/FormattingUtils';
 import { getFilteredNeighbor, stripIdField } from '../../utils/DataUtils';
 import { obfuscateBulkEntityNeighbors } from '../../utils/consts/DemoNames';
@@ -28,14 +26,6 @@ import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts'
 import { HEADERS_OBJ, POSITIONS } from '../../utils/consts/CSVConsts';
 import { PSA_NEIGHBOR, PSA_ASSOCIATION } from '../../utils/consts/FrontEndStateConsts';
 import { PSA_STATUSES } from '../../utils/consts/Consts';
-import { PENN_BOOKING_HOLD_EXCEPTIONS, PENN_BOOKING_RELEASE_EXCEPTIONS } from '../../utils/consts/DMFExceptionsList';
-import { DOMAIN } from '../../utils/consts/ReportDownloadTypes';
-import {
-  CHARGE_TYPES,
-  BHE_LABELS,
-  BRE_LABELS,
-  CHARGE_VALUES
-} from '../../utils/consts/ArrestChargeConsts';
 import {
   DOWNLOAD_CHARGE_LISTS,
   DOWNLOAD_PSA_BY_HEARING_DATE,
@@ -52,108 +42,99 @@ const { FullyQualifiedName } = Models;
 
 const DATETIME_FQNS = [PROPERTY_TYPES.TIMESTAMP, PROPERTY_TYPES.COMPLETED_DATE_TIME, PROPERTY_TYPES.DATE_TIME];
 
-const getChargeString = charge => `${charge.statute}|${charge.description}`;
-
-const getChargeValues = chargeType => (
-  CHARGE_VALUES[chargeType].map(charge => getChargeString(charge))
-);
-
-const getExceptions = exceptions => (
-  exceptions.map(charge => getChargeString(charge))
-);
-
+// TODO: Need to refactor to export from entity sets
 function* downloadChargeListsWorker(action :SequenceAction) :Generator<*, *, *> {
-
-  try {
-    yield put(downloadChargeLists.request(action.id));
-
-    const { jurisdiction } = action.value;
-
-    const chargesList = jurisdiction === DOMAIN.MINNEHAHA ? MinnehahaChargesList : PenningtonChargesList;
-
-    let jsonResults = Immutable.List();
-    const chargeHeaders = Immutable.List(
-      ['statute', 'description', 'degree', 'degreeShort']
-    );
-
-    const chargeDMFHeaders = Immutable.List(
-      [
-        CHARGE_TYPES.STEP_TWO,
-        CHARGE_TYPES.STEP_FOUR,
-        CHARGE_TYPES.ALL_VIOLENT
-      ]
-    );
-    const exceptionHeaders = Immutable.List(
-      [
-        BHE_LABELS.RELEASE,
-        BRE_LABELS.LABEL
-      ]
-    );
-
-    const step2ChargeValues = getChargeValues(CHARGE_TYPES.STEP_TWO);
-    const step4ChargeValues = getChargeValues(CHARGE_TYPES.STEP_FOUR);
-    const violentChargeValues = getChargeValues(CHARGE_TYPES.ALL_VIOLENT);
-    const pennBookingHoldExceptions = getExceptions(PENN_BOOKING_HOLD_EXCEPTIONS);
-    const pennBookingReleaseExceptions = getExceptions(PENN_BOOKING_RELEASE_EXCEPTIONS);
-
-
-    chargesList.forEach((charge) => {
-      let row = Immutable.Map();
-      const { statute, description } = charge;
-      const chargeString = `${statute}|${description}`;
-      chargeHeaders.forEach((header) => {
-        row = row.set(header, charge[header]);
-      });
-      row = row
-        .set(
-          CHARGE_TYPES.STEP_TWO,
-          step2ChargeValues.includes(chargeString)
-        )
-        .set(
-          CHARGE_TYPES.STEP_FOUR,
-          step4ChargeValues.includes(chargeString)
-        )
-        .set(
-          CHARGE_TYPES.ALL_VIOLENT,
-          violentChargeValues.includes(chargeString)
-        )
-        .set(
-          BHE_LABELS.RELEASE,
-          pennBookingHoldExceptions.includes(chargeString)
-        )
-        .set(
-          BRE_LABELS.LABEL,
-          pennBookingReleaseExceptions.includes(chargeString)
-        );
-
-      jsonResults = jsonResults.push(row);
-    });
-
-    let allHeaders = chargeHeaders.concat(chargeDMFHeaders);
-    if (jurisdiction === DOMAIN.PENNINGTON) allHeaders = allHeaders.concat(exceptionHeaders);
-
-
-    const fields = allHeaders.toJS();
-    const csv = Papa.unparse({
-      fields,
-      data: jsonResults.toJS()
-    });
-
-    const name = `${jurisdiction}-Master Charge List`;
-
-    FileSaver.saveFile(csv, name, 'csv');
-
-    yield put(downloadChargeLists.success(action.id));
-  }
-  catch (error) {
-    console.error(error);
-    yield put(downloadChargeLists.failure(action.id, { error }));
-  }
-  finally {
-    yield put(downloadChargeLists.finally(action.id));
-  }
+//
+//   try {
+//     yield put(downloadChargeLists.request(action.id));
+//
+//     const { jurisdiction } = action.value;
+//
+//     const chargesList = jurisdiction === DOMAIN.MINNEHAHA ? MinnehahaChargesList : PenningtonChargesList;
+//
+//     let jsonResults = Immutable.List();
+//     const chargeHeaders = Immutable.List(
+//       ['statute', 'description', 'degree', 'degreeShort']
+//     );
+//
+//     const chargeDMFHeaders = Immutable.List(
+//       [
+//         CHARGE_TYPES.STEP_TWO,
+//         CHARGE_TYPES.STEP_FOUR,
+//         CHARGE_TYPES.ALL_VIOLENT
+//       ]
+//     );
+//     const exceptionHeaders = Immutable.List(
+//       [
+//         BHE_LABELS.RELEASE,
+//         BRE_LABELS.LABEL
+//       ]
+//     );
+//
+//     const step2ChargeValues = getChargeValues(CHARGE_TYPES.STEP_TWO);
+//     const step4ChargeValues = getChargeValues(CHARGE_TYPES.STEP_FOUR);
+//     const violentChargeValues = getChargeValues(CHARGE_TYPES.ALL_VIOLENT);
+//     const pennBookingHoldExceptions = getExceptions(PENN_BOOKING_HOLD_EXCEPTIONS);
+//     const pennBookingReleaseExceptions = getExceptions(PENN_BOOKING_RELEASE_EXCEPTIONS);
+//
+//
+//     chargesList.forEach((charge) => {
+//       let row = Immutable.Map();
+//       const { statute, description } = charge;
+//       const chargeString = `${statute}|${description}`;
+//       chargeHeaders.forEach((header) => {
+//         row = row.set(header, charge[header]);
+//       });
+//       row = row
+//         .set(
+//           CHARGE_TYPES.STEP_TWO,
+//           step2ChargeValues.includes(chargeString)
+//         )
+//         .set(
+//           CHARGE_TYPES.STEP_FOUR,
+//           step4ChargeValues.includes(chargeString)
+//         )
+//         .set(
+//           CHARGE_TYPES.ALL_VIOLENT,
+//           violentChargeValues.includes(chargeString)
+//         )
+//         .set(
+//           BHE_LABELS.RELEASE,
+//           pennBookingHoldExceptions.includes(chargeString)
+//         )
+//         .set(
+//           BRE_LABELS.LABEL,
+//           pennBookingReleaseExceptions.includes(chargeString)
+//         );
+//
+//       jsonResults = jsonResults.push(row);
+//     });
+//
+//     let allHeaders = chargeHeaders.concat(chargeDMFHeaders);
+//     if (jurisdiction === DOMAIN.PENNINGTON) allHeaders = allHeaders.concat(exceptionHeaders);
+//
+//
+//     const fields = allHeaders.toJS();
+//     const csv = Papa.unparse({
+//       fields,
+//       data: jsonResults.toJS()
+//     });
+//
+//     const name = `${jurisdiction}-Master Charge List`;
+//
+//     FileSaver.saveFile(csv, name, 'csv');
+//
+//     yield put(downloadChargeLists.success(action.id));
+//   }
+//   catch (error) {
+//     console.error(error);
+//     yield put(downloadChargeLists.failure(action.id, { error }));
+//   }
+//   finally {
+//     yield put(downloadChargeLists.finally(action.id));
+//   }
 }
-
+//
 function* downloadChargeListsWatcher() :Generator<*, *, *> {
   yield takeEvery(DOWNLOAD_CHARGE_LISTS, downloadChargeListsWorker);
 }

@@ -2,7 +2,7 @@
  * @flow
  */
 
-import { Map, List } from 'immutable';
+import { Map, List, Set } from 'immutable';
 
 import { PLEAS_TO_IGNORE } from './consts/PleaConsts';
 import { PROPERTY_TYPES } from './consts/DataModelConsts';
@@ -209,4 +209,17 @@ export const getSummaryStats = (chargesByCaseNum :Map<*>) => {
     numViolentCharges,
     numViolentConvictions
   };
+};
+
+export const historicalChargeIsViolent = ({
+  charge,
+  violentChargeList
+}) => {
+  const statute = charge.getIn([PROPERTY_TYPES.CHARGE_STATUTE, 0], '');
+  const strippedStatute = stripDegree(statute.toLowerCase());
+  const description = charge.getIn([PROPERTY_TYPES.CHARGE_DESCRIPTION, 0], '');
+
+  const isViolent = violentChargeList.get(strippedStatute, Set()).includes(description);
+
+  return isViolent;
 };

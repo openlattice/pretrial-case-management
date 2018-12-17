@@ -7,7 +7,7 @@ import moment from 'moment';
 import styled from 'styled-components';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
-import { Map, Set, List } from 'immutable';
+import { Map, List } from 'immutable';
 
 import BasicButton from '../../components/buttons/BasicButton';
 import DateTimeRangePicker from '../../components/datetime/DateTimeRangePicker';
@@ -120,10 +120,6 @@ const OptionsWrapper = styled.div`
   }
 `;
 
-const CourtOptionTitle = styled.div`
-  margin: 0 10px 10px 0;
-`;
-
 const Error = styled.div`
   width: 100%;
   text-align: center;
@@ -233,12 +229,13 @@ class DownloadPSA extends React.Component<Props, State> {
 
   renderError = type => <Error>{this.getErrorText(type)}</Error>
 
-  downloadCharges = (jurisdiction) => {
-    const { actions } = this.props;
-    actions.downloadChargeLists({
-      jurisdiction
-    });
-  }
+  // TODO: Can refactor for charge list entity sets
+  // downloadCharges = (jurisdiction) => {
+  //   const { actions } = this.props;
+  //   actions.downloadChargeLists({
+  //     jurisdiction
+  //   });
+  // }
 
   downloadbyPSADate = (filters, domain) => {
     const { startDate, endDate } = this.state;
@@ -452,7 +449,7 @@ class DownloadPSA extends React.Component<Props, State> {
             <DownloadSection>
               <HeaderSection>Download PSA Forms</HeaderSection>
             </DownloadSection>
-            <DownloadSection>
+            {/* <DownloadSection>
               <SubHeaderSection>Download Charge Lists</SubHeaderSection>
               <ButtonRow>
                 <BasicDownloadButton onClick={() => this.downloadCharges(DOMAIN.PENNINGTON)}>
@@ -462,7 +459,7 @@ class DownloadPSA extends React.Component<Props, State> {
                   Download Minnehaha Charges
                 </BasicDownloadButton>
               </ButtonRow>
-            </DownloadSection>
+            </DownloadSection> */}
             <DownloadSection>
               <SubHeaderSection>PSA Downloads</SubHeaderSection>
               <SelectionWrapper>
