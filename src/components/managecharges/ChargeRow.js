@@ -132,25 +132,25 @@ class ChargeRow extends React.Component<Props, State> {
     let row;
     if (chargeType === CHARGE_TYPES.ARREST) {
       row = (
-        <Row disabled onClick={this.openChargeModal}>
+        <Row disabled>
           <td>{ this.renderChargeModal() }</td>
-          <Cell>{ statute }</Cell>
-          <Cell>{ description }</Cell>
-          <DegreeCell>{ degree }</DegreeCell>
-          <Cell>{ degreeShort }</Cell>
-          <Cell>
+          <Cell onClick={this.openChargeModal}>{ statute }</Cell>
+          <Cell onClick={this.openChargeModal}>{ description }</Cell>
+          <DegreeCell onClick={this.openChargeModal}>{ degree }</DegreeCell>
+          <Cell onClick={this.openChargeModal}>{ degreeShort }</Cell>
+          <Cell onClick={this.openChargeModal}>
             <BooleanDisplay checked={isViolent}>{isViolentLabel}</BooleanDisplay>
           </Cell>
-          <Cell>
+          <Cell onClick={this.openChargeModal}>
             <BooleanDisplay checked={isStep2}>{isStep2Label}</BooleanDisplay>
           </Cell>
-          <Cell>
+          <Cell onClick={this.openChargeModal}>
             <BooleanDisplay checked={isStep4}>{isStep4Label}</BooleanDisplay>
           </Cell>
-          <Cell>
+          <Cell onClick={this.openChargeModal}>
             <BooleanDisplay checked={isBHE}>{isBHELabel}</BooleanDisplay>
           </Cell>
-          <Cell>
+          <Cell onClick={this.openChargeModal}>
             <BooleanDisplay checked={isBRE}>{isBRELabel}</BooleanDisplay>
           </Cell>
         </Row>
@@ -158,11 +158,11 @@ class ChargeRow extends React.Component<Props, State> {
     }
     else if (chargeType === CHARGE_TYPES.COURT) {
       row = (
-        <Row disabled onClick={this.openChargeModal}>
+        <Row disabled>
           <td>{ this.renderChargeModal() }</td>
-          <Cell>{ statute }</Cell>
-          <Cell>{ description }</Cell>
-          <Cell>
+          <Cell onClick={this.openChargeModal}>{ statute }</Cell>
+          <Cell onClick={this.openChargeModal}>{ description }</Cell>
+          <Cell onClick={this.openChargeModal}>
             <BooleanDisplay checked={isViolent}>{isViolentLabel}</BooleanDisplay>
           </Cell>
         </Row>
