@@ -135,11 +135,17 @@ export const getDMFStepChargeLabels = ({ currCharges, dmfStep2ChargeList, dmfSte
   let step4Charges = List();
 
   currCharges.forEach((charge) => {
+    let isStep2 = false;
+    let isStep4 = false;
     const statute = charge.getIn([PROPERTY_TYPES.CHARGE_STATUTE, 0], '');
     const description = charge.getIn([PROPERTY_TYPES.CHARGE_DESCRIPTION, 0], '');
 
-    const isStep2 = dmfStep2ChargeList.get(statute, Set()).includes(description);
-    const isStep4 = dmfStep4ChargeList.get(statute, Set()).includes(description);
+    if (dmfStep2ChargeList) {
+      isStep2 = dmfStep2ChargeList.get(statute, Set()).includes(description);
+    }
+    if (dmfStep4ChargeList) {
+      isStep4 = dmfStep4ChargeList.get(statute, Set()).includes(description);
+    }
 
     if (isStep2) step2Charges = step2Charges.push(getChargeTitle(charge, true));
     if (isStep4) step4Charges = step4Charges.push(getChargeTitle(charge, true));
@@ -160,9 +166,14 @@ export const getBHEAndBREChargeLabels = ({
   currCharges.forEach((charge) => {
     const statute = charge.getIn([PROPERTY_TYPES.CHARGE_STATUTE, 0], '');
     const description = charge.getIn([PROPERTY_TYPES.CHARGE_DESCRIPTION, 0], '');
-
-    const isBRE = bookingReleaseExceptionChargeList.get(statute, Set()).includes(description);
-    const isBHE = bookingHoldExceptionChargeList.get(statute, Set()).includes(description);
+    let isBRE = false;
+    let isBHE = false;
+    if (bookingReleaseExceptionChargeList) {
+      isBRE = bookingReleaseExceptionChargeList.get(statute, Set()).includes(description);
+    }
+    if (bookingHoldExceptionChargeList) {
+      isBHE = bookingHoldExceptionChargeList.get(statute, Set()).includes(description);
+    }
 
     if (isBHE) currentBHECharges = currentBHECharges.push(getChargeTitle(charge, true));
     if (!isBHE) currentNonBHECharges = currentNonBHECharges.push(getChargeTitle(charge, true));
