@@ -18,7 +18,6 @@ import { APP, CHARGES, STATE } from '../../utils/consts/FrontEndStateConsts';
 import { BHE_LABELS, BRE_LABELS } from '../../utils/consts/ArrestChargeConsts';
 import { OL } from '../../utils/consts/Colors';
 import {
-  getAllViolentChargeLabels,
   getViolentChargeLabels,
   getDMFStepChargeLabels,
   getBHEAndBREChargeLabels
