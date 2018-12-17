@@ -85,7 +85,7 @@ export const getCasesForPSA = (
   let chargeHistoryNotForMostRecentPSA = Map();
   const psaIsClosed = scores.getIn([PROPERTY_TYPES.STATUS, 0], '') !== PSA_STATUSES.OPEN;
 
-  const psaArrestDateTime = moment(arrestDate);
+  const psaArrestDateTime = moment(arrestDate || undefined);
   const psaClosureDate = psaIsClosed ? moment(lastEditDateForPSA) : moment().add(1, 'day');
 
 
