@@ -1,6 +1,7 @@
 /*
  * @flow
  */
+import { AuthorizationApi } from 'lattice';
 import { DataApiActions, DataApiSagas } from 'lattice-sagas';
 import { Map, Set, fromJS } from 'immutable';
 import { call, put, takeEvery } from 'redux-saga/effects';
@@ -67,6 +68,17 @@ function* loadChargesWorker(action :SequenceAction) :Generator<*, *, *> {
   let bookingHoldExceptionCharges = Map();
   const { id, value } = action;
   const { arrestChargesEntitySetId, courtChargesEntitySetId, selectedOrgId } = value;
+  let arrestChargePermissions = yield call(AuthorizationApi.checkAuthorizations, [{
+    aclKey: [arrestChargesEntitySetId],
+    permissions: ['WRITE']
+  }]);
+  arrestChargePermissions = arrestChargePermissions[0].permissions.WRITE;
+  let courtChargePermissions = yield call(AuthorizationApi.checkAuthorizations, [{
+    aclKey: [courtChargesEntitySetId],
+    permissions: ['WRITE']
+  }]);
+  courtChargePermissions = courtChargePermissions[0].permissions.WRITE;
+
   if (value === null || value === undefined) {
     yield put(loadCharges.failure(id, 'ERR_ACTION_VALUE_NOT_DEFINED'));
     return;
@@ -155,10 +167,12 @@ function* loadChargesWorker(action :SequenceAction) :Generator<*, *, *> {
     yield put(loadCharges.success(action.id, {
       arrestCharges,
       arrestChargesByEntityKeyId,
+      arrestChargePermissions,
       bookingHoldExceptionCharges,
       bookingReleaseExceptionCharges,
       courtCharges,
       courtChargesByEntityKeyId,
+      courtChargePermissions,
       dmfStep2Charges,
       dmfStep4Charges,
       selectedOrgId,
