@@ -4,7 +4,7 @@
 
 import React from 'react';
 
-import Immutable, { Map } from 'immutable';
+import Immutable, { Map, List } from 'immutable';
 import styled from 'styled-components';
 import randomUUID from 'uuid/v4';
 import moment from 'moment';
@@ -584,7 +584,7 @@ class Form extends React.Component<Props, State> {
       arrestOptions,
       allChargesForPerson,
       allSentencesForPerson,
-      allFTAs
+      allFTAs,
     } = this.props;
 
     const {
@@ -898,10 +898,14 @@ class Form extends React.Component<Props, State> {
       arrestOptions,
       allChargesForPerson,
       allSentencesForPerson,
-      allFTAs
+      allFTAs,
+      violentArrestCharges,
+      violentCourtCharges,
+      selectedOrganizationId
     } = this.props;
     const { dmfRiskFactors, riskFactors, scores } = this.state;
-
+    const violentArrestChargeList = violentArrestCharges.get(selectedOrganizationId, List());
+    const violentCourtChargeList = violentCourtCharges.get(selectedOrganizationId, List());
     const data = Immutable.fromJS(this.state)
       .set('scores', scores)
       .set('riskFactors', this.setMultimapToMap(riskFactors))
@@ -916,6 +920,8 @@ class Form extends React.Component<Props, State> {
       allChargesForPerson,
       allSentencesForPerson,
       allFTAs,
+      violentArrestChargeList,
+      violentCourtChargeList,
       {
         user: this.getStaffId(),
         timestamp: toISODateTime(moment())
