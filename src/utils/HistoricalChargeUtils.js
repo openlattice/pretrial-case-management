@@ -216,10 +216,9 @@ export const historicalChargeIsViolent = ({
   violentChargeList
 }) => {
   const statute = charge.getIn([PROPERTY_TYPES.CHARGE_STATUTE, 0], '');
-  const strippedStatute = stripDegree(statute.toLowerCase());
   const description = charge.getIn([PROPERTY_TYPES.CHARGE_DESCRIPTION, 0], '');
 
-  const isViolent = violentChargeList.get(strippedStatute, Set()).includes(description);
+  const isViolent = violentChargeList.get(statute, Set()).includes(description);
 
   return isViolent;
 };
