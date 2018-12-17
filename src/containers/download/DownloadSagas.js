@@ -403,52 +403,54 @@ function* downloadPSAsByHearingDateWorker(action :SequenceAction) :Generator<*, 
       }
     });
 
-    let peopleNeighborsById = yield call(
-      SearchApi.searchEntityNeighborsBulk,
-      peopleEntitySetId,
-      personIdsToHearingIds.keySeq().toJS()
-    );
+    if (personIdsToHearingIds.size) {
+      let peopleNeighborsById = yield call(
+        SearchApi.searchEntityNeighborsBulk,
+        peopleEntitySetId,
+        personIdsToHearingIds.keySeq().toJS()
+      );
 
-    peopleNeighborsById = Immutable.fromJS(peopleNeighborsById);
-    peopleNeighborsById.entrySeq().forEach(([id, neighbors]) => {
-      let hasValidHearing = false;
-      let mostCurrentPSA;
-      let currentPSADateTime;
-      let mostCurrentPSAEntityKeyId;
-      neighbors.forEach((neighbor) => {
-        const entitySetName = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'name']);
-        const entityKeyId = neighbor.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0]);
-        const entityDateTime = moment(neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.DATE_TIME, 0]));
+      peopleNeighborsById = Immutable.fromJS(peopleNeighborsById);
+      peopleNeighborsById.entrySeq().forEach(([id, neighbors]) => {
+        let hasValidHearing = false;
+        let mostCurrentPSA;
+        let currentPSADateTime;
+        let mostCurrentPSAEntityKeyId;
+        neighbors.forEach((neighbor) => {
+          const entitySetName = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'name']);
+          const entityKeyId = neighbor.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0]);
+          const entityDateTime = moment(neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.DATE_TIME, 0]));
 
-        if (entitySetName === ENTITY_SETS.HEARINGS) {
-          const hearingDate = entityDateTime;
-          const hearingDateInRange = hearingDate.isSame(enteredHearingDate);
-          if (hearingDateInRange) {
-            hasValidHearing = true;
+          if (entitySetName === ENTITY_SETS.HEARINGS) {
+            const hearingDate = entityDateTime;
+            const hearingDateInRange = hearingDate.isSame(enteredHearingDate);
+            if (hearingDateInRange) {
+              hasValidHearing = true;
+            }
           }
-        }
 
-        if (entitySetName === ENTITY_SETS.PSA_SCORES
-            && neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.STATUS, 0]) === PSA_STATUSES.OPEN) {
-          if (!mostCurrentPSA || currentPSADateTime.isBefore(entityDateTime)) {
-            mostCurrentPSA = neighbor;
-            mostCurrentPSAEntityKeyId = entityKeyId;
-            currentPSADateTime = entityDateTime;
+          if (entitySetName === ENTITY_SETS.PSA_SCORES
+              && neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.STATUS, 0]) === PSA_STATUSES.OPEN) {
+            if (!mostCurrentPSA || currentPSADateTime.isBefore(entityDateTime)) {
+              mostCurrentPSA = neighbor;
+              mostCurrentPSAEntityKeyId = entityKeyId;
+              currentPSADateTime = entityDateTime;
+            }
           }
+        });
+
+        if (hasValidHearing && mostCurrentPSAEntityKeyId) {
+          scoresAsMap = scoresAsMap.set(
+            mostCurrentPSAEntityKeyId,
+            mostCurrentPSA.get(PSA_NEIGHBOR.DETAILS)
+          );
+          hearingIdsToPSAIds = hearingIdsToPSAIds.set(
+            personIdsToHearingIds.get(id),
+            mostCurrentPSAEntityKeyId
+          );
         }
       });
-
-      if (hasValidHearing && mostCurrentPSAEntityKeyId) {
-        scoresAsMap = scoresAsMap.set(
-          mostCurrentPSAEntityKeyId,
-          mostCurrentPSA.get(PSA_NEIGHBOR.DETAILS)
-        );
-        hearingIdsToPSAIds = hearingIdsToPSAIds.set(
-          personIdsToHearingIds.get(id),
-          mostCurrentPSAEntityKeyId
-        );
-      }
-    });
+    }
 
     if (hearingIdsToPSAIds.size) {
       const psaNeighborsById = yield call(
