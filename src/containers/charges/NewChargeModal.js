@@ -6,7 +6,8 @@ import React from 'react';
 import styled from 'styled-components';
 import { Constants } from 'lattice';
 import { Map } from 'immutable';
-import { Modal } from 'react-bootstrap';
+
+import Modal, { ModalTransition } from '@atlaskit/modal-dialog';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
@@ -22,10 +23,11 @@ import {
   SUBMIT
 } from '../../utils/consts/FrontEndStateConsts';
 
-import * as OverrideClassNames from '../../utils/styleoverrides/OverrideClassNames';
 import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
 import * as DataActionFactory from '../../utils/data/DataActionFactory';
 import * as ChargesActionFactory from './ChargesActionFactory';
+
+const MODAL_WIDTH = '800px';
 
 const {
   ARREST_CHARGE_LIST,
@@ -346,40 +348,47 @@ class NewChargeModal extends React.Component<Props, State> {
     const { state } = this;
     return (
       <Wrapper>
-        <Modal
-            show={open}
-            onHide={onClose}
-            dialogClassName={OverrideClassNames.PSA_REVIEW_MODAL}>
-          <Modal.Body>
-            <TitleWrapper>
-              <h1>{ creatingNew ? 'Create New Charge' : 'Update Charge'}</h1>
-              <div>
-                <CloseModalX onClick={onClose} />
-              </div>
-            </TitleWrapper>
-            <Body>
-              <NewChargeForm
-                  statute={state[PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE]}
-                  chargeType={chargeType}
-                  creatingNew={creatingNew}
-                  deleteCharge={this.deleteCharge}
-                  description={state[PROPERTY_TYPES.REFERENCE_CHARGE_DESCRIPTION]}
-                  degree={state[PROPERTY_TYPES.REFERENCE_CHARGE_DEGREE]}
-                  degreeShort={state[PROPERTY_TYPES.REFERENCE_CHARGE_LEVEL]}
-                  existingCharge={existingCharge}
-                  isViolent={state[PROPERTY_TYPES.CHARGE_IS_VIOLENT]}
-                  isStep2={state[PROPERTY_TYPES.CHARGE_DMF_STEP_2]}
-                  isStep4={state[PROPERTY_TYPES.CHARGE_DMF_STEP_4]}
-                  isBHE={state[PROPERTY_TYPES.BHE]}
-                  isBRE={state[PROPERTY_TYPES.BRE]}
-                  handleCheckboxChange={this.handleCheckboxChange}
-                  handleOnChangeInput={this.onInputChange}
-                  onSubmit={this.updateCharge}
-                  readyToSubmit={this.isReadyToSubmit()}
-                  modal />
-            </Body>
-          </Modal.Body>
-        </Modal>
+        <ModalTransition>
+          {
+            open
+            && (
+              <Modal
+                  scrollBehavior="outside"
+                  onClose={() => onClose()}
+                  width={MODAL_WIDTH}
+                  shouldCloseOnOverlayClick
+                  stackIndex={1}>
+                <TitleWrapper>
+                  <h1>{ creatingNew ? 'Create New Charge' : 'Update Charge'}</h1>
+                  <div>
+                    <CloseModalX onClick={onClose} />
+                  </div>
+                </TitleWrapper>
+                <Body>
+                  <NewChargeForm
+                      statute={state[PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE]}
+                      chargeType={chargeType}
+                      creatingNew={creatingNew}
+                      deleteCharge={this.deleteCharge}
+                      description={state[PROPERTY_TYPES.REFERENCE_CHARGE_DESCRIPTION]}
+                      degree={state[PROPERTY_TYPES.REFERENCE_CHARGE_DEGREE]}
+                      degreeShort={state[PROPERTY_TYPES.REFERENCE_CHARGE_LEVEL]}
+                      existingCharge={existingCharge}
+                      isViolent={state[PROPERTY_TYPES.CHARGE_IS_VIOLENT]}
+                      isStep2={state[PROPERTY_TYPES.CHARGE_DMF_STEP_2]}
+                      isStep4={state[PROPERTY_TYPES.CHARGE_DMF_STEP_4]}
+                      isBHE={state[PROPERTY_TYPES.BHE]}
+                      isBRE={state[PROPERTY_TYPES.BRE]}
+                      handleCheckboxChange={this.handleCheckboxChange}
+                      handleOnChangeInput={this.onInputChange}
+                      onSubmit={this.updateCharge}
+                      readyToSubmit={this.isReadyToSubmit()}
+                      modal />
+                </Body>
+              </Modal>
+            )
+          }
+        </ModalTransition>
       </Wrapper>
     );
   }
