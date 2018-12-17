@@ -70,8 +70,8 @@ const CaseHistoryList = ({
   const caseCount = caseHistory.size;
   const cases = caseHistory
     .sort((c1, c2) => {
-      const date1 = moment(c1.getIn([PROPERTY_TYPES.FILE_DATE, 0], ''));
-      const date2 = moment(c2.getIn([PROPERTY_TYPES.FILE_DATE, 0], ''));
+      const date1 = moment(c1.getIn([PROPERTY_TYPES.FILE_DATE, 0], []));
+      const date2 = moment(c2.getIn([PROPERTY_TYPES.FILE_DATE, 0], []));
       return date1.isBefore(date2) ? 1 : -1;
     })
     .filter(caseObj => caseObj.getIn([PROPERTY_TYPES.CASE_ID, 0], '').length)

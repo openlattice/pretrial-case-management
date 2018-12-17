@@ -196,7 +196,7 @@ function* loadHearingsForDateWorker(action :SequenceAction) :Generator<*, *, *> 
       return true;
     })
       .forEach((hearing) => {
-        const hearingDateTime = moment(hearing.getIn([PROPERTY_TYPES.DATE_TIME, 0], ''));
+        const hearingDateTime = moment(hearing.getIn([PROPERTY_TYPES.DATE_TIME, 0], []));
         if (hearingDateTime.isValid()) {
           const time = hearingDateTime.format(TIME_FORMAT);
           hearingsByTime = hearingsByTime.set(
