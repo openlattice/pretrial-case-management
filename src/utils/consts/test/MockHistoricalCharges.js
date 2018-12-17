@@ -150,7 +150,7 @@ export const MOCK_GUILTY_BY_POA_MISDEMEANOR = Immutable.fromJS({
 });
 
 export const ODYSSEY_VIOLENT_CHARGES = {
-  '22-18-1': [
+  '22-18-1(1)': [
     'DOM ABUSE SIMPLE ASSAULT ATTEMPT TO CAUSE BODILY INJURY'
   ],
   '22-10-5': [
