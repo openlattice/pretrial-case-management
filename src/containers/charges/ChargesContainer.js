@@ -86,7 +86,7 @@ class ManageChargesContainer extends React.Component<Props, State> {
     let { start } = this.state;
     const { numPages } = this.getChargeList();
     const currPage = (start / MAX_RESULTS) + 1;
-    if (currPage > numPages) start = (numPages - 2) * MAX_RESULTS;
+    if (currPage > numPages) start = (numPages - 1) * MAX_RESULTS;
     this.setState({
       searchQuery: event.target.value,
       start
