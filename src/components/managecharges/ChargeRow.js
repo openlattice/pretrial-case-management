@@ -54,9 +54,9 @@ const BooleanDisplay = styled.div`
 `;
 
 type Props = {
+  hasPermission :boolean,
   charge :Immutable.Map<*, *>,
-  chargeType :string,
-  disabled? :boolean
+  chargeType :string
 };
 
 class ChargeRow extends React.Component<Props, State> {
@@ -73,7 +73,10 @@ class ChargeRow extends React.Component<Props, State> {
 
   formatBooleanLabel = boolean => (boolean ? 'Yes' : 'No');
 
-  openChargeModal = () => (this.setState({ chargeModalOpen: true }))
+  openChargeModal = () => {
+    const { hasPermission } = this.props;
+    this.setState({ chargeModalOpen: hasPermission });
+  }
   closeChargeModal = () => (this.setState({ chargeModalOpen: false }))
 
   renderChargeModal = () => {
