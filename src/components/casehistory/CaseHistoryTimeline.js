@@ -110,7 +110,7 @@ const MONTH_FORMAT = 'MM/YYYY';
 export default class CaseHistoryTimeline extends React.Component<Props> {
 
   getCaseDate = (pretrialCase :Immutable.Map<*, *>) =>
-    moment.utc(pretrialCase.getIn([PROPERTY_TYPES.FILE_DATE, 0], ''));
+    moment.utc(pretrialCase.getIn([PROPERTY_TYPES.FILE_DATE, 0], []));
 
   getInitializedCountsMap = () => Immutable.Map().set('m', 0).set('f', 0).set('v', 0);
 
