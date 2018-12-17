@@ -76,12 +76,14 @@ class ChargeTable extends React.Component<Props, State> {
       charges,
       chargeType,
       disabled,
+      hasPermission,
       noResults
     } = this.props;
     if (noResults) return <NoResults>No Results</NoResults>;
     const chargeSeq = charges.valueSeq().map((charge => (
       <ChargeRow
           key={charge.getIn([OPENLATTICE_ID_FQN, 0], '')}
+          hasPermission={hasPermission}
           charge={charge}
           chargeType={chargeType}
           disabled={disabled} />
