@@ -3,7 +3,7 @@
  */
 
 import React from 'react';
-import Immutable, { List, Map } from 'immutable';
+import Immutable, { Map } from 'immutable';
 import styled from 'styled-components';
 import moment from 'moment';
 import randomUUID from 'uuid/v4';
@@ -13,8 +13,6 @@ import BasicButton from '../../../components/buttons/BasicButton';
 import SecondaryButton from '../../../components/buttons/SecondaryButton';
 import SearchableSelect from '../../../components/controls/SearchableSelect';
 import DateTimePicker from '../../../components/datetime/DateTimePicker';
-import MinnehahaChargesList from '../../../utils/consts/MinnehahaChargesList';
-import PenningtonChargesList from '../../../utils/consts/PenningtonChargesList';
 import QUALIFIERS from '../../../utils/consts/QualifierConsts';
 import { CHARGE } from '../../../utils/consts/Consts';
 import type { Charge } from '../../../utils/consts/Consts';
