@@ -7,20 +7,25 @@ import Immutable from 'immutable';
 import moment from 'moment';
 
 import { PROPERTY_TYPES } from './consts/DataModelConsts';
-import { formatValue, formatDate, formatDateTime, formatDateList } from './FormattingUtils';
+import { getViolentChargeLabels } from './ArrestChargeUtils';
+import { chargeIsMostSerious, historicalChargeIsViolent, getSummaryStats } from './HistoricalChargeUtils';
+import { getSentenceToIncarcerationCaseNums } from './SentenceUtils';
+import { getRecentFTAs, getOldFTAs } from './FTAUtils';
+import { sortPeopleByName } from './PSAUtils';
+import { getHeaderText, getConditionsTextList } from './DMFUtils';
+import { stepTwoIncrease, stepFourIncrease, dmfSecondaryReleaseDecrease } from './ScoringUtils';
+import {
+  formatValue,
+  formatDate,
+  formatDateTime,
+  formatDateList
+} from './FormattingUtils';
 import {
   getPendingCharges,
   getPreviousMisdemeanors,
   getPreviousFelonies,
   getPreviousViolentCharges
 } from './AutofillUtils';
-import { getAllViolentCharges } from './ArrestChargeUtils';
-import { chargeIsMostSerious, chargeIsViolent, getSummaryStats } from './HistoricalChargeUtils';
-import { getSentenceToIncarcerationCaseNums } from './SentenceUtils';
-import { getRecentFTAs, getOldFTAs } from './FTAUtils';
-import { sortPeopleByName } from './PSAUtils';
-import { getHeaderText, getConditionsTextList } from './DMFUtils';
-import { stepTwoIncrease, stepFourIncrease, dmfSecondaryReleaseDecrease } from './ScoringUtils';
 
 const {
   AGE_AT_CURRENT_ARREST,
@@ -459,10 +464,16 @@ const getCaseNumFromCharge = (charge :Immutable.Map<*, *>) => {
   return '';
 };
 
-const chargeTags = (doc :Object, yInit :number, charge :Immutable.List<*>, cases :Immutable.Map<*, *>) => {
+const chargeTags = (
+  doc :Object,
+  yInit :number,
+  charge :Immutable.List<*>,
+  cases :Immutable.Map<*, *>,
+  violentCourtChargeList :Immutable.Map<*, *>,
+) => {
   let y = yInit;
   const tags = [];
-  if (chargeIsViolent(charge)) {
+  if (historicalChargeIsViolent({ charge, violentChargeList: violentCourtChargeList })) {
     tags.push('VIOLENT');
   }
   const caseNum = getCaseNumFromCharge(charge);
@@ -499,6 +510,7 @@ const charges = (
   name :string,
   allCases :Immutable.List<*>,
   selectedCharges :Immutable.List<*>,
+  violentCourtChargeList :Immutable.Map<*, *>,
   showDetails :boolean
 ) :number[] => {
   let y :number = yInit;
@@ -519,7 +531,7 @@ const charges = (
 
     const qualifierText = formatValue(charge.get(QUALIFIER, Immutable.List()));
     const CHARGE_OFFSET = 25;
-    y = chargeTags(doc, y, charge, casesByCaseNum);
+    y = chargeTags(doc, y, charge, casesByCaseNum, violentCourtChargeList);
 
     doc.text(xIndent, y, formatValue(charge.get(CHARGE_STATUTE, Immutable.List())));
     let chargeLines = '';
@@ -574,6 +586,8 @@ const riskFactors = (
   allCases :Immutable.List<*>,
   allFTAs :Immutable.List<*>,
   withReferences :boolean,
+  violentArrestChargeList :Immutable.Map<*, *>,
+  violentCourtChargeList :Immutable.Map<*, *>
 ) :number[] => {
   let [y, page] = withReferences ? newPage(doc, pageInit, name) : tryIncrementPage(doc, yInit, pageInit, name);
 
@@ -682,7 +696,13 @@ const riskFactors = (
   renderLine('1', 'Age at Current Arrest', ageAtCurrentArrest);
   // y = riskFactorNotes(y, doc, riskFactorVals.get(AGE_AT_CURRENT_ARREST_NOTES));
 
-  renderLine('2', 'Current Violent Offense', getBooleanText(currentViolentOffense), getAllViolentCharges(currCharges));
+  renderLine(
+    '2',
+    'Current Violent Offense',
+    getBooleanText(currentViolentOffense),
+    getViolentChargeLabels({ currCharges, violentChargeList: violentArrestChargeList }),
+    true
+  );
   // y = riskFactorNotes(y, doc, riskFactorVals.get(CURRENT_VIOLENT_OFFENSE_NOTES));
 
   renderLine('2a', 'Current Violent Offense & 20 Years Old or Younger', getBooleanText(currentViolentOffenseAndYoung));
@@ -708,7 +728,7 @@ const riskFactors = (
 
   renderLine('5a', 'Prior Conviction', getBooleanText(priorConviction));
 
-  renderLine('6', 'Prior Violent Conviction', priorViolentConviction, getPreviousViolentCharges(allCharges));
+  renderLine('6', 'Prior Violent Conviction', priorViolentConviction, getPreviousViolentCharges(allCharges, violentCourtChargeList));
   // y = riskFactorNotes(y, doc, riskFactorVals.get(PRIOR_VIOLENT_CONVICTION_NOTES));
 
   renderLine(
@@ -828,7 +848,8 @@ const caseHistory = (
   pageInit :number,
   name :string,
   allCases :Immutable.List<*>,
-  chargesByCaseNum :Immutable.Map<*, *>
+  chargesByCaseNum :Immutable.Map<*, *>,
+  violentCourtChargeList :Immutable.Map<*, *>,
 ) :number[] => {
   let [y, page] = newPage(doc, pageInit, name);
   y = caseHistoryHeader(doc, y);
@@ -854,7 +875,7 @@ const caseHistory = (
     y += Y_INC;
     const chargesForCase = chargesByCaseNum.get(caseNum, Immutable.List());
     if (chargesForCase.size) {
-      [y, page] = charges(doc, y, page, name, allCases, chargesForCase, true);
+      [y, page] = charges(doc, y, page, name, allCases, chargesForCase, violentCourtChargeList, true);
     }
   });
   return [y, page];
@@ -870,6 +891,8 @@ const getPDFContents = (
   allCharges :Immutable.List<*>,
   allSentences :Immutable.List<*>,
   allFTAs :Immutable.List<*>,
+  violentArrestChargeList :Immutable.Map<*, *>,
+  violentCourtChargeList :Immutable.Map<*, *>,
   createData :{
     user :string,
     timestamp :string
@@ -905,7 +928,7 @@ const getPDFContents = (
   y += Y_INC_LARGE;
 
   // CHARGES SECTION
-  [y, page] = charges(doc, y, page, name, allCases, selectedCharges, false);
+  [y, page] = charges(doc, y, page, name, allCases, selectedCharges, violentCourtChargeList, false);
   thickLine(doc, y);
   y += Y_INC_LARGE;
 
@@ -926,7 +949,9 @@ const getPDFContents = (
         selectedPretrialCase.getIn([FILE_DATE, 0], ''))),
     allCases,
     allFTAs,
-    false
+    false,
+    violentArrestChargeList,
+    violentCourtChargeList
   );
   thickLine(doc, y);
   y += Y_INC;
@@ -952,14 +977,16 @@ const getPDFContents = (
           selectedPretrialCase.getIn([FILE_DATE, 0], ''))),
       allCases,
       allFTAs,
-      true
+      true,
+      violentArrestChargeList,
+      violentCourtChargeList
     );
     thickLine(doc, y, true);
     y += Y_INC;
 
 
     // CASE HISTORY SECCTION=
-    [y, page] = caseHistory(doc, y, page, name, allCases, chargesByCaseNum);
+    [y, page] = caseHistory(doc, y, page, name, allCases, chargesByCaseNum, violentCourtChargeList);
   }
 
   return getPdfName(name, createData.timestamp);
@@ -974,6 +1001,8 @@ const exportPDF = (
   allCharges :Immutable.List<*>,
   allSentences :Immutable.List<*>,
   allFTAs :Immutable.List<*>,
+  violentArrestChargeList :Immutable.Map<*, *>,
+  violentCourtChargeList :Immutable.Map<*, *>,
   createData :{
     user :string,
     timestamp :string
@@ -995,6 +1024,8 @@ const exportPDF = (
     allCharges,
     allSentences,
     allFTAs,
+    violentArrestChargeList,
+    violentCourtChargeList,
     createData,
     updateData,
     compact
@@ -1062,6 +1093,8 @@ export const exportPDFList = (fileName :string, pages :{
       selectedPretrialCase,
       selectedCharges,
       selectedPerson,
+      Immutable.List(),
+      Immutable.List(),
       Immutable.List(),
       Immutable.List(),
       Immutable.List(),

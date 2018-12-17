@@ -2,10 +2,24 @@
  * @flow
  */
 
-import Immutable from 'immutable';
+import Immutable, { Map } from 'immutable';
 import moment from 'moment';
-import { AuthorizationApi, Constants, DataApi, EntityDataModelApi, SearchApi, Models } from 'lattice';
-import { all, call, put, take, takeEvery } from 'redux-saga/effects';
+import {
+  AuthorizationApi,
+  Constants,
+  DataApi,
+  EntityDataModelApi,
+  SearchApi,
+  Models
+} from 'lattice';
+import {
+  all,
+  call,
+  put,
+  take,
+  takeEvery,
+  select
+} from 'redux-saga/effects';
 
 import exportPDF, { exportPDFList } from '../../utils/PDFUtils';
 import {
@@ -18,6 +32,16 @@ import {
 import { getMapByCaseId } from '../../utils/CaseUtils';
 import releaseConditionsConfig from '../../config/formconfig/ReleaseConditionsConfig';
 import { obfuscateEntityNeighbors, obfuscateBulkEntityNeighbors } from '../../utils/consts/DemoNames';
+import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { PSA_STATUSES } from '../../utils/consts/Consts';
+import { formatDMFFromEntity } from '../../utils/DMFUtils';
+import {
+  APP,
+  CHARGES,
+  PSA_NEIGHBOR,
+  PSA_ASSOCIATION,
+  STATE
+} from '../../utils/consts/FrontEndStateConsts';
 import {
   BULK_DOWNLOAD_PSA_REVIEW_PDF,
   CHANGE_PSA_STATUS,
@@ -40,10 +64,6 @@ import {
   updateScoresAndRiskFactors,
   updateOutcomesAndReleaseCondtions
 } from './ReviewActionFactory';
-import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { PSA_STATUSES } from '../../utils/consts/Consts';
-import { formatDMFFromEntity } from '../../utils/DMFUtils';
-import { PSA_NEIGHBOR, PSA_ASSOCIATION } from '../../utils/consts/FrontEndStateConsts';
 
 const { FullyQualifiedName } = Models;
 
@@ -543,6 +563,12 @@ function* bulkDownloadPSAReviewPDFWatcher() :Generator<*, *, *> {
   yield takeEvery(BULK_DOWNLOAD_PSA_REVIEW_PDF, bulkDownloadPSAReviewPDFWorker);
 }
 
+/*
+ * Selectors for charges and orgId
+ */
+const getCharges = state => state.get(STATE.CHARGES, Map());
+const getOrgId = state => state.getIn([STATE.APP, APP.SELECTED_ORG_ID], '');
+
 function* downloadPSAReviewPDFWorker(action :SequenceAction) :Generator<*, *, *> {
 
   try {
@@ -555,6 +581,10 @@ function* downloadPSAReviewPDFWorker(action :SequenceAction) :Generator<*, *, *>
       allSentences,
       allFTAs
     } = yield getCasesAndCharges(neighbors);
+    const charges = yield select(getCharges);
+    const orgId = yield select(getOrgId);
+    const violentArrestChargeList = charges.getIn([CHARGES.ARREST_VIOLENT, orgId], Map());
+    const violentCourtChargeList = charges.getIn([CHARGES.COURT_VIOLENT, orgId], Map());
 
     const {
       data,
@@ -574,6 +604,8 @@ function* downloadPSAReviewPDFWorker(action :SequenceAction) :Generator<*, *, *>
       allCharges,
       allSentences,
       allFTAs,
+      violentArrestChargeList,
+      violentCourtChargeList,
       createData,
       updateData,
       isCompact
