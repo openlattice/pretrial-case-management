@@ -2,7 +2,7 @@
  * @flow
  */
 
-import Immutable, { Map } from 'immutable';
+import Immutable, { Map, List } from 'immutable';
 import moment from 'moment';
 
 import { PROPERTY_TYPES } from './consts/DataModelConsts';
@@ -18,10 +18,6 @@ import {
 } from './HistoricalChargeUtils';
 import { getSentenceToIncarcerationCaseNums } from './SentenceUtils';
 import {
-  getAllStepTwoCharges,
-  getAllStepFourCharges,
-  getAllSecondaryReleaseCharges,
-  getAllSecondaryHoldCharges,
   getViolentChargeLabels,
   getDMFStepChargeLabels,
   getBHEAndBREChargeLabels
@@ -59,14 +55,14 @@ const {
 } = DMF;
 
 export const tryAutofillCurrentViolentCharge = (
-  currCharges :Immutable.List<*>,
-  violentChargeList :Immutable.Map<*, *>
+  currCharges :List<*>,
+  violentChargeList :Map<*, *>
 ) :string => `${getViolentChargeLabels({ currCharges, violentChargeList }).size > 0}`;
 
 export const tryAutofillAge = (
   dateArrested :string,
   defaultValue :string,
-  selectedPerson :Immutable.Map<*, *>
+  selectedPerson :Map<*, *>
 ) :string => {
   const dob = moment.utc(selectedPerson.getIn([DOB, 0], ''));
   let arrest = moment.utc(dateArrested);
@@ -84,24 +80,24 @@ export const tryAutofillAge = (
 };
 
 /* Mapping util functions */
-const mapToLabels = (allCharges :Immutable.List<*>, filterFn :(allCharges :Immutable.List<*>) => Immutable.List<*>) => (
+const mapToLabels = (allCharges :List<*>, filterFn :(allCharges :List<*>) => List<*>) => (
   filterFn(allCharges.filter(charge => !shouldIgnoreCharge(charge))).map(charge => getChargeTitle(charge))
 );
 
-const mapToDetails = (allCharges :Immutable.List<*>, filterFn :(allCharges :Immutable.List<*>) => Immutable.List<*>) => (
+const mapToDetails = (allCharges :List<*>, filterFn :(allCharges :List<*>) => List<*>) => (
   filterFn(allCharges.filter(charge => !shouldIgnoreCharge(charge))).map(charge => getChargeDetails(charge))
 );
 /* Filter charge lists */
 const filterPendingCharges = (
   currCaseNum :string,
   dateArrested :string,
-  allCases :Immutable.List<*>,
-  allCharges :Immutable.List<*>
-) :Immutable.List<*> => {
-  if (!dateArrested || !dateArrested.length || !currCaseNum || !currCaseNum.length) return Immutable.List();
+  allCases :List<*>,
+  allCharges :List<*>
+) :List<*> => {
+  if (!dateArrested || !dateArrested.length || !currCaseNum || !currCaseNum.length) return List();
   const arrestDate = moment(dateArrested);
   let casesWithArrestBefore = Immutable.OrderedSet(); // Set of case numbers with an arrest date before the current one
-  let casesWithDispositionAfter = Immutable.Map(); // Map from case nums to charge list with date after current arrest
+  let casesWithDispositionAfter = Map(); // Map from case nums to charge list with date after current arrest
 
   if (arrestDate.isValid()) {
     allCases.forEach((caseDetails) => {
@@ -140,30 +136,30 @@ const filterPendingCharges = (
       if (shouldInclude && caseNum) {
         casesWithDispositionAfter = casesWithDispositionAfter.set(
           caseNum,
-          casesWithDispositionAfter.get(caseNum, Immutable.List()).push(chargeDetails)
+          casesWithDispositionAfter.get(caseNum, List()).push(chargeDetails)
         );
       }
     });
-    return casesWithArrestBefore.flatMap(caseNum => casesWithDispositionAfter.get(caseNum, Immutable.List()));
+    return casesWithArrestBefore.flatMap(caseNum => casesWithDispositionAfter.get(caseNum, List()));
   }
-  return Immutable.List();
+  return List();
 };
 
-const filterPreviousMisdemeanors = (allCharges :Immutable.List<*>) :Immutable.List<*> => {
-  if (!allCharges.size) return Immutable.List();
+const filterPreviousMisdemeanors = (allCharges :List<*>) :List<*> => {
+  if (!allCharges.size) return List();
   return allCharges.filter(charge => chargeIsGuilty(charge) && chargeIsMisdemeanor(charge));
 };
 
-const filterPreviousFelonies = (allCharges :Immutable.List<*>) :Immutable.List<*> => {
-  if (!allCharges.size) return Immutable.List();
+const filterPreviousFelonies = (allCharges :List<*>) :List<*> => {
+  if (!allCharges.size) return List();
   return allCharges.filter(charge => chargeIsGuilty(charge) && chargeIsFelony(charge));
 };
 
 const filterPreviousViolentCharges = (
-  allCharges :Immutable.List<*>,
+  allCharges :List<*>,
   violentChargeList :Map<*, *>
-) :Immutable.List<*> => {
-  if (!allCharges.size) return Immutable.List();
+) :List<*> => {
+  if (!allCharges.size) return List();
 
   return allCharges
     .filter((charge) => {
@@ -177,8 +173,8 @@ const filterPreviousViolentCharges = (
 export const getPendingChargeLabels = (
   currCaseNum :string,
   dateArrested :string,
-  allCases :Immutable.List<*>,
-  allCharges :Immutable.List<*>
+  allCases :List<*>,
+  allCharges :List<*>
 ) => (
   filterPendingCharges(currCaseNum, dateArrested, allCases, allCharges).map(charge => getChargeTitle(charge))
 );
@@ -186,35 +182,35 @@ export const getPendingChargeLabels = (
 export const getPendingCharges = (
   currCaseNum :string,
   dateArrested :string,
-  allCases :Immutable.List<*>,
-  allCharges :Immutable.List<*>
+  allCases :List<*>,
+  allCharges :List<*>
 ) => (
   filterPendingCharges(currCaseNum, dateArrested, allCases, allCharges).map(charge => getChargeDetails(charge))
 );
 
-export const getPreviousMisdemeanorLabels = (allCharges :Immutable.List<*, *>) => (
+export const getPreviousMisdemeanorLabels = (allCharges :List<*, *>) => (
   mapToLabels(allCharges, filterPreviousMisdemeanors)
 );
 
-export const getPreviousMisdemeanors = (allCharges :Immutable.List<*, *>) => (
+export const getPreviousMisdemeanors = (allCharges :List<*, *>) => (
   mapToDetails(allCharges, filterPreviousMisdemeanors)
 );
-export const getPreviousFelonyLabels = (allCharges :Immutable.List<*, *>) => (
+export const getPreviousFelonyLabels = (allCharges :List<*, *>) => (
   mapToLabels(allCharges, filterPreviousFelonies)
 );
 
-export const getPreviousFelonies = (allCharges :Immutable.List<*, *>) => (
+export const getPreviousFelonies = (allCharges :List<*, *>) => (
   mapToDetails(allCharges, filterPreviousFelonies)
 );
 
-export const getPreviousViolentChargeLabels = (allCharges :Immutable.List<*>, violentChargeList :Map<*, *>) => (
+export const getPreviousViolentChargeLabels = (allCharges :List<*>, violentChargeList :Map<*, *>) => (
   filterPreviousViolentCharges(
     allCharges.filter(charge => !shouldIgnoreCharge(charge)),
     violentChargeList
   ).map(charge => getChargeTitle(charge))
 );
 
-export const getPreviousViolentCharges = (allCharges :Immutable.List<*>, violentChargeList :Map<*, *>) => (
+export const getPreviousViolentCharges = (allCharges :List<*>, violentChargeList :Map<*, *>) => (
   filterPreviousViolentCharges(
     allCharges.filter(charge => !shouldIgnoreCharge(charge)),
     violentChargeList
@@ -226,73 +222,98 @@ export const getPreviousViolentCharges = (allCharges :Immutable.List<*>, violent
 export const tryAutofillPendingCharge = (
   currCaseNum :string,
   dateArrested :string,
-  allCases :Immutable.List<*>,
-  allCharges :Immutable.List<*>,
+  allCases :List<*>,
+  allCharges :List<*>,
   defaultValue :string
 ) => {
   if (!dateArrested.length || !currCaseNum.length) return defaultValue;
   return `${filterPendingCharges(currCaseNum, dateArrested, allCases, allCharges).size > 0}`;
 };
 
-export const tryAutofillPreviousMisdemeanors = (allCharges :Immutable.List<*>) :string => (
+export const tryAutofillPreviousMisdemeanors = (allCharges :List<*>) :string => (
   `${filterPreviousMisdemeanors(allCharges).size > 0}`
 );
-export const tryAutofillPreviousFelonies = (allCharges :Immutable.List<*>) :string => (
+export const tryAutofillPreviousFelonies = (allCharges :List<*>) :string => (
   `${filterPreviousFelonies(allCharges).size > 0}`
 );
 
-export const tryAutofillPreviousViolentCharge = (allCharges :Immutable.List<*>, violentChargeList :Immutable.Map<*, *>) :string => {
+export const tryAutofillPreviousViolentCharge = (allCharges :List<*>, violentChargeList :Map<*, *>) :string => {
   const numViolentCharges = filterPreviousViolentCharges(allCharges, violentChargeList).size;
   if (numViolentCharges > 3) return '3';
   return `${numViolentCharges}`;
 };
 
-export const tryAutofillPriorSentenceToIncarceration = (allSentences :Immutable.List<*>) :string => (
+export const tryAutofillPriorSentenceToIncarceration = (allSentences :List<*>) :string => (
   `${getSentenceToIncarcerationCaseNums(allSentences).size > 0}`
 );
 
-export const tryAutofillDMFStepTwo = (currCharges :Immutable.List<*>) :string => (
-  `${getAllStepTwoCharges(currCharges).size > 0}`
-);
-
-export const tryAutofillDMFStepFour = (currCharges :Immutable.List<*>) :string => (
-  `${getAllStepFourCharges(currCharges).size > 0}`
-);
-
-export const tryAutofillDMFSecondaryReleaseCharges = (currCharges :Immutable.List<*>) :string => {
-  const bheCharges = getAllSecondaryReleaseCharges(currCharges);
-  return `${!!bheCharges.size && bheCharges.size === currCharges.size}`;
+export const tryAutofillDMFStepTwo = (currCharges :List<*>, dmfStep2ChargeList :Map<*, *>) :string => {
+  const { step2Charges } = getDMFStepChargeLabels({ currCharges, dmfStep2ChargeList });
+  return (
+    `${step2Charges.size > 0}`
+  );
 };
 
-export const tryAutofillDMFSecondaryHoldCharges = (currCharges :Immutable.List<*>) :string => (
-  `${!!getAllSecondaryHoldCharges(currCharges).size}`
-);
+export const tryAutofillDMFStepFour = (currCharges :List<*>, dmfStep4ChargeList :Map<*, *>) :string => {
+  const { step4Charges } = getDMFStepChargeLabels({ currCharges, dmfStep4ChargeList });
+  return (
+    `${step4Charges.size > 0}`
+  );
+};
 
-export const tryAutofillRecentFTAs = (allFTAs :Immutable.List<*>, allCharges :Immutable.List<*>) :string => {
+export const tryAutofillDMFSecondaryReleaseCharges = (
+  currCharges :List<*>,
+  bookingHoldExceptionChargeList :Map<*, *>
+) :string => {
+  const {
+    currentBHECharges
+  } = getBHEAndBREChargeLabels({
+    currCharges,
+    bookingHoldExceptionChargeList
+  });
+  return `${!!currentBHECharges.size && currentBHECharges.size === currCharges.size}`;
+};
+
+export const tryAutofillDMFSecondaryHoldCharges = (
+  currCharges :List<*>,
+  bookingReleaseExceptionChargeList :Map<*, *>
+) :string => {
+  const {
+    currentBRECharges
+  } = getBHEAndBREChargeLabels({
+    currCharges,
+    bookingReleaseExceptionChargeList
+  });
+  return (
+    `${!!currentBRECharges.size}`
+  );
+};
+
+export const tryAutofillRecentFTAs = (allFTAs :List<*>, allCharges :List<*>) :string => {
   const numFTAs = getRecentFTAs(allFTAs, allCharges).size;
   return `${numFTAs > 2 ? 2 : numFTAs}`;
 };
 
-export const tryAutofillOldFTAs = (allFTAs :Immutable.List<*>, allCharges :Immutable.List<*>) :string => (
+export const tryAutofillOldFTAs = (allFTAs :List<*>, allCharges :List<*>) :string => (
   `${getOldFTAs(allFTAs, allCharges).size > 0}`
 );
 
 export const tryAutofillFields = (
-  nextCase :Immutable.Map<*, *>,
-  nextCharges :Immutable.List<*>,
-  allCases :Immutable.List<*>,
-  allCharges :Immutable.List<*>,
-  allSentences :Immutable.List<*>,
-  allFTAs :Immutable.List<*>,
-  selectedPerson :Immutable.Map<*, *>,
-  psaFormValues :Immutable.Map<*, *>,
-  violentArrestChargeList :Immutable.Map<*, *>,
-  violentCourtChargeList :Immutable.Map<*, *>,
-  dmfStep2ChargeList :Immutable.Map<*, *>,
-  dmfStep4ChargeList :Immutable.Map<*, *>,
-  bookingReleaseExceptionChargeList :Immutable.Map<*, *>,
-  bookingHoldExceptionChargeList :Immutable.Map<*, *>
-) :Immutable.Map<*, *> => {
+  nextCase :Map<*, *>,
+  nextCharges :List<*>,
+  allCases :List<*>,
+  allCharges :List<*>,
+  allSentences :List<*>,
+  allFTAs :List<*>,
+  selectedPerson :Map<*, *>,
+  psaFormValues :Map<*, *>,
+  violentArrestChargeList :Map<*, *>,
+  violentCourtChargeList :Map<*, *>,
+  dmfStep2ChargeList :Map<*, *>,
+  dmfStep4ChargeList :Map<*, *>,
+  bookingReleaseExceptionChargeList :Map<*, *>,
+  bookingHoldExceptionChargeList :Map<*, *>
+) :Map<*, *> => {
 
   let psaForm = psaFormValues;
 
@@ -337,7 +358,7 @@ export const tryAutofillFields = (
     });
     psaForm = psaForm.set(
       SECONDARY_RELEASE_CHARGES,
-      `${!!currentBHECharges.size && (currentBHECharges.size === nextCharges.size)}`
+      `${(!!currentBHECharges.size && (currentBHECharges.size === nextCharges.size))}`
     );
     psaForm = psaForm.set(
       SECONDARY_HOLD_CHARGES,
