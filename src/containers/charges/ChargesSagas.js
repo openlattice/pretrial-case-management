@@ -64,6 +64,13 @@ function* updateChargesWatcher() :Generator<*, *, *> {
  * loadCharges()
  */
 
+const permissionsSelector = (entitySetId, permissions) => {
+  permissions.forEach((perm) => {
+    if (perm.aclKey === entitySetId) return perm.permissions.WRITE;
+  });
+  return false;
+}
+
 function* loadChargesWorker(action :SequenceAction) :Generator<*, *, *> {
   let violentArrestCharges = Map();
   let violentCourtCharges = Map();
@@ -74,12 +81,12 @@ function* loadChargesWorker(action :SequenceAction) :Generator<*, *, *> {
   const { id, value } = action;
   const { arrestChargesEntitySetId, courtChargesEntitySetId, selectedOrgId } = value;
 
-  let [arrestChargePermissions, courtChargePermissions] = yield call(AuthorizationApi.checkAuthorizations, [
+  const chargePermissions = yield call(AuthorizationApi.checkAuthorizations, [
     { aclKey: [arrestChargesEntitySetId], permissions: ['WRITE'] },
     { aclKey: [courtChargesEntitySetId], permissions: ['WRITE'] }
   ]);
-  arrestChargePermissions = arrestChargePermissions.permissions.WRITE;
-  courtChargePermissions = courtChargePermissions.permissions.WRITE;
+  const arrestChargePermissions = permissionsSelector(arrestChargesEntitySetId, chargePermissions);
+  const courtChargePermissions = permissionsSelector(courtChargesEntitySetId, chargePermissions);
 
   if (value === null || value === undefined) {
     yield put(loadCharges.failure(id, 'ERR_ACTION_VALUE_NOT_DEFINED'));
