@@ -544,25 +544,25 @@ class PSASubmittedPage extends React.Component<Props, State> {
 
     return (
       <div>
-        <div>
-          <MinimallyPaddedResultHeader>Charges</MinimallyPaddedResultHeader>
-          <WideContainer>
-            <ChargeTable
-                charges={charges}
-                violentChargeList={violentArrestCharges.get(selectedOrganizationId, Map())}
-                disabled />
-          </WideContainer>
-          <PaddedResultHeader>Risk Factors</PaddedResultHeader>
-          <WideContainer>
-            {this.renderRiskFactorsTable()}
-          </WideContainer>
-          <PaddedResultHeader>Notes</PaddedResultHeader>
-          <NotesContainer>{notes}</NotesContainer>
-          <MinimallyPaddedResultHeader>Timeline</MinimallyPaddedResultHeader>
-          <TimelineContainer>
-            <CaseHistoryTimeline caseHistory={allCases} chargeHistory={allCharges} />
-          </TimelineContainer>
-        </div>
+        {this.renderScores()}
+        {this.renderDMF()}
+        <MinimallyPaddedResultHeader>Charges</MinimallyPaddedResultHeader>
+        <WideContainer>
+          <ChargeTable
+              charges={charges}
+              violentChargeList={violentArrestCharges.get(selectedOrganizationId, Map())}
+              disabled />
+        </WideContainer>
+        <PaddedResultHeader>Risk Factors</PaddedResultHeader>
+        <WideContainer>
+          {this.renderRiskFactorsTable()}
+        </WideContainer>
+        <PaddedResultHeader>Notes</PaddedResultHeader>
+        <NotesContainer>{notes}</NotesContainer>
+        <MinimallyPaddedResultHeader>Timeline</MinimallyPaddedResultHeader>
+        <TimelineContainer>
+          <CaseHistoryTimeline caseHistory={allCases} chargeHistory={allCharges} />
+        </TimelineContainer>
       </div>
     );
   }
@@ -582,8 +582,6 @@ class PSASubmittedPage extends React.Component<Props, State> {
             {this.renderSetHearingButton()}
           </ButtonRow>
         </HeaderRow>
-        {this.renderScores()}
-        {this.renderDMF()}
         {
           settingHearing
             ? this.renderHearingNewHearingSection()
