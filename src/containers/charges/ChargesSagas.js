@@ -65,10 +65,13 @@ function* updateChargesWatcher() :Generator<*, *, *> {
  */
 
 const permissionsSelector = (entitySetId, permissions) => {
+  let hasPermission;
   permissions.forEach((perm) => {
-    if (perm.aclKey === entitySetId) return perm.permissions.WRITE;
+    if (perm.aclKey[0] === entitySetId) {
+      hasPermission = perm.permissions.WRITE;
+    }
   });
-  return false;
+  return hasPermission;
 };
 
 function* loadChargesWorker(action :SequenceAction) :Generator<*, *, *> {
@@ -85,9 +88,9 @@ function* loadChargesWorker(action :SequenceAction) :Generator<*, *, *> {
     { aclKey: [arrestChargesEntitySetId], permissions: ['WRITE'] },
     { aclKey: [courtChargesEntitySetId], permissions: ['WRITE'] }
   ]);
-  const arrestChargePermissions = permissionsSelector(arrestChargesEntitySetId, chargePermissions);
-  const courtChargePermissions = permissionsSelector(courtChargesEntitySetId, chargePermissions);
-
+  const arrestChargePermissions = yield permissionsSelector(arrestChargesEntitySetId, chargePermissions);
+  const courtChargePermissions = yield permissionsSelector(courtChargesEntitySetId, chargePermissions);
+  
   if (value === null || value === undefined) {
     yield put(loadCharges.failure(id, 'ERR_ACTION_VALUE_NOT_DEFINED'));
     return;
