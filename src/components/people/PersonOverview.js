@@ -75,9 +75,15 @@ const PersonOverview = ({
   openUpdateContactModal
 } :Props) => {
   const mostRecentPSANeighbors = psaNeighborsById.get(mostRecentPSAEntityKeyId, Map());
-  const arrestDate = getIdOrValue(
+  let arrestDate = getIdOrValue(
     mostRecentPSANeighbors, ENTITY_SETS.MANUAL_PRETRIAL_CASES, PROPERTY_TYPES.ARREST_DATE_TIME
   );
+  if (!arrestDate) {
+    arrestDate = getIdOrValue(
+      mostRecentPSANeighbors, ENTITY_SETS.MANUAL_PRETRIAL_CASES, PROPERTY_TYPES.FILE_DATE
+    );
+  }
+  
   const caseHistory = getCaseHistory(neighbors);
   const chargeHistory = getChargeHistory(neighbors);
   const lastEditDateForPSA = psaNeighborsById.getIn(
