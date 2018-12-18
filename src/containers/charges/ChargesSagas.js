@@ -88,9 +88,9 @@ function* loadChargesWorker(action :SequenceAction) :Generator<*, *, *> {
     { aclKey: [arrestChargesEntitySetId], permissions: ['WRITE'] },
     { aclKey: [courtChargesEntitySetId], permissions: ['WRITE'] }
   ]);
-  const arrestChargePermissions = yield permissionsSelector(arrestChargesEntitySetId, chargePermissions);
-  const courtChargePermissions = yield permissionsSelector(courtChargesEntitySetId, chargePermissions);
-  
+  const arrestChargePermissions = permissionsSelector(arrestChargesEntitySetId, chargePermissions);
+  const courtChargePermissions = permissionsSelector(courtChargesEntitySetId, chargePermissions);
+
   if (value === null || value === undefined) {
     yield put(loadCharges.failure(id, 'ERR_ACTION_VALUE_NOT_DEFINED'));
     return;
