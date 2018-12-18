@@ -69,7 +69,7 @@ const permissionsSelector = (entitySetId, permissions) => {
     if (perm.aclKey === entitySetId) return perm.permissions.WRITE;
   });
   return false;
-}
+};
 
 function* loadChargesWorker(action :SequenceAction) :Generator<*, *, *> {
   let violentArrestCharges = Map();
