@@ -321,8 +321,16 @@ class PersonDetailsContainer extends React.Component<Props, State> {
       isFetchingPersonData,
       personId,
       psaNeighborsById,
-      mostRecentPSA
+      mostRecentPSA,
+      neighbors
     } = this.props;
+    let neighborsHearings = Map();
+    neighbors.get(ENTITY_SETS.HEARINGS, List()).forEach((hearing) => {
+      neighborsHearings = neighborsHearings.set(
+        ENTITY_SETS.HEARINGS,
+        neighborsHearings.get(ENTITY_SETS.HEARINGS, List()).push(hearing.get(PSA_NEIGHBOR.DETAILS))
+      );
+    });
     const mostRecentPSAEntityKeyId = getEntityKeyId(mostRecentPSA.get(PSA_NEIGHBOR.DETAILS, Map()));
     const neighborsForMostRecentPSA = psaNeighborsById.get(mostRecentPSAEntityKeyId, Map());
     const psaId = mostRecentPSA.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.GENERAL_ID, 0], '');
@@ -331,8 +339,8 @@ class PersonDetailsContainer extends React.Component<Props, State> {
     const jurisdiction = JURISDICTION[context];
     const hearingsWithOutcomes = hearingNeighborsById
       .keySeq().filter(id => hearingNeighborsById.getIn([id, ENTITY_SETS.OUTCOMES]));
-    const scheduledHearings = getScheduledHearings(neighborsForMostRecentPSA);
-    const pastHearings = getPastHearings(neighborsForMostRecentPSA);
+    const scheduledHearings = getScheduledHearings(neighborsHearings);
+    const pastHearings = getPastHearings(neighborsHearings);
     const availableHearings = getAvailableHearings(hearings, scheduledHearings, hearingNeighborsById);
     const defaultOutcome = getNeighborDetailsForEntitySet(neighborsForMostRecentPSA, ENTITY_SETS.OUTCOMES);
     const defaultDMF = getNeighborDetailsForEntitySet(neighborsForMostRecentPSA, ENTITY_SETS.DMF_RESULTS);

@@ -75,6 +75,7 @@ const StyledInfoButton = styled(InfoButton)`
   width: 178px;
   height: 40px;
   padding: 0;
+  margin: 0;
 `;
 
 type Props = {
