@@ -9,7 +9,6 @@ import { Constants } from 'lattice';
 
 import { OL } from '../../utils/consts/Colors';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { getViolentChargeLabels } from '../../utils/ArrestChargeUtils';
 
 const { OPENLATTICE_ID_FQN } = Constants;
 

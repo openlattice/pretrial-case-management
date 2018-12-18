@@ -8,7 +8,9 @@ import { deleteCharge, loadCharges, updateCharge } from './ChargesActionFactory'
 
 const INITIAL_STATE :Map<*, *> = fromJS({
   [CHARGES.ARREST]: Map(),
+  [CHARGES.ARREST_PERMISSIONS]: false,
   [CHARGES.COURT]: Map(),
+  [CHARGES.COURT_PERMISSIONS]: false,
   [CHARGES.ARREST_VIOLENT]: Map(),
   [CHARGES.COURT_VIOLENT]: Map(),
   [CHARGES.DMF_STEP_2]: Map(),
@@ -58,9 +60,11 @@ export default function chargesReducer(state :Map<*, *> = INITIAL_STATE, action 
         SUCCESS: () => {
           const {
             arrestChargesByEntityKeyId,
+            arrestChargePermissions,
             bookingHoldExceptionCharges,
             bookingReleaseExceptionCharges,
             courtChargesByEntityKeyId,
+            courtChargePermissions,
             dmfStep2Charges,
             dmfStep4Charges,
             selectedOrgId,
@@ -69,9 +73,11 @@ export default function chargesReducer(state :Map<*, *> = INITIAL_STATE, action 
           } = action.value;
           return state
             .setIn([CHARGES.ARREST, selectedOrgId], arrestChargesByEntityKeyId)
+            .set(CHARGES.ARREST_PERMISSIONS, arrestChargePermissions)
             .setIn([CHARGES.BHE, selectedOrgId], bookingHoldExceptionCharges)
             .setIn([CHARGES.BRE, selectedOrgId], bookingReleaseExceptionCharges)
             .setIn([CHARGES.COURT, selectedOrgId], courtChargesByEntityKeyId)
+            .set(CHARGES.COURT_PERMISSIONS, courtChargePermissions)
             .setIn([CHARGES.DMF_STEP_2, selectedOrgId], dmfStep2Charges)
             .setIn([CHARGES.DMF_STEP_4, selectedOrgId], dmfStep4Charges)
             .setIn([CHARGES.ARREST_VIOLENT, selectedOrgId], violentArrestCharges)

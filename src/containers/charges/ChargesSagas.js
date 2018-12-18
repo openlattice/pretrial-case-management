@@ -1,9 +1,15 @@
 /*
  * @flow
  */
+import { AuthorizationApi } from 'lattice';
 import { DataApiActions, DataApiSagas } from 'lattice-sagas';
 import { Map, Set, fromJS } from 'immutable';
-import { call, put, takeEvery } from 'redux-saga/effects';
+import {
+  all,
+  call,
+  put,
+  takeEvery
+} from 'redux-saga/effects';
 
 import { getEntityKeyId } from '../../utils/DataUtils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
@@ -58,6 +64,13 @@ function* updateChargesWatcher() :Generator<*, *, *> {
  * loadCharges()
  */
 
+const permissionsSelector = (entitySetId, permissions) => {
+  permissions.forEach((perm) => {
+    if (perm.aclKey === entitySetId) return perm.permissions.WRITE;
+  });
+  return false;
+};
+
 function* loadChargesWorker(action :SequenceAction) :Generator<*, *, *> {
   let violentArrestCharges = Map();
   let violentCourtCharges = Map();
@@ -67,6 +80,14 @@ function* loadChargesWorker(action :SequenceAction) :Generator<*, *, *> {
   let bookingHoldExceptionCharges = Map();
   const { id, value } = action;
   const { arrestChargesEntitySetId, courtChargesEntitySetId, selectedOrgId } = value;
+
+  const chargePermissions = yield call(AuthorizationApi.checkAuthorizations, [
+    { aclKey: [arrestChargesEntitySetId], permissions: ['WRITE'] },
+    { aclKey: [courtChargesEntitySetId], permissions: ['WRITE'] }
+  ]);
+  const arrestChargePermissions = permissionsSelector(arrestChargesEntitySetId, chargePermissions);
+  const courtChargePermissions = permissionsSelector(courtChargesEntitySetId, chargePermissions);
+
   if (value === null || value === undefined) {
     yield put(loadCharges.failure(id, 'ERR_ACTION_VALUE_NOT_DEFINED'));
     return;
@@ -77,17 +98,12 @@ function* loadChargesWorker(action :SequenceAction) :Generator<*, *, *> {
     let arrestChargesByEntityKeyId = Map();
     let courtChargesByEntityKeyId = Map();
 
-    let arrestCharges = yield call(
-      getEntitySetDataWorker,
-      getEntitySetData({ entitySetId: arrestChargesEntitySetId })
-    );
-    let courtCharges = yield call(
-      getEntitySetDataWorker,
-      getEntitySetData({ entitySetId: courtChargesEntitySetId })
-    );
+    let [arrestCharges, courtCharges] = yield all([
+      call(getEntitySetDataWorker, getEntitySetData({ entitySetId: arrestChargesEntitySetId })),
+      call(getEntitySetDataWorker, getEntitySetData({ entitySetId: courtChargesEntitySetId }))
+    ]);
     const chargeError = arrestCharges.error || courtCharges.error;
     if (chargeError) throw chargeError;
-
 
     // reset values to data
     arrestCharges = fromJS(arrestCharges.data);
@@ -155,10 +171,12 @@ function* loadChargesWorker(action :SequenceAction) :Generator<*, *, *> {
     yield put(loadCharges.success(action.id, {
       arrestCharges,
       arrestChargesByEntityKeyId,
+      arrestChargePermissions,
       bookingHoldExceptionCharges,
       bookingReleaseExceptionCharges,
       courtCharges,
       courtChargesByEntityKeyId,
+      courtChargePermissions,
       dmfStep2Charges,
       dmfStep4Charges,
       selectedOrgId,
