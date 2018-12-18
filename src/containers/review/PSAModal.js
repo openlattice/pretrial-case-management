@@ -782,7 +782,7 @@ class PSAModal extends React.Component<Props, State> {
         content: this.renderPSADetails
       },
       {
-        title: 'DMF',
+        title: 'RCM',
         content: this.renderDMFExplanation
       },
       {

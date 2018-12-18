@@ -242,7 +242,7 @@ class PSASummary extends React.Component<Props, *> {
           </ScoreContent>
         </ScoresContainer>
         <ScoresContainer>
-          <ScoreTitle>DMF</ScoreTitle>
+          <ScoreTitle>RCM</ScoreTitle>
           <SummaryDMFDetails neighbors={neighbors} scores={scores} />
         </ScoresContainer>
       </SummaryRowWrapper>

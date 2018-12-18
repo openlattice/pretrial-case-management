@@ -408,7 +408,7 @@ const dmf = (
   let y = yInit;
   doc.setFont('helvetica', 'normal');
   if (dmfValues.size) {
-    scoreHeader(doc, y, X_COL_1, 'DMF Result');
+    scoreHeader(doc, y, X_COL_1, 'RCM Result');
     y += Y_INC_LARGE;
     detailValueText(doc, y, X_COL_1, getHeaderText(dmfValues.toJS()));
     y += Y_INC;

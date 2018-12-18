@@ -369,7 +369,7 @@ class PSASubmittedPage extends React.Component<Props, State> {
 
     return (
       <DMF>
-        <ResultHeader>DMF Result</ResultHeader>
+        <ResultHeader>RCM Result</ResultHeader>
         <section>
           <DMFCell dmf={dmf} selected large />
           <span>{getHeaderText(dmf)}</span>

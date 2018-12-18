@@ -20,7 +20,7 @@ export const SUMMARY_REPORT = {
   [ENTITY_SETS.DMF_RESULTS]: {
     S2: 'S2',
     S4: 'S4',
-    [PROPERTY_TYPES.COLOR]: 'DMF Color',
+    [PROPERTY_TYPES.COLOR]: 'RCM Color',
     [PROPERTY_TYPES.CONDITION_1]: 'Condition 1',
     [PROPERTY_TYPES.CONDITION_2]: 'Condition 2',
     [PROPERTY_TYPES.CONDITION_3]: 'Condition 3'
