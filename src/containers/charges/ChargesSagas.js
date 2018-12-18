@@ -65,10 +65,13 @@ function* updateChargesWatcher() :Generator<*, *, *> {
  */
 
 const permissionsSelector = (entitySetId, permissions) => {
+  let hasPermission;
   permissions.forEach((perm) => {
-    if (perm.aclKey === entitySetId) return perm.permissions.WRITE;
+    if (perm.aclKey[0] === entitySetId) {
+      hasPermission = perm.permissions.WRITE;
+    }
   });
-  return false;
+  return hasPermission;
 };
 
 function* loadChargesWorker(action :SequenceAction) :Generator<*, *, *> {
