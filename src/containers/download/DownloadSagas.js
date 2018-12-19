@@ -305,7 +305,7 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
     });
 
     if (filters) {
-      jsonResults = yield jsonResults.sortBy(psa => psa.get('First Name')).sortBy(psa => psa.get('Last Name'));
+      jsonResults = jsonResults.sortBy(psa => psa.get('First Name')).sortBy(psa => psa.get('Last Name'));
     }
 
     const fields = filters
@@ -381,6 +381,11 @@ function* downloadPSAsByHearingDateWorker(action :SequenceAction) :Generator<*, 
       let personId;
       neighbors.forEach((neighbor) => {
         const entitySetName = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'name']);
+        if (entitySetName === ENTITY_SETS.PEOPLE) {
+          console.log(neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.LAST_NAME, 0], ''));
+          console.log(neighbor.toJS());
+          console.log(neighbors.toJS());
+        }
         const neighborEntityKeyId = neighbor.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0]);
         if (entitySetName === ENTITY_SETS.PSA_SCORES
             && neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.STATUS, 0]) === PSA_STATUSES.OPEN) {
@@ -406,6 +411,7 @@ function* downloadPSAsByHearingDateWorker(action :SequenceAction) :Generator<*, 
         );
       }
     });
+    console.log(personIdsToHearingIds);
 
     if (personIdsToHearingIds.size) {
       let peopleNeighborsById = yield call(
@@ -427,7 +433,7 @@ function* downloadPSAsByHearingDateWorker(action :SequenceAction) :Generator<*, 
 
           if (entitySetName === ENTITY_SETS.HEARINGS) {
             const hearingDate = entityDateTime;
-            const hearingDateInRange = hearingDate.isSame(enteredHearingDate);
+            const hearingDateInRange = hearingDate.isSame(enteredHearingDate, 'day');
             if (hearingDateInRange) {
               hasValidHearing = true;
             }
@@ -455,7 +461,7 @@ function* downloadPSAsByHearingDateWorker(action :SequenceAction) :Generator<*, 
         }
       });
     }
-
+    console.log(hearingIdsToPSAIds);
     if (hearingIdsToPSAIds.size) {
       const psaNeighborsById = yield call(
         SearchApi.searchEntityNeighborsBulk,
@@ -549,7 +555,7 @@ function* downloadPSAsByHearingDateWorker(action :SequenceAction) :Generator<*, 
         });
 
         if (filters) {
-          jsonResults = yield jsonResults.sortBy(psa => psa.get('First Name')).sortBy(psa => psa.get('Last Name'));
+          jsonResults = jsonResults.sortBy(psa => psa.get('First Name')).sortBy(psa => psa.get('Last Name'));
         }
 
         const fields = filters
