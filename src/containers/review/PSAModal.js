@@ -242,6 +242,12 @@ class PSAModal extends React.Component<Props, State> {
     });
   }
 
+  onClose() {
+    const { onClose } = this.props;
+    this.setState({ editing: false });
+    onClose();
+  }
+
   getNotesFromNeighbors = neighbors => neighbors.getIn([
     ENTITY_SETS.RELEASE_RECOMMENDATIONS,
     PSA_NEIGHBOR.DETAILS,
@@ -809,7 +815,7 @@ class PSAModal extends React.Component<Props, State> {
         { open && (
           <Modal
               scrollBehavior="outside"
-              onClose={() => onClose()}
+              onClose={() => this.onClose()}
               width={MODAL_WIDTH}
               height={MODAL_HEIGHT}
               max-height={MODAL_HEIGHT}
@@ -838,7 +844,7 @@ class PSAModal extends React.Component<Props, State> {
                     </ClosePSAButton>
                   )
                 }
-                <CloseModalX onClick={() => onClose()} />
+                <CloseModalX onClick={() => this.onClose()} />
               </div>
             </TitleWrapper>
             <CustomTabs panes={tabs} />
