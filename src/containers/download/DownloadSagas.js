@@ -381,11 +381,6 @@ function* downloadPSAsByHearingDateWorker(action :SequenceAction) :Generator<*, 
       let personId;
       neighbors.forEach((neighbor) => {
         const entitySetName = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'name']);
-        if (entitySetName === ENTITY_SETS.PEOPLE) {
-          console.log(neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.LAST_NAME, 0], ''));
-          console.log(neighbor.toJS());
-          console.log(neighbors.toJS());
-        }
         const neighborEntityKeyId = neighbor.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0]);
         if (entitySetName === ENTITY_SETS.PSA_SCORES
             && neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.STATUS, 0]) === PSA_STATUSES.OPEN) {
@@ -411,7 +406,7 @@ function* downloadPSAsByHearingDateWorker(action :SequenceAction) :Generator<*, 
         );
       }
     });
-    console.log(personIdsToHearingIds);
+
 
     if (personIdsToHearingIds.size) {
       let peopleNeighborsById = yield call(
@@ -461,7 +456,7 @@ function* downloadPSAsByHearingDateWorker(action :SequenceAction) :Generator<*, 
         }
       });
     }
-    console.log(hearingIdsToPSAIds);
+
     if (hearingIdsToPSAIds.size) {
       const psaNeighborsById = yield call(
         SearchApi.searchEntityNeighborsBulk,
