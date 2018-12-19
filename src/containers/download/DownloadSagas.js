@@ -304,6 +304,10 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
       }
     });
 
+    if (filters) {
+      jsonResults = jsonResults.sortBy(psa => psa.get('First Name')).sortBy(psa => psa.get('Last Name'));
+    }
+
     const fields = filters
       ? Object.values(filters).reduce((es1, es2) => [...Object.values(es1), ...Object.values(es2)])
       : allHeaders.toJS();
@@ -403,6 +407,7 @@ function* downloadPSAsByHearingDateWorker(action :SequenceAction) :Generator<*, 
       }
     });
 
+
     if (personIdsToHearingIds.size) {
       let peopleNeighborsById = yield call(
         SearchApi.searchEntityNeighborsBulk,
@@ -423,7 +428,7 @@ function* downloadPSAsByHearingDateWorker(action :SequenceAction) :Generator<*, 
 
           if (entitySetName === ENTITY_SETS.HEARINGS) {
             const hearingDate = entityDateTime;
-            const hearingDateInRange = hearingDate.isSame(enteredHearingDate);
+            const hearingDateInRange = hearingDate.isSame(enteredHearingDate, 'day');
             if (hearingDateInRange) {
               hasValidHearing = true;
             }
@@ -545,7 +550,7 @@ function* downloadPSAsByHearingDateWorker(action :SequenceAction) :Generator<*, 
         });
 
         if (filters) {
-          jsonResults = yield jsonResults.sortBy(psa => psa.get('First Name')).sortBy(psa => psa.get('Last Name'));
+          jsonResults = jsonResults.sortBy(psa => psa.get('First Name')).sortBy(psa => psa.get('Last Name'));
         }
 
         const fields = filters
