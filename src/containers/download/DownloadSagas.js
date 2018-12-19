@@ -304,6 +304,10 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
       }
     });
 
+    if (filters) {
+      jsonResults = yield jsonResults.sortBy(psa => psa.get('First Name')).sortBy(psa => psa.get('Last Name'));
+    }
+
     const fields = filters
       ? Object.values(filters).reduce((es1, es2) => [...Object.values(es1), ...Object.values(es2)])
       : allHeaders.toJS();
