@@ -201,15 +201,17 @@ class SearchableSelect extends React.Component<Props, State> {
   }
 
   hideDataTable = () => {
+    const { options } = this.props;
 
     this.setState({
+      filteredTypes: options.keySeq(),
       isVisibleDataTable: false,
       searchQuery: ''
     });
   }
 
   showDataTable = (e) => {
-    e.stopPropagation()
+    e.stopPropagation();
 
     this.setState({
       isVisibleDataTable: true,
@@ -283,6 +285,7 @@ class SearchableSelect extends React.Component<Props, State> {
                   transparent={transparent}
                   value={value}
                   onBlur={this.hideDataTable}
+                  onFocus={this.showDataTable}
                   onChange={this.handleOnChangeSearchQuery}
                   onClick={this.showDataTable} />
             )
