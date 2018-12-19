@@ -25,7 +25,7 @@ const ArrestCard = ({ arrest, component } :Props) => {
   const caseNum = arrest.getIn([CASE_ID, 0], '');
   const arrestDateTime = arrest.getIn([ARREST_DATE_TIME, 0], '');
   const arrestDate = formatDateTime(arrestDateTime, 'MM/DD/YYYY');
-  const arrestTime = formatDateTime(arrestDateTime, 'HH:MM');
+  const arrestTime = formatDateTime(arrestDateTime, 'HH:mm');
   const arrestAgency = arrest.getIn([ARRESTING_AGENCY, 0], '');
 
   let generalContent;

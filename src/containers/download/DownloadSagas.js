@@ -19,23 +19,13 @@ import {
 } from 'redux-saga/effects';
 
 import FileSaver from '../../utils/FileSaver';
-import MinnehahaChargesList from '../../utils/consts/MinnehahaChargesList';
-import PenningtonChargesList from '../../utils/consts/PenningtonChargesList';
-import { formatDateTime } from '../../utils/FormattingUtils';
+import { toISODate, formatDateTime } from '../../utils/FormattingUtils';
 import { getFilteredNeighbor, stripIdField } from '../../utils/DataUtils';
 import { obfuscateBulkEntityNeighbors } from '../../utils/consts/DemoNames';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { HEADERS_OBJ, POSITIONS } from '../../utils/consts/CSVConsts';
 import { PSA_NEIGHBOR, PSA_ASSOCIATION } from '../../utils/consts/FrontEndStateConsts';
 import { PSA_STATUSES } from '../../utils/consts/Consts';
-import { PENN_BOOKING_HOLD_EXCEPTIONS, PENN_BOOKING_RELEASE_EXCEPTIONS } from '../../utils/consts/DMFExceptionsList';
-import { DOMAIN } from '../../utils/consts/ReportDownloadTypes';
-import {
-  CHARGE_TYPES,
-  BHE_LABELS,
-  BRE_LABELS,
-  CHARGE_VALUES
-} from '../../utils/consts/ArrestChargeConsts';
 import {
   DOWNLOAD_CHARGE_LISTS,
   DOWNLOAD_PSA_BY_HEARING_DATE,
@@ -52,108 +42,99 @@ const { FullyQualifiedName } = Models;
 
 const DATETIME_FQNS = [PROPERTY_TYPES.TIMESTAMP, PROPERTY_TYPES.COMPLETED_DATE_TIME, PROPERTY_TYPES.DATE_TIME];
 
-const getChargeString = charge => `${charge.statute}|${charge.description}`;
-
-const getChargeValues = chargeType => (
-  CHARGE_VALUES[chargeType].map(charge => getChargeString(charge))
-);
-
-const getExceptions = exceptions => (
-  exceptions.map(charge => getChargeString(charge))
-);
-
+// TODO: Need to refactor to export from entity sets
 function* downloadChargeListsWorker(action :SequenceAction) :Generator<*, *, *> {
-
-  try {
-    yield put(downloadChargeLists.request(action.id));
-
-    const { jurisdiction } = action.value;
-
-    const chargesList = jurisdiction === DOMAIN.MINNEHAHA ? MinnehahaChargesList : PenningtonChargesList;
-
-    let jsonResults = Immutable.List();
-    const chargeHeaders = Immutable.List(
-      ['statute', 'description', 'degree', 'degreeShort']
-    );
-
-    const chargeDMFHeaders = Immutable.List(
-      [
-        CHARGE_TYPES.STEP_TWO,
-        CHARGE_TYPES.STEP_FOUR,
-        CHARGE_TYPES.ALL_VIOLENT
-      ]
-    );
-    const exceptionHeaders = Immutable.List(
-      [
-        BHE_LABELS.RELEASE,
-        BRE_LABELS.LABEL
-      ]
-    );
-
-    const step2ChargeValues = getChargeValues(CHARGE_TYPES.STEP_TWO);
-    const step4ChargeValues = getChargeValues(CHARGE_TYPES.STEP_FOUR);
-    const violentChargeValues = getChargeValues(CHARGE_TYPES.ALL_VIOLENT);
-    const pennBookingHoldExceptions = getExceptions(PENN_BOOKING_HOLD_EXCEPTIONS);
-    const pennBookingReleaseExceptions = getExceptions(PENN_BOOKING_RELEASE_EXCEPTIONS);
-
-
-    chargesList.forEach((charge) => {
-      let row = Immutable.Map();
-      const { statute, description } = charge;
-      const chargeString = `${statute}|${description}`;
-      chargeHeaders.forEach((header) => {
-        row = row.set(header, charge[header]);
-      });
-      row = row
-        .set(
-          CHARGE_TYPES.STEP_TWO,
-          step2ChargeValues.includes(chargeString)
-        )
-        .set(
-          CHARGE_TYPES.STEP_FOUR,
-          step4ChargeValues.includes(chargeString)
-        )
-        .set(
-          CHARGE_TYPES.ALL_VIOLENT,
-          violentChargeValues.includes(chargeString)
-        )
-        .set(
-          BHE_LABELS.RELEASE,
-          pennBookingHoldExceptions.includes(chargeString)
-        )
-        .set(
-          BRE_LABELS.LABEL,
-          pennBookingReleaseExceptions.includes(chargeString)
-        );
-
-      jsonResults = jsonResults.push(row);
-    });
-
-    let allHeaders = chargeHeaders.concat(chargeDMFHeaders);
-    if (jurisdiction === DOMAIN.PENNINGTON) allHeaders = allHeaders.concat(exceptionHeaders);
-
-
-    const fields = allHeaders.toJS();
-    const csv = Papa.unparse({
-      fields,
-      data: jsonResults.toJS()
-    });
-
-    const name = `${jurisdiction}-Master Charge List`;
-
-    FileSaver.saveFile(csv, name, 'csv');
-
-    yield put(downloadChargeLists.success(action.id));
-  }
-  catch (error) {
-    console.error(error);
-    yield put(downloadChargeLists.failure(action.id, { error }));
-  }
-  finally {
-    yield put(downloadChargeLists.finally(action.id));
-  }
+//
+//   try {
+//     yield put(downloadChargeLists.request(action.id));
+//
+//     const { jurisdiction } = action.value;
+//
+//     const chargesList = jurisdiction === DOMAIN.MINNEHAHA ? MinnehahaChargesList : PenningtonChargesList;
+//
+//     let jsonResults = Immutable.List();
+//     const chargeHeaders = Immutable.List(
+//       ['statute', 'description', 'degree', 'degreeShort']
+//     );
+//
+//     const chargeDMFHeaders = Immutable.List(
+//       [
+//         CHARGE_TYPES.STEP_TWO,
+//         CHARGE_TYPES.STEP_FOUR,
+//         CHARGE_TYPES.ALL_VIOLENT
+//       ]
+//     );
+//     const exceptionHeaders = Immutable.List(
+//       [
+//         BHE_LABELS.RELEASE,
+//         BRE_LABELS.LABEL
+//       ]
+//     );
+//
+//     const step2ChargeValues = getChargeValues(CHARGE_TYPES.STEP_TWO);
+//     const step4ChargeValues = getChargeValues(CHARGE_TYPES.STEP_FOUR);
+//     const violentChargeValues = getChargeValues(CHARGE_TYPES.ALL_VIOLENT);
+//     const pennBookingHoldExceptions = getExceptions(PENN_BOOKING_HOLD_EXCEPTIONS);
+//     const pennBookingReleaseExceptions = getExceptions(PENN_BOOKING_RELEASE_EXCEPTIONS);
+//
+//
+//     chargesList.forEach((charge) => {
+//       let row = Immutable.Map();
+//       const { statute, description } = charge;
+//       const chargeString = `${statute}|${description}`;
+//       chargeHeaders.forEach((header) => {
+//         row = row.set(header, charge[header]);
+//       });
+//       row = row
+//         .set(
+//           CHARGE_TYPES.STEP_TWO,
+//           step2ChargeValues.includes(chargeString)
+//         )
+//         .set(
+//           CHARGE_TYPES.STEP_FOUR,
+//           step4ChargeValues.includes(chargeString)
+//         )
+//         .set(
+//           CHARGE_TYPES.ALL_VIOLENT,
+//           violentChargeValues.includes(chargeString)
+//         )
+//         .set(
+//           BHE_LABELS.RELEASE,
+//           pennBookingHoldExceptions.includes(chargeString)
+//         )
+//         .set(
+//           BRE_LABELS.LABEL,
+//           pennBookingReleaseExceptions.includes(chargeString)
+//         );
+//
+//       jsonResults = jsonResults.push(row);
+//     });
+//
+//     let allHeaders = chargeHeaders.concat(chargeDMFHeaders);
+//     if (jurisdiction === DOMAIN.PENNINGTON) allHeaders = allHeaders.concat(exceptionHeaders);
+//
+//
+//     const fields = allHeaders.toJS();
+//     const csv = Papa.unparse({
+//       fields,
+//       data: jsonResults.toJS()
+//     });
+//
+//     const name = `${jurisdiction}-Master Charge List`;
+//
+//     FileSaver.saveFile(csv, name, 'csv');
+//
+//     yield put(downloadChargeLists.success(action.id));
+//   }
+//   catch (error) {
+//     console.error(error);
+//     yield put(downloadChargeLists.failure(action.id, { error }));
+//   }
+//   finally {
+//     yield put(downloadChargeLists.finally(action.id));
+//   }
 }
-
+//
 function* downloadChargeListsWatcher() :Generator<*, *, *> {
   yield takeEvery(DOWNLOAD_CHARGE_LISTS, downloadChargeListsWorker);
 }
@@ -323,6 +304,10 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
       }
     });
 
+    if (filters) {
+      jsonResults = jsonResults.sortBy(psa => psa.get('First Name')).sortBy(psa => psa.get('Last Name'));
+    }
+
     const fields = filters
       ? Object.values(filters).reduce((es1, es2) => [...Object.values(es1), ...Object.values(es2)])
       : allHeaders.toJS();
@@ -354,10 +339,9 @@ function* downloadPSAsByHearingDateWorker(action :SequenceAction) :Generator<*, 
 
   try {
     const {
-      startDate,
-      endDate,
-      allHearingData,
-      courtroom,
+      courtTime,
+      enteredHearingDate,
+      selectedHearingData,
       filters,
       domain
     } = action.value;
@@ -380,13 +364,10 @@ function* downloadPSAsByHearingDateWorker(action :SequenceAction) :Generator<*, 
       call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.PSA_SCORES)
     ]);
 
-    if (allHearingData.size) {
-      allHearingData.forEach((hearing) => {
+    if (selectedHearingData.size) {
+      selectedHearingData.forEach((hearing) => {
         const hearingId = hearing.getIn([OPENLATTICE_ID_FQN, 0]);
-        const hearingCourtroom = hearing.getIn([PROPERTY_TYPES.COURTROOM, 0]);
-        const hearingMatchesCourtroom = hearingCourtroom === courtroom;
-        const shouldIncludeHearing = courtroom ? hearingMatchesCourtroom : true;
-        if (shouldIncludeHearing) {
+        if (hearingId) {
           hearingIds = hearingIds.add(hearingId);
         }
       });
@@ -426,53 +407,55 @@ function* downloadPSAsByHearingDateWorker(action :SequenceAction) :Generator<*, 
       }
     });
 
-    let peopleNeighborsById = yield call(
-      SearchApi.searchEntityNeighborsBulk,
-      peopleEntitySetId,
-      personIdsToHearingIds.keySeq().toJS()
-    );
 
-    peopleNeighborsById = Immutable.fromJS(peopleNeighborsById);
-    peopleNeighborsById.entrySeq().forEach(([id, neighbors]) => {
-      let hasValidHearing = false;
-      let mostCurrentPSA;
-      let currentPSADateTime;
-      let mostCurrentPSAEntityKeyId;
-      neighbors.forEach((neighbor) => {
-        const entitySetName = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'name']);
-        const entityKeyId = neighbor.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0]);
-        const entityDateTime = moment(neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.DATE_TIME, 0]));
+    if (personIdsToHearingIds.size) {
+      let peopleNeighborsById = yield call(
+        SearchApi.searchEntityNeighborsBulk,
+        peopleEntitySetId,
+        personIdsToHearingIds.keySeq().toJS()
+      );
 
-        if (entitySetName === ENTITY_SETS.HEARINGS) {
-          const hearingDate = entityDateTime;
-          const hearingDateInRange = hearingDate.isAfter(startDate)
-            && hearingDate.isBefore(endDate);
-          if (hearingDateInRange) {
-            hasValidHearing = true;
+      peopleNeighborsById = Immutable.fromJS(peopleNeighborsById);
+      peopleNeighborsById.entrySeq().forEach(([id, neighbors]) => {
+        let hasValidHearing = false;
+        let mostCurrentPSA;
+        let currentPSADateTime;
+        let mostCurrentPSAEntityKeyId;
+        neighbors.forEach((neighbor) => {
+          const entitySetName = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'name']);
+          const entityKeyId = neighbor.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0]);
+          const entityDateTime = moment(neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.DATE_TIME, 0]));
+
+          if (entitySetName === ENTITY_SETS.HEARINGS) {
+            const hearingDate = entityDateTime;
+            const hearingDateInRange = hearingDate.isSame(enteredHearingDate, 'day');
+            if (hearingDateInRange) {
+              hasValidHearing = true;
+            }
           }
-        }
 
-        if (entitySetName === ENTITY_SETS.PSA_SCORES
-            && neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.STATUS, 0]) === PSA_STATUSES.OPEN) {
-          if (!mostCurrentPSA || currentPSADateTime.isBefore(entityDateTime)) {
-            mostCurrentPSA = neighbor;
-            mostCurrentPSAEntityKeyId = entityKeyId;
-            currentPSADateTime = entityDateTime;
+          if (entitySetName === ENTITY_SETS.PSA_SCORES
+              && neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.STATUS, 0]) === PSA_STATUSES.OPEN) {
+            if (!mostCurrentPSA || currentPSADateTime.isBefore(entityDateTime)) {
+              mostCurrentPSA = neighbor;
+              mostCurrentPSAEntityKeyId = entityKeyId;
+              currentPSADateTime = entityDateTime;
+            }
           }
+        });
+
+        if (hasValidHearing && mostCurrentPSAEntityKeyId) {
+          scoresAsMap = scoresAsMap.set(
+            mostCurrentPSAEntityKeyId,
+            mostCurrentPSA.get(PSA_NEIGHBOR.DETAILS)
+          );
+          hearingIdsToPSAIds = hearingIdsToPSAIds.set(
+            personIdsToHearingIds.get(id),
+            mostCurrentPSAEntityKeyId
+          );
         }
       });
-
-      if (hasValidHearing && mostCurrentPSAEntityKeyId) {
-        scoresAsMap = scoresAsMap.set(
-          mostCurrentPSAEntityKeyId,
-          mostCurrentPSA.get(PSA_NEIGHBOR.DETAILS)
-        );
-        hearingIdsToPSAIds = hearingIdsToPSAIds.set(
-          personIdsToHearingIds.get(id),
-          mostCurrentPSAEntityKeyId
-        );
-      }
-    });
+    }
 
     if (hearingIdsToPSAIds.size) {
       const psaNeighborsById = yield call(
@@ -567,7 +550,7 @@ function* downloadPSAsByHearingDateWorker(action :SequenceAction) :Generator<*, 
         });
 
         if (filters) {
-          jsonResults = yield jsonResults.sortBy(psa => psa.get('First Name')).sortBy(psa => psa.get('Last Name'));
+          jsonResults = jsonResults.sortBy(psa => psa.get('First Name')).sortBy(psa => psa.get('Last Name'));
         }
 
         const fields = filters
@@ -578,9 +561,7 @@ function* downloadPSAsByHearingDateWorker(action :SequenceAction) :Generator<*, 
           data: jsonResults.toJS()
         });
 
-        const name = courtroom
-          ? `psas_${courtroom}_hearing_dates_from_${startDate.format('MM-DD-YYYY')}-to-${endDate.format('MM-DD-YYYY')}`
-          : `all_psas_with_hearing_dates_from_${startDate.format('MM-DD-YYYY')}_to_${endDate.format('MM-DD-YYYY')}`;
+        const name = `psas_${courtTime}`;
 
         FileSaver.saveFile(csv, name, 'csv');
 
@@ -614,11 +595,13 @@ function* getDownloadFiltersWorker(action :SequenceAction) :Generator<*, *, *> {
   try {
     yield put(getDownloadFilters.request(action.id));
     let courtrooms = Immutable.Map();
+    let options = Immutable.Map();
+    let courtTimeOptions = Immutable.Map();
     let noResults = false;
-    const { startDate, endDate } = action.value;
+    const { hearingDate } = action.value;
 
-    const start = startDate.toISOString(true);
-    const end = endDate.toISOString(true);
+    const start = toISODate(hearingDate);
+
     const DATE_TIME_FQN = new FullyQualifiedName(PROPERTY_TYPES.DATE_TIME);
 
     const [datePropertyTypeId, hearingEntitySetId] = yield all([
@@ -629,7 +612,7 @@ function* getDownloadFiltersWorker(action :SequenceAction) :Generator<*, *, *> {
     const ceiling = yield call(DataApi.getEntitySetSize, hearingEntitySetId);
 
     const hearingOptions = {
-      searchTerm: `${datePropertyTypeId}: [${start} TO ${end}]`,
+      searchTerm: `${datePropertyTypeId}: ${start}`,
       start: 0,
       maxHits: ceiling,
       fuzzy: false
@@ -639,18 +622,38 @@ function* getDownloadFiltersWorker(action :SequenceAction) :Generator<*, *, *> {
     allHearingData = Immutable.fromJS(allHearingData.hits);
     if (allHearingData.size) {
       allHearingData.forEach((hearing) => {
+        const courtTime = hearing.getIn([PROPERTY_TYPES.DATE_TIME, 0]);
+        const sameAshearingDate = (hearingDate.isSame(courtTime, 'day'));
         const hearingId = hearing.getIn([OPENLATTICE_ID_FQN, 0]);
         const hearingType = hearing.getIn([PROPERTY_TYPES.HEARING_TYPE, 0]);
         const hearingCourtroom = hearing.getIn([PROPERTY_TYPES.COURTROOM, 0]);
         const hearingHasBeenCancelled = hearing.getIn([PROPERTY_TYPES.UPDATE_TYPE, 0], '')
           .toLowerCase().trim() === 'cancelled';
         if (hearingId && hearingType && !hearingHasBeenCancelled) {
+          if (courtTime && sameAshearingDate) {
+            const formattedTime = moment(courtTime).format(('HH:mm'));
+            options = options.set(
+              `${hearingCourtroom} - ${formattedTime}`,
+              options.get(`${hearingCourtroom} - ${formattedTime}`, Immutable.List()).push(hearing)
+            );
+          }
           courtrooms = courtrooms.set(hearingCourtroom, hearingCourtroom);
         }
       });
     }
+
+    courtTimeOptions = options
+      .sortBy(hearings => hearings.getIn([0, PROPERTY_TYPES.DATE_TIME, 0]))
+      .sortBy(hearings => hearings.getIn([0, PROPERTY_TYPES.COURTROOM, 0]));
+
     if (!allHearingData.size) noResults = true;
-    yield put(getDownloadFilters.success(action.id, { courtrooms, allHearingData, noResults }));
+    yield put(getDownloadFilters.success(action.id, {
+      courtrooms,
+      courtTimeOptions,
+      options,
+      allHearingData,
+      noResults
+    }));
   }
   catch (error) {
     console.error(error);

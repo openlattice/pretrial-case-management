@@ -1,8 +1,10 @@
 // Redux Reducer
 
 export const STATE = {
+  APP: 'app',
   AUTH: 'auth',
   COURT: 'court',
+  CHARGES: 'charges',
   DASHBOARD: 'dashboard',
   DOWNLOAD: 'download',
   ENROLL: 'enroll',
@@ -24,6 +26,37 @@ export const PSA_NEIGHBOR = {
 export const PSA_ASSOCIATION = {
   DETAILS: 'associationDetails',
   ENTITY_SET: 'associationEntitySet'
+};
+
+// App
+export const APP = {
+  ACTIONS: 'actions',
+  APP: 'app',
+  APP_TYPES: 'appTypes',
+  ENTITY_SETS_BY_ORG: 'entitySetsByOrganization',
+  ERRORS: 'errors',
+  LOADING: 'isLoadingApp',
+  LOAD_APP: 'loadApp',
+  ORGS: 'organizations',
+  PRIMARY_KEYS: 'primaryKeys',
+  PROPERTY_TYPES: 'propertyTypes',
+  SELECTED_ORG_ID: 'selectedOrganizationId',
+  SELECTED_ORG_TITLE: 'selectedOrganizationTitle'
+};
+
+// CHARGES
+export const CHARGES = {
+  ARREST: 'arrestCharges',
+  ARREST_PERMISSIONS: 'arrestChargePermissions',
+  COURT: 'courtCharges',
+  COURT_PERMISSIONS: 'courtChargePermissions',
+  ARREST_VIOLENT: 'violentArrestCharges',
+  COURT_VIOLENT: 'violentCourtCharges',
+  DMF_STEP_2: 'dmfStep2Charges',
+  DMF_STEP_4: 'dmfStep4Charges',
+  BRE: 'bookingReleaseExceptionCharges',
+  BHE: 'bookingHoldExceptionCharges',
+  LOADING: 'loadingCharges'
 };
 
 // Court
@@ -71,6 +104,7 @@ export const DOWNLOAD = {
   NO_RESULTS: 'noHearingResults',
   DOWNLOADING_REPORTS: 'downloadingReports',
   COURTROOM_OPTIONS: 'courtroomOptions',
+  COURTROOM_TIMES: 'courtroomTimes',
   ALL_HEARING_DATA: 'allHearingData',
   ERROR: 'downloadError',
   HEARING_IDS: 'hearingIds'

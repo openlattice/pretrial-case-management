@@ -3,8 +3,9 @@
  */
 
 import React from 'react';
-import Immutable from 'immutable';
+import Immutable, { Map } from 'immutable';
 import styled from 'styled-components';
+import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 
 import BasicButton from '../buttons/BasicButton';
@@ -23,6 +24,7 @@ import closeXWhiteIcon from '../../assets/svg/close-x-white.svg';
 import closeXGrayIcon from '../../assets/svg/close-x-gray.svg';
 import closeXBlackIcon from '../../assets/svg/close-x-black.svg';
 import { OL } from '../../utils/consts/Colors';
+import { APP, CHARGES, STATE } from '../../utils/consts/FrontEndStateConsts';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { getHeaderText } from '../../utils/DMFUtils';
 import { JURISDICTION } from '../../utils/consts/Consts';
@@ -50,7 +52,9 @@ type Props = {
   allHearings :Immutable.List<*>,
   getOnExport :(isCompact :boolean) => void,
   onClose :() => void,
-  history :string[]
+  history :string[],
+  violentArrestCharges :Immutable.Map<*, *>,
+  selectedOrganizationId :string
 };
 
 type State = {
@@ -75,7 +79,7 @@ const Wrapper = styled.div`
 `;
 
 const Banner = styled(WideContainer)`
-  margin-top: -35px;
+  margin: 0 -20px;
   padding: 30px;
   background-color: ${(props) => {
     switch (props.status) {
@@ -88,7 +92,7 @@ const Banner = styled(WideContainer)`
     }
   }};
   height: 80px;
-  width: 1000px;
+  width: 1010px;
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -181,6 +185,10 @@ const InlineScores = styled.div`
 
 const ScoresContainer = styled.div`
   padding: 0 15px;
+`;
+
+const CreateHearingWrapper = styled.div`
+  padding-top: 30px;
 `;
 
 const DMF = styled(WideContainer)`
@@ -361,7 +369,7 @@ class PSASubmittedPage extends React.Component<Props, State> {
 
     return (
       <DMF>
-        <ResultHeader>DMF Result</ResultHeader>
+        <ResultHeader>RCM Result</ResultHeader>
         <section>
           <DMFCell dmf={dmf} selected large />
           <span>{getHeaderText(dmf)}</span>
@@ -473,33 +481,35 @@ class PSASubmittedPage extends React.Component<Props, State> {
     );
   }
 
+  setHearing = () => this.setState({
+    settingHearing: true,
+    selectedHearing: undefined
+  });
+
   renderSetHearingButton = () => {
-    const { selectedHearing } = this.state;
+    const { settingHearing, selectedHearing } = this.state;
     return (
-      <InfoButton onClick={() => this.setState({ settingHearing: true })}>
+      <InfoButton
+          onClick={() => this.setState({ settingHearing: true })}
+          disabled={settingHearing}>
         {selectedHearing ? 'View Hearing' : 'Set Hearing'}
       </InfoButton>
     );
   };
 
-  render() {
+  renderHearingNewHearingSection = () => {
     const {
-      notes,
-      charges,
-      onClose,
-      allCases,
-      allCharges,
       allHearings,
       personId,
       psaId,
       isSubmitting,
       context
     } = this.props;
-    const { settingHearing, selectedHearing } = this.state;
+    const { selectedHearing } = this.state;
     const jurisdiction = JURISDICTION[context];
-    if (settingHearing) {
-      if (!selectedHearing) {
-        return (
+    if (!selectedHearing) {
+      return (
+        <CreateHearingWrapper>
           <NewHearingSection
               submitting={isSubmitting}
               jurisdiction={jurisdiction}
@@ -508,15 +518,58 @@ class PSASubmittedPage extends React.Component<Props, State> {
               hearings={allHearings}
               manuallyCreatingHearing
               onSubmit={hearing => this.setState({ selectedHearing: hearing })} />
-        );
-      }
-
-      return (
-        <SelectedHearingInfo
-            hearing={selectedHearing}
-            onClose={() => this.setState({ settingHearing: false })} />
+        </CreateHearingWrapper>
       );
     }
+    return (
+      <SelectedHearingInfo
+          hearing={selectedHearing}
+          setHearing={this.setHearing}
+          onClose={() => this.setState({
+            settingHearing: false,
+            selectedHearing: undefined
+          })} />
+    );
+  }
+
+  renderContent = () => {
+    const {
+      notes,
+      charges,
+      allCases,
+      allCharges,
+      violentArrestCharges,
+      selectedOrganizationId
+    } = this.props;
+
+    return (
+      <div>
+        {this.renderScores()}
+        {this.renderDMF()}
+        <MinimallyPaddedResultHeader>Charges</MinimallyPaddedResultHeader>
+        <WideContainer>
+          <ChargeTable
+              charges={charges}
+              violentChargeList={violentArrestCharges.get(selectedOrganizationId, Map())}
+              disabled />
+        </WideContainer>
+        <PaddedResultHeader>Risk Factors</PaddedResultHeader>
+        <WideContainer>
+          {this.renderRiskFactorsTable()}
+        </WideContainer>
+        <PaddedResultHeader>Notes</PaddedResultHeader>
+        <NotesContainer>{notes}</NotesContainer>
+        <MinimallyPaddedResultHeader>Timeline</MinimallyPaddedResultHeader>
+        <TimelineContainer>
+          <CaseHistoryTimeline caseHistory={allCases} chargeHistory={allCharges} />
+        </TimelineContainer>
+      </div>
+    );
+  }
+
+  render() {
+    const { onClose } = this.props;
+    const { settingHearing } = this.state;
 
     return (
       <Wrapper>
@@ -529,24 +582,11 @@ class PSASubmittedPage extends React.Component<Props, State> {
             {this.renderSetHearingButton()}
           </ButtonRow>
         </HeaderRow>
-        {this.renderScores()}
-        {this.renderDMF()}
-        <div>
-          <MinimallyPaddedResultHeader>Charges</MinimallyPaddedResultHeader>
-          <WideContainer>
-            <ChargeTable charges={charges} disabled />
-          </WideContainer>
-          <PaddedResultHeader>Risk Factors</PaddedResultHeader>
-          <WideContainer>
-            {this.renderRiskFactorsTable()}
-          </WideContainer>
-          <PaddedResultHeader>Notes</PaddedResultHeader>
-          <NotesContainer>{notes}</NotesContainer>
-          <MinimallyPaddedResultHeader>Timeline</MinimallyPaddedResultHeader>
-          <TimelineContainer>
-            <CaseHistoryTimeline caseHistory={allCases} chargeHistory={allCharges} />
-          </TimelineContainer>
-        </div>
+        {
+          settingHearing
+            ? this.renderHearingNewHearingSection()
+            : this.renderContent()
+        }
         <FooterRow>
           <ButtonRow>
             {this.renderExportButton(true)}
@@ -562,4 +602,18 @@ class PSASubmittedPage extends React.Component<Props, State> {
   }
 }
 
-export default withRouter(PSASubmittedPage);
+function mapStateToProps(state :Immutable.Map<*, *>) :Object {
+  const app = state.get(STATE.APP);
+  const charges = state.get(STATE.CHARGES);
+  return {
+    // App
+    [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
+    [APP.SELECTED_ORG_TITLE]: app.get(APP.SELECTED_ORG_TITLE),
+
+    // Charges
+    [CHARGES.ARREST_VIOLENT]: charges.get(CHARGES.ARREST_VIOLENT),
+    [CHARGES.COURT_VIOLENT]: charges.get(CHARGES.COURT_VIOLENT)
+  };
+}
+
+export default withRouter(connect(mapStateToProps, null)(PSASubmittedPage));

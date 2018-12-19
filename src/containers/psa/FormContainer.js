@@ -4,7 +4,7 @@
 
 import React from 'react';
 
-import Immutable from 'immutable';
+import Immutable, { Map, List } from 'immutable';
 import styled from 'styled-components';
 import randomUUID from 'uuid/v4';
 import moment from 'moment';
@@ -56,11 +56,13 @@ import {
   PSA_STATUSES
 } from '../../utils/consts/Consts';
 import {
-  STATE,
+  APP,
+  CHARGES,
+  COURT,
   PSA_FORM,
-  SUBMIT,
   SEARCH,
-  COURT
+  STATE,
+  SUBMIT
 } from '../../utils/consts/FrontEndStateConsts';
 import {
   ButtonWrapper,
@@ -304,32 +306,40 @@ type Props = {
       callback? :() => void
     }) => void
   },
-  isSubmitted :boolean,
-  isSubmitting :boolean,
-  submitError :boolean,
-  dataModel :Immutable.Map<*, *>,
-  entitySetLookup :Immutable.Map<*, *>,
-  selectedPerson :Immutable.Map<*, *>,
-  arrestId :string,
-  selectedPretrialCase :Immutable.Map<*, *>,
-  allJudges :Immutable.List<*>,
-  arrestOptions :Immutable.List<*>,
-  caseLoadsComplete :boolean,
-  charges :Immutable.List<*>,
   allCasesForPerson :Immutable.List<*>,
   allChargesForPerson :Immutable.List<*>,
-  allSentencesForPerson :Immutable.List<*>,
   allFTAs :Immutable.List<*>,
-  openPSAs :Immutable.Map<*, *>,
-  allPSAs :Immutable.List<*>,
   allHearings :Immutable.List<*>,
-  selectedPersonId :string,
-  isLoadingNeighbors :boolean,
-  isLoadingCases :boolean,
-  numCasesToLoad :number,
-  numCasesLoaded :number,
-  psaForm :Immutable.Map<*, *>,
+  allJudges :Immutable.List<*>,
+  allPSAs :Immutable.List<*>,
+  allSentencesForPerson :Immutable.List<*>,
+  arrestId :string,
+  arrestOptions :Immutable.List<*>,
+  bookingHoldExceptionCharges :Immutable.Map<*, *>,
+  bookingReleaseExceptionCharges :Immutable.Map<*, *>,
+  caseLoadsComplete :boolean,
+  charges :Immutable.List<*>,
+  dataModel :Immutable.Map<*, *>,
+  dmfStep2Charges :Immutable.Map<*, *>,
+  dmfStep4Charges :Immutable.Map<*, *>,
+  entitySetLookup :Immutable.Map<*, *>,
   history :string[],
+  isLoadingCases :boolean,
+  isLoadingNeighbors :boolean,
+  isSubmitted :boolean,
+  isSubmitting :boolean,
+  numCasesLoaded :number,
+  numCasesToLoad :number,
+  openPSAs :Immutable.Map<*, *>,
+  psaForm :Immutable.Map<*, *>,
+  selectedOrganizationId :string,
+  selectedOrganizationTitle :string,
+  selectedPerson :Immutable.Map<*, *>,
+  selectedPersonId :string,
+  selectedPretrialCase :Immutable.Map<*, *>,
+  submitError :boolean,
+  violentCourtCharges :Immutable.Map<*, *>,
+  violentArrestCharges :Immutable.Map<*, *>,
   location :{
     pathname :string
   }
@@ -393,15 +403,28 @@ class Form extends React.Component<Props, State> {
   componentWillReceiveProps(nextProps) {
     const { location, selectedPerson } = this.props;
     const {
-      selectedPretrialCase,
-      charges,
+      actions,
       allCasesForPerson,
       allChargesForPerson,
-      allSentencesForPerson,
       allFTAs,
+      allSentencesForPerson,
+      charges,
+      bookingHoldExceptionCharges,
+      bookingReleaseExceptionCharges,
+      dmfStep2Charges,
+      dmfStep4Charges,
       psaForm,
-      actions,
+      selectedOrganizationId,
+      selectedPretrialCase,
+      violentCourtCharges,
+      violentArrestCharges
     } = nextProps;
+    const violentArrestChargeList = violentArrestCharges.get(selectedOrganizationId, Map());
+    const violentCourtChargeList = violentCourtCharges.get(selectedOrganizationId, Map());
+    const dmfStep2ChargeList = dmfStep2Charges.get(selectedOrganizationId, Map());
+    const dmfStep4ChargeList = dmfStep4Charges.get(selectedOrganizationId, Map());
+    const bookingReleaseExceptionChargeList = bookingReleaseExceptionCharges.get(selectedOrganizationId, Map());
+    const bookingHoldExceptionChargeList = bookingHoldExceptionCharges.get(selectedOrganizationId, Map());
     if (nextProps.location.pathname.endsWith('4') && !location.pathname.endsWith('4')) {
       actions.setPSAValues({
         newValues: tryAutofillFields(
@@ -412,7 +435,13 @@ class Form extends React.Component<Props, State> {
           allSentencesForPerson,
           allFTAs,
           selectedPerson,
-          psaForm
+          psaForm,
+          violentArrestChargeList,
+          violentCourtChargeList,
+          dmfStep2ChargeList,
+          dmfStep4ChargeList,
+          bookingReleaseExceptionChargeList,
+          bookingHoldExceptionChargeList
         )
       });
     }
@@ -555,7 +584,7 @@ class Form extends React.Component<Props, State> {
       arrestOptions,
       allChargesForPerson,
       allSentencesForPerson,
-      allFTAs
+      allFTAs,
     } = this.props;
 
     const {
@@ -808,8 +837,11 @@ class Form extends React.Component<Props, State> {
       charges,
       psaForm,
       selectedPerson,
-      selectedPretrialCase
+      selectedPretrialCase,
+      selectedOrganizationId,
+      violentArrestCharges
     } = this.props;
+    const violentChargeList = violentArrestCharges.get(selectedOrganizationId, Map());
     const personId = this.getPersonIdValue();
     const hasHistory = Number.parseInt(personId, 10).toString() === personId;
     return (
@@ -839,7 +871,9 @@ class Form extends React.Component<Props, State> {
             <h1>Charges</h1>
             <span>{charges.size}</span>
           </HeaderRow>
-          <ChargeTableWrapper><ChargeTable charges={charges} disabled /></ChargeTableWrapper>
+          <ChargeTableWrapper>
+            <ChargeTable charges={charges} violentChargeList={violentChargeList} disabled />
+          </ChargeTableWrapper>
         </PaddedSectionWrapper>
         <PSAInputForm
             handleInputChange={this.handleInputChange}
@@ -864,10 +898,14 @@ class Form extends React.Component<Props, State> {
       arrestOptions,
       allChargesForPerson,
       allSentencesForPerson,
-      allFTAs
+      allFTAs,
+      violentArrestCharges,
+      violentCourtCharges,
+      selectedOrganizationId
     } = this.props;
     const { dmfRiskFactors, riskFactors, scores } = this.state;
-
+    const violentArrestChargeList = violentArrestCharges.get(selectedOrganizationId, List());
+    const violentCourtChargeList = violentCourtCharges.get(selectedOrganizationId, List());
     const data = Immutable.fromJS(this.state)
       .set('scores', scores)
       .set('riskFactors', this.setMultimapToMap(riskFactors))
@@ -882,6 +920,8 @@ class Form extends React.Component<Props, State> {
       allChargesForPerson,
       allSentencesForPerson,
       allFTAs,
+      violentArrestChargeList,
+      violentCourtChargeList,
       {
         user: this.getStaffId(),
         timestamp: toISODateTime(moment())
@@ -975,12 +1015,30 @@ class Form extends React.Component<Props, State> {
 }
 
 function mapStateToProps(state :Immutable.Map<*, *>) :Object {
+  const app = state.get(STATE.APP);
   const psaForm = state.get(STATE.PSA);
   const search = state.get(STATE.SEARCH);
   const submit = state.get(STATE.SUBMIT);
   const court = state.get(STATE.COURT);
-  // TODO: review these state names so that consts can be used in all cases (psaForm & isLoadingCases)
+  const charges = state.get(STATE.CHARGES);
+
   return {
+    // App
+    [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
+    [APP.SELECTED_ORG_TITLE]: app.get(APP.SELECTED_ORG_TITLE),
+
+    // Charges
+    [CHARGES.ARREST]: charges.get(CHARGES.ARREST),
+    [CHARGES.COURT]: charges.get(CHARGES.COURT),
+    [CHARGES.ARREST_VIOLENT]: charges.get(CHARGES.ARREST_VIOLENT),
+    [CHARGES.COURT_VIOLENT]: charges.get(CHARGES.COURT_VIOLENT),
+    [CHARGES.DMF_STEP_2]: charges.get(CHARGES.DMF_STEP_2),
+    [CHARGES.DMF_STEP_4]: charges.get(CHARGES.DMF_STEP_4),
+    [CHARGES.BRE]: charges.get(CHARGES.BRE),
+    [CHARGES.BHE]: charges.get(CHARGES.BHE),
+    [CHARGES.LOADING]: charges.get(CHARGES.LOADING),
+
+    // PSA Form
     [PSA_FORM.ARREST_OPTIONS]: psaForm.get(PSA_FORM.ARREST_OPTIONS),
     [PSA_FORM.ALL_CASES]: psaForm.get(PSA_FORM.ALL_CASES),
     [PSA_FORM.ALL_CHARGES]: psaForm.get(PSA_FORM.ALL_CHARGES),
@@ -997,13 +1055,14 @@ function mapStateToProps(state :Immutable.Map<*, *>) :Object {
     [PSA_FORM.DATA_MODEL]: psaForm.get(PSA_FORM.DATA_MODEL),
     [PSA_FORM.ENTITY_SET_LOOKUP]: psaForm.get(PSA_FORM.ENTITY_SET_LOOKUP),
     [PSA_FORM.LOADING_NEIGHBORS]: psaForm.get(PSA_FORM.LOADING_NEIGHBORS),
-
-    [COURT.ALL_JUDGES]: court.get(COURT.ALL_JUDGES),
-
     [PSA_FORM.SUBMITTED]: submit.get(SUBMIT.SUBMITTED),
     [PSA_FORM.SUBMITTING]: submit.get(SUBMIT.SUBMITTING),
     [PSA_FORM.SUBMIT_ERROR]: submit.get(SUBMIT.ERROR),
 
+    // Court
+    [COURT.ALL_JUDGES]: court.get(COURT.ALL_JUDGES),
+
+    // Search
     [SEARCH.SELECTED_PERSON_ID]: search.get(SEARCH.SELECTED_PERSON_ID),
     isLoadingCases: search.get(SEARCH.LOADING_CASES),
     [SEARCH.NUM_CASES_TO_LOAD]: search.get(SEARCH.NUM_CASES_TO_LOAD),

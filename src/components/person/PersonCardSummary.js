@@ -31,12 +31,12 @@ export default ({ person } :Props) => {
       content: [lastName]
     },
     {
-      label: 'Middle Name',
-      content: [middleName]
-    },
-    {
       label: 'First Name',
       content: [firstName]
+    },
+    {
+      label: 'Middle Name',
+      content: [middleName]
     },
     {
       label: 'Date of Birth',

@@ -1,8 +1,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Modal } from 'react-bootstrap';
+import Modal, { ModalTransition } from '@atlaskit/modal-dialog';
 
-import * as OverrideClassNames from '../utils/styleoverrides/OverrideClassNames';
+const MODAL_WIDTH = '1010px';
+const MODAL_HEIGHT = 'max-content';
 
 function getBody(submissionStatus, pageContent) {
   if (submissionStatus) {
@@ -15,11 +16,22 @@ function getBody(submissionStatus, pageContent) {
 function ConfirmationModal({ submissionStatus, pageContent }) {
   const open = true;
   return (
-    <Modal show={open} dialogClassName={OverrideClassNames.PSA_REVIEW_MODAL}>
-      <Modal.Body>
-        { getBody(submissionStatus, pageContent) }
-      </Modal.Body>
-    </Modal>
+    <ModalTransition>
+      {
+        open
+        && (
+          <Modal
+              scrollBehavior="outside"
+              width={MODAL_WIDTH}
+              height={MODAL_HEIGHT}
+              max-height={MODAL_HEIGHT}
+              shouldCloseOnOverlayClick
+              stackIndex={1}>
+            { getBody(submissionStatus, pageContent) }
+          </Modal>
+        )
+      }
+    </ModalTransition>
   );
 }
 

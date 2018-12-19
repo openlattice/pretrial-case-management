@@ -60,3 +60,8 @@ export const OVERVIEW = '/overview';
 export const CASES = '/cases';
 export const HEARINGS = '/hearings';
 export const ABOUT_PERSON = `${PERSON_DETAILS}`;
+
+/* Manage Charges */
+export const MANAGE_CHARGES :string = `${DASHBOARD}/manage-charges`;
+export const ARREST_CHARGES = '/arrest';
+export const COURT_CHARGES = '/court';

@@ -4,6 +4,9 @@
 
 import Immutable from 'immutable';
 
+import { getEntityKeyId } from '../DataUtils';
+import { PROPERTY_TYPES } from './DataModelConsts';
+
 export const ODYSSEY_VIOLENT_STATUTES = [
   '22-4-1',
   '22-4-2',
@@ -106,3 +109,45 @@ export const MISDEMEANOR_CHARGE_LEVEL_CODES :Set<string> = Immutable.Set([
   'M1',
   'M2'
 ]);
+
+export const CHARGE_TYPES = {
+  ARREST: 'arrest',
+  COURT: 'court'
+};
+
+export const CHARGE_HEADERS = {
+  STATUTE: 'Statute',
+  DESCRIPTION: 'Description',
+  DEGREE: 'Degree',
+  DEGREE_SHORT: '(short)',
+  VIOLENT: 'Violent',
+  STEP_2: 'Step 2',
+  STEP_4: 'Step 4',
+  BHE: 'BHE',
+  BRE: 'BRE'
+};
+
+export const getChargeConsts = (charge) => {
+  const degree = charge.getIn([PROPERTY_TYPES.REFERENCE_CHARGE_LEVEL, 0], '');
+  const degreeShort = charge.getIn([PROPERTY_TYPES.REFERENCE_CHARGE_DEGREE, 0], '');
+  const description = charge.getIn([PROPERTY_TYPES.REFERENCE_CHARGE_DESCRIPTION, 0], '');
+  const entityKeyId = getEntityKeyId(charge);
+  const isViolent = charge.getIn([PROPERTY_TYPES.CHARGE_IS_VIOLENT, 0], false);
+  const isStep2 = charge.getIn([PROPERTY_TYPES.CHARGE_DMF_STEP_2, 0], false);
+  const isStep4 = charge.getIn([PROPERTY_TYPES.CHARGE_DMF_STEP_4, 0], false);
+  const isBRE = charge.getIn([PROPERTY_TYPES.BRE, 0], false);
+  const isBHE = charge.getIn([PROPERTY_TYPES.BHE, 0], false);
+  const statute = charge.getIn([PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE, 0], '');
+  return {
+    degree,
+    degreeShort,
+    description,
+    entityKeyId,
+    isViolent,
+    isStep2,
+    isStep4,
+    isBRE,
+    isBHE,
+    statute
+  };
+};

@@ -3,8 +3,10 @@
  */
 
 import React from 'react';
-import Immutable from 'immutable';
+import Immutable, { Map } from 'immutable';
 import styled from 'styled-components';
+import { connect } from 'react-redux';
+import { withRouter } from 'react-router-dom';
 
 import StyledCheckbox from '../controls/StyledCheckbox';
 import StyledInput from '../controls/StyledInput';
@@ -12,9 +14,14 @@ import StyledTextArea from '../controls/StyledTextArea';
 import StyledRadioButton from '../controls/StyledRadioButton';
 import BasicButton from '../buttons/BasicButton';
 import ExpandableText from '../controls/ExpandableText';
+import { APP, CHARGES, STATE } from '../../utils/consts/FrontEndStateConsts';
+import { BHE_LABELS, BRE_LABELS } from '../../utils/consts/ArrestChargeConsts';
 import { OL } from '../../utils/consts/Colors';
-
-
+import {
+  getViolentChargeLabels,
+  getDMFStepChargeLabels,
+  getBHEAndBREChargeLabels
+} from '../../utils/ArrestChargeUtils';
 import {
   getPendingChargeLabels,
   getPreviousMisdemeanorLabels,
@@ -22,13 +29,6 @@ import {
   getPreviousViolentChargeLabels
 } from '../../utils/AutofillUtils';
 import { getSentenceToIncarcerationCaseNums } from '../../utils/SentenceUtils';
-import {
-  getAllViolentChargeLabels,
-  getAllStepTwoChargeLabels,
-  getAllStepFourChargeLabels,
-  getSecondaryReleaseChargeJustification,
-  getSecondaryHoldChargeJustification
-} from '../../utils/ArrestChargeUtils';
 
 import {
   StyledSectionWrapper,
@@ -249,6 +249,12 @@ const ButtonRow = styled.div`
 
 
 type Props = {
+  bookingHoldExceptionCharges :Map<*, *>,
+  bookingReleaseExceptionCharges :Map<*, *>,
+  dmfStep2Charges :Map<*, *>,
+  dmfStep4Charges :Map<*, *>,
+  selectedOrganizationId :string,
+  violentArrestCharges :Map<*, *>,
   handleInputChange :(event :Object) => void,
   input :Immutable.Map<*, *>,
   handleSubmit :(event :Object) => void,
@@ -267,7 +273,7 @@ type State = {
   incomplete :boolean
 };
 
-export default class PSAInputForm extends React.Component<Props, State> {
+class PSAInputForm extends React.Component<Props, State> {
 
   static defaultProps = {
     viewOnly: false
@@ -312,16 +318,17 @@ export default class PSAInputForm extends React.Component<Props, State> {
   invalidValue = (val :string) => val === null || val === undefined || val === 'null' || val === 'undefined';
 
   handleSubmit = (e) => {
+    const { input, handleSubmit } = this.props;
     e.preventDefault();
 
-    const requiredFields = (this.props.input.get(DMF.COURT_OR_BOOKING) === CONTEXT.BOOKING)
-      ? this.props.input : this.props.input.remove(DMF.SECONDARY_RELEASE_CHARGES).remove(DMF.SECONDARY_HOLD_CHARGES);
+    const requiredFields = (input.get(DMF.COURT_OR_BOOKING) === CONTEXT.BOOKING)
+      ? input : input.remove(DMF.SECONDARY_RELEASE_CHARGES).remove(DMF.SECONDARY_HOLD_CHARGES);
 
     if (requiredFields.valueSeq().filter(this.invalidValue).toList().size) {
       this.setState({ incomplete: true });
     }
     else {
-      this.props.handleSubmit(e);
+      handleSubmit(e);
       this.setState({ incomplete: false });
     }
   }
@@ -379,18 +386,47 @@ export default class PSAInputForm extends React.Component<Props, State> {
 
   render() {
     const {
-      input,
-      currCharges,
-      currCase,
-      allCharges,
-      allSentences,
       allCases,
+      allCharges,
       allFTAs,
-      viewOnly,
+      allSentences,
+      bookingHoldExceptionCharges,
+      bookingReleaseExceptionCharges,
+      currCase,
+      currCharges,
+      dmfStep2Charges,
+      dmfStep4Charges,
       handleClose,
+      input,
       noBorders,
-      psaDate
+      psaDate,
+      selectedOrganizationId,
+      viewOnly,
+      violentArrestCharges,
+      violentCourtCharges,
     } = this.props;
+
+    const violentChargeList = violentArrestCharges.get(selectedOrganizationId, Map());
+    const violentCourtChargeList = violentCourtCharges.get(selectedOrganizationId, Map());
+    const dmfStep2ChargeList = dmfStep2Charges.get(selectedOrganizationId, Map());
+    const dmfStep4ChargeList = dmfStep4Charges.get(selectedOrganizationId, Map());
+    const bookingReleaseExceptionChargeList = bookingReleaseExceptionCharges.get(selectedOrganizationId, Map());
+    const bookingHoldExceptionChargeList = bookingHoldExceptionCharges.get(selectedOrganizationId, Map());
+
+    const currentViolentCharges = getViolentChargeLabels({ currCharges, violentChargeList });
+    const {
+      step2Charges,
+      step4Charges
+    } = getDMFStepChargeLabels({ currCharges, dmfStep2ChargeList, dmfStep4ChargeList });
+    const {
+      currentBHECharges,
+      currentNonBHECharges,
+      currentBRECharges
+    } = getBHEAndBREChargeLabels({
+      currCharges,
+      bookingReleaseExceptionChargeList,
+      bookingHoldExceptionChargeList
+    });
 
     const noPriorConvictions = input.get(PRIOR_MISDEMEANOR) === 'false' && input.get(PRIOR_FELONY) === 'false';
 
@@ -399,11 +435,10 @@ export default class PSAInputForm extends React.Component<Props, State> {
       currCase.getIn([PROPERTY_TYPES.ARREST_DATE, 0],
         currCase.getIn([PROPERTY_TYPES.FILE_DATE, 0], '')));
 
-    const currentViolentCharges = getAllViolentChargeLabels(currCharges);
     const pendingCharges = getPendingChargeLabels(currCaseNum, arrestDate, allCases, allCharges);
     const priorMisdemeanors = getPreviousMisdemeanorLabels(allCharges);
     const priorFelonies = getPreviousFelonyLabels(allCharges);
-    const priorViolentConvictions = getPreviousViolentChargeLabels(allCharges);
+    const priorViolentConvictions = getPreviousViolentChargeLabels(allCharges, violentCourtChargeList);
     const priorSentenceToIncarceration = getSentenceToIncarcerationCaseNums(allSentences);
 
     // psaDate will be undefined if the report is being filled out for the first time.
@@ -411,11 +446,17 @@ export default class PSAInputForm extends React.Component<Props, State> {
     const recentFTAs = getRecentFTAs(allFTAs, allCharges, psaDate);
     const oldFTAs = getOldFTAs(allFTAs, allCharges, psaDate);
 
-    const step2Charges = getAllStepTwoChargeLabels(currCharges);
-    const step4Charges = getAllStepFourChargeLabels(currCharges);
-    const [secondaryReleaseCharges, secondaryReleaseHeader] = getSecondaryReleaseChargeJustification(currCharges);
-    const [secondaryHoldCharges, secondaryHoldHeader] = getSecondaryHoldChargeJustification(currCharges);
-
+    let secondaryReleaseHeader;
+    let secondaryReleaseCharges;
+    if (currentBHECharges.size && (currentBHECharges.size === currCharges.size)) {
+      secondaryReleaseHeader = BHE_LABELS.RELEASE;
+      secondaryReleaseCharges = currentBHECharges;
+    }
+    else {
+      secondaryReleaseHeader = BHE_LABELS.HOLD;
+      secondaryReleaseCharges = currentNonBHECharges;
+    }
+    const secondaryHoldHeader = BRE_LABELS.LABEL;
     return (
       <div>
         <FormWrapper noBorders={noBorders}>
@@ -553,7 +594,7 @@ export default class PSAInputForm extends React.Component<Props, State> {
                   SECONDARY_RELEASE_CHARGES,
                   SECONDARY_RELEASE_CHARGES_PROMPT,
                   secondaryReleaseCharges,
-                  null,
+                  true, // requested to be disabled by client
                   secondaryReleaseHeader
                 ) : null
             }
@@ -563,8 +604,8 @@ export default class PSAInputForm extends React.Component<Props, State> {
                   14,
                   SECONDARY_HOLD_CHARGES,
                   SECONDARY_HOLD_CHARGES_PROMPT,
-                  secondaryHoldCharges,
-                  null,
+                  currentBRECharges,
+                  true, // requested to be disabled by client
                   secondaryHoldHeader
                 ) : null
             }
@@ -614,3 +655,26 @@ export default class PSAInputForm extends React.Component<Props, State> {
     );
   }
 }
+
+function mapStateToProps(state :Immutable.Map<*, *>) :Object {
+  const app = state.get(STATE.APP);
+  const charges = state.get(STATE.CHARGES);
+  return {
+    // App
+    [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
+    [APP.SELECTED_ORG_TITLE]: app.get(APP.SELECTED_ORG_TITLE),
+
+    // Charges
+    [CHARGES.ARREST]: charges.get(CHARGES.ARREST),
+    [CHARGES.COURT]: charges.get(CHARGES.COURT),
+    [CHARGES.ARREST_VIOLENT]: charges.get(CHARGES.ARREST_VIOLENT),
+    [CHARGES.COURT_VIOLENT]: charges.get(CHARGES.COURT_VIOLENT),
+    [CHARGES.DMF_STEP_2]: charges.get(CHARGES.DMF_STEP_2),
+    [CHARGES.DMF_STEP_4]: charges.get(CHARGES.DMF_STEP_4),
+    [CHARGES.BRE]: charges.get(CHARGES.BRE),
+    [CHARGES.BHE]: charges.get(CHARGES.BHE),
+    [CHARGES.LOADING]: charges.get(CHARGES.LOADING),
+  };
+}
+
+export default withRouter(connect(mapStateToProps, null)(PSAInputForm));

@@ -9,7 +9,6 @@ import { Constants } from 'lattice';
 
 import { OL } from '../../utils/consts/Colors';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { getAllViolentCharges } from '../../utils/ArrestChargeUtils';
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
@@ -60,18 +59,23 @@ const Row = styled.tr`
 
 type Props = {
   charge :Immutable.Map<*, *>,
+  disabled? :boolean,
   handleSelect? :(charge :Immutable.Map<*, *>, entityKeyId :string) => void,
-  disabled? :boolean
+  isViolent :boolean,
 };
 
-const ChargeRow = ({ charge, handleSelect, disabled } :Props) => {
+const ChargeRow = ({
+  charge,
+  handleSelect,
+  isViolent,
+  disabled
+} :Props) => {
   const statuteField = charge.get(PROPERTY_TYPES.CHARGE_STATUTE, Immutable.List());
   const statute = statuteField.get(0, '');
   const numberOfCounts = charge
     .getIn([PROPERTY_TYPES.NUMBER_OF_COUNTS, 0], charge.get(PROPERTY_TYPES.NUMBER_OF_COUNTS, '1'));
   const qualifier = charge.getIn([PROPERTY_TYPES.QUALIFIER, 0], '');
   const chargeDescription = charge.getIn([PROPERTY_TYPES.CHARGE_DESCRIPTION, 0], '');
-  const violent = getAllViolentCharges(Immutable.List.of(charge)).size > 0;
   const entityKeyId :string = charge.getIn([OPENLATTICE_ID_FQN, 0], '');
 
   return (
@@ -87,7 +91,7 @@ const ChargeRow = ({ charge, handleSelect, disabled } :Props) => {
       <Cell>{ qualifier }</Cell>
       <Cell>
         <ChargeDescriptionWrapper>
-          { violent ? <span>VIOLENT</span> : null }
+          { isViolent ? <span>VIOLENT</span> : null }
           { chargeDescription }
         </ChargeDescriptionWrapper>
       </Cell>

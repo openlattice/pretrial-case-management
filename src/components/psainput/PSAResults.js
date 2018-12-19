@@ -169,7 +169,7 @@ export default class PSAResults extends React.Component<Props, State> {
 
   renderDMF = () => (
     <div>
-      <ResultHeader>{`DMF Result: ${getHeaderText(this.props.dmf)}`}</ResultHeader>
+      <ResultHeader>{`RCM Result: ${getHeaderText(this.props.dmf)}`}</ResultHeader>
       <CenteredContainer>
         <DMFCell dmf={this.props.dmf} selected />
       </CenteredContainer>

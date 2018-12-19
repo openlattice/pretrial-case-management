@@ -88,6 +88,7 @@ const CreateButton = styled(InfoButton)`
   height: 40px;
   padding-left: 0;
   padding-right: 0;
+  margin: 0;
 `;
 
 

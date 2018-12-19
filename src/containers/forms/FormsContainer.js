@@ -1,11 +1,17 @@
+/*
+ * @flow
+ */
 import React from 'react';
 import styled from 'styled-components';
 import qs from 'query-string';
+import { connect } from 'react-redux';
 
 import DashboardMainSection from '../../components/dashboard/DashboardMainSection';
 import CreateFormListItem from '../../components/dashboard/CreateFormListItem';
 import psaIcon from '../../assets/svg/public-safety-icon.svg';
+import { APP, STATE } from '../../utils/consts/FrontEndStateConsts';
 import { CONTEXT } from '../../utils/consts/Consts';
+import { ORG_IDS } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
 import { StyledFormWrapper } from '../../utils/Layout';
 import * as Routes from '../../core/router/Routes';
@@ -25,31 +31,57 @@ const FormsWrapper = styled.div`
   align-items: center;
 `;
 
-const getPSAPath = context => `${Routes.PSA_FORM}?${qs.stringify({ context })}`;
+class FormsContainer extends React.Component<Props, *> {
 
-class FormsContainer extends React.Component {
+  getPSAPath = context => `${Routes.PSA_FORM}?${qs.stringify({ context })}`;
+
   render() {
+    const { selectedOrganizationTitle, selectedOrganizationId } = this.props;
+    // TODO: This is yucky. We will want to rework once we phase out different contexts for different orgs.
+    let jurisdiction;
+    switch (selectedOrganizationId) {
+      case ORG_IDS.PENNINGTON_SD:
+        jurisdiction = COURT_PENN;
+        break;
+      case ORG_IDS.MINNEHAHA_SD:
+        jurisdiction = COURT_MINN;
+        break;
+      default:
+        break;
+    }
     return (
       <StyledFormWrapper>
-        <DashboardMainSection header="Assessments">
-          <FormsWrapper>
-            <CreateFormListItem
-                name="Public Safety Assessment (Pennington Booking)"
-                path={getPSAPath(BOOKING)}
-                icon={psaIcon} />
-            <CreateFormListItem
-                name="Public Safety Assessment (Pennington Court)"
-                path={getPSAPath(COURT_PENN)}
-                icon={psaIcon} />
-            <CreateFormListItem
-                name="Public Safety Assessment (Minnehaha Court)"
-                path={getPSAPath(COURT_MINN)}
-                icon={psaIcon} />
-          </FormsWrapper>
+        <DashboardMainSection header={`Assessments for ${selectedOrganizationTitle}`}>
+          {
+            jurisdiction
+              ? (
+                <FormsWrapper>
+                  <CreateFormListItem
+                      name="Public Safety Assessment (Booking)"
+                      path={this.getPSAPath(BOOKING)}
+                      icon={psaIcon} />
+                  <CreateFormListItem
+                      name="Public Safety Assessment (Court)"
+                      path={this.getPSAPath(jurisdiction)}
+                      icon={psaIcon} />
+                </FormsWrapper>
+              )
+              : null
+          }
         </DashboardMainSection>
       </StyledFormWrapper>
     );
   }
 }
 
-export default FormsContainer;
+function mapStateToProps(state) {
+  const app = state.get(STATE.APP);
+
+  return {
+    // App
+    [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
+    [APP.SELECTED_ORG_TITLE]: app.get(APP.SELECTED_ORG_TITLE),
+  };
+}
+
+export default connect(mapStateToProps, null)(FormsContainer);

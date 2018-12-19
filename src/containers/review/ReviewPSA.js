@@ -10,7 +10,8 @@ import styled from 'styled-components';
 import Immutable from 'immutable';
 import moment from 'moment';
 
-import StyledDatePicker from '../../components/controls/StyledDatePicker';
+// import StyledDatePicker from '../../components/controls/StyledDatePicker';
+import DatePicker from '../../components/datetime/DatePicker';
 import NavButtonToolbar from '../../components/buttons/NavButtonToolbar';
 import PSAReviewReportsRowList from './PSAReviewReportsRowList';
 import LoadingSpinner from '../../components/LoadingSpinner';
@@ -239,9 +240,8 @@ class ReviewPSA extends React.Component<Props, State> {
       <DateRangeContainer>
         <span>PSA Date </span>
         <DatePickerGroupContainer>
-          <StyledDatePicker
+          <DatePicker
               value={date}
-              clearButton
               onChange={(newDate) => {
                 this.updateFilters({ date: newDate });
               }} />

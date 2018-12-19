@@ -13,7 +13,8 @@ import { formatDate, formatDateTime } from '../../utils/FormattingUtils';
 
 type Props = {
   hearing :Object,
-  onClose :() => void
+  onClose :() => void,
+  setHearing :() => void
 };
 
 const Container = styled.div`
@@ -73,7 +74,7 @@ const InfoItem = styled.div`
   }
 `;
 
-const SelectedHearingInfo = ({ hearing, onClose } :Props) => (
+const SelectedHearingInfo = ({ hearing, setHearing, onClose } :Props) => (
   <Container>
     <CloseButtonWrapper>
       <button onClick={onClose}><img src={closeX} alt="" /></button>
@@ -104,6 +105,7 @@ const SelectedHearingInfo = ({ hearing, onClose } :Props) => (
 
       <InfoRow center>
         <InfoButton onClick={onClose}>Close</InfoButton>
+        <InfoButton onClick={setHearing}>Set Hearing</InfoButton>
       </InfoRow>
     </div>
   </Container>

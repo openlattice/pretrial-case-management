@@ -2,15 +2,21 @@
  * @flow
  */
 import React from 'react';
-import Immutable from 'immutable';
+import Immutable, { Map } from 'immutable';
 import styled from 'styled-components';
+import { connect } from 'react-redux';
 
 import ChargeHistoryStats from '../casehistory/ChargeHistoryStats';
 import ChargeTable from '../charges/ChargeTable';
 import PSASummary from '../../containers/review/PSASummary';
 import { AlternateSectionHeader, Count } from '../../utils/Layout';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
+import {
+  STATE,
+  APP,
+  CHARGES,
+  PSA_NEIGHBOR
+} from '../../utils/consts/FrontEndStateConsts';
 
 const SummaryWrapper = styled.div`
   display: flex;
@@ -33,6 +39,8 @@ type Props = {
   chargeHistory :Immutable.List<*>,
   manualChargeHistory :Immutable.Map<*, *>,
   pendingCharges :Immutable.List<*>,
+  selectedOrganizationId :string,
+  violentArrestCharges :Immutable.Map<*, *>,
   downloadFn :(values :{
     neighbors :Immutable.Map<*, *>,
     scores :Immutable.Map<*, *>
@@ -45,8 +53,11 @@ class PSAModalSummary extends React.Component<Props, *> {
     const {
       manualCaseHistory,
       manualChargeHistory,
-      neighbors
+      neighbors,
+      selectedOrganizationId,
+      violentArrestCharges
     } = this.props;
+    const violentChargeList = violentArrestCharges.get(selectedOrganizationId, Map());
     const caseNum = neighbors.getIn(
       [ENTITY_SETS.MANUAL_PRETRIAL_CASES, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.CASE_ID, 0], ''
     );
@@ -59,7 +70,7 @@ class PSAModalSummary extends React.Component<Props, *> {
           Charges
           <Count>{charges.size}</Count>
         </AlternateSectionHeader>
-        <ChargeTable charges={charges} pretrialCase={pretrialCase} />
+        <ChargeTable charges={charges} violentChargeList={violentChargeList} pretrialCase={pretrialCase} />
       </ChargeTableContainer>
     );
   }
@@ -93,4 +104,18 @@ class PSAModalSummary extends React.Component<Props, *> {
   }
 }
 
-export default PSAModalSummary;
+function mapStateToProps(state :Immutable.Map<*, *>) :Object {
+  const app = state.get(STATE.APP);
+  const charges = state.get(STATE.CHARGES);
+  return {
+    // App
+    [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
+    [APP.SELECTED_ORG_TITLE]: app.get(APP.SELECTED_ORG_TITLE),
+
+    // Charges
+    [CHARGES.ARREST_VIOLENT]: charges.get(CHARGES.ARREST_VIOLENT),
+    [CHARGES.COURT_VIOLENT]: charges.get(CHARGES.COURT_VIOLENT)
+  };
+}
+
+export default connect(mapStateToProps, null)(PSAModalSummary);
