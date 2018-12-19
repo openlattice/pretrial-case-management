@@ -165,13 +165,25 @@ class SelectChargesContainer extends React.Component<Props, State> {
   formatChargeList = (chargeList :Immutable.List<*>) :Object[] => {
     const result = [];
     chargeList.forEach((charge) => {
-      result.push({
-        [STATUTE]: charge.getIn([PROPERTY_TYPES.CHARGE_STATUTE, 0], '[no statute]'),
-        [DESCRIPTION]: charge.getIn([PROPERTY_TYPES.CHARGE_DESCRIPTION, 0], '[no description]'),
-        [DEGREE]: charge.getIn([PROPERTY_TYPES.CHARGE_DEGREE, 0]),
-        [DEGREE_SHORT]: charge.getIn([PROPERTY_TYPES.CHARGE_LEVEL, 0]),
-        [NUMBER_OF_COUNTS]: 1
-      });
+      result.push(
+        fromJS(
+          {
+            [PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE]: [
+              charge.getIn([PROPERTY_TYPES.CHARGE_STATUTE, 0], '[no statute]')
+            ],
+            [PROPERTY_TYPES.REFERENCE_CHARGE_DESCRIPTION]: [
+              charge.getIn([PROPERTY_TYPES.CHARGE_DESCRIPTION, 0], '[no description]')
+            ],
+            [PROPERTY_TYPES.REFERENCE_CHARGE_DEGREE]: [
+              charge.getIn([PROPERTY_TYPES.CHARGE_DEGREE, 0])
+            ],
+            [PROPERTY_TYPES.REFERENCE_CHARGE_LEVEL]: [
+              charge.getIn([PROPERTY_TYPES.CHARGE_LEVEL, 0])
+            ],
+            [NUMBER_OF_COUNTS]: 1
+          }
+        )
+      );
     });
     return fromJS(result);
   }
