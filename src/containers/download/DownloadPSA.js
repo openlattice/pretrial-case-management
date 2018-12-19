@@ -112,7 +112,7 @@ const OptionsWrapper = styled.div`
   width: 100%;
   min-height: 94px;
   display: grid;
-  grid-template-columns: 60% 18% 15%;
+  grid-template-columns: 18% 15% 60%;
   column-gap: 10px;
   align-items: flex-end;
   label {
@@ -464,25 +464,6 @@ class DownloadPSA extends React.Component<Props, State> {
               <SubHeaderSection>PSA Downloads</SubHeaderSection>
               <SelectionWrapper>
                 <OptionsWrapper>
-                  {
-                    byHearingDate
-                      ? (
-                        <CourtroomOptionsWrapper>
-                          <DatePicker
-                              value={hearingDate.format('YYYY-MM-DD')}
-                              onChange={date => this.onHearingDateChange(date)} />
-                          { this.renderCourtTimeOptions() }
-                        </CourtroomOptionsWrapper>
-                      )
-                      : (
-                        <DateTimeRangePicker
-                            startDate={startDate}
-                            endDate={endDate}
-                            onStartChange={start => this.onDateChange({ start })}
-                            onEndChange={end => this.onDateChange({ end })}
-                            format24HourClock />
-                      )
-                  }
                   <StyledCheckbox
                       name={REPORT_TYPES.BY_HEARING}
                       label="By Hearing Date"
@@ -495,6 +476,28 @@ class DownloadPSA extends React.Component<Props, State> {
                       checked={byPSADate}
                       value={byPSADate}
                       onChange={this.handleCheckboxChange} />
+                  {
+                    byHearingDate
+                      ? (
+                        <CourtroomOptionsWrapper>
+                          <DatePicker
+                              value={hearingDate.format('YYYY-MM-DD')}
+                              onChange={date => this.onHearingDateChange(date)} />
+                          { this.renderCourtTimeOptions() }
+                        </CourtroomOptionsWrapper>
+                      ) : null
+                  }
+                  {
+                    byPSADate
+                      ? (
+                        <DateTimeRangePicker
+                            startDate={startDate}
+                            endDate={endDate}
+                            onStartChange={start => this.onDateChange({ start })}
+                            onEndChange={end => this.onDateChange({ end })}
+                            format24HourClock />
+                      ) : null
+                  }
                 </OptionsWrapper>
               </SelectionWrapper>
               <SelectionWrapper>
