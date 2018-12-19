@@ -185,7 +185,7 @@ class SelectChargesContainer extends React.Component<Props, State> {
         )
       );
     });
-    return result;
+    return fromJS(result);
   }
 
   getDateTime = (dateTimeStr) => {
@@ -328,18 +328,21 @@ class SelectChargesContainer extends React.Component<Props, State> {
   }
 
   renderSingleCharge = (charge :Charge, index :number) => {
-    const statute = charge.getIn([PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE, 0], '');
+    const statute = charge.get(STATUTE, '');
+    const description = charge.get(DESCRIPTION, '');
     const qualifier = charge.get(QUALIFIER, '');
     const onChange = (e) => {
       this.handleChargeInputChange(e, index);
     };
+
+    const chargeText = `${statute} ${description}`;
 
     const getOnSelect = field => newVal => this.handleChargeInputChange(newVal, index, field);
     const getOnClear = field => () => this.handleChargeInputChange(undefined, index, field);
 
     return (
       <ChargeWrapper key={`${statute}-${qualifier}-${index}`}>
-        <ChargeTitle>{this.formatCharge(charge)}</ChargeTitle>
+        <ChargeTitle>{chargeText}</ChargeTitle>
         <ChargeOptionsWrapper>
           <SearchableSelect
               onSelect={getOnSelect(QUALIFIER)}
