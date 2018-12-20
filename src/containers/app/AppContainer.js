@@ -5,8 +5,9 @@
 import React from 'react';
 import styled from 'styled-components';
 import { AuthActionFactory } from 'lattice-auth';
-import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
+import { connect } from 'react-redux';
+import { EntityDataModelApiActions } from 'lattice-sagas';
 import { Redirect, Route, Switch } from 'react-router-dom';
 
 import AppConsent from './AppConsent';
@@ -23,9 +24,8 @@ import * as Routes from '../../core/router/Routes';
 import * as AppActionFactory from './AppActionFactory';
 import * as ChargesActionFactory from '../charges/ChargesActionFactory';
 
-const {
-  logout
-} = AuthActionFactory;
+const { logout } = AuthActionFactory;
+const { getAllPropertyTypes } = EntityDataModelApiActions;
 
 const {
   ARREST_CHARGE_LIST,
@@ -59,6 +59,7 @@ const AppBodyWrapper = styled.div`
 
 type Props = {
   actions :{
+    getAllPropertyTypes :RequestSequence;
     loadApp :RequestSequence;
     loadCharges :RequestSequence;
     switchOrganization :(orgId :string) => Object;
@@ -71,6 +72,7 @@ class AppContainer extends React.Component<Props, *> {
   componentDidMount() {
     const { actions } = this.props;
     actions.loadApp();
+    actions.getAllPropertyTypes();
   }
 
   componentWillReceiveProps(nextProps) {
@@ -169,6 +171,7 @@ function mapDispatchToProps(dispatch :Function) :Object {
   });
 
   actions.logout = logout;
+  actions.getAllPropertyTypes = getAllPropertyTypes;
 
   return {
     actions: {
