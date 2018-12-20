@@ -3,6 +3,7 @@
  */
 
 import { AuthSagas } from 'lattice-auth';
+import { EntityDataModelApiSagas } from 'lattice-sagas';
 import { fork } from 'redux-saga/effects';
 
 import * as AppSagas from '../../containers/app/AppSagas';
@@ -59,6 +60,10 @@ export default function* sagas() :Generator<*, *, *> {
     fork(DownloadSagas.downloadChargeListsWatcher),
     fork(DownloadSagas.downloadPSAsByHearingDateWatcher),
     fork(DownloadSagas.getDownloadFiltersWatcher),
+
+    // "lattice-sagas" sagas
+    fork(EntityDataModelApiSagas.getEntityDataModelProjectionWatcher),
+    fork(EntityDataModelApiSagas.getAllPropertyTypesWatcher),
 
     // EnrollSagas
     fork(EnrollSagas.enrollVoiceProfile),
