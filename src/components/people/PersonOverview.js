@@ -141,9 +141,10 @@ const PersonOverview = ({
               View more
             </StyledViewMoreLinkForHearings>
             <HearingCardsWithTitle
-                viewOnly
+                readOnly
                 title="Upcoming Hearings"
                 hearings={scheduledHearings}
+                handleSelect={() => null}
                 noHearingsMessage="There are no upcoming hearings." />
           </StyledColumnRowWithPadding>
         </StyledColumnRowWrapper>

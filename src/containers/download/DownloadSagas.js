@@ -19,7 +19,7 @@ import {
 } from 'redux-saga/effects';
 
 import FileSaver from '../../utils/FileSaver';
-import { toISODate, formatDateTime } from '../../utils/FormattingUtils';
+import { toISODate, formatDateTime, formatDate } from '../../utils/FormattingUtils';
 import { getFilteredNeighbor, stripIdField } from '../../utils/DataUtils';
 import { obfuscateBulkEntityNeighbors } from '../../utils/consts/DemoNames';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
@@ -253,6 +253,9 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
               || fqn === PROPERTY_TYPES.COMPLETED_DATE_TIME
               || fqn === PROPERTY_TYPES.DATE_TIME) {
               newVal = formatDateTime(val, 'YYYY-MM-DD hh:mma');
+            }
+            if (fqn === PROPERTY_TYPES.DOB) {
+              newVal = formatDate(val, 'MM-DD-YYYY');
             }
             if (!newArrayValues.includes(val)) {
               newArrayValues = newArrayValues.push(newVal);
@@ -496,6 +499,9 @@ function* downloadPSAsByHearingDateWorker(action :SequenceAction) :Generator<*, 
                 let newVal = val;
                 if (DATETIME_FQNS.includes(fqn)) {
                   newVal = formatDateTime(val, 'YYYY-MM-DD hh:mma');
+                }
+                if (fqn === PROPERTY_TYPES.DOB) {
+                  newVal = formatDate(val, 'MM-DD-YYYY');
                 }
                 if (!newArrayValues.includes(val)) {
                   newArrayValues = newArrayValues.push(newVal);
