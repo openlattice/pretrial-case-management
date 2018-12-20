@@ -335,8 +335,8 @@ class SelectChargesContainer extends React.Component<Props, State> {
 
 
   deleteCharge = (index :number) => {
-    const { charges } = this.state;
-    charges.splice(index, 1);
+    let { charges } = this.state;
+    charges = charges.splice(index, 1);
     this.setState({ charges });
   }
 
