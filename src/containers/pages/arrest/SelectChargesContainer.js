@@ -157,7 +157,7 @@ class SelectChargesContainer extends React.Component<Props, State> {
     super(props);
     this.state = {
       arrestDate: moment(props.defaultArrest.getIn([PROPERTY_TYPES.ARREST_DATE_TIME, 0])),
-      caseDispositionDate: moment(),
+      caseDispositionDate: '',
       charges: this.formatChargeList(props.defaultCharges)
     };
   }
