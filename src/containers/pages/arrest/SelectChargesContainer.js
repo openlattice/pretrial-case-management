@@ -18,7 +18,6 @@ import { CHARGE } from '../../../utils/consts/Consts';
 import type { Charge } from '../../../utils/consts/Consts';
 import { APP, CHARGES, STATE } from '../../../utils/consts/FrontEndStateConsts';
 import { PROPERTY_TYPES } from '../../../utils/consts/DataModelConsts';
-import { DOMAIN } from '../../../utils/consts/ReportDownloadTypes';
 import { toISODateTime } from '../../../utils/FormattingUtils';
 import { OL } from '../../../utils/consts/Colors';
 
@@ -28,10 +27,6 @@ import {
 } from '../../../utils/Layout';
 
 const {
-  STATUTE,
-  DESCRIPTION,
-  DEGREE,
-  DEGREE_SHORT,
   DISPOSITION_DATE,
   QUALIFIER,
   NUMBER_OF_COUNTS
@@ -141,8 +136,7 @@ type Props = {
   defaultCharges :Immutable.List<*>,
   onSubmit :(pretrialCase :Immutable.Map<*, *>, charges :Immutable.List<*>) => void,
   nextPage :() => void,
-  prevPage :() => void,
-  county :string
+  prevPage :() => void
 };
 
 type State = {
@@ -278,10 +272,10 @@ class SelectChargesContainer extends React.Component<Props, State> {
   }
 
   addCharge = (newChargeInput :Charge) => {
-    const newCharge = newChargeInput;
+    let newCharge = newChargeInput;
     let { charges } = this.state;
     const { caseDispositionDate } = this.state;
-    if (caseDispositionDate) newCharge[DISPOSITION_DATE] = caseDispositionDate;
+    if (caseDispositionDate) newCharge = newCharge.set(DISPOSITION_DATE, caseDispositionDate);
     charges = charges.push(newCharge);
     this.setState({ charges });
   }
