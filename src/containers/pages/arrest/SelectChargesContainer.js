@@ -165,13 +165,37 @@ class SelectChargesContainer extends React.Component<Props, State> {
   formatChargeList = (chargeList :Immutable.List<*>) :Object[] => {
     const result = [];
     chargeList.forEach((charge) => {
-      result.push({
-        [STATUTE]: charge.getIn([PROPERTY_TYPES.CHARGE_STATUTE, 0], '[no statute]'),
-        [DESCRIPTION]: charge.getIn([PROPERTY_TYPES.CHARGE_DESCRIPTION, 0], '[no description]'),
-        [DEGREE]: charge.getIn([PROPERTY_TYPES.CHARGE_DEGREE, 0]),
-        [DEGREE_SHORT]: charge.getIn([PROPERTY_TYPES.CHARGE_LEVEL, 0]),
-        [NUMBER_OF_COUNTS]: 1
-      });
+      result.push(
+        fromJS(
+          {
+            [PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE]: [
+              charge.getIn(
+                [PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE, 0],
+                charge.getIn([PROPERTY_TYPES.CHARGE_STATUTE, 0], '[no statute]')
+              )
+            ],
+            [PROPERTY_TYPES.REFERENCE_CHARGE_DESCRIPTION]: [
+              charge.getIn(
+                [PROPERTY_TYPES.REFERENCE_CHARGE_DESCRIPTION, 0],
+                charge.getIn([PROPERTY_TYPES.CHARGE_DESCRIPTION, 0], '[no description]')
+              )
+            ],
+            [PROPERTY_TYPES.REFERENCE_CHARGE_DEGREE]: [
+              charge.getIn(
+                [PROPERTY_TYPES.REFERENCE_CHARGE_DEGREE, 0],
+                charge.getIn([PROPERTY_TYPES.CHARGE_DEGREE, 0])
+              )
+            ],
+            [PROPERTY_TYPES.REFERENCE_CHARGE_LEVEL]: [
+              charge.getIn(
+                [PROPERTY_TYPES.REFERENCE_CHARGE_LEVEL, 0],
+                charge.getIn([PROPERTY_TYPES.CHARGE_LEVEL, 0])
+              )
+            ],
+            [NUMBER_OF_COUNTS]: 1
+          }
+        )
+      );
     });
     return fromJS(result);
   }
@@ -214,7 +238,7 @@ class SelectChargesContainer extends React.Component<Props, State> {
         [PROPERTY_TYPES.NUMBER_OF_COUNTS]: counts
       };
       if (qualifier) chargeEntity[PROPERTY_TYPES.QUALIFIER] = [qualifier];
-      return chargeEntity;
+      return fromJS(chargeEntity);
     });
 
     onSubmit({
@@ -255,9 +279,10 @@ class SelectChargesContainer extends React.Component<Props, State> {
 
   addCharge = (newChargeInput :Charge) => {
     const newCharge = newChargeInput;
-    const { charges, caseDispositionDate } = this.state;
+    let { charges } = this.state;
+    const { caseDispositionDate } = this.state;
     if (caseDispositionDate) newCharge[DISPOSITION_DATE] = caseDispositionDate;
-    charges.push(newCharge);
+    charges = charges.push(newCharge);
     this.setState({ charges });
   }
 
@@ -292,11 +317,11 @@ class SelectChargesContainer extends React.Component<Props, State> {
   }
 
   handleChargeInputChange = (e :?Object, index :number, optionalField :?string) => {
-    const { charges } = this.state;
+    let { charges } = this.state;
     const field = optionalField || e.target.name;
     const value = optionalField ? e : e.target.value;
-    const newChargeObj = charges[index].set(field, value);
-    charges[index] = newChargeObj;
+    const newChargeObj = charges.get(index).set(field, value);
+    charges = charges.set(index, newChargeObj);
     this.setState({ charges });
   }
 
@@ -316,8 +341,8 @@ class SelectChargesContainer extends React.Component<Props, State> {
   }
 
   renderSingleCharge = (charge :Charge, index :number) => {
-    const statute = charge.get(STATUTE, '');
-    const description = charge.get(DESCRIPTION, '');
+    const statute = charge.getIn([PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE, 0], '');
+    const description = charge.getIn([PROPERTY_TYPES.REFERENCE_CHARGE_DESCRIPTION, 0], '');
     const qualifier = charge.get(QUALIFIER, '');
     const onChange = (e) => {
       this.handleChargeInputChange(e, index);
