@@ -7,6 +7,7 @@ export const STATE = {
   CHARGES: 'charges',
   DASHBOARD: 'dashboard',
   DOWNLOAD: 'download',
+  EDM: 'edm',
   ENROLL: 'enroll',
   PSA: 'psa',
   PEOPLE: 'people',
@@ -108,6 +109,14 @@ export const DOWNLOAD = {
   ALL_HEARING_DATA: 'allHearingData',
   ERROR: 'downloadError',
   HEARING_IDS: 'hearingIds'
+};
+
+// EDM
+
+export const EDM = {
+  FQN_TO_ID: 'fqnToIdMap',
+  IS_FETCHING_PROPERTY_TYPES: 'isFetchingAllPropertyTypes',
+  PROPERTY_TYPES_BY_ID: 'propertyTypesById'
 };
 
 // Enroll
