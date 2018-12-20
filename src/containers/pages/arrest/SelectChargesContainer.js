@@ -228,7 +228,7 @@ class SelectChargesContainer extends React.Component<Props, State> {
       const degree = charge.getIn([PROPERTY_TYPES.REFERENCE_CHARGE_DEGREE, 0], '');
       const degreeShort = charge.getIn([PROPERTY_TYPES.REFERENCE_CHARGE_LEVEL, 0], '');
       const qualifier = charge.get(QUALIFIER, '');
-      const counts = charge.counts ? charge.counts : 1;
+      const counts = charge.get(NUMBER_OF_COUNTS, 1);
       const chargeEntity = {
         [PROPERTY_TYPES.CHARGE_ID]: [`${caseId}|${index + 1}`],
         [PROPERTY_TYPES.CHARGE_STATUTE]: [statute],
@@ -329,7 +329,7 @@ class SelectChargesContainer extends React.Component<Props, State> {
     <CountsInput
         placeholder="Number of Counts"
         name={field}
-        value={charge[field]}
+        value={charge.getIn([field], 1)}
         onChange={onChange} />
   )
 
