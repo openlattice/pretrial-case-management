@@ -131,7 +131,10 @@ const filterPendingCharges = (
         }
       }
 
-      if (chargeDescription === 'PROBATION VIOLATION') shouldInclude = false;
+      if (
+        chargeDescription === 'PROBATION VIOLATION'
+        || chargeDescription === 'VIOLATION OF A VALID COURT ORDER'
+      ) shouldInclude = false;
 
       if (shouldInclude && caseNum) {
         casesWithDispositionAfter = casesWithDispositionAfter.set(
