@@ -35,6 +35,7 @@ const StyledStyledDateTimePicker = ({
           onChange={onChange}
           hideIcon
           timeIsEditable
+          placeholder={dateFormat}
           times={MIL_TIME}
           datePickerSelectProps={{
             placeholder: dateFormat,
