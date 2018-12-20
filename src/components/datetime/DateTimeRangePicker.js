@@ -9,6 +9,7 @@ import { DateTimePicker } from '@atlaskit/datetime-picker';
 import { OL } from '../../utils/consts/Colors';
 import { MIL_TIME } from '../../utils/consts/DateTimeConsts';
 
+
 type Props = {
   startDate :?string,
   endDate :?string,
@@ -74,6 +75,7 @@ const DateTimeRange = ({
               onChange={onStartChange}
               hideIcon
               times={MIL_TIME}
+              timeIsEditable
               datePickerSelectProps={{
                 placeholder: dateFormat,
               }} />
@@ -87,6 +89,7 @@ const DateTimeRange = ({
               onChange={onEndChange}
               hideIcon
               times={MIL_TIME}
+              timeIsEditable
               datePickerSelectProps={{
                 placeholder: dateFormat,
               }} />
