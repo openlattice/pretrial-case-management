@@ -8,11 +8,14 @@ import {
   all,
   call,
   put,
+  select,
   takeEvery
 } from 'redux-saga/effects';
 
+import { getEntitySetId } from '../../utils/AppUtils';
 import { getEntityKeyId } from '../../utils/DataUtils';
-import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { APP, STATE } from '../../utils/consts/FrontEndStateConsts';
 import {
   DELETE_CHARGE,
   LOAD_CHARGES,
@@ -21,6 +24,14 @@ import {
   loadCharges,
   updateCharge
 } from './ChargesActionFactory';
+
+const { ARREST_CHARGE_LIST, COURT_CHARGE_LIST } = APP_TYPES_FQNS;
+
+const arrestChargeListFqn :string = ARREST_CHARGE_LIST.toString();
+const courtChargeListFqn :string = COURT_CHARGE_LIST.toString();
+
+const getApp = state => state.get(STATE.APP, Map());
+const getOrgId = state => state.getIn([STATE.APP, APP.SELECTED_ORG_ID], '');
 
 const { getEntitySetData } = DataApiActions;
 const { getEntitySetDataWorker } = DataApiSagas;
@@ -82,7 +93,10 @@ function* loadChargesWorker(action :SequenceAction) :Generator<*, *, *> {
   let bookingReleaseExceptionCharges = Map();
   let bookingHoldExceptionCharges = Map();
   const { id, value } = action;
-  const { arrestChargesEntitySetId, courtChargesEntitySetId, selectedOrgId } = value;
+  const app = yield select(getApp);
+  const selectedOrgId = yield select(getOrgId);
+  const arrestChargesEntitySetId = getEntitySetId(app, arrestChargeListFqn, selectedOrgId);
+  const courtChargesEntitySetId = getEntitySetId(app, courtChargeListFqn, selectedOrgId);
 
   const chargePermissions = yield call(AuthorizationApi.checkAuthorizations, [
     { aclKey: [arrestChargesEntitySetId], permissions: ['WRITE'] },
