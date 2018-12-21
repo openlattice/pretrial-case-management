@@ -6,6 +6,8 @@ import React from 'react';
 import styled from 'styled-components';
 import { DatePicker } from '@atlaskit/datetime-picker';
 
+import { formatDate } from '../../utils/FormattingUtils';
+
 const DatePickerWrapper = styled.div`
   position: relative;
   height: 39px;
@@ -20,7 +22,6 @@ const onKeyPressFn = (e, onKeyPress) => {
 };
 
 const StyledDatePicker = ({
-  placeholder,
   value,
   onChange,
   onKeyPress
@@ -31,8 +32,8 @@ const StyledDatePicker = ({
       <DatePicker
           hideIcon
           value={value}
-          onChange={onChange}
-          placeholder={placeholder}
+          onChange={date => onChange(formatDate(date))}
+          placeholder={dateFormat}
           dateFormat={dateFormat}
           datePickerSelectProps={{
             placeholder: dateFormat,

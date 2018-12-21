@@ -18,7 +18,6 @@ import { CHARGE } from '../../../utils/consts/Consts';
 import type { Charge } from '../../../utils/consts/Consts';
 import { APP, CHARGES, STATE } from '../../../utils/consts/FrontEndStateConsts';
 import { PROPERTY_TYPES } from '../../../utils/consts/DataModelConsts';
-import { DOMAIN } from '../../../utils/consts/ReportDownloadTypes';
 import { toISODateTime } from '../../../utils/FormattingUtils';
 import { OL } from '../../../utils/consts/Colors';
 
@@ -28,10 +27,6 @@ import {
 } from '../../../utils/Layout';
 
 const {
-  STATUTE,
-  DESCRIPTION,
-  DEGREE,
-  DEGREE_SHORT,
   DISPOSITION_DATE,
   QUALIFIER,
   NUMBER_OF_COUNTS
@@ -141,8 +136,7 @@ type Props = {
   defaultCharges :Immutable.List<*>,
   onSubmit :(pretrialCase :Immutable.Map<*, *>, charges :Immutable.List<*>) => void,
   nextPage :() => void,
-  prevPage :() => void,
-  county :string
+  prevPage :() => void
 };
 
 type State = {
@@ -157,7 +151,7 @@ class SelectChargesContainer extends React.Component<Props, State> {
     super(props);
     this.state = {
       arrestDate: moment(props.defaultArrest.getIn([PROPERTY_TYPES.ARREST_DATE_TIME, 0])),
-      caseDispositionDate: moment(),
+      caseDispositionDate: '',
       charges: this.formatChargeList(props.defaultCharges)
     };
   }
@@ -228,7 +222,7 @@ class SelectChargesContainer extends React.Component<Props, State> {
       const degree = charge.getIn([PROPERTY_TYPES.REFERENCE_CHARGE_DEGREE, 0], '');
       const degreeShort = charge.getIn([PROPERTY_TYPES.REFERENCE_CHARGE_LEVEL, 0], '');
       const qualifier = charge.get(QUALIFIER, '');
-      const counts = charge.counts ? charge.counts : 1;
+      const counts = charge.get(NUMBER_OF_COUNTS, 1);
       const chargeEntity = {
         [PROPERTY_TYPES.CHARGE_ID]: [`${caseId}|${index + 1}`],
         [PROPERTY_TYPES.CHARGE_STATUTE]: [statute],
@@ -278,10 +272,10 @@ class SelectChargesContainer extends React.Component<Props, State> {
   }
 
   addCharge = (newChargeInput :Charge) => {
-    const newCharge = newChargeInput;
+    let newCharge = newChargeInput;
     let { charges } = this.state;
     const { caseDispositionDate } = this.state;
-    if (caseDispositionDate) newCharge[DISPOSITION_DATE] = caseDispositionDate;
+    if (caseDispositionDate) newCharge = newCharge.set(DISPOSITION_DATE, caseDispositionDate);
     charges = charges.push(newCharge);
     this.setState({ charges });
   }
@@ -329,14 +323,14 @@ class SelectChargesContainer extends React.Component<Props, State> {
     <CountsInput
         placeholder="Number of Counts"
         name={field}
-        value={charge[field]}
+        value={charge.getIn([field], 1)}
         onChange={onChange} />
   )
 
 
   deleteCharge = (index :number) => {
-    const { charges } = this.state;
-    charges.splice(index, 1);
+    let { charges } = this.state;
+    charges = charges.splice(index, 1);
     this.setState({ charges });
   }
 
