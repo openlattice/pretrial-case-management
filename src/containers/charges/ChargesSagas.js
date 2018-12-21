@@ -41,8 +41,13 @@ const { getEntitySetDataWorker } = DataApiSagas;
  */
 
 function* deleteChargeWorker(action :SequenceAction) :Generator<*, *, *> {
-  const { entityKeyId, selectedOrganizationId, chargePropertyType } = action.value;
-  yield put(deleteCharge.success(action.id, { entityKeyId, selectedOrganizationId, chargePropertyType }));
+  const { entityKeyId, chargePropertyType } = action.value;
+  const selectedOrganizationId = yield select(getOrgId);
+  yield put(deleteCharge.success(action.id, {
+    entityKeyId,
+    selectedOrganizationId,
+    chargePropertyType
+  }));
 }
 function* deleteChargesWatcher() :Generator<*, *, *> {
   yield takeEvery(DELETE_CHARGE, deleteChargeWorker);
@@ -54,10 +59,10 @@ function* deleteChargesWatcher() :Generator<*, *, *> {
 
 
 function* updateChargeWorker(action :SequenceAction) :Generator<*, *, *> {
+  const selectedOrganizationId = yield select(getOrgId);
   const {
     entity,
     entityKeyId,
-    selectedOrganizationId,
     chargePropertyType
   } = action.value;
   yield put(updateCharge.success(action.id, {
@@ -92,7 +97,7 @@ function* loadChargesWorker(action :SequenceAction) :Generator<*, *, *> {
   let dmfStep4Charges = Map();
   let bookingReleaseExceptionCharges = Map();
   let bookingHoldExceptionCharges = Map();
-  const { id, value } = action;
+  const { id } = action;
   const app = yield select(getApp);
   const selectedOrgId = yield select(getOrgId);
   const arrestChargesEntitySetId = getEntitySetId(app, arrestChargeListFqn, selectedOrgId);
@@ -105,13 +110,8 @@ function* loadChargesWorker(action :SequenceAction) :Generator<*, *, *> {
   const arrestChargePermissions = permissionsSelector(arrestChargesEntitySetId, chargePermissions);
   const courtChargePermissions = permissionsSelector(courtChargesEntitySetId, chargePermissions);
 
-  if (value === null || value === undefined) {
-    yield put(loadCharges.failure(id, 'ERR_ACTION_VALUE_NOT_DEFINED'));
-    return;
-  }
-
   try {
-    yield put(loadCharges.request(action.id));
+    yield put(loadCharges.request(id));
     let arrestChargesByEntityKeyId = Map();
     let courtChargesByEntityKeyId = Map();
 
@@ -185,7 +185,7 @@ function* loadChargesWorker(action :SequenceAction) :Generator<*, *, *> {
       }
     });
 
-    yield put(loadCharges.success(action.id, {
+    yield put(loadCharges.success(id, {
       arrestCharges,
       arrestChargesByEntityKeyId,
       arrestChargePermissions,
@@ -203,10 +203,10 @@ function* loadChargesWorker(action :SequenceAction) :Generator<*, *, *> {
   }
   catch (error) {
     console.error(error);
-    yield put(loadCharges.failure(action.id, error));
+    yield put(loadCharges.failure(id, error));
   }
   finally {
-    yield put(loadCharges.finally(action.id));
+    yield put(loadCharges.finally(id));
   }
 }
 
