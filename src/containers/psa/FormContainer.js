@@ -44,7 +44,7 @@ import { getEntityKeyId } from '../../utils/DataUtils';
 import { toISODateTime } from '../../utils/FormattingUtils';
 import { getScoresAndRiskFactors, calculateDMF, getDMFRiskFactors } from '../../utils/ScoringUtils';
 import { tryAutofillFields } from '../../utils/AutofillUtils';
-import { PROPERTY_TYPES, ENTITY_SETS } from '../../utils/consts/DataModelConsts';
+import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { STATUS_OPTIONS_FOR_PENDING_PSAS } from '../../utils/consts/ReviewPSAConsts';
 import { DOMAIN } from '../../utils/consts/ReportDownloadTypes';
 import {
@@ -84,8 +84,6 @@ import * as Routes from '../../core/router/Routes';
 
 
 const { OPENLATTICE_ID_FQN } = Constants;
-
-const { PEOPLE } = ENTITY_SETS;
 
 const PSARowListHeader = styled.div`
   width: 100%;
