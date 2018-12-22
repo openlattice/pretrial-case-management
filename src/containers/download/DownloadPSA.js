@@ -18,7 +18,7 @@ import SearchableSelect from '../../components/controls/SearchableSelect';
 import StyledCheckbox from '../../components/controls/StyledCheckbox';
 import { OL } from '../../utils/consts/Colors';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { STATE, DOWNLOAD } from '../../utils/consts/FrontEndStateConsts';
+import { APP, STATE, DOWNLOAD } from '../../utils/consts/FrontEndStateConsts';
 import {
   REPORT_TYPES,
   DOMAIN,
@@ -162,7 +162,8 @@ type Props = {
   history :string[],
   loadingHearingData :boolean,
   downloadingReports :boolean,
-  noHearingResults :boolean
+  noHearingResults :boolean,
+  selectedOrganizationId :string
 };
 
 type State = {
@@ -186,13 +187,24 @@ class DownloadPSA extends React.Component<Props, State> {
   }
 
   componentDidMount() {
-    const { actions } = this.props;
     let { hearingDate } = this.state;
     hearingDate = moment(hearingDate);
     if (hearingDate.isValid()) {
       this.setState({ hearingDate });
-      actions.getDownloadFilters({ hearingDate });
     }
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    const { hearingDate } = this.state;
+    const { actions, selectedOrganizationId } = this.props;
+    const { getDownloadFilters } = actions;
+    if (selectedOrganizationId !== prevProps.selectedOrganizationId) {
+      getDownloadFilters({ hearingDate });
+    }
+    if (selectedOrganizationId && (hearingDate !== prevState.hearingDate)) {
+      getDownloadFilters({ hearingDate });
+    }
+
   }
 
   getErrorText = (downloads) => {
@@ -228,14 +240,6 @@ class DownloadPSA extends React.Component<Props, State> {
   }
 
   renderError = type => <Error>{this.getErrorText(type)}</Error>
-
-  // TODO: Can refactor for charge list entity sets
-  // downloadCharges = (jurisdiction) => {
-  //   const { actions } = this.props;
-  //   actions.downloadChargeLists({
-  //     jurisdiction
-  //   });
-  // }
 
   downloadbyPSADate = (filters, domain) => {
     const { startDate, endDate } = this.state;
@@ -449,17 +453,6 @@ class DownloadPSA extends React.Component<Props, State> {
             <DownloadSection>
               <HeaderSection>Download PSA Forms</HeaderSection>
             </DownloadSection>
-            {/* <DownloadSection>
-              <SubHeaderSection>Download Charge Lists</SubHeaderSection>
-              <ButtonRow>
-                <BasicDownloadButton onClick={() => this.downloadCharges(DOMAIN.PENNINGTON)}>
-                  Download Pennington Charges
-                </BasicDownloadButton>
-                <BasicDownloadButton onClick={() => this.downloadCharges(DOMAIN.MINNEHAHA)}>
-                  Download Minnehaha Charges
-                </BasicDownloadButton>
-              </ButtonRow>
-            </DownloadSection> */}
             <DownloadSection>
               <SubHeaderSection>PSA Downloads</SubHeaderSection>
               <SelectionWrapper>
@@ -515,8 +508,11 @@ class DownloadPSA extends React.Component<Props, State> {
 }
 
 function mapStateToProps(state) {
-  const download = state.get(STATE.DOWNLOAD);
+  const app = state.get(STATE.APP, Map())
+  const download = state.get(STATE.DOWNLOAD, Map());
   return {
+    [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
+
     [DOWNLOAD.DOWNLOADING_REPORTS]: download.get(DOWNLOAD.DOWNLOADING_REPORTS),
     [DOWNLOAD.COURTROOM_OPTIONS]: download.get(DOWNLOAD.COURTROOM_OPTIONS),
     [DOWNLOAD.COURTROOM_TIMES]: download.get(DOWNLOAD.COURTROOM_TIMES),
