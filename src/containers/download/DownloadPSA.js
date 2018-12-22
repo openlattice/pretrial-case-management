@@ -159,7 +159,6 @@ type Props = {
     }) => void
   },
   courtroomTimes :Map<*, *>,
-  history :string[],
   loadingHearingData :boolean,
   downloadingReports :boolean,
   noHearingResults :boolean,
@@ -508,7 +507,7 @@ class DownloadPSA extends React.Component<Props, State> {
 }
 
 function mapStateToProps(state) {
-  const app = state.get(STATE.APP, Map())
+  const app = state.get(STATE.APP, Map());
   const download = state.get(STATE.DOWNLOAD, Map());
   return {
     [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
