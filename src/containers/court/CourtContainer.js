@@ -206,9 +206,21 @@ class CourtContainer extends React.Component<Props, State> {
   }
 
   componentDidMount() {
-    const { actions } = this.props;
-    const { checkPSAPermissions } = actions;
+    const { date } = this.state;
+    const {
+      actions,
+      hearingNeighborsById,
+      hearingsByTime,
+      selectedOrganizationId
+    } = this.props;
+    const { checkPSAPermissions, loadHearingsForDate, loadJudges } = actions;
     checkPSAPermissions();
+    if (selectedOrganizationId) {
+      loadJudges();
+      if (!hearingsByTime.size || !hearingNeighborsById.size) {
+        loadHearingsForDate(date);
+      }
+    }
   }
 
   componentDidUpdate(prevProps) {
