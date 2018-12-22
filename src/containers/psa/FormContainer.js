@@ -322,7 +322,6 @@ type Props = {
   dataModel :Immutable.Map<*, *>,
   dmfStep2Charges :Immutable.Map<*, *>,
   dmfStep4Charges :Immutable.Map<*, *>,
-  entitySetLookup :Immutable.Map<*, *>,
   history :string[],
   isLoadingCases :boolean,
   isLoadingNeighbors :boolean,
@@ -365,10 +364,20 @@ class Form extends React.Component<Props, State> {
   }
 
   componentDidMount() {
-    const { actions } = this.props;
-    actions.loadDataModel();
-    actions.loadJudges();
+    const { actions, selectedOrganizationId } = this.props;
+    if (selectedOrganizationId) {
+      actions.loadDataModel();
+      actions.loadJudges();
+    }
     this.redirectToFirstPageIfNecessary();
+  }
+
+  componentDidUpdate(prevProps) {
+    const { actions, selectedOrganizationId } = this.props;
+    if (selectedOrganizationId !== prevProps.selectedOrganizationId) {
+      actions.loadDataModel();
+      actions.loadJudges();
+    }
   }
 
   loadContextParams = () => {
@@ -457,15 +466,6 @@ class Form extends React.Component<Props, State> {
     actions.setPSAValues({ newValues });
   }
 
-  getPropertyTypes = (entitySetName) => {
-    const { dataModel, entitySetLookup } = this.props;
-    const entitySetId = entitySetLookup.get(entitySetName);
-    const entitySet = dataModel.getIn(['entitySets', entitySetId], Immutable.Map());
-    const entityType = dataModel.getIn(['entityTypes', entitySet.get('entityTypeId')], Immutable.Map());
-    return entityType.get('properties', Immutable.List())
-      .map(propertyTypeId => dataModel.getIn(['propertyTypes', propertyTypeId]));
-  }
-
   getStaffId = () => {
     const staffInfo = AuthUtils.getUserInfo();
     let staffId = staffInfo.id;
@@ -528,13 +528,10 @@ class Form extends React.Component<Props, State> {
   getFqn = propertyType => `${propertyType.getIn(['type', 'namespace'])}.${propertyType.getIn(['type', 'name'])}`
 
   handleSelectPerson = (selectedPerson, entityKeyId) => {
-    const { actions, entitySetLookup } = this.props;
+    const { actions } = this.props;
     actions.selectPerson({ selectedPerson });
     actions.loadPersonDetails({ entityKeyId, shouldLoadCases: true });
-    actions.loadNeighbors({
-      entitySetId: entitySetLookup.get(PEOPLE),
-      entityKeyId
-    });
+    actions.loadNeighbors({ entityKeyId });
   }
 
   nextPage = () => {
@@ -661,7 +658,7 @@ class Form extends React.Component<Props, State> {
   }
 
   closePSA = (scores, status, failureReason) => {
-    const { actions, selectedPersonId, entitySetLookup } = this.props;
+    const { actions, selectedPersonId } = this.props;
     const scoresId = scores.getIn([OPENLATTICE_ID_FQN, 0]);
     let scoresEntity = scores.remove('id').remove(OPENLATTICE_ID_FQN);
     scoresEntity = scoresEntity.set(PROPERTY_TYPES.STATUS, Immutable.List.of(status));
@@ -670,10 +667,7 @@ class Form extends React.Component<Props, State> {
     }
 
     const callback = () => {
-      actions.loadNeighbors({
-        entitySetId: entitySetLookup.get(PEOPLE),
-        entityKeyId: selectedPersonId
-      });
+      actions.loadNeighbors({ entityKeyId: selectedPersonId });
     };
 
     actions.changePSAStatus({
@@ -716,7 +710,6 @@ class Form extends React.Component<Props, State> {
   getPendingPSAs = () => {
     const {
       actions,
-      entitySetLookup,
       selectedPersonId,
       allPSAs,
       openPSAs
@@ -737,10 +730,7 @@ class Form extends React.Component<Props, State> {
               renderSubContent={this.renderPendingPSASubContent}
               component={CONTENT_CONSTS.PENDING_PSAS}
               onStatusChangeCallback={() => {
-                actions.loadNeighbors({
-                  entitySetId: entitySetLookup.get(PEOPLE),
-                  entityKeyId: selectedPersonId
-                });
+                actions.loadNeighbors({ entityKeyId: selectedPersonId });
                 actions.clearSubmit();
               }} />
         </PSAReviewRowListContainer>
@@ -756,7 +746,6 @@ class Form extends React.Component<Props, State> {
       isLoadingNeighbors,
       numCasesToLoad,
       numCasesLoaded,
-      entitySetLookup,
       arrestOptions,
       psaForm,
       actions
@@ -768,10 +757,7 @@ class Form extends React.Component<Props, State> {
           entityKeyId: selectedPersonId,
           shouldLoadCases: false
         });
-        actions.loadNeighbors({
-          entitySetId: entitySetLookup.get(PEOPLE),
-          entityKeyId: selectedPersonId
-        });
+        actions.loadNeighbors({ entityKeyId: selectedPersonId });
       }
       const progress = (numCasesToLoad > 0) ? Math.floor((numCasesLoaded / numCasesToLoad) * 100) : 0;
       const loadingText = numCasesToLoad > 0
