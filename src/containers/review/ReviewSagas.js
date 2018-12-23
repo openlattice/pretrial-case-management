@@ -138,7 +138,7 @@ function* getCasesAndCharges(neighbors) {
   const orgId = yield select(getOrgId);
   const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
   const personEntitySetId = getEntitySetId(app, peopleFqn, orgId);
-  const personEntityKeyId = getEntityKeyId(neighbors, appTypeFqn);
+  const personEntityKeyId = getEntityKeyId(neighbors, peopleFqn);
 
   let personNeighbors = yield call(SearchApi.searchEntityNeighbors, personEntitySetId, personEntityKeyId);
   personNeighbors = obfuscateEntityNeighbors(personNeighbors);
