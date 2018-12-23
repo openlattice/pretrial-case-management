@@ -3,7 +3,12 @@ import { OrderedMap, Map } from 'immutable';
 import { Constants } from 'lattice';
 
 import { sortByDate } from '../DataUtils';
-import { ENTITY_SETS, PROPERTY_TYPES } from './DataModelConsts';
+import { APP_TYPES_FQNS, PROPERTY_TYPES } from './DataModelConsts';
+
+let { HEARINGS, OUTCOMES } = APP_TYPES_FQNS;
+
+HEARINGS = HEARINGS.toString();
+OUTCOMES = OUTCOMES.toString();
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
@@ -81,7 +86,7 @@ export const getJudgeOptions = (allJudges, jurisdiction) => {
 
 // Get hearings from psa neighbors
 export const getHearingsFromNeighbors = psaNeighbors => (
-  psaNeighbors.get(ENTITY_SETS.HEARINGS, Map())
+  psaNeighbors.get(HEARINGS, Map())
 );
 
 // Get hearing ids from psa neighbors
@@ -126,7 +131,7 @@ export const getAvailableHearings = (personHearings, scheduledHearings, hearingN
     const hearingDateTime = hearing.getIn([PROPERTY_TYPES.DATE_TIME, 0], '');
     const hearingCourtroom = hearing.getIn([PROPERTY_TYPES.COURTROOM, 0], '');
     const id = hearing.getIn([OPENLATTICE_ID_FQN, 0]);
-    const hasOutcome = !!hearingNeighborsById.getIn([id, ENTITY_SETS.OUTCOMES]);
+    const hasOutcome = !!hearingNeighborsById.getIn([id, OUTCOMES]);
     const hearingHasBeenCancelled = hearing.getIn([PROPERTY_TYPES.UPDATE_TYPE, 0], '')
       .toLowerCase().trim() === 'cancelled';
     const hearingIsInPast = moment(hearingDateTime).isBefore(moment());
