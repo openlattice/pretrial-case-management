@@ -19,7 +19,7 @@ import NavButtonToolbar from '../../components/buttons/NavButtonToolbar';
 import DropDownMenu from '../../components/StyledSelect';
 import { getFormattedPeople } from '../../utils/PeopleUtils';
 import { searchPeople } from '../person/PersonActionFactory';
-import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { DOMAIN_OPTIONS_ARR } from '../../utils/consts/ReviewPSAConsts';
 import { OL } from '../../utils/consts/Colors';
 import {
@@ -127,7 +127,7 @@ class PeopleContainer extends React.Component<Props, State> {
     let missingPeople = Immutable.Set(peopleList);
 
     psaNeighborsById.valueSeq().forEach((neighbors) => {
-      const neighbor = neighbors.getIn([ENTITY_SETS.PEOPLE, PSA_NEIGHBOR.DETAILS], Immutable.Map());
+      const neighbor = neighbors.getIn([APP_TYPES_FQNS.PEOPLE, PSA_NEIGHBOR.DETAILS], Immutable.Map());
       const firstNameList = neighbor.get(PROPERTY_TYPES.FIRST_NAME, Immutable.List()).map(val => val.toLowerCase());
       const lastNameList = neighbor.get(PROPERTY_TYPES.LAST_NAME, Immutable.List()).map(val => val.toLowerCase());
       const id = neighbor.get(PROPERTY_TYPES.PERSON_ID);
