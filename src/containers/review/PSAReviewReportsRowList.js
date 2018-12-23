@@ -14,7 +14,7 @@ import LoadingSpinner from '../../components/LoadingSpinner';
 import CustomPagination from '../../components/Pagination';
 import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
 import { NoResults } from '../../utils/Layout';
-import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_FAILURE_REASONS, PSA_STATUSES, SORT_TYPES } from '../../utils/consts/Consts';
 import { sortByDate, sortByName } from '../../utils/PSAUtils';
 import { getEntityKeyId, getIdOrValue } from '../../utils/DataUtils';
@@ -33,6 +33,11 @@ import * as ReviewActionFactory from './ReviewActionFactory';
 import * as CourtActionFactory from '../court/CourtActionFactory';
 import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
 import * as DataActionFactory from '../../utils/data/DataActionFactory';
+
+const { PSA_SCORES } = APP_TYPES_FQNS;
+
+const peopleFqn :string = APP_TYPES_FQNS.PEOPLE.toString();
+const psaScoresFqn :string = PSA_SCORES.toString();
 
 const StyledCenteredContainer = styled.div`
   text-align: center;
@@ -212,8 +217,8 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
     } = actions;
 
     const neighbors = psaNeighborsById.get(scoreId, Map());
-    const personId = getEntityKeyId(neighbors, ENTITY_SETS.PEOPLE);
-    const personIdValue = getIdOrValue(neighbors, ENTITY_SETS.PEOPLE, PROPERTY_TYPES.PERSON_ID);
+    const personId = getEntityKeyId(neighbors, peopleFqn);
+    const personIdValue = getIdOrValue(neighbors, peopleFqn, PROPERTY_TYPES.PERSON_ID);
     const personCaseHistory = caseHistory.get(personId, List());
     const personManualCaseHistory = manualCaseHistory.get(personId, List());
     const personChargeHistory = chargeHistory.get(personId, Map());
@@ -289,7 +294,7 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
   renderFTAStats = () => {
     const { neighbors, personId } = this.props;
     if (personId && neighbors.size) {
-      const personPSAs = neighbors.getIn([personId, ENTITY_SETS.PSA_SCORES], Map());
+      const personPSAs = neighbors.getIn([personId, psaScoresFqn], Map());
       let psaFailures = 0;
       let ftas = 0;
       personPSAs.forEach((psa) => {
