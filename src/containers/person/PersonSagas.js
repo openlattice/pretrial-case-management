@@ -5,7 +5,7 @@
 import axios from 'axios';
 import moment from 'moment';
 import LatticeAuth from 'lattice-auth';
-
+import { Map } from 'immutable';
 import { EntityDataModelApi, SearchApi } from 'lattice';
 import { push } from 'react-router-redux';
 import {
@@ -13,14 +13,16 @@ import {
   call,
   put,
   take,
-  takeEvery
+  takeEvery,
+  select
 } from 'redux-saga/effects';
 
 import { toISODate, formatDate } from '../../utils/FormattingUtils';
 import { submit } from '../../utils/submit/SubmitActionFactory';
-import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { APP, STATE } from '../../utils/consts/FrontEndStateConsts';
 import { obfuscateEntityNeighbors } from '../../utils/consts/DemoNames';
-
+import { getEntitySetId } from '../../utils/AppUtils';
 import {
   LOAD_PERSON_DETAILS,
   NEW_PERSON_SUBMIT,
@@ -33,6 +35,15 @@ import {
 } from './PersonActionFactory';
 
 import * as Routes from '../../core/router/Routes';
+
+
+let { PEOPLE, PRETRIAL_CASES } = APP_TYPES_FQNS;
+
+PEOPLE = PEOPLE.toString();
+PRETRIAL_CASES = PRETRIAL_CASES.toString();
+
+const getApp = state => state.get(STATE.APP, Map());
+const getOrgId = state => state.getIn([STATE.APP, APP.SELECTED_ORG_ID], '');
 
 declare var __ENV_DEV__ :boolean;
 
@@ -80,16 +91,18 @@ function* loadPersonDetailsWorker(action) :Generator<*, *, *> {
 
   try {
     const { entityKeyId, shouldLoadCases } = action.value;
+    const app = yield select(getApp);
+    const orgId = yield select(getOrgId);
+    const peopleEntitySetId = getEntitySetId(app, PEOPLE, orgId);
     yield put(loadPersonDetails.request(action.id, { entityKeyId }));
-    const entitySetId :string = yield call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.PEOPLE);
 
     // <HACK>
     if (shouldLoadCases && !__ENV_DEV__) {
       yield call(loadCaseHistory, entityKeyId);
-      const response = yield call(SearchApi.searchEntityNeighbors, entitySetId, entityKeyId);
+      const response = yield call(SearchApi.searchEntityNeighbors, peopleEntitySetId, entityKeyId);
       const caseNums = (response || []).filter((neighborObj) => {
         const { neighborEntitySet, neighborDetails } = neighborObj;
-        return neighborEntitySet && neighborDetails && neighborEntitySet.name === ENTITY_SETS.PRETRIAL_CASES;
+        return neighborEntitySet && neighborDetails && neighborEntitySet.name === PRETRIAL_CASES;
       });
       if (caseNums.length) {
         const caseNumRequests = caseNums
@@ -117,7 +130,7 @@ function* loadPersonDetailsWorker(action) :Generator<*, *, *> {
     // </HACK>
 
     else {
-      let response = yield call(SearchApi.searchEntityNeighbors, entitySetId, entityKeyId);
+      let response = yield call(SearchApi.searchEntityNeighbors, peopleEntitySetId, entityKeyId);
       response = obfuscateEntityNeighbors(response);
       yield put(loadPersonDetails.success(action.id, { entityKeyId, response }));
     }
@@ -172,12 +185,12 @@ function takeReqSeqSuccessFailure(reqseq :RequestSequence, seqAction :SequenceAc
 function* newPersonSubmitWorker(action) :Generator<*, *, *> {
   try {
     yield put(newPersonSubmit.request(action.id));
-    const { config, values } = action.value;
+    const { app, config, values } = action.value;
     const personId = yield call(loadPersonId, values);
     if (personId && personId.length) {
       values.idValue = personId;
     }
-    const submitAction :SequenceAction = submit({ config, values });
+    const submitAction :SequenceAction = submit({ app, config, values });
     yield put(submitAction);
     const submitRes :SequenceAction = yield takeReqSeqSuccessFailure(submit, submitAction);
 
@@ -209,9 +222,13 @@ function* getPropertyTypeId(propertyTypeFqn :string) :Generator<*, *, *> {
 }
 
 function* searchPeopleWorker(action) :Generator<*, *, *> {
-
   try {
     yield put(searchPeople.request(action.id));
+    const app = yield select(getApp);
+    const orgId = yield select(getOrgId);
+    const peopleEntitySetId = getEntitySetId(app, PEOPLE, orgId);
+    console.log(peopleEntitySetId);
+
     const {
       firstName,
       lastName,
@@ -248,12 +265,12 @@ function* searchPeopleWorker(action) :Generator<*, *, *> {
       maxHits: 100
     };
 
-    const entitySetId :string = yield call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.PEOPLE);
-    const response = yield call(SearchApi.advancedSearchEntitySetData, entitySetId, searchOptions);
+    const response = yield call(SearchApi.advancedSearchEntitySetData, peopleEntitySetId, searchOptions);
     yield put(searchPeople.success(action.id, response));
   }
   catch (error) {
-    yield put(searchPeople.success(error));
+    console.error(error);
+    yield put(searchPeople.failure(error));
   }
 }
 
