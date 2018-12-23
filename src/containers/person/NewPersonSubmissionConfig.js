@@ -2,7 +2,7 @@
  * @flow
  */
 
-import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { APP_TYPES_FQNS, ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { ALIASES } from '../../config/formconfig/ConfigConsts';
 
 export const ADDRESS_VALUE :'addressValue' = 'addressValue';
@@ -22,12 +22,19 @@ export const SSN_VALUE :'ssnValue' = 'ssnValue';
 export const STATE_VALUE :'stateValue' = 'stateValue';
 export const ZIP_VALUE :'zipValue' = 'zipValue';
 
+const {
+  ADDRESSES,
+  CONTACT_INFO_GIVEN,
+  CONTACT_INFORMATION,
+  LIVES_AT,
+  PEOPLE
+} = APP_TYPES_FQNS;
 
 export const newPersonSubmissionConfig = {
   entitySets: [
     {
       alias: ALIASES.PERSON,
-      name: ENTITY_SETS.PEOPLE,
+      name: PEOPLE,
       fields: {
         [DOB_VALUE]: PROPERTY_TYPES.DOB,
         [FIRST_NAME_VALUE]: PROPERTY_TYPES.FIRST_NAME,
@@ -43,7 +50,7 @@ export const newPersonSubmissionConfig = {
     },
     {
       alias: ALIASES.PERSON_ADDRESSES,
-      name: ENTITY_SETS.ADDRESSES,
+      name: ADDRESSES,
       fields: {
         [ADDRESS_VALUE]: PROPERTY_TYPES.ADDRESS,
         [CITY_VALUE]: PROPERTY_TYPES.CITY,
@@ -53,7 +60,7 @@ export const newPersonSubmissionConfig = {
     },
     {
       alias: ALIASES.CONTACT_INFO,
-      name: ENTITY_SETS.CONTACT_INFORMATION,
+      name: CONTACT_INFORMATION,
       fields: {
         [PROPERTY_TYPES.GENERAL_ID]: PROPERTY_TYPES.GENERAL_ID,
         [PROPERTY_TYPES.EMAIL]: PROPERTY_TYPES.EMAIL,
@@ -63,14 +70,14 @@ export const newPersonSubmissionConfig = {
     },
     {
       alias: ALIASES.LIVES_AT,
-      name: ENTITY_SETS.LIVES_AT,
+      name: LIVES_AT,
       fields: {
         [LIVES_AT_ID_VALUE]: PROPERTY_TYPES.STRING_ID
       }
     },
     {
       alias: ALIASES.CONTACT_GIVEN_FOR,
-      name: ENTITY_SETS.CONTACT_INFO_GIVEN,
+      name: CONTACT_INFO_GIVEN,
       fields: {
         [PROPERTY_TYPES.CONTACT_INFO_GIVEN_ID]: PROPERTY_TYPES.CONTACT_INFO_GIVEN_ID
       }
