@@ -20,8 +20,9 @@ import NewHearingSection from '../../components/hearings/NewHearingSection';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import psaHearingConfig from '../../config/formconfig/PSAHearingConfig';
 import SelectReleaseConditions from '../../components/releaseconditions/SelectReleaseConditions';
+import { getEntitySetId } from '../../utils/AppUtils';
 import { OL } from '../../utils/consts/Colors';
-import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { Title } from '../../utils/Layout';
 import {
   formatJudgeName,
@@ -36,6 +37,7 @@ import {
   JURISDICTION
 } from '../../utils/consts/Consts';
 import {
+  APP,
   STATE,
   REVIEW,
   COURT,
@@ -47,6 +49,24 @@ import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
 import * as DataActionFactory from '../../utils/data/DataActionFactory';
 import * as ReviewActionFactory from '../review/ReviewActionFactory';
 import * as CourtActionFactory from '../court/CourtActionFactory';
+
+let {
+  ASSESSED_BY,
+  BONDS,
+  DMF_RISK_FACTORS,
+  HEARINGS,
+  OUTCOMES,
+  RELEASE_CONDITIONS,
+  JUDGES
+} = APP_TYPES_FQNS;
+
+ASSESSED_BY = ASSESSED_BY.toString();
+BONDS = BONDS.toString();
+DMF_RISK_FACTORS = DMF_RISK_FACTORS.toString();
+HEARINGS = HEARINGS.toString();
+OUTCOMES = OUTCOMES.toString();
+RELEASE_CONDITIONS = RELEASE_CONDITIONS.toString();
+JUDGES = JUDGES.toString();
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
@@ -108,6 +128,7 @@ const SubmittingWrapper = styled.div`
 
 type Props = {
   allJudges :List<*, *>,
+  app :Map<*, *>,
   defaultBond :Map<*, *>,
   defaultConditions :Map<*, *>,
   defaultDMF :Map<*, *>,
@@ -124,6 +145,7 @@ type Props = {
   context :string,
   refreshingNeighbors :boolean,
   readOnly :boolean,
+  selectedOrganizationId :string,
   actions :{
     deleteEntity :(values :{
       entitySetId :string,
@@ -203,7 +225,7 @@ class SelectHearingsContainer extends React.Component<Props, State> {
       psaEntityKeyId
     } = this.props;
     const psaContext = neighbors
-      ? neighbors.getIn([ENTITY_SETS.DMF_RISK_FACTORS, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.CONTEXT, 0])
+      ? neighbors.getIn([DMF_RISK_FACTORS, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.CONTEXT, 0])
       : context;
     const jurisdiction = JURISDICTION[psaContext];
 
@@ -251,6 +273,7 @@ class SelectHearingsContainer extends React.Component<Props, State> {
     const {
       allJudges,
       actions,
+      app,
       defaultBond,
       defaultConditions,
       defaultDMF,
@@ -261,6 +284,7 @@ class SelectHearingsContainer extends React.Component<Props, State> {
       refreshPSANeighborsCallback,
       hearingNeighborsById,
       hearingIdsRefreshing,
+      selectedOrganizationId,
       submitting,
       psaEntityKeyId,
       psaNeighborsById,
@@ -277,15 +301,15 @@ class SelectHearingsContainer extends React.Component<Props, State> {
     let conditions;
 
     let judgeName;
-    let judgeEntitySetId;
+    let judgeEntitySetId = getEntitySetId(app, ASSESSED_BY, selectedOrganizationId);
     const { hearingId, entityKeyId } = selectedHearing;
-    const hearing = psaNeighborsById.getIn([psaEntityKeyId, ENTITY_SETS.HEARINGS])
+    const hearing = psaNeighborsById.getIn([psaEntityKeyId, HEARINGS])
       .filter(hearingObj => (hearingObj.getIn([OPENLATTICE_ID_FQN, 0]) === entityKeyId))
       .get(0);
 
     const hasMultipleHearings = hearingNeighborsById.size > 1;
     const oldDataOutcome = defaultDMF.getIn([PROPERTY_TYPES.OUTCOME, 0]);
-    const onlyOldExists = oldDataOutcome && !hearingNeighborsById.getIn([entityKeyId, ENTITY_SETS.OUTCOMES]);
+    const onlyOldExists = oldDataOutcome && !hearingNeighborsById.getIn([entityKeyId, OUTCOMES]);
 
     if (onlyOldExists) {
       outcome = defaultDMF;
@@ -293,18 +317,18 @@ class SelectHearingsContainer extends React.Component<Props, State> {
       conditions = defaultConditions;
     }
     else {
-      outcome = hearingNeighborsById.getIn([entityKeyId, ENTITY_SETS.OUTCOMES], Map());
-      bond = hearingNeighborsById.getIn([entityKeyId, ENTITY_SETS.BONDS], Map());
+      outcome = hearingNeighborsById.getIn([entityKeyId, OUTCOMES], Map());
+      bond = hearingNeighborsById.getIn([entityKeyId, BONDS], Map());
       conditions = hearingNeighborsById
-        .getIn([entityKeyId, ENTITY_SETS.RELEASE_CONDITIONS], Map());
+        .getIn([entityKeyId, RELEASE_CONDITIONS], Map());
     }
     const submittedOutcomes = (onlyOldExists && hasMultipleHearings)
       ? false
-      : !!(hearingNeighborsById.getIn([entityKeyId, ENTITY_SETS.OUTCOMES]) || oldDataOutcome);
+      : !!(hearingNeighborsById.getIn([entityKeyId, OUTCOMES]) || oldDataOutcome);
 
     const judgeFromJudgeEntity = hearingNeighborsById.getIn([
       entityKeyId,
-      ENTITY_SETS.MIN_PEN_PEOPLE
+      JUDGES
     ]);
     const judgeFromHearingComments = hearing.getIn([PROPERTY_TYPES.HEARING_COMMENTS, 0]);
     if (judgeFromJudgeEntity) {
@@ -317,7 +341,7 @@ class SelectHearingsContainer extends React.Component<Props, State> {
     }
 
     const psaContext = neighbors
-      .getIn([ENTITY_SETS.DMF_RISK_FACTORS, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.CONTEXT, 0]);
+      .getIn([DMF_RISK_FACTORS, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.CONTEXT, 0]);
     const jurisdiction = JURISDICTION[psaContext];
 
     return (
@@ -426,7 +450,7 @@ class SelectHearingsContainer extends React.Component<Props, State> {
 
     const psaNeighbors = psaNeighborsById.get(psaEntityKeyId, Map());
     const hearingsWithOutcomes = hearingNeighborsById
-      .keySeq().filter(id => hearingNeighborsById.getIn([id, ENTITY_SETS.OUTCOMES]));
+      .keySeq().filter(id => hearingNeighborsById.getIn([id, OUTCOMES]));
     const scheduledHearings = getScheduledHearings(psaNeighbors);
     const pastHearings = getPastHearings(psaNeighbors);
 
@@ -466,9 +490,15 @@ class SelectHearingsContainer extends React.Component<Props, State> {
 }
 
 function mapStateToProps(state) {
-  const review = state.get(STATE.REVIEW);
+  const app = state.get(STATE.APP);
+  const orgId = app.get(APP.SELECTED_ORG_ID, '');
   const court = state.get(STATE.COURT);
+  const review = state.get(STATE.REVIEW);
   return {
+    app,
+    [APP.SELECTED_ORG_ID]: orgId,
+    [APP.ENTITY_SETS_BY_ORG]: app.get(APP.ENTITY_SETS_BY_ORG, Map()),
+
     [REVIEW.SCORES]: review.get(REVIEW.SCORES),
     [REVIEW.NEIGHBORS_BY_ID]: review.get(REVIEW.NEIGHBORS_BY_ID),
     [COURT.LOADING_HEARING_NEIGHBORS]: court.get(COURT.LOADING_HEARING_NEIGHBORS),
