@@ -51,6 +51,7 @@ const Body = styled.div`
 `;
 
 type Props = {
+  app :Map<*, *>,
   contactEntity :Map<*, *>,
   email :string,
   isCreatingPerson :boolean,
@@ -115,6 +116,7 @@ class NewHearingSection extends React.Component<Props, State> {
     const { state } = this;
     const {
       actions,
+      app,
       contactEntity,
       onClose,
       updatingExisting,
@@ -146,6 +148,7 @@ class NewHearingSection extends React.Component<Props, State> {
         [FORM_IDS.PERSON_ID]: personId
       });
       submit({
+        app,
         config: addPersonContactInfoConfig,
         values: newContactFields,
         callback: this.refreshPersonNeighborsCallBack
@@ -227,10 +230,12 @@ class NewHearingSection extends React.Component<Props, State> {
 }
 
 function mapStateToProps(state) {
+  const app = state.get(STATE.APP);
   const people = state.get(STATE.PEOPLE);
   const submit = state.get(STATE.SUBMIT);
 
   return {
+    app,
     [PEOPLE.FETCHING_PERSON_DATA]: people.get(PEOPLE.FETCHING_PERSON_DATA),
     [PEOPLE.PERSON_DATA]: people.get(PEOPLE.PERSON_DATA),
 
