@@ -227,7 +227,6 @@ function* searchPeopleWorker(action) :Generator<*, *, *> {
     const app = yield select(getApp);
     const orgId = yield select(getOrgId);
     const peopleEntitySetId = getEntitySetId(app, PEOPLE, orgId);
-    console.log(peopleEntitySetId);
 
     const {
       firstName,
