@@ -114,6 +114,7 @@ class ReleaseConditionsModal extends React.Component<Props, State> {
 
   render() {
     const {
+      app,
       allJudges,
       actions,
       defaultBond,
@@ -217,6 +218,7 @@ class ReleaseConditionsModal extends React.Component<Props, State> {
                       ? <LoadingSpinner />
                       : (
                         <SelectReleaseConditions
+                            app={app}
                             submitting={submitting}
                             submittedOutcomes={submittedOutcomes}
                             jurisdiction={jurisdiction}
@@ -256,10 +258,13 @@ class ReleaseConditionsModal extends React.Component<Props, State> {
 }
 
 function mapStateToProps(state) {
+  const app = state.get(STATE.APP);
   const court = state.get(STATE.COURT);
   const review = state.get(STATE.REVIEW);
   const submit = state.get(STATE.SUBMIT);
   return {
+    app,
+
     [REVIEW.SCORES]: review.get(REVIEW.SCORES),
     [REVIEW.NEIGHBORS_BY_ID]: review.get(REVIEW.NEIGHBORS_BY_ID),
     [COURT.LOADING_HEARING_NEIGHBORS]: court.get(COURT.LOADING_HEARING_NEIGHBORS),
