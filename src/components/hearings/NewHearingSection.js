@@ -6,7 +6,7 @@ import React from 'react';
 import moment from 'moment';
 import styled from 'styled-components';
 import randomUUID from 'uuid/v4';
-import { fromJS } from 'immutable';
+import { fromJS, Map } from 'immutable';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
@@ -78,6 +78,7 @@ const HearingSectionWrapper = styled.div`
 `;
 
 type Props = {
+  app :Map<*, *>,
   allJudges :List<*, *>,
   jurisdiction :string,
   manuallyCreatingHearing :boolean,
@@ -128,6 +129,7 @@ class NewHearingSection extends React.Component<Props, State> {
 
   selectHearing = (hearingDetails) => {
     const {
+      app,
       psaId,
       personId,
       psaEntityKeyId,
@@ -142,6 +144,7 @@ class NewHearingSection extends React.Component<Props, State> {
 
     const callback = psaEntityKeyId ? () => actions.refreshPSANeighbors({ id: psaEntityKeyId }) : () => {};
     actions.submit({
+      app,
       values,
       config: psaHearingConfig,
       callback
@@ -383,9 +386,11 @@ class NewHearingSection extends React.Component<Props, State> {
 }
 
 function mapStateToProps(state) {
-  const review = state.get(STATE.REVIEW);
+  const app = state.get(STATE.APP);
   const court = state.get(STATE.COURT);
+  const review = state.get(STATE.REVIEW);
   return {
+    app,
     [REVIEW.SCORES]: review.get(REVIEW.SCORES),
     [REVIEW.NEIGHBORS_BY_ID]: review.get(REVIEW.NEIGHBORS_BY_ID),
     [COURT.LOADING_HEARING_NEIGHBORS]: court.get(COURT.LOADING_HEARING_NEIGHBORS),
