@@ -4,7 +4,7 @@
 
 import React from 'react';
 import styled from 'styled-components';
-import Immutable from 'immutable';
+import Immutable, { Map } from 'immutable';
 import moment from 'moment';
 import { connect } from 'react-redux';
 import Modal, { ModalTransition } from '@atlaskit/modal-dialog';
@@ -20,6 +20,7 @@ import psaEditedConfig from '../../config/formconfig/PsaEditedConfig';
 import { CenteredContainer } from '../../utils/Layout';
 import { OL } from '../../utils/consts/Colors';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { STATE } from '../../utils/consts/FrontEndStateConsts';
 import { PSA_STATUSES, PSA_FAILURE_REASONS, EDIT_FIELDS } from '../../utils/consts/Consts';
 import { stripIdField } from '../../utils/DataUtils';
 import { toISODateTime } from '../../utils/FormattingUtils';
@@ -106,6 +107,7 @@ const FailureReasonsWrapper = styled.div`
 `;
 
 type Props = {
+  app :Map<*, *>,
   open :boolean,
   scores :Immutable.Map<*, *>,
   onClose :() => void,
@@ -214,7 +216,7 @@ class ClosePSAModal extends React.Component<Props, State> {
     return isReady;
   }
 
-  handleStatusChange = (status :string, failureReason :string[], statusNotes :?string) => {
+  handleStatusChange = (app :Map<*, *>, status :string, failureReason :string[], statusNotes :?string) => {
     if (!this.props.actions.changePSAStatus) return;
     const statusNotesList = (statusNotes && statusNotes.length) ? Immutable.List.of(statusNotes) : Immutable.List();
 
@@ -231,6 +233,7 @@ class ClosePSAModal extends React.Component<Props, State> {
     });
 
     this.props.actions.submit({
+      app,
       config: psaEditedConfig,
       values: {
         [EDIT_FIELDS.PSA_ID]: [scoresEntity.getIn([PROPERTY_TYPES.GENERAL_ID, 0])],
@@ -244,14 +247,16 @@ class ClosePSAModal extends React.Component<Props, State> {
   }
 
   submit = () => {
-    if (!this.state.status) return;
+    const { app, onClose } = this.props;
+    const { status, failureReason } = this.State;
     let { statusNotes } = this.state;
+    if (!status) return;
     if (!statusNotes || !statusNotes.length) {
       statusNotes = null;
     }
 
-    this.handleStatusChange(this.state.status, this.state.failureReason, this.state.statusNotes);
-    this.props.onClose();
+    this.handleStatusChange(app, status, failureReason, statusNotes);
+    onClose();
   }
 
   render() {
@@ -295,6 +300,13 @@ class ClosePSAModal extends React.Component<Props, State> {
   }
 }
 
+function mapStateToProps(state) {
+  const app = state.get(STATE.APP);
+  return {
+    app
+  };
+}
+
 function mapDispatchToProps(dispatch :Function) :Object {
   const actions :{ [string] :Function } = {};
 
@@ -321,4 +333,4 @@ function mapDispatchToProps(dispatch :Function) :Object {
   };
 }
 
-export default connect(null, mapDispatchToProps)(ClosePSAModal);
+export default connect(mapStateToProps, mapDispatchToProps)(ClosePSAModal);
