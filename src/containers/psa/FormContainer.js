@@ -311,13 +311,13 @@ type Props = {
   allJudges :Immutable.List<*>,
   allPSAs :Immutable.List<*>,
   allSentencesForPerson :Immutable.List<*>,
+  app :Immutable.Map<*, *>,
   arrestId :string,
   arrestOptions :Immutable.List<*>,
   bookingHoldExceptionCharges :Immutable.Map<*, *>,
   bookingReleaseExceptionCharges :Immutable.Map<*, *>,
   caseLoadsComplete :boolean,
   charges :Immutable.List<*>,
-  dataModel :Immutable.Map<*, *>,
   dmfStep2Charges :Immutable.Map<*, *>,
   dmfStep4Charges :Immutable.Map<*, *>,
   history :string[],
@@ -330,7 +330,6 @@ type Props = {
   openPSAs :Immutable.Map<*, *>,
   psaForm :Immutable.Map<*, *>,
   selectedOrganizationId :string,
-  selectedOrganizationTitle :string,
   selectedPerson :Immutable.Map<*, *>,
   selectedPersonId :string,
   selectedPretrialCase :Immutable.Map<*, *>,
@@ -477,6 +476,7 @@ class Form extends React.Component<Props, State> {
     const staffId = this.getStaffId();
     const {
       actions,
+      app,
       arrestId,
       charges,
       psaForm,
@@ -519,7 +519,7 @@ class Form extends React.Component<Props, State> {
       delete values[NOTES[DMF.SECONDARY_HOLD_CHARGES]];
     }
 
-    actions.submit({ values, config });
+    actions.submit({ app, values, config });
     this.setState({ psaId });
   }
 
@@ -1008,8 +1008,8 @@ function mapStateToProps(state :Immutable.Map<*, *>) :Object {
 
   return {
     // App
+    app,
     [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
-    [APP.SELECTED_ORG_TITLE]: app.get(APP.SELECTED_ORG_TITLE),
 
     // Charges
     [CHARGES.ARREST]: charges.get(CHARGES.ARREST),
