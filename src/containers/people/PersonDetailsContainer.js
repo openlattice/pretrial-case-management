@@ -134,7 +134,7 @@ class PersonDetailsContainer extends React.Component<Props, State> {
 
   componentDidMount() {
     const { actions, personId, selectedOrganizationId } = this.props;
-    if (selectedOrganizationId) {
+    if (selectedOrganizationId && personId) {
       actions.checkPSAPermissions();
       actions.loadJudges();
       actions.getPersonData(personId);
@@ -147,6 +147,7 @@ class PersonDetailsContainer extends React.Component<Props, State> {
       actions,
       mostRecentPSA,
       neighbors,
+      personId,
       psaNeighborsById,
       selectedOrganizationId
     } = this.props;
@@ -156,12 +157,18 @@ class PersonDetailsContainer extends React.Component<Props, State> {
     const nextMostRecentPSANeighbors = psaNeighborsById.get(mostRecentPSAEntityKeyId, Map());
     const hearingIds = getHearingsIdsFromNeighbors(nextMostRecentPSANeighbors);
     const psaIds = getPSAIdsFromNeighbors(neighbors);
-    const personChanged = (psaIds.length && !prevProps.neighbors.size && neighbors.size)
-      || (hearingIds.length && (initialMostRecentPSANeighbors.size !== nextMostRecentPSANeighbors.size));
-    if (orgChanged || personChanged) {
+    const personChanged = (psaIds.length && !prevProps.neighbors.size && neighbors.size);
+    const psaChanged = (hearingIds.length && (initialMostRecentPSANeighbors.size !== nextMostRecentPSANeighbors.size));
+    if (orgChanged) {
+      actions.checkPSAPermissions();
+      actions.loadJudges();
+      actions.getPersonData(personId);
+      actions.getPersonNeighbors({ personId });
+    }
+    if (personChanged) {
       actions.loadPSAData(psaIds);
     }
-    if (orgChanged || personChanged) {
+    if (psaChanged) {
       actions.loadHearingNeighbors({ hearingIds });
     }
   }
@@ -346,7 +353,8 @@ class PersonDetailsContainer extends React.Component<Props, State> {
       isFetchingPersonData,
       personId,
       psaNeighborsById,
-      mostRecentPSA
+      mostRecentPSA,
+      selectedOrganizationId
     } = this.props;
     const mostRecentPSAEntityKeyId = getEntityKeyId(mostRecentPSA.get(PSA_NEIGHBOR.DETAILS, Map()));
     const neighborsForMostRecentPSA = psaNeighborsById.get(mostRecentPSAEntityKeyId, Map());
@@ -367,6 +375,7 @@ class PersonDetailsContainer extends React.Component<Props, State> {
 
     const isLoading = (
       isLoadingHearingsNeighbors
+      || !selectedOrganizationId
       || isLoadingJudges
       || loadingPSAData
       || loadingPSAResults
@@ -405,14 +414,22 @@ class PersonDetailsContainer extends React.Component<Props, State> {
       neighbors,
       personId,
       psaNeighborsById,
-      selectedPersonData
+      selectedPersonData,
+      selectedOrganizationId
     } = this.props;
     const { downloadPSAReviewPDF } = actions;
     const contactInfo = neighbors.get(CONTACT_INFORMATION, Map());
     const mostRecentPSAEntityKeyId = getEntityKeyId(mostRecentPSA.get(PSA_NEIGHBOR.DETAILS, Map()));
     const neighborsForMostRecentPSA = psaNeighborsById.get(mostRecentPSAEntityKeyId, Map());
     const scheduledHearings = getScheduledHearings(neighborsForMostRecentPSA);
-    const isLoading = (isLoadingJudges || loadingPSAData || loadingPSAResults || isFetchingPersonData);
+    const isLoading = (
+      isLoadingJudges
+      || loadingPSAData
+      || loadingPSAResults
+      || isFetchingPersonData
+      || !selectedOrganizationId
+      || !personId
+    );
     return (
       <PersonOverview
           contactInfo={contactInfo}
