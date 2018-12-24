@@ -3,7 +3,7 @@
  */
 
 import React from 'react';
-import Immutable from 'immutable';
+import Immutable, { Map } from 'immutable';
 import styled from 'styled-components';
 import moment from 'moment';
 import randomUUID from 'uuid/v4';
