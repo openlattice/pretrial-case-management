@@ -178,6 +178,7 @@ const CloseModalX = styled.img.attrs({
 `;
 
 type Props = {
+  app :Map<*, *>,
   caseHistory :List<*>,
   chargeHistory :Map<*, *>,
   entityKeyId :string,
@@ -456,6 +457,7 @@ class PSAModal extends React.Component<Props, State> {
     e.preventDefault();
     const {
       actions,
+      app,
       entityKeyId,
       neighbors,
       scoresEntitySetId,
@@ -526,6 +528,7 @@ class PSAModal extends React.Component<Props, State> {
 
     if (scoreId) {
       actions.submit({
+        app,
         config: psaEditedConfig,
         values: {
           [EDIT_FIELDS.PSA_ID]: [scoreId],
@@ -884,10 +887,14 @@ class PSAModal extends React.Component<Props, State> {
 }
 
 function mapStateToProps(state) {
+  const app = state.get(STATE.APP);
   const court = state.get(STATE.COURT);
   const review = state.get(STATE.REVIEW);
   return {
+    app,
+
     [COURT.HEARINGS_NEIGHBORS_BY_ID]: court.get(COURT.HEARINGS_NEIGHBORS_BY_ID),
+
     [REVIEW.READ_ONLY]: review.get(REVIEW.READ_ONLY)
   };
 }
