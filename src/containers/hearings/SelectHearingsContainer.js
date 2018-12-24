@@ -347,6 +347,7 @@ class SelectHearingsContainer extends React.Component<Props, State> {
     return (
       <Wrapper withPadding>
         <SelectReleaseConditions
+            app={app}
             submitting={submitting}
             submittedOutcomes={submittedOutcomes}
             jurisdiction={jurisdiction}
@@ -379,6 +380,7 @@ class SelectHearingsContainer extends React.Component<Props, State> {
   }
   selectHearing = (hearingDetails) => {
     const {
+      app,
       psaId,
       personId,
       psaEntityKeyId,
@@ -392,6 +394,7 @@ class SelectHearingsContainer extends React.Component<Props, State> {
 
     const callback = psaEntityKeyId ? () => actions.refreshPSANeighbors({ id: psaEntityKeyId }) : () => {};
     actions.submit({
+      app,
       values,
       config: psaHearingConfig,
       callback
