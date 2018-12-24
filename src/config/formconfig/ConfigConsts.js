@@ -2,7 +2,7 @@
  * @flow
  */
 
-import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { FORM_IDS, ID_FIELD_NAMES } from '../../utils/consts/Consts';
 
 export const ALIASES = {
@@ -47,7 +47,7 @@ export const ALIASES = {
 
 export const PERSON_CONFIG = {
   alias: ALIASES.PERSON,
-  name: ENTITY_SETS.PEOPLE,
+  name: APP_TYPES_FQNS.PEOPLE,
   fields: {
     [FORM_IDS.PERSON_ID]: PROPERTY_TYPES.PERSON_ID
   }
@@ -55,7 +55,7 @@ export const PERSON_CONFIG = {
 
 export const STAFF_CONFIG = {
   alias: ALIASES.STAFF,
-  name: ENTITY_SETS.STAFF,
+  name: APP_TYPES_FQNS.STAFF,
   fields: {
     [FORM_IDS.STAFF_ID]: PROPERTY_TYPES.PERSON_ID
   }
@@ -63,7 +63,7 @@ export const STAFF_CONFIG = {
 
 export const PSA_CONFIG = {
   alias: ALIASES.PSA,
-  name: ENTITY_SETS.PSA_SCORES,
+  name: APP_TYPES_FQNS.PSA_SCORES,
   entityId: ID_FIELD_NAMES.PSA_ID,
   fields: {
     [ID_FIELD_NAMES.PSA_ID]: PROPERTY_TYPES.GENERAL_ID
