@@ -212,6 +212,7 @@ const BLANK_PERSON_ROW = {
 };
 
 type Props = {
+  app :Map<*, *>,
   allJudges :Immutable.Map<*, *>,
   backToSelection :() => void,
   defaultBond :Immutable.Map<*, *>,
@@ -234,7 +235,7 @@ type Props = {
   personId :string,
   psaId :string,
   replace :(value :{ entitySetName :string, entityKeyId :string, values :Object }) => void,
-  submit :(value :{ config :Object, values :Object, callback? :() => void }) => void,
+  submit :(value :{ app :Map<*,*>, config :Object, values :Object, callback? :() => void }) => void,
   replaceAssociation :(values :{
     associationEntity :Map<*, *>,
     associationEntitySetName :string,
@@ -598,6 +599,7 @@ class SelectReleaseConditions extends React.Component<Props, State> {
     } = this.state;
 
     const {
+      app,
       defaultOutcome,
       defaultDMF,
       defaultBond,
@@ -777,6 +779,7 @@ class SelectReleaseConditions extends React.Component<Props, State> {
     }
     else {
       submit({
+        app,
         config: releaseConditionsConfig,
         values: submission,
         callback: refreshHearingsNeighborsCallback
