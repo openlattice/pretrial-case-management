@@ -42,7 +42,10 @@ export const APP = {
   PRIMARY_KEYS: 'primaryKeys',
   PROPERTY_TYPES: 'propertyTypes',
   SELECTED_ORG_ID: 'selectedOrganizationId',
-  SELECTED_ORG_TITLE: 'selectedOrganizationTitle'
+  SELECTED_ORG_TITLE: 'selectedOrganizationTitle',
+  APP_SETTINGS_ID: 'appSettingsEntitySetId',
+  SELECTED_ORG_SETTINGS: 'selectedOrganizationSettings',
+  SETTINGS_BY_ORG_ID: 'appSettingsByOrgId'
 };
 
 // CHARGES
