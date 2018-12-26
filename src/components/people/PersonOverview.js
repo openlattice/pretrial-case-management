@@ -44,6 +44,7 @@ type Props = {
   contactInfo :Map<*, *>,
   psaNeighborsById :Map<*, *>,
   selectedPersonData :Map<*, *>,
+  includesPretrialModule :boolean,
   loading :boolean,
   mostRecentPSA :Map<*, *>,
   mostRecentPSAEntityKeyId :string,
@@ -77,6 +78,7 @@ const PersonOverview = ({
   psaNeighborsById,
   scheduledHearings,
   selectedPersonData,
+  includesPretrialModule,
   openDetailsModal,
   openUpdateContactModal
 } :Props) => {
@@ -123,14 +125,19 @@ const PersonOverview = ({
                 openUpdateContactModal={openUpdateContactModal} />
           </StyledColumnRow>
         </StyledColumnRowWrapper>
-        <StyledColumnRowWrapper>
-          <StyledColumnRow>
-            <ChargeHistoryStats
-                padding
-                pendingCharges={pendingCharges}
-                chargeHistory={chargeHistory} />
-          </StyledColumnRow>
-        </StyledColumnRowWrapper>
+        {
+          includesPretrialModule
+            ? (
+              <StyledColumnRowWrapper>
+                <StyledColumnRow>
+                  <ChargeHistoryStats
+                      padding
+                      pendingCharges={pendingCharges}
+                      chargeHistory={chargeHistory} />
+                </StyledColumnRow>
+              </StyledColumnRowWrapper>
+            ) : null
+        }
         <StyledColumnRowWrapper>
           <StyledColumnRow>
             <PSASummary
@@ -141,31 +148,41 @@ const PersonOverview = ({
                 openDetailsModal={openDetailsModal} />
           </StyledColumnRow>
         </StyledColumnRowWrapper>
-        <StyledColumnRowWrapper>
-          <StyledColumnRowWithPadding>
-            <StyledViewMoreLinkForHearings to={`${Routes.PERSON_DETAILS_ROOT}/${personId}${Routes.HEARINGS}`}>
-              View more
-            </StyledViewMoreLinkForHearings>
-            <HearingCardsWithTitle
-                readOnly
-                title="Upcoming Hearings"
-                hearings={scheduledHearings}
-                handleSelect={() => null}
-                noHearingsMessage="There are no upcoming hearings." />
-          </StyledColumnRowWithPadding>
-        </StyledColumnRowWrapper>
-        <StyledColumnRowWrapper>
-          <StyledColumnRow>
-            <StyledViewMoreLinkForCases to={`${Routes.PERSON_DETAILS_ROOT}/${personId}${Routes.CASES}`}>
-              View more
-            </StyledViewMoreLinkForCases>
-            <CaseHistoryList
-                loading={loading}
-                title="Pending Cases on Arrest Date for Current PSA"
-                caseHistory={caseHistoryForMostRecentPSA}
-                chargeHistory={chargeHistoryForMostRecentPSA} />
-          </StyledColumnRow>
-        </StyledColumnRowWrapper>
+        {
+          includesPretrialModule
+            ? (
+              <StyledColumnRowWrapper>
+                <StyledColumnRowWithPadding>
+                  <StyledViewMoreLinkForHearings to={`${Routes.PERSON_DETAILS_ROOT}/${personId}${Routes.HEARINGS}`}>
+                    View more
+                  </StyledViewMoreLinkForHearings>
+                  <HearingCardsWithTitle
+                      readOnly
+                      title="Upcoming Hearings"
+                      hearings={scheduledHearings}
+                      handleSelect={() => null}
+                      noHearingsMessage="There are no upcoming hearings." />
+                </StyledColumnRowWithPadding>
+              </StyledColumnRowWrapper>
+            ) : null
+        }
+        {
+          includesPretrialModule
+            ? (
+              <StyledColumnRowWrapper>
+                <StyledColumnRow>
+                  <StyledViewMoreLinkForCases to={`${Routes.PERSON_DETAILS_ROOT}/${personId}${Routes.CASES}`}>
+                    View more
+                  </StyledViewMoreLinkForCases>
+                  <CaseHistoryList
+                      loading={loading}
+                      title="Pending Cases on Arrest Date for Current PSA"
+                      caseHistory={caseHistoryForMostRecentPSA}
+                      chargeHistory={chargeHistoryForMostRecentPSA} />
+                </StyledColumnRow>
+              </StyledColumnRowWrapper>
+            ) : null
+        }
       </StyledColumn>
     </Wrapper>
   );
