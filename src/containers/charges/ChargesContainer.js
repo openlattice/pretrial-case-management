@@ -46,7 +46,6 @@ type Props = {
   actions :{
     loadApp :RequestSequence;
     loadCharges :RequestSequence;
-    switchOrganization :(orgId :string) => Object;
     logout :() => void;
   };
 };
