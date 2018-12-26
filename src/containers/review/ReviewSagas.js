@@ -747,22 +747,34 @@ function* updateScoresAndRiskFactorsWorker(action :SequenceAction) :Generator<*,
         psaScoresEntitySetId,
         scoresId,
         stripIdField(scoresEntity)),
-      call(DataApi.replaceEntityInEntitySetUsingFqns,
-        dmfEntitySetId,
-        dmfId,
-        stripIdField(dmfEntity)),
-      call(DataApi.replaceEntityInEntitySetUsingFqns,
-        dmfRiskFactorsEntitySetId,
-        dmfRiskFactorsId,
-        stripIdField(dmfRiskFactorsEntity))
     ];
 
     const reloads = [
       call(DataApi.getEntityData, psaScoresEntitySetId, scoresId),
-      call(DataApi.getEntityData, psaRiskFactorsEntitySetId, riskFactorsId),
-      call(DataApi.getEntityData, dmfEntitySetId, dmfId),
-      call(DataApi.getEntityData, dmfRiskFactorsEntitySetId, dmfRiskFactorsId)
+      call(DataApi.getEntityData, psaRiskFactorsEntitySetId, riskFactorsId)
     ];
+
+    if (dmfEntity && dmfId && dmfEntitySetId) {
+      updates.push(
+        call(DataApi.replaceEntityInEntitySetUsingFqns,
+          dmfEntitySetId,
+          dmfId,
+          stripIdField(dmfEntity))
+      );
+
+      reloads.push(call(DataApi.getEntityData, dmfEntitySetId, dmfId));
+    }
+
+    if (dmfRiskFactorsEntity && dmfRiskFactorsId && dmfRiskFactorsEntitySetId) {
+      updates.push(
+        call(DataApi.replaceEntityInEntitySetUsingFqns,
+          dmfRiskFactorsEntitySetId,
+          dmfRiskFactorsId,
+          stripIdField(dmfRiskFactorsEntity))
+      );
+
+      reloads.push(call(DataApi.getEntityData, dmfRiskFactorsEntitySetId, dmfRiskFactorsId));
+    }
 
     if (notesEntity && notesId && notesEntitySetId) {
       updates.push(
