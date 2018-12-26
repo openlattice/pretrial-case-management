@@ -22,10 +22,10 @@ const getPage = (splitStr :string[]) :number => {
 
 export const getCurrentPage = (location :Location) :number => getPage(getSplitStr(location));
 
-export const getNextPath = (location :Location, numPages :number) :?string => {
+export const getNextPath = (location :Location, numPages :number, skipLoad :?boolean) :?string => {
   const splitStr = getSplitStr(location);
   const page = getPage(splitStr);
-  const nextPage = page + 1;
+  const nextPage = (page === 1 && skipLoad) ? (page + 2) : (page + 1);
   splitStr[splitStr.length - 1] = `${nextPage}`;
   return nextPage <= numPages ? splitStr.join('/') : null;
 };
