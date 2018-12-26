@@ -44,7 +44,7 @@ import { getEntityKeyId } from '../../utils/DataUtils';
 import { toISODateTime } from '../../utils/FormattingUtils';
 import { getScoresAndRiskFactors, calculateDMF, getDMFRiskFactors } from '../../utils/ScoringUtils';
 import { tryAutofillFields } from '../../utils/AutofillUtils';
-import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { PROPERTY_TYPES, SETTINGS, MODULE } from '../../utils/consts/DataModelConsts';
 import { STATUS_OPTIONS_FOR_PENDING_PSAS } from '../../utils/consts/ReviewPSAConsts';
 import { DOMAIN } from '../../utils/consts/ReportDownloadTypes';
 import {
@@ -333,6 +333,7 @@ type Props = {
   selectedPerson :Immutable.Map<*, *>,
   selectedPersonId :string,
   selectedPretrialCase :Immutable.Map<*, *>,
+  selectedOrganizationSettings :Immutable.Map<*, *>,
   submitError :boolean,
   violentCourtCharges :Immutable.Map<*, *>,
   violentArrestCharges :Immutable.Map<*, *>,
@@ -481,8 +482,11 @@ class Form extends React.Component<Props, State> {
       charges,
       psaForm,
       selectedPerson,
-      selectedPretrialCase
+      selectedPretrialCase,
+      selectedOrganizationSettings
     } = this.props;
+
+    const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], '');
 
     const values = Object.assign(
       {},
@@ -518,6 +522,10 @@ class Form extends React.Component<Props, State> {
       delete values[DMF.SECONDARY_HOLD_CHARGES];
       delete values[NOTES[DMF.SECONDARY_HOLD_CHARGES]];
     }
+    if (!includesPretrialModule) {
+      delete values[ID_FIELD_NAMES.DMF_ID];
+      delete values[ID_FIELD_NAMES.DMF_RISK_FACTORS_ID];
+    }
 
     actions.submit({ app, values, config });
     this.setState({ psaId });
@@ -533,7 +541,9 @@ class Form extends React.Component<Props, State> {
   }
 
   nextPage = () => {
-    const nextPage = getNextPath(window.location, numPages);
+    const { selectedOrganizationSettings } = this.props;
+    const skipLoad = !selectedOrganizationSettings.get(SETTINGS.LOAD_CASES, true);
+    const nextPage = getNextPath(window.location, numPages, skipLoad);
     this.handlePageChange(nextPage);
   }
 
@@ -543,10 +553,13 @@ class Form extends React.Component<Props, State> {
   }
 
   generateScores = () => {
-    const { psaForm } = this.props;
+    const { psaForm, selectedOrganizationSettings } = this.props;
+    // import module settings
+    const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], '');
     const { riskFactors, scores } = getScoresAndRiskFactors(psaForm);
-    const dmf = calculateDMF(psaForm, scores);
-    const dmfRiskFactors = getDMFRiskFactors(psaForm);
+    // don't calculate dmf if module settings doesn't include pretrial
+    const dmf = includesPretrialModule ? calculateDMF(psaForm, scores) : {};
+    const dmfRiskFactors = includesPretrialModule ? getDMFRiskFactors(psaForm) : {};
     this.setState({
       riskFactors,
       dmfRiskFactors,
@@ -792,7 +805,6 @@ class Form extends React.Component<Props, State> {
     const {
       actions,
       charges,
-      psaForm,
       selectedPretrialCase
     } = this.props;
     return (
@@ -801,9 +813,7 @@ class Form extends React.Component<Props, State> {
           defaultCharges={charges}
           nextPage={this.nextPage}
           prevPage={this.prevPage}
-          onSubmit={actions.addCaseAndCharges}
-          county={psaForm.get(DMF.COURT_OR_BOOKING) === CONTEXT.COURT_MINN
-            ? DOMAIN.MINNEHAHA : DOMAIN.PENNINGTON} />
+          onSubmit={actions.addCaseAndCharges} />
     );
   };
 
@@ -1010,6 +1020,7 @@ function mapStateToProps(state :Immutable.Map<*, *>) :Object {
     // App
     app,
     [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
+    [APP.SELECTED_ORG_SETTINGS]: app.get(APP.SELECTED_ORG_SETTINGS),
 
     // Charges
     [CHARGES.ARREST]: charges.get(CHARGES.ARREST),
