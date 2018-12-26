@@ -16,6 +16,11 @@ import BasicButton from '../buttons/BasicButton';
 import ExpandableText from '../controls/ExpandableText';
 import { APP, CHARGES, STATE } from '../../utils/consts/FrontEndStateConsts';
 import { BHE_LABELS, BRE_LABELS } from '../../utils/consts/ArrestChargeConsts';
+import { formatValue } from '../../utils/FormattingUtils';
+import { getRecentFTAs, getOldFTAs } from '../../utils/FTAUtils';
+import { getSentenceToIncarcerationCaseNums } from '../../utils/SentenceUtils';
+import { StyledSectionWrapper, ErrorMessage } from '../../utils/Layout';
+import { PROPERTY_TYPES, SETTINGS } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
 import {
   getViolentChargeLabels,
@@ -28,23 +33,12 @@ import {
   getPreviousFelonyLabels,
   getPreviousViolentChargeLabels
 } from '../../utils/AutofillUtils';
-import { getSentenceToIncarcerationCaseNums } from '../../utils/SentenceUtils';
-
-import {
-  StyledSectionWrapper,
-  ErrorMessage
-} from '../../utils/Layout';
-
-import { formatValue } from '../../utils/FormattingUtils';
-import { getRecentFTAs, getOldFTAs } from '../../utils/FTAUtils';
-
 import {
   CONTEXT,
   DMF,
   NOTES,
   PSA
 } from '../../utils/consts/Consts';
-import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import {
   CURRENT_AGE_PROMPT,
   CURRENT_VIOLENT_OFFENSE_PROMPT,
@@ -254,6 +248,7 @@ type Props = {
   dmfStep2Charges :Map<*, *>,
   dmfStep4Charges :Map<*, *>,
   selectedOrganizationId :string,
+  selectedOrganizationSettings :boolean,
   violentArrestCharges :Map<*, *>,
   handleInputChange :(event :Object) => void,
   input :Immutable.Map<*, *>,
@@ -342,7 +337,14 @@ class PSAInputForm extends React.Component<Props, State> {
   }
 
   renderQuestionRow = (num, field, prompt, mappings, justifications, disabledField, justificationHeader) => {
-    const { viewOnly, input, handleInputChange } = this.props;
+    const {
+      viewOnly,
+      input,
+      handleInputChange,
+      selectedOrganizationSettings
+    } = this.props;
+    // Only render autojustification if app settings loads historical charges
+    const loadedCases = selectedOrganizationSettings.get(SETTINGS.LOAD_CASES, true);
     const rowNumFormatted = num < 10 ? `0${num}` : `${num}`;
     const notesVal = input.get(NOTES[field]);
     const notesBody = (viewOnly && notesVal) ? <PaddedExpandableText text={notesVal} maxLength={250} />
@@ -372,7 +374,7 @@ class PSAInputForm extends React.Component<Props, State> {
           {radioButtons}
         </InlineFormGroup>
         {
-          justificationText ? (
+          (justificationText && loadedCases) ? (
             <Justifications>
               <h1>AUTOFILL JUSTIFICATION</h1>
               <div><PaddedExpandableText text={justificationText} maxLength={220} /></div>
@@ -663,6 +665,7 @@ function mapStateToProps(state :Immutable.Map<*, *>) :Object {
     // App
     [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
     [APP.SELECTED_ORG_TITLE]: app.get(APP.SELECTED_ORG_TITLE),
+    [APP.SELECTED_ORG_SETTINGS]: app.get(APP.SELECTED_ORG_SETTINGS),
 
     // Charges
     [CHARGES.ARREST]: charges.get(CHARGES.ARREST),
