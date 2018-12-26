@@ -8,8 +8,9 @@ const { FullyQualifiedName } = Models;
 export const APP_NAME = 'psa';
 
 export const ORG_IDS = {
+  DEMO_ORG: '1d5aa1f4-4d22-46a5-97cd-dcc6820e7ff8',
   PENNINGTON_SD: '67d555b4-7495-414e-a259-ef82ba71779a',
-  MINNEHAHA_SD: 'e558ee21-8fec-4c65-aeda-039924ba9a92'
+  MINNEHAHA_SD: 'e558ee21-8fec-4c65-aeda-039924ba9a92',
 };
 
 /*
@@ -54,6 +55,22 @@ export const APP_TYPES_FQNS = {
   SPEAKER_RECOGNITION_PROFILES: new FullyQualifiedName('app.speakerrecognitionprofiles'),
   STAFF: new FullyQualifiedName('app.staff'),
   UJS_EMPLOYEES: new FullyQualifiedName('app.employees')
+};
+
+export const SETTINGS = {
+  CONTEXTS: 'contexts',
+  LOAD_CASES: 'loadCasesOnTheFly',
+  MODULES: 'modules'
+};
+
+export const CONTEXTS = {
+  COURT: 'court',
+  BOOKING: 'booking'
+};
+
+export const MODULE = {
+  PSA: 'psa',
+  PRETRIAL: 'pretrial',
 };
 
 /*
