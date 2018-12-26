@@ -22,7 +22,12 @@ import PSAModal from '../review/PSAModal';
 import { getPSAIdsFromNeighbors } from '../../utils/PeopleUtils';
 import { JURISDICTION } from '../../utils/consts/Consts';
 import { getEntityKeyId, getIdOrValue, getNeighborDetailsForEntitySet } from '../../utils/DataUtils';
-import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import {
+  APP_TYPES_FQNS,
+  PROPERTY_TYPES,
+  SETTINGS,
+  MODULE
+} from '../../utils/consts/DataModelConsts';
 import {
   getScheduledHearings,
   getPastHearings,
@@ -159,7 +164,7 @@ class PersonDetailsContainer extends React.Component<Props, State> {
     const psaIds = getPSAIdsFromNeighbors(neighbors);
     const personChanged = (psaIds.length && !prevProps.neighbors.size && neighbors.size);
     const psaChanged = (hearingIds.length && (initialMostRecentPSANeighbors.size !== nextMostRecentPSANeighbors.size));
-    if (orgChanged) {
+    if (selectedOrganizationId && orgChanged) {
       actions.checkPSAPermissions();
       actions.loadJudges();
       actions.getPersonData(personId);
@@ -415,8 +420,10 @@ class PersonDetailsContainer extends React.Component<Props, State> {
       personId,
       psaNeighborsById,
       selectedPersonData,
-      selectedOrganizationId
+      selectedOrganizationId,
+      selectedOrganizationSettings
     } = this.props;
+    const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], '');
     const { downloadPSAReviewPDF } = actions;
     const contactInfo = neighbors.get(CONTACT_INFORMATION, Map());
     const mostRecentPSAEntityKeyId = getEntityKeyId(mostRecentPSA.get(PSA_NEIGHBOR.DETAILS, Map()));
@@ -432,6 +439,7 @@ class PersonDetailsContainer extends React.Component<Props, State> {
     );
     return (
       <PersonOverview
+          includesPretrialModule={includesPretrialModule}
           contactInfo={contactInfo}
           downloadPSAReviewPDF={downloadPSAReviewPDF}
           loading={isLoading}
@@ -448,13 +456,14 @@ class PersonDetailsContainer extends React.Component<Props, State> {
   }
 
   render() {
-    const { personId } = this.props;
+    const { personId, selectedOrganizationSettings } = this.props;
+    const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], '');
     const overviewRoute = `${Routes.PERSON_DETAILS_ROOT}/${personId}${Routes.OVERVIEW}`;
     const psaRoute = `${Routes.PERSON_DETAILS_ROOT}/${personId}${Routes.PSA}`;
     const hearingsRoute = `${Routes.PERSON_DETAILS_ROOT}/${personId}${Routes.HEARINGS}`;
     const casesRoute = `${Routes.PERSON_DETAILS_ROOT}/${personId}${Routes.CASES}`;
 
-    const navButtons = [
+    let navButtons = [
       {
         path: overviewRoute,
         label: 'Overview'
@@ -462,16 +471,20 @@ class PersonDetailsContainer extends React.Component<Props, State> {
       {
         path: psaRoute,
         label: 'PSA'
-      },
-      {
-        path: hearingsRoute,
-        label: 'Hearings'
-      },
-      {
-        path: casesRoute,
-        label: 'Cases'
       }
     ];
+    if (includesPretrialModule) {
+      navButtons = navButtons.concat([
+        {
+          path: hearingsRoute,
+          label: 'Hearings'
+        },
+        {
+          path: casesRoute,
+          label: 'Cases'
+        }
+      ]);
+    }
 
     return (
       <DashboardMainSection>
@@ -483,8 +496,15 @@ class PersonDetailsContainer extends React.Component<Props, State> {
         <Switch>
           <Route path={overviewRoute} render={this.renderOverview} />
           <Route path={psaRoute} render={this.renderPSA} />
-          <Route path={hearingsRoute} render={this.renderHearings} />
-          <Route path={casesRoute} render={this.renderCases} />
+          {
+            includesPretrialModule
+              ? (
+                <>
+                  <Route path={hearingsRoute} render={this.renderHearings} />
+                  <Route path={casesRoute} render={this.renderCases} />
+                </>
+              ) : null
+          }
           <Redirect from={Routes.PEOPLE} to={overviewRoute} />
           <Redirect from={Routes.PERSON_DETAILS_ROOT} to={overviewRoute} />
           <Redirect from={`${Routes.PERSON_DETAILS_ROOT}/${personId}`} to={overviewRoute} />
@@ -504,6 +524,7 @@ function mapStateToProps(state, ownProps) {
 
   return {
     [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
+    [APP.SELECTED_ORG_SETTINGS]: app.get(APP.SELECTED_ORG_SETTINGS),
 
     personId,
     [REVIEW.ENTITY_SET_ID]: review.get(REVIEW.ENTITY_SET_ID) || people.get(PEOPLE.SCORES_ENTITY_SET_ID),
