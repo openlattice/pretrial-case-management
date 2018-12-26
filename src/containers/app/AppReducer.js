@@ -116,6 +116,9 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [APP.ORGS]: Map(),
   [APP.SELECTED_ORG_ID]: '',
   [APP.SELECTED_ORG_TITLE]: '',
+  [APP.APP_SETTINGS_ID]: '',
+  [APP.SETTINGS_BY_ORG_ID]: Map(),
+  [APP.SELECTED_ORG_SETTINGS]: Map()
 });
 
 const getEntityTypePropertyTypes = (edm :Object, entityTypeId :string) :Object => {
@@ -133,6 +136,7 @@ export default function appReducer(state :Map<*, *> = INITIAL_STATE, action :Seq
     case SWITCH_ORGANIZATION: {
       return state
         .set(APP.SELECTED_ORG_ID, action.org.orgId)
+        .set(APP.SELECTED_ORG_SETTINGS, action.org.settings)
         .set(APP.SELECTED_ORG_TITLE, action.org.title);
     }
 
@@ -157,6 +161,7 @@ export default function appReducer(state :Map<*, *> = INITIAL_STATE, action :Seq
           const {
             app,
             appConfigs,
+            appSettingsByOrgId,
             appTypes,
             edm
           } = value;
@@ -205,6 +210,7 @@ export default function appReducer(state :Map<*, *> = INITIAL_STATE, action :Seq
               const speakerRecognitionConfig = appConfig.config[speakerRecognitionFqn];
               const staffConfig = appConfig.config[staffFqn];
               const ujsEmployeesConfig = appConfig.config[ujsEmployeesFqn];
+
               newState = newState
                 .setIn([arrestChargeListFqn, APP.ENTITY_SETS_BY_ORG, orgId], arrestChargeListConfig.entitySetId)
                 .setIn([courtChargeListFqn, APP.ENTITY_SETS_BY_ORG, orgId], courtChargeListConfig.entitySetId)
@@ -308,12 +314,16 @@ export default function appReducer(state :Map<*, *> = INITIAL_STATE, action :Seq
               .setIn([appTypeFqn, APP.PRIMARY_KEYS], fromJS(primaryKeys));
           });
 
+          const appSettings = appSettingsByOrgId.get(selectedOrganizationId, Map());
+
           return newState
             .set(APP.APP, app)
             .set(APP.ENTITY_SETS_BY_ORG, entitySetsByOrgId)
             .set(APP.ORGS, fromJS(organizations))
             .set(APP.SELECTED_ORG_ID, selectedOrganizationId)
-            .set(APP.SELECTED_ORG_TITLE, selectedOrganizationTitle);
+            .set(APP.SELECTED_ORG_TITLE, selectedOrganizationTitle)
+            .set(APP.SETTINGS_BY_ORG_ID, appSettingsByOrgId)
+            .set(APP.SELECTED_ORG_SETTINGS, appSettings);
         },
         FAILURE: () => {
           const error = {};
