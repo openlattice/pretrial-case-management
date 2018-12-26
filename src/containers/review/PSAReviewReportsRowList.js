@@ -153,7 +153,8 @@ type Props = {
   loadingPSAData :boolean,
   loading :boolean,
   scoresEntitySetId :string,
-  submitting :boolean
+  submitting :boolean,
+  selectedOrganizationId :string
 }
 
 type State = {
@@ -178,9 +179,19 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
   }
 
   componentDidMount() {
-    const { actions } = this.props;
-    actions.checkPSAPermissions();
-    actions.loadJudges();
+    const { actions, selectedOrganizationId } = this.props;
+    if (selectedOrganizationId) {
+      actions.checkPSAPermissions();
+      actions.loadJudges();
+    }
+  }
+
+  componentDidUpdate(prevProps) {
+    const { actions, selectedOrganizationId } = this.props;
+    if (selectedOrganizationId !== prevProps.selectedOrganizationId) {
+      actions.checkPSAPermissions();
+      actions.loadJudges();
+    }
   }
 
   componentWillUnmount() {
@@ -407,6 +418,7 @@ function mapStateToProps(state) {
   // TODO: Address prop names so that consts can be used as keys
   return {
     [APP.ENTITY_SETS_BY_ORG]: app.getIn([APP.ENTITY_SETS_BY_ORG, orgId], Map()),
+    [APP.SELECTED_ORG_ID]: app.get(APP.ESELECTED_ORG_ID),
 
     [REVIEW.ENTITY_SET_ID]: review.get(REVIEW.ENTITY_SET_ID) || people.get(PEOPLE.SCORES_ENTITY_SET_ID),
     [REVIEW.NEIGHBORS_BY_ID]: review.get(REVIEW.NEIGHBORS_BY_ID),
