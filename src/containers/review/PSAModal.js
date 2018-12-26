@@ -31,12 +31,18 @@ import { getEntityKeyId, getEntitySetId, getIdOrValue } from '../../utils/DataUt
 import { CenteredContainer, Title } from '../../utils/Layout';
 import { toISODateTime } from '../../utils/FormattingUtils';
 import { getCasesForPSA, currentPendingCharges } from '../../utils/CaseUtils';
-import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { RESULT_CATEGORIES } from '../../utils/consts/DMFResultConsts';
 import { formatDMFFromEntity } from '../../utils/DMFUtils';
 import { OL } from '../../utils/consts/Colors';
 import { psaIsClosed } from '../../utils/PSAUtils';
 import {
+  APP_TYPES_FQNS,
+  PROPERTY_TYPES,
+  SETTINGS,
+  MODULE
+} from '../../utils/consts/DataModelConsts';
+import {
+  APP,
   PSA_NEIGHBOR,
   PSA_ASSOCIATION,
   STATE,
@@ -461,26 +467,39 @@ class PSAModal extends React.Component<Props, State> {
       entityKeyId,
       neighbors,
       scoresEntitySetId,
-      scores
+      scores,
+      selectedOrganizationSettings
     } = this.props;
-    const { riskFactors } = this.state;
+    let dmfIdValue;
+    let dmfId;
+    let dmfEntitySetId;
+    let dmfEntity;
+    let dmfRiskFactorsIdValue;
+    let dmfRiskFactorsId;
+    let dmfRiskFactorsEntitySetId;
+    let dmfRiskFactorsEntity;
 
+    const { riskFactors } = this.state;
+    // import module settings
+    const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], '');
     const scoresAndRiskFactors = getScoresAndRiskFactors(riskFactors);
     const riskFactorsEntity = Object.assign({}, scoresAndRiskFactors.riskFactors);
-    const dmf = calculateDMF(riskFactors, scoresAndRiskFactors.scores);
+    const dmf = includesPretrialModule ? calculateDMF(riskFactors, scoresAndRiskFactors.scores) : {};
 
     const scoreId = scores.getIn([PROPERTY_TYPES.GENERAL_ID, 0]);
     const riskFactorsIdValue = this.getIdOrValue(PSA_RISK_FACTORS);
+    if (includesPretrialModule) {
+      dmfIdValue = this.getIdOrValue(DMF_RESULTS);
+      dmfId = this.getEntityKeyId(DMF_RESULTS);
+      dmfEntitySetId = this.getEntitySetId(DMF_RESULTS);
+      dmfEntity = this.getDMFEntity(dmf, dmfIdValue);
 
-    const dmfIdValue = this.getIdOrValue(DMF_RESULTS);
-    const dmfId = this.getEntityKeyId(DMF_RESULTS);
-    const dmfEntitySetId = this.getEntitySetId(DMF_RESULTS);
-    const dmfEntity = this.getDMFEntity(dmf, dmfIdValue);
+      dmfRiskFactorsIdValue = this.getIdOrValue(DMF_RISK_FACTORS);
+      dmfRiskFactorsId = this.getEntityKeyId(DMF_RISK_FACTORS);
+      dmfRiskFactorsEntitySetId = this.getEntitySetId(DMF_RISK_FACTORS);
+      dmfRiskFactorsEntity = this.getDMFRiskFactorsEntity(riskFactors, dmfRiskFactorsIdValue);
+    }
 
-    const dmfRiskFactorsIdValue = this.getIdOrValue(DMF_RISK_FACTORS);
-    const dmfRiskFactorsId = this.getEntityKeyId(DMF_RISK_FACTORS);
-    const dmfRiskFactorsEntitySetId = this.getEntitySetId(DMF_RISK_FACTORS);
-    const dmfRiskFactorsEntity = this.getDMFRiskFactorsEntity(riskFactors, dmfRiskFactorsIdValue);
 
     const newScores = scoresAndRiskFactors.scores;
     const scoresEntity = scores
@@ -526,19 +545,26 @@ class PSAModal extends React.Component<Props, State> {
       notesEntity
     });
 
+    const values = {
+      [EDIT_FIELDS.PSA_ID]: [scoreId],
+      [EDIT_FIELDS.RISK_FACTORS_ID]: [riskFactorsId],
+      [EDIT_FIELDS.DMF_ID]: [dmfId],
+      [EDIT_FIELDS.DMF_RISK_FACTORS_ID]: [dmfRiskFactorsId],
+      [EDIT_FIELDS.NOTES_ID]: [notesId],
+      [EDIT_FIELDS.TIMESTAMP]: [toISODateTime(moment())],
+      [EDIT_FIELDS.PERSON_ID]: [AuthUtils.getUserInfo().email]
+    };
+
+    if (!includesPretrialModule) {
+      delete values[EDIT_FIELDS.DMF_ID];
+      delete values[EDIT_FIELDS.DMF_RISK_FACTORS_ID];
+    }
+
     if (scoreId) {
       actions.submit({
         app,
         config: psaEditedConfig,
-        values: {
-          [EDIT_FIELDS.PSA_ID]: [scoreId],
-          [EDIT_FIELDS.RISK_FACTORS_ID]: [riskFactorsId],
-          [EDIT_FIELDS.DMF_ID]: [dmfId],
-          [EDIT_FIELDS.DMF_RISK_FACTORS_ID]: [dmfRiskFactorsId],
-          [EDIT_FIELDS.NOTES_ID]: [notesId],
-          [EDIT_FIELDS.TIMESTAMP]: [toISODateTime(moment())],
-          [EDIT_FIELDS.PERSON_ID]: [AuthUtils.getUserInfo().email]
-        }
+        values
       });
     }
 
@@ -801,15 +827,17 @@ class PSAModal extends React.Component<Props, State> {
       open,
       onClose,
       entityKeyId,
-      readOnly
+      readOnly,
+      selectedOrganizationSettings
     } = this.props;
+    const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], '');
 
     const { closingPSAModalOpen } = this.state;
 
     if (!scores) return null;
     const changeStatusText = psaIsClosed(scores) ? 'Change PSA Status' : 'Close PSA';
 
-    const tabs = [
+    let tabs = [
       {
         title: 'Summary',
         content: this.renderSummary
@@ -839,6 +867,10 @@ class PSAModal extends React.Component<Props, State> {
 
     if (!psaIsClosed(scores)) {
       tabs.splice(4, 0, hearingTab);
+    }
+
+    if (!includesPretrialModule) {
+      tabs = tabs.slice(0, 2);
     }
 
     return (
@@ -892,6 +924,7 @@ function mapStateToProps(state) {
   const review = state.get(STATE.REVIEW);
   return {
     app,
+    [APP.SELECTED_ORG_SETTINGS]: app.get(APP.SELECTED_ORG_SETTINGS),
 
     [COURT.HEARINGS_NEIGHBORS_BY_ID]: court.get(COURT.HEARINGS_NEIGHBORS_BY_ID),
 
