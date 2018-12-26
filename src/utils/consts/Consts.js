@@ -151,6 +151,7 @@ export const NOTES = {
 };
 
 export const CONTEXT = {
+  DEMO_ORG: 'Court (Demo)',
   COURT_MINN: 'Court (Minnehaha)',
   COURT_PENN: 'Court (Pennington)',
   BOOKING: 'Booking'
