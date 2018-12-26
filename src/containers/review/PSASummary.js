@@ -16,12 +16,19 @@ import PersonCardSummary from '../../components/person/PersonCardSummary';
 import PSAReportDownloadButton from '../../components/review/PSAReportDownloadButton';
 import PSAStats from '../../components/review/PSAStats';
 import SummaryDMFDetails from '../../components/dmf/SummaryDMFDetails';
-import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { formatDateTimeList } from '../../utils/FormattingUtils';
 import { getTimeStamp, getNeighborDetailsForEntitySet } from '../../utils/DataUtils';
 import { OL } from '../../utils/consts/Colors';
 import { NoResults, Title, SummaryRowWrapper } from '../../utils/Layout';
 import {
+  APP_TYPES_FQNS,
+  PROPERTY_TYPES,
+  SETTINGS,
+  MODULE
+} from '../../utils/consts/DataModelConsts';
+import {
+  APP,
+  EDM,
   STATE,
   REVIEW,
   PEOPLE,
@@ -134,10 +141,12 @@ const ViewPSADetailsButton = styled(BasicButton)`
 
 type Props = {
   notes :string,
+  entitySetsByOrganization :Immutable.Map<*, *>,
   scores :Immutable.Map<*, *>,
   neighbors :Immutable.Map<*, *>,
   fileNewPSA :boolean,
   profile :boolean,
+  selectedOrganizationSettings :Immutable.Map<*, *>,
   openDetailsModal :() => void,
   actions :{
     downloadPSAReviewPDF :(values :{
@@ -197,14 +206,20 @@ class PSASummary extends React.Component<Props, *> {
   }
 
   renderPSADetails = () => {
-    const { neighbors, actions, scores } = this.props;
+    const {
+      neighbors,
+      actions,
+      scores,
+      entitySetsByOrganization
+    } = this.props;
     const { downloadPSAReviewPDF } = actions;
     let filer;
     const psaDate = formatDateTimeList(getTimeStamp(neighbors, psaRiskFactorsFqn));
     neighbors.get(staffFqn, Immutable.List()).forEach((neighbor) => {
       const associationEntitySetId = neighbor.getIn([PSA_ASSOCIATION.ENTITY_SET, 'id']);
+      const appTypeFqn = entitySetsByOrganization.get(associationEntitySetId);
       const personId = neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.PERSON_ID, 0], '');
-      if (associationEntitySetId === assessedByFqn) {
+      if (appTypeFqn === assessedByFqn) {
         filer = personId;
       }
     });
@@ -231,8 +246,10 @@ class PSASummary extends React.Component<Props, *> {
       neighbors,
       notes,
       scores,
-      profile
+      profile,
+      selectedOrganizationSettings
     } = this.props;
+    const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], '');
 
     const topRow = profile ? this.renderProfileHeader()
       : (
@@ -246,18 +263,23 @@ class PSASummary extends React.Component<Props, *> {
       );
 
     const middleRow = (
-      <SummaryRowWrapper>
-        <ScoresContainer border>
+      <SummaryRowWrapper row={!includesPretrialModule}>
+        <ScoresContainer border={includesPretrialModule}>
           <ScoreTitle>PSA</ScoreTitle>
           <ScoreContent>
             <PSAStats scores={scores} />
             {this.renderPSADetails()}
           </ScoreContent>
         </ScoresContainer>
-        <ScoresContainer>
-          <ScoreTitle>RCM</ScoreTitle>
-          <SummaryDMFDetails neighbors={neighbors} scores={scores} />
-        </ScoresContainer>
+        {
+          includesPretrialModule
+            ? (
+              <ScoresContainer>
+                <ScoreTitle>RCM</ScoreTitle>
+                <SummaryDMFDetails neighbors={neighbors} scores={scores} />
+              </ScoresContainer>
+            ) : null
+        }
       </SummaryRowWrapper>
     );
 
@@ -291,10 +313,18 @@ class PSASummary extends React.Component<Props, *> {
 }
 
 function mapStateToProps(state) {
+  const app = state.get(STATE.APP);
+  const orgId = app.get(APP.SELECTED_ORG_ID, '');
+  const edm = state.get(STATE.EDM);
   const review = state.get(STATE.REVIEW);
   const people = state.get(STATE.PEOPLE);
 
   return {
+    [APP.SELECTED_ORG_SETTINGS]: app.get(APP.SELECTED_ORG_SETTINGS),
+    [APP.ENTITY_SETS_BY_ORG]: app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]),
+
+    [EDM.FQN_TO_ID]: edm.get(EDM.FQN_TO_ID),
+
     [REVIEW.NEIGHBORS_BY_ID]: review.get(REVIEW.NEIGHBORS_BY_ID),
     [REVIEW.LOADING_DATA]: review.get(REVIEW.LOADING_DATA),
     [REVIEW.LOADING_RESULTS]: review.get(REVIEW.LOADING_RESULTS),
