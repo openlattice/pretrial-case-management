@@ -44,7 +44,7 @@ import { getEntityKeyId } from '../../utils/DataUtils';
 import { toISODateTime } from '../../utils/FormattingUtils';
 import { getScoresAndRiskFactors, calculateDMF, getDMFRiskFactors } from '../../utils/ScoringUtils';
 import { tryAutofillFields } from '../../utils/AutofillUtils';
-import { PROPERTY_TYPES, ENTITY_SETS } from '../../utils/consts/DataModelConsts';
+import { PROPERTY_TYPES, SETTINGS, MODULE } from '../../utils/consts/DataModelConsts';
 import { STATUS_OPTIONS_FOR_PENDING_PSAS } from '../../utils/consts/ReviewPSAConsts';
 import { DOMAIN } from '../../utils/consts/ReportDownloadTypes';
 import {
@@ -84,8 +84,6 @@ import * as Routes from '../../core/router/Routes';
 
 
 const { OPENLATTICE_ID_FQN } = Constants;
-
-const { PEOPLE } = ENTITY_SETS;
 
 const PSARowListHeader = styled.div`
   width: 100%;
@@ -313,16 +311,15 @@ type Props = {
   allJudges :Immutable.List<*>,
   allPSAs :Immutable.List<*>,
   allSentencesForPerson :Immutable.List<*>,
+  app :Immutable.Map<*, *>,
   arrestId :string,
   arrestOptions :Immutable.List<*>,
   bookingHoldExceptionCharges :Immutable.Map<*, *>,
   bookingReleaseExceptionCharges :Immutable.Map<*, *>,
   caseLoadsComplete :boolean,
   charges :Immutable.List<*>,
-  dataModel :Immutable.Map<*, *>,
   dmfStep2Charges :Immutable.Map<*, *>,
   dmfStep4Charges :Immutable.Map<*, *>,
-  entitySetLookup :Immutable.Map<*, *>,
   history :string[],
   isLoadingCases :boolean,
   isLoadingNeighbors :boolean,
@@ -333,10 +330,10 @@ type Props = {
   openPSAs :Immutable.Map<*, *>,
   psaForm :Immutable.Map<*, *>,
   selectedOrganizationId :string,
-  selectedOrganizationTitle :string,
   selectedPerson :Immutable.Map<*, *>,
   selectedPersonId :string,
   selectedPretrialCase :Immutable.Map<*, *>,
+  selectedOrganizationSettings :Immutable.Map<*, *>,
   submitError :boolean,
   violentCourtCharges :Immutable.Map<*, *>,
   violentArrestCharges :Immutable.Map<*, *>,
@@ -365,10 +362,20 @@ class Form extends React.Component<Props, State> {
   }
 
   componentDidMount() {
-    const { actions } = this.props;
-    actions.loadDataModel();
-    actions.loadJudges();
+    const { actions, selectedOrganizationId } = this.props;
+    if (selectedOrganizationId) {
+      actions.loadDataModel();
+      actions.loadJudges();
+    }
     this.redirectToFirstPageIfNecessary();
+  }
+
+  componentDidUpdate(prevProps) {
+    const { actions, selectedOrganizationId } = this.props;
+    if (selectedOrganizationId !== prevProps.selectedOrganizationId) {
+      actions.loadDataModel();
+      actions.loadJudges();
+    }
   }
 
   loadContextParams = () => {
@@ -457,15 +464,6 @@ class Form extends React.Component<Props, State> {
     actions.setPSAValues({ newValues });
   }
 
-  getPropertyTypes = (entitySetName) => {
-    const { dataModel, entitySetLookup } = this.props;
-    const entitySetId = entitySetLookup.get(entitySetName);
-    const entitySet = dataModel.getIn(['entitySets', entitySetId], Immutable.Map());
-    const entityType = dataModel.getIn(['entityTypes', entitySet.get('entityTypeId')], Immutable.Map());
-    return entityType.get('properties', Immutable.List())
-      .map(propertyTypeId => dataModel.getIn(['propertyTypes', propertyTypeId]));
-  }
-
   getStaffId = () => {
     const staffInfo = AuthUtils.getUserInfo();
     let staffId = staffInfo.id;
@@ -479,12 +477,16 @@ class Form extends React.Component<Props, State> {
     const staffId = this.getStaffId();
     const {
       actions,
+      app,
       arrestId,
       charges,
       psaForm,
       selectedPerson,
-      selectedPretrialCase
+      selectedPretrialCase,
+      selectedOrganizationSettings
     } = this.props;
+
+    const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], '');
 
     const values = Object.assign(
       {},
@@ -520,25 +522,28 @@ class Form extends React.Component<Props, State> {
       delete values[DMF.SECONDARY_HOLD_CHARGES];
       delete values[NOTES[DMF.SECONDARY_HOLD_CHARGES]];
     }
+    if (!includesPretrialModule) {
+      delete values[ID_FIELD_NAMES.DMF_ID];
+      delete values[ID_FIELD_NAMES.DMF_RISK_FACTORS_ID];
+    }
 
-    actions.submit({ values, config });
+    actions.submit({ app, values, config });
     this.setState({ psaId });
   }
 
   getFqn = propertyType => `${propertyType.getIn(['type', 'namespace'])}.${propertyType.getIn(['type', 'name'])}`
 
   handleSelectPerson = (selectedPerson, entityKeyId) => {
-    const { actions, entitySetLookup } = this.props;
+    const { actions } = this.props;
     actions.selectPerson({ selectedPerson });
     actions.loadPersonDetails({ entityKeyId, shouldLoadCases: true });
-    actions.loadNeighbors({
-      entitySetId: entitySetLookup.get(PEOPLE),
-      entityKeyId
-    });
+    actions.loadNeighbors({ entityKeyId });
   }
 
   nextPage = () => {
-    const nextPage = getNextPath(window.location, numPages);
+    const { selectedOrganizationSettings } = this.props;
+    const skipLoad = !selectedOrganizationSettings.get(SETTINGS.LOAD_CASES, true);
+    const nextPage = getNextPath(window.location, numPages, skipLoad);
     this.handlePageChange(nextPage);
   }
 
@@ -548,10 +553,13 @@ class Form extends React.Component<Props, State> {
   }
 
   generateScores = () => {
-    const { psaForm } = this.props;
+    const { psaForm, selectedOrganizationSettings } = this.props;
+    // import module settings
+    const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], '');
     const { riskFactors, scores } = getScoresAndRiskFactors(psaForm);
-    const dmf = calculateDMF(psaForm, scores);
-    const dmfRiskFactors = getDMFRiskFactors(psaForm);
+    // don't calculate dmf if module settings doesn't include pretrial
+    const dmf = includesPretrialModule ? calculateDMF(psaForm, scores) : {};
+    const dmfRiskFactors = includesPretrialModule ? getDMFRiskFactors(psaForm) : {};
     this.setState({
       riskFactors,
       dmfRiskFactors,
@@ -661,7 +669,7 @@ class Form extends React.Component<Props, State> {
   }
 
   closePSA = (scores, status, failureReason) => {
-    const { actions, selectedPersonId, entitySetLookup } = this.props;
+    const { actions, selectedPersonId } = this.props;
     const scoresId = scores.getIn([OPENLATTICE_ID_FQN, 0]);
     let scoresEntity = scores.remove('id').remove(OPENLATTICE_ID_FQN);
     scoresEntity = scoresEntity.set(PROPERTY_TYPES.STATUS, Immutable.List.of(status));
@@ -670,10 +678,7 @@ class Form extends React.Component<Props, State> {
     }
 
     const callback = () => {
-      actions.loadNeighbors({
-        entitySetId: entitySetLookup.get(PEOPLE),
-        entityKeyId: selectedPersonId
-      });
+      actions.loadNeighbors({ entityKeyId: selectedPersonId });
     };
 
     actions.changePSAStatus({
@@ -716,7 +721,6 @@ class Form extends React.Component<Props, State> {
   getPendingPSAs = () => {
     const {
       actions,
-      entitySetLookup,
       selectedPersonId,
       allPSAs,
       openPSAs
@@ -737,10 +741,7 @@ class Form extends React.Component<Props, State> {
               renderSubContent={this.renderPendingPSASubContent}
               component={CONTENT_CONSTS.PENDING_PSAS}
               onStatusChangeCallback={() => {
-                actions.loadNeighbors({
-                  entitySetId: entitySetLookup.get(PEOPLE),
-                  entityKeyId: selectedPersonId
-                });
+                actions.loadNeighbors({ entityKeyId: selectedPersonId });
                 actions.clearSubmit();
               }} />
         </PSAReviewRowListContainer>
@@ -756,7 +757,6 @@ class Form extends React.Component<Props, State> {
       isLoadingNeighbors,
       numCasesToLoad,
       numCasesLoaded,
-      entitySetLookup,
       arrestOptions,
       psaForm,
       actions
@@ -768,10 +768,7 @@ class Form extends React.Component<Props, State> {
           entityKeyId: selectedPersonId,
           shouldLoadCases: false
         });
-        actions.loadNeighbors({
-          entitySetId: entitySetLookup.get(PEOPLE),
-          entityKeyId: selectedPersonId
-        });
+        actions.loadNeighbors({ entityKeyId: selectedPersonId });
       }
       const progress = (numCasesToLoad > 0) ? Math.floor((numCasesLoaded / numCasesToLoad) * 100) : 0;
       const loadingText = numCasesToLoad > 0
@@ -808,7 +805,6 @@ class Form extends React.Component<Props, State> {
     const {
       actions,
       charges,
-      psaForm,
       selectedPretrialCase
     } = this.props;
     return (
@@ -817,9 +813,7 @@ class Form extends React.Component<Props, State> {
           defaultCharges={charges}
           nextPage={this.nextPage}
           prevPage={this.prevPage}
-          onSubmit={actions.addCaseAndCharges}
-          county={psaForm.get(DMF.COURT_OR_BOOKING) === CONTEXT.COURT_MINN
-            ? DOMAIN.MINNEHAHA : DOMAIN.PENNINGTON} />
+          onSubmit={actions.addCaseAndCharges} />
     );
   };
 
@@ -1024,8 +1018,9 @@ function mapStateToProps(state :Immutable.Map<*, *>) :Object {
 
   return {
     // App
+    app,
     [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
-    [APP.SELECTED_ORG_TITLE]: app.get(APP.SELECTED_ORG_TITLE),
+    [APP.SELECTED_ORG_SETTINGS]: app.get(APP.SELECTED_ORG_SETTINGS),
 
     // Charges
     [CHARGES.ARREST]: charges.get(CHARGES.ARREST),

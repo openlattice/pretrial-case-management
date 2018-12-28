@@ -10,13 +10,17 @@ import ChargeHistoryStats from '../casehistory/ChargeHistoryStats';
 import ChargeTable from '../charges/ChargeTable';
 import PSASummary from '../../containers/review/PSASummary';
 import { AlternateSectionHeader, Count } from '../../utils/Layout';
-import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import {
   STATE,
   APP,
   CHARGES,
   PSA_NEIGHBOR
 } from '../../utils/consts/FrontEndStateConsts';
+
+let { MANUAL_PRETRIAL_CASES } = APP_TYPES_FQNS;
+
+MANUAL_PRETRIAL_CASES = MANUAL_PRETRIAL_CASES.toString();
 
 const SummaryWrapper = styled.div`
   display: flex;
@@ -59,7 +63,7 @@ class PSAModalSummary extends React.Component<Props, *> {
     } = this.props;
     const violentChargeList = violentArrestCharges.get(selectedOrganizationId, Map());
     const caseNum = neighbors.getIn(
-      [ENTITY_SETS.MANUAL_PRETRIAL_CASES, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.CASE_ID, 0], ''
+      [MANUAL_PRETRIAL_CASES, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.CASE_ID, 0], ''
     );
     const pretrialCase = manualCaseHistory
       .filter(caseObj => caseObj.getIn([PROPERTY_TYPES.CASE_ID, 0], '') === caseNum);

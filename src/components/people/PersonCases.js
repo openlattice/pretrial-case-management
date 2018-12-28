@@ -11,7 +11,7 @@ import CaseHistoryTimeline from '../casehistory/CaseHistoryTimeline';
 import ChargeHistoryStats from '../casehistory/ChargeHistoryStats';
 import CaseHistoryList from '../casehistory/CaseHistoryList';
 import LoadingSpinner from '../LoadingSpinner';
-import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { getIdOrValue } from '../../utils/DataUtils';
 import { formatDate } from '../../utils/FormattingUtils';
 import {
@@ -31,6 +31,11 @@ import {
   PSA_NEIGHBOR,
   PSA_ASSOCIATION
 } from '../../utils/consts/FrontEndStateConsts';
+
+let { MANUAL_PRETRIAL_CASES, STAFF } = APP_TYPES_FQNS;
+
+MANUAL_PRETRIAL_CASES = MANUAL_PRETRIAL_CASES.toString();
+STAFF = STAFF.toString();
 
 const PaddedStyledColumnRow = styled(StyledColumnRow)`
   padding: 30px;
@@ -62,11 +67,11 @@ const PersonCases = ({
   const scores = mostRecentPSA.get(PSA_NEIGHBOR.DETAILS, Map());
   const caseHistory = getCaseHistory(neighbors);
   let arrestDate = getIdOrValue(
-    mostRecentPSANeighbors, ENTITY_SETS.MANUAL_PRETRIAL_CASES, PROPERTY_TYPES.ARREST_DATE_TIME
+    mostRecentPSANeighbors, MANUAL_PRETRIAL_CASES, PROPERTY_TYPES.ARREST_DATE_TIME
   );
   if (!arrestDate) arrestDate = formatDate(moment());
   const lastEditDateForPSA = psaNeighborsById.getIn(
-    [mostRecentPSAEntityKeyId, ENTITY_SETS.STAFF, 0, PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.DATE_TIME, 0],
+    [mostRecentPSAEntityKeyId, STAFF, 0, PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.DATE_TIME, 0],
     formatDate(moment())
   );
   const {

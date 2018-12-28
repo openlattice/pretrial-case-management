@@ -12,7 +12,7 @@ import { Map, List } from 'immutable';
 import SelectReleaseConditions from '../../components/releaseconditions/SelectReleaseConditions';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { formatJudgeName } from '../../utils/consts/HearingConsts';
-import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import {
   Wrapper,
   PaddedStyledColumnRow,
@@ -32,6 +32,20 @@ import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
 import * as DataActionFactory from '../../utils/data/DataActionFactory';
 import * as ReviewActionFactory from '../review/ReviewActionFactory';
 import * as CourtActionFactory from '../court/CourtActionFactory';
+
+let {
+  HEARINGS,
+  OUTCOMES,
+  BONDS,
+  JUDGES,
+  RELEASE_CONDITIONS
+} = APP_TYPES_FQNS;
+
+HEARINGS = HEARINGS.toString();
+OUTCOMES = OUTCOMES.toString();
+BONDS = BONDS.toString();
+JUDGES = JUDGES.toString();
+RELEASE_CONDITIONS = RELEASE_CONDITIONS.toString();
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
@@ -100,6 +114,7 @@ class ReleaseConditionsModal extends React.Component<Props, State> {
 
   render() {
     const {
+      app,
       allJudges,
       actions,
       defaultBond,
@@ -138,14 +153,14 @@ class ReleaseConditionsModal extends React.Component<Props, State> {
 
     let judgeName;
     let judgeEntitySetId;
-    const hearing = neighbors.get(ENTITY_SETS.HEARINGS, List())
+    const hearing = neighbors.get(HEARINGS, List())
       .filter(hearingObj => (hearingObj.getIn([OPENLATTICE_ID_FQN, 0]) === hearingEntityKeyId))
       .get(0, Map());
     const hasMultipleHearings = hearingNeighborsById.size > 1;
     const oldDataOutcome = defaultDMF.getIn([PROPERTY_TYPES.OUTCOME, 0]);
-    const onlyOldExists = oldDataOutcome && !hearingNeighborsById.getIn([hearingEntityKeyId, ENTITY_SETS.OUTCOMES]);
+    const onlyOldExists = oldDataOutcome && !hearingNeighborsById.getIn([hearingEntityKeyId, OUTCOMES]);
     const hasOldOrNewOutcome = !!(
-      hearingNeighborsById.getIn([hearingEntityKeyId, ENTITY_SETS.OUTCOMES]) || oldDataOutcome
+      hearingNeighborsById.getIn([hearingEntityKeyId, OUTCOMES]) || oldDataOutcome
     );
 
     if (onlyOldExists) {
@@ -154,10 +169,10 @@ class ReleaseConditionsModal extends React.Component<Props, State> {
       conditions = defaultConditions;
     }
     else {
-      outcome = hearingNeighborsById.getIn([hearingEntityKeyId, ENTITY_SETS.OUTCOMES], Map());
-      bond = hearingNeighborsById.getIn([hearingEntityKeyId, ENTITY_SETS.BONDS], Map());
+      outcome = hearingNeighborsById.getIn([hearingEntityKeyId, OUTCOMES], Map());
+      bond = hearingNeighborsById.getIn([hearingEntityKeyId, BONDS], Map());
       conditions = hearingNeighborsById
-        .getIn([hearingEntityKeyId, ENTITY_SETS.RELEASE_CONDITIONS], Map());
+        .getIn([hearingEntityKeyId, RELEASE_CONDITIONS], Map());
     }
     const submittedOutcomes = (onlyOldExists && hasMultipleHearings)
       ? false
@@ -165,7 +180,7 @@ class ReleaseConditionsModal extends React.Component<Props, State> {
 
     const judgeFromJudgeEntity = hearingNeighborsById.getIn([
       hearingEntityKeyId,
-      ENTITY_SETS.MIN_PEN_PEOPLE
+      JUDGES
     ]);
     const judgeFromHearingComments = hearing.getIn([PROPERTY_TYPES.HEARING_COMMENTS, 0]);
     if (judgeFromJudgeEntity) {
@@ -203,6 +218,7 @@ class ReleaseConditionsModal extends React.Component<Props, State> {
                       ? <LoadingSpinner />
                       : (
                         <SelectReleaseConditions
+                            app={app}
                             submitting={submitting}
                             submittedOutcomes={submittedOutcomes}
                             jurisdiction={jurisdiction}
@@ -242,10 +258,13 @@ class ReleaseConditionsModal extends React.Component<Props, State> {
 }
 
 function mapStateToProps(state) {
+  const app = state.get(STATE.APP);
   const court = state.get(STATE.COURT);
   const review = state.get(STATE.REVIEW);
   const submit = state.get(STATE.SUBMIT);
   return {
+    app,
+
     [REVIEW.SCORES]: review.get(REVIEW.SCORES),
     [REVIEW.NEIGHBORS_BY_ID]: review.get(REVIEW.NEIGHBORS_BY_ID),
     [COURT.LOADING_HEARING_NEIGHBORS]: court.get(COURT.LOADING_HEARING_NEIGHBORS),

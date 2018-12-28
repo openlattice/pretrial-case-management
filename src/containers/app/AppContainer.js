@@ -5,9 +5,11 @@
 import React from 'react';
 import styled from 'styled-components';
 import { AuthActionFactory } from 'lattice-auth';
-import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
+import { connect } from 'react-redux';
+import { EntityDataModelApiActions } from 'lattice-sagas';
 import { Redirect, Route, Switch } from 'react-router-dom';
+import { Map } from 'immutable';
 
 import AppConsent from './AppConsent';
 import HeaderNav from '../../components/nav/HeaderNav';
@@ -15,7 +17,7 @@ import Dashboard from '../../components/dashboard/Dashboard';
 import Forms from '../forms/Forms';
 import ContactSupport from '../../components/app/ContactSupport';
 import { APP, CHARGES, STATE } from '../../utils/consts/FrontEndStateConsts';
-import { APP_TYPES_FQNS } from '../../utils/consts/DataModelConsts';
+import { APP_TYPES_FQNS, SETTINGS, MODULE } from '../../utils/consts/DataModelConsts';
 import { termsAreAccepted } from '../../utils/AcceptTermsUtils';
 import { OL } from '../../utils/consts/Colors';
 
@@ -23,9 +25,8 @@ import * as Routes from '../../core/router/Routes';
 import * as AppActionFactory from './AppActionFactory';
 import * as ChargesActionFactory from '../charges/ChargesActionFactory';
 
-const {
-  logout
-} = AuthActionFactory;
+const { logout } = AuthActionFactory;
+const { getAllPropertyTypes } = EntityDataModelApiActions;
 
 const {
   ARREST_CHARGE_LIST,
@@ -58,7 +59,9 @@ const AppBodyWrapper = styled.div`
  */
 
 type Props = {
+  selectedOrganizationSettings :Map<*, *>,
   actions :{
+    getAllPropertyTypes :RequestSequence;
     loadApp :RequestSequence;
     loadCharges :RequestSequence;
     switchOrganization :(orgId :string) => Object;
@@ -71,20 +74,20 @@ class AppContainer extends React.Component<Props, *> {
   componentDidMount() {
     const { actions } = this.props;
     actions.loadApp();
+    actions.getAllPropertyTypes();
   }
 
-  componentWillReceiveProps(nextProps) {
-
+  componentDidUpdate(prevProps) {
     const { app, actions } = this.props;
-    const prevOrg = app.get(APP.ORGS);
-    const nextOrg = nextProps.app.get(APP.ORGS);
+    const nextOrg = app.get(APP.ORGS);
+    const prevOrg = prevProps.app.get(APP.ORGS);
     if (prevOrg.size !== nextOrg.size) {
       nextOrg.keySeq().forEach((id) => {
         const selectedOrgId :string = id;
-        const arrestChargesEntitySetId = nextProps.app.getIn(
+        const arrestChargesEntitySetId = app.getIn(
           [ARREST_CHARGE_LIST.toString(), APP.ENTITY_SETS_BY_ORG, selectedOrgId]
         );
-        const courtChargesEntitySetId = nextProps.app.getIn(
+        const courtChargesEntitySetId = app.getIn(
           [COURT_CHARGE_LIST.toString(), APP.ENTITY_SETS_BY_ORG, selectedOrgId]
         );
         if (arrestChargesEntitySetId && courtChargesEntitySetId) {
@@ -99,10 +102,11 @@ class AppContainer extends React.Component<Props, *> {
   }
 
   switchOrganization = (organization) => {
-    const { actions, app } = this.props;
+    const { actions, app, appSettingsByOrgId } = this.props;
     const selectedOrganizationId = app.get(APP.SELECTED_ORG_ID);
     if (organization.value !== selectedOrganizationId) {
       actions.switchOrganization({
+        settings: appSettingsByOrgId.get(organization.value, Map()),
         orgId: organization.value,
         title: organization.label
       });
@@ -116,7 +120,8 @@ class AppContainer extends React.Component<Props, *> {
   );
 
   render() {
-    const { actions, app } = this.props;
+    const { actions, app, selectedOrganizationSettings } = this.props;
+    const pretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
     const loading = app.get(APP.LOADING, false);
     const selectedOrg = app.get(APP.SELECTED_ORG_ID, '');
     const orgList = app.get(APP.ORGS).entrySeq().map(([value, organization]) => {
@@ -129,6 +134,7 @@ class AppContainer extends React.Component<Props, *> {
             loading={loading}
             logout={actions.logout}
             organizations={orgList}
+            pretrialModule={pretrialModule}
             selectedOrg={selectedOrg}
             switchOrg={this.switchOrganization} />
         <ContactSupport />
@@ -151,6 +157,10 @@ function mapStateToProps(state) {
 
   return {
     app,
+    [APP.SELECTED_ORG_ID]: app.get(APP.APP_SETTINGS_ID),
+    [APP.SETTINGS_BY_ORG_ID]: app.get(APP.SETTINGS_BY_ORG_ID),
+    [APP.SELECTED_ORG_SETTINGS]: app.get(APP.SELECTED_ORG_SETTINGS),
+
     [CHARGES.ARREST]: charges.get(CHARGES.ARREST),
     [CHARGES.COURT]: charges.get(CHARGES.COURT),
     [CHARGES.LOADING]: charges.get(CHARGES.LOADING)
@@ -169,6 +179,7 @@ function mapDispatchToProps(dispatch :Function) :Object {
   });
 
   actions.logout = logout;
+  actions.getAllPropertyTypes = getAllPropertyTypes;
 
   return {
     actions: {

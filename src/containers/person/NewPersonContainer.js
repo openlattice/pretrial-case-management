@@ -4,7 +4,7 @@
 
 import React from 'react';
 
-import Immutable from 'immutable';
+import Immutable, { Map } from 'immutable';
 import styled from 'styled-components';
 import qs from 'query-string';
 import uuid from 'uuid/v4';
@@ -17,7 +17,6 @@ import BasicButton from '../../components/buttons/BasicButton';
 import InfoButton from '../../components/buttons/InfoButton';
 import Checkbox from '../../components/controls/StyledCheckbox';
 import StyledInput from '../../components/controls/StyledInput';
-// import StyledDatePicker from '../../components/controls/StyledDatePicker';
 import DatePicker from '../../components/datetime/DatePicker';
 import SearchableSelect from '../../components/controls/SearchableSelect';
 import PersonContactInfo from '../../components/person/PersonContactInfo';
@@ -91,6 +90,7 @@ type Props = {
   location :{
     search :string
   },
+  app :Map<*, *>,
   isCreatingPerson :boolean,
   createPersonError :boolean,
   history :string[]
@@ -237,7 +237,7 @@ class NewPersonContainer extends React.Component<Props, State> {
   }
 
   submitNewPerson = () => {
-    const { actions } = this.props;
+    const { actions, app } = this.props;
     const { state } = this;
     const config = newPersonSubmissionConfig;
 
@@ -273,7 +273,7 @@ class NewPersonContainer extends React.Component<Props, State> {
       [PROPERTY_TYPES.CONTACT_INFO_GIVEN_ID]: uuid()
     };
 
-    actions.newPersonSubmit({ config, values });
+    actions.newPersonSubmit({ app, config, values });
   }
 
   getOptionsMap = valueList => valueList.map(value => <option key={value} value={value}>{value}</option>);
@@ -454,8 +454,10 @@ class NewPersonContainer extends React.Component<Props, State> {
 
 function mapStateToProps(state :Immutable.Map<*, *>) :Object {
   const search = state.get(STATE.SEARCH);
+  const app = state.get(STATE.APP);
 
   return {
+    app,
     [SEARCH.CREATING_PERSON]: search.get(SEARCH.CREATING_PERSON),
     [SEARCH.CREATE_PERSON_ERROR]: search.get(SEARCH.CREATE_PERSON_ERROR)
   };

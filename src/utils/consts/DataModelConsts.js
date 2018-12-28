@@ -7,15 +7,70 @@ const { FullyQualifiedName } = Models;
 
 export const APP_NAME = 'psa';
 
-export const APP_TYPES_FQNS = {
-  ARREST_CHARGE_LIST: new FullyQualifiedName('publicsafety.arrestchargelist'),
-  COURT_CHARGE_LIST: new FullyQualifiedName('publicsafety.courtchargelist'),
-  APP_SETTINGS: new FullyQualifiedName('app.settings')
+export const ORG_IDS = {
+  DEMO_ORG: '1d5aa1f4-4d22-46a5-97cd-dcc6820e7ff8',
+  PENNINGTON_SD: '67d555b4-7495-414e-a259-ef82ba71779a',
+  MINNEHAHA_SD: 'e558ee21-8fec-4c65-aeda-039924ba9a92',
 };
 
-export const ORG_IDS = {
-  PENNINGTON_SD: '67d555b4-7495-414e-a259-ef82ba71779a',
-  MINNEHAHA_SD: 'e558ee21-8fec-4c65-aeda-039924ba9a92'
+/*
+* App Type FQNs
+*/
+
+export const APP_TYPES_FQNS = {
+  ARREST_CHARGE_LIST: new FullyQualifiedName('publicsafety.arrestchargelist'),
+  APP_SETTINGS: new FullyQualifiedName('app.settings'),
+  ADDRESSES: new FullyQualifiedName('app.address'),
+  APPEARS_IN: new FullyQualifiedName('app.appearsin'),
+  ARREST_APPEARS_IN: new FullyQualifiedName('app.appearsinarrest'),
+  ARREST_CHARGED_WITH: new FullyQualifiedName('app.arrestchargedwith'),
+  ARREST_CHARGES: new FullyQualifiedName('app.arrestcharges'),
+  ARREST_CASES: new FullyQualifiedName('app.arrestpretrialcases'),
+  ASSESSED_BY: new FullyQualifiedName('app.assessedby'),
+  BONDS: new FullyQualifiedName('app.manualbonds'),
+  CALCULATED_FOR: new FullyQualifiedName('app.calculatedfor'),
+  CHARGED_WITH: new FullyQualifiedName('app.chargedwith'),
+  CHARGES: new FullyQualifiedName('app.courtcharges'),
+  CONTACT_INFO_GIVEN: new FullyQualifiedName('app.contactinfogiven'),
+  CONTACT_INFORMATION: new FullyQualifiedName('app.contactinformation'),
+  COURT_CHARGE_LIST: new FullyQualifiedName('publicsafety.courtchargelist'),
+  DMF_RESULTS: new FullyQualifiedName('app.rcm'),
+  DMF_RISK_FACTORS: new FullyQualifiedName('app.rcmriskfactors'),
+  EDITED_BY: new FullyQualifiedName('app.editedby'),
+  FTAS: new FullyQualifiedName('app.ftas'),
+  HEARINGS: new FullyQualifiedName('app.hearings'),
+  JUDGES: new FullyQualifiedName('app.judges'),
+  LIVES_AT: new FullyQualifiedName('app.livesat'),
+  MANUAL_CHARGES: new FullyQualifiedName('app.manualcharges'),
+  MANUAL_PRETRIAL_CASES: new FullyQualifiedName('app.manualpretrialcases'),
+  OUTCOMES: new FullyQualifiedName('app.psaoutcomes'),
+  PEOPLE: new FullyQualifiedName('app.people'),
+  PRETRIAL_CASES: new FullyQualifiedName('app.courtpretrialcases'),
+  PSA_RISK_FACTORS: new FullyQualifiedName('app.psariskfactors'),
+  PSA_SCORES: new FullyQualifiedName('app.psascores'),
+  REGISTERED_FOR: new FullyQualifiedName('app.registeredfor'),
+  RELEASE_CONDITIONS: new FullyQualifiedName('app.releaseconditions'),
+  RELEASE_RECOMMENDATIONS: new FullyQualifiedName('app.psanotes'),
+  SENTENCES: new FullyQualifiedName('app.sentences'),
+  SPEAKER_RECOGNITION_PROFILES: new FullyQualifiedName('app.speakerrecognitionprofiles'),
+  STAFF: new FullyQualifiedName('app.staff'),
+  UJS_EMPLOYEES: new FullyQualifiedName('app.employees')
+};
+
+export const SETTINGS = {
+  CONTEXTS: 'contexts',
+  LOAD_CASES: 'loadCasesOnTheFly',
+  MODULES: 'modules'
+};
+
+export const CONTEXTS = {
+  COURT: 'court',
+  BOOKING: 'booking'
+};
+
+export const MODULE = {
+  PSA: 'psa',
+  PRETRIAL: 'pretrial',
 };
 
 /*

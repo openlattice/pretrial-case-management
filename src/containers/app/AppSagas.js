@@ -5,9 +5,12 @@
 import { Types } from 'lattice';
 import { push } from 'react-router-redux';
 import { AuthActionFactory, AccountUtils } from 'lattice-auth';
+import { OrderedMap, Map, fromJS } from 'immutable';
 import {
   AppApiActions,
   AppApiSagas,
+  DataApiActions,
+  DataApiSagas,
   EntityDataModelApiActions,
   EntityDataModelApiSagas,
 } from 'lattice-sagas';
@@ -20,7 +23,7 @@ import {
   takeEvery
 } from 'redux-saga/effects';
 
-import { APP_NAME } from '../../utils/consts/DataModelConsts';
+import { APP_TYPES_FQNS, APP_NAME } from '../../utils/consts/DataModelConsts';
 import { removeTermsToken } from '../../utils/AcceptTermsUtils';
 import * as Routes from '../../core/router/Routes';
 
@@ -30,18 +33,23 @@ import {
   loadApp
 } from './AppActionFactory';
 
+let { APP_SETTINGS } = APP_TYPES_FQNS;
+APP_SETTINGS = APP_SETTINGS.toString();
+
 const { SecurableTypes } = Types;
 const { getEntityDataModelProjection } = EntityDataModelApiActions;
 const { getEntityDataModelProjectionWorker } = EntityDataModelApiSagas;
 const { getApp, getAppConfigs, getAppTypes } = AppApiActions;
 const { getAppWorker, getAppConfigsWorker, getAppTypesWorker } = AppApiSagas;
+const { getEntitySetData } = DataApiActions;
+const { getEntitySetDataWorker } = DataApiSagas;
 
 
 function* loadAppWorker(action :SequenceAction) :Generator<*, *, *> {
 
   try {
     yield put(loadApp.request(action.id));
-
+    let appSettingsByOrgId :OrderedMap<*, *> = OrderedMap();
     /*
      * 1. load App
      */
@@ -75,17 +83,47 @@ function* loadAppWorker(action :SequenceAction) :Generator<*, *, *> {
       type: SecurableTypes.EntityType,
     }));
     response = yield call(getEntityDataModelProjectionWorker, getEntityDataModelProjection(projection));
-    if (response.error) throw response.error;
+    if (response.error) {
+      console.error(response.error);
+      throw response.error;
+    }
 
     const edm :Object = response.data;
+    appConfigs.forEach((appConfig :Object) => {
+
+      const { organization } :Object = appConfig;
+      const orgId :string = organization.id;
+      if (fromJS(appConfig.config).size) {
+        const appSettingsConfig = appConfig.config[APP_SETTINGS];
+        appSettingsByOrgId = appSettingsByOrgId.set(orgId, appSettingsConfig.entitySetId);
+      }
+    });
+    const appSettingCalls = appSettingsByOrgId.valueSeq().map(entitySetId => (
+      call(getEntitySetDataWorker, getEntitySetData({ entitySetId }))
+    ));
+
+    const orgIds = appSettingsByOrgId.keySeq().toJS();
+    const appSettingResults = yield all(appSettingCalls.toJS());
+
+    let i = 0;
+    appSettingResults.forEach((setting) => {
+      const entitySetId = orgIds[i];
+      const settings = JSON.parse(setting.data[0]['ol.appdetails']);
+      appSettingsByOrgId = appSettingsByOrgId.set(entitySetId, fromJS(settings));
+      i += 1;
+    });
+
     yield put(loadApp.success(action.id, {
       app,
       appConfigs,
+      appSettingsByOrgId,
       appTypes,
       edm
     }));
+
   }
   catch (error) {
+    console.error(error);
     yield put(loadApp.failure(action.id, error));
   }
   finally {

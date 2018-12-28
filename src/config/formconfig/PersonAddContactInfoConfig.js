@@ -3,14 +3,14 @@
  */
 
 import { ALIASES, PERSON_CONFIG } from './ConfigConsts';
-import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 
 const addPersonContactInfoConfig = {
   entitySets: [
     PERSON_CONFIG,
     {
       alias: ALIASES.CONTACT_INFO,
-      name: ENTITY_SETS.CONTACT_INFORMATION,
+      name: APP_TYPES_FQNS.CONTACT_INFORMATION,
       fields: {
         [PROPERTY_TYPES.GENERAL_ID]: PROPERTY_TYPES.GENERAL_ID,
         [PROPERTY_TYPES.EMAIL]: PROPERTY_TYPES.EMAIL,
@@ -20,7 +20,7 @@ const addPersonContactInfoConfig = {
     },
     {
       alias: ALIASES.CONTACT_GIVEN_FOR,
-      name: ENTITY_SETS.CONTACT_INFO_GIVEN,
+      name: APP_TYPES_FQNS.CONTACT_INFO_GIVEN,
       fields: {
         [PROPERTY_TYPES.CONTACT_INFO_GIVEN_ID]: PROPERTY_TYPES.CONTACT_INFO_GIVEN_ID
       }

@@ -15,13 +15,27 @@ import PersonCard from '../person/PersonCardReview';
 import PSAReportDownloadButton from './PSAReportDownloadButton';
 import PSAStats from './PSAStats';
 import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
-import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { getEntityKeyId } from '../../utils/DataUtils';
 import { OL } from '../../utils/consts/Colors';
 import { psaIsClosed } from '../../utils/PSAUtils';
 import { PSA_NEIGHBOR, PSA_ASSOCIATION } from '../../utils/consts/FrontEndStateConsts';
 
 const { OPENLATTICE_ID_FQN } = Constants;
+
+let {
+  ASSESSED_BY,
+  EDITED_BY,
+  HEARINGS,
+  PEOPLE,
+  STAFF,
+} = APP_TYPES_FQNS;
+
+ASSESSED_BY = ASSESSED_BY.toString();
+EDITED_BY = EDITED_BY.toString();
+HEARINGS = HEARINGS.toString();
+PEOPLE = PEOPLE.toString();
+STAFF = STAFF.toString();
 
 
 const ReviewRowContainer = styled.div`
@@ -179,7 +193,7 @@ export default class PSAReviewReportsRow extends React.Component<Props, State> {
     const { neighbors, hideProfile } = this.props;
     if (hideProfile) return null;
 
-    const personDetails = neighbors.getIn([ENTITY_SETS.PEOPLE, PSA_NEIGHBOR.DETAILS], Immutable.Map());
+    const personDetails = neighbors.getIn([PEOPLE, PSA_NEIGHBOR.DETAILS], Immutable.Map());
     if (!personDetails.size) return <div>Person details unknown.</div>;
     return (
       <PersonCardWrapper>
@@ -268,24 +282,30 @@ export default class PSAReviewReportsRow extends React.Component<Props, State> {
   }
 
   renderMetadata = () => {
-    const { component, neighbors, scores } = this.props;
+    const {
+      component,
+      entitySetIdsToAppType,
+      neighbors,
+      scores
+    } = this.props;
     const dateFormat = 'MM/DD/YYYY hh:mm a';
     let dateCreated;
     let creator;
     let dateEdited;
     let editor;
 
-    neighbors.get(ENTITY_SETS.STAFF, Immutable.List()).forEach((neighbor) => {
-      const associationEntitySetName = neighbor.getIn([PSA_ASSOCIATION.ENTITY_SET, 'name']);
+    neighbors.get(STAFF, Immutable.List()).forEach((neighbor) => {
+      const associationEntitySetId = neighbor.getIn([PSA_ASSOCIATION.ENTITY_SET, 'id']);
+      const appTypFqn = entitySetIdsToAppType.get(associationEntitySetId, '');
       const personId = neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.PERSON_ID, 0], '');
 
-      if (associationEntitySetName === ENTITY_SETS.ASSESSED_BY) {
+      if (appTypFqn === ASSESSED_BY) {
         creator = personId;
         const maybeDate = moment(neighbor.getIn([PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.COMPLETED_DATE_TIME, 0], ''));
 
         if (maybeDate.isValid()) dateCreated = maybeDate;
       }
-      if (associationEntitySetName === ENTITY_SETS.EDITED_BY) {
+      if (appTypFqn === EDITED_BY) {
         const maybeDate = moment(neighbor.getIn([PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.DATE_TIME, 0], ''));
         if (maybeDate.isValid()) {
           if (!dateEdited || dateEdited.isBefore(maybeDate)) {
@@ -329,11 +349,11 @@ export default class PSAReviewReportsRow extends React.Component<Props, State> {
 
   openDetailsModal = () => {
     const { neighbors, loadCaseHistoryFn, loadHearingNeighbors } = this.props;
-    const hearingIds = neighbors.get(ENTITY_SETS.HEARINGS, Immutable.List())
+    const hearingIds = neighbors.get(HEARINGS, Immutable.List())
       .map(neighbor => neighbor.getIn([OPENLATTICE_ID_FQN, 0]))
       .filter(id => !!id)
       .toJS();
-    const personId = getEntityKeyId(neighbors, ENTITY_SETS.PEOPLE);
+    const personId = getEntityKeyId(neighbors, PEOPLE);
     loadCaseHistoryFn({ personId, neighbors });
     loadHearingNeighbors({ hearingIds, loadPersonData: false });
     this.setState({

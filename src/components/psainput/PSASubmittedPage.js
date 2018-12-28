@@ -25,7 +25,7 @@ import closeXGrayIcon from '../../assets/svg/close-x-gray.svg';
 import closeXBlackIcon from '../../assets/svg/close-x-black.svg';
 import { OL } from '../../utils/consts/Colors';
 import { APP, CHARGES, STATE } from '../../utils/consts/FrontEndStateConsts';
-import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { PROPERTY_TYPES, SETTINGS, MODULE } from '../../utils/consts/DataModelConsts';
 import { getHeaderText } from '../../utils/DMFUtils';
 import { JURISDICTION } from '../../utils/consts/Consts';
 import {
@@ -54,7 +54,8 @@ type Props = {
   onClose :() => void,
   history :string[],
   violentArrestCharges :Immutable.Map<*, *>,
-  selectedOrganizationId :string
+  selectedOrganizationId :string,
+  selectedOrganizationSettings :Map
 };
 
 type State = {
@@ -365,17 +366,19 @@ class PSASubmittedPage extends React.Component<Props, State> {
   }
 
   renderDMF = () => {
-    const { dmf } = this.props;
+    const { dmf, selectedOrganizationSettings } = this.props;
+    const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], '');
 
-    return (
-      <DMF>
-        <ResultHeader>RCM Result</ResultHeader>
-        <section>
-          <DMFCell dmf={dmf} selected large />
-          <span>{getHeaderText(dmf)}</span>
-        </section>
-      </DMF>
-    );
+    return includesPretrialModule
+      ? (
+        <DMF>
+          <ResultHeader>RCM Result</ResultHeader>
+          <section>
+            <DMFCell dmf={dmf} selected large />
+            <span>{getHeaderText(dmf)}</span>
+          </section>
+        </DMF>
+      ) : null;
   }
 
   renderRiskFactorsTable = () => {
@@ -539,11 +542,13 @@ class PSASubmittedPage extends React.Component<Props, State> {
       allCases,
       allCharges,
       violentArrestCharges,
-      selectedOrganizationId
+      selectedOrganizationId,
+      selectedOrganizationSettings
     } = this.props;
+    const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], '');
 
     return (
-      <div>
+      <>
         {this.renderScores()}
         {this.renderDMF()}
         <MinimallyPaddedResultHeader>Charges</MinimallyPaddedResultHeader>
@@ -560,15 +565,24 @@ class PSASubmittedPage extends React.Component<Props, State> {
         <PaddedResultHeader>Notes</PaddedResultHeader>
         <NotesContainer>{notes}</NotesContainer>
         <MinimallyPaddedResultHeader>Timeline</MinimallyPaddedResultHeader>
-        <TimelineContainer>
-          <CaseHistoryTimeline caseHistory={allCases} chargeHistory={allCharges} />
-        </TimelineContainer>
-      </div>
+        {
+          includesPretrialModule
+            ? (
+              <TimelineContainer>
+                <CaseHistoryTimeline caseHistory={allCases} chargeHistory={allCharges} />
+              </TimelineContainer>
+            ) : null
+        }
+      </>
     );
   }
 
   render() {
-    const { onClose } = this.props;
+    const {
+      onClose,
+      selectedOrganizationSettings
+    } = this.props;
+    const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], '');
     const { settingHearing } = this.state;
 
     return (
@@ -579,7 +593,7 @@ class PSASubmittedPage extends React.Component<Props, State> {
           <ButtonRow>
             {this.renderExportButton()}
             {this.renderProfileButton()}
-            {this.renderSetHearingButton()}
+            { includesPretrialModule ? this.renderSetHearingButton() : null }
           </ButtonRow>
         </HeaderRow>
         {
@@ -593,7 +607,7 @@ class PSASubmittedPage extends React.Component<Props, State> {
             {this.renderProfileButton()}
           </ButtonRow>
           <FooterButtonGroup>
-            {this.renderSetHearingButton()}
+            { includesPretrialModule ? this.renderSetHearingButton() : null }
             <BasicButton onClick={onClose}><img src={closeXGrayIcon} alt="" /></BasicButton>
           </FooterButtonGroup>
         </FooterRow>
@@ -609,6 +623,7 @@ function mapStateToProps(state :Immutable.Map<*, *>) :Object {
     // App
     [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
     [APP.SELECTED_ORG_TITLE]: app.get(APP.SELECTED_ORG_TITLE),
+    [APP.SELECTED_ORG_SETTINGS]: app.get(APP.SELECTED_ORG_TITLE),
 
     // Charges
     [CHARGES.ARREST_VIOLENT]: charges.get(CHARGES.ARREST_VIOLENT),

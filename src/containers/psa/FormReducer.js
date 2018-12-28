@@ -15,23 +15,10 @@ import {
   loadNeighbors
 } from './FormActionFactory';
 import { changePSAStatus } from '../review/ReviewActionFactory';
-import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA, NOTES, DMF } from '../../utils/consts/Consts';
 import { getMapByCaseId } from '../../utils/CaseUtils';
 import { PSA_NEIGHBOR, PSA_FORM } from '../../utils/consts/FrontEndStateConsts';
-
-const {
-  ARREST_CASES,
-  ARREST_CHARGES,
-  CHARGES,
-  FTAS,
-  HEARINGS,
-  MANUAL_CHARGES,
-  MANUAL_PRETRIAL_CASES,
-  PRETRIAL_CASES,
-  PSA_SCORES,
-  SENTENCES
-} = ENTITY_SETS;
 
 const {
   ARREST_DATE_TIME,
@@ -59,6 +46,31 @@ const {
   SECONDARY_RELEASE_CHARGES,
   SECONDARY_HOLD_CHARGES
 } = DMF;
+
+const {
+  ARREST_CASES,
+  ARREST_CHARGES,
+  CHARGES,
+  FTAS,
+  HEARINGS,
+  MANUAL_CHARGES,
+  MANUAL_PRETRIAL_CASES,
+  PRETRIAL_CASES,
+  PSA_SCORES,
+  SENTENCES
+} = APP_TYPES_FQNS;
+
+const arrestCasesFqn :string = ARREST_CASES.toString();
+const arrestChargesFqn :string = ARREST_CHARGES.toString();
+const chargesFqn :string = CHARGES.toString();
+const ftasFqn :string = FTAS.toString();
+const hearingsFqn :string = HEARINGS.toString();
+const manualChargesFqn :string = MANUAL_CHARGES.toString();
+const manualPretialCasesFqn :string = MANUAL_PRETRIAL_CASES.toString();
+const pretrialCasesFqn :string = PRETRIAL_CASES.toString();
+const psaScoresFqn :string = PSA_SCORES.toString();
+const sentencesFqn :string = SENTENCES.toString();
+
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
@@ -170,16 +182,19 @@ function formReducer(state :Immutable.Map<> = INITIAL_STATE, action :Object) {
           let allFTAs = Immutable.List();
           let allPSAs = Immutable.List();
           let allHearings = Immutable.List();
+          let { neighbors } = action.value;
+          const { entitySetIdsToAppType, openPSAs } = action.value;
 
-          const neighbors = Immutable.fromJS(action.value.neighbors) || Immutable.List();
+          neighbors = Immutable.fromJS(neighbors) || Immutable.List();
           neighbors.forEach((neighbor) => {
-            const entitySetName = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'name'], '');
+            const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
+            const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
             const neighborObj = neighbor.get(PSA_NEIGHBOR.DETAILS, Immutable.Map());
 
-            if (entitySetName === PRETRIAL_CASES) {
+            if (appTypeFqn === pretrialCasesFqn) {
               allCasesForPerson = allCasesForPerson.push(neighborObj);
             }
-            else if (entitySetName === ARREST_CASES) {
+            else if (appTypeFqn === arrestCasesFqn) {
               const arrList = neighborObj.get(ARREST_DATE_TIME, Immutable.List());
               if (arrList.size) {
                 arrestOptionsWithDate = arrestOptionsWithDate.push(neighborObj);
@@ -188,28 +203,28 @@ function formReducer(state :Immutable.Map<> = INITIAL_STATE, action :Object) {
                 arrestOptionsWithoutDate = arrestOptionsWithoutDate.push(neighborObj);
               }
             }
-            else if (entitySetName === MANUAL_PRETRIAL_CASES) {
+            else if (appTypeFqn === manualPretialCasesFqn) {
               allManualCases = allManualCases.push(neighborObj);
             }
-            else if (entitySetName === ARREST_CHARGES) {
+            else if (appTypeFqn === arrestChargesFqn) {
               allArrestCharges = allArrestCharges.push(neighborObj);
             }
-            else if (entitySetName === MANUAL_CHARGES) {
+            else if (appTypeFqn === manualChargesFqn) {
               allManualCharges = allManualCharges.push(neighborObj);
             }
-            else if (entitySetName === CHARGES) {
+            else if (appTypeFqn === chargesFqn) {
               allChargesForPerson = allChargesForPerson.push(neighborObj);
             }
-            else if (entitySetName === SENTENCES) {
+            else if (appTypeFqn === sentencesFqn) {
               allSentencesForPerson = allSentencesForPerson.push(neighborObj);
             }
-            else if (entitySetName === FTAS) {
+            else if (appTypeFqn === ftasFqn) {
               allFTAs = allFTAs.push(neighborObj);
             }
-            else if (entitySetName === PSA_SCORES) {
+            else if (appTypeFqn === psaScoresFqn) {
               allPSAs = allPSAs.push(neighborObj);
             }
-            else if (entitySetName === HEARINGS) {
+            else if (appTypeFqn === hearingsFqn) {
               allHearings = allHearings.push(neighborObj);
             }
           });
@@ -232,7 +247,7 @@ function formReducer(state :Immutable.Map<> = INITIAL_STATE, action :Object) {
             .set(PSA_FORM.ALL_FTAS, allFTAs)
             .set(PSA_FORM.ALL_PSAS, allPSAs)
             .set(PSA_FORM.ALL_ARREST_CHARGES, allArrestCharges)
-            .set(PSA_FORM.OPEN_PSAS, Immutable.fromJS(action.value.openPSAs))
+            .set(PSA_FORM.OPEN_PSAS, Immutable.fromJS(openPSAs))
             .set(PSA_FORM.ALL_MANUAL_CASES, allManualCases)
             .set(PSA_FORM.ALL_MANUAL_CHARGES, getMapByCaseId(allManualCharges, CHARGE_ID))
             .set(PSA_FORM.ALL_HEARINGS, allHearings);
@@ -242,15 +257,16 @@ function formReducer(state :Immutable.Map<> = INITIAL_STATE, action :Object) {
     }
 
     case ADD_CASE_AND_CHARGES: {
+      const { charges, pretrialCase } = action.value;
       let allChargesForPerson = state.get(PSA_FORM.ALL_CHARGES, Immutable.List());
-      action.value.charges.forEach((charge) => {
+      charges.forEach((charge) => {
         allChargesForPerson = allChargesForPerson.push(charge);
       });
       return state
-        .set(PSA_FORM.ARREST_OPTIONS, state.get(PSA_FORM.ARREST_OPTIONS).unshift(action.value.pretrialCase))
+        .set(PSA_FORM.ARREST_OPTIONS, state.get(PSA_FORM.ARREST_OPTIONS).unshift(pretrialCase))
         .set(PSA_FORM.ALL_CHARGES, allChargesForPerson)
-        .set(PSA_FORM.CHARGES, action.value.charges)
-        .set(PSA_FORM.SELECT_PRETRIAL_CASE, action.value.pretrialCase);
+        .set(PSA_FORM.CHARGES, charges)
+        .set(PSA_FORM.SELECT_PRETRIAL_CASE, pretrialCase);
     }
 
     case SELECT_PERSON:

@@ -1,6 +1,6 @@
 import { ALIASES } from './ConfigConsts';
 import { RESULT_CATEGORIES } from '../../utils/consts/DMFResultConsts';
-import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import {
   PSA,
   DMF,
@@ -11,7 +11,7 @@ import {
 const psaConfig = {
   entitySets: [
     {
-      name: ENTITY_SETS.PSA_SCORES,
+      name: APP_TYPES_FQNS.PSA_SCORES,
       alias: ALIASES.PSA,
       entityId: ID_FIELD_NAMES.PSA_ID,
       fields: {
@@ -24,7 +24,7 @@ const psaConfig = {
       }
     },
     {
-      name: ENTITY_SETS.PSA_RISK_FACTORS,
+      name: APP_TYPES_FQNS.PSA_RISK_FACTORS,
       alias: ALIASES.RISK_FACTORS,
       entityId: ID_FIELD_NAMES.RISK_FACTORS_ID,
       fields: {
@@ -54,7 +54,7 @@ const psaConfig = {
       }
     },
     {
-      name: ENTITY_SETS.RELEASE_RECOMMENDATIONS,
+      name: APP_TYPES_FQNS.RELEASE_RECOMMENDATIONS,
       alias: ALIASES.NOTES,
       entityId: ID_FIELD_NAMES.NOTES_ID,
       fields: {
@@ -63,7 +63,7 @@ const psaConfig = {
       }
     },
     {
-      name: ENTITY_SETS.DMF_RISK_FACTORS,
+      name: APP_TYPES_FQNS.DMF_RISK_FACTORS,
       alias: ALIASES.DMF_RISK_FACTORS,
       entityId: ID_FIELD_NAMES.DMF_RISK_FACTORS_ID,
       fields: {
@@ -82,7 +82,7 @@ const psaConfig = {
       }
     },
     {
-      name: ENTITY_SETS.DMF_RESULTS,
+      name: APP_TYPES_FQNS.DMF_RESULTS,
       alias: ALIASES.DMF,
       entityId: ID_FIELD_NAMES.DMF_ID,
       fields: {
@@ -96,21 +96,21 @@ const psaConfig = {
       }
     },
     {
-      name: ENTITY_SETS.STAFF,
+      name: APP_TYPES_FQNS.STAFF,
       alias: ALIASES.STAFF,
       fields: {
         [ID_FIELD_NAMES.STAFF_ID]: PROPERTY_TYPES.PERSON_ID
       }
     },
     {
-      name: ENTITY_SETS.PEOPLE,
+      name: APP_TYPES_FQNS.PEOPLE,
       alias: ALIASES.PERSON,
       fields: {
         [ID_FIELD_NAMES.PERSON_ID]: PROPERTY_TYPES.PERSON_ID
       }
     },
     {
-      name: ENTITY_SETS.ARREST_CASES,
+      name: APP_TYPES_FQNS.ARREST_CASES,
       alias: ALIASES.CASE,
       entityId: ID_FIELD_NAMES.ARREST_ID,
       fields: {
@@ -118,14 +118,14 @@ const psaConfig = {
       }
     },
     {
-      name: ENTITY_SETS.CALCULATED_FOR,
+      name: APP_TYPES_FQNS.CALCULATED_FOR,
       alias: ALIASES.CALCULATED_FOR,
       fields: {
         [ID_FIELD_NAMES.TIMESTAMP]: PROPERTY_TYPES.TIMESTAMP
       }
     },
     {
-      name: ENTITY_SETS.ASSESSED_BY,
+      name: APP_TYPES_FQNS.ASSESSED_BY,
       alias: ALIASES.ASSESSED_BY,
       fields: {
         [ID_FIELD_NAMES.TIMESTAMP]: PROPERTY_TYPES.COMPLETED_DATE_TIME
@@ -133,7 +133,7 @@ const psaConfig = {
     },
     // manual entry setup
     {
-      name: ENTITY_SETS.MANUAL_PRETRIAL_CASES,
+      name: APP_TYPES_FQNS.MANUAL_PRETRIAL_CASES,
       alias: ALIASES.MANUAL_CASE,
       entityId: PROPERTY_TYPES.CASE_ID,
       fields: {
@@ -145,7 +145,7 @@ const psaConfig = {
       }
     },
     {
-      name: ENTITY_SETS.MANUAL_CHARGES,
+      name: APP_TYPES_FQNS.MANUAL_CHARGES,
       alias: ALIASES.MANUAL_CHARGES,
       multipleValuesField: 'charges',
       fields: {
@@ -159,14 +159,14 @@ const psaConfig = {
       }
     },
     {
-      name: ENTITY_SETS.CHARGED_WITH,
+      name: APP_TYPES_FQNS.CHARGED_WITH,
       alias: ALIASES.CHARGED_WITH,
       fields: {
         [PROPERTY_TYPES.CASE_ID]: PROPERTY_TYPES.STRING_ID
       }
     },
     {
-      name: ENTITY_SETS.APPEARS_IN,
+      name: APP_TYPES_FQNS.APPEARS_IN,
       alias: ALIASES.APPEARS_IN,
       fields: {
         [PROPERTY_TYPES.CASE_ID]: PROPERTY_TYPES.STRING_ID

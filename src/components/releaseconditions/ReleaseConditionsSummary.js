@@ -9,10 +9,22 @@ import { Constants } from 'lattice';
 import HearingSummary from '../hearings/HearingSummary';
 import { NoResults } from '../../utils/Layout';
 import { formatJudgeName } from '../../utils/consts/HearingConsts';
-import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
 import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { formatDateTime } from '../../utils/FormattingUtils';
+
+let {
+  JUDGES,
+  OUTCOMES,
+  BONDS,
+  RELEASE_CONDITIONS
+} = APP_TYPES_FQNS;
+
+BONDS = BONDS.toString();
+JUDGES = JUDGES.toString();
+OUTCOMES = OUTCOMES.toString();
+RELEASE_CONDITIONS = RELEASE_CONDITIONS.toString();
 
 const Header = styled.div`
   padding: 30px 0 0 30px;
@@ -36,10 +48,10 @@ const ReleaseConditionsSummary = ({ completedHearings, hearingNeighborsById } :P
     const date = dateTime[0];
     const time = dateTime[1];
     const courtroom = hearing.getIn([PROPERTY_TYPES.COURTROOM, 0], '');
-    const judge = formatJudgeName(hearingNeighbors.getIn([ENTITY_SETS.MIN_PEN_PEOPLE, PSA_NEIGHBOR.DETAILS]));
-    const hearingOutcome = hearingNeighbors.getIn([ENTITY_SETS.OUTCOMES, PSA_NEIGHBOR.DETAILS]);
-    const hearingBond = hearingNeighbors.getIn([ENTITY_SETS.BONDS, PSA_NEIGHBOR.DETAILS]);
-    const hearingConditions = hearingNeighbors.get(ENTITY_SETS.RELEASE_CONDITIONS);
+    const judge = formatJudgeName(hearingNeighbors.getIn([JUDGES, PSA_NEIGHBOR.DETAILS]));
+    const hearingOutcome = hearingNeighbors.getIn([OUTCOMES, PSA_NEIGHBOR.DETAILS]);
+    const hearingBond = hearingNeighbors.getIn([BONDS, PSA_NEIGHBOR.DETAILS]);
+    const hearingConditions = hearingNeighbors.get(RELEASE_CONDITIONS);
     const component = 'RELEASE_CONDTIONS_SUMMARY';
 
     const hearingObj = {

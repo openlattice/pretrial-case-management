@@ -12,6 +12,7 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
 import NewChargeForm from '../../components/managecharges/NewChargeForm';
+import { getEntitySetId } from '../../utils/AppUtils';
 import { arrestChargeConfig, courtChargeConfig } from '../../config/formconfig/ChargeConfig';
 import { CHARGE_TYPES } from '../../utils/consts/ChargeConsts';
 import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
@@ -34,6 +35,9 @@ const {
   COURT_CHARGE_LIST
 } = APP_TYPES_FQNS;
 
+const arrestChargeListFqn :string = ARREST_CHARGE_LIST.toString();
+const courtChargeListFqn :string = COURT_CHARGE_LIST.toString();
+
 const { OPENLATTICE_ID_FQN } = Constants;
 
 const Body = styled.div`
@@ -47,10 +51,10 @@ const Body = styled.div`
 `;
 
 type Props = {
-  arrestEntitySetsByOrganization :Map<*, *>,
+  arrestEntitySetId :string,
   app :Map<*, *>,
   chargeType :string,
-  courtEntitySetsByOrganization :Map<*, *>,
+  courtEntitySetId :string,
   creatingNew :boolean,
   description :string,
   degree :string,
@@ -168,8 +172,7 @@ class NewChargeModal extends React.Component<Props, State> {
     const {
       actions,
       chargeType,
-      entityKeyId,
-      selectedOrganizationId
+      entityKeyId
     } = this.props;
     const { updateCharge } = actions;
     let entity = this.getChargeFields();
@@ -178,7 +181,6 @@ class NewChargeModal extends React.Component<Props, State> {
     updateCharge({
       entity,
       entityKeyId,
-      selectedOrganizationId,
       chargePropertyType
     });
   }
@@ -215,37 +217,23 @@ class NewChargeModal extends React.Component<Props, State> {
 
   getChargeListEntitySetId = () => {
     const {
-      arrestEntitySetsByOrganization,
-      courtEntitySetsByOrganization,
-      chargeType,
-      selectedOrganizationId
+      arrestEntitySetId,
+      courtEntitySetId,
+      chargeType
     } = this.props;
     let entitySetId;
-    if (chargeType === CHARGE_TYPES.COURT) {
-      entitySetId = courtEntitySetsByOrganization.get(selectedOrganizationId, '');
-    }
     if (chargeType === CHARGE_TYPES.ARREST) {
-      entitySetId = arrestEntitySetsByOrganization.get(selectedOrganizationId, '');
+      entitySetId = arrestEntitySetId;
+    }
+    if (chargeType === CHARGE_TYPES.COURT) {
+      entitySetId = courtEntitySetId;
     }
     return entitySetId;
   }
 
   reloadChargesCallback = () => {
-    const {
-      actions,
-      arrestEntitySetsByOrganization,
-      courtEntitySetsByOrganization,
-      selectedOrganizationId
-    } = this.props;
-    const arrestChargesEntitySetId = arrestEntitySetsByOrganization.get(selectedOrganizationId, '');
-    const courtChargesEntitySetId = courtEntitySetsByOrganization.get(selectedOrganizationId, '');
-    if (arrestChargesEntitySetId && courtChargesEntitySetId) {
-      actions.loadCharges({
-        arrestChargesEntitySetId,
-        courtChargesEntitySetId,
-        selectedOrgId: selectedOrganizationId
-      });
-    }
+    const { actions } = this.props;
+    actions.loadCharges();
   }
 
   updateCharge = () => {
@@ -397,12 +385,12 @@ class NewChargeModal extends React.Component<Props, State> {
 function mapStateToProps(state) {
   const submit = state.get(STATE.SUBMIT);
   const app = state.get(STATE.APP);
-
+  const orgId = app.get(APP.SELECTED_ORG_ID, '');
   return {
     // App
     app,
-    arrestEntitySetsByOrganization: app.getIn([ARREST_CHARGE_LIST.toString(), APP.ENTITY_SETS_BY_ORG], Map()),
-    courtEntitySetsByOrganization: app.getIn([COURT_CHARGE_LIST.toString(), APP.ENTITY_SETS_BY_ORG], Map()),
+    arrestEntitySetId: getEntitySetId(app, arrestChargeListFqn, orgId),
+    courtEntitySetId: getEntitySetId(app, courtChargeListFqn, orgId),
     [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
     [APP.SELECTED_ORG_TITLE]: app.get(APP.SELECTED_ORG_TITLE),
 

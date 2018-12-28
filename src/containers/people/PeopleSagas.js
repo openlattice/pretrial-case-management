@@ -2,24 +2,25 @@
  * @flow
  */
 import moment from 'moment';
-import {
-  EntityDataModelApi,
-  Constants,
-  DataApi,
-  SearchApi
-} from 'lattice';
+import { Constants, DataApi, SearchApi } from 'lattice';
 import {
   Map,
   List,
   Set,
   fromJS
 } from 'immutable';
-import { call, put, takeEvery } from 'redux-saga/effects';
+import {
+  call,
+  put,
+  takeEvery,
+  select
+} from 'redux-saga/effects';
 
-import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
+import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { APP, PSA_NEIGHBOR, STATE } from '../../utils/consts/FrontEndStateConsts';
 import { obfuscateEntity, obfuscateEntityNeighbors } from '../../utils/consts/DemoNames';
-
+import { getEntitySetId } from '../../utils/AppUtils';
+import { getPropertyTypeId } from '../../edm/edmUtils';
 import {
   GET_PEOPLE,
   GET_PERSON_DATA,
@@ -31,14 +32,32 @@ import {
   refreshPersonNeighbors
 } from './PeopleActionFactory';
 
+let {
+  CONTACT_INFORMATION,
+  PEOPLE,
+  PSA_SCORES,
+  PRETRIAL_CASES
+} = APP_TYPES_FQNS;
+
+CONTACT_INFORMATION = CONTACT_INFORMATION.toString();
+PEOPLE = PEOPLE.toString();
+PSA_SCORES = PSA_SCORES.toString();
+PRETRIAL_CASES = PRETRIAL_CASES.toString();
+
 const { OPENLATTICE_ID_FQN } = Constants;
+
+const getApp = state => state.get(STATE.APP, Map());
+const getEDM = state => state.get(STATE.EDM, Map());
+const getOrgId = state => state.getIn([STATE.APP, APP.SELECTED_ORG_ID], '');
 
 function* getPeopleWorker(action) :Generator<*, *, *> {
 
   try {
     yield put(getPeople.request(action.id));
-    const entitySetId = yield call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.PEOPLE);
-    const response = yield call(DataApi.getEntitySetData, entitySetId);
+    const app = yield select(getApp);
+    const orgId = yield select(getOrgId);
+    const peopleEntitySetId = getEntitySetId(app, PEOPLE, orgId);
+    const response = yield call(DataApi.getEntitySetData, peopleEntitySetId);
     yield put(getPeople.success(action.id, response));
   }
   catch (error) {
@@ -53,20 +72,20 @@ function* getPeopleWatcher() :Generator<*, *, *> {
   yield takeEvery(GET_PEOPLE, getPeopleWorker);
 }
 
-function* getEntityForPersonId(personId :string, entitySetId :string) :Generator<*, *, *> {
-  const personIdFqn = PROPERTY_TYPES.PERSON_ID.split('.');
-  const propertyTypeId = yield call(EntityDataModelApi.getPropertyTypeId, {
-    namespace: personIdFqn[0],
-    name: personIdFqn[1]
-  });
+function* getEntityForPersonId(personId :string) :Generator<*, *, *> {
+  const app = yield select(getApp);
+  const edm = yield select(getEDM);
+  const orgId = yield select(getOrgId);
+  const peopleEntitySetId = getEntitySetId(app, PEOPLE, orgId);
+  const personIdPropertyTypeId = getPropertyTypeId(edm, PROPERTY_TYPES.PERSON_ID);
 
   const searchOptions = {
-    searchTerm: `${propertyTypeId}:"${personId}"`,
+    searchTerm: `${personIdPropertyTypeId}:"${personId}"`,
     start: 0,
     maxHits: 1
   };
 
-  const response = yield call(SearchApi.searchEntitySetData, entitySetId, searchOptions);
+  const response = yield call(SearchApi.searchEntitySetData, peopleEntitySetId, searchOptions);
   const person = obfuscateEntity(response.hits[0]); // TODO just for demo
   return person;
 }
@@ -75,8 +94,7 @@ function* getPersonDataWorker(action) :Generator<*, *, *> {
 
   try {
     yield put(getPersonData.request(action.id));
-    const entitySetId = yield call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.PEOPLE);
-    const person = yield getEntityForPersonId(action.value, entitySetId);
+    const person = yield getEntityForPersonId(action.value);
     yield put(getPersonData.success(action.id, { person, entityKeyId: person[OPENLATTICE_ID_FQN][0] }));
   }
   catch (error) {
@@ -97,14 +115,66 @@ function* getPersonNeighborsWorker(action) :Generator<*, *, *> {
 
   try {
     yield put(getPersonNeighbors.request(action.id));
-    const entitySetId = yield call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.PEOPLE);
+    let caseNums = Set();
+    let neighborsByEntitySet = Map();
+    let mostRecentPSA = Map();
+    let currentPSADateTime;
 
-    const person = yield getEntityForPersonId(personId, entitySetId);
+    const app = yield select(getApp);
+    const orgId = yield select(getOrgId);
+    const peopleEntitySetId = getEntitySetId(app, PEOPLE, orgId);
+    const psaScoresEntitySetId = getEntitySetId(app, PSA_SCORES, orgId);
+    const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
+
+    const person = yield getEntityForPersonId(personId);
     const entityKeyId = person[OPENLATTICE_ID_FQN][0];
-    let neighbors = yield call(SearchApi.searchEntityNeighbors, entitySetId, entityKeyId);
+    let neighbors = yield call(SearchApi.searchEntityNeighbors, peopleEntitySetId, entityKeyId);
+    neighbors = obfuscateEntityNeighbors(neighbors);
+    neighbors = fromJS(neighbors);
+
+    neighbors.forEach((neighborObj) => {
+      const entitySetId = neighborObj.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
+      const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
+      const entityDateTime = moment(neighborObj.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.DATE_TIME, 0]));
+      if (appTypeFqn === PSA_SCORES) {
+        if (!mostRecentPSA || !currentPSADateTime || currentPSADateTime.isBefore(entityDateTime)) {
+          mostRecentPSA = neighborObj;
+          currentPSADateTime = entityDateTime;
+        }
+      }
+      if (appTypeFqn === CONTACT_INFORMATION) {
+        neighborsByEntitySet = neighborsByEntitySet.set(
+          appTypeFqn,
+          neighborObj
+        );
+      }
+      else {
+        neighborsByEntitySet = neighborsByEntitySet.set(
+          appTypeFqn,
+          neighborsByEntitySet.get(appTypeFqn, List()).push(neighborObj)
+        );
+      }
+    });
+
+    const uniqNeighborsByEntitySet = neighborsByEntitySet.set(PRETRIAL_CASES,
+      neighborsByEntitySet.get(PRETRIAL_CASES, List())
+        .filter((neighbor) => {
+          const caseNum = neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.CASE_ID, 0]);
+          if (!caseNums.has(caseNum)) {
+            caseNums = caseNums.add(caseNum);
+            return true;
+          }
+          return false;
+        }), neighborsByEntitySet);
 
     neighbors = obfuscateEntityNeighbors(neighbors);
-    yield put(getPersonNeighbors.success(action.id, { personId, neighbors }));
+
+    yield put(getPersonNeighbors.success(action.id, {
+      personId,
+      neighbors: uniqNeighborsByEntitySet,
+      psaScoresEntitySetId,
+      mostRecentPSA
+    }));
   }
   catch (error) {
     yield put(getPersonNeighbors.failure(action.id, { error, personId }));
@@ -128,38 +198,43 @@ function* refreshPersonNeighborsWorker(action) :Generator<*, *, *> {
     let currentPSADateTime;
     let mostRecentPSA = Map();
     let neighbors = Map();
+    const app = yield select(getApp);
+    const orgId = yield select(getOrgId);
+    const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
+    const peopleEntitySetId = getEntitySetId(app, PEOPLE, orgId);
+    const psaScoresEntitySetId = getEntitySetId(app, PSA_SCORES, orgId);
 
-    const entitySetId = yield call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.PEOPLE);
-    const person = yield getEntityForPersonId(personId, entitySetId);
+    const person = yield getEntityForPersonId(personId);
     const entityKeyId = person[OPENLATTICE_ID_FQN][0];
-    let neighborsList = yield call(SearchApi.searchEntityNeighbors, entitySetId, entityKeyId);
+    let neighborsList = yield call(SearchApi.searchEntityNeighbors, peopleEntitySetId, entityKeyId);
     neighborsList = obfuscateEntityNeighbors(neighborsList);
     neighborsList = fromJS(neighborsList);
 
     neighborsList.forEach((neighbor) => {
-      const entitySetName = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'name'], '');
+      const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
+      const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
       const entityDateTime = moment(neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.DATE_TIME, 0]));
-      if (entitySetName === ENTITY_SETS.PSA_SCORES) {
+      if (appTypeFqn === PSA_SCORES) {
         if (!mostRecentPSA || !currentPSADateTime || currentPSADateTime.isBefore(entityDateTime)) {
           mostRecentPSA = neighbor;
           currentPSADateTime = entityDateTime;
         }
       }
-      if (entitySetName === ENTITY_SETS.CONTACT_INFORMATION) {
+      if (appTypeFqn === CONTACT_INFORMATION) {
         neighbors = neighbors.set(
-          entitySetName,
+          appTypeFqn,
           neighbor
         );
       }
       else {
         neighbors = neighbors.set(
-          entitySetName,
-          neighbors.get(entitySetName, List()).push(neighbor)
+          appTypeFqn,
+          neighbors.get(appTypeFqn, List()).push(neighbor)
         );
       }
     });
-    neighbors = neighbors.set(ENTITY_SETS.PRETRIAL_CASES,
-      neighbors.get(ENTITY_SETS.PRETRIAL_CASES, List())
+    neighbors = neighbors.set(PRETRIAL_CASES,
+      neighbors.get(PRETRIAL_CASES, List())
         .filter((neighbor) => {
           const caseNum = neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.CASE_ID, 0]);
           if (!caseNums.has(caseNum)) {
@@ -168,15 +243,12 @@ function* refreshPersonNeighborsWorker(action) :Generator<*, *, *> {
           }
           return false;
         }), neighbors);
-    const scoresEntitySetId = neighbors.getIn(
-      [ENTITY_SETS.PSA_SCORES, 0, PSA_NEIGHBOR.ENTITY_SET, 'id'],
-      ''
-    );
+
     yield put(refreshPersonNeighbors.success(action.id, {
       personId,
       mostRecentPSA,
       neighbors,
-      scoresEntitySetId
+      scoresEntitySetId: psaScoresEntitySetId
     }));
   }
   catch (error) {

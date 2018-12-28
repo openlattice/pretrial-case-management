@@ -149,6 +149,7 @@ type Props = {
   loading :boolean,
   organizations :Map<*, *>,
   selectedOrg :string,
+  pretrialModule :boolean,
   logout :() => void,
   switchOrg :(orgId :string) => Object
 }
@@ -182,7 +183,7 @@ class HeaderNav extends React.Component<Props, *> {
   }
 
   render() {
-    const { logout } = this.props;
+    const { logout, pretrialModule } = this.props;
     return (
       <div>
         <AppHeaderWrapper>
@@ -221,20 +222,26 @@ class HeaderNav extends React.Component<Props, *> {
                 selectedIcon={manageChargesSelected}
                 label="Manage Charges" />
             <NavButton
-                path={Routes.JUDGE_VIEW}
-                defaultIcon={judges}
-                selectedIcon={judgesSelected}
-                label="Judges" />
+                path={Routes.VISUALIZE_DASHBOARD}
+                defaultIcon={dashboard}
+                selectedIcon={dashboardSelected}
+                label="Dashboard" />
             <NavButton
                 path={Routes.DOWNLOAD_FORMS}
                 defaultIcon={downloads}
                 selectedIcon={downloadsSelected}
                 label="Downloads" />
-            <NavButton
-                path={Routes.VISUALIZE_DASHBOARD}
-                defaultIcon={dashboard}
-                selectedIcon={dashboardSelected}
-                label="Dashboard" />
+            {
+              pretrialModule
+                ? (
+                  <NavButton
+                      path={Routes.JUDGE_VIEW}
+                      defaultIcon={judges}
+                      selectedIcon={judgesSelected}
+                      label="Judges" />
+                )
+                : null
+            }
           </StyledNavWrapper>
         </AppHeaderWrapper>
       </div>

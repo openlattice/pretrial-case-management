@@ -7,6 +7,7 @@ export const STATE = {
   CHARGES: 'charges',
   DASHBOARD: 'dashboard',
   DOWNLOAD: 'download',
+  EDM: 'edm',
   ENROLL: 'enroll',
   PSA: 'psa',
   PEOPLE: 'people',
@@ -41,7 +42,10 @@ export const APP = {
   PRIMARY_KEYS: 'primaryKeys',
   PROPERTY_TYPES: 'propertyTypes',
   SELECTED_ORG_ID: 'selectedOrganizationId',
-  SELECTED_ORG_TITLE: 'selectedOrganizationTitle'
+  SELECTED_ORG_TITLE: 'selectedOrganizationTitle',
+  APP_SETTINGS_ID: 'appSettingsEntitySetId',
+  SELECTED_ORG_SETTINGS: 'selectedOrganizationSettings',
+  SETTINGS_BY_ORG_ID: 'appSettingsByOrgId'
 };
 
 // CHARGES
@@ -108,6 +112,14 @@ export const DOWNLOAD = {
   ALL_HEARING_DATA: 'allHearingData',
   ERROR: 'downloadError',
   HEARING_IDS: 'hearingIds'
+};
+
+// EDM
+
+export const EDM = {
+  FQN_TO_ID: 'fqnToIdMap',
+  IS_FETCHING_PROPERTY_TYPES: 'isFetchingAllPropertyTypes',
+  PROPERTY_TYPES_BY_ID: 'propertyTypesById'
 };
 
 // Enroll

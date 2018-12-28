@@ -13,7 +13,7 @@ import ChargeHistoryStats from '../casehistory/ChargeHistoryStats';
 import LoadingSpinner from '../LoadingSpinner';
 import PSASummary from '../../containers/review/PSASummary';
 import ViewMoreLink from '../buttons/ViewMoreLink';
-import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { getIdOrValue } from '../../utils/DataUtils';
 import {
   StyledColumn,
@@ -34,10 +34,17 @@ import {
 
 import * as Routes from '../../core/router/Routes';
 
+let { MANUAL_PRETRIAL_CASES, RELEASE_RECOMMENDATIONS, STAFF } = APP_TYPES_FQNS;
+
+MANUAL_PRETRIAL_CASES = MANUAL_PRETRIAL_CASES.toString();
+RELEASE_RECOMMENDATIONS = RELEASE_RECOMMENDATIONS.toString();
+STAFF = STAFF.toString();
+
 type Props = {
   contactInfo :Map<*, *>,
   psaNeighborsById :Map<*, *>,
   selectedPersonData :Map<*, *>,
+  includesPretrialModule :boolean,
   loading :boolean,
   mostRecentPSA :Map<*, *>,
   mostRecentPSAEntityKeyId :string,
@@ -71,27 +78,28 @@ const PersonOverview = ({
   psaNeighborsById,
   scheduledHearings,
   selectedPersonData,
+  includesPretrialModule,
   openDetailsModal,
   openUpdateContactModal
 } :Props) => {
   const mostRecentPSANeighbors = psaNeighborsById.get(mostRecentPSAEntityKeyId, Map());
   let arrestDate = getIdOrValue(
-    mostRecentPSANeighbors, ENTITY_SETS.MANUAL_PRETRIAL_CASES, PROPERTY_TYPES.ARREST_DATE_TIME
+    mostRecentPSANeighbors, MANUAL_PRETRIAL_CASES, PROPERTY_TYPES.ARREST_DATE_TIME
   );
   if (!arrestDate) {
     arrestDate = getIdOrValue(
-      mostRecentPSANeighbors, ENTITY_SETS.MANUAL_PRETRIAL_CASES, PROPERTY_TYPES.FILE_DATE
+      mostRecentPSANeighbors, MANUAL_PRETRIAL_CASES, PROPERTY_TYPES.FILE_DATE
     );
   }
-  
+
   const caseHistory = getCaseHistory(neighbors);
   const chargeHistory = getChargeHistory(neighbors);
   const lastEditDateForPSA = psaNeighborsById.getIn(
-    [mostRecentPSAEntityKeyId, ENTITY_SETS.STAFF, 0, PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.DATE_TIME, 0],
+    [mostRecentPSAEntityKeyId, STAFF, 0, PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.DATE_TIME, 0],
     ''
   );
   const notes = getIdOrValue(
-    mostRecentPSANeighbors, ENTITY_SETS.RELEASE_RECOMMENDATIONS, PROPERTY_TYPES.RELEASE_RECOMMENDATION
+    mostRecentPSANeighbors, RELEASE_RECOMMENDATIONS, PROPERTY_TYPES.RELEASE_RECOMMENDATION
   );
   const scores = mostRecentPSA.get(PSA_NEIGHBOR.DETAILS, Map());
   const { caseHistoryForMostRecentPSA, chargeHistoryForMostRecentPSA } = getCasesForPSA(
@@ -117,14 +125,19 @@ const PersonOverview = ({
                 openUpdateContactModal={openUpdateContactModal} />
           </StyledColumnRow>
         </StyledColumnRowWrapper>
-        <StyledColumnRowWrapper>
-          <StyledColumnRow>
-            <ChargeHistoryStats
-                padding
-                pendingCharges={pendingCharges}
-                chargeHistory={chargeHistory} />
-          </StyledColumnRow>
-        </StyledColumnRowWrapper>
+        {
+          includesPretrialModule
+            ? (
+              <StyledColumnRowWrapper>
+                <StyledColumnRow>
+                  <ChargeHistoryStats
+                      padding
+                      pendingCharges={pendingCharges}
+                      chargeHistory={chargeHistory} />
+                </StyledColumnRow>
+              </StyledColumnRowWrapper>
+            ) : null
+        }
         <StyledColumnRowWrapper>
           <StyledColumnRow>
             <PSASummary
@@ -135,31 +148,41 @@ const PersonOverview = ({
                 openDetailsModal={openDetailsModal} />
           </StyledColumnRow>
         </StyledColumnRowWrapper>
-        <StyledColumnRowWrapper>
-          <StyledColumnRowWithPadding>
-            <StyledViewMoreLinkForHearings to={`${Routes.PERSON_DETAILS_ROOT}/${personId}${Routes.HEARINGS}`}>
-              View more
-            </StyledViewMoreLinkForHearings>
-            <HearingCardsWithTitle
-                readOnly
-                title="Upcoming Hearings"
-                hearings={scheduledHearings}
-                handleSelect={() => null}
-                noHearingsMessage="There are no upcoming hearings." />
-          </StyledColumnRowWithPadding>
-        </StyledColumnRowWrapper>
-        <StyledColumnRowWrapper>
-          <StyledColumnRow>
-            <StyledViewMoreLinkForCases to={`${Routes.PERSON_DETAILS_ROOT}/${personId}${Routes.CASES}`}>
-              View more
-            </StyledViewMoreLinkForCases>
-            <CaseHistoryList
-                loading={loading}
-                title="Pending Cases on Arrest Date for Current PSA"
-                caseHistory={caseHistoryForMostRecentPSA}
-                chargeHistory={chargeHistoryForMostRecentPSA} />
-          </StyledColumnRow>
-        </StyledColumnRowWrapper>
+        {
+          includesPretrialModule
+            ? (
+              <StyledColumnRowWrapper>
+                <StyledColumnRowWithPadding>
+                  <StyledViewMoreLinkForHearings to={`${Routes.PERSON_DETAILS_ROOT}/${personId}${Routes.HEARINGS}`}>
+                    View more
+                  </StyledViewMoreLinkForHearings>
+                  <HearingCardsWithTitle
+                      readOnly
+                      title="Upcoming Hearings"
+                      hearings={scheduledHearings}
+                      handleSelect={() => null}
+                      noHearingsMessage="There are no upcoming hearings." />
+                </StyledColumnRowWithPadding>
+              </StyledColumnRowWrapper>
+            ) : null
+        }
+        {
+          includesPretrialModule
+            ? (
+              <StyledColumnRowWrapper>
+                <StyledColumnRow>
+                  <StyledViewMoreLinkForCases to={`${Routes.PERSON_DETAILS_ROOT}/${personId}${Routes.CASES}`}>
+                    View more
+                  </StyledViewMoreLinkForCases>
+                  <CaseHistoryList
+                      loading={loading}
+                      title="Pending Cases on Arrest Date for Current PSA"
+                      caseHistory={caseHistoryForMostRecentPSA}
+                      chargeHistory={chargeHistoryForMostRecentPSA} />
+                </StyledColumnRow>
+              </StyledColumnRowWrapper>
+            ) : null
+        }
       </StyledColumn>
     </Wrapper>
   );
