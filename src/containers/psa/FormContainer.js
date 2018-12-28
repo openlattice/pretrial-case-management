@@ -516,7 +516,7 @@ class Form extends React.Component<Props, State> {
 
     const config = psaConfig;
 
-    if (values[DMF.COURT_OR_BOOKING] !== CONTEXT.BOOKING) {
+    if ((values[DMF.COURT_OR_BOOKING] !== CONTEXT.BOOKING) || !includesPretrialModule) {
       delete values[DMF.SECONDARY_RELEASE_CHARGES];
       delete values[NOTES[DMF.SECONDARY_RELEASE_CHARGES]];
       delete values[DMF.SECONDARY_HOLD_CHARGES];
@@ -525,8 +525,14 @@ class Form extends React.Component<Props, State> {
     if (!includesPretrialModule) {
       delete values[ID_FIELD_NAMES.DMF_ID];
       delete values[ID_FIELD_NAMES.DMF_RISK_FACTORS_ID];
+      delete values[DMF.EXTRADITED];
+      delete values[NOTES[DMF.EXTRADITED]];
+      delete values[DMF.STEP_2_CHARGES];
+      delete values[NOTES[DMF.STEP_2_CHARGES]];
+      delete values[DMF.STEP_4_CHARGES];
+      delete values[NOTES[DMF.STEP_4_CHARGES]];
     }
-
+    console.log(values);
     actions.submit({ app, values, config });
     this.setState({ psaId });
   }
