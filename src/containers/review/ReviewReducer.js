@@ -119,7 +119,7 @@ export default function reviewReducer(state :Immutable.Map<*, *> = INITIAL_STATE
             .set(REVIEW.NEIGHBORS_BY_ID, newNeighborsByIdState)
             .set(REVIEW.NEIGHBORS_BY_DATE, newNeighborsByDate)
             .set(REVIEW.ALL_FILERS, action.value.allFilers.sort())
-            .set(REVIEW.ERROR, '')
+            .set(REVIEW.ERROR, '');
         },
         FAILURE: () => state
           .set(REVIEW.NEIGHBORS_BY_DATE, Immutable.Map())

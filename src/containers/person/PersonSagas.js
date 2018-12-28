@@ -24,10 +24,12 @@ import { APP, STATE } from '../../utils/consts/FrontEndStateConsts';
 import { obfuscateEntityNeighbors } from '../../utils/consts/DemoNames';
 import { getEntitySetId } from '../../utils/AppUtils';
 import {
+  CLEAR_SEARCH_RESULTS,
   LOAD_PERSON_DETAILS,
   NEW_PERSON_SUBMIT,
   SEARCH_PEOPLE,
   UPDATE_CASES,
+  clearSearchResults,
   loadPersonDetails,
   newPersonSubmit,
   searchPeople,
@@ -277,7 +279,16 @@ function* searchPeopleWatcher() :Generator<*, *, *> {
   yield takeEvery(SEARCH_PEOPLE, searchPeopleWorker);
 }
 
+function* clearSearchResultsWorker(action) :Generator<*, *, *> {
+  yield put(clearSearchResults.success(action.id));
+}
+
+function* clearSearchResultsWatcher() :Generator<*, *, *> {
+  yield takeEvery(CLEAR_SEARCH_RESULTS, clearSearchResultsWorker);
+}
+
 export {
+  clearSearchResultsWatcher,
   loadPersonDetailsWatcher,
   updateCasesWatcher,
   newPersonSubmitWatcher,

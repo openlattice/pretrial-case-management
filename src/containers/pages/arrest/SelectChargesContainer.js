@@ -211,7 +211,7 @@ class SelectChargesContainer extends React.Component<Props, State> {
     const caseEntity = {
       [PROPERTY_TYPES.CASE_ID]: [caseId],
       [PROPERTY_TYPES.FILE_DATE]: [toISODateTime(moment())],
-      [PROPERTY_TYPES.NUMBER_OF_CHARGES]: [charges.length]
+      [PROPERTY_TYPES.NUMBER_OF_CHARGES]: [charges.size]
     };
     if (caseDispositionDate) caseEntity[PROPERTY_TYPES.CASE_DISPOSITION_DATE] = [this.getDateTime(caseDispositionDate)];
     if (arrestDate) caseEntity[PROPERTY_TYPES.ARREST_DATE_TIME] = [this.getDateTime(arrestDate)];

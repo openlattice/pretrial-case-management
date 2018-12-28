@@ -10,7 +10,12 @@ import ChargeHistoryStats from '../casehistory/ChargeHistoryStats';
 import ChargeTable from '../charges/ChargeTable';
 import PSASummary from '../../containers/review/PSASummary';
 import { AlternateSectionHeader, Count } from '../../utils/Layout';
-import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import {
+  APP_TYPES_FQNS,
+  PROPERTY_TYPES,
+  SETTINGS,
+  MODULE
+} from '../../utils/consts/DataModelConsts';
 import {
   STATE,
   APP,
@@ -44,6 +49,7 @@ type Props = {
   manualChargeHistory :Immutable.Map<*, *>,
   pendingCharges :Immutable.List<*>,
   selectedOrganizationId :string,
+  selectedOrganizationSettings :Immutable.Map<*, *>,
   violentArrestCharges :Immutable.Map<*, *>,
   downloadFn :(values :{
     neighbors :Immutable.Map<*, *>,
@@ -87,8 +93,11 @@ class PSAModalSummary extends React.Component<Props, *> {
       neighbors,
       notes,
       pendingCharges,
-      scores
+      scores,
+      selectedOrganizationSettings
     } = this.props;
+
+    const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
 
     return (
       <SummaryWrapper>
@@ -98,10 +107,15 @@ class PSAModalSummary extends React.Component<Props, *> {
             neighbors={neighbors}
             manualCaseHistory={manualCaseHistory}
             downloadFn={downloadFn} />
-        <ChargeHistoryStats
-            padding
-            pendingCharges={pendingCharges}
-            chargeHistory={chargeHistory} />
+        {
+          includesPretrialModule
+            ? (
+              <ChargeHistoryStats
+                  padding
+                  pendingCharges={pendingCharges}
+                  chargeHistory={chargeHistory} />
+            ) : null
+        }
         {this.renderCaseInfo()}
       </SummaryWrapper>
     );
@@ -115,6 +129,7 @@ function mapStateToProps(state :Immutable.Map<*, *>) :Object {
     // App
     [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
     [APP.SELECTED_ORG_TITLE]: app.get(APP.SELECTED_ORG_TITLE),
+    [APP.SELECTED_ORG_SETTINGS]: app.get(APP.SELECTED_ORG_SETTINGS),
 
     // Charges
     [CHARGES.ARREST_VIOLENT]: charges.get(CHARGES.ARREST_VIOLENT),

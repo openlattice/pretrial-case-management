@@ -204,6 +204,7 @@ class ReviewPSA extends React.Component<Props, State> {
     const { actions, selectedOrganizationId } = this.props;
     if (selectedOrganizationId) {
       actions.loadPSAsByDate(STATUS_OPTIONS[status].value);
+      actions.checkPSAPermissions();
     }
   }
 
@@ -212,6 +213,7 @@ class ReviewPSA extends React.Component<Props, State> {
     const { actions, selectedOrganizationId } = this.props;
     if (selectedOrganizationId !== prevProps.selectedOrganizationId) {
       actions.loadPSAsByDate(STATUS_OPTIONS[status].value);
+      actions.checkPSAPermissions();
     }
   }
 

@@ -18,7 +18,7 @@ import LoadingSpinner from '../../components/LoadingSpinner';
 import NavButtonToolbar from '../../components/buttons/NavButtonToolbar';
 import DropDownMenu from '../../components/StyledSelect';
 import { getFormattedPeople } from '../../utils/PeopleUtils';
-import { searchPeople } from '../person/PersonActionFactory';
+import { clearSearchResults, searchPeople } from '../person/PersonActionFactory';
 import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { DOMAIN_OPTIONS_ARR } from '../../utils/consts/ReviewPSAConsts';
 import { OL } from '../../utils/consts/Colors';
@@ -94,6 +94,11 @@ class PeopleContainer extends React.Component<Props, State> {
       countyFilter: '',
       peopleList: []
     };
+  }
+
+  componentWillUnmount() {
+    const { actions } = this.props;
+    actions.clearSearchResults();
   }
 
   componentWillReceiveProps(nextProps) {
@@ -262,7 +267,7 @@ function mapStateToProps(state) {
 }
 
 function mapDispatchToProps(dispatch) {
-  const actions :{ [string] :Function } = { searchPeople };
+  const actions :{ [string] :Function } = { searchPeople, clearSearchResults };
 
   return {
     actions: {

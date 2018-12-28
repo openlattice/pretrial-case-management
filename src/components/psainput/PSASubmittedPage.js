@@ -367,7 +367,7 @@ class PSASubmittedPage extends React.Component<Props, State> {
 
   renderDMF = () => {
     const { dmf, selectedOrganizationSettings } = this.props;
-    const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], '');
+    const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
 
     return includesPretrialModule
       ? (
@@ -562,15 +562,24 @@ class PSASubmittedPage extends React.Component<Props, State> {
         <WideContainer>
           {this.renderRiskFactorsTable()}
         </WideContainer>
-        <PaddedResultHeader>Notes</PaddedResultHeader>
-        <NotesContainer>{notes}</NotesContainer>
-        <MinimallyPaddedResultHeader>Timeline</MinimallyPaddedResultHeader>
+        {
+          notes
+            ? (
+              <>
+                <PaddedResultHeader>Notes</PaddedResultHeader>
+                <NotesContainer>{notes}</NotesContainer>
+              </>
+            ) : null
+        }
         {
           includesPretrialModule
             ? (
-              <TimelineContainer>
-                <CaseHistoryTimeline caseHistory={allCases} chargeHistory={allCharges} />
-              </TimelineContainer>
+              <>
+                <MinimallyPaddedResultHeader>Timeline</MinimallyPaddedResultHeader>
+                <TimelineContainer>
+                  <CaseHistoryTimeline caseHistory={allCases} chargeHistory={allCharges} />
+                </TimelineContainer>
+              </>
             ) : null
         }
       </>
@@ -582,7 +591,7 @@ class PSASubmittedPage extends React.Component<Props, State> {
       onClose,
       selectedOrganizationSettings
     } = this.props;
-    const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], '');
+    const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
     const { settingHearing } = this.state;
 
     return (
@@ -623,7 +632,7 @@ function mapStateToProps(state :Immutable.Map<*, *>) :Object {
     // App
     [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
     [APP.SELECTED_ORG_TITLE]: app.get(APP.SELECTED_ORG_TITLE),
-    [APP.SELECTED_ORG_SETTINGS]: app.get(APP.SELECTED_ORG_TITLE),
+    [APP.SELECTED_ORG_SETTINGS]: app.get(APP.SELECTED_ORG_SETTINGS),
 
     // Charges
     [CHARGES.ARREST_VIOLENT]: charges.get(CHARGES.ARREST_VIOLENT),
