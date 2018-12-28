@@ -966,8 +966,6 @@ function mapDispatchToProps(dispatch :Function) :Object {
     actions[action] = SubmitActionFactory[action];
   });
 
-  console.log(actions);
-
   return {
     actions: {
       ...bindActionCreators(actions, dispatch)

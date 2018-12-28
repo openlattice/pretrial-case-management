@@ -532,7 +532,6 @@ class Form extends React.Component<Props, State> {
       delete values[DMF.STEP_4_CHARGES];
       delete values[NOTES[DMF.STEP_4_CHARGES]];
     }
-    console.log(values);
     actions.submit({ app, values, config });
     this.setState({ psaId });
   }

@@ -99,8 +99,6 @@ function* loadChargesWorker(action :SequenceAction) :Generator<*, *, *> {
   let bookingHoldExceptionCharges = Map();
   const { id, value } = action;
   const { arrestChargesEntitySetId, courtChargesEntitySetId, selectedOrgId } = value;
-  console.log(arrestChargesEntitySetId);
-  console.log(courtChargesEntitySetId);
 
   const chargePermissions = yield call(AuthorizationApi.checkAuthorizations, [
     { aclKey: [arrestChargesEntitySetId], permissions: ['WRITE'] },
