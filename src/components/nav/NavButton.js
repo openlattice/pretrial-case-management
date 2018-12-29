@@ -16,7 +16,7 @@ const StyledNavLink = styled(NavLink).attrs({
 })`
   width: auto;
   height: auto;
-  padding-bottom: 10px;
+  padding: 0 10px 10px 0;
   margin-bottom: -13px;
   font-family: 'Open Sans', sans-serif;
   font-size: 12px;
