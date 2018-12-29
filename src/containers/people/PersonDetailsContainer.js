@@ -502,12 +502,19 @@ class PersonDetailsContainer extends React.Component<Props, State> {
                 <>
                   <Route path={hearingsRoute} render={this.renderHearings} />
                   <Route path={casesRoute} render={this.renderCases} />
+                  <Redirect from={Routes.PEOPLE} to={overviewRoute} />
+                  <Redirect from={Routes.PERSON_DETAILS_ROOT} to={overviewRoute} />
+                  <Redirect from={`${Routes.PERSON_DETAILS_ROOT}/${personId}`} to={overviewRoute} />
                 </>
-              ) : null
+              )
+              : (
+                <>
+                  <Redirect from={Routes.PEOPLE} to={overviewRoute} />
+                  <Redirect from={Routes.PERSON_DETAILS_ROOT} to={overviewRoute} />
+                  <Redirect from={`${Routes.PERSON_DETAILS_ROOT}/${personId}`} to={overviewRoute} />
+                </>
+              )
           }
-          <Redirect from={Routes.PEOPLE} to={overviewRoute} />
-          <Redirect from={Routes.PERSON_DETAILS_ROOT} to={overviewRoute} />
-          <Redirect from={`${Routes.PERSON_DETAILS_ROOT}/${personId}`} to={overviewRoute} />
         </Switch>
       </DashboardMainSection>
     );

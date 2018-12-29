@@ -222,11 +222,6 @@ class HeaderNav extends React.Component<Props, *> {
                 selectedIcon={manageChargesSelected}
                 label="Manage Charges" />
             <NavButton
-                path={Routes.VISUALIZE_DASHBOARD}
-                defaultIcon={dashboard}
-                selectedIcon={dashboardSelected}
-                label="Dashboard" />
-            <NavButton
                 path={Routes.DOWNLOAD_FORMS}
                 defaultIcon={downloads}
                 selectedIcon={downloadsSelected}
@@ -234,11 +229,18 @@ class HeaderNav extends React.Component<Props, *> {
             {
               pretrialModule
                 ? (
-                  <NavButton
-                      path={Routes.JUDGE_VIEW}
-                      defaultIcon={judges}
-                      selectedIcon={judgesSelected}
-                      label="Judges" />
+                  <>
+                    <NavButton
+                        path={Routes.VISUALIZE_DASHBOARD}
+                        defaultIcon={dashboard}
+                        selectedIcon={dashboardSelected}
+                        label="Dashboard" />
+                    <NavButton
+                        path={Routes.JUDGE_VIEW}
+                        defaultIcon={judges}
+                        selectedIcon={judgesSelected}
+                        label="Judges" />
+                  </>
                 )
                 : null
             }
