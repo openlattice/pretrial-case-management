@@ -539,9 +539,10 @@ class Form extends React.Component<Props, State> {
   getFqn = propertyType => `${propertyType.getIn(['type', 'namespace'])}.${propertyType.getIn(['type', 'name'])}`
 
   handleSelectPerson = (selectedPerson, entityKeyId) => {
-    const { actions } = this.props;
+    const { actions, selectedOrganizationSettings } = this.props;
+    const shouldLoadCases = selectedOrganizationSettings.get(SETTINGS.LOAD_CASES, false);
     actions.selectPerson({ selectedPerson });
-    actions.loadPersonDetails({ entityKeyId, shouldLoadCases: true });
+    actions.loadPersonDetails({ entityKeyId, shouldLoadCases });
     actions.loadNeighbors({ entityKeyId });
   }
 
