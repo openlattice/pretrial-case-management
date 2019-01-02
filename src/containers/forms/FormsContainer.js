@@ -20,6 +20,7 @@ const {
   BOOKING,
   COURT_MINN,
   COURT_PENN,
+  COURT_SHELBY,
   DEMO_ORG
 } = CONTEXT;
 
@@ -77,6 +78,9 @@ class FormsContainer extends React.Component<Props, *> {
         break;
       case ORG_IDS.MINNEHAHA_SD:
         jurisdiction = COURT_MINN;
+        break;
+      case ORG_IDS.SHELBY_TN:
+        jurisdiction = COURT_SHELBY;
         break;
       default:
         break;
