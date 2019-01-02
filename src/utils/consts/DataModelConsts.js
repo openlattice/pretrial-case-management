@@ -190,6 +190,7 @@ export const PROPERTY_TYPES = {
   ZIP: 'location.zip',
 
   // Pretrial case entity type consts
+  CASE_NUMBER: 'ol.name',
   CASE_ID: 'j.CaseNumberText',
   ARREST_DATE: 'publicsafety.ArrestDate',
   ARREST_DATE_TIME: 'ol.arrestdatetime',
