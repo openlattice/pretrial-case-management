@@ -10,9 +10,13 @@ import { connect } from 'react-redux';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import PeopleList from '../../components/people/PeopleList';
 import { getFormattedPeople } from '../../utils/PeopleUtils';
-import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import {
+  APP_TYPES_FQNS,
+  PROPERTY_TYPES
+} from '../../utils/consts/DataModelConsts';
 import { PSA_STATUSES } from '../../utils/consts/Consts';
 import {
+  APP,
   PSA_NEIGHBOR,
   SEARCH,
   REVIEW,
@@ -32,6 +36,7 @@ type Props = {
   isLoadingPeople :boolean,
   loadingPSAData :boolean,
   psaNeighborsById :Immutable.Map<*, *>,
+  selectedOrganizationId :string,
   actions :{
     loadPSAsByDate :(filter :string) => void
   }
@@ -40,8 +45,17 @@ type Props = {
 class RequiresActionList extends React.Component<Props, State> {
 
   componentDidMount() {
-    const { actions } = this.props;
-    actions.loadPSAsByDate(PSA_STATUSES.OPEN);
+    const { actions, selectedOrganizationId } = this.props;
+    if (selectedOrganizationId) {
+      actions.loadPSAsByDate(PSA_STATUSES.OPEN);
+    }
+  }
+
+  componentWillReceiveProps(nextProps) {
+    const { actions, selectedOrganizationId } = this.props;
+    if (selectedOrganizationId !== nextProps.selectedOrganizationId) {
+      actions.loadPSAsByDate(PSA_STATUSES.OPEN);
+    }
   }
 
   getPeopleRequiringAction = () => {
@@ -90,9 +104,12 @@ class RequiresActionList extends React.Component<Props, State> {
 }
 
 function mapStateToProps(state) {
+  const app = state.get(STATE.APP);
   const review = state.get(STATE.REVIEW);
   const search = state.get(STATE.SEARCH);
   return {
+    [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
+
     [SEARCH.LOADING]: search.get(SEARCH.LOADING),
     [REVIEW.LOADING_DATA]: review.get(REVIEW.LOADING_DATA),
     [REVIEW.SCORES]: review.get(REVIEW.SCORES),
