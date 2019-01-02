@@ -11,6 +11,7 @@ export const ORG_IDS = {
   DEMO_ORG: '1d5aa1f4-4d22-46a5-97cd-dcc6820e7ff8',
   PENNINGTON_SD: '67d555b4-7495-414e-a259-ef82ba71779a',
   MINNEHAHA_SD: 'e558ee21-8fec-4c65-aeda-039924ba9a92',
+  SHELBY_TN: 'f61d005b-ff0d-4260-b42a-2a03854aa8e2'
 };
 
 /*
