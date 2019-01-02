@@ -117,6 +117,7 @@ type Props = {
   component :?string,
   entitySetsByOrganization :Map<*, *>,
   hideCaseHistory? :boolean,
+  filterType :string,
   onStatusChangeCallback? :() => void,
   renderContent :?(() => void),
   renderSubContent :?(() => void),
@@ -185,6 +186,25 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
       actions.loadJudges();
     }
   }
+
+  componentWillReceiveProps(nextProps) {
+    let { start } = this.state;
+    const { filterType, scoreSeq } = this.props;
+    const nextFilterType = nextProps.filterType;
+    if (filterType && (filterType !== nextFilterType)) {
+      this.setState({ start: 0 });
+    }
+    if (scoreSeq.size !== nextProps.scoreSeq.size) {
+      const numResults = nextProps.scoreSeq.size;
+      const numPages = Math.ceil(numResults / MAX_RESULTS);
+      const currPage = (start / MAX_RESULTS) + 1;
+
+      if (currPage > numPages) start = (numPages - 1) * MAX_RESULTS;
+      if (start <= 0) start = 0;
+      this.setState({ start });
+    }
+  }
+
 
   componentDidUpdate(prevProps) {
     const { actions, selectedOrganizationId } = this.props;
