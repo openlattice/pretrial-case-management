@@ -234,12 +234,15 @@ class PeopleContainer extends React.Component<Props, State> {
       {
         path: Routes.MULTI_SEARCH_PEOPLE,
         label: 'Multi-Search'
-      },
-      {
-        path: Routes.REQUIRES_ACTION_PEOPLE,
-        label: 'Requires Action'
       }
     ];
+
+    const requiresActionTab = {
+      path: Routes.REQUIRES_ACTION_PEOPLE,
+      label: 'Requires Action'
+    };
+
+    if (includesPretrialModule) navButtons.push(requiresActionTab);
 
     return (
       <DashboardMainSection>
