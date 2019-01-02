@@ -224,7 +224,6 @@ class ClosePSAModal extends React.Component<Props, State> {
       .set(PROPERTY_TYPES.STATUS, Immutable.List.of(status))
       .set(PROPERTY_TYPES.FAILURE_REASON, Immutable.fromJS(failureReason))
       .set(PROPERTY_TYPES.STATUS_NOTES, statusNotesList));
-
     const scoresId = this.props.entityKeyId;
     this.props.actions.changePSAStatus({
       scoresId,
@@ -248,7 +247,7 @@ class ClosePSAModal extends React.Component<Props, State> {
 
   submit = () => {
     const { app, onClose } = this.props;
-    const { status, failureReason } = this.State;
+    const { status, failureReason } = this.state;
     let { statusNotes } = this.state;
     if (!status) return;
     if (!statusNotes || !statusNotes.length) {
@@ -266,7 +265,11 @@ class ClosePSAModal extends React.Component<Props, State> {
       <ModalTransition>
         { open
           && (
-            <Modal onClose={() => onClose()} shouldCloseOnOverlayClick stackIndex={2}>
+            <Modal
+                onClose={() => onClose()}
+                shouldCloseOnOverlayClick
+                stackIndex={2}
+                scrollBehavior="outside">
               <ModalWrapper>
                 <TitleWrapper>
                   <h1>Select PSA Resolution</h1>
