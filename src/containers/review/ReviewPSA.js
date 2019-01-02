@@ -224,7 +224,6 @@ class ReviewPSA extends React.Component<Props, State> {
     const { psaNeighborsByDate } = this.props;
     this.setState({
       filterType: FILTER_TYPE.VIEW_ALL,
-      start: 0,
       options: psaNeighborsByDate
     });
   };
@@ -232,7 +231,6 @@ class ReviewPSA extends React.Component<Props, State> {
     const { psaNeighborsById } = this.props;
     this.setState({
       filterType: FILTER_TYPE.SEARCH,
-      start: 0,
       options: psaNeighborsById
     });
   };
@@ -263,8 +261,7 @@ class ReviewPSA extends React.Component<Props, State> {
           dob: '',
           filer: '',
           searchExecuted: false
-        },
-        start: 0
+        }
       }
     );
   }
