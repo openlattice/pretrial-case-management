@@ -7,7 +7,7 @@ import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { Redirect, Route, Switch } from 'react-router-dom';
 import styled from 'styled-components';
-import Immutable from 'immutable';
+import Immutable, { List } from 'immutable';
 import moment from 'moment';
 
 import DatePicker from '../../components/datetime/DatePicker';
@@ -431,13 +431,17 @@ class ReviewPSA extends React.Component<Props, State> {
   }
 
   filterByPerson = () => {
-    const { filters } = this.state;
+    const { scoresAsMap } = this.props;
+    const { filters, options, status } = this.state;
     const { firstName, lastName, dob } = filters;
     if (!firstName.length && !lastName.length) return Immutable.List();
-    const { options } = this.state;
+    const notAllStatus = status !== 'ALL';
 
-    return options.entrySeq().filter(([scoreId, neighbors]) => {
+    const personResults = options.entrySeq().filter(([scoreId, neighbors]) => {
       if (!this.domainMatch(neighbors)) return false;
+  
+      const matchesFilter = !!scoresAsMap.get(scoreId);
+      if (notAllStatus && !matchesFilter) return false;
 
       const neighborFirst = neighbors.getIn(
         [peopleFqn, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.FIRST_NAME],
@@ -459,10 +463,12 @@ class ReviewPSA extends React.Component<Props, State> {
 
       return true;
     });
+
+    return personResults;
   }
 
   filterByDate = () => {
-    const { filters, filterType, options } = this.state;
+    const { filters, options } = this.state;
     const date = moment(filters.date).format(DATE_FORMAT);
 
     if (filters.date === '' || !filters.date) {
