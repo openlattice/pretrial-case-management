@@ -19,10 +19,16 @@ import NavButtonToolbar from '../../components/buttons/NavButtonToolbar';
 import DropDownMenu from '../../components/StyledSelect';
 import { getFormattedPeople } from '../../utils/PeopleUtils';
 import { clearSearchResults, searchPeople } from '../person/PersonActionFactory';
-import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import {
+  APP_TYPES_FQNS,
+  PROPERTY_TYPES,
+  SETTINGS,
+  MODULE
+} from '../../utils/consts/DataModelConsts';
 import { DOMAIN_OPTIONS_ARR } from '../../utils/consts/ReviewPSAConsts';
 import { OL } from '../../utils/consts/Colors';
 import {
+  APP,
   STATE,
   SEARCH,
   PEOPLE,
@@ -73,6 +79,7 @@ type Props = {
   peopleResults :Immutable.List<*>,
   loadingPSAData :boolean,
   psaNeighborsById :Immutable.Map<*, *>,
+  selectedOrganizationSettings :Immutable.Map<*, *>,
   actions :{
     loadPSAsByDate :(filter :string) => void,
     searchPeople :(value :{firstName :string, lastName :string, dob :string}) => void
@@ -217,6 +224,8 @@ class PeopleContainer extends React.Component<Props, State> {
   }
 
   render() {
+    const { selectedOrganizationSettings } = this.props;
+    const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
     const navButtons = [
       {
         path: Routes.SEARCH_PEOPLE,
@@ -236,7 +245,7 @@ class PeopleContainer extends React.Component<Props, State> {
       <DashboardMainSection>
         <ToolbarWrapper>
           <NavButtonToolbar options={navButtons} />
-          {this.renderCountyDropdown()}
+          {includesPretrialModule ? this.renderCountyDropdown() : <div /> }
         </ToolbarWrapper>
         <Switch>
           <Route path={Routes.SEARCH_PEOPLE} render={this.renderSearchPeopleComponent} />
@@ -251,12 +260,14 @@ class PeopleContainer extends React.Component<Props, State> {
 
 
 function mapStateToProps(state) {
+  const app = state.get(STATE.APP);
   const peopleResults = state.getIn([STATE.SEARCH, SEARCH.SEARCH_RESULTS], Immutable.List());
   const isFetchingPeople = state.getIn([STATE.SEARCH, SEARCH.LOADING], false);
   const loadingPSAData = state.getIn([STATE.REVIEW, REVIEW.LOADING_DATA], false);
   const openPSAs = state.getIn([STATE.REVIEW, REVIEW.SCORES], Immutable.Map());
   const psaNeighborsById = state.getIn([STATE.REVIEW, REVIEW.NEIGHBORS_BY_ID], Immutable.Map());
   return {
+    [APP.SELECTED_ORG_SETTINGS]: app.get(APP.SELECTED_ORG_SETTINGS),
     peopleResults,
     isFetchingPeople,
     loadingPSAData,
