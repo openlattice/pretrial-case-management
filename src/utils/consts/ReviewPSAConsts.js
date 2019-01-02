@@ -2,6 +2,11 @@ import { PSA_STATUSES, SORT_TYPES } from '../../utils/consts/Consts';
 import { DOMAIN } from '../../utils/consts/ReportDownloadTypes';
 import * as Routes from '../../core/router/Routes';
 
+export const FILTER_TYPE = {
+  VIEW_ALL: 'viewAll',
+  SEARCH: 'search'
+};
+
 export const DATE_FORMAT = 'MM/DD/YYYY';
 
 export const STATUS_OPTIONS = {
