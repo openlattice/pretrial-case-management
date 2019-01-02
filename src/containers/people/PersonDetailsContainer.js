@@ -493,29 +493,33 @@ class PersonDetailsContainer extends React.Component<Props, State> {
         </ToolbarWrapper>
         { this.renderPSADetailsModal() }
         {/* { this.renderContactInfoModal() } */}
-        <Switch>
-          <Route path={overviewRoute} render={this.renderOverview} />
-          <Route path={psaRoute} render={this.renderPSA} />
-          {
-            includesPretrialModule
-              ? (
-                <>
+        {
+          includesPretrialModule
+            ? (
+              <>
+                <Switch>
+                  <Route path={overviewRoute} render={this.renderOverview} />
+                  <Route path={psaRoute} render={this.renderPSA} />
                   <Route path={hearingsRoute} render={this.renderHearings} />
                   <Route path={casesRoute} render={this.renderCases} />
                   <Redirect from={Routes.PEOPLE} to={overviewRoute} />
                   <Redirect from={Routes.PERSON_DETAILS_ROOT} to={overviewRoute} />
                   <Redirect from={`${Routes.PERSON_DETAILS_ROOT}/${personId}`} to={overviewRoute} />
-                </>
-              )
-              : (
-                <>
+                </Switch>
+              </>
+            )
+            : (
+              <>
+                <Switch>
+                  <Route path={overviewRoute} render={this.renderOverview} />
+                  <Route path={psaRoute} render={this.renderPSA} />
                   <Redirect from={Routes.PEOPLE} to={overviewRoute} />
                   <Redirect from={Routes.PERSON_DETAILS_ROOT} to={overviewRoute} />
                   <Redirect from={`${Routes.PERSON_DETAILS_ROOT}/${personId}`} to={overviewRoute} />
-                </>
-              )
-          }
-        </Switch>
+                </Switch>
+              </>
+            )
+        }
       </DashboardMainSection>
     );
   }
