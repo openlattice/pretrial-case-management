@@ -10,6 +10,8 @@ import { PSA_NEIGHBOR, PSA_ASSOCIATION } from './consts/FrontEndStateConsts';
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
+const LAST_WRITE_FQN = 'openlattice.@lastWrite';
+
 export const stripIdField = (entity) => {
   if (isImmutable(entity)) {
     return entity.delete(OPENLATTICE_ID_FQN).delete('id');
@@ -18,6 +20,9 @@ export const stripIdField = (entity) => {
   const newEntity = Object.assign({}, entity);
   if (newEntity[OPENLATTICE_ID_FQN]) {
     delete newEntity[OPENLATTICE_ID_FQN];
+  }
+  if (newEntity[LAST_WRITE_FQN]) {
+    delete newEntity[LAST_WRITE_FQN];
   }
   if (newEntity.id) {
     delete newEntity.id;
