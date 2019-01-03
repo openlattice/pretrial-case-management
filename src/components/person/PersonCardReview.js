@@ -36,12 +36,15 @@ const StyledPersonCardWrapper = styled(PersonCardWrapper)`
 `;
 
 const StyledDetailsWrapper = styled(DetailsWrapper)`
+  margin: 0 20px 0 0;
   flex-direction: row;
   width: 100%;
 `;
 
 const StyledDetailRow = styled(DetailRow)`
-  flex-wrap: wrap;
+  width: 100%;
+  display: grid;
+  grid-template-columns: 5% 17% 17% 17% 17% 17%;
   text-transform: uppercase;
 `;
 
@@ -50,7 +53,7 @@ const StyledReviewTooltip = styled(StyledTooltip)`
 `;
 
 const StyledDetailItem = styled(DetailItem)`
-  width: 20%;
+  width: 100%;
   position: relative;
 
   h1 {
@@ -95,9 +98,12 @@ const PersonCard = ({ person, handleSelect } :Props) => {
             handleSelect(person, entityKeyId, id);
           }
         }}>
-      { mugshot }
       <StyledDetailsWrapper>
         <StyledDetailRow>
+          <StyledDetailItem>
+            { mugshot }
+          </StyledDetailItem>
+
           <StyledDetailItem>
             <h1>LAST NAME</h1>
             <div>{lastName}</div>

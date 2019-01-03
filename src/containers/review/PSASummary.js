@@ -71,6 +71,11 @@ const SummaryWrapper = styled.div`
   }
 `;
 
+const BaseSummaryRowWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
+
 const TitleRowWrapper = styled.div`
   width: 100%;
   display: flex;
@@ -102,17 +107,17 @@ const ScoreContent = styled.div`
 `;
 
 const PSADetails = styled.div`
-  margin-top: 20px;
+  margin: ${props => (props.includesPretrialModule ? '20px 0 0' : '20px 0')};
   width: 100%;
   display: grid;
-  grid-template-columns: 25% 25% 46%;
+  grid-auto-columns: 1fr;
+  grid-auto-flow: column;
   grid-column-gap: 2%;
 `;
 
 const DownloadButtonWrapper = styled.div`
   width: 100%;
   display: flex;
-  justify-content: flex-end;
 `;
 
 const ScoreTitle = styled.div`
@@ -210,8 +215,11 @@ class PSASummary extends React.Component<Props, *> {
       neighbors,
       actions,
       scores,
-      entitySetsByOrganization
+      entitySetsByOrganization,
+      selectedOrganizationSettings
     } = this.props;
+    const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], '');
+
     const { downloadPSAReviewPDF } = actions;
     let filer;
     const psaDate = formatDateTimeList(getTimeStamp(neighbors, psaRiskFactorsFqn));
@@ -224,22 +232,50 @@ class PSASummary extends React.Component<Props, *> {
       }
     });
     return (
-      <PSADetails>
+      <PSADetails includesPretrialModule={includesPretrialModule}>
         <ContentBlock
             contentBlock={{ label: 'psa date', content: [psaDate] }}
             component={CONTENT_CONSTS.SUMMARY} />
         <ContentBlock
             contentBlock={{ label: 'filer', content: [filer] }}
             component={CONTENT_CONSTS.SUMMARY} />
+        <div />
         <DownloadButtonWrapper>
-          <PSAReportDownloadButton
-              downloadFn={downloadPSAReviewPDF}
-              neighbors={neighbors}
-              scores={scores} />
+          {
+            includesPretrialModule
+              ? (
+                <PSAReportDownloadButton
+                    includesPretrialModule={includesPretrialModule}
+                    downloadFn={downloadPSAReviewPDF}
+                    neighbors={neighbors}
+                    scores={scores} />
+              ) : null
+          }
         </DownloadButtonWrapper>
       </PSADetails>
     );
   }
+
+  renderDownloadButton = () => {
+    const {
+      actions,
+      neighbors,
+      scores,
+      selectedOrganizationSettings
+    } = this.props;
+    const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], '');
+
+    const { downloadPSAReviewPDF } = actions;
+
+    return (
+      <PSAReportDownloadButton
+          includesPretrialModule={includesPretrialModule}
+          downloadFn={downloadPSAReviewPDF}
+          neighbors={neighbors}
+          scores={scores} />
+    );
+  }
+
 
   render() {
     const {
@@ -262,25 +298,36 @@ class PSASummary extends React.Component<Props, *> {
         </NoStyleWrapper>
       );
 
-    const middleRow = (
+    const pretrialMiddleRow = (
       <SummaryRowWrapper row={!includesPretrialModule}>
         <ScoresContainer border={includesPretrialModule}>
           <ScoreTitle>PSA</ScoreTitle>
-          <ScoreContent>
-            <PSAStats scores={scores} />
+          <ScoreContent includesPretrialModule>
+            <PSAStats scores={scores} hideProfile includesPretrialModule={includesPretrialModule} />
             {this.renderPSADetails()}
           </ScoreContent>
         </ScoresContainer>
-        {
-          includesPretrialModule
-            ? (
-              <ScoresContainer>
-                <ScoreTitle>RCM</ScoreTitle>
-                <SummaryDMFDetails neighbors={neighbors} scores={scores} />
-              </ScoresContainer>
-            ) : null
-        }
+        <ScoresContainer>
+          <ScoreTitle>RCM</ScoreTitle>
+          <SummaryDMFDetails neighbors={neighbors} scores={scores} />
+        </ScoresContainer>
       </SummaryRowWrapper>
+    );
+
+    const psaMiddleRow = (
+      <BaseSummaryRowWrapper row={!includesPretrialModule}>
+        <ScoresContainer border={includesPretrialModule}>
+          <ScoreTitle>PSA</ScoreTitle>
+          <ScoreContent includesPretrialModule>
+            <PSAStats
+                scores={scores}
+                hideProfile
+                downloadButton={this.renderDownloadButton}
+                includesPretrialModule={includesPretrialModule} />
+            {this.renderPSADetails()}
+          </ScoreContent>
+        </ScoresContainer>
+      </BaseSummaryRowWrapper>
     );
 
     const bottomRow = !profile ? null
@@ -298,7 +345,7 @@ class PSASummary extends React.Component<Props, *> {
           scores.size
             ? (
               <NoStyleWrapper>
-                { middleRow }
+                { includesPretrialModule ? pretrialMiddleRow : psaMiddleRow }
                 <hr />
                 {(!profile && notes) ? this.renderNotes() : null}
                 {(!profile && notes) ? <hr /> : null}
