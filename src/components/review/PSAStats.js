@@ -23,15 +23,24 @@ const DetailsWrapper = styled.div`
   display: flex;
   flex-direction: row;
   width: 100%;
-  margin-right: 20px;
+  margin: 0 20px 0 0;
 `;
 
 const DetailRow = styled.div`
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
+  display: grid;
   align-items: center;
   width: 100%;
+
+  ${props => (
+    props.hideProfile
+      ? (
+        `grid-auto-columns: 1fr;
+         grid-auto-flow: column;`
+      )
+      : 'grid-template-columns: 5% 17% 17% 17% 17% 17%;'
+  )}
+
+  column-gap: ${props => (props.hideProfile ? '4%' : '2%')};;
 
   div:last-child {
     margin-right: ${props => (props.downloadVisible ? '0' : '0')};
@@ -41,7 +50,7 @@ const DetailRow = styled.div`
 const DetailItem = styled.div`
   display: flex;
   flex-direction: column;
-  width: 20%;
+  width: 100%;
   position: relative;
 
   h1 {
@@ -113,11 +122,18 @@ const SCALE_DIMS = { height: 20, width: 96 };
 const FLAG_DIMS = { height: 28, width: 74 };
 
 type Props = {
+  hideProfile :boolean,
+  includesPretrialModule :boolean,
   scores :Immutable.Map<*, *>,
   downloadButton :() => void
 };
 
-const PSAStats = ({ scores, downloadButton } :Props) => {
+const PSAStats = ({
+  hideProfile,
+  includesPretrialModule,
+  scores,
+  downloadButton
+} :Props) => {
   const status = scores.getIn([PROPERTY_TYPES.STATUS, 0], '');
   const ftaVal = scores.getIn([PROPERTY_TYPES.FTA_SCALE, 0]);
   const ncaVal = scores.getIn([PROPERTY_TYPES.NCA_SCALE, 0]);
@@ -135,35 +151,39 @@ const PSAStats = ({ scores, downloadButton } :Props) => {
   }
 
   return (
-    <Wrapper>
-      <DetailsWrapper>
-        <DetailRow downloadVisible={downloadVisible}>
-          <DetailItem>
-            <h1>PSA Status</h1>
-            <div><StatusTag status={status}>{status}</StatusTag></div>
-          </DetailItem>
-          <DetailItem>
-            <h1>NVCA</h1>
-            <BooleanFlag dims={FLAG_DIMS} value={nvcaVal} />
-          </DetailItem>
-          <DetailItem>
-            <h1>NCA</h1>
-            <div>
-              <span>{ncaVal}</span>
-              <ScoreScale dims={SCALE_DIMS} score={ncaVal} />
-            </div>
-          </DetailItem>
-          <DetailItem>
-            <h1>FTA</h1>
-            <div>
-              <span>{ftaVal}</span>
-              <ScoreScale dims={SCALE_DIMS} score={ftaVal} />
-            </div>
-          </DetailItem>
-          {renderDownloadButton}
-        </DetailRow>
-      </DetailsWrapper>
-    </Wrapper>
+    <DetailsWrapper>
+      <DetailRow downloadVisible={downloadVisible} hideProfile={hideProfile}>
+        { hideProfile ? null : <DetailItem /> }
+        {
+          includesPretrialModule
+            ? (
+              <DetailItem>
+                <h1>PSA Status</h1>
+                <div><StatusTag status={status}>{status}</StatusTag></div>
+              </DetailItem>
+            ) : null
+        }
+        <DetailItem>
+          <h1>NVCA</h1>
+          <BooleanFlag dims={FLAG_DIMS} value={nvcaVal} />
+        </DetailItem>
+        <DetailItem>
+          <h1>NCA</h1>
+          <div>
+            <span>{ncaVal}</span>
+            <ScoreScale dims={SCALE_DIMS} score={ncaVal} />
+          </div>
+        </DetailItem>
+        <DetailItem>
+          <h1>FTA</h1>
+          <div>
+            <span>{ftaVal}</span>
+            <ScoreScale dims={SCALE_DIMS} score={ftaVal} />
+          </div>
+        </DetailItem>
+        {renderDownloadButton}
+      </DetailRow>
+    </DetailsWrapper>
   );
 };
 
