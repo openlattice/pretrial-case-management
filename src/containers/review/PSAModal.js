@@ -910,7 +910,7 @@ class PSAModal extends React.Component<Props, State> {
                 <span>{` ${this.getName()}`}</span>
               </TitleHeader>
               <div>
-                { readOnly
+                { (readOnly || !includesPretrialModule)
                   ? null
                   : (
                     <ClosePSAButton onClick={() => this.setState({ closingPSAModalOpen: true })}>
