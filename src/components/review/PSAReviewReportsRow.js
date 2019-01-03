@@ -81,7 +81,6 @@ const PersonCardWrapper = styled.div`
 `;
 
 const StatsForReview = styled.div`
-  padding-left: 56px;
   width: 100%;
   margin: 0 auto;
   display: flex;
@@ -204,12 +203,16 @@ export default class PSAReviewReportsRow extends React.Component<Props, State> {
   }
 
   renderStats = () => {
-    const { hideProfile, scores } = this.props;
+    const { hideProfile, scores, includesPretrialModule } = this.props;
     const StatsWrapper = hideProfile ? StatsForProfile : StatsForReview;
 
     return (
       <StatsWrapper>
-        <PSAStats scores={scores} downloadButton={this.renderDownloadButton} />
+        <PSAStats
+            scores={scores}
+            includesPretrialModule={includesPretrialModule}
+            downloadButton={this.renderDownloadButton}
+            hideProfile={hideProfile} />
       </StatsWrapper>
     );
   }
@@ -221,6 +224,7 @@ export default class PSAReviewReportsRow extends React.Component<Props, State> {
   renderDownloadButton = () => {
     const {
       component,
+      includesPretrialModule,
       downloadFn,
       neighbors,
       scores
@@ -235,6 +239,7 @@ export default class PSAReviewReportsRow extends React.Component<Props, State> {
       )
       : (
         <PSAReportDownloadButton
+            includesPretrialModule={includesPretrialModule}
             downloadFn={downloadFn}
             neighbors={neighbors}
             scores={scores} />

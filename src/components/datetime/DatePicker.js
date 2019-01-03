@@ -24,12 +24,15 @@ const onKeyPressFn = (e, onKeyPress) => {
 const StyledDatePicker = ({
   value,
   onChange,
-  onKeyPress
+  onKeyPress,
+  subtle
 } :Props) => {
   const dateFormat = 'MM/DD/YYYY';
+  const appearance = subtle ? 'subtle' : 'default';
   return (
     <DatePickerWrapper onKeyPress={e => onKeyPressFn(e, onKeyPress)}>
       <DatePicker
+          appearance={appearance}
           hideIcon
           value={value}
           onChange={date => onChange(formatDate(date))}

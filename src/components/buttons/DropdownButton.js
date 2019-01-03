@@ -105,10 +105,14 @@ export default class DropdownButton extends React.Component<Props, State> {
     };
   }
 
-  toggleDropdown = (e) => {
-    const { open } = this.state;
+  openDropdown = (e) => {
     e.stopPropagation();
-    this.setState({ open: !open });
+    this.setState({ open: true });
+  };
+
+  closeDropdown = (e) => {
+    e.stopPropagation();
+    this.setState({ open: false });
   };
 
   getOptionFn = optionFn => (e) => {
@@ -127,7 +131,7 @@ export default class DropdownButton extends React.Component<Props, State> {
     const imgSrc = open ? selectedDownArrowIcon : downArrowIcon;
     return (
       <DropdownButtonWrapper open={open}>
-        <BaseButton open={open} onClick={this.toggleDropdown} onBlur={this.toggleDropdown}>
+        <BaseButton open={open} onClick={this.openDropdown} onBlur={this.closeDropdown}>
           {title}
           <img src={imgSrc} alt="presentation" />
         </BaseButton>

@@ -14,10 +14,15 @@ import LoadingSpinner from '../LoadingSpinner';
 import MultiSelectCheckbox from '../MultiSelectCheckbox';
 import PSAReviewPersonRowList from '../../containers/review/PSAReviewReportsRowList';
 import PSASummary from '../../containers/review/PSASummary';
-import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { getIdOrValue } from '../../utils/DataUtils';
 import { SORT_TYPES, PSA_STATUSES } from '../../utils/consts/Consts';
 import { STATUS_OPTION_CHECKBOXES } from '../../utils/consts/ReviewPSAConsts';
+import {
+  APP_TYPES_FQNS,
+  PROPERTY_TYPES,
+  SETTINGS,
+  MODULE
+} from '../../utils/consts/DataModelConsts';
 import {
   AlternateSectionHeader,
   Count,
@@ -27,6 +32,7 @@ import {
   Wrapper
 } from '../../utils/Layout';
 import {
+  APP,
   STATE,
   PEOPLE,
   REVIEW,
@@ -58,8 +64,10 @@ const FilterWrapper = styled.div`
 
 type Props = {
   psaNeighborsById :Map<*, *>,
+  selectedOrganizationSettings :Map<*, *>,
   neighbors :Map<*, *>,
   mostRecentPSA :Map<*, *>,
+  personId :string,
   mostRecentPSAEntityKeyId :string,
   loading :boolean,
   openDetailsModal :() => void;
@@ -104,15 +112,18 @@ class PersonOverview extends React.Component<Props, State> {
   renderStatusOptions = () => {
     const { statusFilters } = this.state;
     const statusOptions = Object.values(STATUS_OPTION_CHECKBOXES);
-    return (
-      <FilterWrapper>
-        <MultiSelectCheckbox
-            displayTitle="Filter Status"
-            options={statusOptions}
-            onChange={this.handleCheckboxChange}
-            selected={statusFilters} />
-      </FilterWrapper>
-    );
+    const { selectedOrganizationSettings } = this.props;
+    const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], '');
+    return includesPretrialModule
+      ? (
+        <FilterWrapper>
+          <MultiSelectCheckbox
+              displayTitle="Filter Status"
+              options={statusOptions}
+              onChange={this.handleCheckboxChange}
+              selected={statusFilters} />
+        </FilterWrapper>
+      ) : null;
   }
 
   renderPSAs = () => {
@@ -145,13 +156,16 @@ class PersonOverview extends React.Component<Props, State> {
       mostRecentPSA,
       mostRecentPSAEntityKeyId,
       psaNeighborsById,
-      openDetailsModal
+      openDetailsModal,
+      selectedOrganizationSettings
     } = this.props;
+    const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], '');
     const mostRecentPSANeighbors = psaNeighborsById.get(mostRecentPSAEntityKeyId, Map());
     const scores = mostRecentPSA.get(PSA_NEIGHBOR.DETAILS, Map());
     const notes = getIdOrValue(
       mostRecentPSANeighbors, RELEASE_RECOMMENDATIONS, PROPERTY_TYPES.RELEASE_RECOMMENDATION
     );
+
     if (loading) {
       return <LoadingSpinner />;
     }
@@ -182,10 +196,13 @@ class PersonOverview extends React.Component<Props, State> {
 }
 
 function mapStateToProps(state) {
+  const app = state.get(STATE.APP);
   const review = state.get(STATE.REVIEW);
   const people = state.get(STATE.PEOPLE);
 
   return {
+    [APP.SELECTED_ORG_SETTINGS]: app.get(APP.SELECTED_ORG_SETTINGS),
+
     [REVIEW.NEIGHBORS_BY_ID]: review.get(REVIEW.NEIGHBORS_BY_ID),
     [REVIEW.LOADING_DATA]: review.get(REVIEW.LOADING_DATA),
     [REVIEW.LOADING_RESULTS]: review.get(REVIEW.LOADING_RESULTS),
