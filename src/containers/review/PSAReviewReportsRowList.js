@@ -14,11 +14,16 @@ import LoadingSpinner from '../../components/LoadingSpinner';
 import CustomPagination from '../../components/Pagination';
 import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
 import { NoResults } from '../../utils/Layout';
-import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_FAILURE_REASONS, PSA_STATUSES, SORT_TYPES } from '../../utils/consts/Consts';
 import { sortByDate, sortByName } from '../../utils/PSAUtils';
 import { getEntityKeyId, getIdOrValue } from '../../utils/DataUtils';
 import { OL } from '../../utils/consts/Colors';
+import {
+  APP_TYPES_FQNS,
+  PROPERTY_TYPES,
+  SETTINGS,
+  MODULE
+} from '../../utils/consts/DataModelConsts';
 import {
   APP,
   STATE,
@@ -154,7 +159,8 @@ type Props = {
   loading :boolean,
   scoresEntitySetId :string,
   submitting :boolean,
-  selectedOrganizationId :string
+  selectedOrganizationId :string,
+  selectedOrganizationSettings :Map<*, *>
 }
 
 type State = {
@@ -217,8 +223,11 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
       psaIdsRefreshing,
       readOnlyPermissions,
       hideCaseHistory,
-      submitting
+      submitting,
+      selectedOrganizationSettings
     } = this.props;
+    const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], '');
+
 
     const {
       downloadPSAReviewPDF,
@@ -246,6 +255,7 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
     );
     return (
       <PSAReviewReportsRow
+          includesPretrialModule={includesPretrialModule}
           entitySetIdsToAppType={entitySetsByOrganization}
           neighbors={neighbors}
           scores={scores}
@@ -388,7 +398,11 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
   }
 
   render() {
-    const { scoreSeq, loadingPSAData, loading } = this.props;
+    const {
+      scoreSeq,
+      loadingPSAData,
+      loading
+    } = this.props;
     const { start } = this.state;
 
     if (loadingPSAData || loading) {
@@ -419,6 +433,7 @@ function mapStateToProps(state) {
   return {
     [APP.ENTITY_SETS_BY_ORG]: app.getIn([APP.ENTITY_SETS_BY_ORG, orgId], Map()),
     [APP.SELECTED_ORG_ID]: app.get(APP.ESELECTED_ORG_ID),
+    [APP.SELECTED_ORG_SETTINGS]: app.get(APP.SELECTED_ORG_SETTINGS),
 
     [REVIEW.ENTITY_SET_ID]: review.get(REVIEW.ENTITY_SET_ID) || people.get(PEOPLE.SCORES_ENTITY_SET_ID),
     [REVIEW.NEIGHBORS_BY_ID]: review.get(REVIEW.NEIGHBORS_BY_ID),
