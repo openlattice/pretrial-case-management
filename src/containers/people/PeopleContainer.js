@@ -226,23 +226,25 @@ class PeopleContainer extends React.Component<Props, State> {
   render() {
     const { selectedOrganizationSettings } = this.props;
     const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
-    const navButtons = [
+    let navButtons = [
       {
         path: Routes.SEARCH_PEOPLE,
         label: 'Search'
-      },
-      {
-        path: Routes.MULTI_SEARCH_PEOPLE,
-        label: 'Multi-Search'
       }
     ];
 
-    const requiresActionTab = {
-      path: Routes.REQUIRES_ACTION_PEOPLE,
-      label: 'Requires Action'
-    };
+    const pretrialModuleNavButtons = [
+      {
+        path: Routes.MULTI_SEARCH_PEOPLE,
+        label: 'Multi-Search'
+      },
+      {
+        path: Routes.REQUIRES_ACTION_PEOPLE,
+        label: 'Requires Action'
+      }
+    ];
 
-    if (includesPretrialModule) navButtons.push(requiresActionTab);
+    if (includesPretrialModule) navButtons = navButtons.concat(pretrialModuleNavButtons);
 
     return (
       <DashboardMainSection>

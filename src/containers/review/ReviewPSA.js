@@ -446,7 +446,7 @@ class ReviewPSA extends React.Component<Props, State> {
 
     const personResults = options.entrySeq().filter(([scoreId, neighbors]) => {
       if (!this.domainMatch(neighbors)) return false;
-  
+
       const matchesFilter = !!scoresAsMap.get(scoreId);
       if (notAllStatus && !matchesFilter) return false;
 
@@ -518,18 +518,24 @@ class ReviewPSA extends React.Component<Props, State> {
     this.setState({ domain });
   }
 
-  renderDomainChoices = () => (
-    <FilterWrapper>
-      <span>County </span>
-      <DropDownMenu
-          placeholder="All"
-          classNamePrefix="lattice-select"
-          options={DOMAIN_OPTIONS_ARR}
-          onChange={(e) => {
-            this.changeDomain(e.value);
-          }} />
-    </FilterWrapper>
-  )
+  renderDomainChoices = () => {
+    const { selectedOrganizationSettings } = this.props;
+    const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
+
+    return includesPretrialModule
+      ? (
+        <FilterWrapper>
+          <span>County </span>
+          <DropDownMenu
+              placeholder="All"
+              classNamePrefix="lattice-select"
+              options={DOMAIN_OPTIONS_ARR}
+              onChange={(e) => {
+                this.changeDomain(e.value);
+              }} />
+        </FilterWrapper>
+      ) : null;
+  }
 
   renderTopFilters = () => {
     const { selectedOrganizationSettings } = this.props;
