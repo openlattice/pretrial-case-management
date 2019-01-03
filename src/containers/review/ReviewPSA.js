@@ -172,7 +172,7 @@ type Props = {
 }
 
 type State = {
-  filterType :number,
+  filterType :string,
   filters :{
     date :string,
     firstName :string,
@@ -192,7 +192,7 @@ class ReviewPSA extends React.Component<Props, State> {
     super(props);
     this.state = {
       options: Immutable.List(),
-      filterType: FILTER_TYPE.SEARCH,
+      filterType: FILTER_TYPE.VIEW_ALL,
       filters: {
         date: moment().format(),
         firstName: '',
@@ -242,16 +242,20 @@ class ReviewPSA extends React.Component<Props, State> {
   };
 
   componentWillReceiveProps(nextProps) {
-    const { psaNeighborsByDate } = this.props;
+    const { psaNeighborsByDate } = nextProps;
     const { location } = nextProps;
     const path = location.pathname;
-    if (path.endsWith(Routes.REVIEW_REPORTS)) {
+    const pathsDoNotMatch = path !== this.props.location.pathname;
+    if (pathsDoNotMatch && path.endsWith(Routes.REVIEW_REPORTS)) {
       this.resetState(FILTER_TYPE.VIEW_ALL, moment());
       this.switchToViewAll();
     }
-    else if (path.endsWith(Routes.SEARCH_FORMS)) {
+    else if (pathsDoNotMatch && path.endsWith(Routes.SEARCH_FORMS)) {
       this.resetState(FILTER_TYPE.SEARCH, '');
       this.switchToSearch();
+    }
+    if (psaNeighborsByDate.size) {
+      this.setState({ options: psaNeighborsByDate });
     }
     this.handleFilterRequest();
   }
@@ -589,8 +593,8 @@ class ReviewPSA extends React.Component<Props, State> {
   ))
 
   renderContent = () => {
-    const { loadingResults } = this.props;
-    if (loadingResults) {
+    const { loadingResults, selectedOrganizationId } = this.props;
+    if (!selectedOrganizationId || loadingResults) {
       return <StyledSectionWrapper>{this.renderSpinner()}</StyledSectionWrapper>;
     }
     return (
