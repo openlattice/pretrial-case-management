@@ -18,9 +18,14 @@ import DropDownMenu from '../../components/StyledSelect';
 import { FullWidthContainer, NoResults } from '../../utils/Layout';
 import PersonSearchFields from '../../components/person/PersonSearchFields';
 import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
-import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { SORT_TYPES } from '../../utils/consts/Consts';
 import { OL } from '../../utils/consts/Colors';
+import {
+  APP_TYPES_FQNS,
+  PROPERTY_TYPES,
+  SETTINGS,
+  MODULE
+} from '../../utils/consts/DataModelConsts';
 import {
   APP,
   STATE,
@@ -81,7 +86,7 @@ const StyledFiltersBar = styled.div`
   display: flex;
   flex-direction: row;
   align-items: center;
-  justify-content: space-between;
+  justify-content: ${props => (props.includesPretrialModule ? 'space-between' : 'flex-start')};
 `;
 
 const FilterWrapper = styled.div`
@@ -153,6 +158,7 @@ const LoadingText = styled.div`
 type Props = {
   history :string[],
   scoresAsMap :Immutable.Map<*, *>,
+  selectedOrganizationSettings :Immutable.Map<*, *>,
   psaNeighborsByDate :Immutable.Map<*, Immutable.Map<*, *>>,
   loadingResults :boolean,
   errorMessage :string,
@@ -266,6 +272,7 @@ class ReviewPSA extends React.Component<Props, State> {
         <span>PSA Date </span>
         <DatePickerGroupContainer>
           <DatePicker
+              subtle
               value={date}
               onChange={(newDate) => {
                 this.updateFilters({ date: newDate });
@@ -461,18 +468,23 @@ class ReviewPSA extends React.Component<Props, State> {
     }
   }
 
-  renderStatusOptions = () => (
-    <FilterWrapper>
-      <span>PSA Status </span>
-      <DropDownMenu
-          placeholder={STATUS_OPTIONS[this.state.status].label}
-          classNamePrefix="lattice-select"
-          options={STATUS_OPTIONS_ARR}
-          onChange={(e) => {
-            this.changeStatus(e.value);
-          }} />
-    </FilterWrapper>
-  )
+  renderStatusOptions = () => {
+    const { selectedOrganizationSettings } = this.props;
+    const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
+    return includesPretrialModule
+      ? (
+        <FilterWrapper>
+          <span>PSA Status </span>
+          <DropDownMenu
+              placeholder={STATUS_OPTIONS[this.state.status].label}
+              classNamePrefix="lattice-select"
+              options={STATUS_OPTIONS_ARR}
+              onChange={(e) => {
+                this.changeStatus(e.value);
+              }} />
+        </FilterWrapper>
+      ) : null;
+  }
 
   changeDomain = (domain) => {
     this.setState({ domain });
@@ -491,16 +503,18 @@ class ReviewPSA extends React.Component<Props, State> {
     </FilterWrapper>
   )
 
-  renderTopFilters = () => (
-    <div>
-      <StyledFiltersBar>
+  renderTopFilters = () => {
+    const { selectedOrganizationSettings } = this.props;
+    const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
+    return (
+      <StyledFiltersBar includesPretrialModule={includesPretrialModule}>
+        {this.renderDateRangePicker()}
         {this.renderStatusOptions()}
         {this.renderDomainChoices()}
-        {this.renderDateRangePicker()}
         {this.renderFilerOptions()}
       </StyledFiltersBar>
-    </div>
-  );
+    );
+  };
 
   renderBottomFilters = () => {
     const { activeFilterKey } = this.state;
@@ -578,6 +592,7 @@ function mapStateToProps(state) {
   const review = state.get(STATE.REVIEW);
   return {
     [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID, ''),
+    [APP.SELECTED_ORG_SETTINGS]: app.get(APP.SELECTED_ORG_SETTINGS, ''),
 
     [REVIEW.SCORES]: review.get(REVIEW.SCORES),
     [REVIEW.NEIGHBORS_BY_DATE]: review.get(REVIEW.NEIGHBORS_BY_DATE),
