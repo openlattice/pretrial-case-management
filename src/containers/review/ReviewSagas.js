@@ -991,7 +991,6 @@ function* refreshPSANeighborsWorker(action :SequenceAction) :Generator<*, *, *> 
         }
       }
     });
-    console.log(neighbors.toJS());
     yield put(refreshPSANeighbors.success(action.id, { id, neighbors }));
   }
   catch (error) {
