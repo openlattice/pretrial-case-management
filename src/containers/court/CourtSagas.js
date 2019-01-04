@@ -355,7 +355,8 @@ function* refreshHearingNeighborsWorker(action :SequenceAction) :Generator<*, *,
     let neighbors = Immutable.Map();
     neighborsList.forEach((neighbor) => {
       const entitySetId = Immutable.fromJS(neighbor).getIn([PSA_NEIGHBOR.ENTITY_SET, 'id']);
-      const entitySetName = entitySetIdsToAppType.getIn([orgId, entitySetId], '');
+      let entitySetName = entitySetIdsToAppType.getIn([orgId, entitySetId], '');
+      if (!entitySetName) entitySetName = judgesFqn;
       if (entitySetId === releaseConditionsEntitySetId) {
         neighbors = neighbors.set(
           entitySetName,
