@@ -236,7 +236,7 @@ class SelectHearingsContainer extends React.Component<Props, State> {
           psaId={psaId}
           manuallyCreatingHearing={manuallyCreatingHearing}
           jurisdiction={jurisdiction}
-          afterSubmit={this.backToSelection} />
+          afterSubmit={this.backToHearingSelection} />
     );
   }
 
