@@ -170,10 +170,19 @@ class NewPersonContainer extends React.Component<Props, State> {
     actions.clearForm();
   }
 
+  hasInvalidDOB = () => {
+    const { state } = this;
+    const dob = state[DOB_VALUE];
+    const dobIsValid = moment(dob).isAfter('1/1/1900') && moment(dob).isBefore(moment());
+    if (dob) return !dobIsValid;
+    return undefined;
+  }
+
   isReadyToSubmit = () :boolean => {
     const { isCreatingPerson } = this.props;
     const { state } = this;
-    const hasDOB = !!state[DOB_VALUE];
+    const dob = state[DOB_VALUE];
+    const hasDOB = dob && !this.hasInvalidDOB();
     const hasName = !!state[FIRST_NAME_VALUE] && !!state[LAST_NAME_VALUE];
     const phoneFormatIsCorrect = this.phoneNumValid();
     const emailFormatIsCorrect = this.emailAddValid();
@@ -348,6 +357,7 @@ class NewPersonContainer extends React.Component<Props, State> {
               <InputGroup>
                 <InputLabel>Date of birth*</InputLabel>
                 <DatePicker
+                    isInvalid={this.hasInvalidDOB()}
                     value={state[DOB_VALUE]}
                     onChange={this.handleOnChangeDateOfBirth} />
               </InputGroup>
