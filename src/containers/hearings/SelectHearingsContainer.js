@@ -265,8 +265,9 @@ class SelectHearingsContainer extends React.Component<Props, State> {
 
   refreshHearingsNeighborsCallback = () => {
     const { selectedHearing } = this.state;
-    const { actions } = this.props;
+    const { actions, psaEntityKeyId } = this.props;
     actions.refreshHearingNeighbors({ id: selectedHearing.entityKeyId });
+    if (psaEntityKeyId) actions.refreshPSANeighbors({ id: psaEntityKeyId });
   }
 
   renderSelectReleaseCondtions = (selectedHearing) => {
@@ -325,7 +326,6 @@ class SelectHearingsContainer extends React.Component<Props, State> {
     const submittedOutcomes = (onlyOldExists && hasMultipleHearings)
       ? false
       : !!(hearingNeighborsById.getIn([entityKeyId, OUTCOMES]) || oldDataOutcome);
-
     const judgeFromJudgeEntity = hearingNeighborsById.getIn([
       entityKeyId,
       JUDGES
@@ -392,12 +392,11 @@ class SelectHearingsContainer extends React.Component<Props, State> {
       [FORM_IDS.PERSON_ID]: personId
     });
 
-    const callback = psaEntityKeyId ? () => actions.refreshPSANeighbors({ id: psaEntityKeyId }) : () => {};
     actions.submit({
       app,
       values,
       config: psaHearingConfig,
-      callback
+      callback: this.refreshHearingsNeighborsCallback
     });
   }
 
