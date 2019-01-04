@@ -274,9 +274,8 @@ function* loadHearingNeighborsWorker(action :SequenceAction) :Generator<*, *, *>
           let hearingNeighborsMap = Immutable.Map();
           neighbors.forEach(((neighbor) => {
             const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id']);
-            let entitySetName = entitySetIdsToAppType.get(entitySetId);
+            const entitySetName = entitySetIdsToAppType.get(entitySetId, judgesFqn);
             const entityKeyId = neighbor.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0]);
-            if (!entitySetName) entitySetName = judgesFqn;
             if (entitySetId === releaseConditionsEntitySetId) {
               hearingNeighborsMap = hearingNeighborsMap.set(
                 entitySetName,
@@ -355,7 +354,7 @@ function* refreshHearingNeighborsWorker(action :SequenceAction) :Generator<*, *,
     let neighbors = Immutable.Map();
     neighborsList.forEach((neighbor) => {
       const entitySetId = Immutable.fromJS(neighbor).getIn([PSA_NEIGHBOR.ENTITY_SET, 'id']);
-      const entitySetName = entitySetIdsToAppType.getIn([orgId, entitySetId], '');
+      const entitySetName = entitySetIdsToAppType.getIn([orgId, entitySetId], judgesFqn);
       if (entitySetId === releaseConditionsEntitySetId) {
         neighbors = neighbors.set(
           entitySetName,

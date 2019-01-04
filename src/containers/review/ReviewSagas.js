@@ -2,7 +2,7 @@
  * @flow
  */
 
-import Immutable, { Map } from 'immutable';
+import Immutable, { Map, fromJS } from 'immutable';
 import moment from 'moment';
 import {
   AuthorizationApi,
@@ -349,18 +349,18 @@ function* loadPSADataWorker(action :SequenceAction) :Generator<*, *, *> {
                 if (hearingEntityKeyId) hearingIds = hearingIds.add(neighborDetails.getIn([OPENLATTICE_ID_FQN, 0]));
                 neighborsByAppTypeFqn = neighborsByAppTypeFqn.set(
                   AppTypeFqn,
-                  neighborsByAppTypeFqn.get(AppTypeFqn, Immutable.List()).push(neighborDetails)
+                  neighborsByAppTypeFqn.get(AppTypeFqn, Immutable.List()).push(fromJS(neighborDetails))
                 );
               }
               else {
                 neighborsByAppTypeFqn = neighborsByAppTypeFqn.set(
                   AppTypeFqn,
-                  neighborsByAppTypeFqn.get(AppTypeFqn, Immutable.List()).push(neighbor)
+                  neighborsByAppTypeFqn.get(AppTypeFqn, Immutable.List()).push(fromJS(neighbor))
                 );
               }
             }
             else {
-              neighborsByAppTypeFqn = neighborsByAppTypeFqn.set(AppTypeFqn, neighbor);
+              neighborsByAppTypeFqn = neighborsByAppTypeFqn.set(AppTypeFqn, fromJS(neighbor));
             }
           }
         });
@@ -972,7 +972,7 @@ function* refreshPSANeighborsWorker(action :SequenceAction) :Generator<*, *, *> 
       const entitySetId = neighborEntitySet.id;
       const appTypeFqn = entitySetIdsToAppType.get(entitySetId);
       if (neighborEntitySet && neighborDetails) {
-        if (LIST_ENTITY_SETS.includes(neighborEntitySet.name)) {
+        if (LIST_ENTITY_SETS.includes(appTypeFqn)) {
           if (entitySetId === hearingsEntitySetId) {
             neighbors = neighbors.set(
               appTypeFqn,

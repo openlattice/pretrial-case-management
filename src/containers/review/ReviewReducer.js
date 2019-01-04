@@ -155,10 +155,10 @@ export default function reviewReducer(state :Immutable.Map<*, *> = INITIAL_STATE
           state.get(REVIEW.PSA_IDS_REFRESHING).add(action.value.id)
         ),
         SUCCESS: () => {
-
+          const { neighbors } = action.value;
           let psaNeighborsById = state.get(REVIEW.NEIGHBORS_BY_ID);
 
-          psaNeighborsById = psaNeighborsById.set(action.value.id, Immutable.fromJS(action.value.neighbors));
+          psaNeighborsById = psaNeighborsById.set(action.value.id, neighbors);
 
           return state.set(REVIEW.NEIGHBORS_BY_ID, psaNeighborsById);
         },
