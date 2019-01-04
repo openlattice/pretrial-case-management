@@ -214,8 +214,8 @@ class CourtContainer extends React.Component<Props, State> {
       selectedOrganizationId
     } = this.props;
     const { checkPSAPermissions, loadHearingsForDate, loadJudges } = actions;
-    checkPSAPermissions();
     if (selectedOrganizationId) {
+      checkPSAPermissions();
       loadJudges();
       if (!hearingsByTime.size || !hearingNeighborsById.size) {
         loadHearingsForDate(date);
@@ -223,7 +223,7 @@ class CourtContainer extends React.Component<Props, State> {
     }
   }
 
-  componentDidUpdate(prevProps) {
+  componentWillReceiveProps(nextProps) {
     const { date } = this.state;
     const {
       actions,
@@ -232,15 +232,16 @@ class CourtContainer extends React.Component<Props, State> {
       openPSAIds,
       selectedOrganizationId
     } = this.props;
-    const { loadHearingsForDate, loadJudges } = actions;
-    if (selectedOrganizationId !== prevProps.selectedOrganizationId) {
+    const { checkPSAPermissions, loadHearingsForDate, loadJudges } = actions;
+    if (selectedOrganizationId !== nextProps.selectedOrganizationId) {
+      checkPSAPermissions();
       loadJudges();
       if (!hearingsByTime.size || !hearingNeighborsById.size) {
         loadHearingsForDate(date);
       }
     }
-    if (openPSAIds.size !== prevProps.openPSAIds.size) {
-      actions.loadPSAData(prevProps.openPSAIds.toJS());
+    if (openPSAIds.size !== nextProps.openPSAIds.size) {
+      actions.loadPSAData(nextProps.openPSAIds.toJS());
     }
   }
 
