@@ -7,8 +7,13 @@ import Immutable from 'immutable';
 import styled from 'styled-components';
 
 import PersonCard from './PersonCard';
-import { InfoContainer, InfoWrapper, InfoHeader, Spacer } from '../../utils/Layout';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import {
+  InfoContainer,
+  InfoWrapper,
+  InfoHeader,
+  Spacer
+} from '../../utils/Layout';
 
 
 const CardContainer = styled.div`

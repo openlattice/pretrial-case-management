@@ -1,12 +1,12 @@
 import { ALIASES, PERSON_CONFIG } from './ConfigConsts';
-import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { ID_FIELD_NAMES, LIST_FIELDS } from '../../utils/consts/Consts';
 
 const psaConfig = {
   entitySets: [
     PERSON_CONFIG,
     {
-      name: ENTITY_SETS.DMF_RESULTS,
+      name: APP_TYPES_FQNS.DMF_RESULTS,
       alias: ALIASES.DMF,
       entityId: ID_FIELD_NAMES.DMF_ID,
       fields: {
@@ -15,7 +15,7 @@ const psaConfig = {
       }
     },
     {
-      name: ENTITY_SETS.PSA_SCORES,
+      name: APP_TYPES_FQNS.PSA_SCORES,
       alias: ALIASES.PSA,
       entityId: ID_FIELD_NAMES.PSA_ID,
       fields: {
@@ -23,7 +23,7 @@ const psaConfig = {
       }
     },
     {
-      name: ENTITY_SETS.HEARINGS,
+      name: APP_TYPES_FQNS.HEARINGS,
       alias: ALIASES.HEARING,
       entityId: ID_FIELD_NAMES.HEARING_ID,
       fields: {
@@ -31,7 +31,7 @@ const psaConfig = {
       }
     },
     {
-      name: ENTITY_SETS.OUTCOMES,
+      name: APP_TYPES_FQNS.OUTCOMES,
       alias: ALIASES.OUTCOME,
       entityId: ID_FIELD_NAMES.OUTCOME_ID,
       fields: {
@@ -43,7 +43,7 @@ const psaConfig = {
       }
     },
     {
-      name: ENTITY_SETS.BONDS,
+      name: APP_TYPES_FQNS.BONDS,
       alias: ALIASES.BOND,
       entityId: ID_FIELD_NAMES.BOND_ID,
       fields: {
@@ -53,7 +53,7 @@ const psaConfig = {
       }
     },
     {
-      name: ENTITY_SETS.RELEASE_CONDITIONS,
+      name: APP_TYPES_FQNS.RELEASE_CONDITIONS,
       alias: ALIASES.RELEASE_CONDITION,
       entityId: PROPERTY_TYPES.GENERAL_ID,
       multipleValuesField: LIST_FIELDS.RELEASE_CONDITIONS_FIELD,
@@ -69,21 +69,21 @@ const psaConfig = {
       }
     },
     {
-      name: ENTITY_SETS.REGISTERED_FOR,
+      name: APP_TYPES_FQNS.REGISTERED_FOR,
       alias: ALIASES.REGISTERED_FOR,
       fields: {
         [PROPERTY_TYPES.COMPLETED_DATE_TIME]: PROPERTY_TYPES.COMPLETED_DATE_TIME
       }
     },
     {
-      name: ENTITY_SETS.REGISTERED_FOR,
+      name: APP_TYPES_FQNS.REGISTERED_FOR,
       alias: ALIASES.REGISTERED_FOR_THREE,
       fields: {
         outcomedate: PROPERTY_TYPES.COMPLETED_DATE_TIME
       }
     },
     {
-      name: ENTITY_SETS.REGISTERED_FOR,
+      name: APP_TYPES_FQNS.REGISTERED_FOR,
       alias: ALIASES.REGISTERED_FOR_TWO,
       fields: {
         bonddate: PROPERTY_TYPES.COMPLETED_DATE_TIME

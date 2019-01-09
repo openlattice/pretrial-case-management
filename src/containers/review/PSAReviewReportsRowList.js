@@ -14,12 +14,18 @@ import LoadingSpinner from '../../components/LoadingSpinner';
 import CustomPagination from '../../components/Pagination';
 import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
 import { NoResults } from '../../utils/Layout';
-import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_FAILURE_REASONS, PSA_STATUSES, SORT_TYPES } from '../../utils/consts/Consts';
 import { sortByDate, sortByName } from '../../utils/PSAUtils';
 import { getEntityKeyId, getIdOrValue } from '../../utils/DataUtils';
 import { OL } from '../../utils/consts/Colors';
 import {
+  APP_TYPES_FQNS,
+  PROPERTY_TYPES,
+  SETTINGS,
+  MODULE
+} from '../../utils/consts/DataModelConsts';
+import {
+  APP,
   STATE,
   REVIEW,
   SUBMIT,
@@ -33,6 +39,11 @@ import * as ReviewActionFactory from './ReviewActionFactory';
 import * as CourtActionFactory from '../court/CourtActionFactory';
 import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
 import * as DataActionFactory from '../../utils/data/DataActionFactory';
+
+const { PSA_SCORES } = APP_TYPES_FQNS;
+
+const peopleFqn :string = APP_TYPES_FQNS.PEOPLE.toString();
+const psaScoresFqn :string = PSA_SCORES.toString();
 
 const StyledCenteredContainer = styled.div`
   text-align: center;
@@ -109,7 +120,9 @@ type Props = {
   scoreSeq :Seq,
   sort? :?string,
   component :?string,
+  entitySetsByOrganization :Map<*, *>,
   hideCaseHistory? :boolean,
+  filterType :string,
   onStatusChangeCallback? :() => void,
   renderContent :?(() => void),
   renderSubContent :?(() => void),
@@ -146,7 +159,9 @@ type Props = {
   loadingPSAData :boolean,
   loading :boolean,
   scoresEntitySetId :string,
-  submitting :boolean
+  submitting :boolean,
+  selectedOrganizationId :string,
+  selectedOrganizationSettings :Map<*, *>
 }
 
 type State = {
@@ -171,9 +186,38 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
   }
 
   componentDidMount() {
-    const { actions } = this.props;
-    actions.checkPSAPermissions();
-    actions.loadJudges();
+    const { actions, selectedOrganizationId } = this.props;
+    if (selectedOrganizationId) {
+      actions.checkPSAPermissions();
+      actions.loadJudges();
+    }
+  }
+
+  componentWillReceiveProps(nextProps) {
+    let { start } = this.state;
+    const { filterType, scoreSeq } = this.props;
+    const nextFilterType = nextProps.filterType;
+    if (filterType && (filterType !== nextFilterType)) {
+      this.setState({ start: 0 });
+    }
+    if (scoreSeq.size !== nextProps.scoreSeq.size) {
+      const numResults = nextProps.scoreSeq.size;
+      const numPages = Math.ceil(numResults / MAX_RESULTS);
+      const currPage = (start / MAX_RESULTS) + 1;
+
+      if (currPage > numPages) start = (numPages - 1) * MAX_RESULTS;
+      if (start <= 0) start = 0;
+      this.setState({ start });
+    }
+  }
+
+
+  componentDidUpdate(prevProps) {
+    const { actions, selectedOrganizationId } = this.props;
+    if (selectedOrganizationId !== prevProps.selectedOrganizationId) {
+      actions.checkPSAPermissions();
+      actions.loadJudges();
+    }
   }
 
   componentWillUnmount() {
@@ -185,6 +229,7 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
     const {
       psaNeighborsById,
       caseHistory,
+      entitySetsByOrganization,
       manualCaseHistory,
       chargeHistory,
       manualChargeHistory,
@@ -198,8 +243,11 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
       psaIdsRefreshing,
       readOnlyPermissions,
       hideCaseHistory,
-      submitting
+      submitting,
+      selectedOrganizationSettings
     } = this.props;
+    const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], '');
+
 
     const {
       downloadPSAReviewPDF,
@@ -212,8 +260,8 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
     } = actions;
 
     const neighbors = psaNeighborsById.get(scoreId, Map());
-    const personId = getEntityKeyId(neighbors, ENTITY_SETS.PEOPLE);
-    const personIdValue = getIdOrValue(neighbors, ENTITY_SETS.PEOPLE, PROPERTY_TYPES.PERSON_ID);
+    const personId = getEntityKeyId(neighbors, peopleFqn);
+    const personIdValue = getIdOrValue(neighbors, peopleFqn, PROPERTY_TYPES.PERSON_ID);
     const personCaseHistory = caseHistory.get(personId, List());
     const personManualCaseHistory = manualCaseHistory.get(personId, List());
     const personChargeHistory = chargeHistory.get(personId, Map());
@@ -227,6 +275,8 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
     );
     return (
       <PSAReviewReportsRow
+          includesPretrialModule={includesPretrialModule}
+          entitySetIdsToAppType={entitySetsByOrganization}
           neighbors={neighbors}
           scores={scores}
           scoresEntitySetId={scoresEntitySetId}
@@ -289,7 +339,7 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
   renderFTAStats = () => {
     const { neighbors, personId } = this.props;
     if (personId && neighbors.size) {
-      const personPSAs = neighbors.getIn([personId, ENTITY_SETS.PSA_SCORES], Map());
+      const personPSAs = neighbors.getIn([personId, psaScoresFqn], Map());
       let psaFailures = 0;
       let ftas = 0;
       personPSAs.forEach((psa) => {
@@ -368,7 +418,11 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
   }
 
   render() {
-    const { scoreSeq, loadingPSAData, loading } = this.props;
+    const {
+      scoreSeq,
+      loadingPSAData,
+      loading
+    } = this.props;
     const { start } = this.state;
 
     if (loadingPSAData || loading) {
@@ -389,12 +443,18 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
 }
 
 function mapStateToProps(state) {
+  const app = state.get(STATE.APP);
+  const orgId = app.get(APP.SELECTED_ORG_ID, '');
   const people = state.get(STATE.PEOPLE);
   const review = state.get(STATE.REVIEW);
   const court = state.get(STATE.COURT);
   const submit = state.get(STATE.SUBMIT);
   // TODO: Address prop names so that consts can be used as keys
   return {
+    [APP.ENTITY_SETS_BY_ORG]: app.getIn([APP.ENTITY_SETS_BY_ORG, orgId], Map()),
+    [APP.SELECTED_ORG_ID]: app.get(APP.ESELECTED_ORG_ID),
+    [APP.SELECTED_ORG_SETTINGS]: app.get(APP.SELECTED_ORG_SETTINGS),
+
     [REVIEW.ENTITY_SET_ID]: review.get(REVIEW.ENTITY_SET_ID) || people.get(PEOPLE.SCORES_ENTITY_SET_ID),
     [REVIEW.NEIGHBORS_BY_ID]: review.get(REVIEW.NEIGHBORS_BY_ID),
     [REVIEW.CASE_HISTORY]: review.get(REVIEW.CASE_HISTORY),

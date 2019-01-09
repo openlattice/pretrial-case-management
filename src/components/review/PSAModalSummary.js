@@ -10,13 +10,22 @@ import ChargeHistoryStats from '../casehistory/ChargeHistoryStats';
 import ChargeTable from '../charges/ChargeTable';
 import PSASummary from '../../containers/review/PSASummary';
 import { AlternateSectionHeader, Count } from '../../utils/Layout';
-import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import {
+  APP_TYPES_FQNS,
+  PROPERTY_TYPES,
+  SETTINGS,
+  MODULE
+} from '../../utils/consts/DataModelConsts';
 import {
   STATE,
   APP,
   CHARGES,
   PSA_NEIGHBOR
 } from '../../utils/consts/FrontEndStateConsts';
+
+let { MANUAL_PRETRIAL_CASES } = APP_TYPES_FQNS;
+
+MANUAL_PRETRIAL_CASES = MANUAL_PRETRIAL_CASES.toString();
 
 const SummaryWrapper = styled.div`
   display: flex;
@@ -40,6 +49,7 @@ type Props = {
   manualChargeHistory :Immutable.Map<*, *>,
   pendingCharges :Immutable.List<*>,
   selectedOrganizationId :string,
+  selectedOrganizationSettings :Immutable.Map<*, *>,
   violentArrestCharges :Immutable.Map<*, *>,
   downloadFn :(values :{
     neighbors :Immutable.Map<*, *>,
@@ -59,7 +69,7 @@ class PSAModalSummary extends React.Component<Props, *> {
     } = this.props;
     const violentChargeList = violentArrestCharges.get(selectedOrganizationId, Map());
     const caseNum = neighbors.getIn(
-      [ENTITY_SETS.MANUAL_PRETRIAL_CASES, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.CASE_ID, 0], ''
+      [MANUAL_PRETRIAL_CASES, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.CASE_ID, 0], ''
     );
     const pretrialCase = manualCaseHistory
       .filter(caseObj => caseObj.getIn([PROPERTY_TYPES.CASE_ID, 0], '') === caseNum);
@@ -83,8 +93,11 @@ class PSAModalSummary extends React.Component<Props, *> {
       neighbors,
       notes,
       pendingCharges,
-      scores
+      scores,
+      selectedOrganizationSettings
     } = this.props;
+
+    const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
 
     return (
       <SummaryWrapper>
@@ -94,10 +107,15 @@ class PSAModalSummary extends React.Component<Props, *> {
             neighbors={neighbors}
             manualCaseHistory={manualCaseHistory}
             downloadFn={downloadFn} />
-        <ChargeHistoryStats
-            padding
-            pendingCharges={pendingCharges}
-            chargeHistory={chargeHistory} />
+        {
+          includesPretrialModule
+            ? (
+              <ChargeHistoryStats
+                  padding
+                  pendingCharges={pendingCharges}
+                  chargeHistory={chargeHistory} />
+            ) : null
+        }
         {this.renderCaseInfo()}
       </SummaryWrapper>
     );
@@ -111,6 +129,7 @@ function mapStateToProps(state :Immutable.Map<*, *>) :Object {
     // App
     [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
     [APP.SELECTED_ORG_TITLE]: app.get(APP.SELECTED_ORG_TITLE),
+    [APP.SELECTED_ORG_SETTINGS]: app.get(APP.SELECTED_ORG_SETTINGS),
 
     // Charges
     [CHARGES.ARREST_VIOLENT]: charges.get(CHARGES.ARREST_VIOLENT),

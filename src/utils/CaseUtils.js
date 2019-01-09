@@ -2,8 +2,13 @@ import { Map, List } from 'immutable';
 import moment from 'moment';
 
 import { PSA_STATUSES } from './consts/Consts';
-import { ENTITY_SETS, PROPERTY_TYPES } from './consts/DataModelConsts';
+import { APP_TYPES_FQNS, PROPERTY_TYPES } from './consts/DataModelConsts';
 import { PSA_NEIGHBOR } from './consts/FrontEndStateConsts';
+
+let { CHARGES, PRETRIAL_CASES } = APP_TYPES_FQNS;
+
+CHARGES = CHARGES.toString();
+PRETRIAL_CASES = PRETRIAL_CASES.toString();
 
 export const getMapByCaseId = (list, fqn) => {
   let objMap = Map();
@@ -19,7 +24,7 @@ export const getMapByCaseId = (list, fqn) => {
 
 export const getChargeHistory = (neighbors) => {
   let chargeHistory = Map();
-  neighbors.get(ENTITY_SETS.CHARGES, List())
+  neighbors.get(CHARGES, List())
     .forEach((chargeNeighbor) => {
       const chargeIdArr = chargeNeighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.CHARGE_ID, 0], '').split('|');
       if (chargeIdArr.length) {
@@ -34,7 +39,7 @@ export const getChargeHistory = (neighbors) => {
 };
 
 export const getCaseHistory = (neighbors) => {
-  const caseHistory = neighbors.get(ENTITY_SETS.PRETRIAL_CASES, List())
+  const caseHistory = neighbors.get(PRETRIAL_CASES, List())
     .map(neighborObj => neighborObj.get(PSA_NEIGHBOR.DETAILS, Map()));
   return caseHistory;
 };

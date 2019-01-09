@@ -16,12 +16,19 @@ import PersonCardSummary from '../../components/person/PersonCardSummary';
 import PSAReportDownloadButton from '../../components/review/PSAReportDownloadButton';
 import PSAStats from '../../components/review/PSAStats';
 import SummaryDMFDetails from '../../components/dmf/SummaryDMFDetails';
-import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { formatDateTimeList } from '../../utils/FormattingUtils';
 import { getTimeStamp, getNeighborDetailsForEntitySet } from '../../utils/DataUtils';
 import { OL } from '../../utils/consts/Colors';
 import { NoResults, Title, SummaryRowWrapper } from '../../utils/Layout';
 import {
+  APP_TYPES_FQNS,
+  PROPERTY_TYPES,
+  SETTINGS,
+  MODULE
+} from '../../utils/consts/DataModelConsts';
+import {
+  APP,
+  EDM,
   STATE,
   REVIEW,
   PEOPLE,
@@ -31,6 +38,19 @@ import {
 
 import * as Routes from '../../core/router/Routes';
 import * as ReviewActionFactory from './ReviewActionFactory';
+
+const {
+  ASSESSED_BY,
+  MANUAL_PRETRIAL_CASES,
+  PSA_RISK_FACTORS,
+  STAFF
+} = APP_TYPES_FQNS;
+
+const assessedByFqn :string = ASSESSED_BY.toString();
+const manualPretrialCasesFqn :string = MANUAL_PRETRIAL_CASES.toString();
+const peopleFqn :string = APP_TYPES_FQNS.PEOPLE.toString();
+const psaRiskFactorsFqn :string = PSA_RISK_FACTORS.toString();
+const staffFqn :string = STAFF.toString();
 
 const ButtonWrapper = styled.div`
   display: flex;
@@ -49,6 +69,11 @@ const SummaryWrapper = styled.div`
     height: 1px;
     margin: 0;
   }
+`;
+
+const BaseSummaryRowWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
 `;
 
 const TitleRowWrapper = styled.div`
@@ -82,17 +107,17 @@ const ScoreContent = styled.div`
 `;
 
 const PSADetails = styled.div`
-  margin-top: 20px;
+  margin: ${props => (props.includesPretrialModule ? '20px 0 0' : '20px 0')};
   width: 100%;
   display: grid;
-  grid-template-columns: 25% 25% 46%;
+  grid-auto-columns: 1fr;
+  grid-auto-flow: column;
   grid-column-gap: 2%;
 `;
 
 const DownloadButtonWrapper = styled.div`
   width: 100%;
   display: flex;
-  justify-content: flex-end;
 `;
 
 const ScoreTitle = styled.div`
@@ -121,10 +146,12 @@ const ViewPSADetailsButton = styled(BasicButton)`
 
 type Props = {
   notes :string,
+  entitySetsByOrganization :Immutable.Map<*, *>,
   scores :Immutable.Map<*, *>,
   neighbors :Immutable.Map<*, *>,
   fileNewPSA :boolean,
   profile :boolean,
+  selectedOrganizationSettings :Immutable.Map<*, *>,
   openDetailsModal :() => void,
   actions :{
     downloadPSAReviewPDF :(values :{
@@ -139,7 +166,7 @@ class PSASummary extends React.Component<Props, *> {
   renderArrestInfo = () => {
     const { neighbors, profile } = this.props;
     const component = profile ? `${CONTENT_CONSTS.PROFILE}|${CONTENT_CONSTS.ARREST}` : CONTENT_CONSTS.ARREST;
-    const pretrialCase = getNeighborDetailsForEntitySet(neighbors, ENTITY_SETS.MANUAL_PRETRIAL_CASES);
+    const pretrialCase = getNeighborDetailsForEntitySet(neighbors, manualPretrialCasesFqn);
     return (
       <ArrestCard arrest={pretrialCase} component={component} />
     );
@@ -157,7 +184,7 @@ class PSASummary extends React.Component<Props, *> {
 
   renderPersonInfo = () => {
     const { neighbors } = this.props;
-    const person = getNeighborDetailsForEntitySet(neighbors, ENTITY_SETS.PEOPLE);
+    const person = getNeighborDetailsForEntitySet(neighbors, peopleFqn);
     return (
       <PersonCardSummary person={person} />
     );
@@ -184,42 +211,81 @@ class PSASummary extends React.Component<Props, *> {
   }
 
   renderPSADetails = () => {
-    const { neighbors, actions, scores } = this.props;
+    const {
+      neighbors,
+      actions,
+      scores,
+      entitySetsByOrganization,
+      selectedOrganizationSettings
+    } = this.props;
+    const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], '');
+
     const { downloadPSAReviewPDF } = actions;
     let filer;
-    const psaDate = formatDateTimeList(getTimeStamp(neighbors, ENTITY_SETS.PSA_RISK_FACTORS));
-    neighbors.get(ENTITY_SETS.STAFF, Immutable.List()).forEach((neighbor) => {
-      const associationEntitySetName = neighbor.getIn([PSA_ASSOCIATION.ENTITY_SET, 'name']);
+    const psaDate = formatDateTimeList(getTimeStamp(neighbors, psaRiskFactorsFqn));
+    neighbors.get(staffFqn, Immutable.List()).forEach((neighbor) => {
+      const associationEntitySetId = neighbor.getIn([PSA_ASSOCIATION.ENTITY_SET, 'id']);
+      const appTypeFqn = entitySetsByOrganization.get(associationEntitySetId);
       const personId = neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.PERSON_ID, 0], '');
-      if (associationEntitySetName === ENTITY_SETS.ASSESSED_BY) {
+      if (appTypeFqn === assessedByFqn) {
         filer = personId;
       }
     });
     return (
-      <PSADetails>
+      <PSADetails includesPretrialModule={includesPretrialModule}>
         <ContentBlock
             contentBlock={{ label: 'psa date', content: [psaDate] }}
             component={CONTENT_CONSTS.SUMMARY} />
         <ContentBlock
             contentBlock={{ label: 'filer', content: [filer] }}
             component={CONTENT_CONSTS.SUMMARY} />
+        <div />
         <DownloadButtonWrapper>
-          <PSAReportDownloadButton
-              downloadFn={downloadPSAReviewPDF}
-              neighbors={neighbors}
-              scores={scores} />
+          {
+            includesPretrialModule
+              ? (
+                <PSAReportDownloadButton
+                    includesPretrialModule={includesPretrialModule}
+                    downloadFn={downloadPSAReviewPDF}
+                    neighbors={neighbors}
+                    scores={scores} />
+              ) : null
+          }
         </DownloadButtonWrapper>
       </PSADetails>
     );
   }
+
+  renderDownloadButton = () => {
+    const {
+      actions,
+      neighbors,
+      scores,
+      selectedOrganizationSettings
+    } = this.props;
+    const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], '');
+
+    const { downloadPSAReviewPDF } = actions;
+
+    return (
+      <PSAReportDownloadButton
+          includesPretrialModule={includesPretrialModule}
+          downloadFn={downloadPSAReviewPDF}
+          neighbors={neighbors}
+          scores={scores} />
+    );
+  }
+
 
   render() {
     const {
       neighbors,
       notes,
       scores,
-      profile
+      profile,
+      selectedOrganizationSettings
     } = this.props;
+    const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], '');
 
     const topRow = profile ? this.renderProfileHeader()
       : (
@@ -232,12 +298,12 @@ class PSASummary extends React.Component<Props, *> {
         </NoStyleWrapper>
       );
 
-    const middleRow = (
-      <SummaryRowWrapper>
-        <ScoresContainer border>
+    const pretrialMiddleRow = (
+      <SummaryRowWrapper row={!includesPretrialModule}>
+        <ScoresContainer border={includesPretrialModule}>
           <ScoreTitle>PSA</ScoreTitle>
-          <ScoreContent>
-            <PSAStats scores={scores} />
+          <ScoreContent includesPretrialModule>
+            <PSAStats scores={scores} hideProfile includesPretrialModule={includesPretrialModule} />
             {this.renderPSADetails()}
           </ScoreContent>
         </ScoresContainer>
@@ -246,6 +312,22 @@ class PSASummary extends React.Component<Props, *> {
           <SummaryDMFDetails neighbors={neighbors} scores={scores} />
         </ScoresContainer>
       </SummaryRowWrapper>
+    );
+
+    const psaMiddleRow = (
+      <BaseSummaryRowWrapper row={!includesPretrialModule}>
+        <ScoresContainer border={includesPretrialModule}>
+          <ScoreTitle>PSA</ScoreTitle>
+          <ScoreContent includesPretrialModule>
+            <PSAStats
+                scores={scores}
+                hideProfile
+                downloadButton={this.renderDownloadButton}
+                includesPretrialModule={includesPretrialModule} />
+            {this.renderPSADetails()}
+          </ScoreContent>
+        </ScoresContainer>
+      </BaseSummaryRowWrapper>
     );
 
     const bottomRow = !profile ? null
@@ -263,7 +345,7 @@ class PSASummary extends React.Component<Props, *> {
           scores.size
             ? (
               <NoStyleWrapper>
-                { middleRow }
+                { includesPretrialModule ? pretrialMiddleRow : psaMiddleRow }
                 <hr />
                 {(!profile && notes) ? this.renderNotes() : null}
                 {(!profile && notes) ? <hr /> : null}
@@ -278,10 +360,18 @@ class PSASummary extends React.Component<Props, *> {
 }
 
 function mapStateToProps(state) {
+  const app = state.get(STATE.APP);
+  const orgId = app.get(APP.SELECTED_ORG_ID, '');
+  const edm = state.get(STATE.EDM);
   const review = state.get(STATE.REVIEW);
   const people = state.get(STATE.PEOPLE);
 
   return {
+    [APP.SELECTED_ORG_SETTINGS]: app.get(APP.SELECTED_ORG_SETTINGS),
+    [APP.ENTITY_SETS_BY_ORG]: app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]),
+
+    [EDM.FQN_TO_ID]: edm.get(EDM.FQN_TO_ID),
+
     [REVIEW.NEIGHBORS_BY_ID]: review.get(REVIEW.NEIGHBORS_BY_ID),
     [REVIEW.LOADING_DATA]: review.get(REVIEW.LOADING_DATA),
     [REVIEW.LOADING_RESULTS]: review.get(REVIEW.LOADING_RESULTS),

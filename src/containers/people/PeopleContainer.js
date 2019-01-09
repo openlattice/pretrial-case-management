@@ -18,11 +18,17 @@ import LoadingSpinner from '../../components/LoadingSpinner';
 import NavButtonToolbar from '../../components/buttons/NavButtonToolbar';
 import DropDownMenu from '../../components/StyledSelect';
 import { getFormattedPeople } from '../../utils/PeopleUtils';
-import { searchPeople } from '../person/PersonActionFactory';
-import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { clearSearchResults, searchPeople } from '../person/PersonActionFactory';
+import {
+  APP_TYPES_FQNS,
+  PROPERTY_TYPES,
+  SETTINGS,
+  MODULE
+} from '../../utils/consts/DataModelConsts';
 import { DOMAIN_OPTIONS_ARR } from '../../utils/consts/ReviewPSAConsts';
 import { OL } from '../../utils/consts/Colors';
 import {
+  APP,
   STATE,
   SEARCH,
   PEOPLE,
@@ -73,6 +79,7 @@ type Props = {
   peopleResults :Immutable.List<*>,
   loadingPSAData :boolean,
   psaNeighborsById :Immutable.Map<*, *>,
+  selectedOrganizationSettings :Immutable.Map<*, *>,
   actions :{
     loadPSAsByDate :(filter :string) => void,
     searchPeople :(value :{firstName :string, lastName :string, dob :string}) => void
@@ -94,6 +101,11 @@ class PeopleContainer extends React.Component<Props, State> {
       countyFilter: '',
       peopleList: []
     };
+  }
+
+  componentWillUnmount() {
+    const { actions } = this.props;
+    actions.clearSearchResults();
   }
 
   componentWillReceiveProps(nextProps) {
@@ -127,7 +139,7 @@ class PeopleContainer extends React.Component<Props, State> {
     let missingPeople = Immutable.Set(peopleList);
 
     psaNeighborsById.valueSeq().forEach((neighbors) => {
-      const neighbor = neighbors.getIn([ENTITY_SETS.PEOPLE, PSA_NEIGHBOR.DETAILS], Immutable.Map());
+      const neighbor = neighbors.getIn([APP_TYPES_FQNS.PEOPLE, PSA_NEIGHBOR.DETAILS], Immutable.Map());
       const firstNameList = neighbor.get(PROPERTY_TYPES.FIRST_NAME, Immutable.List()).map(val => val.toLowerCase());
       const lastNameList = neighbor.get(PROPERTY_TYPES.LAST_NAME, Immutable.List()).map(val => val.toLowerCase());
       const id = neighbor.get(PROPERTY_TYPES.PERSON_ID);
@@ -212,11 +224,16 @@ class PeopleContainer extends React.Component<Props, State> {
   }
 
   render() {
-    const navButtons = [
+    const { selectedOrganizationSettings } = this.props;
+    const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
+    let navButtons = [
       {
         path: Routes.SEARCH_PEOPLE,
         label: 'Search'
-      },
+      }
+    ];
+
+    const pretrialModuleNavButtons = [
       {
         path: Routes.MULTI_SEARCH_PEOPLE,
         label: 'Multi-Search'
@@ -227,11 +244,13 @@ class PeopleContainer extends React.Component<Props, State> {
       }
     ];
 
+    if (includesPretrialModule) navButtons = navButtons.concat(pretrialModuleNavButtons);
+
     return (
       <DashboardMainSection>
         <ToolbarWrapper>
           <NavButtonToolbar options={navButtons} />
-          {this.renderCountyDropdown()}
+          {includesPretrialModule ? this.renderCountyDropdown() : <div /> }
         </ToolbarWrapper>
         <Switch>
           <Route path={Routes.SEARCH_PEOPLE} render={this.renderSearchPeopleComponent} />
@@ -246,12 +265,14 @@ class PeopleContainer extends React.Component<Props, State> {
 
 
 function mapStateToProps(state) {
+  const app = state.get(STATE.APP);
   const peopleResults = state.getIn([STATE.SEARCH, SEARCH.SEARCH_RESULTS], Immutable.List());
   const isFetchingPeople = state.getIn([STATE.SEARCH, SEARCH.LOADING], false);
   const loadingPSAData = state.getIn([STATE.REVIEW, REVIEW.LOADING_DATA], false);
   const openPSAs = state.getIn([STATE.REVIEW, REVIEW.SCORES], Immutable.Map());
   const psaNeighborsById = state.getIn([STATE.REVIEW, REVIEW.NEIGHBORS_BY_ID], Immutable.Map());
   return {
+    [APP.SELECTED_ORG_SETTINGS]: app.get(APP.SELECTED_ORG_SETTINGS),
     peopleResults,
     isFetchingPeople,
     loadingPSAData,
@@ -262,7 +283,7 @@ function mapStateToProps(state) {
 }
 
 function mapDispatchToProps(dispatch) {
-  const actions :{ [string] :Function } = { searchPeople };
+  const actions :{ [string] :Function } = { searchPeople, clearSearchResults };
 
   return {
     actions: {

@@ -31,12 +31,18 @@ import { getEntityKeyId, getEntitySetId, getIdOrValue } from '../../utils/DataUt
 import { CenteredContainer, Title } from '../../utils/Layout';
 import { toISODateTime } from '../../utils/FormattingUtils';
 import { getCasesForPSA, currentPendingCharges } from '../../utils/CaseUtils';
-import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { RESULT_CATEGORIES } from '../../utils/consts/DMFResultConsts';
 import { formatDMFFromEntity } from '../../utils/DMFUtils';
 import { OL } from '../../utils/consts/Colors';
 import { psaIsClosed } from '../../utils/PSAUtils';
 import {
+  APP_TYPES_FQNS,
+  PROPERTY_TYPES,
+  SETTINGS,
+  MODULE
+} from '../../utils/consts/DataModelConsts';
+import {
+  APP,
   PSA_NEIGHBOR,
   PSA_ASSOCIATION,
   STATE,
@@ -56,6 +62,34 @@ import * as ReviewActionFactory from './ReviewActionFactory';
 import * as CourtActionFactory from '../court/CourtActionFactory';
 import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
 import * as DataActionFactory from '../../utils/data/DataActionFactory';
+
+let {
+  BONDS,
+  DMF_RESULTS,
+  DMF_RISK_FACTORS,
+  HEARINGS,
+  MANUAL_PRETRIAL_CASES,
+  OUTCOMES,
+  PEOPLE,
+  PRETRIAL_CASES,
+  PSA_RISK_FACTORS,
+  RELEASE_CONDITIONS,
+  RELEASE_RECOMMENDATIONS,
+  STAFF
+} = APP_TYPES_FQNS;
+
+BONDS = BONDS.toString();
+DMF_RESULTS = DMF_RESULTS.toString();
+DMF_RISK_FACTORS = DMF_RISK_FACTORS.toString();
+HEARINGS = HEARINGS.toString();
+MANUAL_PRETRIAL_CASES = MANUAL_PRETRIAL_CASES.toString();
+OUTCOMES = OUTCOMES.toString();
+PEOPLE = PEOPLE.toString();
+PRETRIAL_CASES = PRETRIAL_CASES.toString();
+PSA_RISK_FACTORS = PSA_RISK_FACTORS.toString();
+RELEASE_CONDITIONS = RELEASE_CONDITIONS.toString();
+RELEASE_RECOMMENDATIONS = RELEASE_RECOMMENDATIONS.toString();
+STAFF = STAFF.toString();
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
@@ -150,6 +184,7 @@ const CloseModalX = styled.img.attrs({
 `;
 
 type Props = {
+  app :Map<*, *>,
   caseHistory :List<*>,
   chargeHistory :Map<*, *>,
   entityKeyId :string,
@@ -249,15 +284,17 @@ class PSAModal extends React.Component<Props, State> {
   }
 
   getNotesFromNeighbors = neighbors => neighbors.getIn([
-    ENTITY_SETS.RELEASE_RECOMMENDATIONS,
+    RELEASE_RECOMMENDATIONS,
     PSA_NEIGHBOR.DETAILS,
     PROPERTY_TYPES.RELEASE_RECOMMENDATION,
     0
   ], '');
 
   getRiskFactors = (neighbors :Map<*, *>) => {
-    const riskFactors = neighbors.getIn([ENTITY_SETS.PSA_RISK_FACTORS, PSA_NEIGHBOR.DETAILS], Map());
-    const dmfRiskFactors = neighbors.getIn([ENTITY_SETS.DMF_RISK_FACTORS, PSA_NEIGHBOR.DETAILS], Map());
+    const { selectedOrganizationSettings } = this.props;
+    const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], '');
+    const riskFactors = neighbors.getIn([PSA_RISK_FACTORS, PSA_NEIGHBOR.DETAILS], Map());
+    const dmfRiskFactors = neighbors.getIn([DMF_RISK_FACTORS, PSA_NEIGHBOR.DETAILS], Map());
     const ageAtCurrentArrestVal = riskFactors.getIn([PROPERTY_TYPES.AGE_AT_CURRENT_ARREST, 0]);
     let ageAtCurrentArrest = 0;
     if (ageAtCurrentArrestVal === '21 or 22') ageAtCurrentArrest = 1;
@@ -267,7 +304,7 @@ class PSAModal extends React.Component<Props, State> {
     const priorFTAVal = riskFactors.getIn([PROPERTY_TYPES.PRIOR_FAILURE_TO_APPEAR_RECENT, 0]);
     const priorFTA = (priorFTAVal === '2 or more') ? 2 : priorFTAVal;
 
-    return Immutable.fromJS({
+    let newRiskFactors = {
       [PSA.NOTES]: this.getNotesFromNeighbors(neighbors),
       [PSA.AGE_AT_CURRENT_ARREST]: `${ageAtCurrentArrest}`,
       [PSA.CURRENT_VIOLENT_OFFENSE]: `${riskFactors.getIn([PROPERTY_TYPES.CURRENT_VIOLENT_OFFENSE, 0])}`,
@@ -278,7 +315,7 @@ class PSAModal extends React.Component<Props, State> {
       [PSA.PRIOR_FAILURE_TO_APPEAR_RECENT]: `${priorFTA}`,
       [PSA.PRIOR_FAILURE_TO_APPEAR_OLD]: `${riskFactors.getIn([PROPERTY_TYPES.PRIOR_FAILURE_TO_APPEAR_OLD, 0])}`,
       [PSA.PRIOR_SENTENCE_TO_INCARCERATION]:
-        `${riskFactors.getIn([PROPERTY_TYPES.PRIOR_SENTENCE_TO_INCARCERATION, 0])}`,
+      `${riskFactors.getIn([PROPERTY_TYPES.PRIOR_SENTENCE_TO_INCARCERATION, 0])}`,
       [NOTES[PSA.AGE_AT_CURRENT_ARREST]]: riskFactors.getIn([PROPERTY_TYPES.AGE_AT_CURRENT_ARREST_NOTES, 0], ''),
       [NOTES[PSA.CURRENT_VIOLENT_OFFENSE]]: riskFactors.getIn([PROPERTY_TYPES.CURRENT_VIOLENT_OFFENSE_NOTES, 0], ''),
       [NOTES[PSA.PENDING_CHARGE]]: riskFactors.getIn([PROPERTY_TYPES.PENDING_CHARGE_NOTES, 0], ''),
@@ -286,31 +323,40 @@ class PSAModal extends React.Component<Props, State> {
       [NOTES[PSA.PRIOR_FELONY]]: riskFactors.getIn([PROPERTY_TYPES.PRIOR_FELONY_NOTES, 0], ''),
       [NOTES[PSA.PRIOR_VIOLENT_CONVICTION]]: riskFactors.getIn([PROPERTY_TYPES.PRIOR_VIOLENT_CONVICTION_NOTES, 0], ''),
       [NOTES[PSA.PRIOR_FAILURE_TO_APPEAR_RECENT]]:
-        riskFactors.getIn([PROPERTY_TYPES.PRIOR_FAILURE_TO_APPEAR_RECENT_NOTES, 0], ''),
+      riskFactors.getIn([PROPERTY_TYPES.PRIOR_FAILURE_TO_APPEAR_RECENT_NOTES, 0], ''),
       [NOTES[PSA.PRIOR_FAILURE_TO_APPEAR_OLD]]:
-        riskFactors.getIn([PROPERTY_TYPES.PRIOR_FAILURE_TO_APPEAR_OLD_NOTES, 0], ''),
+      riskFactors.getIn([PROPERTY_TYPES.PRIOR_FAILURE_TO_APPEAR_OLD_NOTES, 0], ''),
       [NOTES[PSA.PRIOR_SENTENCE_TO_INCARCERATION]]:
-        riskFactors.getIn([PROPERTY_TYPES.PRIOR_SENTENCE_TO_INCARCERATION_NOTES, 0], ''),
+      riskFactors.getIn([PROPERTY_TYPES.PRIOR_SENTENCE_TO_INCARCERATION_NOTES, 0], ''),
+    };
 
-      [DMF.EXTRADITED]: `${dmfRiskFactors.getIn([PROPERTY_TYPES.EXTRADITED, 0])}`,
-      [DMF.STEP_2_CHARGES]: `${dmfRiskFactors.getIn([PROPERTY_TYPES.DMF_STEP_2_CHARGES, 0])}`,
-      [DMF.STEP_4_CHARGES]: `${dmfRiskFactors.getIn([PROPERTY_TYPES.DMF_STEP_4_CHARGES, 0])}`,
-      [DMF.COURT_OR_BOOKING]: `${dmfRiskFactors.getIn([PROPERTY_TYPES.CONTEXT, 0])}`,
-      [DMF.SECONDARY_RELEASE_CHARGES]: `${dmfRiskFactors.getIn([PROPERTY_TYPES.DMF_SECONDARY_RELEASE_CHARGES, 0])}`,
-      [DMF.SECONDARY_HOLD_CHARGES]: `${dmfRiskFactors.getIn([PROPERTY_TYPES.DMF_SECONDARY_HOLD_CHARGES, 0])}`,
-      [NOTES[DMF.EXTRADITED]]: `${dmfRiskFactors.getIn([PROPERTY_TYPES.EXTRADITED_NOTES, 0], '')}`,
-      [NOTES[DMF.STEP_2_CHARGES]]: `${dmfRiskFactors.getIn([PROPERTY_TYPES.DMF_STEP_2_CHARGES_NOTES, 0], '')}`,
-      [NOTES[DMF.STEP_4_CHARGES]]: `${dmfRiskFactors.getIn([PROPERTY_TYPES.DMF_STEP_4_CHARGES_NOTES, 0], '')}`,
-      [NOTES[DMF.SECONDARY_RELEASE_CHARGES]]:
-        `${dmfRiskFactors.getIn([PROPERTY_TYPES.DMF_SECONDARY_RELEASE_CHARGES_NOTES, 0], '')}`,
-      [NOTES[DMF.SECONDARY_HOLD_CHARGES]]:
-        `${dmfRiskFactors.getIn([PROPERTY_TYPES.DMF_SECONDARY_HOLD_CHARGES_NOTES, 0], '')}`
-    });
+    if (includesPretrialModule) {
+      newRiskFactors = Object.assign({}, newRiskFactors, {
+        [DMF.EXTRADITED]: `${dmfRiskFactors.getIn([PROPERTY_TYPES.EXTRADITED, 0])}`,
+        [DMF.STEP_2_CHARGES]: `${dmfRiskFactors.getIn([PROPERTY_TYPES.DMF_STEP_2_CHARGES, 0])}`,
+        [DMF.STEP_4_CHARGES]: `${dmfRiskFactors.getIn([PROPERTY_TYPES.DMF_STEP_4_CHARGES, 0])}`,
+        [DMF.COURT_OR_BOOKING]: `${dmfRiskFactors.getIn([PROPERTY_TYPES.CONTEXT, 0])}`,
+        [DMF.SECONDARY_RELEASE_CHARGES]: `${dmfRiskFactors.getIn([PROPERTY_TYPES.DMF_SECONDARY_RELEASE_CHARGES, 0])}`,
+        [DMF.SECONDARY_HOLD_CHARGES]: `${dmfRiskFactors.getIn([PROPERTY_TYPES.DMF_SECONDARY_HOLD_CHARGES, 0])}`,
+        [NOTES[DMF.EXTRADITED]]: `${dmfRiskFactors.getIn([PROPERTY_TYPES.EXTRADITED_NOTES, 0], '')}`,
+        [NOTES[DMF.STEP_2_CHARGES]]: `${dmfRiskFactors.getIn([PROPERTY_TYPES.DMF_STEP_2_CHARGES_NOTES, 0], '')}`,
+        [NOTES[DMF.STEP_4_CHARGES]]: `${dmfRiskFactors.getIn([PROPERTY_TYPES.DMF_STEP_4_CHARGES_NOTES, 0], '')}`,
+        [NOTES[DMF.SECONDARY_RELEASE_CHARGES]]:
+          `${dmfRiskFactors.getIn([PROPERTY_TYPES.DMF_SECONDARY_RELEASE_CHARGES_NOTES, 0], '')}`,
+        [NOTES[DMF.SECONDARY_HOLD_CHARGES]]:
+          `${dmfRiskFactors.getIn([PROPERTY_TYPES.DMF_SECONDARY_HOLD_CHARGES_NOTES, 0], '')}`
+      });
+    }
+    return Immutable.fromJS(newRiskFactors);
   }
 
-  getDMF = (neighbors :Map<*, *>) => (
-    formatDMFFromEntity(neighbors.getIn([ENTITY_SETS.DMF_RESULTS, PSA_NEIGHBOR.DETAILS], Map()))
-  );
+  getDMF = (neighbors :Map<*, *>) => {
+    const { selectedOrganizationSettings } = this.props;
+    const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], '');
+    return includesPretrialModule
+      ? formatDMFFromEntity(neighbors.getIn([DMF_RESULTS, PSA_NEIGHBOR.DETAILS], Map()))
+      : Map();
+  };
 
   downloadRow = (e, isCompact) => {
     e.stopPropagation();
@@ -322,7 +368,7 @@ class PSAModal extends React.Component<Props, State> {
     const { neighbors, hideProfile } = this.props;
     if (hideProfile) return null;
 
-    const personDetails = neighbors.getIn([ENTITY_SETS.PEOPLE, PSA_NEIGHBOR.DETAILS], Map());
+    const personDetails = neighbors.getIn([PEOPLE, PSA_NEIGHBOR.DETAILS], Map());
     if (!personDetails.size) return <div>Person details unknown.</div>;
     return <PersonCard person={personDetails} />;
   }
@@ -428,29 +474,43 @@ class PSAModal extends React.Component<Props, State> {
     e.preventDefault();
     const {
       actions,
+      app,
       entityKeyId,
       neighbors,
       scoresEntitySetId,
-      scores
+      scores,
+      selectedOrganizationSettings
     } = this.props;
-    const { riskFactors } = this.state;
+    let dmfIdValue;
+    let dmfId;
+    let dmfEntitySetId;
+    let dmfEntity;
+    let dmfRiskFactorsIdValue;
+    let dmfRiskFactorsId;
+    let dmfRiskFactorsEntitySetId;
+    let dmfRiskFactorsEntity;
 
+    const { riskFactors } = this.state;
+    // import module settings
+    const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
     const scoresAndRiskFactors = getScoresAndRiskFactors(riskFactors);
     const riskFactorsEntity = Object.assign({}, scoresAndRiskFactors.riskFactors);
-    const dmf = calculateDMF(riskFactors, scoresAndRiskFactors.scores);
+    const dmf = includesPretrialModule ? calculateDMF(riskFactors, scoresAndRiskFactors.scores) : {};
 
     const scoreId = scores.getIn([PROPERTY_TYPES.GENERAL_ID, 0]);
-    const riskFactorsIdValue = this.getIdOrValue(ENTITY_SETS.PSA_RISK_FACTORS);
+    const riskFactorsIdValue = this.getIdOrValue(PSA_RISK_FACTORS);
+    if (includesPretrialModule) {
+      dmfIdValue = this.getIdOrValue(DMF_RESULTS);
+      dmfId = this.getEntityKeyId(DMF_RESULTS);
+      dmfEntitySetId = this.getEntitySetId(DMF_RESULTS);
+      dmfEntity = this.getDMFEntity(dmf, dmfIdValue);
 
-    const dmfIdValue = this.getIdOrValue(ENTITY_SETS.DMF_RESULTS);
-    const dmfId = this.getEntityKeyId(ENTITY_SETS.DMF_RESULTS);
-    const dmfEntitySetId = this.getEntitySetId(ENTITY_SETS.DMF_RESULTS);
-    const dmfEntity = this.getDMFEntity(dmf, dmfIdValue);
+      dmfRiskFactorsIdValue = this.getIdOrValue(DMF_RISK_FACTORS);
+      dmfRiskFactorsId = this.getEntityKeyId(DMF_RISK_FACTORS);
+      dmfRiskFactorsEntitySetId = this.getEntitySetId(DMF_RISK_FACTORS);
+      dmfRiskFactorsEntity = this.getDMFRiskFactorsEntity(riskFactors, dmfRiskFactorsIdValue);
+    }
 
-    const dmfRiskFactorsIdValue = this.getIdOrValue(ENTITY_SETS.DMF_RISK_FACTORS);
-    const dmfRiskFactorsId = this.getEntityKeyId(ENTITY_SETS.DMF_RISK_FACTORS);
-    const dmfRiskFactorsEntitySetId = this.getEntitySetId(ENTITY_SETS.DMF_RISK_FACTORS);
-    const dmfRiskFactorsEntity = this.getDMFRiskFactorsEntity(riskFactors, dmfRiskFactorsIdValue);
 
     const newScores = scoresAndRiskFactors.scores;
     const scoresEntity = scores
@@ -462,8 +522,8 @@ class PSAModal extends React.Component<Props, State> {
     if (riskFactorsIdValue) riskFactorsEntity[PROPERTY_TYPES.GENERAL_ID] = [riskFactorsIdValue];
 
     const scoresId = entityKeyId;
-    const riskFactorsEntitySetId = this.getEntitySetId(ENTITY_SETS.PSA_RISK_FACTORS);
-    const riskFactorsId = this.getEntityKeyId(ENTITY_SETS.PSA_RISK_FACTORS);
+    const riskFactorsEntitySetId = this.getEntitySetId(PSA_RISK_FACTORS);
+    const riskFactorsId = this.getEntityKeyId(PSA_RISK_FACTORS);
 
     let notesIdValue;
     let notesId;
@@ -472,9 +532,9 @@ class PSAModal extends React.Component<Props, State> {
 
     const notes = riskFactors.get(PSA.NOTES);
     if (this.getNotesFromNeighbors(neighbors) !== notes) {
-      notesIdValue = this.getIdOrValue(ENTITY_SETS.RELEASE_RECOMMENDATIONS);
-      notesId = this.getEntityKeyId(ENTITY_SETS.RELEASE_RECOMMENDATIONS);
-      notesEntitySetId = this.getEntitySetId(ENTITY_SETS.RELEASE_RECOMMENDATIONS);
+      notesIdValue = this.getIdOrValue(RELEASE_RECOMMENDATIONS);
+      notesId = this.getEntityKeyId(RELEASE_RECOMMENDATIONS);
+      notesEntitySetId = this.getEntitySetId(RELEASE_RECOMMENDATIONS);
       notesEntity = this.getNotesEntity(riskFactors, notesIdValue);
     }
 
@@ -496,18 +556,26 @@ class PSAModal extends React.Component<Props, State> {
       notesEntity
     });
 
+    const values = {
+      [EDIT_FIELDS.PSA_ID]: [scoreId],
+      [EDIT_FIELDS.RISK_FACTORS_ID]: [riskFactorsId],
+      [EDIT_FIELDS.DMF_ID]: [dmfId],
+      [EDIT_FIELDS.DMF_RISK_FACTORS_ID]: [dmfRiskFactorsId],
+      [EDIT_FIELDS.NOTES_ID]: [notesId],
+      [EDIT_FIELDS.TIMESTAMP]: [toISODateTime(moment())],
+      [EDIT_FIELDS.PERSON_ID]: [AuthUtils.getUserInfo().email]
+    };
+
+    if (!includesPretrialModule) {
+      delete values[EDIT_FIELDS.DMF_ID];
+      delete values[EDIT_FIELDS.DMF_RISK_FACTORS_ID];
+    }
+
     if (scoreId) {
       actions.submit({
+        app,
         config: psaEditedConfig,
-        values: {
-          [EDIT_FIELDS.PSA_ID]: [scoreId],
-          [EDIT_FIELDS.RISK_FACTORS_ID]: [riskFactorsId],
-          [EDIT_FIELDS.DMF_ID]: [dmfId],
-          [EDIT_FIELDS.DMF_RISK_FACTORS_ID]: [dmfRiskFactorsId],
-          [EDIT_FIELDS.NOTES_ID]: [notesId],
-          [EDIT_FIELDS.TIMESTAMP]: [toISODateTime(moment())],
-          [EDIT_FIELDS.PERSON_ID]: [AuthUtils.getUserInfo().email]
-        }
+        values
       });
     }
 
@@ -521,15 +589,15 @@ class PSAModal extends React.Component<Props, State> {
   deleteHearing = () => {
     const { actions, entityKeyId } = this.props;
     actions.deleteEntity({
-      entitySetId: this.getEntitySetId(ENTITY_SETS.HEARINGS),
-      entityKeyId: this.getEntityKeyId(ENTITY_SETS.HEARINGS)
+      entitySetId: this.getEntitySetId(HEARINGS),
+      entityKeyId: this.getEntityKeyId(HEARINGS)
     });
     actions.refreshPSANeighbors({ id: entityKeyId });
   }
 
   getName = () => {
     const { neighbors } = this.props;
-    const person = neighbors.getIn([ENTITY_SETS.PEOPLE, PSA_NEIGHBOR.DETAILS], Map());
+    const person = neighbors.getIn([PEOPLE, PSA_NEIGHBOR.DETAILS], Map());
     const firstName = person.getIn([PROPERTY_TYPES.FIRST_NAME, 0], '');
     const lastName = person.getIn([PROPERTY_TYPES.LAST_NAME, 0], '');
     return `${firstName} ${lastName}`;
@@ -547,11 +615,11 @@ class PSAModal extends React.Component<Props, State> {
     } = this.props;
     const { riskFactors } = this.state;
     const arrestDate = neighbors.getIn(
-      [ENTITY_SETS.MANUAL_PRETRIAL_CASES, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.ARREST_DATE_TIME, 0],
+      [MANUAL_PRETRIAL_CASES, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.ARREST_DATE_TIME, 0],
       ''
     );
     const lastEditDateForPSA = neighbors.getIn(
-      [ENTITY_SETS.STAFF, 0, PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.DATE_TIME, 0],
+      [STAFF, 0, PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.DATE_TIME, 0],
       ''
     );
     const { chargeHistoryForMostRecentPSA } = getCasesForPSA(
@@ -616,9 +684,9 @@ class PSAModal extends React.Component<Props, State> {
     );
 
     const caseNum = neighbors.getIn(
-      [ENTITY_SETS.PRETRIAL_CASES, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.CASE_ID, 0],
+      [PRETRIAL_CASES, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.CASE_ID, 0],
       neighbors.getIn(
-        [ENTITY_SETS.MANUAL_PRETRIAL_CASES, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.CASE_ID, 0],
+        [MANUAL_PRETRIAL_CASES, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.CASE_ID, 0],
         ''
       )
     );
@@ -653,7 +721,7 @@ class PSAModal extends React.Component<Props, State> {
   renderDMFExplanation = () => {
     const { scores, neighbors } = this.props;
     const { dmf, riskFactors } = this.state;
-    if (!neighbors.getIn([ENTITY_SETS.DMF_RESULTS, PSA_NEIGHBOR.DETAILS], Map()).size) {
+    if (!neighbors.getIn([DMF_RESULTS, PSA_NEIGHBOR.DETAILS], Map()).size) {
       return <NoDMFContainer>A DMF was not calculated for this PSA.</NoDMFContainer>;
     }
 
@@ -672,11 +740,11 @@ class PSAModal extends React.Component<Props, State> {
       neighbors
     } = this.props;
     const arrestDate = neighbors.getIn(
-      [ENTITY_SETS.MANUAL_PRETRIAL_CASES, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.ARREST_DATE_TIME, 0],
+      [MANUAL_PRETRIAL_CASES, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.ARREST_DATE_TIME, 0],
       ''
     );
     const lastEditDateForPSA = neighbors.getIn(
-      [ENTITY_SETS.STAFF, 0, PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.DATE_TIME, 0],
+      [STAFF, 0, PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.DATE_TIME, 0],
       ''
     );
     const {
@@ -712,10 +780,10 @@ class PSAModal extends React.Component<Props, State> {
 
   renderReleaseCondtionsSummary = () => {
     const { neighbors, hearingNeighborsById } = this.props;
-    const psaHearings = neighbors.get(ENTITY_SETS.HEARINGS, List());
+    const psaHearings = neighbors.get(HEARINGS, List());
     const hearingsWithOutcomes = psaHearings.filter((hearing) => {
       const entityKeyId = hearing.getIn([OPENLATTICE_ID_FQN, 0]);
-      return !!hearingNeighborsById.getIn([entityKeyId, ENTITY_SETS.OUTCOMES]);
+      return !!hearingNeighborsById.getIn([entityKeyId, OUTCOMES]);
     }).sort((h1, h2) => (moment(h1.getIn([PROPERTY_TYPES.DATE_TIME, 0], ''))
       .isBefore(h2.getIn([PROPERTY_TYPES.DATE_TIME, 0], '')) ? 1 : -1));
 
@@ -742,18 +810,18 @@ class PSAModal extends React.Component<Props, State> {
             submitting={submitting}
             refreshingNeighbors={refreshingNeighbors}
             psaId={scores.getIn([PROPERTY_TYPES.GENERAL_ID, 0])}
-            dmfId={this.getIdOrValue(ENTITY_SETS.DMF_RESULTS)}
+            dmfId={this.getIdOrValue(DMF_RESULTS)}
             psaEntityKeyId={entityKeyId}
             deleteHearing={this.deleteHearing}
             refreshPSANeighborsCallback={this.refreshPSANeighborsCallback}
-            hearingId={this.getEntityKeyId(ENTITY_SETS.HEARINGS)}
+            hearingId={this.getEntityKeyId(HEARINGS)}
             hearings={hearings}
             readOnly={readOnly}
             neighbors={neighbors}
-            defaultOutcome={neighbors.getIn([ENTITY_SETS.OUTCOMES, PSA_NEIGHBOR.DETAILS], Map())}
-            defaultDMF={neighbors.getIn([ENTITY_SETS.DMF_RESULTS, PSA_NEIGHBOR.DETAILS], Map())}
-            defaultBond={neighbors.getIn([ENTITY_SETS.BONDS, PSA_NEIGHBOR.DETAILS], Map())}
-            defaultConditions={neighbors.get(ENTITY_SETS.RELEASE_CONDITIONS, List())
+            defaultOutcome={neighbors.getIn([OUTCOMES, PSA_NEIGHBOR.DETAILS], Map())}
+            defaultDMF={neighbors.getIn([DMF_RESULTS, PSA_NEIGHBOR.DETAILS], Map())}
+            defaultBond={neighbors.getIn([BONDS, PSA_NEIGHBOR.DETAILS], Map())}
+            defaultConditions={neighbors.get(RELEASE_CONDITIONS, List())
               .map(neighbor => neighbor.get(PSA_NEIGHBOR.DETAILS, Map()))}
             {...this.props} />
       </ModalWrapper>
@@ -770,15 +838,17 @@ class PSAModal extends React.Component<Props, State> {
       open,
       onClose,
       entityKeyId,
-      readOnly
+      readOnly,
+      selectedOrganizationSettings
     } = this.props;
+    const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], '');
 
     const { closingPSAModalOpen } = this.state;
 
     if (!scores) return null;
     const changeStatusText = psaIsClosed(scores) ? 'Change PSA Status' : 'Close PSA';
 
-    const tabs = [
+    let tabs = [
       {
         title: 'Summary',
         content: this.renderSummary
@@ -810,6 +880,10 @@ class PSAModal extends React.Component<Props, State> {
       tabs.splice(4, 0, hearingTab);
     }
 
+    if (!includesPretrialModule) {
+      tabs = tabs.slice(0, 2);
+    }
+
     return (
       <ModalTransition>
         { open && (
@@ -836,7 +910,7 @@ class PSAModal extends React.Component<Props, State> {
                 <span>{` ${this.getName()}`}</span>
               </TitleHeader>
               <div>
-                { readOnly
+                { (readOnly || !includesPretrialModule)
                   ? null
                   : (
                     <ClosePSAButton onClick={() => this.setState({ closingPSAModalOpen: true })}>
@@ -856,10 +930,15 @@ class PSAModal extends React.Component<Props, State> {
 }
 
 function mapStateToProps(state) {
+  const app = state.get(STATE.APP);
   const court = state.get(STATE.COURT);
   const review = state.get(STATE.REVIEW);
   return {
+    app,
+    [APP.SELECTED_ORG_SETTINGS]: app.get(APP.SELECTED_ORG_SETTINGS),
+
     [COURT.HEARINGS_NEIGHBORS_BY_ID]: court.get(COURT.HEARINGS_NEIGHBORS_BY_ID),
+
     [REVIEW.READ_ONLY]: review.get(REVIEW.READ_ONLY)
   };
 }

@@ -1,13 +1,13 @@
 import { ALIASES, PERSON_CONFIG, PSA_CONFIG } from './ConfigConsts';
 import { ID_FIELD_NAMES, HEARING } from '../../utils/consts/Consts';
-import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 
 const psaHearingConfig = {
   entitySets: [
     PERSON_CONFIG,
     PSA_CONFIG,
     {
-      name: ENTITY_SETS.HEARINGS,
+      name: APP_TYPES_FQNS.HEARINGS,
       alias: ALIASES.HEARING,
       entityId: ID_FIELD_NAMES.HEARING_ID,
       fields: {
@@ -19,21 +19,21 @@ const psaHearingConfig = {
       }
     },
     {
-      name: ENTITY_SETS.MIN_PEN_PEOPLE,
+      name: APP_TYPES_FQNS.JUDGES,
       alias: ALIASES.JUDGE,
       fields: {
         [ID_FIELD_NAMES.JUDGE_ID]: PROPERTY_TYPES.PERSON_ID
       }
     },
     {
-      name: ENTITY_SETS.APPEARS_IN,
+      name: APP_TYPES_FQNS.APPEARS_IN,
       alias: ALIASES.APPEARS_IN,
       fields: {
         [ID_FIELD_NAMES.HEARING_ID]: PROPERTY_TYPES.STRING_ID
       }
     },
     {
-      name: ENTITY_SETS.ASSESSED_BY,
+      name: APP_TYPES_FQNS.ASSESSED_BY,
       alias: ALIASES.ASSESSED_BY_JUDGE,
       fields: {
         [ID_FIELD_NAMES.TIMESTAMP]: PROPERTY_TYPES.COMPLETED_DATE_TIME

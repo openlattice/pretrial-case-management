@@ -46,7 +46,6 @@ type Props = {
   actions :{
     loadApp :RequestSequence;
     loadCharges :RequestSequence;
-    switchOrganization :(orgId :string) => Object;
     logout :() => void;
   };
 };
@@ -67,13 +66,15 @@ class ManageChargesContainer extends React.Component<Props, State> {
   switchToArrestChargeType = () => (this.setState({ chargeType: CHARGE_TYPES.ARREST, start: 0 }))
   switchToCourtChargeType = () => (this.setState({ chargeType: CHARGE_TYPES.COURT, start: 0 }))
 
-  componentWillReceiveProps(nextProps) {
-    const { location } = nextProps;
+  componentDidUpdate(prevProps) {
+    const { location } = this.props;
     const path = location.pathname;
-    if (path.endsWith(Routes.ARREST_CHARGES)) {
+    const prevPath = prevProps.location.pathname;
+    const pathsDoNotMatch = path !== prevPath;
+    if (pathsDoNotMatch && path.endsWith(Routes.ARREST_CHARGES)) {
       this.switchToArrestChargeType();
     }
-    else if (path.endsWith(Routes.COURT_CHARGES)) {
+    else if (pathsDoNotMatch && path.endsWith(Routes.COURT_CHARGES)) {
       this.switchToCourtChargeType();
     }
   }

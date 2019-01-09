@@ -8,11 +8,14 @@ import {
   all,
   call,
   put,
+  select,
   takeEvery
 } from 'redux-saga/effects';
 
+import { getEntitySetId } from '../../utils/AppUtils';
 import { getEntityKeyId } from '../../utils/DataUtils';
-import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { APP, STATE } from '../../utils/consts/FrontEndStateConsts';
 import {
   DELETE_CHARGE,
   LOAD_CHARGES,
@@ -22,6 +25,14 @@ import {
   updateCharge
 } from './ChargesActionFactory';
 
+const { ARREST_CHARGE_LIST, COURT_CHARGE_LIST } = APP_TYPES_FQNS;
+
+const arrestChargeListFqn :string = ARREST_CHARGE_LIST.toString();
+const courtChargeListFqn :string = COURT_CHARGE_LIST.toString();
+
+const getApp = state => state.get(STATE.APP, Map());
+const getOrgId = state => state.getIn([STATE.APP, APP.SELECTED_ORG_ID], '');
+
 const { getEntitySetData } = DataApiActions;
 const { getEntitySetDataWorker } = DataApiSagas;
 
@@ -30,8 +41,13 @@ const { getEntitySetDataWorker } = DataApiSagas;
  */
 
 function* deleteChargeWorker(action :SequenceAction) :Generator<*, *, *> {
-  const { entityKeyId, selectedOrganizationId, chargePropertyType } = action.value;
-  yield put(deleteCharge.success(action.id, { entityKeyId, selectedOrganizationId, chargePropertyType }));
+  const { entityKeyId, chargePropertyType } = action.value;
+  const selectedOrganizationId = yield select(getOrgId);
+  yield put(deleteCharge.success(action.id, {
+    entityKeyId,
+    selectedOrganizationId,
+    chargePropertyType
+  }));
 }
 function* deleteChargesWatcher() :Generator<*, *, *> {
   yield takeEvery(DELETE_CHARGE, deleteChargeWorker);
@@ -43,10 +59,10 @@ function* deleteChargesWatcher() :Generator<*, *, *> {
 
 
 function* updateChargeWorker(action :SequenceAction) :Generator<*, *, *> {
+  const selectedOrganizationId = yield select(getOrgId);
   const {
     entity,
     entityKeyId,
-    selectedOrganizationId,
     chargePropertyType
   } = action.value;
   yield put(updateCharge.success(action.id, {
@@ -91,13 +107,8 @@ function* loadChargesWorker(action :SequenceAction) :Generator<*, *, *> {
   const arrestChargePermissions = permissionsSelector(arrestChargesEntitySetId, chargePermissions);
   const courtChargePermissions = permissionsSelector(courtChargesEntitySetId, chargePermissions);
 
-  if (value === null || value === undefined) {
-    yield put(loadCharges.failure(id, 'ERR_ACTION_VALUE_NOT_DEFINED'));
-    return;
-  }
-
   try {
-    yield put(loadCharges.request(action.id));
+    yield put(loadCharges.request(id));
     let arrestChargesByEntityKeyId = Map();
     let courtChargesByEntityKeyId = Map();
 
@@ -171,7 +182,7 @@ function* loadChargesWorker(action :SequenceAction) :Generator<*, *, *> {
       }
     });
 
-    yield put(loadCharges.success(action.id, {
+    yield put(loadCharges.success(id, {
       arrestCharges,
       arrestChargesByEntityKeyId,
       arrestChargePermissions,
@@ -189,10 +200,10 @@ function* loadChargesWorker(action :SequenceAction) :Generator<*, *, *> {
   }
   catch (error) {
     console.error(error);
-    yield put(loadCharges.failure(action.id, error));
+    yield put(loadCharges.failure(id, error));
   }
   finally {
-    yield put(loadCharges.finally(action.id));
+    yield put(loadCharges.finally(id));
   }
 }
 

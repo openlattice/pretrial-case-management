@@ -16,6 +16,7 @@ const { OPENLATTICE_ID_FQN } = Constants;
 const {
   ARRESTING_AGENCY,
   CASE_ID,
+  CASE_NUMBER,
   ARREST_DATE,
   ARREST_DATE_TIME,
   NUMBER_OF_CHARGES
@@ -51,8 +52,7 @@ type Props = {
 
 const ArrestRow = ({ arrest, handleSelect } :Props) => {
 
-
-  const caseNum = arrest.getIn([CASE_ID, 0]);
+  const caseNum = arrest.getIn([CASE_NUMBER, 0], arrest.getIn([CASE_ID, 0], ''));
   const arrestDateTime = arrest.getIn([ARREST_DATE_TIME, 0],
     arrest.getIn([ARREST_DATE, 0], ''));
   const arrestDate = formatDateTime(arrestDateTime, 'MM/DD/YYYY');

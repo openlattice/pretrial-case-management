@@ -79,6 +79,7 @@ const StyledInfoButton = styled(InfoButton)`
 `;
 
 type Props = {
+  app :Map<*, *>,
   availableHearings :List<*, *>,
   defaultBond :Map<*, *>,
   defaultConditions :Map<*, *>,
@@ -100,6 +101,7 @@ type Props = {
     }) => void,
     loadHearingNeighbors :(hearingIds :string[]) => void,
     submit :(values :{
+      app :Map<*, *>,
       config :Map<*, *>,
       values :Map<*, *>,
       callback :() => void
@@ -161,6 +163,7 @@ class PersonHearings extends React.Component<Props, State> {
 
   selectHearing = (hearingDetails) => {
     const {
+      app,
       psaId,
       personId,
       psaEntityKeyId,
@@ -174,6 +177,7 @@ class PersonHearings extends React.Component<Props, State> {
 
     const callback = psaEntityKeyId ? () => actions.refreshPSANeighbors({ id: psaEntityKeyId }) : () => {};
     actions.submit({
+      app,
       values,
       config: psaHearingConfig,
       callback
@@ -337,9 +341,11 @@ class PersonHearings extends React.Component<Props, State> {
 }
 
 function mapStateToProps(state) {
+  const app = state.get(STATE.APP);
   const review = state.get(STATE.REVIEW);
   const court = state.get(STATE.COURT);
   return {
+    app,
     [REVIEW.SCORES]: review.get(REVIEW.SCORES),
     [REVIEW.NEIGHBORS_BY_ID]: review.get(REVIEW.NEIGHBORS_BY_ID),
     [COURT.LOADING_HEARING_NEIGHBORS]: court.get(COURT.LOADING_HEARING_NEIGHBORS),

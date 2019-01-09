@@ -24,12 +24,19 @@ const onKeyPressFn = (e, onKeyPress) => {
 const StyledDatePicker = ({
   value,
   onChange,
-  onKeyPress
+  onKeyPress,
+  subtle,
+  isInvalid
 } :Props) => {
+  const dateIsInvalid = (isInvalid === undefined) ? false : isInvalid;
   const dateFormat = 'MM/DD/YYYY';
+  const appearance = subtle ? 'subtle' : 'default';
+
   return (
     <DatePickerWrapper onKeyPress={e => onKeyPressFn(e, onKeyPress)}>
       <DatePicker
+          isInvalid={dateIsInvalid}
+          appearance={appearance}
           hideIcon
           value={value}
           onChange={date => onChange(formatDate(date))}

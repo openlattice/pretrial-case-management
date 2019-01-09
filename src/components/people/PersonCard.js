@@ -11,12 +11,17 @@ import CONTENT from '../../utils/consts/ContentConsts';
 import defaultProfile from '../../assets/svg/profile-placeholder-avatar.svg';
 import PSAModal from '../../containers/review/PSAModal';
 import StyledCard from '../StyledCard';
-import { ENTITY_SETS } from '../../utils/consts/DataModelConsts';
+import { APP_TYPES_FQNS } from '../../utils/consts/DataModelConsts';
 import { getEntityKeyId } from '../../utils/DataUtils';
 import { OL } from '../../utils/consts/Colors';
 import { UndecoratedLink } from '../../utils/Layout';
 
 import * as Routes from '../../core/router/Routes';
+
+let { HEARINGS, PEOPLE } = APP_TYPES_FQNS;
+
+PEOPLE = PEOPLE.toString();
+HEARINGS = HEARINGS.toString();
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
@@ -155,12 +160,12 @@ class PersonCard extends React.Component<Props, State> {
 
   openDetailsModal = () => {
     const { neighbors, loadCaseHistoryFn, loadHearingNeighbors } = this.props;
-    const hearingIds = Immutable.fromJS(neighbors).get(ENTITY_SETS.HEARINGS, Immutable.List())
+    const hearingIds = Immutable.fromJS(neighbors).get(HEARINGS, Immutable.List())
       .map(neighbor => neighbor.getIn([OPENLATTICE_ID_FQN, 0]))
       .filter(id => !!id)
       .toJS();
     const loadPersonData = false;
-    const personId = getEntityKeyId(Immutable.fromJS(neighbors), ENTITY_SETS.PEOPLE);
+    const personId = getEntityKeyId(Immutable.fromJS(neighbors), PEOPLE);
     loadCaseHistoryFn({ personId, neighbors: Immutable.fromJS(neighbors) });
     loadHearingNeighbors({ hearingIds, loadPersonData });
     this.setState({ psaModalOpen: true });

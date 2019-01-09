@@ -16,6 +16,11 @@ import BasicButton from '../buttons/BasicButton';
 import ExpandableText from '../controls/ExpandableText';
 import { APP, CHARGES, STATE } from '../../utils/consts/FrontEndStateConsts';
 import { BHE_LABELS, BRE_LABELS } from '../../utils/consts/ArrestChargeConsts';
+import { formatValue } from '../../utils/FormattingUtils';
+import { getRecentFTAs, getOldFTAs } from '../../utils/FTAUtils';
+import { getSentenceToIncarcerationCaseNums } from '../../utils/SentenceUtils';
+import { StyledSectionWrapper, ErrorMessage } from '../../utils/Layout';
+import { PROPERTY_TYPES, SETTINGS, MODULE } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
 import {
   getViolentChargeLabels,
@@ -28,23 +33,12 @@ import {
   getPreviousFelonyLabels,
   getPreviousViolentChargeLabels
 } from '../../utils/AutofillUtils';
-import { getSentenceToIncarcerationCaseNums } from '../../utils/SentenceUtils';
-
-import {
-  StyledSectionWrapper,
-  ErrorMessage
-} from '../../utils/Layout';
-
-import { formatValue } from '../../utils/FormattingUtils';
-import { getRecentFTAs, getOldFTAs } from '../../utils/FTAUtils';
-
 import {
   CONTEXT,
   DMF,
   NOTES,
   PSA
 } from '../../utils/consts/Consts';
-import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import {
   CURRENT_AGE_PROMPT,
   CURRENT_VIOLENT_OFFENSE_PROMPT,
@@ -254,6 +248,7 @@ type Props = {
   dmfStep2Charges :Map<*, *>,
   dmfStep4Charges :Map<*, *>,
   selectedOrganizationId :string,
+  selectedOrganizationSettings :boolean,
   violentArrestCharges :Map<*, *>,
   handleInputChange :(event :Object) => void,
   input :Immutable.Map<*, *>,
@@ -342,7 +337,14 @@ class PSAInputForm extends React.Component<Props, State> {
   }
 
   renderQuestionRow = (num, field, prompt, mappings, justifications, disabledField, justificationHeader) => {
-    const { viewOnly, input, handleInputChange } = this.props;
+    const {
+      viewOnly,
+      input,
+      handleInputChange,
+      selectedOrganizationSettings
+    } = this.props;
+    // Only render autojustification if app settings loads historical charges
+    const loadedCases = selectedOrganizationSettings.get(SETTINGS.LOAD_CASES, true);
     const rowNumFormatted = num < 10 ? `0${num}` : `${num}`;
     const notesVal = input.get(NOTES[field]);
     const notesBody = (viewOnly && notesVal) ? <PaddedExpandableText text={notesVal} maxLength={250} />
@@ -372,7 +374,7 @@ class PSAInputForm extends React.Component<Props, State> {
           {radioButtons}
         </InlineFormGroup>
         {
-          justificationText ? (
+          (justificationText && loadedCases) ? (
             <Justifications>
               <h1>AUTOFILL JUSTIFICATION</h1>
               <div><PaddedExpandableText text={justificationText} maxLength={220} /></div>
@@ -401,11 +403,12 @@ class PSAInputForm extends React.Component<Props, State> {
       noBorders,
       psaDate,
       selectedOrganizationId,
+      selectedOrganizationSettings,
       viewOnly,
       violentArrestCharges,
       violentCourtCharges,
     } = this.props;
-
+    const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false)
     const violentChargeList = violentArrestCharges.get(selectedOrganizationId, Map());
     const violentCourtChargeList = violentCourtCharges.get(selectedOrganizationId, Map());
     const dmfStep2ChargeList = dmfStep2Charges.get(selectedOrganizationId, Map());
@@ -558,55 +561,62 @@ class PSAInputForm extends React.Component<Props, State> {
                 noPriorConvictions
               )
             }
-
-            <PaddedHeader>DMF Information</PaddedHeader>
-
             {
-              this.renderTFQuestionRow(
-                10,
-                EXTRADITED,
-                EXTRADITED_PROMPT
-              )
-            }
+              includesPretrialModule
+                ? (
+                  <>
+                    <PaddedHeader>DMF Information</PaddedHeader>
 
-            {
-              this.renderTFQuestionRow(
-                11,
-                STEP_2_CHARGES,
-                STEP_2_CHARGES_PROMPT,
-                step2Charges
-              )
-            }
+                    {
+                      this.renderTFQuestionRow(
+                        10,
+                        EXTRADITED,
+                        EXTRADITED_PROMPT
+                      )
+                    }
 
-            {
-              this.renderTFQuestionRow(
-                12,
-                STEP_4_CHARGES,
-                STEP_4_CHARGES_PROMPT,
-                step4Charges
-              )
-            }
+                    {
+                      this.renderTFQuestionRow(
+                        11,
+                        STEP_2_CHARGES,
+                        STEP_2_CHARGES_PROMPT,
+                        step2Charges
+                      )
+                    }
 
-            {
-              input.get(COURT_OR_BOOKING) === CONTEXT.BOOKING
-                ? this.renderTFQuestionRow(
-                  13,
-                  SECONDARY_RELEASE_CHARGES,
-                  SECONDARY_RELEASE_CHARGES_PROMPT,
-                  secondaryReleaseCharges,
-                  true, // requested to be disabled by client
-                  secondaryReleaseHeader
-                ) : null
-            }
-            {
-              input.get(COURT_OR_BOOKING) === CONTEXT.BOOKING
-                ? this.renderTFQuestionRow(
-                  14,
-                  SECONDARY_HOLD_CHARGES,
-                  SECONDARY_HOLD_CHARGES_PROMPT,
-                  currentBRECharges,
-                  true, // requested to be disabled by client
-                  secondaryHoldHeader
+                    {
+                      this.renderTFQuestionRow(
+                        12,
+                        STEP_4_CHARGES,
+                        STEP_4_CHARGES_PROMPT,
+                        step4Charges
+                      )
+                    }
+
+                    {
+                      ((input.get(COURT_OR_BOOKING) === CONTEXT.BOOKING) && includesPretrialModule)
+                        ? this.renderTFQuestionRow(
+                          13,
+                          SECONDARY_RELEASE_CHARGES,
+                          SECONDARY_RELEASE_CHARGES_PROMPT,
+                          secondaryReleaseCharges,
+                          true, // requested to be disabled by client
+                          secondaryReleaseHeader
+                        ) : null
+                    }
+                    {
+                      ((input.get(COURT_OR_BOOKING) === CONTEXT.BOOKING) && includesPretrialModule)
+                        ? this.renderTFQuestionRow(
+                          14,
+                          SECONDARY_HOLD_CHARGES,
+                          SECONDARY_HOLD_CHARGES_PROMPT,
+                          currentBRECharges,
+                          true, // requested to be disabled by client
+                          secondaryHoldHeader
+                        ) : null
+                    }
+
+                  </>
                 ) : null
             }
             <FooterContainer>
@@ -663,6 +673,7 @@ function mapStateToProps(state :Immutable.Map<*, *>) :Object {
     // App
     [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
     [APP.SELECTED_ORG_TITLE]: app.get(APP.SELECTED_ORG_TITLE),
+    [APP.SELECTED_ORG_SETTINGS]: app.get(APP.SELECTED_ORG_SETTINGS),
 
     // Charges
     [CHARGES.ARREST]: charges.get(CHARGES.ARREST),

@@ -17,8 +17,8 @@ import LoadingSpinner from '../../components/LoadingSpinner';
 import SearchableSelect from '../../components/controls/SearchableSelect';
 import StyledCheckbox from '../../components/controls/StyledCheckbox';
 import { OL } from '../../utils/consts/Colors';
-import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { STATE, DOWNLOAD } from '../../utils/consts/FrontEndStateConsts';
+import { SETTINGS, MODULE, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { APP, STATE, DOWNLOAD } from '../../utils/consts/FrontEndStateConsts';
 import {
   REPORT_TYPES,
   DOMAIN,
@@ -159,10 +159,11 @@ type Props = {
     }) => void
   },
   courtroomTimes :Map<*, *>,
-  history :string[],
   loadingHearingData :boolean,
   downloadingReports :boolean,
-  noHearingResults :boolean
+  noHearingResults :boolean,
+  selectedOrganizationId :string,
+  selectedOrganizationSettings :Map<*, *>
 };
 
 type State = {
@@ -186,13 +187,24 @@ class DownloadPSA extends React.Component<Props, State> {
   }
 
   componentDidMount() {
-    const { actions } = this.props;
     let { hearingDate } = this.state;
     hearingDate = moment(hearingDate);
     if (hearingDate.isValid()) {
       this.setState({ hearingDate });
-      actions.getDownloadFilters({ hearingDate });
     }
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    const { hearingDate } = this.state;
+    const { actions, selectedOrganizationId } = this.props;
+    const { getDownloadFilters } = actions;
+    if (selectedOrganizationId !== prevProps.selectedOrganizationId) {
+      getDownloadFilters({ hearingDate });
+    }
+    if (selectedOrganizationId && (hearingDate !== prevState.hearingDate)) {
+      getDownloadFilters({ hearingDate });
+    }
+
   }
 
   getErrorText = (downloads) => {
@@ -228,14 +240,6 @@ class DownloadPSA extends React.Component<Props, State> {
   }
 
   renderError = type => <Error>{this.getErrorText(type)}</Error>
-
-  // TODO: Can refactor for charge list entity sets
-  // downloadCharges = (jurisdiction) => {
-  //   const { actions } = this.props;
-  //   actions.downloadChargeLists({
-  //     jurisdiction
-  //   });
-  // }
 
   downloadbyPSADate = (filters, domain) => {
     const { startDate, endDate } = this.state;
@@ -384,29 +388,35 @@ class DownloadPSA extends React.Component<Props, State> {
   }
 
   renderDownloadByPSA = () => {
-    const { downloadingReports } = this.props;
+    const { downloadingReports, selectedOrganizationSettings } = this.props;
     const { startDate, endDate, byPSADate } = this.state;
+    const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
     const downloads = REPORT_TYPES.BY_PSA;
     return (byPSADate && startDate && endDate)
       ? (
         <SubSelectionWrapper>
-          <ButtonRow>
-            <BasicDownloadButton
-                disabled={downloadingReports || this.getErrorText(downloads)}
-                onClick={() => this.downloadbyPSADate(PSA_RESPONSE_TABLE, DOMAIN.MINNEHAHA)}>
-              Download Minnehaha PSA Response Table
-            </BasicDownloadButton>
-            <BasicDownloadButton
-                disabled={downloadingReports || this.getErrorText(downloads)}
-                onClick={() => this.downloadbyPSADate(SUMMARY_REPORT, DOMAIN.MINNEHAHA)}>
-              Download Minnehaha Summary Report
-            </BasicDownloadButton>
-            <BasicDownloadButton
-                disabled={downloadingReports || this.getErrorText(downloads)}
-                onClick={() => this.downloadbyPSADate(SUMMARY_REPORT, DOMAIN.PENNINGTON)}>
-              Download Pennington Summary Report
-            </BasicDownloadButton>
-          </ButtonRow>
+          {
+            includesPretrialModule
+              ? (
+                <ButtonRow>
+                  <BasicDownloadButton
+                      disabled={downloadingReports || this.getErrorText(downloads)}
+                      onClick={() => this.downloadbyPSADate(PSA_RESPONSE_TABLE, DOMAIN.MINNEHAHA)}>
+                    Download Minnehaha PSA Response Table
+                  </BasicDownloadButton>
+                  <BasicDownloadButton
+                      disabled={downloadingReports || this.getErrorText(downloads)}
+                      onClick={() => this.downloadbyPSADate(SUMMARY_REPORT, DOMAIN.MINNEHAHA)}>
+                    Download Minnehaha Summary Report
+                  </BasicDownloadButton>
+                  <BasicDownloadButton
+                      disabled={downloadingReports || this.getErrorText(downloads)}
+                      onClick={() => this.downloadbyPSADate(SUMMARY_REPORT, DOMAIN.PENNINGTON)}>
+                    Download Pennington Summary Report
+                  </BasicDownloadButton>
+                </ButtonRow>
+              ) : null
+          }
           <ButtonRow>
             <InfoDownloadButton
                 disabled={downloadingReports || this.getErrorText(downloads)}
@@ -435,6 +445,7 @@ class DownloadPSA extends React.Component<Props, State> {
   }
 
   render() {
+    const { selectedOrganizationSettings } = this.props;
     const {
       byHearingDate,
       byPSADate,
@@ -442,6 +453,7 @@ class DownloadPSA extends React.Component<Props, State> {
       startDate,
       endDate
     } = this.state;
+    const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
     return (
       <StyledFormViewWrapper>
         <StyledFormWrapper>
@@ -449,27 +461,21 @@ class DownloadPSA extends React.Component<Props, State> {
             <DownloadSection>
               <HeaderSection>Download PSA Forms</HeaderSection>
             </DownloadSection>
-            {/* <DownloadSection>
-              <SubHeaderSection>Download Charge Lists</SubHeaderSection>
-              <ButtonRow>
-                <BasicDownloadButton onClick={() => this.downloadCharges(DOMAIN.PENNINGTON)}>
-                  Download Pennington Charges
-                </BasicDownloadButton>
-                <BasicDownloadButton onClick={() => this.downloadCharges(DOMAIN.MINNEHAHA)}>
-                  Download Minnehaha Charges
-                </BasicDownloadButton>
-              </ButtonRow>
-            </DownloadSection> */}
             <DownloadSection>
               <SubHeaderSection>PSA Downloads</SubHeaderSection>
               <SelectionWrapper>
                 <OptionsWrapper>
-                  <StyledCheckbox
-                      name={REPORT_TYPES.BY_HEARING}
-                      label="By Hearing Date"
-                      checked={byHearingDate}
-                      value={byHearingDate}
-                      onChange={this.handleCheckboxChange} />
+                  {
+                    includesPretrialModule
+                      ? (
+                        <StyledCheckbox
+                            name={REPORT_TYPES.BY_HEARING}
+                            label="By Hearing Date"
+                            checked={byHearingDate}
+                            value={byHearingDate}
+                            onChange={this.handleCheckboxChange} />
+                      ) : <div />
+                  }
                   <StyledCheckbox
                       name={REPORT_TYPES.BY_PSA}
                       label="By PSA Date"
@@ -501,7 +507,7 @@ class DownloadPSA extends React.Component<Props, State> {
                 </OptionsWrapper>
               </SelectionWrapper>
               <SelectionWrapper>
-                {this.renderDownloadByHearing()}
+                { includesPretrialModule ? this.renderDownloadByHearing() : null }
                 {this.renderDownloadByPSA()}
               </SelectionWrapper>
             </DownloadSection>
@@ -515,8 +521,12 @@ class DownloadPSA extends React.Component<Props, State> {
 }
 
 function mapStateToProps(state) {
-  const download = state.get(STATE.DOWNLOAD);
+  const app = state.get(STATE.APP, Map());
+  const download = state.get(STATE.DOWNLOAD, Map());
   return {
+    [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
+    [APP.SELECTED_ORG_SETTINGS]: app.get(APP.SELECTED_ORG_SETTINGS),
+
     [DOWNLOAD.DOWNLOADING_REPORTS]: download.get(DOWNLOAD.DOWNLOADING_REPORTS),
     [DOWNLOAD.COURTROOM_OPTIONS]: download.get(DOWNLOAD.COURTROOM_OPTIONS),
     [DOWNLOAD.COURTROOM_TIMES]: download.get(DOWNLOAD.COURTROOM_TIMES),

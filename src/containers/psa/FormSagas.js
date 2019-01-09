@@ -1,14 +1,21 @@
 /*
  * @flow
  */
+import { Map } from 'immutable';
 import { Constants, EntityDataModelApi, SearchApi } from 'lattice';
 import {
   call,
   put,
   takeEvery,
-  all
+  select
 } from 'redux-saga/effects';
 
+import { loadPSAData } from '../review/ReviewActionFactory';
+import { getEntitySetId } from '../../utils/AppUtils';
+import { obfuscateBulkEntityNeighbors } from '../../utils/consts/DemoNames';
+import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { APP, STATE } from '../../utils/consts/FrontEndStateConsts';
+import { PSA_STATUSES } from '../../utils/consts/Consts';
 import {
   HARD_RESTART,
   LOAD_DATA_MODEL,
@@ -16,10 +23,14 @@ import {
   loadDataModel,
   loadNeighbors
 } from './FormActionFactory';
-import { loadPSAData } from '../review/ReviewActionFactory';
-import { obfuscateBulkEntityNeighbors } from '../../utils/consts/DemoNames';
-import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { PSA_STATUSES } from '../../utils/consts/Consts';
+
+const { PEOPLE, PSA_SCORES } = APP_TYPES_FQNS;
+
+const peopleFqn :string = PEOPLE.toString();
+const psaScoresFqn :string = PSA_SCORES.toString();
+
+const getApp = state => state.get(STATE.APP, Map());
+const getOrgId = state => state.getIn([STATE.APP, APP.SELECTED_ORG_ID], '');
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
@@ -27,9 +38,9 @@ function* loadDataModelWorker(action :SequenceAction) :Generator<*, *, *> {
 
   try {
     yield put(loadDataModel.request(action.id));
-    const entitySetIds = yield all(Object.values(ENTITY_SETS).map(entitySetName => call(
-      EntityDataModelApi.getEntitySetId, entitySetName
-    )));
+    const app = yield select(getApp);
+    const orgId = yield select(getOrgId);
+    const entitySetIds = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId], Map()).keySeq().toJS();
     const selectors = entitySetIds.map(id => ({
       id,
       type: 'EntitySet',
@@ -50,10 +61,10 @@ function* loadDataModelWatcher() :Generator<*, *, *> {
   yield takeEvery(LOAD_DATA_MODEL, loadDataModelWorker);
 }
 
-const getOpenPSAIds = (neighbors) => {
+const getOpenPSAIds = (neighbors, psaScoresEntitySetId) => {
   if (!neighbors) return [];
   return neighbors.filter((neighbor) => {
-    if (neighbor.neighborEntitySet && neighbor.neighborEntitySet.name === ENTITY_SETS.PSA_SCORES) {
+    if (neighbor.neighborEntitySet && neighbor.neighborEntitySet.id === psaScoresEntitySetId) {
       const statusValues = neighbor.neighborDetails[PROPERTY_TYPES.STATUS];
       if (statusValues && statusValues.includes(PSA_STATUSES.OPEN)) {
         return true;
@@ -63,10 +74,10 @@ const getOpenPSAIds = (neighbors) => {
   }).map(neighbor => neighbor.neighborDetails[OPENLATTICE_ID_FQN][0]);
 };
 
-const getAllPSAIds = (neighbors) => {
+const getAllPSAIds = (neighbors, psaScoresEntitySetId) => {
   if (!neighbors) return [];
   return neighbors.filter((neighbor) => {
-    if (neighbor.neighborEntitySet && neighbor.neighborEntitySet.name === ENTITY_SETS.PSA_SCORES) {
+    if (neighbor.neighborEntitySet && neighbor.neighborEntitySet.id === psaScoresEntitySetId) {
       const statusValues = neighbor.neighborDetails[PROPERTY_TYPES.STATUS];
       if (statusValues) {
         return true;
@@ -77,22 +88,34 @@ const getAllPSAIds = (neighbors) => {
 };
 
 function* getOpenPSANeighbors(neighbors) :Generator<*, *, *> {
-  const ids = getOpenPSAIds(neighbors);
-  const entitySetId = yield call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.PSA_SCORES);
-  const val = ids.length ? yield call(SearchApi.searchEntityNeighborsBulk, entitySetId, ids) : {};
+  const app = yield select(getApp);
+  const orgId = yield select(getOrgId);
+  const psaEntitySetId = getEntitySetId(app, psaScoresFqn, orgId);
+
+  const ids = getOpenPSAIds(neighbors, psaEntitySetId);
+  const val = ids.length ? yield call(SearchApi.searchEntityNeighborsBulk, psaEntitySetId, ids) : {};
+
   return obfuscateBulkEntityNeighbors(val); // TODO just for demo
 }
 
 function* loadNeighborsWorker(action :SequenceAction) :Generator<*, *, *> {
-  const { entitySetId, entityKeyId } = action.value;
+  const { entityKeyId } = action.value;
+
+  const app = yield select(getApp);
+  const orgId = yield select(getOrgId);
+  const peopleEntitySetId = getEntitySetId(app, peopleFqn, orgId);
+  const psaEntitySetId = getEntitySetId(app, psaScoresFqn, orgId);
+  const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId], Map());
 
   try {
     yield put(loadNeighbors.request(action.id));
-    let neighbors = yield call(SearchApi.searchEntityNeighbors, entitySetId, entityKeyId);
+    let neighbors = yield call(SearchApi.searchEntityNeighbors, peopleEntitySetId, entityKeyId);
     neighbors = obfuscateBulkEntityNeighbors(neighbors);
+
     const openPSAs = yield call(getOpenPSANeighbors, neighbors);
-    yield put(loadNeighbors.success(action.id, { neighbors, openPSAs }));
-    yield put(loadPSAData(getAllPSAIds(neighbors)));
+
+    yield put(loadNeighbors.success(action.id, { neighbors, openPSAs, entitySetIdsToAppType }));
+    yield put(loadPSAData(getAllPSAIds(neighbors, psaEntitySetId)));
   }
   catch (error) {
     console.error(error);
