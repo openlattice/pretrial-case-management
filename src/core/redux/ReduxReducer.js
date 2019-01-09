@@ -12,6 +12,7 @@ import dashboardReducer from '../../containers/dashboard/DashboardReducer';
 import downloadReducer from '../../containers/download/DownloadReducer';
 import edmReducer from '../../edm/EDMReducer';
 import enrollReducer from '../../containers/enroll/EnrollReducer';
+import psaModalReducer from '../../containers/psamodal/PSAModalReducer';
 import psaReducer from '../../containers/psa/FormReducer';
 import peopleReducer from '../../containers/people/PeopleReducer';
 import reviewReducer from '../../containers/review/ReviewReducer';
@@ -32,6 +33,7 @@ export default function reduxReducer() {
     [STATE.EDM]: edmReducer,
     [STATE.ENROLL]: enrollReducer,
     [STATE.PSA]: psaReducer,
+    [STATE.PSA_MODAL]: psaModalReducer,
     [STATE.PEOPLE]: peopleReducer,
     [STATE.REVIEW]: reviewReducer,
     [STATE.SEARCH]: searchReducer,
