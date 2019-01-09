@@ -928,6 +928,7 @@ function* updateOutcomesAndReleaseCondtionsWorker(action :SequenceAction) :Gener
     }
 
     callback({
+      app,
       config: releaseConditionsConfig,
       values: conditionSubmit,
       callback: refreshHearingsNeighborsCallback
