@@ -2,7 +2,7 @@
  * @flow
  */
 
-import Immutable, { Map } from 'immutable';
+import Immutable, { fromJS, Map } from 'immutable';
 import moment from 'moment';
 import {
   Constants,
@@ -279,7 +279,7 @@ function* loadHearingNeighborsWorker(action :SequenceAction) :Generator<*, *, *>
             if (entitySetId === releaseConditionsEntitySetId) {
               hearingNeighborsMap = hearingNeighborsMap.set(
                 entitySetName,
-                hearingNeighborsMap.get(entitySetName, Immutable.List()).push(neighbor)
+                hearingNeighborsMap.get(entitySetName, Immutable.List()).push(fromJS(neighbor))
               );
             }
             else {
@@ -293,12 +293,12 @@ function* loadHearingNeighborsWorker(action :SequenceAction) :Generator<*, *, *>
                 hasPSA = true;
                 scoresAsMap = scoresAsMap.set(
                   entityKeyId,
-                  neighbor.get(PSA_NEIGHBOR.DETAILS)
+                  fromJS(neighbor.get(PSA_NEIGHBOR.DETAILS))
                 );
               }
               hearingNeighborsMap = hearingNeighborsMap.set(
                 entitySetName,
-                neighbor
+                fromJS(neighbor)
               );
             }
           }));
@@ -351,10 +351,11 @@ function* refreshHearingNeighborsWorker(action :SequenceAction) :Generator<*, *,
 
     let neighborsList = yield call(SearchApi.searchEntityNeighbors, hearingEntitySetId, id);
     neighborsList = obfuscateEntityNeighbors(neighborsList);
+    neighborsList = Immutable.fromJS(neighborsList);
     let neighbors = Immutable.Map();
     neighborsList.forEach((neighbor) => {
-      const entitySetId = Immutable.fromJS(neighbor).getIn([PSA_NEIGHBOR.ENTITY_SET, 'id']);
-      const entitySetName = entitySetIdsToAppType.getIn([orgId, entitySetId], judgesFqn);
+      const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id']);
+      const entitySetName = entitySetIdsToAppType.get(entitySetId, judgesFqn);
       if (entitySetId === releaseConditionsEntitySetId) {
         neighbors = neighbors.set(
           entitySetName,
