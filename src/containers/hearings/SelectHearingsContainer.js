@@ -133,12 +133,12 @@ type Props = {
   defaultConditions :Map<*, *>,
   defaultDMF :Map<*, *>,
   dmfId :string,
-  hearings :List<*, *>,
+  psaHearings :List<*, *>,
+  personHearings :List<*, *>,
   hearingIdsRefreshing :Set<*, *>,
   hearingNeighborsById :Map<*, *>,
   neighbors :Map<*, *>,
   psaId :string,
-  psaNeighborsById :Map<*, *>,
   psaEntityKeyId :string,
   personId :string,
   submitting :boolean,
@@ -200,19 +200,9 @@ class SelectHearingsContainer extends React.Component<Props, State> {
     };
   }
 
-  componentWillReceiveProps = (nextProps) => {
-    const { neighbors, actions } = this.props;
-    const { loadHearingNeighbors } = actions;
-    const nextNeighbors = nextProps.neighbors;
-    if (neighbors.size !== nextNeighbors.size) {
-      const hearingIds = getHearingsIdsFromNeighbors(nextNeighbors);
-      loadHearingNeighbors({ hearingIds });
-    }
-  }
-
-  getSortedHearings = (scheduledHearings) => {
-    const { hearings, hearingNeighborsById } = this.props;
-    return getScheduledHearings(hearings, scheduledHearings, hearingNeighborsById);
+  getSortedHearings = () => {
+    const { personHearings } = this.props;
+    return getScheduledHearings(personHearings);
   }
 
   renderNewHearingSection = () => {
@@ -279,6 +269,7 @@ class SelectHearingsContainer extends React.Component<Props, State> {
       defaultConditions,
       defaultDMF,
       dmfId,
+      psaHearings,
       neighbors,
       personId,
       psaId,
@@ -286,9 +277,7 @@ class SelectHearingsContainer extends React.Component<Props, State> {
       hearingNeighborsById,
       hearingIdsRefreshing,
       selectedOrganizationId,
-      submitting,
-      psaEntityKeyId,
-      psaNeighborsById,
+      submitting
     } = this.props;
     const {
       deleteEntity,
@@ -304,7 +293,7 @@ class SelectHearingsContainer extends React.Component<Props, State> {
     let judgeName;
     let judgeEntitySetId = getEntitySetId(app, ASSESSED_BY, selectedOrganizationId);
     const { hearingId, entityKeyId } = selectedHearing;
-    const hearing = psaNeighborsById.getIn([psaEntityKeyId, HEARINGS])
+    const hearing = psaHearings
       .filter(hearingObj => (hearingObj.getIn([OPENLATTICE_ID_FQN, 0]) === entityKeyId))
       .get(0);
 
@@ -383,7 +372,6 @@ class SelectHearingsContainer extends React.Component<Props, State> {
       app,
       psaId,
       personId,
-      psaEntityKeyId,
       actions
     } = this.props;
 
@@ -442,19 +430,16 @@ class SelectHearingsContainer extends React.Component<Props, State> {
   render() {
     const { manuallyCreatingHearing, selectingReleaseConditions, selectedHearing } = this.state;
     const {
-      psaEntityKeyId,
-      psaNeighborsById,
+      neighbors,
       hearingIdsRefreshing,
       submitting,
       refreshingNeighbors,
       hearingNeighborsById
     } = this.props;
-
-    const psaNeighbors = psaNeighborsById.get(psaEntityKeyId, Map());
     const hearingsWithOutcomes = hearingNeighborsById
       .keySeq().filter(id => hearingNeighborsById.getIn([id, OUTCOMES]));
-    const scheduledHearings = getScheduledHearings(psaNeighbors);
-    const pastHearings = getPastHearings(psaNeighbors);
+    const scheduledHearings = getScheduledHearings(neighbors);
+    const pastHearings = getPastHearings(neighbors);
 
     if (submitting || refreshingNeighbors || hearingIdsRefreshing) {
       return (
