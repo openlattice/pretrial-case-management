@@ -293,10 +293,6 @@ function* replaceAssociationWorker(action :SequenceAction) :Generator<*, *, *> {
   try {
     yield put(replaceAssociation.request(action.id));
 
-    console.log(associationEntitySetId);
-    console.log(srcEntitySetId);
-    console.log(dstEntitySetId);
-
     // Collect Entity Set Ids for association, src, and dst
     if (!associationEntitySetId) associationEntitySetId = yield call(EntityDataModelApi.getEntitySetId, associationEntitySetName);
     if (!srcEntitySetId) srcEntitySetId = yield call(EntityDataModelApi.getEntitySetId, srcEntitySetName);
