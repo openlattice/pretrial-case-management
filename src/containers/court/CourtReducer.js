@@ -17,7 +17,12 @@ import {
   refreshHearingNeighbors,
   loadJudges
 } from './CourtActionFactory';
-import { COURT } from '../../utils/consts/FrontEndStateConsts';
+import { changePSAStatus, updateScoresAndRiskFactors } from '../review/ReviewActionFactory';
+import { COURT, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
+import { APP_TYPES_FQNS } from '../../utils/consts/DataModelConsts';
+
+let { PSA_SCORES } = APP_TYPES_FQNS;
+PSA_SCORES = PSA_SCORES.toString();
 
 const INITIAL_STATE :Map<*, *> = fromJS({
   // Hearings
@@ -54,6 +59,20 @@ const INITIAL_STATE :Map<*, *> = fromJS({
 
 export default function courtReducer(state :Map<*, *> = INITIAL_STATE, action :SequenceAction) {
   switch (action.type) {
+
+    case changePSAStatus.case(action.type): {
+      return changePSAStatus.reducer(state, action, {
+        SUCCESS: () => {
+          let peopleWithOpenPSAs = state.get(COURT.PEOPLE_WITH_OPEN_PSAS);
+          state.get(COURT.PEOPLE_IDS_TO_OPEN_PSA_IDS).entrySeq().forEach(([personId, psaId]) => {
+            if (psaId === action.value.id) peopleWithOpenPSAs = peopleWithOpenPSAs.delete(personId);
+          });
+          return state
+            .set(COURT.SCORES_AS_MAP, state.get(COURT.SCORES_AS_MAP).set(action.value.id, fromJS(action.value.entity)))
+            .set(COURT.PEOPLE_WITH_OPEN_PSAS, peopleWithOpenPSAs);
+        }
+      });
+    }
 
     case filterPeopleIdsWithOpenPSAs.case(action.type): {
       return filterPeopleIdsWithOpenPSAs.reducer(state, action, {
@@ -137,6 +156,19 @@ export default function courtReducer(state :Map<*, *> = INITIAL_STATE, action :S
           .set(COURT.HEARINGS_NEIGHBORS_BY_ID, Map())
           .set(COURT.LOADING_HEARINGS_ERROR, false),
         FINALLY: () => state.set(COURT.LOADING_HEARING_NEIGHBORS, false)
+      });
+    }
+
+    case updateScoresAndRiskFactors.case(action.type): {
+      return updateScoresAndRiskFactors.reducer(state, action, {
+        SUCCESS: () => {
+          const {
+            scoresId,
+            newScoreEntity,
+          } = action.value;
+
+          return state.setIn([COURT.SCORES_AS_MAP, scoresId], newScoreEntity);
+        }
       });
     }
 
