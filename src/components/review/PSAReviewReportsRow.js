@@ -137,7 +137,7 @@ const ClosePSAButton = styled(BasicButton)`
 type Props = {
   entityKeyId :string,
   scores :Immutable.Map<*, *>,
-  neighbors :Immutable.Map<*, *>,
+  psaNeighbors :Immutable.Map<*, *>,
   hideCaseHistory? :boolean,
   hideProfile? :boolean,
   onStatusChangeCallback? :() => void,
@@ -189,10 +189,10 @@ export default class PSAReviewReportsRow extends React.Component<Props, State> {
   }
 
   renderPersonCard = () => {
-    const { neighbors, hideProfile } = this.props;
+    const { psaNeighbors, hideProfile } = this.props;
     if (hideProfile) return null;
 
-    const personDetails = neighbors.getIn([PEOPLE, PSA_NEIGHBOR.DETAILS], Immutable.Map());
+    const personDetails = psaNeighbors.getIn([PEOPLE, PSA_NEIGHBOR.DETAILS], Immutable.Map());
     if (!personDetails.size) return <div>Person details unknown.</div>;
     return (
       <PersonCardWrapper>
@@ -226,7 +226,7 @@ export default class PSAReviewReportsRow extends React.Component<Props, State> {
       component,
       includesPretrialModule,
       downloadFn,
-      neighbors,
+      psaNeighbors,
       scores
     } = this.props;
 
@@ -241,7 +241,7 @@ export default class PSAReviewReportsRow extends React.Component<Props, State> {
         <PSAReportDownloadButton
             includesPretrialModule={includesPretrialModule}
             downloadFn={downloadFn}
-            neighbors={neighbors}
+            neighbors={psaNeighbors}
             scores={scores} />
       );
     return button;
@@ -290,7 +290,7 @@ export default class PSAReviewReportsRow extends React.Component<Props, State> {
     const {
       component,
       entitySetIdsToAppType,
-      neighbors,
+      psaNeighbors,
       scores
     } = this.props;
     const dateFormat = 'MM/DD/YYYY hh:mm a';
@@ -299,7 +299,7 @@ export default class PSAReviewReportsRow extends React.Component<Props, State> {
     let dateEdited;
     let editor;
 
-    neighbors.get(STAFF, Immutable.List()).forEach((neighbor) => {
+    psaNeighbors.get(STAFF, Immutable.List()).forEach((neighbor) => {
       const associationEntitySetId = neighbor.getIn([PSA_ASSOCIATION.ENTITY_SET, 'id']);
       const appTypFqn = entitySetIdsToAppType.get(associationEntitySetId, '');
       const personId = neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.PERSON_ID, 0], '');
@@ -353,14 +353,12 @@ export default class PSAReviewReportsRow extends React.Component<Props, State> {
   }
 
   openDetailsModal = () => {
-    const { neighbors, loadCaseHistoryFn, loadHearingNeighbors } = this.props;
-    const hearingIds = neighbors.get(HEARINGS, Immutable.List())
-      .map(neighbor => neighbor.getIn([OPENLATTICE_ID_FQN, 0]))
-      .filter(id => !!id)
-      .toJS();
-    const personId = getEntityKeyId(neighbors, PEOPLE);
-    loadCaseHistoryFn({ personId, neighbors });
-    loadHearingNeighbors({ hearingIds, loadPersonData: false });
+    const {
+      entityKeyId,
+      loadPSAModal,
+      loadCaseHistoryFn,
+    } = this.props;
+    loadPSAModal({ psaId: entityKeyId, callback: loadCaseHistoryFn });
     this.setState({
       open: true
     });
