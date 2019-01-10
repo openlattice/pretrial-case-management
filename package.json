@@ -25,7 +25,8 @@
   "license": "GPLv3",
   "dependencies": {
     "@atlaskit/datetime-picker": "6.3.15",
-    "@atlaskit/modal-dialog": "^7.0.10",
+    "@atlaskit/modal-dialog": "7.0.10",
+    "@atlaskit/select": "6.1.16",
     "@babel/polyfill": "^7.0.0",
     "@babel/runtime": "^7.0.0",
     "@fortawesome/fontawesome-svg-core": "^1.2.0",
