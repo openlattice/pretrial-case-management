@@ -95,6 +95,7 @@ function* loadPersonDetailsWorker(action) :Generator<*, *, *> {
     const { entityKeyId, shouldLoadCases } = action.value;
     const app = yield select(getApp);
     const orgId = yield select(getOrgId);
+    const pretrialCasesEntitySetId = getEntitySetId(app, PRETRIAL_CASES, orgId);
     const peopleEntitySetId = getEntitySetId(app, PEOPLE, orgId);
     yield put(loadPersonDetails.request(action.id, { entityKeyId }));
 
@@ -104,7 +105,7 @@ function* loadPersonDetailsWorker(action) :Generator<*, *, *> {
       const response = yield call(SearchApi.searchEntityNeighbors, peopleEntitySetId, entityKeyId);
       const caseNums = (response || []).filter((neighborObj) => {
         const { neighborEntitySet, neighborDetails } = neighborObj;
-        return neighborEntitySet && neighborDetails && neighborEntitySet.name === PRETRIAL_CASES;
+        return neighborEntitySet && neighborDetails && neighborEntitySet.id === pretrialCasesEntitySetId;
       });
       if (caseNums.length) {
         const caseNumRequests = caseNums
