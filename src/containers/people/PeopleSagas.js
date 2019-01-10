@@ -21,6 +21,7 @@ import { APP, PSA_NEIGHBOR, STATE } from '../../utils/consts/FrontEndStateConsts
 import { obfuscateEntity, obfuscateEntityNeighbors } from '../../utils/consts/DemoNames';
 import { getEntitySetId } from '../../utils/AppUtils';
 import { getPropertyTypeId } from '../../edm/edmUtils';
+import { toISODate } from '../../utils/FormattingUtils';
 import {
   GET_PEOPLE,
   GET_PERSON_DATA,
@@ -34,15 +35,27 @@ import {
 
 let {
   CONTACT_INFORMATION,
+  DMF_RESULTS,
+  DMF_RISK_FACTORS,
+  HEARINGS,
+  MANUAL_PRETRIAL_CASES,
   PEOPLE,
+  PSA_RISK_FACTORS,
   PSA_SCORES,
-  PRETRIAL_CASES
+  PRETRIAL_CASES,
+  STAFF
 } = APP_TYPES_FQNS;
 
 CONTACT_INFORMATION = CONTACT_INFORMATION.toString();
+DMF_RESULTS = DMF_RESULTS.toString();
+DMF_RISK_FACTORS = DMF_RISK_FACTORS.toString();
+HEARINGS = HEARINGS.toString();
+MANUAL_PRETRIAL_CASES = MANUAL_PRETRIAL_CASES.toString();
 PEOPLE = PEOPLE.toString();
+PSA_RISK_FACTORS = PSA_RISK_FACTORS.toString();
 PSA_SCORES = PSA_SCORES.toString();
 PRETRIAL_CASES = PRETRIAL_CASES.toString();
+STAFF = STAFF.toString();
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
@@ -148,6 +161,20 @@ function* getPersonNeighborsWorker(action) :Generator<*, *, *> {
           neighborObj
         );
       }
+      if (appTypeFqn === HEARINGS) {
+        const hearingDetails = neighborObj.get(PSA_NEIGHBOR.DETAILS, Map());
+        const hearingId = hearingDetails.getIn([OPENLATTICE_ID_FQN, 0]);
+        const hearingDateTime = hearingDetails.getIn([PROPERTY_TYPES.DATE_TIME, 0]);
+        const hearingExists = !!hearingDateTime && !!hearingId;
+        const hearingHasBeenCancelled = hearingDetails.getIn([PROPERTY_TYPES.UPDATE_TYPE, 0], '')
+          .toLowerCase().trim() === 'cancelled';
+        if (hearingExists && !hearingHasBeenCancelled) {
+          neighborsByEntitySet = neighborsByEntitySet.set(
+            appTypeFqn,
+            neighborsByEntitySet.get(appTypeFqn, List()).push(hearingDetails)
+          );
+        }
+      }
       else {
         neighborsByEntitySet = neighborsByEntitySet.set(
           appTypeFqn,
@@ -169,11 +196,35 @@ function* getPersonNeighborsWorker(action) :Generator<*, *, *> {
 
     neighbors = obfuscateEntityNeighbors(neighbors);
 
+    let mostRecentPSANeighborsByAppTypeFqn = Map();
+    if (mostRecentPSA) {
+      const psaId = mostRecentPSA.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0]);
+      let psaNeighbors = yield call(SearchApi.searchEntityNeighbors, psaScoresEntitySetId, psaId);
+      psaNeighbors = fromJS(psaNeighbors);
+      psaNeighbors.forEach((neighbor) => {
+        const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
+        const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
+        if (appTypeFqn === STAFF) {
+          neighbors = neighbors.set(
+            appTypeFqn,
+            neighbors.get(appTypeFqn, List()).push(neighbor)
+          );
+        }
+        else {
+          mostRecentPSANeighborsByAppTypeFqn = mostRecentPSANeighborsByAppTypeFqn.set(
+            appTypeFqn,
+            fromJS(neighbor)
+          );
+        }
+      });
+    }
+
     yield put(getPersonNeighbors.success(action.id, {
       personId,
       neighbors: uniqNeighborsByEntitySet,
       psaScoresEntitySetId,
-      mostRecentPSA
+      mostRecentPSA,
+      mostRecentPSANeighborsByAppTypeFqn
     }));
   }
   catch (error) {
@@ -244,9 +295,33 @@ function* refreshPersonNeighborsWorker(action) :Generator<*, *, *> {
           return false;
         }), neighbors);
 
+    let mostRecentPSANeighborsByAppTypeFqn = Map();
+    if (mostRecentPSA) {
+      const psaId = mostRecentPSA.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0]);
+      let psaNeighbors = yield call(SearchApi.searchEntityNeighbors, psaScoresEntitySetId, psaId);
+      psaNeighbors = fromJS(psaNeighbors);
+      psaNeighbors.forEach((neighbor) => {
+        const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
+        const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
+        if (appTypeFqn === STAFF) {
+          neighbors = neighbors.set(
+            appTypeFqn,
+            neighbors.get(appTypeFqn, List()).push(neighbor)
+          );
+        }
+        else {
+          mostRecentPSANeighborsByAppTypeFqn = mostRecentPSANeighborsByAppTypeFqn.set(
+            appTypeFqn,
+            fromJS(neighbor)
+          );
+        }
+      });
+    }
+
     yield put(refreshPersonNeighbors.success(action.id, {
       personId,
       mostRecentPSA,
+      mostRecentPSANeighborsByAppTypeFqn,
       neighbors,
       scoresEntitySetId: psaScoresEntitySetId
     }));

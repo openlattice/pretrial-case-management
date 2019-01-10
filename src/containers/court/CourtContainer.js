@@ -29,6 +29,7 @@ import {
   COURT,
   EDM,
   PSA_NEIGHBOR,
+  PSA_MODAL,
   REVIEW,
   STATE,
   SUBMIT
@@ -37,6 +38,7 @@ import {
 import * as CourtActionFactory from './CourtActionFactory';
 import * as FormActionFactory from '../psa/FormActionFactory';
 import * as ReviewActionFactory from '../review/ReviewActionFactory';
+import * as PSAModalActionFactory from '../psamodal/PSAModalActionFactory';
 import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
 import * as DataActionFactory from '../../utils/data/DataActionFactory';
 
@@ -145,22 +147,15 @@ const ToggleWrapper = styled.div`
 type Props = {
   openPSAIds :List<*>,
   hearingsByTime :Map<*, *>,
-  psaNeighborsById :Map<*, *>,
   hearingNeighborsById :Map<*, *>,
   isLoadingPSAs :boolean,
   courtroom :string,
   courtrooms :List<*>,
   county :string,
+  hearingIds :List<*>,
   peopleWithOpenPsas :Set<*>,
   peopleIdsToOpenPSAIds :Map<*>,
   scoresAsMap :Map<*>,
-  caseHistory :List<*>,
-  manualCaseHistory :List<*>,
-  chargeHistory :Map<*, *>,
-  manualChargeHistory :Map<*, *>,
-  sentenceHistory :Map<*, *>,
-  ftaHistory :Map<*, *>,
-  hearings :List<*>,
   loadingPSAData :boolean,
   submitting :boolean,
   selectedOrganizationId :string,
@@ -228,6 +223,7 @@ class CourtContainer extends React.Component<Props, State> {
     const {
       actions,
       hearingsByTime,
+      hearingIds,
       hearingNeighborsById,
       openPSAIds,
       selectedOrganizationId
@@ -240,8 +236,11 @@ class CourtContainer extends React.Component<Props, State> {
         loadHearingsForDate(date);
       }
     }
-    if (openPSAIds.size !== nextProps.openPSAIds.size) {
-      actions.loadPSAData(nextProps.openPSAIds.toJS());
+    // if (openPSAIds.size !== nextProps.openPSAIds.size) {
+    //   actions.loadPSAData(nextProps.openPSAIds.toJS());
+    // }
+    if (hearingIds.size !== nextProps.hearingIds.size) {
+      actions.loadHearingNeighbors({ hearingIds: nextProps.hearingIds.toJS() });
     }
   }
 
@@ -250,61 +249,43 @@ class CourtContainer extends React.Component<Props, State> {
     actions.clearSubmit();
   }
 
+  loadCaseHistoryCallback = (personId, psaNeighbors) => {
+    const { actions } = this.props;
+    const { loadCaseHistory } = actions;
+    loadCaseHistory({ personId, neighbors: psaNeighbors });
+  }
+
   renderPersonCard = (person, index) => {
     const {
       actions,
       peopleIdsToOpenPSAIds,
-      caseHistory,
-      manualCaseHistory,
-      chargeHistory,
-      manualChargeHistory,
-      sentenceHistory,
-      ftaHistory,
-      hearings,
       peopleWithOpenPsas,
       scoresAsMap,
-      psaNeighborsById,
       submitting,
       psaIdsRefreshing
     } = this.props;
     const personOlId = person.getIn([OPENLATTICE_ID_FQN, 0]);
     const openPSAId = peopleIdsToOpenPSAIds.get(personOlId, '');
-    const personCaseHistory = caseHistory.get(personOlId, List());
-    const personManualCaseHistory = manualCaseHistory.get(personOlId, List());
-    const personChargeHistory = chargeHistory.get(personOlId, Map());
-    const personManualChargeHistory = manualChargeHistory.get(personOlId, Map());
-    const personSentenceHistory = sentenceHistory.get(personOlId, Map());
-    const personFTAHistory = ftaHistory.get(personOlId, Map());
-    const personHearings = hearings.get(personOlId, List());
     const hasOpenPSA = peopleWithOpenPsas.has(personOlId);
     const scores = scoresAsMap.get(openPSAId, Map());
-    const neighbors = psaNeighborsById.get(openPSAId, Map());
     const personObj = formatPeopleInfo(person);
-    const entityKeyId = scores.getIn([OPENLATTICE_ID_FQN, 0]);
     return (
       <PersonCard
           key={`${personObj.identification}-${index}`}
-          entityKeyId={entityKeyId}
+          psaId={openPSAId}
           person={person}
+          personId={personOlId}
           personObj={personObj}
           hasOpenPSA={hasOpenPSA}
           scores={scores}
-          neighbors={neighbors}
           downloadFn={actions.downloadPSAReviewPDF}
-          loadCaseHistoryFn={actions.loadCaseHistory}
-          loadHearingNeighbors={actions.loadHearingNeighbors}
+          loadCaseHistoryFn={this.loadCaseHistoryCallback}
+          loadPSAModal={actions.loadPSAModal}
           submitData={actions.submit}
           replaceEntity={actions.replaceEntity}
           deleteEntity={actions.deleteEntity}
-          caseHistory={personCaseHistory}
-          manualCaseHistory={personManualCaseHistory}
-          chargeHistory={personChargeHistory}
-          manualChargeHistory={personManualChargeHistory}
-          sentenceHistory={personSentenceHistory}
-          ftaHistory={personFTAHistory}
-          hearings={personHearings}
           submitting={submitting}
-          refreshingNeighbors={psaIdsRefreshing.has(entityKeyId)}
+          refreshingNeighbors={psaIdsRefreshing.has(openPSAId)}
           judgesview />
     );
   }
@@ -322,11 +303,14 @@ class CourtContainer extends React.Component<Props, State> {
     const persons = people.toList().sort(sortPeopleByName);
     return (
       <HearingRow key={`${courtroom}-${time}`}>
-        <Courtroom key={`${time}-${courtroom}`}>
+        <Courtroom key={`${courtroom}-${time}-${time}`}>
           <span>{courtroom}</span>
-          <SecondaryButton onClick={() => this.downloadPDFs(courtroom, people, time)}>Download PDFs</SecondaryButton>
+          <SecondaryButton
+              onClick={() => this.downloadPDFs(courtroom, people, time)}>
+            Download PDFs
+          </SecondaryButton>
         </Courtroom>
-        <PeopleWrapper>{persons.map(this.renderPersonCard)}</PeopleWrapper>
+        <PeopleWrapper key={`${time}-${courtroom}`}>{persons.map(this.renderPersonCard)}</PeopleWrapper>
       </HearingRow>
     );
   }
@@ -514,6 +498,7 @@ function mapStateToProps(state) {
   const court = state.get(STATE.COURT);
   const edm = state.get(STATE.EDM);
   const review = state.get(STATE.REVIEW);
+  const psaModal = state.get(STATE.PSA_MODAL);
   const submit = state.get(STATE.SUBMIT);
   return {
     [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
@@ -538,18 +523,10 @@ function mapStateToProps(state) {
 
     [EDM.FQN_TO_ID]: edm.get(EDM.FQN_TO_ID),
 
-    [REVIEW.CASE_HISTORY]: review.get(REVIEW.CASE_HISTORY),
-    [REVIEW.MANUAL_CASE_HISTORY]: review.get(REVIEW.MANUAL_CASE_HISTORY),
-    [REVIEW.CHARGE_HISTORY]: review.get(REVIEW.CHARGE_HISTORY),
-    [REVIEW.MANUAL_CHARGE_HISTORY]: review.get(REVIEW.MANUAL_CHARGE_HISTORY),
-    [REVIEW.SENTENCE_HISTORY]: review.get(REVIEW.SENTENCE_HISTORY),
-    [REVIEW.FTA_HISTORY]: review.get(REVIEW.FTA_HISTORY),
-    [REVIEW.HEARINGS]: review.get(REVIEW.HEARINGS),
     [REVIEW.LOADING_DATA]: review.get(REVIEW.LOADING_DATA),
     [REVIEW.PSA_IDS_REFRESHING]: review.get(REVIEW.PSA_IDS_REFRESHING),
-    [REVIEW.NEIGHBORS_BY_ID]: review.get(REVIEW.NEIGHBORS_BY_ID),
-    [REVIEW.NEIGHBORS_BY_DATE]: review.get(REVIEW.NEIGHBORS_BY_DATE),
-    [REVIEW.ALL_FILERS]: review.get(REVIEW.ALL_FILERS),
+
+    [PSA_MODAL.HEARING_IDS]: psaModal.get(PSA_MODAL.HEARING_IDS),
 
     [SUBMIT.SUBMITTING]: submit.get(SUBMIT.SUBMITTING, false)
   };
@@ -568,6 +545,10 @@ function mapDispatchToProps(dispatch :Function) :Object {
 
   Object.keys(ReviewActionFactory).forEach((action :string) => {
     actions[action] = ReviewActionFactory[action];
+  });
+
+  Object.keys(PSAModalActionFactory).forEach((action :string) => {
+    actions[action] = PSAModalActionFactory[action];
   });
 
   Object.keys(SubmitActionFactory).forEach((action :string) => {

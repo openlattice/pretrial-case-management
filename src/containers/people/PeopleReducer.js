@@ -1,7 +1,6 @@
 /*
  * @flow
  */
-import moment from 'moment';
 import { Constants } from 'lattice';
 import {
   Map,
@@ -20,9 +19,15 @@ import {
   refreshPersonNeighbors
 } from './PeopleActionFactory';
 
-let { PSA_SCORES } = APP_TYPES_FQNS;
+let {
+  DMF_RESULTS,
+  PSA_SCORES,
+  RELEASE_RECOMMENDATIONS
+} = APP_TYPES_FQNS;
 
+DMF_RESULTS = DMF_RESULTS.toString();
 PSA_SCORES = PSA_SCORES.toString();
+RELEASE_RECOMMENDATIONS = RELEASE_RECOMMENDATIONS.toString();
 
 const { OPENLATTICE_ID_FQN } = Constants;
 const INITIAL_STATE = fromJS({
@@ -34,7 +39,8 @@ const INITIAL_STATE = fromJS({
   [PEOPLE.FETCHING_PERSON_DATA]: false,
   [PEOPLE.NEIGHBORS]: Map(),
   [PEOPLE.REFRESHING_PERSON_NEIGHBORS]: false,
-  [PEOPLE.MOST_RECENT_PSA]: Map()
+  [PEOPLE.MOST_RECENT_PSA]: Map(),
+  [PEOPLE.MOST_RECENT_PSA_NEIGHBORS]: Map(),
 });
 
 export default function peopleReducer(state = INITIAL_STATE, action) {
@@ -98,12 +104,14 @@ export default function peopleReducer(state = INITIAL_STATE, action) {
             personId,
             neighbors,
             scoresEntitySetId,
-            mostRecentPSA
+            mostRecentPSA,
+            mostRecentPSANeighborsByAppTypeFqn
           } = action.value;
           return (
             state.setIn([PEOPLE.NEIGHBORS, personId], neighbors)
               .set(PEOPLE.SCORES_ENTITY_SET_ID, scoresEntitySetId)
               .set(PEOPLE.MOST_RECENT_PSA, mostRecentPSA)
+              .set(PEOPLE.MOST_RECENT_PSA_NEIGHBORS, mostRecentPSANeighborsByAppTypeFqn)
           );
         },
         FAILURE: () => state
@@ -122,6 +130,7 @@ export default function peopleReducer(state = INITIAL_STATE, action) {
           const {
             personId,
             mostRecentPSA,
+            mostRecentPSANeighborsByAppTypeFqn,
             neighbors,
             scoresEntitySetId
           } = action.value;
@@ -129,6 +138,7 @@ export default function peopleReducer(state = INITIAL_STATE, action) {
             state.setIn([PEOPLE.NEIGHBORS, personId], neighbors)
               .set(PEOPLE.SCORES_ENTITY_SET_ID, scoresEntitySetId)
               .set(PEOPLE.MOST_RECENT_PSA, mostRecentPSA)
+              .set(PEOPLE.MOST_RECENT_PSA_NEIGHBORS, mostRecentPSANeighborsByAppTypeFqn)
           );
         },
         FAILURE: () => state
@@ -141,13 +151,21 @@ export default function peopleReducer(state = INITIAL_STATE, action) {
     case updateScoresAndRiskFactors.case(action.type): {
       return updateScoresAndRiskFactors.reducer(state, action, {
         SUCCESS: () => {
+          const {
+            newScoreEntity,
+            newDMFEntity,
+            newNotesEntity
+          } = action.value;
           let mostRecentPSA = state.get(PEOPLE.MOST_RECENT_PSA, Map());
+          let mostRecentPSANeighbors = state.get(PEOPLE.MOST_RECENT_PSA_NEIGHBORS, Map());
           const mostRecentPSAEntityKeyId = getEntityKeyId(mostRecentPSA.get(PSA_NEIGHBOR.DETAILS, Map()));
           const personId = state.getIn([PEOPLE.PERSON_DATA, PROPERTY_TYPES.PERSON_ID, 0], '');
-          const { newScoreEntity } = action.value;
           const olID = newScoreEntity[OPENLATTICE_ID_FQN][0];
           if (olID === mostRecentPSAEntityKeyId) {
             mostRecentPSA = mostRecentPSA.set(PSA_NEIGHBOR.DETAILS, fromJS(newScoreEntity));
+            mostRecentPSANeighbors = mostRecentPSANeighbors
+              .setIn([DMF_RESULTS, PSA_NEIGHBOR.DETAILS], fromJS(newDMFEntity))
+              .setIn([RELEASE_RECOMMENDATIONS, PSA_NEIGHBOR.DETAILS], fromJS(newNotesEntity));
           }
 
           const newPSAs = state.getIn([PEOPLE.NEIGHBORS, personId, PSA_SCORES], Map())
@@ -160,7 +178,8 @@ export default function peopleReducer(state = INITIAL_STATE, action) {
             });
           const newState = state
             .setIn([PEOPLE.NEIGHBORS, personId, PSA_SCORES], newPSAs)
-            .set(PEOPLE.MOST_RECENT_PSA, mostRecentPSA);
+            .set(PEOPLE.MOST_RECENT_PSA, mostRecentPSA)
+            .set(PEOPLE.MOST_RECENT_PSA_NEIGHBORS, mostRecentPSANeighbors);
           return newState;
         }
       });

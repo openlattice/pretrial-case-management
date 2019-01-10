@@ -7,7 +7,8 @@ import styled from 'styled-components';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import Modal, { ModalTransition } from '@atlaskit/modal-dialog';
-import { Map } from 'immutable';
+import { Map, fromJS } from 'immutable';
+import { Constants } from 'lattice';
 
 import closeX from '../../assets/svg/close-x-gray.svg';
 import HearingCardsWithTitle from '../hearings/HearingCardsWithTitle';
@@ -17,6 +18,7 @@ import ReleaseConditionsModal from '../../containers/hearings/ReleaseConditionsM
 import LoadingSpinner from '../LoadingSpinner';
 import psaHearingConfig from '../../config/formconfig/PSAHearingConfig';
 import { FORM_IDS, ID_FIELD_NAMES } from '../../utils/consts/Consts';
+import { APP_TYPES_FQNS } from '../../utils/consts/DataModelConsts';
 import {
   STATE,
   REVIEW,
@@ -33,6 +35,12 @@ import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
 import * as DataActionFactory from '../../utils/data/DataActionFactory';
 import * as ReviewActionFactory from '../../containers/review/ReviewActionFactory';
 import * as CourtActionFactory from '../../containers/court/CourtActionFactory';
+import * as PeopleActionFactory from '../../containers/people/PeopleActionFactory';
+
+const { OPENLATTICE_ID_FQN } = Constants;
+
+let { OUTCOMES } = APP_TYPES_FQNS;
+OUTCOMES = OUTCOMES.toString();
 
 const PaddedStyledColumnRow = styled(StyledColumnRow)`
   display: block;
@@ -85,6 +93,7 @@ type Props = {
   defaultConditions :Map<*, *>,
   defaultDMF :Map<*, *>,
   dmfId :string,
+  hearingNeighborsById :Map<*, *>,
   hearingsWithOutcomes :List<*, *>,
   jurisdiction :?string,
   loading :boolean,
@@ -193,7 +202,7 @@ class PersonHearings extends React.Component<Props, State> {
     this.setState({
       manuallyCreatingHearing: false,
       releaseConditionsModalOpen: true,
-      selectedHearing: { row, hearingId, entityKeyId }
+      selectedHearing: fromJS({ row, hearingId, entityKeyId })
     });
   };
 
@@ -211,7 +220,9 @@ class PersonHearings extends React.Component<Props, State> {
       personId,
     } = this.props;
     const { releaseConditionsModalOpen, selectedHearing } = this.state;
-    const { hearingId, entityKeyId } = selectedHearing;
+    const selectedHearingEntityKeyId = selectedHearing.get('entityKeyId', '');
+    const selectedHearingId = selectedHearing.get('hearingId', '');
+    const hearing = selectedHearing.get('row', Map());
 
     return (
       <ReleaseConditionsModal
@@ -220,8 +231,8 @@ class PersonHearings extends React.Component<Props, State> {
           defaultConditions={defaultConditions}
           defaultDMF={defaultDMF}
           dmfId={dmfId}
-          hearingId={hearingId}
-          hearingEntityKeyId={entityKeyId}
+          hearingId={selectedHearingId}
+          hearingEntityKeyId={selectedHearingEntityKeyId}
           jurisdiction={jurisdiction}
           neighbors={neighbors}
           loading={loading}
@@ -229,7 +240,7 @@ class PersonHearings extends React.Component<Props, State> {
           personId={personId}
           psaEntityKeyId={psaEntityKeyId}
           psaId={psaId}
-          selectedHearing={selectedHearing} />
+          selectedHearing={hearing} />
     );
   }
 
@@ -260,7 +271,7 @@ class PersonHearings extends React.Component<Props, State> {
                 <TitleWrapper>
                   <h1>Add New Hearing</h1>
                   <div>
-                    { manuallyCreatingHearing ? null : this.renderCreateHearingButton() }
+                    {/* { manuallyCreatingHearing ? null : this.renderCreateHearingButton() } */}
                     <CloseModalX onClick={this.onClose} />
                   </div>
                 </TitleWrapper>
@@ -293,28 +304,33 @@ class PersonHearings extends React.Component<Props, State> {
 
 
   renderScheduledAndPastHearings = () => {
-    const {
-      hearingsWithOutcomes,
-      scheduledHearings,
-      pastHearings
-    } = this.props;
-
+    const { hearingsWithOutcomes, hearingNeighborsById } = this.props;
+    const { scheduledHearings, pastHearings } = this.props;
+    const scheduledHearingsWithOutcomes = scheduledHearings.filter((hearing) => {
+      const id = hearing.getIn([OPENLATTICE_ID_FQN, 0], '');
+      const hasOutcome = !!hearingNeighborsById.getIn([id, OUTCOMES]);
+      return hasOutcome;
+    });
+    const pastHearingsWithOutcomes = pastHearings.filter((hearing) => {
+      const id = hearing.getIn([OPENLATTICE_ID_FQN, 0], '');
+      const hasOutcome = !!hearingNeighborsById.getIn([id, OUTCOMES]);
+      return hasOutcome;
+    });
     return (
       <StyledColumnRowWrapper>
         <PaddedStyledColumnRow>
           <TitleWrapper>
-            <h1>Hearings</h1>
-            { this.renderAddHearingButton() }
+            <h1>Manage Hearings</h1>
           </TitleWrapper>
           <HearingCardsWithTitle
               title="Scheduled Hearings"
-              hearings={scheduledHearings}
+              hearings={scheduledHearingsWithOutcomes}
               handleSelect={this.selectingReleaseConditions}
               hearingsWithOutcomes={hearingsWithOutcomes} />
           <hr />
           <HearingCardsWithTitle
               title="Past Hearings"
-              hearings={pastHearings}
+              hearings={pastHearingsWithOutcomes}
               handleSelect={this.selectingReleaseConditions}
               hearingsWithOutcomes={hearingsWithOutcomes} />
         </PaddedStyledColumnRow>
@@ -366,6 +382,10 @@ function mapDispatchToProps(dispatch :Function) :Object {
 
   Object.keys(SubmitActionFactory).forEach((action :string) => {
     actions[action] = SubmitActionFactory[action];
+  });
+
+  Object.keys(PeopleActionFactory).forEach((action :string) => {
+    actions[action] = PeopleActionFactory[action];
   });
 
   Object.keys(ReviewActionFactory).forEach((action :string) => {

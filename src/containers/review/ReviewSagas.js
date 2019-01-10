@@ -311,16 +311,20 @@ function* loadPSADataWorker(action :SequenceAction) :Generator<*, *, *> {
       const orgId = yield select(getOrgId);
       const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
       const psaScoresEntitySetId = getEntitySetId(app, psaScoresFqn, orgId);
-      let neighborsById = yield call(SearchApi.searchEntityNeighborsBulk, psaScoresEntitySetId, action.value);
+      const peopleEntitySetId = getEntitySetId(app, peopleFqn, orgId);
+      const staffEntitySetId = getEntitySetId(app, staffFqn, orgId);
+      let neighborsById = yield call(SearchApi.searchEntityNeighborsWithFilter, psaScoresEntitySetId, {
+        entityKeyIds: action.value,
+        sourceEntitySetIds: [psaScoresEntitySetId],
+        destinationEntitySetIds: [peopleEntitySetId, psaScoresEntitySetId, staffEntitySetId]
+      });
       neighborsById = obfuscateBulkEntityNeighbors(neighborsById); // TODO just for demo
       neighborsById = Immutable.fromJS(neighborsById);
 
-      neighborsById.keySeq().forEach((id) => {
+      neighborsById.entrySeq().forEach(([id, neighbors]) => {
         let allDatesEdited = Immutable.List();
         let neighborsByAppTypeFqn = Immutable.Map();
-
-        neighborsById.get(id).forEach((neighbor) => {
-
+        neighbors.forEach((neighbor) => {
           neighbor.getIn([PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.TIMESTAMP],
             neighbor.getIn([
               PSA_ASSOCIATION.DETAILS,
@@ -341,7 +345,6 @@ function* loadPSADataWorker(action :SequenceAction) :Generator<*, *, *> {
                   allFilers = allFilers.add(filer);
                 });
             }
-
             if (LIST_ENTITY_SETS.includes(AppTypeFqn)) {
               if (AppTypeFqn === hearingsFqn) {
                 const neighborDetails = neighbor.get(PSA_NEIGHBOR.DETAILS, Immutable.Map());
@@ -364,7 +367,6 @@ function* loadPSADataWorker(action :SequenceAction) :Generator<*, *, *> {
             }
           }
         });
-
         allDatesEdited.forEach((editDate) => {
           psaNeighborsById = psaNeighborsById.set(id, neighborsByAppTypeFqn);
           psaNeighborsByDate = psaNeighborsByDate.set(
@@ -372,6 +374,7 @@ function* loadPSADataWorker(action :SequenceAction) :Generator<*, *, *> {
             psaNeighborsByDate.get(editDate, Immutable.Map()).set(id, neighborsByAppTypeFqn)
           );
         });
+
       });
     }
 
