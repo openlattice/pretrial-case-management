@@ -971,12 +971,15 @@ class SelectReleaseConditions extends React.Component<Props, State> {
       `${date.format(dateFormat)} ${time.format(timeFormat)}`, `${dateFormat} ${timeFormat}`
     );
     const associationEntitySetName = ASSESSED_BY;
+    const associationEntitySetId = getEntitySetId(app, ASSESSED_BY, selectedOrganizationId);
     const associationEntityKeyId = judgeEntity
       ? judgeEntity.getIn([PSA_ASSOCIATION.DETAILS, OPENLATTICE_ID_FQN, 0])
       : null;
     const srcEntitySetName = JUDGES;
+    const srcEntitySetId = getEntitySetId(app, JUDGES, selectedOrganizationId);
     const srcEntityKeyId = judgeId;
     const dstEntitySetName = HEARINGS;
+    const hearingsEntitySetId = getEntitySetId(app, HEARINGS, selectedOrganizationId);
     const dstEntityKeyId = hearingEntityKeyId;
     if (judgeIsOther && judgeEntitySetId) {
       deleteEntity({
@@ -993,15 +996,17 @@ class SelectReleaseConditions extends React.Component<Props, State> {
       replaceAssociation({
         associationEntity,
         associationEntitySetName,
+        associationEntitySetId,
         associationEntityKeyId,
         srcEntitySetName,
         srcEntityKeyId,
+        srcEntitySetId,
         dstEntitySetName,
         dstEntityKeyId,
-        callback: refreshHearingsNeighborsCallback
+        callback: refreshHearingsNeighborsCallback,
+        dstEntitySetId: hearingsEntitySetId
       });
     }
-    const hearingsEntitySetId = getEntitySetId(app, HEARINGS, selectedOrganizationId);
     if ((hearingDateTime && hearingCourtroom) || judgeIsOther) {
       const newHearing = hearing
         .set(PROPERTY_TYPES.COURTROOM, [hearingCourtroom])
