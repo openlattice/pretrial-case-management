@@ -10,6 +10,7 @@ import { connect } from 'react-redux';
 import Modal, { ModalTransition } from '@atlaskit/modal-dialog';
 import { AuthUtils } from 'lattice-auth';
 import { bindActionCreators } from 'redux';
+import { Constants } from 'lattice';
 
 import RadioButton from '../controls/StyledRadioButton';
 import Checkbox from '../controls/StyledCheckbox';
@@ -29,6 +30,8 @@ import * as FormActionFactory from '../../containers/psa/FormActionFactory';
 import * as ReviewActionFactory from '../../containers/review/ReviewActionFactory';
 import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
 import * as DataActionFactory from '../../utils/data/DataActionFactory';
+
+const { OPENLATTICE_ID_FQN } = Constants;
 
 const ModalWrapper = styled(CenteredContainer)`
   margin-top: -15px;
@@ -217,21 +220,27 @@ class ClosePSAModal extends React.Component<Props, State> {
   }
 
   handleStatusChange = (app :Map<*, *>, status :string, failureReason :string[], statusNotes :?string) => {
-    if (!this.props.actions.changePSAStatus) return;
+    const {
+      actions,
+      scores,
+      onStatusChangeCallback,
+      onSubmit,
+      entityKeyId
+    } = this.props;
+    if (!actions.changePSAStatus) return;
     const statusNotesList = (statusNotes && statusNotes.length) ? Immutable.List.of(statusNotes) : Immutable.List();
 
-    const scoresEntity = stripIdField(this.props.scores
+    const scoresEntity = stripIdField(scores
       .set(PROPERTY_TYPES.STATUS, Immutable.List.of(status))
       .set(PROPERTY_TYPES.FAILURE_REASON, Immutable.fromJS(failureReason))
       .set(PROPERTY_TYPES.STATUS_NOTES, statusNotesList));
-    const scoresId = this.props.entityKeyId;
-    this.props.actions.changePSAStatus({
-      scoresId,
+    actions.changePSAStatus({
+      scoresId: entityKeyId,
       scoresEntity,
-      callback: this.props.onStatusChangeCallback
+      callback: onStatusChangeCallback
     });
 
-    this.props.actions.submit({
+    actions.submit({
       app,
       config: psaEditedConfig,
       values: {
@@ -239,9 +248,9 @@ class ClosePSAModal extends React.Component<Props, State> {
         [EDIT_FIELDS.TIMESTAMP]: [toISODateTime(moment())],
         [EDIT_FIELDS.PERSON_ID]: [AuthUtils.getUserInfo().email]
       },
-      callback: this.props.actions.clearSubmit
+      callback: actions.clearSubmit
     });
-    this.props.onSubmit();
+    onSubmit();
     this.setState({ editing: false });
   }
 
