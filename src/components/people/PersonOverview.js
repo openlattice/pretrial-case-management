@@ -72,6 +72,7 @@ const PersonOverview = ({
   contactInfo,
   loading,
   mostRecentPSA,
+  mostRecentPSANeighbors,
   mostRecentPSAEntityKeyId,
   neighbors,
   personId,
@@ -82,7 +83,7 @@ const PersonOverview = ({
   openDetailsModal,
   openUpdateContactModal
 } :Props) => {
-  const mostRecentPSANeighbors = psaNeighborsById.get(mostRecentPSAEntityKeyId, Map());
+  // const mostRecentPSANeighbors = psaNeighborsById.get(mostRecentPSAEntityKeyId, Map());
   let arrestDate = getIdOrValue(
     mostRecentPSANeighbors, MANUAL_PRETRIAL_CASES, PROPERTY_TYPES.ARREST_DATE_TIME
   );
