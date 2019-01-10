@@ -24,9 +24,12 @@ const CardsHolder = styled.div`
   margin-bottom: 30px
 `;
 
+const CardWrapper = styled.div`
+  display: block;
+`;
+
 const Card = styled.div`
-  display: flex;
-  flex-direction: row;
+  display: inline-block;
   justify-content: space-between;
   width: 100%;
   border-radius: 5px;
@@ -111,16 +114,17 @@ const HearingCardsHolder = ({
     ));
 
     return (
-      <Card
-          onClick={() => handleSelect(hearing, hearingId, entityKeyId)}
-          key={`${dateTime}${courtroom}${entityKeyId}`}
-          readOnly={readOnly}
-          selected={selected}>
-        { needsAttention ? <Notification /> : null }
-        <ContentSection component={CONTENT_CONSTS.HEARING_CARD}>
-          {content}
-        </ContentSection>
-      </Card>
+      <CardWrapper key={`${dateTime}${courtroom}${entityKeyId}`}>
+        <Card
+            onClick={() => handleSelect(hearing, hearingId, entityKeyId)}
+            readOnly={readOnly}
+            selected={selected}>
+          { needsAttention ? <Notification /> : null }
+          <ContentSection component={CONTENT_CONSTS.HEARING_CARD}>
+            {content}
+          </ContentSection>
+        </Card>
+      </CardWrapper>
     );
   });
 
