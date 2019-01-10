@@ -26,6 +26,7 @@ import BasicButton from '../buttons/BasicButton';
 import releaseConditionsConfig from '../../config/formconfig/ReleaseConditionsConfig';
 import { NoContactRow } from './ReleaseConditionsStyledTags';
 import { OL } from '../../utils/consts/Colors';
+import { getEntitySetId } from '../../utils/AppUtils';
 import { getTimeOptions } from '../../utils/consts/DateTimeConsts';
 import {
   RELEASE_CONDITIONS,
@@ -49,6 +50,19 @@ import {
 
 const { RELEASE_CONDITIONS_FIELD } = LIST_FIELDS;
 const { OPENLATTICE_ID_FQN } = Constants;
+
+let {
+  BONDS,
+  HEARINGS,
+  ASSESSED_BY,
+  JUDGES
+} = APP_TYPES_FQNS;
+const RELEASE_CONDITIONS_FQN = APP_TYPES_FQNS.RELEASE_CONDITIONS.toString();
+
+BONDS = BONDS.toString();
+HEARINGS = HEARINGS.toString();
+ASSESSED_BY = ASSESSED_BY.toString();
+JUDGES = JUDGES.toString();
 
 const {
   OUTCOME,
@@ -617,10 +631,10 @@ class SelectReleaseConditions extends React.Component<Props, State> {
 
 
     const bondTime = defaultBond.getIn([PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.COMPLETED_DATE_TIME, 0],
-      neighbors.getIn([APP_TYPES_FQNS.BONDS, PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.COMPLETED_DATE_TIME, 0]));
+      neighbors.getIn([BONDS, PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.COMPLETED_DATE_TIME, 0]));
     const conditionsTime = defaultConditions.getIn([0, PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.COMPLETED_DATE_TIME, 0],
       neighbors.getIn(
-        [APP_TYPES_FQNS.RELEASE_CONDITIONS, 0, PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.COMPLETED_DATE_TIME, 0]
+        [RELEASE_CONDITIONS_FQN, 0, PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.COMPLETED_DATE_TIME, 0]
       ));
 
     const bondShouldSubmit = !(defaultBond.getIn([PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.COMPLETED_DATE_TIME, 0]))
@@ -914,6 +928,8 @@ class SelectReleaseConditions extends React.Component<Props, State> {
 
   handleHearingUpdate = () => {
     const {
+      app,
+      selectedOrganizationId,
       hearing,
       replace,
       submitCallback,
@@ -954,13 +970,13 @@ class SelectReleaseConditions extends React.Component<Props, State> {
     const hearingDateTime = moment(
       `${date.format(dateFormat)} ${time.format(timeFormat)}`, `${dateFormat} ${timeFormat}`
     );
-    const associationEntitySetName = APP_TYPES_FQNS.ASSESSED_BY;
+    const associationEntitySetName = ASSESSED_BY;
     const associationEntityKeyId = judgeEntity
       ? judgeEntity.getIn([PSA_ASSOCIATION.DETAILS, OPENLATTICE_ID_FQN, 0])
       : null;
-    const srcEntitySetName = APP_TYPES_FQNS.JUDGES;
+    const srcEntitySetName = JUDGES;
     const srcEntityKeyId = judgeId;
-    const dstEntitySetName = APP_TYPES_FQNS.HEARINGS;
+    const dstEntitySetName = HEARINGS;
     const dstEntityKeyId = hearingEntityKeyId;
     if (judgeIsOther && judgeEntitySetId) {
       deleteEntity({
@@ -985,6 +1001,7 @@ class SelectReleaseConditions extends React.Component<Props, State> {
         callback: refreshHearingsNeighborsCallback
       });
     }
+    const hearingsEntitySetId = getEntitySetId(app, HEARINGS, selectedOrganizationId);
     if ((hearingDateTime && hearingCourtroom) || judgeIsOther) {
       const newHearing = hearing
         .set(PROPERTY_TYPES.COURTROOM, [hearingCourtroom])
@@ -993,7 +1010,8 @@ class SelectReleaseConditions extends React.Component<Props, State> {
         .set(PROPERTY_TYPES.HEARING_COMMENTS, judgeText)
         .toJS();
       replace({
-        entitySetName: APP_TYPES_FQNS.HEARINGS,
+        entitySetName: HEARINGS,
+        entitySetId: hearingsEntitySetId,
         entityKeyId: hearingEntityKeyId,
         values: newHearing,
         callback: submitCallback
