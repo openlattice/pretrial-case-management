@@ -3,7 +3,8 @@
  */
 
 import React from 'react';
-import { Constants } from 'lattice';
+import moment from 'moment';
+import styled from 'styled-components';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import Modal, { ModalTransition } from '@atlaskit/modal-dialog';
@@ -34,22 +35,27 @@ import * as ReviewActionFactory from '../review/ReviewActionFactory';
 import * as CourtActionFactory from '../court/CourtActionFactory';
 
 let {
-  HEARINGS,
   OUTCOMES,
   BONDS,
   JUDGES,
   RELEASE_CONDITIONS
 } = APP_TYPES_FQNS;
 
-HEARINGS = HEARINGS.toString();
 OUTCOMES = OUTCOMES.toString();
 BONDS = BONDS.toString();
 JUDGES = JUDGES.toString();
 RELEASE_CONDITIONS = RELEASE_CONDITIONS.toString();
 
-const { OPENLATTICE_ID_FQN } = Constants;
+const LoadingWrapper = styled.div`
+  width: 100%;
+  height: 300px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+`;
 
 type Props = {
+  app :Map<*, *>,
   allJudges :List<*, *>,
   defaultBond :Map<*, *>,
   defaultConditions :Map<*, *>,
@@ -59,7 +65,6 @@ type Props = {
   hearingEntityKeyId :string,
   hearingIdsRefreshing :Set<*, *>,
   hearingNeighborsById :Map<*, *>,
-  jurisdiction :string,
   neighbors :Map<*, *>,
   open :boolean,
   onClose :() => void,
@@ -102,9 +107,9 @@ const MODAL_HEIGHT = 'max-content';
 class ReleaseConditionsModal extends React.Component<Props, State> {
 
   refreshHearingsNeighborsCallback = () => {
-    const { selectedHearing } = this.props;
+    const { hearingEntityKeyId } = this.props;
     const { actions } = this.props;
-    actions.refreshHearingNeighbors({ id: selectedHearing.entityKeyId });
+    actions.refreshHearingNeighbors({ id: hearingEntityKeyId });
   }
   refreshPSANeighborsCallback = () => {
     const { psaEntityKeyId } = this.props;
@@ -126,13 +131,13 @@ class ReleaseConditionsModal extends React.Component<Props, State> {
       hearingEntityKeyId,
       hearingNeighborsById,
       hearingIdsRefreshing,
-      jurisdiction,
       open,
       onClose,
       personId,
       psaEntityKeyId,
       psaId,
       psaIdsRefreshing,
+      selectedHearing,
       submitting
     } = this.props;
     const {
@@ -142,6 +147,7 @@ class ReleaseConditionsModal extends React.Component<Props, State> {
       submit,
       updateOutcomesAndReleaseCondtions
     } = actions;
+    const jurisdiction = app.get('selectedOrganizationTitle');
 
     const refreshingNeighbors = psaIdsRefreshing.has(psaEntityKeyId);
 
@@ -153,15 +159,17 @@ class ReleaseConditionsModal extends React.Component<Props, State> {
 
     let judgeName;
     let judgeEntitySetId;
-    const hearing = neighbors.get(HEARINGS, List())
-      .filter(hearingObj => (hearingObj.getIn([OPENLATTICE_ID_FQN, 0]) === hearingEntityKeyId))
-      .get(0, Map());
+    const hearing = selectedHearing;
     const hasMultipleHearings = hearingNeighborsById.size > 1;
     const oldDataOutcome = defaultDMF.getIn([PROPERTY_TYPES.OUTCOME, 0]);
     const onlyOldExists = oldDataOutcome && !hearingNeighborsById.getIn([hearingEntityKeyId, OUTCOMES]);
     const hasOldOrNewOutcome = !!(
       hearingNeighborsById.getIn([hearingEntityKeyId, OUTCOMES]) || oldDataOutcome
     );
+
+    const psaDate = moment(hearingNeighborsById.getIn(
+      [hearingEntityKeyId, PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.COMPLETED_DATE_TIME, 0]
+    )).format('MM/DD/YYYY');
 
     if (onlyOldExists) {
       outcome = defaultDMF;
@@ -172,7 +180,7 @@ class ReleaseConditionsModal extends React.Component<Props, State> {
       outcome = hearingNeighborsById.getIn([hearingEntityKeyId, OUTCOMES], Map());
       bond = hearingNeighborsById.getIn([hearingEntityKeyId, BONDS], Map());
       conditions = hearingNeighborsById
-        .getIn([hearingEntityKeyId, RELEASE_CONDITIONS], Map());
+        .getIn([hearingEntityKeyId, RELEASE_CONDITIONS], List());
     }
     const submittedOutcomes = (onlyOldExists && hasMultipleHearings)
       ? false
@@ -207,7 +215,7 @@ class ReleaseConditionsModal extends React.Component<Props, State> {
                   shouldCloseOnOverlayClick
                   stackIndex={2}>
                 <TitleWrapper>
-                  <h1>Hearing Details</h1>
+                  <h1>{`Hearing Details for PSA Created on ${psaDate}`}</h1>
                   <div>
                     <CloseModalX onClick={onClose} />
                   </div>
@@ -215,7 +223,7 @@ class ReleaseConditionsModal extends React.Component<Props, State> {
                 <PaddedStyledColumnRow>
                   {
                     loading
-                      ? <LoadingSpinner />
+                      ? <LoadingWrapper><LoadingSpinner /></LoadingWrapper>
                       : (
                         <SelectReleaseConditions
                             app={app}
