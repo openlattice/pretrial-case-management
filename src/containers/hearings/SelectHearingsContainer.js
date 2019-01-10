@@ -336,6 +336,7 @@ class SelectHearingsContainer extends React.Component<Props, State> {
     return (
       <Wrapper withPadding>
         <SelectReleaseConditions
+            selectedOrganizationId={selectedOrganizationId}
             app={app}
             submitting={submitting}
             submittedOutcomes={submittedOutcomes}
