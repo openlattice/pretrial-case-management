@@ -63,12 +63,11 @@ const FilterWrapper = styled.div`
 `;
 
 type Props = {
-  psaNeighborsById :Map<*, *>,
+  mostRecentPSANeighbors :Map<*, *>,
   selectedOrganizationSettings :Map<*, *>,
   neighbors :Map<*, *>,
   mostRecentPSA :Map<*, *>,
   personId :string,
-  mostRecentPSAEntityKeyId :string,
   loading :boolean,
   openDetailsModal :() => void;
 }
@@ -154,13 +153,9 @@ class PersonOverview extends React.Component<Props, State> {
     const {
       loading,
       mostRecentPSA,
-      mostRecentPSAEntityKeyId,
-      psaNeighborsById,
-      openDetailsModal,
-      selectedOrganizationSettings
+      mostRecentPSANeighbors,
+      openDetailsModal
     } = this.props;
-    const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], '');
-    const mostRecentPSANeighbors = psaNeighborsById.get(mostRecentPSAEntityKeyId, Map());
     const scores = mostRecentPSA.get(PSA_NEIGHBOR.DETAILS, Map());
     const notes = getIdOrValue(
       mostRecentPSANeighbors, RELEASE_RECOMMENDATIONS, PROPERTY_TYPES.RELEASE_RECOMMENDATION
