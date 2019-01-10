@@ -41,7 +41,8 @@ import {
   SUBMIT,
   PEOPLE,
   REVIEW,
-  PSA_NEIGHBOR
+  PSA_NEIGHBOR,
+  PSA_MODAL
 } from '../../utils/consts/FrontEndStateConsts';
 
 import * as Routes from '../../core/router/Routes';
@@ -147,21 +148,15 @@ class PersonDetailsContainer extends React.Component<Props, State> {
   componentDidUpdate(prevProps) {
     const {
       actions,
-      mostRecentPSA,
-      mostRecentPSANeighbors,
       neighbors,
       personId,
-      psaNeighborsById,
+      hearingIds,
       selectedOrganizationId
     } = this.props;
     const orgChanged = selectedOrganizationId !== prevProps.selectedOrganizationId;
-    const mostRecentPSAEntityKeyId = getEntityKeyId(mostRecentPSA.get(PSA_NEIGHBOR.DETAILS, Map()));
-    const nextMostRecentPSANeighbors = psaNeighborsById.get(mostRecentPSAEntityKeyId, Map());
-    const psaHearingIds = getHearingsIdsFromNeighbors(nextMostRecentPSANeighbors);
     const personHearingIds = getHearingsIdsFromNeighbors(neighbors);
     const psaIds = getPSAIdsFromNeighbors(neighbors);
     const personChanged = (psaIds.length && !prevProps.neighbors.size && neighbors.size);
-    const psaChanged = (psaHearingIds.length && (mostRecentPSANeighbors.size !== nextMostRecentPSANeighbors.size));
     if (selectedOrganizationId && orgChanged) {
       actions.checkPSAPermissions();
       actions.loadJudges();
@@ -172,8 +167,8 @@ class PersonDetailsContainer extends React.Component<Props, State> {
       actions.loadPSAData(psaIds);
       actions.loadHearingNeighbors({ hearingIds: personHearingIds });
     }
-    if (psaChanged) {
-      actions.loadHearingNeighbors({ hearingIds: psaHearingIds });
+    if (hearingIds.size !== prevProps.hearingIds.size) {
+      actions.loadHearingNeighbors({ hearingIds: hearingIds.toJS() });
     }
   }
 
@@ -188,9 +183,7 @@ class PersonDetailsContainer extends React.Component<Props, State> {
   }
 
   closeModal = () => {
-    const { actions } = this.props;
     this.setState({ open: false });
-    actions.clearPSAModal();
   };
 
   openModal = () => (this.setState({ open: true }));
@@ -267,19 +260,11 @@ class PersonDetailsContainer extends React.Component<Props, State> {
 
   openDetailsModal = () => {
     const {
-      psaNeighborsById,
       mostRecentPSA,
       actions
     } = this.props;
-    const { loadHearingNeighbors } = actions;
     const mostRecentPSAEntityKeyId = getEntityKeyId(mostRecentPSA.get(PSA_NEIGHBOR.DETAILS, Map()));
-    const neighborsForMostRecentPSA = psaNeighborsById.get(mostRecentPSAEntityKeyId, Map());
-    const hearingIds = neighborsForMostRecentPSA.get(HEARINGS, List())
-      .map(neighbor => neighbor.getIn([OPENLATTICE_ID_FQN, 0]))
-      .filter(id => !!id)
-      .toJS();
     actions.loadPSAModal({ psaId: mostRecentPSAEntityKeyId, callback: this.loadCaseHistoryCallback });
-    loadHearingNeighbors({ hearingIds, loadPersonData: false });
     this.openModal();
   }
 
@@ -523,6 +508,7 @@ function mapStateToProps(state, ownProps) {
   const people = state.get(STATE.PEOPLE);
   const court = state.get(STATE.COURT);
   const submit = state.get(STATE.SUBMIT);
+  const psaModal = state.get(STATE.PSA_MODAL);
 
   return {
     [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
@@ -544,6 +530,8 @@ function mapStateToProps(state, ownProps) {
     [PEOPLE.MOST_RECENT_PSA]: people.get(PEOPLE.MOST_RECENT_PSA),
     [PEOPLE.MOST_RECENT_PSA_NEIGHBORS]: people.get(PEOPLE.MOST_RECENT_PSA_NEIGHBORS),
     personHearings: people.getIn([PEOPLE.NEIGHBORS, personId, HEARINGS], Map()),
+
+    [PSA_MODAL.HEARING_IDS]: psaModal.get(PSA_MODAL.HEARING_IDS),
 
     [COURT.LOADING_HEARING_NEIGHBORS]: court.get(COURT.LOADING_HEARING_NEIGHBORS),
     [COURT.HEARINGS_NEIGHBORS_BY_ID]: court.get(COURT.HEARINGS_NEIGHBORS_BY_ID),
