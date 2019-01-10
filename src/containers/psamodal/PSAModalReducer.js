@@ -93,7 +93,6 @@ export default function psaModalReducer(state :Map<*, *> = INITIAL_STATE, action
           const { neighbors } = action.value;
           const hearings = neighbors.get(HEARINGS, List());
           const hearingIds = hearings.map(hearing => hearing.getIn([OPENLATTICE_ID_FQN, 0], ''));
-          console.log(neighbors.toJS());
           return state
             .set(PSA_MODAL.PSA_NEIGHBORS, neighbors)
             .set(PSA_MODAL.HEARINGS, hearings)

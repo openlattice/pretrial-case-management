@@ -10,6 +10,7 @@ import {
 
 import { getEntityKeyId } from '../../utils/DataUtils';
 import { changePSAStatus, updateScoresAndRiskFactors, loadPSAData } from '../review/ReviewActionFactory';
+import { refreshHearingNeighbors } from '../court/CourtActionFactory';
 import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PEOPLE, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import {
@@ -145,6 +146,12 @@ export default function peopleReducer(state = INITIAL_STATE, action) {
           .setIn([PEOPLE.NEIGHBORS, action.personId], Map())
           .set(PEOPLE.REFRESHING_PERSON_NEIGHBORS, false),
         FINALLY: () => state.set(PEOPLE.REFRESHING_PERSON_NEIGHBORS, false)
+      });
+    }
+
+    case refreshHearingNeighbors.case(action.type): {
+      return refreshHearingNeighbors.reducer(state, action, {
+        SUCCESS: () => state.set(PEOPLE.MOST_RECENT_PSA_NEIGHBORS, action.value.neighbors)
       });
     }
 

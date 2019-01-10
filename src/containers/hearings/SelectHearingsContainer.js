@@ -39,6 +39,7 @@ import {
 import {
   APP,
   STATE,
+  SUBMIT,
   REVIEW,
   COURT,
   PSA_NEIGHBOR,
@@ -336,6 +337,7 @@ class SelectHearingsContainer extends React.Component<Props, State> {
     return (
       <Wrapper withPadding>
         <SelectReleaseConditions
+            selectedOrganizationId={selectedOrganizationId}
             app={app}
             submitting={submitting}
             submittedOutcomes={submittedOutcomes}
@@ -481,6 +483,7 @@ function mapStateToProps(state) {
   const orgId = app.get(APP.SELECTED_ORG_ID, '');
   const court = state.get(STATE.COURT);
   const review = state.get(STATE.REVIEW);
+  const submit = state.get(STATE.SUBMIT);
   return {
     app,
     [APP.SELECTED_ORG_ID]: orgId,
@@ -493,7 +496,9 @@ function mapStateToProps(state) {
     [COURT.ALL_JUDGES]: court.get(COURT.ALL_JUDGES),
     [COURT.HEARING_IDS_REFRESHING]: court.get(COURT.HEARING_IDS_REFRESHING),
     [REVIEW.LOADING_RESULTS]: review.get(REVIEW.LOADING_RESULTS),
-    [REVIEW.ERROR]: review.get(REVIEW.ERROR)
+    [REVIEW.ERROR]: review.get(REVIEW.ERROR),
+
+    [SUBMIT.SUBMITTING]: submit.get(SUBMIT.SUBMITTING)
   };
 }
 
