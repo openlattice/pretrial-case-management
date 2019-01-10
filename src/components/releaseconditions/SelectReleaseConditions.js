@@ -638,8 +638,9 @@ class SelectReleaseConditions extends React.Component<Props, State> {
     );
     const conditionEntityKeyIds = defaultConditions.map(neighbor => neighbor.getIn(
       [PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0],
-      neighbor.getIn([OPENLATTICE_ID_FQN, 0], [])
+      neighbor.getIn([OPENLATTICE_ID_FQN, 0], ''), []
     ));
+
     const bondEntityKeyId = defaultBond.getIn(
       [PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0],
       defaultBond.getIn([OPENLATTICE_ID_FQN, 0], '')
