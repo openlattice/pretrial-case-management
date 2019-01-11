@@ -952,6 +952,7 @@ function mapStateToProps(state) {
   const psaModal = state.get(STATE.PSA_MODAL);
   return {
     app,
+    [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
     [APP.SELECTED_ORG_SETTINGS]: app.get(APP.SELECTED_ORG_SETTINGS),
 
     [PSA_MODAL.PSA_ID]: psaModal.get(PSA_MODAL.PSA_ID),

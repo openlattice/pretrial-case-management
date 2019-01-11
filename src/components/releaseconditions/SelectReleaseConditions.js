@@ -51,6 +51,20 @@ import {
 const { RELEASE_CONDITIONS_FIELD } = LIST_FIELDS;
 const { OPENLATTICE_ID_FQN } = Constants;
 
+let {
+  ASSESSED_BY,
+  BONDS,
+  JUDGES,
+  HEARINGS
+} = APP_TYPES_FQNS;
+
+const RELEASE_CONDITIONS_FQN = APP_TYPES_FQNS.RELEASE_CONDITIONS.toString();
+
+ASSESSED_BY = ASSESSED_BY.toString();
+BONDS = BONDS.toString();
+JUDGES = JUDGES.toString();
+HEARINGS = HEARINGS.toString();
+
 const {
   OUTCOME,
   OTHER_OUTCOME_TEXT,
@@ -236,6 +250,7 @@ type Props = {
   neighbors :Immutable.Map<*, *>,
   personId :string,
   psaId :string,
+  selectedOrganizationId :string,
   replace :(value :{ entitySetName :string, entityKeyId :string, values :Object }) => void,
   submit :(value :{ app :Map<*, *>, config :Object, values :Object, callback? :() => void }) => void,
   replaceAssociation :(values :{
@@ -619,10 +634,10 @@ class SelectReleaseConditions extends React.Component<Props, State> {
 
 
     const bondTime = defaultBond.getIn([PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.COMPLETED_DATE_TIME, 0],
-      neighbors.getIn([APP_TYPES_FQNS.BONDS.toString(), PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.COMPLETED_DATE_TIME, 0]));
+      neighbors.getIn([BONDS, PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.COMPLETED_DATE_TIME, 0]));
     const conditionsTime = defaultConditions.getIn([0, PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.COMPLETED_DATE_TIME, 0],
       neighbors.getIn(
-        [APP_TYPES_FQNS.RELEASE_CONDITIONS.toString(), 0, PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.COMPLETED_DATE_TIME, 0]
+        [RELEASE_CONDITIONS_FQN, 0, PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.COMPLETED_DATE_TIME, 0]
       ));
 
     const bondShouldSubmit = !(defaultBond.getIn([PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.COMPLETED_DATE_TIME, 0]))
@@ -953,23 +968,23 @@ class SelectReleaseConditions extends React.Component<Props, State> {
     this.setState({ modifyingHearing: false });
     const dateFormat = 'MM/DD/YYYY';
     const timeFormat = 'hh:mm a';
-    const date = moment(newHearingDate);
+    const date = newHearingDate ? moment(newHearingDate) : moment(dateTime);
     const time = moment(rawTime, timeFormat);
     const hearingDateTime = moment(
       `${date.format(dateFormat)} ${time.format(timeFormat)}`, `${dateFormat} ${timeFormat}`
     );
 
-    const associationEntitySetId = getEntitySetId(app, APP_TYPES_FQNS.ASSESSED_BY.toString(), selectedOrganizationId);
-    const srcEntitySetId = getEntitySetId(app, APP_TYPES_FQNS.JUDGES.toString(), selectedOrganizationId);
-    const hearingEntitySetId = getEntitySetId(app, APP_TYPES_FQNS.HEARINGS.toString(), selectedOrganizationId);
+    const associationEntitySetId = getEntitySetId(app, ASSESSED_BY, selectedOrganizationId);
+    const srcEntitySetId = getEntitySetId(app, JUDGES, selectedOrganizationId);
+    const hearingEntitySetId = getEntitySetId(app, HEARINGS, selectedOrganizationId);
 
-    const associationEntitySetName = APP_TYPES_FQNS.ASSESSED_BY.toString();
+    const associationEntitySetName = ASSESSED_BY;
     const associationEntityKeyId = judgeEntity
       ? judgeEntity.getIn([PSA_ASSOCIATION.DETAILS, OPENLATTICE_ID_FQN, 0])
       : null;
-    const srcEntitySetName = APP_TYPES_FQNS.JUDGES.toString();
+    const srcEntitySetName = JUDGES;
     const srcEntityKeyId = judgeId;
-    const dstEntitySetName = APP_TYPES_FQNS.HEARINGS.toString();
+    const dstEntitySetName = HEARINGS;
     const dstEntityKeyId = hearingEntityKeyId;
     if (judgeIsOther && judgeEntitySetId) {
       deleteEntity({
@@ -988,11 +1003,11 @@ class SelectReleaseConditions extends React.Component<Props, State> {
         associationEntitySetName,
         associationEntityKeyId,
         srcEntitySetName,
+        srcEntitySetId,
         srcEntityKeyId,
         dstEntitySetName,
         dstEntityKeyId,
         associationEntitySetId,
-        srcEntitySetId,
         dstEntitySetId: hearingEntitySetId,
         callback: refreshHearingsNeighborsCallback
       });
@@ -1006,7 +1021,7 @@ class SelectReleaseConditions extends React.Component<Props, State> {
         .toJS();
       replace({
         entitySetId: hearingEntitySetId,
-        entitySetName: APP_TYPES_FQNS.HEARINGS.toString(),
+        entitySetName: HEARINGS,
         entityKeyId: hearingEntityKeyId,
         values: newHearing,
         callback: submitCallback
