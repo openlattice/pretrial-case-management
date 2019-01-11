@@ -139,6 +139,7 @@ type Props = {
   hearingIdsRefreshing :Set<*, *>,
   hearingNeighborsById :Map<*, *>,
   neighbors :Map<*, *>,
+  psaIdsRefreshing :Map<*, *>,
   psaId :string,
   psaEntityKeyId :string,
   personId :string,
@@ -146,6 +147,8 @@ type Props = {
   context :string,
   refreshingNeighbors :boolean,
   readOnly :boolean,
+  replacingAssociation :boolean,
+  replacingEntity :boolean,
   selectedOrganizationId :string,
   actions :{
     deleteEntity :(values :{
@@ -435,19 +438,26 @@ class SelectHearingsContainer extends React.Component<Props, State> {
       neighbors,
       hearingIdsRefreshing,
       submitting,
+      psaIdsRefreshing,
       refreshingNeighbors,
+      replacingAssociation,
+      replacingEntity,
       hearingNeighborsById
     } = this.props;
     const hearingsWithOutcomes = hearingNeighborsById
       .keySeq().filter(id => hearingNeighborsById.getIn([id, OUTCOMES]));
     const scheduledHearings = getScheduledHearings(neighbors);
     const pastHearings = getPastHearings(neighbors);
-
-    if (submitting || refreshingNeighbors || hearingIdsRefreshing) {
+    if (submitting
+      || replacingEntity
+      || replacingAssociation
+      || refreshingNeighbors
+      || psaIdsRefreshing.size
+      || hearingIdsRefreshing) {
       return (
         <Wrapper>
           <SubmittingWrapper>
-            <span>{ submitting ? 'Submitting' : 'Reloading' }</span>
+            <span>{ (submitting || replacingEntity || replacingAssociation) ? 'Submitting' : 'Reloading' }</span>
             <LoadingSpinner />
           </SubmittingWrapper>
         </Wrapper>
@@ -489,15 +499,19 @@ function mapStateToProps(state) {
     [APP.SELECTED_ORG_ID]: orgId,
     [APP.ENTITY_SETS_BY_ORG]: app.get(APP.ENTITY_SETS_BY_ORG, Map()),
 
-    [REVIEW.SCORES]: review.get(REVIEW.SCORES),
-    [REVIEW.NEIGHBORS_BY_ID]: review.get(REVIEW.NEIGHBORS_BY_ID),
     [COURT.LOADING_HEARING_NEIGHBORS]: court.get(COURT.LOADING_HEARING_NEIGHBORS),
     [COURT.HEARINGS_NEIGHBORS_BY_ID]: court.get(COURT.HEARINGS_NEIGHBORS_BY_ID),
     [COURT.ALL_JUDGES]: court.get(COURT.ALL_JUDGES),
     [COURT.HEARING_IDS_REFRESHING]: court.get(COURT.HEARING_IDS_REFRESHING),
+
+    [REVIEW.SCORES]: review.get(REVIEW.SCORES),
+    [REVIEW.NEIGHBORS_BY_ID]: review.get(REVIEW.NEIGHBORS_BY_ID),
     [REVIEW.LOADING_RESULTS]: review.get(REVIEW.LOADING_RESULTS),
     [REVIEW.ERROR]: review.get(REVIEW.ERROR),
+    [REVIEW.PSA_IDS_REFRESHING]: review.get(REVIEW.PSA_IDS_REFRESHING),
 
+    [SUBMIT.REPLACING_ENTITY]: submit.get(SUBMIT.REPLACING_ENTITY),
+    [SUBMIT.REPLACING_ASSOCIATION]: submit.get(SUBMIT.REPLACING_ASSOCIATION),
     [SUBMIT.SUBMITTING]: submit.get(SUBMIT.SUBMITTING)
   };
 }
