@@ -186,7 +186,6 @@ const CloseModalX = styled.img.attrs({
   height: 16px;
   width: 16px;
   margin-left: 40px;
-
   &:hover {
     cursor: pointer;
   }
@@ -818,11 +817,8 @@ class PSAModal extends React.Component<Props, State> {
       scores,
       entityKeyId,
       personHearings,
-      psaPermissions,
-      loadingHearingNeighbors
+      psaPermissions
     } = this.props;
-
-    if (loadingHearingNeighbors) return <SpinnerWrapper><LoadingSpinner /></SpinnerWrapper>;
 
     return (
       <ModalWrapper withPadding>
