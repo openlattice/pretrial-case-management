@@ -65,7 +65,6 @@ function submitReducer(state :Immutable.Map<*, *> = INITIAL_STATE, action :Objec
           .set(SUBMIT.ERROR, ''),
         SUCCESS: () => state
           .set(SUBMIT.REPLACE_ASSOCIATION_SUCCESS, true)
-          .set(SUBMIT.REPLACING_ASSOCIATION, true)
           .set(SUBMIT.ERROR, ''),
         FAILURE: () => state
           .set(SUBMIT.REPLACE_ASSOCIATION_SUCCESS, false)
