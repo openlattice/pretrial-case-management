@@ -4,7 +4,7 @@
 import { Constants } from 'lattice';
 import { Map, List, fromJS } from 'immutable';
 
-import { APP_TYPES_FQNS } from '../../utils/consts/DataModelConsts';
+import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_MODAL, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { loadPSAModal, CLEAR_PSA_MODAL } from './PSAModalActionFactory';
 import { loadHearingNeighbors, refreshHearingNeighbors } from '../court/CourtActionFactory';
@@ -21,6 +21,7 @@ let {
   DMF_RISK_FACTORS,
   DMF_RESULTS,
   HEARINGS,
+  PEOPLE,
   PSA_RISK_FACTORS,
   RELEASE_RECOMMENDATIONS,
   PSA_SCORES
@@ -29,6 +30,7 @@ let {
 DMF_RISK_FACTORS = DMF_RISK_FACTORS.toString();
 DMF_RESULTS = DMF_RESULTS.toString();
 HEARINGS = HEARINGS.toString();
+PEOPLE = PEOPLE.toString();
 PSA_RISK_FACTORS = PSA_RISK_FACTORS.toString();
 RELEASE_RECOMMENDATIONS = RELEASE_RECOMMENDATIONS.toString();
 PSA_SCORES = PSA_SCORES.toString();
@@ -66,8 +68,10 @@ export default function psaModalReducer(state :Map<*, *> = INITIAL_STATE, action
             hearingIds,
             psaPermissions
           } = action.value;
+          const personId = neighborsByAppTypeFqn.getIn([PEOPLE, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.PERSON_ID, 0], '');
           return state
             .set(PSA_MODAL.PSA_ID, psaId)
+            .set(PSA_MODAL.PERSON_ID, personId)
             .set(PSA_MODAL.PSA_NEIGHBORS, neighborsByAppTypeFqn)
             .set(PSA_MODAL.HEARINGS, neighborsByAppTypeFqn.get(HEARINGS, List()))
             .set(PSA_MODAL.PSA_PERMISSIONS, psaPermissions)
