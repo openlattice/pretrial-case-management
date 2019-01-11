@@ -820,7 +820,6 @@ class PSAModal extends React.Component<Props, State> {
       personId,
       psaPermissions
     } = this.props;
-    console.log(personId);
 
     return (
       <ModalWrapper withPadding>
