@@ -205,9 +205,9 @@ function* getPersonNeighborsWorker(action) :Generator<*, *, *> {
         const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
         const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
         if (appTypeFqn === STAFF) {
-          mostRecentPSANeighborsByAppTypeFqn = mostRecentPSANeighborsByAppTypeFqn.set(
+          neighbors = neighbors.set(
             appTypeFqn,
-            mostRecentPSANeighborsByAppTypeFqn.get(appTypeFqn, List()).push(neighbor)
+            neighbors.get(appTypeFqn, List()).push(neighbor)
           );
         }
         else {

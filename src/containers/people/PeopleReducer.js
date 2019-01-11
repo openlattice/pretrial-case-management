@@ -151,11 +151,7 @@ export default function peopleReducer(state = INITIAL_STATE, action) {
 
     case refreshHearingNeighbors.case(action.type): {
       return refreshHearingNeighbors.reducer(state, action, {
-        SUCCESS: () => {
-          const { neighbors } = action.value;
-          const nextNeighbors = state.get(PEOPLE.MOST_RECENT_PSA_NEIGHBORS).merge(neighbors);
-          return state.set(PEOPLE.MOST_RECENT_PSA_NEIGHBORS, nextNeighbors);
-        }
+        SUCCESS: () => state.set(PEOPLE.MOST_RECENT_PSA_NEIGHBORS, action.value.neighbors)
       });
     }
 
