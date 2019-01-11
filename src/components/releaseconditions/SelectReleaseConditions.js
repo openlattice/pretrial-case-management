@@ -64,18 +64,6 @@ const {
   NO_CONTACT_PEOPLE
 } = RELEASE_CONDITIONS;
 
-let {
-  ASSESSED_BY,
-  BONDS,
-  HEARINGS,
-  JUDGES,
-} = APP_TYPES_FQNS;
-
-ASSESSED_BY = ASSESSED_BY.toString();
-BONDS = BONDS.toString();
-HEARINGS = HEARINGS.toString();
-JUDGES = JUDGES.toString();
-
 const NO_RELEASE_CONDITION = 'No release';
 
 const Wrapper = styled.div`
@@ -631,7 +619,7 @@ class SelectReleaseConditions extends React.Component<Props, State> {
 
 
     const bondTime = defaultBond.getIn([PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.COMPLETED_DATE_TIME, 0],
-      neighbors.getIn([BONDS, PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.COMPLETED_DATE_TIME, 0]));
+      neighbors.getIn([APP_TYPES_FQNS.BONDS.toString(), PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.COMPLETED_DATE_TIME, 0]));
     const conditionsTime = defaultConditions.getIn([0, PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.COMPLETED_DATE_TIME, 0],
       neighbors.getIn(
         [APP_TYPES_FQNS.RELEASE_CONDITIONS.toString(), 0, PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.COMPLETED_DATE_TIME, 0]
@@ -971,17 +959,17 @@ class SelectReleaseConditions extends React.Component<Props, State> {
       `${date.format(dateFormat)} ${time.format(timeFormat)}`, `${dateFormat} ${timeFormat}`
     );
 
-    const associationEntitySetId = getEntitySetId(app, ASSESSED_BY, selectedOrganizationId);
-    const srcEntitySetId = getEntitySetId(app, JUDGES, selectedOrganizationId);
-    const hearingEntitySetId = getEntitySetId(app, HEARINGS, selectedOrganizationId);
+    const associationEntitySetId = getEntitySetId(app, APP_TYPES_FQNS.ASSESSED_BY.toString(), selectedOrganizationId);
+    const srcEntitySetId = getEntitySetId(app, APP_TYPES_FQNS.JUDGES.toString(), selectedOrganizationId);
+    const hearingEntitySetId = getEntitySetId(app, APP_TYPES_FQNS.HEARINGS.toString(), selectedOrganizationId);
 
-    const associationEntitySetName = ASSESSED_BY;
+    const associationEntitySetName = APP_TYPES_FQNS.ASSESSED_BY.toString();
     const associationEntityKeyId = judgeEntity
       ? judgeEntity.getIn([PSA_ASSOCIATION.DETAILS, OPENLATTICE_ID_FQN, 0])
       : null;
-    const srcEntitySetName = JUDGES;
+    const srcEntitySetName = APP_TYPES_FQNS.JUDGES.toString();
     const srcEntityKeyId = judgeId;
-    const dstEntitySetName = HEARINGS;
+    const dstEntitySetName = APP_TYPES_FQNS.HEARINGS.toString();
     const dstEntityKeyId = hearingEntityKeyId;
     if (judgeIsOther && judgeEntitySetId) {
       deleteEntity({
@@ -1018,7 +1006,7 @@ class SelectReleaseConditions extends React.Component<Props, State> {
         .toJS();
       replace({
         entitySetId: hearingEntitySetId,
-        entitySetName: HEARINGS,
+        entitySetName: APP_TYPES_FQNS.HEARINGS.toString(),
         entityKeyId: hearingEntityKeyId,
         values: newHearing,
         callback: submitCallback
