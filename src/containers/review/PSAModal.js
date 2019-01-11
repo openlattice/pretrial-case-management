@@ -818,11 +818,8 @@ class PSAModal extends React.Component<Props, State> {
       scores,
       entityKeyId,
       personHearings,
-      psaPermissions,
-      loadingHearingNeighbors
+      psaPermissions
     } = this.props;
-
-    if (loadingHearingNeighbors) return <SpinnerWrapper><LoadingSpinner /></SpinnerWrapper>;
 
     return (
       <ModalWrapper withPadding>
