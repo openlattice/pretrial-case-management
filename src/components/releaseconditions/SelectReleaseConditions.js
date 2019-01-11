@@ -52,17 +52,18 @@ const { RELEASE_CONDITIONS_FIELD } = LIST_FIELDS;
 const { OPENLATTICE_ID_FQN } = Constants;
 
 let {
-  BONDS,
-  HEARINGS,
   ASSESSED_BY,
-  JUDGES
+  BONDS,
+  JUDGES,
+  HEARINGS
 } = APP_TYPES_FQNS;
+
 const RELEASE_CONDITIONS_FQN = APP_TYPES_FQNS.RELEASE_CONDITIONS.toString();
 
-BONDS = BONDS.toString();
-HEARINGS = HEARINGS.toString();
 ASSESSED_BY = ASSESSED_BY.toString();
+BONDS = BONDS.toString();
 JUDGES = JUDGES.toString();
+HEARINGS = HEARINGS.toString();
 
 const {
   OUTCOME,
@@ -248,6 +249,7 @@ type Props = {
   neighbors :Immutable.Map<*, *>,
   personId :string,
   psaId :string,
+  selectedOrganizationId :string,
   replace :(value :{ entitySetName :string, entityKeyId :string, values :Object }) => void,
   submit :(value :{ app :Map<*,*>, config :Object, values :Object, callback? :() => void }) => void,
   replaceAssociation :(values :{
@@ -929,7 +931,6 @@ class SelectReleaseConditions extends React.Component<Props, State> {
   handleHearingUpdate = () => {
     const {
       app,
-      selectedOrganizationId,
       hearing,
       replace,
       submitCallback,
@@ -939,7 +940,8 @@ class SelectReleaseConditions extends React.Component<Props, State> {
       judgeName,
       replaceAssociation,
       refreshHearingsNeighborsCallback,
-      deleteEntity
+      deleteEntity,
+      selectedOrganizationId
     } = this.props;
     const {
       judge,
@@ -999,9 +1001,11 @@ class SelectReleaseConditions extends React.Component<Props, State> {
         associationEntitySetId,
         associationEntityKeyId,
         srcEntitySetName,
+        srcEntitySetId,
         srcEntityKeyId,
         srcEntitySetId,
         dstEntitySetName,
+        dstEntitySetId: hearingsEntitySetId,
         dstEntityKeyId,
         callback: refreshHearingsNeighborsCallback,
         dstEntitySetId: hearingsEntitySetId

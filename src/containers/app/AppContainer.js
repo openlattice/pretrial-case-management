@@ -23,12 +23,14 @@ import { OL } from '../../utils/consts/Colors';
 
 import * as Routes from '../../core/router/Routes';
 import * as AppActionFactory from './AppActionFactory';
+import * as CourtActionFactory from '../court/CourtActionFactory';
 import * as ChargesActionFactory from '../charges/ChargesActionFactory';
 
 const { logout } = AuthActionFactory;
 const { getAllPropertyTypes } = EntityDataModelApiActions;
 
 const {
+  JUDGES,
   ARREST_CHARGE_LIST,
   COURT_CHARGE_LIST
 } = APP_TYPES_FQNS;
@@ -90,12 +92,18 @@ class AppContainer extends React.Component<Props, *> {
         const courtChargesEntitySetId = app.getIn(
           [COURT_CHARGE_LIST.toString(), APP.ENTITY_SETS_BY_ORG, selectedOrgId]
         );
+        const judgesEntitySetId = app.getIn(
+          [JUDGES.toString(), APP.ENTITY_SETS_BY_ORG, selectedOrgId]
+        );
         if (arrestChargesEntitySetId && courtChargesEntitySetId) {
           actions.loadCharges({
             arrestChargesEntitySetId,
             courtChargesEntitySetId,
             selectedOrgId
           });
+        }
+        if (judgesEntitySetId) {
+          actions.loadJudges();
         }
       });
     }
@@ -172,6 +180,10 @@ function mapDispatchToProps(dispatch :Function) :Object {
 
   Object.keys(AppActionFactory).forEach((action :string) => {
     actions[action] = AppActionFactory[action];
+  });
+
+  Object.keys(CourtActionFactory).forEach((action :string) => {
+    actions[action] = CourtActionFactory[action];
   });
 
   Object.keys(ChargesActionFactory).forEach((action :string) => {
