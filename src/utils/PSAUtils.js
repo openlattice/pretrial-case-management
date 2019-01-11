@@ -41,12 +41,13 @@ export const sortByName = ([id1, neighbor1], [id2, neighbor2]) => {
   return sortPeopleByName(p1, p2);
 };
 
-export const sortByDate = ([id1, neighbor1], [id2, neighbor2]) => {
+export const sortByDate = ([id1, neighbor1], [id2, neighbor2], entitySetsByOrganization) => {
   let latest1;
   let latest2;
 
   const getDate = (neighborObj, latest) => {
-    const associationName = neighborObj.getIn([PSA_ASSOCIATION.ENTITY_SET, 'name']);
+    const associationId = neighborObj.getIn([PSA_ASSOCIATION.ENTITY_SET, 'id']);
+    const associationName = entitySetsByOrganization.get(associationId);
     const ptFqn = associationName === ASSESSED_BY
       ? PROPERTY_TYPES.COMPLETED_DATE_TIME : PROPERTY_TYPES.DATE_TIME;
     const date = moment(neighborObj.getIn([PSA_ASSOCIATION.DETAILS, ptFqn, 0], ''));
