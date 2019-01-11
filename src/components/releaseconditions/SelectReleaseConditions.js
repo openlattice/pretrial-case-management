@@ -250,7 +250,7 @@ type Props = {
   psaId :string,
   selectedOrganizationId :string,
   replace :(value :{ entitySetName :string, entityKeyId :string, values :Object }) => void,
-  submit :(value :{ app :Map<*,*>, config :Object, values :Object, callback? :() => void }) => void,
+  submit :(value :{ app :Map<*, *>, config :Object, values :Object, callback? :() => void }) => void,
   replaceAssociation :(values :{
     associationEntity :Map<*, *>,
     associationEntitySetName :string,
