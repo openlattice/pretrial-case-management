@@ -248,6 +248,7 @@ type Props = {
   neighbors :Immutable.Map<*, *>,
   personId :string,
   psaId :string,
+  selectedOrganizationId :string,
   replace :(value :{ entitySetName :string, entityKeyId :string, values :Object }) => void,
   submit :(value :{ app :Map<*,*>, config :Object, values :Object, callback? :() => void }) => void,
   replaceAssociation :(values :{
@@ -965,7 +966,7 @@ class SelectReleaseConditions extends React.Component<Props, State> {
     this.setState({ modifyingHearing: false });
     const dateFormat = 'MM/DD/YYYY';
     const timeFormat = 'hh:mm a';
-    const date = moment(newHearingDate);
+    const date = newHearingDate ? moment(newHearingDate) : moment(dateTime);
     const time = moment(rawTime, timeFormat);
     const hearingDateTime = moment(
       `${date.format(dateFormat)} ${time.format(timeFormat)}`, `${dateFormat} ${timeFormat}`
@@ -1060,7 +1061,8 @@ class SelectReleaseConditions extends React.Component<Props, State> {
       date = (
         <DatePicker
             paddingTop
-            value={newHearingDate || dateTime}
+            defaultValue={moment(newHearingDate || dateTime).toISOString(true)}
+            value={moment(newHearingDate || dateTime).toISOString(true)}
             placeholder={`${formatDateTime(dateTime, 'MM/DD/YYYY')}`}
             onChange={newDate => this.setState({ newHearingDate: newDate })}
             clearButton={false} />
