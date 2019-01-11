@@ -71,7 +71,6 @@ let {
   JUDGES,
 } = APP_TYPES_FQNS;
 
-const RELEASE_CONDITIONS_FQN = APP_TYPES_FQNS.RELEASE_CONDITIONS.toString();
 ASSESSED_BY = ASSESSED_BY.toString();
 BONDS = BONDS.toString();
 HEARINGS = HEARINGS.toString();
@@ -635,7 +634,7 @@ class SelectReleaseConditions extends React.Component<Props, State> {
       neighbors.getIn([BONDS, PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.COMPLETED_DATE_TIME, 0]));
     const conditionsTime = defaultConditions.getIn([0, PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.COMPLETED_DATE_TIME, 0],
       neighbors.getIn(
-        [RELEASE_CONDITIONS_FQN, 0, PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.COMPLETED_DATE_TIME, 0]
+        [APP_TYPES_FQNS.RELEASE_CONDITIONS.toString(), 0, PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.COMPLETED_DATE_TIME, 0]
       ));
 
     const bondShouldSubmit = !(defaultBond.getIn([PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.COMPLETED_DATE_TIME, 0]))
@@ -971,16 +970,18 @@ class SelectReleaseConditions extends React.Component<Props, State> {
     const hearingDateTime = moment(
       `${date.format(dateFormat)} ${time.format(timeFormat)}`, `${dateFormat} ${timeFormat}`
     );
-    const associationEntitySetName = ASSESSED_BY;
+
     const associationEntitySetId = getEntitySetId(app, ASSESSED_BY, selectedOrganizationId);
+    const srcEntitySetId = getEntitySetId(app, JUDGES, selectedOrganizationId);
+    const hearingEntitySetId = getEntitySetId(app, HEARINGS, selectedOrganizationId);
+
+    const associationEntitySetName = ASSESSED_BY;
     const associationEntityKeyId = judgeEntity
       ? judgeEntity.getIn([PSA_ASSOCIATION.DETAILS, OPENLATTICE_ID_FQN, 0])
       : null;
     const srcEntitySetName = JUDGES;
-    const srcEntitySetId = getEntitySetId(app, JUDGES, selectedOrganizationId);
     const srcEntityKeyId = judgeId;
     const dstEntitySetName = HEARINGS;
-    const hearingEntitySetId = getEntitySetId(app, HEARINGS, selectedOrganizationId);
     const dstEntityKeyId = hearingEntityKeyId;
     if (judgeIsOther && judgeEntitySetId) {
       deleteEntity({
@@ -998,12 +999,12 @@ class SelectReleaseConditions extends React.Component<Props, State> {
         associationEntity,
         associationEntitySetName,
         associationEntityKeyId,
-        associationEntitySetId,
         srcEntitySetName,
         srcEntityKeyId,
-        srcEntitySetId,
         dstEntitySetName,
         dstEntityKeyId,
+        associationEntitySetId,
+        srcEntitySetId,
         dstEntitySetId: hearingEntitySetId,
         callback: refreshHearingsNeighborsCallback
       });
@@ -1016,9 +1017,9 @@ class SelectReleaseConditions extends React.Component<Props, State> {
         .set(PROPERTY_TYPES.HEARING_COMMENTS, judgeText)
         .toJS();
       replace({
+        entitySetId: hearingEntitySetId,
         entitySetName: HEARINGS,
         entityKeyId: hearingEntityKeyId,
-        entitySetId: hearingEntitySetId,
         values: newHearing,
         callback: submitCallback
       });
