@@ -163,7 +163,6 @@ type Props = {
   psaNeighborsByDate :Immutable.Map<*, Immutable.Map<*, *>>,
   loadingResults :boolean,
   errorMessage :string,
-  location :Object,
   actions :{
     loadPSAsByDate :(filter :string) => void
   },
@@ -204,7 +203,8 @@ class ReviewPSA extends React.Component<Props, State> {
       },
       sort: SORT_TYPES.NAME,
       status: 'OPEN',
-      domain: ''
+      domain: '',
+      start: 0
     };
   }
 
@@ -242,7 +242,7 @@ class ReviewPSA extends React.Component<Props, State> {
   };
 
   componentWillReceiveProps(nextProps) {
-    const { psaNeighborsByDate, psaNeighborsById } = nextProps;
+    const { psaNeighborsByDate } = nextProps;
     const { location } = nextProps;
     const path = location.pathname;
     const pathsDoNotMatch = path !== this.props.location.pathname;
@@ -254,13 +254,8 @@ class ReviewPSA extends React.Component<Props, State> {
       this.resetState(FILTER_TYPE.SEARCH, '');
       this.switchToSearch();
     }
-    if (psaNeighborsByDate.size && path.endsWith(Routes.REVIEW_REPORTS)) {
-      this.switchToViewAll();
+    if (psaNeighborsByDate.size) {
       this.setState({ options: psaNeighborsByDate });
-    }
-    if (psaNeighborsById.size && path.endsWith(Routes.SEARCH_FORMS)) {
-      this.setState({ options: psaNeighborsByDate });
-      this.switchToSearch();
     }
     this.handleFilterRequest();
   }

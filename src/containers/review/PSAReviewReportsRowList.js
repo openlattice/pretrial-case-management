@@ -43,10 +43,9 @@ import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
 import * as DataActionFactory from '../../utils/data/DataActionFactory';
 
 const { PSA_SCORES } = APP_TYPES_FQNS;
-let { ASSESSED_BY } = APP_TYPES_FQNS;
+
 const peopleFqn :string = APP_TYPES_FQNS.PEOPLE.toString();
 const psaScoresFqn :string = PSA_SCORES.toString();
-ASSESSED_BY = ASSESSED_BY.toString();
 
 const StyledCenteredContainer = styled.div`
   text-align: center;
@@ -124,7 +123,6 @@ type Props = {
   sort? :?string,
   component :?string,
   entitySetsByOrganization :Map<*, *>,
-  entitySetIdsToAppType :Map<*, *>,
   hideCaseHistory? :boolean,
   hearingIds :Set<*>,
   filterType :string,
@@ -343,18 +341,11 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
   }
 
   sortItems = () => {
-    const {
-      sort,
-      scoreSeq,
-      psaNeighborsById,
-      entitySetsByOrganization
-    } = this.props;
+    const { sort, scoreSeq, psaNeighborsById } = this.props;
     if (!sort) return scoreSeq;
     const sortFn = sort === SORT_TYPES.DATE ? sortByDate : sortByName;
     return scoreSeq.sort(([id1], [id2]) => sortFn(
-      [id1, psaNeighborsById.get(id1, Map())],
-      [id2, psaNeighborsById.get(id2, Map())],
-      entitySetsByOrganization
+      [id1, psaNeighborsById.get(id1, Map())], [id2, psaNeighborsById.get(id2, Map())]
     ));
   }
 
