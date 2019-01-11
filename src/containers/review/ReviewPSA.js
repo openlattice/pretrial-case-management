@@ -452,7 +452,6 @@ class ReviewPSA extends React.Component<Props, State> {
     const { firstName, lastName, dob } = filters;
     if (!firstName.length && !lastName.length) return Immutable.List();
     const notAllStatus = status !== 'ALL';
-    console.log(options);
 
     const personResults = options.entrySeq().filter(([scoreId, neighbors]) => {
       if (!this.domainMatch(neighbors)) return false;
