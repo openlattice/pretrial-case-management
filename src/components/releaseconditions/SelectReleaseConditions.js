@@ -953,7 +953,7 @@ class SelectReleaseConditions extends React.Component<Props, State> {
     this.setState({ modifyingHearing: false });
     const dateFormat = 'MM/DD/YYYY';
     const timeFormat = 'hh:mm a';
-    const date = newHearingDate ? moment(newHearingDate) : moment(dateTime);
+    const date = moment(newHearingDate);
     const time = moment(rawTime, timeFormat);
     const hearingDateTime = moment(
       `${date.format(dateFormat)} ${time.format(timeFormat)}`, `${dateFormat} ${timeFormat}`
