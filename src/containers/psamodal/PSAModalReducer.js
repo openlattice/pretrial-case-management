@@ -4,7 +4,7 @@
 import { Constants } from 'lattice';
 import { Map, List, fromJS } from 'immutable';
 
-import { APP_TYPES_FQNS } from '../../utils/consts/DataModelConsts';
+import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_MODAL, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { loadPSAModal, CLEAR_PSA_MODAL } from './PSAModalActionFactory';
 import { loadHearingNeighbors, refreshHearingNeighbors } from '../court/CourtActionFactory';
@@ -68,7 +68,7 @@ export default function psaModalReducer(state :Map<*, *> = INITIAL_STATE, action
             hearingIds,
             psaPermissions
           } = action.value;
-          const personId = neighborsByAppTypeFqn.getIn([PEOPLE, PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0], '');
+          const personId = neighborsByAppTypeFqn.getIn([PEOPLE, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.PERSON_ID, 0], '');
           return state
             .set(PSA_MODAL.PSA_ID, psaId)
             .set(PSA_MODAL.PERSON_ID, personId)
