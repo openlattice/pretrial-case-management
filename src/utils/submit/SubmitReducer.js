@@ -38,7 +38,7 @@ function submitReducer(state :Immutable.Map<*, *> = INITIAL_STATE, action :Objec
           .set(SUBMIT.REPLACE_ENTITY_SUCCESS, true)
           .set(SUBMIT.ERROR, ''),
         FAILURE: () => state
-          .set(SUBMIT.REPLACE_ENTITY_SUCCESS, true)
+          .set(SUBMIT.REPLACE_ENTITY_SUCCESS, false)
           .set(SUBMIT.ERROR, action.value),
         FINALLY: () => state.set(SUBMIT.REPLACING_ENTITY, false)
       });
