@@ -825,10 +825,10 @@ class PSAModal extends React.Component<Props, State> {
     return (
       <ModalWrapper withPadding>
         <SelectHearingsContainer
+            {...this.props}
             psaHearings={hearings}
             submitting={submitting}
             refreshingNeighbors={refreshingNeighbors}
-            psaId={scores.getIn([PROPERTY_TYPES.GENERAL_ID, 0])}
             dmfId={this.getIdOrValue(DMF_RESULTS)}
             personId={personId}
             psaEntityKeyId={entityKeyId}
@@ -844,7 +844,7 @@ class PSAModal extends React.Component<Props, State> {
             defaultBond={psaNeighbors.getIn([BONDS, PSA_NEIGHBOR.DETAILS], Map())}
             defaultConditions={psaNeighbors.get(RELEASE_CONDITIONS, List())
               .map(neighbor => neighbor.get(PSA_NEIGHBOR.DETAILS, Map()))}
-            {...this.props} />
+            psaId={scores.getIn([PROPERTY_TYPES.GENERAL_ID, 0])} />
       </ModalWrapper>
     );
   }
