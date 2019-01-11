@@ -817,8 +817,10 @@ class PSAModal extends React.Component<Props, State> {
       scores,
       entityKeyId,
       personHearings,
+      personId,
       psaPermissions
     } = this.props;
+    console.log(personId);
 
     return (
       <ModalWrapper withPadding>
@@ -828,6 +830,7 @@ class PSAModal extends React.Component<Props, State> {
             refreshingNeighbors={refreshingNeighbors}
             psaId={scores.getIn([PROPERTY_TYPES.GENERAL_ID, 0])}
             dmfId={this.getIdOrValue(DMF_RESULTS)}
+            personId={personId}
             psaEntityKeyId={entityKeyId}
             deleteHearing={this.deleteHearing}
             refreshPSANeighborsCallback={this.refreshPSANeighborsCallback}
