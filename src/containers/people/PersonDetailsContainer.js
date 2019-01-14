@@ -169,6 +169,11 @@ class PersonDetailsContainer extends React.Component<Props, State> {
     }
   }
 
+  componentWillUnmount() {
+    const { actions } = this.props;
+    actions.clearPerson();
+  }
+
   refreshPSANeighborsCallback = () => {
     const { actions, mostRecentPSA } = this.props;
     const mostRecentPSAEntityKeyId = getEntityKeyId(mostRecentPSA.get(PSA_NEIGHBOR.DETAILS, Map()));
