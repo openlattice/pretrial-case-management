@@ -14,6 +14,7 @@ import { refreshHearingNeighbors } from '../court/CourtActionFactory';
 import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PEOPLE, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import {
+  CLEAR_PERSON,
   getPeople,
   getPersonData,
   getPersonNeighbors,
@@ -46,6 +47,11 @@ const INITIAL_STATE = fromJS({
 
 export default function peopleReducer(state = INITIAL_STATE, action) {
   switch (action.type) {
+
+    case CLEAR_PERSON: {
+      return INITIAL_STATE;
+    }
+
     case changePSAStatus.case(action.type): {
       return changePSAStatus.reducer(state, action, {
         SUCCESS: () => {
