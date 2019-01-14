@@ -144,6 +144,23 @@ class NewChargeModal extends React.Component<Props, State> {
     }
   }
 
+  componentWillReceiveProps(nextProps) {
+    const { open } = this.props;
+    if (open && !nextProps.open) {
+      this.setState({
+        [PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE]: '',
+        [PROPERTY_TYPES.REFERENCE_CHARGE_DESCRIPTION]: '',
+        [PROPERTY_TYPES.REFERENCE_CHARGE_DEGREE]: '',
+        [PROPERTY_TYPES.REFERENCE_CHARGE_LEVEL]: '',
+        [PROPERTY_TYPES.CHARGE_IS_VIOLENT]: false,
+        [PROPERTY_TYPES.CHARGE_DMF_STEP_2]: false,
+        [PROPERTY_TYPES.CHARGE_DMF_STEP_4]: false,
+        [PROPERTY_TYPES.BHE]: false,
+        [PROPERTY_TYPES.BRE]: false
+      });
+    }
+  }
+
   updateState = (
     statute,
     description,
@@ -190,8 +207,8 @@ class NewChargeModal extends React.Component<Props, State> {
     const { chargeType } = this.props;
     const newStatute = state[PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE];
     const newDescription = state[PROPERTY_TYPES.REFERENCE_CHARGE_DESCRIPTION];
-    const newDegree = state[PROPERTY_TYPES.REFERENCE_CHARGE_DEGREE];
-    const newDegreeShort = state[PROPERTY_TYPES.REFERENCE_CHARGE_LEVEL];
+    const newDegree = state[PROPERTY_TYPES.REFERENCE_CHARGE_LEVEL];
+    const newDegreeShort = state[PROPERTY_TYPES.REFERENCE_CHARGE_DEGREE];
     const newIsViolent = state[PROPERTY_TYPES.CHARGE_IS_VIOLENT];
     const newIsStep2 = state[PROPERTY_TYPES.CHARGE_DMF_STEP_2];
     const newIsStep4 = state[PROPERTY_TYPES.CHARGE_DMF_STEP_4];
@@ -232,8 +249,17 @@ class NewChargeModal extends React.Component<Props, State> {
   }
 
   reloadChargesCallback = () => {
-    const { actions } = this.props;
-    actions.loadCharges();
+    const {
+      actions,
+      selectedOrganizationId,
+      arrestEntitySetId,
+      courtEntitySetId
+    } = this.props;
+    actions.loadCharges({
+      selectedOrgId: selectedOrganizationId,
+      arrestChargesEntitySetId: arrestEntitySetId,
+      courtChargesEntitySetId: courtEntitySetId
+    });
   }
 
   updateCharge = () => {
@@ -389,6 +415,7 @@ function mapStateToProps(state) {
   return {
     // App
     app,
+    [APP.SELECTED_ORG_ID]: orgId,
     arrestEntitySetId: getEntitySetId(app, arrestChargeListFqn, orgId),
     courtEntitySetId: getEntitySetId(app, courtChargeListFqn, orgId),
     [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
