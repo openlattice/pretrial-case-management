@@ -7,7 +7,6 @@ import styled from 'styled-components';
 import { Map, List } from 'immutable';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
-import { Constants } from 'lattice';
 import { Redirect, Route, Switch } from 'react-router-dom';
 
 import ClosePSAModal from '../../components/review/ClosePSAModal';
@@ -68,8 +67,6 @@ OUTCOMES = OUTCOMES.toString();
 DMF_RESULTS = DMF_RESULTS.toString();
 DMF_RISK_FACTORS = DMF_RISK_FACTORS.toString();
 RELEASE_CONDITIONS = RELEASE_CONDITIONS.toString();
-
-const { OPENLATTICE_ID_FQN } = Constants;
 
 const ToolbarWrapper = styled.div`
   display: flex;
