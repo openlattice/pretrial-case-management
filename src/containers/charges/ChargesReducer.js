@@ -1,8 +1,9 @@
 /*
  * @flow
  */
-import { Map, fromJS } from 'immutable';
+import { Map, Set, fromJS } from 'immutable';
 
+import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { CHARGES } from '../../utils/consts/FrontEndStateConsts';
 import { deleteCharge, loadCharges, updateCharge } from './ChargesActionFactory';
 
@@ -41,7 +42,75 @@ export default function chargesReducer(state :Map<*, *> = INITIAL_STATE, action 
             selectedOrganizationId,
             chargePropertyType
           } = action.value;
-          return state.setIn([chargePropertyType, selectedOrganizationId, entityKeyId], fromJS(entity));
+          const charge = fromJS(entity);
+          const statute = charge.getIn([PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE, 0], '');
+          const description = charge.getIn([PROPERTY_TYPES.REFERENCE_CHARGE_DESCRIPTION, 0], '');
+          let newState = state
+            .setIn([chargePropertyType, selectedOrganizationId, entityKeyId], charge);
+          if (charge.getIn([PROPERTY_TYPES.CHARGE_IS_VIOLENT, 0], false)) {
+            if (chargePropertyType === CHARGES.ARREST) {
+              newState = newState.setIn(
+                [CHARGES.ARREST_VIOLENT, selectedOrganizationId, statute],
+                newState.getIn([CHARGES.ARREST_VIOLENT, selectedOrganizationId, statute], Set()).add(description)
+              );
+            }
+            else if (chargePropertyType === CHARGES.COURT) {
+              newState = newState.setIn(
+                [CHARGES.COURT_VIOLENT, selectedOrganizationId, statute],
+                newState.getIn([CHARGES.ARREST_VIOLENT, selectedOrganizationId, statute], Set()).add(description)
+              );
+            }
+          }
+          if (charge.getIn([PROPERTY_TYPES.CHARGE_DMF_STEP_2, 0], false)) {
+            newState = newState.setIn(
+              [CHARGES.DMF_STEP_2, selectedOrganizationId, statute],
+              newState.getIn([CHARGES.DMF_STEP_2, selectedOrganizationId, statute], Set()).add(description)
+            );
+          }
+          else if (newState.getIn([CHARGES.DMF_STEP_2, selectedOrganizationId, statute])) {
+            newState = newState.setIn(
+              [CHARGES.DMF_STEP_2, selectedOrganizationId, statute],
+              newState.getIn([CHARGES.DMF_STEP_2, selectedOrganizationId, statute], Set()).delete(description)
+            );
+          }
+          if (charge.getIn([PROPERTY_TYPES.CHARGE_DMF_STEP_4, 0], false)) {
+            newState = newState.setIn(
+              [CHARGES.DMF_STEP_4, selectedOrganizationId, statute],
+              newState.getIn([CHARGES.DMF_STEP_4, selectedOrganizationId, statute], Set()).add(description)
+            );
+          }
+          else if (newState.getIn([CHARGES.DMF_STEP_4, selectedOrganizationId, statute])) {
+            newState = newState.setIn(
+              [CHARGES.DMF_STEP_4, selectedOrganizationId, statute],
+              newState.getIn([CHARGES.DMF_STEP_4, selectedOrganizationId, statute], Set()).delete(description)
+            );
+          }
+          if (charge.getIn([PROPERTY_TYPES.BRE, 0], false)) {
+            newState = newState.setIn(
+              [CHARGES.BRE, selectedOrganizationId, statute],
+              newState.getIn([CHARGES.BRE, selectedOrganizationId, statute], Set()).add(description)
+            );
+          }
+          else if (newState.getIn([CHARGES.BRE, selectedOrganizationId, statute])) {
+            newState = newState.setIn(
+              [CHARGES.BRE, selectedOrganizationId, statute],
+              newState.getIn([CHARGES.BRE, selectedOrganizationId, statute], Set()).delete(description)
+            );
+          }
+          if (charge.getIn([PROPERTY_TYPES.BHE, 0], false)) {
+            newState = newState.setIn(
+              [CHARGES.BHE, selectedOrganizationId, statute],
+              newState.getIn([CHARGES.BHE, selectedOrganizationId, statute], Set()).add(description)
+            );
+          }
+          else if (newState.getIn([CHARGES.BHE, selectedOrganizationId, statute])) {
+            newState = newState.setIn(
+              [CHARGES.BHE, selectedOrganizationId, statute],
+              newState.getIn([CHARGES.BHE, selectedOrganizationId, statute], Set()).delete(description)
+            );
+          }
+          console.log(newState.toJS());
+          return newState;
         }
       });
     }
