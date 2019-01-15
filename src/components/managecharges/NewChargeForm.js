@@ -214,6 +214,8 @@ class PersonContactInfo extends React.Component<Props, State> {
       ? 'CHARGE IS VIOLENT'
       : 'CHARGE IS NOT VIOLENT'
 
+    const confirmViolentDisabled = !(statute && description);
+
     description = description || '';
     degree = degree || '';
     degreeShort = degreeShort || '';
@@ -318,7 +320,8 @@ class PersonContactInfo extends React.Component<Props, State> {
                 label={confirmViolentText}
                 checked={confirmViolentCharge}
                 value="confirmViolentCharge"
-                onChange={handleCheckboxChange} />
+                onChange={handleCheckboxChange}
+                disabled={confirmViolentDisabled} />
           </CheckboxContainer>
         </InputRow>
         { this.renderButtons() }
