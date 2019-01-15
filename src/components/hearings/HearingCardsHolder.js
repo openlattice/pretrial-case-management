@@ -34,7 +34,7 @@ const Card = styled.div`
   width: 100%;
   border-radius: 5px;
   border: 1px solid ${OL.GREY11} !important;
-  padding: 15px 60px;
+  padding: 15px 20px;
   background-color: ${props => (props.selected ? OL.PURPLE06 : 'transparent')};
 
 
@@ -86,6 +86,7 @@ const HearingCardsHolder = ({
     const date = formatDateTime(dateTime, 'MM/DD/YYYY');
     const time = formatDateTime(dateTime, 'HH:mm');
     const courtroom = hearing.getIn([PROPERTY_TYPES.COURTROOM, 0], '');
+    const courtType = hearing.getIn([PROPERTY_TYPES.HEARING_TYPE, 0], '')
 
     const hearingId = hearing.getIn([PROPERTY_TYPES.CASE_ID, 0]);
     const entityKeyId :string = hearing.getIn([OPENLATTICE_ID_FQN, 0], '');
@@ -104,6 +105,10 @@ const HearingCardsHolder = ({
       {
         label: 'Courtroom',
         content: [courtroom]
+      },
+      {
+        label: 'Type',
+        content: [courtType]
       }
     ];
 

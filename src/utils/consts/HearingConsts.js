@@ -86,7 +86,7 @@ export const getJudgeOptions = (allJudges, jurisdiction) => {
 
 // Get hearings from psa neighbors
 export const getHearingsFromNeighbors = psaNeighbors => (
-  psaNeighbors.get(HEARINGS, Map())
+  psaNeighbors.get(HEARINGS) || psaNeighbors || Map()
 );
 
 // Get hearing ids from psa neighbors
