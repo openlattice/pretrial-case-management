@@ -95,6 +95,19 @@ type Props = {
   },
 }
 
+const INITIAL_STATE = {
+  confirmViolentCharge: false,
+  [PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE]: '',
+  [PROPERTY_TYPES.REFERENCE_CHARGE_DESCRIPTION]: '',
+  [PROPERTY_TYPES.REFERENCE_CHARGE_DEGREE]: '',
+  [PROPERTY_TYPES.REFERENCE_CHARGE_LEVEL]: '',
+  [PROPERTY_TYPES.CHARGE_IS_VIOLENT]: false,
+  [PROPERTY_TYPES.CHARGE_DMF_STEP_2]: false,
+  [PROPERTY_TYPES.CHARGE_DMF_STEP_4]: false,
+  [PROPERTY_TYPES.BHE]: false,
+  [PROPERTY_TYPES.BRE]: false
+};
+
 class NewChargeModal extends React.Component<Props, State> {
 
   static defaultProps = {
@@ -103,17 +116,7 @@ class NewChargeModal extends React.Component<Props, State> {
 
   constructor(props :Props) {
     super(props);
-    this.state = {
-      [PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE]: '',
-      [PROPERTY_TYPES.REFERENCE_CHARGE_DESCRIPTION]: '',
-      [PROPERTY_TYPES.REFERENCE_CHARGE_DEGREE]: '',
-      [PROPERTY_TYPES.REFERENCE_CHARGE_LEVEL]: '',
-      [PROPERTY_TYPES.CHARGE_IS_VIOLENT]: false,
-      [PROPERTY_TYPES.CHARGE_DMF_STEP_2]: false,
-      [PROPERTY_TYPES.CHARGE_DMF_STEP_4]: false,
-      [PROPERTY_TYPES.BHE]: false,
-      [PROPERTY_TYPES.BRE]: false
-    };
+    this.state = INITIAL_STATE;
   }
 
   componentDidMount() {
@@ -145,17 +148,7 @@ class NewChargeModal extends React.Component<Props, State> {
   }
 
   clearState = () => {
-    this.setState({
-      [PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE]: '',
-      [PROPERTY_TYPES.REFERENCE_CHARGE_DESCRIPTION]: '',
-      [PROPERTY_TYPES.REFERENCE_CHARGE_DEGREE]: '',
-      [PROPERTY_TYPES.REFERENCE_CHARGE_LEVEL]: '',
-      [PROPERTY_TYPES.CHARGE_IS_VIOLENT]: false,
-      [PROPERTY_TYPES.CHARGE_DMF_STEP_2]: false,
-      [PROPERTY_TYPES.CHARGE_DMF_STEP_4]: false,
-      [PROPERTY_TYPES.BHE]: false,
-      [PROPERTY_TYPES.BRE]: false
-    });
+    this.setState(INITIAL_STATE);
   }
 
   updateState = (
@@ -332,10 +325,11 @@ class NewChargeModal extends React.Component<Props, State> {
   }
 
   isReadyToSubmit = () :boolean => {
+    const { confirmViolentCharge } = this.state;
     const { state } = this;
     const statute = state[PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE];
     const description = state[PROPERTY_TYPES.REFERENCE_CHARGE_DESCRIPTION];
-    return !!(statute && description);
+    return !!(statute && description && confirmViolentCharge);
   }
 
   onInputChange = (e) => {
@@ -359,6 +353,7 @@ class NewChargeModal extends React.Component<Props, State> {
       existingCharge
     } = this.props;
     const { state } = this;
+    const { confirmViolentCharge } = this.state;
     return (
       <Wrapper>
         <ModalTransition>
@@ -396,6 +391,7 @@ class NewChargeModal extends React.Component<Props, State> {
                       handleOnChangeInput={this.onInputChange}
                       onSubmit={this.updateCharge}
                       readyToSubmit={this.isReadyToSubmit()}
+                      confirmViolentCharge={confirmViolentCharge}
                       modal />
                 </Body>
               </Modal>
