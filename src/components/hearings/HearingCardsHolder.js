@@ -50,7 +50,7 @@ const Notification = styled.div`
   background-color: ${OL.PURPLE02};
   border-radius: 50%;
   position: absolute;
-  transform: translateX(-200%) translateY(40%);
+  transform: translateX(-150%) translateY(-115%);
 `;
 
 const NoHearings = styled.div`

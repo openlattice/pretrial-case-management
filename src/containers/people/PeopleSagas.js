@@ -168,7 +168,9 @@ function* getPersonNeighborsWorker(action) :Generator<*, *, *> {
         const hearingExists = !!hearingDateTime && !!hearingId;
         const hearingHasBeenCancelled = hearingDetails.getIn([PROPERTY_TYPES.UPDATE_TYPE, 0], '')
           .toLowerCase().trim() === 'cancelled';
-        if (hearingExists && !hearingHasBeenCancelled) {
+        const hearingIsGeneric = hearingDetails.getIn([PROPERTY_TYPES.HEARING_TYPE, 0], '')
+          .toLowerCase().trim() === 'all other hearings';
+        if (hearingExists && !hearingHasBeenCancelled && !hearingIsGeneric) {
           neighborsByEntitySet = neighborsByEntitySet.set(
             appTypeFqn,
             neighborsByEntitySet.get(appTypeFqn, List()).push(hearingDetails)
