@@ -193,10 +193,13 @@ function* loadHearingsForDateWorker(action :SequenceAction) :Generator<*, *, *> 
         const hearingId = hearing.getIn([OPENLATTICE_ID_FQN, 0]);
         const hearingHasBeenCancelled = hearing.getIn([PROPERTY_TYPES.UPDATE_TYPE, 0], '')
           .toLowerCase().trim() === 'cancelled';
+        const hearingIsGeneric = hearing.getIn([PROPERTY_TYPES.HEARING_TYPE, 0], '')
+          .toLowerCase().trim() === 'all other hearings';
         if (hearingType
           && hearingExists
           && hearingOnDateSelected
           && !hearingHasBeenCancelled
+          && !hearingIsGeneric
         ) hearingIds = hearingIds.add(hearingId);
       });
     }
