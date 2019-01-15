@@ -144,21 +144,18 @@ class NewChargeModal extends React.Component<Props, State> {
     }
   }
 
-  componentWillReceiveProps(nextProps) {
-    const { open } = this.props;
-    if (open && !nextProps.open) {
-      this.setState({
-        [PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE]: '',
-        [PROPERTY_TYPES.REFERENCE_CHARGE_DESCRIPTION]: '',
-        [PROPERTY_TYPES.REFERENCE_CHARGE_DEGREE]: '',
-        [PROPERTY_TYPES.REFERENCE_CHARGE_LEVEL]: '',
-        [PROPERTY_TYPES.CHARGE_IS_VIOLENT]: false,
-        [PROPERTY_TYPES.CHARGE_DMF_STEP_2]: false,
-        [PROPERTY_TYPES.CHARGE_DMF_STEP_4]: false,
-        [PROPERTY_TYPES.BHE]: false,
-        [PROPERTY_TYPES.BRE]: false
-      });
-    }
+  clearState = () => {
+    this.setState({
+      [PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE]: '',
+      [PROPERTY_TYPES.REFERENCE_CHARGE_DESCRIPTION]: '',
+      [PROPERTY_TYPES.REFERENCE_CHARGE_DEGREE]: '',
+      [PROPERTY_TYPES.REFERENCE_CHARGE_LEVEL]: '',
+      [PROPERTY_TYPES.CHARGE_IS_VIOLENT]: false,
+      [PROPERTY_TYPES.CHARGE_DMF_STEP_2]: false,
+      [PROPERTY_TYPES.CHARGE_DMF_STEP_4]: false,
+      [PROPERTY_TYPES.BHE]: false,
+      [PROPERTY_TYPES.BRE]: false
+    });
   }
 
   updateState = (
@@ -200,6 +197,7 @@ class NewChargeModal extends React.Component<Props, State> {
       entityKeyId,
       chargePropertyType
     });
+    this.clearState();
   }
 
   getChargeFields = () => {
@@ -260,6 +258,7 @@ class NewChargeModal extends React.Component<Props, State> {
       arrestChargesEntitySetId: arrestEntitySetId,
       courtChargesEntitySetId: courtEntitySetId
     });
+    this.clearState();
   }
 
   updateCharge = () => {
