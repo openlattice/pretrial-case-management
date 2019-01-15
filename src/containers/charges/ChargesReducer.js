@@ -1,8 +1,9 @@
 /*
  * @flow
  */
-import { Map, fromJS } from 'immutable';
+import { Map, Set, fromJS } from 'immutable';
 
+import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { CHARGES } from '../../utils/consts/FrontEndStateConsts';
 import { deleteCharge, loadCharges, updateCharge } from './ChargesActionFactory';
 
@@ -19,6 +20,13 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [CHARGES.BHE]: Map(),
   [CHARGES.LOADING]: false
 });
+
+const CHARGE_PT_PAIRS = {
+  [PROPERTY_TYPES.CHARGE_DMF_STEP_2]: CHARGES.DMF_STEP_2,
+  [PROPERTY_TYPES.CHARGE_DMF_STEP_4]: CHARGES.DMF_STEP_4,
+  [PROPERTY_TYPES.BRE]: CHARGES.BRE,
+  [PROPERTY_TYPES.BHE]: CHARGES.BHE
+};
 
 export default function chargesReducer(state :Map<*, *> = INITIAL_STATE, action :SequenceAction) {
   switch (action.type) {
@@ -41,7 +49,32 @@ export default function chargesReducer(state :Map<*, *> = INITIAL_STATE, action 
             selectedOrganizationId,
             chargePropertyType
           } = action.value;
-          return state.setIn([chargePropertyType, selectedOrganizationId, entityKeyId], fromJS(entity));
+          const charge = fromJS(entity);
+
+          const statute = charge.getIn([PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE, 0], '');
+          const description = charge.getIn([PROPERTY_TYPES.REFERENCE_CHARGE_DESCRIPTION, 0], '');
+
+          let newState = state.setIn([chargePropertyType, selectedOrganizationId, entityKeyId], charge);
+
+          if (charge.getIn([PROPERTY_TYPES.CHARGE_IS_VIOLENT, 0], false)) {
+            const chargeField = chargePropertyType === CHARGES.ARREST ? CHARGES.ARREST_VIOLENT : CHARGES.COURT_VIOLENT;
+            newState = newState.setIn(
+              [chargeField, selectedOrganizationId, statute],
+              newState.getIn([chargeField, selectedOrganizationId, statute], Set()).add(description)
+            );
+          }
+
+          Object.entries(CHARGE_PT_PAIRS).forEach(([propertyType, chargeField]) => {
+            let descriptions = newState.getIn([chargeField, selectedOrganizationId, statute], Set());
+            if (charge.getIn([propertyType, 0], false)) {
+              descriptions = descriptions.add(description);
+            }
+            else if (newState.getIn([chargeField, selectedOrganizationId, statute])) {
+              descriptions = descriptions.delete(description);
+            }
+            newState = newState.setIn([chargeField, selectedOrganizationId, statute], descriptions);
+          });
+          return newState;
         }
       });
     }
