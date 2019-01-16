@@ -38,7 +38,6 @@ const StyledStyledDateTimePicker = ({
           timeIsEditable
           placeholder={dateFormat}
           times={[moment().format(timeFormat)]}
-          isOpen={false}
           datePickerSelectProps={{
             placeholder: dateFormat,
           }} />
