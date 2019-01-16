@@ -1,5 +1,5 @@
 import moment from 'moment';
-import { OrderedMap, Map } from 'immutable';
+import { OrderedMap, Map, List } from 'immutable';
 import { Constants } from 'lattice';
 
 import { sortByDate } from '../DataUtils';
@@ -100,9 +100,21 @@ export const getHearingsIdsFromNeighbors = psaNeighbors => (
 // Get future hearings in sequential order from psa neighbors
 export const getScheduledHearings = (psaNeighbors) => {
   const todaysDate = moment().startOf('day');
+  let filteredCourtStrings = List();
   return (
     getHearingsFromNeighbors(psaNeighbors)
-      .filter(hearing => todaysDate.isBefore(hearing.getIn([PROPERTY_TYPES.DATE_TIME, 0], '')))
+      .filter((hearing) => {
+        const hearingDate = hearing.getIn([PROPERTY_TYPES.DATE_TIME, 0]);
+        const courtroom = hearing.getIn([PROPERTY_TYPES.COURTROOM, 0]);
+        const hearingType = hearing.getIn([PROPERTY_TYPES.HEARING_TYPE, 0]);
+        const hearingCourtString = `${hearingDate}-${courtroom}-${hearingType}`;
+        const hearingIsADuplicate = filteredCourtStrings.includes(hearingCourtString);
+        if (hearingDate && courtroom && hearingType && !hearingIsADuplicate) {
+          filteredCourtStrings = filteredCourtStrings.push(`${hearingDate}-${courtroom}-${hearingType}`);
+          if (todaysDate.isBefore(hearingDate)) return true;
+        }
+        return false;
+      })
       .sort((h1, h2) => sortByDate(h1, h2, PROPERTY_TYPES.DATE_TIME))
   );
 };
