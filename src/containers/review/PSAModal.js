@@ -631,15 +631,12 @@ class PSAModal extends React.Component<Props, State> {
     } = this.props;
     const { riskFactors } = this.state;
     let caseNumbersToAssociationId = Map();
-    if (psaNeighbors.get(PRETRIAL_CASES)) {
-      psaNeighbors.get(PRETRIAL_CASES).forEach((pretrialCase) => {
-        if (pretrialCase) {
-          const caseNum = pretrialCase.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.CASE_ID, 0]);
-          const associationEntityKeyId = pretrialCase.getIn([PSA_ASSOCIATION.DETAILS, OPENLATTICE_ID_FQN, 0]);
-          caseNumbersToAssociationId = caseNumbersToAssociationId.set(caseNum, associationEntityKeyId);
-        }
-      });
-    }
+    let caseNumbersToAssociationId = Map();
+    psaNeighbors.get(PRETRIAL_CASES, List()).forEach((pretrialCase) => {
+      const caseNum = pretrialCase.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.CASE_ID, 0]);
+      const associationEntityKeyId = pretrialCase.getIn([PSA_ASSOCIATION.DETAILS, OPENLATTICE_ID_FQN, 0]);
+      caseNumbersToAssociationId = caseNumbersToAssociationId.set(caseNum, associationEntityKeyId);
+    });
 
     if (loadingPSAModal || loadingCaseHistory) return <SpinnerWrapper><LoadingSpinner /></SpinnerWrapper>;
 
@@ -828,15 +825,12 @@ class PSAModal extends React.Component<Props, State> {
       lastEditDateForPSA
     );
     let caseNumbersToAssociationId = Map();
-    if (psaNeighbors.get(PRETRIAL_CASES)) {
-      psaNeighbors.get(PRETRIAL_CASES).forEach((pretrialCase) => {
-        if (pretrialCase) {
-          const caseNum = pretrialCase.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.CASE_ID, 0]);
-          const associationEntityKeyId = pretrialCase.getIn([PSA_ASSOCIATION.DETAILS, OPENLATTICE_ID_FQN, 0]);
-          caseNumbersToAssociationId = caseNumbersToAssociationId.set(caseNum, associationEntityKeyId);
-        }
-      });
-    }
+    psaNeighbors.get(PRETRIAL_CASES, List()).forEach((pretrialCase) => {
+      const caseNum = pretrialCase.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.CASE_ID, 0]);
+      const associationEntityKeyId = pretrialCase.getIn([PSA_ASSOCIATION.DETAILS, OPENLATTICE_ID_FQN, 0]);
+      caseNumbersToAssociationId = caseNumbersToAssociationId.set(caseNum, associationEntityKeyId);
+    });
+
     return (
       <ModalWrapper withPadding>
         <Title withSubtitle>
