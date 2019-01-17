@@ -88,7 +88,7 @@ class PSAModalSummary extends React.Component<Props, *> {
       .filter(caseObj => caseObj.getIn([PROPERTY_TYPES.CASE_ID, 0], '') === caseNum);
     const charges = manualChargeHistory.get(caseNum, Immutable.List());
 
-    const assocaitedCasesForForPSA = caseHistoryForMostRecentPSA.filter((caseObj) => {
+    const associatedCasesForForPSA = caseHistoryForMostRecentPSA.filter((caseObj) => {
       const caseNo = caseObj.getIn([PROPERTY_TYPES.CASE_ID, 0]);
       return caseNumbersToAssociationId.get(caseNo);
     });
@@ -111,7 +111,7 @@ class PSAModalSummary extends React.Component<Props, *> {
               removeCaseFromPSA={removeCaseFromPSA}
               caseNumbersToAssociationId={caseNumbersToAssociationId}
               title="Court Charges"
-              caseHistory={assocaitedCasesForForPSA}
+              caseHistory={associatedCasesForForPSA}
               chargeHistory={chargeHistoryForMostRecentPSA} />
         </ChargeTableContainer>
       </>
