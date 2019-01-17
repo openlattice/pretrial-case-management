@@ -631,7 +631,6 @@ class PSAModal extends React.Component<Props, State> {
     } = this.props;
     const { riskFactors } = this.state;
     let caseNumbersToAssociationId = Map();
-    let caseNumbersToAssociationId = Map();
     psaNeighbors.get(PRETRIAL_CASES, List()).forEach((pretrialCase) => {
       const caseNum = pretrialCase.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.CASE_ID, 0]);
       const associationEntityKeyId = pretrialCase.getIn([PSA_ASSOCIATION.DETAILS, OPENLATTICE_ID_FQN, 0]);
