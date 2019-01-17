@@ -2,7 +2,6 @@
 
 const path = require('path');
 const Webpack = require('webpack');
-const TerserPlugin = require('terser-webpack-plugin');
 
 const APP_CONFIG = require('../app/app.config.js');
 const APP_PATHS = require('../app/paths.config.js');
