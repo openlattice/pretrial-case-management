@@ -145,14 +145,16 @@ const CaseHistoryList = ({
       );
     });
 
-
-  let casesDisplay = <NoResults>No Cases Found</NoResults>;
-  if (cases.size) {
-    casesDisplay = cases;
-  }
-  else if (psaPermissions) {
-    casesDisplay = <NoResults>Navigate to Case History tab to add cases to this PSA.</NoResults>;
-  }
+  const instructionsText = cases.size
+    ? 'Navigate to Case History tab to add more court cases to this PSA.'
+    : 'Navigate to Case History tab to add court cases to this PSA.';
+  const noResultsText = psaPermissions ? instructionsText : 'No Cases Found';
+  const casesDisplay = (
+    <>
+      {cases}
+      <NoResults>{noResultsText}</NoResults>
+    </>
+  );
 
   return (
     <CaseHistoryContainer>
