@@ -100,11 +100,7 @@ module.exports = (env) => {
       net: 'empty',
     },
     optimization: {
-      minimize: !!env.production,
-      minimizer: [new TerserPlugin({
-        cache: true,
-        parallel: true
-      })],
+      minimize: !!env.production
     },
     output: {
       path: APP_PATHS.ABS.BUILD,
