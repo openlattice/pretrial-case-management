@@ -111,7 +111,7 @@ const CaseHistoryList = ({
   };
 
   const caseCount = caseHistory.size;
-  const oneWeekAgo = moment().subtract(7, 'days');
+  const oneWeekAgo = moment().subtract(1, 'week');
   const cases = caseHistory
     .sort((c1, c2) => {
       const date1 = moment(c1.getIn([PROPERTY_TYPES.FILE_DATE, 0], ''));
