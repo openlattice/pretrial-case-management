@@ -73,7 +73,7 @@ type Props = {
   removeCaseFromPSA :() => void,
   caseHistory :Immutable.List<*>,
   chargeHistory :Immutable.Map<*, *>,
-  caseNumbersToAssociationId :Immutable.Map<*, *>,
+  caseNumbersToAssociationId? :Immutable.Map<*, *>,
   loading :boolean,
   modal :boolean,
   pendingCases :boolean,
