@@ -121,7 +121,7 @@ const { FullyQualifiedName } = Models;
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
-const LIST_ENTITY_SETS = Immutable.List.of(STAFF, RELEASE_CONDITIONS, HEARINGS, pretrialCasesFqn);
+const LIST_ENTITY_SETS = Immutable.List.of(staffFqn, releaseConditionsFqn, hearingsFqn, pretrialCasesFqn);
 
 const orderCasesByArrestDate = (case1, case2) => {
   const date1 = moment(case1.getIn([PROPERTY_TYPES.ARREST_DATE, 0], case1.getIn([PROPERTY_TYPES.FILE_DATE, 0], '')));
