@@ -104,6 +104,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [courtChargeListFqn]: APP_CONFIG_INITIAL_STATE,
   [appSettingsFqn]: APP_CONFIG_INITIAL_STATE,
   [APP.ENTITY_SETS_BY_ORG]: Map(),
+  [APP.FQN_TO_ID]: Map(),
   [APP.ACTIONS]: {
     [APP.LOAD_APP]: Map(),
   },
@@ -148,6 +149,7 @@ export default function appReducer(state :Map<*, *> = INITIAL_STATE, action :Seq
           .setIn([APP.ACTIONS, APP.LOAD_APP, action.id], fromJS(action)),
         SUCCESS: () => {
           let entitySetsByOrgId = Map();
+          let fqnToIdMap = Map();
           if (!state.hasIn([APP.ACTIONS, APP.LOAD_APP, action.id])) {
             return state;
           }
@@ -249,6 +251,47 @@ export default function appReducer(state :Map<*, *> = INITIAL_STATE, action :Seq
                 .setIn([speakerRecognitionFqn, APP.ENTITY_SETS_BY_ORG, orgId], speakerRecognitionConfig.entitySetId)
                 .setIn([staffFqn, APP.ENTITY_SETS_BY_ORG, orgId], staffConfig.entitySetId)
                 .setIn([ujsEmployeesFqn, APP.ENTITY_SETS_BY_ORG, orgId], ujsEmployeesConfig.entitySetId);
+              fqnToIdMap = fqnToIdMap.set(
+                orgId,
+                fqnToIdMap.get(orgId, Map())
+                  .set(arrestChargeListFqn, arrestChargeListConfig.entitySetId)
+                  .set(courtChargeListFqn, courtChargeListConfig.entitySetId)
+                  .set(appSettingsFqn, appSettingsConfig.entitySetId)
+                  .set(addressesFqn, addressesConfig.entitySetId)
+                  .set(appearsInFqn, appearsInConfig.entitySetId)
+                  .set(arrestAppearsInFqn, arrestAppearsInConfig.entitySetId)
+                  .set(arrestChargedwithFqn, arrestChargedwithConfig.entitySetId)
+                  .set(arrestChargesFqn, arrestChargesConfig.entitySetId)
+                  .set(arrestCasesFqn, arrestCasesConfig.entitySetId)
+                  .set(assessedByFqn, assessedByConfig.entitySetId)
+                  .set(bondsFqn, bondsConfig.entitySetId)
+                  .set(calculatedForFqn, calculatedForConfig.entitySetId)
+                  .set(chargedWithFqn, chargedWithConfig.entitySetId)
+                  .set(chargesFqn, chargesConfig.entitySetId)
+                  .set(contactInfoGivenFqn, contactInfoGivenConfig.entitySetId)
+                  .set(contactInformationFqn, contactInformationConfig.entitySetId)
+                  .set(dmfResultsFqn, dmfResultsConfig.entitySetId)
+                  .set(dmfRiskFactorsFqn, dmfRiskFactorsConfig.entitySetId)
+                  .set(editedByFqn, editedByConfig.entitySetId)
+                  .set(ftaFqn, ftaConfig.entitySetId)
+                  .set(hearingsFqn, hearingsConfig.entitySetId)
+                  .set(judgesFqn, judgesConfig.entitySetId)
+                  .set(livesAtFqn, livesAtConfig.entitySetId)
+                  .set(manualChargesFqn, manualChargesConfig.entitySetId)
+                  .set(manualPretrialCasesFqn, manualPretrialCasesConfig.entitySetId)
+                  .set(outcomesFqn, outcomesConfig.entitySetId)
+                  .set(peopleFqn, peopleConfig.entitySetId)
+                  .set(pretrialCasesFqn, pretrialCasesConfig.entitySetId)
+                  .set(psaRiskFactorsFqn, psaRiskFactorsConfig.entitySetId)
+                  .set(psaScoresFqn, psaScoresConfig.entitySetId)
+                  .set(registeredForFqn, registeredForConfig.entitySetId)
+                  .set(releaseConditionsFqn, releaseConditionsConfig.entitySetId)
+                  .set(releaseRecommendationsFqn, releaseRecommendationsConfig.entitySetId)
+                  .set(sentencesFqn, sentencesConfig.entitySetId)
+                  .set(speakerRecognitionFqn, speakerRecognitionConfig.entitySetId)
+                  .set(staffFqn, staffConfig.entitySetId)
+                  .set(ujsEmployeesFqn, ujsEmployeesConfig.entitySetId)
+              );
               entitySetsByOrgId = entitySetsByOrgId.set(
                 orgId,
                 entitySetsByOrgId.get(orgId, Map())
@@ -319,6 +362,7 @@ export default function appReducer(state :Map<*, *> = INITIAL_STATE, action :Seq
           return newState
             .set(APP.APP, app)
             .set(APP.ENTITY_SETS_BY_ORG, entitySetsByOrgId)
+            .set(APP.FQN_TO_ID, fqnToIdMap)
             .set(APP.ORGS, fromJS(organizations))
             .set(APP.SELECTED_ORG_ID, selectedOrganizationId)
             .set(APP.SELECTED_ORG_TITLE, selectedOrganizationTitle)
@@ -329,6 +373,7 @@ export default function appReducer(state :Map<*, *> = INITIAL_STATE, action :Seq
           const error = {};
           return state
             .set(APP.ENTITY_SETS_BY_ORG, Map())
+            .set(APP.FQN_TO_ID, Map())
             .setIn([arrestChargeListFqn, APP.ENTITY_SETS_BY_ORG], Map())
             .setIn([arrestChargeListFqn, APP.PRIMARY_KEYS], List())
             .setIn([arrestChargeListFqn, APP.PROPERTY_TYPES], Map())
