@@ -95,18 +95,16 @@ const CaseHistoryList = ({
 } :Props) => {
   const addCaseToPSAButton = (caseNum) => {
     const associationEntityKeyId = caseNumbersToAssociationId.get(caseNum);
-    let addorRemoveFn = addCaseToPSA;
-    let fnArgument = { [ID_FIELD_NAMES.CASE_ID]: caseNum };
+    let onClick = () => addCaseToPSA({ [ID_FIELD_NAMES.CASE_ID]: caseNum });
     let buttonText = 'Add to PSA';
     if (associationEntityKeyId) {
-      addorRemoveFn = removeCaseFromPSA;
-      fnArgument = associationEntityKeyId;
+      onClick = () => removeCaseFromPSA(associationEntityKeyId);
       buttonText = 'Remove From PSA';
     }
-    return (psaPermissions && addorRemoveFn && caseNum && pendingCases)
+    return (psaPermissions && caseNum && pendingCases)
       ? (
         <StyledButton
-            onClick={() => addorRemoveFn(fnArgument)}>
+            onClick={onClick}>
           {buttonText}
         </StyledButton>
       ) : null;
