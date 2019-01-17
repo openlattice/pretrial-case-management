@@ -2,7 +2,7 @@
 
 const path = require('path');
 const Webpack = require('webpack');
-const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
+const TerserPlugin = require('terser-webpack-plugin');
 
 const APP_CONFIG = require('../app/app.config.js');
 const APP_PATHS = require('../app/paths.config.js');
@@ -101,7 +101,7 @@ module.exports = (env) => {
     },
     optimization: {
       minimize: !!env.production,
-      minimizer: [new UglifyJsPlugin({
+      minimizer: [new TerserPlugin({
         cache: true,
         parallel: true
       })],
