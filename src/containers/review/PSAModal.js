@@ -11,6 +11,7 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import Modal, { ModalTransition } from '@atlaskit/modal-dialog';
 import { AuthUtils } from 'lattice-auth';
+import { Link } from 'react-router-dom';
 
 import CustomTabs from '../../components/tabs/Tabs';
 import LoadingSpinner from '../../components/LoadingSpinner';
@@ -57,6 +58,7 @@ import {
   PSA
 } from '../../utils/consts/Consts';
 
+import * as Routes from '../../core/router/Routes';
 import * as FormActionFactory from '../psa/FormActionFactory';
 import * as ReviewActionFactory from './ReviewActionFactory';
 import * as PSAModalActionFactory from '../psamodal/PSAModalActionFactory';
@@ -93,6 +95,10 @@ RELEASE_RECOMMENDATIONS = RELEASE_RECOMMENDATIONS.toString();
 STAFF = STAFF.toString();
 
 const { OPENLATTICE_ID_FQN } = Constants;
+
+const StyledLink = styled(Link)`
+  color: ${OL.GREY01};
+`;
 
 const DownloadButtonContainer = styled.div`
   width: 100%;
@@ -863,6 +869,7 @@ class PSAModal extends React.Component<Props, State> {
       open,
       psaPermissions,
       psaId,
+      personId,
       selectedOrganizationSettings
     } = this.props;
 
@@ -932,7 +939,7 @@ class PSAModal extends React.Component<Props, State> {
             <TitleWrapper>
               <TitleHeader>
                 PSA Details:
-                <span>{` ${this.getName()}`}</span>
+                <StyledLink to={`${Routes.PERSON_DETAILS_ROOT}/${personId}${Routes.OVERVIEW}`}>{` ${this.getName()}`}</StyledLink>
               </TitleHeader>
               <div>
                 { (!psaPermissions || !includesPretrialModule)
