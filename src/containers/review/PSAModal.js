@@ -98,6 +98,9 @@ const { OPENLATTICE_ID_FQN } = Constants;
 
 const StyledLink = styled(Link)`
   color: ${OL.GREY01};
+  :hover {
+    color: ${OL.PURPLE02};
+  }
 `;
 
 const DownloadButtonContainer = styled.div`
@@ -939,7 +942,9 @@ class PSAModal extends React.Component<Props, State> {
             <TitleWrapper>
               <TitleHeader>
                 PSA Details:
-                <StyledLink to={`${Routes.PERSON_DETAILS_ROOT}/${personId}${Routes.OVERVIEW}`}>{` ${this.getName()}`}</StyledLink>
+                <StyledLink to={`${Routes.PERSON_DETAILS_ROOT}/${personId}${Routes.OVERVIEW}`}>
+                  {`  ${this.getName()}`}
+                </StyledLink>
               </TitleHeader>
               <div>
                 { (!psaPermissions || !includesPretrialModule)
