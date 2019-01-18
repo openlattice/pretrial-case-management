@@ -8,6 +8,8 @@ import styled from 'styled-components';
 import moment from 'moment';
 import randomUUID from 'uuid/v4';
 import { connect } from 'react-redux';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faExclamationTriangle } from '@fortawesome/pro-light-svg-icons';
 
 import BasicButton from '../../../components/buttons/BasicButton';
 import SecondaryButton from '../../../components/buttons/SecondaryButton';
@@ -118,16 +120,23 @@ const DeleteButton = styled(BasicButton)`
 `;
 
 const ChargeTitle = styled.div`
+  display: flex;
+  flex-direction: row;
   padding-bottom: 10px;
   font-family: 'Open Sans', sans-serif;
   font-size: 14px;
-  color: ${OL.GREY15};
+  color: ${props => (props.notify ? OL.RED01 : OL.GREY15)};
   display: inline-block;
 `;
 
 const CaseInfoWrapper = styled.div`
   width: 100%;
-`
+`;
+
+const TitleWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
 
 type Props = {
   arrestCharges :Map<*, *>,
@@ -335,21 +344,41 @@ class SelectChargesContainer extends React.Component<Props, State> {
   }
 
   renderSingleCharge = (charge :Charge, index :number) => {
+    const { arrestCharges, selectedOrganizationId } = this.props;
+    const orgArrestCharges = arrestCharges.get(selectedOrganizationId, Map()).valueSeq();
+    let arrestChargeOptions = Map();
+    orgArrestCharges.forEach((chargeObj) => {
+      arrestChargeOptions = arrestChargeOptions.set(this.formatCharge(chargeObj), chargeObj);
+    });
     const statute = charge.getIn([PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE, 0], '');
     const description = charge.getIn([PROPERTY_TYPES.REFERENCE_CHARGE_DESCRIPTION, 0], '');
     const qualifier = charge.get(QUALIFIER, '');
     const onChange = (e) => {
       this.handleChargeInputChange(e, index);
     };
-
     const chargeText = `${statute} ${description}`;
+
+    const noRecordOfCharge = !arrestChargeOptions.get(chargeText);
 
     const getOnSelect = field => newVal => this.handleChargeInputChange(newVal, index, field);
     const getOnClear = field => () => this.handleChargeInputChange(undefined, index, field);
 
     return (
       <ChargeWrapper key={`${statute}-${qualifier}-${index}`}>
-        <ChargeTitle>{chargeText}</ChargeTitle>
+        <TitleWrapper>
+          {
+            noRecordOfCharge
+              ? (
+                <ChargeTitle notify={noRecordOfCharge}>
+                  <FontAwesomeIcon icon={faExclamationTriangle} />
+                  { noRecordOfCharge ? ' [CHARGE UNRECOGNIZED - WILL NOT BE APPLIED TO AUTOFILL]' : null }
+                </ChargeTitle>
+              ) : null
+          }
+          <ChargeTitle>
+            {chargeText}
+          </ChargeTitle>
+        </TitleWrapper>
         <ChargeOptionsWrapper>
           <SearchableSelect
               onSelect={getOnSelect(QUALIFIER)}
