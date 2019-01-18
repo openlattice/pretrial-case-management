@@ -232,7 +232,7 @@ class PSASummary extends React.Component<Props, *> {
       }
     });
     return (
-      <PSADetails includesPretrialModule={includesPretrialModule}>
+      <PSADetails>
         <ContentBlock
             contentBlock={{ label: 'psa date', content: [psaDate] }}
             component={CONTENT_CONSTS.SUMMARY} />
@@ -241,41 +241,15 @@ class PSASummary extends React.Component<Props, *> {
             component={CONTENT_CONSTS.SUMMARY} />
         <div />
         <DownloadButtonWrapper>
-          {
-            includesPretrialModule
-              ? (
-                <PSAReportDownloadButton
-                    includesPretrialModule={includesPretrialModule}
-                    downloadFn={downloadPSAReviewPDF}
-                    neighbors={neighbors}
-                    scores={scores} />
-              ) : null
-          }
+          <PSAReportDownloadButton
+              includesPretrialModule={includesPretrialModule}
+              downloadFn={downloadPSAReviewPDF}
+              neighbors={neighbors}
+              scores={scores} />
         </DownloadButtonWrapper>
       </PSADetails>
     );
   }
-
-  renderDownloadButton = () => {
-    const {
-      actions,
-      neighbors,
-      scores,
-      selectedOrganizationSettings
-    } = this.props;
-    const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], '');
-
-    const { downloadPSAReviewPDF } = actions;
-
-    return (
-      <PSAReportDownloadButton
-          includesPretrialModule={includesPretrialModule}
-          downloadFn={downloadPSAReviewPDF}
-          neighbors={neighbors}
-          scores={scores} />
-    );
-  }
-
 
   render() {
     const {
@@ -303,7 +277,7 @@ class PSASummary extends React.Component<Props, *> {
         <ScoresContainer border={includesPretrialModule}>
           <ScoreTitle>PSA</ScoreTitle>
           <ScoreContent includesPretrialModule>
-            <PSAStats scores={scores} hideProfile includesPretrialModule={includesPretrialModule} />
+            <PSAStats scores={scores} hideProfile />
             {this.renderPSADetails()}
           </ScoreContent>
         </ScoresContainer>
@@ -319,11 +293,7 @@ class PSASummary extends React.Component<Props, *> {
         <ScoresContainer border={includesPretrialModule}>
           <ScoreTitle>PSA</ScoreTitle>
           <ScoreContent includesPretrialModule>
-            <PSAStats
-                scores={scores}
-                hideProfile
-                downloadButton={this.renderDownloadButton}
-                includesPretrialModule={includesPretrialModule} />
+            <PSAStats scores={scores} hideProfile />
             {this.renderPSADetails()}
           </ScoreContent>
         </ScoresContainer>
