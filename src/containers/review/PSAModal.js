@@ -947,13 +947,13 @@ class PSAModal extends React.Component<Props, State> {
                 </StyledLink>
               </TitleHeader>
               <div>
-                { (!psaPermissions || !includesPretrialModule)
-                  ? null
-                  : (
+                { psaPermissions
+                  ? (
                     <ClosePSAButton onClick={() => this.setState({ closingPSAModalOpen: true })}>
                       {changeStatusText}
                     </ClosePSAButton>
                   )
+                  : null
                 }
                 <CloseModalX onClick={() => this.onClose()} />
               </div>
