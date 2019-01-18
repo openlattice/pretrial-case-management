@@ -400,7 +400,7 @@ class PSAInputForm extends React.Component<Props, State> {
       dmfStep4Charges,
       handleClose,
       input,
-      noBorders,
+      modal,
       psaDate,
       selectedOrganizationId,
       selectedOrganizationSettings,
@@ -462,7 +462,7 @@ class PSAInputForm extends React.Component<Props, State> {
     const secondaryHoldHeader = BRE_LABELS.LABEL;
     return (
       <div>
-        <FormWrapper noBorders={noBorders}>
+        <FormWrapper noBorders={modal}>
           <Header>PSA Information</Header>
           <WideForm>
             {
@@ -640,7 +640,7 @@ class PSAInputForm extends React.Component<Props, State> {
               {
                 viewOnly ? null : (
                   <ButtonRow>
-                    { noBorders ? <div /> : <DiscardButton onClick={handleClose}>Discard</DiscardButton> }
+                    { modal ? <div /> : <DiscardButton onClick={handleClose}>Discard</DiscardButton> }
                     <SubmitButton
                         type="submit"
                         bsStyle="primary"

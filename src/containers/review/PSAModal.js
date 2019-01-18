@@ -725,7 +725,7 @@ class PSAModal extends React.Component<Props, State> {
             allSentences={allSentences}
             allFTAs={ftaHistory}
             viewOnly={!editing || psaIsClosed(scores)}
-            noBorders
+            modal
             psaDate={psaDate} />
         {editButton}
       </ModalWrapper>
