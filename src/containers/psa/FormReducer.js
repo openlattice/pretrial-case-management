@@ -133,6 +133,14 @@ const INITIAL_STATE :Immutable.Map<> = Immutable.fromJS({
   [PSA_FORM.SUBMIT_ERROR]: false
 });
 
+const ARREST_CHARGE_AUTOFILLS = [
+  CURRENT_VIOLENT_OFFENSE,
+  STEP_2_CHARGES,
+  STEP_4_CHARGES,
+  SECONDARY_RELEASE_CHARGES,
+  SECONDARY_HOLD_CHARGES
+];
+
 function formReducer(state :Immutable.Map<> = INITIAL_STATE, action :Object) {
   switch (action.type) {
 
@@ -291,14 +299,43 @@ function formReducer(state :Immutable.Map<> = INITIAL_STATE, action :Object) {
     }
 
     case SET_PSA_VALUES: {
-      let psa = state.get(PSA_FORM.PSA).merge(action.value.newValues);
+      let psa = state.get(PSA_FORM.PSA);
+      const { newValues } = action.value;
+
+      // when calling setPSAValues with 'tryAutofillFields', the newValue map will have a size greater than 1
+      if (newValues.size > 1) {
+        action.value.newValues.entrySeq().forEach(([field, newValue]) => {
+          const oldValue = psa.get(field);
+          const isAnArrestAutofill = ARREST_CHARGE_AUTOFILLS.includes(field);
+          const newValueIncreased = (oldValue === 'false' && newValue === 'true');
+          const priorViolentIncrease = (field === PRIOR_VIOLENT_CONVICTION && newValue > oldValue);
+          const failureToAppearIncrease = (field === PRIOR_FAILURE_TO_APPEAR_RECENT && newValue > oldValue);
+          if (
+            oldValue === null
+            || isAnArrestAutofill
+            || newValueIncreased
+            || priorViolentIncrease
+            || failureToAppearIncrease
+          ) {
+            psa = psa.set(field, newValue);
+          }
+          else {
+            psa = psa.set(field, oldValue);
+          }
+        });
+      }
+      // when changing values manually, on the actualy form, setPSAValues is valled with a map of size 1
+      else {
+        psa = psa.merge(newValues);
+      }
+
       if (psa.get(PRIOR_MISDEMEANOR) === 'false' && psa.get(PRIOR_FELONY) === 'false') {
         psa = psa.set(PRIOR_VIOLENT_CONVICTION, '0').set(PRIOR_SENTENCE_TO_INCARCERATION, 'false');
       }
       return state.set(PSA_FORM.PSA, psa);
     }
 
-    case CLEAR_FORM:
+    case CLEAR_FORM: {
       return state
         .set(PSA_FORM.ARREST_OPTIONS, Immutable.List())
         .set(PSA_FORM.ALL_CASES, Immutable.List())
@@ -318,6 +355,7 @@ function formReducer(state :Immutable.Map<> = INITIAL_STATE, action :Object) {
         .set(PSA_FORM.SUBMITTED, false)
         .set(PSA_FORM.SUBMITTING, false)
         .set(PSA_FORM.SUBMIT_ERROR, false);
+    }
 
 
     default:
