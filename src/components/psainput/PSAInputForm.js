@@ -260,7 +260,8 @@ type Props = {
   allCases :Immutable.List<*>,
   allFTAs :Immutable.List<*>,
   psaDate :string,
-  viewOnly? :boolean
+  viewOnly? :boolean,
+  exitEdit? :() => void;
 };
 
 type State = {
@@ -398,6 +399,7 @@ class PSAInputForm extends React.Component<Props, State> {
       currCharges,
       dmfStep2Charges,
       dmfStep4Charges,
+      exitEdit,
       handleClose,
       input,
       modal,
@@ -640,7 +642,10 @@ class PSAInputForm extends React.Component<Props, State> {
               {
                 viewOnly ? null : (
                   <ButtonRow>
-                    { modal ? <div /> : <DiscardButton onClick={handleClose}>Discard</DiscardButton> }
+                    { exitEdit
+                      ? <DiscardButton onClick={exitEdit}>Cancel</DiscardButton>
+                      : <DiscardButton onClick={handleClose}>Discard</DiscardButton>
+                    }
                     <SubmitButton
                         type="submit"
                         bsStyle="primary"
