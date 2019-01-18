@@ -285,9 +285,13 @@ class PSAModal extends React.Component<Props, State> {
     });
   }
 
+  exitEdit = () => {
+    this.setState({ editing: false });
+  }
+
   onClose() {
     const { onClose } = this.props;
-    this.setState({ editing: false });
+    this.exitEdit();
     onClose();
   }
 
@@ -725,7 +729,8 @@ class PSAModal extends React.Component<Props, State> {
             allSentences={allSentences}
             allFTAs={ftaHistory}
             viewOnly={!editing || psaIsClosed(scores)}
-            noBorders
+            exitEdit={this.exitEdit}
+            modal
             psaDate={psaDate} />
         {editButton}
       </ModalWrapper>
