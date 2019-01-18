@@ -640,7 +640,7 @@ class PSAInputForm extends React.Component<Props, State> {
               {
                 viewOnly ? null : (
                   <ButtonRow>
-                    <DiscardButton onClick={handleClose}>Discard</DiscardButton>
+                    { noBorders ? <div /> : <DiscardButton onClick={handleClose}>Discard</DiscardButton> }
                     <SubmitButton
                         type="submit"
                         bsStyle="primary"
