@@ -339,7 +339,7 @@ class PersonDetailsContainer extends React.Component<Props, State> {
       mostRecentPSA,
       selectedOrganizationId
     } = this.props;
-    const personHearingsWithOutcomes = neighbors.get(HEARINGS).filter((hearing) => {
+    const personHearingsWithOutcomes = neighbors.get(HEARINGS, List()).filter((hearing) => {
       const id = hearing.getIn([OPENLATTICE_ID_FQN, 0], '');
       const hasOutcome = !!hearingNeighborsById.getIn([id, OUTCOMES]);
       return hasOutcome;
