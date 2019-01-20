@@ -8,6 +8,7 @@ import { Map, List } from 'immutable';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { Redirect, Route, Switch } from 'react-router-dom';
+import { Constants } from 'lattice';
 
 import ClosePSAModal from '../../components/review/ClosePSAModal';
 import UpdateContactInfoModal from '../person/UpdateContactInfoModal';
@@ -50,6 +51,7 @@ import * as PeopleActionFactory from './PeopleActionFactory';
 import * as ReviewActionFactory from '../review/ReviewActionFactory';
 import * as PSAModalActionFactory from '../psamodal/PSAModalActionFactory';
 
+const { OPENLATTICE_ID_FQN } = Constants;
 let {
   BONDS,
   CONTACT_INFORMATION,
@@ -337,6 +339,11 @@ class PersonDetailsContainer extends React.Component<Props, State> {
       mostRecentPSA,
       selectedOrganizationId
     } = this.props;
+    const personHearingsWithOutcomes = neighbors.get(HEARINGS).filter((hearing) => {
+      const id = hearing.getIn([OPENLATTICE_ID_FQN, 0], '');
+      const hasOutcome = !!hearingNeighborsById.getIn([id, OUTCOMES]);
+      return hasOutcome;
+    });
     const mostRecentPSAEntityKeyId = getEntityKeyId(mostRecentPSA.get(PSA_NEIGHBOR.DETAILS, Map()));
     const neighborsForMostRecentPSA = psaNeighborsById.get(mostRecentPSAEntityKeyId, Map());
     const psaId = mostRecentPSA.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.GENERAL_ID, 0], '');
@@ -345,8 +352,8 @@ class PersonDetailsContainer extends React.Component<Props, State> {
     const jurisdiction = JURISDICTION[context];
     const hearingsWithOutcomes = hearingNeighborsById
       .keySeq().filter(id => hearingNeighborsById.getIn([id, OUTCOMES]));
-    const scheduledHearings = getScheduledHearings(neighbors);
-    const pastHearings = getPastHearings(neighbors);
+    const scheduledHearings = getScheduledHearings(personHearingsWithOutcomes);
+    const pastHearings = getPastHearings(personHearingsWithOutcomes);
     const availableHearings = getAvailableHearings(personHearings, scheduledHearings, hearingNeighborsById);
     const defaultOutcome = getNeighborDetailsForEntitySet(neighborsForMostRecentPSA, OUTCOMES);
     const defaultDMF = getNeighborDetailsForEntitySet(neighborsForMostRecentPSA, DMF_RESULTS);
