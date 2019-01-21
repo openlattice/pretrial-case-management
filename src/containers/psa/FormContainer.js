@@ -599,6 +599,7 @@ class Form extends React.Component<Props, State> {
       allChargesForPerson,
       allSentencesForPerson,
       allFTAs,
+      psaForm
     } = this.props;
 
     const {
@@ -608,8 +609,11 @@ class Form extends React.Component<Props, State> {
       scoresWereGenerated
     } = this.state;
 
+    const notes = psaForm.get(PSA.NOTES, '');
+
     if (!scoresWereGenerated) return null;
     const data = Immutable.fromJS(this.state)
+      .set('notes', notes)
       .set('scores', scores)
       .set('riskFactors', this.setMultimapToMap(riskFactors))
       .set('psaRiskFactors', Immutable.fromJS(riskFactors))
@@ -620,7 +624,8 @@ class Form extends React.Component<Props, State> {
         <Button
             bsStyle="info"
             onClick={() => {
-              exportPDF(data,
+              exportPDF(
+                data,
                 selectedPretrialCase,
                 charges,
                 selectedPerson,
@@ -901,12 +906,15 @@ class Form extends React.Component<Props, State> {
       allFTAs,
       violentArrestCharges,
       violentCourtCharges,
-      selectedOrganizationId
+      selectedOrganizationId,
+      psaForm
     } = this.props;
     const { dmfRiskFactors, riskFactors, scores } = this.state;
     const violentArrestChargeList = violentArrestCharges.get(selectedOrganizationId, List());
     const violentCourtChargeList = violentCourtCharges.get(selectedOrganizationId, List());
+    const notes = psaForm.get(PSA.NOTES, '');
     const data = Immutable.fromJS(this.state)
+      .set('notes', notes)
       .set('scores', scores)
       .set('riskFactors', this.setMultimapToMap(riskFactors))
       .set('psaRiskFactors', Immutable.fromJS(riskFactors))
