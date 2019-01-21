@@ -8,6 +8,7 @@ import { Map, List } from 'immutable';
 
 import AboutPersonGeneral from '../person/AboutPersonGeneral';
 import HearingCardsWithTitle from '../hearings/HearingCardsWithTitle';
+import SubscriptionInfo from './SubscriptionInfo';
 import CaseHistoryList from '../casehistory/CaseHistoryList';
 import ChargeHistoryStats from '../casehistory/ChargeHistoryStats';
 import LoadingSpinner from '../LoadingSpinner';
@@ -129,14 +130,35 @@ const PersonOverview = ({
         {
           includesPretrialModule
             ? (
-              <StyledColumnRowWrapper>
-                <StyledColumnRow>
-                  <ChargeHistoryStats
-                      padding
-                      pendingCharges={pendingCharges}
-                      chargeHistory={chargeHistory} />
-                </StyledColumnRow>
-              </StyledColumnRowWrapper>
+              <>
+                <StyledColumnRowWrapper>
+                  <StyledColumnRow>
+                    <SubscriptionInfo
+                        // need to include subscription here
+                        person={selectedPersonData} />
+                  </StyledColumnRow>
+                </StyledColumnRowWrapper>
+                <StyledColumnRowWrapper>
+                  <StyledColumnRowWithPadding>
+                    <StyledViewMoreLinkForHearings to={`${Routes.PERSON_DETAILS_ROOT}/${personId}${Routes.HEARINGS}`}>
+                      View more
+                    </StyledViewMoreLinkForHearings>
+                    <HearingCardsWithTitle
+                        readOnly
+                        title="Upcoming Hearings"
+                        hearings={scheduledHearings}
+                        handleSelect={() => null}
+                        noHearingsMessage="There are no upcoming hearings." />
+                  </StyledColumnRowWithPadding>
+                </StyledColumnRowWrapper>
+                <StyledColumnRowWrapper>
+                  <StyledColumnRowWithPadding>
+                    <ChargeHistoryStats
+                        pendingCharges={pendingCharges}
+                        chargeHistory={chargeHistory} />
+                  </StyledColumnRowWithPadding>
+                </StyledColumnRowWrapper>
+              </>
             ) : null
         }
         <StyledColumnRowWrapper>
@@ -149,24 +171,6 @@ const PersonOverview = ({
                 openDetailsModal={openDetailsModal} />
           </StyledColumnRow>
         </StyledColumnRowWrapper>
-        {
-          includesPretrialModule
-            ? (
-              <StyledColumnRowWrapper>
-                <StyledColumnRowWithPadding>
-                  <StyledViewMoreLinkForHearings to={`${Routes.PERSON_DETAILS_ROOT}/${personId}${Routes.HEARINGS}`}>
-                    View more
-                  </StyledViewMoreLinkForHearings>
-                  <HearingCardsWithTitle
-                      readOnly
-                      title="Upcoming Hearings"
-                      hearings={scheduledHearings}
-                      handleSelect={() => null}
-                      noHearingsMessage="There are no upcoming hearings." />
-                </StyledColumnRowWithPadding>
-              </StyledColumnRowWrapper>
-            ) : null
-        }
         {
           includesPretrialModule
             ? (
