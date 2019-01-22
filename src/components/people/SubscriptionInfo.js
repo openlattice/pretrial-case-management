@@ -6,10 +6,11 @@ import React from 'react';
 import styled from 'styled-components';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCheck, faTimesCircle } from '@fortawesome/pro-light-svg-icons';
+import { faCheck, faCog, faTimesCircle } from '@fortawesome/pro-light-svg-icons';
 
 import { formatPeopleInfo } from '../../utils/PeopleUtils';
 import StyledCheckbox from '../controls/StyledCheckbox';
+import StyledButton from '../buttons/StyledButton';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
 import {
@@ -23,19 +24,13 @@ const Status = styled(InputRow)`
   display: flex;
   flex-direction: row;
   justify-content: space-between;
-  align-content: center;
+  align-items: center;
   margin: 0;
 `;
 
 const StatusText = styled.div`
   font-size: 16px;
   font-weight: 600;
-  padding: 5px 10px;
-`;
-
-const SubStatusText = styled.div`
-  font-size: 14px;
-  font-weight: 400;
   padding: 5px 10px;
 `;
 
@@ -81,8 +76,8 @@ class SubscriptionInfo extends React.Component<Props, *> {
       ? 'is subscribed to court notifications'
       : 'is not subscribed to court notifications';
     const subscriptionText = isSubscribed
-      ? `Unsubscribe ${name}?`
-      : `Subscribe ${name}?`;
+      ? ' Manage Subscription'
+      : ` Subscribe ${name}`;
     return (
       <Status>
         <Status>
@@ -90,8 +85,10 @@ class SubscriptionInfo extends React.Component<Props, *> {
           <StatusText>{`${name} ${isSubscribedText}`}</StatusText>
         </Status>
         <Status>
-          <SubStatusText>{`${subscriptionText}`}</SubStatusText>
-          <StyledCheckbox />
+          <StyledButton>
+            <FontAwesomeIcon icon={faCog} />
+            {subscriptionText}
+          </StyledButton>
         </Status>
       </Status>
     );
