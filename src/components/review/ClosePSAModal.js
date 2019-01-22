@@ -4,13 +4,12 @@
 
 import React from 'react';
 import styled from 'styled-components';
-import Immutable, { Map } from 'immutable';
+import Immutable, { Map, fromJS } from 'immutable';
 import moment from 'moment';
 import { connect } from 'react-redux';
 import Modal, { ModalTransition } from '@atlaskit/modal-dialog';
 import { AuthUtils } from 'lattice-auth';
 import { bindActionCreators } from 'redux';
-import { Constants } from 'lattice';
 
 import RadioButton from '../controls/StyledRadioButton';
 import Checkbox from '../controls/StyledCheckbox';
@@ -20,8 +19,8 @@ import closeX from '../../assets/svg/close-x-gray.svg';
 import psaEditedConfig from '../../config/formconfig/PsaEditedConfig';
 import { CenteredContainer } from '../../utils/Layout';
 import { OL } from '../../utils/consts/Colors';
-import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { STATE } from '../../utils/consts/FrontEndStateConsts';
+import { PROPERTY_TYPES, SETTINGS, MODULE } from '../../utils/consts/DataModelConsts';
+import { APP, STATE } from '../../utils/consts/FrontEndStateConsts';
 import { PSA_STATUSES, PSA_FAILURE_REASONS, EDIT_FIELDS } from '../../utils/consts/Consts';
 import { stripIdField } from '../../utils/DataUtils';
 import { toISODateTime } from '../../utils/FormattingUtils';
@@ -30,8 +29,6 @@ import * as FormActionFactory from '../../containers/psa/FormActionFactory';
 import * as ReviewActionFactory from '../../containers/review/ReviewActionFactory';
 import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
 import * as DataActionFactory from '../../utils/data/DataActionFactory';
-
-const { OPENLATTICE_ID_FQN } = Constants;
 
 const ModalWrapper = styled(CenteredContainer)`
   margin-top: -15px;
@@ -113,6 +110,7 @@ type Props = {
   app :Map<*, *>,
   open :boolean,
   scores :Immutable.Map<*, *>,
+  selectedOrganizationSettings :Immutable.Map<*, *>,
   onClose :() => void,
   defaultStatus? :?string,
   entityKeyId :?string,
@@ -268,7 +266,8 @@ class ClosePSAModal extends React.Component<Props, State> {
   }
 
   render() {
-    const { open, onClose } = this.props;
+    const { open, onClose, selectedOrganizationSettings } = this.props;
+    const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], '');
     const { status, statusNotes } = this.state;
     return (
       <ModalTransition>
@@ -284,8 +283,17 @@ class ClosePSAModal extends React.Component<Props, State> {
                   <h1>Select PSA Resolution</h1>
                   <CloseModalX onClick={() => onClose()} />
                 </TitleWrapper>
-                <OptionsGrid numColumns={3} gap={5}>
-                  {this.mapOptionsToRadioButtons(PSA_STATUSES, 'status')}
+                <OptionsGrid numColumns={includesPretrialModule ? 3 : 2} gap={5}>
+                  {
+                    includesPretrialModule
+                      ? this.mapOptionsToRadioButtons(PSA_STATUSES, 'status')
+                      : this.mapOptionsToRadioButtons(
+                        fromJS(PSA_STATUSES)
+                          .filter(value => value === PSA_STATUSES.OPEN || value === PSA_STATUSES.CANCELLED)
+                          .toJS(),
+                        'status'
+                      )
+                  }
                 </OptionsGrid>
                 { status === PSA_STATUSES.FAILURE
                   ? (
@@ -315,7 +323,8 @@ class ClosePSAModal extends React.Component<Props, State> {
 function mapStateToProps(state) {
   const app = state.get(STATE.APP);
   return {
-    app
+    app,
+    [APP.SELECTED_ORG_SETTINGS]: app.get(APP.SELECTED_ORG_SETTINGS)
   };
 }
 

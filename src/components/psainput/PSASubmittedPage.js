@@ -248,9 +248,14 @@ const ButtonRow = styled.div`
     justify-content: center;
   }
 
+  div {
+    margin-left: 10px;
+  }
+
   button:not(:first-child) {
     margin-left: 10px;
   }
+
 `;
 
 const FooterButtonGroup = styled.div`
@@ -457,18 +462,16 @@ class PSASubmittedPage extends React.Component<Props, State> {
   renderExportButton = (openAbove) => {
     const { getOnExport } = this.props;
     return (
-      <div>
-        <DropdownButton
-            title="PDF Report"
-            openAbove={openAbove}
-            options={[{
-              label: 'Export compact version',
-              onClick: () => getOnExport(true)
-            }, {
-              label: 'Export full version',
-              onClick: () => getOnExport(false)
-            }]} />
-      </div>
+      <DropdownButton
+          title="PDF Report"
+          openAbove={openAbove}
+          options={[{
+            label: 'Export compact version',
+            onClick: () => getOnExport(true)
+          }, {
+            label: 'Export full version',
+            onClick: () => getOnExport(false)
+          }]} />
     );
   }
 
@@ -491,13 +494,15 @@ class PSASubmittedPage extends React.Component<Props, State> {
 
   renderSetHearingButton = () => {
     const { settingHearing, selectedHearing } = this.state;
-    return (
-      <InfoButton
-          onClick={() => this.setState({ settingHearing: true })}
-          disabled={settingHearing}>
-        {selectedHearing ? 'View Hearing' : 'Set Hearing'}
-      </InfoButton>
-    );
+    const buttonText = selectedHearing ? 'View Hearing' : 'Set Hearing';
+    return !settingHearing
+      ? (
+        <InfoButton
+            onClick={() => this.setState({ settingHearing: true })}
+            disabled={settingHearing}>
+          { buttonText }
+        </InfoButton>
+      ) : null;
   };
 
   renderHearingNewHearingSection = () => {
@@ -600,9 +605,9 @@ class PSASubmittedPage extends React.Component<Props, State> {
         <HeaderRow>
           <span>Public Safety Assessment</span>
           <ButtonRow>
+            { includesPretrialModule ? this.renderSetHearingButton() : null }
             {this.renderExportButton()}
             {this.renderProfileButton()}
-            { includesPretrialModule ? this.renderSetHearingButton() : null }
           </ButtonRow>
         </HeaderRow>
         {

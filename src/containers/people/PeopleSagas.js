@@ -35,24 +35,16 @@ import {
 
 let {
   CONTACT_INFORMATION,
-  DMF_RESULTS,
-  DMF_RISK_FACTORS,
   HEARINGS,
-  MANUAL_PRETRIAL_CASES,
   PEOPLE,
-  PSA_RISK_FACTORS,
   PSA_SCORES,
   PRETRIAL_CASES,
   STAFF
 } = APP_TYPES_FQNS;
 
 CONTACT_INFORMATION = CONTACT_INFORMATION.toString();
-DMF_RESULTS = DMF_RESULTS.toString();
-DMF_RISK_FACTORS = DMF_RISK_FACTORS.toString();
 HEARINGS = HEARINGS.toString();
-MANUAL_PRETRIAL_CASES = MANUAL_PRETRIAL_CASES.toString();
 PEOPLE = PEOPLE.toString();
-PSA_RISK_FACTORS = PSA_RISK_FACTORS.toString();
 PSA_SCORES = PSA_SCORES.toString();
 PRETRIAL_CASES = PRETRIAL_CASES.toString();
 STAFF = STAFF.toString();
@@ -158,7 +150,7 @@ function* getPersonNeighborsWorker(action) :Generator<*, *, *> {
       if (appTypeFqn === CONTACT_INFORMATION) {
         neighborsByEntitySet = neighborsByEntitySet.set(
           appTypeFqn,
-          neighborObj
+          neighborsByEntitySet.get(appTypeFqn, List()).push(neighborObj)
         );
       }
       if (appTypeFqn === HEARINGS) {
@@ -230,6 +222,7 @@ function* getPersonNeighborsWorker(action) :Generator<*, *, *> {
     }));
   }
   catch (error) {
+    console.error(error);
     yield put(getPersonNeighbors.failure(action.id, { error, personId }));
   }
   finally {
@@ -276,7 +269,7 @@ function* refreshPersonNeighborsWorker(action) :Generator<*, *, *> {
       if (appTypeFqn === CONTACT_INFORMATION) {
         neighbors = neighbors.set(
           appTypeFqn,
-          neighbor
+          neighbors.get(appTypeFqn, List()).push(neighbor)
         );
       }
       else {

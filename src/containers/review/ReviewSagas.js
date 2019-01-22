@@ -319,10 +319,17 @@ function* loadPSADataWorker(action :SequenceAction) :Generator<*, *, *> {
       const psaScoresEntitySetId = getEntitySetId(app, psaScoresFqn, orgId);
       const peopleEntitySetId = getEntitySetId(app, peopleFqn, orgId);
       const staffEntitySetId = getEntitySetId(app, staffFqn, orgId);
+      const manualPretrialCasesFqnEntitySetId = getEntitySetId(app, manualPretrialCasesFqn, orgId);
+      const releaseRecommendationsEntitySetId = getEntitySetId(app, releaseRecommendationsFqn, orgId);
       let neighborsById = yield call(SearchApi.searchEntityNeighborsWithFilter, psaScoresEntitySetId, {
         entityKeyIds: action.value,
-        sourceEntitySetIds: [psaScoresEntitySetId],
-        destinationEntitySetIds: [peopleEntitySetId, psaScoresEntitySetId, staffEntitySetId]
+        sourceEntitySetIds: [psaScoresEntitySetId, releaseRecommendationsEntitySetId],
+        destinationEntitySetIds: [
+          peopleEntitySetId,
+          psaScoresEntitySetId,
+          staffEntitySetId,
+          manualPretrialCasesFqnEntitySetId
+        ]
       });
       neighborsById = obfuscateBulkEntityNeighbors(neighborsById); // TODO just for demo
       neighborsById = Immutable.fromJS(neighborsById);
