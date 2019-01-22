@@ -121,7 +121,7 @@ const { FullyQualifiedName } = Models;
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
-const LIST_ENTITY_SETS = Immutable.List.of(STAFF, RELEASE_CONDITIONS, HEARINGS);
+const LIST_ENTITY_SETS = Immutable.List.of(staffFqn, releaseConditionsFqn, hearingsFqn, pretrialCasesFqn);
 
 const orderCasesByArrestDate = (case1, case2) => {
   const date1 = moment(case1.getIn([PROPERTY_TYPES.ARREST_DATE, 0], case1.getIn([PROPERTY_TYPES.FILE_DATE, 0], '')));
@@ -190,7 +190,13 @@ function* getCasesAndCharges(neighbors) {
         allFTAs = allFTAs.push(Immutable.fromJS(neighborDetails));
       }
       else if (appTypeFqn === hearingsFqn) {
-        allHearings = allHearings.push(Immutable.fromJS(neighborDetails));
+        const hearingHasBeenCancelled = neighborDetails.getIn([PROPERTY_TYPES.UPDATE_TYPE, 0], '')
+          .toLowerCase().trim() === 'cancelled';
+        const hearingIsGeneric = neighborDetails.getIn([PROPERTY_TYPES.HEARING_TYPE, 0], '')
+          .toLowerCase().trim() === 'all other hearings';
+        if (!hearingHasBeenCancelled && !hearingIsGeneric) {
+          allHearings = allHearings.push(Immutable.fromJS(neighborDetails));
+        }
       }
     }
   });
@@ -313,9 +319,10 @@ function* loadPSADataWorker(action :SequenceAction) :Generator<*, *, *> {
       const psaScoresEntitySetId = getEntitySetId(app, psaScoresFqn, orgId);
       const peopleEntitySetId = getEntitySetId(app, peopleFqn, orgId);
       const staffEntitySetId = getEntitySetId(app, staffFqn, orgId);
+      const releaseRecommendationsEntitySetId = getEntitySetId(app, releaseRecommendationsFqn, orgId);
       let neighborsById = yield call(SearchApi.searchEntityNeighborsWithFilter, psaScoresEntitySetId, {
         entityKeyIds: action.value,
-        sourceEntitySetIds: [psaScoresEntitySetId],
+        sourceEntitySetIds: [psaScoresEntitySetId, releaseRecommendationsEntitySetId],
         destinationEntitySetIds: [peopleEntitySetId, psaScoresEntitySetId, staffEntitySetId]
       });
       neighborsById = obfuscateBulkEntityNeighbors(neighborsById); // TODO just for demo

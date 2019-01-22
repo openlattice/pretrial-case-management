@@ -260,7 +260,8 @@ type Props = {
   allCases :Immutable.List<*>,
   allFTAs :Immutable.List<*>,
   psaDate :string,
-  viewOnly? :boolean
+  viewOnly? :boolean,
+  exitEdit? :() => void;
 };
 
 type State = {
@@ -398,9 +399,10 @@ class PSAInputForm extends React.Component<Props, State> {
       currCharges,
       dmfStep2Charges,
       dmfStep4Charges,
+      exitEdit,
       handleClose,
       input,
-      noBorders,
+      modal,
       psaDate,
       selectedOrganizationId,
       selectedOrganizationSettings,
@@ -462,7 +464,7 @@ class PSAInputForm extends React.Component<Props, State> {
     const secondaryHoldHeader = BRE_LABELS.LABEL;
     return (
       <div>
-        <FormWrapper noBorders={noBorders}>
+        <FormWrapper noBorders={modal}>
           <Header>PSA Information</Header>
           <WideForm>
             {
@@ -640,7 +642,10 @@ class PSAInputForm extends React.Component<Props, State> {
               {
                 viewOnly ? null : (
                   <ButtonRow>
-                    <DiscardButton onClick={handleClose}>Discard</DiscardButton>
+                    { exitEdit
+                      ? <DiscardButton onClick={exitEdit}>Cancel</DiscardButton>
+                      : <DiscardButton onClick={handleClose}>Discard</DiscardButton>
+                    }
                     <SubmitButton
                         type="submit"
                         bsStyle="primary"

@@ -59,8 +59,8 @@ const StyledContentBlockWrapper = styled.div`
       case CONTENT_CONSTS.HEARING_CARD:
         return (
           `grid-auto-rows: min-content;
-            grid-column-gap: 30px;
-            grid-auto-columns: max-content;
+            grid-column-gap: 15px;
+            grid-template-columns: reapeat(auto-fill);
             grid-auto-flow: column;
            :nth-last-child(4) {
              justify-content: flex-end;
