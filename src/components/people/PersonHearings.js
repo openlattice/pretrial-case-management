@@ -323,13 +323,7 @@ class PersonHearings extends React.Component<Props, State> {
             <h1>Manage Hearings</h1>
           </TitleWrapper>
           <HearingCardsWithTitle
-              title="Scheduled Hearings"
-              hearings={scheduledHearingsWithOutcomes}
-              handleSelect={this.selectingReleaseConditions}
-              hearingsWithOutcomes={hearingsWithOutcomes} />
-          <hr />
-          <HearingCardsWithTitle
-              title="Past Hearings"
+              title="Hearings With Outcomes"
               hearings={pastHearingsWithOutcomes}
               handleSelect={this.selectingReleaseConditions}
               hearingsWithOutcomes={hearingsWithOutcomes} />
