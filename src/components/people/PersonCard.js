@@ -108,7 +108,6 @@ type Props = {
     identification :string
   },
   scores :Immutable.Map<*, *>,
-  neighbors :Immutable.Map<*, *>,
   hasOpenPSA? :boolean,
   judgesview? :boolean,
   loadCaseHistoryFn :(values :{
@@ -128,8 +127,7 @@ class PersonCard extends React.Component<Props, State> {
 
   static defaultProps = {
     hasOpenPSA: false,
-    judgesview: false,
-    neighbors: Immutable.Map()
+    judgesview: false
   }
 
   constructor(props :Props) {
@@ -143,6 +141,7 @@ class PersonCard extends React.Component<Props, State> {
 
   renderModal = () => {
     const { props } = this;
+    const { psaId } = this.props;
     const { psaModalOpen } = this.state;
     const modalProps = {};
     Object.keys(this.props).forEach((prop) => {
@@ -153,21 +152,19 @@ class PersonCard extends React.Component<Props, State> {
           open={psaModalOpen}
           view={CONTENT.JUDGES}
           onClose={this.onClose}
+          entityKeyId={psaId}
           {...modalProps} />
     );
   }
 
 
   openDetailsModal = () => {
-    const { neighbors, loadCaseHistoryFn, loadHearingNeighbors } = this.props;
-    const hearingIds = Immutable.fromJS(neighbors).get(HEARINGS, Immutable.List())
-      .map(neighbor => neighbor.getIn([OPENLATTICE_ID_FQN, 0]))
-      .filter(id => !!id)
-      .toJS();
-    const loadPersonData = false;
-    const personId = getEntityKeyId(Immutable.fromJS(neighbors), PEOPLE);
-    loadCaseHistoryFn({ personId, neighbors: Immutable.fromJS(neighbors) });
-    loadHearingNeighbors({ hearingIds, loadPersonData });
+    const {
+      psaId,
+      loadCaseHistoryFn,
+      loadPSAModal
+    } = this.props;
+    loadPSAModal({ psaId, callback: loadCaseHistoryFn });
     this.setState({ psaModalOpen: true });
   }
 

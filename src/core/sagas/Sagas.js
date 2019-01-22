@@ -13,6 +13,7 @@ import * as PersonSagas from '../../containers/person/PersonSagas';
 import * as PeopleSagas from '../../containers/people/PeopleSagas';
 import * as DashboardSagas from '../../containers/dashboard/DashboardSagas';
 import * as DataSagas from '../../utils/data/DataSagas';
+import * as PSAModalSagas from '../../containers/psamodal/PSAModalSagas';
 import * as PsaSagas from '../../containers/psa/FormSagas';
 import * as ReviewSagas from '../../containers/review/ReviewSagas';
 import * as DownloadSagas from '../../containers/download/DownloadSagas';
@@ -85,6 +86,9 @@ export default function* sagas() :Generator<*, *, *> {
     fork(PeopleSagas.getPersonDataWatcher),
     fork(PeopleSagas.getPersonNeighborsWatcher),
     fork(PeopleSagas.refreshPersonNeighborsWatcher),
+
+    // PSA Sagas
+    fork(PSAModalSagas.loadPSAModalWatcher),
 
     // PSA Sagas
     fork(PsaSagas.hardRestartWatcher),

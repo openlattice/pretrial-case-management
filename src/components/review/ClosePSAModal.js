@@ -4,7 +4,7 @@
 
 import React from 'react';
 import styled from 'styled-components';
-import Immutable, { Map } from 'immutable';
+import Immutable, { Map, fromJS } from 'immutable';
 import moment from 'moment';
 import { connect } from 'react-redux';
 import Modal, { ModalTransition } from '@atlaskit/modal-dialog';
@@ -19,8 +19,8 @@ import closeX from '../../assets/svg/close-x-gray.svg';
 import psaEditedConfig from '../../config/formconfig/PsaEditedConfig';
 import { CenteredContainer } from '../../utils/Layout';
 import { OL } from '../../utils/consts/Colors';
-import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { STATE } from '../../utils/consts/FrontEndStateConsts';
+import { PROPERTY_TYPES, SETTINGS, MODULE } from '../../utils/consts/DataModelConsts';
+import { APP, STATE } from '../../utils/consts/FrontEndStateConsts';
 import { PSA_STATUSES, PSA_FAILURE_REASONS, EDIT_FIELDS } from '../../utils/consts/Consts';
 import { stripIdField } from '../../utils/DataUtils';
 import { toISODateTime } from '../../utils/FormattingUtils';
@@ -110,6 +110,7 @@ type Props = {
   app :Map<*, *>,
   open :boolean,
   scores :Immutable.Map<*, *>,
+  selectedOrganizationSettings :Immutable.Map<*, *>,
   onClose :() => void,
   defaultStatus? :?string,
   entityKeyId :?string,
@@ -217,21 +218,27 @@ class ClosePSAModal extends React.Component<Props, State> {
   }
 
   handleStatusChange = (app :Map<*, *>, status :string, failureReason :string[], statusNotes :?string) => {
-    if (!this.props.actions.changePSAStatus) return;
+    const {
+      actions,
+      scores,
+      onStatusChangeCallback,
+      onSubmit,
+      entityKeyId
+    } = this.props;
+    if (!actions.changePSAStatus) return;
     const statusNotesList = (statusNotes && statusNotes.length) ? Immutable.List.of(statusNotes) : Immutable.List();
 
-    const scoresEntity = stripIdField(this.props.scores
+    const scoresEntity = stripIdField(scores
       .set(PROPERTY_TYPES.STATUS, Immutable.List.of(status))
       .set(PROPERTY_TYPES.FAILURE_REASON, Immutable.fromJS(failureReason))
       .set(PROPERTY_TYPES.STATUS_NOTES, statusNotesList));
-    const scoresId = this.props.entityKeyId;
-    this.props.actions.changePSAStatus({
-      scoresId,
+    actions.changePSAStatus({
+      scoresId: entityKeyId,
       scoresEntity,
-      callback: this.props.onStatusChangeCallback
+      callback: onStatusChangeCallback
     });
 
-    this.props.actions.submit({
+    actions.submit({
       app,
       config: psaEditedConfig,
       values: {
@@ -239,9 +246,9 @@ class ClosePSAModal extends React.Component<Props, State> {
         [EDIT_FIELDS.TIMESTAMP]: [toISODateTime(moment())],
         [EDIT_FIELDS.PERSON_ID]: [AuthUtils.getUserInfo().email]
       },
-      callback: this.props.actions.clearSubmit
+      callback: actions.clearSubmit
     });
-    this.props.onSubmit();
+    onSubmit();
     this.setState({ editing: false });
   }
 
@@ -259,7 +266,8 @@ class ClosePSAModal extends React.Component<Props, State> {
   }
 
   render() {
-    const { open, onClose } = this.props;
+    const { open, onClose, selectedOrganizationSettings } = this.props;
+    const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], '');
     const { status, statusNotes } = this.state;
     return (
       <ModalTransition>
@@ -275,8 +283,17 @@ class ClosePSAModal extends React.Component<Props, State> {
                   <h1>Select PSA Resolution</h1>
                   <CloseModalX onClick={() => onClose()} />
                 </TitleWrapper>
-                <OptionsGrid numColumns={3} gap={5}>
-                  {this.mapOptionsToRadioButtons(PSA_STATUSES, 'status')}
+                <OptionsGrid numColumns={includesPretrialModule ? 3 : 2} gap={5}>
+                  {
+                    includesPretrialModule
+                      ? this.mapOptionsToRadioButtons(PSA_STATUSES, 'status')
+                      : this.mapOptionsToRadioButtons(
+                        fromJS(PSA_STATUSES)
+                          .filter(value => value === PSA_STATUSES.OPEN || value === PSA_STATUSES.CANCELLED)
+                          .toJS(),
+                        'status'
+                      )
+                  }
                 </OptionsGrid>
                 { status === PSA_STATUSES.FAILURE
                   ? (
@@ -306,7 +323,8 @@ class ClosePSAModal extends React.Component<Props, State> {
 function mapStateToProps(state) {
   const app = state.get(STATE.APP);
   return {
-    app
+    app,
+    [APP.SELECTED_ORG_SETTINGS]: app.get(APP.SELECTED_ORG_SETTINGS)
   };
 }
 

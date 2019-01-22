@@ -6,6 +6,7 @@ import React from 'react';
 import styled from 'styled-components';
 
 import CheckboxButton from '../controls/StyledCheckboxButton';
+import StyledCheckbox from '../controls/StyledCheckbox';
 import StyledInput from '../controls/StyledInput';
 import InfoButton from '../buttons/InfoButton';
 import { PrimaryButton, TertiaryButton } from '../../utils/Layout';
@@ -51,9 +52,23 @@ const ButtonContainer = styled.div`
   align-items: center;
 `;
 
+const CheckboxContainer = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  margin: 30px 0 0;
+
+  label {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 14px;
+    color: ${OL.GREY02};
+  }
+`;
+
 type Props = {
   statute :string,
   chargeType :string,
+  confirmViolentCharge :boolean,
   creatingNew :boolean,
   description :string,
   degree :string,
@@ -182,7 +197,7 @@ class PersonContactInfo extends React.Component<Props, State> {
   formatBooleanLabel = boolean => (boolean ? 'Yes' : 'No');
 
   render() {
-    const { chargeType } = this.props;
+    const { chargeType, confirmViolentCharge, handleCheckboxChange } = this.props;
     let {
       description,
       degree,
@@ -194,6 +209,12 @@ class PersonContactInfo extends React.Component<Props, State> {
       isBRE,
       statute
     } = this.props;
+
+    const confirmViolentText = isViolent
+      ? 'CHARGE IS VIOLENT'
+      : 'CHARGE IS NOT VIOLENT'
+
+    const confirmViolentDisabled = !(statute && description);
 
     description = description || '';
     degree = degree || '';
@@ -292,6 +313,17 @@ class PersonContactInfo extends React.Component<Props, State> {
               </InputRow>
             )
         }
+        <InputRow>
+          <CheckboxContainer>
+            <StyledCheckbox
+                name="confirmViolentCharge"
+                label={confirmViolentText}
+                checked={confirmViolentCharge}
+                value="confirmViolentCharge"
+                onChange={handleCheckboxChange}
+                disabled={confirmViolentDisabled} />
+          </CheckboxContainer>
+        </InputRow>
         { this.renderButtons() }
       </StyledFormSection>
     );

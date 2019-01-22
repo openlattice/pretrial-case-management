@@ -6,7 +6,7 @@ import React from 'react';
 import styled from 'styled-components';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { Map, List, Set } from 'immutable';
+import { Map, Set } from 'immutable';
 
 import PSAFailureStats from '../../components/review/PSAFailureStats';
 import PSAReviewReportsRow from '../../components/review/PSAReviewReportsRow';
@@ -16,7 +16,7 @@ import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
 import { NoResults } from '../../utils/Layout';
 import { PSA_FAILURE_REASONS, PSA_STATUSES, SORT_TYPES } from '../../utils/consts/Consts';
 import { sortByDate, sortByName } from '../../utils/PSAUtils';
-import { getEntityKeyId, getIdOrValue } from '../../utils/DataUtils';
+import { getIdOrValue } from '../../utils/DataUtils';
 import { OL } from '../../utils/consts/Colors';
 import {
   APP_TYPES_FQNS,
@@ -31,19 +31,22 @@ import {
   SUBMIT,
   PEOPLE,
   PSA_NEIGHBOR,
+  PSA_MODAL,
   COURT
 } from '../../utils/consts/FrontEndStateConsts';
 
 import * as FormActionFactory from '../psa/FormActionFactory';
 import * as ReviewActionFactory from './ReviewActionFactory';
+import * as PSAModalActionFactory from '../psamodal/PSAModalActionFactory';
 import * as CourtActionFactory from '../court/CourtActionFactory';
 import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
 import * as DataActionFactory from '../../utils/data/DataActionFactory';
 
 const { PSA_SCORES } = APP_TYPES_FQNS;
-
+let { ASSESSED_BY } = APP_TYPES_FQNS;
 const peopleFqn :string = APP_TYPES_FQNS.PEOPLE.toString();
 const psaScoresFqn :string = PSA_SCORES.toString();
+ASSESSED_BY = ASSESSED_BY.toString();
 
 const StyledCenteredContainer = styled.div`
   text-align: center;
@@ -121,7 +124,9 @@ type Props = {
   sort? :?string,
   component :?string,
   entitySetsByOrganization :Map<*, *>,
+  entitySetIdsToAppType :Map<*, *>,
   hideCaseHistory? :boolean,
+  hearingIds :Set<*>,
   filterType :string,
   onStatusChangeCallback? :() => void,
   renderContent :?(() => void),
@@ -145,17 +150,9 @@ type Props = {
     clearSubmit :() => void,
   },
   psaNeighborsById :Map<*, *>,
-  caseHistory :List<*>,
-  manualCaseHistory :List<*>,
   neighbors :Map<*, *>,
-  chargeHistory :Map<*, *>,
-  manualChargeHistory :Map<*, *>,
-  sentenceHistory :Map<*, *>,
-  ftaHistory :Map<*, *>,
-  hearings :List<*>,
   psaIdsRefreshing :Set<*>,
   personId :string,
-  readOnlyPermissions :boolean,
   loadingPSAData :boolean,
   loading :boolean,
   scoresEntitySetId :string,
@@ -188,14 +185,18 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
   componentDidMount() {
     const { actions, selectedOrganizationId } = this.props;
     if (selectedOrganizationId) {
-      actions.checkPSAPermissions();
       actions.loadJudges();
     }
   }
 
   componentWillReceiveProps(nextProps) {
     let { start } = this.state;
-    const { filterType, scoreSeq } = this.props;
+    const {
+      actions,
+      filterType,
+      hearingIds,
+      scoreSeq
+    } = this.props;
     const nextFilterType = nextProps.filterType;
     if (filterType && (filterType !== nextFilterType)) {
       this.setState({ start: 0 });
@@ -209,13 +210,15 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
       if (start <= 0) start = 0;
       this.setState({ start });
     }
+    if (hearingIds.size !== nextProps.hearingIds.size) {
+      actions.loadHearingNeighbors({ hearingIds: nextProps.hearingIds.toJS() });
+    }
   }
 
 
   componentDidUpdate(prevProps) {
     const { actions, selectedOrganizationId } = this.props;
     if (selectedOrganizationId !== prevProps.selectedOrganizationId) {
-      actions.checkPSAPermissions();
       actions.loadJudges();
     }
   }
@@ -225,23 +228,21 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
     actions.clearSubmit();
   }
 
+  loadCaseHistoryCallback = (personId, psaNeighbors) => {
+    const { actions } = this.props;
+    const { loadCaseHistory } = actions;
+    loadCaseHistory({ personId, neighbors: psaNeighbors });
+  }
+
   renderRow = (scoreId, scores) => {
     const {
       psaNeighborsById,
-      caseHistory,
       entitySetsByOrganization,
-      manualCaseHistory,
-      chargeHistory,
-      manualChargeHistory,
-      sentenceHistory,
-      ftaHistory,
-      hearings,
       component,
       scoresEntitySetId,
       actions,
       onStatusChangeCallback,
       psaIdsRefreshing,
-      readOnlyPermissions,
       hideCaseHistory,
       submitting,
       selectedOrganizationSettings
@@ -251,7 +252,7 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
 
     const {
       downloadPSAReviewPDF,
-      loadCaseHistory,
+      loadPSAModal,
       loadHearingNeighbors,
       submit,
       replaceEntity,
@@ -260,15 +261,7 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
     } = actions;
 
     const neighbors = psaNeighborsById.get(scoreId, Map());
-    const personId = getEntityKeyId(neighbors, peopleFqn);
     const personIdValue = getIdOrValue(neighbors, peopleFqn, PROPERTY_TYPES.PERSON_ID);
-    const personCaseHistory = caseHistory.get(personId, List());
-    const personManualCaseHistory = manualCaseHistory.get(personId, List());
-    const personChargeHistory = chargeHistory.get(personId, Map());
-    const personManualChargeHistory = manualChargeHistory.get(personId, Map());
-    const personSentenceHistory = sentenceHistory.get(personId, Map());
-    const personFTAHistory = ftaHistory.get(personId, Map());
-    const personHearings = hearings.get(personId, List());
 
     const hideProfile = (
       component === CONTENT_CONSTS.PROFILE || component === CONTENT_CONSTS.PENDING_PSAS
@@ -277,28 +270,21 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
       <PSAReviewReportsRow
           includesPretrialModule={includesPretrialModule}
           entitySetIdsToAppType={entitySetsByOrganization}
-          neighbors={neighbors}
+          psaNeighbors={neighbors}
           scores={scores}
           scoresEntitySetId={scoresEntitySetId}
           personId={personIdValue}
           entityKeyId={scoreId}
           downloadFn={downloadPSAReviewPDF}
-          loadCaseHistoryFn={loadCaseHistory}
+          loadCaseHistoryFn={this.loadCaseHistoryCallback}
           loadHearingNeighbors={loadHearingNeighbors}
+          loadPSAModal={loadPSAModal}
           onStatusChangeCallback={onStatusChangeCallback}
           submitData={submit}
           replaceEntity={replaceEntity}
           deleteEntity={deleteEntity}
           refreshPSANeighbors={refreshPSANeighbors}
-          caseHistory={personCaseHistory}
-          manualCaseHistory={personManualCaseHistory}
-          chargeHistory={personChargeHistory}
-          manualChargeHistory={personManualChargeHistory}
-          sentenceHistory={personSentenceHistory}
-          ftaHistory={personFTAHistory}
-          hearings={personHearings}
           refreshingNeighbors={psaIdsRefreshing.has(scoreId)}
-          readOnly={readOnlyPermissions}
           key={scoreId}
           hideCaseHistory={hideCaseHistory}
           hideProfile={hideProfile}
@@ -357,11 +343,18 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
   }
 
   sortItems = () => {
-    const { sort, scoreSeq, psaNeighborsById } = this.props;
+    const {
+      sort,
+      scoreSeq,
+      psaNeighborsById,
+      entitySetsByOrganization
+    } = this.props;
     if (!sort) return scoreSeq;
     const sortFn = sort === SORT_TYPES.DATE ? sortByDate : sortByName;
     return scoreSeq.sort(([id1], [id2]) => sortFn(
-      [id1, psaNeighborsById.get(id1, Map())], [id2, psaNeighborsById.get(id2, Map())]
+      [id1, psaNeighborsById.get(id1, Map())],
+      [id2, psaNeighborsById.get(id2, Map())],
+      entitySetsByOrganization
     ));
   }
 
@@ -449,6 +442,7 @@ function mapStateToProps(state) {
   const review = state.get(STATE.REVIEW);
   const court = state.get(STATE.COURT);
   const submit = state.get(STATE.SUBMIT);
+  const psaModal = state.get(STATE.PSA_MODAL);
   // TODO: Address prop names so that consts can be used as keys
   return {
     [APP.ENTITY_SETS_BY_ORG]: app.getIn([APP.ENTITY_SETS_BY_ORG, orgId], Map()),
@@ -457,16 +451,11 @@ function mapStateToProps(state) {
 
     [REVIEW.ENTITY_SET_ID]: review.get(REVIEW.ENTITY_SET_ID) || people.get(PEOPLE.SCORES_ENTITY_SET_ID),
     [REVIEW.NEIGHBORS_BY_ID]: review.get(REVIEW.NEIGHBORS_BY_ID),
-    [REVIEW.CASE_HISTORY]: review.get(REVIEW.CASE_HISTORY),
-    [REVIEW.MANUAL_CASE_HISTORY]: review.get(REVIEW.MANUAL_CASE_HISTORY),
-    [REVIEW.CHARGE_HISTORY]: review.get(REVIEW.CHARGE_HISTORY),
-    [REVIEW.MANUAL_CHARGE_HISTORY]: review.get(REVIEW.MANUAL_CHARGE_HISTORY),
-    [REVIEW.SENTENCE_HISTORY]: review.get(REVIEW.SENTENCE_HISTORY),
-    [REVIEW.FTA_HISTORY]: review.get(REVIEW.FTA_HISTORY),
-    [REVIEW.HEARINGS]: review.get(REVIEW.HEARINGS),
     [REVIEW.LOADING_DATA]: review.get(REVIEW.LOADING_DATA),
     [REVIEW.PSA_IDS_REFRESHING]: review.get(REVIEW.PSA_IDS_REFRESHING),
     readOnlyPermissions: review.get(REVIEW.READ_ONLY),
+
+    [PSA_MODAL.HEARING_IDS]: psaModal.get(PSA_MODAL.HEARING_IDS),
 
     [PEOPLE.PERSON_DATA]: people.get(PEOPLE.PERSON_DATA),
     [PEOPLE.NEIGHBORS]: people.get(PEOPLE.NEIGHBORS, Map()),
@@ -489,6 +478,10 @@ function mapDispatchToProps(dispatch :Function) :Object {
 
   Object.keys(ReviewActionFactory).forEach((action :string) => {
     actions[action] = ReviewActionFactory[action];
+  });
+
+  Object.keys(PSAModalActionFactory).forEach((action :string) => {
+    actions[action] = PSAModalActionFactory[action];
   });
 
   Object.keys(CourtActionFactory).forEach((action :string) => {

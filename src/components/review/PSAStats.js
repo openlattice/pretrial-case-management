@@ -123,14 +123,12 @@ const FLAG_DIMS = { height: 28, width: 74 };
 
 type Props = {
   hideProfile :boolean,
-  includesPretrialModule :boolean,
   scores :Immutable.Map<*, *>,
   downloadButton :() => void
 };
 
 const PSAStats = ({
   hideProfile,
-  includesPretrialModule,
   scores,
   downloadButton
 } :Props) => {
@@ -154,15 +152,10 @@ const PSAStats = ({
     <DetailsWrapper>
       <DetailRow downloadVisible={downloadVisible} hideProfile={hideProfile}>
         { hideProfile ? null : <DetailItem /> }
-        {
-          includesPretrialModule
-            ? (
-              <DetailItem>
-                <h1>PSA Status</h1>
-                <div><StatusTag status={status}>{status}</StatusTag></div>
-              </DetailItem>
-            ) : null
-        }
+        <DetailItem>
+          <h1>PSA Status</h1>
+          <div><StatusTag status={status}>{status}</StatusTag></div>
+        </DetailItem>
         <DetailItem>
           <h1>NVCA</h1>
           <BooleanFlag dims={FLAG_DIMS} value={nvcaVal} />

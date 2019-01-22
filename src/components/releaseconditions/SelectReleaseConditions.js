@@ -26,8 +26,8 @@ import BasicButton from '../buttons/BasicButton';
 import releaseConditionsConfig from '../../config/formconfig/ReleaseConditionsConfig';
 import { NoContactRow } from './ReleaseConditionsStyledTags';
 import { OL } from '../../utils/consts/Colors';
-import { getEntitySetId } from '../../utils/AppUtils';
 import { getTimeOptions } from '../../utils/consts/DateTimeConsts';
+import { getEntitySetId } from '../../utils/AppUtils';
 import {
   RELEASE_CONDITIONS,
   LIST_FIELDS,
@@ -234,6 +234,7 @@ type Props = {
   defaultConditions :Immutable.List<*>,
   defaultDMF :Immutable.Map<*, *>,
   defaultOutcome :Immutable.Map<*, *>,
+  selectedOrganizationId :string,
   deleteEntity :(values :{
     entitySetId :string,
     entityKeyId :string
@@ -251,7 +252,7 @@ type Props = {
   psaId :string,
   selectedOrganizationId :string,
   replace :(value :{ entitySetName :string, entityKeyId :string, values :Object }) => void,
-  submit :(value :{ app :Map<*,*>, config :Object, values :Object, callback? :() => void }) => void,
+  submit :(value :{ app :Map<*, *>, config :Object, values :Object, callback? :() => void }) => void,
   replaceAssociation :(values :{
     associationEntity :Map<*, *>,
     associationEntitySetName :string,
@@ -413,7 +414,7 @@ class SelectReleaseConditions extends React.Component<Props, State> {
           [PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.OTHER_TEXT, 0],
           defaultDMF.getIn([PROPERTY_TYPES.OTHER_TEXT, 0], '')
         ),
-        [RELEASE]: defaultBond.size ? RELEASES.RELEASED : RELEASES.HELD,
+        [RELEASE]: bondType ? RELEASES.RELEASED : RELEASES.HELD,
         [BOND_TYPE]: bondType,
         [BOND_AMOUNT]: bondAmount,
         [CONDITIONS]: conditionsByType.keySeq().toJS(),
@@ -654,8 +655,9 @@ class SelectReleaseConditions extends React.Component<Props, State> {
     );
     const conditionEntityKeyIds = defaultConditions.map(neighbor => neighbor.getIn(
       [PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0],
-      neighbor.getIn([OPENLATTICE_ID_FQN, 0], [])
+      neighbor.getIn([OPENLATTICE_ID_FQN, 0], ''), []
     ));
+
     const bondEntityKeyId = defaultBond.getIn(
       [PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0],
       defaultBond.getIn([OPENLATTICE_ID_FQN, 0], '')
@@ -727,6 +729,12 @@ class SelectReleaseConditions extends React.Component<Props, State> {
         [PROPERTY_TYPES.BOND_AMOUNT]: bondAmount
       };
       submission[ID_FIELD_NAMES.BOND_ID] = randomUUID();
+    }
+    else {
+      bondEntity = {
+        [PROPERTY_TYPES.BOND_TYPE]: null,
+        [PROPERTY_TYPES.BOND_AMOUNT]: null
+      };
     }
 
     const conditionsEntity = [];
@@ -966,19 +974,21 @@ class SelectReleaseConditions extends React.Component<Props, State> {
     this.setState({ modifyingHearing: false });
     const dateFormat = 'MM/DD/YYYY';
     const timeFormat = 'hh:mm a';
-    const date = moment(newHearingDate);
+    const date = newHearingDate ? moment(newHearingDate) : moment(dateTime);
     const time = moment(rawTime, timeFormat);
     const hearingDateTime = moment(
       `${date.format(dateFormat)} ${time.format(timeFormat)}`, `${dateFormat} ${timeFormat}`
     );
-    const hearingsEntitySetId = getEntitySetId(app, HEARINGS, selectedOrganizationId);
-    const associationEntitySetName = ASSESSED_BY;
+
     const associationEntitySetId = getEntitySetId(app, ASSESSED_BY, selectedOrganizationId);
+    const srcEntitySetId = getEntitySetId(app, JUDGES, selectedOrganizationId);
+    const hearingEntitySetId = getEntitySetId(app, HEARINGS, selectedOrganizationId);
+
+    const associationEntitySetName = ASSESSED_BY;
     const associationEntityKeyId = judgeEntity
       ? judgeEntity.getIn([PSA_ASSOCIATION.DETAILS, OPENLATTICE_ID_FQN, 0])
       : null;
     const srcEntitySetName = JUDGES;
-    const srcEntitySetId = getEntitySetId(app, JUDGES, selectedOrganizationId);
     const srcEntityKeyId = judgeId;
     const dstEntitySetName = HEARINGS;
     const dstEntityKeyId = hearingEntityKeyId;
@@ -997,14 +1007,14 @@ class SelectReleaseConditions extends React.Component<Props, State> {
       replaceAssociation({
         associationEntity,
         associationEntitySetName,
-        associationEntitySetId,
         associationEntityKeyId,
         srcEntitySetName,
         srcEntitySetId,
         srcEntityKeyId,
         dstEntitySetName,
-        dstEntitySetId: hearingsEntitySetId,
         dstEntityKeyId,
+        associationEntitySetId,
+        dstEntitySetId: hearingEntitySetId,
         callback: refreshHearingsNeighborsCallback
       });
     }
@@ -1016,8 +1026,8 @@ class SelectReleaseConditions extends React.Component<Props, State> {
         .set(PROPERTY_TYPES.HEARING_COMMENTS, judgeText)
         .toJS();
       replace({
+        entitySetId: hearingEntitySetId,
         entitySetName: HEARINGS,
-        entitySetId: hearingsEntitySetId,
         entityKeyId: hearingEntityKeyId,
         values: newHearing,
         callback: submitCallback
@@ -1181,7 +1191,6 @@ class SelectReleaseConditions extends React.Component<Props, State> {
 
   render() {
     const { state } = this;
-
     const RELEASED = state[RELEASE] !== RELEASES.RELEASED;
     return (
       <Wrapper>

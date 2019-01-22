@@ -11,8 +11,10 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import Modal, { ModalTransition } from '@atlaskit/modal-dialog';
 import { AuthUtils } from 'lattice-auth';
+import { Link } from 'react-router-dom';
 
 import CustomTabs from '../../components/tabs/Tabs';
+import LoadingSpinner from '../../components/LoadingSpinner';
 import PSAInputForm from '../../components/psainput/PSAInputForm';
 import PersonCard from '../../components/person/PersonCardReview';
 import StyledButton from '../../components/buttons/StyledButton';
@@ -45,9 +47,8 @@ import {
   APP,
   PSA_NEIGHBOR,
   PSA_ASSOCIATION,
-  STATE,
-  REVIEW,
-  COURT
+  PSA_MODAL,
+  STATE
 } from '../../utils/consts/FrontEndStateConsts';
 import {
   CONTEXT,
@@ -57,8 +58,10 @@ import {
   PSA
 } from '../../utils/consts/Consts';
 
+import * as Routes from '../../core/router/Routes';
 import * as FormActionFactory from '../psa/FormActionFactory';
 import * as ReviewActionFactory from './ReviewActionFactory';
+import * as PSAModalActionFactory from '../psamodal/PSAModalActionFactory';
 import * as CourtActionFactory from '../court/CourtActionFactory';
 import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
 import * as DataActionFactory from '../../utils/data/DataActionFactory';
@@ -93,6 +96,13 @@ STAFF = STAFF.toString();
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
+const StyledLink = styled(Link)`
+  color: ${OL.GREY01};
+  :hover {
+    color: ${OL.PURPLE02};
+  }
+`;
+
 const DownloadButtonContainer = styled.div`
   width: 100%;
   height: 100%;
@@ -107,6 +117,14 @@ const ModalWrapper = styled.div`
     margin: ${props => (props.withPadding ? '30px -30px' : '15px 0')};
     width: ${props => (props.withPadding ? 'calc(100% + 60px)' : '100%')};
   }
+`;
+
+const SpinnerWrapper = styled.div`
+  margin: 20px;
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
 `;
 
 const NoDMFContainer = styled(CenteredContainer)`
@@ -177,7 +195,6 @@ const CloseModalX = styled.img.attrs({
   height: 16px;
   width: 16px;
   margin-left: 40px;
-
   &:hover {
     cursor: pointer;
   }
@@ -193,11 +210,11 @@ type Props = {
   hideProfile? :boolean,
   manualCaseHistory :List<*>,
   manualChargeHistory :Map<*, *>,
-  neighbors :Map<*, *>,
   onClose :() => {},
   open :boolean,
   personId :string,
   readOnly :boolean,
+  psaPermission :boolean,
   refreshingNeighbors :boolean,
   scores :Map<*, *>,
   scoresEntitySetId :string,
@@ -265,21 +282,25 @@ class PSAModal extends React.Component<Props, State> {
     this.state = {
       editing: false,
       closingPSAModalOpen: false,
-      riskFactors: this.getRiskFactors(props.neighbors),
-      dmf: this.getDMF(props.neighbors)
+      riskFactors: this.getRiskFactors(props.psaNeighbors),
+      dmf: this.getDMF(props.psaNeighbors)
     };
   }
 
   componentWillReceiveProps(nextProps :Props) {
     this.setState({
-      dmf: this.getDMF(nextProps.neighbors),
-      riskFactors: this.getRiskFactors(nextProps.neighbors)
+      dmf: this.getDMF(nextProps.psaNeighbors),
+      riskFactors: this.getRiskFactors(nextProps.psaNeighbors)
     });
+  }
+
+  exitEdit = () => {
+    this.setState({ editing: false });
   }
 
   onClose() {
     const { onClose } = this.props;
-    this.setState({ editing: false });
+    this.exitEdit();
     onClose();
   }
 
@@ -360,15 +381,15 @@ class PSAModal extends React.Component<Props, State> {
 
   downloadRow = (e, isCompact) => {
     e.stopPropagation();
-    const { actions, neighbors, scores } = this.props;
-    actions.downloadPSAReviewPDF({ neighbors, scores, isCompact });
+    const { actions, psaNeighbors, scores } = this.props;
+    actions.downloadPSAReviewPDF({ neighbors: psaNeighbors, scores, isCompact });
   }
 
   renderPersonCard = () => {
-    const { neighbors, hideProfile } = this.props;
+    const { psaNeighbors, hideProfile } = this.props;
     if (hideProfile) return null;
 
-    const personDetails = neighbors.getIn([PEOPLE, PSA_NEIGHBOR.DETAILS], Map());
+    const personDetails = psaNeighbors.getIn([PEOPLE, PSA_NEIGHBOR.DETAILS], Map());
     if (!personDetails.size) return <div>Person details unknown.</div>;
     return <PersonCard person={personDetails} />;
   }
@@ -451,18 +472,18 @@ class PSAModal extends React.Component<Props, State> {
   });
 
   getEntitySetId = (name) :string => {
-    const { neighbors } = this.props;
-    return getEntitySetId(neighbors, name);
+    const { psaNeighbors } = this.props;
+    return getEntitySetId(psaNeighbors, name);
   };
 
   getEntityKeyId = (name) :string => {
-    const { neighbors } = this.props;
-    return getEntityKeyId(neighbors, name);
+    const { psaNeighbors } = this.props;
+    return getEntityKeyId(psaNeighbors, name);
   };
 
   getIdOrValue = (name, optionalFQN) :string => {
-    const { neighbors } = this.props;
-    return getIdOrValue(neighbors, name, optionalFQN);
+    const { psaNeighbors } = this.props;
+    return getIdOrValue(psaNeighbors, name, optionalFQN);
   };
 
   refreshPSANeighborsCallback = () => {
@@ -476,7 +497,7 @@ class PSAModal extends React.Component<Props, State> {
       actions,
       app,
       entityKeyId,
-      neighbors,
+      psaNeighbors,
       scoresEntitySetId,
       scores,
       selectedOrganizationSettings
@@ -531,7 +552,7 @@ class PSAModal extends React.Component<Props, State> {
     let notesEntity;
 
     const notes = riskFactors.get(PSA.NOTES);
-    if (this.getNotesFromNeighbors(neighbors) !== notes) {
+    if (this.getNotesFromNeighbors(psaNeighbors) !== notes) {
       notesIdValue = this.getIdOrValue(RELEASE_RECOMMENDATIONS);
       notesId = this.getEntityKeyId(RELEASE_RECOMMENDATIONS);
       notesEntitySetId = this.getEntitySetId(RELEASE_RECOMMENDATIONS);
@@ -596,16 +617,19 @@ class PSAModal extends React.Component<Props, State> {
   }
 
   getName = () => {
-    const { neighbors } = this.props;
-    const person = neighbors.getIn([PEOPLE, PSA_NEIGHBOR.DETAILS], Map());
+    const { psaNeighbors, loadingPSAModal, loadingCaseHistory } = this.props;
+    const person = psaNeighbors.getIn([PEOPLE, PSA_NEIGHBOR.DETAILS], Map());
     const firstName = person.getIn([PROPERTY_TYPES.FIRST_NAME, 0], '');
     const lastName = person.getIn([PROPERTY_TYPES.LAST_NAME, 0], '');
+    if (loadingPSAModal || loadingCaseHistory) return 'Loading...';
     return `${firstName} ${lastName}`;
   }
 
   renderSummary = () => {
     const {
-      neighbors,
+      loadingPSAModal,
+      loadingCaseHistory,
+      psaNeighbors,
       scores,
       manualCaseHistory,
       chargeHistory,
@@ -614,11 +638,14 @@ class PSAModal extends React.Component<Props, State> {
       actions
     } = this.props;
     const { riskFactors } = this.state;
-    const arrestDate = neighbors.getIn(
+
+    if (loadingPSAModal || loadingCaseHistory) return <SpinnerWrapper><LoadingSpinner /></SpinnerWrapper>;
+
+    const arrestDate = psaNeighbors.getIn(
       [MANUAL_PRETRIAL_CASES, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.ARREST_DATE_TIME, 0],
       ''
     );
-    const lastEditDateForPSA = neighbors.getIn(
+    const lastEditDateForPSA = psaNeighbors.getIn(
       [STAFF, 0, PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.DATE_TIME, 0],
       ''
     );
@@ -636,7 +663,7 @@ class PSAModal extends React.Component<Props, State> {
       <PSAModalSummary
           downloadFn={actions.downloadPSAReviewPDF}
           scores={scores}
-          neighbors={neighbors}
+          neighbors={psaNeighbors}
           manualCaseHistory={manualCaseHistory}
           chargeHistory={chargeHistory}
           manualChargeHistory={manualChargeHistory}
@@ -653,13 +680,13 @@ class PSAModal extends React.Component<Props, State> {
       manualChargeHistory,
       sentenceHistory,
       ftaHistory,
-      neighbors,
+      psaNeighbors,
       scores,
-      readOnly
+      psaPermissions
     } = this.props;
     const psaDate = scores.getIn([PROPERTY_TYPES.DATE_TIME, 0], '');
     const { editing, riskFactors } = this.state;
-    const editHeader = (editing || readOnly || psaIsClosed(scores)) ? null : (
+    const editHeader = (editing || !psaPermissions || psaIsClosed(scores)) ? null : (
       <CenteredContainer>
         <PSAFormHeader>
           Public Safety Assessment
@@ -671,7 +698,7 @@ class PSAModal extends React.Component<Props, State> {
         </PSAFormHeader>
       </CenteredContainer>
     );
-    const editButton = (editing || readOnly || psaIsClosed(scores)) ? null : (
+    const editButton = (editing || !psaPermissions || psaIsClosed(scores)) ? null : (
       <CenteredContainer>
         <EditPSAButton
             footer
@@ -683,9 +710,9 @@ class PSAModal extends React.Component<Props, State> {
       </CenteredContainer>
     );
 
-    const caseNum = neighbors.getIn(
+    const caseNum = psaNeighbors.getIn(
       [PRETRIAL_CASES, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.CASE_ID, 0],
-      neighbors.getIn(
+      psaNeighbors.getIn(
         [MANUAL_PRETRIAL_CASES, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.CASE_ID, 0],
         ''
       )
@@ -711,7 +738,8 @@ class PSAModal extends React.Component<Props, State> {
             allSentences={allSentences}
             allFTAs={ftaHistory}
             viewOnly={!editing || psaIsClosed(scores)}
-            noBorders
+            exitEdit={this.exitEdit}
+            modal
             psaDate={psaDate} />
         {editButton}
       </ModalWrapper>
@@ -719,9 +747,9 @@ class PSAModal extends React.Component<Props, State> {
   }
 
   renderDMFExplanation = () => {
-    const { scores, neighbors } = this.props;
+    const { scores, psaNeighbors } = this.props;
     const { dmf, riskFactors } = this.state;
-    if (!neighbors.getIn([DMF_RESULTS, PSA_NEIGHBOR.DETAILS], Map()).size) {
+    if (!psaNeighbors.getIn([DMF_RESULTS, PSA_NEIGHBOR.DETAILS], Map()).size) {
       return <NoDMFContainer>A DMF was not calculated for this PSA.</NoDMFContainer>;
     }
 
@@ -737,13 +765,13 @@ class PSAModal extends React.Component<Props, State> {
       caseHistory,
       chargeHistory,
       scores,
-      neighbors
+      psaNeighbors
     } = this.props;
-    const arrestDate = neighbors.getIn(
+    const arrestDate = psaNeighbors.getIn(
       [MANUAL_PRETRIAL_CASES, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.ARREST_DATE_TIME, 0],
       ''
     );
-    const lastEditDateForPSA = neighbors.getIn(
+    const lastEditDateForPSA = psaNeighbors.getIn(
       [STAFF, 0, PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.DATE_TIME, 0],
       ''
     );
@@ -779,8 +807,8 @@ class PSAModal extends React.Component<Props, State> {
   };
 
   renderReleaseCondtionsSummary = () => {
-    const { neighbors, hearingNeighborsById } = this.props;
-    const psaHearings = neighbors.get(HEARINGS, List());
+    const { psaNeighbors, hearingNeighborsById } = this.props;
+    const psaHearings = psaNeighbors.get(HEARINGS, List());
     const hearingsWithOutcomes = psaHearings.filter((hearing) => {
       const entityKeyId = hearing.getIn([OPENLATTICE_ID_FQN, 0]);
       return !!hearingNeighborsById.getIn([entityKeyId, OUTCOMES]);
@@ -796,34 +824,40 @@ class PSAModal extends React.Component<Props, State> {
 
   renderHearings = () => {
     const {
-      neighbors,
+      hearings,
+      psaNeighbors,
       submitting,
       refreshingNeighbors,
       scores,
       entityKeyId,
-      hearings,
-      readOnly
+      personHearings,
+      personId,
+      psaPermissions
     } = this.props;
+
     return (
       <ModalWrapper withPadding>
         <SelectHearingsContainer
+            {...this.props}
+            psaHearings={hearings}
             submitting={submitting}
             refreshingNeighbors={refreshingNeighbors}
-            psaId={scores.getIn([PROPERTY_TYPES.GENERAL_ID, 0])}
             dmfId={this.getIdOrValue(DMF_RESULTS)}
+            personId={personId}
             psaEntityKeyId={entityKeyId}
             deleteHearing={this.deleteHearing}
             refreshPSANeighborsCallback={this.refreshPSANeighborsCallback}
             hearingId={this.getEntityKeyId(HEARINGS)}
-            hearings={hearings}
-            readOnly={readOnly}
-            neighbors={neighbors}
-            defaultOutcome={neighbors.getIn([OUTCOMES, PSA_NEIGHBOR.DETAILS], Map())}
-            defaultDMF={neighbors.getIn([DMF_RESULTS, PSA_NEIGHBOR.DETAILS], Map())}
-            defaultBond={neighbors.getIn([BONDS, PSA_NEIGHBOR.DETAILS], Map())}
-            defaultConditions={neighbors.get(RELEASE_CONDITIONS, List())
+            personHearings={personHearings}
+            readOnly={!psaPermissions}
+            psaNeighbors={psaNeighbors}
+            neighbors={psaNeighbors}
+            defaultOutcome={psaNeighbors.getIn([OUTCOMES, PSA_NEIGHBOR.DETAILS], Map())}
+            defaultDMF={psaNeighbors.getIn([DMF_RESULTS, PSA_NEIGHBOR.DETAILS], Map())}
+            defaultBond={psaNeighbors.getIn([BONDS, PSA_NEIGHBOR.DETAILS], Map())}
+            defaultConditions={psaNeighbors.get(RELEASE_CONDITIONS, List())
               .map(neighbor => neighbor.get(PSA_NEIGHBOR.DETAILS, Map()))}
-            {...this.props} />
+            psaId={scores.getIn([PROPERTY_TYPES.GENERAL_ID, 0])} />
       </ModalWrapper>
     );
   }
@@ -836,11 +870,12 @@ class PSAModal extends React.Component<Props, State> {
     const {
       scores,
       open,
-      onClose,
-      entityKeyId,
-      readOnly,
+      psaPermissions,
+      psaId,
+      personId,
       selectedOrganizationSettings
     } = this.props;
+
     const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], '');
 
     const { closingPSAModalOpen } = this.state;
@@ -903,20 +938,22 @@ class PSAModal extends React.Component<Props, State> {
                 onClose={() => this.setState({ closingPSAModalOpen: false })}
                 onSubmit={this.handleStatusChange}
                 scores={scores}
-                entityKeyId={entityKeyId} />
+                entityKeyId={psaId} />
             <TitleWrapper>
               <TitleHeader>
                 PSA Details:
-                <span>{` ${this.getName()}`}</span>
+                <StyledLink to={`${Routes.PERSON_DETAILS_ROOT}/${personId}${Routes.OVERVIEW}`}>
+                  {`  ${this.getName()}`}
+                </StyledLink>
               </TitleHeader>
               <div>
-                { (readOnly || !includesPretrialModule)
-                  ? null
-                  : (
+                { psaPermissions
+                  ? (
                     <ClosePSAButton onClick={() => this.setState({ closingPSAModalOpen: true })}>
                       {changeStatusText}
                     </ClosePSAButton>
                   )
+                  : null
                 }
                 <CloseModalX onClick={() => this.onClose()} />
               </div>
@@ -931,16 +968,30 @@ class PSAModal extends React.Component<Props, State> {
 
 function mapStateToProps(state) {
   const app = state.get(STATE.APP);
-  const court = state.get(STATE.COURT);
-  const review = state.get(STATE.REVIEW);
+  const psaModal = state.get(STATE.PSA_MODAL);
   return {
     app,
     [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
     [APP.SELECTED_ORG_SETTINGS]: app.get(APP.SELECTED_ORG_SETTINGS),
 
-    [COURT.HEARINGS_NEIGHBORS_BY_ID]: court.get(COURT.HEARINGS_NEIGHBORS_BY_ID),
+    [PSA_MODAL.PSA_ID]: psaModal.get(PSA_MODAL.PSA_ID),
+    [PSA_MODAL.LOADING_PSA_MODAL]: psaModal.get(PSA_MODAL.LOADING_PSA_MODAL),
+    [PSA_MODAL.PSA_NEIGHBORS]: psaModal.get(PSA_MODAL.PSA_NEIGHBORS),
+    [PSA_MODAL.PSA_PERMISSIONS]: psaModal.get(PSA_MODAL.PSA_PERMISSIONS),
+    [PSA_MODAL.HEARINGS]: psaModal.get(PSA_MODAL.HEARINGS),
+    [PSA_MODAL.HEARING_IDS]: psaModal.get(PSA_MODAL.HEARING_IDS),
+    [PSA_MODAL.HEARINGS_NEIGHBORS_BY_ID]: psaModal.get(PSA_MODAL.HEARINGS_NEIGHBORS_BY_ID),
+    [PSA_MODAL.LOADING_HEARING_NEIGHBORS]: psaModal.get(PSA_MODAL.LOADING_HEARING_NEIGHBORS),
+    [PSA_MODAL.PERSON_HEARINGS]: psaModal.get(PSA_MODAL.PERSON_HEARINGS),
+    [PSA_MODAL.PERSON_ID]: psaModal.get(PSA_MODAL.PERSON_ID),
+    [PSA_MODAL.LOADING_CASES]: psaModal.get(PSA_MODAL.LOADING_CASES),
+    [PSA_MODAL.CASE_HISTORY]: psaModal.get(PSA_MODAL.CASE_HISTORY),
+    [PSA_MODAL.MANUAL_CASE_HISTORY]: psaModal.get(PSA_MODAL.MANUAL_CASE_HISTORY),
+    [PSA_MODAL.CHARGE_HISTORY]: psaModal.get(PSA_MODAL.CHARGE_HISTORY),
+    [PSA_MODAL.MANUAL_CHARGE_HISTORY]: psaModal.get(PSA_MODAL.MANUAL_CHARGE_HISTORY),
+    [PSA_MODAL.SENTENCE_HISTORY]: psaModal.get(PSA_MODAL.SENTENCE_HISTORY),
+    [PSA_MODAL.FTA_HISTORY]: psaModal.get(PSA_MODAL.FTA_HISTORY)
 
-    [REVIEW.READ_ONLY]: review.get(REVIEW.READ_ONLY)
   };
 }
 
@@ -953,6 +1004,10 @@ function mapDispatchToProps(dispatch :Function) :Object {
 
   Object.keys(ReviewActionFactory).forEach((action :string) => {
     actions[action] = ReviewActionFactory[action];
+  });
+
+  Object.keys(PSAModalActionFactory).forEach((action :string) => {
+    actions[action] = PSAModalActionFactory[action];
   });
 
   Object.keys(CourtActionFactory).forEach((action :string) => {

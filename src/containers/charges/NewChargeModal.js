@@ -95,6 +95,19 @@ type Props = {
   },
 }
 
+const INITIAL_STATE = {
+  confirmViolentCharge: false,
+  [PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE]: '',
+  [PROPERTY_TYPES.REFERENCE_CHARGE_DESCRIPTION]: '',
+  [PROPERTY_TYPES.REFERENCE_CHARGE_DEGREE]: '',
+  [PROPERTY_TYPES.REFERENCE_CHARGE_LEVEL]: '',
+  [PROPERTY_TYPES.CHARGE_IS_VIOLENT]: false,
+  [PROPERTY_TYPES.CHARGE_DMF_STEP_2]: false,
+  [PROPERTY_TYPES.CHARGE_DMF_STEP_4]: false,
+  [PROPERTY_TYPES.BHE]: false,
+  [PROPERTY_TYPES.BRE]: false
+};
+
 class NewChargeModal extends React.Component<Props, State> {
 
   static defaultProps = {
@@ -103,17 +116,7 @@ class NewChargeModal extends React.Component<Props, State> {
 
   constructor(props :Props) {
     super(props);
-    this.state = {
-      [PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE]: '',
-      [PROPERTY_TYPES.REFERENCE_CHARGE_DESCRIPTION]: '',
-      [PROPERTY_TYPES.REFERENCE_CHARGE_DEGREE]: '',
-      [PROPERTY_TYPES.REFERENCE_CHARGE_LEVEL]: '',
-      [PROPERTY_TYPES.CHARGE_IS_VIOLENT]: false,
-      [PROPERTY_TYPES.CHARGE_DMF_STEP_2]: false,
-      [PROPERTY_TYPES.CHARGE_DMF_STEP_4]: false,
-      [PROPERTY_TYPES.BHE]: false,
-      [PROPERTY_TYPES.BRE]: false
-    };
+    this.state = INITIAL_STATE;
   }
 
   componentDidMount() {
@@ -142,6 +145,10 @@ class NewChargeModal extends React.Component<Props, State> {
         isBRE
       );
     }
+  }
+
+  clearState = () => {
+    this.setState(INITIAL_STATE);
   }
 
   updateState = (
@@ -183,6 +190,7 @@ class NewChargeModal extends React.Component<Props, State> {
       entityKeyId,
       chargePropertyType
     });
+    this.clearState();
   }
 
   getChargeFields = () => {
@@ -190,8 +198,8 @@ class NewChargeModal extends React.Component<Props, State> {
     const { chargeType } = this.props;
     const newStatute = state[PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE];
     const newDescription = state[PROPERTY_TYPES.REFERENCE_CHARGE_DESCRIPTION];
-    const newDegree = state[PROPERTY_TYPES.REFERENCE_CHARGE_DEGREE];
-    const newDegreeShort = state[PROPERTY_TYPES.REFERENCE_CHARGE_LEVEL];
+    const newDegree = state[PROPERTY_TYPES.REFERENCE_CHARGE_LEVEL];
+    const newDegreeShort = state[PROPERTY_TYPES.REFERENCE_CHARGE_DEGREE];
     const newIsViolent = state[PROPERTY_TYPES.CHARGE_IS_VIOLENT];
     const newIsStep2 = state[PROPERTY_TYPES.CHARGE_DMF_STEP_2];
     const newIsStep4 = state[PROPERTY_TYPES.CHARGE_DMF_STEP_4];
@@ -232,8 +240,18 @@ class NewChargeModal extends React.Component<Props, State> {
   }
 
   reloadChargesCallback = () => {
-    const { actions } = this.props;
-    actions.loadCharges();
+    const {
+      actions,
+      selectedOrganizationId,
+      arrestEntitySetId,
+      courtEntitySetId
+    } = this.props;
+    actions.loadCharges({
+      selectedOrgId: selectedOrganizationId,
+      arrestChargesEntitySetId: arrestEntitySetId,
+      courtChargesEntitySetId: courtEntitySetId
+    });
+    this.clearState();
   }
 
   updateCharge = () => {
@@ -307,10 +325,11 @@ class NewChargeModal extends React.Component<Props, State> {
   }
 
   isReadyToSubmit = () :boolean => {
+    const { confirmViolentCharge } = this.state;
     const { state } = this;
     const statute = state[PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE];
     const description = state[PROPERTY_TYPES.REFERENCE_CHARGE_DESCRIPTION];
-    return !!(statute && description);
+    return !!(statute && description && confirmViolentCharge);
   }
 
   onInputChange = (e) => {
@@ -334,6 +353,7 @@ class NewChargeModal extends React.Component<Props, State> {
       existingCharge
     } = this.props;
     const { state } = this;
+    const { confirmViolentCharge } = this.state;
     return (
       <Wrapper>
         <ModalTransition>
@@ -371,6 +391,7 @@ class NewChargeModal extends React.Component<Props, State> {
                       handleOnChangeInput={this.onInputChange}
                       onSubmit={this.updateCharge}
                       readyToSubmit={this.isReadyToSubmit()}
+                      confirmViolentCharge={confirmViolentCharge}
                       modal />
                 </Body>
               </Modal>
@@ -389,6 +410,7 @@ function mapStateToProps(state) {
   return {
     // App
     app,
+    [APP.SELECTED_ORG_ID]: orgId,
     arrestEntitySetId: getEntitySetId(app, arrestChargeListFqn, orgId),
     courtEntitySetId: getEntitySetId(app, courtChargeListFqn, orgId),
     [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),

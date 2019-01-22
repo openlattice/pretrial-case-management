@@ -39,6 +39,7 @@ import {
 import {
   APP,
   STATE,
+  SUBMIT,
   REVIEW,
   COURT,
   PSA_NEIGHBOR,
@@ -90,7 +91,6 @@ const Header = styled.div`
   flex-direction: row;
   justify-content: space-between;
   margin-bottom: 20px;
-
   span {
     font-family: 'Open Sans', sans-serif;
     font-size: 16px;
@@ -117,7 +117,6 @@ const SubmittingWrapper = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: center;
-
   span {
     font-family: 'Open Sans', sans-serif;
     font-size: 16px;
@@ -133,18 +132,21 @@ type Props = {
   defaultConditions :Map<*, *>,
   defaultDMF :Map<*, *>,
   dmfId :string,
-  hearings :List<*, *>,
+  psaHearings :List<*, *>,
+  personHearings :List<*, *>,
   hearingIdsRefreshing :Set<*, *>,
   hearingNeighborsById :Map<*, *>,
   neighbors :Map<*, *>,
+  psaIdsRefreshing :Map<*, *>,
   psaId :string,
-  psaNeighborsById :Map<*, *>,
   psaEntityKeyId :string,
   personId :string,
   submitting :boolean,
   context :string,
   refreshingNeighbors :boolean,
   readOnly :boolean,
+  replacingAssociation :boolean,
+  replacingEntity :boolean,
   selectedOrganizationId :string,
   actions :{
     deleteEntity :(values :{
@@ -200,19 +202,9 @@ class SelectHearingsContainer extends React.Component<Props, State> {
     };
   }
 
-  componentWillReceiveProps = (nextProps) => {
-    const { neighbors, actions } = this.props;
-    const { loadHearingNeighbors } = actions;
-    const nextNeighbors = nextProps.neighbors;
-    if (neighbors.size !== nextNeighbors.size) {
-      const hearingIds = getHearingsIdsFromNeighbors(nextNeighbors);
-      loadHearingNeighbors({ hearingIds });
-    }
-  }
-
-  getSortedHearings = (scheduledHearings) => {
-    const { hearings, hearingNeighborsById } = this.props;
-    return getScheduledHearings(hearings, scheduledHearings, hearingNeighborsById);
+  getSortedHearings = () => {
+    const { personHearings } = this.props;
+    return getScheduledHearings(personHearings);
   }
 
   renderNewHearingSection = () => {
@@ -279,6 +271,7 @@ class SelectHearingsContainer extends React.Component<Props, State> {
       defaultConditions,
       defaultDMF,
       dmfId,
+      psaHearings,
       neighbors,
       personId,
       psaId,
@@ -286,9 +279,7 @@ class SelectHearingsContainer extends React.Component<Props, State> {
       hearingNeighborsById,
       hearingIdsRefreshing,
       selectedOrganizationId,
-      submitting,
-      psaEntityKeyId,
-      psaNeighborsById,
+      submitting
     } = this.props;
     const {
       deleteEntity,
@@ -304,7 +295,7 @@ class SelectHearingsContainer extends React.Component<Props, State> {
     let judgeName;
     let judgeEntitySetId = getEntitySetId(app, ASSESSED_BY, selectedOrganizationId);
     const { hearingId, entityKeyId } = selectedHearing;
-    const hearing = psaNeighborsById.getIn([psaEntityKeyId, HEARINGS])
+    const hearing = psaHearings
       .filter(hearingObj => (hearingObj.getIn([OPENLATTICE_ID_FQN, 0]) === entityKeyId))
       .get(0);
 
@@ -384,7 +375,6 @@ class SelectHearingsContainer extends React.Component<Props, State> {
       app,
       psaId,
       personId,
-      psaEntityKeyId,
       actions
     } = this.props;
 
@@ -443,25 +433,29 @@ class SelectHearingsContainer extends React.Component<Props, State> {
   render() {
     const { manuallyCreatingHearing, selectingReleaseConditions, selectedHearing } = this.state;
     const {
-      psaEntityKeyId,
-      psaNeighborsById,
+      neighbors,
       hearingIdsRefreshing,
       submitting,
+      psaIdsRefreshing,
       refreshingNeighbors,
+      replacingAssociation,
+      replacingEntity,
       hearingNeighborsById
     } = this.props;
-
-    const psaNeighbors = psaNeighborsById.get(psaEntityKeyId, Map());
     const hearingsWithOutcomes = hearingNeighborsById
       .keySeq().filter(id => hearingNeighborsById.getIn([id, OUTCOMES]));
-    const scheduledHearings = getScheduledHearings(psaNeighbors);
-    const pastHearings = getPastHearings(psaNeighbors);
-
-    if (submitting || refreshingNeighbors || hearingIdsRefreshing) {
+    const scheduledHearings = getScheduledHearings(neighbors);
+    const pastHearings = getPastHearings(neighbors);
+    if (submitting
+      || replacingEntity
+      || replacingAssociation
+      || refreshingNeighbors
+      || psaIdsRefreshing.size
+      || hearingIdsRefreshing) {
       return (
         <Wrapper>
           <SubmittingWrapper>
-            <span>{ submitting ? 'Submitting' : 'Reloading' }</span>
+            <span>{ (submitting || replacingEntity || replacingAssociation) ? 'Submitting' : 'Reloading' }</span>
             <LoadingSpinner />
           </SubmittingWrapper>
         </Wrapper>
@@ -497,19 +491,26 @@ function mapStateToProps(state) {
   const orgId = app.get(APP.SELECTED_ORG_ID, '');
   const court = state.get(STATE.COURT);
   const review = state.get(STATE.REVIEW);
+  const submit = state.get(STATE.SUBMIT);
   return {
     app,
     [APP.SELECTED_ORG_ID]: orgId,
     [APP.ENTITY_SETS_BY_ORG]: app.get(APP.ENTITY_SETS_BY_ORG, Map()),
 
-    [REVIEW.SCORES]: review.get(REVIEW.SCORES),
-    [REVIEW.NEIGHBORS_BY_ID]: review.get(REVIEW.NEIGHBORS_BY_ID),
     [COURT.LOADING_HEARING_NEIGHBORS]: court.get(COURT.LOADING_HEARING_NEIGHBORS),
     [COURT.HEARINGS_NEIGHBORS_BY_ID]: court.get(COURT.HEARINGS_NEIGHBORS_BY_ID),
     [COURT.ALL_JUDGES]: court.get(COURT.ALL_JUDGES),
     [COURT.HEARING_IDS_REFRESHING]: court.get(COURT.HEARING_IDS_REFRESHING),
+
+    [REVIEW.SCORES]: review.get(REVIEW.SCORES),
+    [REVIEW.NEIGHBORS_BY_ID]: review.get(REVIEW.NEIGHBORS_BY_ID),
     [REVIEW.LOADING_RESULTS]: review.get(REVIEW.LOADING_RESULTS),
-    [REVIEW.ERROR]: review.get(REVIEW.ERROR)
+    [REVIEW.ERROR]: review.get(REVIEW.ERROR),
+    [REVIEW.PSA_IDS_REFRESHING]: review.get(REVIEW.PSA_IDS_REFRESHING),
+
+    [SUBMIT.REPLACING_ENTITY]: submit.get(SUBMIT.REPLACING_ENTITY),
+    [SUBMIT.REPLACING_ASSOCIATION]: submit.get(SUBMIT.REPLACING_ASSOCIATION),
+    [SUBMIT.SUBMITTING]: submit.get(SUBMIT.SUBMITTING)
   };
 }
 

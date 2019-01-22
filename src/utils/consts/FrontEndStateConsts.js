@@ -9,6 +9,7 @@ export const STATE = {
   DOWNLOAD: 'download',
   EDM: 'edm',
   ENROLL: 'enroll',
+  PSA_MODAL: 'psaModal',
   PSA: 'psa',
   PEOPLE: 'people',
   REVIEW: 'review',
@@ -133,6 +134,34 @@ export const ENROLL = {
   ERROR: 'errorMessage'
 };
 
+// PSA Modal
+
+export const PSA_MODAL = {
+  LOADING_PSA_MODAL: 'loadingPSAModal',
+
+  // PSA
+  PSA_ID: 'psaId',
+  PSA_NEIGHBORS: 'psaNeighbors',
+  PSA_PERMISSIONS: 'psaPermissions',
+
+  // HEARINGS
+  HEARINGS: 'hearings',
+  HEARING_IDS: 'hearingIds',
+  LOADING_HEARING_NEIGHBORS: 'loadingHearingNeighbors',
+  HEARINGS_NEIGHBORS_BY_ID: 'hearingNeighborsById',
+
+  // Person
+  PERSON_ID: 'personId',
+  LOADING_CASES: 'loadingCaseHistory',
+  CASE_HISTORY: 'caseHistory',
+  MANUAL_CASE_HISTORY: 'manualCaseHistory',
+  CHARGE_HISTORY: 'chargeHistory',
+  MANUAL_CHARGE_HISTORY: 'manualChargeHistory',
+  SENTENCE_HISTORY: 'sentenceHistory',
+  FTA_HISTORY: 'ftaHistory',
+  PERSON_HEARINGS: 'personHearings'
+};
+
 // PSA
 
 export const PSA_FORM = {
@@ -171,7 +200,8 @@ export const PEOPLE = {
   FETCHING_PERSON_DATA: 'isFetchingPersonData',
   NEIGHBORS: 'neighbors',
   REFRESHING_PERSON_NEIGHBORS: 'refreshingPersonNeighbors',
-  MOST_RECENT_PSA: 'mostRecentPSA'
+  MOST_RECENT_PSA: 'mostRecentPSA',
+  MOST_RECENT_PSA_NEIGHBORS: 'mostRecentPSANeighbors'
 };
 
 // Review
@@ -216,6 +246,10 @@ export const SEARCH = {
 // Submit
 
 export const SUBMIT = {
+  REPLACING_ENTITY: 'replacingEntity',
+  REPLACE_ENTITY_SUCCESS: 'replaceEntitySuccess',
+  REPLACING_ASSOCIATION: 'replacingAssociation',
+  REPLACE_ASSOCIATION_SUCCESS: 'replaceAssociationSuccess',
   SUBMITTING: 'submitting',
   SUCCESS: 'submitSuccess',
   SUBMITTED: 'submitted',
