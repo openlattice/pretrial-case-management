@@ -88,6 +88,7 @@ type Props = {
   neighbors :Map<*, *>,
   personId :string,
   psaNeighborsById :Map<*, *>,
+  readOnlyPermissions :boolean,
   actions :{
     getPersonData :(personId :string) => void,
     getPersonNeighbors :(value :{
@@ -238,7 +239,7 @@ class PersonDetailsContainer extends React.Component<Props, State> {
     const { updateContactModalOpen } = this.state;
     const { neighbors, selectedPersonData } = this.props;
     const personId = selectedPersonData.getIn([PROPERTY_TYPES.PERSON_ID, 0], '');
-    const contactInfo = neighbors.get(CONTACT_INFORMATION, Map());
+    const contactInfo = neighbors.get(CONTACT_INFORMATION, List());
     const email = getIdOrValue(neighbors, CONTACT_INFORMATION, PROPERTY_TYPES.EMAIL);
     const phone = getIdOrValue(neighbors, CONTACT_INFORMATION, PROPERTY_TYPES.PHONE);
     const isMobile = getIdOrValue(neighbors, CONTACT_INFORMATION, PROPERTY_TYPES.IS_MOBILE);
@@ -404,12 +405,13 @@ class PersonDetailsContainer extends React.Component<Props, State> {
       personId,
       psaNeighborsById,
       selectedPersonData,
+      readOnlyPermissions,
       selectedOrganizationId,
       selectedOrganizationSettings
     } = this.props;
     const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], '');
     const { downloadPSAReviewPDF } = actions;
-    const contactInfo = neighbors.get(CONTACT_INFORMATION, Map());
+    const contactInfo = neighbors.get(CONTACT_INFORMATION, List());
     const mostRecentPSAEntityKeyId = getEntityKeyId(mostRecentPSA.get(PSA_NEIGHBOR.DETAILS, Map()));
     const neighborsForMostRecentPSA = psaNeighborsById.get(mostRecentPSAEntityKeyId, Map());
     const scheduledHearings = getScheduledHearings(neighborsForMostRecentPSA);
@@ -433,6 +435,7 @@ class PersonDetailsContainer extends React.Component<Props, State> {
           neighbors={neighbors}
           personId={personId}
           psaNeighborsById={psaNeighborsById}
+          readOnlyPermissions={readOnlyPermissions}
           scheduledHearings={scheduledHearings}
           selectedPersonData={selectedPersonData}
           openDetailsModal={this.openDetailsModal}
