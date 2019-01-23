@@ -25,6 +25,7 @@ export const ALIASES = {
   HEARING: 'hearing',
   OUTCOME: 'outcome',
   JUDGE: 'judge',
+  SUBSCRIPTION: 'subscription',
 
   CONTACT_GIVEN_FOR: 'contactInfoGivenFor',
   CONTACTED_AT: 'contactedAt',
