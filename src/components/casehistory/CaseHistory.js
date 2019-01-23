@@ -17,6 +17,7 @@ const CaseHistoryWrapper = styled.div`
 `;
 
 type Props = {
+  caseNumbersToAssociationId :Map<*, *>,
   caseHistoryForMostRecentPSA :List<*>,
   chargeHistoryForMostRecentPSA :Map<*, *>,
   caseHistoryNotForMostRecentPSA :List<*>,
@@ -25,9 +26,13 @@ type Props = {
   loading :boolean,
   modal :boolean,
   overview :boolean,
+  psaPermissions :boolean,
+  addCaseToPSA :() => void,
+  removeCaseFromPSA :() => void,
 };
 
 const CaseHistory = ({
+  caseNumbersToAssociationId,
   caseHistoryForMostRecentPSA,
   chargeHistoryForMostRecentPSA,
   caseHistoryNotForMostRecentPSA,
@@ -35,7 +40,10 @@ const CaseHistory = ({
   chargeHistory,
   loading,
   modal,
-  overview
+  overview,
+  addCaseToPSA,
+  psaPermissions,
+  removeCaseFromPSA
 } :Props) => {
 
   const pendingCharges = currentPendingCharges(chargeHistoryForMostRecentPSA);
@@ -51,6 +59,11 @@ const CaseHistory = ({
         )
       }
       <CaseHistoryList
+          psaPermissions={psaPermissions}
+          pendingCases
+          addCaseToPSA={addCaseToPSA}
+          removeCaseFromPSA={removeCaseFromPSA}
+          caseNumbersToAssociationId={caseNumbersToAssociationId}
           loading={loading}
           title="Pending Cases on Arrest Date for Current PSA"
           caseHistory={caseHistoryForMostRecentPSA}
