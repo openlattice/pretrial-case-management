@@ -147,13 +147,13 @@ function* getPersonNeighborsWorker(action) :Generator<*, *, *> {
           currentPSADateTime = entityDateTime;
         }
       }
-      if (appTypeFqn === CONTACT_INFORMATION) {
+      else if (appTypeFqn === CONTACT_INFORMATION) {
         neighborsByEntitySet = neighborsByEntitySet.set(
           appTypeFqn,
           neighborsByEntitySet.get(appTypeFqn, List()).push(neighborObj)
         );
       }
-      if (appTypeFqn === HEARINGS) {
+      else if (appTypeFqn === HEARINGS) {
         const hearingDetails = neighborObj.get(PSA_NEIGHBOR.DETAILS, Map());
         const hearingId = hearingDetails.getIn([OPENLATTICE_ID_FQN, 0]);
         const hearingDateTime = hearingDetails.getIn([PROPERTY_TYPES.DATE_TIME, 0]);
