@@ -9,7 +9,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCheck, faCog, faTimesCircle } from '@fortawesome/pro-light-svg-icons';
 
 import { formatPeopleInfo } from '../../utils/PeopleUtils';
-import StyledCheckbox from '../controls/StyledCheckbox';
+import ManageSubscriptionModal from '../../containers/people/ManageSubscriptionModal';
 import StyledButton from '../buttons/StyledButton';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
@@ -44,12 +44,47 @@ const StyledFormSection = styled(FormSection)`
 `;
 
 type Props = {
+  contactInfo :List<*, *>,
   person :Map<*, *>,
   subscription :Map<*, *>,
+  readOnlyPermissions :boolean,
   modal :boolean
 }
 
-class SubscriptionInfo extends React.Component<Props, *> {
+class SubscriptionInfo extends React.Component<Props, State> {
+  constructor(props :Props) {
+    super(props);
+    this.state = {
+      manageSubscriptionModalOpen: false
+    };
+  }
+
+  openManageSubscriptionModal = () => this.setState({ manageSubscriptionModalOpen: true });
+  onClose = () => this.setState({ manageSubscriptionModalOpen: false });
+
+  renderManageSubscriptionButton = () => {
+    const subscriptionText = ' Manage Subscription';
+    return (
+      <StyledButton
+          onClick={this.openManageSubscriptionModal}>
+        <FontAwesomeIcon icon={faCog} />
+        {subscriptionText}
+      </StyledButton>
+    );
+  }
+
+  renderManageSubscriptionModal = () => {
+    const { manageSubscriptionModalOpen } = this.state;
+    const { contactInfo, person, subscription } = this.props;
+    return (
+      <ManageSubscriptionModal
+          person={person}
+          subscription={subscription}
+          contactInfo={contactInfo}
+          open={manageSubscriptionModalOpen}
+          onClose={this.onClose} />
+    );
+  }
 
   renderHeader = () => {
     const { modal } = this.props;
@@ -62,22 +97,23 @@ class SubscriptionInfo extends React.Component<Props, *> {
       );
   }
 
-  renderSubscriptionStatus = () => {
-    const { person, subscription } = this.props;
+  getName = () => {
+    const { person } = this.props;
     const { firstName, middleName, lastName } = formatPeopleInfo(person);
     const midName = middleName ? ` ${middleName}` : '';
-    const name = `${firstName}${midName} ${lastName}`;
-    // isSubscriped will come from the subscription
-    const isSubscribed = false;
+    return `${firstName}${midName} ${lastName}`;
+  }
+
+  renderSubscriptionStatus = () => {
+    const { readOnlyPermissions, subscription, modal } = this.props;
+    const name = this.getName();
+    const isSubscribed = subscription.getIn([PROPERTY_TYPES.IS_ACTIVE, 0], false);
     const subscriptionIcon = isSubscribed
       ? <StatusIconContainer><FontAwesomeIcon color="green" icon={faCheck} /></StatusIconContainer>
       : <StatusIconContainer><FontAwesomeIcon color="red" icon={faTimesCircle} /></StatusIconContainer>;
     const isSubscribedText = isSubscribed
       ? 'is subscribed to court notifications'
       : 'is not subscribed to court notifications';
-    const subscriptionText = isSubscribed
-      ? ' Manage Subscription'
-      : ` Subscribe ${name}`;
     return (
       <Status>
         <Status>
@@ -85,10 +121,7 @@ class SubscriptionInfo extends React.Component<Props, *> {
           <StatusText>{`${name} ${isSubscribedText}`}</StatusText>
         </Status>
         <Status>
-          <StyledButton>
-            <FontAwesomeIcon icon={faCog} />
-            {subscriptionText}
-          </StyledButton>
+          { (modal || readOnlyPermissions) ? null : this.renderManageSubscriptionButton() }
         </Status>
       </Status>
     );
@@ -101,6 +134,7 @@ class SubscriptionInfo extends React.Component<Props, *> {
     return (
       <StyledFormSection modal={modal}>
         { this.renderSubscriptionStatus() }
+        { this.renderManageSubscriptionModal() }
       </StyledFormSection>
     );
   }
