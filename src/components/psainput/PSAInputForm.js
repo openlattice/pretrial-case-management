@@ -419,7 +419,7 @@ class PSAInputForm extends React.Component<Props, State> {
       violentArrestCharges,
       violentCourtCharges,
     } = this.props;
-    const { iiiChecked, iiiNotChecked, iiiComplete } = this.state;
+    const { iiiComplete } = this.state;
     const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false)
     const violentChargeList = violentArrestCharges.get(selectedOrganizationId, Map());
     const violentCourtChargeList = violentCourtCharges.get(selectedOrganizationId, Map());
