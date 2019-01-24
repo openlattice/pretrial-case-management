@@ -8,7 +8,7 @@ import styled from 'styled-components';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 
-import StyledCheckbox from '../controls/StyledCheckbox';
+import StyledRadio from '../controls/StyledRadio';
 import StyledInput from '../controls/StyledInput';
 import StyledTextArea from '../controls/StyledTextArea';
 import StyledRadioButton from '../controls/StyledRadioButton';
@@ -104,6 +104,8 @@ const Header = styled.div`
 `;
 
 const SearchText = styled.div`
+  display: flex;
+  align-items: center;
   font-size: 14px;
   color: #{OL.GREY02};
   margin-right: 10px;
@@ -185,11 +187,11 @@ const PaddedErrorMessage = styled(ErrorMessage)`
   margin-top: 20px;
 `;
 
-const CheckboxContainer = styled.div`
+const RadioContainer = styled.div`
   display: flex;
   flex-direction: row;
   justify-content: center;
-  margin: 30px 0 0;
+  margin: 30px 0;
 
   label {
     font-family: 'Open Sans', sans-serif;
@@ -271,8 +273,7 @@ type Props = {
 };
 
 type State = {
-  iiiChecked :boolean,
-  iiiNotChecked :boolean,
+  iiiComplete :boolean,
   incomplete :boolean
 };
 
@@ -285,8 +286,7 @@ class PSAInputForm extends React.Component<Props, State> {
   constructor(props :Props) {
     super(props);
     this.state = {
-      iiiChecked: false,
-      iiiNotChecked: false,
+      iiiComplete: false,
       incomplete: false
     };
   }
@@ -315,19 +315,9 @@ class PSAInputForm extends React.Component<Props, State> {
     </RadioWrapper>
   );
 
-  handleCheckboxChange = (event) => {
-    if (event.target.name === 'iiiChecked') {
-      this.setState({
-        iiiChecked: true,
-        iiiNotChecked: false
-      });
-    }
-    else {
-      this.setState({
-        iiiChecked: false,
-        iiiNotChecked: true
-      });
-    }
+  handleRadioChange = (e) => {
+    const { name, value } = e.target;
+    this.setState({ [name]: value });
   }
 
   invalidValue = (val :string) => val === null || val === undefined || val === 'null' || val === 'undefined';
@@ -429,7 +419,7 @@ class PSAInputForm extends React.Component<Props, State> {
       violentArrestCharges,
       violentCourtCharges,
     } = this.props;
-    const { iiiChecked, iiiNotChecked } = this.state;
+    const { iiiChecked, iiiNotChecked, iiiComplete } = this.state;
     const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false)
     const violentChargeList = violentArrestCharges.get(selectedOrganizationId, Map());
     const violentCourtChargeList = violentCourtCharges.get(selectedOrganizationId, Map());
@@ -649,23 +639,23 @@ class PSAInputForm extends React.Component<Props, State> {
                   disabled={viewOnly}
                   onChange={this.props.handleInputChange} />
 
-              <CheckboxContainer>
+              <RadioContainer>
                 <SearchText>Interstate Identification Index (III) Search:</SearchText>
-                <StyledCheckbox
-                    name="iiiChecked"
+                <StyledRadio
+                    name="iiiComplete"
                     label="completed"
-                    checked={iiiChecked}
-                    value={iiiChecked}
-                    onChange={this.handleCheckboxChange}
+                    checked={iiiComplete === 'completed'}
+                    value="completed"
+                    onChange={this.handleRadioChange}
                     disabled={viewOnly} />
-                <StyledCheckbox
-                    name="iiiNotChecked"
+                <StyledRadio
+                    name="iiiComplete"
                     label="not completed"
-                    checked={iiiNotChecked}
-                    value={iiiNotChecked}
-                    onChange={this.handleCheckboxChange}
+                    checked={iiiComplete === 'not completed'}
+                    value="not completed"
+                    onChange={this.handleRadioChange}
                     disabled={viewOnly} />
-              </CheckboxContainer>
+              </RadioContainer>
 
               {
                 viewOnly ? null : (
@@ -679,7 +669,7 @@ class PSAInputForm extends React.Component<Props, State> {
                         bsStyle="primary"
                         bsSize="lg"
                         onClick={this.handleSubmit}
-                        disabled={!(iiiChecked || iiiNotChecked)}>
+                        disabled={!(iiiComplete)}>
                       Score & Submit
                     </SubmitButton>
                     <div />
