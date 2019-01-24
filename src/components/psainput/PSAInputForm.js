@@ -103,6 +103,12 @@ const Header = styled.div`
   padding-left: 30px;
 `;
 
+const SearchText = styled.div`
+  font-size: 14px;
+  color: #{OL.GREY02};
+  margin-right: 10px;
+`;
+
 const PaddedHeader = styled(Header)`
   margin: 30px 0 0 0;
 `;
@@ -266,6 +272,7 @@ type Props = {
 
 type State = {
   iiiChecked :boolean,
+  iiiNotChecked :boolean,
   incomplete :boolean
 };
 
@@ -279,6 +286,7 @@ class PSAInputForm extends React.Component<Props, State> {
     super(props);
     this.state = {
       iiiChecked: false,
+      iiiNotChecked: false,
       incomplete: false
     };
   }
@@ -308,7 +316,18 @@ class PSAInputForm extends React.Component<Props, State> {
   );
 
   handleCheckboxChange = (event) => {
-    this.setState({ iiiChecked: event.target.checked });
+    if (event.target.name === 'iiiChecked') {
+      this.setState({
+        iiiChecked: true,
+        iiiNotChecked: false
+      });
+    }
+    else {
+      this.setState({
+        iiiChecked: false,
+        iiiNotChecked: true
+      });
+    }
   }
 
   invalidValue = (val :string) => val === null || val === undefined || val === 'null' || val === 'undefined';
@@ -410,6 +429,7 @@ class PSAInputForm extends React.Component<Props, State> {
       violentArrestCharges,
       violentCourtCharges,
     } = this.props;
+    const { iiiChecked, iiiNotChecked } = this.state;
     const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false)
     const violentChargeList = violentArrestCharges.get(selectedOrganizationId, Map());
     const violentCourtChargeList = violentCourtCharges.get(selectedOrganizationId, Map());
@@ -630,11 +650,19 @@ class PSAInputForm extends React.Component<Props, State> {
                   onChange={this.props.handleInputChange} />
 
               <CheckboxContainer>
+                <SearchText>Interstate Identification Index (III) Search:</SearchText>
                 <StyledCheckbox
-                    name="iii"
-                    label="Interstate Identification Index (III) search completed"
+                    name="iiiChecked"
+                    label="completed"
                     checked={this.state.iiiChecked}
                     value={this.state.iiiChecked}
+                    onChange={this.handleCheckboxChange}
+                    disabled={viewOnly} />
+                <StyledCheckbox
+                    name="iiiNotChecked"
+                    label="not completed"
+                    checked={this.state.iiiNotChecked}
+                    value={this.state.iiiNotChecked}
                     onChange={this.handleCheckboxChange}
                     disabled={viewOnly} />
               </CheckboxContainer>
@@ -651,7 +679,7 @@ class PSAInputForm extends React.Component<Props, State> {
                         bsStyle="primary"
                         bsSize="lg"
                         onClick={this.handleSubmit}
-                        disabled={!this.state.iiiChecked}>
+                        disabled={!(iiiChecked || iiiNotChecked)}>
                       Score & Submit
                     </SubmitButton>
                     <div />
