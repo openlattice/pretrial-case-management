@@ -273,7 +273,7 @@ type Props = {
 };
 
 type State = {
-  iiiComplete :boolean,
+  iiiComplete :string,
   incomplete :boolean
 };
 
@@ -286,7 +286,7 @@ class PSAInputForm extends React.Component<Props, State> {
   constructor(props :Props) {
     super(props);
     this.state = {
-      iiiComplete: false,
+      iiiComplete: undefined,
       incomplete: false
     };
   }
