@@ -654,15 +654,15 @@ class PSAInputForm extends React.Component<Props, State> {
                 <StyledCheckbox
                     name="iiiChecked"
                     label="completed"
-                    checked={this.state.iiiChecked}
-                    value={this.state.iiiChecked}
+                    checked={iiiChecked}
+                    value={iiiChecked}
                     onChange={this.handleCheckboxChange}
                     disabled={viewOnly} />
                 <StyledCheckbox
                     name="iiiNotChecked"
                     label="not completed"
-                    checked={this.state.iiiNotChecked}
-                    value={this.state.iiiNotChecked}
+                    checked={iiiNotChecked}
+                    value={iiiNotChecked}
                     onChange={this.handleCheckboxChange}
                     disabled={viewOnly} />
               </CheckboxContainer>
