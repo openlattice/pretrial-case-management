@@ -35,14 +35,20 @@ import {
 
 import * as Routes from '../../core/router/Routes';
 
-let { MANUAL_PRETRIAL_CASES, RELEASE_RECOMMENDATIONS, STAFF } = APP_TYPES_FQNS;
+let {
+  MANUAL_PRETRIAL_CASES,
+  RELEASE_RECOMMENDATIONS,
+  STAFF,
+  SUBSCRIPTION
+} = APP_TYPES_FQNS;
 
 MANUAL_PRETRIAL_CASES = MANUAL_PRETRIAL_CASES.toString();
 RELEASE_RECOMMENDATIONS = RELEASE_RECOMMENDATIONS.toString();
 STAFF = STAFF.toString();
+SUBSCRIPTION = SUBSCRIPTION.toString();
 
 type Props = {
-  contactInfo :Map<*, *>,
+  contactInfo :List<*, *>,
   psaNeighborsById :Map<*, *>,
   selectedPersonData :Map<*, *>,
   includesPretrialModule :boolean,
@@ -53,6 +59,7 @@ type Props = {
   openDetailsModal :() => void,
   openUpdateContactModal :() => void,
   personId :string,
+  readOnlyPermissions :boolean,
   scheduledHearings :List,
 }
 
@@ -82,9 +89,11 @@ const PersonOverview = ({
   selectedPersonData,
   includesPretrialModule,
   openDetailsModal,
-  openUpdateContactModal
+  openUpdateContactModal,
+  readOnlyPermissions
 } :Props) => {
-  // const mostRecentPSANeighbors = psaNeighborsById.get(mostRecentPSAEntityKeyId, Map());
+
+  const subscription = neighbors.getIn([SUBSCRIPTION, PSA_NEIGHBOR.DETAILS], Map());
   let arrestDate = getIdOrValue(
     mostRecentPSANeighbors, MANUAL_PRETRIAL_CASES, PROPERTY_TYPES.ARREST_DATE_TIME
   );
@@ -103,7 +112,7 @@ const PersonOverview = ({
   const notes = getIdOrValue(
     mostRecentPSANeighbors, RELEASE_RECOMMENDATIONS, PROPERTY_TYPES.RELEASE_RECOMMENDATION
   );
-  const scores = mostRecentPSA.get(PSA_NEIGHBOR.DETAILS, Map());
+  const scores = mostRecentPSA.get(PSA_NEIGHBOR.DETAILS, List());
   const { caseHistoryForMostRecentPSA, chargeHistoryForMostRecentPSA } = getCasesForPSA(
     caseHistory,
     chargeHistory,
@@ -134,7 +143,9 @@ const PersonOverview = ({
                 <StyledColumnRowWrapper>
                   <StyledColumnRow>
                     <SubscriptionInfo
-                        // need to include subscription here
+                        readOnlyPermissions={readOnlyPermissions}
+                        subscription={subscription}
+                        contactInfo={contactInfo}
                         person={selectedPersonData} />
                   </StyledColumnRow>
                 </StyledColumnRowWrapper>
