@@ -110,7 +110,7 @@ type Props = {
 
 const INITIAL_STATE = {
   newHearingCourtroom: undefined,
-  newHearingDate: undefined,
+  newHearingDate: moment().format('MM/DD/YYYY'),
   newHearingTime: undefined,
   judge: '',
   otherJudgeText: '',
