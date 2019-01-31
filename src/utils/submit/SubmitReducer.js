@@ -6,6 +6,7 @@ import Immutable from 'immutable';
 
 import { CLEAR_FORM } from '../../containers/psa/FormActionFactory';
 import { SUBMIT } from '../consts/FrontEndStateConsts';
+import { updateEntity } from '../data/DataActionFactory';
 import {
   CLEAR_SUBMIT,
   replaceAssociation,
@@ -17,6 +18,8 @@ import {
 const INITIAL_STATE :Immutable.Map<*, *> = Immutable.Map().withMutations((map :Immutable.Map<*, *>) => {
   map.set(SUBMIT.REPLACING_ASSOCIATION, false);
   map.set(SUBMIT.REPLACE_ASSOCIATION_SUCCESS, false);
+  map.set(SUBMIT.UPDATING_ENTITY, false);
+  map.set(SUBMIT.UPDATE_ENTITY_SUCCESS, false);
   map.set(SUBMIT.REPLACING_ENTITY, false);
   map.set(SUBMIT.REPLACE_ENTITY_SUCCESS, false);
   map.set(SUBMIT.SUBMITTING, false);
@@ -54,6 +57,22 @@ function submitReducer(state :Immutable.Map<*, *> = INITIAL_STATE, action :Objec
         SUCCESS: () => state.set(SUBMIT.SUCCESS, true).set(SUBMIT.ERROR, ''),
         FAILURE: () => state.set(SUBMIT.SUCCESS, false).set(SUBMIT.ERROR, action.value),
         FINALLY: () => state.set(SUBMIT.SUBMITTING, false).set(SUBMIT.SUBMITTED, true)
+      });
+    }
+
+    case updateEntity.case(action.type): {
+      return updateEntity.reducer(state, action, {
+        REQUEST: () => state
+          .set(SUBMIT.UPDATING_ENTITY, true)
+          .set(SUBMIT.UPDATE_ENTITY_SUCCESS, false)
+          .set(SUBMIT.ERROR, ''),
+        SUCCESS: () => state
+          .set(SUBMIT.UPDATE_ENTITY_SUCCESS, true)
+          .set(SUBMIT.ERROR, ''),
+        FAILURE: () => state
+          .set(SUBMIT.UPDATE_ENTITY_SUCCESS, false)
+          .set(SUBMIT.ERROR, action.value),
+        FINALLY: () => state.set(SUBMIT.UPDATING_ENTITY, false)
       });
     }
 
