@@ -16,18 +16,18 @@ const SubscriptionConfig = {
       }
     },
     {
-      name: APP_TYPES_FQNS.APPEARS_IN,
-      alias: ALIASES.APPEARS_IN,
+      name: APP_TYPES_FQNS.REGISTERED_FOR,
+      alias: ALIASES.REGISTERED_FOR,
       fields: {
-        [PROPERTY_TYPES.SUBSCRIPTION_ID]: PROPERTY_TYPES.SUBSCRIPTION_ID
+        [PROPERTY_TYPES.COMPLETED_DATE_TIME]: PROPERTY_TYPES.COMPLETED_DATE_TIME
       }
     }
   ],
   associations: [
     {
-      src: ALIASES.SUBSCRIPTION,
-      dst: ALIASES.PERSON,
-      association: ALIASES.APPEARS_IN
+      src: ALIASES.PERSON,
+      dst: ALIASES.SUBSCRIPTION,
+      association: ALIASES.REGISTERED_FOR
     }
   ]
 };
