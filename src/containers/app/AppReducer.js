@@ -52,6 +52,7 @@ const {
   SENTENCES,
   SPEAKER_RECOGNITION_PROFILES,
   STAFF,
+  SUBSCRIPTION,
   UJS_EMPLOYEES,
 } = APP_TYPES_FQNS;
 
@@ -91,6 +92,7 @@ const releaseRecommendationsFqn :string = RELEASE_RECOMMENDATIONS.toString();
 const sentencesFqn :string = SENTENCES.toString();
 const speakerRecognitionFqn :string = SPEAKER_RECOGNITION_PROFILES.toString();
 const staffFqn :string = STAFF.toString();
+const subscriptionFqn :string = SUBSCRIPTION.toString();
 const ujsEmployeesFqn :string = UJS_EMPLOYEES.toString();
 
 const APP_CONFIG_INITIAL_STATE :Map<*, *> = fromJS({
@@ -209,6 +211,7 @@ export default function appReducer(state :Map<*, *> = INITIAL_STATE, action :Seq
               const sentencesConfig = appConfig.config[sentencesFqn];
               const speakerRecognitionConfig = appConfig.config[speakerRecognitionFqn];
               const staffConfig = appConfig.config[staffFqn];
+              const subscriptionConfig = appConfig.config[subscriptionFqn];
               const ujsEmployeesConfig = appConfig.config[ujsEmployeesFqn];
 
               newState = newState
@@ -248,6 +251,7 @@ export default function appReducer(state :Map<*, *> = INITIAL_STATE, action :Seq
                 .setIn([sentencesFqn, APP.ENTITY_SETS_BY_ORG, orgId], sentencesConfig.entitySetId)
                 .setIn([speakerRecognitionFqn, APP.ENTITY_SETS_BY_ORG, orgId], speakerRecognitionConfig.entitySetId)
                 .setIn([staffFqn, APP.ENTITY_SETS_BY_ORG, orgId], staffConfig.entitySetId)
+                .setIn([subscriptionFqn, APP.ENTITY_SETS_BY_ORG, orgId], subscriptionConfig.entitySetId)
                 .setIn([ujsEmployeesFqn, APP.ENTITY_SETS_BY_ORG, orgId], ujsEmployeesConfig.entitySetId);
               entitySetsByOrgId = entitySetsByOrgId.set(
                 orgId,
@@ -288,6 +292,7 @@ export default function appReducer(state :Map<*, *> = INITIAL_STATE, action :Seq
                   .set(sentencesConfig.entitySetId, sentencesFqn)
                   .set(speakerRecognitionConfig.entitySetId, speakerRecognitionFqn)
                   .set(staffConfig.entitySetId, staffFqn)
+                  .set(subscriptionConfig.entitySetId, subscriptionFqn)
                   .set(ujsEmployeesConfig.entitySetId, ujsEmployeesFqn)
               );
             }
@@ -434,6 +439,9 @@ export default function appReducer(state :Map<*, *> = INITIAL_STATE, action :Seq
             .setIn([staffFqn, APP.ENTITY_SETS_BY_ORG], Map())
             .setIn([staffFqn, APP.PRIMARY_KEYS], Map())
             .setIn([staffFqn, APP.PROPERTY_TYPES], Map())
+            .setIn([subscriptionFqn, APP.ENTITY_SETS_BY_ORG], Map())
+            .setIn([subscriptionFqn, APP.PRIMARY_KEYS], Map())
+            .setIn([subscriptionFqn, APP.PROPERTY_TYPES], Map())
             .setIn([ujsEmployeesFqn, APP.ENTITY_SETS_BY_ORG], Map())
             .setIn([ujsEmployeesFqn, APP.PRIMARY_KEYS], List())
             .setIn([ujsEmployeesFqn, APP.PROPERTY_TYPES], List())
