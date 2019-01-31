@@ -13,8 +13,10 @@ import {
 import {
   DELETE_ENTITY,
   REPLACE_ENTITY_DATA,
+  UPDATE_ENTITY_DATA,
   deleteEntity,
-  replaceEntity
+  replaceEntity,
+  updateEntity
 } from './DataActionFactory';
 
 import { loadPersonDetails } from '../../containers/person/PersonActionFactory';
@@ -76,7 +78,35 @@ function* replaceEntityWatcher() :Generator<*, *, *> {
   yield takeEvery(REPLACE_ENTITY_DATA, replaceEntityWorker);
 }
 
+function* updateEntityWorker(action :SequenceAction) :Generator<*, *, *> {
+  const {
+    entitySetId,
+    entities,
+    partial,
+    callback
+  } = action.value;
+
+  try {
+    yield put(updateEntity.request(action.id));
+    yield call(DataApi.updateEntityData, entitySetId, entities, partial);
+    yield put(updateEntity.success(action.id));
+
+    if (callback) callback();
+  }
+  catch (error) {
+    yield put(updateEntity.failure(action.id, { error }));
+  }
+  finally {
+    yield put(updateEntity.finally(action.id));
+  }
+}
+
+function* updateEntityWatcher() :Generator<*, *, *> {
+  yield takeEvery(UPDATE_ENTITY_DATA, updateEntityWorker);
+}
+
 export {
   deleteEntityWatcher,
-  replaceEntityWatcher
+  replaceEntityWatcher,
+  updateEntityWatcher
 };
