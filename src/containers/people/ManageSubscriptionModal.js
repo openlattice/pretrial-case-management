@@ -4,18 +4,20 @@
 
 import React from 'react';
 import styled from 'styled-components';
+import moment from 'moment';
 import randomUUID from 'uuid/v4';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import Modal, { ModalTransition } from '@atlaskit/modal-dialog';
-import { Map } from 'immutable';
+import { Map, fromJS } from 'immutable';
 import { Constants } from 'lattice';
 
 import BasicButton from '../../components/buttons/BasicButton';
+import InfoButton from '../../components/buttons/InfoButton';
 import SubscriptionConfig from '../../config/formconfig/SubscriptionConfig';
 import SubscriptionInfo from '../../components/people/SubscriptionInfo';
 import ContactInfoTable from '../../components/contactinformation/ContactInfoTable';
-import LoadingSpinner from '../../components/LoadingSpinner';
+import NewContactForm from './NewContactForm';
 import { FORM_IDS } from '../../utils/consts/Consts';
 import { getEntitySetId } from '../../utils/AppUtils';
 import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
@@ -28,52 +30,72 @@ import {
 } from '../../utils/Layout';
 import {
   APP,
+  EDM,
   REVIEW,
+  PEOPLE,
   STATE,
   SUBMIT
 } from '../../utils/consts/FrontEndStateConsts';
 
 import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
 import * as DataActionFactory from '../../utils/data/DataActionFactory';
+import * as PeopleActionFactory from './PeopleActionFactory';
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
 let {
-  CONTACT_INFORMATION,
   SUBSCRIPTION
 } = APP_TYPES_FQNS;
 
-CONTACT_INFORMATION = CONTACT_INFORMATION.toString();
 SUBSCRIPTION = SUBSCRIPTION.toString();
 
-const LoadingWrapper = styled.div`
-  width: 100%;
-  height: 300px;
+const ContactHeader = styled.div`
   display: flex;
-  justify-content: center;
-  align-items: center;
-`;
-
-const ContactText = styled.div`
-  font-size: 14px;
-  font-weight: 400;
-  margin: 10px 30px;
+  flex-direction: column;
+  font-size: 16px;
+  font-weight: 600;
+  margin: 10px 0;
+  span {
+    margin-top: 10px;
+    font-size: 14px;
+    font-weight: 400;
+  }
 `;
 
 const ButtonRow = styled.div`
   width: 100%;
-  margin: 0 30px 30px;
+  margin-bottom: 30px;
+`;
+
+const ModalBody = styled.div`
+  width: 100%;
+  padding: 0 30px;
 `;
 
 const SubscribeButton = styled(BasicButton)`
   width: 180px;
   color: ${OL.WHITE};
   margin-right: 10px;
-  background: ${props => (props.isSubscribed ? OL.RED01 : OL.GREEN02)};
+  background: ${(props) => {
+    let backgroundColor = OL.RED01;
+    if (!props.isSubscribed) {
+      backgroundColor = OL.GREEN02;
+    }
+    if (props.disabled) {
+      backgroundColor = OL.GREY08;
+    }
+    return backgroundColor;
+  }};
 `;
 
 const EditContactButton = styled(BasicButton)`
   width: 180px;
+`;
+
+const CancelEditButton = styled(BasicButton)`
+  width: 90px;
+  height: 40px;
+  padding: 0;
 `;
 
 const ColumnRow = styled(PaddedStyledColumnRow)`
@@ -82,15 +104,28 @@ const ColumnRow = styled(PaddedStyledColumnRow)`
   justify-content: flex-start;
 `;
 
+const SaveButton = styled(InfoButton)`
+  width: 90px;
+  height: 100%;
+  margin: 0 10px 0 0;
+`;
+
+const INITIAL_STATE = {
+  modifyingContactInformation: false,
+  updates: {}
+};
+
 type Props = {
   app :Map<*, *>,
   contactInfo :Map<*, *>,
+  fqnToIdMap :Map<*, *>,
   person :Map<*, *>,
-  personId :string,
+  readOnlyPermissions :boolean,
+  refreshingPersonNeighbors :boolean,
   selectedOrganizationId :string,
   subscription :Map<*, *>,
   submitting :boolean,
-  checkPSAPermissions :boolean,
+  updatingEntity :boolean,
   open :() => void,
   onClose :() => void,
   actions :{
@@ -110,42 +145,74 @@ const MODAL_HEIGHT = 'max-content';
 class ReleaseConditionsModal extends React.Component<Props, State> {
   constructor(props :Props) {
     super(props);
-    this.state = {
-      selectingFromExistingContacts: false,
-      creatingNewContact: false
-    };
+    this.state = INITIAL_STATE;
+  }
+
+  handleCheckboxUpdates = (e) => {
+    const { fqnToIdMap } = this.props;
+    const { updates } = this.state;
+    const { value, name, checked } = e.target;
+    const currentEntity = updates[value] || {};
+    currentEntity[fqnToIdMap.get(name)] = [checked];
+    updates[value] = currentEntity;
+    this.setState({
+      updates
+    });
   }
 
   refreshPersonNeighborsCallback = () => {
-    const { personId } = this.props;
+    const { person } = this.props;
     const { actions } = this.props;
-    actions.refreshPSANeighbors({ personId });
+    const personId = person.getIn([PROPERTY_TYPES.PERSON_ID, 0], '');
+    actions.refreshPersonNeighbors({ personId });
+    this.setState(INITIAL_STATE);
   }
 
-  selectFromExistingContacts = () => this.setState({
-    selectingFromExistingContacts: true,
-    creatingNewContact: false
+  modifyContactInformation = () => this.setState({
+    modifyingContactInformation: true
   });
 
-  createNewContact = () => this.setState({
-    selectingFromExistingContacts: false,
-    creatingNewContact: true
-  });
+  notModifyingContactInformation = () => this.setState({
+    modifyingContactInformation: false
+  });;
+
+  uponUpdate = () => {
+    this.setState(INITIAL_STATE);
+  }
+
+  updateExistingContacts = () => {
+    const { updates } = this.state;
+    const { actions, person } = this.props;
+    const { updateContactInfo } = actions;
+    const personId = person.getIn([PROPERTY_TYPES.PERSON_ID, 0], '');
+    const personEntityKeyId = person.getIn([OPENLATTICE_ID_FQN, 0], '');
+
+    if (fromJS(updates).size) {
+      updateContactInfo({
+        entities: updates,
+        personEntityKeyId,
+        personId,
+        callback: this.uponUpdate
+      });
+    }
+  }
 
   createSubscription = () => {
     const { actions, app, person } = this.props;
-    const personId = person.get(PROPERTY_TYPES.PERSON_ID, '');
+    const personId = person.getIn([PROPERTY_TYPES.PERSON_ID, 0], '');
     const values = {
       [PROPERTY_TYPES.SUBSCRIPTION_ID]: randomUUID(),
       [PROPERTY_TYPES.IS_ACTIVE]: true,
       [PROPERTY_TYPES.DAY_INTERVAL]: true,
       [PROPERTY_TYPES.WEEK_INTERVAL]: true,
-      [FORM_IDS.PERSON_ID]: personId
+      [FORM_IDS.PERSON_ID]: personId,
+      [PROPERTY_TYPES.COMPLETED_DATE_TIME]: moment().toISOString(true)
     };
-    actions.props({
+    actions.submit({
       app,
       config: SubscriptionConfig,
-      values
+      values,
+      callback: this.refreshPersonNeighborsCallback
     });
   }
 
@@ -153,51 +220,126 @@ class ReleaseConditionsModal extends React.Component<Props, State> {
     const {
       actions,
       app,
+      fqnToIdMap,
       subscription,
       selectedOrganizationId
     } = this.props;
     const isSubscribed = subscription.getIn([PROPERTY_TYPES.IS_ACTIVE, 0], false);
     const entitySetId = getEntitySetId(app, SUBSCRIPTION, selectedOrganizationId);
-    const entityKeyId = subscription.get(OPENLATTICE_ID_FQN, '');
+    const entityKeyId = subscription.getIn([OPENLATTICE_ID_FQN, 0], '');
     const values = {
-      [PROPERTY_TYPES.IS_ACTIVE]: !isSubscribed
+      [entityKeyId]: {
+        [fqnToIdMap.get(PROPERTY_TYPES.IS_ACTIVE)]: [!isSubscribed]
+      }
     };
-    actions.replaceEntity({
+    actions.updateEntity({
       entitySetId,
-      entityKeyId,
-      values
+      entities: values,
+      partial: 'PartialReplace',
+      callback: this.refreshPersonNeighborsCallback
     });
   }
 
   renderSubscribeButton = () => {
-    const { subscription } = this.props;
+    const { modifyingContactInformation } = this.state;
+    const {
+      contactInfo,
+      subscription,
+      submitting,
+      refreshingPersonNeighbors,
+      updatingEntity
+    } = this.props;
+    const subscriptionExists = subscription.size;
     const isSubscribed = subscription.getIn([PROPERTY_TYPES.IS_ACTIVE, 0], false);
-    const subscribeButtonText = isSubscribed ? 'Unsubscribe' : 'Subscribe';
+    let subscribeButtonText = isSubscribed ? 'Unsubscribe' : 'Subscribe';
+    if (submitting || refreshingPersonNeighbors || updatingEntity) subscribeButtonText = 'Loading...';
+    const editContactInfoText = 'Add Contact Info';
+    const subscribeFn = subscriptionExists ? this.toggleSubscription : this.createSubscription;
     return (
       <ButtonRow>
         <SubscribeButton
-            isSubscribed={isSubscribed}>
+            disabled={
+              !contactInfo.size
+              || modifyingContactInformation
+              || refreshingPersonNeighbors
+              || updatingEntity
+            }
+            isSubscribed={isSubscribed}
+            onClick={() => subscribeFn()}>
           { subscribeButtonText }
         </SubscribeButton>
-        <EditContactButton>
-          Edit Contact Info
-        </EditContactButton>
+        {
+          modifyingContactInformation
+            ? (
+              <>
+                <SaveButton
+                    disabled={submitting || refreshingPersonNeighbors}
+                    onClick={this.updateExistingContacts}>
+                  Save
+                </SaveButton>
+                <CancelEditButton
+                    disabled={refreshingPersonNeighbors}
+                    onClick={this.notModifyingContactInformation}>
+                  Cancel
+                </CancelEditButton>
+              </>
+            )
+            : (
+              <EditContactButton
+                  onClick={this.modifyContactInformation}>
+                { editContactInfoText }
+              </EditContactButton>
+            )
+        }
       </ButtonRow>
+    );
+  }
+
+  renderContactInformation = () => {
+    const {
+      contactInfo,
+      readOnlyPermissions,
+      person,
+      refreshingPersonNeighbors
+    } = this.props;
+    const { modifyingContactInformation } = this.state;
+    const personId = person.getIn([PROPERTY_TYPES.PERSON_ID, 0], '');
+    return (
+      <>
+        <ContactHeader>
+          Contact Information
+          <span>
+            {'All methods of contact that are marked "preferred" will recieve court notifications.'}
+          </span>
+        </ContactHeader>
+        <ContactInfoTable
+            contactInfo={contactInfo}
+            editing={modifyingContactInformation}
+            hasPermission={readOnlyPermissions}
+            noResults={!contactInfo.size}
+            handleCheckboxUpdates={this.handleCheckboxUpdates}
+            disabled={refreshingPersonNeighbors} />
+        {
+          modifyingContactInformation
+            ? (
+              <NewContactForm personId={personId} editing={modifyingContactInformation} />
+            )
+            : null
+        }
+      </>
     );
   }
 
   render() {
     const {
-      contactInfo,
       open,
       onClose,
       person,
+      refreshingPersonNeighbors,
       submitting,
-      readOnlyPermissions,
-      subscription
+      subscription,
+      updatingEntity
     } = this.props;
-    const { selectingFromExistingContacts, creatingNewContact } = this.state;
-
     return (
       <Wrapper>
         <ModalTransition>
@@ -212,41 +354,26 @@ class ReleaseConditionsModal extends React.Component<Props, State> {
                   max-height={MODAL_HEIGHT}
                   shouldCloseOnOverlayClick
                   stackIndex={2}>
-                <TitleWrapper>
-                  <h2>Manage Subscription</h2>
-                  <div>
-                    <CloseModalX onClick={onClose} />
-                  </div>
-                </TitleWrapper>
-                <ColumnRow>
-                  <SubscriptionInfo
-                      modal
-                      subscription={subscription}
-                      person={person} />
-                  <ContactText>
-                    {'All methods of contact that are marked "preferred" will recieve court notifications.'}
-                  </ContactText>
-                  <ContactInfoTable
-                      contactInfo={contactInfo}
-                      editing={selectingFromExistingContacts}
-                      hasPermission={readOnlyPermissions}
-                      noResults={!contactInfo.size} />
-                  { this.renderSubscribeButton() }
-                  {
-                    selectingFromExistingContacts
-                      ? (
-                        <div />
-                      )
-                      : null
-                  }
-                  {
-                    creatingNewContact
-                      ? (
-                        <div />
-                      )
-                      : null
-                  }
-                </ColumnRow>
+                <ModalBody>
+                  <ColumnRow>
+                    <TitleWrapper noPadding>
+                      <h2>Manage Subscription</h2>
+                      <div>
+                        <CloseModalX onClick={onClose} />
+                      </div>
+                    </TitleWrapper>
+                  </ColumnRow>
+                  <ColumnRow>
+                    <SubscriptionInfo
+                        updatingEntity={updatingEntity}
+                        refreshingPersonNeighbors={refreshingPersonNeighbors}
+                        modal
+                        subscription={subscription}
+                        person={person} />
+                    { this.renderContactInformation() }
+                    { this.renderSubscribeButton() }
+                  </ColumnRow>
+                </ModalBody>
               </Modal>
             )
           }
@@ -260,14 +387,21 @@ function mapStateToProps(state) {
   const app = state.get(STATE.APP);
   const submit = state.get(STATE.SUBMIT);
   const review = state.get(STATE.REVIEW);
+  const edm = state.get(STATE.EDM);
+  const people = state.get(STATE.PEOPLE);
   return {
     app,
     [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
     [APP.SELECTED_ORG_SETTINGS]: app.get(APP.SELECTED_ORG_SETTINGS),
 
+    [EDM.FQN_TO_ID]: edm.get(EDM.FQN_TO_ID),
+
     readOnlyPermissions: review.get(REVIEW.READ_ONLY),
 
-    [SUBMIT.SUBMITTING]: submit.get(SUBMIT.SUBMITTING, false)
+    [PEOPLE.REFRESHING_PERSON_NEIGHBORS]: people.get(PEOPLE.REFRESHING_PERSON_NEIGHBORS, false),
+
+    [SUBMIT.SUBMITTING]: submit.get(SUBMIT.SUBMITTING, false),
+    [SUBMIT.UPDATING_ENTITY]: submit.get(SUBMIT.UPDATING_ENTITY, false)
   };
 }
 
@@ -280,6 +414,10 @@ function mapDispatchToProps(dispatch :Function) :Object {
 
   Object.keys(SubmitActionFactory).forEach((action :string) => {
     actions[action] = SubmitActionFactory[action];
+  });
+
+  Object.keys(PeopleActionFactory).forEach((action :string) => {
+    actions[action] = PeopleActionFactory[action];
   });
 
   return {
