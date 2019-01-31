@@ -78,17 +78,28 @@ const ToolbarWrapper = styled.div`
 `;
 
 type Props = {
+  entityKeyId :string,
+  hearingNeighborsById :Map<*, *>,
   hearings :List<*, *>,
-  selectedPersonData :Map<*, *>,
+  hearingIds :List<*, *>,
+  isLoadingHearingsNeighbors :boolean,
+  isLoadingJudges :boolean,
   isFetchingPersonData :boolean,
   loadingPSAData :boolean,
   loadingPSAResults :boolean,
   mostRecentPSA :Map<*, *>,
   mostRecentPSAEntityKeyId :string,
+  mostRecentPSANeighbors :Map<*, *>,
   neighbors :Map<*, *>,
+  personHearings :List<*, *>,
   personId :string,
   psaNeighborsById :Map<*, *>,
   readOnlyPermissions :boolean,
+  refreshingPersonNeighbors :boolean,
+  selectedOrganizationId :string,
+  selectedOrganizationSettings :Map<*, *>,
+  selectedPersonData :Map<*, *>,
+  updatingEntity :boolean,
   actions :{
     getPersonData :(personId :string) => void,
     getPersonNeighbors :(value :{
@@ -404,10 +415,12 @@ class PersonDetailsContainer extends React.Component<Props, State> {
       neighbors,
       personId,
       psaNeighborsById,
+      refreshingPersonNeighbors,
       selectedPersonData,
       readOnlyPermissions,
       selectedOrganizationId,
-      selectedOrganizationSettings
+      selectedOrganizationSettings,
+      updatingEntity
     } = this.props;
     const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], '');
     const { downloadPSAReviewPDF } = actions;
@@ -425,6 +438,8 @@ class PersonDetailsContainer extends React.Component<Props, State> {
     );
     return (
       <PersonOverview
+          refreshingPersonNeighbors={refreshingPersonNeighbors}
+          updatingEntity={updatingEntity}
           includesPretrialModule={includesPretrialModule}
           contactInfo={contactInfo}
           downloadPSAReviewPDF={downloadPSAReviewPDF}
@@ -541,6 +556,7 @@ function mapStateToProps(state, ownProps) {
     [PEOPLE.NEIGHBORS]: people.getIn([PEOPLE.NEIGHBORS, personId], Map()),
     [PEOPLE.MOST_RECENT_PSA]: people.get(PEOPLE.MOST_RECENT_PSA),
     [PEOPLE.MOST_RECENT_PSA_NEIGHBORS]: people.get(PEOPLE.MOST_RECENT_PSA_NEIGHBORS),
+    [PEOPLE.REFRESHING_PERSON_NEIGHBORS]: people.get(PEOPLE.REFRESHING_PERSON_NEIGHBORS),
     personHearings: people.getIn([PEOPLE.NEIGHBORS, personId, HEARINGS], Map()),
 
     [PSA_MODAL.HEARING_IDS]: psaModal.get(PSA_MODAL.HEARING_IDS),
@@ -551,7 +567,8 @@ function mapStateToProps(state, ownProps) {
     [COURT.ALL_JUDGES]: court.get(COURT.ALL_JUDGES),
     [COURT.LOADING_JUDGES]: court.get(COURT.LOADING_JUDGES),
 
-    [SUBMIT.SUBMITTING]: submit.get(SUBMIT.SUBMITTING, false)
+    [SUBMIT.SUBMITTING]: submit.get(SUBMIT.SUBMITTING, false),
+    [SUBMIT.UPDATING_ENTITY]: submit.get(SUBMIT.UPDATING_ENTITY, false)
   };
 }
 
