@@ -8,18 +8,21 @@ import styled from 'styled-components';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCheck, faCog, faTimesCircle } from '@fortawesome/pro-light-svg-icons';
 
-import { formatPeopleInfo } from '../../utils/PeopleUtils';
 import ManageSubscriptionModal from '../../containers/people/ManageSubscriptionModal';
 import StyledButton from '../buttons/StyledButton';
+import LoadingSpinner from '../LoadingSpinner';
+import { formatPeopleInfo } from '../../utils/PeopleUtils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
-import {
-  FormSection,
-  InputRow,
-  PaddedRow,
-  SubHeader
-} from '../person/PersonFormTags';
+import { FormSection, InputRow } from '../person/PersonFormTags';
 
+const LoadingWrapper = styled.div`
+  height: 100%;
+  width: auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+`;
 const Status = styled(InputRow)`
   display: flex;
   flex-direction: row;
@@ -41,6 +44,7 @@ const StatusIconContainer = styled.div`
 const StyledFormSection = styled(FormSection)`
   border-bottom: ${props => (props.modal ? 'none' : `border-bottom: 1px solid ${OL.GREY11}`)};
   margin-bottom: 0 !important;
+  padding: 20px 0;
 `;
 
 type Props = {
@@ -48,7 +52,9 @@ type Props = {
   person :Map<*, *>,
   subscription :Map<*, *>,
   readOnlyPermissions :boolean,
-  modal :boolean
+  refreshingPersonNeighbors :boolean,
+  modal :boolean,
+  updatingEntity :boolean
 }
 
 class SubscriptionInfo extends React.Component<Props, State> {
@@ -86,17 +92,6 @@ class SubscriptionInfo extends React.Component<Props, State> {
     );
   }
 
-  renderHeader = () => {
-    const { modal } = this.props;
-    return modal
-      ? null
-      : (
-        <PaddedRow>
-          <SubHeader>Court Notifications</SubHeader>
-        </PaddedRow>
-      );
-  }
-
   getName = () => {
     const { person } = this.props;
     const { firstName, middleName, lastName } = formatPeopleInfo(person);
@@ -105,12 +100,27 @@ class SubscriptionInfo extends React.Component<Props, State> {
   }
 
   renderSubscriptionStatus = () => {
-    const { readOnlyPermissions, subscription, modal } = this.props;
+    const {
+      modal,
+      readOnlyPermissions,
+      refreshingPersonNeighbors,
+      subscription,
+      updatingEntity,
+    } = this.props;
     const name = this.getName();
     const isSubscribed = subscription.getIn([PROPERTY_TYPES.IS_ACTIVE, 0], false);
-    const subscriptionIcon = isSubscribed
+    let subscriptionIcon = isSubscribed
       ? <StatusIconContainer><FontAwesomeIcon color="green" icon={faCheck} /></StatusIconContainer>
       : <StatusIconContainer><FontAwesomeIcon color="red" icon={faTimesCircle} /></StatusIconContainer>;
+    if (updatingEntity || refreshingPersonNeighbors) {
+      subscriptionIcon = (
+        <StatusIconContainer>
+          <LoadingWrapper>
+            <LoadingSpinner size="1em" />
+          </LoadingWrapper>
+        </StatusIconContainer>
+      );
+    }
     const isSubscribedText = isSubscribed
       ? 'is subscribed to court notifications'
       : 'is not subscribed to court notifications';
