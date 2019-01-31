@@ -9,6 +9,7 @@ import { Map } from 'immutable';
 import ContactInfoRow from './ContactInfoRow';
 import { NoResults } from '../../utils/Layout';
 import { OL } from '../../utils/consts/Colors';
+import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 
 const { OPENLATTICE_ID_FQN } = Constants;
@@ -16,7 +17,7 @@ const { OPENLATTICE_ID_FQN } = Constants;
 const Table = styled.table`
   max-height: 70vh !important;
   border: 1px solid ${OL.GREY08};
-  margin: 0 30px 30px;
+  margin-bottom: 30px;
 `;
 
 const HeaderRow = styled.tr`
@@ -51,18 +52,30 @@ class ChargeTable extends React.Component<Props, State> {
   render() {
     const {
       contactInfo,
+      disabled,
       editing,
       hasPermission,
-      noResults
+      noResults,
+      handleCheckboxUpdates
     } = this.props;
-    if (noResults) return <NoResults>No Results</NoResults>;
-    const chargeSeq = contactInfo.valueSeq().map((contact => (
-      <ContactInfoRow
-          key={contact.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0], '')}
-          hasPermission={hasPermission}
-          contact={contact.get(PSA_NEIGHBOR.DETAILS, Map())}
-          editing={editing} />
-    )));
+    if (noResults) return <NoResults>No contact information on file.</NoResults>;
+    let chargeSeq = editing
+      ? contactInfo.valueSeq()
+      : contactInfo.valueSeq()
+        .filter(contact => contact.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.IS_PREFERRED, 0], ''));
+    chargeSeq = chargeSeq
+      .sortBy((contact => contact.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.PHONE, 0], '')))
+      .sortBy((contact => contact.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.EMAIL, 0], '')))
+      .sortBy((contact => !contact.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.IS_PREFERRED, 0], '')))
+      .map((contact => (
+        <ContactInfoRow
+            disabled={disabled}
+            key={contact.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0], '')}
+            handleCheckboxUpdates={handleCheckboxUpdates}
+            hasPermission={hasPermission}
+            contact={contact.get(PSA_NEIGHBOR.DETAILS, Map())}
+            editing={editing} />
+      )));
     return (
       <Table>
         <tbody>
