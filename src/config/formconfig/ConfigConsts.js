@@ -42,6 +42,7 @@ export const ALIASES = {
   EDITED_BY: 'editedBy',
   CHARGED_WITH: 'chargedWith',
   APPEARS_IN: 'appearsIn',
+  REGISTERED_FOR: 'registeredfor',
   REGISTERED_FOR_TWO: 'registeredfor2',
   REGISTERED_FOR_THREE: 'registeredfor3'
 };
