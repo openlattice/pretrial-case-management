@@ -55,6 +55,7 @@ export default function* sagas() :Generator<*, *, *> {
     // DataSagas
     fork(DataSagas.deleteEntityWatcher),
     fork(DataSagas.replaceEntityWatcher),
+    fork(DataSagas.updateEntityWatcher),
 
     // DownloadSagas
     fork(DownloadSagas.downloadPSAsWatcher),
@@ -86,6 +87,7 @@ export default function* sagas() :Generator<*, *, *> {
     fork(PeopleSagas.getPersonDataWatcher),
     fork(PeopleSagas.getPersonNeighborsWatcher),
     fork(PeopleSagas.refreshPersonNeighborsWatcher),
+    fork(PeopleSagas.updateContactInfoWatcher),
 
     // PSA Sagas
     fork(PSAModalSagas.loadPSAModalWatcher),
