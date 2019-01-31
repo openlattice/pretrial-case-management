@@ -5,17 +5,13 @@
 import React from 'react';
 import styled from 'styled-components';
 import { Map } from 'immutable';
+import { Constants } from 'lattice';
 
-import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import CheckboxButton from '../controls/StyledCheckboxButton';
+import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
-import { phoneIsValid, emailIsValid } from '../../utils/PeopleUtils';
 
-
-let {
-  CONTACT_INFORMATION
-} = APP_TYPES_FQNS;
-
-CONTACT_INFORMATION = CONTACT_INFORMATION.toString();
+const { OPENLATTICE_ID_FQN } = Constants;
 
 const Cell = styled.td`
   font-family: 'Open Sans', sans-serif;
@@ -58,37 +54,115 @@ const BooleanDisplay = styled.div`
 
 type Props = {
   contact :Map<*, *>,
-  editing :boolean
+  editing :boolean,
+  disabled :boolean,
+  handleCheckboxUpdates :() => void,
 };
 
 class ChargeRow extends React.Component<Props, State> {
 
+  constructor(props :Props) {
+    super(props);
+    const { contact } = props;
+    const isMobile = contact.getIn([PROPERTY_TYPES.IS_MOBILE, 0], '');
+    const isPreferred = contact.getIn([PROPERTY_TYPES.IS_PREFERRED, 0], '');
+    this.state = {
+      [PROPERTY_TYPES.IS_MOBILE]: isMobile,
+      [PROPERTY_TYPES.IS_PREFERRED]: isPreferred
+    };
+  }
+
+  static getDerivedStateFromProps(nextProps, prevState) {
+    const { contact, editing } = nextProps;
+    const isMobile = contact.getIn([PROPERTY_TYPES.IS_MOBILE, 0], '');
+    const isPreferred = contact.getIn([PROPERTY_TYPES.IS_PREFERRED, 0], '');
+    const isMobileFromState = prevState[PROPERTY_TYPES.IS_MOBILE];
+    const isPreferredFromState = prevState[PROPERTY_TYPES.IS_PREFERRED];
+    const nextState = {};
+    if (!editing) {
+      if (isMobile !== isMobileFromState) {
+        nextState[PROPERTY_TYPES.IS_MOBILE] = isMobile;
+      }
+      if (isPreferred !== isPreferredFromState) {
+        nextState[PROPERTY_TYPES.IS_PREFERRED] = isPreferred;
+      }
+      return nextState;
+    }
+    return null;
+  }
+
   renderContact = () => {
-    const { contact, editing } = this.props;
+    const { contact } = this.props;
     const email = contact.getIn([PROPERTY_TYPES.EMAIL, 0], '');
     const phone = contact.getIn([PROPERTY_TYPES.PHONE, 0], '');
     return (email || phone);
   }
 
   contactType = () => {
-    const { contact, editing } = this.props;
+    const { contact } = this.props;
     const email = contact.getIn([PROPERTY_TYPES.EMAIL, 0], '');
     return email ? 'Email' : 'Phone';
   }
 
+  getEntityKeyId = () => {
+    const { contact } = this.props;
+    return contact.getIn([OPENLATTICE_ID_FQN, 0], '');
+  }
+
+  handleCheckboxChange = (e) => {
+    const { handleCheckboxUpdates } = this.props;
+    const { name, checked } = e.target;
+    this.setState({ [name]: checked });
+    handleCheckboxUpdates(e);
+  }
+
   isMobile = () => {
-    const { contact, editing } = this.props;
-    const isMobile = contact.getIn([PROPERTY_TYPES.IS_MOBILE, 0], '');
+    const { state } = this;
+    const { contact, editing, disabled } = this.props;
+    const isMobile = state[PROPERTY_TYPES.IS_MOBILE];
+    const entityKeyId = this.getEntityKeyId();
     const email = contact.getIn([PROPERTY_TYPES.EMAIL, 0], '');
+    const input = editing
+      ? (
+        <CheckboxButton
+            name={PROPERTY_TYPES.IS_MOBILE}
+            onChange={this.handleCheckboxChange}
+            checked={isMobile}
+            value={entityKeyId}
+            disabled={!editing || disabled}
+            label={isMobile ? 'Yes' : 'No'} />
+      )
+      : (
+        <BooleanDisplay>
+          {isMobile ? 'Yes' : 'No'}
+        </BooleanDisplay>
+      );
     return email
       ? null
-      : <BooleanDisplay checked={isMobile}>{isMobile ? 'Yes' : 'No'}</BooleanDisplay>;
+      : input;
   }
 
   isPreferred= () => {
-    const { contact, editing } = this.props;
-    const isPreferred = contact.getIn([PROPERTY_TYPES.IS_PREFERRED, 0], '');
-    return <BooleanDisplay checked={isPreferred}>{isPreferred ? 'Yes' : 'No'}</BooleanDisplay>;
+    const { state } = this;
+    const { editing, disabled } = this.props;
+    const entityKeyId = this.getEntityKeyId();
+    const isPreferred = state[PROPERTY_TYPES.IS_PREFERRED];
+    const input = editing
+      ? (
+        <CheckboxButton
+            name={PROPERTY_TYPES.IS_PREFERRED}
+            onChange={this.handleCheckboxChange}
+            value={entityKeyId}
+            checked={isPreferred}
+            disabled={!editing || disabled}
+            label={isPreferred ? 'Yes' : 'No'} />
+      )
+      : (
+        <BooleanDisplay>
+          {isPreferred ? 'Yes' : 'No'}
+        </BooleanDisplay>
+      );
+    return input;
   }
 
   renderRow = () => {
