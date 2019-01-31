@@ -49,18 +49,21 @@ SUBSCRIPTION = SUBSCRIPTION.toString();
 
 type Props = {
   contactInfo :List<*, *>,
-  psaNeighborsById :Map<*, *>,
-  selectedPersonData :Map<*, *>,
   includesPretrialModule :boolean,
   loading :boolean,
   mostRecentPSA :Map<*, *>,
   mostRecentPSAEntityKeyId :string,
+  mostRecentPSANeighbors :Map<*, *>,
   neighbors :Map<*, *>,
   openDetailsModal :() => void,
   openUpdateContactModal :() => void,
   personId :string,
+  psaNeighborsById :Map<*, *>,
   readOnlyPermissions :boolean,
+  refreshingPersonNeighbors :boolean,
+  selectedPersonData :Map<*, *>,
   scheduledHearings :List,
+  updatingEntity :boolean
 }
 
 const StyledViewMoreLinkForCases = styled(ViewMoreLink)`
@@ -90,7 +93,9 @@ const PersonOverview = ({
   includesPretrialModule,
   openDetailsModal,
   openUpdateContactModal,
-  readOnlyPermissions
+  readOnlyPermissions,
+  refreshingPersonNeighbors,
+  updatingEntity
 } :Props) => {
 
   const subscription = neighbors.getIn([SUBSCRIPTION, PSA_NEIGHBOR.DETAILS], Map());
@@ -141,8 +146,10 @@ const PersonOverview = ({
             ? (
               <>
                 <StyledColumnRowWrapper>
-                  <StyledColumnRow>
+                  <StyledColumnRow withPadding>
                     <SubscriptionInfo
+                        refreshingPersonNeighbors={refreshingPersonNeighbors}
+                        updatingEntity={updatingEntity}
                         readOnlyPermissions={readOnlyPermissions}
                         subscription={subscription}
                         contactInfo={contactInfo}
