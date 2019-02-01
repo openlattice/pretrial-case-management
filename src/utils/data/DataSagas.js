@@ -82,13 +82,13 @@ function* updateEntityWorker(action :SequenceAction) :Generator<*, *, *> {
   const {
     entitySetId,
     entities,
-    partial,
+    updateType,
     callback
   } = action.value;
 
   try {
     yield put(updateEntity.request(action.id));
-    yield call(DataApi.updateEntityData, entitySetId, entities, partial);
+    yield call(DataApi.updateEntityData, entitySetId, entities, updateType);
     yield put(updateEntity.success(action.id));
 
     if (callback) callback();
