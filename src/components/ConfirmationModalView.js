@@ -13,8 +13,7 @@ function getBody(submissionStatus, pageContent) {
   If there continues to be an issue, contact help@openlattice.com.`;
 }
 
-function ConfirmationModal({ submissionStatus, pageContent }) {
-  const open = true;
+function ConfirmationModal({ submissionStatus, pageContent, open }) {
   return (
     <ModalTransition>
       {
@@ -37,7 +36,8 @@ function ConfirmationModal({ submissionStatus, pageContent }) {
 
 ConfirmationModal.propTypes = {
   pageContent: PropTypes.func.isRequired,
-  submissionStatus: PropTypes.bool.isRequired
+  submissionStatus: PropTypes.bool.isRequired,
+  open: PropTypes.isRequired
 };
 
 export default ConfirmationModal;
