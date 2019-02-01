@@ -426,8 +426,7 @@ class PersonDetailsContainer extends React.Component<Props, State> {
     const { downloadPSAReviewPDF } = actions;
     const contactInfo = neighbors.get(CONTACT_INFORMATION, List());
     const mostRecentPSAEntityKeyId = getEntityKeyId(mostRecentPSA.get(PSA_NEIGHBOR.DETAILS, Map()));
-    const neighborsForMostRecentPSA = psaNeighborsById.get(mostRecentPSAEntityKeyId, Map());
-    const scheduledHearings = getScheduledHearings(neighborsForMostRecentPSA);
+    const allScheduledHearings = getScheduledHearings(neighbors);
     const isLoading = (
       isLoadingJudges
       || loadingPSAData
@@ -451,7 +450,7 @@ class PersonDetailsContainer extends React.Component<Props, State> {
           personId={personId}
           psaNeighborsById={psaNeighborsById}
           readOnlyPermissions={readOnlyPermissions}
-          scheduledHearings={scheduledHearings}
+          allScheduledHearings={allScheduledHearings}
           selectedPersonData={selectedPersonData}
           openDetailsModal={this.openDetailsModal}
           openUpdateContactModal={this.openUpdateContactModal} />
