@@ -38,6 +38,7 @@ import ChargeTable from '../../components/charges/ChargeTable';
 import PSAReviewReportsRowList from '../review/PSAReviewReportsRowList';
 import exportPDF from '../../utils/PDFUtils';
 import psaConfig from '../../config/formconfig/PsaConfig';
+import SubscriptionInfo from '../../components/people/SubscriptionInfo';
 import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
 import { OL } from '../../utils/consts/Colors';
 import { getEntityKeyId } from '../../utils/DataUtils';
@@ -60,14 +61,17 @@ import {
   CHARGES,
   COURT,
   PSA_FORM,
+  REVIEW,
   SEARCH,
   STATE,
-  SUBMIT
+  SUBMIT,
+  PEOPLE
 } from '../../utils/consts/FrontEndStateConsts';
 import {
   ButtonWrapper,
   StyledFormWrapper,
-  StyledSectionWrapper
+  StyledSectionWrapper,
+  StyledColumnRow
 } from '../../utils/Layout';
 import {
   getNextPath,
@@ -250,6 +254,7 @@ const INITIAL_PERSON_FORM = Immutable.fromJS({
 });
 
 const INITIAL_STATE = Immutable.fromJS({
+  confirmationModalOpen: false,
   status: STATUS_OPTIONS_FOR_PENDING_PSAS.OPEN.value,
   personForm: INITIAL_PERSON_FORM,
   riskFactors: {},
@@ -306,6 +311,7 @@ type Props = {
   },
   allCasesForPerson :Immutable.List<*>,
   allChargesForPerson :Immutable.List<*>,
+  allContacts :Immutable.Map<*>,
   allFTAs :Immutable.List<*>,
   allHearings :Immutable.List<*>,
   allJudges :Immutable.List<*>,
@@ -329,12 +335,16 @@ type Props = {
   numCasesToLoad :number,
   openPSAs :Immutable.Map<*, *>,
   psaForm :Immutable.Map<*, *>,
+  readOnlyPermissions :boolean,
+  refreshingPersonNeighbors :boolean,
   selectedOrganizationId :string,
   selectedPerson :Immutable.Map<*, *>,
   selectedPersonId :string,
   selectedPretrialCase :Immutable.Map<*, *>,
   selectedOrganizationSettings :Immutable.Map<*, *>,
   submitError :boolean,
+  subscription :Immutable.Map<*, *>,
+  updatingEntity :boolean,
   violentCourtCharges :Immutable.Map<*, *>,
   violentArrestCharges :Immutable.Map<*, *>,
   location :{
@@ -349,6 +359,7 @@ type State = {
   dmfRiskFactors :{},
   scores :{},
   dmf :{},
+  confirmationModalOpen :boolean,
   scoresWereGenerated :boolean,
   psaIdClosing :?string,
   skipClosePSAs :boolean
@@ -366,6 +377,7 @@ class Form extends React.Component<Props, State> {
     if (selectedOrganizationId) {
       actions.loadDataModel();
       actions.loadJudges();
+      actions.checkPSAPermissions();
     }
     this.redirectToFirstPageIfNecessary();
   }
@@ -571,7 +583,8 @@ class Form extends React.Component<Props, State> {
       dmfRiskFactors,
       scores,
       dmf,
-      scoresWereGenerated: true
+      scoresWereGenerated: true,
+      confirmationModalOpen: true
     });
     this.submitEntities(scores.set(PROPERTY_TYPES.STATUS, Immutable.List.of(PSA_STATUSES.OPEN)), riskFactors, dmf);
   }
@@ -784,7 +797,8 @@ class Form extends React.Component<Props, State> {
         <LoadingContainer>
           <LoadingText>{loadingText}</LoadingText>
           <ProgressBar progress={progress} />
-        </LoadingContainer>);
+        </LoadingContainer>
+      );
     }
 
     if (isLoadingNeighbors || !caseLoadsComplete) {
@@ -832,13 +846,18 @@ class Form extends React.Component<Props, State> {
     const {
       allCasesForPerson,
       allChargesForPerson,
+      allContacts,
       allFTAs,
       allSentencesForPerson,
       charges,
       psaForm,
+      readOnlyPermissions,
+      refreshingPersonNeighbors,
       selectedPerson,
       selectedPretrialCase,
       selectedOrganizationId,
+      subscription,
+      updatingEntity,
       violentArrestCharges
     } = this.props;
     const violentChargeList = violentArrestCharges.get(selectedOrganizationId, Map());
@@ -865,6 +884,17 @@ class Form extends React.Component<Props, State> {
                 arrest={selectedPretrialCase}
                 component={CONTENT_CONSTS.FORM_CONTAINER} />
           </ContextItem>
+        </ContextRow>
+        <ContextRow>
+          <StyledColumnRow withPadding>
+            <SubscriptionInfo
+                refreshingPersonNeighbors={refreshingPersonNeighbors}
+                updatingEntity={updatingEntity}
+                readOnlyPermissions={readOnlyPermissions}
+                subscription={subscription}
+                contactInfo={allContacts}
+                person={selectedPerson} />
+          </StyledColumnRow>
         </ContextRow>
         <PaddedSectionWrapper>
           <HeaderRow left>
@@ -981,7 +1011,10 @@ class Form extends React.Component<Props, State> {
     );
   }
 
+  openConfirmationModal = this.setState({ confirmationModalOpen: true });
+
   renderPSAResultsModal = () => {
+    const { confirmationModalOpen } = this.state;
     const { actions, isSubmitting, isSubmitted } = this.props;
     const currentPage = getCurrentPage(window.location);
     if (!currentPage || Number.isNaN(currentPage)) return null;
@@ -991,6 +1024,7 @@ class Form extends React.Component<Props, State> {
 
     return (
       <ConfirmationModal
+          open={confirmationModalOpen}
           submissionStatus={isSubmitting || isSubmitted}
           pageContent={this.getPsaResults}
           handleModalButtonClick={actions.hardRestart} />
@@ -1021,6 +1055,8 @@ function mapStateToProps(state :Immutable.Map<*, *>) :Object {
   const submit = state.get(STATE.SUBMIT);
   const court = state.get(STATE.COURT);
   const charges = state.get(STATE.CHARGES);
+  const review = state.get(STATE.REVIEW);
+  const people = state.get(STATE.PEOPLE);
 
   return {
     // App
@@ -1047,8 +1083,11 @@ function mapStateToProps(state :Immutable.Map<*, *>) :Object {
     [PSA_FORM.ALL_FTAS]: psaForm.get(PSA_FORM.ALL_FTAS),
     [PSA_FORM.ALL_PSAS]: psaForm.get(PSA_FORM.ALL_PSAS),
     [PSA_FORM.ALL_HEARINGS]: psaForm.get(PSA_FORM.ALL_HEARINGS),
+    [PSA_FORM.ALL_CONTACTS]: psaForm.get(PSA_FORM.ALL_CONTACTS),
+    [PSA_FORM.SUBSCRIPTION]: psaForm.get(PSA_FORM.SUBSCRIPTION),
     [PSA_FORM.CHARGES]: psaForm.get(PSA_FORM.CHARGES),
     [PSA_FORM.SELECT_PERSON]: psaForm.get(PSA_FORM.SELECT_PERSON),
+    [PSA_FORM.SELECT_PERSON_NEIGHBORS]: psaForm.get(PSA_FORM.SELECT_PERSON_NEIGHBORS),
     [PSA_FORM.OPEN_PSAS]: psaForm.get(PSA_FORM.OPEN_PSAS),
     [PSA_FORM.ARREST_ID]: psaForm.get(PSA_FORM.ARREST_ID),
     [PSA_FORM.SELECT_PRETRIAL_CASE]: psaForm.get(PSA_FORM.SELECT_PRETRIAL_CASE),
@@ -1056,12 +1095,23 @@ function mapStateToProps(state :Immutable.Map<*, *>) :Object {
     [PSA_FORM.DATA_MODEL]: psaForm.get(PSA_FORM.DATA_MODEL),
     [PSA_FORM.ENTITY_SET_LOOKUP]: psaForm.get(PSA_FORM.ENTITY_SET_LOOKUP),
     [PSA_FORM.LOADING_NEIGHBORS]: psaForm.get(PSA_FORM.LOADING_NEIGHBORS),
+
+    // Submit
     [PSA_FORM.SUBMITTED]: submit.get(SUBMIT.SUBMITTED),
     [PSA_FORM.SUBMITTING]: submit.get(SUBMIT.SUBMITTING),
     [PSA_FORM.SUBMIT_ERROR]: submit.get(SUBMIT.ERROR),
 
+    [SUBMIT.SUBMITTING]: submit.get(SUBMIT.SUBMITTING),
+    [SUBMIT.UPDATING_ENTITY]: submit.get(SUBMIT.UPDATING_ENTITY),
+
+    // People
+    [PEOPLE.REFRESHING_PERSON_NEIGHBORS]: people.get(PEOPLE.REFRESHING_PERSON_NEIGHBORS),
+
     // Court
     [COURT.ALL_JUDGES]: court.get(COURT.ALL_JUDGES),
+
+    // Review
+    readOnlyPermissions: review.get(REVIEW.READ_ONLY),
 
     // Search
     [SEARCH.SELECTED_PERSON_ID]: search.get(SEARCH.SELECTED_PERSON_ID),
