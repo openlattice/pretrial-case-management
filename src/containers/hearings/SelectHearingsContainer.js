@@ -484,7 +484,7 @@ class SelectHearingsContainer extends React.Component<Props, State> {
         <SubscriptionInfo
             refreshingPersonNeighbors={refreshingPersonNeighbors}
             updatingEntity={updatingEntity}
-            readOnlyPermissions={readOnly}
+            readOnly={readOnly}
             subscription={subscription}
             contactInfo={contactInfo}
             person={person} />
