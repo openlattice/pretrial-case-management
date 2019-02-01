@@ -152,7 +152,7 @@ const CaseHistoryList = ({
   const casesDisplay = (
     <>
       {cases}
-      { modal ? null : <NoResults>{noResultsText}</NoResults> }
+      { (cases.size) ? null : <NoResults>{noResultsText}</NoResults> }
     </>
   );
 
