@@ -152,6 +152,7 @@ export const PSA_MODAL = {
 
   // Person
   PERSON_ID: 'personId',
+  PERSON_NEIGHBORS: 'personNeighbors',
   LOADING_CASES: 'loadingCaseHistory',
   CASE_HISTORY: 'caseHistory',
   MANUAL_CASE_HISTORY: 'manualCaseHistory',
@@ -175,6 +176,8 @@ export const PSA_FORM = {
   ALL_MANUAL_CASES: 'allManualCases',
   ALL_MANUAL_CHARGES: 'allManualCharges',
   ALL_HEARINGS: 'allHearings',
+  ALL_CONTACTS: 'allContacts',
+  SUBSCRIPTION: 'subscription',
   CHARGES: 'charges',
   SELECT_PERSON: 'selectedPerson',
   OPEN_PSAS: 'openPSAs',
