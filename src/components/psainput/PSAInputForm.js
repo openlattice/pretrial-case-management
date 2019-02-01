@@ -8,7 +8,7 @@ import styled from 'styled-components';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 
-import StyledCheckbox from '../controls/StyledCheckbox';
+import StyledRadio from '../controls/StyledRadio';
 import StyledInput from '../controls/StyledInput';
 import StyledTextArea from '../controls/StyledTextArea';
 import StyledRadioButton from '../controls/StyledRadioButton';
@@ -103,6 +103,14 @@ const Header = styled.div`
   padding-left: 30px;
 `;
 
+const SearchText = styled.div`
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  color: #{OL.GREY02};
+  margin-right: 10px;
+`;
+
 const PaddedHeader = styled(Header)`
   margin: 30px 0 0 0;
 `;
@@ -179,11 +187,11 @@ const PaddedErrorMessage = styled(ErrorMessage)`
   margin-top: 20px;
 `;
 
-const CheckboxContainer = styled.div`
+const RadioContainer = styled.div`
   display: flex;
   flex-direction: row;
   justify-content: center;
-  margin: 30px 0 0;
+  margin: 30px 0;
 
   label {
     font-family: 'Open Sans', sans-serif;
@@ -265,7 +273,7 @@ type Props = {
 };
 
 type State = {
-  iiiChecked :boolean,
+  iiiComplete :string,
   incomplete :boolean
 };
 
@@ -278,7 +286,7 @@ class PSAInputForm extends React.Component<Props, State> {
   constructor(props :Props) {
     super(props);
     this.state = {
-      iiiChecked: false,
+      iiiComplete: undefined,
       incomplete: false
     };
   }
@@ -307,8 +315,9 @@ class PSAInputForm extends React.Component<Props, State> {
     </RadioWrapper>
   );
 
-  handleCheckboxChange = (event) => {
-    this.setState({ iiiChecked: event.target.checked });
+  handleRadioChange = (e) => {
+    const { name, value } = e.target;
+    this.setState({ [name]: value });
   }
 
   invalidValue = (val :string) => val === null || val === undefined || val === 'null' || val === 'undefined';
@@ -410,6 +419,7 @@ class PSAInputForm extends React.Component<Props, State> {
       violentArrestCharges,
       violentCourtCharges,
     } = this.props;
+    const { iiiComplete } = this.state;
     const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false)
     const violentChargeList = violentArrestCharges.get(selectedOrganizationId, Map());
     const violentCourtChargeList = violentCourtCharges.get(selectedOrganizationId, Map());
@@ -629,15 +639,23 @@ class PSAInputForm extends React.Component<Props, State> {
                   disabled={viewOnly}
                   onChange={this.props.handleInputChange} />
 
-              <CheckboxContainer>
-                <StyledCheckbox
-                    name="iii"
-                    label="Interstate Identification Index (III) search completed"
-                    checked={this.state.iiiChecked}
-                    value={this.state.iiiChecked}
-                    onChange={this.handleCheckboxChange}
+              <RadioContainer>
+                <SearchText>Interstate Identification Index (III) Search:</SearchText>
+                <StyledRadio
+                    name="iiiComplete"
+                    label="completed"
+                    checked={iiiComplete === 'completed'}
+                    value="completed"
+                    onChange={this.handleRadioChange}
                     disabled={viewOnly} />
-              </CheckboxContainer>
+                <StyledRadio
+                    name="iiiComplete"
+                    label="not completed"
+                    checked={iiiComplete === 'not completed'}
+                    value="not completed"
+                    onChange={this.handleRadioChange}
+                    disabled={viewOnly} />
+              </RadioContainer>
 
               {
                 viewOnly ? null : (
@@ -651,7 +669,7 @@ class PSAInputForm extends React.Component<Props, State> {
                         bsStyle="primary"
                         bsSize="lg"
                         onClick={this.handleSubmit}
-                        disabled={!this.state.iiiChecked}>
+                        disabled={!(iiiComplete)}>
                       Score & Submit
                     </SubmitButton>
                     <div />
