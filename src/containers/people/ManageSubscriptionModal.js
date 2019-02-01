@@ -195,6 +195,9 @@ class ReleaseConditionsModal extends React.Component<Props, State> {
         callback: this.uponUpdate
       });
     }
+    else {
+      this.uponUpdate();
+    }
   }
 
   createSubscription = () => {
@@ -232,6 +235,7 @@ class ReleaseConditionsModal extends React.Component<Props, State> {
         [fqnToIdMap.get(PROPERTY_TYPES.IS_ACTIVE)]: [!isSubscribed]
       }
     };
+    console.log(values);
     actions.updateEntity({
       entitySetId,
       entities: values,
@@ -353,7 +357,7 @@ class ReleaseConditionsModal extends React.Component<Props, State> {
                   height={MODAL_HEIGHT}
                   max-height={MODAL_HEIGHT}
                   shouldCloseOnOverlayClick
-                  stackIndex={2}>
+                  stackIndex={20}>
                 <ModalBody>
                   <ColumnRow>
                     <TitleWrapper noPadding>
