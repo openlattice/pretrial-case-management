@@ -161,8 +161,7 @@ class ReleaseConditionsModal extends React.Component<Props, State> {
   }
 
   refreshPersonNeighborsCallback = () => {
-    const { person } = this.props;
-    const { actions } = this.props;
+    const { actions, person } = this.props;
     const personId = person.getIn([PROPERTY_TYPES.PERSON_ID, 0], '');
     actions.refreshPersonNeighbors({ personId });
     this.setState(INITIAL_STATE);
@@ -235,11 +234,10 @@ class ReleaseConditionsModal extends React.Component<Props, State> {
         [fqnToIdMap.get(PROPERTY_TYPES.IS_ACTIVE)]: [!isSubscribed]
       }
     };
-    console.log(values);
     actions.updateEntity({
       entitySetId,
       entities: values,
-      partial: 'PartialReplace',
+      updateType: 'PartialReplace',
       callback: this.refreshPersonNeighborsCallback
     });
   }
@@ -253,7 +251,7 @@ class ReleaseConditionsModal extends React.Component<Props, State> {
       refreshingPersonNeighbors,
       updatingEntity
     } = this.props;
-    const subscriptionExists = subscription.size;
+    const subscriptionExists = !!subscription.size;
     const isSubscribed = subscription.getIn([PROPERTY_TYPES.IS_ACTIVE, 0], false);
     let subscribeButtonText = isSubscribed ? 'Unsubscribe' : 'Subscribe';
     if (submitting || refreshingPersonNeighbors || updatingEntity) subscribeButtonText = 'Loading...';
@@ -269,7 +267,7 @@ class ReleaseConditionsModal extends React.Component<Props, State> {
               || updatingEntity
             }
             isSubscribed={isSubscribed}
-            onClick={() => subscribeFn()}>
+            onClick={subscribeFn}>
           { subscribeButtonText }
         </SubscribeButton>
         {
@@ -340,7 +338,7 @@ class ReleaseConditionsModal extends React.Component<Props, State> {
       onClose,
       person,
       refreshingPersonNeighbors,
-      submitting,
+      readOnly,
       subscription,
       updatingEntity
     } = this.props;
@@ -352,7 +350,7 @@ class ReleaseConditionsModal extends React.Component<Props, State> {
             && (
               <Modal
                   scrollBehavior="outside"
-                  onClose={() => onClose()}
+                  onClose={onClose}
                   width={MODAL_WIDTH}
                   height={MODAL_HEIGHT}
                   max-height={MODAL_HEIGHT}
@@ -400,7 +398,7 @@ function mapStateToProps(state) {
 
     [EDM.FQN_TO_ID]: edm.get(EDM.FQN_TO_ID),
 
-    readOnlyPermissions: review.get(REVIEW.READ_ONLY),
+    [REVIEW.READ_ONLY]: review.get(REVIEW.READ_ONLY),
 
     [PEOPLE.REFRESHING_PERSON_NEIGHBORS]: people.get(PEOPLE.REFRESHING_PERSON_NEIGHBORS, false),
 
