@@ -189,7 +189,6 @@ function* getPersonNeighborsWorker(action) :Generator<*, *, *> {
         );
       }
     });
-    console.log(neighborsByEntitySet.toJS());
 
     const uniqNeighborsByEntitySet = neighborsByEntitySet.set(PRETRIAL_CASES,
       neighborsByEntitySet.get(PRETRIAL_CASES, List())
