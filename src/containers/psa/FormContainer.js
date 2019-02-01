@@ -895,7 +895,7 @@ class Form extends React.Component<Props, State> {
             <SubscriptionInfo
                 refreshingPersonNeighbors={refreshingPersonNeighbors}
                 updatingEntity={updatingEntity}
-                readOnlyPermissions={readOnlyPermissions}
+                readOnly={readOnlyPermissions}
                 subscription={subscription}
                 contactInfo={allContacts}
                 person={selectedPerson} />
