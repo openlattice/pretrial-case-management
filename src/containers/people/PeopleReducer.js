@@ -212,7 +212,6 @@ export default function peopleReducer(state = INITIAL_STATE, action) {
           const { personId, contactInformation } = action.value;
           return state.setIn([PEOPLE.NEIGHBORS, personId, CONTACT_INFORMATION], contactInformation);
         },
-        FAILURE: () => state.set(PEOPLE.REFRESHING_PERSON_NEIGHBORS, false),
         FINALLY: () => state.set(PEOPLE.REFRESHING_PERSON_NEIGHBORS, false)
       });
     }
