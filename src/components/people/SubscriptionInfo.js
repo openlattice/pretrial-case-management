@@ -51,7 +51,7 @@ type Props = {
   contactInfo :List<*, *>,
   person :Map<*, *>,
   subscription :Map<*, *>,
-  readOnlyPermissions :boolean,
+  readOnly :boolean,
   refreshingPersonNeighbors :boolean,
   modal :boolean,
   updatingEntity :boolean
@@ -102,7 +102,7 @@ class SubscriptionInfo extends React.Component<Props, State> {
   renderSubscriptionStatus = () => {
     const {
       modal,
-      readOnlyPermissions,
+      readOnly,
       refreshingPersonNeighbors,
       subscription,
       updatingEntity,
@@ -131,7 +131,7 @@ class SubscriptionInfo extends React.Component<Props, State> {
           <StatusText>{`${name} ${isSubscribedText}`}</StatusText>
         </Status>
         <Status>
-          { (modal || readOnlyPermissions) ? null : this.renderManageSubscriptionButton() }
+          { (modal || readOnly) ? null : this.renderManageSubscriptionButton() }
         </Status>
       </Status>
     );
