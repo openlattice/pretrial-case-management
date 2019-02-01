@@ -8,6 +8,7 @@ import { Map } from 'immutable';
 import { Constants } from 'lattice';
 
 import CheckboxButton from '../controls/StyledCheckboxButton';
+import { CONTACT_METHODS } from '../../utils/consts/ContactInfoConsts';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
 
@@ -64,29 +65,23 @@ class ChargeRow extends React.Component<Props, State> {
   constructor(props :Props) {
     super(props);
     const { contact } = props;
-    const isMobile = contact.getIn([PROPERTY_TYPES.IS_MOBILE, 0], '');
-    const isPreferred = contact.getIn([PROPERTY_TYPES.IS_PREFERRED, 0], '');
+    const isMobile = contact.getIn([PROPERTY_TYPES.IS_MOBILE, 0], false);
+    const isPreferred = contact.getIn([PROPERTY_TYPES.IS_PREFERRED, 0], false);
     this.state = {
       [PROPERTY_TYPES.IS_MOBILE]: isMobile,
       [PROPERTY_TYPES.IS_PREFERRED]: isPreferred
     };
   }
 
-  static getDerivedStateFromProps(nextProps, prevState) {
+  static getDerivedStateFromProps(nextProps) {
     const { contact, editing } = nextProps;
-    const isMobile = contact.getIn([PROPERTY_TYPES.IS_MOBILE, 0], '');
-    const isPreferred = contact.getIn([PROPERTY_TYPES.IS_PREFERRED, 0], '');
-    const isMobileFromState = prevState[PROPERTY_TYPES.IS_MOBILE];
-    const isPreferredFromState = prevState[PROPERTY_TYPES.IS_PREFERRED];
-    const nextState = {};
+    const isMobile = contact.getIn([PROPERTY_TYPES.IS_MOBILE, 0], false);
+    const isPreferred = contact.getIn([PROPERTY_TYPES.IS_PREFERRED, 0], false);
     if (!editing) {
-      if (isMobile !== isMobileFromState) {
-        nextState[PROPERTY_TYPES.IS_MOBILE] = isMobile;
-      }
-      if (isPreferred !== isPreferredFromState) {
-        nextState[PROPERTY_TYPES.IS_PREFERRED] = isPreferred;
-      }
-      return nextState;
+      return {
+        [PROPERTY_TYPES.IS_MOBILE]: isMobile,
+        [PROPERTY_TYPES.IS_PREFERRED]: isPreferred
+      };
     }
     return null;
   }
@@ -101,7 +96,7 @@ class ChargeRow extends React.Component<Props, State> {
   contactType = () => {
     const { contact } = this.props;
     const email = contact.getIn([PROPERTY_TYPES.EMAIL, 0], '');
-    return email ? 'Email' : 'Phone';
+    return email ? CONTACT_METHODS.EMAIL : CONTACT_METHODS.PHONE;
   }
 
   getEntityKeyId = () => {
