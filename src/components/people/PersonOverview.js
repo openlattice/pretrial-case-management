@@ -150,7 +150,7 @@ const PersonOverview = ({
                     <SubscriptionInfo
                         refreshingPersonNeighbors={refreshingPersonNeighbors}
                         updatingEntity={updatingEntity}
-                        readOnlyPermissions={readOnlyPermissions}
+                        readOnly={readOnlyPermissions}
                         subscription={subscription}
                         contactInfo={contactInfo}
                         person={selectedPersonData} />
