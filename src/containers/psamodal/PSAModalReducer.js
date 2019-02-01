@@ -8,6 +8,7 @@ import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelCons
 import { PSA_MODAL, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { loadPSAModal, CLEAR_PSA_MODAL } from './PSAModalActionFactory';
 import { loadHearingNeighbors, refreshHearingNeighbors } from '../court/CourtActionFactory';
+import { updateContactInfo, refreshPersonNeighbors } from '../people/PeopleActionFactory';
 import {
   changePSAStatus,
   loadCaseHistory,
@@ -18,15 +19,18 @@ import {
 const { OPENLATTICE_ID_FQN } = Constants;
 
 let {
+  CONTACT_INFORMATION,
   DMF_RISK_FACTORS,
   DMF_RESULTS,
   HEARINGS,
   PEOPLE,
   PSA_RISK_FACTORS,
   RELEASE_RECOMMENDATIONS,
-  PSA_SCORES
+  PSA_SCORES,
+  SUBSCRIPTION
 } = APP_TYPES_FQNS;
 
+CONTACT_INFORMATION = CONTACT_INFORMATION.toString();
 DMF_RISK_FACTORS = DMF_RISK_FACTORS.toString();
 DMF_RESULTS = DMF_RESULTS.toString();
 HEARINGS = HEARINGS.toString();
@@ -34,6 +38,7 @@ PEOPLE = PEOPLE.toString();
 PSA_RISK_FACTORS = PSA_RISK_FACTORS.toString();
 RELEASE_RECOMMENDATIONS = RELEASE_RECOMMENDATIONS.toString();
 PSA_SCORES = PSA_SCORES.toString();
+SUBSCRIPTION = SUBSCRIPTION.toString();
 
 const INITIAL_STATE :Map<*, *> = fromJS({
   [PSA_MODAL.LOADING_PSA_MODAL]: false,
@@ -53,6 +58,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [PSA_MODAL.SENTENCE_HISTORY]: Map(),
   [PSA_MODAL.FTA_HISTORY]: Map(),
   [PSA_MODAL.PERSON_HEARINGS]: Map(),
+  [PSA_MODAL.PERSON_NEIGHBORS]: Map(),
 });
 
 export default function psaModalReducer(state :Map<*, *> = INITIAL_STATE, action :SequenceAction) {
@@ -65,6 +71,7 @@ export default function psaModalReducer(state :Map<*, *> = INITIAL_STATE, action
           const {
             psaId,
             neighborsByAppTypeFqn,
+            personNeighborsByFqn,
             hearingIds,
             psaPermissions
           } = action.value;
@@ -75,6 +82,7 @@ export default function psaModalReducer(state :Map<*, *> = INITIAL_STATE, action
             .set(PSA_MODAL.PSA_NEIGHBORS, neighborsByAppTypeFqn)
             .set(PSA_MODAL.HEARINGS, neighborsByAppTypeFqn.get(HEARINGS, List()))
             .set(PSA_MODAL.PSA_PERMISSIONS, psaPermissions)
+            .set(PSA_MODAL.PERSON_NEIGHBORS, personNeighborsByFqn)
             .set(PSA_MODAL.HEARING_IDS, hearingIds);
         },
         FAILURE: () => state.set(PSA_MODAL.LOADING_PSA_MODAL, false),
@@ -175,6 +183,28 @@ export default function psaModalReducer(state :Map<*, *> = INITIAL_STATE, action
         },
         FAILURE: () => state.set(PSA_MODAL.LOADING_HEARING_NEIGHBORS, false),
         FINALLY: () => state.set(PSA_MODAL.LOADING_HEARING_NEIGHBORS, false),
+      });
+    }
+
+    case updateContactInfo.case(action.type): {
+      return updateContactInfo.reducer(state, action, {
+        SUCCESS: () => {
+          const { contactInformation } = action.value;
+          return state.setIn([PSA_MODAL.PERSON_NEIGHBORS, CONTACT_INFORMATION], contactInformation);
+        }
+      });
+    }
+
+    case refreshPersonNeighbors.case(action.type): {
+      return refreshPersonNeighbors.reducer(state, action, {
+        SUCCESS: () => {
+          const { neighbors } = action.value;
+          const subscription = neighbors.getIn([SUBSCRIPTION], Map());
+          const contacts = neighbors.getIn([CONTACT_INFORMATION], List());
+          return state
+            .setIn([PSA_MODAL.PERSON_NEIGHBORS, SUBSCRIPTION], subscription)
+            .setIn([PSA_MODAL.PERSON_NEIGHBORS, CONTACT_INFORMATION], contacts);
+        }
       });
     }
 
