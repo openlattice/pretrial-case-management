@@ -208,48 +208,52 @@ function formReducer(state :Immutable.Map<> = INITIAL_STATE, action :Object) {
             const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
             const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
             const neighborObj = neighbor.get(PSA_NEIGHBOR.DETAILS, Immutable.Map());
-
-            if (appTypeFqn === pretrialCasesFqn) {
-              allCasesForPerson = allCasesForPerson.push(neighborObj);
-            }
-            else if (appTypeFqn === arrestCasesFqn) {
-              const arrList = neighborObj.get(ARREST_DATE_TIME, Immutable.List());
-              if (arrList.size) {
-                arrestOptionsWithDate = arrestOptionsWithDate.push(neighborObj);
+            switch (appTypeFqn) {
+              case pretrialCasesFqn:
+                allCasesForPerson = allCasesForPerson.push(neighborObj);
+                break;
+              case arrestCasesFqn: {
+                const arrList = neighborObj.get(ARREST_DATE_TIME, Immutable.List());
+                if (arrList.size) {
+                  arrestOptionsWithDate = arrestOptionsWithDate.push(neighborObj);
+                }
+                else {
+                  arrestOptionsWithoutDate = arrestOptionsWithoutDate.push(neighborObj);
+                }
+                break;
               }
-              else {
-                arrestOptionsWithoutDate = arrestOptionsWithoutDate.push(neighborObj);
-              }
-            }
-            else if (appTypeFqn === manualPretialCasesFqn) {
-              allManualCases = allManualCases.push(neighborObj);
-            }
-            else if (appTypeFqn === arrestChargesFqn) {
-              allArrestCharges = allArrestCharges.push(neighborObj);
-            }
-            else if (appTypeFqn === manualChargesFqn) {
-              allManualCharges = allManualCharges.push(neighborObj);
-            }
-            else if (appTypeFqn === chargesFqn) {
-              allChargesForPerson = allChargesForPerson.push(neighborObj);
-            }
-            else if (appTypeFqn === sentencesFqn) {
-              allSentencesForPerson = allSentencesForPerson.push(neighborObj);
-            }
-            else if (appTypeFqn === ftasFqn) {
-              allFTAs = allFTAs.push(neighborObj);
-            }
-            else if (appTypeFqn === psaScoresFqn) {
-              allPSAs = allPSAs.push(neighborObj);
-            }
-            else if (appTypeFqn === hearingsFqn) {
-              allHearings = allHearings.push(neighborObj);
-            }
-            else if (appTypeFqn === contactInformationFqn) {
-              allContactInfo = allContactInfo.push(neighbor);
-            }
-            else if (appTypeFqn === subscriptionFqn) {
-              personSubscription = neighborObj;
+              case manualPretialCasesFqn:
+                allManualCases = allManualCases.push(neighborObj);
+                break;
+              case arrestChargesFqn:
+                allArrestCharges = allArrestCharges.push(neighborObj);
+                break;
+              case manualChargesFqn:
+                allManualCharges = allManualCharges.push(neighborObj);
+                break;
+              case chargesFqn:
+                allChargesForPerson = allChargesForPerson.push(neighborObj);
+                break;
+              case sentencesFqn:
+                allSentencesForPerson = allSentencesForPerson.push(neighborObj);
+                break;
+              case ftasFqn:
+                allFTAs = allFTAs.push(neighborObj);
+                break;
+              case psaScoresFqn:
+                allPSAs = allPSAs.push(neighborObj);
+                break;
+              case hearingsFqn:
+                allHearings = allHearings.push(neighborObj);
+                break;
+              case contactInformationFqn:
+                allContactInfo = allContactInfo.push(neighbor);
+                break;
+              case subscriptionFqn:
+                personSubscription = neighborObj;
+                break;
+              default:
+                break;
             }
           });
 
