@@ -62,7 +62,7 @@ type Props = {
   readOnlyPermissions :boolean,
   refreshingPersonNeighbors :boolean,
   selectedPersonData :Map<*, *>,
-  scheduledHearings :List,
+  allScheduledHearings :List,
   updatingEntity :boolean
 }
 
@@ -88,7 +88,7 @@ const PersonOverview = ({
   neighbors,
   personId,
   psaNeighborsById,
-  scheduledHearings,
+  allScheduledHearings,
   selectedPersonData,
   includesPretrialModule,
   openDetailsModal,
@@ -164,7 +164,7 @@ const PersonOverview = ({
                     <HearingCardsWithTitle
                         readOnly
                         title="Upcoming Hearings"
-                        hearings={scheduledHearings}
+                        hearings={allScheduledHearings}
                         handleSelect={() => null}
                         noHearingsMessage="There are no upcoming hearings." />
                   </StyledColumnRowWithPadding>
