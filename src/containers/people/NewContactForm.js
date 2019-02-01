@@ -18,6 +18,7 @@ import { phoneIsValid, emailIsValid } from '../../utils/PeopleUtils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
 import { InputGroup } from '../../components/person/PersonFormTags';
+import { CONTACT_METHODS } from '../../utils/consts/ContactInfoConsts';
 import {
   APP,
   STATE,
@@ -190,7 +191,7 @@ class NewHearingSection extends React.Component<Props, State> {
     return (
       <AddContactButton
           disabled={submitting || !this.isReadyToSubmit()}
-          onClick={() => this.createNewContact()}>
+          onClick={this.createNewContact}>
         Add
       </AddContactButton>
     );
@@ -202,14 +203,14 @@ class NewHearingSection extends React.Component<Props, State> {
       this.setState({
         [PROPERTY_TYPES.EMAIL]: value,
         [PROPERTY_TYPES.PHONE]: '',
-        contactMethod: 'Email'
+        contactMethod: CONTACT_METHODS.EMAIL
       });
     }
     else if (phoneIsValid(value)) {
       this.setState({
         [PROPERTY_TYPES.EMAIL]: '',
         [PROPERTY_TYPES.PHONE]: this.formatPhoneNumber(value),
-        contactMethod: 'Phone'
+        contactMethod: CONTACT_METHODS.PHONE
       });
     }
     this.setState({ [name]: value });
@@ -229,7 +230,7 @@ class NewHearingSection extends React.Component<Props, State> {
     const cleaned = (phone).replace(/\D/g, '');
     const match = cleaned.match(/^(\d{3})(\d{3})(\d{4})$/);
     if (match) {
-      return `(${match[1]})${match[2]}-${match[3]}`;
+      return `(${match[1]}) ${match[2]}-${match[3]}`;
     }
     return null;
   }
@@ -239,7 +240,7 @@ class NewHearingSection extends React.Component<Props, State> {
     const { contact } = state;
     const phone = state[PROPERTY_TYPES.PHONE];
     const email = state[PROPERTY_TYPES.EMAIL];
-    return (contact === '') || !!(phone || email);
+    return (contact === '') || phone || email;
   }
 
   renderContact = () => {
@@ -260,7 +261,7 @@ class NewHearingSection extends React.Component<Props, State> {
     const { state } = this;
     const { contactMethod } = this.state;
     const isMobile = state[PROPERTY_TYPES.IS_MOBILE];
-    return (contactMethod === 'Phone')
+    return (contactMethod === CONTACT_METHODS.PHONE)
       ? (
         <InputGroup>
           <InputLabel>Mobile</InputLabel>
