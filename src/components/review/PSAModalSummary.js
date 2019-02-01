@@ -7,6 +7,7 @@ import styled from 'styled-components';
 import { connect } from 'react-redux';
 
 import ChargeHistoryStats from '../casehistory/ChargeHistoryStats';
+import CaseHistoryList from '../casehistory/CaseHistoryList';
 import ChargeTable from '../charges/ChargeTable';
 import PSASummary from '../../containers/review/PSASummary';
 import { AlternateSectionHeader, Count } from '../../utils/Layout';
@@ -41,6 +42,11 @@ const ChargeTableContainer = styled.div`
 `;
 
 type Props = {
+  addCaseToPSA :() => void,
+  removeCaseFromPSA :() => void,
+  caseNumbersToAssociationId :Immutable.List,
+  chargeHistoryForMostRecentPSA :Immutable.Map,
+  caseHistoryForMostRecentPSA :Immutable.List,
   notes :string,
   scores :Immutable.Map<*, *>,
   neighbors :Immutable.Map<*, *>,
@@ -51,6 +57,7 @@ type Props = {
   selectedOrganizationId :string,
   selectedOrganizationSettings :Immutable.Map<*, *>,
   violentArrestCharges :Immutable.Map<*, *>,
+  psaPermissions :boolean,
   downloadFn :(values :{
     neighbors :Immutable.Map<*, *>,
     scores :Immutable.Map<*, *>
@@ -65,7 +72,13 @@ class PSAModalSummary extends React.Component<Props, *> {
       manualChargeHistory,
       neighbors,
       selectedOrganizationId,
-      violentArrestCharges
+      violentArrestCharges,
+      addCaseToPSA,
+      removeCaseFromPSA,
+      caseNumbersToAssociationId,
+      chargeHistoryForMostRecentPSA,
+      caseHistoryForMostRecentPSA,
+      psaPermissions
     } = this.props;
     const violentChargeList = violentArrestCharges.get(selectedOrganizationId, Map());
     const caseNum = neighbors.getIn(
@@ -74,14 +87,34 @@ class PSAModalSummary extends React.Component<Props, *> {
     const pretrialCase = manualCaseHistory
       .filter(caseObj => caseObj.getIn([PROPERTY_TYPES.CASE_ID, 0], '') === caseNum);
     const charges = manualChargeHistory.get(caseNum, Immutable.List());
+
+    const associatedCasesForForPSA = caseHistoryForMostRecentPSA.filter((caseObj) => {
+      const caseNo = caseObj.getIn([PROPERTY_TYPES.CASE_ID, 0]);
+      return caseNumbersToAssociationId.get(caseNo);
+    });
     return (
-      <ChargeTableContainer>
-        <AlternateSectionHeader>
-          Charges
-          <Count>{charges.size}</Count>
-        </AlternateSectionHeader>
-        <ChargeTable charges={charges} violentChargeList={violentChargeList} pretrialCase={pretrialCase} />
-      </ChargeTableContainer>
+      <>
+        <hr />
+        <ChargeTableContainer>
+          <AlternateSectionHeader>
+            Arrest Charges
+            <Count>{charges.size}</Count>
+          </AlternateSectionHeader>
+          <ChargeTable charges={charges} violentChargeList={violentChargeList} pretrialCase={pretrialCase} />
+        </ChargeTableContainer>
+        <hr />
+        <ChargeTableContainer>
+          <CaseHistoryList
+              psaPermissions={psaPermissions}
+              pendingCases
+              addCaseToPSA={addCaseToPSA}
+              removeCaseFromPSA={removeCaseFromPSA}
+              caseNumbersToAssociationId={caseNumbersToAssociationId}
+              title="Court Charges"
+              caseHistory={associatedCasesForForPSA}
+              chargeHistory={chargeHistoryForMostRecentPSA} />
+        </ChargeTableContainer>
+      </>
     );
   }
 
@@ -114,6 +147,7 @@ class PSAModalSummary extends React.Component<Props, *> {
                   padding
                   pendingCharges={pendingCharges}
                   chargeHistory={chargeHistory} />
+
             ) : null
         }
         {this.renderCaseInfo()}

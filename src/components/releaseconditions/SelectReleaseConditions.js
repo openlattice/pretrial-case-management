@@ -414,7 +414,7 @@ class SelectReleaseConditions extends React.Component<Props, State> {
           [PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.OTHER_TEXT, 0],
           defaultDMF.getIn([PROPERTY_TYPES.OTHER_TEXT, 0], '')
         ),
-        [RELEASE]: defaultBond.size ? RELEASES.RELEASED : RELEASES.HELD,
+        [RELEASE]: bondType ? RELEASES.RELEASED : RELEASES.HELD,
         [BOND_TYPE]: bondType,
         [BOND_AMOUNT]: bondAmount,
         [CONDITIONS]: conditionsByType.keySeq().toJS(),
@@ -729,6 +729,12 @@ class SelectReleaseConditions extends React.Component<Props, State> {
         [PROPERTY_TYPES.BOND_AMOUNT]: bondAmount
       };
       submission[ID_FIELD_NAMES.BOND_ID] = randomUUID();
+    }
+    else {
+      bondEntity = {
+        [PROPERTY_TYPES.BOND_TYPE]: null,
+        [PROPERTY_TYPES.BOND_AMOUNT]: null
+      };
     }
 
     const conditionsEntity = [];
@@ -1185,7 +1191,6 @@ class SelectReleaseConditions extends React.Component<Props, State> {
 
   render() {
     const { state } = this;
-
     const RELEASED = state[RELEASE] !== RELEASES.RELEASED;
     return (
       <Wrapper>
