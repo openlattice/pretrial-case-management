@@ -140,7 +140,6 @@ function* getPersonNeighborsWorker(action) :Generator<*, *, *> {
     let neighbors = yield call(SearchApi.searchEntityNeighbors, peopleEntitySetId, entityKeyId);
     neighbors = obfuscateEntityNeighbors(neighbors);
     neighbors = fromJS(neighbors);
-
     neighbors.forEach((neighborObj) => {
       const entitySetId = neighborObj.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
       const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
@@ -150,6 +149,10 @@ function* getPersonNeighborsWorker(action) :Generator<*, *, *> {
           mostRecentPSA = neighborObj;
           currentPSADateTime = entityDateTime;
         }
+        neighborsByEntitySet = neighborsByEntitySet.set(
+          appTypeFqn,
+          neighborsByEntitySet.get(appTypeFqn, List()).push(neighborObj)
+        );
       }
       else if (appTypeFqn === CONTACT_INFORMATION) {
         neighborsByEntitySet = neighborsByEntitySet.set(
@@ -186,6 +189,7 @@ function* getPersonNeighborsWorker(action) :Generator<*, *, *> {
         );
       }
     });
+    console.log(neighborsByEntitySet.toJS());
 
     const uniqNeighborsByEntitySet = neighborsByEntitySet.set(PRETRIAL_CASES,
       neighborsByEntitySet.get(PRETRIAL_CASES, List())
@@ -275,6 +279,10 @@ function* refreshPersonNeighborsWorker(action) :Generator<*, *, *> {
           mostRecentPSA = neighbor;
           currentPSADateTime = entityDateTime;
         }
+        neighbors = neighbors.set(
+          appTypeFqn,
+          neighbors.get(appTypeFqn, List()).push(neighbor)
+        );
       }
       else if (appTypeFqn === CONTACT_INFORMATION) {
         neighbors = neighbors.set(
