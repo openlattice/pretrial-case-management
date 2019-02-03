@@ -320,5 +320,9 @@ export const PROPERTY_TYPES = {
   SUBSCRIPTION_ID: 'ol.id',
   IS_ACTIVE: 'ol.active',
   DAY_INTERVAL: 'ol.dayinterval',
-  WEEK_INTERVAL: 'ol.weekinterval'
+  WEEK_INTERVAL: 'ol.weekinterval',
+
+  // Reminders
+  REMINDER_ID: 'ol.id',
+  NOTIFIED: 'ol.notified'
 };
