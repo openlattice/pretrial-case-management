@@ -65,3 +65,7 @@ export const ABOUT_PERSON = `${PERSON_DETAILS}`;
 export const MANAGE_CHARGES :string = `${DASHBOARD}/manage-charges`;
 export const ARREST_CHARGES = '/arrest';
 export const COURT_CHARGES = '/court';
+
+/* Staff Dashboard */
+export const STAFF_DASHBOARD :string = `${DASHBOARD}/staff_dasboard`;
+export const REMINDERS :string = 'reminders';
