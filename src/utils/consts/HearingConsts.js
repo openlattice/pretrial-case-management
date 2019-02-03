@@ -155,3 +155,16 @@ export const getAvailableHearings = (personHearings, scheduledHearings, hearingN
   });
   return unusedHearings.sort((h1, h2) => sortByDate(h1, h2, PROPERTY_TYPES.DATE_TIME));
 };
+
+export const getHearingFields = (hearing) => {
+  const hearingDate = moment(hearing.getIn([PROPERTY_TYPES.DATE_TIME, 0])).format('MM/DD/YYYY');
+  const hearingTime = moment(hearing.getIn([PROPERTY_TYPES.DATE_TIME, 0])).format('HH:mm');
+  const courtroom = hearing.getIn([PROPERTY_TYPES.COURTROOM, 0]);
+  const hearingType = hearing.getIn([PROPERTY_TYPES.HEARING_TYPE, 0]);
+  return {
+    hearingDate,
+    hearingTime,
+    courtroom,
+    hearingType
+  };
+};
