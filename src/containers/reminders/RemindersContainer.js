@@ -196,8 +196,6 @@ class RemindersContainer extends React.Component<Props, State> {
   }
 
   render() {
-    const { reminderIds } = this.props;
-    console.log(reminderIds.toJS());
     return (
       <DashboardMainSection>
         {this.renderToolbar()}
