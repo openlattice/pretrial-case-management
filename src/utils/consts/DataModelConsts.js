@@ -63,6 +63,7 @@ export const APP_TYPES_FQNS = {
 export const SETTINGS = {
   CONTEXTS: 'contexts',
   LOAD_CASES: 'loadCasesOnTheFly',
+  COURT_REMINDERS: 'courtRemindersEnabled',
   MODULES: 'modules'
 };
 
