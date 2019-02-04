@@ -64,7 +64,11 @@ class RemindersTable extends React.Component<Props, State> {
       noResults
     } = this.props;
     if (noResults) return <NoResults>No Results</NoResults>;
-    const reminderSeq = reminders.valueSeq().map(((reminder) => {
+    const reminderSeq = reminders.valueSeq().sortBy((reminder) => {
+      const { entityKeyId } = getReminderFields(reminder);
+      const person = neighbors.getIn([entityKeyId, PEOPLE, PSA_NEIGHBOR.DETAILS], Map());
+      return person.get(PROPERTY_TYPES.LAST_NAME);
+    }).map(((reminder) => {
       const {
         reminderId,
         dateTime,
