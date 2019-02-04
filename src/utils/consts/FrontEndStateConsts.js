@@ -12,6 +12,7 @@ export const STATE = {
   PSA_MODAL: 'psaModal',
   PSA: 'psa',
   PEOPLE: 'people',
+  REMINDERS: 'reminders',
   REVIEW: 'review',
   SEARCH: 'search',
   SUBMIT: 'submit'
@@ -206,6 +207,20 @@ export const PEOPLE = {
   REFRESHING_PERSON_NEIGHBORS: 'refreshingPersonNeighbors',
   MOST_RECENT_PSA: 'mostRecentPSA',
   MOST_RECENT_PSA_NEIGHBORS: 'mostRecentPSANeighbors'
+};
+
+// Reminders
+
+export const REMINDERS = {
+  REMINDER_IDS: 'reminderIds',
+  FUTURE_REMINDERS: 'futureRemidners',
+  PAST_REMINDERS: 'pastReminders',
+  SUCCESSFUL_REMINDER_IDS: 'successfulReminderIds',
+  FAILED_REMINDER_IDS: 'failedReminderIds',
+  LOADING_REMINDERS: 'loadingReminders',
+  REMINDER_NEIGHBORS: 'reminderNeighborsById',
+  REMINDERS_WITH_OPEN_PSA_IDS: 'remindersWithOpenPSA',
+  LOADING_REMINDER_NEIGHBORS: 'loadingReminderNeighbors'
 };
 
 // Review
