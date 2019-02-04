@@ -81,6 +81,7 @@ const StyledColumnRowWithPadding = styled(StyledColumnRow)`
 
 const PersonOverview = ({
   contactInfo,
+  courtRemindersEnabled,
   loading,
   mostRecentPSA,
   mostRecentPSANeighbors,
@@ -127,6 +128,21 @@ const PersonOverview = ({
   );
   const pendingCharges = currentPendingCharges(chargeHistory);
 
+  const renderSubscriptionInfo = courtRemindersEnabled
+    ? (
+      <StyledColumnRowWrapper>
+        <StyledColumnRow withPadding>
+          <SubscriptionInfo
+              refreshingPersonNeighbors={refreshingPersonNeighbors}
+              updatingEntity={updatingEntity}
+              readOnly={readOnlyPermissions}
+              subscription={subscription}
+              contactInfo={contactInfo}
+              person={selectedPersonData} />
+        </StyledColumnRow>
+      </StyledColumnRowWrapper>
+    ) : null;
+
   if (loading) {
     return <LoadingSpinner />;
   }
@@ -145,17 +161,7 @@ const PersonOverview = ({
           includesPretrialModule
             ? (
               <>
-                <StyledColumnRowWrapper>
-                  <StyledColumnRow withPadding>
-                    <SubscriptionInfo
-                        refreshingPersonNeighbors={refreshingPersonNeighbors}
-                        updatingEntity={updatingEntity}
-                        readOnly={readOnlyPermissions}
-                        subscription={subscription}
-                        contactInfo={contactInfo}
-                        person={selectedPersonData} />
-                  </StyledColumnRow>
-                </StyledColumnRowWrapper>
+                {renderSubscriptionInfo}
                 <StyledColumnRowWrapper>
                   <StyledColumnRowWithPadding>
                     <StyledViewMoreLinkForHearings to={`${Routes.PERSON_DETAILS_ROOT}/${personId}${Routes.HEARINGS}`}>
