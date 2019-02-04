@@ -52,6 +52,7 @@ export const APP_TYPES_FQNS = {
   REGISTERED_FOR: new FullyQualifiedName('app.registeredfor'),
   RELEASE_CONDITIONS: new FullyQualifiedName('app.releaseconditions'),
   RELEASE_RECOMMENDATIONS: new FullyQualifiedName('app.psanotes'),
+  REMINDERS: new FullyQualifiedName('app.remindersent'),
   SENTENCES: new FullyQualifiedName('app.sentences'),
   SUBSCRIPTION: new FullyQualifiedName('app.subscription'),
   SPEAKER_RECOGNITION_PROFILES: new FullyQualifiedName('app.speakerrecognitionprofiles'),
@@ -319,5 +320,9 @@ export const PROPERTY_TYPES = {
   SUBSCRIPTION_ID: 'ol.id',
   IS_ACTIVE: 'ol.active',
   DAY_INTERVAL: 'ol.dayinterval',
-  WEEK_INTERVAL: 'ol.weekinterval'
+  WEEK_INTERVAL: 'ol.weekinterval',
+
+  // Reminders
+  REMINDER_ID: 'ol.id',
+  NOTIFIED: 'ol.notified'
 };
