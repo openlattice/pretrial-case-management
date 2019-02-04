@@ -68,12 +68,12 @@ class RemindersTable extends React.Component<Props, State> {
       .sortBy((reminder) => {
         const { entityKeyId } = getReminderFields(reminder);
         const person = neighbors.getIn([entityKeyId, PEOPLE, PSA_NEIGHBOR.DETAILS], Map());
-        return person.get(PROPERTY_TYPES.LAST_NAME);
+        return person.get(PROPERTY_TYPES.FIRST_NAME);
       })
       .sortBy((reminder) => {
         const { entityKeyId } = getReminderFields(reminder);
         const person = neighbors.getIn([entityKeyId, PEOPLE, PSA_NEIGHBOR.DETAILS], Map());
-        return person.get(PROPERTY_TYPES.FIRST_NAME);
+        return person.get(PROPERTY_TYPES.LAST_NAME);
       }).map(((reminder) => {
         const {
           reminderId,
