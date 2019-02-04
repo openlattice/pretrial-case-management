@@ -99,10 +99,6 @@ class AboutPersonGeneral extends React.Component<Props, *> {
             label: 'First Name',
             content: [(firstName ? formattedFirstName : firstName)]
           },
-          // {
-          //   label: (isMobile ? 'Phone (mobile)' : 'Phone'),
-          //   content: [(phone || 'NA')]
-          // },
           {
             label: 'Date of Birth',
             content: [dob]

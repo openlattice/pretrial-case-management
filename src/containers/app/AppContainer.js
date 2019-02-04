@@ -61,6 +61,8 @@ const AppBodyWrapper = styled.div`
  */
 
 type Props = {
+  app :Map<*, *>,
+  appSettingsByOrgId :Map<*, *>,
   selectedOrganizationSettings :Map<*, *>,
   actions :{
     getAllPropertyTypes :RequestSequence;
@@ -162,7 +164,6 @@ class AppContainer extends React.Component<Props, *> {
 function mapStateToProps(state) {
   const app = state.get(STATE.APP);
   const charges = state.get(STATE.CHARGES);
-
   return {
     app,
     [APP.SELECTED_ORG_ID]: app.get(APP.APP_SETTINGS_ID),

@@ -52,7 +52,9 @@ export const APP_TYPES_FQNS = {
   REGISTERED_FOR: new FullyQualifiedName('app.registeredfor'),
   RELEASE_CONDITIONS: new FullyQualifiedName('app.releaseconditions'),
   RELEASE_RECOMMENDATIONS: new FullyQualifiedName('app.psanotes'),
+  REMINDERS: new FullyQualifiedName('app.remindersent'),
   SENTENCES: new FullyQualifiedName('app.sentences'),
+  SUBSCRIPTION: new FullyQualifiedName('app.subscription'),
   SPEAKER_RECOGNITION_PROFILES: new FullyQualifiedName('app.speakerrecognitionprofiles'),
   STAFF: new FullyQualifiedName('app.staff'),
   UJS_EMPLOYEES: new FullyQualifiedName('app.employees')
@@ -168,6 +170,7 @@ export const PROPERTY_TYPES = {
   EMAIL: 'staff.email',
   PHONE: 'contact.phonenumber',
   IS_MOBILE: 'contact.cellphone',
+  IS_PREFERRED: 'ol.preferred',
 
   // contact info given id
   CONTACT_INFO_GIVEN_ID: 'ol.id',
@@ -311,5 +314,15 @@ export const PROPERTY_TYPES = {
 
   // Voice recognition entity type consts
   AUDIO_SAMPLE: 'media.audio',
-  PIN: 'general.pin'
+  PIN: 'general.pin',
+
+  // Subscription
+  SUBSCRIPTION_ID: 'ol.id',
+  IS_ACTIVE: 'ol.active',
+  DAY_INTERVAL: 'ol.dayinterval',
+  WEEK_INTERVAL: 'ol.weekinterval',
+
+  // Reminders
+  REMINDER_ID: 'ol.id',
+  NOTIFIED: 'ol.notified'
 };

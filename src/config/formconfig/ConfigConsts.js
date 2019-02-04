@@ -25,6 +25,7 @@ export const ALIASES = {
   HEARING: 'hearing',
   OUTCOME: 'outcome',
   JUDGE: 'judge',
+  SUBSCRIPTION: 'subscription',
 
   CONTACT_GIVEN_FOR: 'contactInfoGivenFor',
   CONTACTED_AT: 'contactedAt',
@@ -41,6 +42,7 @@ export const ALIASES = {
   EDITED_BY: 'editedBy',
   CHARGED_WITH: 'chargedWith',
   APPEARS_IN: 'appearsIn',
+  REGISTERED_FOR: 'registeredfor',
   REGISTERED_FOR_TWO: 'registeredfor2',
   REGISTERED_FOR_THREE: 'registeredfor3'
 };

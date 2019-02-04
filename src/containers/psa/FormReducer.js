@@ -14,6 +14,7 @@ import {
   loadDataModel,
   loadNeighbors
 } from './FormActionFactory';
+import { updateContactInfo, refreshPersonNeighbors } from '../people/PeopleActionFactory';
 import { changePSAStatus } from '../review/ReviewActionFactory';
 import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA, NOTES, DMF } from '../../utils/consts/Consts';
@@ -51,18 +52,21 @@ const {
   ARREST_CASES,
   ARREST_CHARGES,
   CHARGES,
+  CONTACT_INFORMATION,
   FTAS,
   HEARINGS,
   MANUAL_CHARGES,
   MANUAL_PRETRIAL_CASES,
   PRETRIAL_CASES,
   PSA_SCORES,
-  SENTENCES
+  SENTENCES,
+  SUBSCRIPTION
 } = APP_TYPES_FQNS;
 
 const arrestCasesFqn :string = ARREST_CASES.toString();
 const arrestChargesFqn :string = ARREST_CHARGES.toString();
 const chargesFqn :string = CHARGES.toString();
+const contactInformationFqn :string = CONTACT_INFORMATION.toString();
 const ftasFqn :string = FTAS.toString();
 const hearingsFqn :string = HEARINGS.toString();
 const manualChargesFqn :string = MANUAL_CHARGES.toString();
@@ -70,6 +74,7 @@ const manualPretialCasesFqn :string = MANUAL_PRETRIAL_CASES.toString();
 const pretrialCasesFqn :string = PRETRIAL_CASES.toString();
 const psaScoresFqn :string = PSA_SCORES.toString();
 const sentencesFqn :string = SENTENCES.toString();
+const subscriptionFqn :string = SUBSCRIPTION.toString();
 
 
 const { OPENLATTICE_ID_FQN } = Constants;
@@ -116,11 +121,14 @@ const INITIAL_STATE :Immutable.Map<> = Immutable.fromJS({
   [PSA_FORM.ALL_ARREST_CHARGES]: Immutable.List(),
   [PSA_FORM.ALL_FTAS]: Immutable.List(),
   [PSA_FORM.ALL_PSAS]: Immutable.List(),
+  [PSA_FORM.SELECT_PERSON]: Immutable.List(),
+  [PSA_FORM.SUBSCRIPTION]: Immutable.Map(),
   [PSA_FORM.ALL_MANUAL_CASES]: Immutable.List(),
   [PSA_FORM.ALL_MANUAL_CHARGES]: Immutable.Map(),
   [PSA_FORM.ALL_HEARINGS]: Immutable.List(),
   [PSA_FORM.CHARGES]: Immutable.List(),
   [PSA_FORM.SELECT_PERSON]: Immutable.Map(),
+  [PSA_FORM.SELECT_PERSON_NEIGHBORS]: Immutable.Map(),
   [PSA_FORM.OPEN_PSAS]: Immutable.Map(),
   [PSA_FORM.ARREST_ID]: '',
   [PSA_FORM.SELECT_PRETRIAL_CASE]: Immutable.Map(),
@@ -190,6 +198,8 @@ function formReducer(state :Immutable.Map<> = INITIAL_STATE, action :Object) {
           let allFTAs = Immutable.List();
           let allPSAs = Immutable.List();
           let allHearings = Immutable.List();
+          let allContactInfo = Immutable.List();
+          let personSubscription = Immutable.Map();
           let { neighbors } = action.value;
           const { entitySetIdsToAppType, openPSAs } = action.value;
 
@@ -198,42 +208,52 @@ function formReducer(state :Immutable.Map<> = INITIAL_STATE, action :Object) {
             const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
             const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
             const neighborObj = neighbor.get(PSA_NEIGHBOR.DETAILS, Immutable.Map());
-
-            if (appTypeFqn === pretrialCasesFqn) {
-              allCasesForPerson = allCasesForPerson.push(neighborObj);
-            }
-            else if (appTypeFqn === arrestCasesFqn) {
-              const arrList = neighborObj.get(ARREST_DATE_TIME, Immutable.List());
-              if (arrList.size) {
-                arrestOptionsWithDate = arrestOptionsWithDate.push(neighborObj);
+            switch (appTypeFqn) {
+              case pretrialCasesFqn:
+                allCasesForPerson = allCasesForPerson.push(neighborObj);
+                break;
+              case arrestCasesFqn: {
+                const arrList = neighborObj.get(ARREST_DATE_TIME, Immutable.List());
+                if (arrList.size) {
+                  arrestOptionsWithDate = arrestOptionsWithDate.push(neighborObj);
+                }
+                else {
+                  arrestOptionsWithoutDate = arrestOptionsWithoutDate.push(neighborObj);
+                }
+                break;
               }
-              else {
-                arrestOptionsWithoutDate = arrestOptionsWithoutDate.push(neighborObj);
-              }
-            }
-            else if (appTypeFqn === manualPretialCasesFqn) {
-              allManualCases = allManualCases.push(neighborObj);
-            }
-            else if (appTypeFqn === arrestChargesFqn) {
-              allArrestCharges = allArrestCharges.push(neighborObj);
-            }
-            else if (appTypeFqn === manualChargesFqn) {
-              allManualCharges = allManualCharges.push(neighborObj);
-            }
-            else if (appTypeFqn === chargesFqn) {
-              allChargesForPerson = allChargesForPerson.push(neighborObj);
-            }
-            else if (appTypeFqn === sentencesFqn) {
-              allSentencesForPerson = allSentencesForPerson.push(neighborObj);
-            }
-            else if (appTypeFqn === ftasFqn) {
-              allFTAs = allFTAs.push(neighborObj);
-            }
-            else if (appTypeFqn === psaScoresFqn) {
-              allPSAs = allPSAs.push(neighborObj);
-            }
-            else if (appTypeFqn === hearingsFqn) {
-              allHearings = allHearings.push(neighborObj);
+              case manualPretialCasesFqn:
+                allManualCases = allManualCases.push(neighborObj);
+                break;
+              case arrestChargesFqn:
+                allArrestCharges = allArrestCharges.push(neighborObj);
+                break;
+              case manualChargesFqn:
+                allManualCharges = allManualCharges.push(neighborObj);
+                break;
+              case chargesFqn:
+                allChargesForPerson = allChargesForPerson.push(neighborObj);
+                break;
+              case sentencesFqn:
+                allSentencesForPerson = allSentencesForPerson.push(neighborObj);
+                break;
+              case ftasFqn:
+                allFTAs = allFTAs.push(neighborObj);
+                break;
+              case psaScoresFqn:
+                allPSAs = allPSAs.push(neighborObj);
+                break;
+              case hearingsFqn:
+                allHearings = allHearings.push(neighborObj);
+                break;
+              case contactInformationFqn:
+                allContactInfo = allContactInfo.push(neighbor);
+                break;
+              case subscriptionFqn:
+                personSubscription = neighborObj;
+                break;
+              default:
+                break;
             }
           });
 
@@ -254,6 +274,8 @@ function formReducer(state :Immutable.Map<> = INITIAL_STATE, action :Object) {
             .set(PSA_FORM.ALL_SENTENCES, allSentencesForPerson)
             .set(PSA_FORM.ALL_FTAS, allFTAs)
             .set(PSA_FORM.ALL_PSAS, allPSAs)
+            .set(PSA_FORM.ALL_CONTACTS, allContactInfo)
+            .set(PSA_FORM.SUBSCRIPTION, personSubscription)
             .set(PSA_FORM.ALL_ARREST_CHARGES, allArrestCharges)
             .set(PSA_FORM.OPEN_PSAS, Immutable.fromJS(openPSAs))
             .set(PSA_FORM.ALL_MANUAL_CASES, allManualCases)
@@ -357,6 +379,27 @@ function formReducer(state :Immutable.Map<> = INITIAL_STATE, action :Object) {
         .set(PSA_FORM.SUBMIT_ERROR, false);
     }
 
+    case updateContactInfo.case(action.type): {
+      return updateContactInfo.reducer(state, action, {
+        SUCCESS: () => {
+          const { contactInformation } = action.value;
+          return state.set(PSA_FORM.ALL_CONTACTS, contactInformation);
+        }
+      });
+    }
+
+    case refreshPersonNeighbors.case(action.type): {
+      return refreshPersonNeighbors.reducer(state, action, {
+        SUCCESS: () => {
+          const { neighbors } = action.value;
+          const subscription = neighbors.getIn([subscriptionFqn, PSA_NEIGHBOR.DETAILS], Immutable.Map());
+          const contacts = neighbors.getIn([contactInformationFqn], Immutable.List());
+          return state
+            .set(PSA_FORM.SUBSCRIPTION, subscription)
+            .set(PSA_FORM.ALL_CONTACTS, contacts);
+        }
+      });
+    }
 
     default:
       return state;

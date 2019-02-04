@@ -892,10 +892,10 @@ class PSAModal extends React.Component<Props, State> {
       scores,
       entityKeyId,
       personHearings,
+      personNeighbors,
       personId,
       psaPermissions
     } = this.props;
-
     return (
       <ModalWrapper withPadding>
         <SelectHearingsContainer
@@ -905,6 +905,7 @@ class PSAModal extends React.Component<Props, State> {
             refreshingNeighbors={refreshingNeighbors}
             dmfId={this.getIdOrValue(DMF_RESULTS)}
             personId={personId}
+            personNeighbors={personNeighbors}
             psaEntityKeyId={entityKeyId}
             deleteHearing={this.deleteHearing}
             refreshPSANeighborsCallback={this.refreshPSANeighborsCallback}
@@ -1045,6 +1046,7 @@ function mapStateToProps(state) {
     [PSA_MODAL.HEARINGS_NEIGHBORS_BY_ID]: psaModal.get(PSA_MODAL.HEARINGS_NEIGHBORS_BY_ID),
     [PSA_MODAL.LOADING_HEARING_NEIGHBORS]: psaModal.get(PSA_MODAL.LOADING_HEARING_NEIGHBORS),
     [PSA_MODAL.PERSON_HEARINGS]: psaModal.get(PSA_MODAL.PERSON_HEARINGS),
+    [PSA_MODAL.PERSON_NEIGHBORS]: psaModal.get(PSA_MODAL.PERSON_NEIGHBORS),
     [PSA_MODAL.PERSON_ID]: psaModal.get(PSA_MODAL.PERSON_ID),
     [PSA_MODAL.LOADING_CASES]: psaModal.get(PSA_MODAL.LOADING_CASES),
     [PSA_MODAL.CASE_HISTORY]: psaModal.get(PSA_MODAL.CASE_HISTORY),

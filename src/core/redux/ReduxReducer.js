@@ -15,6 +15,7 @@ import enrollReducer from '../../containers/enroll/EnrollReducer';
 import psaModalReducer from '../../containers/psamodal/PSAModalReducer';
 import psaReducer from '../../containers/psa/FormReducer';
 import peopleReducer from '../../containers/people/PeopleReducer';
+import remindersReducer from '../../containers/reminders/RemindersReducer';
 import reviewReducer from '../../containers/review/ReviewReducer';
 import searchReducer from '../../containers/person/SearchReducer';
 import submitReducer from '../../utils/submit/SubmitReducer';
@@ -35,6 +36,7 @@ export default function reduxReducer() {
     [STATE.PSA]: psaReducer,
     [STATE.PSA_MODAL]: psaModalReducer,
     [STATE.PEOPLE]: peopleReducer,
+    [STATE.REMINDERS]: remindersReducer,
     [STATE.REVIEW]: reviewReducer,
     [STATE.SEARCH]: searchReducer,
     [STATE.SUBMIT]: submitReducer

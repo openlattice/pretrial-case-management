@@ -18,15 +18,18 @@ import {
   getPeople,
   getPersonData,
   getPersonNeighbors,
-  refreshPersonNeighbors
+  refreshPersonNeighbors,
+  updateContactInfo
 } from './PeopleActionFactory';
 
 let {
+  CONTACT_INFORMATION,
   DMF_RESULTS,
   PSA_SCORES,
   RELEASE_RECOMMENDATIONS
 } = APP_TYPES_FQNS;
 
+CONTACT_INFORMATION = CONTACT_INFORMATION.toString();
 DMF_RESULTS = DMF_RESULTS.toString();
 PSA_SCORES = PSA_SCORES.toString();
 RELEASE_RECOMMENDATIONS = RELEASE_RECOMMENDATIONS.toString();
@@ -199,6 +202,17 @@ export default function peopleReducer(state = INITIAL_STATE, action) {
             .set(PEOPLE.MOST_RECENT_PSA_NEIGHBORS, mostRecentPSANeighbors);
           return newState;
         }
+      });
+    }
+
+    case updateContactInfo.case(action.type): {
+      return updateContactInfo.reducer(state, action, {
+        REQUEST: () => state.set(PEOPLE.REFRESHING_PERSON_NEIGHBORS, true),
+        SUCCESS: () => {
+          const { personId, contactInformation } = action.value;
+          return state.setIn([PEOPLE.NEIGHBORS, personId, CONTACT_INFORMATION], contactInformation);
+        },
+        FINALLY: () => state.set(PEOPLE.REFRESHING_PERSON_NEIGHBORS, false)
       });
     }
 

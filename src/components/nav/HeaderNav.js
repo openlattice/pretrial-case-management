@@ -231,7 +231,7 @@ class HeaderNav extends React.Component<Props, *> {
                 ? (
                   <>
                     <NavButton
-                        path={Routes.VISUALIZE_DASHBOARD}
+                        path={Routes.STAFF_DASHBOARD}
                         defaultIcon={dashboard}
                         selectedIcon={dashboardSelected}
                         label="Dashboard" />

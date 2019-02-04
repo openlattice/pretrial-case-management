@@ -8,6 +8,7 @@ import { Map, List } from 'immutable';
 
 import AboutPersonGeneral from '../person/AboutPersonGeneral';
 import HearingCardsWithTitle from '../hearings/HearingCardsWithTitle';
+import SubscriptionInfo from './SubscriptionInfo';
 import CaseHistoryList from '../casehistory/CaseHistoryList';
 import ChargeHistoryStats from '../casehistory/ChargeHistoryStats';
 import LoadingSpinner from '../LoadingSpinner';
@@ -34,25 +35,35 @@ import {
 
 import * as Routes from '../../core/router/Routes';
 
-let { MANUAL_PRETRIAL_CASES, RELEASE_RECOMMENDATIONS, STAFF } = APP_TYPES_FQNS;
+let {
+  MANUAL_PRETRIAL_CASES,
+  RELEASE_RECOMMENDATIONS,
+  STAFF,
+  SUBSCRIPTION
+} = APP_TYPES_FQNS;
 
 MANUAL_PRETRIAL_CASES = MANUAL_PRETRIAL_CASES.toString();
 RELEASE_RECOMMENDATIONS = RELEASE_RECOMMENDATIONS.toString();
 STAFF = STAFF.toString();
+SUBSCRIPTION = SUBSCRIPTION.toString();
 
 type Props = {
-  contactInfo :Map<*, *>,
-  psaNeighborsById :Map<*, *>,
-  selectedPersonData :Map<*, *>,
+  contactInfo :List<*, *>,
   includesPretrialModule :boolean,
   loading :boolean,
   mostRecentPSA :Map<*, *>,
   mostRecentPSAEntityKeyId :string,
+  mostRecentPSANeighbors :Map<*, *>,
   neighbors :Map<*, *>,
   openDetailsModal :() => void,
   openUpdateContactModal :() => void,
   personId :string,
-  scheduledHearings :List,
+  psaNeighborsById :Map<*, *>,
+  readOnlyPermissions :boolean,
+  refreshingPersonNeighbors :boolean,
+  selectedPersonData :Map<*, *>,
+  allScheduledHearings :List,
+  updatingEntity :boolean
 }
 
 const StyledViewMoreLinkForCases = styled(ViewMoreLink)`
@@ -77,13 +88,17 @@ const PersonOverview = ({
   neighbors,
   personId,
   psaNeighborsById,
-  scheduledHearings,
+  allScheduledHearings,
   selectedPersonData,
   includesPretrialModule,
   openDetailsModal,
-  openUpdateContactModal
+  openUpdateContactModal,
+  readOnlyPermissions,
+  refreshingPersonNeighbors,
+  updatingEntity
 } :Props) => {
-  // const mostRecentPSANeighbors = psaNeighborsById.get(mostRecentPSAEntityKeyId, Map());
+
+  const subscription = neighbors.getIn([SUBSCRIPTION, PSA_NEIGHBOR.DETAILS], Map());
   let arrestDate = getIdOrValue(
     mostRecentPSANeighbors, MANUAL_PRETRIAL_CASES, PROPERTY_TYPES.ARREST_DATE_TIME
   );
@@ -102,7 +117,7 @@ const PersonOverview = ({
   const notes = getIdOrValue(
     mostRecentPSANeighbors, RELEASE_RECOMMENDATIONS, PROPERTY_TYPES.RELEASE_RECOMMENDATION
   );
-  const scores = mostRecentPSA.get(PSA_NEIGHBOR.DETAILS, Map());
+  const scores = mostRecentPSA.get(PSA_NEIGHBOR.DETAILS, List());
   const { caseHistoryForMostRecentPSA, chargeHistoryForMostRecentPSA } = getCasesForPSA(
     caseHistory,
     chargeHistory,
@@ -129,14 +144,39 @@ const PersonOverview = ({
         {
           includesPretrialModule
             ? (
-              <StyledColumnRowWrapper>
-                <StyledColumnRow>
-                  <ChargeHistoryStats
-                      padding
-                      pendingCharges={pendingCharges}
-                      chargeHistory={chargeHistory} />
-                </StyledColumnRow>
-              </StyledColumnRowWrapper>
+              <>
+                <StyledColumnRowWrapper>
+                  <StyledColumnRow withPadding>
+                    <SubscriptionInfo
+                        refreshingPersonNeighbors={refreshingPersonNeighbors}
+                        updatingEntity={updatingEntity}
+                        readOnly={readOnlyPermissions}
+                        subscription={subscription}
+                        contactInfo={contactInfo}
+                        person={selectedPersonData} />
+                  </StyledColumnRow>
+                </StyledColumnRowWrapper>
+                <StyledColumnRowWrapper>
+                  <StyledColumnRowWithPadding>
+                    <StyledViewMoreLinkForHearings to={`${Routes.PERSON_DETAILS_ROOT}/${personId}${Routes.HEARINGS}`}>
+                      View more
+                    </StyledViewMoreLinkForHearings>
+                    <HearingCardsWithTitle
+                        readOnly
+                        title="Upcoming Hearings"
+                        hearings={allScheduledHearings}
+                        handleSelect={() => null}
+                        noHearingsMessage="There are no upcoming hearings." />
+                  </StyledColumnRowWithPadding>
+                </StyledColumnRowWrapper>
+                <StyledColumnRowWrapper>
+                  <StyledColumnRowWithPadding>
+                    <ChargeHistoryStats
+                        pendingCharges={pendingCharges}
+                        chargeHistory={chargeHistory} />
+                  </StyledColumnRowWithPadding>
+                </StyledColumnRowWrapper>
+              </>
             ) : null
         }
         <StyledColumnRowWrapper>
@@ -149,24 +189,6 @@ const PersonOverview = ({
                 openDetailsModal={openDetailsModal} />
           </StyledColumnRow>
         </StyledColumnRowWrapper>
-        {
-          includesPretrialModule
-            ? (
-              <StyledColumnRowWrapper>
-                <StyledColumnRowWithPadding>
-                  <StyledViewMoreLinkForHearings to={`${Routes.PERSON_DETAILS_ROOT}/${personId}${Routes.HEARINGS}`}>
-                    View more
-                  </StyledViewMoreLinkForHearings>
-                  <HearingCardsWithTitle
-                      readOnly
-                      title="Upcoming Hearings"
-                      hearings={scheduledHearings}
-                      handleSelect={() => null}
-                      noHearingsMessage="There are no upcoming hearings." />
-                </StyledColumnRowWithPadding>
-              </StyledColumnRowWrapper>
-            ) : null
-        }
         {
           includesPretrialModule
             ? (
