@@ -912,7 +912,7 @@ class Form extends React.Component<Props, State> {
                 component={CONTENT_CONSTS.FORM_CONTAINER} />
           </ContextItem>
         </ContextRow>
-        { this.renderSubscriptionInfo }
+        { this.renderSubscriptionInfo() }
         <PaddedSectionWrapper>
           <HeaderRow left>
             <h1>Charges</h1>
