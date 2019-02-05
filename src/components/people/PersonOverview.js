@@ -163,7 +163,7 @@ const PersonOverview = ({
           includesPretrialModule
             ? (
               <>
-                {renderSubscriptionInfo}
+                {renderSubscriptionInfo()}
                 <StyledColumnRowWrapper>
                   <StyledColumnRowWithPadding>
                     <StyledViewMoreLinkForHearings to={`${Routes.PERSON_DETAILS_ROOT}/${personId}${Routes.HEARINGS}`}>
