@@ -173,21 +173,21 @@ class RemindersContainer extends React.Component<Props, State> {
         {
           futureRemidners.size ? this.renderTable(
             'Scheduled Reminders',
-            futureRemidners.valueSeq().sortBy(reminder => reminder.get(PROPERTY_TYPES.DATE_TIME, '')),
+            futureRemidners,
             reminderNeighborsById
           ) : null
         }
         {
           this.renderTable(
             'Past Reminders',
-            pastReminders.valueSeq().sortBy(reminder => reminder.get(PROPERTY_TYPES.DATE_TIME, '')),
+            pastReminders,
             reminderNeighborsById
           )
         }
         {
           this.renderTable(
             'Failed Reminders',
-            failedReminders.valueSeq().sortBy(reminder => reminder.get(PROPERTY_TYPES.DATE_TIME, '')),
+            failedReminders,
             reminderNeighborsById
           )
         }
