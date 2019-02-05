@@ -155,7 +155,7 @@ function* loadReminderNeighborsByIdWorker(action :SequenceAction) :Generator<*, 
       let neighborsById = yield call(SearchApi.searchEntityNeighborsWithFilter, remindersEntitySetId, {
         entityKeyIds: reminderIds,
         sourceEntitySetIds: [remindersEntitySetId],
-        destinationEntitySetIds: [contactInformationEntitySetId, hearingsEntitySetId, peopleEntitySetId]
+        // destinationEntitySetIds: [contactInformationEntitySetId, hearingsEntitySetId, peopleEntitySetId]
       });
       neighborsById = obfuscateBulkEntityNeighbors(neighborsById);
       neighborsById = fromJS(neighborsById);
@@ -182,7 +182,7 @@ function* loadReminderNeighborsByIdWorker(action :SequenceAction) :Generator<*, 
       let psasByPersonId = yield call(SearchApi.searchEntityNeighborsWithFilter, peopleEntitySetId, {
         entityKeyIds: personIds.toJS(),
         sourceEntitySetIds: [psaScoresEntitySetId],
-        destinationEntitySetIds: [peopleEntitySetId]
+        // destinationEntitySetIds: [peopleEntitySetId]
       });
       psasByPersonId = fromJS(psasByPersonId);
       psasByPersonId = psasByPersonId.filter(psaList => psaList
