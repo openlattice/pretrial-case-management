@@ -148,6 +148,7 @@ function* loadPSAModalWorker(action :SequenceAction) :Generator<*, *, *> {
       sourceEntitySetIds: [peopleEntitySetId],
       destinationEntitySetIds: [subscriptionEntitySetId, contactInformationEntitySetId]
     });
+
     personNeighbors = fromJS(Object.values(personNeighbors)[0]);
     let personNeighborsByFqn = Map();
     personNeighbors.forEach((neighbor) => {
