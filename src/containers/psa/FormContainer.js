@@ -847,22 +847,44 @@ class Form extends React.Component<Props, State> {
     return selectedPerson.getIn([PROPERTY_TYPES.PERSON_ID, 0], '');
   }
 
+  renderSubscriptionInfo = () => {
+    const {
+      allContacts,
+      readOnlyPermissions,
+      refreshingPersonNeighbors,
+      selectedPerson,
+      selectedOrganizationSettings,
+      subscription,
+      updatingEntity
+    } = this.props;
+    const courtRemindersEnabled = selectedOrganizationSettings.get(SETTINGS.COURT_REMINDERS, false);
+    return courtRemindersEnabled
+      ? (
+        <ContextRow>
+          <StyledColumnRow withPadding>
+            <SubscriptionInfo
+                refreshingPersonNeighbors={refreshingPersonNeighbors}
+                updatingEntity={updatingEntity}
+                readOnly={readOnlyPermissions}
+                subscription={subscription}
+                contactInfo={allContacts}
+                person={selectedPerson} />
+          </StyledColumnRow>
+        </ContextRow>
+      ) : null;
+  }
+
   getPsaInputForm = () => {
     const {
       allCasesForPerson,
       allChargesForPerson,
-      allContacts,
       allFTAs,
       allSentencesForPerson,
       charges,
       psaForm,
-      readOnlyPermissions,
-      refreshingPersonNeighbors,
       selectedPerson,
       selectedPretrialCase,
       selectedOrganizationId,
-      subscription,
-      updatingEntity,
       violentArrestCharges
     } = this.props;
     const violentChargeList = violentArrestCharges.get(selectedOrganizationId, Map());
@@ -890,17 +912,7 @@ class Form extends React.Component<Props, State> {
                 component={CONTENT_CONSTS.FORM_CONTAINER} />
           </ContextItem>
         </ContextRow>
-        <ContextRow>
-          <StyledColumnRow withPadding>
-            <SubscriptionInfo
-                refreshingPersonNeighbors={refreshingPersonNeighbors}
-                updatingEntity={updatingEntity}
-                readOnly={readOnlyPermissions}
-                subscription={subscription}
-                contactInfo={allContacts}
-                person={selectedPerson} />
-          </StyledColumnRow>
-        </ContextRow>
+        { this.renderSubscriptionInfo() }
         <PaddedSectionWrapper>
           <HeaderRow left>
             <h1>Charges</h1>

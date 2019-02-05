@@ -423,6 +423,7 @@ class PersonDetailsContainer extends React.Component<Props, State> {
       updatingEntity
     } = this.props;
     const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], '');
+    const courtRemindersEnabled = selectedOrganizationSettings.get(SETTINGS.COURT_REMINDERS, false);
     const { downloadPSAReviewPDF } = actions;
     const contactInfo = neighbors.get(CONTACT_INFORMATION, List());
     const mostRecentPSAEntityKeyId = getEntityKeyId(mostRecentPSA.get(PSA_NEIGHBOR.DETAILS, Map()));
@@ -437,6 +438,7 @@ class PersonDetailsContainer extends React.Component<Props, State> {
     );
     return (
       <PersonOverview
+          courtRemindersEnabled={courtRemindersEnabled}
           refreshingPersonNeighbors={refreshingPersonNeighbors}
           updatingEntity={updatingEntity}
           includesPretrialModule={includesPretrialModule}

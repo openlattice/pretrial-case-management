@@ -204,7 +204,7 @@ function* getPersonNeighborsWorker(action) :Generator<*, *, *> {
     neighbors = obfuscateEntityNeighbors(neighbors);
 
     let mostRecentPSANeighborsByAppTypeFqn = Map();
-    if (mostRecentPSA) {
+    if (mostRecentPSA.size) {
       const psaId = mostRecentPSA.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0]);
       let psaNeighbors = yield call(SearchApi.searchEntityNeighbors, psaScoresEntitySetId, psaId);
       psaNeighbors = fromJS(psaNeighbors);
