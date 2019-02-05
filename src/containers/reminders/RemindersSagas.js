@@ -159,7 +159,7 @@ function* loadReminderNeighborsByIdWorker(action :SequenceAction) :Generator<*, 
       const psaScoresEntitySetId = getEntitySetId(app, PSA_SCORES, orgId);
       let neighborsById = yield call(SearchApi.searchEntityNeighborsWithFilter, remindersEntitySetId, {
         entityKeyIds: reminderIds,
-        sourceEntitySetIds: [remindersEntitySetId],
+        sourceEntitySetIds: [],
         destinationEntitySetIds: [contactInformationEntitySetId, hearingsEntitySetId, peopleEntitySetId]
       });
       neighborsById = obfuscateBulkEntityNeighbors(neighborsById);
@@ -187,7 +187,7 @@ function* loadReminderNeighborsByIdWorker(action :SequenceAction) :Generator<*, 
       let psasByHearingId = yield call(SearchApi.searchEntityNeighborsWithFilter, hearingsEntitySetId, {
         entityKeyIds: hearingIds.toJS(),
         sourceEntitySetIds: [psaScoresEntitySetId],
-        destinationEntitySetIds: [hearingsEntitySetId]
+        destinationEntitySetIds: []
       });
       psasByHearingId = fromJS(psasByHearingId);
       psasByHearingId = psasByHearingId.filter(psaList => psaList
