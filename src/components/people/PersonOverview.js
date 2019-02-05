@@ -128,20 +128,22 @@ const PersonOverview = ({
   );
   const pendingCharges = currentPendingCharges(chargeHistory);
 
-  const renderSubscriptionInfo = courtRemindersEnabled
-    ? (
-      <StyledColumnRowWrapper>
-        <StyledColumnRow withPadding>
-          <SubscriptionInfo
-              refreshingPersonNeighbors={refreshingPersonNeighbors}
-              updatingEntity={updatingEntity}
-              readOnly={readOnlyPermissions}
-              subscription={subscription}
-              contactInfo={contactInfo}
-              person={selectedPersonData} />
-        </StyledColumnRow>
-      </StyledColumnRowWrapper>
-    ) : null;
+  const renderSubscriptionInfo = () => (
+    courtRemindersEnabled
+      ? (
+        <StyledColumnRowWrapper>
+          <StyledColumnRow withPadding>
+            <SubscriptionInfo
+                refreshingPersonNeighbors={refreshingPersonNeighbors}
+                updatingEntity={updatingEntity}
+                readOnly={readOnlyPermissions}
+                subscription={subscription}
+                contactInfo={contactInfo}
+                person={selectedPersonData} />
+          </StyledColumnRow>
+        </StyledColumnRowWrapper>
+      ) : null
+  );
 
   if (loading) {
     return <LoadingSpinner />;
