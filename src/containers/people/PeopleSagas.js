@@ -21,7 +21,6 @@ import { APP, PSA_NEIGHBOR, STATE } from '../../utils/consts/FrontEndStateConsts
 import { obfuscateEntity, obfuscateEntityNeighbors } from '../../utils/consts/DemoNames';
 import { getEntitySetId } from '../../utils/AppUtils';
 import { getPropertyTypeId } from '../../edm/edmUtils';
-import { toISODate } from '../../utils/FormattingUtils';
 import {
   GET_PEOPLE,
   GET_PERSON_DATA,
