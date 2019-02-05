@@ -23,7 +23,7 @@ import SelectReleaseConditions from '../../components/releaseconditions/SelectRe
 import SubscriptionInfo from '../../components/people/SubscriptionInfo';
 import { getEntitySetId } from '../../utils/AppUtils';
 import { OL } from '../../utils/consts/Colors';
-import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { APP_TYPES_FQNS, PROPERTY_TYPES, SETTINGS } from '../../utils/consts/DataModelConsts';
 import { Title } from '../../utils/Layout';
 import {
   formatJudgeName,
@@ -439,6 +439,31 @@ class SelectHearingsContainer extends React.Component<Props, State> {
     );
   }
 
+  renderSubscriptionInfo = () => {
+    const {
+      refreshingPersonNeighbors,
+      readOnly,
+      personNeighbors,
+      psaNeighbors,
+      selectedOrganizationSettings,
+      updatingEntity,
+    } = this.props;
+    const subscription = personNeighbors.getIn([SUBSCRIPTION, PSA_NEIGHBOR.DETAILS], Map());
+    const contactInfo = personNeighbors.get(CONTACT_INFORMATION, List());
+    const person = psaNeighbors.getIn([PEOPLE_FQN, PSA_NEIGHBOR.DETAILS], Map());
+    const courtRemindersEnabled = selectedOrganizationSettings.get(SETTINGS.COURT_REMINDERS, false);
+    return courtRemindersEnabled
+      ? (
+        <SubscriptionInfo
+            refreshingPersonNeighbors={refreshingPersonNeighbors}
+            updatingEntity={updatingEntity}
+            readOnly={readOnly}
+            subscription={subscription}
+            contactInfo={contactInfo}
+            person={person} />
+      ) : null;
+  }
+
   render() {
     const { manuallyCreatingHearing, selectingReleaseConditions, selectedHearing } = this.state;
     const {
@@ -447,22 +472,14 @@ class SelectHearingsContainer extends React.Component<Props, State> {
       submitting,
       psaIdsRefreshing,
       refreshingNeighbors,
-      refreshingPersonNeighbors,
-      personNeighbors,
-      psaNeighbors,
-      readOnly,
       replacingAssociation,
       replacingEntity,
-      hearingNeighborsById,
-      updatingEntity
+      hearingNeighborsById
     } = this.props;
     const hearingsWithOutcomes = hearingNeighborsById
       .keySeq().filter(id => hearingNeighborsById.getIn([id, OUTCOMES]));
     const scheduledHearings = getScheduledHearings(neighbors);
     const pastHearings = getPastHearings(neighbors);
-    const contactInfo = personNeighbors.get(CONTACT_INFORMATION, List());
-    const subscription = personNeighbors.getIn([SUBSCRIPTION, PSA_NEIGHBOR.DETAILS], Map());
-    const person = psaNeighbors.getIn([PEOPLE_FQN, PSA_NEIGHBOR.DETAILS], Map());
     if (submitting
       || replacingEntity
       || replacingAssociation
@@ -481,13 +498,7 @@ class SelectHearingsContainer extends React.Component<Props, State> {
 
     return (
       <Container>
-        <SubscriptionInfo
-            refreshingPersonNeighbors={refreshingPersonNeighbors}
-            updatingEntity={updatingEntity}
-            readOnly={readOnly}
-            subscription={subscription}
-            contactInfo={contactInfo}
-            person={person} />
+        {this.renderSubscriptionInfo()}
         <HearingCardsWithTitle
             title="Scheduled Hearings"
             hearings={scheduledHearings}
@@ -519,6 +530,7 @@ function mapStateToProps(state) {
   return {
     app,
     [APP.SELECTED_ORG_ID]: orgId,
+    [APP.SELECTED_ORG_SETTINGS]: app.get(APP.SELECTED_ORG_SETTINGS, Map()),
     [APP.ENTITY_SETS_BY_ORG]: app.get(APP.ENTITY_SETS_BY_ORG, Map()),
 
     [COURT.LOADING_HEARING_NEIGHBORS]: court.get(COURT.LOADING_HEARING_NEIGHBORS),
