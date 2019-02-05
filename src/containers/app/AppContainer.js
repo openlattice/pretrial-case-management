@@ -16,10 +16,12 @@ import HeaderNav from '../../components/nav/HeaderNav';
 import Dashboard from '../../components/dashboard/Dashboard';
 import Forms from '../forms/Forms';
 import ContactSupport from '../../components/app/ContactSupport';
+import LoadingSpinner from '../../components/LoadingSpinner';
 import { APP, CHARGES, STATE } from '../../utils/consts/FrontEndStateConsts';
 import { APP_TYPES_FQNS, SETTINGS, MODULE } from '../../utils/consts/DataModelConsts';
 import { termsAreAccepted } from '../../utils/AcceptTermsUtils';
 import { OL } from '../../utils/consts/Colors';
+import { NoResults } from '../../utils/Layout';
 
 import * as Routes from '../../core/router/Routes';
 import * as AppActionFactory from './AppActionFactory';
@@ -129,6 +131,27 @@ class AppContainer extends React.Component<Props, *> {
       : <Redirect to={Routes.TERMS} />
   );
 
+  renderAppBody = () => {
+    const { app } = this.props;
+    const loading = app.get(APP.LOADING, false);
+    return loading
+      ? (
+        <NoResults>
+          <LoadingSpinner />
+        </NoResults>
+      )
+      : (
+        <AppBodyWrapper>
+          <Switch>
+            <Route path={Routes.TERMS} component={AppConsent} />
+            <Route path={Routes.DASHBOARD} render={() => this.renderComponent(Dashboard)} />
+            <Route path={Routes.FORMS} render={() => this.renderComponent(Forms)} />
+            <Redirect to={Routes.DASHBOARD} />
+          </Switch>
+        </AppBodyWrapper>
+      );
+  }
+
   render() {
     const { actions, app, selectedOrganizationSettings } = this.props;
     const pretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
@@ -148,14 +171,7 @@ class AppContainer extends React.Component<Props, *> {
             selectedOrg={selectedOrg}
             switchOrg={this.switchOrganization} />
         <ContactSupport />
-        <AppBodyWrapper>
-          <Switch>
-            <Route path={Routes.TERMS} component={AppConsent} />
-            <Route path={Routes.DASHBOARD} render={() => this.renderComponent(Dashboard)} />
-            <Route path={Routes.FORMS} render={() => this.renderComponent(Forms)} />
-            <Redirect to={Routes.DASHBOARD} />
-          </Switch>
-        </AppBodyWrapper>
+        {this.renderAppBody()}
       </AppWrapper>
     );
   }

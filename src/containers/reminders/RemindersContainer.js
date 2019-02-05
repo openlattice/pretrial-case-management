@@ -15,6 +15,7 @@ import LoadingSpinner from '../../components/LoadingSpinner';
 import DashboardMainSection from '../../components/dashboard/DashboardMainSection';
 import Pagination from '../../components/Pagination';
 import { APP, REMINDERS, STATE } from '../../utils/consts/FrontEndStateConsts';
+import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
 
 import * as AppActionFactory from '../app/AppActionFactory';
@@ -172,21 +173,21 @@ class RemindersContainer extends React.Component<Props, State> {
         {
           futureRemidners.size ? this.renderTable(
             'Scheduled Reminders',
-            futureRemidners.valueSeq(),
+            futureRemidners,
             reminderNeighborsById
           ) : null
         }
         {
           this.renderTable(
             'Past Reminders',
-            pastReminders.valueSeq(),
+            pastReminders,
             reminderNeighborsById
           )
         }
         {
           this.renderTable(
             'Failed Reminders',
-            failedReminders.valueSeq,
+            failedReminders,
             reminderNeighborsById
           )
         }

@@ -8,7 +8,7 @@ import { Map } from 'immutable';
 
 import RemindersRow from './RemindersRow';
 import { NoResults } from '../../utils/Layout';
-import { getReminderFields, REMINDERS_HEADERS } from '../../utils/RemindersUtils';
+import { getReminderFields, sortReminders, REMINDERS_HEADERS } from '../../utils/RemindersUtils';
 import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { formatPeopleInfo } from '../../utils/PeopleUtils';
@@ -64,45 +64,42 @@ class RemindersTable extends React.Component<Props, State> {
       noResults
     } = this.props;
     if (noResults) return <NoResults>No Results</NoResults>;
-    const reminderSeq = reminders.valueSeq().map(((reminder) => {
-      const {
-        reminderId,
-        dateTime,
-        wasNotified,
-        entityKeyId
-      } = getReminderFields(reminder);
-      const person = neighbors.getIn([entityKeyId, PEOPLE, PSA_NEIGHBOR.DETAILS], Map());
-      const hearing = neighbors.getIn([entityKeyId, HEARINGS, PSA_NEIGHBOR.DETAILS], Map());
-      const contactInfo = neighbors.getIn([entityKeyId, CONTACT_INFORMATION, PSA_NEIGHBOR.DETAILS], Map());
-      const {
-        identification,
-        firstName,
-        middleName,
-        lastName
-      } = formatPeopleInfo(person);
-      const {
-        courtroom,
-        hearingType
-      } = getHearingFields(hearing);
-      const contact = contactInfo.get(PROPERTY_TYPES.PHONE);
-      const midName = middleName ? ` ${middleName}` : '';
-      const name = `${lastName}, ${firstName}${midName}`;
+    const reminderSeq = sortReminders(reminders, neighbors)
+      .map(((reminder) => {
+        const {
+          reminderId,
+          dateTime,
+          wasNotified,
+          entityKeyId
+        } = getReminderFields(reminder);
+        const person = neighbors.getIn([entityKeyId, PEOPLE, PSA_NEIGHBOR.DETAILS], Map());
+        const hearing = neighbors.getIn([entityKeyId, HEARINGS, PSA_NEIGHBOR.DETAILS], Map());
+        const contactInfo = neighbors.getIn([entityKeyId, CONTACT_INFORMATION, PSA_NEIGHBOR.DETAILS], Map());
+        const {
+          identification,
+          lastFirstMid
+        } = formatPeopleInfo(person);
+        const {
+          courtroom,
+          hearingType
+        } = getHearingFields(hearing);
+        const contact = contactInfo.get(PROPERTY_TYPES.PHONE);
 
-      const hasOpenPSA = remindersWithOpenPSA.includes(reminderId);
-      return (
-        <RemindersRow
-            key={reminderId}
-            contact={contact}
-            courtroom={courtroom}
-            hearingType={hearingType}
-            reminderId={reminderId}
-            time={moment(dateTime).format('HH:mm')}
-            wasNotified={wasNotified}
-            personId={identification}
-            personName={name}
-            hasOpenPSA={hasOpenPSA} />
-      );
-    }));
+        const hasOpenPSA = remindersWithOpenPSA.includes(reminderId);
+        return (
+          <RemindersRow
+              key={reminderId}
+              contact={contact}
+              courtroom={courtroom}
+              hearingType={hearingType}
+              reminderId={reminderId}
+              time={moment(dateTime).format('HH:mm')}
+              wasNotified={wasNotified}
+              personId={identification}
+              personName={lastFirstMid}
+              hasOpenPSA={hasOpenPSA} />
+        );
+      }));
     return (
       <Table>
         <tbody>
