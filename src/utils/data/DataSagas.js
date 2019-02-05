@@ -2,7 +2,7 @@
  * @flow
  */
 
-import { DataApi, EntityDataModelApi } from 'lattice';
+import { DataApi, EntityDataModelApi, Types } from 'lattice';
 import {
   call,
   put,
@@ -22,6 +22,8 @@ import {
 import { loadPersonDetails } from '../../containers/person/PersonActionFactory';
 import { STATE, SEARCH } from '../consts/FrontEndStateConsts';
 
+const { DeleteTypes } = Types;
+
 function* deleteEntityWorker(action :SequenceAction) :Generator<*, *, *> {
   const { entityKeyId, entitySetName, callback } = action.value;
   let { entitySetId } = action.value;
@@ -29,7 +31,7 @@ function* deleteEntityWorker(action :SequenceAction) :Generator<*, *, *> {
   try {
     yield put(deleteEntity.request(action.id));
     if (!entitySetId) entitySetId = yield call(EntityDataModelApi.getEntitySetId, entitySetName);
-    yield call(DataApi.clearEntityFromEntitySet, entitySetId, entityKeyId);
+    yield call(DataApi.deleteEntity, entitySetId, entityKeyId, DeleteTypes.Soft);
     yield put(deleteEntity.success(action.id, { entityKeyId }));
 
     if (callback) callback();
