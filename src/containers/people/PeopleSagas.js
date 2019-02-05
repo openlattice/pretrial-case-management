@@ -144,7 +144,7 @@ function* getPersonNeighborsWorker(action) :Generator<*, *, *> {
       const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
       const entityDateTime = moment(neighborObj.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.DATE_TIME, 0]));
       if (appTypeFqn === PSA_SCORES) {
-        if (!mostRecentPSA || !currentPSADateTime || currentPSADateTime.isBefore(entityDateTime)) {
+        if (!mostRecentPSA.size || !currentPSADateTime || currentPSADateTime.isBefore(entityDateTime)) {
           mostRecentPSA = neighborObj;
           currentPSADateTime = entityDateTime;
         }
@@ -313,7 +313,7 @@ function* refreshPersonNeighborsWorker(action) :Generator<*, *, *> {
         }), neighbors);
 
     let mostRecentPSANeighborsByAppTypeFqn = Map();
-    if (mostRecentPSA) {
+    if (mostRecentPSA.size) {
       const psaId = mostRecentPSA.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0]);
       let psaNeighbors = yield call(SearchApi.searchEntityNeighbors, psaScoresEntitySetId, psaId);
       psaNeighbors = fromJS(psaNeighbors);
