@@ -145,7 +145,7 @@ function* getPersonNeighborsWorker(action) :Generator<*, *, *> {
       const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
       const entityDateTime = moment(neighborObj.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.DATE_TIME, 0]));
       if (appTypeFqn === PSA_SCORES) {
-        if (!mostRecentPSA || !currentPSADateTime || currentPSADateTime.isBefore(entityDateTime)) {
+        if (!mostRecentPSA.size || !currentPSADateTime || currentPSADateTime.isBefore(entityDateTime)) {
           mostRecentPSA = neighborObj;
           currentPSADateTime = entityDateTime;
         }
