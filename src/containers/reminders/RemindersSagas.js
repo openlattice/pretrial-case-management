@@ -160,7 +160,7 @@ function* loadReminderNeighborsByIdWorker(action :SequenceAction) :Generator<*, 
       let neighborsById = yield call(SearchApi.searchEntityNeighborsWithFilter, remindersEntitySetId, {
         entityKeyIds: reminderIds,
         sourceEntitySetIds: [],
-        destinationEntitySetIds: [contactInformationEntitySetId, hearingsEntitySetId, peopleEntitySetId]
+        // destinationEntitySetIds: [contactInformationEntitySetId, hearingsEntitySetId, peopleEntitySetId]
       });
       neighborsById = obfuscateBulkEntityNeighbors(neighborsById);
       neighborsById = fromJS(neighborsById);
@@ -187,11 +187,17 @@ function* loadReminderNeighborsByIdWorker(action :SequenceAction) :Generator<*, 
       let psasByHearingId = yield call(SearchApi.searchEntityNeighborsWithFilter, hearingsEntitySetId, {
         entityKeyIds: hearingIds.toJS(),
         sourceEntitySetIds: [psaScoresEntitySetId],
-        destinationEntitySetIds: []
+        // destinationEntitySetIds: []
       });
       psasByHearingId = fromJS(psasByHearingId);
-      psasByHearingId = psasByHearingId.filter(psaList => psaList
-        .some(psa => psa.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.STATUS, 0]) === PSA_STATUSES.OPEN));
+      psasByHearingId = psasByHearingId.filter(neighborList => neighborList
+        .some((neighbor) => {
+          const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
+          const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
+          const isPSA = appTypeFqn === PSA_SCORES;
+          const psaIsOpen = neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.STATUS, 0]) === PSA_STATUSES.OPEN;
+          return isPSA && psaIsOpen;
+        }));
       psasByHearingId.entrySeq().forEach(([hearingId, psaList]) => {
         if (psaList.size) {
           const reminderId = hearingIdsToReminderIds.get(hearingId);
