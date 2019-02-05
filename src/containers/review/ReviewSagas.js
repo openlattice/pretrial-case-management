@@ -10,8 +10,7 @@ import {
   DataApi,
   EntityDataModelApi,
   SearchApi,
-  Models,
-  Types
+  Models
 } from 'lattice';
 import {
   all,
@@ -66,8 +65,6 @@ import {
   updateScoresAndRiskFactors,
   updateOutcomesAndReleaseCondtions
 } from './ReviewActionFactory';
-
-const { DeleteTypes } = Types;
 
 const {
   ARREST_CHARGES,
@@ -889,12 +886,7 @@ function* updateOutcomesAndReleaseCondtionsWorker(action :SequenceAction) :Gener
     const updatedEntities = [];
 
     conditionEntityKeyIds.toJS().forEach((entityKeyId) => {
-      updates.push(call(
-        DataApi.deleteEntity,
-        allEntitySetIds.releaseConditionEntitySetId,
-        entityKeyId,
-        DeleteTypes.Soft)
-      );
+      updates.push(call(DataApi.clearEntityFromEntitySet, allEntitySetIds.releaseConditionEntitySetId, entityKeyId));
     });
 
     const edmDetails = yield call(EntityDataModelApi.getEntityDataModelProjection, edmDetailsRequest);
