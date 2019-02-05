@@ -2,8 +2,13 @@
  * @flow
  */
 
-import { fromJS, Map, Set } from 'immutable';
 import moment from 'moment';
+import {
+  fromJS,
+  Map,
+  Set,
+  List
+} from 'immutable';
 import {
   Constants,
   SearchApi,
@@ -139,9 +144,9 @@ function* loadReminderNeighborsByIdWorker(action :SequenceAction) :Generator<*, 
     const { reminderIds } = action.value;
 
     let reminderNeighborsById = Map();
-    let reminderIdsWithOpenPSAs = Set();
-    let personIds = Set();
-    let personIdsToReminderIds = Map();
+    let reminderIdsWithOpenPSAs = List();
+    let hearingIds = Set();
+    let hearingIdsToReminderIds = Map();
 
     if (reminderIds.length) {
       const app = yield select(getApp);
@@ -166,9 +171,9 @@ function* loadReminderNeighborsByIdWorker(action :SequenceAction) :Generator<*, 
             const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
             const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
             const entityKeyId = neighbor.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0]);
-            if (appTypeFqn === PEOPLE) {
-              personIdsToReminderIds = personIdsToReminderIds.set(entityKeyId, reminderId);
-              personIds = personIds.add(entityKeyId);
+            if (appTypeFqn === HEARINGS) {
+              hearingIdsToReminderIds = hearingIdsToReminderIds.set(entityKeyId, reminderId);
+              hearingIds = hearingIds.add(entityKeyId);
             }
             neighborsByAppTypeFqn = neighborsByAppTypeFqn.set(
               appTypeFqn,
@@ -179,21 +184,21 @@ function* loadReminderNeighborsByIdWorker(action :SequenceAction) :Generator<*, 
         reminderNeighborsById = reminderNeighborsById.set(reminderId, neighborsByAppTypeFqn);
       });
 
-      let psasByPersonId = yield call(SearchApi.searchEntityNeighborsWithFilter, peopleEntitySetId, {
-        entityKeyIds: personIds.toJS(),
+      let psasByHearingId = yield call(SearchApi.searchEntityNeighborsWithFilter, hearingsEntitySetId, {
+        entityKeyIds: hearingIds.toJS(),
         sourceEntitySetIds: [psaScoresEntitySetId],
-        destinationEntitySetIds: [peopleEntitySetId]
+        destinationEntitySetIds: [hearingsEntitySetId]
       });
-      psasByPersonId = fromJS(psasByPersonId);
-      psasByPersonId = psasByPersonId.filter(psaList => psaList
+      psasByHearingId = fromJS(psasByHearingId);
+      psasByHearingId = psasByHearingId.filter(psaList => psaList
         .some(psa => psa.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.STATUS, 0]) === PSA_STATUSES.OPEN));
-      psasByPersonId.entrySeq().forEach(([personId, psaList]) => {
+      psasByHearingId.entrySeq().forEach(([hearingId, psaList]) => {
         if (psaList.size) {
-          const reminderId = personIdsToReminderIds.get(personId);
-          reminderIdsWithOpenPSAs = reminderIdsWithOpenPSAs.add(reminderId);
+          const reminderId = hearingIdsToReminderIds.get(hearingId);
+          reminderIdsWithOpenPSAs = reminderIdsWithOpenPSAs.concat(reminderIds);
           reminderNeighborsById = reminderNeighborsById.set(
             reminderId,
-            reminderNeighborsById.get(reminderId, Map()).set(PSA_SCORES, psaList)
+            reminderNeighborsById.get(reminderId, Map()).set(PSA_SCORES, psaList.get(0, Map()))
           );
         }
       });
