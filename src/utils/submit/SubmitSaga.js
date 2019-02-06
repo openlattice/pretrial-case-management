@@ -6,7 +6,8 @@ import {
   DataApi,
   DataIntegrationApi,
   EntityDataModelApi,
-  Models
+  Models,
+  Types
 } from 'lattice';
 
 import {
@@ -30,6 +31,8 @@ import {
 const {
   FullyQualifiedName
 } = Models;
+
+const { DeleteTypes } = Types;
 
 function getEntityId(primaryKey, propertyTypesById, values, fields) {
   const fieldNamesByFqn = {};
@@ -320,7 +323,7 @@ function* replaceAssociationWorker(action :SequenceAction) :Generator<*, *, *> {
 
     // Delete existing association
     if (associationEntityKeyId) {
-      yield call(DataApi.clearEntityFromEntitySet, associationEntitySetId, associationEntityKeyId);
+      yield call(DataApi.deleteEntity, associationEntitySetId, associationEntityKeyId, DeleteTypes.Soft);
     }
 
     // Create new association
