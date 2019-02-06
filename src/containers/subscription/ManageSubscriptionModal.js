@@ -17,7 +17,7 @@ import InfoButton from '../../components/buttons/InfoButton';
 import SubscriptionConfig from '../../config/formconfig/SubscriptionConfig';
 import SubscriptionInfo from '../../components/people/SubscriptionInfo';
 import ContactInfoTable from '../../components/contactinformation/ContactInfoTable';
-import NewContactForm from './NewContactForm';
+import NewContactForm from '../people/NewContactForm';
 import { FORM_IDS } from '../../utils/consts/Consts';
 import { getEntitySetId } from '../../utils/AppUtils';
 import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
@@ -34,12 +34,13 @@ import {
   REVIEW,
   PEOPLE,
   STATE,
-  SUBMIT
+  SUBMIT,
+  SUBSCRIPTIONS
 } from '../../utils/consts/FrontEndStateConsts';
 
 import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
 import * as DataActionFactory from '../../utils/data/DataActionFactory';
-import * as PeopleActionFactory from './PeopleActionFactory';
+import * as PeopleActionFactory from '../people/PeopleActionFactory';
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
@@ -338,7 +339,6 @@ class ReleaseConditionsModal extends React.Component<Props, State> {
       onClose,
       person,
       refreshingPersonNeighbors,
-      readOnly,
       subscription,
       updatingEntity
     } = this.props;
@@ -391,6 +391,7 @@ function mapStateToProps(state) {
   const review = state.get(STATE.REVIEW);
   const edm = state.get(STATE.EDM);
   const people = state.get(STATE.PEOPLE);
+  const subscriptions = state.get(STATE.SUBSCRIPTIONS);
   return {
     app,
     [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
@@ -403,7 +404,10 @@ function mapStateToProps(state) {
     [PEOPLE.REFRESHING_PERSON_NEIGHBORS]: people.get(PEOPLE.REFRESHING_PERSON_NEIGHBORS, false),
 
     [SUBMIT.SUBMITTING]: submit.get(SUBMIT.SUBMITTING, false),
-    [SUBMIT.UPDATING_ENTITY]: submit.get(SUBMIT.UPDATING_ENTITY, false)
+    [SUBMIT.UPDATING_ENTITY]: submit.get(SUBMIT.UPDATING_ENTITY, false),
+
+    [SUBSCRIPTIONS.LOADING_SUBSCRIPTION_MODAL]: subscriptions.get(SUBSCRIPTIONS.LOADING_SUBSCRIPTION_MODAL, false),
+    [SUBSCRIPTIONS.PERSON_NEIGHBORS]: subscriptions.get(SUBSCRIPTIONS.PERSON_NEIGHBORS, false)
   };
 }
 
