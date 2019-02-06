@@ -165,7 +165,7 @@ class NewHearingSection extends React.Component<Props, State> {
       };
     }
 
-    if (newContactFields) {
+    if (newContactFields && (email.length || phone.length)) {
       newContactFields = Object.assign({}, newContactFields, {
         [PROPERTY_TYPES.GENERAL_ID]: randomUUID(),
         [FORM_IDS.PERSON_ID]: personId
