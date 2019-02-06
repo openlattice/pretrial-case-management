@@ -4,17 +4,24 @@
 
 import React from 'react';
 import styled from 'styled-components';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+import { Constants } from 'lattice';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCheck, faCog, faTimesCircle } from '@fortawesome/pro-light-svg-icons';
 
-import ManageSubscriptionModal from '../../containers/people/ManageSubscriptionModal';
+import ManageSubscriptionModal from '../../containers/subscription/ManageSubscriptionModal';
 import StyledButton from '../buttons/StyledButton';
 import LoadingSpinner from '../LoadingSpinner';
 import { formatPeopleInfo } from '../../utils/PeopleUtils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
 import { FormSection, InputRow } from '../person/PersonFormTags';
+
+import * as SubscriptionsActionFactory from '../../containers/subscription/SubscriptionsActionFactory';
+
+const { OPENLATTICE_ID_FQN } = Constants;
 
 const LoadingWrapper = styled.div`
   height: 100%;
@@ -48,13 +55,15 @@ const StyledFormSection = styled(FormSection)`
 `;
 
 type Props = {
-  contactInfo :List<*, *>,
   person :Map<*, *>,
   subscription :Map<*, *>,
   readOnly :boolean,
   refreshingPersonNeighbors :boolean,
   modal :boolean,
-  updatingEntity :boolean
+  updatingEntity :boolean,
+  actions :{
+    loadSubcriptionModal :(values :{ personId :string }) => void,
+  }
 }
 
 class SubscriptionInfo extends React.Component<Props, State> {
@@ -65,7 +74,12 @@ class SubscriptionInfo extends React.Component<Props, State> {
     };
   }
 
-  openManageSubscriptionModal = () => this.setState({ manageSubscriptionModalOpen: true });
+  openManageSubscriptionModal = () => {
+    const { actions, person } = this.props;
+    const personId = person.getIn([OPENLATTICE_ID_FQN, 0], '');
+    actions.loadSubcriptionModal({ personId });
+    this.setState({ manageSubscriptionModalOpen: true });
+  };
   onClose = () => this.setState({ manageSubscriptionModalOpen: false });
 
   renderManageSubscriptionButton = () => {
@@ -81,12 +95,10 @@ class SubscriptionInfo extends React.Component<Props, State> {
 
   renderManageSubscriptionModal = () => {
     const { manageSubscriptionModalOpen } = this.state;
-    const { contactInfo, person, subscription } = this.props;
+    const { person } = this.props;
     return (
       <ManageSubscriptionModal
           person={person}
-          subscription={subscription}
-          contactInfo={contactInfo}
           open={manageSubscriptionModalOpen}
           onClose={this.onClose} />
     );
@@ -150,4 +162,18 @@ class SubscriptionInfo extends React.Component<Props, State> {
   }
 }
 
-export default SubscriptionInfo;
+function mapDispatchToProps(dispatch :Function) :Object {
+  const actions :{ [string] :Function } = {};
+
+  Object.keys(SubscriptionsActionFactory).forEach((action :string) => {
+    actions[action] = SubscriptionsActionFactory[action];
+  });
+
+  return {
+    actions: {
+      ...bindActionCreators(actions, dispatch)
+    }
+  };
+}
+
+export default connect(null, mapDispatchToProps)(SubscriptionInfo);
