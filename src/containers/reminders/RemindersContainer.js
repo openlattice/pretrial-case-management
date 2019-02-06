@@ -68,6 +68,7 @@ type Props = {
   reminderIds :Set<*, *>,
   selectedOrganizationId :boolean,
   actions :{
+    loadPeopleWithHearingsButNoContacts :RequestSequence,
     loadRemindersforDate :RequestSequence,
     loadReminderNeighborsById :RequestSequence,
   };
@@ -89,8 +90,9 @@ class RemindersContainer extends React.Component<Props, State> {
       reminderIds,
       selectedOrganizationId
     } = this.props;
-    const { loadRemindersforDate } = actions;
+    const { loadPeopleWithHearingsButNoContacts, loadRemindersforDate } = actions;
     if (selectedOrganizationId) {
+      loadPeopleWithHearingsButNoContacts();
       if (!reminderIds.size) {
         loadRemindersforDate({ date });
       }
@@ -104,8 +106,9 @@ class RemindersContainer extends React.Component<Props, State> {
       reminderIds,
       selectedOrganizationId
     } = this.props;
-    const { loadRemindersforDate } = actions;
+    const { loadPeopleWithHearingsButNoContacts, loadRemindersforDate } = actions;
     if (selectedOrganizationId !== nextProps.selectedOrganizationId) {
+      loadPeopleWithHearingsButNoContacts();
       if (!reminderIds.size) {
         loadRemindersforDate({ date });
       }
@@ -224,7 +227,9 @@ function mapStateToProps(state) {
     [REMINDERS.LOADING_REMINDERS]: reminders.get(REMINDERS.LOADING_REMINDERS),
     [REMINDERS.REMINDER_NEIGHBORS]: reminders.get(REMINDERS.REMINDER_NEIGHBORS),
     [REMINDERS.REMINDERS_WITH_OPEN_PSA_IDS]: reminders.get(REMINDERS.REMINDERS_WITH_OPEN_PSA_IDS),
-    [REMINDERS.LOADING_REMINDER_NEIGHBORS]: reminders.get(REMINDERS.LOADING_REMINDER_NEIGHBORS)
+    [REMINDERS.LOADING_REMINDER_NEIGHBORS]: reminders.get(REMINDERS.LOADING_REMINDER_NEIGHBORS),
+    [REMINDERS.PEOPLE_WITH_HEARINGS_BUT_NO_CONTACT]: reminders.get(REMINDERS.PEOPLE_WITH_HEARINGS_BUT_NO_CONTACT),
+    [REMINDERS.LOADING_PEOPLE_NO_CONTACTS]: reminders.get(REMINDERS.LOADING_PEOPLE_NO_CONTACTS)
   };
 }
 
