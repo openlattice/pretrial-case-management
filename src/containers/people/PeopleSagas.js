@@ -369,16 +369,29 @@ function* updateContactInfoWorker(action :SequenceAction) :Generator<*, *, *> {
     const app = yield select(getApp);
     const orgId = yield select(getOrgId);
     const peopleEntitySetId = getEntitySetId(app, PEOPLE, orgId);
+    const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
     const contactInformationEntitySetId = getEntitySetId(app, CONTACT_INFORMATION, orgId);
 
+    /* partially update contact info */
     yield call(DataApi.updateEntityData, contactInformationEntitySetId, entities, 'PartialReplace');
-    let contactInformation = yield call(SearchApi.searchEntityNeighborsWithFilter, peopleEntitySetId, {
+
+    /* get updated contact info for person */
+    const filteredNeighbors = yield call(SearchApi.searchEntityNeighborsWithFilter, peopleEntitySetId, {
       entityKeyIds: [personEntityKeyId],
-      sourceEntitySetIds: [peopleEntitySetId],
+      sourceEntitySetIds: [],
       // destinationEntitySetIds: [contactInformationEntitySetId]
     });
-    contactInformation = fromJS(Object.values(contactInformation)).flatten(true);
+
+    /* filter neighbors for contact info */
+    const contactInformation = fromJS(Object.values(filteredNeighbors)).get(0, List()).filter((neighbor) => {
+      const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
+      const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
+      const isContactInfo = appTypeFqn === CONTACT_INFORMATION;
+      return isContactInfo;
+    });
+
     if (callback) callback();
+
     yield put(updateContactInfo.success(action.id, { personId, contactInformation }));
   }
   catch (error) {
