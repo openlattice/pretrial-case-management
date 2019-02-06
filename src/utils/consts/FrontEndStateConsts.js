@@ -15,7 +15,8 @@ export const STATE = {
   REMINDERS: 'reminders',
   REVIEW: 'review',
   SEARCH: 'search',
-  SUBMIT: 'submit'
+  SUBMIT: 'submit',
+  SUBSCRIPTIONS: 'subscriptions'
 };
 
 // General PSA
@@ -220,7 +221,9 @@ export const REMINDERS = {
   LOADING_REMINDERS: 'loadingReminders',
   REMINDER_NEIGHBORS: 'reminderNeighborsById',
   REMINDERS_WITH_OPEN_PSA_IDS: 'remindersWithOpenPSA',
-  LOADING_REMINDER_NEIGHBORS: 'loadingReminderNeighbors'
+  LOADING_REMINDER_NEIGHBORS: 'loadingReminderNeighbors',
+  PEOPLE_WITH_HEARINGS_BUT_NO_CONTACT: 'peopleWithHearingsButNoContacts',
+  LOADING_PEOPLE_NO_CONTACTS: 'loadingPeopleWithNoContacts'
 };
 
 // Review
@@ -275,4 +278,10 @@ export const SUBMIT = {
   SUCCESS: 'submitSuccess',
   SUBMITTED: 'submitted',
   ERROR: 'error'
+};
+// Submit
+
+export const SUBSCRIPTIONS = {
+  LOADING_SUBSCRIPTION_MODAL: 'loadingSubscriptionInfo',
+  PERSON_NEIGHBORS: 'personNeighborsForSubscription'
 };
