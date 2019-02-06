@@ -34,10 +34,6 @@ const HeaderElement = styled.th`
   padding: 10px 5px;
 `;
 
-const CenteredHeaderElement = styled(HeaderElement)`
-  text-align: center;
-`;
-
 class ChargeTable extends React.Component<Props, State> {
 
   renderHeaders = () => (
@@ -59,11 +55,11 @@ class ChargeTable extends React.Component<Props, State> {
       handleCheckboxUpdates
     } = this.props;
     if (noResults) return <NoResults>No contact information on file.</NoResults>;
-    let chargeSeq = editing
+    let contactSeq = editing
       ? contactInfo.valueSeq()
       : contactInfo.valueSeq()
         .filter(contact => contact.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.IS_PREFERRED, 0], false));
-    chargeSeq = chargeSeq
+    contactSeq = contactSeq
       .sortBy((contact => contact.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.PHONE, 0], '')))
       .sortBy((contact => contact.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.EMAIL, 0], '')))
       .sortBy((contact => !contact.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.IS_PREFERRED, 0], false)))
@@ -80,7 +76,7 @@ class ChargeTable extends React.Component<Props, State> {
       <Table>
         <tbody>
           { this.renderHeaders() }
-          { chargeSeq }
+          { contactSeq }
         </tbody>
       </Table>
     );
