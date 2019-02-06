@@ -19,6 +19,7 @@ import remindersReducer from '../../containers/reminders/RemindersReducer';
 import reviewReducer from '../../containers/review/ReviewReducer';
 import searchReducer from '../../containers/person/SearchReducer';
 import submitReducer from '../../utils/submit/SubmitReducer';
+import subscriptionsReducer from '../../containers/subscription/SubscriptionsReducer';
 
 import { STATE } from '../../utils/consts/FrontEndStateConsts';
 
@@ -39,6 +40,7 @@ export default function reduxReducer() {
     [STATE.REMINDERS]: remindersReducer,
     [STATE.REVIEW]: reviewReducer,
     [STATE.SEARCH]: searchReducer,
-    [STATE.SUBMIT]: submitReducer
+    [STATE.SUBMIT]: submitReducer,
+    [STATE.SUBSCRIPTIONS]: subscriptionsReducer
   });
 }
