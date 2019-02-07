@@ -153,6 +153,7 @@ class NewHearingSection extends React.Component<Props, State> {
       newContactFields = {
         [PROPERTY_TYPES.PHONE]: [phone],
         [PROPERTY_TYPES.GENERAL_ID]: [phone],
+        [PROPERTY_TYPES.CONTACT_INFO_GIVEN_ID]: [phone],
         [PROPERTY_TYPES.IS_MOBILE]: [isMobile],
         [PROPERTY_TYPES.IS_PREFERRED]: [isPreferred]
       };
@@ -161,13 +162,13 @@ class NewHearingSection extends React.Component<Props, State> {
       newContactFields = {
         [PROPERTY_TYPES.EMAIL]: [email],
         [PROPERTY_TYPES.GENERAL_ID]: [email],
+        [PROPERTY_TYPES.CONTACT_INFO_GIVEN_ID]: [email],
         [PROPERTY_TYPES.IS_PREFERRED]: [isPreferred]
       };
     }
 
     if (newContactFields && (email.length || phone.length)) {
       newContactFields = Object.assign({}, newContactFields, {
-        [PROPERTY_TYPES.CONTACT_INFO_GIVEN_ID]: randomUUID(),
         [FORM_IDS.PERSON_ID]: personId
       });
       const callback = this.refreshPersonNeighborsCallback;
