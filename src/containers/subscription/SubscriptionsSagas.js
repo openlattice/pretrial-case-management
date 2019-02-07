@@ -53,7 +53,7 @@ function* loadSubcriptionModalWorker(action :SequenceAction) :Generator<*, *, *>
       const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
       const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
       if (appTypeFqn === SUBSCRIPTION) {
-        personNeighbors = personNeighbors.set(SUBSCRIPTION, neighbor);
+        personNeighbors = personNeighbors.set(SUBSCRIPTION, neighbor.get(PSA_NEIGHBOR.DETAILS, Map()));
       }
       if (appTypeFqn === CONTACT_INFORMATION) {
         personNeighbors = personNeighbors.set(
@@ -63,7 +63,7 @@ function* loadSubcriptionModalWorker(action :SequenceAction) :Generator<*, *, *>
       }
     });
 
-    yield put(loadSubcriptionModal.success(action.id, { personNeighbors }));
+    yield put(loadSubcriptionModal.success(action.id, { personId, personNeighbors }));
   }
 
   catch (error) {
