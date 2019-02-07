@@ -283,5 +283,7 @@ export const SUBMIT = {
 
 export const SUBSCRIPTIONS = {
   LOADING_SUBSCRIPTION_MODAL: 'loadingSubscriptionInfo',
+  CONTACT_INFO: 'contactInfo',
+  SUBSCRIPTION: 'subscription',
   PERSON_NEIGHBORS: 'personNeighborsForSubscription'
 };
