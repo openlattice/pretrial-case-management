@@ -16,6 +16,9 @@ const newPersonSubmit = newRequestSequence('NEW_PERSON_SUBMIT');
 const SEARCH_PEOPLE = 'SEARCH_PEOPLE';
 const searchPeople = newRequestSequence('SEARCH_PEOPLE');
 
+const SEARCH_PEOPLE_BY_PHONE = 'SEARCH_PEOPLE_BY_PHONE';
+const searchPeopleByPhoneNumber = newRequestSequence('SEARCH_PEOPLE_BY_PHONE');
+
 const UPDATE_CASES = 'UPDATE_CASES';
 const updateCases = newRequestSequence('UPDATE_CASES');
 
@@ -24,10 +27,12 @@ export {
   LOAD_PERSON_DETAILS,
   NEW_PERSON_SUBMIT,
   SEARCH_PEOPLE,
+  SEARCH_PEOPLE_BY_PHONE,
   UPDATE_CASES,
   clearSearchResults,
   loadPersonDetails,
   newPersonSubmit,
   searchPeople,
+  searchPeopleByPhoneNumber,
   updateCases
 };
