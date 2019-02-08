@@ -49,7 +49,9 @@ function* loadSubcriptionModalWorker(action :SequenceAction) :Generator<*, *, *>
       destinationEntitySetIds: [subscriptionEntityKeyId, contactInformationEntityKeyId]
     });
 
-    fromJS(Object.values(personNeighborsById)[0]).forEach((neighbor) => {
+    const neighbors = fromJS(Object.values(personNeighborsById));
+
+    neighbors.get(0, List()).forEach((neighbor) => {
       const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
       const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
       if (appTypeFqn === SUBSCRIPTION) {
