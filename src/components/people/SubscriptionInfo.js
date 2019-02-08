@@ -4,9 +4,9 @@
 
 import React from 'react';
 import styled from 'styled-components';
+import { Constants } from 'lattice';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { Constants } from 'lattice';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCheck, faCog, faTimesCircle } from '@fortawesome/pro-light-svg-icons';
@@ -16,6 +16,7 @@ import StyledButton from '../buttons/StyledButton';
 import LoadingSpinner from '../LoadingSpinner';
 import { formatPeopleInfo } from '../../utils/PeopleUtils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { STATE, SUBSCRIPTIONS } from '../../utils/consts/FrontEndStateConsts';
 import { OL } from '../../utils/consts/Colors';
 import { FormSection, InputRow } from '../person/PersonFormTags';
 
@@ -55,13 +56,15 @@ const StyledFormSection = styled(FormSection)`
 `;
 
 type Props = {
+  loadingSubscriptionInfo :boolean,
+  modal :boolean,
   person :Map<*, *>,
-  subscription :Map<*, *>,
   readOnly :boolean,
   refreshingPersonNeighbors :boolean,
-  modal :boolean,
+  subscription :Map<*, *>,
   updatingEntity :boolean,
   actions :{
+    clearSubscriptionModal :() => void,
     loadSubcriptionModal :(values :{ personId :string }) => void,
   }
 }
@@ -80,7 +83,8 @@ class SubscriptionInfo extends React.Component<Props, State> {
     actions.loadSubcriptionModal({ personId });
     this.setState({ manageSubscriptionModalOpen: true });
   };
-  onClose = () => this.setState({ manageSubscriptionModalOpen: false });
+
+  onClose = () => this.setState({ manageSubscriptionModalOpen: false })
 
   renderManageSubscriptionButton = () => {
     const subscriptionText = ' Manage Subscription';
@@ -116,6 +120,7 @@ class SubscriptionInfo extends React.Component<Props, State> {
       modal,
       readOnly,
       refreshingPersonNeighbors,
+      loadingSubscriptionInfo,
       subscription,
       updatingEntity,
     } = this.props;
@@ -124,7 +129,7 @@ class SubscriptionInfo extends React.Component<Props, State> {
     let subscriptionIcon = isSubscribed
       ? <StatusIconContainer><FontAwesomeIcon color="green" icon={faCheck} /></StatusIconContainer>
       : <StatusIconContainer><FontAwesomeIcon color="red" icon={faTimesCircle} /></StatusIconContainer>;
-    if (updatingEntity || refreshingPersonNeighbors) {
+    if (updatingEntity || refreshingPersonNeighbors || loadingSubscriptionInfo) {
       subscriptionIcon = (
         <StatusIconContainer>
           <LoadingWrapper>
@@ -162,6 +167,14 @@ class SubscriptionInfo extends React.Component<Props, State> {
   }
 }
 
+function mapStateToProps(state) {
+  const subscriptions = state.get(STATE.SUBSCRIPTIONS);
+
+  return {
+    [SUBSCRIPTIONS.LOADING_SUBSCRIPTION_MODAL]: subscriptions.get(SUBSCRIPTIONS.LOADING_SUBSCRIPTION_MODAL)
+  };
+}
+
 function mapDispatchToProps(dispatch :Function) :Object {
   const actions :{ [string] :Function } = {};
 
@@ -176,4 +189,4 @@ function mapDispatchToProps(dispatch :Function) :Object {
   };
 }
 
-export default connect(null, mapDispatchToProps)(SubscriptionInfo);
+export default connect(mapStateToProps, mapDispatchToProps)(SubscriptionInfo);
