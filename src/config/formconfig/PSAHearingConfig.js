@@ -53,8 +53,8 @@ const psaHearingConfig = {
     },
     // _____ assessed by judge
     {
-      src: ALIASES.JUDGE,
-      dst: ALIASES.HEARING,
+      src: ALIASES.HEARING,
+      dst: ALIASES.JUDGE,
       association: ALIASES.ASSESSED_BY_JUDGE
     }
   ]
