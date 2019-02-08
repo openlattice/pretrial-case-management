@@ -33,9 +33,9 @@ import {
   LOAD_PEOPLE_WITH_HEARINGS_BUT_NO_CONTACTS,
   LOAD_REMINDER_NEIGHBORS,
   LOAD_REMINDERS_FOR_DATE,
-  loadPeopleWithHearingsButNoContacts,
   loadReminderNeighborsById,
-  loadRemindersforDate
+  loadRemindersforDate,
+  loadPeopleWithHearingsButNoContacts,
 } from './RemindersActionFactory';
 
 let {
@@ -245,6 +245,7 @@ function* loadReminderNeighborsByIdWorker(action :SequenceAction) :Generator<*, 
 function* loadReminderNeighborsByIdWatcher() :Generator<*, *, *> {
   yield takeEvery(LOAD_REMINDER_NEIGHBORS, loadReminderNeighborsByIdWorker);
 }
+
 function* loadPeopleWithHearingsButNoContactsWorker(action :SequenceAction) :Generator<*, *, *> {
   try {
     yield put(loadPeopleWithHearingsButNoContacts.request(action.id));
@@ -298,10 +299,10 @@ function* loadPeopleWithHearingsButNoContactsWorker(action :SequenceAction) :Gen
             && !hearingHasBeenCancelled
           ) hasFutureHearing = true;
         }
-        if (isPerson) person = neighbor;
+        if (isPerson) person = neighbor.get(PSA_NEIGHBOR.DETAILS, Map());
       });
       if (hasFutureHearing && person) {
-        const entityKeyId = person.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0], '');
+        const entityKeyId = person.getIn([OPENLATTICE_ID_FQN, 0], '');
         peopleWithOpenPSAsandHearingsButNoContactById = peopleWithOpenPSAsandHearingsButNoContactById
           .set(entityKeyId, person);
       }
@@ -322,7 +323,7 @@ function* loadPeopleWithHearingsButNoContactsWorker(action :SequenceAction) :Gen
         const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
         const isContactInformation = appTypeFqn === CONTACT_INFORMATION;
         if (isContactInformation) {
-          const isPreferred = neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.PREFERRED, 0], false);
+          const isPreferred = neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.IS_PREFERRED, 0], false);
           if (isPreferred) hasPreferredContact = true;
         }
       });
@@ -330,7 +331,6 @@ function* loadPeopleWithHearingsButNoContactsWorker(action :SequenceAction) :Gen
         peopleWithOpenPSAsandHearingsButNoContactById = peopleWithOpenPSAsandHearingsButNoContactById.delete(id);
       }
     });
-
     yield put(loadPeopleWithHearingsButNoContacts
       .success(action.id, { peopleWithOpenPSAsandHearingsButNoContactById }));
   }
