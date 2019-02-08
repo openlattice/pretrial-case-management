@@ -25,13 +25,14 @@ const StyledInput = styled.input`
 `;
 
 type Props = {
+  placeholder :string,
   onChange :(event :Object) => void
 };
 
-const SearchBar = ({ onChange } :Props) => (
+const SearchBar = ({ onChange, placeholder } :Props) => (
   <StyledInput
       onChange={onChange}
-      placeholder="Search..." />
+      placeholder={placeholder || 'Search...'} />
 );
 
 export default SearchBar;
