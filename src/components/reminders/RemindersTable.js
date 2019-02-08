@@ -43,6 +43,10 @@ const HeaderElement = styled.th`
   padding: 10px 5px;
 `;
 
+const NoResultsForTable = styled(NoResults)`
+  padding: 100px 0;
+`;
+
 class RemindersTable extends React.Component<Props, State> {
   renderHeaders = () => (
     <HeaderRow>
@@ -63,7 +67,7 @@ class RemindersTable extends React.Component<Props, State> {
       remindersWithOpenPSA,
       noResults
     } = this.props;
-    if (noResults) return <NoResults>No Results</NoResults>;
+    if (noResults) return <NoResultsForTable>No Results</NoResultsForTable>;
     const reminderSeq = sortReminders(reminders, neighbors)
       .map(((reminder) => {
         const {
