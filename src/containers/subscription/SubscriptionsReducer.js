@@ -2,9 +2,9 @@
  * @flow
  */
 
-import { Map, fromJS } from 'immutable';
+import { Map, List, fromJS } from 'immutable';
 
-import { loadSubcriptionModal } from './SubscriptionsActionFactory';
+import { CLEAR_SUBSCRIPTION_MODAL, loadSubcriptionModal } from './SubscriptionsActionFactory';
 import { refreshPersonNeighbors, updateContactInfo } from '../people/PeopleActionFactory';
 
 import { APP_TYPES_FQNS } from '../../utils/consts/DataModelConsts';
@@ -17,12 +17,14 @@ SUBSCRIPTION = SUBSCRIPTION.toString();
 
 const INITIAL_STATE :Map<*, *> = fromJS({
   [SUBSCRIPTIONS.LOADING_SUBSCRIPTION_MODAL]: false,
-  [SUBSCRIPTIONS.CONTACT_INFO]: Map(),
+  [SUBSCRIPTIONS.CONTACT_INFO]: List(),
   [SUBSCRIPTIONS.PERSON_NEIGHBORS]: Map(),
   [SUBSCRIPTIONS.SUBSCRIPTION]: Map()
 });
 export default function subscriptionsReducer(state :Map<*, *> = INITIAL_STATE, action :SequenceAction) {
   switch (action.type) {
+
+    case CLEAR_SUBSCRIPTION_MODAL: return INITIAL_STATE;
 
     case loadSubcriptionModal.case(action.type): {
       return loadSubcriptionModal.reducer(state, action, {
@@ -31,7 +33,7 @@ export default function subscriptionsReducer(state :Map<*, *> = INITIAL_STATE, a
           const { personNeighbors } = action.value;
           return state
             .set(SUBSCRIPTIONS.PERSON_NEIGHBORS, personNeighbors)
-            .set(SUBSCRIPTIONS.CONTACT_INFO, personNeighbors.get(CONTACT_INFORMATION, Map()))
+            .set(SUBSCRIPTIONS.CONTACT_INFO, personNeighbors.get(CONTACT_INFORMATION, List()))
             .set(SUBSCRIPTIONS.SUBSCRIPTION, personNeighbors.get(SUBSCRIPTION, Map()));
         },
         FINALLY: () => state.set(SUBSCRIPTIONS.LOADING_SUBSCRIPTION_MODAL, false)
