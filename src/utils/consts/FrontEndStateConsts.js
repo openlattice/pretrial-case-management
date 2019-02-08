@@ -279,11 +279,12 @@ export const SUBMIT = {
   SUBMITTED: 'submitted',
   ERROR: 'error'
 };
-// Submit
+
+// Subscriptions
 
 export const SUBSCRIPTIONS = {
   LOADING_SUBSCRIPTION_MODAL: 'loadingSubscriptionInfo',
   CONTACT_INFO: 'contactInfo',
-  SUBSCRIPTION: 'subscription',
-  PERSON_NEIGHBORS: 'personNeighborsForSubscription'
+  PERSON_NEIGHBORS: 'personNeighbors',
+  SUBSCRIPTION: 'subscription'
 };
