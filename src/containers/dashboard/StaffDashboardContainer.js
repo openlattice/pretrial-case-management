@@ -104,7 +104,13 @@ class StaffDashboard extends React.Component<Props, State> {
       label: 'Court Reminders'
     };
 
-    if (courtRemindersEnabled) navButtons.push(remindersButton);
+    let remindersSwitchRoute = null;
+    let redirectRoute = visualizeRoute;
+    if (courtRemindersEnabled) {
+      navButtons.unshift(remindersButton);
+      redirectRoute = remindersRoute;
+      remindersSwitchRoute = <Route path={remindersRoute} render={this.renderRemindersPortal} />
+    }
 
     return (
       <DashboardMainSection>
@@ -113,8 +119,8 @@ class StaffDashboard extends React.Component<Props, State> {
         </ToolbarWrapper>
         <Switch>
           <Route path={visualizeRoute} render={this.renderVisualizationPortal} />
-          <Route path={remindersRoute} render={this.renderRemindersPortal} />
-          <Redirect from={Routes.STAFF_DASHBOARD} to={visualizeRoute} />
+          {remindersSwitchRoute}
+          <Redirect from={Routes.STAFF_DASHBOARD} to={redirectRoute} />
         </Switch>
       </DashboardMainSection>
     );
