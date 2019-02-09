@@ -94,8 +94,7 @@ const FormWrapper = styled(StyledFormWrapper)`
 `;
 
 const DashboardWrapper = styled(StyledFormViewWrapper)`
-  width: 1300px;
-  margin-left: -170px;
+  width: 100%;
 `;
 
 const CHART_HEIGHT = 300;
@@ -134,7 +133,7 @@ type State = {
   domain :string
 };
 
-class DashboardContainer extends React.Component<Props, State> {
+class VisualizeContainer extends React.Component<Props, State> {
 
   constructor(props) {
     super(props);
@@ -297,14 +296,20 @@ class DashboardContainer extends React.Component<Props, State> {
       <div>
         <ChartRow>
           <Chart title="PSAs Created Per Day" render={this.renderPsasPerDayChart} />
+        </ChartRow>
+        <ChartRow>
           <Chart title="Length of Current Pending Charges (Days)" render={this.renderPendingChargesChart} />
         </ChartRow>
         <ChartRow>
           <Chart title="Days to Reoffense" render={this.renderDaysToReoffenseChart} />
+        </ChartRow>
+        <ChartRow>
           <Chart title="PSA Scores Which Led to Reoffense" render={this.renderReoffensePSAsChart} />
         </ChartRow>
         <ChartRow>
           <Chart title="PSA Charge Degrees" render={this.renderPsaChargeDegreesChart} />
+        </ChartRow>
+        <ChartRow>
           <Chart title="Violent PSA Charges" render={this.renderViolentPsaChargesChart} />
         </ChartRow>
       </div>
@@ -333,7 +338,6 @@ class DashboardContainer extends React.Component<Props, State> {
         <FormWrapper>
           <StyledTitleWrapper>
             <div>Dashboard</div>
-            <CloseX icon={faTimes} onClick={this.handleClose} />
           </StyledTitleWrapper>
           <StyledSectionWrapper>
             {this.renderDemoBanner()}
@@ -370,4 +374,4 @@ function mapDispatchToProps(dispatch :Function) :Object {
   };
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(DashboardContainer);
+export default connect(mapStateToProps, mapDispatchToProps)(VisualizeContainer);
