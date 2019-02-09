@@ -124,11 +124,7 @@ class SubscriptionInfo extends React.Component<Props, State> {
       subscription,
       updatingEntity,
     } = this.props;
-    const name = this.getName();
-    const isSubscribed = subscription.getIn([PROPERTY_TYPES.IS_ACTIVE, 0], false);
-    let subscriptionIcon = isSubscribed
-      ? <StatusIconContainer><FontAwesomeIcon color="green" icon={faCheck} /></StatusIconContainer>
-      : <StatusIconContainer><FontAwesomeIcon color="red" icon={faTimesCircle} /></StatusIconContainer>;
+    let subscriptionIcon;
     if (updatingEntity || refreshingPersonNeighbors || loadingSubscriptionInfo) {
       subscriptionIcon = (
         <StatusIconContainer>
@@ -138,6 +134,11 @@ class SubscriptionInfo extends React.Component<Props, State> {
         </StatusIconContainer>
       );
     }
+    const name = this.getName();
+    const isSubscribed = subscription.getIn([PROPERTY_TYPES.IS_ACTIVE, 0], false);
+    subscriptionIcon = isSubscribed
+      ? <StatusIconContainer><FontAwesomeIcon color="green" icon={faCheck} /></StatusIconContainer>
+      : <StatusIconContainer><FontAwesomeIcon color="red" icon={faTimesCircle} /></StatusIconContainer>;
     const isSubscribedText = isSubscribed
       ? 'is subscribed to court notifications'
       : 'is not subscribed to court notifications';
