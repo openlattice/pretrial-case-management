@@ -36,7 +36,7 @@ const HeaderElement = styled.th`
 
 const NoResultsForTable = styled(NoResults)`
   padding-top: 20px;
-`
+`;
 
 class ChargeTable extends React.Component<Props, State> {
 
@@ -58,11 +58,11 @@ class ChargeTable extends React.Component<Props, State> {
       noResults,
       handleCheckboxUpdates
     } = this.props;
-    let contactSeq = editing
+    let contactList = editing
       ? contactInfo
       : contactInfo
         .filter(contact => contact.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.IS_PREFERRED, 0], false));
-    contactSeq = contactSeq
+    contactList = contactList
       .sortBy((contact => contact.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.PHONE, 0], '')))
       .sortBy((contact => contact.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.EMAIL, 0], '')))
       .sortBy((contact => !contact.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.IS_PREFERRED, 0], false)))
@@ -75,13 +75,13 @@ class ChargeTable extends React.Component<Props, State> {
             contact={contact.get(PSA_NEIGHBOR.DETAILS, Map())}
             editing={editing} />
       )));
-    const hasContactButNoPreferred = (!noResults && !contactSeq.size);
+    const hasContactButNoPreferred = (!noResults && !contactList.size);
     return (
       <>
         <Table>
           <tbody>
             { this.renderHeaders() }
-            { (noResults || hasContactButNoPreferred) ? null : contactSeq }
+            { (noResults || hasContactButNoPreferred) ? null : contactList }
           </tbody>
         </Table>
         {
