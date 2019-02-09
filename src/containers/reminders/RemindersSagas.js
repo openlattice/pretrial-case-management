@@ -255,7 +255,7 @@ function* loadPeopleWithHearingsButNoContactsWorker(action :SequenceAction) :Gen
     const app = yield select(getApp);
     const edm = yield select(getEDM);
     const orgId = yield select(getOrgId);
-    const statusfqn = new FullyQualifiedName(PROPERTY_TYPES.STATUS);
+    const statusFqn = new FullyQualifiedName(PROPERTY_TYPES.STATUS);
     const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
     const psaScoresEntitySetId = getEntitySetId(app, PSA_SCORES, orgId);
     const peopleEntitySetId = getEntitySetId(app, PEOPLE, orgId);
@@ -263,7 +263,7 @@ function* loadPeopleWithHearingsButNoContactsWorker(action :SequenceAction) :Gen
     const contactInformationEntityKeyId = getEntitySetId(app, CONTACT_INFORMATION, orgId);
 
     /* Grab Open PSAs */
-    const statusPropertyTypeId = getPropertyTypeId(edm, statusfqn);
+    const statusPropertyTypeId = getPropertyTypeId(edm, statusFqn);
     const filter = action.value || PSA_STATUSES.OPEN;
     const searchTerm = action.value === '*' ? action.value : `${statusPropertyTypeId}:"${filter}"`;
     const allScoreData = yield call(getAllSearchResults, psaScoresEntitySetId, searchTerm);
