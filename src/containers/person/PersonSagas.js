@@ -6,7 +6,7 @@ import axios from 'axios';
 import moment from 'moment';
 import LatticeAuth from 'lattice-auth';
 import { fromJS, List, Map } from 'immutable';
-import { Constants, EntityDataModelApi, SearchApi } from 'lattice';
+import { Constants, SearchApi } from 'lattice';
 import { push } from 'react-router-redux';
 import {
   all,
@@ -293,8 +293,8 @@ function* searchPeopleByPhoneNumberWorker(action) :Generator<*, *, *> {
     const lastNamePropertyTypeId = getPropertyTypeId(edm, PROPERTY_TYPES.LAST_NAME);
 
     const { searchTerm } = action.value;
-    const letters = (searchTerm).replace(/[^a-zA-Z ]/g, '');
-    const numbers = (searchTerm).replace(/[^0-9 ]/g, '');
+    const letters = (searchTerm).replace(/[^a-zA-Z]/g, '');
+    const numbers = (searchTerm).replace(/[^0-9]/g, '');
     const phoneFields = [];
     const nameFields = [];
     const updateSearchField = (searchFields :Array, searchString :string, property :string) => {
