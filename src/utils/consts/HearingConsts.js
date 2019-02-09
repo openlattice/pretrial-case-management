@@ -144,12 +144,14 @@ export const getAvailableHearings = (personHearings, scheduledHearings, hearingN
     const hearingCourtroom = hearing.getIn([PROPERTY_TYPES.COURTROOM, 0], '');
     const id = hearing.getIn([OPENLATTICE_ID_FQN, 0]);
     const hasOutcome = !!hearingNeighborsById.getIn([id, OUTCOMES]);
+    const hearingIsInactive = hearing.getIn([PROPERTY_TYPES.HEARING_INACTIVE, 0], false);
     const hearingHasBeenCancelled = hearing.getIn([PROPERTY_TYPES.UPDATE_TYPE, 0], '')
       .toLowerCase().trim() === 'cancelled';
     const hearingIsInPast = moment(hearingDateTime).isBefore(moment());
     return !((scheduledHearingMap.get(hearingDateTime) === hearingCourtroom)
     || hasOutcome
     || hearingHasBeenCancelled
+    || hearingIsInactive
     || hearingIsInPast
     );
   });

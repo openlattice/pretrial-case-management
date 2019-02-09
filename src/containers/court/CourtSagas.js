@@ -191,22 +191,24 @@ function* loadHearingsForDateWorker(action :SequenceAction) :Generator<*, *, *> 
           === toISODate(action.value);
         const hearingType = hearing.getIn([PROPERTY_TYPES.HEARING_TYPE, 0]);
         const hearingId = hearing.getIn([OPENLATTICE_ID_FQN, 0]);
+        const hearingIsInactive = hearing.getIn([PROPERTY_TYPES.HEARING_INACTIVE, 0], false);
         const hearingHasBeenCancelled = hearing.getIn([PROPERTY_TYPES.UPDATE_TYPE, 0], '')
           .toLowerCase().trim() === 'cancelled';
         if (hearingType
           && hearingExists
           && hearingOnDateSelected
           && !hearingHasBeenCancelled
+          && !hearingIsInactive
         ) hearingIds = hearingIds.add(hearingId);
       });
     }
 
     hearingsToday.filter((hearing) => {
       const hearingHasValidDateTime = moment(hearing.getIn([PROPERTY_TYPES.DATE_TIME, 0], '')).isValid();
+      const hearingIsInactive = hearing.getIn([PROPERTY_TYPES.HEARING_INACTIVE, 0], false);
       const hearingHasBeenCancelled = hearing
         .getIn([PROPERTY_TYPES.UPDATE_TYPE, 0], '').toLowerCase().trim() === 'cancelled';
-      if (!hearingHasValidDateTime) return false;
-      if (hearingHasBeenCancelled) return false;
+      if (!hearingHasValidDateTime || hearingHasBeenCancelled || hearingIsInactive) return false;
       return true;
     })
       .forEach((hearing) => {

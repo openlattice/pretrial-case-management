@@ -290,6 +290,7 @@ function* loadPeopleWithHearingsButNoContactsWorker(action :SequenceAction) :Gen
           const hearingDateTime = neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.DATE_TIME, 0]);
           const hearingExists = !!hearingDateTime;
           const hearingType = neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.HEARING_TYPE, 0]);
+          const hearingIsInactive = neighbor.getIn([PROPERTY_TYPES.HEARING_INACTIVE, 0], false);
           const hearingHasBeenCancelled = neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.UPDATE_TYPE, 0], '')
             .toLowerCase().trim() === 'cancelled';
           const hearingInFuture = moment().isBefore(moment(hearingDateTime));
@@ -297,6 +298,7 @@ function* loadPeopleWithHearingsButNoContactsWorker(action :SequenceAction) :Gen
             && hearingExists
             && hearingInFuture
             && !hearingHasBeenCancelled
+            && !hearingIsInactive
           ) hasFutureHearing = true;
         }
         if (isPerson) person = neighbor.get(PSA_NEIGHBOR.DETAILS, Map());
