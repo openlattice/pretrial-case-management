@@ -339,7 +339,7 @@ function* searchPeopleByPhoneNumberWorker(action) :Generator<*, *, *> {
         let peopleByContactId = yield call(SearchApi.searchEntityNeighborsWithFilter, contactInformationEntitySetId, {
           entityKeyIds: contactIds.toJS(),
           sourceEntitySetIds: [peopleEntitySetId],
-          // destinationEntitySetIds: [contactInformationEntitySetId]
+          // destinationEntitySetIds: [contactInformationEntitySetId, peopleEntitySetId]
         });
         peopleByContactId = fromJS(peopleByContactId);
         const peopleList = peopleByContactId

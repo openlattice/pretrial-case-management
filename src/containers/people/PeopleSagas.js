@@ -378,7 +378,7 @@ function* updateContactInfoWorker(action :SequenceAction) :Generator<*, *, *> {
     /* get updated contact info for person */
     const filteredNeighbors = yield call(SearchApi.searchEntityNeighborsWithFilter, peopleEntitySetId, {
       entityKeyIds: [personEntityKeyId],
-      sourceEntitySetIds: [],
+      sourceEntitySetIds: [contactInformationEntitySetId],
       // destinationEntitySetIds: [contactInformationEntitySetId]
     });
 
