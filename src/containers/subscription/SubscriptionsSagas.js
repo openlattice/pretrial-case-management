@@ -40,13 +40,13 @@ function* loadSubcriptionModalWorker(action :SequenceAction) :Generator<*, *, *>
     const orgId = yield select(getOrgId);
     const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
     const peopleEntitySetId = getEntitySetId(app, PEOPLE, orgId);
-    const contactInformationEntityKeyId = getEntitySetId(app, CONTACT_INFORMATION, orgId);
-    const subscriptionEntityKeyId = getEntitySetId(app, SUBSCRIPTION, orgId);
+    const contactInformationEntitySetId = getEntitySetId(app, CONTACT_INFORMATION, orgId);
+    const subscriptionEntitySetId = getEntitySetId(app, SUBSCRIPTION, orgId);
 
     const personNeighborsById = yield call(SearchApi.searchEntityNeighborsWithFilter, peopleEntitySetId, {
       entityKeyIds: [personId],
       sourceEntitySetIds: [],
-      destinationEntitySetIds: [subscriptionEntityKeyId, contactInformationEntityKeyId]
+      destinationEntitySetIds: [subscriptionEntitySetId, contactInformationEntitySetId]
     });
 
     const neighbors = fromJS(Object.values(personNeighborsById));
