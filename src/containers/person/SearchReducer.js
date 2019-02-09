@@ -49,36 +49,38 @@ export default function searchReducer(state = INITIAL_STATE, action) {
     case searchPeople.case(action.type): {
       return searchPeople.reducer(state, action, {
         REQUEST: () => state
+          .set(SEARCH.SEARCH_HAS_RUN, false)
           .set(SEARCH.LOADING, true)
           .set(SEARCH.SEARCH_ERROR, false),
         SUCCESS: () => state
           .set(SEARCH.SEARCH_RESULTS, Immutable.fromJS(action.value.hits))
           .set(SEARCH.LOADING, false)
-          .set(SEARCH.SEARCH_HAS_RUN, true)
           .set(SEARCH.SEARCH_ERROR, false),
         FAILURE: () => state
           .set(SEARCH.LOADING, false)
           .set(SEARCH.SEARCH_ERROR, true),
-        FINALLY: () => state.set(SEARCH.LOADING, false)
+        FINALLY: () => state
+          .set(SEARCH.SEARCH_HAS_RUN, true)
+          .set(SEARCH.LOADING, false)
       });
     }
 
     case searchPeopleByPhoneNumber.case(action.type): {
       return searchPeopleByPhoneNumber.reducer(state, action, {
         REQUEST: () => state
+          .set(SEARCH.SEARCH_HAS_RUN, false)
           .set(SEARCH.LOADING, true)
           .set(SEARCH.SEARCH_ERROR, false),
-        SUCCESS: () => {
-          return state
-            .set(SEARCH.SEARCH_RESULTS, Immutable.fromJS(action.value.people))
-            .set(SEARCH.LOADING, false)
-            .set(SEARCH.SEARCH_HAS_RUN, true)
-            .set(SEARCH.SEARCH_ERROR, false)
-        },
+        SUCCESS: () => state
+          .set(SEARCH.SEARCH_RESULTS, Immutable.fromJS(action.value.people))
+          .set(SEARCH.LOADING, false)
+          .set(SEARCH.SEARCH_ERROR, false),
         FAILURE: () => state
           .set(SEARCH.LOADING, false)
           .set(SEARCH.SEARCH_ERROR, true),
-        FINALLY: () => state.set(SEARCH.LOADING, false)
+        FINALLY: () => state
+          .set(SEARCH.SEARCH_HAS_RUN, true)
+          .set(SEARCH.LOADING, false)
       });
     }
 
