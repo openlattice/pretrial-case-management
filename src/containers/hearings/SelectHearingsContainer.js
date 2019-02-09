@@ -464,41 +464,18 @@ class SelectHearingsContainer extends React.Component<Props, State> {
       ) : null;
   }
 
-  render() {
+  renderHearings = () => {
     const { manuallyCreatingHearing, selectingReleaseConditions, selectedHearing } = this.state;
     const {
       neighbors,
-      hearingIdsRefreshing,
-      submitting,
-      psaIdsRefreshing,
-      refreshingNeighbors,
-      replacingAssociation,
-      replacingEntity,
       hearingNeighborsById
     } = this.props;
     const hearingsWithOutcomes = hearingNeighborsById
       .keySeq().filter(id => hearingNeighborsById.getIn([id, OUTCOMES]));
     const scheduledHearings = getScheduledHearings(neighbors);
     const pastHearings = getPastHearings(neighbors);
-    if (submitting
-      || replacingEntity
-      || replacingAssociation
-      || refreshingNeighbors
-      || psaIdsRefreshing.size
-      || hearingIdsRefreshing) {
-      return (
-        <Wrapper>
-          <SubmittingWrapper>
-            <span>{ (submitting || replacingEntity || replacingAssociation) ? 'Submitting' : 'Reloading' }</span>
-            <LoadingSpinner />
-          </SubmittingWrapper>
-        </Wrapper>
-      );
-    }
-
     return (
-      <Container>
-        {this.renderSubscriptionInfo()}
+      <>
         <HearingCardsWithTitle
             title="Scheduled Hearings"
             hearings={scheduledHearings}
@@ -515,6 +492,41 @@ class SelectHearingsContainer extends React.Component<Props, State> {
         { selectingReleaseConditions
           ? this.renderSelectReleaseCondtions(selectedHearing)
           : this.renderAvailableHearings(manuallyCreatingHearing, scheduledHearings)
+        }
+      </>
+    );
+  }
+
+  render() {
+    const {
+      hearingIdsRefreshing,
+      submitting,
+      psaIdsRefreshing,
+      refreshingNeighbors,
+      replacingAssociation,
+      replacingEntity
+    } = this.props;
+    const isLoading = (submitting
+      || replacingEntity
+      || replacingAssociation
+      || refreshingNeighbors
+      || psaIdsRefreshing.size
+      || hearingIdsRefreshing);
+
+    return (
+      <Container>
+        {this.renderSubscriptionInfo()}
+        {
+          isLoading
+            ? (
+              <Wrapper>
+                <SubmittingWrapper>
+                  <span>{ (submitting || replacingEntity || replacingAssociation) ? 'Submitting' : 'Reloading' }</span>
+                  <LoadingSpinner />
+                </SubmittingWrapper>
+              </Wrapper>
+            )
+            : this.renderHearings()
         }
       </Container>
     );
