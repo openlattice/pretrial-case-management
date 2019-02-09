@@ -228,7 +228,7 @@ class RemindersContainer extends React.Component<Props, State> {
           </TitleText>
         </TableTitle>
         <PersonSubscriptionList
-            noResultsText="All Contacts Have a Preferred Contact"
+            noResultsText="No Results"
             loading={loadingPeopleWithNoContacts}
             people={people}
             noResults={!people.size} />
