@@ -303,7 +303,7 @@ function* searchPeopleByPhoneNumberWorker(action) :Generator<*, *, *> {
       property :string,
       exact? :boolean
     ) => {
-      const isExact = exact || false;
+      const isExact = !!exact;
       searchFields.push({
         searchTerm: searchString,
         property,
