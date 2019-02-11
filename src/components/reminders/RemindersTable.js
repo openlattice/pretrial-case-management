@@ -53,6 +53,7 @@ class RemindersTable extends React.Component<Props, State> {
       <HeaderElement>{REMINDERS_HEADERS.TIME}</HeaderElement>
       <HeaderElement>{REMINDERS_HEADERS.NAME}</HeaderElement>
       <HeaderElement>{REMINDERS_HEADERS.CONTACT}</HeaderElement>
+      <HeaderElement>{REMINDERS_HEADERS.COURT_TIME}</HeaderElement>
       <HeaderElement>{REMINDERS_HEADERS.COURTROOM}</HeaderElement>
       <HeaderElement>{REMINDERS_HEADERS.HEARING_TYPE}</HeaderElement>
       <HeaderElement>{REMINDERS_HEADERS.STATUS}</HeaderElement>
@@ -85,6 +86,7 @@ class RemindersTable extends React.Component<Props, State> {
         } = formatPeopleInfo(person);
         const {
           courtroom,
+          hearingTime,
           hearingType
         } = getHearingFields(hearing);
         const contact = contactInfo.get(PROPERTY_TYPES.PHONE);
@@ -95,6 +97,7 @@ class RemindersTable extends React.Component<Props, State> {
               key={reminderId}
               contact={contact}
               courtroom={courtroom}
+              hearingTime={hearingTime}
               hearingType={hearingType}
               reminderId={reminderId}
               time={moment(dateTime).format('HH:mm')}
