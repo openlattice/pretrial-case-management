@@ -253,6 +253,8 @@ export const REVIEW = {
 export const SEARCH = {
   LOADING: 'isLoadingPeople',
   SEARCH_RESULTS: 'searchResults',
+  CONTACTS: 'contactResults',
+  RESULTS_TO_CONTACTS: 'peopleIdsToContactIds',
   SEARCH_ERROR: 'searchError',
   SELECTED_PERSON_ID: 'selectedPersonId',
   PERSON_DETAILS: 'personDetails',
