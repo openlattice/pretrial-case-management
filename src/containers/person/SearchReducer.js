@@ -2,7 +2,7 @@
  * @flow
  */
 
-import Immutable from 'immutable';
+import { Map, List, fromJS } from 'immutable';
 
 import {
   clearSearchResults,
@@ -17,12 +17,14 @@ import { SEARCH } from '../../utils/consts/FrontEndStateConsts';
 
 declare var __ENV_DEV__ :boolean;
 
-const INITIAL_STATE :Immutable.Map<*, *> = Immutable.fromJS({
+const INITIAL_STATE :Map<*, *> = fromJS({
   [SEARCH.LOADING]: false,
-  [SEARCH.SEARCH_RESULTS]: Immutable.List(),
+  [SEARCH.SEARCH_RESULTS]: List(),
+  [SEARCH.CONTACTS]: Map(),
+  [SEARCH.RESULTS_TO_CONTACTS]: Map(),
   [SEARCH.SEARCH_ERROR]: false,
   [SEARCH.SELECTED_PERSON_ID]: '',
-  [SEARCH.PERSON_DETAILS]: Immutable.List(),
+  [SEARCH.PERSON_DETAILS]: List(),
   [SEARCH.LOADING_CASES]: false,
   [SEARCH.NUM_CASES_TO_LOAD]: 0,
   [SEARCH.NUM_CASES_LOADED]: 0,
@@ -39,8 +41,10 @@ export default function searchReducer(state = INITIAL_STATE, action) {
     case clearSearchResults.case(action.type): {
       return clearSearchResults.reducer(state, action, {
         SUCCESS: () => state
-          .set(SEARCH.SEARCH_RESULTS, Immutable.List())
-          .set(SEARCH.PERSON_DETAILS, Immutable.List())
+          .set(SEARCH.SEARCH_RESULTS, List())
+          .set(SEARCH.PERSON_DETAILS, List())
+          .set(SEARCH.CONTACTS, Map())
+          .set(SEARCH.RESULTS_TO_CONTACTS, Map())
           .set(SEARCH.SEARCH_HAS_RUN, false)
           .set(SEARCH.LOADING, false)
       });
@@ -53,7 +57,7 @@ export default function searchReducer(state = INITIAL_STATE, action) {
           .set(SEARCH.LOADING, true)
           .set(SEARCH.SEARCH_ERROR, false),
         SUCCESS: () => state
-          .set(SEARCH.SEARCH_RESULTS, Immutable.fromJS(action.value.hits))
+          .set(SEARCH.SEARCH_RESULTS, fromJS(action.value.hits))
           .set(SEARCH.LOADING, false)
           .set(SEARCH.SEARCH_ERROR, false),
         FAILURE: () => state
@@ -68,11 +72,15 @@ export default function searchReducer(state = INITIAL_STATE, action) {
     case searchPeopleByPhoneNumber.case(action.type): {
       return searchPeopleByPhoneNumber.reducer(state, action, {
         REQUEST: () => state
+          .set(SEARCH.CONTACTS, Map())
+          .set(SEARCH.RESULTS_TO_CONTACTS, Map())
           .set(SEARCH.SEARCH_HAS_RUN, false)
           .set(SEARCH.LOADING, true)
           .set(SEARCH.SEARCH_ERROR, false),
         SUCCESS: () => state
-          .set(SEARCH.SEARCH_RESULTS, Immutable.fromJS(action.value.people))
+          .set(SEARCH.SEARCH_RESULTS, fromJS(action.value.people))
+          .set(SEARCH.CONTACTS, fromJS(action.value.contactMap))
+          .set(SEARCH.RESULTS_TO_CONTACTS, fromJS(action.value.personIdsToContactIds))
           .set(SEARCH.LOADING, false)
           .set(SEARCH.SEARCH_ERROR, false),
         FAILURE: () => state
@@ -92,14 +100,14 @@ export default function searchReducer(state = INITIAL_STATE, action) {
         },
         SUCCESS: () => {
           const { response } = action.value;
-          let newState = state.set(SEARCH.PERSON_DETAILS, Immutable.fromJS(response));
+          let newState = state.set(SEARCH.PERSON_DETAILS, fromJS(response));
           if (!state.get(SEARCH.LOADING_CASES)) {
             newState = newState.set(SEARCH.CASE_LOADS_COMPLETE, true);
           }
           return newState;
         },
         FAILURE: () => state
-          .set(SEARCH.PERSON_DETAILS, Immutable.List())
+          .set(SEARCH.PERSON_DETAILS, List())
           .set(SEARCH.LOADING_CASES, false)
           .set(SEARCH.NUM_CASES_TO_LOAD, 0)
           .set(SEARCH.NUM_CASES_LOADED, 0),
