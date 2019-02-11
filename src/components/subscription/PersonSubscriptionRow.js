@@ -11,6 +11,7 @@ import { faCog } from '@fortawesome/pro-light-svg-icons';
 import ManageSubscriptionModal from '../../containers/subscription/ManageSubscriptionModal';
 import StyledButton from '../buttons/StyledButton';
 import { OL } from '../../utils/consts/Colors';
+import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { formatPeopleInfo } from '../../utils/PeopleUtils';
 
 const { OPENLATTICE_ID_FQN } = Constants;
@@ -18,7 +19,8 @@ const { OPENLATTICE_ID_FQN } = Constants;
 const Row = styled.div`
   width: 100%;
   display: grid;
-  grid-template-columns: 62.5% 37.5%;
+  grid-template-columns: ${props => (props.includeContact ? '45% 25% 30%' : '62% 38%')};
+  grid-auto-flow: column;
   border-bottom: 1px solid ${OL.GREY11};
 
   &:last-child {
@@ -82,14 +84,18 @@ class PersonSubscriptionRow extends React.Component<Props, State> {
   )
 
   render() {
-    const { person } = this.props;
+    const { contact, person } = this.props;
     const { lastFirstMid } = formatPeopleInfo(person);
+    const phone = contact
+      ? contact.getIn([PROPERTY_TYPES.PHONE, 0], 'N/A')
+      : undefined;
     return (
-      <Row>
+      <Row includeContact={phone}>
         <BodyElement>
           {lastFirstMid}
           { this.renderManageSubscriptionModal() }
         </BodyElement>
+        { phone ? <BodyElement>{phone}</BodyElement> : null }
         <BodyElement>
           {this.renderManageSubscriptionButton()}
         </BodyElement>
