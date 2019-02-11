@@ -297,15 +297,26 @@ function* searchPeopleByPhoneNumberWorker(action) :Generator<*, *, *> {
     const numbers = (searchTerm).replace(/[^0-9]/g, '');
     const phoneFields = [];
     const nameFields = [];
-    const updateSearchField = (searchFields :Array, searchString :string, property :string) => {
+    const updateSearchField = (
+      searchFields :Array,
+      searchString :string,
+      property :string,
+      exact? :boolean
+    ) => {
+      const isExact = exact || false;
       searchFields.push({
         searchTerm: searchString,
-        property
+        property,
+        exact: isExact
       });
     };
 
     if (numbers.trim().length) {
-      updateSearchField(phoneFields, numbers.trim(), phonePropertyTypeId);
+      let searchString = numbers.trim();
+      if (searchString.length > 9) {
+        searchString = `"${searchString.slice(0, 3)} ${searchString.slice(3, 6)}-${searchString.slice(6)}"`;
+      }
+      updateSearchField(phoneFields, searchString, phonePropertyTypeId);
     }
     if (letters.trim().length) {
       updateSearchField(nameFields, letters.trim(), firstNamePropertyTypeId);
@@ -327,45 +338,87 @@ function* searchPeopleByPhoneNumberWorker(action) :Generator<*, *, *> {
 
     let allResults = List();
     let contactIds = List();
-    let peopleSearchResults;
+    let peopleIds = List();
+    let personIdsToContactIds = Map();
+    let contactMap = Map();
+    let peopleMap = Map();
     if (phoneFields.length) {
       const searchOptions = phoneOptions;
       let contacts = yield call(SearchApi.advancedSearchEntitySetData, contactInformationEntitySetId, searchOptions);
       contacts = fromJS(contacts.hits);
       contacts.forEach((contact) => {
-        contactIds = contactIds.push(contact.getIn([OPENLATTICE_ID_FQN, 0], ''));
+        const contactId = contact.getIn([OPENLATTICE_ID_FQN, 0], '');
+        contactIds = contactIds.push(contactId);
+        contactMap = contactMap.set(contactId, contact);
       });
       if (contactIds.size) {
         let peopleByContactId = yield call(SearchApi.searchEntityNeighborsWithFilter, contactInformationEntitySetId, {
           entityKeyIds: contactIds.toJS(),
           sourceEntitySetIds: [peopleEntitySetId],
-          // destinationEntitySetIds: [contactInformationEntitySetId, peopleEntitySetId]
+          destinationEntitySetIds: [contactInformationEntitySetId, peopleEntitySetId]
         });
         peopleByContactId = fromJS(peopleByContactId);
-        const peopleList = peopleByContactId
-          .valueSeq()
-          .flatten(true)
-          .map((person) => {
-            const personObj = person.get(PSA_NEIGHBOR.DETAILS, Map());
-            return personObj;
-          });
-        allResults = allResults.concat(peopleList);
+        peopleByContactId.entrySeq().forEach(([id, people]) => {
+          const peopleList = people
+            .filter((person => !!person.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0], '')))
+            .map((person) => {
+              const personObj = person.get(PSA_NEIGHBOR.DETAILS, Map());
+              const personId = personObj.getIn([OPENLATTICE_ID_FQN, 0], '');
+              personIdsToContactIds = personIdsToContactIds.set(
+                personId, personIdsToContactIds.get(personId, List()).push(id)
+              );
+              return personObj;
+            });
+          allResults = allResults.concat(peopleList);
+        });
       }
     }
     if (nameFields.length) {
       const searchOptions = nameOptions;
-      peopleSearchResults = yield call(SearchApi.advancedSearchEntitySetData, peopleEntitySetId, searchOptions);
-      peopleSearchResults = fromJS(peopleSearchResults.hits);
-      allResults = allResults.concat(peopleSearchResults);
+      let people = yield call(SearchApi.advancedSearchEntitySetData, peopleEntitySetId, searchOptions);
+      people = fromJS(people.hits);
+      allResults = allResults.concat(people);
+      people.forEach((person) => {
+        const personId = person.getIn([OPENLATTICE_ID_FQN, 0], '');
+        peopleIds = peopleIds.push(personId);
+        peopleMap = peopleMap.set(personId, person);
+      });
+      if (peopleIds.size) {
+        let contactsByPersonId = yield call(SearchApi.searchEntityNeighborsWithFilter, peopleEntitySetId, {
+          entityKeyIds: peopleIds.toJS(),
+          sourceEntitySetIds: [],
+          destinationEntitySetIds: [contactInformationEntitySetId]
+        });
+        contactsByPersonId = fromJS(contactsByPersonId);
+        contactsByPersonId.entrySeq().forEach(([id, contacts]) => {
+          contacts
+            .filter((contact => !!contact.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0], '')))
+            .forEach((contact) => {
+              const contactObj = contact.get(PSA_NEIGHBOR.DETAILS, Map());
+              const contactId = contactObj.getIn([OPENLATTICE_ID_FQN, 0], '');
+              const contactIsPreferred = contactObj.getIn([PROPERTY_TYPES.IS_PREFERRED, 0], false);
+              const personNeedsContact = !personIdsToContactIds.get(id);
+              if (personNeedsContact && contactIsPreferred) {
+                contactMap = contactMap.set(contactId, contactObj);
+                personIdsToContactIds = personIdsToContactIds.set(
+                  id, personIdsToContactIds.get(id, List()).push(contactId)
+                );
+              }
+            });
+        });
+      }
     }
-
     let people = Map();
     allResults.forEach((person) => {
       const personId = person.getIn([OPENLATTICE_ID_FQN, 0], '');
       people = people.set(personId, person);
     });
 
-    yield put(searchPeopleByPhoneNumber.success(action.id, { people }));
+    yield put(searchPeopleByPhoneNumber.success(action.id, {
+      people,
+      contactMap,
+      personIdsToContactIds
+    }));
   }
   catch (error) {
     console.error(error);
