@@ -86,10 +86,12 @@ class RemindersTable extends React.Component<Props, State> {
         } = formatPeopleInfo(person);
         const {
           courtroom,
+          hearingDate,
           hearingTime,
           hearingType
         } = getHearingFields(hearing);
         const contact = contactInfo.get(PROPERTY_TYPES.PHONE);
+        const hearingDateTime = `${hearingDate} ${hearingTime}`;
 
         const hasOpenPSA = remindersWithOpenPSA.includes(reminderId);
         return (
@@ -97,7 +99,7 @@ class RemindersTable extends React.Component<Props, State> {
               key={reminderId}
               contact={contact}
               courtroom={courtroom}
-              hearingTime={hearingTime}
+              hearingTime={hearingDateTime}
               hearingType={hearingType}
               reminderId={reminderId}
               time={moment(dateTime).format('HH:mm')}
