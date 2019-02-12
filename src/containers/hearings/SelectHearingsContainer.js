@@ -29,7 +29,8 @@ import {
   formatJudgeName,
   getHearingsIdsFromNeighbors,
   getScheduledHearings,
-  getPastHearings
+  getPastHearings,
+  getHearingFields
 } from '../../utils/consts/HearingConsts';
 import {
   FORM_IDS,
@@ -212,7 +213,17 @@ class SelectHearingsContainer extends React.Component<Props, State> {
   }
 
   getSortedHearings = () => {
-    const { personHearings } = this.props;
+    const { psaHearings } = this.props;
+    let { personHearings } = this.props;
+    let hearingStrings = List();
+    psaHearings.forEach((hearing) => {
+      const { hearingCourtString } = getHearingFields(hearing);
+      hearingStrings = hearingStrings.push(hearingCourtString);
+    });
+    personHearings = personHearings.filter((hearing) => {
+      const { hearingCourtString } = getHearingFields(hearing);
+      return !hearingStrings.includes(hearingCourtString);
+    });
     return getScheduledHearings(personHearings);
   }
 
@@ -468,7 +479,8 @@ class SelectHearingsContainer extends React.Component<Props, State> {
     const { manuallyCreatingHearing, selectingReleaseConditions, selectedHearing } = this.state;
     const {
       neighbors,
-      hearingNeighborsById
+      hearingNeighborsById,
+      psaHearings
     } = this.props;
     const hearingsWithOutcomes = hearingNeighborsById
       .keySeq().filter(id => hearingNeighborsById.getIn([id, OUTCOMES]));
