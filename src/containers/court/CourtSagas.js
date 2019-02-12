@@ -170,7 +170,6 @@ function* filterPeopleIdsWithOpenPSAsWorker(action :SequenceAction) :Generator<*
       });
       psaIdToMostRecentEditDate = psaIdToMostRecentEditDate.set(id, mostRecentEditDate);
     });
-    console.log(psaIdToMostRecentEditDate.toJS());
     yield put(filterPeopleIdsWithOpenPSAs.success(action.id, {
       filteredPersonIds,
       scoresAsMap,
