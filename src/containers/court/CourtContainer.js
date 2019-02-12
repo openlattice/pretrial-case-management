@@ -28,6 +28,7 @@ import {
   APP,
   COURT,
   EDM,
+  PSA_ASSOCIATION,
   PSA_NEIGHBOR,
   PSA_MODAL,
   REVIEW,
@@ -225,7 +226,6 @@ class CourtContainer extends React.Component<Props, State> {
       hearingsByTime,
       hearingIds,
       hearingNeighborsById,
-      openPSAIds,
       selectedOrganizationId
     } = this.props;
     const { checkPSAPermissions, loadHearingsForDate, loadJudges } = actions;
@@ -262,18 +262,24 @@ class CourtContainer extends React.Component<Props, State> {
       peopleWithOpenPsas,
       scoresAsMap,
       submitting,
+      psaEditDatesById,
       psaIdsRefreshing
     } = this.props;
     const personOlId = person.getIn([OPENLATTICE_ID_FQN, 0]);
     const openPSAId = peopleIdsToOpenPSAIds.get(personOlId, '');
     const hasOpenPSA = peopleWithOpenPsas.has(personOlId);
     const scores = scoresAsMap.get(openPSAId, Map());
+    const lastEditDate = moment(psaEditDatesById.getIn(
+      [openPSAId, PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.COMPLETED_DATE_TIME],
+      psaEditDatesById.getIn([openPSAId, PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.DATE_TIME], '')
+    )).format('MM/DD/YYYY');
     const personObj = formatPeopleInfo(person);
     return (
       <PersonCard
           key={`${personObj.identification}-${index}`}
           psaId={openPSAId}
           person={person}
+          editDate={lastEditDate}
           personId={personOlId}
           personObj={personObj}
           hasOpenPSA={hasOpenPSA}
@@ -517,6 +523,7 @@ function mapStateToProps(state) {
     [COURT.COURTROOM]: court.get(COURT.COURTROOM),
     [COURT.COURTROOMS]: court.get(COURT.COURTROOMS),
     [COURT.SCORES_AS_MAP]: court.get(COURT.SCORES_AS_MAP),
+    [COURT.PSA_EDIT_DATES]: court.get(COURT.PSA_EDIT_DATES),
     [COURT.OPEN_PSA_IDS]: court.get(COURT.OPEN_PSA_IDS),
     [COURT.PEOPLE_IDS_TO_OPEN_PSA_IDS]: court.get(COURT.PEOPLE_IDS_TO_OPEN_PSA_IDS),
     [COURT.ALL_JUDGES]: court.get(COURT.ALL_JUDGES),
