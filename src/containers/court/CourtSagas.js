@@ -153,6 +153,7 @@ function* filterPeopleIdsWithOpenPSAsWorker(action :SequenceAction) :Generator<*
     psaNeighborsById = fromJS(psaNeighborsById);
     psaNeighborsById.entrySeq().forEach(([id, neighbors]) => {
       let mostRecentEditDate;
+      let mostRecentNeighbor;
       neighbors.forEach((neighbor) => {
         const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id']);
         const appTypeFqn = entitySetIdsToAppType.get(entitySetId, judgesFqn);
@@ -165,10 +166,13 @@ function* filterPeopleIdsWithOpenPSAsWorker(action :SequenceAction) :Generator<*
           const isMostRecent = mostRecentEditDate
             ? moment(mostRecentEditDate).isBefore(editDate)
             : true;
-          if (isMostRecent) mostRecentEditDate = neighbor;
+          if (isMostRecent) {
+            mostRecentEditDate = editDate;
+            mostRecentNeighbor = neighbor;
+          }
         }
       });
-      psaIdToMostRecentEditDate = psaIdToMostRecentEditDate.set(id, mostRecentEditDate);
+      psaIdToMostRecentEditDate = psaIdToMostRecentEditDate.set(id, mostRecentNeighbor);
     });
     yield put(filterPeopleIdsWithOpenPSAs.success(action.id, {
       filteredPersonIds,
