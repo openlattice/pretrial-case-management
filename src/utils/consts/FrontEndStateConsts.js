@@ -87,6 +87,7 @@ export const COURT = {
   LOADING_COURTROOM_OPTIONS: 'loadingCoutrooms',
   OPEN_PSAS: 'openPSAs',
   SCORES_AS_MAP: 'scoresAsMap',
+  PSA_EDIT_DATES: 'psaEditDatesById',
   OPEN_PSA_IDS: 'openPSAIds',
   PEOPLE_IDS_TO_OPEN_PSA_IDS: 'peopleIdsToOpenPSAIds',
 

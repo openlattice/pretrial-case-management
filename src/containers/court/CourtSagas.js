@@ -2,7 +2,7 @@
  * @flow
  */
 
-import Immutable, { fromJS, Map } from 'immutable';
+import Immutable, { fromJS, Map, List } from 'immutable';
 import moment from 'moment';
 import {
   Constants,
@@ -20,10 +20,15 @@ import {
 import { getEntitySetId } from '../../utils/AppUtils';
 import { getPropertyTypeId } from '../../edm/edmUtils';
 import { PSA_STATUSES } from '../../utils/consts/Consts';
-import { APP, PSA_NEIGHBOR, STATE } from '../../utils/consts/FrontEndStateConsts';
 import { toISODate, TIME_FORMAT } from '../../utils/FormattingUtils';
 import { obfuscateEntityNeighbors, obfuscateBulkEntityNeighbors } from '../../utils/consts/DemoNames';
 import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import {
+  APP,
+  PSA_ASSOCIATION,
+  PSA_NEIGHBOR,
+  STATE
+} from '../../utils/consts/FrontEndStateConsts';
 import {
   FILTER_PEOPLE_IDS_WITH_OPEN_PSAS,
   LOAD_HEARINGS_FOR_DATE,
@@ -42,7 +47,8 @@ const {
   JUDGES,
   PEOPLE,
   PSA_SCORES,
-  RELEASE_CONDITIONS
+  RELEASE_CONDITIONS,
+  STAFF
 } = APP_TYPES_FQNS;
 
 const hearingsFqn :string = HEARINGS.toString();
@@ -50,6 +56,7 @@ const judgesFqn :string = JUDGES.toString();
 const peopleFqn :string = PEOPLE.toString();
 const psaScoresFqn :string = PSA_SCORES.toString();
 const releaseConditionsFqn :string = RELEASE_CONDITIONS.toString();
+const staffFqn :string = STAFF.toString();
 
 const { OPENLATTICE_ID_FQN } = Constants;
 const { FullyQualifiedName } = Models;
@@ -79,9 +86,11 @@ function* filterPeopleIdsWithOpenPSAsWorker(action :SequenceAction) :Generator<*
 
     const app = yield select(getApp);
     const orgId = yield select(getOrgId);
+    const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
     const hearingsEntitySetId = getEntitySetId(app, hearingsFqn, orgId);
     const peopleEntitySetId = getEntitySetId(app, peopleFqn, orgId);
     const psaEntitySetId = getEntitySetId(app, psaScoresFqn, orgId);
+    const staffEntitySetId = getEntitySetId(app, staffFqn, orgId);
     if (personIds.size) {
       let peopleNeighborsById = yield call(SearchApi.searchEntityNeighborsWithFilter, peopleEntitySetId, {
         entityKeyIds: personIds.toJS(),
@@ -135,12 +144,43 @@ function* filterPeopleIdsWithOpenPSAsWorker(action :SequenceAction) :Generator<*
         }
       });
     }
+    let psaIdToMostRecentEditDate = Map();
+    let psaNeighborsById = yield call(SearchApi.searchEntityNeighborsWithFilter, psaEntitySetId, {
+      entityKeyIds: openPSAIds.toJS(),
+      sourceEntitySetIds: [peopleEntitySetId],
+      destinationEntitySetIds: [staffEntitySetId]
+    });
+    psaNeighborsById = fromJS(psaNeighborsById);
+    psaNeighborsById.entrySeq().forEach(([id, neighbors]) => {
+      let mostRecentEditDate;
+      let mostRecentNeighbor;
+      neighbors.forEach((neighbor) => {
+        const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id']);
+        const appTypeFqn = entitySetIdsToAppType.get(entitySetId, judgesFqn);
+        if (appTypeFqn === staffFqn) {
+          const neighborObj = neighbor.get(PSA_ASSOCIATION.DETAILS, Map());
+          const editDate = neighborObj.getIn(
+            [PROPERTY_TYPES.COMPLETED_DATE_TIME, 0],
+            neighborObj.getIn([PROPERTY_TYPES.DATE_TIME], '')
+          );
+          const isMostRecent = mostRecentEditDate
+            ? moment(mostRecentEditDate).isBefore(editDate)
+            : true;
+          if (isMostRecent) {
+            mostRecentEditDate = editDate;
+            mostRecentNeighbor = neighbor;
+          }
+        }
+      });
+      psaIdToMostRecentEditDate = psaIdToMostRecentEditDate.set(id, mostRecentNeighbor);
+    });
     yield put(filterPeopleIdsWithOpenPSAs.success(action.id, {
       filteredPersonIds,
       scoresAsMap,
       personIdsToOpenPSAIds,
       openPSAIds,
-      hearingNeighborsById
+      hearingNeighborsById,
+      psaIdToMostRecentEditDate
     }));
   }
   catch (error) {
