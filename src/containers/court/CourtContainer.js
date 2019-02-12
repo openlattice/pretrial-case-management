@@ -146,7 +146,6 @@ const ToggleWrapper = styled.div`
 `;
 
 type Props = {
-  openPSAIds :List<*>,
   hearingsByTime :Map<*, *>,
   hearingNeighborsById :Map<*, *>,
   isLoadingPSAs :boolean,
@@ -160,6 +159,7 @@ type Props = {
   loadingPSAData :boolean,
   submitting :boolean,
   selectedOrganizationId :string,
+  psaEditDatesById :Map<*, *>,
   psaIdsRefreshing :boolean,
   actions :{
     bulkDownloadPSAReviewPDF :({ peopleEntityKeyIds :string[] }) => void,
@@ -270,8 +270,8 @@ class CourtContainer extends React.Component<Props, State> {
     const hasOpenPSA = peopleWithOpenPsas.has(personOlId);
     const scores = scoresAsMap.get(openPSAId, Map());
     const lastEditDate = moment(psaEditDatesById.getIn(
-      [openPSAId, PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.COMPLETED_DATE_TIME],
-      psaEditDatesById.getIn([openPSAId, PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.DATE_TIME], '')
+      [openPSAId, PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.COMPLETED_DATE_TIME, 0],
+      psaEditDatesById.getIn([openPSAId, PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.DATE_TIME, 0], '')
     )).format('MM/DD/YYYY');
     const personObj = formatPeopleInfo(person);
     return (
