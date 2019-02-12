@@ -163,7 +163,7 @@ export const getHearingFields = (hearing) => {
   const hearingTime = moment(hearing.getIn([PROPERTY_TYPES.DATE_TIME, 0])).format('HH:mm');
   const courtroom = hearing.getIn([PROPERTY_TYPES.COURTROOM, 0]);
   const hearingType = hearing.getIn([PROPERTY_TYPES.HEARING_TYPE, 0]);
-  const hearingCourtString = `${hearingDate}-${courtroom}-${hearingType}`;
+  const hearingCourtString = `${hearingDate}-${hearingTime}-${courtroom}-${hearingType}`;
   return {
     hearingDate,
     hearingTime,
