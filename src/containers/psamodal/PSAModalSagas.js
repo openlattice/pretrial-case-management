@@ -145,7 +145,7 @@ function* loadPSAModalWorker(action :SequenceAction) :Generator<*, *, *> {
 
     let personNeighbors = yield call(SearchApi.searchEntityNeighborsWithFilter, peopleEntitySetId, {
       entityKeyIds: [personId],
-      sourceEntitySetIds: [peopleEntitySetId],
+      sourceEntitySetIds: [contactInformationEntitySetId],
       // destinationEntitySetIds: [subscriptionEntitySetId, contactInformationEntitySetId]
     });
 

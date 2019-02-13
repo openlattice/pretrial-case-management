@@ -193,11 +193,12 @@ function* getCasesAndCharges(neighbors) {
         allFTAs = allFTAs.push(Immutable.fromJS(neighborDetails));
       }
       else if (appTypeFqn === hearingsFqn) {
+        const hearingIsInactive = neighborDetails.getIn([PROPERTY_TYPES.HEARING_INACTIVE, 0], false);
         const hearingHasBeenCancelled = neighborDetails.getIn([PROPERTY_TYPES.UPDATE_TYPE, 0], '')
           .toLowerCase().trim() === 'cancelled';
         const hearingIsGeneric = neighborDetails.getIn([PROPERTY_TYPES.HEARING_TYPE, 0], '')
           .toLowerCase().trim() === 'all other hearings';
-        if (!hearingHasBeenCancelled && !hearingIsGeneric) {
+        if (!hearingHasBeenCancelled && !hearingIsGeneric && !hearingIsInactive) {
           allHearings = allHearings.push(Immutable.fromJS(neighborDetails));
         }
       }

@@ -36,7 +36,7 @@ const DOWNLOAD :string = '/download';
 export const DOWNLOAD_FORMS = DASHBOARD + DOWNLOAD;
 
 /* Visualize Stats */
-const VISUALIZE :string = '/visualize';
+export const VISUALIZE :string = '/visualize';
 export const VISUALIZE_DASHBOARD = DASHBOARD + VISUALIZE;
 
 /* Enroll voice profile */

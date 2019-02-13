@@ -172,11 +172,12 @@ function* getPersonNeighborsWorker(action) :Generator<*, *, *> {
         const hearingId = hearingDetails.getIn([OPENLATTICE_ID_FQN, 0]);
         const hearingDateTime = hearingDetails.getIn([PROPERTY_TYPES.DATE_TIME, 0]);
         const hearingExists = !!hearingDateTime && !!hearingId;
+        const hearingIsInactive = hearingDetails.getIn([PROPERTY_TYPES.HEARING_INACTIVE, 0], false);
         const hearingHasBeenCancelled = hearingDetails.getIn([PROPERTY_TYPES.UPDATE_TYPE, 0], '')
           .toLowerCase().trim() === 'cancelled';
         const hearingIsGeneric = hearingDetails.getIn([PROPERTY_TYPES.HEARING_TYPE, 0], '')
           .toLowerCase().trim() === 'all other hearings';
-        if (hearingExists && !hearingHasBeenCancelled && !hearingIsGeneric) {
+        if (hearingExists && !hearingHasBeenCancelled && !hearingIsGeneric && !hearingIsInactive) {
           neighborsByEntitySet = neighborsByEntitySet.set(
             appTypeFqn,
             neighborsByEntitySet.get(appTypeFqn, List()).push(hearingDetails)
@@ -380,7 +381,7 @@ function* updateContactInfoWorker(action :SequenceAction) :Generator<*, *, *> {
     /* get updated contact info for person */
     const filteredNeighbors = yield call(SearchApi.searchEntityNeighborsWithFilter, peopleEntitySetId, {
       entityKeyIds: [personEntityKeyId],
-      sourceEntitySetIds: [],
+      sourceEntitySetIds: [contactInformationEntitySetId],
       // destinationEntitySetIds: [contactInformationEntitySetId]
     });
 

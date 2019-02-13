@@ -6,7 +6,6 @@ import React from 'react';
 import styled from 'styled-components';
 import { Col } from 'react-bootstrap';
 
-// import StyledDatePicker from '../controls/StyledDatePicker';
 import DatePicker from '../datetime/DatePicker';
 import StyledInput from '../controls/StyledInput';
 import InfoButton from '../buttons/InfoButton';

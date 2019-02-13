@@ -10,16 +10,25 @@ import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 
 import DatePicker from '../../components/datetime/DatePicker';
-import RemindersTable from '../../components/reminders/RemindersTable'
+import RemindersTable from '../../components/reminders/RemindersTable';
+import SearchAllBar from '../../components/SearchAllBar';
 import LoadingSpinner from '../../components/LoadingSpinner';
+import PersonSubscriptionList from '../../components/subscription/PersonSubscriptionList';
 import DashboardMainSection from '../../components/dashboard/DashboardMainSection';
 import Pagination from '../../components/Pagination';
-import { APP, REMINDERS, STATE } from '../../utils/consts/FrontEndStateConsts';
-import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { Count } from '../../utils/Layout';
 import { OL } from '../../utils/consts/Colors';
+import {
+  APP,
+  REMINDERS,
+  SEARCH,
+  STATE
+} from '../../utils/consts/FrontEndStateConsts';
 
 import * as AppActionFactory from '../app/AppActionFactory';
 import * as RemindersActionFactory from './RemindersActionFactory';
+import * as SubscriptionsActionFactory from '../subscription/SubscriptionsActionFactory';
+import * as PersonActionFactory from '../person/PersonActionFactory';
 
 
 const ToolbarWrapper = styled.div`
@@ -27,11 +36,23 @@ const ToolbarWrapper = styled.div`
   flex-direction: row;
   justify-content: space-between;
   align-items: baseline;
-  margin-bottom: 15px;
+  margin: 15px 0;
+  background: white;
+  border: 1px solid ${OL.GREY11};
+  border-radius: 5px;
+  padding: 15px 30px;
+  width: 100%;
 `;
 
-const SubToolbarWrapper = styled(ToolbarWrapper)`
-  margin-right: -30px;
+const SubToolbarWrapper = styled.div`
+  flex-wrap: nowrap;
+  width: max-content;
+  display: flex;
+  flex-direction: row;
+  align-items: baseline;
+  span {
+    width: 100%;
+  }
 `;
 
 const ResultsWrapper = styled.div`
@@ -40,46 +61,70 @@ const ResultsWrapper = styled.div`
 
 const TableWrapper = styled.div`
   width: 100%;
+  max-height: 100%;
   display: flex;
   flex-direction: column;
   padding: 30px;
-  margin-bottom: 30px;
+  margin-bottom: 15px;
   background: white;
   border: 1px solid ${OL.GREY11};
   border-radius: 5px;
+  overflow: hidden;
 `;
 
 const TableTitle = styled.div`
   font-size: 16px;
   font-weight: 400;
   color: ${OL.GREY01};
-  margin-bottom: 15px;
+  padding-bottom: 20px;
+  min-height: 56px;
+`;
+
+const TitleText = styled.span`
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  font-size: 16px;
+  font-weight: 400;
+  color: ${OL.GREY01};
+`;
+
+const ListContainer = styled.div`
+  width: 100%;
+  height: 400px;
+  display: grid;
+  grid-template-columns: 48% 48%;
+  column-gap: 4%;
 `;
 
 type Props = {
   futureRemidners :Map<*, *>,
-  pastReminders :Map<*, *>,
-  successfulReminderIds :Set<*, *>,
   failedReminderIds :Set<*, *>,
+  isLoadingPeople :boolean,
+  loadingPeopleWithNoContacts :boolean,
   loadingReminders :boolean,
   loadingReminderNeighbors :boolean,
+  pastReminders :Map<*, *>,
+  peopleWithHearingsButNoContacts :Map<*, *>,
   reminderNeighborsById :Map<*, *>,
-  remindersWithOpenPSA :Set<*, *>,
+  remindersWithOpenPSA :Set<*>,
   reminderIds :Set<*, *>,
+  searchResults :Set<*>,
+  searchHasRun :boolean,
   selectedOrganizationId :boolean,
   actions :{
+    loadPeopleWithHearingsButNoContacts :RequestSequence,
     loadRemindersforDate :RequestSequence,
     loadReminderNeighborsById :RequestSequence,
+    searchPeopleByPhoneNumber :RequestSequence,
   };
 };
-
-const MAX_RESULTS = 20;
 
 class RemindersContainer extends React.Component<Props, State> {
   constructor(props :Props) {
     super(props);
     this.state = {
-      selectedDate: moment(),
+      selectedDate: moment()
     };
   }
   componentDidMount() {
@@ -89,8 +134,9 @@ class RemindersContainer extends React.Component<Props, State> {
       reminderIds,
       selectedOrganizationId
     } = this.props;
-    const { loadRemindersforDate } = actions;
+    const { loadPeopleWithHearingsButNoContacts, loadRemindersforDate } = actions;
     if (selectedOrganizationId) {
+      loadPeopleWithHearingsButNoContacts();
       if (!reminderIds.size) {
         loadRemindersforDate({ date });
       }
@@ -104,12 +150,18 @@ class RemindersContainer extends React.Component<Props, State> {
       reminderIds,
       selectedOrganizationId
     } = this.props;
-    const { loadRemindersforDate } = actions;
+    const { loadPeopleWithHearingsButNoContacts, loadRemindersforDate } = actions;
     if (selectedOrganizationId !== nextProps.selectedOrganizationId) {
+      loadPeopleWithHearingsButNoContacts();
       if (!reminderIds.size) {
         loadRemindersforDate({ date });
       }
     }
+  }
+
+  componentWillUnmount() {
+    const { actions } = this.props;
+    actions.clearSearchResults();
   }
 
   onDateChange = (dateStr) => {
@@ -126,6 +178,7 @@ class RemindersContainer extends React.Component<Props, State> {
 
     return (
       <DatePicker
+          subtle
           value={selectedDate.format('YYYY-MM-DD')}
           onChange={date => this.onDateChange(date)} />
     );
@@ -134,17 +187,27 @@ class RemindersContainer extends React.Component<Props, State> {
   renderToolbar = () => (
     <ToolbarWrapper>
       <SubToolbarWrapper>
-        Date:
+        <span>Reminder Date:</span>
         {this.renderDatePicker()}
       </SubToolbarWrapper>
     </ToolbarWrapper>
   )
 
+  renderSearchToolbar = () => {
+    const { actions } = this.props;
+    return <SearchAllBar handleSubmit={actions.searchPeopleByPhoneNumber} />;
+  }
+
   renderTable = (title, reminders, neighbors) => {
     const { remindersWithOpenPSA } = this.props;
     return (
       <TableWrapper>
-        <TableTitle>{ title }</TableTitle>
+        <TableTitle>
+          <TitleText>
+            <span>{ title }</span>
+            <Count>{ reminders.size }</Count>
+          </TitleText>
+        </TableTitle>
         <RemindersTable
             reminders={reminders}
             neighbors={neighbors}
@@ -153,6 +216,59 @@ class RemindersContainer extends React.Component<Props, State> {
       </TableWrapper>
     );
   }
+
+  renderNoContactPersonList = (people) => {
+    const { loadingPeopleWithNoContacts } = this.props;
+    return (
+      <TableWrapper>
+        <TableTitle>
+          <TitleText>
+            People not recieveing reminders
+            <Count>{ people.size }</Count>
+          </TitleText>
+        </TableTitle>
+        <PersonSubscriptionList
+            noResultsText="No Results"
+            loading={loadingPeopleWithNoContacts}
+            people={people}
+            noResults={!people.size} />
+      </TableWrapper>
+    );
+  }
+
+  renderSearchByContactList = (people) => {
+    const { isLoadingPeople, searchHasRun } = this.props;
+    const noResultsText = (searchHasRun && !people.size)
+      ? 'No Results'
+      : 'Search for People By Name or Phone Number';
+    return (
+      <TableWrapper>
+        <TableTitle>
+          <TitleText>
+            {this.renderSearchToolbar()}
+          </TitleText>
+        </TableTitle>
+        <PersonSubscriptionList
+            includeContact
+            noResultsText={noResultsText}
+            loading={isLoadingPeople}
+            people={people}
+            noResults={!people.size} />
+      </TableWrapper>
+    );
+  }
+
+  renderLists = () => {
+    const { peopleWithHearingsButNoContacts, searchResults } = this.props;
+    return (
+      <ListContainer>
+        {this.renderSearchByContactList(searchResults)}
+        {this.renderNoContactPersonList(peopleWithHearingsButNoContacts)}
+      </ListContainer>
+    );
+  }
+
+  renderSearch
 
   renderResults = () => {
     const {
@@ -198,6 +314,7 @@ class RemindersContainer extends React.Component<Props, State> {
   render() {
     return (
       <DashboardMainSection>
+        {this.renderLists()}
         {this.renderToolbar()}
         {this.renderResults()}
       </DashboardMainSection>
@@ -208,6 +325,7 @@ class RemindersContainer extends React.Component<Props, State> {
 function mapStateToProps(state) {
   const app = state.get(STATE.APP);
   const reminders = state.get(STATE.REMINDERS);
+  const search = state.get(STATE.SEARCH);
 
   return {
     // App
@@ -224,7 +342,14 @@ function mapStateToProps(state) {
     [REMINDERS.LOADING_REMINDERS]: reminders.get(REMINDERS.LOADING_REMINDERS),
     [REMINDERS.REMINDER_NEIGHBORS]: reminders.get(REMINDERS.REMINDER_NEIGHBORS),
     [REMINDERS.REMINDERS_WITH_OPEN_PSA_IDS]: reminders.get(REMINDERS.REMINDERS_WITH_OPEN_PSA_IDS),
-    [REMINDERS.LOADING_REMINDER_NEIGHBORS]: reminders.get(REMINDERS.LOADING_REMINDER_NEIGHBORS)
+    [REMINDERS.LOADING_REMINDER_NEIGHBORS]: reminders.get(REMINDERS.LOADING_REMINDER_NEIGHBORS),
+    [REMINDERS.PEOPLE_WITH_HEARINGS_BUT_NO_CONTACT]: reminders.get(REMINDERS.PEOPLE_WITH_HEARINGS_BUT_NO_CONTACT),
+    [REMINDERS.LOADING_PEOPLE_NO_CONTACTS]: reminders.get(REMINDERS.LOADING_PEOPLE_NO_CONTACTS),
+
+    [SEARCH.LOADING]: search.get(SEARCH.LOADING),
+    [SEARCH.SEARCH_RESULTS]: search.get(SEARCH.SEARCH_RESULTS),
+    [SEARCH.SEARCH_ERROR]: search.get(SEARCH.SEARCH_ERROR),
+    [SEARCH.SEARCH_HAS_RUN]: search.get(SEARCH.SEARCH_HAS_RUN)
   };
 }
 
@@ -237,6 +362,14 @@ function mapDispatchToProps(dispatch :Function) :Object {
 
   Object.keys(RemindersActionFactory).forEach((action :string) => {
     actions[action] = RemindersActionFactory[action];
+  });
+
+  Object.keys(PersonActionFactory).forEach((action :string) => {
+    actions[action] = PersonActionFactory[action];
+  });
+
+  Object.keys(SubscriptionsActionFactory).forEach((action :string) => {
+    actions[action] = SubscriptionsActionFactory[action];
   });
 
   return {

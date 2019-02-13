@@ -44,6 +44,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   // Open PSAs + Neighbors
   [COURT.LOADING_PSAS]: false,
   [COURT.OPEN_PSAS]: Map(),
+  [COURT.PSA_EDIT_DATES]: Map(),
   [COURT.OPEN_PSA_IDS]: Set(),
   [COURT.SCORES_AS_MAP]: Map(),
 
@@ -87,13 +88,15 @@ export default function courtReducer(state :Map<*, *> = INITIAL_STATE, action :S
             scoresAsMap,
             personIdsToOpenPSAIds,
             openPSAIds,
-            hearingNeighborsById
+            hearingNeighborsById,
+            psaIdToMostRecentEditDate
           } = action.value;
           const currentHearingNeighborsState = state.get(COURT.HEARINGS_NEIGHBORS_BY_ID);
           const newHearingNeighborsState = currentHearingNeighborsState.merge(hearingNeighborsById);
           return state
             .set(COURT.HEARINGS_NEIGHBORS_BY_ID, newHearingNeighborsState)
             .set(COURT.PEOPLE_WITH_OPEN_PSAS, fromJS(filteredPersonIds))
+            .set(COURT.PSA_EDIT_DATES, fromJS(psaIdToMostRecentEditDate))
             .set(COURT.SCORES_AS_MAP, scoresAsMap)
             .set(COURT.OPEN_PSA_IDS, openPSAIds)
             .set(COURT.PEOPLE_IDS_TO_OPEN_PSA_IDS, personIdsToOpenPSAIds);
