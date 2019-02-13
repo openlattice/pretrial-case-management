@@ -571,6 +571,7 @@ export const StyledColumnRow = styled.div`
   display: flex;
   flex-wrap: wrap;
   width: 100%;
+  padding: ${props => (props.withPadding ? '0 30px' : 0)};
   border-radius: 5px;
   background-color: ${OL.WHITE};
   border: solid 1px ${OL.GREY11};
@@ -598,7 +599,7 @@ export const PaddedStyledColumnRow = styled(StyledColumnRow)`
 `;
 
 export const TitleWrapper = styled.div`
-  padding: 0 15px;
+  padding: ${props => (props.noPadding ? 0 : '0 15px')};
   width: 100%;
   display: flex;
   flex-direction: row;

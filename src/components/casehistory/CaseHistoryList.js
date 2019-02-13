@@ -8,16 +8,25 @@ import moment from 'moment';
 
 import ChargeList from '../charges/ChargeList';
 import LoadingSpinner from '../LoadingSpinner';
+import StyledButton from '../buttons/StyledButton';
 import { OL } from '../../utils/consts/Colors';
-import { NoResults, Title, Count } from '../../utils/Layout';
 import { formatDateList } from '../../utils/FormattingUtils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { ID_FIELD_NAMES } from '../../utils/consts/Consts';
+import {
+  NoResults,
+  Title,
+  Count,
+  PendingChargeStatus
+} from '../../utils/Layout';
 
 const InfoRow = styled.div`
   background-color: ${OL.GREY09};
   display: flex;
   flex-direction: row;
-  padding: 15px 0;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 30px 15px 0;
   margin: ${props => (props.modal ? '0 -30px' : 0)};
 `;
 
@@ -33,6 +42,8 @@ const TitleWrapper = styled.div`
 `;
 
 const InfoItem = styled.div`
+  display: flex;
+  align-items: center;
   margin: ${props => (props.modal ? '0 30px' : 0)};
   padding: ${props => (props.modal ? 0 : '0 30px')};
   color: ${OL.GREY01};
@@ -52,22 +63,55 @@ const StyledSpinner = styled(LoadingSpinner)`
   width: 100%;
 `;
 
+const InfoRowContainer = styled.div`
+  display: flex;
+  flex-direction: row;
+`;
+
 type Props = {
+  addCaseToPSA :() => void,
+  removeCaseFromPSA :() => void,
   caseHistory :Immutable.List<*>,
   chargeHistory :Immutable.Map<*, *>,
+  caseNumbersToAssociationId? :Immutable.Map<*, *>,
   loading :boolean,
   modal :boolean,
+  pendingCases :boolean,
+  psaPermissions :boolean,
   title :string,
 };
 
 const CaseHistoryList = ({
+  addCaseToPSA,
+  removeCaseFromPSA,
+  caseNumbersToAssociationId,
   title,
   caseHistory,
   chargeHistory,
   loading,
+  pendingCases,
+  psaPermissions,
   modal
 } :Props) => {
+  const addCaseToPSAButton = (caseNum) => {
+    const associationEntityKeyId = caseNumbersToAssociationId.get(caseNum);
+    let onClick = () => addCaseToPSA({ [ID_FIELD_NAMES.CASE_ID]: caseNum });
+    let buttonText = 'Add to PSA';
+    if (associationEntityKeyId) {
+      onClick = () => removeCaseFromPSA(associationEntityKeyId);
+      buttonText = 'Remove From PSA';
+    }
+    return (psaPermissions && caseNum && pendingCases)
+      ? (
+        <StyledButton
+            onClick={onClick}>
+          {buttonText}
+        </StyledButton>
+      ) : null;
+  };
+
   const caseCount = caseHistory.size;
+  const oneWeekAgo = moment().subtract(1, 'week');
   const cases = caseHistory
     .sort((c1, c2) => {
       const date1 = moment(c1.getIn([PROPERTY_TYPES.FILE_DATE, 0], ''));
@@ -78,20 +122,39 @@ const CaseHistoryList = ({
     .map((caseObj) => {
       const caseNum = caseObj.getIn([PROPERTY_TYPES.CASE_ID, 0], '');
       const charges = chargeHistory.get(caseNum);
-      const fileDate = formatDateList(caseObj.get(PROPERTY_TYPES.FILE_DATE, Immutable.List()));
+      const dateList = caseObj.get(PROPERTY_TYPES.FILE_DATE, Immutable.List());
+      const hasBeenUpdated = dateList.some(date => oneWeekAgo.isBefore(date));
+      const fileDate = formatDateList(dateList);
       return (
         <div key={caseNum}>
           <InfoRow modal={modal}>
-            <InfoItem modal={modal}>{`Case Number: ${caseNum}`}</InfoItem>
-            <InfoItem modal={modal}>{`File Date: ${fileDate}`}</InfoItem>
+            <InfoRowContainer>
+              <InfoItem modal={modal}>{`Case Number: ${caseNum}`}</InfoItem>
+              <InfoItem modal={modal}>{`File Date: ${fileDate}`}</InfoItem>
+              <InfoItem modal={modal}>
+                { (psaPermissions && hasBeenUpdated)
+                  ? <PendingChargeStatus pendingCharges>Updated</PendingChargeStatus>
+                  : null
+                }
+              </InfoItem>
+            </InfoRowContainer>
+            { caseNumbersToAssociationId ? addCaseToPSAButton(caseNum) : null }
           </InfoRow>
           <ChargeList modal={modal} pretrialCaseDetails={caseObj} charges={charges} detailed historical />
         </div>
       );
     });
-  const casesDisplay = cases.size
-    ? cases
-    : <NoResults>No Cases Found</NoResults>;
+
+  const instructionsText = cases.size
+    ? 'Navigate to Case History tab to add more court cases to this PSA.'
+    : 'Navigate to Case History tab to add court cases to this PSA.';
+  const noResultsText = psaPermissions ? instructionsText : 'No Cases Found';
+  const casesDisplay = (
+    <>
+      {cases}
+      { (cases.size) ? null : <NoResults>{noResultsText}</NoResults> }
+    </>
+  );
 
   return (
     <CaseHistoryContainer>

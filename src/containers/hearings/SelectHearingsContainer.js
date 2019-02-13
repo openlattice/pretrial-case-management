@@ -20,9 +20,10 @@ import NewHearingSection from '../../components/hearings/NewHearingSection';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import psaHearingConfig from '../../config/formconfig/PSAHearingConfig';
 import SelectReleaseConditions from '../../components/releaseconditions/SelectReleaseConditions';
+import SubscriptionInfo from '../../components/people/SubscriptionInfo';
 import { getEntitySetId } from '../../utils/AppUtils';
 import { OL } from '../../utils/consts/Colors';
-import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { APP_TYPES_FQNS, PROPERTY_TYPES, SETTINGS } from '../../utils/consts/DataModelConsts';
 import { Title } from '../../utils/Layout';
 import {
   formatJudgeName,
@@ -42,6 +43,7 @@ import {
   SUBMIT,
   REVIEW,
   COURT,
+  PEOPLE,
   PSA_NEIGHBOR,
   PSA_ASSOCIATION
 } from '../../utils/consts/FrontEndStateConsts';
@@ -54,20 +56,25 @@ import * as CourtActionFactory from '../court/CourtActionFactory';
 let {
   ASSESSED_BY,
   BONDS,
+  CONTACT_INFORMATION,
   DMF_RISK_FACTORS,
   HEARINGS,
   OUTCOMES,
   RELEASE_CONDITIONS,
-  JUDGES
+  JUDGES,
+  SUBSCRIPTION
 } = APP_TYPES_FQNS;
 
 ASSESSED_BY = ASSESSED_BY.toString();
 BONDS = BONDS.toString();
+CONTACT_INFORMATION = CONTACT_INFORMATION.toString();
 DMF_RISK_FACTORS = DMF_RISK_FACTORS.toString();
 HEARINGS = HEARINGS.toString();
 OUTCOMES = OUTCOMES.toString();
 RELEASE_CONDITIONS = RELEASE_CONDITIONS.toString();
 JUDGES = JUDGES.toString();
+SUBSCRIPTION = SUBSCRIPTION.toString();
+const PEOPLE_FQN = APP_TYPES_FQNS.PEOPLE.toString();
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
@@ -144,9 +151,11 @@ type Props = {
   submitting :boolean,
   context :string,
   refreshingNeighbors :boolean,
+  refreshingPersonNeighbors :boolean,
   readOnly :boolean,
   replacingAssociation :boolean,
   replacingEntity :boolean,
+  personNeighbors :Map<*, *>,
   selectedOrganizationId :string,
   actions :{
     deleteEntity :(values :{
@@ -430,6 +439,31 @@ class SelectHearingsContainer extends React.Component<Props, State> {
     );
   }
 
+  renderSubscriptionInfo = () => {
+    const {
+      refreshingPersonNeighbors,
+      readOnly,
+      personNeighbors,
+      psaNeighbors,
+      selectedOrganizationSettings,
+      updatingEntity,
+    } = this.props;
+    const subscription = personNeighbors.getIn([SUBSCRIPTION, PSA_NEIGHBOR.DETAILS], Map());
+    const contactInfo = personNeighbors.get(CONTACT_INFORMATION, List());
+    const person = psaNeighbors.getIn([PEOPLE_FQN, PSA_NEIGHBOR.DETAILS], Map());
+    const courtRemindersEnabled = selectedOrganizationSettings.get(SETTINGS.COURT_REMINDERS, false);
+    return courtRemindersEnabled
+      ? (
+        <SubscriptionInfo
+            refreshingPersonNeighbors={refreshingPersonNeighbors}
+            updatingEntity={updatingEntity}
+            readOnly={readOnly}
+            subscription={subscription}
+            contactInfo={contactInfo}
+            person={person} />
+      ) : null;
+  }
+
   render() {
     const { manuallyCreatingHearing, selectingReleaseConditions, selectedHearing } = this.state;
     const {
@@ -464,6 +498,7 @@ class SelectHearingsContainer extends React.Component<Props, State> {
 
     return (
       <Container>
+        {this.renderSubscriptionInfo()}
         <HearingCardsWithTitle
             title="Scheduled Hearings"
             hearings={scheduledHearings}
@@ -495,6 +530,7 @@ function mapStateToProps(state) {
   return {
     app,
     [APP.SELECTED_ORG_ID]: orgId,
+    [APP.SELECTED_ORG_SETTINGS]: app.get(APP.SELECTED_ORG_SETTINGS, Map()),
     [APP.ENTITY_SETS_BY_ORG]: app.get(APP.ENTITY_SETS_BY_ORG, Map()),
 
     [COURT.LOADING_HEARING_NEIGHBORS]: court.get(COURT.LOADING_HEARING_NEIGHBORS),
@@ -508,9 +544,12 @@ function mapStateToProps(state) {
     [REVIEW.ERROR]: review.get(REVIEW.ERROR),
     [REVIEW.PSA_IDS_REFRESHING]: review.get(REVIEW.PSA_IDS_REFRESHING),
 
+    [PEOPLE.REFRESH_PERSON_NEIGHBORS]: review.get(PEOPLE.REFRESH_PERSON_NEIGHBORS),
+
     [SUBMIT.REPLACING_ENTITY]: submit.get(SUBMIT.REPLACING_ENTITY),
     [SUBMIT.REPLACING_ASSOCIATION]: submit.get(SUBMIT.REPLACING_ASSOCIATION),
-    [SUBMIT.SUBMITTING]: submit.get(SUBMIT.SUBMITTING)
+    [SUBMIT.SUBMITTING]: submit.get(SUBMIT.SUBMITTING),
+    [SUBMIT.UPDATING_ENTITY]: submit.get(SUBMIT.UPDATING_ENTITY)
   };
 }
 

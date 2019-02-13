@@ -15,6 +15,7 @@ import * as DashboardSagas from '../../containers/dashboard/DashboardSagas';
 import * as DataSagas from '../../utils/data/DataSagas';
 import * as PSAModalSagas from '../../containers/psamodal/PSAModalSagas';
 import * as PsaSagas from '../../containers/psa/FormSagas';
+import * as RemindersReducerSagas from '../../containers/reminders/RemindersSagas';
 import * as ReviewSagas from '../../containers/review/ReviewSagas';
 import * as DownloadSagas from '../../containers/download/DownloadSagas';
 import * as EnrollSagas from '../../containers/enroll/EnrollSagas';
@@ -55,6 +56,7 @@ export default function* sagas() :Generator<*, *, *> {
     // DataSagas
     fork(DataSagas.deleteEntityWatcher),
     fork(DataSagas.replaceEntityWatcher),
+    fork(DataSagas.updateEntityWatcher),
 
     // DownloadSagas
     fork(DownloadSagas.downloadPSAsWatcher),
@@ -86,6 +88,7 @@ export default function* sagas() :Generator<*, *, *> {
     fork(PeopleSagas.getPersonDataWatcher),
     fork(PeopleSagas.getPersonNeighborsWatcher),
     fork(PeopleSagas.refreshPersonNeighborsWatcher),
+    fork(PeopleSagas.updateContactInfoWatcher),
 
     // PSA Sagas
     fork(PSAModalSagas.loadPSAModalWatcher),
@@ -94,6 +97,10 @@ export default function* sagas() :Generator<*, *, *> {
     fork(PsaSagas.hardRestartWatcher),
     fork(PsaSagas.loadDataModelWatcher),
     fork(PsaSagas.loadNeighborsWatcher),
+
+    // Reminder Sagas
+    fork(RemindersReducerSagas.loadRemindersforDateWatcher),
+    fork(RemindersReducerSagas.loadReminderNeighborsByIdWatcher),
 
     // Review Sagas
     fork(ReviewSagas.bulkDownloadPSAReviewPDFWatcher),

@@ -78,16 +78,28 @@ const ToolbarWrapper = styled.div`
 `;
 
 type Props = {
+  entityKeyId :string,
+  hearingNeighborsById :Map<*, *>,
   hearings :List<*, *>,
-  selectedPersonData :Map<*, *>,
+  hearingIds :List<*, *>,
+  isLoadingHearingsNeighbors :boolean,
+  isLoadingJudges :boolean,
   isFetchingPersonData :boolean,
   loadingPSAData :boolean,
   loadingPSAResults :boolean,
   mostRecentPSA :Map<*, *>,
   mostRecentPSAEntityKeyId :string,
+  mostRecentPSANeighbors :Map<*, *>,
   neighbors :Map<*, *>,
+  personHearings :List<*, *>,
   personId :string,
   psaNeighborsById :Map<*, *>,
+  readOnlyPermissions :boolean,
+  refreshingPersonNeighbors :boolean,
+  selectedOrganizationId :string,
+  selectedOrganizationSettings :Map<*, *>,
+  selectedPersonData :Map<*, *>,
+  updatingEntity :boolean,
   actions :{
     getPersonData :(personId :string) => void,
     getPersonNeighbors :(value :{
@@ -238,7 +250,7 @@ class PersonDetailsContainer extends React.Component<Props, State> {
     const { updateContactModalOpen } = this.state;
     const { neighbors, selectedPersonData } = this.props;
     const personId = selectedPersonData.getIn([PROPERTY_TYPES.PERSON_ID, 0], '');
-    const contactInfo = neighbors.get(CONTACT_INFORMATION, Map());
+    const contactInfo = neighbors.get(CONTACT_INFORMATION, List());
     const email = getIdOrValue(neighbors, CONTACT_INFORMATION, PROPERTY_TYPES.EMAIL);
     const phone = getIdOrValue(neighbors, CONTACT_INFORMATION, PROPERTY_TYPES.PHONE);
     const isMobile = getIdOrValue(neighbors, CONTACT_INFORMATION, PROPERTY_TYPES.IS_MOBILE);
@@ -403,16 +415,19 @@ class PersonDetailsContainer extends React.Component<Props, State> {
       neighbors,
       personId,
       psaNeighborsById,
+      refreshingPersonNeighbors,
       selectedPersonData,
+      readOnlyPermissions,
       selectedOrganizationId,
-      selectedOrganizationSettings
+      selectedOrganizationSettings,
+      updatingEntity
     } = this.props;
     const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], '');
+    const courtRemindersEnabled = selectedOrganizationSettings.get(SETTINGS.COURT_REMINDERS, false);
     const { downloadPSAReviewPDF } = actions;
-    const contactInfo = neighbors.get(CONTACT_INFORMATION, Map());
+    const contactInfo = neighbors.get(CONTACT_INFORMATION, List());
     const mostRecentPSAEntityKeyId = getEntityKeyId(mostRecentPSA.get(PSA_NEIGHBOR.DETAILS, Map()));
-    const neighborsForMostRecentPSA = psaNeighborsById.get(mostRecentPSAEntityKeyId, Map());
-    const scheduledHearings = getScheduledHearings(neighborsForMostRecentPSA);
+    const allScheduledHearings = getScheduledHearings(neighbors);
     const isLoading = (
       isLoadingJudges
       || loadingPSAData
@@ -423,6 +438,9 @@ class PersonDetailsContainer extends React.Component<Props, State> {
     );
     return (
       <PersonOverview
+          courtRemindersEnabled={courtRemindersEnabled}
+          refreshingPersonNeighbors={refreshingPersonNeighbors}
+          updatingEntity={updatingEntity}
           includesPretrialModule={includesPretrialModule}
           contactInfo={contactInfo}
           downloadPSAReviewPDF={downloadPSAReviewPDF}
@@ -433,7 +451,8 @@ class PersonDetailsContainer extends React.Component<Props, State> {
           neighbors={neighbors}
           personId={personId}
           psaNeighborsById={psaNeighborsById}
-          scheduledHearings={scheduledHearings}
+          readOnlyPermissions={readOnlyPermissions}
+          allScheduledHearings={allScheduledHearings}
           selectedPersonData={selectedPersonData}
           openDetailsModal={this.openDetailsModal}
           openUpdateContactModal={this.openUpdateContactModal} />
@@ -538,6 +557,7 @@ function mapStateToProps(state, ownProps) {
     [PEOPLE.NEIGHBORS]: people.getIn([PEOPLE.NEIGHBORS, personId], Map()),
     [PEOPLE.MOST_RECENT_PSA]: people.get(PEOPLE.MOST_RECENT_PSA),
     [PEOPLE.MOST_RECENT_PSA_NEIGHBORS]: people.get(PEOPLE.MOST_RECENT_PSA_NEIGHBORS),
+    [PEOPLE.REFRESHING_PERSON_NEIGHBORS]: people.get(PEOPLE.REFRESHING_PERSON_NEIGHBORS),
     personHearings: people.getIn([PEOPLE.NEIGHBORS, personId, HEARINGS], Map()),
 
     [PSA_MODAL.HEARING_IDS]: psaModal.get(PSA_MODAL.HEARING_IDS),
@@ -548,7 +568,8 @@ function mapStateToProps(state, ownProps) {
     [COURT.ALL_JUDGES]: court.get(COURT.ALL_JUDGES),
     [COURT.LOADING_JUDGES]: court.get(COURT.LOADING_JUDGES),
 
-    [SUBMIT.SUBMITTING]: submit.get(SUBMIT.SUBMITTING, false)
+    [SUBMIT.SUBMITTING]: submit.get(SUBMIT.SUBMITTING, false),
+    [SUBMIT.UPDATING_ENTITY]: submit.get(SUBMIT.UPDATING_ENTITY, false)
   };
 }
 

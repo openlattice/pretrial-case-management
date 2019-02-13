@@ -3,7 +3,7 @@
  */
 
 import moment from 'moment';
-import Immutable, { Map, fromJS } from 'immutable';
+import Immutable, { Map, List, fromJS } from 'immutable';
 import { AuthorizationApi, Constants, SearchApi } from 'lattice';
 import {
   call,
@@ -26,19 +26,25 @@ import {
 import { LOAD_PSA_MODAL, loadPSAModal } from './PSAModalActionFactory';
 
 const {
+  CONTACT_INFORMATION,
   HEARINGS,
   PEOPLE,
+  PRETRIAL_CASES,
   PSA_SCORES,
   RELEASE_CONDITIONS,
-  STAFF
+  STAFF,
+  SUBSCRIPTION
 } = APP_TYPES_FQNS;
 
 
+const contactInformationFqn :string = CONTACT_INFORMATION.toString();
 const hearingsFqn :string = HEARINGS.toString();
 const peopleFqn :string = PEOPLE.toString();
+const pretrialCasesFqn :string = PRETRIAL_CASES.toString();
 const psaScoresFqn :string = PSA_SCORES.toString();
 const releaseConditionsFqn :string = RELEASE_CONDITIONS.toString();
 const staffFqn :string = STAFF.toString();
+const subscriptionFqn :string = SUBSCRIPTION.toString();
 
 /*
  * Selectors
@@ -48,7 +54,7 @@ const getOrgId = state => state.getIn([STATE.APP, APP.SELECTED_ORG_ID], '');
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
-const LIST_ENTITY_SETS = Immutable.List.of(staffFqn, releaseConditionsFqn, hearingsFqn);
+const LIST_ENTITY_SETS = Immutable.List.of(staffFqn, releaseConditionsFqn, hearingsFqn, pretrialCasesFqn);
 
 function* loadPSAModalWorker(action :SequenceAction) :Generator<*, *, *> {
   const { psaId, callback } = action.value; // Deconstruct action argument
@@ -64,6 +70,9 @@ function* loadPSAModalWorker(action :SequenceAction) :Generator<*, *, *> {
     const orgId = yield select(getOrgId);
     const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
     const psaScoresEntitySetId = getEntitySetId(app, psaScoresFqn, orgId);
+    const peopleEntitySetId = getEntitySetId(app, peopleFqn, orgId);
+    const subscriptionEntitySetId = getEntitySetId(app, subscriptionFqn, orgId);
+    const contactInformationEntitySetId = getEntitySetId(app, contactInformationFqn, orgId);
 
     /*
      * Get Neighbors
@@ -134,12 +143,38 @@ function* loadPSAModalWorker(action :SequenceAction) :Generator<*, *, *> {
 
     const personId = getEntityKeyId(neighborsByAppTypeFqn, peopleFqn);
 
+    let personNeighbors = yield call(SearchApi.searchEntityNeighborsWithFilter, peopleEntitySetId, {
+      entityKeyIds: [personId],
+      sourceEntitySetIds: [peopleEntitySetId],
+      // destinationEntitySetIds: [subscriptionEntitySetId, contactInformationEntitySetId]
+    });
+
+    personNeighbors = fromJS(Object.values(personNeighbors)[0]);
+    let personNeighborsByFqn = Map();
+    personNeighbors.forEach((neighbor) => {
+      const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
+      const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
+      if (appTypeFqn === contactInformationFqn) {
+        personNeighborsByFqn = personNeighborsByFqn.set(
+          appTypeFqn,
+          personNeighborsByFqn.get(appTypeFqn, List()).push(neighbor)
+        );
+      }
+      else if (appTypeFqn === subscriptionFqn) {
+        personNeighborsByFqn = personNeighborsByFqn.set(
+          appTypeFqn,
+          neighbor
+        );
+      }
+    });
+
     if (callback) callback(personId, neighborsByAppTypeFqn);
 
     yield put(loadPSAModal.success(action.id, {
       psaId,
       neighborsByAppTypeFqn,
       psaPermissions,
+      personNeighborsByFqn,
       hearingIds,
       allFilers
     }));

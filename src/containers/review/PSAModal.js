@@ -14,6 +14,7 @@ import { AuthUtils } from 'lattice-auth';
 import { Link } from 'react-router-dom';
 
 import CustomTabs from '../../components/tabs/Tabs';
+import CourtCaseForPSAConfig from '../../config/formconfig/CourtCaseForPSAConfig';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import PSAInputForm from '../../components/psainput/PSAInputForm';
 import PersonCard from '../../components/person/PersonCardReview';
@@ -54,6 +55,7 @@ import {
   CONTEXT,
   DMF,
   EDIT_FIELDS,
+  ID_FIELD_NAMES,
   NOTES,
   PSA
 } from '../../utils/consts/Consts';
@@ -68,6 +70,7 @@ import * as DataActionFactory from '../../utils/data/DataActionFactory';
 
 let {
   BONDS,
+  CALCULATED_FOR,
   DMF_RESULTS,
   DMF_RISK_FACTORS,
   HEARINGS,
@@ -82,6 +85,7 @@ let {
 } = APP_TYPES_FQNS;
 
 BONDS = BONDS.toString();
+CALCULATED_FOR = CALCULATED_FOR.toString();
 DMF_RESULTS = DMF_RESULTS.toString();
 DMF_RISK_FACTORS = DMF_RISK_FACTORS.toString();
 HEARINGS = HEARINGS.toString();
@@ -635,9 +639,16 @@ class PSAModal extends React.Component<Props, State> {
       chargeHistory,
       caseHistory,
       manualChargeHistory,
+      psaPermissions,
       actions
     } = this.props;
     const { riskFactors } = this.state;
+    let caseNumbersToAssociationId = Map();
+    psaNeighbors.get(PRETRIAL_CASES, List()).forEach((pretrialCase) => {
+      const caseNum = pretrialCase.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.CASE_ID, 0]);
+      const associationEntityKeyId = pretrialCase.getIn([PSA_ASSOCIATION.DETAILS, OPENLATTICE_ID_FQN, 0]);
+      caseNumbersToAssociationId = caseNumbersToAssociationId.set(caseNum, associationEntityKeyId);
+    });
 
     if (loadingPSAModal || loadingCaseHistory) return <SpinnerWrapper><LoadingSpinner /></SpinnerWrapper>;
 
@@ -649,7 +660,10 @@ class PSAModal extends React.Component<Props, State> {
       [STAFF, 0, PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.DATE_TIME, 0],
       ''
     );
-    const { chargeHistoryForMostRecentPSA } = getCasesForPSA(
+    const {
+      chargeHistoryForMostRecentPSA,
+      caseHistoryForMostRecentPSA,
+    } = getCasesForPSA(
       caseHistory,
       chargeHistory,
       scores,
@@ -661,6 +675,11 @@ class PSAModal extends React.Component<Props, State> {
 
     return (
       <PSAModalSummary
+          caseNumbersToAssociationId={caseNumbersToAssociationId}
+          chargeHistoryForMostRecentPSA={chargeHistoryForMostRecentPSA}
+          caseHistoryForMostRecentPSA={caseHistoryForMostRecentPSA}
+          addCaseToPSA={this.addCaseToPSA}
+          removeCaseFromPSA={this.removeCaseFromPSA}
           downloadFn={actions.downloadPSAReviewPDF}
           scores={scores}
           neighbors={psaNeighbors}
@@ -668,7 +687,8 @@ class PSAModal extends React.Component<Props, State> {
           chargeHistory={chargeHistory}
           manualChargeHistory={manualChargeHistory}
           notes={riskFactors.get(PSA.NOTES)}
-          pendingCharges={pendingCharges} />
+          pendingCharges={pendingCharges}
+          psaPermissions={psaPermissions} />
     );
   }
 
@@ -760,12 +780,42 @@ class PSAModal extends React.Component<Props, State> {
     );
   }
 
+  addCaseToPSA = (values) => {
+    const { actions, app, scores } = this.props;
+    const psaId = scores.getIn([PROPERTY_TYPES.GENERAL_ID, 0]);
+
+    const caseToPSAValues = Object.assign({}, values, {
+      [PROPERTY_TYPES.TIMESTAMP]: moment().toISOString(true),
+      [ID_FIELD_NAMES.PSA_ID]: psaId
+    });
+
+    actions.submit({
+      app,
+      config: CourtCaseForPSAConfig,
+      values: caseToPSAValues,
+      callback: this.refreshPSANeighborsCallback
+    });
+  }
+
+  removeCaseFromPSA = (associationEntityKeyId) => {
+    const { actions, fqnsToEntitySetIds, selectedOrganizationId } = this.props;
+    const { deleteEntity } = actions;
+    const entitySetId = fqnsToEntitySetIds.getIn([selectedOrganizationId, CALCULATED_FOR]);
+
+    deleteEntity({
+      entitySetId,
+      entityKeyId: associationEntityKeyId,
+      callback: this.refreshPSANeighborsCallback
+    });
+  }
+
   renderCaseHistory = () => {
     const {
       caseHistory,
       chargeHistory,
       scores,
-      psaNeighbors
+      psaNeighbors,
+      psaPermissions
     } = this.props;
     const arrestDate = psaNeighbors.getIn(
       [MANUAL_PRETRIAL_CASES, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.ARREST_DATE_TIME, 0],
@@ -787,6 +837,13 @@ class PSAModal extends React.Component<Props, State> {
       arrestDate,
       lastEditDateForPSA
     );
+    let caseNumbersToAssociationId = Map();
+    psaNeighbors.get(PRETRIAL_CASES, List()).forEach((pretrialCase) => {
+      const caseNum = pretrialCase.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.CASE_ID, 0]);
+      const associationEntityKeyId = pretrialCase.getIn([PSA_ASSOCIATION.DETAILS, OPENLATTICE_ID_FQN, 0]);
+      caseNumbersToAssociationId = caseNumbersToAssociationId.set(caseNum, associationEntityKeyId);
+    });
+
     return (
       <ModalWrapper withPadding>
         <Title withSubtitle>
@@ -797,11 +854,15 @@ class PSAModal extends React.Component<Props, State> {
         <hr />
         <CaseHistory
             modal
+            addCaseToPSA={this.addCaseToPSA}
+            caseNumbersToAssociationId={caseNumbersToAssociationId}
+            removeCaseFromPSA={this.removeCaseFromPSA}
             caseHistoryForMostRecentPSA={caseHistoryForMostRecentPSA}
             chargeHistoryForMostRecentPSA={chargeHistoryForMostRecentPSA}
             caseHistoryNotForMostRecentPSA={caseHistoryNotForMostRecentPSA}
             chargeHistoryNotForMostRecentPSA={chargeHistoryNotForMostRecentPSA}
-            chargeHistory={chargeHistory} />
+            chargeHistory={chargeHistory}
+            psaPermissions={psaPermissions} />
       </ModalWrapper>
     );
   };
@@ -831,10 +892,10 @@ class PSAModal extends React.Component<Props, State> {
       scores,
       entityKeyId,
       personHearings,
+      personNeighbors,
       personId,
       psaPermissions
     } = this.props;
-
     return (
       <ModalWrapper withPadding>
         <SelectHearingsContainer
@@ -844,6 +905,7 @@ class PSAModal extends React.Component<Props, State> {
             refreshingNeighbors={refreshingNeighbors}
             dmfId={this.getIdOrValue(DMF_RESULTS)}
             personId={personId}
+            personNeighbors={personNeighbors}
             psaEntityKeyId={entityKeyId}
             deleteHearing={this.deleteHearing}
             refreshPSANeighborsCallback={this.refreshPSANeighborsCallback}
@@ -971,6 +1033,7 @@ function mapStateToProps(state) {
   const psaModal = state.get(STATE.PSA_MODAL);
   return {
     app,
+    [APP.FQN_TO_ID]: app.get(APP.FQN_TO_ID),
     [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
     [APP.SELECTED_ORG_SETTINGS]: app.get(APP.SELECTED_ORG_SETTINGS),
 
@@ -983,6 +1046,7 @@ function mapStateToProps(state) {
     [PSA_MODAL.HEARINGS_NEIGHBORS_BY_ID]: psaModal.get(PSA_MODAL.HEARINGS_NEIGHBORS_BY_ID),
     [PSA_MODAL.LOADING_HEARING_NEIGHBORS]: psaModal.get(PSA_MODAL.LOADING_HEARING_NEIGHBORS),
     [PSA_MODAL.PERSON_HEARINGS]: psaModal.get(PSA_MODAL.PERSON_HEARINGS),
+    [PSA_MODAL.PERSON_NEIGHBORS]: psaModal.get(PSA_MODAL.PERSON_NEIGHBORS),
     [PSA_MODAL.PERSON_ID]: psaModal.get(PSA_MODAL.PERSON_ID),
     [PSA_MODAL.LOADING_CASES]: psaModal.get(PSA_MODAL.LOADING_CASES),
     [PSA_MODAL.CASE_HISTORY]: psaModal.get(PSA_MODAL.CASE_HISTORY),

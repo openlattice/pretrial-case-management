@@ -12,6 +12,7 @@ export const STATE = {
   PSA_MODAL: 'psaModal',
   PSA: 'psa',
   PEOPLE: 'people',
+  REMINDERS: 'reminders',
   REVIEW: 'review',
   SEARCH: 'search',
   SUBMIT: 'submit'
@@ -36,6 +37,7 @@ export const APP = {
   APP: 'app',
   APP_TYPES: 'appTypes',
   ENTITY_SETS_BY_ORG: 'entitySetsByOrganization',
+  FQN_TO_ID: 'fqnsToEntitySetIds',
   ERRORS: 'errors',
   LOADING: 'isLoadingApp',
   LOAD_APP: 'loadApp',
@@ -152,6 +154,7 @@ export const PSA_MODAL = {
 
   // Person
   PERSON_ID: 'personId',
+  PERSON_NEIGHBORS: 'personNeighbors',
   LOADING_CASES: 'loadingCaseHistory',
   CASE_HISTORY: 'caseHistory',
   MANUAL_CASE_HISTORY: 'manualCaseHistory',
@@ -175,6 +178,8 @@ export const PSA_FORM = {
   ALL_MANUAL_CASES: 'allManualCases',
   ALL_MANUAL_CHARGES: 'allManualCharges',
   ALL_HEARINGS: 'allHearings',
+  ALL_CONTACTS: 'allContacts',
+  SUBSCRIPTION: 'subscription',
   CHARGES: 'charges',
   SELECT_PERSON: 'selectedPerson',
   OPEN_PSAS: 'openPSAs',
@@ -202,6 +207,20 @@ export const PEOPLE = {
   REFRESHING_PERSON_NEIGHBORS: 'refreshingPersonNeighbors',
   MOST_RECENT_PSA: 'mostRecentPSA',
   MOST_RECENT_PSA_NEIGHBORS: 'mostRecentPSANeighbors'
+};
+
+// Reminders
+
+export const REMINDERS = {
+  REMINDER_IDS: 'reminderIds',
+  FUTURE_REMINDERS: 'futureRemidners',
+  PAST_REMINDERS: 'pastReminders',
+  SUCCESSFUL_REMINDER_IDS: 'successfulReminderIds',
+  FAILED_REMINDER_IDS: 'failedReminderIds',
+  LOADING_REMINDERS: 'loadingReminders',
+  REMINDER_NEIGHBORS: 'reminderNeighborsById',
+  REMINDERS_WITH_OPEN_PSA_IDS: 'remindersWithOpenPSA',
+  LOADING_REMINDER_NEIGHBORS: 'loadingReminderNeighbors'
 };
 
 // Review
@@ -248,6 +267,8 @@ export const SEARCH = {
 export const SUBMIT = {
   REPLACING_ENTITY: 'replacingEntity',
   REPLACE_ENTITY_SUCCESS: 'replaceEntitySuccess',
+  UPDATING_ENTITY: 'updatingEntity',
+  UPDATE_ENTITY_SUCCESS: 'updateEntitySuccess',
   REPLACING_ASSOCIATION: 'replacingAssociation',
   REPLACE_ASSOCIATION_SUCCESS: 'replaceAssociationSuccess',
   SUBMITTING: 'submitting',

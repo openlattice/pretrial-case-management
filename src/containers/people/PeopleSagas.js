@@ -21,16 +21,17 @@ import { APP, PSA_NEIGHBOR, STATE } from '../../utils/consts/FrontEndStateConsts
 import { obfuscateEntity, obfuscateEntityNeighbors } from '../../utils/consts/DemoNames';
 import { getEntitySetId } from '../../utils/AppUtils';
 import { getPropertyTypeId } from '../../edm/edmUtils';
-import { toISODate } from '../../utils/FormattingUtils';
 import {
   GET_PEOPLE,
   GET_PERSON_DATA,
   GET_PERSON_NEIGHBORS,
   REFRESH_PERSON_NEIGHBORS,
+  UPDATE_CONTACT_INFORMATION,
   getPeople,
   getPersonData,
   getPersonNeighbors,
-  refreshPersonNeighbors
+  refreshPersonNeighbors,
+  updateContactInfo
 } from './PeopleActionFactory';
 
 let {
@@ -39,7 +40,8 @@ let {
   PEOPLE,
   PSA_SCORES,
   PRETRIAL_CASES,
-  STAFF
+  STAFF,
+  SUBSCRIPTION
 } = APP_TYPES_FQNS;
 
 CONTACT_INFORMATION = CONTACT_INFORMATION.toString();
@@ -48,6 +50,7 @@ PEOPLE = PEOPLE.toString();
 PSA_SCORES = PSA_SCORES.toString();
 PRETRIAL_CASES = PRETRIAL_CASES.toString();
 STAFF = STAFF.toString();
+SUBSCRIPTION = SUBSCRIPTION.toString();
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
@@ -136,24 +139,33 @@ function* getPersonNeighborsWorker(action) :Generator<*, *, *> {
     let neighbors = yield call(SearchApi.searchEntityNeighbors, peopleEntitySetId, entityKeyId);
     neighbors = obfuscateEntityNeighbors(neighbors);
     neighbors = fromJS(neighbors);
-
     neighbors.forEach((neighborObj) => {
       const entitySetId = neighborObj.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
       const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
       const entityDateTime = moment(neighborObj.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.DATE_TIME, 0]));
       if (appTypeFqn === PSA_SCORES) {
-        if (!mostRecentPSA || !currentPSADateTime || currentPSADateTime.isBefore(entityDateTime)) {
+        if (!mostRecentPSA.size || !currentPSADateTime || currentPSADateTime.isBefore(entityDateTime)) {
           mostRecentPSA = neighborObj;
           currentPSADateTime = entityDateTime;
         }
-      }
-      if (appTypeFqn === CONTACT_INFORMATION) {
         neighborsByEntitySet = neighborsByEntitySet.set(
           appTypeFqn,
           neighborsByEntitySet.get(appTypeFqn, List()).push(neighborObj)
         );
       }
-      if (appTypeFqn === HEARINGS) {
+      else if (appTypeFqn === CONTACT_INFORMATION) {
+        neighborsByEntitySet = neighborsByEntitySet.set(
+          appTypeFqn,
+          neighborsByEntitySet.get(appTypeFqn, List()).push(neighborObj)
+        );
+      }
+      else if (appTypeFqn === SUBSCRIPTION) {
+        neighborsByEntitySet = neighborsByEntitySet.set(
+          appTypeFqn,
+          neighborObj
+        );
+      }
+      else if (appTypeFqn === HEARINGS) {
         const hearingDetails = neighborObj.get(PSA_NEIGHBOR.DETAILS, Map());
         const hearingId = hearingDetails.getIn([OPENLATTICE_ID_FQN, 0]);
         const hearingDateTime = hearingDetails.getIn([PROPERTY_TYPES.DATE_TIME, 0]);
@@ -191,7 +203,7 @@ function* getPersonNeighborsWorker(action) :Generator<*, *, *> {
     neighbors = obfuscateEntityNeighbors(neighbors);
 
     let mostRecentPSANeighborsByAppTypeFqn = Map();
-    if (mostRecentPSA) {
+    if (mostRecentPSA.size) {
       const psaId = mostRecentPSA.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0]);
       let psaNeighbors = yield call(SearchApi.searchEntityNeighbors, psaScoresEntitySetId, psaId);
       psaNeighbors = fromJS(psaNeighbors);
@@ -265,11 +277,21 @@ function* refreshPersonNeighborsWorker(action) :Generator<*, *, *> {
           mostRecentPSA = neighbor;
           currentPSADateTime = entityDateTime;
         }
-      }
-      if (appTypeFqn === CONTACT_INFORMATION) {
         neighbors = neighbors.set(
           appTypeFqn,
           neighbors.get(appTypeFqn, List()).push(neighbor)
+        );
+      }
+      else if (appTypeFqn === CONTACT_INFORMATION) {
+        neighbors = neighbors.set(
+          appTypeFqn,
+          neighbors.get(appTypeFqn, List()).push(neighbor)
+        );
+      }
+      else if (appTypeFqn === SUBSCRIPTION) {
+        neighbors = neighbors.set(
+          appTypeFqn,
+          neighbor
         );
       }
       else {
@@ -291,7 +313,7 @@ function* refreshPersonNeighborsWorker(action) :Generator<*, *, *> {
         }), neighbors);
 
     let mostRecentPSANeighborsByAppTypeFqn = Map();
-    if (mostRecentPSA) {
+    if (mostRecentPSA.size) {
       const psaId = mostRecentPSA.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0]);
       let psaNeighbors = yield call(SearchApi.searchEntityNeighbors, psaScoresEntitySetId, psaId);
       psaNeighbors = fromJS(psaNeighbors);
@@ -334,9 +356,60 @@ function* refreshPersonNeighborsWatcher() :Generator<*, *, *> {
   yield takeEvery(REFRESH_PERSON_NEIGHBORS, refreshPersonNeighborsWorker);
 }
 
+function* updateContactInfoWorker(action :SequenceAction) :Generator<*, *, *> {
+  const {
+    entities,
+    personId,
+    personEntityKeyId,
+    callback
+  } = action.value;
+
+  try {
+    yield put(updateContactInfo.request(action.id));
+    const app = yield select(getApp);
+    const orgId = yield select(getOrgId);
+    const peopleEntitySetId = getEntitySetId(app, PEOPLE, orgId);
+    const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
+    const contactInformationEntitySetId = getEntitySetId(app, CONTACT_INFORMATION, orgId);
+
+    /* partially update contact info */
+    yield call(DataApi.updateEntityData, contactInformationEntitySetId, entities, 'PartialReplace');
+
+    /* get updated contact info for person */
+    const filteredNeighbors = yield call(SearchApi.searchEntityNeighborsWithFilter, peopleEntitySetId, {
+      entityKeyIds: [personEntityKeyId],
+      sourceEntitySetIds: [],
+      // destinationEntitySetIds: [contactInformationEntitySetId]
+    });
+
+    /* filter neighbors for contact info */
+    const contactInformation = fromJS(Object.values(filteredNeighbors)).get(0, List()).filter((neighbor) => {
+      const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
+      const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
+      const isContactInfo = appTypeFqn === CONTACT_INFORMATION;
+      return isContactInfo;
+    });
+
+    if (callback) callback();
+
+    yield put(updateContactInfo.success(action.id, { personId, contactInformation }));
+  }
+  catch (error) {
+    yield put(updateContactInfo.failure(action.id, { error }));
+  }
+  finally {
+    yield put(updateContactInfo.finally(action.id));
+  }
+}
+
+function* updateContactInfoWatcher() :Generator<*, *, *> {
+  yield takeEvery(UPDATE_CONTACT_INFORMATION, updateContactInfoWorker);
+}
+
 export {
   getPeopleWatcher,
   getPersonDataWatcher,
   getPersonNeighborsWatcher,
-  refreshPersonNeighborsWatcher
+  refreshPersonNeighborsWatcher,
+  updateContactInfoWatcher
 };
