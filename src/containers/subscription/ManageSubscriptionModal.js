@@ -14,19 +14,21 @@ import { Constants } from 'lattice';
 
 import BasicButton from '../../components/buttons/BasicButton';
 import InfoButton from '../../components/buttons/InfoButton';
+import LoadingSpinner from '../../components/LoadingSpinner';
 import SubscriptionConfig from '../../config/formconfig/SubscriptionConfig';
 import SubscriptionInfo from '../../components/people/SubscriptionInfo';
 import ContactInfoTable from '../../components/contactinformation/ContactInfoTable';
-import NewContactForm from './NewContactForm';
+import NewContactForm from '../people/NewContactForm';
 import { FORM_IDS } from '../../utils/consts/Consts';
 import { getEntitySetId } from '../../utils/AppUtils';
 import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
 import {
-  Wrapper,
+  CloseModalX,
+  NoResults,
   PaddedStyledColumnRow,
   TitleWrapper,
-  CloseModalX
+  Wrapper,
 } from '../../utils/Layout';
 import {
   APP,
@@ -34,12 +36,15 @@ import {
   REVIEW,
   PEOPLE,
   STATE,
-  SUBMIT
+  SUBMIT,
+  SUBSCRIPTIONS,
+  PSA_NEIGHBOR
 } from '../../utils/consts/FrontEndStateConsts';
 
 import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
 import * as DataActionFactory from '../../utils/data/DataActionFactory';
-import * as PeopleActionFactory from './PeopleActionFactory';
+import * as PeopleActionFactory from '../people/PeopleActionFactory';
+import * as SubscriptionsActionFactory from './SubscriptionsActionFactory';
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
@@ -119,6 +124,7 @@ type Props = {
   app :Map<*, *>,
   contactInfo :Map<*, *>,
   fqnToIdMap :Map<*, *>,
+  loadingSubscriptionInfo :boolean,
   person :Map<*, *>,
   readOnlyPermissions :boolean,
   refreshingPersonNeighbors :boolean,
@@ -246,6 +252,7 @@ class ReleaseConditionsModal extends React.Component<Props, State> {
     const { modifyingContactInformation } = this.state;
     const {
       contactInfo,
+      loadingSubscriptionInfo,
       subscription,
       submitting,
       refreshingPersonNeighbors,
@@ -254,9 +261,16 @@ class ReleaseConditionsModal extends React.Component<Props, State> {
     const subscriptionExists = !!subscription.size;
     const isSubscribed = subscription.getIn([PROPERTY_TYPES.IS_ACTIVE, 0], false);
     let subscribeButtonText = isSubscribed ? 'Unsubscribe' : 'Subscribe';
-    if (submitting || refreshingPersonNeighbors || updatingEntity) subscribeButtonText = 'Loading...';
+    if (
+      submitting
+      || refreshingPersonNeighbors
+      || updatingEntity
+      || loadingSubscriptionInfo
+    ) subscribeButtonText = 'Loading...';
     const editContactInfoText = 'Add Contact Info';
     const subscribeFn = subscriptionExists ? this.toggleSubscription : this.createSubscription;
+    const noPreferredContacts = !contactInfo
+      .filter(contact => contact.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.IS_PREFERRED, 0], false)).size;
     return (
       <ButtonRow>
         <SubscribeButton
@@ -265,6 +279,7 @@ class ReleaseConditionsModal extends React.Component<Props, State> {
               || modifyingContactInformation
               || refreshingPersonNeighbors
               || updatingEntity
+              || noPreferredContacts
             }
             isSubscribed={isSubscribed}
             onClick={subscribeFn}>
@@ -300,8 +315,9 @@ class ReleaseConditionsModal extends React.Component<Props, State> {
   renderContactInformation = () => {
     const {
       contactInfo,
-      readOnlyPermissions,
+      loadingSubscriptionInfo,
       person,
+      readOnlyPermissions,
       refreshingPersonNeighbors
     } = this.props;
     const { modifyingContactInformation } = this.state;
@@ -314,13 +330,19 @@ class ReleaseConditionsModal extends React.Component<Props, State> {
             {'All methods of contact that are marked "preferred" will recieve court notifications.'}
           </span>
         </ContactHeader>
-        <ContactInfoTable
-            contactInfo={contactInfo}
-            editing={modifyingContactInformation}
-            hasPermission={readOnlyPermissions}
-            noResults={!contactInfo.size}
-            handleCheckboxUpdates={this.handleCheckboxUpdates}
-            disabled={refreshingPersonNeighbors} />
+        {
+          loadingSubscriptionInfo
+            ? <NoResults><LoadingSpinner /></NoResults>
+            : (
+              <ContactInfoTable
+                  contactInfo={contactInfo}
+                  editing={modifyingContactInformation}
+                  hasPermission={readOnlyPermissions}
+                  noResults={!contactInfo.size}
+                  handleCheckboxUpdates={this.handleCheckboxUpdates}
+                  disabled={refreshingPersonNeighbors} />
+            )
+        }
         {
           modifyingContactInformation
             ? (
@@ -332,13 +354,19 @@ class ReleaseConditionsModal extends React.Component<Props, State> {
     );
   }
 
+  onClose = () => {
+    const { actions, onClose } = this.props;
+    const { clearSubscriptionModal } = actions;
+    onClose();
+    clearSubscriptionModal();
+    this.setState(INITIAL_STATE);
+  }
+
   render() {
     const {
       open,
-      onClose,
       person,
       refreshingPersonNeighbors,
-      readOnly,
       subscription,
       updatingEntity
     } = this.props;
@@ -350,7 +378,7 @@ class ReleaseConditionsModal extends React.Component<Props, State> {
             && (
               <Modal
                   scrollBehavior="outside"
-                  onClose={onClose}
+                  onClose={this.onClose}
                   width={MODAL_WIDTH}
                   height={MODAL_HEIGHT}
                   max-height={MODAL_HEIGHT}
@@ -361,7 +389,7 @@ class ReleaseConditionsModal extends React.Component<Props, State> {
                     <TitleWrapper noPadding>
                       <h2>Manage Subscription</h2>
                       <div>
-                        <CloseModalX onClick={onClose} />
+                        <CloseModalX onClick={this.onClose} />
                       </div>
                     </TitleWrapper>
                   </ColumnRow>
@@ -391,6 +419,7 @@ function mapStateToProps(state) {
   const review = state.get(STATE.REVIEW);
   const edm = state.get(STATE.EDM);
   const people = state.get(STATE.PEOPLE);
+  const subscription = state.get(STATE.SUBSCRIPTIONS);
   return {
     app,
     [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
@@ -403,7 +432,12 @@ function mapStateToProps(state) {
     [PEOPLE.REFRESHING_PERSON_NEIGHBORS]: people.get(PEOPLE.REFRESHING_PERSON_NEIGHBORS, false),
 
     [SUBMIT.SUBMITTING]: submit.get(SUBMIT.SUBMITTING, false),
-    [SUBMIT.UPDATING_ENTITY]: submit.get(SUBMIT.UPDATING_ENTITY, false)
+    [SUBMIT.UPDATING_ENTITY]: submit.get(SUBMIT.UPDATING_ENTITY, false),
+
+    [SUBSCRIPTIONS.LOADING_SUBSCRIPTION_MODAL]: subscription.get(SUBSCRIPTIONS.LOADING_SUBSCRIPTION_MODAL),
+    [SUBSCRIPTIONS.CONTACT_INFO]: subscription.get(SUBSCRIPTIONS.CONTACT_INFO),
+    [SUBSCRIPTIONS.PERSON_NEIGHBORS]: subscription.get(SUBSCRIPTIONS.PERSON_NEIGHBORS),
+    [SUBSCRIPTIONS.SUBSCRIPTION]: subscription.get(SUBSCRIPTIONS.SUBSCRIPTION)
   };
 }
 
@@ -420,6 +454,10 @@ function mapDispatchToProps(dispatch :Function) :Object {
 
   Object.keys(PeopleActionFactory).forEach((action :string) => {
     actions[action] = PeopleActionFactory[action];
+  });
+
+  Object.keys(SubscriptionsActionFactory).forEach((action :string) => {
+    actions[action] = SubscriptionsActionFactory[action];
   });
 
   return {

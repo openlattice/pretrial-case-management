@@ -29,8 +29,8 @@ const addPersonContactInfoConfig = {
   ],
   associations: [
     {
-      src: ALIASES.PERSON,
-      dst: ALIASES.CONTACT_INFO,
+      src: ALIASES.CONTACT_INFO,
+      dst: ALIASES.PERSON,
       association: ALIASES.CONTACT_GIVEN_FOR
     }
   ]

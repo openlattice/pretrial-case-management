@@ -52,7 +52,7 @@ const Name = styled.div`
   font-size: 13px;
   font-weight: 600;
   color: ${OL.GREY15};
-  margin-bottom: 4px;
+  margin-bottom: 5px 0 4px;
   text-transform: uppercase;
 `;
 
@@ -71,17 +71,17 @@ const Dob = styled.span`
 
 const OpenPSATag = styled.span`
   z-index: 1;
-  margin-left: 85px;
+  margin-left: 75px;
   margin-bottom: -8px;
   display: flex;
   flex-direction: row;
   justify-content: center;
   align-items: center;
-  width: 65px;
+  width: 125px;
   height: 16px;
   border-radius: 3px;
   background-color: ${OL.PURPLE07};
-  padding: 2px;
+  padding: 5px 0;
   text-transform: uppercase;
   color: ${OL.WHITE};
   font-family: 'Open Sans', sans-serif;
@@ -169,7 +169,7 @@ class PersonCard extends React.Component<Props, State> {
   }
 
   renderContent = () => {
-    const { personObj } = this.props;
+    const { editDate, personObj } = this.props;
     const {
       firstName,
       middleName,
@@ -187,7 +187,7 @@ class PersonCard extends React.Component<Props, State> {
       ? (
         <CardWrapper>
           { this.renderModal() }
-          <OpenPSATag>Open PSA</OpenPSATag>
+          <OpenPSATag>{`Open PSA: ${editDate}`}</OpenPSATag>
           <StyledPersonCard onClick={this.openDetailsModal}>
             <MugShot src={photo || defaultProfile} />
             <PersonInfoSection>

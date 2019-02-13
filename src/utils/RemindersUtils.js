@@ -17,6 +17,7 @@ export const REMINDERS_HEADERS = {
   TIME: 'Time',
   NAME: 'Name',
   CONTACT: 'Contact',
+  COURT_TIME: 'Hearing Time',
   COURTROOM: 'Courtroom',
   HEARING_TYPE: 'Type',
   STATUS: 'Status',

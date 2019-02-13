@@ -29,7 +29,8 @@ import {
   formatJudgeName,
   getHearingsIdsFromNeighbors,
   getScheduledHearings,
-  getPastHearings
+  getPastHearings,
+  getHearingFields
 } from '../../utils/consts/HearingConsts';
 import {
   FORM_IDS,
@@ -212,7 +213,17 @@ class SelectHearingsContainer extends React.Component<Props, State> {
   }
 
   getSortedHearings = () => {
-    const { personHearings } = this.props;
+    const { psaHearings } = this.props;
+    let { personHearings } = this.props;
+    let hearingStrings = List();
+    psaHearings.forEach((hearing) => {
+      const { hearingCourtString } = getHearingFields(hearing);
+      hearingStrings = hearingStrings.push(hearingCourtString);
+    });
+    personHearings = personHearings.filter((hearing) => {
+      const { hearingCourtString } = getHearingFields(hearing);
+      return !hearingStrings.includes(hearingCourtString);
+    });
     return getScheduledHearings(personHearings);
   }
 
@@ -464,41 +475,19 @@ class SelectHearingsContainer extends React.Component<Props, State> {
       ) : null;
   }
 
-  render() {
+  renderHearings = () => {
     const { manuallyCreatingHearing, selectingReleaseConditions, selectedHearing } = this.state;
     const {
       neighbors,
-      hearingIdsRefreshing,
-      submitting,
-      psaIdsRefreshing,
-      refreshingNeighbors,
-      replacingAssociation,
-      replacingEntity,
-      hearingNeighborsById
+      hearingNeighborsById,
+      psaHearings
     } = this.props;
     const hearingsWithOutcomes = hearingNeighborsById
       .keySeq().filter(id => hearingNeighborsById.getIn([id, OUTCOMES]));
     const scheduledHearings = getScheduledHearings(neighbors);
     const pastHearings = getPastHearings(neighbors);
-    if (submitting
-      || replacingEntity
-      || replacingAssociation
-      || refreshingNeighbors
-      || psaIdsRefreshing.size
-      || hearingIdsRefreshing) {
-      return (
-        <Wrapper>
-          <SubmittingWrapper>
-            <span>{ (submitting || replacingEntity || replacingAssociation) ? 'Submitting' : 'Reloading' }</span>
-            <LoadingSpinner />
-          </SubmittingWrapper>
-        </Wrapper>
-      );
-    }
-
     return (
-      <Container>
-        {this.renderSubscriptionInfo()}
+      <>
         <HearingCardsWithTitle
             title="Scheduled Hearings"
             hearings={scheduledHearings}
@@ -515,6 +504,41 @@ class SelectHearingsContainer extends React.Component<Props, State> {
         { selectingReleaseConditions
           ? this.renderSelectReleaseCondtions(selectedHearing)
           : this.renderAvailableHearings(manuallyCreatingHearing, scheduledHearings)
+        }
+      </>
+    );
+  }
+
+  render() {
+    const {
+      hearingIdsRefreshing,
+      submitting,
+      psaIdsRefreshing,
+      refreshingNeighbors,
+      replacingAssociation,
+      replacingEntity
+    } = this.props;
+    const isLoading = (submitting
+      || replacingEntity
+      || replacingAssociation
+      || refreshingNeighbors
+      || psaIdsRefreshing.size
+      || hearingIdsRefreshing);
+
+    return (
+      <Container>
+        {this.renderSubscriptionInfo()}
+        {
+          isLoading
+            ? (
+              <Wrapper>
+                <SubmittingWrapper>
+                  <span>{ (submitting || replacingEntity || replacingAssociation) ? 'Submitting' : 'Reloading' }</span>
+                  <LoadingSpinner />
+                </SubmittingWrapper>
+              </Wrapper>
+            )
+            : this.renderHearings()
         }
       </Container>
     );

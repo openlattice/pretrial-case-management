@@ -2,7 +2,7 @@
  * @flow
  */
 
-import Immutable, { Map, fromJS } from 'immutable';
+import Immutable, { List, Map, fromJS } from 'immutable';
 import moment from 'moment';
 import {
   AuthorizationApi,
@@ -124,7 +124,7 @@ const { FullyQualifiedName } = Models;
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
-const LIST_ENTITY_SETS = Immutable.List.of(staffFqn, releaseConditionsFqn, hearingsFqn, pretrialCasesFqn);
+const LIST_ENTITY_SETS = Immutable.List.of(staffFqn, releaseConditionsFqn, hearingsFqn, pretrialCasesFqn, chargesFqn);
 
 const orderCasesByArrestDate = (case1, case2) => {
   const date1 = moment(case1.getIn([PROPERTY_TYPES.ARREST_DATE, 0], case1.getIn([PROPERTY_TYPES.FILE_DATE, 0], '')));
@@ -193,11 +193,12 @@ function* getCasesAndCharges(neighbors) {
         allFTAs = allFTAs.push(Immutable.fromJS(neighborDetails));
       }
       else if (appTypeFqn === hearingsFqn) {
+        const hearingIsInactive = neighborDetails.getIn([PROPERTY_TYPES.HEARING_INACTIVE, 0], false);
         const hearingHasBeenCancelled = neighborDetails.getIn([PROPERTY_TYPES.UPDATE_TYPE, 0], '')
           .toLowerCase().trim() === 'cancelled';
         const hearingIsGeneric = neighborDetails.getIn([PROPERTY_TYPES.HEARING_TYPE, 0], '')
           .toLowerCase().trim() === 'all other hearings';
-        if (!hearingHasBeenCancelled && !hearingIsGeneric) {
+        if (!hearingHasBeenCancelled && !hearingIsGeneric && !hearingIsInactive) {
           allHearings = allHearings.push(Immutable.fromJS(neighborDetails));
         }
       }
@@ -464,18 +465,17 @@ function* loadPSAsByDateWorker(action :SequenceAction) :Generator<*, *, *> {
 const getPSADataFromNeighbors = (
   scores :Immutable.Map<*, *>,
   neighbors :Immutable.Map<*, *>,
+  allCharges :Immutable.List<*>,
   allManualCharges :Immutable.List<*>,
   staffEntitySetId :string,
   assessedByEntitySetId :string,
   editedByEntitySetId :string
 ) => {
-
   const recommendationText = neighbors.getIn([
     releaseRecommendationsFqn,
     PSA_NEIGHBOR.DETAILS,
     PROPERTY_TYPES.RELEASE_RECOMMENDATION
   ], Immutable.List()).join(', ');
-
   const dmf = neighbors.getIn([dmfResultsFqn, PSA_NEIGHBOR.DETAILS], Immutable.Map());
   const formattedDMF = Immutable.fromJS(formatDMFFromEntity(dmf)).filter(val => !!val);
 
@@ -503,6 +503,17 @@ const getPSADataFromNeighbors = (
 
   const selectedCharges = allManualCharges
     .filter(chargeObj => chargeObj.getIn([PROPERTY_TYPES.CHARGE_ID, 0], '').split('|')[0] === caseId);
+  let selectedCourtCharges = List();
+  if (allCharges.size) {
+    const associatedCaseIds = neighbors
+      .get(pretrialCasesFqn, List())
+      .map(neighbor => neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.CASE_ID, 0], ''));
+    selectedCourtCharges = allCharges
+      .filter((chargeObj) => {
+        const chargeId = chargeObj.getIn([PROPERTY_TYPES.CHARGE_ID, 0], '').split('|')[0];
+        return associatedCaseIds.includes(chargeId);
+      });
+  }
 
   const selectedPerson = neighbors.getIn([peopleFqn, PSA_NEIGHBOR.DETAILS], Immutable.Map());
 
@@ -540,6 +551,7 @@ const getPSADataFromNeighbors = (
 
   return {
     data,
+    selectedCourtCharges,
     selectedPretrialCase,
     selectedCharges,
     selectedPerson,
@@ -561,6 +573,7 @@ function* bulkDownloadPSAReviewPDFWorker(action :SequenceAction) :Generator<*, *
     const orgId = yield select(getOrgId);
 
     const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId], Map());
+    const chargesEntitySetId = getEntitySetId(app, chargesFqn, orgId);
     const assessedByEntitySetId = getEntitySetId(app, assessedByFqn, orgId);
     const editedByEntitySetId = getEntitySetId(app, editedByFqn, orgId);
     const manualChargesEntitySetId = getEntitySetId(app, manualChargesFqn, orgId);
@@ -572,6 +585,7 @@ function* bulkDownloadPSAReviewPDFWorker(action :SequenceAction) :Generator<*, *
     peopleNeighbors = obfuscateBulkEntityNeighbors(peopleNeighbors); // TODO just for demo
 
     let manualChargesByPersonId = Immutable.Map();
+    let courtChargesByPersonId = Immutable.Map();
     let psasById = Immutable.Map();
 
     Object.entries(peopleNeighbors).forEach(([personId, neighborList]) => {
@@ -589,6 +603,12 @@ function* bulkDownloadPSAReviewPDFWorker(action :SequenceAction) :Generator<*, *
           else if (id === manualChargesEntitySetId) {
             manualChargesByPersonId = manualChargesByPersonId
               .set(personId, manualChargesByPersonId.get(personId).push(Immutable.fromJS(neighborDetails)));
+          }
+          else if (id === chargesEntitySetId) {
+            courtChargesByPersonId = courtChargesByPersonId.set(
+              personId,
+              courtChargesByPersonId.get(personId, Immutable.List()).push(Immutable.fromJS(neighborDetails))
+            );
           }
         }
       });
@@ -638,13 +658,14 @@ function* bulkDownloadPSAReviewPDFWorker(action :SequenceAction) :Generator<*, *
           neighbors = neighbors.set(appTypeFqn, neighbor);
         }
       });
-
       const scores = Immutable.fromJS(psasById.get(psaId));
       const personId = neighbors.getIn([peopleFqn, PSA_NEIGHBOR.ID]);
       const allManualCharges = manualChargesByPersonId.get(personId, Immutable.List());
+      const allCharges = courtChargesByPersonId.get(personId, Immutable.List());
       pageDetailsList.push(getPSADataFromNeighbors(
         scores,
         neighbors,
+        allCharges,
         allManualCharges,
         staffEntitySetId,
         assessedByEntitySetId,
@@ -689,6 +710,7 @@ function* downloadPSAReviewPDFWorker(action :SequenceAction) :Generator<*, *, *>
 
     const {
       data,
+      selectedCourtCharges,
       selectedPretrialCase,
       selectedCharges,
       selectedPerson,
@@ -697,6 +719,7 @@ function* downloadPSAReviewPDFWorker(action :SequenceAction) :Generator<*, *, *>
     } = getPSADataFromNeighbors(
       scores,
       neighbors,
+      allCharges,
       allManualCharges,
       staffEntitySetId,
       assessedByEntitySetId,
@@ -706,6 +729,7 @@ function* downloadPSAReviewPDFWorker(action :SequenceAction) :Generator<*, *, *>
     exportPDF(
       data,
       selectedPretrialCase,
+      selectedCourtCharges,
       selectedCharges,
       selectedPerson,
       allCases,

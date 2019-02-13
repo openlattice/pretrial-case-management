@@ -235,6 +235,7 @@ export const PROPERTY_TYPES = {
   HEARING_TYPE: 'justice.courtcasetype',
   UPDATE_TYPE: 'ol.update',
   HEARING_COMMENTS: 'event.comments',
+  HEARING_INACTIVE: 'ol.inactive',
 
   // PSA Outcomes entity Type Consts
   JUDGE_ACCEPTED: 'justice.judgeacceptedrecommendation',

@@ -7,7 +7,6 @@ import { Redirect, Route, Switch } from 'react-router-dom';
 import styled from 'styled-components';
 
 import CourtContainer from '../../containers/court/CourtContainer';
-import DashboardContainer from '../../containers/dashboard/DashboardContainer';
 import FormsContainer from '../../containers/forms/FormsContainer';
 import ManageChargesContainer from '../../containers/charges/ChargesContainer';
 import NewPersonContainer from '../../containers/person/NewPersonContainer';

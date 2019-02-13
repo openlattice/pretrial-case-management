@@ -5,8 +5,8 @@
 import axios from 'axios';
 import moment from 'moment';
 import LatticeAuth from 'lattice-auth';
-import { Map } from 'immutable';
-import { EntityDataModelApi, SearchApi } from 'lattice';
+import { fromJS, List, Map } from 'immutable';
+import { Constants, SearchApi } from 'lattice';
 import { push } from 'react-router-redux';
 import {
   all,
@@ -20,31 +20,36 @@ import {
 import { toISODate, formatDate } from '../../utils/FormattingUtils';
 import { submit } from '../../utils/submit/SubmitActionFactory';
 import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { APP, STATE } from '../../utils/consts/FrontEndStateConsts';
+import { APP, STATE, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { obfuscateEntityNeighbors } from '../../utils/consts/DemoNames';
 import { getEntitySetId } from '../../utils/AppUtils';
+import { getPropertyTypeId } from '../../edm/edmUtils';
 import {
   CLEAR_SEARCH_RESULTS,
   LOAD_PERSON_DETAILS,
   NEW_PERSON_SUBMIT,
   SEARCH_PEOPLE,
+  SEARCH_PEOPLE_BY_PHONE,
   UPDATE_CASES,
   clearSearchResults,
   loadPersonDetails,
   newPersonSubmit,
   searchPeople,
+  searchPeopleByPhoneNumber,
   updateCases,
 } from './PersonActionFactory';
 
 import * as Routes from '../../core/router/Routes';
 
-
-let { PEOPLE, PRETRIAL_CASES } = APP_TYPES_FQNS;
+const { OPENLATTICE_ID_FQN } = Constants;
+let { CONTACT_INFORMATION, PEOPLE, PRETRIAL_CASES } = APP_TYPES_FQNS;
 
 PEOPLE = PEOPLE.toString();
 PRETRIAL_CASES = PRETRIAL_CASES.toString();
+CONTACT_INFORMATION = CONTACT_INFORMATION.toString();
 
 const getApp = state => state.get(STATE.APP, Map());
+const getEDM = state => state.get(STATE.EDM, Map());
 const getOrgId = state => state.getIn([STATE.APP, APP.SELECTED_ORG_ID], '');
 
 declare var __ENV_DEV__ :boolean;
@@ -216,25 +221,21 @@ function* newPersonSubmitWatcher() :Generator<*, *, *> {
   yield takeEvery(NEW_PERSON_SUBMIT, newPersonSubmitWorker);
 }
 
-function* getPropertyTypeId(propertyTypeFqn :string) :Generator<*, *, *> {
-  const propertyTypeFqnArr = propertyTypeFqn.split('.');
-  return yield call(EntityDataModelApi.getPropertyTypeId, {
-    namespace: propertyTypeFqnArr[0],
-    name: propertyTypeFqnArr[1]
-  });
-}
-
 function* searchPeopleWorker(action) :Generator<*, *, *> {
   try {
     yield put(searchPeople.request(action.id));
     const app = yield select(getApp);
+    const edm = yield select(getEDM);
     const orgId = yield select(getOrgId);
     const peopleEntitySetId = getEntitySetId(app, PEOPLE, orgId);
+    const firstNamePropertyTypeId = getPropertyTypeId(edm, PROPERTY_TYPES.FIRST_NAME);
+    const lastNamePropertyTypeId = getPropertyTypeId(edm, PROPERTY_TYPES.LAST_NAME);
+    const dobPropertyTypeId = getPropertyTypeId(edm, PROPERTY_TYPES.DOB);
 
     const {
       firstName,
       lastName,
-      dob
+      dob,
     } = action.value;
     const searchFields = [];
     const updateSearchField = (searchString :string, property :string, exact? :boolean) => {
@@ -247,18 +248,15 @@ function* searchPeopleWorker(action) :Generator<*, *, *> {
     };
 
     if (firstName.trim().length) {
-      const firstNameId = yield call(getPropertyTypeId, PROPERTY_TYPES.FIRST_NAME);
-      updateSearchField(firstName.trim(), firstNameId);
+      updateSearchField(firstName.trim(), firstNamePropertyTypeId);
     }
     if (lastName.trim().length) {
-      const lastNameId = yield call(getPropertyTypeId, PROPERTY_TYPES.LAST_NAME);
-      updateSearchField(lastName.trim(), lastNameId);
+      updateSearchField(lastName.trim(), lastNamePropertyTypeId);
     }
     if (dob && dob.trim().length) {
       const dobMoment = moment(dob.trim());
       if (dobMoment.isValid()) {
-        const dobId = yield call(getPropertyTypeId, PROPERTY_TYPES.DOB);
-        updateSearchField(toISODate(dobMoment), dobId, true);
+        updateSearchField(toISODate(dobMoment), dobPropertyTypeId, true);
       }
     }
     const searchOptions = {
@@ -280,6 +278,158 @@ function* searchPeopleWatcher() :Generator<*, *, *> {
   yield takeEvery(SEARCH_PEOPLE, searchPeopleWorker);
 }
 
+function* searchPeopleByPhoneNumberWorker(action) :Generator<*, *, *> {
+
+  try {
+    yield put(searchPeopleByPhoneNumber.request(action.id));
+    const app = yield select(getApp);
+    const edm = yield select(getEDM);
+    const orgId = yield select(getOrgId);
+    const contactInformationEntitySetId = getEntitySetId(app, CONTACT_INFORMATION, orgId);
+    const peopleEntitySetId = getEntitySetId(app, PEOPLE, orgId);
+    const phonePropertyTypeId = getPropertyTypeId(edm, PROPERTY_TYPES.PHONE);
+    const firstNamePropertyTypeId = getPropertyTypeId(edm, PROPERTY_TYPES.FIRST_NAME);
+    const middleNamePropertyTypeId = getPropertyTypeId(edm, PROPERTY_TYPES.MIDDLE_NAME);
+    const lastNamePropertyTypeId = getPropertyTypeId(edm, PROPERTY_TYPES.LAST_NAME);
+
+    const { searchTerm } = action.value;
+    const letters = (searchTerm).replace(/[^a-zA-Z]/g, '');
+    const numbers = (searchTerm).replace(/[^0-9]/g, '');
+    const phoneFields = [];
+    const nameFields = [];
+    const updateSearchField = (
+      searchFields :Array,
+      searchString :string,
+      property :string,
+      exact? :boolean
+    ) => {
+      const isExact = !!exact;
+      searchFields.push({
+        searchTerm: searchString,
+        property,
+        exact: isExact
+      });
+    };
+
+    if (numbers.trim().length) {
+      let searchString = numbers.trim();
+      if (searchString.length > 9) {
+        searchString = `"${searchString.slice(0, 3)} ${searchString.slice(3, 6)}-${searchString.slice(6)}"`;
+      }
+      updateSearchField(phoneFields, searchString, phonePropertyTypeId);
+    }
+    if (letters.trim().length) {
+      updateSearchField(nameFields, letters.trim(), firstNamePropertyTypeId);
+      updateSearchField(nameFields, letters.trim(), middleNamePropertyTypeId);
+      updateSearchField(nameFields, letters.trim(), lastNamePropertyTypeId);
+    }
+
+    const phoneOptions = {
+      searchFields: phoneFields,
+      start: 0,
+      maxHits: 100
+    };
+
+    const nameOptions = {
+      searchFields: nameFields,
+      start: 0,
+      maxHits: 100
+    };
+
+    let allResults = List();
+    let contactIds = List();
+    let peopleIds = List();
+    let personIdsToContactIds = Map();
+    let contactMap = Map();
+    let peopleMap = Map();
+    if (phoneFields.length) {
+      const searchOptions = phoneOptions;
+      let contacts = yield call(SearchApi.advancedSearchEntitySetData, contactInformationEntitySetId, searchOptions);
+      contacts = fromJS(contacts.hits);
+      contacts.forEach((contact) => {
+        const contactId = contact.getIn([OPENLATTICE_ID_FQN, 0], '');
+        contactIds = contactIds.push(contactId);
+        contactMap = contactMap.set(contactId, contact);
+      });
+      if (contactIds.size) {
+        let peopleByContactId = yield call(SearchApi.searchEntityNeighborsWithFilter, contactInformationEntitySetId, {
+          entityKeyIds: contactIds.toJS(),
+          sourceEntitySetIds: [peopleEntitySetId],
+          destinationEntitySetIds: [contactInformationEntitySetId, peopleEntitySetId]
+        });
+        peopleByContactId = fromJS(peopleByContactId);
+        peopleByContactId.entrySeq().forEach(([id, people]) => {
+          const peopleList = people
+            .filter((person => !!person.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0], '')))
+            .map((person) => {
+              const personObj = person.get(PSA_NEIGHBOR.DETAILS, Map());
+              const personId = personObj.getIn([OPENLATTICE_ID_FQN, 0], '');
+              personIdsToContactIds = personIdsToContactIds.set(
+                personId, personIdsToContactIds.get(personId, List()).push(id)
+              );
+              return personObj;
+            });
+          allResults = allResults.concat(peopleList);
+        });
+      }
+    }
+    if (nameFields.length) {
+      const searchOptions = nameOptions;
+      let people = yield call(SearchApi.advancedSearchEntitySetData, peopleEntitySetId, searchOptions);
+      people = fromJS(people.hits);
+      allResults = allResults.concat(people);
+      people.forEach((person) => {
+        const personId = person.getIn([OPENLATTICE_ID_FQN, 0], '');
+        peopleIds = peopleIds.push(personId);
+        peopleMap = peopleMap.set(personId, person);
+      });
+      if (peopleIds.size) {
+        let contactsByPersonId = yield call(SearchApi.searchEntityNeighborsWithFilter, peopleEntitySetId, {
+          entityKeyIds: peopleIds.toJS(),
+          sourceEntitySetIds: [],
+          destinationEntitySetIds: [contactInformationEntitySetId]
+        });
+        contactsByPersonId = fromJS(contactsByPersonId);
+        contactsByPersonId.entrySeq().forEach(([id, contacts]) => {
+          contacts
+            .filter((contact => !!contact.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0], '')))
+            .forEach((contact) => {
+              const contactObj = contact.get(PSA_NEIGHBOR.DETAILS, Map());
+              const contactId = contactObj.getIn([OPENLATTICE_ID_FQN, 0], '');
+              const contactIsPreferred = contactObj.getIn([PROPERTY_TYPES.IS_PREFERRED, 0], false);
+              const personNeedsContact = !personIdsToContactIds.get(id);
+              if (personNeedsContact && contactIsPreferred) {
+                contactMap = contactMap.set(contactId, contactObj);
+                personIdsToContactIds = personIdsToContactIds.set(
+                  id, personIdsToContactIds.get(id, List()).push(contactId)
+                );
+              }
+            });
+        });
+      }
+    }
+    let people = Map();
+    allResults.forEach((person) => {
+      const personId = person.getIn([OPENLATTICE_ID_FQN, 0], '');
+      people = people.set(personId, person);
+    });
+
+    yield put(searchPeopleByPhoneNumber.success(action.id, {
+      people,
+      contactMap,
+      personIdsToContactIds
+    }));
+  }
+  catch (error) {
+    console.error(error);
+    yield put(searchPeopleByPhoneNumber.failure(error));
+  }
+}
+
+function* searchPeopleByPhoneNumberWatcher() :Generator<*, *, *> {
+  yield takeEvery(SEARCH_PEOPLE_BY_PHONE, searchPeopleByPhoneNumberWorker);
+}
+
 function* clearSearchResultsWorker(action) :Generator<*, *, *> {
   yield put(clearSearchResults.success(action.id));
 }
@@ -293,5 +443,6 @@ export {
   loadPersonDetailsWatcher,
   updateCasesWatcher,
   newPersonSubmitWatcher,
-  searchPeopleWatcher
+  searchPeopleWatcher,
+  searchPeopleByPhoneNumberWatcher
 };

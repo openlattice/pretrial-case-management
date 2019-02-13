@@ -640,6 +640,7 @@ class Form extends React.Component<Props, State> {
               exportPDF(
                 data,
                 selectedPretrialCase,
+                List(),
                 charges,
                 selectedPerson,
                 arrestOptions,
@@ -649,7 +650,8 @@ class Form extends React.Component<Props, State> {
                 {
                   user: this.getStaffId(),
                   timestamp: toISODateTime(moment())
-                });
+                }
+              );
             }}>
             Export as PDF
         </Button>
@@ -962,8 +964,10 @@ class Form extends React.Component<Props, State> {
       .set('psaRiskFactors', Immutable.fromJS(riskFactors))
       .set('dmfRiskFactors', Immutable.fromJS(dmfRiskFactors));
 
-    exportPDF(data,
+    exportPDF(
+      data,
       selectedPretrialCase,
+      List(),
       charges,
       selectedPerson,
       arrestOptions,
@@ -977,7 +981,8 @@ class Form extends React.Component<Props, State> {
         timestamp: toISODateTime(moment())
       },
       false,
-      isCompact);
+      isCompact
+    );
   }
 
   getPsaResults = () => {
