@@ -1,27 +1,55 @@
+/*
+ * @flow
+ */
 import React from 'react';
 import styled from 'styled-components';
+import { Map } from 'immutable';
 
 import HearingRow from './HearingRow';
 import { OL } from '../../utils/consts/Colors';
-import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { APP_TYPES_FQNS } from '../../utils/consts/DataModelConsts';
+import { getHearingFields, sortHearingsByDate } from '../../utils/consts/HearingConsts';
 
-const Table = styled.table`
+let { PSA_SCORES } = APP_TYPES_FQNS;
+
+PSA_SCORES = PSA_SCORES.toString();
+
+const Table = styled.div`
+  position: relative;
+  margin-bottom: 30px;
   width: 100%;
-  min-width: 960px;
+  border: 1px solid ${OL.GREY11};
 `;
 
-const HeaderRow = styled.tr`
+const Body = styled.div`
+  width: 100%;
+  min-height: 200px;
+  max-height: ${props => props.maxHeight}px;
+  overflow-y: scroll;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+`;
+
+const HeaderRow = styled.div`
+  position: absolute;
+  display: grid;
+  grid-template-columns: 120px 74px 145px 225px 92px 241px;
   background-color: ${OL.GREY08};
   border: 1px solid ${OL.GREY08};
 `;
 
-const HeaderElement = styled.th`
+const HeaderElement = styled.div`
   font-size: 11px;
   font-weight: 600;
   font-family: 'Open Sans', sans-serif;
   color: ${OL.GREY02};
   text-transform: uppercase;
-  padding: 12px 30px;
+  padding: 12px 10px;
+`;
+
+const CenteredHeader = styled(HeaderElement)`
+  text-align: center;
 `;
 
 const Headers = () => (
@@ -29,24 +57,56 @@ const Headers = () => (
     <HeaderElement>DATE</HeaderElement>
     <HeaderElement>TIME</HeaderElement>
     <HeaderElement>COURTROOM</HeaderElement>
+    <HeaderElement>Type</HeaderElement>
+    <CenteredHeader>OPEN PSA</CenteredHeader>
     <HeaderElement />
   </HeaderRow>
 );
 
-const HearingsTable = ({ rows, handleSelect, disabled }) => {
+type Props = {
+  maxHeight :number,
+  rows :Map<*, *>,
+  hearingsWithOutcomes :Map<*, *>,
+  hearingNeighborsById :Map<*, *>,
+  cancelFn :(values :{ entityKeyId :string }) => void,
+}
+
+const HearingsTable = ({
+  maxHeight,
+  rows,
+  cancelFn,
+  hearingsWithOutcomes,
+  hearingNeighborsById
+} :Props) => {
+  let hearingCourtStringsCounts = Map();
+  rows.forEach((hearing) => {
+    const { hearingCourtString } = getHearingFields(hearing);
+    hearingCourtStringsCounts = hearingCourtStringsCounts.set(
+      hearingCourtString,
+      hearingCourtStringsCounts.get(hearingCourtString, 0) + 1
+    );
+  });
 
   return (
     <Table>
-      <tbody>
-        <Headers />
-        {rows.map((row => (
-          <HearingRow
-              key={row.getIn([PROPERTY_TYPES.CASE_ID, 0], '')}
-              row={row}
-              handleSelect={handleSelect}
-              disabled={disabled} />
-        )))}
-      </tbody>
+      <Headers />
+      <Body maxHeight={maxHeight}>
+        {rows.sort(sortHearingsByDate).map(((row) => {
+          const { hearingId, hearingEntityKeyId, hearingCourtString } = getHearingFields(row);
+          const hearingIsADuplicate = (hearingCourtStringsCounts.get(hearingCourtString) > 1);
+          const hearingHasPSA = !!hearingNeighborsById.getIn([hearingEntityKeyId, PSA_SCORES], Map()).size;
+          if (hearingIsADuplicate) console.log(`${hearingEntityKeyId}-${hearingCourtString}-${hearingId}`);
+          return (
+            <HearingRow
+                key={`${hearingEntityKeyId}-${hearingCourtString}-${hearingId}`}
+                row={row}
+                isDuplicate={hearingIsADuplicate}
+                hasPSA={hearingHasPSA}
+                cancelFn={cancelFn}
+                disabled={hearingsWithOutcomes.includes(hearingEntityKeyId)} />
+          );
+        }))}
+      </Body>
     </Table>
   );
 };
