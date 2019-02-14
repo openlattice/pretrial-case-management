@@ -12,6 +12,7 @@ import { faExclamationTriangle, faCheck, faTimesCircle } from '@fortawesome/pro-
 import InfoButton from '../buttons/InfoButton';
 import { OL } from '../../utils/consts/Colors';
 import { getHearingFields } from '../../utils/consts/HearingConsts';
+import { isUUID } from '../../utils/DataUtils';
 
 const Cell = styled.div`
   display: flex;
@@ -96,18 +97,18 @@ const HearingRow = ({
     hearingType
   } = getHearingFields(row);
 
-  const booleanIcon = boolean => (boolean
+  const renderBooleanIcon = boolean => (boolean
     ? <StatusIconContainer><FontAwesomeIcon color="green" icon={faCheck} /></StatusIconContainer>
     : <StatusIconContainer><FontAwesomeIcon color="red" icon={faTimesCircle} /></StatusIconContainer>
   );
 
-  const cancelButton = (
+  const renderCancelButton = (
     <CancelButton onClick={() => cancelFn(hearingEntityKeyId)} disabled={disabled}>
       { disabled ? 'Hearing Has Outcomes' : 'Cancel Hearing'}
     </CancelButton>
   );
 
-  const duplicateTag = isDuplicate
+  const renderDuplicateTag = isDuplicate
     ? (
       <DuplicateText>
         <StatusIconContainer><FontAwesomeIcon color="red" icon={faExclamationTriangle} /></StatusIconContainer>
@@ -123,10 +124,10 @@ const HearingRow = ({
       <Cell>{ courtroom }</Cell>
       <Cell>
         { hearingType }
-        { duplicateTag }
+        { renderDuplicateTag }
       </Cell>
-      <Cell>{booleanIcon(hasPSA)}</Cell>
-      <Cell>{cancelButton}</Cell>
+      <Cell>{renderBooleanIcon(hasPSA)}</Cell>
+      <Cell>{renderCancelButton}</Cell>
     </Row>
   );
 };
