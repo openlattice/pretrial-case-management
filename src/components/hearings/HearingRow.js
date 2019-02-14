@@ -14,6 +14,8 @@ import { OL } from '../../utils/consts/Colors';
 import { getHearingFields } from '../../utils/consts/HearingConsts';
 
 const Cell = styled.div`
+  display: flex;
+  align-items: center;
   padding: 5px 10px;
   font-family: 'Open Sans', sans-serif;
   font-size: 12px;
