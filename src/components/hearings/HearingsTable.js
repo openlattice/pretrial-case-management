@@ -92,7 +92,7 @@ const HearingsTable = ({
     <Table>
       <Headers />
       <Body maxHeight={maxHeight}>
-        {rows.sort(sortHearingsByDate).map(((row) => {
+        {rows.sort(sortHearingsByDate).valueSeq().map(((row) => {
           const { hearingId, hearingEntityKeyId, hearingCourtString } = getHearingFields(row);
           const hearingIsADuplicate = (hearingCourtStringsCounts.get(hearingCourtString) > 1);
           const hearingHasPSA = !!hearingNeighborsById.getIn([hearingEntityKeyId, PSA_SCORES], Map()).size;
