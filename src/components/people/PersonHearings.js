@@ -365,9 +365,6 @@ class PersonHearings extends React.Component<Props, State> {
     });
     return (
       <ColumnWrapper>
-        <TitleWrapper>
-          <h1>Manage Hearings</h1>
-        </TitleWrapper>
         <PaddedStyledColumnRow>
           <HearingCardsWithTitle
               title="Hearings With Outcomes"
