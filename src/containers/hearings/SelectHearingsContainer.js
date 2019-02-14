@@ -412,13 +412,27 @@ class SelectHearingsContainer extends React.Component<Props, State> {
   }
 
   selectExistingHearing = (row, hearingId) => {
-    const { onSubmit } = this.props;
-    const hearingWithOnlyId = { [ID_FIELD_NAMES.HEARING_ID]: hearingId };
-    this.selectHearing(hearingWithOnlyId);
-    onSubmit(Object.assign({}, hearingWithOnlyId, {
+    const {
+      actions,
+      app,
+      onSubmit,
+      psaId
+    } = this.props;
+    const values = {
+      [ID_FIELD_NAMES.HEARING_ID]: hearingId,
+      [ID_FIELD_NAMES.PSA_ID]: psaId,
+    };
+    actions.submit({
+      app,
+      values,
+      config: psaHearingConfig,
+      callback: this.refreshHearingsNeighborsCallback
+    });
+    onSubmit({
+      [ID_FIELD_NAMES.HEARING_ID]: hearingId,
       [HEARING.DATE_TIME]: row.getIn([PROPERTY_TYPES.DATE_TIME, 0], ''),
       [HEARING.COURTROOM]: row.getIn([PROPERTY_TYPES.COURTROOM, 0], '')
-    }));
+    });
   }
 
   renderAvailableHearings = (manuallyCreatingHearing, scheduledHearings) => {
