@@ -16,6 +16,7 @@ PSA_SCORES = PSA_SCORES.toString();
 
 const Table = styled.div`
   position: relative;
+  overflow: hidden;
   margin-bottom: 30px;
   width: 100%;
   border: 1px solid ${OL.GREY11};
