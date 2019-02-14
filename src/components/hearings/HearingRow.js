@@ -7,7 +7,7 @@ import styled from 'styled-components';
 import Immutable from 'immutable';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCheck, faTimesCircle } from '@fortawesome/pro-light-svg-icons';
+import { faExclamationTriangle, faCheck, faTimesCircle } from '@fortawesome/pro-light-svg-icons';
 
 import InfoButton from '../buttons/InfoButton';
 import { OL } from '../../utils/consts/Colors';
@@ -26,7 +26,7 @@ const Cell = styled.div`
 const Row = styled.div`
   width: 100%;
   display: grid;
-  grid-template-columns: 120px 74px 145px 225px 92px 241px;
+  grid-template-columns: 120px 74px 145px 250px 92px 216px;
   border-bottom: 1px solid ${OL.GREY11};
 
   &:hover {
@@ -51,6 +51,9 @@ const DeleteButton = styled(InfoButton)`
 `;
 
 const DuplicateText = styled.div`
+  display: flex;
+  flex-direction: row;
+  align-items: center;
   font-size: 12px;
   color: ${OL.RED01};
 `;
@@ -67,7 +70,7 @@ const StatusIconContainer = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  margin: 5px 0;
+  margin: 5px 5px;
 `;
 
 type Props = {
@@ -104,7 +107,13 @@ const HearingRow = ({
     </CancelButton>
   );
 
-  const duplicateTag = isDuplicate ? <DuplicateText>Duplicate</DuplicateText> : null;
+  const duplicateTag = isDuplicate
+    ? (
+      <DuplicateText>
+        <StatusIconContainer><FontAwesomeIcon color="red" icon={faExclamationTriangle} /></StatusIconContainer>
+        Duplicate
+      </DuplicateText>
+    ) : null;
 
   return (
     <Row

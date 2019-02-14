@@ -35,7 +35,7 @@ const Body = styled.div`
 const HeaderRow = styled.div`
   position: absolute;
   display: grid;
-  grid-template-columns: 120px 74px 145px 225px 92px 241px;
+  grid-template-columns: 120px 74px 145px 250px 92px 216px;
   background-color: ${OL.GREY08};
   border: 1px solid ${OL.GREY08};
 `;
