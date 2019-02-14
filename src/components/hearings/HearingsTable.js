@@ -27,6 +27,7 @@ const Body = styled.div`
   min-height: 200px;
   max-height: ${props => props.maxHeight}px;
   overflow-y: scroll;
+  margin-top: 41px;
   &::-webkit-scrollbar {
     display: none;
   }
@@ -55,11 +56,11 @@ const CenteredHeader = styled(HeaderElement)`
 
 const Headers = () => (
   <HeaderRow>
-    <HeaderElement>DATE</HeaderElement>
-    <HeaderElement>TIME</HeaderElement>
-    <HeaderElement>COURTROOM</HeaderElement>
+    <HeaderElement>Date</HeaderElement>
+    <HeaderElement>Time</HeaderElement>
+    <HeaderElement>Courtroom</HeaderElement>
     <HeaderElement>Type</HeaderElement>
-    <CenteredHeader>OPEN PSA</CenteredHeader>
+    <CenteredHeader>Open PSA</CenteredHeader>
     <HeaderElement />
   </HeaderRow>
 );
