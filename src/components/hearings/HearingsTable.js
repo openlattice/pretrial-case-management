@@ -96,7 +96,6 @@ const HearingsTable = ({
           const { hearingId, hearingEntityKeyId, hearingCourtString } = getHearingFields(row);
           const hearingIsADuplicate = (hearingCourtStringsCounts.get(hearingCourtString) > 1);
           const hearingHasPSA = !!hearingNeighborsById.getIn([hearingEntityKeyId, PSA_SCORES], Map()).size;
-          if (hearingIsADuplicate) console.log(`${hearingEntityKeyId}-${hearingCourtString}-${hearingId}`);
           return (
             <HearingRow
                 key={`${hearingEntityKeyId}-${hearingCourtString}-${hearingId}`}
