@@ -50,10 +50,9 @@ const NoResultsForTable = styled(NoResults)`
 class RemindersTable extends React.Component<Props, State> {
   renderHeaders = () => (
     <HeaderRow>
-      <HeaderElement>{REMINDERS_HEADERS.TIME}</HeaderElement>
+      <HeaderElement>{REMINDERS_HEADERS.COURT_TIME}</HeaderElement>
       <HeaderElement>{REMINDERS_HEADERS.NAME}</HeaderElement>
       <HeaderElement>{REMINDERS_HEADERS.CONTACT}</HeaderElement>
-      <HeaderElement>{REMINDERS_HEADERS.COURT_TIME}</HeaderElement>
       <HeaderElement>{REMINDERS_HEADERS.COURTROOM}</HeaderElement>
       <HeaderElement>{REMINDERS_HEADERS.HEARING_TYPE}</HeaderElement>
       <HeaderElement>{REMINDERS_HEADERS.STATUS}</HeaderElement>

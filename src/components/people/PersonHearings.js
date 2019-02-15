@@ -14,20 +14,26 @@ import closeX from '../../assets/svg/close-x-gray.svg';
 import HearingCardsWithTitle from '../hearings/HearingCardsWithTitle';
 import InfoButton from '../buttons/InfoButton';
 import NewHearingSection from '../hearings/NewHearingSection';
+import HearingsTable from '../hearings/HearingsTable';
 import ReleaseConditionsModal from '../../containers/hearings/ReleaseConditionsModal';
 import LoadingSpinner from '../LoadingSpinner';
 import psaHearingConfig from '../../config/formconfig/PSAHearingConfig';
+import { getEntitySetId } from '../../utils/AppUtils';
 import { FORM_IDS, ID_FIELD_NAMES } from '../../utils/consts/Consts';
-import { APP_TYPES_FQNS } from '../../utils/consts/DataModelConsts';
+import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import {
-  STATE,
+  APP,
+  COURT,
+  EDM,
   REVIEW,
-  COURT
+  STATE
 } from '../../utils/consts/FrontEndStateConsts';
 import {
+  Count,
   StyledColumn,
   StyledColumnRow,
   StyledColumnRowWrapper,
+  Title,
   Wrapper
 } from '../../utils/Layout';
 
@@ -39,12 +45,19 @@ import * as PeopleActionFactory from '../../containers/people/PeopleActionFactor
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
-let { OUTCOMES } = APP_TYPES_FQNS;
+let { HEARINGS, OUTCOMES } = APP_TYPES_FQNS;
+
+HEARINGS = HEARINGS.toString();
 OUTCOMES = OUTCOMES.toString();
+
+const ColumnWrapper = styled(StyledColumnRowWrapper)`
+  background: transparent;
+`;
 
 const PaddedStyledColumnRow = styled(StyledColumnRow)`
   display: block;
   padding: 30px;
+  margin-bottom: 15px;
   hr {
     height: 1px;
     overflow: visible;
@@ -62,7 +75,7 @@ const TitleWrapper = styled.div`
   width: 100%;
   display: flex;
   flex-direction: row;
-  justify-content: space-between;
+  justify-content: flex-start;
   align-items: center;
 `;
 
@@ -93,6 +106,7 @@ type Props = {
   defaultConditions :Map<*, *>,
   defaultDMF :Map<*, *>,
   dmfId :string,
+  fqnToIdMap :Map<*, *>,
   hearingNeighborsById :Map<*, *>,
   hearingsWithOutcomes :List<*, *>,
   jurisdiction :?string,
@@ -102,6 +116,7 @@ type Props = {
   personId :?string,
   psaEntityKeyId :Map<*, *>,
   psaId :?string,
+  selectedOrganizationId :string,
   scheduledHearings :List<*, *>,
   actions :{
     deleteEntity :(values :{
@@ -116,6 +131,7 @@ type Props = {
       callback :() => void
     }) => void,
     refreshPSANeighbors :({ id :string }) => void,
+    refreshPersonNeighbors :(values :{ personId :string }) => void,
     refreshHearingNeighbors :({ id :string }) => void,
     replaceAssociation :(values :{
       associationEntity :Map<*, *>,
@@ -150,6 +166,32 @@ class PersonHearings extends React.Component<Props, State> {
       releaseConditionsModalOpen: false,
       selectedHearing: Map()
     };
+  }
+
+  refreshPersonNeighborsCallback = () => {
+    const { actions, personId } = this.props;
+    actions.refreshPersonNeighbors({ personId });
+  }
+
+  cancelHearing = (entityKeyId) => {
+    const {
+      actions,
+      app,
+      fqnToIdMap,
+      selectedOrganizationId
+    } = this.props;
+    const entitySetId = getEntitySetId(app, HEARINGS, selectedOrganizationId);
+    const values = {
+      [entityKeyId]: {
+        [fqnToIdMap.get(PROPERTY_TYPES.HEARING_INACTIVE)]: [true]
+      }
+    };
+    actions.updateEntity({
+      entitySetId,
+      entities: values,
+      updateType: 'PartialReplace',
+      callback: this.refreshPersonNeighborsCallback
+    });
   }
 
   openNewHearingModal = () => this.setState({ newHearingModalOpen: true })
@@ -304,8 +346,13 @@ class PersonHearings extends React.Component<Props, State> {
 
 
   renderScheduledAndPastHearings = () => {
-    const { hearingsWithOutcomes, hearingNeighborsById } = this.props;
-    const { scheduledHearings, pastHearings } = this.props;
+    const {
+      hearings,
+      hearingsWithOutcomes,
+      hearingNeighborsById,
+      scheduledHearings,
+      pastHearings
+    } = this.props;
     const scheduledHearingsWithOutcomes = scheduledHearings.filter((hearing) => {
       const id = hearing.getIn([OPENLATTICE_ID_FQN, 0], '');
       const hasOutcome = !!hearingNeighborsById.getIn([id, OUTCOMES]);
@@ -317,18 +364,27 @@ class PersonHearings extends React.Component<Props, State> {
       return hasOutcome;
     });
     return (
-      <StyledColumnRowWrapper>
+      <ColumnWrapper>
         <PaddedStyledColumnRow>
-          <TitleWrapper>
-            <h1>Manage Hearings</h1>
-          </TitleWrapper>
           <HearingCardsWithTitle
               title="Hearings With Outcomes"
               hearings={pastHearingsWithOutcomes}
               handleSelect={this.selectingReleaseConditions}
               hearingsWithOutcomes={hearingsWithOutcomes} />
         </PaddedStyledColumnRow>
-      </StyledColumnRowWrapper>
+        <PaddedStyledColumnRow>
+          <TitleWrapper>
+            <Title withSubtitle><span>All Hearings</span></Title>
+            <Count>{hearings.size}</Count>
+          </TitleWrapper>
+          <HearingsTable
+              maxHeight={400}
+              rows={hearings}
+              hearingsWithOutcomes={hearingsWithOutcomes}
+              hearingNeighborsById={hearingNeighborsById}
+              cancelFn={this.cancelHearing} />
+        </PaddedStyledColumnRow>
+      </ColumnWrapper>
     );
   }
 
@@ -352,16 +408,24 @@ class PersonHearings extends React.Component<Props, State> {
 
 function mapStateToProps(state) {
   const app = state.get(STATE.APP);
+  const edm = state.get(STATE.EDM);
   const review = state.get(STATE.REVIEW);
   const court = state.get(STATE.COURT);
   return {
     app,
+    [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
+    [APP.SELECTED_ORG_SETTINGS]: app.get(APP.SELECTED_ORG_SETTINGS),
+
+    [EDM.FQN_TO_ID]: edm.get(EDM.FQN_TO_ID),
+
     [REVIEW.SCORES]: review.get(REVIEW.SCORES),
     [REVIEW.NEIGHBORS_BY_ID]: review.get(REVIEW.NEIGHBORS_BY_ID),
+
     [COURT.LOADING_HEARING_NEIGHBORS]: court.get(COURT.LOADING_HEARING_NEIGHBORS),
     [COURT.HEARINGS_NEIGHBORS_BY_ID]: court.get(COURT.HEARINGS_NEIGHBORS_BY_ID),
     [COURT.ALL_JUDGES]: court.get(COURT.ALL_JUDGES),
     [COURT.HEARING_IDS_REFRESHING]: court.get(COURT.HEARING_IDS_REFRESHING),
+
     [REVIEW.LOADING_RESULTS]: review.get(REVIEW.LOADING_RESULTS),
     [REVIEW.ERROR]: review.get(REVIEW.ERROR)
   };
