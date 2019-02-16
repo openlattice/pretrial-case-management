@@ -272,6 +272,10 @@ function* searchPeopleWorker(action) :Generator<*, *, *> {
     console.error(error);
     yield put(searchPeople.failure(error));
   }
+
+  finally {
+    yield put(searchPeople.finally(action.id));
+  }
 }
 
 function* searchPeopleWatcher() :Generator<*, *, *> {
