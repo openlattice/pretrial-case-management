@@ -1,4 +1,5 @@
 
+import moment from 'moment';
 import { List } from 'immutable';
 import { Constants } from 'lattice';
 
@@ -34,8 +35,24 @@ export const formatPeopleInfo = (person) => {
   };
 };
 
+export const sortPeopleByName = (p1, p2) => {
+  const p1Last = p1.getIn([PROPERTY_TYPES.LAST_NAME, 0], '').toLowerCase();
+  const p2Last = p2.getIn([PROPERTY_TYPES.LAST_NAME, 0], '').toLowerCase();
+  if (p1Last !== p2Last) return p1Last < p2Last ? -1 : 1;
+
+  const p1First = p1.getIn([PROPERTY_TYPES.FIRST_NAME, 0], '').toLowerCase();
+  const p2First = p2.getIn([PROPERTY_TYPES.FIRST_NAME, 0], '').toLowerCase();
+  if (p1First !== p2First) return p1First < p2First ? -1 : 1;
+
+  const p1Dob = moment(p1.getIn([PROPERTY_TYPES.DOB, 0], ''));
+  const p2Dob = moment(p2.getIn([PROPERTY_TYPES.DOB, 0], ''));
+  if (p1Dob.isValid() && p2Dob.isValid()) return p1Dob.isBefore(p2Dob) ? -1 : 1;
+
+  return 0;
+};
+
 export const getFormattedPeople = peopleList => (
-  peopleList.map(person => formatPeopleInfo(person))
+  peopleList.sort(sortPeopleByName).map(person => formatPeopleInfo(person))
 );
 
 // Get PSA Ids from person Neighbors
