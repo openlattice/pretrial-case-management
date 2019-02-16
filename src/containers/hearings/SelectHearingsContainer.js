@@ -20,14 +20,13 @@ import NewHearingSection from '../../components/hearings/NewHearingSection';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import psaHearingConfig from '../../config/formconfig/PSAHearingConfig';
 import SelectReleaseConditions from '../../components/releaseconditions/SelectReleaseConditions';
-import SubscriptionInfo from '../../components/people/SubscriptionInfo';
+import SubscriptionInfo from '../../components/subscription/SubscriptionInfo';
 import { getEntitySetId } from '../../utils/AppUtils';
 import { OL } from '../../utils/consts/Colors';
 import { APP_TYPES_FQNS, PROPERTY_TYPES, SETTINGS } from '../../utils/consts/DataModelConsts';
 import { Title } from '../../utils/Layout';
 import {
   formatJudgeName,
-  getHearingsIdsFromNeighbors,
   getScheduledHearings,
   getPastHearings,
   getHearingFields

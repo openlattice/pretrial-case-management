@@ -38,7 +38,7 @@ import ChargeTable from '../../components/charges/ChargeTable';
 import PSAReviewReportsRowList from '../review/PSAReviewReportsRowList';
 import exportPDF from '../../utils/PDFUtils';
 import psaConfig from '../../config/formconfig/PsaConfig';
-import SubscriptionInfo from '../../components/people/SubscriptionInfo';
+import SubscriptionInfo from '../../components/subscription/SubscriptionInfo';
 import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
 import { OL } from '../../utils/consts/Colors';
 import { getEntityKeyId } from '../../utils/DataUtils';
