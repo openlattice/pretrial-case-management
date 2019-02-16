@@ -1,4 +1,4 @@
-import { Map, List } from 'immutable';
+import { Map, List, fromJS } from 'immutable';
 import moment from 'moment';
 
 import { PSA_STATUSES } from './consts/Consts';
@@ -44,7 +44,7 @@ export const getCaseHistory = (neighbors) => {
   return caseHistory;
 };
 
-const getPendingCharges = (caseNum, chargeHistory, arrestDate, psaClosureDate) => {
+export const getPendingCharges = (caseNum, chargeHistory, arrestDate, psaClosureDate) => {
   let pendingCharges = Map();
   if (chargeHistory.get(caseNum)) {
     pendingCharges = chargeHistory.get(caseNum)
