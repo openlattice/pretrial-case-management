@@ -208,7 +208,15 @@ export const PEOPLE = {
   NEIGHBORS: 'neighbors',
   REFRESHING_PERSON_NEIGHBORS: 'refreshingPersonNeighbors',
   MOST_RECENT_PSA: 'mostRecentPSA',
-  MOST_RECENT_PSA_NEIGHBORS: 'mostRecentPSANeighbors'
+  MOST_RECENT_PSA_NEIGHBORS: 'mostRecentPSANeighbors',
+  REQUIRES_ACTION_PEOPLE: 'requiresActionPeople',
+  REQUIRES_ACTION_SCORES: 'requiresActionPSAScores',
+  NO_PENDING_CHARGES_PSA_SCORES: 'psaScoresWithNoPendingCharges',
+  REQUIRES_ACTION_NEIGHBORS: 'requiresActionPeopleNeighbors',
+  MULTIPLE_PSA_PEOPLE: 'peopleWithMultiplePSAs',
+  RECENT_FTA_PEOPLE: 'peopleWithRecentFTAs',
+  NO_PENDING_CHARGES_PEOPLE: 'peopleWithNoPendingCharges',
+  REQUIRES_ACTION_LOADING: 'loadingRequiresActionPeople'
 };
 
 // Reminders
