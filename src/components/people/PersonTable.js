@@ -9,9 +9,9 @@ import PersonRow from './PersonRow';
 import { OL } from '../../utils/consts/Colors';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 
-
 const Table = styled.table`
   width: 100%;
+  margin-bottom: 15px;
 `;
 
 const HeaderRow = styled.tr`
@@ -42,10 +42,16 @@ const Headers = () => (
 type Props = {
   people :Immutable.List<*, *>,
   gray :boolean,
+  small :boolean,
   handleSelect :(person :Immutable.Map, entityKeyId :string, personId :string) => void,
 };
 
-const PersonTable = ({ people, handleSelect, gray } :Props) => (
+const PersonTable = ({
+  people,
+  handleSelect,
+  gray,
+  small
+} :Props) => (
   <Table>
     <tbody>
       <Headers />
@@ -54,7 +60,8 @@ const PersonTable = ({ people, handleSelect, gray } :Props) => (
             key={person.getIn([PROPERTY_TYPES.PERSON_ID, 0], '')}
             person={person}
             handleSelect={handleSelect}
-            gray={gray} />
+            gray={gray}
+            small={small} />
       )))}
     </tbody>
   </Table>
