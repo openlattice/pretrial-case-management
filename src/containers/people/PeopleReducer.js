@@ -3,9 +3,10 @@
  */
 import { Constants } from 'lattice';
 import {
-  Map,
+  fromJS,
   List,
-  fromJS
+  Map,
+  Set
 } from 'immutable';
 
 import { getEntityKeyId } from '../../utils/DataUtils';
@@ -18,6 +19,7 @@ import {
   getPeople,
   getPersonData,
   getPersonNeighbors,
+  loadRequiresActionPeople,
   refreshPersonNeighbors,
   updateContactInfo
 } from './PeopleActionFactory';
@@ -46,6 +48,14 @@ const INITIAL_STATE = fromJS({
   [PEOPLE.REFRESHING_PERSON_NEIGHBORS]: false,
   [PEOPLE.MOST_RECENT_PSA]: Map(),
   [PEOPLE.MOST_RECENT_PSA_NEIGHBORS]: Map(),
+  [PEOPLE.REQUIRES_ACTION_PEOPLE]: Map(),
+  [PEOPLE.REQUIRES_ACTION_SCORES]: Map(),
+  [PEOPLE.NO_PENDING_CHARGES_PSA_SCORES]: Set(),
+  [PEOPLE.REQUIRES_ACTION_NEIGHBORS]: Map(),
+  [PEOPLE.MULTIPLE_PSA_PEOPLE]: Set(),
+  [PEOPLE.RECENT_FTA_PEOPLE]: Set(),
+  [PEOPLE.NO_PENDING_CHARGES_PEOPLE]: Set(),
+  [PEOPLE.REQUIRES_ACTION_LOADING]: false
 });
 
 export default function peopleReducer(state = INITIAL_STATE, action) {
@@ -128,6 +138,40 @@ export default function peopleReducer(state = INITIAL_STATE, action) {
           .setIn([PEOPLE.NEIGHBORS, action.personId], Map())
           .set(PEOPLE.FETCHING_PEOPLE, false),
         FINALLY: () => state.set(PEOPLE.FETCHING_PERSON_DATA, false)
+      });
+    }
+
+    case loadRequiresActionPeople.case(action.type): {
+      return loadRequiresActionPeople.reducer(state, action, {
+        REQUEST: () => state
+          .set(PEOPLE.REQUIRES_ACTION_LOADING, true)
+          .set(PEOPLE.REQUIRES_ACTION_PEOPLE, Map())
+          .set(PEOPLE.REQUIRES_ACTION_SCORES, Map())
+          .set(PEOPLE.REQUIRES_ACTION_NEIGHBORS, Map()),
+        SUCCESS: () => {
+          const {
+            peopleNeighborsById,
+            peopleWithMultipleOpenPSAs,
+            peopleWithRecentFTAs,
+            peopleWithNoPendingCharges,
+            peopleMap,
+            psaScoreMap,
+            psaScoresWithNoPendingCharges
+          } = action.value;
+          return (
+            state
+              .set(PEOPLE.REQUIRES_ACTION_PEOPLE, peopleMap)
+              .set(PEOPLE.REQUIRES_ACTION_SCORES, psaScoreMap)
+              .set(PEOPLE.NO_PENDING_CHARGES_PSA_SCORES, psaScoresWithNoPendingCharges)
+              .set(PEOPLE.REQUIRES_ACTION_NEIGHBORS, peopleNeighborsById)
+              .set(PEOPLE.MULTIPLE_PSA_PEOPLE, peopleWithMultipleOpenPSAs)
+              .set(PEOPLE.RECENT_FTA_PEOPLE, peopleWithRecentFTAs)
+              .set(PEOPLE.NO_PENDING_CHARGES_PEOPLE, peopleWithNoPendingCharges)
+          );
+        },
+        FAILURE: () => state
+          .set(PEOPLE.FETCHING_PEOPLE, false),
+        FINALLY: () => state.set(PEOPLE.REQUIRES_ACTION_LOADING, false)
       });
     }
 
