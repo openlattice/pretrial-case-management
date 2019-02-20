@@ -58,6 +58,7 @@ class Tabs extends React.Component<Props, State> {
         {
           buttonObjects.map(button => (
             <RadioButton
+                key={button.name}
                 name={button.name}
                 count={button.count}
                 label={button.title}
