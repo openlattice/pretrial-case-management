@@ -78,14 +78,17 @@ const Row = styled.tr`
   }
 
   &:active {
-    background-color: ${OL.GREY08};
+    background-color: ${OL.PURPLE06};
   }
+
+  background-color: ${props => (props.active ? OL.PURPLE06 : 'none')};
 `;
 
 type Props = {
   person :Immutable.Map<*, *>,
   handleSelect? :(person :Immutable.Map<*, *>, entityKeyId :string, id :string) => void,
   gray? :boolean,
+  selected? :boolean,
   small? :boolean,
 };
 
@@ -93,6 +96,7 @@ const PersonRow = ({
   person,
   handleSelect,
   gray,
+  selected,
   small
 } :Props) => {
 
@@ -114,10 +118,11 @@ const PersonRow = ({
 
   return (
     <Row
+        active={selected}
         gray={gray}
         onClick={() => {
           if (handleSelect) {
-            handleSelect(person, entityKeyId, id);
+            handleSelect(entityKeyId);
           }
         }
         }>
@@ -141,6 +146,7 @@ const PersonRow = ({
 PersonRow.defaultProps = {
   handleSelect: () => {},
   gray: false,
+  selected: false,
   small: false
 };
 
