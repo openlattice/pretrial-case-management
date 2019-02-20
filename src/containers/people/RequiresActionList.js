@@ -3,8 +3,9 @@
  */
 
 import React from 'react';
-import Immutable, { Map } from 'immutable';
+import { Map, List } from 'immutable';
 import styled from 'styled-components';
+import { Constants } from 'lattice';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 
@@ -17,22 +18,31 @@ import Pagination from '../../components/Pagination';
 import PersonTable from '../../components/people/PersonTable';
 import { formatPeopleInfo, sortPeopleByName } from '../../utils/PeopleUtils';
 import { OL } from '../../utils/consts/Colors';
+import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
+import { APP_TYPES_FQNS, MODULE, SETTINGS } from '../../utils/consts/DataModelConsts';
 import {
   APP,
   PEOPLE,
   SEARCH,
-  REVIEW,
   STATE,
 } from '../../utils/consts/FrontEndStateConsts';
 
 import * as ReviewActionFactory from '../review/ReviewActionFactory';
 import * as PeopleActionFactory from './PeopleActionFactory';
+import * as PSAModalActionFactory from '../psamodal/PSAModalActionFactory';
+
+const { OPENLATTICE_ID_FQN } = Constants;
+
+let { PSA_SCORES } = APP_TYPES_FQNS;
+
+PSA_SCORES = PSA_SCORES.toString();
 
 const SectionWrapper = styled.div`
     width: 100%;
     display: flex;
     flex-direction: column;
     padding: 20px 30px;
+    margin-bottom: 30px;
     justify-content: center;
     background-color: ${OL.WHITE};
     border-radius: 5px;
@@ -46,17 +56,31 @@ const ToolbarWrapper = styled.div`
   align-items: baseline;
 `;
 
+const PSAListTitle = styled.div`
+  color: ${OL.GREY01};
+  padding-top: 10px;
+  font-size: 18px;
+  font-weight: 400;
+  padding-bottom: 20px;
+  min-height: 56px;
+`;
+
 const SubToolbarWrapper = styled(ToolbarWrapper)`
   margin-right: -30px;
 `;
 
 type Props = {
+  entitySetIdsToAppType :Map<*, *>,
   loadingRequiresActionPeople :boolean,
-  requiresActionPeople :Immutable.Map<*, *>,
+  requiresActionPeople :Map<*, *>,
+  requiresActionPeopleNeighbors :Map<*, *>,
   peopleWithMultiplePSAs :Set<*>,
   peopleWithRecentFTAs :Set<*>,
+  peopleWithNoPendingCharges :Set<*>,
+  psaNeighborsById :Map<*, *>,
   psaScoresWithNoPendingCharges :Set<*>,
   selectedOrganizationId :string,
+  selectedOrganizationSettings :Map<*, *>,
   actions :{
     loadPSAsByDate :(filter :string) => void
   }
@@ -76,8 +100,24 @@ class RequiresActionList extends React.Component<Props, State> {
     this.state = {
       filter: REQUIRES_ACTION_FILTERS.MULTIPLE_PSA_PEOPLE,
       start: 0,
-      searchQuery: ''
+      searchQuery: '',
+      selectedPersonId: ''
     };
+  }
+
+  static getDerivedStateFromProps(nextProps, prevState) {
+    const { selectedPersonId, filter } = prevState;
+    const { peopleWithMultiplePSAs } = nextProps;
+    const selectedPersonNoLongerHasMultiplePSAs = !peopleWithMultiplePSAs.includes(selectedPersonId);
+    if (
+      selectedPersonNoLongerHasMultiplePSAs
+      && (filter === PEOPLE.MULTIPLE_PSA_PEOPLE)
+    ) {
+      return {
+        selectedPersonId: ''
+      };
+    }
+    return null;
   }
 
   componentDidMount() {
@@ -94,6 +134,8 @@ class RequiresActionList extends React.Component<Props, State> {
     }
   }
 
+  setPersonId = selectedPersonId => this.setState({ selectedPersonId });
+
   handleOnChangeSearchQuery = (event :SyntheticInputEvent<*>) => {
     let { start } = this.state;
     const { numPages } = this.getActionList();
@@ -107,23 +149,26 @@ class RequiresActionList extends React.Component<Props, State> {
   }
 
   handleFilterRequest = (people) => {
-    const { searchQuery } = this.state;
+    const { searchQuery, selectedPersonId } = this.state;
     let nextPeople = people.sort(sortPeopleByName);
     if (searchQuery) {
       const searchQueryWords = searchQuery.split(' ');
       nextPeople = people.filter((person) => {
+        let personIsSelected = false;
         let matchesDOB = false;
         let matchesFirstName = false;
         let matchesIdentification = false;
         let matchesLastName = false;
         let matchesMiddleName = false;
         const {
+          entityKeyId,
           dob,
           firstName,
           identification,
           lastName,
           middleName
         } = formatPeopleInfo(person);
+        if (selectedPersonId === entityKeyId) personIsSelected = true;
         searchQueryWords.forEach((word) => {
           if (dob && dob.toLowerCase().includes(word.toLowerCase())) matchesDOB = true;
           if (firstName && firstName.toLowerCase().includes(word.toLowerCase())) matchesFirstName = true;
@@ -137,6 +182,7 @@ class RequiresActionList extends React.Component<Props, State> {
           || matchesIdentification
           || matchesLastName
           || matchesMiddleName
+          || personIsSelected
         );
       });
     }
@@ -180,19 +226,22 @@ class RequiresActionList extends React.Component<Props, State> {
   )
 
   renderPeople = () => {
-    const { start } = this.state;
+    const { selectedPersonId, start } = this.state;
     const { people } = this.getActionList();
     const pageOfPeople = people.slice(start, start + MAX_RESULTS);
     return (
       <PersonTable
-          small
-          people={pageOfPeople} />
+          handleSelect={this.setPersonId}
+          selectedPersonId={selectedPersonId}
+          people={pageOfPeople}
+          small />
     );
   }
 
   updateFilter = filter => this.setState({
     filter,
-    start: 0
+    start: 0,
+    selectedPersonId: ''
   });
 
   renderStatButtons = () => {
@@ -212,9 +261,59 @@ class RequiresActionList extends React.Component<Props, State> {
     );
   }
 
+  loadCaseHistoryCallback = (personId, psaNeighbors) => {
+    const { actions } = this.props;
+    const { loadCaseHistory } = actions;
+    loadCaseHistory({ personId, neighbors: psaNeighbors });
+  }
+
+  renderPSAReviewRows = () => {
+    const { selectedPersonId } = this.state;
+    const {
+      actions,
+      entitySetIdsToAppType,
+      psaNeighborsById,
+      requiresActionPeopleNeighbors,
+      selectedOrganizationSettings
+    } = this.props;
+    console.log(selectedPersonId);
+    if (!selectedPersonId) return null;
+
+    const { downloadPSAReviewPDF, loadPSAModal } = actions;
+    const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
+    const personPSAs = requiresActionPeopleNeighbors.getIn([selectedPersonId, PSA_SCORES], List());
+    console.log(personPSAs);
+
+    const psaList = personPSAs.map((psa) => {
+      const entityKeyId = psa.getIn([OPENLATTICE_ID_FQN, 0], '');
+      const psaNeighbors = psaNeighborsById.get(entityKeyId, Map());
+
+      return (
+        <PSAReviewReportsRow
+            key={entityKeyId}
+            component={CONTENT_CONSTS.PENDING_PSAS}
+            downloadFn={downloadPSAReviewPDF}
+            entityKeyId={entityKeyId}
+            entitySetIdsToAppType={entitySetIdsToAppType}
+            hideProfile
+            includesPretrialModule={includesPretrialModule}
+            loadCaseHistoryFn={this.loadCaseHistoryCallback}
+            loadPSAModal={loadPSAModal}
+            psaNeighbors={psaNeighbors}
+            scores={psa} />
+      );
+    });
+
+    return (
+      <SectionWrapper>
+        <PSAListTitle>Open PSAs</PSAListTitle>
+        { psaList }
+      </SectionWrapper>
+    );
+  }
+
   render() {
     const { loadingRequiresActionPeople } = this.props;
-
     if (loadingRequiresActionPeople) {
       return <LoadingSpinner />;
     }
@@ -232,6 +331,7 @@ class RequiresActionList extends React.Component<Props, State> {
             { this.renderPagination() }
           </SubToolbarWrapper>
         </SectionWrapper>
+        {this.renderPSAReviewRows() }
       </DashboardMainSection>
     );
   }
@@ -239,14 +339,17 @@ class RequiresActionList extends React.Component<Props, State> {
 
 function mapStateToProps(state) {
   const app = state.get(STATE.APP);
-  const review = state.get(STATE.REVIEW);
   const people = state.get(STATE.PEOPLE);
   const search = state.get(STATE.SEARCH);
+  const orgId = app.get(APP.SELECTED_ORG_ID);
   return {
-    [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
+    [APP.SELECTED_ORG_ID]: orgId,
+    [APP.SELECTED_ORG_SETTINGS]: app.get(APP.SELECTED_ORG_SETTINGS),
+    entitySetIdsToAppType: app.getIn([APP.ENTITY_SETS_BY_ORG, orgId], Map()),
 
     [PEOPLE.REQUIRES_ACTION_PEOPLE]: people.get(PEOPLE.REQUIRES_ACTION_PEOPLE),
     [PEOPLE.REQUIRES_ACTION_SCORES]: people.get(PEOPLE.REQUIRES_ACTION_SCORES),
+    [PEOPLE.PSA_NEIGHBORS_BY_ID]: people.get(PEOPLE.PSA_NEIGHBORS_BY_ID),
     [PEOPLE.NO_PENDING_CHARGES_PSA_SCORES]: people.get(PEOPLE.NO_PENDING_CHARGES_PSA_SCORES),
     [PEOPLE.REQUIRES_ACTION_NEIGHBORS]: people.get(PEOPLE.REQUIRES_ACTION_NEIGHBORS),
     [PEOPLE.MULTIPLE_PSA_PEOPLE]: people.get(PEOPLE.MULTIPLE_PSA_PEOPLE),
@@ -254,10 +357,7 @@ function mapStateToProps(state) {
     [PEOPLE.NO_PENDING_CHARGES_PEOPLE]: people.get(PEOPLE.NO_PENDING_CHARGES_PEOPLE),
     [PEOPLE.REQUIRES_ACTION_LOADING]: people.get(PEOPLE.REQUIRES_ACTION_LOADING),
 
-    [SEARCH.LOADING]: search.get(SEARCH.LOADING),
-    [REVIEW.LOADING_DATA]: review.get(REVIEW.LOADING_DATA),
-    [REVIEW.SCORES]: review.get(REVIEW.SCORES),
-    [REVIEW.NEIGHBORS_BY_ID]: review.get(REVIEW.NEIGHBORS_BY_ID)
+    [SEARCH.LOADING]: search.get(SEARCH.LOADING)
   };
 }
 
@@ -270,6 +370,10 @@ function mapDispatchToProps(dispatch) {
 
   Object.keys(PeopleActionFactory).forEach((action :string) => {
     actions[action] = PeopleActionFactory[action];
+  });
+
+  Object.keys(PSAModalActionFactory).forEach((action :string) => {
+    actions[action] = PSAModalActionFactory[action];
   });
 
   return {
