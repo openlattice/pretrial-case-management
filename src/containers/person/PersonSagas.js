@@ -271,6 +271,7 @@ function* searchPeopleWorker(action) :Generator<*, *, *> {
   catch (error) {
     yield put(searchPeople.failure(error));
   }
+
   finally {
     yield put(searchPeople.finally(action.id));
   }
