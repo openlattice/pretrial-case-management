@@ -126,15 +126,8 @@ const PersonRow = ({
           }
         }
         }>
-      <Cell small={small}>{mugshot}</Cell>
-      <Cell small={small}>
-        {
-          small
-            ? (
-              <StyledLink to={`${Routes.PERSON_DETAILS_ROOT}/${id}${Routes.OVERVIEW}`}>{lastName}</StyledLink>
-            ) : lastName
-        }
-      </Cell>
+      <Cell small={small}>{ mugshot }</Cell>
+      <Cell small={small}>{ lastName }</Cell>
       <Cell small={small}>{ firstName }</Cell>
       <Cell small={small}>{ middleName }</Cell>
       <Cell small={small}>{ dob }</Cell>
