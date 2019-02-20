@@ -22,7 +22,7 @@ import { obfuscateEntity, obfuscateEntityNeighbors } from '../../utils/consts/De
 import { getEntitySetId } from '../../utils/AppUtils';
 import { getPropertyTypeId } from '../../edm/edmUtils';
 import { PSA_STATUSES } from '../../utils/consts/Consts';
-import { getPendingCharges } from '../../utils/CaseUtils';
+import { getCasesForPSA, getChargeHistory, getCaseHistory } from '../../utils/CaseUtils';
 import {
   GET_PEOPLE,
   GET_PERSON_DATA,
@@ -558,6 +558,9 @@ function* loadRequiresActionPeopleWorker(action :SequenceAction) :Generator<*, *
         }
       });
 
+      const personCaseHistory = getCaseHistory(personNeighbors);
+      const personChargeHistory = getChargeHistory(personNeighbors);
+
       /* collect people Ids with multiple PSAs */
       const psaCount = personNeighbors.get(PSA_SCORES, List()).size;
       if (psaCount > 1) peopleWithMultipleOpenPSAs = peopleWithMultipleOpenPSAs.add(personId);
@@ -577,20 +580,25 @@ function* loadRequiresActionPeopleWorker(action :SequenceAction) :Generator<*, *
       if (personCharges) {
         personNeighbors.get(PSA_SCORES, List()).forEach((psa) => {
           const psaId = psa.getIn([OPENLATTICE_ID_FQN, 0], '');
-          let psaPendingCharges;
-          if (psaScoreMap.get(psaId)) {
-            const arrestDate = moment(psaNeighborsById
-              .getIn([psaId, MANUAL_PRETRIAL_CASES, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.ARREST_DATE_TIME, 0]));
-            if (arrestDate.isValid()) {
-              psaPendingCharges = personCharges.filter((charge) => {
-                const dispositionDate = moment(charge.getIn([PROPERTY_TYPES.DISPOSITION_DATE, 0], []));
-                return dispositionDate.isBetween(arrestDate, moment().add(1, 'day'), null, []);
-              });
+          let hasPendingCharges = false;
+          const arrestDate = moment(psaNeighborsById
+            .getIn([psaId, MANUAL_PRETRIAL_CASES, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.ARREST_DATE_TIME, 0]));
+          const { chargeHistoryForMostRecentPSA } = getCasesForPSA(
+            personCaseHistory,
+            personChargeHistory,
+            psa,
+            arrestDate,
+            undefined
+          );
+          if (psaScoreMap.get(psaId) && arrestDate.isValid()) {
+            chargeHistoryForMostRecentPSA.entrySeq().forEach(([_, charges]) => {
+              const psaHasPendingCharges = charges.some(charge => !charge.getIn([PROPERTY_TYPES.DISPOSITION_DATE, 0]));
+              if (psaHasPendingCharges) hasPendingCharges = true;
+            });
+            if (chargeHistoryForMostRecentPSA.size && !hasPendingCharges) {
+              psaScoresWithNoPendingCharges = psaScoresWithNoPendingCharges.add(psaId);
+              peopleWithNoPendingCharges = peopleWithNoPendingCharges.add(personId);
             }
-          }
-          if (!psaPendingCharges.size) {
-            psaScoresWithNoPendingCharges = psaScoresWithNoPendingCharges.add(psaId);
-            peopleWithNoPendingCharges = peopleWithNoPendingCharges.add(personId);
           }
         });
       }
