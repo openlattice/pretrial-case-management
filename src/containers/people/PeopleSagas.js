@@ -47,6 +47,7 @@ let {
   PEOPLE,
   PSA_SCORES,
   PRETRIAL_CASES,
+  RELEASE_RECOMMENDATIONS,
   STAFF,
   SUBSCRIPTION
 } = APP_TYPES_FQNS;
@@ -59,10 +60,11 @@ MANUAL_PRETRIAL_CASES = MANUAL_PRETRIAL_CASES.toString();
 PEOPLE = PEOPLE.toString();
 PSA_SCORES = PSA_SCORES.toString();
 PRETRIAL_CASES = PRETRIAL_CASES.toString();
+RELEASE_RECOMMENDATIONS = RELEASE_RECOMMENDATIONS.toString();
 STAFF = STAFF.toString();
 SUBSCRIPTION = SUBSCRIPTION.toString();
 
-const LIST_FQNS = [CONTACT_INFORMATION, HEARINGS, PRETRIAL_CASES, STAFF];
+const LIST_FQNS = [CONTACT_INFORMATION, HEARINGS, PRETRIAL_CASES, STAFF, RELEASE_RECOMMENDATIONS, CHARGES];
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
@@ -367,6 +369,7 @@ function* refreshPersonNeighborsWorker(action) :Generator<*, *, *> {
 
     yield put(refreshPersonNeighbors.success(action.id, {
       personId,
+      entityKeyId,
       mostRecentPSA,
       mostRecentPSANeighborsByAppTypeFqn,
       neighbors,
@@ -456,9 +459,11 @@ function* loadRequiresActionPeopleWorker(action :SequenceAction) :Generator<*, *
     const psaScoresEntitySetId = getEntitySetId(app, PSA_SCORES, orgId);
     const peopleEntitySetId = getEntitySetId(app, PEOPLE, orgId);
     const manualPretrialCasesFqnEntitySetId = getEntitySetId(app, MANUAL_PRETRIAL_CASES, orgId);
-    const pretrialCasesFqnEntitySetId = getEntitySetId(app, PRETRIAL_CASES, orgId);
+    const pretrialCasesEntitySetId = getEntitySetId(app, PRETRIAL_CASES, orgId);
+    const releaseRecommendationsEntitySetId = getEntitySetId(app, RELEASE_RECOMMENDATIONS, orgId);
     const chargesEntitySetId = getEntitySetId(app, CHARGES, orgId);
     const ftaEntitySetId = getEntitySetId(app, FTAS, orgId);
+    const staffEntitySetId = getEntitySetId(app, STAFF, orgId);
 
     /* load all open PSAs */
     const statusPropertyTypeId = getPropertyTypeId(edm, PROPERTY_TYPES.STATUS);
@@ -474,8 +479,13 @@ function* loadRequiresActionPeopleWorker(action :SequenceAction) :Generator<*, *
     /* get people and cases for all open PSAs */
     let openPSAIdsToPeopleAndCases = yield call(SearchApi.searchEntityNeighborsWithFilter, psaScoresEntitySetId, {
       entityKeyIds: psaIds,
-      sourceEntitySetIds: [],
-      destinationEntitySetIds: [peopleEntitySetId, manualPretrialCasesFqnEntitySetId]
+      sourceEntitySetIds: [psaScoresEntitySetId, releaseRecommendationsEntitySetId],
+      destinationEntitySetIds: [
+        peopleEntitySetId,
+        psaScoresEntitySetId,
+        staffEntitySetId,
+        manualPretrialCasesFqnEntitySetId
+      ]
     });
 
     /* all people Ids */
@@ -491,7 +501,15 @@ function* loadRequiresActionPeopleWorker(action :SequenceAction) :Generator<*, *
           peopleMap = peopleMap.set(neighborId, neighborObj);
           peopleIds = peopleIds.add(neighborId);
         }
-        psaNeighbors = psaNeighbors.set(appTypeFqn, neighborObj);
+        if (LIST_FQNS.includes(appTypeFqn)) {
+          psaNeighbors = psaNeighbors.set(
+            appTypeFqn,
+            psaNeighbors.get(appTypeFqn, List()).push(neighbor)
+          );
+        }
+        else {
+          psaNeighbors = psaNeighbors.set(appTypeFqn, neighbor);
+        }
       });
       psaNeighborsById = psaNeighborsById.set(psaId, psaNeighbors);
     });
@@ -500,7 +518,7 @@ function* loadRequiresActionPeopleWorker(action :SequenceAction) :Generator<*, *
     let peoleWithOpenPSANeighbors = yield call(SearchApi.searchEntityNeighborsWithFilter, peopleEntitySetId, {
       entityKeyIds: peopleIds.toJS(),
       sourceEntitySetIds: [psaScoresEntitySetId, ftaEntitySetId],
-      destinationEntitySetIds: [chargesEntitySetId, pretrialCasesFqnEntitySetId, ftaEntitySetId]
+      destinationEntitySetIds: [chargesEntitySetId, pretrialCasesEntitySetId, ftaEntitySetId]
     });
     peoleWithOpenPSANeighbors = fromJS(peoleWithOpenPSANeighbors);
 
@@ -555,16 +573,16 @@ function* loadRequiresActionPeopleWorker(action :SequenceAction) :Generator<*, *
       if (hasFTASincePSA) peopleWithRecentFTAs = peopleWithRecentFTAs.add(personId);
 
       /* collect people Ids with no pending charges */
-      const personPendingCharges = personNeighbors.get(CHARGES);
-      if (personPendingCharges) {
+      const personCharges = personNeighbors.get(CHARGES);
+      if (personCharges) {
         personNeighbors.get(PSA_SCORES, List()).forEach((psa) => {
           const psaId = psa.getIn([OPENLATTICE_ID_FQN, 0], '');
           let psaPendingCharges;
           if (psaScoreMap.get(psaId)) {
             const arrestDate = moment(psaNeighborsById
-              .getIn([psaId, MANUAL_PRETRIAL_CASES, PROPERTY_TYPES.ARREST_DATE_TIME, 0]));
+              .getIn([psaId, MANUAL_PRETRIAL_CASES, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.ARREST_DATE_TIME, 0]));
             if (arrestDate.isValid()) {
-              psaPendingCharges = personPendingCharges.filter((charge) => {
+              psaPendingCharges = personCharges.filter((charge) => {
                 const dispositionDate = moment(charge.getIn([PROPERTY_TYPES.DISPOSITION_DATE, 0], []));
                 return dispositionDate.isBetween(arrestDate, moment().add(1, 'day'), null, []);
               });
@@ -586,6 +604,7 @@ function* loadRequiresActionPeopleWorker(action :SequenceAction) :Generator<*, *
       peopleWithNoPendingCharges,
       peopleMap,
       psaScoreMap,
+      psaNeighborsById,
       psaScoresWithNoPendingCharges
     }));
   }
