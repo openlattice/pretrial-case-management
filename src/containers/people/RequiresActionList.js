@@ -276,13 +276,11 @@ class RequiresActionList extends React.Component<Props, State> {
       requiresActionPeopleNeighbors,
       selectedOrganizationSettings
     } = this.props;
-    console.log(selectedPersonId);
     if (!selectedPersonId) return null;
 
     const { downloadPSAReviewPDF, loadPSAModal } = actions;
     const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
     const personPSAs = requiresActionPeopleNeighbors.getIn([selectedPersonId, PSA_SCORES], List());
-    console.log(personPSAs);
 
     const psaList = personPSAs.map((psa) => {
       const entityKeyId = psa.getIn([OPENLATTICE_ID_FQN, 0], '');
