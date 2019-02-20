@@ -15,6 +15,7 @@ let { PSA_SCORES } = APP_TYPES_FQNS;
 PSA_SCORES = PSA_SCORES.toString();
 
 export const formatPeopleInfo = (person) => {
+  const entityKeyId = formatDOB(person.getIn([OPENLATTICE_ID_FQN, 0]));
   const formattedDOB = formatDOB(person.getIn([PROPERTY_TYPES.DOB, 0]));
   const identification = person.getIn([PROPERTY_TYPES.PERSON_ID, 0]);
   const firstName = person.getIn([PROPERTY_TYPES.FIRST_NAME, 0]);
@@ -25,6 +26,7 @@ export const formatPeopleInfo = (person) => {
   const midName = middleName ? ` ${middleName}` : '';
   const lastFirstMid = `${lastName}, ${firstName}${midName}`;
   return {
+    entityKeyId,
     identification,
     firstName,
     middleName,
