@@ -213,6 +213,7 @@ export const PEOPLE = {
   REQUIRES_ACTION_SCORES: 'requiresActionPSAScores',
   NO_PENDING_CHARGES_PSA_SCORES: 'psaScoresWithNoPendingCharges',
   REQUIRES_ACTION_NEIGHBORS: 'requiresActionPeopleNeighbors',
+  PSA_NEIGHBORS_BY_ID: 'psaNeighborsById',
   MULTIPLE_PSA_PEOPLE: 'peopleWithMultiplePSAs',
   RECENT_FTA_PEOPLE: 'peopleWithRecentFTAs',
   NO_PENDING_CHARGES_PEOPLE: 'peopleWithNoPendingCharges',
