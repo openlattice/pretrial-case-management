@@ -247,7 +247,7 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
       submitting,
       selectedOrganizationSettings
     } = this.props;
-    const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], '');
+    const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
 
 
     const {
