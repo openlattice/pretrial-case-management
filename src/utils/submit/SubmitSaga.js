@@ -15,7 +15,7 @@ import {
   put,
   takeEvery,
   all
-} from 'redux-saga/effects';
+} from '@redux-saga/core/effects';
 
 import { APP } from '../consts/FrontEndStateConsts';
 import { stripIdField } from '../DataUtils';

@@ -2,9 +2,9 @@
  * @flow
  */
 
+import { all, fork } from '@redux-saga/core/effects';
 import { AuthSagas } from 'lattice-auth';
 import { EntityDataModelApiSagas } from 'lattice-sagas';
-import { fork } from 'redux-saga/effects';
 
 import * as AppSagas from '../../containers/app/AppSagas';
 import * as ChargesSagas from '../../containers/charges/ChargesSagas';
@@ -24,7 +24,7 @@ import * as SubscriptionsSagas from '../../containers/subscription/Subscriptions
 
 export default function* sagas() :Generator<*, *, *> {
 
-  yield [
+  yield all([
     // AppSagas
     fork(AppSagas.authExpirationCleanupWatcher),
     fork(AppSagas.authFailureCleanupWatcher),
@@ -119,5 +119,5 @@ export default function* sagas() :Generator<*, *, *> {
 
     // Subscriptions Sagas
     fork(SubscriptionsSagas.loadSubcriptionModalWatcher)
-  ];
+  ]);
 }

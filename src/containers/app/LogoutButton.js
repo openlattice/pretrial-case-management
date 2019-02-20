@@ -9,11 +9,11 @@ import styled from 'styled-components';
 import { Button } from 'react-bootstrap';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { AuthActionFactory } from 'lattice-auth';
+import { AuthActions } from 'lattice-auth';
 
 const {
   logout
-} = AuthActionFactory;
+} = AuthActions;
 
 const StyledLogoutButton = styled(Button)`
   position: absolute;

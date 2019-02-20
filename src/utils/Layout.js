@@ -92,22 +92,22 @@ export const Label = styled(ControlLabel)`
   font-weight: 400;
 `;
 
-export const TitleLabel = Label.extend`
+export const TitleLabel = styled(Label)`
   display: block;
   font-family: 'Open Sans', sans-serif;
   color: ${OL.GREY01};
 `;
 
-export const TableTitleLabel = TitleLabel.extend`
+export const TableTitleLabel = styled(TitleLabel)`
   font-weight: bold;
   font-size: 16px;
 `;
 
-export const TableRowLabel = TitleLabel.extend`
+export const TableRowLabel = styled(TitleLabel)`
   font-size: 16px;
 `;
 
-export const SectionHeader = Label.extend`
+export const SectionHeader = styled(Label)`
   font-size: 24px;
   margin-bottom: 24px;
 `;
@@ -252,7 +252,7 @@ export const ButtonWrapper = styled.div`
   text-align: center;
 `;
 
-export const SubmitButtonWrapper = ButtonWrapper.extend`
+export const SubmitButtonWrapper = styled(ButtonWrapper)`
   padding-top: 20px;
   text-align: center;
 `;

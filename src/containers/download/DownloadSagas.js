@@ -15,7 +15,7 @@ import {
   put,
   takeEvery,
   select
-} from 'redux-saga/effects';
+} from '@redux-saga/core/effects';
 
 import FileSaver from '../../utils/FileSaver';
 import { getEntitySetId } from '../../utils/AppUtils';

@@ -8,7 +8,7 @@ import {
   put,
   takeEvery,
   select
-} from 'redux-saga/effects';
+} from '@redux-saga/core/effects';
 
 import { loadPSAData } from '../review/ReviewActionFactory';
 import { getEntitySetId } from '../../utils/AppUtils';
