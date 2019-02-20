@@ -92,7 +92,7 @@ const REQUIRES_ACTION_FILTERS = {
   NO_PENDING_CHARGES_PEOPLE: PEOPLE.NO_PENDING_CHARGES_PEOPLE
 };
 
-const MAX_RESULTS = 8;
+const PAGE_SIZE = 8;
 
 class RequiresActionList extends React.Component<Props, State> {
   constructor(props :Props) {
@@ -139,8 +139,8 @@ class RequiresActionList extends React.Component<Props, State> {
   handleOnChangeSearchQuery = (event :SyntheticInputEvent<*>) => {
     let { start } = this.state;
     const { numPages } = this.getActionList();
-    const currPage = (start / MAX_RESULTS) + 1;
-    if (currPage > numPages) start = (numPages - 1) * MAX_RESULTS;
+    const currPage = (start / PAGE_SIZE) + 1;
+    if (currPage > numPages) start = (numPages - 1) * PAGE_SIZE;
     if (start <= 0) start = 0;
     this.setState({
       searchQuery: event.target.value,
@@ -196,7 +196,7 @@ class RequiresActionList extends React.Component<Props, State> {
     let people = props[filter].map(personId => requiresActionPeople.get(personId, Map()));
     people = this.handleFilterRequest(people);
     const numResults = people.length || people.size;
-    const numPages = Math.ceil(numResults / MAX_RESULTS);
+    const numPages = Math.ceil(numResults / PAGE_SIZE);
     return { people, numResults, numPages };
   }
 
@@ -211,13 +211,13 @@ class RequiresActionList extends React.Component<Props, State> {
   renderPagination = () => {
     const { start } = this.state;
     const { numPages } = this.getActionList();
-    const currPage = (start / MAX_RESULTS) + 1;
+    const currPage = (start / PAGE_SIZE) + 1;
     return (
       <Pagination
           numPages={numPages}
           activePage={currPage}
           updateStart={this.updateStart}
-          onChangePage={page => this.updatePage((page - 1) * MAX_RESULTS)} />
+          onChangePage={page => this.updatePage((page - 1) * PAGE_SIZE)} />
     );
   }
 
@@ -228,7 +228,7 @@ class RequiresActionList extends React.Component<Props, State> {
   renderPeople = () => {
     const { selectedPersonId, start } = this.state;
     const { people } = this.getActionList();
-    const pageOfPeople = people.slice(start, start + MAX_RESULTS);
+    const pageOfPeople = people.slice(start, start + PAGE_SIZE);
     return (
       <PersonTable
           handleSelect={this.setPersonId}
