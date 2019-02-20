@@ -26,12 +26,18 @@ export const getChargeHistory = (neighbors) => {
   let chargeHistory = Map();
   neighbors.get(CHARGES, List())
     .forEach((chargeNeighbor) => {
-      const chargeIdArr = chargeNeighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.CHARGE_ID, 0], '').split('|');
+      const chargeIdArr = chargeNeighbor.getIn(
+        [PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.CHARGE_ID, 0],
+        chargeNeighbor.getIn([PROPERTY_TYPES.CHARGE_ID, 0], '')
+      ).split('|');
       if (chargeIdArr.length) {
         const caseId = chargeIdArr[0];
         chargeHistory = chargeHistory.set(
           caseId,
-          chargeHistory.get(caseId, List()).push(chargeNeighbor.get(PSA_NEIGHBOR.DETAILS, Map()))
+          chargeHistory.get(caseId, List()).push(chargeNeighbor.get(
+            PSA_NEIGHBOR.DETAILS,
+            chargeNeighbor
+          ))
         );
       }
     });
@@ -40,7 +46,10 @@ export const getChargeHistory = (neighbors) => {
 
 export const getCaseHistory = (neighbors) => {
   const caseHistory = neighbors.get(PRETRIAL_CASES, List())
-    .map(neighborObj => neighborObj.get(PSA_NEIGHBOR.DETAILS, Map()));
+    .map(neighborObj => neighborObj.get(
+      PSA_NEIGHBOR.DETAILS,
+      neighborObj
+    ));
   return caseHistory;
 };
 
