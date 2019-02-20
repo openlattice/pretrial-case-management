@@ -134,7 +134,7 @@ class RequiresActionList extends React.Component<Props, State> {
     }
   }
 
-  setPersonId = selectedPersonId => this.setState({ selectedPersonId });
+  setPersonId = (person, selectedPersonId) => this.setState({ selectedPersonId });
 
   handleOnChangeSearchQuery = (event :SyntheticInputEvent<*>) => {
     let { start } = this.state;
@@ -250,7 +250,10 @@ class RequiresActionList extends React.Component<Props, State> {
       peopleWithMultiplePSAs,
       peopleWithRecentFTAs,
       psaScoresWithNoPendingCharges,
+      selectedOrganizationSettings
     } = this.props;
+    const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
+    if (!includesPretrialModule) return null;
     return (
       <StatButtons
           peopleWithMultiplePSAs={peopleWithMultiplePSAs}
