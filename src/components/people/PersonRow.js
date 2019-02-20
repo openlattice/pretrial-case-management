@@ -122,7 +122,7 @@ const PersonRow = ({
         gray={gray}
         onClick={() => {
           if (handleSelect) {
-            handleSelect(entityKeyId);
+            handleSelect(person, entityKeyId);
           }
         }
         }>
