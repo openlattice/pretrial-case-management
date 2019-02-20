@@ -35,6 +35,7 @@ CONTACT_INFORMATION = CONTACT_INFORMATION.toString();
 DMF_RESULTS = DMF_RESULTS.toString();
 PSA_SCORES = PSA_SCORES.toString();
 RELEASE_RECOMMENDATIONS = RELEASE_RECOMMENDATIONS.toString();
+const peopleFqn = APP_TYPES_FQNS.PEOPLE.toString();
 
 const { OPENLATTICE_ID_FQN } = Constants;
 const INITIAL_STATE = fromJS({
@@ -50,6 +51,7 @@ const INITIAL_STATE = fromJS({
   [PEOPLE.MOST_RECENT_PSA_NEIGHBORS]: Map(),
   [PEOPLE.REQUIRES_ACTION_PEOPLE]: Map(),
   [PEOPLE.REQUIRES_ACTION_SCORES]: Map(),
+  [PEOPLE.PSA_NEIGHBORS_BY_ID]: Map(),
   [PEOPLE.NO_PENDING_CHARGES_PSA_SCORES]: Set(),
   [PEOPLE.REQUIRES_ACTION_NEIGHBORS]: Map(),
   [PEOPLE.MULTIPLE_PSA_PEOPLE]: Set(),
@@ -84,8 +86,40 @@ export default function peopleReducer(state = INITIAL_STATE, action) {
             }
             return neighborObj;
           });
+
+          const requiresActionPeople = state.get(PEOPLE.REQUIRES_ACTION_PEOPLE, Map());
+          let requiresActionPeopleNeighbors = state.get(PEOPLE.REQUIRES_ACTION_NEIGHBORS, Map());
+          let peopleWithMultiplePSAs = state.get(PEOPLE.MULTIPLE_PSA_PEOPLE, Set());
+          if (requiresActionPeople.size) {
+            const requiresActionPersonId = state.getIn([
+              PEOPLE.PSA_NEIGHBORS_BY_ID,
+              id,
+              peopleFqn,
+              PSA_NEIGHBOR.DETAILS,
+              OPENLATTICE_ID_FQN,
+              0
+            ], '');
+            const personPSAs = state.getIn([
+              PEOPLE.REQUIRES_ACTION_NEIGHBORS,
+              requiresActionPersonId,
+              PSA_SCORES
+            ], List()).filter((psa) => {
+              const psaId = psa.getIn([OPENLATTICE_ID_FQN, 0], '');
+              return psaId !== id;
+            });
+            requiresActionPeopleNeighbors = requiresActionPeopleNeighbors.setIn([
+              requiresActionPersonId,
+              PSA_SCORES,
+              personPSAs
+            ]);
+            if (personPSAs.size < 2) {
+              peopleWithMultiplePSAs = peopleWithMultiplePSAs.delete(requiresActionPersonId);
+            }
+          }
           return state
             .setIn([PEOPLE.NEIGHBORS, personId, PSA_SCORES], nextNeighbors)
+            .set(PEOPLE.REQUIRES_ACTION_NEIGHBORS, requiresActionPeopleNeighbors)
+            .set(PEOPLE.MULTIPLE_PSA_PEOPLE, peopleWithMultiplePSAs)
             .set(PEOPLE.MOST_RECENT_PSA, mostRecentPSA);
         }
       });
@@ -156,12 +190,14 @@ export default function peopleReducer(state = INITIAL_STATE, action) {
             peopleWithNoPendingCharges,
             peopleMap,
             psaScoreMap,
+            psaNeighborsById,
             psaScoresWithNoPendingCharges
           } = action.value;
           return (
             state
               .set(PEOPLE.REQUIRES_ACTION_PEOPLE, peopleMap)
               .set(PEOPLE.REQUIRES_ACTION_SCORES, psaScoreMap)
+              .set(PEOPLE.PSA_NEIGHBORS_BY_ID, psaNeighborsById)
               .set(PEOPLE.NO_PENDING_CHARGES_PSA_SCORES, psaScoresWithNoPendingCharges)
               .set(PEOPLE.REQUIRES_ACTION_NEIGHBORS, peopleNeighborsById)
               .set(PEOPLE.MULTIPLE_PSA_PEOPLE, peopleWithMultipleOpenPSAs)
@@ -188,6 +224,7 @@ export default function peopleReducer(state = INITIAL_STATE, action) {
             neighbors,
             scoresEntitySetId
           } = action.value;
+
           return (
             state.setIn([PEOPLE.NEIGHBORS, personId], neighbors)
               .set(PEOPLE.SCORES_ENTITY_SET_ID, scoresEntitySetId)
