@@ -14,6 +14,7 @@ import { changePSAStatus, updateScoresAndRiskFactors, loadPSAData } from '../rev
 import { refreshHearingNeighbors } from '../court/CourtActionFactory';
 import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PEOPLE, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
+import { PSA_STATUSES } from '../../utils/consts/Consts';
 import {
   CLEAR_PERSON,
   getPeople,
@@ -53,6 +54,7 @@ const INITIAL_STATE = fromJS({
   [PEOPLE.REQUIRES_ACTION_SCORES]: Map(),
   [PEOPLE.PSA_NEIGHBORS_BY_ID]: Map(),
   [PEOPLE.NO_PENDING_CHARGES_PSA_SCORES]: Set(),
+  [PEOPLE.RECENT_FTA_PSA_SCORES]: Set(),
   [PEOPLE.REQUIRES_ACTION_NEIGHBORS]: Map(),
   [PEOPLE.MULTIPLE_PSA_PEOPLE]: Set(),
   [PEOPLE.RECENT_FTA_PEOPLE]: Set(),
@@ -90,6 +92,10 @@ export default function peopleReducer(state = INITIAL_STATE, action) {
           const requiresActionPeople = state.get(PEOPLE.REQUIRES_ACTION_PEOPLE, Map());
           let requiresActionPeopleNeighbors = state.get(PEOPLE.REQUIRES_ACTION_NEIGHBORS, Map());
           let peopleWithMultiplePSAs = state.get(PEOPLE.MULTIPLE_PSA_PEOPLE, Set());
+          let peopleWithRecentFTAs = state.get(PEOPLE.RECENT_FTA_PEOPLE, Set());
+          let psaScoresWithRecentFTAs = state.get(PEOPLE.RECENT_FTA_PSA_SCORES, Set());
+          let peopleWithNoPendingCharges = state.get(PEOPLE.NO_PENDING_CHARGES_PEOPLE, Set());
+          let psaScoresWithNoPendingCharges = state.get(PEOPLE.NO_PENDING_CHARGES_PSA_SCORES, Set());
           if (requiresActionPeople.size) {
             const requiresActionPersonId = state.getIn([
               PEOPLE.PSA_NEIGHBORS_BY_ID,
@@ -115,11 +121,21 @@ export default function peopleReducer(state = INITIAL_STATE, action) {
             if (personPSAs.size < 2) {
               peopleWithMultiplePSAs = peopleWithMultiplePSAs.delete(requiresActionPersonId);
             }
+            if (entity[PROPERTY_TYPES.STATUS][0] !== PSA_STATUSES.OPEN) {
+              peopleWithRecentFTAs = peopleWithRecentFTAs.delete(requiresActionPeople);
+              psaScoresWithRecentFTAs = psaScoresWithRecentFTAs.delete(id);
+              peopleWithNoPendingCharges = peopleWithNoPendingCharges.delete(requiresActionPersonId);
+              psaScoresWithNoPendingCharges = psaScoresWithNoPendingCharges.delete(id);
+            }
           }
           return state
             .setIn([PEOPLE.NEIGHBORS, personId, PSA_SCORES], nextNeighbors)
             .set(PEOPLE.REQUIRES_ACTION_NEIGHBORS, requiresActionPeopleNeighbors)
             .set(PEOPLE.MULTIPLE_PSA_PEOPLE, peopleWithMultiplePSAs)
+            .set(PEOPLE.RECENT_FTA_PEOPLE, peopleWithRecentFTAs)
+            .set(PEOPLE.RECENT_FTA_PSA_SCORES, psaScoresWithRecentFTAs)
+            .set(PEOPLE.NO_PENDING_CHARGES_PEOPLE, peopleWithNoPendingCharges)
+            .set(PEOPLE.NO_PENDING_CHARGES_PSA_SCORES, psaScoresWithNoPendingCharges)
             .set(PEOPLE.MOST_RECENT_PSA, mostRecentPSA);
         }
       });
@@ -191,7 +207,8 @@ export default function peopleReducer(state = INITIAL_STATE, action) {
             peopleMap,
             psaScoreMap,
             psaNeighborsById,
-            psaScoresWithNoPendingCharges
+            psaScoresWithNoPendingCharges,
+            psaScoresWithRecentFTAs
           } = action.value;
           return (
             state
@@ -199,6 +216,7 @@ export default function peopleReducer(state = INITIAL_STATE, action) {
               .set(PEOPLE.REQUIRES_ACTION_SCORES, psaScoreMap)
               .set(PEOPLE.PSA_NEIGHBORS_BY_ID, psaNeighborsById)
               .set(PEOPLE.NO_PENDING_CHARGES_PSA_SCORES, psaScoresWithNoPendingCharges)
+              .set(PEOPLE.RECENT_FTA_PSA_SCORES, psaScoresWithRecentFTAs)
               .set(PEOPLE.REQUIRES_ACTION_NEIGHBORS, peopleNeighborsById)
               .set(PEOPLE.MULTIPLE_PSA_PEOPLE, peopleWithMultipleOpenPSAs)
               .set(PEOPLE.RECENT_FTA_PEOPLE, peopleWithRecentFTAs)
