@@ -212,6 +212,7 @@ export const PEOPLE = {
   REQUIRES_ACTION_PEOPLE: 'requiresActionPeople',
   REQUIRES_ACTION_SCORES: 'requiresActionPSAScores',
   NO_PENDING_CHARGES_PSA_SCORES: 'psaScoresWithNoPendingCharges',
+  RECENT_FTA_PSA_SCORES: 'psaScoresWithRecentFTAs',
   REQUIRES_ACTION_NEIGHBORS: 'requiresActionPeopleNeighbors',
   PSA_NEIGHBORS_BY_ID: 'psaNeighborsById',
   MULTIPLE_PSA_PEOPLE: 'peopleWithMultiplePSAs',
