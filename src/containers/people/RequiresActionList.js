@@ -3,11 +3,15 @@
  */
 
 import React from 'react';
-import { Map, List } from 'immutable';
 import styled from 'styled-components';
+import moment from 'moment';
+import { Map, List } from 'immutable';
 import { Constants } from 'lattice';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
+
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCalendarTimes, faEllipsisV } from '@fortawesome/pro-light-svg-icons';
 
 import StatButtons from '../../components/requiresaction/RequiresActionStatButtons';
 import PSAReviewReportsRow from '../../components/review/PSAReviewReportsRow';
@@ -19,7 +23,12 @@ import PersonTable from '../../components/people/PersonTable';
 import { formatPeopleInfo, sortPeopleByName } from '../../utils/PeopleUtils';
 import { OL } from '../../utils/consts/Colors';
 import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
-import { APP_TYPES_FQNS, MODULE, SETTINGS } from '../../utils/consts/DataModelConsts';
+import {
+  APP_TYPES_FQNS,
+  MODULE,
+  PROPERTY_TYPES,
+  SETTINGS
+} from '../../utils/consts/DataModelConsts';
 import {
   APP,
   PEOPLE,
@@ -79,6 +88,7 @@ type Props = {
   peopleWithNoPendingCharges :Set<*>,
   psaNeighborsById :Map<*, *>,
   psaScoresWithNoPendingCharges :Set<*>,
+  psaScoresWithRecentFTAs :Set<*>,
   selectedOrganizationId :string,
   selectedOrganizationSettings :Map<*, *>,
   actions :{
@@ -109,10 +119,7 @@ class RequiresActionList extends React.Component<Props, State> {
     const { selectedPersonId, filter } = prevState;
     const { peopleWithMultiplePSAs } = nextProps;
     const selectedPersonNoLongerHasMultiplePSAs = !peopleWithMultiplePSAs.includes(selectedPersonId);
-    if (
-      selectedPersonNoLongerHasMultiplePSAs
-      && (filter === PEOPLE.MULTIPLE_PSA_PEOPLE)
-    ) {
+    if (selectedPersonNoLongerHasMultiplePSAs && (filter === PEOPLE.MULTIPLE_PSA_PEOPLE)) {
       return {
         selectedPersonId: ''
       };
@@ -195,7 +202,7 @@ class RequiresActionList extends React.Component<Props, State> {
     const { filter } = this.state;
     let people = props[filter].map(personId => requiresActionPeople.get(personId, Map()));
     people = this.handleFilterRequest(people);
-    const numResults = people.length || people.size;
+    const numResults = people.size;
     const numPages = Math.ceil(numResults / PAGE_SIZE);
     return { people, numResults, numPages };
   }
@@ -271,21 +278,31 @@ class RequiresActionList extends React.Component<Props, State> {
   }
 
   renderPSAReviewRows = () => {
-    const { selectedPersonId } = this.state;
+    const { filter, selectedPersonId } = this.state;
     const {
       actions,
       entitySetIdsToAppType,
       psaNeighborsById,
       requiresActionPeopleNeighbors,
+      psaScoresWithRecentFTAs,
       selectedOrganizationSettings
     } = this.props;
     if (!selectedPersonId) return null;
 
     const { downloadPSAReviewPDF, loadPSAModal } = actions;
     const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
-    const personPSAs = requiresActionPeopleNeighbors.getIn([selectedPersonId, PSA_SCORES], List());
-
-    const psaList = personPSAs.map((psa) => {
+    let personPSAs = requiresActionPeopleNeighbors.getIn([selectedPersonId, PSA_SCORES], List());
+    let earliestPSADate;
+    if (filter === REQUIRES_ACTION_FILTERS.RECENT_FTA_PEOPLE) {
+      personPSAs = personPSAs.filter((psa) => {
+        const entityKeyId = psa.getIn([OPENLATTICE_ID_FQN, 0], '');
+        return psaScoresWithRecentFTAs.includes(entityKeyId);
+      });
+    }
+    const psaList = personPSAs.sortBy((psa) => {
+      const psaDate = psa.getIn([PROPERTY_TYPES.DATE_TIME, 0], '');
+      if (!earliestPSADate || earliestPSADate.isAfter(psaDate)) earliestPSADate = moment(psaDate);
+    }).map((psa) => {
       const entityKeyId = psa.getIn([OPENLATTICE_ID_FQN, 0], '');
       const psaNeighbors = psaNeighborsById.get(entityKeyId, Map());
 
@@ -355,6 +372,7 @@ function mapStateToProps(state) {
     [PEOPLE.REQUIRES_ACTION_NEIGHBORS]: people.get(PEOPLE.REQUIRES_ACTION_NEIGHBORS),
     [PEOPLE.MULTIPLE_PSA_PEOPLE]: people.get(PEOPLE.MULTIPLE_PSA_PEOPLE),
     [PEOPLE.RECENT_FTA_PEOPLE]: people.get(PEOPLE.RECENT_FTA_PEOPLE),
+    [PEOPLE.RECENT_FTA_PSA_SCORES]: people.get(PEOPLE.RECENT_FTA_PSA_SCORES),
     [PEOPLE.NO_PENDING_CHARGES_PEOPLE]: people.get(PEOPLE.NO_PENDING_CHARGES_PEOPLE),
     [PEOPLE.REQUIRES_ACTION_LOADING]: people.get(PEOPLE.REQUIRES_ACTION_LOADING),
 
