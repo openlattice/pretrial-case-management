@@ -473,6 +473,7 @@ function* updateContactInfoWatcher() :Generator<*, *, *> {
 function* loadRequiresActionPeopleWorker(action :SequenceAction) :Generator<*, *, *> {
   let psaScoreMap = Map();
   let psaScoresWithNoPendingCharges = Set();
+  let psaScoresWithRecentFTAs = Set();
   let psaNeighborsById = Map();
   let peopleIds = Set();
   let peopleMap = Map();
@@ -546,17 +547,16 @@ function* loadRequiresActionPeopleWorker(action :SequenceAction) :Generator<*, *
     });
 
     /* get filtered neighbors for all people with open PSAs */
-    let peoleWithOpenPSANeighbors = yield call(SearchApi.searchEntityNeighborsWithFilter, peopleEntitySetId, {
+    let peopleWithOpenPSANeighbors = yield call(SearchApi.searchEntityNeighborsWithFilter, peopleEntitySetId, {
       entityKeyIds: peopleIds.toJS(),
       sourceEntitySetIds: [psaScoresEntitySetId, ftaEntitySetId],
       destinationEntitySetIds: [chargesEntitySetId, pretrialCasesEntitySetId, ftaEntitySetId]
     });
-    peoleWithOpenPSANeighbors = fromJS(peoleWithOpenPSANeighbors);
+    peopleWithOpenPSANeighbors = fromJS(peopleWithOpenPSANeighbors);
 
     /* map person neighbors by personId -> appTypeFqn -> neighbors */
-    peoleWithOpenPSANeighbors.entrySeq().forEach(([personId, neighbors]) => {
+    peopleWithOpenPSANeighbors.entrySeq().forEach(([personId, neighbors]) => {
       let personNeighbors = Map();
-      let earliestOpenPSADate;
       neighbors.forEach((neighbor) => {
         const neighborObj = neighbor.get(PSA_NEIGHBOR.DETAILS, Map());
         const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
@@ -565,10 +565,6 @@ function* loadRequiresActionPeopleWorker(action :SequenceAction) :Generator<*, *
           /* only open psas */
           const psaStatus = neighborObj.getIn([PROPERTY_TYPES.STATUS, 0], '');
           if (psaStatus === PSA_STATUSES.OPEN) {
-            const psaDate = moment(neighborObj.getIn([PROPERTY_TYPES.DATE_TIME, 0], ''));
-            if (psaDate.isValid() && (!earliestOpenPSADate || psaDate.isBefore(earliestOpenPSADate))) {
-              earliestOpenPSADate = psaDate;
-            }
             personNeighbors = personNeighbors.set(
               appTypeFqn,
               personNeighbors.get(appTypeFqn, List()).push(neighborObj)
@@ -597,14 +593,6 @@ function* loadRequiresActionPeopleWorker(action :SequenceAction) :Generator<*, *
       if (psaCount > 1) peopleWithMultipleOpenPSAs = peopleWithMultipleOpenPSAs.add(personId);
 
       /* collect people Ids with recent FTAs */
-      const hasFTASincePSA = personNeighbors.get(FTAS, List()).some((fta) => {
-        const ftaDateTime = fta.getIn([PROPERTY_TYPES.DATE_TIME, 0], '');
-        if (earliestOpenPSADate) {
-          return earliestOpenPSADate.isBefore(ftaDateTime);
-        }
-        return false;
-      });
-      if (hasFTASincePSA) peopleWithRecentFTAs = peopleWithRecentFTAs.add(personId);
 
       /* collect people Ids with no pending charges */
       const personCharges = personNeighbors.get(CHARGES);
@@ -612,6 +600,18 @@ function* loadRequiresActionPeopleWorker(action :SequenceAction) :Generator<*, *
         personNeighbors.get(PSA_SCORES, List()).forEach((psa) => {
           const psaId = psa.getIn([OPENLATTICE_ID_FQN, 0], '');
           let hasPendingCharges = false;
+          const psaDate = moment(psa.getIn([PROPERTY_TYPES.DATE_TIME, 0], ''));
+          const hasFTASincePSA = personNeighbors.get(FTAS, List()).some((fta) => {
+            const ftaDateTime = fta.getIn([PROPERTY_TYPES.DATE_TIME, 0], '');
+            if (psaDate.isValid()) {
+              return psaDate.isBefore(ftaDateTime);
+            }
+            return false;
+          });
+          if (hasFTASincePSA) {
+            peopleWithRecentFTAs = peopleWithRecentFTAs.add(personId);
+            psaScoresWithRecentFTAs = psaScoresWithRecentFTAs.add(psaId);
+          }
           const arrestDate = moment(psaNeighborsById
             .getIn([psaId, MANUAL_PRETRIAL_CASES, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.ARREST_DATE_TIME, 0]));
           const { chargeHistoryForMostRecentPSA } = getCasesForPSA(
@@ -644,7 +644,8 @@ function* loadRequiresActionPeopleWorker(action :SequenceAction) :Generator<*, *
       peopleMap,
       psaScoreMap,
       psaNeighborsById,
-      psaScoresWithNoPendingCharges
+      psaScoresWithNoPendingCharges,
+      psaScoresWithRecentFTAs
     }));
   }
   catch (error) {
