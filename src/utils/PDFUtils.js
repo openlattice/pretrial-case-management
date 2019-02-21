@@ -11,7 +11,7 @@ import { getViolentChargeLabels } from './ArrestChargeUtils';
 import { chargeIsMostSerious, historicalChargeIsViolent, getSummaryStats } from './HistoricalChargeUtils';
 import { getSentenceToIncarcerationCaseNums } from './SentenceUtils';
 import { getRecentFTAs, getOldFTAs } from './FTAUtils';
-import { sortPeopleByName } from './PSAUtils';
+import { sortPeopleByName } from './PeopleUtils';
 import { getHeaderText, getConditionsTextList } from './DMFUtils';
 import { stepTwoIncrease, stepFourIncrease, dmfSecondaryReleaseDecrease } from './ScoringUtils';
 import {
