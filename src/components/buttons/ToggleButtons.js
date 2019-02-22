@@ -18,7 +18,6 @@ const ToggleButtonGroup = styled.ul`
   flex-wrap: wrap;
   justify-content: center;
   padding: 0;
-  height: 100%;
   width: max-content;
   max-width: 900px;
   font-family: 'Open Sans', sans-serif;
