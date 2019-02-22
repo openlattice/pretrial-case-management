@@ -502,17 +502,14 @@ class PSAModal extends React.Component<Props, State> {
       app,
       entityKeyId,
       psaNeighbors,
-      scoresEntitySetId,
       scores,
       selectedOrganizationSettings
     } = this.props;
     let dmfIdValue;
     let dmfId;
-    let dmfEntitySetId;
     let dmfEntity;
     let dmfRiskFactorsIdValue;
     let dmfRiskFactorsId;
-    let dmfRiskFactorsEntitySetId;
     let dmfRiskFactorsEntity;
 
     const { riskFactors } = this.state;
@@ -527,12 +524,10 @@ class PSAModal extends React.Component<Props, State> {
     if (includesPretrialModule) {
       dmfIdValue = this.getIdOrValue(DMF_RESULTS);
       dmfId = this.getEntityKeyId(DMF_RESULTS);
-      dmfEntitySetId = this.getEntitySetId(DMF_RESULTS);
       dmfEntity = this.getDMFEntity(dmf, dmfIdValue);
 
       dmfRiskFactorsIdValue = this.getIdOrValue(DMF_RISK_FACTORS);
       dmfRiskFactorsId = this.getEntityKeyId(DMF_RISK_FACTORS);
-      dmfRiskFactorsEntitySetId = this.getEntitySetId(DMF_RISK_FACTORS);
       dmfRiskFactorsEntity = this.getDMFRiskFactorsEntity(riskFactors, dmfRiskFactorsIdValue);
     }
 
@@ -547,36 +542,24 @@ class PSAModal extends React.Component<Props, State> {
     if (riskFactorsIdValue) riskFactorsEntity[PROPERTY_TYPES.GENERAL_ID] = [riskFactorsIdValue];
 
     const scoresId = entityKeyId;
-    const riskFactorsEntitySetId = this.getEntitySetId(PSA_RISK_FACTORS);
     const riskFactorsId = this.getEntityKeyId(PSA_RISK_FACTORS);
 
-    let notesIdValue;
-    let notesId;
-    let notesEntitySetId;
-    let notesEntity;
-
-    const notes = riskFactors.get(PSA.NOTES);
-    if (this.getNotesFromNeighbors(psaNeighbors) !== notes) {
-      notesIdValue = this.getIdOrValue(RELEASE_RECOMMENDATIONS);
-      notesId = this.getEntityKeyId(RELEASE_RECOMMENDATIONS);
-      notesEntitySetId = this.getEntitySetId(RELEASE_RECOMMENDATIONS);
-      notesEntity = this.getNotesEntity(riskFactors, notesIdValue);
+    let notesIdValue = this.getIdOrValue(RELEASE_RECOMMENDATIONS);
+    const notesId = this.getEntityKeyId(RELEASE_RECOMMENDATIONS);
+    if (this.getNotesFromNeighbors(psaNeighbors) !== notesIdValue) {
+      notesIdValue = riskFactors.get(PSA.NOTES);
     }
+    const notesEntity = this.getNotesEntity(riskFactors, notesId);
 
     actions.updateScoresAndRiskFactors({
-      scoresEntitySetId,
       scoresId,
       scoresEntity,
-      riskFactorsEntitySetId,
       riskFactorsId,
       riskFactorsEntity,
-      dmfEntitySetId,
       dmfId,
       dmfEntity,
-      dmfRiskFactorsEntitySetId,
       dmfRiskFactorsId,
       dmfRiskFactorsEntity,
-      notesEntitySetId,
       notesId,
       notesEntity
     });
