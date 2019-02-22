@@ -134,11 +134,12 @@ class RemindersContainer extends React.Component<Props, State> {
       reminderIds,
       selectedOrganizationId
     } = this.props;
-    const { loadPeopleWithHearingsButNoContacts, loadRemindersforDate } = actions;
+    const { loadOptOutsForDate, loadPeopleWithHearingsButNoContacts, loadRemindersforDate } = actions;
     if (selectedOrganizationId) {
       loadPeopleWithHearingsButNoContacts();
       if (!reminderIds.size) {
         loadRemindersforDate({ date });
+        loadOptOutsForDate({ date });
       }
     }
   }
@@ -150,11 +151,12 @@ class RemindersContainer extends React.Component<Props, State> {
       reminderIds,
       selectedOrganizationId
     } = this.props;
-    const { loadPeopleWithHearingsButNoContacts, loadRemindersforDate } = actions;
+    const { loadOptOutsForDate, loadPeopleWithHearingsButNoContacts, loadRemindersforDate } = actions;
     if (selectedOrganizationId !== nextProps.selectedOrganizationId) {
       loadPeopleWithHearingsButNoContacts();
       if (!reminderIds.size) {
         loadRemindersforDate({ date });
+        loadOptOutsForDate({ date });
       }
     }
   }
@@ -167,9 +169,11 @@ class RemindersContainer extends React.Component<Props, State> {
   onDateChange = (dateStr) => {
     const { actions } = this.props;
     const date = moment(dateStr);
+    const { loadOptOutsForDate, loadRemindersforDate } = actions;
     if (date.isValid()) {
       this.setState({ selectedDate: date });
-      actions.loadRemindersforDate({ date });
+      loadRemindersforDate({ date });
+      loadOptOutsForDate({ date });
     }
   }
 
@@ -326,6 +330,7 @@ function mapStateToProps(state) {
   const app = state.get(STATE.APP);
   const reminders = state.get(STATE.REMINDERS);
   const search = state.get(STATE.SEARCH);
+  console.log(reminders.toJS());
 
   return {
     // App
@@ -345,6 +350,12 @@ function mapStateToProps(state) {
     [REMINDERS.LOADING_REMINDER_NEIGHBORS]: reminders.get(REMINDERS.LOADING_REMINDER_NEIGHBORS),
     [REMINDERS.PEOPLE_WITH_HEARINGS_BUT_NO_CONTACT]: reminders.get(REMINDERS.PEOPLE_WITH_HEARINGS_BUT_NO_CONTACT),
     [REMINDERS.LOADING_PEOPLE_NO_CONTACTS]: reminders.get(REMINDERS.LOADING_PEOPLE_NO_CONTACTS),
+    [REMINDERS.OPT_OUTS]: reminders.get(REMINDERS.OPT_OUTS),
+    [REMINDERS.OPT_OUT_NEIGHBORS]: reminders.get(REMINDERS.OPT_OUT_NEIGHBORS),
+    [REMINDERS.OPT_OUTS_WITH_REASON]: reminders.get(REMINDERS.OPT_OUTS_WITH_REASON),
+    [REMINDERS.REMINDER_IDS_TO_OPT_OUT_IDS]: reminders.get(REMINDERS.REMINDER_IDS_TO_OPT_OUT_IDS),
+    [REMINDERS.LOADING_OPT_OUTS]: reminders.get(REMINDERS.LOADING_OPT_OUTS),
+    [REMINDERS.LOADING_OPT_OUT_NEIGHBORS]: reminders.get(REMINDERS.LOADING_OPT_OUT_NEIGHBORS),
 
     [SEARCH.LOADING]: search.get(SEARCH.LOADING),
     [SEARCH.SEARCH_RESULTS]: search.get(SEARCH.SEARCH_RESULTS),
