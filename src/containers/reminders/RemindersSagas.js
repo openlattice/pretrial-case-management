@@ -30,12 +30,16 @@ import { toISODate } from '../../utils/FormattingUtils';
 import { obfuscateBulkEntityNeighbors } from '../../utils/consts/DemoNames';
 import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import {
+  LOAD_OPT_OUT_NEIGHBORS,
+  LOAD_OPT_OUTS_FOR_DATE,
   LOAD_PEOPLE_WITH_HEARINGS_BUT_NO_CONTACTS,
   LOAD_REMINDER_NEIGHBORS,
   LOAD_REMINDERS_FOR_DATE,
-  loadReminderNeighborsById,
-  loadRemindersforDate,
+  loadOptOutNeighbors,
+  loadOptOutsForDate,
   loadPeopleWithHearingsButNoContacts,
+  loadReminderNeighborsById,
+  loadRemindersforDate
 } from './RemindersActionFactory';
 
 let {
@@ -43,7 +47,8 @@ let {
   HEARINGS,
   PEOPLE,
   PSA_SCORES,
-  REMINDERS
+  REMINDERS,
+  REMINDER_OPT_OUTS
 } = APP_TYPES_FQNS;
 
 CONTACT_INFORMATION = CONTACT_INFORMATION.toString();
@@ -51,6 +56,8 @@ HEARINGS = HEARINGS.toString();
 PEOPLE = PEOPLE.toString();
 PSA_SCORES = PSA_SCORES.toString();
 REMINDERS = REMINDERS.toString();
+REMINDER_OPT_OUTS = REMINDER_OPT_OUTS.toString();
+
 
 const { OPENLATTICE_ID_FQN } = Constants;
 const { FullyQualifiedName } = Models;
@@ -74,6 +81,127 @@ function* getAllSearchResults(entitySetId :string, searchTerm :string) :Generato
     maxHits: numHits
   };
   return yield call(SearchApi.searchEntitySetData, entitySetId, loadResultsRequest);
+}
+
+function* loadOptOutNeighborsWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  try {
+    yield put(loadOptOutNeighbors.request(action.id));
+    const { optOutIds } = action.value;
+    let optOutNeighborsById = Map();
+    let reminderIdToOptOutId = Map();
+
+    if (optOutIds.length) {
+      const app = yield select(getApp);
+      const orgId = yield select(getOrgId);
+      const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
+      const optOutEntitySetId = getEntitySetId(app, REMINDER_OPT_OUTS, orgId);
+      // const contactInformationEntitySetId = getEntitySetId(app, CONTACT_INFORMATION, orgId);
+      // const hearingsEntitySetId = getEntitySetId(app, HEARINGS, orgId);
+      // const peopleEntitySetId = getEntitySetId(app, PEOPLE, orgId);
+      // const psaScoresEntitySetId = getEntitySetId(app, PSA_SCORES, orgId);
+      let neighborsById = yield call(SearchApi.searchEntityNeighborsWithFilter, optOutEntitySetId, {
+        entityKeyIds: optOutIds,
+        sourceEntitySetIds: [],
+        // destinationEntitySetIds: [contactInformationEntitySetId, hearingsEntitySetId, peopleEntitySetId]
+      });
+      neighborsById = obfuscateBulkEntityNeighbors(neighborsById);
+      neighborsById = fromJS(neighborsById);
+      neighborsById.entrySeq().forEach(([optOutId, neighbors]) => {
+        let neighborsByAppTypeFqn = Map();
+        if (neighbors) {
+          neighbors.forEach((neighbor) => {
+            const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
+            const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
+            const entityKeyId = neighbor.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0]);
+            if (appTypeFqn === REMINDERS) {
+              reminderIdToOptOutId = reminderIdToOptOutId.set(entityKeyId, optOutId);
+            }
+            neighborsByAppTypeFqn = neighborsByAppTypeFqn.set(
+              appTypeFqn,
+              fromJS(neighbor)
+            );
+          });
+        }
+        optOutNeighborsById = optOutNeighborsById.set(optOutId, neighborsByAppTypeFqn);
+      });
+    }
+
+    yield put(loadOptOutNeighbors.success(action.id, {
+      optOutNeighborsById,
+      reminderIdToOptOutId
+    }));
+
+  }
+  catch (error) {
+    console.error(error);
+    yield put(loadOptOutNeighbors.failure(action.id, { error }));
+  }
+  finally {
+    yield put(loadOptOutNeighbors.finally(action.id));
+  }
+}
+
+function* loadOptOutNeighborsWatcher() :Generator<*, *, *> {
+  yield takeEvery(LOAD_OPT_OUT_NEIGHBORS, loadOptOutNeighborsWorker);
+}
+function* loadOptOutsForDateWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  try {
+    yield put(loadOptOutsForDate.request(action.id));
+    const { date } = action.value;
+    let optOutIds = Set();
+    let optOutMap = Map();
+    let optOutsWithReasons = Set();
+
+    const DATE_TIME_FQN = new FullyQualifiedName(PROPERTY_TYPES.DATE_TIME);
+
+    const app = yield select(getApp);
+    const edm = yield select(getEDM);
+    const orgId = yield select(getOrgId);
+    const optOutEntitySetId = getEntitySetId(app, REMINDER_OPT_OUTS, orgId);
+    const datePropertyTypeId = getPropertyTypeId(edm, DATE_TIME_FQN);
+
+    const ceiling = yield call(DataApi.getEntitySetSize, optOutEntitySetId);
+
+    const reminderOptions = {
+      searchTerm: `${datePropertyTypeId}: ${toISODate(date)}`,
+      start: 0,
+      maxHits: ceiling,
+      fuzzy: false
+    };
+    const allOptOutDataforDate = yield call(SearchApi.searchEntitySetData, optOutEntitySetId, reminderOptions);
+    const optOutsOnDate = fromJS(allOptOutDataforDate.hits);
+    optOutsOnDate.forEach((optOut) => {
+      const entityKeyId = optOut.getIn([OPENLATTICE_ID_FQN, 0], '');
+      const hasReason = !!optOut.getIn([PROPERTY_TYPES.REASON, 0], '');
+
+      optOutIds = optOutIds.add(entityKeyId);
+      optOutMap = optOutMap.set(entityKeyId, optOut);
+      if (hasReason) optOutsWithReasons = optOutsWithReasons.add(entityKeyId);
+    });
+
+    yield put(loadOptOutsForDate.success(action.id, {
+      optOutMap,
+      optOutsWithReasons
+    }));
+
+    if (optOutIds.size) {
+      optOutIds = optOutIds.toJS();
+      yield put(loadOptOutNeighbors({ optOutIds }));
+    }
+  }
+  catch (error) {
+    console.error(error);
+    yield put(loadOptOutsForDate.failure(action.id, { error }));
+  }
+  finally {
+    yield put(loadOptOutsForDate.finally(action.id));
+  }
+}
+
+function* loadOptOutsForDateWatcher() :Generator<*, *, *> {
+  yield takeEvery(LOAD_OPT_OUTS_FOR_DATE, loadOptOutsForDateWorker);
 }
 
 function* loadRemindersforDateWorker(action :SequenceAction) :Generator<*, *, *> {
@@ -351,6 +479,8 @@ function* loadPeopleWithHearingsButNoContactsWatcher() :Generator<*, *, *> {
 
 
 export {
+  loadOptOutNeighborsWatcher,
+  loadOptOutsForDateWatcher,
   loadPeopleWithHearingsButNoContactsWatcher,
   loadRemindersforDateWatcher,
   loadReminderNeighborsByIdWatcher
