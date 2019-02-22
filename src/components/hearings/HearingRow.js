@@ -12,7 +12,6 @@ import { faExclamationTriangle, faCheck, faTimesCircle } from '@fortawesome/pro-
 import InfoButton from '../buttons/InfoButton';
 import { OL } from '../../utils/consts/Colors';
 import { getHearingFields } from '../../utils/consts/HearingConsts';
-import { isUUID } from '../../utils/DataUtils';
 
 const Cell = styled.div`
   display: flex;
@@ -76,6 +75,7 @@ const StatusIconContainer = styled.div`
 
 type Props = {
   hasPSA :boolean,
+  hasOutcome :boolean,
   row :Immutable.Map<*, *>,
   cancelFn :(entityKeyId :string) => void,
   isDuplicate :boolean,
@@ -84,6 +84,7 @@ type Props = {
 
 const HearingRow = ({
   hasPSA,
+  hasOutcome,
   row,
   cancelFn,
   disabled,
@@ -102,9 +103,11 @@ const HearingRow = ({
     : <StatusIconContainer><FontAwesomeIcon color="red" icon={faTimesCircle} /></StatusIconContainer>
   );
 
+  const disabledText = hasOutcome ? 'Hearing Has Outcome' : 'Manually Created';
+
   const renderCancelButton = (
     <CancelButton onClick={() => cancelFn(hearingEntityKeyId)} disabled={disabled}>
-      { disabled ? 'Hearing Has Outcomes' : 'Cancel Hearing'}
+      { disabled ? disabledText : 'Cancel Hearing'}
     </CancelButton>
   );
 
