@@ -234,7 +234,13 @@ export const REMINDERS = {
   REMINDERS_WITH_OPEN_PSA_IDS: 'remindersWithOpenPSA',
   LOADING_REMINDER_NEIGHBORS: 'loadingReminderNeighbors',
   PEOPLE_WITH_HEARINGS_BUT_NO_CONTACT: 'peopleWithHearingsButNoContacts',
-  LOADING_PEOPLE_NO_CONTACTS: 'loadingPeopleWithNoContacts'
+  LOADING_PEOPLE_NO_CONTACTS: 'loadingPeopleWithNoContacts',
+  OPT_OUTS: 'optOutMap',
+  OPT_OUT_NEIGHBORS: 'optOutNeighbors',
+  OPT_OUTS_WITH_REASON: 'optOutsWithReasons',
+  REMINDER_IDS_TO_OPT_OUT_IDS: 'reminderIdsToOptOutIds',
+  LOADING_OPT_OUTS: 'loadingOptOuts',
+  LOADING_OPT_OUT_NEIGHBORS: 'loadingOptOutNeighbors'
 };
 
 // Review
