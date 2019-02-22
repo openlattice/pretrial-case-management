@@ -47,6 +47,7 @@ const Row = styled.tr`
 
 type Props = {
   hasOpenPSA :boolean,
+  hearingTime :string,
   hearingType :string,
   contact :string,
   courtroom :string,
@@ -68,6 +69,7 @@ class ReminderRow extends React.Component<Props, State> {
     const {
       contact,
       courtroom,
+      hearingTime,
       hearingType,
       hasOpenPSA,
       personName,
@@ -78,7 +80,7 @@ class ReminderRow extends React.Component<Props, State> {
 
     const row = (
       <Row disabled>
-        <Cell>{ time }</Cell>
+        <Cell>{ hearingTime }</Cell>
         <Cell>
           <StyledLink to={`${Routes.PERSON_DETAILS_ROOT}/${personId}${Routes.OVERVIEW}`}>
             { personName }

@@ -15,11 +15,12 @@ import * as DashboardSagas from '../../containers/dashboard/DashboardSagas';
 import * as DataSagas from '../../utils/data/DataSagas';
 import * as PSAModalSagas from '../../containers/psamodal/PSAModalSagas';
 import * as PsaSagas from '../../containers/psa/FormSagas';
-import * as RemindersReducerSagas from '../../containers/reminders/RemindersSagas';
+import * as RemindersSagas from '../../containers/reminders/RemindersSagas';
 import * as ReviewSagas from '../../containers/review/ReviewSagas';
 import * as DownloadSagas from '../../containers/download/DownloadSagas';
 import * as EnrollSagas from '../../containers/enroll/EnrollSagas';
 import * as SubmitSagas from '../../utils/submit/SubmitSaga';
+import * as SubscriptionsSagas from '../../containers/subscription/SubscriptionsSagas';
 
 export default function* sagas() :Generator<*, *, *> {
 
@@ -81,6 +82,7 @@ export default function* sagas() :Generator<*, *, *> {
     fork(PersonSagas.loadPersonDetailsWatcher),
     fork(PersonSagas.newPersonSubmitWatcher),
     fork(PersonSagas.searchPeopleWatcher),
+    fork(PersonSagas.searchPeopleByPhoneNumberWatcher),
     fork(PersonSagas.updateCasesWatcher),
 
     // PeopleSagas
@@ -99,8 +101,9 @@ export default function* sagas() :Generator<*, *, *> {
     fork(PsaSagas.loadNeighborsWatcher),
 
     // Reminder Sagas
-    fork(RemindersReducerSagas.loadRemindersforDateWatcher),
-    fork(RemindersReducerSagas.loadReminderNeighborsByIdWatcher),
+    fork(RemindersSagas.loadPeopleWithHearingsButNoContactsWatcher),
+    fork(RemindersSagas.loadRemindersforDateWatcher),
+    fork(RemindersSagas.loadReminderNeighborsByIdWatcher),
 
     // Review Sagas
     fork(ReviewSagas.bulkDownloadPSAReviewPDFWatcher),
@@ -112,6 +115,9 @@ export default function* sagas() :Generator<*, *, *> {
     fork(ReviewSagas.loadPSAsByDateWatcher),
     fork(ReviewSagas.refreshPSANeighborsWatcher),
     fork(ReviewSagas.updateScoresAndRiskFactorsWatcher),
-    fork(ReviewSagas.updateOutcomesAndReleaseCondtionsWatcher)
+    fork(ReviewSagas.updateOutcomesAndReleaseCondtionsWatcher),
+
+    // Subscriptions Sagas
+    fork(SubscriptionsSagas.loadSubcriptionModalWatcher)
   ];
 }

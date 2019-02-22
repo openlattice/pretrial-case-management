@@ -2,9 +2,18 @@
  * @flow
  */
 
-import { Map, Set, fromJS } from 'immutable';
+import {
+  List,
+  Map,
+  Set,
+  fromJS
+} from 'immutable';
 
-import { loadReminderNeighborsById, loadRemindersforDate } from './RemindersActionFactory';
+import {
+  loadPeopleWithHearingsButNoContacts,
+  loadReminderNeighborsById,
+  loadRemindersforDate
+} from './RemindersActionFactory';
 import { REMINDERS } from '../../utils/consts/FrontEndStateConsts';
 
 const INITIAL_STATE :Map<*, *> = fromJS({
@@ -17,6 +26,8 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [REMINDERS.REMINDER_NEIGHBORS]: Map(),
   [REMINDERS.REMINDERS_WITH_OPEN_PSA_IDS]: Map(),
   [REMINDERS.LOADING_REMINDER_NEIGHBORS]: false,
+  [REMINDERS.PEOPLE_WITH_HEARINGS_BUT_NO_CONTACT]: Map(),
+  [REMINDERS.LOADING_PEOPLE_NO_CONTACTS]: false,
 });
 export default function remindersReducer(state :Map<*, *> = INITIAL_STATE, action :SequenceAction) {
   switch (action.type) {
@@ -53,6 +64,18 @@ export default function remindersReducer(state :Map<*, *> = INITIAL_STATE, actio
             .set(REMINDERS.REMINDERS_WITH_OPEN_PSA_IDS, reminderIdsWithOpenPSAs);
         },
         FINALLY: () => state.set(REMINDERS.LOADING_REMINDER_NEIGHBORS, false)
+      });
+    }
+
+    case loadPeopleWithHearingsButNoContacts.case(action.type): {
+      return loadPeopleWithHearingsButNoContacts.reducer(state, action, {
+        REQUEST: () => state.set(REMINDERS.LOADING_PEOPLE_NO_CONTACTS, true),
+        SUCCESS: () => {
+          const { peopleWithOpenPSAsandHearingsButNoContactById } = action.value;
+          return state
+            .set(REMINDERS.PEOPLE_WITH_HEARINGS_BUT_NO_CONTACT, peopleWithOpenPSAsandHearingsButNoContactById);
+        },
+        FINALLY: () => state.set(REMINDERS.LOADING_PEOPLE_NO_CONTACTS, false)
       });
     }
 

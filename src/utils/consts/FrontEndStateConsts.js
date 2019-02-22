@@ -15,7 +15,8 @@ export const STATE = {
   REMINDERS: 'reminders',
   REVIEW: 'review',
   SEARCH: 'search',
-  SUBMIT: 'submit'
+  SUBMIT: 'submit',
+  SUBSCRIPTIONS: 'subscriptions'
 };
 
 // General PSA
@@ -86,6 +87,7 @@ export const COURT = {
   LOADING_COURTROOM_OPTIONS: 'loadingCoutrooms',
   OPEN_PSAS: 'openPSAs',
   SCORES_AS_MAP: 'scoresAsMap',
+  PSA_EDIT_DATES: 'psaEditDatesById',
   OPEN_PSA_IDS: 'openPSAIds',
   PEOPLE_IDS_TO_OPEN_PSA_IDS: 'peopleIdsToOpenPSAIds',
 
@@ -220,7 +222,9 @@ export const REMINDERS = {
   LOADING_REMINDERS: 'loadingReminders',
   REMINDER_NEIGHBORS: 'reminderNeighborsById',
   REMINDERS_WITH_OPEN_PSA_IDS: 'remindersWithOpenPSA',
-  LOADING_REMINDER_NEIGHBORS: 'loadingReminderNeighbors'
+  LOADING_REMINDER_NEIGHBORS: 'loadingReminderNeighbors',
+  PEOPLE_WITH_HEARINGS_BUT_NO_CONTACT: 'peopleWithHearingsButNoContacts',
+  LOADING_PEOPLE_NO_CONTACTS: 'loadingPeopleWithNoContacts'
 };
 
 // Review
@@ -250,6 +254,8 @@ export const REVIEW = {
 export const SEARCH = {
   LOADING: 'isLoadingPeople',
   SEARCH_RESULTS: 'searchResults',
+  CONTACTS: 'contactResults',
+  RESULTS_TO_CONTACTS: 'peopleIdsToContactIds',
   SEARCH_ERROR: 'searchError',
   SELECTED_PERSON_ID: 'selectedPersonId',
   PERSON_DETAILS: 'personDetails',
@@ -275,4 +281,13 @@ export const SUBMIT = {
   SUCCESS: 'submitSuccess',
   SUBMITTED: 'submitted',
   ERROR: 'error'
+};
+
+// Subscriptions
+
+export const SUBSCRIPTIONS = {
+  LOADING_SUBSCRIPTION_MODAL: 'loadingSubscriptionInfo',
+  CONTACT_INFO: 'contactInfo',
+  PERSON_NEIGHBORS: 'personNeighbors',
+  SUBSCRIPTION: 'subscription'
 };

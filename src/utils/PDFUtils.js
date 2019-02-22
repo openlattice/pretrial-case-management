@@ -3,7 +3,7 @@
  */
 
 import JSPDF from 'jspdf';
-import Immutable from 'immutable';
+import Immutable, { Set } from 'immutable';
 import moment from 'moment';
 
 import { PROPERTY_TYPES } from './consts/DataModelConsts';
@@ -85,8 +85,8 @@ const SCORE_OFFSET = 5;
 const RESPONSE_OFFSET = (X_MAX * 2) / 3;
 const GENERATED_RISK_FACTOR_OFFSET = X_MARGIN + 5;
 const BOX_MARGIN = X_MARGIN + 5;
-const BOX_HEIGHT = 8;
-const BOX_WIDTH = ((X_MAX / 2) - (2 * BOX_MARGIN)) / 6;
+const BOX_HEIGHT = 6;
+const BOX_WIDTH = ((X_MAX / 2) - (2 * BOX_MARGIN)) / 10;
 
 const X_COL_1 = X_MARGIN;
 const X_COL_2 = (X_MAX / 2) - 30;
@@ -256,11 +256,11 @@ const person = (
   detailHeaderText(doc, y, X_MARGIN, 'NAME');
   y += Y_INC;
   doc.setTextColor(0);
-  doc.setFontSize(12);
+  doc.setFontSize(10);
   doc.text(X_MARGIN, y, name);
   y += Y_INC;
   thickLine(doc, y);
-  y += Y_INC_LARGE;
+  y += Y_INC;
 
   /* person details section */
 
@@ -362,7 +362,7 @@ const nvcaFlag = (doc :Object, yInit :number, value :string) :number => {
   doc.setTextColor(0);
 
   const width = 18;
-  const height = 7;
+  const height = 6;
 
   doc.roundedRect(X_COL_1, y, width, height, 1, 1, 'FD');
   const textXOffset = flagIsTrue ? 3 : 2;
@@ -385,14 +385,14 @@ const scoreHeader = (doc, y, xOffset, text) => {
 const scores = (doc :Object, yInit :number, scoreValues :Immutable.Map<*, *>) :number => {
   let y = yInit;
   scoreHeader(doc, y, X_COL_1, 'New Violent Criminal Activity Flag');
+  scoreHeader(doc, y, (X_COL_2 + 5), 'New Criminal Activity Scale');
+  scoreHeader(doc, y, (X_COL_3 + 25), 'Failure to Appear Scale');
   y += Y_INC_SMALL;
-  y = nvcaFlag(doc, y, getBooleanText(scoreValues.getIn([PROPERTY_TYPES.NVCA_FLAG, 0])));
+  nvcaFlag(doc, y, getBooleanText(scoreValues.getIn([PROPERTY_TYPES.NVCA_FLAG, 0])));
+  scale(doc, y, (X_COL_2 + 5), scoreValues.getIn([PROPERTY_TYPES.NCA_SCALE, 0]));
+  scale(doc, y, (X_COL_3 + 25), scoreValues.getIn([PROPERTY_TYPES.FTA_SCALE, 0]));
 
-  scoreHeader(doc, y, X_COL_1, 'New Criminal Activity Scale');
-  scoreHeader(doc, y, X_COL_3, 'Failure to Appear Scale');
   y += Y_INC_SMALL;
-  scale(doc, y, X_COL_1, scoreValues.getIn([PROPERTY_TYPES.NCA_SCALE, 0]));
-  y = scale(doc, y, X_COL_3, scoreValues.getIn([PROPERTY_TYPES.FTA_SCALE, 0]));
 
   return y;
 };
@@ -408,6 +408,7 @@ const dmf = (
   let y = yInit;
   doc.setFont('helvetica', 'normal');
   if (dmfValues.size) {
+    y += Y_INC_LARGE + 2;
     scoreHeader(doc, y, X_COL_1, 'RCM Result');
     y += Y_INC_LARGE;
     detailValueText(doc, y, X_COL_1, getHeaderText(dmfValues.toJS()));
@@ -511,7 +512,8 @@ const charges = (
   allCases :Immutable.List<*>,
   selectedCharges :Immutable.List<*>,
   violentCourtChargeList :Immutable.Map<*, *>,
-  showDetails :boolean
+  showDetails :boolean,
+  chargeHeader :string
 ) :number[] => {
   let y :number = yInit;
   let page :number = pageInit;
@@ -520,10 +522,10 @@ const charges = (
   const casesByCaseNum = getCasesByCaseNum(allCases);
 
   if (!showDetails) {
-    scoreHeader(doc, y, X_COL_1, 'Charges');
+    scoreHeader(doc, y, X_COL_1, chargeHeader);
     y += Y_INC_LARGE;
   }
-  doc.setFontSize(FONT_SIZE);
+  doc.setFontSize(9);
   selectedCharges.forEach((charge, index) => {
     if (y > MAX_Y) {
       [y, page] = newPage(doc, page, name);
@@ -556,6 +558,71 @@ const charges = (
       }
     }
   });
+
+  doc.setFontSize(FONT_SIZE);
+  return [y, page];
+};
+
+
+const courtCharges = (
+  doc :Object,
+  yInit :number,
+  pageInit :number,
+  name :string,
+  allCases :Immutable.List<*>,
+  selectedCharges :Immutable.List<*>,
+  violentCourtChargeList :Immutable.Map<*, *>,
+  showDetails :boolean,
+  chargeHeader :string
+) :number[] => {
+  let y :number = yInit;
+  let page :number = pageInit;
+  const xIndent = showDetails ? X_COL_1 + SCORE_OFFSET : X_COL_1;
+  const xWidth = X_MAX - X_MARGIN - xIndent;
+  const casesByCaseNum = getCasesByCaseNum(allCases);
+  let caseNums = Set();
+  selectedCharges.forEach((charge) => {
+    caseNums = caseNums.add(charge.getIn([PROPERTY_TYPES.CHARGE_ID, 0], '').split('|')[0])
+  });
+
+  if (!showDetails) {
+    scoreHeader(doc, y, X_COL_1, `${chargeHeader} - ${caseNums.toJS()}`);
+    y += Y_INC_LARGE;
+  }
+  doc.setFontSize(9);
+  selectedCharges.forEach((charge, index) => {
+    if (y > MAX_Y) {
+      [y, page] = newPage(doc, page, name);
+    }
+
+    const qualifierText = formatValue(charge.get(QUALIFIER, Immutable.List()));
+    const CHARGE_OFFSET = 25;
+    // y = chargeTags(doc, y, charge, casesByCaseNum, violentCourtChargeList);
+
+    doc.text(xIndent, y, formatValue(charge.get(CHARGE_STATUTE, Immutable.List())));
+    let chargeLines = '';
+    if (qualifierText) {
+      chargeLines = doc.splitTextToSize(`${qualifierText} - ${getChargeText(charge)}`, xWidth);
+    }
+    else {
+      chargeLines = doc.splitTextToSize(getChargeText(charge), xWidth);
+    }
+    doc.text(xIndent + CHARGE_OFFSET, y, chargeLines);
+    y += chargeLines.length * Y_INC;
+    if (showDetails) {
+      const pleaLines = doc.splitTextToSize(getPleaText(charge), xWidth - SCORE_OFFSET);
+      doc.text(xIndent + SCORE_OFFSET, y, pleaLines);
+      y += pleaLines.length * Y_INC;
+      const dispositionLines = doc.splitTextToSize(getDispositionText(charge), xWidth - SCORE_OFFSET);
+      doc.text(xIndent + SCORE_OFFSET, y, dispositionLines);
+      y += dispositionLines.length * Y_INC_SMALL;
+      if (index !== selectedCharges.size - 1) { /* Skip bottom divider line on last charge */
+        thinLine(doc, y, xIndent);
+        y += Y_INC;
+      }
+    }
+  });
+  doc.setFontSize(FONT_SIZE);
   return [y, page];
 };
 
@@ -850,6 +917,7 @@ const caseHistory = (
   allCases :Immutable.List<*>,
   chargesByCaseNum :Immutable.Map<*, *>,
   violentCourtChargeList :Immutable.Map<*, *>,
+  title :string
 ) :number[] => {
   let [y, page] = newPage(doc, pageInit, name);
   y = caseHistoryHeader(doc, y);
@@ -857,7 +925,7 @@ const caseHistory = (
   y = summaryStats(doc, y, chargesByCaseNum);
   thickLine(doc, y, true);
   y += (Y_INC * 2);
-  scoreHeader(doc, y, X_COL_1, 'Case History');
+  scoreHeader(doc, y, X_COL_1, title);
 
   allCases.forEach((c) => {
     y += Y_INC;
@@ -884,6 +952,7 @@ const caseHistory = (
 const getPDFContents = (
   doc :Object,
   data :Immutable.Map<*, *>,
+  selectedCourtCharges :Immutable.Map<*, *>,
   selectedPretrialCase :Immutable.Map<*, *>,
   selectedCharges :Immutable.Map<*, *>,
   selectedPerson :Immutable.Map<*, *>,
@@ -927,10 +996,26 @@ const getPDFContents = (
   thickLine(doc, y);
   y += Y_INC_LARGE;
 
-  // CHARGES SECTION
-  [y, page] = charges(doc, y, page, name, allCases, selectedCharges, violentCourtChargeList, false);
-  thickLine(doc, y);
+  // ARREST CHARGES SECTION
+  [y, page] = charges(doc, y, page, name, allCases, selectedCharges, violentCourtChargeList, false, 'Arrest Charges');
+  thinLine(doc, y);
   y += Y_INC_LARGE;
+  if (selectedCourtCharges.size) {
+    // COURT CHARGES SECTION
+    [y, page] = courtCharges(
+      doc,
+      y,
+      page,
+      name,
+      allCases,
+      selectedCourtCharges,
+      violentCourtChargeList,
+      false,
+      'Court Charges'
+    );
+    thickLine(doc, y);
+    y += Y_INC_LARGE;
+  }
 
   // RISK FACTORS SECTION
   [y, page] = riskFactors(
@@ -986,7 +1071,7 @@ const getPDFContents = (
 
 
     // CASE HISTORY SECCTION=
-    [y, page] = caseHistory(doc, y, page, name, allCases, chargesByCaseNum, violentCourtChargeList);
+    [y, page] = caseHistory(doc, y, page, name, allCases, chargesByCaseNum, violentCourtChargeList, 'Case History');
   }
 
   return getPdfName(name, createData.timestamp);
@@ -995,6 +1080,7 @@ const getPDFContents = (
 const exportPDF = (
   data :Immutable.Map<*, *>,
   selectedPretrialCase :Immutable.Map<*, *>,
+  selectedCourtCharges :Immutable.Map<*, *>,
   selectedCharges :Immutable.Map<*, *>,
   selectedPerson :Immutable.Map<*, *>,
   allCases :Immutable.List<*>,
@@ -1017,6 +1103,7 @@ const exportPDF = (
   const fileName = getPDFContents(
     doc,
     data,
+    selectedCourtCharges,
     selectedPretrialCase,
     selectedCharges,
     selectedPerson,
@@ -1055,6 +1142,7 @@ const coverPage = (doc :Object, selectedPeople :Immutable.Map<*, *>[]) => {
 
 export const exportPDFList = (fileName :string, pages :{
   data :Immutable.Map<*, *>,
+  selectedCourtCharges :Immutable.Map<*, *>,
   selectedPretrialCase :Immutable.Map<*, *>,
   selectedCharges :Immutable.Map<*, *>,
   selectedPerson :Immutable.Map<*, *>,
@@ -1070,15 +1158,14 @@ export const exportPDFList = (fileName :string, pages :{
 }[]) :void => {
   const doc = new JSPDF();
   const sortedPages = pages;
-  sortedPages.sort((page1, page2) => {
-    return sortPeopleByName(page1.selectedPerson, page2.selectedPerson);
-  })
+  sortedPages.sort((page1, page2) => sortPeopleByName(page1.selectedPerson, page2.selectedPerson));
 
   coverPage(doc, sortedPages.map(page => page.selectedPerson));
 
   sortedPages.forEach((page) => {
     const {
       data,
+      selectedCourtCharges,
       selectedPretrialCase,
       selectedCharges,
       selectedPerson,
@@ -1090,6 +1177,7 @@ export const exportPDFList = (fileName :string, pages :{
     getPDFContents(
       doc,
       data,
+      selectedCourtCharges,
       selectedPretrialCase,
       selectedCharges,
       selectedPerson,

@@ -41,6 +41,7 @@ function* deleteEntityWorker(action :SequenceAction) :Generator<*, *, *> {
     if (personId) yield put(loadPersonDetails({ entityKeyId: personId, shouldLoadCases: false }));
   }
   catch (error) {
+    console.error(error);
     yield put(deleteEntity.failure(action.id, { entityKeyId, error }));
   }
   finally {

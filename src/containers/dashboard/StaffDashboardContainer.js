@@ -11,6 +11,7 @@ import { Redirect, Route, Switch } from 'react-router-dom';
 
 import RemindersContainer from '../reminders/RemindersContainer';
 import DashboardMainSection from '../../components/dashboard/DashboardMainSection';
+import VisualizeContainer from './VisualizeContainer';
 import NavButtonToolbar from '../../components/buttons/NavButtonToolbar';
 import {
   SETTINGS,
@@ -82,17 +83,34 @@ class StaffDashboard extends React.Component<Props, State> {
 
   renderRemindersPortal = () => <RemindersContainer />;
 
+  renderVisualizationPortal = () => <VisualizeContainer />;
+
   render() {
     const { selectedOrganizationSettings } = this.props;
-    const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], '');
+    const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
+    const courtRemindersEnabled = selectedOrganizationSettings.get(SETTINGS.COURT_REMINDERS, false);
     const remindersRoute = `${Routes.STAFF_DASHBOARD}/${Routes.REMINDERS}`;
+    const visualizeRoute = `${Routes.STAFF_DASHBOARD}/${Routes.VISUALIZE}`;
 
     const navButtons = [
       {
-        path: remindersRoute,
-        label: 'Court Reminders'
+        path: visualizeRoute,
+        label: 'Visualize'
       }
     ];
+
+    const remindersButton = {
+      path: remindersRoute,
+      label: 'Court Reminders'
+    };
+
+    let remindersSwitchRoute = null;
+    let redirectRoute = visualizeRoute;
+    if (courtRemindersEnabled) {
+      navButtons.unshift(remindersButton);
+      redirectRoute = remindersRoute;
+      remindersSwitchRoute = <Route path={remindersRoute} render={this.renderRemindersPortal} />
+    }
 
     return (
       <DashboardMainSection>
@@ -100,8 +118,9 @@ class StaffDashboard extends React.Component<Props, State> {
           <NavButtonToolbar options={navButtons} />
         </ToolbarWrapper>
         <Switch>
-          <Route path={remindersRoute} render={this.renderRemindersPortal} />
-          <Redirect from={Routes.STAFF_DASHBOARD} to={remindersRoute} />
+          <Route path={visualizeRoute} render={this.renderVisualizationPortal} />
+          {remindersSwitchRoute}
+          <Redirect from={Routes.STAFF_DASHBOARD} to={redirectRoute} />
         </Switch>
       </DashboardMainSection>
     );

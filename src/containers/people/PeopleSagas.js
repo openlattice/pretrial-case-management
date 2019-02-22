@@ -52,6 +52,8 @@ PRETRIAL_CASES = PRETRIAL_CASES.toString();
 STAFF = STAFF.toString();
 SUBSCRIPTION = SUBSCRIPTION.toString();
 
+const LIST_FQNS = [CONTACT_INFORMATION, HEARINGS, PRETRIAL_CASES, STAFF];
+
 const { OPENLATTICE_ID_FQN } = Constants;
 
 const getApp = state => state.get(STATE.APP, Map());
@@ -137,12 +139,18 @@ function* getPersonNeighborsWorker(action) :Generator<*, *, *> {
     const person = yield getEntityForPersonId(personId);
     const entityKeyId = person[OPENLATTICE_ID_FQN][0];
     let neighbors = yield call(SearchApi.searchEntityNeighbors, peopleEntitySetId, entityKeyId);
+
     neighbors = obfuscateEntityNeighbors(neighbors);
     neighbors = fromJS(neighbors);
+
+    let hearingEntityKeyId = Set();
+
     neighbors.forEach((neighborObj) => {
       const entitySetId = neighborObj.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
       const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
+      const neighborEntityKeyId = neighborObj.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0], '');
       const entityDateTime = moment(neighborObj.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.DATE_TIME, 0]));
+
       if (appTypeFqn === PSA_SCORES) {
         if (!mostRecentPSA.size || !currentPSADateTime || currentPSADateTime.isBefore(entityDateTime)) {
           mostRecentPSA = neighborObj;
@@ -170,16 +178,25 @@ function* getPersonNeighborsWorker(action) :Generator<*, *, *> {
         const hearingId = hearingDetails.getIn([OPENLATTICE_ID_FQN, 0]);
         const hearingDateTime = hearingDetails.getIn([PROPERTY_TYPES.DATE_TIME, 0]);
         const hearingExists = !!hearingDateTime && !!hearingId;
+        const hearingIsInactive = hearingDetails.getIn([PROPERTY_TYPES.HEARING_INACTIVE, 0], false);
         const hearingHasBeenCancelled = hearingDetails.getIn([PROPERTY_TYPES.UPDATE_TYPE, 0], '')
           .toLowerCase().trim() === 'cancelled';
         const hearingIsGeneric = hearingDetails.getIn([PROPERTY_TYPES.HEARING_TYPE, 0], '')
           .toLowerCase().trim() === 'all other hearings';
-        if (hearingExists && !hearingHasBeenCancelled && !hearingIsGeneric) {
+        const hearingIsADuplicate = hearingEntityKeyId.includes(neighborEntityKeyId);
+        if (
+          hearingExists
+          && !hearingHasBeenCancelled
+          && !hearingIsGeneric
+          && !hearingIsInactive
+          && !hearingIsADuplicate
+        ) {
           neighborsByEntitySet = neighborsByEntitySet.set(
             appTypeFqn,
             neighborsByEntitySet.get(appTypeFqn, List()).push(hearingDetails)
           );
         }
+        hearingEntityKeyId = hearingEntityKeyId.add(neighborEntityKeyId);
       }
       else {
         neighborsByEntitySet = neighborsByEntitySet.set(
@@ -210,7 +227,7 @@ function* getPersonNeighborsWorker(action) :Generator<*, *, *> {
       psaNeighbors.forEach((neighbor) => {
         const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
         const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
-        if (appTypeFqn === STAFF) {
+        if (LIST_FQNS.includes(appTypeFqn)) {
           mostRecentPSANeighborsByAppTypeFqn = mostRecentPSANeighborsByAppTypeFqn.set(
             appTypeFqn,
             mostRecentPSANeighborsByAppTypeFqn.get(appTypeFqn, List()).push(neighbor)
@@ -293,6 +310,23 @@ function* refreshPersonNeighborsWorker(action) :Generator<*, *, *> {
           appTypeFqn,
           neighbor
         );
+      }
+      else if (appTypeFqn === HEARINGS) {
+        const hearingDetails = neighbor.get(PSA_NEIGHBOR.DETAILS, Map());
+        const hearingId = hearingDetails.getIn([OPENLATTICE_ID_FQN, 0]);
+        const hearingDateTime = hearingDetails.getIn([PROPERTY_TYPES.DATE_TIME, 0]);
+        const hearingExists = !!hearingDateTime && !!hearingId;
+        const hearingIsInactive = hearingDetails.getIn([PROPERTY_TYPES.HEARING_INACTIVE, 0], false);
+        const hearingHasBeenCancelled = hearingDetails.getIn([PROPERTY_TYPES.UPDATE_TYPE, 0], '')
+          .toLowerCase().trim() === 'cancelled';
+        const hearingIsGeneric = hearingDetails.getIn([PROPERTY_TYPES.HEARING_TYPE, 0], '')
+          .toLowerCase().trim() === 'all other hearings';
+        if (hearingExists && !hearingHasBeenCancelled && !hearingIsGeneric && !hearingIsInactive) {
+          neighbors = neighbors.set(
+            appTypeFqn,
+            neighbors.get(appTypeFqn, List()).push(hearingDetails)
+          );
+        }
       }
       else {
         neighbors = neighbors.set(
@@ -378,7 +412,7 @@ function* updateContactInfoWorker(action :SequenceAction) :Generator<*, *, *> {
     /* get updated contact info for person */
     const filteredNeighbors = yield call(SearchApi.searchEntityNeighborsWithFilter, peopleEntitySetId, {
       entityKeyIds: [personEntityKeyId],
-      sourceEntitySetIds: [],
+      sourceEntitySetIds: [contactInformationEntitySetId],
       // destinationEntitySetIds: [contactInformationEntitySetId]
     });
 

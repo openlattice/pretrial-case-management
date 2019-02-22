@@ -43,10 +43,14 @@ const HeaderElement = styled.th`
   padding: 10px 5px;
 `;
 
+const NoResultsForTable = styled(NoResults)`
+  padding: 100px 0;
+`;
+
 class RemindersTable extends React.Component<Props, State> {
   renderHeaders = () => (
     <HeaderRow>
-      <HeaderElement>{REMINDERS_HEADERS.TIME}</HeaderElement>
+      <HeaderElement>{REMINDERS_HEADERS.COURT_TIME}</HeaderElement>
       <HeaderElement>{REMINDERS_HEADERS.NAME}</HeaderElement>
       <HeaderElement>{REMINDERS_HEADERS.CONTACT}</HeaderElement>
       <HeaderElement>{REMINDERS_HEADERS.COURTROOM}</HeaderElement>
@@ -63,7 +67,7 @@ class RemindersTable extends React.Component<Props, State> {
       remindersWithOpenPSA,
       noResults
     } = this.props;
-    if (noResults) return <NoResults>No Results</NoResults>;
+    if (noResults) return <NoResultsForTable>No Results</NoResultsForTable>;
     const reminderSeq = sortReminders(reminders, neighbors)
       .map(((reminder) => {
         const {
@@ -81,9 +85,12 @@ class RemindersTable extends React.Component<Props, State> {
         } = formatPeopleInfo(person);
         const {
           courtroom,
+          hearingDate,
+          hearingTime,
           hearingType
         } = getHearingFields(hearing);
         const contact = contactInfo.get(PROPERTY_TYPES.PHONE);
+        const hearingDateTime = `${hearingDate} ${hearingTime}`;
 
         const hasOpenPSA = remindersWithOpenPSA.includes(reminderId);
         return (
@@ -91,6 +98,7 @@ class RemindersTable extends React.Component<Props, State> {
               key={reminderId}
               contact={contact}
               courtroom={courtroom}
+              hearingTime={hearingDateTime}
               hearingType={hearingType}
               reminderId={reminderId}
               time={moment(dateTime).format('HH:mm')}
