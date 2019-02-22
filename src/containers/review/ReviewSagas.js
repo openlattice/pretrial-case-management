@@ -320,6 +320,7 @@ function* loadPSADataWorker(action :SequenceAction) :Generator<*, *, *> {
       const app = yield select(getApp);
       const orgId = yield select(getOrgId);
       const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
+      const dmfFqnEntitySetId = getEntitySetId(app, dmfResultsFqn, orgId);
       const psaScoresEntitySetId = getEntitySetId(app, psaScoresFqn, orgId);
       const peopleEntitySetId = getEntitySetId(app, peopleFqn, orgId);
       const staffEntitySetId = getEntitySetId(app, staffFqn, orgId);
@@ -327,7 +328,7 @@ function* loadPSADataWorker(action :SequenceAction) :Generator<*, *, *> {
       const releaseRecommendationsEntitySetId = getEntitySetId(app, releaseRecommendationsFqn, orgId);
       let neighborsById = yield call(SearchApi.searchEntityNeighborsWithFilter, psaScoresEntitySetId, {
         entityKeyIds: action.value,
-        sourceEntitySetIds: [psaScoresEntitySetId, releaseRecommendationsEntitySetId],
+        sourceEntitySetIds: [psaScoresEntitySetId, releaseRecommendationsEntitySetId, dmfFqnEntitySetId],
         // destinationEntitySetIds: [
         //   peopleEntitySetId,
         //   psaScoresEntitySetId,
