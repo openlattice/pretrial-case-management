@@ -44,10 +44,8 @@ export default function remindersReducer(state :Map<*, *> = INITIAL_STATE, actio
       return loadOptOutNeighbors.reducer(state, action, {
         REQUEST: () => state.set(REMINDERS.LOADING_OPT_OUT_NEIGHBORS, true),
         SUCCESS: () => {
-          const { optOutNeighborsById, reminderIdToOptOutId } = action.value;
-          return state
-            .set(REMINDERS.OPT_OUT_NEIGHBORS, optOutNeighborsById)
-            .set(REMINDERS.REMINDER_IDS_TO_OPT_OUT_IDS, reminderIdToOptOutId);
+          const { optOutNeighborsById } = action.value;
+          return state.set(REMINDERS.OPT_OUT_NEIGHBORS, optOutNeighborsById);
         },
         FINALLY: () => state.set(REMINDERS.LOADING_OPT_OUT_NEIGHBORS, false)
       });
