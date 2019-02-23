@@ -16,7 +16,7 @@ import BasicButton from '../../components/buttons/BasicButton';
 import InfoButton from '../../components/buttons/InfoButton';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import SubscriptionConfig from '../../config/formconfig/SubscriptionConfig';
-import SubscriptionInfo from '../../components/people/SubscriptionInfo';
+import SubscriptionInfo from '../../components/subscription/SubscriptionInfo';
 import ContactInfoTable from '../../components/contactinformation/ContactInfoTable';
 import NewContactForm from '../people/NewContactForm';
 import { FORM_IDS } from '../../utils/consts/Consts';

@@ -21,44 +21,73 @@ import { APP, PSA_NEIGHBOR, STATE } from '../../utils/consts/FrontEndStateConsts
 import { obfuscateEntity, obfuscateEntityNeighbors } from '../../utils/consts/DemoNames';
 import { getEntitySetId } from '../../utils/AppUtils';
 import { getPropertyTypeId } from '../../edm/edmUtils';
+import { PSA_STATUSES } from '../../utils/consts/Consts';
+import { getCasesForPSA, getChargeHistory, getCaseHistory } from '../../utils/CaseUtils';
 import {
   GET_PEOPLE,
   GET_PERSON_DATA,
   GET_PERSON_NEIGHBORS,
+  LOAD_REQUIRES_ACTION_PEOPLE,
   REFRESH_PERSON_NEIGHBORS,
   UPDATE_CONTACT_INFORMATION,
   getPeople,
   getPersonData,
   getPersonNeighbors,
+  loadRequiresActionPeople,
   refreshPersonNeighbors,
   updateContactInfo
 } from './PeopleActionFactory';
 
 let {
+  CHARGES,
   CONTACT_INFORMATION,
+  FTAS,
   HEARINGS,
+  MANUAL_PRETRIAL_CASES,
   PEOPLE,
   PSA_SCORES,
   PRETRIAL_CASES,
+  RELEASE_RECOMMENDATIONS,
   STAFF,
   SUBSCRIPTION
 } = APP_TYPES_FQNS;
 
+CHARGES = CHARGES.toString();
 CONTACT_INFORMATION = CONTACT_INFORMATION.toString();
+FTAS = FTAS.toString();
 HEARINGS = HEARINGS.toString();
+MANUAL_PRETRIAL_CASES = MANUAL_PRETRIAL_CASES.toString();
 PEOPLE = PEOPLE.toString();
 PSA_SCORES = PSA_SCORES.toString();
 PRETRIAL_CASES = PRETRIAL_CASES.toString();
+RELEASE_RECOMMENDATIONS = RELEASE_RECOMMENDATIONS.toString();
 STAFF = STAFF.toString();
 SUBSCRIPTION = SUBSCRIPTION.toString();
 
-const LIST_FQNS = [CONTACT_INFORMATION, HEARINGS, PRETRIAL_CASES, STAFF];
+const LIST_FQNS = [CONTACT_INFORMATION, HEARINGS, PRETRIAL_CASES, STAFF, RELEASE_RECOMMENDATIONS, CHARGES];
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
 const getApp = state => state.get(STATE.APP, Map());
 const getEDM = state => state.get(STATE.EDM, Map());
 const getOrgId = state => state.getIn([STATE.APP, APP.SELECTED_ORG_ID], '');
+
+function* getAllSearchResults(entitySetId :string, searchTerm :string) :Generator<*, *, *> {
+  const loadSizeRequest = {
+    searchTerm,
+    start: 0,
+    maxHits: 1
+  };
+  const response = yield call(SearchApi.searchEntitySetData, entitySetId, loadSizeRequest);
+  const { numHits } = response;
+
+  const loadResultsRequest = {
+    searchTerm,
+    start: 0,
+    maxHits: numHits
+  };
+  return yield call(SearchApi.searchEntitySetData, entitySetId, loadResultsRequest);
+}
 
 function* getPeopleWorker(action) :Generator<*, *, *> {
 
@@ -371,6 +400,7 @@ function* refreshPersonNeighborsWorker(action) :Generator<*, *, *> {
 
     yield put(refreshPersonNeighbors.success(action.id, {
       personId,
+      entityKeyId,
       mostRecentPSA,
       mostRecentPSANeighborsByAppTypeFqn,
       neighbors,
@@ -440,10 +470,202 @@ function* updateContactInfoWatcher() :Generator<*, *, *> {
   yield takeEvery(UPDATE_CONTACT_INFORMATION, updateContactInfoWorker);
 }
 
+function* loadRequiresActionPeopleWorker(action :SequenceAction) :Generator<*, *, *> {
+  let psaScoreMap = Map();
+  let psaScoresWithNoPendingCharges = Set();
+  let psaScoresWithRecentFTAs = Set();
+  let psaNeighborsById = Map();
+  let peopleIds = Set();
+  let peopleMap = Map();
+  let peopleWithMultipleOpenPSAs = Set();
+  let peopleWithRecentFTAs = Set();
+  let peopleWithNoPendingCharges = Set();
+  let peopleNeighborsById = Map();
+
+  try {
+    yield put(loadRequiresActionPeople.request(action.id));
+    const app = yield select(getApp);
+    const edm = yield select(getEDM);
+    const orgId = yield select(getOrgId);
+    const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
+    const psaScoresEntitySetId = getEntitySetId(app, PSA_SCORES, orgId);
+    const peopleEntitySetId = getEntitySetId(app, PEOPLE, orgId);
+    const manualPretrialCasesFqnEntitySetId = getEntitySetId(app, MANUAL_PRETRIAL_CASES, orgId);
+    const pretrialCasesEntitySetId = getEntitySetId(app, PRETRIAL_CASES, orgId);
+    const releaseRecommendationsEntitySetId = getEntitySetId(app, RELEASE_RECOMMENDATIONS, orgId);
+    const chargesEntitySetId = getEntitySetId(app, CHARGES, orgId);
+    const ftaEntitySetId = getEntitySetId(app, FTAS, orgId);
+    const staffEntitySetId = getEntitySetId(app, STAFF, orgId);
+
+    /* load all open PSAs */
+    const statusPropertyTypeId = getPropertyTypeId(edm, PROPERTY_TYPES.STATUS);
+    const searchTerm = action.value === '*' ? action.value : `${statusPropertyTypeId}:"${PSA_STATUSES.OPEN}"`;
+    const openPSAData = yield call(getAllSearchResults, psaScoresEntitySetId, searchTerm);
+    fromJS(openPSAData.hits).forEach((psa) => {
+      const psaId = psa.getIn([OPENLATTICE_ID_FQN, 0], '');
+      if (psaId) psaScoreMap = psaScoreMap.set(psaId, psa);
+    });
+    /* all PSA Ids */
+    const psaIds = psaScoreMap.keySeq().toJS();
+
+    /* get people and cases for all open PSAs */
+    let openPSAIdsToPeopleAndCases = yield call(SearchApi.searchEntityNeighborsWithFilter, psaScoresEntitySetId, {
+      entityKeyIds: psaIds,
+      sourceEntitySetIds: [psaScoresEntitySetId, releaseRecommendationsEntitySetId],
+      destinationEntitySetIds: [
+        peopleEntitySetId,
+        psaScoresEntitySetId,
+        staffEntitySetId,
+        manualPretrialCasesFqnEntitySetId
+      ]
+    });
+
+    /* all people Ids */
+    openPSAIdsToPeopleAndCases = fromJS(openPSAIdsToPeopleAndCases);
+    openPSAIdsToPeopleAndCases.entrySeq().forEach(([psaId, neighbors]) => {
+      let psaNeighbors = Map();
+      neighbors.forEach((neighbor) => {
+        const neighborObj = neighbor.get(PSA_NEIGHBOR.DETAILS, Map());
+        const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
+        const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
+        const neighborId = neighborObj.getIn([OPENLATTICE_ID_FQN, 0], '');
+        if (appTypeFqn === PEOPLE) {
+          peopleMap = peopleMap.set(neighborId, neighborObj);
+          peopleIds = peopleIds.add(neighborId);
+        }
+        if (LIST_FQNS.includes(appTypeFqn)) {
+          psaNeighbors = psaNeighbors.set(
+            appTypeFqn,
+            psaNeighbors.get(appTypeFqn, List()).push(neighbor)
+          );
+        }
+        else {
+          psaNeighbors = psaNeighbors.set(appTypeFqn, neighbor);
+        }
+      });
+      psaNeighborsById = psaNeighborsById.set(psaId, psaNeighbors);
+    });
+
+    /* get filtered neighbors for all people with open PSAs */
+    let peopleWithOpenPSANeighbors = yield call(SearchApi.searchEntityNeighborsWithFilter, peopleEntitySetId, {
+      entityKeyIds: peopleIds.toJS(),
+      sourceEntitySetIds: [psaScoresEntitySetId, ftaEntitySetId],
+      destinationEntitySetIds: [chargesEntitySetId, pretrialCasesEntitySetId, ftaEntitySetId]
+    });
+    peopleWithOpenPSANeighbors = fromJS(peopleWithOpenPSANeighbors);
+
+    /* map person neighbors by personId -> appTypeFqn -> neighbors */
+    peopleWithOpenPSANeighbors.entrySeq().forEach(([personId, neighbors]) => {
+      let personNeighbors = Map();
+      neighbors.forEach((neighbor) => {
+        const neighborObj = neighbor.get(PSA_NEIGHBOR.DETAILS, Map());
+        const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
+        const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
+        if (appTypeFqn === PSA_SCORES) {
+          /* only open psas */
+          const psaStatus = neighborObj.getIn([PROPERTY_TYPES.STATUS, 0], '');
+          if (psaStatus === PSA_STATUSES.OPEN) {
+            personNeighbors = personNeighbors.set(
+              appTypeFqn,
+              personNeighbors.get(appTypeFqn, List()).push(neighborObj)
+            );
+          }
+        }
+        else if (appTypeFqn === CHARGES) {
+          personNeighbors = personNeighbors.set(
+            appTypeFqn,
+            personNeighbors.get(appTypeFqn, List()).push(neighborObj)
+          );
+        }
+        else {
+          personNeighbors = personNeighbors.set(
+            appTypeFqn,
+            personNeighbors.get(appTypeFqn, List()).push(neighborObj)
+          );
+        }
+      });
+
+      const personCaseHistory = getCaseHistory(personNeighbors);
+      const personChargeHistory = getChargeHistory(personNeighbors);
+
+      /* collect people Ids with multiple PSAs */
+      const psaCount = personNeighbors.get(PSA_SCORES, List()).size;
+      if (psaCount > 1) peopleWithMultipleOpenPSAs = peopleWithMultipleOpenPSAs.add(personId);
+
+      /* collect people Ids with recent FTAs */
+
+      /* collect people Ids with no pending charges */
+      const personCharges = personNeighbors.get(CHARGES);
+      if (personCharges) {
+        personNeighbors.get(PSA_SCORES, List()).forEach((psa) => {
+          const psaId = psa.getIn([OPENLATTICE_ID_FQN, 0], '');
+          let hasPendingCharges = false;
+          const psaDate = moment(psa.getIn([PROPERTY_TYPES.DATE_TIME, 0], ''));
+          const hasFTASincePSA = personNeighbors.get(FTAS, List()).some((fta) => {
+            const ftaDateTime = fta.getIn([PROPERTY_TYPES.DATE_TIME, 0], '');
+            if (psaDate.isValid()) {
+              return psaDate.isBefore(ftaDateTime);
+            }
+            return false;
+          });
+          if (hasFTASincePSA) {
+            peopleWithRecentFTAs = peopleWithRecentFTAs.add(personId);
+            psaScoresWithRecentFTAs = psaScoresWithRecentFTAs.add(psaId);
+          }
+          const arrestDate = moment(psaNeighborsById
+            .getIn([psaId, MANUAL_PRETRIAL_CASES, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.ARREST_DATE_TIME, 0]));
+          const { chargeHistoryForMostRecentPSA } = getCasesForPSA(
+            personCaseHistory,
+            personChargeHistory,
+            psa,
+            arrestDate,
+            undefined
+          );
+          if (psaScoreMap.get(psaId) && arrestDate.isValid()) {
+            chargeHistoryForMostRecentPSA.entrySeq().forEach(([_, charges]) => {
+              const psaHasPendingCharges = charges.some(charge => !charge.getIn([PROPERTY_TYPES.DISPOSITION_DATE, 0]));
+              if (psaHasPendingCharges) hasPendingCharges = true;
+            });
+            if (chargeHistoryForMostRecentPSA.size && !hasPendingCharges) {
+              psaScoresWithNoPendingCharges = psaScoresWithNoPendingCharges.add(psaId);
+              peopleWithNoPendingCharges = peopleWithNoPendingCharges.add(personId);
+            }
+          }
+        });
+      }
+      peopleNeighborsById = peopleNeighborsById.set(personId, personNeighbors);
+    });
+
+    yield put(loadRequiresActionPeople.success(action.id, {
+      peopleNeighborsById,
+      peopleWithMultipleOpenPSAs,
+      peopleWithRecentFTAs,
+      peopleWithNoPendingCharges,
+      peopleMap,
+      psaScoreMap,
+      psaNeighborsById,
+      psaScoresWithNoPendingCharges,
+      psaScoresWithRecentFTAs
+    }));
+  }
+  catch (error) {
+    console.error(error);
+    yield put(loadRequiresActionPeople.failure(action.id, { error }));
+  }
+  finally {
+    yield put(loadRequiresActionPeople.finally(action.id));
+  }
+}
+
+function* loadRequiresActionPeopleWatcher() :Generator<*, *, *> {
+  yield takeEvery(LOAD_REQUIRES_ACTION_PEOPLE, loadRequiresActionPeopleWorker);
+}
+
 export {
   getPeopleWatcher,
   getPersonDataWatcher,
   getPersonNeighborsWatcher,
+  loadRequiresActionPeopleWatcher,
   refreshPersonNeighborsWatcher,
   updateContactInfoWatcher
 };
