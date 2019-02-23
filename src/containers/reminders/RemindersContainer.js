@@ -10,20 +10,24 @@ import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 
 import DatePicker from '../../components/datetime/DatePicker';
-import RemindersTable from '../../components/reminders/RemindersTable';
+import TableWithPagination from '../../components/reminders/TableWithPagination';
 import SearchAllBar from '../../components/SearchAllBar';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import PersonSubscriptionList from '../../components/subscription/PersonSubscriptionList';
 import DashboardMainSection from '../../components/dashboard/DashboardMainSection';
-import Pagination from '../../components/Pagination';
 import { Count } from '../../utils/Layout';
 import { OL } from '../../utils/consts/Colors';
+import { APP_TYPES_FQNS } from '../../utils/consts/DataModelConsts';
 import {
   APP,
   REMINDERS,
   SEARCH,
   STATE
 } from '../../utils/consts/FrontEndStateConsts';
+
+const remindersFqn = APP_TYPES_FQNS.REMINDERS.toString();
+const reminderOptOutsFqn = APP_TYPES_FQNS.REMINDER_OPT_OUTS.toString();
+
 
 import * as AppActionFactory from '../app/AppActionFactory';
 import * as RemindersActionFactory from './RemindersActionFactory';
@@ -102,8 +106,12 @@ type Props = {
   failedReminderIds :Set<*, *>,
   isLoadingPeople :boolean,
   loadingPeopleWithNoContacts :boolean,
+  loadingOptOuts :boolean,
+  loadingOptOutNeighbors :boolean,
   loadingReminders :boolean,
   loadingReminderNeighbors :boolean,
+  optOutMap :Map<*, *>,
+  optOutNeighbors :Map<*, *>,
   pastReminders :Map<*, *>,
   peopleWithHearingsButNoContacts :Map<*, *>,
   reminderNeighborsById :Map<*, *>,
@@ -202,22 +210,34 @@ class RemindersContainer extends React.Component<Props, State> {
     return <SearchAllBar handleSubmit={actions.searchPeopleByPhoneNumber} />;
   }
 
-  renderTable = (title, reminders, neighbors) => {
-    const { remindersWithOpenPSA } = this.props;
+  renderRemindersTable = (title, reminders, neighbors) => {
+    const { remindersWithOpenPSA, loadingReminders, loadingReminderNeighbors } = this.props;
     return (
-      <TableWrapper>
-        <TableTitle>
-          <TitleText>
-            <span>{ title }</span>
-            <Count>{ reminders.size }</Count>
-          </TitleText>
-        </TableTitle>
-        <RemindersTable
-            reminders={reminders}
-            neighbors={neighbors}
-            remindersWithOpenPSA={remindersWithOpenPSA}
-            noResults={!reminders.size} />
-      </TableWrapper>
+      <TableWithPagination
+          loading={loadingReminders || loadingReminderNeighbors}
+          title={title}
+          entities={reminders}
+          neighbors={neighbors}
+          appTypeFqn={remindersFqn}
+          remindersWithOpenPSA={remindersWithOpenPSA} />
+    );
+  }
+
+  renderOptOutTable = () => {
+    const {
+      optOutMap,
+      optOutNeighbors,
+      loadingOptOuts,
+      loadingOptOutNeighbors
+    } = this.props;
+    return (
+      <TableWithPagination
+          loading={loadingOptOuts || loadingOptOutNeighbors}
+          title="Opt Outs"
+          entities={optOutMap}
+          neighbors={optOutNeighbors}
+          appTypeFqn={reminderOptOutsFqn}
+          remindersWithOpenPSA={Set()} />
     );
   }
 
@@ -279,33 +299,28 @@ class RemindersContainer extends React.Component<Props, State> {
       futureRemidners,
       pastReminders,
       failedReminderIds,
-      reminderNeighborsById,
-      loadingReminders,
-      loadingReminderNeighbors
+      reminderNeighborsById
     } = this.props;
     const failedReminders = pastReminders.filter((reminder, entityKeyId) => failedReminderIds.includes(entityKeyId));
 
-    if (loadingReminders || loadingReminderNeighbors) {
-      return <LoadingSpinner />;
-    }
     return (
       <ResultsWrapper>
         {
-          futureRemidners.size ? this.renderTable(
+          futureRemidners.size ? this.renderRemindersTable(
             'Scheduled Reminders',
             futureRemidners,
             reminderNeighborsById
           ) : null
         }
         {
-          this.renderTable(
-            'Past Reminders',
+          this.renderRemindersTable(
+            'Reminders',
             pastReminders,
             reminderNeighborsById
           )
         }
         {
-          this.renderTable(
+          this.renderRemindersTable(
             'Failed Reminders',
             failedReminders,
             reminderNeighborsById
@@ -320,6 +335,7 @@ class RemindersContainer extends React.Component<Props, State> {
       <DashboardMainSection>
         {this.renderLists()}
         {this.renderToolbar()}
+        {this.renderOptOutTable()}
         {this.renderResults()}
       </DashboardMainSection>
     );
@@ -330,7 +346,6 @@ function mapStateToProps(state) {
   const app = state.get(STATE.APP);
   const reminders = state.get(STATE.REMINDERS);
   const search = state.get(STATE.SEARCH);
-  console.log(reminders.toJS());
 
   return {
     // App
@@ -353,7 +368,6 @@ function mapStateToProps(state) {
     [REMINDERS.OPT_OUTS]: reminders.get(REMINDERS.OPT_OUTS),
     [REMINDERS.OPT_OUT_NEIGHBORS]: reminders.get(REMINDERS.OPT_OUT_NEIGHBORS),
     [REMINDERS.OPT_OUTS_WITH_REASON]: reminders.get(REMINDERS.OPT_OUTS_WITH_REASON),
-    [REMINDERS.REMINDER_IDS_TO_OPT_OUT_IDS]: reminders.get(REMINDERS.REMINDER_IDS_TO_OPT_OUT_IDS),
     [REMINDERS.LOADING_OPT_OUTS]: reminders.get(REMINDERS.LOADING_OPT_OUTS),
     [REMINDERS.LOADING_OPT_OUT_NEIGHBORS]: reminders.get(REMINDERS.LOADING_OPT_OUT_NEIGHBORS),
 
