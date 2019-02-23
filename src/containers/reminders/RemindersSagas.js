@@ -113,10 +113,6 @@ function* loadOptOutNeighborsWorker(action :SequenceAction) :Generator<*, *, *> 
           neighbors.forEach((neighbor) => {
             const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
             const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
-            const entityKeyId = neighbor.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0]);
-            if (appTypeFqn === REMINDERS) {
-              reminderIdToOptOutId = reminderIdToOptOutId.set(entityKeyId, optOutId);
-            }
             neighborsByAppTypeFqn = neighborsByAppTypeFqn.set(
               appTypeFqn,
               fromJS(neighbor)
@@ -127,10 +123,7 @@ function* loadOptOutNeighborsWorker(action :SequenceAction) :Generator<*, *, *> 
       });
     }
 
-    yield put(loadOptOutNeighbors.success(action.id, {
-      optOutNeighborsById,
-      reminderIdToOptOutId
-    }));
+    yield put(loadOptOutNeighbors.success(action.id, { optOutNeighborsById }));
 
   }
   catch (error) {
