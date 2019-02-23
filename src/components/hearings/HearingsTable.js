@@ -9,6 +9,7 @@ import HearingRow from './HearingRow';
 import { OL } from '../../utils/consts/Colors';
 import { APP_TYPES_FQNS } from '../../utils/consts/DataModelConsts';
 import { getHearingFields, sortHearingsByDate } from '../../utils/consts/HearingConsts';
+import { isUUID } from '../../utils/DataUtils';
 
 let { PSA_SCORES } = APP_TYPES_FQNS;
 
@@ -96,6 +97,9 @@ const HearingsTable = ({
         {rows.sort(sortHearingsByDate).valueSeq().map(((row) => {
           const { hearingId, hearingEntityKeyId, hearingCourtString } = getHearingFields(row);
           const hearingIsADuplicate = (hearingCourtStringsCounts.get(hearingCourtString) > 1);
+          const hearingWasCreatedManually = isUUID(hearingId);
+          const hearingHasOutcome = hearingsWithOutcomes.includes(hearingEntityKeyId);
+          const disabled = hearingHasOutcome || !hearingWasCreatedManually;
           const hearingHasPSA = !!hearingNeighborsById.getIn([hearingEntityKeyId, PSA_SCORES], Map()).size;
           return (
             <HearingRow
@@ -103,8 +107,9 @@ const HearingsTable = ({
                 row={row}
                 isDuplicate={hearingIsADuplicate}
                 hasPSA={hearingHasPSA}
+                hasOutcome={hearingHasOutcome}
                 cancelFn={cancelFn}
-                disabled={hearingsWithOutcomes.includes(hearingEntityKeyId)} />
+                disabled={disabled} />
           );
         }))}
       </Body>
