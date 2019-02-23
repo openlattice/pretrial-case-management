@@ -121,7 +121,7 @@ export const getScheduledHearings = (psaNeighbors) => {
 
 // Get past hearings in sequential order from psa neighbors
 export const getPastHearings = (psaNeighbors) => {
-  const todaysDate = moment().startOf('day');
+  const todaysDate = moment();
   return (
     getHearingsFromNeighbors(psaNeighbors)
       .filter(hearing => todaysDate.isAfter(hearing.getIn([PROPERTY_TYPES.DATE_TIME, 0], '')))
