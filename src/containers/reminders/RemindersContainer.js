@@ -223,7 +223,7 @@ class RemindersContainer extends React.Component<Props, State> {
       <TableWrapper>
         <TableTitle>
           <TitleText>
-            People not recieveing reminders
+            People not receiving reminders
             <Count>{ people.size }</Count>
           </TitleText>
         </TableTitle>

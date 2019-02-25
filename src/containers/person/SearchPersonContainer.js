@@ -124,10 +124,6 @@ type State = {
 
 class SearchPeopleContainer extends React.Component<Props, State> {
 
-  static defaultProps = {
-    onSelectPerson: () => {}
-  }
-
   constructor(props :Props) {
     super(props);
     this.state = {
@@ -189,8 +185,7 @@ class SearchPeopleContainer extends React.Component<Props, State> {
 
       return 0;
     });
-
-    return <PersonTable people={rows} gray={gray} handleSelect={this.handleOnSelectPerson} />
+    return <PersonTable people={rows} gray={gray} handleSelect={this.handleOnSelectPerson} />;
   }
 
   renderCreatePersonButton = () => {
@@ -309,7 +304,7 @@ function mapStateToProps(state :Immutable.Map<*, *>) :Object {
   return {
     [SEARCH.SEARCH_RESULTS]: search.get(SEARCH.SEARCH_RESULTS, Immutable.List()),
     [SEARCH.LOADING]: search.get(SEARCH.LOADING, false),
-    [SEARCH.SEARCH_HAS_RUN]: search.get(SEARCH.SEARCH_HAS_RUN, false),
+    [SEARCH.SEARCH_HAS_RUN]: search.get(SEARCH.SEARCH_HAS_RUN),
     error: search.get('searchError', false)
   };
 }

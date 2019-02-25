@@ -6,12 +6,15 @@ import React from 'react';
 import styled from 'styled-components';
 import Immutable from 'immutable';
 import { Constants } from 'lattice';
+import { Link } from 'react-router-dom';
 
 import defaultUserIcon from '../../assets/svg/profile-placeholder-round.svg';
 import { PersonPicture, PersonMugshot } from '../../utils/Layout';
 import { formatValue, formatDateList } from '../../utils/FormattingUtils';
 import { OL } from '../../utils/consts/Colors';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+
+import * as Routes from '../../core/router/Routes';
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
@@ -20,19 +23,35 @@ const {
   FIRST_NAME,
   MIDDLE_NAME,
   LAST_NAME,
-  SUFFIX,
   MUGSHOT,
   PERSON_ID,
   PICTURE
 } = PROPERTY_TYPES;
 
+const StyledLink = styled(Link)`
+  color: ${OL.GREY01};
+  :hover {
+    color: ${OL.PURPLE02};
+  }
+`;
+
 const Cell = styled.td`
   padding: 7px 0;
   font-family: 'Open Sans', sans-serif;
-  font-size: 14px;
+  font-size: ${props => (props.small ? 12 : 14)}px;
 `;
 const StyledPersonMugshot = styled(PersonMugshot)`
-  width: 36px;
+  width: ${props => (props.small ? 30 : 36)}px;
+  ${props => (props.small
+    ? (
+      `min-width: 30px;
+        height: 30px;
+        display: flex;
+        justify-content: center;
+        align-items: center;`
+    )
+    : ''
+  )}
 `;
 
 const Row = styled.tr`
@@ -59,57 +78,69 @@ const Row = styled.tr`
   }
 
   &:active {
-    background-color: ${OL.GREY08};
+    background-color: ${OL.PURPLE06};
   }
+
+  background-color: ${props => (props.active ? OL.PURPLE06 : 'none')};
 `;
 
 type Props = {
   person :Immutable.Map<*, *>,
   handleSelect? :(person :Immutable.Map<*, *>, entityKeyId :string, id :string) => void,
-  gray? :boolean
+  gray? :boolean,
+  selected? :boolean,
+  small? :boolean,
 };
 
-const PersonRow = ({ person, handleSelect, gray } :Props) => {
+const PersonRow = ({
+  person,
+  handleSelect,
+  gray,
+  selected,
+  small
+} :Props) => {
 
   let mugshot :string = person.getIn([MUGSHOT, 0]) || person.getIn([PICTURE, 0]);
   mugshot = mugshot
     ? (
-      <StyledPersonMugshot>
+      <StyledPersonMugshot small={small}>
         <PersonPicture src={mugshot} alt="" />
       </StyledPersonMugshot>
-    ) : <PersonPicture src={defaultUserIcon} alt="" />;
+    ) : <PersonPicture small={small} src={defaultUserIcon} alt="" />;
 
   const firstName = formatValue(person.get(FIRST_NAME, Immutable.List()));
   const middleName = formatValue(person.get(MIDDLE_NAME, Immutable.List()));
   const lastName = formatValue(person.get(LAST_NAME, Immutable.List()));
   const dob = formatDateList(person.get(DOB, Immutable.List()), 'MM/DD/YYYY');
-  const suffix = formatValue(person.get(SUFFIX, Immutable.List()));
   const id :string = person.getIn([PERSON_ID, 0], '');
   const displayId = id.length <= 11 ? id : `${id.substr(0, 10)}...`;
   const entityKeyId :string = person.getIn([OPENLATTICE_ID_FQN, 0], '');
 
   return (
     <Row
+        active={selected}
         gray={gray}
         onClick={() => {
           if (handleSelect) {
-            handleSelect(person, entityKeyId, id);
+            handleSelect(person, entityKeyId);
           }
         }
         }>
-      <Cell>{mugshot}</Cell>
-      <Cell>{ lastName }</Cell>
-      <Cell>{ firstName }</Cell>
-      <Cell>{ middleName }</Cell>
-      <Cell>{ dob }</Cell>
-      <Cell>{ displayId }</Cell>
+      <Cell small={small}>{ mugshot }</Cell>
+      <Cell small={small}>{ lastName }</Cell>
+      <Cell small={small}>{ firstName }</Cell>
+      <Cell small={small}>{ middleName }</Cell>
+      <Cell small={small}>{ dob }</Cell>
+      <Cell small={small}>{ displayId }</Cell>
     </Row>
   );
 };
 
 PersonRow.defaultProps = {
   handleSelect: () => {},
-  gray: false
+  gray: false,
+  selected: false,
+  small: false
 };
 
 export default PersonRow;

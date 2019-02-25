@@ -679,7 +679,7 @@ export const StatsSectionHeader = styled(AlternateSectionHeader)`
 // mugshot wrapper
 
 export const PersonPicture = styled.img`
-  width: 36px;
+  width: ${props => (props.small ? 30 : 36)}px;
   height: auto;
 `;
 

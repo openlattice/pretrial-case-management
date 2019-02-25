@@ -13,6 +13,9 @@ const getPeople = newRequestSequence(GET_PEOPLE);
 const GET_PERSON_DATA = 'GET_PERSON_DATA';
 const getPersonData = newRequestSequence(GET_PERSON_DATA);
 
+const LOAD_REQUIRES_ACTION_PEOPLE = 'LOAD_REQUIRES_ACTION_PEOPLE';
+const loadRequiresActionPeople = newRequestSequence(LOAD_REQUIRES_ACTION_PEOPLE);
+
 const REFRESH_PERSON_NEIGHBORS = 'REFRESH_PERSON_NEIGHBORS';
 const refreshPersonNeighbors = newRequestSequence(REFRESH_PERSON_NEIGHBORS);
 
@@ -27,12 +30,14 @@ export {
   GET_PEOPLE,
   GET_PERSON_DATA,
   GET_PERSON_NEIGHBORS,
+  LOAD_REQUIRES_ACTION_PEOPLE,
   REFRESH_PERSON_NEIGHBORS,
   UPDATE_CONTACT_INFORMATION,
   clearPerson,
   getPeople,
   getPersonData,
   getPersonNeighbors,
+  loadRequiresActionPeople,
   refreshPersonNeighbors,
   updateContactInfo
 };

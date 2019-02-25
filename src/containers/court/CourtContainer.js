@@ -11,7 +11,7 @@ import { bindActionCreators } from 'redux';
 import { NavLink } from 'react-router-dom';
 import { Constants } from 'lattice';
 
-import { formatPeopleInfo } from '../../utils/PeopleUtils';
+import { formatPeopleInfo, sortPeopleByName } from '../../utils/PeopleUtils';
 import SecondaryButton from '../../components/buttons/SecondaryButton';
 import ToggleButtonsGroup from '../../components/buttons/ToggleButtons';
 import LoadingSpinner from '../../components/LoadingSpinner';
@@ -22,7 +22,6 @@ import { StyledSectionWrapper } from '../../utils/Layout';
 import { TIME_FORMAT } from '../../utils/FormattingUtils';
 import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { DOMAIN } from '../../utils/consts/ReportDownloadTypes';
-import { sortPeopleByName } from '../../utils/PSAUtils';
 import { OL } from '../../utils/consts/Colors';
 import {
   APP,
