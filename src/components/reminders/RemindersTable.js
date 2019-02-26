@@ -133,8 +133,6 @@ class RemindersTable extends React.Component<Props, State> {
       noResults
     } = this.props;
     if (noResults) return <NoResultsForTable>No Results</NoResultsForTable>;
-    console.log(entities.toJS());
-    console.log(neighbors.toJS());
     const entitySeq = sortEntities(entities, neighbors)
       .map(((entity) => {
         let row = null;
