@@ -145,21 +145,20 @@ const ToggleWrapper = styled.div`
 `;
 
 type Props = {
+  isLoadingHearings :boolean,
+  isLoadingHearingsNeighbors :boolean,
   hearingsByTime :Map<*, *>,
   hearingNeighborsById :Map<*, *>,
   isLoadingPSAs :boolean,
   courtroom :string,
   courtrooms :List<*>,
   county :string,
-  hearingIds :List<*>,
   peopleWithOpenPsas :Set<*>,
   peopleIdsToOpenPSAIds :Map<*>,
   scoresAsMap :Map<*>,
-  loadingPSAData :boolean,
   submitting :boolean,
   selectedOrganizationId :string,
   psaEditDatesById :Map<*, *>,
-  psaIdsRefreshing :boolean,
   actions :{
     bulkDownloadPSAReviewPDF :({ peopleEntityKeyIds :string[] }) => void,
     changeHearingFilters :({ county? :string, courtroom? :string }) => void,
@@ -174,7 +173,6 @@ type Props = {
       personId :string,
       neighbors :Map<*, *>
     }) => void,
-    loadHearingNeighbors :(hearingIds :string[]) => void,
     loadHearingsForDate :(date :Object) => void,
     loadJudges :() => void,
     loadPSAsByDate :(filter :string) => void,
@@ -223,7 +221,6 @@ class CourtContainer extends React.Component<Props, State> {
     const {
       actions,
       hearingsByTime,
-      hearingIds,
       hearingNeighborsById,
       selectedOrganizationId
     } = this.props;
@@ -234,12 +231,6 @@ class CourtContainer extends React.Component<Props, State> {
       if (!hearingsByTime.size || !hearingNeighborsById.size) {
         loadHearingsForDate(date);
       }
-    }
-    // if (openPSAIds.size !== nextProps.openPSAIds.size) {
-    //   actions.loadPSAData(nextProps.openPSAIds.toJS());
-    // }
-    if (hearingIds.size !== nextProps.hearingIds.size) {
-      actions.loadHearingNeighbors({ hearingIds: nextProps.hearingIds.toJS() });
     }
   }
 
@@ -275,7 +266,7 @@ class CourtContainer extends React.Component<Props, State> {
     const personObj = formatPeopleInfo(person);
     return (
       <PersonCard
-          key={`${personObj.identification}-${index}`}
+          key={`${personObj.identification}`}
           psaId={openPSAId}
           person={person}
           editDate={lastEditDate}
@@ -290,7 +281,6 @@ class CourtContainer extends React.Component<Props, State> {
           replaceEntity={actions.replaceEntity}
           deleteEntity={actions.deleteEntity}
           submitting={submitting}
-          refreshingNeighbors={psaIdsRefreshing.has(openPSAId)}
           judgesview />
     );
   }
@@ -305,17 +295,17 @@ class CourtContainer extends React.Component<Props, State> {
   }
 
   renderHearingRow = (courtroom, people, time) => {
-    const persons = people.toList().sort(sortPeopleByName);
+    const sortedPeople = people.toList().sort(sortPeopleByName);
     return (
       <HearingRow key={`${courtroom}-${time}`}>
-        <Courtroom key={`${courtroom}-${time}-${time}`}>
+        <Courtroom key={`courtroom-${courtroom}-${time}`}>
           <span>{courtroom}</span>
           <SecondaryButton
               onClick={() => this.downloadPDFs(courtroom, people, time)}>
             Download PDFs
           </SecondaryButton>
         </Courtroom>
-        <PeopleWrapper key={`${time}-${courtroom}`}>{persons.map(this.renderPersonCard)}</PeopleWrapper>
+        <PeopleWrapper>{sortedPeople.map(this.renderPersonCard)}</PeopleWrapper>
       </HearingRow>
     );
   }
@@ -358,6 +348,7 @@ class CourtContainer extends React.Component<Props, State> {
 
 
     if (!hearingsByCourtroom.size) return null;
+
     return (
       <HearingTime key={`${time}${courtroom}${county}`}>
         <h1>{time}</h1>
@@ -465,8 +456,13 @@ class CourtContainer extends React.Component<Props, State> {
   )
 
   renderContent = () => {
-    const { loadingPSAData, isLoadingPSAs, hearingsByTime } = this.props;
-    if (loadingPSAData || isLoadingPSAs) {
+    const {
+      isLoadingHearings,
+      isLoadingHearingsNeighbors,
+      isLoadingPSAs,
+      hearingsByTime
+    } = this.props;
+    if (isLoadingHearings || isLoadingHearingsNeighbors || isLoadingPSAs) {
       return <SpinnerWrapper><LoadingSpinner /></SpinnerWrapper>;
     }
 
@@ -502,20 +498,18 @@ function mapStateToProps(state) {
   const app = state.get(STATE.APP);
   const court = state.get(STATE.COURT);
   const edm = state.get(STATE.EDM);
-  const review = state.get(STATE.REVIEW);
-  const psaModal = state.get(STATE.PSA_MODAL);
   const submit = state.get(STATE.SUBMIT);
   return {
     [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
 
     [COURT.HEARINGS_TODAY]: court.get(COURT.HEARINGS_TODAY),
     [COURT.HEARINGS_BY_TIME]: court.get(COURT.HEARINGS_BY_TIME),
-    [COURT.LOADING_HEARING_NEIGHBORS]: court.get(COURT.LOADING_HEARING_NEIGHBORS),
     [COURT.HEARINGS_NEIGHBORS_BY_ID]: court.get(COURT.HEARINGS_NEIGHBORS_BY_ID),
     [COURT.HEARING_IDS_REFRESHING]: court.get(COURT.HEARING_IDS_REFRESHING),
     [COURT.LOADING_HEARINGS_ERROR]: court.get(COURT.LOADING_HEARINGS_ERROR),
     [COURT.PEOPLE_WITH_OPEN_PSAS]: court.get(COURT.PEOPLE_WITH_OPEN_PSAS),
     [COURT.LOADING_HEARINGS]: court.get(COURT.LOADING_HEARINGS),
+    [COURT.LOADING_HEARING_NEIGHBORS]: court.get(COURT.LOADING_HEARING_NEIGHBORS),
     [COURT.LOADING_PSAS]: court.get(COURT.LOADING_PSAS),
     [COURT.LOADING_ERROR]: court.get(COURT.LOADING_ERROR),
     [COURT.COUNTY]: court.get(COURT.COUNTY),
@@ -528,11 +522,6 @@ function mapStateToProps(state) {
     [COURT.ALL_JUDGES]: court.get(COURT.ALL_JUDGES),
 
     [EDM.FQN_TO_ID]: edm.get(EDM.FQN_TO_ID),
-
-    [REVIEW.LOADING_DATA]: review.get(REVIEW.LOADING_DATA),
-    [REVIEW.PSA_IDS_REFRESHING]: review.get(REVIEW.PSA_IDS_REFRESHING),
-
-    [PSA_MODAL.HEARING_IDS]: psaModal.get(PSA_MODAL.HEARING_IDS),
 
     [SUBMIT.SUBMITTING]: submit.get(SUBMIT.SUBMITTING, false)
   };
