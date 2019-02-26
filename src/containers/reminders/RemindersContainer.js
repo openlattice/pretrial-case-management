@@ -136,36 +136,30 @@ class RemindersContainer extends React.Component<Props, State> {
     };
   }
   componentDidMount() {
-    const date = moment();
-    const {
-      actions,
-      reminderIds,
-      selectedOrganizationId
-    } = this.props;
-    const { loadOptOutsForDate, loadPeopleWithHearingsButNoContacts, loadRemindersforDate } = actions;
+    const { actions, selectedOrganizationId } = this.props;
+    const { loadPeopleWithHearingsButNoContacts } = actions;
     if (selectedOrganizationId) {
       loadPeopleWithHearingsButNoContacts();
-      if (!reminderIds.size) {
-        loadRemindersforDate({ date });
-        loadOptOutsForDate({ date });
-      }
+      this.loadData();
     }
   }
 
   componentWillReceiveProps(nextProps) {
-    const date = moment();
-    const {
-      actions,
-      reminderIds,
-      selectedOrganizationId
-    } = this.props;
-    const { loadOptOutsForDate, loadPeopleWithHearingsButNoContacts, loadRemindersforDate } = actions;
+    const { actions, selectedOrganizationId } = this.props;
+    const { loadPeopleWithHearingsButNoContacts } = actions;
     if (selectedOrganizationId !== nextProps.selectedOrganizationId) {
       loadPeopleWithHearingsButNoContacts();
-      if (!reminderIds.size) {
-        loadRemindersforDate({ date });
-        loadOptOutsForDate({ date });
-      }
+      this.loadData();
+    }
+  }
+
+  loadData = () => {
+    const { selectedDate } = this.state;
+    const { actions, reminderIds } = this.props;
+    const { loadOptOutsForDate, loadRemindersforDate } = actions;
+    if (!reminderIds.size) {
+      loadRemindersforDate({ date: selectedDate });
+      loadOptOutsForDate({ date: selectedDate });
     }
   }
 
