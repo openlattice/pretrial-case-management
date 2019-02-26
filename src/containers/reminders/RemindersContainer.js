@@ -140,7 +140,7 @@ class RemindersContainer extends React.Component<Props, State> {
     const { loadPeopleWithHearingsButNoContacts } = actions;
     if (selectedOrganizationId) {
       loadPeopleWithHearingsButNoContacts();
-      this.loadData();
+      this.loadData(this.props);
     }
   }
 
@@ -149,13 +149,13 @@ class RemindersContainer extends React.Component<Props, State> {
     const { loadPeopleWithHearingsButNoContacts } = actions;
     if (selectedOrganizationId !== nextProps.selectedOrganizationId) {
       loadPeopleWithHearingsButNoContacts();
-      this.loadData();
+      this.loadData(nextProps);
     }
   }
 
-  loadData = () => {
+  loadData = (props) => {
     const { selectedDate } = this.state;
-    const { actions, reminderIds } = this.props;
+    const { actions, reminderIds } = props;
     const { loadOptOutsForDate, loadRemindersforDate } = actions;
     if (!reminderIds.size) {
       loadRemindersforDate({ date: selectedDate });
