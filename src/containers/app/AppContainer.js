@@ -4,7 +4,7 @@
 
 import React from 'react';
 import styled from 'styled-components';
-import { AuthActionFactory } from 'lattice-auth';
+import { AuthActions } from 'lattice-auth';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { EntityDataModelApiActions } from 'lattice-sagas';
@@ -28,7 +28,7 @@ import * as AppActionFactory from './AppActionFactory';
 import * as CourtActionFactory from '../court/CourtActionFactory';
 import * as ChargesActionFactory from '../charges/ChargesActionFactory';
 
-const { logout } = AuthActionFactory;
+const { logout } = AuthActions;
 const { getAllPropertyTypes } = EntityDataModelApiActions;
 
 const {

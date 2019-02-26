@@ -14,7 +14,7 @@ import {
   put,
   takeEvery,
   select
-} from 'redux-saga/effects';
+} from '@redux-saga/core/effects';
 
 import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { APP, PSA_NEIGHBOR, STATE } from '../../utils/consts/FrontEndStateConsts';

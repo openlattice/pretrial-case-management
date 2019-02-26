@@ -290,7 +290,7 @@ class SelfieWebCam extends React.Component<Props, State> {
               height={450}
               isVisible={!selfieCaptured}
               src={videoSource}
-              innerRef={(element) => {
+              ref={(element) => {
                 this.video = element;
               }} />
           <StyledImageElement

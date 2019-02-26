@@ -10,7 +10,7 @@ import {
   put,
   takeEvery,
   select
-} from 'redux-saga/effects';
+} from '@redux-saga/core/effects';
 
 import { getEntitySetId } from '../../utils/AppUtils';
 import { getEntityKeyId } from '../../utils/DataUtils';

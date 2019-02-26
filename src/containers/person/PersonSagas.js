@@ -5,9 +5,9 @@
 import axios from 'axios';
 import moment from 'moment';
 import LatticeAuth from 'lattice-auth';
+import { push } from 'connected-react-router';
 import { fromJS, List, Map } from 'immutable';
 import { Constants, SearchApi } from 'lattice';
-import { push } from 'react-router-redux';
 import {
   all,
   call,
@@ -15,7 +15,7 @@ import {
   take,
   takeEvery,
   select
-} from 'redux-saga/effects';
+} from '@redux-saga/core/effects';
 
 import { toISODate, formatDate } from '../../utils/FormattingUtils';
 import { submit } from '../../utils/submit/SubmitActionFactory';

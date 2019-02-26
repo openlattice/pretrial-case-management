@@ -8,7 +8,7 @@ import {
   put,
   select,
   takeEvery
-} from 'redux-saga/effects';
+} from '@redux-saga/core/effects';
 
 import { getEntitySetId } from '../../utils/AppUtils';
 import { APP, PSA_NEIGHBOR, STATE } from '../../utils/consts/FrontEndStateConsts';

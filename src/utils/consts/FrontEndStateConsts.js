@@ -14,6 +14,7 @@ export const STATE = {
   PEOPLE: 'people',
   REMINDERS: 'reminders',
   REVIEW: 'review',
+  ROUTER: 'router',
   SEARCH: 'search',
   SUBMIT: 'submit',
   SUBSCRIPTIONS: 'subscriptions'
