@@ -25,6 +25,13 @@ export const REMINDERS_HEADERS = {
   PSA_STATUS: 'Open PSA'
 };
 
+export const OPT_OUT_HEADERS = {
+  NAME: 'Name',
+  CONTACT: 'Contact',
+  OPT_OUT_TIME: 'Time of Opt Out',
+  REASON: 'Reason'
+};
+
 export const getReminderFields = (reminder) => {
   const reminderId = reminder.getIn([OPENLATTICE_ID_FQN, 0], '');
   const wasNotified = reminder.getIn([PROPERTY_TYPES.NOTIFIED, 0], false);
@@ -38,22 +45,35 @@ export const getReminderFields = (reminder) => {
   };
 };
 
-export const sortReminders = (reminders, neighbors) => (
-  reminders.valueSeq().sort((reminder1, reminder2) => {
-    const entityKeyId1 = getEntityKeyId(reminder1);
+export const getOptOutFields = (optOut) => {
+  const dateTime = optOut.getIn([PROPERTY_TYPES.DATE_TIME, 0], '');
+  const entityKeyId = optOut.getIn([OPENLATTICE_ID_FQN, 0], '');
+  const reason = optOut.getIn([PROPERTY_TYPES.REASON, 0], 'No Response');
+  return {
+    dateTime,
+    entityKeyId,
+    reason
+  };
+};
+
+export const sortEntities = (entities, neighbors) => (
+  entities.valueSeq().sort((entity1, entity2) => {
+    const entityKeyId1 = getEntityKeyId(entity1);
     const person1 = neighbors.getIn([entityKeyId1, PEOPLE, PSA_NEIGHBOR.DETAILS], Map());
     const hearingDateTime1 = moment(neighbors
       .getIn([entityKeyId1, HEARINGS, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.DATE_TIME, 0], ''));
+    const dateTime1 = moment(entity1.getIn([PROPERTY_TYPES.DATE_TIME, 0], ''));
     const firstName1 = person1.getIn([PROPERTY_TYPES.FIRST_NAME, 0]);
     const lastName1 = person1.getIn([PROPERTY_TYPES.LAST_NAME, 0]);
 
-    const entityKeyId2 = getEntityKeyId(reminder2);
+    const entityKeyId2 = getEntityKeyId(entity2);
     const person2 = neighbors.getIn([entityKeyId2, PEOPLE, PSA_NEIGHBOR.DETAILS], Map());
     const hearingDateTime2 = moment(neighbors
       .getIn([entityKeyId2, HEARINGS, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.DATE_TIME, 0], ''));
+    const dateTime2 = moment(entity2.getIn([PROPERTY_TYPES.DATE_TIME, 0], ''));
     const firstName2 = person2.getIn([PROPERTY_TYPES.FIRST_NAME, 0]);
     const lastName2 = person2.getIn([PROPERTY_TYPES.LAST_NAME, 0]);
-
+    if (!dateTime1.isSame(dateTime2)) return dateTime1.isBefore(dateTime2) ? -1 : 1;
     if (!hearingDateTime1.isSame(hearingDateTime2)) return hearingDateTime1.isBefore(hearingDateTime2) ? -1 : 1;
     if (lastName1 !== lastName2) return lastName1 > lastName2 ? 1 : -1;
     if (firstName1 !== firstName2) return firstName1 > firstName2 ? 1 : -1;

@@ -10,6 +10,8 @@ import {
 } from 'immutable';
 
 import {
+  loadOptOutNeighbors,
+  loadOptOutsForDate,
   loadPeopleWithHearingsButNoContacts,
   loadReminderNeighborsById,
   loadRemindersforDate
@@ -28,13 +30,46 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [REMINDERS.LOADING_REMINDER_NEIGHBORS]: false,
   [REMINDERS.PEOPLE_WITH_HEARINGS_BUT_NO_CONTACT]: Map(),
   [REMINDERS.LOADING_PEOPLE_NO_CONTACTS]: false,
+  [REMINDERS.OPT_OUTS]: Map(),
+  [REMINDERS.OPT_OUT_NEIGHBORS]: Map(),
+  [REMINDERS.OPT_OUTS_WITH_REASON]: Set(),
+  [REMINDERS.REMINDER_IDS_TO_OPT_OUT_IDS]: Map(),
+  [REMINDERS.LOADING_OPT_OUTS]: false,
+  [REMINDERS.LOADING_OPT_OUT_NEIGHBORS]: false,
 });
 export default function remindersReducer(state :Map<*, *> = INITIAL_STATE, action :SequenceAction) {
   switch (action.type) {
 
+    case loadOptOutNeighbors.case(action.type): {
+      return loadOptOutNeighbors.reducer(state, action, {
+        REQUEST: () => state.set(REMINDERS.LOADING_OPT_OUT_NEIGHBORS, true),
+        SUCCESS: () => {
+          const { optOutNeighborsById } = action.value;
+          return state.set(REMINDERS.OPT_OUT_NEIGHBORS, optOutNeighborsById);
+        },
+        FINALLY: () => state.set(REMINDERS.LOADING_OPT_OUT_NEIGHBORS, false)
+      });
+    }
+
+    case loadOptOutsForDate.case(action.type): {
+      return loadOptOutsForDate.reducer(state, action, {
+        REQUEST: () => state.set(REMINDERS.LOADING_OPT_OUTS, true),
+        SUCCESS: () => {
+          const {
+            optOutMap,
+            optOutsWithReasons
+          } = action.value;
+          return state
+            .set(REMINDERS.OPT_OUTS, optOutMap)
+            .set(REMINDERS.OPT_OUTS_WITH_REASON, optOutsWithReasons);
+        },
+        FINALLY: () => state.set(REMINDERS.LOADING_OPT_OUTS, false)
+      });
+    }
+
     case loadRemindersforDate.case(action.type): {
       return loadRemindersforDate.reducer(state, action, {
-        REQUEST: () => state.set(REMINDERS.LOADING_REMINDERS, true),
+        REQUEST: () => state.set(REMINDERS.LOADING_OPT_OUTS, true),
         SUCCESS: () => {
           const {
             reminderIds,
