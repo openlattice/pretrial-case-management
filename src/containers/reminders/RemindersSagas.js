@@ -89,21 +89,19 @@ function* loadOptOutNeighborsWorker(action :SequenceAction) :Generator<*, *, *> 
     yield put(loadOptOutNeighbors.request(action.id));
     const { optOutIds } = action.value;
     let optOutNeighborsById = Map();
-    let reminderIdToOptOutId = Map();
 
     if (optOutIds.length) {
       const app = yield select(getApp);
       const orgId = yield select(getOrgId);
       const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
       const optOutEntitySetId = getEntitySetId(app, REMINDER_OPT_OUTS, orgId);
-      // const contactInformationEntitySetId = getEntitySetId(app, CONTACT_INFORMATION, orgId);
-      // const hearingsEntitySetId = getEntitySetId(app, HEARINGS, orgId);
-      // const peopleEntitySetId = getEntitySetId(app, PEOPLE, orgId);
-      // const psaScoresEntitySetId = getEntitySetId(app, PSA_SCORES, orgId);
+      const contactInformationEntitySetId = getEntitySetId(app, CONTACT_INFORMATION, orgId);
+      const hearingsEntitySetId = getEntitySetId(app, HEARINGS, orgId);
+      const peopleEntitySetId = getEntitySetId(app, PEOPLE, orgId);
       let neighborsById = yield call(SearchApi.searchEntityNeighborsWithFilter, optOutEntitySetId, {
         entityKeyIds: optOutIds,
         sourceEntitySetIds: [],
-        // destinationEntitySetIds: [contactInformationEntitySetId, hearingsEntitySetId, peopleEntitySetId]
+        destinationEntitySetIds: [contactInformationEntitySetId, hearingsEntitySetId, peopleEntitySetId]
       });
       neighborsById = obfuscateBulkEntityNeighbors(neighborsById);
       neighborsById = fromJS(neighborsById);
@@ -299,7 +297,7 @@ function* loadReminderNeighborsByIdWorker(action :SequenceAction) :Generator<*, 
       let neighborsById = yield call(SearchApi.searchEntityNeighborsWithFilter, remindersEntitySetId, {
         entityKeyIds: reminderIds,
         sourceEntitySetIds: [],
-        // destinationEntitySetIds: [contactInformationEntitySetId, hearingsEntitySetId, peopleEntitySetId]
+        destinationEntitySetIds: [contactInformationEntitySetId, hearingsEntitySetId, peopleEntitySetId]
       });
       neighborsById = obfuscateBulkEntityNeighbors(neighborsById);
       neighborsById = fromJS(neighborsById);
@@ -326,7 +324,7 @@ function* loadReminderNeighborsByIdWorker(action :SequenceAction) :Generator<*, 
       let psasByHearingId = yield call(SearchApi.searchEntityNeighborsWithFilter, hearingsEntitySetId, {
         entityKeyIds: hearingIds.toJS(),
         sourceEntitySetIds: [psaScoresEntitySetId],
-        // destinationEntitySetIds: []
+        destinationEntitySetIds: []
       });
       psasByHearingId = fromJS(psasByHearingId);
       psasByHearingId = psasByHearingId.filter(neighborList => neighborList

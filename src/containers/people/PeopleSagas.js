@@ -443,7 +443,7 @@ function* updateContactInfoWorker(action :SequenceAction) :Generator<*, *, *> {
     const filteredNeighbors = yield call(SearchApi.searchEntityNeighborsWithFilter, peopleEntitySetId, {
       entityKeyIds: [personEntityKeyId],
       sourceEntitySetIds: [contactInformationEntitySetId],
-      // destinationEntitySetIds: [contactInformationEntitySetId]
+      destinationEntitySetIds: [contactInformationEntitySetId]
     });
 
     /* filter neighbors for contact info */
