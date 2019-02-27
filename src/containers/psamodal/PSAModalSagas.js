@@ -3,8 +3,13 @@
  */
 
 import moment from 'moment';
-import Immutable, { Map, List, fromJS } from 'immutable';
 import { AuthorizationApi, Constants, SearchApi } from 'lattice';
+import {
+  Map,
+  List,
+  Set,
+  fromJS
+} from 'immutable';
 import {
   call,
   put,
@@ -54,17 +59,17 @@ const getOrgId = state => state.getIn([STATE.APP, APP.SELECTED_ORG_ID], '');
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
-const LIST_ENTITY_SETS = Immutable.List.of(staffFqn, releaseConditionsFqn, hearingsFqn, pretrialCasesFqn);
+const LIST_ENTITY_SETS = List.of(staffFqn, releaseConditionsFqn, hearingsFqn, pretrialCasesFqn);
 
 function* loadPSAModalWorker(action :SequenceAction) :Generator<*, *, *> {
   const { psaId, callback } = action.value; // Deconstruct action argument
   try {
     yield put(loadPSAModal.request(action.id));
 
-    let allFilers = Immutable.Set();
-    let hearingIds = Immutable.Set();
-    let allDatesEdited = Immutable.List();
-    let neighborsByAppTypeFqn = Immutable.Map();
+    let allFilers = Set();
+    let hearingIds = Set();
+    let allDatesEdited = List();
+    let neighborsByAppTypeFqn = Map();
     let psaPermissions = false;
     const app = yield select(getApp);
     const orgId = yield select(getOrgId);
@@ -101,7 +106,7 @@ function* loadPSAModalWorker(action :SequenceAction) :Generator<*, *, *> {
         neighbor.getIn([
           PSA_ASSOCIATION.DETAILS,
           PROPERTY_TYPES.DATE_TIME
-        ], Immutable.List())).forEach((timestamp) => {
+        ], List())).forEach((timestamp) => {
         const timestampMoment = moment(timestamp);
         if (timestampMoment.isValid()) {
           allDatesEdited = allDatesEdited.push(timestampMoment.format('MM/DD/YYYY'));
@@ -112,7 +117,7 @@ function* loadPSAModalWorker(action :SequenceAction) :Generator<*, *, *> {
       const AppTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
       if (AppTypeFqn) {
         if (AppTypeFqn === staffFqn) {
-          neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.PERSON_ID], Immutable.List())
+          neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.PERSON_ID], List())
             .forEach((filer) => {
               allFilers = allFilers.add(filer);
             });
@@ -120,18 +125,18 @@ function* loadPSAModalWorker(action :SequenceAction) :Generator<*, *, *> {
 
         if (LIST_ENTITY_SETS.includes(AppTypeFqn)) {
           if (AppTypeFqn === hearingsFqn) {
-            const neighborDetails = neighbor.get(PSA_NEIGHBOR.DETAILS, Immutable.Map());
+            const neighborDetails = neighbor.get(PSA_NEIGHBOR.DETAILS, Map());
             const hearingEntityKeyId = neighborDetails.getIn([OPENLATTICE_ID_FQN, 0]);
             if (hearingEntityKeyId) hearingIds = hearingIds.add(neighborDetails.getIn([OPENLATTICE_ID_FQN, 0]));
             neighborsByAppTypeFqn = neighborsByAppTypeFqn.set(
               AppTypeFqn,
-              neighborsByAppTypeFqn.get(AppTypeFqn, Immutable.List()).push(fromJS(neighborDetails))
+              neighborsByAppTypeFqn.get(AppTypeFqn, List()).push(fromJS(neighborDetails))
             );
           }
           else {
             neighborsByAppTypeFqn = neighborsByAppTypeFqn.set(
               AppTypeFqn,
-              neighborsByAppTypeFqn.get(AppTypeFqn, Immutable.List()).push(fromJS(neighbor))
+              neighborsByAppTypeFqn.get(AppTypeFqn, List()).push(fromJS(neighbor))
             );
           }
         }
@@ -146,7 +151,7 @@ function* loadPSAModalWorker(action :SequenceAction) :Generator<*, *, *> {
     let personNeighbors = yield call(SearchApi.searchEntityNeighborsWithFilter, peopleEntitySetId, {
       entityKeyIds: [personId],
       sourceEntitySetIds: [contactInformationEntitySetId],
-      destinationEntitySetIds: [subscriptionEntitySetId, contactInformationEntitySetId]
+      // destinationEntitySetIds: [subscriptionEntitySetId, contactInformationEntitySetId]
     });
 
     personNeighbors = fromJS(Object.values(personNeighbors)[0]);
