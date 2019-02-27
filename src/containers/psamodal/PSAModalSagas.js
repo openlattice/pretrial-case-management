@@ -151,10 +151,10 @@ function* loadPSAModalWorker(action :SequenceAction) :Generator<*, *, *> {
     let personNeighbors = yield call(SearchApi.searchEntityNeighborsWithFilter, peopleEntitySetId, {
       entityKeyIds: [personId],
       sourceEntitySetIds: [contactInformationEntitySetId],
-      // destinationEntitySetIds: [subscriptionEntitySetId, contactInformationEntitySetId]
+      destinationEntitySetIds: [subscriptionEntitySetId, contactInformationEntitySetId]
     });
 
-    personNeighbors = fromJS(Object.values(personNeighbors)[0]);
+    personNeighbors = fromJS(Object.values(personNeighbors)[0] || []);
     let personNeighborsByFqn = Map();
     personNeighbors.forEach((neighbor) => {
       const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
