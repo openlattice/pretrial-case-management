@@ -149,7 +149,7 @@ function* loadPSAModalWorker(action :SequenceAction) :Generator<*, *, *> {
       destinationEntitySetIds: [subscriptionEntitySetId, contactInformationEntitySetId]
     });
 
-    personNeighbors = fromJS(Object.values(personNeighbors)[0]);
+    personNeighbors = fromJS(Object.values(personNeighbors)[0] || []);
     let personNeighborsByFqn = Map();
     personNeighbors.forEach((neighbor) => {
       const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
