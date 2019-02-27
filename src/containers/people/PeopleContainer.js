@@ -230,7 +230,6 @@ class PeopleContainer extends React.Component<Props, State> {
     const { selectedOrganizationSettings } = this.props;
     const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
     const courtRemindersEnabled = selectedOrganizationSettings.get(SETTINGS.COURT_REMINDERS, false);
-    const remindersRoute = `${Routes.STAFF_DASHBOARD}/${Routes.REMINDERS}`;
     let remindersSwitchRoute = null;
 
     let navButtons = [
@@ -252,7 +251,7 @@ class PeopleContainer extends React.Component<Props, State> {
     ];
 
     const remindersButton = {
-      path: remindersRoute,
+      path: Routes.MANAGE_PEOPLE_REMINDERS,
       label: 'Court Reminders'
     };
 
@@ -261,7 +260,7 @@ class PeopleContainer extends React.Component<Props, State> {
       navButtons = navButtons.concat(pretrialModuleNavButtons);
       if (courtRemindersEnabled) {
         navButtons.push(remindersButton);
-        remindersSwitchRoute = <Route path={remindersRoute} render={this.renderRemindersPortal} />;
+        remindersSwitchRoute = <Route path={Routes.MANAGE_PEOPLE_REMINDERS} render={this.renderRemindersPortal} />;
       }
     }
 
@@ -275,8 +274,8 @@ class PeopleContainer extends React.Component<Props, State> {
           <Route path={Routes.SEARCH_PEOPLE} render={this.renderSearchPeopleComponent} />
           <Route path={Routes.MULTI_SEARCH_PEOPLE} render={this.renderMultiSearchPeopleComponent} />
           <Route path={Routes.REQUIRES_ACTION_PEOPLE} render={this.renderRequiresActionPeopleComponent} />
-          <Redirect from={Routes.PEOPLE} to={Routes.SEARCH_PEOPLE} />
           { remindersSwitchRoute }
+          <Redirect from={Routes.PEOPLE} to={Routes.SEARCH_PEOPLE} />
         </Switch>
       </DashboardMainSection>
     );
