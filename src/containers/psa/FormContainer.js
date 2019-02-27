@@ -789,8 +789,7 @@ class Form extends React.Component<Props, State> {
       actions
     } = this.props;
     const { skipClosePSAs } = this.state;
-    const loadingPerson = isLoadingCases;
-    if (loadingPerson && !isLoadingNeighbors) {
+    if (isLoadingCases && !isLoadingNeighbors) {
       const progress = (numCasesToLoad > 0) ? Math.floor((numCasesLoaded / numCasesToLoad) * 100) : 0;
       const loadingText = numCasesToLoad > 0
         ? `Loading cases (${numCasesLoaded} / ${numCasesToLoad})`
