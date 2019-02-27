@@ -10,6 +10,7 @@ import { connect } from 'react-redux';
 import { Redirect, Route, Switch } from 'react-router-dom';
 
 import RequiresActionList from './RequiresActionList';
+import RemindersContainer from '../reminders/RemindersContainer';
 import PersonSearchFields from '../../components/person/PersonSearchFields';
 import PersonTextAreaInput from '../../components/person/PersonTextAreaInput';
 import PeopleList from '../../components/people/PeopleList';
@@ -223,9 +224,15 @@ class PeopleContainer extends React.Component<Props, State> {
     );
   }
 
+  renderRemindersPortal = () => <RemindersContainer />;
+
   render() {
     const { selectedOrganizationSettings } = this.props;
     const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
+    const courtRemindersEnabled = selectedOrganizationSettings.get(SETTINGS.COURT_REMINDERS, false);
+    const remindersRoute = `${Routes.STAFF_DASHBOARD}/${Routes.REMINDERS}`;
+    let remindersSwitchRoute = null;
+
     let navButtons = [
       {
         path: Routes.SEARCH_PEOPLE,
@@ -244,7 +251,19 @@ class PeopleContainer extends React.Component<Props, State> {
       }
     ];
 
-    if (includesPretrialModule) navButtons = navButtons.concat(pretrialModuleNavButtons);
+    const remindersButton = {
+      path: remindersRoute,
+      label: 'Court Reminders'
+    };
+
+
+    if (includesPretrialModule) {
+      navButtons = navButtons.concat(pretrialModuleNavButtons);
+      if (courtRemindersEnabled) {
+        navButtons.push(remindersButton);
+        remindersSwitchRoute = <Route path={remindersRoute} render={this.renderRemindersPortal} />;
+      }
+    }
 
     return (
       <DashboardMainSection>
@@ -257,6 +276,7 @@ class PeopleContainer extends React.Component<Props, State> {
           <Route path={Routes.MULTI_SEARCH_PEOPLE} render={this.renderMultiSearchPeopleComponent} />
           <Route path={Routes.REQUIRES_ACTION_PEOPLE} render={this.renderRequiresActionPeopleComponent} />
           <Redirect from={Routes.PEOPLE} to={Routes.SEARCH_PEOPLE} />
+          { remindersSwitchRoute }
         </Switch>
       </DashboardMainSection>
     );
