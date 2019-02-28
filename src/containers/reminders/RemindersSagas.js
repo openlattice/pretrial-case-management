@@ -383,15 +383,15 @@ function* loadPeopleWithHearingsButNoContactsWorker(action :SequenceAction) :Gen
 
     /* Grab Open PSAs */
     const statusPropertyTypeId = getPropertyTypeId(edm, statusFqn);
-    const filter = action.value || PSA_STATUSES.OPEN;
-    const searchTerm = action.value === '*' ? action.value : `${statusPropertyTypeId}:"${filter}"`;
+    const filter = PSA_STATUSES.OPEN;
+    const searchTerm = `${statusPropertyTypeId}:"${filter}"`;
     const allScoreData = yield call(getAllSearchResults, psaScoresEntitySetId, searchTerm);
     const scoreIds = fromJS(allScoreData.hits).map(score => score.getIn([OPENLATTICE_ID_FQN, 0], ''));
 
     /* Grab people for all Open PSAs */
     let psaNeighborsById = yield call(SearchApi.searchEntityNeighborsWithFilter, psaScoresEntitySetId, {
       entityKeyIds: scoreIds.toJS(),
-      sourceEntitySetIds: [psaScoresEntitySetId],
+      sourceEntitySetIds: [],
       destinationEntitySetIds: [peopleEntitySetId, hearingEntityKeyId]
     });
     psaNeighborsById = fromJS(psaNeighborsById);
@@ -432,7 +432,7 @@ function* loadPeopleWithHearingsButNoContactsWorker(action :SequenceAction) :Gen
     /* Grab people neighbors */
     let peopleNeighborsById = yield call(SearchApi.searchEntityNeighborsWithFilter, peopleEntitySetId, {
       entityKeyIds: peopleWithOpenPSAsandHearingsButNoContactById.keySeq().toJS(),
-      sourceEntitySetIds: [],
+      sourceEntitySetIds: [contactInformationEntityKeyId],
       destinationEntitySetIds: [contactInformationEntityKeyId]
     });
     peopleNeighborsById = fromJS(peopleNeighborsById);

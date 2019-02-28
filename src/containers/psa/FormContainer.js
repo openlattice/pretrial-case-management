@@ -331,6 +331,7 @@ type Props = {
   isLoadingNeighbors :boolean,
   isSubmitted :boolean,
   isSubmitting :boolean,
+  loadingPersonDetails :boolean,
   numCasesLoaded :number,
   numCasesToLoad :number,
   openPSAs :Immutable.Map<*, *>,
@@ -778,9 +779,9 @@ class Form extends React.Component<Props, State> {
   getSelectArrestSection = () => {
     const {
       caseLoadsComplete,
-      selectedPersonId,
       isLoadingCases,
       isLoadingNeighbors,
+      loadingPersonDetails,
       numCasesToLoad,
       numCasesLoaded,
       arrestOptions,
@@ -789,13 +790,6 @@ class Form extends React.Component<Props, State> {
     } = this.props;
     const { skipClosePSAs } = this.state;
     if (isLoadingCases && !isLoadingNeighbors) {
-      if (numCasesLoaded === numCasesToLoad) {
-        actions.loadPersonDetails({
-          entityKeyId: selectedPersonId,
-          shouldLoadCases: false
-        });
-        actions.loadNeighbors({ entityKeyId: selectedPersonId });
-      }
       const progress = (numCasesToLoad > 0) ? Math.floor((numCasesLoaded / numCasesToLoad) * 100) : 0;
       const loadingText = numCasesToLoad > 0
         ? `Loading cases (${numCasesLoaded} / ${numCasesToLoad})`
@@ -808,7 +802,7 @@ class Form extends React.Component<Props, State> {
       );
     }
 
-    if (isLoadingNeighbors || !caseLoadsComplete) {
+    if (isLoadingNeighbors || loadingPersonDetails || !caseLoadsComplete) {
       return <LoadingSpinner />;
     }
 
@@ -1140,6 +1134,7 @@ function mapStateToProps(state :Immutable.Map<*, *>) :Object {
 
     // Search
     [SEARCH.SELECTED_PERSON_ID]: search.get(SEARCH.SELECTED_PERSON_ID),
+    [SEARCH.LOADING_PERSON_DETAILS]: search.get(SEARCH.LOADING_PERSON_DETAILS),
     isLoadingCases: search.get(SEARCH.LOADING_CASES),
     [SEARCH.NUM_CASES_TO_LOAD]: search.get(SEARCH.NUM_CASES_TO_LOAD),
     [SEARCH.NUM_CASES_LOADED]: search.get(SEARCH.NUM_CASES_LOADED),

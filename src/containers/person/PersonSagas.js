@@ -148,6 +148,10 @@ function* loadPersonDetailsWorker(action) :Generator<*, *, *> {
     yield put(loadPersonDetails.failure(action.id, error));
   }
 
+  finally {
+    yield put(loadPersonDetails.finally(action.id));
+  }
+
 }
 
 function* loadPersonDetailsWatcher() :Generator<*, *, *> {
