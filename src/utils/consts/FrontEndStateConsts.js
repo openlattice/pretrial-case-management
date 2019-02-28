@@ -276,6 +276,7 @@ export const SEARCH = {
   SEARCH_ERROR: 'searchError',
   SELECTED_PERSON_ID: 'selectedPersonId',
   PERSON_DETAILS: 'personDetails',
+  LOADING_PERSON_DETAILS: 'loadingPersonDetails',
   LOADING_CASES: 'loadingCases',
   NUM_CASES_TO_LOAD: 'numCasesToLoad',
   NUM_CASES_LOADED: 'numCasesLoaded',
