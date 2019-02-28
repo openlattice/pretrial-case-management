@@ -12,7 +12,6 @@ import { connect } from 'react-redux';
 import DatePicker from '../../components/datetime/DatePicker';
 import TableWithPagination from '../../components/reminders/TableWithPagination';
 import SearchAllBar from '../../components/SearchAllBar';
-import LoadingSpinner from '../../components/LoadingSpinner';
 import PersonSubscriptionList from '../../components/subscription/PersonSubscriptionList';
 import DashboardMainSection from '../../components/dashboard/DashboardMainSection';
 import { Count } from '../../utils/Layout';
@@ -25,15 +24,13 @@ import {
   STATE
 } from '../../utils/consts/FrontEndStateConsts';
 
-const remindersFqn = APP_TYPES_FQNS.REMINDERS.toString();
-const reminderOptOutsFqn = APP_TYPES_FQNS.REMINDER_OPT_OUTS.toString();
-
-
 import * as AppActionFactory from '../app/AppActionFactory';
 import * as RemindersActionFactory from './RemindersActionFactory';
 import * as SubscriptionsActionFactory from '../subscription/SubscriptionsActionFactory';
 import * as PersonActionFactory from '../person/PersonActionFactory';
 
+const remindersFqn = APP_TYPES_FQNS.REMINDERS.toString();
+const reminderOptOutsFqn = APP_TYPES_FQNS.REMINDER_OPT_OUTS.toString();
 
 const ToolbarWrapper = styled.div`
   display: flex;
@@ -116,7 +113,6 @@ type Props = {
   peopleWithHearingsButNoContacts :Map<*, *>,
   reminderNeighborsById :Map<*, *>,
   remindersWithOpenPSA :Set<*>,
-  reminderIds :Set<*, *>,
   searchResults :Set<*>,
   searchHasRun :boolean,
   selectedOrganizationId :boolean,

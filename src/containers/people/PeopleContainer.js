@@ -10,13 +10,13 @@ import { connect } from 'react-redux';
 import { Redirect, Route, Switch } from 'react-router-dom';
 
 import RequiresActionList from './RequiresActionList';
+import RemindersContainer from '../reminders/RemindersContainer';
 import PersonSearchFields from '../../components/person/PersonSearchFields';
 import PersonTextAreaInput from '../../components/person/PersonTextAreaInput';
 import PeopleList from '../../components/people/PeopleList';
 import DashboardMainSection from '../../components/dashboard/DashboardMainSection';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import NavButtonToolbar from '../../components/buttons/NavButtonToolbar';
-import DropDownMenu from '../../components/StyledSelect';
 import { getFormattedPeople } from '../../utils/PeopleUtils';
 import { clearSearchResults, searchPeople } from '../person/PersonActionFactory';
 import {
@@ -25,7 +25,6 @@ import {
   SETTINGS,
   MODULE
 } from '../../utils/consts/DataModelConsts';
-import { DOMAIN_OPTIONS_ARR } from '../../utils/consts/ReviewPSAConsts';
 import { OL } from '../../utils/consts/Colors';
 import {
   APP,
@@ -65,15 +64,6 @@ const ToolbarWrapper = styled.div`
   align-items: flex-start;
 `;
 
-const FilterWrapper = styled.div`
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  white-space: nowrap;
-  width: 13%;
-  margin-top: -10px;
-`;
-
 type Props = {
   isFetchingPeople :boolean,
   peopleResults :Immutable.List<*>,
@@ -88,7 +78,6 @@ type Props = {
 
 type State = {
   didMapPeopleToProps :boolean,
-  countyFilter :string,
   peopleList :string[]
 };
 
@@ -98,7 +87,6 @@ class PeopleContainer extends React.Component<Props, State> {
 
     this.state = {
       didMapPeopleToProps: false,
-      countyFilter: '',
       peopleList: []
     };
   }
@@ -196,36 +184,16 @@ class PeopleContainer extends React.Component<Props, State> {
     );
   }
 
-  renderRequiresActionPeopleComponent = () => {
-    const { loadingPSAData, isFetchingPeople } = this.props;
-    const { didMapPeopleToProps, countyFilter } = this.state;
-    return (
-      <RequiresActionList
-          countyFilter={countyFilter}
-          didMapPeopleToProps={didMapPeopleToProps}
-          isLoadingPeople={isFetchingPeople}
-          loadingPSAData={loadingPSAData} />
-    );
-  }
+  renderRequiresActionPeopleComponent = () => <RequiresActionList />;
 
-  renderCountyDropdown = () => {
-    if (!window.location.href.includes(Routes.REQUIRES_ACTION_PEOPLE)) {
-      return null;
-    }
-    return (
-      <FilterWrapper>
-        <DropDownMenu
-            placeholder="All counties"
-            classNamePrefix="lattice-select"
-            options={DOMAIN_OPTIONS_ARR}
-            onChange={e => this.setState({ countyFilter: e.value })} />
-      </FilterWrapper>
-    );
-  }
+  renderRemindersPortal = () => <RemindersContainer />;
 
   render() {
     const { selectedOrganizationSettings } = this.props;
     const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
+    const courtRemindersEnabled = selectedOrganizationSettings.get(SETTINGS.COURT_REMINDERS, false);
+    let remindersSwitchRoute = null;
+
     let navButtons = [
       {
         path: Routes.SEARCH_PEOPLE,
@@ -244,18 +212,30 @@ class PeopleContainer extends React.Component<Props, State> {
       }
     ];
 
-    if (includesPretrialModule) navButtons = navButtons.concat(pretrialModuleNavButtons);
+    const remindersButton = {
+      path: Routes.MANAGE_PEOPLE_REMINDERS,
+      label: 'Court Reminders'
+    };
+
+
+    if (includesPretrialModule) {
+      navButtons = navButtons.concat(pretrialModuleNavButtons);
+      if (courtRemindersEnabled) {
+        navButtons.push(remindersButton);
+        remindersSwitchRoute = <Route path={Routes.MANAGE_PEOPLE_REMINDERS} render={this.renderRemindersPortal} />;
+      }
+    }
 
     return (
       <DashboardMainSection>
         <ToolbarWrapper>
           <NavButtonToolbar options={navButtons} />
-          {includesPretrialModule ? this.renderCountyDropdown() : <div /> }
         </ToolbarWrapper>
         <Switch>
           <Route path={Routes.SEARCH_PEOPLE} render={this.renderSearchPeopleComponent} />
           <Route path={Routes.MULTI_SEARCH_PEOPLE} render={this.renderMultiSearchPeopleComponent} />
           <Route path={Routes.REQUIRES_ACTION_PEOPLE} render={this.renderRequiresActionPeopleComponent} />
+          { remindersSwitchRoute }
           <Redirect from={Routes.PEOPLE} to={Routes.SEARCH_PEOPLE} />
         </Switch>
       </DashboardMainSection>

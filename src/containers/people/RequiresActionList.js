@@ -85,7 +85,6 @@ type Props = {
   requiresActionPeopleNeighbors :Map<*, *>,
   peopleWithMultiplePSAs :Set<*>,
   peopleWithRecentFTAs :Set<*>,
-  peopleWithNoPendingCharges :Set<*>,
   psaNeighborsById :Map<*, *>,
   psaScoresWithNoPendingCharges :Set<*>,
   psaScoresWithRecentFTAs :Set<*>,
