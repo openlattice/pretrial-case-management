@@ -4,6 +4,9 @@
 
 import { newRequestSequence } from 'redux-reqseq';
 
+const BULK_DOWNLOAD_REMINDERS_PDF :string = 'BULK_DOWNLOAD_REMINDERS_PDF';
+const bulkDownloadRemindersPDF :RequestSequence = newRequestSequence(BULK_DOWNLOAD_REMINDERS_PDF);
+
 const LOAD_OPT_OUT_NEIGHBORS :string = 'LOAD_OPT_OUT_NEIGHBORS';
 const loadOptOutNeighbors :RequestSequence = newRequestSequence(LOAD_OPT_OUT_NEIGHBORS);
 
@@ -22,11 +25,13 @@ const LOAD_REMINDER_NEIGHBORS :string = 'LOAD_REMINDER_NEIGHBORS';
 const loadReminderNeighborsById :RequestSequence = newRequestSequence(LOAD_REMINDER_NEIGHBORS);
 
 export {
+  BULK_DOWNLOAD_REMINDERS_PDF,
   LOAD_OPT_OUT_NEIGHBORS,
   LOAD_OPT_OUTS_FOR_DATE,
   LOAD_PEOPLE_WITH_HEARINGS_BUT_NO_CONTACTS,
   LOAD_REMINDER_NEIGHBORS,
   LOAD_REMINDERS_FOR_DATE,
+  bulkDownloadRemindersPDF,
   loadOptOutNeighbors,
   loadOptOutsForDate,
   loadPeopleWithHearingsButNoContacts,
