@@ -238,10 +238,12 @@ export const REMINDERS = {
   LOADING_PEOPLE_NO_CONTACTS: 'loadingPeopleWithNoContacts',
   OPT_OUTS: 'optOutMap',
   OPT_OUT_NEIGHBORS: 'optOutNeighbors',
+  OPT_OUT_PEOPLE_IDS: 'optOutPeopleIds',
   OPT_OUTS_WITH_REASON: 'optOutsWithReasons',
   REMINDER_IDS_TO_OPT_OUT_IDS: 'reminderIdsToOptOutIds',
   LOADING_OPT_OUTS: 'loadingOptOuts',
-  LOADING_OPT_OUT_NEIGHBORS: 'loadingOptOutNeighbors'
+  LOADING_OPT_OUT_NEIGHBORS: 'loadingOptOutNeighbors',
+  LOADING_REMINDER_PDF: 'loadingReminderPDF'
 };
 
 // Review
