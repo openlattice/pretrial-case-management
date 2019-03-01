@@ -103,7 +103,7 @@ const HearingRow = ({
     : <StatusIconContainer><FontAwesomeIcon color="red" icon={faTimesCircle} /></StatusIconContainer>
   );
 
-  const disabledText = hasOutcome ? 'Hearing Has Outcome' : 'Manually Created';
+  const disabledText = hasOutcome ? 'Hearing Has Outcome' : 'Odyssey Hearing';
 
   const renderCancelButton = (
     <CancelButton onClick={() => cancelFn(hearingEntityKeyId)} disabled={disabled}>
