@@ -45,7 +45,7 @@ function* loadSubcriptionModalWorker(action :SequenceAction) :Generator<*, *, *>
 
     const personNeighborsById = yield call(SearchApi.searchEntityNeighborsWithFilter, peopleEntitySetId, {
       entityKeyIds: [personId],
-      sourceEntitySetIds: [],
+      sourceEntitySetIds: [contactInformationEntitySetId],
       destinationEntitySetIds: [subscriptionEntitySetId, contactInformationEntitySetId]
     });
 
