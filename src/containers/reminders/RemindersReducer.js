@@ -79,7 +79,7 @@ export default function remindersReducer(state :Map<*, *> = INITIAL_STATE, actio
 
     case loadRemindersforDate.case(action.type): {
       return loadRemindersforDate.reducer(state, action, {
-        REQUEST: () => state.set(REMINDERS.LOADING_OPT_OUTS, true),
+        REQUEST: () => state.set(REMINDERS.LOADING_REMINDERS, true),
         SUCCESS: () => {
           const {
             reminderIds,

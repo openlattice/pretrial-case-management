@@ -37,7 +37,7 @@ const Body = styled.div`
 const HeaderRow = styled.div`
   position: absolute;
   display: grid;
-  grid-template-columns: 120px 74px 145px 250px 92px 216px;
+  grid-template-columns: 110px 70px 130px 190px 100px 95px 200px;
   background-color: ${OL.GREY08};
   border: 1px solid ${OL.GREY08};
 `;
@@ -61,6 +61,7 @@ const Headers = () => (
     <HeaderElement>Time</HeaderElement>
     <HeaderElement>Courtroom</HeaderElement>
     <HeaderElement>Type</HeaderElement>
+    <HeaderElement>Case ID</HeaderElement>
     <CenteredHeader>Open PSA</CenteredHeader>
     <HeaderElement />
   </HeaderRow>
@@ -95,7 +96,13 @@ const HearingsTable = ({
       <Headers />
       <Body maxHeight={maxHeight}>
         {rows.sort(sortHearingsByDate).valueSeq().map(((row) => {
-          const { hearingId, hearingEntityKeyId, hearingCourtString } = getHearingFields(row);
+          const {
+            hearingId,
+            hearingEntityKeyId,
+            hearingCourtString,
+            hearingCaseId
+          } = getHearingFields(row);
+
           const hearingIsADuplicate = (hearingCourtStringsCounts.get(hearingCourtString) > 1);
           const hearingWasCreatedManually = isUUID(hearingId);
           const hearingHasOutcome = hearingsWithOutcomes.includes(hearingEntityKeyId);
@@ -105,6 +112,7 @@ const HearingsTable = ({
             <HearingRow
                 key={`${hearingEntityKeyId}-${hearingCourtString}-${hearingId}`}
                 row={row}
+                caseId={hearingCaseId}
                 isDuplicate={hearingIsADuplicate}
                 hasPSA={hearingHasPSA}
                 hasOutcome={hearingHasOutcome}

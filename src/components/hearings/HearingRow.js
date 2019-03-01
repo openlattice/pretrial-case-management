@@ -12,6 +12,18 @@ import { faExclamationTriangle, faCheck, faTimesCircle } from '@fortawesome/pro-
 import InfoButton from '../buttons/InfoButton';
 import { OL } from '../../utils/consts/Colors';
 import { getHearingFields } from '../../utils/consts/HearingConsts';
+import { StyledTooltip } from '../../utils/Layout';
+
+const CaseId = styled.div`
+  display: block;
+  overflow: hidden;
+  width: 100%;
+  font-size: 14px;
+  color: ${OL.GREY15};
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  position: relative;
+`;
 
 const Cell = styled.div`
   display: flex;
@@ -21,12 +33,17 @@ const Cell = styled.div`
   font-size: 12px;
   color: ${OL.GREY15};
   height: 40px;
+  position: relative;
+
+  &:hover ${StyledTooltip} {
+    visibility: visible;
+  }
 `;
 
 const Row = styled.div`
   width: 100%;
   display: grid;
-  grid-template-columns: 120px 74px 145px 250px 92px 216px;
+  grid-template-columns: 110px 70px 130px 190px 100px 95px 200px;
   border-bottom: 1px solid ${OL.GREY11};
 
   &:hover {
@@ -73,6 +90,10 @@ const StatusIconContainer = styled.div`
   margin: 5px 5px;
 `;
 
+const Tooltip = ({ value } :object) => (
+  value && value.length ? <StyledTooltip>{value}</StyledTooltip> : null
+);
+
 type Props = {
   hasPSA :boolean,
   hasOutcome :boolean,
@@ -83,6 +104,7 @@ type Props = {
 };
 
 const HearingRow = ({
+  caseId,
   hasPSA,
   hasOutcome,
   row,
@@ -103,7 +125,7 @@ const HearingRow = ({
     : <StatusIconContainer><FontAwesomeIcon color="red" icon={faTimesCircle} /></StatusIconContainer>
   );
 
-  const disabledText = hasOutcome ? 'Hearing Has Outcome' : 'Manually Created';
+  const disabledText = hasOutcome ? 'Hearing Has Outcome' : 'Odyssey Hearing';
 
   const renderCancelButton = (
     <CancelButton onClick={() => cancelFn(hearingEntityKeyId)} disabled={disabled}>
@@ -121,13 +143,17 @@ const HearingRow = ({
 
   return (
     <Row
-        disabled={disabled}>
+        disabled>
       <Cell>{ hearingDate }</Cell>
       <Cell>{ hearingTime }</Cell>
       <Cell>{ courtroom }</Cell>
       <Cell>
         { hearingType }
         { renderDuplicateTag }
+      </Cell>
+      <Cell>
+        <CaseId>{caseId}</CaseId>
+        <Tooltip value={caseId} />
       </Cell>
       <Cell>{renderBooleanIcon(hasPSA)}</Cell>
       <Cell>{renderCancelButton}</Cell>
