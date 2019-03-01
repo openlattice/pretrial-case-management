@@ -141,6 +141,8 @@ const hearing = (
   doc.text(X_COL_1, y, formatDateTime(hearingDateTime));
   doc.text(X_COL_2, y, hearingType);
   doc.text(X_COL_3, y, courtroom);
+  y += 2 * Y_INC_LARGE;
+  doc.text(X_COL_1, y, 'Need help? Call 605-721-4518 or 605-721-4509 with any questions or concerns.');
 
   y += Y_INC_SMALL;
   page = pageInit + 1;
