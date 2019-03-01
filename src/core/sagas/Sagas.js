@@ -102,6 +102,7 @@ export default function* sagas() :Generator<*, *, *> {
     fork(PsaSagas.loadNeighborsWatcher),
 
     // Reminder Sagas
+    fork(RemindersSagas.bulkDownloadRemindersPDFWatcher),
     fork(RemindersSagas.loadOptOutNeighborsWatcher),
     fork(RemindersSagas.loadOptOutsForDateWatcher),
     fork(RemindersSagas.loadPeopleWithHearingsButNoContactsWatcher),
