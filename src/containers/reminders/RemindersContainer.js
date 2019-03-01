@@ -206,7 +206,7 @@ class RemindersContainer extends React.Component<Props, State> {
         </SubToolbarWrapper>
         <StyledButton onClick={this.downloadReminderPDF} disabled={loadingPeopleWithNoContacts || loadingReminderPDF}>
           <FontAwesomeIcon color={OL.PURPLE03} icon={faFileDownload} />
-          {'  PDF Reminders'}
+          {' PDF Reminders'}
         </StyledButton>
       </ToolbarWrapper>
     );
