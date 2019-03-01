@@ -10,6 +10,7 @@ import {
 } from 'immutable';
 
 import {
+  bulkDownloadRemindersPDF,
   loadOptOutNeighbors,
   loadOptOutsForDate,
   loadPeopleWithHearingsButNoContacts,
@@ -32,20 +33,29 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [REMINDERS.LOADING_PEOPLE_NO_CONTACTS]: false,
   [REMINDERS.OPT_OUTS]: Map(),
   [REMINDERS.OPT_OUT_NEIGHBORS]: Map(),
+  [REMINDERS.OPT_OUT_PEOPLE_IDS]: Set(),
   [REMINDERS.OPT_OUTS_WITH_REASON]: Set(),
-  [REMINDERS.REMINDER_IDS_TO_OPT_OUT_IDS]: Map(),
   [REMINDERS.LOADING_OPT_OUTS]: false,
   [REMINDERS.LOADING_OPT_OUT_NEIGHBORS]: false,
+  [REMINDERS.LOADING_REMINDER_PDF]: false,
 });
 export default function remindersReducer(state :Map<*, *> = INITIAL_STATE, action :SequenceAction) {
   switch (action.type) {
 
+    case bulkDownloadRemindersPDF.case(action.type): {
+      return bulkDownloadRemindersPDF.reducer(state, action, {
+        REQUEST: () => state.set(REMINDERS.LOADING_REMINDER_PDF, true),
+        FINALLY: () => state.set(REMINDERS.LOADING_REMINDER_PDF, false)
+      });
+    }
     case loadOptOutNeighbors.case(action.type): {
       return loadOptOutNeighbors.reducer(state, action, {
         REQUEST: () => state.set(REMINDERS.LOADING_OPT_OUT_NEIGHBORS, true),
         SUCCESS: () => {
-          const { optOutNeighborsById } = action.value;
-          return state.set(REMINDERS.OPT_OUT_NEIGHBORS, optOutNeighborsById);
+          const { optOutNeighborsById, optOutPeopleIds } = action.value;
+          return state
+            .set(REMINDERS.OPT_OUT_NEIGHBORS, optOutNeighborsById)
+            .set(REMINDERS.OPT_OUT_PEOPLE_IDS, optOutPeopleIds);
         },
         FINALLY: () => state.set(REMINDERS.LOADING_OPT_OUT_NEIGHBORS, false)
       });
