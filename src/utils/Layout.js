@@ -305,6 +305,7 @@ export const ChargesWrapper = styled.div`
   margin: ${props => (props.modal ? '0 -30px -5px' : 0)};
   display: inline-block;
   width: ${props => (props.modal ? 'calc(100% + 60px)' : '100%')};
+  border-bottom: ${props => (props.isCompact ? `1px solid ${OL.GREY11}` : 'none')} !important;
 `;
 
 export const ChargesTable = styled.table`
@@ -322,7 +323,7 @@ export const ChargeRow = styled.tr`
 `;
 
 export const ChargeItem = styled.td`
-  padding: 25px 15px;
+  padding: ${props => (props.isCompact ? '0px 15px' : '25px 15px')};
 `;
 
 export const ChargeTag = styled.div`
