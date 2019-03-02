@@ -20,6 +20,7 @@ import PersonHearings from '../../components/people/PersonHearings';
 import PersonCases from '../../components/people/PersonCases';
 import PSAModal from '../review/PSAModal';
 import { getPSAIdsFromNeighbors } from '../../utils/PeopleUtils';
+import { getChargeHistory } from '../../utils/CaseUtils';
 import { JURISDICTION } from '../../utils/consts/Consts';
 import { getEntityKeyId, getIdOrValue, getNeighborDetailsForEntitySet } from '../../utils/DataUtils';
 import {
@@ -356,6 +357,7 @@ class PersonDetailsContainer extends React.Component<Props, State> {
       const hasOutcome = !!hearingNeighborsById.getIn([id, OUTCOMES]);
       return hasOutcome;
     });
+    const chargeHistory = getChargeHistory(neighbors);
     const mostRecentPSAEntityKeyId = getEntityKeyId(mostRecentPSA.get(PSA_NEIGHBOR.DETAILS, Map()));
     const neighborsForMostRecentPSA = psaNeighborsById.get(mostRecentPSAEntityKeyId, Map());
     const psaId = mostRecentPSA.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.GENERAL_ID, 0], '');
@@ -385,6 +387,7 @@ class PersonDetailsContainer extends React.Component<Props, State> {
     return (
       <PersonHearings
           availableHearings={availableHearings}
+          chargeHistory={chargeHistory}
           defaultBond={defaultBond}
           defaultConditions={defaultConditions}
           defaultDMF={defaultDMF}
@@ -396,6 +399,7 @@ class PersonDetailsContainer extends React.Component<Props, State> {
           loading={isLoading}
           scheduledHearings={scheduledHearings}
           neighbors={neighborsForMostRecentPSA}
+          hearingNeighborsById={hearingNeighborsById}
           pastHearings={pastHearings}
           personId={personId}
           psaEntityKeyId={mostRecentPSAEntityKeyId}
