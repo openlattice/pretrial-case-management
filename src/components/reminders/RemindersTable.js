@@ -133,7 +133,8 @@ class RemindersTable extends React.Component<Props, State> {
       noResults
     } = this.props;
     if (noResults) return <NoResultsForTable>No Results</NoResultsForTable>;
-    const entitySeq = sortEntities(entities, neighbors)
+    const shouldSortByDateTime = (appTypeFqn === REMINDER_OPT_OUTS);
+    const entitySeq = sortEntities(entities, neighbors, shouldSortByDateTime)
       .map(((entity) => {
         let row = null;
         if (appTypeFqn === REMINDERS) {
