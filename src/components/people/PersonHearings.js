@@ -7,7 +7,7 @@ import styled from 'styled-components';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import Modal, { ModalTransition } from '@atlaskit/modal-dialog';
-import { Map, fromJS } from 'immutable';
+import { List, Map, fromJS } from 'immutable';
 import { Constants } from 'lattice';
 
 import closeX from '../../assets/svg/close-x-gray.svg';
@@ -25,6 +25,7 @@ import {
   APP,
   COURT,
   EDM,
+  PSA_NEIGHBOR,
   REVIEW,
   STATE
 } from '../../utils/consts/FrontEndStateConsts';
@@ -45,10 +46,11 @@ import * as PeopleActionFactory from '../../containers/people/PeopleActionFactor
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
-let { HEARINGS, OUTCOMES } = APP_TYPES_FQNS;
+let { HEARINGS, OUTCOMES, PRETRIAL_CASES } = APP_TYPES_FQNS;
 
 HEARINGS = HEARINGS.toString();
 OUTCOMES = OUTCOMES.toString();
+PRETRIAL_CASES = PRETRIAL_CASES.toString();
 
 const ColumnWrapper = styled(StyledColumnRowWrapper)`
   background: transparent;
@@ -250,10 +252,12 @@ class PersonHearings extends React.Component<Props, State> {
 
   renderReleaseConditionsModal = () => {
     const {
+      chargeHistory,
       defaultBond,
       defaultConditions,
       defaultDMF,
       dmfId,
+      hearingNeighborsById,
       jurisdiction,
       loading,
       neighbors,
@@ -265,9 +269,14 @@ class PersonHearings extends React.Component<Props, State> {
     const selectedHearingEntityKeyId = selectedHearing.get('entityKeyId', '');
     const selectedHearingId = selectedHearing.get('hearingId', '');
     const hearing = selectedHearing.get('row', Map());
+    let caseHistory = hearingNeighborsById
+      .getIn([selectedHearingEntityKeyId, PRETRIAL_CASES, PSA_NEIGHBOR.DETAILS], Map());
+    caseHistory = caseHistory.size ? fromJS([caseHistory]) : List();
 
     return (
       <ReleaseConditionsModal
+          chargeHistory={chargeHistory}
+          caseHistory={caseHistory}
           open={releaseConditionsModalOpen}
           defaultBond={defaultBond}
           defaultConditions={defaultConditions}
@@ -275,6 +284,7 @@ class PersonHearings extends React.Component<Props, State> {
           dmfId={dmfId}
           hearingId={selectedHearingId}
           hearingEntityKeyId={selectedHearingEntityKeyId}
+          hearingNeighborsById={hearingNeighborsById}
           jurisdiction={jurisdiction}
           neighbors={neighbors}
           loading={loading}
