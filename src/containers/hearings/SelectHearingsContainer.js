@@ -527,8 +527,7 @@ class SelectHearingsContainer extends React.Component<Props, State> {
     const { manuallyCreatingHearing, selectingReleaseConditions, selectedHearing } = this.state;
     const {
       neighbors,
-      hearingNeighborsById,
-      psaHearings
+      hearingNeighborsById
     } = this.props;
     const hearingsWithOutcomes = hearingNeighborsById
       .keySeq().filter(id => hearingNeighborsById.getIn([id, OUTCOMES]));

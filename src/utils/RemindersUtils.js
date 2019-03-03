@@ -56,7 +56,7 @@ export const getOptOutFields = (optOut) => {
   };
 };
 
-export const sortEntities = (entities, neighbors) => (
+export const sortEntities = (entities, neighbors, shouldSortByDateTime) => (
   entities.valueSeq().sort((entity1, entity2) => {
     const entityKeyId1 = getEntityKeyId(entity1);
     const person1 = neighbors.getIn([entityKeyId1, PEOPLE, PSA_NEIGHBOR.DETAILS], Map());
@@ -73,7 +73,7 @@ export const sortEntities = (entities, neighbors) => (
     const dateTime2 = moment(entity2.getIn([PROPERTY_TYPES.DATE_TIME, 0], ''));
     const firstName2 = person2.getIn([PROPERTY_TYPES.FIRST_NAME, 0]);
     const lastName2 = person2.getIn([PROPERTY_TYPES.LAST_NAME, 0]);
-    if (!dateTime1.isSame(dateTime2)) return dateTime1.isBefore(dateTime2) ? -1 : 1;
+    if (shouldSortByDateTime && !dateTime1.isSame(dateTime2)) return dateTime1.isBefore(dateTime2) ? -1 : 1;
     if (!hearingDateTime1.isSame(hearingDateTime2)) return hearingDateTime1.isBefore(hearingDateTime2) ? -1 : 1;
     if (lastName1 !== lastName2) return lastName1 > lastName2 ? 1 : -1;
     if (firstName1 !== firstName2) return firstName1 > firstName2 ? 1 : -1;
