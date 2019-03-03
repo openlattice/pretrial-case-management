@@ -135,55 +135,49 @@ class ChargeList extends React.Component<Props, *> {
         violentChargeList: violentArrestCharges
       }).size > 0;
 
+    const chargeTags = (
+      <>
+        { (mostSerious) ? <MostSeriousTag>MOST SERIOUS</MostSeriousTag> : null }
+        { (violent) ? <ViolentTag>VIOLENT</ViolentTag> : null }
+        { (convicted) ? <ConvictedTag>CONVICTED</ConvictedTag> : null }
+      </>
+    );
 
     return isCompact
-      ? (
-        <div>
-          { (mostSerious) ? <MostSeriousTag>MOST SERIOUS</MostSeriousTag> : null }
-          { (violent) ? <ViolentTag>VIOLENT</ViolentTag> : null }
-          { (convicted) ? <ConvictedTag>CONVICTED</ConvictedTag> : null }
-        </div>
-      )
-      : (
-        <ChargeTagWrapper>
-          { (mostSerious) ? <MostSeriousTag>MOST SERIOUS</MostSeriousTag> : null }
-          { (violent) ? <ViolentTag>VIOLENT</ViolentTag> : null }
-          { (convicted) ? <ConvictedTag>CONVICTED</ConvictedTag> : null }
-        </ChargeTagWrapper>
-      );
+      ? <div>{chargeTags}</div>
+      : <ChargeTagWrapper>{chargeTags}</ChargeTagWrapper>;
   }
 
   renderChargeDetails = (charge :Map<*, *>) => {
     const { detailed, isCompact } = this.props;
     if (!detailed) return null;
 
-    const plea = formatValue(charge.get(PROPERTY_TYPES.PLEA, List()));
     const pleaDate = formatDateList(charge.get(PROPERTY_TYPES.PLEA_DATE, List()));
-    const disposition = formatValue(charge.get(PROPERTY_TYPES.DISPOSITION, List()));
+    const plea = formatValue(charge.get(PROPERTY_TYPES.PLEA, List()));
+    const pleaString = `Plea: ${pleaDate} — ${plea}`;
+
     const dispositionDate = formatDateList(charge.get(PROPERTY_TYPES.DISPOSITION_DATE, List()));
+    const disposition = formatValue(charge.get(PROPERTY_TYPES.DISPOSITION, List()));
+    const dispositionString = `Disposition: ${dispositionDate} — ${disposition}`;
+
+    const chargeDetails = (
+      <>
+        <ChargeDetail isCompact={isCompact}>{pleaString}</ChargeDetail>
+        <ChargeDetail isCompact={isCompact}>{dispositionString}</ChargeDetail>
+      </>
+    );
+
     return isCompact
-      ? (
-        <CompactChargeDetails>
-          <ChargeDetail isCompact={isCompact}>{`Plea: ${pleaDate} — ${plea}`}</ChargeDetail>
-          <ChargeDetail isCompact={isCompact}>{`Disposition: ${dispositionDate} — ${disposition}`}</ChargeDetail>
-        </CompactChargeDetails>
-      )
-      : (
-        <div>
-          <ChargeDetail>{`Plea: ${pleaDate} — ${plea}`}</ChargeDetail>
-          <ChargeDetail>{`Disposition: ${dispositionDate} — ${disposition}`}</ChargeDetail>
-        </div>
-      );
+      ? <CompactChargeDetails>{chargeDetails}</CompactChargeDetails>
+      : <div>{chargeDetails}</div>;
   }
 
   renderQualifier = (charge :Map<*, *>) => {
-    const { isCompact } = this.props;
-    return (
-      this.props.historical ? null : (
-        <PaddedChargeItem isCompact={isCompact}>
-          {formatValue(charge.get(PROPERTY_TYPES.QUALIFIER, List()))}
-        </PaddedChargeItem>
-      )
+    const { historical, isCompact } = this.props;
+    return historical ? null : (
+      <PaddedChargeItem isCompact={isCompact}>
+        {formatValue(charge.get(PROPERTY_TYPES.QUALIFIER, List()))}
+      </PaddedChargeItem>
     );
   }
 
@@ -206,8 +200,8 @@ class ChargeList extends React.Component<Props, *> {
 
       const description = (
         <ChargeDescriptionTitle isCompact={isCompact}>
-          { chargeDescription.size ? <span> {formatValue(chargeDescription)}</span> : null }
-          { chargeDegree.size ? <span> ({formatValue(chargeDegree)})</span> : null }
+          { chargeDescription.size ? <span>{formatValue(chargeDescription)}</span> : null }
+          { chargeDegree.size ? <span>{formatValue(chargeDegree)}</span> : null }
           { isCompact ? this.renderTags(charge) : null }
         </ChargeDescriptionTitle>
       );
