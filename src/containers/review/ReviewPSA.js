@@ -13,7 +13,7 @@ import moment from 'moment';
 import DatePicker from '../../components/datetime/DatePicker';
 import NavButtonToolbar from '../../components/buttons/NavButtonToolbar';
 import PSAReviewReportsRowList from './PSAReviewReportsRowList';
-import LoadingSpinner from '../../components/LoadingSpinner';
+import LogoLoader from '../../assets/LogoLoader';
 import DropDownMenu from '../../components/StyledSelect';
 import { FullWidthContainer, NoResults } from '../../utils/Layout';
 import PersonSearchFields from '../../components/person/PersonSearchFields';
@@ -145,15 +145,6 @@ const ErrorText = styled.div`
   font-size: 16px;
   color: firebrick;
   margin-top: 15px;
-`;
-
-const LoadingText = styled.div`
-  margin-top: 39vh;
-  width: 100%;
-  font-size: 16px;
-  text-align: center;
-  width: 960px;
-  margin-bottom: 20px;
 `;
 
 type Props = {
@@ -339,8 +330,7 @@ class ReviewPSA extends React.Component<Props, State> {
 
   renderSpinner = () => (
     <div>
-      <LoadingText>Loading past reports...</LoadingText>
-      <LoadingSpinner />
+      <LogoLoader loadingText="Loading past reports..." />
     </div>
   )
 
