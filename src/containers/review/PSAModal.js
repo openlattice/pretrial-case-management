@@ -15,7 +15,7 @@ import { Link } from 'react-router-dom';
 
 import CustomTabs from '../../components/tabs/Tabs';
 import CourtCaseForPSAConfig from '../../config/formconfig/CourtCaseForPSAConfig';
-import LoadingSpinner from '../../components/LoadingSpinner';
+import LogoLoader from '../../assets/LogoLoader';
 import PSAInputForm from '../../components/psainput/PSAInputForm';
 import PersonCard from '../../components/person/PersonCardReview';
 import StyledButton from '../../components/buttons/StyledButton';
@@ -633,7 +633,7 @@ class PSAModal extends React.Component<Props, State> {
       caseNumbersToAssociationId = caseNumbersToAssociationId.set(caseNum, associationEntityKeyId);
     });
 
-    if (loadingPSAModal || loadingCaseHistory) return <SpinnerWrapper><LoadingSpinner /></SpinnerWrapper>;
+    if (loadingPSAModal || loadingCaseHistory) return <LogoLoader loadingText="Loading person details..." />;
 
     const arrestDate = psaNeighbors.getIn(
       [MANUAL_PRETRIAL_CASES, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.ARREST_DATE_TIME, 0],

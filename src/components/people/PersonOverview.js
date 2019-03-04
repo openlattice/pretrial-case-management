@@ -11,7 +11,7 @@ import HearingCardsWithTitle from '../hearings/HearingCardsWithTitle';
 import SubscriptionInfo from '../subscription/SubscriptionInfo';
 import CaseHistoryList from '../casehistory/CaseHistoryList';
 import ChargeHistoryStats from '../casehistory/ChargeHistoryStats';
-import LoadingSpinner from '../LoadingSpinner';
+import LogoLoader from '../../assets/LogoLoader';
 import PSASummary from '../../containers/review/PSASummary';
 import ViewMoreLink from '../buttons/ViewMoreLink';
 import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
@@ -146,7 +146,7 @@ const PersonOverview = ({
   );
 
   if (loading) {
-    return <LoadingSpinner />;
+    return <LogoLoader loadingText="Loading Person Details..." />;
   }
   return (
     <Wrapper>

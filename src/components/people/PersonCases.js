@@ -10,7 +10,7 @@ import { Map } from 'immutable';
 import CaseHistoryTimeline from '../casehistory/CaseHistoryTimeline';
 import ChargeHistoryStats from '../casehistory/ChargeHistoryStats';
 import CaseHistoryList from '../casehistory/CaseHistoryList';
-import LoadingSpinner from '../LoadingSpinner';
+import LogoLoader from '../../assets/LogoLoader';
 import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { getIdOrValue } from '../../utils/DataUtils';
 import { formatDate } from '../../utils/FormattingUtils';
@@ -88,7 +88,7 @@ const PersonCases = ({
   );
   const pendingCharges = currentPendingCharges(chargeHistory);
   if (loading) {
-    return <LoadingSpinner />;
+    return <LogoLoader loadingText="Loading..." />;
   }
   return (
     <Wrapper>

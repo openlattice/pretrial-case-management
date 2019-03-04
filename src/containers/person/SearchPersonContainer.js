@@ -14,7 +14,7 @@ import { connect } from 'react-redux';
 import PersonSearchFields from '../../components/person/PersonSearchFields';
 import SecondaryButton from '../../components/buttons/SecondaryButton';
 import PersonTable from '../../components/people/PersonTable';
-import LoadingSpinner from '../../components/LoadingSpinner';
+import LogoLoader from '../../assets/LogoLoader';
 import NoSearchResults from '../../components/people/NoSearchResults';
 import { clearSearchResults, searchPeople } from './PersonActionFactory';
 import { toISODate } from '../../utils/FormattingUtils';
@@ -217,8 +217,7 @@ class SearchPeopleContainer extends React.Component<Props, State> {
     if (isLoadingPeople) {
       return (
         <NonResultsContainer>
-          <LoadingText>Loading results...</LoadingText>
-          <LoadingSpinner />
+          <LogoLoader loadingText="Loading results..." />
         </NonResultsContainer>
       );
     }

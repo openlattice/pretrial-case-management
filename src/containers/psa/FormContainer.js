@@ -22,7 +22,7 @@ import {
 } from 'react-router-dom';
 
 import BasicButton from '../../components/buttons/BasicButton';
-import LoadingSpinner from '../../components/LoadingSpinner';
+import LogoLoader from '../../assets/LogoLoader';
 import ConfirmationModal from '../../components/ConfirmationModalView';
 import SearchPersonContainer from '../person/SearchPersonContainer';
 import SelectArrestContainer from '../pages/arrest/SelectArrestContainer';
@@ -803,7 +803,7 @@ class Form extends React.Component<Props, State> {
     }
 
     if (isLoadingNeighbors || loadingPersonDetails || !caseLoadsComplete) {
-      return <LoadingSpinner />;
+      return <LogoLoader />;
     }
 
     const pendingPSAs = (skipClosePSAs || psaForm.get(DMF.COURT_OR_BOOKING) === CONTEXT.BOOKING)
