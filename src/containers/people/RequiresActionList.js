@@ -10,12 +10,9 @@ import { Constants } from 'lattice';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCalendarTimes, faEllipsisV } from '@fortawesome/pro-light-svg-icons';
-
 import StatButtons from '../../components/requiresaction/RequiresActionStatButtons';
 import PSAReviewReportsRow from '../../components/review/PSAReviewReportsRow';
-import LoadingSpinner from '../../components/LoadingSpinner';
+import LogoLoader from '../../assets/LogoLoader';
 import SearchBar from '../../components/PSASearchBar';
 import DashboardMainSection from '../../components/dashboard/DashboardMainSection';
 import Pagination from '../../components/Pagination';
@@ -332,7 +329,7 @@ class RequiresActionList extends React.Component<Props, State> {
   render() {
     const { loadingRequiresActionPeople } = this.props;
     if (loadingRequiresActionPeople) {
-      return <LoadingSpinner />;
+      return <LogoLoader loadingText="Loading..." />;
     }
     return (
       <DashboardMainSection>
