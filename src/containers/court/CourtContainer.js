@@ -14,7 +14,7 @@ import { Constants } from 'lattice';
 import { formatPeopleInfo, sortPeopleByName } from '../../utils/PeopleUtils';
 import SecondaryButton from '../../components/buttons/SecondaryButton';
 import ToggleButtonsGroup from '../../components/buttons/ToggleButtons';
-import LoadingSpinner from '../../components/LoadingSpinner';
+import LogoLoader from '../../assets/LogoLoader';
 import PersonCard from '../../components/people/PersonCard';
 import DatePicker from '../../components/datetime/DatePicker';
 import * as Routes from '../../core/router/Routes';
@@ -463,7 +463,7 @@ class CourtContainer extends React.Component<Props, State> {
       hearingsByTime
     } = this.props;
     if (isLoadingHearings || isLoadingHearingsNeighbors || isLoadingPSAs) {
-      return <SpinnerWrapper><LoadingSpinner /></SpinnerWrapper>;
+      return <LogoLoader loadingText="Loading..." />;
     }
 
     const timeOptions = hearingsByTime.keySeq().sort((time1, time2) => (
