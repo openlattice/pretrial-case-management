@@ -197,8 +197,8 @@ const exportPDFList = (fileName :string, pages :{
   selectedHearing :Immutable.Map<*, *>,
 }[]) :void => {
   const doc = new JSPDF();
-  const sortedPages = pages;
-  sortedPages.sort((page1, page2) => sortPeopleByName(page1.selectedPerson, page2.selectedPerson));
+  let sortedPages = pages;
+  sortedPages = sortedPages.sort((page1, page2) => sortPeopleByName(page1.selectedPerson, page2.selectedPerson));
 
   coverPage(doc, sortedPages.map(page => page.selectedPerson));
 
