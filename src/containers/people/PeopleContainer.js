@@ -15,7 +15,7 @@ import PersonSearchFields from '../../components/person/PersonSearchFields';
 import PersonTextAreaInput from '../../components/person/PersonTextAreaInput';
 import PeopleList from '../../components/people/PeopleList';
 import DashboardMainSection from '../../components/dashboard/DashboardMainSection';
-import LoadingSpinner from '../../components/LoadingSpinner';
+import LogoLoader from '../../assets/LogoLoader';
 import NavButtonToolbar from '../../components/buttons/NavButtonToolbar';
 import { getFormattedPeople } from '../../utils/PeopleUtils';
 import { clearSearchResults, searchPeople } from '../person/PersonActionFactory';
@@ -173,7 +173,7 @@ class PeopleContainer extends React.Component<Props, State> {
           }
         </SearchBox>
         {
-          loadingPSAData ? <LoadingSpinner /> : (
+          loadingPSAData ? <LogoLoader loadingText="Loading People..." /> : (
             <PeopleList
                 people={formattedPeople}
                 isFetchingPeople={isFetchingPeople}
