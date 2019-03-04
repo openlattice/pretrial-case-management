@@ -15,7 +15,7 @@ import { Link } from 'react-router-dom';
 
 import CustomTabs from '../../components/tabs/Tabs';
 import CourtCaseForPSAConfig from '../../config/formconfig/CourtCaseForPSAConfig';
-import LogoLoader from '../../assets/LogoLoader';
+import LogoLoader from '../../components/LogoLoader';
 import PSAInputForm from '../../components/psainput/PSAInputForm';
 import PersonCard from '../../components/person/PersonCardReview';
 import StyledButton from '../../components/buttons/StyledButton';

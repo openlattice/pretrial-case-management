@@ -16,7 +16,7 @@ import InfoButton from '../buttons/InfoButton';
 import NewHearingSection from '../hearings/NewHearingSection';
 import HearingsTable from '../hearings/HearingsTable';
 import ReleaseConditionsModal from '../../containers/hearings/ReleaseConditionsModal';
-import LogoLoader from '../../assets/LogoLoader';
+import LogoLoader from '../LogoLoader';
 import psaHearingConfig from '../../config/formconfig/PSAHearingConfig';
 import { getEntitySetId } from '../../utils/AppUtils';
 import { FORM_IDS, ID_FIELD_NAMES } from '../../utils/consts/Consts';

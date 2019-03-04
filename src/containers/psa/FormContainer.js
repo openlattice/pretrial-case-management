@@ -22,7 +22,7 @@ import {
 } from 'react-router-dom';
 
 import BasicButton from '../../components/buttons/BasicButton';
-import LogoLoader from '../../assets/LogoLoader';
+import LogoLoader from '../../components/LogoLoader';
 import ConfirmationModal from '../../components/ConfirmationModalView';
 import SearchPersonContainer from '../person/SearchPersonContainer';
 import SelectArrestContainer from '../pages/arrest/SelectArrestContainer';

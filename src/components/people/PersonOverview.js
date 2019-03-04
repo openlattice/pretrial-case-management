@@ -11,7 +11,7 @@ import HearingCardsWithTitle from '../hearings/HearingCardsWithTitle';
 import SubscriptionInfo from '../subscription/SubscriptionInfo';
 import CaseHistoryList from '../casehistory/CaseHistoryList';
 import ChargeHistoryStats from '../casehistory/ChargeHistoryStats';
-import LogoLoader from '../../assets/LogoLoader';
+import LogoLoader from '../LogoLoader';
 import PSASummary from '../../containers/review/PSASummary';
 import ViewMoreLink from '../buttons/ViewMoreLink';
 import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';

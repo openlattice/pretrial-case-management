@@ -9,7 +9,7 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
 import PersonSubcriptionRow from './PersonSubscriptionRow';
-import LogoLoader from '../../assets/LogoLoader';
+import LogoLoader from '../LogoLoader';
 import { NoResults } from '../../utils/Layout';
 import { OL } from '../../utils/consts/Colors';
 import { SEARCH, STATE } from '../../utils/consts/FrontEndStateConsts';

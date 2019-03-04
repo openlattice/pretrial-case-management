@@ -16,7 +16,7 @@ import HeaderNav from '../../components/nav/HeaderNav';
 import Dashboard from '../../components/dashboard/Dashboard';
 import Forms from '../forms/Forms';
 import ContactSupport from '../../components/app/ContactSupport';
-import LogoLoader from '../../assets/LogoLoader';
+import LogoLoader from '../../components/LogoLoader';
 import { APP, CHARGES, STATE } from '../../utils/consts/FrontEndStateConsts';
 import { APP_TYPES_FQNS, SETTINGS, MODULE } from '../../utils/consts/DataModelConsts';
 import { termsAreAccepted } from '../../utils/AcceptTermsUtils';

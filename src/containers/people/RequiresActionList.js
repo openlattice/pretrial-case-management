@@ -12,7 +12,7 @@ import { connect } from 'react-redux';
 
 import StatButtons from '../../components/requiresaction/RequiresActionStatButtons';
 import PSAReviewReportsRow from '../../components/review/PSAReviewReportsRow';
-import LogoLoader from '../../assets/LogoLoader';
+import LogoLoader from '../../components/LogoLoader';
 import SearchBar from '../../components/PSASearchBar';
 import DashboardMainSection from '../../components/dashboard/DashboardMainSection';
 import Pagination from '../../components/Pagination';
