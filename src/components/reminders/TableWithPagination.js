@@ -7,7 +7,7 @@ import styled from 'styled-components';
 import { Map, Set } from 'immutable';
 
 import RemindersTable from './RemindersTable';
-import LoadingSpinner from '../LoadingSpinner';
+import LogoLoader from '../../assets/LogoLoader';
 import Pagination from '../Pagination';
 import { Count } from '../../utils/Layout';
 import { OL } from '../../utils/consts/Colors';
@@ -105,7 +105,7 @@ class RemindersTableWithPagination extends React.Component<Props, State> {
     } = this.props;
     const { entities } = this.getRemindersList();
     const pageOfEntities = entities.slice(start, start + PAGE_SIZE);
-    if (loading) return <LoadingSpinner />;
+    if (loading) return <LogoLoader loadingText="Loading..." />;
     return (
       <RemindersTable
           entities={pageOfEntities}
