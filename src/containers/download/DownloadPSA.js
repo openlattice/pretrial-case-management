@@ -13,7 +13,7 @@ import BasicButton from '../../components/buttons/BasicButton';
 import DateTimeRangePicker from '../../components/datetime/DateTimeRangePicker';
 import DatePicker from '../../components/datetime/DatePicker';
 import InfoButton from '../../components/buttons/InfoButton';
-import LoadingSpinner from '../../components/LoadingSpinner';
+import LogoLoader from '../../assets/LogoLoader';
 import SearchableSelect from '../../components/controls/SearchableSelect';
 import StyledCheckbox from '../../components/controls/StyledCheckbox';
 import { OL } from '../../utils/consts/Colors';
@@ -319,7 +319,7 @@ class DownloadPSA extends React.Component<Props, State> {
     const { loadingHearingData, downloadingReports, noHearingResults } = this.props;
     const { hearingDate, byHearingDate, courtTime } = this.state;
     const downloads = REPORT_TYPES.BY_HEARING;
-    if (loadingHearingData) return <LoadingSpinner />;
+    if (loadingHearingData) return <LogoLoader />;
     return (byHearingDate && hearingDate)
       ? (
         <SubSelectionWrapper>
@@ -353,10 +353,7 @@ class DownloadPSA extends React.Component<Props, State> {
           {
             downloadingReports
               ? (
-                <LoadingReports>
-                  Loading Report
-                  <LoadingSpinner />
-                </LoadingReports>
+                <LogoLoader loadingText="Loading Report..." />
               )
               : null
           }
@@ -432,10 +429,7 @@ class DownloadPSA extends React.Component<Props, State> {
           {
             downloadingReports
               ? (
-                <LoadingReports>
-                  Loading Report
-                  <LoadingSpinner />
-                </LoadingReports>
+                <LogoLoader loadingText="Loading Report..." />
               )
               : null
           }
