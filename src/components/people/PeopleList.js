@@ -7,6 +7,7 @@ import styled from 'styled-components';
 import Immutable from 'immutable';
 
 import LoadingSpinner from '../LoadingSpinner';
+import LogoLoader from '../../assets/LogoLoader';
 import NoSearchResults from './NoSearchResults';
 import PersonCard from './PersonCard';
 import { StyledErrorMessage } from '../../utils/Layout';
@@ -55,7 +56,7 @@ const PeopleList = ({ people, isFetchingPeople, didMapPeopleToProps } :Props) =>
   return (
     <CardsWrapper>
       { renderPersonCards() }
-      { isFetchingPeople ? <LoadingSpinner /> : null }
+      { isFetchingPeople ? <LogoLoader loadingText="Searching..." /> : null }
     </CardsWrapper>
   );
 };
