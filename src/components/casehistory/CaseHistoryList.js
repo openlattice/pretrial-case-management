@@ -79,6 +79,7 @@ type Props = {
   pendingCases :boolean,
   psaPermissions :boolean,
   title :string,
+  isCompact :boolean
 };
 
 const CaseHistoryList = ({
@@ -91,7 +92,8 @@ const CaseHistoryList = ({
   loading,
   pendingCases,
   psaPermissions,
-  modal
+  modal,
+  isCompact
 } :Props) => {
   const addCaseToPSAButton = (caseNum) => {
     const associationEntityKeyId = caseNumbersToAssociationId.get(caseNum);
@@ -140,7 +142,13 @@ const CaseHistoryList = ({
             </InfoRowContainer>
             { caseNumbersToAssociationId ? addCaseToPSAButton(caseNum) : null }
           </InfoRow>
-          <ChargeList modal={modal} pretrialCaseDetails={caseObj} charges={charges} detailed historical />
+          <ChargeList
+              isCompact={isCompact}
+              modal={modal}
+              pretrialCaseDetails={caseObj}
+              charges={charges}
+              detailed
+              historical />
         </div>
       );
     });
@@ -158,12 +166,17 @@ const CaseHistoryList = ({
 
   return (
     <CaseHistoryContainer>
-      <TitleWrapper modal={modal}>
-        <Title withSubtitle>
-          <span>{title}</span>
-        </Title>
-        <Count>{caseCount}</Count>
-      </TitleWrapper>
+      {
+        title
+          ? (
+            <TitleWrapper modal={modal}>
+              <Title withSubtitle>
+                <span>{title}</span>
+              </Title>
+              <Count>{caseCount}</Count>
+            </TitleWrapper>
+          ) : null
+      }
       {
         loading
           ? <StyledSpinner />

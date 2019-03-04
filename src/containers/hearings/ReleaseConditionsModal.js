@@ -10,6 +10,7 @@ import { bindActionCreators } from 'redux';
 import Modal, { ModalTransition } from '@atlaskit/modal-dialog';
 import { Map, List } from 'immutable';
 
+import CaseHistoryList from '../../components/casehistory/CaseHistoryList';
 import SelectReleaseConditions from '../../components/releaseconditions/SelectReleaseConditions';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { formatJudgeName } from '../../utils/consts/HearingConsts';
@@ -54,10 +55,18 @@ const LoadingWrapper = styled.div`
   align-items: center;
 `;
 
+const ChargeTableContainer = styled.div`
+  text-align: center;
+  width: 100%;
+  margin: 0;
+`;
+
 type Props = {
   app :Map<*, *>,
   allJudges :List<*, *>,
   defaultBond :Map<*, *>,
+  chargeHistory :Map<*, *>,
+  caseHistory :Map<*, *>,
   defaultConditions :Map<*, *>,
   defaultDMF :Map<*, *>,
   dmfId :string,
@@ -115,6 +124,23 @@ class ReleaseConditionsModal extends React.Component<Props, State> {
     const { psaEntityKeyId } = this.props;
     const { actions } = this.props;
     actions.refreshPSANeighbors({ id: psaEntityKeyId });
+  }
+
+  renderChargeTable = () => {
+    const {
+      chargeHistory,
+      caseHistory,
+    } = this.props;
+    return caseHistory.size
+      ? (
+        <ChargeTableContainer>
+          <CaseHistoryList
+              isCompact
+              pendingCases
+              caseHistory={caseHistory}
+              chargeHistory={chargeHistory} />
+        </ChargeTableContainer>
+      ) : null;
   }
 
   render() {
@@ -239,6 +265,7 @@ class ReleaseConditionsModal extends React.Component<Props, State> {
                             psaId={psaId}
                             dmfId={dmfId}
                             submit={submit}
+                            renderCharges={this.renderChargeTable}
                             replace={replaceEntity}
                             replaceAssociation={replaceAssociation}
                             deleteEntity={deleteEntity}

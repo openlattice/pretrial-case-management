@@ -868,6 +868,7 @@ class PSAModal extends React.Component<Props, State> {
 
   renderHearings = () => {
     const {
+      chargeHistory,
       hearings,
       psaNeighbors,
       submitting,
@@ -879,10 +880,12 @@ class PSAModal extends React.Component<Props, State> {
       personId,
       psaPermissions
     } = this.props;
+
     return (
       <ModalWrapper withPadding>
         <SelectHearingsContainer
             {...this.props}
+            chargeHistory={chargeHistory}
             psaHearings={hearings}
             submitting={submitting}
             refreshingNeighbors={refreshingNeighbors}
