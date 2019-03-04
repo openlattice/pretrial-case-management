@@ -135,11 +135,7 @@ class AppContainer extends React.Component<Props, *> {
     const { app } = this.props;
     const loading = app.get(APP.LOADING, false);
     return loading
-      ? (
-        <NoResults>
-          <LogoLoader loadingText="Loading..." />
-        </NoResults>
-      )
+      ? <LogoLoader loadingText="Loading..." />
       : (
         <AppBodyWrapper>
           <Switch>
