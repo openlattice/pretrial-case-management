@@ -1191,10 +1191,12 @@ class SelectReleaseConditions extends React.Component<Props, State> {
 
   render() {
     const { state } = this;
+    const { renderCharges } = this.props;
     const RELEASED = state[RELEASE] !== RELEASES.RELEASED;
     return (
       <Wrapper>
         {this.renderHearingInfo()}
+        { renderCharges() }
         <OutcomeSection
             mapOptionsToRadioButtons={this.mapOptionsToRadioButtons}
             outcome={state[OUTCOME]}
