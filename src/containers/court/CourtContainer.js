@@ -202,17 +202,13 @@ class CourtContainer extends React.Component<Props, State> {
     const { date } = this.state;
     const {
       actions,
-      hearingNeighborsById,
-      hearingsByTime,
       selectedOrganizationId
     } = this.props;
     const { checkPSAPermissions, loadHearingsForDate, loadJudges } = actions;
     if (selectedOrganizationId) {
       checkPSAPermissions();
       loadJudges();
-      if (!hearingsByTime.size || !hearingNeighborsById.size) {
-        loadHearingsForDate(date);
-      }
+      loadHearingsForDate(date);
     }
   }
 
