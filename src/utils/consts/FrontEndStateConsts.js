@@ -12,6 +12,7 @@ export const STATE = {
   PSA_MODAL: 'psaModal',
   PSA: 'psa',
   PEOPLE: 'people',
+  RELEASE_CONDITIONS: 'releaseConditions',
   REMINDERS: 'reminders',
   REVIEW: 'review',
   ROUTER: 'router',
@@ -41,6 +42,7 @@ export const APP = {
   ENTITY_SETS_BY_ORG: 'entitySetsByOrganization',
   FQN_TO_ID: 'fqnsToEntitySetIds',
   ERRORS: 'errors',
+  JURISDICTION: 'jurisdiction',
   LOADING: 'isLoadingApp',
   LOAD_APP: 'loadApp',
   ORGS: 'organizations',
@@ -220,6 +222,18 @@ export const PEOPLE = {
   RECENT_FTA_PEOPLE: 'peopleWithRecentFTAs',
   NO_PENDING_CHARGES_PEOPLE: 'peopleWithNoPendingCharges',
   REQUIRES_ACTION_LOADING: 'loadingRequiresActionPeople'
+};
+
+// Release Conditions
+
+export const RELEASE_COND = {
+  SELECTED_HEARING: 'selectedHearing',
+  HAS_OUTCOME: 'hasOutcome',
+  HEARING_NEIGHBORS: 'hearingNeighbors',
+  PERSON_NEIGHBORS: 'personNeighbors',
+  PSA_NEIGHBORS: 'psaNeighbors',
+  LOADING_RELEASE_CONDITIONS: 'loadingReleaseCondtions',
+  REFRESHING_RELEASE_CONDITIONS: 'refreshingReleaseConditions'
 };
 
 // Reminders
