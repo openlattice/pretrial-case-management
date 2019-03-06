@@ -8,10 +8,8 @@ import {
   AuthorizationApi,
   Constants,
   DataApi,
-  EntityDataModelApi,
   SearchApi,
-  Models,
-  Types
+  Models
 } from 'lattice';
 import {
   all,
@@ -26,17 +24,11 @@ import { getEntitySetId } from '../../utils/AppUtils';
 import { getPropertyTypeId } from '../../edm/edmUtils';
 import exportPDF, { exportPDFList } from '../../utils/PDFUtils';
 import { getMapByCaseId } from '../../utils/CaseUtils';
-import releaseConditionsConfig from '../../config/formconfig/ReleaseConditionsConfig';
 import { obfuscateEntityNeighbors, obfuscateBulkEntityNeighbors } from '../../utils/consts/DemoNames';
 import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_STATUSES } from '../../utils/consts/Consts';
 import { formatDMFFromEntity } from '../../utils/DMFUtils';
-import {
-  getEntityKeyId,
-  getFqnObj,
-  getFilteredNeighborsById,
-  stripIdField
-} from '../../utils/DataUtils';
+import { getEntityKeyId, stripIdField } from '../../utils/DataUtils';
 import {
   APP,
   CHARGES,
@@ -54,7 +46,6 @@ import {
   LOAD_PSAS_BY_DATE,
   REFRESH_PSA_NEIGHBORS,
   UPDATE_SCORES_AND_RISK_FACTORS,
-  UPDATE_OUTCOMES_AND_RELEASE_CONDITIONS,
   bulkDownloadPSAReviewPDF,
   changePSAStatus,
   checkPSAPermissions,
@@ -63,16 +54,12 @@ import {
   loadPSAData,
   loadPSAsByDate,
   refreshPSANeighbors,
-  updateScoresAndRiskFactors,
-  updateOutcomesAndReleaseCondtions
+  updateScoresAndRiskFactors
 } from './ReviewActionFactory';
-
-const { DeleteTypes } = Types;
 
 const {
   ARREST_CHARGES,
   ASSESSED_BY,
-  BONDS,
   DMF_RESULTS,
   DMF_RISK_FACTORS,
   EDITED_BY,
@@ -80,7 +67,6 @@ const {
   HEARINGS,
   MANUAL_CHARGES,
   MANUAL_PRETRIAL_CASES,
-  OUTCOMES,
   PEOPLE,
   PRETRIAL_CASES,
   PSA_RISK_FACTORS,
@@ -93,7 +79,6 @@ const {
 
 const arrestChargesFqn :string = ARREST_CHARGES.toString();
 const assessedByFqn :string = ASSESSED_BY.toString();
-const bondsFqn :string = BONDS.toString();
 const chargesFqn :string = APP_TYPES_FQNS.CHARGES.toString();
 const dmfResultsFqn :string = DMF_RESULTS.toString();
 const dmfRiskFactorsFqn :string = DMF_RISK_FACTORS.toString();
@@ -102,7 +87,6 @@ const ftasFqn :string = FTAS.toString();
 const hearingsFqn :string = HEARINGS.toString();
 const manualChargesFqn :string = MANUAL_CHARGES.toString();
 const manualPretrialCasesFqn :string = MANUAL_PRETRIAL_CASES.toString();
-const outcomesFqn :string = OUTCOMES.toString();
 const peopleFqn :string = PEOPLE.toString();
 const pretrialCasesFqn :string = PRETRIAL_CASES.toString();
 const psaRiskFactorsFqn :string = PSA_RISK_FACTORS.toString();
@@ -866,143 +850,6 @@ function* updateScoresAndRiskFactorsWatcher() :Generator<*, *, *> {
   yield takeEvery(UPDATE_SCORES_AND_RISK_FACTORS, updateScoresAndRiskFactorsWorker);
 }
 
-const getMapFromEntityKeysToPropertyKeys = (entity, entityKeyId, propertyTypesByFqn) => {
-  let entityObject = Immutable.Map();
-  Object.keys(entity).forEach((key) => {
-    const propertyTypeKeyId = propertyTypesByFqn[key].id;
-    const property = entity[key] ? [entity[key]] : [];
-    entityObject = entityObject.setIn([entityKeyId, propertyTypeKeyId], property);
-  });
-  return entityObject;
-};
-
-function* updateOutcomesAndReleaseCondtionsWorker(action :SequenceAction) :Generator<*, *, *> {
-  try {
-    const {
-      psaId,
-      conditionSubmit,
-      conditionEntityKeyIds,
-      bondEntity,
-      bondEntityKeyId,
-      outcomeEntity,
-      outcomeEntityKeyId,
-      callback,
-      refreshHearingsNeighborsCallback
-    } = action.value;
-
-    const app = yield select(getApp);
-    const orgId = yield select(getOrgId);
-    const releaseConditionEntitySetId = getEntitySetId(app, releaseConditionsFqn, orgId);
-    const bondEntitySetId = getEntitySetId(app, bondsFqn, orgId);
-    const outcomeEntitySetId = getEntitySetId(app, outcomesFqn, orgId);
-
-    const allEntitySetIds = { releaseConditionEntitySetId, bondEntitySetId, outcomeEntitySetId };
-
-    const edmDetailsRequest = Object.values(allEntitySetIds).map(id => (
-      {
-        id,
-        type: 'EntitySet',
-        include: [
-          'EntitySet',
-          'EntityType',
-          'PropertyTypeInEntitySet'
-        ]
-      }
-    ));
-
-    const updates = [];
-    const updatedEntities = [];
-
-    conditionEntityKeyIds.toJS().forEach((entityKeyId) => {
-      updates.push(call(
-        DataApi.deleteEntity,
-        allEntitySetIds.releaseConditionEntitySetId,
-        entityKeyId,
-        DeleteTypes.Soft
-      ));
-    });
-
-    const edmDetails = yield call(EntityDataModelApi.getEntityDataModelProjection, edmDetailsRequest);
-
-    const propertyTypesByFqn = {};
-    Object.values(edmDetails.propertyTypes).forEach((propertyType) => {
-      const fqn = new FullyQualifiedName(propertyType.type).getFullyQualifiedName();
-      propertyTypesByFqn[fqn] = propertyType;
-    });
-
-    if (bondEntityKeyId) {
-      const bondEntityOject = getMapFromEntityKeysToPropertyKeys(
-        bondEntity,
-        bondEntityKeyId,
-        propertyTypesByFqn
-      );
-      updates.push(
-        call(DataApi.replaceEntityData,
-          allEntitySetIds.bondEntitySetId,
-          bondEntityOject.toJS(),
-          false)
-      );
-
-      updatedEntities.push(call(DataApi.getEntityData, allEntitySetIds.bondEntitySetId, bondEntityKeyId));
-    }
-
-    if (outcomeEntityKeyId) {
-      const outcomeEntityOject = getMapFromEntityKeysToPropertyKeys(
-        outcomeEntity,
-        outcomeEntityKeyId,
-        propertyTypesByFqn
-      );
-      updates.push(
-        call(DataApi.replaceEntityData,
-          allEntitySetIds.outcomeEntitySetId,
-          outcomeEntityOject.toJS(),
-          false)
-      );
-
-      updatedEntities.push(call(DataApi.getEntityData, allEntitySetIds.outcomeEntitySetId, outcomeEntityKeyId));
-    }
-
-    yield all(updates);
-
-    let newBondEntity;
-    let newOutcomeEntity;
-    if (bondEntityKeyId && outcomeEntityKeyId) {
-      [newBondEntity, newOutcomeEntity] = yield all(updatedEntities);
-    }
-    else if (bondEntityKeyId && !outcomeEntityKeyId) {
-      newBondEntity = yield all(updatedEntities);
-    }
-    else if (!bondEntityKeyId && outcomeEntityKeyId) {
-      newOutcomeEntity = yield all(updatedEntities);
-    }
-
-    callback({
-      app,
-      config: releaseConditionsConfig,
-      values: conditionSubmit,
-      callback: refreshHearingsNeighborsCallback
-    });
-
-    yield put(updateOutcomesAndReleaseCondtions.success(action.id, {
-      psaId,
-      edmDetails,
-      newBondEntity,
-      newOutcomeEntity
-    }));
-  }
-  catch (error) {
-    console.error(error);
-    yield put(updateOutcomesAndReleaseCondtions.failure(action.id, { error }));
-  }
-  finally {
-    yield put(updateOutcomesAndReleaseCondtions.finally(action.id));
-  }
-}
-
-function* updateOutcomesAndReleaseCondtionsWatcher() :Generator<*, *, *> {
-  yield takeEvery(UPDATE_OUTCOMES_AND_RELEASE_CONDITIONS, updateOutcomesAndReleaseCondtionsWorker);
-}
-
 function* refreshPSANeighborsWorker(action :SequenceAction) :Generator<*, *, *> {
   const { id } = action.value;
   try {
@@ -1106,6 +953,5 @@ export {
   loadPSADataWatcher,
   loadPSAsByDateWatcher,
   refreshPSANeighborsWatcher,
-  updateScoresAndRiskFactorsWatcher,
-  updateOutcomesAndReleaseCondtionsWatcher
+  updateScoresAndRiskFactorsWatcher
 };
