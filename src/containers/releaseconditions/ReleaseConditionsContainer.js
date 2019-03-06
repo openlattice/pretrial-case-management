@@ -366,10 +366,31 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       this.setState(this.getStateFromProps(nextProps));
     }
 
+    const outComeChanged = defaultOutcome.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.OUTCOME, 0])
+      !== nextNeighborEntities.defaultOutcome.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.OUTCOME, 0]);
+
+    const bondChanged = (defaultBond.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.BOND_TYPE, 0])
+      !== nextNeighborEntities.defaultBond.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.BOND_TYPE, 0]))
+      || (defaultBond.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.BOND_AMOUNT, 0])
+        !== nextNeighborEntities.defaultBond.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.BOND_AMOUNT, 0]));
+
+    const conditionTypes = defaultConditions.map(neighbor => neighbor.getIn(
+      [PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.CONDITION_TYPE, 0],
+      neighbor.getIn([PROPERTY_TYPES.CONDITION_TYPE, 0], ''), []
+    ));
+
+    const conditionsSizeChanged = defaultConditions.size !== nextNeighborEntities.defaultConditions.size;
+
+    const defaultConditionsChanged = conditionsSizeChanged
+      || nextNeighborEntities.defaultConditions.some((condition) => {
+        const conditionType = condition.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.CONDITION_TYPE, 0], '');
+        return !conditionTypes.includes(conditionType);
+      });
+
     if (
-      nextNeighborEntities.defaultOutcome.size !== defaultOutcome.size
-      || nextNeighborEntities.defaultBond.size !== defaultBond.size
-      || nextNeighborEntities.defaultConditions.size !== defaultConditions.size
+      outComeChanged
+      || bondChanged
+      || defaultConditionsChanged
       || nextJudge.judgeName !== judgeName
       || nextJudge.judgeEntity !== judgeEntity
       || nextProps.hearingEntityKeyId !== hearingEntityKeyId
@@ -1409,6 +1430,8 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
 
   render() {
     const { state } = this;
+    console.log(this.props.selectedHearing.toJS())
+    console.log(this.props.hearingNeighbors.toJS())
     return (
       <Wrapper>
         { this.renderHearingInfo() }
