@@ -65,9 +65,9 @@ export const getCourtroomOptions = () => {
 
 export const getJudgeOptions = (allJudges, jurisdiction) => {
   let judgeOptions = Map();
-
   allJudges.forEach((judge) => {
-    if (judge.getIn([PROPERTY_TYPES.JURISDICTION, 0]) === jurisdiction) {
+    const judgeJurisdiction = judge.getIn([PROPERTY_TYPES.JURISDICTION, 0]);
+    if (judgeJurisdiction === jurisdiction) {
       const fullNameString = formatJudgeName(judge);
       judgeOptions = judgeOptions.set(
         fullNameString,
