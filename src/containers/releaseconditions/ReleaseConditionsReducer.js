@@ -64,14 +64,9 @@ export default function releaseConditionsReducer(state :Map<*, *> = INITIAL_STAT
       return updateOutcomesAndReleaseCondtions.reducer(state, action, {
         REQUEST: () => state.set(RELEASE_COND.REFRESHING_RELEASE_CONDITIONS, true),
         SUCCESS: () => {
-          const {
-            hearing,
-            hearingNeighborsByAppTypeFqn,
-          } = action.value;
+          const { hearingNeighborsByAppTypeFqn } = action.value;
 
-          return state
-            .set(RELEASE_COND.SELECTED_HEARING, hearing)
-            .set(RELEASE_COND.HEARING_NEIGHBORS, hearingNeighborsByAppTypeFqn);
+          return state.set(RELEASE_COND.HEARING_NEIGHBORS, hearingNeighborsByAppTypeFqn);
         },
         FINALLY: () => state.set(RELEASE_COND.REFRESHING_RELEASE_CONDITIONS, false),
       });
