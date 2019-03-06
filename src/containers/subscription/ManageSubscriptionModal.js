@@ -148,7 +148,7 @@ type Props = {
 const MODAL_WIDTH = '750px';
 const MODAL_HEIGHT = 'max-content';
 
-class ReleaseConditionsModal extends React.Component<Props, State> {
+class ManageSubscriptionModal extends React.Component<Props, State> {
   constructor(props :Props) {
     super(props);
     this.state = INITIAL_STATE;
@@ -467,4 +467,4 @@ function mapDispatchToProps(dispatch :Function) :Object {
   };
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(ReleaseConditionsModal);
+export default connect(mapStateToProps, mapDispatchToProps)(ManageSubscriptionModal);
