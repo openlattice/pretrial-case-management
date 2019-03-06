@@ -326,9 +326,10 @@ function* searchPeopleByPhoneNumberWorker(action) :Generator<*, *, *> {
       updateSearchField(phoneFields, searchString, phonePropertyTypeId);
     }
     if (letters.trim().length) {
-      updateSearchField(nameFields, letters.trim(), firstNamePropertyTypeId);
-      updateSearchField(nameFields, letters.trim(), middleNamePropertyTypeId);
-      updateSearchField(nameFields, letters.trim(), lastNamePropertyTypeId);
+      letters.trim().split(' ').forEach((word) => {
+        updateSearchField(nameFields, word, firstNamePropertyTypeId);
+        updateSearchField(nameFields, word, lastNamePropertyTypeId);
+      });
     }
 
     const phoneOptions = {
