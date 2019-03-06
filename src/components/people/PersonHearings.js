@@ -15,7 +15,7 @@ import HearingCardsWithTitle from '../hearings/HearingCardsWithTitle';
 import InfoButton from '../buttons/InfoButton';
 import NewHearingSection from '../hearings/NewHearingSection';
 import HearingsTable from '../hearings/HearingsTable';
-import ReleaseConditionsModal from '../../containers/hearings/ReleaseConditionsModal';
+import ReleaseConditionsModal from '../releaseconditions/ReleaseConditionsModal';
 import LogoLoader from '../../assets/LogoLoader';
 import psaHearingConfig from '../../config/formconfig/PSAHearingConfig';
 import { getEntitySetId } from '../../utils/AppUtils';
@@ -258,10 +258,11 @@ class PersonHearings extends React.Component<Props, State> {
       defaultDMF,
       dmfId,
       hearingNeighborsById,
+      hearingIdsRefreshing,
       jurisdiction,
-      loading,
       neighbors,
       psaEntityKeyId,
+      psaIdsRefreshing,
       psaId,
       personId,
     } = this.props;
@@ -272,6 +273,8 @@ class PersonHearings extends React.Component<Props, State> {
     let caseHistory = hearingNeighborsById
       .getIn([selectedHearingEntityKeyId, PRETRIAL_CASES, PSA_NEIGHBOR.DETAILS], Map());
     caseHistory = caseHistory.size ? fromJS([caseHistory]) : List();
+    const refreshingNeighbors = psaIdsRefreshing.has(psaEntityKeyId);
+    const refreshing = (hearingIdsRefreshing || refreshingNeighbors);
 
     return (
       <ReleaseConditionsModal
@@ -287,7 +290,7 @@ class PersonHearings extends React.Component<Props, State> {
           hearingNeighborsById={hearingNeighborsById}
           jurisdiction={jurisdiction}
           neighbors={neighbors}
-          loading={loading}
+          refreshing={refreshing}
           onClose={this.onClose}
           personId={personId}
           psaEntityKeyId={psaEntityKeyId}
@@ -430,6 +433,7 @@ function mapStateToProps(state) {
 
     [REVIEW.SCORES]: review.get(REVIEW.SCORES),
     [REVIEW.NEIGHBORS_BY_ID]: review.get(REVIEW.NEIGHBORS_BY_ID),
+    [REVIEW.PSA_IDS_REFRESHING]: review.get(REVIEW.PSA_IDS_REFRESHING),
 
     [COURT.LOADING_HEARING_NEIGHBORS]: court.get(COURT.LOADING_HEARING_NEIGHBORS),
     [COURT.HEARINGS_NEIGHBORS_BY_ID]: court.get(COURT.HEARINGS_NEIGHBORS_BY_ID),
