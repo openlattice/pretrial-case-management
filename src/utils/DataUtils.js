@@ -92,3 +92,13 @@ export function addWeekdays(date, days) {
   }
   return newDate;
 }
+
+export const getMapFromEntityKeysToPropertyKeys = (entity, entityKeyId, propertyTypesByFqn) => {
+  let entityObject = Map();
+  Object.keys(entity).forEach((key) => {
+    const propertyTypeKeyId = propertyTypesByFqn[key].id;
+    const property = entity[key] ? [entity[key]] : [];
+    entityObject = entityObject.setIn([entityKeyId, propertyTypeKeyId], property);
+  });
+  return entityObject;
+};
