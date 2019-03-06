@@ -296,11 +296,10 @@ function* searchPeopleByPhoneNumberWorker(action) :Generator<*, *, *> {
     const peopleEntitySetId = getEntitySetId(app, PEOPLE, orgId);
     const phonePropertyTypeId = getPropertyTypeId(edm, PROPERTY_TYPES.PHONE);
     const firstNamePropertyTypeId = getPropertyTypeId(edm, PROPERTY_TYPES.FIRST_NAME);
-    const middleNamePropertyTypeId = getPropertyTypeId(edm, PROPERTY_TYPES.MIDDLE_NAME);
     const lastNamePropertyTypeId = getPropertyTypeId(edm, PROPERTY_TYPES.LAST_NAME);
 
     const { searchTerm } = action.value;
-    const letters = (searchTerm).replace(/[^a-zA-Z]/g, '');
+    const letters = (searchTerm).replace(/[^a-zA-Z]/g, ' ');
     const numbers = (searchTerm).replace(/[^0-9]/g, '');
     const phoneFields = [];
     const nameFields = [];
