@@ -29,8 +29,6 @@ import {
   EDM,
   PSA_ASSOCIATION,
   PSA_NEIGHBOR,
-  PSA_MODAL,
-  REVIEW,
   STATE,
   SUBMIT
 } from '../../utils/consts/FrontEndStateConsts';
@@ -132,10 +130,6 @@ const Label = styled.span`
   margin-bottom: 10px;
 `;
 
-const SpinnerWrapper = styled.div`
-  margin-top: 30px;
-`;
-
 const ToggleWrapper = styled.div`
   display: flex;
   flex-wrap: wrap;
@@ -145,6 +139,7 @@ const ToggleWrapper = styled.div`
 `;
 
 type Props = {
+  courtDate :moment,
   isLoadingHearings :boolean,
   isLoadingHearingsNeighbors :boolean,
   hearingsByTime :Map<*, *>,
