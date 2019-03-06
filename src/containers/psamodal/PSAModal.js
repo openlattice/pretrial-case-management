@@ -278,9 +278,7 @@ type State = {
 class PSAModal extends React.Component<Props, State> {
 
   static defaultProps = {
-    hideCaseHistory: false,
-    hideProfile: false,
-    onStatusChangeCallback: () => {}
+    hideProfile: false
   }
 
   constructor(props :Props) {
@@ -910,10 +908,6 @@ class PSAModal extends React.Component<Props, State> {
             psaId={scores.getIn([PROPERTY_TYPES.GENERAL_ID, 0])} />
       </ModalWrapper>
     );
-  }
-
-  renderHeader = () => {
-
   }
 
   render() {
