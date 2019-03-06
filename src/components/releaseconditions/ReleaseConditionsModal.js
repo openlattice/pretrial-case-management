@@ -7,7 +7,7 @@ import moment from 'moment';
 import Modal, { ModalTransition } from '@atlaskit/modal-dialog';
 import { Map } from 'immutable';
 
-import ReleaseConditionsContainer from './ReleaseConditionsContainer';
+import ReleaseConditionsContainer from '../../containers/releaseconditions/ReleaseConditionsContainer';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import {
   Wrapper,
