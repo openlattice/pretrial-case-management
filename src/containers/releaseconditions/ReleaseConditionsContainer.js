@@ -9,17 +9,13 @@ import randomUUID from 'uuid/v4';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { Constants } from 'lattice';
-import {
-  fromJS,
-  List,
-  Map,
-  OrderedMap
-} from 'immutable';
+import { List, Map, OrderedMap } from 'immutable';
 
 import CaseHistoryList from '../../components/casehistory/CaseHistoryList';
 import LogoLoader from '../../components/LogoLoader';
 import OutcomeSection from '../../components/releaseconditions/OutcomeSection';
 import DecisionSection from '../../components/releaseconditions/DecisionSection';
+import WarrantSection from '../../components/releaseconditions/WarrantSection';
 import BondTypeSection from '../../components/releaseconditions/BondTypeSection';
 import ConditionsSection from '../../components/releaseconditions/ConditionsSection';
 import ContentBlock from '../../components/ContentBlock';
@@ -51,11 +47,13 @@ import {
   LIST_FIELDS,
   ID_FIELD_NAMES,
   FORM_IDS,
-  HEARING_TYPES
+  HEARING_TYPES,
+  JURISDICTION
 } from '../../utils/consts/Consts';
 import {
   OUTCOMES,
   RELEASES,
+  WARRANTS,
   BOND_TYPES,
   CONDITION_LIST,
   C_247_MAPPINGS,
@@ -83,6 +81,7 @@ const { OPENLATTICE_ID_FQN } = Constants;
 let {
   ASSESSED_BY,
   DMF_RESULTS,
+  DMF_RISK_FACTORS,
   JUDGES,
   HEARINGS,
   PEOPLE,
@@ -96,6 +95,7 @@ const BONDS_FQN = APP_TYPES_FQNS.BONDS.toString();
 
 ASSESSED_BY = ASSESSED_BY.toString();
 DMF_RESULTS = DMF_RESULTS.toString();
+DMF_RISK_FACTORS = DMF_RISK_FACTORS.toString();
 JUDGES = JUDGES.toString();
 HEARINGS = HEARINGS.toString();
 PEOPLE = PEOPLE.toString();
@@ -106,6 +106,7 @@ const {
   OUTCOME,
   OTHER_OUTCOME_TEXT,
   RELEASE,
+  WARRANT,
   BOND_TYPE,
   BOND_AMOUNT,
   CONDITIONS,
@@ -267,16 +268,17 @@ type Props = {
   allJudges :Map<*, *>,
   backToSelection :() => void,
   hasOutcome :boolean,
-  selectedOrganizationId :string,
-  selectedHearing :Map<*, *>,
-  personNeighbors :Map<*, *>,
   hearingNeighbors :Map<*, *>,
   hearingEntityKeyId :string,
-  jurisdiction :string,
-  loading :boolean,
   loadingReleaseCondtions :boolean,
+  personNeighbors :Map<*, *>,
+  psaNeighbors :Map<*, *>,
   refreshingReleaseConditions :boolean,
+  replacingAssociation :boolean,
+  replacingEntity :boolean,
+  selectedHearing :Map<*, *>,
   selectedOrganizationId :string,
+  submitting :boolean,
   actions :{
     clearReleaseConditions :() => void;
     deleteEntity :(values :{
@@ -330,7 +332,7 @@ type State = {
   release :?string,
 };
 
-class SelectReleaseConditions extends React.Component<Props, State> {
+class ReleaseConditionsContainer extends React.Component<Props, State> {
 
   constructor(props :Props) {
     super(props);
@@ -413,7 +415,7 @@ class SelectReleaseConditions extends React.Component<Props, State> {
   getNeighborEntities = (props) => {
     const { hearingNeighbors, psaNeighbors } = props;
     const defaultBond = hearingNeighbors.get(BONDS_FQN, Map());
-    const defaultConditions = hearingNeighbors.get(RELEASE_CONDITIONS_FQN, Map());
+    const defaultConditions = hearingNeighbors.get(RELEASE_CONDITIONS_FQN, List());
     const defaultDMF = psaNeighbors.getIn([DMF_RESULTS, PSA_NEIGHBOR.DETAILS], Map());
     const psaEntity = hearingNeighbors.getIn([PSA_SCORES, PSA_NEIGHBOR.DETAILS], Map());
     const personEntity = hearingNeighbors.get([PEOPLE, PSA_NEIGHBOR.DETAILS], Map());
@@ -433,10 +435,9 @@ class SelectReleaseConditions extends React.Component<Props, State> {
 
   renderChargeTable = () => {
     const { personNeighbors, hearingNeighbors } = this.props;
-    let caseHistory = hearingNeighbors.getIn([PRETRIAL_CASES, PSA_NEIGHBOR.DETAILS], Map());
-    caseHistory = caseHistory.size ? fromJS([caseHistory]) : List();
+    const caseHistory = hearingNeighbors.get(PRETRIAL_CASES, List())
+      .map(pretrialCase => (pretrialCase.get(PSA_NEIGHBOR.DETAILS, Map())));
     const chargeHistory = getChargeHistory(personNeighbors);
-
     return caseHistory.size
       ? (
         <ChargeTableContainer>
@@ -468,9 +469,9 @@ class SelectReleaseConditions extends React.Component<Props, State> {
     const editingHearing = false;
 
     if (this.state) {
-      modifyingHearing = this.state.modifyingHearing;
-      hearingDateTime = this.state.hearingDateTime;
-      hearingCourtroom = this.state.hearingCourtroom;
+      modifyingHearing = this.state.modifyingHearing || modifyingHearing;
+      hearingDateTime = this.state.hearingDateTime || hearingDateTime;
+      hearingCourtroom = this.state.hearingCourtroom || hearingCourtroom;
     }
 
     if (hasOutcome) {
@@ -500,16 +501,28 @@ class SelectReleaseConditions extends React.Component<Props, State> {
         };
       });
 
+      const outcome = defaultOutcome.getIn(
+        [PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.OUTCOME, 0],
+        defaultOutcome.getIn([PROPERTY_TYPES.OUTCOME, 0])
+      );
+      const otherOutcomeText = defaultOutcome.getIn(
+        [PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.OTHER_TEXT, 0],
+        defaultOutcome.getIn([PROPERTY_TYPES.OTHER_TEXT, 0], '')
+      );
+      let warrant = null;
+      let release = null;
+      if (outcome === OUTCOMES.FTA) {
+        warrant = bondType ? WARRANTS.WARRANT : WARRANTS.NO_WARRANT;
+      }
+      else if (outcome !== OUTCOMES.FTA) {
+        release = (outcome !== OUTCOMES.FTA && bondType) ? RELEASES.RELEASED : RELEASES.HELD;
+      }
+
       return {
-        [OUTCOME]: defaultOutcome.getIn(
-          [PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.OUTCOME, 0],
-          defaultOutcome.getIn([PROPERTY_TYPES.OUTCOME, 0])
-        ),
-        [OTHER_OUTCOME_TEXT]: defaultOutcome.getIn(
-          [PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.OTHER_TEXT, 0],
-          defaultOutcome.getIn([PROPERTY_TYPES.OTHER_TEXT, 0], '')
-        ),
-        [RELEASE]: bondType ? RELEASES.RELEASED : RELEASES.HELD,
+        [OUTCOME]: outcome,
+        [OTHER_OUTCOME_TEXT]: otherOutcomeText,
+        [WARRANT]: warrant,
+        [RELEASE]: release,
         [BOND_TYPE]: bondType,
         [BOND_AMOUNT]: bondAmount,
         [CONDITIONS]: conditionsByType.keySeq().toJS(),
@@ -532,6 +545,7 @@ class SelectReleaseConditions extends React.Component<Props, State> {
       [OUTCOME]: null,
       [OTHER_OUTCOME_TEXT]: '',
       [RELEASE]: null,
+      [WARRANT]: null,
       [BOND_TYPE]: null,
       [BOND_AMOUNT]: '',
       [CONDITIONS]: [],
@@ -615,11 +629,30 @@ class SelectReleaseConditions extends React.Component<Props, State> {
         if (value !== OUTCOMES.OTHER) {
           state[OTHER_OUTCOME_TEXT] = '';
         }
+        if (value !== OUTCOMES.FTA) {
+          state[WARRANT] = null;
+        }
+        if (value === OUTCOMES.FTA) {
+          state[RELEASE] = null;
+        }
         break;
       }
 
       case 'release': {
         if (value === RELEASES.HELD) {
+          state[BOND_TYPE] = null;
+          state[BOND_AMOUNT] = '';
+          state[CONDITIONS] = [];
+          state[CHECKIN_FREQUENCY] = null;
+          state[C247_TYPES] = [];
+          state[OTHER_CONDITION_TEXT] = '';
+          state[NO_CONTACT_PEOPLE] = [Object.assign({}, BLANK_PERSON_ROW)];
+        }
+        break;
+      }
+
+      case 'warrant': {
+        if (value === WARRANTS.NO_WARRANT) {
           state[BOND_TYPE] = null;
           state[BOND_AMOUNT] = '';
           state[CONDITIONS] = [];
@@ -930,15 +963,18 @@ class SelectReleaseConditions extends React.Component<Props, State> {
       outcome,
       otherConditionText,
       otherOutcomeText,
-      release
+      release,
+      warrant
     } = this.state;
+
     if (
       disabled
       || submitting
       || !outcome
-      || !release
+      || !(release || warrant)
       || (outcome === OUTCOMES.OTHER && !otherOutcomeText.length)
-      || (release === RELEASES.RELEASED && !bondType)
+      || (release && release === RELEASES.RELEASED && !bondType)
+      || (warrant && warrant === WARRANTS.WARRANT && !bondType)
       || ((bondType === BOND_TYPES.CASH_ONLY || bondType === BOND_TYPES.CASH_SURETY) && !bondAmount.length)
       || (conditions.includes(CONDITION_LIST.CHECKINS) && !checkinFrequency)
       || (conditions.includes(CONDITION_LIST.C_247) && !(c247Types.length || c247Types.size))
@@ -1144,11 +1180,13 @@ class SelectReleaseConditions extends React.Component<Props, State> {
 
   renderHearingInfo = () => {
     const {
-      hasOutcome,
       allJudges,
-      selectedHearing,
-      jurisdiction,
-      backToSelection
+      backToSelection,
+      hasOutcome,
+      psaNeighbors,
+      replacingAssociation,
+      replacingEntity,
+      selectedHearing
     } = this.props;
     const {
       newHearingDate,
@@ -1158,6 +1196,9 @@ class SelectReleaseConditions extends React.Component<Props, State> {
       otherJudgeText,
       judge
     } = this.state;
+
+    const psaContext = psaNeighbors.getIn([DMF_RISK_FACTORS, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.CONTEXT, 0]);
+    const jurisdiction = JURISDICTION[psaContext];
 
     const { judgeName } = this.getJudgeEntity(this.props);
 
@@ -1281,6 +1322,10 @@ class SelectReleaseConditions extends React.Component<Props, State> {
       </ContentSection>
     );
 
+    if (replacingEntity || replacingAssociation) {
+      return <LogoLoader size={30} loadingText="Updating Hearing" />;
+    }
+
 
     return (
       <HearingSectionWrapper>
@@ -1293,30 +1338,39 @@ class SelectReleaseConditions extends React.Component<Props, State> {
     );
   }
 
-  render() {
+  renderOutcomesAndReleaseConditions = () => {
     const { state } = this;
-    const {
-      loading,
-      loadingReleaseCondtions,
-      refreshingReleaseConditions,
-    } = this.props;
-    const RELEASED = state[RELEASE] !== RELEASES.RELEASED;
+    const { loadingReleaseCondtions, refreshingReleaseConditions, submitting } = this.props;
+    const { release, warrant } = state;
+    const outcomeIsFTA = state[OUTCOME] === OUTCOMES.FTA;
+    const RELEASED = release !== RELEASES.RELEASED;
+    const NO_WARRANT = warrant !== WARRANTS.WARRANT;
 
-    if (loading || loadingReleaseCondtions || refreshingReleaseConditions) {
-      return <LogoLoader loadingText="Loading Release Conditions..." />;
+    if (loadingReleaseCondtions || submitting || refreshingReleaseConditions) {
+      const loadingText = loadingReleaseCondtions
+        ? 'Loading Release Conditions...'
+        : 'Refreshing Release Conditions...';
+      return <LogoLoader size={30} loadingText={loadingText} />;
     }
 
     return (
-      <Wrapper>
-        {this.renderHearingInfo()}
-        { this.renderChargeTable() }
+      <>
         <OutcomeSection
             mapOptionsToRadioButtons={this.mapOptionsToRadioButtons}
             outcome={state[OUTCOME]}
             otherOutcome={state[OTHER_OUTCOME_TEXT]}
             handleInputChange={this.handleInputChange}
             disabled={state.disabled} />
-        <DecisionSection mapOptionsToRadioButtons={this.mapOptionsToRadioButtons} />
+        {
+          !outcomeIsFTA
+            ? <DecisionSection mapOptionsToRadioButtons={this.mapOptionsToRadioButtons} />
+            : null
+        }
+        {
+          outcomeIsFTA
+            ? <WarrantSection mapOptionsToRadioButtons={this.mapOptionsToRadioButtons} />
+            : null
+        }
         {
           RELEASED ? null : (
             <div>
@@ -1337,6 +1391,29 @@ class SelectReleaseConditions extends React.Component<Props, State> {
             </div>
           )
         }
+        {
+          NO_WARRANT
+            ? null
+            : (
+              <BondTypeSection
+                  mapOptionsToRadioButtons={this.mapOptionsToRadioButtons}
+                  handleNumberInputChange={this.handleNumberInputChange}
+                  bondType={state[BOND_TYPE]}
+                  bondAmount={`${state[BOND_AMOUNT]}`}
+                  disabled={state.disabled} />
+            )
+        }
+      </>
+    );
+  }
+
+  render() {
+    const { state } = this;
+    return (
+      <Wrapper>
+        { this.renderHearingInfo() }
+        { this.renderChargeTable() }
+        { this.renderOutcomesAndReleaseConditions() }
         {
           state.disabled
             ? (
@@ -1370,7 +1447,6 @@ function mapStateToProps(state) {
   const submit = state.get(STATE.SUBMIT);
   return {
     app,
-    [APP.JURISDICTION]: app.get('selectedOrganizationTitle'),
     [APP.SELECTED_ORG_ID]: orgId,
     [APP.SELECTED_ORG_SETTINGS]: app.get(APP.SELECTED_ORG_SETTINGS, Map()),
     [APP.ENTITY_SETS_BY_ORG]: app.get(APP.ENTITY_SETS_BY_ORG, Map()),
@@ -1386,7 +1462,9 @@ function mapStateToProps(state) {
 
     [COURT.ALL_JUDGES]: court.get(COURT.ALL_JUDGES),
 
-    [SUBMIT.SUBMITTING]: submit.get(SUBMIT.SUBMITTING, false)
+    [SUBMIT.REPLACING_ASSOCIATION]: submit.get(SUBMIT.REPLACING_ASSOCIATION),
+    [SUBMIT.REPLACING_ENTITY]: submit.get(SUBMIT.REPLACING_ENTITY),
+    [SUBMIT.SUBMITTING]: submit.get(SUBMIT.SUBMITTING)
   };
 }
 
@@ -1420,4 +1498,4 @@ function mapDispatchToProps(dispatch :Function) :Object {
   };
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(SelectReleaseConditions);
+export default connect(mapStateToProps, mapDispatchToProps)(ReleaseConditionsContainer);
