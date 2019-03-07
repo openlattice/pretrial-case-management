@@ -1,7 +1,7 @@
 /*
  * @flow
  */
-import { AuthorizationApi } from 'lattice';
+import { AuthorizationApi, SearchApi } from 'lattice';
 import { DataApiActions, DataApiSagas } from 'lattice-sagas';
 import { Map, Set, fromJS } from 'immutable';
 import {
@@ -113,15 +113,23 @@ function* loadChargesWorker(action :SequenceAction) :Generator<*, *, *> {
     let courtChargesByEntityKeyId = Map();
 
     let [arrestCharges, courtCharges] = yield all([
-      call(getEntitySetDataWorker, getEntitySetData({ entitySetId: arrestChargesEntitySetId })),
-      call(getEntitySetDataWorker, getEntitySetData({ entitySetId: courtChargesEntitySetId }))
+      call(SearchApi.searchEntitySetData, arrestChargesEntitySetId, {
+        searchTerm: '*',
+        start: 0,
+        maxHits: 10000
+      }),
+      call(SearchApi.searchEntitySetData, courtChargesEntitySetId, {
+        searchTerm: '*',
+        start: 0,
+        maxHits: 10000
+      })
     ]);
     const chargeError = arrestCharges.error || courtCharges.error;
     if (chargeError) throw chargeError;
 
     // reset values to data
-    arrestCharges = fromJS(arrestCharges.data);
-    courtCharges = fromJS(courtCharges.data);
+    arrestCharges = fromJS(arrestCharges.hits);
+    courtCharges = fromJS(courtCharges.hits);
 
     // Map charges by EnityKeyId for easy state update
     arrestCharges.forEach((charge) => {
