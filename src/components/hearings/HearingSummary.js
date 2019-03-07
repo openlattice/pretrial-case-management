@@ -7,11 +7,16 @@ import Immutable from 'immutable';
 import styled from 'styled-components';
 
 import ContentBlock from '../ContentBlock';
-import { CONDITION_LIST, BOND_TYPES, RELEASES } from '../../utils/consts/ReleaseConditionConsts';
 import { OL } from '../../utils/consts/Colors';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { HEADER_LABELS } from '../../utils/consts/DMFResultConsts';
+import {
+  BOND_TYPES,
+  CONDITION_LIST,
+  OUTCOMES,
+  RELEASES
+} from '../../utils/consts/ReleaseConditionConsts';
 
 const { HELD, RELEASED } = RELEASES;
 
@@ -109,6 +114,8 @@ const HearingSummary = ({ hearing }) => {
     }
     decision = RELEASED;
   }
+
+  if (outcome === OUTCOMES.FTA) decision = 'N/A';
 
   let conditionsByType = Immutable.Map();
   if (hearingConditions) {
