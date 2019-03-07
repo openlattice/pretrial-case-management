@@ -5,6 +5,7 @@ import { Map, fromJS } from 'immutable';
 
 import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { RELEASE_COND } from '../../utils/consts/FrontEndStateConsts';
+import { refreshHearingNeighbors } from '../court/CourtActionFactory';
 import {
   CLEAR_RELEASE_CONDITIONS,
   loadReleaseConditions,
@@ -67,6 +68,18 @@ export default function releaseConditionsReducer(state :Map<*, *> = INITIAL_STAT
           const { hearingNeighborsByAppTypeFqn } = action.value;
 
           return state.set(RELEASE_COND.HEARING_NEIGHBORS, hearingNeighborsByAppTypeFqn);
+        },
+        FINALLY: () => state.set(RELEASE_COND.REFRESHING_RELEASE_CONDITIONS, false),
+      });
+    }
+
+    case refreshHearingNeighbors.case(action.type): {
+      return refreshHearingNeighbors.reducer(state, action, {
+        SUCCESS: () => {
+          const { neighbors } = action.value;
+          console.log(neighbors.toJS());
+
+          return state.set(RELEASE_COND.HEARING_NEIGHBORS, neighbors);
         },
         FINALLY: () => state.set(RELEASE_COND.REFRESHING_RELEASE_CONDITIONS, false),
       });
