@@ -15,7 +15,6 @@ import {
   EntityDataModelApiSagas,
 } from 'lattice-sagas';
 
-
 import {
   all,
   call,
