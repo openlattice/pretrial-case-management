@@ -74,6 +74,7 @@ function* loadPSAModalWorker(action :SequenceAction) :Generator<*, *, *> {
     const app = yield select(getApp);
     const orgId = yield select(getOrgId);
     const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
+    const hearingsEntitySetId = getEntitySetId(app, hearingsFqn, orgId);
     const psaScoresEntitySetId = getEntitySetId(app, psaScoresFqn, orgId);
     const peopleEntitySetId = getEntitySetId(app, peopleFqn, orgId);
     const subscriptionEntitySetId = getEntitySetId(app, subscriptionFqn, orgId);
@@ -151,7 +152,7 @@ function* loadPSAModalWorker(action :SequenceAction) :Generator<*, *, *> {
     let personNeighbors = yield call(SearchApi.searchEntityNeighborsWithFilter, peopleEntitySetId, {
       entityKeyIds: [personId],
       sourceEntitySetIds: [contactInformationEntitySetId],
-      destinationEntitySetIds: [subscriptionEntitySetId, contactInformationEntitySetId]
+      destinationEntitySetIds: [subscriptionEntitySetId, contactInformationEntitySetId, hearingsEntitySetId]
     });
 
     personNeighbors = fromJS(Object.values(personNeighbors)[0] || []);
@@ -164,6 +165,11 @@ function* loadPSAModalWorker(action :SequenceAction) :Generator<*, *, *> {
           appTypeFqn,
           personNeighborsByFqn.get(appTypeFqn, List()).push(neighbor)
         );
+      }
+      else if (appTypeFqn === hearingsFqn) {
+        const neighborDetails = neighbor.get(PSA_NEIGHBOR.DETAILS, Map());
+        const hearingEntityKeyId = neighborDetails.getIn([OPENLATTICE_ID_FQN, 0]);
+        if (hearingEntityKeyId) hearingIds = hearingIds.add(hearingEntityKeyId);
       }
       else if (appTypeFqn === subscriptionFqn) {
         personNeighborsByFqn = personNeighborsByFqn.set(

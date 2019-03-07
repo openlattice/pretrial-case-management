@@ -22,6 +22,9 @@ const refreshHearingNeighbors :RequestSequence = newRequestSequence(REFRESH_HEAR
 const LOAD_JUDGES :string = 'LOAD_JUDGES';
 const loadJudges :RequestSequence = newRequestSequence(LOAD_JUDGES);
 
+const SET_COURT_DATE :string = 'SET_COURT_DATE';
+const setCourtDate :RequestSequence = newRequestSequence(SET_COURT_DATE);
+
 export {
   CHANGE_HEARING_FILTERS,
   FILTER_PEOPLE_IDS_WITH_OPEN_PSAS,
@@ -29,10 +32,12 @@ export {
   LOAD_HEARING_NEIGHBORS,
   REFRESH_HEARING_NEIGHBORS,
   LOAD_JUDGES,
+  SET_COURT_DATE,
   changeHearingFilters,
   filterPeopleIdsWithOpenPSAs,
   loadHearingsForDate,
   loadHearingNeighbors,
   refreshHearingNeighbors,
-  loadJudges
+  loadJudges,
+  setCourtDate
 };
