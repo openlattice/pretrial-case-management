@@ -2,6 +2,7 @@
  * @flow
  */
 
+import moment from 'moment';
 import {
   Map,
   Set,
@@ -15,16 +16,16 @@ import {
   loadHearingsForDate,
   loadHearingNeighbors,
   refreshHearingNeighbors,
-  loadJudges
+  loadJudges,
+  SET_COURT_DATE
 } from './CourtActionFactory';
 import { changePSAStatus, updateScoresAndRiskFactors } from '../review/ReviewActionFactory';
-import { COURT, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
-import { APP_TYPES_FQNS } from '../../utils/consts/DataModelConsts';
+import { COURT } from '../../utils/consts/FrontEndStateConsts';
 
-let { PSA_SCORES } = APP_TYPES_FQNS;
-PSA_SCORES = PSA_SCORES.toString();
 
 const INITIAL_STATE :Map<*, *> = fromJS({
+  [COURT.COURT_DATE]: moment(),
+
   // Hearings
   [COURT.LOADING_HEARINGS]: false,
   [COURT.HEARINGS_TODAY]: List(),
@@ -139,6 +140,11 @@ export default function courtReducer(state :Map<*, *> = INITIAL_STATE, action :S
         newState = newState.set(COURT.COURTROOM, courtroom);
       }
       return newState;
+    }
+
+    case SET_COURT_DATE: {
+      const { courtDate } = action.value;
+      return state.set(COURT.COURT_DATE, courtDate);
     }
 
     case loadHearingNeighbors.case(action.type): {
