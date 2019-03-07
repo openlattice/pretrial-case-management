@@ -40,6 +40,32 @@ export const HEARING_CONSTS = {
   OTHER_JUDGE: 'Other'
 };
 
+export const getHearingFields = (hearing) => {
+  const hearingCaseId = hearing.getIn([PROPERTY_TYPES.CASE_ID, 0], '');
+  const courtroom = hearing.getIn([PROPERTY_TYPES.COURTROOM, 0], '');
+  const hearingDate = moment(hearing.getIn([PROPERTY_TYPES.DATE_TIME, 0])).format('MM/DD/YYYY');
+  const hearingDateTime = moment(hearing.getIn([PROPERTY_TYPES.DATE_TIME, 0]), '');
+  const hearingId = hearing.getIn([PROPERTY_TYPES.CASE_ID, 0], '');
+  const hearingEntityKeyId = hearing.getIn([OPENLATTICE_ID_FQN, 0], '');
+  const hearingTime = moment(hearing.getIn([PROPERTY_TYPES.DATE_TIME, 0], '')).format('HH:mm');
+  const hearingType = hearing.getIn([PROPERTY_TYPES.HEARING_TYPE, 0], '');
+  const hearingIsInactive = hearing.getIn([PROPERTY_TYPES.HEARING_INACTIVE, 0], '');
+
+  const hearingCourtString = `${hearingDateTime}-${courtroom}-${hearingType}-${hearingCaseId}`;
+  return {
+    hearingCaseId,
+    hearingDate,
+    hearingDateTime,
+    hearingEntityKeyId,
+    hearingId,
+    hearingTime,
+    courtroom,
+    hearingType,
+    hearingCourtString,
+    hearingIsInactive
+  };
+};
+
 export const formatJudgeName = (judge) => {
   if (judge) {
     const firstName = judge.getIn([PROPERTY_TYPES.FIRST_NAME, 0]);
@@ -104,13 +130,13 @@ export const getScheduledHearings = (psaNeighbors) => {
   return (
     getHearingsFromNeighbors(psaNeighbors)
       .filter((hearing) => {
+        const { hearingCourtString, hearingIsInactive } = getHearingFields(hearing);
         const hearingDate = hearing.getIn([PROPERTY_TYPES.DATE_TIME, 0]);
         const courtroom = hearing.getIn([PROPERTY_TYPES.COURTROOM, 0]);
         const hearingType = hearing.getIn([PROPERTY_TYPES.HEARING_TYPE, 0]);
-        const hearingCourtString = `${hearingDate}-${courtroom}-${hearingType}`;
         const hearingIsADuplicate = filteredCourtStrings.includes(hearingCourtString);
-        if (hearingDate && courtroom && hearingType && !hearingIsADuplicate) {
-          filteredCourtStrings = filteredCourtStrings.push(`${hearingDate}-${courtroom}-${hearingType}`);
+        if (!hearingIsInactive && hearingDate && courtroom && hearingType && !hearingIsADuplicate) {
+          filteredCourtStrings = filteredCourtStrings.push(hearingCourtString);
           if (todaysDate.isBefore(hearingDate)) return true;
         }
         return false;
@@ -121,10 +147,22 @@ export const getScheduledHearings = (psaNeighbors) => {
 
 // Get past hearings in sequential order from psa neighbors
 export const getPastHearings = (psaNeighbors) => {
-  const todaysDate = moment();
+  const todaysDate = moment().startOf('day');
+  let filteredCourtStrings = List();
   return (
     getHearingsFromNeighbors(psaNeighbors)
-      .filter(hearing => todaysDate.isAfter(hearing.getIn([PROPERTY_TYPES.DATE_TIME, 0], '')))
+      .filter((hearing) => {
+        const { hearingCourtString, hearingIsInactive } = getHearingFields(hearing);
+        const hearingDate = hearing.getIn([PROPERTY_TYPES.DATE_TIME, 0]);
+        const courtroom = hearing.getIn([PROPERTY_TYPES.COURTROOM, 0]);
+        const hearingType = hearing.getIn([PROPERTY_TYPES.HEARING_TYPE, 0]);
+        const hearingIsADuplicate = filteredCourtStrings.includes(hearingCourtString);
+        if (!hearingIsInactive && hearingDate && courtroom && hearingType && !hearingIsADuplicate) {
+          filteredCourtStrings = filteredCourtStrings.push(hearingCourtString);
+          return todaysDate.isAfter(hearing.getIn([PROPERTY_TYPES.DATE_TIME, 0], ''));
+        }
+        return false;
+      })
       .sort((h1, h2) => sortByDate(h1, h2, PROPERTY_TYPES.DATE_TIME))
   );
 };
@@ -158,29 +196,6 @@ export const getAvailableHearings = (personHearings, scheduledHearings, hearingN
   return unusedHearings.sort((h1, h2) => sortByDate(h1, h2, PROPERTY_TYPES.DATE_TIME));
 };
 
-export const getHearingFields = (hearing) => {
-  const hearingCaseId = hearing.getIn([PROPERTY_TYPES.CASE_ID, 0], '');
-  const courtroom = hearing.getIn([PROPERTY_TYPES.COURTROOM, 0], '');
-  const hearingDate = moment(hearing.getIn([PROPERTY_TYPES.DATE_TIME, 0])).format('MM/DD/YYYY');
-  const hearingDateTime = moment(hearing.getIn([PROPERTY_TYPES.DATE_TIME, 0]), '');
-  const hearingId = hearing.getIn([PROPERTY_TYPES.CASE_ID, 0], '');
-  const hearingEntityKeyId = hearing.getIn([OPENLATTICE_ID_FQN, 0], '');
-  const hearingTime = moment(hearing.getIn([PROPERTY_TYPES.DATE_TIME, 0], '')).format('HH:mm');
-  const hearingType = hearing.getIn([PROPERTY_TYPES.HEARING_TYPE, 0], '');
-
-  const hearingCourtString = `${hearingDateTime}-${courtroom}-${hearingType}-${hearingCaseId}`;
-  return {
-    hearingCaseId,
-    hearingDate,
-    hearingDateTime,
-    hearingEntityKeyId,
-    hearingId,
-    hearingTime,
-    courtroom,
-    hearingType,
-    hearingCourtString
-  };
-};
 
 export const sortHearingsByDate = (h1, h2) => {
   const h1DOB = moment(h1.getIn([PROPERTY_TYPES.DATE_TIME, 0], ''));
