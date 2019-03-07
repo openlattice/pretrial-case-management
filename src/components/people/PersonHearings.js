@@ -6,8 +6,13 @@ import React from 'react';
 import styled from 'styled-components';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { List, Map, fromJS, Set } from 'immutable';
 import { Constants } from 'lattice';
+import {
+  List,
+  Map,
+  fromJS,
+  Set
+} from 'immutable';
 
 import HearingCardsWithTitle from '../hearings/HearingCardsWithTitle';
 import InfoButton from '../buttons/InfoButton';
