@@ -248,7 +248,8 @@ function* updateOutcomesAndReleaseCondtionsWorker(action :SequenceAction) :Gener
       hearingEntityKeyId,
       outcomeEntity,
       outcomeEntityKeyId,
-      callback
+      callback,
+      refreshHearingsNeighborsCallback
     } = action.value;
 
     const app = yield select(getApp);
@@ -291,7 +292,7 @@ function* updateOutcomesAndReleaseCondtionsWorker(action :SequenceAction) :Gener
       propertyTypesByFqn[fqn] = propertyType;
     });
 
-    if (bondEntityKeyId) {
+    if (bondEntityKeyId && fromJS(bondEntity).size) {
       const bondEntityOject = getMapFromEntityKeysToPropertyKeys(
         bondEntity,
         bondEntityKeyId,
@@ -307,7 +308,7 @@ function* updateOutcomesAndReleaseCondtionsWorker(action :SequenceAction) :Gener
       updatedEntities.push(call(DataApi.getEntityData, allEntitySetIds.bondEntitySetId, bondEntityKeyId));
     }
 
-    if (outcomeEntityKeyId) {
+    if (outcomeEntityKeyId && fromJS(outcomeEntity).size) {
       const outcomeEntityOject = getMapFromEntityKeysToPropertyKeys(
         outcomeEntity,
         outcomeEntityKeyId,
@@ -337,18 +338,24 @@ function* updateOutcomesAndReleaseCondtionsWorker(action :SequenceAction) :Gener
       newOutcomeEntity = yield all(updatedEntities);
     }
 
-    callback({
+    const submitValues = {
       app,
       config: releaseConditionsConfig,
-      values: conditionSubmit
-    });
+      values: conditionSubmit,
+      callback: refreshHearingsNeighborsCallback
+    };
+
+    yield call(callback, submitValues);
 
     let { hearingNeighborsByAppTypeFqn } = yield call(getHearingAndNeighbors, hearingEntityKeyId);
+
     if (newBondEntity) {
-      hearingNeighborsByAppTypeFqn = hearingNeighborsByAppTypeFqn.set(bondsFqn, fromJS(newBondEntity));
+      hearingNeighborsByAppTypeFqn = hearingNeighborsByAppTypeFqn
+        .setIn([bondsFqn, PSA_NEIGHBOR.DETAILS], fromJS(newBondEntity));
     }
     if (newOutcomeEntity) {
-      hearingNeighborsByAppTypeFqn = hearingNeighborsByAppTypeFqn.set(outcomesFqn, fromJS(newOutcomeEntity));
+      hearingNeighborsByAppTypeFqn = hearingNeighborsByAppTypeFqn
+        .setIn([outcomesFqn, PSA_NEIGHBOR.DETAILS], fromJS(newOutcomeEntity));
     }
 
     yield put(updateOutcomesAndReleaseCondtions.success(action.id, {
