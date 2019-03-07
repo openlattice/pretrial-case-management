@@ -6,14 +6,16 @@ import React from 'react';
 import styled from 'styled-components';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import Modal, { ModalTransition } from '@atlaskit/modal-dialog';
-import { List, Map, fromJS } from 'immutable';
 import { Constants } from 'lattice';
+import {
+  List,
+  Map,
+  fromJS,
+  Set
+} from 'immutable';
 
-import closeX from '../../assets/svg/close-x-gray.svg';
 import HearingCardsWithTitle from '../hearings/HearingCardsWithTitle';
 import InfoButton from '../buttons/InfoButton';
-import NewHearingSection from '../hearings/NewHearingSection';
 import HearingsTable from '../hearings/HearingsTable';
 import ReleaseConditionsModal from '../../containers/hearings/ReleaseConditionsModal';
 import LogoLoader from '../../assets/LogoLoader';
@@ -68,10 +70,6 @@ const PaddedStyledColumnRow = styled(StyledColumnRow)`
   }
 `;
 
-const NoBorderStyledColumnRow = styled(PaddedStyledColumnRow)`
-  padding: 30px;
-  border: none;
-`;
 
 const TitleWrapper = styled.div`
   width: 100%;
@@ -79,19 +77,6 @@ const TitleWrapper = styled.div`
   flex-direction: row;
   justify-content: flex-start;
   align-items: center;
-`;
-
-const CloseModalX = styled.img.attrs({
-  alt: '',
-  src: closeX
-})`
-  height: 16px;
-  width: 16px;
-  margin-left: 40px;
-
-  &:hover {
-    cursor: pointer;
-  }
 `;
 
 const StyledInfoButton = styled(InfoButton)`
@@ -103,23 +88,20 @@ const StyledInfoButton = styled(InfoButton)`
 
 type Props = {
   app :Map<*, *>,
-  availableHearings :List<*, *>,
   defaultBond :Map<*, *>,
   defaultConditions :Map<*, *>,
   defaultDMF :Map<*, *>,
   dmfId :string,
   fqnToIdMap :Map<*, *>,
   hearingNeighborsById :Map<*, *>,
-  hearingsWithOutcomes :List<*, *>,
   jurisdiction :?string,
   loading :boolean,
   neighbors :Map<*, *>,
-  pastHearings :List<*, *>,
+  hearings :List<*, *>,
   personId :?string,
   psaEntityKeyId :Map<*, *>,
   psaId :?string,
   selectedOrganizationId :string,
-  scheduledHearings :List<*, *>,
   actions :{
     deleteEntity :(values :{
       entitySetId :string,
@@ -156,15 +138,10 @@ type State = {
   selectingReleaseConditions :boolean
 };
 
-const MODAL_WIDTH = '975px';
-const MODAL_HEIGHT = 'max-content';
-
 class PersonHearings extends React.Component<Props, State> {
   constructor(props :Props) {
     super(props);
     this.state = {
-      manuallyCreatingHearing: false,
-      newHearingModalOpen: false,
       releaseConditionsModalOpen: false,
       selectedHearing: Map()
     };
@@ -196,15 +173,10 @@ class PersonHearings extends React.Component<Props, State> {
     });
   }
 
-  openNewHearingModal = () => this.setState({ newHearingModalOpen: true })
-
   onClose = () => this.setState({
-    newHearingModalOpen: false,
-    releaseConditionsModalOpen: false,
-    manuallyCreatingHearing: false
+    releaseConditionsModalOpen: false
   })
 
-  manuallyCreatingHearing = () => this.setState({ manuallyCreatingHearing: true })
 
   renderCreateHearingButton = () => (
     <StyledInfoButton onClick={this.manuallyCreatingHearing}>Create New Hearing</StyledInfoButton>
@@ -244,7 +216,6 @@ class PersonHearings extends React.Component<Props, State> {
 
   selectingReleaseConditions = (row, hearingId, entityKeyId) => {
     this.setState({
-      manuallyCreatingHearing: false,
       releaseConditionsModalOpen: true,
       selectedHearing: fromJS({ row, hearingId, entityKeyId })
     });
@@ -296,81 +267,17 @@ class PersonHearings extends React.Component<Props, State> {
     );
   }
 
-  renderNewHearingModal = () => {
-    const {
-      jurisdiction,
-      availableHearings,
-      personId,
-      psaId,
-      psaEntityKeyId
-    } = this.props;
-    const { newHearingModalOpen, manuallyCreatingHearing } = this.state;
-
-    return (
-      <ModalTransition>
-        {
-          newHearingModalOpen
-          && (
-            <Modal
-                scrollBehavior="outside"
-                onClose={() => this.onClose()}
-                width={MODAL_WIDTH}
-                height={MODAL_HEIGHT}
-                max-height={MODAL_HEIGHT}
-                shouldCloseOnOverlayClick
-                stackIndex={2}>
-              <NoBorderStyledColumnRow>
-                <TitleWrapper>
-                  <h1>Add New Hearing</h1>
-                  <div>
-                    {/* { manuallyCreatingHearing ? null : this.renderCreateHearingButton() } */}
-                    <CloseModalX onClick={this.onClose} />
-                  </div>
-                </TitleWrapper>
-                {
-                  manuallyCreatingHearing
-                    ? (
-                      <NewHearingSection
-                          personId={personId}
-                          psaEntityKeyId={psaEntityKeyId}
-                          psaId={psaId}
-                          manuallyCreatingHearing
-                          jurisdiction={jurisdiction}
-                          afterSubmit={this.onClose} />
-                    )
-                    : (
-                      <HearingCardsWithTitle
-                          title="Available Hearings"
-                          subtitle="Select a hearing to add it to the defendant's schedule"
-                          hearings={availableHearings}
-                          handleSelect={this.selectExistingHearing} />
-                    )
-                }
-              </NoBorderStyledColumnRow>
-            </Modal>
-          )
-        }
-      </ModalTransition>
-    );
-  }
-
 
   renderScheduledAndPastHearings = () => {
     const {
       hearings,
-      hearingsWithOutcomes,
-      hearingNeighborsById,
-      scheduledHearings,
-      pastHearings
+      hearingNeighborsById
     } = this.props;
-    const scheduledHearingsWithOutcomes = scheduledHearings.filter((hearing) => {
+    let hearingsWithOutcomesIds = Set();
+    const hearingsWithOutcomes = hearings.filter((hearing) => {
       const id = hearing.getIn([OPENLATTICE_ID_FQN, 0], '');
       const hasOutcome = !!hearingNeighborsById.getIn([id, OUTCOMES]);
-      return hasOutcome;
-    });
-    const pastHearingsWithOutcomes = pastHearings.filter((hearing) => {
-      const id = hearing.getIn([OPENLATTICE_ID_FQN, 0], '');
-      const hasOutcome = !!hearingNeighborsById.getIn([id, OUTCOMES]);
+      if (hasOutcome) hearingsWithOutcomesIds = hearingsWithOutcomesIds.add(id);
       return hasOutcome;
     });
     return (
@@ -378,9 +285,9 @@ class PersonHearings extends React.Component<Props, State> {
         <PaddedStyledColumnRow>
           <HearingCardsWithTitle
               title="Hearings With Outcomes"
-              hearings={pastHearingsWithOutcomes}
+              hearings={hearingsWithOutcomes}
               handleSelect={this.selectingReleaseConditions}
-              hearingsWithOutcomes={hearingsWithOutcomes} />
+              hearingsWithOutcomes={hearingsWithOutcomesIds} />
         </PaddedStyledColumnRow>
         <PaddedStyledColumnRow>
           <TitleWrapper>
@@ -408,7 +315,6 @@ class PersonHearings extends React.Component<Props, State> {
       <Wrapper>
         <StyledColumn>
           { this.renderScheduledAndPastHearings() }
-          { this.renderNewHearingModal() }
           { this.renderReleaseConditionsModal() }
         </StyledColumn>
       </Wrapper>
