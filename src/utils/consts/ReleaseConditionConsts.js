@@ -14,8 +14,8 @@ export const RELEASES = {
 };
 
 export const WARRANTS = {
-  WARRANT: 'Warrant was issued',
-  NO_WARRANT: 'No warrant was issued'
+  NO_WARRANT: 'No warrant was issued',
+  WARRANT: 'Warrant was issued'
 };
 
 export const BOND_TYPES = {
