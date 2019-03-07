@@ -3,7 +3,7 @@
  */
 
 import { push } from 'connected-react-router';
-import { Types } from 'lattice';
+import { Types, SearchApi } from 'lattice';
 import { AuthActions, AccountUtils } from 'lattice-auth';
 import { OrderedMap, Map, fromJS } from 'immutable';
 import {
@@ -14,7 +14,6 @@ import {
   EntityDataModelApiActions,
   EntityDataModelApiSagas,
 } from 'lattice-sagas';
-
 
 import {
   all,
@@ -99,7 +98,11 @@ function* loadAppWorker(action :SequenceAction) :Generator<*, *, *> {
       }
     });
     const appSettingCalls = appSettingsByOrgId.valueSeq().map(entitySetId => (
-      call(getEntitySetDataWorker, getEntitySetData({ entitySetId }))
+      call(SearchApi.searchEntitySetData, entitySetId, {
+        searchTerm: '*',
+        start: 0,
+        maxHits: 1
+      })
     ));
 
     const orgIds = appSettingsByOrgId.keySeq().toJS();
@@ -108,7 +111,7 @@ function* loadAppWorker(action :SequenceAction) :Generator<*, *, *> {
     let i = 0;
     appSettingResults.forEach((setting) => {
       const entitySetId = orgIds[i];
-      const settings = JSON.parse(setting.data[0]['ol.appdetails']);
+      const settings = JSON.parse(setting.hits[0]['ol.appdetails']);
       appSettingsByOrgId = appSettingsByOrgId.set(entitySetId, fromJS(settings));
       i += 1;
     });

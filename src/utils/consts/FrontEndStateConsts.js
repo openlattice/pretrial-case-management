@@ -71,6 +71,7 @@ export const CHARGES = {
 // Court
 
 export const COURT = {
+  COURT_DATE: 'courtDate',
   HEARINGS_TODAY: 'hearingsToday',
   HEARINGS_BY_TIME: 'hearingsByTime',
   HEARINGS_NEIGHBORS_BY_ID: 'hearingNeighborsById',

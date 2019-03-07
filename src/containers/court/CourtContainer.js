@@ -29,8 +29,6 @@ import {
   EDM,
   PSA_ASSOCIATION,
   PSA_NEIGHBOR,
-  PSA_MODAL,
-  REVIEW,
   STATE,
   SUBMIT
 } from '../../utils/consts/FrontEndStateConsts';
@@ -132,10 +130,6 @@ const Label = styled.span`
   margin-bottom: 10px;
 `;
 
-const SpinnerWrapper = styled.div`
-  margin-top: 30px;
-`;
-
 const ToggleWrapper = styled.div`
   display: flex;
   flex-wrap: wrap;
@@ -145,6 +139,7 @@ const ToggleWrapper = styled.div`
 `;
 
 type Props = {
+  courtDate :moment,
   isLoadingHearings :boolean,
   isLoadingHearingsNeighbors :boolean,
   hearingsByTime :Map<*, *>,
@@ -191,19 +186,12 @@ const PENN_ROOM_PREFIX = 'Courtroom ';
 
 class CourtContainer extends React.Component<Props, State> {
 
-  constructor(props :Props) {
-    super(props);
-    this.state = {
-      date: moment()
-    };
-  }
-
   componentDidMount() {
-    const { date } = this.state;
     const {
       actions,
-      hearingNeighborsById,
+      courtDate,
       hearingsByTime,
+      hearingNeighborsById,
       selectedOrganizationId
     } = this.props;
     const { checkPSAPermissions, loadHearingsForDate, loadJudges } = actions;
@@ -211,15 +199,15 @@ class CourtContainer extends React.Component<Props, State> {
       checkPSAPermissions();
       loadJudges();
       if (!hearingsByTime.size || !hearingNeighborsById.size) {
-        loadHearingsForDate(date);
+        loadHearingsForDate(courtDate);
       }
     }
   }
 
   componentWillReceiveProps(nextProps) {
-    const { date } = this.state;
     const {
       actions,
+      courtDate,
       hearingsByTime,
       hearingNeighborsById,
       selectedOrganizationId
@@ -228,8 +216,8 @@ class CourtContainer extends React.Component<Props, State> {
     if (selectedOrganizationId !== nextProps.selectedOrganizationId) {
       checkPSAPermissions();
       loadJudges();
-      if (!hearingsByTime.size || !hearingNeighborsById.size) {
-        loadHearingsForDate(date);
+      if (!hearingsByTime.size || !hearingNeighborsById.size || courtDate !== nextProps.courtDate) {
+        loadHearingsForDate(courtDate);
       }
     }
   }
@@ -432,20 +420,20 @@ class CourtContainer extends React.Component<Props, State> {
 
   handleDateChange = (dateStr) => {
     const { actions } = this.props;
-    const date = moment(dateStr);
-    if (date.isValid()) {
-      this.setState({ date });
-      actions.loadHearingsForDate(date);
+    const courtDate = moment(dateStr);
+    if (courtDate.isValid()) {
+      actions.setCourtDate({ courtDate });
+      actions.loadHearingsForDate(courtDate);
     }
   }
 
   renderDatePicker = () => {
-    const { date } = this.state;
+    const { courtDate } = this.props;
     return (
       <DatePickerWrapper>
         <Label>Hearing Date</Label>
         <DatePicker
-            value={date.format('YYYY-MM-DD')}
+            value={courtDate.format('YYYY-MM-DD')}
             onChange={this.handleDateChange} />
       </DatePickerWrapper>
     );
@@ -502,6 +490,7 @@ function mapStateToProps(state) {
   return {
     [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
 
+    [COURT.COURT_DATE]: court.get(COURT.COURT_DATE),
     [COURT.HEARINGS_TODAY]: court.get(COURT.HEARINGS_TODAY),
     [COURT.HEARINGS_BY_TIME]: court.get(COURT.HEARINGS_BY_TIME),
     [COURT.HEARINGS_NEIGHBORS_BY_ID]: court.get(COURT.HEARINGS_NEIGHBORS_BY_ID),
