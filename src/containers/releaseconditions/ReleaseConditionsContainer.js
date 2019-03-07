@@ -268,6 +268,7 @@ type Props = {
   allJudges :Map<*, *>,
   backToSelection :() => void,
   hasOutcome :boolean,
+  hearingIdsRefreshing :boolean,
   hearingNeighbors :Map<*, *>,
   hearingEntityKeyId :string,
   loadingReleaseCondtions :boolean,
@@ -536,7 +537,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
         warrant = bondType ? WARRANTS.WARRANT : WARRANTS.NO_WARRANT;
       }
       else if (outcome !== OUTCOMES.FTA) {
-        release = (outcome !== OUTCOMES.FTA && bondType) ? RELEASES.RELEASED : RELEASES.HELD;
+        release = bondType ? RELEASES.RELEASED : RELEASES.HELD;
       }
 
       return {
@@ -694,6 +695,15 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
 
       default:
         break;
+    }
+    if (state[RELEASE] === null && state[WARRANT] === null) {
+      state[BOND_TYPE] = null;
+      state[BOND_AMOUNT] = '';
+      state[CONDITIONS] = [];
+      state[CHECKIN_FREQUENCY] = null;
+      state[C247_TYPES] = [];
+      state[OTHER_CONDITION_TEXT] = '';
+      state[NO_CONTACT_PEOPLE] = [Object.assign({}, BLANK_PERSON_ROW)];
     }
     this.setState(state);
   }
@@ -1161,7 +1171,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
     }
     if (judgeNameEdited && judgeId && !judgeIsOther) {
       const associationEntity = {
-        [PROPERTY_TYPES.COMPLETED_DATE_TIME]: moment().toISOString(true),
+        [ID_FIELD_NAMES.TIMESTAMP]: moment().toISOString(true),
       };
       replaceAssociation({
         associationEntity,
@@ -1204,6 +1214,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       allJudges,
       backToSelection,
       hasOutcome,
+      loadingReleaseCondtions,
       psaNeighbors,
       replacingAssociation,
       replacingEntity,
@@ -1343,8 +1354,12 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       </ContentSection>
     );
 
-    if (replacingEntity || replacingAssociation) {
-      return <LogoLoader size={30} loadingText="Updating Hearing" />;
+    const loadingText = loadingReleaseCondtions
+      ? 'Loading Hearing Details...'
+      : 'Updating Hearing...';
+
+    if (loadingReleaseCondtions || replacingEntity || replacingAssociation) {
+      return <LogoLoader size={30} loadingText={loadingText} />;
     }
 
 
@@ -1361,13 +1376,18 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
 
   renderOutcomesAndReleaseConditions = () => {
     const { state } = this;
-    const { loadingReleaseCondtions, refreshingReleaseConditions, submitting } = this.props;
     const { release, warrant } = state;
     const outcomeIsFTA = state[OUTCOME] === OUTCOMES.FTA;
     const RELEASED = release !== RELEASES.RELEASED;
     const NO_WARRANT = warrant !== WARRANTS.WARRANT;
+    const {
+      hearingIdsRefreshing,
+      loadingReleaseCondtions,
+      refreshingReleaseConditions,
+      submitting
+    } = this.props;
 
-    if (loadingReleaseCondtions || submitting || refreshingReleaseConditions) {
+    if (loadingReleaseCondtions || submitting || refreshingReleaseConditions || hearingIdsRefreshing) {
       const loadingText = loadingReleaseCondtions
         ? 'Loading Release Conditions...'
         : 'Refreshing Release Conditions...';
@@ -1430,8 +1450,6 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
 
   render() {
     const { state } = this;
-    console.log(this.props.selectedHearing.toJS())
-    console.log(this.props.hearingNeighbors.toJS())
     return (
       <Wrapper>
         { this.renderHearingInfo() }
@@ -1484,6 +1502,7 @@ function mapStateToProps(state) {
     [RELEASE_COND.REFRESHING_RELEASE_CONDITIONS]: releaseConditions.get(RELEASE_COND.REFRESHING_RELEASE_CONDITIONS),
 
     [COURT.ALL_JUDGES]: court.get(COURT.ALL_JUDGES),
+    [COURT.HEARING_IDS_REFRESHING]: court.get(COURT.HEARING_IDS_REFRESHING),
 
     [SUBMIT.REPLACING_ASSOCIATION]: submit.get(SUBMIT.REPLACING_ASSOCIATION),
     [SUBMIT.REPLACING_ENTITY]: submit.get(SUBMIT.REPLACING_ENTITY),
