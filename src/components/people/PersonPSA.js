@@ -10,7 +10,7 @@ import { connect } from 'react-redux';
 import { Constants } from 'lattice';
 
 import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
-import LoadingSpinner from '../LoadingSpinner';
+import LogoLoader from '../../assets/LogoLoader';
 import MultiSelectCheckbox from '../MultiSelectCheckbox';
 import PSAReviewPersonRowList from '../../containers/review/PSAReviewReportsRowList';
 import PSASummary from '../../containers/review/PSASummary';
@@ -162,7 +162,7 @@ class PersonOverview extends React.Component<Props, State> {
     );
 
     if (loading) {
-      return <LoadingSpinner />;
+      return <LogoLoader loadingText="Loading..." />;
     }
     return (
       <Wrapper>

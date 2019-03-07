@@ -25,6 +25,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [SEARCH.SEARCH_ERROR]: false,
   [SEARCH.SELECTED_PERSON_ID]: '',
   [SEARCH.PERSON_DETAILS]: List(),
+  [SEARCH.LOADING_PERSON_DETAILS]: false,
   [SEARCH.LOADING_CASES]: false,
   [SEARCH.NUM_CASES_TO_LOAD]: 0,
   [SEARCH.NUM_CASES_LOADED]: 0,
@@ -96,11 +97,14 @@ export default function searchReducer(state = INITIAL_STATE, action) {
       return loadPersonDetails.reducer(state, action, {
         REQUEST: () => {
           const { entityKeyId } = action.value;
-          return state.set(SEARCH.SELECTED_PERSON_ID, entityKeyId);
+          return state
+            .set(SEARCH.LOADING_PERSON_DETAILS, true)
+            .set(SEARCH.SELECTED_PERSON_ID, entityKeyId);
         },
         SUCCESS: () => {
           const { response } = action.value;
-          let newState = state.set(SEARCH.PERSON_DETAILS, fromJS(response));
+          let newState = state
+            .set(SEARCH.PERSON_DETAILS, fromJS(response));
           if (!state.get(SEARCH.LOADING_CASES)) {
             newState = newState.set(SEARCH.CASE_LOADS_COMPLETE, true);
           }
@@ -111,6 +115,7 @@ export default function searchReducer(state = INITIAL_STATE, action) {
           .set(SEARCH.LOADING_CASES, false)
           .set(SEARCH.NUM_CASES_TO_LOAD, 0)
           .set(SEARCH.NUM_CASES_LOADED, 0),
+        FINALLY: () => state.set(SEARCH.LOADING_PERSON_DETAILS, false)
       });
     }
 
@@ -120,7 +125,8 @@ export default function searchReducer(state = INITIAL_STATE, action) {
           const { cases } = action.value;
           return state
             .set(SEARCH.NUM_CASES_TO_LOAD, state.get(SEARCH.NUM_CASES_TO_LOAD) + cases.length)
-            .set(SEARCH.LOADING_CASES, true);
+            .set(SEARCH.LOADING_CASES, true)
+            .set(SEARCH.CASE_LOADS_COMPLETE, false);
         },
         SUCCESS: () => {
           const { cases } = action.value;

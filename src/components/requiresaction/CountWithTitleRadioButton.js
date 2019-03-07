@@ -1,0 +1,118 @@
+import React from 'react';
+import PropTypes from 'prop-types';
+import styled from 'styled-components';
+
+import { OL } from '../../utils/consts/Colors';
+
+export const RadioInputContainer = styled.input.attrs({
+  type: 'radio'
+})`
+  opacity: 0;
+  height: 0;
+  width: 0;
+`;
+
+export const RadioContainer = styled.label`
+  display: flex;
+  width: 100%;
+`;
+
+const Count = styled.div`
+  font-size: 25px;
+  color: ${(props) => {
+    if (props.checked) {
+      return props.disabled ? OL.GREEN02 : OL.RED01;
+    }
+    return props.disabled ? OL.GREEN02 : OL.GREY02;
+  }}
+`;
+const Title = styled.div`
+  font-size: 13.5px;
+  color: ${props => (props.checked ? OL.GREY01 : OL.GREY02)};
+`;
+
+export const RadioSelection = styled.span`
+  padding: 10px 12px;
+  width: 100%;
+  min-width: 84px;
+  border-radius: 3px;
+  border: solid 1px ${OL.GREY11};
+  background-color: ${OL.WHITE};
+  font-family: 'Open Sans', sans-serif;
+  font-size: 13.5px;
+  font-weight: normal;
+  color: ${OL.GREY02};
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+
+  ${RadioContainer}:hover ${RadioInputContainer}:enabled:not(:checked) ~ & {
+    background-color: ${OL.GREY05};
+    cursor: pointer;
+  }
+
+  ${RadioContainer} ${RadioInputContainer}:checked ~ & {
+    border: solid 1px ${OL.GREY03};
+  }
+
+  ${RadioContainer} ${RadioInputContainer}:disabled ~ & {
+    cursor: default;
+  }
+
+  ${RadioContainer} ${RadioInputContainer}:disabled:checked ~ & {
+    background-color: ${OL.GREY05};
+    color: ${OL.GREY02};
+    cursor: default;
+    border: none;
+  }
+`;
+
+const StyledRadioButton = ({
+  name,
+  count,
+  label,
+  value,
+  checked,
+  onChange,
+  disabled,
+  large
+}) => (
+  <RadioContainer>
+    <RadioInputContainer
+        name={name}
+        value={value}
+        checked={checked}
+        onChange={onChange}
+        disabled={disabled} />
+    <RadioSelection large={large}>
+      <Count checked={checked} green={disabled}>{count}</Count>
+      <Title checked={checked}>{label}</Title>
+    </RadioSelection>
+  </RadioContainer>
+);
+
+StyledRadioButton.propTypes = {
+  count: PropTypes.number,
+  name: PropTypes.string,
+  label: PropTypes.string.isRequired,
+  value: PropTypes.oneOfType([
+    PropTypes.string,
+    PropTypes.bool
+  ]).isRequired,
+  checked: PropTypes.bool,
+  onChange: PropTypes.func.isRequired,
+  disabled: PropTypes.bool,
+  large: PropTypes.bool
+};
+
+StyledRadioButton.defaultProps = {
+  count: 0,
+  disabled: false,
+  name: undefined,
+  checked: false,
+  large: false
+};
+
+export default StyledRadioButton;

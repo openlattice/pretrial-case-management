@@ -9,11 +9,11 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
 import PersonSubcriptionRow from './PersonSubscriptionRow';
-import LoadingSpinner from '../LoadingSpinner';
+import LogoLoader from '../../assets/LogoLoader';
 import { NoResults } from '../../utils/Layout';
 import { OL } from '../../utils/consts/Colors';
 import { SEARCH, STATE } from '../../utils/consts/FrontEndStateConsts';
-import { sortPeopleByName } from '../../utils/PSAUtils';
+import { sortPeopleByName } from '../../utils/PeopleUtils';
 
 import * as SubscriptionsActionFactory from '../../containers/subscription/SubscriptionsActionFactory';
 
@@ -70,7 +70,7 @@ class PersonSubscriptionList extends React.Component<Props, State> {
           { loading ? null : this.renderBodyElements() }
         </Table>
         { loading
-          ? <NoResults><LoadingSpinner /></NoResults>
+          ? <LogoLoader size={30} loadingText="Loading People..." />
           : noResultsDisplay
         }
       </>

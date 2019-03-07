@@ -8,11 +8,13 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { Constants } from 'lattice';
 import {
+  fromJS,
   List,
   Map,
   Set
 } from 'immutable';
 
+import CaseHistoryList from '../../components/casehistory/CaseHistoryList';
 import InfoButton from '../../components/buttons/InfoButton';
 import HearingCardsWithTitle from '../../components/hearings/HearingCardsWithTitle';
 import HearingCardsHolder from '../../components/hearings/HearingCardsHolder';
@@ -20,14 +22,13 @@ import NewHearingSection from '../../components/hearings/NewHearingSection';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import psaHearingConfig from '../../config/formconfig/PSAHearingConfig';
 import SelectReleaseConditions from '../../components/releaseconditions/SelectReleaseConditions';
-import SubscriptionInfo from '../../components/people/SubscriptionInfo';
+import SubscriptionInfo from '../../components/subscription/SubscriptionInfo';
 import { getEntitySetId } from '../../utils/AppUtils';
 import { OL } from '../../utils/consts/Colors';
 import { APP_TYPES_FQNS, PROPERTY_TYPES, SETTINGS } from '../../utils/consts/DataModelConsts';
 import { Title } from '../../utils/Layout';
 import {
   formatJudgeName,
-  getHearingsIdsFromNeighbors,
   getScheduledHearings,
   getPastHearings,
   getHearingFields
@@ -57,6 +58,7 @@ import * as CourtActionFactory from '../court/CourtActionFactory';
 let {
   ASSESSED_BY,
   BONDS,
+  PRETRIAL_CASES,
   CONTACT_INFORMATION,
   DMF_RISK_FACTORS,
   HEARINGS,
@@ -68,6 +70,7 @@ let {
 
 ASSESSED_BY = ASSESSED_BY.toString();
 BONDS = BONDS.toString();
+PRETRIAL_CASES = PRETRIAL_CASES.toString();
 CONTACT_INFORMATION = CONTACT_INFORMATION.toString();
 DMF_RISK_FACTORS = DMF_RISK_FACTORS.toString();
 HEARINGS = HEARINGS.toString();
@@ -87,6 +90,11 @@ const Container = styled.div`
   }
 `;
 
+const ChargeTableContainer = styled.div`
+  text-align: center;
+  width: 100%;
+  margin: 0;
+`;
 
 const Wrapper = styled.div`
   max-height: 100%;
@@ -136,6 +144,7 @@ const SubmittingWrapper = styled.div`
 type Props = {
   allJudges :List<*, *>,
   app :Map<*, *>,
+  chargeHistory :Map<*, *>,
   defaultBond :Map<*, *>,
   defaultConditions :Map<*, *>,
   defaultDMF :Map<*, *>,
@@ -149,6 +158,7 @@ type Props = {
   psaId :string,
   psaEntityKeyId :string,
   personId :string,
+  psaNeighbors :Map<*, *>,
   submitting :boolean,
   context :string,
   refreshingNeighbors :boolean,
@@ -158,6 +168,8 @@ type Props = {
   replacingEntity :boolean,
   personNeighbors :Map<*, *>,
   selectedOrganizationId :string,
+  selectedOrganizationSettings :Map<*, *>,
+  updatingEntity :boolean,
   actions :{
     deleteEntity :(values :{
       entitySetId :string,
@@ -282,6 +294,27 @@ class SelectHearingsContainer extends React.Component<Props, State> {
     if (psaEntityKeyId) actions.refreshPSANeighbors({ id: psaEntityKeyId });
   }
 
+  renderChargeTable = () => {
+    const { selectedHearing } = this.state;
+    const {
+      chargeHistory,
+      hearingNeighborsById,
+    } = this.props;
+    const { entityKeyId } = selectedHearing;
+    const hearingNeighbors = hearingNeighborsById.get(entityKeyId, Map());
+    const associatedCasesForForPSA = fromJS([hearingNeighbors.getIn([PRETRIAL_CASES, PSA_NEIGHBOR.DETAILS], Map())]);
+    return associatedCasesForForPSA.size
+      ? (
+        <ChargeTableContainer>
+          <CaseHistoryList
+              isCompact
+              pendingCases
+              caseHistory={associatedCasesForForPSA}
+              chargeHistory={chargeHistory} />
+        </ChargeTableContainer>
+      ) : null;
+  }
+
   renderSelectReleaseCondtions = (selectedHearing) => {
     const {
       allJudges,
@@ -358,6 +391,7 @@ class SelectHearingsContainer extends React.Component<Props, State> {
     return (
       <Wrapper withPadding>
         <SelectReleaseConditions
+            renderCharges={this.renderChargeTable}
             selectedOrganizationId={selectedOrganizationId}
             app={app}
             submitting={submitting}
@@ -493,8 +527,7 @@ class SelectHearingsContainer extends React.Component<Props, State> {
     const { manuallyCreatingHearing, selectingReleaseConditions, selectedHearing } = this.state;
     const {
       neighbors,
-      hearingNeighborsById,
-      psaHearings
+      hearingNeighborsById
     } = this.props;
     const hearingsWithOutcomes = hearingNeighborsById
       .keySeq().filter(id => hearingNeighborsById.getIn([id, OUTCOMES]));
@@ -570,6 +603,7 @@ function mapStateToProps(state) {
     [APP.SELECTED_ORG_ID]: orgId,
     [APP.SELECTED_ORG_SETTINGS]: app.get(APP.SELECTED_ORG_SETTINGS, Map()),
     [APP.ENTITY_SETS_BY_ORG]: app.get(APP.ENTITY_SETS_BY_ORG, Map()),
+    [APP.FQN_TO_ID]: app.get(APP.FQN_TO_ID),
 
     [COURT.LOADING_HEARING_NEIGHBORS]: court.get(COURT.LOADING_HEARING_NEIGHBORS),
     [COURT.HEARINGS_NEIGHBORS_BY_ID]: court.get(COURT.HEARINGS_NEIGHBORS_BY_ID),

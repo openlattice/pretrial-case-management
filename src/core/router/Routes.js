@@ -44,11 +44,13 @@ const VOICE :string = '/voice';
 export const VOICE_ENROLLMENT = DASHBOARD + VOICE;
 
 /* people */
+export const REMINDERS :string = '/reminders';
 export const PERSON = `${DASHBOARD}/person`;
 export const PEOPLE = `${DASHBOARD}/people`;
 export const SEARCH_PEOPLE = `${PEOPLE}/search`;
 export const MULTI_SEARCH_PEOPLE = `${PEOPLE}/multisearch`;
 export const REQUIRES_ACTION_PEOPLE = `${PEOPLE}/requires_action`;
+export const MANAGE_PEOPLE_REMINDERS = `${PEOPLE}/${REMINDERS}`;
 
 /* query params */
 export const FIRST_NAME = 'fname';
@@ -68,4 +70,3 @@ export const COURT_CHARGES = '/court';
 
 /* Staff Dashboard */
 export const STAFF_DASHBOARD :string = `${DASHBOARD}/staff_dasboard`;
-export const REMINDERS :string = 'reminders';

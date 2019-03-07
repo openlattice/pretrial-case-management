@@ -11,10 +11,10 @@ import { bindActionCreators } from 'redux';
 import { NavLink } from 'react-router-dom';
 import { Constants } from 'lattice';
 
-import { formatPeopleInfo } from '../../utils/PeopleUtils';
+import { formatPeopleInfo, sortPeopleByName } from '../../utils/PeopleUtils';
 import SecondaryButton from '../../components/buttons/SecondaryButton';
 import ToggleButtonsGroup from '../../components/buttons/ToggleButtons';
-import LoadingSpinner from '../../components/LoadingSpinner';
+import LogoLoader from '../../assets/LogoLoader';
 import PersonCard from '../../components/people/PersonCard';
 import DatePicker from '../../components/datetime/DatePicker';
 import * as Routes from '../../core/router/Routes';
@@ -22,7 +22,6 @@ import { StyledSectionWrapper } from '../../utils/Layout';
 import { TIME_FORMAT } from '../../utils/FormattingUtils';
 import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { DOMAIN } from '../../utils/consts/ReportDownloadTypes';
-import { sortPeopleByName } from '../../utils/PSAUtils';
 import { OL } from '../../utils/consts/Colors';
 import {
   APP,
@@ -30,8 +29,6 @@ import {
   EDM,
   PSA_ASSOCIATION,
   PSA_NEIGHBOR,
-  PSA_MODAL,
-  REVIEW,
   STATE,
   SUBMIT
 } from '../../utils/consts/FrontEndStateConsts';
@@ -133,10 +130,6 @@ const Label = styled.span`
   margin-bottom: 10px;
 `;
 
-const SpinnerWrapper = styled.div`
-  margin-top: 30px;
-`;
-
 const ToggleWrapper = styled.div`
   display: flex;
   flex-wrap: wrap;
@@ -146,21 +139,21 @@ const ToggleWrapper = styled.div`
 `;
 
 type Props = {
+  courtDate :moment,
+  isLoadingHearings :boolean,
+  isLoadingHearingsNeighbors :boolean,
   hearingsByTime :Map<*, *>,
   hearingNeighborsById :Map<*, *>,
   isLoadingPSAs :boolean,
   courtroom :string,
   courtrooms :List<*>,
   county :string,
-  hearingIds :List<*>,
   peopleWithOpenPsas :Set<*>,
   peopleIdsToOpenPSAIds :Map<*>,
   scoresAsMap :Map<*>,
-  loadingPSAData :boolean,
   submitting :boolean,
   selectedOrganizationId :string,
   psaEditDatesById :Map<*, *>,
-  psaIdsRefreshing :boolean,
   actions :{
     bulkDownloadPSAReviewPDF :({ peopleEntityKeyIds :string[] }) => void,
     changeHearingFilters :({ county? :string, courtroom? :string }) => void,
@@ -175,7 +168,6 @@ type Props = {
       personId :string,
       neighbors :Map<*, *>
     }) => void,
-    loadHearingNeighbors :(hearingIds :string[]) => void,
     loadHearingsForDate :(date :Object) => void,
     loadJudges :() => void,
     loadPSAsByDate :(filter :string) => void,
@@ -194,19 +186,12 @@ const PENN_ROOM_PREFIX = 'Courtroom ';
 
 class CourtContainer extends React.Component<Props, State> {
 
-  constructor(props :Props) {
-    super(props);
-    this.state = {
-      date: moment()
-    };
-  }
-
   componentDidMount() {
-    const { date } = this.state;
     const {
       actions,
-      hearingNeighborsById,
+      courtDate,
       hearingsByTime,
+      hearingNeighborsById,
       selectedOrganizationId
     } = this.props;
     const { checkPSAPermissions, loadHearingsForDate, loadJudges } = actions;
@@ -214,17 +199,16 @@ class CourtContainer extends React.Component<Props, State> {
       checkPSAPermissions();
       loadJudges();
       if (!hearingsByTime.size || !hearingNeighborsById.size) {
-        loadHearingsForDate(date);
+        loadHearingsForDate(courtDate);
       }
     }
   }
 
   componentWillReceiveProps(nextProps) {
-    const { date } = this.state;
     const {
       actions,
+      courtDate,
       hearingsByTime,
-      hearingIds,
       hearingNeighborsById,
       selectedOrganizationId
     } = this.props;
@@ -232,15 +216,9 @@ class CourtContainer extends React.Component<Props, State> {
     if (selectedOrganizationId !== nextProps.selectedOrganizationId) {
       checkPSAPermissions();
       loadJudges();
-      if (!hearingsByTime.size || !hearingNeighborsById.size) {
-        loadHearingsForDate(date);
+      if (!hearingsByTime.size || !hearingNeighborsById.size || courtDate !== nextProps.courtDate) {
+        loadHearingsForDate(courtDate);
       }
-    }
-    // if (openPSAIds.size !== nextProps.openPSAIds.size) {
-    //   actions.loadPSAData(nextProps.openPSAIds.toJS());
-    // }
-    if (hearingIds.size !== nextProps.hearingIds.size) {
-      actions.loadHearingNeighbors({ hearingIds: nextProps.hearingIds.toJS() });
     }
   }
 
@@ -276,7 +254,7 @@ class CourtContainer extends React.Component<Props, State> {
     const personObj = formatPeopleInfo(person);
     return (
       <PersonCard
-          key={`${personObj.identification}-${index}`}
+          key={`${personObj.identification}`}
           psaId={openPSAId}
           person={person}
           editDate={lastEditDate}
@@ -291,7 +269,6 @@ class CourtContainer extends React.Component<Props, State> {
           replaceEntity={actions.replaceEntity}
           deleteEntity={actions.deleteEntity}
           submitting={submitting}
-          refreshingNeighbors={psaIdsRefreshing.has(openPSAId)}
           judgesview />
     );
   }
@@ -306,17 +283,17 @@ class CourtContainer extends React.Component<Props, State> {
   }
 
   renderHearingRow = (courtroom, people, time) => {
-    const persons = people.toList().sort(sortPeopleByName);
+    const sortedPeople = people.toList().sort(sortPeopleByName);
     return (
       <HearingRow key={`${courtroom}-${time}`}>
-        <Courtroom key={`${courtroom}-${time}-${time}`}>
+        <Courtroom key={`courtroom-${courtroom}-${time}`}>
           <span>{courtroom}</span>
           <SecondaryButton
               onClick={() => this.downloadPDFs(courtroom, people, time)}>
             Download PDFs
           </SecondaryButton>
         </Courtroom>
-        <PeopleWrapper key={`${time}-${courtroom}`}>{persons.map(this.renderPersonCard)}</PeopleWrapper>
+        <PeopleWrapper>{sortedPeople.map(this.renderPersonCard)}</PeopleWrapper>
       </HearingRow>
     );
   }
@@ -359,6 +336,7 @@ class CourtContainer extends React.Component<Props, State> {
 
 
     if (!hearingsByCourtroom.size) return null;
+
     return (
       <HearingTime key={`${time}${courtroom}${county}`}>
         <h1>{time}</h1>
@@ -442,20 +420,20 @@ class CourtContainer extends React.Component<Props, State> {
 
   handleDateChange = (dateStr) => {
     const { actions } = this.props;
-    const date = moment(dateStr);
-    if (date.isValid()) {
-      this.setState({ date });
-      actions.loadHearingsForDate(date);
+    const courtDate = moment(dateStr);
+    if (courtDate.isValid()) {
+      actions.setCourtDate({ courtDate });
+      actions.loadHearingsForDate(courtDate);
     }
   }
 
   renderDatePicker = () => {
-    const { date } = this.state;
+    const { courtDate } = this.props;
     return (
       <DatePickerWrapper>
         <Label>Hearing Date</Label>
         <DatePicker
-            value={date.format('YYYY-MM-DD')}
+            value={courtDate.format('YYYY-MM-DD')}
             onChange={this.handleDateChange} />
       </DatePickerWrapper>
     );
@@ -466,9 +444,14 @@ class CourtContainer extends React.Component<Props, State> {
   )
 
   renderContent = () => {
-    const { loadingPSAData, isLoadingPSAs, hearingsByTime } = this.props;
-    if (loadingPSAData || isLoadingPSAs) {
-      return <SpinnerWrapper><LoadingSpinner /></SpinnerWrapper>;
+    const {
+      isLoadingHearings,
+      isLoadingHearingsNeighbors,
+      isLoadingPSAs,
+      hearingsByTime
+    } = this.props;
+    if (isLoadingHearings || isLoadingHearingsNeighbors || isLoadingPSAs) {
+      return <LogoLoader loadingText="Loading..." />;
     }
 
     const timeOptions = hearingsByTime.keySeq().sort((time1, time2) => (
@@ -503,20 +486,19 @@ function mapStateToProps(state) {
   const app = state.get(STATE.APP);
   const court = state.get(STATE.COURT);
   const edm = state.get(STATE.EDM);
-  const review = state.get(STATE.REVIEW);
-  const psaModal = state.get(STATE.PSA_MODAL);
   const submit = state.get(STATE.SUBMIT);
   return {
     [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
 
+    [COURT.COURT_DATE]: court.get(COURT.COURT_DATE),
     [COURT.HEARINGS_TODAY]: court.get(COURT.HEARINGS_TODAY),
     [COURT.HEARINGS_BY_TIME]: court.get(COURT.HEARINGS_BY_TIME),
-    [COURT.LOADING_HEARING_NEIGHBORS]: court.get(COURT.LOADING_HEARING_NEIGHBORS),
     [COURT.HEARINGS_NEIGHBORS_BY_ID]: court.get(COURT.HEARINGS_NEIGHBORS_BY_ID),
     [COURT.HEARING_IDS_REFRESHING]: court.get(COURT.HEARING_IDS_REFRESHING),
     [COURT.LOADING_HEARINGS_ERROR]: court.get(COURT.LOADING_HEARINGS_ERROR),
     [COURT.PEOPLE_WITH_OPEN_PSAS]: court.get(COURT.PEOPLE_WITH_OPEN_PSAS),
     [COURT.LOADING_HEARINGS]: court.get(COURT.LOADING_HEARINGS),
+    [COURT.LOADING_HEARING_NEIGHBORS]: court.get(COURT.LOADING_HEARING_NEIGHBORS),
     [COURT.LOADING_PSAS]: court.get(COURT.LOADING_PSAS),
     [COURT.LOADING_ERROR]: court.get(COURT.LOADING_ERROR),
     [COURT.COUNTY]: court.get(COURT.COUNTY),
@@ -529,11 +511,6 @@ function mapStateToProps(state) {
     [COURT.ALL_JUDGES]: court.get(COURT.ALL_JUDGES),
 
     [EDM.FQN_TO_ID]: edm.get(EDM.FQN_TO_ID),
-
-    [REVIEW.LOADING_DATA]: review.get(REVIEW.LOADING_DATA),
-    [REVIEW.PSA_IDS_REFRESHING]: review.get(REVIEW.PSA_IDS_REFRESHING),
-
-    [PSA_MODAL.HEARING_IDS]: psaModal.get(PSA_MODAL.HEARING_IDS),
 
     [SUBMIT.SUBMITTING]: submit.get(SUBMIT.SUBMITTING, false)
   };

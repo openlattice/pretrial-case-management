@@ -2,7 +2,7 @@
  * @flow
  */
 
-import { push } from 'react-router-redux';
+import { push } from 'connected-react-router';
 import { Types, SearchApi } from 'lattice';
 import { AuthActions, AccountUtils } from 'lattice-auth';
 import { OrderedMap, Map, fromJS } from 'immutable';
@@ -20,7 +20,7 @@ import {
   call,
   put,
   takeEvery
-} from 'redux-saga/effects';
+} from '@redux-saga/core/effects';
 
 import { APP_TYPES_FQNS, APP_NAME } from '../../utils/consts/DataModelConsts';
 import { removeTermsToken } from '../../utils/AcceptTermsUtils';
@@ -152,15 +152,15 @@ function cleanupWorker() {
 }
 
 function* authExpirationCleanupWatcher() :Generator<*, *, *> {
-  yield takeEvery(AuthActionFactory.AUTH_EXPIRED, cleanupWorker);
+  yield takeEvery(AuthActions.AUTH_EXPIRED, cleanupWorker);
 }
 
 function* authFailureCleanupWatcher() :Generator<*, *, *> {
-  yield takeEvery(AuthActionFactory.AUTH_FAILURE, cleanupWorker);
+  yield takeEvery(AuthActions.AUTH_FAILURE, cleanupWorker);
 }
 
 function* logoutCleanupWatcher() :Generator<*, *, *> {
-  yield takeEvery(AuthActionFactory.LOGOUT, cleanupWorker);
+  yield takeEvery(AuthActions.LOGOUT, cleanupWorker);
 }
 
 export {

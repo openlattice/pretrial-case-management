@@ -49,7 +49,7 @@ const ConvictedTag = styled(ChargeTag)`
 
 const PaddedChargeItem = styled(ChargeItem)`
   vertical-align: top;
-  padding: 30px;
+  padding: ${props => (props.isCompact ? '0 30px' : '30px')};
 
 `;
 
@@ -58,21 +58,34 @@ const ChargeHeaderItem = styled(PaddedChargeItem)`
   font-size: 14px;
   font-weight: 600;
   color: ${OL.GREY15};
-  padding-left: 25px 30px;
+  padding: ${props => (props.isCompact ? '18px 30px' : '25px 30px')};
 `;
 
 const ChargeDescriptionTitle = styled.div`
+  ${props => ((props.isCompact)
+    ? (
+      `display: flex;
+       flex-direction: row;`
+    )
+    : '')}
   span {
-    font-size: 14px;
+    font-size: ${props => (props.isCompact ? 12 : 14)}px;
     font-weight: 600;
     color: ${OL.GREY15};
+    padding-right: 5px;
   }
 `;
 
 const ChargeDetail = styled.div`
   padding: 5px 0;
-  font-size: 14px;
+  font-size: ${props => (props.isCompact ? 12 : 14)}px;
   color: ${OL.GREY15};
+`;
+
+const CompactChargeDetails = styled.div`
+  display: flex;
+  flex-direction: row;
+  font-size: 12px;
 `;
 
 type Props = {
@@ -83,7 +96,8 @@ type Props = {
   modal? :modal,
   selectedOrganizationId :string,
   violentArrestCharges :Map<*, *>,
-  violentCourtCharges :Map<*, *>
+  violentCourtCharges :Map<*, *>,
+  isCompact :boolean
 };
 
 class ChargeList extends React.Component<Props, *> {
@@ -98,7 +112,8 @@ class ChargeList extends React.Component<Props, *> {
     const {
       historical,
       pretrialCaseDetails,
-      selectedOrganizationId
+      selectedOrganizationId,
+      isCompact
     } = this.props;
     let {
       violentArrestCharges,
@@ -120,39 +135,59 @@ class ChargeList extends React.Component<Props, *> {
         violentChargeList: violentArrestCharges
       }).size > 0;
 
-
-    return (
-      <ChargeTagWrapper>
+    const chargeTags = (
+      <>
         { (mostSerious) ? <MostSeriousTag>MOST SERIOUS</MostSeriousTag> : null }
         { (violent) ? <ViolentTag>VIOLENT</ViolentTag> : null }
         { (convicted) ? <ConvictedTag>CONVICTED</ConvictedTag> : null }
-      </ChargeTagWrapper>
+      </>
     );
+
+    return isCompact
+      ? <div>{chargeTags}</div>
+      : <ChargeTagWrapper>{chargeTags}</ChargeTagWrapper>;
   }
 
   renderChargeDetails = (charge :Map<*, *>) => {
-    const { detailed } = this.props;
+    const { detailed, isCompact } = this.props;
     if (!detailed) return null;
 
-    const plea = formatValue(charge.get(PROPERTY_TYPES.PLEA, List()));
     const pleaDate = formatDateList(charge.get(PROPERTY_TYPES.PLEA_DATE, List()));
-    const disposition = formatValue(charge.get(PROPERTY_TYPES.DISPOSITION, List()));
+    const plea = formatValue(charge.get(PROPERTY_TYPES.PLEA, List()));
+    const pleaString = `Plea: ${pleaDate} — ${plea}`;
+
     const dispositionDate = formatDateList(charge.get(PROPERTY_TYPES.DISPOSITION_DATE, List()));
-    return (
-      <div>
-        <ChargeDetail>{`Plea: ${pleaDate} — ${plea}`}</ChargeDetail>
-        <ChargeDetail>{`Disposition: ${dispositionDate} — ${disposition}`}</ChargeDetail>
-      </div>
+    const disposition = formatValue(charge.get(PROPERTY_TYPES.DISPOSITION, List()));
+    const dispositionString = `Disposition: ${dispositionDate} — ${disposition}`;
+
+    const chargeDetails = (
+      <>
+        <ChargeDetail isCompact={isCompact}>{pleaString}</ChargeDetail>
+        <ChargeDetail isCompact={isCompact}>{dispositionString}</ChargeDetail>
+      </>
+    );
+
+    return isCompact
+      ? <CompactChargeDetails>{chargeDetails}</CompactChargeDetails>
+      : <div>{chargeDetails}</div>;
+  }
+
+  renderQualifier = (charge :Map<*, *>) => {
+    const { historical, isCompact } = this.props;
+    return historical ? null : (
+      <PaddedChargeItem isCompact={isCompact}>
+        {formatValue(charge.get(PROPERTY_TYPES.QUALIFIER, List()))}
+      </PaddedChargeItem>
     );
   }
 
-  renderQualifier = (charge :Map<*, *>) => (
-    this.props.historical ? null : (
-      <PaddedChargeItem>{formatValue(charge.get(PROPERTY_TYPES.QUALIFIER, List()))}</PaddedChargeItem>
-    ))
-
   getChargeList = () => {
-    const { charges, detailed, modal } = this.props;
+    const {
+      charges,
+      detailed,
+      modal,
+      isCompact
+    } = this.props;
     const rows = charges.map((charge, index) => {
       if (!charge.get(CHARGE_STATUTE, List()).size) {
         return (
@@ -164,9 +199,10 @@ class ChargeList extends React.Component<Props, *> {
       const chargeNum = charge.get(CHARGE_STATUTE, List());
 
       const description = (
-        <ChargeDescriptionTitle>
-          { chargeDescription.size ? <span> {formatValue(chargeDescription)}</span> : null }
-          { chargeDegree.size ? <span> ({formatValue(chargeDegree)})</span> : null }
+        <ChargeDescriptionTitle isCompact={isCompact}>
+          { chargeDescription.size ? <span>{formatValue(chargeDescription)}</span> : null }
+          { chargeDegree.size ? <span>{formatValue(chargeDegree)}</span> : null }
+          { isCompact ? this.renderTags(charge) : null }
         </ChargeDescriptionTitle>
       );
 
@@ -175,9 +211,9 @@ class ChargeList extends React.Component<Props, *> {
 
       return (
         <ChargeRow key={index}>
-          <ChargeHeaderItem>{formatValue(chargeNum.toJS())}</ChargeHeaderItem>
-          <ChargeItem>
-            {this.renderTags(charge)}
+          <ChargeHeaderItem isCompact={isCompact}>{formatValue(chargeNum.toJS())}</ChargeHeaderItem>
+          <ChargeItem isCompact={isCompact}>
+            { isCompact ? null : this.renderTags(charge)}
             {styledDescription}
             {this.renderChargeDetails(charge)}
           </ChargeItem>
@@ -195,11 +231,11 @@ class ChargeList extends React.Component<Props, *> {
   }
 
   render = () => {
-    const { charges, modal } = this.props;
+    const { charges, modal, isCompact } = this.props;
     if (!charges || !charges.size) return null;
     return (
       <div>
-        <ChargesWrapper modal={modal}>
+        <ChargesWrapper isCompact={isCompact} modal={modal}>
           {this.getChargeList()}
         </ChargesWrapper>
       </div>

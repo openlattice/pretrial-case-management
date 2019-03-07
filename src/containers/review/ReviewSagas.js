@@ -20,7 +20,7 @@ import {
   take,
   takeEvery,
   select
-} from 'redux-saga/effects';
+} from '@redux-saga/core/effects';
 
 import { getEntitySetId } from '../../utils/AppUtils';
 import { getPropertyTypeId } from '../../edm/edmUtils';
@@ -329,12 +329,12 @@ function* loadPSADataWorker(action :SequenceAction) :Generator<*, *, *> {
       let neighborsById = yield call(SearchApi.searchEntityNeighborsWithFilter, psaScoresEntitySetId, {
         entityKeyIds: action.value,
         sourceEntitySetIds: [psaScoresEntitySetId, releaseRecommendationsEntitySetId, dmfFqnEntitySetId],
-        // destinationEntitySetIds: [
-        //   peopleEntitySetId,
-        //   psaScoresEntitySetId,
-        //   staffEntitySetId,
-        //   manualPretrialCasesFqnEntitySetId
-        // ]
+        destinationEntitySetIds: [
+          peopleEntitySetId,
+          psaScoresEntitySetId,
+          staffEntitySetId,
+          manualPretrialCasesFqnEntitySetId
+        ]
       });
       neighborsById = obfuscateBulkEntityNeighbors(neighborsById); // TODO just for demo
       neighborsById = Immutable.fromJS(neighborsById);

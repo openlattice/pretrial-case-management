@@ -80,3 +80,15 @@ export const sortByDate = (d1, d2, fqn) => (
 );
 
 export const isUUID = uuid => (/^[A-F\d]{8}-[A-F\d]{4}-4[A-F\d]{3}-[89AB][A-F\d]{3}-[A-F\d]{12}$/i).test(uuid);
+
+export function addWeekdays(date, days) {
+  let newDate = moment(date);
+  let count = days;
+  while (count > 0) {
+    newDate = newDate.add(1, 'days');
+    if (newDate.isoWeekday() !== 6 && newDate.isoWeekday() !== 7) {
+      count -= 1;
+    }
+  }
+  return newDate;
+}

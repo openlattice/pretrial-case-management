@@ -92,22 +92,22 @@ export const Label = styled(ControlLabel)`
   font-weight: 400;
 `;
 
-export const TitleLabel = Label.extend`
+export const TitleLabel = styled(Label)`
   display: block;
   font-family: 'Open Sans', sans-serif;
   color: ${OL.GREY01};
 `;
 
-export const TableTitleLabel = TitleLabel.extend`
+export const TableTitleLabel = styled(TitleLabel)`
   font-weight: bold;
   font-size: 16px;
 `;
 
-export const TableRowLabel = TitleLabel.extend`
+export const TableRowLabel = styled(TitleLabel)`
   font-size: 16px;
 `;
 
-export const SectionHeader = Label.extend`
+export const SectionHeader = styled(Label)`
   font-size: 24px;
   margin-bottom: 24px;
 `;
@@ -252,7 +252,7 @@ export const ButtonWrapper = styled.div`
   text-align: center;
 `;
 
-export const SubmitButtonWrapper = ButtonWrapper.extend`
+export const SubmitButtonWrapper = styled(ButtonWrapper)`
   padding-top: 20px;
   text-align: center;
 `;
@@ -305,6 +305,7 @@ export const ChargesWrapper = styled.div`
   margin: ${props => (props.modal ? '0 -30px -5px' : 0)};
   display: inline-block;
   width: ${props => (props.modal ? 'calc(100% + 60px)' : '100%')};
+  border-bottom: ${props => (props.isCompact ? `1px solid ${OL.GREY11}` : 'none')} !important;
 `;
 
 export const ChargesTable = styled.table`
@@ -322,7 +323,7 @@ export const ChargeRow = styled.tr`
 `;
 
 export const ChargeItem = styled.td`
-  padding: 25px 15px;
+  padding: ${props => (props.isCompact ? '0px 15px' : '25px 15px')};
 `;
 
 export const ChargeTag = styled.div`
@@ -679,7 +680,7 @@ export const StatsSectionHeader = styled(AlternateSectionHeader)`
 // mugshot wrapper
 
 export const PersonPicture = styled.img`
-  width: 36px;
+  width: ${props => (props.small ? 30 : 36)}px;
   height: auto;
 `;
 
@@ -695,4 +696,23 @@ export const PersonMugshot = styled.div`
       display: inline;
       margin: 0 auto;
   }
+`;
+
+export const StyledTooltip = styled.div`
+  visibility: hidden;
+  position: absolute;
+  z-index: 1;
+  bottom: -40px;
+  left: 15%;
+  border-radius: 5px;
+  box-shadow: 0 10px 20px 0 rgba(0, 0, 0, 0.1);
+  background-color: ${OL.GREY08};
+  border: solid 1px ${OL.GREY05};
+  max-width: 320px;
+  width: max-content;
+  font-family: 'Open Sans', sans-serif;
+  font-size: 14px;
+  color: ${OL.GREY15};
+  padding: 8px 15px;
+  white-space: normal !important;
 `;

@@ -8,19 +8,24 @@ import moment from 'moment';
 import { Map, Set } from 'immutable';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
+import { Constants } from 'lattice';
+
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faFileDownload } from '@fortawesome/pro-light-svg-icons';
 
 import DatePicker from '../../components/datetime/DatePicker';
-import RemindersTable from '../../components/reminders/RemindersTable';
+import TableWithPagination from '../../components/reminders/TableWithPagination';
 import SearchAllBar from '../../components/SearchAllBar';
-import LoadingSpinner from '../../components/LoadingSpinner';
 import PersonSubscriptionList from '../../components/subscription/PersonSubscriptionList';
 import DashboardMainSection from '../../components/dashboard/DashboardMainSection';
-import Pagination from '../../components/Pagination';
+import StyledButton from '../../components/buttons/StyledButton';
 import { Count } from '../../utils/Layout';
 import { OL } from '../../utils/consts/Colors';
+import { APP_TYPES_FQNS } from '../../utils/consts/DataModelConsts';
 import {
   APP,
   REMINDERS,
+  PSA_NEIGHBOR,
   SEARCH,
   STATE
 } from '../../utils/consts/FrontEndStateConsts';
@@ -30,6 +35,10 @@ import * as RemindersActionFactory from './RemindersActionFactory';
 import * as SubscriptionsActionFactory from '../subscription/SubscriptionsActionFactory';
 import * as PersonActionFactory from '../person/PersonActionFactory';
 
+const { OPENLATTICE_ID_FQN } = Constants;
+const peopleFqn = APP_TYPES_FQNS.PEOPLE.toString();
+const remindersFqn = APP_TYPES_FQNS.REMINDERS.toString();
+const reminderOptOutsFqn = APP_TYPES_FQNS.REMINDER_OPT_OUTS.toString();
 
 const ToolbarWrapper = styled.div`
   display: flex;
@@ -102,13 +111,18 @@ type Props = {
   failedReminderIds :Set<*, *>,
   isLoadingPeople :boolean,
   loadingPeopleWithNoContacts :boolean,
+  loadingOptOuts :boolean,
+  loadingOptOutNeighbors :boolean,
   loadingReminders :boolean,
   loadingReminderNeighbors :boolean,
+  loadingReminderPDF :boolean,
+  optOutMap :Map<*, *>,
+  optOutNeighbors :Map<*, *>,
+  optOutPeopleIds :Set<*>,
   pastReminders :Map<*, *>,
   peopleWithHearingsButNoContacts :Map<*, *>,
   reminderNeighborsById :Map<*, *>,
   remindersWithOpenPSA :Set<*>,
-  reminderIds :Set<*, *>,
   searchResults :Set<*>,
   searchHasRun :boolean,
   selectedOrganizationId :boolean,
@@ -128,34 +142,30 @@ class RemindersContainer extends React.Component<Props, State> {
     };
   }
   componentDidMount() {
-    const date = moment();
-    const {
-      actions,
-      reminderIds,
-      selectedOrganizationId
-    } = this.props;
-    const { loadPeopleWithHearingsButNoContacts, loadRemindersforDate } = actions;
+    const { actions, selectedOrganizationId } = this.props;
+    const { loadPeopleWithHearingsButNoContacts } = actions;
     if (selectedOrganizationId) {
       loadPeopleWithHearingsButNoContacts();
-      if (!reminderIds.size) {
-        loadRemindersforDate({ date });
-      }
+      this.loadData(this.props);
     }
   }
 
   componentWillReceiveProps(nextProps) {
-    const date = moment();
-    const {
-      actions,
-      reminderIds,
-      selectedOrganizationId
-    } = this.props;
-    const { loadPeopleWithHearingsButNoContacts, loadRemindersforDate } = actions;
+    const { actions, selectedOrganizationId } = this.props;
+    const { loadPeopleWithHearingsButNoContacts } = actions;
     if (selectedOrganizationId !== nextProps.selectedOrganizationId) {
       loadPeopleWithHearingsButNoContacts();
-      if (!reminderIds.size) {
-        loadRemindersforDate({ date });
-      }
+      this.loadData(nextProps);
+    }
+  }
+
+  loadData = (props) => {
+    const { selectedDate } = this.state;
+    const { actions, reminderIds } = props;
+    const { loadOptOutsForDate, loadRemindersforDate } = actions;
+    if (!reminderIds.size) {
+      loadRemindersforDate({ date: selectedDate });
+      loadOptOutsForDate({ date: selectedDate });
     }
   }
 
@@ -167,9 +177,11 @@ class RemindersContainer extends React.Component<Props, State> {
   onDateChange = (dateStr) => {
     const { actions } = this.props;
     const date = moment(dateStr);
+    const { loadOptOutsForDate, loadRemindersforDate } = actions;
     if (date.isValid()) {
       this.setState({ selectedDate: date });
-      actions.loadRemindersforDate({ date });
+      loadRemindersforDate({ date });
+      loadOptOutsForDate({ date });
     }
   }
 
@@ -184,36 +196,54 @@ class RemindersContainer extends React.Component<Props, State> {
     );
   }
 
-  renderToolbar = () => (
-    <ToolbarWrapper>
-      <SubToolbarWrapper>
-        <span>Reminder Date:</span>
-        {this.renderDatePicker()}
-      </SubToolbarWrapper>
-    </ToolbarWrapper>
-  )
-
+  renderToolbar = () => {
+    const { loadingPeopleWithNoContacts, loadingReminderPDF } = this.props;
+    return (
+      <ToolbarWrapper>
+        <SubToolbarWrapper>
+          <span>Reminder Date:</span>
+          {this.renderDatePicker()}
+        </SubToolbarWrapper>
+        <StyledButton onClick={this.downloadReminderPDF} disabled={loadingPeopleWithNoContacts || loadingReminderPDF}>
+          <FontAwesomeIcon color={OL.PURPLE03} icon={faFileDownload} />
+          {' PDF Reminders'}
+        </StyledButton>
+      </ToolbarWrapper>
+    );
+  }
   renderSearchToolbar = () => {
     const { actions } = this.props;
     return <SearchAllBar handleSubmit={actions.searchPeopleByPhoneNumber} />;
   }
 
-  renderTable = (title, reminders, neighbors) => {
-    const { remindersWithOpenPSA } = this.props;
+  renderRemindersTable = (title, reminders, neighbors) => {
+    const { remindersWithOpenPSA, loadingReminders, loadingReminderNeighbors } = this.props;
     return (
-      <TableWrapper>
-        <TableTitle>
-          <TitleText>
-            <span>{ title }</span>
-            <Count>{ reminders.size }</Count>
-          </TitleText>
-        </TableTitle>
-        <RemindersTable
-            reminders={reminders}
-            neighbors={neighbors}
-            remindersWithOpenPSA={remindersWithOpenPSA}
-            noResults={!reminders.size} />
-      </TableWrapper>
+      <TableWithPagination
+          loading={loadingReminders || loadingReminderNeighbors}
+          title={title}
+          entities={reminders}
+          neighbors={neighbors}
+          appTypeFqn={remindersFqn}
+          remindersWithOpenPSA={remindersWithOpenPSA} />
+    );
+  }
+
+  renderOptOutTable = () => {
+    const {
+      optOutMap,
+      optOutNeighbors,
+      loadingOptOuts,
+      loadingOptOutNeighbors
+    } = this.props;
+    return (
+      <TableWithPagination
+          loading={loadingOptOuts || loadingOptOutNeighbors}
+          title="Opt Outs"
+          entities={optOutMap}
+          neighbors={optOutNeighbors}
+          appTypeFqn={reminderOptOutsFqn}
+          remindersWithOpenPSA={Set()} />
     );
   }
 
@@ -223,7 +253,7 @@ class RemindersContainer extends React.Component<Props, State> {
       <TableWrapper>
         <TableTitle>
           <TitleText>
-            People not recieveing reminders
+            People not receiving reminders
             <Count>{ people.size }</Count>
           </TitleText>
         </TableTitle>
@@ -268,40 +298,52 @@ class RemindersContainer extends React.Component<Props, State> {
     );
   }
 
-  renderSearch
+  downloadReminderPDF = () => {
+    const { selectedDate } = this.state;
+    const {
+      actions,
+      failedReminderIds,
+      optOutPeopleIds,
+      peopleWithHearingsButNoContacts,
+      reminderNeighborsById
+    } = this.props;
+    const { bulkDownloadRemindersPDF } = actions;
+    const failedPeopleIds = failedReminderIds.map((reminderId) => {
+      const personId = reminderNeighborsById.getIn([
+        reminderId,
+        peopleFqn,
+        PSA_NEIGHBOR.DETAILS,
+        OPENLATTICE_ID_FQN,
+        0], '');
+      return personId;
+    });
+    bulkDownloadRemindersPDF({
+      date: selectedDate,
+      optOutPeopleIds,
+      failedPeopleIds,
+      peopleWithHearingsButNoContacts: peopleWithHearingsButNoContacts.keySeq()
+    });
+  }
 
   renderResults = () => {
     const {
-      futureRemidners,
       pastReminders,
       failedReminderIds,
-      reminderNeighborsById,
-      loadingReminders,
-      loadingReminderNeighbors
+      reminderNeighborsById
     } = this.props;
     const failedReminders = pastReminders.filter((reminder, entityKeyId) => failedReminderIds.includes(entityKeyId));
 
-    if (loadingReminders || loadingReminderNeighbors) {
-      return <LoadingSpinner />;
-    }
     return (
       <ResultsWrapper>
         {
-          futureRemidners.size ? this.renderTable(
-            'Scheduled Reminders',
-            futureRemidners,
-            reminderNeighborsById
-          ) : null
-        }
-        {
-          this.renderTable(
-            'Past Reminders',
+          this.renderRemindersTable(
+            'Reminders',
             pastReminders,
             reminderNeighborsById
           )
         }
         {
-          this.renderTable(
+          this.renderRemindersTable(
             'Failed Reminders',
             failedReminders,
             reminderNeighborsById
@@ -316,6 +358,7 @@ class RemindersContainer extends React.Component<Props, State> {
       <DashboardMainSection>
         {this.renderLists()}
         {this.renderToolbar()}
+        {this.renderOptOutTable()}
         {this.renderResults()}
       </DashboardMainSection>
     );
@@ -345,6 +388,13 @@ function mapStateToProps(state) {
     [REMINDERS.LOADING_REMINDER_NEIGHBORS]: reminders.get(REMINDERS.LOADING_REMINDER_NEIGHBORS),
     [REMINDERS.PEOPLE_WITH_HEARINGS_BUT_NO_CONTACT]: reminders.get(REMINDERS.PEOPLE_WITH_HEARINGS_BUT_NO_CONTACT),
     [REMINDERS.LOADING_PEOPLE_NO_CONTACTS]: reminders.get(REMINDERS.LOADING_PEOPLE_NO_CONTACTS),
+    [REMINDERS.OPT_OUTS]: reminders.get(REMINDERS.OPT_OUTS),
+    [REMINDERS.OPT_OUT_NEIGHBORS]: reminders.get(REMINDERS.OPT_OUT_NEIGHBORS),
+    [REMINDERS.OPT_OUT_PEOPLE_IDS]: reminders.get(REMINDERS.OPT_OUT_PEOPLE_IDS),
+    [REMINDERS.OPT_OUTS_WITH_REASON]: reminders.get(REMINDERS.OPT_OUTS_WITH_REASON),
+    [REMINDERS.LOADING_OPT_OUTS]: reminders.get(REMINDERS.LOADING_OPT_OUTS),
+    [REMINDERS.LOADING_OPT_OUT_NEIGHBORS]: reminders.get(REMINDERS.LOADING_OPT_OUT_NEIGHBORS),
+    [REMINDERS.LOADING_REMINDER_PDF]: reminders.get(REMINDERS.LOADING_REMINDER_PDF),
 
     [SEARCH.LOADING]: search.get(SEARCH.LOADING),
     [SEARCH.SEARCH_RESULTS]: search.get(SEARCH.SEARCH_RESULTS),

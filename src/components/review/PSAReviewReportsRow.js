@@ -6,7 +6,6 @@ import React from 'react';
 import Immutable from 'immutable';
 import styled from 'styled-components';
 import moment from 'moment';
-import { Constants } from 'lattice';
 
 import PSAModal from '../../containers/review/PSAModal';
 import ClosePSAModal from './ClosePSAModal';
@@ -16,24 +15,19 @@ import PSAReportDownloadButton from './PSAReportDownloadButton';
 import PSAStats from './PSAStats';
 import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
 import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { getEntityKeyId } from '../../utils/DataUtils';
 import { OL } from '../../utils/consts/Colors';
 import { psaIsClosed } from '../../utils/PSAUtils';
 import { PSA_NEIGHBOR, PSA_ASSOCIATION } from '../../utils/consts/FrontEndStateConsts';
 
-const { OPENLATTICE_ID_FQN } = Constants;
-
 let {
   ASSESSED_BY,
   EDITED_BY,
-  HEARINGS,
   PEOPLE,
   STAFF,
 } = APP_TYPES_FQNS;
 
 ASSESSED_BY = ASSESSED_BY.toString();
 EDITED_BY = EDITED_BY.toString();
-HEARINGS = HEARINGS.toString();
 PEOPLE = PEOPLE.toString();
 STAFF = STAFF.toString();
 

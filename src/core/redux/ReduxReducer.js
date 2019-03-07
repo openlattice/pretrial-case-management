@@ -2,6 +2,7 @@
  * @flow
  */
 
+import { connectRouter } from 'connected-react-router/immutable';
 import { AuthReducer } from 'lattice-auth';
 import { combineReducers } from 'redux-immutable';
 
@@ -23,7 +24,7 @@ import subscriptionsReducer from '../../containers/subscription/SubscriptionsRed
 
 import { STATE } from '../../utils/consts/FrontEndStateConsts';
 
-export default function reduxReducer() {
+export default function reduxReducer(routerHistory :any) {
 
   return combineReducers({
     [STATE.APP]: appReducer,
@@ -39,8 +40,9 @@ export default function reduxReducer() {
     [STATE.PEOPLE]: peopleReducer,
     [STATE.REMINDERS]: remindersReducer,
     [STATE.REVIEW]: reviewReducer,
+    [STATE.ROUTER]: connectRouter(routerHistory),
     [STATE.SEARCH]: searchReducer,
     [STATE.SUBMIT]: submitReducer,
-    [STATE.SUBSCRIPTIONS]: subscriptionsReducer
+    [STATE.SUBSCRIPTIONS]: subscriptionsReducer,
   });
 }

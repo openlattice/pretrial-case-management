@@ -8,7 +8,7 @@ import {
   put,
   select,
   takeEvery
-} from 'redux-saga/effects';
+} from '@redux-saga/core/effects';
 
 import { getEntitySetId } from '../../utils/AppUtils';
 import { APP, PSA_NEIGHBOR, STATE } from '../../utils/consts/FrontEndStateConsts';
@@ -45,7 +45,7 @@ function* loadSubcriptionModalWorker(action :SequenceAction) :Generator<*, *, *>
 
     const personNeighborsById = yield call(SearchApi.searchEntityNeighborsWithFilter, peopleEntitySetId, {
       entityKeyIds: [personId],
-      sourceEntitySetIds: [],
+      sourceEntitySetIds: [contactInformationEntitySetId],
       destinationEntitySetIds: [subscriptionEntitySetId, contactInformationEntitySetId]
     });
 

@@ -6,17 +6,19 @@ import React from 'react';
 import styled from 'styled-components';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import Modal, { ModalTransition } from '@atlaskit/modal-dialog';
-import { Map, fromJS } from 'immutable';
 import { Constants } from 'lattice';
+import {
+  List,
+  Map,
+  fromJS,
+  Set
+} from 'immutable';
 
-import closeX from '../../assets/svg/close-x-gray.svg';
 import HearingCardsWithTitle from '../hearings/HearingCardsWithTitle';
 import InfoButton from '../buttons/InfoButton';
-import NewHearingSection from '../hearings/NewHearingSection';
 import HearingsTable from '../hearings/HearingsTable';
 import ReleaseConditionsModal from '../../containers/hearings/ReleaseConditionsModal';
-import LoadingSpinner from '../LoadingSpinner';
+import LogoLoader from '../../assets/LogoLoader';
 import psaHearingConfig from '../../config/formconfig/PSAHearingConfig';
 import { getEntitySetId } from '../../utils/AppUtils';
 import { FORM_IDS, ID_FIELD_NAMES } from '../../utils/consts/Consts';
@@ -25,6 +27,7 @@ import {
   APP,
   COURT,
   EDM,
+  PSA_NEIGHBOR,
   REVIEW,
   STATE
 } from '../../utils/consts/FrontEndStateConsts';
@@ -45,10 +48,11 @@ import * as PeopleActionFactory from '../../containers/people/PeopleActionFactor
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
-let { HEARINGS, OUTCOMES } = APP_TYPES_FQNS;
+let { HEARINGS, OUTCOMES, PRETRIAL_CASES } = APP_TYPES_FQNS;
 
 HEARINGS = HEARINGS.toString();
 OUTCOMES = OUTCOMES.toString();
+PRETRIAL_CASES = PRETRIAL_CASES.toString();
 
 const ColumnWrapper = styled(StyledColumnRowWrapper)`
   background: transparent;
@@ -66,10 +70,6 @@ const PaddedStyledColumnRow = styled(StyledColumnRow)`
   }
 `;
 
-const NoBorderStyledColumnRow = styled(PaddedStyledColumnRow)`
-  padding: 30px;
-  border: none;
-`;
 
 const TitleWrapper = styled.div`
   width: 100%;
@@ -77,19 +77,6 @@ const TitleWrapper = styled.div`
   flex-direction: row;
   justify-content: flex-start;
   align-items: center;
-`;
-
-const CloseModalX = styled.img.attrs({
-  alt: '',
-  src: closeX
-})`
-  height: 16px;
-  width: 16px;
-  margin-left: 40px;
-
-  &:hover {
-    cursor: pointer;
-  }
 `;
 
 const StyledInfoButton = styled(InfoButton)`
@@ -101,23 +88,20 @@ const StyledInfoButton = styled(InfoButton)`
 
 type Props = {
   app :Map<*, *>,
-  availableHearings :List<*, *>,
   defaultBond :Map<*, *>,
   defaultConditions :Map<*, *>,
   defaultDMF :Map<*, *>,
   dmfId :string,
   fqnToIdMap :Map<*, *>,
   hearingNeighborsById :Map<*, *>,
-  hearingsWithOutcomes :List<*, *>,
   jurisdiction :?string,
   loading :boolean,
   neighbors :Map<*, *>,
-  pastHearings :List<*, *>,
+  hearings :List<*, *>,
   personId :?string,
   psaEntityKeyId :Map<*, *>,
   psaId :?string,
   selectedOrganizationId :string,
-  scheduledHearings :List<*, *>,
   actions :{
     deleteEntity :(values :{
       entitySetId :string,
@@ -154,15 +138,10 @@ type State = {
   selectingReleaseConditions :boolean
 };
 
-const MODAL_WIDTH = '975px';
-const MODAL_HEIGHT = 'max-content';
-
 class PersonHearings extends React.Component<Props, State> {
   constructor(props :Props) {
     super(props);
     this.state = {
-      manuallyCreatingHearing: false,
-      newHearingModalOpen: false,
       releaseConditionsModalOpen: false,
       selectedHearing: Map()
     };
@@ -194,15 +173,10 @@ class PersonHearings extends React.Component<Props, State> {
     });
   }
 
-  openNewHearingModal = () => this.setState({ newHearingModalOpen: true })
-
   onClose = () => this.setState({
-    newHearingModalOpen: false,
-    releaseConditionsModalOpen: false,
-    manuallyCreatingHearing: false
+    releaseConditionsModalOpen: false
   })
 
-  manuallyCreatingHearing = () => this.setState({ manuallyCreatingHearing: true })
 
   renderCreateHearingButton = () => (
     <StyledInfoButton onClick={this.manuallyCreatingHearing}>Create New Hearing</StyledInfoButton>
@@ -242,7 +216,6 @@ class PersonHearings extends React.Component<Props, State> {
 
   selectingReleaseConditions = (row, hearingId, entityKeyId) => {
     this.setState({
-      manuallyCreatingHearing: false,
       releaseConditionsModalOpen: true,
       selectedHearing: fromJS({ row, hearingId, entityKeyId })
     });
@@ -250,10 +223,12 @@ class PersonHearings extends React.Component<Props, State> {
 
   renderReleaseConditionsModal = () => {
     const {
+      chargeHistory,
       defaultBond,
       defaultConditions,
       defaultDMF,
       dmfId,
+      hearingNeighborsById,
       jurisdiction,
       loading,
       neighbors,
@@ -265,9 +240,14 @@ class PersonHearings extends React.Component<Props, State> {
     const selectedHearingEntityKeyId = selectedHearing.get('entityKeyId', '');
     const selectedHearingId = selectedHearing.get('hearingId', '');
     const hearing = selectedHearing.get('row', Map());
+    let caseHistory = hearingNeighborsById
+      .getIn([selectedHearingEntityKeyId, PRETRIAL_CASES, PSA_NEIGHBOR.DETAILS], Map());
+    caseHistory = caseHistory.size ? fromJS([caseHistory]) : List();
 
     return (
       <ReleaseConditionsModal
+          chargeHistory={chargeHistory}
+          caseHistory={caseHistory}
           open={releaseConditionsModalOpen}
           defaultBond={defaultBond}
           defaultConditions={defaultConditions}
@@ -275,6 +255,7 @@ class PersonHearings extends React.Component<Props, State> {
           dmfId={dmfId}
           hearingId={selectedHearingId}
           hearingEntityKeyId={selectedHearingEntityKeyId}
+          hearingNeighborsById={hearingNeighborsById}
           jurisdiction={jurisdiction}
           neighbors={neighbors}
           loading={loading}
@@ -286,81 +267,17 @@ class PersonHearings extends React.Component<Props, State> {
     );
   }
 
-  renderNewHearingModal = () => {
-    const {
-      jurisdiction,
-      availableHearings,
-      personId,
-      psaId,
-      psaEntityKeyId
-    } = this.props;
-    const { newHearingModalOpen, manuallyCreatingHearing } = this.state;
-
-    return (
-      <ModalTransition>
-        {
-          newHearingModalOpen
-          && (
-            <Modal
-                scrollBehavior="outside"
-                onClose={() => this.onClose()}
-                width={MODAL_WIDTH}
-                height={MODAL_HEIGHT}
-                max-height={MODAL_HEIGHT}
-                shouldCloseOnOverlayClick
-                stackIndex={2}>
-              <NoBorderStyledColumnRow>
-                <TitleWrapper>
-                  <h1>Add New Hearing</h1>
-                  <div>
-                    {/* { manuallyCreatingHearing ? null : this.renderCreateHearingButton() } */}
-                    <CloseModalX onClick={this.onClose} />
-                  </div>
-                </TitleWrapper>
-                {
-                  manuallyCreatingHearing
-                    ? (
-                      <NewHearingSection
-                          personId={personId}
-                          psaEntityKeyId={psaEntityKeyId}
-                          psaId={psaId}
-                          manuallyCreatingHearing
-                          jurisdiction={jurisdiction}
-                          afterSubmit={this.onClose} />
-                    )
-                    : (
-                      <HearingCardsWithTitle
-                          title="Available Hearings"
-                          subtitle="Select a hearing to add it to the defendant's schedule"
-                          hearings={availableHearings}
-                          handleSelect={this.selectExistingHearing} />
-                    )
-                }
-              </NoBorderStyledColumnRow>
-            </Modal>
-          )
-        }
-      </ModalTransition>
-    );
-  }
-
 
   renderScheduledAndPastHearings = () => {
     const {
       hearings,
-      hearingsWithOutcomes,
-      hearingNeighborsById,
-      scheduledHearings,
-      pastHearings
+      hearingNeighborsById
     } = this.props;
-    const scheduledHearingsWithOutcomes = scheduledHearings.filter((hearing) => {
+    let hearingsWithOutcomesIds = Set();
+    const hearingsWithOutcomes = hearings.filter((hearing) => {
       const id = hearing.getIn([OPENLATTICE_ID_FQN, 0], '');
       const hasOutcome = !!hearingNeighborsById.getIn([id, OUTCOMES]);
-      return hasOutcome;
-    });
-    const pastHearingsWithOutcomes = pastHearings.filter((hearing) => {
-      const id = hearing.getIn([OPENLATTICE_ID_FQN, 0], '');
-      const hasOutcome = !!hearingNeighborsById.getIn([id, OUTCOMES]);
+      if (hasOutcome) hearingsWithOutcomesIds = hearingsWithOutcomesIds.add(id);
       return hasOutcome;
     });
     return (
@@ -368,9 +285,9 @@ class PersonHearings extends React.Component<Props, State> {
         <PaddedStyledColumnRow>
           <HearingCardsWithTitle
               title="Hearings With Outcomes"
-              hearings={pastHearingsWithOutcomes}
+              hearings={hearingsWithOutcomes}
               handleSelect={this.selectingReleaseConditions}
-              hearingsWithOutcomes={hearingsWithOutcomes} />
+              hearingsWithOutcomes={hearingsWithOutcomesIds} />
         </PaddedStyledColumnRow>
         <PaddedStyledColumnRow>
           <TitleWrapper>
@@ -392,13 +309,12 @@ class PersonHearings extends React.Component<Props, State> {
     const { loading } = this.props;
 
     if (loading) {
-      return <LoadingSpinner />;
+      return <LogoLoader loadingText="Loading..." />;
     }
     return (
       <Wrapper>
         <StyledColumn>
           { this.renderScheduledAndPastHearings() }
-          { this.renderNewHearingModal() }
           { this.renderReleaseConditionsModal() }
         </StyledColumn>
       </Wrapper>

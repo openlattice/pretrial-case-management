@@ -6,7 +6,7 @@ import randomUUID from 'uuid/v4';
 import moment from 'moment';
 import { DataApi, DataIntegrationApi, EntityDataModelApi, SearchApi } from 'lattice';
 import { AuthUtils } from 'lattice-auth';
-import { call, put, take, all } from 'redux-saga/effects';
+import { call, put, take, all } from '@redux-saga/core/effects';
 
 import * as ActionTypes from './EnrollActionTypes';
 import {

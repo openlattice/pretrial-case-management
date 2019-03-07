@@ -8,7 +8,7 @@ import {
   put,
   select,
   takeEvery
-} from 'redux-saga/effects';
+} from '@redux-saga/core/effects';
 
 import {
   DELETE_ENTITY,

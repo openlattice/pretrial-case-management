@@ -14,6 +14,7 @@ export const STATE = {
   PEOPLE: 'people',
   REMINDERS: 'reminders',
   REVIEW: 'review',
+  ROUTER: 'router',
   SEARCH: 'search',
   SUBMIT: 'submit',
   SUBSCRIPTIONS: 'subscriptions'
@@ -70,6 +71,7 @@ export const CHARGES = {
 // Court
 
 export const COURT = {
+  COURT_DATE: 'courtDate',
   HEARINGS_TODAY: 'hearingsToday',
   HEARINGS_BY_TIME: 'hearingsByTime',
   HEARINGS_NEIGHBORS_BY_ID: 'hearingNeighborsById',
@@ -208,7 +210,17 @@ export const PEOPLE = {
   NEIGHBORS: 'neighbors',
   REFRESHING_PERSON_NEIGHBORS: 'refreshingPersonNeighbors',
   MOST_RECENT_PSA: 'mostRecentPSA',
-  MOST_RECENT_PSA_NEIGHBORS: 'mostRecentPSANeighbors'
+  MOST_RECENT_PSA_NEIGHBORS: 'mostRecentPSANeighbors',
+  REQUIRES_ACTION_PEOPLE: 'requiresActionPeople',
+  REQUIRES_ACTION_SCORES: 'requiresActionPSAScores',
+  NO_PENDING_CHARGES_PSA_SCORES: 'psaScoresWithNoPendingCharges',
+  RECENT_FTA_PSA_SCORES: 'psaScoresWithRecentFTAs',
+  REQUIRES_ACTION_NEIGHBORS: 'requiresActionPeopleNeighbors',
+  PSA_NEIGHBORS_BY_ID: 'psaNeighborsById',
+  MULTIPLE_PSA_PEOPLE: 'peopleWithMultiplePSAs',
+  RECENT_FTA_PEOPLE: 'peopleWithRecentFTAs',
+  NO_PENDING_CHARGES_PEOPLE: 'peopleWithNoPendingCharges',
+  REQUIRES_ACTION_LOADING: 'loadingRequiresActionPeople'
 };
 
 // Reminders
@@ -224,7 +236,15 @@ export const REMINDERS = {
   REMINDERS_WITH_OPEN_PSA_IDS: 'remindersWithOpenPSA',
   LOADING_REMINDER_NEIGHBORS: 'loadingReminderNeighbors',
   PEOPLE_WITH_HEARINGS_BUT_NO_CONTACT: 'peopleWithHearingsButNoContacts',
-  LOADING_PEOPLE_NO_CONTACTS: 'loadingPeopleWithNoContacts'
+  LOADING_PEOPLE_NO_CONTACTS: 'loadingPeopleWithNoContacts',
+  OPT_OUTS: 'optOutMap',
+  OPT_OUT_NEIGHBORS: 'optOutNeighbors',
+  OPT_OUT_PEOPLE_IDS: 'optOutPeopleIds',
+  OPT_OUTS_WITH_REASON: 'optOutsWithReasons',
+  REMINDER_IDS_TO_OPT_OUT_IDS: 'reminderIdsToOptOutIds',
+  LOADING_OPT_OUTS: 'loadingOptOuts',
+  LOADING_OPT_OUT_NEIGHBORS: 'loadingOptOutNeighbors',
+  LOADING_REMINDER_PDF: 'loadingReminderPDF'
 };
 
 // Review
@@ -259,6 +279,7 @@ export const SEARCH = {
   SEARCH_ERROR: 'searchError',
   SELECTED_PERSON_ID: 'selectedPersonId',
   PERSON_DETAILS: 'personDetails',
+  LOADING_PERSON_DETAILS: 'loadingPersonDetails',
   LOADING_CASES: 'loadingCases',
   NUM_CASES_TO_LOAD: 'numCasesToLoad',
   NUM_CASES_LOADED: 'numCasesLoaded',

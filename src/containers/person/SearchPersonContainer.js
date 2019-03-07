@@ -14,7 +14,7 @@ import { connect } from 'react-redux';
 import PersonSearchFields from '../../components/person/PersonSearchFields';
 import SecondaryButton from '../../components/buttons/SecondaryButton';
 import PersonTable from '../../components/people/PersonTable';
-import LoadingSpinner from '../../components/LoadingSpinner';
+import LogoLoader from '../../assets/LogoLoader';
 import NoSearchResults from '../../components/people/NoSearchResults';
 import { clearSearchResults, searchPeople } from './PersonActionFactory';
 import { toISODate } from '../../utils/FormattingUtils';
@@ -124,10 +124,6 @@ type State = {
 
 class SearchPeopleContainer extends React.Component<Props, State> {
 
-  static defaultProps = {
-    onSelectPerson: () => {}
-  }
-
   constructor(props :Props) {
     super(props);
     this.state = {
@@ -189,8 +185,7 @@ class SearchPeopleContainer extends React.Component<Props, State> {
 
       return 0;
     });
-
-    return <PersonTable people={rows} gray={gray} handleSelect={this.handleOnSelectPerson} />
+    return <PersonTable people={rows} gray={gray} handleSelect={this.handleOnSelectPerson} />;
   }
 
   renderCreatePersonButton = () => {
@@ -222,8 +217,7 @@ class SearchPeopleContainer extends React.Component<Props, State> {
     if (isLoadingPeople) {
       return (
         <NonResultsContainer>
-          <LoadingText>Loading results...</LoadingText>
-          <LoadingSpinner />
+          <LogoLoader loadingText="Loading results..." />
         </NonResultsContainer>
       );
     }
@@ -309,7 +303,7 @@ function mapStateToProps(state :Immutable.Map<*, *>) :Object {
   return {
     [SEARCH.SEARCH_RESULTS]: search.get(SEARCH.SEARCH_RESULTS, Immutable.List()),
     [SEARCH.LOADING]: search.get(SEARCH.LOADING, false),
-    [SEARCH.SEARCH_HAS_RUN]: search.get(SEARCH.SEARCH_HAS_RUN, false),
+    [SEARCH.SEARCH_HAS_RUN]: search.get(SEARCH.SEARCH_HAS_RUN),
     error: search.get('searchError', false)
   };
 }

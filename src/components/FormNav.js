@@ -18,12 +18,12 @@ export const NavButton = styled(Button)`
   margin: 0 10px;
 `;
 
-export const NextButton = NavButton.extend`
+export const NextButton = styled(NavButton)`
   background: ${OL.BLUE09};
   color: ${OL.WHITE};
 `;
 
-export const SubmitButton = NextButton.extend.attrs({
+export const SubmitButton = styled(NextButton).attrs({
   type: (props) => {
     return props.type || 'submit';
   }

@@ -45,6 +45,7 @@ export const APP_TYPES_FQNS = {
   MANUAL_CHARGES: new FullyQualifiedName('app.manualcharges'),
   MANUAL_PRETRIAL_CASES: new FullyQualifiedName('app.manualpretrialcases'),
   OUTCOMES: new FullyQualifiedName('app.psaoutcomes'),
+  OVERSAW: new FullyQualifiedName('app.oversaw'),
   PEOPLE: new FullyQualifiedName('app.people'),
   PRETRIAL_CASES: new FullyQualifiedName('app.courtpretrialcases'),
   PSA_RISK_FACTORS: new FullyQualifiedName('app.psariskfactors'),
@@ -52,6 +53,7 @@ export const APP_TYPES_FQNS = {
   REGISTERED_FOR: new FullyQualifiedName('app.registeredfor'),
   RELEASE_CONDITIONS: new FullyQualifiedName('app.releaseconditions'),
   RELEASE_RECOMMENDATIONS: new FullyQualifiedName('app.psanotes'),
+  REMINDER_OPT_OUTS: new FullyQualifiedName('app.optout'),
   REMINDERS: new FullyQualifiedName('app.remindersent'),
   SENTENCES: new FullyQualifiedName('app.sentences'),
   SUBSCRIPTION: new FullyQualifiedName('app.subscription'),
@@ -292,6 +294,9 @@ export const PROPERTY_TYPES = {
   BOND_TYPE: 'justice.bonddescription',
   BOND_AMOUNT: 'justice.bondamount',
   SURETY_AMOUNT: 'justice.suretyamount',
+
+  // Opt Out type Consts
+  REASON: 'ol.reason',
 
   // Release condition entity type consts
   CONDITION_TYPE: 'ol.type',

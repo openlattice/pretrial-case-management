@@ -4,7 +4,7 @@
 
 import React from 'react';
 import styled from 'styled-components';
-import { AuthActionFactory } from 'lattice-auth';
+import { AuthActions } from 'lattice-auth';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { EntityDataModelApiActions } from 'lattice-sagas';
@@ -16,7 +16,7 @@ import HeaderNav from '../../components/nav/HeaderNav';
 import Dashboard from '../../components/dashboard/Dashboard';
 import Forms from '../forms/Forms';
 import ContactSupport from '../../components/app/ContactSupport';
-import LoadingSpinner from '../../components/LoadingSpinner';
+import LogoLoader from '../../assets/LogoLoader';
 import { APP, CHARGES, STATE } from '../../utils/consts/FrontEndStateConsts';
 import { APP_TYPES_FQNS, SETTINGS, MODULE } from '../../utils/consts/DataModelConsts';
 import { termsAreAccepted } from '../../utils/AcceptTermsUtils';
@@ -28,7 +28,7 @@ import * as AppActionFactory from './AppActionFactory';
 import * as CourtActionFactory from '../court/CourtActionFactory';
 import * as ChargesActionFactory from '../charges/ChargesActionFactory';
 
-const { logout } = AuthActionFactory;
+const { logout } = AuthActions;
 const { getAllPropertyTypes } = EntityDataModelApiActions;
 
 const {
@@ -137,7 +137,7 @@ class AppContainer extends React.Component<Props, *> {
     return loading
       ? (
         <NoResults>
-          <LoadingSpinner />
+          <LogoLoader loadingText="Loading..." />
         </NoResults>
       )
       : (
