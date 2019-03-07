@@ -53,8 +53,6 @@ export const getHearingFields = (hearing) => {
     .toLowerCase().trim() === 'cancelled';
   const hearingIsInactive = hearing.getIn([PROPERTY_TYPES.HEARING_INACTIVE, 0], false);
   const hearingIsCancelled = hearingIsInactive || hearingUpdateIsCancelled;
-  console.log('hearingIsCancelled');
-  console.log(hearingIsCancelled);
 
   const hearingCourtString = `${hearingDateTime}-${courtroom}-${hearingType}-${hearingCaseId}`;
   return {
@@ -147,14 +145,6 @@ export const getScheduledHearings = (psaNeighbors) => {
           hearingIsCancelled
         } = getHearingFields(hearing);
         const hearingIsADuplicate = filteredCourtStrings.includes(hearingCourtString);
-        console.log({
-          hearingIsCancelled,
-          hearingDate,
-          hearingTime,
-          courtroom,
-          hearingType,
-          hearingIsADuplicate
-        });
         if (
           !hearingIsCancelled
           && hearingDate
