@@ -435,7 +435,6 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
     const { selectedHearing, hearingNeighbors } = props;
     const judgeEntity = getNeighborDetailsForEntitySet(hearingNeighbors, JUDGES);
     const judgeEntitySetId = judgeEntity.getIn([PSA_ASSOCIATION.ENTITY_SET, 'id'], '');
-    const judgeEntity = getNeighborDetailsForEntitySet(hearingNeighbors, JUDGES);
     const judgesNameFromHearingComments = selectedHearing.getIn([PROPERTY_TYPES.HEARING_COMMENTS, 0], 'N/A');
 
     const judgeName = judgeEntity.size ? formatJudgeName(judgeEntity) : judgesNameFromHearingComments;
