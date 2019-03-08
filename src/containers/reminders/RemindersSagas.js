@@ -99,15 +99,17 @@ function* loadOptOutNeighborsWorker(action :SequenceAction) :Generator<*, *, *> 
     const { optOutIds } = action.value;
     let optOutNeighborsById = Map();
     let optOutPeopleIds = Set();
+    let contactInfoIdsToOptOutIds = Map();
+    let optOutContactInfoIds = Set();
+    const app = yield select(getApp);
+    const orgId = yield select(getOrgId);
+    const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
+    const optOutEntitySetId = getEntitySetId(app, REMINDER_OPT_OUTS, orgId);
+    const contactInformationEntitySetId = getEntitySetId(app, CONTACT_INFORMATION, orgId);
+    const hearingsEntitySetId = getEntitySetId(app, HEARINGS, orgId);
+    const peopleEntitySetId = getEntitySetId(app, PEOPLE, orgId);
 
     if (optOutIds.length) {
-      const app = yield select(getApp);
-      const orgId = yield select(getOrgId);
-      const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
-      const optOutEntitySetId = getEntitySetId(app, REMINDER_OPT_OUTS, orgId);
-      const contactInformationEntitySetId = getEntitySetId(app, CONTACT_INFORMATION, orgId);
-      const hearingsEntitySetId = getEntitySetId(app, HEARINGS, orgId);
-      const peopleEntitySetId = getEntitySetId(app, PEOPLE, orgId);
       let neighborsById = yield call(SearchApi.searchEntityNeighborsWithFilter, optOutEntitySetId, {
         entityKeyIds: optOutIds,
         sourceEntitySetIds: [],
@@ -125,6 +127,10 @@ function* loadOptOutNeighborsWorker(action :SequenceAction) :Generator<*, *, *> 
             if (appTypeFqn === PEOPLE) {
               optOutPeopleIds = optOutPeopleIds.add(entityKeyId);
             }
+            if (appTypeFqn === CONTACT_INFORMATION) {
+              optOutContactInfoIds = optOutContactInfoIds.add(entityKeyId);
+              contactInfoIdsToOptOutIds = contactInfoIdsToOptOutIds.set(entityKeyId, optOutId);
+            }
             neighborsByAppTypeFqn = neighborsByAppTypeFqn.set(
               appTypeFqn,
               fromJS(neighbor)
@@ -132,6 +138,33 @@ function* loadOptOutNeighborsWorker(action :SequenceAction) :Generator<*, *, *> 
           });
         }
         optOutNeighborsById = optOutNeighborsById.set(optOutId, neighborsByAppTypeFqn);
+      });
+    }
+
+    if (optOutContactInfoIds.size) {
+      let neighborsById = yield call(SearchApi.searchEntityNeighborsWithFilter, contactInformationEntitySetId, {
+        entityKeyIds: optOutContactInfoIds.toJS(),
+        sourceEntitySetIds: [peopleEntitySetId],
+        destinationEntitySetIds: [peopleEntitySetId]
+      });
+      neighborsById = obfuscateBulkEntityNeighbors(neighborsById);
+      neighborsById = fromJS(neighborsById);
+      neighborsById.entrySeq().forEach(([contactInfoId, neighbors]) => {
+        let neighborsByAppTypeFqn = Map();
+        if (neighbors.size) {
+          neighbors.forEach((neighbor) => {
+            const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
+            const entityKeyId = neighbor.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0], '');
+            const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
+            if (appTypeFqn === PEOPLE) {
+              optOutPeopleIds = optOutPeopleIds.add(entityKeyId);
+              neighborsByAppTypeFqn = neighborsByAppTypeFqn.set(appTypeFqn, fromJS(neighbor));
+            }
+          });
+        }
+        const optOutId = contactInfoIdsToOptOutIds.get(contactInfoId);
+        const newOptOutNeighbors = optOutNeighborsById.get(optOutId).merge(neighborsByAppTypeFqn);
+        optOutNeighborsById = optOutNeighborsById.set(optOutId, newOptOutNeighbors);
       });
     }
 
