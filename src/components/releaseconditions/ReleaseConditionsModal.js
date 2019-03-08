@@ -9,13 +9,14 @@ import { Map } from 'immutable';
 
 import ReleaseConditionsContainer from '../../containers/releaseconditions/ReleaseConditionsContainer';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { PSA_ASSOCIATION } from '../../utils/consts/FrontEndStateConsts';
+import { formatDate } from '../../utils/FormattingUtils';
 import {
   Wrapper,
   PaddedStyledColumnRow,
   TitleWrapper,
   CloseModalX
 } from '../../utils/Layout';
-import { PSA_ASSOCIATION } from '../../utils/consts/FrontEndStateConsts';
 
 
 type Props = {
@@ -64,9 +65,9 @@ const ReleaseConditionsModal = ({
 } :Props) => {
 
 
-  const psaDate = moment(hearingNeighborsById.getIn(
+  const psaDate = formatDate(hearingNeighborsById.getIn(
     [hearingEntityKeyId, PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.COMPLETED_DATE_TIME, 0]
-  )).format('MM/DD/YYYY');
+  ));
 
   return (
     <Wrapper>
