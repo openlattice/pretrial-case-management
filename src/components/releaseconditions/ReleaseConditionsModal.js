@@ -3,14 +3,13 @@
  */
 
 import React from 'react';
-import moment from 'moment';
 import Modal, { ModalTransition } from '@atlaskit/modal-dialog';
 import { Map } from 'immutable';
 
 import ReleaseConditionsContainer from '../../containers/releaseconditions/ReleaseConditionsContainer';
-import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { PSA_ASSOCIATION } from '../../utils/consts/FrontEndStateConsts';
+import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { formatDate } from '../../utils/FormattingUtils';
+import { getAssociationDetailsForEntitySet, grabFirstNeighborValue } from '../../utils/DataUtils';
 import {
   Wrapper,
   PaddedStyledColumnRow,
@@ -18,6 +17,8 @@ import {
   CloseModalX
 } from '../../utils/Layout';
 
+let { PSA_SCORES } = APP_TYPES_FQNS;
+PSA_SCORES = PSA_SCORES.toString();
 
 type Props = {
   hearingEntityKeyId :string,
@@ -64,10 +65,8 @@ const ReleaseConditionsModal = ({
   refreshing
 } :Props) => {
 
-
-  const psaDate = formatDate(hearingNeighborsById.getIn(
-    [hearingEntityKeyId, PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.COMPLETED_DATE_TIME, 0]
-  ));
+  const psaObj = getAssociationDetailsForEntitySet(hearingNeighborsById.get(hearingEntityKeyId, PSA_SCORES));
+  const psaDate = formatDate(grabFirstNeighborValue(psaObj, PROPERTY_TYPES.COMPLETED_DATE_TIME));
 
   return (
     <Wrapper>
