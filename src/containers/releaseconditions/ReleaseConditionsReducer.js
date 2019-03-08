@@ -77,7 +77,6 @@ export default function releaseConditionsReducer(state :Map<*, *> = INITIAL_STAT
       return refreshHearingNeighbors.reducer(state, action, {
         SUCCESS: () => {
           const { neighbors } = action.value;
-          console.log(neighbors.toJS());
 
           return state.set(RELEASE_COND.HEARING_NEIGHBORS, neighbors);
         },
