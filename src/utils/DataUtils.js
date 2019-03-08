@@ -44,8 +44,8 @@ export const getEntitySetId = (neighbors :Map<*, *>, name :?string) :string => {
 };
 
 export const getEntityKeyId = (neighbors :Map<*, *>, name :?string) :string => {
-  const entity = name ? neighbors.getIn([name, PSA_NEIGHBOR.DETAILS], Map()) : neighbors;
-  return entity.getIn([OPENLATTICE_ID_FQN, 0], '');
+  const entity = name ? neighbors.get(name, Map()) : neighbors;
+  return entity.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0], entity.getIn([OPENLATTICE_ID_FQN, 0], ''));
 };
 
 export const getIdOrValue = (neighbors :Map<*, *>, entitySetName :string, optionalFQN :?string) :string => {
@@ -56,10 +56,10 @@ export const getTimeStamp = (neighbors :Map<*, *>, entitySetName :string) :strin
   neighbors.getIn([entitySetName, PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.TIMESTAMP], Map())
 );
 export const getNeighborDetailsForEntitySet = (neighbors :Map<*, *>, name :string) :string => (
-  neighbors.getIn([name, PSA_NEIGHBOR.DETAILS], Map())
+  neighbors.getIn([name, PSA_NEIGHBOR.DETAILS], neighbors.get(PSA_NEIGHBOR.DETAILS, Map()))
 );
 export const getAssociationDetailsForEntitySet = (neighbors :Map<*, *>, name :string) :string => (
-  neighbors.getIn([name, PSA_ASSOCIATION.DETAILS], Map())
+  neighbors.getIn([name, PSA_ASSOCIATION.DETAILS], neighbors.get(PSA_ASSOCIATION.DETAILS, Map()))
 );
 
 export const getFilteredNeighbor = neighborObj => Object.assign({}, ...[
