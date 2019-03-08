@@ -162,13 +162,7 @@ function* loadReleaseConditionsWorker(action :SequenceAction) :Generator<*, *, *
     psaNeighbors.forEach((neighbor) => {
       const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
       const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
-      if (appTypeFqn === dmfResultsFqn) {
-        psaNeighborsByAppTypeFqn = psaNeighborsByAppTypeFqn.set(
-          appTypeFqn,
-          neighbor
-        );
-      }
-      if (appTypeFqn === dmfRiskFactorsFqn) {
+      if (appTypeFqn === dmfResultsFqn || appTypeFqn === dmfRiskFactorsFqn) {
         psaNeighborsByAppTypeFqn = psaNeighborsByAppTypeFqn.set(
           appTypeFqn,
           neighbor
@@ -194,7 +188,7 @@ function* loadReleaseConditionsWorker(action :SequenceAction) :Generator<*, *, *
       const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
       const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
 
-      if (appTypeFqn === contactInformationFqn) {
+      if (appTypeFqn === contactInformationFqn || appTypeFqn === chargesFqn) {
         personNeighborsByAppTypeFqn = personNeighborsByAppTypeFqn.set(
           appTypeFqn,
           personNeighborsByAppTypeFqn.get(appTypeFqn, List()).push(neighbor)
@@ -204,12 +198,6 @@ function* loadReleaseConditionsWorker(action :SequenceAction) :Generator<*, *, *
         personNeighborsByAppTypeFqn = personNeighborsByAppTypeFqn.set(
           appTypeFqn,
           neighbor
-        );
-      }
-      else if (appTypeFqn === chargesFqn) {
-        personNeighborsByAppTypeFqn = personNeighborsByAppTypeFqn.set(
-          appTypeFqn,
-          personNeighborsByAppTypeFqn.get(appTypeFqn, List()).push(neighbor)
         );
       }
     });
