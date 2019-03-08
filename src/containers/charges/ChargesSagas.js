@@ -2,7 +2,6 @@
  * @flow
  */
 import { AuthorizationApi, SearchApi } from 'lattice';
-import { DataApiActions, DataApiSagas } from 'lattice-sagas';
 import { Map, Set, fromJS } from 'immutable';
 import {
   all,
@@ -12,9 +11,8 @@ import {
   takeEvery
 } from '@redux-saga/core/effects';
 
-import { getEntitySetId } from '../../utils/AppUtils';
 import { getEntityKeyId } from '../../utils/DataUtils';
-import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { APP, STATE } from '../../utils/consts/FrontEndStateConsts';
 import {
   DELETE_CHARGE,
@@ -25,16 +23,7 @@ import {
   updateCharge
 } from './ChargesActionFactory';
 
-const { ARREST_CHARGE_LIST, COURT_CHARGE_LIST } = APP_TYPES_FQNS;
-
-const arrestChargeListFqn :string = ARREST_CHARGE_LIST.toString();
-const courtChargeListFqn :string = COURT_CHARGE_LIST.toString();
-
-const getApp = state => state.get(STATE.APP, Map());
 const getOrgId = state => state.getIn([STATE.APP, APP.SELECTED_ORG_ID], '');
-
-const { getEntitySetData } = DataApiActions;
-const { getEntitySetDataWorker } = DataApiSagas;
 
 /*
  * deleteCharge()
