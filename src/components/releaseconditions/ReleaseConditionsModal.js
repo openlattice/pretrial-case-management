@@ -76,7 +76,7 @@ const ReleaseConditionsModal = ({
           && (
             <Modal
                 scrollBehavior="outside"
-                onClose={() => onClose()}
+                onClose={onClose}
                 width={MODAL_WIDTH}
                 height={MODAL_HEIGHT}
                 max-height={MODAL_HEIGHT}
