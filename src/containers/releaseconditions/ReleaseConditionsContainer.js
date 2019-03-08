@@ -34,6 +34,7 @@ import { OL } from '../../utils/consts/Colors';
 import { getTimeOptions } from '../../utils/consts/DateTimeConsts';
 import { getEntitySetId } from '../../utils/AppUtils';
 import { getChargeHistory } from '../../utils/CaseUtils';
+import { isUUID } from '../../utils/DataUtils';
 import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { toISODate, toISODateTime, formatDateTime } from '../../utils/FormattingUtils';
 import {
@@ -62,6 +63,7 @@ import {
 import {
   APP,
   COURT,
+  EDM,
   PSA_ASSOCIATION,
   PSA_NEIGHBOR,
   RELEASE_COND,
@@ -267,6 +269,7 @@ type Props = {
   app :Map<*, *>,
   allJudges :Map<*, *>,
   backToSelection :() => void,
+  fqnToIdMap :Map<*, *>,
   hasOutcome :boolean,
   hearingIdsRefreshing :boolean,
   hearingNeighbors :Map<*, *>,
@@ -1204,6 +1207,27 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
     }
   }
 
+  cancelHearing = (entityKeyId) => {
+    const {
+      actions,
+      app,
+      fqnToIdMap,
+      selectedOrganizationId
+    } = this.props;
+    const entitySetId = getEntitySetId(app, HEARINGS, selectedOrganizationId);
+    const values = {
+      [entityKeyId]: {
+        [fqnToIdMap.get(PROPERTY_TYPES.HEARING_INACTIVE)]: [true]
+      }
+    };
+    actions.updateEntity({
+      entitySetId,
+      entities: values,
+      updateType: 'PartialReplace',
+      callback: this.refreshHearingsNeighborsCallback
+    });
+  }
+
   onInputChange = (e) => {
     const { name, value } = e.target;
     this.setState({ [name]: value });
@@ -1214,6 +1238,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       allJudges,
       backToSelection,
       hasOutcome,
+      hearingEntityKeyId,
       loadingReleaseCondtions,
       psaNeighbors,
       replacingAssociation,
@@ -1229,6 +1254,16 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       judge
     } = this.state;
 
+    const hearingId = selectedHearing.getIn([PROPERTY_TYPES.CASE_ID, 0], '');
+    const hearingWasCreatedManually = isUUID(hearingId);
+    const disabledText = hearingWasCreatedManually ? 'Has Outcome' : 'Odyssey Hearing';
+    const cancelButtonText = (hasOutcome || !hearingWasCreatedManually) ? disabledText : 'Cancel Hearing';
+    const cancelHearingButton = (
+      <StyledBasicButton onClick={() => this.cancelHearing(hearingEntityKeyId)} disabled={hasOutcome}>
+        { cancelButtonText }
+      </StyledBasicButton>
+    );
+
     const psaContext = psaNeighbors.getIn([DMF_RISK_FACTORS, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.CONTEXT, 0]);
     const jurisdiction = JURISDICTION[psaContext];
 
@@ -1242,7 +1277,9 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
     let hearingInfoButton;
     let otherJudge;
 
-    const backToSelectionButton = <StyledBasicButton onClick={backToSelection}>Back to Selection</StyledBasicButton>;
+    const backToSelectionButton = backToSelection
+      ? <StyledBasicButton onClick={backToSelection}>Back to Selection</StyledBasicButton>
+      : null;
 
     if (modifyingHearing) {
       date = (
@@ -1283,6 +1320,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
             name="otherJudgeText"
             value={otherJudgeText} />
       );
+
       hearingInfoButton = (
         <HearingInfoButtons modifyingHearing>
           <StyledBasicButton onClick={() => this.setState({ modifyingHearing: false })}>Cancel</StyledBasicButton>
@@ -1297,16 +1335,12 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       judgeSelect = judgeName || 'NA';
       otherJudge = otherJudgeText;
       hearingInfoButton = (
-        hasOutcome
-          ? null
-          : (
-            <HearingInfoButtons>
-              <StyledBasicButton
-                  onClick={() => this.setState({ modifyingHearing: true })}>
-                Edit
-              </StyledBasicButton>
-            </HearingInfoButtons>
-          )
+        <HearingInfoButtons>
+          <StyledBasicButton
+              onClick={() => this.setState({ modifyingHearing: true })}>
+            Edit
+          </StyledBasicButton>
+        </HearingInfoButtons>
       );
     }
 
@@ -1367,7 +1401,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       <HearingSectionWrapper>
         {hearingInfoSection}
         <HearingSectionAside backToSelection={backToSelection}>
-          {backToSelection ? backToSelectionButton : null}
+          {modifyingHearing ? cancelHearingButton : backToSelectionButton}
           {hearingInfoButton}
         </HearingSectionAside>
       </HearingSectionWrapper>
@@ -1483,6 +1517,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
 function mapStateToProps(state) {
   const app = state.get(STATE.APP);
   const court = state.get(STATE.COURT);
+  const edm = state.get(STATE.EDM);
   const orgId = app.get(APP.SELECTED_ORG_ID, '');
   const releaseConditions = state.get(STATE.RELEASE_CONDITIONS);
   const submit = state.get(STATE.SUBMIT);
@@ -1492,6 +1527,8 @@ function mapStateToProps(state) {
     [APP.SELECTED_ORG_SETTINGS]: app.get(APP.SELECTED_ORG_SETTINGS, Map()),
     [APP.ENTITY_SETS_BY_ORG]: app.get(APP.ENTITY_SETS_BY_ORG, Map()),
     [APP.FQN_TO_ID]: app.get(APP.FQN_TO_ID),
+
+    [EDM.FQN_TO_ID]: edm.get(EDM.FQN_TO_ID),
 
     [RELEASE_COND.SELECTED_HEARING]: releaseConditions.get(RELEASE_COND.SELECTED_HEARING),
     [RELEASE_COND.HAS_OUTCOME]: releaseConditions.get(RELEASE_COND.HAS_OUTCOME),
