@@ -38,7 +38,7 @@ export const getFqnObj = (fqnStr) => {
   };
 };
 
-export const getEntitySetId = (neighbors :Map<*, *>, name :string) :string => {
+export const getEntitySetId = (neighbors :Map<*, *>, name :?string) :string => {
   const entity = name ? neighbors.getIn([name, PSA_NEIGHBOR.ENTITY_SET], Map()) : neighbors;
   return entity.get('id', '');
 };
@@ -57,6 +57,9 @@ export const getTimeStamp = (neighbors :Map<*, *>, entitySetName :string) :strin
 );
 export const getNeighborDetailsForEntitySet = (neighbors :Map<*, *>, name :string) :string => (
   neighbors.getIn([name, PSA_NEIGHBOR.DETAILS], Map())
+);
+export const getAssociationDetailsForEntitySet = (neighbors :Map<*, *>, name :string) :string => (
+  neighbors.getIn([name, PSA_ASSOCIATION.DETAILS], Map())
 );
 
 export const getFilteredNeighbor = neighborObj => Object.assign({}, ...[
@@ -102,3 +105,8 @@ export const getMapFromEntityKeysToPropertyKeys = (entity, entityKeyId, property
   });
   return entityObject;
 };
+
+export const getFirstNeighborValue = (neighborObj, fqn, defaultValue = '') => neighborObj.getIn(
+  [PSA_NEIGHBOR.DETAILS, fqn, 0],
+  neighborObj.getIn([fqn, 0], defaultValue)
+);
