@@ -203,7 +203,7 @@ function* loadOptOutsForDateWorker(action :SequenceAction) :Generator<*, *, *> {
     const ceiling = yield call(DataApi.getEntitySetSize, optOutEntitySetId);
 
     const reminderOptions = {
-      searchTerm: `${datePropertyTypeId}: ${toISODate(date)}`,
+      searchTerm: `${datePropertyTypeId}:"${toISODate(date)}"`,
       start: 0,
       maxHits: ceiling,
       fuzzy: false
@@ -264,7 +264,7 @@ function* loadRemindersforDateWorker(action :SequenceAction) :Generator<*, *, *>
     const ceiling = yield call(DataApi.getEntitySetSize, remindersEntitySetId);
 
     const reminderOptions = {
-      searchTerm: `${datePropertyTypeId}: ${toISODate(date)}`,
+      searchTerm: `${datePropertyTypeId}:"${toISODate(date)}"`,
       start: 0,
       maxHits: ceiling,
       fuzzy: false
@@ -560,7 +560,7 @@ function* bulkDownloadRemindersPDFWorker(action :SequenceAction) :Generator<*, *
     const oneWeekAhead = addWeekdays(date, 5);
 
     const reminderOptions = {
-      searchTerm: `${datePropertyTypeId}: "${toISODate(oneDayAhead)}" OR ${datePropertyTypeId}: "${toISODate(oneWeekAhead)}"`,
+      searchTerm: `${datePropertyTypeId}:"${toISODate(oneDayAhead)}" OR ${datePropertyTypeId}:"${toISODate(oneWeekAhead)}"`,
       start: 0,
       maxHits: ceiling,
       fuzzy: false

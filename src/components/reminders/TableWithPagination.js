@@ -7,7 +7,7 @@ import styled from 'styled-components';
 import { Map, Set } from 'immutable';
 
 import RemindersTable from './RemindersTable';
-import LogoLoader from '../../assets/LogoLoader';
+import LogoLoader from '../LogoLoader';
 import Pagination from '../Pagination';
 import { Count } from '../../utils/Layout';
 import { OL } from '../../utils/consts/Colors';

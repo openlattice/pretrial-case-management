@@ -13,7 +13,7 @@ import moment from 'moment';
 import DatePicker from '../../components/datetime/DatePicker';
 import NavButtonToolbar from '../../components/buttons/NavButtonToolbar';
 import PSAReviewReportsRowList from './PSAReviewReportsRowList';
-import LogoLoader from '../../assets/LogoLoader';
+import LogoLoader from '../../components/LogoLoader';
 import DropDownMenu from '../../components/StyledSelect';
 import { FullWidthContainer, NoResults } from '../../utils/Layout';
 import PersonSearchFields from '../../components/person/PersonSearchFields';

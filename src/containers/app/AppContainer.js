@@ -16,7 +16,7 @@ import HeaderNav from '../../components/nav/HeaderNav';
 import Dashboard from '../../components/dashboard/Dashboard';
 import Forms from '../forms/Forms';
 import ContactSupport from '../../components/app/ContactSupport';
-import LogoLoader from '../../assets/LogoLoader';
+import LogoLoader from '../../components/LogoLoader';
 import { APP, CHARGES, STATE } from '../../utils/consts/FrontEndStateConsts';
 import { APP_TYPES_FQNS, SETTINGS, MODULE } from '../../utils/consts/DataModelConsts';
 import { termsAreAccepted } from '../../utils/AcceptTermsUtils';
@@ -135,11 +135,7 @@ class AppContainer extends React.Component<Props, *> {
     const { app } = this.props;
     const loading = app.get(APP.LOADING, false);
     return loading
-      ? (
-        <NoResults>
-          <LogoLoader loadingText="Loading..." />
-        </NoResults>
-      )
+      ? <LogoLoader loadingText="Loading..." />
       : (
         <AppBodyWrapper>
           <Switch>

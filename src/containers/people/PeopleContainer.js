@@ -15,7 +15,7 @@ import PersonSearchFields from '../../components/person/PersonSearchFields';
 import PersonTextAreaInput from '../../components/person/PersonTextAreaInput';
 import PeopleList from '../../components/people/PeopleList';
 import DashboardMainSection from '../../components/dashboard/DashboardMainSection';
-import LogoLoader from '../../assets/LogoLoader';
+import LogoLoader from '../../components/LogoLoader';
 import NavButtonToolbar from '../../components/buttons/NavButtonToolbar';
 import { getFormattedPeople } from '../../utils/PeopleUtils';
 import { clearSearchResults, searchPeople } from '../person/PersonActionFactory';

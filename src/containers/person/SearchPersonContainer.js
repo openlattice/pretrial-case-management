@@ -14,7 +14,7 @@ import { connect } from 'react-redux';
 import PersonSearchFields from '../../components/person/PersonSearchFields';
 import SecondaryButton from '../../components/buttons/SecondaryButton';
 import PersonTable from '../../components/people/PersonTable';
-import LogoLoader from '../../assets/LogoLoader';
+import LogoLoader from '../../components/LogoLoader';
 import NoSearchResults from '../../components/people/NoSearchResults';
 import { clearSearchResults, searchPeople } from './PersonActionFactory';
 import { toISODate } from '../../utils/FormattingUtils';
