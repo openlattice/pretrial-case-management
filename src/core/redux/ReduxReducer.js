@@ -16,6 +16,7 @@ import enrollReducer from '../../containers/enroll/EnrollReducer';
 import psaModalReducer from '../../containers/psamodal/PSAModalReducer';
 import psaReducer from '../../containers/psa/FormReducer';
 import peopleReducer from '../../containers/people/PeopleReducer';
+import releaseConditionsReducer from '../../containers/releaseconditions/ReleaseConditionsReducer';
 import remindersReducer from '../../containers/reminders/RemindersReducer';
 import reviewReducer from '../../containers/review/ReviewReducer';
 import searchReducer from '../../containers/person/SearchReducer';
@@ -38,6 +39,7 @@ export default function reduxReducer(routerHistory :any) {
     [STATE.PSA]: psaReducer,
     [STATE.PSA_MODAL]: psaModalReducer,
     [STATE.PEOPLE]: peopleReducer,
+    [STATE.RELEASE_CONDITIONS]: releaseConditionsReducer,
     [STATE.REMINDERS]: remindersReducer,
     [STATE.REVIEW]: reviewReducer,
     [STATE.ROUTER]: connectRouter(routerHistory),

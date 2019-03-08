@@ -6,33 +6,20 @@ import React from 'react';
 import styled from 'styled-components';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { Constants } from 'lattice';
-import {
-  fromJS,
-  List,
-  Map,
-  Set
-} from 'immutable';
+import { List, Map, Set } from 'immutable';
 
-import CaseHistoryList from '../../components/casehistory/CaseHistoryList';
 import InfoButton from '../../components/buttons/InfoButton';
 import HearingCardsWithTitle from '../../components/hearings/HearingCardsWithTitle';
 import HearingCardsHolder from '../../components/hearings/HearingCardsHolder';
 import NewHearingSection from '../../components/hearings/NewHearingSection';
-import LoadingSpinner from '../../components/LoadingSpinner';
+import LogoLoader from '../../components/LogoLoader';
 import psaHearingConfig from '../../config/formconfig/PSAHearingConfig';
-import SelectReleaseConditions from '../../components/releaseconditions/SelectReleaseConditions';
+import ReleaseConditionsContainer from '../releaseconditions/ReleaseConditionsContainer';
 import SubscriptionInfo from '../../components/subscription/SubscriptionInfo';
-import { getEntitySetId } from '../../utils/AppUtils';
 import { OL } from '../../utils/consts/Colors';
 import { APP_TYPES_FQNS, PROPERTY_TYPES, SETTINGS } from '../../utils/consts/DataModelConsts';
 import { Title } from '../../utils/Layout';
-import {
-  formatJudgeName,
-  getScheduledHearings,
-  getPastHearings,
-  getHearingFields
-} from '../../utils/consts/HearingConsts';
+import { getScheduledHearings, getPastHearings, getHearingFields } from '../../utils/consts/HearingConsts';
 import {
   FORM_IDS,
   ID_FIELD_NAMES,
@@ -46,8 +33,7 @@ import {
   REVIEW,
   COURT,
   PEOPLE,
-  PSA_NEIGHBOR,
-  PSA_ASSOCIATION
+  PSA_NEIGHBOR
 } from '../../utils/consts/FrontEndStateConsts';
 
 import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
@@ -56,44 +42,24 @@ import * as ReviewActionFactory from '../review/ReviewActionFactory';
 import * as CourtActionFactory from '../court/CourtActionFactory';
 
 let {
-  ASSESSED_BY,
-  BONDS,
-  PRETRIAL_CASES,
   CONTACT_INFORMATION,
   DMF_RISK_FACTORS,
-  HEARINGS,
   OUTCOMES,
-  RELEASE_CONDITIONS,
-  JUDGES,
   SUBSCRIPTION
 } = APP_TYPES_FQNS;
 
-ASSESSED_BY = ASSESSED_BY.toString();
-BONDS = BONDS.toString();
-PRETRIAL_CASES = PRETRIAL_CASES.toString();
+
 CONTACT_INFORMATION = CONTACT_INFORMATION.toString();
 DMF_RISK_FACTORS = DMF_RISK_FACTORS.toString();
-HEARINGS = HEARINGS.toString();
 OUTCOMES = OUTCOMES.toString();
-RELEASE_CONDITIONS = RELEASE_CONDITIONS.toString();
-JUDGES = JUDGES.toString();
 SUBSCRIPTION = SUBSCRIPTION.toString();
 const PEOPLE_FQN = APP_TYPES_FQNS.PEOPLE.toString();
-
-const { OPENLATTICE_ID_FQN } = Constants;
-
 
 const Container = styled.div`
   hr {
     margin: 30px -30px;
     width: calc(100% + 60px);
   }
-`;
-
-const ChargeTableContainer = styled.div`
-  text-align: center;
-  width: 100%;
-  margin: 0;
 `;
 
 const Wrapper = styled.div`
@@ -127,28 +93,8 @@ const CreateButton = styled(InfoButton)`
   margin: 0;
 `;
 
-
-const SubmittingWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  span {
-    font-family: 'Open Sans', sans-serif;
-    font-size: 16px;
-    margin: 20px 0;
-    color: ${OL.GREY15};
-  }
-`;
-
 type Props = {
-  allJudges :List<*, *>,
   app :Map<*, *>,
-  chargeHistory :Map<*, *>,
-  defaultBond :Map<*, *>,
-  defaultConditions :Map<*, *>,
-  defaultDMF :Map<*, *>,
-  dmfId :string,
   psaHearings :List<*, *>,
   personHearings :List<*, *>,
   hearingIdsRefreshing :Set<*, *>,
@@ -167,7 +113,6 @@ type Props = {
   replacingAssociation :boolean,
   replacingEntity :boolean,
   personNeighbors :Map<*, *>,
-  selectedOrganizationId :string,
   selectedOrganizationSettings :Map<*, *>,
   updatingEntity :boolean,
   actions :{
@@ -194,7 +139,6 @@ type Props = {
       callback :() => void
     }) => void
   },
-  refreshPSANeighborsCallback :() => void,
   onSubmit? :(hearing :Object) => void
 }
 
@@ -294,133 +238,13 @@ class SelectHearingsContainer extends React.Component<Props, State> {
     if (psaEntityKeyId) actions.refreshPSANeighbors({ id: psaEntityKeyId });
   }
 
-  renderChargeTable = () => {
-    const { selectedHearing } = this.state;
-    const {
-      chargeHistory,
-      hearingNeighborsById,
-    } = this.props;
-    const { entityKeyId } = selectedHearing;
-    const hearingNeighbors = hearingNeighborsById.get(entityKeyId, Map());
-    const associatedCasesForForPSA = fromJS([hearingNeighbors.getIn([PRETRIAL_CASES, PSA_NEIGHBOR.DETAILS], Map())]);
-    return associatedCasesForForPSA.size
-      ? (
-        <ChargeTableContainer>
-          <CaseHistoryList
-              isCompact
-              pendingCases
-              caseHistory={associatedCasesForForPSA}
-              chargeHistory={chargeHistory} />
-        </ChargeTableContainer>
-      ) : null;
-  }
-
   renderSelectReleaseCondtions = (selectedHearing) => {
-    const {
-      allJudges,
-      actions,
-      app,
-      defaultBond,
-      defaultConditions,
-      defaultDMF,
-      dmfId,
-      psaHearings,
-      neighbors,
-      personId,
-      psaId,
-      refreshPSANeighborsCallback,
-      hearingNeighborsById,
-      hearingIdsRefreshing,
-      selectedOrganizationId,
-      submitting
-    } = this.props;
-    const {
-      deleteEntity,
-      replaceAssociation,
-      replaceEntity,
-      submit,
-      updateOutcomesAndReleaseCondtions
-    } = actions;
-    let outcome;
-    let bond;
-    let conditions;
-
-    let judgeName;
-    let judgeEntitySetId = getEntitySetId(app, ASSESSED_BY, selectedOrganizationId);
-    const { hearingId, entityKeyId } = selectedHearing;
-    const hearing = psaHearings
-      .filter(hearingObj => (hearingObj.getIn([OPENLATTICE_ID_FQN, 0]) === entityKeyId))
-      .get(0);
-
-    const hasMultipleHearings = hearingNeighborsById.size > 1;
-    const oldDataOutcome = defaultDMF.getIn([PROPERTY_TYPES.OUTCOME, 0]);
-    const onlyOldExists = oldDataOutcome && !hearingNeighborsById.getIn([entityKeyId, OUTCOMES]);
-
-    if (onlyOldExists) {
-      outcome = defaultDMF;
-      bond = defaultBond;
-      conditions = defaultConditions;
-    }
-    else {
-      outcome = hearingNeighborsById.getIn([entityKeyId, OUTCOMES], Map());
-      bond = hearingNeighborsById.getIn([entityKeyId, BONDS], Map());
-      conditions = hearingNeighborsById
-        .getIn([entityKeyId, RELEASE_CONDITIONS], Map());
-    }
-    const submittedOutcomes = (onlyOldExists && hasMultipleHearings)
-      ? false
-      : !!(hearingNeighborsById.getIn([entityKeyId, OUTCOMES]) || oldDataOutcome);
-    const judgeFromJudgeEntity = hearingNeighborsById.getIn([
-      entityKeyId,
-      JUDGES
-    ]);
-    const judgeFromHearingComments = hearing.getIn([PROPERTY_TYPES.HEARING_COMMENTS, 0]);
-    if (judgeFromJudgeEntity) {
-      const judgeEntity = judgeFromJudgeEntity.get(PSA_NEIGHBOR.DETAILS);
-      judgeName = formatJudgeName(judgeEntity);
-      judgeEntitySetId = judgeFromJudgeEntity.getIn([PSA_ASSOCIATION.ENTITY_SET, 'id']);
-    }
-    else {
-      judgeName = judgeFromHearingComments;
-    }
-
-    const psaContext = neighbors
-      .getIn([DMF_RISK_FACTORS, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.CONTEXT, 0]);
-    const jurisdiction = JURISDICTION[psaContext];
-
+    const { entityKeyId } = selectedHearing;
     return (
       <Wrapper withPadding>
-        <SelectReleaseConditions
-            renderCharges={this.renderChargeTable}
-            selectedOrganizationId={selectedOrganizationId}
-            app={app}
-            submitting={submitting}
-            submittedOutcomes={submittedOutcomes}
-            jurisdiction={jurisdiction}
-            judgeEntity={judgeFromJudgeEntity}
-            judgeEntitySetId={judgeEntitySetId}
-            judgeName={judgeName}
-            allJudges={allJudges}
-            neighbors={neighbors}
-            personId={personId}
-            psaId={psaId}
-            dmfId={dmfId}
-            submit={submit}
-            replace={replaceEntity}
-            replaceAssociation={replaceAssociation}
-            deleteEntity={deleteEntity}
-            submitCallback={refreshPSANeighborsCallback}
-            updateFqn={updateOutcomesAndReleaseCondtions}
-            refreshHearingsNeighborsCallback={this.refreshHearingsNeighborsCallback}
-            hearingIdsRefreshing={hearingIdsRefreshing}
-            hearingId={hearingId}
-            hearingEntityKeyId={entityKeyId}
-            hearing={hearing}
+        <ReleaseConditionsContainer
             backToSelection={this.backToHearingSelection}
-            defaultOutcome={outcome}
-            defaultDMF={defaultDMF}
-            defaultBond={bond}
-            defaultConditions={conditions} />
+            hearingEntityKeyId={entityKeyId} />
       </Wrapper>
     );
   }
@@ -527,26 +351,52 @@ class SelectHearingsContainer extends React.Component<Props, State> {
     const { manuallyCreatingHearing, selectingReleaseConditions, selectedHearing } = this.state;
     const {
       neighbors,
-      hearingNeighborsById
+      hearingNeighborsById,
+      hearingIdsRefreshing,
+      submitting,
+      psaIdsRefreshing,
+      refreshingNeighbors,
+      replacingAssociation,
+      replacingEntity
     } = this.props;
     const hearingsWithOutcomes = hearingNeighborsById
       .keySeq().filter(id => hearingNeighborsById.getIn([id, OUTCOMES]));
     const scheduledHearings = getScheduledHearings(neighbors);
     const pastHearings = getPastHearings(neighbors);
+    const isLoading = (submitting
+      || replacingEntity
+      || replacingAssociation
+      || refreshingNeighbors
+      || psaIdsRefreshing.size
+      || hearingIdsRefreshing);
+
+    const loadingText = (submitting || replacingEntity || replacingAssociation) ? 'Submitting' : 'Reloading';
     return (
       <>
-        <HearingCardsWithTitle
-            title="Scheduled Hearings"
-            hearings={scheduledHearings}
-            handleSelect={this.selectingReleaseConditions}
-            selectedHearing={selectedHearing}
-            hearingsWithOutcomes={hearingsWithOutcomes} />
-        <HearingCardsWithTitle
-            title="Past Hearings"
-            hearings={pastHearings}
-            handleSelect={this.selectingReleaseConditions}
-            selectedHearing={selectedHearing}
-            hearingsWithOutcomes={hearingsWithOutcomes} />
+        {
+          isLoading
+            ? (
+              <Wrapper>
+                <LogoLoader loadingText={loadingText} />
+              </Wrapper>
+            )
+            : (
+              <>
+                <HearingCardsWithTitle
+                    title="Scheduled Hearings"
+                    hearings={scheduledHearings}
+                    handleSelect={this.selectingReleaseConditions}
+                    selectedHearing={selectedHearing}
+                    hearingsWithOutcomes={hearingsWithOutcomes} />
+                <HearingCardsWithTitle
+                    title="Past Hearings"
+                    hearings={pastHearings}
+                    handleSelect={this.selectingReleaseConditions}
+                    selectedHearing={selectedHearing}
+                    hearingsWithOutcomes={hearingsWithOutcomes} />
+              </>
+            )
+        }
         <hr />
         { selectingReleaseConditions
           ? this.renderSelectReleaseCondtions(selectedHearing)
@@ -557,36 +407,10 @@ class SelectHearingsContainer extends React.Component<Props, State> {
   }
 
   render() {
-    const {
-      hearingIdsRefreshing,
-      submitting,
-      psaIdsRefreshing,
-      refreshingNeighbors,
-      replacingAssociation,
-      replacingEntity
-    } = this.props;
-    const isLoading = (submitting
-      || replacingEntity
-      || replacingAssociation
-      || refreshingNeighbors
-      || psaIdsRefreshing.size
-      || hearingIdsRefreshing);
-
     return (
       <Container>
-        {this.renderSubscriptionInfo()}
-        {
-          isLoading
-            ? (
-              <Wrapper>
-                <SubmittingWrapper>
-                  <span>{ (submitting || replacingEntity || replacingAssociation) ? 'Submitting' : 'Reloading' }</span>
-                  <LoadingSpinner />
-                </SubmittingWrapper>
-              </Wrapper>
-            )
-            : this.renderHearings()
-        }
+        { this.renderSubscriptionInfo() }
+        { this.renderHearings() }
       </Container>
     );
   }

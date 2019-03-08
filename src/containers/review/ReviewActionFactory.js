@@ -31,9 +31,6 @@ const refreshPSANeighbors :RequestSequence = newRequestSequence(REFRESH_PSA_NEIG
 const UPDATE_SCORES_AND_RISK_FACTORS :string = 'UPDATE_SCORES_AND_RISK_FACTORS';
 const updateScoresAndRiskFactors :RequestSequence = newRequestSequence(UPDATE_SCORES_AND_RISK_FACTORS);
 
-const UPDATE_OUTCOMES_AND_RELEASE_CONDITIONS :string = 'UPDATE_OUTCOMES_AND_RELEASE_CONDITIONS';
-const updateOutcomesAndReleaseCondtions :RequestSequence = newRequestSequence(UPDATE_OUTCOMES_AND_RELEASE_CONDITIONS);
-
 export {
   BULK_DOWNLOAD_PSA_REVIEW_PDF,
   CHANGE_PSA_STATUS,
@@ -44,7 +41,6 @@ export {
   LOAD_PSAS_BY_DATE,
   REFRESH_PSA_NEIGHBORS,
   UPDATE_SCORES_AND_RISK_FACTORS,
-  UPDATE_OUTCOMES_AND_RELEASE_CONDITIONS,
   bulkDownloadPSAReviewPDF,
   changePSAStatus,
   checkPSAPermissions,
@@ -53,6 +49,5 @@ export {
   loadPSAData,
   loadPSAsByDate,
   refreshPSANeighbors,
-  updateScoresAndRiskFactors,
-  updateOutcomesAndReleaseCondtions
+  updateScoresAndRiskFactors
 };
