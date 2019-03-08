@@ -13,7 +13,7 @@ import BasicButton from '../../components/buttons/BasicButton';
 import DateTimeRangePicker from '../../components/datetime/DateTimeRangePicker';
 import DatePicker from '../../components/datetime/DatePicker';
 import InfoButton from '../../components/buttons/InfoButton';
-import LogoLoader from '../../assets/LogoLoader';
+import LogoLoader from '../../components/LogoLoader';
 import SearchableSelect from '../../components/controls/SearchableSelect';
 import StyledCheckbox from '../../components/controls/StyledCheckbox';
 import { OL } from '../../utils/consts/Colors';

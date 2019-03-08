@@ -10,7 +10,7 @@ import { connect } from 'react-redux';
 import { Constants } from 'lattice';
 
 import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
-import LogoLoader from '../../assets/LogoLoader';
+import LogoLoader from '../LogoLoader';
 import MultiSelectCheckbox from '../MultiSelectCheckbox';
 import PSAReviewPersonRowList from '../../containers/review/PSAReviewReportsRowList';
 import PSASummary from '../../containers/review/PSASummary';
