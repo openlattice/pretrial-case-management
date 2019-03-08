@@ -32,11 +32,17 @@ import releaseConditionsConfig from '../../config/formconfig/ReleaseConditionsCo
 import { NoContactRow } from '../../components/releaseconditions/ReleaseConditionsStyledTags';
 import { OL } from '../../utils/consts/Colors';
 import { getTimeOptions } from '../../utils/consts/DateTimeConsts';
-import { getEntitySetId } from '../../utils/AppUtils';
+import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { getChargeHistory } from '../../utils/CaseUtils';
-import { isUUID } from '../../utils/DataUtils';
 import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { toISODate, toISODateTime, formatDateTime } from '../../utils/FormattingUtils';
+import {
+  getEntitySetId,
+  getEntityKeyId,
+  getNeighborDetailsForEntitySet,
+  getFirstNeighborValue,
+  isUUID
+} from '../../utils/DataUtils';
 import {
   formatJudgeName,
   getCourtroomOptions,
@@ -370,24 +376,23 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       this.setState(this.getStateFromProps(nextProps));
     }
 
-    const outComeChanged = defaultOutcome.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.OUTCOME, 0])
-      !== nextNeighborEntities.defaultOutcome.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.OUTCOME, 0]);
+    const outComeChanged = getFirstNeighborValue(defaultOutcome, PROPERTY_TYPES.OUTCOME)
+      !== getFirstNeighborValue(nextNeighborEntities.defaultOutcome, PROPERTY_TYPES.OUTCOME);
 
-    const bondChanged = (defaultBond.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.BOND_TYPE, 0])
-      !== nextNeighborEntities.defaultBond.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.BOND_TYPE, 0]))
-      || (defaultBond.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.BOND_AMOUNT, 0])
-        !== nextNeighborEntities.defaultBond.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.BOND_AMOUNT, 0]));
+    const bondChanged = getFirstNeighborValue(defaultBond, PROPERTY_TYPES.BOND_TYPE)
+      !== getFirstNeighborValue(nextNeighborEntities.defaultBond, PROPERTY_TYPES.BOND_TYPE)
+      || getFirstNeighborValue(defaultBond, PROPERTY_TYPES.BOND_AMOUNT)
+        !== getFirstNeighborValue(nextNeighborEntities.defaultBond, PROPERTY_TYPES.BOND_AMOUNT);
 
-    const conditionTypes = defaultConditions.map(neighbor => neighbor.getIn(
-      [PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.CONDITION_TYPE, 0],
-      neighbor.getIn([PROPERTY_TYPES.CONDITION_TYPE, 0], ''), []
-    ));
+    const conditionTypes = defaultConditions.map(neighbor => getFirstNeighborValue(
+      neighbor, PROPERTY_TYPES.CONDITION_TYPE
+    ), []);
 
     const conditionsSizeChanged = defaultConditions.size !== nextNeighborEntities.defaultConditions.size;
 
     const defaultConditionsChanged = conditionsSizeChanged
       || nextNeighborEntities.defaultConditions.some((condition) => {
-        const conditionType = condition.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.CONDITION_TYPE, 0], '');
+        const conditionType = getFirstNeighborValue(condition, PROPERTY_TYPES.CONDITION_TYPE);
         return !conditionTypes.includes(conditionType);
       });
 
@@ -398,10 +403,10 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       || nextJudge.judgeName !== judgeName
       || nextJudge.judgeEntity !== judgeEntity
       || nextProps.hearingEntityKeyId !== hearingEntityKeyId
-      || nextProps.selectedHearing.getIn([PROPERTY_TYPES.DATE_TIME, 0])
-        !== selectedHearing.getIn([PROPERTY_TYPES.DATE_TIME, 0])
-      || nextProps.selectedHearing.getIn([PROPERTY_TYPES.COURTROOM, 0])
-        !== selectedHearing.getIn([PROPERTY_TYPES.COURTROOM, 0])
+      || getFirstNeighborValue(nextProps.selectedHearing, PROPERTY_TYPES.DATE_TIME)
+        !== getFirstNeighborValue(selectedHearing, PROPERTY_TYPES.DATE_TIME)
+      || getFirstNeighborValue(nextProps.selectedHearing, PROPERTY_TYPES.COURTROOM)
+        !== getFirstNeighborValue(selectedHearing, PROPERTY_TYPES.COURTROOM)
     ) {
       this.setState(this.getStateFromProps(nextProps));
     }
@@ -421,15 +426,15 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
 
   refreshPSANeighborsCallback = () => {
     const { psaEntity } = this.getNeighborEntities(this.props);
-    const psaEntityKeyId = psaEntity.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0], '');
+    const psaEntityKeyId = getEntityKeyId(psaEntity);
     const { actions } = this.props;
     if (psaEntityKeyId) actions.refreshPSANeighbors({ id: psaEntityKeyId });
   }
 
   getJudgeEntity = (props) => {
     const { selectedHearing, hearingNeighbors } = props;
-    const judgeEntity = hearingNeighbors.getIn([JUDGES, PSA_NEIGHBOR.DETAILS], Map());
     const judgeEntitySetId = judgeEntity.getIn([PSA_ASSOCIATION.ENTITY_SET, 'id'], '');
+    const judgeEntity = getNeighborDetailsForEntitySet(hearingNeighbors, JUDGES);
     const judgesNameFromHearingComments = selectedHearing.getIn([PROPERTY_TYPES.HEARING_COMMENTS, 0], 'N/A');
 
     const judgeName = judgeEntity.size ? formatJudgeName(judgeEntity) : judgesNameFromHearingComments;
@@ -483,11 +488,12 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
     const { judgeEntity, judgeName } = this.getJudgeEntity(props);
 
     let modifyingHearing = false;
-    const hearingDateTimeMoment = moment(selectedHearing.getIn([PROPERTY_TYPES.DATE_TIME, 0], ''));
+    const hearingDateTimeString = getFirstNeighborValue(selectedHearing, PROPERTY_TYPES.DATE_TIME);
+    const hearingDateTimeMoment = moment(hearingDateTimeString);
     let hearingDateTime = hearingDateTimeMoment.isValid() ? hearingDateTimeMoment : null;
-    let hearingCourtroom = selectedHearing.getIn([PROPERTY_TYPES.COURTROOM, 0], '');
+    let hearingCourtroom = getFirstNeighborValue(selectedHearing, PROPERTY_TYPES.COURTROOM);
     const otherJudgeText = '';
-    const judgeId = judgeEntity ? judgeEntity.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.PERSON_ID, 0]) : null;
+    const judgeId = judgeEntity ? getFirstNeighborValue(judgeEntity, PROPERTY_TYPES.PERSON_ID) : null;
     const judge = judgeName || otherJudgeText;
     let newHearingDate;
     let newHearingTime;
@@ -500,8 +506,8 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
     }
 
     if (hasOutcome) {
-      const bondType = defaultBond.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.BOND_TYPE, 0]);
-      const bondAmount = defaultBond.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.BOND_AMOUNT, 0], '');
+      const bondType = getFirstNeighborValue(defaultBond, PROPERTY_TYPES.BOND_TYPE);
+      const bondAmount = getFirstNeighborValue(defaultBond, PROPERTY_TYPES.BOND_AMOUNT);
 
       let conditionsByType = Map();
       defaultConditions.forEach((condition) => {
@@ -512,28 +518,23 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       });
 
       const c247Types = conditionsByType.get(CONDITION_LIST.C_247, List()).map((condition) => {
-        const planType = condition.getIn([PROPERTY_TYPES.PLAN_TYPE, 0]);
-        const frequency = condition.getIn([PROPERTY_TYPES.FREQUENCY, 0]);
+        const planType = getFirstNeighborValue(condition, PROPERTY_TYPES.PLAN_TYPE);
+        const frequency = getFirstNeighborValue(condition, PROPERTY_TYPES.FREQUENCY);
         return frequency ? `${planType} ${frequency}` : planType;
       });
 
       const noContactPeople = conditionsByType.get(CONDITION_LIST.NO_CONTACT, List()).map((condition) => {
-        const personType = condition.getIn([PROPERTY_TYPES.PERSON_TYPE, 0]);
-        const personName = condition.getIn([PROPERTY_TYPES.PERSON_NAME, 0]);
+        const personType = getFirstNeighborValue(condition, PROPERTY_TYPES.PERSON_TYPE);
+        const personName = getFirstNeighborValue(condition, PROPERTY_TYPES.PERSON_NAME);
         return {
           [PROPERTY_TYPES.PERSON_TYPE]: personType,
           [PROPERTY_TYPES.PERSON_NAME]: personName
         };
       });
 
-      const outcome = defaultOutcome.getIn(
-        [PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.OUTCOME, 0],
-        defaultOutcome.getIn([PROPERTY_TYPES.OUTCOME, 0])
-      );
-      const otherOutcomeText = defaultOutcome.getIn(
-        [PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.OTHER_TEXT, 0],
-        defaultOutcome.getIn([PROPERTY_TYPES.OTHER_TEXT, 0], '')
-      );
+      const outcome = getFirstNeighborValue(defaultOutcome, PROPERTY_TYPES.OUTCOME);
+      const otherOutcomeText = getFirstNeighborValue(defaultOutcome, PROPERTY_TYPES.OTHER_TEXT);
+
       let warrant = null;
       let release = null;
       if (outcome === OUTCOMES.FTA) {
@@ -793,10 +794,10 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       personEntity
     } = this.getNeighborEntities(this.props);
 
-    const hearingId = selectedHearing.getIn([PROPERTY_TYPES.CASE_ID, 0], '');
-    const psaId = psaEntity.getIn([PROPERTY_TYPES.GENERAL_ID, 0], '');
-    const personId = personEntity.getIn([PROPERTY_TYPES.PERSON_ID, 0], '');
-    const dmfId = defaultDMF.getIn([PROPERTY_TYPES.GENERAL_ID, 0], '');
+    const hearingId = getFirstNeighborValue(selectedHearing, PROPERTY_TYPES.CASE_ID);
+    const psaId = getFirstNeighborValue(psaEntity, PROPERTY_TYPES.GENERAL_ID);
+    const personId = getFirstNeighborValue(personEntity, PROPERTY_TYPES.PERSON_ID);
+    const dmfId = getFirstNeighborValue(defaultDMF, PROPERTY_TYPES.GENERAL_ID);
 
     const {
       updateOutcomesAndReleaseCondtions,
@@ -807,29 +808,17 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
     const bondTime = defaultBond.getIn([PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.COMPLETED_DATE_TIME, 0]);
     const conditionsTime = defaultConditions.getIn([0, PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.COMPLETED_DATE_TIME, 0]);
 
-    const bondShouldSubmit = !(defaultBond.getIn([PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.COMPLETED_DATE_TIME, 0]))
-      || !bondTime
-      || bondTime === conditionsTime;
+    const bondShouldSubmit = !bondTime || bondTime === conditionsTime;
 
-    const outcomeShouldSubmit = !!defaultOutcome.getIn([PROPERTY_TYPES.OUTCOME, 0]);
+    const outcomeShouldSubmit = !!getFirstNeighborValue(defaultOutcome, PROPERTY_TYPES.OUTCOME);
     const outcomeShouldReplace = !outcomeShouldSubmit;
 
-    const releaseType = defaultDMF.getIn([PROPERTY_TYPES.RELEASE_TYPE, 0], '');
+    const releaseType = getFirstNeighborValue(defaultDMF, PROPERTY_TYPES.RELEASE_TYPE);
     const judgeAccepted = (outcome === OUTCOMES.ACCEPTED);
 
-    const outcomeEntityKeyId = defaultOutcome.getIn(
-      [PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0],
-      defaultOutcome.getIn([OPENLATTICE_ID_FQN, 0], '')
-    );
-    const conditionEntityKeyIds = defaultConditions.map(neighbor => neighbor.getIn(
-      [PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0],
-      neighbor.getIn([OPENLATTICE_ID_FQN, 0], ''), []
-    ));
-
-    const bondEntityKeyId = defaultBond.getIn(
-      [PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0],
-      defaultBond.getIn([OPENLATTICE_ID_FQN, 0], '')
-    );
+    const outcomeEntityKeyId = getEntityKeyId(defaultOutcome);
+    const conditionEntityKeyIds = defaultConditions.map(neighbor => getEntityKeyId(neighbor));
+    const bondEntityKeyId = getEntityKeyId(defaultBond);
 
     if (!this.isReadyToSubmit()) {
       return;
@@ -1152,9 +1141,9 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       `${date.format(dateFormat)} ${time.format(timeFormat)}`, `${dateFormat} ${timeFormat}`
     );
 
-    const associationEntitySetId = getEntitySetId(app, ASSESSED_BY, selectedOrganizationId);
-    const srcEntitySetId = getEntitySetId(app, JUDGES, selectedOrganizationId);
-    const hearingEntitySetId = getEntitySetId(app, HEARINGS, selectedOrganizationId);
+    const associationEntitySetId = getEntitySetIdFromApp(app, ASSESSED_BY, selectedOrganizationId);
+    const srcEntitySetId = getEntitySetIdFromApp(app, JUDGES, selectedOrganizationId);
+    const hearingEntitySetId = getEntitySetIdFromApp(app, HEARINGS, selectedOrganizationId);
 
     const associationEntitySetName = ASSESSED_BY;
     const associationEntityKeyId = judgeEntity
@@ -1214,7 +1203,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       fqnToIdMap,
       selectedOrganizationId
     } = this.props;
-    const entitySetId = getEntitySetId(app, HEARINGS, selectedOrganizationId);
+    const entitySetId = getEntitySetIdFromApp(app, HEARINGS, selectedOrganizationId);
     const values = {
       [entityKeyId]: {
         [fqnToIdMap.get(PROPERTY_TYPES.HEARING_INACTIVE)]: [true]
@@ -1254,8 +1243,10 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       judge
     } = this.state;
 
-    const hearingId = selectedHearing.getIn([PROPERTY_TYPES.CASE_ID, 0], '');
+    const hearingId = getFirstNeighborValue(selectedHearing, PROPERTY_TYPES.CASE_ID);
+    const hearingDateTime = getFirstNeighborValue(selectedHearing, PROPERTY_TYPES.DATE_TIME);
     const hearingWasCreatedManually = isUUID(hearingId);
+
     const disabledText = hearingWasCreatedManually ? 'Has Outcome' : 'Odyssey Hearing';
     const cancelButtonText = (hasOutcome || !hearingWasCreatedManually) ? disabledText : 'Cancel Hearing';
     const cancelHearingButton = (
@@ -1269,7 +1260,6 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
 
     const { judgeName } = this.getJudgeEntity(this.props);
 
-    const dateTime = selectedHearing.getIn([PROPERTY_TYPES.DATE_TIME, 0], '');
     let date;
     let time;
     let courtroom;
@@ -1285,15 +1275,15 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       date = (
         <DatePicker
             paddingTop
-            value={newHearingDate || dateTime}
-            placeholder={`${formatDateTime(dateTime, 'MM/DD/YYYY')}`}
+            value={newHearingDate || hearingDateTime}
+            placeholder={`${formatDateTime(hearingDateTime, 'MM/DD/YYYY')}`}
             onChange={newDate => this.setState({ newHearingDate: newDate })}
             clearButton={false} />
       );
       time = (
         <StyledSearchableSelect
             options={getTimeOptions()}
-            value={newHearingTime || formatDateTime(dateTime, 'HH:mm A')}
+            value={newHearingTime || formatDateTime(hearingDateTime, 'HH:mm A')}
             onSelect={newTime => this.setState({ newHearingTime: newTime })}
             short />
       );
@@ -1329,8 +1319,8 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       );
     }
     else {
-      date = formatDateTime(dateTime, 'MM/DD/YYYY');
-      time = formatDateTime(dateTime, 'HH:mm');
+      date = formatDateTime(hearingDateTime, 'MM/DD/YYYY');
+      time = formatDateTime(hearingDateTime, 'HH:mm');
       courtroom = selectedHearing.getIn([PROPERTY_TYPES.COURTROOM, 0], '');
       judgeSelect = judgeName || 'NA';
       otherJudge = otherJudgeText;
