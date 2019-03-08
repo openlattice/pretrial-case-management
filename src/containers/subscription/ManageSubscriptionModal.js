@@ -20,7 +20,7 @@ import SubscriptionInfo from '../../components/subscription/SubscriptionInfo';
 import ContactInfoTable from '../../components/contactinformation/ContactInfoTable';
 import NewContactForm from '../people/NewContactForm';
 import { FORM_IDS } from '../../utils/consts/Consts';
-import { getEntitySetId } from '../../utils/AppUtils';
+import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
 import {
@@ -233,7 +233,7 @@ class ManageSubscriptionModal extends React.Component<Props, State> {
       selectedOrganizationId
     } = this.props;
     const isSubscribed = subscription.getIn([PROPERTY_TYPES.IS_ACTIVE, 0], false);
-    const entitySetId = getEntitySetId(app, SUBSCRIPTION, selectedOrganizationId);
+    const entitySetId = getEntitySetIdFromApp(app, SUBSCRIPTION, selectedOrganizationId);
     const entityKeyId = subscription.getIn([OPENLATTICE_ID_FQN, 0], '');
     const values = {
       [entityKeyId]: {
