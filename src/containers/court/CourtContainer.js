@@ -238,6 +238,7 @@ class CourtContainer extends React.Component<Props, State> {
       actions,
       peopleIdsToOpenPSAIds,
       peopleWithOpenPsas,
+      peopleWithMultipleOpenPsas,
       scoresAsMap,
       submitting,
       psaEditDatesById,
@@ -247,6 +248,7 @@ class CourtContainer extends React.Component<Props, State> {
     const openPSAId = peopleIdsToOpenPSAIds.get(personOlId, '');
     const hasOpenPSA = peopleWithOpenPsas.has(personOlId);
     const scores = scoresAsMap.get(openPSAId, Map());
+    const hasMultipleOpenPSAs = peopleWithMultipleOpenPsas.includes(personOlId);
     const lastEditDate = moment(psaEditDatesById.getIn(
       [openPSAId, PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.COMPLETED_DATE_TIME, 0],
       psaEditDatesById.getIn([openPSAId, PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.DATE_TIME, 0], '')
@@ -258,6 +260,7 @@ class CourtContainer extends React.Component<Props, State> {
           psaId={openPSAId}
           person={person}
           editDate={lastEditDate}
+          multipleOpenPSAs={hasMultipleOpenPSAs}
           personId={personOlId}
           personObj={personObj}
           hasOpenPSA={hasOpenPSA}
@@ -497,6 +500,7 @@ function mapStateToProps(state) {
     [COURT.HEARING_IDS_REFRESHING]: court.get(COURT.HEARING_IDS_REFRESHING),
     [COURT.LOADING_HEARINGS_ERROR]: court.get(COURT.LOADING_HEARINGS_ERROR),
     [COURT.PEOPLE_WITH_OPEN_PSAS]: court.get(COURT.PEOPLE_WITH_OPEN_PSAS),
+    [COURT.PEOPLE_WITH_MULTIPLE_OPEN_PSAS]: court.get(COURT.PEOPLE_WITH_MULTIPLE_OPEN_PSAS),
     [COURT.LOADING_HEARINGS]: court.get(COURT.LOADING_HEARINGS),
     [COURT.LOADING_HEARING_NEIGHBORS]: court.get(COURT.LOADING_HEARING_NEIGHBORS),
     [COURT.LOADING_PSAS]: court.get(COURT.LOADING_PSAS),
