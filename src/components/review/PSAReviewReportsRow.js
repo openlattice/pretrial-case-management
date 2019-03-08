@@ -7,7 +7,7 @@ import Immutable from 'immutable';
 import styled from 'styled-components';
 import moment from 'moment';
 
-import PSAModal from '../../containers/review/PSAModal';
+import PSAModal from '../../containers/psamodal/PSAModal';
 import ClosePSAModal from './ClosePSAModal';
 import BasicButton from '../buttons/StyledButton';
 import PersonCard from '../person/PersonCardReview';

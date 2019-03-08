@@ -27,7 +27,7 @@ const OutcomeSection = ({
 } :Props) => (
   <RowWrapper>
     <h1>Outcome</h1>
-    <OptionsGrid numColumns={4} >
+    <OptionsGrid numColumns={5}>
       {mapOptionsToRadioButtons(OUTCOMES, 'outcome')}
     </OptionsGrid>
     {

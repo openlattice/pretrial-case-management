@@ -10,7 +10,7 @@ import {
   takeEvery
 } from '@redux-saga/core/effects';
 
-import { getEntitySetId } from '../../utils/AppUtils';
+import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { APP, PSA_NEIGHBOR, STATE } from '../../utils/consts/FrontEndStateConsts';
 import { APP_TYPES_FQNS } from '../../utils/consts/DataModelConsts';
 
@@ -39,9 +39,9 @@ function* loadSubcriptionModalWorker(action :SequenceAction) :Generator<*, *, *>
     const app = yield select(getApp);
     const orgId = yield select(getOrgId);
     const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
-    const peopleEntitySetId = getEntitySetId(app, PEOPLE, orgId);
-    const contactInformationEntitySetId = getEntitySetId(app, CONTACT_INFORMATION, orgId);
-    const subscriptionEntitySetId = getEntitySetId(app, SUBSCRIPTION, orgId);
+    const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE, orgId);
+    const contactInformationEntitySetId = getEntitySetIdFromApp(app, CONTACT_INFORMATION, orgId);
+    const subscriptionEntitySetId = getEntitySetIdFromApp(app, SUBSCRIPTION, orgId);
 
     const personNeighborsById = yield call(SearchApi.searchEntityNeighborsWithFilter, peopleEntitySetId, {
       entityKeyIds: [personId],

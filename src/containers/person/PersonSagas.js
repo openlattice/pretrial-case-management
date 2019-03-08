@@ -22,7 +22,7 @@ import { submit } from '../../utils/submit/SubmitActionFactory';
 import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { APP, STATE, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { obfuscateEntityNeighbors } from '../../utils/consts/DemoNames';
-import { getEntitySetId } from '../../utils/AppUtils';
+import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { getPropertyTypeId } from '../../edm/edmUtils';
 import {
   CLEAR_SEARCH_RESULTS,
@@ -100,8 +100,8 @@ function* loadPersonDetailsWorker(action) :Generator<*, *, *> {
     const { entityKeyId, shouldLoadCases } = action.value;
     const app = yield select(getApp);
     const orgId = yield select(getOrgId);
-    const pretrialCasesEntitySetId = getEntitySetId(app, PRETRIAL_CASES, orgId);
-    const peopleEntitySetId = getEntitySetId(app, PEOPLE, orgId);
+    const pretrialCasesEntitySetId = getEntitySetIdFromApp(app, PRETRIAL_CASES, orgId);
+    const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE, orgId);
     yield put(loadPersonDetails.request(action.id, { entityKeyId }));
 
     // <HACK>
@@ -231,7 +231,7 @@ function* searchPeopleWorker(action) :Generator<*, *, *> {
     const app = yield select(getApp);
     const edm = yield select(getEDM);
     const orgId = yield select(getOrgId);
-    const peopleEntitySetId = getEntitySetId(app, PEOPLE, orgId);
+    const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE, orgId);
     const firstNamePropertyTypeId = getPropertyTypeId(edm, PROPERTY_TYPES.FIRST_NAME);
     const lastNamePropertyTypeId = getPropertyTypeId(edm, PROPERTY_TYPES.LAST_NAME);
     const dobPropertyTypeId = getPropertyTypeId(edm, PROPERTY_TYPES.DOB);
@@ -292,8 +292,8 @@ function* searchPeopleByPhoneNumberWorker(action) :Generator<*, *, *> {
     const app = yield select(getApp);
     const edm = yield select(getEDM);
     const orgId = yield select(getOrgId);
-    const contactInformationEntitySetId = getEntitySetId(app, CONTACT_INFORMATION, orgId);
-    const peopleEntitySetId = getEntitySetId(app, PEOPLE, orgId);
+    const contactInformationEntitySetId = getEntitySetIdFromApp(app, CONTACT_INFORMATION, orgId);
+    const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE, orgId);
     const phonePropertyTypeId = getPropertyTypeId(edm, PROPERTY_TYPES.PHONE);
     const firstNamePropertyTypeId = getPropertyTypeId(edm, PROPERTY_TYPES.FIRST_NAME);
     const lastNamePropertyTypeId = getPropertyTypeId(edm, PROPERTY_TYPES.LAST_NAME);
