@@ -9,7 +9,7 @@ import { Constants } from 'lattice';
 
 import CONTENT from '../../utils/consts/ContentConsts';
 import defaultProfile from '../../assets/svg/profile-placeholder-avatar.svg';
-import PSAModal from '../../containers/review/PSAModal';
+import PSAModal from '../../containers/psamodal/PSAModal';
 import StyledCard from '../StyledCard';
 import { APP_TYPES_FQNS } from '../../utils/consts/DataModelConsts';
 import { getEntityKeyId } from '../../utils/DataUtils';

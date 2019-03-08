@@ -4,12 +4,18 @@ export const OUTCOMES = {
   ACCEPTED: 'Judge accepted PSA recommendation',
   INCREASED: 'Judge increased PSA recommendation',
   DECREASED: 'Judge decreased PSA recommendation',
+  FTA: 'Failed to appear',
   OTHER: 'Other'
 };
 
 export const RELEASES = {
   HELD: 'Defendant is to be held in custody',
   RELEASED: 'Defendant is to be released on bond'
+};
+
+export const WARRANTS = {
+  NO_WARRANT: 'No warrant was issued',
+  WARRANT: 'Warrant was issued'
 };
 
 export const BOND_TYPES = {

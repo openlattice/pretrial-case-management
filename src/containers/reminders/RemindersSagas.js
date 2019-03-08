@@ -22,7 +22,7 @@ import {
   takeEvery
 } from '@redux-saga/core/effects';
 
-import { getEntitySetId } from '../../utils/AppUtils';
+import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { getPropertyTypeId } from '../../edm/edmUtils';
 import { PSA_STATUSES } from '../../utils/consts/Consts';
 import exportPDFList from '../../utils/CourtRemindersPDFUtils';
@@ -99,15 +99,17 @@ function* loadOptOutNeighborsWorker(action :SequenceAction) :Generator<*, *, *> 
     const { optOutIds } = action.value;
     let optOutNeighborsById = Map();
     let optOutPeopleIds = Set();
+    let contactInfoIdsToOptOutIds = Map();
+    let optOutContactInfoIds = Set();
+    const app = yield select(getApp);
+    const orgId = yield select(getOrgId);
+    const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
+    const optOutEntitySetId = getEntitySetIdFromApp(app, REMINDER_OPT_OUTS, orgId);
+    const contactInformationEntitySetId = getEntitySetIdFromApp(app, CONTACT_INFORMATION, orgId);
+    const hearingsEntitySetId = getEntitySetIdFromApp(app, HEARINGS, orgId);
+    const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE, orgId);
 
     if (optOutIds.length) {
-      const app = yield select(getApp);
-      const orgId = yield select(getOrgId);
-      const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
-      const optOutEntitySetId = getEntitySetId(app, REMINDER_OPT_OUTS, orgId);
-      const contactInformationEntitySetId = getEntitySetId(app, CONTACT_INFORMATION, orgId);
-      const hearingsEntitySetId = getEntitySetId(app, HEARINGS, orgId);
-      const peopleEntitySetId = getEntitySetId(app, PEOPLE, orgId);
       let neighborsById = yield call(SearchApi.searchEntityNeighborsWithFilter, optOutEntitySetId, {
         entityKeyIds: optOutIds,
         sourceEntitySetIds: [],
@@ -125,6 +127,10 @@ function* loadOptOutNeighborsWorker(action :SequenceAction) :Generator<*, *, *> 
             if (appTypeFqn === PEOPLE) {
               optOutPeopleIds = optOutPeopleIds.add(entityKeyId);
             }
+            if (appTypeFqn === CONTACT_INFORMATION) {
+              optOutContactInfoIds = optOutContactInfoIds.add(entityKeyId);
+              contactInfoIdsToOptOutIds = contactInfoIdsToOptOutIds.set(entityKeyId, optOutId);
+            }
             neighborsByAppTypeFqn = neighborsByAppTypeFqn.set(
               appTypeFqn,
               fromJS(neighbor)
@@ -132,6 +138,33 @@ function* loadOptOutNeighborsWorker(action :SequenceAction) :Generator<*, *, *> 
           });
         }
         optOutNeighborsById = optOutNeighborsById.set(optOutId, neighborsByAppTypeFqn);
+      });
+    }
+
+    if (optOutContactInfoIds.size) {
+      let neighborsById = yield call(SearchApi.searchEntityNeighborsWithFilter, contactInformationEntitySetId, {
+        entityKeyIds: optOutContactInfoIds.toJS(),
+        sourceEntitySetIds: [peopleEntitySetId],
+        destinationEntitySetIds: [peopleEntitySetId]
+      });
+      neighborsById = obfuscateBulkEntityNeighbors(neighborsById);
+      neighborsById = fromJS(neighborsById);
+      neighborsById.entrySeq().forEach(([contactInfoId, neighbors]) => {
+        let neighborsByAppTypeFqn = Map();
+        if (neighbors.size) {
+          neighbors.forEach((neighbor) => {
+            const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
+            const entityKeyId = neighbor.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0], '');
+            const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
+            if (appTypeFqn === PEOPLE) {
+              optOutPeopleIds = optOutPeopleIds.add(entityKeyId);
+              neighborsByAppTypeFqn = neighborsByAppTypeFqn.set(appTypeFqn, fromJS(neighbor));
+            }
+          });
+        }
+        const optOutId = contactInfoIdsToOptOutIds.get(contactInfoId);
+        const newOptOutNeighbors = optOutNeighborsById.get(optOutId).merge(neighborsByAppTypeFqn);
+        optOutNeighborsById = optOutNeighborsById.set(optOutId, newOptOutNeighbors);
       });
     }
 
@@ -164,7 +197,7 @@ function* loadOptOutsForDateWorker(action :SequenceAction) :Generator<*, *, *> {
     const app = yield select(getApp);
     const edm = yield select(getEDM);
     const orgId = yield select(getOrgId);
-    const optOutEntitySetId = getEntitySetId(app, REMINDER_OPT_OUTS, orgId);
+    const optOutEntitySetId = getEntitySetIdFromApp(app, REMINDER_OPT_OUTS, orgId);
     const datePropertyTypeId = getPropertyTypeId(edm, DATE_TIME_FQN);
 
     const ceiling = yield call(DataApi.getEntitySetSize, optOutEntitySetId);
@@ -225,7 +258,7 @@ function* loadRemindersforDateWorker(action :SequenceAction) :Generator<*, *, *>
     const app = yield select(getApp);
     const edm = yield select(getEDM);
     const orgId = yield select(getOrgId);
-    const remindersEntitySetId = getEntitySetId(app, REMINDERS, orgId);
+    const remindersEntitySetId = getEntitySetIdFromApp(app, REMINDERS, orgId);
     const datePropertyTypeId = getPropertyTypeId(edm, DATE_TIME_FQN);
 
     const ceiling = yield call(DataApi.getEntitySetSize, remindersEntitySetId);
@@ -304,11 +337,11 @@ function* loadReminderNeighborsByIdWorker(action :SequenceAction) :Generator<*, 
       const app = yield select(getApp);
       const orgId = yield select(getOrgId);
       const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
-      const remindersEntitySetId = getEntitySetId(app, REMINDERS, orgId);
-      const contactInformationEntitySetId = getEntitySetId(app, CONTACT_INFORMATION, orgId);
-      const hearingsEntitySetId = getEntitySetId(app, HEARINGS, orgId);
-      const peopleEntitySetId = getEntitySetId(app, PEOPLE, orgId);
-      const psaScoresEntitySetId = getEntitySetId(app, PSA_SCORES, orgId);
+      const remindersEntitySetId = getEntitySetIdFromApp(app, REMINDERS, orgId);
+      const contactInformationEntitySetId = getEntitySetIdFromApp(app, CONTACT_INFORMATION, orgId);
+      const hearingsEntitySetId = getEntitySetIdFromApp(app, HEARINGS, orgId);
+      const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE, orgId);
+      const psaScoresEntitySetId = getEntitySetIdFromApp(app, PSA_SCORES, orgId);
       let neighborsById = yield call(SearchApi.searchEntityNeighborsWithFilter, remindersEntitySetId, {
         entityKeyIds: reminderIds,
         sourceEntitySetIds: [],
@@ -394,10 +427,10 @@ function* loadPeopleWithHearingsButNoContactsWorker(action :SequenceAction) :Gen
     const orgId = yield select(getOrgId);
     const statusFqn = new FullyQualifiedName(PROPERTY_TYPES.STATUS);
     const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
-    const psaScoresEntitySetId = getEntitySetId(app, PSA_SCORES, orgId);
-    const peopleEntitySetId = getEntitySetId(app, PEOPLE, orgId);
-    const hearingEntityKeyId = getEntitySetId(app, HEARINGS, orgId);
-    const contactInformationEntityKeyId = getEntitySetId(app, CONTACT_INFORMATION, orgId);
+    const psaScoresEntitySetId = getEntitySetIdFromApp(app, PSA_SCORES, orgId);
+    const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE, orgId);
+    const hearingEntityKeyId = getEntitySetIdFromApp(app, HEARINGS, orgId);
+    const contactInformationEntityKeyId = getEntitySetIdFromApp(app, CONTACT_INFORMATION, orgId);
 
     /* Grab Open PSAs */
     const statusPropertyTypeId = getPropertyTypeId(edm, statusFqn);
@@ -516,8 +549,8 @@ function* bulkDownloadRemindersPDFWorker(action :SequenceAction) :Generator<*, *
     const app = yield select(getApp);
     const edm = yield select(getEDM);
     const orgId = yield select(getOrgId);
-    const hearingsEntitySetId = getEntitySetId(app, HEARINGS, orgId);
-    const peopleEntitySetId = getEntitySetId(app, PEOPLE, orgId);
+    const hearingsEntitySetId = getEntitySetIdFromApp(app, HEARINGS, orgId);
+    const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE, orgId);
     const datePropertyTypeId = getPropertyTypeId(edm, DATE_TIME_FQN);
     const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
 

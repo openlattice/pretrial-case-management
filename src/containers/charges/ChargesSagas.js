@@ -1,8 +1,7 @@
 /*
  * @flow
  */
-import { AuthorizationApi } from 'lattice';
-import { DataApiActions, DataApiSagas } from 'lattice-sagas';
+import { AuthorizationApi, SearchApi } from 'lattice';
 import { Map, Set, fromJS } from 'immutable';
 import {
   all,
@@ -12,9 +11,8 @@ import {
   takeEvery
 } from '@redux-saga/core/effects';
 
-import { getEntitySetId } from '../../utils/AppUtils';
 import { getEntityKeyId } from '../../utils/DataUtils';
-import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { APP, STATE } from '../../utils/consts/FrontEndStateConsts';
 import {
   DELETE_CHARGE,
@@ -25,16 +23,7 @@ import {
   updateCharge
 } from './ChargesActionFactory';
 
-const { ARREST_CHARGE_LIST, COURT_CHARGE_LIST } = APP_TYPES_FQNS;
-
-const arrestChargeListFqn :string = ARREST_CHARGE_LIST.toString();
-const courtChargeListFqn :string = COURT_CHARGE_LIST.toString();
-
-const getApp = state => state.get(STATE.APP, Map());
 const getOrgId = state => state.getIn([STATE.APP, APP.SELECTED_ORG_ID], '');
-
-const { getEntitySetData } = DataApiActions;
-const { getEntitySetDataWorker } = DataApiSagas;
 
 /*
  * deleteCharge()
@@ -113,15 +102,23 @@ function* loadChargesWorker(action :SequenceAction) :Generator<*, *, *> {
     let courtChargesByEntityKeyId = Map();
 
     let [arrestCharges, courtCharges] = yield all([
-      call(getEntitySetDataWorker, getEntitySetData({ entitySetId: arrestChargesEntitySetId })),
-      call(getEntitySetDataWorker, getEntitySetData({ entitySetId: courtChargesEntitySetId }))
+      call(SearchApi.searchEntitySetData, arrestChargesEntitySetId, {
+        searchTerm: '*',
+        start: 0,
+        maxHits: 10000
+      }),
+      call(SearchApi.searchEntitySetData, courtChargesEntitySetId, {
+        searchTerm: '*',
+        start: 0,
+        maxHits: 10000
+      })
     ]);
     const chargeError = arrestCharges.error || courtCharges.error;
     if (chargeError) throw chargeError;
 
     // reset values to data
-    arrestCharges = fromJS(arrestCharges.data);
-    courtCharges = fromJS(courtCharges.data);
+    arrestCharges = fromJS(arrestCharges.hits);
+    courtCharges = fromJS(courtCharges.hits);
 
     // Map charges by EnityKeyId for easy state update
     arrestCharges.forEach((charge) => {

@@ -18,7 +18,7 @@ import PersonOverview from '../../components/people/PersonOverview';
 import PersonPSA from '../../components/people/PersonPSA';
 import PersonHearings from '../../components/people/PersonHearings';
 import PersonCases from '../../components/people/PersonCases';
-import PSAModal from '../review/PSAModal';
+import PSAModal from '../psamodal/PSAModal';
 import { getPSAIdsFromNeighbors } from '../../utils/PeopleUtils';
 import { getChargeHistory } from '../../utils/CaseUtils';
 import { JURISDICTION } from '../../utils/consts/Consts';

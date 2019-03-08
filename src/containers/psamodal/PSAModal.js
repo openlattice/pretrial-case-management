@@ -62,8 +62,8 @@ import {
 
 import * as Routes from '../../core/router/Routes';
 import * as FormActionFactory from '../psa/FormActionFactory';
-import * as ReviewActionFactory from './ReviewActionFactory';
-import * as PSAModalActionFactory from '../psamodal/PSAModalActionFactory';
+import * as ReviewActionFactory from '../review/ReviewActionFactory';
+import * as PSAModalActionFactory from './PSAModalActionFactory';
 import * as CourtActionFactory from '../court/CourtActionFactory';
 import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
 import * as DataActionFactory from '../../utils/data/DataActionFactory';
@@ -121,14 +121,6 @@ const ModalWrapper = styled.div`
     margin: ${props => (props.withPadding ? '30px -30px' : '15px 0')};
     width: ${props => (props.withPadding ? 'calc(100% + 60px)' : '100%')};
   }
-`;
-
-const SpinnerWrapper = styled.div`
-  margin: 20px;
-  width: 100%;
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
 `;
 
 const NoDMFContainer = styled(CenteredContainer)`
@@ -210,18 +202,28 @@ type Props = {
   chargeHistory :Map<*, *>,
   entityKeyId :string,
   ftaHistory :Map<*, *>,
+  fqnsToEntitySetIds :Map<*, *>,
   hearings :List<*>,
+  hearingNeighborsById :Map<*, *>,
   hideProfile? :boolean,
+  loadingPSAModal :boolean,
+  loadingCaseHistory :boolean,
   manualCaseHistory :List<*>,
   manualChargeHistory :Map<*, *>,
   onClose :() => {},
   open :boolean,
-  personId :string,
   readOnly :boolean,
-  psaPermission :boolean,
+  personId :string,
+  personHearings :Map<*, *>,
+  personNeighbors :Map<*, *>,
+  psaId :Map<*, *>,
+  psaNeighbors :Map<*, *>,
+  psaPermissions :boolean,
   refreshingNeighbors :boolean,
   scores :Map<*, *>,
   scoresEntitySetId :string,
+  selectedOrganizationId :string,
+  selectedOrganizationSettings :Map<*, *>,
   sentenceHistory :Map<*, *>,
   submitting :boolean,
   judgesview :boolean,
@@ -276,9 +278,7 @@ type State = {
 class PSAModal extends React.Component<Props, State> {
 
   static defaultProps = {
-    hideCaseHistory: false,
-    hideProfile: false,
-    onStatusChangeCallback: () => {}
+    hideProfile: false
   }
 
   constructor(props :Props) {
@@ -908,10 +908,6 @@ class PSAModal extends React.Component<Props, State> {
             psaId={scores.getIn([PROPERTY_TYPES.GENERAL_ID, 0])} />
       </ModalWrapper>
     );
-  }
-
-  renderHeader = () => {
-
   }
 
   render() {

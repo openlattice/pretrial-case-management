@@ -7,6 +7,7 @@ import Immutable from 'immutable';
 import { APP_TYPES_FQNS } from '../../utils/consts/DataModelConsts';
 import { PSA_NEIGHBOR, REVIEW } from '../../utils/consts/FrontEndStateConsts';
 import { SWITCH_ORGANIZATION } from '../app/AppActionFactory';
+import { updateOutcomesAndReleaseCondtions } from '../releaseconditions/ReleaseConditionsActionFactory';
 import {
   changePSAStatus,
   checkPSAPermissions,
@@ -14,8 +15,7 @@ import {
   loadPSAData,
   loadPSAsByDate,
   refreshPSANeighbors,
-  updateScoresAndRiskFactors,
-  updateOutcomesAndReleaseCondtions
+  updateScoresAndRiskFactors
 } from './ReviewActionFactory';
 
 const {

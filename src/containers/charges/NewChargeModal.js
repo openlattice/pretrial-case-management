@@ -12,7 +12,7 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
 import NewChargeForm from '../../components/managecharges/NewChargeForm';
-import { getEntitySetId } from '../../utils/AppUtils';
+import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { arrestChargeConfig, courtChargeConfig } from '../../config/formconfig/ChargeConfig';
 import { CHARGE_TYPES } from '../../utils/consts/ChargeConsts';
 import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
@@ -411,8 +411,8 @@ function mapStateToProps(state) {
     // App
     app,
     [APP.SELECTED_ORG_ID]: orgId,
-    arrestEntitySetId: getEntitySetId(app, arrestChargeListFqn, orgId),
-    courtEntitySetId: getEntitySetId(app, courtChargeListFqn, orgId),
+    arrestEntitySetId: getEntitySetIdFromApp(app, arrestChargeListFqn, orgId),
+    courtEntitySetId: getEntitySetIdFromApp(app, courtChargeListFqn, orgId),
     [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
     [APP.SELECTED_ORG_TITLE]: app.get(APP.SELECTED_ORG_TITLE),
 
