@@ -5,26 +5,18 @@
 import React from 'react';
 import Immutable from 'immutable';
 import styled from 'styled-components';
-import { Constants } from 'lattice';
+
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faClone } from '@fortawesome/pro-light-svg-icons';
 
 import CONTENT from '../../utils/consts/ContentConsts';
 import defaultProfile from '../../assets/svg/profile-placeholder-avatar.svg';
 import PSAModal from '../../containers/psamodal/PSAModal';
 import StyledCard from '../StyledCard';
-import { APP_TYPES_FQNS } from '../../utils/consts/DataModelConsts';
-import { getEntityKeyId } from '../../utils/DataUtils';
 import { OL } from '../../utils/consts/Colors';
 import { UndecoratedLink } from '../../utils/Layout';
 
 import * as Routes from '../../core/router/Routes';
-
-let { HEARINGS, PEOPLE } = APP_TYPES_FQNS;
-
-PEOPLE = PEOPLE.toString();
-HEARINGS = HEARINGS.toString();
-
-const { OPENLATTICE_ID_FQN } = Constants;
-
 
 const StyledUndecoratedLink = styled(UndecoratedLink)`
   display: flex;
@@ -87,6 +79,12 @@ const OpenPSATag = styled.span`
   font-family: 'Open Sans', sans-serif;
   font-size: 11px;
   font-weight: 600;
+`;
+
+const MultiIconWrapper = styled.span`
+  z-index: 1;
+  position: absolute;
+  transform: translateX(208px) translateY(-2px);
 `;
 
 const TagPlaceholder = styled.span`
@@ -178,7 +176,7 @@ class PersonCard extends React.Component<Props, State> {
       photo,
       identification
     } = personObj;
-    const { hasOpenPSA, judgesview } = this.props;
+    const { multipleOpenPSAs, hasOpenPSA, judgesview } = this.props;
 
     const midName = middleName ? ` ${middleName}` : '';
     const name = `${lastName}, ${firstName}${midName}`;
@@ -188,6 +186,14 @@ class PersonCard extends React.Component<Props, State> {
         <CardWrapper>
           { this.renderModal() }
           <OpenPSATag>{`Open PSA: ${editDate}`}</OpenPSATag>
+          {
+            multipleOpenPSAs
+              ? (
+                <MultiIconWrapper>
+                  <FontAwesomeIcon color={OL.PURPLE03} icon={faClone} />
+                </MultiIconWrapper>
+              ) : null
+          }
           <StyledPersonCard onClick={this.openDetailsModal}>
             <MugShot src={photo || defaultProfile} />
             <PersonInfoSection>
