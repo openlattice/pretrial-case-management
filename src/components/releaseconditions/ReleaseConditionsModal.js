@@ -9,7 +9,7 @@ import { Map } from 'immutable';
 import ReleaseConditionsContainer from '../../containers/releaseconditions/ReleaseConditionsContainer';
 import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { formatDate } from '../../utils/FormattingUtils';
-import { getAssociationDetailsForEntitySet, grabFirstNeighborValue } from '../../utils/DataUtils';
+import { getAssociationDetailsForEntitySet, getFirstNeighborValue } from '../../utils/DataUtils';
 import {
   Wrapper,
   PaddedStyledColumnRow,
@@ -65,8 +65,8 @@ const ReleaseConditionsModal = ({
   refreshing
 } :Props) => {
 
-  const psaObj = getAssociationDetailsForEntitySet(hearingNeighborsById.get(hearingEntityKeyId, PSA_SCORES));
-  const psaDate = formatDate(grabFirstNeighborValue(psaObj, PROPERTY_TYPES.COMPLETED_DATE_TIME));
+  const psaObj = getAssociationDetailsForEntitySet(hearingNeighborsById.get(hearingEntityKeyId, Map()), PSA_SCORES);
+  const psaDate = formatDate(getFirstNeighborValue(psaObj, PROPERTY_TYPES.COMPLETED_DATE_TIME));
 
   return (
     <Wrapper>
