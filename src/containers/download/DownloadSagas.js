@@ -585,7 +585,7 @@ function* getDownloadFiltersWorker(action :SequenceAction) :Generator<*, *, *> {
     const ceiling = yield call(DataApi.getEntitySetSize, hearingEntitySetId);
 
     const hearingOptions = {
-      searchTerm: `${datePropertyTypeId}: ${start}`,
+      searchTerm: `${datePropertyTypeId}: "${start}"`,
       start: 0,
       maxHits: ceiling,
       fuzzy: false

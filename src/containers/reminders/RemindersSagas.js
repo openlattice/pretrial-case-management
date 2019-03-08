@@ -203,7 +203,7 @@ function* loadOptOutsForDateWorker(action :SequenceAction) :Generator<*, *, *> {
     const ceiling = yield call(DataApi.getEntitySetSize, optOutEntitySetId);
 
     const reminderOptions = {
-      searchTerm: `${datePropertyTypeId}: ${toISODate(date)}`,
+      searchTerm: `${datePropertyTypeId}: "${toISODate(date)}"`,
       start: 0,
       maxHits: ceiling,
       fuzzy: false
@@ -264,7 +264,7 @@ function* loadRemindersforDateWorker(action :SequenceAction) :Generator<*, *, *>
     const ceiling = yield call(DataApi.getEntitySetSize, remindersEntitySetId);
 
     const reminderOptions = {
-      searchTerm: `${datePropertyTypeId}: ${toISODate(date)}`,
+      searchTerm: `${datePropertyTypeId}: "${toISODate(date)}"`,
       start: 0,
       maxHits: ceiling,
       fuzzy: false

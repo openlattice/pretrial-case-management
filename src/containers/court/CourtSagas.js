@@ -216,7 +216,7 @@ function* loadHearingsForDateWorker(action :SequenceAction) :Generator<*, *, *> 
     const ceiling = yield call(DataApi.getEntitySetSize, hearingEntitySetId);
 
     const hearingOptions = {
-      searchTerm: `${datePropertyTypeId}: ${toISODate(action.value)}`,
+      searchTerm: `${datePropertyTypeId}: "${toISODate(action.value)}"`,
       start: 0,
       maxHits: ceiling,
       fuzzy: false
