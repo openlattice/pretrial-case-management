@@ -20,7 +20,7 @@ import HearingsTable from '../hearings/HearingsTable';
 import ReleaseConditionsModal from '../releaseconditions/ReleaseConditionsModal';
 import LogoLoader from '../../assets/LogoLoader';
 import psaHearingConfig from '../../config/formconfig/PSAHearingConfig';
-import { getEntitySetId } from '../../utils/AppUtils';
+import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { FORM_IDS, ID_FIELD_NAMES } from '../../utils/consts/Consts';
 import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import {
@@ -159,7 +159,7 @@ class PersonHearings extends React.Component<Props, State> {
       fqnToIdMap,
       selectedOrganizationId
     } = this.props;
-    const entitySetId = getEntitySetId(app, HEARINGS, selectedOrganizationId);
+    const entitySetId = getEntitySetIdFromApp(app, HEARINGS, selectedOrganizationId);
     const values = {
       [entityKeyId]: {
         [fqnToIdMap.get(PROPERTY_TYPES.HEARING_INACTIVE)]: [true]

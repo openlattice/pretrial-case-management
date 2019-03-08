@@ -20,7 +20,7 @@ import {
 
 
 import releaseConditionsConfig from '../../config/formconfig/ReleaseConditionsConfig';
-import { getEntitySetId } from '../../utils/AppUtils';
+import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { getEntityKeyId, getMapFromEntityKeysToPropertyKeys } from '../../utils/DataUtils';
 import { obfuscateEntityNeighbors } from '../../utils/consts/DemoNames';
 import { APP_TYPES_FQNS } from '../../utils/consts/DataModelConsts';
@@ -81,7 +81,7 @@ function* getHearingAndNeighbors(hearingId :string) :Generator<*, *, *> {
   const app = yield select(getApp);
   const orgId = yield select(getOrgId);
   const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
-  const hearingsEntitySetId = getEntitySetId(app, hearingsFqn, orgId);
+  const hearingsEntitySetId = getEntitySetIdFromApp(app, hearingsFqn, orgId);
 
   /*
    * Get Hearing Info
@@ -131,13 +131,13 @@ function* loadReleaseConditionsWorker(action :SequenceAction) :Generator<*, *, *
     const app = yield select(getApp);
     const orgId = yield select(getOrgId);
     const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
-    const chargesEntitySetId = getEntitySetId(app, chargesFqn, orgId);
-    const dmfEntitySetId = getEntitySetId(app, dmfResultsFqn, orgId);
-    const dmfRiskFactorsEntitySetId = getEntitySetId(app, dmfRiskFactorsFqn, orgId);
-    const peopleEntitySetId = getEntitySetId(app, peopleFqn, orgId);
-    const subscriptionEntitySetId = getEntitySetId(app, subscriptionFqn, orgId);
-    const contactInformationEntitySetId = getEntitySetId(app, contactInformationFqn, orgId);
-    const psaScoresEntityKeyId = getEntitySetId(app, psaScoresFqn, orgId);
+    const chargesEntitySetId = getEntitySetIdFromApp(app, chargesFqn, orgId);
+    const dmfEntitySetId = getEntitySetIdFromApp(app, dmfResultsFqn, orgId);
+    const dmfRiskFactorsEntitySetId = getEntitySetIdFromApp(app, dmfRiskFactorsFqn, orgId);
+    const peopleEntitySetId = getEntitySetIdFromApp(app, peopleFqn, orgId);
+    const subscriptionEntitySetId = getEntitySetIdFromApp(app, subscriptionFqn, orgId);
+    const contactInformationEntitySetId = getEntitySetIdFromApp(app, contactInformationFqn, orgId);
+    const psaScoresEntityKeyId = getEntitySetIdFromApp(app, psaScoresFqn, orgId);
 
     /*
      * Get Hearing and Hearing Neighbors
@@ -254,9 +254,9 @@ function* updateOutcomesAndReleaseCondtionsWorker(action :SequenceAction) :Gener
 
     const app = yield select(getApp);
     const orgId = yield select(getOrgId);
-    const releaseConditionEntitySetId = getEntitySetId(app, releaseConditionsFqn, orgId);
-    const bondEntitySetId = getEntitySetId(app, bondsFqn, orgId);
-    const outcomeEntitySetId = getEntitySetId(app, outcomesFqn, orgId);
+    const releaseConditionEntitySetId = getEntitySetIdFromApp(app, releaseConditionsFqn, orgId);
+    const bondEntitySetId = getEntitySetIdFromApp(app, bondsFqn, orgId);
+    const outcomeEntitySetId = getEntitySetIdFromApp(app, outcomesFqn, orgId);
 
     const allEntitySetIds = { releaseConditionEntitySetId, bondEntitySetId, outcomeEntitySetId };
 

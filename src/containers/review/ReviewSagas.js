@@ -20,7 +20,7 @@ import {
   select
 } from '@redux-saga/core/effects';
 
-import { getEntitySetId } from '../../utils/AppUtils';
+import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { getPropertyTypeId } from '../../edm/edmUtils';
 import exportPDF, { exportPDFList } from '../../utils/PDFUtils';
 import { getMapByCaseId } from '../../utils/CaseUtils';
@@ -124,7 +124,7 @@ function* getCasesAndCharges(neighbors) {
   const app = yield select(getApp);
   const orgId = yield select(getOrgId);
   const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
-  const personEntitySetId = getEntitySetId(app, peopleFqn, orgId);
+  const personEntitySetId = getEntitySetIdFromApp(app, peopleFqn, orgId);
   const personEntityKeyId = getEntityKeyId(neighbors, peopleFqn);
 
   let personNeighbors = yield call(SearchApi.searchEntityNeighbors, personEntitySetId, personEntityKeyId);
@@ -208,7 +208,7 @@ function* checkPSAPermissionsWorker(action :SequenceAction) :Generator<*, *, *> 
     yield put(checkPSAPermissions.request(action.id));
     const app = yield select(getApp);
     const orgId = yield select(getOrgId);
-    const psaRiskFactorsEntitySetId = getEntitySetId(app, psaRiskFactorsFqn, orgId);
+    const psaRiskFactorsEntitySetId = getEntitySetIdFromApp(app, psaRiskFactorsFqn, orgId);
     const permissions = yield call(AuthorizationApi.checkAuthorizations, [{
       aclKey: [psaRiskFactorsEntitySetId],
       permissions: ['WRITE']
@@ -304,12 +304,12 @@ function* loadPSADataWorker(action :SequenceAction) :Generator<*, *, *> {
       const app = yield select(getApp);
       const orgId = yield select(getOrgId);
       const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
-      const dmfFqnEntitySetId = getEntitySetId(app, dmfResultsFqn, orgId);
-      const psaScoresEntitySetId = getEntitySetId(app, psaScoresFqn, orgId);
-      const peopleEntitySetId = getEntitySetId(app, peopleFqn, orgId);
-      const staffEntitySetId = getEntitySetId(app, staffFqn, orgId);
-      const manualPretrialCasesFqnEntitySetId = getEntitySetId(app, manualPretrialCasesFqn, orgId);
-      const releaseRecommendationsEntitySetId = getEntitySetId(app, releaseRecommendationsFqn, orgId);
+      const dmfFqnEntitySetId = getEntitySetIdFromApp(app, dmfResultsFqn, orgId);
+      const psaScoresEntitySetId = getEntitySetIdFromApp(app, psaScoresFqn, orgId);
+      const peopleEntitySetId = getEntitySetIdFromApp(app, peopleFqn, orgId);
+      const staffEntitySetId = getEntitySetIdFromApp(app, staffFqn, orgId);
+      const manualPretrialCasesFqnEntitySetId = getEntitySetIdFromApp(app, manualPretrialCasesFqn, orgId);
+      const releaseRecommendationsEntitySetId = getEntitySetIdFromApp(app, releaseRecommendationsFqn, orgId);
       let neighborsById = yield call(SearchApi.searchEntityNeighborsWithFilter, psaScoresEntitySetId, {
         entityKeyIds: action.value,
         sourceEntitySetIds: [psaScoresEntitySetId, releaseRecommendationsEntitySetId, dmfFqnEntitySetId],
@@ -415,7 +415,7 @@ function* loadPSAsByDateWorker(action :SequenceAction) :Generator<*, *, *> {
     const orgId = yield select(getOrgId);
     const statusfqn = new FullyQualifiedName(PROPERTY_TYPES.STATUS);
 
-    const psaScoresEntitySetId = getEntitySetId(app, psaScoresFqn, orgId);
+    const psaScoresEntitySetId = getEntitySetIdFromApp(app, psaScoresFqn, orgId);
     const statusPropertyTypeId = getPropertyTypeId(edm, statusfqn);
     const filter = action.value || PSA_STATUSES.OPEN;
     const searchTerm = action.value === '*' ? action.value : `${statusPropertyTypeId}:"${filter}"`;
@@ -558,13 +558,13 @@ function* bulkDownloadPSAReviewPDFWorker(action :SequenceAction) :Generator<*, *
     const orgId = yield select(getOrgId);
 
     const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId], Map());
-    const chargesEntitySetId = getEntitySetId(app, chargesFqn, orgId);
-    const assessedByEntitySetId = getEntitySetId(app, assessedByFqn, orgId);
-    const editedByEntitySetId = getEntitySetId(app, editedByFqn, orgId);
-    const manualChargesEntitySetId = getEntitySetId(app, manualChargesFqn, orgId);
-    const personEntitySetId = getEntitySetId(app, peopleFqn, orgId);
-    const psaEntitySetId = getEntitySetId(app, psaScoresFqn, orgId);
-    const staffEntitySetId = getEntitySetId(app, staffFqn, orgId);
+    const chargesEntitySetId = getEntitySetIdFromApp(app, chargesFqn, orgId);
+    const assessedByEntitySetId = getEntitySetIdFromApp(app, assessedByFqn, orgId);
+    const editedByEntitySetId = getEntitySetIdFromApp(app, editedByFqn, orgId);
+    const manualChargesEntitySetId = getEntitySetIdFromApp(app, manualChargesFqn, orgId);
+    const personEntitySetId = getEntitySetIdFromApp(app, peopleFqn, orgId);
+    const psaEntitySetId = getEntitySetIdFromApp(app, psaScoresFqn, orgId);
+    const staffEntitySetId = getEntitySetIdFromApp(app, staffFqn, orgId);
 
     let peopleNeighbors = yield call(SearchApi.searchEntityNeighborsBulk, personEntitySetId, peopleEntityKeyIds);
     peopleNeighbors = obfuscateBulkEntityNeighbors(peopleNeighbors); // TODO just for demo
@@ -687,9 +687,9 @@ function* downloadPSAReviewPDFWorker(action :SequenceAction) :Generator<*, *, *>
     const app = yield select(getApp);
     const charges = yield select(getCharges);
     const orgId = yield select(getOrgId);
-    const assessedByEntitySetId = getEntitySetId(app, assessedByFqn, orgId);
-    const editedByEntitySetId = getEntitySetId(app, editedByFqn, orgId);
-    const staffEntitySetId = getEntitySetId(app, staffFqn, orgId);
+    const assessedByEntitySetId = getEntitySetIdFromApp(app, assessedByFqn, orgId);
+    const editedByEntitySetId = getEntitySetIdFromApp(app, editedByFqn, orgId);
+    const staffEntitySetId = getEntitySetIdFromApp(app, staffFqn, orgId);
     const violentArrestChargeList = charges.getIn([CHARGES.ARREST_VIOLENT, orgId], Map());
     const violentCourtChargeList = charges.getIn([CHARGES.COURT_VIOLENT, orgId], Map());
 
@@ -760,11 +760,11 @@ function* updateScoresAndRiskFactorsWorker(action :SequenceAction) :Generator<*,
     } = action.value;
     const app = yield select(getApp);
     const orgId = yield select(getOrgId);
-    const psaScoresEntitySetId = getEntitySetId(app, psaScoresFqn, orgId);
-    const psaRiskFactorsEntitySetId = getEntitySetId(app, psaRiskFactorsFqn, orgId);
-    const dmfEntitySetId = getEntitySetId(app, dmfResultsFqn, orgId);
-    const dmfRiskFactorsEntitySetId = getEntitySetId(app, dmfRiskFactorsFqn, orgId);
-    const notesEntitySetId = getEntitySetId(app, releaseRecommendationsFqn, orgId);
+    const psaScoresEntitySetId = getEntitySetIdFromApp(app, psaScoresFqn, orgId);
+    const psaRiskFactorsEntitySetId = getEntitySetIdFromApp(app, psaRiskFactorsFqn, orgId);
+    const dmfEntitySetId = getEntitySetIdFromApp(app, dmfResultsFqn, orgId);
+    const dmfRiskFactorsEntitySetId = getEntitySetIdFromApp(app, dmfRiskFactorsFqn, orgId);
+    const notesEntitySetId = getEntitySetIdFromApp(app, releaseRecommendationsFqn, orgId);
 
     const updates = [
       call(DataApi.replaceEntityInEntitySetUsingFqns,
@@ -858,8 +858,8 @@ function* refreshPSANeighborsWorker(action :SequenceAction) :Generator<*, *, *> 
     const app = yield select(getApp);
     const orgId = yield select(getOrgId);
     const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
-    const psaScoresEntitySetId = getEntitySetId(app, psaScoresFqn, orgId);
-    const hearingsEntitySetId = getEntitySetId(app, hearingsFqn, orgId);
+    const psaScoresEntitySetId = getEntitySetIdFromApp(app, psaScoresFqn, orgId);
+    const hearingsEntitySetId = getEntitySetIdFromApp(app, hearingsFqn, orgId);
 
     let neighborsList = yield call(SearchApi.searchEntityNeighbors, psaScoresEntitySetId, id);
     neighborsList = obfuscateEntityNeighbors(neighborsList); // TODO just for demo
@@ -913,7 +913,7 @@ function* changePSAStatusWorker(action :SequenceAction) :Generator<*, *, *> {
     yield put(changePSAStatus.request(action.id));
     const app = yield select(getApp);
     const orgId = yield select(getOrgId);
-    const psaScoresEntitySetId = getEntitySetId(app, psaScoresFqn, orgId);
+    const psaScoresEntitySetId = getEntitySetIdFromApp(app, psaScoresFqn, orgId);
 
     yield call(
       DataApi.replaceEntityInEntitySetUsingFqns,

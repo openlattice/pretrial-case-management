@@ -11,7 +11,7 @@ import {
 } from '@redux-saga/core/effects';
 
 import { loadPSAData } from '../review/ReviewActionFactory';
-import { getEntitySetId } from '../../utils/AppUtils';
+import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { obfuscateBulkEntityNeighbors } from '../../utils/consts/DemoNames';
 import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { APP, STATE } from '../../utils/consts/FrontEndStateConsts';
@@ -90,7 +90,7 @@ const getAllPSAIds = (neighbors, psaScoresEntitySetId) => {
 function* getOpenPSANeighbors(neighbors) :Generator<*, *, *> {
   const app = yield select(getApp);
   const orgId = yield select(getOrgId);
-  const psaEntitySetId = getEntitySetId(app, psaScoresFqn, orgId);
+  const psaEntitySetId = getEntitySetIdFromApp(app, psaScoresFqn, orgId);
 
   const ids = getOpenPSAIds(neighbors, psaEntitySetId);
   const val = ids.length ? yield call(SearchApi.searchEntityNeighborsBulk, psaEntitySetId, ids) : {};
@@ -103,8 +103,8 @@ function* loadNeighborsWorker(action :SequenceAction) :Generator<*, *, *> {
 
   const app = yield select(getApp);
   const orgId = yield select(getOrgId);
-  const peopleEntitySetId = getEntitySetId(app, peopleFqn, orgId);
-  const psaEntitySetId = getEntitySetId(app, psaScoresFqn, orgId);
+  const peopleEntitySetId = getEntitySetIdFromApp(app, peopleFqn, orgId);
+  const psaEntitySetId = getEntitySetIdFromApp(app, psaScoresFqn, orgId);
   const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId], Map());
 
   try {

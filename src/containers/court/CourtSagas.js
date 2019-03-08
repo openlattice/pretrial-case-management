@@ -2,7 +2,7 @@
  * @flow
  */
 
-import Immutable, { fromJS, Map, List } from 'immutable';
+import Immutable, { fromJS, Map } from 'immutable';
 import moment from 'moment';
 import {
   Constants,
@@ -17,7 +17,7 @@ import {
   takeEvery
 } from '@redux-saga/core/effects';
 
-import { getEntitySetId } from '../../utils/AppUtils';
+import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { getPropertyTypeId } from '../../edm/edmUtils';
 import { PSA_STATUSES } from '../../utils/consts/Consts';
 import { toISODate, TIME_FORMAT } from '../../utils/FormattingUtils';
@@ -87,10 +87,10 @@ function* filterPeopleIdsWithOpenPSAsWorker(action :SequenceAction) :Generator<*
     const app = yield select(getApp);
     const orgId = yield select(getOrgId);
     const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
-    const hearingsEntitySetId = getEntitySetId(app, hearingsFqn, orgId);
-    const peopleEntitySetId = getEntitySetId(app, peopleFqn, orgId);
-    const psaEntitySetId = getEntitySetId(app, psaScoresFqn, orgId);
-    const staffEntitySetId = getEntitySetId(app, staffFqn, orgId);
+    const hearingsEntitySetId = getEntitySetIdFromApp(app, hearingsFqn, orgId);
+    const peopleEntitySetId = getEntitySetIdFromApp(app, peopleFqn, orgId);
+    const psaEntitySetId = getEntitySetIdFromApp(app, psaScoresFqn, orgId);
+    const staffEntitySetId = getEntitySetIdFromApp(app, staffFqn, orgId);
     if (personIds.size) {
       let peopleNeighborsById = yield call(SearchApi.searchEntityNeighborsWithFilter, peopleEntitySetId, {
         entityKeyIds: personIds.toJS(),
@@ -210,7 +210,7 @@ function* loadHearingsForDateWorker(action :SequenceAction) :Generator<*, *, *> 
     const app = yield select(getApp);
     const edm = yield select(getEDM);
     const orgId = yield select(getOrgId);
-    const hearingEntitySetId = getEntitySetId(app, hearingsFqn, orgId);
+    const hearingEntitySetId = getEntitySetIdFromApp(app, hearingsFqn, orgId);
     const datePropertyTypeId = getPropertyTypeId(edm, DATE_TIME_FQN);
 
     const ceiling = yield call(DataApi.getEntitySetSize, hearingEntitySetId);
@@ -299,10 +299,10 @@ function* loadHearingNeighborsWorker(action :SequenceAction) :Generator<*, *, *>
       const app = yield select(getApp);
       const orgId = yield select(getOrgId);
       const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
-      const hearingEntitySetId = getEntitySetId(app, hearingsFqn, orgId);
-      const peopleEntitySetId = getEntitySetId(app, peopleFqn, orgId);
-      const releaseConditionsEntitySetId = getEntitySetId(app, releaseConditionsFqn, orgId);
-      const psaEntitySetId = getEntitySetId(app, psaScoresFqn, orgId);
+      const hearingEntitySetId = getEntitySetIdFromApp(app, hearingsFqn, orgId);
+      const peopleEntitySetId = getEntitySetIdFromApp(app, peopleFqn, orgId);
+      const releaseConditionsEntitySetId = getEntitySetIdFromApp(app, releaseConditionsFqn, orgId);
+      const psaEntitySetId = getEntitySetIdFromApp(app, psaScoresFqn, orgId);
       let neighborsById = yield call(SearchApi.searchEntityNeighborsWithFilter, hearingEntitySetId, {
         entityKeyIds: hearingIds
       });
@@ -387,8 +387,8 @@ function* refreshHearingNeighborsWorker(action :SequenceAction) :Generator<*, *,
     yield put(refreshHearingNeighbors.request(action.id, { id }));
     const app = yield select(getApp);
     const orgId = yield select(getOrgId);
-    const hearingEntitySetId = getEntitySetId(app, hearingsFqn, orgId);
-    const releaseConditionsEntitySetId = getEntitySetId(app, releaseConditionsFqn, orgId);
+    const hearingEntitySetId = getEntitySetIdFromApp(app, hearingsFqn, orgId);
+    const releaseConditionsEntitySetId = getEntitySetIdFromApp(app, releaseConditionsFqn, orgId);
     const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
 
     let neighborsList = yield call(SearchApi.searchEntityNeighbors, hearingEntitySetId, id);
@@ -431,7 +431,7 @@ function* loadJudgesWorker(action :SequenceAction) :Generator<*, *, *> {
     yield put(loadJudges.request(action.id));
     const app = yield select(getApp);
     const orgId = yield select(getOrgId);
-    const judgesEntitySetId = getEntitySetId(app, judgesFqn, orgId);
+    const judgesEntitySetId = getEntitySetIdFromApp(app, judgesFqn, orgId);
     const entitySetSize = yield call(DataApi.getEntitySetSize, judgesEntitySetId);
     const options = {
       searchTerm: '*',
