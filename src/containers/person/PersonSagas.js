@@ -303,6 +303,8 @@ function* searchPeopleByPhoneNumberWorker(action) :Generator<*, *, *> {
     const numbers = (searchTerm).replace(/[^0-9]/g, '');
     const phoneFields = [];
     const nameFields = [];
+    const firstNameConstraints = { min: 1, constraints: [] };
+    const lastNameConstraints = { min: 1, constraints: [] };
     const updateSearchField = (
       searchFields :Array,
       searchString :string,
@@ -316,6 +318,16 @@ function* searchPeopleByPhoneNumberWorker(action) :Generator<*, *, *> {
         exact: isExact
       });
     };
+    const updateConstraints = (
+      nameConstraints :Array,
+      search :string,
+      property :string,
+    ) => {
+      nameConstraints.constraints.push({
+        searchTerm: `${property}:"${search}"`,
+        fuzzy: true
+      });
+    };
 
     if (numbers.trim().length) {
       let searchString = numbers.trim();
@@ -324,19 +336,36 @@ function* searchPeopleByPhoneNumberWorker(action) :Generator<*, *, *> {
       }
       updateSearchField(phoneFields, searchString, phonePropertyTypeId);
     }
+
+    const names = letters.trim().split(' ');
     if (letters.trim().length) {
-      letters.trim().split(' ').forEach((word) => {
-        updateSearchField(nameFields, word, firstNamePropertyTypeId);
-        updateSearchField(nameFields, word, lastNamePropertyTypeId);
-      });
+      if (names.length < 2) {
+        updateSearchField(nameFields, letters.trim(), firstNamePropertyTypeId);
+        updateSearchField(nameFields, letters.trim(), lastNamePropertyTypeId);
+      }
+      else {
+        names.forEach((word) => {
+          updateConstraints(firstNameConstraints, word, firstNamePropertyTypeId);
+          updateConstraints(lastNameConstraints, word, lastNamePropertyTypeId);
+        });
+      }
     }
+
+    const searchConstraints = {
+      entitySetIds: [peopleEntitySetId],
+      start: 0,
+      maxHits: 100,
+      constraints: [
+        firstNameConstraints,
+        lastNameConstraints
+      ]
+    };
 
     const phoneOptions = {
       searchFields: phoneFields,
       start: 0,
       maxHits: 100
     };
-
     const nameOptions = {
       searchFields: nameFields,
       start: 0,
@@ -380,9 +409,15 @@ function* searchPeopleByPhoneNumberWorker(action) :Generator<*, *, *> {
         });
       }
     }
-    if (nameFields.length) {
+    if (names.length) {
       const searchOptions = nameOptions;
-      let people = yield call(SearchApi.advancedSearchEntitySetData, peopleEntitySetId, searchOptions);
+      let people;
+      if (names.length < 2) {
+        people = yield call(SearchApi.advancedSearchEntitySetData, peopleEntitySetId, searchOptions);
+      }
+      else {
+        people = yield call(SearchApi.executeSearch, searchConstraints);
+      }
       people = fromJS(people.hits);
       allResults = allResults.concat(people);
       people.forEach((person) => {
