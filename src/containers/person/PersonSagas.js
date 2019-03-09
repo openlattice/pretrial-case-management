@@ -302,6 +302,7 @@ function* searchPeopleByPhoneNumberWorker(action) :Generator<*, *, *> {
     const letters = (searchTerm).replace(/[^a-zA-Z]/g, ' ');
     const numbers = (searchTerm).replace(/[^0-9]/g, '');
     const phoneFields = [];
+    const nameFields = [];
     const firstNameConstraints = { min: 1, constraints: [] };
     const lastNameConstraints = { min: 1, constraints: [] };
     const updateSearchField = (
@@ -335,11 +336,19 @@ function* searchPeopleByPhoneNumberWorker(action) :Generator<*, *, *> {
       }
       updateSearchField(phoneFields, searchString, phonePropertyTypeId);
     }
+
+    const names = letters.trim().split(' ');
     if (letters.trim().length) {
-      letters.trim().split(' ').forEach((word) => {
-        updateConstraints(firstNameConstraints, word, firstNamePropertyTypeId);
-        updateConstraints(lastNameConstraints, word, lastNamePropertyTypeId);
-      });
+      if (names.length < 2) {
+        updateSearchField(nameFields, letters.trim(), firstNamePropertyTypeId);
+        updateSearchField(nameFields, letters.trim(), lastNamePropertyTypeId);
+      }
+      else {
+        names.forEach((word) => {
+          updateConstraints(firstNameConstraints, word, firstNamePropertyTypeId);
+          updateConstraints(lastNameConstraints, word, lastNamePropertyTypeId);
+        });
+      }
     }
 
     const searchConstraints = {
@@ -354,6 +363,11 @@ function* searchPeopleByPhoneNumberWorker(action) :Generator<*, *, *> {
 
     const phoneOptions = {
       searchFields: phoneFields,
+      start: 0,
+      maxHits: 100
+    };
+    const nameOptions = {
+      searchFields: nameFields,
       start: 0,
       maxHits: 100
     };
@@ -395,8 +409,15 @@ function* searchPeopleByPhoneNumberWorker(action) :Generator<*, *, *> {
         });
       }
     }
-    if (firstNameConstraints.constraints.length || lastNameConstraints.constraints.length) {
-      let people = yield call(SearchApi.executeSearch, searchConstraints);
+    if (names.length) {
+      const searchOptions = nameOptions;
+      let people;
+      if (names.length < 2) {
+        people = yield call(SearchApi.advancedSearchEntitySetData, peopleEntitySetId, searchOptions);
+      }
+      else {
+        people = yield call(SearchApi.executeSearch, searchConstraints);
+      }
       people = fromJS(people.hits);
       allResults = allResults.concat(people);
       people.forEach((person) => {
