@@ -352,8 +352,6 @@ function* searchPeopleByPhoneNumberWorker(action) :Generator<*, *, *> {
       ]
     };
 
-    console.log(searchConstraints);
-
     const phoneOptions = {
       searchFields: phoneFields,
       start: 0,
