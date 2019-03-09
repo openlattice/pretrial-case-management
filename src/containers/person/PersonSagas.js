@@ -302,7 +302,8 @@ function* searchPeopleByPhoneNumberWorker(action) :Generator<*, *, *> {
     const letters = (searchTerm).replace(/[^a-zA-Z]/g, ' ');
     const numbers = (searchTerm).replace(/[^0-9]/g, '');
     const phoneFields = [];
-    const nameFields = [];
+    const firstNameConstraints = { min: 1, constraints: [] };
+    const lastNameConstraints = { min: 1, constraints: [] };
     const updateSearchField = (
       searchFields :Array,
       searchString :string,
@@ -316,6 +317,16 @@ function* searchPeopleByPhoneNumberWorker(action) :Generator<*, *, *> {
         exact: isExact
       });
     };
+    const updateConstraints = (
+      nameConstraints :Array,
+      search :string,
+      property :string,
+    ) => {
+      nameConstraints.constraints.push({
+        searchTerm: `${property}:"${search}"`,
+        fuzzy: true
+      });
+    };
 
     if (numbers.trim().length) {
       let searchString = numbers.trim();
@@ -326,19 +337,25 @@ function* searchPeopleByPhoneNumberWorker(action) :Generator<*, *, *> {
     }
     if (letters.trim().length) {
       letters.trim().split(' ').forEach((word) => {
-        updateSearchField(nameFields, word, firstNamePropertyTypeId);
-        updateSearchField(nameFields, word, lastNamePropertyTypeId);
+        updateConstraints(firstNameConstraints, word, firstNamePropertyTypeId);
+        updateConstraints(lastNameConstraints, word, lastNamePropertyTypeId);
       });
     }
 
-    const phoneOptions = {
-      searchFields: phoneFields,
+    const searchConstraints = {
+      entitySetIds: [peopleEntitySetId],
       start: 0,
-      maxHits: 100
+      maxHits: 100,
+      constraints: [
+        firstNameConstraints,
+        lastNameConstraints
+      ]
     };
 
-    const nameOptions = {
-      searchFields: nameFields,
+    console.log(searchConstraints);
+
+    const phoneOptions = {
+      searchFields: phoneFields,
       start: 0,
       maxHits: 100
     };
@@ -380,9 +397,8 @@ function* searchPeopleByPhoneNumberWorker(action) :Generator<*, *, *> {
         });
       }
     }
-    if (nameFields.length) {
-      const searchOptions = nameOptions;
-      let people = yield call(SearchApi.advancedSearchEntitySetData, peopleEntitySetId, searchOptions);
+    if (firstNameConstraints.constraints.length || lastNameConstraints.constraints.length) {
+      let people = yield call(SearchApi.executeSearch, searchConstraints);
       people = fromJS(people.hits);
       allResults = allResults.concat(people);
       people.forEach((person) => {
