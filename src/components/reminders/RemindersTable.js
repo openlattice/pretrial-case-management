@@ -11,6 +11,7 @@ import OptOutRow from './OptOutRow';
 import { NoResults } from '../../utils/Layout';
 import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
+import { getIdOrValue } from '../../utils/DataUtils';
 import { formatPeopleInfo } from '../../utils/PeopleUtils';
 import { getHearingFields } from '../../utils/consts/HearingConsts';
 import {
@@ -27,13 +28,15 @@ let {
   CONTACT_INFORMATION,
   HEARINGS,
   PEOPLE,
+  PRETRIAL_CASES,
   REMINDERS,
-  REMINDER_OPT_OUTS
+  REMINDER_OPT_OUTS,
 } = APP_TYPES_FQNS;
 
-PEOPLE = PEOPLE.toString();
 CONTACT_INFORMATION = CONTACT_INFORMATION.toString();
 HEARINGS = HEARINGS.toString();
+PEOPLE = PEOPLE.toString();
+PRETRIAL_CASES = PRETRIAL_CASES.toString();
 REMINDERS = REMINDERS.toString();
 REMINDER_OPT_OUTS = REMINDER_OPT_OUTS.toString();
 
@@ -76,8 +79,8 @@ class RemindersTable extends React.Component<Props, State> {
           <HeaderElement>{REMINDERS_HEADERS.CONTACT}</HeaderElement>
           <HeaderElement>{REMINDERS_HEADERS.COURTROOM}</HeaderElement>
           <HeaderElement>{REMINDERS_HEADERS.HEARING_TYPE}</HeaderElement>
+          <HeaderElement>{REMINDERS_HEADERS.CASE_NUM}</HeaderElement>
           <HeaderElement>{REMINDERS_HEADERS.STATUS}</HeaderElement>
-          <HeaderElement>{REMINDERS_HEADERS.PSA_STATUS}</HeaderElement>
         </HeaderRow>
       );
     }
@@ -129,7 +132,6 @@ class RemindersTable extends React.Component<Props, State> {
       appTypeFqn,
       entities,
       neighbors,
-      remindersWithOpenPSA,
       noResults
     } = this.props;
     if (noResults) return <NoResultsForTable>No Results</NoResultsForTable>;
@@ -152,8 +154,8 @@ class RemindersTable extends React.Component<Props, State> {
             contact,
             hearingDateTime
           } = this.getNeighborDetails(entityKeyId, neighbors);
-          const hasOpenPSA = remindersWithOpenPSA.includes(reminderId);
-
+          const remidnerNeighbors = neighbors.get(entityKeyId, Map());
+          const caseNum = getIdOrValue(remidnerNeighbors, PRETRIAL_CASES, PROPERTY_TYPES.CASE_ID);
           row = (
             <RemindersRow
                 key={reminderId}
@@ -166,7 +168,7 @@ class RemindersTable extends React.Component<Props, State> {
                 wasNotified={wasNotified}
                 personId={identification}
                 personName={lastFirstMid}
-                hasOpenPSA={hasOpenPSA} />
+                caseNumber={caseNum} />
           );
         }
         if (appTypeFqn === REMINDER_OPT_OUTS) {
