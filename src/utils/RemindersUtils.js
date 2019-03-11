@@ -32,6 +32,12 @@ export const OPT_OUT_HEADERS = {
   REASON: 'Reason'
 };
 
+export const FILTERS = {
+  ALL: 'All',
+  FAILED: 'Failed',
+  SUCCESSFUL: 'Successful'
+};
+
 export const getReminderFields = (reminder) => {
   const reminderId = reminder.getIn([OPENLATTICE_ID_FQN, 0], '');
   const wasNotified = reminder.getIn([PROPERTY_TYPES.NOTIFIED, 0], false);
