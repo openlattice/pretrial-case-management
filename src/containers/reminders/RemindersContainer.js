@@ -5,13 +5,13 @@
 import React from 'react';
 import styled from 'styled-components';
 import moment from 'moment';
-import { Map, Set } from 'immutable';
+import { fromJS, Map, Set } from 'immutable';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { Constants } from 'lattice';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFileDownload } from '@fortawesome/pro-light-svg-icons';
+import { faCheck, faFileDownload, faTimesCircle } from '@fortawesome/pro-light-svg-icons';
 
 import DatePicker from '../../components/datetime/DatePicker';
 import TableWithPagination from '../../components/reminders/TableWithPagination';
@@ -22,6 +22,7 @@ import StyledButton from '../../components/buttons/StyledButton';
 import { Count } from '../../utils/Layout';
 import { OL } from '../../utils/consts/Colors';
 import { APP_TYPES_FQNS } from '../../utils/consts/DataModelConsts';
+import { FILTERS } from '../../utils/RemindersUtils';
 import {
   APP,
   REMINDERS,
@@ -106,8 +107,12 @@ const ListContainer = styled.div`
   column-gap: 4%;
 `;
 
+const StatusIconContainer = styled.div`
+  pointer-events: none;
+  margin: 5px 0;
+`;
+
 type Props = {
-  futureRemidners :Map<*, *>,
   failedReminderIds :Set<*, *>,
   isLoadingPeople :boolean,
   loadingPeopleWithNoContacts :boolean,
@@ -126,6 +131,7 @@ type Props = {
   searchResults :Set<*>,
   searchHasRun :boolean,
   selectedOrganizationId :boolean,
+  successfulReminderIds :Set<*, *>,
   actions :{
     loadPeopleWithHearingsButNoContacts :RequestSequence,
     loadRemindersforDate :RequestSequence,
@@ -138,9 +144,13 @@ class RemindersContainer extends React.Component<Props, State> {
   constructor(props :Props) {
     super(props);
     this.state = {
-      selectedDate: moment()
+      selectedDate: moment(),
+      filter: ''
     };
   }
+
+  setFilter = e => {this.setState({ filter: e.target.value }); console.log(e.target);};
+
   componentDidMount() {
     const { actions, selectedOrganizationId } = this.props;
     const { loadPeopleWithHearingsButNoContacts } = actions;
@@ -216,13 +226,17 @@ class RemindersContainer extends React.Component<Props, State> {
     return <SearchAllBar handleSubmit={actions.searchPeopleByPhoneNumber} />;
   }
 
-  renderRemindersTable = (title, reminders, neighbors) => {
+  renderRemindersTable = (title, reminders, neighbors, filters) => {
+    const { filter } = this.state;
     const { remindersWithOpenPSA, loadingReminders, loadingReminderNeighbors } = this.props;
     return (
       <TableWithPagination
           loading={loadingReminders || loadingReminderNeighbors}
           title={title}
           entities={reminders}
+          filter={filter}
+          filters={filters}
+          selectFilterFn={this.setFilter}
           neighbors={neighbors}
           appTypeFqn={remindersFqn}
           remindersWithOpenPSA={remindersWithOpenPSA} />
@@ -326,27 +340,59 @@ class RemindersContainer extends React.Component<Props, State> {
   }
 
   renderResults = () => {
+    const { filter } = this.state;
     const {
       pastReminders,
       failedReminderIds,
-      reminderNeighborsById
+      reminderNeighborsById,
+      successfulReminderIds
     } = this.props;
-    const failedReminders = pastReminders.filter((reminder, entityKeyId) => failedReminderIds.includes(entityKeyId));
+    const failedReminders = pastReminders
+      .filter((reminder, entityKeyId) => failedReminderIds.includes(entityKeyId));
+    const successfulReminders = pastReminders
+      .filter((reminder, entityKeyId) => successfulReminderIds.includes(entityKeyId));
+
+    let entities = pastReminders;
+    if (filter === FILTERS.FAILED) {
+      entities = failedReminders;
+    }
+    else if (filter === FILTERS.SUCCESSFUL) {
+      entities = successfulReminders;
+    }
+
+    const filters = fromJS({
+      [FILTERS.ALL]: {
+        label: FILTERS.ALL,
+        value: ''
+      },
+      [FILTERS.FAILED]: {
+        label: (
+          <StatusIconContainer>
+            {`${FILTERS.FAILED} `}
+            <FontAwesomeIcon color="red" icon={faTimesCircle} />
+          </StatusIconContainer>
+        ),
+        value: FILTERS.FAILED
+      },
+      [FILTERS.SUCCESSFUL]: {
+        label: (
+          <StatusIconContainer>
+            {`${FILTERS.SUCCESSFUL} `}
+            <FontAwesomeIcon color="green" icon={faCheck} />
+          </StatusIconContainer>
+        ),
+        value: FILTERS.SUCCESSFUL
+      }
+    });
 
     return (
       <ResultsWrapper>
         {
           this.renderRemindersTable(
             'Reminders',
-            pastReminders,
-            reminderNeighborsById
-          )
-        }
-        {
-          this.renderRemindersTable(
-            'Failed Reminders',
-            failedReminders,
-            reminderNeighborsById
+            entities,
+            reminderNeighborsById,
+            filters
           )
         }
       </ResultsWrapper>
