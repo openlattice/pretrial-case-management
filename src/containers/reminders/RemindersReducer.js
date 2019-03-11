@@ -83,14 +83,14 @@ export default function remindersReducer(state :Map<*, *> = INITIAL_STATE, actio
         SUCCESS: () => {
           const {
             reminderIds,
-            futureRemidners,
+            futureReminders,
             pastReminders,
             successfulRemindersIds,
             failedRemindersIds,
           } = action.value;
           return state
             .set(REMINDERS.REMINDER_IDS, reminderIds)
-            .set(REMINDERS.FUTURE_REMINDERS, futureRemidners)
+            .set(REMINDERS.FUTURE_REMINDERS, futureReminders)
             .set(REMINDERS.PAST_REMINDERS, pastReminders)
             .set(REMINDERS.SUCCESSFUL_REMINDER_IDS, successfulRemindersIds)
             .set(REMINDERS.FAILED_REMINDER_IDS, failedRemindersIds);

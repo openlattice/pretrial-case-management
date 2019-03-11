@@ -250,7 +250,7 @@ function* loadRemindersforDateWorker(action :SequenceAction) :Generator<*, *, *>
     yield put(loadRemindersforDate.request(action.id));
     const { date } = action.value;
     let reminderIds = Set();
-    let futureRemidners = Map();
+    let futureReminders = Map();
     let pastReminders = Map();
     let successfulRemindersIds = Set();
     let failedRemindersIds = Set();
@@ -283,7 +283,7 @@ function* loadRemindersforDateWorker(action :SequenceAction) :Generator<*, *, *>
       if (entityKeyId && dateTime) {
         reminderIds = reminderIds.add(entityKeyId);
         if (reminderIsPending) {
-          futureRemidners = futureRemidners.set(entityKeyId, reminder);
+          futureReminders = futureReminders.set(entityKeyId, reminder);
         }
         else {
           pastReminders = pastReminders.set(entityKeyId, reminder);
@@ -299,7 +299,7 @@ function* loadRemindersforDateWorker(action :SequenceAction) :Generator<*, *, *>
 
     yield put(loadRemindersforDate.success(action.id, {
       reminderIds,
-      futureRemidners,
+      futureReminders,
       pastReminders,
       successfulRemindersIds,
       failedRemindersIds,
