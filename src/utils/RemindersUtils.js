@@ -21,8 +21,8 @@ export const REMINDERS_HEADERS = {
   COURT_TIME: 'Hearing Time',
   COURTROOM: 'Courtroom',
   HEARING_TYPE: 'Type',
-  STATUS: 'Status',
-  PSA_STATUS: 'Open PSA'
+  CASE_NUM: 'Case',
+  STATUS: 'Status'
 };
 
 export const OPT_OUT_HEADERS = {
