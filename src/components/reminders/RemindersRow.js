@@ -67,6 +67,7 @@ class ReminderRow extends React.Component<Props, State> {
 
   renderRow = () => {
     const {
+      caseNumber,
       contact,
       courtroom,
       hearingTime,
@@ -89,8 +90,8 @@ class ReminderRow extends React.Component<Props, State> {
         <Cell>{ contact }</Cell>
         <Cell>{ courtroom }</Cell>
         <Cell>{ hearingType }</Cell>
+        <Cell>{ caseNumber }</Cell>
         <Cell>{ this.renderbooleanIcon(wasNotified) }</Cell>
-        <Cell>{ this.renderbooleanIcon(hasOpenPSA) }</Cell>
 
       </Row>
     );
