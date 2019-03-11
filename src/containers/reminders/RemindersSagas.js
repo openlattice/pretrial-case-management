@@ -57,7 +57,8 @@ let {
   PEOPLE,
   PSA_SCORES,
   REMINDERS,
-  REMINDER_OPT_OUTS
+  REMINDER_OPT_OUTS,
+  PRETRIAL_CASES
 } = APP_TYPES_FQNS;
 
 CONTACT_INFORMATION = CONTACT_INFORMATION.toString();
@@ -66,6 +67,7 @@ PEOPLE = PEOPLE.toString();
 PSA_SCORES = PSA_SCORES.toString();
 REMINDERS = REMINDERS.toString();
 REMINDER_OPT_OUTS = REMINDER_OPT_OUTS.toString();
+PRETRIAL_CASES = PRETRIAL_CASES.toString();
 
 
 const { OPENLATTICE_ID_FQN } = Constants;
@@ -294,6 +296,7 @@ function* loadRemindersforDateWorker(action :SequenceAction) :Generator<*, *, *>
         }
       }
     });
+
     yield put(loadRemindersforDate.success(action.id, {
       reminderIds,
       futureRemidners,
@@ -328,7 +331,6 @@ function* loadReminderNeighborsByIdWorker(action :SequenceAction) :Generator<*, 
     const { reminderIds } = action.value;
 
     let reminderNeighborsById = Map();
-    let reminderIdsWithOpenPSAs = List();
     let hearingIds = Set();
     let hearingsMap = Map();
     let hearingIdsToReminderIds = Map();
@@ -341,7 +343,7 @@ function* loadReminderNeighborsByIdWorker(action :SequenceAction) :Generator<*, 
       const contactInformationEntitySetId = getEntitySetIdFromApp(app, CONTACT_INFORMATION, orgId);
       const hearingsEntitySetId = getEntitySetIdFromApp(app, HEARINGS, orgId);
       const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE, orgId);
-      const psaScoresEntitySetId = getEntitySetIdFromApp(app, PSA_SCORES, orgId);
+      const pretrialCasesEntitySetId = getEntitySetIdFromApp(app, PRETRIAL_CASES, orgId);
       let neighborsById = yield call(SearchApi.searchEntityNeighborsWithFilter, remindersEntitySetId, {
         entityKeyIds: reminderIds,
         sourceEntitySetIds: [],
@@ -371,35 +373,36 @@ function* loadReminderNeighborsByIdWorker(action :SequenceAction) :Generator<*, 
         reminderNeighborsById = reminderNeighborsById.set(reminderId, neighborsByAppTypeFqn);
       });
 
-      let psasByHearingId = yield call(SearchApi.searchEntityNeighborsWithFilter, hearingsEntitySetId, {
+      let hearingNeighborsById = yield call(SearchApi.searchEntityNeighborsWithFilter, hearingsEntitySetId, {
         entityKeyIds: hearingIds.toJS(),
-        sourceEntitySetIds: [psaScoresEntitySetId],
-        destinationEntitySetIds: []
+        sourceEntitySetIds: [],
+        destinationEntitySetIds: [pretrialCasesEntitySetId]
       });
-      psasByHearingId = fromJS(psasByHearingId);
-      psasByHearingId = psasByHearingId.filter(neighborList => neighborList
-        .some((neighbor) => {
-          const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
-          const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
-          const isPSA = appTypeFqn === PSA_SCORES;
-          const psaIsOpen = neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.STATUS, 0]) === PSA_STATUSES.OPEN;
-          return isPSA && psaIsOpen;
-        }));
-      psasByHearingId.entrySeq().forEach(([hearingId, psaList]) => {
-        if (psaList.size) {
+      hearingNeighborsById = fromJS(hearingNeighborsById);
+      hearingNeighborsById.entrySeq().forEach(([hearingId, neighbors]) => {
+        if (neighbors.size) {
+          let neighborsByAppTypeFqn = Map();
+          neighbors.forEach((neighbor) => {
+            const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
+            const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
+            if (appTypeFqn === PRETRIAL_CASES) {
+              neighborsByAppTypeFqn = neighborsByAppTypeFqn.set(
+                appTypeFqn,
+                fromJS(neighbor)
+              );
+            }
+          });
           const reminderId = hearingIdsToReminderIds.get(hearingId);
-          reminderIdsWithOpenPSAs = reminderIdsWithOpenPSAs.concat(reminderIds);
           reminderNeighborsById = reminderNeighborsById.set(
             reminderId,
-            reminderNeighborsById.get(reminderId, Map()).set(PSA_SCORES, psaList.get(0, Map()))
+            reminderNeighborsById.get(reminderId, Map()).merge(neighborsByAppTypeFqn)
           );
         }
       });
     }
 
     yield put(loadReminderNeighborsById.success(action.id, {
-      reminderNeighborsById,
-      reminderIdsWithOpenPSAs
+      reminderNeighborsById
     }));
   }
   catch (error) {
