@@ -127,7 +127,6 @@ type Props = {
   pastReminders :Map<*, *>,
   peopleWithHearingsButNoContacts :Map<*, *>,
   reminderNeighborsById :Map<*, *>,
-  remindersWithOpenPSA :Set<*>,
   searchResults :Set<*>,
   searchHasRun :boolean,
   selectedOrganizationId :boolean,
@@ -149,7 +148,7 @@ class RemindersContainer extends React.Component<Props, State> {
     };
   }
 
-  setFilter = e => {this.setState({ filter: e.target.value }); console.log(e.target);};
+  setFilter = e => this.setState({ filter: e.target.value });
 
   componentDidMount() {
     const { actions, selectedOrganizationId } = this.props;
@@ -228,7 +227,7 @@ class RemindersContainer extends React.Component<Props, State> {
 
   renderRemindersTable = (title, reminders, neighbors, filters) => {
     const { filter } = this.state;
-    const { remindersWithOpenPSA, loadingReminders, loadingReminderNeighbors } = this.props;
+    const { loadingReminders, loadingReminderNeighbors } = this.props;
     return (
       <TableWithPagination
           loading={loadingReminders || loadingReminderNeighbors}
@@ -238,8 +237,7 @@ class RemindersContainer extends React.Component<Props, State> {
           filters={filters}
           selectFilterFn={this.setFilter}
           neighbors={neighbors}
-          appTypeFqn={remindersFqn}
-          remindersWithOpenPSA={remindersWithOpenPSA} />
+          appTypeFqn={remindersFqn} />
     );
   }
 
@@ -256,8 +254,7 @@ class RemindersContainer extends React.Component<Props, State> {
           title="Opt Outs"
           entities={optOutMap}
           neighbors={optOutNeighbors}
-          appTypeFqn={reminderOptOutsFqn}
-          remindersWithOpenPSA={Set()} />
+          appTypeFqn={reminderOptOutsFqn} />
     );
   }
 
@@ -430,7 +427,6 @@ function mapStateToProps(state) {
     [REMINDERS.FAILED_REMINDER_IDS]: reminders.get(REMINDERS.FAILED_REMINDER_IDS),
     [REMINDERS.LOADING_REMINDERS]: reminders.get(REMINDERS.LOADING_REMINDERS),
     [REMINDERS.REMINDER_NEIGHBORS]: reminders.get(REMINDERS.REMINDER_NEIGHBORS),
-    [REMINDERS.REMINDERS_WITH_OPEN_PSA_IDS]: reminders.get(REMINDERS.REMINDERS_WITH_OPEN_PSA_IDS),
     [REMINDERS.LOADING_REMINDER_NEIGHBORS]: reminders.get(REMINDERS.LOADING_REMINDER_NEIGHBORS),
     [REMINDERS.PEOPLE_WITH_HEARINGS_BUT_NO_CONTACT]: reminders.get(REMINDERS.PEOPLE_WITH_HEARINGS_BUT_NO_CONTACT),
     [REMINDERS.LOADING_PEOPLE_NO_CONTACTS]: reminders.get(REMINDERS.LOADING_PEOPLE_NO_CONTACTS),
