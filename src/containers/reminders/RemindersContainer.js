@@ -344,17 +344,15 @@ class RemindersContainer extends React.Component<Props, State> {
       reminderNeighborsById,
       successfulReminderIds
     } = this.props;
-    const failedReminders = pastReminders
-      .filter((reminder, entityKeyId) => failedReminderIds.includes(entityKeyId));
-    const successfulReminders = pastReminders
-      .filter((reminder, entityKeyId) => successfulReminderIds.includes(entityKeyId));
 
     let entities = pastReminders;
     if (filter === FILTERS.FAILED) {
-      entities = failedReminders;
+      entities = pastReminders
+        .filter((reminder, entityKeyId) => failedReminderIds.includes(entityKeyId));
     }
     else if (filter === FILTERS.SUCCESSFUL) {
-      entities = successfulReminders;
+      entities = pastReminders
+        .filter((reminder, entityKeyId) => successfulReminderIds.includes(entityKeyId));
     }
 
     const filters = fromJS({
