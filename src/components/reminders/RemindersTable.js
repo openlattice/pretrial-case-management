@@ -154,8 +154,8 @@ class RemindersTable extends React.Component<Props, State> {
             contact,
             hearingDateTime
           } = this.getNeighborDetails(entityKeyId, neighbors);
-          const remidnerNeighbors = neighbors.get(entityKeyId, Map());
-          const caseNum = getIdOrValue(remidnerNeighbors, PRETRIAL_CASES, PROPERTY_TYPES.CASE_ID);
+          const reminderNeighbors = neighbors.get(entityKeyId, Map());
+          const caseNum = getIdOrValue(reminderNeighbors, PRETRIAL_CASES, PROPERTY_TYPES.CASE_ID);
           row = (
             <RemindersRow
                 key={reminderId}
