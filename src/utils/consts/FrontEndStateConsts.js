@@ -150,6 +150,7 @@ export const PSA_MODAL = {
 
   // PSA
   PSA_ID: 'psaId',
+  SCORES: 'scores',
   PSA_NEIGHBORS: 'psaNeighbors',
   PSA_PERMISSIONS: 'psaPermissions',
 
