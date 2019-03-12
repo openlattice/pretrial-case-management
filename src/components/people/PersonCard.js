@@ -3,7 +3,7 @@
  */
 
 import React from 'react';
-import Immutable from 'immutable';
+import { Map } from 'immutable';
 import styled from 'styled-components';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -105,14 +105,16 @@ type Props = {
     photo :string,
     identification :string
   },
-  scores :Immutable.Map<*, *>,
+  psaId :string,
+  editDate :string,
   hasOpenPSA? :boolean,
+  multipleOpenPSAs? :boolean,
   judgesview? :boolean,
   loadCaseHistoryFn :(values :{
     personId :string,
-    neighbors :Immutable.Map<*, *>
+    neighbors :Map<*, *>
   }) => void,
-  loadHearingNeighbors :(hearingIds :string[]) => void,
+  loadPSAModal :(psaId :string, callback :() => void) => void,
 };
 
 type State = {
@@ -125,7 +127,8 @@ class PersonCard extends React.Component<Props, State> {
 
   static defaultProps = {
     hasOpenPSA: false,
-    judgesview: false
+    judgesview: false,
+    multipleOpenPSAs: false
   }
 
   constructor(props :Props) {
@@ -138,20 +141,15 @@ class PersonCard extends React.Component<Props, State> {
   onClose = () => (this.setState({ psaModalOpen: false }));
 
   renderModal = () => {
-    const { props } = this;
     const { psaId } = this.props;
     const { psaModalOpen } = this.state;
-    const modalProps = {};
-    Object.keys(this.props).forEach((prop) => {
-      (modalProps[prop] = Immutable.fromJS(props[prop]));
-    });
     return (
       <PSAModal
           open={psaModalOpen}
+          openModal={this.openDetailsModal}
           view={CONTENT.JUDGES}
           onClose={this.onClose}
-          entityKeyId={psaId}
-          {...modalProps} />
+          entityKeyId={psaId} />
     );
   }
 

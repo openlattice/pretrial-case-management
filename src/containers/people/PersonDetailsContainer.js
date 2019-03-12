@@ -236,10 +236,7 @@ class PersonDetailsContainer extends React.Component<Props, State> {
             entityKeyId={mostRecentPSAEntityKeyId}
             open={open}
             openModal={this.openModal}
-            onClose={this.closeModal}
-            scores={scores}
-            personId={personId}
-            {...actions} />
+            onClose={this.closeModal} />
       );
     return modal;
   }

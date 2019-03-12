@@ -239,15 +239,11 @@ class CourtContainer extends React.Component<Props, State> {
       peopleIdsToOpenPSAIds,
       peopleWithOpenPsas,
       peopleWithMultipleOpenPsas,
-      scoresAsMap,
-      submitting,
-      psaEditDatesById,
-      psaIdsRefreshing
+      psaEditDatesById
     } = this.props;
     const personOlId = person.getIn([OPENLATTICE_ID_FQN, 0]);
     const openPSAId = peopleIdsToOpenPSAIds.get(personOlId, '');
     const hasOpenPSA = peopleWithOpenPsas.has(personOlId);
-    const scores = scoresAsMap.get(openPSAId, Map());
     const hasMultipleOpenPSAs = peopleWithMultipleOpenPsas.includes(personOlId);
     const lastEditDate = moment(psaEditDatesById.getIn(
       [openPSAId, PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.COMPLETED_DATE_TIME, 0],
@@ -258,20 +254,12 @@ class CourtContainer extends React.Component<Props, State> {
       <PersonCard
           key={`${personObj.identification}`}
           psaId={openPSAId}
-          person={person}
           editDate={lastEditDate}
           multipleOpenPSAs={hasMultipleOpenPSAs}
-          personId={personOlId}
           personObj={personObj}
           hasOpenPSA={hasOpenPSA}
-          scores={scores}
-          downloadFn={actions.downloadPSAReviewPDF}
           loadCaseHistoryFn={this.loadCaseHistoryCallback}
           loadPSAModal={actions.loadPSAModal}
-          submitData={actions.submit}
-          replaceEntity={actions.replaceEntity}
-          deleteEntity={actions.deleteEntity}
-          submitting={submitting}
           judgesview />
     );
   }
@@ -489,7 +477,6 @@ function mapStateToProps(state) {
   const app = state.get(STATE.APP);
   const court = state.get(STATE.COURT);
   const edm = state.get(STATE.EDM);
-  const submit = state.get(STATE.SUBMIT);
   return {
     [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
 
@@ -497,7 +484,6 @@ function mapStateToProps(state) {
     [COURT.HEARINGS_TODAY]: court.get(COURT.HEARINGS_TODAY),
     [COURT.HEARINGS_BY_TIME]: court.get(COURT.HEARINGS_BY_TIME),
     [COURT.HEARINGS_NEIGHBORS_BY_ID]: court.get(COURT.HEARINGS_NEIGHBORS_BY_ID),
-    [COURT.HEARING_IDS_REFRESHING]: court.get(COURT.HEARING_IDS_REFRESHING),
     [COURT.LOADING_HEARINGS_ERROR]: court.get(COURT.LOADING_HEARINGS_ERROR),
     [COURT.PEOPLE_WITH_OPEN_PSAS]: court.get(COURT.PEOPLE_WITH_OPEN_PSAS),
     [COURT.PEOPLE_WITH_MULTIPLE_OPEN_PSAS]: court.get(COURT.PEOPLE_WITH_MULTIPLE_OPEN_PSAS),
@@ -515,8 +501,6 @@ function mapStateToProps(state) {
     [COURT.ALL_JUDGES]: court.get(COURT.ALL_JUDGES),
 
     [EDM.FQN_TO_ID]: edm.get(EDM.FQN_TO_ID),
-
-    [SUBMIT.SUBMITTING]: submit.get(SUBMIT.SUBMITTING, false)
   };
 }
 
