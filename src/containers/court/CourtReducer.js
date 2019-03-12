@@ -171,19 +171,6 @@ export default function courtReducer(state :Map<*, *> = INITIAL_STATE, action :S
       });
     }
 
-    case updateScoresAndRiskFactors.case(action.type): {
-      return updateScoresAndRiskFactors.reducer(state, action, {
-        SUCCESS: () => {
-          const {
-            scoresId,
-            newScoreEntity,
-          } = action.value;
-
-          return state.setIn([COURT.SCORES_AS_MAP, scoresId], newScoreEntity);
-        }
-      });
-    }
-
     case refreshHearingNeighbors.case(action.type): {
       return refreshHearingNeighbors.reducer(state, action, {
         REQUEST: () => state.set(COURT.HEARING_IDS_REFRESHING, true),
