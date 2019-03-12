@@ -22,7 +22,6 @@ import {
 import { changePSAStatus, updateScoresAndRiskFactors } from '../review/ReviewActionFactory';
 import { COURT } from '../../utils/consts/FrontEndStateConsts';
 
-
 const INITIAL_STATE :Map<*, *> = fromJS({
   [COURT.COURT_DATE]: moment(),
 
@@ -189,11 +188,9 @@ export default function courtReducer(state :Map<*, *> = INITIAL_STATE, action :S
       return refreshHearingNeighbors.reducer(state, action, {
         REQUEST: () => state.set(COURT.HEARING_IDS_REFRESHING, true),
         SUCCESS: () => {
-          let hearingNeighborsById = state.get(COURT.HEARINGS_NEIGHBORS_BY_ID);
+          const { id, neighbors } = action.value;
 
-          hearingNeighborsById = hearingNeighborsById.set(action.value.id, action.value.neighbors);
-
-          return state.set(COURT.HEARINGS_NEIGHBORS_BY_ID, hearingNeighborsById);
+          return state.setIn([COURT.HEARINGS_NEIGHBORS_BY_ID, id], neighbors);
         },
         FINALLY: () => state.set(COURT.HEARING_IDS_REFRESHING, false),
       });
