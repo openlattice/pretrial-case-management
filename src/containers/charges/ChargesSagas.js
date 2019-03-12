@@ -1,7 +1,8 @@
 /*
  * @flow
  */
-import { AuthorizationApi, SearchApi } from 'lattice';
+import { AuthorizationApi } from 'lattice';
+import { DataApiActions, DataApiSagas } from 'lattice-sagas';
 import { Map, Set, fromJS } from 'immutable';
 import {
   all,
@@ -24,6 +25,9 @@ import {
 } from './ChargesActionFactory';
 
 const getOrgId = state => state.getIn([STATE.APP, APP.SELECTED_ORG_ID], '');
+
+const { getEntitySetData } = DataApiActions;
+const { getEntitySetDataWorker } = DataApiSagas;
 
 /*
  * deleteCharge()
@@ -102,23 +106,15 @@ function* loadChargesWorker(action :SequenceAction) :Generator<*, *, *> {
     let courtChargesByEntityKeyId = Map();
 
     let [arrestCharges, courtCharges] = yield all([
-      call(SearchApi.searchEntitySetData, arrestChargesEntitySetId, {
-        searchTerm: '*',
-        start: 0,
-        maxHits: 10000
-      }),
-      call(SearchApi.searchEntitySetData, courtChargesEntitySetId, {
-        searchTerm: '*',
-        start: 0,
-        maxHits: 10000
-      })
+      call(getEntitySetDataWorker, getEntitySetData({ entitySetId: arrestChargesEntitySetId })),
+      call(getEntitySetDataWorker, getEntitySetData({ entitySetId: courtChargesEntitySetId }))
     ]);
     const chargeError = arrestCharges.error || courtCharges.error;
     if (chargeError) throw chargeError;
 
     // reset values to data
-    arrestCharges = fromJS(arrestCharges.hits);
-    courtCharges = fromJS(courtCharges.hits);
+    arrestCharges = fromJS(arrestCharges.data);
+    courtCharges = fromJS(courtCharges.data);
 
     // Map charges by EnityKeyId for easy state update
     arrestCharges.forEach((charge) => {
