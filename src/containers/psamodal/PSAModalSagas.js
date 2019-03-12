@@ -3,7 +3,12 @@
  */
 
 import moment from 'moment';
-import { AuthorizationApi, Constants, SearchApi } from 'lattice';
+import {
+  AuthorizationApi,
+  Constants,
+  DataApi,
+  SearchApi
+} from 'lattice';
 import {
   Map,
   List,
@@ -79,6 +84,13 @@ function* loadPSAModalWorker(action :SequenceAction) :Generator<*, *, *> {
     const peopleEntitySetId = getEntitySetIdFromApp(app, peopleFqn, orgId);
     const subscriptionEntitySetId = getEntitySetIdFromApp(app, subscriptionFqn, orgId);
     const contactInformationEntitySetId = getEntitySetIdFromApp(app, contactInformationFqn, orgId);
+
+    /*
+     * Get PSA Info
+     */
+
+    let scores = yield call(DataApi.getEntityData, psaScoresEntitySetId, psaId);
+    scores = fromJS(scores);
 
     /*
      * Get Neighbors
@@ -183,8 +195,10 @@ function* loadPSAModalWorker(action :SequenceAction) :Generator<*, *, *> {
 
     yield put(loadPSAModal.success(action.id, {
       psaId,
+      scores,
       neighborsByAppTypeFqn,
       psaPermissions,
+      personId,
       personNeighborsByFqn,
       hearingIds,
       allFilers
