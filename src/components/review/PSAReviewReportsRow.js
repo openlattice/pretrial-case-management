@@ -261,7 +261,11 @@ export default class PSAReviewReportsRow extends React.Component<Props, State> {
             onSubmit={this.handleStatusChange} />
       )
       : (
-        <PSAModal open={open} onClose={() => this.setState({ open: false })} {...this.props} />
+        <PSAModal
+            open={open}
+            openModal={this.openDetailsModal}
+            entityKeyId={entityKeyId}
+            onClose={() => this.setState({ open: false })} />
       );
     return modal;
   }
