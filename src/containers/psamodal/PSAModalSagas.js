@@ -48,7 +48,6 @@ const hearingsFqn :string = HEARINGS.toString();
 const peopleFqn :string = PEOPLE.toString();
 const pretrialCasesFqn :string = PRETRIAL_CASES.toString();
 const psaScoresFqn :string = PSA_SCORES.toString();
-const psaRiskFactorsFqn :string = PSA_RISK_FACTORS.toString();
 const releaseConditionsFqn :string = RELEASE_CONDITIONS.toString();
 const staffFqn :string = STAFF.toString();
 const subscriptionFqn :string = SUBSCRIPTION.toString();
@@ -61,7 +60,7 @@ const getOrgId = state => state.getIn([STATE.APP, APP.SELECTED_ORG_ID], '');
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
-const LIST_ENTITY_SETS = List.of(staffFqn, releaseConditionsFqn, hearingsFqn, pretrialCasesFqn, psaRiskFactorsFqn);
+const LIST_ENTITY_SETS = List.of(staffFqn, releaseConditionsFqn, hearingsFqn, pretrialCasesFqn);
 
 function* loadPSAModalWorker(action :SequenceAction) :Generator<*, *, *> {
   const { psaId, callback } = action.value; // Deconstruct action argument
