@@ -242,7 +242,7 @@ export const RELEASE_COND = {
 
 export const REMINDERS = {
   REMINDER_IDS: 'reminderIds',
-  FUTURE_REMINDERS: 'futureRemidners',
+  FUTURE_REMINDERS: 'futureReminders',
   PAST_REMINDERS: 'pastReminders',
   SUCCESSFUL_REMINDER_IDS: 'successfulReminderIds',
   FAILED_REMINDER_IDS: 'failedReminderIds',

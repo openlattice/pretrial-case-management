@@ -83,14 +83,14 @@ export default function remindersReducer(state :Map<*, *> = INITIAL_STATE, actio
         SUCCESS: () => {
           const {
             reminderIds,
-            futureRemidners,
+            futureReminders,
             pastReminders,
             successfulRemindersIds,
             failedRemindersIds,
           } = action.value;
           return state
             .set(REMINDERS.REMINDER_IDS, reminderIds)
-            .set(REMINDERS.FUTURE_REMINDERS, futureRemidners)
+            .set(REMINDERS.FUTURE_REMINDERS, futureReminders)
             .set(REMINDERS.PAST_REMINDERS, pastReminders)
             .set(REMINDERS.SUCCESSFUL_REMINDER_IDS, successfulRemindersIds)
             .set(REMINDERS.FAILED_REMINDER_IDS, failedRemindersIds);
@@ -103,10 +103,9 @@ export default function remindersReducer(state :Map<*, *> = INITIAL_STATE, actio
       return loadReminderNeighborsById.reducer(state, action, {
         REQUEST: () => state.set(REMINDERS.LOADING_REMINDER_NEIGHBORS, true),
         SUCCESS: () => {
-          const { reminderNeighborsById, reminderIdsWithOpenPSAs } = action.value;
+          const { reminderNeighborsById } = action.value;
           return state
             .set(REMINDERS.REMINDER_NEIGHBORS, reminderNeighborsById)
-            .set(REMINDERS.REMINDERS_WITH_OPEN_PSA_IDS, reminderIdsWithOpenPSAs);
         },
         FINALLY: () => state.set(REMINDERS.LOADING_REMINDER_NEIGHBORS, false)
       });
