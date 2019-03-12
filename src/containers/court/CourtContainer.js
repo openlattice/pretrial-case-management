@@ -254,10 +254,8 @@ class CourtContainer extends React.Component<Props, State> {
       <PersonCard
           key={`${personObj.identification}`}
           psaId={openPSAId}
-          person={person}
           editDate={lastEditDate}
           multipleOpenPSAs={hasMultipleOpenPSAs}
-          personId={personOlId}
           personObj={personObj}
           hasOpenPSA={hasOpenPSA}
           loadCaseHistoryFn={this.loadCaseHistoryCallback}
