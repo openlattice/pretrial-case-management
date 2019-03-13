@@ -12,6 +12,7 @@ import { Redirect, Route, Switch } from 'react-router-dom';
 import { Map } from 'immutable';
 
 import AppConsent from './AppConsent';
+import ErrorPage from '../../components/ErrorPage';
 import HeaderNav from '../../components/nav/HeaderNav';
 import Dashboard from '../../components/dashboard/Dashboard';
 import Forms from '../forms/Forms';
@@ -21,7 +22,6 @@ import { APP, CHARGES, STATE } from '../../utils/consts/FrontEndStateConsts';
 import { APP_TYPES_FQNS, SETTINGS, MODULE } from '../../utils/consts/DataModelConsts';
 import { termsAreAccepted } from '../../utils/AcceptTermsUtils';
 import { OL } from '../../utils/consts/Colors';
-import { NoResults } from '../../utils/Layout';
 
 import * as Routes from '../../core/router/Routes';
 import * as AppActionFactory from './AppActionFactory';
@@ -66,6 +66,7 @@ type Props = {
   app :Map<*, *>,
   appSettingsByOrgId :Map<*, *>,
   selectedOrganizationSettings :Map<*, *>,
+  errors :Map<*, *>,
   actions :{
     getAllPropertyTypes :RequestSequence;
     loadApp :RequestSequence;
@@ -132,8 +133,16 @@ class AppContainer extends React.Component<Props, *> {
   );
 
   renderAppBody = () => {
-    const { app } = this.props;
+    const { app, errors } = this.props;
     const loading = app.get(APP.LOADING, false);
+    const error = errors.get('loadApp', '').toString();
+
+    if (error.length) {
+      return (
+        <ErrorPage error={error} />
+      );
+    }
+
     return loading
       ? <LogoLoader loadingText="Loading..." />
       : (
@@ -181,6 +190,7 @@ function mapStateToProps(state) {
     [APP.SELECTED_ORG_ID]: app.get(APP.APP_SETTINGS_ID),
     [APP.SETTINGS_BY_ORG_ID]: app.get(APP.SETTINGS_BY_ORG_ID),
     [APP.SELECTED_ORG_SETTINGS]: app.get(APP.SELECTED_ORG_SETTINGS),
+    [APP.ERRORS]: app.get(APP.ERRORS),
 
     [CHARGES.ARREST]: charges.get(CHARGES.ARREST),
     [CHARGES.COURT]: charges.get(CHARGES.COURT),
