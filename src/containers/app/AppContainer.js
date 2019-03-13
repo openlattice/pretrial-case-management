@@ -139,7 +139,7 @@ class AppContainer extends React.Component<Props, *> {
 
     if (error.length) {
       return (
-        <ErrorPage error={error} />
+        <ErrorPage />
       );
     }
 
