@@ -24,6 +24,7 @@ import {
 
 import { APP_TYPES_FQNS, APP_NAME } from '../../utils/consts/DataModelConsts';
 import { removeTermsToken } from '../../utils/AcceptTermsUtils';
+import { defaultSettings } from '../../utils/AppUtils';
 import * as Routes from '../../core/router/Routes';
 
 import {
@@ -123,7 +124,7 @@ function* loadAppWorker(action :SequenceAction) :Generator<*, *, *> {
   }
   catch (error) {
     console.error(error);
-    yield put(loadApp.failure(action.id, error));
+    yield put(loadApp.failure(action.id, { error, defaultSettings }));
   }
   finally {
     yield put(loadApp.finally(action.id));
