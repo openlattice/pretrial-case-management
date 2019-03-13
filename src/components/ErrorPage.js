@@ -34,8 +34,12 @@ const ErrorWrapper = styled.div`
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  font-size: 36px;
+  font-size: 24px;
   font-weight: 700;
+  div {
+    max-width: 750px;
+    text-align: center;
+  }
   svg {
     font-size: 150px;
     margin-bottom: 20px;
@@ -45,11 +49,13 @@ const ErrorWrapper = styled.div`
   }
 `;
 
-const ErrorPage = ({ error } :Props) => {
+const ERROR_MSG = 'Uh oh! Something went wrong. Contact OpenLattice support if you continue to experience this problem.';
+
+const ErrorPage = () => {
   return (
     <ErrorWrapper>
       <FontAwesomeIcon color={OL.PURPLE05} icon={faHeartBroken} />
-      {` ${error}`}
+      <div>{ERROR_MSG}</div>
     </ErrorWrapper>
   );
 };
