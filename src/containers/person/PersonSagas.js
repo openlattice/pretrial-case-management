@@ -409,7 +409,7 @@ function* searchPeopleByPhoneNumberWorker(action) :Generator<*, *, *> {
         });
       }
     }
-    if (names.length) {
+    if (letters.trim().length) {
       const searchOptions = nameOptions;
       let people;
       if (names.length < 2) {
