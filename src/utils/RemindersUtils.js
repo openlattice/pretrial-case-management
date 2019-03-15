@@ -2,9 +2,10 @@ import moment from 'moment';
 import { Map } from 'immutable';
 import { Constants } from 'lattice';
 
+import { getHearingFields } from './consts/HearingConsts';
 import { APP_TYPES_FQNS, PROPERTY_TYPES } from './consts/DataModelConsts';
 import { PSA_NEIGHBOR } from './consts/FrontEndStateConsts';
-import { getEntityKeyId } from './DataUtils';
+import { addWeekdays, getEntityKeyId } from './DataUtils';
 
 
 let { HEARINGS, PEOPLE } = APP_TYPES_FQNS;
@@ -85,3 +86,12 @@ export const sortEntities = (entities, neighbors, shouldSortByDateTime) => (
     if (firstName1 !== firstName2) return firstName1 > firstName2 ? 1 : -1;
     return 0;
   }));
+
+export const hearingNeedsReminder = (hearing) => {
+  const today = moment();
+  const oneDayAhead = addWeekdays(today, 1);
+  const oneWeekAhead = addWeekdays(today, 5);
+  const { hearingDateTime } = getHearingFields(hearing);
+  return hearingDateTime.isSame(oneDayAhead, 'day')
+   || hearingDateTime.isSame(oneWeekAhead, 'day');
+};
