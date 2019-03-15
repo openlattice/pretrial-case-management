@@ -73,11 +73,11 @@ export default function psaModalReducer(state :Map<*, *> = INITIAL_STATE, action
             scores,
             psaId,
             neighborsByAppTypeFqn,
-            personId,
             personNeighborsByFqn,
             hearingIds,
             psaPermissions
           } = action.value;
+          const personId = neighborsByAppTypeFqn.getIn([PEOPLE, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.PERSON_ID, 0], '');
           return state
             .set(PSA_MODAL.SCORES, scores)
             .set(PSA_MODAL.PSA_ID, psaId)
