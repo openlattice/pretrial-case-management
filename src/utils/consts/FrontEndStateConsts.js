@@ -9,6 +9,7 @@ export const STATE = {
   DOWNLOAD: 'download',
   EDM: 'edm',
   ENROLL: 'enroll',
+  MANUAL_REMINDERS: 'manualReminders',
   PSA_MODAL: 'psaModal',
   PSA: 'psa',
   PEOPLE: 'people',
@@ -141,6 +142,20 @@ export const ENROLL = {
   SUBMITTING_AUDIO: 'submittingAudio',
   NUM_SUBMISSIONS: 'numSubmissions',
   ERROR: 'errorMessage'
+};
+
+// Manual Reminders
+
+export const MANUAL_REMINDERS = {
+  REMINDER_IDS: 'manualReminderIds',
+  REMINDERS_BY_ID: 'manualRemindersById',
+  SUCCESSFUL_REMINDER_IDS: 'successfulManualReminderIds',
+  FAILED_REMINDER_IDS: 'failedManualReminderIds',
+  LOADING_MANUAL_REMINDERS: 'loadingManualReminders',
+  MANUAL_REMINDER_NEIGHBORS: 'manualReminderNeighborsById',
+  LOADING_MANUAL_REMINDER_NEIGHBORS: 'loadingManualReminderNeighbors',
+  LOADING_MODAL: 'loadingManualReminderForm',
+  PEOPLE_NEIGHBORS: 'peopleNeighborsForManualReminder'
 };
 
 // PSA Modal
