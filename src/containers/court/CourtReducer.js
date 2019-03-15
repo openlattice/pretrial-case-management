@@ -182,6 +182,7 @@ export default function courtReducer(state :Map<*, *> = INITIAL_STATE, action :S
         FINALLY: () => state.set(COURT.HEARING_IDS_REFRESHING, false),
       });
     }
+
     case loadJudges.case(action.type): {
       return loadJudges.reducer(state, action, {
         REQUEST: () => state.set(COURT.LOADING_JUDGES, true),
