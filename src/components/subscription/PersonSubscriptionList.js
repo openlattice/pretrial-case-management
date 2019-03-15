@@ -16,6 +16,7 @@ import { SEARCH, STATE } from '../../utils/consts/FrontEndStateConsts';
 import { sortPeopleByName } from '../../utils/PeopleUtils';
 
 import * as SubscriptionsActionFactory from '../../containers/subscription/SubscriptionsActionFactory';
+import * as ManualRemindersActionFactory from '../../containers/manualreminders/ManualRemindersActionFactory';
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
@@ -53,6 +54,7 @@ class PersonSubscriptionList extends React.Component<Props, State> {
             contact={contact}
             person={person}
             loadNeighbors={actions.loadSubcriptionModal}
+            loadManualRemindersForm={actions.loadManualRemindersForm}
             onClose={actions.clearSubscriptionModal} />
       );
     });
@@ -93,6 +95,10 @@ function mapDispatchToProps(dispatch :Function) :Object {
 
   Object.keys(SubscriptionsActionFactory).forEach((action :string) => {
     actions[action] = SubscriptionsActionFactory[action];
+  });
+
+  Object.keys(ManualRemindersActionFactory).forEach((action :string) => {
+    actions[action] = ManualRemindersActionFactory[action];
   });
 
   return {
