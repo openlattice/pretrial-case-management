@@ -5,6 +5,7 @@ import moment from 'moment';
 import { isImmutable, Map, fromJS } from 'immutable';
 import { Constants } from 'lattice';
 
+import federalHolidays from './consts/FederalHolidays';
 import { PROPERTY_TYPES } from './consts/DataModelConsts';
 import { PSA_NEIGHBOR, PSA_ASSOCIATION } from './consts/FrontEndStateConsts';
 
@@ -89,7 +90,10 @@ export function addWeekdays(date, days) {
   let count = days;
   while (count > 0) {
     newDate = newDate.add(1, 'days');
-    if (newDate.isoWeekday() !== 6 && newDate.isoWeekday() !== 7) {
+    if (
+      newDate.isoWeekday() !== 6
+        && newDate.isoWeekday() !== 7
+        && !federalHolidays.includes(newDate.format('YYYY-MM-DD'))) {
       count -= 1;
     }
   }
