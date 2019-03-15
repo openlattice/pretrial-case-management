@@ -11,12 +11,14 @@ import { bindActionCreators } from 'redux';
 import { NavLink } from 'react-router-dom';
 import { Constants } from 'lattice';
 
-import { formatPeopleInfo, sortPeopleByName } from '../../utils/PeopleUtils';
+import CONTENT from '../../utils/consts/ContentConsts';
 import SecondaryButton from '../../components/buttons/SecondaryButton';
 import ToggleButtonsGroup from '../../components/buttons/ToggleButtons';
 import LogoLoader from '../../components/LogoLoader';
 import PersonCard from '../../components/people/PersonCard';
 import DatePicker from '../../components/datetime/DatePicker';
+import PSAModal from '../psamodal/PSAModal';
+import { formatPeopleInfo, sortPeopleByName } from '../../utils/PeopleUtils';
 import * as Routes from '../../core/router/Routes';
 import { StyledSectionWrapper } from '../../utils/Layout';
 import { TIME_FORMAT } from '../../utils/FormattingUtils';
@@ -29,8 +31,7 @@ import {
   EDM,
   PSA_ASSOCIATION,
   PSA_NEIGHBOR,
-  STATE,
-  SUBMIT
+  STATE
 } from '../../utils/consts/FrontEndStateConsts';
 
 import * as CourtActionFactory from './CourtActionFactory';
@@ -150,8 +151,7 @@ type Props = {
   county :string,
   peopleWithOpenPsas :Set<*>,
   peopleIdsToOpenPSAIds :Map<*>,
-  scoresAsMap :Map<*>,
-  submitting :boolean,
+  peopleWithMultipleOpenPsas :Set<*>,
   selectedOrganizationId :string,
   psaEditDatesById :Map<*, *>,
   actions :{
@@ -185,6 +185,34 @@ type State = {
 const PENN_ROOM_PREFIX = 'Courtroom ';
 
 class CourtContainer extends React.Component<Props, State> {
+  constructor(props :Props) {
+    super(props);
+    this.state = {
+      psaModalOpen: false
+    };
+  }
+
+  onClose = () => (this.setState({ psaModalOpen: false }));
+
+  renderPSAModal = () => {
+    const { psaId, psaModalOpen } = this.state;
+    return (
+      <PSAModal
+          open={psaModalOpen}
+          view={CONTENT.JUDGES}
+          onClose={this.onClose}
+          entityKeyId={psaId} />
+    );
+  }
+
+
+  openPSAModal = ({ psaId }) => {
+    const { actions } = this.props;
+    const { loadPSAModal } = actions;
+    this.setState({ psaId });
+    loadPSAModal({ psaId, callback: this.loadCaseHistoryFn });
+    this.setState({ psaModalOpen: true });
+  }
 
   componentDidMount() {
     const {
@@ -235,7 +263,6 @@ class CourtContainer extends React.Component<Props, State> {
 
   renderPersonCard = (person, index) => {
     const {
-      actions,
       peopleIdsToOpenPSAIds,
       peopleWithOpenPsas,
       peopleWithMultipleOpenPsas,
@@ -259,7 +286,7 @@ class CourtContainer extends React.Component<Props, State> {
           personObj={personObj}
           hasOpenPSA={hasOpenPSA}
           loadCaseHistoryFn={this.loadCaseHistoryCallback}
-          loadPSAModal={actions.loadPSAModal}
+          openPSAModal={this.openPSAModal}
           judgesview />
     );
   }
@@ -468,6 +495,7 @@ class CourtContainer extends React.Component<Props, State> {
             {this.renderContent()}
           </StyledSectionWrapper>
         </StyledFormWrapper>
+        {this.renderPSAModal()}
       </StyledFormViewWrapper>
     );
   }
