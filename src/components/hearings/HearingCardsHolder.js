@@ -19,7 +19,7 @@ const { OPENLATTICE_ID_FQN } = Constants;
 
 const CardsHolder = styled.div`
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(${props => (props.columns ? props.columns : 2)}, 1fr);
   grid-gap: 20px;
   margin-bottom: 30px
 `;
@@ -60,6 +60,7 @@ const NoHearings = styled.div`
 `;
 
 type Props = {
+  columns :number,
   hearings :Immutable.List<*>,
   hearingsWithOutcomes :Immutable.List<*>,
   readOnly :boolean,
@@ -69,6 +70,7 @@ type Props = {
 }
 
 const HearingCardsHolder = ({
+  columns,
   hearings,
   handleSelect,
   readOnly,
@@ -134,7 +136,7 @@ const HearingCardsHolder = ({
   });
 
   return (
-    <CardsHolder>
+    <CardsHolder columns={columns}>
       { hearingOptions.size ? hearingOptions : <NoHearings>No hearings found.</NoHearings> }
     </CardsHolder>
   );
