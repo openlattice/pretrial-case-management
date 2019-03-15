@@ -150,6 +150,17 @@ export default function courtReducer(state :Map<*, *> = INITIAL_STATE, action :S
       return state.set(COURT.COURT_DATE, courtDate);
     }
 
+    case refreshHearingNeighbors.case(action.type): {
+      return refreshHearingNeighbors.reducer(state, action, {
+        REQUEST: () => state.set(COURT.HEARING_IDS_REFRESHING, true),
+        SUCCESS: () => {
+          const { id, neighbors } = action.value;
+          return state.setIn([COURT.HEARINGS_NEIGHBORS_BY_ID, id], neighbors);
+        },
+        FINALLY: () => state.set(COURT.HEARING_IDS_REFRESHING, false),
+      });
+    }
+
     case loadHearingNeighbors.case(action.type): {
       return loadHearingNeighbors.reducer(state, action, {
         REQUEST: () => state
@@ -171,17 +182,6 @@ export default function courtReducer(state :Map<*, *> = INITIAL_STATE, action :S
       });
     }
 
-    case refreshHearingNeighbors.case(action.type): {
-      return refreshHearingNeighbors.reducer(state, action, {
-        REQUEST: () => state.set(COURT.HEARING_IDS_REFRESHING, true),
-        SUCCESS: () => {
-          const { id, neighbors } = action.value;
-
-          return state.setIn([COURT.HEARINGS_NEIGHBORS_BY_ID, id], neighbors);
-        },
-        FINALLY: () => state.set(COURT.HEARING_IDS_REFRESHING, false),
-      });
-    }
 
     case loadJudges.case(action.type): {
       return loadJudges.reducer(state, action, {
