@@ -23,6 +23,7 @@ import {
 } from '@redux-saga/core/effects';
 
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
+import { hearingNeedsReminder } from '../../utils/RemindersUtils';
 import { getPropertyTypeId } from '../../edm/edmUtils';
 import { PSA_STATUSES } from '../../utils/consts/Consts';
 import exportPDFList from '../../utils/CourtRemindersPDFUtils';
@@ -424,6 +425,7 @@ function* loadPeopleWithHearingsButNoContactsWorker(action :SequenceAction) :Gen
 
     let peopleWithOpenPSAsandHearingsButNoContactById = Map();
     let hearingsMap = Map();
+    let peopleMap = Map();
 
     const app = yield select(getApp);
     const edm = yield select(getEDM);
@@ -432,7 +434,7 @@ function* loadPeopleWithHearingsButNoContactsWorker(action :SequenceAction) :Gen
     const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
     const psaScoresEntitySetId = getEntitySetIdFromApp(app, PSA_SCORES, orgId);
     const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE, orgId);
-    const hearingEntityKeyId = getEntitySetIdFromApp(app, HEARINGS, orgId);
+    const hearingsEntitySetId = getEntitySetIdFromApp(app, HEARINGS, orgId);
     const contactInformationEntityKeyId = getEntitySetIdFromApp(app, CONTACT_INFORMATION, orgId);
 
     /* Grab Open PSAs */
@@ -446,21 +448,42 @@ function* loadPeopleWithHearingsButNoContactsWorker(action :SequenceAction) :Gen
     let psaNeighborsById = yield call(SearchApi.searchEntityNeighborsWithFilter, psaScoresEntitySetId, {
       entityKeyIds: scoreIds.toJS(),
       sourceEntitySetIds: [],
-      destinationEntitySetIds: [peopleEntitySetId, hearingEntityKeyId]
+      destinationEntitySetIds: [peopleEntitySetId, hearingsEntitySetId]
     });
     psaNeighborsById = fromJS(psaNeighborsById);
 
     /* Filter for people with hearings */
     psaNeighborsById.entrySeq().forEach(([_, neighbors]) => {
-      let person;
+      neighbors.forEach((neighbor) => {
+        const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
+        const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
+        const isPerson = appTypeFqn === PEOPLE;
+        if (isPerson) {
+          const entityKeyId = neighbor.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0], '');
+          const person = neighbor.get(PSA_NEIGHBOR.DETAILS, Map());
+          peopleMap = peopleMap.set(entityKeyId, person);
+        }
+      });
+    });
+
+    /* Grab people neighbors */
+    let peopleNeighborsById = yield call(SearchApi.searchEntityNeighborsWithFilter, peopleEntitySetId, {
+      entityKeyIds: peopleMap.keySeq().toJS(),
+      sourceEntitySetIds: [contactInformationEntityKeyId],
+      destinationEntitySetIds: [contactInformationEntityKeyId, hearingsEntitySetId]
+    });
+    peopleNeighborsById = fromJS(peopleNeighborsById);
+
+    peopleNeighborsById.entrySeq().forEach(([id, neighbors]) => {
+      let hasPreferredContact = false;
       let hasFutureHearing = false;
       neighbors.forEach((neighbor) => {
         const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
         const entityKeyId = neighbor.getIn([PSA_ASSOCIATION.DETAILS, OPENLATTICE_ID_FQN, 0], '');
         const neighborObj = neighbor.get(PSA_NEIGHBOR.DETAILS, Map());
         const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
+        const isContactInformation = appTypeFqn === CONTACT_INFORMATION;
         const isHearing = appTypeFqn === HEARINGS;
-        const isPerson = appTypeFqn === PEOPLE;
         if (isHearing) {
           const hearingDateTime = neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.DATE_TIME, 0]);
           const hearingExists = !!hearingDateTime;
@@ -468,47 +491,28 @@ function* loadPeopleWithHearingsButNoContactsWorker(action :SequenceAction) :Gen
           const hearingIsInactive = neighbor.getIn([PROPERTY_TYPES.HEARING_INACTIVE, 0], false);
           const hearingHasBeenCancelled = neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.UPDATE_TYPE, 0], '')
             .toLowerCase().trim() === 'cancelled';
-          const hearingInFuture = moment().startOf('day').isBefore(moment(hearingDateTime));
+          const hearingInFuture = moment().startOf('day').isBefore(hearingDateTime);
           if (hearingType
             && hearingExists
             && hearingInFuture
             && !hearingHasBeenCancelled
             && !hearingIsInactive
           ) {
-            hasFutureHearing = true;
+            const needsReminder = hearingNeedsReminder(neighborObj);
+            if (needsReminder) {
+              hasFutureHearing = true;
+            }
             hearingsMap = hearingsMap.set(entityKeyId, neighborObj);
           }
         }
-        if (isPerson) person = neighbor.get(PSA_NEIGHBOR.DETAILS, Map());
-      });
-      if (hasFutureHearing && person) {
-        const entityKeyId = person.getIn([OPENLATTICE_ID_FQN, 0], '');
-        peopleWithOpenPSAsandHearingsButNoContactById = peopleWithOpenPSAsandHearingsButNoContactById
-          .set(entityKeyId, person);
-      }
-    });
-
-    /* Grab people neighbors */
-    let peopleNeighborsById = yield call(SearchApi.searchEntityNeighborsWithFilter, peopleEntitySetId, {
-      entityKeyIds: peopleWithOpenPSAsandHearingsButNoContactById.keySeq().toJS(),
-      sourceEntitySetIds: [contactInformationEntityKeyId],
-      destinationEntitySetIds: [contactInformationEntityKeyId]
-    });
-    peopleNeighborsById = fromJS(peopleNeighborsById);
-
-    peopleNeighborsById.entrySeq().forEach(([id, neighbors]) => {
-      let hasPreferredContact = false;
-      neighbors.forEach((neighbor) => {
-        const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
-        const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
-        const isContactInformation = appTypeFqn === CONTACT_INFORMATION;
         if (isContactInformation) {
           const isPreferred = neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.IS_PREFERRED, 0], false);
           if (isPreferred) hasPreferredContact = true;
         }
       });
-      if (hasPreferredContact) {
-        peopleWithOpenPSAsandHearingsButNoContactById = peopleWithOpenPSAsandHearingsButNoContactById.delete(id);
+      if (!hasPreferredContact && hasFutureHearing) {
+        const person = peopleMap.get(id, Map());
+        peopleWithOpenPSAsandHearingsButNoContactById = peopleWithOpenPSAsandHearingsButNoContactById.set(id, person);
       }
     });
     yield put(loadPeopleWithHearingsButNoContacts
@@ -632,6 +636,14 @@ function* bulkDownloadRemindersPDFWorker(action :SequenceAction) :Generator<*, *
       const selectedHearing = hearingMap.get(hearingId, Map());
       pageDetailsList = pageDetailsList.push({ selectedPerson, selectedHearing });
     });
+    pageDetailsList = pageDetailsList
+      .groupBy(reminderObj => reminderObj.selectedPerson.getIn([OPENLATTICE_ID_FQN, 0], ''))
+      .valueSeq()
+      .map((personList) => {
+        const selectPerson = personList.getIn([0, 'selectedPerson'], Map());
+        const selectHearings = personList.map(personHearing => personHearing.selectedHearing || Map());
+        return { selectedPerson: selectPerson, selectedHearing: selectHearings }
+      });
     exportPDFList(fileName, pageDetailsList);
   }
   catch (error) {
