@@ -49,6 +49,7 @@ export const APP_TYPES_FQNS = {
   LIVES_AT_ARREST: new FullyQualifiedName('app.livesat_arrest'),
   MANUAL_CHARGES: new FullyQualifiedName('app.manualcharges'),
   MANUAL_PRETRIAL_CASES: new FullyQualifiedName('app.manualpretrialcases'),
+  MANUAL_REMINDERS: new FullyQualifiedName('app.manualreminders'),
   OUTCOMES: new FullyQualifiedName('app.psaoutcomes'),
   OVERSAW: new FullyQualifiedName('app.oversaw'),
   PEOPLE: new FullyQualifiedName('app.people'),
@@ -337,5 +338,6 @@ export const PROPERTY_TYPES = {
 
   // Reminders
   REMINDER_ID: 'ol.id',
-  NOTIFIED: 'ol.notified'
+  NOTIFIED: 'ol.notified',
+  REMINDER_NOTES: 'ol.notes'
 };
