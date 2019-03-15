@@ -198,7 +198,6 @@ function* loadPSAModalWorker(action :SequenceAction) :Generator<*, *, *> {
       scores,
       neighborsByAppTypeFqn,
       psaPermissions,
-      personId,
       personNeighborsByFqn,
       hearingIds,
       allFilers
