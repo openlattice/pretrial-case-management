@@ -6,9 +6,10 @@ import styled from 'styled-components';
 import { Constants } from 'lattice';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCog } from '@fortawesome/pro-light-svg-icons';
+import { faCog, faPaperPlane } from '@fortawesome/pro-light-svg-icons';
 
 import ManageSubscriptionModal from '../../containers/subscription/ManageSubscriptionModal';
+import CreateManualReminderModal from '../reminders/CreateManualReminderModal';
 import StyledButton from '../buttons/StyledButton';
 import { OL } from '../../utils/consts/Colors';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
@@ -45,24 +46,38 @@ const ManageSubscriptionButton = styled(StyledButton)`
   font-size: 12px;
 `;
 
+const OpenCreateManualReminderButton = styled(ManageSubscriptionButton)`
+  width: 30%;
+  margin-right: 10px;
+`;
+
 class PersonSubscriptionRow extends React.Component<Props, State> {
   constructor(props :Props) {
     super(props);
     this.state = {
-      manageSubscriptionModalOpen: false
+      manageSubscriptionModalOpen: false,
+      creatingManualReminder: false
     };
   }
+
+  onClose = () => {
+    const { onClose } = this.props;
+    this.setState({
+      manageSubscriptionModalOpen: false,
+      creatingManualReminder: false
+    });
+    onClose();
+  };
+
+  onCreateSubscriptionClose = () => {
+    this.setState({ creatingManualReminder: false });
+  }
+
   openManageSubscriptionModal = () => {
     const { person, loadNeighbors } = this.props;
     const personId = person.getIn([OPENLATTICE_ID_FQN, 0], '');
     loadNeighbors({ personId });
     this.setState({ manageSubscriptionModalOpen: true });
-  };
-
-  onClose = () => {
-    const { onClose } = this.props;
-    this.setState({ manageSubscriptionModalOpen: false });
-    onClose();
   };
 
   renderManageSubscriptionModal = () => {
@@ -76,11 +91,35 @@ class PersonSubscriptionRow extends React.Component<Props, State> {
     );
   }
 
+  openCreateManualReminderModal = () => {
+    const { person, loadManualRemindersForm } = this.props;
+    const personId = person.getIn([OPENLATTICE_ID_FQN, 0], '');
+    loadManualRemindersForm({ personId });
+    this.setState({ creatingManualReminder: true });
+  };
+
+  renderCreateManualReminderModal = () => {
+    const { creatingManualReminder } = this.state;
+    const { person } = this.props;
+    return (
+      <CreateManualReminderModal
+          person={person}
+          open={creatingManualReminder}
+          onClose={this.onClose} />
+    );
+  }
+
   renderManageSubscriptionButton = () => (
     <ManageSubscriptionButton onClick={this.openManageSubscriptionModal}>
       <FontAwesomeIcon icon={faCog} height="12px" />
       {' Settings'}
     </ManageSubscriptionButton>
+  )
+
+  renderManualReminderButton = () => (
+    <OpenCreateManualReminderButton onClick={this.openCreateManualReminderModal}>
+      <FontAwesomeIcon icon={faPaperPlane} height="12px" />
+    </OpenCreateManualReminderButton>
   )
 
   render() {
@@ -94,9 +133,11 @@ class PersonSubscriptionRow extends React.Component<Props, State> {
         <BodyElement>
           {lastFirstMid}
           { this.renderManageSubscriptionModal() }
+          { this.renderCreateManualReminderModal() }
         </BodyElement>
         { phone ? <BodyElement>{phone}</BodyElement> : null }
         <BodyElement>
+          {this.renderManualReminderButton()}
           {this.renderManageSubscriptionButton()}
         </BodyElement>
       </Row>
