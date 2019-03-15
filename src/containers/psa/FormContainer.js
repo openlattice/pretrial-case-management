@@ -551,9 +551,14 @@ class Form extends React.Component<Props, State> {
 
   getFqn = propertyType => `${propertyType.getIn(['type', 'namespace'])}.${propertyType.getIn(['type', 'name'])}`
 
+  shouldLoadCases = () => {
+    const { selectedOrganizationSettings } = this.props;
+    return selectedOrganizationSettings.get(SETTINGS.LOAD_CASES, false);
+  }
+
   handleSelectPerson = (selectedPerson, entityKeyId) => {
-    const { actions, selectedOrganizationSettings } = this.props;
-    const shouldLoadCases = selectedOrganizationSettings.get(SETTINGS.LOAD_CASES, false);
+    const { actions } = this.props;
+    const shouldLoadCases = this.shouldLoadCases();
     actions.selectPerson({ selectedPerson });
     actions.loadPersonDetails({ entityKeyId, shouldLoadCases });
     actions.loadNeighbors({ entityKeyId });
@@ -785,11 +790,27 @@ class Form extends React.Component<Props, State> {
       numCasesToLoad,
       numCasesLoaded,
       arrestOptions,
+      selectedPersonId,
       psaForm,
       actions
     } = this.props;
     const { skipClosePSAs } = this.state;
+
     if (isLoadingCases && !isLoadingNeighbors) {
+
+      /*
+       * NOTE: this secondary neighbors load is necessary to refresh the person's case history after
+       * pulling their case history on the fly from bifrost. Without it, their updated case history
+       * will not be used for populating the PSA autofill values.
+       */
+      if (this.shouldLoadCases() && numCasesLoaded === numCasesToLoad) {
+        actions.loadPersonDetails({
+          entityKeyId: selectedPersonId,
+          shouldLoadCases: false
+        });
+        actions.loadNeighbors({ entityKeyId: selectedPersonId });
+      }
+
       const progress = (numCasesToLoad > 0) ? Math.floor((numCasesLoaded / numCasesToLoad) * 100) : 0;
       const loadingText = numCasesToLoad > 0
         ? `Loading cases (${numCasesLoaded} / ${numCasesToLoad})`
