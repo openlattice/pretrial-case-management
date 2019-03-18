@@ -434,7 +434,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
   getJudgeEntity = (props) => {
     const { selectedHearing, hearingNeighbors } = props;
     const judgeEntity = getNeighborDetailsForEntitySet(hearingNeighbors, JUDGES);
-    const judgeEntitySetId = judgeEntity.getIn([PSA_ASSOCIATION.ENTITY_SET, 'id'], '');
+    const judgeEntitySetId = hearingNeighbors.getIn([JUDGES, PSA_ASSOCIATION.DETAILS, 'id'], '');
     const judgesNameFromHearingComments = selectedHearing.getIn([PROPERTY_TYPES.HEARING_COMMENTS, 0], 'N/A');
 
     const judgeName = judgeEntity.size ? formatJudgeName(judgeEntity) : judgesNameFromHearingComments;
@@ -1162,7 +1162,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
     }
     if (judgeNameEdited && judgeId && !judgeIsOther) {
       const associationEntity = {
-        [ID_FIELD_NAMES.TIMESTAMP]: moment().toISOString(true),
+        [PROPERTY_TYPES.COMPLETED_DATE_TIME]: moment().toISOString(true),
       };
       replaceAssociation({
         associationEntity,
@@ -1227,6 +1227,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       backToSelection,
       hasOutcome,
       hearingEntityKeyId,
+      hearingIdsRefreshing,
       loadingReleaseCondtions,
       psaNeighbors,
       replacingAssociation,
@@ -1381,7 +1382,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       ? 'Loading Hearing Details...'
       : 'Updating Hearing...';
 
-    if (loadingReleaseCondtions || replacingEntity || replacingAssociation) {
+    if (loadingReleaseCondtions || replacingEntity || replacingAssociation || hearingIdsRefreshing) {
       return <LogoLoader size={30} loadingText={loadingText} />;
     }
 
