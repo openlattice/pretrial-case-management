@@ -18,6 +18,7 @@ import Dashboard from '../../components/dashboard/Dashboard';
 import Forms from '../forms/Forms';
 import ContactSupport from '../../components/app/ContactSupport';
 import LogoLoader from '../../components/LogoLoader';
+import WelcomeBanner from '../../components/WelcomeBanner';
 import { APP, CHARGES, STATE } from '../../utils/consts/FrontEndStateConsts';
 import { APP_TYPES_FQNS, SETTINGS, MODULE } from '../../utils/consts/DataModelConsts';
 import { termsAreAccepted } from '../../utils/AcceptTermsUtils';
@@ -66,6 +67,7 @@ type Props = {
   app :Map<*, *>,
   appSettingsByOrgId :Map<*, *>,
   selectedOrganizationSettings :Map<*, *>,
+  selectedOrganizationTitle :string,
   errors :Map<*, *>,
   actions :{
     getAllPropertyTypes :RequestSequence;
@@ -158,8 +160,14 @@ class AppContainer extends React.Component<Props, *> {
   }
 
   render() {
-    const { actions, app, selectedOrganizationSettings } = this.props;
-    const pretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
+    const {
+      actions,
+      app,
+      selectedOrganizationSettings,
+      selectedOrganizationTitle
+    } = this.props;
+    const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
+    const tool = includesPretrialModule ? 'Pretrial Case Management' : 'PSA Calculator';
     const loading = app.get(APP.LOADING, false);
     const selectedOrg = app.get(APP.SELECTED_ORG_ID, '');
     const orgList = app.get(APP.ORGS).entrySeq().map(([value, organization]) => {
@@ -172,10 +180,11 @@ class AppContainer extends React.Component<Props, *> {
             loading={loading}
             logout={actions.logout}
             organizations={orgList}
-            pretrialModule={pretrialModule}
+            pretrialModule={includesPretrialModule}
             selectedOrg={selectedOrg}
             switchOrg={this.switchOrganization} />
         <ContactSupport />
+        { selectedOrganizationTitle ? <WelcomeBanner tool={tool} organization={selectedOrganizationTitle} /> : null }
         {this.renderAppBody()}
       </AppWrapper>
     );
@@ -190,6 +199,7 @@ function mapStateToProps(state) {
     [APP.SELECTED_ORG_ID]: app.get(APP.APP_SETTINGS_ID),
     [APP.SETTINGS_BY_ORG_ID]: app.get(APP.SETTINGS_BY_ORG_ID),
     [APP.SELECTED_ORG_SETTINGS]: app.get(APP.SELECTED_ORG_SETTINGS),
+    [APP.SELECTED_ORG_TITLE]: app.get(APP.SELECTED_ORG_TITLE),
     [APP.ERRORS]: app.get(APP.ERRORS),
 
     [CHARGES.ARREST]: charges.get(CHARGES.ARREST),
