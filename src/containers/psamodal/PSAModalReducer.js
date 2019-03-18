@@ -95,10 +95,7 @@ export default function psaModalReducer(state :Map<*, *> = INITIAL_STATE, action
 
     case changePSAStatus.case(action.type): {
       return changePSAStatus.reducer(state, action, {
-        SUCCESS: () => state.set(
-          PSA_MODAL.PSA_NEIGHBORS,
-          state.get(PSA_MODAL.PSA_NEIGHBORS).set(PSA_SCORES, fromJS(action.value.entity))
-        )
+        SUCCESS: () => state.set(PSA_MODAL.SCORES, fromJS(action.value.entity))
       });
     }
 
