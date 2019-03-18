@@ -25,6 +25,7 @@ let {
   HEARINGS,
   PEOPLE,
   PSA_RISK_FACTORS,
+  PSA_SCORES,
   RELEASE_RECOMMENDATIONS,
   SUBSCRIPTION
 } = APP_TYPES_FQNS;
@@ -35,6 +36,7 @@ DMF_RESULTS = DMF_RESULTS.toString();
 HEARINGS = HEARINGS.toString();
 PEOPLE = PEOPLE.toString();
 PSA_RISK_FACTORS = PSA_RISK_FACTORS.toString();
+PSA_SCORES = PSA_SCORES.toString();
 RELEASE_RECOMMENDATIONS = RELEASE_RECOMMENDATIONS.toString();
 SUBSCRIPTION = SUBSCRIPTION.toString();
 
@@ -93,7 +95,12 @@ export default function psaModalReducer(state :Map<*, *> = INITIAL_STATE, action
 
     case changePSAStatus.case(action.type): {
       return changePSAStatus.reducer(state, action, {
-        SUCCESS: () => state.set(PSA_MODAL.SCORES, fromJS(action.value.entity))
+        SUCCESS: () => state
+          .set(PSA_MODAL.SCORES, fromJS(action.value.entity))
+          .set(
+            PSA_MODAL.PSA_NEIGHBORS,
+            state.get(PSA_MODAL.PSA_NEIGHBORS).set(PSA_SCORES, fromJS(action.value.entity))
+          )
       });
     }
 
