@@ -372,7 +372,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
     const nextJudge = this.getJudgeEntity(nextProps);
 
     if (hearingEntityKeyId !== nextProps.hearingEntityKeyId) {
-      this.loadReleaseConditions(this.props);
+      this.loadReleaseConditions(nextProps);
       this.setState(this.getStateFromProps(nextProps));
     }
 
