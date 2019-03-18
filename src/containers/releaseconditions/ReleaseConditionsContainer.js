@@ -434,12 +434,19 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
   getJudgeEntity = (props) => {
     const { selectedHearing, hearingNeighbors } = props;
     const judgeEntity = getNeighborDetailsForEntitySet(hearingNeighbors, JUDGES);
-    const judgeEntitySetId = hearingNeighbors.getIn([JUDGES, PSA_ASSOCIATION.DETAILS, 'id'], '');
+    const judgeAssociationEntityKeyId = hearingNeighbors
+      .getIn([JUDGES, PSA_ASSOCIATION.DETAILS, OPENLATTICE_ID_FQN, 0], '');
+    const judgeAssociationEntitySetId = hearingNeighbors.getIn([JUDGES, PSA_ASSOCIATION.ENTITY_SET, 'id'], '');
     const judgesNameFromHearingComments = selectedHearing.getIn([PROPERTY_TYPES.HEARING_COMMENTS, 0], 'N/A');
 
     const judgeName = judgeEntity.size ? formatJudgeName(judgeEntity) : judgesNameFromHearingComments;
 
-    return { judgeEntity, judgeName, judgeEntitySetId };
+    return {
+      judgeEntity,
+      judgeName,
+      judgeAssociationEntityKeyId,
+      judgeAssociationEntitySetId
+    };
   }
 
   getNeighborEntities = (props) => {
@@ -1116,7 +1123,11 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       hearingCourtroom,
       otherJudgeText
     } = this.state;
-    const { judgeEntity, judgeName, judgeEntitySetId } = this.getJudgeEntity(this.props);
+    const {
+      judgeEntity,
+      judgeName,
+      judgeAssociationEntityKeyId
+    } = this.getJudgeEntity(this.props);
 
     const judgeNameEdited = judge !== judgeName;
     const judgeIsOther = (judge === 'Other');
@@ -1145,16 +1156,14 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
     const hearingEntitySetId = getEntitySetIdFromApp(app, HEARINGS, selectedOrganizationId);
 
     const associationEntitySetName = ASSESSED_BY;
-    const associationEntityKeyId = judgeEntity
-      ? judgeEntity.getIn([PSA_ASSOCIATION.DETAILS, OPENLATTICE_ID_FQN, 0])
-      : null;
+    const associationEntityKeyId = judgeEntity ? judgeAssociationEntityKeyId : null;
     const srcEntitySetName = JUDGES;
     const srcEntityKeyId = judgeId;
     const dstEntitySetName = HEARINGS;
     const dstEntityKeyId = hearingEntityKeyId;
-    if (judgeIsOther && judgeEntitySetId) {
+    if (judgeIsOther && associationEntityKeyId) {
       deleteEntity({
-        entitySetId: judgeEntitySetId,
+        entitySetId: associationEntitySetId,
         entityKeyId: associationEntityKeyId
       });
       this.refreshHearingsNeighborsCallback();
