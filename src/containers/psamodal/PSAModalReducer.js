@@ -98,7 +98,6 @@ export default function psaModalReducer(state :Map<*, *> = INITIAL_STATE, action
         SUCCESS: () => state
           .set(PSA_MODAL.SCORES, fromJS(action.value.entity))
           .setIn([PSA_MODAL.PSA_NEIGHBORS, PSA_SCORES], fromJS(action.value.entity))
-          )
       });
     }
 
