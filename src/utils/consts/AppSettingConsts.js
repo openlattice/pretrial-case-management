@@ -16,6 +16,7 @@ export const MODULE = {
 
 
 export const SETTINGS = {
+  CASE_CONTEXTS: 'caseContexts',
   CONTEXTS: 'contexts',
   LOAD_CASES: 'loadCasesOnTheFly',
   COURT_REMINDERS: 'courtRemindersEnabled',
