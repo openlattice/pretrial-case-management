@@ -150,6 +150,7 @@ export const ENTITY_SETS = {
 };
 
 export const PROPERTY_TYPES = {
+  APP_DETAILS: 'ol.appdetails',
   STRING_ID: 'general.stringid',
   COMPLETED_DATE_TIME: 'date.completeddatetime',
   DATE_TIME: 'general.datetime',

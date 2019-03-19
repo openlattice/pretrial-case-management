@@ -15,6 +15,7 @@ import AppConsent from './AppConsent';
 import ErrorPage from '../../components/ErrorPage';
 import HeaderNav from '../../components/nav/HeaderNav';
 import Dashboard from '../../components/dashboard/Dashboard';
+import SettingsContainer from '../../containers/settings/SettingsContainer';
 import Forms from '../forms/Forms';
 import ContactSupport from '../../components/app/ContactSupport';
 import LogoLoader from '../../components/LogoLoader';
@@ -153,6 +154,7 @@ class AppContainer extends React.Component<Props, *> {
             <Route path={Routes.TERMS} component={AppConsent} />
             <Route path={Routes.DASHBOARD} render={() => this.renderComponent(Dashboard)} />
             <Route path={Routes.FORMS} render={() => this.renderComponent(Forms)} />
+            <Route path={Routes.SETTINGS} render={() => this.renderComponent(SettingsContainer)} />
             <Redirect to={Routes.DASHBOARD} />
           </Switch>
         </AppBodyWrapper>

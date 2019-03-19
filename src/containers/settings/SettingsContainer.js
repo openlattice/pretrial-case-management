@@ -1,0 +1,268 @@
+/*
+ * @flow
+ */
+
+import React from 'react';
+import styled from 'styled-components';
+import { Map } from 'immutable';
+import { Constants } from 'lattice';
+import { bindActionCreators } from 'redux';
+import { connect } from 'react-redux';
+
+import StyledCheckbox from '../../components/controls/StyledCheckbox';
+import StyledRadio from '../../components/controls/StyledRadio';
+import InfoButton from '../../components/buttons/InfoButton';
+import { APP, STATE } from '../../utils/consts/FrontEndStateConsts';
+import { PROPERTY_TYPES, APP_TYPES_FQNS } from '../../utils/consts/DataModelConsts';
+import { OL } from '../../utils/consts/Colors';
+
+import * as AppActionFactory from '../app/AppActionFactory';
+import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
+import {
+  StyledFormViewWrapper,
+  StyledFormWrapper,
+  StyledSectionWrapper
+} from '../../utils/Layout';
+
+const { OPENLATTICE_ID_FQN } = Constants;
+
+const Section = styled.div`
+  width: 100%;
+  padding: 30px;
+  border-bottom: 1px solid ${OL.GREY11};
+`;
+
+const HeaderSection = styled.div`
+  font-family: 'Open Sans', sans-serif;
+  font-size: 18px;
+  color: ${OL.GREY01};
+  width: 100%
+`;
+
+const SubSection = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  margin-bottom: 40px;
+
+  h1 {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 16px;
+    color: ${OL.GREY01};
+  }
+
+`;
+
+const RadioSection = styled.div`
+  margin-bottom: 10px;
+
+  h1 {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 14px;
+    color: ${OL.GREY01};
+  }
+
+  article {
+    margin-left: 15px;
+  }
+`;
+
+const SubmitRow = styled.div`
+  width: 100%;
+  margin-top: 30px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+`;
+
+type Props = {
+  settings :Map<*, *>,
+  settingsEntitySetId :string,
+  actions :{
+    loadApp :RequestSequence;
+    replaceEntity :RequestSequence;
+  };
+};
+
+const FIELDS = {
+  CONTEXTS: 'contexts',
+  REMINDERS_ENABLED: 'courtRemindersEnabled',
+  LOAD_CASES_ON_THE_FLY: 'loadCasesOnTheFly',
+  MODULES: 'modules',
+  CASE_CONTEXTS: 'caseContexts'
+};
+
+const MODULES = {
+  PSA: 'psa',
+  PRETRIAL: 'pretrial'
+};
+
+const CONTEXTS = {
+  COURT: 'court',
+  BOOKING: 'booking'
+};
+
+const CASE_CONTEXTS = {
+  ARREST: 'arrest',
+  COURT: 'court'
+};
+
+class SettingsContainer extends React.Component<Props, State> {
+  constructor(props :Props) {
+    super(props);
+    this.state = {
+      settings: props.settings.delete(OPENLATTICE_ID_FQN)
+    };
+  }
+
+  componentWillReceiveProps(nextProps) {
+    const { settings } = this.props;
+    if (settings !== nextProps.settings) {
+      this.setState({ settings: nextProps.settings.delete(OPENLATTICE_ID_FQN) });
+    }
+  }
+
+  renderCheckbox = (valuePath, label) => {
+    const { settings } = this.state;
+    return (
+      <StyledCheckbox
+          checked={settings.getIn(valuePath, false)}
+          label={label}
+          onChange={({ target }) => {
+            this.setState({ settings: settings.setIn(valuePath, target.checked) });
+          }} />
+    );
+  }
+
+  renderRadioButton = (valuePath, optionValue, label) => {
+    const { settings } = this.state;
+
+    return (
+      <StyledRadio
+          value={optionValue}
+          checked={settings.getIn(valuePath) === optionValue}
+          label={label}
+          onChange={({ target }) => {
+            this.setState({ settings: settings.setIn(valuePath, target.value) });
+          }} />
+    );
+  }
+
+  submit = () => {
+    const { actions, settings, settingsEntitySetId } = this.props;
+
+    const entityKeyId = settings.get(OPENLATTICE_ID_FQN);
+    const entitySetId = settingsEntitySetId;
+
+    const values = {
+      [PROPERTY_TYPES.APP_DETAILS]: [JSON.stringify(this.state.settings.toJS())]
+    };
+
+    actions.replaceEntity({
+      entityKeyId,
+      entitySetId,
+      values,
+      callback: actions.loadApp
+    });
+  }
+
+  render() {
+
+    return (
+      <StyledFormViewWrapper>
+        <StyledFormWrapper>
+          <StyledSectionWrapper>
+            <Section>
+              <HeaderSection>Manage App Settings</HeaderSection>
+            </Section>
+            <Section>
+              <SubSection>
+                <h1>Modules</h1>
+                <article>
+                  {this.renderCheckbox([FIELDS.MODULES, MODULES.PSA], 'PSA')}
+                  {this.renderCheckbox([FIELDS.MODULES, MODULES.PRETRIAL], 'Pretrial')}
+                </article>
+              </SubSection>
+              <SubSection>
+                <h1>Contexts</h1>
+                <article>
+                  {this.renderCheckbox([FIELDS.CONTEXTS, CONTEXTS.COURT], 'Court')}
+                  {this.renderCheckbox([FIELDS.CONTEXTS, CONTEXTS.BOOKING], 'Booking')}
+                </article>
+              </SubSection>
+              <SubSection>
+                <h1>Case contexts</h1>
+                <article>
+                  <RadioSection>
+                    <h1>Case/charge types for booking context:</h1>
+                    {this.renderRadioButton([FIELDS.CASE_CONTEXTS, CONTEXTS.BOOKING], CASE_CONTEXTS.ARREST, 'Arrest')}
+                    {this.renderRadioButton([FIELDS.CASE_CONTEXTS, CONTEXTS.BOOKING], CASE_CONTEXTS.COURT, 'Court')}
+                  </RadioSection>
+                  <RadioSection>
+                    <h1>Case/charge types for court context:</h1>
+                    {this.renderRadioButton([FIELDS.CASE_CONTEXTS, CONTEXTS.COURT], CASE_CONTEXTS.ARREST, 'Arrest')}
+                    {this.renderRadioButton([FIELDS.CASE_CONTEXTS, CONTEXTS.COURT], CASE_CONTEXTS.COURT, 'Court')}
+                  </RadioSection>
+                </article>
+              </SubSection>
+              <SubSection>
+                <h1>Court reminders enabled</h1>
+                <article>
+                  {this.renderCheckbox([FIELDS.REMINDERS_ENABLED], 'Enabled?')}
+                </article>
+              </SubSection>
+              <SubSection>
+                <h1>Load cases on the fly</h1>
+                <article>
+                  {this.renderCheckbox([FIELDS.LOAD_CASES_ON_THE_FLY], 'Should load?')}
+                </article>
+              </SubSection>
+            </Section>
+            <SubmitRow>
+              <InfoButton onClick={this.submit}>Save Changes</InfoButton>
+            </SubmitRow>
+          </StyledSectionWrapper>
+        </StyledFormWrapper>
+      </StyledFormViewWrapper>
+    );
+  }
+}
+
+function mapStateToProps(state) {
+  const app = state.get(STATE.APP);
+
+  const orgId = app.get(APP.SELECTED_ORG_ID);
+
+  let settingsEntitySetId;
+  app.getIn([APP.ENTITY_SETS_BY_ORG, orgId], Map()).entrySeq().forEach(([entitySetId, fqn]) => {
+    if (fqn === APP_TYPES_FQNS.APP_SETTINGS.toString()) {
+      settingsEntitySetId = entitySetId;
+    }
+  });
+
+  return {
+    settings: app.getIn([APP.SETTINGS_BY_ORG_ID, orgId], Map()),
+    settingsEntitySetId
+  };
+}
+
+function mapDispatchToProps(dispatch :Function) :Object {
+  const actions :{ [string] :Function } = {};
+
+  Object.keys(AppActionFactory).forEach((action :string) => {
+    actions[action] = AppActionFactory[action];
+  });
+
+  Object.keys(SubmitActionFactory).forEach((action :string) => {
+    actions[action] = SubmitActionFactory[action];
+  });
+
+  return {
+    actions: {
+      ...bindActionCreators(actions, dispatch)
+    }
+  };
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(SettingsContainer);

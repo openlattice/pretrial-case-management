@@ -3,7 +3,7 @@
  */
 
 import { push } from 'connected-react-router';
-import { Types } from 'lattice';
+import { Constants, Types } from 'lattice';
 import { AuthActions, AccountUtils } from 'lattice-auth';
 import { OrderedMap, fromJS } from 'immutable';
 import {
@@ -32,6 +32,8 @@ import {
   SWITCH_ORGANIZATION,
   loadApp
 } from './AppActionFactory';
+
+const { OPENLATTICE_ID_FQN } = Constants;
 
 let { APP_SETTINGS } = APP_TYPES_FQNS;
 APP_SETTINGS = APP_SETTINGS.toString();
@@ -108,7 +110,9 @@ function* loadAppWorker(action :SequenceAction) :Generator<*, *, *> {
     let i = 0;
     appSettingResults.forEach((setting) => {
       const entitySetId = orgIds[i];
-      const settings = JSON.parse(setting.data[0]['ol.appdetails']);
+      const settingsEntity = setting.data[0];
+      const settings = JSON.parse(settingsEntity['ol.appdetails']);
+      settings[OPENLATTICE_ID_FQN] = settingsEntity[OPENLATTICE_ID_FQN][0];
       appSettingsByOrgId = appSettingsByOrgId.set(entitySetId, fromJS(settings));
       i += 1;
     });
