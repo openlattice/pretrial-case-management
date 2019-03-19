@@ -19,6 +19,7 @@ import QUALIFIERS from '../../../utils/consts/QualifierConsts';
 import { CHARGE } from '../../../utils/consts/Consts';
 import type { Charge } from '../../../utils/consts/Consts';
 import { APP, CHARGES, STATE } from '../../../utils/consts/FrontEndStateConsts';
+import { CASE_CONTEXTS } from '../../../utils/consts/AppSettingConsts';
 import { PROPERTY_TYPES } from '../../../utils/consts/DataModelConsts';
 import { toISODateTime } from '../../../utils/FormattingUtils';
 import { OL } from '../../../utils/consts/Colors';
@@ -52,6 +53,11 @@ const HeaderWrapper = styled.div`
     width: 220px;
     margin: 20px 0;
   }
+`;
+
+const ArrestCaseNumberInput = styled.input`
+  width: 100%;
+  height: 44px;
 `;
 
 const CountsInput = styled.input.attrs({
@@ -159,6 +165,8 @@ class SelectChargesContainer extends React.Component<Props, State> {
   constructor(props :Props) {
     super(props);
     this.state = {
+      chargeType: props.chargeType,
+      courtCaseNumber: '',
       arrestDate: moment(props.defaultArrest.getIn([PROPERTY_TYPES.ARREST_DATE_TIME, 0])),
       caseDispositionDate: '',
       charges: this.formatChargeList(props.defaultCharges)
@@ -215,7 +223,7 @@ class SelectChargesContainer extends React.Component<Props, State> {
 
   onSubmit = () => {
     const { onSubmit, nextPage } = this.props;
-    const { arrestDate, caseDispositionDate, charges } = this.state;
+    const { arrestDate, caseDispositionDate, charges, courtCaseNumber } = this.state;
     const caseId = randomUUID();
     const caseEntity = {
       [PROPERTY_TYPES.CASE_ID]: [caseId],
@@ -224,6 +232,7 @@ class SelectChargesContainer extends React.Component<Props, State> {
     };
     if (caseDispositionDate) caseEntity[PROPERTY_TYPES.CASE_DISPOSITION_DATE] = [this.getDateTime(caseDispositionDate)];
     if (arrestDate) caseEntity[PROPERTY_TYPES.ARREST_DATE_TIME] = [this.getDateTime(arrestDate)];
+    if (courtCaseNumber) caseEntity[PROPERTY_TYPES.CASE_NUMBER] = [courtCaseNumber];
 
     const chargeEntities = charges.map((charge, index) => {
       const statute = charge.getIn([PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE, 0], '');
@@ -251,8 +260,38 @@ class SelectChargesContainer extends React.Component<Props, State> {
     nextPage();
   }
 
+  onInputChange = (e) => {
+    const { name, value } = e.target.value;
+    this.setState({ [name]: value });
+  }
+
+  renderDispositionOrCourtCaseNumberInput = () => {
+    const { caseDispositionDate, courtCaseNumber, chargeType } = this.state;
+    return (chargeType === CASE_CONTEXTS.ARREST)
+      ? (
+        <InputLabel>
+          Case Disposition Date
+          <DateTimePicker
+              name="caseDispositionDate"
+              value={caseDispositionDate}
+              onChange={(date) => {
+                this.setState({ caseDispositionDate: date });
+              }} />
+        </InputLabel>
+      )
+      : (
+        <InputLabel>
+          Court Case Number
+          <ArrestCaseNumberInput
+              name="courtCaseNumber"
+              value={courtCaseNumber}
+              onChange={this.onInputChange} />
+        </InputLabel>
+      );
+  }
+
   renderCaseInfo = () => {
-    const { arrestDate, caseDispositionDate } = this.state;
+    const { arrestDate } = this.state;
     return (
       <CaseInfoWrapper>
         <SectionHeader>Arrest Details:</SectionHeader>
@@ -266,15 +305,7 @@ class SelectChargesContainer extends React.Component<Props, State> {
                   this.setState({ arrestDate: arrdate });
                 }} />
           </InputLabel>
-          <InputLabel>
-            Case Disposition Date
-            <DateTimePicker
-                name="caseDispositionDate"
-                value={caseDispositionDate}
-                onChange={(date) => {
-                  this.setState({ caseDispositionDate: date });
-                }} />
-          </InputLabel>
+          { this.renderDispositionOrCourtCaseNumberInput() }
         </CaseDetailsWrapper>
       </CaseInfoWrapper>
     );
