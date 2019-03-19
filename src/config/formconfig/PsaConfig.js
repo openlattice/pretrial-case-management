@@ -16,7 +16,7 @@ type Props = {
 }
 const psaConfig = ({ manualCourtCasesAndCharges } :Props) => {
 
-  const caseAndChargeConfig = manualCourtCasesAndCharges
+  const caseConfig = manualCourtCasesAndCharges
     ? (
       {
         name: APP_TYPES_FQNS.MANUAL_PRETRIAL_COURT_CASES,
@@ -24,13 +24,32 @@ const psaConfig = ({ manualCourtCasesAndCharges } :Props) => {
         entityId: PROPERTY_TYPES.CASE_ID,
         fields: {
           [PROPERTY_TYPES.CASE_NUMBER]: PROPERTY_TYPES.CASE_NUMBER,
+          [ID_FIELD_NAMES.ARREST_ID_FOR_COURT]: PROPERTY_TYPES.CHARGE_ID,
           [PROPERTY_TYPES.CASE_ID]: PROPERTY_TYPES.CASE_ID,
           [PROPERTY_TYPES.CASE_DISPOSITION_DATE]: PROPERTY_TYPES.CASE_DISPOSITION_DATE,
           [PROPERTY_TYPES.ARREST_DATE_TIME]: PROPERTY_TYPES.ARREST_DATE_TIME,
           [PROPERTY_TYPES.FILE_DATE]: PROPERTY_TYPES.FILE_DATE,
           [PROPERTY_TYPES.NUMBER_OF_CHARGES]: PROPERTY_TYPES.NUMBER_OF_CHARGES
         }
-      },
+      }
+    )
+    : (
+      {
+        name: APP_TYPES_FQNS.MANUAL_PRETRIAL_CASES,
+        alias: ALIASES.MANUAL_CASE,
+        entityId: PROPERTY_TYPES.CASE_ID,
+        fields: {
+          [PROPERTY_TYPES.CASE_ID]: PROPERTY_TYPES.CASE_ID,
+          [PROPERTY_TYPES.CASE_DISPOSITION_DATE]: PROPERTY_TYPES.CASE_DISPOSITION_DATE,
+          [PROPERTY_TYPES.ARREST_DATE_TIME]: PROPERTY_TYPES.ARREST_DATE_TIME,
+          [PROPERTY_TYPES.FILE_DATE]: PROPERTY_TYPES.FILE_DATE,
+          [PROPERTY_TYPES.NUMBER_OF_CHARGES]: PROPERTY_TYPES.NUMBER_OF_CHARGES
+        }
+      }
+    );
+
+  const chargeConfig = manualCourtCasesAndCharges
+    ? (
       {
         name: APP_TYPES_FQNS.MANUAL_COURT_CHARGES,
         alias: ALIASES.MANUAL_CHARGES,
@@ -48,19 +67,7 @@ const psaConfig = ({ manualCourtCasesAndCharges } :Props) => {
     )
     : (
       {
-        name: APP_TYPES_FQNS.MANUAL_PRETRIAL_COURT_CASES,
-        alias: ALIASES.MANUAL_CASE,
-        entityId: PROPERTY_TYPES.CASE_ID,
-        fields: {
-          [PROPERTY_TYPES.CASE_ID]: PROPERTY_TYPES.CASE_ID,
-          [PROPERTY_TYPES.CASE_DISPOSITION_DATE]: PROPERTY_TYPES.CASE_DISPOSITION_DATE,
-          [PROPERTY_TYPES.ARREST_DATE_TIME]: PROPERTY_TYPES.ARREST_DATE_TIME,
-          [PROPERTY_TYPES.FILE_DATE]: PROPERTY_TYPES.FILE_DATE,
-          [PROPERTY_TYPES.NUMBER_OF_CHARGES]: PROPERTY_TYPES.NUMBER_OF_CHARGES
-        }
-      },
-      {
-        name: APP_TYPES_FQNS.MANUAL_COURT_CHARGES,
+        name: APP_TYPES_FQNS.MANUAL_CHARGES,
         alias: ALIASES.MANUAL_CHARGES,
         multipleValuesField: 'charges',
         fields: {
@@ -107,6 +114,7 @@ const psaConfig = ({ manualCourtCasesAndCharges } :Props) => {
           [PROPERTY_TYPES.PRIOR_FAILURE_TO_APPEAR_RECENT]: PROPERTY_TYPES.PRIOR_FAILURE_TO_APPEAR_RECENT,
           [PROPERTY_TYPES.PRIOR_FAILURE_TO_APPEAR_OLD]: PROPERTY_TYPES.PRIOR_FAILURE_TO_APPEAR_OLD,
           [PROPERTY_TYPES.PRIOR_SENTENCE_TO_INCARCERATION]: PROPERTY_TYPES.PRIOR_SENTENCE_TO_INCARCERATION,
+          [DMF.COURT_OR_BOOKING]: PROPERTY_TYPES.CONTEXT,
 
           // notes
           [PROPERTY_TYPES.AGE_AT_CURRENT_ARREST_NOTES]: PROPERTY_TYPES.AGE_AT_CURRENT_ARREST_NOTES,
@@ -199,7 +207,8 @@ const psaConfig = ({ manualCourtCasesAndCharges } :Props) => {
         }
       },
 
-      caseAndChargeConfig,
+      caseConfig,
+      chargeConfig,
 
       {
         name: APP_TYPES_FQNS.CHARGED_WITH,
