@@ -59,13 +59,19 @@ const StyledFormWrapper = styled.div`
 `;
 
 const StyledTitleWrapper = styled.div`
-  align-items: center;
   color: ${OL.GREY34};
   display: flex;
-  font-size: 32px;
-  justify-content: space-between;
+  font-size: 24px;
   margin-bottom: 30px;
   width: 100%;
+
+  div {
+    height: 100%;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    margin-left: 10px;
+  }
 `;
 
 const HearingTime = styled.div`
@@ -153,6 +159,7 @@ type Props = {
   peopleIdsToOpenPSAIds :Map<*>,
   peopleWithMultipleOpenPsas :Set<*>,
   selectedOrganizationId :string,
+  selectedOrganizationTitle :string,
   psaEditDatesById :Map<*, *>,
   actions :{
     bulkDownloadPSAReviewPDF :({ peopleEntityKeyIds :string[] }) => void,
@@ -481,11 +488,13 @@ class CourtContainer extends React.Component<Props, State> {
   }
 
   render() {
+    const { selectedOrganizationTitle } = this.props;
     return (
       <StyledFormViewWrapper>
         <StyledFormWrapper>
           <StyledTitleWrapper>
-            <div>Initial Appearances</div>
+            Court Hearings
+            <div>{ `(Showing Open PSAs for ${selectedOrganizationTitle})` }</div>
           </StyledTitleWrapper>
           <StyledSectionWrapper>
             {this.renderDatePicker()}
@@ -507,6 +516,7 @@ function mapStateToProps(state) {
   const edm = state.get(STATE.EDM);
   return {
     [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
+    [APP.SELECTED_ORG_TITLE]: app.get(APP.SELECTED_ORG_TITLE),
 
     [COURT.COURT_DATE]: court.get(COURT.COURT_DATE),
     [COURT.HEARINGS_TODAY]: court.get(COURT.HEARINGS_TODAY),
