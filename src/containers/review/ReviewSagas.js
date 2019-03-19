@@ -66,7 +66,9 @@ const {
   FTAS,
   HEARINGS,
   MANUAL_CHARGES,
+  MANUAL_COURT_CHARGES,
   MANUAL_PRETRIAL_CASES,
+  MANUAL_PRETRIAL_COURT_CASES,
   PEOPLE,
   PRETRIAL_CASES,
   PSA_RISK_FACTORS,
@@ -86,7 +88,9 @@ const editedByFqn :string = EDITED_BY.toString();
 const ftasFqn :string = FTAS.toString();
 const hearingsFqn :string = HEARINGS.toString();
 const manualChargesFqn :string = MANUAL_CHARGES.toString();
+const manualCourtChargesFqn :string = MANUAL_COURT_CHARGES.toString();
 const manualPretrialCasesFqn :string = MANUAL_PRETRIAL_CASES.toString();
+const manualPretrialCourtCasesFqn :string = MANUAL_PRETRIAL_COURT_CASES.toString();
 const peopleFqn :string = PEOPLE.toString();
 const pretrialCasesFqn :string = PRETRIAL_CASES.toString();
 const psaRiskFactorsFqn :string = PSA_RISK_FACTORS.toString();
@@ -158,13 +162,13 @@ function* getCasesAndCharges(neighbors) {
           pretrialCaseOptionsWithoutDate = pretrialCaseOptionsWithoutDate.push(caseObj);
         }
       }
-      else if (appTypeFqn === manualPretrialCasesFqn) {
+      else if (appTypeFqn === manualPretrialCasesFqn || appTypeFqn === manualPretrialCourtCasesFqn) {
         allManualCases = allManualCases.push(neighborDetails);
       }
       else if (appTypeFqn === chargesFqn) {
         allCharges = allCharges.push(neighborDetails);
       }
-      else if (appTypeFqn === manualChargesFqn) {
+      else if (appTypeFqn === manualChargesFqn || appTypeFqn === manualCourtChargesFqn) {
         allManualCharges = allManualCharges.push(neighborDetails);
       }
       else if (appTypeFqn === arrestChargesFqn) {
