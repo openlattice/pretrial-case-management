@@ -929,6 +929,8 @@ class PSAModal extends React.Component<Props, State> {
     if (!scores) return null;
     const changeStatusText = psaIsClosed(scores) ? 'Change PSA Status' : 'Close PSA';
 
+    const modalHasLoaded = !loadingPSAModal && !loadingCaseHistory;
+
     let tabs = [
       {
         title: 'Summary',
@@ -976,7 +978,7 @@ class PSAModal extends React.Component<Props, State> {
               max-height={MODAL_HEIGHT}
               shouldCloseOnOverlayClick
               stackIndex={1}>
-            { psaPermissions && !(loadingPSAModal || loadingCaseHistory)
+            { psaPermissions && modalHasLoaded
               ? (
                 <ClosePSAModal
                     open={closingPSAModalOpen}
@@ -998,7 +1000,7 @@ class PSAModal extends React.Component<Props, State> {
                 </StyledLink>
               </TitleHeader>
               <div>
-                { psaPermissions && !(loadingPSAModal || loadingCaseHistory)
+                { psaPermissions && modalHasLoaded
                   ? (
                     <ClosePSAButton onClick={() => this.setState({ closingPSAModalOpen: true })}>
                       {changeStatusText}
