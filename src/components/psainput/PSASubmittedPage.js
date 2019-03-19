@@ -25,7 +25,8 @@ import closeXGrayIcon from '../../assets/svg/close-x-gray.svg';
 import closeXBlackIcon from '../../assets/svg/close-x-black.svg';
 import { OL } from '../../utils/consts/Colors';
 import { APP, CHARGES, STATE } from '../../utils/consts/FrontEndStateConsts';
-import { PROPERTY_TYPES, SETTINGS, MODULE } from '../../utils/consts/DataModelConsts';
+import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
+import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { getHeaderText } from '../../utils/DMFUtils';
 import { JURISDICTION } from '../../utils/consts/Consts';
 import {

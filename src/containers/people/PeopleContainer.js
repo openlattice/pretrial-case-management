@@ -19,12 +19,8 @@ import LogoLoader from '../../components/LogoLoader';
 import NavButtonToolbar from '../../components/buttons/NavButtonToolbar';
 import { getFormattedPeople } from '../../utils/PeopleUtils';
 import { clearSearchResults, searchPeople } from '../person/PersonActionFactory';
-import {
-  APP_TYPES_FQNS,
-  PROPERTY_TYPES,
-  SETTINGS,
-  MODULE
-} from '../../utils/consts/DataModelConsts';
+import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
+import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
 import {
   APP,

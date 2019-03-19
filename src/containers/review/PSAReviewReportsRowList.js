@@ -18,12 +18,8 @@ import { PSA_FAILURE_REASONS, PSA_STATUSES, SORT_TYPES } from '../../utils/const
 import { sortByDate, sortByName } from '../../utils/PSAUtils';
 import { getIdOrValue } from '../../utils/DataUtils';
 import { OL } from '../../utils/consts/Colors';
-import {
-  APP_TYPES_FQNS,
-  PROPERTY_TYPES,
-  SETTINGS,
-  MODULE
-} from '../../utils/consts/DataModelConsts';
+import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
+import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import {
   APP,
   STATE,

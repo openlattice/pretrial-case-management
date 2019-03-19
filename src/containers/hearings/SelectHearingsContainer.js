@@ -16,10 +16,11 @@ import LogoLoader from '../../components/LogoLoader';
 import psaHearingConfig from '../../config/formconfig/PSAHearingConfig';
 import ReleaseConditionsContainer from '../releaseconditions/ReleaseConditionsContainer';
 import SubscriptionInfo from '../../components/subscription/SubscriptionInfo';
-import { OL } from '../../utils/consts/Colors';
-import { APP_TYPES_FQNS, PROPERTY_TYPES, SETTINGS } from '../../utils/consts/DataModelConsts';
-import { Title } from '../../utils/Layout';
+import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { getScheduledHearings, getPastHearings, getHearingFields } from '../../utils/consts/HearingConsts';
+import { OL } from '../../utils/consts/Colors';
+import { SETTINGS } from '../../utils/consts/AppSettingConsts';
+import { Title } from '../../utils/Layout';
 import {
   FORM_IDS,
   ID_FIELD_NAMES,

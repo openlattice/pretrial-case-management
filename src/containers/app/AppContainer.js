@@ -19,7 +19,8 @@ import Forms from '../forms/Forms';
 import ContactSupport from '../../components/app/ContactSupport';
 import LogoLoader from '../../components/LogoLoader';
 import { APP, CHARGES, STATE } from '../../utils/consts/FrontEndStateConsts';
-import { APP_TYPES_FQNS, SETTINGS, MODULE } from '../../utils/consts/DataModelConsts';
+import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
+import { APP_TYPES_FQNS } from '../../utils/consts/DataModelConsts';
 import { termsAreAccepted } from '../../utils/AcceptTermsUtils';
 import { OL } from '../../utils/consts/Colors';
 

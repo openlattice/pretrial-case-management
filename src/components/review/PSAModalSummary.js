@@ -11,12 +11,8 @@ import CaseHistoryList from '../casehistory/CaseHistoryList';
 import ChargeTable from '../charges/ChargeTable';
 import PSASummary from '../../containers/review/PSASummary';
 import { AlternateSectionHeader, Count } from '../../utils/Layout';
-import {
-  APP_TYPES_FQNS,
-  PROPERTY_TYPES,
-  SETTINGS,
-  MODULE
-} from '../../utils/consts/DataModelConsts';
+import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
+import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import {
   STATE,
   APP,

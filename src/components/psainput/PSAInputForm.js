@@ -20,7 +20,8 @@ import { formatValue } from '../../utils/FormattingUtils';
 import { getRecentFTAs, getOldFTAs } from '../../utils/FTAUtils';
 import { getSentenceToIncarcerationCaseNums } from '../../utils/SentenceUtils';
 import { StyledSectionWrapper, ErrorMessage } from '../../utils/Layout';
-import { PROPERTY_TYPES, SETTINGS, MODULE } from '../../utils/consts/DataModelConsts';
+import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { OL } from '../../utils/consts/Colors';
 import {
   getViolentChargeLabels,
