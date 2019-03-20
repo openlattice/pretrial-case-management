@@ -25,6 +25,7 @@ export const formatPeopleInfo = (person) => {
   const photo = person.getIn([PROPERTY_TYPES.PICTURE, 0]) || person.getIn([PROPERTY_TYPES.MUGSHOT, 0]);
   const midName = middleName ? ` ${middleName}` : '';
   const lastFirstMid = `${lastName}, ${firstName}${midName}`;
+  const hasOpenPSA = person.get('hasOpenPSA', false);
   return {
     entityKeyId,
     identification,
@@ -33,7 +34,8 @@ export const formatPeopleInfo = (person) => {
     lastName,
     dob,
     photo,
-    lastFirstMid
+    lastFirstMid,
+    hasOpenPSA
   };
 };
 
