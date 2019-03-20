@@ -132,36 +132,36 @@ function* loadPSAModalWorker(action :SequenceAction) :Generator<*, *, *> {
 
       const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id']);
       const neighborDetails = neighbor.get(PSA_NEIGHBOR.DETAILS, Map());
-      const AppTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
-      if (AppTypeFqn) {
-        if (AppTypeFqn === staffFqn) {
+      const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
+      if (appTypeFqn) {
+        if (appTypeFqn === staffFqn) {
           neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.PERSON_ID], List())
             .forEach((filer) => {
               allFilers = allFilers.add(filer);
             });
         }
 
-        if (LIST_ENTITY_SETS.includes(AppTypeFqn)) {
+        if (LIST_ENTITY_SETS.includes(appTypeFqn)) {
           const hearingEntityKeyId = neighborDetails.getIn([OPENLATTICE_ID_FQN, 0]);
-          if (AppTypeFqn === hearingsFqn) {
+          if (appTypeFqn === hearingsFqn) {
             if (hearingEntityKeyId) hearingIds = hearingIds.add(neighborDetails.getIn([OPENLATTICE_ID_FQN, 0]));
             neighborsByAppTypeFqn = neighborsByAppTypeFqn.set(
-              AppTypeFqn,
-              neighborsByAppTypeFqn.get(AppTypeFqn, List()).push(fromJS(neighborDetails))
+              appTypeFqn,
+              neighborsByAppTypeFqn.get(appTypeFqn, List()).push(fromJS(neighborDetails))
             );
           }
           else {
             neighborsByAppTypeFqn = neighborsByAppTypeFqn.set(
-              AppTypeFqn,
-              neighborsByAppTypeFqn.get(AppTypeFqn, List()).push(fromJS(neighbor))
+              appTypeFqn,
+              neighborsByAppTypeFqn.get(appTypeFqn, List()).push(fromJS(neighbor))
             );
           }
         }
-        else if (AppTypeFqn === manualPretrialCasesFqn || AppTypeFqn === manualPretrialCourtCasesFqn) {
+        else if (appTypeFqn === manualPretrialCasesFqn || appTypeFqn === manualPretrialCourtCasesFqn) {
           neighborsByAppTypeFqn = neighborsByAppTypeFqn.set(manualPretrialCasesFqn, neighbor);
         }
         else {
-          neighborsByAppTypeFqn = neighborsByAppTypeFqn.set(AppTypeFqn, fromJS(neighbor));
+          neighborsByAppTypeFqn = neighborsByAppTypeFqn.set(appTypeFqn, fromJS(neighbor));
         }
       }
     });
