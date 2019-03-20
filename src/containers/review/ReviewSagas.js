@@ -561,6 +561,7 @@ function* bulkDownloadPSAReviewPDFWorker(action :SequenceAction) :Generator<*, *
     const app = yield select(getApp);
     const orgId = yield select(getOrgId);
 
+    const settings = app.get(APP.SELECTED_ORG_SETTINGS);
     const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId], Map());
     const chargesEntitySetId = getEntitySetIdFromApp(app, chargesFqn, orgId);
     const assessedByEntitySetId = getEntitySetIdFromApp(app, assessedByFqn, orgId);
@@ -661,7 +662,7 @@ function* bulkDownloadPSAReviewPDFWorker(action :SequenceAction) :Generator<*, *
         editedByEntitySetId
       ));
     });
-    exportPDFList(fileName, pageDetailsList);
+    exportPDFList(fileName, pageDetailsList, settings);
   }
   catch (error) {
     console.error(error);
@@ -689,6 +690,7 @@ function* downloadPSAReviewPDFWorker(action :SequenceAction) :Generator<*, *, *>
       allFTAs
     } = yield getCasesAndCharges(neighbors);
     const app = yield select(getApp);
+    const settings = app.get(APP.SELECTED_ORG_SETTINGS);
     const charges = yield select(getCharges);
     const orgId = yield select(getOrgId);
     const assessedByEntitySetId = getEntitySetIdFromApp(app, assessedByFqn, orgId);
@@ -729,7 +731,8 @@ function* downloadPSAReviewPDFWorker(action :SequenceAction) :Generator<*, *, *>
       violentCourtChargeList,
       createData,
       updateData,
-      isCompact
+      isCompact,
+      settings
     );
 
     yield put(downloadPSAReviewPDF.success(action.id));
