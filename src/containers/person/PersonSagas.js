@@ -20,6 +20,7 @@ import {
 import { toISODate, formatDate } from '../../utils/FormattingUtils';
 import { submit } from '../../utils/submit/SubmitActionFactory';
 import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { PSA_STATUSES } from '../../utils/consts/Consts';
 import { APP, STATE, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { obfuscateEntityNeighbors } from '../../utils/consts/DemoNames';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
@@ -42,10 +43,16 @@ import {
 import * as Routes from '../../core/router/Routes';
 
 const { OPENLATTICE_ID_FQN } = Constants;
-let { CONTACT_INFORMATION, PEOPLE, PRETRIAL_CASES } = APP_TYPES_FQNS;
+let {
+  CONTACT_INFORMATION,
+  PEOPLE,
+  PRETRIAL_CASES,
+  PSA_SCORES
+} = APP_TYPES_FQNS;
 
 PEOPLE = PEOPLE.toString();
 PRETRIAL_CASES = PRETRIAL_CASES.toString();
+PSA_SCORES = PSA_SCORES.toString();
 CONTACT_INFORMATION = CONTACT_INFORMATION.toString();
 
 const getApp = state => state.get(STATE.APP, Map());
@@ -231,6 +238,7 @@ function* searchPeopleWorker(action) :Generator<*, *, *> {
     const app = yield select(getApp);
     const edm = yield select(getEDM);
     const orgId = yield select(getOrgId);
+    const psaScoresEntitySetId = getEntitySetIdFromApp(app, PSA_SCORES, orgId);
     const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE, orgId);
     const firstNamePropertyTypeId = getPropertyTypeId(edm, PROPERTY_TYPES.FIRST_NAME);
     const lastNamePropertyTypeId = getPropertyTypeId(edm, PROPERTY_TYPES.LAST_NAME);
@@ -240,6 +248,7 @@ function* searchPeopleWorker(action) :Generator<*, *, *> {
       firstName,
       lastName,
       dob,
+      includePSAInfo
     } = action.value;
     const searchFields = [];
     const updateSearchField = (searchString :string, property :string, exact? :boolean) => {
@@ -269,7 +278,30 @@ function* searchPeopleWorker(action) :Generator<*, *, *> {
       maxHits: 100
     };
 
-    const response = yield call(SearchApi.advancedSearchEntitySetData, peopleEntitySetId, searchOptions);
+    let response = yield call(SearchApi.advancedSearchEntitySetData, peopleEntitySetId, searchOptions);
+    let personMap = Map();
+    if (includePSAInfo) {
+      response.forEach((person) => {
+        const personId = person[OPENLATTICE_ID_FQN];
+        personMap = personMap.set(personId, fromJS(person));
+      });
+      let peopleNeighborsById = yield call(SearchApi.searchEntityNeighborsWithFilter, peopleEntitySetId, {
+        entityKeyIds: personMap.keySeq().toJS(),
+        sourceEntitySetIds: [psaScoresEntitySetId],
+        destinationEntitySetIds: []
+      });
+      peopleNeighborsById = fromJS(peopleNeighborsById);
+
+      peopleNeighborsById.entrySeq().forEach(([personId, neighbors]) => {
+        const hasOpenPSA = neighbors.some(neighbor => (
+          neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.STATUS, 0], '') === PSA_STATUSES.OPEN
+        ));
+
+        if (hasOpenPSA) personMap = personMap.setIn([personId, 'hasOpenPSA'], hasOpenPSA);
+      });
+      response = personMap.valueSeq().toJS();
+    }
+
     yield put(searchPeople.success(action.id, response));
   }
   catch (error) {
