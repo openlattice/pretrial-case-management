@@ -940,6 +940,7 @@ function* changePSAStatusWorker(action :SequenceAction) :Generator<*, *, *> {
     }
   }
   catch (error) {
+    console.error(error);
     yield put(changePSAStatus.failure(action.id, error));
   }
   finally {
