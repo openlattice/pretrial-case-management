@@ -136,7 +136,6 @@ class PSAModalSummary extends React.Component<Props, *> {
       scores,
       selectedOrganizationSettings
     } = this.props;
-    console.log(manualCaseHistory.toJS());
 
     const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
 
