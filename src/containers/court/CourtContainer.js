@@ -217,7 +217,7 @@ class CourtContainer extends React.Component<Props, State> {
     const { actions } = this.props;
     const { loadPSAModal } = actions;
     this.setState({ psaId });
-    loadPSAModal({ psaId, callback: this.loadCaseHistoryFn });
+    loadPSAModal({ psaId, callback: this.loadCaseHistoryCallback });
     this.setState({ psaModalOpen: true });
   }
 
