@@ -279,10 +279,11 @@ function* searchPeopleWorker(action) :Generator<*, *, *> {
     };
 
     let response = yield call(SearchApi.advancedSearchEntitySetData, peopleEntitySetId, searchOptions);
+    response = fromJS(response.hits);
     let personMap = Map();
     if (includePSAInfo) {
       response.forEach((person) => {
-        const personId = person[OPENLATTICE_ID_FQN];
+        const personId = person.getIn([OPENLATTICE_ID_FQN, 0], '');
         personMap = personMap.set(personId, fromJS(person));
       });
       let peopleNeighborsById = yield call(SearchApi.searchEntityNeighborsWithFilter, peopleEntitySetId, {
@@ -299,13 +300,14 @@ function* searchPeopleWorker(action) :Generator<*, *, *> {
 
         if (hasOpenPSA) personMap = personMap.setIn([personId, 'hasOpenPSA'], hasOpenPSA);
       });
-      response = personMap.valueSeq().toJS();
+      response = personMap.valueSeq();
     }
 
     yield put(searchPeople.success(action.id, response));
   }
   catch (error) {
-    yield put(searchPeople.failure(error));
+    console.error(error);
+    yield put(searchPeople.failure(action.id, error));
   }
 
   finally {
