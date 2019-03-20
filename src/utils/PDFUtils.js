@@ -6,6 +6,8 @@ import JSPDF from 'jspdf';
 import Immutable, { Set } from 'immutable';
 import moment from 'moment';
 
+import { CONTEXTS, SETTINGS } from './consts/AppSettingConsts';
+import { CONTEXT } from './consts/Consts';
 import { PROPERTY_TYPES } from './consts/DataModelConsts';
 import { getViolentChargeLabels } from './ArrestChargeUtils';
 import { chargeIsMostSerious, historicalChargeIsViolent, getSummaryStats } from './HistoricalChargeUtils';
@@ -520,7 +522,8 @@ const charges = (
   const xIndent = showDetails ? X_COL_1 + SCORE_OFFSET : X_COL_1;
   const xWidth = X_MAX - X_MARGIN - xIndent;
   const casesByCaseNum = getCasesByCaseNum(allCases);
-
+  thickLine(doc, y);
+  y += Y_INC_LARGE;
   if (!showDetails) {
     scoreHeader(doc, y, X_COL_1, chargeHeader);
     y += Y_INC_LARGE;
@@ -970,7 +973,8 @@ const getPDFContents = (
     user :string,
     timestamp :string
   },
-  compact :boolean
+  compact :boolean,
+  settings
 ) :string => {
   doc.setFont('helvetica', 'normal');
   let y = 15;
@@ -993,11 +997,14 @@ const getPDFContents = (
 
   // DMF SECTION
   y = dmf(doc, y, data.get('dmf'), data.get('dmfRiskFactors'), data.get('psaRiskFactors'), data.get('scores'));
-  thickLine(doc, y);
   y += Y_INC_LARGE;
 
-  // ARREST CHARGES SECTION
-  [y, page] = charges(doc, y, page, name, allCases, selectedCharges, violentCourtChargeList, false, 'Arrest Charges');
+  // ARREST OR COURT CHARGES SECTION
+  const psaContext = data.getIn(['psaRiskFactors', PROPERTY_TYPES.CONTEXT, 0], '');
+  const caseContext = psaContext === CONTEXT.BOOKING ? CONTEXTS.BOOKING : CONTEXTS.COURT;
+  let chargeType = settings.getIn([SETTINGS.CASE_CONTEXTS, caseContext], '');
+  chargeType = chargeType.slice(0, 1).toUpperCase() + chargeType.slice(1);
+  [y, page] = charges(doc, y, page, name, allCases, selectedCharges, violentCourtChargeList, false, `${chargeType} Charges`);
   thinLine(doc, y);
   y += Y_INC_LARGE;
   if (selectedCourtCharges.size) {
@@ -1097,7 +1104,8 @@ const exportPDF = (
     user :string,
     timestamp :string
   },
-  compact :boolean
+  compact :boolean,
+  settings
 ) :void => {
   const doc = new JSPDF();
   const fileName = getPDFContents(
@@ -1115,7 +1123,8 @@ const exportPDF = (
     violentCourtChargeList,
     createData,
     updateData,
-    compact
+    compact,
+    settings
   );
 
   doc.save(fileName);
@@ -1140,22 +1149,26 @@ const coverPage = (doc :Object, selectedPeople :Immutable.Map<*, *>[]) => {
   });
 };
 
-export const exportPDFList = (fileName :string, pages :{
-  data :Immutable.Map<*, *>,
-  selectedCourtCharges :Immutable.Map<*, *>,
-  selectedPretrialCase :Immutable.Map<*, *>,
-  selectedCharges :Immutable.Map<*, *>,
-  selectedPerson :Immutable.Map<*, *>,
-  createData :{
-    user :string,
-    timestamp :string
-  },
-  updateData :{
-    user :string,
-    timestamp :string
-  },
-  compact :boolean
-}[]) :void => {
+export const exportPDFList = (
+  fileName :string,
+  pages :{
+    data :Immutable.Map<*, *>,
+    selectedCourtCharges :Immutable.Map<*, *>,
+    selectedPretrialCase :Immutable.Map<*, *>,
+    selectedCharges :Immutable.Map<*, *>,
+    selectedPerson :Immutable.Map<*, *>,
+    createData :{
+      user :string,
+      timestamp :string
+    },
+    updateData :{
+      user :string,
+      timestamp :string
+    },
+    compact :boolean
+  }[],
+  settings
+) :void => {
   const doc = new JSPDF();
   const sortedPages = pages;
   sortedPages.sort((page1, page2) => sortPeopleByName(page1.selectedPerson, page2.selectedPerson));
@@ -1189,7 +1202,8 @@ export const exportPDFList = (fileName :string, pages :{
       Immutable.List(),
       createData,
       updateData,
-      true
+      true,
+      settings
     );
   });
   doc.save(fileName);

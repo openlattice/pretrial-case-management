@@ -104,17 +104,17 @@ function* getHearingAndNeighbors(hearingId :string) :Generator<*, *, *> {
   hearingNeighbors.forEach((neighbor) => {
 
     const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id']);
-    const AppTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
-    if (AppTypeFqn) {
+    const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
+    if (appTypeFqn) {
 
-      if (LIST_ENTITY_SETS.includes(AppTypeFqn)) {
+      if (LIST_ENTITY_SETS.includes(appTypeFqn)) {
         hearingNeighborsByAppTypeFqn = hearingNeighborsByAppTypeFqn.set(
-          AppTypeFqn,
-          hearingNeighborsByAppTypeFqn.get(AppTypeFqn, List()).push(fromJS(neighbor))
+          appTypeFqn,
+          hearingNeighborsByAppTypeFqn.get(appTypeFqn, List()).push(fromJS(neighbor))
         );
       }
       else {
-        hearingNeighborsByAppTypeFqn = hearingNeighborsByAppTypeFqn.set(AppTypeFqn, fromJS(neighbor));
+        hearingNeighborsByAppTypeFqn = hearingNeighborsByAppTypeFqn.set(appTypeFqn, fromJS(neighbor));
       }
     }
   });

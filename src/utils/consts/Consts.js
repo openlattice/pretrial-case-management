@@ -229,6 +229,7 @@ export const ID_FIELD_NAMES = {
   PERSON_ID: 'personId',
   CASE_ID: 'caseId',
   ARREST_ID: 'arrestId',
+  ARREST_ID_FOR_COURT: 'arrestIdForCourt',
   STAFF_ID: 'staffId',
   TIMESTAMP: 'timestamp',
   DMF_RISK_FACTORS_ID: 'dmfRiskFactorsId',

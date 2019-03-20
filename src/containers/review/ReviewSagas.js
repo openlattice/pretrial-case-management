@@ -66,7 +66,9 @@ const {
   FTAS,
   HEARINGS,
   MANUAL_CHARGES,
+  MANUAL_COURT_CHARGES,
   MANUAL_PRETRIAL_CASES,
+  MANUAL_PRETRIAL_COURT_CASES,
   PEOPLE,
   PRETRIAL_CASES,
   PSA_RISK_FACTORS,
@@ -86,7 +88,9 @@ const editedByFqn :string = EDITED_BY.toString();
 const ftasFqn :string = FTAS.toString();
 const hearingsFqn :string = HEARINGS.toString();
 const manualChargesFqn :string = MANUAL_CHARGES.toString();
+const manualCourtChargesFqn :string = MANUAL_COURT_CHARGES.toString();
 const manualPretrialCasesFqn :string = MANUAL_PRETRIAL_CASES.toString();
+const manualPretrialCourtCasesFqn :string = MANUAL_PRETRIAL_COURT_CASES.toString();
 const peopleFqn :string = PEOPLE.toString();
 const pretrialCasesFqn :string = PRETRIAL_CASES.toString();
 const psaRiskFactorsFqn :string = PSA_RISK_FACTORS.toString();
@@ -158,13 +162,13 @@ function* getCasesAndCharges(neighbors) {
           pretrialCaseOptionsWithoutDate = pretrialCaseOptionsWithoutDate.push(caseObj);
         }
       }
-      else if (appTypeFqn === manualPretrialCasesFqn) {
+      else if (appTypeFqn === manualPretrialCasesFqn || appTypeFqn === manualPretrialCourtCasesFqn) {
         allManualCases = allManualCases.push(neighborDetails);
       }
       else if (appTypeFqn === chargesFqn) {
         allCharges = allCharges.push(neighborDetails);
       }
-      else if (appTypeFqn === manualChargesFqn) {
+      else if (appTypeFqn === manualChargesFqn || appTypeFqn === manualCourtChargesFqn) {
         allManualCharges = allManualCharges.push(neighborDetails);
       }
       else if (appTypeFqn === arrestChargesFqn) {
@@ -339,33 +343,33 @@ function* loadPSADataWorker(action :SequenceAction) :Generator<*, *, *> {
           });
 
           const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id']);
-          const AppTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
-          if (AppTypeFqn) {
-            if (AppTypeFqn === staffFqn) {
+          const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
+          if (appTypeFqn) {
+            if (appTypeFqn === staffFqn) {
               neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.PERSON_ID], Immutable.List())
                 .forEach((filer) => {
                   allFilers = allFilers.add(filer);
                 });
             }
-            if (LIST_ENTITY_SETS.includes(AppTypeFqn)) {
-              if (AppTypeFqn === hearingsFqn) {
+            if (LIST_ENTITY_SETS.includes(appTypeFqn)) {
+              if (appTypeFqn === hearingsFqn) {
                 const neighborDetails = neighbor.get(PSA_NEIGHBOR.DETAILS, Immutable.Map());
                 const hearingEntityKeyId = neighborDetails.getIn([OPENLATTICE_ID_FQN, 0]);
                 if (hearingEntityKeyId) hearingIds = hearingIds.add(neighborDetails.getIn([OPENLATTICE_ID_FQN, 0]));
                 neighborsByAppTypeFqn = neighborsByAppTypeFqn.set(
-                  AppTypeFqn,
-                  neighborsByAppTypeFqn.get(AppTypeFqn, Immutable.List()).push(fromJS(neighborDetails))
+                  appTypeFqn,
+                  neighborsByAppTypeFqn.get(appTypeFqn, Immutable.List()).push(fromJS(neighborDetails))
                 );
               }
               else {
                 neighborsByAppTypeFqn = neighborsByAppTypeFqn.set(
-                  AppTypeFqn,
-                  neighborsByAppTypeFqn.get(AppTypeFqn, Immutable.List()).push(fromJS(neighbor))
+                  appTypeFqn,
+                  neighborsByAppTypeFqn.get(appTypeFqn, Immutable.List()).push(fromJS(neighbor))
                 );
               }
             }
             else {
-              neighborsByAppTypeFqn = neighborsByAppTypeFqn.set(AppTypeFqn, fromJS(neighbor));
+              neighborsByAppTypeFqn = neighborsByAppTypeFqn.set(appTypeFqn, fromJS(neighbor));
             }
           }
         });
@@ -557,6 +561,7 @@ function* bulkDownloadPSAReviewPDFWorker(action :SequenceAction) :Generator<*, *
     const app = yield select(getApp);
     const orgId = yield select(getOrgId);
 
+    const settings = app.get(APP.SELECTED_ORG_SETTINGS);
     const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId], Map());
     const chargesEntitySetId = getEntitySetIdFromApp(app, chargesFqn, orgId);
     const assessedByEntitySetId = getEntitySetIdFromApp(app, assessedByFqn, orgId);
@@ -657,7 +662,7 @@ function* bulkDownloadPSAReviewPDFWorker(action :SequenceAction) :Generator<*, *
         editedByEntitySetId
       ));
     });
-    exportPDFList(fileName, pageDetailsList);
+    exportPDFList(fileName, pageDetailsList, settings);
   }
   catch (error) {
     console.error(error);
@@ -685,6 +690,7 @@ function* downloadPSAReviewPDFWorker(action :SequenceAction) :Generator<*, *, *>
       allFTAs
     } = yield getCasesAndCharges(neighbors);
     const app = yield select(getApp);
+    const settings = app.get(APP.SELECTED_ORG_SETTINGS);
     const charges = yield select(getCharges);
     const orgId = yield select(getOrgId);
     const assessedByEntitySetId = getEntitySetIdFromApp(app, assessedByFqn, orgId);
@@ -725,7 +731,8 @@ function* downloadPSAReviewPDFWorker(action :SequenceAction) :Generator<*, *, *>
       violentCourtChargeList,
       createData,
       updateData,
-      isCompact
+      isCompact,
+      settings
     );
 
     yield put(downloadPSAReviewPDF.success(action.id));

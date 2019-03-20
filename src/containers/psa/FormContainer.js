@@ -45,9 +45,14 @@ import { getEntityKeyId } from '../../utils/DataUtils';
 import { toISODateTime } from '../../utils/FormattingUtils';
 import { getScoresAndRiskFactors, calculateDMF, getDMFRiskFactors } from '../../utils/ScoringUtils';
 import { tryAutofillFields } from '../../utils/AutofillUtils';
-import { PROPERTY_TYPES, SETTINGS, MODULE } from '../../utils/consts/DataModelConsts';
+import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { STATUS_OPTIONS_FOR_PENDING_PSAS } from '../../utils/consts/ReviewPSAConsts';
-import { DOMAIN } from '../../utils/consts/ReportDownloadTypes';
+import {
+  CASE_CONTEXTS,
+  CONTEXTS,
+  MODULE,
+  SETTINGS
+} from '../../utils/consts/AppSettingConsts';
 import {
   CONTEXT,
   DMF,
@@ -527,7 +532,13 @@ class Form extends React.Component<Props, State> {
       values[ID_FIELD_NAMES.ARREST_ID] = [arrestId];
     }
 
-    const config = psaConfig;
+    // Get Case Context from settings and pass to config
+    const caseContext = psaForm.get(DMF.COURT_OR_BOOKING) === CONTEXT.BOOKING ? CONTEXTS.BOOKING : CONTEXTS.COURT;
+    const chargeType = selectedOrganizationSettings.getIn([SETTINGS.CASE_CONTEXTS, caseContext]);
+    const manualCourtCasesAndCharges = (chargeType === CASE_CONTEXTS.COURT);
+
+    const config = psaConfig({ manualCourtCasesAndCharges });
+
 
     if ((values[DMF.COURT_OR_BOOKING] !== CONTEXT.BOOKING) || !includesPretrialModule) {
       delete values[DMF.SECONDARY_RELEASE_CHARGES];
@@ -847,10 +858,15 @@ class Form extends React.Component<Props, State> {
     const {
       actions,
       charges,
-      selectedPretrialCase
+      psaForm,
+      selectedPretrialCase,
+      selectedOrganizationSettings,
     } = this.props;
+    const caseContext = psaForm.get(DMF.COURT_OR_BOOKING) === CONTEXT.BOOKING ? CONTEXTS.BOOKING : CONTEXTS.COURT;
+    const chargeType = selectedOrganizationSettings.getIn([SETTINGS.CASE_CONTEXTS, caseContext]);
     return (
       <SelectChargesContainer
+          chargeType={chargeType}
           defaultArrest={selectedPretrialCase}
           defaultCharges={charges}
           nextPage={this.nextPage}

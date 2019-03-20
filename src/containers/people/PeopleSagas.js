@@ -44,6 +44,7 @@ let {
   FTAS,
   HEARINGS,
   MANUAL_PRETRIAL_CASES,
+  MANUAL_PRETRIAL_COURT_CASES,
   PEOPLE,
   PSA_SCORES,
   PRETRIAL_CASES,
@@ -57,6 +58,7 @@ CONTACT_INFORMATION = CONTACT_INFORMATION.toString();
 FTAS = FTAS.toString();
 HEARINGS = HEARINGS.toString();
 MANUAL_PRETRIAL_CASES = MANUAL_PRETRIAL_CASES.toString();
+MANUAL_PRETRIAL_COURT_CASES = MANUAL_PRETRIAL_COURT_CASES.toString();
 PEOPLE = PEOPLE.toString();
 PSA_SCORES = PSA_SCORES.toString();
 PRETRIAL_CASES = PRETRIAL_CASES.toString();
@@ -261,6 +263,9 @@ function* getPersonNeighborsWorker(action) :Generator<*, *, *> {
             appTypeFqn,
             mostRecentPSANeighborsByAppTypeFqn.get(appTypeFqn, List()).push(neighbor)
           );
+        }
+        else if (appTypeFqn === MANUAL_PRETRIAL_CASES || appTypeFqn === MANUAL_PRETRIAL_COURT_CASES) {
+          mostRecentPSANeighborsByAppTypeFqn = mostRecentPSANeighborsByAppTypeFqn.set(MANUAL_PRETRIAL_CASES, fromJS(neighbor));
         }
         else {
           mostRecentPSANeighborsByAppTypeFqn = mostRecentPSANeighborsByAppTypeFqn.set(

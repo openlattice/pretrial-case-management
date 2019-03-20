@@ -17,7 +17,8 @@ import LogoLoader from '../../components/LogoLoader';
 import SearchableSelect from '../../components/controls/SearchableSelect';
 import StyledCheckbox from '../../components/controls/StyledCheckbox';
 import { OL } from '../../utils/consts/Colors';
-import { SETTINGS, MODULE, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
+import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { APP, STATE, DOWNLOAD } from '../../utils/consts/FrontEndStateConsts';
 import {
   REPORT_TYPES,

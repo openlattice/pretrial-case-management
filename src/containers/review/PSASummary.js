@@ -20,12 +20,8 @@ import { formatDateTimeList } from '../../utils/FormattingUtils';
 import { getTimeStamp, getNeighborDetailsForEntitySet } from '../../utils/DataUtils';
 import { OL } from '../../utils/consts/Colors';
 import { NoResults, Title, SummaryRowWrapper } from '../../utils/Layout';
-import {
-  APP_TYPES_FQNS,
-  PROPERTY_TYPES,
-  SETTINGS,
-  MODULE
-} from '../../utils/consts/DataModelConsts';
+import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
+import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import {
   APP,
   EDM,

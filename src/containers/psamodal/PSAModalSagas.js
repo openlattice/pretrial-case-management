@@ -40,6 +40,8 @@ const {
   HEARINGS,
   PEOPLE,
   PRETRIAL_CASES,
+  MANUAL_PRETRIAL_COURT_CASES,
+  MANUAL_PRETRIAL_CASES,
   PSA_SCORES,
   RELEASE_CONDITIONS,
   STAFF,
@@ -51,6 +53,8 @@ const contactInformationFqn :string = CONTACT_INFORMATION.toString();
 const hearingsFqn :string = HEARINGS.toString();
 const peopleFqn :string = PEOPLE.toString();
 const pretrialCasesFqn :string = PRETRIAL_CASES.toString();
+const manualPretrialCasesFqn :string = MANUAL_PRETRIAL_CASES.toString();
+const manualPretrialCourtCasesFqn :string = MANUAL_PRETRIAL_COURT_CASES.toString();
 const psaScoresFqn :string = PSA_SCORES.toString();
 const releaseConditionsFqn :string = RELEASE_CONDITIONS.toString();
 const staffFqn :string = STAFF.toString();
@@ -127,34 +131,37 @@ function* loadPSAModalWorker(action :SequenceAction) :Generator<*, *, *> {
       });
 
       const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id']);
-      const AppTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
-      if (AppTypeFqn) {
-        if (AppTypeFqn === staffFqn) {
+      const neighborDetails = neighbor.get(PSA_NEIGHBOR.DETAILS, Map());
+      const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
+      if (appTypeFqn) {
+        if (appTypeFqn === staffFqn) {
           neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.PERSON_ID], List())
             .forEach((filer) => {
               allFilers = allFilers.add(filer);
             });
         }
 
-        if (LIST_ENTITY_SETS.includes(AppTypeFqn)) {
-          if (AppTypeFqn === hearingsFqn) {
-            const neighborDetails = neighbor.get(PSA_NEIGHBOR.DETAILS, Map());
-            const hearingEntityKeyId = neighborDetails.getIn([OPENLATTICE_ID_FQN, 0]);
+        if (LIST_ENTITY_SETS.includes(appTypeFqn)) {
+          const hearingEntityKeyId = neighborDetails.getIn([OPENLATTICE_ID_FQN, 0]);
+          if (appTypeFqn === hearingsFqn) {
             if (hearingEntityKeyId) hearingIds = hearingIds.add(neighborDetails.getIn([OPENLATTICE_ID_FQN, 0]));
             neighborsByAppTypeFqn = neighborsByAppTypeFqn.set(
-              AppTypeFqn,
-              neighborsByAppTypeFqn.get(AppTypeFqn, List()).push(fromJS(neighborDetails))
+              appTypeFqn,
+              neighborsByAppTypeFqn.get(appTypeFqn, List()).push(fromJS(neighborDetails))
             );
           }
           else {
             neighborsByAppTypeFqn = neighborsByAppTypeFqn.set(
-              AppTypeFqn,
-              neighborsByAppTypeFqn.get(AppTypeFqn, List()).push(fromJS(neighbor))
+              appTypeFqn,
+              neighborsByAppTypeFqn.get(appTypeFqn, List()).push(fromJS(neighbor))
             );
           }
         }
+        else if (appTypeFqn === manualPretrialCasesFqn || appTypeFqn === manualPretrialCourtCasesFqn) {
+          neighborsByAppTypeFqn = neighborsByAppTypeFqn.set(manualPretrialCasesFqn, neighbor);
+        }
         else {
-          neighborsByAppTypeFqn = neighborsByAppTypeFqn.set(AppTypeFqn, fromJS(neighbor));
+          neighborsByAppTypeFqn = neighborsByAppTypeFqn.set(appTypeFqn, fromJS(neighbor));
         }
       }
     });

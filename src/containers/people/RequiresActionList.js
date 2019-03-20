@@ -20,12 +20,8 @@ import PersonTable from '../../components/people/PersonTable';
 import { formatPeopleInfo, sortPeopleByName } from '../../utils/PeopleUtils';
 import { OL } from '../../utils/consts/Colors';
 import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
-import {
-  APP_TYPES_FQNS,
-  MODULE,
-  PROPERTY_TYPES,
-  SETTINGS
-} from '../../utils/consts/DataModelConsts';
+import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
+import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import {
   APP,
   PEOPLE,

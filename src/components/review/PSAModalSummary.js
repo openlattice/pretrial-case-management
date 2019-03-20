@@ -11,12 +11,8 @@ import CaseHistoryList from '../casehistory/CaseHistoryList';
 import ChargeTable from '../charges/ChargeTable';
 import PSASummary from '../../containers/review/PSASummary';
 import { AlternateSectionHeader, Count } from '../../utils/Layout';
-import {
-  APP_TYPES_FQNS,
-  PROPERTY_TYPES,
-  SETTINGS,
-  MODULE
-} from '../../utils/consts/DataModelConsts';
+import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
+import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import {
   STATE,
   APP,
@@ -68,6 +64,7 @@ class PSAModalSummary extends React.Component<Props, *> {
 
   renderCaseInfo = () => {
     const {
+      chargeType,
       manualCaseHistory,
       manualChargeHistory,
       neighbors,
@@ -78,8 +75,10 @@ class PSAModalSummary extends React.Component<Props, *> {
       caseNumbersToAssociationId,
       chargeHistoryForMostRecentPSA,
       caseHistoryForMostRecentPSA,
-      psaPermissions
+      psaPermissions,
+      selectedOrganizationSettings
     } = this.props;
+    const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
     const violentChargeList = violentArrestCharges.get(selectedOrganizationId, Map());
     const caseNum = neighbors.getIn(
       [MANUAL_PRETRIAL_CASES, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.CASE_ID, 0], ''
@@ -92,28 +91,36 @@ class PSAModalSummary extends React.Component<Props, *> {
       const caseNo = caseObj.getIn([PROPERTY_TYPES.CASE_ID, 0]);
       return caseNumbersToAssociationId.get(caseNo);
     });
+
     return (
       <>
         <hr />
         <ChargeTableContainer>
           <AlternateSectionHeader>
-            Arrest Charges
+            {`${chargeType} Charges`}
             <Count>{charges.size}</Count>
           </AlternateSectionHeader>
           <ChargeTable charges={charges} violentChargeList={violentChargeList} pretrialCase={pretrialCase} />
         </ChargeTableContainer>
-        <hr />
-        <ChargeTableContainer>
-          <CaseHistoryList
-              psaPermissions={psaPermissions}
-              pendingCases
-              addCaseToPSA={addCaseToPSA}
-              removeCaseFromPSA={removeCaseFromPSA}
-              caseNumbersToAssociationId={caseNumbersToAssociationId}
-              title="Court Charges"
-              caseHistory={associatedCasesForForPSA}
-              chargeHistory={chargeHistoryForMostRecentPSA} />
-        </ChargeTableContainer>
+        {
+          includesPretrialModule
+            ? (
+              <>
+                <hr />
+                <ChargeTableContainer>
+                  <CaseHistoryList
+                      psaPermissions={psaPermissions}
+                      pendingCases
+                      addCaseToPSA={addCaseToPSA}
+                      removeCaseFromPSA={removeCaseFromPSA}
+                      caseNumbersToAssociationId={caseNumbersToAssociationId}
+                      title="Court Charges"
+                      caseHistory={associatedCasesForForPSA}
+                      chargeHistory={chargeHistoryForMostRecentPSA} />
+                </ChargeTableContainer>
+              </>
+            ) : null
+        }
       </>
     );
   }

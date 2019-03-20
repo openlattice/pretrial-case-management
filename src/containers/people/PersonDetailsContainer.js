@@ -23,12 +23,8 @@ import { getPSAIdsFromNeighbors } from '../../utils/PeopleUtils';
 import { getChargeHistory } from '../../utils/CaseUtils';
 import { JURISDICTION } from '../../utils/consts/Consts';
 import { getEntityKeyId, getIdOrValue, getNeighborDetailsForEntitySet } from '../../utils/DataUtils';
-import {
-  APP_TYPES_FQNS,
-  PROPERTY_TYPES,
-  SETTINGS,
-  MODULE
-} from '../../utils/consts/DataModelConsts';
+import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
+import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import {
   getScheduledHearings,
   getPastHearings,
