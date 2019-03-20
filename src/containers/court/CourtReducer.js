@@ -21,7 +21,9 @@ import {
 } from './CourtActionFactory';
 import { changePSAStatus } from '../review/ReviewActionFactory';
 import { SWITCH_ORGANIZATION } from '../app/AppActionFactory';
+import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { COURT } from '../../utils/consts/FrontEndStateConsts';
+import { PSA_STATUSES } from '../../utils/consts/Consts';
 
 const INITIAL_STATE :Map<*, *> = fromJS({
   [COURT.COURT_DATE]: moment(),
@@ -67,8 +69,11 @@ export default function courtReducer(state :Map<*, *> = INITIAL_STATE, action :S
       return changePSAStatus.reducer(state, action, {
         SUCCESS: () => {
           let peopleWithOpenPSAs = state.get(COURT.PEOPLE_WITH_OPEN_PSAS);
+          const { entity } = action.value;
+          const status = entity[PROPERTY_TYPES.STATUS][0];
+          const psaIsClosed = status !== PSA_STATUSES.OPEN;
           state.get(COURT.PEOPLE_IDS_TO_OPEN_PSA_IDS).entrySeq().forEach(([personId, psaId]) => {
-            if (psaId === action.value.id) peopleWithOpenPSAs = peopleWithOpenPSAs.delete(personId);
+            if (psaIsClosed && psaId === action.value.id) peopleWithOpenPSAs = peopleWithOpenPSAs.delete(personId);
           });
           return state
             .set(COURT.SCORES_AS_MAP, state.get(COURT.SCORES_AS_MAP).set(action.value.id, fromJS(action.value.entity)))
