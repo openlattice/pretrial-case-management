@@ -75,10 +75,14 @@ export default function releaseConditionsReducer(state :Map<*, *> = INITIAL_STAT
 
     case refreshHearingNeighbors.case(action.type): {
       return refreshHearingNeighbors.reducer(state, action, {
+        REQUEST: () => state.set(RELEASE_COND.REFRESHING_RELEASE_CONDITIONS, true),
         SUCCESS: () => {
           const { neighbors } = action.value;
+          const outcomeEntity = neighbors.get(OUTCOMES, Map());
 
-          return state.set(RELEASE_COND.HEARING_NEIGHBORS, neighbors);
+          return state
+            .set(RELEASE_COND.HAS_OUTCOME, !!outcomeEntity.size)
+            .set(RELEASE_COND.HEARING_NEIGHBORS, neighbors);
         },
         FINALLY: () => state.set(RELEASE_COND.REFRESHING_RELEASE_CONDITIONS, false),
       });

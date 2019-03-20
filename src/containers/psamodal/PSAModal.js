@@ -922,6 +922,8 @@ class PSAModal extends React.Component<Props, State> {
 
   render() {
     const {
+      loadingPSAModal,
+      loadingCaseHistory,
       scores,
       open,
       psaPermissions,
@@ -936,6 +938,8 @@ class PSAModal extends React.Component<Props, State> {
 
     if (!scores) return null;
     const changeStatusText = psaIsClosed(scores) ? 'Change PSA Status' : 'Close PSA';
+
+    const modalHasLoaded = !loadingPSAModal && !loadingCaseHistory;
 
     let tabs = [
       {
@@ -984,15 +988,20 @@ class PSAModal extends React.Component<Props, State> {
               max-height={MODAL_HEIGHT}
               shouldCloseOnOverlayClick
               stackIndex={1}>
-            <ClosePSAModal
-                open={closingPSAModalOpen}
-                defaultStatus={scores.getIn([PROPERTY_TYPES.STATUS, 0])}
-                defaultStatusNotes={scores.getIn([PROPERTY_TYPES.STATUS_NOTES, 0])}
-                defaultFailureReasons={scores.get(PROPERTY_TYPES.FAILURE_REASON, List()).toJS()}
-                onClose={() => this.setState({ closingPSAModalOpen: false })}
-                onSubmit={this.handleStatusChange}
-                scores={scores}
-                entityKeyId={psaId} />
+            { psaPermissions && modalHasLoaded
+              ? (
+                <ClosePSAModal
+                    open={closingPSAModalOpen}
+                    defaultStatus={scores.getIn([PROPERTY_TYPES.STATUS, 0], '')}
+                    defaultStatusNotes={scores.getIn([PROPERTY_TYPES.STATUS_NOTES, 0], '')}
+                    defaultFailureReasons={scores.get(PROPERTY_TYPES.FAILURE_REASON, List()).toJS()}
+                    onClose={() => this.setState({ closingPSAModalOpen: false })}
+                    onSubmit={this.handleStatusChange}
+                    scores={scores}
+                    entityKeyId={psaId} />
+              )
+              : null
+            }
             <TitleWrapper>
               <TitleHeader>
                 PSA Details:
@@ -1001,7 +1010,7 @@ class PSAModal extends React.Component<Props, State> {
                 </StyledLink>
               </TitleHeader>
               <div>
-                { psaPermissions
+                { psaPermissions && modalHasLoaded
                   ? (
                     <ClosePSAButton onClick={() => this.setState({ closingPSAModalOpen: true })}>
                       {changeStatusText}

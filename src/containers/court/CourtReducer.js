@@ -19,7 +19,8 @@ import {
   loadJudges,
   SET_COURT_DATE
 } from './CourtActionFactory';
-import { changePSAStatus, updateScoresAndRiskFactors } from '../review/ReviewActionFactory';
+import { changePSAStatus } from '../review/ReviewActionFactory';
+import { SWITCH_ORGANIZATION } from '../app/AppActionFactory';
 import { COURT } from '../../utils/consts/FrontEndStateConsts';
 
 const INITIAL_STATE :Map<*, *> = fromJS({
@@ -195,6 +196,10 @@ export default function courtReducer(state :Map<*, *> = INITIAL_STATE, action :S
           .set(COURT.LOADING_JUDGES_ERROR, action.error),
         FINALLY: () => state.set(COURT.LOADING_JUDGES, false)
       });
+    }
+
+    case SWITCH_ORGANIZATION: {
+      return INITIAL_STATE;
     }
 
     default:
