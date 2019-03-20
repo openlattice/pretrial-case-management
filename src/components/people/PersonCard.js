@@ -63,13 +63,13 @@ const Dob = styled.span`
 
 const OpenPSATag = styled.span`
   z-index: 1;
-  margin-left: 75px;
+  margin-left: ${props => (props.includesDate ? 75 : 115)}px;
   margin-bottom: -8px;
   display: flex;
   flex-direction: row;
   justify-content: center;
   align-items: center;
-  width: 125px;
+  width: ${props => (props.includesDate ? 125 : 65)}px;
   height: 16px;
   border-radius: 3px;
   background-color: ${OL.PURPLE07};
@@ -150,7 +150,7 @@ class PersonCard extends React.Component<Props, State> {
     return hasOpenPSA && judgesview
       ? (
         <CardWrapper>
-          <OpenPSATag>{`Open PSA: ${editDate}`}</OpenPSATag>
+          <OpenPSATag includesDate>{`Open PSA: ${editDate}`}</OpenPSATag>
           {
             multipleOpenPSAs
               ? (
@@ -173,7 +173,7 @@ class PersonCard extends React.Component<Props, State> {
       )
       : (
         <StyledUndecoratedLink to={`${Routes.PERSON_DETAILS_ROOT}/${identification}`}>
-          <TagPlaceholder />
+          { hasOpenPSA ? <OpenPSATag>Open PSA</OpenPSATag> : <TagPlaceholder /> }
           <StyledPersonCard>
             <MugShot src={photo || defaultProfile} />
             <PersonInfoSection>
