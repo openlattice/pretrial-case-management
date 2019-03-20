@@ -6,7 +6,7 @@ import JSPDF from 'jspdf';
 import Immutable, { Set } from 'immutable';
 import moment from 'moment';
 
-import { CONTEXTS, SETTINGS } from './consts/AppSettingConsts';
+import { CASE_CONTEXTS, CONTEXTS, SETTINGS } from './consts/AppSettingConsts';
 import { CONTEXT } from './consts/Consts';
 import { PROPERTY_TYPES } from './consts/DataModelConsts';
 import { getViolentChargeLabels } from './ArrestChargeUtils';
@@ -982,6 +982,13 @@ const getPDFContents = (
   const name = getName(selectedPerson);
   const chargesByCaseNum = getChargesByCaseNum(allCharges);
   const mostSeriousCharge = selectedPretrialCase.getIn([MOST_SERIOUS_CHARGE_NO, 0], '');
+  const psaContext = data.getIn(['psaRiskFactors', PROPERTY_TYPES.CONTEXT, 0], '');
+  const caseContext = psaContext === CONTEXT.BOOKING ? CONTEXTS.BOOKING : CONTEXTS.COURT;
+  let chargeType = settings.getIn([SETTINGS.CASE_CONTEXTS, caseContext], '');
+  let caseNum = chargeType === CASE_CONTEXTS.COURT
+    ? selectedPretrialCase.getIn([PROPERTY_TYPES.CASE_NUMBER, 0], '')
+    : '';
+  caseNum = caseNum.length ? ` - ${caseNum}` : '';
 
   // PAGE HEADER
   y = header(doc, y);
@@ -1000,11 +1007,8 @@ const getPDFContents = (
   y += Y_INC_LARGE;
 
   // ARREST OR COURT CHARGES SECTION
-  const psaContext = data.getIn(['psaRiskFactors', PROPERTY_TYPES.CONTEXT, 0], '');
-  const caseContext = psaContext === CONTEXT.BOOKING ? CONTEXTS.BOOKING : CONTEXTS.COURT;
-  let chargeType = settings.getIn([SETTINGS.CASE_CONTEXTS, caseContext], '');
   chargeType = chargeType.slice(0, 1).toUpperCase() + chargeType.slice(1);
-  [y, page] = charges(doc, y, page, name, allCases, selectedCharges, violentCourtChargeList, false, `${chargeType} Charges`);
+  [y, page] = charges(doc, y, page, name, allCases, selectedCharges, violentCourtChargeList, false, `${chargeType} Charges${caseNum}`);
   thinLine(doc, y);
   y += Y_INC_LARGE;
   if (selectedCourtCharges.size) {
