@@ -58,7 +58,7 @@ export default function searchReducer(state = INITIAL_STATE, action) {
           .set(SEARCH.LOADING, true)
           .set(SEARCH.SEARCH_ERROR, false),
         SUCCESS: () => state
-          .set(SEARCH.SEARCH_RESULTS, fromJS(action.value.hits))
+          .set(SEARCH.SEARCH_RESULTS, action.value)
           .set(SEARCH.LOADING, false)
           .set(SEARCH.SEARCH_ERROR, false),
         FAILURE: () => state
