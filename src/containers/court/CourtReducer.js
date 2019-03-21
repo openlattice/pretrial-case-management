@@ -3,6 +3,7 @@
  */
 
 import moment from 'moment';
+import { Constants } from 'lattice';
 import {
   Map,
   Set,
@@ -19,11 +20,17 @@ import {
   loadJudges,
   SET_COURT_DATE
 } from './CourtActionFactory';
-import { changePSAStatus } from '../review/ReviewActionFactory';
+import { refreshPSANeighbors, changePSAStatus } from '../review/ReviewActionFactory';
 import { SWITCH_ORGANIZATION } from '../app/AppActionFactory';
-import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { COURT } from '../../utils/consts/FrontEndStateConsts';
 import { PSA_STATUSES } from '../../utils/consts/Consts';
+
+const { OPENLATTICE_ID_FQN } = Constants;
+
+let { HEARINGS } = APP_TYPES_FQNS;
+
+HEARINGS = HEARINGS.toString();
 
 const INITIAL_STATE :Map<*, *> = fromJS({
   [COURT.COURT_DATE]: moment(),
@@ -200,6 +207,43 @@ export default function courtReducer(state :Map<*, *> = INITIAL_STATE, action :S
           .set(COURT.ALL_JUDGES, Map())
           .set(COURT.LOADING_JUDGES_ERROR, action.error),
         FINALLY: () => state.set(COURT.LOADING_JUDGES, false)
+      });
+    }
+
+    case refreshPSANeighbors.case(action.type): {
+      return refreshPSANeighbors.reducer(state, action, {
+        SUCCESS: () => {
+          const { neighbors } = action.value;
+          const courtDate = state.get(COURT.COURT_DATE);
+          let hearingsByTime = state.get(COURT.HEARINGS_BY_TIME, Map());
+
+          let refreshedHearings = Map();
+          neighbors.get(HEARINGS).forEach((hearing) => {
+            const hearingEntityKeyId = hearing.getIn([OPENLATTICE_ID_FQN, 0]);
+            refreshedHearings = refreshedHearings.set(hearingEntityKeyId, hearing);
+          });
+
+          hearingsByTime.entrySeq().forEach(([time, hearings]) => {
+            const filteredHearings = hearings.filter((hearing) => {
+              const hearingEntityKeyId = hearing.getIn([OPENLATTICE_ID_FQN, 0]);
+              const refreshedHearing = refreshedHearings.get(hearingEntityKeyId);
+              if (refreshedHearing) {
+                const hearingDateTime = moment(refreshedHearing.getIn([PROPERTY_TYPES.DATE_TIME, 0], ''));
+                return hearingDateTime.isSame(courtDate, 'day');
+              }
+              return true;
+            });
+            if (hearings.size !== filteredHearings.size) {
+              if (filteredHearings.size) {
+                hearingsByTime = hearingsByTime.set(time, filteredHearings);
+              }
+              else {
+                hearingsByTime = hearingsByTime.delete(time);
+              }
+            }
+          });
+          return state.set(COURT.HEARINGS_BY_TIME, hearingsByTime);
+        }
       });
     }
 
