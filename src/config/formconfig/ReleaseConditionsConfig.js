@@ -2,7 +2,7 @@ import { ALIASES, PERSON_CONFIG } from './ConfigConsts';
 import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { ID_FIELD_NAMES, LIST_FIELDS } from '../../utils/consts/Consts';
 
-const psaConfig = {
+const releaseConditionsConfig = {
   entitySets: [
     PERSON_CONFIG,
     {
@@ -170,4 +170,4 @@ const psaConfig = {
   ]
 };
 
-export default psaConfig;
+export default releaseConditionsConfig;

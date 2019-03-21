@@ -38,12 +38,13 @@ import { RESULT_CATEGORIES } from '../../utils/consts/DMFResultConsts';
 import { formatDMFFromEntity } from '../../utils/DMFUtils';
 import { OL } from '../../utils/consts/Colors';
 import { psaIsClosed } from '../../utils/PSAUtils';
+import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import {
-  APP_TYPES_FQNS,
-  PROPERTY_TYPES,
-  SETTINGS,
-  MODULE
-} from '../../utils/consts/DataModelConsts';
+  CASE_CONTEXTS,
+  CONTEXTS,
+  MODULE,
+  SETTINGS
+} from '../../utils/consts/AppSettingConsts';
 import {
   APP,
   PSA_NEIGHBOR,
@@ -623,7 +624,8 @@ class PSAModal extends React.Component<Props, State> {
       caseHistory,
       manualChargeHistory,
       psaPermissions,
-      actions
+      actions,
+      selectedOrganizationSettings
     } = this.props;
     const { riskFactors } = this.state;
     let caseNumbersToAssociationId = Map();
@@ -654,10 +656,17 @@ class PSAModal extends React.Component<Props, State> {
       lastEditDateForPSA
     );
 
+    const psaContext = psaNeighbors.getIn([PSA_RISK_FACTORS, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.CONTEXT, 0], '');
+    const caseContext = psaContext === CONTEXT.BOOKING ? CONTEXTS.BOOKING : CONTEXTS.COURT;
+    // Get Case Context from settings and pass to config
+    let chargeType = selectedOrganizationSettings.getIn([SETTINGS.CASE_CONTEXTS, caseContext], '');
+    chargeType = chargeType.slice(0, 1).toUpperCase() + chargeType.slice(1);
+
     const pendingCharges = currentPendingCharges(chargeHistoryForMostRecentPSA);
 
     return (
       <PSAModalSummary
+          chargeType={chargeType}
           caseNumbersToAssociationId={caseNumbersToAssociationId}
           chargeHistoryForMostRecentPSA={chargeHistoryForMostRecentPSA}
           caseHistoryForMostRecentPSA={caseHistoryForMostRecentPSA}
@@ -912,6 +921,8 @@ class PSAModal extends React.Component<Props, State> {
 
   render() {
     const {
+      loadingPSAModal,
+      loadingCaseHistory,
       scores,
       open,
       psaPermissions,
@@ -926,6 +937,8 @@ class PSAModal extends React.Component<Props, State> {
 
     if (!scores) return null;
     const changeStatusText = psaIsClosed(scores) ? 'Change PSA Status' : 'Close PSA';
+
+    const modalHasLoaded = !loadingPSAModal && !loadingCaseHistory;
 
     let tabs = [
       {
@@ -974,15 +987,20 @@ class PSAModal extends React.Component<Props, State> {
               max-height={MODAL_HEIGHT}
               shouldCloseOnOverlayClick
               stackIndex={1}>
-            <ClosePSAModal
-                open={closingPSAModalOpen}
-                defaultStatus={scores.getIn([PROPERTY_TYPES.STATUS, 0])}
-                defaultStatusNotes={scores.getIn([PROPERTY_TYPES.STATUS_NOTES, 0])}
-                defaultFailureReasons={scores.get(PROPERTY_TYPES.FAILURE_REASON, List()).toJS()}
-                onClose={() => this.setState({ closingPSAModalOpen: false })}
-                onSubmit={this.handleStatusChange}
-                scores={scores}
-                entityKeyId={psaId} />
+            { psaPermissions && modalHasLoaded
+              ? (
+                <ClosePSAModal
+                    open={closingPSAModalOpen}
+                    defaultStatus={scores.getIn([PROPERTY_TYPES.STATUS, 0], '')}
+                    defaultStatusNotes={scores.getIn([PROPERTY_TYPES.STATUS_NOTES, 0], '')}
+                    defaultFailureReasons={scores.get(PROPERTY_TYPES.FAILURE_REASON, List()).toJS()}
+                    onClose={() => this.setState({ closingPSAModalOpen: false })}
+                    onSubmit={this.handleStatusChange}
+                    scores={scores}
+                    entityKeyId={psaId} />
+              )
+              : null
+            }
             <TitleWrapper>
               <TitleHeader>
                 PSA Details:
@@ -991,7 +1009,7 @@ class PSAModal extends React.Component<Props, State> {
                 </StyledLink>
               </TitleHeader>
               <div>
-                { psaPermissions
+                { psaPermissions && modalHasLoaded
                   ? (
                     <ClosePSAButton onClick={() => this.setState({ closingPSAModalOpen: true })}>
                       {changeStatusText}

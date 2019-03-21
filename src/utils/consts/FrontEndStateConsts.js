@@ -80,6 +80,7 @@ export const COURT = {
   HEARINGS_NEIGHBORS_BY_ID: 'hearingNeighborsById',
   PEOPLE_WITH_OPEN_PSAS: 'peopleWithOpenPsas',
   PEOPLE_WITH_MULTIPLE_OPEN_PSAS: 'peopleWithMultipleOpenPsas',
+  PEOPLE_RECEIVING_REMINDERS: 'peopleReceivingReminders',
   LOADING_HEARINGS: 'isLoadingHearings',
   LOADING_HEARING_NEIGHBORS: 'isLoadingHearingsNeighbors',
   HEARING_IDS_REFRESHING: 'hearingIdsRefreshing',
@@ -251,7 +252,8 @@ export const RELEASE_COND = {
   PERSON_NEIGHBORS: 'personNeighbors',
   PSA_NEIGHBORS: 'psaNeighbors',
   LOADING_RELEASE_CONDITIONS: 'loadingReleaseCondtions',
-  REFRESHING_RELEASE_CONDITIONS: 'refreshingReleaseConditions'
+  REFRESHING_RELEASE_CONDITIONS: 'refreshingReleaseConditions',
+  REFRESHING_SELECTED_HEARING: 'refreshingSelectedHearing'
 };
 
 // Reminders

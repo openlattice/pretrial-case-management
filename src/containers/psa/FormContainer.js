@@ -45,9 +45,14 @@ import { getEntityKeyId } from '../../utils/DataUtils';
 import { toISODateTime } from '../../utils/FormattingUtils';
 import { getScoresAndRiskFactors, calculateDMF, getDMFRiskFactors } from '../../utils/ScoringUtils';
 import { tryAutofillFields } from '../../utils/AutofillUtils';
-import { PROPERTY_TYPES, SETTINGS, MODULE } from '../../utils/consts/DataModelConsts';
+import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { STATUS_OPTIONS_FOR_PENDING_PSAS } from '../../utils/consts/ReviewPSAConsts';
-import { DOMAIN } from '../../utils/consts/ReportDownloadTypes';
+import {
+  CASE_CONTEXTS,
+  CONTEXTS,
+  MODULE,
+  SETTINGS
+} from '../../utils/consts/AppSettingConsts';
 import {
   CONTEXT,
   DMF,
@@ -527,7 +532,13 @@ class Form extends React.Component<Props, State> {
       values[ID_FIELD_NAMES.ARREST_ID] = [arrestId];
     }
 
-    const config = psaConfig;
+    // Get Case Context from settings and pass to config
+    const caseContext = psaForm.get(DMF.COURT_OR_BOOKING) === CONTEXT.BOOKING ? CONTEXTS.BOOKING : CONTEXTS.COURT;
+    const chargeType = selectedOrganizationSettings.getIn([SETTINGS.CASE_CONTEXTS, caseContext]);
+    const manualCourtCasesAndCharges = (chargeType === CASE_CONTEXTS.COURT);
+
+    const config = psaConfig({ manualCourtCasesAndCharges });
+
 
     if ((values[DMF.COURT_OR_BOOKING] !== CONTEXT.BOOKING) || !includesPretrialModule) {
       delete values[DMF.SECONDARY_RELEASE_CHARGES];
@@ -551,9 +562,14 @@ class Form extends React.Component<Props, State> {
 
   getFqn = propertyType => `${propertyType.getIn(['type', 'namespace'])}.${propertyType.getIn(['type', 'name'])}`
 
+  shouldLoadCases = () => {
+    const { selectedOrganizationSettings } = this.props;
+    return selectedOrganizationSettings.get(SETTINGS.LOAD_CASES, false);
+  }
+
   handleSelectPerson = (selectedPerson, entityKeyId) => {
-    const { actions, selectedOrganizationSettings } = this.props;
-    const shouldLoadCases = selectedOrganizationSettings.get(SETTINGS.LOAD_CASES, false);
+    const { actions } = this.props;
+    const shouldLoadCases = this.shouldLoadCases();
     actions.selectPerson({ selectedPerson });
     actions.loadPersonDetails({ entityKeyId, shouldLoadCases });
     actions.loadNeighbors({ entityKeyId });
@@ -785,11 +801,27 @@ class Form extends React.Component<Props, State> {
       numCasesToLoad,
       numCasesLoaded,
       arrestOptions,
+      selectedPersonId,
       psaForm,
       actions
     } = this.props;
     const { skipClosePSAs } = this.state;
+
     if (isLoadingCases && !isLoadingNeighbors) {
+
+      /*
+       * NOTE: this secondary neighbors load is necessary to refresh the person's case history after
+       * pulling their case history on the fly from bifrost. Without it, their updated case history
+       * will not be used for populating the PSA autofill values.
+       */
+      if (this.shouldLoadCases() && numCasesLoaded === numCasesToLoad) {
+        actions.loadPersonDetails({
+          entityKeyId: selectedPersonId,
+          shouldLoadCases: false
+        });
+        actions.loadNeighbors({ entityKeyId: selectedPersonId });
+      }
+
       const progress = (numCasesToLoad > 0) ? Math.floor((numCasesLoaded / numCasesToLoad) * 100) : 0;
       const loadingText = numCasesToLoad > 0
         ? `Loading cases (${numCasesLoaded} / ${numCasesToLoad})`
@@ -826,10 +858,15 @@ class Form extends React.Component<Props, State> {
     const {
       actions,
       charges,
-      selectedPretrialCase
+      psaForm,
+      selectedPretrialCase,
+      selectedOrganizationSettings,
     } = this.props;
+    const caseContext = psaForm.get(DMF.COURT_OR_BOOKING) === CONTEXT.BOOKING ? CONTEXTS.BOOKING : CONTEXTS.COURT;
+    const chargeType = selectedOrganizationSettings.getIn([SETTINGS.CASE_CONTEXTS, caseContext]);
     return (
       <SelectChargesContainer
+          chargeType={chargeType}
           defaultArrest={selectedPretrialCase}
           defaultCharges={charges}
           nextPage={this.nextPage}

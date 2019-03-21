@@ -229,6 +229,7 @@ export const ID_FIELD_NAMES = {
   PERSON_ID: 'personId',
   CASE_ID: 'caseId',
   ARREST_ID: 'arrestId',
+  ARREST_ID_FOR_COURT: 'arrestIdForCourt',
   STAFF_ID: 'staffId',
   TIMESTAMP: 'timestamp',
   DMF_RISK_FACTORS_ID: 'dmfRiskFactorsId',
@@ -303,6 +304,8 @@ export const JURISDICTION = {
   [CONTEXT.COURT_MINN]: 'Minnehaha County, South Dakota',
   [CONTEXT.BOOKING]: 'Pennington County, South Dakota'
 };
+
+export const HAS_OPEN_PSA = 'hasOpenPsa';
 
 export const TABLE_WIDTH = 1000;
 export const ROW_HEIGHT = 50;
