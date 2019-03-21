@@ -18,6 +18,7 @@ import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 const { OPENLATTICE_ID_FQN } = Constants;
 
 const CardsHolder = styled.div`
+  width: 100%;
   display: grid;
   grid-template-columns: repeat(${props => (props.columns ? props.columns : 2)}, 1fr);
   grid-gap: 20px;
