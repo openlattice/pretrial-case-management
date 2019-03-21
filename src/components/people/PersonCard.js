@@ -3,15 +3,12 @@
  */
 
 import React from 'react';
-import { Map } from 'immutable';
 import styled from 'styled-components';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faClone } from '@fortawesome/pro-light-svg-icons';
 
-import CONTENT from '../../utils/consts/ContentConsts';
 import defaultProfile from '../../assets/svg/profile-placeholder-avatar.svg';
-import PSAModal from '../../containers/psamodal/PSAModal';
 import StyledCard from '../StyledCard';
 import { OL } from '../../utils/consts/Colors';
 import { UndecoratedLink } from '../../utils/Layout';
@@ -29,6 +26,7 @@ const CardWrapper = styled.div`
 `;
 
 const StyledPersonCard = styled(StyledCard)`
+  box-shadow: ${props => (props.hasOpenPSA ? `0 0 5px 5px ${OL.PURPLE04}` : 'none')};
   width: 100%;
 `;
 
@@ -63,13 +61,13 @@ const Dob = styled.span`
 
 const OpenPSATag = styled.span`
   z-index: 1;
-  margin-left: ${props => (props.includesDate ? 75 : 115)}px;
+  margin-left: 75px;
   margin-bottom: -8px;
   display: flex;
   flex-direction: row;
   justify-content: center;
   align-items: center;
-  width: ${props => (props.includesDate ? 125 : 65)}px;
+  width: 125px;
   height: 16px;
   border-radius: 3px;
   background-color: ${OL.PURPLE07};
@@ -173,8 +171,8 @@ class PersonCard extends React.Component<Props, State> {
       )
       : (
         <StyledUndecoratedLink to={`${Routes.PERSON_DETAILS_ROOT}/${identification}`}>
-          { hasOpenPSA ? <OpenPSATag>Open PSA</OpenPSATag> : <TagPlaceholder /> }
-          <StyledPersonCard>
+          <TagPlaceholder />
+          <StyledPersonCard hasOpenPSA={hasOpenPSA} >
             <MugShot src={photo || defaultProfile} />
             <PersonInfoSection>
               <Name>{name}</Name>
