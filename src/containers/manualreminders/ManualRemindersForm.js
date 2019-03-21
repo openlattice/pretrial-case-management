@@ -75,6 +75,7 @@ const NotesInput = styled.textarea`
 type Props = {
   personId :string,
   person :Map<*, *>,
+  peopleNeighborsForManualReminder :Map<*, *>,
   refreshingPersonNeighbors :boolean,
   submitting :boolean,
   actions :{
@@ -243,7 +244,7 @@ class NewHearingSection extends React.Component<Props, State> {
 
     return (
       <>
-        <InputLabel>{`Which of ${this.getSubjectsName()}'s hearings are you reimind them of?`}</InputLabel>
+        <InputLabel>{`Which of ${this.getSubjectsName()}'s hearings is this reminder for?`}</InputLabel>
         <FlexContainer>
           <HearingCardsHolder
               columns={1}
