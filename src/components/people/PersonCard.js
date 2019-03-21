@@ -7,6 +7,7 @@ import styled from 'styled-components';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faClone } from '@fortawesome/pro-light-svg-icons';
+import { faBell } from '@fortawesome/pro-solid-svg-icons';
 
 import defaultProfile from '../../assets/svg/profile-placeholder-avatar.svg';
 import StyledCard from '../StyledCard';
@@ -26,7 +27,7 @@ const CardWrapper = styled.div`
 `;
 
 const StyledPersonCard = styled(StyledCard)`
-  box-shadow: ${props => (props.hasOpenPSA ? `0 0 5px 5px ${OL.PURPLE04}` : 'none')};
+  box-shadow: ${props => (props.hasOpenPSA ? `0 0 5px 5px ${OL.PURPLE06}` : 'none')};
   width: 100%;
 `;
 
@@ -61,13 +62,13 @@ const Dob = styled.span`
 
 const OpenPSATag = styled.span`
   z-index: 1;
-  margin-left: 75px;
+  margin-left: 100px;
   margin-bottom: -8px;
   display: flex;
   flex-direction: row;
   justify-content: center;
   align-items: center;
-  width: 125px;
+  width: 75px;
   height: 16px;
   border-radius: 3px;
   background-color: ${OL.PURPLE07};
@@ -80,9 +81,15 @@ const OpenPSATag = styled.span`
 `;
 
 const MultiIconWrapper = styled.span`
+  width: 30px;
+  display: flex;
+  justify-content: flex-end;
   z-index: 1;
   position: absolute;
-  transform: translateX(208px) translateY(-2px);
+  transform: translateX(192px) translateY(0px);
+  svg {
+    margin-left: 5px;
+  }
 `;
 
 const TagPlaceholder = styled.span`
@@ -140,7 +147,12 @@ class PersonCard extends React.Component<Props, State> {
       photo,
       identification
     } = personObj;
-    const { multipleOpenPSAs, hasOpenPSA, judgesview } = this.props;
+    const {
+      multipleOpenPSAs,
+      hasOpenPSA,
+      isReceivingReminders,
+      judgesview
+    } = this.props;
 
     const midName = middleName ? ` ${middleName}` : '';
     const name = `${lastName}, ${firstName}${midName}`;
@@ -148,16 +160,17 @@ class PersonCard extends React.Component<Props, State> {
     return hasOpenPSA && judgesview
       ? (
         <CardWrapper>
-          <OpenPSATag includesDate>{`Open PSA: ${editDate}`}</OpenPSATag>
+          <OpenPSATag includesDate>{editDate}</OpenPSATag>
           {
-            multipleOpenPSAs
+            multipleOpenPSAs || isReceivingReminders
               ? (
                 <MultiIconWrapper>
-                  <FontAwesomeIcon color={OL.PURPLE03} icon={faClone} />
+                  { isReceivingReminders ? <FontAwesomeIcon color={OL.ORANGE01} icon={faBell} /> : null }
+                  { multipleOpenPSAs ? <FontAwesomeIcon color={OL.PURPLE02} icon={faClone} /> : null }
                 </MultiIconWrapper>
               ) : null
           }
-          <StyledPersonCard onClick={() => openPSAModal({ psaId })}>
+          <StyledPersonCard hasOpenPSA={hasOpenPSA} onClick={() => openPSAModal({ psaId })}>
             <MugShot src={photo || defaultProfile} />
             <PersonInfoSection>
               <Name>{name}</Name>

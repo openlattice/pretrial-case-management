@@ -11,6 +11,10 @@ import { bindActionCreators } from 'redux';
 import { NavLink } from 'react-router-dom';
 import { Constants } from 'lattice';
 
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faClone } from '@fortawesome/pro-light-svg-icons';
+import { faBell } from '@fortawesome/pro-solid-svg-icons';
+
 import CONTENT from '../../utils/consts/ContentConsts';
 import SecondaryButton from '../../components/buttons/SecondaryButton';
 import ToggleButtonsGroup from '../../components/buttons/ToggleButtons';
@@ -46,6 +50,26 @@ const peopleFqn :string = PEOPLE.toString();
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
+
+const Legend = styled.div`
+  display: flex;
+  flex-direction: row;
+  padding: 10px;
+`;
+
+const LegendItem = styled.div`
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: center;
+  font-size: 12px;
+  margin-bottom: 10px;
+  padding: 5px;
+  svg {
+    margin-right: 5px;
+  }
+`;
+
 const StyledFormViewWrapper = styled.div`
   display: flex;
   max-width: 960px;
@@ -58,20 +82,30 @@ const StyledFormWrapper = styled.div`
   width: 100%;
 `;
 
+const Subtitle = styled.div`
+  height: 100%;
+  font-size: 18px;
+  display: flex;
+  margin: 5.5px 10px;
+`;
+
+const Title = styled.div`
+  height: 100%;
+  font-size: 24px;
+  display: flex;
+`;
+
+const Header = styled.div`
+  display: flex;
+  justify-content: space-between;
+`;
+
 const StyledTitleWrapper = styled.div`
   color: ${OL.GREY34};
   display: flex;
   font-size: 24px;
   margin-bottom: 30px;
   width: 100%;
-
-  div {
-    height: 100%;
-    font-size: 18px;
-    display: flex;
-    align-items: center;
-    margin-left: 10px;
-  }
 `;
 
 const HearingTime = styled.div`
@@ -273,12 +307,14 @@ class CourtContainer extends React.Component<Props, State> {
       peopleIdsToOpenPSAIds,
       peopleWithOpenPsas,
       peopleWithMultipleOpenPsas,
+      peopleReceivingReminders,
       psaEditDatesById
     } = this.props;
-    const personOlId = person.getIn([OPENLATTICE_ID_FQN, 0]);
-    const openPSAId = peopleIdsToOpenPSAIds.get(personOlId, '');
-    const hasOpenPSA = peopleWithOpenPsas.has(personOlId);
-    const hasMultipleOpenPSAs = peopleWithMultipleOpenPsas.includes(personOlId);
+    const personEntityKeyId = person.getIn([OPENLATTICE_ID_FQN, 0]);
+    const openPSAId = peopleIdsToOpenPSAIds.get(personEntityKeyId, '');
+    const hasOpenPSA = peopleWithOpenPsas.has(personEntityKeyId);
+    const isReceivingReminders = peopleReceivingReminders.includes(personEntityKeyId);
+    const hasMultipleOpenPSAs = peopleWithMultipleOpenPsas.includes(personEntityKeyId);
     const lastEditDate = moment(psaEditDatesById.getIn(
       [openPSAId, PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.COMPLETED_DATE_TIME, 0],
       psaEditDatesById.getIn([openPSAId, PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.DATE_TIME, 0], '')
@@ -292,6 +328,7 @@ class CourtContainer extends React.Component<Props, State> {
           multipleOpenPSAs={hasMultipleOpenPSAs}
           personObj={personObj}
           hasOpenPSA={hasOpenPSA}
+          isReceivingReminders={isReceivingReminders}
           loadCaseHistoryFn={this.loadCaseHistoryCallback}
           openPSAModal={this.openPSAModal}
           judgesview />
@@ -487,17 +524,33 @@ class CourtContainer extends React.Component<Props, State> {
 
   }
 
+  renderLegend = () => (
+    <Legend>
+      <LegendItem>
+        <FontAwesomeIcon color={OL.ORANGE01} icon={faBell} />
+        <div>Person is receiving reminders</div>
+      </LegendItem>
+      <LegendItem>
+        <FontAwesomeIcon color={OL.PURPLE02} icon={faClone} />
+        <div>Person has multiple open PSAs</div>
+      </LegendItem>
+    </Legend>
+  )
+
   render() {
-    const { selectedOrganizationTitle } = this.props;
+    const { selectedOrganizationTitle, peopleReceivingReminders } = this.props;
     return (
       <StyledFormViewWrapper>
         <StyledFormWrapper>
-          <StyledTitleWrapper>
-            Court Hearings
-            <div>{ `(Showing Open PSAs for ${selectedOrganizationTitle})` }</div>
-          </StyledTitleWrapper>
+          <Header>
+            <StyledTitleWrapper>
+              <Title>Court Hearings</Title>
+              <Subtitle>{ `(Showing Open PSAs for ${selectedOrganizationTitle})` }</Subtitle>
+            </StyledTitleWrapper>
+          </Header>
           <StyledSectionWrapper>
             {this.renderDatePicker()}
+            {this.renderLegend()}
             {this.renderCountyChoices()}
             {this.renderCourtroomChoices()}
             {this.renderSearchLink()}
@@ -525,6 +578,7 @@ function mapStateToProps(state) {
     [COURT.LOADING_HEARINGS_ERROR]: court.get(COURT.LOADING_HEARINGS_ERROR),
     [COURT.PEOPLE_WITH_OPEN_PSAS]: court.get(COURT.PEOPLE_WITH_OPEN_PSAS),
     [COURT.PEOPLE_WITH_MULTIPLE_OPEN_PSAS]: court.get(COURT.PEOPLE_WITH_MULTIPLE_OPEN_PSAS),
+    [COURT.PEOPLE_RECEIVING_REMINDERS]: court.get(COURT.PEOPLE_RECEIVING_REMINDERS),
     [COURT.LOADING_HEARINGS]: court.get(COURT.LOADING_HEARINGS),
     [COURT.LOADING_HEARING_NEIGHBORS]: court.get(COURT.LOADING_HEARING_NEIGHBORS),
     [COURT.LOADING_PSAS]: court.get(COURT.LOADING_PSAS),

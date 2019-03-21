@@ -42,6 +42,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
 
   // People
   [COURT.PEOPLE_WITH_OPEN_PSAS]: Set(),
+  [COURT.PEOPLE_RECEIVING_REMINDERS]: Set(),
   [COURT.PEOPLE_WITH_MULTIPLE_OPEN_PSAS]: Set(),
   [COURT.PEOPLE_IDS_TO_OPEN_PSA_IDS]: Map(),
 
@@ -95,6 +96,7 @@ export default function courtReducer(state :Map<*, *> = INITIAL_STATE, action :S
             filteredPersonIds,
             scoresAsMap,
             personIdsToOpenPSAIds,
+            personIdsWhoAreSubscribed,
             openPSAIds,
             hearingNeighborsById,
             peopleWithMultiplePSAs,
@@ -106,6 +108,7 @@ export default function courtReducer(state :Map<*, *> = INITIAL_STATE, action :S
             .set(COURT.HEARINGS_NEIGHBORS_BY_ID, newHearingNeighborsState)
             .set(COURT.PEOPLE_WITH_OPEN_PSAS, fromJS(filteredPersonIds))
             .set(COURT.PEOPLE_WITH_MULTIPLE_OPEN_PSAS, peopleWithMultiplePSAs)
+            .set(COURT.PEOPLE_RECEIVING_REMINDERS, personIdsWhoAreSubscribed)
             .set(COURT.PSA_EDIT_DATES, fromJS(psaIdToMostRecentEditDate))
             .set(COURT.SCORES_AS_MAP, scoresAsMap)
             .set(COURT.OPEN_PSA_IDS, openPSAIds)
