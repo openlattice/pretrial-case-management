@@ -283,8 +283,8 @@ function* searchPeopleWorker(action) :Generator<*, *, *> {
     let personMap = Map();
     if (includePSAInfo) {
       response.forEach((person) => {
-        const personId = person.getIn([OPENLATTICE_ID_FQN, 0], '');
-        personMap = personMap.set(personId, fromJS(person));
+        const personEntityKeyId = person.getIn([OPENLATTICE_ID_FQN, 0], '');
+        personMap = personMap.set(personEntityKeyId, fromJS(person));
       });
       let peopleNeighborsById = yield call(SearchApi.searchEntityNeighborsWithFilter, peopleEntitySetId, {
         entityKeyIds: personMap.keySeq().toJS(),
@@ -293,12 +293,12 @@ function* searchPeopleWorker(action) :Generator<*, *, *> {
       });
       peopleNeighborsById = fromJS(peopleNeighborsById);
 
-      peopleNeighborsById.entrySeq().forEach(([personId, neighbors]) => {
+      peopleNeighborsById.entrySeq().forEach(([personEntityKeyId, neighbors]) => {
         const hasOpenPSA = neighbors.some(neighbor => (
           neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.STATUS, 0], '') === PSA_STATUSES.OPEN
         ));
 
-        if (hasOpenPSA) personMap = personMap.setIn([personId, 'hasOpenPSA'], hasOpenPSA);
+        if (hasOpenPSA) personMap = personMap.setIn([personEntityKeyId, 'hasOpenPSA'], hasOpenPSA);
       });
       response = personMap.valueSeq();
     }
