@@ -106,7 +106,7 @@ class PeopleContainer extends React.Component<Props, State> {
     return (
       <div>
         <SearchBox>
-          <PersonSearchFields handleSubmit={actions.searchPeople} />
+          <PersonSearchFields includePSAInfo handleSubmit={actions.searchPeople} />
         </SearchBox>
         <PeopleList
             people={formattedPeople}

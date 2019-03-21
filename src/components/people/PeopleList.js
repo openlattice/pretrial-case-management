@@ -36,7 +36,12 @@ const PeopleList = ({ people, isFetchingPeople, didMapPeopleToProps } :Props) =>
   const renderPersonCards = () => {
     try {
       if (people && people.size > 0) {
-        return people.map(person => <PersonCard key={person.identification} personObj={person} />);
+        return people.map(person => (
+          <PersonCard
+              hasOpenPSA={person.hasOpenPSA}
+              key={person.identification}
+              personObj={person} />
+        ));
       }
       else if (people && people.size === 0 && didMapPeopleToProps) {
         return <NoSearchResultsPadded />;

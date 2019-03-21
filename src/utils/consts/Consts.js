@@ -305,6 +305,8 @@ export const JURISDICTION = {
   [CONTEXT.BOOKING]: 'Pennington County, South Dakota'
 };
 
+export const HAS_OPEN_PSA = 'hasOpenPsa';
+
 export const TABLE_WIDTH = 1000;
 export const ROW_HEIGHT = 50;
 export const TABLE_OFFSET = 2;

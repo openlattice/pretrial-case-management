@@ -3,15 +3,12 @@
  */
 
 import React from 'react';
-import { Map } from 'immutable';
 import styled from 'styled-components';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faClone } from '@fortawesome/pro-light-svg-icons';
 
-import CONTENT from '../../utils/consts/ContentConsts';
 import defaultProfile from '../../assets/svg/profile-placeholder-avatar.svg';
-import PSAModal from '../../containers/psamodal/PSAModal';
 import StyledCard from '../StyledCard';
 import { OL } from '../../utils/consts/Colors';
 import { UndecoratedLink } from '../../utils/Layout';
@@ -29,6 +26,7 @@ const CardWrapper = styled.div`
 `;
 
 const StyledPersonCard = styled(StyledCard)`
+  box-shadow: ${props => (props.hasOpenPSA ? `0 0 5px 5px ${OL.PURPLE04}` : 'none')};
   width: 100%;
 `;
 
@@ -150,7 +148,7 @@ class PersonCard extends React.Component<Props, State> {
     return hasOpenPSA && judgesview
       ? (
         <CardWrapper>
-          <OpenPSATag>{`Open PSA: ${editDate}`}</OpenPSATag>
+          <OpenPSATag includesDate>{`Open PSA: ${editDate}`}</OpenPSATag>
           {
             multipleOpenPSAs
               ? (
@@ -174,7 +172,7 @@ class PersonCard extends React.Component<Props, State> {
       : (
         <StyledUndecoratedLink to={`${Routes.PERSON_DETAILS_ROOT}/${identification}`}>
           <TagPlaceholder />
-          <StyledPersonCard>
+          <StyledPersonCard hasOpenPSA={hasOpenPSA} >
             <MugShot src={photo || defaultProfile} />
             <PersonInfoSection>
               <Name>{name}</Name>
