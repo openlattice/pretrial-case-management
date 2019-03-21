@@ -20,7 +20,7 @@ import {
 import { toISODate, formatDate } from '../../utils/FormattingUtils';
 import { submit } from '../../utils/submit/SubmitActionFactory';
 import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { PSA_STATUSES } from '../../utils/consts/Consts';
+import { HAS_OPEN_PSA, PSA_STATUSES } from '../../utils/consts/Consts';
 import { APP, STATE, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { obfuscateEntityNeighbors } from '../../utils/consts/DemoNames';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
@@ -298,7 +298,7 @@ function* searchPeopleWorker(action) :Generator<*, *, *> {
           neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.STATUS, 0], '') === PSA_STATUSES.OPEN
         ));
 
-        if (hasOpenPSA) personMap = personMap.setIn([personEntityKeyId, 'hasOpenPSA'], hasOpenPSA);
+        if (hasOpenPSA) personMap = personMap.setIn([personEntityKeyId, HAS_OPEN_PSA], hasOpenPSA);
       });
       response = personMap.valueSeq();
     }

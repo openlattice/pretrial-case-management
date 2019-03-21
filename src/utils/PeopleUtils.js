@@ -5,6 +5,7 @@ import { Constants } from 'lattice';
 
 
 import { APP_TYPES_FQNS, PROPERTY_TYPES } from './consts/DataModelConsts';
+import { HAS_OPEN_PSA } from './consts/Consts';
 import { PSA_NEIGHBOR } from './consts/FrontEndStateConsts';
 import { formatDOB } from './Helpers';
 
@@ -25,7 +26,7 @@ export const formatPeopleInfo = (person) => {
   const photo = person.getIn([PROPERTY_TYPES.PICTURE, 0]) || person.getIn([PROPERTY_TYPES.MUGSHOT, 0]);
   const midName = middleName ? ` ${middleName}` : '';
   const lastFirstMid = `${lastName}, ${firstName}${midName}`;
-  const hasOpenPSA = person.get('hasOpenPSA', false);
+  const hasOpenPSA = person.get(HAS_OPEN_PSA, false);
   return {
     entityKeyId,
     identification,
