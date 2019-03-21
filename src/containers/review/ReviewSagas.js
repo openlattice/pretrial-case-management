@@ -898,6 +898,7 @@ function* refreshPSANeighborsWorker(action :SequenceAction) :Generator<*, *, *> 
     yield put(refreshPSANeighbors.success(action.id, { id, neighbors }));
   }
   catch (error) {
+    console.error(error);
     yield put(refreshPSANeighbors.failure(action.id, error));
   }
   finally {
