@@ -48,19 +48,23 @@ import {
 } from './CourtActionFactory';
 
 const {
+  CONTACT_INFORMATION,
   HEARINGS,
   JUDGES,
   PEOPLE,
   PSA_SCORES,
   RELEASE_CONDITIONS,
+  SUBSCRIPTION,
   STAFF
 } = APP_TYPES_FQNS;
 
+const contactInformationFqn :string = CONTACT_INFORMATION.toString();
 const hearingsFqn :string = HEARINGS.toString();
 const judgesFqn :string = JUDGES.toString();
 const peopleFqn :string = PEOPLE.toString();
 const psaScoresFqn :string = PSA_SCORES.toString();
 const releaseConditionsFqn :string = RELEASE_CONDITIONS.toString();
+const subscriptionFqn :string = SUBSCRIPTION.toString();
 const staffFqn :string = STAFF.toString();
 
 const { OPENLATTICE_ID_FQN } = Constants;
@@ -88,11 +92,14 @@ function* filterPeopleIdsWithOpenPSAsWorker(action :SequenceAction) :Generator<*
     let filteredPersonIds = Set();
     let openPSAIds = Set();
     let personIdsToOpenPSAIds = Map();
+    let personIdsWhoAreSubscribed = Set();
     let peopleWithMultiplePSAs = Set();
 
     const app = yield select(getApp);
     const orgId = yield select(getOrgId);
     const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
+    const contactInformationEntitySetId = getEntitySetIdFromApp(app, contactInformationFqn, orgId);
+    const subscriptionEntitySetId = getEntitySetIdFromApp(app, subscriptionFqn, orgId);
     const hearingsEntitySetId = getEntitySetIdFromApp(app, hearingsFqn, orgId);
     const peopleEntitySetId = getEntitySetIdFromApp(app, peopleFqn, orgId);
     const psaEntitySetId = getEntitySetIdFromApp(app, psaScoresFqn, orgId);
@@ -100,13 +107,16 @@ function* filterPeopleIdsWithOpenPSAsWorker(action :SequenceAction) :Generator<*
     if (personIds.size) {
       let peopleNeighborsById = yield call(SearchApi.searchEntityNeighborsWithFilter, peopleEntitySetId, {
         entityKeyIds: personIds.toJS(),
-        sourceEntitySetIds: [psaEntitySetId],
-        destinationEntitySetIds: [hearingsEntitySetId]
+        sourceEntitySetIds: [psaEntitySetId, contactInformationEntitySetId],
+        destinationEntitySetIds: [hearingsEntitySetId, subscriptionEntitySetId, contactInformationEntitySetId]
       });
       peopleNeighborsById = obfuscateBulkEntityNeighbors(peopleNeighborsById);
       peopleNeighborsById = fromJS(peopleNeighborsById);
       peopleNeighborsById.entrySeq().forEach(([id, neighbors]) => {
+
         let hasValidHearing = false;
+        let hasActiveSubscription = false;
+        let hasPreferredContact = false;
         let mostCurrentPSA;
         let currentPSADateTime;
         let mostCurrentPSAEntityKeyId;
@@ -123,6 +133,18 @@ function* filterPeopleIdsWithOpenPSAsWorker(action :SequenceAction) :Generator<*
               hasValidHearing = true;
             }
           }
+          if (entitySetId === subscriptionEntitySetId) {
+            const subscriptionIsActive = neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.IS_ACTIVE, 0], false);
+            if (subscriptionIsActive) {
+              hasActiveSubscription = true;
+            }
+          }
+          if (entitySetId === contactInformationEntitySetId) {
+            const contactIsPreferred = neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.IS_PREFERRED, 0], false);
+            if (contactIsPreferred) {
+              hasPreferredContact = true;
+            }
+          }
           else if (entitySetId === psaEntitySetId
               && neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.STATUS, 0]) === PSA_STATUSES.OPEN) {
             if (!mostCurrentPSA || currentPSADateTime.isBefore(entityDateTime)) {
@@ -134,6 +156,10 @@ function* filterPeopleIdsWithOpenPSAsWorker(action :SequenceAction) :Generator<*
             openPSAIds = openPSAIds.add(entityKeyId);
           }
         });
+        if (hasActiveSubscription && hasPreferredContact) {
+          personIdsWhoAreSubscribed = personIdsWhoAreSubscribed.add(id);
+        }
+
         if (psaCount > 1) peopleWithMultiplePSAs = peopleWithMultiplePSAs.add(id);
 
         if (hasValidHearing && mostCurrentPSAEntityKeyId) {
@@ -187,6 +213,7 @@ function* filterPeopleIdsWithOpenPSAsWorker(action :SequenceAction) :Generator<*
       filteredPersonIds,
       scoresAsMap,
       personIdsToOpenPSAIds,
+      personIdsWhoAreSubscribed,
       openPSAIds,
       hearingNeighborsById,
       peopleWithMultiplePSAs,
