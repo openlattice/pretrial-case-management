@@ -284,6 +284,7 @@ type Props = {
   personNeighbors :Map<*, *>,
   psaNeighbors :Map<*, *>,
   refreshingReleaseConditions :boolean,
+  refreshingSelectedHearing :boolean,
   replacingAssociation :boolean,
   replacingEntity :boolean,
   selectedHearing :Map<*, *>,
@@ -1239,6 +1240,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       hearingIdsRefreshing,
       loadingReleaseCondtions,
       psaNeighbors,
+      refreshingSelectedHearing,
       replacingAssociation,
       replacingEntity,
       selectedHearing
@@ -1391,7 +1393,13 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       ? 'Loading Hearing Details...'
       : 'Updating Hearing...';
 
-    if (loadingReleaseCondtions || replacingEntity || replacingAssociation || hearingIdsRefreshing) {
+    if (
+      loadingReleaseCondtions
+      || replacingEntity
+      || replacingAssociation
+      || hearingIdsRefreshing
+      || refreshingSelectedHearing
+    ) {
       return <LogoLoader size={30} loadingText={loadingText} />;
     }
 
@@ -1536,6 +1544,7 @@ function mapStateToProps(state) {
     [RELEASE_COND.PSA_NEIGHBORS]: releaseConditions.get(RELEASE_COND.PSA_NEIGHBORS),
     [RELEASE_COND.LOADING_RELEASE_CONDITIONS]: releaseConditions.get(RELEASE_COND.LOADING_RELEASE_CONDITIONS),
     [RELEASE_COND.REFRESHING_RELEASE_CONDITIONS]: releaseConditions.get(RELEASE_COND.REFRESHING_RELEASE_CONDITIONS),
+    [RELEASE_COND.REFRESHING_SELECTED_HEARING]: releaseConditions.get(RELEASE_COND.REFRESHING_SELECTED_HEARING),
 
     [COURT.ALL_JUDGES]: court.get(COURT.ALL_JUDGES),
     [COURT.HEARING_IDS_REFRESHING]: court.get(COURT.HEARING_IDS_REFRESHING),
