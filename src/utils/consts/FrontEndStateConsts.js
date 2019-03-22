@@ -12,6 +12,7 @@ export const STATE = {
   PSA_MODAL: 'psaModal',
   PSA: 'psa',
   PEOPLE: 'people',
+  RELEASE_CONDITIONS: 'releaseConditions',
   REMINDERS: 'reminders',
   REVIEW: 'review',
   ROUTER: 'router',
@@ -41,6 +42,7 @@ export const APP = {
   ENTITY_SETS_BY_ORG: 'entitySetsByOrganization',
   FQN_TO_ID: 'fqnsToEntitySetIds',
   ERRORS: 'errors',
+  JURISDICTION: 'jurisdiction',
   LOADING: 'isLoadingApp',
   LOAD_APP: 'loadApp',
   ORGS: 'organizations',
@@ -76,6 +78,8 @@ export const COURT = {
   HEARINGS_BY_TIME: 'hearingsByTime',
   HEARINGS_NEIGHBORS_BY_ID: 'hearingNeighborsById',
   PEOPLE_WITH_OPEN_PSAS: 'peopleWithOpenPsas',
+  PEOPLE_WITH_MULTIPLE_OPEN_PSAS: 'peopleWithMultipleOpenPsas',
+  PEOPLE_RECEIVING_REMINDERS: 'peopleReceivingReminders',
   LOADING_HEARINGS: 'isLoadingHearings',
   LOADING_HEARING_NEIGHBORS: 'isLoadingHearingsNeighbors',
   HEARING_IDS_REFRESHING: 'hearingIdsRefreshing',
@@ -147,6 +151,7 @@ export const PSA_MODAL = {
 
   // PSA
   PSA_ID: 'psaId',
+  SCORES: 'scores',
   PSA_NEIGHBORS: 'psaNeighbors',
   PSA_PERMISSIONS: 'psaPermissions',
 
@@ -223,11 +228,24 @@ export const PEOPLE = {
   REQUIRES_ACTION_LOADING: 'loadingRequiresActionPeople'
 };
 
+// Release Conditions
+
+export const RELEASE_COND = {
+  SELECTED_HEARING: 'selectedHearing',
+  HAS_OUTCOME: 'hasOutcome',
+  HEARING_NEIGHBORS: 'hearingNeighbors',
+  PERSON_NEIGHBORS: 'personNeighbors',
+  PSA_NEIGHBORS: 'psaNeighbors',
+  LOADING_RELEASE_CONDITIONS: 'loadingReleaseCondtions',
+  REFRESHING_RELEASE_CONDITIONS: 'refreshingReleaseConditions',
+  REFRESHING_SELECTED_HEARING: 'refreshingSelectedHearing'
+};
+
 // Reminders
 
 export const REMINDERS = {
   REMINDER_IDS: 'reminderIds',
-  FUTURE_REMINDERS: 'futureRemidners',
+  FUTURE_REMINDERS: 'futureReminders',
   PAST_REMINDERS: 'pastReminders',
   SUCCESSFUL_REMINDER_IDS: 'successfulReminderIds',
   FAILED_REMINDER_IDS: 'failedReminderIds',

@@ -18,17 +18,13 @@ import PersonOverview from '../../components/people/PersonOverview';
 import PersonPSA from '../../components/people/PersonPSA';
 import PersonHearings from '../../components/people/PersonHearings';
 import PersonCases from '../../components/people/PersonCases';
-import PSAModal from '../review/PSAModal';
+import PSAModal from '../psamodal/PSAModal';
 import { getPSAIdsFromNeighbors } from '../../utils/PeopleUtils';
 import { getChargeHistory } from '../../utils/CaseUtils';
 import { JURISDICTION } from '../../utils/consts/Consts';
 import { getEntityKeyId, getIdOrValue, getNeighborDetailsForEntitySet } from '../../utils/DataUtils';
-import {
-  APP_TYPES_FQNS,
-  PROPERTY_TYPES,
-  SETTINGS,
-  MODULE
-} from '../../utils/consts/DataModelConsts';
+import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
+import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import {
   getScheduledHearings,
   getPastHearings,
@@ -236,10 +232,7 @@ class PersonDetailsContainer extends React.Component<Props, State> {
             entityKeyId={mostRecentPSAEntityKeyId}
             open={open}
             openModal={this.openModal}
-            onClose={this.closeModal}
-            scores={scores}
-            personId={personId}
-            {...actions} />
+            onClose={this.closeModal} />
       );
     return modal;
   }

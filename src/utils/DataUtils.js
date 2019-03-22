@@ -38,14 +38,14 @@ export const getFqnObj = (fqnStr) => {
   };
 };
 
-export const getEntitySetId = (neighbors :Map<*, *>, name :string) :string => {
+export const getEntitySetId = (neighbors :Map<*, *>, name :?string) :string => {
   const entity = name ? neighbors.getIn([name, PSA_NEIGHBOR.ENTITY_SET], Map()) : neighbors;
   return entity.get('id', '');
 };
 
 export const getEntityKeyId = (neighbors :Map<*, *>, name :?string) :string => {
-  const entity = name ? neighbors.getIn([name, PSA_NEIGHBOR.DETAILS], Map()) : neighbors;
-  return entity.getIn([OPENLATTICE_ID_FQN, 0], '');
+  const entity = name ? neighbors.get(name, Map()) : neighbors;
+  return entity.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0], entity.getIn([OPENLATTICE_ID_FQN, 0], ''));
 };
 
 export const getIdOrValue = (neighbors :Map<*, *>, entitySetName :string, optionalFQN :?string) :string => {
@@ -56,7 +56,10 @@ export const getTimeStamp = (neighbors :Map<*, *>, entitySetName :string) :strin
   neighbors.getIn([entitySetName, PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.TIMESTAMP], Map())
 );
 export const getNeighborDetailsForEntitySet = (neighbors :Map<*, *>, name :string) :string => (
-  neighbors.getIn([name, PSA_NEIGHBOR.DETAILS], Map())
+  neighbors.getIn([name, PSA_NEIGHBOR.DETAILS], neighbors.get(PSA_NEIGHBOR.DETAILS, Map()))
+);
+export const getAssociationDetailsForEntitySet = (neighbors :Map<*, *>, name :string) :string => (
+  neighbors.getIn([name, PSA_ASSOCIATION.DETAILS], neighbors.get(PSA_ASSOCIATION.DETAILS, Map()))
 );
 
 export const getFilteredNeighbor = neighborObj => Object.assign({}, ...[
@@ -92,3 +95,18 @@ export function addWeekdays(date, days) {
   }
   return newDate;
 }
+
+export const getMapFromEntityKeysToPropertyKeys = (entity, entityKeyId, propertyTypesByFqn) => {
+  let entityObject = Map();
+  Object.keys(entity).forEach((key) => {
+    const propertyTypeKeyId = propertyTypesByFqn[key].id;
+    const property = entity[key] ? [entity[key]] : [];
+    entityObject = entityObject.setIn([entityKeyId, propertyTypeKeyId], property);
+  });
+  return entityObject;
+};
+
+export const getFirstNeighborValue = (neighborObj, fqn, defaultValue = '') => neighborObj.getIn(
+  [PSA_NEIGHBOR.DETAILS, fqn, 0],
+  neighborObj.getIn([fqn, 0], defaultValue)
+);

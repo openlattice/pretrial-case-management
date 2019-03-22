@@ -2,7 +2,7 @@ import { ALIASES, PERSON_CONFIG } from './ConfigConsts';
 import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { ID_FIELD_NAMES, LIST_FIELDS } from '../../utils/consts/Consts';
 
-const psaConfig = {
+const releaseConditionsConfig = {
   entitySets: [
     PERSON_CONFIG,
     {
@@ -35,11 +35,12 @@ const psaConfig = {
       alias: ALIASES.OUTCOME,
       entityId: ID_FIELD_NAMES.OUTCOME_ID,
       fields: {
-        [ID_FIELD_NAMES.OUTCOME_ID]: PROPERTY_TYPES.GENERAL_ID,
-        [PROPERTY_TYPES.RELEASE_TYPE]: PROPERTY_TYPES.RELEASE_TYPE,
-        [PROPERTY_TYPES.OUTCOME]: PROPERTY_TYPES.OUTCOME,
+        [PROPERTY_TYPES.APPEARED]: PROPERTY_TYPES.APPEARED,
         [PROPERTY_TYPES.JUDGE_ACCEPTED]: PROPERTY_TYPES.JUDGE_ACCEPTED,
-        [PROPERTY_TYPES.OTHER_TEXT]: PROPERTY_TYPES.OTHER_TEXT
+        [PROPERTY_TYPES.OUTCOME]: PROPERTY_TYPES.OUTCOME,
+        [ID_FIELD_NAMES.OUTCOME_ID]: PROPERTY_TYPES.GENERAL_ID,
+        [PROPERTY_TYPES.OTHER_TEXT]: PROPERTY_TYPES.OTHER_TEXT,
+        [PROPERTY_TYPES.RELEASE_TYPE]: PROPERTY_TYPES.RELEASE_TYPE
       }
     },
     {
@@ -169,4 +170,4 @@ const psaConfig = {
   ]
 };
 
-export default psaConfig;
+export default releaseConditionsConfig;

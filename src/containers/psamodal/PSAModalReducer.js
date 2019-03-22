@@ -25,8 +25,8 @@ let {
   HEARINGS,
   PEOPLE,
   PSA_RISK_FACTORS,
-  RELEASE_RECOMMENDATIONS,
   PSA_SCORES,
+  RELEASE_RECOMMENDATIONS,
   SUBSCRIPTION
 } = APP_TYPES_FQNS;
 
@@ -36,12 +36,13 @@ DMF_RESULTS = DMF_RESULTS.toString();
 HEARINGS = HEARINGS.toString();
 PEOPLE = PEOPLE.toString();
 PSA_RISK_FACTORS = PSA_RISK_FACTORS.toString();
-RELEASE_RECOMMENDATIONS = RELEASE_RECOMMENDATIONS.toString();
 PSA_SCORES = PSA_SCORES.toString();
+RELEASE_RECOMMENDATIONS = RELEASE_RECOMMENDATIONS.toString();
 SUBSCRIPTION = SUBSCRIPTION.toString();
 
 const INITIAL_STATE :Map<*, *> = fromJS({
   [PSA_MODAL.LOADING_PSA_MODAL]: false,
+  [PSA_MODAL.SCORES]: Map(),
   [PSA_MODAL.PSA_ID]: '',
   [PSA_MODAL.PSA_NEIGHBORS]: Map(),
   [PSA_MODAL.PSA_PERMISSIONS]: false,
@@ -69,6 +70,7 @@ export default function psaModalReducer(state :Map<*, *> = INITIAL_STATE, action
         REQUEST: () => state.set(PSA_MODAL.LOADING_PSA_MODAL, true),
         SUCCESS: () => {
           const {
+            scores,
             psaId,
             neighborsByAppTypeFqn,
             personNeighborsByFqn,
@@ -77,6 +79,7 @@ export default function psaModalReducer(state :Map<*, *> = INITIAL_STATE, action
           } = action.value;
           const personId = neighborsByAppTypeFqn.getIn([PEOPLE, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.PERSON_ID, 0], '');
           return state
+            .set(PSA_MODAL.SCORES, scores)
             .set(PSA_MODAL.PSA_ID, psaId)
             .set(PSA_MODAL.PERSON_ID, personId)
             .set(PSA_MODAL.PSA_NEIGHBORS, neighborsByAppTypeFqn)
@@ -92,10 +95,9 @@ export default function psaModalReducer(state :Map<*, *> = INITIAL_STATE, action
 
     case changePSAStatus.case(action.type): {
       return changePSAStatus.reducer(state, action, {
-        SUCCESS: () => state.set(
-          PSA_MODAL.PSA_NEIGHBORS,
-          state.get(PSA_MODAL.PSA_NEIGHBORS).set(PSA_SCORES, fromJS(action.value.entity))
-        )
+        SUCCESS: () => state
+          .set(PSA_MODAL.SCORES, fromJS(action.value.entity))
+          .setIn([PSA_MODAL.PSA_NEIGHBORS, PSA_SCORES], fromJS(action.value.entity))
       });
     }
 
@@ -117,6 +119,7 @@ export default function psaModalReducer(state :Map<*, *> = INITIAL_STATE, action
       return updateScoresAndRiskFactors.reducer(state, action, {
         SUCCESS: () => {
           const {
+            newScoreEntity,
             newRiskFactorsEntity,
             newDMFEntity,
             newDMFRiskFactorsEntity,
@@ -129,7 +132,9 @@ export default function psaModalReducer(state :Map<*, *> = INITIAL_STATE, action
             .setIn([DMF_RESULTS, PSA_NEIGHBOR.DETAILS], fromJS(newDMFEntity))
             .setIn([DMF_RISK_FACTORS, PSA_NEIGHBOR.DETAILS], fromJS(newDMFRiskFactorsEntity))
             .setIn([RELEASE_RECOMMENDATIONS, PSA_NEIGHBOR.DETAILS], fromJS(newNotesEntity));
-          return state.set(PSA_MODAL.PSA_NEIGHBORS, neighborsByAppTypeFqn);
+          return state
+            .set(PSA_MODAL.SCORES, fromJS(newScoreEntity))
+            .set(PSA_MODAL.PSA_NEIGHBORS, neighborsByAppTypeFqn);
         }
       });
     }

@@ -10,7 +10,7 @@ import { Map } from 'immutable';
 import CaseHistoryTimeline from '../casehistory/CaseHistoryTimeline';
 import ChargeHistoryStats from '../casehistory/ChargeHistoryStats';
 import CaseHistoryList from '../casehistory/CaseHistoryList';
-import LogoLoader from '../../assets/LogoLoader';
+import LogoLoader from '../LogoLoader';
 import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { getIdOrValue } from '../../utils/DataUtils';
 import { formatDate } from '../../utils/FormattingUtils';

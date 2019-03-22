@@ -3,28 +3,18 @@
  */
 
 import React from 'react';
-import Immutable from 'immutable';
 import styled from 'styled-components';
-import { Constants } from 'lattice';
 
-import CONTENT from '../../utils/consts/ContentConsts';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faClone } from '@fortawesome/pro-light-svg-icons';
+import { faBell } from '@fortawesome/pro-solid-svg-icons';
+
 import defaultProfile from '../../assets/svg/profile-placeholder-avatar.svg';
-import PSAModal from '../../containers/review/PSAModal';
 import StyledCard from '../StyledCard';
-import { APP_TYPES_FQNS } from '../../utils/consts/DataModelConsts';
-import { getEntityKeyId } from '../../utils/DataUtils';
 import { OL } from '../../utils/consts/Colors';
 import { UndecoratedLink } from '../../utils/Layout';
 
 import * as Routes from '../../core/router/Routes';
-
-let { HEARINGS, PEOPLE } = APP_TYPES_FQNS;
-
-PEOPLE = PEOPLE.toString();
-HEARINGS = HEARINGS.toString();
-
-const { OPENLATTICE_ID_FQN } = Constants;
-
 
 const StyledUndecoratedLink = styled(UndecoratedLink)`
   display: flex;
@@ -37,6 +27,7 @@ const CardWrapper = styled.div`
 `;
 
 const StyledPersonCard = styled(StyledCard)`
+  box-shadow: ${props => (props.hasOpenPSA ? `0 0 5px 5px ${OL.PURPLE06}` : 'none')};
   width: 100%;
 `;
 
@@ -71,13 +62,13 @@ const Dob = styled.span`
 
 const OpenPSATag = styled.span`
   z-index: 1;
-  margin-left: 75px;
+  margin-left: 100px;
   margin-bottom: -8px;
   display: flex;
   flex-direction: row;
   justify-content: center;
   align-items: center;
-  width: 125px;
+  width: 75px;
   height: 16px;
   border-radius: 3px;
   background-color: ${OL.PURPLE07};
@@ -87,6 +78,18 @@ const OpenPSATag = styled.span`
   font-family: 'Open Sans', sans-serif;
   font-size: 11px;
   font-weight: 600;
+`;
+
+const MultiIconWrapper = styled.span`
+  width: 30px;
+  display: flex;
+  justify-content: flex-end;
+  z-index: 1;
+  position: absolute;
+  transform: translateX(192px) translateY(0px);
+  svg {
+    margin-left: 5px;
+  }
 `;
 
 const TagPlaceholder = styled.span`
@@ -107,14 +110,12 @@ type Props = {
     photo :string,
     identification :string
   },
-  scores :Immutable.Map<*, *>,
+  psaId :string,
+  editDate :string,
   hasOpenPSA? :boolean,
+  multipleOpenPSAs? :boolean,
   judgesview? :boolean,
-  loadCaseHistoryFn :(values :{
-    personId :string,
-    neighbors :Immutable.Map<*, *>
-  }) => void,
-  loadHearingNeighbors :(hearingIds :string[]) => void,
+  openPSAModal :(psaId :string, callback :() => void) => void,
 };
 
 type State = {
@@ -127,49 +128,17 @@ class PersonCard extends React.Component<Props, State> {
 
   static defaultProps = {
     hasOpenPSA: false,
-    judgesview: false
-  }
-
-  constructor(props :Props) {
-    super(props);
-    this.state = {
-      psaModalOpen: false
-    };
-  }
-
-  onClose = () => (this.setState({ psaModalOpen: false }));
-
-  renderModal = () => {
-    const { props } = this;
-    const { psaId } = this.props;
-    const { psaModalOpen } = this.state;
-    const modalProps = {};
-    Object.keys(this.props).forEach((prop) => {
-      (modalProps[prop] = Immutable.fromJS(props[prop]));
-    });
-    return (
-      <PSAModal
-          open={psaModalOpen}
-          view={CONTENT.JUDGES}
-          onClose={this.onClose}
-          entityKeyId={psaId}
-          {...modalProps} />
-    );
-  }
-
-
-  openDetailsModal = () => {
-    const {
-      psaId,
-      loadCaseHistoryFn,
-      loadPSAModal
-    } = this.props;
-    loadPSAModal({ psaId, callback: loadCaseHistoryFn });
-    this.setState({ psaModalOpen: true });
+    judgesview: false,
+    multipleOpenPSAs: false
   }
 
   renderContent = () => {
-    const { editDate, personObj } = this.props;
+    const {
+      editDate,
+      personObj,
+      openPSAModal,
+      psaId
+    } = this.props;
     const {
       firstName,
       middleName,
@@ -178,7 +147,12 @@ class PersonCard extends React.Component<Props, State> {
       photo,
       identification
     } = personObj;
-    const { hasOpenPSA, judgesview } = this.props;
+    const {
+      multipleOpenPSAs,
+      hasOpenPSA,
+      isReceivingReminders,
+      judgesview
+    } = this.props;
 
     const midName = middleName ? ` ${middleName}` : '';
     const name = `${lastName}, ${firstName}${midName}`;
@@ -186,9 +160,17 @@ class PersonCard extends React.Component<Props, State> {
     return hasOpenPSA && judgesview
       ? (
         <CardWrapper>
-          { this.renderModal() }
-          <OpenPSATag>{`Open PSA: ${editDate}`}</OpenPSATag>
-          <StyledPersonCard onClick={this.openDetailsModal}>
+          <OpenPSATag includesDate>{editDate}</OpenPSATag>
+          {
+            multipleOpenPSAs || isReceivingReminders
+              ? (
+                <MultiIconWrapper>
+                  { isReceivingReminders ? <FontAwesomeIcon color={OL.ORANGE01} icon={faBell} /> : null }
+                  { multipleOpenPSAs ? <FontAwesomeIcon color={OL.PURPLE02} icon={faClone} /> : null }
+                </MultiIconWrapper>
+              ) : null
+          }
+          <StyledPersonCard hasOpenPSA={hasOpenPSA} onClick={() => openPSAModal({ psaId })}>
             <MugShot src={photo || defaultProfile} />
             <PersonInfoSection>
               <Name>{name}</Name>
@@ -203,7 +185,7 @@ class PersonCard extends React.Component<Props, State> {
       : (
         <StyledUndecoratedLink to={`${Routes.PERSON_DETAILS_ROOT}/${identification}`}>
           <TagPlaceholder />
-          <StyledPersonCard>
+          <StyledPersonCard hasOpenPSA={hasOpenPSA} >
             <MugShot src={photo || defaultProfile} />
             <PersonInfoSection>
               <Name>{name}</Name>

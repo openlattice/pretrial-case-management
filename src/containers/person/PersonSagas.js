@@ -20,9 +20,10 @@ import {
 import { toISODate, formatDate } from '../../utils/FormattingUtils';
 import { submit } from '../../utils/submit/SubmitActionFactory';
 import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { HAS_OPEN_PSA, PSA_STATUSES } from '../../utils/consts/Consts';
 import { APP, STATE, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { obfuscateEntityNeighbors } from '../../utils/consts/DemoNames';
-import { getEntitySetId } from '../../utils/AppUtils';
+import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { getPropertyTypeId } from '../../edm/edmUtils';
 import {
   CLEAR_SEARCH_RESULTS,
@@ -42,10 +43,16 @@ import {
 import * as Routes from '../../core/router/Routes';
 
 const { OPENLATTICE_ID_FQN } = Constants;
-let { CONTACT_INFORMATION, PEOPLE, PRETRIAL_CASES } = APP_TYPES_FQNS;
+let {
+  CONTACT_INFORMATION,
+  PEOPLE,
+  PRETRIAL_CASES,
+  PSA_SCORES
+} = APP_TYPES_FQNS;
 
 PEOPLE = PEOPLE.toString();
 PRETRIAL_CASES = PRETRIAL_CASES.toString();
+PSA_SCORES = PSA_SCORES.toString();
 CONTACT_INFORMATION = CONTACT_INFORMATION.toString();
 
 const getApp = state => state.get(STATE.APP, Map());
@@ -100,8 +107,8 @@ function* loadPersonDetailsWorker(action) :Generator<*, *, *> {
     const { entityKeyId, shouldLoadCases } = action.value;
     const app = yield select(getApp);
     const orgId = yield select(getOrgId);
-    const pretrialCasesEntitySetId = getEntitySetId(app, PRETRIAL_CASES, orgId);
-    const peopleEntitySetId = getEntitySetId(app, PEOPLE, orgId);
+    const pretrialCasesEntitySetId = getEntitySetIdFromApp(app, PRETRIAL_CASES, orgId);
+    const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE, orgId);
     yield put(loadPersonDetails.request(action.id, { entityKeyId }));
 
     // <HACK>
@@ -231,7 +238,8 @@ function* searchPeopleWorker(action) :Generator<*, *, *> {
     const app = yield select(getApp);
     const edm = yield select(getEDM);
     const orgId = yield select(getOrgId);
-    const peopleEntitySetId = getEntitySetId(app, PEOPLE, orgId);
+    const psaScoresEntitySetId = getEntitySetIdFromApp(app, PSA_SCORES, orgId);
+    const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE, orgId);
     const firstNamePropertyTypeId = getPropertyTypeId(edm, PROPERTY_TYPES.FIRST_NAME);
     const lastNamePropertyTypeId = getPropertyTypeId(edm, PROPERTY_TYPES.LAST_NAME);
     const dobPropertyTypeId = getPropertyTypeId(edm, PROPERTY_TYPES.DOB);
@@ -240,6 +248,7 @@ function* searchPeopleWorker(action) :Generator<*, *, *> {
       firstName,
       lastName,
       dob,
+      includePSAInfo
     } = action.value;
     const searchFields = [];
     const updateSearchField = (searchString :string, property :string, exact? :boolean) => {
@@ -269,11 +278,36 @@ function* searchPeopleWorker(action) :Generator<*, *, *> {
       maxHits: 100
     };
 
-    const response = yield call(SearchApi.advancedSearchEntitySetData, peopleEntitySetId, searchOptions);
+    let response = yield call(SearchApi.advancedSearchEntitySetData, peopleEntitySetId, searchOptions);
+    response = fromJS(response.hits);
+    let personMap = Map();
+    if (includePSAInfo) {
+      response.forEach((person) => {
+        const personEntityKeyId = person.getIn([OPENLATTICE_ID_FQN, 0], '');
+        personMap = personMap.set(personEntityKeyId, fromJS(person));
+      });
+      let peopleNeighborsById = yield call(SearchApi.searchEntityNeighborsWithFilter, peopleEntitySetId, {
+        entityKeyIds: personMap.keySeq().toJS(),
+        sourceEntitySetIds: [psaScoresEntitySetId],
+        destinationEntitySetIds: []
+      });
+      peopleNeighborsById = fromJS(peopleNeighborsById);
+
+      peopleNeighborsById.entrySeq().forEach(([personEntityKeyId, neighbors]) => {
+        const hasOpenPSA = neighbors.some(neighbor => (
+          neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.STATUS, 0], '') === PSA_STATUSES.OPEN
+        ));
+
+        if (hasOpenPSA) personMap = personMap.setIn([personEntityKeyId, HAS_OPEN_PSA], hasOpenPSA);
+      });
+      response = personMap.valueSeq();
+    }
+
     yield put(searchPeople.success(action.id, response));
   }
   catch (error) {
-    yield put(searchPeople.failure(error));
+    console.error(error);
+    yield put(searchPeople.failure(action.id, error));
   }
 
   finally {
@@ -292,8 +326,8 @@ function* searchPeopleByPhoneNumberWorker(action) :Generator<*, *, *> {
     const app = yield select(getApp);
     const edm = yield select(getEDM);
     const orgId = yield select(getOrgId);
-    const contactInformationEntitySetId = getEntitySetId(app, CONTACT_INFORMATION, orgId);
-    const peopleEntitySetId = getEntitySetId(app, PEOPLE, orgId);
+    const contactInformationEntitySetId = getEntitySetIdFromApp(app, CONTACT_INFORMATION, orgId);
+    const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE, orgId);
     const phonePropertyTypeId = getPropertyTypeId(edm, PROPERTY_TYPES.PHONE);
     const firstNamePropertyTypeId = getPropertyTypeId(edm, PROPERTY_TYPES.FIRST_NAME);
     const lastNamePropertyTypeId = getPropertyTypeId(edm, PROPERTY_TYPES.LAST_NAME);
@@ -303,6 +337,8 @@ function* searchPeopleByPhoneNumberWorker(action) :Generator<*, *, *> {
     const numbers = (searchTerm).replace(/[^0-9]/g, '');
     const phoneFields = [];
     const nameFields = [];
+    const firstNameConstraints = { min: 1, constraints: [] };
+    const lastNameConstraints = { min: 1, constraints: [] };
     const updateSearchField = (
       searchFields :Array,
       searchString :string,
@@ -316,6 +352,16 @@ function* searchPeopleByPhoneNumberWorker(action) :Generator<*, *, *> {
         exact: isExact
       });
     };
+    const updateConstraints = (
+      nameConstraints :Array,
+      search :string,
+      property :string,
+    ) => {
+      nameConstraints.constraints.push({
+        searchTerm: `${property}:"${search}"`,
+        fuzzy: true
+      });
+    };
 
     if (numbers.trim().length) {
       let searchString = numbers.trim();
@@ -324,19 +370,36 @@ function* searchPeopleByPhoneNumberWorker(action) :Generator<*, *, *> {
       }
       updateSearchField(phoneFields, searchString, phonePropertyTypeId);
     }
+
+    const names = letters.trim().split(' ');
     if (letters.trim().length) {
-      letters.trim().split(' ').forEach((word) => {
-        updateSearchField(nameFields, word, firstNamePropertyTypeId);
-        updateSearchField(nameFields, word, lastNamePropertyTypeId);
-      });
+      if (names.length < 2) {
+        updateSearchField(nameFields, letters.trim(), firstNamePropertyTypeId);
+        updateSearchField(nameFields, letters.trim(), lastNamePropertyTypeId);
+      }
+      else {
+        names.forEach((word) => {
+          updateConstraints(firstNameConstraints, word, firstNamePropertyTypeId);
+          updateConstraints(lastNameConstraints, word, lastNamePropertyTypeId);
+        });
+      }
     }
+
+    const searchConstraints = {
+      entitySetIds: [peopleEntitySetId],
+      start: 0,
+      maxHits: 100,
+      constraints: [
+        firstNameConstraints,
+        lastNameConstraints
+      ]
+    };
 
     const phoneOptions = {
       searchFields: phoneFields,
       start: 0,
       maxHits: 100
     };
-
     const nameOptions = {
       searchFields: nameFields,
       start: 0,
@@ -380,9 +443,15 @@ function* searchPeopleByPhoneNumberWorker(action) :Generator<*, *, *> {
         });
       }
     }
-    if (nameFields.length) {
+    if (letters.trim().length) {
       const searchOptions = nameOptions;
-      let people = yield call(SearchApi.advancedSearchEntitySetData, peopleEntitySetId, searchOptions);
+      let people;
+      if (names.length < 2) {
+        people = yield call(SearchApi.advancedSearchEntitySetData, peopleEntitySetId, searchOptions);
+      }
+      else {
+        people = yield call(SearchApi.executeSearch, searchConstraints);
+      }
       people = fromJS(people.hits);
       allResults = allResults.concat(people);
       people.forEach((person) => {

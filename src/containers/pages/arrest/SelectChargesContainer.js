@@ -16,9 +16,10 @@ import SecondaryButton from '../../../components/buttons/SecondaryButton';
 import SearchableSelect from '../../../components/controls/SearchableSelect';
 import DateTimePicker from '../../../components/datetime/DateTimePicker';
 import QUALIFIERS from '../../../utils/consts/QualifierConsts';
-import { CHARGE } from '../../../utils/consts/Consts';
+import { CHARGE, ID_FIELD_NAMES } from '../../../utils/consts/Consts';
 import type { Charge } from '../../../utils/consts/Consts';
 import { APP, CHARGES, STATE } from '../../../utils/consts/FrontEndStateConsts';
+import { CASE_CONTEXTS, SETTINGS } from '../../../utils/consts/AppSettingConsts';
 import { PROPERTY_TYPES } from '../../../utils/consts/DataModelConsts';
 import { toISODateTime } from '../../../utils/FormattingUtils';
 import { OL } from '../../../utils/consts/Colors';
@@ -52,6 +53,11 @@ const HeaderWrapper = styled.div`
     width: 220px;
     margin: 20px 0;
   }
+`;
+
+const GeneralInputField = styled.input`
+  width: 100%;
+  height: 44px;
 `;
 
 const CountsInput = styled.input.attrs({
@@ -140,12 +146,13 @@ const TitleWrapper = styled.div`
 
 type Props = {
   arrestCharges :Map<*, *>,
+  chargeType :string,
   selectedOrganizationId :string,
+  selectedOrganizationSettings :Immutable.Map<*, *>,
   defaultArrest :Immutable.Map<*, *>,
   defaultCharges :Immutable.List<*>,
   onSubmit :(pretrialCase :Immutable.Map<*, *>, charges :Immutable.List<*>) => void,
-  nextPage :() => void,
-  prevPage :() => void
+  nextPage :() => void
 };
 
 type State = {
@@ -159,6 +166,9 @@ class SelectChargesContainer extends React.Component<Props, State> {
   constructor(props :Props) {
     super(props);
     this.state = {
+      chargeType: props.chargeType,
+      courtCaseNumber: '',
+      arrestTrackingNumber: '',
       arrestDate: moment(props.defaultArrest.getIn([PROPERTY_TYPES.ARREST_DATE_TIME, 0])),
       caseDispositionDate: '',
       charges: this.formatChargeList(props.defaultCharges)
@@ -215,7 +225,13 @@ class SelectChargesContainer extends React.Component<Props, State> {
 
   onSubmit = () => {
     const { onSubmit, nextPage } = this.props;
-    const { arrestDate, caseDispositionDate, charges } = this.state;
+    const {
+      arrestDate,
+      arrestTrackingNumber,
+      caseDispositionDate,
+      charges,
+      courtCaseNumber
+    } = this.state;
     const caseId = randomUUID();
     const caseEntity = {
       [PROPERTY_TYPES.CASE_ID]: [caseId],
@@ -224,6 +240,8 @@ class SelectChargesContainer extends React.Component<Props, State> {
     };
     if (caseDispositionDate) caseEntity[PROPERTY_TYPES.CASE_DISPOSITION_DATE] = [this.getDateTime(caseDispositionDate)];
     if (arrestDate) caseEntity[PROPERTY_TYPES.ARREST_DATE_TIME] = [this.getDateTime(arrestDate)];
+    if (courtCaseNumber) caseEntity[PROPERTY_TYPES.CASE_NUMBER] = [courtCaseNumber];
+    if (arrestTrackingNumber) caseEntity[ID_FIELD_NAMES.ARREST_ID_FOR_COURT] = [arrestTrackingNumber];
 
     const chargeEntities = charges.map((charge, index) => {
       const statute = charge.getIn([PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE, 0], '');
@@ -251,11 +269,56 @@ class SelectChargesContainer extends React.Component<Props, State> {
     nextPage();
   }
 
+  onInputChange = (e) => {
+    const { name, value } = e.target;
+    this.setState({ [name]: value });
+  }
+
+  renderDispositionOrCourtCaseNumberInput = () => {
+    const {
+      arrestTrackingNumber,
+      caseDispositionDate,
+      courtCaseNumber,
+      chargeType
+    } = this.state;
+    return (chargeType === CASE_CONTEXTS.ARREST)
+      ? (
+        <InputLabel>
+          Case Disposition Date
+          <DateTimePicker
+              name="caseDispositionDate"
+              value={caseDispositionDate}
+              onChange={(date) => {
+                this.setState({ caseDispositionDate: date });
+              }} />
+        </InputLabel>
+      )
+      : (
+        <>
+          <InputLabel>
+            Arrest Tracking Number
+            <GeneralInputField
+                name="arrestTrackingNumber"
+                value={arrestTrackingNumber}
+                onChange={this.onInputChange} />
+          </InputLabel>
+          <InputLabel>
+            Court Case Number
+            <GeneralInputField
+                name="courtCaseNumber"
+                value={courtCaseNumber}
+                onChange={this.onInputChange} />
+          </InputLabel>
+        </>
+      );
+  }
+
   renderCaseInfo = () => {
-    const { arrestDate, caseDispositionDate } = this.state;
+    const { arrestDate, chargeType } = this.state;
+    const isArrest = (chargeType === CASE_CONTEXTS.ARREST);
     return (
       <CaseInfoWrapper>
-        <SectionHeader>Arrest Details:</SectionHeader>
+        <SectionHeader>{ isArrest ? 'Arrest Details:' : 'Court Details:'}</SectionHeader>
         <CaseDetailsWrapper>
           <InputLabel>
             Arrest Date
@@ -266,15 +329,7 @@ class SelectChargesContainer extends React.Component<Props, State> {
                   this.setState({ arrestDate: arrdate });
                 }} />
           </InputLabel>
-          <InputLabel>
-            Case Disposition Date
-            <DateTimePicker
-                name="caseDispositionDate"
-                value={caseDispositionDate}
-                onChange={(date) => {
-                  this.setState({ caseDispositionDate: date });
-                }} />
-          </InputLabel>
+          { this.renderDispositionOrCourtCaseNumberInput() }
         </CaseDetailsWrapper>
       </CaseInfoWrapper>
     );
@@ -411,12 +466,28 @@ class SelectChargesContainer extends React.Component<Props, State> {
     );
   }
 
-  renderHeader = () => (
-    <HeaderWrapper>
-      <StyledTitle>Add/Edit Arrest Charges</StyledTitle>
-      <SecondaryButton onClick={this.onSubmit}>Confirm Charge Details</SecondaryButton>
-    </HeaderWrapper>
-  )
+  renderHeader = () => {
+    const { chargeType, selectedOrganizationSettings } = this.props;
+    const loadCasesOnTheFly = selectedOrganizationSettings.get(SETTINGS.LOAD_CASES, false);
+    let title;
+    switch (chargeType) {
+      case CASE_CONTEXTS.ARREST:
+        title = loadCasesOnTheFly ? 'Add/Edit Arrest Charges' : 'Add Arrest Charges';
+        break;
+      case CASE_CONTEXTS.COURT:
+        title = loadCasesOnTheFly ? 'Add/Edit Court Charges' : 'Add Court Charges';
+        break;
+      default:
+        title = 'Add Charges';
+        break;
+    }
+    return (
+      <HeaderWrapper>
+        <StyledTitle>{ title }</StyledTitle>
+        <SecondaryButton onClick={this.onSubmit}>Confirm Charge Details</SecondaryButton>
+      </HeaderWrapper>
+    );
+  }
 
   render() {
     return (
@@ -437,6 +508,7 @@ function mapStateToProps(state) {
     // App
     [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
     [APP.SELECTED_ORG_TITLE]: app.get(APP.SELECTED_ORG_TITLE),
+    [APP.SELECTED_ORG_SETTINGS]: app.get(APP.SELECTED_ORG_SETTINGS),
 
     // Charges
     [CHARGES.ARREST]: charges.get(CHARGES.ARREST),

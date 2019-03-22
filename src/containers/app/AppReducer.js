@@ -39,7 +39,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [APP.APP]: Map(),
   [APP.APP_TYPES]: Map(),
   [APP.ERRORS]: {
-    [APP.LOAD_APP]: Map(),
+    [APP.LOAD_APP]: '',
   },
   [APP.LOADING]: true,
   [APP.ORGS]: Map(),
@@ -158,6 +158,8 @@ export default function appReducer(state :Map<*, *> = INITIAL_STATE, action :Seq
             .set(APP.SELECTED_ORG_SETTINGS, appSettings);
         },
         FAILURE: () => {
+          let { error } = action.value;
+          const { defaultSettings } = action.value;
           let newState = Map();
           Object.values(APP_TYPES_FQNS).forEach((fqn) => {
             const fqnString = fqn.toString();
@@ -166,14 +168,15 @@ export default function appReducer(state :Map<*, *> = INITIAL_STATE, action :Seq
               .setIn([fqnString, APP.PRIMARY_KEYS], List())
               .setIn([fqnString, APP.PROPERTY_TYPES], Map());
           });
-          const error = {};
+          if (!error) error = { loadApp: '' };
           return newState
             .set(APP.ENTITY_SETS_BY_ORG, Map())
             .set(APP.FQN_TO_ID, Map())
             .setIn([APP.ERRORS, APP.LOAD_APP], fromJS(error))
             .set(APP.ORGS, Map())
             .set(APP.SELECTED_ORG_ID, '')
-            .set(APP.SELECTED_ORG_TITLE, '');
+            .set(APP.SELECTED_ORG_TITLE, '')
+            .set(APP.SELECTED_ORG_SETTINGS, fromJS(defaultSettings));
         },
         FINALLY: () => state
           .set(APP.LOADING, false)

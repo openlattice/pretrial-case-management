@@ -7,7 +7,8 @@ import styled from 'styled-components';
 import { Map, Set } from 'immutable';
 
 import RemindersTable from './RemindersTable';
-import LogoLoader from '../../assets/LogoLoader';
+import LogoLoader from '../LogoLoader';
+import BasicButton from '../buttons/BasicButton';
 import Pagination from '../Pagination';
 import { Count } from '../../utils/Layout';
 import { OL } from '../../utils/consts/Colors';
@@ -53,12 +54,28 @@ const TitleText = styled.span`
   color: ${OL.GREY01};
 `;
 
+const FilterButton = styled(BasicButton)`
+  border-radius: 30px;
+  border: 1px solid ${OL.GREY11};
+  margin: 0 5px;
+  padding: 0 20px;
+  background: ${props => (props.selected ? OL.PURPLE02 : 'none')};
+  color: ${props => (props.selected ? OL.WHITE : OL.GREY02)};
+`;
+const ButtonWrapper = styled.div`
+  display: flex;
+  flex-direction: row;
+  width: max-content;
+  justify-content: space-around;
+`;
+
 type Props = {
-  entities :Map<*, *>,
   appTypeFqn :string,
+  entities :Map<*, *>,
+  filters :Map<*, *>,
+  loading :boolean,
   neighbors :Map<*, *>,
   remindersWithOpenPSA :Set<*>,
-  loading :boolean,
   title :string,
 };
 
@@ -68,7 +85,7 @@ class RemindersTableWithPagination extends React.Component<Props, State> {
   constructor(props :Props) {
     super(props);
     this.state = {
-      start: 0,
+      start: 0
     };
   }
 
@@ -116,8 +133,32 @@ class RemindersTableWithPagination extends React.Component<Props, State> {
     );
   }
 
+  renderFilterButtons = () => {
+    const { filter, filters, selectFilterFn } = this.props;
+    const buttons = filters.valueSeq().map((buttonFilter) => {
+      const label = buttonFilter.get('label', <div />);
+      const value = buttonFilter.get('value', '');
+      const selected = filter === value;
+      return (
+        <FilterButton
+            key={value}
+            selected={selected}
+            value={value}
+            onClick={selectFilterFn}>
+          { label }
+        </FilterButton>
+      );
+    });
+    const FilterButtons = (
+      <ButtonWrapper>
+        { buttons.toJS() }
+      </ButtonWrapper>
+    );
+    return FilterButtons;
+  }
+
   render() {
-    const { title, entities } = this.props;
+    const { title, entities, filters } = this.props;
     return (
       <TableWrapper>
         <ToolbarWrapper>
@@ -126,6 +167,7 @@ class RemindersTableWithPagination extends React.Component<Props, State> {
               <span>{ title }</span>
               <Count>{ entities.size }</Count>
             </TitleText>
+            { filters ? this.renderFilterButtons() : null }
           </TableTitle>
           { this.renderPagination() }
         </ToolbarWrapper>

@@ -13,19 +13,15 @@ import moment from 'moment';
 import DatePicker from '../../components/datetime/DatePicker';
 import NavButtonToolbar from '../../components/buttons/NavButtonToolbar';
 import PSAReviewReportsRowList from './PSAReviewReportsRowList';
-import LogoLoader from '../../assets/LogoLoader';
+import LogoLoader from '../../components/LogoLoader';
 import DropDownMenu from '../../components/StyledSelect';
 import { FullWidthContainer, NoResults } from '../../utils/Layout';
 import PersonSearchFields from '../../components/person/PersonSearchFields';
 import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
 import { SORT_TYPES } from '../../utils/consts/Consts';
 import { OL } from '../../utils/consts/Colors';
-import {
-  APP_TYPES_FQNS,
-  PROPERTY_TYPES,
-  SETTINGS,
-  MODULE
-} from '../../utils/consts/DataModelConsts';
+import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
+import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import {
   APP,
   STATE,

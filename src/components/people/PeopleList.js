@@ -7,6 +7,7 @@ import styled from 'styled-components';
 import Immutable from 'immutable';
 
 import LoadingSpinner from '../LoadingSpinner';
+import LogoLoader from '../LogoLoader';
 import NoSearchResults from './NoSearchResults';
 import PersonCard from './PersonCard';
 import { StyledErrorMessage } from '../../utils/Layout';
@@ -35,7 +36,12 @@ const PeopleList = ({ people, isFetchingPeople, didMapPeopleToProps } :Props) =>
   const renderPersonCards = () => {
     try {
       if (people && people.size > 0) {
-        return people.map(person => <PersonCard key={person.identification} personObj={person} />);
+        return people.map(person => (
+          <PersonCard
+              hasOpenPSA={person.hasOpenPSA}
+              key={person.identification}
+              personObj={person} />
+        ));
       }
       else if (people && people.size === 0 && didMapPeopleToProps) {
         return <NoSearchResultsPadded />;
@@ -55,7 +61,7 @@ const PeopleList = ({ people, isFetchingPeople, didMapPeopleToProps } :Props) =>
   return (
     <CardsWrapper>
       { renderPersonCards() }
-      { isFetchingPeople ? <LoadingSpinner /> : null }
+      { isFetchingPeople ? <LogoLoader loadingText="Searching..." /> : null }
     </CardsWrapper>
   );
 };

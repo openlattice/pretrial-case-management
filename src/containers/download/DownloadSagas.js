@@ -18,7 +18,7 @@ import {
 } from '@redux-saga/core/effects';
 
 import FileSaver from '../../utils/FileSaver';
-import { getEntitySetId } from '../../utils/AppUtils';
+import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { getPropertyTypeId } from '../../edm/edmUtils';
 import { toISODate, formatDateTime, formatDate } from '../../utils/FormattingUtils';
 import { getFilteredNeighbor, stripIdField } from '../../utils/DataUtils';
@@ -131,10 +131,10 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
     const app = yield select(getApp);
     const orgId = yield select(getOrgId);
     const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
-    const dmfRiskFactorsEntitySetId = getEntitySetId(app, dmfRiskFactorsFqn, orgId);
-    const psaRiskFactorsEntitySetId = getEntitySetId(app, psaRiskFactorsFqn, orgId);
-    const psaEntitySetId = getEntitySetId(app, psaScoresFqn, orgId);
-    const staffEntitySetId = getEntitySetId(app, staffFqn, orgId);
+    const dmfRiskFactorsEntitySetId = getEntitySetIdFromApp(app, dmfRiskFactorsFqn, orgId);
+    const psaRiskFactorsEntitySetId = getEntitySetIdFromApp(app, psaRiskFactorsFqn, orgId);
+    const psaEntitySetId = getEntitySetIdFromApp(app, psaScoresFqn, orgId);
+    const staffEntitySetId = getEntitySetIdFromApp(app, staffFqn, orgId);
 
     const start = moment(startDate);
     const end = moment(endDate);
@@ -313,12 +313,12 @@ function* downloadPSAsByHearingDateWorker(action :SequenceAction) :Generator<*, 
     yield put(downloadPSAsByHearingDate.request(action.id, { noResults }));
     const app = yield select(getApp);
     const orgId = yield select(getOrgId);
-    const dmfRiskFactorsEntitySetId = getEntitySetId(app, dmfRiskFactorsFqn, orgId);
-    const hearingsEntitySetId = getEntitySetId(app, hearingsFqn, orgId);
-    const peopleEntitySetId = getEntitySetId(app, peopleFqn, orgId);
-    const psaEntitySetId = getEntitySetId(app, psaScoresFqn, orgId);
-    const psaRiskFactorsEntitySetId = getEntitySetId(app, psaRiskFactorsFqn, orgId);
-    const staffEntitySetId = getEntitySetId(app, staffFqn, orgId);
+    const dmfRiskFactorsEntitySetId = getEntitySetIdFromApp(app, dmfRiskFactorsFqn, orgId);
+    const hearingsEntitySetId = getEntitySetIdFromApp(app, hearingsFqn, orgId);
+    const peopleEntitySetId = getEntitySetIdFromApp(app, peopleFqn, orgId);
+    const psaEntitySetId = getEntitySetIdFromApp(app, psaScoresFqn, orgId);
+    const psaRiskFactorsEntitySetId = getEntitySetIdFromApp(app, psaRiskFactorsFqn, orgId);
+    const staffEntitySetId = getEntitySetIdFromApp(app, staffFqn, orgId);
     const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
 
     if (selectedHearingData.size) {
@@ -579,13 +579,13 @@ function* getDownloadFiltersWorker(action :SequenceAction) :Generator<*, *, *> {
     const app = yield select(getApp);
     const edm = yield select(getEDM);
     const orgId = yield select(getOrgId);
-    const hearingEntitySetId = getEntitySetId(app, hearingsFqn, orgId);
+    const hearingEntitySetId = getEntitySetIdFromApp(app, hearingsFqn, orgId);
     const datePropertyTypeId = getPropertyTypeId(edm, DATE_TIME_FQN);
 
     const ceiling = yield call(DataApi.getEntitySetSize, hearingEntitySetId);
 
     const hearingOptions = {
-      searchTerm: `${datePropertyTypeId}: ${start}`,
+      searchTerm: `${datePropertyTypeId}:"${start}"`,
       start: 0,
       maxHits: ceiling,
       fuzzy: false

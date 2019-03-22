@@ -23,11 +23,14 @@ export const APP_TYPES_FQNS = {
   APP_SETTINGS: new FullyQualifiedName('app.settings'),
   ADDRESSES: new FullyQualifiedName('app.address'),
   APPEARS_IN: new FullyQualifiedName('app.appearsin'),
+  APPEARS_IN_STATE: new FullyQualifiedName('app.appearsinstate'),
   ARREST_APPEARS_IN: new FullyQualifiedName('app.appearsinarrest'),
   ARREST_CHARGED_WITH: new FullyQualifiedName('app.arrestchargedwith'),
   ARREST_CHARGES: new FullyQualifiedName('app.arrestcharges'),
   ARREST_CASES: new FullyQualifiedName('app.arrestpretrialcases'),
+  ARRESTED_IN: new FullyQualifiedName('app.arrestedin'),
   ASSESSED_BY: new FullyQualifiedName('app.assessedby'),
+  ASSESSED_BY_STATE: new FullyQualifiedName('app.assessedby_shared'),
   BONDS: new FullyQualifiedName('app.manualbonds'),
   CALCULATED_FOR: new FullyQualifiedName('app.calculatedfor'),
   CHARGED_WITH: new FullyQualifiedName('app.chargedwith'),
@@ -40,10 +43,14 @@ export const APP_TYPES_FQNS = {
   EDITED_BY: new FullyQualifiedName('app.editedby'),
   FTAS: new FullyQualifiedName('app.ftas'),
   HEARINGS: new FullyQualifiedName('app.hearings'),
+  INCIDENT: new FullyQualifiedName('app.incident'),
   JUDGES: new FullyQualifiedName('app.judges'),
   LIVES_AT: new FullyQualifiedName('app.livesat'),
+  LIVES_AT_ARREST: new FullyQualifiedName('app.livesat_arrest'),
   MANUAL_CHARGES: new FullyQualifiedName('app.manualcharges'),
+  MANUAL_COURT_CHARGES: new FullyQualifiedName('app.manualcourtcharges'),
   MANUAL_PRETRIAL_CASES: new FullyQualifiedName('app.manualpretrialcases'),
+  MANUAL_PRETRIAL_COURT_CASES: new FullyQualifiedName('app.manualpretrialcourtcases'),
   OUTCOMES: new FullyQualifiedName('app.psaoutcomes'),
   OVERSAW: new FullyQualifiedName('app.oversaw'),
   PEOPLE: new FullyQualifiedName('app.people'),
@@ -241,6 +248,7 @@ export const PROPERTY_TYPES = {
 
   // PSA Outcomes entity Type Consts
   JUDGE_ACCEPTED: 'justice.judgeacceptedrecommendation',
+  APPEARED: 'ol.appeared',
 
   // PSA form entity type consts
   AGE_AT_CURRENT_ARREST: 'psa.AgeAtCurrentArrest',

@@ -2,8 +2,13 @@
  * @flow
  */
 
-import Immutable, { fromJS, Map, List } from 'immutable';
 import moment from 'moment';
+import {
+  fromJS,
+  Map,
+  Set,
+  List
+} from 'immutable';
 import {
   Constants,
   SearchApi,
@@ -17,7 +22,7 @@ import {
   takeEvery
 } from '@redux-saga/core/effects';
 
-import { getEntitySetId } from '../../utils/AppUtils';
+import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { getPropertyTypeId } from '../../edm/edmUtils';
 import { PSA_STATUSES } from '../../utils/consts/Consts';
 import { toISODate, TIME_FORMAT } from '../../utils/FormattingUtils';
@@ -43,19 +48,23 @@ import {
 } from './CourtActionFactory';
 
 const {
+  CONTACT_INFORMATION,
   HEARINGS,
   JUDGES,
   PEOPLE,
   PSA_SCORES,
   RELEASE_CONDITIONS,
+  SUBSCRIPTION,
   STAFF
 } = APP_TYPES_FQNS;
 
+const contactInformationFqn :string = CONTACT_INFORMATION.toString();
 const hearingsFqn :string = HEARINGS.toString();
 const judgesFqn :string = JUDGES.toString();
 const peopleFqn :string = PEOPLE.toString();
 const psaScoresFqn :string = PSA_SCORES.toString();
 const releaseConditionsFqn :string = RELEASE_CONDITIONS.toString();
+const subscriptionFqn :string = SUBSCRIPTION.toString();
 const staffFqn :string = STAFF.toString();
 
 const { OPENLATTICE_ID_FQN } = Constants;
@@ -76,34 +85,42 @@ function* filterPeopleIdsWithOpenPSAsWorker(action :SequenceAction) :Generator<*
     } = action.value;
     let { scoresAsMap, hearingNeighborsById } = action.value;
     if (!scoresAsMap) {
-      scoresAsMap = Immutable.Map();
+      scoresAsMap = Map();
     }
 
     const hearingDateTimeMoment = toISODate(moment(hearingDateTime));
-    let filteredPersonIds = Immutable.Set();
-    let openPSAIds = Immutable.Set();
-    let personIdsToOpenPSAIds = Immutable.Map();
+    let filteredPersonIds = Set();
+    let openPSAIds = Set();
+    let personIdsToOpenPSAIds = Map();
+    let personIdsWhoAreSubscribed = Set();
+    let peopleWithMultiplePSAs = Set();
 
     const app = yield select(getApp);
     const orgId = yield select(getOrgId);
     const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
-    const hearingsEntitySetId = getEntitySetId(app, hearingsFqn, orgId);
-    const peopleEntitySetId = getEntitySetId(app, peopleFqn, orgId);
-    const psaEntitySetId = getEntitySetId(app, psaScoresFqn, orgId);
-    const staffEntitySetId = getEntitySetId(app, staffFqn, orgId);
+    const contactInformationEntitySetId = getEntitySetIdFromApp(app, contactInformationFqn, orgId);
+    const subscriptionEntitySetId = getEntitySetIdFromApp(app, subscriptionFqn, orgId);
+    const hearingsEntitySetId = getEntitySetIdFromApp(app, hearingsFqn, orgId);
+    const peopleEntitySetId = getEntitySetIdFromApp(app, peopleFqn, orgId);
+    const psaEntitySetId = getEntitySetIdFromApp(app, psaScoresFqn, orgId);
+    const staffEntitySetId = getEntitySetIdFromApp(app, staffFqn, orgId);
     if (personIds.size) {
       let peopleNeighborsById = yield call(SearchApi.searchEntityNeighborsWithFilter, peopleEntitySetId, {
         entityKeyIds: personIds.toJS(),
-        sourceEntitySetIds: [psaEntitySetId],
-        destinationEntitySetIds: [hearingsEntitySetId]
+        sourceEntitySetIds: [psaEntitySetId, contactInformationEntitySetId],
+        destinationEntitySetIds: [hearingsEntitySetId, subscriptionEntitySetId, contactInformationEntitySetId]
       });
       peopleNeighborsById = obfuscateBulkEntityNeighbors(peopleNeighborsById);
-      peopleNeighborsById = Immutable.fromJS(peopleNeighborsById);
+      peopleNeighborsById = fromJS(peopleNeighborsById);
       peopleNeighborsById.entrySeq().forEach(([id, neighbors]) => {
+
         let hasValidHearing = false;
+        let hasActiveSubscription = false;
+        let hasPreferredContact = false;
         let mostCurrentPSA;
         let currentPSADateTime;
         let mostCurrentPSAEntityKeyId;
+        let psaCount = 0;
         neighbors.forEach((neighbor) => {
           const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id']);
           const entityKeyId = neighbor.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0]);
@@ -116,6 +133,18 @@ function* filterPeopleIdsWithOpenPSAsWorker(action :SequenceAction) :Generator<*
               hasValidHearing = true;
             }
           }
+          if (entitySetId === subscriptionEntitySetId) {
+            const subscriptionIsActive = neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.IS_ACTIVE, 0], false);
+            if (subscriptionIsActive) {
+              hasActiveSubscription = true;
+            }
+          }
+          if (entitySetId === contactInformationEntitySetId) {
+            const contactIsPreferred = neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.IS_PREFERRED, 0], false);
+            if (contactIsPreferred) {
+              hasPreferredContact = true;
+            }
+          }
           else if (entitySetId === psaEntitySetId
               && neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.STATUS, 0]) === PSA_STATUSES.OPEN) {
             if (!mostCurrentPSA || currentPSADateTime.isBefore(entityDateTime)) {
@@ -123,9 +152,15 @@ function* filterPeopleIdsWithOpenPSAsWorker(action :SequenceAction) :Generator<*
               mostCurrentPSAEntityKeyId = entityKeyId;
               currentPSADateTime = entityDateTime;
             }
+            psaCount += 1;
             openPSAIds = openPSAIds.add(entityKeyId);
           }
         });
+        if (hasActiveSubscription && hasPreferredContact) {
+          personIdsWhoAreSubscribed = personIdsWhoAreSubscribed.add(id);
+        }
+
+        if (psaCount > 1) peopleWithMultiplePSAs = peopleWithMultiplePSAs.add(id);
 
         if (hasValidHearing && mostCurrentPSAEntityKeyId) {
           const hearingId = personIdsToHearingIds.get(id);
@@ -178,8 +213,10 @@ function* filterPeopleIdsWithOpenPSAsWorker(action :SequenceAction) :Generator<*
       filteredPersonIds,
       scoresAsMap,
       personIdsToOpenPSAIds,
+      personIdsWhoAreSubscribed,
       openPSAIds,
       hearingNeighborsById,
+      peopleWithMultiplePSAs,
       psaIdToMostRecentEditDate
     }));
   }
@@ -201,28 +238,28 @@ function* loadHearingsForDateWorker(action :SequenceAction) :Generator<*, *, *> 
   try {
     yield put(loadHearingsForDate.request(action.id));
 
-    let courtrooms = Immutable.Set();
-    let hearingIds = Immutable.Set();
-    let hearingsByTime = Immutable.Map();
+    let courtrooms = Set();
+    let hearingIds = Set();
+    let hearingsByTime = Map();
 
     const DATE_TIME_FQN = new FullyQualifiedName(PROPERTY_TYPES.DATE_TIME);
 
     const app = yield select(getApp);
     const edm = yield select(getEDM);
     const orgId = yield select(getOrgId);
-    const hearingEntitySetId = getEntitySetId(app, hearingsFqn, orgId);
+    const hearingEntitySetId = getEntitySetIdFromApp(app, hearingsFqn, orgId);
     const datePropertyTypeId = getPropertyTypeId(edm, DATE_TIME_FQN);
 
     const ceiling = yield call(DataApi.getEntitySetSize, hearingEntitySetId);
 
     const hearingOptions = {
-      searchTerm: `${datePropertyTypeId}: ${toISODate(action.value)}`,
+      searchTerm: `${datePropertyTypeId}:"${toISODate(action.value)}"`,
       start: 0,
       maxHits: ceiling,
       fuzzy: false
     };
     const allHearingData = yield call(SearchApi.searchEntitySetData, hearingEntitySetId, hearingOptions);
-    const hearingsToday = Immutable.fromJS(allHearingData.hits);
+    const hearingsToday = fromJS(allHearingData.hits);
     if (hearingsToday.size) {
       hearingsToday.forEach((hearing) => {
         const hearingDateTime = hearing.getIn([PROPERTY_TYPES.DATE_TIME, 0]);
@@ -257,7 +294,7 @@ function* loadHearingsForDateWorker(action :SequenceAction) :Generator<*, *, *> 
           const time = hearingDateTime.format(TIME_FORMAT);
           hearingsByTime = hearingsByTime.set(
             time,
-            hearingsByTime.get(time, Immutable.List()).push(hearing)
+            hearingsByTime.get(time, List()).push(hearing)
           );
         }
         const courtroom = hearing.getIn([PROPERTY_TYPES.COURTROOM, 0], '');
@@ -290,30 +327,30 @@ function* loadHearingNeighborsWorker(action :SequenceAction) :Generator<*, *, *>
 
     const { hearingIds, hearingDateTime } = action.value;
 
-    let hearingNeighborsById = Immutable.Map();
-    let personIdsToHearingIds = Immutable.Map();
-    let personIds = Immutable.Set();
-    let scoresAsMap = Immutable.Map();
+    let hearingNeighborsById = Map();
+    let personIdsToHearingIds = Map();
+    let personIds = Set();
+    let scoresAsMap = Map();
 
     if (hearingIds.length) {
       const app = yield select(getApp);
       const orgId = yield select(getOrgId);
       const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
-      const hearingEntitySetId = getEntitySetId(app, hearingsFqn, orgId);
-      const peopleEntitySetId = getEntitySetId(app, peopleFqn, orgId);
-      const releaseConditionsEntitySetId = getEntitySetId(app, releaseConditionsFqn, orgId);
-      const psaEntitySetId = getEntitySetId(app, psaScoresFqn, orgId);
+      const hearingEntitySetId = getEntitySetIdFromApp(app, hearingsFqn, orgId);
+      const peopleEntitySetId = getEntitySetIdFromApp(app, peopleFqn, orgId);
+      const releaseConditionsEntitySetId = getEntitySetIdFromApp(app, releaseConditionsFqn, orgId);
+      const psaEntitySetId = getEntitySetIdFromApp(app, psaScoresFqn, orgId);
       let neighborsById = yield call(SearchApi.searchEntityNeighborsWithFilter, hearingEntitySetId, {
         entityKeyIds: hearingIds
       });
       neighborsById = obfuscateBulkEntityNeighbors(neighborsById);
-      neighborsById = Immutable.fromJS(neighborsById);
+      neighborsById = fromJS(neighborsById);
       neighborsById.entrySeq().forEach(([hearingId, neighbors]) => {
         if (neighbors) {
           let hasPerson = false;
           let hasPSA = false;
           let personId;
-          let hearingNeighborsMap = Immutable.Map();
+          let hearingNeighborsMap = Map();
           neighbors.forEach(((neighbor) => {
             const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id']);
             const entitySetName = entitySetIdsToAppType.get(entitySetId, judgesFqn);
@@ -321,7 +358,7 @@ function* loadHearingNeighborsWorker(action :SequenceAction) :Generator<*, *, *>
             if (entitySetId === releaseConditionsEntitySetId) {
               hearingNeighborsMap = hearingNeighborsMap.set(
                 entitySetName,
-                hearingNeighborsMap.get(entitySetName, Immutable.List()).push(fromJS(neighbor))
+                hearingNeighborsMap.get(entitySetName, List()).push(fromJS(neighbor))
               );
             }
             else {
@@ -387,27 +424,27 @@ function* refreshHearingNeighborsWorker(action :SequenceAction) :Generator<*, *,
     yield put(refreshHearingNeighbors.request(action.id, { id }));
     const app = yield select(getApp);
     const orgId = yield select(getOrgId);
-    const hearingEntitySetId = getEntitySetId(app, hearingsFqn, orgId);
-    const releaseConditionsEntitySetId = getEntitySetId(app, releaseConditionsFqn, orgId);
+    const hearingEntitySetId = getEntitySetIdFromApp(app, hearingsFqn, orgId);
+    const releaseConditionsEntitySetId = getEntitySetIdFromApp(app, releaseConditionsFqn, orgId);
     const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
 
     let neighborsList = yield call(SearchApi.searchEntityNeighbors, hearingEntitySetId, id);
     neighborsList = obfuscateEntityNeighbors(neighborsList);
-    neighborsList = Immutable.fromJS(neighborsList);
-    let neighbors = Immutable.Map();
+    neighborsList = fromJS(neighborsList);
+    let neighbors = Map();
     neighborsList.forEach((neighbor) => {
       const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id']);
       const entitySetName = entitySetIdsToAppType.get(entitySetId, judgesFqn);
       if (entitySetId === releaseConditionsEntitySetId) {
         neighbors = neighbors.set(
           entitySetName,
-          neighbors.get(entitySetName, Immutable.List()).push(Immutable.fromJS(neighbor))
+          neighbors.get(entitySetName, List()).push(fromJS(neighbor))
         );
       }
       else {
         neighbors = neighbors.set(
           entitySetName,
-          Immutable.fromJS(neighbor)
+          fromJS(neighbor)
         );
       }
     });
@@ -431,7 +468,7 @@ function* loadJudgesWorker(action :SequenceAction) :Generator<*, *, *> {
     yield put(loadJudges.request(action.id));
     const app = yield select(getApp);
     const orgId = yield select(getOrgId);
-    const judgesEntitySetId = getEntitySetId(app, judgesFqn, orgId);
+    const judgesEntitySetId = getEntitySetIdFromApp(app, judgesFqn, orgId);
     const entitySetSize = yield call(DataApi.getEntitySetSize, judgesEntitySetId);
     const options = {
       searchTerm: '*',
@@ -440,7 +477,7 @@ function* loadJudgesWorker(action :SequenceAction) :Generator<*, *, *> {
     };
 
     const allJudgeData = yield call(SearchApi.searchEntitySetData, judgesEntitySetId, options);
-    const allJudges = Immutable.fromJS(allJudgeData.hits);
+    const allJudges = fromJS(allJudgeData.hits);
     yield put(loadJudges.success(action.id, { allJudges }));
   }
   catch (error) {

@@ -3,9 +3,9 @@
  */
 
 import { push } from 'connected-react-router';
-import { Types, SearchApi } from 'lattice';
+import { Types } from 'lattice';
 import { AuthActions, AccountUtils } from 'lattice-auth';
-import { OrderedMap, Map, fromJS } from 'immutable';
+import { OrderedMap, fromJS } from 'immutable';
 import {
   AppApiActions,
   AppApiSagas,
@@ -24,6 +24,7 @@ import {
 
 import { APP_TYPES_FQNS, APP_NAME } from '../../utils/consts/DataModelConsts';
 import { removeTermsToken } from '../../utils/AcceptTermsUtils';
+import { defaultSettings } from '../../utils/AppUtils';
 import * as Routes from '../../core/router/Routes';
 
 import {
@@ -98,11 +99,7 @@ function* loadAppWorker(action :SequenceAction) :Generator<*, *, *> {
       }
     });
     const appSettingCalls = appSettingsByOrgId.valueSeq().map(entitySetId => (
-      call(SearchApi.searchEntitySetData, entitySetId, {
-        searchTerm: '*',
-        start: 0,
-        maxHits: 1
-      })
+      call(getEntitySetDataWorker, getEntitySetData({ entitySetId }))
     ));
 
     const orgIds = appSettingsByOrgId.keySeq().toJS();
@@ -111,7 +108,7 @@ function* loadAppWorker(action :SequenceAction) :Generator<*, *, *> {
     let i = 0;
     appSettingResults.forEach((setting) => {
       const entitySetId = orgIds[i];
-      const settings = JSON.parse(setting.hits[0]['ol.appdetails']);
+      const settings = JSON.parse(setting.data[0]['ol.appdetails']);
       appSettingsByOrgId = appSettingsByOrgId.set(entitySetId, fromJS(settings));
       i += 1;
     });
@@ -127,7 +124,7 @@ function* loadAppWorker(action :SequenceAction) :Generator<*, *, *> {
   }
   catch (error) {
     console.error(error);
-    yield put(loadApp.failure(action.id, error));
+    yield put(loadApp.failure(action.id, { error, defaultSettings }));
   }
   finally {
     yield put(loadApp.finally(action.id));

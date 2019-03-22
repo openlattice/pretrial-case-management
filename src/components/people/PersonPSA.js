@@ -10,19 +10,15 @@ import { connect } from 'react-redux';
 import { Constants } from 'lattice';
 
 import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
-import LogoLoader from '../../assets/LogoLoader';
+import LogoLoader from '../LogoLoader';
 import MultiSelectCheckbox from '../MultiSelectCheckbox';
 import PSAReviewPersonRowList from '../../containers/review/PSAReviewReportsRowList';
 import PSASummary from '../../containers/review/PSASummary';
 import { getIdOrValue } from '../../utils/DataUtils';
 import { SORT_TYPES, PSA_STATUSES } from '../../utils/consts/Consts';
 import { STATUS_OPTION_CHECKBOXES } from '../../utils/consts/ReviewPSAConsts';
-import {
-  APP_TYPES_FQNS,
-  PROPERTY_TYPES,
-  SETTINGS,
-  MODULE
-} from '../../utils/consts/DataModelConsts';
+import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
+import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import {
   AlternateSectionHeader,
   Count,

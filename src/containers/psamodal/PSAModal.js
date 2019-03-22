@@ -15,7 +15,7 @@ import { Link } from 'react-router-dom';
 
 import CustomTabs from '../../components/tabs/Tabs';
 import CourtCaseForPSAConfig from '../../config/formconfig/CourtCaseForPSAConfig';
-import LogoLoader from '../../assets/LogoLoader';
+import LogoLoader from '../../components/LogoLoader';
 import PSAInputForm from '../../components/psainput/PSAInputForm';
 import PersonCard from '../../components/person/PersonCardReview';
 import StyledButton from '../../components/buttons/StyledButton';
@@ -38,12 +38,13 @@ import { RESULT_CATEGORIES } from '../../utils/consts/DMFResultConsts';
 import { formatDMFFromEntity } from '../../utils/DMFUtils';
 import { OL } from '../../utils/consts/Colors';
 import { psaIsClosed } from '../../utils/PSAUtils';
+import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import {
-  APP_TYPES_FQNS,
-  PROPERTY_TYPES,
-  SETTINGS,
-  MODULE
-} from '../../utils/consts/DataModelConsts';
+  CASE_CONTEXTS,
+  CONTEXTS,
+  MODULE,
+  SETTINGS
+} from '../../utils/consts/AppSettingConsts';
 import {
   APP,
   PSA_NEIGHBOR,
@@ -62,8 +63,8 @@ import {
 
 import * as Routes from '../../core/router/Routes';
 import * as FormActionFactory from '../psa/FormActionFactory';
-import * as ReviewActionFactory from './ReviewActionFactory';
-import * as PSAModalActionFactory from '../psamodal/PSAModalActionFactory';
+import * as ReviewActionFactory from '../review/ReviewActionFactory';
+import * as PSAModalActionFactory from './PSAModalActionFactory';
 import * as CourtActionFactory from '../court/CourtActionFactory';
 import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
 import * as DataActionFactory from '../../utils/data/DataActionFactory';
@@ -121,14 +122,6 @@ const ModalWrapper = styled.div`
     margin: ${props => (props.withPadding ? '30px -30px' : '15px 0')};
     width: ${props => (props.withPadding ? 'calc(100% + 60px)' : '100%')};
   }
-`;
-
-const SpinnerWrapper = styled.div`
-  margin: 20px;
-  width: 100%;
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
 `;
 
 const NoDMFContainer = styled(CenteredContainer)`
@@ -210,18 +203,28 @@ type Props = {
   chargeHistory :Map<*, *>,
   entityKeyId :string,
   ftaHistory :Map<*, *>,
+  fqnsToEntitySetIds :Map<*, *>,
   hearings :List<*>,
+  hearingNeighborsById :Map<*, *>,
   hideProfile? :boolean,
+  loadingPSAModal :boolean,
+  loadingCaseHistory :boolean,
   manualCaseHistory :List<*>,
   manualChargeHistory :Map<*, *>,
   onClose :() => {},
   open :boolean,
-  personId :string,
   readOnly :boolean,
-  psaPermission :boolean,
+  personId :string,
+  personHearings :Map<*, *>,
+  personNeighbors :Map<*, *>,
+  psaId :Map<*, *>,
+  psaNeighbors :Map<*, *>,
+  psaPermissions :boolean,
   refreshingNeighbors :boolean,
   scores :Map<*, *>,
   scoresEntitySetId :string,
+  selectedOrganizationId :string,
+  selectedOrganizationSettings :Map<*, *>,
   sentenceHistory :Map<*, *>,
   submitting :boolean,
   judgesview :boolean,
@@ -276,9 +279,7 @@ type State = {
 class PSAModal extends React.Component<Props, State> {
 
   static defaultProps = {
-    hideCaseHistory: false,
-    hideProfile: false,
-    onStatusChangeCallback: () => {}
+    hideProfile: false
   }
 
   constructor(props :Props) {
@@ -623,7 +624,8 @@ class PSAModal extends React.Component<Props, State> {
       caseHistory,
       manualChargeHistory,
       psaPermissions,
-      actions
+      actions,
+      selectedOrganizationSettings
     } = this.props;
     const { riskFactors } = this.state;
     let caseNumbersToAssociationId = Map();
@@ -654,10 +656,17 @@ class PSAModal extends React.Component<Props, State> {
       lastEditDateForPSA
     );
 
+    const psaContext = psaNeighbors.getIn([PSA_RISK_FACTORS, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.CONTEXT, 0], '');
+    const caseContext = psaContext === CONTEXT.BOOKING ? CONTEXTS.BOOKING : CONTEXTS.COURT;
+    // Get Case Context from settings and pass to config
+    let chargeType = selectedOrganizationSettings.getIn([SETTINGS.CASE_CONTEXTS, caseContext], '');
+    chargeType = chargeType.slice(0, 1).toUpperCase() + chargeType.slice(1);
+
     const pendingCharges = currentPendingCharges(chargeHistoryForMostRecentPSA);
 
     return (
       <PSAModalSummary
+          chargeType={chargeType}
           caseNumbersToAssociationId={caseNumbersToAssociationId}
           chargeHistoryForMostRecentPSA={chargeHistoryForMostRecentPSA}
           caseHistoryForMostRecentPSA={caseHistoryForMostRecentPSA}
@@ -910,12 +919,10 @@ class PSAModal extends React.Component<Props, State> {
     );
   }
 
-  renderHeader = () => {
-
-  }
-
   render() {
     const {
+      loadingPSAModal,
+      loadingCaseHistory,
       scores,
       open,
       psaPermissions,
@@ -930,6 +937,8 @@ class PSAModal extends React.Component<Props, State> {
 
     if (!scores) return null;
     const changeStatusText = psaIsClosed(scores) ? 'Change PSA Status' : 'Close PSA';
+
+    const modalHasLoaded = !loadingPSAModal && !loadingCaseHistory;
 
     let tabs = [
       {
@@ -978,15 +987,20 @@ class PSAModal extends React.Component<Props, State> {
               max-height={MODAL_HEIGHT}
               shouldCloseOnOverlayClick
               stackIndex={1}>
-            <ClosePSAModal
-                open={closingPSAModalOpen}
-                defaultStatus={scores.getIn([PROPERTY_TYPES.STATUS, 0])}
-                defaultStatusNotes={scores.getIn([PROPERTY_TYPES.STATUS_NOTES, 0])}
-                defaultFailureReasons={scores.get(PROPERTY_TYPES.FAILURE_REASON, List()).toJS()}
-                onClose={() => this.setState({ closingPSAModalOpen: false })}
-                onSubmit={this.handleStatusChange}
-                scores={scores}
-                entityKeyId={psaId} />
+            { psaPermissions && modalHasLoaded
+              ? (
+                <ClosePSAModal
+                    open={closingPSAModalOpen}
+                    defaultStatus={scores.getIn([PROPERTY_TYPES.STATUS, 0], '')}
+                    defaultStatusNotes={scores.getIn([PROPERTY_TYPES.STATUS_NOTES, 0], '')}
+                    defaultFailureReasons={scores.get(PROPERTY_TYPES.FAILURE_REASON, List()).toJS()}
+                    onClose={() => this.setState({ closingPSAModalOpen: false })}
+                    onSubmit={this.handleStatusChange}
+                    scores={scores}
+                    entityKeyId={psaId} />
+              )
+              : null
+            }
             <TitleWrapper>
               <TitleHeader>
                 PSA Details:
@@ -995,7 +1009,7 @@ class PSAModal extends React.Component<Props, State> {
                 </StyledLink>
               </TitleHeader>
               <div>
-                { psaPermissions
+                { psaPermissions && modalHasLoaded
                   ? (
                     <ClosePSAButton onClick={() => this.setState({ closingPSAModalOpen: true })}>
                       {changeStatusText}
@@ -1023,6 +1037,7 @@ function mapStateToProps(state) {
     [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
     [APP.SELECTED_ORG_SETTINGS]: app.get(APP.SELECTED_ORG_SETTINGS),
 
+    [PSA_MODAL.SCORES]: psaModal.get(PSA_MODAL.SCORES),
     [PSA_MODAL.PSA_ID]: psaModal.get(PSA_MODAL.PSA_ID),
     [PSA_MODAL.LOADING_PSA_MODAL]: psaModal.get(PSA_MODAL.LOADING_PSA_MODAL),
     [PSA_MODAL.PSA_NEIGHBORS]: psaModal.get(PSA_MODAL.PSA_NEIGHBORS),
