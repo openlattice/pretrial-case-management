@@ -10,7 +10,13 @@ import {
   loadManualRemindersForDate,
   loadManualRemindersNeighborsById,
 } from './ManualRemindersActionFactory';
+import { refreshPersonNeighbors } from '../people/PeopleActionFactory';
 import { MANUAL_REMINDERS } from '../../utils/consts/FrontEndStateConsts';
+import { APP_TYPES_FQNS } from '../../utils/consts/DataModelConsts';
+
+let { CONTACT_INFORMATION } = APP_TYPES_FQNS;
+
+CONTACT_INFORMATION = CONTACT_INFORMATION.toString();
 
 const INITIAL_STATE :Map<*, *> = fromJS({
   [MANUAL_REMINDERS.LOADING_FORM]: false,
@@ -48,6 +54,17 @@ export default function remindersReducer(state :Map<*, *> = INITIAL_STATE, actio
           return state;
         },
         FINALLY: () => state
+      });
+    }
+
+    case refreshPersonNeighbors.case(action.type): {
+      return refreshPersonNeighbors.reducer(state, action, {
+        SUCCESS: () => {
+          const { neighbors } = action.value;
+          const contactInfo = neighbors.get(CONTACT_INFORMATION, Map());
+          const personNeighbors = state.set(CONTACT_INFORMATION, contactInfo);
+          return state.set(MANUAL_REMINDERS.PEOPLE_NEIGHBORS, personNeighbors);
+        }
       });
     }
 
