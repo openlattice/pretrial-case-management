@@ -5,6 +5,7 @@
 import { Map, Set, fromJS } from 'immutable';
 
 import {
+  CLEAR_MANUAL_REMINDERS_FORM,
   loadManualRemindersForm,
   loadManualRemindersForDate,
   loadManualRemindersNeighborsById,
@@ -12,7 +13,7 @@ import {
 import { MANUAL_REMINDERS } from '../../utils/consts/FrontEndStateConsts';
 
 const INITIAL_STATE :Map<*, *> = fromJS({
-  [MANUAL_REMINDERS.LOADING_MODAL]: false,
+  [MANUAL_REMINDERS.LOADING_FORM]: false,
   [MANUAL_REMINDERS.PEOPLE_NEIGHBORS]: Map(),
 
 });
@@ -21,12 +22,12 @@ export default function remindersReducer(state :Map<*, *> = INITIAL_STATE, actio
 
     case loadManualRemindersForm.case(action.type): {
       return loadManualRemindersForm.reducer(state, action, {
-        REQUEST: () => state.set(MANUAL_REMINDERS.LOADING_MODAL, true),
+        REQUEST: () => state.set(MANUAL_REMINDERS.LOADING_FORM, true),
         SUCCESS: () => {
           const { neighborsByAppTypeFqn } = action.value;
           return state.set(MANUAL_REMINDERS.PEOPLE_NEIGHBORS, neighborsByAppTypeFqn);
         },
-        FINALLY: () => state.set(MANUAL_REMINDERS.LOADING_MODAL, false)
+        FINALLY: () => state.set(MANUAL_REMINDERS.LOADING_FORM, false)
       });
     }
 
@@ -34,7 +35,7 @@ export default function remindersReducer(state :Map<*, *> = INITIAL_STATE, actio
       return loadManualRemindersForDate.reducer(state, action, {
         REQUEST: () => state,
         SUCCESS: () => {
-          return state
+          return state;
         },
         FINALLY: () => state
       });
@@ -44,11 +45,15 @@ export default function remindersReducer(state :Map<*, *> = INITIAL_STATE, actio
       return loadManualRemindersNeighborsById.reducer(state, action, {
         REQUEST: () => state,
         SUCCESS: () => {
-          return state
+          return state;
         },
         FINALLY: () => state
       });
     }
+
+    case CLEAR_MANUAL_REMINDERS_FORM:
+      return INITIAL_STATE;
+
     default:
       return state;
   }
