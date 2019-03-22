@@ -22,6 +22,7 @@ export const ALIASES = {
   MANUAL_CHARGES: 'manualCharges',
   BOND: 'bond',
   RELEASE_CONDITION: 'releaseCondition',
+  REMINDER: 'reminder',
   HEARING: 'hearing',
   OUTCOME: 'outcome',
   JUDGE: 'judge',
