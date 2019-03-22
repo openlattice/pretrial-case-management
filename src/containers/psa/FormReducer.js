@@ -1,7 +1,7 @@
 /*
  * @flow
  */
-import Immutable from 'immutable';
+import Immutable, { fromJS, List } from 'immutable';
 import moment from 'moment';
 import { Constants } from 'lattice';
 
@@ -15,10 +15,11 @@ import {
   loadNeighbors
 } from './FormActionFactory';
 import { updateContactInfo, refreshPersonNeighbors } from '../people/PeopleActionFactory';
-import { changePSAStatus } from '../review/ReviewActionFactory';
+import { changePSAStatus, updateScoresAndRiskFactors } from '../review/ReviewActionFactory';
 import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA, NOTES, DMF } from '../../utils/consts/Consts';
 import { getMapByCaseId } from '../../utils/CaseUtils';
+import { getEntityKeyId } from '../../utils/DataUtils';
 import { PSA_NEIGHBOR, PSA_FORM } from '../../utils/consts/FrontEndStateConsts';
 
 const {
@@ -397,6 +398,24 @@ function formReducer(state :Immutable.Map<> = INITIAL_STATE, action :Object) {
           return state
             .set(PSA_FORM.SUBSCRIPTION, subscription)
             .set(PSA_FORM.ALL_CONTACTS, contacts);
+        }
+      });
+    }
+
+    case updateScoresAndRiskFactors.case(action.type): {
+      return updateScoresAndRiskFactors.reducer(state, action, {
+        SUCCESS: () => {
+          const { scoresId, newScoreEntity } = action.value;
+
+          let allPSAs = state.get(PSA_FORM.ALL_PSAS);
+          allPSAs = allPSAs.map((scores) => {
+            console.log(scores);
+            const scoresEntityKeyId = getEntityKeyId(scores);
+            if (scoresId === scoresEntityKeyId) return fromJS(newScoreEntity);
+            return scores;
+          });
+          return state
+            .set(PSA_FORM.ALL_PSAS, allPSAs);
         }
       });
     }
