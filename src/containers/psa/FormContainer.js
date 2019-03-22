@@ -314,6 +314,7 @@ type Props = {
       callback? :() => void
     }) => void
   },
+  arrestCharges :Immutable.Map<*, *>,
   allCasesForPerson :Immutable.List<*>,
   allChargesForPerson :Immutable.List<*>,
   allContacts :Immutable.Map<*>,
@@ -329,6 +330,7 @@ type Props = {
   bookingReleaseExceptionCharges :Immutable.Map<*, *>,
   caseLoadsComplete :boolean,
   charges :Immutable.List<*>,
+  courtCharges :Immutable.Map<*, *>,
   dmfStep2Charges :Immutable.Map<*, *>,
   dmfStep4Charges :Immutable.Map<*, *>,
   history :string[],
@@ -854,21 +856,57 @@ class Form extends React.Component<Props, State> {
     );
   }
 
+  formatCharge = charge => (
+    `${
+      charge.getIn([PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE, 0], '')
+    } ${
+      charge.getIn([PROPERTY_TYPES.REFERENCE_CHARGE_DESCRIPTION, 0], '')
+    }`
+  );
+
+  formatChargeOptions = () => {
+    const {
+      arrestCharges,
+      courtCharges,
+      psaForm,
+      selectedOrganizationSettings,
+      selectedOrganizationId
+    } = this.props;
+
+    const caseContext = psaForm.get(DMF.COURT_OR_BOOKING) === CONTEXT.BOOKING ? CONTEXTS.BOOKING : CONTEXTS.COURT;
+    const chargeType = selectedOrganizationSettings.getIn([SETTINGS.CASE_CONTEXTS, caseContext]);
+    const chargesByOrgId = chargeType === CASE_CONTEXTS.COURT ? courtCharges : arrestCharges;
+
+    const orgCharges = chargesByOrgId.get(selectedOrganizationId, Map()).valueSeq();
+    let chargeOptions = Map();
+    orgCharges.forEach((charge) => {
+      chargeOptions = chargeOptions.set(this.formatCharge(charge), charge);
+    });
+    return chargeOptions.sortBy((statute, _) => statute);
+  }
+
   getSelectChargesSection = () => {
     const {
       actions,
       charges,
+      isLoadingNeighbors,
+      loadingPersonDetails,
       psaForm,
       selectedPretrialCase,
       selectedOrganizationSettings,
     } = this.props;
     const caseContext = psaForm.get(DMF.COURT_OR_BOOKING) === CONTEXT.BOOKING ? CONTEXTS.BOOKING : CONTEXTS.COURT;
     const chargeType = selectedOrganizationSettings.getIn([SETTINGS.CASE_CONTEXTS, caseContext]);
+    if (isLoadingNeighbors || loadingPersonDetails) {
+      return <LogoLoader loadingText="Loading Person Details..." />;
+    }
+
     return (
       <SelectChargesContainer
           chargeType={chargeType}
           defaultArrest={selectedPretrialCase}
           defaultCharges={charges}
+          chargeOptions={this.formatChargeOptions()}
           nextPage={this.nextPage}
           prevPage={this.prevPage}
           onSubmit={actions.addCaseAndCharges} />
