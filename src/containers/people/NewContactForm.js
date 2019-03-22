@@ -297,11 +297,13 @@ class NewHearingSection extends React.Component<Props, State> {
     const { submitting, refreshingPersonNeighbors } = this.props;
     const { state } = this;
     const isPreferred = state[PROPERTY_TYPES.IS_PREFERRED];
+    const { contactMethod } = state;
+    const isEmail = contactMethod === CONTACT_METHODS.EMAIL;
     return (
       <InputGroup>
         <InputLabel>Preferred</InputLabel>
         <CheckboxButton
-            disabled={submitting || refreshingPersonNeighbors}
+            disabled={submitting || refreshingPersonNeighbors || isEmail}
             name={PROPERTY_TYPES.IS_PREFERRED}
             onChange={this.updateCheckbox}
             value={isPreferred}
