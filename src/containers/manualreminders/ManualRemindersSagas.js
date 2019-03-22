@@ -111,7 +111,7 @@ function* loadManualRemindersFormWorker(action :SequenceAction) :Generator<*, *,
           else {
             neighborsByAppTypeFqn = neighborsByAppTypeFqn.set(
               appTypeFqn,
-              neighborsByAppTypeFqn.get(appTypeFqn, List()).push(fromJS(neighborObj))
+              neighborsByAppTypeFqn.get(appTypeFqn, List()).push(fromJS(neighbor))
             );
           }
         });
