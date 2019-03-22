@@ -409,7 +409,6 @@ function formReducer(state :Immutable.Map<> = INITIAL_STATE, action :Object) {
 
           let allPSAs = state.get(PSA_FORM.ALL_PSAS);
           allPSAs = allPSAs.map((scores) => {
-            console.log(scores);
             const scoresEntityKeyId = getEntityKeyId(scores);
             if (scoresId === scoresEntityKeyId) return fromJS(newScoreEntity);
             return scores;
