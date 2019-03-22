@@ -134,6 +134,12 @@ class NewHearingSection extends React.Component<Props, State> {
     return null;
   }
 
+  submitCallback = () => {
+    const { submitCallback } = this.state;
+    if (submitCallback) submitCallback();
+    this.refreshPersonNeighborsCallback();
+  }
+
   createNewContact = () => {
     const { state } = this;
     const {
@@ -171,7 +177,7 @@ class NewHearingSection extends React.Component<Props, State> {
       newContactFields = Object.assign({}, newContactFields, {
         [FORM_IDS.PERSON_ID]: personId
       });
-      const callback = this.refreshPersonNeighborsCallback;
+      const callback = this.submitCallback;
       submit({
         app,
         config: addPersonContactInfoConfig,
