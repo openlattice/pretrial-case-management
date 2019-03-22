@@ -155,7 +155,7 @@ export const MANUAL_REMINDERS = {
   LOADING_MANUAL_REMINDERS: 'loadingManualReminders',
   MANUAL_REMINDER_NEIGHBORS: 'manualReminderNeighborsById',
   LOADING_MANUAL_REMINDER_NEIGHBORS: 'loadingManualReminderNeighbors',
-  LOADING_MODAL: 'loadingManualReminderForm',
+  LOADING_FORM: 'loadingManualReminderForm',
   PEOPLE_NEIGHBORS: 'peopleNeighborsForManualReminder'
 };
 
