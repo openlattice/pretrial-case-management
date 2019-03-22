@@ -340,6 +340,9 @@ export const PROPERTY_TYPES = {
 
   // Reminders
   REMINDER_ID: 'ol.id',
+  REMINDER_STATUS: 'ol.status',
+  REMINDER_TYPE: 'ol.type',
   NOTIFIED: 'ol.notified',
-  REMINDER_NOTES: 'ol.notes'
+  REMINDER_NOTES: 'ol.notes',
+  CONTACT_METHOD: 'ol.contactmethod'
 };
