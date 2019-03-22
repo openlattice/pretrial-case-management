@@ -105,7 +105,7 @@ export default function remindersReducer(state :Map<*, *> = INITIAL_STATE, actio
         SUCCESS: () => {
           const { reminderNeighborsById } = action.value;
           return state
-            .set(REMINDERS.REMINDER_NEIGHBORS, reminderNeighborsById)
+            .set(REMINDERS.REMINDER_NEIGHBORS, reminderNeighborsById);
         },
         FINALLY: () => state.set(REMINDERS.LOADING_REMINDER_NEIGHBORS, false)
       });
