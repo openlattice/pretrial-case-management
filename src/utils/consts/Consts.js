@@ -189,7 +189,9 @@ export const FORM_IDS = {
   STAFF_ID: 'staffId',
   CONTACT_ID: 'contactId',
   BOND_ID: 'bondId',
-  TIMESTAMP: 'timestamp'
+  TIMESTAMP: 'timestamp',
+  CONTACT_INFO_ID: 'contactInfoId',
+  HEARING_ID: 'hearingId'
 };
 
 export const EDIT_FIELDS = {
@@ -238,7 +240,8 @@ export const ID_FIELD_NAMES = {
   HEARING_ID: 'hearingId',
   OUTCOME_ID: 'outcomeId',
   EMPLOYEE_ID: 'employeeId',
-  JUDGE_ID: 'judgeId'
+  JUDGE_ID: 'judgeId',
+  CONTACT_INFO_ID: 'contactInfoId'
 };
 
 export const ID_FIELDS = {
