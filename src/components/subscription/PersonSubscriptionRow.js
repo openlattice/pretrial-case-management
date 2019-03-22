@@ -9,7 +9,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCog, faPaperPlane } from '@fortawesome/pro-light-svg-icons';
 
 import ManageSubscriptionModal from '../../containers/subscription/ManageSubscriptionModal';
-import CreateManualReminderModal from '../reminders/CreateManualReminderModal';
+import CreateManualReminderModal from '../manualreminders/CreateManualReminderModal';
 import StyledButton from '../buttons/StyledButton';
 import { OL } from '../../utils/consts/Colors';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
