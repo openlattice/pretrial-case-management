@@ -33,6 +33,13 @@ const Table = styled.div`
 
 class PersonSubscriptionList extends React.Component<Props, State> {
 
+  onClose = () => {
+    const { actions } = this.props;
+    const { clearSubscriptionModal, clearManualRemindersForm } = actions;
+    clearSubscriptionModal();
+    clearManualRemindersForm();
+  }
+
   renderBodyElements = () => {
     const {
       actions,
@@ -55,7 +62,7 @@ class PersonSubscriptionList extends React.Component<Props, State> {
             person={person}
             loadNeighbors={actions.loadSubcriptionModal}
             loadManualRemindersForm={actions.loadManualRemindersForm}
-            onClose={actions.clearSubscriptionModal} />
+            onClose={this.onClose} />
       );
     });
   };
