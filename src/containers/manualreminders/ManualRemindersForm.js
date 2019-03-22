@@ -9,12 +9,15 @@ import { Map, List } from 'immutable';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
+import BasicButton from '../../components/buttons/BasicButton';
+import SelectContactInfoTable from '../../components/contactinformation/SelectContactInfoTable';
 import StyledRadio from '../../components/controls/StyledRadio';
 import NewContactForm from '../people/NewContactForm';
 import HearingCardsHolder from '../../components/hearings/HearingCardsHolder';
 import { formatPeopleInfo } from '../../utils/PeopleUtils';
 import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
+import { getEntityKeyId } from '../../utils/DataUtils';
 import { CONTACT_METHODS } from '../../utils/consts/ContactInfoConsts';
 import {
   APP,
@@ -26,8 +29,9 @@ import {
 import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
 import * as ManualRemindersActionFactory from './ManualRemindersActionFactory';
 
-let { HEARINGS } = APP_TYPES_FQNS;
+let { CONTACT_INFORMATION, HEARINGS } = APP_TYPES_FQNS;
 
+CONTACT_INFORMATION = CONTACT_INFORMATION.toString();
 HEARINGS = HEARINGS.toString();
 
 /*
@@ -49,7 +53,7 @@ const FormContainer = styled.div`
   grid-auto-flow: column;
   align-items: flex-end;
   padding: 20px;
-  margin-bottom: 30px;
+  margin-bottom: 15px;
 `;
 
 const FlexContainer = styled(FormContainer)`
@@ -95,8 +99,9 @@ type Props = {
 
 const INITIAL_STATE = {
   selectedHearing: null,
+  addingNewContact: false,
   hearingEntityKeyId: '',
-  contact: null,
+  contact: Map(),
   contactMethod: '',
   notified: '',
   [PROPERTY_TYPES.REMINDER_NOTES]: '',
@@ -124,18 +129,18 @@ class NewHearingSection extends React.Component<Props, State> {
     const { contact } = this.state;
     const { name, value } = e.target;
 
-    if (name === 'notified' && !contact && value === 'No') {
+    if (name === 'notified' && !contact.size && value === 'No') {
       this.setState({ contactMethod: '' });
     }
     this.setState({ [name]: value });
   }
 
-  addPhoneNumberToState = contact => this.setState({ contact })
+  onContactListRadioChange = contact => this.setState({ contact })
 
   radioIsDisabled = () => {
     const { submitting, refreshingPersonNeighbors } = this.props;
     const { contact } = this.state;
-    return submitting || refreshingPersonNeighbors || contact;
+    return submitting || refreshingPersonNeighbors || contact.size;
   }
 
   renderContactMethod = () => {
@@ -173,21 +178,52 @@ class NewHearingSection extends React.Component<Props, State> {
     );
   }
 
+  addingContactInformation = () => this.setState({ addingNewContact: true });
+  notAddingContactInformation = () => this.setState({ addingNewContact: false });
+
+  renderAddContactButton = () => (
+    <FlexContainer>
+      <BasicButton onClick={this.addingContactInformation}>Add Contact</BasicButton>
+    </FlexContainer>
+  )
+
   renderContactForm = () => {
     const { person } = this.props;
     const { identification } = formatPeopleInfo(person);
     const { contact } = this.state;
-    const contactDisplay = contact
-      || (
+    const contactDisplay = contact.size
+      ? contact
+      : (
         <>
           <InputLabel>Add Contact</InputLabel>
           <NewContactForm
               personId={identification}
               editing={!contact}
-              addPhoneToParentState={this.addPhoneNumberToState} />
+              submitCallback={this.notAddingContactInformation} />
         </>
       );
     return contactDisplay;
+  }
+
+  renderContactTableAndForm = () => {
+    const { addingNewContact, contact } = this.state;
+    const { peopleNeighborsForManualReminder } = this.props;
+    const contacts = peopleNeighborsForManualReminder.get(CONTACT_INFORMATION, List());
+    const contactEntityKeyId = getEntityKeyId(contact);
+    if (contacts.size) {
+      return (
+        <>
+          <SelectContactInfoTable
+              contactInfo={contacts}
+              onCheckBoxChange={this.onContactListRadioChange}
+              selectedContactEntityKeyId={contactEntityKeyId}
+              noResults={!contacts.size} />
+          { !addingNewContact ? this.renderAddContactButton() : null }
+          { addingNewContact ? this.renderContactForm() : null }
+        </>
+      );
+    }
+    return this.renderContactForm();
   }
 
   getSubjectsName = () => {
@@ -224,7 +260,7 @@ class NewHearingSection extends React.Component<Props, State> {
                 checked={wasNotNotified} />
           </FormContainer>
           { wasNotified ? this.renderContactMethod() : null }
-          { (isPhone || isEmail) ? this.renderContactForm() : null }
+          { (isPhone || isEmail) ? this.renderContactTableAndForm() : null }
         </>
       ) : null;
   }
@@ -241,6 +277,7 @@ class NewHearingSection extends React.Component<Props, State> {
     const { peopleNeighborsForManualReminder } = this.props;
     console.log(this.state);
     const hearings = peopleNeighborsForManualReminder.get(HEARINGS, List());
+    console.log(peopleNeighborsForManualReminder.toJS());
 
     return (
       <>
@@ -288,7 +325,7 @@ function mapStateToProps(state) {
     [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
     [APP.SELECTED_ORG_SETTINGS]: app.get(APP.SELECTED_ORG_SETTINGS),
 
-    [MANUAL_REMINDERS.LOADING_MODAL]: manualReminders.get(MANUAL_REMINDERS.LOADING_MODAL),
+    [MANUAL_REMINDERS.LOADING_FORM]: manualReminders.get(MANUAL_REMINDERS.LOADING_FORM),
     [MANUAL_REMINDERS.PEOPLE_NEIGHBORS]: manualReminders.get(MANUAL_REMINDERS.PEOPLE_NEIGHBORS),
 
     [SUBMIT.SUBMITTING]: submit.get(SUBMIT.SUBMITTING, false)
