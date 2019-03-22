@@ -26,6 +26,11 @@ export const REMINDERS_HEADERS = {
   STATUS: 'Status'
 };
 
+export const REMINDER_TYPES = {
+  HEARING: 'Hearing',
+  CHECKIN: 'Check-in'
+};
+
 export const OPT_OUT_HEADERS = {
   NAME: 'Name',
   CONTACT: 'Contact',
