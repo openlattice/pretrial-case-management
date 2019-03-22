@@ -145,9 +145,8 @@ const TitleWrapper = styled.div`
 `;
 
 type Props = {
-  arrestCharges :Map<*, *>,
+  chargeOptions :Map<*, *>,
   chargeType :string,
-  selectedOrganizationId :string,
   selectedOrganizationSettings :Immutable.Map<*, *>,
   defaultArrest :Immutable.Map<*, *>,
   defaultCharges :Immutable.List<*>,
@@ -274,43 +273,48 @@ class SelectChargesContainer extends React.Component<Props, State> {
     this.setState({ [name]: value });
   }
 
-  renderDispositionOrCourtCaseNumberInput = () => {
-    const {
-      arrestTrackingNumber,
-      caseDispositionDate,
-      courtCaseNumber,
-      chargeType
-    } = this.state;
-    return (chargeType === CASE_CONTEXTS.ARREST)
-      ? (
+  renderArrestAndCourtCaseNumberInput = () => {
+    const { arrestTrackingNumber, courtCaseNumber } = this.state;
+    return (
+      <>
         <InputLabel>
-          Case Disposition Date
-          <DateTimePicker
-              name="caseDispositionDate"
-              value={caseDispositionDate}
-              onChange={(date) => {
-                this.setState({ caseDispositionDate: date });
-              }} />
+          Arrest Tracking Number
+          <GeneralInputField
+              name="arrestTrackingNumber"
+              value={arrestTrackingNumber}
+              onChange={this.onInputChange} />
         </InputLabel>
-      )
-      : (
-        <>
-          <InputLabel>
-            Arrest Tracking Number
-            <GeneralInputField
-                name="arrestTrackingNumber"
-                value={arrestTrackingNumber}
-                onChange={this.onInputChange} />
-          </InputLabel>
-          <InputLabel>
-            Court Case Number
-            <GeneralInputField
-                name="courtCaseNumber"
-                value={courtCaseNumber}
-                onChange={this.onInputChange} />
-          </InputLabel>
-        </>
-      );
+        <InputLabel>
+          Court Case Number
+          <GeneralInputField
+              name="courtCaseNumber"
+              value={courtCaseNumber}
+              onChange={this.onInputChange} />
+        </InputLabel>
+      </>
+    );
+  }
+
+  renderDispositionInput = () => {
+    const { caseDispositionDate } = this.state;
+    return (
+      <InputLabel>
+        Case Disposition Date
+        <DateTimePicker
+            name="caseDispositionDate"
+            value={caseDispositionDate}
+            onChange={(date) => {
+              this.setState({ caseDispositionDate: date });
+            }} />
+      </InputLabel>
+    );
+  }
+
+  renderDispositionOrCourtCaseNumberInput = () => {
+    const { chargeType } = this.state;
+    return (chargeType === CASE_CONTEXTS.ARREST)
+      ? this.renderDispositionInput()
+      : this.renderArrestAndCourtCaseNumberInput();
   }
 
   renderCaseInfo = () => {
@@ -344,7 +348,6 @@ class SelectChargesContainer extends React.Component<Props, State> {
     this.setState({ charges });
   }
 
-  // formatCharge = (charge :Charge) => `${charge.statute} ${charge.description}`;
   formatCharge = charge => (
     `${
       charge.getIn([PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE, 0], '')
@@ -352,19 +355,6 @@ class SelectChargesContainer extends React.Component<Props, State> {
       charge.getIn([PROPERTY_TYPES.REFERENCE_CHARGE_DESCRIPTION, 0], '')
     }`
   );
-
-  formatChargeOptions = () => {
-    const {
-      arrestCharges,
-      selectedOrganizationId
-    } = this.props;
-    const orgArrestCharges = arrestCharges.get(selectedOrganizationId, Map()).valueSeq();
-    let arrestChargeOptions = Map();
-    orgArrestCharges.forEach((charge) => {
-      arrestChargeOptions = arrestChargeOptions.set(this.formatCharge(charge), charge);
-    });
-    return arrestChargeOptions.sortBy((statute, _) => statute);
-  }
 
   formatSelectOptions = (optionValues) => {
     let options = Immutable.Map();
@@ -399,12 +389,7 @@ class SelectChargesContainer extends React.Component<Props, State> {
   }
 
   renderSingleCharge = (charge :Charge, index :number) => {
-    const { arrestCharges, selectedOrganizationId } = this.props;
-    const orgArrestCharges = arrestCharges.get(selectedOrganizationId, Map()).valueSeq();
-    let arrestChargeOptions = Map();
-    orgArrestCharges.forEach((chargeObj) => {
-      arrestChargeOptions = arrestChargeOptions.set(this.formatCharge(chargeObj), chargeObj);
-    });
+    const { chargeOptions } = this.props;
     const statute = charge.getIn([PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE, 0], '');
     const description = charge.getIn([PROPERTY_TYPES.REFERENCE_CHARGE_DESCRIPTION, 0], '');
     const qualifier = charge.get(QUALIFIER, '');
@@ -413,7 +398,7 @@ class SelectChargesContainer extends React.Component<Props, State> {
     };
     const chargeText = `${statute} ${description}`;
 
-    const noRecordOfCharge = !arrestChargeOptions.get(chargeText);
+    const noRecordOfCharge = !chargeOptions.get(chargeText);
 
     const getOnSelect = field => newVal => this.handleChargeInputChange(newVal, index, field);
     const getOnClear = field => () => this.handleChargeInputChange(undefined, index, field);
@@ -449,6 +434,7 @@ class SelectChargesContainer extends React.Component<Props, State> {
   }
 
   renderCharges = () => {
+    const { chargeOptions } = this.props;
     const { charges } = this.state;
     const chargeItems = charges.map(this.renderSingleCharge);
     return (
@@ -458,7 +444,7 @@ class SelectChargesContainer extends React.Component<Props, State> {
         <ChargeSearch
             scrollVisible
             onSelect={this.addCharge}
-            options={this.formatChargeOptions()}
+            options={chargeOptions}
             searchPlaceholder="Select a charge"
             openAbove />
         <hr />
