@@ -5,11 +5,16 @@
 import React from 'react';
 import styled from 'styled-components';
 import randomUUID from 'uuid/v4';
+import moment from 'moment';
 import { Map, List } from 'immutable';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
+import { AuthUtils } from 'lattice-auth';
 
+import ManualReminderConfig from '../../config/formconfig/ManualReminderConfig';
 import BasicButton from '../../components/buttons/BasicButton';
+import InfoButton from '../../components/buttons/InfoButton';
+import LogoLoader from '../../components/LogoLoader';
 import SelectContactInfoTable from '../../components/contactinformation/SelectContactInfoTable';
 import StyledRadio from '../../components/controls/StyledRadio';
 import NewContactForm from '../people/NewContactForm';
@@ -17,7 +22,9 @@ import HearingCardsHolder from '../../components/hearings/HearingCardsHolder';
 import { formatPeopleInfo } from '../../utils/PeopleUtils';
 import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
+import { FORM_IDS } from '../../utils/consts/Consts';
 import { getEntityKeyId } from '../../utils/DataUtils';
+import { REMINDER_TYPES } from '../../utils/RemindersUtils';
 import { CONTACT_METHODS } from '../../utils/consts/ContactInfoConsts';
 import {
   APP,
@@ -77,6 +84,8 @@ const NotesInput = styled.textarea`
 `;
 
 type Props = {
+  app :Map<*, *>,
+  loadingManualReminderForm :boolean,
   personId :string,
   person :Map<*, *>,
   peopleNeighborsForManualReminder :Map<*, *>,
@@ -98,13 +107,13 @@ type Props = {
 }
 
 const INITIAL_STATE = {
-  selectedHearing: null,
+  selectedHearing: {},
   addingNewContact: false,
   hearingEntityKeyId: '',
   contact: Map(),
   contactMethod: '',
   notified: '',
-  [PROPERTY_TYPES.REMINDER_NOTES]: '',
+  notes: '',
 };
 
 class NewHearingSection extends React.Component<Props, State> {
@@ -120,9 +129,84 @@ class NewHearingSection extends React.Component<Props, State> {
     this.setState(INITIAL_STATE);
   }
 
+  getStaffId = () => {
+    const staffInfo = AuthUtils.getUserInfo();
+    let staffId = staffInfo.id;
+    if (staffInfo.email && staffInfo.email.length > 0) {
+      staffId = staffInfo.email;
+    }
+    return staffId;
+  }
+
   isReadyToSubmit = () :boolean => {
-    const { state } = this;
-    return (state.contactMethod);
+    const { contact, contactMethod } = this.state;
+    let contactSelected = true;
+    if (contactMethod === CONTACT_METHODS.PHONE || contactMethod === CONTACT_METHODS.EMAIL) {
+      contactSelected = !!contact.size;
+    }
+    return contactMethod && contactSelected;
+  }
+
+  getSubmissionValues = () => {
+    const {
+      contact,
+      contactMethod,
+      notes,
+      notified,
+      selectedHearing,
+    } = this.state;
+    const { person } = this.props;
+    const { identification } = formatPeopleInfo(person);
+
+    const staffId = this.getStaffId();
+
+    const { hearingId } = selectedHearing;
+
+    const contactInformationId = contact.getIn([PROPERTY_TYPES.GENERAL_ID, 0], null);
+
+    const submissionValues = {
+      [PROPERTY_TYPES.DATE_TIME]: [moment().toISOString(true)],
+
+      // Reminder
+      [PROPERTY_TYPES.CONTACT_METHOD]: [contactMethod],
+      [PROPERTY_TYPES.NOTIFIED]: [notified],
+      [PROPERTY_TYPES.REMINDER_ID]: [randomUUID()],
+      [PROPERTY_TYPES.REMINDER_NOTES]: [notes],
+      [PROPERTY_TYPES.REMINDER_TYPE]: [REMINDER_TYPES.HEARING],
+
+      // Person
+      [FORM_IDS.PERSON_ID]: [identification],
+
+      // Hearing
+      [FORM_IDS.HEARING_ID]: [hearingId],
+
+      // Hearing
+      [FORM_IDS.CONTACT_INFO_ID]: [contactInformationId],
+
+      // staff
+      [FORM_IDS.STAFF_ID]: [staffId],
+    };
+    return submissionValues;
+  }
+
+  submitManualReminder = () => {
+    const { actions, app } = this.props;
+    const { submit } = actions;
+    const values = this.getSubmissionValues();
+    submit({ app, values, config: ManualReminderConfig });
+  }
+
+  renderSubmitButton = () => {
+    const { submitting } = this.props;
+    return (
+      <FlexContainer>
+        <InfoButton
+            disabled={submitting || !this.isReadyToSubmit()}
+            onClick={this.submitManualReminder}>
+          Submit
+        </InfoButton>
+      </FlexContainer>
+    );
   }
 
   handleInputChange = (e) => {
@@ -269,7 +353,7 @@ class NewHearingSection extends React.Component<Props, State> {
     this.setState({
       selectedHearing: { hearing, hearingId, entityKeyId },
       hearingEntityKeyId: entityKeyId
-    })
+    });
   }
 
   renderHearingSelection = () => {
@@ -277,7 +361,6 @@ class NewHearingSection extends React.Component<Props, State> {
     const { peopleNeighborsForManualReminder } = this.props;
     console.log(this.state);
     const hearings = peopleNeighborsForManualReminder.get(HEARINGS, List());
-    console.log(peopleNeighborsForManualReminder.toJS());
 
     return (
       <>
@@ -300,17 +383,20 @@ class NewHearingSection extends React.Component<Props, State> {
       <FlexContainer>
         <NotesInput
             onChange={this.handleInputChange}
-            name={PROPERTY_TYPES.REMINDER_NOTES} />
+            name="notes" />
       </FlexContainer>
     </>
   )
 
   render() {
+    const { loadingManualReminderForm } = this.props;
+    if (loadingManualReminderForm) return <LogoLoader />
     return (
       <FormWrapper>
         {this.renderHearingSelection()}
         {this.renderContactSection()}
         {this.renderNotesSection()}
+        {this.renderSubmitButton()}
       </FormWrapper>
     );
   }
