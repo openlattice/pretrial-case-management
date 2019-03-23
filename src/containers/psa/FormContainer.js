@@ -622,62 +622,6 @@ class Form extends React.Component<Props, State> {
     return map;
   };
 
-  renderExportButton = () => {
-    const {
-      selectedPretrialCase,
-      charges,
-      selectedPerson,
-      arrestOptions,
-      allChargesForPerson,
-      allSentencesForPerson,
-      allFTAs,
-      psaForm
-    } = this.props;
-
-    const {
-      dmfRiskFactors,
-      riskFactors,
-      scores,
-      scoresWereGenerated
-    } = this.state;
-
-    const notes = psaForm.get(PSA.NOTES, '');
-
-    if (!scoresWereGenerated) return null;
-    const data = Immutable.fromJS(this.state)
-      .set('notes', notes)
-      .set('scores', scores)
-      .set('riskFactors', this.setMultimapToMap(riskFactors))
-      .set('psaRiskFactors', Immutable.fromJS(riskFactors))
-      .set('dmfRiskFactors', Immutable.fromJS(dmfRiskFactors));
-
-    return (
-      <ButtonWrapper>
-        <Button
-            bsStyle="info"
-            onClick={() => {
-              exportPDF(
-                data,
-                selectedPretrialCase,
-                List(),
-                charges,
-                selectedPerson,
-                arrestOptions,
-                allChargesForPerson,
-                allSentencesForPerson,
-                allFTAs,
-                {
-                  user: this.getStaffId(),
-                  timestamp: toISODateTime(moment())
-                }
-              );
-            }}>
-            Export as PDF
-        </Button>
-      </ButtonWrapper>
-    );
-  }
-
   renderDiscardButton = () => <DiscardButton onClick={this.handleClose}>Discard</DiscardButton>;
 
   renderClearButton = () => {
@@ -1019,8 +963,9 @@ class Form extends React.Component<Props, State> {
       allFTAs,
       violentArrestCharges,
       violentCourtCharges,
+      psaForm,
       selectedOrganizationId,
-      psaForm
+      selectedOrganizationSettings
     } = this.props;
     const { dmfRiskFactors, riskFactors, scores } = this.state;
     const violentArrestChargeList = violentArrestCharges.get(selectedOrganizationId, List());
@@ -1050,7 +995,8 @@ class Form extends React.Component<Props, State> {
         timestamp: toISODateTime(moment())
       },
       false,
-      isCompact
+      isCompact,
+      selectedOrganizationSettings
     );
   }
 
