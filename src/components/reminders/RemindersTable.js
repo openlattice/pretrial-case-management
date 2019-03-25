@@ -112,7 +112,7 @@ class RemindersTable extends React.Component<Props, State> {
       hearingTime,
       hearingType
     } = getHearingFields(hearing);
-    const contact = contactInfo.get(PROPERTY_TYPES.PHONE);
+    const contact = contactInfo.get(PROPERTY_TYPES.PHONE, contactInfo.get(PROPERTY_TYPES.EMAIL, ''));
     const hearingDateTime = `${hearingDate} ${hearingTime}`;
 
     return ({
