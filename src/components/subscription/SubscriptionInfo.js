@@ -4,7 +4,6 @@
 
 import React from 'react';
 import styled from 'styled-components';
-import { Constants } from 'lattice';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
@@ -14,6 +13,7 @@ import { faCheck, faCog, faTimesCircle } from '@fortawesome/pro-light-svg-icons'
 import ManageSubscriptionModal from '../../containers/subscription/ManageSubscriptionModal';
 import StyledButton from '../buttons/StyledButton';
 import LoadingSpinner from '../LoadingSpinner';
+import { getEntityKeyId } from '../../utils/DataUtils';
 import { formatPeopleInfo } from '../../utils/PeopleUtils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { STATE, SUBSCRIPTIONS } from '../../utils/consts/FrontEndStateConsts';
@@ -21,8 +21,6 @@ import { OL } from '../../utils/consts/Colors';
 import { FormSection, InputRow } from '../person/PersonFormTags';
 
 import * as SubscriptionsActionFactory from '../../containers/subscription/SubscriptionsActionFactory';
-
-const { OPENLATTICE_ID_FQN } = Constants;
 
 const LoadingWrapper = styled.div`
   height: 100%;
@@ -65,7 +63,7 @@ type Props = {
   updatingEntity :boolean,
   actions :{
     clearSubscriptionModal :() => void,
-    loadSubcriptionModal :(values :{ personId :string }) => void,
+    loadSubcriptionModal :(values :{ personEntityKeyId :string }) => void,
   }
 }
 
@@ -79,8 +77,8 @@ class SubscriptionInfo extends React.Component<Props, State> {
 
   openManageSubscriptionModal = () => {
     const { actions, person } = this.props;
-    const personId = person.getIn([OPENLATTICE_ID_FQN, 0], '');
-    actions.loadSubcriptionModal({ personId });
+    const personEntityKeyId = getEntityKeyId(person);
+    actions.loadSubcriptionModal({ personEntityKeyId });
     this.setState({ manageSubscriptionModalOpen: true });
   };
 

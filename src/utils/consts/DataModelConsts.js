@@ -51,6 +51,7 @@ export const APP_TYPES_FQNS = {
   MANUAL_COURT_CHARGES: new FullyQualifiedName('app.manualcourtcharges'),
   MANUAL_PRETRIAL_CASES: new FullyQualifiedName('app.manualpretrialcases'),
   MANUAL_PRETRIAL_COURT_CASES: new FullyQualifiedName('app.manualpretrialcourtcases'),
+  MANUAL_REMINDERS: new FullyQualifiedName('app.manualreminders'),
   OUTCOMES: new FullyQualifiedName('app.psaoutcomes'),
   OVERSAW: new FullyQualifiedName('app.oversaw'),
   PEOPLE: new FullyQualifiedName('app.people'),
@@ -339,5 +340,9 @@ export const PROPERTY_TYPES = {
 
   // Reminders
   REMINDER_ID: 'ol.id',
-  NOTIFIED: 'ol.notified'
+  REMINDER_STATUS: 'ol.status',
+  REMINDER_TYPE: 'ol.type',
+  NOTIFIED: 'ol.notified',
+  REMINDER_NOTES: 'ol.notes',
+  CONTACT_METHOD: 'ol.contactmethod'
 };

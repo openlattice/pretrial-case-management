@@ -60,7 +60,7 @@ type Props = {
   handleCheckboxUpdates :() => void,
 };
 
-class ChargeRow extends React.Component<Props, State> {
+class ContactInfoRow extends React.Component<Props, State> {
 
   constructor(props :Props) {
     super(props);
@@ -177,4 +177,4 @@ class ChargeRow extends React.Component<Props, State> {
   }
 }
 
-export default ChargeRow;
+export default ContactInfoRow;
