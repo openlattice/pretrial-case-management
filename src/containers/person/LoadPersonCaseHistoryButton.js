@@ -57,7 +57,7 @@ class ManageChargesContainer extends React.Component<Props, State> {
         shouldLoadCases: false
       });
     }
-    if (caseLoadsComplete && personDetailsLoaded) {
+    if (caseLoadsComplete && personDetailsLoaded && !loadingCaseHistory) {
       actions.loadCaseHistory({ personId: personEntityKeyId, neighbors: psaNeighbors });
     }
     if (loadingCaseHistory) {
