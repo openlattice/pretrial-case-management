@@ -11,7 +11,12 @@ import { connect } from 'react-redux';
 import { Constants } from 'lattice';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCheck, faFileDownload, faTimesCircle } from '@fortawesome/pro-light-svg-icons';
+import {
+  faCheck,
+  faEdit,
+  faFileDownload,
+  faTimesCircle
+} from '@fortawesome/pro-light-svg-icons';
 
 import DatePicker from '../../components/datetime/DatePicker';
 import TableWithPagination from '../../components/reminders/TableWithPagination';
@@ -25,14 +30,17 @@ import { APP_TYPES_FQNS } from '../../utils/consts/DataModelConsts';
 import { FILTERS } from '../../utils/RemindersUtils';
 import {
   APP,
+  MANUAL_REMINDERS,
   REMINDERS,
   PSA_NEIGHBOR,
   SEARCH,
-  STATE
+  STATE,
+  SUBMIT
 } from '../../utils/consts/FrontEndStateConsts';
 
 import * as AppActionFactory from '../app/AppActionFactory';
 import * as RemindersActionFactory from './RemindersActionFactory';
+import * as ManualRemindersActionFactory from '../manualreminders/ManualRemindersActionFactory';
 import * as SubscriptionsActionFactory from '../subscription/SubscriptionsActionFactory';
 import * as PersonActionFactory from '../person/PersonActionFactory';
 
@@ -114,23 +122,30 @@ const StatusIconContainer = styled.div`
 
 type Props = {
   failedReminderIds :Set<*, *>,
+  failedManualReminderIds :Set<*, *>,
   isLoadingPeople :boolean,
   loadingPeopleWithNoContacts :boolean,
   loadingOptOuts :boolean,
   loadingOptOutNeighbors :boolean,
   loadingReminders :boolean,
+  loadingManualReminders :boolean,
   loadingReminderNeighbors :boolean,
+  loadingManualReminderNeighbors :boolean,
   loadingReminderPDF :boolean,
   optOutMap :Map<*, *>,
   optOutNeighbors :Map<*, *>,
   optOutPeopleIds :Set<*>,
   pastReminders :Map<*, *>,
+  peopleReceivingManualReminders :Map<*, *>,
   peopleWithHearingsButNoContacts :Map<*, *>,
   reminderNeighborsById :Map<*, *>,
+  manualRemindersById :Map<*, *>,
+  manualReminderNeighborsById :Map<*, *>,
   searchResults :Set<*>,
   searchHasRun :boolean,
   selectedOrganizationId :boolean,
   successfulReminderIds :Set<*, *>,
+  successfulManualReminderIds :Set<*, *>,
   actions :{
     loadPeopleWithHearingsButNoContacts :RequestSequence,
     loadRemindersforDate :RequestSequence,
@@ -170,8 +185,15 @@ class RemindersContainer extends React.Component<Props, State> {
 
   loadData = (props) => {
     const { selectedDate } = this.state;
-    const { actions, reminderIds } = props;
-    const { loadOptOutsForDate, loadRemindersforDate } = actions;
+    const { actions, manualReminderIds, reminderIds } = props;
+    const {
+      loadManualRemindersForDate,
+      loadOptOutsForDate,
+      loadRemindersforDate
+    } = actions;
+    if (!manualReminderIds.size) {
+      loadManualRemindersForDate({ date: selectedDate });
+    }
     if (!reminderIds.size) {
       loadRemindersforDate({ date: selectedDate });
       loadOptOutsForDate({ date: selectedDate });
@@ -186,11 +208,21 @@ class RemindersContainer extends React.Component<Props, State> {
   onDateChange = (dateStr) => {
     const { actions } = this.props;
     const date = moment(dateStr);
-    const { loadOptOutsForDate, loadRemindersforDate } = actions;
+    const { loadOptOutsForDate, loadManualRemindersForDate, loadRemindersforDate } = actions;
     if (date.isValid()) {
       this.setState({ selectedDate: date });
+      loadManualRemindersForDate({ date });
       loadRemindersforDate({ date });
       loadOptOutsForDate({ date });
+    }
+  }
+
+  manualRemidnersSubmitCallback = () => {
+    const { actions } = this.props;
+    const { selectedDate } = this.state;
+    const { loadManualRemindersForDate } = actions;
+    if (selectedDate.isValid()) {
+      loadManualRemindersForDate({ date: selectedDate });
     }
   }
 
@@ -227,10 +259,21 @@ class RemindersContainer extends React.Component<Props, State> {
 
   renderRemindersTable = (title, reminders, neighbors, filters) => {
     const { filter } = this.state;
-    const { loadingReminders, loadingReminderNeighbors } = this.props;
+    const {
+      loadingManualReminders,
+      loadingReminders,
+      loadingManualReminderNeighbors,
+      loadingReminderNeighbors
+    } = this.props;
+    const loading = (
+      loadingManualReminders
+        || loadingReminders
+        || loadingManualReminderNeighbors
+        || loadingReminderNeighbors
+    );
     return (
       <TableWithPagination
-          loading={loadingReminders || loadingReminderNeighbors}
+          loading={loading}
           title={title}
           entities={reminders}
           filter={filter}
@@ -271,6 +314,7 @@ class RemindersContainer extends React.Component<Props, State> {
         <PersonSubscriptionList
             noResultsText="No Results"
             loading={loadingPeopleWithNoContacts}
+            submitCallback={this.manualRemidnersSubmitCallback}
             people={people}
             noResults={!people.size} />
       </TableWrapper>
@@ -300,7 +344,11 @@ class RemindersContainer extends React.Component<Props, State> {
   }
 
   renderLists = () => {
-    const { peopleWithHearingsButNoContacts, searchResults } = this.props;
+    let { peopleWithHearingsButNoContacts } = this.props;
+    const { peopleReceivingManualReminders, searchResults } = this.props;
+    peopleReceivingManualReminders.forEach((personEntityKeyId) => {
+      peopleWithHearingsButNoContacts = peopleWithHearingsButNoContacts.delete(personEntityKeyId);
+    });
     return (
       <ListContainer>
         {this.renderSearchByContactList(searchResults)}
@@ -341,18 +389,27 @@ class RemindersContainer extends React.Component<Props, State> {
     const {
       pastReminders,
       failedReminderIds,
+      failedManualReminderIds,
+      manualRemindersById,
       reminderNeighborsById,
-      successfulReminderIds
+      manualReminderNeighborsById,
+      successfulReminderIds,
+      successfulManualReminderIds
     } = this.props;
 
-    let entities = pastReminders;
+    let entities = pastReminders.merge(manualRemindersById);
     if (filter === FILTERS.FAILED) {
-      entities = pastReminders
-        .filter((reminder, entityKeyId) => failedReminderIds.includes(entityKeyId));
+      entities = entities
+        .filter((reminder, entityKeyId) => failedReminderIds
+          .concat(failedManualReminderIds).includes(entityKeyId));
     }
     else if (filter === FILTERS.SUCCESSFUL) {
-      entities = pastReminders
-        .filter((reminder, entityKeyId) => successfulReminderIds.includes(entityKeyId));
+      entities = entities
+        .filter((reminder, entityKeyId) => successfulReminderIds
+          .concat(successfulManualReminderIds).includes(entityKeyId));
+    }
+    else if (filter === FILTERS.MANUAL) {
+      entities = manualRemindersById;
     }
 
     const filters = fromJS({
@@ -364,7 +421,7 @@ class RemindersContainer extends React.Component<Props, State> {
         label: (
           <StatusIconContainer>
             {`${FILTERS.FAILED} `}
-            <FontAwesomeIcon color="red" icon={faTimesCircle} />
+            <FontAwesomeIcon color={filter === FILTERS.FAILED ? OL.WHITE : OL.RED01} icon={faTimesCircle} />
           </StatusIconContainer>
         ),
         value: FILTERS.FAILED
@@ -373,10 +430,19 @@ class RemindersContainer extends React.Component<Props, State> {
         label: (
           <StatusIconContainer>
             {`${FILTERS.SUCCESSFUL} `}
-            <FontAwesomeIcon color="green" icon={faCheck} />
+            <FontAwesomeIcon color={filter === FILTERS.SUCCESSFUL ? OL.WHITE : OL.GREEN01} icon={faCheck} />
           </StatusIconContainer>
         ),
         value: FILTERS.SUCCESSFUL
+      },
+      [FILTERS.MANUAL]: {
+        label: (
+          <StatusIconContainer>
+            {`${FILTERS.MANUAL} `}
+            <FontAwesomeIcon color={filter === FILTERS.MANUAL ? OL.WHITE : OL.PURPLE03} icon={faEdit} />
+          </StatusIconContainer>
+        ),
+        value: FILTERS.MANUAL
       }
     });
 
@@ -386,7 +452,7 @@ class RemindersContainer extends React.Component<Props, State> {
           this.renderRemindersTable(
             'Reminders',
             entities,
-            reminderNeighborsById,
+            reminderNeighborsById.merge(manualReminderNeighborsById),
             filters
           )
         }
@@ -409,6 +475,7 @@ class RemindersContainer extends React.Component<Props, State> {
 function mapStateToProps(state) {
   const app = state.get(STATE.APP);
   const reminders = state.get(STATE.REMINDERS);
+  const manualReminders = state.get(STATE.MANUAL_REMINDERS);
   const search = state.get(STATE.SEARCH);
 
   return {
@@ -417,7 +484,7 @@ function mapStateToProps(state) {
     [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
     [APP.SELECTED_ORG_TITLE]: app.get(APP.SELECTED_ORG_TITLE),
 
-    // Charges
+    // Reminders
     [REMINDERS.REMINDER_IDS]: reminders.get(REMINDERS.REMINDER_IDS),
     [REMINDERS.FUTURE_REMINDERS]: reminders.get(REMINDERS.FUTURE_REMINDERS),
     [REMINDERS.PAST_REMINDERS]: reminders.get(REMINDERS.PAST_REMINDERS),
@@ -436,6 +503,16 @@ function mapStateToProps(state) {
     [REMINDERS.LOADING_OPT_OUT_NEIGHBORS]: reminders.get(REMINDERS.LOADING_OPT_OUT_NEIGHBORS),
     [REMINDERS.LOADING_REMINDER_PDF]: reminders.get(REMINDERS.LOADING_REMINDER_PDF),
 
+    // Manual Reminders
+    [MANUAL_REMINDERS.REMINDER_IDS]: manualReminders.get(MANUAL_REMINDERS.REMINDER_IDS),
+    [MANUAL_REMINDERS.REMINDERS_BY_ID]: manualReminders.get(MANUAL_REMINDERS.REMINDERS_BY_ID),
+    [MANUAL_REMINDERS.LOADING_MANUAL_REMINDERS]: manualReminders.get(MANUAL_REMINDERS.LOADING_MANUAL_REMINDERS),
+    [MANUAL_REMINDERS.MANUAL_REMINDER_NEIGHBORS]: manualReminders.get(MANUAL_REMINDERS.MANUAL_REMINDER_NEIGHBORS),
+    [MANUAL_REMINDERS.PEOPLE_RECEIVING_REMINDERS]: manualReminders.get(MANUAL_REMINDERS.PEOPLE_RECEIVING_REMINDERS),
+    [MANUAL_REMINDERS.LOADING_REMINDER_NEIGHBORS]: manualReminders.get(MANUAL_REMINDERS.LOADING_REMINDER_NEIGHBORS),
+    [MANUAL_REMINDERS.SUCCESSFUL_REMINDER_IDS]: manualReminders.get(MANUAL_REMINDERS.SUCCESSFUL_REMINDER_IDS),
+    [MANUAL_REMINDERS.FAILED_REMINDER_IDS]: manualReminders.get(MANUAL_REMINDERS.FAILED_REMINDER_IDS),
+
     [SEARCH.LOADING]: search.get(SEARCH.LOADING),
     [SEARCH.SEARCH_RESULTS]: search.get(SEARCH.SEARCH_RESULTS),
     [SEARCH.SEARCH_ERROR]: search.get(SEARCH.SEARCH_ERROR),
@@ -452,6 +529,10 @@ function mapDispatchToProps(dispatch :Function) :Object {
 
   Object.keys(RemindersActionFactory).forEach((action :string) => {
     actions[action] = RemindersActionFactory[action];
+  });
+
+  Object.keys(ManualRemindersActionFactory).forEach((action :string) => {
+    actions[action] = ManualRemindersActionFactory[action];
   });
 
   Object.keys(PersonActionFactory).forEach((action :string) => {
