@@ -1,4 +1,4 @@
-import { Constants } from 'lattice'
+import { Constants } from 'lattice';
 
 import { CONTACT_METHODS } from './consts/ContactInfoConsts';
 import { PROPERTY_TYPES } from './consts/DataModelConsts';
