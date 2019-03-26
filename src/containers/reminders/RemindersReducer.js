@@ -26,6 +26,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [REMINDERS.SUCCESSFUL_REMINDER_IDS]: Set(),
   [REMINDERS.FAILED_REMINDER_IDS]: Set(),
   [REMINDERS.LOADING_REMINDERS]: false,
+  [REMINDERS.LOADED]: false,
   [REMINDERS.REMINDER_NEIGHBORS]: Map(),
   [REMINDERS.REMINDERS_WITH_OPEN_PSA_IDS]: Map(),
   [REMINDERS.LOADING_REMINDER_NEIGHBORS]: false,
@@ -79,7 +80,9 @@ export default function remindersReducer(state :Map<*, *> = INITIAL_STATE, actio
 
     case loadRemindersforDate.case(action.type): {
       return loadRemindersforDate.reducer(state, action, {
-        REQUEST: () => state.set(REMINDERS.LOADING_REMINDERS, true),
+        REQUEST: () => state
+          .set(REMINDERS.LOADING_REMINDERS, true)
+          .set(REMINDERS.LOADED, false),
         SUCCESS: () => {
           const {
             reminderIds,
@@ -95,7 +98,9 @@ export default function remindersReducer(state :Map<*, *> = INITIAL_STATE, actio
             .set(REMINDERS.SUCCESSFUL_REMINDER_IDS, successfulRemindersIds)
             .set(REMINDERS.FAILED_REMINDER_IDS, failedRemindersIds);
         },
-        FINALLY: () => state.set(REMINDERS.LOADING_REMINDERS, false)
+        FINALLY: () => state
+          .set(REMINDERS.LOADING_REMINDERS, false)
+          .set(REMINDERS.LOADED, true),
       });
     }
 
