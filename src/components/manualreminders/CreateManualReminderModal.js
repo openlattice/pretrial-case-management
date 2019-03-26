@@ -31,6 +31,7 @@ type Props = {
   person :Map<*, *>,
   open :() => void,
   onClose :() => void,
+  submitCallback :() => void,
   actions :{
     refreshPersonNeighbors :(values :{ personId :string }) => void,
     submit :(values :{
@@ -44,7 +45,12 @@ type Props = {
 const MODAL_WIDTH = '750px';
 const MODAL_HEIGHT = 'max-content';
 
-const ManageSubscriptionModal = ({ onClose, open, person } :Props) => (
+const ManageSubscriptionModal = ({
+  onClose,
+  open,
+  person,
+  submitCallback
+} :Props) => (
   <Wrapper>
     <ModalTransition>
       {
@@ -68,7 +74,7 @@ const ManageSubscriptionModal = ({ onClose, open, person } :Props) => (
                 </TitleWrapper>
               </ColumnRow>
               <ColumnRow>
-                <ManualRemindersForm person={person} />
+                <ManualRemindersForm person={person} submitCallback={submitCallback} />
               </ColumnRow>
             </ModalBody>
           </Modal>
