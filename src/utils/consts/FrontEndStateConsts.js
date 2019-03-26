@@ -151,10 +151,11 @@ export const MANUAL_REMINDERS = {
   REMINDER_IDS: 'manualReminderIds',
   REMINDERS_BY_ID: 'manualRemindersById',
   SUCCESSFUL_REMINDER_IDS: 'successfulManualReminderIds',
+  PEOPLE_RECEIVING_REMINDERS: 'peopleReceivingManualReminders',
   FAILED_REMINDER_IDS: 'failedManualReminderIds',
   LOADING_MANUAL_REMINDERS: 'loadingManualReminders',
   MANUAL_REMINDER_NEIGHBORS: 'manualReminderNeighborsById',
-  LOADING_MANUAL_REMINDER_NEIGHBORS: 'loadingManualReminderNeighbors',
+  LOADING_REMINDER_NEIGHBORS: 'loadingManualReminderNeighbors',
   LOADING_FORM: 'loadingManualReminderForm',
   PEOPLE_NEIGHBORS: 'peopleNeighborsForManualReminder'
 };
