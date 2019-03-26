@@ -11,6 +11,7 @@ import { faCheck } from '@fortawesome/pro-light-svg-icons';
 
 import StyledRadio from '../controls/StyledRadio';
 import { getEntityKeyId } from '../../utils/DataUtils';
+import { getContactFields } from '../../utils/ContactInfoUtils';
 import { CONTACT_METHODS } from '../../utils/consts/ContactInfoConsts';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
@@ -74,14 +75,13 @@ class SelectContactInfoRow extends React.Component<Props, State> {
 
   renderContact = () => {
     const { contact } = this.props;
-    const email = contact.getIn([PROPERTY_TYPES.EMAIL, 0], '');
-    const phone = contact.getIn([PROPERTY_TYPES.PHONE, 0], '');
+    const { email, phone } = getContactFields(contact);
     return (email || phone);
   }
 
   contactType = () => {
     const { contact } = this.props;
-    const email = contact.getIn([PROPERTY_TYPES.EMAIL, 0], '');
+    const { email } = getContactFields(contact);
     return email ? CONTACT_METHODS.EMAIL : CONTACT_METHODS.PHONE;
   }
 
