@@ -117,6 +117,11 @@ type Props = {
   }
 }
 
+const NOTIFIED_CONSTS = {
+  WAS_NOTIFIED: 'wasNotified',
+  WAS_NOT_NOTIFIED: 'wasNotNotified'
+};
+
 const INITIAL_STATE = {
   selectedHearing: {},
   addingNewContact: false,
@@ -169,7 +174,7 @@ class NewHearingSection extends React.Component<Props, State> {
     const { person } = this.props;
     const { personId } = formatPeopleInfo(person);
 
-    const wasNotified = notified === 'Yes';
+    const wasNotified = notified === NOTIFIED_CONSTS.WAS_NOTIFIED;
 
     const staffId = this.getStaffId();
 
@@ -238,7 +243,7 @@ class NewHearingSection extends React.Component<Props, State> {
     const { contact } = this.state;
     const { name, value } = e.target;
 
-    if (name === 'notified' && !contact.size && value === 'No') {
+    if (name === 'notified' && !contact.size && value === NOTIFIED_CONSTS.WAS_NOT_NOTIFIED) {
       this.setState({ contactMethod: '' });
     }
     if (name === 'contactMethod' && value === 'Other') {
@@ -349,8 +354,8 @@ class NewHearingSection extends React.Component<Props, State> {
     const { submitted } = this.props;
     const { contactMethod, selectedHearing, notified } = this.state;
 
-    const wasNotified = notified === 'Yes';
-    const wasNotNotified = notified === 'No';
+    const wasNotified = notified === NOTIFIED_CONSTS.WAS_NOTIFIED;
+    const wasNotNotified = notified === NOTIFIED_CONSTS.WAS_NOT_NOTIFIED;
     const isPhone = (contactMethod === CONTACT_METHODS.PHONE);
     const isEmail = (contactMethod === CONTACT_METHODS.EMAIL);
     return selectedHearing.size
@@ -362,14 +367,14 @@ class NewHearingSection extends React.Component<Props, State> {
                 disabled={submitted}
                 label="Yes"
                 name="notified"
-                value="Yes"
+                value={NOTIFIED_CONSTS.WAS_NOTIFIED}
                 onChange={this.handleInputChange}
                 checked={wasNotified} />
             <StyledRadio
                 disabled={submitted}
                 label="No"
                 name="notified"
-                value="No"
+                value={NOTIFIED_CONSTS.WAS_NOT_NOTIFIED}
                 onChange={this.handleInputChange}
                 checked={wasNotNotified} />
           </FormContainer>
