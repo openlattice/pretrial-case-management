@@ -298,6 +298,7 @@ export const SEARCH = {
   SELECTED_PERSON_ID: 'selectedPersonId',
   PERSON_DETAILS: 'personDetails',
   LOADING_PERSON_DETAILS: 'loadingPersonDetails',
+  PERSON_DETAILS_LOADED: 'personDetailsLoaded',
   LOADING_CASES: 'loadingCases',
   NUM_CASES_TO_LOAD: 'numCasesToLoad',
   NUM_CASES_LOADED: 'numCasesLoaded',
