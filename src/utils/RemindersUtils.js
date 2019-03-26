@@ -41,7 +41,8 @@ export const OPT_OUT_HEADERS = {
 export const FILTERS = {
   ALL: 'All',
   FAILED: 'Failed',
-  SUCCESSFUL: 'Successful'
+  SUCCESSFUL: 'Successful',
+  MANUAL: 'Manual'
 };
 
 export const getReminderFields = (reminder) => {
