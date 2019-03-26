@@ -217,7 +217,7 @@ class RemindersContainer extends React.Component<Props, State> {
     }
   }
 
-  manualRemidnersSubmitCallback = () => {
+  manualRemindersSubmitCallback = () => {
     const { actions } = this.props;
     const { selectedDate } = this.state;
     const { loadManualRemindersForDate } = actions;
@@ -314,7 +314,7 @@ class RemindersContainer extends React.Component<Props, State> {
         <PersonSubscriptionList
             noResultsText="No Results"
             loading={loadingPeopleWithNoContacts}
-            submitCallback={this.manualRemidnersSubmitCallback}
+            submitCallback={this.manualRemindersSubmitCallback}
             people={people}
             noResults={!people.size} />
       </TableWrapper>
