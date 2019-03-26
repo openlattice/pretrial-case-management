@@ -117,17 +117,12 @@ type Props = {
   }
 }
 
-const NOTIFIED_CONSTS = {
-  WAS_NOTIFIED: 'wasNotified',
-  WAS_NOT_NOTIFIED: 'wasNotNotified'
-};
-
 const INITIAL_STATE = {
   selectedHearing: { hearing: Map(), hearingId: '', entityKeyId: '' },
   addingNewContact: false,
   contact: Map(),
   contactMethod: '',
-  notified: '',
+  notified: null,
   notes: '',
   editing: false
 };
@@ -175,8 +170,6 @@ class NewHearingSection extends React.Component<Props, State> {
     const { personId } = formatPeopleInfo(person);
     const { hearing } = selectedHearing;
 
-    const wasNotified = notified === NOTIFIED_CONSTS.WAS_NOTIFIED;
-
     const staffId = this.getStaffId();
 
     const hearingId = getFirstNeighborValue(hearing, PROPERTY_TYPES.CASE_ID, null);
@@ -188,7 +181,7 @@ class NewHearingSection extends React.Component<Props, State> {
 
       // Reminder
       [PROPERTY_TYPES.CONTACT_METHOD]: [contactMethod],
-      [PROPERTY_TYPES.NOTIFIED]: [wasNotified],
+      [PROPERTY_TYPES.NOTIFIED]: [notified],
       [PROPERTY_TYPES.REMINDER_ID]: [randomUUID()],
       [PROPERTY_TYPES.REMINDER_NOTES]: [notes],
       [PROPERTY_TYPES.REMINDER_TYPE]: [REMINDER_TYPES.HEARING],
@@ -241,13 +234,17 @@ class NewHearingSection extends React.Component<Props, State> {
   }
 
   handleInputChange = (e) => {
-    const { contact } = this.state;
     const { name, value } = e.target;
 
-    if (name === 'notified' && !contact.size && value === NOTIFIED_CONSTS.WAS_NOT_NOTIFIED) {
-      this.setState({ contactMethod: '' });
+    if (name === 'notified' && value === 'false') {
+      this.setState({ [name]: false });
     }
-    this.setState({ [name]: value });
+    else if (name === 'notified' && value === 'true') {
+      this.setState({ [name]: true });
+    }
+    else {
+      this.setState({ [name]: value });
+    }
   }
 
   onContactListRadioChange = contact => this.setState({ contact });
@@ -343,10 +340,8 @@ class NewHearingSection extends React.Component<Props, State> {
   renderContactSection = () => {
     const { submitted } = this.props;
     const { contactMethod, selectedHearing, notified } = this.state;
-    const { hearing } = selectedHearing;
 
-    const wasNotified = notified === NOTIFIED_CONSTS.WAS_NOTIFIED;
-    const wasNotNotified = notified === NOTIFIED_CONSTS.WAS_NOT_NOTIFIED;
+    const { hearing } = selectedHearing;
     const isPhone = (contactMethod === CONTACT_METHODS.PHONE);
     const isEmail = (contactMethod === CONTACT_METHODS.EMAIL);
     return hearing.size
@@ -358,16 +353,16 @@ class NewHearingSection extends React.Component<Props, State> {
                 disabled={submitted}
                 label="Yes"
                 name="notified"
-                value={NOTIFIED_CONSTS.WAS_NOTIFIED}
+                value
                 onChange={this.handleInputChange}
-                checked={wasNotified} />
+                checked={notified === true} />
             <StyledRadio
                 disabled={submitted}
                 label="No"
                 name="notified"
-                value={NOTIFIED_CONSTS.WAS_NOT_NOTIFIED}
+                value={false}
                 onChange={this.handleInputChange}
-                checked={wasNotNotified} />
+                checked={notified === false} />
           </FormContainer>
           { notified ? this.renderContactMethod() : null }
           { (isPhone || isEmail) ? this.renderContactTableAndForm() : null }
