@@ -413,24 +413,23 @@ class NewHearingSection extends React.Component<Props, State> {
   renderNotesSection = () => {
     const { submitted } = this.props;
     const { notes } = this.state;
-    return submitted
-      ? (
-        <>
-          <InputLabel>Notes</InputLabel>
-          <FlexContainer>{ notes }</FlexContainer>
-        </>
-      )
-      : (
-        <>
-          <InputLabel>Notes</InputLabel>
-          <FlexContainer>
-            <NotesInput
-                disabled={submitted}
-                onChange={this.handleInputChange}
-                name="notes" />
-          </FlexContainer>
-        </>
-      );
+    return (
+      <>
+        <InputLabel>Notes</InputLabel>
+        <FlexContainer>
+          {
+            submitted
+              ? notes
+              : (
+                <NotesInput
+                    disabled={submitted}
+                    onChange={this.handleInputChange}
+                    name="notes" />
+              )
+          }
+        </FlexContainer>
+      </>
+    );
   }
 
   render() {
