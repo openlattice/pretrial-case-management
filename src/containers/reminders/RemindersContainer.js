@@ -34,8 +34,7 @@ import {
   REMINDERS,
   PSA_NEIGHBOR,
   SEARCH,
-  STATE,
-  SUBMIT
+  STATE
 } from '../../utils/consts/FrontEndStateConsts';
 
 import * as AppActionFactory from '../app/AppActionFactory';
@@ -139,7 +138,9 @@ type Props = {
   peopleReceivingManualReminders :Map<*, *>,
   peopleWithHearingsButNoContacts :Map<*, *>,
   reminderNeighborsById :Map<*, *>,
+  remindersLoaded :boolean,
   manualRemindersById :Map<*, *>,
+  manualRemindersLoaded :boolean,
   manualReminderNeighborsById :Map<*, *>,
   searchResults :Set<*>,
   searchHasRun :boolean,
@@ -185,16 +186,16 @@ class RemindersContainer extends React.Component<Props, State> {
 
   loadData = (props) => {
     const { selectedDate } = this.state;
-    const { actions, manualReminderIds, reminderIds } = props;
+    const { actions, manualRemindersLoaded, remindersLoaded } = props;
     const {
       loadManualRemindersForDate,
       loadOptOutsForDate,
       loadRemindersforDate
     } = actions;
-    if (!manualReminderIds.size) {
+    if (!manualRemindersLoaded) {
       loadManualRemindersForDate({ date: selectedDate });
     }
-    if (!reminderIds.size) {
+    if (!remindersLoaded) {
       loadRemindersforDate({ date: selectedDate });
       loadOptOutsForDate({ date: selectedDate });
     }
@@ -368,13 +369,13 @@ class RemindersContainer extends React.Component<Props, State> {
     } = this.props;
     const { bulkDownloadRemindersPDF } = actions;
     const failedPeopleIds = failedReminderIds.map((reminderId) => {
-      const personId = reminderNeighborsById.getIn([
+      const personEntityKeyId = reminderNeighborsById.getIn([
         reminderId,
         peopleFqn,
         PSA_NEIGHBOR.DETAILS,
         OPENLATTICE_ID_FQN,
         0], '');
-      return personId;
+      return personEntityKeyId;
     });
     bulkDownloadRemindersPDF({
       date: selectedDate,
@@ -491,6 +492,7 @@ function mapStateToProps(state) {
     [REMINDERS.SUCCESSFUL_REMINDER_IDS]: reminders.get(REMINDERS.SUCCESSFUL_REMINDER_IDS),
     [REMINDERS.FAILED_REMINDER_IDS]: reminders.get(REMINDERS.FAILED_REMINDER_IDS),
     [REMINDERS.LOADING_REMINDERS]: reminders.get(REMINDERS.LOADING_REMINDERS),
+    [REMINDERS.LOADED]: reminders.get(REMINDERS.LOADED),
     [REMINDERS.REMINDER_NEIGHBORS]: reminders.get(REMINDERS.REMINDER_NEIGHBORS),
     [REMINDERS.LOADING_REMINDER_NEIGHBORS]: reminders.get(REMINDERS.LOADING_REMINDER_NEIGHBORS),
     [REMINDERS.PEOPLE_WITH_HEARINGS_BUT_NO_CONTACT]: reminders.get(REMINDERS.PEOPLE_WITH_HEARINGS_BUT_NO_CONTACT),
@@ -507,6 +509,7 @@ function mapStateToProps(state) {
     [MANUAL_REMINDERS.REMINDER_IDS]: manualReminders.get(MANUAL_REMINDERS.REMINDER_IDS),
     [MANUAL_REMINDERS.REMINDERS_BY_ID]: manualReminders.get(MANUAL_REMINDERS.REMINDERS_BY_ID),
     [MANUAL_REMINDERS.LOADING_MANUAL_REMINDERS]: manualReminders.get(MANUAL_REMINDERS.LOADING_MANUAL_REMINDERS),
+    [MANUAL_REMINDERS.LOADED]: manualReminders.get(MANUAL_REMINDERS.LOADED),
     [MANUAL_REMINDERS.MANUAL_REMINDER_NEIGHBORS]: manualReminders.get(MANUAL_REMINDERS.MANUAL_REMINDER_NEIGHBORS),
     [MANUAL_REMINDERS.PEOPLE_RECEIVING_REMINDERS]: manualReminders.get(MANUAL_REMINDERS.PEOPLE_RECEIVING_REMINDERS),
     [MANUAL_REMINDERS.LOADING_REMINDER_NEIGHBORS]: manualReminders.get(MANUAL_REMINDERS.LOADING_REMINDER_NEIGHBORS),
