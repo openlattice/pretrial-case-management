@@ -24,7 +24,7 @@ import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelCons
 import { OL } from '../../utils/consts/Colors';
 import { FORM_IDS } from '../../utils/consts/Consts';
 import { filterContactsByType, getContactInfoFields } from '../../utils/ContactInfoUtils';
-import { getEntityKeyId } from '../../utils/DataUtils';
+import { getEntityKeyId, getFirstNeighborValue } from '../../utils/DataUtils';
 import { REMINDER_TYPES } from '../../utils/RemindersUtils';
 import { CONTACT_METHODS } from '../../utils/consts/ContactInfoConsts';
 import {
@@ -173,9 +173,9 @@ class NewHearingSection extends React.Component<Props, State> {
 
     const staffId = this.getStaffId();
 
-    const hearingId = selectedHearing.getIn([PROPERTY_TYPES.CASE_ID, 0], null);
+    const hearingId = getFirstNeighborValue(selectedHearing, PROPERTY_TYPES.CASE_ID, null);
 
-    const contactInformationId = contact.getIn([PROPERTY_TYPES.GENERAL_ID, 0], null);
+    const contactInformationId = getFirstNeighborValue(contact, PROPERTY_TYPES.GENERAL_ID, null);
 
     const submissionValues = {
       [PROPERTY_TYPES.DATE_TIME]: [moment().toISOString(true)],
