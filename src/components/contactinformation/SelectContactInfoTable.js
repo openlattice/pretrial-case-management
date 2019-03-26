@@ -8,6 +8,7 @@ import { Map } from 'immutable';
 
 import SelectContactInfoRow from './SelectContactInfoRow';
 import { NoResults } from '../../utils/Layout';
+import { getFirstNeighborValue } from '../../utils/DataUtils';
 import { OL } from '../../utils/consts/Colors';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
@@ -58,9 +59,9 @@ class ChargeTable extends React.Component<Props, State> {
       noResults
     } = this.props;
     const contactList = contactInfo
-      .sortBy((contact => contact.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.PHONE, 0], '')))
-      .sortBy((contact => contact.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.EMAIL, 0], '')))
-      .sortBy((contact => !contact.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.IS_PREFERRED, 0], false)))
+      .sortBy(contact => getFirstNeighborValue(contact, PROPERTY_TYPES.PHONE))
+      .sortBy(contact => getFirstNeighborValue(contact, PROPERTY_TYPES.EMAIL))
+      .sortBy(contact => getFirstNeighborValue(contact, PROPERTY_TYPES.IS_PREFERRED, false))
       .map((contact => (
         <SelectContactInfoRow
             key={contact.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0], '')}
