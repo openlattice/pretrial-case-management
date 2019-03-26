@@ -23,6 +23,7 @@ import { formatPeopleInfo } from '../../utils/PeopleUtils';
 import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
 import { FORM_IDS } from '../../utils/consts/Consts';
+import { filterContactsByType, getContactFields } from '../../utils/ContactInfoUtils';
 import { getEntityKeyId } from '../../utils/DataUtils';
 import { REMINDER_TYPES } from '../../utils/RemindersUtils';
 import { CONTACT_METHODS } from '../../utils/consts/ContactInfoConsts';
@@ -69,6 +70,15 @@ const FlexContainer = styled(FormContainer)`
   justify-content: center;
 `;
 
+const SuccessBanner = styled(FormContainer)`
+  background: ${OL.GREEN01};
+  color: ${OL.WHITE};
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+`;
+
 const InputLabel = styled.div`
   color: ${OL.GREY02};
   font-weight: 600;
@@ -89,8 +99,9 @@ type Props = {
   personId :string,
   person :Map<*, *>,
   peopleNeighborsForManualReminder :Map<*, *>,
-  refreshingPersonNeighbors :boolean,
   submitting :boolean,
+  submitted :boolean,
+  submitCallback :() => void,
   actions :{
     refreshPersonNeighbors :(values :{ personId :string }) => void,
     submit :(values :{
@@ -109,11 +120,11 @@ type Props = {
 const INITIAL_STATE = {
   selectedHearing: {},
   addingNewContact: false,
-  hearingEntityKeyId: '',
   contact: Map(),
   contactMethod: '',
   notified: '',
   notes: '',
+  editing: false
 };
 
 class NewHearingSection extends React.Component<Props, State> {
@@ -158,9 +169,11 @@ class NewHearingSection extends React.Component<Props, State> {
     const { person } = this.props;
     const { identification } = formatPeopleInfo(person);
 
+    const wasNotified = notified === 'Yes';
+
     const staffId = this.getStaffId();
 
-    const { hearingId } = selectedHearing;
+    const hearingId = selectedHearing.getIn([PROPERTY_TYPES.CASE_ID, 0], null);
 
     const contactInformationId = contact.getIn([PROPERTY_TYPES.GENERAL_ID, 0], null);
 
@@ -169,7 +182,7 @@ class NewHearingSection extends React.Component<Props, State> {
 
       // Reminder
       [PROPERTY_TYPES.CONTACT_METHOD]: [contactMethod],
-      [PROPERTY_TYPES.NOTIFIED]: [notified],
+      [PROPERTY_TYPES.NOTIFIED]: [wasNotified],
       [PROPERTY_TYPES.REMINDER_ID]: [randomUUID()],
       [PROPERTY_TYPES.REMINDER_NOTES]: [notes],
       [PROPERTY_TYPES.REMINDER_TYPE]: [REMINDER_TYPES.HEARING],
@@ -189,24 +202,36 @@ class NewHearingSection extends React.Component<Props, State> {
     return submissionValues;
   }
 
+  submitCallback = () => {
+    const { submitCallback } = this.props;
+    if (submitCallback) submitCallback();
+  }
+
   submitManualReminder = () => {
     const { actions, app } = this.props;
     const { submit } = actions;
     const values = this.getSubmissionValues();
-    submit({ app, values, config: ManualReminderConfig });
+    submit({
+      app,
+      values,
+      config: ManualReminderConfig,
+      callback: this.submitCallBack
+    });
   }
 
   renderSubmitButton = () => {
-    const { submitting } = this.props;
-    return (
-      <FlexContainer>
-        <InfoButton
-            disabled={submitting || !this.isReadyToSubmit()}
-            onClick={this.submitManualReminder}>
-          Submit
-        </InfoButton>
-      </FlexContainer>
-    );
+    const { submitting, submitted } = this.props;
+    return submitted
+      ? <SuccessBanner>Reminder Has Been Submitted</SuccessBanner>
+      : (
+        <FlexContainer>
+          <InfoButton
+              disabled={submitting || !this.isReadyToSubmit()}
+              onClick={this.submitManualReminder}>
+            Submit
+          </InfoButton>
+        </FlexContainer>
+      );
   }
 
   handleInputChange = (e) => {
@@ -216,18 +241,16 @@ class NewHearingSection extends React.Component<Props, State> {
     if (name === 'notified' && !contact.size && value === 'No') {
       this.setState({ contactMethod: '' });
     }
+    if (name === 'contactMethod' && value === 'Other') {
+      this.setState({ contact: Map() });
+    }
     this.setState({ [name]: value });
   }
 
-  onContactListRadioChange = contact => this.setState({ contact })
-
-  radioIsDisabled = () => {
-    const { submitting, refreshingPersonNeighbors } = this.props;
-    const { contact } = this.state;
-    return submitting || refreshingPersonNeighbors || contact.size;
-  }
+  onContactListRadioChange = contact => this.setState({ contact });
 
   renderContactMethod = () => {
+    const { submitted } = this.props;
     const { contactMethod } = this.state;
     const isPhone = (contactMethod === CONTACT_METHODS.PHONE);
     const isEmail = (contactMethod === CONTACT_METHODS.EMAIL);
@@ -237,21 +260,21 @@ class NewHearingSection extends React.Component<Props, State> {
         <InputLabel>How were they contacted?</InputLabel>
         <FormContainer>
           <StyledRadio
-              disabled={this.radioIsDisabled()}
+              disabled={submitted}
               label={CONTACT_METHODS.PHONE}
               name="contactMethod"
               value={CONTACT_METHODS.PHONE}
               onChange={this.handleInputChange}
               checked={isPhone} />
           <StyledRadio
-              disabled={this.radioIsDisabled()}
+              disabled={submitted}
               label={CONTACT_METHODS.EMAIL}
               name="contactMethod"
               value={CONTACT_METHODS.EMAIL}
               onChange={this.handleInputChange}
               checked={isEmail} />
           <StyledRadio
-              disabled={this.radioIsDisabled()}
+              disabled={submitted}
               label={CONTACT_METHODS.OTHER}
               name="contactMethod"
               value={CONTACT_METHODS.OTHER}
@@ -274,26 +297,32 @@ class NewHearingSection extends React.Component<Props, State> {
   renderContactForm = () => {
     const { person } = this.props;
     const { identification } = formatPeopleInfo(person);
-    const { contact } = this.state;
-    const contactDisplay = contact.size
-      ? contact
-      : (
-        <>
-          <InputLabel>Add Contact</InputLabel>
-          <NewContactForm
-              personId={identification}
-              editing={!contact}
-              submitCallback={this.notAddingContactInformation} />
-        </>
-      );
-    return contactDisplay;
+    const { addingNewContact } = this.state;
+    return (
+      <>
+        <InputLabel>Add Contact</InputLabel>
+        <NewContactForm
+            personId={identification}
+            editing={!!addingNewContact}
+            submitCallback={this.notAddingContactInformation} />
+      </>
+    );
   }
 
   renderContactTableAndForm = () => {
-    const { addingNewContact, contact } = this.state;
-    const { peopleNeighborsForManualReminder } = this.props;
-    const contacts = peopleNeighborsForManualReminder.get(CONTACT_INFORMATION, List());
-    const contactEntityKeyId = getEntityKeyId(contact);
+    const { addingNewContact, contact, contactMethod } = this.state;
+    const { peopleNeighborsForManualReminder, submitted } = this.props;
+    const { contactEntityKeyId } = getContactFields(contact);
+    let contacts = filterContactsByType(
+      peopleNeighborsForManualReminder.get(CONTACT_INFORMATION, List()),
+      contactMethod
+    );
+    if (submitted) {
+      contacts = contacts.filter((contactObj) => {
+        const entityKeyId = getEntityKeyId(contactObj);
+        return entityKeyId === contactEntityKeyId;
+      });
+    }
     if (contacts.size) {
       return (
         <>
@@ -302,8 +331,8 @@ class NewHearingSection extends React.Component<Props, State> {
               onCheckBoxChange={this.onContactListRadioChange}
               selectedContactEntityKeyId={contactEntityKeyId}
               noResults={!contacts.size} />
-          { !addingNewContact ? this.renderAddContactButton() : null }
-          { addingNewContact ? this.renderContactForm() : null }
+          { !addingNewContact && !submitted ? this.renderAddContactButton() : null }
+          { addingNewContact && !submitted ? this.renderContactForm() : null }
         </>
       );
     }
@@ -317,33 +346,34 @@ class NewHearingSection extends React.Component<Props, State> {
   }
 
   renderContactSection = () => {
-    const { contactMethod, hearingEntityKeyId, notified } = this.state;
+    const { submitted } = this.props;
+    const { contactMethod, selectedHearing, notified } = this.state;
 
     const wasNotified = notified === 'Yes';
     const wasNotNotified = notified === 'No';
     const isPhone = (contactMethod === CONTACT_METHODS.PHONE);
     const isEmail = (contactMethod === CONTACT_METHODS.EMAIL);
-    return hearingEntityKeyId
+    return selectedHearing.size
       ? (
         <>
           <InputLabel>{`Was ${this.getSubjectsName()} succesfully contacted?`}</InputLabel>
           <FormContainer>
             <StyledRadio
-                disabled={this.radioIsDisabled()}
+                disabled={submitted}
                 label="Yes"
                 name="notified"
                 value="Yes"
                 onChange={this.handleInputChange}
                 checked={wasNotified} />
             <StyledRadio
-                disabled={this.radioIsDisabled()}
+                disabled={submitted}
                 label="No"
                 name="notified"
                 value="No"
                 onChange={this.handleInputChange}
                 checked={wasNotNotified} />
           </FormContainer>
-          { wasNotified ? this.renderContactMethod() : null }
+          { notified ? this.renderContactMethod() : null }
           { (isPhone || isEmail) ? this.renderContactTableAndForm() : null }
         </>
       ) : null;
@@ -351,15 +381,13 @@ class NewHearingSection extends React.Component<Props, State> {
 
   selectHearing = (hearing, hearingId, entityKeyId) => {
     this.setState({
-      selectedHearing: { hearing, hearingId, entityKeyId },
-      hearingEntityKeyId: entityKeyId
+      selectedHearing: hearing
     });
   }
 
   renderHearingSelection = () => {
     const { selectedHearing } = this.state;
     const { peopleNeighborsForManualReminder } = this.props;
-    console.log(this.state);
     const hearings = peopleNeighborsForManualReminder.get(HEARINGS, List());
 
     return (
@@ -377,20 +405,32 @@ class NewHearingSection extends React.Component<Props, State> {
     );
   }
 
-  renderNotesSection = () => (
-    <>
-      <InputLabel>Notes</InputLabel>
-      <FlexContainer>
-        <NotesInput
-            onChange={this.handleInputChange}
-            name="notes" />
-      </FlexContainer>
-    </>
-  )
+  renderNotesSection = () => {
+    const { submitted } = this.props;
+    const { notes } = this.state;
+    return submitted
+      ? (
+        <>
+          <InputLabel>Notes</InputLabel>
+          <FlexContainer>{ notes }</FlexContainer>
+        </>
+      )
+      : (
+        <>
+          <InputLabel>Notes</InputLabel>
+          <FlexContainer>
+            <NotesInput
+                disabled={submitted}
+                onChange={this.handleInputChange}
+                name="notes" />
+          </FlexContainer>
+        </>
+      );
+  }
 
   render() {
-    const { loadingManualReminderForm } = this.props;
-    if (loadingManualReminderForm) return <LogoLoader />
+    const { loadingManualReminderForm, submitting } = this.props;
+    if (loadingManualReminderForm || submitting) return <LogoLoader />;
     return (
       <FormWrapper>
         {this.renderHearingSelection()}
@@ -414,7 +454,8 @@ function mapStateToProps(state) {
     [MANUAL_REMINDERS.LOADING_FORM]: manualReminders.get(MANUAL_REMINDERS.LOADING_FORM),
     [MANUAL_REMINDERS.PEOPLE_NEIGHBORS]: manualReminders.get(MANUAL_REMINDERS.PEOPLE_NEIGHBORS),
 
-    [SUBMIT.SUBMITTING]: submit.get(SUBMIT.SUBMITTING, false)
+    [SUBMIT.SUBMITTING]: submit.get(SUBMIT.SUBMITTING),
+    [SUBMIT.SUBMITTED]: submit.get(SUBMIT.SUBMITTED)
   };
 }
 
