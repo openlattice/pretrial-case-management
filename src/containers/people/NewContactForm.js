@@ -19,6 +19,7 @@ import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
 import { InputGroup } from '../../components/person/PersonFormTags';
 import { CONTACT_METHODS } from '../../utils/consts/ContactInfoConsts';
+import { formatPhoneNumber } from '../../utils/ContactInfoUtils';
 import {
   APP,
   STATE,
@@ -216,7 +217,7 @@ class NewHearingSection extends React.Component<Props, State> {
     else if (phoneIsValid(value)) {
       this.setState({
         [PROPERTY_TYPES.EMAIL]: '',
-        [PROPERTY_TYPES.PHONE]: this.formatPhoneNumber(value),
+        [PROPERTY_TYPES.PHONE]: formatPhoneNumber(value),
         contactMethod: CONTACT_METHODS.PHONE
       });
     }
@@ -231,15 +232,6 @@ class NewHearingSection extends React.Component<Props, State> {
   isReadyToSubmit = () :boolean => {
     const { state } = this;
     return (state[PROPERTY_TYPES.EMAIL] || state[PROPERTY_TYPES.PHONE]);
-  }
-
-  formatPhoneNumber = (phone) => {
-    const cleaned = (phone).replace(/\D/g, '');
-    const match = cleaned.match(/^(\d{3})(\d{3})(\d{4})$/);
-    if (match) {
-      return `(${match[1]}) ${match[2]}-${match[3]}`;
-    }
-    return null;
   }
 
   contactIsValid = () => {
