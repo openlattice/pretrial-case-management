@@ -115,6 +115,7 @@ type Props = {
   hasOpenPSA? :boolean,
   multipleOpenPSAs? :boolean,
   judgesview? :boolean,
+  isReceivingReminders :boolean,
   openPSAModal :(psaId :string, callback :() => void) => void,
 };
 
@@ -185,7 +186,7 @@ class PersonCard extends React.Component<Props, State> {
       : (
         <StyledUndecoratedLink to={`${Routes.PERSON_DETAILS_ROOT}/${personId}`}>
           <TagPlaceholder />
-          <StyledPersonCard hasOpenPSA={hasOpenPSA} >
+          <StyledPersonCard hasOpenPSA={hasOpenPSA}>
             <MugShot src={photo || defaultProfile} />
             <PersonInfoSection>
               <Name>{name}</Name>
