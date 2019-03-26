@@ -24,16 +24,13 @@ import {
 
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { getPropertyTypeId } from '../../edm/edmUtils';
-import { PSA_STATUSES } from '../../utils/consts/Consts';
 import { getHearingFields } from '../../utils/consts/HearingConsts';
-import exportPDFList from '../../utils/CourtRemindersPDFUtils';
 import { toISODate } from '../../utils/FormattingUtils';
-import { addWeekdays } from '../../utils/DataUtils';
+import { hearingNeedsReminder } from '../../utils/RemindersUtils';
 import { obfuscateBulkEntityNeighbors } from '../../utils/consts/DemoNames';
 import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import {
   APP,
-  PSA_ASSOCIATION,
   PSA_NEIGHBOR,
   STATE
 } from '../../utils/consts/FrontEndStateConsts';
@@ -50,19 +47,17 @@ let {
   CONTACT_INFORMATION,
   HEARINGS,
   PEOPLE,
-  PSA_SCORES,
-  REMINDERS,
-  REMINDER_OPT_OUTS,
-  PRETRIAL_CASES
+  MANUAL_REMINDERS,
+  PRETRIAL_CASES,
+  STAFF
 } = APP_TYPES_FQNS;
 
 CONTACT_INFORMATION = CONTACT_INFORMATION.toString();
 HEARINGS = HEARINGS.toString();
 PEOPLE = PEOPLE.toString();
-PSA_SCORES = PSA_SCORES.toString();
-REMINDERS = REMINDERS.toString();
-REMINDER_OPT_OUTS = REMINDER_OPT_OUTS.toString();
+MANUAL_REMINDERS = MANUAL_REMINDERS.toString();
 PRETRIAL_CASES = PRETRIAL_CASES.toString();
+STAFF = STAFF.toString();
 
 
 const { OPENLATTICE_ID_FQN } = Constants;
@@ -100,8 +95,7 @@ function* loadManualRemindersFormWorker(action :SequenceAction) :Generator<*, *,
           const neighborObj = neighbor.get(PSA_NEIGHBOR.DETAILS, Map());
           const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
           if (appTypeFqn === HEARINGS) {
-            const { hearingDateTime } = getHearingFields(neighborObj);
-            if (moment().isBefore(hearingDateTime)) {
+            if (hearingNeedsReminder(neighborObj)) {
               neighborsByAppTypeFqn = neighborsByAppTypeFqn.set(
                 appTypeFqn,
                 neighborsByAppTypeFqn.get(appTypeFqn, List()).push(fromJS(neighborObj))
@@ -142,21 +136,20 @@ function* loadManualRemindersForDateWorker(action :SequenceAction) :Generator<*,
   try {
     yield put(loadManualRemindersForDate.request(action.id));
     const { date } = action.value;
-    let reminderIds = Set();
-    let futureReminders = Map();
-    let pastReminders = Map();
-    let successfulRemindersIds = Set();
-    let failedRemindersIds = Set();
+    let manualReminderIds = Set();
+    let manualReminders = Map();
+    let successfulManualRemindersIds = Set();
+    let failedManualRemindersIds = Set();
 
     const DATE_TIME_FQN = new FullyQualifiedName(PROPERTY_TYPES.DATE_TIME);
 
     const app = yield select(getApp);
     const edm = yield select(getEDM);
     const orgId = yield select(getOrgId);
-    const remindersEntitySetId = getEntitySetIdFromApp(app, REMINDERS, orgId);
+    const manualRemindersEntitySetId = getEntitySetIdFromApp(app, MANUAL_REMINDERS, orgId);
     const datePropertyTypeId = getPropertyTypeId(edm, DATE_TIME_FQN);
 
-    const ceiling = yield call(DataApi.getEntitySetSize, remindersEntitySetId);
+    const ceiling = yield call(DataApi.getEntitySetSize, manualRemindersEntitySetId);
 
     const reminderOptions = {
       searchTerm: `${datePropertyTypeId}:"${toISODate(date)}"`,
@@ -164,43 +157,39 @@ function* loadManualRemindersForDateWorker(action :SequenceAction) :Generator<*,
       maxHits: ceiling,
       fuzzy: false
     };
-    const allRemindersDataforDate = yield call(SearchApi.searchEntitySetData, remindersEntitySetId, reminderOptions);
-    const remindersOnDate = fromJS(allRemindersDataforDate.hits);
-    remindersOnDate.forEach((reminder) => {
+    const allRemindersDataforDate = yield call(
+      SearchApi.searchEntitySetData,
+      manualRemindersEntitySetId,
+      reminderOptions
+    );
+    const manualRemindersOnDate = fromJS(allRemindersDataforDate.hits);
+    manualRemindersOnDate.forEach((reminder) => {
       const entityKeyId = reminder.getIn([OPENLATTICE_ID_FQN, 0], '');
       const dateTime = moment(reminder.getIn([PROPERTY_TYPES.DATE_TIME, 0]));
       const wasNotified = reminder.getIn([PROPERTY_TYPES.NOTIFIED, 0], false);
 
-      const reminderIsPending = dateTime.isAfter();
-
       if (entityKeyId && dateTime) {
-        reminderIds = reminderIds.add(entityKeyId);
-        if (reminderIsPending) {
-          futureReminders = futureReminders.set(entityKeyId, reminder);
+        manualReminderIds = manualReminderIds.add(entityKeyId);
+        manualReminders = manualReminders.set(entityKeyId, reminder);
+        if (wasNotified) {
+          successfulManualRemindersIds = successfulManualRemindersIds.add(entityKeyId);
         }
         else {
-          pastReminders = pastReminders.set(entityKeyId, reminder);
-          if (wasNotified) {
-            successfulRemindersIds = successfulRemindersIds.add(entityKeyId);
-          }
-          else {
-            failedRemindersIds = failedRemindersIds.add(entityKeyId);
-          }
+          failedManualRemindersIds = failedManualRemindersIds.add(entityKeyId);
         }
       }
     });
 
     yield put(loadManualRemindersForDate.success(action.id, {
-      reminderIds,
-      futureReminders,
-      pastReminders,
-      successfulRemindersIds,
-      failedRemindersIds,
+      manualReminderIds,
+      manualReminders,
+      successfulManualRemindersIds,
+      failedManualRemindersIds
     }));
 
-    if (reminderIds.size) {
-      reminderIds = reminderIds.toJS();
-      yield put(loadReminderNeighborsById({ reminderIds }));
+    if (manualReminderIds.size) {
+      manualReminderIds = manualReminderIds.toJS();
+      yield put(loadManualRemindersNeighborsById({ manualReminderIds }));
     }
   }
   catch (error) {
@@ -221,30 +210,37 @@ function* loadManualRemindersNeighborsByIdWorker(action :SequenceAction) :Genera
   try {
     yield put(loadManualRemindersNeighborsById.request(action.id));
 
-    const { reminderIds } = action.value;
+    const { manualReminderIds } = action.value;
 
-    let reminderNeighborsById = Map();
+    let manualReminderNeighborsById = Map();
     let hearingIds = Set();
     let hearingsMap = Map();
-    let hearingIdsToReminderIds = Map();
+    let hearingIdsToManualReminderIds = Map();
+    let peopleReceivingManualReminders = Set();
 
-    if (reminderIds.length) {
+    if (manualReminderIds.length) {
       const app = yield select(getApp);
       const orgId = yield select(getOrgId);
       const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
-      const remindersEntitySetId = getEntitySetIdFromApp(app, REMINDERS, orgId);
+      const manualRemindersEntitySetId = getEntitySetIdFromApp(app, MANUAL_REMINDERS, orgId);
       const contactInformationEntitySetId = getEntitySetIdFromApp(app, CONTACT_INFORMATION, orgId);
       const hearingsEntitySetId = getEntitySetIdFromApp(app, HEARINGS, orgId);
       const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE, orgId);
+      const staffEntitySetId = getEntitySetIdFromApp(app, STAFF, orgId);
       const pretrialCasesEntitySetId = getEntitySetIdFromApp(app, PRETRIAL_CASES, orgId);
-      let neighborsById = yield call(SearchApi.searchEntityNeighborsWithFilter, remindersEntitySetId, {
-        entityKeyIds: reminderIds,
+      let neighborsById = yield call(SearchApi.searchEntityNeighborsWithFilter, manualRemindersEntitySetId, {
+        entityKeyIds: manualReminderIds,
         sourceEntitySetIds: [],
-        destinationEntitySetIds: [contactInformationEntitySetId, hearingsEntitySetId, peopleEntitySetId]
+        destinationEntitySetIds: [
+          staffEntitySetId,
+          contactInformationEntitySetId,
+          hearingsEntitySetId,
+          peopleEntitySetId
+        ]
       });
       neighborsById = obfuscateBulkEntityNeighbors(neighborsById);
       neighborsById = fromJS(neighborsById);
-      neighborsById.entrySeq().forEach(([reminderId, neighbors]) => {
+      neighborsById.entrySeq().forEach(([manualReminderEntityKeyId, neighbors]) => {
         let neighborsByAppTypeFqn = Map();
         if (neighbors) {
           neighbors.forEach((neighbor) => {
@@ -253,9 +249,12 @@ function* loadManualRemindersNeighborsByIdWorker(action :SequenceAction) :Genera
             const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
             const entityKeyId = neighbor.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0]);
             if (appTypeFqn === HEARINGS) {
-              hearingIdsToReminderIds = hearingIdsToReminderIds.set(entityKeyId, reminderId);
+              hearingIdsToManualReminderIds = hearingIdsToManualReminderIds.set(entityKeyId, manualReminderEntityKeyId);
               hearingIds = hearingIds.add(entityKeyId);
               hearingsMap = hearingsMap.set(entityKeyId, neighborObj);
+            }
+            if (appTypeFqn === PEOPLE) {
+              peopleReceivingManualReminders = peopleReceivingManualReminders.add(entityKeyId);
             }
             neighborsByAppTypeFqn = neighborsByAppTypeFqn.set(
               appTypeFqn,
@@ -263,7 +262,7 @@ function* loadManualRemindersNeighborsByIdWorker(action :SequenceAction) :Genera
             );
           });
         }
-        reminderNeighborsById = reminderNeighborsById.set(reminderId, neighborsByAppTypeFqn);
+        manualReminderNeighborsById = manualReminderNeighborsById.set(manualReminderEntityKeyId, neighborsByAppTypeFqn);
       });
 
       let hearingNeighborsById = yield call(SearchApi.searchEntityNeighborsWithFilter, hearingsEntitySetId, {
@@ -285,17 +284,18 @@ function* loadManualRemindersNeighborsByIdWorker(action :SequenceAction) :Genera
               );
             }
           });
-          const reminderId = hearingIdsToReminderIds.get(hearingId);
-          reminderNeighborsById = reminderNeighborsById.set(
-            reminderId,
-            reminderNeighborsById.get(reminderId, Map()).merge(neighborsByAppTypeFqn)
+          const manualReminderEntityKeyId = hearingIdsToManualReminderIds.get(hearingId);
+          manualReminderNeighborsById = manualReminderNeighborsById.set(
+            manualReminderEntityKeyId,
+            manualReminderNeighborsById.get(manualReminderEntityKeyId, Map()).merge(neighborsByAppTypeFqn)
           );
         }
       });
     }
 
     yield put(loadManualRemindersNeighborsById.success(action.id, {
-      reminderNeighborsById
+      manualReminderNeighborsById,
+      peopleReceivingManualReminders
     }));
   }
   catch (error) {
