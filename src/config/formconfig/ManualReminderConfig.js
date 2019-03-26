@@ -22,6 +22,7 @@ const ManualReminderConfig = {
     {
       name: APP_TYPES_FQNS.HEARINGS,
       alias: ALIASES.HEARING,
+      entityId: FORM_IDS.HEARING_ID,
       fields: {
         [FORM_IDS.HEARING_ID]: PROPERTY_TYPES.CASE_ID
       }
