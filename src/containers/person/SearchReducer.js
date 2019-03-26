@@ -5,6 +5,7 @@
 import { Map, List, fromJS } from 'immutable';
 
 import {
+  CLEAR_CASE_LOADER,
   clearSearchResults,
   loadPersonDetails,
   newPersonSubmit,
@@ -38,6 +39,13 @@ const INITIAL_STATE :Map<*, *> = fromJS({
 export default function searchReducer(state = INITIAL_STATE, action) {
 
   switch (action.type) {
+
+    case CLEAR_CASE_LOADER:
+      return state
+        .set(SEARCH.LOADING_CASES, false)
+        .set(SEARCH.NUM_CASES_TO_LOAD, 0)
+        .set(SEARCH.NUM_CASES_LOADED, 0)
+        .set(SEARCH.CASE_LOADS_COMPLETE, false);
 
     case clearSearchResults.case(action.type): {
       return clearSearchResults.reducer(state, action, {
@@ -99,6 +107,7 @@ export default function searchReducer(state = INITIAL_STATE, action) {
           const { entityKeyId } = action.value;
           return state
             .set(SEARCH.LOADING_PERSON_DETAILS, true)
+            .set(SEARCH.PERSON_DETAILS_LOADED, false)
             .set(SEARCH.SELECTED_PERSON_ID, entityKeyId);
         },
         SUCCESS: () => {
@@ -115,7 +124,9 @@ export default function searchReducer(state = INITIAL_STATE, action) {
           .set(SEARCH.LOADING_CASES, false)
           .set(SEARCH.NUM_CASES_TO_LOAD, 0)
           .set(SEARCH.NUM_CASES_LOADED, 0),
-        FINALLY: () => state.set(SEARCH.LOADING_PERSON_DETAILS, false)
+        FINALLY: () => state
+          .set(SEARCH.LOADING_PERSON_DETAILS, false)
+          .set(SEARCH.PERSON_DETAILS_LOADED, true)
       });
     }
 
