@@ -5,17 +5,15 @@
 import React from 'react';
 import styled from 'styled-components';
 import { Map } from 'immutable';
-import { Constants } from 'lattice';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCheck } from '@fortawesome/pro-light-svg-icons';
 
 import StyledRadio from '../controls/StyledRadio';
+import { getEntityKeyId } from '../../utils/DataUtils';
 import { CONTACT_METHODS } from '../../utils/consts/ContactInfoConsts';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
-
-const { OPENLATTICE_ID_FQN } = Constants;
 
 const Cell = styled.td`
   font-family: 'Open Sans', sans-serif;
@@ -87,14 +85,9 @@ class SelectContactInfoRow extends React.Component<Props, State> {
     return email ? CONTACT_METHODS.EMAIL : CONTACT_METHODS.PHONE;
   }
 
-  getEntityKeyId = () => {
-    const { contact } = this.props;
-    return contact.getIn([OPENLATTICE_ID_FQN, 0], '');
-  }
-
   renderRadioSelect = () => {
     const { contact, onCheckBoxChange, selectedContactEntityKeyId } = this.props;
-    const contactEntityKeyId = this.getEntityKeyId();
+    const contactEntityKeyId = getEntityKeyId(contact);
     const isSelected = contactEntityKeyId === selectedContactEntityKeyId;
     return (
       <StyledRadio
