@@ -61,8 +61,8 @@ class PersonSubscriptionList extends React.Component<Props, State> {
   openManageSubscriptionModal = (person) => {
     const { actions } = this.props;
     const { loadSubcriptionModal } = actions;
-    const { entityKeyId } = formatPeopleInfo(person);
-    loadSubcriptionModal({ personId: entityKeyId });
+    const { personEntityKeyId } = formatPeopleInfo(person);
+    loadSubcriptionModal({ personEntityKeyId });
     this.setState({
       manageSubscriptionModalOpen: true,
       person
@@ -82,8 +82,8 @@ class PersonSubscriptionList extends React.Component<Props, State> {
   openCreateManualReminderModal = (person) => {
     const { actions } = this.props;
     const { loadManualRemindersForm } = actions;
-    const { entityKeyId } = formatPeopleInfo(person);
-    loadManualRemindersForm({ personId: entityKeyId });
+    const { personEntityKeyId } = formatPeopleInfo(person);
+    loadManualRemindersForm({ personEntityKeyId });
     this.setState({
       creatingManualReminder: true,
       person
@@ -110,15 +110,15 @@ class PersonSubscriptionList extends React.Component<Props, State> {
       people
     } = this.props;
     return people.valueSeq().sort(sortPeopleByName).map((person) => {
-      const { indentification } = formatPeopleInfo(person);
+      const { personId } = formatPeopleInfo(person);
       let contact;
       if (includeContact) {
-        const contactId = peopleIdsToContactIds.getIn([indentification, 0], '');
+        const contactId = peopleIdsToContactIds.getIn([personId, 0], '');
         contact = contactResults.get(contactId, Map());
       }
       return (
         <PersonSubcriptionRow
-            key={indentification}
+            key={personId}
             contact={contact}
             person={person}
             openManageSubscriptionModal={this.openManageSubscriptionModal}

@@ -71,7 +71,7 @@ function* loadManualRemindersFormWorker(action :SequenceAction) :Generator<*, *,
 
   try {
     yield put(loadManualRemindersForm.request(action.id));
-    const { personId } = action.value;
+    const { personEntityKeyId } = action.value;
 
     const app = yield select(getApp);
     const orgId = yield select(getOrgId);
@@ -81,7 +81,7 @@ function* loadManualRemindersFormWorker(action :SequenceAction) :Generator<*, *,
     const contactInformationEntitySetId = getEntitySetIdFromApp(app, CONTACT_INFORMATION, orgId);
 
     let personNeighborsById = yield call(SearchApi.searchEntityNeighborsWithFilter, peopleEntitySetId, {
-      entityKeyIds: [personId],
+      entityKeyIds: [personEntityKeyId],
       sourceEntitySetIds: [contactInformationEntitySetId],
       destinationEntitySetIds: [contactInformationEntitySetId, hearingsEntitySetId]
     });

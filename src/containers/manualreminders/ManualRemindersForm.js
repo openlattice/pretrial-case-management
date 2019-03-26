@@ -167,7 +167,7 @@ class NewHearingSection extends React.Component<Props, State> {
       selectedHearing,
     } = this.state;
     const { person } = this.props;
-    const { identification } = formatPeopleInfo(person);
+    const { personId } = formatPeopleInfo(person);
 
     const wasNotified = notified === 'Yes';
 
@@ -188,7 +188,7 @@ class NewHearingSection extends React.Component<Props, State> {
       [PROPERTY_TYPES.REMINDER_TYPE]: [REMINDER_TYPES.HEARING],
 
       // Person
-      [FORM_IDS.PERSON_ID]: [identification],
+      [FORM_IDS.PERSON_ID]: [personId],
 
       // Hearing
       [FORM_IDS.HEARING_ID]: [hearingId],
@@ -296,13 +296,13 @@ class NewHearingSection extends React.Component<Props, State> {
 
   renderContactForm = () => {
     const { person } = this.props;
-    const { identification } = formatPeopleInfo(person);
+    const { personId } = formatPeopleInfo(person);
     const { addingNewContact } = this.state;
     return (
       <>
         <InputLabel>Add Contact</InputLabel>
         <NewContactForm
-            personId={identification}
+            personId={personId}
             editing={!!addingNewContact}
             submitCallback={this.notAddingContactInformation} />
       </>

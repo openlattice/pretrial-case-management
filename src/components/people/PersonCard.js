@@ -108,7 +108,7 @@ type Props = {
     lastName :string,
     dob :string,
     photo :string,
-    identification :string
+    personId :string
   },
   psaId :string,
   editDate :string,
@@ -145,7 +145,7 @@ class PersonCard extends React.Component<Props, State> {
       lastName,
       dob,
       photo,
-      identification
+      personId
     } = personObj;
     const {
       multipleOpenPSAs,
@@ -183,7 +183,7 @@ class PersonCard extends React.Component<Props, State> {
         </CardWrapper>
       )
       : (
-        <StyledUndecoratedLink to={`${Routes.PERSON_DETAILS_ROOT}/${identification}`}>
+        <StyledUndecoratedLink to={`${Routes.PERSON_DETAILS_ROOT}/${personId}`}>
           <TagPlaceholder />
           <StyledPersonCard hasOpenPSA={hasOpenPSA} >
             <MugShot src={photo || defaultProfile} />
