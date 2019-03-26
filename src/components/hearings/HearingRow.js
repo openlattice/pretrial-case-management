@@ -105,7 +105,7 @@ type Props = {
 
 const HearingRow = ({
   caseId,
-  hasPSA,
+  hasOpenPSA,
   hasOutcome,
   row,
   cancelFn,
@@ -155,7 +155,7 @@ const HearingRow = ({
         <CaseId>{caseId}</CaseId>
         <Tooltip value={caseId} />
       </Cell>
-      <Cell>{renderBooleanIcon(hasPSA)}</Cell>
+      <Cell>{renderBooleanIcon(hasOpenPSA)}</Cell>
       <Cell>{renderCancelButton}</Cell>
     </Row>
   );
