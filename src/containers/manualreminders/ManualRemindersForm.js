@@ -236,15 +236,8 @@ class NewHearingSection extends React.Component<Props, State> {
   handleInputChange = (e) => {
     const { name, value } = e.target;
 
-    if (name === 'notified' && value === 'false') {
-      this.setState({ [name]: false });
-    }
-    else if (name === 'notified' && value === 'true') {
-      this.setState({ [name]: true });
-    }
-    else {
-      this.setState({ [name]: value });
-    }
+    if (name === 'notified') this.setState({ [name]: value === 'true' });
+    else this.setState({ [name]: value });
   }
 
   onContactListRadioChange = contact => this.setState({ contact });
