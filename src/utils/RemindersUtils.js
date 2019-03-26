@@ -96,7 +96,7 @@ export const sortEntities = (entities, neighbors, shouldSortByDateTime) => (
 export const hearingNeedsReminder = (hearing) => {
   const today = moment();
   const oneDayAhead = addWeekdays(today, 1);
-  const oneWeekAhead = addWeekdays(today, 5);
+  const oneWeekAhead = addWeekdays(today, 7);
   const { hearingDateTime } = getHearingFields(hearing);
   return hearingDateTime.isSame(oneDayAhead, 'day')
    || hearingDateTime.isSame(oneWeekAhead, 'day');

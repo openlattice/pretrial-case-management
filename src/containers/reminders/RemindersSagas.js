@@ -564,7 +564,7 @@ function* bulkDownloadRemindersPDFWorker(action :SequenceAction) :Generator<*, *
     const ceiling = yield call(DataApi.getEntitySetSize, hearingsEntitySetId);
 
     const oneDayAhead = addWeekdays(date, 1);
-    const oneWeekAhead = addWeekdays(date, 5);
+    const oneWeekAhead = addWeekdays(date, 7);
 
     const reminderOptions = {
       searchTerm: `${datePropertyTypeId}:"${toISODate(oneDayAhead)}" OR ${datePropertyTypeId}:"${toISODate(oneWeekAhead)}"`,

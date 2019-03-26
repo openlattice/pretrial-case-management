@@ -85,17 +85,18 @@ export const sortByDate = (d1, d2, fqn) => (
 
 export const isUUID = uuid => (/^[A-F\d]{8}-[A-F\d]{4}-4[A-F\d]{3}-[89AB][A-F\d]{3}-[A-F\d]{12}$/i).test(uuid);
 
+const dateOnWeekend = date => date.isoWeekday() === 6 || date.isoWeekday() === 7;
+const dateOnHoliday = date => federalHolidays.includes(date.format('YYYY-MM-DD'));
+
 export function addWeekdays(date, days) {
-  let newDate = moment(date);
-  let count = days;
-  while (count > 0) {
+  let newDate = moment(date).add(days, 'days');
+  let onWeekend = dateOnWeekend(newDate);
+  let onHoliday = dateOnHoliday(newDate);
+
+  while (onWeekend || onHoliday) {
     newDate = newDate.add(1, 'days');
-    if (
-      newDate.isoWeekday() !== 6
-        && newDate.isoWeekday() !== 7
-        && !federalHolidays.includes(newDate.format('YYYY-MM-DD'))) {
-      count -= 1;
-    }
+    onWeekend = dateOnWeekend(newDate);
+    onHoliday = dateOnHoliday(newDate);
   }
   return newDate;
 }
