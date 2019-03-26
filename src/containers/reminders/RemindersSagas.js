@@ -642,7 +642,7 @@ function* bulkDownloadRemindersPDFWorker(action :SequenceAction) :Generator<*, *
       .map((personList) => {
         const selectPerson = personList.getIn([0, 'selectedPerson'], Map());
         const selectHearings = personList.map(personHearing => personHearing.selectedHearing || Map());
-        return { selectedPerson: selectPerson, selectedHearing: selectHearings }
+        return { selectedPerson: selectPerson, selectedHearing: selectHearings };
       });
     exportPDFList(fileName, pageDetailsList);
   }
