@@ -23,7 +23,7 @@ import { formatPeopleInfo } from '../../utils/PeopleUtils';
 import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
 import { FORM_IDS } from '../../utils/consts/Consts';
-import { filterContactsByType, getContactFields } from '../../utils/ContactInfoUtils';
+import { filterContactsByType, getContactInfoFields } from '../../utils/ContactInfoUtils';
 import { getEntityKeyId } from '../../utils/DataUtils';
 import { REMINDER_TYPES } from '../../utils/RemindersUtils';
 import { CONTACT_METHODS } from '../../utils/consts/ContactInfoConsts';
@@ -312,7 +312,7 @@ class NewHearingSection extends React.Component<Props, State> {
   renderContactTableAndForm = () => {
     const { addingNewContact, contact, contactMethod } = this.state;
     const { peopleNeighborsForManualReminder, submitted } = this.props;
-    const { contactEntityKeyId } = getContactFields(contact);
+    const { contactEntityKeyId } = getContactInfoFields(contact);
     let contacts = filterContactsByType(
       peopleNeighborsForManualReminder.get(CONTACT_INFORMATION, List()),
       contactMethod

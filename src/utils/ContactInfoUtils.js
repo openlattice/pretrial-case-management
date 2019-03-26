@@ -33,7 +33,7 @@ export const formatPhoneNumber = (phone) => {
   return null;
 };
 
-export const getContactFields = (contact) => {
+export const getContactInfoFields = (contact) => {
   const contactDetails = contact.get(PSA_NEIGHBOR.DETAILS, contact);
   const phone = contactDetails.getIn([PROPERTY_TYPES.PHONE, 0], '');
   const email = contactDetails.getIn([PROPERTY_TYPES.EMAIL, 0], '');
