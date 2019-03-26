@@ -7,9 +7,10 @@ import { Map } from 'immutable';
 
 import HearingRow from './HearingRow';
 import { OL } from '../../utils/consts/Colors';
-import { APP_TYPES_FQNS } from '../../utils/consts/DataModelConsts';
+import { PSA_STATUSES } from '../../utils/consts/Consts';
+import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { getHearingFields, sortHearingsByDate } from '../../utils/consts/HearingConsts';
-import { isUUID } from '../../utils/DataUtils';
+import { isUUID, getIdOrValue } from '../../utils/DataUtils';
 
 let { PSA_SCORES } = APP_TYPES_FQNS;
 
@@ -107,14 +108,15 @@ const HearingsTable = ({
           const hearingWasCreatedManually = isUUID(hearingId);
           const hearingHasOutcome = hearingsWithOutcomes.includes(hearingEntityKeyId);
           const disabled = hearingHasOutcome || !hearingWasCreatedManually;
-          const hearingHasPSA = !!hearingNeighborsById.getIn([hearingEntityKeyId, PSA_SCORES], Map()).size;
+          const hearingHasOpenPSA = getIdOrValue(hearingNeighborsById
+            .get(hearingEntityKeyId), PSA_SCORES, PROPERTY_TYPES.STATUS) === PSA_STATUSES.OPEN;
           return (
             <HearingRow
                 key={`${hearingEntityKeyId}-${hearingCourtString}-${hearingId}`}
                 row={row}
                 caseId={hearingCaseId}
                 isDuplicate={hearingIsADuplicate}
-                hasPSA={hearingHasPSA}
+                hasOpenPSA={hearingHasOpenPSA}
                 hasOutcome={hearingHasOutcome}
                 cancelFn={cancelFn}
                 disabled={disabled} />

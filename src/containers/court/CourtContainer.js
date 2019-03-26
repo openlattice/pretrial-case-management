@@ -191,7 +191,10 @@ type Props = {
   county :string,
   peopleWithOpenPsas :Set<*>,
   peopleIdsToOpenPSAIds :Map<*>,
+  scoresAsMap :Map<*>,
+  submitting :boolean,
   peopleWithMultipleOpenPsas :Set<*>,
+  peopleReceivingReminders :Set<*>,
   selectedOrganizationId :string,
   selectedOrganizationTitle :string,
   psaEditDatesById :Map<*, *>,
@@ -538,7 +541,7 @@ class CourtContainer extends React.Component<Props, State> {
   )
 
   render() {
-    const { selectedOrganizationTitle, peopleReceivingReminders } = this.props;
+    const { selectedOrganizationTitle } = this.props;
     return (
       <StyledFormViewWrapper>
         <StyledFormWrapper>

@@ -4,20 +4,21 @@
 import React from 'react';
 import styled from 'styled-components';
 import { Map } from 'immutable';
-import { Constants } from 'lattice';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
+import CreateManualReminderModal from '../manualreminders/CreateManualReminderModal';
+import ManageSubscriptionModal from '../../containers/subscription/ManageSubscriptionModal';
 import PersonSubcriptionRow from './PersonSubscriptionRow';
 import LogoLoader from '../LogoLoader';
 import { NoResults } from '../../utils/Layout';
 import { OL } from '../../utils/consts/Colors';
 import { SEARCH, STATE } from '../../utils/consts/FrontEndStateConsts';
-import { sortPeopleByName } from '../../utils/PeopleUtils';
+import { formatPeopleInfo, sortPeopleByName } from '../../utils/PeopleUtils';
 
 import * as SubscriptionsActionFactory from '../../containers/subscription/SubscriptionsActionFactory';
-
-const { OPENLATTICE_ID_FQN } = Constants;
+import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
+import * as ManualRemindersActionFactory from '../../containers/manualreminders/ManualRemindersActionFactory';
 
 const Table = styled.div`
   width: 100%;
@@ -30,18 +31,86 @@ const Table = styled.div`
   }
 `;
 
+const ModalContainer = styled.div`
+  height: 0;
+`;
+
 class PersonSubscriptionList extends React.Component<Props, State> {
+  constructor(props :Props) {
+    super(props);
+    this.state = {
+      person: Map(),
+      manageSubscriptionModalOpen: false,
+      creatingManualReminder: false
+    };
+  }
+
+
+  onClose = () => {
+    const { actions } = this.props;
+    const { clearSubmit, clearSubscriptionModal, clearManualRemindersForm } = actions;
+    this.setState({
+      manageSubscriptionModalOpen: false,
+      creatingManualReminder: false
+    });
+    clearSubscriptionModal();
+    clearManualRemindersForm();
+    clearSubmit();
+  }
+
+  openManageSubscriptionModal = (person) => {
+    const { actions } = this.props;
+    const { loadSubcriptionModal } = actions;
+    const { personEntityKeyId } = formatPeopleInfo(person);
+    loadSubcriptionModal({ personEntityKeyId });
+    this.setState({
+      manageSubscriptionModalOpen: true,
+      person
+    });
+  };
+
+  renderManageSubscriptionModal = () => {
+    const { manageSubscriptionModalOpen, person } = this.state;
+    return (
+      <ManageSubscriptionModal
+          person={person}
+          open={manageSubscriptionModalOpen}
+          onClose={this.onClose} />
+    );
+  }
+
+  openCreateManualReminderModal = (person) => {
+    const { actions } = this.props;
+    const { loadManualRemindersForm } = actions;
+    const { personEntityKeyId } = formatPeopleInfo(person);
+    loadManualRemindersForm({ personEntityKeyId });
+    this.setState({
+      creatingManualReminder: true,
+      person
+    });
+  };
+
+  renderCreateManualReminderModal = () => {
+    const { submitCallback } = this.props;
+    const { creatingManualReminder, person } = this.state;
+    return (
+      <CreateManualReminderModal
+          person={person}
+          submitCallback={submitCallback}
+          open={creatingManualReminder}
+          onClose={this.onClose} />
+    );
+  }
 
   renderBodyElements = () => {
     const {
-      actions,
       contactResults,
       peopleIdsToContactIds,
       includeContact,
       people
     } = this.props;
     return people.valueSeq().sort(sortPeopleByName).map((person) => {
-      const personId = person.getIn([OPENLATTICE_ID_FQN, 0], '');
+      const { personId } = formatPeopleInfo(person);
       let contact;
       if (includeContact) {
         const contactId = peopleIdsToContactIds.getIn([personId, 0], '');
@@ -52,8 +121,9 @@ class PersonSubscriptionList extends React.Component<Props, State> {
             key={personId}
             contact={contact}
             person={person}
-            loadNeighbors={actions.loadSubcriptionModal}
-            onClose={actions.clearSubscriptionModal} />
+            openManageSubscriptionModal={this.openManageSubscriptionModal}
+            openCreateManualReminderModal={this.openCreateManualReminderModal}
+            onClose={this.onClose} />
       );
     });
   };
@@ -73,6 +143,10 @@ class PersonSubscriptionList extends React.Component<Props, State> {
           ? <LogoLoader size={30} loadingText="Loading People..." />
           : noResultsDisplay
         }
+        <ModalContainer>
+          { this.renderManageSubscriptionModal() }
+          { this.renderCreateManualReminderModal() }
+        </ModalContainer>
       </>
     );
   }
@@ -91,8 +165,16 @@ function mapStateToProps(state) {
 function mapDispatchToProps(dispatch :Function) :Object {
   const actions :{ [string] :Function } = {};
 
+  Object.keys(ManualRemindersActionFactory).forEach((action :string) => {
+    actions[action] = ManualRemindersActionFactory[action];
+  });
+
   Object.keys(SubscriptionsActionFactory).forEach((action :string) => {
     actions[action] = SubscriptionsActionFactory[action];
+  });
+
+  Object.keys(SubmitActionFactory).forEach((action :string) => {
+    actions[action] = SubmitActionFactory[action];
   });
 
   return {

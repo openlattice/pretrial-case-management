@@ -55,6 +55,7 @@ export const getHearingFields = (hearing) => {
   const hearingIsCancelled = hearingIsInactive || hearingUpdateIsCancelled;
 
   const hearingCourtString = `${hearingDateTime}-${courtroom}-${hearingType}-${hearingCaseId}`;
+  const hearingCourtStringNoCaseId = `${hearingDateTime}-${courtroom}-${hearingType}`;
   return {
     hearingCaseId,
     hearingDate,
@@ -65,6 +66,7 @@ export const getHearingFields = (hearing) => {
     courtroom,
     hearingType,
     hearingCourtString,
+    hearingCourtStringNoCaseId,
     hearingUpdateIsCancelled,
     hearingIsInactive,
     hearingIsCancelled

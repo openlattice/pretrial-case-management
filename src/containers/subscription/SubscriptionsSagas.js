@@ -33,7 +33,7 @@ function* loadSubcriptionModalWorker(action :SequenceAction) :Generator<*, *, *>
 
   try {
     yield put(loadSubcriptionModal.request(action.id));
-    const { personId } = action.value;
+    const { personEntityKeyId } = action.value;
     let personNeighbors = Map();
 
     const app = yield select(getApp);
@@ -44,7 +44,7 @@ function* loadSubcriptionModalWorker(action :SequenceAction) :Generator<*, *, *>
     const subscriptionEntitySetId = getEntitySetIdFromApp(app, SUBSCRIPTION, orgId);
 
     const personNeighborsById = yield call(SearchApi.searchEntityNeighborsWithFilter, peopleEntitySetId, {
-      entityKeyIds: [personId],
+      entityKeyIds: [personEntityKeyId],
       sourceEntitySetIds: [contactInformationEntitySetId],
       destinationEntitySetIds: [subscriptionEntitySetId, contactInformationEntitySetId]
     });
@@ -65,7 +65,7 @@ function* loadSubcriptionModalWorker(action :SequenceAction) :Generator<*, *, *>
       }
     });
 
-    yield put(loadSubcriptionModal.success(action.id, { personId, personNeighbors }));
+    yield put(loadSubcriptionModal.success(action.id, { personEntityKeyId, personNeighbors }));
   }
 
   catch (error) {

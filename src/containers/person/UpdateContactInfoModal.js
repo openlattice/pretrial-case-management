@@ -14,7 +14,7 @@ import PersonContactInfo from '../../components/person/PersonContactInfo';
 import InfoButton from '../../components/buttons/InfoButton';
 import addPersonContactInfoConfig from '../../config/formconfig/PersonAddContactInfoConfig';
 import { getEntityKeyId } from '../../utils/DataUtils';
-import { phoneIsValid, emailIsValid } from '../../utils/PeopleUtils';
+import { phoneIsValid, emailIsValid } from '../../utils/ContactInfoUtils';
 import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { FORM_IDS } from '../../utils/consts/Consts';
 import {

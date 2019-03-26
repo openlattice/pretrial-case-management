@@ -22,7 +22,7 @@ import SearchableSelect from '../../components/controls/SearchableSelect';
 import PersonContactInfo from '../../components/person/PersonContactInfo';
 import { GENDERS, STATES } from '../../utils/consts/Consts';
 import { toISODate } from '../../utils/FormattingUtils';
-import { phoneIsValid, emailIsValid } from '../../utils/PeopleUtils';
+import { phoneIsValid, emailIsValid } from '../../utils/ContactInfoUtils';
 import { newPersonSubmit } from './PersonActionFactory';
 import { clearForm } from '../psa/FormActionFactory';
 import { STATE, SEARCH } from '../../utils/consts/FrontEndStateConsts';
