@@ -123,7 +123,7 @@ const NOTIFIED_CONSTS = {
 };
 
 const INITIAL_STATE = {
-  selectedHearing: {},
+  selectedHearing: { hearing: Map(), hearingId: '', entityKeyId: '' },
   addingNewContact: false,
   contact: Map(),
   contactMethod: '',
@@ -173,12 +173,13 @@ class NewHearingSection extends React.Component<Props, State> {
     } = this.state;
     const { person } = this.props;
     const { personId } = formatPeopleInfo(person);
+    const { hearing } = selectedHearing;
 
     const wasNotified = notified === NOTIFIED_CONSTS.WAS_NOTIFIED;
 
     const staffId = this.getStaffId();
 
-    const hearingId = getFirstNeighborValue(selectedHearing, PROPERTY_TYPES.CASE_ID, null);
+    const hearingId = getFirstNeighborValue(hearing, PROPERTY_TYPES.CASE_ID, null);
 
     const contactInformationId = getFirstNeighborValue(contact, PROPERTY_TYPES.GENERAL_ID, null);
 
@@ -353,12 +354,13 @@ class NewHearingSection extends React.Component<Props, State> {
   renderContactSection = () => {
     const { submitted } = this.props;
     const { contactMethod, selectedHearing, notified } = this.state;
+    const { hearing } = selectedHearing;
 
     const wasNotified = notified === NOTIFIED_CONSTS.WAS_NOTIFIED;
     const wasNotNotified = notified === NOTIFIED_CONSTS.WAS_NOT_NOTIFIED;
     const isPhone = (contactMethod === CONTACT_METHODS.PHONE);
     const isEmail = (contactMethod === CONTACT_METHODS.EMAIL);
-    return selectedHearing.size
+    return hearing.size
       ? (
         <>
           <InputLabel>{`Was ${this.getSubjectsName()} succesfully contacted?`}</InputLabel>
@@ -386,7 +388,7 @@ class NewHearingSection extends React.Component<Props, State> {
 
   selectHearing = (hearing, hearingId, entityKeyId) => {
     this.setState({
-      selectedHearing: hearing
+      selectedHearing: { hearing, hearingId, entityKeyId }
     });
   }
 
