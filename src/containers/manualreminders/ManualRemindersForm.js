@@ -247,9 +247,6 @@ class NewHearingSection extends React.Component<Props, State> {
     if (name === 'notified' && !contact.size && value === NOTIFIED_CONSTS.WAS_NOT_NOTIFIED) {
       this.setState({ contactMethod: '' });
     }
-    if (name === 'contactMethod' && value === 'Other') {
-      this.setState({ contact: Map() });
-    }
     this.setState({ [name]: value });
   }
 
@@ -260,7 +257,6 @@ class NewHearingSection extends React.Component<Props, State> {
     const { contactMethod } = this.state;
     const isPhone = (contactMethod === CONTACT_METHODS.PHONE);
     const isEmail = (contactMethod === CONTACT_METHODS.EMAIL);
-    const isOther = (contactMethod === CONTACT_METHODS.OTHER);
     return (
       <>
         <InputLabel>How were they contacted?</InputLabel>
@@ -279,13 +275,6 @@ class NewHearingSection extends React.Component<Props, State> {
               value={CONTACT_METHODS.EMAIL}
               onChange={this.handleInputChange}
               checked={isEmail} />
-          <StyledRadio
-              disabled={submitted}
-              label={CONTACT_METHODS.OTHER}
-              name="contactMethod"
-              value={CONTACT_METHODS.OTHER}
-              onChange={this.handleInputChange}
-              checked={isOther} />
         </FormContainer>
       </>
     );
