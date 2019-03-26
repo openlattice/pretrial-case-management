@@ -29,6 +29,7 @@ import ReleaseConditionsSummary from '../../components/releaseconditions/Release
 import ClosePSAModal from '../../components/review/ClosePSAModal';
 import psaEditedConfig from '../../config/formconfig/PsaEditedConfig';
 import closeX from '../../assets/svg/close-x-gray.svg';
+import LoadPersonCaseHistoryButton from '../person/LoadPersonCaseHistoryButton';
 import { getScoresAndRiskFactors, calculateDMF } from '../../utils/ScoringUtils';
 import { getEntityKeyId, getEntitySetId, getIdOrValue } from '../../utils/DataUtils';
 import { CenteredContainer, Title } from '../../utils/Layout';
@@ -835,13 +836,17 @@ class PSAModal extends React.Component<Props, State> {
       const associationEntityKeyId = pretrialCase.getIn([PSA_ASSOCIATION.DETAILS, OPENLATTICE_ID_FQN, 0]);
       caseNumbersToAssociationId = caseNumbersToAssociationId.set(caseNum, associationEntityKeyId);
     });
+    const personEntityKeyId = getIdOrValue(psaNeighbors, PEOPLE, OPENLATTICE_ID_FQN);
 
     return (
       <ModalWrapper withPadding>
-        <Title withSubtitle>
-          <span>Timeline</span>
-          <span>Convictions in past two years</span>
-        </Title>
+        <TitleWrapper>
+          <Title withSubtitle>
+            <span>Timeline</span>
+            <span>Convictions in past two years</span>
+          </Title>
+          <LoadPersonCaseHistoryButton personEntityKeyId={personEntityKeyId} psaNeighbors={psaNeighbors} />
+        </TitleWrapper>
         <CaseHistoryTimeline caseHistory={caseHistory} chargeHistory={chargeHistory} />
         <hr />
         <CaseHistory
