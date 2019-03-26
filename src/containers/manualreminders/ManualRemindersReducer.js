@@ -22,8 +22,17 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [MANUAL_REMINDERS.LOADING_FORM]: false,
   [MANUAL_REMINDERS.PEOPLE_NEIGHBORS]: Map(),
 
+  [MANUAL_REMINDERS.REMINDER_IDS]: Set(),
+  [MANUAL_REMINDERS.REMINDERS_BY_ID]: Map(),
+  [MANUAL_REMINDERS.LOADING_MANUAL_REMINDERS]: false,
+  [MANUAL_REMINDERS.MANUAL_REMINDER_NEIGHBORS]: Map(),
+  [MANUAL_REMINDERS.PEOPLE_RECEIVING_REMINDERS]: Set(),
+  [MANUAL_REMINDERS.LOADING_REMINDER_NEIGHBORS]: false,
+  [MANUAL_REMINDERS.SUCCESSFUL_REMINDER_IDS]: Set(),
+  [MANUAL_REMINDERS.FAILED_REMINDER_IDS]: Set()
 });
-export default function remindersReducer(state :Map<*, *> = INITIAL_STATE, action :SequenceAction) {
+
+export default function manualRemindersReducer(state :Map<*, *> = INITIAL_STATE, action :SequenceAction) {
   switch (action.type) {
 
     case loadManualRemindersForm.case(action.type): {
@@ -39,21 +48,34 @@ export default function remindersReducer(state :Map<*, *> = INITIAL_STATE, actio
 
     case loadManualRemindersForDate.case(action.type): {
       return loadManualRemindersForDate.reducer(state, action, {
-        REQUEST: () => state,
+        REQUEST: () => state.set(MANUAL_REMINDERS.LOADING_MANUAL_REMINDERS, true),
         SUCCESS: () => {
-          return state;
+          const {
+            manualReminderIds,
+            manualReminders,
+            successfulManualRemindersIds,
+            failedManualRemindersIds
+          } = action.value;
+          return state
+            .set(MANUAL_REMINDERS.REMINDER_IDS, manualReminderIds)
+            .set(MANUAL_REMINDERS.REMINDERS_BY_ID, manualReminders)
+            .set(MANUAL_REMINDERS.SUCCESSFUL_REMINDER_IDS, successfulManualRemindersIds)
+            .set(MANUAL_REMINDERS.FAILED_REMINDER_IDS, failedManualRemindersIds);
         },
-        FINALLY: () => state
+        FINALLY: () => state.set(MANUAL_REMINDERS.LOADING_MANUAL_REMINDERS, false),
       });
     }
 
     case loadManualRemindersNeighborsById.case(action.type): {
       return loadManualRemindersNeighborsById.reducer(state, action, {
-        REQUEST: () => state,
+        REQUEST: () => state.set(MANUAL_REMINDERS.LOADING_REMINDER_NEIGHBORS, true),
         SUCCESS: () => {
-          return state;
+          const { peopleReceivingManualReminders, manualReminderNeighborsById } = action.value;
+          return state
+            .set(MANUAL_REMINDERS.PEOPLE_RECEIVING_REMINDERS, peopleReceivingManualReminders)
+            .set(MANUAL_REMINDERS.MANUAL_REMINDER_NEIGHBORS, manualReminderNeighborsById);
         },
-        FINALLY: () => state
+        FINALLY: () => state.set(MANUAL_REMINDERS.LOADING_REMINDER_NEIGHBORS, false)
       });
     }
 
@@ -69,7 +91,7 @@ export default function remindersReducer(state :Map<*, *> = INITIAL_STATE, actio
     }
 
     case CLEAR_MANUAL_REMINDERS_FORM:
-      return INITIAL_STATE;
+      return state.set(MANUAL_REMINDERS.PEOPLE_NEIGHBORS, Map());
 
     default:
       return state;
