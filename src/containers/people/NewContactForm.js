@@ -14,12 +14,11 @@ import StyledInput from '../../components/controls/StyledInput';
 import InfoButton from '../../components/buttons/InfoButton';
 import CheckboxButton from '../../components/controls/StyledCheckboxButton';
 import { FORM_IDS } from '../../utils/consts/Consts';
-import { phoneIsValid, emailIsValid } from '../../utils/PeopleUtils';
+import { phoneIsValid, emailIsValid, formatPhoneNumber } from '../../utils/ContactInfoUtils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
 import { InputGroup } from '../../components/person/PersonFormTags';
 import { CONTACT_METHODS } from '../../utils/consts/ContactInfoConsts';
-import { formatPhoneNumber } from '../../utils/ContactInfoUtils';
 import {
   APP,
   STATE,
