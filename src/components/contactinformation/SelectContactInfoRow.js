@@ -46,21 +46,19 @@ const Row = styled.tr`
 type Props = {
   contact :Map<*, *>,
   selectedContactEntityKeyId :string,
-  disabled :boolean,
   onCheckBoxChange :() => void,
+};
+
+const INITIAL_STATE = {
+  [PROPERTY_TYPES.IS_MOBILE]: false,
+  [PROPERTY_TYPES.IS_PREFERRED]: false
 };
 
 class SelectContactInfoRow extends React.Component<Props, State> {
 
   constructor(props :Props) {
     super(props);
-    const { contact } = props;
-    const isMobile = contact.getIn([PROPERTY_TYPES.IS_MOBILE, 0], false);
-    const isPreferred = contact.getIn([PROPERTY_TYPES.IS_PREFERRED, 0], false);
-    this.state = {
-      [PROPERTY_TYPES.IS_MOBILE]: isMobile,
-      [PROPERTY_TYPES.IS_PREFERRED]: isPreferred
-    };
+    this.state = INITIAL_STATE;
   }
 
   static getDerivedStateFromProps(nextProps) {
