@@ -75,11 +75,11 @@ class RemindersTable extends React.Component<Props, State> {
       headers = (
         <HeaderRow>
           <HeaderElement>{REMINDERS_HEADERS.COURT_TIME}</HeaderElement>
+          <HeaderElement>{REMINDERS_HEADERS.CASE_NUM}</HeaderElement>
           <HeaderElement>{REMINDERS_HEADERS.NAME}</HeaderElement>
-          <HeaderElement>{REMINDERS_HEADERS.CONTACT}</HeaderElement>
           <HeaderElement>{REMINDERS_HEADERS.COURTROOM}</HeaderElement>
           <HeaderElement>{REMINDERS_HEADERS.HEARING_TYPE}</HeaderElement>
-          <HeaderElement>{REMINDERS_HEADERS.CASE_NUM}</HeaderElement>
+          <HeaderElement>{REMINDERS_HEADERS.CONTACT}</HeaderElement>
           <HeaderElement>{REMINDERS_HEADERS.STATUS}</HeaderElement>
         </HeaderRow>
       );
