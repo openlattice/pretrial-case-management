@@ -16,6 +16,7 @@ export const MODULE = {
 
 
 export const SETTINGS = {
+  ARRESTS_INTEGRATED: 'arrestsIntegrated',
   CASE_CONTEXTS: 'caseContexts',
   CONTEXTS: 'contexts',
   LOAD_CASES: 'loadCasesOnTheFly',
