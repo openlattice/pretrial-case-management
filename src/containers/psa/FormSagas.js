@@ -89,8 +89,7 @@ const getAllPSAIds = (neighbors, psaScoresEntitySetId) => {
 
 function* getOpenPSANeighbors(neighbors) :Generator<*, *, *> {
   const app = yield select(getApp);
-  const orgId = yield select(getOrgId);
-  const psaEntitySetId = getEntitySetIdFromApp(app, psaScoresFqn, orgId);
+  const psaEntitySetId = getEntitySetIdFromApp(app, psaScoresFqn);
 
   const ids = getOpenPSAIds(neighbors, psaEntitySetId);
   const val = ids.length ? yield call(SearchApi.searchEntityNeighborsBulk, psaEntitySetId, ids) : {};
@@ -103,8 +102,8 @@ function* loadNeighborsWorker(action :SequenceAction) :Generator<*, *, *> {
 
   const app = yield select(getApp);
   const orgId = yield select(getOrgId);
-  const peopleEntitySetId = getEntitySetIdFromApp(app, peopleFqn, orgId);
-  const psaEntitySetId = getEntitySetIdFromApp(app, psaScoresFqn, orgId);
+  const peopleEntitySetId = getEntitySetIdFromApp(app, peopleFqn);
+  const psaEntitySetId = getEntitySetIdFromApp(app, psaScoresFqn);
   const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId], Map());
 
   try {
