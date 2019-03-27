@@ -96,8 +96,7 @@ function* getPeopleWorker(action) :Generator<*, *, *> {
   try {
     yield put(getPeople.request(action.id));
     const app = yield select(getApp);
-    const orgId = yield select(getOrgId);
-    const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE, orgId);
+    const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
     const response = yield call(DataApi.getEntitySetData, peopleEntitySetId);
     yield put(getPeople.success(action.id, response));
   }
@@ -116,8 +115,7 @@ function* getPeopleWatcher() :Generator<*, *, *> {
 function* getEntityForPersonId(personId :string) :Generator<*, *, *> {
   const app = yield select(getApp);
   const edm = yield select(getEDM);
-  const orgId = yield select(getOrgId);
-  const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE, orgId);
+  const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
   const personIdPropertyTypeId = getPropertyTypeId(edm, PROPERTY_TYPES.PERSON_ID);
 
   const searchOptions = {
@@ -163,8 +161,8 @@ function* getPersonNeighborsWorker(action) :Generator<*, *, *> {
 
     const app = yield select(getApp);
     const orgId = yield select(getOrgId);
-    const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE, orgId);
-    const psaScoresEntitySetId = getEntitySetIdFromApp(app, PSA_SCORES, orgId);
+    const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
+    const psaScoresEntitySetId = getEntitySetIdFromApp(app, PSA_SCORES);
     const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
 
     const person = yield getEntityForPersonId(personId);
@@ -310,8 +308,8 @@ function* refreshPersonNeighborsWorker(action) :Generator<*, *, *> {
     const app = yield select(getApp);
     const orgId = yield select(getOrgId);
     const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
-    const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE, orgId);
-    const psaScoresEntitySetId = getEntitySetIdFromApp(app, PSA_SCORES, orgId);
+    const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
+    const psaScoresEntitySetId = getEntitySetIdFromApp(app, PSA_SCORES);
 
     const person = yield getEntityForPersonId(personId);
     const entityKeyId = person[OPENLATTICE_ID_FQN][0];
@@ -437,9 +435,9 @@ function* updateContactInfoWorker(action :SequenceAction) :Generator<*, *, *> {
     yield put(updateContactInfo.request(action.id));
     const app = yield select(getApp);
     const orgId = yield select(getOrgId);
-    const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE, orgId);
     const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
-    const contactInformationEntitySetId = getEntitySetIdFromApp(app, CONTACT_INFORMATION, orgId);
+    const contactInformationEntitySetId = getEntitySetIdFromApp(app, CONTACT_INFORMATION);
+    const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
 
     /* partially update contact info */
     yield call(DataApi.updateEntityData, contactInformationEntitySetId, entities, 'PartialReplace');
@@ -493,14 +491,14 @@ function* loadRequiresActionPeopleWorker(action :SequenceAction) :Generator<*, *
     const edm = yield select(getEDM);
     const orgId = yield select(getOrgId);
     const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
-    const psaScoresEntitySetId = getEntitySetIdFromApp(app, PSA_SCORES, orgId);
-    const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE, orgId);
-    const manualPretrialCasesFqnEntitySetId = getEntitySetIdFromApp(app, MANUAL_PRETRIAL_CASES, orgId);
-    const pretrialCasesEntitySetId = getEntitySetIdFromApp(app, PRETRIAL_CASES, orgId);
-    const releaseRecommendationsEntitySetId = getEntitySetIdFromApp(app, RELEASE_RECOMMENDATIONS, orgId);
-    const chargesEntitySetId = getEntitySetIdFromApp(app, CHARGES, orgId);
-    const ftaEntitySetId = getEntitySetIdFromApp(app, FTAS, orgId);
-    const staffEntitySetId = getEntitySetIdFromApp(app, STAFF, orgId);
+    const psaScoresEntitySetId = getEntitySetIdFromApp(app, PSA_SCORES);
+    const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
+    const manualPretrialCasesFqnEntitySetId = getEntitySetIdFromApp(app, MANUAL_PRETRIAL_CASES);
+    const pretrialCasesEntitySetId = getEntitySetIdFromApp(app, PRETRIAL_CASES);
+    const releaseRecommendationsEntitySetId = getEntitySetIdFromApp(app, RELEASE_RECOMMENDATIONS);
+    const chargesEntitySetId = getEntitySetIdFromApp(app, CHARGES);
+    const ftaEntitySetId = getEntitySetIdFromApp(app, FTAS);
+    const staffEntitySetId = getEntitySetIdFromApp(app, STAFF);
 
     /* load all open PSAs */
     const statusPropertyTypeId = getPropertyTypeId(edm, PROPERTY_TYPES.STATUS);
