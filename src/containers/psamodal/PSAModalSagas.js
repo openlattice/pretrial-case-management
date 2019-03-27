@@ -43,7 +43,6 @@ const {
   MANUAL_PRETRIAL_COURT_CASES,
   MANUAL_PRETRIAL_CASES,
   PSA_SCORES,
-  PSA_RISK_FACTORS,
   RELEASE_CONDITIONS,
   STAFF,
   SUBSCRIPTION
@@ -84,11 +83,11 @@ function* loadPSAModalWorker(action :SequenceAction) :Generator<*, *, *> {
     const app = yield select(getApp);
     const orgId = yield select(getOrgId);
     const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
-    const hearingsEntitySetId = getEntitySetIdFromApp(app, hearingsFqn, orgId);
-    const psaScoresEntitySetId = getEntitySetIdFromApp(app, psaScoresFqn, orgId);
-    const peopleEntitySetId = getEntitySetIdFromApp(app, peopleFqn, orgId);
-    const subscriptionEntitySetId = getEntitySetIdFromApp(app, subscriptionFqn, orgId);
-    const contactInformationEntitySetId = getEntitySetIdFromApp(app, contactInformationFqn, orgId);
+    const hearingsEntitySetId = getEntitySetIdFromApp(app, hearingsFqn);
+    const psaScoresEntitySetId = getEntitySetIdFromApp(app, psaScoresFqn);
+    const peopleEntitySetId = getEntitySetIdFromApp(app, peopleFqn);
+    const subscriptionEntitySetId = getEntitySetIdFromApp(app, subscriptionFqn);
+    const contactInformationEntitySetId = getEntitySetIdFromApp(app, contactInformationFqn);
 
     /*
      * Get PSA Info
