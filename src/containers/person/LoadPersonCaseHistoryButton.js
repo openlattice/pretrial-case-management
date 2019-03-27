@@ -37,7 +37,7 @@ type Props = {
   };
 };
 
-// This button's function is to update case on a given person.
+// This button's function is to update a subjects casehistory on the fly from bifrost.
 
 class LoadPersonCaseHistoryButton extends React.Component<Props, State> {
 
@@ -52,14 +52,18 @@ class LoadPersonCaseHistoryButton extends React.Component<Props, State> {
       psaNeighbors
     } = nextProps;
 
-    // Person has clicked on the Load Case History button, cases have loaded. Case history
-    // is then reloaded to reflect new charges in the modal.
+    // User has clicked on the Load Case History button, which initiates the integration of
+    // the provided subject's (personEntityKeyId) case history on the fly from bifrost.
+    // Once this integration is complete, the case history is then reloaded from OpenLattice
+    // to reflect the newly integrated data.
     if (caseLoadsComplete && personDetailsLoaded && !loadingCaseHistory) {
+      // see loadCastHistory fn in '../review/ReviewSagas'
       actions.loadCaseHistory({ personId: personEntityKeyId, neighbors: psaNeighbors });
     }
-    // once loadCaseHistory is fired - we clear redux state related to case loader to prevent
-    // from gettting stuck in a loop.
+    // once loadCaseHistory is fired - Redux state related to case loader (bifrost) is cleared
+    // to prevent from gettting stuck in a loop.
     if (loadingCaseHistory) {
+      // see clearCaseLoader fn in '../psa/FormSagas'
       actions.clearCaseLoader();
     }
   }
@@ -71,6 +75,8 @@ class LoadPersonCaseHistoryButton extends React.Component<Props, State> {
 
   loadCaseHistory = () => {
     const { actions, personEntityKeyId } = this.props;
+    // shouldLoadCases is set to true, so that the subjects case history is loaded on the fly from bifrost
+    // see loadPersonDetails in '../psa/FormSagas'
     actions.loadPersonDetails({
       entityKeyId: personEntityKeyId,
       shouldLoadCases: true
