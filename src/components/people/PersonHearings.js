@@ -159,14 +159,14 @@ class PersonHearings extends React.Component<Props, State> {
       fqnToIdMap,
       selectedOrganizationId
     } = this.props;
-    const entitySetId = getEntitySetIdFromApp(app, HEARINGS, selectedOrganizationId);
+    const hearingEntitySetId = getEntitySetIdFromApp(app, HEARINGS);
     const values = {
       [entityKeyId]: {
         [fqnToIdMap.get(PROPERTY_TYPES.HEARING_INACTIVE)]: [true]
       }
     };
     actions.updateEntity({
-      entitySetId,
+      hearingEntitySetId,
       entities: values,
       updateType: 'PartialReplace',
       callback: this.refreshPersonNeighborsCallback
