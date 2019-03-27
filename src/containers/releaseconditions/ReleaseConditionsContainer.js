@@ -1108,8 +1108,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       actions,
       app,
       hearingEntityKeyId,
-      selectedHearing,
-      selectedOrganizationId
+      selectedHearing
     } = this.props;
     const {
       deleteEntity,
@@ -1152,9 +1151,9 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       `${date.format(dateFormat)} ${time.format(timeFormat)}`, `${dateFormat} ${timeFormat}`
     );
 
-    const associationEntitySetId = getEntitySetIdFromApp(app, ASSESSED_BY, selectedOrganizationId);
-    const srcEntitySetId = getEntitySetIdFromApp(app, JUDGES, selectedOrganizationId);
-    const hearingEntitySetId = getEntitySetIdFromApp(app, HEARINGS, selectedOrganizationId);
+    const associationEntitySetId = getEntitySetIdFromApp(app, ASSESSED_BY);
+    const srcEntitySetId = getEntitySetIdFromApp(app, JUDGES);
+    const hearingEntitySetId = getEntitySetIdFromApp(app, HEARINGS);
 
     const associationEntitySetName = ASSESSED_BY;
     const associationEntityKeyId = judgeEntity ? judgeAssociationEntityKeyId : null;
@@ -1209,10 +1208,9 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
     const {
       actions,
       app,
-      fqnToIdMap,
-      selectedOrganizationId
+      fqnToIdMap
     } = this.props;
-    const entitySetId = getEntitySetIdFromApp(app, HEARINGS, selectedOrganizationId);
+    const entitySetId = getEntitySetIdFromApp(app, HEARINGS);
     const values = {
       [entityKeyId]: {
         [fqnToIdMap.get(PROPERTY_TYPES.HEARING_INACTIVE)]: [true]
