@@ -578,9 +578,7 @@ class Form extends React.Component<Props, State> {
   }
 
   nextPage = () => {
-    const { selectedOrganizationSettings } = this.props;
-    const skipLoad = !selectedOrganizationSettings.get(SETTINGS.LOAD_CASES, true);
-    const nextPage = getNextPath(window.location, numPages, skipLoad);
+    const nextPage = getNextPath(window.location, numPages);
     this.handlePageChange(nextPage);
   }
 
