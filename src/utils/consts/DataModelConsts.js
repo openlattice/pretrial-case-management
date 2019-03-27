@@ -108,50 +108,6 @@ export const CHARGE_FQNS = {
   BRE: new FullyQualifiedName('ol.breindicator'),
 };
 
-export const ENTITY_SETS = {
-  PEOPLE: 'southdakotapeople',
-  ADDRESSES: 'southdakotaaddresses',
-  CHARGES: 'southdakotacharges',
-  SENTENCES: 'southdakotasentences',
-  PRETRIAL_CASES: 'southdakotapretrialcaseprocessings',
-  MANUAL_PRETRIAL_CASES: 'southdakotamanualpretrialcaseprocessings',
-  MANUAL_CHARGES: 'southdakotamanualcharges',
-  PSA_RISK_FACTORS: 'southdakotapsariskfactors',
-  PSA_SCORES: 'southdakotapsas',
-  DMF_RISK_FACTORS: 'southdakotadmfriskfactors',
-  DMF_RESULTS: 'southdakotadmfs',
-  RELEASE_RECOMMENDATIONS: 'southdakotareleaserecommendations',
-  STAFF: 'southdakotastaff',
-  SPEAKER_RECOGNITION_PROFILES: 'southdakotaspeakerverificationprofiles',
-  FTAS: 'southdakotaftas',
-  HEARINGS: 'southdakotahearings',
-  OUTCOMES: 'southdakotapsaoutcomes',
-  JUDGES: 'southdakotajudges',
-  BONDS: 'southdakotamanualbonds',
-  RELEASE_CONDITIONS: 'southdakotareleaseconditions',
-  CONTACT_INFORMATION: 'southdakotacontactinformation',
-
-  // judge entity sets
-  MIN_PEN_PEOPLE: 'MinPenPeople',
-  UJS_EMPLOYEES: 'UJSEmployees',
-
-  // arrest entity sets
-  ARREST_CASES: 'PenZuercherPretrialCase',
-  ARREST_CHARGES: 'PenZuercherCharge',
-  ARREST_APPEARS_IN: 'PenZuercherAppearsin',
-  ARREST_CHARGED_WITH: 'PenZuercherchargedwith',
-
-  // association entity sets
-  APPEARS_IN: 'southdakotaappearsin',
-  ASSESSED_BY: 'southdakotaassessedby',
-  LIVES_AT: 'southdakotalivesat',
-  CALCULATED_FOR: 'southdakotacalculatedfor',
-  CHARGED_WITH: 'southdakotachargedwith',
-  REGISTERED_FOR: 'southdakotaregisteredfor',
-  EDITED_BY: 'southdakotaeditedby',
-  CONTACT_INFO_GIVEN: 'southdakotacontactinfogiven'
-};
-
 export const PROPERTY_TYPES = {
   STRING_ID: 'general.stringid',
   COMPLETED_DATE_TIME: 'date.completeddatetime',
