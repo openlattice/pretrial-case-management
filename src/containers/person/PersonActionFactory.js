@@ -4,6 +4,9 @@
 
 import { newRequestSequence } from 'redux-reqseq';
 
+const CLEAR_CASE_LOADER = 'CLEAR_CASE_LOADER';
+const clearCaseLoader = newRequestSequence('CLEAR_CASE_LOADER');
+
 const CLEAR_SEARCH_RESULTS = 'CLEAR_SEARCH_RESULTS';
 const clearSearchResults = newRequestSequence('CLEAR_SEARCH_RESULTS');
 
@@ -23,12 +26,14 @@ const UPDATE_CASES = 'UPDATE_CASES';
 const updateCases = newRequestSequence('UPDATE_CASES');
 
 export {
+  CLEAR_CASE_LOADER,
   CLEAR_SEARCH_RESULTS,
   LOAD_PERSON_DETAILS,
   NEW_PERSON_SUBMIT,
   SEARCH_PEOPLE,
   SEARCH_PEOPLE_BY_PHONE,
   UPDATE_CASES,
+  clearCaseLoader,
   clearSearchResults,
   loadPersonDetails,
   newPersonSubmit,
