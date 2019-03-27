@@ -107,8 +107,8 @@ function* loadPersonDetailsWorker(action) :Generator<*, *, *> {
     const { entityKeyId, shouldLoadCases } = action.value;
     const app = yield select(getApp);
     const orgId = yield select(getOrgId);
-    const pretrialCasesEntitySetId = getEntitySetIdFromApp(app, PRETRIAL_CASES, orgId);
-    const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE, orgId);
+    const pretrialCasesEntitySetId = getEntitySetIdFromApp(app, PRETRIAL_CASES);
+    const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
     yield put(loadPersonDetails.request(action.id, { entityKeyId }));
 
     // <HACK>
@@ -238,8 +238,8 @@ function* searchPeopleWorker(action) :Generator<*, *, *> {
     const app = yield select(getApp);
     const edm = yield select(getEDM);
     const orgId = yield select(getOrgId);
-    const psaScoresEntitySetId = getEntitySetIdFromApp(app, PSA_SCORES, orgId);
-    const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE, orgId);
+    const psaScoresEntitySetId = getEntitySetIdFromApp(app, PSA_SCORES);
+    const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
     const firstNamePropertyTypeId = getPropertyTypeId(edm, PROPERTY_TYPES.FIRST_NAME);
     const lastNamePropertyTypeId = getPropertyTypeId(edm, PROPERTY_TYPES.LAST_NAME);
     const dobPropertyTypeId = getPropertyTypeId(edm, PROPERTY_TYPES.DOB);
@@ -325,9 +325,8 @@ function* searchPeopleByPhoneNumberWorker(action) :Generator<*, *, *> {
     yield put(searchPeopleByPhoneNumber.request(action.id));
     const app = yield select(getApp);
     const edm = yield select(getEDM);
-    const orgId = yield select(getOrgId);
-    const contactInformationEntitySetId = getEntitySetIdFromApp(app, CONTACT_INFORMATION, orgId);
-    const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE, orgId);
+    const contactInformationEntitySetId = getEntitySetIdFromApp(app, CONTACT_INFORMATION);
+    const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
     const phonePropertyTypeId = getPropertyTypeId(edm, PROPERTY_TYPES.PHONE);
     const firstNamePropertyTypeId = getPropertyTypeId(edm, PROPERTY_TYPES.FIRST_NAME);
     const lastNamePropertyTypeId = getPropertyTypeId(edm, PROPERTY_TYPES.LAST_NAME);
