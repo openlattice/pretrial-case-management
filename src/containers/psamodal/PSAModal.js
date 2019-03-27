@@ -51,7 +51,8 @@ import {
   PSA_NEIGHBOR,
   PSA_ASSOCIATION,
   PSA_MODAL,
-  STATE
+  STATE,
+  SEARCH
 } from '../../utils/consts/FrontEndStateConsts';
 import {
   CONTEXT,
@@ -201,6 +202,7 @@ const CloseModalX = styled.img.attrs({
 type Props = {
   app :Map<*, *>,
   caseHistory :List<*>,
+  caseLoadsComplete :boolean,
   chargeHistory :Map<*, *>,
   entityKeyId :string,
   ftaHistory :Map<*, *>,
@@ -208,6 +210,8 @@ type Props = {
   hearings :List<*>,
   hearingNeighborsById :Map<*, *>,
   hideProfile? :boolean,
+  loadingCases :boolean,
+  loadingPersonDetails :boolean,
   loadingPSAModal :boolean,
   loadingCaseHistory :boolean,
   manualCaseHistory :List<*>,
@@ -215,6 +219,7 @@ type Props = {
   onClose :() => {},
   open :boolean,
   readOnly :boolean,
+  personDetailsLoaded :boolean,
   personId :string,
   personHearings :Map<*, *>,
   personNeighbors :Map<*, *>,
@@ -805,8 +810,13 @@ class PSAModal extends React.Component<Props, State> {
   renderCaseHistory = () => {
     const {
       caseHistory,
+      caseLoadsComplete,
       chargeHistory,
       scores,
+      loadingCases,
+      loadingCaseHistory,
+      loadingPersonDetails,
+      personDetailsLoaded,
       psaNeighbors,
       psaPermissions
     } = this.props;
@@ -837,6 +847,7 @@ class PSAModal extends React.Component<Props, State> {
       caseNumbersToAssociationId = caseNumbersToAssociationId.set(caseNum, associationEntityKeyId);
     });
     const personEntityKeyId = getIdOrValue(psaNeighbors, PEOPLE, OPENLATTICE_ID_FQN);
+    const isBetweenLoadingCycles = caseLoadsComplete && personDetailsLoaded && !loadingCaseHistory;
 
     return (
       <ModalWrapper withPadding>
@@ -849,17 +860,25 @@ class PSAModal extends React.Component<Props, State> {
         </TitleWrapper>
         <CaseHistoryTimeline caseHistory={caseHistory} chargeHistory={chargeHistory} />
         <hr />
-        <CaseHistory
-            modal
-            addCaseToPSA={this.addCaseToPSA}
-            caseNumbersToAssociationId={caseNumbersToAssociationId}
-            removeCaseFromPSA={this.removeCaseFromPSA}
-            caseHistoryForMostRecentPSA={caseHistoryForMostRecentPSA}
-            chargeHistoryForMostRecentPSA={chargeHistoryForMostRecentPSA}
-            caseHistoryNotForMostRecentPSA={caseHistoryNotForMostRecentPSA}
-            chargeHistoryNotForMostRecentPSA={chargeHistoryNotForMostRecentPSA}
-            chargeHistory={chargeHistory}
-            psaPermissions={psaPermissions} />
+        {
+          (loadingCaseHistory || loadingPersonDetails || isBetweenLoadingCycles || loadingCases)
+            ? (
+              <LogoLoader loadingText="Refreshing Case History" />
+            )
+            : (
+              <CaseHistory
+                  modal
+                  addCaseToPSA={this.addCaseToPSA}
+                  caseNumbersToAssociationId={caseNumbersToAssociationId}
+                  removeCaseFromPSA={this.removeCaseFromPSA}
+                  caseHistoryForMostRecentPSA={caseHistoryForMostRecentPSA}
+                  chargeHistoryForMostRecentPSA={chargeHistoryForMostRecentPSA}
+                  caseHistoryNotForMostRecentPSA={caseHistoryNotForMostRecentPSA}
+                  chargeHistoryNotForMostRecentPSA={chargeHistoryNotForMostRecentPSA}
+                  chargeHistory={chargeHistory}
+                  psaPermissions={psaPermissions} />
+            )
+        }
       </ModalWrapper>
     );
   };
@@ -1036,6 +1055,7 @@ class PSAModal extends React.Component<Props, State> {
 function mapStateToProps(state) {
   const app = state.get(STATE.APP);
   const psaModal = state.get(STATE.PSA_MODAL);
+  const search = state.get(STATE.SEARCH);
   return {
     app,
     [APP.FQN_TO_ID]: app.get(APP.FQN_TO_ID),
@@ -1060,8 +1080,12 @@ function mapStateToProps(state) {
     [PSA_MODAL.CHARGE_HISTORY]: psaModal.get(PSA_MODAL.CHARGE_HISTORY),
     [PSA_MODAL.MANUAL_CHARGE_HISTORY]: psaModal.get(PSA_MODAL.MANUAL_CHARGE_HISTORY),
     [PSA_MODAL.SENTENCE_HISTORY]: psaModal.get(PSA_MODAL.SENTENCE_HISTORY),
-    [PSA_MODAL.FTA_HISTORY]: psaModal.get(PSA_MODAL.FTA_HISTORY)
+    [PSA_MODAL.FTA_HISTORY]: psaModal.get(PSA_MODAL.FTA_HISTORY),
 
+    [SEARCH.LOADING_PERSON_DETAILS]: search.get(SEARCH.LOADING_PERSON_DETAILS),
+    [SEARCH.LOADING_CASES]: search.get(SEARCH.LOADING_CASES),
+    [SEARCH.PERSON_DETAILS_LOADED]: search.get(SEARCH.PERSON_DETAILS_LOADED),
+    [SEARCH.CASE_LOADS_COMPLETE]: search.get(SEARCH.CASE_LOADS_COMPLETE)
   };
 }
 
