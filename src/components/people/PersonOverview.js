@@ -56,7 +56,7 @@ type Props = {
   mostRecentPSANeighbors :Map<*, *>,
   neighbors :Map<*, *>,
   openDetailsModal :() => void,
-  openUpdateContactModal :() => void,
+  courtRemindersEnabled :boolean,
   personId :string,
   psaNeighborsById :Map<*, *>,
   readOnlyPermissions :boolean,
@@ -93,7 +93,6 @@ const PersonOverview = ({
   selectedPersonData,
   includesPretrialModule,
   openDetailsModal,
-  openUpdateContactModal,
   readOnlyPermissions,
   refreshingPersonNeighbors,
   updatingEntity
@@ -153,10 +152,7 @@ const PersonOverview = ({
       <StyledColumn>
         <StyledColumnRowWrapper>
           <StyledColumnRow>
-            <AboutPersonGeneral
-                selectedPersonData={selectedPersonData}
-                contactInfo={contactInfo}
-                openUpdateContactModal={openUpdateContactModal} />
+            <AboutPersonGeneral selectedPersonData={selectedPersonData} />
           </StyledColumnRow>
         </StyledColumnRowWrapper>
         {
