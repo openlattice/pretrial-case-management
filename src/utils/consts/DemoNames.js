@@ -1,10 +1,25 @@
 import randomUUID from 'uuid/v4';
 import { Map } from 'immutable';
-import { ENTITY_SETS, PROPERTY_TYPES } from './DataModelConsts';
+import { APP_TYPES_FQNS, PROPERTY_TYPES } from './DataModelConsts';
+import { APP } from './FrontEndStateConsts';
 
 export const DEMO_PATH = '/psademo/';
 
 export const isDemoPath = () => window.location.pathname === DEMO_PATH;
+
+let {
+  CHARGES,
+  FTAS,
+  PEOPLE,
+  PRETRIAL_CASES,
+  SENTENCES
+} = APP_TYPES_FQNS;
+
+CHARGES = CHARGES.toString();
+FTAS = FTAS.toString();
+PEOPLE = PEOPLE.toString();
+PRETRIAL_CASES = PRETRIAL_CASES.toString();
+SENTENCES = SENTENCES.toString();
 
 const {
   FIRST_NAME,
@@ -9480,21 +9495,24 @@ export const getRandomPerson = () => {
 
 export const obfuscateEntity = entity => (isDemoPath() ? Object.assign({}, entity, getRandomPerson()) : entity);
 
-export const obfuscateEntityNeighbors = (neighbors) => {
+export const obfuscateEntityNeighbors = (neighbors, app) => {
   if (!isDemoPath()) return neighbors;
   let caseNums = Map();
+  const orgId = app.get(APP.SELECTED_ORG_ID);
+  const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
 
   const neighborsStep1 = neighbors.map((neighbor) => {
     const { neighborEntitySet, neighborDetails } = neighbor;
 
     if (neighborEntitySet) {
-      const { name } = neighborEntitySet;
+      const { id } = neighborEntitySet;
+      const appTypeFqn = entitySetIdsToAppType.get(id, '');
 
-      if (name === ENTITY_SETS.PEOPLE) {
+      if (appTypeFqn === PEOPLE) {
         return Object.assign({}, neighbor, { neighborDetails: obfuscateEntity(neighborDetails) });
       }
 
-      if (name === ENTITY_SETS.PRETRIAL_CASES) {
+      if (appTypeFqn === PRETRIAL_CASES) {
         const caseNum = randomUUID();
         if (neighborDetails[PROPERTY_TYPES.CASE_ID] && neighborDetails[PROPERTY_TYPES.CASE_ID].length) {
           caseNums = caseNums.set(neighborDetails[PROPERTY_TYPES.CASE_ID][0], caseNum);
@@ -9521,17 +9539,18 @@ export const obfuscateEntityNeighbors = (neighbors) => {
     };
 
     if (neighborEntitySet) {
-      const { name } = neighborEntitySet;
+      const { id } = neighborEntitySet;
+      const appTypeFqn = entitySetIdsToAppType.get(id, '');
 
-      if (name === ENTITY_SETS.CHARGES) {
+      if (appTypeFqn === CHARGES) {
         return getUpdatedNeighbor(PROPERTY_TYPES.CHARGE_ID);
       }
 
-      if (name === ENTITY_SETS.SENTENCES) {
+      if (appTypeFqn === SENTENCES) {
         return getUpdatedNeighbor(PROPERTY_TYPES.GENERAL_ID);
       }
 
-      if (name === ENTITY_SETS.FTAS) {
+      if (appTypeFqn === FTAS) {
         return getUpdatedNeighbor(PROPERTY_TYPES.GENERAL_ID);
       }
     }
@@ -9540,11 +9559,11 @@ export const obfuscateEntityNeighbors = (neighbors) => {
   });
 };
 
-export const obfuscateBulkEntityNeighbors = (neighborsById) => {
+export const obfuscateBulkEntityNeighbors = (neighborsById, app) => {
   if (!isDemoPath()) return neighborsById;
   const result = {};
   Object.keys(neighborsById).forEach((id) => {
-    result[id] = obfuscateEntityNeighbors(neighborsById[id]);
+    result[id] = obfuscateEntityNeighbors(neighborsById[id], app);
   });
   return result;
 };
