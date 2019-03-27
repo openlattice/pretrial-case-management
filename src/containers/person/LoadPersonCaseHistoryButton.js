@@ -25,7 +25,6 @@ type Props = {
   psaNeighbors :Map<*, *>,
   caseLoadsComplete :boolean,
   isLoadingCases :boolean,
-  isLoadingNeighbors :boolean,
   loadingPersonDetails :boolean,
   loadingCaseHistory :boolean,
   caseLoadsComplete :boolean,
@@ -38,7 +37,9 @@ type Props = {
   };
 };
 
-class ManageChargesContainer extends React.Component<Props, State> {
+// This button's function is to update case on a given person.
+
+class LoadPersonCaseHistoryButton extends React.Component<Props, State> {
 
   componentWillReceiveProps(nextProps) {
     const { actions } = this.props;
@@ -51,15 +52,13 @@ class ManageChargesContainer extends React.Component<Props, State> {
       psaNeighbors
     } = nextProps;
 
-    if (caseLoadsComplete && !personDetailsLoaded) {
-      actions.loadPersonDetails({
-        entityKeyId: personEntityKeyId,
-        shouldLoadCases: false
-      });
-    }
+    // Person has clicked on the Load Case History button, cases have loaded. Case history
+    // is then reloaded to reflect new charges in the modal.
     if (caseLoadsComplete && personDetailsLoaded && !loadingCaseHistory) {
       actions.loadCaseHistory({ personId: personEntityKeyId, neighbors: psaNeighbors });
     }
+    // once loadCaseHistory is fired - we clear redux state related to case loader to prevent
+    // from gettting stuck in a loop.
     if (loadingCaseHistory) {
       actions.clearCaseLoader();
     }
@@ -81,11 +80,16 @@ class ManageChargesContainer extends React.Component<Props, State> {
   render() {
     const {
       isLoadingCases,
+      caseLoadsComplete,
       loadingCaseHistory,
+      personDetailsLoaded,
       loadingPersonDetails
     } = this.props;
-
-    const loading = isLoadingCases || loadingCaseHistory || loadingPersonDetails;
+    const isBetweenLoadingCycles = caseLoadsComplete && personDetailsLoaded && !loadingCaseHistory;
+    const loading = isLoadingCases
+      || loadingCaseHistory
+      || loadingPersonDetails
+      || isBetweenLoadingCycles;
     return this.shouldLoadCases
       ? <BasicButton onClick={this.loadCaseHistory} disabled={loading}>Load Case History</BasicButton>
       : null;
@@ -138,4 +142,4 @@ function mapDispatchToProps(dispatch :Function) :Object {
   };
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(ManageChargesContainer);
+export default connect(mapStateToProps, mapDispatchToProps)(LoadPersonCaseHistoryButton);
