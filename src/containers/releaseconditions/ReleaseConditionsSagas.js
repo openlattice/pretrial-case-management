@@ -81,7 +81,7 @@ function* getHearingAndNeighbors(hearingId :string) :Generator<*, *, *> {
   const app = yield select(getApp);
   const orgId = yield select(getOrgId);
   const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
-  const hearingsEntitySetId = getEntitySetIdFromApp(app, hearingsFqn, orgId);
+  const hearingsEntitySetId = getEntitySetIdFromApp(app, hearingsFqn);
 
   /*
    * Get Hearing Info
@@ -131,13 +131,13 @@ function* loadReleaseConditionsWorker(action :SequenceAction) :Generator<*, *, *
     const app = yield select(getApp);
     const orgId = yield select(getOrgId);
     const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
-    const chargesEntitySetId = getEntitySetIdFromApp(app, chargesFqn, orgId);
-    const dmfEntitySetId = getEntitySetIdFromApp(app, dmfResultsFqn, orgId);
-    const dmfRiskFactorsEntitySetId = getEntitySetIdFromApp(app, dmfRiskFactorsFqn, orgId);
-    const peopleEntitySetId = getEntitySetIdFromApp(app, peopleFqn, orgId);
-    const subscriptionEntitySetId = getEntitySetIdFromApp(app, subscriptionFqn, orgId);
-    const contactInformationEntitySetId = getEntitySetIdFromApp(app, contactInformationFqn, orgId);
-    const psaScoresEntityKeyId = getEntitySetIdFromApp(app, psaScoresFqn, orgId);
+    const chargesEntitySetId = getEntitySetIdFromApp(app, chargesFqn);
+    const dmfEntitySetId = getEntitySetIdFromApp(app, dmfResultsFqn);
+    const dmfRiskFactorsEntitySetId = getEntitySetIdFromApp(app, dmfRiskFactorsFqn);
+    const peopleEntitySetId = getEntitySetIdFromApp(app, peopleFqn);
+    const subscriptionEntitySetId = getEntitySetIdFromApp(app, subscriptionFqn);
+    const contactInformationEntitySetId = getEntitySetIdFromApp(app, contactInformationFqn);
+    const psaScoresEntityKeyId = getEntitySetIdFromApp(app, psaScoresFqn);
 
     /*
      * Get Hearing and Hearing Neighbors
@@ -241,10 +241,9 @@ function* updateOutcomesAndReleaseCondtionsWorker(action :SequenceAction) :Gener
     } = action.value;
 
     const app = yield select(getApp);
-    const orgId = yield select(getOrgId);
-    const releaseConditionEntitySetId = getEntitySetIdFromApp(app, releaseConditionsFqn, orgId);
-    const bondEntitySetId = getEntitySetIdFromApp(app, bondsFqn, orgId);
-    const outcomeEntitySetId = getEntitySetIdFromApp(app, outcomesFqn, orgId);
+    const releaseConditionEntitySetId = getEntitySetIdFromApp(app, releaseConditionsFqn);
+    const bondEntitySetId = getEntitySetIdFromApp(app, bondsFqn);
+    const outcomeEntitySetId = getEntitySetIdFromApp(app, outcomesFqn);
 
     const allEntitySetIds = { releaseConditionEntitySetId, bondEntitySetId, outcomeEntitySetId };
 
