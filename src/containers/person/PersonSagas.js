@@ -145,7 +145,7 @@ function* loadPersonDetailsWorker(action) :Generator<*, *, *> {
 
     else {
       let response = yield call(SearchApi.searchEntityNeighbors, peopleEntitySetId, entityKeyId);
-      response = obfuscateEntityNeighbors(response);
+      response = obfuscateEntityNeighbors(response, app);
       yield put(loadPersonDetails.success(action.id, { entityKeyId, response }));
     }
   }
@@ -236,7 +236,6 @@ function* searchPeopleWorker(action) :Generator<*, *, *> {
     yield put(searchPeople.request(action.id));
     const app = yield select(getApp);
     const edm = yield select(getEDM);
-    const orgId = yield select(getOrgId);
     const psaScoresEntitySetId = getEntitySetIdFromApp(app, PSA_SCORES);
     const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
     const firstNamePropertyTypeId = getPropertyTypeId(edm, PROPERTY_TYPES.FIRST_NAME);

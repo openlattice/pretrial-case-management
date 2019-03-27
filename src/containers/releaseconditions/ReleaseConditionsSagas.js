@@ -95,7 +95,7 @@ function* getHearingAndNeighbors(hearingId :string) :Generator<*, *, *> {
    */
 
   let hearingNeighbors = yield call(SearchApi.searchEntityNeighbors, hearingsEntitySetId, hearingId);
-  hearingNeighbors = obfuscateEntityNeighbors(hearingNeighbors); // TODO just for demo
+  hearingNeighbors = obfuscateEntityNeighbors(hearingNeighbors, app); // TODO just for demo
   hearingNeighbors = fromJS(hearingNeighbors);
   /*
    * Format Neighbors

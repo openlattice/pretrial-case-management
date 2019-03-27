@@ -101,7 +101,7 @@ function* loadPSAModalWorker(action :SequenceAction) :Generator<*, *, *> {
      */
 
     let psaNeighbors = yield call(SearchApi.searchEntityNeighbors, psaScoresEntitySetId, psaId);
-    psaNeighbors = obfuscateEntityNeighbors(psaNeighbors); // TODO just for demo
+    psaNeighbors = obfuscateEntityNeighbors(psaNeighbors, app); // TODO just for demo
     psaNeighbors = fromJS(psaNeighbors);
 
     /*

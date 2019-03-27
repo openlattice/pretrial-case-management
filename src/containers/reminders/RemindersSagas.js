@@ -118,7 +118,7 @@ function* loadOptOutNeighborsWorker(action :SequenceAction) :Generator<*, *, *> 
         sourceEntitySetIds: [],
         destinationEntitySetIds: [contactInformationEntitySetId, hearingsEntitySetId, peopleEntitySetId]
       });
-      neighborsById = obfuscateBulkEntityNeighbors(neighborsById);
+      neighborsById = obfuscateBulkEntityNeighbors(neighborsById, app);
       neighborsById = fromJS(neighborsById);
       neighborsById.entrySeq().forEach(([optOutId, neighbors]) => {
         let neighborsByAppTypeFqn = Map();
@@ -150,7 +150,7 @@ function* loadOptOutNeighborsWorker(action :SequenceAction) :Generator<*, *, *> 
         sourceEntitySetIds: [peopleEntitySetId],
         destinationEntitySetIds: [peopleEntitySetId]
       });
-      neighborsById = obfuscateBulkEntityNeighbors(neighborsById);
+      neighborsById = obfuscateBulkEntityNeighbors(neighborsById, app);
       neighborsById = fromJS(neighborsById);
       neighborsById.entrySeq().forEach(([contactInfoId, neighbors]) => {
         let neighborsByAppTypeFqn = Map();
@@ -348,7 +348,7 @@ function* loadReminderNeighborsByIdWorker(action :SequenceAction) :Generator<*, 
         sourceEntitySetIds: [],
         destinationEntitySetIds: [contactInformationEntitySetId, hearingsEntitySetId, peopleEntitySetId]
       });
-      neighborsById = obfuscateBulkEntityNeighbors(neighborsById);
+      neighborsById = obfuscateBulkEntityNeighbors(neighborsById, app);
       neighborsById = fromJS(neighborsById);
       neighborsById.entrySeq().forEach(([reminderId, neighbors]) => {
         let neighborsByAppTypeFqn = Map();

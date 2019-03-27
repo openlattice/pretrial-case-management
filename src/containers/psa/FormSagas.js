@@ -94,7 +94,7 @@ function* getOpenPSANeighbors(neighbors) :Generator<*, *, *> {
   const ids = getOpenPSAIds(neighbors, psaEntitySetId);
   const val = ids.length ? yield call(SearchApi.searchEntityNeighborsBulk, psaEntitySetId, ids) : {};
 
-  return obfuscateBulkEntityNeighbors(val); // TODO just for demo
+  return obfuscateBulkEntityNeighbors(val, app); // TODO just for demo
 }
 
 function* loadNeighborsWorker(action :SequenceAction) :Generator<*, *, *> {
@@ -109,7 +109,7 @@ function* loadNeighborsWorker(action :SequenceAction) :Generator<*, *, *> {
   try {
     yield put(loadNeighbors.request(action.id));
     let neighbors = yield call(SearchApi.searchEntityNeighbors, peopleEntitySetId, entityKeyId);
-    neighbors = obfuscateBulkEntityNeighbors(neighbors);
+    neighbors = obfuscateBulkEntityNeighbors(neighbors, app);
 
     const openPSAs = yield call(getOpenPSANeighbors, neighbors);
 

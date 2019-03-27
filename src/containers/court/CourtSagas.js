@@ -110,7 +110,7 @@ function* filterPeopleIdsWithOpenPSAsWorker(action :SequenceAction) :Generator<*
         sourceEntitySetIds: [psaEntitySetId, contactInformationEntitySetId],
         destinationEntitySetIds: [hearingsEntitySetId, subscriptionEntitySetId, contactInformationEntitySetId]
       });
-      peopleNeighborsById = obfuscateBulkEntityNeighbors(peopleNeighborsById);
+      peopleNeighborsById = obfuscateBulkEntityNeighbors(peopleNeighborsById, app);
       peopleNeighborsById = fromJS(peopleNeighborsById);
       peopleNeighborsById.entrySeq().forEach(([id, neighbors]) => {
 
@@ -342,7 +342,7 @@ function* loadHearingNeighborsWorker(action :SequenceAction) :Generator<*, *, *>
       let neighborsById = yield call(SearchApi.searchEntityNeighborsWithFilter, hearingEntitySetId, {
         entityKeyIds: hearingIds
       });
-      neighborsById = obfuscateBulkEntityNeighbors(neighborsById);
+      neighborsById = obfuscateBulkEntityNeighbors(neighborsById, app);
       neighborsById = fromJS(neighborsById);
       neighborsById.entrySeq().forEach(([hearingId, neighbors]) => {
         if (neighbors) {
@@ -428,7 +428,7 @@ function* refreshHearingNeighborsWorker(action :SequenceAction) :Generator<*, *,
     const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
 
     let neighborsList = yield call(SearchApi.searchEntityNeighbors, hearingEntitySetId, id);
-    neighborsList = obfuscateEntityNeighbors(neighborsList);
+    neighborsList = obfuscateEntityNeighbors(neighborsList, app);
     neighborsList = fromJS(neighborsList);
     let neighbors = Map();
     neighborsList.forEach((neighbor) => {

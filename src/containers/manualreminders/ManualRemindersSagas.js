@@ -84,7 +84,7 @@ function* loadManualRemindersFormWorker(action :SequenceAction) :Generator<*, *,
       sourceEntitySetIds: [contactInformationEntitySetId],
       destinationEntitySetIds: [contactInformationEntitySetId, hearingsEntitySetId]
     });
-    personNeighborsById = obfuscateBulkEntityNeighbors(personNeighborsById);
+    personNeighborsById = obfuscateBulkEntityNeighbors(personNeighborsById, app);
     personNeighborsById = fromJS(personNeighborsById);
     let neighborsByAppTypeFqn = Map();
     personNeighborsById.entrySeq().forEach(([_, neighbors]) => {
@@ -236,7 +236,7 @@ function* loadManualRemindersNeighborsByIdWorker(action :SequenceAction) :Genera
           peopleEntitySetId
         ]
       });
-      neighborsById = obfuscateBulkEntityNeighbors(neighborsById);
+      neighborsById = obfuscateBulkEntityNeighbors(neighborsById, app);
       neighborsById = fromJS(neighborsById);
       neighborsById.entrySeq().forEach(([manualReminderEntityKeyId, neighbors]) => {
         let neighborsByAppTypeFqn = Map();

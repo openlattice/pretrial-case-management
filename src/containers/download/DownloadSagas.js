@@ -153,7 +153,7 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
     });
 
     let neighborsById = yield call(SearchApi.searchEntityNeighborsBulk, psaEntitySetId, scoresAsMap.keySeq().toJS());
-    neighborsById = obfuscateBulkEntityNeighbors(neighborsById); // TODO just for demo
+    neighborsById = obfuscateBulkEntityNeighbors(neighborsById, app); // TODO just for demo
     let usableNeighborsById = Immutable.Map();
 
     Object.keys(neighborsById).forEach((id) => {

@@ -169,7 +169,7 @@ function* getPersonNeighborsWorker(action) :Generator<*, *, *> {
     const entityKeyId = person[OPENLATTICE_ID_FQN][0];
     let neighbors = yield call(SearchApi.searchEntityNeighbors, peopleEntitySetId, entityKeyId);
 
-    neighbors = obfuscateEntityNeighbors(neighbors);
+    neighbors = obfuscateEntityNeighbors(neighbors, app);
     neighbors = fromJS(neighbors);
 
     let hearingEntityKeyId = Set();
@@ -246,7 +246,7 @@ function* getPersonNeighborsWorker(action) :Generator<*, *, *> {
           return false;
         }), neighborsByEntitySet);
 
-    neighbors = obfuscateEntityNeighbors(neighbors);
+    neighbors = obfuscateEntityNeighbors(neighbors, app);
 
     let mostRecentPSANeighborsByAppTypeFqn = Map();
     if (mostRecentPSA.size) {
@@ -314,7 +314,7 @@ function* refreshPersonNeighborsWorker(action) :Generator<*, *, *> {
     const person = yield getEntityForPersonId(personId);
     const entityKeyId = person[OPENLATTICE_ID_FQN][0];
     let neighborsList = yield call(SearchApi.searchEntityNeighbors, peopleEntitySetId, entityKeyId);
-    neighborsList = obfuscateEntityNeighbors(neighborsList);
+    neighborsList = obfuscateEntityNeighbors(neighborsList, app);
     neighborsList = fromJS(neighborsList);
 
     neighborsList.forEach((neighbor) => {
