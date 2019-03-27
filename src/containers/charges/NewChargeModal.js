@@ -411,8 +411,8 @@ function mapStateToProps(state) {
     // App
     app,
     [APP.SELECTED_ORG_ID]: orgId,
-    arrestEntitySetId: getEntitySetIdFromApp(app, arrestChargeListFqn, orgId),
-    courtEntitySetId: getEntitySetIdFromApp(app, courtChargeListFqn, orgId),
+    arrestEntitySetId: getEntitySetIdFromApp(app, arrestChargeListFqn),
+    courtEntitySetId: getEntitySetIdFromApp(app, courtChargeListFqn),
     [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
     [APP.SELECTED_ORG_TITLE]: app.get(APP.SELECTED_ORG_TITLE),
 
