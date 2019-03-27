@@ -24,7 +24,6 @@ import {
 
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { getPropertyTypeId } from '../../edm/edmUtils';
-import { getHearingFields } from '../../utils/consts/HearingConsts';
 import { toISODate } from '../../utils/FormattingUtils';
 import { hearingNeedsReminder } from '../../utils/RemindersUtils';
 import { obfuscateBulkEntityNeighbors } from '../../utils/consts/DemoNames';
@@ -76,9 +75,9 @@ function* loadManualRemindersFormWorker(action :SequenceAction) :Generator<*, *,
     const app = yield select(getApp);
     const orgId = yield select(getOrgId);
     const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
-    const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE, orgId);
-    const hearingsEntitySetId = getEntitySetIdFromApp(app, HEARINGS, orgId);
-    const contactInformationEntitySetId = getEntitySetIdFromApp(app, CONTACT_INFORMATION, orgId);
+    const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
+    const hearingsEntitySetId = getEntitySetIdFromApp(app, HEARINGS);
+    const contactInformationEntitySetId = getEntitySetIdFromApp(app, CONTACT_INFORMATION);
 
     let personNeighborsById = yield call(SearchApi.searchEntityNeighborsWithFilter, peopleEntitySetId, {
       entityKeyIds: [personEntityKeyId],
@@ -145,8 +144,7 @@ function* loadManualRemindersForDateWorker(action :SequenceAction) :Generator<*,
 
     const app = yield select(getApp);
     const edm = yield select(getEDM);
-    const orgId = yield select(getOrgId);
-    const manualRemindersEntitySetId = getEntitySetIdFromApp(app, MANUAL_REMINDERS, orgId);
+    const manualRemindersEntitySetId = getEntitySetIdFromApp(app, MANUAL_REMINDERS);
     const datePropertyTypeId = getPropertyTypeId(edm, DATE_TIME_FQN);
 
     const ceiling = yield call(DataApi.getEntitySetSize, manualRemindersEntitySetId);
@@ -222,12 +220,12 @@ function* loadManualRemindersNeighborsByIdWorker(action :SequenceAction) :Genera
       const app = yield select(getApp);
       const orgId = yield select(getOrgId);
       const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
-      const manualRemindersEntitySetId = getEntitySetIdFromApp(app, MANUAL_REMINDERS, orgId);
-      const contactInformationEntitySetId = getEntitySetIdFromApp(app, CONTACT_INFORMATION, orgId);
-      const hearingsEntitySetId = getEntitySetIdFromApp(app, HEARINGS, orgId);
-      const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE, orgId);
-      const staffEntitySetId = getEntitySetIdFromApp(app, STAFF, orgId);
-      const pretrialCasesEntitySetId = getEntitySetIdFromApp(app, PRETRIAL_CASES, orgId);
+      const manualRemindersEntitySetId = getEntitySetIdFromApp(app, MANUAL_REMINDERS);
+      const contactInformationEntitySetId = getEntitySetIdFromApp(app, CONTACT_INFORMATION);
+      const hearingsEntitySetId = getEntitySetIdFromApp(app, HEARINGS);
+      const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
+      const staffEntitySetId = getEntitySetIdFromApp(app, STAFF);
+      const pretrialCasesEntitySetId = getEntitySetIdFromApp(app, PRETRIAL_CASES);
       let neighborsById = yield call(SearchApi.searchEntityNeighborsWithFilter, manualRemindersEntitySetId, {
         entityKeyIds: manualReminderIds,
         sourceEntitySetIds: [],
