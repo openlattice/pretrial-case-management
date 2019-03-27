@@ -229,11 +229,10 @@ class ManageSubscriptionModal extends React.Component<Props, State> {
       actions,
       app,
       fqnToIdMap,
-      subscription,
-      selectedOrganizationId
+      subscription
     } = this.props;
     const isSubscribed = subscription.getIn([PROPERTY_TYPES.IS_ACTIVE, 0], false);
-    const entitySetId = getEntitySetIdFromApp(app, SUBSCRIPTION, selectedOrganizationId);
+    const entitySetId = getEntitySetIdFromApp(app, SUBSCRIPTION);
     const entityKeyId = subscription.getIn([OPENLATTICE_ID_FQN, 0], '');
     const values = {
       [entityKeyId]: {
