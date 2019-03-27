@@ -131,10 +131,10 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
     const app = yield select(getApp);
     const orgId = yield select(getOrgId);
     const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
-    const dmfRiskFactorsEntitySetId = getEntitySetIdFromApp(app, dmfRiskFactorsFqn, orgId);
-    const psaRiskFactorsEntitySetId = getEntitySetIdFromApp(app, psaRiskFactorsFqn, orgId);
-    const psaEntitySetId = getEntitySetIdFromApp(app, psaScoresFqn, orgId);
-    const staffEntitySetId = getEntitySetIdFromApp(app, staffFqn, orgId);
+    const dmfRiskFactorsEntitySetId = getEntitySetIdFromApp(app, dmfRiskFactorsFqn);
+    const psaRiskFactorsEntitySetId = getEntitySetIdFromApp(app, psaRiskFactorsFqn);
+    const psaEntitySetId = getEntitySetIdFromApp(app, psaScoresFqn);
+    const staffEntitySetId = getEntitySetIdFromApp(app, staffFqn);
 
     const start = moment(startDate);
     const end = moment(endDate);
@@ -313,12 +313,12 @@ function* downloadPSAsByHearingDateWorker(action :SequenceAction) :Generator<*, 
     yield put(downloadPSAsByHearingDate.request(action.id, { noResults }));
     const app = yield select(getApp);
     const orgId = yield select(getOrgId);
-    const dmfRiskFactorsEntitySetId = getEntitySetIdFromApp(app, dmfRiskFactorsFqn, orgId);
-    const hearingsEntitySetId = getEntitySetIdFromApp(app, hearingsFqn, orgId);
-    const peopleEntitySetId = getEntitySetIdFromApp(app, peopleFqn, orgId);
-    const psaEntitySetId = getEntitySetIdFromApp(app, psaScoresFqn, orgId);
-    const psaRiskFactorsEntitySetId = getEntitySetIdFromApp(app, psaRiskFactorsFqn, orgId);
-    const staffEntitySetId = getEntitySetIdFromApp(app, staffFqn, orgId);
+    const dmfRiskFactorsEntitySetId = getEntitySetIdFromApp(app, dmfRiskFactorsFqn);
+    const hearingsEntitySetId = getEntitySetIdFromApp(app, hearingsFqn);
+    const peopleEntitySetId = getEntitySetIdFromApp(app, peopleFqn);
+    const psaEntitySetId = getEntitySetIdFromApp(app, psaScoresFqn);
+    const psaRiskFactorsEntitySetId = getEntitySetIdFromApp(app, psaRiskFactorsFqn);
+    const staffEntitySetId = getEntitySetIdFromApp(app, staffFqn);
     const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
 
     if (selectedHearingData.size) {
@@ -578,8 +578,7 @@ function* getDownloadFiltersWorker(action :SequenceAction) :Generator<*, *, *> {
 
     const app = yield select(getApp);
     const edm = yield select(getEDM);
-    const orgId = yield select(getOrgId);
-    const hearingEntitySetId = getEntitySetIdFromApp(app, hearingsFqn, orgId);
+    const hearingEntitySetId = getEntitySetIdFromApp(app, hearingsFqn);
     const datePropertyTypeId = getPropertyTypeId(edm, DATE_TIME_FQN);
 
     const ceiling = yield call(DataApi.getEntitySetSize, hearingEntitySetId);
