@@ -106,7 +106,6 @@ function* loadPersonDetailsWorker(action) :Generator<*, *, *> {
   try {
     const { entityKeyId, shouldLoadCases } = action.value;
     const app = yield select(getApp);
-    const orgId = yield select(getOrgId);
     const pretrialCasesEntitySetId = getEntitySetIdFromApp(app, PRETRIAL_CASES);
     const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
     yield put(loadPersonDetails.request(action.id, { entityKeyId }));
