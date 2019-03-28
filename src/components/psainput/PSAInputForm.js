@@ -355,7 +355,6 @@ class PSAInputForm extends React.Component<Props, State> {
       selectedOrganizationSettings
     } = this.props;
     // Only render autojustification if app settings loads historical charges
-    const loadedCases = selectedOrganizationSettings.get(SETTINGS.LOAD_CASES, true);
     const rowNumFormatted = num < 10 ? `0${num}` : `${num}`;
     const notesVal = input.get(NOTES[field]);
     const notesBody = (viewOnly && notesVal) ? <PaddedExpandableText text={notesVal} maxLength={250} />
@@ -385,7 +384,7 @@ class PSAInputForm extends React.Component<Props, State> {
           {radioButtons}
         </InlineFormGroup>
         {
-          (justificationText && loadedCases) ? (
+          (justificationText) ? (
             <Justifications>
               <h1>AUTOFILL JUSTIFICATION</h1>
               <div><PaddedExpandableText text={justificationText} maxLength={220} /></div>
