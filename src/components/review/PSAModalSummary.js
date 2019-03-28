@@ -12,7 +12,7 @@ import ChargeTable from '../charges/ChargeTable';
 import PSASummary from '../../containers/review/PSASummary';
 import { AlternateSectionHeader, Count } from '../../utils/Layout';
 import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
-import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import {
   STATE,
   APP,
@@ -20,9 +20,7 @@ import {
   PSA_NEIGHBOR
 } from '../../utils/consts/FrontEndStateConsts';
 
-let { MANUAL_PRETRIAL_CASES } = APP_TYPES_FQNS;
-
-MANUAL_PRETRIAL_CASES = MANUAL_PRETRIAL_CASES.toString();
+const { MANUAL_PRETRIAL_CASES } = APP_TYPES;
 
 const SummaryWrapper = styled.div`
   display: flex;
@@ -40,6 +38,7 @@ const ChargeTableContainer = styled.div`
 type Props = {
   addCaseToPSA :() => void,
   removeCaseFromPSA :() => void,
+  chargeType :string,
   caseNumbersToAssociationId :Immutable.List,
   chargeHistoryForMostRecentPSA :Immutable.Map,
   caseHistoryForMostRecentPSA :Immutable.List,
