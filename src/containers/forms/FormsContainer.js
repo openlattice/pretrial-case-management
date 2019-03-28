@@ -22,7 +22,8 @@ const {
   COURT_MINN,
   COURT_PENN,
   COURT_SHELBY,
-  DEMO_ORG
+  DEMO_ORG,
+  PCM_DEMO_ORG
 } = CONTEXT;
 
 const FormsWrapper = styled.div`
@@ -72,6 +73,9 @@ class FormsContainer extends React.Component<Props, *> {
     let jurisdiction;
     switch (selectedOrganizationId) {
       case ORG_IDS.DEMO_ORG:
+        jurisdiction = DEMO_ORG;
+        break;
+      case ORG_IDS.PCM_DEMO_ORG:
         jurisdiction = DEMO_ORG;
         break;
       case ORG_IDS.PENNINGTON_SD:

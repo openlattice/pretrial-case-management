@@ -75,11 +75,11 @@ class RemindersTable extends React.Component<Props, State> {
       headers = (
         <HeaderRow>
           <HeaderElement>{REMINDERS_HEADERS.COURT_TIME}</HeaderElement>
+          <HeaderElement>{REMINDERS_HEADERS.CASE_NUM}</HeaderElement>
           <HeaderElement>{REMINDERS_HEADERS.NAME}</HeaderElement>
           <HeaderElement>{REMINDERS_HEADERS.CONTACT}</HeaderElement>
           <HeaderElement>{REMINDERS_HEADERS.COURTROOM}</HeaderElement>
           <HeaderElement>{REMINDERS_HEADERS.HEARING_TYPE}</HeaderElement>
-          <HeaderElement>{REMINDERS_HEADERS.CASE_NUM}</HeaderElement>
           <HeaderElement>{REMINDERS_HEADERS.STATUS}</HeaderElement>
         </HeaderRow>
       );
@@ -103,7 +103,7 @@ class RemindersTable extends React.Component<Props, State> {
     const hearing = neighbors.getIn([entityKeyId, HEARINGS, PSA_NEIGHBOR.DETAILS], Map());
     const contactInfo = neighbors.getIn([entityKeyId, CONTACT_INFORMATION, PSA_NEIGHBOR.DETAILS], Map());
     const {
-      identification,
+      personId,
       lastFirstMid
     } = formatPeopleInfo(person);
     const {
@@ -112,11 +112,11 @@ class RemindersTable extends React.Component<Props, State> {
       hearingTime,
       hearingType
     } = getHearingFields(hearing);
-    const contact = contactInfo.get(PROPERTY_TYPES.PHONE);
+    const contact = contactInfo.get(PROPERTY_TYPES.PHONE, contactInfo.get(PROPERTY_TYPES.EMAIL, ''));
     const hearingDateTime = `${hearingDate} ${hearingTime}`;
 
     return ({
-      identification,
+      personId,
       lastFirstMid,
       courtroom,
       hearingDate,
@@ -147,7 +147,7 @@ class RemindersTable extends React.Component<Props, State> {
             wasNotified
           } = getReminderFields(entity);
           const {
-            identification,
+            personId,
             lastFirstMid,
             courtroom,
             hearingType,
@@ -166,7 +166,7 @@ class RemindersTable extends React.Component<Props, State> {
                 reminderId={reminderId}
                 time={moment(dateTime).format('HH:mm')}
                 wasNotified={wasNotified}
-                personId={identification}
+                personId={personId}
                 personName={lastFirstMid}
                 caseNumber={caseNum} />
           );
@@ -178,7 +178,7 @@ class RemindersTable extends React.Component<Props, State> {
             reason
           } = getOptOutFields(entity);
           const {
-            identification,
+            personId,
             lastFirstMid,
             contact
           } = this.getNeighborDetails(entityKeyId, neighbors);
@@ -189,7 +189,7 @@ class RemindersTable extends React.Component<Props, State> {
                 optOutId={entityKeyId}
                 reason={reason}
                 time={moment(dateTime).format('HH:mm')}
-                personId={identification}
+                personId={personId}
                 personName={lastFirstMid} />
           );
         }

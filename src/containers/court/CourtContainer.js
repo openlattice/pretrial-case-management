@@ -191,7 +191,10 @@ type Props = {
   county :string,
   peopleWithOpenPsas :Set<*>,
   peopleIdsToOpenPSAIds :Map<*>,
+  scoresAsMap :Map<*>,
+  submitting :boolean,
   peopleWithMultipleOpenPsas :Set<*>,
+  peopleReceivingReminders :Set<*>,
   selectedOrganizationId :string,
   selectedOrganizationTitle :string,
   psaEditDatesById :Map<*, *>,
@@ -322,7 +325,7 @@ class CourtContainer extends React.Component<Props, State> {
     const personObj = formatPeopleInfo(person);
     return (
       <PersonCard
-          key={`${personObj.identification}`}
+          key={`${personObj.personId}`}
           psaId={openPSAId}
           editDate={lastEditDate}
           multipleOpenPSAs={hasMultipleOpenPSAs}
@@ -355,7 +358,7 @@ class CourtContainer extends React.Component<Props, State> {
             Download PDFs
           </SecondaryButton>
         </Courtroom>
-        <PeopleWrapper>{sortedPeople.map(this.renderPersonCard)}</PeopleWrapper>
+        <PeopleWrapper key={`people-${courtroom}-${time}`}>{sortedPeople.map(this.renderPersonCard)}</PeopleWrapper>
       </HearingRow>
     );
   }
@@ -400,7 +403,7 @@ class CourtContainer extends React.Component<Props, State> {
     if (!hearingsByCourtroom.size) return null;
 
     return (
-      <HearingTime key={`${time}${courtroom}${county}`}>
+      <HearingTime key={`HearingTime${time}${courtroom}${county}`}>
         <h1>{time}</h1>
         {
           hearingsByCourtroom.entrySeq()
@@ -538,7 +541,7 @@ class CourtContainer extends React.Component<Props, State> {
   )
 
   render() {
-    const { selectedOrganizationTitle, peopleReceivingReminders } = this.props;
+    const { selectedOrganizationTitle } = this.props;
     return (
       <StyledFormViewWrapper>
         <StyledFormWrapper>

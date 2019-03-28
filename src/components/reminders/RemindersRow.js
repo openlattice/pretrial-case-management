@@ -82,6 +82,7 @@ class ReminderRow extends React.Component<Props, State> {
     const row = (
       <Row disabled>
         <Cell>{ hearingTime }</Cell>
+        <Cell>{ caseNumber }</Cell>
         <Cell>
           <StyledLink to={`${Routes.PERSON_DETAILS_ROOT}/${personId}${Routes.OVERVIEW}`}>
             { personName }
@@ -90,7 +91,6 @@ class ReminderRow extends React.Component<Props, State> {
         <Cell>{ contact }</Cell>
         <Cell>{ courtroom }</Cell>
         <Cell>{ hearingType }</Cell>
-        <Cell>{ caseNumber }</Cell>
         <Cell>{ this.renderbooleanIcon(wasNotified) }</Cell>
 
       </Row>

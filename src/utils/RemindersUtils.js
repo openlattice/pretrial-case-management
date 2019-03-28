@@ -2,9 +2,10 @@ import moment from 'moment';
 import { Map } from 'immutable';
 import { Constants } from 'lattice';
 
+import { getHearingFields } from './consts/HearingConsts';
 import { APP_TYPES_FQNS, PROPERTY_TYPES } from './consts/DataModelConsts';
 import { PSA_NEIGHBOR } from './consts/FrontEndStateConsts';
-import { getEntityKeyId } from './DataUtils';
+import { addWeekdays, getEntityKeyId } from './DataUtils';
 
 
 let { HEARINGS, PEOPLE } = APP_TYPES_FQNS;
@@ -25,6 +26,11 @@ export const REMINDERS_HEADERS = {
   STATUS: 'Status'
 };
 
+export const REMINDER_TYPES = {
+  HEARING: 'Hearing',
+  CHECKIN: 'Check-in'
+};
+
 export const OPT_OUT_HEADERS = {
   NAME: 'Name',
   CONTACT: 'Contact',
@@ -35,7 +41,8 @@ export const OPT_OUT_HEADERS = {
 export const FILTERS = {
   ALL: 'All',
   FAILED: 'Failed',
-  SUCCESSFUL: 'Successful'
+  SUCCESSFUL: 'Successful',
+  MANUAL: 'Manual'
 };
 
 export const getReminderFields = (reminder) => {
@@ -85,3 +92,12 @@ export const sortEntities = (entities, neighbors, shouldSortByDateTime) => (
     if (firstName1 !== firstName2) return firstName1 > firstName2 ? 1 : -1;
     return 0;
   }));
+
+export const hearingNeedsReminder = (hearing) => {
+  const today = moment();
+  const oneDayAhead = addWeekdays(today, 1);
+  const oneWeekAhead = addWeekdays(today, 7);
+  const { hearingDateTime } = getHearingFields(hearing);
+  return hearingDateTime.isSame(oneDayAhead, 'day')
+   || hearingDateTime.isSame(oneWeekAhead, 'day');
+};

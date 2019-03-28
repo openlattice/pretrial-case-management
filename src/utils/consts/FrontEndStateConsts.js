@@ -9,6 +9,7 @@ export const STATE = {
   DOWNLOAD: 'download',
   EDM: 'edm',
   ENROLL: 'enroll',
+  MANUAL_REMINDERS: 'manualReminders',
   PSA_MODAL: 'psaModal',
   PSA: 'psa',
   PEOPLE: 'people',
@@ -144,6 +145,22 @@ export const ENROLL = {
   ERROR: 'errorMessage'
 };
 
+// Manual Reminders
+
+export const MANUAL_REMINDERS = {
+  REMINDER_IDS: 'manualReminderIds',
+  REMINDERS_BY_ID: 'manualRemindersById',
+  SUCCESSFUL_REMINDER_IDS: 'successfulManualReminderIds',
+  PEOPLE_RECEIVING_REMINDERS: 'peopleReceivingManualReminders',
+  FAILED_REMINDER_IDS: 'failedManualReminderIds',
+  LOADING_MANUAL_REMINDERS: 'loadingManualReminders',
+  LOADED: 'manualRemindersLoaded',
+  MANUAL_REMINDER_NEIGHBORS: 'manualReminderNeighborsById',
+  LOADING_REMINDER_NEIGHBORS: 'loadingManualReminderNeighbors',
+  LOADING_FORM: 'loadingManualReminderForm',
+  PEOPLE_NEIGHBORS: 'peopleNeighborsForManualReminder'
+};
+
 // PSA Modal
 
 export const PSA_MODAL = {
@@ -250,6 +267,7 @@ export const REMINDERS = {
   SUCCESSFUL_REMINDER_IDS: 'successfulReminderIds',
   FAILED_REMINDER_IDS: 'failedReminderIds',
   LOADING_REMINDERS: 'loadingReminders',
+  LOADED: 'remindersLoaded',
   REMINDER_NEIGHBORS: 'reminderNeighborsById',
   REMINDERS_WITH_OPEN_PSA_IDS: 'remindersWithOpenPSA',
   LOADING_REMINDER_NEIGHBORS: 'loadingReminderNeighbors',
@@ -298,6 +316,7 @@ export const SEARCH = {
   SELECTED_PERSON_ID: 'selectedPersonId',
   PERSON_DETAILS: 'personDetails',
   LOADING_PERSON_DETAILS: 'loadingPersonDetails',
+  PERSON_DETAILS_LOADED: 'personDetailsLoaded',
   LOADING_CASES: 'loadingCases',
   NUM_CASES_TO_LOAD: 'numCasesToLoad',
   NUM_CASES_LOADED: 'numCasesLoaded',

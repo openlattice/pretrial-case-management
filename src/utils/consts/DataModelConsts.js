@@ -9,6 +9,7 @@ export const APP_NAME = 'psa';
 
 export const ORG_IDS = {
   DEMO_ORG: '1d5aa1f4-4d22-46a5-97cd-dcc6820e7ff8',
+  PCM_DEMO_ORG: 'dd9fb3e7-7e70-45ae-8b43-ea479b067e68',
   PENNINGTON_SD: '67d555b4-7495-414e-a259-ef82ba71779a',
   MINNEHAHA_SD: 'e558ee21-8fec-4c65-aeda-039924ba9a92',
   SHELBY_TN: 'f61d005b-ff0d-4260-b42a-2a03854aa8e2'
@@ -51,6 +52,7 @@ export const APP_TYPES_FQNS = {
   MANUAL_COURT_CHARGES: new FullyQualifiedName('app.manualcourtcharges'),
   MANUAL_PRETRIAL_CASES: new FullyQualifiedName('app.manualpretrialcases'),
   MANUAL_PRETRIAL_COURT_CASES: new FullyQualifiedName('app.manualpretrialcourtcases'),
+  MANUAL_REMINDERS: new FullyQualifiedName('app.manualreminders'),
   OUTCOMES: new FullyQualifiedName('app.psaoutcomes'),
   OVERSAW: new FullyQualifiedName('app.oversaw'),
   PEOPLE: new FullyQualifiedName('app.people'),
@@ -339,5 +341,9 @@ export const PROPERTY_TYPES = {
 
   // Reminders
   REMINDER_ID: 'ol.id',
-  NOTIFIED: 'ol.notified'
+  REMINDER_STATUS: 'ol.status',
+  REMINDER_TYPE: 'ol.type',
+  NOTIFIED: 'ol.notified',
+  REMINDER_NOTES: 'ol.notes',
+  CONTACT_METHOD: 'ol.contactmethod'
 };

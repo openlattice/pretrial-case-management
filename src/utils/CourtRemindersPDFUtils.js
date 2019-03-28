@@ -3,7 +3,7 @@
  */
 
 import JSPDF from 'jspdf';
-import Immutable from 'immutable';
+import Immutable, { Set } from 'immutable';
 
 import { PROPERTY_TYPES } from './consts/DataModelConsts';
 import { sortPeopleByName, formatPeopleInfo } from './PeopleUtils';
@@ -124,12 +124,11 @@ const hearing = (
   doc :Object,
   yInit :number,
   pageInit :number,
-  selectedHearing :Immutable.Map<*, *>,
+  selectedHearing :Immutable.List<*, *>,
 ) :number[] => {
   let y :number = yInit;
   let page :number = pageInit;
-
-  const { hearingDateTime, hearingType, courtroom } = getHearingFields(selectedHearing);
+  let hearingList = Set();
   hearingHeader(doc, y, X_COL_1, 'Address');
   y += Y_INC_SMALL;
   doc.text(X_COL_1, y, '315 St Joseph St, Rapid City, SD 57701');
@@ -137,10 +136,21 @@ const hearing = (
   hearingHeader(doc, y, X_COL_1, 'Hearing Date');
   hearingHeader(doc, y, X_COL_2, 'Hearing Type');
   hearingHeader(doc, y, X_COL_3, 'Courtroom');
-  y += Y_INC_SMALL;
-  doc.text(X_COL_1, y, formatDateTime(hearingDateTime));
-  doc.text(X_COL_2, y, hearingType);
-  doc.text(X_COL_3, y, courtroom);
+  selectedHearing.forEach((hearingObj) => {
+    const {
+      hearingDateTime,
+      hearingType,
+      courtroom,
+      hearingCourtStringNoCaseId
+    } = getHearingFields(hearingObj);
+    if (!hearingList.includes(hearingCourtStringNoCaseId)) {
+      y += Y_INC_SMALL;
+      doc.text(X_COL_1, y, formatDateTime(hearingDateTime));
+      doc.text(X_COL_2, y, hearingType);
+      doc.text(X_COL_3, y, courtroom);
+      hearingList = hearingList.add(hearingCourtStringNoCaseId);
+    }
+  });
   y += 2 * Y_INC_LARGE;
   doc.text(X_COL_1, y, 'Need help? Call 605-721-4518 or 605-721-4509 with any questions or concerns.');
 
