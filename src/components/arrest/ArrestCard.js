@@ -8,6 +8,7 @@ import ContentBlock from '../ContentBlock';
 import ContentSection from '../ContentSection';
 import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
 import { formatDateTime } from '../../utils/FormattingUtils';
+import { getCaseFields } from '../../utils/CaseUtils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 
 const {
@@ -22,11 +23,12 @@ type Props = {
 };
 
 const ArrestCard = ({ arrest, component } :Props) => {
-  const caseNum = arrest.getIn([CASE_ID, 0], '');
-  const arrestDateTime = arrest.getIn([ARREST_DATE_TIME, 0], '');
+  const { caseId, arrestDateTime, arrestingAgency } = getCaseFields(
+    arrest,
+    [CASE_ID, ARREST_DATE_TIME, ARRESTING_AGENCY]
+  );
   const arrestDate = formatDateTime(arrestDateTime, 'MM/DD/YYYY');
   const arrestTime = formatDateTime(arrestDateTime, 'HH:mm');
-  const arrestAgency = arrest.getIn([ARRESTING_AGENCY, 0], '');
 
   let generalContent;
 
@@ -34,7 +36,7 @@ const ArrestCard = ({ arrest, component } :Props) => {
     generalContent = [
       {
         label: 'Case Number',
-        content: [caseNum]
+        content: [caseId]
       },
       {
         label: '',
@@ -50,7 +52,7 @@ const ArrestCard = ({ arrest, component } :Props) => {
       },
       {
         label: 'Arresting Agency',
-        content: [arrestAgency]
+        content: [arrestingAgency]
       }
     ];
   }

@@ -11,6 +11,7 @@ import LoadingSpinner from '../LoadingSpinner';
 import StyledButton from '../buttons/StyledButton';
 import { OL } from '../../utils/consts/Colors';
 import { formatDateList } from '../../utils/FormattingUtils';
+import { getCaseFields } from '../../utils/CaseUtils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { ID_FIELD_NAMES } from '../../utils/consts/Consts';
 import {
@@ -122,17 +123,17 @@ const CaseHistoryList = ({
     })
     .filter(caseObj => caseObj.getIn([PROPERTY_TYPES.CASE_ID, 0], '').length)
     .map((caseObj) => {
-      const caseNum = caseObj.getIn([PROPERTY_TYPES.CASE_ID, 0], '');
-      const charges = chargeHistory.get(caseNum);
+      const { caseId, fileDate } = getCaseFields(caseObj, [PROPERTY_TYPES.CASE_ID, PROPERTY_TYPES.FILE_DATE]);
+      const formattedFileDate = formatDateList(fileDate);
+      const charges = chargeHistory.get(caseId);
       const dateList = caseObj.get(PROPERTY_TYPES.FILE_DATE, Immutable.List());
       const hasBeenUpdated = dateList.some(date => oneWeekAgo.isBefore(date));
-      const fileDate = formatDateList(dateList);
       return (
-        <div key={caseNum}>
+        <div key={caseId}>
           <InfoRow modal={modal}>
             <InfoRowContainer>
-              <InfoItem modal={modal}>{`Case Number: ${caseNum}`}</InfoItem>
-              <InfoItem modal={modal}>{`File Date: ${fileDate}`}</InfoItem>
+              <InfoItem modal={modal}>{`Case Number: ${caseId}`}</InfoItem>
+              <InfoItem modal={modal}>{`File Date: ${formattedFileDate}`}</InfoItem>
               <InfoItem modal={modal}>
                 { (psaPermissions && hasBeenUpdated)
                   ? <PendingChargeStatus pendingCharges>Updated</PendingChargeStatus>
@@ -140,7 +141,7 @@ const CaseHistoryList = ({
                 }
               </InfoItem>
             </InfoRowContainer>
-            { caseNumbersToAssociationId ? addCaseToPSAButton(caseNum) : null }
+            { caseNumbersToAssociationId ? addCaseToPSAButton(caseId) : null }
           </InfoRow>
           <ChargeList
               isCompact={isCompact}

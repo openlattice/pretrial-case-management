@@ -4,14 +4,13 @@
 
 import React from 'react';
 import styled from 'styled-components';
-import Immutable from 'immutable';
-import { Constants } from 'lattice';
+import { Map } from 'immutable';
 
 import { OL } from '../../utils/consts/Colors';
 import { formatDateTime } from '../../utils/FormattingUtils';
+import { getCaseFields } from '../../utils/CaseUtils';
+import { getEntityKeyId } from '../../utils/DataUtils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-
-const { OPENLATTICE_ID_FQN } = Constants;
 
 const {
   ARRESTING_AGENCY,
@@ -46,34 +45,43 @@ const Row = styled.tr`
 `;
 
 type Props = {
-  arrest :Immutable.Map<*, *>,
-  handleSelect? :(arrest :Immutable.Map<*, *>, entityKeyId :string) => void
+  arrest :Map<*, *>,
+  handleSelect? :(arrest :Map<*, *>, entityKeyId :string) => void
 };
 
 const ArrestRow = ({ arrest, handleSelect } :Props) => {
 
-  const caseNum = arrest.getIn([CASE_NUMBER, 0], arrest.getIn([CASE_ID, 0], ''));
-  const arrestDateTime = arrest.getIn([ARREST_DATE_TIME, 0],
-    arrest.getIn([ARREST_DATE, 0], ''));
+  const {
+    arrestingAgency,
+    arrestDateTime,
+    caseId,
+    caseNumber,
+    numberOfCharges
+  } = getCaseFields(arrest, [
+    ARRESTING_AGENCY,
+    ARREST_DATE,
+    ARREST_DATE_TIME,
+    CASE_ID,
+    CASE_NUMBER,
+    NUMBER_OF_CHARGES
+  ]);
+  const caseNum = caseNumber || caseId;
   const arrestDate = formatDateTime(arrestDateTime, 'MM/DD/YYYY');
   const arrestTime = formatDateTime(arrestDateTime, 'HH:mm');
 
-  const numCharges = arrest.getIn([NUMBER_OF_CHARGES, 0]);
-  const arrestAgency = arrest.getIn([ARRESTING_AGENCY, 0]);
-
-  const entityKeyId :string = arrest.getIn([OPENLATTICE_ID_FQN, 0], '');
+  const caseEntityKeyId :string = getEntityKeyId(arrest);
 
   return (
     <Row onClick={() => {
       if (handleSelect) {
-        handleSelect(arrest, entityKeyId);
+        handleSelect(arrest, caseEntityKeyId);
       }
     }}>
       <Cell>{ caseNum }</Cell>
       <Cell>{ arrestDate }</Cell>
       <Cell>{ arrestTime }</Cell>
-      <Cell>{ numCharges }</Cell>
-      <Cell>{ arrestAgency }</Cell>
+      <Cell>{ numberOfCharges }</Cell>
+      <Cell>{ arrestingAgency }</Cell>
     </Row>
   );
 };

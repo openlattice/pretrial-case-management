@@ -7,9 +7,16 @@ import { PROPERTY_TYPES } from './consts/DataModelConsts';
 import { getFirstNeighborValue } from './DataUtils';
 
 export const getChargeFields = (charge) => {
-  const statute = getFirstNeighborValue(charge, PROPERTY_TYPES.CHARGE_STATUTE);
+  const chargeId = getFirstNeighborValue(charge, PROPERTY_TYPES.CHARGE_ID);
   const description = getFirstNeighborValue(charge, PROPERTY_TYPES.CHARGE_DESCRIPTION);
-  return { statute, description };
+  const dispositionDate = getFirstNeighborValue(charge, PROPERTY_TYPES.DISPOSITION_DATE, []);
+  const statute = getFirstNeighborValue(charge, PROPERTY_TYPES.CHARGE_STATUTE);
+  return {
+    chargeId,
+    description,
+    dispositionDate,
+    statute
+  };
 };
 
 export const getViolentChargeLabels = ({ currCharges, violentChargeList }) => {
