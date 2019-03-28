@@ -1,25 +1,19 @@
 import randomUUID from 'uuid/v4';
 import { Map } from 'immutable';
-import { APP_TYPES_FQNS, PROPERTY_TYPES } from './DataModelConsts';
+import { APP_TYPES, PROPERTY_TYPES } from './DataModelConsts';
 import { APP } from './FrontEndStateConsts';
 
 export const DEMO_PATH = '/psademo/';
 
 export const isDemoPath = () => window.location.pathname === DEMO_PATH;
 
-let {
+const {
   CHARGES,
   FTAS,
   PEOPLE,
   PRETRIAL_CASES,
   SENTENCES
-} = APP_TYPES_FQNS;
-
-CHARGES = CHARGES.toString();
-FTAS = FTAS.toString();
-PEOPLE = PEOPLE.toString();
-PRETRIAL_CASES = PRETRIAL_CASES.toString();
-SENTENCES = SENTENCES.toString();
+} = APP_TYPES;
 
 const {
   FIRST_NAME,

@@ -3,12 +3,9 @@ import { OrderedMap, Map, List } from 'immutable';
 import { Constants } from 'lattice';
 
 import { sortByDate } from '../DataUtils';
-import { APP_TYPES_FQNS, PROPERTY_TYPES } from './DataModelConsts';
+import { APP_TYPES, PROPERTY_TYPES } from './DataModelConsts';
 
-let { HEARINGS, OUTCOMES } = APP_TYPES_FQNS;
-
-HEARINGS = HEARINGS.toString();
-OUTCOMES = OUTCOMES.toString();
+const { HEARINGS, OUTCOMES } = APP_TYPES;
 
 const { OPENLATTICE_ID_FQN } = Constants;
 

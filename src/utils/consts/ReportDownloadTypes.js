@@ -2,7 +2,7 @@
  * @flow
  */
 
-import { APP_TYPES_FQNS, PROPERTY_TYPES } from './DataModelConsts';
+import { APP_TYPES, PROPERTY_TYPES } from './DataModelConsts';
 
 const {
   ASSESSED_BY,
@@ -12,35 +12,26 @@ const {
   PSA_SCORES,
   RELEASE_RECOMMENDATIONS,
   STAFF
-} = APP_TYPES_FQNS;
-
-
-const assessedByFqn :string = ASSESSED_BY.toString();
-const dmfResultsFqn :string = DMF_RESULTS.toString();
-const releastRecommendationsFqn :string = RELEASE_RECOMMENDATIONS.toString();
-const peopleFqn :string = PEOPLE.toString();
-const psaRiskFactorsFqn :string = PSA_RISK_FACTORS.toString();
-const psaScoresFqn :string = PSA_SCORES.toString();
-const staffFqn :string = STAFF.toString();
+} = APP_TYPES;
 
 export const SUMMARY_REPORT = {
-  [peopleFqn]: {
+  [PEOPLE]: {
     [PROPERTY_TYPES.LAST_NAME]: 'Last Name',
     [PROPERTY_TYPES.FIRST_NAME]: 'First Name',
     [PROPERTY_TYPES.DOB]: 'Date of Birth'
   },
-  [staffFqn]: {
+  [STAFF]: {
     [PROPERTY_TYPES.PERSON_ID]: 'Completed By'
   },
-  [assessedByFqn]: {
+  [ASSESSED_BY]: {
     [PROPERTY_TYPES.COMPLETED_DATE_TIME]: 'Creation Date'
   },
-  [psaScoresFqn]: {
+  [PSA_SCORES]: {
     [PROPERTY_TYPES.NVCA_FLAG]: 'NVCA',
     [PROPERTY_TYPES.NCA_SCALE]: 'NCA',
     [PROPERTY_TYPES.FTA_SCALE]: 'FTA'
   },
-  [dmfResultsFqn]: {
+  [DMF_RESULTS]: {
     S2: 'S2',
     S4: 'S4',
     [PROPERTY_TYPES.COLOR]: 'RCM Color',
@@ -51,12 +42,12 @@ export const SUMMARY_REPORT = {
 };
 
 export const PSA_RESPONSE_TABLE = {
-  [peopleFqn]: {
+  [PEOPLE]: {
     [PROPERTY_TYPES.LAST_NAME]: 'Last Name',
     [PROPERTY_TYPES.FIRST_NAME]: 'First Name',
     [PROPERTY_TYPES.DOB]: 'Date of Birth'
   },
-  [psaRiskFactorsFqn]: {
+  [PSA_RISK_FACTORS]: {
     [PROPERTY_TYPES.AGE_AT_CURRENT_ARREST]: 'Q1',
     [PROPERTY_TYPES.CURRENT_VIOLENT_OFFENSE]: 'Q2',
     [PROPERTY_TYPES.PENDING_CHARGE]: 'Q3',
@@ -67,7 +58,7 @@ export const PSA_RESPONSE_TABLE = {
     [PROPERTY_TYPES.PRIOR_FAILURE_TO_APPEAR_OLD]: 'Q8',
     [PROPERTY_TYPES.PRIOR_SENTENCE_TO_INCARCERATION]: 'Q9'
   },
-  [releastRecommendationsFqn]: {
+  [RELEASE_RECOMMENDATIONS]: {
     [PROPERTY_TYPES.RELEASE_RECOMMENDATION]: 'Additional Notes'
   }
 };
