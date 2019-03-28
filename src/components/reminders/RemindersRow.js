@@ -46,15 +46,13 @@ const Row = styled.tr`
 `;
 
 type Props = {
-  hasOpenPSA :boolean,
   hearingTime :string,
   hearingType :string,
   contact :string,
   courtroom :string,
-  hasOpenPSA :boolean,
   personName :string,
   personId :string,
-  time :string,
+  caseNumber :string,
   wasNotified :boolean
 };
 
@@ -72,10 +70,8 @@ class ReminderRow extends React.Component<Props, State> {
       courtroom,
       hearingTime,
       hearingType,
-      hasOpenPSA,
       personName,
       personId,
-      time,
       wasNotified
     } = this.props;
 
