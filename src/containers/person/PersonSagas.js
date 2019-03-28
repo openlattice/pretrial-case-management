@@ -19,9 +19,9 @@ import {
 
 import { toISODate, formatDate } from '../../utils/FormattingUtils';
 import { submit } from '../../utils/submit/SubmitActionFactory';
-import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { HAS_OPEN_PSA, PSA_STATUSES } from '../../utils/consts/Consts';
-import { APP, STATE, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
+import { STATE, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { obfuscateEntityNeighbors } from '../../utils/consts/DemoNames';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { getPropertyTypeId } from '../../edm/edmUtils';
@@ -43,21 +43,15 @@ import {
 import * as Routes from '../../core/router/Routes';
 
 const { OPENLATTICE_ID_FQN } = Constants;
-let {
+const {
   CONTACT_INFORMATION,
   PEOPLE,
   PRETRIAL_CASES,
   PSA_SCORES
-} = APP_TYPES_FQNS;
-
-PEOPLE = PEOPLE.toString();
-PRETRIAL_CASES = PRETRIAL_CASES.toString();
-PSA_SCORES = PSA_SCORES.toString();
-CONTACT_INFORMATION = CONTACT_INFORMATION.toString();
+} = APP_TYPES;
 
 const getApp = state => state.get(STATE.APP, Map());
 const getEDM = state => state.get(STATE.EDM, Map());
-const getOrgId = state => state.getIn([STATE.APP, APP.SELECTED_ORG_ID], '');
 
 declare var __ENV_DEV__ :boolean;
 
