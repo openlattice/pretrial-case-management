@@ -39,13 +39,8 @@ import { RESULT_CATEGORIES } from '../../utils/consts/DMFResultConsts';
 import { formatDMFFromEntity } from '../../utils/DMFUtils';
 import { OL } from '../../utils/consts/Colors';
 import { psaIsClosed } from '../../utils/PSAUtils';
-import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import {
-  CASE_CONTEXTS,
-  CONTEXTS,
-  MODULE,
-  SETTINGS
-} from '../../utils/consts/AppSettingConsts';
+import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { CONTEXTS, MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
 import {
   APP,
   PSA_NEIGHBOR,
@@ -71,7 +66,7 @@ import * as CourtActionFactory from '../court/CourtActionFactory';
 import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
 import * as DataActionFactory from '../../utils/data/DataActionFactory';
 
-let {
+const {
   BONDS,
   CALCULATED_FOR,
   DMF_RESULTS,
@@ -85,21 +80,7 @@ let {
   RELEASE_CONDITIONS,
   RELEASE_RECOMMENDATIONS,
   STAFF
-} = APP_TYPES_FQNS;
-
-BONDS = BONDS.toString();
-CALCULATED_FOR = CALCULATED_FOR.toString();
-DMF_RESULTS = DMF_RESULTS.toString();
-DMF_RISK_FACTORS = DMF_RISK_FACTORS.toString();
-HEARINGS = HEARINGS.toString();
-MANUAL_PRETRIAL_CASES = MANUAL_PRETRIAL_CASES.toString();
-OUTCOMES = OUTCOMES.toString();
-PEOPLE = PEOPLE.toString();
-PRETRIAL_CASES = PRETRIAL_CASES.toString();
-PSA_RISK_FACTORS = PSA_RISK_FACTORS.toString();
-RELEASE_CONDITIONS = RELEASE_CONDITIONS.toString();
-RELEASE_RECOMMENDATIONS = RELEASE_RECOMMENDATIONS.toString();
-STAFF = STAFF.toString();
+} = APP_TYPES;
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
