@@ -5,7 +5,7 @@ import { Constants } from 'lattice';
 import { getHearingFields } from './consts/HearingConsts';
 import { APP_TYPES, PROPERTY_TYPES } from './consts/DataModelConsts';
 import { PSA_NEIGHBOR } from './consts/FrontEndStateConsts';
-import { addWeekdays, getEntityKeyId } from './DataUtils';
+import { addWeekdays, getEntityKeyId, getFirstNeighborValue } from './DataUtils';
 
 const { HEARINGS, PEOPLE } = APP_TYPES;
 
@@ -42,25 +42,23 @@ export const FILTERS = {
 };
 
 export const getReminderFields = (reminder) => {
-  const reminderId = reminder.getIn([OPENLATTICE_ID_FQN, 0], '');
-  const wasNotified = reminder.getIn([PROPERTY_TYPES.NOTIFIED, 0], false);
-  const dateTime = reminder.getIn([PROPERTY_TYPES.DATE_TIME, 0]);
-  const entityKeyId = reminder.getIn([OPENLATTICE_ID_FQN, 0]);
+  const reminderEntityKeyId = getEntityKeyId(reminder);
+  const wasNotified = getFirstNeighborValue(reminder, PROPERTY_TYPES.NOTIFIED, false);
+  const dateTime = getFirstNeighborValue(reminder, PROPERTY_TYPES.DATE_TIME);
   return {
-    reminderId,
+    reminderEntityKeyId,
     wasNotified,
     dateTime,
-    entityKeyId
   };
 };
 
 export const getOptOutFields = (optOut) => {
-  const dateTime = optOut.getIn([PROPERTY_TYPES.DATE_TIME, 0], '');
-  const entityKeyId = optOut.getIn([OPENLATTICE_ID_FQN, 0], '');
-  const reason = optOut.getIn([PROPERTY_TYPES.REASON, 0], 'No Response');
+  const optOutEntityKeyId = getEntityKeyId(optOut);
+  const reason = getFirstNeighborValue(optOut, PROPERTY_TYPES.REASON);
+  const dateTime = getFirstNeighborValue(optOut, PROPERTY_TYPES.DATE_TIME);
   return {
     dateTime,
-    entityKeyId,
+    optOutEntityKeyId,
     reason
   };
 };

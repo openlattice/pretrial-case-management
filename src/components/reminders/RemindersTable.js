@@ -134,8 +134,7 @@ class RemindersTable extends React.Component<Props, State> {
         let row = null;
         if (appTypeFqn === REMINDERS) {
           const {
-            reminderId,
-            entityKeyId,
+            reminderEntityKeyId,
             dateTime,
             wasNotified
           } = getReminderFields(entity);
@@ -146,17 +145,16 @@ class RemindersTable extends React.Component<Props, State> {
             hearingType,
             contact,
             hearingDateTime
-          } = this.getNeighborDetails(entityKeyId, neighbors);
-          const reminderNeighbors = neighbors.get(entityKeyId, Map());
+          } = this.getNeighborDetails(reminderEntityKeyId, neighbors);
+          const reminderNeighbors = neighbors.get(reminderEntityKeyId, Map());
           const caseNum = getIdOrValue(reminderNeighbors, PRETRIAL_CASES, PROPERTY_TYPES.CASE_ID);
           row = (
             <RemindersRow
-                key={reminderId}
+                key={reminderEntityKeyId}
                 contact={contact}
                 courtroom={courtroom}
                 hearingTime={hearingDateTime}
                 hearingType={hearingType}
-                reminderId={reminderId}
                 time={moment(dateTime).format('HH:mm')}
                 wasNotified={wasNotified}
                 personId={personId}
@@ -167,19 +165,18 @@ class RemindersTable extends React.Component<Props, State> {
         if (appTypeFqn === REMINDER_OPT_OUTS) {
           const {
             dateTime,
-            entityKeyId,
+            optOutEntityKeyId,
             reason
           } = getOptOutFields(entity);
           const {
             personId,
             lastFirstMid,
             contact
-          } = this.getNeighborDetails(entityKeyId, neighbors);
+          } = this.getNeighborDetails(optOutEntityKeyId, neighbors);
           row = (
             <OptOutRow
-                key={entityKeyId}
+                key={optOutEntityKeyId}
                 contact={contact}
-                optOutId={entityKeyId}
                 reason={reason}
                 time={moment(dateTime).format('HH:mm')}
                 personId={personId}
