@@ -4,7 +4,7 @@
 
 import Immutable from 'immutable';
 
-import { APP_TYPES_FQNS } from '../../utils/consts/DataModelConsts';
+import { APP_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_NEIGHBOR, REVIEW } from '../../utils/consts/FrontEndStateConsts';
 import { SWITCH_ORGANIZATION } from '../app/AppActionFactory';
 import { updateOutcomesAndReleaseCondtions } from '../releaseconditions/ReleaseConditionsActionFactory';
@@ -25,14 +25,7 @@ const {
   OUTCOMES,
   PSA_RISK_FACTORS,
   RELEASE_RECOMMENDATIONS
-} = APP_TYPES_FQNS;
-
-const bondsFqn :string = BONDS.toString();
-const dmfResultsFqn :string = DMF_RESULTS.toString();
-const dmfRiskFactorsFqn :string = DMF_RISK_FACTORS.toString();
-const outcomesFqn :string = OUTCOMES.toString();
-const psaRiskFactorsFqn :string = PSA_RISK_FACTORS.toString();
-const releaseRecommendationsFqn :string = RELEASE_RECOMMENDATIONS.toString();
+} = APP_TYPES;
 
 const INITIAL_STATE :Immutable.Map<*, *> = Immutable.fromJS({
   [REVIEW.ENTITY_SET_ID]: '',
@@ -189,39 +182,39 @@ export default function reviewReducer(state :Immutable.Map<*, *> = INITIAL_STATE
             : state.getIn([
               REVIEW.NEIGHBORS_BY_ID,
               scoresId,
-              releaseRecommendationsFqn,
+              RELEASE_RECOMMENDATIONS,
               PSA_NEIGHBOR.DETAILS
             ]);
           psaNeighborsByDate.keySeq().forEach((date) => {
             if (psaNeighborsByDate.get(date).get(scoresId)) {
               psaNeighborsByDate = psaNeighborsByDate.setIn(
-                [date, scoresId, psaRiskFactorsFqn, PSA_NEIGHBOR.DETAILS],
+                [date, scoresId, PSA_RISK_FACTORS, PSA_NEIGHBOR.DETAILS],
                 Immutable.fromJS(newRiskFactorsEntity)
               ).setIn(
-                [date, scoresId, dmfResultsFqn, PSA_NEIGHBOR.DETAILS],
+                [date, scoresId, DMF_RESULTS, PSA_NEIGHBOR.DETAILS],
                 Immutable.fromJS(newDMFEntity)
               ).setIn(
-                [date, scoresId, dmfRiskFactorsFqn, PSA_NEIGHBOR.DETAILS],
+                [date, scoresId, DMF_RISK_FACTORS, PSA_NEIGHBOR.DETAILS],
                 Immutable.fromJS(newDMFRiskFactorsEntity)
               ).setIn(
-                [date, scoresId, releaseRecommendationsFqn, PSA_NEIGHBOR.DETAILS],
+                [date, scoresId, RELEASE_RECOMMENDATIONS, PSA_NEIGHBOR.DETAILS],
                 Immutable.fromJS(notesEntity)
               );
             }
           });
           const psaNeighborsById = state.get(REVIEW.NEIGHBORS_BY_ID)
             .setIn(
-              [scoresId, psaRiskFactorsFqn, PSA_NEIGHBOR.DETAILS],
+              [scoresId, PSA_RISK_FACTORS, PSA_NEIGHBOR.DETAILS],
               Immutable.fromJS(newRiskFactorsEntity)
             ).setIn(
-              [scoresId, dmfResultsFqn, PSA_NEIGHBOR.DETAILS],
+              [scoresId, DMF_RESULTS, PSA_NEIGHBOR.DETAILS],
               Immutable.fromJS(newDMFEntity)
             ).setIn(
-              [scoresId, dmfRiskFactorsFqn, PSA_NEIGHBOR.DETAILS],
+              [scoresId, DMF_RISK_FACTORS, PSA_NEIGHBOR.DETAILS],
               Immutable.fromJS(newDMFRiskFactorsEntity)
             )
             .setIn(
-              [scoresId, releaseRecommendationsFqn, PSA_NEIGHBOR.DETAILS],
+              [scoresId, RELEASE_RECOMMENDATIONS, PSA_NEIGHBOR.DETAILS],
               Immutable.fromJS(notesEntity)
             );
           return state
@@ -250,20 +243,20 @@ export default function reviewReducer(state :Immutable.Map<*, *> = INITIAL_STATE
           psaNeighborsByDate.keySeq().forEach((date) => {
             if (psaNeighborsByDate.get(date).get(psaId)) {
               psaNeighborsByDate = psaNeighborsByDate.setIn(
-                [date, psaId, outcomesFqn, PSA_NEIGHBOR.DETAILS],
+                [date, psaId, OUTCOMES, PSA_NEIGHBOR.DETAILS],
                 Immutable.fromJS(newOutcomeEntity)
               ).setIn(
-                [date, psaId, bondsFqn, PSA_NEIGHBOR.DETAILS],
+                [date, psaId, BONDS, PSA_NEIGHBOR.DETAILS],
                 Immutable.fromJS(newBondEntity)
               );
             }
           });
           const psaNeighborsById = state.get(REVIEW.NEIGHBORS_BY_ID)
             .setIn(
-              [psaId, outcomesFqn, PSA_NEIGHBOR.DETAILS],
+              [psaId, OUTCOMES, PSA_NEIGHBOR.DETAILS],
               Immutable.fromJS(newOutcomeEntity)
             ).setIn(
-              [psaId, bondsFqn, PSA_NEIGHBOR.DETAILS],
+              [psaId, BONDS, PSA_NEIGHBOR.DETAILS],
               Immutable.fromJS(newBondEntity)
             );
           return state
