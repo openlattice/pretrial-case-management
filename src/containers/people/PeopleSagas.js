@@ -16,7 +16,7 @@ import {
   select
 } from '@redux-saga/core/effects';
 
-import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { APP, PSA_NEIGHBOR, STATE } from '../../utils/consts/FrontEndStateConsts';
 import { obfuscateEntity, obfuscateEntityNeighbors } from '../../utils/consts/DemoNames';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
@@ -38,7 +38,7 @@ import {
   updateContactInfo
 } from './PeopleActionFactory';
 
-let {
+const {
   CHARGES,
   CONTACT_INFORMATION,
   FTAS,
@@ -51,20 +51,7 @@ let {
   RELEASE_RECOMMENDATIONS,
   STAFF,
   SUBSCRIPTION
-} = APP_TYPES_FQNS;
-
-CHARGES = CHARGES.toString();
-CONTACT_INFORMATION = CONTACT_INFORMATION.toString();
-FTAS = FTAS.toString();
-HEARINGS = HEARINGS.toString();
-MANUAL_PRETRIAL_CASES = MANUAL_PRETRIAL_CASES.toString();
-MANUAL_PRETRIAL_COURT_CASES = MANUAL_PRETRIAL_COURT_CASES.toString();
-PEOPLE = PEOPLE.toString();
-PSA_SCORES = PSA_SCORES.toString();
-PRETRIAL_CASES = PRETRIAL_CASES.toString();
-RELEASE_RECOMMENDATIONS = RELEASE_RECOMMENDATIONS.toString();
-STAFF = STAFF.toString();
-SUBSCRIPTION = SUBSCRIPTION.toString();
+} = APP_TYPES;
 
 const LIST_FQNS = [CONTACT_INFORMATION, HEARINGS, PRETRIAL_CASES, STAFF, CHARGES];
 
@@ -263,7 +250,8 @@ function* getPersonNeighborsWorker(action) :Generator<*, *, *> {
           );
         }
         else if (appTypeFqn === MANUAL_PRETRIAL_CASES || appTypeFqn === MANUAL_PRETRIAL_COURT_CASES) {
-          mostRecentPSANeighborsByAppTypeFqn = mostRecentPSANeighborsByAppTypeFqn.set(MANUAL_PRETRIAL_CASES, fromJS(neighbor));
+          mostRecentPSANeighborsByAppTypeFqn = mostRecentPSANeighborsByAppTypeFqn
+            .set(MANUAL_PRETRIAL_CASES, fromJS(neighbor));
         }
         else {
           mostRecentPSANeighborsByAppTypeFqn = mostRecentPSANeighborsByAppTypeFqn.set(

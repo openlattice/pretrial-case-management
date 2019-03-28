@@ -12,7 +12,7 @@ import {
 import { getEntityKeyId } from '../../utils/DataUtils';
 import { changePSAStatus, updateScoresAndRiskFactors, loadPSAData } from '../review/ReviewActionFactory';
 import { refreshHearingNeighbors } from '../court/CourtActionFactory';
-import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PEOPLE, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { PSA_STATUSES } from '../../utils/consts/Consts';
 import {
@@ -25,18 +25,14 @@ import {
   updateContactInfo
 } from './PeopleActionFactory';
 
-let {
+const {
   CONTACT_INFORMATION,
   DMF_RESULTS,
   PSA_SCORES,
   RELEASE_RECOMMENDATIONS
-} = APP_TYPES_FQNS;
+} = APP_TYPES;
 
-CONTACT_INFORMATION = CONTACT_INFORMATION.toString();
-DMF_RESULTS = DMF_RESULTS.toString();
-PSA_SCORES = PSA_SCORES.toString();
-RELEASE_RECOMMENDATIONS = RELEASE_RECOMMENDATIONS.toString();
-const peopleFqn = APP_TYPES_FQNS.PEOPLE.toString();
+const PEOPLE_FQN = APP_TYPES.PEOPLE;
 
 const { OPENLATTICE_ID_FQN } = Constants;
 const INITIAL_STATE = fromJS({
@@ -100,7 +96,7 @@ export default function peopleReducer(state = INITIAL_STATE, action) {
             const requiresActionPersonId = state.getIn([
               PEOPLE.PSA_NEIGHBORS_BY_ID,
               id,
-              peopleFqn,
+              PEOPLE_FQN,
               PSA_NEIGHBOR.DETAILS,
               OPENLATTICE_ID_FQN,
               0

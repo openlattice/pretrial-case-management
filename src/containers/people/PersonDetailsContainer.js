@@ -23,7 +23,7 @@ import { getChargeHistory } from '../../utils/CaseUtils';
 import { JURISDICTION } from '../../utils/consts/Consts';
 import { getEntityKeyId, getIdOrValue, getNeighborDetailsForEntitySet } from '../../utils/DataUtils';
 import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
-import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import {
   getScheduledHearings,
   getPastHearings,
@@ -48,7 +48,8 @@ import * as ReviewActionFactory from '../review/ReviewActionFactory';
 import * as PSAModalActionFactory from '../psamodal/PSAModalActionFactory';
 
 const { OPENLATTICE_ID_FQN } = Constants;
-let {
+
+const {
   BONDS,
   CONTACT_INFORMATION,
   HEARINGS,
@@ -56,15 +57,7 @@ let {
   DMF_RESULTS,
   DMF_RISK_FACTORS,
   RELEASE_CONDITIONS
-} = APP_TYPES_FQNS;
-
-BONDS = BONDS.toString();
-CONTACT_INFORMATION = CONTACT_INFORMATION.toString();
-HEARINGS = HEARINGS.toString();
-OUTCOMES = OUTCOMES.toString();
-DMF_RESULTS = DMF_RESULTS.toString();
-DMF_RISK_FACTORS = DMF_RISK_FACTORS.toString();
-RELEASE_CONDITIONS = RELEASE_CONDITIONS.toString();
+} = APP_TYPES;
 
 const ToolbarWrapper = styled.div`
   display: flex;
