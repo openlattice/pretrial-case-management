@@ -8,13 +8,11 @@ import { Map } from 'immutable';
 import HearingRow from './HearingRow';
 import { OL } from '../../utils/consts/Colors';
 import { PSA_STATUSES } from '../../utils/consts/Consts';
-import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { getHearingFields, sortHearingsByDate } from '../../utils/consts/HearingConsts';
 import { isUUID, getIdOrValue } from '../../utils/DataUtils';
 
-let { PSA_SCORES } = APP_TYPES_FQNS;
-
-PSA_SCORES = PSA_SCORES.toString();
+const { PSA_SCORES } = APP_TYPES;
 
 const Table = styled.div`
   position: relative;
@@ -109,7 +107,7 @@ const HearingsTable = ({
           const hearingHasOutcome = hearingsWithOutcomes.includes(hearingEntityKeyId);
           const disabled = hearingHasOutcome || !hearingWasCreatedManually;
           const hearingHasOpenPSA = getIdOrValue(hearingNeighborsById
-            .get(hearingEntityKeyId), PSA_SCORES, PROPERTY_TYPES.STATUS) === PSA_STATUSES.OPEN;
+            .get(hearingEntityKeyId, Map()), PSA_SCORES, PROPERTY_TYPES.STATUS) === PSA_STATUSES.OPEN;
           return (
             <HearingRow
                 key={`${hearingEntityKeyId}-${hearingCourtString}-${hearingId}`}
