@@ -27,7 +27,7 @@ import { getPropertyTypeId } from '../../edm/edmUtils';
 import { toISODate } from '../../utils/FormattingUtils';
 import { hearingNeedsReminder } from '../../utils/RemindersUtils';
 import { obfuscateBulkEntityNeighbors } from '../../utils/consts/DemoNames';
-import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import {
   APP,
   PSA_NEIGHBOR,
@@ -42,22 +42,14 @@ import {
   loadManualRemindersNeighborsById,
 } from './ManualRemindersActionFactory';
 
-let {
+const {
   CONTACT_INFORMATION,
   HEARINGS,
   PEOPLE,
   MANUAL_REMINDERS,
   PRETRIAL_CASES,
   STAFF
-} = APP_TYPES_FQNS;
-
-CONTACT_INFORMATION = CONTACT_INFORMATION.toString();
-HEARINGS = HEARINGS.toString();
-PEOPLE = PEOPLE.toString();
-MANUAL_REMINDERS = MANUAL_REMINDERS.toString();
-PRETRIAL_CASES = PRETRIAL_CASES.toString();
-STAFF = STAFF.toString();
-
+} = APP_TYPES;
 
 const { OPENLATTICE_ID_FQN } = Constants;
 const { FullyQualifiedName } = Models;

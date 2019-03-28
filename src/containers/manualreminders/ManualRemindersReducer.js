@@ -12,11 +12,9 @@ import {
 } from './ManualRemindersActionFactory';
 import { refreshPersonNeighbors } from '../people/PeopleActionFactory';
 import { MANUAL_REMINDERS } from '../../utils/consts/FrontEndStateConsts';
-import { APP_TYPES_FQNS } from '../../utils/consts/DataModelConsts';
+import { APP_TYPES } from '../../utils/consts/DataModelConsts';
 
-let { CONTACT_INFORMATION } = APP_TYPES_FQNS;
-
-CONTACT_INFORMATION = CONTACT_INFORMATION.toString();
+const { CONTACT_INFORMATION } = APP_TYPES;
 
 const INITIAL_STATE :Map<*, *> = fromJS({
   [MANUAL_REMINDERS.LOADING_FORM]: false,

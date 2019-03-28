@@ -20,7 +20,7 @@ import StyledRadio from '../../components/controls/StyledRadio';
 import NewContactForm from '../people/NewContactForm';
 import HearingCardsHolder from '../../components/hearings/HearingCardsHolder';
 import { formatPeopleInfo } from '../../utils/PeopleUtils';
-import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
 import { FORM_IDS } from '../../utils/consts/Consts';
 import { filterContactsByType, getContactInfoFields } from '../../utils/ContactInfoUtils';
@@ -37,10 +37,7 @@ import {
 import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
 import * as ManualRemindersActionFactory from './ManualRemindersActionFactory';
 
-let { CONTACT_INFORMATION, HEARINGS } = APP_TYPES_FQNS;
-
-CONTACT_INFORMATION = CONTACT_INFORMATION.toString();
-HEARINGS = HEARINGS.toString();
+const { CONTACT_INFORMATION, HEARINGS } = APP_TYPES;
 
 /*
  * styled components
