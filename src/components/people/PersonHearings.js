@@ -22,7 +22,7 @@ import LogoLoader from '../LogoLoader';
 import psaHearingConfig from '../../config/formconfig/PSAHearingConfig';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { FORM_IDS, ID_FIELD_NAMES } from '../../utils/consts/Consts';
-import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import {
   APP,
   COURT,
@@ -48,11 +48,7 @@ import * as PeopleActionFactory from '../../containers/people/PeopleActionFactor
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
-let { HEARINGS, OUTCOMES, PRETRIAL_CASES } = APP_TYPES_FQNS;
-
-HEARINGS = HEARINGS.toString();
-OUTCOMES = OUTCOMES.toString();
-PRETRIAL_CASES = PRETRIAL_CASES.toString();
+const { HEARINGS, OUTCOMES, PRETRIAL_CASES } = APP_TYPES;
 
 const ColumnWrapper = styled(StyledColumnRowWrapper)`
   background: transparent;
