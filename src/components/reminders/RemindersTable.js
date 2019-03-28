@@ -9,7 +9,7 @@ import { Map } from 'immutable';
 import RemindersRow from './RemindersRow';
 import OptOutRow from './OptOutRow';
 import { NoResults } from '../../utils/Layout';
-import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { getIdOrValue } from '../../utils/DataUtils';
 import { formatPeopleInfo } from '../../utils/PeopleUtils';
@@ -24,21 +24,14 @@ import {
 
 import { OL } from '../../utils/consts/Colors';
 
-let {
+const {
   CONTACT_INFORMATION,
   HEARINGS,
   PEOPLE,
   PRETRIAL_CASES,
   REMINDERS,
   REMINDER_OPT_OUTS,
-} = APP_TYPES_FQNS;
-
-CONTACT_INFORMATION = CONTACT_INFORMATION.toString();
-HEARINGS = HEARINGS.toString();
-PEOPLE = PEOPLE.toString();
-PRETRIAL_CASES = PRETRIAL_CASES.toString();
-REMINDERS = REMINDERS.toString();
-REMINDER_OPT_OUTS = REMINDER_OPT_OUTS.toString();
+} = APP_TYPES;
 
 const Table = styled.table`
   width: 100%;
