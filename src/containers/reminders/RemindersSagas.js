@@ -30,7 +30,7 @@ import exportPDFList from '../../utils/CourtRemindersPDFUtils';
 import { toISODate } from '../../utils/FormattingUtils';
 import { addWeekdays } from '../../utils/DataUtils';
 import { obfuscateBulkEntityNeighbors } from '../../utils/consts/DemoNames';
-import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import {
   APP,
   PSA_ASSOCIATION,
@@ -52,7 +52,7 @@ import {
   loadRemindersforDate
 } from './RemindersActionFactory';
 
-let {
+const {
   CONTACT_INFORMATION,
   HEARINGS,
   PEOPLE,
@@ -60,16 +60,7 @@ let {
   REMINDERS,
   REMINDER_OPT_OUTS,
   PRETRIAL_CASES
-} = APP_TYPES_FQNS;
-
-CONTACT_INFORMATION = CONTACT_INFORMATION.toString();
-HEARINGS = HEARINGS.toString();
-PEOPLE = PEOPLE.toString();
-PSA_SCORES = PSA_SCORES.toString();
-REMINDERS = REMINDERS.toString();
-REMINDER_OPT_OUTS = REMINDER_OPT_OUTS.toString();
-PRETRIAL_CASES = PRETRIAL_CASES.toString();
-
+} = APP_TYPES;
 
 const { OPENLATTICE_ID_FQN } = Constants;
 const { FullyQualifiedName } = Models;
