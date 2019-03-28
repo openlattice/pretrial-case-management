@@ -15,7 +15,7 @@ import NewChargeForm from '../../components/managecharges/NewChargeForm';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { arrestChargeConfig, courtChargeConfig } from '../../config/formconfig/ChargeConfig';
 import { CHARGE_TYPES } from '../../utils/consts/ChargeConsts';
-import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { Wrapper, TitleWrapper, CloseModalX } from '../../utils/Layout';
 import {
   APP,
@@ -30,13 +30,7 @@ import * as ChargesActionFactory from './ChargesActionFactory';
 
 const MODAL_WIDTH = '800px';
 
-const {
-  ARREST_CHARGE_LIST,
-  COURT_CHARGE_LIST
-} = APP_TYPES_FQNS;
-
-const arrestChargeListFqn :string = ARREST_CHARGE_LIST.toString();
-const courtChargeListFqn :string = COURT_CHARGE_LIST.toString();
+const { ARREST_CHARGE_LIST, COURT_CHARGE_LIST } = APP_TYPES;
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
@@ -411,8 +405,8 @@ function mapStateToProps(state) {
     // App
     app,
     [APP.SELECTED_ORG_ID]: orgId,
-    arrestEntitySetId: getEntitySetIdFromApp(app, arrestChargeListFqn),
-    courtEntitySetId: getEntitySetIdFromApp(app, courtChargeListFqn),
+    arrestEntitySetId: getEntitySetIdFromApp(app, ARREST_CHARGE_LIST),
+    courtEntitySetId: getEntitySetIdFromApp(app, COURT_CHARGE_LIST),
     [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
     [APP.SELECTED_ORG_TITLE]: app.get(APP.SELECTED_ORG_TITLE),
 
