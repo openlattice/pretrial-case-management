@@ -22,7 +22,7 @@ import {
   takeEvery
 } from '@redux-saga/core/effects';
 
-import { APP_TYPES_FQNS, APP_NAME } from '../../utils/consts/DataModelConsts';
+import { APP_TYPES, APP_NAME } from '../../utils/consts/DataModelConsts';
 import { removeTermsToken } from '../../utils/AcceptTermsUtils';
 import { defaultSettings } from '../../utils/AppUtils';
 import * as Routes from '../../core/router/Routes';
@@ -33,8 +33,7 @@ import {
   loadApp
 } from './AppActionFactory';
 
-let { APP_SETTINGS } = APP_TYPES_FQNS;
-APP_SETTINGS = APP_SETTINGS.toString();
+const { APP_SETTINGS } = APP_TYPES;
 
 const { SecurableTypes } = Types;
 const { getEntityDataModelProjection } = EntityDataModelApiActions;

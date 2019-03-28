@@ -6,7 +6,7 @@ import { Models } from 'lattice';
 import { List, Map, fromJS } from 'immutable';
 import { AccountUtils } from 'lattice-auth';
 
-import { APP_TYPES_FQNS } from '../../utils/consts/DataModelConsts';
+import { APP_TYPES, APP_TYPES_FQNS } from '../../utils/consts/DataModelConsts';
 import { APP } from '../../utils/consts/FrontEndStateConsts';
 import {
   loadApp,
@@ -15,11 +15,7 @@ import {
 
 const { FullyQualifiedName } = Models;
 
-const { ARREST_CHARGE_LIST, COURT_CHARGE_LIST, APP_SETTINGS } = APP_TYPES_FQNS;
-
-const arrestChargeListFqn :string = ARREST_CHARGE_LIST.toString();
-const courtChargeListFqn :string = COURT_CHARGE_LIST.toString();
-const appSettingsFqn :string = APP_SETTINGS.toString();
+const { ARREST_CHARGE_LIST, COURT_CHARGE_LIST, APP_SETTINGS } = APP_TYPES;
 
 const APP_CONFIG_INITIAL_STATE :Map<*, *> = fromJS({
   [APP.ENTITY_SETS_BY_ORG]: Map(),
@@ -28,9 +24,9 @@ const APP_CONFIG_INITIAL_STATE :Map<*, *> = fromJS({
 });
 
 const INITIAL_STATE :Map<*, *> = fromJS({
-  [arrestChargeListFqn]: APP_CONFIG_INITIAL_STATE,
-  [courtChargeListFqn]: APP_CONFIG_INITIAL_STATE,
-  [appSettingsFqn]: APP_CONFIG_INITIAL_STATE,
+  [ARREST_CHARGE_LIST]: APP_CONFIG_INITIAL_STATE,
+  [COURT_CHARGE_LIST]: APP_CONFIG_INITIAL_STATE,
+  [APP_SETTINGS]: APP_CONFIG_INITIAL_STATE,
   [APP.ENTITY_SETS_BY_ORG]: Map(),
   [APP.FQN_TO_ID]: Map(),
   [APP.ACTIONS]: {
