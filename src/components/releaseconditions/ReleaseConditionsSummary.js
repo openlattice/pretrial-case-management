@@ -9,22 +9,17 @@ import { Constants } from 'lattice';
 import HearingSummary from '../hearings/HearingSummary';
 import { NoResults } from '../../utils/Layout';
 import { formatJudgeName } from '../../utils/consts/HearingConsts';
-import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
 import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { formatDateTime } from '../../utils/FormattingUtils';
 
-let {
+const {
   JUDGES,
   OUTCOMES,
   BONDS,
   RELEASE_CONDITIONS
-} = APP_TYPES_FQNS;
-
-BONDS = BONDS.toString();
-JUDGES = JUDGES.toString();
-OUTCOMES = OUTCOMES.toString();
-RELEASE_CONDITIONS = RELEASE_CONDITIONS.toString();
+} = APP_TYPES;
 
 const Header = styled.div`
   padding: 30px 0 0 30px;

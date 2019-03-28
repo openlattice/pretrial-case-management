@@ -7,7 +7,7 @@ import Modal, { ModalTransition } from '@atlaskit/modal-dialog';
 import { Map } from 'immutable';
 
 import ReleaseConditionsContainer from '../../containers/releaseconditions/ReleaseConditionsContainer';
-import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { formatDate } from '../../utils/FormattingUtils';
 import { getAssociationDetailsForEntitySet, getFirstNeighborValue } from '../../utils/DataUtils';
 import {
@@ -17,8 +17,7 @@ import {
   CloseModalX
 } from '../../utils/Layout';
 
-let { PSA_SCORES } = APP_TYPES_FQNS;
-PSA_SCORES = PSA_SCORES.toString();
+const { PSA_SCORES } = APP_TYPES;
 
 type Props = {
   hearingEntityKeyId :string,
