@@ -1,22 +1,17 @@
 import Immutable from 'immutable';
 import moment from 'moment';
 
-import { APP_TYPES_FQNS, PROPERTY_TYPES } from './consts/DataModelConsts';
+import { APP_TYPES, PROPERTY_TYPES } from './consts/DataModelConsts';
 import { PSA_STATUSES } from './consts/Consts';
 import { PSA_NEIGHBOR, PSA_ASSOCIATION } from './consts/FrontEndStateConsts';
 import { sortPeopleByName } from './PeopleUtils';
 
-let {
+const {
   ASSESSED_BY,
   EDITED_BY,
   PEOPLE,
   STAFF
-} = APP_TYPES_FQNS;
-
-ASSESSED_BY = ASSESSED_BY.toString();
-EDITED_BY = EDITED_BY.toString();
-PEOPLE = PEOPLE.toString();
-STAFF = STAFF.toString();
+} = APP_TYPES;
 
 export const sortByName = ([id1, neighbor1], [id2, neighbor2]) => {
   const p1 = neighbor1.getIn([PEOPLE, PSA_NEIGHBOR.DETAILS], Immutable.Map());

@@ -3,15 +3,11 @@ import { Map } from 'immutable';
 import { Constants } from 'lattice';
 
 import { getHearingFields } from './consts/HearingConsts';
-import { APP_TYPES_FQNS, PROPERTY_TYPES } from './consts/DataModelConsts';
+import { APP_TYPES, PROPERTY_TYPES } from './consts/DataModelConsts';
 import { PSA_NEIGHBOR } from './consts/FrontEndStateConsts';
 import { addWeekdays, getEntityKeyId } from './DataUtils';
 
-
-let { HEARINGS, PEOPLE } = APP_TYPES_FQNS;
-
-HEARINGS = HEARINGS.toString();
-PEOPLE = PEOPLE.toString();
+const { HEARINGS, PEOPLE } = APP_TYPES;
 
 const { OPENLATTICE_ID_FQN } = Constants;
 

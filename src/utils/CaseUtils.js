@@ -1,14 +1,11 @@
-import { Map, List, fromJS } from 'immutable';
+import { Map, List } from 'immutable';
 import moment from 'moment';
 
 import { PSA_STATUSES } from './consts/Consts';
-import { APP_TYPES_FQNS, PROPERTY_TYPES } from './consts/DataModelConsts';
+import { APP_TYPES, PROPERTY_TYPES } from './consts/DataModelConsts';
 import { PSA_NEIGHBOR } from './consts/FrontEndStateConsts';
 
-let { CHARGES, PRETRIAL_CASES } = APP_TYPES_FQNS;
-
-CHARGES = CHARGES.toString();
-PRETRIAL_CASES = PRETRIAL_CASES.toString();
+const { CHARGES, PRETRIAL_CASES } = APP_TYPES;
 
 export const getMapByCaseId = (list, fqn) => {
   let objMap = Map();

@@ -4,7 +4,7 @@ import { List } from 'immutable';
 import { Constants } from 'lattice';
 
 
-import { APP_TYPES_FQNS, PROPERTY_TYPES } from './consts/DataModelConsts';
+import { APP_TYPES, PROPERTY_TYPES } from './consts/DataModelConsts';
 import { HAS_OPEN_PSA } from './consts/Consts';
 import { PSA_NEIGHBOR } from './consts/FrontEndStateConsts';
 import { formatDOB } from './Helpers';
@@ -12,9 +12,7 @@ import { getFirstNeighborValue } from './DataUtils';
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
-let { PSA_SCORES } = APP_TYPES_FQNS;
-
-PSA_SCORES = PSA_SCORES.toString();
+const { PSA_SCORES } = APP_TYPES;
 
 export const formatPeopleInfo = (person) => {
   const personEntityKeyId = getFirstNeighborValue(person, OPENLATTICE_ID_FQN);
