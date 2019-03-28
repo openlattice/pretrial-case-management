@@ -4,7 +4,7 @@
 import { Map, fromJS } from 'immutable';
 import { Constants } from 'lattice';
 
-import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { RELEASE_COND } from '../../utils/consts/FrontEndStateConsts';
 import { refreshHearingNeighbors } from '../court/CourtActionFactory';
 import { refreshPSANeighbors } from '../review/ReviewActionFactory';
@@ -14,11 +14,7 @@ import {
   updateOutcomesAndReleaseCondtions
 } from './ReleaseConditionsActionFactory';
 
-let { HEARINGS, OUTCOMES, DMF_RESULTS } = APP_TYPES_FQNS;
-
-HEARINGS = HEARINGS.toString();
-OUTCOMES = OUTCOMES.toString();
-DMF_RESULTS = DMF_RESULTS.toString();
+const { HEARINGS, OUTCOMES, DMF_RESULTS } = APP_TYPES;
 
 const { OPENLATTICE_ID_FQN } = Constants;
 

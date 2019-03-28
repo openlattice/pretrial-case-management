@@ -34,7 +34,7 @@ import { OL } from '../../utils/consts/Colors';
 import { getTimeOptions } from '../../utils/consts/DateTimeConsts';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { getChargeHistory } from '../../utils/CaseUtils';
-import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { toISODate, toISODateTime, formatDateTime } from '../../utils/FormattingUtils';
 import {
   getEntitySetId,
@@ -86,7 +86,7 @@ import * as CourtActionFactory from '../court/CourtActionFactory';
 const { RELEASE_CONDITIONS_FIELD } = LIST_FIELDS;
 const { OPENLATTICE_ID_FQN } = Constants;
 
-let {
+const {
   ASSESSED_BY,
   DMF_RESULTS,
   DMF_RISK_FACTORS,
@@ -95,20 +95,11 @@ let {
   PEOPLE,
   PSA_SCORES,
   PRETRIAL_CASES
-} = APP_TYPES_FQNS;
+} = APP_TYPES;
 
-const RELEASE_CONDITIONS_FQN = APP_TYPES_FQNS.RELEASE_CONDITIONS.toString();
-const OUTCOMES_FQN = APP_TYPES_FQNS.OUTCOMES.toString();
-const BONDS_FQN = APP_TYPES_FQNS.BONDS.toString();
-
-ASSESSED_BY = ASSESSED_BY.toString();
-DMF_RESULTS = DMF_RESULTS.toString();
-DMF_RISK_FACTORS = DMF_RISK_FACTORS.toString();
-JUDGES = JUDGES.toString();
-HEARINGS = HEARINGS.toString();
-PEOPLE = PEOPLE.toString();
-PSA_SCORES = PSA_SCORES.toString();
-PRETRIAL_CASES = PRETRIAL_CASES.toString();
+const RELEASE_CONDITIONS_FQN = APP_TYPES.RELEASE_CONDITIONS;
+const OUTCOMES_FQN = APP_TYPES.OUTCOMES;
+const BONDS_FQN = APP_TYPES.BONDS;
 
 const {
   OUTCOME,
