@@ -16,7 +16,7 @@ import LogoLoader from '../../components/LogoLoader';
 import psaHearingConfig from '../../config/formconfig/PSAHearingConfig';
 import ReleaseConditionsContainer from '../releaseconditions/ReleaseConditionsContainer';
 import SubscriptionInfo from '../../components/subscription/SubscriptionInfo';
-import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { getScheduledHearings, getPastHearings, getHearingFields } from '../../utils/consts/HearingConsts';
 import { OL } from '../../utils/consts/Colors';
 import { SETTINGS } from '../../utils/consts/AppSettingConsts';
@@ -42,19 +42,14 @@ import * as DataActionFactory from '../../utils/data/DataActionFactory';
 import * as ReviewActionFactory from '../review/ReviewActionFactory';
 import * as CourtActionFactory from '../court/CourtActionFactory';
 
-let {
+const {
   CONTACT_INFORMATION,
   DMF_RISK_FACTORS,
   OUTCOMES,
   SUBSCRIPTION
-} = APP_TYPES_FQNS;
+} = APP_TYPES;
 
-
-CONTACT_INFORMATION = CONTACT_INFORMATION.toString();
-DMF_RISK_FACTORS = DMF_RISK_FACTORS.toString();
-OUTCOMES = OUTCOMES.toString();
-SUBSCRIPTION = SUBSCRIPTION.toString();
-const PEOPLE_FQN = APP_TYPES_FQNS.PEOPLE.toString();
+const PEOPLE_FQN = APP_TYPES.PEOPLE;
 
 const Container = styled.div`
   hr {
