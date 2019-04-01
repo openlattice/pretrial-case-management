@@ -36,19 +36,14 @@ import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { getChargeHistory } from '../../utils/CaseUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { toISODate, toISODateTime, formatDateTime } from '../../utils/FormattingUtils';
+import { HEARING_CONSTS } from '../../utils/consts/HearingConsts';
+import { formatJudgeName, getCourtroomOptions, getJudgeOptions } from '../../utils/HearingUtils';
 import {
-  getEntitySetId,
   getEntityKeyId,
   getNeighborDetailsForEntitySet,
   getFirstNeighborValue,
   isUUID
 } from '../../utils/DataUtils';
-import {
-  formatJudgeName,
-  getCourtroomOptions,
-  getJudgeOptions,
-  HEARING_CONSTS
-} from '../../utils/consts/HearingConsts';
 import {
   RELEASE_CONDITIONS,
   LIST_FIELDS,

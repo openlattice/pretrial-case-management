@@ -29,7 +29,7 @@ import {
   getPastHearings,
   getAvailableHearings,
   getHearingsIdsFromNeighbors
-} from '../../utils/consts/HearingConsts';
+} from '../../utils/HearingUtils';
 import {
   APP,
   COURT,

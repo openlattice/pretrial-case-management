@@ -8,7 +8,7 @@ import { Constants } from 'lattice';
 
 import HearingSummary from '../hearings/HearingSummary';
 import { NoResults } from '../../utils/Layout';
-import { formatJudgeName } from '../../utils/consts/HearingConsts';
+import { formatJudgeName } from '../../utils/HearingUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
 import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
