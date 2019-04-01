@@ -453,7 +453,7 @@ function* searchPeopleByPhoneNumberWorker(action) :Generator<*, *, *> {
       if (peopleIds.size) {
         let contactsByPersonId = yield call(SearchApi.searchEntityNeighborsWithFilter, peopleEntitySetId, {
           entityKeyIds: peopleIds.toJS(),
-          sourceEntitySetIds: [],
+          sourceEntitySetIds: [contactInformationEntitySetId],
           destinationEntitySetIds: [contactInformationEntitySetId]
         });
         contactsByPersonId = fromJS(contactsByPersonId);
