@@ -14,18 +14,24 @@ const { OPENLATTICE_ID_FQN } = Constants;
 
 const { PSA_SCORES } = APP_TYPES;
 
+const formatPersonName = (firstName, middleName, lastName) => {
+  const midName = middleName ? ` ${middleName}` : '';
+  const lastFirstMid = `${lastName}, ${firstName}${midName}`;
+
+  return lastFirstMid;
+};
+
 export const formatPeopleInfo = (person) => {
   const personEntityKeyId = getFirstNeighborValue(person, OPENLATTICE_ID_FQN);
-  const dob = formatDOB(getFirstNeighborValue(person, PROPERTY_TYPES.DOB));
   const personId = getFirstNeighborValue(person, PROPERTY_TYPES.PERSON_ID);
+  const dob = formatDOB(getFirstNeighborValue(person, PROPERTY_TYPES.DOB));
   const firstName = getFirstNeighborValue(person, PROPERTY_TYPES.FIRST_NAME);
   const middleName = getFirstNeighborValue(person, PROPERTY_TYPES.MIDDLE_NAME);
   const lastName = getFirstNeighborValue(person, PROPERTY_TYPES.LAST_NAME);
   const photo = getFirstNeighborValue(
     person, PROPERTY_TYPES.PICTURE, getFirstNeighborValue(person, PROPERTY_TYPES.MUGSHOT)
   );
-  const midName = middleName ? ` ${middleName}` : '';
-  const lastFirstMid = `${lastName}, ${firstName}${midName}`;
+  const lastFirstMid = formatPersonName(firstName, middleName, lastName);
   const hasOpenPSA = person.get(HAS_OPEN_PSA, false);
   return {
     personEntityKeyId,
