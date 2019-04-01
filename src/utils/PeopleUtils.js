@@ -14,7 +14,7 @@ const { OPENLATTICE_ID_FQN } = Constants;
 
 const { PSA_SCORES } = APP_TYPES;
 
-const formatPersonName = (firstName, middleName, lastName) => {
+export const formatPersonName = (firstName, middleName, lastName) => {
   const midName = middleName ? ` ${middleName}` : '';
   const lastFirstMid = `${lastName}, ${firstName}${midName}`;
 
