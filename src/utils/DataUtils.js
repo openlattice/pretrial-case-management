@@ -115,3 +115,14 @@ export const getFirstNeighborValue = (neighborObj, fqn, defaultValue = '') => ne
   [PSA_NEIGHBOR.DETAILS, fqn, 0],
   neighborObj.getIn([fqn, 0], defaultValue)
 );
+
+// Pass entity object and list of property types and will return and object of labels
+// mapped to properties.
+export const getEntityProperties = (caseObj, propertyList) => {
+  let returnCaseFields = Map();
+  propertyList.forEach((propertyType) => {
+    const property = getFirstNeighborValue(caseObj, propertyType);
+    returnCaseFields = returnCaseFields.set(propertyType, property);
+  });
+  return returnCaseFields.toJS();
+};
