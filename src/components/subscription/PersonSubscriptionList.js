@@ -107,19 +107,21 @@ class PersonSubscriptionList extends React.Component<Props, State> {
       contactResults,
       peopleIdsToContactIds,
       includeContact,
-      people
+      people,
+      includeManualRemindersButton
     } = this.props;
     return people.valueSeq().sort(sortPeopleByName).map((person) => {
-      const { personId } = formatPeopleInfo(person);
+      const { personEntityKeyId } = formatPeopleInfo(person);
       let contact;
       if (includeContact) {
-        const contactId = peopleIdsToContactIds.getIn([personId, 0], '');
+        const contactId = peopleIdsToContactIds.getIn([personEntityKeyId, 0], '');
         contact = contactResults.get(contactId, Map());
       }
       return (
         <PersonSubcriptionRow
-            key={personId}
+            key={personEntityKeyId}
             contact={contact}
+            includeManualRemindersButton={includeManualRemindersButton}
             person={person}
             openManageSubscriptionModal={this.openManageSubscriptionModal}
             openCreateManualReminderModal={this.openCreateManualReminderModal}
@@ -129,7 +131,11 @@ class PersonSubscriptionList extends React.Component<Props, State> {
   };
 
   render() {
-    const { noResults, noResultsText, loading } = this.props;
+    const {
+      noResults,
+      noResultsText,
+      loading
+    } = this.props;
 
     const noResultsDisplay = (noResults && !loading)
       ? <NoResults>{ noResultsText }</NoResults>

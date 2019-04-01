@@ -84,9 +84,9 @@ class ReminderRow extends React.Component<Props, State> {
             { personName }
           </StyledLink>
         </Cell>
+        <Cell>{ contact }</Cell>
         <Cell>{ courtroom }</Cell>
         <Cell>{ hearingType }</Cell>
-        <Cell>{ contact }</Cell>
         <Cell>{ this.renderbooleanIcon(wasNotified) }</Cell>
 
       </Row>

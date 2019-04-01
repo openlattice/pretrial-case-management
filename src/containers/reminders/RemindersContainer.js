@@ -313,6 +313,7 @@ class RemindersContainer extends React.Component<Props, State> {
           </TitleText>
         </TableTitle>
         <PersonSubscriptionList
+            includeManualRemindersButton
             noResultsText="No Results"
             loading={loadingPeopleWithNoContacts}
             submitCallback={this.manualRemindersSubmitCallback}
