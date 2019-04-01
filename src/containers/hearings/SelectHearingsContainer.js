@@ -17,7 +17,7 @@ import psaHearingConfig from '../../config/formconfig/PSAHearingConfig';
 import ReleaseConditionsContainer from '../releaseconditions/ReleaseConditionsContainer';
 import SubscriptionInfo from '../../components/subscription/SubscriptionInfo';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { getScheduledHearings, getPastHearings, getHearingFields } from '../../utils/consts/HearingConsts';
+import { getScheduledHearings, getPastHearings, getHearingString } from '../../utils/HearingUtils';
 import { OL } from '../../utils/consts/Colors';
 import { SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { Title } from '../../utils/Layout';
@@ -169,11 +169,11 @@ class SelectHearingsContainer extends React.Component<Props, State> {
     let { personHearings } = this.props;
     let hearingStrings = List();
     psaHearings.forEach((hearing) => {
-      const { hearingCourtString } = getHearingFields(hearing);
+      const hearingCourtString = getHearingString(hearing);
       hearingStrings = hearingStrings.push(hearingCourtString);
     });
     personHearings = personHearings.filter((hearing) => {
-      const { hearingCourtString } = getHearingFields(hearing);
+      const hearingCourtString = getHearingString(hearing);
       return !hearingStrings.includes(hearingCourtString);
     });
     return getScheduledHearings(personHearings);
