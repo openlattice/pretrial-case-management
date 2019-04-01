@@ -19,7 +19,8 @@ import psaHearingConfig from '../../config/formconfig/PSAHearingConfig';
 import SearchableSelect from '../controls/SearchableSelect';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
-import { getCourtroomOptions, getJudgeOptions, HEARING_CONSTS } from '../../utils/consts/HearingConsts';
+import { HEARING_CONSTS } from '../../utils/consts/HearingConsts';
+import { getCourtroomOptions, getJudgeOptions } from '../../utils/HearingUtils';
 import { getTimeOptions } from '../../utils/consts/DateTimeConsts';
 import { STATE, REVIEW, COURT } from '../../utils/consts/FrontEndStateConsts';
 import {
