@@ -10,33 +10,6 @@ import { getPSAFields } from './PSAUtils';
 
 const { CHARGES, PRETRIAL_CASES } = APP_TYPES;
 
-const CASE_PROPERTY_LABELS = {
-  [PROPERTY_TYPES.CASE_ID]: 'caseId',
-  [PROPERTY_TYPES.CASE_NUMBER]: 'caseNumber',
-  [PROPERTY_TYPES.ARREST_DATE]: 'arrestDate',
-  [PROPERTY_TYPES.ARREST_DATE_TIME]: 'arrestDateTime',
-  [PROPERTY_TYPES.FILE_DATE]: 'fileDate',
-  [PROPERTY_TYPES.MOST_SERIOUS_CHARGE_NO]: 'mostSeriousChargeNumber',
-  [PROPERTY_TYPES.MOST_SERIOUS_CHARGE_DESC]: 'mostSeriousChargeDescription',
-  [PROPERTY_TYPES.MOST_SERIOUS_CHARGE_DEG]: 'mostSeriousChargeDegree',
-  [PROPERTY_TYPES.NUMBER_OF_CHARGES]: 'numberOfCharges',
-  [PROPERTY_TYPES.LAST_UPDATED_DATE]: 'lastUpdateDate',
-  [PROPERTY_TYPES.CASE_DISPOSITION_DATE]: 'caseDispositionDate',
-  [PROPERTY_TYPES.ARRESTING_AGENCY]: 'arrestingAgency'
-};
-
-// Pass case object and list of property types and will return and object of labels
-// mapped to properties.
-export const getCaseFields = (caseObj, propertyList) => {
-  let returnCaseFields = Map();
-  propertyList.forEach((propertyType) => {
-    const label = CASE_PROPERTY_LABELS[propertyType];
-    const property = getFirstNeighborValue(caseObj, propertyType);
-    returnCaseFields = returnCaseFields.set(label, property);
-  });
-  return returnCaseFields.toJS();
-};
-
 export const getMapByCaseId = (list, fqn) => {
   let objMap = Map();
   list.forEach((obj) => {
@@ -77,6 +50,7 @@ export const getCaseHistory = (neighbors) => {
     ));
   return caseHistory;
 };
+
 
 export const getPendingCharges = (caseNum, chargeHistory, arrestDate, psaClosureDate) => {
   let pendingCharges = Map();
