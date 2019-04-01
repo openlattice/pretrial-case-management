@@ -8,15 +8,13 @@ import { Map } from 'immutable';
 
 import { OL } from '../../utils/consts/Colors';
 import { formatDateTime } from '../../utils/FormattingUtils';
-import { getCaseFields } from '../../utils/CaseUtils';
-import { getEntityKeyId } from '../../utils/DataUtils';
+import { getEntityProperties, getEntityKeyId } from '../../utils/DataUtils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 
 const {
   ARRESTING_AGENCY,
   CASE_ID,
   CASE_NUMBER,
-  ARREST_DATE,
   ARREST_DATE_TIME,
   NUMBER_OF_CHARGES
 } = PROPERTY_TYPES;
@@ -52,14 +50,13 @@ type Props = {
 const ArrestRow = ({ arrest, handleSelect } :Props) => {
 
   const {
-    arrestingAgency,
-    arrestDateTime,
-    caseId,
-    caseNumber,
-    numberOfCharges
-  } = getCaseFields(arrest, [
+    [ARRESTING_AGENCY]: arrestingAgency,
+    [ARREST_DATE_TIME]: arrestDateTime,
+    [CASE_ID]: caseId,
+    [CASE_NUMBER]: caseNumber,
+    [NUMBER_OF_CHARGES]: numberOfCharges
+  } = getEntityProperties(arrest, [
     ARRESTING_AGENCY,
-    ARREST_DATE,
     ARREST_DATE_TIME,
     CASE_ID,
     CASE_NUMBER,
