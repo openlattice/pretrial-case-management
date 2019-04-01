@@ -8,7 +8,7 @@ import ContentBlock from '../ContentBlock';
 import ContentSection from '../ContentSection';
 import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
 import { formatDateTime } from '../../utils/FormattingUtils';
-import { getCaseFields } from '../../utils/CaseUtils';
+import { getEntityProperties } from '../../utils/DataUtils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 
 const {
@@ -23,7 +23,11 @@ type Props = {
 };
 
 const ArrestCard = ({ arrest, component } :Props) => {
-  const { caseId, arrestDateTime, arrestingAgency } = getCaseFields(
+  const {
+    [CASE_ID]: caseId,
+    [ARREST_DATE_TIME]: arrestDateTime,
+    [ARRESTING_AGENCY]: arrestingAgency
+  } = getEntityProperties(
     arrest,
     [CASE_ID, ARREST_DATE_TIME, ARRESTING_AGENCY]
   );
