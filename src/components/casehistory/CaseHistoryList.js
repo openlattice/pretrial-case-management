@@ -11,7 +11,7 @@ import LoadingSpinner from '../LoadingSpinner';
 import StyledButton from '../buttons/StyledButton';
 import { OL } from '../../utils/consts/Colors';
 import { formatDateList } from '../../utils/FormattingUtils';
-import { getEntityProperties } from '../../utils/DataUtils';
+import { getEntityProperties, getFirstNeighborValue } from '../../utils/DataUtils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { ID_FIELD_NAMES } from '../../utils/consts/Consts';
 import {
@@ -117,17 +117,17 @@ const CaseHistoryList = ({
   const oneWeekAgo = moment().subtract(1, 'week');
   const cases = caseHistory
     .sort((c1, c2) => {
-      const date1 = moment(c1.getIn([PROPERTY_TYPES.FILE_DATE, 0], ''));
-      const date2 = moment(c2.getIn([PROPERTY_TYPES.FILE_DATE, 0], ''));
+      const date1 = moment(getFirstNeighborValue(c1, PROPERTY_TYPES.FILE_DATE));
+      const date2 = moment(getFirstNeighborValue(c2, PROPERTY_TYPES.FILE_DATE));
       return date1.isBefore(date2) ? 1 : -1;
     })
-    .filter(caseObj => caseObj.getIn([PROPERTY_TYPES.CASE_ID, 0], '').length)
+    .filter(caseObj => getFirstNeighborValue(caseObj, PROPERTY_TYPES.CASE_ID).length)
     .map((caseObj) => {
       const {
         [PROPERTY_TYPES.CASE_ID]: caseId,
         [PROPERTY_TYPES.FILE_DATE]: fileDate
       } = getEntityProperties(caseObj, [PROPERTY_TYPES.CASE_ID, PROPERTY_TYPES.FILE_DATE]);
-      const formattedFileDate = formatDateList(fileDate);
+      const formattedFileDate = formatDateList([fileDate]);
       const charges = chargeHistory.get(caseId);
       const dateList = caseObj.get(PROPERTY_TYPES.FILE_DATE, Immutable.List());
       const hasBeenUpdated = dateList.some(date => oneWeekAgo.isBefore(date));
