@@ -11,7 +11,7 @@ import LoadingSpinner from '../LoadingSpinner';
 import StyledButton from '../buttons/StyledButton';
 import { OL } from '../../utils/consts/Colors';
 import { formatDateList } from '../../utils/FormattingUtils';
-import { getCaseFields } from '../../utils/CaseUtils';
+import { getEntityProperties } from '../../utils/DataUtils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { ID_FIELD_NAMES } from '../../utils/consts/Consts';
 import {
@@ -123,7 +123,10 @@ const CaseHistoryList = ({
     })
     .filter(caseObj => caseObj.getIn([PROPERTY_TYPES.CASE_ID, 0], '').length)
     .map((caseObj) => {
-      const { caseId, fileDate } = getCaseFields(caseObj, [PROPERTY_TYPES.CASE_ID, PROPERTY_TYPES.FILE_DATE]);
+      const {
+        [PROPERTY_TYPES.CASE_ID]: caseId,
+        [PROPERTY_TYPES.FILE_DATE]: fileDate
+      } = getEntityProperties(caseObj, [PROPERTY_TYPES.CASE_ID, PROPERTY_TYPES.FILE_DATE]);
       const formattedFileDate = formatDateList(fileDate);
       const charges = chargeHistory.get(caseId);
       const dateList = caseObj.get(PROPERTY_TYPES.FILE_DATE, Immutable.List());
