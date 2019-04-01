@@ -34,7 +34,6 @@ export const getCaseFields = (caseObj, propertyList) => {
     const property = getFirstNeighborValue(caseObj, propertyType);
     returnCaseFields = returnCaseFields.set(label, property);
   });
-  console.log(returnCaseFields.toJS());
   return returnCaseFields.toJS();
 };
 
