@@ -116,6 +116,13 @@ export const getFirstNeighborValue = (neighborObj, fqn, defaultValue = '') => ne
   neighborObj.getIn([fqn, 0], defaultValue)
 );
 
+export const getDateAndTime = (dateTime) => {
+  const date = moment(dateTime).format('MM/DD/YYYY');
+  const time = moment(dateTime).format('HH:mm');
+
+  return { date, time };
+}
+
 // Pass entity object and list of property types and will return and object of labels
 // mapped to properties.
 export const getEntityProperties = (caseObj, propertyList) => {
