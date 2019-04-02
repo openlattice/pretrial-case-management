@@ -22,7 +22,6 @@ import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { getPropertyTypeId } from '../../edm/edmUtils';
 import { toISODate, formatDateTime, formatDate } from '../../utils/FormattingUtils';
 import { getFilteredNeighbor, stripIdField } from '../../utils/DataUtils';
-import { obfuscateBulkEntityNeighbors } from '../../utils/consts/DemoNames';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { HEADERS_OBJ, POSITIONS } from '../../utils/consts/CSVConsts';
 import { PSA_STATUSES } from '../../utils/consts/Consts';
@@ -145,7 +144,6 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
     });
 
     let neighborsById = yield call(SearchApi.searchEntityNeighborsBulk, psaEntitySetId, scoresAsMap.keySeq().toJS());
-    neighborsById = obfuscateBulkEntityNeighbors(neighborsById, app); // TODO just for demo
     let usableNeighborsById = Immutable.Map();
 
     Object.keys(neighborsById).forEach((id) => {

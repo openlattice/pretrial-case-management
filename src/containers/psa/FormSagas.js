@@ -12,7 +12,6 @@ import {
 
 import { loadPSAData } from '../review/ReviewActionFactory';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
-import { obfuscateBulkEntityNeighbors } from '../../utils/consts/DemoNames';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { APP, STATE } from '../../utils/consts/FrontEndStateConsts';
 import { PSA_STATUSES } from '../../utils/consts/Consts';
@@ -90,8 +89,6 @@ function* getOpenPSANeighbors(neighbors) :Generator<*, *, *> {
 
   const ids = getOpenPSAIds(neighbors, psaEntitySetId);
   const val = ids.length ? yield call(SearchApi.searchEntityNeighborsBulk, psaEntitySetId, ids) : {};
-
-  return obfuscateBulkEntityNeighbors(val, app); // TODO just for demo
 }
 
 function* loadNeighborsWorker(action :SequenceAction) :Generator<*, *, *> {
@@ -105,8 +102,7 @@ function* loadNeighborsWorker(action :SequenceAction) :Generator<*, *, *> {
 
   try {
     yield put(loadNeighbors.request(action.id));
-    let neighbors = yield call(SearchApi.searchEntityNeighbors, peopleEntitySetId, entityKeyId);
-    neighbors = obfuscateBulkEntityNeighbors(neighbors, app);
+    const neighbors = yield call(SearchApi.searchEntityNeighbors, peopleEntitySetId, entityKeyId);
 
     const openPSAs = yield call(getOpenPSANeighbors, neighbors);
 

@@ -22,7 +22,6 @@ import { submit } from '../../utils/submit/SubmitActionFactory';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { HAS_OPEN_PSA, PSA_STATUSES } from '../../utils/consts/Consts';
 import { STATE, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
-import { obfuscateEntityNeighbors } from '../../utils/consts/DemoNames';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { getPropertyTypeId } from '../../edm/edmUtils';
 import {
@@ -139,7 +138,6 @@ function* loadPersonDetailsWorker(action) :Generator<*, *, *> {
 
     else {
       let response = yield call(SearchApi.searchEntityNeighbors, peopleEntitySetId, entityKeyId);
-      response = obfuscateEntityNeighbors(response, app);
       yield put(loadPersonDetails.success(action.id, { entityKeyId, response }));
     }
   }

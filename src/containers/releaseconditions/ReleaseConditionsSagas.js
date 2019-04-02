@@ -22,7 +22,6 @@ import {
 import releaseConditionsConfig from '../../config/formconfig/ReleaseConditionsConfig';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { getEntityKeyId, getMapFromEntityKeysToPropertyKeys } from '../../utils/DataUtils';
-import { obfuscateEntityNeighbors } from '../../utils/consts/DemoNames';
 import { APP_TYPES } from '../../utils/consts/DataModelConsts';
 import { APP, PSA_NEIGHBOR, STATE } from '../../utils/consts/FrontEndStateConsts';
 
@@ -80,7 +79,6 @@ function* getHearingAndNeighbors(hearingId :string) :Generator<*, *, *> {
    */
 
   let hearingNeighbors = yield call(SearchApi.searchEntityNeighbors, hearingsEntitySetId, hearingId);
-  hearingNeighbors = obfuscateEntityNeighbors(hearingNeighbors, app); // TODO just for demo
   hearingNeighbors = fromJS(hearingNeighbors);
   /*
    * Format Neighbors

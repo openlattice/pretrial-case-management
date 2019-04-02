@@ -26,7 +26,6 @@ import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { getPropertyTypeId } from '../../edm/edmUtils';
 import { toISODate } from '../../utils/FormattingUtils';
 import { hearingNeedsReminder } from '../../utils/RemindersUtils';
-import { obfuscateBulkEntityNeighbors } from '../../utils/consts/DemoNames';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import {
   APP,
@@ -76,7 +75,6 @@ function* loadManualRemindersFormWorker(action :SequenceAction) :Generator<*, *,
       sourceEntitySetIds: [contactInformationEntitySetId],
       destinationEntitySetIds: [contactInformationEntitySetId, hearingsEntitySetId]
     });
-    personNeighborsById = obfuscateBulkEntityNeighbors(personNeighborsById, app);
     personNeighborsById = fromJS(personNeighborsById);
     let neighborsByAppTypeFqn = Map();
     personNeighborsById.entrySeq().forEach(([_, neighbors]) => {
@@ -228,7 +226,6 @@ function* loadManualRemindersNeighborsByIdWorker(action :SequenceAction) :Genera
           peopleEntitySetId
         ]
       });
-      neighborsById = obfuscateBulkEntityNeighbors(neighborsById, app);
       neighborsById = fromJS(neighborsById);
       neighborsById.entrySeq().forEach(([manualReminderEntityKeyId, neighbors]) => {
         let neighborsByAppTypeFqn = Map();

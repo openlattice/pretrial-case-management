@@ -29,7 +29,6 @@ import { PSA_STATUSES } from '../../utils/consts/Consts';
 import exportPDFList from '../../utils/CourtRemindersPDFUtils';
 import { toISODate } from '../../utils/FormattingUtils';
 import { addWeekdays } from '../../utils/DataUtils';
-import { obfuscateBulkEntityNeighbors } from '../../utils/consts/DemoNames';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import {
   APP,
@@ -109,7 +108,6 @@ function* loadOptOutNeighborsWorker(action :SequenceAction) :Generator<*, *, *> 
         sourceEntitySetIds: [],
         destinationEntitySetIds: [contactInformationEntitySetId, hearingsEntitySetId, peopleEntitySetId]
       });
-      neighborsById = obfuscateBulkEntityNeighbors(neighborsById, app);
       neighborsById = fromJS(neighborsById);
       neighborsById.entrySeq().forEach(([optOutId, neighbors]) => {
         let neighborsByAppTypeFqn = Map();
@@ -141,7 +139,6 @@ function* loadOptOutNeighborsWorker(action :SequenceAction) :Generator<*, *, *> 
         sourceEntitySetIds: [peopleEntitySetId],
         destinationEntitySetIds: [peopleEntitySetId]
       });
-      neighborsById = obfuscateBulkEntityNeighbors(neighborsById, app);
       neighborsById = fromJS(neighborsById);
       neighborsById.entrySeq().forEach(([contactInfoId, neighbors]) => {
         let neighborsByAppTypeFqn = Map();
@@ -339,7 +336,6 @@ function* loadReminderNeighborsByIdWorker(action :SequenceAction) :Generator<*, 
         sourceEntitySetIds: [],
         destinationEntitySetIds: [contactInformationEntitySetId, hearingsEntitySetId, peopleEntitySetId]
       });
-      neighborsById = obfuscateBulkEntityNeighbors(neighborsById, app);
       neighborsById = fromJS(neighborsById);
       neighborsById.entrySeq().forEach(([reminderId, neighbors]) => {
         let neighborsByAppTypeFqn = Map();

@@ -24,7 +24,6 @@ import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { getPropertyTypeId } from '../../edm/edmUtils';
 import exportPDF, { exportPDFList } from '../../utils/PDFUtils';
 import { getMapByCaseId } from '../../utils/CaseUtils';
-import { obfuscateEntityNeighbors, obfuscateBulkEntityNeighbors } from '../../utils/consts/DemoNames';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_STATUSES } from '../../utils/consts/Consts';
 import { formatDMFFromEntity } from '../../utils/DMFUtils';
@@ -113,7 +112,6 @@ function* getCasesAndCharges(neighbors) {
   const personEntityKeyId = getEntityKeyId(neighbors, PEOPLE);
 
   let personNeighbors = yield call(SearchApi.searchEntityNeighbors, personEntitySetId, personEntityKeyId);
-  personNeighbors = obfuscateEntityNeighbors(personNeighbors, app);
 
   let pretrialCaseOptionsWithDate = Immutable.List();
   let pretrialCaseOptionsWithoutDate = Immutable.List();
@@ -304,7 +302,6 @@ function* loadPSADataWorker(action :SequenceAction) :Generator<*, *, *> {
           manualPretrialCasesFqnEntitySetId
         ]
       });
-      neighborsById = obfuscateBulkEntityNeighbors(neighborsById, app); // TODO just for demo
       neighborsById = Immutable.fromJS(neighborsById);
 
       neighborsById.entrySeq().forEach(([id, neighbors]) => {
@@ -551,7 +548,6 @@ function* bulkDownloadPSAReviewPDFWorker(action :SequenceAction) :Generator<*, *
     const staffEntitySetId = getEntitySetIdFromApp(app, STAFF);
 
     let peopleNeighbors = yield call(SearchApi.searchEntityNeighborsBulk, personEntitySetId, peopleEntityKeyIds);
-    peopleNeighbors = obfuscateBulkEntityNeighbors(peopleNeighbors, app); // TODO just for demo
 
     let manualChargesByPersonId = Immutable.Map();
     let courtChargesByPersonId = Immutable.Map();
@@ -608,7 +604,6 @@ function* bulkDownloadPSAReviewPDFWorker(action :SequenceAction) :Generator<*, *
     });
 
     let psaNeighborsById = yield call(SearchApi.searchEntityNeighborsBulk, psaEntitySetId, psasById.keySeq().toJS());
-    psaNeighborsById = obfuscateBulkEntityNeighbors(psaNeighborsById, app); // TODO just for demo
     psaNeighborsById = Immutable.fromJS(psaNeighborsById);
 
     const pageDetailsList = [];
@@ -847,8 +842,7 @@ function* refreshPSANeighborsWorker(action :SequenceAction) :Generator<*, *, *> 
     const psaScoresEntitySetId = getEntitySetIdFromApp(app, PSA_SCORES);
     const hearingsEntitySetId = getEntitySetIdFromApp(app, HEARINGS);
 
-    let neighborsList = yield call(SearchApi.searchEntityNeighbors, psaScoresEntitySetId, id);
-    neighborsList = obfuscateEntityNeighbors(neighborsList, app); // TODO just for demo
+    const neighborsList = yield call(SearchApi.searchEntityNeighbors, psaScoresEntitySetId, id);
     let neighbors = Immutable.Map();
     neighborsList.forEach((neighbor) => {
       const { neighborEntitySet, neighborDetails } = neighbor;

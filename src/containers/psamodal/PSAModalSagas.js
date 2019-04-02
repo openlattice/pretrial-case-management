@@ -24,7 +24,6 @@ import {
 
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { getEntityKeyId } from '../../utils/DataUtils';
-import { obfuscateEntityNeighbors } from '../../utils/consts/DemoNames';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import {
   APP,
@@ -89,7 +88,6 @@ function* loadPSAModalWorker(action :SequenceAction) :Generator<*, *, *> {
      */
 
     let psaNeighbors = yield call(SearchApi.searchEntityNeighbors, psaScoresEntitySetId, psaId);
-    psaNeighbors = obfuscateEntityNeighbors(psaNeighbors, app); // TODO just for demo
     psaNeighbors = fromJS(psaNeighbors);
 
     /*

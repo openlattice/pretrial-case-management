@@ -18,7 +18,6 @@ import {
 
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { APP, PSA_NEIGHBOR, STATE } from '../../utils/consts/FrontEndStateConsts';
-import { obfuscateEntity, obfuscateEntityNeighbors } from '../../utils/consts/DemoNames';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { getPropertyTypeId } from '../../edm/edmUtils';
 import { PSA_STATUSES } from '../../utils/consts/Consts';
@@ -112,7 +111,7 @@ function* getEntityForPersonId(personId :string) :Generator<*, *, *> {
   };
 
   const response = yield call(SearchApi.searchEntitySetData, peopleEntitySetId, searchOptions);
-  const person = obfuscateEntity(response.hits[0]); // TODO just for demo
+  const person = response.hits[0];
   return person;
 }
 
@@ -155,8 +154,6 @@ function* getPersonNeighborsWorker(action) :Generator<*, *, *> {
     const person = yield getEntityForPersonId(personId);
     const entityKeyId = person[OPENLATTICE_ID_FQN][0];
     let neighbors = yield call(SearchApi.searchEntityNeighbors, peopleEntitySetId, entityKeyId);
-
-    neighbors = obfuscateEntityNeighbors(neighbors, app);
     neighbors = fromJS(neighbors);
 
     let hearingEntityKeyId = Set();
@@ -233,8 +230,6 @@ function* getPersonNeighborsWorker(action) :Generator<*, *, *> {
           return false;
         }), neighborsByEntitySet);
 
-    neighbors = obfuscateEntityNeighbors(neighbors, app);
-
     let mostRecentPSANeighborsByAppTypeFqn = Map();
     if (mostRecentPSA.size) {
       const psaId = mostRecentPSA.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0]);
@@ -302,7 +297,6 @@ function* refreshPersonNeighborsWorker(action) :Generator<*, *, *> {
     const person = yield getEntityForPersonId(personId);
     const entityKeyId = person[OPENLATTICE_ID_FQN][0];
     let neighborsList = yield call(SearchApi.searchEntityNeighbors, peopleEntitySetId, entityKeyId);
-    neighborsList = obfuscateEntityNeighbors(neighborsList, app);
     neighborsList = fromJS(neighborsList);
 
     neighborsList.forEach((neighbor) => {
