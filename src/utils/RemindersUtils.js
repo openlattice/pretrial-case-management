@@ -1,15 +1,16 @@
 import moment from 'moment';
 import { Map } from 'immutable';
-import { Constants } from 'lattice';
 
-import { getHearingFields } from './consts/HearingConsts';
 import { APP_TYPES, PROPERTY_TYPES } from './consts/DataModelConsts';
 import { PSA_NEIGHBOR } from './consts/FrontEndStateConsts';
-import { addWeekdays, getEntityKeyId, getFirstNeighborValue } from './DataUtils';
+import {
+  addWeekdays,
+  getEntityKeyId,
+  getEntityProperties,
+  getFirstNeighborValue
+} from './DataUtils';
 
 const { HEARINGS, PEOPLE } = APP_TYPES;
-
-const { OPENLATTICE_ID_FQN } = Constants;
 
 export const REMINDERS_HEADERS = {
   TIME: 'Time',
@@ -69,17 +70,18 @@ export const sortEntities = (entities, neighbors, shouldSortByDateTime) => (
     const person1 = neighbors.getIn([entityKeyId1, PEOPLE, PSA_NEIGHBOR.DETAILS], Map());
     const hearingDateTime1 = moment(neighbors
       .getIn([entityKeyId1, HEARINGS, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.DATE_TIME, 0], ''));
-    const dateTime1 = moment(entity1.getIn([PROPERTY_TYPES.DATE_TIME, 0], ''));
-    const firstName1 = person1.getIn([PROPERTY_TYPES.FIRST_NAME, 0]);
-    const lastName1 = person1.getIn([PROPERTY_TYPES.LAST_NAME, 0]);
+    const dateTime1 = moment(getFirstNeighborValue(entity1, PROPERTY_TYPES.DATE_TIME));
+    const firstName1 = getFirstNeighborValue(person1, PROPERTY_TYPES.FIRST_NAME);
+    const lastName1 = getFirstNeighborValue(person1, PROPERTY_TYPES.LAST_NAME);
 
     const entityKeyId2 = getEntityKeyId(entity2);
     const person2 = neighbors.getIn([entityKeyId2, PEOPLE, PSA_NEIGHBOR.DETAILS], Map());
     const hearingDateTime2 = moment(neighbors
       .getIn([entityKeyId2, HEARINGS, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.DATE_TIME, 0], ''));
-    const dateTime2 = moment(entity2.getIn([PROPERTY_TYPES.DATE_TIME, 0], ''));
-    const firstName2 = person2.getIn([PROPERTY_TYPES.FIRST_NAME, 0]);
-    const lastName2 = person2.getIn([PROPERTY_TYPES.LAST_NAME, 0]);
+    const dateTime2 = moment(getFirstNeighborValue(entity2, PROPERTY_TYPES.DATE_TIME));
+    const firstName2 = getFirstNeighborValue(person2, PROPERTY_TYPES.FIRST_NAME);
+    const lastName2 = getFirstNeighborValue(person2, PROPERTY_TYPES.LAST_NAME);
+
     if (shouldSortByDateTime && !dateTime1.isSame(dateTime2)) return dateTime1.isBefore(dateTime2) ? -1 : 1;
     if (!hearingDateTime1.isSame(hearingDateTime2)) return hearingDateTime1.isBefore(hearingDateTime2) ? -1 : 1;
     if (lastName1 !== lastName2) return lastName1 > lastName2 ? 1 : -1;
@@ -91,7 +93,7 @@ export const hearingNeedsReminder = (hearing) => {
   const today = moment();
   const oneDayAhead = addWeekdays(today, 1);
   const oneWeekAhead = addWeekdays(today, 7);
-  const { hearingDateTime } = getHearingFields(hearing);
-  return hearingDateTime.isSame(oneDayAhead, 'day')
-   || hearingDateTime.isSame(oneWeekAhead, 'day');
+  const { [PROPERTY_TYPES.DATE_TIME]: hearingDateTime } = getEntityProperties(hearing, [PROPERTY_TYPES.DATE_TIME]);
+  return moment(hearingDateTime).isSame(oneDayAhead, 'day')
+   || moment(hearingDateTime).isSame(oneWeekAhead, 'day');
 };
