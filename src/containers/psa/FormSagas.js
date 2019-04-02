@@ -89,6 +89,7 @@ function* getOpenPSANeighbors(neighbors) :Generator<*, *, *> {
 
   const ids = getOpenPSAIds(neighbors, psaEntitySetId);
   const val = ids.length ? yield call(SearchApi.searchEntityNeighborsBulk, psaEntitySetId, ids) : {};
+  return val;
 }
 
 function* loadNeighborsWorker(action :SequenceAction) :Generator<*, *, *> {
