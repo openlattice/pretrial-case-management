@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCheck } from '@fortawesome/pro-regular-svg-icons';
 import { OL } from '../utils/consts/Colors';
 
 const GRAY = OL.GREY33;
@@ -78,7 +79,7 @@ const CompleteProgressBarIcon = styled(ProgressBarIcon)`
 `;
 
 const Check = styled(FontAwesomeIcon).attrs({
-  name: 'check'
+  icon: faCheck
 })`
   margin-top: 4px;
 `;

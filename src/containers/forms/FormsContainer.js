@@ -88,6 +88,7 @@ class FormsContainer extends React.Component<Props, *> {
         jurisdiction = COURT_SHELBY;
         break;
       default:
+        jurisdiction = DEMO_ORG;
         break;
     }
     return (

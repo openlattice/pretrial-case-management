@@ -35,8 +35,11 @@ export const APP_TYPES = {
   ASSESSED_BY_STATE: 'app.assessedby_shared',
   BONDS: 'app.manualbonds',
   CALCULATED_FOR: 'app.calculatedfor',
+  CALLED: 'app.called',
   CHARGED_WITH: 'app.chargedwith',
   CHARGES: 'app.courtcharges',
+  CHECKIN_APPOINTMENTS: 'app.checkinAppointment',
+  CHECKINS: 'app.checkin',
   CONTACT_INFO_GIVEN: 'app.contactinfogiven',
   CONTACT_INFORMATION: 'app.contactinformation',
   COURT_CHARGE_LIST: 'publicsafety.courtchargelist',
@@ -304,8 +307,8 @@ export const PROPERTY_TYPES = {
   RELEASE_RECOMMENDATION: 'publicsafety.recommendation',
 
   // Voice recognition entity type consts
-  AUDIO_SAMPLE: 'media.audio',
-  PIN: 'general.pin',
+  AUDIO_SAMPLE: 'ol.audio',
+  PIN: 'ol.token',
 
   // Subscription
   SUBSCRIPTION_ID: 'ol.id',
