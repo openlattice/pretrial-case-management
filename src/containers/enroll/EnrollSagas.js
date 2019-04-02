@@ -4,9 +4,21 @@
 import axios from 'axios';
 import randomUUID from 'uuid/v4';
 import moment from 'moment';
-import { DataApi, DataIntegrationApi, EntityDataModelApi, SearchApi } from 'lattice';
+import { Map } from 'immutable';
 import { AuthUtils } from 'lattice-auth';
-import { call, put, take, all } from '@redux-saga/core/effects';
+import {
+  DataApi,
+  DataIntegrationApi,
+  EntityDataModelApi,
+  SearchApi
+} from 'lattice';
+import {
+  call,
+  put,
+  take,
+  all,
+  select
+} from '@redux-saga/core/effects';
 
 import * as ActionTypes from './EnrollActionTypes';
 import {
@@ -18,7 +30,9 @@ import {
 
 import { toISODateTime } from '../../utils/FormattingUtils';
 import { getFqnObj } from '../../utils/DataUtils';
-import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { getEntitySetIdFromApp } from '../../utils/AppUtils';
+import { STATE } from '../../utils/consts/FrontEndStateConsts';
+import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 
 const CHECKINS_BASE_URL = 'https://api.openlattice.com/checkins/voice';
 
@@ -36,11 +50,9 @@ const getEntityId = (entity, primaryKeyIds) => {
   return pKeyVals.length ? pKeyVals.join(',') : randomUUID();
 };
 
-const getHeaders = () => {
-  return {
-    Authorization: `Bearer ${AuthUtils.getAuthToken()}`
-  };
-};
+const getHeaders = () => ({
+  Authorization: `Bearer ${AuthUtils.getAuthToken()}`
+});
 
 function* tryLoadProfile(id) {
   try {
@@ -69,14 +81,18 @@ export function* getOrCreateProfile() :Generator<*, *, *> {
     const { personId, personEntityKeyId } = yield take(ActionTypes.GET_PROFILE_REQUEST);
 
     try {
-      const personEntitySetId = yield call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.PEOPLE);
+      const app = yield select(state => state.get(STATE.APP, Map()));
+      const personEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.PEOPLE);
+      const voiceEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.SPEAKER_RECOGNITION_PROFILES);
+      const registeredForEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.REGISTERED_FOR);
+
       const neighbors = yield call(SearchApi.searchEntityNeighbors, personEntitySetId, personEntityKeyId);
 
       const idsToTry = {};
       if (neighbors) {
         neighbors.forEach((neighborObj) => {
           const entitySet = neighborObj.neighborEntitySet;
-          if (entitySet && entitySet.name === ENTITY_SETS.SPEAKER_RECOGNITION_PROFILES) {
+          if (entitySet && entitySet.id === voiceEntitySetId) {
             const ids = neighborObj.neighborDetails[PROPERTY_TYPES.GENERAL_ID];
             if (ids && ids.length) {
               const id = ids[0];
@@ -120,18 +136,13 @@ export function* getOrCreateProfile() :Generator<*, *, *> {
           call(EntityDataModelApi.getPropertyTypeId, getFqnObj(PROPERTY_TYPES.PIN))
         ]);
 
-        const [voiceEntitySetId, registeredForEntitySetId] = yield all([
-          call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.SPEAKER_RECOGNITION_PROFILES),
-          call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.REGISTERED_FOR)
-        ]);
-
         const personDetails = {
           [subjectId]: [personId]
         };
 
         const voiceDetails = {
           [generalId]: [speakerVerificationId],
-          [pinId]: [newPin]
+          [pinId]: [`${newPin}`]
         };
 
         const registeredForDetails = {
@@ -190,26 +201,30 @@ export function* enrollVoiceProfile() :Generator<*, *, *> {
     } = yield take(ActionTypes.ENROLL_VOICE_REQUEST);
 
     try {
-      const enrollRequest = {
-        method: 'post',
-        url: `${CHECKINS_BASE_URL}/profile/${profileId}`,
-        headers: Object.assign({}, getHeaders(), { 'Content-Type': 'multipart/form-data' }),
-        data: audio
-      };
-
-      yield call(axios, enrollRequest);
+      const app = yield select(state => state.get(STATE.APP, Map()));
+      const entitySetId = getEntitySetIdFromApp(app, APP_TYPES.SPEAKER_RECOGNITION_PROFILES);
 
       const [generalId, audioId] = yield all([
         call(EntityDataModelApi.getPropertyTypeId, getFqnObj(PROPERTY_TYPES.GENERAL_ID)),
         call(EntityDataModelApi.getPropertyTypeId, getFqnObj(PROPERTY_TYPES.AUDIO_SAMPLE))
       ]);
 
-      const entitySetId = yield call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.SPEAKER_RECOGNITION_PROFILES);
-
       const voiceDetails = {
         [generalId]: [profileId],
-        [audioId]: [audio]
+        [audioId]: [{
+          'content-type': 'audio/wav',
+          data: window.btoa(String.fromCharCode(...new Uint8Array(audio)))
+        }]
       };
+
+
+      const enrollRequest = {
+        method: 'post',
+        url: `${CHECKINS_BASE_URL}/profile/${profileId}`,
+        headers: Object.assign({}, getHeaders(), { 'Content-Type': 'multipart/form-data' }),
+        data: audio
+      };
+      yield call(axios, enrollRequest);
 
       yield call(DataApi.createOrMergeEntityData, entitySetId, [voiceDetails]);
 
