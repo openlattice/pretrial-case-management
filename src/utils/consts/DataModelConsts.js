@@ -90,23 +90,6 @@ const getAppTypeFqns = () => {
 
 export const APP_TYPES_FQNS = getAppTypeFqns();
 
-export const SETTINGS = {
-  CONTEXTS: 'contexts',
-  LOAD_CASES: 'loadCasesOnTheFly',
-  COURT_REMINDERS: 'courtRemindersEnabled',
-  MODULES: 'modules'
-};
-
-export const CONTEXTS = {
-  COURT: 'court',
-  BOOKING: 'booking'
-};
-
-export const MODULE = {
-  PSA: 'psa',
-  PRETRIAL: 'pretrial',
-};
-
 /*
  * Charge FQNs
  */
