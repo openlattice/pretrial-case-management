@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
-import { faTimes } from '@fortawesome/pro-regular-svg-icons';
+import { faTimes, faQuoteLeft, faQuoteRight } from '@fortawesome/pro-regular-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -23,6 +23,7 @@ import {
   StyledTitleWrapper,
   StyledTopFormNavBuffer
 } from '../../utils/Layout';
+import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 
 const BodyContainer = styled.div`
   text-align: center;
@@ -38,14 +39,14 @@ const PromptHeaderText = styled.div`
 `;
 
 const QuoteLeft = styled(FontAwesomeIcon).attrs({
-  name: 'quote-left'
+  icon: faQuoteLeft
 })`
   margin: 0 6px 0 -20px;
   color: #36454f;
 `;
 
 const QuoteRight = styled(FontAwesomeIcon).attrs({
-  name: 'quote-right'
+  icon: faQuoteRight
 })`
   margin: 0 -20px 0 6px;
   color: #36454f;
@@ -156,44 +157,51 @@ class EnrollVoice extends React.Component {
   }
 
   handleClose = () => {
-    this.props.history.push(Routes.DASHBOARD);
+    const { history } = this.props;
+    history.push(Routes.DASHBOARD);
   }
 
   getSearchPeopleSection = () => {
+    const { actions } = this.props;
     return (
-      <SearchPersonContainer onSelectPerson={(person, personEntityKeyId, personId) => {
+      <SearchPersonContainer onSelectPerson={(person, personEntityKeyId) => {
+        const personId = person.getIn([PROPERTY_TYPES.PERSON_ID, 0], '');
         this.setState({ personEntityKeyId, personId });
-        this.props.actions.getProfileRequest(personId, personEntityKeyId);
+        actions.getProfileRequest(personId, personEntityKeyId);
       }} />
     );
   };
 
   submitAudio = () => {
-    const { profileId } = this.props;
+    const { actions, profileId } = this.props;
     const { blobObject } = this.state;
     this.setState({ blobObject: null });
-    this.props.actions.enrollVoiceRequest(profileId, blobObject);
+    actions.enrollVoiceRequest(profileId, blobObject);
   }
 
   renderSubmit = () => {
+    const { blobObject } = this.state;
     const { submittingAudio, numSubmissions } = this.props;
     const attemptNum = numSubmissions + 1;
     if (submittingAudio) {
       return (
         <div>
           <LoadingSpinner />
-          <LoadingProfileText>{`Submitting audip clip ${attemptNum}/3`}</LoadingProfileText>
+          <LoadingProfileText>{`Submitting audio clip ${attemptNum}/3`}</LoadingProfileText>
         </div>
       );
     }
 
-    if (!this.state.blobObject) return null;
+    if (!blobObject) return null;
     return (
       <SubmitButton onClick={this.submitAudio}>{`Submit Clip ${attemptNum}`}</SubmitButton>
     );
   }
 
-  renderError = () => <ErrorMessage>{this.props.errorMessage}</ErrorMessage>
+  renderError = () => {
+    const { errorMessage } = this.props;
+    return <ErrorMessage>{errorMessage}</ErrorMessage>;
+  }
 
   enrollmentSuccess = () => {
     const { pin } = this.props;
@@ -248,8 +256,11 @@ class EnrollVoice extends React.Component {
   }
 
   renderContent = () => {
-    if (!this.state.personId) return this.getSearchPeopleSection();
-    if (this.props.numSubmissions >= 3) return this.enrollmentSuccess();
+    const { personId } = this.state;
+    const { numSubmissions } = this.props;
+
+    if (!personId) return this.getSearchPeopleSection();
+    if (numSubmissions >= 3) return this.enrollmentSuccess();
     return this.getRecordAudioSection();
   }
 
