@@ -1,14 +1,14 @@
-import { Map, List, fromJS } from 'immutable';
+import { Map, List } from 'immutable';
 import moment from 'moment';
 
 import { PSA_STATUSES } from './consts/Consts';
-import { APP_TYPES_FQNS, PROPERTY_TYPES } from './consts/DataModelConsts';
+import { APP_TYPES, PROPERTY_TYPES } from './consts/DataModelConsts';
 import { PSA_NEIGHBOR } from './consts/FrontEndStateConsts';
+import { getChargeFields } from './ArrestChargeUtils';
+import { getFirstNeighborValue } from './DataUtils';
+import { getPSAFields } from './PSAUtils';
 
-let { CHARGES, PRETRIAL_CASES } = APP_TYPES_FQNS;
-
-CHARGES = CHARGES.toString();
-PRETRIAL_CASES = PRETRIAL_CASES.toString();
+const { CHARGES, PRETRIAL_CASES } = APP_TYPES;
 
 export const getMapByCaseId = (list, fqn) => {
   let objMap = Map();
@@ -26,10 +26,8 @@ export const getChargeHistory = (neighbors) => {
   let chargeHistory = Map();
   neighbors.get(CHARGES, List())
     .forEach((chargeNeighbor) => {
-      const chargeIdArr = chargeNeighbor.getIn(
-        [PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.CHARGE_ID, 0],
-        chargeNeighbor.getIn([PROPERTY_TYPES.CHARGE_ID, 0], '')
-      ).split('|');
+      const { chargeId } = getChargeFields(chargeNeighbor);
+      const chargeIdArr = chargeId.split('|');
       if (chargeIdArr.length) {
         const caseId = chargeIdArr[0];
         chargeHistory = chargeHistory.set(
@@ -53,12 +51,14 @@ export const getCaseHistory = (neighbors) => {
   return caseHistory;
 };
 
+
 export const getPendingCharges = (caseNum, chargeHistory, arrestDate, psaClosureDate) => {
   let pendingCharges = Map();
   if (chargeHistory.get(caseNum)) {
     pendingCharges = chargeHistory.get(caseNum)
       .filter((charge) => {
-        const dispositionDate = moment(charge.getIn([PROPERTY_TYPES.DISPOSITION_DATE, 0], []));
+        let { dispositionDate } = getChargeFields(charge);
+        dispositionDate = moment(dispositionDate);
         return dispositionDate.isBetween(arrestDate, psaClosureDate, null, []);
       });
   }
@@ -70,7 +70,8 @@ const getNonPendingCharges = (caseNum, chargeHistory, arrestDate, psaClosureDate
   if (chargeHistory.get(caseNum)) {
     nonPendingCharges = chargeHistory.get(caseNum)
       .filter((charge) => {
-        const dispositionDate = moment(charge.getIn([PROPERTY_TYPES.DISPOSITION_DATE, 0], []));
+        let { dispositionDate } = getChargeFields(charge);
+        dispositionDate = moment(dispositionDate);
         return !dispositionDate.isBetween(arrestDate, psaClosureDate, null, []);
       });
   }
@@ -80,7 +81,8 @@ const getNonPendingCharges = (caseNum, chargeHistory, arrestDate, psaClosureDate
 export const currentPendingCharges = (charges) => {
   let pendingCharges = List();
   charges.forEach(caseObj => caseObj.forEach((charge) => {
-    const chargeHasDisposition = !!charge.getIn([PROPERTY_TYPES.DISPOSITION_DATE, 0], '');
+    const { dispositionDate } = getChargeFields(charge);
+    const chargeHasDisposition = !!dispositionDate;
     if (!chargeHasDisposition) pendingCharges = pendingCharges.push(charge);
   }));
   return pendingCharges;
@@ -97,7 +99,8 @@ export const getCasesForPSA = (
   let chargeHistoryForMostRecentPSA = Map();
   let caseHistoryNotForMostRecentPSA = List();
   let chargeHistoryNotForMostRecentPSA = Map();
-  const psaIsClosed = scores.getIn([PROPERTY_TYPES.STATUS, 0], '') !== PSA_STATUSES.OPEN;
+  const { status } = getPSAFields(scores);
+  const psaIsClosed = status !== PSA_STATUSES.OPEN;
 
   const psaArrestDateTime = moment(arrestDate || undefined);
   const psaClosureDate = psaIsClosed ? moment(lastEditDateForPSA) : moment().add(1, 'day');
@@ -105,7 +108,7 @@ export const getCasesForPSA = (
 
   if (psaArrestDateTime.isValid()) {
     caseHistory.forEach((caseObj) => {
-      const caseNum = caseObj.getIn([PROPERTY_TYPES.CASE_ID, 0], '');
+      const caseNum = getFirstNeighborValue(caseObj, PROPERTY_TYPES.CASE_ID);
       const pendingCharges = getPendingCharges(caseNum, chargeHistory, psaArrestDateTime, psaClosureDate);
       const nonPendingCharges = getNonPendingCharges(caseNum, chargeHistory, psaArrestDateTime, psaClosureDate);
       const isPending = !!pendingCharges.size;

@@ -14,7 +14,7 @@ import ChargeHistoryStats from '../casehistory/ChargeHistoryStats';
 import LogoLoader from '../LogoLoader';
 import PSASummary from '../../containers/review/PSASummary';
 import ViewMoreLink from '../buttons/ViewMoreLink';
-import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { getIdOrValue } from '../../utils/DataUtils';
 import {
   StyledColumn,
@@ -35,17 +35,12 @@ import {
 
 import * as Routes from '../../core/router/Routes';
 
-let {
+const {
   MANUAL_PRETRIAL_CASES,
   RELEASE_RECOMMENDATIONS,
   STAFF,
   SUBSCRIPTION
-} = APP_TYPES_FQNS;
-
-MANUAL_PRETRIAL_CASES = MANUAL_PRETRIAL_CASES.toString();
-RELEASE_RECOMMENDATIONS = RELEASE_RECOMMENDATIONS.toString();
-STAFF = STAFF.toString();
-SUBSCRIPTION = SUBSCRIPTION.toString();
+} = APP_TYPES;
 
 type Props = {
   contactInfo :List<*, *>,
@@ -56,7 +51,7 @@ type Props = {
   mostRecentPSANeighbors :Map<*, *>,
   neighbors :Map<*, *>,
   openDetailsModal :() => void,
-  openUpdateContactModal :() => void,
+  courtRemindersEnabled :boolean,
   personId :string,
   psaNeighborsById :Map<*, *>,
   readOnlyPermissions :boolean,
@@ -93,7 +88,6 @@ const PersonOverview = ({
   selectedPersonData,
   includesPretrialModule,
   openDetailsModal,
-  openUpdateContactModal,
   readOnlyPermissions,
   refreshingPersonNeighbors,
   updatingEntity
@@ -153,10 +147,7 @@ const PersonOverview = ({
       <StyledColumn>
         <StyledColumnRowWrapper>
           <StyledColumnRow>
-            <AboutPersonGeneral
-                selectedPersonData={selectedPersonData}
-                contactInfo={contactInfo}
-                openUpdateContactModal={openUpdateContactModal} />
+            <AboutPersonGeneral selectedPersonData={selectedPersonData} />
           </StyledColumnRow>
         </StyledColumnRowWrapper>
         {

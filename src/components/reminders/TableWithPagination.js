@@ -12,6 +12,10 @@ import BasicButton from '../buttons/BasicButton';
 import Pagination from '../Pagination';
 import { Count } from '../../utils/Layout';
 import { OL } from '../../utils/consts/Colors';
+import { sortEntities } from '../../utils/RemindersUtils';
+import { APP_TYPES } from '../../utils/consts/DataModelConsts';
+
+const { REMINDER_OPT_OUTS } = APP_TYPES;
 
 const ToolbarWrapper = styled.div`
   display: flex;
@@ -90,7 +94,10 @@ class RemindersTableWithPagination extends React.Component<Props, State> {
   }
 
   getRemindersList = () => {
-    const { entities } = this.props;
+    const { appTypeFqn, neighbors } = this.props;
+    let { entities } = this.props;
+    const shouldSortByDateTime = (appTypeFqn === REMINDER_OPT_OUTS);
+    entities = sortEntities(entities, neighbors, shouldSortByDateTime);
     const numResults = entities.size;
     const numPages = Math.ceil(numResults / PAGE_SIZE);
     return { entities, numResults, numPages };

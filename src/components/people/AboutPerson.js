@@ -13,7 +13,7 @@ import MultiSelectCheckbox from '../MultiSelectCheckbox';
 import CaseHistory from '../casehistory/CaseHistory';
 import CaseHistoryTimeline from '../casehistory/CaseHistoryTimeline';
 import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
-import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { SORT_TYPES, PSA_STATUSES } from '../../utils/consts/Consts';
 import { STATUS_OPTION_CHECKBOXES } from '../../utils/consts/ReviewPSAConsts';
 import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
@@ -29,6 +29,7 @@ import {
 } from '../../utils/CaseUtils';
 import { OL } from '../../utils/consts/Colors';
 
+const { PSA_SCORES } = APP_TYPES;
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
@@ -151,7 +152,7 @@ class AboutPerson extends React.Component<Props, State> {
   renderPSAs = () => {
     const { neighbors, loading } = this.props;
     const { statusFilters } = this.state;
-    const scoreSeq = neighbors.get(APP_TYPES_FQNS.PSA_SCORES, Immutable.Map())
+    const scoreSeq = neighbors.get(PSA_SCORES, Immutable.Map())
       .filter(neighbor => !!neighbor.get(PSA_NEIGHBOR.DETAILS)
         && statusFilters.includes(neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.STATUS, 0])))
       .map(neighbor => [
@@ -200,7 +201,7 @@ class AboutPerson extends React.Component<Props, State> {
             chargeHistoryNotForMostRecentPSA={chargeHistoryNotForMostRecentPSA}
             chargeHistory={chargeHistory} />
       </CaseHistoryWrapper>
-    )
+    );
   };
 
   render() {

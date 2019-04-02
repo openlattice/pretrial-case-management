@@ -21,7 +21,7 @@ import { getTimeStamp, getNeighborDetailsForEntitySet } from '../../utils/DataUt
 import { OL } from '../../utils/consts/Colors';
 import { NoResults, Title, SummaryRowWrapper } from '../../utils/Layout';
 import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
-import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import {
   APP,
   EDM,
@@ -40,13 +40,9 @@ const {
   MANUAL_PRETRIAL_CASES,
   PSA_RISK_FACTORS,
   STAFF
-} = APP_TYPES_FQNS;
+} = APP_TYPES;
 
-const assessedByFqn :string = ASSESSED_BY.toString();
-const manualPretrialCasesFqn :string = MANUAL_PRETRIAL_CASES.toString();
-const peopleFqn :string = APP_TYPES_FQNS.PEOPLE.toString();
-const psaRiskFactorsFqn :string = PSA_RISK_FACTORS.toString();
-const staffFqn :string = STAFF.toString();
+const peopleFqn :string = APP_TYPES.PEOPLE;
 
 const ButtonWrapper = styled.div`
   display: flex;
@@ -162,7 +158,7 @@ class PSASummary extends React.Component<Props, *> {
   renderArrestInfo = () => {
     const { neighbors, profile } = this.props;
     const component = profile ? `${CONTENT_CONSTS.PROFILE}|${CONTENT_CONSTS.ARREST}` : CONTENT_CONSTS.ARREST;
-    const pretrialCase = getNeighborDetailsForEntitySet(neighbors, manualPretrialCasesFqn);
+    const pretrialCase = getNeighborDetailsForEntitySet(neighbors, MANUAL_PRETRIAL_CASES);
     return (
       <ArrestCard arrest={pretrialCase} component={component} />
     );
@@ -218,12 +214,12 @@ class PSASummary extends React.Component<Props, *> {
 
     const { downloadPSAReviewPDF } = actions;
     let filer;
-    const psaDate = formatDateTimeList(getTimeStamp(neighbors, psaRiskFactorsFqn));
-    neighbors.get(staffFqn, Immutable.List()).forEach((neighbor) => {
+    const psaDate = formatDateTimeList(getTimeStamp(neighbors, PSA_RISK_FACTORS));
+    neighbors.get(STAFF, Immutable.List()).forEach((neighbor) => {
       const associationEntitySetId = neighbor.getIn([PSA_ASSOCIATION.ENTITY_SET, 'id']);
       const appTypeFqn = entitySetsByOrganization.get(associationEntitySetId);
       const personId = neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.PERSON_ID, 0], '');
-      if (appTypeFqn === assessedByFqn) {
+      if (appTypeFqn === ASSESSED_BY) {
         filer = personId;
       }
     });

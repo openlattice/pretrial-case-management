@@ -19,10 +19,9 @@ import {
 
 import { toISODate, formatDate } from '../../utils/FormattingUtils';
 import { submit } from '../../utils/submit/SubmitActionFactory';
-import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { HAS_OPEN_PSA, PSA_STATUSES } from '../../utils/consts/Consts';
-import { APP, STATE, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
-import { obfuscateEntityNeighbors } from '../../utils/consts/DemoNames';
+import { STATE, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { getPropertyTypeId } from '../../edm/edmUtils';
 import {
@@ -43,21 +42,15 @@ import {
 import * as Routes from '../../core/router/Routes';
 
 const { OPENLATTICE_ID_FQN } = Constants;
-let {
+const {
   CONTACT_INFORMATION,
   PEOPLE,
   PRETRIAL_CASES,
   PSA_SCORES
-} = APP_TYPES_FQNS;
-
-PEOPLE = PEOPLE.toString();
-PRETRIAL_CASES = PRETRIAL_CASES.toString();
-PSA_SCORES = PSA_SCORES.toString();
-CONTACT_INFORMATION = CONTACT_INFORMATION.toString();
+} = APP_TYPES;
 
 const getApp = state => state.get(STATE.APP, Map());
 const getEDM = state => state.get(STATE.EDM, Map());
-const getOrgId = state => state.getIn([STATE.APP, APP.SELECTED_ORG_ID], '');
 
 declare var __ENV_DEV__ :boolean;
 
@@ -106,9 +99,8 @@ function* loadPersonDetailsWorker(action) :Generator<*, *, *> {
   try {
     const { entityKeyId, shouldLoadCases } = action.value;
     const app = yield select(getApp);
-    const orgId = yield select(getOrgId);
-    const pretrialCasesEntitySetId = getEntitySetIdFromApp(app, PRETRIAL_CASES, orgId);
-    const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE, orgId);
+    const pretrialCasesEntitySetId = getEntitySetIdFromApp(app, PRETRIAL_CASES);
+    const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
     yield put(loadPersonDetails.request(action.id, { entityKeyId }));
 
     // <HACK>
@@ -146,7 +138,6 @@ function* loadPersonDetailsWorker(action) :Generator<*, *, *> {
 
     else {
       let response = yield call(SearchApi.searchEntityNeighbors, peopleEntitySetId, entityKeyId);
-      response = obfuscateEntityNeighbors(response);
       yield put(loadPersonDetails.success(action.id, { entityKeyId, response }));
     }
   }
@@ -237,9 +228,8 @@ function* searchPeopleWorker(action) :Generator<*, *, *> {
     yield put(searchPeople.request(action.id));
     const app = yield select(getApp);
     const edm = yield select(getEDM);
-    const orgId = yield select(getOrgId);
-    const psaScoresEntitySetId = getEntitySetIdFromApp(app, PSA_SCORES, orgId);
-    const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE, orgId);
+    const psaScoresEntitySetId = getEntitySetIdFromApp(app, PSA_SCORES);
+    const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
     const firstNamePropertyTypeId = getPropertyTypeId(edm, PROPERTY_TYPES.FIRST_NAME);
     const lastNamePropertyTypeId = getPropertyTypeId(edm, PROPERTY_TYPES.LAST_NAME);
     const dobPropertyTypeId = getPropertyTypeId(edm, PROPERTY_TYPES.DOB);
@@ -325,9 +315,8 @@ function* searchPeopleByPhoneNumberWorker(action) :Generator<*, *, *> {
     yield put(searchPeopleByPhoneNumber.request(action.id));
     const app = yield select(getApp);
     const edm = yield select(getEDM);
-    const orgId = yield select(getOrgId);
-    const contactInformationEntitySetId = getEntitySetIdFromApp(app, CONTACT_INFORMATION, orgId);
-    const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE, orgId);
+    const contactInformationEntitySetId = getEntitySetIdFromApp(app, CONTACT_INFORMATION);
+    const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
     const phonePropertyTypeId = getPropertyTypeId(edm, PROPERTY_TYPES.PHONE);
     const firstNamePropertyTypeId = getPropertyTypeId(edm, PROPERTY_TYPES.FIRST_NAME);
     const lastNamePropertyTypeId = getPropertyTypeId(edm, PROPERTY_TYPES.LAST_NAME);

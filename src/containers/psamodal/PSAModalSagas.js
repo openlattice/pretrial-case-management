@@ -24,8 +24,7 @@ import {
 
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { getEntityKeyId } from '../../utils/DataUtils';
-import { obfuscateEntityNeighbors } from '../../utils/consts/DemoNames';
-import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import {
   APP,
   PSA_NEIGHBOR,
@@ -43,23 +42,10 @@ const {
   MANUAL_PRETRIAL_COURT_CASES,
   MANUAL_PRETRIAL_CASES,
   PSA_SCORES,
-  PSA_RISK_FACTORS,
   RELEASE_CONDITIONS,
   STAFF,
   SUBSCRIPTION
-} = APP_TYPES_FQNS;
-
-
-const contactInformationFqn :string = CONTACT_INFORMATION.toString();
-const hearingsFqn :string = HEARINGS.toString();
-const peopleFqn :string = PEOPLE.toString();
-const pretrialCasesFqn :string = PRETRIAL_CASES.toString();
-const manualPretrialCasesFqn :string = MANUAL_PRETRIAL_CASES.toString();
-const manualPretrialCourtCasesFqn :string = MANUAL_PRETRIAL_COURT_CASES.toString();
-const psaScoresFqn :string = PSA_SCORES.toString();
-const releaseConditionsFqn :string = RELEASE_CONDITIONS.toString();
-const staffFqn :string = STAFF.toString();
-const subscriptionFqn :string = SUBSCRIPTION.toString();
+} = APP_TYPES;
 
 /*
  * Selectors
@@ -69,7 +55,7 @@ const getOrgId = state => state.getIn([STATE.APP, APP.SELECTED_ORG_ID], '');
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
-const LIST_ENTITY_SETS = List.of(staffFqn, releaseConditionsFqn, hearingsFqn, pretrialCasesFqn);
+const LIST_ENTITY_SETS = List.of(STAFF, RELEASE_CONDITIONS, HEARINGS, PRETRIAL_CASES);
 
 function* loadPSAModalWorker(action :SequenceAction) :Generator<*, *, *> {
   const { psaId, callback } = action.value; // Deconstruct action argument
@@ -84,11 +70,11 @@ function* loadPSAModalWorker(action :SequenceAction) :Generator<*, *, *> {
     const app = yield select(getApp);
     const orgId = yield select(getOrgId);
     const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
-    const hearingsEntitySetId = getEntitySetIdFromApp(app, hearingsFqn, orgId);
-    const psaScoresEntitySetId = getEntitySetIdFromApp(app, psaScoresFqn, orgId);
-    const peopleEntitySetId = getEntitySetIdFromApp(app, peopleFqn, orgId);
-    const subscriptionEntitySetId = getEntitySetIdFromApp(app, subscriptionFqn, orgId);
-    const contactInformationEntitySetId = getEntitySetIdFromApp(app, contactInformationFqn, orgId);
+    const hearingsEntitySetId = getEntitySetIdFromApp(app, HEARINGS);
+    const psaScoresEntitySetId = getEntitySetIdFromApp(app, PSA_SCORES);
+    const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
+    const subscriptionEntitySetId = getEntitySetIdFromApp(app, SUBSCRIPTION);
+    const contactInformationEntitySetId = getEntitySetIdFromApp(app, CONTACT_INFORMATION);
 
     /*
      * Get PSA Info
@@ -102,7 +88,6 @@ function* loadPSAModalWorker(action :SequenceAction) :Generator<*, *, *> {
      */
 
     let psaNeighbors = yield call(SearchApi.searchEntityNeighbors, psaScoresEntitySetId, psaId);
-    psaNeighbors = obfuscateEntityNeighbors(psaNeighbors); // TODO just for demo
     psaNeighbors = fromJS(psaNeighbors);
 
     /*
@@ -135,7 +120,7 @@ function* loadPSAModalWorker(action :SequenceAction) :Generator<*, *, *> {
       const neighborDetails = neighbor.get(PSA_NEIGHBOR.DETAILS, Map());
       const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
       if (appTypeFqn) {
-        if (appTypeFqn === staffFqn) {
+        if (appTypeFqn === STAFF) {
           neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.PERSON_ID], List())
             .forEach((filer) => {
               allFilers = allFilers.add(filer);
@@ -144,7 +129,7 @@ function* loadPSAModalWorker(action :SequenceAction) :Generator<*, *, *> {
 
         if (LIST_ENTITY_SETS.includes(appTypeFqn)) {
           const hearingEntityKeyId = neighborDetails.getIn([OPENLATTICE_ID_FQN, 0]);
-          if (appTypeFqn === hearingsFqn) {
+          if (appTypeFqn === HEARINGS) {
             if (hearingEntityKeyId) hearingIds = hearingIds.add(neighborDetails.getIn([OPENLATTICE_ID_FQN, 0]));
             neighborsByAppTypeFqn = neighborsByAppTypeFqn.set(
               appTypeFqn,
@@ -158,8 +143,8 @@ function* loadPSAModalWorker(action :SequenceAction) :Generator<*, *, *> {
             );
           }
         }
-        else if (appTypeFqn === manualPretrialCasesFqn || appTypeFqn === manualPretrialCourtCasesFqn) {
-          neighborsByAppTypeFqn = neighborsByAppTypeFqn.set(manualPretrialCasesFqn, neighbor);
+        else if (appTypeFqn === MANUAL_PRETRIAL_CASES || appTypeFqn === MANUAL_PRETRIAL_COURT_CASES) {
+          neighborsByAppTypeFqn = neighborsByAppTypeFqn.set(MANUAL_PRETRIAL_CASES, neighbor);
         }
         else {
           neighborsByAppTypeFqn = neighborsByAppTypeFqn.set(appTypeFqn, fromJS(neighbor));
@@ -167,7 +152,7 @@ function* loadPSAModalWorker(action :SequenceAction) :Generator<*, *, *> {
       }
     });
 
-    const personId = getEntityKeyId(neighborsByAppTypeFqn, peopleFqn);
+    const personId = getEntityKeyId(neighborsByAppTypeFqn, PEOPLE);
 
     let personNeighbors = yield call(SearchApi.searchEntityNeighborsWithFilter, peopleEntitySetId, {
       entityKeyIds: [personId],
@@ -180,18 +165,18 @@ function* loadPSAModalWorker(action :SequenceAction) :Generator<*, *, *> {
     personNeighbors.forEach((neighbor) => {
       const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
       const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
-      if (appTypeFqn === contactInformationFqn) {
+      if (appTypeFqn === CONTACT_INFORMATION) {
         personNeighborsByFqn = personNeighborsByFqn.set(
           appTypeFqn,
           personNeighborsByFqn.get(appTypeFqn, List()).push(neighbor)
         );
       }
-      else if (appTypeFqn === hearingsFqn) {
+      else if (appTypeFqn === HEARINGS) {
         const neighborDetails = neighbor.get(PSA_NEIGHBOR.DETAILS, Map());
         const hearingEntityKeyId = neighborDetails.getIn([OPENLATTICE_ID_FQN, 0]);
         if (hearingEntityKeyId) hearingIds = hearingIds.add(hearingEntityKeyId);
       }
-      else if (appTypeFqn === subscriptionFqn) {
+      else if (appTypeFqn === SUBSCRIPTION) {
         personNeighborsByFqn = personNeighborsByFqn.set(
           appTypeFqn,
           neighbor

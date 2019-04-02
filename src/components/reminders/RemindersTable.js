@@ -9,36 +9,27 @@ import { Map } from 'immutable';
 import RemindersRow from './RemindersRow';
 import OptOutRow from './OptOutRow';
 import { NoResults } from '../../utils/Layout';
-import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
-import { getIdOrValue } from '../../utils/DataUtils';
+import { getDateAndTime, getEntityProperties, getIdOrValue } from '../../utils/DataUtils';
 import { formatPeopleInfo } from '../../utils/PeopleUtils';
-import { getHearingFields } from '../../utils/consts/HearingConsts';
 import {
   getReminderFields,
   getOptOutFields,
-  sortEntities,
   REMINDERS_HEADERS,
   OPT_OUT_HEADERS
 } from '../../utils/RemindersUtils';
 
 import { OL } from '../../utils/consts/Colors';
 
-let {
+const {
   CONTACT_INFORMATION,
   HEARINGS,
   PEOPLE,
   PRETRIAL_CASES,
   REMINDERS,
   REMINDER_OPT_OUTS,
-} = APP_TYPES_FQNS;
-
-CONTACT_INFORMATION = CONTACT_INFORMATION.toString();
-HEARINGS = HEARINGS.toString();
-PEOPLE = PEOPLE.toString();
-PRETRIAL_CASES = PRETRIAL_CASES.toString();
-REMINDERS = REMINDERS.toString();
-REMINDER_OPT_OUTS = REMINDER_OPT_OUTS.toString();
+} = APP_TYPES;
 
 const Table = styled.table`
   width: 100%;
@@ -107,11 +98,15 @@ class RemindersTable extends React.Component<Props, State> {
       lastFirstMid
     } = formatPeopleInfo(person);
     const {
-      courtroom,
-      hearingDate,
-      hearingTime,
-      hearingType
-    } = getHearingFields(hearing);
+      [PROPERTY_TYPES.COURTROOM]: courtroom,
+      [PROPERTY_TYPES.DATE_TIME]: dateTime,
+      [PROPERTY_TYPES.HEARING_TYPE]: hearingType
+    } = getEntityProperties(hearing, [
+      PROPERTY_TYPES.COURTROOM,
+      PROPERTY_TYPES.DATE_TIME,
+      PROPERTY_TYPES.HEARING_TYPE
+    ]);
+    const { date: hearingDate, time: hearingTime } = getDateAndTime(dateTime);
     const contact = contactInfo.get(PROPERTY_TYPES.PHONE, contactInfo.get(PROPERTY_TYPES.EMAIL, ''));
     const hearingDateTime = `${hearingDate} ${hearingTime}`;
 
@@ -135,66 +130,61 @@ class RemindersTable extends React.Component<Props, State> {
       noResults
     } = this.props;
     if (noResults) return <NoResultsForTable>No Results</NoResultsForTable>;
-    const shouldSortByDateTime = (appTypeFqn === REMINDER_OPT_OUTS);
-    const entitySeq = sortEntities(entities, neighbors, shouldSortByDateTime)
-      .map(((entity) => {
-        let row = null;
-        if (appTypeFqn === REMINDERS) {
-          const {
-            reminderId,
-            entityKeyId,
-            dateTime,
-            wasNotified
-          } = getReminderFields(entity);
-          const {
-            personId,
-            lastFirstMid,
-            courtroom,
-            hearingType,
-            contact,
-            hearingDateTime
-          } = this.getNeighborDetails(entityKeyId, neighbors);
-          const reminderNeighbors = neighbors.get(entityKeyId, Map());
-          const caseNum = getIdOrValue(reminderNeighbors, PRETRIAL_CASES, PROPERTY_TYPES.CASE_ID);
-          row = (
-            <RemindersRow
-                key={reminderId}
-                contact={contact}
-                courtroom={courtroom}
-                hearingTime={hearingDateTime}
-                hearingType={hearingType}
-                reminderId={reminderId}
-                time={moment(dateTime).format('HH:mm')}
-                wasNotified={wasNotified}
-                personId={personId}
-                personName={lastFirstMid}
-                caseNumber={caseNum} />
-          );
-        }
-        if (appTypeFqn === REMINDER_OPT_OUTS) {
-          const {
-            dateTime,
-            entityKeyId,
-            reason
-          } = getOptOutFields(entity);
-          const {
-            personId,
-            lastFirstMid,
-            contact
-          } = this.getNeighborDetails(entityKeyId, neighbors);
-          row = (
-            <OptOutRow
-                key={entityKeyId}
-                contact={contact}
-                optOutId={entityKeyId}
-                reason={reason}
-                time={moment(dateTime).format('HH:mm')}
-                personId={personId}
-                personName={lastFirstMid} />
-          );
-        }
-        return row;
-      }));
+    const entitySeq = entities.map(((entity) => {
+      let row = null;
+      if (appTypeFqn === REMINDERS) {
+        const {
+          reminderEntityKeyId,
+          dateTime,
+          wasNotified
+        } = getReminderFields(entity);
+        const {
+          personId,
+          lastFirstMid,
+          courtroom,
+          hearingType,
+          contact,
+          hearingDateTime
+        } = this.getNeighborDetails(reminderEntityKeyId, neighbors);
+        const reminderNeighbors = neighbors.get(reminderEntityKeyId, Map());
+        const caseNum = getIdOrValue(reminderNeighbors, PRETRIAL_CASES, PROPERTY_TYPES.CASE_ID);
+        row = (
+          <RemindersRow
+              key={reminderEntityKeyId}
+              contact={contact}
+              courtroom={courtroom}
+              hearingTime={hearingDateTime}
+              hearingType={hearingType}
+              time={moment(dateTime).format('HH:mm')}
+              wasNotified={wasNotified}
+              personId={personId}
+              personName={lastFirstMid}
+              caseNumber={caseNum} />
+        );
+      }
+      if (appTypeFqn === REMINDER_OPT_OUTS) {
+        const {
+          dateTime,
+          optOutEntityKeyId,
+          reason
+        } = getOptOutFields(entity);
+        const {
+          personId,
+          lastFirstMid,
+          contact
+        } = this.getNeighborDetails(optOutEntityKeyId, neighbors);
+        row = (
+          <OptOutRow
+              key={optOutEntityKeyId}
+              contact={contact}
+              reason={reason}
+              time={moment(dateTime).format('HH:mm')}
+              personId={personId}
+              personName={lastFirstMid} />
+        );
+      }
+      return row;
+    }));
     return (
       <Table>
         <tbody>

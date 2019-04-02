@@ -22,8 +22,7 @@ import {
 import releaseConditionsConfig from '../../config/formconfig/ReleaseConditionsConfig';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { getEntityKeyId, getMapFromEntityKeysToPropertyKeys } from '../../utils/DataUtils';
-import { obfuscateEntityNeighbors } from '../../utils/consts/DemoNames';
-import { APP_TYPES_FQNS } from '../../utils/consts/DataModelConsts';
+import { APP_TYPES } from '../../utils/consts/DataModelConsts';
 import { APP, PSA_NEIGHBOR, STATE } from '../../utils/consts/FrontEndStateConsts';
 
 import {
@@ -51,22 +50,7 @@ const {
   REMINDERS,
   STAFF,
   SUBSCRIPTION
-} = APP_TYPES_FQNS;
-
-const bondsFqn :string = BONDS.toString();
-const chargesFqn :string = CHARGES.toString();
-const contactInformationFqn :string = CONTACT_INFORMATION.toString();
-const dmfResultsFqn :string = DMF_RESULTS.toString();
-const dmfRiskFactorsFqn :string = DMF_RISK_FACTORS.toString();
-const hearingsFqn :string = HEARINGS.toString();
-const outcomesFqn :string = OUTCOMES.toString();
-const peopleFqn :string = PEOPLE.toString();
-const pretrialCasesFqn :string = PRETRIAL_CASES.toString();
-const psaScoresFqn :string = PSA_SCORES.toString();
-const releaseConditionsFqn :string = RELEASE_CONDITIONS.toString();
-const remindersFqn :string = REMINDERS.toString();
-const staffFqn :string = STAFF.toString();
-const subscriptionFqn :string = SUBSCRIPTION.toString();
+} = APP_TYPES;
 
 /*
  * Selectors
@@ -74,14 +58,14 @@ const subscriptionFqn :string = SUBSCRIPTION.toString();
 const getApp = state => state.get(STATE.APP, Map());
 const getOrgId = state => state.getIn([STATE.APP, APP.SELECTED_ORG_ID], '');
 
-const LIST_ENTITY_SETS = List.of(staffFqn, releaseConditionsFqn, hearingsFqn, pretrialCasesFqn, remindersFqn);
+const LIST_ENTITY_SETS = List.of(STAFF, RELEASE_CONDITIONS, HEARINGS, PRETRIAL_CASES, REMINDERS);
 
 function* getHearingAndNeighbors(hearingId :string) :Generator<*, *, *> {
   let hearingNeighborsByAppTypeFqn = Map();
   const app = yield select(getApp);
   const orgId = yield select(getOrgId);
   const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
-  const hearingsEntitySetId = getEntitySetIdFromApp(app, hearingsFqn, orgId);
+  const hearingsEntitySetId = getEntitySetIdFromApp(app, HEARINGS);
 
   /*
    * Get Hearing Info
@@ -95,7 +79,6 @@ function* getHearingAndNeighbors(hearingId :string) :Generator<*, *, *> {
    */
 
   let hearingNeighbors = yield call(SearchApi.searchEntityNeighbors, hearingsEntitySetId, hearingId);
-  hearingNeighbors = obfuscateEntityNeighbors(hearingNeighbors); // TODO just for demo
   hearingNeighbors = fromJS(hearingNeighbors);
   /*
    * Format Neighbors
@@ -131,13 +114,13 @@ function* loadReleaseConditionsWorker(action :SequenceAction) :Generator<*, *, *
     const app = yield select(getApp);
     const orgId = yield select(getOrgId);
     const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
-    const chargesEntitySetId = getEntitySetIdFromApp(app, chargesFqn, orgId);
-    const dmfEntitySetId = getEntitySetIdFromApp(app, dmfResultsFqn, orgId);
-    const dmfRiskFactorsEntitySetId = getEntitySetIdFromApp(app, dmfRiskFactorsFqn, orgId);
-    const peopleEntitySetId = getEntitySetIdFromApp(app, peopleFqn, orgId);
-    const subscriptionEntitySetId = getEntitySetIdFromApp(app, subscriptionFqn, orgId);
-    const contactInformationEntitySetId = getEntitySetIdFromApp(app, contactInformationFqn, orgId);
-    const psaScoresEntityKeyId = getEntitySetIdFromApp(app, psaScoresFqn, orgId);
+    const chargesEntitySetId = getEntitySetIdFromApp(app, CHARGES);
+    const dmfEntitySetId = getEntitySetIdFromApp(app, DMF_RESULTS);
+    const dmfRiskFactorsEntitySetId = getEntitySetIdFromApp(app, DMF_RISK_FACTORS);
+    const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
+    const subscriptionEntitySetId = getEntitySetIdFromApp(app, SUBSCRIPTION);
+    const contactInformationEntitySetId = getEntitySetIdFromApp(app, CONTACT_INFORMATION);
+    const psaScoresEntityKeyId = getEntitySetIdFromApp(app, PSA_SCORES);
 
     /*
      * Get Hearing and Hearing Neighbors
@@ -149,7 +132,7 @@ function* loadReleaseConditionsWorker(action :SequenceAction) :Generator<*, *, *
     * Get PSA Neighbors
     */
 
-    const psaId = getEntityKeyId(hearingNeighborsByAppTypeFqn, psaScoresFqn);
+    const psaId = getEntityKeyId(hearingNeighborsByAppTypeFqn, PSA_SCORES);
 
     let psaNeighbors = yield call(SearchApi.searchEntityNeighborsWithFilter, psaScoresEntityKeyId, {
       entityKeyIds: [psaId],
@@ -162,7 +145,7 @@ function* loadReleaseConditionsWorker(action :SequenceAction) :Generator<*, *, *
     psaNeighbors.forEach((neighbor) => {
       const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
       const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
-      if (appTypeFqn === dmfResultsFqn || appTypeFqn === dmfRiskFactorsFqn) {
+      if (appTypeFqn === DMF_RESULTS || appTypeFqn === DMF_RISK_FACTORS) {
         psaNeighborsByAppTypeFqn = psaNeighborsByAppTypeFqn.set(
           appTypeFqn,
           neighbor
@@ -174,7 +157,7 @@ function* loadReleaseConditionsWorker(action :SequenceAction) :Generator<*, *, *
     * Get Person Neighbors
     */
 
-    const personId = getEntityKeyId(hearingNeighborsByAppTypeFqn, peopleFqn);
+    const personId = getEntityKeyId(hearingNeighborsByAppTypeFqn, PEOPLE);
 
     let personNeighbors = yield call(SearchApi.searchEntityNeighborsWithFilter, peopleEntitySetId, {
       entityKeyIds: [personId],
@@ -188,13 +171,13 @@ function* loadReleaseConditionsWorker(action :SequenceAction) :Generator<*, *, *
       const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
       const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
 
-      if (appTypeFqn === contactInformationFqn || appTypeFqn === chargesFqn) {
+      if (appTypeFqn === CONTACT_INFORMATION || appTypeFqn === CHARGES) {
         personNeighborsByAppTypeFqn = personNeighborsByAppTypeFqn.set(
           appTypeFqn,
           personNeighborsByAppTypeFqn.get(appTypeFqn, List()).push(neighbor)
         );
       }
-      else if (appTypeFqn === subscriptionFqn) {
+      else if (appTypeFqn === SUBSCRIPTION) {
         personNeighborsByAppTypeFqn = personNeighborsByAppTypeFqn.set(
           appTypeFqn,
           neighbor
@@ -241,10 +224,9 @@ function* updateOutcomesAndReleaseCondtionsWorker(action :SequenceAction) :Gener
     } = action.value;
 
     const app = yield select(getApp);
-    const orgId = yield select(getOrgId);
-    const releaseConditionEntitySetId = getEntitySetIdFromApp(app, releaseConditionsFqn, orgId);
-    const bondEntitySetId = getEntitySetIdFromApp(app, bondsFqn, orgId);
-    const outcomeEntitySetId = getEntitySetIdFromApp(app, outcomesFqn, orgId);
+    const releaseConditionEntitySetId = getEntitySetIdFromApp(app, RELEASE_CONDITIONS);
+    const bondEntitySetId = getEntitySetIdFromApp(app, BONDS);
+    const outcomeEntitySetId = getEntitySetIdFromApp(app, OUTCOMES);
 
     const allEntitySetIds = { releaseConditionEntitySetId, bondEntitySetId, outcomeEntitySetId };
 
@@ -339,11 +321,11 @@ function* updateOutcomesAndReleaseCondtionsWorker(action :SequenceAction) :Gener
 
     if (newBondEntity) {
       hearingNeighborsByAppTypeFqn = hearingNeighborsByAppTypeFqn
-        .setIn([bondsFqn, PSA_NEIGHBOR.DETAILS], fromJS(newBondEntity));
+        .setIn([BONDS, PSA_NEIGHBOR.DETAILS], fromJS(newBondEntity));
     }
     if (newOutcomeEntity) {
       hearingNeighborsByAppTypeFqn = hearingNeighborsByAppTypeFqn
-        .setIn([outcomesFqn, PSA_NEIGHBOR.DETAILS], fromJS(newOutcomeEntity));
+        .setIn([OUTCOMES, PSA_NEIGHBOR.DETAILS], fromJS(newOutcomeEntity));
     }
 
     yield put(updateOutcomesAndReleaseCondtions.success(action.id, {

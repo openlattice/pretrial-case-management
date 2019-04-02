@@ -12,19 +12,11 @@ import {
 
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { APP, PSA_NEIGHBOR, STATE } from '../../utils/consts/FrontEndStateConsts';
-import { APP_TYPES_FQNS } from '../../utils/consts/DataModelConsts';
+import { APP_TYPES } from '../../utils/consts/DataModelConsts';
 
 import { LOAD_SUBSCRIPTION_MODAL, loadSubcriptionModal } from './SubscriptionsActionFactory';
 
-let {
-  CONTACT_INFORMATION,
-  PEOPLE,
-  SUBSCRIPTION
-} = APP_TYPES_FQNS;
-
-CONTACT_INFORMATION = CONTACT_INFORMATION.toString();
-PEOPLE = PEOPLE.toString();
-SUBSCRIPTION = SUBSCRIPTION.toString();
+const { CONTACT_INFORMATION, PEOPLE, SUBSCRIPTION } = APP_TYPES;
 
 const getApp = state => state.get(STATE.APP, Map());
 const getOrgId = state => state.getIn([STATE.APP, APP.SELECTED_ORG_ID], '');
@@ -39,9 +31,9 @@ function* loadSubcriptionModalWorker(action :SequenceAction) :Generator<*, *, *>
     const app = yield select(getApp);
     const orgId = yield select(getOrgId);
     const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
-    const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE, orgId);
-    const contactInformationEntitySetId = getEntitySetIdFromApp(app, CONTACT_INFORMATION, orgId);
-    const subscriptionEntitySetId = getEntitySetIdFromApp(app, SUBSCRIPTION, orgId);
+    const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
+    const contactInformationEntitySetId = getEntitySetIdFromApp(app, CONTACT_INFORMATION);
+    const subscriptionEntitySetId = getEntitySetIdFromApp(app, SUBSCRIPTION);
 
     const personNeighborsById = yield call(SearchApi.searchEntityNeighborsWithFilter, peopleEntitySetId, {
       entityKeyIds: [personEntityKeyId],

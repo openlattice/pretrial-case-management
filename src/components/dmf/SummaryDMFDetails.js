@@ -9,7 +9,7 @@ import DMFCell from './DMFCell';
 import rightArrow from '../../assets/svg/dmf-arrow.svg';
 import { CONTEXT } from '../../utils/consts/Consts';
 import { DMFIncreaseText, StepWrapper } from './DMFStyledTags';
-import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import {
   getDMFDecision,
@@ -25,11 +25,7 @@ import {
   dmfSecondaryHoldIncrease
 } from '../../utils/ScoringUtils';
 
-let { DMF_RESULTS, DMF_RISK_FACTORS, PSA_RISK_FACTORS } = APP_TYPES_FQNS;
-
-DMF_RESULTS = DMF_RESULTS.toString();
-DMF_RISK_FACTORS = DMF_RISK_FACTORS.toString();
-PSA_RISK_FACTORS = PSA_RISK_FACTORS.toString();
+const { DMF_RESULTS, DMF_RISK_FACTORS, PSA_RISK_FACTORS } = APP_TYPES;
 
 const ScoreContent = styled.div`
   padding: 20px 30px 0;

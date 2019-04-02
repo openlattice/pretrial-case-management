@@ -7,7 +7,8 @@ import Immutable, { Set } from 'immutable';
 
 import { PROPERTY_TYPES } from './consts/DataModelConsts';
 import { sortPeopleByName, formatPeopleInfo } from './PeopleUtils';
-import { getHearingFields } from './consts/HearingConsts';
+import { getEntityProperties } from './DataUtils';
+import { getHearingString } from './HearingUtils';
 import {
   formatValue,
   formatDateTime
@@ -138,11 +139,15 @@ const hearing = (
   hearingHeader(doc, y, X_COL_3, 'Courtroom');
   selectedHearing.forEach((hearingObj) => {
     const {
-      hearingDateTime,
-      hearingType,
-      courtroom,
-      hearingCourtStringNoCaseId
-    } = getHearingFields(hearingObj);
+      [PROPERTY_TYPES.COURTROOM]: courtroom,
+      [PROPERTY_TYPES.DATE_TIME]: hearingDateTime,
+      [PROPERTY_TYPES.HEARING_TYPE]: hearingType
+    } = getEntityProperties(hearingObj, [
+      PROPERTY_TYPES.COURTROOM,
+      PROPERTY_TYPES.DATE_TIME,
+      PROPERTY_TYPES.HEARING_TYPE
+    ]);
+    const hearingCourtStringNoCaseId = getHearingString(hearingObj);
     if (!hearingList.includes(hearingCourtStringNoCaseId)) {
       y += Y_INC_SMALL;
       doc.text(X_COL_1, y, formatDateTime(hearingDateTime));

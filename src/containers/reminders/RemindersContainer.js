@@ -26,7 +26,7 @@ import DashboardMainSection from '../../components/dashboard/DashboardMainSectio
 import StyledButton from '../../components/buttons/StyledButton';
 import { Count } from '../../utils/Layout';
 import { OL } from '../../utils/consts/Colors';
-import { APP_TYPES_FQNS } from '../../utils/consts/DataModelConsts';
+import { APP_TYPES } from '../../utils/consts/DataModelConsts';
 import { FILTERS } from '../../utils/RemindersUtils';
 import {
   APP,
@@ -44,9 +44,9 @@ import * as SubscriptionsActionFactory from '../subscription/SubscriptionsAction
 import * as PersonActionFactory from '../person/PersonActionFactory';
 
 const { OPENLATTICE_ID_FQN } = Constants;
-const peopleFqn = APP_TYPES_FQNS.PEOPLE.toString();
-const remindersFqn = APP_TYPES_FQNS.REMINDERS.toString();
-const reminderOptOutsFqn = APP_TYPES_FQNS.REMINDER_OPT_OUTS.toString();
+const peopleFqn = APP_TYPES.PEOPLE;
+const remindersFqn = APP_TYPES.REMINDERS;
+const reminderOptOutsFqn = APP_TYPES.REMINDER_OPT_OUTS;
 
 const ToolbarWrapper = styled.div`
   display: flex;

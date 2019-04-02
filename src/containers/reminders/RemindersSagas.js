@@ -29,8 +29,7 @@ import { PSA_STATUSES } from '../../utils/consts/Consts';
 import exportPDFList from '../../utils/CourtRemindersPDFUtils';
 import { toISODate } from '../../utils/FormattingUtils';
 import { addWeekdays } from '../../utils/DataUtils';
-import { obfuscateBulkEntityNeighbors } from '../../utils/consts/DemoNames';
-import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import {
   APP,
   PSA_ASSOCIATION,
@@ -52,7 +51,7 @@ import {
   loadRemindersforDate
 } from './RemindersActionFactory';
 
-let {
+const {
   CONTACT_INFORMATION,
   HEARINGS,
   PEOPLE,
@@ -60,16 +59,7 @@ let {
   REMINDERS,
   REMINDER_OPT_OUTS,
   PRETRIAL_CASES
-} = APP_TYPES_FQNS;
-
-CONTACT_INFORMATION = CONTACT_INFORMATION.toString();
-HEARINGS = HEARINGS.toString();
-PEOPLE = PEOPLE.toString();
-PSA_SCORES = PSA_SCORES.toString();
-REMINDERS = REMINDERS.toString();
-REMINDER_OPT_OUTS = REMINDER_OPT_OUTS.toString();
-PRETRIAL_CASES = PRETRIAL_CASES.toString();
-
+} = APP_TYPES;
 
 const { OPENLATTICE_ID_FQN } = Constants;
 const { FullyQualifiedName } = Models;
@@ -107,10 +97,10 @@ function* loadOptOutNeighborsWorker(action :SequenceAction) :Generator<*, *, *> 
     const app = yield select(getApp);
     const orgId = yield select(getOrgId);
     const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
-    const optOutEntitySetId = getEntitySetIdFromApp(app, REMINDER_OPT_OUTS, orgId);
-    const contactInformationEntitySetId = getEntitySetIdFromApp(app, CONTACT_INFORMATION, orgId);
-    const hearingsEntitySetId = getEntitySetIdFromApp(app, HEARINGS, orgId);
-    const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE, orgId);
+    const optOutEntitySetId = getEntitySetIdFromApp(app, REMINDER_OPT_OUTS);
+    const contactInformationEntitySetId = getEntitySetIdFromApp(app, CONTACT_INFORMATION);
+    const hearingsEntitySetId = getEntitySetIdFromApp(app, HEARINGS);
+    const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
 
     if (optOutIds.length) {
       let neighborsById = yield call(SearchApi.searchEntityNeighborsWithFilter, optOutEntitySetId, {
@@ -118,7 +108,6 @@ function* loadOptOutNeighborsWorker(action :SequenceAction) :Generator<*, *, *> 
         sourceEntitySetIds: [],
         destinationEntitySetIds: [contactInformationEntitySetId, hearingsEntitySetId, peopleEntitySetId]
       });
-      neighborsById = obfuscateBulkEntityNeighbors(neighborsById);
       neighborsById = fromJS(neighborsById);
       neighborsById.entrySeq().forEach(([optOutId, neighbors]) => {
         let neighborsByAppTypeFqn = Map();
@@ -150,7 +139,6 @@ function* loadOptOutNeighborsWorker(action :SequenceAction) :Generator<*, *, *> 
         sourceEntitySetIds: [peopleEntitySetId],
         destinationEntitySetIds: [peopleEntitySetId]
       });
-      neighborsById = obfuscateBulkEntityNeighbors(neighborsById);
       neighborsById = fromJS(neighborsById);
       neighborsById.entrySeq().forEach(([contactInfoId, neighbors]) => {
         let neighborsByAppTypeFqn = Map();
@@ -199,8 +187,7 @@ function* loadOptOutsForDateWorker(action :SequenceAction) :Generator<*, *, *> {
 
     const app = yield select(getApp);
     const edm = yield select(getEDM);
-    const orgId = yield select(getOrgId);
-    const optOutEntitySetId = getEntitySetIdFromApp(app, REMINDER_OPT_OUTS, orgId);
+    const optOutEntitySetId = getEntitySetIdFromApp(app, REMINDER_OPT_OUTS);
     const datePropertyTypeId = getPropertyTypeId(edm, DATE_TIME_FQN);
 
     const ceiling = yield call(DataApi.getEntitySetSize, optOutEntitySetId);
@@ -260,8 +247,7 @@ function* loadRemindersforDateWorker(action :SequenceAction) :Generator<*, *, *>
 
     const app = yield select(getApp);
     const edm = yield select(getEDM);
-    const orgId = yield select(getOrgId);
-    const remindersEntitySetId = getEntitySetIdFromApp(app, REMINDERS, orgId);
+    const remindersEntitySetId = getEntitySetIdFromApp(app, REMINDERS);
     const datePropertyTypeId = getPropertyTypeId(edm, DATE_TIME_FQN);
 
     const ceiling = yield call(DataApi.getEntitySetSize, remindersEntitySetId);
@@ -340,17 +326,16 @@ function* loadReminderNeighborsByIdWorker(action :SequenceAction) :Generator<*, 
       const app = yield select(getApp);
       const orgId = yield select(getOrgId);
       const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
-      const remindersEntitySetId = getEntitySetIdFromApp(app, REMINDERS, orgId);
-      const contactInformationEntitySetId = getEntitySetIdFromApp(app, CONTACT_INFORMATION, orgId);
-      const hearingsEntitySetId = getEntitySetIdFromApp(app, HEARINGS, orgId);
-      const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE, orgId);
-      const pretrialCasesEntitySetId = getEntitySetIdFromApp(app, PRETRIAL_CASES, orgId);
+      const remindersEntitySetId = getEntitySetIdFromApp(app, REMINDERS);
+      const contactInformationEntitySetId = getEntitySetIdFromApp(app, CONTACT_INFORMATION);
+      const hearingsEntitySetId = getEntitySetIdFromApp(app, HEARINGS);
+      const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
+      const pretrialCasesEntitySetId = getEntitySetIdFromApp(app, PRETRIAL_CASES);
       let neighborsById = yield call(SearchApi.searchEntityNeighborsWithFilter, remindersEntitySetId, {
         entityKeyIds: reminderIds,
         sourceEntitySetIds: [],
         destinationEntitySetIds: [contactInformationEntitySetId, hearingsEntitySetId, peopleEntitySetId]
       });
-      neighborsById = obfuscateBulkEntityNeighbors(neighborsById);
       neighborsById = fromJS(neighborsById);
       neighborsById.entrySeq().forEach(([reminderId, neighbors]) => {
         let neighborsByAppTypeFqn = Map();
@@ -432,10 +417,10 @@ function* loadPeopleWithHearingsButNoContactsWorker(action :SequenceAction) :Gen
     const orgId = yield select(getOrgId);
     const statusFqn = new FullyQualifiedName(PROPERTY_TYPES.STATUS);
     const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
-    const psaScoresEntitySetId = getEntitySetIdFromApp(app, PSA_SCORES, orgId);
-    const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE, orgId);
-    const hearingsEntitySetId = getEntitySetIdFromApp(app, HEARINGS, orgId);
-    const contactInformationEntityKeyId = getEntitySetIdFromApp(app, CONTACT_INFORMATION, orgId);
+    const psaScoresEntitySetId = getEntitySetIdFromApp(app, PSA_SCORES);
+    const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
+    const hearingsEntitySetId = getEntitySetIdFromApp(app, HEARINGS);
+    const contactInformationEntityKeyId = getEntitySetIdFromApp(app, CONTACT_INFORMATION);
 
     /* Grab Open PSAs */
     const statusPropertyTypeId = getPropertyTypeId(edm, statusFqn);
@@ -556,8 +541,8 @@ function* bulkDownloadRemindersPDFWorker(action :SequenceAction) :Generator<*, *
     const app = yield select(getApp);
     const edm = yield select(getEDM);
     const orgId = yield select(getOrgId);
-    const hearingsEntitySetId = getEntitySetIdFromApp(app, HEARINGS, orgId);
-    const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE, orgId);
+    const hearingsEntitySetId = getEntitySetIdFromApp(app, HEARINGS);
+    const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
     const datePropertyTypeId = getPropertyTypeId(edm, DATE_TIME_FQN);
     const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
 

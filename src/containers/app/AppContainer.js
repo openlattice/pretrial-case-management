@@ -21,7 +21,7 @@ import LogoLoader from '../../components/LogoLoader';
 import WelcomeBanner from '../../components/WelcomeBanner';
 import { APP, CHARGES, STATE } from '../../utils/consts/FrontEndStateConsts';
 import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
-import { APP_TYPES_FQNS } from '../../utils/consts/DataModelConsts';
+import { APP_TYPES } from '../../utils/consts/DataModelConsts';
 import { termsAreAccepted } from '../../utils/AcceptTermsUtils';
 import { OL } from '../../utils/consts/Colors';
 
@@ -37,7 +37,7 @@ const {
   JUDGES,
   ARREST_CHARGE_LIST,
   COURT_CHARGE_LIST
-} = APP_TYPES_FQNS;
+} = APP_TYPES;
 
 /*
  * styled components
@@ -95,13 +95,13 @@ class AppContainer extends React.Component<Props, *> {
       nextOrg.keySeq().forEach((id) => {
         const selectedOrgId :string = id;
         const arrestChargesEntitySetId = app.getIn(
-          [ARREST_CHARGE_LIST.toString(), APP.ENTITY_SETS_BY_ORG, selectedOrgId]
+          [ARREST_CHARGE_LIST, APP.ENTITY_SETS_BY_ORG, selectedOrgId]
         );
         const courtChargesEntitySetId = app.getIn(
-          [COURT_CHARGE_LIST.toString(), APP.ENTITY_SETS_BY_ORG, selectedOrgId]
+          [COURT_CHARGE_LIST, APP.ENTITY_SETS_BY_ORG, selectedOrgId]
         );
         const judgesEntitySetId = app.getIn(
-          [JUDGES.toString(), APP.ENTITY_SETS_BY_ORG, selectedOrgId]
+          [JUDGES, APP.ENTITY_SETS_BY_ORG, selectedOrgId]
         );
         if (arrestChargesEntitySetId && courtChargesEntitySetId) {
           actions.loadCharges({

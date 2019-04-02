@@ -14,22 +14,17 @@ import PersonCard from '../person/PersonCardReview';
 import PSAReportDownloadButton from './PSAReportDownloadButton';
 import PSAStats from './PSAStats';
 import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
-import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
 import { psaIsClosed } from '../../utils/PSAUtils';
 import { PSA_NEIGHBOR, PSA_ASSOCIATION } from '../../utils/consts/FrontEndStateConsts';
 
-let {
+const {
   ASSESSED_BY,
   EDITED_BY,
   PEOPLE,
   STAFF,
-} = APP_TYPES_FQNS;
-
-ASSESSED_BY = ASSESSED_BY.toString();
-EDITED_BY = EDITED_BY.toString();
-PEOPLE = PEOPLE.toString();
-STAFF = STAFF.toString();
+} = APP_TYPES;
 
 
 const ReviewRowContainer = styled.div`

@@ -26,7 +26,7 @@ import { formatPeopleInfo, sortPeopleByName } from '../../utils/PeopleUtils';
 import * as Routes from '../../core/router/Routes';
 import { StyledSectionWrapper } from '../../utils/Layout';
 import { TIME_FORMAT } from '../../utils/FormattingUtils';
-import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { DOMAIN } from '../../utils/consts/ReportDownloadTypes';
 import { OL } from '../../utils/consts/Colors';
 import {
@@ -45,8 +45,7 @@ import * as PSAModalActionFactory from '../psamodal/PSAModalActionFactory';
 import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
 import * as DataActionFactory from '../../utils/data/DataActionFactory';
 
-const { PEOPLE } = APP_TYPES_FQNS;
-const peopleFqn :string = PEOPLE.toString();
+const { PEOPLE } = APP_TYPES;
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
@@ -390,7 +389,7 @@ class CourtContainer extends React.Component<Props, State> {
       if (shouldInclude) {
         const hearingId = hearing.getIn([OPENLATTICE_ID_FQN, 0]);
         const person = hearingNeighborsById
-          .getIn([hearingId, peopleFqn, PSA_NEIGHBOR.DETAILS], Map());
+          .getIn([hearingId, PEOPLE, PSA_NEIGHBOR.DETAILS], Map());
         const personId = person.getIn([PROPERTY_TYPES.PERSON_ID, 0]);
         if (personId) {
           hearingsByCourtroom = hearingsByCourtroom
