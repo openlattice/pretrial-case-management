@@ -17,7 +17,7 @@ export const ORG_IDS = {
 };
 
 /*
-* App Type FQNs
+* App Types
 */
 
 export const APP_TYPES = {
@@ -72,57 +72,20 @@ export const APP_TYPES = {
   UJS_EMPLOYEES: 'app.employees'
 };
 
-export const APP_TYPES_FQNS = {
-  ARREST_CHARGE_LIST: new FullyQualifiedName(APP_TYPES.ARREST_CHARGE_LIST),
-  APP_SETTINGS: new FullyQualifiedName(APP_TYPES.APP_SETTINGS),
-  ADDRESSES: new FullyQualifiedName(APP_TYPES.ADDRESSES),
-  APPEARS_IN: new FullyQualifiedName(APP_TYPES.APPEARS_IN),
-  APPEARS_IN_STATE: new FullyQualifiedName(APP_TYPES.APPEARS_IN_STATE),
-  ARREST_APPEARS_IN: new FullyQualifiedName(APP_TYPES.ARREST_APPEARS_IN),
-  ARREST_CHARGED_WITH: new FullyQualifiedName(APP_TYPES.ARREST_CHARGED_WITH),
-  ARREST_CHARGES: new FullyQualifiedName(APP_TYPES.ARREST_CHARGES),
-  ARREST_CASES: new FullyQualifiedName(APP_TYPES.ARREST_CASES),
-  ARRESTED_IN: new FullyQualifiedName(APP_TYPES.ARRESTED_IN),
-  ASSESSED_BY: new FullyQualifiedName(APP_TYPES.ASSESSED_BY),
-  ASSESSED_BY_STATE: new FullyQualifiedName(APP_TYPES.ASSESSED_BY_STATE),
-  BONDS: new FullyQualifiedName(APP_TYPES.BONDS),
-  CALCULATED_FOR: new FullyQualifiedName(APP_TYPES.CALCULATED_FOR),
-  CHARGED_WITH: new FullyQualifiedName(APP_TYPES.CHARGED_WITH),
-  CHARGES: new FullyQualifiedName(APP_TYPES.CHARGES),
-  CONTACT_INFO_GIVEN: new FullyQualifiedName(APP_TYPES.CONTACT_INFO_GIVEN),
-  CONTACT_INFORMATION: new FullyQualifiedName(APP_TYPES.CONTACT_INFORMATION),
-  COURT_CHARGE_LIST: new FullyQualifiedName(APP_TYPES.COURT_CHARGE_LIST),
-  DMF_RESULTS: new FullyQualifiedName(APP_TYPES.DMF_RESULTS),
-  DMF_RISK_FACTORS: new FullyQualifiedName(APP_TYPES.DMF_RISK_FACTORS),
-  EDITED_BY: new FullyQualifiedName(APP_TYPES.EDITED_BY),
-  FTAS: new FullyQualifiedName(APP_TYPES.FTAS),
-  HEARINGS: new FullyQualifiedName(APP_TYPES.HEARINGS),
-  INCIDENT: new FullyQualifiedName(APP_TYPES.INCIDENT),
-  JUDGES: new FullyQualifiedName(APP_TYPES.JUDGES),
-  LIVES_AT: new FullyQualifiedName(APP_TYPES.LIVES_AT),
-  LIVES_AT_ARREST: new FullyQualifiedName(APP_TYPES.LIVES_AT_ARREST),
-  MANUAL_CHARGES: new FullyQualifiedName(APP_TYPES.MANUAL_CHARGES),
-  MANUAL_COURT_CHARGES: new FullyQualifiedName(APP_TYPES.MANUAL_COURT_CHARGES),
-  MANUAL_PRETRIAL_CASES: new FullyQualifiedName(APP_TYPES.MANUAL_PRETRIAL_CASES),
-  MANUAL_PRETRIAL_COURT_CASES: new FullyQualifiedName(APP_TYPES.MANUAL_PRETRIAL_COURT_CASES),
-  MANUAL_REMINDERS: new FullyQualifiedName(APP_TYPES.MANUAL_REMINDERS),
-  OUTCOMES: new FullyQualifiedName(APP_TYPES.OUTCOMES),
-  OVERSAW: new FullyQualifiedName(APP_TYPES.OVERSAW),
-  PEOPLE: new FullyQualifiedName(APP_TYPES.PEOPLE),
-  PRETRIAL_CASES: new FullyQualifiedName(APP_TYPES.PRETRIAL_CASES),
-  PSA_RISK_FACTORS: new FullyQualifiedName(APP_TYPES.PSA_RISK_FACTORS),
-  PSA_SCORES: new FullyQualifiedName(APP_TYPES.PSA_SCORES),
-  REGISTERED_FOR: new FullyQualifiedName(APP_TYPES.REGISTERED_FOR),
-  RELEASE_CONDITIONS: new FullyQualifiedName(APP_TYPES.RELEASE_CONDITIONS),
-  RELEASE_RECOMMENDATIONS: new FullyQualifiedName(APP_TYPES.RELEASE_RECOMMENDATIONS),
-  REMINDER_OPT_OUTS: new FullyQualifiedName(APP_TYPES.REMINDER_OPT_OUTS),
-  REMINDERS: new FullyQualifiedName(APP_TYPES.REMINDERS),
-  SENTENCES: new FullyQualifiedName(APP_TYPES.SENTENCES),
-  SUBSCRIPTION: new FullyQualifiedName(APP_TYPES.SUBSCRIPTION),
-  SPEAKER_RECOGNITION_PROFILES: new FullyQualifiedName(APP_TYPES.SPEAKER_RECOGNITION_PROFILES),
-  STAFF: new FullyQualifiedName(APP_TYPES.STAFF),
-  UJS_EMPLOYEES: new FullyQualifiedName(APP_TYPES.UJS_EMPLOYEES)
+
+/*
+* App Type Fqns
+*/
+
+const getAppTypeFqns = () => {
+  const appTypeFqns = {};
+  Object.entries(APP_TYPES).forEach(([key, appType]) => {
+    appTypeFqns[key] = new FullyQualifiedName(appType);
+  });
+  return appTypeFqns;
 };
+
+export const APP_TYPES_FQNS = getAppTypeFqns();
 
 export const SETTINGS = {
   CONTEXTS: 'contexts',
