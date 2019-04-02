@@ -17,6 +17,7 @@ import {
   loadReminderNeighborsById,
   loadRemindersforDate
 } from './RemindersActionFactory';
+import {SWITCH_ORGANIZATION} from '../app/AppActionFactory';
 import { REMINDERS } from '../../utils/consts/FrontEndStateConsts';
 
 const INITIAL_STATE :Map<*, *> = fromJS({
@@ -49,6 +50,7 @@ export default function remindersReducer(state :Map<*, *> = INITIAL_STATE, actio
         FINALLY: () => state.set(REMINDERS.LOADING_REMINDER_PDF, false)
       });
     }
+
     case loadOptOutNeighbors.case(action.type): {
       return loadOptOutNeighbors.reducer(state, action, {
         REQUEST: () => state.set(REMINDERS.LOADING_OPT_OUT_NEIGHBORS, true),
@@ -127,6 +129,9 @@ export default function remindersReducer(state :Map<*, *> = INITIAL_STATE, actio
         FINALLY: () => state.set(REMINDERS.LOADING_PEOPLE_NO_CONTACTS, false)
       });
     }
+
+    case SWITCH_ORGANIZATION:
+      return INITIAL_STATE;
 
     default:
       return state;
