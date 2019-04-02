@@ -4,7 +4,6 @@
 
 import React from 'react';
 import styled from 'styled-components';
-import randomUUID from 'uuid/v4';
 import { Map } from 'immutable';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
