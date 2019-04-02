@@ -1,9 +1,10 @@
 /*
  * @flow
  */
-import { Models } from 'lattice';
+import { Constants, Models } from 'lattice';
 
 const { FullyQualifiedName } = Models;
+const { OPENLATTICE_ID_FQN } = Constants;
 
 export const APP_NAME = 'psa';
 
@@ -162,6 +163,8 @@ export const CHARGE_FQNS = {
 };
 
 export const PROPERTY_TYPES = {
+  ENTITY_KEY_ID: OPENLATTICE_ID_FQN,
+
   STRING_ID: 'general.stringid',
   COMPLETED_DATE_TIME: 'date.completeddatetime',
   DATE_TIME: 'general.datetime',
