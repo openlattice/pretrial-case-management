@@ -372,14 +372,14 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
         !== getFirstNeighborValue(nextNeighborEntities.defaultBond, PROPERTY_TYPES.BOND_AMOUNT);
 
     const conditionTypes = defaultConditions.map(neighbor => getFirstNeighborValue(
-      neighbor, PROPERTY_TYPES.CONDITION_TYPE
+      neighbor, PROPERTY_TYPES.TYPE
     ), []);
 
     const conditionsSizeChanged = defaultConditions.size !== nextNeighborEntities.defaultConditions.size;
 
     const defaultConditionsChanged = conditionsSizeChanged
       || nextNeighborEntities.defaultConditions.some((condition) => {
-        const conditionType = getFirstNeighborValue(condition, PROPERTY_TYPES.CONDITION_TYPE);
+        const conditionType = getFirstNeighborValue(condition, PROPERTY_TYPES.TYPE);
         return !conditionTypes.includes(conditionType);
       });
 
@@ -505,7 +505,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
 
       let conditionsByType = Map();
       defaultConditions.forEach((condition) => {
-        const type = condition.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.CONDITION_TYPE, 0]);
+        const type = condition.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.TYPE, 0]);
         conditionsByType = conditionsByType.set(type, conditionsByType.get(type, List()).push(
           condition.get(PSA_NEIGHBOR.DETAILS, (condition || Map())) // check for old data
         ));
@@ -891,7 +891,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
     const conditionsEntity = [];
     if (release === RELEASES.HELD) {
       conditionsEntity.push({
-        [PROPERTY_TYPES.CONDITION_TYPE]: NO_RELEASE_CONDITION,
+        [PROPERTY_TYPES.TYPE]: NO_RELEASE_CONDITION,
         [PROPERTY_TYPES.START_DATE]: startDate,
         [PROPERTY_TYPES.GENERAL_ID]: randomUUID()
       });
@@ -900,7 +900,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       conditions.forEach((condition) => {
 
         const conditionObj = {
-          [PROPERTY_TYPES.CONDITION_TYPE]: condition,
+          [PROPERTY_TYPES.TYPE]: condition,
           [PROPERTY_TYPES.START_DATE]: startDate,
           [PROPERTY_TYPES.GENERAL_ID]: randomUUID()
         };
