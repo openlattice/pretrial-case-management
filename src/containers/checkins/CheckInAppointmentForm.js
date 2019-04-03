@@ -72,17 +72,13 @@ type Props = {
   app :Map<*, *>,
   personEntityKeyId :string,
   hearingEntityKeyId :string,
+  independentSubmission :boolean,
   submitting :boolean,
   actions :{
     refreshPersonNeighbors :(values :{ personId :string }) => void,
     submit :(values :{
       config :Map<*, *>,
       values :Map<*, *>,
-      callback :() => void
-    }) => void,
-    updateContactInfo :(values :{
-      entities :Map<*, *>,
-      personId :string,
       callback :() => void
     }) => void,
   }
@@ -271,12 +267,10 @@ class NewHearingSection extends React.Component<Props, State> {
   }
 
   render() {
-    const { appointmentType, appointmentDates } = this.state;
-    console.log(this.state);
-    console.log(appointmentDates.toJS());
+    const { appointmentType } = this.state;
     return (
       <SubConditionsWrapper>
-        <h2>Check-in frequency</h2>
+        <h2>Manage Check-ins</h2>
         <FormContainer>
           { this.renderAppointmentTypeOptions() }
           {
@@ -313,10 +307,6 @@ function mapDispatchToProps(dispatch :Function) :Object {
 
   Object.keys(SubmitActionFactory).forEach((action :string) => {
     actions[action] = SubmitActionFactory[action];
-  });
-
-  Object.keys(PeopleActionFactory).forEach((action :string) => {
-    actions[action] = PeopleActionFactory[action];
   });
 
   return {
