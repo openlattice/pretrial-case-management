@@ -93,6 +93,14 @@ class RemindersTableWithPagination extends React.Component<Props, State> {
     };
   }
 
+  static getDerivedStateFromProps(nextProps) {
+    const { loading } = nextProps;
+    if (loading) {
+      return { start: 0 };
+    }
+    return null;
+  }
+
   getRemindersList = () => {
     const { appTypeFqn, neighbors } = this.props;
     let { entities } = this.props;
