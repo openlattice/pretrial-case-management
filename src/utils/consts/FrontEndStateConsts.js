@@ -3,8 +3,9 @@
 export const STATE = {
   APP: 'app',
   AUTH: 'auth',
-  COURT: 'court',
   CHARGES: 'charges',
+  CHECK_INS: 'checkIns',
+  COURT: 'court',
   DASHBOARD: 'dashboard',
   DOWNLOAD: 'download',
   EDM: 'edm',
@@ -69,6 +70,16 @@ export const CHARGES = {
   BRE: 'bookingReleaseExceptionCharges',
   BHE: 'bookingHoldExceptionCharges',
   LOADING: 'loadingCharges'
+};
+
+// Check-Ins
+export const CHECK_IN = {
+  FORM_NEIGHBORS: 'checkInFormNeighbors',
+  LOADING_FORM: 'loadingCheckInsForm',
+  LOADING_CHECK_INS: 'loadingCheckIns',
+  CHECK_INS_BY_ID: 'checkInsById',
+  LOADING_CHECK_IN_NEIGHBORS: 'loadingCheckInNieghbors',
+  CHECK_IN_NEIGHBORS_BY_ID: 'checkInNeighborsById',
 };
 
 // Court
