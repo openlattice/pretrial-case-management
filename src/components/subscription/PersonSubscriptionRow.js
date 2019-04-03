@@ -66,7 +66,7 @@ class PersonSubscriptionRow extends React.Component<Props, State> {
     );
   }
   render() {
-    const { contact, person } = this.props;
+    const { contact, person, includeManualRemindersButton } = this.props;
     const { lastFirstMid } = formatPeopleInfo(person);
     const phone = contact
       ? contact.getIn([PROPERTY_TYPES.PHONE, 0], 'N/A')
@@ -78,7 +78,7 @@ class PersonSubscriptionRow extends React.Component<Props, State> {
         </BodyElement>
         { phone ? <BodyElement>{phone}</BodyElement> : null }
         <BodyElement>
-          {this.renderManualReminderButton()}
+          { includeManualRemindersButton ? this.renderManualReminderButton() : null }
           {this.renderManageSubscriptionButton()}
         </BodyElement>
       </Row>

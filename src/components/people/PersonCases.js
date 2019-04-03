@@ -11,7 +11,7 @@ import CaseHistoryTimeline from '../casehistory/CaseHistoryTimeline';
 import ChargeHistoryStats from '../casehistory/ChargeHistoryStats';
 import CaseHistoryList from '../casehistory/CaseHistoryList';
 import LogoLoader from '../LogoLoader';
-import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { getIdOrValue } from '../../utils/DataUtils';
 import { formatDate } from '../../utils/FormattingUtils';
 import {
@@ -32,10 +32,7 @@ import {
   PSA_ASSOCIATION
 } from '../../utils/consts/FrontEndStateConsts';
 
-let { MANUAL_PRETRIAL_CASES, STAFF } = APP_TYPES_FQNS;
-
-MANUAL_PRETRIAL_CASES = MANUAL_PRETRIAL_CASES.toString();
-STAFF = STAFF.toString();
+const { MANUAL_PRETRIAL_CASES, STAFF } = APP_TYPES;
 
 const PaddedStyledColumnRow = styled(StyledColumnRow)`
   padding: 30px;

@@ -26,8 +26,7 @@ import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { getPropertyTypeId } from '../../edm/edmUtils';
 import { PSA_STATUSES } from '../../utils/consts/Consts';
 import { toISODate, TIME_FORMAT } from '../../utils/FormattingUtils';
-import { obfuscateEntityNeighbors, obfuscateBulkEntityNeighbors } from '../../utils/consts/DemoNames';
-import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import {
   APP,
   PSA_ASSOCIATION,
@@ -56,16 +55,7 @@ const {
   RELEASE_CONDITIONS,
   SUBSCRIPTION,
   STAFF
-} = APP_TYPES_FQNS;
-
-const contactInformationFqn :string = CONTACT_INFORMATION.toString();
-const hearingsFqn :string = HEARINGS.toString();
-const judgesFqn :string = JUDGES.toString();
-const peopleFqn :string = PEOPLE.toString();
-const psaScoresFqn :string = PSA_SCORES.toString();
-const releaseConditionsFqn :string = RELEASE_CONDITIONS.toString();
-const subscriptionFqn :string = SUBSCRIPTION.toString();
-const staffFqn :string = STAFF.toString();
+} = APP_TYPES;
 
 const { OPENLATTICE_ID_FQN } = Constants;
 const { FullyQualifiedName } = Models;
@@ -98,19 +88,18 @@ function* filterPeopleIdsWithOpenPSAsWorker(action :SequenceAction) :Generator<*
     const app = yield select(getApp);
     const orgId = yield select(getOrgId);
     const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
-    const contactInformationEntitySetId = getEntitySetIdFromApp(app, contactInformationFqn, orgId);
-    const subscriptionEntitySetId = getEntitySetIdFromApp(app, subscriptionFqn, orgId);
-    const hearingsEntitySetId = getEntitySetIdFromApp(app, hearingsFqn, orgId);
-    const peopleEntitySetId = getEntitySetIdFromApp(app, peopleFqn, orgId);
-    const psaEntitySetId = getEntitySetIdFromApp(app, psaScoresFqn, orgId);
-    const staffEntitySetId = getEntitySetIdFromApp(app, staffFqn, orgId);
+    const contactInformationEntitySetId = getEntitySetIdFromApp(app, CONTACT_INFORMATION);
+    const subscriptionEntitySetId = getEntitySetIdFromApp(app, SUBSCRIPTION);
+    const hearingsEntitySetId = getEntitySetIdFromApp(app, HEARINGS);
+    const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
+    const psaEntitySetId = getEntitySetIdFromApp(app, PSA_SCORES);
+    const staffEntitySetId = getEntitySetIdFromApp(app, STAFF);
     if (personIds.size) {
       let peopleNeighborsById = yield call(SearchApi.searchEntityNeighborsWithFilter, peopleEntitySetId, {
         entityKeyIds: personIds.toJS(),
         sourceEntitySetIds: [psaEntitySetId, contactInformationEntitySetId],
         destinationEntitySetIds: [hearingsEntitySetId, subscriptionEntitySetId, contactInformationEntitySetId]
       });
-      peopleNeighborsById = obfuscateBulkEntityNeighbors(peopleNeighborsById);
       peopleNeighborsById = fromJS(peopleNeighborsById);
       peopleNeighborsById.entrySeq().forEach(([id, neighbors]) => {
 
@@ -170,7 +159,7 @@ function* filterPeopleIdsWithOpenPSAsWorker(action :SequenceAction) :Generator<*
           );
           if (hearingId) {
             hearingNeighborsById = hearingNeighborsById.setIn(
-              [hearingId, psaScoresFqn],
+              [hearingId, PSA_SCORES],
               mostCurrentPSA
             );
           }
@@ -191,8 +180,8 @@ function* filterPeopleIdsWithOpenPSAsWorker(action :SequenceAction) :Generator<*
       let mostRecentNeighbor;
       neighbors.forEach((neighbor) => {
         const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id']);
-        const appTypeFqn = entitySetIdsToAppType.get(entitySetId, judgesFqn);
-        if (appTypeFqn === staffFqn) {
+        const appTypeFqn = entitySetIdsToAppType.get(entitySetId, JUDGES);
+        if (appTypeFqn === STAFF) {
           const neighborObj = neighbor.get(PSA_ASSOCIATION.DETAILS, Map());
           const editDate = neighborObj.getIn(
             [PROPERTY_TYPES.COMPLETED_DATE_TIME, 0],
@@ -246,8 +235,7 @@ function* loadHearingsForDateWorker(action :SequenceAction) :Generator<*, *, *> 
 
     const app = yield select(getApp);
     const edm = yield select(getEDM);
-    const orgId = yield select(getOrgId);
-    const hearingEntitySetId = getEntitySetIdFromApp(app, hearingsFqn, orgId);
+    const hearingEntitySetId = getEntitySetIdFromApp(app, HEARINGS);
     const datePropertyTypeId = getPropertyTypeId(edm, DATE_TIME_FQN);
 
     const ceiling = yield call(DataApi.getEntitySetSize, hearingEntitySetId);
@@ -336,14 +324,13 @@ function* loadHearingNeighborsWorker(action :SequenceAction) :Generator<*, *, *>
       const app = yield select(getApp);
       const orgId = yield select(getOrgId);
       const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
-      const hearingEntitySetId = getEntitySetIdFromApp(app, hearingsFqn, orgId);
-      const peopleEntitySetId = getEntitySetIdFromApp(app, peopleFqn, orgId);
-      const releaseConditionsEntitySetId = getEntitySetIdFromApp(app, releaseConditionsFqn, orgId);
-      const psaEntitySetId = getEntitySetIdFromApp(app, psaScoresFqn, orgId);
+      const hearingEntitySetId = getEntitySetIdFromApp(app, HEARINGS);
+      const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
+      const releaseConditionsEntitySetId = getEntitySetIdFromApp(app, RELEASE_CONDITIONS);
+      const psaEntitySetId = getEntitySetIdFromApp(app, PSA_SCORES);
       let neighborsById = yield call(SearchApi.searchEntityNeighborsWithFilter, hearingEntitySetId, {
         entityKeyIds: hearingIds
       });
-      neighborsById = obfuscateBulkEntityNeighbors(neighborsById);
       neighborsById = fromJS(neighborsById);
       neighborsById.entrySeq().forEach(([hearingId, neighbors]) => {
         if (neighbors) {
@@ -353,7 +340,7 @@ function* loadHearingNeighborsWorker(action :SequenceAction) :Generator<*, *, *>
           let hearingNeighborsMap = Map();
           neighbors.forEach(((neighbor) => {
             const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id']);
-            const entitySetName = entitySetIdsToAppType.get(entitySetId, judgesFqn);
+            const entitySetName = entitySetIdsToAppType.get(entitySetId, JUDGES);
             const entityKeyId = neighbor.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0]);
             if (entitySetId === releaseConditionsEntitySetId) {
               hearingNeighborsMap = hearingNeighborsMap.set(
@@ -424,17 +411,16 @@ function* refreshHearingNeighborsWorker(action :SequenceAction) :Generator<*, *,
     yield put(refreshHearingNeighbors.request(action.id, { id }));
     const app = yield select(getApp);
     const orgId = yield select(getOrgId);
-    const hearingEntitySetId = getEntitySetIdFromApp(app, hearingsFqn, orgId);
-    const releaseConditionsEntitySetId = getEntitySetIdFromApp(app, releaseConditionsFqn, orgId);
+    const hearingEntitySetId = getEntitySetIdFromApp(app, HEARINGS);
+    const releaseConditionsEntitySetId = getEntitySetIdFromApp(app, RELEASE_CONDITIONS);
     const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
 
     let neighborsList = yield call(SearchApi.searchEntityNeighbors, hearingEntitySetId, id);
-    neighborsList = obfuscateEntityNeighbors(neighborsList);
     neighborsList = fromJS(neighborsList);
     let neighbors = Map();
     neighborsList.forEach((neighbor) => {
       const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id']);
-      const entitySetName = entitySetIdsToAppType.get(entitySetId, judgesFqn);
+      const entitySetName = entitySetIdsToAppType.get(entitySetId, JUDGES);
       if (entitySetId === releaseConditionsEntitySetId) {
         neighbors = neighbors.set(
           entitySetName,
@@ -467,8 +453,7 @@ function* loadJudgesWorker(action :SequenceAction) :Generator<*, *, *> {
   try {
     yield put(loadJudges.request(action.id));
     const app = yield select(getApp);
-    const orgId = yield select(getOrgId);
-    const judgesEntitySetId = getEntitySetIdFromApp(app, judgesFqn, orgId);
+    const judgesEntitySetId = getEntitySetIdFromApp(app, JUDGES);
     const entitySetSize = yield call(DataApi.getEntitySetSize, judgesEntitySetId);
     const options = {
       searchTerm: '*',

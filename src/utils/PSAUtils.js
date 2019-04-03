@@ -1,22 +1,38 @@
 import Immutable from 'immutable';
 import moment from 'moment';
 
-import { APP_TYPES_FQNS, PROPERTY_TYPES } from './consts/DataModelConsts';
+import { APP_TYPES, PROPERTY_TYPES } from './consts/DataModelConsts';
 import { PSA_STATUSES } from './consts/Consts';
 import { PSA_NEIGHBOR, PSA_ASSOCIATION } from './consts/FrontEndStateConsts';
 import { sortPeopleByName } from './PeopleUtils';
+import { getFirstNeighborValue } from './DataUtils';
 
-let {
+const {
   ASSESSED_BY,
   EDITED_BY,
   PEOPLE,
   STAFF
-} = APP_TYPES_FQNS;
+} = APP_TYPES;
 
-ASSESSED_BY = ASSESSED_BY.toString();
-EDITED_BY = EDITED_BY.toString();
-PEOPLE = PEOPLE.toString();
-STAFF = STAFF.toString();
+export const getPSAFields = (scores) => {
+  const failureReason = getFirstNeighborValue(scores, PROPERTY_TYPES.FAILURE_REASON);
+  const ftaScale = getFirstNeighborValue(scores, PROPERTY_TYPES.FTA_SCALE);
+  const ncaScale = getFirstNeighborValue(scores, PROPERTY_TYPES.NCA_SCALE);
+  const nvcaFlag = getFirstNeighborValue(scores, PROPERTY_TYPES.NVCA_FLAG);
+  const status = getFirstNeighborValue(scores, PROPERTY_TYPES.STATUS);
+  const statusNotes = getFirstNeighborValue(scores, PROPERTY_TYPES.STATUS_NOTES);
+  const timeStamp = getFirstNeighborValue(scores, PROPERTY_TYPES.TIMESTAMP);
+
+  return {
+    failureReason,
+    ftaScale,
+    ncaScale,
+    nvcaFlag,
+    status,
+    statusNotes,
+    timeStamp
+  };
+};
 
 export const sortByName = ([id1, neighbor1], [id2, neighbor2]) => {
   const p1 = neighbor1.getIn([PEOPLE, PSA_NEIGHBOR.DETAILS], Immutable.Map());

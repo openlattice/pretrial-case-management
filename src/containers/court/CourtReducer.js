@@ -22,15 +22,13 @@ import {
 } from './CourtActionFactory';
 import { refreshPSANeighbors, changePSAStatus } from '../review/ReviewActionFactory';
 import { SWITCH_ORGANIZATION } from '../app/AppActionFactory';
-import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { COURT } from '../../utils/consts/FrontEndStateConsts';
 import { PSA_STATUSES } from '../../utils/consts/Consts';
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
-let { HEARINGS } = APP_TYPES_FQNS;
-
-HEARINGS = HEARINGS.toString();
+const { HEARINGS } = APP_TYPES;
 
 const INITIAL_STATE :Map<*, *> = fromJS({
   [COURT.COURT_DATE]: moment(),

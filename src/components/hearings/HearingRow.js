@@ -11,8 +11,16 @@ import { faExclamationTriangle, faCheck, faTimesCircle } from '@fortawesome/pro-
 
 import InfoButton from '../buttons/InfoButton';
 import { OL } from '../../utils/consts/Colors';
-import { getHearingFields } from '../../utils/consts/HearingConsts';
+import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { getEntityProperties, getDateAndTime } from '../../utils/DataUtils';
 import { StyledTooltip } from '../../utils/Layout';
+
+const {
+  COURTROOM,
+  DATE_TIME,
+  ENTITY_KEY_ID,
+  HEARING_TYPE
+} = PROPERTY_TYPES;
 
 const CaseId = styled.div`
   display: block;
@@ -95,9 +103,10 @@ const Tooltip = ({ value } :object) => (
 );
 
 type Props = {
-  hasPSA :boolean,
+  caseId :string,
+  hasOpenPSA :boolean,
   hasOutcome :boolean,
-  row :Immutable.Map<*, *>,
+  hearing :Immutable.Map<*, *>,
   cancelFn :(entityKeyId :string) => void,
   isDuplicate :boolean,
   disabled :boolean
@@ -107,18 +116,26 @@ const HearingRow = ({
   caseId,
   hasOpenPSA,
   hasOutcome,
-  row,
+  hearing,
   cancelFn,
   disabled,
   isDuplicate
 } :Props) => {
+
   const {
-    courtroom,
-    hearingDate,
-    hearingEntityKeyId,
-    hearingTime,
-    hearingType
-  } = getHearingFields(row);
+    [COURTROOM]: courtroom,
+    [DATE_TIME]: hearingDateTime,
+    [ENTITY_KEY_ID]: hearingEntityKeyId,
+    [HEARING_TYPE]: hearingType
+  } = getEntityProperties(hearing,
+    [
+      COURTROOM,
+      DATE_TIME,
+      ENTITY_KEY_ID,
+      HEARING_TYPE
+    ]);
+
+  const { date: hearingDate, time: hearingTime } = getDateAndTime(hearingDateTime);
 
   const renderBooleanIcon = boolean => (boolean
     ? <StatusIconContainer><FontAwesomeIcon color="green" icon={faCheck} /></StatusIconContainer>

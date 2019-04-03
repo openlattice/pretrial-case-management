@@ -18,7 +18,7 @@ import { getIdOrValue } from '../../utils/DataUtils';
 import { SORT_TYPES, PSA_STATUSES } from '../../utils/consts/Consts';
 import { STATUS_OPTION_CHECKBOXES } from '../../utils/consts/ReviewPSAConsts';
 import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
-import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import {
   AlternateSectionHeader,
   Count,
@@ -37,10 +37,7 @@ import {
 
 import * as ReviewActionFactory from '../../containers/review/ReviewActionFactory';
 
-let { PSA_SCORES, RELEASE_RECOMMENDATIONS } = APP_TYPES_FQNS;
-
-PSA_SCORES = PSA_SCORES.toString();
-RELEASE_RECOMMENDATIONS = RELEASE_RECOMMENDATIONS.toString();
+const { PSA_SCORES, RELEASE_RECOMMENDATIONS } = APP_TYPES;
 
 const { OPENLATTICE_ID_FQN } = Constants;
 

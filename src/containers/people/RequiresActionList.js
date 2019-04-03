@@ -21,7 +21,7 @@ import { formatPeopleInfo, sortPeopleByName } from '../../utils/PeopleUtils';
 import { OL } from '../../utils/consts/Colors';
 import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
 import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
-import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import {
   APP,
   PEOPLE,
@@ -35,9 +35,7 @@ import * as PSAModalActionFactory from '../psamodal/PSAModalActionFactory';
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
-let { PSA_SCORES } = APP_TYPES_FQNS;
-
-PSA_SCORES = PSA_SCORES.toString();
+const { PSA_SCORES } = APP_TYPES;
 
 const SectionWrapper = styled.div`
     width: 100%;

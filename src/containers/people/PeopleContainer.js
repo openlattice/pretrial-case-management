@@ -20,7 +20,7 @@ import NavButtonToolbar from '../../components/buttons/NavButtonToolbar';
 import { getFormattedPeople } from '../../utils/PeopleUtils';
 import { clearSearchResults, searchPeople } from '../person/PersonActionFactory';
 import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
-import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
 import {
   APP,
@@ -32,6 +32,8 @@ import {
 } from '../../utils/consts/FrontEndStateConsts';
 
 import * as Routes from '../../core/router/Routes';
+
+const PEOPLE_FQN = APP_TYPES.PEOPLE;
 
 const SearchBox = styled.div`
   padding: 30px 0;
@@ -123,7 +125,7 @@ class PeopleContainer extends React.Component<Props, State> {
     let missingPeople = Immutable.Set(peopleList);
 
     psaNeighborsById.valueSeq().forEach((neighbors) => {
-      const neighbor = neighbors.getIn([APP_TYPES_FQNS.PEOPLE, PSA_NEIGHBOR.DETAILS], Immutable.Map());
+      const neighbor = neighbors.getIn([PEOPLE_FQN, PSA_NEIGHBOR.DETAILS], Immutable.Map());
       const firstNameList = neighbor.get(PROPERTY_TYPES.FIRST_NAME, Immutable.List()).map(val => val.toLowerCase());
       const lastNameList = neighbor.get(PROPERTY_TYPES.LAST_NAME, Immutable.List()).map(val => val.toLowerCase());
       const id = neighbor.get(PROPERTY_TYPES.PERSON_ID);

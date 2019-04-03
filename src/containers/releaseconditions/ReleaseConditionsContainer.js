@@ -34,21 +34,16 @@ import { OL } from '../../utils/consts/Colors';
 import { getTimeOptions } from '../../utils/consts/DateTimeConsts';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { getChargeHistory } from '../../utils/CaseUtils';
-import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { toISODate, toISODateTime, formatDateTime } from '../../utils/FormattingUtils';
+import { HEARING_CONSTS } from '../../utils/consts/HearingConsts';
+import { formatJudgeName, getCourtroomOptions, getJudgeOptions } from '../../utils/HearingUtils';
 import {
-  getEntitySetId,
   getEntityKeyId,
   getNeighborDetailsForEntitySet,
   getFirstNeighborValue,
   isUUID
 } from '../../utils/DataUtils';
-import {
-  formatJudgeName,
-  getCourtroomOptions,
-  getJudgeOptions,
-  HEARING_CONSTS
-} from '../../utils/consts/HearingConsts';
 import {
   RELEASE_CONDITIONS,
   LIST_FIELDS,
@@ -86,7 +81,7 @@ import * as CourtActionFactory from '../court/CourtActionFactory';
 const { RELEASE_CONDITIONS_FIELD } = LIST_FIELDS;
 const { OPENLATTICE_ID_FQN } = Constants;
 
-let {
+const {
   ASSESSED_BY,
   DMF_RESULTS,
   DMF_RISK_FACTORS,
@@ -95,20 +90,11 @@ let {
   PEOPLE,
   PSA_SCORES,
   PRETRIAL_CASES
-} = APP_TYPES_FQNS;
+} = APP_TYPES;
 
-const RELEASE_CONDITIONS_FQN = APP_TYPES_FQNS.RELEASE_CONDITIONS.toString();
-const OUTCOMES_FQN = APP_TYPES_FQNS.OUTCOMES.toString();
-const BONDS_FQN = APP_TYPES_FQNS.BONDS.toString();
-
-ASSESSED_BY = ASSESSED_BY.toString();
-DMF_RESULTS = DMF_RESULTS.toString();
-DMF_RISK_FACTORS = DMF_RISK_FACTORS.toString();
-JUDGES = JUDGES.toString();
-HEARINGS = HEARINGS.toString();
-PEOPLE = PEOPLE.toString();
-PSA_SCORES = PSA_SCORES.toString();
-PRETRIAL_CASES = PRETRIAL_CASES.toString();
+const RELEASE_CONDITIONS_FQN = APP_TYPES.RELEASE_CONDITIONS;
+const OUTCOMES_FQN = APP_TYPES.OUTCOMES;
+const BONDS_FQN = APP_TYPES.BONDS;
 
 const {
   OUTCOME,
@@ -1108,8 +1094,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       actions,
       app,
       hearingEntityKeyId,
-      selectedHearing,
-      selectedOrganizationId
+      selectedHearing
     } = this.props;
     const {
       deleteEntity,
@@ -1152,9 +1137,9 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       `${date.format(dateFormat)} ${time.format(timeFormat)}`, `${dateFormat} ${timeFormat}`
     );
 
-    const associationEntitySetId = getEntitySetIdFromApp(app, ASSESSED_BY, selectedOrganizationId);
-    const srcEntitySetId = getEntitySetIdFromApp(app, JUDGES, selectedOrganizationId);
-    const hearingEntitySetId = getEntitySetIdFromApp(app, HEARINGS, selectedOrganizationId);
+    const associationEntitySetId = getEntitySetIdFromApp(app, ASSESSED_BY);
+    const srcEntitySetId = getEntitySetIdFromApp(app, JUDGES);
+    const hearingEntitySetId = getEntitySetIdFromApp(app, HEARINGS);
 
     const associationEntitySetName = ASSESSED_BY;
     const associationEntityKeyId = judgeEntity ? judgeAssociationEntityKeyId : null;
@@ -1209,10 +1194,9 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
     const {
       actions,
       app,
-      fqnToIdMap,
-      selectedOrganizationId
+      fqnToIdMap
     } = this.props;
-    const entitySetId = getEntitySetIdFromApp(app, HEARINGS, selectedOrganizationId);
+    const entitySetId = getEntitySetIdFromApp(app, HEARINGS);
     const values = {
       [entityKeyId]: {
         [fqnToIdMap.get(PROPERTY_TYPES.HEARING_INACTIVE)]: [true]

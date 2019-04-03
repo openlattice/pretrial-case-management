@@ -16,8 +16,11 @@ export const defaultSettings = {
   }
 };
 
-export const getEntitySetIdFromApp :string = (app, FQN :string, orgId :string) => app.getIn([
-  FQN,
-  APP.ENTITY_SETS_BY_ORG,
-  orgId
-]);
+export const getEntitySetIdFromApp :string = (app, fqn :string) => {
+  const orgId = app.get(APP.SELECTED_ORG_ID);
+  return app.getIn([
+    fqn,
+    APP.ENTITY_SETS_BY_ORG,
+    orgId
+  ]);
+};

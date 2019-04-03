@@ -22,8 +22,7 @@ import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { getPropertyTypeId } from '../../edm/edmUtils';
 import { toISODate, formatDateTime, formatDate } from '../../utils/FormattingUtils';
 import { getFilteredNeighbor, stripIdField } from '../../utils/DataUtils';
-import { obfuscateBulkEntityNeighbors } from '../../utils/consts/DemoNames';
-import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { HEADERS_OBJ, POSITIONS } from '../../utils/consts/CSVConsts';
 import { PSA_STATUSES } from '../../utils/consts/Consts';
 import {
@@ -48,15 +47,7 @@ const {
   PSA_RISK_FACTORS,
   PSA_SCORES,
   STAFF
-} = APP_TYPES_FQNS;
-
-
-const hearingsFqn :string = HEARINGS.toString();
-const dmfRiskFactorsFqn :string = DMF_RISK_FACTORS.toString();
-const peopleFqn :string = PEOPLE.toString();
-const psaRiskFactorsFqn :string = PSA_RISK_FACTORS.toString();
-const psaScoresFqn :string = PSA_SCORES.toString();
-const staffFqn :string = STAFF.toString();
+} = APP_TYPES;
 
 const getApp = state => state.get(STATE.APP, Map());
 const getEDM = state => state.get(STATE.EDM, Map());
@@ -131,10 +122,10 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
     const app = yield select(getApp);
     const orgId = yield select(getOrgId);
     const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
-    const dmfRiskFactorsEntitySetId = getEntitySetIdFromApp(app, dmfRiskFactorsFqn, orgId);
-    const psaRiskFactorsEntitySetId = getEntitySetIdFromApp(app, psaRiskFactorsFqn, orgId);
-    const psaEntitySetId = getEntitySetIdFromApp(app, psaScoresFqn, orgId);
-    const staffEntitySetId = getEntitySetIdFromApp(app, staffFqn, orgId);
+    const dmfRiskFactorsEntitySetId = getEntitySetIdFromApp(app, DMF_RISK_FACTORS);
+    const psaRiskFactorsEntitySetId = getEntitySetIdFromApp(app, PSA_RISK_FACTORS);
+    const psaEntitySetId = getEntitySetIdFromApp(app, PSA_SCORES);
+    const staffEntitySetId = getEntitySetIdFromApp(app, STAFF);
 
     const start = moment(startDate);
     const end = moment(endDate);
@@ -153,7 +144,6 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
     });
 
     let neighborsById = yield call(SearchApi.searchEntityNeighborsBulk, psaEntitySetId, scoresAsMap.keySeq().toJS());
-    neighborsById = obfuscateBulkEntityNeighbors(neighborsById); // TODO just for demo
     let usableNeighborsById = Immutable.Map();
 
     Object.keys(neighborsById).forEach((id) => {
@@ -215,7 +205,7 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
     usableNeighborsById.keySeq().forEach((id) => {
       let combinedEntity = getUpdatedEntity(
         Immutable.Map(),
-        psaScoresFqn,
+        PSA_SCORES,
         scoresAsMap.get(id)
       );
 
@@ -313,12 +303,12 @@ function* downloadPSAsByHearingDateWorker(action :SequenceAction) :Generator<*, 
     yield put(downloadPSAsByHearingDate.request(action.id, { noResults }));
     const app = yield select(getApp);
     const orgId = yield select(getOrgId);
-    const dmfRiskFactorsEntitySetId = getEntitySetIdFromApp(app, dmfRiskFactorsFqn, orgId);
-    const hearingsEntitySetId = getEntitySetIdFromApp(app, hearingsFqn, orgId);
-    const peopleEntitySetId = getEntitySetIdFromApp(app, peopleFqn, orgId);
-    const psaEntitySetId = getEntitySetIdFromApp(app, psaScoresFqn, orgId);
-    const psaRiskFactorsEntitySetId = getEntitySetIdFromApp(app, psaRiskFactorsFqn, orgId);
-    const staffEntitySetId = getEntitySetIdFromApp(app, staffFqn, orgId);
+    const dmfRiskFactorsEntitySetId = getEntitySetIdFromApp(app, DMF_RISK_FACTORS);
+    const hearingsEntitySetId = getEntitySetIdFromApp(app, HEARINGS);
+    const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
+    const psaEntitySetId = getEntitySetIdFromApp(app, PSA_SCORES);
+    const psaRiskFactorsEntitySetId = getEntitySetIdFromApp(app, PSA_RISK_FACTORS);
+    const staffEntitySetId = getEntitySetIdFromApp(app, STAFF);
     const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
 
     if (selectedHearingData.size) {
@@ -473,7 +463,7 @@ function* downloadPSAsByHearingDateWorker(action :SequenceAction) :Generator<*, 
         usableNeighborsById.keySeq().forEach((id) => {
           let combinedEntity = getUpdatedEntity(
             Immutable.Map(),
-            psaScoresFqn,
+            PSA_SCORES,
             scoresAsMap.get(id)
           );
 
@@ -578,8 +568,7 @@ function* getDownloadFiltersWorker(action :SequenceAction) :Generator<*, *, *> {
 
     const app = yield select(getApp);
     const edm = yield select(getEDM);
-    const orgId = yield select(getOrgId);
-    const hearingEntitySetId = getEntitySetIdFromApp(app, hearingsFqn, orgId);
+    const hearingEntitySetId = getEntitySetIdFromApp(app, HEARINGS);
     const datePropertyTypeId = getPropertyTypeId(edm, DATE_TIME_FQN);
 
     const ceiling = yield call(DataApi.getEntitySetSize, hearingEntitySetId);
