@@ -2,10 +2,10 @@
  * @flow
  */
 import React from 'react';
-import styled from 'styled-components';
 
 import StyledInput from '../controls/StyledInput';
-import { RowWrapper, OptionsGrid } from './ReleaseConditionsStyledTags';
+import CheckInAppointmentForm from '../../containers/checkins/CheckInAppointmentForm';
+import { RowWrapper, OptionsGrid, SubConditionsWrapper } from './ReleaseConditionsStyledTags';
 import { RELEASE_CONDITIONS } from '../../utils/consts/Consts';
 import {
   CONDITION_LIST,
@@ -14,14 +14,6 @@ import {
 } from '../../utils/consts/ReleaseConditionConsts';
 
 const { OTHER_CONDITION_TEXT } = RELEASE_CONDITIONS;
-
-const SubConditionsWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  hr {
-    margin: 20px 0 20px
-  }
-`;
 
 const renderCheckInSection = mapOptionsToRadioButtons => (
   <SubConditionsWrapper>
@@ -69,7 +61,8 @@ const ConditionsSection = ({
       {mapOptionsToCheckboxButtons(CONDITION_LIST, 'conditions')}
     </OptionsGrid>
     { conditions.includes(CONDITION_LIST.NO_CONTACT) ? renderNoContactPeople() : null }
-    { conditions.includes(CONDITION_LIST.CHECKINS) ? renderCheckInSection(mapOptionsToRadioButtons) : null }
+    {/* { conditions.includes(CONDITION_LIST.CHECKINS) ? renderCheckInSection(mapOptionsToRadioButtons) : null } */}
+    { conditions.includes(CONDITION_LIST.CHECKINS) ? <CheckInAppointmentForm /> : null }
     { conditions.includes(CONDITION_LIST.C_247) ? render247Project(mapOptionsToCheckboxButtons) : null }
     { conditions.includes(CONDITION_LIST.OTHER) ? (
       <SubConditionsWrapper>
