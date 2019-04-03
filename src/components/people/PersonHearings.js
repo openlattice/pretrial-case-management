@@ -149,12 +149,7 @@ class PersonHearings extends React.Component<Props, State> {
   }
 
   cancelHearing = (entityKeyId) => {
-    const {
-      actions,
-      app,
-      fqnToIdMap,
-      selectedOrganizationId
-    } = this.props;
+    const { actions, app, fqnToIdMap } = this.props;
     const hearingEntitySetId = getEntitySetIdFromApp(app, HEARINGS);
     const values = {
       [entityKeyId]: {
@@ -162,7 +157,7 @@ class PersonHearings extends React.Component<Props, State> {
       }
     };
     actions.updateEntity({
-      hearingEntitySetId,
+      entitySetId: hearingEntitySetId,
       entities: values,
       updateType: 'PartialReplace',
       callback: this.refreshPersonNeighborsCallback
