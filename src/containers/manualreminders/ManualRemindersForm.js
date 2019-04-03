@@ -119,7 +119,7 @@ const INITIAL_STATE = {
   addingNewContact: false,
   contact: Map(),
   contactMethod: '',
-  notified: null,
+  notified: true,
   notes: '',
   editing: false
 };
