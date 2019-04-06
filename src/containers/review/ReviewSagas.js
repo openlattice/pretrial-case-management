@@ -398,7 +398,9 @@ function* loadPSAsByDateWorker(action :SequenceAction) :Generator<*, *, *> {
     const psaScoresEntitySetId = getEntitySetIdFromApp(app, PSA_SCORES);
     const statusPropertyTypeId = getPropertyTypeId(edm, statusfqn);
     const filter = action.value || PSA_STATUSES.OPEN;
-    const searchTerm = action.value === '*' ? action.value : `${statusPropertyTypeId}:"${filter}"`;
+    const searchTerm = action.value === '*'
+      ? action.value
+      : `${psaScoresEntitySetId}.${statusPropertyTypeId}:"${filter}"`;
     const allScoreData = yield call(getAllSearchResults, psaScoresEntitySetId, searchTerm);
 
     let scoresAsMap = Immutable.Map();

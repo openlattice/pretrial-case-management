@@ -193,7 +193,7 @@ function* loadOptOutsForDateWorker(action :SequenceAction) :Generator<*, *, *> {
     const ceiling = yield call(DataApi.getEntitySetSize, optOutEntitySetId);
 
     const reminderOptions = {
-      searchTerm: `${datePropertyTypeId}:"${toISODate(date)}"`,
+      searchTerm: `${optOutEntitySetId}.${datePropertyTypeId}:"${toISODate(date)}"`,
       start: 0,
       maxHits: ceiling,
       fuzzy: false
@@ -253,7 +253,7 @@ function* loadRemindersforDateWorker(action :SequenceAction) :Generator<*, *, *>
     const ceiling = yield call(DataApi.getEntitySetSize, remindersEntitySetId);
 
     const reminderOptions = {
-      searchTerm: `${datePropertyTypeId}:"${toISODate(date)}"`,
+      searchTerm: `${remindersEntitySetId}.${datePropertyTypeId}:"${toISODate(date)}"`,
       start: 0,
       maxHits: ceiling,
       fuzzy: false
@@ -425,7 +425,7 @@ function* loadPeopleWithHearingsButNoContactsWorker(action :SequenceAction) :Gen
     /* Grab Open PSAs */
     const statusPropertyTypeId = getPropertyTypeId(edm, statusFqn);
     const filter = PSA_STATUSES.OPEN;
-    const searchTerm = `${statusPropertyTypeId}:"${filter}"`;
+    const searchTerm = `${psaScoresEntitySetId}.${statusPropertyTypeId}:"${filter}"`;
     const allScoreData = yield call(getAllSearchResults, psaScoresEntitySetId, searchTerm);
     const scoreIds = fromJS(allScoreData.hits).map(score => score.getIn([OPENLATTICE_ID_FQN, 0], ''));
 
@@ -551,8 +551,10 @@ function* bulkDownloadRemindersPDFWorker(action :SequenceAction) :Generator<*, *
     const oneDayAhead = addWeekdays(date, 1);
     const oneWeekAhead = addWeekdays(date, 7);
 
+    const getDateSearch = selectedDate => `${hearingsEntitySetId}.${datePropertyTypeId}:"${toISODate(selectedDate)}"`;
+
     const reminderOptions = {
-      searchTerm: `${datePropertyTypeId}:"${toISODate(oneDayAhead)}" OR ${datePropertyTypeId}:"${toISODate(oneWeekAhead)}"`,
+      searchTerm: `${getDateSearch(oneDayAhead)} OR ${getDateSearch(oneWeekAhead)}`,
       start: 0,
       maxHits: ceiling,
       fuzzy: false
