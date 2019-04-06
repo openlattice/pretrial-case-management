@@ -207,7 +207,8 @@ export const EDIT_FIELDS = {
 export const LIST_FIELDS = {
   ENTITY_SET_ID: 'entitySetId',
   ID: 'entityKeyId',
-  RELEASE_CONDITIONS_FIELD: 'releaseConditionField'
+  RELEASE_CONDITIONS_FIELD: 'releaseConditionField',
+  CHECKIN_APPOINTMENTS_FIELD: 'checkInAppointmentField'
 };
 
 export const FORM_LENGTHS = {
@@ -241,7 +242,8 @@ export const ID_FIELD_NAMES = {
   OUTCOME_ID: 'outcomeId',
   EMPLOYEE_ID: 'employeeId',
   JUDGE_ID: 'judgeId',
-  CONTACT_INFO_ID: 'contactInfoId'
+  CONTACT_INFO_ID: 'contactInfoId',
+  CHECKIN_APPOINTMENT_ID: 'checkInAppointmentId'
 };
 
 export const ID_FIELDS = {
