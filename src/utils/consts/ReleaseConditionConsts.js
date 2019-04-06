@@ -45,8 +45,7 @@ export const CONDITION_LIST = {
 export const CHECKIN_FREQUENCIES = {
   ONCE_MONTH: '1/month',
   TWICE_MONTH: '2/month',
-  WEEKLY: 'Weekly',
-  AT_LEAST_WEEKLY: 'At least weekly'
+  WEEKLY: 'Weekly'
 };
 
 export const C_247_TYPES = {
