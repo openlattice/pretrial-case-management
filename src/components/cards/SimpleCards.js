@@ -76,7 +76,7 @@ const SimpleCards = ({
         <CardWrapper key={startDate}>
           <Card>
             { moment(startDate).format('MM/DD/YYYY') }
-            <RemoveEntityX onClick={() => removeEntity({ entityKeyId, startDate })} />
+            { removeEntity ? <RemoveEntityX onClick={() => removeEntity({ entityKeyId, startDate })} /> : null }
           </Card>
         </CardWrapper>
       );
