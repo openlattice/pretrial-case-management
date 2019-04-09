@@ -1,12 +1,16 @@
 /*
  * @flow
  */
+import moment from 'moment';
 import React from 'react';
 
 import StyledInput from '../controls/StyledInput';
 import CheckInAppointmentForm from '../../containers/checkins/CheckInAppointmentForm';
+import SimpleCards from '../cards/SimpleCards';
 import { RowWrapper, OptionsGrid, SubConditionsWrapper } from './ReleaseConditionsStyledTags';
 import { RELEASE_CONDITIONS } from '../../utils/consts/Consts';
+import { getFirstNeighborValue } from '../../utils/DataUtils';
+import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import {
   CONDITION_LIST,
   CHECKIN_FREQUENCIES,
@@ -47,34 +51,54 @@ type Props = {
 };
 
 const ConditionsSection = ({
+  appointmentEntities,
+  addAppointmentsToSubmission,
+  conditions,
+  disabled,
+  handleInputChange,
   mapOptionsToRadioButtons,
   mapOptionsToCheckboxButtons,
-  handleInputChange,
-  renderNoContactPeople,
-  conditions,
   otherCondition,
-  disabled
-} :Props) => (
-  <RowWrapper>
-    <h1>Conditions</h1>
-    <OptionsGrid numColumns={4}>
-      {mapOptionsToCheckboxButtons(CONDITION_LIST, 'conditions')}
-    </OptionsGrid>
-    { conditions.includes(CONDITION_LIST.NO_CONTACT) ? renderNoContactPeople() : null }
-    {/* { conditions.includes(CONDITION_LIST.CHECKINS) ? renderCheckInSection(mapOptionsToRadioButtons) : null } */}
-    { conditions.includes(CONDITION_LIST.CHECKINS) ? <CheckInAppointmentForm /> : null }
-    { conditions.includes(CONDITION_LIST.C_247) ? render247Project(mapOptionsToCheckboxButtons) : null }
-    { conditions.includes(CONDITION_LIST.OTHER) ? (
-      <SubConditionsWrapper>
-        <h2>Other Conditions</h2>
-        <StyledInput
-            name={OTHER_CONDITION_TEXT}
-            value={otherCondition}
-            onChange={handleInputChange}
-            disabled={disabled} />
-      </SubConditionsWrapper>
-    ) : null }
-  </RowWrapper>
-);
+  renderNoContactPeople,
+  settingsIncludeVoiceEnroll
+} :Props) => {
+  const sortedEntities = appointmentEntities.valueSeq().sort((a1, a2) => {
+    const a1moment = moment(getFirstNeighborValue(a1, PROPERTY_TYPES.START_DATE));
+    const a2moment = moment(getFirstNeighborValue(a2, PROPERTY_TYPES.START_DATE));
+    return a1moment.isBefore(a2moment) ? -1 : 1;
+  });
+  const checkInForm = disabled
+    ? (
+      <SimpleCards
+          title="Appointments"
+          entities={sortedEntities} />
+    )
+    : <CheckInAppointmentForm addAppointmentsToSubmission={addAppointmentsToSubmission} />;
+  const checkInSection = settingsIncludeVoiceEnroll
+    ? checkInForm
+    : renderCheckInSection(mapOptionsToRadioButtons);
+  return (
+    <RowWrapper>
+      <h1>Conditions</h1>
+      <OptionsGrid numColumns={4}>
+        {mapOptionsToCheckboxButtons(CONDITION_LIST, 'conditions')}
+      </OptionsGrid>
+      <hr />
+      { conditions.includes(CONDITION_LIST.NO_CONTACT) ? renderNoContactPeople() : null }
+      { conditions.includes(CONDITION_LIST.CHECKINS) ? checkInSection : null }
+      { conditions.includes(CONDITION_LIST.C_247) ? render247Project(mapOptionsToCheckboxButtons) : null }
+      { conditions.includes(CONDITION_LIST.OTHER) ? (
+        <SubConditionsWrapper>
+          <h2>Other Conditions</h2>
+          <StyledInput
+              name={OTHER_CONDITION_TEXT}
+              value={otherCondition}
+              onChange={handleInputChange}
+              disabled={disabled} />
+        </SubConditionsWrapper>
+      ) : null }
+    </RowWrapper>
+  );
+};
 
 export default ConditionsSection;
