@@ -59,15 +59,15 @@ const NoResultsForTable = styled(NoResults)`
 class RemindersTable extends React.Component<Props, State> {
 
   renderHeaders = () => {
-    const { appTypeFqn } = this.props;
+    const { appTypeFqn, sortByDate, sortByName } = this.props;
     let headers = null;
 
     if (appTypeFqn === REMINDERS) {
       headers = (
         <HeaderRow>
-          <HeaderElement>{REMINDERS_HEADERS.COURT_TIME}</HeaderElement>
+          <HeaderElement onClick={sortByDate}>{REMINDERS_HEADERS.COURT_TIME}</HeaderElement>
           <HeaderElement>{REMINDERS_HEADERS.CASE_NUM}</HeaderElement>
-          <HeaderElement>{REMINDERS_HEADERS.NAME}</HeaderElement>
+          <HeaderElement onClick={sortByName}>{REMINDERS_HEADERS.NAME}</HeaderElement>
           <HeaderElement>{REMINDERS_HEADERS.CONTACT}</HeaderElement>
           <HeaderElement>{REMINDERS_HEADERS.COURTROOM}</HeaderElement>
           <HeaderElement>{REMINDERS_HEADERS.HEARING_TYPE}</HeaderElement>
