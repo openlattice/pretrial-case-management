@@ -5,13 +5,13 @@ import { Constants } from 'lattice';
 
 
 import { APP_TYPES, PROPERTY_TYPES } from './consts/DataModelConsts';
-import { HAS_OPEN_PSA } from './consts/Consts';
+import { PERSON_INFO_DATA } from './consts/Consts';
 import { PSA_NEIGHBOR } from './consts/FrontEndStateConsts';
 import { formatDOB } from './Helpers';
 import { getFirstNeighborValue } from './DataUtils';
 
 const { OPENLATTICE_ID_FQN } = Constants;
-
+const { HAS_OPEN_PSA, HAS_MULTIPLE_OPEN_PSAS, IS_RECEIVING_REMINDERS } = PERSON_INFO_DATA;
 const { PSA_SCORES } = APP_TYPES;
 
 export const formatPersonName = (firstName, middleName, lastName) => {
@@ -33,6 +33,8 @@ export const formatPeopleInfo = (person) => {
   );
   const lastFirstMid = formatPersonName(firstName, middleName, lastName);
   const hasOpenPSA = person.get(HAS_OPEN_PSA, false);
+  const multipleOpenPSAs = person.get(HAS_MULTIPLE_OPEN_PSAS, false);
+  const isReceivingReminders = person.get(IS_RECEIVING_REMINDERS, false);
   return {
     personEntityKeyId,
     personId,
@@ -42,7 +44,9 @@ export const formatPeopleInfo = (person) => {
     dob,
     photo,
     lastFirstMid,
-    hasOpenPSA
+    hasOpenPSA,
+    multipleOpenPSAs,
+    isReceivingReminders
   };
 };
 
