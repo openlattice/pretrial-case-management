@@ -37,8 +37,10 @@ import { getChargeHistory } from '../../utils/CaseUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { toISODate, toISODateTime, formatDateTime } from '../../utils/FormattingUtils';
 import { HEARING_CONSTS } from '../../utils/consts/HearingConsts';
+import { SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { formatJudgeName, getCourtroomOptions, getJudgeOptions } from '../../utils/HearingUtils';
 import {
+  getCreateAssociationObject,
   getEntityKeyId,
   getNeighborDetailsForEntitySet,
   getFirstNeighborValue,
@@ -78,18 +80,20 @@ import * as ReviewActionFactory from '../review/ReviewActionFactory';
 import * as ReleaseConditionsActionFactory from './ReleaseConditionsActionFactory';
 import * as CourtActionFactory from '../court/CourtActionFactory';
 
-const { RELEASE_CONDITIONS_FIELD } = LIST_FIELDS;
+const { CHECKIN_APPOINTMENTS_FIELD, RELEASE_CONDITIONS_FIELD } = LIST_FIELDS;
 const { OPENLATTICE_ID_FQN } = Constants;
 
 const {
   ASSESSED_BY,
+  CHECKIN_APPOINTMENTS,
   DMF_RESULTS,
   DMF_RISK_FACTORS,
   JUDGES,
   HEARINGS,
   PEOPLE,
   PSA_SCORES,
-  PRETRIAL_CASES
+  PRETRIAL_CASES,
+  REGISTERED_FOR
 } = APP_TYPES;
 
 const RELEASE_CONDITIONS_FQN = APP_TYPES.RELEASE_CONDITIONS;
@@ -275,6 +279,7 @@ type Props = {
   replacingEntity :boolean,
   selectedHearing :Map<*, *>,
   selectedOrganizationId :string,
+  selectedOrganizationSettings :Map<*, *>,
   submitting :boolean,
   actions :{
     clearReleaseConditions :() => void;
@@ -438,16 +443,19 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
 
   getNeighborEntities = (props) => {
     const { hearingNeighbors, psaNeighbors } = props;
+    const defaultCheckInAppointments = hearingNeighbors.get(CHECKIN_APPOINTMENTS, Map());
     const defaultBond = hearingNeighbors.get(BONDS_FQN, Map());
     const defaultConditions = hearingNeighbors.get(RELEASE_CONDITIONS_FQN, List());
     const defaultDMF = psaNeighbors.getIn([DMF_RESULTS, PSA_NEIGHBOR.DETAILS], Map());
     const psaEntity = hearingNeighbors.getIn([PSA_SCORES, PSA_NEIGHBOR.DETAILS], Map());
-    const personEntity = hearingNeighbors.get([PEOPLE, PSA_NEIGHBOR.DETAILS], Map());
+    const personEntity = hearingNeighbors.getIn([PEOPLE, PSA_NEIGHBOR.DETAILS], Map());
     let defaultOutcome = hearingNeighbors.get(OUTCOMES_FQN, Map());
 
     defaultOutcome = defaultOutcome.size ? defaultOutcome : defaultDMF;
+    console.log(defaultCheckInAppointments.toJS());
 
     return {
+      defaultCheckInAppointments,
       defaultBond,
       defaultConditions,
       defaultDMF,
@@ -478,7 +486,12 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
   getStateFromProps = (props :Props) :State => {
     const { selectedHearing, hasOutcome } = props;
 
-    const { defaultBond, defaultConditions, defaultOutcome } = this.getNeighborEntities(props);
+    const {
+      defaultCheckInAppointments,
+      defaultBond,
+      defaultConditions,
+      defaultOutcome
+    } = this.getNeighborEntities(props);
     const { judgeEntity, judgeName } = this.getJudgeEntity(props);
 
     let modifyingHearing = false;
@@ -558,7 +571,10 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
         otherJudgeText,
         judge,
         judgeId,
-        disabled: true
+        disabled: true,
+        defaultCheckInAppointments,
+        newCheckInAppointmentEntities: List(),
+        existingCheckInAppointmentEntityKeyIds: List()
       };
     }
     return {
@@ -582,7 +598,10 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       judge,
       judgeId,
       disabled: false,
-      editingHearing
+      editingHearing,
+      defaultCheckInAppointments,
+      newCheckInAppointmentEntities: List(),
+      existingCheckInAppointmentEntityKeyIds: List()
     };
   }
 
@@ -768,6 +787,8 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       conditions,
       checkinFrequency,
       c247Types,
+      existingCheckInAppointmentEntityKeyIds,
+      newCheckInAppointmentEntities,
       otherConditionText,
       editingHearing
     } = this.state;
@@ -775,11 +796,13 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
     const {
       actions,
       app,
+      fqnToIdMap,
       selectedHearing,
       hearingEntityKeyId
     } = this.props;
 
     const {
+      defaultCheckInAppointments,
       defaultBond,
       defaultConditions,
       defaultDMF,
@@ -788,12 +811,54 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       personEntity
     } = this.getNeighborEntities(this.props);
 
+    const hearingCheckInAppointmentEntityKeyIds = defaultCheckInAppointments.map((checkIn) => {
+      const entityKeyId = getEntityKeyId(checkIn);
+      return entityKeyId;
+    });
+    const existingCheckInEntityKeyIds = existingCheckInAppointmentEntityKeyIds.filter(checkInEntityKeyId => (
+      !hearingCheckInAppointmentEntityKeyIds.includes(checkInEntityKeyId)
+    ));
+    const registeredforEntitySetId = getEntitySetIdFromApp(app, REGISTERED_FOR);
+    const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
+    const personEntityKeyId = getEntityKeyId(personEntity);
+    const hearingEntitySetId = getEntitySetIdFromApp(app, HEARINGS);
+    const appointmentEntitySetId = getEntitySetIdFromApp(app, CHECKIN_APPOINTMENTS);
+    const dateCompletedPropertyId = fqnToIdMap.get(PROPERTY_TYPES.COMPLETED_DATE_TIME, '');
+    let newAssociationEntities = List();
+    let seconds = 3;
+    existingCheckInEntityKeyIds.forEach((entityKeyId) => {
+      const hearingAssociation = getCreateAssociationObject({
+        associationEntitySetId: registeredforEntitySetId,
+        associationEntity: { [dateCompletedPropertyId]: moment().add(seconds, 'ms').toISOString(true) },
+        srcEntitySetId: appointmentEntitySetId,
+        srcEntityKeyId: entityKeyId,
+        dstEntitySetId: hearingEntitySetId,
+        dstEntityKeyId: hearingEntityKeyId
+      });
+      seconds += 1;
+      newAssociationEntities = newAssociationEntities.push(hearingAssociation);
+      const personAssociation = getCreateAssociationObject({
+        associationEntitySetId: registeredforEntitySetId,
+        associationEntity: { [dateCompletedPropertyId]: moment().add((seconds), 'ms').toISOString(true) },
+        srcEntitySetId: appointmentEntitySetId,
+        srcEntityKeyId: entityKeyId,
+        dstEntitySetId: peopleEntitySetId,
+        dstEntityKeyId: personEntityKeyId
+      });
+      newAssociationEntities = newAssociationEntities.push(personAssociation);
+    });
+
     const hearingId = getFirstNeighborValue(selectedHearing, PROPERTY_TYPES.CASE_ID);
     const psaId = getFirstNeighborValue(psaEntity, PROPERTY_TYPES.GENERAL_ID);
     const personId = getFirstNeighborValue(personEntity, PROPERTY_TYPES.PERSON_ID);
     const dmfId = getFirstNeighborValue(defaultDMF, PROPERTY_TYPES.GENERAL_ID);
+    const outcomeId = getFirstNeighborValue(defaultOutcome, PROPERTY_TYPES.GENERAL_ID, undefined);
+    const bondId = getFirstNeighborValue(defaultBond, PROPERTY_TYPES.GENERAL_ID, undefined);
+    console.log(outcomeId);
+    console.log(bondId);
 
     const {
+      createAssociations,
       updateOutcomesAndReleaseCondtions,
       submit
     } = actions;
@@ -827,6 +892,8 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       [ID_FIELD_NAMES.DMF_ID]: dmfId,
       [ID_FIELD_NAMES.PSA_ID]: psaId,
       [ID_FIELD_NAMES.HEARING_ID]: hearingId,
+      [ID_FIELD_NAMES.OUTCOME_ID]: outcomeId,
+      [ID_FIELD_NAMES.BOND_ID]: bondId,
       [PROPERTY_TYPES.COMPLETED_DATE_TIME]: toISODateTime(moment())
     };
 
@@ -933,9 +1000,21 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       });
     }
     submission[RELEASE_CONDITIONS_FIELD] = conditionsEntity;
+
+    if (newCheckInAppointmentEntities.length) {
+      submission[CHECKIN_APPOINTMENTS_FIELD] = newCheckInAppointmentEntities;
+      conditionSubmit[CHECKIN_APPOINTMENTS_FIELD] = newCheckInAppointmentEntities;
+    }
     conditionSubmit[RELEASE_CONDITIONS_FIELD] = conditionsEntity;
     submission.bonddate = moment().add(1, 'ms').toISOString(true);
+    console.log(submission.bonddate);
     submission.outcomedate = moment().add(2, 'ms').toISOString(true);
+    // if (newAssociationEntities.length) {
+    //   createAssociations({
+    //     associationObjects: newAssociationEntities,
+    //     callback: this.refreshHearingsNeighborsCallback
+    //   });
+    // }
     if (editingHearing) {
       updateOutcomesAndReleaseCondtions({
         psaId,
@@ -951,14 +1030,14 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       });
       this.setState({ editingHearing: false });
     }
-    else {
-      submit({
-        app,
-        config: releaseConditionsConfig,
-        values: submission,
-        callback: this.refreshHearingsNeighborsCallback
-      });
-    }
+    // else {
+    //  submit({
+    //    app,
+    //    config: releaseConditionsConfig,
+    //    values: submission,
+    //    callback: this.refreshHearingsNeighborsCallback
+    //  });
+    // }
 
   }
 
@@ -968,7 +1047,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
   }
 
   isReadyToSubmit = () => {
-    const { submitting } = this.props;
+    const { submitting, selectedOrganizationSettings } = this.props;
     const {
       bondAmount,
       bondType,
@@ -982,6 +1061,9 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       release,
       warrant
     } = this.state;
+    const settingsIncludeVoiceEnroll = selectedOrganizationSettings.get(SETTINGS.ENROLL_VOICE, false);
+
+    const checkInRestriction = settingsIncludeVoiceEnroll ? false : !checkinFrequency;
 
     if (
       disabled
@@ -992,7 +1074,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       || (release && release === RELEASES.RELEASED && !bondType)
       || (warrant && warrant === WARRANTS.WARRANT && !bondType)
       || ((bondType === BOND_TYPES.CASH_ONLY || bondType === BOND_TYPES.CASH_SURETY) && !bondAmount.length)
-      || (conditions.includes(CONDITION_LIST.CHECKINS) && !checkinFrequency)
+      || (conditions.includes(CONDITION_LIST.CHECKINS) && checkInRestriction)
       || (conditions.includes(CONDITION_LIST.C_247) && !(c247Types.length || c247Types.size))
       || (conditions.includes(CONDITION_LIST.OTHER) && !otherConditionText.length)
       || (conditions.includes(CONDITION_LIST.NO_CONTACT)
@@ -1399,6 +1481,10 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
     );
   }
 
+  addAppointmentsToSubmission = ({ existingCheckInAppointmentEntityKeyIds, newCheckInAppointmentEntities }) => {
+    this.setState({ existingCheckInAppointmentEntityKeyIds, newCheckInAppointmentEntities });
+  }
+
   renderOutcomesAndReleaseConditions = () => {
     const { state } = this;
     const { release, warrant } = state;
@@ -1409,9 +1495,13 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       hearingIdsRefreshing,
       loadingReleaseCondtions,
       refreshingReleaseConditions,
+      selectedOrganizationSettings,
       submitting
     } = this.props;
 
+    const { defaultCheckInAppointments } = this.getNeighborEntities(this.props);
+
+    const settingsIncludeVoiceEnroll = selectedOrganizationSettings.get(SETTINGS.ENROLL_VOICE, false);
     if (loadingReleaseCondtions || submitting || refreshingReleaseConditions || hearingIdsRefreshing) {
       const loadingText = loadingReleaseCondtions
         ? 'Loading Release Conditions...'
@@ -1439,7 +1529,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
         }
         {
           RELEASED ? null : (
-            <div>
+            <>
               <BondTypeSection
                   mapOptionsToRadioButtons={this.mapOptionsToRadioButtons}
                   handleNumberInputChange={this.handleNumberInputChange}
@@ -1447,14 +1537,17 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
                   bondAmount={`${state[BOND_AMOUNT]}`}
                   disabled={state.disabled} />
               <ConditionsSection
+                  appointmentEntities={defaultCheckInAppointments}
+                  addAppointmentsToSubmission={this.addAppointmentsToSubmission}
+                  conditions={state[CONDITIONS]}
+                  disabled={state.disabled}
+                  handleInputChange={this.handleInputChange}
+                  settingsIncludeVoiceEnroll={settingsIncludeVoiceEnroll}
                   mapOptionsToRadioButtons={this.mapOptionsToRadioButtons}
                   mapOptionsToCheckboxButtons={this.mapOptionsToCheckboxButtons}
-                  handleInputChange={this.handleInputChange}
-                  renderNoContactPeople={this.renderNoContactPeople}
-                  conditions={state[CONDITIONS]}
                   otherCondition={state[OTHER_CONDITION_TEXT]}
-                  disabled={state.disabled} />
-            </div>
+                  renderNoContactPeople={this.renderNoContactPeople} />
+            </>
           )
         }
         {
