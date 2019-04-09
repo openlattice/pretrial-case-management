@@ -5,17 +5,21 @@
 import moment from 'moment';
 import React from 'react';
 import styled from 'styled-components';
-import { Map, List } from 'immutable';
+import randomUUID from 'uuid/v4';
+import { Map, List, fromJS } from 'immutable';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
 import DatePicker from '../../components/datetime/DatePicker';
-import StyledInput from '../../components/controls/StyledInput';
 import InfoButton from '../../components/buttons/InfoButton';
 import StyledRadio from '../../components/controls/StyledRadio';
 import RadioButton from '../../components/controls/StyledRadioButton';
-import { FORM_IDS } from '../../utils/consts/Consts';
-import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import SimpleCards from '../../components/cards/SimpleCards';
+import { APPOINTMENT_PATTERN, APPOINTMENT_TYPES } from '../../utils/consts/AppointmentConsts';
+import { toISODate, toISODateTime } from '../../utils/FormattingUtils';
+import { getEntitySetIdFromApp } from '../../utils/AppUtils';
+import { getFirstNeighborValue } from '../../utils/DataUtils';
+import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
 import { InputGroup } from '../../components/person/PersonFormTags';
 import { CHECKIN_FREQUENCIES } from '../../utils/consts/ReleaseConditionConsts';
@@ -28,8 +32,9 @@ import {
 } from '../../utils/consts/FrontEndStateConsts';
 
 import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
-import * as PeopleActionFactory from '../people/PeopleActionFactory';
+import * as DataActionFactory from '../../utils/data/DataActionFactory';
 
+const { CHECKIN_APPOINTMENTS } = APP_TYPES;
 
 /*
  * styled components
@@ -63,17 +68,13 @@ margin-bottom: 0px;
 font-size: 12px;
 `;
 
-const DateRangeContainer = styled.div`
-  display: flex;
-  flex-direction: row;
-`;
-
 type Props = {
   app :Map<*, *>,
   personEntityKeyId :string,
   hearingEntityKeyId :string,
   independentSubmission :boolean,
   submitting :boolean,
+  addAppointmentsToSubmission :() => void,
   actions :{
     refreshPersonNeighbors :(values :{ personId :string }) => void,
     submit :(values :{
@@ -84,18 +85,13 @@ type Props = {
   }
 }
 
-const APPOINMENT_TYPES = {
-  SINGLE: 'single',
-  RECURRING: 'recurring'
-};
-
 const INITIAL_STATE = {
   editing: false,
-  appointmentDates: List(),
+  appointmentEntities: Map(),
   startDate: moment(),
   endDate: null,
   frequency: '',
-  appointmentType: APPOINMENT_TYPES.SINGLE
+  appointmentType: APPOINTMENT_PATTERN.SINGLE
 };
 
 class NewHearingSection extends React.Component<Props, State> {
@@ -105,8 +101,21 @@ class NewHearingSection extends React.Component<Props, State> {
     this.state = INITIAL_STATE;
   }
 
-  submitCheckInAppointments = () => {
+  createCheckInSubmissionValues = (date) => {
+    const startDate = date;
+    const endDate = toISODate(moment(startDate).add(1, 'd'));
+    const appointmentEntity = {
+      [PROPERTY_TYPES.GENERAL_ID]: [randomUUID()],
+      [PROPERTY_TYPES.START_DATE]: [startDate],
+      [PROPERTY_TYPES.END_DATE]: [endDate],
+      [PROPERTY_TYPES.TYPE]: [APPOINTMENT_TYPES.CHECK_IN],
+      [PROPERTY_TYPES.COMPLETED_DATE_TIME]: [toISODateTime(moment(startDate))]
+    };
+    return fromJS(appointmentEntity);
+  }
 
+  submitCheckInAppointments = () => {
+    // TODO: add an independent sumbmission option if independentSubmission prop is true
   }
 
   getFrequencyConversion = () => {
@@ -127,49 +136,92 @@ class NewHearingSection extends React.Component<Props, State> {
         value = 1;
         break;
 
-      case CHECKIN_FREQUENCIES.AT_LEAST_WEEKLY:
-        value = 1;
-        break;
-
       default:
         break;
     }
     return { value, increment };
   }
 
-  addAppointmentDates = () => {
+  addAppointmentEntities = () => {
     const {
       appointmentType,
       endDate,
       frequency,
       startDate
     } = this.state;
-    let { appointmentDates } = this.state;
+    let { appointmentEntities } = this.state;
     let appointmentDate = startDate;
-    const addingRecurringAppointment = (appointmentType === APPOINMENT_TYPES.RECURRING);
+    const addingRecurringAppointment = (appointmentType === APPOINTMENT_PATTERN.RECURRING);
     if (addingRecurringAppointment && startDate && endDate && frequency) {
       const end = endDate;
       while (appointmentDate.isBefore(end)) {
         const { value, increment } = this.getFrequencyConversion();
-        appointmentDates = appointmentDates.push(appointmentDate.format('MM/DD/YYYY'));
+        const isoDateTime = toISODate(appointmentDate);
+        const appointmentEntity = this.createCheckInSubmissionValues(isoDateTime);
+        appointmentEntities = appointmentEntities.set(isoDateTime, appointmentEntity);
         appointmentDate = moment(appointmentDate).add(value, increment);
       }
     }
     else {
-      appointmentDates = appointmentDates.push(appointmentDate.format('MM/DD/YYYY'));
+      const isoDateTime = toISODate(appointmentDate);
+      const appointmentEntity = this.createCheckInSubmissionValues(isoDateTime);
+      appointmentEntities = appointmentEntities.set(isoDateTime, appointmentEntity);
     }
-    this.setState({ appointmentDates });
+    this.setState({ appointmentEntities });
+    this.addNewAndExistingAppointments(appointmentEntities);
   };
 
-  renderAddAppointmentsButton = () => <InfoButton onClick={this.addAppointmentDates}>Add Appointments</InfoButton>;
+  addNewAndExistingAppointments = (appointmentEntities) => {
+    const { addAppointmentsToSubmission } = this.props;
+    let existingCheckInAppointmentEntityKeyIds = List();
+    const newCheckInAppointmentEntities = appointmentEntities.valueSeq().filter((appointment) => {
+      const appointmentEntityKeyId = getFirstNeighborValue(appointment, PROPERTY_TYPES.ENTITY_KEY_ID);
+      if (appointmentEntityKeyId) {
+        existingCheckInAppointmentEntityKeyIds = existingCheckInAppointmentEntityKeyIds.push(appointmentEntityKeyId);
+        return false;
+      }
+      return true;
+    }).toJS();
+    existingCheckInAppointmentEntityKeyIds = existingCheckInAppointmentEntityKeyIds.toJS();
+    addAppointmentsToSubmission({ existingCheckInAppointmentEntityKeyIds, newCheckInAppointmentEntities });
+  }
+
+  removeAppointmentEntity = ({ startDate, entityKeyId }) => {
+    const { actions, app } = this.props;
+    let { appointmentEntities } = this.state;
+    appointmentEntities = appointmentEntities.delete(startDate);
+    this.setState({ appointmentEntities });
+    this.addNewAndExistingAppointments(appointmentEntities);
+    const checkInAppointmentEntitySetId = getEntitySetIdFromApp(app, CHECKIN_APPOINTMENTS);
+    if (entityKeyId) {
+      actions.deleteEntity({
+        entitySetId: checkInAppointmentEntitySetId,
+        entityKeyId
+      });
+    }
+  }
+
+  renderAddAppointmentsButton = () => <InfoButton onClick={this.addAppointmentEntities}>Add Appointments</InfoButton>;
 
   handleInputChange = (e) => {
     const { name, value } = e.target;
     this.setState({ [name]: value });
   }
 
-  renderNewAppointmentCards = () => {
+  renderAppointmentCards = () => {
+    const { appointmentEntities } = this.state;
+    const sortedEntities = appointmentEntities.valueSeq().sort((a1, a2) => {
+      const a1moment = moment(getFirstNeighborValue(a1, PROPERTY_TYPES.START_DATE));
+      const a2moment = moment(getFirstNeighborValue(a2, PROPERTY_TYPES.START_DATE));
+      return a1moment.isBefore(a2moment) ? -1 : 1;
+    });
 
+    return (
+      <SimpleCards
+          title="Appointments"
+          entities={sortedEntities}
+          removeEntity={this.removeAppointmentEntity} />
+    );
   }
 
   mapOptionsToRadioButtons = (options :{}) => {
@@ -192,9 +244,9 @@ class NewHearingSection extends React.Component<Props, State> {
 
   renderFrequencySection = () => {
     const { appointmentType } = this.state;
-    return (appointmentType === APPOINMENT_TYPES.RECURRING)
+    return (appointmentType === APPOINTMENT_PATTERN.RECURRING)
       ? (
-        <OptionsGrid numColumns={4}>
+        <OptionsGrid numColumns={3}>
           { this.mapOptionsToRadioButtons(CHECKIN_FREQUENCIES) }
         </OptionsGrid>
       ) : null;
@@ -205,17 +257,17 @@ class NewHearingSection extends React.Component<Props, State> {
     return (
       <>
         <StyledRadio
-            label={APPOINMENT_TYPES.SINGLE}
+            label={APPOINTMENT_PATTERN.SINGLE}
             name="appointmentType"
-            value={APPOINMENT_TYPES.SINGLE}
+            value={APPOINTMENT_PATTERN.SINGLE}
             onChange={this.handleInputChange}
-            checked={appointmentType === APPOINMENT_TYPES.SINGLE} />
+            checked={appointmentType === APPOINTMENT_PATTERN.SINGLE} />
         <StyledRadio
-            label={APPOINMENT_TYPES.RECURRING}
+            label={APPOINTMENT_PATTERN.RECURRING}
             name="appointmentType"
-            value={APPOINMENT_TYPES.RECURRING}
+            value={APPOINTMENT_PATTERN.RECURRING}
             onChange={this.handleInputChange}
-            checked={appointmentType === APPOINMENT_TYPES.RECURRING} />
+            checked={appointmentType === APPOINTMENT_PATTERN.RECURRING} />
       </>
     );
   }
@@ -274,13 +326,14 @@ class NewHearingSection extends React.Component<Props, State> {
         <FormContainer>
           { this.renderAppointmentTypeOptions() }
           {
-            (appointmentType === APPOINMENT_TYPES.SINGLE)
+            (appointmentType === APPOINTMENT_PATTERN.SINGLE)
               ? this.renderSingleAppointment()
               : this.renderRecurringAppointment()
           }
           { this.renderAddAppointmentsButton() }
         </FormContainer>
         { this.renderFrequencySection() }
+        { this.renderAppointmentCards() }
         <hr />
       </SubConditionsWrapper>
     );
@@ -304,6 +357,10 @@ function mapStateToProps(state) {
 
 function mapDispatchToProps(dispatch :Function) :Object {
   const actions :{ [string] :Function } = {};
+
+  Object.keys(DataActionFactory).forEach((action :string) => {
+    actions[action] = DataActionFactory[action];
+  });
 
   Object.keys(SubmitActionFactory).forEach((action :string) => {
     actions[action] = SubmitActionFactory[action];
