@@ -86,7 +86,7 @@ const MultiIconWrapper = styled.span`
   justify-content: flex-end;
   z-index: 1;
   position: absolute;
-  transform: translateX(192px) translateY(0px);
+  transform: ${props => (props.judgesview ? 'translateX(192px)' : 'translateX(264px)')};
   svg {
     margin-left: 5px;
   }
@@ -165,7 +165,7 @@ class PersonCard extends React.Component<Props, State> {
           {
             multipleOpenPSAs || isReceivingReminders
               ? (
-                <MultiIconWrapper>
+                <MultiIconWrapper judgesview>
                   { isReceivingReminders ? <FontAwesomeIcon color={OL.ORANGE01} icon={faBell} /> : null }
                   { multipleOpenPSAs ? <FontAwesomeIcon color={OL.PURPLE02} icon={faClone} /> : null }
                 </MultiIconWrapper>
@@ -186,6 +186,15 @@ class PersonCard extends React.Component<Props, State> {
       : (
         <StyledUndecoratedLink to={`${Routes.PERSON_DETAILS_ROOT}/${personId}`}>
           <TagPlaceholder />
+          {
+            multipleOpenPSAs || isReceivingReminders
+              ? (
+                <MultiIconWrapper>
+                  { isReceivingReminders ? <FontAwesomeIcon color={OL.ORANGE01} icon={faBell} /> : null }
+                  { multipleOpenPSAs ? <FontAwesomeIcon color={OL.PURPLE02} icon={faClone} /> : null }
+                </MultiIconWrapper>
+              ) : null
+          }
           <StyledPersonCard hasOpenPSA={hasOpenPSA}>
             <MugShot src={photo || defaultProfile} />
             <PersonInfoSection>
