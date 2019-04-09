@@ -47,6 +47,7 @@ import {
 } from './CourtActionFactory';
 
 const {
+  CHECKIN_APPOINTMENTS,
   CONTACT_INFORMATION,
   HEARINGS,
   JUDGES,
@@ -59,6 +60,8 @@ const {
 
 const { OPENLATTICE_ID_FQN } = Constants;
 const { FullyQualifiedName } = Models;
+
+const LIST_APP_TYPES = [CHECKIN_APPOINTMENTS, CONTACT_INFORMATION, HEARINGS, RELEASE_CONDITIONS, STAFF];
 
 const getApp = state => state.get(STATE.APP, Map());
 const getEDM = state => state.get(STATE.EDM, Map());
@@ -420,8 +423,9 @@ function* refreshHearingNeighborsWorker(action :SequenceAction) :Generator<*, *,
     let neighbors = Map();
     neighborsList.forEach((neighbor) => {
       const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id']);
+      const appTypeFqn = entitySetIdsToAppType.get(entitySetId, JUDGES);
       const entitySetName = entitySetIdsToAppType.get(entitySetId, JUDGES);
-      if (entitySetId === releaseConditionsEntitySetId) {
+      if (LIST_APP_TYPES.includes(appTypeFqn)) {
         neighbors = neighbors.set(
           entitySetName,
           neighbors.get(entitySetName, List()).push(fromJS(neighbor))
