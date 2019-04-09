@@ -119,7 +119,7 @@ const INITIAL_STATE = {
   addingNewContact: false,
   contact: Map(),
   contactMethod: '',
-  notified: null,
+  notified: true,
   notes: '',
   editing: false
 };
@@ -147,12 +147,8 @@ class NewHearingSection extends React.Component<Props, State> {
   }
 
   isReadyToSubmit = () :boolean => {
-    const { contact, contactMethod } = this.state;
-    let contactSelected = true;
-    if (contactMethod === CONTACT_METHODS.PHONE || contactMethod === CONTACT_METHODS.EMAIL) {
-      contactSelected = !!contact.size;
-    }
-    return contactMethod && contactSelected;
+    const { contactMethod } = this.state;
+    return contactMethod;
   }
 
   getSubmissionValues = () => {

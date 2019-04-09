@@ -315,32 +315,21 @@ export default class PSAReviewReportsRow extends React.Component<Props, State> {
     });
 
     const isClosed = psaIsClosed(scores);
-    const editLabel = psaIsClosed(scores) ? 'Closed' : 'Edited';
+    const editLabel = isClosed ? 'Closed' : 'Edited';
     if (!(dateCreated || dateEdited) && !(creator || editor)) return null;
 
     const dateCreatedText = dateCreated ? dateCreated.format(dateFormat) : '';
     const dateEditedText = dateEdited ? dateEdited.format(dateFormat) : '';
 
-    const openMetadata = (dateEdited || editor)
-      ? <MetadataItem>{this.renderMetadataText(editLabel, dateEditedText, editor)}</MetadataItem>
-      : <MetadataItem>{this.renderMetadataText('Created', dateCreatedText, creator)}</MetadataItem>;
-
     return (
       <MetadataWrapper>
-        {
-          isClosed && (component === CONTENT_CONSTS.PENDING_PSAS)
-            ? (
-              <MetadataSubWrapper>
-                <MetadataItem>{this.renderMetadataText('Created', dateCreatedText, creator)}</MetadataItem>
-                <MetadataItem>{this.renderMetadataText(editLabel, dateEditedText, editor)}</MetadataItem>
-              </MetadataSubWrapper>
-            )
-            : (
-              <MetadataSubWrapper>
-                {openMetadata}
-              </MetadataSubWrapper>
-            )
-        }
+        <MetadataSubWrapper>
+          <MetadataItem>{this.renderMetadataText('Created', dateCreatedText, creator)}</MetadataItem>
+          { (dateEdited || editor)
+            ? <MetadataItem>{this.renderMetadataText(editLabel, dateEditedText, editor)}</MetadataItem>
+            : null
+          }
+        </MetadataSubWrapper>
       </MetadataWrapper>
     );
   }
