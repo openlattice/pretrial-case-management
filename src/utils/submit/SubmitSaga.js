@@ -14,15 +14,18 @@ import {
   call,
   put,
   takeEvery,
-  all
+  all,
+  select
 } from '@redux-saga/core/effects';
 
-import { APP } from '../consts/FrontEndStateConsts';
+import { APP, EDM, STATE } from '../consts/FrontEndStateConsts';
 import { stripIdField } from '../DataUtils';
 import {
+  CREATE_ASSOCIATIONS,
   REPLACE_ASSOCIATION,
   REPLACE_ENTITY,
   SUBMIT,
+  createAssociations,
   replaceAssociation,
   replaceEntity,
   submit
@@ -33,6 +36,10 @@ const {
 } = Models;
 
 const { DeleteTypes } = Types;
+
+/*
+ * Selectors
+ */
 
 function getEntityId(primaryKey, propertyTypesById, values, fields) {
   const fieldNamesByFqn = {};
@@ -91,6 +98,45 @@ function shouldCreateEntity(entityDescription, values, details) {
     if (allFalse) return false;
   }
   return true;
+}
+
+
+function* createAssociationsWorker(action :SequenceAction) :Generator<*, *, *> {
+  const {
+    associationObjects,
+    callback
+  } = action.value;
+
+  try {
+    yield put(createAssociations.request(action.id));
+
+    // Create new association
+    const associationCalls = associationObjects.map(submitObject => (
+      call(
+        DataApi.createAssociationss,
+        submitObject
+      )
+    ));
+
+    yield all(associationCalls);
+
+    yield put(createAssociations.success(action.id));
+
+    if (callback) {
+      callback();
+    }
+  }
+  catch (error) {
+    console.error(error);
+    yield put(createAssociations.failure(action.id, { error }));
+  }
+  finally {
+    yield put(createAssociations.finally(action.id));
+  }
+}
+
+function* createAssociationsWatcher() :Generator<*, *, *> {
+  yield takeEvery(CREATE_ASSOCIATIONS, createAssociationsWorker);
 }
 
 function* replaceEntityWorker(action :SequenceAction) :Generator<*, *, *> {
@@ -442,6 +488,7 @@ function* replaceAssociationWatcher() :Generator<*, *, *> {
 }
 
 export {
+  createAssociationsWatcher,
   replaceAssociationWatcher,
   replaceEntityWatcher,
   submitWatcher

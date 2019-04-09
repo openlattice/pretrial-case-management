@@ -340,6 +340,8 @@ export const SEARCH = {
 // Submit
 
 export const SUBMIT = {
+  CREATING_ASSOCIATIONS: 'creatingAssociations',
+  CREATE_ASSOCIATIONS_COMPLETE: 'createAssociationComplete',
   REPLACING_ENTITY: 'replacingEntity',
   REPLACE_ENTITY_SUCCESS: 'replaceEntitySuccess',
   UPDATING_ENTITY: 'updatingEntity',

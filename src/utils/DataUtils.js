@@ -113,7 +113,7 @@ export const getMapFromEntityKeysToPropertyKeys = (entity, entityKeyId, property
 
 export const getFirstNeighborValue = (neighborObj, fqn, defaultValue = '') => neighborObj.getIn(
   [PSA_NEIGHBOR.DETAILS, fqn, 0],
-  neighborObj.getIn([fqn, 0], defaultValue)
+  neighborObj.getIn([fqn, 0], neighborObj.get(fqn, defaultValue))
 );
 
 export const getDateAndTime = (dateTime) => {
@@ -121,15 +121,39 @@ export const getDateAndTime = (dateTime) => {
   const time = moment(dateTime).format('HH:mm');
 
   return { date, time };
-}
+};
 
 // Pass entity object and list of property types and will return and object of labels
 // mapped to properties.
-export const getEntityProperties = (caseObj, propertyList) => {
+export const getEntityProperties = (entityObj, propertyList) => {
   let returnCaseFields = Map();
   propertyList.forEach((propertyType) => {
-    const property = getFirstNeighborValue(caseObj, propertyType);
+    const backUpValue = entityObj.get(propertyType, '');
+    const property = getFirstNeighborValue(entityObj, propertyType, backUpValue);
     returnCaseFields = returnCaseFields.set(propertyType, property);
   });
   return returnCaseFields.toJS();
 };
+
+export const getCreateAssociationObject = ({
+  associationEntitySetId,
+  associationEntity,
+  srcEntitySetId,
+  srcEntityKeyId,
+  dstEntitySetId,
+  dstEntityKeyId
+}) => (
+  {
+    [associationEntitySetId]: [{
+      data: associationEntity,
+      src: {
+        entitySetId: srcEntitySetId,
+        entityKeyId: srcEntityKeyId
+      },
+      dst: {
+        entitySetId: dstEntitySetId,
+        entityKeyId: dstEntityKeyId
+      }
+    }]
+  }
+);
