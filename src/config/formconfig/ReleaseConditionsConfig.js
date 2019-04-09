@@ -70,8 +70,28 @@ const releaseConditionsConfig = {
       }
     },
     {
+      name: APP_TYPES_FQNS.CHECKIN_APPOINTMENTS,
+      alias: ALIASES.CHECKIN_APPOINTMENT,
+      entityId: PROPERTY_TYPES.GENERAL_ID,
+      multipleValuesField: LIST_FIELDS.CHECKIN_APPOINTMENTS_FIELD,
+      fields: {
+        [PROPERTY_TYPES.GENERAL_ID]: PROPERTY_TYPES.GENERAL_ID,
+        [PROPERTY_TYPES.TYPE]: PROPERTY_TYPES.TYPE,
+        [PROPERTY_TYPES.START_DATE]: PROPERTY_TYPES.START_DATE,
+        [PROPERTY_TYPES.END_DATE]: PROPERTY_TYPES.END_DATE
+      }
+    },
+    {
       name: APP_TYPES_FQNS.REGISTERED_FOR,
       alias: ALIASES.REGISTERED_FOR,
+      fields: {
+        [PROPERTY_TYPES.COMPLETED_DATE_TIME]: PROPERTY_TYPES.COMPLETED_DATE_TIME
+      }
+    },
+    {
+      name: APP_TYPES_FQNS.REGISTERED_FOR,
+      alias: ALIASES.APPOINTMENT_REGISTERED_FOR,
+      multipleValuesEntity: LIST_FIELDS.CHECKIN_APPOINTMENTS_FIELD,
       fields: {
         [PROPERTY_TYPES.COMPLETED_DATE_TIME]: PROPERTY_TYPES.COMPLETED_DATE_TIME
       }
@@ -134,6 +154,18 @@ const releaseConditionsConfig = {
       src: ALIASES.OUTCOME,
       dst: ALIASES.HEARING,
       association: ALIASES.REGISTERED_FOR_THREE
+    },
+
+    // Check-in Appointments registered for _____
+    {
+      src: ALIASES.CHECKIN_APPOINTMENT,
+      dst: ALIASES.PERSON,
+      association: ALIASES.APPOINTMENT_REGISTERED_FOR
+    },
+    {
+      src: ALIASES.CHECKIN_APPOINTMENT,
+      dst: ALIASES.HEARING,
+      association: ALIASES.APPOINTMENT_REGISTERED_FOR
     },
 
     // Release conditions registered for _____
