@@ -37,6 +37,7 @@ const { DeleteTypes } = Types;
 
 const {
   BONDS,
+  CHECKIN_APPOINTMENTS,
   CHARGES,
   CONTACT_INFORMATION,
   DMF_RESULTS,
@@ -58,7 +59,7 @@ const {
 const getApp = state => state.get(STATE.APP, Map());
 const getOrgId = state => state.getIn([STATE.APP, APP.SELECTED_ORG_ID], '');
 
-const LIST_ENTITY_SETS = List.of(STAFF, RELEASE_CONDITIONS, HEARINGS, PRETRIAL_CASES, REMINDERS);
+const LIST_ENTITY_SETS = List.of(CHECKIN_APPOINTMENTS, STAFF, RELEASE_CONDITIONS, HEARINGS, PRETRIAL_CASES, REMINDERS);
 
 function* getHearingAndNeighbors(hearingId :string) :Generator<*, *, *> {
   let hearingNeighborsByAppTypeFqn = Map();
