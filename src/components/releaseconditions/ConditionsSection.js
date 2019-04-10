@@ -3,6 +3,7 @@
  */
 import moment from 'moment';
 import React from 'react';
+import { Map } from 'immutable';
 
 import StyledInput from '../controls/StyledInput';
 import CheckInAppointmentForm from '../../containers/checkins/CheckInAppointmentForm';
@@ -22,7 +23,7 @@ const { OTHER_CONDITION_TEXT } = RELEASE_CONDITIONS;
 const renderCheckInSection = mapOptionsToRadioButtons => (
   <SubConditionsWrapper>
     <h2>Check-in frequency</h2>
-    <OptionsGrid numColumns={4}>
+    <OptionsGrid numColumns={3}>
       {mapOptionsToRadioButtons(CHECKIN_FREQUENCIES, 'checkinFrequency')}
     </OptionsGrid>
     <hr />
@@ -51,8 +52,8 @@ type Props = {
 };
 
 const ConditionsSection = ({
-  appointmentEntities,
   addAppointmentsToSubmission,
+  appointmentEntities,
   conditions,
   disabled,
   handleInputChange,
@@ -62,9 +63,11 @@ const ConditionsSection = ({
   renderNoContactPeople,
   settingsIncludeVoiceEnroll
 } :Props) => {
-  const sortedEntities = appointmentEntities.valueSeq().sort((a1, a2) => {
-    const a1moment = moment(getFirstNeighborValue(a1, PROPERTY_TYPES.START_DATE));
-    const a2moment = moment(getFirstNeighborValue(a2, PROPERTY_TYPES.START_DATE));
+  const sortedEntities = appointmentEntities.sort((a1, a2) => {
+    const a1StartDate = getFirstNeighborValue(a1, PROPERTY_TYPES.START_DATE);
+    const a2StartDate = getFirstNeighborValue(a2, PROPERTY_TYPES.START_DATE);
+    const a1moment = moment(a1StartDate);
+    const a2moment = moment(a2StartDate);
     return a1moment.isBefore(a2moment) ? -1 : 1;
   });
   const checkInForm = disabled
@@ -73,7 +76,11 @@ const ConditionsSection = ({
           title="Appointments"
           entities={sortedEntities} />
     )
-    : <CheckInAppointmentForm addAppointmentsToSubmission={addAppointmentsToSubmission} />;
+    : (
+      <CheckInAppointmentForm
+          addAppointmentsToSubmission={addAppointmentsToSubmission}
+          existingAppointments={appointmentEntities} />
+    );
   const checkInSection = settingsIncludeVoiceEnroll
     ? checkInForm
     : renderCheckInSection(mapOptionsToRadioButtons);
