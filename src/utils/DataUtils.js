@@ -144,16 +144,14 @@ export const getCreateAssociationObject = ({
   dstEntityKeyId
 }) => (
   {
-    [associationEntitySetId]: [{
-      data: associationEntity,
-      src: {
-        entitySetId: srcEntitySetId,
-        entityKeyId: srcEntityKeyId
-      },
-      dst: {
-        entitySetId: dstEntitySetId,
-        entityKeyId: dstEntityKeyId
-      }
-    }]
+    data: associationEntity,
+    src: {
+      entitySetId: srcEntitySetId,
+      entityKeyId: srcEntityKeyId
+    },
+    dst: {
+      entitySetId: dstEntitySetId,
+      entityKeyId: dstEntityKeyId
+    }
   }
 );
