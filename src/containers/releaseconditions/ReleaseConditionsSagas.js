@@ -59,7 +59,16 @@ const {
 const getApp = state => state.get(STATE.APP, Map());
 const getOrgId = state => state.getIn([STATE.APP, APP.SELECTED_ORG_ID], '');
 
-const LIST_ENTITY_SETS = List.of(CHECKIN_APPOINTMENTS, STAFF, RELEASE_CONDITIONS, HEARINGS, PRETRIAL_CASES, REMINDERS);
+const LIST_ENTITY_SETS = List.of(
+  CHECKIN_APPOINTMENTS,
+  STAFF,
+  RELEASE_CONDITIONS,
+  HEARINGS,
+  PRETRIAL_CASES,
+  REMINDERS,
+  CHARGES,
+  CONTACT_INFORMATION
+);
 
 function* getHearingAndNeighbors(hearingId :string) :Generator<*, *, *> {
   let hearingNeighborsByAppTypeFqn = Map();
@@ -115,6 +124,7 @@ function* loadReleaseConditionsWorker(action :SequenceAction) :Generator<*, *, *
     const app = yield select(getApp);
     const orgId = yield select(getOrgId);
     const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
+    const checkInAppointmentEntitySetId = getEntitySetIdFromApp(app, CHECKIN_APPOINTMENTS);
     const chargesEntitySetId = getEntitySetIdFromApp(app, CHARGES);
     const dmfEntitySetId = getEntitySetIdFromApp(app, DMF_RESULTS);
     const dmfRiskFactorsEntitySetId = getEntitySetIdFromApp(app, DMF_RISK_FACTORS);
@@ -162,7 +172,7 @@ function* loadReleaseConditionsWorker(action :SequenceAction) :Generator<*, *, *
 
     let personNeighbors = yield call(SearchApi.searchEntityNeighborsWithFilter, peopleEntitySetId, {
       entityKeyIds: [personId],
-      sourceEntitySetIds: [contactInformationEntitySetId],
+      sourceEntitySetIds: [contactInformationEntitySetId, checkInAppointmentEntitySetId],
       destinationEntitySetIds: [subscriptionEntitySetId, contactInformationEntitySetId, chargesEntitySetId]
     });
 
@@ -172,7 +182,7 @@ function* loadReleaseConditionsWorker(action :SequenceAction) :Generator<*, *, *
       const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
       const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
 
-      if (appTypeFqn === CONTACT_INFORMATION || appTypeFqn === CHARGES) {
+      if (LIST_ENTITY_SETS.includes(appTypeFqn)) {
         personNeighborsByAppTypeFqn = personNeighborsByAppTypeFqn.set(
           appTypeFqn,
           personNeighborsByAppTypeFqn.get(appTypeFqn, List()).push(neighbor)
