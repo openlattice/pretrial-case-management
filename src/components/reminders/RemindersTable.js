@@ -6,6 +6,9 @@ import moment from 'moment';
 import styled from 'styled-components';
 import { Map } from 'immutable';
 
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSortDown } from '@fortawesome/pro-light-svg-icons';
+
 import RemindersRow from './RemindersRow';
 import OptOutRow from './OptOutRow';
 import { NoResults } from '../../utils/Layout';
@@ -65,9 +68,15 @@ class RemindersTable extends React.Component<Props, State> {
     if (appTypeFqn === REMINDERS) {
       headers = (
         <HeaderRow>
-          <HeaderElement onClick={sortByDate}>{REMINDERS_HEADERS.COURT_TIME}</HeaderElement>
+          <HeaderElement onClick={sortByDate}>
+            {`${REMINDERS_HEADERS.COURT_TIME} `}
+            <FontAwesomeIcon color={OL.GREY01} icon={faSortDown} />
+          </HeaderElement>
           <HeaderElement>{REMINDERS_HEADERS.CASE_NUM}</HeaderElement>
-          <HeaderElement onClick={sortByName}>{REMINDERS_HEADERS.NAME}</HeaderElement>
+          <HeaderElement onClick={sortByName}>
+            {`${REMINDERS_HEADERS.NAME} `}
+            <FontAwesomeIcon color={OL.GREY01} icon={faSortDown} />
+          </HeaderElement>
           <HeaderElement>{REMINDERS_HEADERS.CONTACT}</HeaderElement>
           <HeaderElement>{REMINDERS_HEADERS.COURTROOM}</HeaderElement>
           <HeaderElement>{REMINDERS_HEADERS.HEARING_TYPE}</HeaderElement>
