@@ -265,6 +265,7 @@ type Props = {
   app :Map<*, *>,
   allJudges :Map<*, *>,
   backToSelection :() => void,
+  creatingAssociations :boolean,
   fqnToIdMap :Map<*, *>,
   hasOutcome :boolean,
   hearingIdsRefreshing :boolean,
@@ -355,7 +356,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
   }
 
   componentWillReceiveProps(nextProps :Props) {
-    const { hearingEntityKeyId, selectedHearing } = this.props;
+    const { personNeighbors, hearingEntityKeyId, selectedHearing } = this.props;
 
     const { defaultBond, defaultConditions, defaultOutcome } = this.getNeighborEntities(this.props);
     const { judgeEntity, judgeName } = this.getJudgeEntity(this.props);
@@ -388,6 +389,8 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
         return !conditionTypes.includes(conditionType);
       });
 
+    const personNeighborsLoaded = !personNeighbors.size && nextProps.personNeighbors.size;
+
     if (
       outComeChanged
       || bondChanged
@@ -395,6 +398,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       || nextJudge.judgeName !== judgeName
       || nextJudge.judgeEntity !== judgeEntity
       || nextProps.hearingEntityKeyId !== hearingEntityKeyId
+      || personNeighborsLoaded
       || getFirstNeighborValue(nextProps.selectedHearing, PROPERTY_TYPES.DATE_TIME)
         !== getFirstNeighborValue(selectedHearing, PROPERTY_TYPES.DATE_TIME)
       || getFirstNeighborValue(nextProps.selectedHearing, PROPERTY_TYPES.COURTROOM)
@@ -443,7 +447,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
 
   getNeighborEntities = (props) => {
     const { hearingNeighbors, psaNeighbors } = props;
-    const defaultCheckInAppointments = hearingNeighbors.get(CHECKIN_APPOINTMENTS, Map());
+    const defaultCheckInAppointments = hearingNeighbors.get(CHECKIN_APPOINTMENTS, List());
     const defaultBond = hearingNeighbors.get(BONDS_FQN, Map());
     const defaultConditions = hearingNeighbors.get(RELEASE_CONDITIONS_FQN, List());
     const defaultDMF = psaNeighbors.getIn([DMF_RESULTS, PSA_NEIGHBOR.DETAILS], Map());
@@ -452,7 +456,6 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
     let defaultOutcome = hearingNeighbors.get(OUTCOMES_FQN, Map());
 
     defaultOutcome = defaultOutcome.size ? defaultOutcome : defaultDMF;
-    console.log(defaultCheckInAppointments.toJS());
 
     return {
       defaultCheckInAppointments,
@@ -484,7 +487,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
 
 
   getStateFromProps = (props :Props) :State => {
-    const { selectedHearing, hasOutcome } = props;
+    const { personNeighbors, selectedHearing, hasOutcome } = props;
 
     const {
       defaultCheckInAppointments,
@@ -493,6 +496,13 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       defaultOutcome
     } = this.getNeighborEntities(props);
     const { judgeEntity, judgeName } = this.getJudgeEntity(props);
+
+    const existingCheckInAppointmentEntityKeyIds = [];
+    const personCheckInAppointments = personNeighbors.get(CHECKIN_APPOINTMENTS, Map());
+    personCheckInAppointments.forEach((appointment) => {
+      const entityKeyId = getFirstNeighborValue(appointment, PROPERTY_TYPES.ENTITY_KEY_ID);
+      existingCheckInAppointmentEntityKeyIds.push(entityKeyId);
+    });
 
     let modifyingHearing = false;
     const hearingDateTimeString = getFirstNeighborValue(selectedHearing, PROPERTY_TYPES.DATE_TIME);
@@ -573,8 +583,8 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
         judgeId,
         disabled: true,
         defaultCheckInAppointments,
-        newCheckInAppointmentEntities: List(),
-        existingCheckInAppointmentEntityKeyIds: List()
+        newCheckInAppointmentEntities: [],
+        existingCheckInAppointmentEntityKeyIds
       };
     }
     return {
@@ -600,8 +610,8 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       disabled: false,
       editingHearing,
       defaultCheckInAppointments,
-      newCheckInAppointmentEntities: List(),
-      existingCheckInAppointmentEntityKeyIds: List()
+      newCheckInAppointmentEntities: [],
+      existingCheckInAppointmentEntityKeyIds
     };
   }
 
@@ -777,6 +787,38 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
     );
   }
 
+  getAssociationsForExistingAppointments = () => {
+    const { app, fqnToIdMap, hearingEntityKeyId } = this.props;
+    const { existingCheckInAppointmentEntityKeyIds } = this.state;
+    const { defaultCheckInAppointments } = this.getNeighborEntities(this.props);
+
+    const hearingCheckInAppointmentEntityKeyIds = defaultCheckInAppointments.map((checkIn) => {
+      const entityKeyId = getEntityKeyId(checkIn);
+      return entityKeyId;
+    });
+    const existingCheckInEntityKeyIds = existingCheckInAppointmentEntityKeyIds.filter(checkInEntityKeyId => (
+      !hearingCheckInAppointmentEntityKeyIds.includes(checkInEntityKeyId)
+    ));
+    const registeredforEntitySetId = getEntitySetIdFromApp(app, REGISTERED_FOR);
+    const hearingEntitySetId = getEntitySetIdFromApp(app, HEARINGS);
+    const appointmentEntitySetId = getEntitySetIdFromApp(app, CHECKIN_APPOINTMENTS);
+    const dateCompletedPropertyId = fqnToIdMap.get(PROPERTY_TYPES.COMPLETED_DATE_TIME, '');
+    const newAssociationEntities = { [registeredforEntitySetId]: [] };
+    let milliseconds = 3;
+    existingCheckInEntityKeyIds.forEach((entityKeyId) => {
+      const hearingAssociation = getCreateAssociationObject({
+        associationEntity: { [dateCompletedPropertyId]: [moment().add(milliseconds, 'ms').toISOString(true)] },
+        srcEntitySetId: appointmentEntitySetId,
+        srcEntityKeyId: entityKeyId,
+        dstEntitySetId: hearingEntitySetId,
+        dstEntityKeyId: hearingEntityKeyId
+      });
+      milliseconds += 1;
+      newAssociationEntities[registeredforEntitySetId].push(hearingAssociation);
+    });
+    return newAssociationEntities;
+  }
+
   onSubmit = () => {
     const {
       outcome,
@@ -787,7 +829,6 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       conditions,
       checkinFrequency,
       c247Types,
-      existingCheckInAppointmentEntityKeyIds,
       newCheckInAppointmentEntities,
       otherConditionText,
       editingHearing
@@ -796,13 +837,11 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
     const {
       actions,
       app,
-      fqnToIdMap,
-      selectedHearing,
-      hearingEntityKeyId
+      hearingEntityKeyId,
+      selectedHearing
     } = this.props;
 
     const {
-      defaultCheckInAppointments,
       defaultBond,
       defaultConditions,
       defaultDMF,
@@ -811,42 +850,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       personEntity
     } = this.getNeighborEntities(this.props);
 
-    const hearingCheckInAppointmentEntityKeyIds = defaultCheckInAppointments.map((checkIn) => {
-      const entityKeyId = getEntityKeyId(checkIn);
-      return entityKeyId;
-    });
-    const existingCheckInEntityKeyIds = existingCheckInAppointmentEntityKeyIds.filter(checkInEntityKeyId => (
-      !hearingCheckInAppointmentEntityKeyIds.includes(checkInEntityKeyId)
-    ));
-    const registeredforEntitySetId = getEntitySetIdFromApp(app, REGISTERED_FOR);
-    const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
-    const personEntityKeyId = getEntityKeyId(personEntity);
-    const hearingEntitySetId = getEntitySetIdFromApp(app, HEARINGS);
-    const appointmentEntitySetId = getEntitySetIdFromApp(app, CHECKIN_APPOINTMENTS);
-    const dateCompletedPropertyId = fqnToIdMap.get(PROPERTY_TYPES.COMPLETED_DATE_TIME, '');
-    let newAssociationEntities = List();
-    let seconds = 3;
-    existingCheckInEntityKeyIds.forEach((entityKeyId) => {
-      const hearingAssociation = getCreateAssociationObject({
-        associationEntitySetId: registeredforEntitySetId,
-        associationEntity: { [dateCompletedPropertyId]: moment().add(seconds, 'ms').toISOString(true) },
-        srcEntitySetId: appointmentEntitySetId,
-        srcEntityKeyId: entityKeyId,
-        dstEntitySetId: hearingEntitySetId,
-        dstEntityKeyId: hearingEntityKeyId
-      });
-      seconds += 1;
-      newAssociationEntities = newAssociationEntities.push(hearingAssociation);
-      const personAssociation = getCreateAssociationObject({
-        associationEntitySetId: registeredforEntitySetId,
-        associationEntity: { [dateCompletedPropertyId]: moment().add((seconds), 'ms').toISOString(true) },
-        srcEntitySetId: appointmentEntitySetId,
-        srcEntityKeyId: entityKeyId,
-        dstEntitySetId: peopleEntitySetId,
-        dstEntityKeyId: personEntityKeyId
-      });
-      newAssociationEntities = newAssociationEntities.push(personAssociation);
-    });
+    const newAssociationEntities = this.getAssociationsForExistingAppointments();
 
     const hearingId = getFirstNeighborValue(selectedHearing, PROPERTY_TYPES.CASE_ID);
     const psaId = getFirstNeighborValue(psaEntity, PROPERTY_TYPES.GENERAL_ID);
@@ -854,8 +858,6 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
     const dmfId = getFirstNeighborValue(defaultDMF, PROPERTY_TYPES.GENERAL_ID);
     const outcomeId = getFirstNeighborValue(defaultOutcome, PROPERTY_TYPES.GENERAL_ID, undefined);
     const bondId = getFirstNeighborValue(defaultBond, PROPERTY_TYPES.GENERAL_ID, undefined);
-    console.log(outcomeId);
-    console.log(bondId);
 
     const {
       createAssociations,
@@ -1000,21 +1002,20 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       });
     }
     submission[RELEASE_CONDITIONS_FIELD] = conditionsEntity;
-
     if (newCheckInAppointmentEntities.length) {
       submission[CHECKIN_APPOINTMENTS_FIELD] = newCheckInAppointmentEntities;
       conditionSubmit[CHECKIN_APPOINTMENTS_FIELD] = newCheckInAppointmentEntities;
     }
     conditionSubmit[RELEASE_CONDITIONS_FIELD] = conditionsEntity;
     submission.bonddate = moment().add(1, 'ms').toISOString(true);
-    console.log(submission.bonddate);
     submission.outcomedate = moment().add(2, 'ms').toISOString(true);
-    // if (newAssociationEntities.length) {
-    //   createAssociations({
-    //     associationObjects: newAssociationEntities,
-    //     callback: this.refreshHearingsNeighborsCallback
-    //   });
-    // }
+
+    if (Object.keys(newAssociationEntities).length) {
+      createAssociations({
+        associationObjects: [newAssociationEntities],
+        callback: this.refreshHearingsNeighborsCallback
+      });
+    }
     if (editingHearing) {
       updateOutcomesAndReleaseCondtions({
         psaId,
@@ -1030,14 +1031,14 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       });
       this.setState({ editingHearing: false });
     }
-    // else {
-    //  submit({
-    //    app,
-    //    config: releaseConditionsConfig,
-    //    values: submission,
-    //    callback: this.refreshHearingsNeighborsCallback
-    //  });
-    // }
+    else {
+      submit({
+        app,
+        config: releaseConditionsConfig,
+        values: submission,
+        callback: this.refreshHearingsNeighborsCallback
+      });
+    }
 
   }
 
@@ -1301,6 +1302,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
     const {
       allJudges,
       backToSelection,
+      creatingAssociations,
       hasOutcome,
       hearingEntityKeyId,
       hearingIdsRefreshing,
@@ -1482,7 +1484,8 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
   }
 
   addAppointmentsToSubmission = ({ existingCheckInAppointmentEntityKeyIds, newCheckInAppointmentEntities }) => {
-    this.setState({ existingCheckInAppointmentEntityKeyIds, newCheckInAppointmentEntities });
+    if (existingCheckInAppointmentEntityKeyIds) this.setState({ existingCheckInAppointmentEntityKeyIds });
+    if (newCheckInAppointmentEntities) this.setState({ newCheckInAppointmentEntities });
   }
 
   renderOutcomesAndReleaseConditions = () => {
@@ -1492,17 +1495,27 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
     const RELEASED = release !== RELEASES.RELEASED;
     const NO_WARRANT = warrant !== WARRANTS.WARRANT;
     const {
+      creatingAssociations,
       hearingIdsRefreshing,
       loadingReleaseCondtions,
       refreshingReleaseConditions,
+      personNeighbors,
       selectedOrganizationSettings,
       submitting
     } = this.props;
 
     const { defaultCheckInAppointments } = this.getNeighborEntities(this.props);
+    const personCheckInAppointments = personNeighbors.get(CHECKIN_APPOINTMENTS, Map());
+    const allCheckInAppointments = defaultCheckInAppointments.merge(personCheckInAppointments);
 
     const settingsIncludeVoiceEnroll = selectedOrganizationSettings.get(SETTINGS.ENROLL_VOICE, false);
-    if (loadingReleaseCondtions || submitting || refreshingReleaseConditions || hearingIdsRefreshing) {
+    if (
+      loadingReleaseCondtions
+        || submitting
+        || refreshingReleaseConditions
+        || hearingIdsRefreshing
+        || creatingAssociations
+    ) {
       const loadingText = loadingReleaseCondtions
         ? 'Loading Release Conditions...'
         : 'Refreshing Release Conditions...';
@@ -1537,7 +1550,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
                   bondAmount={`${state[BOND_AMOUNT]}`}
                   disabled={state.disabled} />
               <ConditionsSection
-                  appointmentEntities={defaultCheckInAppointments}
+                  appointmentEntities={allCheckInAppointments}
                   addAppointmentsToSubmission={this.addAppointmentsToSubmission}
                   conditions={state[CONDITIONS]}
                   disabled={state.disabled}
@@ -1626,6 +1639,7 @@ function mapStateToProps(state) {
     [COURT.ALL_JUDGES]: court.get(COURT.ALL_JUDGES),
     [COURT.HEARING_IDS_REFRESHING]: court.get(COURT.HEARING_IDS_REFRESHING),
 
+    [SUBMIT.CREATING_ASSOCIATIONS]: submit.get(SUBMIT.CREATING_ASSOCIATIONS),
     [SUBMIT.REPLACING_ASSOCIATION]: submit.get(SUBMIT.REPLACING_ASSOCIATION),
     [SUBMIT.REPLACING_ENTITY]: submit.get(SUBMIT.REPLACING_ENTITY),
     [SUBMIT.SUBMITTING]: submit.get(SUBMIT.SUBMITTING)
