@@ -1483,8 +1483,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
     );
   }
 
-  addAppointmentsToSubmission = ({ existingCheckInAppointmentEntityKeyIds, newCheckInAppointmentEntities }) => {
-    if (existingCheckInAppointmentEntityKeyIds) this.setState({ existingCheckInAppointmentEntityKeyIds });
+  addAppointmentsToSubmission = ({ newCheckInAppointmentEntities }) => {
     if (newCheckInAppointmentEntities) this.setState({ newCheckInAppointmentEntities });
   }
 
