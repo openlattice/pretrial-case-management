@@ -45,10 +45,13 @@ type Props = {
   mapOptionsToRadioButtons :(options :{}, field :string) => void,
   mapOptionsToCheckboxButtons :(options :{}, field :string) => void,
   handleInputChange :(event :Object) => void,
+  addAppointmentsToSubmission :(event :Object) => void,
+  appointmentEntities :List<*>,
   renderNoContactPeople :() => void,
   conditions :Object,
   otherCondition :String,
-  disabled :boolean
+  disabled :boolean,
+  settingsIncludeVoiceEnroll :boolean
 };
 
 const ConditionsSection = ({
@@ -63,6 +66,7 @@ const ConditionsSection = ({
   renderNoContactPeople,
   settingsIncludeVoiceEnroll
 } :Props) => {
+  let appointmentsByDate = Map();
   const sortedEntities = appointmentEntities.sort((a1, a2) => {
     const a1StartDate = getFirstNeighborValue(a1, PROPERTY_TYPES.START_DATE);
     const a2StartDate = getFirstNeighborValue(a2, PROPERTY_TYPES.START_DATE);
@@ -70,11 +74,15 @@ const ConditionsSection = ({
     const a2moment = moment(a2StartDate);
     return a1moment.isBefore(a2moment) ? -1 : 1;
   });
+  sortedEntities.forEach((appointment) => {
+    const startDate = getFirstNeighborValue(appointment, PROPERTY_TYPES.START_DATE);
+    appointmentsByDate = appointmentsByDate.set(startDate, appointment);
+  });
   const checkInForm = disabled
     ? (
       <SimpleCards
           title="Appointments"
-          entities={sortedEntities} />
+          entities={appointmentsByDate.valueSeq()} />
     )
     : (
       <CheckInAppointmentForm
