@@ -113,7 +113,7 @@ function* createAssociationsWorker(action :SequenceAction) :Generator<*, *, *> {
     // Create new association
     const associationCalls = associationObjects.map(submitObject => (
       call(
-        DataApi.createAssociationss,
+        DataApi.createAssociations,
         submitObject
       )
     ));
