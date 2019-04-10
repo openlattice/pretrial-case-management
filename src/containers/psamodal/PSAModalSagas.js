@@ -35,6 +35,7 @@ import {
 import { LOAD_PSA_MODAL, loadPSAModal } from './PSAModalActionFactory';
 
 const {
+  CHECKIN_APPOINTMENTS,
   CONTACT_INFORMATION,
   HEARINGS,
   PEOPLE,
@@ -55,7 +56,7 @@ const getOrgId = state => state.getIn([STATE.APP, APP.SELECTED_ORG_ID], '');
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
-const LIST_ENTITY_SETS = List.of(STAFF, RELEASE_CONDITIONS, HEARINGS, PRETRIAL_CASES);
+const LIST_ENTITY_SETS = List.of(STAFF, RELEASE_CONDITIONS, HEARINGS, PRETRIAL_CASES, CHECKIN_APPOINTMENTS);
 
 function* loadPSAModalWorker(action :SequenceAction) :Generator<*, *, *> {
   const { psaId, callback } = action.value; // Deconstruct action argument
@@ -70,6 +71,7 @@ function* loadPSAModalWorker(action :SequenceAction) :Generator<*, *, *> {
     const app = yield select(getApp);
     const orgId = yield select(getOrgId);
     const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
+    const checkInAppointmentEntitySetId = getEntitySetIdFromApp(app, CHECKIN_APPOINTMENTS);
     const hearingsEntitySetId = getEntitySetIdFromApp(app, HEARINGS);
     const psaScoresEntitySetId = getEntitySetIdFromApp(app, PSA_SCORES);
     const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
@@ -156,7 +158,7 @@ function* loadPSAModalWorker(action :SequenceAction) :Generator<*, *, *> {
 
     let personNeighbors = yield call(SearchApi.searchEntityNeighborsWithFilter, peopleEntitySetId, {
       entityKeyIds: [personId],
-      sourceEntitySetIds: [contactInformationEntitySetId],
+      sourceEntitySetIds: [contactInformationEntitySetId, checkInAppointmentEntitySetId],
       destinationEntitySetIds: [subscriptionEntitySetId, contactInformationEntitySetId, hearingsEntitySetId]
     });
 
