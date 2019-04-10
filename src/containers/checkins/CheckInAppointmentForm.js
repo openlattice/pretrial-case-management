@@ -18,7 +18,7 @@ import SimpleCards from '../../components/cards/SimpleCards';
 import { APPOINTMENT_PATTERN, APPOINTMENT_TYPES } from '../../utils/consts/AppointmentConsts';
 import { toISODate, toISODateTime } from '../../utils/FormattingUtils';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
-import { getFirstNeighborValue } from '../../utils/DataUtils';
+import { getFirstNeighborValue, getNeighborDetailsForEntitySet } from '../../utils/DataUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
 import { InputGroup } from '../../components/person/PersonFormTags';
@@ -101,6 +101,20 @@ class NewHearingSection extends React.Component<Props, State> {
     this.state = INITIAL_STATE;
   }
 
+  static getDerivedStateFromProps(nextProps, prevState) {
+    let { appointmentEntities } = prevState;
+    const { existingAppointments } = nextProps;
+    if (!appointmentEntities.size && existingAppointments.size) {
+      existingAppointments.forEach((appointment) => {
+        const details = getNeighborDetailsForEntitySet(appointment);
+        const startDate = getFirstNeighborValue(appointment, PROPERTY_TYPES.START_DATE);
+        appointmentEntities = appointmentEntities.set(startDate, details);
+      });
+      return { appointmentEntities };
+    }
+    return null;
+  }
+
   createCheckInSubmissionValues = (date) => {
     const startDate = date;
     const endDate = toISODate(moment(startDate).add(1, 'd'));
@@ -173,17 +187,11 @@ class NewHearingSection extends React.Component<Props, State> {
 
   addNewAndExistingAppointments = (appointmentEntities) => {
     const { addAppointmentsToSubmission } = this.props;
-    let existingCheckInAppointmentEntityKeyIds = List();
     const newCheckInAppointmentEntities = appointmentEntities.valueSeq().filter((appointment) => {
       const appointmentEntityKeyId = getFirstNeighborValue(appointment, PROPERTY_TYPES.ENTITY_KEY_ID);
-      if (appointmentEntityKeyId) {
-        existingCheckInAppointmentEntityKeyIds = existingCheckInAppointmentEntityKeyIds.push(appointmentEntityKeyId);
-        return false;
-      }
-      return true;
+      return !appointmentEntityKeyId
     }).toJS();
-    existingCheckInAppointmentEntityKeyIds = existingCheckInAppointmentEntityKeyIds.toJS();
-    addAppointmentsToSubmission({ existingCheckInAppointmentEntityKeyIds, newCheckInAppointmentEntities });
+    addAppointmentsToSubmission({ newCheckInAppointmentEntities });
   }
 
   removeAppointmentEntity = ({ startDate, entityKeyId }) => {
