@@ -26,7 +26,6 @@ import {
 } from '../../utils/Layout';
 
 import * as EnrollActionFactory from './EnrollActionFactory';
-import * as Routes from '../../core/router/Routes';
 
 const BodyContainer = styled.div`
   text-align: center;
@@ -156,7 +155,6 @@ class EnrollVoice extends React.Component<Props, State> {
       personEntityKeyId: null,
       personId: null,
       blobObject: null,
-      userMedia: null
     };
   }
 
