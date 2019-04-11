@@ -29,7 +29,6 @@ import SearchableSelect from '../../components/controls/SearchableSelect';
 import InfoButton from '../../components/buttons/InfoButton';
 import BasicButton from '../../components/buttons/BasicButton';
 import releaseConditionsConfig from '../../config/formconfig/ReleaseConditionsConfig';
-import { NoContactRow } from '../../components/releaseconditions/ReleaseConditionsStyledTags';
 import { OL } from '../../utils/consts/Colors';
 import { getTimeOptions } from '../../utils/consts/DateTimeConsts';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
@@ -39,6 +38,11 @@ import { toISODate, toISODateTime, formatDateTime } from '../../utils/Formatting
 import { HEARING_CONSTS } from '../../utils/consts/HearingConsts';
 import { SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { formatJudgeName, getCourtroomOptions, getJudgeOptions } from '../../utils/HearingUtils';
+import {
+  NoContactRow,
+  OptionsGrid,
+  SubConditionsWrapper
+} from '../../components/releaseconditions/ReleaseConditionsStyledTags';
 import {
   getCreateAssociationObject,
   getEntityKeyId,
@@ -61,7 +65,9 @@ import {
   BOND_TYPES,
   CONDITION_LIST,
   C_247_MAPPINGS,
-  NO_CONTACT_TYPES
+  NO_CONTACT_TYPES,
+  CHECKIN_FREQUENCIES,
+  C_247_TYPES
 } from '../../utils/consts/ReleaseConditionConsts';
 import {
   APP,
@@ -735,8 +741,9 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
     this.setState(state);
   }
 
-  mapOptionsToRadioButtons = (options :{}, field :string) => {
+  mapOptionsToRadioButtons = (options :{}, field :string, parentState ?:Object) => {
     const { disabled } = this.state;
+    const stateOfTruth = parentState || this.state;
     return (
       Object.values(options).map(option => (
         <RadioWrapper key={option}>
@@ -744,7 +751,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
               large
               name={field}
               value={option}
-              checked={this.state[field] === option}
+              checked={stateOfTruth[field] === option}
               onChange={this.handleInputChange}
               disabled={disabled}
               label={option} />
@@ -753,8 +760,9 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
     );
   }
 
-  mapOptionsToCheckboxButtons = (options :{}, field :string) => {
+  mapOptionsToCheckboxButtons = (options :{}, field :string, parentState ?:Object) => {
     const { disabled } = this.state;
+    const stateOfTruth = parentState || this.state;
     return (
       Object.values(options).map(option => (
         <RadioWrapper key={option}>
@@ -762,28 +770,12 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
               large
               name={field}
               value={option}
-              checked={this.state[field].includes(option)}
+              checked={stateOfTruth[field].includes(option)}
               onChange={this.handleCheckboxChange}
               disabled={disabled}
               label={option} />
         </RadioWrapper>
       ))
-    );
-  }
-
-  renderConditionCheckbox = (condition, optionalLabel) => {
-    const { conditions, disabled } = this.state;
-    return (
-      <RadioWrapper>
-        <CheckboxButton
-            large
-            name="conditions"
-            value={condition}
-            checked={conditions.includes(condition)}
-            label={optionalLabel || condition}
-            disabled={disabled}
-            onChange={this.handleConditionChange} />
-      </RadioWrapper>
     );
   }
 
@@ -1550,6 +1542,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
                   bondAmount={`${state[BOND_AMOUNT]}`}
                   disabled={state.disabled} />
               <ConditionsSection
+                  parentState={this.state}
                   appointmentEntities={allCheckInAppointments}
                   addAppointmentsToSubmission={this.addAppointmentsToSubmission}
                   conditions={state[CONDITIONS]}
@@ -1557,8 +1550,8 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
                   handleInputChange={this.handleInputChange}
                   person={person}
                   settingsIncludeVoiceEnroll={settingsIncludeVoiceEnroll}
-                  mapOptionsToRadioButtons={this.mapOptionsToRadioButtons}
                   mapOptionsToCheckboxButtons={this.mapOptionsToCheckboxButtons}
+                  mapOptionsToRadioButtons={this.mapOptionsToRadioButtons}
                   otherCondition={state[OTHER_CONDITION_TEXT]}
                   renderNoContactPeople={this.renderNoContactPeople} />
             </>
