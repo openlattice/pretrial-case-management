@@ -77,6 +77,8 @@ const EnrollVoiceModal = ({
               </ColumnRow>
               <ColumnRow>
                 <EnrollVoice
+                    open={open}
+                    onClose={onClose}
                     personId={personId}
                     personEntityKeyId={personEntityKeyId}
                     personName={personName} />
