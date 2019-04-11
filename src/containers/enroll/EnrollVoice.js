@@ -15,6 +15,7 @@ import LogoLoader from '../../components/LogoLoader';
 import DotProgressBar from '../../components/DotProgressBar';
 import StyledButton from '../../components/buttons/StyledButton';
 import VOICE_PROMPT from './Consts';
+import { OL } from '../../utils/consts/Colors';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { STATE, ENROLL } from '../../utils/consts/FrontEndStateConsts';
 import {
@@ -29,6 +30,14 @@ import * as Routes from '../../core/router/Routes';
 
 const BodyContainer = styled.div`
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+`;
+
+const SectionWrapper = styled(StyledSectionWrapper)`
+  border: none;
 `;
 
 const PromptHeaderText = styled.div`
@@ -39,14 +48,14 @@ const QuoteLeft = styled(FontAwesomeIcon).attrs({
   icon: faQuoteLeft
 })`
   margin: 0 6px 0 -20px;
-  color: #36454f;
+  color: ${OL.PURPLE03};
 `;
 
 const QuoteRight = styled(FontAwesomeIcon).attrs({
   icon: faQuoteRight
 })`
   margin: 0 -20px 0 6px;
-  color: #36454f;
+  color: ${OL.PURPLE03};
 `;
 
 const PromptText = styled.div`
@@ -57,7 +66,6 @@ const PromptText = styled.div`
   max-width: 600px;
   max-height: 300px;
   display: inline-block;
-  overflow-y: scroll;
   border-radius: 3px;
 `;
 
@@ -125,13 +133,14 @@ const RememberPinText = styled.div`
 type Props = {
   personId :string,
   personEntityKeyId :string,
+  profileEntityKeyId :string,
   loadingProfile :boolean,
   profileId :string,
   pin :string,
   submittingAudio :boolean,
   numSubmissions :number,
   errorMessage :string,
-  history :string[],
+  onClose :() => void,
   actions :{
     getProfileRequest :(personId :string, personEntityKeyId :string) => void,
     enrollVoiceRequest :(profileId :string, blobObject :Object) => void,
@@ -146,17 +155,28 @@ class EnrollVoice extends React.Component<Props, State> {
     this.state = {
       personEntityKeyId: null,
       personId: null,
-      blobObject: null
+      blobObject: null,
+      userMedia: null
     };
   }
 
   static getDerivedStateFromProps(nextProps, prevState) {
-    const { actions, personEntityKeyId, personId } = nextProps;
+    const {
+      actions,
+      profileEntityKeyId,
+      loadingProfile,
+      personEntityKeyId,
+      personId,
+      profileId
+    } = nextProps;
     const receivedPersonEntityKeyId = !prevState.personEntityKeyId && personEntityKeyId;
     const receivedPersonId = !prevState.personId && personId;
-    if (actions && receivedPersonEntityKeyId && receivedPersonId) {
+    if (!loadingProfile && receivedPersonEntityKeyId && receivedPersonId) {
       actions.getProfileRequest(personId, personEntityKeyId);
       return { personEntityKeyId, personId };
+    }
+    if (profileId && !profileEntityKeyId) {
+      actions.getProfileRequest(personId, personEntityKeyId);
     }
     return null;
   }
@@ -168,8 +188,8 @@ class EnrollVoice extends React.Component<Props, State> {
   }
 
   handleClose = () => {
-    const { history } = this.props;
-    history.push(Routes.DASHBOARD);
+    const { onClose } = this.props;
+    onClose();
   }
 
   onSelectPerson = (person, personEntityKeyId) => {
@@ -182,10 +202,10 @@ class EnrollVoice extends React.Component<Props, State> {
   getSearchPeopleSection = () => <SearchPersonContainer onSelectPerson={this.onSelectPerson} />;
 
   submitAudio = () => {
-    const { actions, profileId } = this.props;
+    const { actions, profileEntityKeyId, profileId } = this.props;
     const { blobObject } = this.state;
     this.setState({ blobObject: null });
-    actions.enrollVoiceRequest(profileId, blobObject);
+    actions.enrollVoiceRequest(profileId, profileEntityKeyId, blobObject);
   }
 
   renderSubmit = () => {
@@ -207,6 +227,7 @@ class EnrollVoice extends React.Component<Props, State> {
 
   enrollmentSuccess = () => {
     const { pin } = this.props;
+    this.stopMicrophoneUse()
     return (
       <SuccessWrapper>
         <Success>Success! Your voice has been enrolled.</Success>
@@ -224,13 +245,13 @@ class EnrollVoice extends React.Component<Props, State> {
 
   getRecordAudioSection = () => {
     const {
-      profileId,
+      profileEntityKeyId,
       loadingProfile,
       numSubmissions,
       actions
     } = this.props;
 
-    if (loadingProfile || !profileId) return <LogoLoader loadingText="Loading profile..." />;
+    if (!profileEntityKeyId) return <LogoLoader loadingText="Loading profile..." />;
 
     return (
       <BodyContainer>
@@ -244,10 +265,14 @@ class EnrollVoice extends React.Component<Props, State> {
             <QuoteRight />
           </PromptTextWrapper>
         </PromptText>
-        <AudioRecorder onStart={actions.clearError} onStop={this.onStopRecording} />
         <ProgressBarWrapper>
-          <DotProgressBar numSteps={3} current={numSubmissions} />
+          {
+            loadingProfile
+              ? <LogoLoader noPadding size="30px" loadingText="Loading profile..." />
+              : <DotProgressBar numSteps={3} current={numSubmissions} />
+          }
         </ProgressBarWrapper>
+        <AudioRecorder onStart={actions.clearError} onStop={this.onStopRecording} />
         <br />
         {this.renderSubmit()}
         {this.renderError()}
@@ -268,10 +293,10 @@ class EnrollVoice extends React.Component<Props, State> {
     return (
       <StyledFormViewWrapper>
         <StyledFormWrapper>
-          <StyledSectionWrapper>
+          <SectionWrapper>
             {this.renderContent()}
             <StyledTopFormNavBuffer />
-          </StyledSectionWrapper>
+          </SectionWrapper>
         </StyledFormWrapper>
       </StyledFormViewWrapper>
     );
@@ -283,6 +308,7 @@ function mapStateToProps(state :Map<>) :Object {
 
   return {
     [ENROLL.LOADING_PROFILE]: enroll.get(ENROLL.LOADING_PROFILE),
+    [ENROLL.ENTITY_KEY_ID]: enroll.get(ENROLL.ENTITY_KEY_ID),
     [ENROLL.PROFILE_ID]: enroll.get(ENROLL.PROFILE_ID),
     [ENROLL.PIN]: enroll.get(ENROLL.PIN),
     [ENROLL.SUBMITTING_AUDIO]: enroll.get(ENROLL.SUBMITTING_AUDIO),
