@@ -10,6 +10,7 @@ import * as ActionTypes from './EnrollActionTypes';
 
 const INITIAL_STATE_FIELDS = {
   [ENROLL.LOADING_PROFILE]: false,
+  [ENROLL.ENTITY_KEY_ID]: '',
   [ENROLL.PROFILE_ID]: '',
   [ENROLL.PIN]: '',
   [ENROLL.SUBMITTING_AUDIO]: false,
@@ -33,6 +34,7 @@ function enrollReducer(state :Map<> = INITIAL_STATE, action :Object) {
     case ActionTypes.GET_PROFILE_SUCCESS:
       return state
         .set(ENROLL.PROFILE_ID, action.profileId)
+        .set(ENROLL.ENTITY_KEY_ID, action.profileEntityKeyId)
         .set(ENROLL.PIN, action.pin)
         .set(ENROLL.LOADING_PROFILE, false)
         .set(ENROLL.NUM_SUBMISSIONS, action.numSubmissions)
