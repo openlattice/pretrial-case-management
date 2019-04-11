@@ -61,9 +61,9 @@ export const formatJudgeName = (judge) => {
       PROPERTY_TYPES.MIDDLE_NAME,
       PROPERTY_TYPES.LAST_NAME
     ]);
-    const fullNameString = formatPersonName(firstName, middleName, lastName);
+    const { lastFirstMid } = formatPersonName(firstName, middleName, lastName);
     if (firstName && lastName) {
-      return fullNameString;
+      return lastFirstMid;
     }
   }
   return 'NA';
