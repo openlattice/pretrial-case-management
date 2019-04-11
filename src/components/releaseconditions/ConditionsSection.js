@@ -69,6 +69,7 @@ const UnderlinedTextButton = styled.div`
 `;
 
 type Props = {
+  parentState :Object,
   person :Map<*, *>,
   personIsEnrolled :boolean,
   mapOptionsToRadioButtons :(options :{}, field :string) => void,
@@ -97,8 +98,8 @@ class ConditionsSection extends React.Component<Props, State> {
   openEnrollVoiceModal = () => this.setState({ enrollVoiceModalOpen: true });
   closeEnrollVoiceModal = () => {
     const { actions } = this.props;
-    actions.clearEnrollVoice();
     this.setState({ enrollVoiceModalOpen: false });
+    actions.clearEnrollVoice();
   };
 
   renderVoiceEnrollmentModal = () => {
@@ -127,12 +128,12 @@ class ConditionsSection extends React.Component<Props, State> {
   );
 
   renderSimpleCheckInSection = () => {
-    const { mapOptionsToRadioButtons } = this.props;
+    const { parentState, mapOptionsToRadioButtons } = this.props;
     return (
       <SubConditionsWrapper>
         <h2>Check-in frequency</h2>
         <OptionsGrid numColumns={3}>
-          {mapOptionsToRadioButtons(CHECKIN_FREQUENCIES, 'checkinFrequency')}
+          {mapOptionsToRadioButtons(CHECKIN_FREQUENCIES, 'checkinFrequency', parentState)}
         </OptionsGrid>
         <hr />
       </SubConditionsWrapper>
@@ -140,13 +141,13 @@ class ConditionsSection extends React.Component<Props, State> {
   };
 
   render247Project = () => {
-    const { mapOptionsToCheckboxButtons } = this.props;
+    const { parentState, mapOptionsToCheckboxButtons } = this.props;
     return (
       <SubConditionsWrapper>
         <h2>24/7 Requirements</h2>
         <h3>Must sign 24/7 Project agreement and comply with all terms and conditions.</h3>
         <OptionsGrid numColumns={3}>
-          {mapOptionsToCheckboxButtons(C_247_TYPES, 'c247Types')}
+          {mapOptionsToCheckboxButtons(C_247_TYPES, 'c247Types', parentState)}
         </OptionsGrid>
         <hr />
       </SubConditionsWrapper>
@@ -212,10 +213,10 @@ class ConditionsSection extends React.Component<Props, State> {
   }
 
   renderConditionsGrid = () => {
-    const { mapOptionsToCheckboxButtons } = this.props;
+    const { parentState, mapOptionsToCheckboxButtons } = this.props;
     return (
       <OptionsGrid numColumns={4}>
-        {mapOptionsToCheckboxButtons(CONDITION_LIST, 'conditions')}
+        {mapOptionsToCheckboxButtons(CONDITION_LIST, 'conditions', parentState)}
       </OptionsGrid>
     );
   }
