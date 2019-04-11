@@ -149,6 +149,7 @@ export const EDM = {
 
 export const ENROLL = {
   LOADING_PROFILE: 'loadingProfile',
+  ENTITY_KEY_ID: 'profileEntityKeyId',
   PROFILE_ID: 'profileId',
   PIN: 'pin',
   SUBMITTING_AUDIO: 'submittingAudio',
