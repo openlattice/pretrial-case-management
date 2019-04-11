@@ -77,6 +77,7 @@ class AudioRecorder extends React.Component {
   }
 
   componentDidMount() {
+    const { hasMedia } = this.state;
     const mediaSupport :boolean = !!(
       navigator.getUserMedia
       || navigator.webkitGetUserMedia
@@ -89,7 +90,7 @@ class AudioRecorder extends React.Component {
       return;
     }
 
-    if (!this.state.hasMedia) {
+    if (!hasMedia) {
       this.requestUserMedia();
     }
   }
@@ -134,6 +135,10 @@ class AudioRecorder extends React.Component {
     this.cancelAnyAnimationFrame();
     if (this.mediaRecorder.state === 'recording') {
       this.mediaRecorder.stop();
+    }
+    if (this.mediaRecorder.state === 'inactive') {
+      this.mediaRecorder.stream.getTracks() // get all tracks from the MediaStream
+        .forEach(track => track.stop());
     }
   }
 
