@@ -55,3 +55,9 @@ export function clearError() {
     type: ActionTypes.CLEAR_ERROR
   };
 }
+
+export function clearEnrollVoice() {
+  return {
+    type: ActionTypes.CLEAR_ENROLL_VOICE
+  };
+}
