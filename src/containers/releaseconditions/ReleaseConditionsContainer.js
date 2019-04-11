@@ -1494,6 +1494,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
     const RELEASED = release !== RELEASES.RELEASED;
     const NO_WARRANT = warrant !== WARRANTS.WARRANT;
     const {
+      hearingNeighbors,
       creatingAssociations,
       hearingIdsRefreshing,
       loadingReleaseCondtions,
@@ -1502,7 +1503,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       selectedOrganizationSettings,
       submitting
     } = this.props;
-
+    const person = getNeighborDetailsForEntitySet(hearingNeighbors, PEOPLE);
     const { defaultCheckInAppointments } = this.getNeighborEntities(this.props);
     const personCheckInAppointments = personNeighbors.get(CHECKIN_APPOINTMENTS, Map());
     const allCheckInAppointments = defaultCheckInAppointments.merge(personCheckInAppointments);
@@ -1554,6 +1555,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
                   conditions={state[CONDITIONS]}
                   disabled={state.disabled}
                   handleInputChange={this.handleInputChange}
+                  person={person}
                   settingsIncludeVoiceEnroll={settingsIncludeVoiceEnroll}
                   mapOptionsToRadioButtons={this.mapOptionsToRadioButtons}
                   mapOptionsToCheckboxButtons={this.mapOptionsToCheckboxButtons}
