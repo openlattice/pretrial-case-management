@@ -1,37 +1,34 @@
+/*
+ * @flow
+ */
 import React from 'react';
-import PropTypes from 'prop-types';
 import styled from 'styled-components';
-import { faTimes, faQuoteLeft, faQuoteRight } from '@fortawesome/pro-regular-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
+import { faQuoteLeft, faQuoteRight } from '@fortawesome/pro-regular-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+
 import AudioRecorder from '../../components/AudioRecorder';
 import SearchPersonContainer from '../person/SearchPersonContainer';
-import LoadingSpinner from '../../components/LoadingSpinner';
+import LogoLoader from '../../components/LogoLoader';
 import DotProgressBar from '../../components/DotProgressBar';
 import StyledButton from '../../components/buttons/StyledButton';
 import VOICE_PROMPT from './Consts';
-import * as ActionFactory from './EnrollActionFactory';
-import * as Routes from '../../core/router/Routes';
+import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { STATE, ENROLL } from '../../utils/consts/FrontEndStateConsts';
 import {
-  CloseX,
   StyledFormViewWrapper,
   StyledFormWrapper,
   StyledSectionWrapper,
-  StyledTitleWrapper,
   StyledTopFormNavBuffer
 } from '../../utils/Layout';
-import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+
+import * as EnrollActionFactory from './EnrollActionFactory';
+import * as Routes from '../../core/router/Routes';
 
 const BodyContainer = styled.div`
   text-align: center;
-`;
-
-const LoadingProfileText = styled.div`
-  font-size: 18px;
-  margin: 20px;
 `;
 
 const PromptHeaderText = styled.div`
@@ -125,21 +122,24 @@ const RememberPinText = styled.div`
   margin-bottom: 30px;
 `;
 
-class EnrollVoice extends React.Component {
+type Props = {
+  personId :string,
+  personEntityKeyId :string,
+  loadingProfile :boolean,
+  profileId :string,
+  pin :string,
+  submittingAudio :boolean,
+  numSubmissions :number,
+  errorMessage :string,
+  history :string[],
+  actions :{
+    getProfileRequest :(personId :string, personEntityKeyId :string) => void,
+    enrollVoiceRequest :(profileId :string, blobObject :Object) => void,
+    clearError :() => void,
+  }
+}
 
-  static propTypes = {
-    loadingProfile: PropTypes.bool.isRequired,
-    profileId: PropTypes.string.isRequired,
-    pin: PropTypes.string.isRequired,
-    submittingAudio: PropTypes.bool.isRequired,
-    numSubmissions: PropTypes.number.isRequired,
-    errorMessage: PropTypes.string.isRequired,
-    actions: PropTypes.shape({
-      getProfileRequest: PropTypes.func.isRequired,
-      enrollVoiceRequest: PropTypes.func.isRequired,
-      clearError: PropTypes.func.isRequired
-    }).isRequired
-  };
+class EnrollVoice extends React.Component<Props, State> {
 
   constructor(props) {
     super(props);
@@ -148,6 +148,17 @@ class EnrollVoice extends React.Component {
       personId: null,
       blobObject: null
     };
+  }
+
+  static getDerivedStateFromProps(nextProps, prevState) {
+    const { actions, personEntityKeyId, personId } = nextProps;
+    const receivedPersonEntityKeyId = !prevState.personEntityKeyId && personEntityKeyId;
+    const receivedPersonId = !prevState.personId && personId;
+    if (actions && receivedPersonEntityKeyId && receivedPersonId) {
+      actions.getProfileRequest(personId, personEntityKeyId);
+      return { personEntityKeyId, personId };
+    }
+    return null;
   }
 
   onStopRecording = (recordedBlob) => {
@@ -161,16 +172,14 @@ class EnrollVoice extends React.Component {
     history.push(Routes.DASHBOARD);
   }
 
-  getSearchPeopleSection = () => {
+  onSelectPerson = (person, personEntityKeyId) => {
     const { actions } = this.props;
-    return (
-      <SearchPersonContainer onSelectPerson={(person, personEntityKeyId) => {
-        const personId = person.getIn([PROPERTY_TYPES.PERSON_ID, 0], '');
-        this.setState({ personEntityKeyId, personId });
-        actions.getProfileRequest(personId, personEntityKeyId);
-      }} />
-    );
-  };
+    const personId = person.getIn([PROPERTY_TYPES.PERSON_ID, 0], '');
+    this.setState({ personEntityKeyId, personId });
+    actions.getProfileRequest(personId, personEntityKeyId);
+  }
+
+  getSearchPeopleSection = () => <SearchPersonContainer onSelectPerson={this.onSelectPerson} />;
 
   submitAudio = () => {
     const { actions, profileId } = this.props;
@@ -183,14 +192,7 @@ class EnrollVoice extends React.Component {
     const { blobObject } = this.state;
     const { submittingAudio, numSubmissions } = this.props;
     const attemptNum = numSubmissions + 1;
-    if (submittingAudio) {
-      return (
-        <div>
-          <LoadingSpinner />
-          <LoadingProfileText>{`Submitting audio clip ${attemptNum}/3`}</LoadingProfileText>
-        </div>
-      );
-    }
+    if (submittingAudio) return <LogoLoader loadingText={`Submitting audio clip ${attemptNum}/3`} />;
 
     if (!blobObject) return null;
     return (
@@ -221,16 +223,14 @@ class EnrollVoice extends React.Component {
   }
 
   getRecordAudioSection = () => {
-    const { loadingProfile, numSubmissions, actions } = this.props;
+    const {
+      profileId,
+      loadingProfile,
+      numSubmissions,
+      actions
+    } = this.props;
 
-    if (loadingProfile) {
-      return (
-        <div>
-          <LoadingSpinner />
-          <LoadingProfileText>Loading profile...</LoadingProfileText>
-        </div>
-      );
-    }
+    if (loadingProfile || !profileId) return <LogoLoader loadingText="Loading profile..." />;
 
     return (
       <BodyContainer>
@@ -268,10 +268,6 @@ class EnrollVoice extends React.Component {
     return (
       <StyledFormViewWrapper>
         <StyledFormWrapper>
-          <StyledTitleWrapper>
-            <div>Enroll Voice Profile</div>
-            <CloseX icon={faTimes} onClick={this.handleClose} />
-          </StyledTitleWrapper>
           <StyledSectionWrapper>
             {this.renderContent()}
             <StyledTopFormNavBuffer />
@@ -298,8 +294,8 @@ function mapStateToProps(state :Map<>) :Object {
 function mapDispatchToProps(dispatch :Function) :Object {
   const actions :{ [string] :Function } = {};
 
-  Object.keys(ActionFactory).forEach((action :string) => {
-    actions[action] = ActionFactory[action];
+  Object.keys(EnrollActionFactory).forEach((action :string) => {
+    actions[action] = EnrollActionFactory[action];
   });
 
   return {
