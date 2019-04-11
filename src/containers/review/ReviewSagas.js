@@ -740,7 +740,6 @@ function* updateScoresAndRiskFactorsWorker(action :SequenceAction) :Generator<*,
       notesEntity
     } = action.value;
     const app = yield select(getApp);
-    const orgId = yield select(getOrgId);
     const psaScoresEntitySetId = getEntitySetIdFromApp(app, PSA_SCORES);
     const psaRiskFactorsEntitySetId = getEntitySetIdFromApp(app, PSA_RISK_FACTORS);
     const dmfEntitySetId = getEntitySetIdFromApp(app, DMF_RESULTS);
