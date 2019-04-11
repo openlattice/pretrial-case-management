@@ -12,12 +12,13 @@ export function getProfileRequest(personId :string, personEntityKeyId :string) {
   };
 }
 
-export function getProfileSuccess(profileId :string, pin :string, numSubmissions :number) {
+export function getProfileSuccess(profileId :string, pin :string, numSubmissions :number, profileEntityKeyId :string) {
   return {
     type: ActionTypes.GET_PROFILE_SUCCESS,
     profileId,
     pin,
-    numSubmissions
+    numSubmissions,
+    profileEntityKeyId
   };
 }
 
@@ -28,10 +29,11 @@ export function getProfileFailure(errorMessage :string) {
   };
 }
 
-export function enrollVoiceRequest(profileId :string, audio :Object) {
+export function enrollVoiceRequest(profileId :string, profileEntityKeyId :string, audio :Object) {
   return {
     type: ActionTypes.ENROLL_VOICE_REQUEST,
     profileId,
+    profileEntityKeyId,
     audio
   };
 }
