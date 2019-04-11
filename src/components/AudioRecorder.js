@@ -136,10 +136,6 @@ class AudioRecorder extends React.Component {
     if (this.mediaRecorder.state === 'recording') {
       this.mediaRecorder.stop();
     }
-    if (this.mediaRecorder.state === 'inactive') {
-      this.mediaRecorder.stream.getTracks() // get all tracks from the MediaStream
-        .forEach(track => track.stop());
-    }
   }
 
   onMediaStop = () => {
