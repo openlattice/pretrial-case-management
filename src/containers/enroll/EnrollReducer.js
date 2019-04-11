@@ -64,6 +64,9 @@ function enrollReducer(state :Map<> = INITIAL_STATE, action :Object) {
     case ActionTypes.CLEAR_ERROR:
       return state.set(ENROLL.ERROR, '');
 
+    case ActionTypes.CLEAR_ENROLL_VOICE:
+      return INITIAL_STATE;
+
     default:
       return state;
   }
