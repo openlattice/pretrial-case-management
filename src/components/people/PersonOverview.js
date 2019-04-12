@@ -7,6 +7,7 @@ import styled from 'styled-components';
 import { Map, List } from 'immutable';
 
 import AboutPersonGeneral from '../person/AboutPersonGeneral';
+import EnrollStatusBanner from '../enroll/EnrollStatusBanner';
 import HearingCardsWithTitle from '../hearings/HearingCardsWithTitle';
 import SubscriptionInfo from '../subscription/SubscriptionInfo';
 import CaseHistoryList from '../casehistory/CaseHistoryList';
@@ -58,7 +59,9 @@ type Props = {
   refreshingPersonNeighbors :boolean,
   selectedPersonData :Map<*, *>,
   allScheduledHearings :List,
-  updatingEntity :boolean
+  updatingEntity :boolean,
+  settingsIncludeVoiceEnroll :boolean,
+  personVoiceProfile :Map<*, *>
 }
 
 const StyledViewMoreLinkForCases = styled(ViewMoreLink)`
@@ -90,7 +93,9 @@ const PersonOverview = ({
   openDetailsModal,
   readOnlyPermissions,
   refreshingPersonNeighbors,
-  updatingEntity
+  updatingEntity,
+  personVoiceProfile,
+  settingsIncludeVoiceEnroll
 } :Props) => {
 
   const subscription = neighbors.getIn([SUBSCRIPTION, PSA_NEIGHBOR.DETAILS], Map());
@@ -139,6 +144,17 @@ const PersonOverview = ({
       ) : null
   );
 
+  const renderEnrollStatusBanner = () => (
+    settingsIncludeVoiceEnroll
+      ? (
+        <StyledColumnRowWrapper>
+          <StyledColumnRow withPadding>
+            <EnrollStatusBanner person={selectedPersonData} personVoiceProfile={personVoiceProfile} />
+          </StyledColumnRow>
+        </StyledColumnRowWrapper>
+      ) : null
+  );
+
   if (loading) {
     return <LogoLoader loadingText="Loading Person Details..." />;
   }
@@ -155,6 +171,7 @@ const PersonOverview = ({
             ? (
               <>
                 {renderSubscriptionInfo()}
+                {renderEnrollStatusBanner()}
                 <StyledColumnRowWrapper>
                   <StyledColumnRowWithPadding>
                     <StyledViewMoreLinkForHearings to={`${Routes.PERSON_DETAILS_ROOT}/${personId}${Routes.HEARINGS}`}>
