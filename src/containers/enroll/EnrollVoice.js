@@ -225,7 +225,6 @@ class EnrollVoice extends React.Component<Props, State> {
 
   enrollmentSuccess = () => {
     const { pin } = this.props;
-    this.stopMicrophoneUse()
     return (
       <SuccessWrapper>
         <Success>Success! Your voice has been enrolled.</Success>
