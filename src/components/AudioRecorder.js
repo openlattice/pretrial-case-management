@@ -97,6 +97,8 @@ class AudioRecorder extends React.Component {
 
   componentWillUnmount() {
     this.onStop();
+    // turn off user media
+    this.mediaRecorder.stream.getTracks().forEach(track => track.stop());
   }
 
   requestUserMedia = () => {
