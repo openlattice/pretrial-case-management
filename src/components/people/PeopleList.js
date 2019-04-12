@@ -39,6 +39,8 @@ const PeopleList = ({ people, isFetchingPeople, didMapPeopleToProps } :Props) =>
         return people.map(person => (
           <PersonCard
               hasOpenPSA={person.hasOpenPSA}
+              multipleOpenPSAs={person.multipleOpenPSAs}
+              isReceivingReminders={person.isReceivingReminders}
               key={person.personId}
               personObj={person} />
         ));

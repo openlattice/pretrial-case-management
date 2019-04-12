@@ -157,7 +157,17 @@ const hearing = (
     }
   });
   y += 2 * Y_INC_LARGE;
-  doc.text(X_COL_1, y, 'Need help? Call 605-721-4518 or 605-721-4509 with any questions or concerns.');
+  doc.text(X_COL_1, y,
+    'This is a Friendly Court Reminder for your Upcoming Court Date according to your RELEASE PAPERWORK at Booking.')
+  y += Y_INC_SMALL;
+  doc.text(X_COL_1, y,
+  'If you need to reschedule and you have no Attorney assigned or retained, please call the Clerk of Courts at 605-394-2575.');
+  y += Y_INC_LARGE;
+  y += Y_INC_SMALL;
+  doc.text(X_COL_1, y, 'If you’ve already rescheduled, please attend your New Court Date and discard this notice.');
+  y += Y_INC_LARGE;
+  y += Y_INC_SMALL;
+  doc.text(X_COL_1, y, 'Pre-Trial Release Department');
 
   y += Y_INC_SMALL;
   page = pageInit + 1;

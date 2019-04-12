@@ -330,7 +330,7 @@ class SelectChargesContainer extends React.Component<Props, State> {
                 name="arrestDate"
                 value={arrestDate}
                 onChange={(arrdate) => {
-                  this.setState({ arrestDate: arrdate });
+                  this.setState({ arrestDate: moment(arrdate).toISOString(true) });
                 }} />
           </InputLabel>
           { this.renderDispositionOrCourtCaseNumberInput() }

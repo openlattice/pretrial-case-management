@@ -72,7 +72,7 @@ const DateTimeRange = ({
               dateFormat={dateFormat}
               timeFormat={timeFormat}
               value={startDate}
-              onChange={onStartChange}
+              onChange={time => onStartChange(time.slice(0, time.length - 2))}
               hideIcon
               times={MIL_TIME}
               timeIsEditable
@@ -86,7 +86,7 @@ const DateTimeRange = ({
               dateFormat={dateFormat}
               timeFormat={timeFormat}
               value={endDate}
-              onChange={onEndChange}
+              onChange={time => onEndChange(time.slice(0, time.length - 2))}
               hideIcon
               times={MIL_TIME}
               timeIsEditable
