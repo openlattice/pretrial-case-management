@@ -94,7 +94,7 @@ export function* getProfileWorker(action :SequenceAction) :Generator<*, *, *> {
     const peopleNeighborsById = yield call(SearchApi.searchEntityNeighborsWithFilter, peopleEntitySetId, {
       entityKeyIds: [personEntityKeyId],
       sourceEntitySetIds: [enrollVoiceEntitySetId],
-      destinationEntitySetIds: [enrollVoiceEntitySetId]
+      destinationEntitySetIds: []
     });
     const personNeighbors = fromJS(Object.values(peopleNeighborsById)[0]);
     let voiceProfileEntityKeyId;
