@@ -70,10 +70,6 @@ font-size: 12px;
 
 type Props = {
   app :Map<*, *>,
-  personEntityKeyId :string,
-  hearingEntityKeyId :string,
-  independentSubmission :boolean,
-  submitting :boolean,
   addAppointmentsToSubmission :() => void,
   actions :{
     refreshPersonNeighbors :(values :{ personId :string }) => void,
@@ -189,7 +185,7 @@ class NewHearingSection extends React.Component<Props, State> {
     const { addAppointmentsToSubmission } = this.props;
     const newCheckInAppointmentEntities = appointmentEntities.valueSeq().filter((appointment) => {
       const appointmentEntityKeyId = getFirstNeighborValue(appointment, PROPERTY_TYPES.ENTITY_KEY_ID);
-      return !appointmentEntityKeyId
+      return !appointmentEntityKeyId;
     }).toJS();
     addAppointmentsToSubmission({ newCheckInAppointmentEntities });
   }
@@ -226,7 +222,7 @@ class NewHearingSection extends React.Component<Props, State> {
 
     return (
       <SimpleCards
-          title="Appointments"
+          title="Scheduled Check-ins"
           entities={sortedEntities}
           removeEntity={this.removeAppointmentEntity} />
     );
