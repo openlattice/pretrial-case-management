@@ -71,8 +71,8 @@ export default function* sagas() :Generator<*, *, *> {
     fork(EntityDataModelApiSagas.getAllPropertyTypesWatcher),
 
     // EnrollSagas
-    fork(EnrollSagas.enrollVoiceProfile),
-    fork(EnrollSagas.getOrCreateProfile),
+    fork(EnrollSagas.enrollVoiceWatcher),
+    fork(EnrollSagas.getProfileWatcher),
 
     // Manual Reminders
     fork(ManualRemindersSagas.loadManualRemindersFormWatcher),
