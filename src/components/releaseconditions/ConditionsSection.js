@@ -2,25 +2,16 @@
  * @flow
  */
 import moment from 'moment';
-import styled from 'styled-components';
 import React from 'react';
 import { Map } from 'immutable';
-import { connect } from 'react-redux';
-import { bindActionCreators } from 'redux';
 
-import { faMicrophoneAlt, faMicrophoneAltSlash } from '@fortawesome/pro-regular-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-
-import EnrollVoiceModal from '../enroll/EnrollVoiceModal';
+import EnrollStatusBanner from '../enroll/EnrollStatusBanner';
 import StyledInput from '../controls/StyledInput';
 import CheckInAppointmentForm from '../../containers/checkins/CheckInAppointmentForm';
 import SimpleCards from '../cards/SimpleCards';
 import { RowWrapper, OptionsGrid, SubConditionsWrapper } from './ReleaseConditionsStyledTags';
 import { RELEASE_CONDITIONS } from '../../utils/consts/Consts';
-import { OL } from '../../utils/consts/Colors';
-import { getEntityProperties, getFirstNeighborValue } from '../../utils/DataUtils';
-import { formatPersonName, formatPeopleInfo } from '../../utils/PeopleUtils';
-import { InputRow } from '../person/PersonFormTags';
+import { getFirstNeighborValue } from '../../utils/DataUtils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import {
   CONDITION_LIST,
@@ -28,50 +19,14 @@ import {
   C_247_TYPES
 } from '../../utils/consts/ReleaseConditionConsts';
 
-import * as EnrollActionFactory from '../../containers/enroll/EnrollActionFactory';
-
-const {
-  ENTITY_KEY_ID,
-  FIRST_NAME,
-  LAST_NAME,
-  MIDDLE_NAME,
-  PERSON_ID,
-  START_DATE
-} = PROPERTY_TYPES;
+const { START_DATE } = PROPERTY_TYPES;
 
 const { OTHER_CONDITION_TEXT } = RELEASE_CONDITIONS;
-
-const Status = styled(InputRow)`
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  align-items: center;
-  margin: 0;
-`;
-
-const StatusText = styled.div`
-  font-size: 16px;
-  font-weight: 600;
-  padding: 5px 10px;
-`;
-
-const StatusIconContainer = styled.div`
-  margin: 5px 0;
-`;
-
-const UnderlinedTextButton = styled.div`
-  display: block;
-  color: ${OL.PURPLE02};
-  text-decoration: 'underline';
-  :hover {
-    cursor: pointer;
-  }
-`;
 
 type Props = {
   parentState :Object,
   person :Map<*, *>,
-  personIsEnrolled :boolean,
+  personVoiceProfile :boolean,
   mapOptionsToRadioButtons :(options :{}, field :string) => void,
   mapOptionsToCheckboxButtons :(options :{}, field :string) => void,
   handleInputChange :(event :Object) => void,
@@ -82,50 +37,9 @@ type Props = {
   otherCondition :String,
   disabled :boolean,
   settingsIncludeVoiceEnroll :boolean,
-  actions :{
-    clearEnrollState :() => void
-  }
 };
 
 class ConditionsSection extends React.Component<Props, State> {
-  constructor(props :Props) {
-    super(props);
-    this.state = {
-      enrollVoiceModalOpen: false
-    };
-  }
-
-  openEnrollVoiceModal = () => this.setState({ enrollVoiceModalOpen: true });
-  closeEnrollVoiceModal = () => {
-    const { actions } = this.props;
-    this.setState({ enrollVoiceModalOpen: false });
-    actions.clearEnrollState();
-  };
-
-  renderVoiceEnrollmentModal = () => {
-    const { enrollVoiceModalOpen } = this.state;
-    const { person } = this.props;
-    const {
-      [PERSON_ID]: personId,
-      [FIRST_NAME]: firstName,
-      [MIDDLE_NAME]: middleName,
-      [LAST_NAME]: lastName,
-      [ENTITY_KEY_ID]: personEntityKeyId,
-    } = getEntityProperties(person, [PERSON_ID, ENTITY_KEY_ID]);
-    const { firstMidLast } = formatPersonName(firstName, middleName, lastName);
-    return (
-      <EnrollVoiceModal
-          personId={personId}
-          personEntityKeyId={personEntityKeyId}
-          personName={firstMidLast}
-          open={enrollVoiceModalOpen}
-          onClose={this.closeEnrollVoiceModal} />
-    );
-  }
-
-  renderEnrollPersonButton = () => (
-    <UnderlinedTextButton onClick={this.openEnrollVoiceModal}>Enroll</UnderlinedTextButton>
-  );
 
   renderSimpleCheckInSection = () => {
     const { parentState, mapOptionsToRadioButtons } = this.props;
@@ -154,34 +68,6 @@ class ConditionsSection extends React.Component<Props, State> {
     );
   }
 
-  renderEnrollmentIcon = () => {
-    const { personIsEnrolled } = this.props;
-    return personIsEnrolled
-      ? <StatusIconContainer><FontAwesomeIcon color="green" icon={faMicrophoneAlt} /></StatusIconContainer>
-      : <StatusIconContainer><FontAwesomeIcon color="red" icon={faMicrophoneAltSlash} /></StatusIconContainer>;
-  }
-
-  renderEnrollmentText = () => {
-    const { person, personIsEnrolled } = this.props;
-    const { firstMidLast } = formatPeopleInfo(person);
-    return personIsEnrolled
-      ? `${firstMidLast} is enrolled in check-ins`
-      : `${firstMidLast} is not enrolled in check-ins`;
-  }
-
-  renderEnrollmentBanner = () => {
-    const { personIsEnrolled } = this.props;
-    return (
-      <>
-        <Status>
-          { this.renderEnrollmentIcon() }
-          <StatusText>{this.renderEnrollmentText()}</StatusText>
-          { personIsEnrolled ? null : this.renderEnrollPersonButton() }
-        </Status>
-        { this.renderVoiceEnrollmentModal() }
-      </>
-    );
-  }
   renderDisabledAppointmentsDisplay = () => {
     const { appointmentEntities } = this.props;
     let appointmentsByDate = Map();
@@ -198,7 +84,7 @@ class ConditionsSection extends React.Component<Props, State> {
     });
     return (
       <SimpleCards
-          title="Appointments"
+          title="Scheduled Check-ins"
           entities={appointmentsByDate.valueSeq()} />
     );
   }
@@ -230,7 +116,8 @@ class ConditionsSection extends React.Component<Props, State> {
 
   render() {
     const {
-      personIsEnrolled,
+      person,
+      personVoiceProfile,
       conditions,
       disabled,
       handleInputChange,
@@ -242,8 +129,8 @@ class ConditionsSection extends React.Component<Props, State> {
     const checkInSection = settingsIncludeVoiceEnroll
       ? (
         <>
-          { this.renderEnrollmentBanner() }
-          { personIsEnrolled ? this.renderFullCheckInSection() : null }
+          <EnrollStatusBanner person={person} personVoiceProfile={personVoiceProfile} />
+          { personVoiceProfile.size ? this.renderFullCheckInSection() : null }
         </>
       )
       : this.renderSimpleCheckInSection();
@@ -271,18 +158,4 @@ class ConditionsSection extends React.Component<Props, State> {
   }
 }
 
-function mapDispatchToProps(dispatch :Function) :Object {
-  const actions :{ [string] :Function } = {};
-
-  Object.keys(EnrollActionFactory).forEach((action :string) => {
-    actions[action] = EnrollActionFactory[action];
-  });
-
-  return {
-    actions: {
-      ...bindActionCreators(actions, dispatch)
-    }
-  };
-}
-
-export default connect(null, mapDispatchToProps)(ConditionsSection);
+export default ConditionsSection;
