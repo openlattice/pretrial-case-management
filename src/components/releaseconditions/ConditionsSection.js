@@ -83,7 +83,7 @@ type Props = {
   disabled :boolean,
   settingsIncludeVoiceEnroll :boolean,
   actions :{
-    clearEnrollVoice :() => void
+    clearEnrollState :() => void
   }
 };
 
@@ -99,7 +99,7 @@ class ConditionsSection extends React.Component<Props, State> {
   closeEnrollVoiceModal = () => {
     const { actions } = this.props;
     this.setState({ enrollVoiceModalOpen: false });
-    actions.clearEnrollVoice();
+    actions.clearEnrollState();
   };
 
   renderVoiceEnrollmentModal = () => {
