@@ -49,7 +49,8 @@ const {
   PRETRIAL_CASES,
   RELEASE_RECOMMENDATIONS,
   STAFF,
-  SUBSCRIPTION
+  SUBSCRIPTION,
+  SPEAKER_RECOGNITION_PROFILES
 } = APP_TYPES;
 
 const LIST_FQNS = [CONTACT_INFORMATION, HEARINGS, PRETRIAL_CASES, STAFF, CHARGES];
@@ -181,6 +182,12 @@ function* getPersonNeighborsWorker(action) :Generator<*, *, *> {
         );
       }
       else if (appTypeFqn === SUBSCRIPTION) {
+        neighborsByEntitySet = neighborsByEntitySet.set(
+          appTypeFqn,
+          neighborObj
+        );
+      }
+      else if (appTypeFqn === SPEAKER_RECOGNITION_PROFILES) {
         neighborsByEntitySet = neighborsByEntitySet.set(
           appTypeFqn,
           neighborObj
@@ -320,6 +327,12 @@ function* refreshPersonNeighborsWorker(action) :Generator<*, *, *> {
         );
       }
       else if (appTypeFqn === SUBSCRIPTION) {
+        neighbors = neighbors.set(
+          appTypeFqn,
+          neighbor
+        );
+      }
+      else if (appTypeFqn === SPEAKER_RECOGNITION_PROFILES) {
         neighbors = neighbors.set(
           appTypeFqn,
           neighbor
