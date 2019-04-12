@@ -56,7 +56,8 @@ const {
   OUTCOMES,
   DMF_RESULTS,
   DMF_RISK_FACTORS,
-  RELEASE_CONDITIONS
+  RELEASE_CONDITIONS,
+  SPEAKER_RECOGNITION_PROFILES
 } = APP_TYPES;
 
 const ToolbarWrapper = styled.div`
@@ -379,6 +380,7 @@ class PersonDetailsContainer extends React.Component<Props, State> {
       updatingEntity
     } = this.props;
     const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], '');
+    const settingsIncludeVoiceEnroll = selectedOrganizationSettings.get(SETTINGS.ENROLL_VOICE, false);
     const courtRemindersEnabled = selectedOrganizationSettings.get(SETTINGS.COURT_REMINDERS, false);
     const { downloadPSAReviewPDF } = actions;
     const contactInfo = neighbors.get(CONTACT_INFORMATION, List());
@@ -392,6 +394,7 @@ class PersonDetailsContainer extends React.Component<Props, State> {
       || !selectedOrganizationId
       || !personId
     );
+    const personVoiceProfile = neighbors.get(SPEAKER_RECOGNITION_PROFILES, Map());
     return (
       <PersonOverview
           courtRemindersEnabled={courtRemindersEnabled}
@@ -406,10 +409,12 @@ class PersonDetailsContainer extends React.Component<Props, State> {
           mostRecentPSAEntityKeyId={mostRecentPSAEntityKeyId}
           neighbors={neighbors}
           personId={personId}
+          personVoiceProfile={personVoiceProfile}
           psaNeighborsById={psaNeighborsById}
           readOnlyPermissions={readOnlyPermissions}
           allScheduledHearings={allScheduledHearings}
           selectedPersonData={selectedPersonData}
+          settingsIncludeVoiceEnroll={settingsIncludeVoiceEnroll}
           openDetailsModal={this.openDetailsModal} />
     );
   }
