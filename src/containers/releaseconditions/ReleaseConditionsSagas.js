@@ -50,7 +50,8 @@ const {
   RELEASE_CONDITIONS,
   REMINDERS,
   STAFF,
-  SUBSCRIPTION
+  SUBSCRIPTION,
+  SPEAKER_RECOGNITION_PROFILES
 } = APP_TYPES;
 
 /*
@@ -131,7 +132,8 @@ function* loadReleaseConditionsWorker(action :SequenceAction) :Generator<*, *, *
     const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
     const subscriptionEntitySetId = getEntitySetIdFromApp(app, SUBSCRIPTION);
     const contactInformationEntitySetId = getEntitySetIdFromApp(app, CONTACT_INFORMATION);
-    const psaScoresEntityKeyId = getEntitySetIdFromApp(app, PSA_SCORES);
+    const psaScoresEntitySetId = getEntitySetIdFromApp(app, PSA_SCORES);
+    const voiceProfileEntitySetId = getEntitySetIdFromApp(app, SPEAKER_RECOGNITION_PROFILES);
 
     /*
      * Get Hearing and Hearing Neighbors
@@ -145,7 +147,7 @@ function* loadReleaseConditionsWorker(action :SequenceAction) :Generator<*, *, *
 
     const psaId = getEntityKeyId(hearingNeighborsByAppTypeFqn, PSA_SCORES);
 
-    let psaNeighbors = yield call(SearchApi.searchEntityNeighborsWithFilter, psaScoresEntityKeyId, {
+    let psaNeighbors = yield call(SearchApi.searchEntityNeighborsWithFilter, psaScoresEntitySetId, {
       entityKeyIds: [psaId],
       sourceEntitySetIds: [dmfEntitySetId],
       destinationEntitySetIds: [dmfRiskFactorsEntitySetId]
@@ -172,7 +174,7 @@ function* loadReleaseConditionsWorker(action :SequenceAction) :Generator<*, *, *
 
     let personNeighbors = yield call(SearchApi.searchEntityNeighborsWithFilter, peopleEntitySetId, {
       entityKeyIds: [personId],
-      sourceEntitySetIds: [contactInformationEntitySetId, checkInAppointmentEntitySetId],
+      sourceEntitySetIds: [contactInformationEntitySetId, checkInAppointmentEntitySetId, voiceProfileEntitySetId],
       destinationEntitySetIds: [subscriptionEntitySetId, contactInformationEntitySetId, chargesEntitySetId]
     });
 
@@ -188,7 +190,7 @@ function* loadReleaseConditionsWorker(action :SequenceAction) :Generator<*, *, *
           personNeighborsByAppTypeFqn.get(appTypeFqn, List()).push(neighbor)
         );
       }
-      else if (appTypeFqn === SUBSCRIPTION) {
+      else {
         personNeighborsByAppTypeFqn = personNeighborsByAppTypeFqn.set(
           appTypeFqn,
           neighbor
