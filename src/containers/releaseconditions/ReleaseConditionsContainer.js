@@ -38,11 +38,7 @@ import { toISODate, toISODateTime, formatDateTime } from '../../utils/Formatting
 import { HEARING_CONSTS } from '../../utils/consts/HearingConsts';
 import { SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { formatJudgeName, getCourtroomOptions, getJudgeOptions } from '../../utils/HearingUtils';
-import {
-  NoContactRow,
-  OptionsGrid,
-  SubConditionsWrapper
-} from '../../components/releaseconditions/ReleaseConditionsStyledTags';
+import { NoContactRow } from '../../components/releaseconditions/ReleaseConditionsStyledTags';
 import {
   getCreateAssociationObject,
   getEntityKeyId,
@@ -65,9 +61,7 @@ import {
   BOND_TYPES,
   CONDITION_LIST,
   C_247_MAPPINGS,
-  NO_CONTACT_TYPES,
-  CHECKIN_FREQUENCIES,
-  C_247_TYPES
+  NO_CONTACT_TYPES
 } from '../../utils/consts/ReleaseConditionConsts';
 import {
   APP,
@@ -99,7 +93,8 @@ const {
   PEOPLE,
   PSA_SCORES,
   PRETRIAL_CASES,
-  REGISTERED_FOR
+  REGISTERED_FOR,
+  SPEAKER_RECOGNITION_PROFILES
 } = APP_TYPES;
 
 const RELEASE_CONDITIONS_FQN = APP_TYPES.RELEASE_CONDITIONS;
@@ -1498,6 +1493,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
     const person = getNeighborDetailsForEntitySet(hearingNeighbors, PEOPLE);
     const { defaultCheckInAppointments } = this.getNeighborEntities(this.props);
     const personCheckInAppointments = personNeighbors.get(CHECKIN_APPOINTMENTS, Map());
+    const personVoiceProfile = personNeighbors.get(SPEAKER_RECOGNITION_PROFILES, Map());
     const allCheckInAppointments = defaultCheckInAppointments.merge(personCheckInAppointments);
 
     const settingsIncludeVoiceEnroll = selectedOrganizationSettings.get(SETTINGS.ENROLL_VOICE, false);
@@ -1549,6 +1545,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
                   disabled={state.disabled}
                   handleInputChange={this.handleInputChange}
                   person={person}
+                  personVoiceProfile={personVoiceProfile}
                   settingsIncludeVoiceEnroll={settingsIncludeVoiceEnroll}
                   mapOptionsToCheckboxButtons={this.mapOptionsToCheckboxButtons}
                   mapOptionsToRadioButtons={this.mapOptionsToRadioButtons}
