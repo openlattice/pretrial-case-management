@@ -1,65 +1,27 @@
 /*
  * @flow
  */
+import { newRequestSequence } from 'redux-reqseq';
 
-import * as ActionTypes from './EnrollActionTypes';
+const GET_PROFILE :string = 'GET_PROFILE';
+const getProfile :RequestSequence = newRequestSequence(GET_PROFILE);
 
-export function getProfileRequest(personId :string, personEntityKeyId :string) {
-  return {
-    type: ActionTypes.GET_PROFILE_REQUEST,
-    personId,
-    personEntityKeyId
-  };
-}
+const ENROLL_VOICE :string = 'ENROLL_VOICE';
+const enrollVoice :RequestSequence = newRequestSequence(ENROLL_VOICE);
 
-export function getProfileSuccess(profileId :string, pin :string, numSubmissions :number, profileEntityKeyId :string) {
-  return {
-    type: ActionTypes.GET_PROFILE_SUCCESS,
-    profileId,
-    pin,
-    numSubmissions,
-    profileEntityKeyId
-  };
-}
+const CLEAR_ENROLL_ERROR :string = 'CLEAR_ENROLL_ERROR';
+const clearEnrollError :RequestSequence = newRequestSequence(CLEAR_ENROLL_ERROR);
 
-export function getProfileFailure(errorMessage :string) {
-  return {
-    type: ActionTypes.GET_PROFILE_FAILURE,
-    errorMessage
-  };
-}
+const CLEAR_ENROLL_STATE :string = 'CLEAR_ENROLL_STATE';
+const clearEnrollState :RequestSequence = newRequestSequence(CLEAR_ENROLL_STATE);
 
-export function enrollVoiceRequest(profileId :string, profileEntityKeyId :string, audio :Object) {
-  return {
-    type: ActionTypes.ENROLL_VOICE_REQUEST,
-    profileId,
-    profileEntityKeyId,
-    audio
-  };
-}
-
-export function enrollVoiceSuccess(numSubmissions :number) {
-  return {
-    type: ActionTypes.ENROLL_VOICE_SUCCESS,
-    numSubmissions
-  };
-}
-
-export function enrollVoiceFailure(errorMessage :string) {
-  return {
-    type: ActionTypes.ENROLL_VOICE_FAILURE,
-    errorMessage
-  };
-}
-
-export function clearError() {
-  return {
-    type: ActionTypes.CLEAR_ERROR
-  };
-}
-
-export function clearEnrollVoice() {
-  return {
-    type: ActionTypes.CLEAR_ENROLL_VOICE
-  };
-}
+export {
+  GET_PROFILE,
+  ENROLL_VOICE,
+  CLEAR_ENROLL_ERROR,
+  CLEAR_ENROLL_STATE,
+  getProfile,
+  enrollVoice,
+  clearEnrollError,
+  clearEnrollState
+};
