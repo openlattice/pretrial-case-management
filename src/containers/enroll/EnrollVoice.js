@@ -141,9 +141,9 @@ type Props = {
   errorMessage :string,
   onClose :() => void,
   actions :{
-    getProfileRequest :(personId :string, personEntityKeyId :string) => void,
-    enrollVoiceRequest :(profileId :string, blobObject :Object) => void,
-    clearError :() => void,
+    getProfile :(personId :string, personEntityKeyId :string) => void,
+    enrollVoice :(profileId :string, blobObject :Object) => void,
+    clearEnrollError :() => void,
   }
 }
 
@@ -170,11 +170,11 @@ class EnrollVoice extends React.Component<Props, State> {
     const receivedPersonEntityKeyId = !prevState.personEntityKeyId && personEntityKeyId;
     const receivedPersonId = !prevState.personId && personId;
     if (!loadingProfile && receivedPersonEntityKeyId && receivedPersonId) {
-      actions.getProfileRequest(personId, personEntityKeyId);
+      actions.getProfile({ personId, personEntityKeyId });
       return { personEntityKeyId, personId };
     }
     if (profileId && !profileEntityKeyId) {
-      actions.getProfileRequest(personId, personEntityKeyId);
+      actions.getProfile({ personId, personEntityKeyId });
     }
     return null;
   }
@@ -194,7 +194,7 @@ class EnrollVoice extends React.Component<Props, State> {
     const { actions } = this.props;
     const personId = person.getIn([PROPERTY_TYPES.PERSON_ID, 0], '');
     this.setState({ personEntityKeyId, personId });
-    actions.getProfileRequest(personId, personEntityKeyId);
+    actions.getProfile({ personId, personEntityKeyId });
   }
 
   getSearchPeopleSection = () => <SearchPersonContainer onSelectPerson={this.onSelectPerson} />;
@@ -203,7 +203,7 @@ class EnrollVoice extends React.Component<Props, State> {
     const { actions, profileEntityKeyId, profileId } = this.props;
     const { blobObject } = this.state;
     this.setState({ blobObject: null });
-    actions.enrollVoiceRequest(profileId, profileEntityKeyId, blobObject);
+    actions.enrollVoice({ profileId, profileEntityKeyId, audio: blobObject });
   }
 
   renderSubmit = () => {
@@ -269,7 +269,7 @@ class EnrollVoice extends React.Component<Props, State> {
               : <DotProgressBar numSteps={3} current={numSubmissions} />
           }
         </ProgressBarWrapper>
-        <AudioRecorder onStart={actions.clearError} onStop={this.onStopRecording} />
+        <AudioRecorder onStart={actions.clearEnrollError} onStop={this.onStopRecording} />
         <br />
         {this.renderSubmit()}
         {this.renderError()}
