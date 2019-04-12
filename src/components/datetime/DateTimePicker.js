@@ -33,7 +33,7 @@ const StyledStyledDateTimePicker = ({
           dateFormat={dateFormat}
           timeFormat={timeFormat}
           value={value}
-          onChange={onChange}
+          onChange={time => onChange(time.slice(0, time.length - 7))}
           hideIcon
           timeIsEditable
           placeholder={dateFormat}
