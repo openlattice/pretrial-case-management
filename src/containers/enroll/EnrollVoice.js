@@ -210,7 +210,7 @@ class EnrollVoice extends React.Component<Props, State> {
     const { blobObject } = this.state;
     const { submittingAudio, numSubmissions } = this.props;
     const attemptNum = numSubmissions + 1;
-    if (submittingAudio) return <LogoLoader loadingText={`Submitting audio clip ${attemptNum}/3`} />;
+    if (submittingAudio) return <LogoLoader noPadding loadingText={`Submitting audio clip ${attemptNum}/3`} />;
 
     if (!blobObject) return null;
     return (
@@ -243,7 +243,6 @@ class EnrollVoice extends React.Component<Props, State> {
   getRecordAudioSection = () => {
     const {
       profileEntityKeyId,
-      loadingProfile,
       numSubmissions,
       actions
     } = this.props;
@@ -263,11 +262,7 @@ class EnrollVoice extends React.Component<Props, State> {
           </PromptTextWrapper>
         </PromptText>
         <ProgressBarWrapper>
-          {
-            loadingProfile
-              ? <LogoLoader noPadding size="30px" loadingText="Loading profile..." />
-              : <DotProgressBar numSteps={3} current={numSubmissions} />
-          }
+          <DotProgressBar numSteps={3} current={numSubmissions} />
         </ProgressBarWrapper>
         <AudioRecorder onStart={actions.clearEnrollError} onStop={this.onStopRecording} />
         <br />
