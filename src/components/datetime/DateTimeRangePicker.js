@@ -72,7 +72,10 @@ const DateTimeRange = ({
               dateFormat={dateFormat}
               timeFormat={timeFormat}
               value={startDate}
-              onChange={time => onStartChange(time.slice(0, time.length - 2))}
+              onChange={(time) => {
+                const submitTime = (time).replace(/['pm','am'].*$/g, '');
+                onStartChange(submitTime);
+              }}
               hideIcon
               times={MIL_TIME}
               timeIsEditable
@@ -86,7 +89,10 @@ const DateTimeRange = ({
               dateFormat={dateFormat}
               timeFormat={timeFormat}
               value={endDate}
-              onChange={time => onEndChange(time.slice(0, time.length - 2))}
+              onChange={(time) => {
+                const submitTime = (time).replace(/['pm','am'].*$/g, '');
+                onEndChange(submitTime);
+              }}
               hideIcon
               times={MIL_TIME}
               timeIsEditable
