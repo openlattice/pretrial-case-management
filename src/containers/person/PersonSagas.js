@@ -474,7 +474,6 @@ function* searchPeopleByPhoneNumberWorker(action) :Generator<*, *, *> {
           const personContactIds = personIdsToContactIds.get(id, List());
           const hasAPreferredContact = personContactIds.some((contactentityKeyId) => {
             const contactObj = contactMap.get(contactentityKeyId, Map());
-            console.log(contactObj)
             return contactObj.getIn([PROPERTY_TYPES.IS_PREFERRED, 0], false);
           });
           neighbors.forEach((neighbor) => {
