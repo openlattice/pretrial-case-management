@@ -8,6 +8,7 @@ import { EntityDataModelApiSagas } from 'lattice-sagas';
 
 import * as AppSagas from '../../containers/app/AppSagas';
 import * as ChargesSagas from '../../containers/charges/ChargesSagas';
+import * as CheckInsSagas from '../../containers/checkins/CheckInsSagas';
 import * as CourtSagas from '../../containers/court/CourtSagas';
 import * as PersonSagas from '../../containers/person/PersonSagas';
 import * as PeopleSagas from '../../containers/people/PeopleSagas';
@@ -45,6 +46,10 @@ export default function* sagas() :Generator<*, *, *> {
     fork(ChargesSagas.deleteChargesWatcher),
     fork(ChargesSagas.loadChargesWatcher),
     fork(ChargesSagas.updateChargesWatcher),
+
+    // CheckInsSagas
+    fork(CheckInsSagas.loadCheckInAppointmentsForDateWatcher),
+    fork(CheckInsSagas.loadCheckInNeighborsWatcher),
 
     // CourtSagas
     fork(CourtSagas.filterPeopleIdsWithOpenPSAsWatcher),
