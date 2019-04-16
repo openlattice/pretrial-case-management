@@ -56,8 +56,8 @@ export const getIdOrValue = (neighbors :Map<*, *>, entitySetName :string, option
 export const getTimeStamp = (neighbors :Map<*, *>, entitySetName :string) :string => (
   neighbors.getIn([entitySetName, PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.TIMESTAMP], Map())
 );
-export const getNeighborDetailsForEntitySet = (neighbors :Map<*, *>, name :string) :string => (
-  neighbors.getIn([name, PSA_NEIGHBOR.DETAILS], neighbors.get(PSA_NEIGHBOR.DETAILS, Map()))
+export const getNeighborDetailsForEntitySet = (neighbors :Map<*, *>, name :string, defaultValue = Map()) :string => (
+  neighbors.getIn([name, PSA_NEIGHBOR.DETAILS], neighbors.get(PSA_NEIGHBOR.DETAILS, defaultValue))
 );
 export const getAssociationDetailsForEntitySet = (neighbors :Map<*, *>, name :string) :string => (
   neighbors.getIn([name, PSA_ASSOCIATION.DETAILS], neighbors.get(PSA_ASSOCIATION.DETAILS, Map()))
