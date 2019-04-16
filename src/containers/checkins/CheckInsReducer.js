@@ -2,33 +2,54 @@
  * @flow
  */
 
-import { Map, fromJS } from 'immutable';
+import { Map, Set, fromJS } from 'immutable';
 
 import {
-  CLEAR_CHECK_INS_FORM,
-  loadCheckInsForm
+  loadCheckInAppointmentsForDate,
+  loadCheckInNeighbors
 } from './CheckInsActionFactory';
 import { CHECK_IN } from '../../utils/consts/FrontEndStateConsts';
 
 const INITIAL_STATE :Map<*, *> = fromJS({
-  [CHECK_IN.FORM_NEIGHBORS]: Map(),
-  [CHECK_IN.LOADING_FORM]: false
+  [CHECK_IN.CHECK_INS_LOADED]: false,
+  [CHECK_IN.LOADING_CHECK_INS]: false,
+  [CHECK_IN.CHECK_IN_IDS]: Map(),
+  [CHECK_IN.CHECK_INS_BY_ID]: Map(),
+  [CHECK_IN.LOADING_CHECK_IN_NEIGHBORS]: false,
+  [CHECK_IN.CHECK_IN_NEIGHBORS_BY_ID]: Map(),
+  [CHECK_IN.SUCCESSFUL_IDS]: Set(),
+  [CHECK_IN.FAILED_IDS]: Set(),
+  [CHECK_IN.PENDING_IDS]: Set()
 });
 
 export default function manualRemindersReducer(state :Map<*, *> = INITIAL_STATE, action :SequenceAction) {
   switch (action.type) {
 
-    case CLEAR_CHECK_INS_FORM:
-      return INITIAL_STATE;
-
-    case loadCheckInsForm.case(action.type): {
-      return loadCheckInsForm.reducer(state, action, {
-        REQUEST: () => state.set(CHECK_IN.LOADING_FORM, true),
+    case loadCheckInAppointmentsForDate.case(action.type): {
+      return loadCheckInAppointmentsForDate.reducer(state, action, {
+        REQUEST: () => state
+          .set(CHECK_IN.CHECK_INS_LOADED, false)
+          .set(CHECK_IN.LOADING_CHECK_INS, true),
         SUCCESS: () => {
-          const { formNeighbors } = action.value;
-          return state.set(CHECK_IN.FORM_NEIGHBORS, formNeighbors);
+          const { checkInAppointmentIds, checkInAppointmentMap } = action.value;
+          return state
+            .set(CHECK_IN.CHECK_INS_BY_ID, checkInAppointmentMap)
+            .set(CHECK_IN.CHECK_IN_IDS, checkInAppointmentIds)
+            .set(CHECK_IN.CHECK_INS_LOADED, true);
         },
-        FINALLY: () => state.set(CHECK_IN.LOADING_FORM, false)
+        FAILURE: () => state.set(CHECK_IN.LOADING_CHECK_INS, false),
+        FINALLY: () => state.set(CHECK_IN.LOADING_CHECK_INS, false)
+      });
+    }
+
+    case loadCheckInNeighbors.case(action.type): {
+      return loadCheckInNeighbors.reducer(state, action, {
+        REQUEST: () => state.set(CHECK_IN.LOADING_CHECK_IN_NEIGHBORS, true),
+        SUCCESS: () => {
+          const { checkInNeighborsById } = action.value;
+          return state.set(CHECK_IN.CHECK_IN_NEIGHBORS_BY_ID, checkInNeighborsById);
+        },
+        FINALLY: () => state.set(CHECK_IN.LOADING_CHECK_IN_NEIGHBORS, false)
       });
     }
 
