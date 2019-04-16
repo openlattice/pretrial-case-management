@@ -1,0 +1,323 @@
+/*
+ * @flow
+ */
+
+import React from 'react';
+import styled from 'styled-components';
+import moment from 'moment';
+import { bindActionCreators } from 'redux';
+import { connect } from 'react-redux';
+import {
+  fromJS,
+  Map,
+  Set,
+  List
+} from 'immutable';
+
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCheck, faHourglassHalf, faTimesCircle } from '@fortawesome/pro-light-svg-icons';
+
+import DatePicker from '../../components/datetime/DatePicker';
+import TableWithPagination from '../../components/reminders/TableWithPagination';
+import DashboardMainSection from '../../components/dashboard/DashboardMainSection';
+import { OL } from '../../utils/consts/Colors';
+import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { FILTERS, RESULT_TYPE } from '../../utils/consts/CheckInConsts';
+import { getEntityProperties } from '../../utils/DataUtils';
+import {
+  APP,
+  CHECK_IN,
+  SEARCH,
+  STATE
+} from '../../utils/consts/FrontEndStateConsts';
+
+import * as CheckInsActionFactory from './CheckInsActionFactory';
+import * as PersonActionFactory from '../person/PersonActionFactory';
+
+const { CHECKINS, PEOPLE, HEARINGS } = APP_TYPES;
+
+const {
+  DATE_TIME,
+  RESULT,
+  START_DATE,
+  END_DATE
+} = PROPERTY_TYPES;
+
+const ToolbarWrapper = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: baseline;
+  margin: 15px 0;
+  background: white;
+  border: 1px solid ${OL.GREY11};
+  border-radius: 5px;
+  padding: 15px 30px;
+  width: 100%;
+`;
+
+const SubToolbarWrapper = styled.div`
+  flex-wrap: nowrap;
+  width: max-content;
+  display: flex;
+  flex-direction: row;
+  align-items: baseline;
+  span {
+    width: 100%;
+  }
+`;
+
+const ResultsWrapper = styled.div`
+  width: 100%;
+`;
+
+const StatusIconContainer = styled.div`
+  pointer-events: none;
+  margin: 5px 0;
+`;
+
+type Props = {
+  loadingCheckIns :boolean,
+  loadingCheckInNieghbors :boolean,
+  checkInsById :Map<*, *>,
+  checkInNeighborsById :Map<*, *>,
+  successfulCheckInIds :Set<*>,
+  failedCheckInIds :Set<*>,
+  pendingCheckInIds :Set<*>,
+  selectedOrganizationId :string,
+  actions :{
+    loadCheckInAppointmentsForDate :RequestSequence
+  };
+};
+
+class CheckInsContainer extends React.Component<Props, State> {
+  constructor(props :Props) {
+    super(props);
+    this.state = {
+      selectedDate: moment(),
+      filter: ''
+    };
+  }
+
+  setFilter = e => this.setState({ filter: e.target.value });
+
+  componentDidMount() {
+    const { actions, selectedOrganizationId } = this.props;
+    if (actions && selectedOrganizationId) {
+      this.loadData(this.props);
+    }
+  }
+
+  componentWillReceiveProps(nextProps) {
+    const { selectedOrganizationId } = this.props;
+    if (selectedOrganizationId !== nextProps.selectedOrganizationId) {
+      this.loadData(nextProps);
+    }
+  }
+
+  loadData = (props) => {
+    const { selectedDate } = this.state;
+    const { actions, checkInsLoaded } = props;
+    const { loadCheckInAppointmentsForDate } = actions;
+    if (!checkInsLoaded) {
+      loadCheckInAppointmentsForDate({ date: selectedDate });
+    }
+  }
+
+  componentWillUnmount() {
+    const { actions } = this.props;
+    actions.clearSearchResults();
+  }
+
+  onDateChange = (dateStr) => {
+    const { actions } = this.props;
+    const date = moment(dateStr);
+    const { loadCheckInAppointmentsForDate } = actions;
+    if (date.isValid()) {
+      loadCheckInAppointmentsForDate({ date });
+    }
+  }
+
+  renderDatePicker = () => {
+    const { selectedDate } = this.state;
+
+    return (
+      <DatePicker
+          subtle
+          value={selectedDate.format('YYYY-MM-DD')}
+          onChange={date => this.onDateChange(date)} />
+    );
+  }
+
+  renderToolbar = () => (
+    <ToolbarWrapper>
+      <SubToolbarWrapper>
+        <span>Check-in Date:</span>
+        {this.renderDatePicker()}
+      </SubToolbarWrapper>
+    </ToolbarWrapper>
+  );
+
+  renderCheckInsTable = (title, checkIns, neighbors, filters) => {
+    const { filter } = this.state;
+    const { loadingCheckIns, loadingCheckInNieghbors } = this.props;
+    const loading = loadingCheckIns || loadingCheckInNieghbors;
+    return (
+      <TableWithPagination
+          loading={loading}
+          title={title}
+          entities={checkIns}
+          filter={filter}
+          filters={filters}
+          selectFilterFn={this.setFilter}
+          neighbors={neighbors}
+          appTypeFqn={APP_TYPES.CHECKIN_APPOINTMENTS} />
+    );
+  }
+
+  renderResults = () => {
+    const { filter } = this.state;
+    const {
+      checkInsById,
+      checkInNeighborsById
+    } = this.props;
+
+    let entities = checkInsById;
+    entities = entities.filter((checkInAppointment, entityKeyId) => {
+      const checkInAppointmentNeighbors = checkInNeighborsById.get(entityKeyId, Map());
+      const person = checkInAppointmentNeighbors.get(PEOPLE, Map());
+      const hearings = checkInAppointmentNeighbors.get(HEARINGS, List());
+      if (!person.size && !hearings.size) return false;
+
+      const checkIn = checkInAppointmentNeighbors.get(CHECKINS, Map());
+      const {
+        [START_DATE]: startDate,
+        [END_DATE]: endDate
+      } = getEntityProperties(checkInAppointment, [START_DATE, END_DATE]);
+      const { [DATE_TIME]: checkInTime, [RESULT]: result } = getEntityProperties(checkIn, [DATE_TIME, RESULT]);
+      const validCheckInTime = moment(checkInTime).isBetween(startDate, endDate);
+      let filterResult = true;
+      switch (filter) {
+        case FILTERS.FAILED:
+          filterResult = (!checkIn.size && moment().isAfter(endDate))
+          || (checkInTime && !validCheckInTime)
+          || (result === RESULT_TYPE.REJECT);
+          break;
+        case FILTERS.SUCCESSFUL:
+          filterResult = checkIn.size && (checkInTime && validCheckInTime) && (result === RESULT_TYPE.ACCEPT);
+          break;
+        case FILTERS.PENDING:
+          filterResult = (!checkIn.size && moment().isBefore(endDate));
+          break;
+        default:
+          break;
+      }
+      return filterResult;
+    });
+
+    const filters = fromJS({
+      [FILTERS.ALL]: {
+        label: FILTERS.ALL,
+        value: ''
+      },
+      [FILTERS.FAILED]: {
+        label: (
+          <StatusIconContainer>
+            {`${FILTERS.FAILED} `}
+            <FontAwesomeIcon color={filter === FILTERS.FAILED ? OL.WHITE : OL.RED01} icon={faTimesCircle} />
+          </StatusIconContainer>
+        ),
+        value: FILTERS.FAILED
+      },
+      [FILTERS.SUCCESSFUL]: {
+        label: (
+          <StatusIconContainer>
+            {`${FILTERS.SUCCESSFUL} `}
+            <FontAwesomeIcon color={filter === FILTERS.SUCCESSFUL ? OL.WHITE : OL.GREEN01} icon={faCheck} />
+          </StatusIconContainer>
+        ),
+        value: FILTERS.SUCCESSFUL
+      },
+      [FILTERS.PENDING]: {
+        label: (
+          <StatusIconContainer>
+            {`${FILTERS.PENDING} `}
+            <FontAwesomeIcon color={filter === FILTERS.PENDING ? OL.WHITE : OL.PURPLE03} icon={faHourglassHalf} />
+          </StatusIconContainer>
+        ),
+        value: FILTERS.PENDING
+      }
+    });
+
+    return (
+      <ResultsWrapper>
+        {
+          this.renderCheckInsTable(
+            'Reminders',
+            entities,
+            checkInNeighborsById,
+            filters
+          )
+        }
+      </ResultsWrapper>
+    );
+  }
+
+  render() {
+    return (
+      <DashboardMainSection>
+        {this.renderToolbar()}
+        {this.renderResults()}
+      </DashboardMainSection>
+    );
+  }
+}
+
+function mapStateToProps(state) {
+  const app = state.get(STATE.APP);
+  const checkIns = state.get(STATE.CHECK_INS);
+  const search = state.get(STATE.SEARCH);
+
+  return {
+    // App
+    [APP.ORGS]: app.get(APP.ORGS),
+    [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
+    [APP.SELECTED_ORG_TITLE]: app.get(APP.SELECTED_ORG_TITLE),
+
+    // Reminders
+    [CHECK_IN.CHECK_INS_LOADED]: checkIns.get(CHECK_IN.CHECK_INS_LOADED),
+    [CHECK_IN.LOADING_CHECK_INS]: checkIns.get(CHECK_IN.LOADING_CHECK_INS),
+    [CHECK_IN.CHECK_IN_IDS]: checkIns.get(CHECK_IN.CHECK_IN_IDS),
+    [CHECK_IN.CHECK_INS_BY_ID]: checkIns.get(CHECK_IN.CHECK_INS_BY_ID),
+    [CHECK_IN.LOADING_CHECK_IN_NEIGHBORS]: checkIns.get(CHECK_IN.LOADING_CHECK_IN_NEIGHBORS),
+    [CHECK_IN.CHECK_IN_NEIGHBORS_BY_ID]: checkIns.get(CHECK_IN.CHECK_IN_NEIGHBORS_BY_ID),
+    [CHECK_IN.SUCCESSFUL_IDS]: checkIns.get(CHECK_IN.SUCCESSFUL_IDS),
+    [CHECK_IN.FAILED_IDS]: checkIns.get(CHECK_IN.FAILED_IDS),
+    [CHECK_IN.PENDING_IDS]: checkIns.get(CHECK_IN.PENDING_IDS),
+
+    [SEARCH.LOADING]: search.get(SEARCH.LOADING),
+    [SEARCH.SEARCH_RESULTS]: search.get(SEARCH.SEARCH_RESULTS),
+    [SEARCH.SEARCH_ERROR]: search.get(SEARCH.SEARCH_ERROR),
+    [SEARCH.SEARCH_HAS_RUN]: search.get(SEARCH.SEARCH_HAS_RUN)
+  };
+}
+
+function mapDispatchToProps(dispatch :Function) :Object {
+  const actions :{ [string] :Function } = {};
+
+  Object.keys(CheckInsActionFactory).forEach((action :string) => {
+    actions[action] = CheckInsActionFactory[action];
+  });
+
+  Object.keys(PersonActionFactory).forEach((action :string) => {
+    actions[action] = PersonActionFactory[action];
+  });
+
+  return {
+    actions: {
+      ...bindActionCreators(actions, dispatch)
+    }
+  };
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(CheckInsContainer);
