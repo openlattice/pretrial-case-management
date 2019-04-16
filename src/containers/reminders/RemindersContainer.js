@@ -366,10 +366,11 @@ class RemindersContainer extends React.Component<Props, State> {
       failedReminderIds,
       optOutPeopleIds,
       peopleWithHearingsButNoContacts,
-      reminderNeighborsById
+      reminderNeighborsById,
+      successfulReminderIds
     } = this.props;
     const { bulkDownloadRemindersPDF } = actions;
-    const failedPeopleIds = failedReminderIds.map((reminderId) => {
+    const peopleIdsWhoHaveRecievedReminders = successfulReminderIds.map((reminderId) => {
       const personEntityKeyId = reminderNeighborsById.getIn([
         reminderId,
         peopleFqn,
@@ -378,6 +379,16 @@ class RemindersContainer extends React.Component<Props, State> {
         0], '');
       return personEntityKeyId;
     });
+    const failedPeopleIds = failedReminderIds.map((reminderId) => {
+      const personEntityKeyId = reminderNeighborsById.getIn([
+        reminderId,
+        peopleFqn,
+        PSA_NEIGHBOR.DETAILS,
+        OPENLATTICE_ID_FQN,
+        0], '');
+      return personEntityKeyId;
+    }).filter(personEntityKeyId => !peopleIdsWhoHaveRecievedReminders.includes(personEntityKeyId));
+
     bulkDownloadRemindersPDF({
       date: selectedDate,
       optOutPeopleIds,
