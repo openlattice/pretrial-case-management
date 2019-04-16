@@ -2,6 +2,7 @@
  * @flow
  */
 
+import moment from 'moment';
 import { Map, List, fromJS } from 'immutable';
 import {
   DataApi,
@@ -21,8 +22,8 @@ import {
 
 import releaseConditionsConfig from '../../config/formconfig/ReleaseConditionsConfig';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
-import { getEntityKeyId, getMapFromEntityKeysToPropertyKeys } from '../../utils/DataUtils';
-import { APP_TYPES } from '../../utils/consts/DataModelConsts';
+import { getEntityProperties, getEntityKeyId, getMapFromEntityKeysToPropertyKeys } from '../../utils/DataUtils';
+import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { APP, PSA_NEIGHBOR, STATE } from '../../utils/consts/FrontEndStateConsts';
 
 import {
@@ -183,8 +184,16 @@ function* loadReleaseConditionsWorker(action :SequenceAction) :Generator<*, *, *
     personNeighbors.forEach((neighbor) => {
       const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
       const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
-
-      if (LIST_ENTITY_SETS.includes(appTypeFqn)) {
+      if (appTypeFqn === CHECKIN_APPOINTMENTS) {
+        const { [PROPERTY_TYPES.END_DATE]: checkInEndDate } = getEntityProperties(neighbor, [PROPERTY_TYPES.END_DATE]);
+        if (moment().isBefore(checkInEndDate)) {
+          personNeighborsByAppTypeFqn = personNeighborsByAppTypeFqn.set(
+            appTypeFqn,
+            personNeighborsByAppTypeFqn.get(appTypeFqn, List()).push(neighbor)
+          );
+        }
+      }
+      else if (LIST_ENTITY_SETS.includes(appTypeFqn)) {
         personNeighborsByAppTypeFqn = personNeighborsByAppTypeFqn.set(
           appTypeFqn,
           personNeighborsByAppTypeFqn.get(appTypeFqn, List()).push(neighbor)
