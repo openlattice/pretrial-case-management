@@ -118,6 +118,7 @@ export const PROPERTY_TYPES = {
   STRING_ID: 'general.stringid',
   TYPE: 'ol.type',
   STATUS: 'general.status',
+  RESULT: 'general.result',
 
   COMPLETED_DATE_TIME: 'date.completeddatetime',
   DATE_TIME: 'general.datetime',
@@ -161,6 +162,9 @@ export const PROPERTY_TYPES = {
   CHARGE_DMF_STEP_4: 'ol.dmfstep4indicator',
   BHE: 'ol.bheindicator',
   BRE: 'ol.breindicator',
+
+  // Check-ins
+  CONFIDENCE: 'general.confidence',
 
   // location-specific fields
   ADDRESS: 'location.Address',
