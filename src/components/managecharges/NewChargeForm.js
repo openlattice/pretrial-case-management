@@ -239,11 +239,11 @@ class PersonContactInfo extends React.Component<Props, State> {
                 </InputGroup>
                 <InputGroup>
                   <InputLabel>Degree</InputLabel>
-                  {this.renderInput(PROPERTY_TYPES.REFERENCE_CHARGE_DEGREE, degree) }
+                  {this.renderInput(PROPERTY_TYPES.REFERENCE_CHARGE_LEVEL, degree) }
                 </InputGroup>
                 <InputGroup>
                   <InputLabel>Degree (Short)</InputLabel>
-                  {this.renderInput(PROPERTY_TYPES.REFERENCE_CHARGE_LEVEL, degreeShort) }
+                  {this.renderInput(PROPERTY_TYPES.REFERENCE_CHARGE_DEGREE, degreeShort) }
                 </InputGroup>
               </InputRow>
             )
