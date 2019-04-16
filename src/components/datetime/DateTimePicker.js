@@ -33,7 +33,10 @@ const StyledStyledDateTimePicker = ({
           dateFormat={dateFormat}
           timeFormat={timeFormat}
           value={value}
-          onChange={time => onChange(time.slice(0, time.length - 7))}
+          onChange={(time) => {
+            const submitTime = (time).replace(/['pm','am'].*$/g, '');
+            onChange(submitTime);
+          }}
           hideIcon
           timeIsEditable
           placeholder={dateFormat}
