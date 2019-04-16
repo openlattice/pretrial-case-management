@@ -74,12 +74,12 @@ export const CHARGES = {
 
 // Check-Ins
 export const CHECK_IN = {
-  FORM_NEIGHBORS: 'checkInFormNeighbors',
-  LOADING_FORM: 'loadingCheckInsForm',
+  CHECK_INS_LOADED: 'checkInsLoaded',
   LOADING_CHECK_INS: 'loadingCheckIns',
+  CHECK_IN_IDS: 'checkInIds',
   CHECK_INS_BY_ID: 'checkInsById',
   LOADING_CHECK_IN_NEIGHBORS: 'loadingCheckInNieghbors',
-  CHECK_IN_NEIGHBORS_BY_ID: 'checkInNeighborsById',
+  CHECK_IN_NEIGHBORS_BY_ID: 'checkInNeighborsById'
 };
 
 // Court
