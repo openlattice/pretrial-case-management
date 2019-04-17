@@ -121,7 +121,7 @@ export const getDateAndTime = (dateTime) => {
   const time = moment(dateTime).format('HH:mm');
 
   return { date, time };
-}
+};
 
 // Pass entity object and list of property types and will return and object of labels
 // mapped to properties.

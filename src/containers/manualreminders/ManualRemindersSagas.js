@@ -140,7 +140,7 @@ function* loadManualRemindersForDateWorker(action :SequenceAction) :Generator<*,
     const ceiling = yield call(DataApi.getEntitySetSize, manualRemindersEntitySetId);
 
     const reminderOptions = {
-      searchTerm: `${datePropertyTypeId}:"${toISODate(date)}"`,
+      searchTerm: `${manualRemindersEntitySetId}.${datePropertyTypeId}:"${toISODate(date)}"`,
       start: 0,
       maxHits: ceiling,
       fuzzy: false

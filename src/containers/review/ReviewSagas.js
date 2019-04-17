@@ -290,7 +290,8 @@ function* loadPSADataWorker(action :SequenceAction) :Generator<*, *, *> {
       const psaScoresEntitySetId = getEntitySetIdFromApp(app, PSA_SCORES);
       const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
       const staffEntitySetId = getEntitySetIdFromApp(app, STAFF);
-      const manualPretrialCasesFqnEntitySetId = getEntitySetIdFromApp(app, MANUAL_PRETRIAL_CASES);
+      const manualPretrialCasesEntitySetId = getEntitySetIdFromApp(app, MANUAL_PRETRIAL_CASES);
+      const manualPretrialCourtCasesEntitySetId = getEntitySetIdFromApp(app, MANUAL_PRETRIAL_COURT_CASES);
       const releaseRecommendationsEntitySetId = getEntitySetIdFromApp(app, RELEASE_RECOMMENDATIONS);
       let neighborsById = yield call(SearchApi.searchEntityNeighborsWithFilter, psaScoresEntitySetId, {
         entityKeyIds: action.value,
@@ -299,7 +300,8 @@ function* loadPSADataWorker(action :SequenceAction) :Generator<*, *, *> {
           peopleEntitySetId,
           psaScoresEntitySetId,
           staffEntitySetId,
-          manualPretrialCasesFqnEntitySetId
+          manualPretrialCourtCasesEntitySetId,
+          manualPretrialCasesEntitySetId
         ]
       });
       neighborsById = Immutable.fromJS(neighborsById);
@@ -344,6 +346,9 @@ function* loadPSADataWorker(action :SequenceAction) :Generator<*, *, *> {
                   neighborsByAppTypeFqn.get(appTypeFqn, Immutable.List()).push(fromJS(neighbor))
                 );
               }
+            }
+            else if (appTypeFqn === MANUAL_PRETRIAL_CASES || appTypeFqn === MANUAL_PRETRIAL_COURT_CASES) {
+              neighborsByAppTypeFqn = neighborsByAppTypeFqn.set(MANUAL_PRETRIAL_CASES, fromJS(neighbor));
             }
             else {
               neighborsByAppTypeFqn = neighborsByAppTypeFqn.set(appTypeFqn, fromJS(neighbor));
@@ -398,7 +403,9 @@ function* loadPSAsByDateWorker(action :SequenceAction) :Generator<*, *, *> {
     const psaScoresEntitySetId = getEntitySetIdFromApp(app, PSA_SCORES);
     const statusPropertyTypeId = getPropertyTypeId(edm, statusfqn);
     const filter = action.value || PSA_STATUSES.OPEN;
-    const searchTerm = action.value === '*' ? action.value : `${statusPropertyTypeId}:"${filter}"`;
+    const searchTerm = action.value === '*'
+      ? action.value
+      : `${psaScoresEntitySetId}.${statusPropertyTypeId}:"${filter}"`;
     const allScoreData = yield call(getAllSearchResults, psaScoresEntitySetId, searchTerm);
 
     let scoresAsMap = Immutable.Map();
