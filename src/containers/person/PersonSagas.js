@@ -376,9 +376,10 @@ function* searchPeopleByPhoneNumberWorker(action) :Generator<*, *, *> {
       nameConstraints :Array,
       search :string,
       property :string,
+      entitySetId :string,
     ) => {
       nameConstraints.constraints.push({
-        searchTerm: `${property}:"${search}"`,
+        searchTerm: `${entitySetId}.${property}:"${search}"`,
         fuzzy: true
       });
     };
@@ -399,8 +400,8 @@ function* searchPeopleByPhoneNumberWorker(action) :Generator<*, *, *> {
       }
       else {
         names.forEach((word) => {
-          updateConstraints(firstNameConstraints, word, firstNamePropertyTypeId);
-          updateConstraints(lastNameConstraints, word, lastNamePropertyTypeId);
+          updateConstraints(firstNameConstraints, word, firstNamePropertyTypeId, peopleEntitySetId);
+          updateConstraints(lastNameConstraints, word, lastNamePropertyTypeId, peopleEntitySetId);
         });
       }
     }
