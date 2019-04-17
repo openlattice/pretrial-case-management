@@ -241,7 +241,8 @@ export const ID_FIELD_NAMES = {
   OUTCOME_ID: 'outcomeId',
   EMPLOYEE_ID: 'employeeId',
   JUDGE_ID: 'judgeId',
-  CONTACT_INFO_ID: 'contactInfoId'
+  CONTACT_INFO_ID: 'contactInfoId',
+  CHARGE_ID: 'chargeId'
 };
 
 export const ID_FIELDS = {
