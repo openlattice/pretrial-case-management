@@ -1,4 +1,5 @@
 import { ALIASES } from './ConfigConsts';
+import { ID_FIELD_NAMES } from '../../utils/consts/Consts';
 import { APP_TYPES_FQNS, CHARGE_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 
 const {
@@ -12,6 +13,7 @@ export const arrestChargeConfig = () => (
       {
         name: ARREST_CHARGE_LIST,
         alias: ALIASES.CHARGE,
+        entityId: ID_FIELD_NAMES.CHARGE_ID,
         fields: {
           [PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE]: CHARGE_FQNS.STATUTE,
           [PROPERTY_TYPES.REFERENCE_CHARGE_DESCRIPTION]: CHARGE_FQNS.DESCRIPTION,
@@ -35,6 +37,7 @@ export const courtChargeConfig = () => (
       {
         name: COURT_CHARGE_LIST,
         alias: ALIASES.CHARGE,
+        entityId: ID_FIELD_NAMES.CHARGE_ID,
         fields: {
           [PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE]: CHARGE_FQNS.STATUTE,
           [PROPERTY_TYPES.REFERENCE_CHARGE_DESCRIPTION]: CHARGE_FQNS.DESCRIPTION,
