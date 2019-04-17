@@ -106,7 +106,7 @@ function* getEntityForPersonId(personId :string) :Generator<*, *, *> {
   const personIdPropertyTypeId = getPropertyTypeId(edm, PROPERTY_TYPES.PERSON_ID);
 
   const searchOptions = {
-    searchTerm: `${personIdPropertyTypeId}:"${personId}"`,
+    searchTerm: `${peopleEntitySetId}.${personIdPropertyTypeId}:"${personId}"`,
     start: 0,
     maxHits: 1
   };
@@ -497,7 +497,9 @@ function* loadRequiresActionPeopleWorker(action :SequenceAction) :Generator<*, *
 
     /* load all open PSAs */
     const statusPropertyTypeId = getPropertyTypeId(edm, PROPERTY_TYPES.STATUS);
-    const searchTerm = action.value === '*' ? action.value : `${statusPropertyTypeId}:"${PSA_STATUSES.OPEN}"`;
+    const searchTerm = action.value === '*'
+      ? action.value
+      : `${psaScoresEntitySetId}.${statusPropertyTypeId}:"${PSA_STATUSES.OPEN}"`;
     const openPSAData = yield call(getAllSearchResults, psaScoresEntitySetId, searchTerm);
     fromJS(openPSAData.hits).forEach((psa) => {
       const psaId = psa.getIn([OPENLATTICE_ID_FQN, 0], '');

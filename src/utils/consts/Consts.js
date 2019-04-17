@@ -243,7 +243,7 @@ export const ID_FIELD_NAMES = {
   EMPLOYEE_ID: 'employeeId',
   JUDGE_ID: 'judgeId',
   CONTACT_INFO_ID: 'contactInfoId',
-  CHECKIN_APPOINTMENT_ID: 'checkInAppointmentId'
+  CHARGE_ID: 'chargeId'
 };
 
 export const ID_FIELDS = {
