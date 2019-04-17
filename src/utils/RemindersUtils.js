@@ -1,6 +1,7 @@
 import moment from 'moment';
 import { Map } from 'immutable';
 
+import { SORT_TYPES } from './consts/Consts';
 import { APP_TYPES, PROPERTY_TYPES } from './consts/DataModelConsts';
 import { PSA_NEIGHBOR } from './consts/FrontEndStateConsts';
 import {
@@ -64,7 +65,7 @@ export const getOptOutFields = (optOut) => {
   };
 };
 
-export const sortEntities = (entities, neighbors, shouldSortByDateTime) => (
+export const sortEntities = (entities, neighbors, shouldSortByDateTime, sort) => (
   entities.valueSeq().sort((entity1, entity2) => {
     const entityKeyId1 = getEntityKeyId(entity1);
     const person1 = neighbors.getIn([entityKeyId1, PEOPLE, PSA_NEIGHBOR.DETAILS], Map());
@@ -83,9 +84,14 @@ export const sortEntities = (entities, neighbors, shouldSortByDateTime) => (
     const lastName2 = getFirstNeighborValue(person2, PROPERTY_TYPES.LAST_NAME);
 
     if (shouldSortByDateTime && !dateTime1.isSame(dateTime2)) return dateTime1.isBefore(dateTime2) ? -1 : 1;
-    if (!hearingDateTime1.isSame(hearingDateTime2)) return hearingDateTime1.isBefore(hearingDateTime2) ? -1 : 1;
+    if (sort === SORT_TYPES.DATE) {
+      if (!hearingDateTime1.isSame(hearingDateTime2)) return hearingDateTime1.isBefore(hearingDateTime2) ? -1 : 1;
+      if (lastName1 !== lastName2) return lastName1 > lastName2 ? 1 : -1;
+      if (firstName1 !== firstName2) return firstName1 > firstName2 ? 1 : -1;
+    }
     if (lastName1 !== lastName2) return lastName1 > lastName2 ? 1 : -1;
     if (firstName1 !== firstName2) return firstName1 > firstName2 ? 1 : -1;
+    if (!hearingDateTime1.isSame(hearingDateTime2)) return hearingDateTime1.isBefore(hearingDateTime2) ? -1 : 1;
     return 0;
   }));
 

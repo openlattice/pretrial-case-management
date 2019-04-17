@@ -6,6 +6,7 @@ import styled from 'styled-components';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCog, faPaperPlane } from '@fortawesome/pro-light-svg-icons';
+import { faBell } from '@fortawesome/pro-solid-svg-icons';
 
 import StyledButton from '../buttons/StyledButton';
 import { OL } from '../../utils/consts/Colors';
@@ -67,7 +68,7 @@ class PersonSubscriptionRow extends React.Component<Props, State> {
   }
   render() {
     const { contact, person, includeManualRemindersButton } = this.props;
-    const { lastFirstMid } = formatPeopleInfo(person);
+    const { lastFirstMid, isReceivingReminders } = formatPeopleInfo(person);
     const phone = contact
       ? contact.getIn([PROPERTY_TYPES.PHONE, 0], 'N/A')
       : undefined;
@@ -75,6 +76,11 @@ class PersonSubscriptionRow extends React.Component<Props, State> {
       <Row includeContact={phone}>
         <BodyElement>
           {lastFirstMid}
+          {
+            isReceivingReminders
+              ? <BodyElement><FontAwesomeIcon icon={faBell} color={OL.ORANGE01} height="12px" /></BodyElement>
+              : null
+          }
         </BodyElement>
         { phone ? <BodyElement>{phone}</BodyElement> : null }
         <BodyElement>
