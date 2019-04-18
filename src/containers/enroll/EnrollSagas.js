@@ -97,6 +97,7 @@ export function* getProfileWorker(action :SequenceAction) :Generator<*, *, *> {
       destinationEntitySetIds: []
     });
     const personNeighbors = fromJS(Object.values(peopleNeighborsById)[0] || []);
+    let voiceProfileRequest;
     let voiceProfileEntityKeyId;
     let voiceProfileId;
     let voiceProfile;
@@ -112,10 +113,11 @@ export function* getProfileWorker(action :SequenceAction) :Generator<*, *, *> {
           voiceProfileId = neighborObj.getIn([PROPERTY_TYPES.GENERAL_ID, 0], '');
         }
       });
+      if (voiceProfileId) {
+        voiceProfileRequest = yield call(tryLoadProfile, voiceProfileId);
+        voiceProfile = voiceProfileRequest;
+      }
     }
-    let voiceProfileRequest;
-    if (voiceProfileId) voiceProfileRequest = yield call(tryLoadProfile, voiceProfileId);
-    if (voiceProfileRequest) voiceProfile = voiceProfileRequest;
 
     if (!voiceProfile || !voiceProfile.data || !voiceProfile.data.verificationProfileId) {
       const createProfileRequest = {
