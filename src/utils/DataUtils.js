@@ -127,16 +127,17 @@ export const getDateAndTime = (dateTime) => {
 // mapped to properties.
 export const getEntityProperties = (entityObj, propertyList) => {
   let returnCaseFields = Map();
-  propertyList.forEach((propertyType) => {
-    const backUpValue = entityObj.get(propertyType, '');
-    const property = getFirstNeighborValue(entityObj, propertyType, backUpValue);
-    returnCaseFields = returnCaseFields.set(propertyType, property);
-  });
+  if (propertyList.length) {
+    propertyList.forEach((propertyType) => {
+      const backUpValue = entityObj.get(propertyType, '');
+      const property = getFirstNeighborValue(entityObj, propertyType, backUpValue);
+      returnCaseFields = returnCaseFields.set(propertyType, property);
+    });
+  }
   return returnCaseFields.toJS();
 };
 
 export const getCreateAssociationObject = ({
-  associationEntitySetId,
   associationEntity,
   srcEntitySetId,
   srcEntityKeyId,
