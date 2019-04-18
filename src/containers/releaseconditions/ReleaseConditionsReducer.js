@@ -1,11 +1,13 @@
 /*
  * @flow
  */
-import { Map, fromJS } from 'immutable';
+import { List, Map, fromJS } from 'immutable';
 import { Constants } from 'lattice';
 
+import { getEntityProperties } from '../../utils/DataUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { RELEASE_COND } from '../../utils/consts/FrontEndStateConsts';
+import { deleteEntity } from '../../utils/data/DataActionFactory';
 import { refreshHearingNeighbors } from '../court/CourtActionFactory';
 import { refreshPSANeighbors } from '../review/ReviewActionFactory';
 import {
@@ -14,7 +16,12 @@ import {
   updateOutcomesAndReleaseCondtions
 } from './ReleaseConditionsActionFactory';
 
-const { HEARINGS, OUTCOMES, DMF_RESULTS } = APP_TYPES;
+const {
+  HEARINGS,
+  OUTCOMES,
+  DMF_RESULTS,
+  CHECKIN_APPOINTMENTS
+} = APP_TYPES;
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
@@ -63,6 +70,33 @@ export default function releaseConditionsReducer(state :Map<*, *> = INITIAL_STAT
       });
     }
 
+    case deleteEntity.case(action.type): {
+      return deleteEntity.reducer(state, action, {
+        SUCCESS: () => {
+          const { entityKeyId } = action.value;
+
+          const hearingCheckInAppointments = state.getIn([RELEASE_COND.HEARING_NEIGHBORS, CHECKIN_APPOINTMENTS], List())
+            .filter((checkInAppointment) => {
+              const {
+                [PROPERTY_TYPES.ENTITY_KEY_ID]: checkInAppoiontmentsEntityKeyId
+              } = getEntityProperties(checkInAppointment, [PROPERTY_TYPES.ENTITY_KEY_ID]);
+              return entityKeyId !== checkInAppoiontmentsEntityKeyId;
+            });
+          const personCheckInAppointments = state.getIn([RELEASE_COND.PERSON_NEIGHBORS, CHECKIN_APPOINTMENTS], List())
+            .filter((checkInAppointment) => {
+              const {
+                [PROPERTY_TYPES.ENTITY_KEY_ID]: checkInAppoiontmentsEntityKeyId
+              } = getEntityProperties(checkInAppointment, [PROPERTY_TYPES.ENTITY_KEY_ID]);
+              return entityKeyId !== checkInAppoiontmentsEntityKeyId;
+            });
+
+          return state
+            .setIn([RELEASE_COND.HEARING_NEIGHBORS, CHECKIN_APPOINTMENTS], hearingCheckInAppointments)
+            .setIn([RELEASE_COND.PERSON_NEIGHBORS, CHECKIN_APPOINTMENTS], personCheckInAppointments);
+        }
+      });
+    }
+
     case refreshHearingNeighbors.case(action.type): {
       return refreshHearingNeighbors.reducer(state, action, {
         REQUEST: () => state.set(RELEASE_COND.REFRESHING_RELEASE_CONDITIONS, true),
@@ -89,7 +123,7 @@ export default function releaseConditionsReducer(state :Map<*, *> = INITIAL_STAT
           neighbors.get(HEARINGS).forEach((hearing) => {
             const hearingEntityKeyId = hearing.getIn([OPENLATTICE_ID_FQN, 0]);
             if (hearingEntityKeyId === selectedHearingEntityKeyId) {
-              selectedHearing = hearing
+              selectedHearing = hearing;
             }
           });
 
