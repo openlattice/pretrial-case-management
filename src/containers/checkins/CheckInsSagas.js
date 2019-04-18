@@ -1,6 +1,8 @@
 /*
  * @flow
  */
+
+import moment from 'moment';
 import { SearchApi, DataApi } from 'lattice';
 import {
   call,
@@ -23,6 +25,7 @@ import { APPOINTMENT_TYPES } from '../../utils/consts/AppointmentConsts';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import {
   APP,
+  PSA_ASSOCIATION,
   PSA_NEIGHBOR,
   STATE
 } from '../../utils/consts/FrontEndStateConsts';
@@ -43,6 +46,8 @@ const {
 } = APP_TYPES;
 
 const {
+  PHONE,
+  COMPLETED_DATE_TIME,
   START_DATE,
   ENTITY_KEY_ID,
   TYPE
@@ -70,7 +75,7 @@ function* loadCheckInAppointmentsForDateWorker(action :SequenceAction) :Generato
     const ceiling = yield call(DataApi.getEntitySetSize, checkInAppoiontmentsEntitySetId);
 
     const checkInOptions = {
-      searchTerm: `${startDatePropertyTypeId}:"${toISODate(date)}"`,
+      searchTerm: `${checkInAppoiontmentsEntitySetId}.${startDatePropertyTypeId}:"${toISODate(date)}"`,
       start: 0,
       maxHits: ceiling,
       fuzzy: false
@@ -96,7 +101,7 @@ function* loadCheckInAppointmentsForDateWorker(action :SequenceAction) :Generato
 
     if (checkInAppointmentIds.size) {
       checkInAppointmentIds = checkInAppointmentIds.toJS();
-      yield put(loadCheckInNeighbors({ checkInAppointmentIds }));
+      yield put(loadCheckInNeighbors({ checkInAppointmentIds, date }));
     }
     yield put(loadCheckInAppointmentsForDate.success(action.id, {
       checkInAppointmentIds,
@@ -121,7 +126,7 @@ function* loadCheckInNeighborsWorker(action :SequenceAction) :Generator<*, *, *>
   try {
     yield put(loadCheckInNeighbors.request(action.id));
 
-    const { checkInAppointmentIds } = action.value;
+    const { checkInAppointmentIds, date } = action.value;
 
     let checkInNeighborsById = Map();
     let hearingIdsToCheckInIds = Map();
@@ -189,10 +194,23 @@ function* loadCheckInNeighborsWorker(action :SequenceAction) :Generator<*, *, *>
             const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
             const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
             if (appTypeFqn === CHECKINS) {
-              neighborsByAppTypeFqn = neighborsByAppTypeFqn.set(
-                appTypeFqn,
-                fromJS(neighbor)
-              );
+              const associationData = neighbor.getIn([PSA_ASSOCIATION.DETAILS], Map());
+              const {
+                [PHONE]: phone,
+                [COMPLETED_DATE_TIME]: dateTime
+              } = getEntityProperties(associationData, [PHONE, COMPLETED_DATE_TIME]);
+              if (moment(dateTime).isSame(date, 'd')) {
+                neighborsByAppTypeFqn = neighborsByAppTypeFqn.set(
+                  appTypeFqn,
+                  neighborsByAppTypeFqn.get(appTypeFqn, List()).push(
+                    fromJS(
+                      neighbor
+                        .setIn([PSA_NEIGHBOR.DETAILS, PHONE], [phone])
+                        .setIn([PSA_NEIGHBOR.DETAILS, COMPLETED_DATE_TIME], [dateTime])
+                    )
+                  )
+                );
+              }
             }
           });
           const checkInId = peopleIdsToCheckInIds.get(personId);
