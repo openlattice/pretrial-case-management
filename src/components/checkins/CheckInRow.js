@@ -12,23 +12,15 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHourglassHalf, faMicrophoneAlt } from '@fortawesome/pro-light-svg-icons';
 
 import { getDateAndTime, getEntityProperties, getNeighborDetailsForEntitySet } from '../../utils/DataUtils';
+import { getCheckInAttempts } from '../../utils/CheckInUtils';
 import { formatPeopleInfo } from '../../utils/PeopleUtils';
-import { formatPhoneNumber } from '../../utils/ContactInfoUtils';
 import { OL } from '../../utils/consts/Colors';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { FILTERS, RESULT_TYPE } from '../../utils/consts/CheckInConsts';
+import { FILTERS } from '../../utils/consts/CheckInConsts';
 
 import * as Routes from '../../core/router/Routes';
 
-const {
-  CONFIDENCE,
-  COMPLETED_DATE_TIME,
-  CASE_ID,
-  END_DATE,
-  RESULT,
-  START_DATE,
-  PHONE
-} = PROPERTY_TYPES;
+const { CASE_ID } = PROPERTY_TYPES;
 
 const {
   CHECKINS,
@@ -104,78 +96,20 @@ class CheckInRow extends React.Component<Props, State> {
     return statusIcon;
   }
 
-  getCheckInAttempts = () => {
-    let checkInStatus;
-    let checkInTimes;
-    let checkInNumbers;
-    let successfulCheckIns = List();
-    const successfulNumbers = [];
-    const successfulCheckInTimes = [];
-    let failedCheckIns = List();
-    const failedNumbers = [];
-    const failedCheckInTimes = [];
+  renderRow = () => {
     const { checkInAppointment, neighbors } = this.props;
     const checkIns = neighbors.get(CHECKINS, Map());
-    const {
-      [START_DATE]: startDate,
-      [END_DATE]: endDate
-    } = getEntityProperties(checkInAppointment, [END_DATE, START_DATE]);
-    checkIns.forEach((checkIn) => {
-      const {
-        [RESULT]: result,
-        [COMPLETED_DATE_TIME]: checkInTime,
-        [CONFIDENCE]: confidence,
-        [PHONE]: phone
-      } = getEntityProperties(checkIn, [COMPLETED_DATE_TIME, RESULT, PHONE, CONFIDENCE]);
-      const { date, time } = getDateAndTime(checkInTime);
-      const validCheckInTime = moment(checkInTime).isBetween(startDate, endDate);
-      const checkInAccepted = result === RESULT_TYPE.ACCEPT;
-      console.log(confidence);
-      if (validCheckInTime && checkInAccepted) {
-        successfulCheckIns = successfulCheckIns.push(checkIn);
-        successfulNumbers.push(formatPhoneNumber(phone));
-        successfulCheckInTimes.push(`${date} ${time}`);
-      }
-      else {
-        failedCheckIns = failedCheckIns.push(checkIn);
-        failedNumbers.push(formatPhoneNumber(phone));
-        failedCheckInTimes.push(`${date} ${time}`);
-      }
-    });
-    const numAttempts = successfulCheckIns.size + failedCheckIns.size;
-    if (moment().isAfter(endDate) || (!successfulCheckIns.size && failedCheckIns.size)) checkInStatus = FILTERS.FAILED;
-    else if (successfulCheckIns.size) checkInStatus = FILTERS.SUCCESSFUL;
-    else checkInStatus = FILTERS.PENDING;
-
-    if (checkInStatus === FILTERS.FAILED) {
-      checkInTimes = failedNumbers;
-      checkInNumbers = failedCheckInTimes;
-    }
-    else if (checkInStatus === FILTERS.SUCCESSFUL) {
-      checkInTimes = successfulCheckInTimes;
-      checkInNumbers = successfulNumbers;
-    }
-
-    return {
-      checkInStatus,
-      checkInTimes,
-      checkInNumbers,
-      numAttempts
-    };
-  }
-
-  renderRow = () => {
-    const { neighbors } = this.props;
     const person = getNeighborDetailsForEntitySet(neighbors, PEOPLE);
     const hearings = neighbors.get(HEARINGS, List());
     const pretrialCase = neighbors.get(PRETRIAL_CASES, Map());
     const { [CASE_ID]: caseNumber } = getEntityProperties(pretrialCase, [CASE_ID]);
     const {
+      entityKeyId,
       checkInStatus,
-      checkInTimes,
-      checkInNumbers,
+      checkInTime,
+      checkInNumber,
       numAttempts
-    } = this.getCheckInAttempts();
+    } = getCheckInAttempts(checkInAppointment, checkIns);
 
     let mostRecentHearing;
     hearings.forEach((hearing) => {
@@ -198,14 +132,14 @@ class CheckInRow extends React.Component<Props, State> {
       lastFirstMid
     } = formatPeopleInfo(person);
     const row = (
-      <Row disabled>
-        <Cell>{ checkInTimes || '-' }</Cell>
+      <Row key={entityKeyId} disabled>
+        <Cell>{ checkInTime || '-' }</Cell>
         <Cell>
           <StyledLink to={`${Routes.PERSON_DETAILS_ROOT}/${personId}${Routes.OVERVIEW}`}>
             { lastFirstMid }
           </StyledLink>
         </Cell>
-        <Cell>{ checkInNumbers ? checkInNumbers[0] : '-' }</Cell>
+        <Cell>{ checkInNumber || '-' }</Cell>
         <Cell>{ mostRecentHearing.dateTime }</Cell>
         <Cell>{ mostRecentHearing.courtroom }</Cell>
         <Cell>{ mostRecentHearing.hearingType }</Cell>
