@@ -9,7 +9,7 @@ import { Map, List } from 'immutable';
 import { Link } from 'react-router-dom';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCheck, faHourglassHalf, faTimesCircle } from '@fortawesome/pro-light-svg-icons';
+import { faHourglassHalf, faMicrophoneAlt } from '@fortawesome/pro-light-svg-icons';
 
 import { getDateAndTime, getEntityProperties, getNeighborDetailsForEntitySet } from '../../utils/DataUtils';
 import { formatPeopleInfo } from '../../utils/PeopleUtils';
@@ -84,13 +84,19 @@ class CheckInRow extends React.Component<Props, State> {
     let statusIcon;
     switch (checkInStatus) {
       case FILTERS.FAILED:
-        statusIcon = <StatusIconContainer><FontAwesomeIcon color="red" icon={faTimesCircle} /></StatusIconContainer>;
+        statusIcon = (
+          <StatusIconContainer><FontAwesomeIcon color={OL.ORANGE01} icon={faMicrophoneAlt} /></StatusIconContainer>
+        );
         break;
       case FILTERS.SUCCESSFUL:
-        statusIcon = <StatusIconContainer><FontAwesomeIcon color="green" icon={faCheck} /></StatusIconContainer>;
+        statusIcon = (
+          <StatusIconContainer><FontAwesomeIcon color={OL.GREEN01} icon={faMicrophoneAlt} /></StatusIconContainer>
+        );
         break;
       case FILTERS.PENDING:
-        statusIcon = <StatusIconContainer><FontAwesomeIcon color={OL.PURPLE03} icon={faHourglassHalf} /></StatusIconContainer>
+        statusIcon = (
+          <StatusIconContainer><FontAwesomeIcon color={OL.PURPLE03} icon={faHourglassHalf} /></StatusIconContainer>
+        );
         break;
       default:
         break;
