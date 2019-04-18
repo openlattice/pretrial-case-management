@@ -15,7 +15,7 @@ import {
 } from 'immutable';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCheck, faHourglassHalf, faTimesCircle } from '@fortawesome/pro-light-svg-icons';
+import { faHourglassHalf, faMicrophoneAlt } from '@fortawesome/pro-light-svg-icons';
 
 import DatePicker from '../../components/datetime/DatePicker';
 import TableWithPagination from '../../components/reminders/TableWithPagination';
@@ -37,7 +37,7 @@ import * as PersonActionFactory from '../person/PersonActionFactory';
 const { CHECKINS, PEOPLE, HEARINGS } = APP_TYPES;
 
 const {
-  DATE_TIME,
+  COMPLETED_DATE_TIME,
   RESULT,
   START_DATE,
   END_DATE
@@ -72,8 +72,14 @@ const ResultsWrapper = styled.div`
 `;
 
 const StatusIconContainer = styled.div`
+  display: flex;
+  flex-direction: row;
   pointer-events: none;
   margin: 5px 0;
+`;
+
+const StatusText = styled.div`
+  margin-right: 10px;
 `;
 
 type Props = {
@@ -188,26 +194,37 @@ class CheckInsContainer extends React.Component<Props, State> {
       const person = checkInAppointmentNeighbors.get(PEOPLE, Map());
       const hearings = checkInAppointmentNeighbors.get(HEARINGS, List());
       if (!person.size && !hearings.size) return false;
-
-      const checkIn = checkInAppointmentNeighbors.get(CHECKINS, Map());
       const {
         [START_DATE]: startDate,
         [END_DATE]: endDate
       } = getEntityProperties(checkInAppointment, [START_DATE, END_DATE]);
-      const { [DATE_TIME]: checkInTime, [RESULT]: result } = getEntityProperties(checkIn, [DATE_TIME, RESULT]);
-      const validCheckInTime = moment(checkInTime).isBetween(startDate, endDate);
+
+      const checkIns = checkInAppointmentNeighbors.get(CHECKINS, List());
+      let successfulCheckIns = List();
+      let failedCheckIns = List();
+      checkIns.forEach((checkIn) => {
+        const {
+          [COMPLETED_DATE_TIME]: checkInTime,
+          [RESULT]: result
+        } = getEntityProperties(checkIn, [COMPLETED_DATE_TIME, RESULT]);
+        const validCheckInTime = moment(checkInTime).isBetween(startDate, endDate);
+        const checkInAccepted = result === RESULT_TYPE.ACCEPT;
+        if (validCheckInTime && checkInAccepted) successfulCheckIns = successfulCheckIns.push(checkIn);
+        else failedCheckIns = failedCheckIns.push(checkIn);
+      });
       let filterResult = true;
       switch (filter) {
         case FILTERS.FAILED:
-          filterResult = (!checkIn.size && moment().isAfter(endDate))
-          || (checkInTime && !validCheckInTime)
-          || (result === RESULT_TYPE.REJECT);
+          filterResult = moment().isAfter(endDate)
+          || (!successfulCheckIns.size && failedCheckIns.size);
           break;
         case FILTERS.SUCCESSFUL:
-          filterResult = checkIn.size && (checkInTime && validCheckInTime) && (result === RESULT_TYPE.ACCEPT);
+          filterResult = !!successfulCheckIns.size;
           break;
         case FILTERS.PENDING:
-          filterResult = (!checkIn.size && moment().isBefore(endDate));
+          filterResult = successfulCheckIns.size === 0
+            && failedCheckIns.size === 0
+            && moment().isBefore(endDate);
           break;
         default:
           break;
@@ -223,8 +240,8 @@ class CheckInsContainer extends React.Component<Props, State> {
       [FILTERS.FAILED]: {
         label: (
           <StatusIconContainer>
-            {`${FILTERS.FAILED} `}
-            <FontAwesomeIcon color={filter === FILTERS.FAILED ? OL.WHITE : OL.RED01} icon={faTimesCircle} />
+            <StatusText>{`${FILTERS.FAILED}`}</StatusText>
+            <FontAwesomeIcon color={filter === FILTERS.FAILED ? OL.WHITE : OL.ORANGE01} icon={faMicrophoneAlt} />
           </StatusIconContainer>
         ),
         value: FILTERS.FAILED
@@ -232,8 +249,8 @@ class CheckInsContainer extends React.Component<Props, State> {
       [FILTERS.SUCCESSFUL]: {
         label: (
           <StatusIconContainer>
-            {`${FILTERS.SUCCESSFUL} `}
-            <FontAwesomeIcon color={filter === FILTERS.SUCCESSFUL ? OL.WHITE : OL.GREEN01} icon={faCheck} />
+            <StatusText>{`${FILTERS.SUCCESSFUL}`}</StatusText>
+            <FontAwesomeIcon color={filter === FILTERS.SUCCESSFUL ? OL.WHITE : OL.GREEN01} icon={faMicrophoneAlt} />
           </StatusIconContainer>
         ),
         value: FILTERS.SUCCESSFUL
@@ -241,7 +258,7 @@ class CheckInsContainer extends React.Component<Props, State> {
       [FILTERS.PENDING]: {
         label: (
           <StatusIconContainer>
-            {`${FILTERS.PENDING} `}
+            <StatusText>{`${FILTERS.PENDING}`}</StatusText>
             <FontAwesomeIcon color={filter === FILTERS.PENDING ? OL.WHITE : OL.PURPLE03} icon={faHourglassHalf} />
           </StatusIconContainer>
         ),
