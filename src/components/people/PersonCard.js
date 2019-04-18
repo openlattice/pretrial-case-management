@@ -130,14 +130,25 @@ class PersonCard extends React.Component<Props, State> {
   static defaultProps = {
     hasOpenPSA: false,
     judgesview: false,
-    multipleOpenPSAs: false
+    multipleOpenPSAs: false,
+  }
+
+  openPSAModal = () => {
+    const { openPSAModal, psaId } = this.props;
+    if (openPSAModal && psaId) {
+      openPSAModal({ psaId });
+    }
   }
 
   renderCardContent = () => {
     const {
       personObj,
       openPSAModal,
-      psaId
+      psaId,
+      multipleOpenPSAs,
+      hasOpenPSA,
+      isReceivingReminders,
+      judgesview
     } = this.props;
     const {
       firstName,
@@ -146,12 +157,6 @@ class PersonCard extends React.Component<Props, State> {
       dob,
       photo,
     } = personObj;
-    const {
-      multipleOpenPSAs,
-      hasOpenPSA,
-      isReceivingReminders,
-      judgesview
-    } = this.props;
 
     const midName = middleName ? ` ${middleName}` : '';
     const name = `${lastName}, ${firstName}${midName}`;
@@ -166,7 +171,7 @@ class PersonCard extends React.Component<Props, State> {
               </MultiIconWrapper>
             ) : null
         }
-        <StyledPersonCard hasOpenPSA={hasOpenPSA} onClick={() => openPSAModal({ psaId })}>
+        <StyledPersonCard hasOpenPSA={hasOpenPSA} onClick={this.openPSAModal}>
           <MugShot src={photo || defaultProfile} />
           <PersonInfoSection>
             <Name>{name}</Name>
@@ -181,10 +186,15 @@ class PersonCard extends React.Component<Props, State> {
   }
 
   renderCard = () => {
-    const { editDate, personObj, hasOpenPSA } = this.props;
+    const {
+      editDate,
+      personObj,
+      hasOpenPSA,
+      judgesview
+    } = this.props;
     const { personId } = personObj;
 
-    return hasOpenPSA
+    return hasOpenPSA && judgesview
       ? (
         <CardWrapper>
           <OpenPSATag includesDate>{editDate}</OpenPSATag>
