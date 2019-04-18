@@ -69,6 +69,7 @@ const ToolbarWrapper = styled.div`
 
 type Props = {
   entityKeyId :string,
+  entitySetsByOrganization :Map<*, *>,
   hearingNeighborsById :Map<*, *>,
   hearingIds :List<*, *>,
   isLoadingHearingsNeighbors :boolean,
@@ -377,7 +378,8 @@ class PersonDetailsContainer extends React.Component<Props, State> {
       readOnlyPermissions,
       selectedOrganizationId,
       selectedOrganizationSettings,
-      updatingEntity
+      updatingEntity,
+      entitySetsByOrganization
     } = this.props;
     const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], '');
     const settingsIncludeVoiceEnroll = selectedOrganizationSettings.get(SETTINGS.ENROLL_VOICE, false);
@@ -398,6 +400,7 @@ class PersonDetailsContainer extends React.Component<Props, State> {
     return (
       <PersonOverview
           courtRemindersEnabled={courtRemindersEnabled}
+          entitySetIdsToAppType={entitySetsByOrganization.get(selectedOrganizationId, Map())}
           refreshingPersonNeighbors={refreshingPersonNeighbors}
           updatingEntity={updatingEntity}
           includesPretrialModule={includesPretrialModule}
@@ -500,6 +503,7 @@ function mapStateToProps(state, ownProps) {
   return {
     [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
     [APP.SELECTED_ORG_SETTINGS]: app.get(APP.SELECTED_ORG_SETTINGS),
+    [APP.ENTITY_SETS_BY_ORG]: app.get(APP.ENTITY_SETS_BY_ORG),
 
     personId,
     [REVIEW.ENTITY_SET_ID]: review.get(REVIEW.ENTITY_SET_ID) || people.get(PEOPLE.SCORES_ENTITY_SET_ID),
