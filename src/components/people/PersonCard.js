@@ -133,9 +133,8 @@ class PersonCard extends React.Component<Props, State> {
     multipleOpenPSAs: false
   }
 
-  renderContent = () => {
+  renderCardContent = () => {
     const {
-      editDate,
       personObj,
       openPSAModal,
       psaId
@@ -146,7 +145,6 @@ class PersonCard extends React.Component<Props, State> {
       lastName,
       dob,
       photo,
-      personId
     } = personObj;
     const {
       multipleOpenPSAs,
@@ -157,54 +155,46 @@ class PersonCard extends React.Component<Props, State> {
 
     const midName = middleName ? ` ${middleName}` : '';
     const name = `${lastName}, ${firstName}${midName}`;
+    return (
+      <>
+        {
+          multipleOpenPSAs || isReceivingReminders
+            ? (
+              <MultiIconWrapper judgesview={judgesview}>
+                { isReceivingReminders ? <FontAwesomeIcon color={OL.ORANGE01} icon={faBell} /> : null }
+                { multipleOpenPSAs ? <FontAwesomeIcon color={OL.PURPLE02} icon={faClone} /> : null }
+              </MultiIconWrapper>
+            ) : null
+        }
+        <StyledPersonCard hasOpenPSA={hasOpenPSA} onClick={() => openPSAModal({ psaId })}>
+          <MugShot src={photo || defaultProfile} />
+          <PersonInfoSection>
+            <Name>{name}</Name>
+            <div>
+              <DobLabel>DOB  </DobLabel>
+              <Dob>{dob}</Dob>
+            </div>
+          </PersonInfoSection>
+        </StyledPersonCard>
+      </>
+    );
+  }
 
-    return hasOpenPSA && judgesview
+  renderCard = () => {
+    const { editDate, personObj, hasOpenPSA } = this.props;
+    const { personId } = personObj;
+
+    return hasOpenPSA
       ? (
         <CardWrapper>
           <OpenPSATag includesDate>{editDate}</OpenPSATag>
-          {
-            multipleOpenPSAs || isReceivingReminders
-              ? (
-                <MultiIconWrapper judgesview>
-                  { isReceivingReminders ? <FontAwesomeIcon color={OL.ORANGE01} icon={faBell} /> : null }
-                  { multipleOpenPSAs ? <FontAwesomeIcon color={OL.PURPLE02} icon={faClone} /> : null }
-                </MultiIconWrapper>
-              ) : null
-          }
-          <StyledPersonCard hasOpenPSA={hasOpenPSA} onClick={() => openPSAModal({ psaId })}>
-            <MugShot src={photo || defaultProfile} />
-            <PersonInfoSection>
-              <Name>{name}</Name>
-              <div>
-                <DobLabel>DOB  </DobLabel>
-                <Dob>{dob}</Dob>
-              </div>
-            </PersonInfoSection>
-          </StyledPersonCard>
+          { this.renderCardContent() }
         </CardWrapper>
       )
       : (
         <StyledUndecoratedLink to={`${Routes.PERSON_DETAILS_ROOT}/${personId}`}>
           <TagPlaceholder />
-          {
-            multipleOpenPSAs || isReceivingReminders
-              ? (
-                <MultiIconWrapper>
-                  { isReceivingReminders ? <FontAwesomeIcon color={OL.ORANGE01} icon={faBell} /> : null }
-                  { multipleOpenPSAs ? <FontAwesomeIcon color={OL.PURPLE02} icon={faClone} /> : null }
-                </MultiIconWrapper>
-              ) : null
-          }
-          <StyledPersonCard hasOpenPSA={hasOpenPSA}>
-            <MugShot src={photo || defaultProfile} />
-            <PersonInfoSection>
-              <Name>{name}</Name>
-              <div>
-                <DobLabel>DOB  </DobLabel>
-                <Dob>{dob}</Dob>
-              </div>
-            </PersonInfoSection>
-          </StyledPersonCard>
+          { this.renderCardContent() }
         </StyledUndecoratedLink>
       );
   }
@@ -212,7 +202,7 @@ class PersonCard extends React.Component<Props, State> {
   render() {
     return (
       <div>
-        {this.renderContent()}
+        { this.renderCard() }
       </div>
     );
   }
