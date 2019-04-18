@@ -6,13 +6,14 @@ export const CHECKIN_HEADERS = {
   COURTROOM: 'Courtroom',
   HEARING_TYPE: 'Type',
   CASE_NUM: 'Case',
-  STATUS: 'Status'
+  STATUS: 'Status',
+  NUM_ATTEMPTS: '# Attempts'
 };
 
 export const FILTERS = {
   ALL: 'All',
-  FAILED: 'Failed',
-  SUCCESSFUL: 'Successful',
+  FAILED: 'Not Verified',
+  SUCCESSFUL: 'Verified',
   PENDING: 'Pending'
 };
 
