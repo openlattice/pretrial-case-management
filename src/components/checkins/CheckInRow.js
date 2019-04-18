@@ -13,21 +13,21 @@ import { faCheck, faHourglassHalf, faTimesCircle } from '@fortawesome/pro-light-
 
 import { getDateAndTime, getEntityProperties, getNeighborDetailsForEntitySet } from '../../utils/DataUtils';
 import { formatPeopleInfo } from '../../utils/PeopleUtils';
+import { formatPhoneNumber } from '../../utils/ContactInfoUtils';
 import { OL } from '../../utils/consts/Colors';
-import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { RESULT_TYPE } from '../../utils/consts/CheckInConsts';
+import { FILTERS, RESULT_TYPE } from '../../utils/consts/CheckInConsts';
 
 import * as Routes from '../../core/router/Routes';
 
 const {
+  CONFIDENCE,
+  COMPLETED_DATE_TIME,
   CASE_ID,
-  DATE_TIME,
   END_DATE,
-  ENTITY_KEY_ID,
   RESULT,
   START_DATE,
-  CONFIDENCE
+  PHONE
 } = PROPERTY_TYPES;
 
 const {
@@ -50,6 +50,10 @@ const Cell = styled.td`
   color: ${OL.GREY15};
   text-align: left;
   padding: 5px;
+`;
+
+const CenteredCell = styled(Cell)`
+  text-align: center;
 `;
 
 const StatusIconContainer = styled.div`
@@ -76,50 +80,97 @@ type Props = {
 
 class CheckInRow extends React.Component<Props, State> {
 
-  renderbooleanIcon = () => {
-    const { checkInAppointment, neighbors } = this.props;
-    const { [ENTITY_KEY_ID]: entityKeyId } = getEntityProperties(checkInAppointment, [ENTITY_KEY_ID]);
-    const checkInAppointmentNeighbors = neighbors.get(entityKeyId, Map());
-    const checkIn = checkInAppointmentNeighbors.get(CHECKINS, Map());
-    const {
-      [START_DATE]: startDate,
-      [END_DATE]: endDate
-    } = getEntityProperties(checkInAppointment, [START_DATE, END_DATE]);
-    const { [DATE_TIME]: checkInTime, [RESULT]: result } = getEntityProperties(checkIn, [DATE_TIME, RESULT]);
-    const validCheckInTime = moment(checkInTime).isBetween(startDate, endDate);
-
+  renderbooleanIcon = (checkInStatus) => {
     let statusIcon;
-    if ((!checkIn.size && moment().isAfter(endDate))
-    || (checkInTime && !validCheckInTime)
-    || (result === RESULT_TYPE.REJECT)) {
-      statusIcon = <StatusIconContainer><FontAwesomeIcon color="red" icon={faTimesCircle} /></StatusIconContainer>;
-    }
-    else if (checkIn.size && (checkInTime && validCheckInTime) && (result === RESULT_TYPE.ACCEPT)) {
-      statusIcon = <StatusIconContainer><FontAwesomeIcon color="green" icon={faCheck} /></StatusIconContainer>;
-    }
-    else {
-      statusIcon = (
-        <StatusIconContainer><FontAwesomeIcon color={OL.PURPLE03} icon={faHourglassHalf} /></StatusIconContainer>
-      );
+    switch (checkInStatus) {
+      case FILTERS.FAILED:
+        statusIcon = <StatusIconContainer><FontAwesomeIcon color="red" icon={faTimesCircle} /></StatusIconContainer>;
+        break;
+      case FILTERS.SUCCESSFUL:
+        statusIcon = <StatusIconContainer><FontAwesomeIcon color="green" icon={faCheck} /></StatusIconContainer>;
+        break;
+      case FILTERS.PENDING:
+        statusIcon = <StatusIconContainer><FontAwesomeIcon color={OL.PURPLE03} icon={faHourglassHalf} /></StatusIconContainer>
+        break;
+      default:
+        break;
     }
     return statusIcon;
   }
 
-  renderRow = () => {
+  getCheckInAttempts = () => {
+    let checkInStatus;
+    let checkInTimes;
+    let checkInNumbers;
+    let successfulCheckIns = List();
+    const successfulNumbers = [];
+    const successfulCheckInTimes = [];
+    let failedCheckIns = List();
+    const failedNumbers = [];
+    const failedCheckInTimes = [];
     const { checkInAppointment, neighbors } = this.props;
+    const checkIns = neighbors.get(CHECKINS, Map());
+    const {
+      [START_DATE]: startDate,
+      [END_DATE]: endDate
+    } = getEntityProperties(checkInAppointment, [END_DATE, START_DATE]);
+    checkIns.forEach((checkIn) => {
+      const {
+        [RESULT]: result,
+        [COMPLETED_DATE_TIME]: checkInTime,
+        [CONFIDENCE]: confidence,
+        [PHONE]: phone
+      } = getEntityProperties(checkIn, [COMPLETED_DATE_TIME, RESULT, PHONE, CONFIDENCE]);
+      const { date, time } = getDateAndTime(checkInTime);
+      const validCheckInTime = moment(checkInTime).isBetween(startDate, endDate);
+      const checkInAccepted = result === RESULT_TYPE.ACCEPT;
+      console.log(confidence);
+      if (validCheckInTime && checkInAccepted) {
+        successfulCheckIns = successfulCheckIns.push(checkIn);
+        successfulNumbers.push(formatPhoneNumber(phone));
+        successfulCheckInTimes.push(`${date} ${time}`);
+      }
+      else {
+        failedCheckIns = failedCheckIns.push(checkIn);
+        failedNumbers.push(formatPhoneNumber(phone));
+        failedCheckInTimes.push(`${date} ${time}`);
+      }
+    });
+    const numAttempts = successfulCheckIns.size + failedCheckIns.size;
+    if (moment().isAfter(endDate) || (!successfulCheckIns.size && failedCheckIns.size)) checkInStatus = FILTERS.FAILED;
+    else if (successfulCheckIns.size) checkInStatus = FILTERS.SUCCESSFUL;
+    else checkInStatus = FILTERS.PENDING;
+
+    if (checkInStatus === FILTERS.FAILED) {
+      checkInTimes = failedNumbers;
+      checkInNumbers = failedCheckInTimes;
+    }
+    else if (checkInStatus === FILTERS.SUCCESSFUL) {
+      checkInTimes = successfulCheckInTimes;
+      checkInNumbers = successfulNumbers;
+    }
+
+    return {
+      checkInStatus,
+      checkInTimes,
+      checkInNumbers,
+      numAttempts
+    };
+  }
+
+  renderRow = () => {
+    const { neighbors } = this.props;
     const person = getNeighborDetailsForEntitySet(neighbors, PEOPLE);
-    const checkInEntity = neighbors.get(CHECKINS, Map());
     const hearings = neighbors.get(HEARINGS, List());
     const pretrialCase = neighbors.get(PRETRIAL_CASES, Map());
-
-    const { [START_DATE]: startDate } = getEntityProperties(checkInAppointment, [START_DATE]);
     const { [CASE_ID]: caseNumber } = getEntityProperties(pretrialCase, [CASE_ID]);
-
     const {
-      [RESULT]: result,
-      [DATE_TIME]: checkinTime,
-      [CONFIDENCE]: confidence
-    } = getEntityProperties(checkInEntity, [RESULT, DATE_TIME, CONFIDENCE]);
+      checkInStatus,
+      checkInTimes,
+      checkInNumbers,
+      numAttempts
+    } = this.getCheckInAttempts();
+
     let mostRecentHearing;
     hearings.forEach((hearing) => {
       const {
@@ -136,25 +187,25 @@ class CheckInRow extends React.Component<Props, State> {
         mostRecentHearing = { courtroom, dateTime: `${hearingDate} ${hearingTime}`, hearingType };
       }
     });
-    const { date: checkInDate, time: checkInTime } = getDateAndTime(checkinTime);
     const {
       personId,
       lastFirstMid
     } = formatPeopleInfo(person);
     const row = (
       <Row disabled>
-        <Cell>{ checkinTime ? `${checkInDate} ${checkInTime}` : '-' }</Cell>
+        <Cell>{ checkInTimes || '-' }</Cell>
         <Cell>
           <StyledLink to={`${Routes.PERSON_DETAILS_ROOT}/${personId}${Routes.OVERVIEW}`}>
             { lastFirstMid }
           </StyledLink>
         </Cell>
+        <Cell>{ checkInNumbers ? checkInNumbers[0] : '-' }</Cell>
         <Cell>{ mostRecentHearing.dateTime }</Cell>
         <Cell>{ mostRecentHearing.courtroom }</Cell>
         <Cell>{ mostRecentHearing.hearingType }</Cell>
         <Cell>{ caseNumber }</Cell>
-        <Cell>{ this.renderbooleanIcon(result, checkinTime, startDate) }</Cell>
-
+        <CenteredCell>{ this.renderbooleanIcon(checkInStatus) }</CenteredCell>
+        <CenteredCell>{ numAttempts }</CenteredCell>
       </Row>
     );
     return row;
