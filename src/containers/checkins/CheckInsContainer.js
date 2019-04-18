@@ -87,9 +87,6 @@ type Props = {
   loadingCheckInNieghbors :boolean,
   checkInsById :Map<*, *>,
   checkInNeighborsById :Map<*, *>,
-  successfulCheckInIds :Set<*>,
-  failedCheckInIds :Set<*>,
-  pendingCheckInIds :Set<*>,
   selectedOrganizationId :string,
   actions :{
     loadCheckInAppointmentsForDate :RequestSequence
@@ -140,6 +137,7 @@ class CheckInsContainer extends React.Component<Props, State> {
     const date = moment(dateStr);
     const { loadCheckInAppointmentsForDate } = actions;
     if (date.isValid()) {
+      this.setState({ selectedDate: date });
       loadCheckInAppointmentsForDate({ date });
     }
   }
