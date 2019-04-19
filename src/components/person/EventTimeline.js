@@ -18,11 +18,13 @@ import { getEntityProperties } from '../../utils/DataUtils';
 import { StyledTooltip } from './PersonStyledTags';
 
 const {
+  COMPLETED_DATE_TIME,
   DATE_TIME,
+  END_DATE,
   ENTITY_KEY_ID,
-  START_DATE,
   PERSON_ID,
-  HEARING_TYPE
+  HEARING_TYPE,
+  START_DATE
 } = PROPERTY_TYPES;
 
 type Props = {
@@ -35,11 +37,30 @@ type Props = {
 };
 
 const LabelToolTip = styled(StyledTooltip)`
-  bottom: 110px;
+  bottom: 50px;
   left: 20px;
   z-index: 100;
 `;
 
+const IconWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  transform: ${(props) => {
+    const { numIcons } = props;
+    if (numIcons > 1) {
+      return `translateY(${-numIcons * 10}px)`;
+    }
+    return '';
+  }};
+`;
+
+const IconContainer = styled.div`
+  &:hover ${StyledTooltip} {
+    visibility: visible;
+  }
+`;
 const TimelineWrapper = styled.div`
   margin: 85px 0 50px 0;
   padding: 0 30px;
@@ -64,10 +85,6 @@ const TagRow = styled.div`
 const TagGroupWrapper = styled.div`
   position: absolute;
   left: ${props => props.left}%;
-
-  &:hover ${StyledTooltip} {
-    visibility: visible;
-  }
 `;
 
 const TagMonthLabel = styled.div`
@@ -112,14 +129,13 @@ export default class EventTimeline extends React.Component<Props> {
 
   getEventDate = (event :Immutable.Map<*, *>) => (
     moment.utc(event.getIn(
-      [PROPERTY_TYPES.DATE_TIME, 0],
-      event.getIn([PROPERTY_TYPES.COMPLETED_DATE_TIME, 0], event.getIn([PROPERTY_TYPES.START_DATE, 0], ''))
+      [DATE_TIME, 0], event.getIn([COMPLETED_DATE_TIME, 0], event.getIn([START_DATE, 0], ''))
     ))
   )
 
   getAllEventsAndRange = () => {
-    let events = List();
-    let endDate = moment();
+    let events = Map();
+    let endDate = moment().endOf('day');
     const {
       scores,
       staff,
@@ -131,113 +147,129 @@ export default class EventTimeline extends React.Component<Props> {
     let { [DATE_TIME]: startDate } = getEntityProperties(scores, [DATE_TIME]);
     startDate = moment(startDate);
     const filteredCheckIns = checkInAppointments.filter((checkInAppointment) => {
-      const { [START_DATE]: checkInTime } = getEntityProperties(checkInAppointment, [START_DATE]);
-      return moment(checkInTime).isSameOrAfter(moment(startDate).startOf('day'));
+      const { [END_DATE]: checkInTime } = getEntityProperties(checkInAppointment, [END_DATE]);
+      return moment(checkInTime).isSameOrAfter(startDate);
     });
 
-    const formattedStaffList = staff.map((staffer) => {
+    staff.forEach((staffer) => {
       let staffObj;
       const neighborDetails = staffer.get(PSA_NEIGHBOR.DETAILS, Map());
       const associationDetails = staffer.get(PSA_ASSOCIATION.DETAILS, Map());
       const associationEntitySetId = staffer.getIn([PSA_ASSOCIATION.ENTITY_SET, 'id'], '');
       const appTypeFqn = entitySetIdsToAppType.get(associationEntitySetId, '');
       const staffDetails = neighborDetails.merge(associationDetails);
-      const staffDate = this.getEventDate(associationDetails);
+      const staffDate = moment(this.getEventDate(associationDetails)).format('MM/DD/YYYY');
       if (endDate.isBefore(staffDate)) endDate = moment(staffDate);
+      if (startDate.isAfter(staffDate)) startDate = moment(staffDate);
       if (appTypeFqn === APP_TYPES.EDITED_BY) {
         staffObj = staffDetails.set('type', EVENT_TYPES.PSA_EDITED);
       }
       else if (appTypeFqn === APP_TYPES.ASSESSED_BY) {
         staffObj = staffDetails.set('type', EVENT_TYPES.PSA_CREATED);
       }
-      return staffObj;
+      events = events.set(staffDate, events.get(staffDate, List()).push(staffObj));
     });
-    events = events
-      .concat(formattedStaffList)
-      .concat(hearings.map((hearing) => {
-        const hearinDetails = hearing.get(PSA_NEIGHBOR.DETAILS);
-        const hearingDate = this.getEventDate(hearinDetails);
-        if (endDate.isBefore(hearingDate)) endDate = moment(hearingDate);
-        return hearinDetails.set('type', EVENT_TYPES.HEARING);
-      }))
-      .concat(
-        filteredCheckIns
-          .map((checkInAppointment) => {
-            const checkInDetails = checkInAppointment.get(PSA_NEIGHBOR.DETAILS);
-            const checkInDate = this.getEventDate(checkInDetails);
-            if (endDate.isBefore(checkInDate)) endDate = moment(checkInDate);
-            return checkInDetails.set('type', EVENT_TYPES.CHECKIN_APPOINTMENTS);
-          })
-      );
+    hearings.forEach((hearing) => {
+      let hearinDetails = hearing.get(PSA_NEIGHBOR.DETAILS);
+      hearinDetails = hearinDetails.set('type', EVENT_TYPES.HEARING);
+      const hearingDate = moment(this.getEventDate(hearinDetails)).format('MM/DD/YYYY');
+      if (endDate.isBefore(hearingDate)) endDate = moment(hearingDate);
+      if (startDate.isAfter(hearingDate)) startDate = moment(hearingDate);
+      events = events.set(hearingDate, events.get(hearingDate, List()).push(hearinDetails));
+    });
+    filteredCheckIns.forEach((checkInAppointment) => {
+      let checkInDetails = checkInAppointment.get(PSA_NEIGHBOR.DETAILS);
+      checkInDetails = checkInDetails.set('type', EVENT_TYPES.CHECKIN_APPOINTMENTS);
+      const checkInDate = moment(this.getEventDate(checkInDetails)).format('MM/DD/YYYY');
+      if (endDate.isBefore(checkInDate)) endDate = moment(checkInDate);
+      events = events.set(checkInDate, events.get(checkInDate, List()).push(checkInDetails));
+    });
 
     return { events, startDate, endDate };
   }
 
-  renderTag = (leftOffset, color, dateLabel, icon, label) => (
-    <TagGroupWrapper key={`${color}-${dateLabel}-${label}-${leftOffset}`} left={leftOffset}>
-      <Tooltip value={label} />
+  renderTag = (leftOffset, dateLabel, iconGroup, dateTime) => (
+    <TagGroupWrapper key={`${dateTime}-${leftOffset}`} left={leftOffset}>
       <TagGroup>
-        <FontAwesomeIcon color={color} icon={icon} />
+        { iconGroup }
         <TagLine />
         <TagMonthLabel>{dateLabel}</TagMonthLabel>
       </TagGroup>
     </TagGroupWrapper>
   );
 
-  renderTags = () => {
+  getIcons = (event) => {
     const { checkInStatusById } = this.props;
+    let color = OL.PURPLE02;
+    const eventType = event.get('type', '');
+    const { icon } = EVENT_LABELS[eventType];
+    let { label } = EVENT_LABELS[eventType];
+    if (eventType === EVENT_TYPES.CHECKIN_APPOINTMENTS) {
+      const checkInId = event.getIn([ENTITY_KEY_ID, 0], '');
+      const checkInAppointmentsStatus = checkInStatusById.get(checkInId, List());
+      if (checkInAppointmentsStatus.size) {
+        const status = checkInAppointmentsStatus.get('checkInStatus');
+        switch (status) {
+          case FILTERS.SUCCESSFUL:
+            label = `${label} (${FILTERS.SUCCESSFUL})`;
+            color = OL.GREEN01;
+            break;
+          case FILTERS.FAILED:
+            label = `${label} (${FILTERS.FAILED})`;
+            color = OL.ORANGE01;
+            break;
+          case FILTERS.PENDING:
+            label = `${label} (${FILTERS.PENDING})`;
+            color = OL.PURPLE05;
+            break;
+          default:
+            break;
+        }
+      }
+    }
+    if (eventType === EVENT_TYPES.PSA_CREATED) {
+      color = OL.GREEN01;
+      const staffMember = event.getIn([PERSON_ID, 0], '');
+      if (staffMember) label = `${label} by ${staffMember}`;
+    }
+    if (eventType === EVENT_TYPES.PSA_EDITED) {
+      const staffMember = event.getIn([PERSON_ID, 0], '');
+      if (staffMember) label = `${label} by ${staffMember}`;
+    }
+    if (eventType === EVENT_TYPES.HEARING) {
+      const hearingType = event.getIn([HEARING_TYPE, 0], '');
+      if (hearingType) label = `${label} (${hearingType})`;
+    }
+
+    return (
+      <IconContainer>
+        <FontAwesomeIcon color={color} icon={icon} />
+        <Tooltip value={label} />
+      </IconContainer>
+    );
+  }
+
+  renderTags = () => {
     const { events, startDate, endDate } = this.getAllEventsAndRange();
-    const duration = moment.duration(startDate.diff(endDate)).as('days');
+    const duration = moment.duration(startDate.diff(endDate.add(12, 'h'))).as('days');
     if (events.size) {
       return (
         <TagRow>
           {
-            events.map((event) => {
-              let color = OL.PURPLE02;
-              const eventType = event.get('type', '');
-              const dateTime = moment(this.getEventDate(event));
+            events.entrySeq().map(([date, eventList]) => {
+              const iconGroup = (
+                <IconWrapper numIcons={eventList.size}>
+                  {
+                    eventList.map(event => this.getIcons(event))
+                  }
+                </IconWrapper>
+              );
+              const dateTime = moment(date);
               const positionRatio = Math.floor(moment.duration(startDate.diff(dateTime)).as('days') / duration * 100);
               const dateLabel = dateTime.format(DATE_FORMAT);
               const leftOffset = positionRatio;
-              const { icon } = EVENT_LABELS[eventType];
-              let { label } = EVENT_LABELS[eventType];
-              if (eventType === EVENT_TYPES.CHECKIN_APPOINTMENTS) {
-                const checkInId = event.getIn([ENTITY_KEY_ID, 0], '');
-                const checkInAppointmentsStatus = checkInStatusById.get(checkInId, List());
-                if (checkInAppointmentsStatus.size) {
-                  const status = checkInAppointmentsStatus.get('checkInStatus');
-                  switch (status) {
-                    case FILTERS.SUCCESSFUL:
-                      label = `${label} (${FILTERS.SUCCESSFUL})`;
-                      color = OL.GREEN01;
-                      break;
-                    case FILTERS.FAILED:
-                      label = `${label} (${FILTERS.FAILED})`;
-                      color = OL.ORANGE01;
-                      break;
-                    case FILTERS.PENDING:
-                      label = `${label} (${FILTERS.PENDING})`;
-                      color = OL.PURPLE06;
-                      break;
-                    default:
-                      break;
-                  }
-                }
-              }
-              if (eventType === EVENT_TYPES.PSA_CREATED) {
-                color = OL.GREEN01;
-                const staffMember = event.getIn([PERSON_ID, 0], '');
-                if (staffMember) label = `${label} by ${staffMember}`;
-              }
-              if (eventType === EVENT_TYPES.PSA_EDITED) {
-                const staffMember = event.getIn([PERSON_ID, 0], '');
-                if (staffMember) label = `${label} by ${staffMember}`;
-              }
-              if (eventType === EVENT_TYPES.HEARING) {
-                const hearingType = event.getIn([HEARING_TYPE, 0], '');
-                if (hearingType) label = `${label} (${hearingType})`;
-              }
-              return this.renderTag(leftOffset, color, dateLabel, icon, label);
+
+              return this.renderTag(leftOffset, dateLabel, iconGroup, dateTime);
             })
           }
         </TagRow>
