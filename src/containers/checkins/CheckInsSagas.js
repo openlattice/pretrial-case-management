@@ -194,21 +194,12 @@ function* loadCheckInNeighborsWorker(action :SequenceAction) :Generator<*, *, *>
             const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
             const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
             if (appTypeFqn === CHECKINS) {
-              // TODO: wont't need to use association data in future. just for old data and testing for now
-              const associationData = neighbor.getIn([PSA_ASSOCIATION.DETAILS], Map());
-              const {
-                [PHONE]: phone,
-                [COMPLETED_DATE_TIME]: dateTime
-              } = getEntityProperties(associationData, [PHONE, COMPLETED_DATE_TIME]);
+              const { [COMPLETED_DATE_TIME]: dateTime } = getEntityProperties(neighbor, [PHONE, COMPLETED_DATE_TIME]);
               if (moment(dateTime).isSame(date, 'd')) {
                 neighborsByAppTypeFqn = neighborsByAppTypeFqn.set(
                   appTypeFqn,
                   neighborsByAppTypeFqn.get(appTypeFqn, List()).push(
-                    fromJS(
-                      neighbor
-                        .setIn([PSA_NEIGHBOR.DETAILS, PHONE], [phone])
-                        .setIn([PSA_NEIGHBOR.DETAILS, COMPLETED_DATE_TIME], [dateTime])
-                    )
+                    fromJS(neighbor)
                   )
                 );
               }
