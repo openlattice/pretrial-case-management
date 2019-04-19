@@ -52,7 +52,7 @@ const TimelineWrapper = styled.div`
 const TimelineBar = styled.div`
   width: 100%;
   height: 10px;
-  background-color: ${OL.GREY08};
+  background-color: ${OL.GREY11};
   border-radius: 1px;
 `;
 
