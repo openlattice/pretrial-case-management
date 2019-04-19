@@ -85,7 +85,7 @@ const INITIAL_STATE = {
   editing: false,
   appointmentEntities: Map(),
   startDate: moment(),
-  endDate: null,
+  endDate: moment(),
   frequency: '',
   appointmentType: APPOINTMENT_PATTERN.SINGLE
 };
