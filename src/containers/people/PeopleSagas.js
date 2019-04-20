@@ -19,6 +19,7 @@ import {
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { APP, PSA_NEIGHBOR, STATE } from '../../utils/consts/FrontEndStateConsts';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
+import { getEntityProperties } from '../../utils/DataUtils';
 import { getPropertyTypeId } from '../../edm/edmUtils';
 import { PSA_STATUSES } from '../../utils/consts/Consts';
 import { getCasesForPSA, getChargeHistory, getCaseHistory } from '../../utils/CaseUtils';
@@ -54,6 +55,13 @@ const {
   SUBSCRIPTION,
   SPEAKER_RECOGNITION_PROFILES
 } = APP_TYPES;
+
+const {
+  DATE_TIME,
+  HEARING_INACTIVE,
+  UPDATE_TYPE,
+  HEARING_TYPE
+} = PROPERTY_TYPES;
 
 const LIST_FQNS = [CHECKINS, CHECKIN_APPOINTMENTS, CONTACT_INFORMATION, HEARINGS, PRETRIAL_CASES, STAFF, CHARGES];
 
@@ -247,7 +255,28 @@ function* getPersonNeighborsWorker(action) :Generator<*, *, *> {
       psaNeighbors.forEach((neighbor) => {
         const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
         const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
-        if (LIST_FQNS.includes(appTypeFqn)) {
+        if (appTypeFqn === HEARINGS) {
+          const {
+            [DATE_TIME]: hearingDateTime,
+            [HEARING_INACTIVE]: hearingIsInactive,
+            [UPDATE_TYPE]: updateType,
+            [HEARING_TYPE]: hearingType
+          } = getEntityProperties(neighbor, [
+            DATE_TIME,
+            HEARING_INACTIVE,
+            UPDATE_TYPE,
+            HEARING_TYPE
+          ]);
+          const hearingHasBeenCancelled = updateType.toLowerCase().trim() === 'cancelled';
+          const hearingIsGeneric = hearingType.toLowerCase().trim() === 'all other hearings';
+          if (hearingDateTime && !hearingHasBeenCancelled && !hearingIsGeneric && !hearingIsInactive) {
+            mostRecentPSANeighborsByAppTypeFqn = mostRecentPSANeighborsByAppTypeFqn.set(
+              appTypeFqn,
+              mostRecentPSANeighborsByAppTypeFqn.get(appTypeFqn, List()).push(fromJS(neighbor))
+            );
+          }
+        }
+        else if (LIST_FQNS.includes(appTypeFqn)) {
           mostRecentPSANeighborsByAppTypeFqn = mostRecentPSANeighborsByAppTypeFqn.set(
             appTypeFqn,
             mostRecentPSANeighborsByAppTypeFqn.get(appTypeFqn, List()).push(neighbor)
