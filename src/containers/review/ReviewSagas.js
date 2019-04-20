@@ -24,7 +24,7 @@ import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { getPropertyTypeId } from '../../edm/edmUtils';
 import exportPDF, { exportPDFList } from '../../utils/PDFUtils';
 import { getMapByCaseId } from '../../utils/CaseUtils';
-import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { APP_TYPES, PROPERTY_TYPES, SEARCH_PREFIX } from '../../utils/consts/DataModelConsts';
 import { PSA_STATUSES } from '../../utils/consts/Consts';
 import { formatDMFFromEntity } from '../../utils/DMFUtils';
 import { getEntityKeyId, stripIdField } from '../../utils/DataUtils';
@@ -405,7 +405,7 @@ function* loadPSAsByDateWorker(action :SequenceAction) :Generator<*, *, *> {
     const filter = action.value || PSA_STATUSES.OPEN;
     const searchTerm = action.value === '*'
       ? action.value
-      : `${psaScoresEntitySetId}.${statusPropertyTypeId}:"${filter}"`;
+      : `${SEARCH_PREFIX}.${statusPropertyTypeId}:"${filter}"`;
     const allScoreData = yield call(getAllSearchResults, psaScoresEntitySetId, searchTerm);
 
     let scoresAsMap = Immutable.Map();

@@ -26,7 +26,7 @@ import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { getPropertyTypeId } from '../../edm/edmUtils';
 import { toISODate } from '../../utils/FormattingUtils';
 import { hearingNeedsReminder } from '../../utils/RemindersUtils';
-import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { APP_TYPES, PROPERTY_TYPES, SEARCH_PREFIX } from '../../utils/consts/DataModelConsts';
 import {
   APP,
   PSA_NEIGHBOR,
@@ -140,7 +140,7 @@ function* loadManualRemindersForDateWorker(action :SequenceAction) :Generator<*,
     const ceiling = yield call(DataApi.getEntitySetSize, manualRemindersEntitySetId);
 
     const reminderOptions = {
-      searchTerm: `${manualRemindersEntitySetId}.${datePropertyTypeId}:"${toISODate(date)}"`,
+      searchTerm: `${SEARCH_PREFIX}.${datePropertyTypeId}:"${toISODate(date)}"`,
       start: 0,
       maxHits: ceiling,
       fuzzy: false

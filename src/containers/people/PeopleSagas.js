@@ -16,7 +16,7 @@ import {
   select
 } from '@redux-saga/core/effects';
 
-import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { APP_TYPES, PROPERTY_TYPES, SEARCH_PREFIX } from '../../utils/consts/DataModelConsts';
 import { APP, PSA_NEIGHBOR, STATE } from '../../utils/consts/FrontEndStateConsts';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { getPropertyTypeId } from '../../edm/edmUtils';
@@ -105,7 +105,7 @@ function* getEntityForPersonId(personId :string) :Generator<*, *, *> {
   const personIdPropertyTypeId = getPropertyTypeId(edm, PROPERTY_TYPES.PERSON_ID);
 
   const searchOptions = {
-    searchTerm: `${peopleEntitySetId}.${personIdPropertyTypeId}:"${personId}"`,
+    searchTerm: `${SEARCH_PREFIX}.${personIdPropertyTypeId}:"${personId}"`,
     start: 0,
     maxHits: 1
   };
@@ -486,7 +486,7 @@ function* loadRequiresActionPeopleWorker(action :SequenceAction) :Generator<*, *
     const statusPropertyTypeId = getPropertyTypeId(edm, PROPERTY_TYPES.STATUS);
     const searchTerm = action.value === '*'
       ? action.value
-      : `${psaScoresEntitySetId}.${statusPropertyTypeId}:"${PSA_STATUSES.OPEN}"`;
+      : `${SEARCH_PREFIX}.${statusPropertyTypeId}:"${PSA_STATUSES.OPEN}"`;
     const openPSAData = yield call(getAllSearchResults, psaScoresEntitySetId, searchTerm);
     fromJS(openPSAData.hits).forEach((psa) => {
       const psaId = psa.getIn([OPENLATTICE_ID_FQN, 0], '');
