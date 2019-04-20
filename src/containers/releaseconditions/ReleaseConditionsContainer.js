@@ -1289,15 +1289,9 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
     const {
       allJudges,
       backToSelection,
-      creatingAssociations,
       hasOutcome,
       hearingEntityKeyId,
-      hearingIdsRefreshing,
-      loadingReleaseCondtions,
       psaNeighbors,
-      refreshingSelectedHearing,
-      replacingAssociation,
-      replacingEntity,
       selectedHearing
     } = this.props;
     const {
@@ -1444,21 +1438,6 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       </ContentSection>
     );
 
-    const loadingText = loadingReleaseCondtions
-      ? 'Loading Hearing Details...'
-      : 'Updating Hearing...';
-
-    if (
-      loadingReleaseCondtions
-      || replacingEntity
-      || replacingAssociation
-      || hearingIdsRefreshing
-      || refreshingSelectedHearing
-    ) {
-      return <LogoLoader size={30} loadingText={loadingText} />;
-    }
-
-
     return (
       <HearingSectionWrapper>
         {hearingInfoSection}
@@ -1481,14 +1460,10 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
     const RELEASED = release !== RELEASES.RELEASED;
     const NO_WARRANT = warrant !== WARRANTS.WARRANT;
     const {
+      hearingEntityKeyId,
       hearingNeighbors,
-      creatingAssociations,
-      hearingIdsRefreshing,
-      loadingReleaseCondtions,
-      refreshingReleaseConditions,
       personNeighbors,
-      selectedOrganizationSettings,
-      submitting
+      selectedOrganizationSettings
     } = this.props;
     const person = getNeighborDetailsForEntitySet(hearingNeighbors, PEOPLE);
     const { defaultCheckInAppointments } = this.getNeighborEntities(this.props);
@@ -1497,18 +1472,6 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
     const allCheckInAppointments = defaultCheckInAppointments.merge(personCheckInAppointments);
 
     const settingsIncludeVoiceEnroll = selectedOrganizationSettings.get(SETTINGS.ENROLL_VOICE, false);
-    if (
-      loadingReleaseCondtions
-        || submitting
-        || refreshingReleaseConditions
-        || hearingIdsRefreshing
-        || creatingAssociations
-    ) {
-      const loadingText = loadingReleaseCondtions
-        ? 'Loading Release Conditions...'
-        : 'Refreshing Release Conditions...';
-      return <LogoLoader size={30} loadingText={loadingText} />;
-    }
 
     return (
       <>
@@ -1538,6 +1501,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
                   bondAmount={`${state[BOND_AMOUNT]}`}
                   disabled={state.disabled} />
               <ConditionsSection
+                  hearingEntityKeyId={hearingEntityKeyId}
                   parentState={this.state}
                   appointmentEntities={allCheckInAppointments}
                   addAppointmentsToSubmission={this.addAppointmentsToSubmission}
@@ -1571,7 +1535,31 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
   }
 
   render() {
+    const {
+      loadingReleaseCondtions,
+      replacingEntity,
+      replacingAssociation,
+      hearingIdsRefreshing,
+      refreshingSelectedHearing,
+      submitting,
+      refreshingReleaseConditions,
+      creatingAssociations
+    } = this.props;
     const { state } = this;
+    const loading = (
+      loadingReleaseCondtions
+      || replacingEntity
+      || replacingAssociation
+      || hearingIdsRefreshing
+      || refreshingSelectedHearing
+      || submitting
+      || refreshingReleaseConditions
+      || creatingAssociations
+    );
+    const loadingText = 'Loading Hearing & Release Conditions...';
+    if (loading) {
+      return <LogoLoader size={30} loadingText={loadingText} />;
+    }
     return (
       <Wrapper>
         { this.renderHearingInfo() }
