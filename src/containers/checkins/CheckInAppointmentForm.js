@@ -164,18 +164,22 @@ class NewHearingSection extends React.Component<Props, State> {
     const addingRecurringAppointment = (appointmentType === APPOINTMENT_PATTERN.RECURRING);
     if (addingRecurringAppointment && startDate && endDate && frequency) {
       const end = endDate;
+      const isoDateTime = toISODate(appointmentDate);
       while (appointmentDate.isBefore(end)) {
         const { value, increment } = this.getFrequencyConversion();
-        const isoDateTime = toISODate(appointmentDate);
         const appointmentEntity = this.createCheckInSubmissionValues(isoDateTime);
-        appointmentEntities = appointmentEntities.set(isoDateTime, appointmentEntity);
+        if (!appointmentEntities.get(isoDateTime)) {
+          appointmentEntities = appointmentEntities.set(isoDateTime, appointmentEntity);
+        }
         appointmentDate = moment(appointmentDate).add(value, increment);
       }
     }
     else {
       const isoDateTime = toISODate(appointmentDate);
       const appointmentEntity = this.createCheckInSubmissionValues(isoDateTime);
-      appointmentEntities = appointmentEntities.set(isoDateTime, appointmentEntity);
+      if (!appointmentEntities.get(isoDateTime)) {
+        appointmentEntities = appointmentEntities.set(isoDateTime, appointmentEntity);
+      }
     }
     this.setState({ appointmentEntities });
     this.addNewAndExistingAppointments(appointmentEntities);
