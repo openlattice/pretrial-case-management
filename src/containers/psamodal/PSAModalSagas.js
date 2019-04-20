@@ -23,7 +23,7 @@ import {
 } from '@redux-saga/core/effects';
 
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
-import { getEntityKeyId } from '../../utils/DataUtils';
+import { getEntityProperties, getEntityKeyId } from '../../utils/DataUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import {
   APP,
@@ -33,6 +33,13 @@ import {
 } from '../../utils/consts/FrontEndStateConsts';
 
 import { LOAD_PSA_MODAL, loadPSAModal } from './PSAModalActionFactory';
+
+const {
+  DATE_TIME,
+  HEARING_INACTIVE,
+  UPDATE_TYPE,
+  HEARING_TYPE
+} = PROPERTY_TYPES;
 
 const {
   CHECKIN_APPOINTMENTS,
@@ -133,10 +140,26 @@ function* loadPSAModalWorker(action :SequenceAction) :Generator<*, *, *> {
           const hearingEntityKeyId = neighborDetails.getIn([OPENLATTICE_ID_FQN, 0]);
           if (appTypeFqn === HEARINGS) {
             if (hearingEntityKeyId) hearingIds = hearingIds.add(neighborDetails.getIn([OPENLATTICE_ID_FQN, 0]));
-            neighborsByAppTypeFqn = neighborsByAppTypeFqn.set(
-              appTypeFqn,
-              neighborsByAppTypeFqn.get(appTypeFqn, List()).push(fromJS(neighborDetails))
-            );
+            console.log('hi');
+            const {
+              [DATE_TIME]: hearingDateTime,
+              [HEARING_INACTIVE]: hearingIsInactive,
+              [UPDATE_TYPE]: updateType,
+              [HEARING_TYPE]: hearingType
+            } = getEntityProperties(neighbor, [
+              DATE_TIME,
+              HEARING_INACTIVE,
+              UPDATE_TYPE,
+              HEARING_TYPE
+            ]);
+            const hearingHasBeenCancelled = updateType.toLowerCase().trim() === 'cancelled';
+            const hearingIsGeneric = hearingType.toLowerCase().trim() === 'all other hearings';
+            if (hearingDateTime && !hearingHasBeenCancelled && !hearingIsGeneric && !hearingIsInactive) {
+              neighborsByAppTypeFqn = neighborsByAppTypeFqn.set(
+                appTypeFqn,
+                neighborsByAppTypeFqn.get(appTypeFqn, List()).push(fromJS(neighborDetails))
+              );
+            }
           }
           else {
             neighborsByAppTypeFqn = neighborsByAppTypeFqn.set(
@@ -177,6 +200,10 @@ function* loadPSAModalWorker(action :SequenceAction) :Generator<*, *, *> {
         const neighborDetails = neighbor.get(PSA_NEIGHBOR.DETAILS, Map());
         const hearingEntityKeyId = neighborDetails.getIn([OPENLATTICE_ID_FQN, 0]);
         if (hearingEntityKeyId) hearingIds = hearingIds.add(hearingEntityKeyId);
+        personNeighborsByFqn = personNeighborsByFqn.set(
+          appTypeFqn,
+          personNeighborsByFqn.get(appTypeFqn, List()).push(neighbor)
+        );
       }
       else if (appTypeFqn === SUBSCRIPTION) {
         personNeighborsByFqn = personNeighborsByFqn.set(
