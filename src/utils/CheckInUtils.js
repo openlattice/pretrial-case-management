@@ -35,45 +35,57 @@ export const getCheckInAttempts = (checkInAppointment, checkIns) => {
     [START_DATE]: startDate,
     [END_DATE]: endDate
   } = getEntityProperties(checkInAppointment, [ENTITY_KEY_ID, END_DATE, START_DATE]);
-  checkIns.forEach((checkIn) => {
-    const {
-      [RESULT]: result,
-      [COMPLETED_DATE_TIME]: checkInTime,
-      [PHONE]: phone
-    } = getEntityProperties(checkIn, [COMPLETED_DATE_TIME, RESULT, PHONE]);
-    const validCheckInTime = moment(checkInTime).isBetween(startDate, endDate);
-    const checkInAccepted = result === RESULT_TYPE.ACCEPT;
-    if (validCheckInTime) {
-      if (checkInAccepted) {
-        const isMostRecent = !mostRecentSuccess || moment(checkInTime).isAfter(mostRecentSuccess);
-        if (isMostRecent) mostRecentSuccess = checkInTime;
-        successfulCheckIns = successfulCheckIns.push(checkIn);
-        successfulNumbers = successfulNumbers.set(checkInTime, formatPhoneNumber(phone));
+  if (checkIns.size) {
+    checkIns.forEach((checkIn) => {
+      const {
+        [RESULT]: result,
+        [COMPLETED_DATE_TIME]: checkInTime,
+        [PHONE]: phone
+      } = getEntityProperties(checkIn, [COMPLETED_DATE_TIME, RESULT, PHONE]);
+      const validCheckInTime = moment(checkInTime).isBetween(startDate, endDate);
+      const checkInAccepted = result === RESULT_TYPE.ACCEPT;
+      if (validCheckInTime) {
+        if (checkInAccepted) {
+          const isMostRecent = !mostRecentSuccess || moment(checkInTime).isAfter(mostRecentSuccess);
+          if (isMostRecent) mostRecentSuccess = checkInTime;
+          successfulCheckIns = successfulCheckIns.push(checkIn);
+          successfulNumbers = successfulNumbers.set(checkInTime, formatPhoneNumber(phone));
+        }
+        else {
+          const isMostRecent = !mostRecentFailure || moment(checkInTime).isAfter(mostRecentFailure);
+          if (isMostRecent) mostRecentFailure = checkInTime;
+          failedCheckIns = failedCheckIns.push(checkIn);
+          failedNumbers = failedNumbers.set(checkInTime, formatPhoneNumber(phone));
+        }
       }
-      else {
-        const isMostRecent = !mostRecentFailure || moment(checkInTime).isAfter(mostRecentFailure);
-        if (isMostRecent) mostRecentFailure = checkInTime;
-        failedCheckIns = failedCheckIns.push(checkIn);
-        failedNumbers = failedNumbers.set(checkInTime, formatPhoneNumber(phone));
-      }
-    }
-    numAttempts = successfulCheckIns.size + failedCheckIns.size;
-    if (successfulCheckIns.size) checkInStatus = FILTERS.SUCCESSFUL;
-    else if ((!successfulCheckIns.size && failedCheckIns.size)
-    || moment().isAfter(endDate)) checkInStatus = FILTERS.FAILED;
-    else checkInStatus = FILTERS.PENDING;
+      numAttempts = successfulCheckIns.size + failedCheckIns.size;
+      if (successfulCheckIns.size) checkInStatus = FILTERS.SUCCESSFUL;
+      else if ((!successfulCheckIns.size && failedCheckIns.size)
+      || moment().isAfter(endDate)) checkInStatus = FILTERS.FAILED;
+      else checkInStatus = FILTERS.PENDING;
 
-    if (checkInStatus === FILTERS.FAILED) {
-      displayCheckInTime = mostRecentFailure;
-      displayCheckInNumber = failedNumbers.get(displayCheckInTime);
+      if (checkInStatus === FILTERS.FAILED) {
+        displayCheckInTime = mostRecentFailure;
+        displayCheckInNumber = failedNumbers.get(displayCheckInTime);
+      }
+      else if (checkInStatus === FILTERS.SUCCESSFUL) {
+        displayCheckInTime = mostRecentSuccess;
+        displayCheckInNumber = successfulNumbers.get(displayCheckInTime);
+      }
+      const { date, time } = getDateAndTime(displayCheckInTime);
+      displayCheckInTime = displayCheckInTime ? `${date} ${time}` : undefined;
+    });
+  }
+  else {
+    const stillHasTime = moment().isBefore(endDate);
+    numAttempts = 0;
+    if (stillHasTime) {
+      checkInStatus = FILTERS.PENDING;
     }
-    else if (checkInStatus === FILTERS.SUCCESSFUL) {
-      displayCheckInTime = mostRecentSuccess;
-      displayCheckInNumber = successfulNumbers.get(displayCheckInTime);
+    else {
+      checkInStatus = FILTERS.FAILED;
     }
-    const { date, time } = getDateAndTime(displayCheckInTime);
-    displayCheckInTime = displayCheckInTime ? `${date} ${time}` : undefined;
-  });
+  }
 
   return {
     entityKeyId,
