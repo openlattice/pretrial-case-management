@@ -9,7 +9,7 @@ import {
   Set
 } from 'immutable';
 
-import { getEntityKeyId } from '../../utils/DataUtils';
+import { getEntityKeyId, getNeighborDetailsForEntitySet, getEntityProperties } from '../../utils/DataUtils';
 import { changePSAStatus, updateScoresAndRiskFactors, loadPSAData } from '../review/ReviewActionFactory';
 import { refreshHearingNeighbors } from '../court/CourtActionFactory';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
@@ -26,11 +26,16 @@ import {
 } from './PeopleActionFactory';
 
 const {
+  CHECKIN_APPOINTMENTS,
   CONTACT_INFORMATION,
   DMF_RESULTS,
   PSA_SCORES,
   RELEASE_RECOMMENDATIONS
 } = APP_TYPES;
+
+const {
+  PERSON_ID
+} = PROPERTY_TYPES;
 
 const PEOPLE_FQN = APP_TYPES.PEOPLE;
 
@@ -257,8 +262,22 @@ export default function peopleReducer(state = INITIAL_STATE, action) {
       return refreshHearingNeighbors.reducer(state, action, {
         SUCCESS: () => {
           const { neighbors } = action.value;
+          const personEntity = neighbors.get(PEOPLE_FQN, Map());
+          const { [PERSON_ID]: personId } = getEntityProperties(personEntity, [PERSON_ID]);
+          let personNeighbors = state.getIn([PEOPLE.NEIGHBORS, personId], Map());
+          const hearingCheckInAppointments = neighbors.get(CHECKIN_APPOINTMENTS, List());
+          const personCheckInAppointments = personNeighbors.get(CHECKIN_APPOINTMENTS, List());
+          let nextCheckInAppointments = Set();
+          hearingCheckInAppointments.concat(personCheckInAppointments)
+            .forEach((checkInAppointment) => {
+              nextCheckInAppointments = nextCheckInAppointments.add(checkInAppointment);
+            });
           const nextNeighbors = state.get(PEOPLE.MOST_RECENT_PSA_NEIGHBORS).merge(neighbors);
-          return state.set(PEOPLE.MOST_RECENT_PSA_NEIGHBORS, nextNeighbors);
+          personNeighbors = personNeighbors.set(CHECKIN_APPOINTMENTS, nextCheckInAppointments);
+          const nextState = state
+            .set(PEOPLE.MOST_RECENT_PSA_NEIGHBORS, nextNeighbors)
+            .setIn([PEOPLE.NEIGHBORS, personId], personNeighbors);
+          return nextState;
         }
       });
     }
