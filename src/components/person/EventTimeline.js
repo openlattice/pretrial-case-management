@@ -242,7 +242,7 @@ export default class EventTimeline extends React.Component<Props> {
     }
 
     return (
-      <IconContainer>
+      <IconContainer key={`${color}-${label}-${eventType}`}>
         <FontAwesomeIcon color={color} icon={icon} />
         <Tooltip value={label} />
       </IconContainer>
