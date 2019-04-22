@@ -16,12 +16,14 @@ const CardsHolderContainer = styled.div`
   width: 100%;
   display: flex;
   flex-direction: row;
+  flex-wrap: wrap;
   margin-bottom: 30px;
 `;
 
 const CardWrapper = styled.div`
   display: block;
   margin-right: 10px;
+  margin: 0 10px 10px 0;
 `;
 
 
