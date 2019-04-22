@@ -319,11 +319,11 @@ class HearingSettingsForm extends React.Component<Props, State> {
         content: [clearHearingSettingsButton]
       }
     ];
-    const hearingInfoContent = HEARING_ARR.map(hearingItem => (
+    const hearingInfoContent = HEARING_ARR.map((hearingItem, idx) => (
       <ContentBlock
           component={CONTENT_CONSTS.CREATING_HEARING}
           contentBlock={hearingItem}
-          key={hearingItem.label} />
+          key={`${hearingItem.label}-${idx}`} />
     ));
 
     const hearingInfoSection = (
