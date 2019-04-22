@@ -38,12 +38,6 @@ export const getEntitySetIdFromApp :string = (app, fqn :string) => {
 export const getJurisdiction :string = (selectedOrganizationId) => {
   let jurisdiction;
   switch (selectedOrganizationId) {
-    case ORG_IDS.DEMO_ORG:
-      jurisdiction = DEMO_ORG;
-      break;
-    case ORG_IDS.PCM_DEMO_ORG:
-      jurisdiction = DEMO_ORG;
-      break;
     case ORG_IDS.PENNINGTON_SD:
       jurisdiction = COURT_PENN;
       break;
@@ -53,6 +47,8 @@ export const getJurisdiction :string = (selectedOrganizationId) => {
     case ORG_IDS.SHELBY_TN:
       jurisdiction = COURT_SHELBY;
       break;
+    case ORG_IDS.DEMO_ORG:
+    case ORG_IDS.PCM_DEMO_ORG:
     default:
       jurisdiction = DEMO_ORG;
       break;
