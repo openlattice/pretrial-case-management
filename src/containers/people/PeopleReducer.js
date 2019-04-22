@@ -9,8 +9,9 @@ import {
   Set
 } from 'immutable';
 
-import { getEntityKeyId, getNeighborDetailsForEntitySet, getEntityProperties } from '../../utils/DataUtils';
+import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
 import { changePSAStatus, updateScoresAndRiskFactors, loadPSAData } from '../review/ReviewActionFactory';
+import { deleteEntity } from '../../utils/data/DataActionFactory';
 import { refreshHearingNeighbors } from '../court/CourtActionFactory';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PEOPLE, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
@@ -327,6 +328,28 @@ export default function peopleReducer(state = INITIAL_STATE, action) {
           return state.setIn([PEOPLE.NEIGHBORS, personId, CONTACT_INFORMATION], contactInformation);
         },
         FINALLY: () => state.set(PEOPLE.REFRESHING_PERSON_NEIGHBORS, false)
+      });
+    }
+
+
+    case deleteEntity.case(action.type): {
+      return deleteEntity.reducer(state, action, {
+        SUCCESS: () => {
+          const { entityKeyId } = action.value;
+          const personId = state.getIn([PEOPLE.PERSON_DATA, PROPERTY_TYPES.PERSON_ID, 0], '');
+          let personNeighbors = state.getIn([PEOPLE.NEIGHBORS, personId], Map());
+
+          const personCheckInAppointments = personNeighbors.get(CHECKIN_APPOINTMENTS, List())
+            .filter((checkInAppointment) => {
+              const {
+                [PROPERTY_TYPES.ENTITY_KEY_ID]: checkInAppoiontmentsEntityKeyId
+              } = getEntityProperties(checkInAppointment, [PROPERTY_TYPES.ENTITY_KEY_ID]);
+              return entityKeyId !== checkInAppoiontmentsEntityKeyId;
+            });
+          personNeighbors = personNeighbors.set(CHECKIN_APPOINTMENTS, personCheckInAppointments);
+
+          return state.setIn([PEOPLE.NEIGHBORS, personId], personNeighbors);
+        }
       });
     }
 
