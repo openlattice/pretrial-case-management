@@ -9,22 +9,15 @@ import { connect } from 'react-redux';
 import DashboardMainSection from '../../components/dashboard/DashboardMainSection';
 import CreateFormListItem from '../../components/dashboard/CreateFormListItem';
 import psaIcon from '../../assets/svg/public-safety-icon.svg';
+import { getJurisdiction } from '../../utils/AppUtils';
 import { APP, STATE } from '../../utils/consts/FrontEndStateConsts';
 import { CONTEXT } from '../../utils/consts/Consts';
 import { CONTEXTS, SETTINGS } from '../../utils/consts/AppSettingConsts';
-import { ORG_IDS } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
 import { StyledFormWrapper } from '../../utils/Layout';
 import * as Routes from '../../core/router/Routes';
 
-const {
-  BOOKING,
-  COURT_MINN,
-  COURT_PENN,
-  COURT_SHELBY,
-  DEMO_ORG,
-  PCM_DEMO_ORG
-} = CONTEXT;
+const { BOOKING } = CONTEXT;
 
 const FormsWrapper = styled.div`
   display: flex;
@@ -70,27 +63,7 @@ class FormsContainer extends React.Component<Props, *> {
   render() {
     const { selectedOrganizationTitle, selectedOrganizationId } = this.props;
     // TODO: This is yucky. We will want to rework once we phase out different contexts for different orgs.
-    let jurisdiction;
-    switch (selectedOrganizationId) {
-      case ORG_IDS.DEMO_ORG:
-        jurisdiction = DEMO_ORG;
-        break;
-      case ORG_IDS.PCM_DEMO_ORG:
-        jurisdiction = DEMO_ORG;
-        break;
-      case ORG_IDS.PENNINGTON_SD:
-        jurisdiction = COURT_PENN;
-        break;
-      case ORG_IDS.MINNEHAHA_SD:
-        jurisdiction = COURT_MINN;
-        break;
-      case ORG_IDS.SHELBY_TN:
-        jurisdiction = COURT_SHELBY;
-        break;
-      default:
-        jurisdiction = DEMO_ORG;
-        break;
-    }
+    const jurisdiction = getJurisdiction(selectedOrganizationId);
     return (
       <StyledFormWrapper>
         <DashboardMainSection header={`Assessments for ${selectedOrganizationTitle}`}>
