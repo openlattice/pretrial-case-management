@@ -548,13 +548,12 @@ function* bulkDownloadRemindersPDFWorker(action :SequenceAction) :Generator<*, *
 
     const ceiling = yield call(DataApi.getEntitySetSize, hearingsEntitySetId);
 
-    const oneDayAhead = addWeekdays(date, 1);
     const oneWeekAhead = addWeekdays(date, 7);
 
     const getDateSearch = selectedDate => `${hearingsEntitySetId}.${datePropertyTypeId}:"${toISODate(selectedDate)}"`;
 
     const reminderOptions = {
-      searchTerm: `${getDateSearch(oneDayAhead)} OR ${getDateSearch(oneWeekAhead)}`,
+      searchTerm: `${getDateSearch(oneWeekAhead)}`,
       start: 0,
       maxHits: ceiling,
       fuzzy: false
@@ -568,8 +567,7 @@ function* bulkDownloadRemindersPDFWorker(action :SequenceAction) :Generator<*, *
         const entityKeyId = hearing.getIn([OPENLATTICE_ID_FQN, 0], '');
         const hearingDateTime = hearing.getIn([PROPERTY_TYPES.DATE_TIME, 0]);
         const hearingExists = !!hearingDateTime;
-        const hearingOnDateSelected = moment(hearingDateTime).isSame(oneDayAhead, 'day')
-          || moment(hearingDateTime).isSame(oneWeekAhead, 'day');
+        const hearingOnDateSelected = moment(hearingDateTime).isSame(oneWeekAhead, 'day');
         const hearingType = hearing.getIn([PROPERTY_TYPES.HEARING_TYPE, 0]);
         const hearingId = hearing.getIn([OPENLATTICE_ID_FQN, 0]);
         const hearingIsInactive = hearing.getIn([PROPERTY_TYPES.HEARING_INACTIVE, 0], false);
