@@ -23,6 +23,7 @@ import {
 } from '@redux-saga/core/effects';
 
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
+import { hearingIsCancelled } from '../../utils/HearingUtils';
 import { getPropertyTypeId } from '../../edm/edmUtils';
 import { PSA_STATUSES } from '../../utils/consts/Consts';
 import { toISODate, TIME_FORMAT } from '../../utils/FormattingUtils';
@@ -259,13 +260,10 @@ function* loadHearingsForDateWorker(action :SequenceAction) :Generator<*, *, *> 
           === toISODate(action.value);
         const hearingType = hearing.getIn([PROPERTY_TYPES.HEARING_TYPE, 0]);
         const hearingId = hearing.getIn([OPENLATTICE_ID_FQN, 0]);
-        const hearingIsInactive = hearing.getIn([PROPERTY_TYPES.HEARING_INACTIVE, 0], false);
-        const hearingHasBeenCancelled = hearing.getIn([PROPERTY_TYPES.UPDATE_TYPE, 0], '')
-          .toLowerCase().trim() === 'cancelled';
+        const hearingIsInactive = hearingIsCancelled(hearing);
         if (hearingType
           && hearingExists
           && hearingOnDateSelected
-          && !hearingHasBeenCancelled
           && !hearingIsInactive
         ) hearingIds = hearingIds.add(hearingId);
       });
@@ -273,10 +271,8 @@ function* loadHearingsForDateWorker(action :SequenceAction) :Generator<*, *, *> 
 
     hearingsToday.filter((hearing) => {
       const hearingHasValidDateTime = moment(hearing.getIn([PROPERTY_TYPES.DATE_TIME, 0], '')).isValid();
-      const hearingIsInactive = hearing.getIn([PROPERTY_TYPES.HEARING_INACTIVE, 0], false);
-      const hearingHasBeenCancelled = hearing
-        .getIn([PROPERTY_TYPES.UPDATE_TYPE, 0], '').toLowerCase().trim() === 'cancelled';
-      if (!hearingHasValidDateTime || hearingHasBeenCancelled || hearingIsInactive) return false;
+      const hearingIsInactive = hearingIsCancelled(hearing);
+      if (!hearingHasValidDateTime || hearingIsInactive) return false;
       return true;
     })
       .forEach((hearing) => {
@@ -415,7 +411,6 @@ function* refreshHearingNeighborsWorker(action :SequenceAction) :Generator<*, *,
     const app = yield select(getApp);
     const orgId = yield select(getOrgId);
     const hearingEntitySetId = getEntitySetIdFromApp(app, HEARINGS);
-    const releaseConditionsEntitySetId = getEntitySetIdFromApp(app, RELEASE_CONDITIONS);
     const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
 
     let neighborsList = yield call(SearchApi.searchEntityNeighbors, hearingEntitySetId, id);
