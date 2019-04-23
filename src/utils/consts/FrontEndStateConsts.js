@@ -10,6 +10,7 @@ export const STATE = {
   DOWNLOAD: 'download',
   EDM: 'edm',
   ENROLL: 'enroll',
+  HEARINGS: 'hearings',
   MANUAL_REMINDERS: 'manualReminders',
   PSA_MODAL: 'psaModal',
   PSA: 'psa',
@@ -155,6 +156,16 @@ export const ENROLL = {
   SUBMITTING_AUDIO: 'submittingAudio',
   NUM_SUBMISSIONS: 'numSubmissions',
   ERROR: 'errorMessage'
+};
+
+// Hearings
+
+export const HEARINGS = {
+  SETTINGS_MODAL_OPEN: 'hearingSettingsModalOpen',
+  DATE: 'hearingDate',
+  TIME: 'hearingTime',
+  COURTROOM: 'hearingCourtroom',
+  JUDGE: 'hearingJudge'
 };
 
 // Manual Reminders
