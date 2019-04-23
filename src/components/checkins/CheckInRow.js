@@ -72,7 +72,7 @@ type Props = {
 
 class CheckInRow extends React.Component<Props, State> {
 
-  renderbooleanIcon = (checkInStatus) => {
+  renderBooleanIcon = (checkInStatus) => {
     let statusIcon;
     switch (checkInStatus) {
       case FILTERS.FAILED:
@@ -144,7 +144,7 @@ class CheckInRow extends React.Component<Props, State> {
         <Cell>{ mostRecentHearing.courtroom }</Cell>
         <Cell>{ mostRecentHearing.hearingType }</Cell>
         <Cell>{ caseNumber }</Cell>
-        <CenteredCell>{ this.renderbooleanIcon(checkInStatus) }</CenteredCell>
+        <CenteredCell>{ this.renderBooleanIcon(checkInStatus) }</CenteredCell>
         <CenteredCell>{ numAttempts }</CenteredCell>
       </Row>
     );
