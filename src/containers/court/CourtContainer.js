@@ -18,6 +18,7 @@ import { faBell } from '@fortawesome/pro-solid-svg-icons';
 import CONTENT from '../../utils/consts/ContentConsts';
 import SecondaryButton from '../../components/buttons/SecondaryButton';
 import ToggleButtonsGroup from '../../components/buttons/ToggleButtons';
+import HearingSettingsButton from '../../components/hearings/HearingSettingsButton';
 import LogoLoader from '../../components/LogoLoader';
 import PersonCard from '../../components/people/PersonCard';
 import DatePicker from '../../components/datetime/DatePicker';
@@ -549,6 +550,7 @@ class CourtContainer extends React.Component<Props, State> {
               <Title>Court Hearings</Title>
               <Subtitle>{ `(Showing Open PSAs for ${selectedOrganizationTitle})` }</Subtitle>
             </StyledTitleWrapper>
+            <HearingSettingsButton />
           </Header>
           <StyledSectionWrapper>
             {this.renderDatePicker()}

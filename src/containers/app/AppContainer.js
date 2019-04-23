@@ -15,15 +15,21 @@ import AppConsent from './AppConsent';
 import ErrorPage from '../../components/ErrorPage';
 import HeaderNav from '../../components/nav/HeaderNav';
 import Dashboard from '../../components/dashboard/Dashboard';
+import HearingSettingsModal from '../../components/hearings/HearingSettingsModal';
 import Forms from '../forms/Forms';
 import ContactSupport from '../../components/app/ContactSupport';
 import LogoLoader from '../../components/LogoLoader';
 import WelcomeBanner from '../../components/WelcomeBanner';
-import { APP, CHARGES, STATE } from '../../utils/consts/FrontEndStateConsts';
 import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { APP_TYPES } from '../../utils/consts/DataModelConsts';
 import { termsAreAccepted } from '../../utils/AcceptTermsUtils';
 import { OL } from '../../utils/consts/Colors';
+import {
+  APP,
+  CHARGES,
+  HEARINGS,
+  STATE
+} from '../../utils/consts/FrontEndStateConsts';
 
 import * as Routes from '../../core/router/Routes';
 import * as AppActionFactory from './AppActionFactory';
@@ -187,6 +193,7 @@ class AppContainer extends React.Component<Props, *> {
         <ContactSupport />
         { selectedOrganizationTitle ? <WelcomeBanner tool={tool} organization={selectedOrganizationTitle} /> : null }
         {this.renderAppBody()}
+        <HearingSettingsModal />
       </AppWrapper>
     );
   }
@@ -195,6 +202,7 @@ class AppContainer extends React.Component<Props, *> {
 function mapStateToProps(state) {
   const app = state.get(STATE.APP);
   const charges = state.get(STATE.CHARGES);
+  const hearings = state.get(STATE.HEARINGS);
   return {
     app,
     [APP.SELECTED_ORG_ID]: app.get(APP.APP_SETTINGS_ID),
@@ -205,7 +213,9 @@ function mapStateToProps(state) {
 
     [CHARGES.ARREST]: charges.get(CHARGES.ARREST),
     [CHARGES.COURT]: charges.get(CHARGES.COURT),
-    [CHARGES.LOADING]: charges.get(CHARGES.LOADING)
+    [CHARGES.LOADING]: charges.get(CHARGES.LOADING),
+
+    [HEARINGS.SETTINGS_MODAL_OPEN]: hearings.get(HEARINGS.SETTINGS_MODAL_OPEN)
   };
 }
 
