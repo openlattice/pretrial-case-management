@@ -28,6 +28,7 @@ import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_STATUSES } from '../../utils/consts/Consts';
 import { formatDMFFromEntity } from '../../utils/DMFUtils';
 import { getEntityKeyId, stripIdField } from '../../utils/DataUtils';
+import { hearingIsCancelled } from '../../utils/HearingUtils';
 import {
   APP,
   CHARGES,
@@ -160,9 +161,7 @@ function* getCasesAndCharges(neighbors) {
         allFTAs = allFTAs.push(Immutable.fromJS(neighborDetails));
       }
       else if (appTypeFqn === HEARINGS) {
-        const hearingIsInactive = neighborDetails.getIn([PROPERTY_TYPES.HEARING_INACTIVE, 0], false);
-        const hearingHasBeenCancelled = neighborDetails.getIn([PROPERTY_TYPES.UPDATE_TYPE, 0], '')
-          .toLowerCase().trim() === 'cancelled';
+        const hearingIsInactive = hearingIsCancelled(neighborDetails);
         const hearingIsGeneric = neighborDetails.getIn([PROPERTY_TYPES.HEARING_TYPE, 0], '')
           .toLowerCase().trim() === 'all other hearings';
         if (!hearingHasBeenCancelled && !hearingIsGeneric && !hearingIsInactive) {

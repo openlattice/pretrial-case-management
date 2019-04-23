@@ -20,6 +20,7 @@ import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { APP, PSA_NEIGHBOR, STATE } from '../../utils/consts/FrontEndStateConsts';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { getEntityProperties } from '../../utils/DataUtils';
+import { hearingIsCancelled } from '../../utils/HearingUtils';
 import { getPropertyTypeId } from '../../edm/edmUtils';
 import { PSA_STATUSES } from '../../utils/consts/Consts';
 import { getCasesForPSA, getChargeHistory, getCaseHistory } from '../../utils/CaseUtils';
@@ -208,15 +209,12 @@ function* getPersonNeighborsWorker(action) :Generator<*, *, *> {
         const hearingId = hearingDetails.getIn([OPENLATTICE_ID_FQN, 0]);
         const hearingDateTime = hearingDetails.getIn([PROPERTY_TYPES.DATE_TIME, 0]);
         const hearingExists = !!hearingDateTime && !!hearingId;
-        const hearingIsInactive = hearingDetails.getIn([PROPERTY_TYPES.HEARING_INACTIVE, 0], false);
-        const hearingHasBeenCancelled = hearingDetails.getIn([PROPERTY_TYPES.UPDATE_TYPE, 0], '')
-          .toLowerCase().trim() === 'cancelled';
+        const hearingIsInactive = hearingIsCancelled(hearingDetails);
         const hearingIsGeneric = hearingDetails.getIn([PROPERTY_TYPES.HEARING_TYPE, 0], '')
           .toLowerCase().trim() === 'all other hearings';
         const hearingIsADuplicate = hearingEntityKeyId.includes(neighborEntityKeyId);
         if (
           hearingExists
-          && !hearingHasBeenCancelled
           && !hearingIsGeneric
           && !hearingIsInactive
           && !hearingIsADuplicate
@@ -374,12 +372,10 @@ function* refreshPersonNeighborsWorker(action) :Generator<*, *, *> {
         const hearingId = hearingDetails.getIn([OPENLATTICE_ID_FQN, 0]);
         const hearingDateTime = hearingDetails.getIn([PROPERTY_TYPES.DATE_TIME, 0]);
         const hearingExists = !!hearingDateTime && !!hearingId;
-        const hearingIsInactive = hearingDetails.getIn([PROPERTY_TYPES.HEARING_INACTIVE, 0], false);
-        const hearingHasBeenCancelled = hearingDetails.getIn([PROPERTY_TYPES.UPDATE_TYPE, 0], '')
-          .toLowerCase().trim() === 'cancelled';
+        const hearingIsInactive = hearingIsCancelled(hearingDetails);
         const hearingIsGeneric = hearingDetails.getIn([PROPERTY_TYPES.HEARING_TYPE, 0], '')
           .toLowerCase().trim() === 'all other hearings';
-        if (hearingExists && !hearingHasBeenCancelled && !hearingIsGeneric && !hearingIsInactive) {
+        if (hearingExists && !hearingIsGeneric && !hearingIsInactive) {
           neighbors = neighbors.set(
             appTypeFqn,
             neighbors.get(appTypeFqn, List()).push(hearingDetails)
