@@ -58,9 +58,9 @@ type Props = {
 
 class ReminderRow extends React.Component<Props, State> {
 
-  renderbooleanIcon = (boolean, contact) => (boolean
-    ? <StatusIconContainer key={contact}><FontAwesomeIcon color="green" icon={faCheck} /></StatusIconContainer>
-    : <StatusIconContainer key={contact}><FontAwesomeIcon color="red" icon={faTimesCircle} /></StatusIconContainer>
+  renderbooleanIcon = boolean => (boolean
+    ? <FontAwesomeIcon color="green" icon={faCheck} />
+    : <FontAwesomeIcon color="red" icon={faTimesCircle} />
   )
 
   renderRow = () => {
@@ -87,7 +87,11 @@ class ReminderRow extends React.Component<Props, State> {
         <Cell>{ contact }</Cell>
         <Cell>{ courtroom }</Cell>
         <Cell>{ hearingType }</Cell>
-        <Cell>{ this.renderbooleanIcon(wasNotified, contact) }</Cell>
+        <Cell>
+          <StatusIconContainer key={contact}>
+            { this.renderbooleanIcon(wasNotified, contact) }
+          </StatusIconContainer>
+        </Cell>
 
       </Row>
     );
