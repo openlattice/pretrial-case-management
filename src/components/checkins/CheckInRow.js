@@ -73,27 +73,29 @@ type Props = {
 class CheckInRow extends React.Component<Props, State> {
 
   renderBooleanIcon = (checkInStatus) => {
-    let statusIcon;
+    let color;
+    let icon;
     switch (checkInStatus) {
       case FILTERS.FAILED:
-        statusIcon = (
-          <StatusIconContainer><FontAwesomeIcon color={OL.ORANGE01} icon={faMicrophoneAlt} /></StatusIconContainer>
-        );
+        color = OL.ORANGE01;
+        icon = faMicrophoneAlt;
         break;
       case FILTERS.SUCCESSFUL:
-        statusIcon = (
-          <StatusIconContainer><FontAwesomeIcon color={OL.GREEN01} icon={faMicrophoneAlt} /></StatusIconContainer>
-        );
+        color = OL.GREEN01;
+        icon = faMicrophoneAlt;
         break;
       case FILTERS.PENDING:
-        statusIcon = (
-          <StatusIconContainer><FontAwesomeIcon color={OL.PURPLE03} icon={faHourglassHalf} /></StatusIconContainer>
-        );
+        color = OL.PURPLE03;
+        icon = faHourglassHalf;
         break;
       default:
         break;
     }
-    return statusIcon;
+    return (
+      <StatusIconContainer>
+        <FontAwesomeIcon color={color} icon={icon} />
+      </StatusIconContainer>
+    );
   }
 
   renderRow = () => {
