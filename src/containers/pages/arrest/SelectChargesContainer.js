@@ -22,12 +22,18 @@ import { APP, CHARGES, STATE } from '../../../utils/consts/FrontEndStateConsts';
 import { CASE_CONTEXTS, SETTINGS } from '../../../utils/consts/AppSettingConsts';
 import { PROPERTY_TYPES } from '../../../utils/consts/DataModelConsts';
 import { toISODateTime } from '../../../utils/FormattingUtils';
+import { getEntityProperties } from '../../../utils/DataUtils';
 import { OL } from '../../../utils/consts/Colors';
 
 import {
   StyledFormWrapper,
   Title
 } from '../../../utils/Layout';
+
+const {
+  CASE_NUMBER,
+  ARRESTING_AGENCY
+} = PROPERTY_TYPES;
 
 const {
   DISPOSITION_DATE,
@@ -58,6 +64,12 @@ const HeaderWrapper = styled.div`
 const GeneralInputField = styled.input`
   width: 100%;
   height: 44px;
+  padding: 2px 8px;
+
+  :disabled {
+    background: ${OL.GREY38};
+    border: none;
+  }
 `;
 
 const CountsInput = styled.input.attrs({
@@ -168,10 +180,31 @@ class SelectChargesContainer extends React.Component<Props, State> {
       chargeType: props.chargeType,
       courtCaseNumber: '',
       arrestTrackingNumber: '',
+      arrestAgency: '',
       arrestDate: moment(props.defaultArrest.getIn([PROPERTY_TYPES.ARREST_DATE_TIME, 0])),
       caseDispositionDate: '',
       charges: this.formatChargeList(props.defaultCharges)
     };
+  }
+
+
+  static getDerivedStateFromProps(nextProps) {
+    const { defaultArrest } = nextProps;
+    if (defaultArrest.size) {
+      let {
+        [CASE_NUMBER]: arrestTrackingNumber,
+        [ARRESTING_AGENCY]: arrestAgency
+      } = getEntityProperties(defaultArrest, [CASE_NUMBER, ARRESTING_AGENCY]);
+      arrestTrackingNumber = arrestTrackingNumber || '';
+      arrestAgency = arrestAgency || '';
+      if (arrestTrackingNumber || arrestAgency) {
+        return {
+          arrestTrackingNumber,
+          arrestAgency
+        };
+      }
+    }
+    return null;
   }
 
   formatChargeList = (chargeList :Immutable.List<*>) :Object[] => {
@@ -223,8 +256,9 @@ class SelectChargesContainer extends React.Component<Props, State> {
   }
 
   onSubmit = () => {
-    const { onSubmit, nextPage } = this.props;
+    const { onSubmit, nextPage, defaultArrest } = this.props;
     const {
+      arrestAgency,
       arrestDate,
       arrestTrackingNumber,
       caseDispositionDate,
@@ -240,7 +274,8 @@ class SelectChargesContainer extends React.Component<Props, State> {
     if (caseDispositionDate) caseEntity[PROPERTY_TYPES.CASE_DISPOSITION_DATE] = [this.getDateTime(caseDispositionDate)];
     if (arrestDate) caseEntity[PROPERTY_TYPES.ARREST_DATE_TIME] = [this.getDateTime(arrestDate)];
     if (courtCaseNumber) caseEntity[PROPERTY_TYPES.CASE_NUMBER] = [courtCaseNumber];
-    if (arrestTrackingNumber) caseEntity[ID_FIELD_NAMES.ARREST_ID_FOR_COURT] = [arrestTrackingNumber];
+    if (!defaultArrest.size && arrestTrackingNumber) caseEntity[PROPERTY_TYPES.CASE_NUMBER] = [arrestTrackingNumber];
+    if (!defaultArrest.size && arrestAgency) caseEntity[PROPERTY_TYPES.ARRESTING_AGENCY] = [arrestAgency];
 
     const chargeEntities = charges.map((charge, index) => {
       const statute = charge.getIn([PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE, 0], '');
@@ -296,17 +331,31 @@ class SelectChargesContainer extends React.Component<Props, State> {
   }
 
   renderDispositionInput = () => {
-    const { caseDispositionDate } = this.state;
+    const { defaultArrest } = this.props;
+    const { arrestAgency, arrestTrackingNumber } = this.state;
+    const {
+      [CASE_NUMBER]: caseIdFromSelectedArrest,
+      [ARRESTING_AGENCY]: arrestAgencyFromSelectedArrest
+    } = getEntityProperties(defaultArrest, [CASE_NUMBER, ARRESTING_AGENCY]);
     return (
-      <InputLabel>
-        Case Disposition Date
-        <DateTimePicker
-            name="caseDispositionDate"
-            value={caseDispositionDate}
-            onChange={(date) => {
-              this.setState({ caseDispositionDate: date });
-            }} />
-      </InputLabel>
+      <>
+        <InputLabel>
+          Arrest Tracking Number
+          <GeneralInputField
+              disabled={!!caseIdFromSelectedArrest}
+              name="arrestTrackingNumber"
+              value={arrestTrackingNumber}
+              onChange={this.onInputChange} />
+        </InputLabel>
+        <InputLabel>
+          Arresting Agency
+          <GeneralInputField
+              disabled={!!arrestAgencyFromSelectedArrest}
+              name="arrestAgency"
+              value={arrestAgency}
+              onChange={this.onInputChange} />
+        </InputLabel>
+      </>
     );
   }
 
