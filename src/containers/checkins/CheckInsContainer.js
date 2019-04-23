@@ -179,6 +179,19 @@ class CheckInsContainer extends React.Component<Props, State> {
     );
   }
 
+  getCheckInFilter = (checkInFilter, color, icon) => {
+    const { filter } = this.state;
+    return {
+      label: (
+        <StatusIconContainer>
+          <StatusText>{`${filter}`}</StatusText>
+          <FontAwesomeIcon color={filter === checkInFilter ? OL.WHITE : color} icon={icon} />
+        </StatusIconContainer>
+      ),
+      value: filter
+    };
+  }
+
   renderResults = () => {
     const { filter } = this.state;
     const {
@@ -235,33 +248,9 @@ class CheckInsContainer extends React.Component<Props, State> {
         label: FILTERS.ALL,
         value: ''
       },
-      [FILTERS.FAILED]: {
-        label: (
-          <StatusIconContainer>
-            <StatusText>{`${FILTERS.FAILED}`}</StatusText>
-            <FontAwesomeIcon color={filter === FILTERS.FAILED ? OL.WHITE : OL.ORANGE01} icon={faMicrophoneAlt} />
-          </StatusIconContainer>
-        ),
-        value: FILTERS.FAILED
-      },
-      [FILTERS.SUCCESSFUL]: {
-        label: (
-          <StatusIconContainer>
-            <StatusText>{`${FILTERS.SUCCESSFUL}`}</StatusText>
-            <FontAwesomeIcon color={filter === FILTERS.SUCCESSFUL ? OL.WHITE : OL.GREEN01} icon={faMicrophoneAlt} />
-          </StatusIconContainer>
-        ),
-        value: FILTERS.SUCCESSFUL
-      },
-      [FILTERS.PENDING]: {
-        label: (
-          <StatusIconContainer>
-            <StatusText>{`${FILTERS.PENDING}`}</StatusText>
-            <FontAwesomeIcon color={filter === FILTERS.PENDING ? OL.WHITE : OL.PURPLE03} icon={faHourglassHalf} />
-          </StatusIconContainer>
-        ),
-        value: FILTERS.PENDING
-      }
+      [FILTERS.FAILED]: this.getCheckInFilter(FILTERS.FAILED, OL.ORANGE01, faMicrophoneAlt),
+      [FILTERS.SUCCESSFUL]: this.getCheckInFilter(FILTERS.SUCCESSFUL, OL.GREEN01, faMicrophoneAlt),
+      [FILTERS.PENDING]: this.getCheckInFilter(FILTERS.PENDING, OL.PURPLE03, faHourglassHalf)
     });
 
     return (
