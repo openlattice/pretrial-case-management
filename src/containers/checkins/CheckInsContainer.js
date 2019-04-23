@@ -184,11 +184,11 @@ class CheckInsContainer extends React.Component<Props, State> {
     return {
       label: (
         <StatusIconContainer>
-          <StatusText>{`${filter}`}</StatusText>
+          <StatusText>{`${checkInFilter}`}</StatusText>
           <FontAwesomeIcon color={filter === checkInFilter ? OL.WHITE : color} icon={icon} />
         </StatusIconContainer>
       ),
-      value: filter
+      value: checkInFilter
     };
   }
 
