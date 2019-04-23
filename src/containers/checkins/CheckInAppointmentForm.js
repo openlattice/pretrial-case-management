@@ -124,10 +124,6 @@ class NewHearingSection extends React.Component<Props, State> {
     return fromJS(appointmentEntity);
   }
 
-  submitCheckInAppointments = () => {
-    // TODO: add an independent sumbmission option if independentSubmission prop is true
-  }
-
   getFrequencyConversion = () => {
     const { frequency } = this.state;
     let value;
