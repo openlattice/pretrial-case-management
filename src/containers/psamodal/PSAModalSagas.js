@@ -140,7 +140,6 @@ function* loadPSAModalWorker(action :SequenceAction) :Generator<*, *, *> {
           const hearingEntityKeyId = neighborDetails.getIn([OPENLATTICE_ID_FQN, 0]);
           if (appTypeFqn === HEARINGS) {
             if (hearingEntityKeyId) hearingIds = hearingIds.add(neighborDetails.getIn([OPENLATTICE_ID_FQN, 0]));
-            console.log('hi');
             const {
               [DATE_TIME]: hearingDateTime,
               [HEARING_INACTIVE]: hearingIsInactive,
