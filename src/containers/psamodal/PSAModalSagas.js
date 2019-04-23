@@ -23,6 +23,7 @@ import {
 } from '@redux-saga/core/effects';
 
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
+import { hearingIsCancelled } from '../../utils/HearingUtils';
 import { getEntityProperties, getEntityKeyId } from '../../utils/DataUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import {
@@ -142,18 +143,14 @@ function* loadPSAModalWorker(action :SequenceAction) :Generator<*, *, *> {
             if (hearingEntityKeyId) hearingIds = hearingIds.add(neighborDetails.getIn([OPENLATTICE_ID_FQN, 0]));
             const {
               [DATE_TIME]: hearingDateTime,
-              [HEARING_INACTIVE]: hearingIsInactive,
-              [UPDATE_TYPE]: updateType,
               [HEARING_TYPE]: hearingType
             } = getEntityProperties(neighbor, [
               DATE_TIME,
-              HEARING_INACTIVE,
-              UPDATE_TYPE,
               HEARING_TYPE
             ]);
-            const hearingHasBeenCancelled = updateType.toLowerCase().trim() === 'cancelled';
+            const hearingIsInactive = hearingIsCancelled(neighbor);
             const hearingIsGeneric = hearingType.toLowerCase().trim() === 'all other hearings';
-            if (hearingDateTime && !hearingHasBeenCancelled && !hearingIsGeneric && !hearingIsInactive) {
+            if (hearingDateTime && !hearingIsGeneric && !hearingIsInactive) {
               neighborsByAppTypeFqn = neighborsByAppTypeFqn.set(
                 appTypeFqn,
                 neighborsByAppTypeFqn.get(appTypeFqn, List()).push(fromJS(neighborDetails))

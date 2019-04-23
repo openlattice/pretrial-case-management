@@ -256,18 +256,14 @@ function* getPersonNeighborsWorker(action) :Generator<*, *, *> {
         if (appTypeFqn === HEARINGS) {
           const {
             [DATE_TIME]: hearingDateTime,
-            [HEARING_INACTIVE]: hearingIsInactive,
-            [UPDATE_TYPE]: updateType,
             [HEARING_TYPE]: hearingType
           } = getEntityProperties(neighbor, [
             DATE_TIME,
-            HEARING_INACTIVE,
-            UPDATE_TYPE,
             HEARING_TYPE
           ]);
-          const hearingHasBeenCancelled = updateType.toLowerCase().trim() === 'cancelled';
+          const hearingIsInactive = hearingIsCancelled(neighbor);
           const hearingIsGeneric = hearingType.toLowerCase().trim() === 'all other hearings';
-          if (hearingDateTime && !hearingHasBeenCancelled && !hearingIsGeneric && !hearingIsInactive) {
+          if (hearingDateTime && !hearingIsGeneric && !hearingIsInactive) {
             mostRecentPSANeighborsByAppTypeFqn = mostRecentPSANeighborsByAppTypeFqn.set(
               appTypeFqn,
               mostRecentPSANeighborsByAppTypeFqn.get(appTypeFqn, List()).push(fromJS(neighbor))
