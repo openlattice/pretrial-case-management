@@ -127,7 +127,7 @@ class NewHearingSection extends React.Component<Props, State> {
   getFrequencyConversion = () => {
     const { frequency } = this.state;
     let value;
-    const increment = 'w';
+    const increment = 'weeks';
 
     switch (frequency) {
       case CHECKIN_FREQUENCIES.ONCE_MONTH:
