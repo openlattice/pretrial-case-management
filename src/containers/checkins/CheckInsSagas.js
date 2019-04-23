@@ -72,12 +72,10 @@ function* loadCheckInAppointmentsForDateWorker(action :SequenceAction) :Generato
     const checkInAppoiontmentsEntitySetId = getEntitySetIdFromApp(app, CHECKIN_APPOINTMENTS);
     const startDatePropertyTypeId = getPropertyTypeId(edm, START_DATE);
 
-    const ceiling = yield call(DataApi.getEntitySetSize, checkInAppoiontmentsEntitySetId);
-
     const checkInOptions = {
       searchTerm: `${checkInAppoiontmentsEntitySetId}.${startDatePropertyTypeId}:"${toISODate(date)}"`,
       start: 0,
-      maxHits: ceiling,
+      maxHits: 10000,
       fuzzy: false
     };
     const allCheckInDataforDate = yield call(
