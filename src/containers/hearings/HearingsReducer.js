@@ -1,7 +1,7 @@
 /*
  * @flow
  */
-
+import moment from 'moment';
 import { Map, fromJS } from 'immutable';
 
 import {
@@ -16,7 +16,7 @@ import { HEARINGS } from '../../utils/consts/FrontEndStateConsts';
 
 const INITIAL_STATE :Map<*, *> = fromJS({
   [HEARINGS.SETTINGS_MODAL_OPEN]: false,
-  [HEARINGS.DATE]: '',
+  [HEARINGS.DATE]: moment().format('MM/DD/YYYY'),
   [HEARINGS.TIME]: '',
   [HEARINGS.COURTROOM]: '',
   [HEARINGS.JUDGE]: ''
