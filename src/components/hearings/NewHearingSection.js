@@ -255,7 +255,7 @@ class NewHearingSection extends React.Component<Props, State> {
     const { newHearingDate } = this.state;
     return (
       <DatePicker
-          value={newHearingDate || moment()}
+          value={newHearingDate || moment().format('MM/DD/YYYY')}
           onChange={this.onDateChange} />
     );
   }
