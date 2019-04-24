@@ -124,7 +124,7 @@ const INITIAL_STATE = {
   editing: false
 };
 
-class NewHearingSection extends React.Component<Props, State> {
+class ManualRemindersForm extends React.Component<Props, State> {
 
   constructor(props :Props) {
     super(props);
@@ -453,4 +453,4 @@ function mapDispatchToProps(dispatch :Function) :Object {
   };
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(NewHearingSection);
+export default connect(mapStateToProps, mapDispatchToProps)(ManualRemindersForm);

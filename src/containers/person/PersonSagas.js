@@ -288,10 +288,10 @@ function* searchPeopleWorker(action) :Generator<*, *, *> {
       });
       peopleNeighborsById = fromJS(peopleNeighborsById);
 
-      let hasActiveSubscription = false;
-      let hasPreferredContact = false;
-      let psaCount = 0;
       peopleNeighborsById.entrySeq().forEach(([personEntityKeyId, neighbors]) => {
+        let hasActiveSubscription = false;
+        let hasPreferredContact = false;
+        let psaCount = 0;
         neighbors.forEach((neighbor) => {
           const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id']);
           const appTypeFqn = entitySetIdsToAppType.get(entitySetId);

@@ -13,6 +13,7 @@ import dashboardReducer from '../../containers/dashboard/DashboardReducer';
 import downloadReducer from '../../containers/download/DownloadReducer';
 import edmReducer from '../../edm/EDMReducer';
 import enrollReducer from '../../containers/enroll/EnrollReducer';
+import hearingsReducer from '../../containers/hearings/HearingsReducer';
 import manualRemindersReducer from '../../containers/manualreminders/ManualRemindersReducer';
 import psaModalReducer from '../../containers/psamodal/PSAModalReducer';
 import psaReducer from '../../containers/psa/FormReducer';
@@ -37,6 +38,7 @@ export default function reduxReducer(routerHistory :any) {
     [STATE.DOWNLOAD]: downloadReducer,
     [STATE.EDM]: edmReducer,
     [STATE.ENROLL]: enrollReducer,
+    [STATE.HEARINGS]: hearingsReducer,
     [STATE.MANUAL_REMINDERS]: manualRemindersReducer,
     [STATE.PSA]: psaReducer,
     [STATE.PSA_MODAL]: psaModalReducer,
