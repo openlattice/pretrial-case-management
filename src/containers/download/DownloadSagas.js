@@ -369,7 +369,6 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
         || combinedEntity.get('Last Name')
         || combinedEntity.get('First Name')
       ) {
-        console.log(combinedEntity.toJS());
         jsonResults = jsonResults.push(combinedEntity);
       }
     });
