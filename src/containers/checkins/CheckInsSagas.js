@@ -18,7 +18,7 @@ import {
 } from 'immutable';
 
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
-import { getEntityProperties } from '../../utils/DataUtils';
+import { getEntityProperties, getSearchTerm } from '../../utils/DataUtils';
 import { toISODate } from '../../utils/FormattingUtils';
 import { getPropertyTypeId } from '../../edm/edmUtils';
 import { APPOINTMENT_TYPES } from '../../utils/consts/AppointmentConsts';
@@ -73,7 +73,7 @@ function* loadCheckInAppointmentsForDateWorker(action :SequenceAction) :Generato
     const startDatePropertyTypeId = getPropertyTypeId(edm, START_DATE);
 
     const checkInOptions = {
-      searchTerm: `${checkInAppoiontmentsEntitySetId}.${startDatePropertyTypeId}:"${toISODate(date)}"`,
+      searchTerm: getSearchTerm(startDatePropertyTypeId, toISODate(date)),
       start: 0,
       maxHits: 10000,
       fuzzy: false
