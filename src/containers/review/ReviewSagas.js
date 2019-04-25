@@ -24,10 +24,10 @@ import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { getPropertyTypeId } from '../../edm/edmUtils';
 import exportPDF, { exportPDFList } from '../../utils/PDFUtils';
 import { getMapByCaseId } from '../../utils/CaseUtils';
-import { APP_TYPES, PROPERTY_TYPES, SEARCH_PREFIX } from '../../utils/consts/DataModelConsts';
+import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_STATUSES } from '../../utils/consts/Consts';
 import { formatDMFFromEntity } from '../../utils/DMFUtils';
-import { getEntityKeyId, stripIdField } from '../../utils/DataUtils';
+import { getEntityKeyId, stripIdField, getSearchTerm } from '../../utils/DataUtils';
 import { hearingIsCancelled } from '../../utils/HearingUtils';
 import {
   APP,
@@ -402,9 +402,7 @@ function* loadPSAsByDateWorker(action :SequenceAction) :Generator<*, *, *> {
     const psaScoresEntitySetId = getEntitySetIdFromApp(app, PSA_SCORES);
     const statusPropertyTypeId = getPropertyTypeId(edm, statusfqn);
     const filter = action.value || PSA_STATUSES.OPEN;
-    const searchTerm = action.value === '*'
-      ? action.value
-      : `${SEARCH_PREFIX}.${statusPropertyTypeId}:"${filter}"`;
+    const searchTerm = action.value === '*' ? action.value : getSearchTerm(statusPropertyTypeId, filter);
     const allScoreData = yield call(getAllSearchResults, psaScoresEntitySetId, searchTerm);
 
     let scoresAsMap = Immutable.Map();
