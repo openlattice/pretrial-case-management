@@ -245,7 +245,7 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
     const getUpdatedEntity = (combinedEntityInit, appTypeFqn, details) => {
       if (filters && !filters[appTypeFqn]) return combinedEntityInit;
       let combinedEntity = combinedEntityInit;
-      if (appTypeFqn === CHARGES || appTypeFqn === MANUAL_CHARGES || appTypeFqn === MANUAL_COURT_CHARGES) {
+      if (Object.values(caseToChargeTypes).includes(appTypeFqn)) {
         let keyString = appTypeFqn;
         if (!includesPretrialModule) {
           keyString = `${MANUAL_COURT_CHARGES}|${MANUAL_CHARGES}`;
