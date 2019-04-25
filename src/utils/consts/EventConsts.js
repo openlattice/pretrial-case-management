@@ -46,7 +46,7 @@ const PSA_CLOSED_EVENT = {
 };
 
 const REMINDER_EVENT = {
-  label: 'PSA Closed',
+  label: 'Reminder Sent',
   icon: faPaperPlane
 };
 
