@@ -43,6 +43,9 @@ export const VISUALIZE_DASHBOARD = DASHBOARD + VISUALIZE;
 const VOICE :string = '/voice';
 export const VOICE_ENROLLMENT = DASHBOARD + VOICE;
 
+/* CheckIns Container */
+const CHECKINS :string = 'checkins';
+
 /* people */
 export const REMINDERS :string = '/reminders';
 export const PERSON = `${DASHBOARD}/person`;
@@ -51,6 +54,7 @@ export const SEARCH_PEOPLE = `${PEOPLE}/search`;
 export const MULTI_SEARCH_PEOPLE = `${PEOPLE}/multisearch`;
 export const REQUIRES_ACTION_PEOPLE = `${PEOPLE}/requires_action`;
 export const MANAGE_PEOPLE_REMINDERS = `${PEOPLE}/${REMINDERS}`;
+export const MANAGE_PEOPLE_CHECKINS = `${PEOPLE}/${CHECKINS}`;
 
 /* query params */
 export const FIRST_NAME = 'fname';

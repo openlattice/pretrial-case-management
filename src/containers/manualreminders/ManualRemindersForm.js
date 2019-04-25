@@ -177,7 +177,7 @@ class ManualRemindersForm extends React.Component<Props, State> {
       [PROPERTY_TYPES.NOTIFIED]: [notified],
       [PROPERTY_TYPES.REMINDER_ID]: [randomUUID()],
       [PROPERTY_TYPES.REMINDER_NOTES]: [notes],
-      [PROPERTY_TYPES.REMINDER_TYPE]: [REMINDER_TYPES.HEARING],
+      [PROPERTY_TYPES.TYPE]: [REMINDER_TYPES.HEARING],
 
       // Person
       [FORM_IDS.PERSON_ID]: [personId],

@@ -8,7 +8,7 @@ import Modal, { ModalTransition } from '@atlaskit/modal-dialog';
 import { Map } from 'immutable';
 
 
-import ManualRemindersForm from '../../containers/manualreminders/ManualRemindersForm';
+import EnrollVoice from '../../containers/enroll/EnrollVoice';
 import {
   CloseModalX,
   PaddedStyledColumnRow,
@@ -28,10 +28,11 @@ const ColumnRow = styled(PaddedStyledColumnRow)`
 `;
 
 type Props = {
-  person :Map<*, *>,
+  personId :string,
+  personEntityKeyId :string,
+  personName :string,
   open :() => void,
   onClose :() => void,
-  submitCallback :() => void,
   actions :{
     refreshPersonNeighbors :(values :{ personId :string }) => void,
     submit :(values :{
@@ -45,11 +46,12 @@ type Props = {
 const MODAL_WIDTH = '750px';
 const MODAL_HEIGHT = 'max-content';
 
-const ManageSubscriptionModal = ({
+const EnrollVoiceModal = ({
+  personId,
+  personEntityKeyId,
+  personName,
   onClose,
-  open,
-  person,
-  submitCallback
+  open
 } :Props) => (
   <Wrapper>
     <ModalTransition>
@@ -67,14 +69,19 @@ const ManageSubscriptionModal = ({
             <ModalBody>
               <ColumnRow>
                 <TitleWrapper noPadding>
-                  <h2>Record Communication (Manual Reminder)</h2>
+                  <h2>Enroll Voice Profile</h2>
                   <div>
                     <CloseModalX onClick={onClose} />
                   </div>
                 </TitleWrapper>
               </ColumnRow>
               <ColumnRow>
-                <ManualRemindersForm person={person} submitCallback={submitCallback} />
+                <EnrollVoice
+                    open={open}
+                    onClose={onClose}
+                    personId={personId}
+                    personEntityKeyId={personEntityKeyId}
+                    personName={personName} />
               </ColumnRow>
             </ModalBody>
           </Modal>
@@ -84,4 +91,4 @@ const ManageSubscriptionModal = ({
   </Wrapper>
 );
 
-export default ManageSubscriptionModal;
+export default EnrollVoiceModal;

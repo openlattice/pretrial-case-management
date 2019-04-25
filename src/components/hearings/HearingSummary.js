@@ -121,8 +121,8 @@ const HearingSummary = ({ hearing }) => {
   if (hearingConditions) {
     hearingConditions.forEach((condition) => {
       const type = condition.getIn(
-        [PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.CONDITION_TYPE, 0],
-        condition.getIn([PROPERTY_TYPES.CONDITION_TYPE, 0]) // check for old data
+        [PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.TYPE, 0],
+        condition.getIn([PROPERTY_TYPES.TYPE, 0]) // check for old data
       );
       conditionsByType = conditionsByType.set(type, conditionsByType.get(type, Immutable.List()).push(
         condition.get(PSA_NEIGHBOR.DETAILS, (condition || Immutable.Map())) // check for old data
