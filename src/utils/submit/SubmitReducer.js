@@ -9,6 +9,7 @@ import { SUBMIT } from '../consts/FrontEndStateConsts';
 import { updateEntity } from '../data/DataActionFactory';
 import {
   CLEAR_SUBMIT,
+  createAssociations,
   replaceAssociation,
   replaceEntity,
   submit
@@ -16,6 +17,8 @@ import {
 
 
 const INITIAL_STATE :Immutable.Map<*, *> = Immutable.Map().withMutations((map :Immutable.Map<*, *>) => {
+  map.set(SUBMIT.CREATING_ASSOCIATIONS, false);
+  map.set(SUBMIT.CREATE_ASSOCIATIONS_COMPLETE, false);
   map.set(SUBMIT.REPLACING_ASSOCIATION, false);
   map.set(SUBMIT.REPLACE_ASSOCIATION_SUCCESS, false);
   map.set(SUBMIT.UPDATING_ENTITY, false);
@@ -30,6 +33,22 @@ const INITIAL_STATE :Immutable.Map<*, *> = Immutable.Map().withMutations((map :I
 
 function submitReducer(state :Immutable.Map<*, *> = INITIAL_STATE, action :Object) {
   switch (action.type) {
+
+    case createAssociations.case(action.type): {
+      return createAssociations.reducer(state, action, {
+        REQUEST: () => state
+          .set(SUBMIT.CREATING_ASSOCIATIONS, true)
+          .set(SUBMIT.CREATE_ASSOCIATIONS_COMPLETE, false)
+          .set(SUBMIT.ERROR, ''),
+        SUCCESS: () => state
+          .set(SUBMIT.CREATE_ASSOCIATIONS_COMPLETE, true)
+          .set(SUBMIT.ERROR, ''),
+        FAILURE: () => state
+          .set(SUBMIT.CREATE_ASSOCIATIONS_COMPLETE, false)
+          .set(SUBMIT.ERROR, action.value.error),
+        FINALLY: () => state.set(SUBMIT.CREATING_ASSOCIATIONS, false)
+      });
+    }
 
     case replaceEntity.case(action.type): {
       return replaceEntity.reducer(state, action, {

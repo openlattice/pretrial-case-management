@@ -67,7 +67,7 @@ const ManageSubscriptionModal = ({
             <ModalBody>
               <ColumnRow>
                 <TitleWrapper noPadding>
-                  <h2>Create Reminder</h2>
+                  <h2>Record Communication (Manual Reminder)</h2>
                   <div>
                     <CloseModalX onClick={onClose} />
                   </div>

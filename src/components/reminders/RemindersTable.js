@@ -6,13 +6,23 @@ import moment from 'moment';
 import styled from 'styled-components';
 import { Map } from 'immutable';
 
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSortDown } from '@fortawesome/pro-light-svg-icons';
+
 import RemindersRow from './RemindersRow';
 import OptOutRow from './OptOutRow';
+import CheckInRow from '../checkins/CheckInRow';
 import { NoResults } from '../../utils/Layout';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
-import { getDateAndTime, getEntityProperties, getIdOrValue } from '../../utils/DataUtils';
 import { formatPeopleInfo } from '../../utils/PeopleUtils';
+import { CHECKIN_HEADERS } from '../../utils/consts/CheckInConsts';
+import {
+  getEntityKeyId,
+  getDateAndTime,
+  getEntityProperties,
+  getIdOrValue
+} from '../../utils/DataUtils';
 import {
   getReminderFields,
   getOptOutFields,
@@ -23,6 +33,7 @@ import {
 import { OL } from '../../utils/consts/Colors';
 
 const {
+  CHECKIN_APPOINTMENTS,
   CONTACT_INFORMATION,
   HEARINGS,
   PEOPLE,
@@ -65,9 +76,15 @@ class RemindersTable extends React.Component<Props, State> {
     if (appTypeFqn === REMINDERS) {
       headers = (
         <HeaderRow>
-          <HeaderElement onClick={sortByDate}>{REMINDERS_HEADERS.COURT_TIME}</HeaderElement>
+          <HeaderElement onClick={sortByDate}>
+            {`${REMINDERS_HEADERS.COURT_TIME} `}
+            <FontAwesomeIcon color={OL.GREY01} icon={faSortDown} />
+          </HeaderElement>
           <HeaderElement>{REMINDERS_HEADERS.CASE_NUM}</HeaderElement>
-          <HeaderElement onClick={sortByName}>{REMINDERS_HEADERS.NAME}</HeaderElement>
+          <HeaderElement onClick={sortByName}>
+            {`${REMINDERS_HEADERS.NAME} `}
+            <FontAwesomeIcon color={OL.GREY01} icon={faSortDown} />
+          </HeaderElement>
           <HeaderElement>{REMINDERS_HEADERS.CONTACT}</HeaderElement>
           <HeaderElement>{REMINDERS_HEADERS.COURTROOM}</HeaderElement>
           <HeaderElement>{REMINDERS_HEADERS.HEARING_TYPE}</HeaderElement>
@@ -82,6 +99,21 @@ class RemindersTable extends React.Component<Props, State> {
           <HeaderElement>{OPT_OUT_HEADERS.NAME}</HeaderElement>
           <HeaderElement>{OPT_OUT_HEADERS.CONTACT}</HeaderElement>
           <HeaderElement>{OPT_OUT_HEADERS.REASON}</HeaderElement>
+        </HeaderRow>
+      );
+    }
+    if (appTypeFqn === CHECKIN_APPOINTMENTS) {
+      headers = (
+        <HeaderRow>
+          <HeaderElement>{CHECKIN_HEADERS.TIME}</HeaderElement>
+          <HeaderElement>{CHECKIN_HEADERS.NAME}</HeaderElement>
+          <HeaderElement>{CHECKIN_HEADERS.CONTACT}</HeaderElement>
+          <HeaderElement>{CHECKIN_HEADERS.COURT_TIME}</HeaderElement>
+          <HeaderElement>{CHECKIN_HEADERS.COURTROOM}</HeaderElement>
+          <HeaderElement>{CHECKIN_HEADERS.HEARING_TYPE}</HeaderElement>
+          <HeaderElement>{CHECKIN_HEADERS.CASE_NUM}</HeaderElement>
+          <HeaderElement>{CHECKIN_HEADERS.STATUS}</HeaderElement>
+          <HeaderElement>{CHECKIN_HEADERS.NUM_ATTEMPTS}</HeaderElement>
         </HeaderRow>
       );
     }
@@ -181,6 +213,16 @@ class RemindersTable extends React.Component<Props, State> {
               time={moment(dateTime).format('HH:mm')}
               personId={personId}
               personName={lastFirstMid} />
+        );
+      }
+      if (appTypeFqn === CHECKIN_APPOINTMENTS) {
+        const checkInsEntityKeyId = getEntityKeyId(entity);
+        const checkInNeighbors = neighbors.get(checkInsEntityKeyId, Map());
+        row = (
+          <CheckInRow
+              key={checkInsEntityKeyId}
+              neighbors={checkInNeighbors}
+              checkInAppointment={entity} />
         );
       }
       return row;

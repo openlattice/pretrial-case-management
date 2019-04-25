@@ -62,3 +62,11 @@ export const NoContactRow = styled.div`
   grid-template-columns: 1fr 2fr 1fr;
   grid-gap: 20px;
 `;
+
+export const SubConditionsWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  hr {
+    margin: 20px 0 20px
+  }
+`;

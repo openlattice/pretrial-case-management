@@ -90,23 +90,6 @@ const getAppTypeFqns = () => {
 
 export const APP_TYPES_FQNS = getAppTypeFqns();
 
-export const SETTINGS = {
-  CONTEXTS: 'contexts',
-  LOAD_CASES: 'loadCasesOnTheFly',
-  COURT_REMINDERS: 'courtRemindersEnabled',
-  MODULES: 'modules'
-};
-
-export const CONTEXTS = {
-  COURT: 'court',
-  BOOKING: 'booking'
-};
-
-export const MODULE = {
-  PSA: 'psa',
-  PRETRIAL: 'pretrial',
-};
-
 /*
  * Charge FQNs
  */
@@ -131,7 +114,12 @@ export const CHARGE_FQNS = {
 export const PROPERTY_TYPES = {
   ENTITY_KEY_ID: OPENLATTICE_ID_FQN,
 
+  GENERAL_ID: 'general.id',
   STRING_ID: 'general.stringid',
+  TYPE: 'ol.type',
+  STATUS: 'general.status',
+  RESULT: 'general.result',
+
   COMPLETED_DATE_TIME: 'date.completeddatetime',
   DATE_TIME: 'general.datetime',
   START_DATE: 'ol.startdate',
@@ -174,6 +162,9 @@ export const PROPERTY_TYPES = {
   CHARGE_DMF_STEP_4: 'ol.dmfstep4indicator',
   BHE: 'ol.bheindicator',
   BRE: 'ol.breindicator',
+
+  // Check-ins
+  CONFIDENCE: 'general.confidence',
 
   // location-specific fields
   ADDRESS: 'location.Address',
@@ -286,7 +277,6 @@ export const PROPERTY_TYPES = {
   REASON: 'ol.reason',
 
   // Release condition entity type consts
-  CONDITION_TYPE: 'ol.type',
   FREQUENCY: 'general.frequency',
   OTHER_TEXT: 'ol.othertext',
   PERSON_NAME: 'general.fullname',
@@ -298,12 +288,10 @@ export const PROPERTY_TYPES = {
   NCA_SCALE: 'psa.ncaScale',
   FTA_SCALE: 'psa.ftaScale',
   TIMESTAMP: 'psa.GeneratedDate',
-  STATUS: 'general.status',
   STATUS_NOTES: 'general.statusnotes',
   FAILURE_REASON: 'justice.failurereason',
 
   // Release recommendation entity type consts
-  GENERAL_ID: 'general.id',
   RELEASE_RECOMMENDATION: 'publicsafety.recommendation',
 
   // Voice recognition entity type consts
@@ -319,7 +307,6 @@ export const PROPERTY_TYPES = {
   // Reminders
   REMINDER_ID: 'ol.id',
   REMINDER_STATUS: 'ol.status',
-  REMINDER_TYPE: 'ol.type',
   NOTIFIED: 'ol.notified',
   REMINDER_NOTES: 'ol.notes',
   CONTACT_METHOD: 'ol.contactmethod'

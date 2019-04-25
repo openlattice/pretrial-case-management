@@ -61,7 +61,7 @@ const Headers = () => (
     <HeaderElement>Courtroom</HeaderElement>
     <HeaderElement>Type</HeaderElement>
     <HeaderElement>Case ID</HeaderElement>
-    <CenteredHeader>Open PSA</CenteredHeader>
+    <CenteredHeader>PSA</CenteredHeader>
     <HeaderElement />
   </HeaderRow>
 );

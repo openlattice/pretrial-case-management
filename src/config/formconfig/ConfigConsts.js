@@ -7,6 +7,7 @@ import { FORM_IDS, ID_FIELD_NAMES } from '../../utils/consts/Consts';
 
 export const ALIASES = {
   CHARGE: 'charge',
+  CHECKIN_APPOINTMENT: 'checkInAppointment',
   CONTACT_INFO: 'contactinfo',
   EMPLOYER: 'employer',
   PERSON: 'person',
@@ -45,7 +46,8 @@ export const ALIASES = {
   APPEARS_IN: 'appearsIn',
   REGISTERED_FOR: 'registeredfor',
   REGISTERED_FOR_TWO: 'registeredfor2',
-  REGISTERED_FOR_THREE: 'registeredfor3'
+  REGISTERED_FOR_THREE: 'registeredfor3',
+  APPOINTMENT_REGISTERED_FOR: 'appointmentregisteredfor'
 };
 
 export const PERSON_CONFIG = {

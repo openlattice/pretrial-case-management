@@ -11,6 +11,7 @@ import { Redirect, Route, Switch } from 'react-router-dom';
 
 import RequiresActionList from './RequiresActionList';
 import RemindersContainer from '../reminders/RemindersContainer';
+import CheckInsContainer from '../checkins/CheckInsContainer';
 import PersonSearchFields from '../../components/person/PersonSearchFields';
 import PersonTextAreaInput from '../../components/person/PersonTextAreaInput';
 import PeopleList from '../../components/people/PeopleList';
@@ -185,12 +186,15 @@ class PeopleContainer extends React.Component<Props, State> {
   renderRequiresActionPeopleComponent = () => <RequiresActionList />;
 
   renderRemindersPortal = () => <RemindersContainer />;
+  renderCheckInsPortal = () => <CheckInsContainer />;
 
   render() {
     const { selectedOrganizationSettings } = this.props;
     const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
+    const settingsIncludeVoiceEnroll = selectedOrganizationSettings.get(SETTINGS.ENROLL_VOICE, false);
     const courtRemindersEnabled = selectedOrganizationSettings.get(SETTINGS.COURT_REMINDERS, false);
     let remindersSwitchRoute = null;
+    let checkInsSwitchRoute = null;
 
     let navButtons = [
       {
@@ -215,12 +219,21 @@ class PeopleContainer extends React.Component<Props, State> {
       label: 'Court Reminders'
     };
 
+    const checkInsButton = {
+      path: Routes.MANAGE_PEOPLE_CHECKINS,
+      label: 'Check-Ins'
+    };
+
 
     if (includesPretrialModule) {
       navButtons = navButtons.concat(pretrialModuleNavButtons);
       if (courtRemindersEnabled) {
         navButtons.push(remindersButton);
         remindersSwitchRoute = <Route path={Routes.MANAGE_PEOPLE_REMINDERS} render={this.renderRemindersPortal} />;
+      }
+      if (settingsIncludeVoiceEnroll) {
+        navButtons.push(checkInsButton);
+        checkInsSwitchRoute = <Route path={Routes.MANAGE_PEOPLE_CHECKINS} render={this.renderCheckInsPortal} />;
       }
     }
 
@@ -234,6 +247,7 @@ class PeopleContainer extends React.Component<Props, State> {
           <Route path={Routes.MULTI_SEARCH_PEOPLE} render={this.renderMultiSearchPeopleComponent} />
           <Route path={Routes.REQUIRES_ACTION_PEOPLE} render={this.renderRequiresActionPeopleComponent} />
           { remindersSwitchRoute }
+          { checkInsSwitchRoute }
           <Redirect from={Routes.PEOPLE} to={Routes.SEARCH_PEOPLE} />
         </Switch>
       </DashboardMainSection>
