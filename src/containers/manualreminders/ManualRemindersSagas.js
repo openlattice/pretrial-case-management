@@ -23,6 +23,7 @@ import {
 } from '@redux-saga/core/effects';
 
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
+import { getSearchTerm } from '../../utils/DataUtils';
 import { getPropertyTypeId } from '../../edm/edmUtils';
 import { toISODate } from '../../utils/FormattingUtils';
 import { hearingNeedsReminder } from '../../utils/RemindersUtils';
@@ -140,7 +141,7 @@ function* loadManualRemindersForDateWorker(action :SequenceAction) :Generator<*,
     const ceiling = yield call(DataApi.getEntitySetSize, manualRemindersEntitySetId);
 
     const reminderOptions = {
-      searchTerm: `${manualRemindersEntitySetId}.${datePropertyTypeId}:"${toISODate(date)}"`,
+      searchTerm: getSearchTerm(datePropertyTypeId, toISODate(date)),
       start: 0,
       maxHits: ceiling,
       fuzzy: false

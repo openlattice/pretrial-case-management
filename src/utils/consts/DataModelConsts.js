@@ -6,6 +6,8 @@ import { Constants, Models } from 'lattice';
 const { FullyQualifiedName } = Models;
 const { OPENLATTICE_ID_FQN } = Constants;
 
+export const SEARCH_PREFIX = 'entity';
+
 export const APP_NAME = 'psa';
 
 export const ORG_IDS = {
