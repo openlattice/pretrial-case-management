@@ -2,12 +2,7 @@
  * @flow
  */
 
-import {
-  List,
-  Map,
-  Set,
-  fromJS
-} from 'immutable';
+import { Map, Set, fromJS } from 'immutable';
 
 import {
   bulkDownloadRemindersPDF,
@@ -17,7 +12,7 @@ import {
   loadReminderNeighborsById,
   loadRemindersforDate
 } from './RemindersActionFactory';
-import {SWITCH_ORGANIZATION} from '../app/AppActionFactory';
+import { SWITCH_ORGANIZATION } from '../app/AppActionFactory';
 import { REMINDERS } from '../../utils/consts/FrontEndStateConsts';
 
 const INITIAL_STATE :Map<*, *> = fromJS({

@@ -6,10 +6,7 @@ import { faCheck } from '@fortawesome/pro-regular-svg-icons';
 import { OL } from '../utils/consts/Colors';
 
 const GRAY = OL.GREY33;
-const GREEN = OL.GREEN06;
-const YELLOW_GREEN = OL.GREEN07;
-const BLUE = OL.BLUE07;
-const LIGHT_BLUE = OL.BLUE08;
+const PURPLE = OL.PURPLE02;
 const { WHITE } = OL;
 
 const ProgressBar = styled.ol`
@@ -47,11 +44,11 @@ const getProgressBarStep = (current, complete) => styled.li`
   }
 
   &:before {
-    background-color: ${current || complete ? GREEN : GRAY}
+    background-color: ${current || complete ? PURPLE : GRAY}
   }
 
   &:after {
-    background-color: ${complete ? GREEN : GRAY};
+    background-color: ${complete ? PURPLE : GRAY};
     width: 0%;
   }
 `;
@@ -69,13 +66,13 @@ const ProgressBarIcon = styled.div`
 `;
 
 const CurrentProgressBarIcon = styled(ProgressBarIcon)`
-  color: ${YELLOW_GREEN};
-  background-color: ${YELLOW_GREEN};
+  color: ${OL.PURPLE04};
+  background-color: ${OL.PURPLE04};
 `;
 
 const CompleteProgressBarIcon = styled(ProgressBarIcon)`
   color: ${WHITE};
-  background-color: ${GREEN};
+  background-color: ${PURPLE};
 `;
 
 const Check = styled(FontAwesomeIcon).attrs({
@@ -96,7 +93,7 @@ const ProgressBarStepLabel = styled.span`
 
   .is-current > &,
   .is-complete > & {
-    color: ${GREEN};
+    color: ${PURPLE};
   }
 `;
 

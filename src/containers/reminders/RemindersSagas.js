@@ -24,6 +24,7 @@ import {
 
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { hearingNeedsReminder } from '../../utils/RemindersUtils';
+import { hearingIsCancelled } from '../../utils/HearingUtils';
 import { getPropertyTypeId } from '../../edm/edmUtils';
 import { PSA_STATUSES } from '../../utils/consts/Consts';
 import exportPDFList from '../../utils/CourtRemindersPDFUtils';
@@ -473,14 +474,11 @@ function* loadPeopleWithHearingsButNoContactsWorker(action :SequenceAction) :Gen
           const hearingDateTime = neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.DATE_TIME, 0]);
           const hearingExists = !!hearingDateTime;
           const hearingType = neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.HEARING_TYPE, 0]);
-          const hearingIsInactive = neighbor.getIn([PROPERTY_TYPES.HEARING_INACTIVE, 0], false);
-          const hearingHasBeenCancelled = neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.UPDATE_TYPE, 0], '')
-            .toLowerCase().trim() === 'cancelled';
+          const hearingIsInactive = hearingIsCancelled(neighbor);
           const hearingInFuture = moment().startOf('day').isBefore(hearingDateTime);
           if (hearingType
             && hearingExists
             && hearingInFuture
-            && !hearingHasBeenCancelled
             && !hearingIsInactive
           ) {
             const needsReminder = hearingNeedsReminder(neighborObj);
@@ -548,13 +546,12 @@ function* bulkDownloadRemindersPDFWorker(action :SequenceAction) :Generator<*, *
 
     const ceiling = yield call(DataApi.getEntitySetSize, hearingsEntitySetId);
 
-    const oneDayAhead = addWeekdays(date, 1);
     const oneWeekAhead = addWeekdays(date, 7);
 
     const getDateSearch = selectedDate => `${SEARCH_PREFIX}.${datePropertyTypeId}:"${toISODate(selectedDate)}"`;
 
     const reminderOptions = {
-      searchTerm: `${getDateSearch(oneDayAhead)} OR ${getDateSearch(oneWeekAhead)}`,
+      searchTerm: `${getDateSearch(oneWeekAhead)}`,
       start: 0,
       maxHits: ceiling,
       fuzzy: false
@@ -568,17 +565,13 @@ function* bulkDownloadRemindersPDFWorker(action :SequenceAction) :Generator<*, *
         const entityKeyId = hearing.getIn([OPENLATTICE_ID_FQN, 0], '');
         const hearingDateTime = hearing.getIn([PROPERTY_TYPES.DATE_TIME, 0]);
         const hearingExists = !!hearingDateTime;
-        const hearingOnDateSelected = moment(hearingDateTime).isSame(oneDayAhead, 'day')
-          || moment(hearingDateTime).isSame(oneWeekAhead, 'day');
+        const hearingOnDateSelected = moment(hearingDateTime).isSame(oneWeekAhead, 'day');
         const hearingType = hearing.getIn([PROPERTY_TYPES.HEARING_TYPE, 0]);
         const hearingId = hearing.getIn([OPENLATTICE_ID_FQN, 0]);
-        const hearingIsInactive = hearing.getIn([PROPERTY_TYPES.HEARING_INACTIVE, 0], false);
-        const hearingHasBeenCancelled = hearing.getIn([PROPERTY_TYPES.UPDATE_TYPE, 0], '')
-          .toLowerCase().trim() === 'cancelled';
+        const hearingIsInactive = hearingIsCancelled(hearing);
         if (hearingType
           && hearingExists
           && hearingOnDateSelected
-          && !hearingHasBeenCancelled
           && !hearingIsInactive
         ) {
           hearingIds = hearingIds.add(hearingId);

@@ -9,8 +9,9 @@ import {
   Set
 } from 'immutable';
 
-import { getEntityKeyId } from '../../utils/DataUtils';
+import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
 import { changePSAStatus, updateScoresAndRiskFactors, loadPSAData } from '../review/ReviewActionFactory';
+import { deleteEntity } from '../../utils/data/DataActionFactory';
 import { refreshHearingNeighbors } from '../court/CourtActionFactory';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PEOPLE, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
@@ -26,11 +27,16 @@ import {
 } from './PeopleActionFactory';
 
 const {
+  CHECKIN_APPOINTMENTS,
   CONTACT_INFORMATION,
   DMF_RESULTS,
   PSA_SCORES,
   RELEASE_RECOMMENDATIONS
 } = APP_TYPES;
+
+const {
+  PERSON_ID
+} = PROPERTY_TYPES;
 
 const PEOPLE_FQN = APP_TYPES.PEOPLE;
 
@@ -257,8 +263,22 @@ export default function peopleReducer(state = INITIAL_STATE, action) {
       return refreshHearingNeighbors.reducer(state, action, {
         SUCCESS: () => {
           const { neighbors } = action.value;
+          const personEntity = neighbors.get(PEOPLE_FQN, Map());
+          const { [PERSON_ID]: personId } = getEntityProperties(personEntity, [PERSON_ID]);
+          let personNeighbors = state.getIn([PEOPLE.NEIGHBORS, personId], Map());
+          const hearingCheckInAppointments = neighbors.get(CHECKIN_APPOINTMENTS, List());
+          const personCheckInAppointments = personNeighbors.get(CHECKIN_APPOINTMENTS, List());
+          let nextCheckInAppointments = Set();
+          hearingCheckInAppointments.concat(personCheckInAppointments)
+            .forEach((checkInAppointment) => {
+              nextCheckInAppointments = nextCheckInAppointments.add(checkInAppointment);
+            });
           const nextNeighbors = state.get(PEOPLE.MOST_RECENT_PSA_NEIGHBORS).merge(neighbors);
-          return state.set(PEOPLE.MOST_RECENT_PSA_NEIGHBORS, nextNeighbors);
+          personNeighbors = personNeighbors.set(CHECKIN_APPOINTMENTS, nextCheckInAppointments);
+          const nextState = state
+            .set(PEOPLE.MOST_RECENT_PSA_NEIGHBORS, nextNeighbors)
+            .setIn([PEOPLE.NEIGHBORS, personId], personNeighbors);
+          return nextState;
         }
       });
     }
@@ -308,6 +328,28 @@ export default function peopleReducer(state = INITIAL_STATE, action) {
           return state.setIn([PEOPLE.NEIGHBORS, personId, CONTACT_INFORMATION], contactInformation);
         },
         FINALLY: () => state.set(PEOPLE.REFRESHING_PERSON_NEIGHBORS, false)
+      });
+    }
+
+
+    case deleteEntity.case(action.type): {
+      return deleteEntity.reducer(state, action, {
+        SUCCESS: () => {
+          const { entityKeyId } = action.value;
+          const personId = state.getIn([PEOPLE.PERSON_DATA, PROPERTY_TYPES.PERSON_ID, 0], '');
+          let personNeighbors = state.getIn([PEOPLE.NEIGHBORS, personId], Map());
+
+          const personCheckInAppointments = personNeighbors.get(CHECKIN_APPOINTMENTS, List())
+            .filter((checkInAppointment) => {
+              const {
+                [PROPERTY_TYPES.ENTITY_KEY_ID]: checkInAppoiontmentsEntityKeyId
+              } = getEntityProperties(checkInAppointment, [PROPERTY_TYPES.ENTITY_KEY_ID]);
+              return entityKeyId !== checkInAppoiontmentsEntityKeyId;
+            });
+          personNeighbors = personNeighbors.set(CHECKIN_APPOINTMENTS, personCheckInAppointments);
+
+          return state.setIn([PEOPLE.NEIGHBORS, personId], personNeighbors);
+        }
       });
     }
 

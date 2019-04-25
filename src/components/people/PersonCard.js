@@ -130,15 +130,25 @@ class PersonCard extends React.Component<Props, State> {
   static defaultProps = {
     hasOpenPSA: false,
     judgesview: false,
-    multipleOpenPSAs: false
+    multipleOpenPSAs: false,
   }
 
-  renderContent = () => {
+  openPSAModal = () => {
+    const { openPSAModal, psaId } = this.props;
+    if (openPSAModal && psaId) {
+      openPSAModal({ psaId });
+    }
+  }
+
+  renderCardContent = () => {
     const {
-      editDate,
       personObj,
       openPSAModal,
-      psaId
+      psaId,
+      multipleOpenPSAs,
+      hasOpenPSA,
+      isReceivingReminders,
+      judgesview
     } = this.props;
     const {
       firstName,
@@ -146,65 +156,55 @@ class PersonCard extends React.Component<Props, State> {
       lastName,
       dob,
       photo,
-      personId
     } = personObj;
-    const {
-      multipleOpenPSAs,
-      hasOpenPSA,
-      isReceivingReminders,
-      judgesview
-    } = this.props;
 
     const midName = middleName ? ` ${middleName}` : '';
     const name = `${lastName}, ${firstName}${midName}`;
+    return (
+      <>
+        {
+          multipleOpenPSAs || isReceivingReminders
+            ? (
+              <MultiIconWrapper judgesview={judgesview}>
+                { isReceivingReminders ? <FontAwesomeIcon color={OL.ORANGE01} icon={faBell} /> : null }
+                { multipleOpenPSAs ? <FontAwesomeIcon color={OL.PURPLE02} icon={faClone} /> : null }
+              </MultiIconWrapper>
+            ) : null
+        }
+        <StyledPersonCard hasOpenPSA={hasOpenPSA} onClick={this.openPSAModal}>
+          <MugShot src={photo || defaultProfile} />
+          <PersonInfoSection>
+            <Name>{name}</Name>
+            <div>
+              <DobLabel>DOB  </DobLabel>
+              <Dob>{dob}</Dob>
+            </div>
+          </PersonInfoSection>
+        </StyledPersonCard>
+      </>
+    );
+  }
+
+  renderCard = () => {
+    const {
+      editDate,
+      personObj,
+      hasOpenPSA,
+      judgesview
+    } = this.props;
+    const { personId } = personObj;
 
     return hasOpenPSA && judgesview
       ? (
         <CardWrapper>
           <OpenPSATag includesDate>{editDate}</OpenPSATag>
-          {
-            multipleOpenPSAs || isReceivingReminders
-              ? (
-                <MultiIconWrapper judgesview>
-                  { isReceivingReminders ? <FontAwesomeIcon color={OL.ORANGE01} icon={faBell} /> : null }
-                  { multipleOpenPSAs ? <FontAwesomeIcon color={OL.PURPLE02} icon={faClone} /> : null }
-                </MultiIconWrapper>
-              ) : null
-          }
-          <StyledPersonCard hasOpenPSA={hasOpenPSA} onClick={() => openPSAModal({ psaId })}>
-            <MugShot src={photo || defaultProfile} />
-            <PersonInfoSection>
-              <Name>{name}</Name>
-              <div>
-                <DobLabel>DOB  </DobLabel>
-                <Dob>{dob}</Dob>
-              </div>
-            </PersonInfoSection>
-          </StyledPersonCard>
+          { this.renderCardContent() }
         </CardWrapper>
       )
       : (
         <StyledUndecoratedLink to={`${Routes.PERSON_DETAILS_ROOT}/${personId}`}>
           <TagPlaceholder />
-          {
-            multipleOpenPSAs || isReceivingReminders
-              ? (
-                <MultiIconWrapper>
-                  { isReceivingReminders ? <FontAwesomeIcon color={OL.ORANGE01} icon={faBell} /> : null }
-                  { multipleOpenPSAs ? <FontAwesomeIcon color={OL.PURPLE02} icon={faClone} /> : null }
-                </MultiIconWrapper>
-              ) : null
-          }
-          <StyledPersonCard hasOpenPSA={hasOpenPSA}>
-            <MugShot src={photo || defaultProfile} />
-            <PersonInfoSection>
-              <Name>{name}</Name>
-              <div>
-                <DobLabel>DOB  </DobLabel>
-                <Dob>{dob}</Dob>
-              </div>
-            </PersonInfoSection>
-          </StyledPersonCard>
+          { this.renderCardContent() }
         </StyledUndecoratedLink>
       );
   }
@@ -212,7 +212,7 @@ class PersonCard extends React.Component<Props, State> {
   render() {
     return (
       <div>
-        {this.renderContent()}
+        { this.renderCard() }
       </div>
     );
   }

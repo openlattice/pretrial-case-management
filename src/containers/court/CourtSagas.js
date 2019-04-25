@@ -23,6 +23,7 @@ import {
 } from '@redux-saga/core/effects';
 
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
+import { hearingIsCancelled } from '../../utils/HearingUtils';
 import { getPropertyTypeId } from '../../edm/edmUtils';
 import { PSA_STATUSES } from '../../utils/consts/Consts';
 import { toISODate, TIME_FORMAT } from '../../utils/FormattingUtils';
@@ -47,6 +48,7 @@ import {
 } from './CourtActionFactory';
 
 const {
+  CHECKIN_APPOINTMENTS,
   CONTACT_INFORMATION,
   HEARINGS,
   JUDGES,
@@ -59,6 +61,8 @@ const {
 
 const { OPENLATTICE_ID_FQN } = Constants;
 const { FullyQualifiedName } = Models;
+
+const LIST_APP_TYPES = [CHECKIN_APPOINTMENTS, CONTACT_INFORMATION, HEARINGS, RELEASE_CONDITIONS, STAFF];
 
 const getApp = state => state.get(STATE.APP, Map());
 const getEDM = state => state.get(STATE.EDM, Map());
@@ -256,13 +260,10 @@ function* loadHearingsForDateWorker(action :SequenceAction) :Generator<*, *, *> 
           === toISODate(action.value);
         const hearingType = hearing.getIn([PROPERTY_TYPES.HEARING_TYPE, 0]);
         const hearingId = hearing.getIn([OPENLATTICE_ID_FQN, 0]);
-        const hearingIsInactive = hearing.getIn([PROPERTY_TYPES.HEARING_INACTIVE, 0], false);
-        const hearingHasBeenCancelled = hearing.getIn([PROPERTY_TYPES.UPDATE_TYPE, 0], '')
-          .toLowerCase().trim() === 'cancelled';
+        const hearingIsInactive = hearingIsCancelled(hearing);
         if (hearingType
           && hearingExists
           && hearingOnDateSelected
-          && !hearingHasBeenCancelled
           && !hearingIsInactive
         ) hearingIds = hearingIds.add(hearingId);
       });
@@ -270,10 +271,8 @@ function* loadHearingsForDateWorker(action :SequenceAction) :Generator<*, *, *> 
 
     hearingsToday.filter((hearing) => {
       const hearingHasValidDateTime = moment(hearing.getIn([PROPERTY_TYPES.DATE_TIME, 0], '')).isValid();
-      const hearingIsInactive = hearing.getIn([PROPERTY_TYPES.HEARING_INACTIVE, 0], false);
-      const hearingHasBeenCancelled = hearing
-        .getIn([PROPERTY_TYPES.UPDATE_TYPE, 0], '').toLowerCase().trim() === 'cancelled';
-      if (!hearingHasValidDateTime || hearingHasBeenCancelled || hearingIsInactive) return false;
+      const hearingIsInactive = hearingIsCancelled(hearing);
+      if (!hearingHasValidDateTime || hearingIsInactive) return false;
       return true;
     })
       .forEach((hearing) => {
@@ -412,7 +411,6 @@ function* refreshHearingNeighborsWorker(action :SequenceAction) :Generator<*, *,
     const app = yield select(getApp);
     const orgId = yield select(getOrgId);
     const hearingEntitySetId = getEntitySetIdFromApp(app, HEARINGS);
-    const releaseConditionsEntitySetId = getEntitySetIdFromApp(app, RELEASE_CONDITIONS);
     const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
 
     let neighborsList = yield call(SearchApi.searchEntityNeighbors, hearingEntitySetId, id);
@@ -420,8 +418,9 @@ function* refreshHearingNeighborsWorker(action :SequenceAction) :Generator<*, *,
     let neighbors = Map();
     neighborsList.forEach((neighbor) => {
       const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id']);
+      const appTypeFqn = entitySetIdsToAppType.get(entitySetId, JUDGES);
       const entitySetName = entitySetIdsToAppType.get(entitySetId, JUDGES);
-      if (entitySetId === releaseConditionsEntitySetId) {
+      if (LIST_APP_TYPES.includes(appTypeFqn)) {
         neighbors = neighbors.set(
           entitySetName,
           neighbors.get(entitySetName, List()).push(fromJS(neighbor))

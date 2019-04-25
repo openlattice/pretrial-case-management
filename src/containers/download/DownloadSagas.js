@@ -19,6 +19,7 @@ import {
 
 import FileSaver from '../../utils/FileSaver';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
+import { hearingIsCancelled } from '../../utils/HearingUtils';
 import { getPropertyTypeId } from '../../edm/edmUtils';
 import { toISODate, formatDateTime, formatDate } from '../../utils/FormattingUtils';
 import { getFilteredNeighbor, stripIdField } from '../../utils/DataUtils';
@@ -589,10 +590,8 @@ function* getDownloadFiltersWorker(action :SequenceAction) :Generator<*, *, *> {
         const hearingId = hearing.getIn([OPENLATTICE_ID_FQN, 0]);
         const hearingType = hearing.getIn([PROPERTY_TYPES.HEARING_TYPE, 0]);
         const hearingCourtroom = hearing.getIn([PROPERTY_TYPES.COURTROOM, 0]);
-        const hearingIsInactive = hearing.getIn([PROPERTY_TYPES.HEARING_INACTIVE, 0], false);
-        const hearingHasBeenCancelled = hearing.getIn([PROPERTY_TYPES.UPDATE_TYPE, 0], '')
-          .toLowerCase().trim() === 'cancelled';
-        if (hearingId && hearingType && !hearingHasBeenCancelled && !hearingIsInactive) {
+        const hearingIsInactive = hearingIsCancelled(hearing);
+        if (hearingId && hearingType && !hearingIsInactive) {
           if (courtTime && sameAshearingDate) {
             const formattedTime = moment(courtTime).format(('HH:mm'));
             options = options.set(

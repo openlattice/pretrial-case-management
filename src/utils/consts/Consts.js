@@ -207,7 +207,8 @@ export const EDIT_FIELDS = {
 export const LIST_FIELDS = {
   ENTITY_SET_ID: 'entitySetId',
   ID: 'entityKeyId',
-  RELEASE_CONDITIONS_FIELD: 'releaseConditionField'
+  RELEASE_CONDITIONS_FIELD: 'releaseConditionField',
+  CHECKIN_APPOINTMENTS_FIELD: 'checkInAppointmentField'
 };
 
 export const FORM_LENGTHS = {

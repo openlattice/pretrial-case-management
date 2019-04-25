@@ -56,7 +56,7 @@ const LoadingText = styled.div`
 const Container = styled.div`
   width: 100%;
   min-height: ${props => (props.size ? (props.size * 1.5) : 75)}px;
-  margin-top: 20%;
+  margin-top: ${props => (props.noPadding ? 'none' : '20%')};
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -65,17 +65,18 @@ const Container = styled.div`
 
 type Props = {
   loadingText :string,
-  size :number
+  size :number,
+  noPadding :boolean
 }
 
-const LogoLoader = ({ size, loadingText } :Props) => (
+const LogoLoader = ({ size, loadingText, noPadding } :Props) => (
   <>
     <Container>
       <EllipseTop size={size} />
       <Ellipse size={size} />
       <EllipseBottom size={size} />
     </Container>
-    { loadingText ? <LoadingText size={size}>{loadingText}</LoadingText> : null }
+    { loadingText ? <LoadingText size={size} noPadding={noPadding}>{loadingText}</LoadingText> : null }
   </>
 );
 

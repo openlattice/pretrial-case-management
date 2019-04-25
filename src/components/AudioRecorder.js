@@ -77,6 +77,7 @@ class AudioRecorder extends React.Component {
   }
 
   componentDidMount() {
+    const { hasMedia } = this.state;
     const mediaSupport :boolean = !!(
       navigator.getUserMedia
       || navigator.webkitGetUserMedia
@@ -89,13 +90,15 @@ class AudioRecorder extends React.Component {
       return;
     }
 
-    if (!this.state.hasMedia) {
+    if (!hasMedia) {
       this.requestUserMedia();
     }
   }
 
   componentWillUnmount() {
     this.onStop();
+    // turn off user media
+    this.mediaRecorder.stream.getTracks().forEach(track => track.stop());
   }
 
   requestUserMedia = () => {

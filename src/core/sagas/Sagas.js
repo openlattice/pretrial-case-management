@@ -8,6 +8,7 @@ import { EntityDataModelApiSagas } from 'lattice-sagas';
 
 import * as AppSagas from '../../containers/app/AppSagas';
 import * as ChargesSagas from '../../containers/charges/ChargesSagas';
+import * as CheckInsSagas from '../../containers/checkins/CheckInsSagas';
 import * as CourtSagas from '../../containers/court/CourtSagas';
 import * as PersonSagas from '../../containers/person/PersonSagas';
 import * as PeopleSagas from '../../containers/people/PeopleSagas';
@@ -46,6 +47,10 @@ export default function* sagas() :Generator<*, *, *> {
     fork(ChargesSagas.loadChargesWatcher),
     fork(ChargesSagas.updateChargesWatcher),
 
+    // CheckInsSagas
+    fork(CheckInsSagas.loadCheckInAppointmentsForDateWatcher),
+    fork(CheckInsSagas.loadCheckInNeighborsWatcher),
+
     // CourtSagas
     fork(CourtSagas.filterPeopleIdsWithOpenPSAsWatcher),
     fork(CourtSagas.loadHearingsForDateWatcher),
@@ -71,8 +76,8 @@ export default function* sagas() :Generator<*, *, *> {
     fork(EntityDataModelApiSagas.getAllPropertyTypesWatcher),
 
     // EnrollSagas
-    fork(EnrollSagas.enrollVoiceProfile),
-    fork(EnrollSagas.getOrCreateProfile),
+    fork(EnrollSagas.enrollVoiceWatcher),
+    fork(EnrollSagas.getProfileWatcher),
 
     // Manual Reminders
     fork(ManualRemindersSagas.loadManualRemindersFormWatcher),
@@ -80,6 +85,7 @@ export default function* sagas() :Generator<*, *, *> {
     fork(ManualRemindersSagas.loadManualRemindersNeighborsByIdWatcher),
 
     // SubmitDataSaga
+    fork(SubmitSagas.createAssociationsWatcher),
     fork(SubmitSagas.replaceAssociationWatcher),
     fork(SubmitSagas.replaceEntityWatcher),
     fork(SubmitSagas.submitWatcher),

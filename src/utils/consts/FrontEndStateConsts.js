@@ -3,12 +3,14 @@
 export const STATE = {
   APP: 'app',
   AUTH: 'auth',
-  COURT: 'court',
   CHARGES: 'charges',
+  CHECK_INS: 'checkIns',
+  COURT: 'court',
   DASHBOARD: 'dashboard',
   DOWNLOAD: 'download',
   EDM: 'edm',
   ENROLL: 'enroll',
+  HEARINGS: 'hearings',
   MANUAL_REMINDERS: 'manualReminders',
   PSA_MODAL: 'psaModal',
   PSA: 'psa',
@@ -69,6 +71,16 @@ export const CHARGES = {
   BRE: 'bookingReleaseExceptionCharges',
   BHE: 'bookingHoldExceptionCharges',
   LOADING: 'loadingCharges'
+};
+
+// Check-Ins
+export const CHECK_IN = {
+  CHECK_INS_LOADED: 'checkInsLoaded',
+  LOADING_CHECK_INS: 'loadingCheckIns',
+  CHECK_IN_IDS: 'checkInIds',
+  CHECK_INS_BY_ID: 'checkInsById',
+  LOADING_CHECK_IN_NEIGHBORS: 'loadingCheckInNieghbors',
+  CHECK_IN_NEIGHBORS_BY_ID: 'checkInNeighborsById'
 };
 
 // Court
@@ -138,11 +150,22 @@ export const EDM = {
 
 export const ENROLL = {
   LOADING_PROFILE: 'loadingProfile',
+  ENTITY_KEY_ID: 'profileEntityKeyId',
   PROFILE_ID: 'profileId',
   PIN: 'pin',
   SUBMITTING_AUDIO: 'submittingAudio',
   NUM_SUBMISSIONS: 'numSubmissions',
   ERROR: 'errorMessage'
+};
+
+// Hearings
+
+export const HEARINGS = {
+  SETTINGS_MODAL_OPEN: 'hearingSettingsModalOpen',
+  DATE: 'hearingDate',
+  TIME: 'hearingTime',
+  COURTROOM: 'hearingCourtroom',
+  JUDGE: 'hearingJudge'
 };
 
 // Manual Reminders
@@ -329,6 +352,8 @@ export const SEARCH = {
 // Submit
 
 export const SUBMIT = {
+  CREATING_ASSOCIATIONS: 'creatingAssociations',
+  CREATE_ASSOCIATIONS_COMPLETE: 'createAssociationComplete',
   REPLACING_ENTITY: 'replacingEntity',
   REPLACE_ENTITY_SUCCESS: 'replaceEntitySuccess',
   UPDATING_ENTITY: 'updatingEntity',

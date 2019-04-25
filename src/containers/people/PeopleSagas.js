@@ -19,6 +19,8 @@ import {
 import { APP_TYPES, PROPERTY_TYPES, SEARCH_PREFIX } from '../../utils/consts/DataModelConsts';
 import { APP, PSA_NEIGHBOR, STATE } from '../../utils/consts/FrontEndStateConsts';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
+import { getEntityProperties } from '../../utils/DataUtils';
+import { hearingIsCancelled } from '../../utils/HearingUtils';
 import { getPropertyTypeId } from '../../edm/edmUtils';
 import { PSA_STATUSES } from '../../utils/consts/Consts';
 import { getCasesForPSA, getChargeHistory, getCaseHistory } from '../../utils/CaseUtils';
@@ -39,6 +41,8 @@ import {
 
 const {
   CHARGES,
+  CHECKINS,
+  CHECKIN_APPOINTMENTS,
   CONTACT_INFORMATION,
   FTAS,
   HEARINGS,
@@ -49,10 +53,18 @@ const {
   PRETRIAL_CASES,
   RELEASE_RECOMMENDATIONS,
   STAFF,
-  SUBSCRIPTION
+  SUBSCRIPTION,
+  SPEAKER_RECOGNITION_PROFILES
 } = APP_TYPES;
 
-const LIST_FQNS = [CONTACT_INFORMATION, HEARINGS, PRETRIAL_CASES, STAFF, CHARGES];
+const {
+  DATE_TIME,
+  HEARING_INACTIVE,
+  UPDATE_TYPE,
+  HEARING_TYPE
+} = PROPERTY_TYPES;
+
+const LIST_FQNS = [CHECKINS, CHECKIN_APPOINTMENTS, CONTACT_INFORMATION, HEARINGS, PRETRIAL_CASES, STAFF, CHARGES];
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
@@ -186,20 +198,23 @@ function* getPersonNeighborsWorker(action) :Generator<*, *, *> {
           neighborObj
         );
       }
+      else if (appTypeFqn === SPEAKER_RECOGNITION_PROFILES) {
+        neighborsByEntitySet = neighborsByEntitySet.set(
+          appTypeFqn,
+          neighborObj
+        );
+      }
       else if (appTypeFqn === HEARINGS) {
         const hearingDetails = neighborObj.get(PSA_NEIGHBOR.DETAILS, Map());
         const hearingId = hearingDetails.getIn([OPENLATTICE_ID_FQN, 0]);
         const hearingDateTime = hearingDetails.getIn([PROPERTY_TYPES.DATE_TIME, 0]);
         const hearingExists = !!hearingDateTime && !!hearingId;
-        const hearingIsInactive = hearingDetails.getIn([PROPERTY_TYPES.HEARING_INACTIVE, 0], false);
-        const hearingHasBeenCancelled = hearingDetails.getIn([PROPERTY_TYPES.UPDATE_TYPE, 0], '')
-          .toLowerCase().trim() === 'cancelled';
+        const hearingIsInactive = hearingIsCancelled(hearingDetails);
         const hearingIsGeneric = hearingDetails.getIn([PROPERTY_TYPES.HEARING_TYPE, 0], '')
           .toLowerCase().trim() === 'all other hearings';
         const hearingIsADuplicate = hearingEntityKeyId.includes(neighborEntityKeyId);
         if (
           hearingExists
-          && !hearingHasBeenCancelled
           && !hearingIsGeneric
           && !hearingIsInactive
           && !hearingIsADuplicate
@@ -238,7 +253,24 @@ function* getPersonNeighborsWorker(action) :Generator<*, *, *> {
       psaNeighbors.forEach((neighbor) => {
         const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
         const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
-        if (LIST_FQNS.includes(appTypeFqn)) {
+        if (appTypeFqn === HEARINGS) {
+          const {
+            [DATE_TIME]: hearingDateTime,
+            [HEARING_TYPE]: hearingType
+          } = getEntityProperties(neighbor, [
+            DATE_TIME,
+            HEARING_TYPE
+          ]);
+          const hearingIsInactive = hearingIsCancelled(neighbor);
+          const hearingIsGeneric = hearingType.toLowerCase().trim() === 'all other hearings';
+          if (hearingDateTime && !hearingIsGeneric && !hearingIsInactive) {
+            mostRecentPSANeighborsByAppTypeFqn = mostRecentPSANeighborsByAppTypeFqn.set(
+              appTypeFqn,
+              mostRecentPSANeighborsByAppTypeFqn.get(appTypeFqn, List()).push(fromJS(neighbor))
+            );
+          }
+        }
+        else if (LIST_FQNS.includes(appTypeFqn)) {
           mostRecentPSANeighborsByAppTypeFqn = mostRecentPSANeighborsByAppTypeFqn.set(
             appTypeFqn,
             mostRecentPSANeighborsByAppTypeFqn.get(appTypeFqn, List()).push(neighbor)
@@ -325,17 +357,21 @@ function* refreshPersonNeighborsWorker(action) :Generator<*, *, *> {
           neighbor
         );
       }
+      else if (appTypeFqn === SPEAKER_RECOGNITION_PROFILES) {
+        neighbors = neighbors.set(
+          appTypeFqn,
+          neighbor
+        );
+      }
       else if (appTypeFqn === HEARINGS) {
         const hearingDetails = neighbor.get(PSA_NEIGHBOR.DETAILS, Map());
         const hearingId = hearingDetails.getIn([OPENLATTICE_ID_FQN, 0]);
         const hearingDateTime = hearingDetails.getIn([PROPERTY_TYPES.DATE_TIME, 0]);
         const hearingExists = !!hearingDateTime && !!hearingId;
-        const hearingIsInactive = hearingDetails.getIn([PROPERTY_TYPES.HEARING_INACTIVE, 0], false);
-        const hearingHasBeenCancelled = hearingDetails.getIn([PROPERTY_TYPES.UPDATE_TYPE, 0], '')
-          .toLowerCase().trim() === 'cancelled';
+        const hearingIsInactive = hearingIsCancelled(hearingDetails);
         const hearingIsGeneric = hearingDetails.getIn([PROPERTY_TYPES.HEARING_TYPE, 0], '')
           .toLowerCase().trim() === 'all other hearings';
-        if (hearingExists && !hearingHasBeenCancelled && !hearingIsGeneric && !hearingIsInactive) {
+        if (hearingExists && !hearingIsGeneric && !hearingIsInactive) {
           neighbors = neighbors.set(
             appTypeFqn,
             neighbors.get(appTypeFqn, List()).push(hearingDetails)
