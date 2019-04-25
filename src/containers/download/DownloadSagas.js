@@ -128,9 +128,13 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
       domain
     } = action.value;
 
-    let manualCaseIdsToScoreIds = Map();
-    let manualCourtCaseIdsToScoreIds = Map();
-    let pretrialCaseIdsToScoreIds = Map();
+    const caseToChargeTypes = {
+      [MANUAL_PRETRIAL_CASES]: MANUAL_CHARGES,
+      [MANUAL_PRETRIAL_COURT_CASES]: MANUAL_COURT_CHARGES,
+      [PRETRIAL_CASES]: CHARGES
+    };
+
+    let caseIdsToScoreIds = Map();
 
     const app = yield select(getApp);
     const orgId = yield select(getOrgId);
@@ -140,12 +144,6 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
     const psaRiskFactorsEntitySetId = getEntitySetIdFromApp(app, PSA_RISK_FACTORS);
     const psaEntitySetId = getEntitySetIdFromApp(app, PSA_SCORES);
     const staffEntitySetId = getEntitySetIdFromApp(app, STAFF);
-    const pretrialCasesEntitySetId = getEntitySetIdFromApp(app, PRETRIAL_CASES);
-    const chargesEntitySetId = getEntitySetIdFromApp(app, CHARGES);
-    const manualCourtCasesEntitySetId = getEntitySetIdFromApp(app, MANUAL_PRETRIAL_COURT_CASES);
-    const manualArrestCasesEntitySetId = getEntitySetIdFromApp(app, MANUAL_PRETRIAL_CASES);
-    const manualCourtChargesEntitySetId = getEntitySetIdFromApp(app, MANUAL_COURT_CHARGES);
-    const manualArrestChargesEntitySetId = getEntitySetIdFromApp(app, MANUAL_CHARGES);
 
     const start = moment(startDate);
     const end = moment(endDate);
@@ -181,14 +179,9 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
             domainMatch = false;
           }
         }
-        if (appTypeFqn === MANUAL_PRETRIAL_CASES) {
-          manualCaseIdsToScoreIds = manualCaseIdsToScoreIds.set(entityKeyId, id);
-        }
-        if (appTypeFqn === MANUAL_PRETRIAL_COURT_CASES) {
-          manualCourtCaseIdsToScoreIds = manualCourtCaseIdsToScoreIds.set(entityKeyId, id);
-        }
-        if (appTypeFqn === PRETRIAL_CASES) {
-          pretrialCaseIdsToScoreIds = pretrialCaseIdsToScoreIds.set(entityKeyId, id);
+
+        if (Object.keys(caseToChargeTypes).includes(appTypeFqn)) {
+          caseIdsToScoreIds = caseIdsToScoreIds.setIn([appTypeFqn, entityKeyId], id);
         }
 
         const timestampList = neighbor.associationDetails[PROPERTY_TYPES.TIMESTAMP]
@@ -215,33 +208,15 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
         }
       )
     );
-    if (pretrialCaseIdsToScoreIds.size) {
-      chargeCalls.push(
-        getChargeCall(
-          pretrialCasesEntitySetId,
-          pretrialCaseIdsToScoreIds.keySeq().toJS(),
-          chargesEntitySetId
-        )
-      );
-    }
-    if (manualCourtCaseIdsToScoreIds.size) {
-      chargeCalls.push(
-        getChargeCall(
-          manualCourtCasesEntitySetId,
-          manualCourtCaseIdsToScoreIds.keySeq().toJS(),
-          manualCourtChargesEntitySetId
-        )
-      );
-    }
-    if (manualCaseIdsToScoreIds.size) {
-      chargeCalls.push(
-        getChargeCall(
-          manualArrestCasesEntitySetId,
-          manualCaseIdsToScoreIds.keySeq().toJS(),
-          manualArrestChargesEntitySetId
-        )
-      );
-    }
+    Object.keys(caseToChargeTypes).forEach((appTypeFqn) => {
+      if (caseIdsToScoreIds.get(appTypeFqn, Map()).size) {
+        const caseEntitySetId = getEntitySetIdFromApp(app, appTypeFqn);
+        const chargeEntitySetId = getEntitySetIdFromApp(app, caseToChargeTypes[appTypeFqn]);
+        chargeCalls.push(
+          getChargeCall(caseEntitySetId, caseIdsToScoreIds.get(appTypeFqn, Map()).keySeq().toJS(), chargeEntitySetId)
+        );
+      }
+    });
 
     const chargesByIdList = yield all(chargeCalls);
     let chargesById = Map();
@@ -250,16 +225,19 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
       chargesById = chargesById.merge(fromJS(chargeList));
     });
 
-    chargesById.entrySeq().forEach(([id, charges]) => {
-      const psaEntityKeyId = pretrialCaseIdsToScoreIds.get(id,
-        manualCourtCaseIdsToScoreIds.get(id,
-          manualCaseIdsToScoreIds.get(id, '')));
-      if (psaEntityKeyId) {
-        charges.forEach((charge) => {
-          usableNeighborsById = usableNeighborsById.set(
-            psaEntityKeyId,
-            usableNeighborsById.get(psaEntityKeyId, List()).push(charge)
-          );
+    Object.keys(caseToChargeTypes).forEach((appTypeFqn) => {
+      if (caseIdsToScoreIds.get(appTypeFqn, Map()).size) {
+        const caseIdsToScoreIdsForAppType = caseIdsToScoreIds.get(appTypeFqn);
+        chargesById.entrySeq().forEach(([id, charges]) => {
+          const psaEntityKeyId = caseIdsToScoreIdsForAppType.get(id, '');
+          if (psaEntityKeyId) {
+            charges.forEach((charge) => {
+              usableNeighborsById = usableNeighborsById.set(
+                psaEntityKeyId,
+                usableNeighborsById.get(psaEntityKeyId, List()).push(charge)
+              );
+            });
+          }
         });
       }
     });
