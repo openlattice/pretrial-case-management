@@ -21,6 +21,7 @@ import ContactSupport from '../../components/app/ContactSupport';
 import LogoLoader from '../../components/LogoLoader';
 import WelcomeBanner from '../../components/WelcomeBanner';
 import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
+import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { APP_TYPES } from '../../utils/consts/DataModelConsts';
 import { termsAreAccepted } from '../../utils/AcceptTermsUtils';
 import { OL } from '../../utils/consts/Colors';
@@ -40,6 +41,7 @@ const { logout } = AuthActions;
 const { getAllPropertyTypes } = EntityDataModelApiActions;
 
 const {
+  ARRESTING_AGENCIES,
   JUDGES,
   ARREST_CHARGE_LIST,
   COURT_CHARGE_LIST
@@ -100,15 +102,10 @@ class AppContainer extends React.Component<Props, *> {
     if (prevOrg.size !== nextOrg.size) {
       nextOrg.keySeq().forEach((id) => {
         const selectedOrgId :string = id;
-        const arrestChargesEntitySetId = app.getIn(
-          [ARREST_CHARGE_LIST, APP.ENTITY_SETS_BY_ORG, selectedOrgId]
-        );
-        const courtChargesEntitySetId = app.getIn(
-          [COURT_CHARGE_LIST, APP.ENTITY_SETS_BY_ORG, selectedOrgId]
-        );
-        const judgesEntitySetId = app.getIn(
-          [JUDGES, APP.ENTITY_SETS_BY_ORG, selectedOrgId]
-        );
+        const arrestChargesEntitySetId = getEntitySetIdFromApp(app, ARREST_CHARGE_LIST);
+        const courtChargesEntitySetId = getEntitySetIdFromApp(app, COURT_CHARGE_LIST);
+        const judgesEntitySetId = getEntitySetIdFromApp(app, JUDGES);
+        const arrestAngenciesEntitySetId = getEntitySetIdFromApp(app, ARRESTING_AGENCIES);
         if (arrestChargesEntitySetId && courtChargesEntitySetId) {
           actions.loadCharges({
             arrestChargesEntitySetId,
@@ -118,6 +115,9 @@ class AppContainer extends React.Component<Props, *> {
         }
         if (judgesEntitySetId) {
           actions.loadJudges();
+        }
+        if (arrestAngenciesEntitySetId) {
+          actions.loadArrestingAgencies();
         }
       });
     }
@@ -132,6 +132,8 @@ class AppContainer extends React.Component<Props, *> {
         orgId: organization.value,
         title: organization.label
       });
+      actions.loadJudges();
+      actions.loadArrestingAgencies();
     }
   }
 
