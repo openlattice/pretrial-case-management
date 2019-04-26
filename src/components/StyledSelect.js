@@ -11,7 +11,7 @@ const StyledSelect = styled(Select)`
     min-height: 44px;
     border-radius: 5px;
     border: none;
-    background-color: transparent;
+    background-color: ${props => (props.background ? props.background : 'transparent')};
     margin-top: 10px;
     font-family: 'Open Sans', sans-serif;
     font-size: 14px;
@@ -36,7 +36,7 @@ const StyledSelect = styled(Select)`
   }
 
   .lattice-select__menu {
-    width: fit-content;
+    width: 100%;
     text-align: left;
   }
 
