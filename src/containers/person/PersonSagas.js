@@ -276,49 +276,51 @@ function* searchPeopleWorker(action) :Generator<*, *, *> {
     let response = yield call(SearchApi.advancedSearchEntitySetData, peopleEntitySetId, searchOptions);
     response = fromJS(response.hits);
     let personMap = Map();
-    if (includePSAInfo) {
-      response.forEach((person) => {
-        const personEntityKeyId = person.getIn([OPENLATTICE_ID_FQN, 0], '');
-        personMap = personMap.set(personEntityKeyId, fromJS(person));
-      });
-      let peopleNeighborsById = yield call(SearchApi.searchEntityNeighborsWithFilter, peopleEntitySetId, {
-        entityKeyIds: personMap.keySeq().toJS(),
-        sourceEntitySetIds: [psaScoresEntitySetId, contactInformationEntitySetId],
-        destinationEntitySetIds: [subscriptionEntitySetId, contactInformationEntitySetId]
-      });
-      peopleNeighborsById = fromJS(peopleNeighborsById);
-
-      peopleNeighborsById.entrySeq().forEach(([personEntityKeyId, neighbors]) => {
-        let hasActiveSubscription = false;
-        let hasPreferredContact = false;
-        let psaCount = 0;
-        neighbors.forEach((neighbor) => {
-          const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id']);
-          const appTypeFqn = entitySetIdsToAppType.get(entitySetId);
-          if (appTypeFqn === PSA_SCORES
-            && neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.STATUS, 0], '') === PSA_STATUSES.OPEN) {
-            psaCount += 1;
-          }
-          if (appTypeFqn === SUBSCRIPTION) {
-            const subscriptionIsActive = neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.IS_ACTIVE, 0], false);
-            if (subscriptionIsActive) {
-              hasActiveSubscription = true;
-            }
-          }
-          if (appTypeFqn === CONTACT_INFORMATION) {
-            const contactIsPreferred = neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.IS_PREFERRED, 0], false);
-            if (contactIsPreferred) {
-              hasPreferredContact = true;
-            }
-          }
+    if (response.size) {
+      if (includePSAInfo) {
+        response.forEach((person) => {
+          const personEntityKeyId = person.getIn([OPENLATTICE_ID_FQN, 0], '');
+          personMap = personMap.set(personEntityKeyId, fromJS(person));
         });
+        let peopleNeighborsById = yield call(SearchApi.searchEntityNeighborsWithFilter, peopleEntitySetId, {
+          entityKeyIds: personMap.keySeq().toJS(),
+          sourceEntitySetIds: [psaScoresEntitySetId, contactInformationEntitySetId],
+          destinationEntitySetIds: [subscriptionEntitySetId, contactInformationEntitySetId]
+        });
+        peopleNeighborsById = fromJS(peopleNeighborsById);
 
-        personMap = personMap
-          .setIn([personEntityKeyId, HAS_OPEN_PSA], (psaCount > 0))
-          .setIn([personEntityKeyId, HAS_MULTIPLE_OPEN_PSAS], (psaCount > 1))
-          .setIn([personEntityKeyId, IS_RECEIVING_REMINDERS], (hasActiveSubscription && hasPreferredContact));
-      });
-      response = personMap.valueSeq();
+        peopleNeighborsById.entrySeq().forEach(([personEntityKeyId, neighbors]) => {
+          let hasActiveSubscription = false;
+          let hasPreferredContact = false;
+          let psaCount = 0;
+          neighbors.forEach((neighbor) => {
+            const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id']);
+            const appTypeFqn = entitySetIdsToAppType.get(entitySetId);
+            if (appTypeFqn === PSA_SCORES
+              && neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.STATUS, 0], '') === PSA_STATUSES.OPEN) {
+              psaCount += 1;
+            }
+            if (appTypeFqn === SUBSCRIPTION) {
+              const subscriptionIsActive = neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.IS_ACTIVE, 0], false);
+              if (subscriptionIsActive) {
+                hasActiveSubscription = true;
+              }
+            }
+            if (appTypeFqn === CONTACT_INFORMATION) {
+              const contactIsPreferred = neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.IS_PREFERRED, 0], false);
+              if (contactIsPreferred) {
+                hasPreferredContact = true;
+              }
+            }
+          });
+
+          personMap = personMap
+            .setIn([personEntityKeyId, HAS_OPEN_PSA], (psaCount > 0))
+            .setIn([personEntityKeyId, HAS_MULTIPLE_OPEN_PSAS], (psaCount > 1))
+            .setIn([personEntityKeyId, IS_RECEIVING_REMINDERS], (hasActiveSubscription && hasPreferredContact));
+        });
+        response = personMap.valueSeq();
+      }
     }
 
     yield put(searchPeople.success(action.id, response));
