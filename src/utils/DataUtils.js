@@ -6,7 +6,7 @@ import { isImmutable, Map, fromJS } from 'immutable';
 import { Constants } from 'lattice';
 
 import federalHolidays from './consts/FederalHolidays';
-import { PROPERTY_TYPES } from './consts/DataModelConsts';
+import { PROPERTY_TYPES, SEARCH_PREFIX } from './consts/DataModelConsts';
 import { PSA_NEIGHBOR, PSA_ASSOCIATION } from './consts/FrontEndStateConsts';
 
 const { OPENLATTICE_ID_FQN } = Constants;
@@ -133,3 +133,5 @@ export const getEntityProperties = (caseObj, propertyList) => {
   });
   return returnCaseFields.toJS();
 };
+
+export const getSearchTerm = (propertyTypeId, searchString) => `${SEARCH_PREFIX}.${propertyTypeId}:"${searchString}"`;

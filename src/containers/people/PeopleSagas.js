@@ -19,6 +19,7 @@ import {
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { APP, PSA_NEIGHBOR, STATE } from '../../utils/consts/FrontEndStateConsts';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
+import { getSearchTerm } from '../../utils/DataUtils';
 import { getPropertyTypeId } from '../../edm/edmUtils';
 import { PSA_STATUSES } from '../../utils/consts/Consts';
 import { getCasesForPSA, getChargeHistory, getCaseHistory } from '../../utils/CaseUtils';
@@ -105,7 +106,7 @@ function* getEntityForPersonId(personId :string) :Generator<*, *, *> {
   const personIdPropertyTypeId = getPropertyTypeId(edm, PROPERTY_TYPES.PERSON_ID);
 
   const searchOptions = {
-    searchTerm: `${peopleEntitySetId}.${personIdPropertyTypeId}:"${personId}"`,
+    searchTerm: getSearchTerm(personIdPropertyTypeId, personId),
     start: 0,
     maxHits: 1
   };
@@ -484,9 +485,7 @@ function* loadRequiresActionPeopleWorker(action :SequenceAction) :Generator<*, *
 
     /* load all open PSAs */
     const statusPropertyTypeId = getPropertyTypeId(edm, PROPERTY_TYPES.STATUS);
-    const searchTerm = action.value === '*'
-      ? action.value
-      : `${psaScoresEntitySetId}.${statusPropertyTypeId}:"${PSA_STATUSES.OPEN}"`;
+    const searchTerm = action.value === '*' ? action.value : getSearchTerm(statusPropertyTypeId, PSA_STATUSES.OPEN);
     const openPSAData = yield call(getAllSearchResults, psaScoresEntitySetId, searchTerm);
     fromJS(openPSAData.hits).forEach((psa) => {
       const psaId = psa.getIn([OPENLATTICE_ID_FQN, 0], '');
