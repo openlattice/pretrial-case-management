@@ -23,5 +23,6 @@ export const SETTINGS = {
   COURT_REMINDERS: 'courtRemindersEnabled',
   ENROLL_VOICE: 'enrollVoice',
   LOAD_CASES: 'loadCasesOnTheFly',
-  MODULES: 'modules'
+  MODULES: 'modules',
+  PREFERRED_COUNTY: 'preferredCountyEntityKeyId'
 };

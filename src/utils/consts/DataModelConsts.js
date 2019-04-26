@@ -123,6 +123,7 @@ export const CHARGE_FQNS = {
 export const PROPERTY_TYPES = {
   ENTITY_KEY_ID: OPENLATTICE_ID_FQN,
 
+  APP_DETAILS: 'ol.appdetails',
   GENERAL_ID: 'general.id',
   ID: 'ol.id',
   STRING_ID: 'general.stringid',
