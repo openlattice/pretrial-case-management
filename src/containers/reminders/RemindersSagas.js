@@ -29,7 +29,7 @@ import { getPropertyTypeId } from '../../edm/edmUtils';
 import { PSA_STATUSES } from '../../utils/consts/Consts';
 import exportPDFList from '../../utils/CourtRemindersPDFUtils';
 import { toISODate } from '../../utils/FormattingUtils';
-import { addWeekdays } from '../../utils/DataUtils';
+import { addWeekdays, getSearchTerm } from '../../utils/DataUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import {
   APP,
@@ -194,7 +194,7 @@ function* loadOptOutsForDateWorker(action :SequenceAction) :Generator<*, *, *> {
     const ceiling = yield call(DataApi.getEntitySetSize, optOutEntitySetId);
 
     const reminderOptions = {
-      searchTerm: `${optOutEntitySetId}.${datePropertyTypeId}:"${toISODate(date)}"`,
+      searchTerm: getSearchTerm(datePropertyTypeId, toISODate(date)),
       start: 0,
       maxHits: ceiling,
       fuzzy: false
@@ -254,7 +254,7 @@ function* loadRemindersforDateWorker(action :SequenceAction) :Generator<*, *, *>
     const ceiling = yield call(DataApi.getEntitySetSize, remindersEntitySetId);
 
     const reminderOptions = {
-      searchTerm: `${remindersEntitySetId}.${datePropertyTypeId}:"${toISODate(date)}"`,
+      searchTerm: getSearchTerm(datePropertyTypeId, toISODate(date)),
       start: 0,
       maxHits: ceiling,
       fuzzy: false
@@ -426,7 +426,7 @@ function* loadPeopleWithHearingsButNoContactsWorker(action :SequenceAction) :Gen
     /* Grab Open PSAs */
     const statusPropertyTypeId = getPropertyTypeId(edm, statusFqn);
     const filter = PSA_STATUSES.OPEN;
-    const searchTerm = `${psaScoresEntitySetId}.${statusPropertyTypeId}:"${filter}"`;
+    const searchTerm = getSearchTerm(statusPropertyTypeId, filter);
     const allScoreData = yield call(getAllSearchResults, psaScoresEntitySetId, searchTerm);
     const scoreIds = fromJS(allScoreData.hits).map(score => score.getIn([OPENLATTICE_ID_FQN, 0], ''));
 
@@ -548,7 +548,7 @@ function* bulkDownloadRemindersPDFWorker(action :SequenceAction) :Generator<*, *
 
     const oneWeekAhead = addWeekdays(date, 7);
 
-    const getDateSearch = selectedDate => `${hearingsEntitySetId}.${datePropertyTypeId}:"${toISODate(selectedDate)}"`;
+    const getDateSearch = selectedDate => getSearchTerm(datePropertyTypeId, toISODate(selectedDate));
 
     const reminderOptions = {
       searchTerm: `${getDateSearch(oneWeekAhead)}`,

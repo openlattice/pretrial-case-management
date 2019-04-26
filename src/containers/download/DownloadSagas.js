@@ -23,7 +23,7 @@ import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { hearingIsCancelled } from '../../utils/HearingUtils';
 import { getPropertyTypeId } from '../../edm/edmUtils';
 import { toISODate, formatDateTime, formatDate } from '../../utils/FormattingUtils';
-import { getFilteredNeighbor, stripIdField } from '../../utils/DataUtils';
+import { getFilteredNeighbor, stripIdField, getSearchTerm } from '../../utils/DataUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { HEADERS_OBJ, POSITIONS } from '../../utils/consts/CSVConsts';
@@ -673,7 +673,7 @@ function* getDownloadFiltersWorker(action :SequenceAction) :Generator<*, *, *> {
     const ceiling = yield call(DataApi.getEntitySetSize, hearingEntitySetId);
 
     const hearingOptions = {
-      searchTerm: `${hearingEntitySetId}.${datePropertyTypeId}:"${start}"`,
+      searchTerm: getSearchTerm(datePropertyTypeId, start),
       start: 0,
       maxHits: ceiling,
       fuzzy: false
