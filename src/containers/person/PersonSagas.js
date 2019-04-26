@@ -175,7 +175,7 @@ function* updateCasesWorker(action) :Generator<*, *, *> {
   }
   catch (error) {
     console.error(error);
-    yield put(updateCases.failure(error, { cases }));
+    yield put(updateCases.failure(action.id, { cases }));
   }
   finally {
     yield put(updateCases.finally(action.id, { cases }));
