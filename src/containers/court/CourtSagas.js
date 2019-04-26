@@ -23,6 +23,7 @@ import {
 } from '@redux-saga/core/effects';
 
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
+import { getSearchTerm } from '../../utils/DataUtils';
 import { hearingIsCancelled } from '../../utils/HearingUtils';
 import { getPropertyTypeId } from '../../edm/edmUtils';
 import { PSA_STATUSES } from '../../utils/consts/Consts';
@@ -245,7 +246,7 @@ function* loadHearingsForDateWorker(action :SequenceAction) :Generator<*, *, *> 
     const ceiling = yield call(DataApi.getEntitySetSize, hearingEntitySetId);
 
     const hearingOptions = {
-      searchTerm: `${hearingEntitySetId}.${datePropertyTypeId}:"${toISODate(action.value)}"`,
+      searchTerm: getSearchTerm(datePropertyTypeId, toISODate(action.value)),
       start: 0,
       maxHits: ceiling,
       fuzzy: false
