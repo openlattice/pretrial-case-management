@@ -282,6 +282,7 @@ class SearchableSelect extends React.Component<Props, State> {
             ) : (
               <SearchInput
                   placeholder={searchPlaceholder}
+                  disabled={disabled}
                   transparent={transparent}
                   value={value}
                   onBlur={this.hideDataTable}
