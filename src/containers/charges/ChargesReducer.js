@@ -5,9 +5,16 @@ import { Map, Set, fromJS } from 'immutable';
 
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { CHARGES } from '../../utils/consts/FrontEndStateConsts';
-import { deleteCharge, loadCharges, updateCharge } from './ChargesActionFactory';
+import {
+  deleteCharge,
+  loadArrestingAgencies,
+  loadCharges,
+  updateCharge
+} from './ChargesActionFactory';
 
 const INITIAL_STATE :Map<*, *> = fromJS({
+  [CHARGES.ARRESTING_AGENCIES]: Map(),
+  [CHARGES.LOADING_AGENCIES]: false,
   [CHARGES.ARREST]: Map(),
   [CHARGES.ARREST_PERMISSIONS]: false,
   [CHARGES.COURT]: Map(),
@@ -30,6 +37,17 @@ const CHARGE_PT_PAIRS = {
 
 export default function chargesReducer(state :Map<*, *> = INITIAL_STATE, action :SequenceAction) {
   switch (action.type) {
+
+    case loadArrestingAgencies.case(action.type): {
+      return loadArrestingAgencies.reducer(state, action, {
+        REQUEST: () => state.set(CHARGES.LOADING_AGENCIES, true),
+        SUCCESS: () => {
+          const { allAgencies } = action.value;
+          return state.set(CHARGES.ARRESTING_AGENCIES, allAgencies);
+        },
+        FINALLY: () => state.set(CHARGES.LOADING_AGENCIES, false)
+      });
+    }
 
     case deleteCharge.case(action.type): {
       return deleteCharge.reducer(state, action, {
