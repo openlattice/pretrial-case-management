@@ -164,7 +164,7 @@ function* getCasesAndCharges(neighbors) {
         const hearingIsInactive = hearingIsCancelled(neighborDetails);
         const hearingIsGeneric = neighborDetails.getIn([PROPERTY_TYPES.HEARING_TYPE, 0], '')
           .toLowerCase().trim() === 'all other hearings';
-        if (!hearingHasBeenCancelled && !hearingIsGeneric && !hearingIsInactive) {
+        if (!hearingIsGeneric && !hearingIsInactive) {
           allHearings = allHearings.push(Immutable.fromJS(neighborDetails));
         }
       }
