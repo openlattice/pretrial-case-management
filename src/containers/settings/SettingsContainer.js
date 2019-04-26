@@ -10,11 +10,18 @@ import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 
 import StyledCheckbox from '../../components/controls/StyledCheckbox';
+import StyledInput from '../../components/controls/StyledInput';
 import StyledRadio from '../../components/controls/StyledRadio';
 import InfoButton from '../../components/buttons/InfoButton';
 import { APP, STATE } from '../../utils/consts/FrontEndStateConsts';
-import { PROPERTY_TYPES, APP_TYPES_FQNS } from '../../utils/consts/DataModelConsts';
+import { PROPERTY_TYPES, APP_TYPES } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
+import {
+  CASE_CONTEXTS,
+  CONTEXTS,
+  MODULE,
+  SETTINGS
+} from '../../utils/consts/AppSettingConsts';
 
 import * as AppActionFactory from '../app/AppActionFactory';
 import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
@@ -85,29 +92,6 @@ type Props = {
   };
 };
 
-const FIELDS = {
-  CONTEXTS: 'contexts',
-  REMINDERS_ENABLED: 'courtRemindersEnabled',
-  LOAD_CASES_ON_THE_FLY: 'loadCasesOnTheFly',
-  MODULES: 'modules',
-  CASE_CONTEXTS: 'caseContexts'
-};
-
-const MODULES = {
-  PSA: 'psa',
-  PRETRIAL: 'pretrial'
-};
-
-const CONTEXTS = {
-  COURT: 'court',
-  BOOKING: 'booking'
-};
-
-const CASE_CONTEXTS = {
-  ARREST: 'arrest',
-  COURT: 'court'
-};
-
 class SettingsContainer extends React.Component<Props, State> {
   constructor(props :Props) {
     super(props);
@@ -131,6 +115,19 @@ class SettingsContainer extends React.Component<Props, State> {
           label={label}
           onChange={({ target }) => {
             this.setState({ settings: settings.setIn(valuePath, target.checked) });
+          }} />
+    );
+  }
+
+  renderInput = (field) => {
+    const { settings } = this.state;
+    return (
+      <StyledInput
+          value={settings.get(field, '')}
+          onChange={({ target }) => {
+            let { value } = target;
+            if (!value) value = undefined;
+            this.setState({ settings: settings.set(field, value) });
           }} />
     );
   }
@@ -180,15 +177,15 @@ class SettingsContainer extends React.Component<Props, State> {
               <SubSection>
                 <h1>Modules</h1>
                 <article>
-                  {this.renderCheckbox([FIELDS.MODULES, MODULES.PSA], 'PSA')}
-                  {this.renderCheckbox([FIELDS.MODULES, MODULES.PRETRIAL], 'Pretrial')}
+                  {this.renderCheckbox([SETTINGS.MODULES, MODULE.PSA], 'PSA')}
+                  {this.renderCheckbox([SETTINGS.MODULES, MODULE.PRETRIAL], 'Pretrial')}
                 </article>
               </SubSection>
               <SubSection>
                 <h1>Contexts</h1>
                 <article>
-                  {this.renderCheckbox([FIELDS.CONTEXTS, CONTEXTS.COURT], 'Court')}
-                  {this.renderCheckbox([FIELDS.CONTEXTS, CONTEXTS.BOOKING], 'Booking')}
+                  {this.renderCheckbox([SETTINGS.CONTEXTS, CONTEXTS.COURT], 'Court')}
+                  {this.renderCheckbox([SETTINGS.CONTEXTS, CONTEXTS.BOOKING], 'Booking')}
                 </article>
               </SubSection>
               <SubSection>
@@ -196,26 +193,32 @@ class SettingsContainer extends React.Component<Props, State> {
                 <article>
                   <RadioSection>
                     <h1>Case/charge types for booking context:</h1>
-                    {this.renderRadioButton([FIELDS.CASE_CONTEXTS, CONTEXTS.BOOKING], CASE_CONTEXTS.ARREST, 'Arrest')}
-                    {this.renderRadioButton([FIELDS.CASE_CONTEXTS, CONTEXTS.BOOKING], CASE_CONTEXTS.COURT, 'Court')}
+                    {this.renderRadioButton([SETTINGS.CASE_CONTEXTS, CONTEXTS.BOOKING], CASE_CONTEXTS.ARREST, 'Arrest')}
+                    {this.renderRadioButton([SETTINGS.CASE_CONTEXTS, CONTEXTS.BOOKING], CASE_CONTEXTS.COURT, 'Court')}
                   </RadioSection>
                   <RadioSection>
                     <h1>Case/charge types for court context:</h1>
-                    {this.renderRadioButton([FIELDS.CASE_CONTEXTS, CONTEXTS.COURT], CASE_CONTEXTS.ARREST, 'Arrest')}
-                    {this.renderRadioButton([FIELDS.CASE_CONTEXTS, CONTEXTS.COURT], CASE_CONTEXTS.COURT, 'Court')}
+                    {this.renderRadioButton([SETTINGS.CASE_CONTEXTS, CONTEXTS.COURT], CASE_CONTEXTS.ARREST, 'Arrest')}
+                    {this.renderRadioButton([SETTINGS.CASE_CONTEXTS, CONTEXTS.COURT], CASE_CONTEXTS.COURT, 'Court')}
                   </RadioSection>
                 </article>
               </SubSection>
               <SubSection>
                 <h1>Court reminders enabled</h1>
                 <article>
-                  {this.renderCheckbox([FIELDS.REMINDERS_ENABLED], 'Enabled?')}
+                  {this.renderCheckbox([SETTINGS.COURT_REMINDERS], 'Enabled?')}
                 </article>
               </SubSection>
               <SubSection>
                 <h1>Load cases on the fly</h1>
                 <article>
-                  {this.renderCheckbox([FIELDS.LOAD_CASES_ON_THE_FLY], 'Should load?')}
+                  {this.renderCheckbox([SETTINGS.LOAD_CASES], 'Should load?')}
+                </article>
+              </SubSection>
+              <SubSection>
+                <h1>Preferred County Entity Key Id</h1>
+                <article>
+                  {this.renderInput(SETTINGS.PREFERRED_COUNTY)}
                 </article>
               </SubSection>
             </Section>
@@ -236,7 +239,7 @@ function mapStateToProps(state) {
 
   let settingsEntitySetId;
   app.getIn([APP.ENTITY_SETS_BY_ORG, orgId], Map()).entrySeq().forEach(([entitySetId, fqn]) => {
-    if (fqn === APP_TYPES_FQNS.APP_SETTINGS.toString()) {
+    if (fqn === APP_TYPES.APP_SETTINGS) {
       settingsEntitySetId = entitySetId;
     }
   });
