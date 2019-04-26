@@ -41,7 +41,7 @@ import psaConfig from '../../config/formconfig/PsaConfig';
 import SubscriptionInfo from '../../components/subscription/SubscriptionInfo';
 import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
 import { OL } from '../../utils/consts/Colors';
-import { getEntityKeyId } from '../../utils/DataUtils';
+import { getFirstNeighborValue, getEntityKeyId } from '../../utils/DataUtils';
 import { toISODateTime } from '../../utils/FormattingUtils';
 import { getScoresAndRiskFactors, calculateDMF, getDMFRiskFactors } from '../../utils/ScoringUtils';
 import { tryAutofillFields } from '../../utils/AutofillUtils';
@@ -824,9 +824,23 @@ class Form extends React.Component<Props, State> {
     const orgCharges = chargesByOrgId.get(selectedOrganizationId, Map()).valueSeq();
     let chargeOptions = Map();
     orgCharges.forEach((charge) => {
-      chargeOptions = chargeOptions.set(this.formatCharge(charge), charge);
+      chargeOptions = chargeOptions.set(
+        this.formatCharge(charge),
+        {
+          label: this.formatCharge(charge),
+          value: charge
+        }
+      );
     });
-    return chargeOptions.sortBy((statute, _) => statute);
+
+    const sortedChargeList = chargeOptions.valueSeq()
+      .sortBy(charge => getFirstNeighborValue(charge.value, PROPERTY_TYPES.REFERENCE_CHARGE_DESCRIPTION))
+      .sortBy(charge => getFirstNeighborValue(charge.value, PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE));
+
+    return {
+      chargeOptions: chargeOptions.sortBy((statute, _) => statute),
+      chargeList: sortedChargeList
+    };
   }
 
   getSelectChargesSection = () => {
@@ -841,6 +855,7 @@ class Form extends React.Component<Props, State> {
     } = this.props;
     const caseContext = psaForm.get(DMF.COURT_OR_BOOKING) === CONTEXT.BOOKING ? CONTEXTS.BOOKING : CONTEXTS.COURT;
     const chargeType = selectedOrganizationSettings.getIn([SETTINGS.CASE_CONTEXTS, caseContext]);
+    const { chargeList, chargeOptions } = this.formatChargeOptions();
     if (isLoadingNeighbors || loadingPersonDetails) {
       return <LogoLoader loadingText="Loading Person Details..." />;
     }
@@ -850,7 +865,8 @@ class Form extends React.Component<Props, State> {
           chargeType={chargeType}
           defaultArrest={selectedPretrialCase}
           defaultCharges={charges}
-          chargeOptions={this.formatChargeOptions()}
+          chargeOptions={chargeOptions}
+          chargeList={chargeList}
           nextPage={this.nextPage}
           prevPage={this.prevPage}
           onSubmit={actions.addCaseAndCharges} />
