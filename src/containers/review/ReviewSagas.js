@@ -27,7 +27,7 @@ import { getMapByCaseId } from '../../utils/CaseUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_STATUSES } from '../../utils/consts/Consts';
 import { formatDMFFromEntity } from '../../utils/DMFUtils';
-	import { getEntityKeyId, stripIdField, getSearchTerm } from '../../utils/DataUtils';
+import { getEntityKeyId, stripIdField, getSearchTerm } from '../../utils/DataUtils';
 import {
   APP,
   CHARGES,
