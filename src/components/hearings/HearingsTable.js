@@ -7,13 +7,12 @@ import { Map } from 'immutable';
 
 import HearingRow from './HearingRow';
 import { OL } from '../../utils/consts/Colors';
-import { APP_TYPES_FQNS } from '../../utils/consts/DataModelConsts';
-import { getHearingFields, sortHearingsByDate } from '../../utils/consts/HearingConsts';
-import { isUUID } from '../../utils/DataUtils';
+import { PSA_STATUSES } from '../../utils/consts/Consts';
+import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { sortHearingsByDate, getHearingString } from '../../utils/HearingUtils';
+import { getEntityProperties, isUUID, getIdOrValue } from '../../utils/DataUtils';
 
-let { PSA_SCORES } = APP_TYPES_FQNS;
-
-PSA_SCORES = PSA_SCORES.toString();
+const { PSA_SCORES } = APP_TYPES;
 
 const Table = styled.div`
   position: relative;
@@ -62,7 +61,7 @@ const Headers = () => (
     <HeaderElement>Courtroom</HeaderElement>
     <HeaderElement>Type</HeaderElement>
     <HeaderElement>Case ID</HeaderElement>
-    <CenteredHeader>Open PSA</CenteredHeader>
+    <CenteredHeader>PSA</CenteredHeader>
     <HeaderElement />
   </HeaderRow>
 );
@@ -84,7 +83,7 @@ const HearingsTable = ({
 } :Props) => {
   let hearingCourtStringsCounts = Map();
   rows.forEach((hearing) => {
-    const { hearingCourtString } = getHearingFields(hearing);
+    const hearingCourtString = getHearingString(hearing);
     hearingCourtStringsCounts = hearingCourtStringsCounts.set(
       hearingCourtString,
       hearingCourtStringsCounts.get(hearingCourtString, 0) + 1
@@ -97,24 +96,27 @@ const HearingsTable = ({
       <Body maxHeight={maxHeight}>
         {rows.sort(sortHearingsByDate).valueSeq().map(((row) => {
           const {
-            hearingId,
-            hearingEntityKeyId,
-            hearingCourtString,
-            hearingCaseId
-          } = getHearingFields(row);
+            [PROPERTY_TYPES.CASE_ID]: hearingCaseId,
+            [PROPERTY_TYPES.ENTITY_KEY_ID]: hearingEntityKeyId
+          } = getEntityProperties(row, [
+            PROPERTY_TYPES.CASE_ID,
+            PROPERTY_TYPES.ENTITY_KEY_ID
+          ]);
+          const hearingCourtString = getHearingString(row);
 
           const hearingIsADuplicate = (hearingCourtStringsCounts.get(hearingCourtString) > 1);
-          const hearingWasCreatedManually = isUUID(hearingId);
+          const hearingWasCreatedManually = isUUID(hearingCaseId);
           const hearingHasOutcome = hearingsWithOutcomes.includes(hearingEntityKeyId);
           const disabled = hearingHasOutcome || !hearingWasCreatedManually;
-          const hearingHasPSA = !!hearingNeighborsById.getIn([hearingEntityKeyId, PSA_SCORES], Map()).size;
+          const hearingHasOpenPSA = getIdOrValue(hearingNeighborsById
+            .get(hearingEntityKeyId, Map()), PSA_SCORES, PROPERTY_TYPES.STATUS) === PSA_STATUSES.OPEN;
           return (
             <HearingRow
-                key={`${hearingEntityKeyId}-${hearingCourtString}-${hearingId}`}
-                row={row}
+                key={`${hearingEntityKeyId}-${hearingCourtString}-${hearingCaseId}`}
+                hearing={row}
                 caseId={hearingCaseId}
                 isDuplicate={hearingIsADuplicate}
-                hasPSA={hearingHasPSA}
+                hasOpenPSA={hearingHasOpenPSA}
                 hasOutcome={hearingHasOutcome}
                 cancelFn={cancelFn}
                 disabled={disabled} />

@@ -7,8 +7,8 @@ import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { Redirect, Route, Switch } from 'react-router-dom';
 import styled from 'styled-components';
-import Immutable, { List } from 'immutable';
 import moment from 'moment';
+import { List, Map, Set } from 'immutable';
 
 import DatePicker from '../../components/datetime/DatePicker';
 import NavButtonToolbar from '../../components/buttons/NavButtonToolbar';
@@ -20,12 +20,8 @@ import PersonSearchFields from '../../components/person/PersonSearchFields';
 import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
 import { SORT_TYPES } from '../../utils/consts/Consts';
 import { OL } from '../../utils/consts/Colors';
-import {
-  APP_TYPES_FQNS,
-  PROPERTY_TYPES,
-  SETTINGS,
-  MODULE
-} from '../../utils/consts/DataModelConsts';
+import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
+import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import {
   APP,
   STATE,
@@ -46,11 +42,7 @@ import * as FormActionFactory from '../psa/FormActionFactory';
 import * as ReviewActionFactory from './ReviewActionFactory';
 import * as Routes from '../../core/router/Routes';
 
-const { PEOPLE, STAFF } = APP_TYPES_FQNS;
-
-const peopleFqn :string = PEOPLE.toString();
-const staffFqn :string = STAFF.toString();
-
+const { PEOPLE, STAFF } = APP_TYPES;
 
 const StyledFormWrapper = styled.div`
   display: flex;
@@ -149,17 +141,17 @@ const ErrorText = styled.div`
 
 type Props = {
   history :string[],
-  scoresAsMap :Immutable.Map<*, *>,
-  selectedOrganizationSettings :Immutable.Map<*, *>,
-  psaNeighborsByDate :Immutable.Map<*, Immutable.Map<*, *>>,
+  scoresAsMap :Map<*, *>,
+  selectedOrganizationSettings :Map<*, *>,
+  psaNeighborsByDate :Map<*, Map<*, *>>,
   loadingResults :boolean,
   errorMessage :string,
   location :Object,
   actions :{
     loadPSAsByDate :(filter :string) => void
   },
-  psaNeighborsById :Immutable.Map<*, *>,
-  allFilers :Immutable.Set<*>,
+  psaNeighborsById :Map<*, *>,
+  allFilers :Set<*>,
   selectedOrganizationId :string
 }
 
@@ -183,7 +175,7 @@ class ReviewPSA extends React.Component<Props, State> {
   constructor(props :Props) {
     super(props);
     this.state = {
-      options: Immutable.List(),
+      options: List(),
       filterType: FILTER_TYPE.VIEW_ALL,
       filters: {
         date: moment().format(),
@@ -374,17 +366,17 @@ class ReviewPSA extends React.Component<Props, State> {
 
   filterWithoutDate = () => {
     const { psaNeighborsByDate } = this.props;
-    let results = Immutable.Map();
+    let results = Map();
     const keys = psaNeighborsByDate.keySeq();
 
     keys.forEach((date) => {
-      results = results.merge(psaNeighborsByDate.get(date, Immutable.Map())
+      results = results.merge(psaNeighborsByDate.get(date, Map())
         .entrySeq()
         .filter(([scoreId, neighbors]) => {
 
           if (!this.domainMatch(neighbors)) return false;
 
-          const personId = neighbors.getIn([peopleFqn, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.PERSON_ID, 0]);
+          const personId = neighbors.getIn([PEOPLE, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.PERSON_ID, 0]);
           if (personId) return true;
         }));
     });
@@ -393,7 +385,7 @@ class ReviewPSA extends React.Component<Props, State> {
 
   domainMatch = neighbors => (
     !this.state.domain.length
-      || neighbors.get(staffFqn, Immutable.List()).filter((neighbor) => {
+      || neighbors.get(STAFF, List()).filter((neighbor) => {
         if (!neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.PERSON_ID, 0], '').endsWith(this.state.domain)) {
           return false;
         }
@@ -408,8 +400,8 @@ class ReviewPSA extends React.Component<Props, State> {
     return items.filter(([scoreId, neighbors]) => {
       if (!this.domainMatch(neighbors)) return false;
       let includesFiler = false;
-      neighbors.get(staffFqn, Immutable.List()).forEach((neighbor) => {
-        if (neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.PERSON_ID], Immutable.List()).includes(filer)) {
+      neighbors.get(STAFF, List()).forEach((neighbor) => {
+        if (neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.PERSON_ID], List()).includes(filer)) {
           includesFiler = true;
         }
       });
@@ -440,7 +432,7 @@ class ReviewPSA extends React.Component<Props, State> {
     const { scoresAsMap } = this.props;
     const { filters, options, status } = this.state;
     const { firstName, lastName, dob } = filters;
-    if (!firstName.length && !lastName.length) return Immutable.List();
+    if (!firstName.length && !lastName.length) return List();
     const notAllStatus = status !== 'ALL';
 
     const personResults = options.entrySeq().filter(([scoreId, neighbors]) => {
@@ -450,16 +442,16 @@ class ReviewPSA extends React.Component<Props, State> {
       if (notAllStatus && !matchesFilter) return false;
 
       const neighborFirst = neighbors.getIn(
-        [peopleFqn, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.FIRST_NAME],
-        Immutable.List()
+        [PEOPLE, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.FIRST_NAME],
+        List()
       );
       const neighborLast = neighbors.getIn(
-        [peopleFqn, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.LAST_NAME],
-        Immutable.List()
+        [PEOPLE, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.LAST_NAME],
+        List()
       );
       const neighborDob = neighbors.getIn(
-        [peopleFqn, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.DOB],
-        Immutable.List()
+        [PEOPLE, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.DOB],
+        List()
       );
 
       if (!neighborFirst.filter(val => val.toLowerCase().includes(firstName.toLowerCase())).size) return false;
@@ -481,7 +473,7 @@ class ReviewPSA extends React.Component<Props, State> {
       return this.filterWithoutDate();
     }
 
-    return options.get(date, Immutable.Map())
+    return options.get(date, Map())
       .entrySeq()
       .filter(([scoreId, neighbors]) => this.domainMatch(neighbors));
   }

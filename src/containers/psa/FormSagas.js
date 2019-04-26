@@ -12,8 +12,7 @@ import {
 
 import { loadPSAData } from '../review/ReviewActionFactory';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
-import { obfuscateBulkEntityNeighbors } from '../../utils/consts/DemoNames';
-import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { APP, STATE } from '../../utils/consts/FrontEndStateConsts';
 import { PSA_STATUSES } from '../../utils/consts/Consts';
 import {
@@ -24,10 +23,7 @@ import {
   loadNeighbors
 } from './FormActionFactory';
 
-const { PEOPLE, PSA_SCORES } = APP_TYPES_FQNS;
-
-const peopleFqn :string = PEOPLE.toString();
-const psaScoresFqn :string = PSA_SCORES.toString();
+const { PEOPLE, PSA_SCORES } = APP_TYPES;
 
 const getApp = state => state.get(STATE.APP, Map());
 const getOrgId = state => state.getIn([STATE.APP, APP.SELECTED_ORG_ID], '');
@@ -89,13 +85,11 @@ const getAllPSAIds = (neighbors, psaScoresEntitySetId) => {
 
 function* getOpenPSANeighbors(neighbors) :Generator<*, *, *> {
   const app = yield select(getApp);
-  const orgId = yield select(getOrgId);
-  const psaEntitySetId = getEntitySetIdFromApp(app, psaScoresFqn, orgId);
+  const psaEntitySetId = getEntitySetIdFromApp(app, PSA_SCORES);
 
   const ids = getOpenPSAIds(neighbors, psaEntitySetId);
   const val = ids.length ? yield call(SearchApi.searchEntityNeighborsBulk, psaEntitySetId, ids) : {};
-
-  return obfuscateBulkEntityNeighbors(val); // TODO just for demo
+  return val;
 }
 
 function* loadNeighborsWorker(action :SequenceAction) :Generator<*, *, *> {
@@ -103,14 +97,13 @@ function* loadNeighborsWorker(action :SequenceAction) :Generator<*, *, *> {
 
   const app = yield select(getApp);
   const orgId = yield select(getOrgId);
-  const peopleEntitySetId = getEntitySetIdFromApp(app, peopleFqn, orgId);
-  const psaEntitySetId = getEntitySetIdFromApp(app, psaScoresFqn, orgId);
+  const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
+  const psaEntitySetId = getEntitySetIdFromApp(app, PSA_SCORES);
   const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId], Map());
 
   try {
     yield put(loadNeighbors.request(action.id));
-    let neighbors = yield call(SearchApi.searchEntityNeighbors, peopleEntitySetId, entityKeyId);
-    neighbors = obfuscateBulkEntityNeighbors(neighbors);
+    const neighbors = yield call(SearchApi.searchEntityNeighbors, peopleEntitySetId, entityKeyId);
 
     const openPSAs = yield call(getOpenPSANeighbors, neighbors);
 

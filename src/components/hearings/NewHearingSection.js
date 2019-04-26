@@ -19,9 +19,16 @@ import psaHearingConfig from '../../config/formconfig/PSAHearingConfig';
 import SearchableSelect from '../controls/SearchableSelect';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
-import { getCourtroomOptions, getJudgeOptions, HEARING_CONSTS } from '../../utils/consts/HearingConsts';
+import { HEARING_CONSTS } from '../../utils/consts/HearingConsts';
+import { getCourtroomOptions, getJudgeOptions, formatJudgeName } from '../../utils/HearingUtils';
+import { getEntityProperties } from '../../utils/DataUtils';
 import { getTimeOptions } from '../../utils/consts/DateTimeConsts';
-import { STATE, REVIEW, COURT } from '../../utils/consts/FrontEndStateConsts';
+import {
+  STATE,
+  HEARINGS,
+  REVIEW,
+  COURT
+} from '../../utils/consts/FrontEndStateConsts';
 import {
   FORM_IDS,
   ID_FIELD_NAMES,
@@ -127,6 +134,29 @@ class NewHearingSection extends React.Component<Props, State> {
     this.state = INITIAL_STATE;
   }
 
+  componentDidMount() {
+    const {
+      allJudges,
+      [HEARINGS.DATE]: newHearingDate,
+      [HEARINGS.TIME]: newHearingTime,
+      [HEARINGS.COURTROOM]: newHearingCourtroom,
+      [HEARINGS.JUDGE]: judgeId
+    } = this.props;
+    let judge;
+    allJudges.forEach((judgeObj) => {
+      const { [PROPERTY_TYPES.PERSON_ID]: hearingJudgeId } = getEntityProperties(judgeObj, [PROPERTY_TYPES.PERSON_ID]);
+      const fullNameString = formatJudgeName(judgeObj);
+      if (judgeId === hearingJudgeId) judge = fullNameString;
+    });
+    this.setState({
+      newHearingCourtroom,
+      newHearingDate,
+      newHearingTime,
+      judge,
+      judgeId,
+    });
+  }
+
   selectHearing = (hearingDetails) => {
     const {
       app,
@@ -225,7 +255,7 @@ class NewHearingSection extends React.Component<Props, State> {
     const { newHearingDate } = this.state;
     return (
       <DatePicker
-          value={newHearingDate || moment()}
+          value={newHearingDate || moment().format('MM/DD/YYYY')}
           onChange={this.onDateChange} />
     );
   }
@@ -388,17 +418,25 @@ class NewHearingSection extends React.Component<Props, State> {
 function mapStateToProps(state) {
   const app = state.get(STATE.APP);
   const court = state.get(STATE.COURT);
+  const hearings = state.get(STATE.HEARINGS);
   const review = state.get(STATE.REVIEW);
   return {
     app,
-    [REVIEW.SCORES]: review.get(REVIEW.SCORES),
-    [REVIEW.NEIGHBORS_BY_ID]: review.get(REVIEW.NEIGHBORS_BY_ID),
+
     [COURT.LOADING_HEARING_NEIGHBORS]: court.get(COURT.LOADING_HEARING_NEIGHBORS),
     [COURT.HEARINGS_NEIGHBORS_BY_ID]: court.get(COURT.HEARINGS_NEIGHBORS_BY_ID),
     [COURT.ALL_JUDGES]: court.get(COURT.ALL_JUDGES),
     [COURT.HEARING_IDS_REFRESHING]: court.get(COURT.HEARING_IDS_REFRESHING),
+
+    [HEARINGS.DATE]: hearings.get(HEARINGS.DATE),
+    [HEARINGS.TIME]: hearings.get(HEARINGS.TIME),
+    [HEARINGS.COURTROOM]: hearings.get(HEARINGS.COURTROOM),
+    [HEARINGS.JUDGE]: hearings.get(HEARINGS.JUDGE),
+
+    [REVIEW.SCORES]: review.get(REVIEW.SCORES),
+    [REVIEW.NEIGHBORS_BY_ID]: review.get(REVIEW.NEIGHBORS_BY_ID),
     [REVIEW.LOADING_RESULTS]: review.get(REVIEW.LOADING_RESULTS),
-    [REVIEW.ERROR]: review.get(REVIEW.ERROR)
+    [REVIEW.ERROR]: review.get(REVIEW.ERROR),
   };
 }
 

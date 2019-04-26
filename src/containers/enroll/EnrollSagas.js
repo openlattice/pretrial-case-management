@@ -4,21 +4,32 @@
 import axios from 'axios';
 import randomUUID from 'uuid/v4';
 import moment from 'moment';
-import { DataApi, DataIntegrationApi, EntityDataModelApi, SearchApi } from 'lattice';
+import { fromJS, Map } from 'immutable';
 import { AuthUtils } from 'lattice-auth';
-import { call, put, take, all } from '@redux-saga/core/effects';
-
-import * as ActionTypes from './EnrollActionTypes';
+import { DataApi, DataIntegrationApi, SearchApi } from 'lattice';
 import {
-  enrollVoiceSuccess,
-  enrollVoiceFailure,
-  getProfileSuccess,
-  getProfileFailure
+  call,
+  put,
+  select,
+  takeEvery
+} from '@redux-saga/core/effects';
+
+import {
+  GET_PROFILE,
+  ENROLL_VOICE,
+  getProfile,
+  enrollVoice
 } from './EnrollActionFactory';
 
 import { toISODateTime } from '../../utils/FormattingUtils';
-import { getFqnObj } from '../../utils/DataUtils';
-import { ENTITY_SETS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { getEntitySetIdFromApp } from '../../utils/AppUtils';
+import { getPropertyTypeId } from '../../edm/edmUtils';
+import { APP, STATE, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
+import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+
+const getApp = state => state.get(STATE.APP, Map());
+const getEDM = state => state.get(STATE.EDM, Map());
+const getOrgId = state => state.getIn([STATE.APP, APP.SELECTED_ORG_ID], '');
 
 const CHECKINS_BASE_URL = 'https://api.openlattice.com/checkins/voice';
 
@@ -36,11 +47,9 @@ const getEntityId = (entity, primaryKeyIds) => {
   return pKeyVals.length ? pKeyVals.join(',') : randomUUID();
 };
 
-const getHeaders = () => {
-  return {
-    Authorization: `Bearer ${AuthUtils.getAuthToken()}`
-  };
-};
+const getHeaders = () => ({
+  Authorization: `Bearer ${AuthUtils.getAuthToken()}`
+});
 
 function* tryLoadProfile(id) {
   try {
@@ -64,161 +73,198 @@ function* getPin(id) {
   return response.data;
 }
 
-export function* getOrCreateProfile() :Generator<*, *, *> {
-  while (true) {
-    const { personId, personEntityKeyId } = yield take(ActionTypes.GET_PROFILE_REQUEST);
+export function* getProfileWorker(action :SequenceAction) :Generator<*, *, *> {
+  yield put(getProfile.request(action.id));
+  const { personId, personEntityKeyId } = action.value;
+  try {
 
-    try {
-      const personEntitySetId = yield call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.PEOPLE);
-      const neighbors = yield call(SearchApi.searchEntityNeighbors, personEntitySetId, personEntityKeyId);
+    const app = yield select(getApp);
+    const edm = yield select(getEDM);
+    const orgId = yield select(getOrgId);
 
-      const idsToTry = {};
-      if (neighbors) {
-        neighbors.forEach((neighborObj) => {
-          const entitySet = neighborObj.neighborEntitySet;
-          if (entitySet && entitySet.name === ENTITY_SETS.SPEAKER_RECOGNITION_PROFILES) {
-            const ids = neighborObj.neighborDetails[PROPERTY_TYPES.GENERAL_ID];
-            if (ids && ids.length) {
-              const id = ids[0];
-              const pins = neighborObj.neighborDetails[PROPERTY_TYPES.PIN];
-              const pin = pins ? pins[0] : undefined;
-              idsToTry[id] = pin;
-            }
-          }
-        });
-      }
+    const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
+    const peopleEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.PEOPLE);
+    const enrollVoiceEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.SPEAKER_RECOGNITION_PROFILES);
+    const registeredForEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.REGISTERED_FOR);
+    const personIdPropertyId = getPropertyTypeId(edm, PROPERTY_TYPES.PERSON_ID);
+    const generalIdPropertyId = getPropertyTypeId(edm, PROPERTY_TYPES.GENERAL_ID);
+    const completedDateTimePropertyId = getPropertyTypeId(edm, PROPERTY_TYPES.COMPLETED_DATE_TIME);
+    const pinPropertyId = getPropertyTypeId(edm, PROPERTY_TYPES.PIN);
 
-      let profile;
-      let pin;
-
-      if (Object.keys(idsToTry).length) {
-        const idList = (idsToTry.length > 3) ? Object.keys(idsToTry).splice(0, 3) : Object.keys(idsToTry);
-        const requests = idList.map(id => call(tryLoadProfile, id));
-        const profiles = yield all(requests);
-        const successfulProfiles = profiles.filter(p => p);
-        if (successfulProfiles.length) {
-          [profile] = successfulProfiles;
-          pin = idsToTry[profile.data.verificationProfileId];
+    const peopleNeighborsById = yield call(SearchApi.searchEntityNeighborsWithFilter, peopleEntitySetId, {
+      entityKeyIds: [personEntityKeyId],
+      sourceEntitySetIds: [enrollVoiceEntitySetId],
+      destinationEntitySetIds: []
+    });
+    const personNeighbors = fromJS(Object.values(peopleNeighborsById)[0] || []);
+    let voiceProfileRequest;
+    let voiceProfileEntityKeyId;
+    let voiceProfileId;
+    let voiceProfile;
+    let pin;
+    if (personNeighbors.size) {
+      personNeighbors.forEach((neighbor) => {
+        const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
+        const neighborObj = neighbor.get(PSA_NEIGHBOR.DETAILS, Map());
+        const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
+        if (appTypeFqn === APP_TYPES.SPEAKER_RECOGNITION_PROFILES) {
+          pin = neighborObj.getIn([PROPERTY_TYPES.PIN, 0], undefined);
+          voiceProfileEntityKeyId = neighborObj.getIn([PROPERTY_TYPES.ENTITY_KEY_ID, 0], '');
+          voiceProfileId = neighborObj.getIn([PROPERTY_TYPES.GENERAL_ID, 0], '');
         }
-      }
-
-      if (!profile || !profile.data || !profile.data.verificationProfileId) {
-        const createProfileRequest = {
-          method: 'post',
-          url: `${CHECKINS_BASE_URL}/profile/create`,
-          headers: getHeaders()
-        };
-
-        const createProfileResponse = yield call(axios, createProfileRequest);
-        const speakerVerificationId = createProfileResponse.data;
-        const newPin = yield call(getPin, speakerVerificationId);
-
-        const [subjectId, generalId, timestampId, pinId] = yield all([
-          call(EntityDataModelApi.getPropertyTypeId, getFqnObj(PROPERTY_TYPES.PERSON_ID)),
-          call(EntityDataModelApi.getPropertyTypeId, getFqnObj(PROPERTY_TYPES.GENERAL_ID)),
-          call(EntityDataModelApi.getPropertyTypeId, getFqnObj(PROPERTY_TYPES.COMPLETED_DATE_TIME)),
-          call(EntityDataModelApi.getPropertyTypeId, getFqnObj(PROPERTY_TYPES.PIN))
-        ]);
-
-        const [voiceEntitySetId, registeredForEntitySetId] = yield all([
-          call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.SPEAKER_RECOGNITION_PROFILES),
-          call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.REGISTERED_FOR)
-        ]);
-
-        const personDetails = {
-          [subjectId]: [personId]
-        };
-
-        const voiceDetails = {
-          [generalId]: [speakerVerificationId],
-          [pinId]: [newPin]
-        };
-
-        const registeredForDetails = {
-          [timestampId]: [toISODateTime(moment())]
-        };
-
-        const personEntityKey = {
-          entitySetId: personEntitySetId,
-          entityId: getEntityId(personDetails, [subjectId])
-        };
-
-        const voiceEntityKey = {
-          entitySetId: voiceEntitySetId,
-          entityId: speakerVerificationId
-        };
-
-        const registeredForEntityKey = {
-          entitySetId: registeredForEntitySetId,
-          entityId: getEntityId(registeredForDetails, [timestampId])
-        };
-
-        const entities = [{
-          key: personEntityKey,
-          details: personDetails
-        }, {
-          key: voiceEntityKey,
-          details: voiceDetails
-        }];
-        const associations = [{
-          key: registeredForEntityKey,
-          src: voiceEntityKey,
-          dst: personEntityKey,
-          details: registeredForDetails
-        }];
-
-        yield call(DataIntegrationApi.createEntityAndAssociationData, { entities, associations });
-        yield put(getProfileSuccess(speakerVerificationId, `${newPin}`, 0));
-      }
-      else {
-        if (!pin) pin = yield call(getPin, profile.data.verificationProfileId);
-        yield put(getProfileSuccess(profile.data.verificationProfileId, `${pin}`, profile.data.enrollmentsCount));
+      });
+      if (voiceProfileId) {
+        voiceProfileRequest = yield call(tryLoadProfile, voiceProfileId);
+        voiceProfile = voiceProfileRequest;
       }
     }
-    catch (error) {
-      console.error(error)
-      yield put(getProfileFailure(`Unable to load or create profile for user with id ${personId}.`));
-    }
-  }
-}
 
-export function* enrollVoiceProfile() :Generator<*, *, *> {
-  while (true) {
-    const {
-      profileId,
-      audio
-    } = yield take(ActionTypes.ENROLL_VOICE_REQUEST);
-
-    try {
-      const enrollRequest = {
+    if (!voiceProfile || !voiceProfile.data || !voiceProfile.data.verificationProfileId) {
+      const createProfileRequest = {
         method: 'post',
-        url: `${CHECKINS_BASE_URL}/profile/${profileId}`,
-        headers: Object.assign({}, getHeaders(), { 'Content-Type': 'multipart/form-data' }),
-        data: audio
+        url: `${CHECKINS_BASE_URL}/profile/create`,
+        headers: getHeaders()
       };
 
-      yield call(axios, enrollRequest);
+      const createProfileResponse = yield call(axios, createProfileRequest);
+      const speakerVerificationId = createProfileResponse.data;
+      const newPin = yield call(getPin, speakerVerificationId);
 
-      const [generalId, audioId] = yield all([
-        call(EntityDataModelApi.getPropertyTypeId, getFqnObj(PROPERTY_TYPES.GENERAL_ID)),
-        call(EntityDataModelApi.getPropertyTypeId, getFqnObj(PROPERTY_TYPES.AUDIO_SAMPLE))
-      ]);
-
-      const entitySetId = yield call(EntityDataModelApi.getEntitySetId, ENTITY_SETS.SPEAKER_RECOGNITION_PROFILES);
+      const personDetails = {
+        [personIdPropertyId]: [personId]
+      };
 
       const voiceDetails = {
-        [generalId]: [profileId],
-        [audioId]: [audio]
+        [generalIdPropertyId]: [speakerVerificationId],
+        [pinPropertyId]: [`${newPin}`]
       };
 
-      yield call(DataApi.createOrMergeEntityData, entitySetId, [voiceDetails]);
+      const registeredForDetails = {
+        [completedDateTimePropertyId]: [toISODateTime(moment())]
+      };
 
-      const profile = yield call(tryLoadProfile, profileId);
-      yield put(enrollVoiceSuccess(profile.data.enrollmentsCount));
+      const personEntityKey = {
+        entitySetId: peopleEntitySetId,
+        entityId: getEntityId(personDetails, [personIdPropertyId])
+      };
 
+      const voiceEntityKey = {
+        entitySetId: enrollVoiceEntitySetId,
+        entityId: speakerVerificationId
+      };
+
+      const registeredForEntityKey = {
+        entitySetId: registeredForEntitySetId,
+        entityId: getEntityId(registeredForDetails, [completedDateTimePropertyId])
+      };
+
+      const entities = [{
+        key: personEntityKey,
+        details: personDetails
+      }, {
+        key: voiceEntityKey,
+        details: voiceDetails
+      }];
+      const associations = [{
+        key: registeredForEntityKey,
+        src: voiceEntityKey,
+        dst: personEntityKey,
+        details: registeredForDetails
+      }];
+
+      yield call(DataIntegrationApi.createEntityAndAssociationData, { entities, associations });
+      yield put(getProfile.success(action.id, {
+        profileId: speakerVerificationId,
+        pin: newPin,
+        numSubmissions: 0,
+        profileEntityKeyId: ''
+      }));
     }
-    catch (error) {
-      yield put(enrollVoiceFailure('Audio submission was not successful. Please re-record and try again.'));
+    else {
+      if (!pin) pin = yield call(getPin, voiceProfile.data.verificationProfileId);
+      yield put(getProfile.success(action.id, {
+        profileId: voiceProfile.data.verificationProfileId,
+        pin,
+        numSubmissions: voiceProfile.data.enrollmentsCount,
+        profileEntityKeyId: voiceProfileEntityKeyId
+      }));
     }
   }
+  catch (error) {
+    console.error(error);
+    yield put(getProfile.failure(
+      action.id,
+      { error: `Unable to load or create profile for user with id ${personId}.` }
+    ));
+  }
+  finally {
+    yield put(getProfile.finally(action.id));
+  }
 }
+
+function* getProfileWatcher() :Generator<*, *, *> {
+  yield takeEvery(GET_PROFILE, getProfileWorker);
+}
+
+export function* enrollVoiceWorker(action :SequenceAction) :Generator<*, *, *> {
+  yield put(enrollVoice.request(action.id));
+  const {
+    profileId,
+    profileEntityKeyId,
+    audio
+  } = action.value;
+
+  try {
+    const app = yield select(getApp);
+    const edm = yield select(getEDM);
+    const profileEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.SPEAKER_RECOGNITION_PROFILES);
+    const audioPropertyId = getPropertyTypeId(edm, PROPERTY_TYPES.AUDIO_SAMPLE);
+
+    const profileEntity = {
+      [profileEntityKeyId]: {
+        [audioPropertyId]: [
+          {
+            'content-type': 'audio/wav',
+            data: window.btoa(String.fromCharCode(...new Uint8Array(audio)))
+          }
+        ]
+      }
+    };
+
+
+    const enrollRequest = {
+      method: 'post',
+      url: `${CHECKINS_BASE_URL}/profile/${profileId}`,
+      headers: Object.assign({}, getHeaders(), { 'Content-Type': 'multipart/form-data' }),
+      data: audio
+    };
+    yield call(axios, enrollRequest);
+
+    yield call(DataApi.updateEntityData, profileEntitySetId, profileEntity, 'Merge');
+
+    const profile = yield call(tryLoadProfile, profileId);
+    const { enrollmentsCount: numSubmissions } = profile.data;
+    yield put(enrollVoice.success(action.id, { numSubmissions }));
+
+  }
+  catch (error) {
+    console.error(error);
+    yield put(enrollVoice.failure(
+      action.id,
+      { error: 'Audio submission was not successful. Please re-record and try again.' }
+    ));
+  }
+  finally {
+    yield put(enrollVoice.finally(action.id));
+  }
+}
+
+
+function* enrollVoiceWatcher() :Generator<*, *, *> {
+  yield takeEvery(ENROLL_VOICE, enrollVoiceWorker);
+}
+
+export {
+  getProfileWatcher,
+  enrollVoiceWatcher
+};

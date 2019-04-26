@@ -4,7 +4,7 @@
 
 import React from 'react';
 import styled from 'styled-components';
-import { AuthActions } from 'lattice-auth';
+import { AuthActions, AuthUtils } from 'lattice-auth';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { EntityDataModelApiActions } from 'lattice-sagas';
@@ -15,15 +15,22 @@ import AppConsent from './AppConsent';
 import ErrorPage from '../../components/ErrorPage';
 import HeaderNav from '../../components/nav/HeaderNav';
 import Dashboard from '../../components/dashboard/Dashboard';
-import SettingsContainer from '../../containers/settings/SettingsContainer';
+import SettingsContainer from '../settings/SettingsContainer';
+import HearingSettingsModal from '../../components/hearings/HearingSettingsModal';
 import Forms from '../forms/Forms';
 import ContactSupport from '../../components/app/ContactSupport';
 import LogoLoader from '../../components/LogoLoader';
 import WelcomeBanner from '../../components/WelcomeBanner';
-import { APP, CHARGES, STATE } from '../../utils/consts/FrontEndStateConsts';
-import { APP_TYPES_FQNS, SETTINGS, MODULE } from '../../utils/consts/DataModelConsts';
+import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
+import { APP_TYPES } from '../../utils/consts/DataModelConsts';
 import { termsAreAccepted } from '../../utils/AcceptTermsUtils';
 import { OL } from '../../utils/consts/Colors';
+import {
+  APP,
+  CHARGES,
+  HEARINGS,
+  STATE
+} from '../../utils/consts/FrontEndStateConsts';
 
 import * as Routes from '../../core/router/Routes';
 import * as AppActionFactory from './AppActionFactory';
@@ -37,7 +44,7 @@ const {
   JUDGES,
   ARREST_CHARGE_LIST,
   COURT_CHARGE_LIST
-} = APP_TYPES_FQNS;
+} = APP_TYPES;
 
 /*
  * styled components
@@ -95,13 +102,13 @@ class AppContainer extends React.Component<Props, *> {
       nextOrg.keySeq().forEach((id) => {
         const selectedOrgId :string = id;
         const arrestChargesEntitySetId = app.getIn(
-          [ARREST_CHARGE_LIST.toString(), APP.ENTITY_SETS_BY_ORG, selectedOrgId]
+          [ARREST_CHARGE_LIST, APP.ENTITY_SETS_BY_ORG, selectedOrgId]
         );
         const courtChargesEntitySetId = app.getIn(
-          [COURT_CHARGE_LIST.toString(), APP.ENTITY_SETS_BY_ORG, selectedOrgId]
+          [COURT_CHARGE_LIST, APP.ENTITY_SETS_BY_ORG, selectedOrgId]
         );
         const judgesEntitySetId = app.getIn(
-          [JUDGES.toString(), APP.ENTITY_SETS_BY_ORG, selectedOrgId]
+          [JUDGES, APP.ENTITY_SETS_BY_ORG, selectedOrgId]
         );
         if (arrestChargesEntitySetId && courtChargesEntitySetId) {
           actions.loadCharges({
@@ -135,6 +142,14 @@ class AppContainer extends React.Component<Props, *> {
       : <Redirect to={Routes.TERMS} />
   );
 
+  renderIfAdmin = (Component, props) => {
+    if (!AuthUtils.isAdmin()) {
+      return <Redirect to={Routes.DASHBOARD} />;
+    }
+
+    return this.renderComponent(Component, props);
+  }
+
   renderAppBody = () => {
     const { app, errors } = this.props;
     const loading = app.get(APP.LOADING, false);
@@ -154,7 +169,7 @@ class AppContainer extends React.Component<Props, *> {
             <Route path={Routes.TERMS} component={AppConsent} />
             <Route path={Routes.DASHBOARD} render={() => this.renderComponent(Dashboard)} />
             <Route path={Routes.FORMS} render={() => this.renderComponent(Forms)} />
-            <Route path={Routes.SETTINGS} render={() => this.renderComponent(SettingsContainer)} />
+            <Route path={Routes.SETTINGS} render={() => this.renderIfAdmin(SettingsContainer)} />
             <Redirect to={Routes.DASHBOARD} />
           </Switch>
         </AppBodyWrapper>
@@ -188,6 +203,7 @@ class AppContainer extends React.Component<Props, *> {
         <ContactSupport />
         { selectedOrganizationTitle ? <WelcomeBanner tool={tool} organization={selectedOrganizationTitle} /> : null }
         {this.renderAppBody()}
+        <HearingSettingsModal />
       </AppWrapper>
     );
   }
@@ -196,6 +212,7 @@ class AppContainer extends React.Component<Props, *> {
 function mapStateToProps(state) {
   const app = state.get(STATE.APP);
   const charges = state.get(STATE.CHARGES);
+  const hearings = state.get(STATE.HEARINGS);
   return {
     app,
     [APP.SELECTED_ORG_ID]: app.get(APP.APP_SETTINGS_ID),
@@ -206,7 +223,9 @@ function mapStateToProps(state) {
 
     [CHARGES.ARREST]: charges.get(CHARGES.ARREST),
     [CHARGES.COURT]: charges.get(CHARGES.COURT),
-    [CHARGES.LOADING]: charges.get(CHARGES.LOADING)
+    [CHARGES.LOADING]: charges.get(CHARGES.LOADING),
+
+    [HEARINGS.SETTINGS_MODAL_OPEN]: hearings.get(HEARINGS.SETTINGS_MODAL_OPEN)
   };
 }
 

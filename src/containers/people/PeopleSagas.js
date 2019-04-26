@@ -16,10 +16,11 @@ import {
   select
 } from '@redux-saga/core/effects';
 
-import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { APP, PSA_NEIGHBOR, STATE } from '../../utils/consts/FrontEndStateConsts';
-import { obfuscateEntity, obfuscateEntityNeighbors } from '../../utils/consts/DemoNames';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
+import { getEntityProperties, getSearchTerm } from '../../utils/DataUtils';
+import { hearingIsCancelled } from '../../utils/HearingUtils';
 import { getPropertyTypeId } from '../../edm/edmUtils';
 import { PSA_STATUSES } from '../../utils/consts/Consts';
 import { getCasesForPSA, getChargeHistory, getCaseHistory } from '../../utils/CaseUtils';
@@ -38,33 +39,32 @@ import {
   updateContactInfo
 } from './PeopleActionFactory';
 
-let {
+const {
   CHARGES,
+  CHECKINS,
+  CHECKIN_APPOINTMENTS,
   CONTACT_INFORMATION,
   FTAS,
   HEARINGS,
   MANUAL_PRETRIAL_CASES,
+  MANUAL_PRETRIAL_COURT_CASES,
   PEOPLE,
   PSA_SCORES,
   PRETRIAL_CASES,
   RELEASE_RECOMMENDATIONS,
   STAFF,
-  SUBSCRIPTION
-} = APP_TYPES_FQNS;
+  SUBSCRIPTION,
+  SPEAKER_RECOGNITION_PROFILES
+} = APP_TYPES;
 
-CHARGES = CHARGES.toString();
-CONTACT_INFORMATION = CONTACT_INFORMATION.toString();
-FTAS = FTAS.toString();
-HEARINGS = HEARINGS.toString();
-MANUAL_PRETRIAL_CASES = MANUAL_PRETRIAL_CASES.toString();
-PEOPLE = PEOPLE.toString();
-PSA_SCORES = PSA_SCORES.toString();
-PRETRIAL_CASES = PRETRIAL_CASES.toString();
-RELEASE_RECOMMENDATIONS = RELEASE_RECOMMENDATIONS.toString();
-STAFF = STAFF.toString();
-SUBSCRIPTION = SUBSCRIPTION.toString();
+const {
+  DATE_TIME,
+  HEARING_INACTIVE,
+  UPDATE_TYPE,
+  HEARING_TYPE
+} = PROPERTY_TYPES;
 
-const LIST_FQNS = [CONTACT_INFORMATION, HEARINGS, PRETRIAL_CASES, STAFF, CHARGES];
+const LIST_FQNS = [CHECKINS, CHECKIN_APPOINTMENTS, CONTACT_INFORMATION, HEARINGS, PRETRIAL_CASES, STAFF, CHARGES];
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
@@ -94,8 +94,7 @@ function* getPeopleWorker(action) :Generator<*, *, *> {
   try {
     yield put(getPeople.request(action.id));
     const app = yield select(getApp);
-    const orgId = yield select(getOrgId);
-    const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE, orgId);
+    const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
     const response = yield call(DataApi.getEntitySetData, peopleEntitySetId);
     yield put(getPeople.success(action.id, response));
   }
@@ -114,18 +113,17 @@ function* getPeopleWatcher() :Generator<*, *, *> {
 function* getEntityForPersonId(personId :string) :Generator<*, *, *> {
   const app = yield select(getApp);
   const edm = yield select(getEDM);
-  const orgId = yield select(getOrgId);
-  const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE, orgId);
+  const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
   const personIdPropertyTypeId = getPropertyTypeId(edm, PROPERTY_TYPES.PERSON_ID);
 
   const searchOptions = {
-    searchTerm: `${personIdPropertyTypeId}:"${personId}"`,
+    searchTerm: getSearchTerm(personIdPropertyTypeId, personId),
     start: 0,
     maxHits: 1
   };
 
   const response = yield call(SearchApi.searchEntitySetData, peopleEntitySetId, searchOptions);
-  const person = obfuscateEntity(response.hits[0]); // TODO just for demo
+  const person = response.hits[0];
   return person;
 }
 
@@ -161,15 +159,13 @@ function* getPersonNeighborsWorker(action) :Generator<*, *, *> {
 
     const app = yield select(getApp);
     const orgId = yield select(getOrgId);
-    const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE, orgId);
-    const psaScoresEntitySetId = getEntitySetIdFromApp(app, PSA_SCORES, orgId);
+    const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
+    const psaScoresEntitySetId = getEntitySetIdFromApp(app, PSA_SCORES);
     const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
 
     const person = yield getEntityForPersonId(personId);
     const entityKeyId = person[OPENLATTICE_ID_FQN][0];
     let neighbors = yield call(SearchApi.searchEntityNeighbors, peopleEntitySetId, entityKeyId);
-
-    neighbors = obfuscateEntityNeighbors(neighbors);
     neighbors = fromJS(neighbors);
 
     let hearingEntityKeyId = Set();
@@ -202,20 +198,23 @@ function* getPersonNeighborsWorker(action) :Generator<*, *, *> {
           neighborObj
         );
       }
+      else if (appTypeFqn === SPEAKER_RECOGNITION_PROFILES) {
+        neighborsByEntitySet = neighborsByEntitySet.set(
+          appTypeFqn,
+          neighborObj
+        );
+      }
       else if (appTypeFqn === HEARINGS) {
         const hearingDetails = neighborObj.get(PSA_NEIGHBOR.DETAILS, Map());
         const hearingId = hearingDetails.getIn([OPENLATTICE_ID_FQN, 0]);
         const hearingDateTime = hearingDetails.getIn([PROPERTY_TYPES.DATE_TIME, 0]);
         const hearingExists = !!hearingDateTime && !!hearingId;
-        const hearingIsInactive = hearingDetails.getIn([PROPERTY_TYPES.HEARING_INACTIVE, 0], false);
-        const hearingHasBeenCancelled = hearingDetails.getIn([PROPERTY_TYPES.UPDATE_TYPE, 0], '')
-          .toLowerCase().trim() === 'cancelled';
+        const hearingIsInactive = hearingIsCancelled(hearingDetails);
         const hearingIsGeneric = hearingDetails.getIn([PROPERTY_TYPES.HEARING_TYPE, 0], '')
           .toLowerCase().trim() === 'all other hearings';
         const hearingIsADuplicate = hearingEntityKeyId.includes(neighborEntityKeyId);
         if (
           hearingExists
-          && !hearingHasBeenCancelled
           && !hearingIsGeneric
           && !hearingIsInactive
           && !hearingIsADuplicate
@@ -246,8 +245,6 @@ function* getPersonNeighborsWorker(action) :Generator<*, *, *> {
           return false;
         }), neighborsByEntitySet);
 
-    neighbors = obfuscateEntityNeighbors(neighbors);
-
     let mostRecentPSANeighborsByAppTypeFqn = Map();
     if (mostRecentPSA.size) {
       const psaId = mostRecentPSA.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0]);
@@ -256,11 +253,32 @@ function* getPersonNeighborsWorker(action) :Generator<*, *, *> {
       psaNeighbors.forEach((neighbor) => {
         const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
         const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
-        if (LIST_FQNS.includes(appTypeFqn)) {
+        if (appTypeFqn === HEARINGS) {
+          const {
+            [DATE_TIME]: hearingDateTime,
+            [HEARING_TYPE]: hearingType
+          } = getEntityProperties(neighbor, [
+            DATE_TIME,
+            HEARING_TYPE
+          ]);
+          const hearingIsInactive = hearingIsCancelled(neighbor);
+          const hearingIsGeneric = hearingType.toLowerCase().trim() === 'all other hearings';
+          if (hearingDateTime && !hearingIsGeneric && !hearingIsInactive) {
+            mostRecentPSANeighborsByAppTypeFqn = mostRecentPSANeighborsByAppTypeFqn.set(
+              appTypeFqn,
+              mostRecentPSANeighborsByAppTypeFqn.get(appTypeFqn, List()).push(fromJS(neighbor))
+            );
+          }
+        }
+        else if (LIST_FQNS.includes(appTypeFqn)) {
           mostRecentPSANeighborsByAppTypeFqn = mostRecentPSANeighborsByAppTypeFqn.set(
             appTypeFqn,
             mostRecentPSANeighborsByAppTypeFqn.get(appTypeFqn, List()).push(neighbor)
           );
+        }
+        else if (appTypeFqn === MANUAL_PRETRIAL_CASES || appTypeFqn === MANUAL_PRETRIAL_COURT_CASES) {
+          mostRecentPSANeighborsByAppTypeFqn = mostRecentPSANeighborsByAppTypeFqn
+            .set(MANUAL_PRETRIAL_CASES, fromJS(neighbor));
         }
         else {
           mostRecentPSANeighborsByAppTypeFqn = mostRecentPSANeighborsByAppTypeFqn.set(
@@ -305,13 +323,12 @@ function* refreshPersonNeighborsWorker(action) :Generator<*, *, *> {
     const app = yield select(getApp);
     const orgId = yield select(getOrgId);
     const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
-    const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE, orgId);
-    const psaScoresEntitySetId = getEntitySetIdFromApp(app, PSA_SCORES, orgId);
+    const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
+    const psaScoresEntitySetId = getEntitySetIdFromApp(app, PSA_SCORES);
 
     const person = yield getEntityForPersonId(personId);
     const entityKeyId = person[OPENLATTICE_ID_FQN][0];
     let neighborsList = yield call(SearchApi.searchEntityNeighbors, peopleEntitySetId, entityKeyId);
-    neighborsList = obfuscateEntityNeighbors(neighborsList);
     neighborsList = fromJS(neighborsList);
 
     neighborsList.forEach((neighbor) => {
@@ -340,17 +357,21 @@ function* refreshPersonNeighborsWorker(action) :Generator<*, *, *> {
           neighbor
         );
       }
+      else if (appTypeFqn === SPEAKER_RECOGNITION_PROFILES) {
+        neighbors = neighbors.set(
+          appTypeFqn,
+          neighbor
+        );
+      }
       else if (appTypeFqn === HEARINGS) {
         const hearingDetails = neighbor.get(PSA_NEIGHBOR.DETAILS, Map());
         const hearingId = hearingDetails.getIn([OPENLATTICE_ID_FQN, 0]);
         const hearingDateTime = hearingDetails.getIn([PROPERTY_TYPES.DATE_TIME, 0]);
         const hearingExists = !!hearingDateTime && !!hearingId;
-        const hearingIsInactive = hearingDetails.getIn([PROPERTY_TYPES.HEARING_INACTIVE, 0], false);
-        const hearingHasBeenCancelled = hearingDetails.getIn([PROPERTY_TYPES.UPDATE_TYPE, 0], '')
-          .toLowerCase().trim() === 'cancelled';
+        const hearingIsInactive = hearingIsCancelled(hearingDetails);
         const hearingIsGeneric = hearingDetails.getIn([PROPERTY_TYPES.HEARING_TYPE, 0], '')
           .toLowerCase().trim() === 'all other hearings';
-        if (hearingExists && !hearingHasBeenCancelled && !hearingIsGeneric && !hearingIsInactive) {
+        if (hearingExists && !hearingIsGeneric && !hearingIsInactive) {
           neighbors = neighbors.set(
             appTypeFqn,
             neighbors.get(appTypeFqn, List()).push(hearingDetails)
@@ -432,9 +453,9 @@ function* updateContactInfoWorker(action :SequenceAction) :Generator<*, *, *> {
     yield put(updateContactInfo.request(action.id));
     const app = yield select(getApp);
     const orgId = yield select(getOrgId);
-    const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE, orgId);
     const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
-    const contactInformationEntitySetId = getEntitySetIdFromApp(app, CONTACT_INFORMATION, orgId);
+    const contactInformationEntitySetId = getEntitySetIdFromApp(app, CONTACT_INFORMATION);
+    const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
 
     /* partially update contact info */
     yield call(DataApi.updateEntityData, contactInformationEntitySetId, entities, 'PartialReplace');
@@ -488,18 +509,18 @@ function* loadRequiresActionPeopleWorker(action :SequenceAction) :Generator<*, *
     const edm = yield select(getEDM);
     const orgId = yield select(getOrgId);
     const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
-    const psaScoresEntitySetId = getEntitySetIdFromApp(app, PSA_SCORES, orgId);
-    const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE, orgId);
-    const manualPretrialCasesFqnEntitySetId = getEntitySetIdFromApp(app, MANUAL_PRETRIAL_CASES, orgId);
-    const pretrialCasesEntitySetId = getEntitySetIdFromApp(app, PRETRIAL_CASES, orgId);
-    const releaseRecommendationsEntitySetId = getEntitySetIdFromApp(app, RELEASE_RECOMMENDATIONS, orgId);
-    const chargesEntitySetId = getEntitySetIdFromApp(app, CHARGES, orgId);
-    const ftaEntitySetId = getEntitySetIdFromApp(app, FTAS, orgId);
-    const staffEntitySetId = getEntitySetIdFromApp(app, STAFF, orgId);
+    const psaScoresEntitySetId = getEntitySetIdFromApp(app, PSA_SCORES);
+    const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
+    const manualPretrialCasesFqnEntitySetId = getEntitySetIdFromApp(app, MANUAL_PRETRIAL_CASES);
+    const pretrialCasesEntitySetId = getEntitySetIdFromApp(app, PRETRIAL_CASES);
+    const releaseRecommendationsEntitySetId = getEntitySetIdFromApp(app, RELEASE_RECOMMENDATIONS);
+    const chargesEntitySetId = getEntitySetIdFromApp(app, CHARGES);
+    const ftaEntitySetId = getEntitySetIdFromApp(app, FTAS);
+    const staffEntitySetId = getEntitySetIdFromApp(app, STAFF);
 
     /* load all open PSAs */
     const statusPropertyTypeId = getPropertyTypeId(edm, PROPERTY_TYPES.STATUS);
-    const searchTerm = action.value === '*' ? action.value : `${statusPropertyTypeId}:"${PSA_STATUSES.OPEN}"`;
+    const searchTerm = action.value === '*' ? action.value : getSearchTerm(statusPropertyTypeId, PSA_STATUSES.OPEN);
     const openPSAData = yield call(getAllSearchResults, psaScoresEntitySetId, searchTerm);
     fromJS(openPSAData.hits).forEach((psa) => {
       const psaId = psa.getIn([OPENLATTICE_ID_FQN, 0], '');

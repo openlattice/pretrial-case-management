@@ -11,7 +11,6 @@ import { Redirect, Route, Switch } from 'react-router-dom';
 import { Constants } from 'lattice';
 
 import ClosePSAModal from '../../components/review/ClosePSAModal';
-import UpdateContactInfoModal from '../person/UpdateContactInfoModal';
 import DashboardMainSection from '../../components/dashboard/DashboardMainSection';
 import NavButtonToolbar from '../../components/buttons/NavButtonToolbar';
 import PersonOverview from '../../components/people/PersonOverview';
@@ -23,18 +22,14 @@ import { getPSAIdsFromNeighbors } from '../../utils/PeopleUtils';
 import { getChargeHistory } from '../../utils/CaseUtils';
 import { JURISDICTION } from '../../utils/consts/Consts';
 import { getEntityKeyId, getIdOrValue, getNeighborDetailsForEntitySet } from '../../utils/DataUtils';
-import {
-  APP_TYPES_FQNS,
-  PROPERTY_TYPES,
-  SETTINGS,
-  MODULE
-} from '../../utils/consts/DataModelConsts';
+import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
+import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import {
   getScheduledHearings,
   getPastHearings,
   getAvailableHearings,
   getHearingsIdsFromNeighbors
-} from '../../utils/consts/HearingConsts';
+} from '../../utils/HearingUtils';
 import {
   APP,
   COURT,
@@ -53,23 +48,17 @@ import * as ReviewActionFactory from '../review/ReviewActionFactory';
 import * as PSAModalActionFactory from '../psamodal/PSAModalActionFactory';
 
 const { OPENLATTICE_ID_FQN } = Constants;
-let {
+
+const {
   BONDS,
   CONTACT_INFORMATION,
   HEARINGS,
   OUTCOMES,
   DMF_RESULTS,
   DMF_RISK_FACTORS,
-  RELEASE_CONDITIONS
-} = APP_TYPES_FQNS;
-
-BONDS = BONDS.toString();
-CONTACT_INFORMATION = CONTACT_INFORMATION.toString();
-HEARINGS = HEARINGS.toString();
-OUTCOMES = OUTCOMES.toString();
-DMF_RESULTS = DMF_RESULTS.toString();
-DMF_RISK_FACTORS = DMF_RISK_FACTORS.toString();
-RELEASE_CONDITIONS = RELEASE_CONDITIONS.toString();
+  RELEASE_CONDITIONS,
+  SPEAKER_RECOGNITION_PROFILES
+} = APP_TYPES;
 
 const ToolbarWrapper = styled.div`
   display: flex;
@@ -80,8 +69,8 @@ const ToolbarWrapper = styled.div`
 
 type Props = {
   entityKeyId :string,
+  entitySetsByOrganization :Map<*, *>,
   hearingNeighborsById :Map<*, *>,
-  hearings :List<*, *>,
   hearingIds :List<*, *>,
   isLoadingHearingsNeighbors :boolean,
   isLoadingJudges :boolean,
@@ -89,7 +78,6 @@ type Props = {
   loadingPSAData :boolean,
   loadingPSAResults :boolean,
   mostRecentPSA :Map<*, *>,
-  mostRecentPSAEntityKeyId :string,
   mostRecentPSANeighbors :Map<*, *>,
   neighbors :Map<*, *>,
   personHearings :List<*, *>,
@@ -142,8 +130,7 @@ class PersonDetailsContainer extends React.Component<Props, State> {
     this.state = {
       open: false,
       closing: false,
-      closePSAButtonActive: false,
-      updateContactModalOpen: false
+      closePSAButtonActive: false
     };
   }
 
@@ -207,12 +194,7 @@ class PersonDetailsContainer extends React.Component<Props, State> {
 
   renderPSADetailsModal = () => {
     const { closePSAButtonActive, closing, open } = this.state;
-    const {
-      actions,
-      entityKeyId,
-      mostRecentPSA,
-      personId,
-    } = this.props;
+    const { entityKeyId, mostRecentPSA } = this.props;
 
     const scores = mostRecentPSA.get(PSA_NEIGHBOR.DETAILS, Map());
     const mostRecentPSAEntityKeyId = getEntityKeyId(scores);
@@ -239,31 +221,6 @@ class PersonDetailsContainer extends React.Component<Props, State> {
             onClose={this.closeModal} />
       );
     return modal;
-  }
-
-  openUpdateContactModal = () => this.setState({ updateContactModalOpen: true });
-  closeUpdateContactModal = () => this.setState({ updateContactModalOpen: false });
-
-  renderContactInfoModal = () => {
-    const { updateContactModalOpen } = this.state;
-    const { neighbors, selectedPersonData } = this.props;
-    const personId = selectedPersonData.getIn([PROPERTY_TYPES.PERSON_ID, 0], '');
-    const contactInfo = neighbors.get(CONTACT_INFORMATION, List());
-    const email = getIdOrValue(neighbors, CONTACT_INFORMATION, PROPERTY_TYPES.EMAIL);
-    const phone = getIdOrValue(neighbors, CONTACT_INFORMATION, PROPERTY_TYPES.PHONE);
-    const isMobile = getIdOrValue(neighbors, CONTACT_INFORMATION, PROPERTY_TYPES.IS_MOBILE);
-    const updatingExisting = !!contactInfo.size;
-    return (
-      <UpdateContactInfoModal
-          contactEntity={contactInfo}
-          email={email}
-          isMobile={isMobile}
-          personId={personId}
-          phone={phone}
-          updatingExisting={updatingExisting}
-          onClose={this.closeUpdateContactModal}
-          open={updateContactModalOpen} />
-    );
   }
 
   loadCaseHistoryCallback = (personId, psaNeighbors) => {
@@ -421,9 +378,11 @@ class PersonDetailsContainer extends React.Component<Props, State> {
       readOnlyPermissions,
       selectedOrganizationId,
       selectedOrganizationSettings,
-      updatingEntity
+      updatingEntity,
+      entitySetsByOrganization
     } = this.props;
     const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], '');
+    const settingsIncludeVoiceEnroll = selectedOrganizationSettings.get(SETTINGS.ENROLL_VOICE, false);
     const courtRemindersEnabled = selectedOrganizationSettings.get(SETTINGS.COURT_REMINDERS, false);
     const { downloadPSAReviewPDF } = actions;
     const contactInfo = neighbors.get(CONTACT_INFORMATION, List());
@@ -437,9 +396,11 @@ class PersonDetailsContainer extends React.Component<Props, State> {
       || !selectedOrganizationId
       || !personId
     );
+    const personVoiceProfile = neighbors.get(SPEAKER_RECOGNITION_PROFILES, Map());
     return (
       <PersonOverview
           courtRemindersEnabled={courtRemindersEnabled}
+          entitySetIdsToAppType={entitySetsByOrganization.get(selectedOrganizationId, Map())}
           refreshingPersonNeighbors={refreshingPersonNeighbors}
           updatingEntity={updatingEntity}
           includesPretrialModule={includesPretrialModule}
@@ -451,12 +412,13 @@ class PersonDetailsContainer extends React.Component<Props, State> {
           mostRecentPSAEntityKeyId={mostRecentPSAEntityKeyId}
           neighbors={neighbors}
           personId={personId}
+          personVoiceProfile={personVoiceProfile}
           psaNeighborsById={psaNeighborsById}
           readOnlyPermissions={readOnlyPermissions}
           allScheduledHearings={allScheduledHearings}
           selectedPersonData={selectedPersonData}
-          openDetailsModal={this.openDetailsModal}
-          openUpdateContactModal={this.openUpdateContactModal} />
+          settingsIncludeVoiceEnroll={settingsIncludeVoiceEnroll}
+          openDetailsModal={this.openDetailsModal} />
     );
   }
 
@@ -497,7 +459,6 @@ class PersonDetailsContainer extends React.Component<Props, State> {
           <NavButtonToolbar options={navButtons} />
         </ToolbarWrapper>
         { this.renderPSADetailsModal() }
-        {/* { this.renderContactInfoModal() } */}
         {
           includesPretrialModule
             ? (
@@ -542,6 +503,7 @@ function mapStateToProps(state, ownProps) {
   return {
     [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
     [APP.SELECTED_ORG_SETTINGS]: app.get(APP.SELECTED_ORG_SETTINGS),
+    [APP.ENTITY_SETS_BY_ORG]: app.get(APP.ENTITY_SETS_BY_ORG),
 
     personId,
     [REVIEW.ENTITY_SET_ID]: review.get(REVIEW.ENTITY_SET_ID) || people.get(PEOPLE.SCORES_ENTITY_SET_ID),

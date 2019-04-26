@@ -20,12 +20,8 @@ import PersonTable from '../../components/people/PersonTable';
 import { formatPeopleInfo, sortPeopleByName } from '../../utils/PeopleUtils';
 import { OL } from '../../utils/consts/Colors';
 import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
-import {
-  APP_TYPES_FQNS,
-  MODULE,
-  PROPERTY_TYPES,
-  SETTINGS
-} from '../../utils/consts/DataModelConsts';
+import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
+import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import {
   APP,
   PEOPLE,
@@ -39,9 +35,7 @@ import * as PSAModalActionFactory from '../psamodal/PSAModalActionFactory';
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
-let { PSA_SCORES } = APP_TYPES_FQNS;
-
-PSA_SCORES = PSA_SCORES.toString();
+const { PSA_SCORES } = APP_TYPES;
 
 const SectionWrapper = styled.div`
     width: 100%;
@@ -164,18 +158,18 @@ class RequiresActionList extends React.Component<Props, State> {
         let matchesLastName = false;
         let matchesMiddleName = false;
         const {
-          entityKeyId,
+          personEntityKeyId,
           dob,
           firstName,
-          identification,
+          personId,
           lastName,
           middleName
         } = formatPeopleInfo(person);
-        if (selectedPersonId === entityKeyId) personIsSelected = true;
+        if (selectedPersonId === personEntityKeyId) personIsSelected = true;
         searchQueryWords.forEach((word) => {
           if (dob && dob.toLowerCase().includes(word.toLowerCase())) matchesDOB = true;
           if (firstName && firstName.toLowerCase().includes(word.toLowerCase())) matchesFirstName = true;
-          if (identification && identification.toLowerCase().includes(word.toLowerCase())) matchesIdentification = true;
+          if (personId && personId.toLowerCase().includes(word.toLowerCase())) matchesIdentification = true;
           if (lastName && lastName.toLowerCase().includes(word.toLowerCase())) matchesLastName = true;
           if (middleName && middleName.toLowerCase().includes(word.toLowerCase())) matchesMiddleName = true;
         });

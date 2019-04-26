@@ -4,7 +4,7 @@
 import { Constants } from 'lattice';
 import { Map, List, fromJS } from 'immutable';
 
-import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_MODAL, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { loadPSAModal, CLEAR_PSA_MODAL } from './PSAModalActionFactory';
 import { loadHearingNeighbors, refreshHearingNeighbors } from '../court/CourtActionFactory';
@@ -18,7 +18,7 @@ import {
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
-let {
+const {
   CONTACT_INFORMATION,
   DMF_RISK_FACTORS,
   DMF_RESULTS,
@@ -28,17 +28,7 @@ let {
   PSA_SCORES,
   RELEASE_RECOMMENDATIONS,
   SUBSCRIPTION
-} = APP_TYPES_FQNS;
-
-CONTACT_INFORMATION = CONTACT_INFORMATION.toString();
-DMF_RISK_FACTORS = DMF_RISK_FACTORS.toString();
-DMF_RESULTS = DMF_RESULTS.toString();
-HEARINGS = HEARINGS.toString();
-PEOPLE = PEOPLE.toString();
-PSA_RISK_FACTORS = PSA_RISK_FACTORS.toString();
-PSA_SCORES = PSA_SCORES.toString();
-RELEASE_RECOMMENDATIONS = RELEASE_RECOMMENDATIONS.toString();
-SUBSCRIPTION = SUBSCRIPTION.toString();
+} = APP_TYPES;
 
 const INITIAL_STATE :Map<*, *> = fromJS({
   [PSA_MODAL.LOADING_PSA_MODAL]: false,

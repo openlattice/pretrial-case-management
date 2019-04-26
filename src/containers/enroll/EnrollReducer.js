@@ -6,10 +6,16 @@ import Immutable from 'immutable';
 
 import { ENROLL } from '../../utils/consts/FrontEndStateConsts';
 
-import * as ActionTypes from './EnrollActionTypes';
+import {
+  enrollVoice,
+  getProfile,
+  CLEAR_ENROLL_ERROR,
+  CLEAR_ENROLL_STATE
+} from './EnrollActionFactory';
 
 const INITIAL_STATE_FIELDS = {
   [ENROLL.LOADING_PROFILE]: false,
+  [ENROLL.ENTITY_KEY_ID]: '',
   [ENROLL.PROFILE_ID]: '',
   [ENROLL.PIN]: '',
   [ENROLL.SUBMITTING_AUDIO]: false,
@@ -19,54 +25,69 @@ const INITIAL_STATE_FIELDS = {
 
 const INITIAL_STATE :Map<> = Immutable.fromJS(INITIAL_STATE_FIELDS);
 
-function enrollReducer(state :Map<> = INITIAL_STATE, action :Object) {
+export default function enrollReducer(state :Map<*, *> = INITIAL_STATE, action :SequenceAction) {
 
   switch (action.type) {
 
-    case ActionTypes.GET_PROFILE_REQUEST:
-      return state
-        .set(ENROLL.LOADING_PROFILE, true)
-        .set(ENROLL.ERROR, '')
-        .set(ENROLL.PROFILE_ID, '')
-        .set(ENROLL.PIN, '');
+    case getProfile.case(action.type): {
+      return getProfile.reducer(state, action, {
+        REQUEST: () => state
+          .set(ENROLL.LOADING_PROFILE, true)
+          .set(ENROLL.ERROR, '')
+          .set(ENROLL.PROFILE_ID, '')
+          .set(ENROLL.PIN, ''),
+        SUCCESS: () => {
+          const {
+            numSubmissions,
+            pin,
+            profileEntityKeyId,
+            profileId
+          } = action.value;
+          return state
+            .set(ENROLL.PROFILE_ID, profileId)
+            .set(ENROLL.ENTITY_KEY_ID, profileEntityKeyId)
+            .set(ENROLL.PIN, pin)
+            .set(ENROLL.NUM_SUBMISSIONS, numSubmissions)
+            .set(ENROLL.ERROR, '');
+        },
+        FAILURE: () => {
+          const { error } = action.value;
+          return state
+            .set(ENROLL.PROFILE_ID, '')
+            .set(ENROLL.PIN, '')
+            .set(ENROLL.ERROR, error);
+        },
+        FINALLY: () => state
+          .set(ENROLL.LOADING_PROFILE, false)
+      });
+    }
 
-    case ActionTypes.GET_PROFILE_SUCCESS:
-      return state
-        .set(ENROLL.PROFILE_ID, action.profileId)
-        .set(ENROLL.PIN, action.pin)
-        .set(ENROLL.LOADING_PROFILE, false)
-        .set(ENROLL.NUM_SUBMISSIONS, action.numSubmissions)
-        .set(ENROLL.ERROR, '');
+    case enrollVoice.case(action.type): {
+      return enrollVoice.reducer(state, action, {
+        REQUEST: () => state
+          .set(ENROLL.SUBMITTING_AUDIO, true)
+          .set(ENROLL.ERROR, ''),
+        SUCCESS: () => {
+          const { numSubmissions } = action.value;
+          return state
+            .set(ENROLL.NUM_SUBMISSIONS, numSubmissions)
+            .set(ENROLL.ERROR, '');
+        },
+        FAILURE: () => {
+          const { error } = action.value;
+          return state.set(ENROLL.ERROR, error);
+        },
+        FINALLY: () => state.set(ENROLL.SUBMITTING_AUDIO, false)
+      });
+    }
 
-    case ActionTypes.GET_PROFILE_FAILURE:
-      return state
-        .set(ENROLL.PROFILE_ID, '')
-        .set(ENROLL.PIN, '')
-        .set(ENROLL.ERROR, action.errorMessage)
-        .set(ENROLL.LOADING_PROFILE, false);
-
-    case ActionTypes.ENROLL_VOICE_REQUEST:
-      return state
-        .set(ENROLL.SUBMITTING_AUDIO, true)
-        .set(ENROLL.ERROR, '');
-
-    case ActionTypes.ENROLL_VOICE_SUCCESS:
-      return state
-        .set(ENROLL.NUM_SUBMISSIONS, action.numSubmissions)
-        .set(ENROLL.SUBMITTING_AUDIO, false)
-        .set(ENROLL.ERROR, '');
-
-    case ActionTypes.ENROLL_VOICE_FAILURE:
-      return state
-        .set(ENROLL.ERROR, action.errorMessage)
-        .set(ENROLL.SUBMITTING_AUDIO, false);
-
-    case ActionTypes.CLEAR_ERROR:
+    case CLEAR_ENROLL_ERROR:
       return state.set(ENROLL.ERROR, '');
+
+    case CLEAR_ENROLL_STATE:
+      return INITIAL_STATE;
 
     default:
       return state;
   }
 }
-
-export default enrollReducer;

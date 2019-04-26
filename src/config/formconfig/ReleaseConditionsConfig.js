@@ -2,7 +2,7 @@ import { ALIASES, PERSON_CONFIG } from './ConfigConsts';
 import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { ID_FIELD_NAMES, LIST_FIELDS } from '../../utils/consts/Consts';
 
-const psaConfig = {
+const releaseConditionsConfig = {
   entitySets: [
     PERSON_CONFIG,
     {
@@ -60,7 +60,7 @@ const psaConfig = {
       multipleValuesField: LIST_FIELDS.RELEASE_CONDITIONS_FIELD,
       fields: {
         [PROPERTY_TYPES.GENERAL_ID]: PROPERTY_TYPES.GENERAL_ID,
-        [PROPERTY_TYPES.CONDITION_TYPE]: PROPERTY_TYPES.CONDITION_TYPE,
+        [PROPERTY_TYPES.TYPE]: PROPERTY_TYPES.TYPE,
         [PROPERTY_TYPES.FREQUENCY]: PROPERTY_TYPES.FREQUENCY,
         [PROPERTY_TYPES.OTHER_TEXT]: PROPERTY_TYPES.OTHER_TEXT,
         [PROPERTY_TYPES.PLAN_TYPE]: PROPERTY_TYPES.PLAN_TYPE,
@@ -70,8 +70,28 @@ const psaConfig = {
       }
     },
     {
+      name: APP_TYPES_FQNS.CHECKIN_APPOINTMENTS,
+      alias: ALIASES.CHECKIN_APPOINTMENT,
+      entityId: PROPERTY_TYPES.GENERAL_ID,
+      multipleValuesField: LIST_FIELDS.CHECKIN_APPOINTMENTS_FIELD,
+      fields: {
+        [PROPERTY_TYPES.GENERAL_ID]: PROPERTY_TYPES.GENERAL_ID,
+        [PROPERTY_TYPES.TYPE]: PROPERTY_TYPES.TYPE,
+        [PROPERTY_TYPES.START_DATE]: PROPERTY_TYPES.START_DATE,
+        [PROPERTY_TYPES.END_DATE]: PROPERTY_TYPES.END_DATE
+      }
+    },
+    {
       name: APP_TYPES_FQNS.REGISTERED_FOR,
       alias: ALIASES.REGISTERED_FOR,
+      fields: {
+        [PROPERTY_TYPES.COMPLETED_DATE_TIME]: PROPERTY_TYPES.COMPLETED_DATE_TIME
+      }
+    },
+    {
+      name: APP_TYPES_FQNS.REGISTERED_FOR,
+      alias: ALIASES.APPOINTMENT_REGISTERED_FOR,
+      multipleValuesEntity: LIST_FIELDS.CHECKIN_APPOINTMENTS_FIELD,
       fields: {
         [PROPERTY_TYPES.COMPLETED_DATE_TIME]: PROPERTY_TYPES.COMPLETED_DATE_TIME
       }
@@ -136,6 +156,18 @@ const psaConfig = {
       association: ALIASES.REGISTERED_FOR_THREE
     },
 
+    // Check-in Appointments registered for _____
+    {
+      src: ALIASES.CHECKIN_APPOINTMENT,
+      dst: ALIASES.PERSON,
+      association: ALIASES.APPOINTMENT_REGISTERED_FOR
+    },
+    {
+      src: ALIASES.CHECKIN_APPOINTMENT,
+      dst: ALIASES.HEARING,
+      association: ALIASES.APPOINTMENT_REGISTERED_FOR
+    },
+
     // Release conditions registered for _____
     {
       src: ALIASES.RELEASE_CONDITION,
@@ -170,4 +202,4 @@ const psaConfig = {
   ]
 };
 
-export default psaConfig;
+export default releaseConditionsConfig;

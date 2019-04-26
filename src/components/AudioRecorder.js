@@ -6,6 +6,7 @@ import PropTypes from 'prop-types';
 
 import styled from 'styled-components';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCircle, faHourglassHalf } from '@fortawesome/pro-solid-svg-icons';
 
 import StyledButton from './buttons/StyledButton';
 
@@ -76,6 +77,7 @@ class AudioRecorder extends React.Component {
   }
 
   componentDidMount() {
+    const { hasMedia } = this.state;
     const mediaSupport :boolean = !!(
       navigator.getUserMedia
       || navigator.webkitGetUserMedia
@@ -88,13 +90,15 @@ class AudioRecorder extends React.Component {
       return;
     }
 
-    if (!this.state.hasMedia) {
+    if (!hasMedia) {
       this.requestUserMedia();
     }
   }
 
   componentWillUnmount() {
     this.onStop();
+    // turn off user media
+    this.mediaRecorder.stream.getTracks().forEach(track => track.stop());
   }
 
   requestUserMedia = () => {
@@ -303,7 +307,7 @@ class AudioRecorder extends React.Component {
     `;
 
     const Icon = styled(FontAwesomeIcon).attrs({
-      name: 'hourglass-half'
+      icon: faHourglassHalf
     })`
       margin-right: 7px;
     `;
@@ -325,7 +329,7 @@ class AudioRecorder extends React.Component {
       );
     }
     const RecordIcon = styled(FontAwesomeIcon).attrs({
-      name: 'circle'
+      icon: faCircle
     })`
       color: ${this.state.recording ? '#b80000' : 'black'}
     `;

@@ -36,9 +36,21 @@ const PeopleList = ({ people, isFetchingPeople, didMapPeopleToProps } :Props) =>
   const renderPersonCards = () => {
     try {
       if (people && people.size > 0) {
-        return people.map(person => <PersonCard key={person.identification} personObj={person} />);
+        const personCards = people.map(person => (
+          <PersonCard
+              hasOpenPSA={person.hasOpenPSA}
+              multipleOpenPSAs={person.multipleOpenPSAs}
+              isReceivingReminders={person.isReceivingReminders}
+              key={person.personId}
+              personObj={person} />
+        ));
+        return (
+          <CardsWrapper>
+            { personCards }
+          </CardsWrapper>
+        );
       }
-      else if (people && people.size === 0 && didMapPeopleToProps) {
+      if (people && people.size === 0 && didMapPeopleToProps) {
         return <NoSearchResultsPadded />;
       }
 
@@ -53,12 +65,9 @@ const PeopleList = ({ people, isFetchingPeople, didMapPeopleToProps } :Props) =>
     }
   };
 
-  return (
-    <CardsWrapper>
-      { renderPersonCards() }
-      { isFetchingPeople ? <LogoLoader loadingText="Searching..." /> : null }
-    </CardsWrapper>
-  );
+  return isFetchingPeople
+    ? <LogoLoader loadingText="Searching..." />
+    : renderPersonCards();
 };
 
 export default PeopleList;

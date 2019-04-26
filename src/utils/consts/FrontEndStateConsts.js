@@ -3,12 +3,15 @@
 export const STATE = {
   APP: 'app',
   AUTH: 'auth',
-  COURT: 'court',
   CHARGES: 'charges',
+  CHECK_INS: 'checkIns',
+  COURT: 'court',
   DASHBOARD: 'dashboard',
   DOWNLOAD: 'download',
   EDM: 'edm',
   ENROLL: 'enroll',
+  HEARINGS: 'hearings',
+  MANUAL_REMINDERS: 'manualReminders',
   PSA_MODAL: 'psaModal',
   PSA: 'psa',
   PEOPLE: 'people',
@@ -70,6 +73,16 @@ export const CHARGES = {
   LOADING: 'loadingCharges'
 };
 
+// Check-Ins
+export const CHECK_IN = {
+  CHECK_INS_LOADED: 'checkInsLoaded',
+  LOADING_CHECK_INS: 'loadingCheckIns',
+  CHECK_IN_IDS: 'checkInIds',
+  CHECK_INS_BY_ID: 'checkInsById',
+  LOADING_CHECK_IN_NEIGHBORS: 'loadingCheckInNieghbors',
+  CHECK_IN_NEIGHBORS_BY_ID: 'checkInNeighborsById'
+};
+
 // Court
 
 export const COURT = {
@@ -79,6 +92,7 @@ export const COURT = {
   HEARINGS_NEIGHBORS_BY_ID: 'hearingNeighborsById',
   PEOPLE_WITH_OPEN_PSAS: 'peopleWithOpenPsas',
   PEOPLE_WITH_MULTIPLE_OPEN_PSAS: 'peopleWithMultipleOpenPsas',
+  PEOPLE_RECEIVING_REMINDERS: 'peopleReceivingReminders',
   LOADING_HEARINGS: 'isLoadingHearings',
   LOADING_HEARING_NEIGHBORS: 'isLoadingHearingsNeighbors',
   HEARING_IDS_REFRESHING: 'hearingIdsRefreshing',
@@ -136,11 +150,38 @@ export const EDM = {
 
 export const ENROLL = {
   LOADING_PROFILE: 'loadingProfile',
+  ENTITY_KEY_ID: 'profileEntityKeyId',
   PROFILE_ID: 'profileId',
   PIN: 'pin',
   SUBMITTING_AUDIO: 'submittingAudio',
   NUM_SUBMISSIONS: 'numSubmissions',
   ERROR: 'errorMessage'
+};
+
+// Hearings
+
+export const HEARINGS = {
+  SETTINGS_MODAL_OPEN: 'hearingSettingsModalOpen',
+  DATE: 'hearingDate',
+  TIME: 'hearingTime',
+  COURTROOM: 'hearingCourtroom',
+  JUDGE: 'hearingJudge'
+};
+
+// Manual Reminders
+
+export const MANUAL_REMINDERS = {
+  REMINDER_IDS: 'manualReminderIds',
+  REMINDERS_BY_ID: 'manualRemindersById',
+  SUCCESSFUL_REMINDER_IDS: 'successfulManualReminderIds',
+  PEOPLE_RECEIVING_REMINDERS: 'peopleReceivingManualReminders',
+  FAILED_REMINDER_IDS: 'failedManualReminderIds',
+  LOADING_MANUAL_REMINDERS: 'loadingManualReminders',
+  LOADED: 'manualRemindersLoaded',
+  MANUAL_REMINDER_NEIGHBORS: 'manualReminderNeighborsById',
+  LOADING_REMINDER_NEIGHBORS: 'loadingManualReminderNeighbors',
+  LOADING_FORM: 'loadingManualReminderForm',
+  PEOPLE_NEIGHBORS: 'peopleNeighborsForManualReminder'
 };
 
 // PSA Modal
@@ -236,7 +277,8 @@ export const RELEASE_COND = {
   PERSON_NEIGHBORS: 'personNeighbors',
   PSA_NEIGHBORS: 'psaNeighbors',
   LOADING_RELEASE_CONDITIONS: 'loadingReleaseCondtions',
-  REFRESHING_RELEASE_CONDITIONS: 'refreshingReleaseConditions'
+  REFRESHING_RELEASE_CONDITIONS: 'refreshingReleaseConditions',
+  REFRESHING_SELECTED_HEARING: 'refreshingSelectedHearing'
 };
 
 // Reminders
@@ -248,6 +290,7 @@ export const REMINDERS = {
   SUCCESSFUL_REMINDER_IDS: 'successfulReminderIds',
   FAILED_REMINDER_IDS: 'failedReminderIds',
   LOADING_REMINDERS: 'loadingReminders',
+  LOADED: 'remindersLoaded',
   REMINDER_NEIGHBORS: 'reminderNeighborsById',
   REMINDERS_WITH_OPEN_PSA_IDS: 'remindersWithOpenPSA',
   LOADING_REMINDER_NEIGHBORS: 'loadingReminderNeighbors',
@@ -296,6 +339,7 @@ export const SEARCH = {
   SELECTED_PERSON_ID: 'selectedPersonId',
   PERSON_DETAILS: 'personDetails',
   LOADING_PERSON_DETAILS: 'loadingPersonDetails',
+  PERSON_DETAILS_LOADED: 'personDetailsLoaded',
   LOADING_CASES: 'loadingCases',
   NUM_CASES_TO_LOAD: 'numCasesToLoad',
   NUM_CASES_LOADED: 'numCasesLoaded',
@@ -308,6 +352,8 @@ export const SEARCH = {
 // Submit
 
 export const SUBMIT = {
+  CREATING_ASSOCIATIONS: 'creatingAssociations',
+  CREATE_ASSOCIATIONS_COMPLETE: 'createAssociationComplete',
   REPLACING_ENTITY: 'replacingEntity',
   REPLACE_ENTITY_SUCCESS: 'replaceEntitySuccess',
   UPDATING_ENTITY: 'updatingEntity',

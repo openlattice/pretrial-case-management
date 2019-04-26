@@ -45,9 +45,14 @@ import { getEntityKeyId } from '../../utils/DataUtils';
 import { toISODateTime } from '../../utils/FormattingUtils';
 import { getScoresAndRiskFactors, calculateDMF, getDMFRiskFactors } from '../../utils/ScoringUtils';
 import { tryAutofillFields } from '../../utils/AutofillUtils';
-import { PROPERTY_TYPES, SETTINGS, MODULE } from '../../utils/consts/DataModelConsts';
+import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { STATUS_OPTIONS_FOR_PENDING_PSAS } from '../../utils/consts/ReviewPSAConsts';
-import { DOMAIN } from '../../utils/consts/ReportDownloadTypes';
+import {
+  CASE_CONTEXTS,
+  CONTEXTS,
+  MODULE,
+  SETTINGS
+} from '../../utils/consts/AppSettingConsts';
 import {
   CONTEXT,
   DMF,
@@ -309,6 +314,7 @@ type Props = {
       callback? :() => void
     }) => void
   },
+  arrestCharges :Immutable.Map<*, *>,
   allCasesForPerson :Immutable.List<*>,
   allChargesForPerson :Immutable.List<*>,
   allContacts :Immutable.Map<*>,
@@ -324,6 +330,7 @@ type Props = {
   bookingReleaseExceptionCharges :Immutable.Map<*, *>,
   caseLoadsComplete :boolean,
   charges :Immutable.List<*>,
+  courtCharges :Immutable.Map<*, *>,
   dmfStep2Charges :Immutable.Map<*, *>,
   dmfStep4Charges :Immutable.Map<*, *>,
   history :string[],
@@ -527,7 +534,13 @@ class Form extends React.Component<Props, State> {
       values[ID_FIELD_NAMES.ARREST_ID] = [arrestId];
     }
 
-    const config = psaConfig;
+    // Get Case Context from settings and pass to config
+    const caseContext = psaForm.get(DMF.COURT_OR_BOOKING) === CONTEXT.BOOKING ? CONTEXTS.BOOKING : CONTEXTS.COURT;
+    const chargeType = selectedOrganizationSettings.getIn([SETTINGS.CASE_CONTEXTS, caseContext]);
+    const manualCourtCasesAndCharges = (chargeType === CASE_CONTEXTS.COURT);
+
+    const config = psaConfig({ manualCourtCasesAndCharges });
+
 
     if ((values[DMF.COURT_OR_BOOKING] !== CONTEXT.BOOKING) || !includesPretrialModule) {
       delete values[DMF.SECONDARY_RELEASE_CHARGES];
@@ -566,7 +579,7 @@ class Form extends React.Component<Props, State> {
 
   nextPage = () => {
     const { selectedOrganizationSettings } = this.props;
-    const skipLoad = !selectedOrganizationSettings.get(SETTINGS.LOAD_CASES, true);
+    const skipLoad = !selectedOrganizationSettings.get(SETTINGS.ARRESTS_INTEGRATED, true);
     const nextPage = getNextPath(window.location, numPages, skipLoad);
     this.handlePageChange(nextPage);
   }
@@ -608,62 +621,6 @@ class Form extends React.Component<Props, State> {
     });
     return map;
   };
-
-  renderExportButton = () => {
-    const {
-      selectedPretrialCase,
-      charges,
-      selectedPerson,
-      arrestOptions,
-      allChargesForPerson,
-      allSentencesForPerson,
-      allFTAs,
-      psaForm
-    } = this.props;
-
-    const {
-      dmfRiskFactors,
-      riskFactors,
-      scores,
-      scoresWereGenerated
-    } = this.state;
-
-    const notes = psaForm.get(PSA.NOTES, '');
-
-    if (!scoresWereGenerated) return null;
-    const data = Immutable.fromJS(this.state)
-      .set('notes', notes)
-      .set('scores', scores)
-      .set('riskFactors', this.setMultimapToMap(riskFactors))
-      .set('psaRiskFactors', Immutable.fromJS(riskFactors))
-      .set('dmfRiskFactors', Immutable.fromJS(dmfRiskFactors));
-
-    return (
-      <ButtonWrapper>
-        <Button
-            bsStyle="info"
-            onClick={() => {
-              exportPDF(
-                data,
-                selectedPretrialCase,
-                List(),
-                charges,
-                selectedPerson,
-                arrestOptions,
-                allChargesForPerson,
-                allSentencesForPerson,
-                allFTAs,
-                {
-                  user: this.getStaffId(),
-                  timestamp: toISODateTime(moment())
-                }
-              );
-            }}>
-            Export as PDF
-        </Button>
-      </ButtonWrapper>
-    );
-  }
 
   renderDiscardButton = () => <DiscardButton onClick={this.handleClose}>Discard</DiscardButton>;
 
@@ -843,16 +800,57 @@ class Form extends React.Component<Props, State> {
     );
   }
 
+  formatCharge = charge => (
+    `${
+      charge.getIn([PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE, 0], '')
+    } ${
+      charge.getIn([PROPERTY_TYPES.REFERENCE_CHARGE_DESCRIPTION, 0], '')
+    }`
+  );
+
+  formatChargeOptions = () => {
+    const {
+      arrestCharges,
+      courtCharges,
+      psaForm,
+      selectedOrganizationSettings,
+      selectedOrganizationId
+    } = this.props;
+
+    const caseContext = psaForm.get(DMF.COURT_OR_BOOKING) === CONTEXT.BOOKING ? CONTEXTS.BOOKING : CONTEXTS.COURT;
+    const chargeType = selectedOrganizationSettings.getIn([SETTINGS.CASE_CONTEXTS, caseContext]);
+    const chargesByOrgId = chargeType === CASE_CONTEXTS.COURT ? courtCharges : arrestCharges;
+
+    const orgCharges = chargesByOrgId.get(selectedOrganizationId, Map()).valueSeq();
+    let chargeOptions = Map();
+    orgCharges.forEach((charge) => {
+      chargeOptions = chargeOptions.set(this.formatCharge(charge), charge);
+    });
+    return chargeOptions.sortBy((statute, _) => statute);
+  }
+
   getSelectChargesSection = () => {
     const {
       actions,
       charges,
-      selectedPretrialCase
+      isLoadingNeighbors,
+      loadingPersonDetails,
+      psaForm,
+      selectedPretrialCase,
+      selectedOrganizationSettings,
     } = this.props;
+    const caseContext = psaForm.get(DMF.COURT_OR_BOOKING) === CONTEXT.BOOKING ? CONTEXTS.BOOKING : CONTEXTS.COURT;
+    const chargeType = selectedOrganizationSettings.getIn([SETTINGS.CASE_CONTEXTS, caseContext]);
+    if (isLoadingNeighbors || loadingPersonDetails) {
+      return <LogoLoader loadingText="Loading Person Details..." />;
+    }
+
     return (
       <SelectChargesContainer
+          chargeType={chargeType}
           defaultArrest={selectedPretrialCase}
           defaultCharges={charges}
+          chargeOptions={this.formatChargeOptions()}
           nextPage={this.nextPage}
           prevPage={this.prevPage}
           onSubmit={actions.addCaseAndCharges} />
@@ -965,8 +963,9 @@ class Form extends React.Component<Props, State> {
       allFTAs,
       violentArrestCharges,
       violentCourtCharges,
+      psaForm,
       selectedOrganizationId,
-      psaForm
+      selectedOrganizationSettings
     } = this.props;
     const { dmfRiskFactors, riskFactors, scores } = this.state;
     const violentArrestChargeList = violentArrestCharges.get(selectedOrganizationId, List());
@@ -996,7 +995,8 @@ class Form extends React.Component<Props, State> {
         timestamp: toISODateTime(moment())
       },
       false,
-      isCompact
+      isCompact,
+      selectedOrganizationSettings
     );
   }
 

@@ -3,6 +3,16 @@
  */
 import { APP } from './consts/FrontEndStateConsts';
 
+import { ORG_IDS } from './consts/DataModelConsts';
+import { CONTEXT } from './consts/Consts';
+
+const {
+  COURT_MINN,
+  COURT_PENN,
+  COURT_SHELBY,
+  DEMO_ORG,
+} = CONTEXT;
+
 export const defaultSettings = {
   contexts: {
     court: true,
@@ -16,8 +26,32 @@ export const defaultSettings = {
   }
 };
 
-export const getEntitySetIdFromApp :string = (app, FQN :string, orgId :string) => app.getIn([
-  FQN,
-  APP.ENTITY_SETS_BY_ORG,
-  orgId
-]);
+export const getEntitySetIdFromApp :string = (app, fqn :string) => {
+  const orgId = app.get(APP.SELECTED_ORG_ID);
+  return app.getIn([
+    fqn,
+    APP.ENTITY_SETS_BY_ORG,
+    orgId
+  ]);
+};
+
+export const getJurisdiction :string = (selectedOrganizationId) => {
+  let jurisdiction;
+  switch (selectedOrganizationId) {
+    case ORG_IDS.PENNINGTON_SD:
+      jurisdiction = COURT_PENN;
+      break;
+    case ORG_IDS.MINNEHAHA_SD:
+      jurisdiction = COURT_MINN;
+      break;
+    case ORG_IDS.SHELBY_TN:
+      jurisdiction = COURT_SHELBY;
+      break;
+    case ORG_IDS.DEMO_ORG:
+    case ORG_IDS.PCM_DEMO_ORG:
+    default:
+      jurisdiction = DEMO_ORG;
+      break;
+  }
+  return jurisdiction;
+};

@@ -14,22 +14,17 @@ import PersonCard from '../person/PersonCardReview';
 import PSAReportDownloadButton from './PSAReportDownloadButton';
 import PSAStats from './PSAStats';
 import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
-import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
 import { psaIsClosed } from '../../utils/PSAUtils';
 import { PSA_NEIGHBOR, PSA_ASSOCIATION } from '../../utils/consts/FrontEndStateConsts';
 
-let {
+const {
   ASSESSED_BY,
   EDITED_BY,
   PEOPLE,
   STAFF,
-} = APP_TYPES_FQNS;
-
-ASSESSED_BY = ASSESSED_BY.toString();
-EDITED_BY = EDITED_BY.toString();
-PEOPLE = PEOPLE.toString();
-STAFF = STAFF.toString();
+} = APP_TYPES;
 
 
 const ReviewRowContainer = styled.div`
@@ -320,32 +315,21 @@ export default class PSAReviewReportsRow extends React.Component<Props, State> {
     });
 
     const isClosed = psaIsClosed(scores);
-    const editLabel = psaIsClosed(scores) ? 'Closed' : 'Edited';
+    const editLabel = isClosed ? 'Closed' : 'Edited';
     if (!(dateCreated || dateEdited) && !(creator || editor)) return null;
 
     const dateCreatedText = dateCreated ? dateCreated.format(dateFormat) : '';
     const dateEditedText = dateEdited ? dateEdited.format(dateFormat) : '';
 
-    const openMetadata = (dateEdited || editor)
-      ? <MetadataItem>{this.renderMetadataText(editLabel, dateEditedText, editor)}</MetadataItem>
-      : <MetadataItem>{this.renderMetadataText('Created', dateCreatedText, creator)}</MetadataItem>;
-
     return (
       <MetadataWrapper>
-        {
-          isClosed && (component === CONTENT_CONSTS.PENDING_PSAS)
-            ? (
-              <MetadataSubWrapper>
-                <MetadataItem>{this.renderMetadataText('Created', dateCreatedText, creator)}</MetadataItem>
-                <MetadataItem>{this.renderMetadataText(editLabel, dateEditedText, editor)}</MetadataItem>
-              </MetadataSubWrapper>
-            )
-            : (
-              <MetadataSubWrapper>
-                {openMetadata}
-              </MetadataSubWrapper>
-            )
-        }
+        <MetadataSubWrapper>
+          <MetadataItem>{this.renderMetadataText('Created', dateCreatedText, creator)}</MetadataItem>
+          { (dateEdited || editor)
+            ? <MetadataItem>{this.renderMetadataText(editLabel, dateEditedText, editor)}</MetadataItem>
+            : null
+          }
+        </MetadataSubWrapper>
       </MetadataWrapper>
     );
   }

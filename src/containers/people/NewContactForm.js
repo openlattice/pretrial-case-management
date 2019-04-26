@@ -4,7 +4,6 @@
 
 import React from 'react';
 import styled from 'styled-components';
-import randomUUID from 'uuid/v4';
 import { Map } from 'immutable';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -14,7 +13,7 @@ import StyledInput from '../../components/controls/StyledInput';
 import InfoButton from '../../components/buttons/InfoButton';
 import CheckboxButton from '../../components/controls/StyledCheckboxButton';
 import { FORM_IDS } from '../../utils/consts/Consts';
-import { phoneIsValid, emailIsValid } from '../../utils/PeopleUtils';
+import { phoneIsValid, emailIsValid, formatPhoneNumber } from '../../utils/ContactInfoUtils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
 import { InputGroup } from '../../components/person/PersonFormTags';
@@ -117,7 +116,7 @@ const INITIAL_STATE = {
   [PROPERTY_TYPES.IS_PREFERRED]: false
 };
 
-class NewHearingSection extends React.Component<Props, State> {
+class NewContactForm extends React.Component<Props, State> {
 
   constructor(props :Props) {
     super(props);
@@ -132,6 +131,12 @@ class NewHearingSection extends React.Component<Props, State> {
       return INITIAL_STATE;
     }
     return null;
+  }
+
+  submitCallback = () => {
+    const { submitCallback } = this.state;
+    if (submitCallback) submitCallback();
+    this.refreshPersonNeighborsCallback();
   }
 
   createNewContact = () => {
@@ -171,7 +176,7 @@ class NewHearingSection extends React.Component<Props, State> {
       newContactFields = Object.assign({}, newContactFields, {
         [FORM_IDS.PERSON_ID]: personId
       });
-      const callback = this.refreshPersonNeighborsCallback;
+      const callback = this.submitCallback;
       submit({
         app,
         config: addPersonContactInfoConfig,
@@ -210,7 +215,7 @@ class NewHearingSection extends React.Component<Props, State> {
     else if (phoneIsValid(value)) {
       this.setState({
         [PROPERTY_TYPES.EMAIL]: '',
-        [PROPERTY_TYPES.PHONE]: this.formatPhoneNumber(value),
+        [PROPERTY_TYPES.PHONE]: formatPhoneNumber(value),
         contactMethod: CONTACT_METHODS.PHONE
       });
     }
@@ -225,15 +230,6 @@ class NewHearingSection extends React.Component<Props, State> {
   isReadyToSubmit = () :boolean => {
     const { state } = this;
     return (state[PROPERTY_TYPES.EMAIL] || state[PROPERTY_TYPES.PHONE]);
-  }
-
-  formatPhoneNumber = (phone) => {
-    const cleaned = (phone).replace(/\D/g, '');
-    const match = cleaned.match(/^(\d{3})(\d{3})(\d{4})$/);
-    if (match) {
-      return `(${match[1]}) ${match[2]}-${match[3]}`;
-    }
-    return null;
   }
 
   contactIsValid = () => {
@@ -291,11 +287,13 @@ class NewHearingSection extends React.Component<Props, State> {
     const { submitting, refreshingPersonNeighbors } = this.props;
     const { state } = this;
     const isPreferred = state[PROPERTY_TYPES.IS_PREFERRED];
+    const { contactMethod } = state;
+    const isEmail = contactMethod === CONTACT_METHODS.EMAIL;
     return (
       <InputGroup>
         <InputLabel>Preferred</InputLabel>
         <CheckboxButton
-            disabled={submitting || refreshingPersonNeighbors}
+            disabled={submitting || refreshingPersonNeighbors || isEmail}
             name={PROPERTY_TYPES.IS_PREFERRED}
             onChange={this.updateCheckbox}
             value={isPreferred}
@@ -358,4 +356,4 @@ function mapDispatchToProps(dispatch :Function) :Object {
   };
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(NewHearingSection);
+export default connect(mapStateToProps, mapDispatchToProps)(NewContactForm);

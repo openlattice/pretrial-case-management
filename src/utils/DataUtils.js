@@ -5,7 +5,8 @@ import moment from 'moment';
 import { isImmutable, Map, fromJS } from 'immutable';
 import { Constants } from 'lattice';
 
-import { PROPERTY_TYPES } from './consts/DataModelConsts';
+import federalHolidays from './consts/FederalHolidays';
+import { PROPERTY_TYPES, SEARCH_PREFIX } from './consts/DataModelConsts';
 import { PSA_NEIGHBOR, PSA_ASSOCIATION } from './consts/FrontEndStateConsts';
 
 const { OPENLATTICE_ID_FQN } = Constants;
@@ -55,8 +56,8 @@ export const getIdOrValue = (neighbors :Map<*, *>, entitySetName :string, option
 export const getTimeStamp = (neighbors :Map<*, *>, entitySetName :string) :string => (
   neighbors.getIn([entitySetName, PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.TIMESTAMP], Map())
 );
-export const getNeighborDetailsForEntitySet = (neighbors :Map<*, *>, name :string) :string => (
-  neighbors.getIn([name, PSA_NEIGHBOR.DETAILS], neighbors.get(PSA_NEIGHBOR.DETAILS, Map()))
+export const getNeighborDetailsForEntitySet = (neighbors :Map<*, *>, name :string, defaultValue = Map()) :string => (
+  neighbors.getIn([name, PSA_NEIGHBOR.DETAILS], neighbors.get(PSA_NEIGHBOR.DETAILS, defaultValue))
 );
 export const getAssociationDetailsForEntitySet = (neighbors :Map<*, *>, name :string) :string => (
   neighbors.getIn([name, PSA_ASSOCIATION.DETAILS], neighbors.get(PSA_ASSOCIATION.DETAILS, Map()))
@@ -84,14 +85,18 @@ export const sortByDate = (d1, d2, fqn) => (
 
 export const isUUID = uuid => (/^[A-F\d]{8}-[A-F\d]{4}-4[A-F\d]{3}-[89AB][A-F\d]{3}-[A-F\d]{12}$/i).test(uuid);
 
+const dateOnWeekend = date => date.isoWeekday() === 6 || date.isoWeekday() === 7;
+const dateOnHoliday = date => federalHolidays.includes(date.format('YYYY-MM-DD'));
+
 export function addWeekdays(date, days) {
-  let newDate = moment(date);
-  let count = days;
-  while (count > 0) {
+  let newDate = moment(date).add(days, 'days');
+  let onWeekend = dateOnWeekend(newDate);
+  let onHoliday = dateOnHoliday(newDate);
+
+  while (onWeekend || onHoliday) {
     newDate = newDate.add(1, 'days');
-    if (newDate.isoWeekday() !== 6 && newDate.isoWeekday() !== 7) {
-      count -= 1;
-    }
+    onWeekend = dateOnWeekend(newDate);
+    onHoliday = dateOnHoliday(newDate);
   }
   return newDate;
 }
@@ -108,5 +113,48 @@ export const getMapFromEntityKeysToPropertyKeys = (entity, entityKeyId, property
 
 export const getFirstNeighborValue = (neighborObj, fqn, defaultValue = '') => neighborObj.getIn(
   [PSA_NEIGHBOR.DETAILS, fqn, 0],
-  neighborObj.getIn([fqn, 0], defaultValue)
+  neighborObj.getIn([fqn, 0], neighborObj.get(fqn, defaultValue))
 );
+
+export const getDateAndTime = (dateTime) => {
+  const date = moment(dateTime).format('MM/DD/YYYY');
+  const time = moment(dateTime).format('HH:mm');
+
+  return { date, time };
+};
+
+// Pass entity object and list of property types and will return and object of labels
+// mapped to properties.
+export const getEntityProperties = (entityObj, propertyList) => {
+  let returnCaseFields = Map();
+  if (propertyList.length) {
+    propertyList.forEach((propertyType) => {
+      const backUpValue = entityObj.get(propertyType, '');
+      const property = getFirstNeighborValue(entityObj, propertyType, backUpValue);
+      returnCaseFields = returnCaseFields.set(propertyType, property);
+    });
+  }
+  return returnCaseFields.toJS();
+};
+
+export const getCreateAssociationObject = ({
+  associationEntity,
+  srcEntitySetId,
+  srcEntityKeyId,
+  dstEntitySetId,
+  dstEntityKeyId
+}) => (
+  {
+    data: associationEntity,
+    src: {
+      entitySetId: srcEntitySetId,
+      entityKeyId: srcEntityKeyId
+    },
+    dst: {
+      entitySetId: dstEntitySetId,
+      entityKeyId: dstEntityKeyId
+    }
+  }
+);
+
+export const getSearchTerm = (propertyTypeId, searchString) => `${SEARCH_PREFIX}.${propertyTypeId}:"${searchString}"`;

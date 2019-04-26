@@ -3,11 +3,12 @@
  */
 
 import JSPDF from 'jspdf';
-import Immutable from 'immutable';
+import Immutable, { Set } from 'immutable';
 
 import { PROPERTY_TYPES } from './consts/DataModelConsts';
 import { sortPeopleByName, formatPeopleInfo } from './PeopleUtils';
-import { getHearingFields } from './consts/HearingConsts';
+import { getEntityProperties } from './DataUtils';
+import { getHearingString } from './HearingUtils';
 import {
   formatValue,
   formatDateTime
@@ -124,12 +125,11 @@ const hearing = (
   doc :Object,
   yInit :number,
   pageInit :number,
-  selectedHearing :Immutable.Map<*, *>,
+  selectedHearing :Immutable.List<*, *>,
 ) :number[] => {
   let y :number = yInit;
   let page :number = pageInit;
-
-  const { hearingDateTime, hearingType, courtroom } = getHearingFields(selectedHearing);
+  let hearingList = Set();
   hearingHeader(doc, y, X_COL_1, 'Address');
   y += Y_INC_SMALL;
   doc.text(X_COL_1, y, '315 St Joseph St, Rapid City, SD 57701');
@@ -137,12 +137,37 @@ const hearing = (
   hearingHeader(doc, y, X_COL_1, 'Hearing Date');
   hearingHeader(doc, y, X_COL_2, 'Hearing Type');
   hearingHeader(doc, y, X_COL_3, 'Courtroom');
-  y += Y_INC_SMALL;
-  doc.text(X_COL_1, y, formatDateTime(hearingDateTime));
-  doc.text(X_COL_2, y, hearingType);
-  doc.text(X_COL_3, y, courtroom);
+  selectedHearing.forEach((hearingObj) => {
+    const {
+      [PROPERTY_TYPES.COURTROOM]: courtroom,
+      [PROPERTY_TYPES.DATE_TIME]: hearingDateTime,
+      [PROPERTY_TYPES.HEARING_TYPE]: hearingType
+    } = getEntityProperties(hearingObj, [
+      PROPERTY_TYPES.COURTROOM,
+      PROPERTY_TYPES.DATE_TIME,
+      PROPERTY_TYPES.HEARING_TYPE
+    ]);
+    const hearingCourtStringNoCaseId = getHearingString(hearingObj);
+    if (!hearingList.includes(hearingCourtStringNoCaseId)) {
+      y += Y_INC_SMALL;
+      doc.text(X_COL_1, y, formatDateTime(hearingDateTime));
+      doc.text(X_COL_2, y, hearingType);
+      doc.text(X_COL_3, y, courtroom);
+      hearingList = hearingList.add(hearingCourtStringNoCaseId);
+    }
+  });
   y += 2 * Y_INC_LARGE;
-  doc.text(X_COL_1, y, 'Need help? Call 605-721-4518 or 605-721-4509 with any questions or concerns.');
+  doc.text(X_COL_1, y,
+    'This is a Friendly Court Reminder for your Upcoming Court Date according to your RELEASE PAPERWORK at Booking.')
+  y += Y_INC_SMALL;
+  doc.text(X_COL_1, y,
+  'If you need to reschedule and you have no Attorney assigned or retained, please call the Clerk of Courts at 605-394-2575.');
+  y += Y_INC_LARGE;
+  y += Y_INC_SMALL;
+  doc.text(X_COL_1, y, 'If you’ve already rescheduled, please attend your New Court Date and discard this notice.');
+  y += Y_INC_LARGE;
+  y += Y_INC_SMALL;
+  doc.text(X_COL_1, y, 'Pre-Trial Release Department');
 
   y += Y_INC_SMALL;
   page = pageInit + 1;

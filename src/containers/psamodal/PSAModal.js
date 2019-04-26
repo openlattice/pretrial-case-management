@@ -29,6 +29,7 @@ import ReleaseConditionsSummary from '../../components/releaseconditions/Release
 import ClosePSAModal from '../../components/review/ClosePSAModal';
 import psaEditedConfig from '../../config/formconfig/PsaEditedConfig';
 import closeX from '../../assets/svg/close-x-gray.svg';
+import LoadPersonCaseHistoryButton from '../person/LoadPersonCaseHistoryButton';
 import { getScoresAndRiskFactors, calculateDMF } from '../../utils/ScoringUtils';
 import { getEntityKeyId, getEntitySetId, getIdOrValue } from '../../utils/DataUtils';
 import { CenteredContainer, Title } from '../../utils/Layout';
@@ -38,18 +39,15 @@ import { RESULT_CATEGORIES } from '../../utils/consts/DMFResultConsts';
 import { formatDMFFromEntity } from '../../utils/DMFUtils';
 import { OL } from '../../utils/consts/Colors';
 import { psaIsClosed } from '../../utils/PSAUtils';
-import {
-  APP_TYPES_FQNS,
-  PROPERTY_TYPES,
-  SETTINGS,
-  MODULE
-} from '../../utils/consts/DataModelConsts';
+import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { CONTEXTS, MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
 import {
   APP,
   PSA_NEIGHBOR,
   PSA_ASSOCIATION,
   PSA_MODAL,
-  STATE
+  STATE,
+  SEARCH
 } from '../../utils/consts/FrontEndStateConsts';
 import {
   CONTEXT,
@@ -68,7 +66,7 @@ import * as CourtActionFactory from '../court/CourtActionFactory';
 import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
 import * as DataActionFactory from '../../utils/data/DataActionFactory';
 
-let {
+const {
   BONDS,
   CALCULATED_FOR,
   DMF_RESULTS,
@@ -82,21 +80,7 @@ let {
   RELEASE_CONDITIONS,
   RELEASE_RECOMMENDATIONS,
   STAFF
-} = APP_TYPES_FQNS;
-
-BONDS = BONDS.toString();
-CALCULATED_FOR = CALCULATED_FOR.toString();
-DMF_RESULTS = DMF_RESULTS.toString();
-DMF_RISK_FACTORS = DMF_RISK_FACTORS.toString();
-HEARINGS = HEARINGS.toString();
-MANUAL_PRETRIAL_CASES = MANUAL_PRETRIAL_CASES.toString();
-OUTCOMES = OUTCOMES.toString();
-PEOPLE = PEOPLE.toString();
-PRETRIAL_CASES = PRETRIAL_CASES.toString();
-PSA_RISK_FACTORS = PSA_RISK_FACTORS.toString();
-RELEASE_CONDITIONS = RELEASE_CONDITIONS.toString();
-RELEASE_RECOMMENDATIONS = RELEASE_RECOMMENDATIONS.toString();
-STAFF = STAFF.toString();
+} = APP_TYPES;
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
@@ -199,6 +183,7 @@ const CloseModalX = styled.img.attrs({
 type Props = {
   app :Map<*, *>,
   caseHistory :List<*>,
+  caseLoadsComplete :boolean,
   chargeHistory :Map<*, *>,
   entityKeyId :string,
   ftaHistory :Map<*, *>,
@@ -206,6 +191,8 @@ type Props = {
   hearings :List<*>,
   hearingNeighborsById :Map<*, *>,
   hideProfile? :boolean,
+  loadingCases :boolean,
+  loadingPersonDetails :boolean,
   loadingPSAModal :boolean,
   loadingCaseHistory :boolean,
   manualCaseHistory :List<*>,
@@ -213,6 +200,7 @@ type Props = {
   onClose :() => {},
   open :boolean,
   readOnly :boolean,
+  personDetailsLoaded :boolean,
   personId :string,
   personHearings :Map<*, *>,
   personNeighbors :Map<*, *>,
@@ -623,7 +611,8 @@ class PSAModal extends React.Component<Props, State> {
       caseHistory,
       manualChargeHistory,
       psaPermissions,
-      actions
+      actions,
+      selectedOrganizationSettings
     } = this.props;
     const { riskFactors } = this.state;
     let caseNumbersToAssociationId = Map();
@@ -654,10 +643,17 @@ class PSAModal extends React.Component<Props, State> {
       lastEditDateForPSA
     );
 
+    const psaContext = psaNeighbors.getIn([PSA_RISK_FACTORS, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.CONTEXT, 0], '');
+    const caseContext = psaContext === CONTEXT.BOOKING ? CONTEXTS.BOOKING : CONTEXTS.COURT;
+    // Get Case Context from settings and pass to config
+    let chargeType = selectedOrganizationSettings.getIn([SETTINGS.CASE_CONTEXTS, caseContext], '');
+    chargeType = chargeType.slice(0, 1).toUpperCase() + chargeType.slice(1);
+
     const pendingCharges = currentPendingCharges(chargeHistoryForMostRecentPSA);
 
     return (
       <PSAModalSummary
+          chargeType={chargeType}
           caseNumbersToAssociationId={caseNumbersToAssociationId}
           chargeHistoryForMostRecentPSA={chargeHistoryForMostRecentPSA}
           caseHistoryForMostRecentPSA={caseHistoryForMostRecentPSA}
@@ -795,8 +791,13 @@ class PSAModal extends React.Component<Props, State> {
   renderCaseHistory = () => {
     const {
       caseHistory,
+      caseLoadsComplete,
       chargeHistory,
       scores,
+      loadingCases,
+      loadingCaseHistory,
+      loadingPersonDetails,
+      personDetailsLoaded,
       psaNeighbors,
       psaPermissions
     } = this.props;
@@ -826,26 +827,39 @@ class PSAModal extends React.Component<Props, State> {
       const associationEntityKeyId = pretrialCase.getIn([PSA_ASSOCIATION.DETAILS, OPENLATTICE_ID_FQN, 0]);
       caseNumbersToAssociationId = caseNumbersToAssociationId.set(caseNum, associationEntityKeyId);
     });
+    const personEntityKeyId = getIdOrValue(psaNeighbors, PEOPLE, OPENLATTICE_ID_FQN);
+    const isBetweenLoadingCycles = caseLoadsComplete && personDetailsLoaded && !loadingCaseHistory;
 
     return (
       <ModalWrapper withPadding>
-        <Title withSubtitle>
-          <span>Timeline</span>
-          <span>Convictions in past two years</span>
-        </Title>
+        <TitleWrapper>
+          <Title withSubtitle>
+            <span>Timeline</span>
+            <span>Convictions in past two years</span>
+          </Title>
+          <LoadPersonCaseHistoryButton personEntityKeyId={personEntityKeyId} psaNeighbors={psaNeighbors} />
+        </TitleWrapper>
         <CaseHistoryTimeline caseHistory={caseHistory} chargeHistory={chargeHistory} />
         <hr />
-        <CaseHistory
-            modal
-            addCaseToPSA={this.addCaseToPSA}
-            caseNumbersToAssociationId={caseNumbersToAssociationId}
-            removeCaseFromPSA={this.removeCaseFromPSA}
-            caseHistoryForMostRecentPSA={caseHistoryForMostRecentPSA}
-            chargeHistoryForMostRecentPSA={chargeHistoryForMostRecentPSA}
-            caseHistoryNotForMostRecentPSA={caseHistoryNotForMostRecentPSA}
-            chargeHistoryNotForMostRecentPSA={chargeHistoryNotForMostRecentPSA}
-            chargeHistory={chargeHistory}
-            psaPermissions={psaPermissions} />
+        {
+          (loadingCaseHistory || loadingPersonDetails || isBetweenLoadingCycles || loadingCases)
+            ? (
+              <LogoLoader loadingText="Refreshing Case History" />
+            )
+            : (
+              <CaseHistory
+                  modal
+                  addCaseToPSA={this.addCaseToPSA}
+                  caseNumbersToAssociationId={caseNumbersToAssociationId}
+                  removeCaseFromPSA={this.removeCaseFromPSA}
+                  caseHistoryForMostRecentPSA={caseHistoryForMostRecentPSA}
+                  chargeHistoryForMostRecentPSA={chargeHistoryForMostRecentPSA}
+                  caseHistoryNotForMostRecentPSA={caseHistoryNotForMostRecentPSA}
+                  chargeHistoryNotForMostRecentPSA={chargeHistoryNotForMostRecentPSA}
+                  chargeHistory={chargeHistory}
+                  psaPermissions={psaPermissions} />
+            )
+        }
       </ModalWrapper>
     );
   };
@@ -912,6 +926,8 @@ class PSAModal extends React.Component<Props, State> {
 
   render() {
     const {
+      loadingPSAModal,
+      loadingCaseHistory,
       scores,
       open,
       psaPermissions,
@@ -926,6 +942,8 @@ class PSAModal extends React.Component<Props, State> {
 
     if (!scores) return null;
     const changeStatusText = psaIsClosed(scores) ? 'Change PSA Status' : 'Close PSA';
+
+    const modalHasLoaded = !loadingPSAModal && !loadingCaseHistory;
 
     let tabs = [
       {
@@ -974,15 +992,20 @@ class PSAModal extends React.Component<Props, State> {
               max-height={MODAL_HEIGHT}
               shouldCloseOnOverlayClick
               stackIndex={1}>
-            <ClosePSAModal
-                open={closingPSAModalOpen}
-                defaultStatus={scores.getIn([PROPERTY_TYPES.STATUS, 0])}
-                defaultStatusNotes={scores.getIn([PROPERTY_TYPES.STATUS_NOTES, 0])}
-                defaultFailureReasons={scores.get(PROPERTY_TYPES.FAILURE_REASON, List()).toJS()}
-                onClose={() => this.setState({ closingPSAModalOpen: false })}
-                onSubmit={this.handleStatusChange}
-                scores={scores}
-                entityKeyId={psaId} />
+            { psaPermissions && modalHasLoaded
+              ? (
+                <ClosePSAModal
+                    open={closingPSAModalOpen}
+                    defaultStatus={scores.getIn([PROPERTY_TYPES.STATUS, 0], '')}
+                    defaultStatusNotes={scores.getIn([PROPERTY_TYPES.STATUS_NOTES, 0], '')}
+                    defaultFailureReasons={scores.get(PROPERTY_TYPES.FAILURE_REASON, List()).toJS()}
+                    onClose={() => this.setState({ closingPSAModalOpen: false })}
+                    onSubmit={this.handleStatusChange}
+                    scores={scores}
+                    entityKeyId={psaId} />
+              )
+              : null
+            }
             <TitleWrapper>
               <TitleHeader>
                 PSA Details:
@@ -991,7 +1014,7 @@ class PSAModal extends React.Component<Props, State> {
                 </StyledLink>
               </TitleHeader>
               <div>
-                { psaPermissions
+                { psaPermissions && modalHasLoaded
                   ? (
                     <ClosePSAButton onClick={() => this.setState({ closingPSAModalOpen: true })}>
                       {changeStatusText}
@@ -1013,6 +1036,7 @@ class PSAModal extends React.Component<Props, State> {
 function mapStateToProps(state) {
   const app = state.get(STATE.APP);
   const psaModal = state.get(STATE.PSA_MODAL);
+  const search = state.get(STATE.SEARCH);
   return {
     app,
     [APP.FQN_TO_ID]: app.get(APP.FQN_TO_ID),
@@ -1037,8 +1061,12 @@ function mapStateToProps(state) {
     [PSA_MODAL.CHARGE_HISTORY]: psaModal.get(PSA_MODAL.CHARGE_HISTORY),
     [PSA_MODAL.MANUAL_CHARGE_HISTORY]: psaModal.get(PSA_MODAL.MANUAL_CHARGE_HISTORY),
     [PSA_MODAL.SENTENCE_HISTORY]: psaModal.get(PSA_MODAL.SENTENCE_HISTORY),
-    [PSA_MODAL.FTA_HISTORY]: psaModal.get(PSA_MODAL.FTA_HISTORY)
+    [PSA_MODAL.FTA_HISTORY]: psaModal.get(PSA_MODAL.FTA_HISTORY),
 
+    [SEARCH.LOADING_PERSON_DETAILS]: search.get(SEARCH.LOADING_PERSON_DETAILS),
+    [SEARCH.LOADING_CASES]: search.get(SEARCH.LOADING_CASES),
+    [SEARCH.PERSON_DETAILS_LOADED]: search.get(SEARCH.PERSON_DETAILS_LOADED),
+    [SEARCH.CASE_LOADS_COMPLETE]: search.get(SEARCH.CASE_LOADS_COMPLETE)
   };
 }
 

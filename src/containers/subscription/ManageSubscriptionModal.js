@@ -21,7 +21,7 @@ import ContactInfoTable from '../../components/contactinformation/ContactInfoTab
 import NewContactForm from '../people/NewContactForm';
 import { FORM_IDS } from '../../utils/consts/Consts';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
-import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
 import {
   CloseModalX,
@@ -48,11 +48,7 @@ import * as SubscriptionsActionFactory from './SubscriptionsActionFactory';
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
-let {
-  SUBSCRIPTION
-} = APP_TYPES_FQNS;
-
-SUBSCRIPTION = SUBSCRIPTION.toString();
+const { SUBSCRIPTION } = APP_TYPES;
 
 const ContactHeader = styled.div`
   display: flex;
@@ -128,7 +124,6 @@ type Props = {
   person :Map<*, *>,
   readOnlyPermissions :boolean,
   refreshingPersonNeighbors :boolean,
-  selectedOrganizationId :string,
   subscription :Map<*, *>,
   submitting :boolean,
   updatingEntity :boolean,
@@ -229,11 +224,10 @@ class ManageSubscriptionModal extends React.Component<Props, State> {
       actions,
       app,
       fqnToIdMap,
-      subscription,
-      selectedOrganizationId
+      subscription
     } = this.props;
     const isSubscribed = subscription.getIn([PROPERTY_TYPES.IS_ACTIVE, 0], false);
-    const entitySetId = getEntitySetIdFromApp(app, SUBSCRIPTION, selectedOrganizationId);
+    const entitySetId = getEntitySetIdFromApp(app, SUBSCRIPTION);
     const entityKeyId = subscription.getIn([OPENLATTICE_ID_FQN, 0], '');
     const values = {
       [entityKeyId]: {

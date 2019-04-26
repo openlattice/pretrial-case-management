@@ -7,11 +7,9 @@ import Immutable from 'immutable';
 import moment from 'moment';
 
 import ContentBlock from '../ContentBlock';
-import InfoButton from '../buttons/InfoButton';
 import ContentSection from '../ContentSection';
 import defaultUserIcon from '../../assets/svg/profile-placeholder-rectangle-big.svg';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { formatDateList, formatValue } from '../../utils/FormattingUtils';
 import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
 
@@ -24,12 +22,6 @@ const {
   PICTURE
 } = PROPERTY_TYPES;
 
-const EditContactButton = styled(InfoButton)`
-  padding: 0;
-  font-size: 14px;
-  width: 160px;
-  height: 40px;
-`;
 const HeaderWrapper = styled.div`
   width: 100%;
   display: flex;
@@ -38,28 +30,17 @@ const HeaderWrapper = styled.div`
 `;
 
 type Props = {
-  selectedPersonData :Immutable.Map<*, *>,
-  contactInfo :Immutable.Map<*, *>,
-  openUpdateContactModal :() => void
+  selectedPersonData :Immutable.Map<*, *>
 }
 
 class AboutPersonGeneral extends React.Component<Props, *> {
-
-  renderContactModal = () => {
-    const { openUpdateContactModal } = this.props;
-    return (
-      <EditContactButton onClick={openUpdateContactModal}>
-        Edit Contact Info
-      </EditContactButton>
-    );
-  };
 
   formatName = name => (
     name.split(' ').map(n => (n.charAt(0).toUpperCase() + n.slice(1).toLowerCase())).join(' ')
   )
 
   render() {
-    const { selectedPersonData, contactInfo } = this.props;
+    const { selectedPersonData } = this.props;
 
     let generalContent = [];
 
@@ -72,8 +53,6 @@ class AboutPersonGeneral extends React.Component<Props, *> {
     const formattedLastName = this.formatName(lastName);
     const dobList = selectedPersonData.get(DOB, Immutable.List());
     const dob = formatDateList(dobList);
-    const phone = contactInfo.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.PHONE, 0], '');
-    const isMobile = contactInfo.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.IS_MOBILE, 0], '');
     const mugshot :string = selectedPersonData.getIn([MUGSHOT, 0])
       || selectedPersonData.getIn([PICTURE, 0])
       || defaultUserIcon;
@@ -132,7 +111,6 @@ class AboutPersonGeneral extends React.Component<Props, *> {
     const header = (
       <HeaderWrapper>
         {`${firstName} ${middleName} ${lastName}`}
-        {/* { this.renderContactModal() } */}
       </HeaderWrapper>
     );
 

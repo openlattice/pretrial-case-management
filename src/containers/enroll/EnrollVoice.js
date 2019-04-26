@@ -1,36 +1,42 @@
+/*
+ * @flow
+ */
 import React from 'react';
-import PropTypes from 'prop-types';
 import styled from 'styled-components';
-import { faTimes } from '@fortawesome/pro-regular-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
+import { faQuoteLeft, faQuoteRight } from '@fortawesome/pro-regular-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+
 import AudioRecorder from '../../components/AudioRecorder';
 import SearchPersonContainer from '../person/SearchPersonContainer';
-import LoadingSpinner from '../../components/LoadingSpinner';
+import LogoLoader from '../../components/LogoLoader';
 import DotProgressBar from '../../components/DotProgressBar';
 import StyledButton from '../../components/buttons/StyledButton';
 import VOICE_PROMPT from './Consts';
-import * as ActionFactory from './EnrollActionFactory';
-import * as Routes from '../../core/router/Routes';
+import { OL } from '../../utils/consts/Colors';
+import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { STATE, ENROLL } from '../../utils/consts/FrontEndStateConsts';
 import {
-  CloseX,
   StyledFormViewWrapper,
   StyledFormWrapper,
   StyledSectionWrapper,
-  StyledTitleWrapper,
   StyledTopFormNavBuffer
 } from '../../utils/Layout';
 
+import * as EnrollActionFactory from './EnrollActionFactory';
+
 const BodyContainer = styled.div`
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 `;
 
-const LoadingProfileText = styled.div`
-  font-size: 18px;
-  margin: 20px;
+const SectionWrapper = styled(StyledSectionWrapper)`
+  border: none;
 `;
 
 const PromptHeaderText = styled.div`
@@ -38,17 +44,17 @@ const PromptHeaderText = styled.div`
 `;
 
 const QuoteLeft = styled(FontAwesomeIcon).attrs({
-  name: 'quote-left'
+  icon: faQuoteLeft
 })`
   margin: 0 6px 0 -20px;
-  color: #36454f;
+  color: ${OL.PURPLE03};
 `;
 
 const QuoteRight = styled(FontAwesomeIcon).attrs({
-  name: 'quote-right'
+  icon: faQuoteRight
 })`
   margin: 0 -20px 0 6px;
-  color: #36454f;
+  color: ${OL.PURPLE03};
 `;
 
 const PromptText = styled.div`
@@ -59,7 +65,6 @@ const PromptText = styled.div`
   max-width: 600px;
   max-height: 300px;
   display: inline-block;
-  overflow-y: scroll;
   border-radius: 3px;
 `;
 
@@ -124,29 +129,54 @@ const RememberPinText = styled.div`
   margin-bottom: 30px;
 `;
 
-class EnrollVoice extends React.Component {
+type Props = {
+  personId :string,
+  personEntityKeyId :string,
+  profileEntityKeyId :string,
+  loadingProfile :boolean,
+  profileId :string,
+  pin :string,
+  submittingAudio :boolean,
+  numSubmissions :number,
+  errorMessage :string,
+  onClose :() => void,
+  actions :{
+    getProfile :(personId :string, personEntityKeyId :string) => void,
+    enrollVoice :(profileId :string, blobObject :Object) => void,
+    clearEnrollError :() => void,
+  }
+}
 
-  static propTypes = {
-    loadingProfile: PropTypes.bool.isRequired,
-    profileId: PropTypes.string.isRequired,
-    pin: PropTypes.string.isRequired,
-    submittingAudio: PropTypes.bool.isRequired,
-    numSubmissions: PropTypes.number.isRequired,
-    errorMessage: PropTypes.string.isRequired,
-    actions: PropTypes.shape({
-      getProfileRequest: PropTypes.func.isRequired,
-      enrollVoiceRequest: PropTypes.func.isRequired,
-      clearError: PropTypes.func.isRequired
-    }).isRequired
-  };
+class EnrollVoice extends React.Component<Props, State> {
 
   constructor(props) {
     super(props);
     this.state = {
       personEntityKeyId: null,
       personId: null,
-      blobObject: null
+      blobObject: null,
     };
+  }
+
+  static getDerivedStateFromProps(nextProps, prevState) {
+    const {
+      actions,
+      profileEntityKeyId,
+      loadingProfile,
+      personEntityKeyId,
+      personId,
+      profileId
+    } = nextProps;
+    const receivedPersonEntityKeyId = !prevState.personEntityKeyId && personEntityKeyId;
+    const receivedPersonId = !prevState.personId && personId;
+    if (!loadingProfile && receivedPersonEntityKeyId && receivedPersonId) {
+      actions.getProfile({ personId, personEntityKeyId });
+      return { personEntityKeyId, personId };
+    }
+    if (profileId && !profileEntityKeyId) {
+      actions.getProfile({ personId, personEntityKeyId });
+    }
+    return null;
   }
 
   onStopRecording = (recordedBlob) => {
@@ -156,44 +186,42 @@ class EnrollVoice extends React.Component {
   }
 
   handleClose = () => {
-    this.props.history.push(Routes.DASHBOARD);
+    const { onClose } = this.props;
+    onClose();
   }
 
-  getSearchPeopleSection = () => {
-    return (
-      <SearchPersonContainer onSelectPerson={(person, personEntityKeyId, personId) => {
-        this.setState({ personEntityKeyId, personId });
-        this.props.actions.getProfileRequest(personId, personEntityKeyId);
-      }} />
-    );
-  };
+  onSelectPerson = (person, personEntityKeyId) => {
+    const { actions } = this.props;
+    const personId = person.getIn([PROPERTY_TYPES.PERSON_ID, 0], '');
+    this.setState({ personEntityKeyId, personId });
+    actions.getProfile({ personId, personEntityKeyId });
+  }
+
+  getSearchPeopleSection = () => <SearchPersonContainer onSelectPerson={this.onSelectPerson} />;
 
   submitAudio = () => {
-    const { profileId } = this.props;
+    const { actions, profileEntityKeyId, profileId } = this.props;
     const { blobObject } = this.state;
     this.setState({ blobObject: null });
-    this.props.actions.enrollVoiceRequest(profileId, blobObject);
+    actions.enrollVoice({ profileId, profileEntityKeyId, audio: blobObject });
   }
 
   renderSubmit = () => {
+    const { blobObject } = this.state;
     const { submittingAudio, numSubmissions } = this.props;
     const attemptNum = numSubmissions + 1;
-    if (submittingAudio) {
-      return (
-        <div>
-          <LoadingSpinner />
-          <LoadingProfileText>{`Submitting audip clip ${attemptNum}/3`}</LoadingProfileText>
-        </div>
-      );
-    }
+    if (submittingAudio) return <LogoLoader noPadding loadingText={`Submitting audio clip ${attemptNum}/3`} />;
 
-    if (!this.state.blobObject) return null;
+    if (!blobObject) return null;
     return (
       <SubmitButton onClick={this.submitAudio}>{`Submit Clip ${attemptNum}`}</SubmitButton>
     );
   }
 
-  renderError = () => <ErrorMessage>{this.props.errorMessage}</ErrorMessage>
+  renderError = () => {
+    const { errorMessage } = this.props;
+    return <ErrorMessage>{errorMessage}</ErrorMessage>;
+  }
 
   enrollmentSuccess = () => {
     const { pin } = this.props;
@@ -213,16 +241,13 @@ class EnrollVoice extends React.Component {
   }
 
   getRecordAudioSection = () => {
-    const { loadingProfile, numSubmissions, actions } = this.props;
+    const {
+      profileEntityKeyId,
+      numSubmissions,
+      actions
+    } = this.props;
 
-    if (loadingProfile) {
-      return (
-        <div>
-          <LoadingSpinner />
-          <LoadingProfileText>Loading profile...</LoadingProfileText>
-        </div>
-      );
-    }
+    if (!profileEntityKeyId) return <LogoLoader loadingText="Loading profile..." />;
 
     return (
       <BodyContainer>
@@ -236,10 +261,10 @@ class EnrollVoice extends React.Component {
             <QuoteRight />
           </PromptTextWrapper>
         </PromptText>
-        <AudioRecorder onStart={actions.clearError} onStop={this.onStopRecording} />
         <ProgressBarWrapper>
           <DotProgressBar numSteps={3} current={numSubmissions} />
         </ProgressBarWrapper>
+        <AudioRecorder onStart={actions.clearEnrollError} onStop={this.onStopRecording} />
         <br />
         {this.renderSubmit()}
         {this.renderError()}
@@ -248,8 +273,11 @@ class EnrollVoice extends React.Component {
   }
 
   renderContent = () => {
-    if (!this.state.personId) return this.getSearchPeopleSection();
-    if (this.props.numSubmissions >= 3) return this.enrollmentSuccess();
+    const { personId } = this.state;
+    const { numSubmissions } = this.props;
+
+    if (!personId) return this.getSearchPeopleSection();
+    if (numSubmissions >= 3) return this.enrollmentSuccess();
     return this.getRecordAudioSection();
   }
 
@@ -257,14 +285,10 @@ class EnrollVoice extends React.Component {
     return (
       <StyledFormViewWrapper>
         <StyledFormWrapper>
-          <StyledTitleWrapper>
-            <div>Enroll Voice Profile</div>
-            <CloseX icon={faTimes} onClick={this.handleClose} />
-          </StyledTitleWrapper>
-          <StyledSectionWrapper>
+          <SectionWrapper>
             {this.renderContent()}
             <StyledTopFormNavBuffer />
-          </StyledSectionWrapper>
+          </SectionWrapper>
         </StyledFormWrapper>
       </StyledFormViewWrapper>
     );
@@ -276,6 +300,7 @@ function mapStateToProps(state :Map<>) :Object {
 
   return {
     [ENROLL.LOADING_PROFILE]: enroll.get(ENROLL.LOADING_PROFILE),
+    [ENROLL.ENTITY_KEY_ID]: enroll.get(ENROLL.ENTITY_KEY_ID),
     [ENROLL.PROFILE_ID]: enroll.get(ENROLL.PROFILE_ID),
     [ENROLL.PIN]: enroll.get(ENROLL.PIN),
     [ENROLL.SUBMITTING_AUDIO]: enroll.get(ENROLL.SUBMITTING_AUDIO),
@@ -287,8 +312,8 @@ function mapStateToProps(state :Map<>) :Object {
 function mapDispatchToProps(dispatch :Function) :Object {
   const actions :{ [string] :Function } = {};
 
-  Object.keys(ActionFactory).forEach((action :string) => {
-    actions[action] = ActionFactory[action];
+  Object.keys(EnrollActionFactory).forEach((action :string) => {
+    actions[action] = EnrollActionFactory[action];
   });
 
   return {

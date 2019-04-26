@@ -12,6 +12,11 @@ import BasicButton from '../buttons/BasicButton';
 import Pagination from '../Pagination';
 import { Count } from '../../utils/Layout';
 import { OL } from '../../utils/consts/Colors';
+import { SORT_TYPES } from '../../utils/consts/Consts';
+import { sortEntities } from '../../utils/RemindersUtils';
+import { APP_TYPES } from '../../utils/consts/DataModelConsts';
+
+const { REMINDER_OPT_OUTS } = APP_TYPES;
 
 const ToolbarWrapper = styled.div`
   display: flex;
@@ -85,12 +90,31 @@ class RemindersTableWithPagination extends React.Component<Props, State> {
   constructor(props :Props) {
     super(props);
     this.state = {
-      start: 0
+      start: 0,
+      sort: SORT_TYPES.NAME
     };
   }
 
+  static getDerivedStateFromProps(nextProps) {
+    const { loading } = nextProps;
+    if (loading) {
+      return { start: 0 };
+    }
+    return null;
+  }
+
+  sortByDate = () => this.setState({ sort: SORT_TYPES.DATE });
+  sortByName = () => this.setState({ sort: SORT_TYPES.NAME });
+
+  getSortedEntities = () => {
+    const { sort } = this.state;
+    const { appTypeFqn, entities, neighbors } = this.props;
+    const shouldSortByDateTime = (appTypeFqn === REMINDER_OPT_OUTS);
+    return sortEntities(entities, neighbors, shouldSortByDateTime, sort);
+  }
+
   getRemindersList = () => {
-    const { entities } = this.props;
+    const entities = this.getSortedEntities();
     const numResults = entities.size;
     const numPages = Math.ceil(numResults / PAGE_SIZE);
     return { entities, numResults, numPages };
@@ -125,6 +149,8 @@ class RemindersTableWithPagination extends React.Component<Props, State> {
     if (loading) return <LogoLoader loadingText="Loading..." />;
     return (
       <RemindersTable
+          sortByName={this.sortByName}
+          sortByDate={this.sortByDate}
           entities={pageOfEntities}
           neighbors={neighbors}
           remindersWithOpenPSA={remindersWithOpenPSA}

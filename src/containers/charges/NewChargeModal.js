@@ -5,7 +5,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import { Constants } from 'lattice';
-import { Map } from 'immutable';
+import { Map, List } from 'immutable';
 
 import Modal, { ModalTransition } from '@atlaskit/modal-dialog';
 import { connect } from 'react-redux';
@@ -15,12 +15,14 @@ import NewChargeForm from '../../components/managecharges/NewChargeForm';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { arrestChargeConfig, courtChargeConfig } from '../../config/formconfig/ChargeConfig';
 import { CHARGE_TYPES } from '../../utils/consts/ChargeConsts';
-import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { ID_FIELD_NAMES } from '../../utils/consts/Consts';
+import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { Wrapper, TitleWrapper, CloseModalX } from '../../utils/Layout';
 import {
   APP,
-  STATE,
   CHARGES,
+  EDM,
+  STATE,
   SUBMIT
 } from '../../utils/consts/FrontEndStateConsts';
 
@@ -30,13 +32,7 @@ import * as ChargesActionFactory from './ChargesActionFactory';
 
 const MODAL_WIDTH = '800px';
 
-const {
-  ARREST_CHARGE_LIST,
-  COURT_CHARGE_LIST
-} = APP_TYPES_FQNS;
-
-const arrestChargeListFqn :string = ARREST_CHARGE_LIST.toString();
-const courtChargeListFqn :string = COURT_CHARGE_LIST.toString();
+const { ARREST_CHARGE_LIST, COURT_CHARGE_LIST } = APP_TYPES;
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
@@ -61,6 +57,7 @@ type Props = {
   degreeShort :string,
   existingCharge :boolean,
   entityKeyId :string,
+  fqnToIdMap :Map<*, *>,
   isViolent :boolean,
   isStep2 :boolean,
   isStep4 :boolean,
@@ -80,6 +77,12 @@ type Props = {
       entityKeyId :string,
       entitySetId :string,
       entitySetName :string,
+    }) => void,
+    updateEntity :(values :{
+      entitySetId :string,
+      entities :string,
+      updateType :string,
+      callback :() => void
     }) => void,
     updateCharge :(values :{
       entityKeyId :string,
@@ -165,8 +168,8 @@ class NewChargeModal extends React.Component<Props, State> {
     this.setState({
       [PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE]: statute,
       [PROPERTY_TYPES.REFERENCE_CHARGE_DESCRIPTION]: description,
-      [PROPERTY_TYPES.REFERENCE_CHARGE_DEGREE]: degree,
-      [PROPERTY_TYPES.REFERENCE_CHARGE_LEVEL]: degreeShort,
+      [PROPERTY_TYPES.REFERENCE_CHARGE_LEVEL]: degree,
+      [PROPERTY_TYPES.REFERENCE_CHARGE_DEGREE]: degreeShort,
       [PROPERTY_TYPES.CHARGE_IS_VIOLENT]: isViolent,
       [PROPERTY_TYPES.CHARGE_DMF_STEP_2]: isStep2,
       [PROPERTY_TYPES.CHARGE_DMF_STEP_4]: isStep4,
@@ -175,22 +178,27 @@ class NewChargeModal extends React.Component<Props, State> {
     });
   }
 
-  updateChargeCallback = () => {
-    const {
-      actions,
-      chargeType,
-      entityKeyId
-    } = this.props;
-    const { updateCharge } = actions;
-    let entity = this.getChargeFields();
-    entity = Object.assign({}, entity, { [OPENLATTICE_ID_FQN]: [entityKeyId] });
-    const chargePropertyType = (chargeType === CHARGE_TYPES.COURT) ? CHARGES.COURT : CHARGES.ARREST;
-    updateCharge({
-      entity,
-      entityKeyId,
-      chargePropertyType
+  getChargeUpdate = () => {
+    const { state } = this;
+    const { entityKeyId, fqnToIdMap } = this.props;
+    const chargePropertyTypes = List.of(
+      PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE,
+      PROPERTY_TYPES.REFERENCE_CHARGE_DESCRIPTION,
+      PROPERTY_TYPES.REFERENCE_CHARGE_LEVEL,
+      PROPERTY_TYPES.REFERENCE_CHARGE_DEGREE,
+      PROPERTY_TYPES.CHARGE_IS_VIOLENT,
+      PROPERTY_TYPES.CHARGE_DMF_STEP_2,
+      PROPERTY_TYPES.CHARGE_DMF_STEP_4,
+      PROPERTY_TYPES.BHE,
+      PROPERTY_TYPES.BRE,
+    );
+    const entityFields = {};
+    chargePropertyTypes.forEach((propertyType) => {
+      const newValue = state[propertyType];
+      const propertyTypeId = fqnToIdMap.get(propertyType, '');
+      if (newValue) entityFields[propertyTypeId] = [newValue];
     });
-    this.clearState();
+    return { [entityKeyId]: entityFields };
   }
 
   getChargeFields = () => {
@@ -209,11 +217,12 @@ class NewChargeModal extends React.Component<Props, State> {
       [PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE]: [newStatute],
       [PROPERTY_TYPES.REFERENCE_CHARGE_DESCRIPTION]: [newDescription],
       [PROPERTY_TYPES.CHARGE_IS_VIOLENT]: [newIsViolent],
+      [ID_FIELD_NAMES.CHARGE_ID]: [`${newStatute}|${newDescription}`],
     };
     if (chargeType === CHARGE_TYPES.ARREST) {
       newChargeFields = Object.assign({}, newChargeFields, {
-        [PROPERTY_TYPES.REFERENCE_CHARGE_DEGREE]: [newDegree],
-        [PROPERTY_TYPES.REFERENCE_CHARGE_LEVEL]: [newDegreeShort],
+        [PROPERTY_TYPES.REFERENCE_CHARGE_DEGREE]: [newDegreeShort],
+        [PROPERTY_TYPES.REFERENCE_CHARGE_LEVEL]: [newDegree],
         [PROPERTY_TYPES.CHARGE_DMF_STEP_2]: [newIsStep2],
         [PROPERTY_TYPES.CHARGE_DMF_STEP_4]: [newIsStep4],
         [PROPERTY_TYPES.BHE]: [newIsBHE],
@@ -259,11 +268,10 @@ class NewChargeModal extends React.Component<Props, State> {
       app,
       actions,
       chargeType,
-      entityKeyId,
       onClose,
       existingCharge
     } = this.props;
-    const { replaceEntity, submit } = actions;
+    const { updateEntity, submit } = actions;
     const entitySetId = this.getChargeListEntitySetId();
     let config;
     // TODO: We propbably want to change the name of these entity sets so that they capture county and state
@@ -274,17 +282,18 @@ class NewChargeModal extends React.Component<Props, State> {
       config = arrestChargeConfig();
     }
 
-    const newChargeFields = this.getChargeFields();
 
     if (existingCharge) {
-      replaceEntity({
-        entityKeyId,
+      const entities = this.getChargeUpdate();
+      updateEntity({
         entitySetId,
-        values: newChargeFields,
-        callback: this.updateChargeCallback
+        entities,
+        updateType: 'PartialReplace',
+        callback: this.reloadChargesCallback
       });
     }
     else {
+      const newChargeFields = this.getChargeFields();
       submit({
         app,
         config,
@@ -307,7 +316,8 @@ class NewChargeModal extends React.Component<Props, State> {
     deleteCharge({
       entityKeyId,
       selectedOrganizationId,
-      chargePropertyType
+      chargePropertyType,
+      callback: this.reloadChargesCallback
     });
   }
 
@@ -379,8 +389,8 @@ class NewChargeModal extends React.Component<Props, State> {
                       creatingNew={creatingNew}
                       deleteCharge={this.deleteCharge}
                       description={state[PROPERTY_TYPES.REFERENCE_CHARGE_DESCRIPTION]}
-                      degree={state[PROPERTY_TYPES.REFERENCE_CHARGE_DEGREE]}
-                      degreeShort={state[PROPERTY_TYPES.REFERENCE_CHARGE_LEVEL]}
+                      degree={state[PROPERTY_TYPES.REFERENCE_CHARGE_LEVEL]}
+                      degreeShort={state[PROPERTY_TYPES.REFERENCE_CHARGE_DEGREE]}
                       existingCharge={existingCharge}
                       isViolent={state[PROPERTY_TYPES.CHARGE_IS_VIOLENT]}
                       isStep2={state[PROPERTY_TYPES.CHARGE_DMF_STEP_2]}
@@ -406,15 +416,18 @@ class NewChargeModal extends React.Component<Props, State> {
 function mapStateToProps(state) {
   const submit = state.get(STATE.SUBMIT);
   const app = state.get(STATE.APP);
+  const edm = state.get(STATE.EDM);
   const orgId = app.get(APP.SELECTED_ORG_ID, '');
   return {
     // App
     app,
     [APP.SELECTED_ORG_ID]: orgId,
-    arrestEntitySetId: getEntitySetIdFromApp(app, arrestChargeListFqn, orgId),
-    courtEntitySetId: getEntitySetIdFromApp(app, courtChargeListFqn, orgId),
+    arrestEntitySetId: getEntitySetIdFromApp(app, ARREST_CHARGE_LIST),
+    courtEntitySetId: getEntitySetIdFromApp(app, COURT_CHARGE_LIST),
     [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
     [APP.SELECTED_ORG_TITLE]: app.get(APP.SELECTED_ORG_TITLE),
+
+    [EDM.FQN_TO_ID]: edm.get(EDM.FQN_TO_ID),
 
     // Submit
     [SUBMIT.SUBMITTING]: submit.get(SUBMIT.SUBMITTING, false)

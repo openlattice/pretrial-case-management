@@ -33,6 +33,7 @@ export const RadioSelection = styled.span`
   background-color: ${OL.GREY06};
   border-radius: 50%;
   border: 1px solid ${OL.GREY24};
+  transform: ${props => (props.noLabel ? 'translateY(-10px)' : 'none')};
 
   ${RadioContainer}:hover ${RadioInputContainer} ~ & {
     background-color: ${OL.GREY22};
@@ -79,16 +80,18 @@ const StyledRadio = ({
   value,
   checked,
   onChange,
-  disabled
+  disabled,
+  noLabel
 }) => (
-  <RadioContainer>{label}
+  <RadioContainer>
+    { noLabel ? null : label}
     <RadioInputContainer
         name={name}
         value={value}
         checked={checked}
         onChange={onChange}
         disabled={disabled} />
-    <RadioSelection />
+    <RadioSelection noLabel={noLabel} />
   </RadioContainer>
 );
 
@@ -101,13 +104,15 @@ StyledRadio.propTypes = {
   ]).isRequired,
   checked: PropTypes.bool,
   onChange: PropTypes.func.isRequired,
-  disabled: PropTypes.bool
+  disabled: PropTypes.bool,
+  noLabel: PropTypes.bool
 };
 
 StyledRadio.defaultProps = {
   disabled: false,
   name: undefined,
-  checked: false
+  checked: false,
+  noLabel: false
 };
 
 export default StyledRadio;

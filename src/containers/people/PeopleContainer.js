@@ -11,6 +11,7 @@ import { Redirect, Route, Switch } from 'react-router-dom';
 
 import RequiresActionList from './RequiresActionList';
 import RemindersContainer from '../reminders/RemindersContainer';
+import CheckInsContainer from '../checkins/CheckInsContainer';
 import PersonSearchFields from '../../components/person/PersonSearchFields';
 import PersonTextAreaInput from '../../components/person/PersonTextAreaInput';
 import PeopleList from '../../components/people/PeopleList';
@@ -19,12 +20,8 @@ import LogoLoader from '../../components/LogoLoader';
 import NavButtonToolbar from '../../components/buttons/NavButtonToolbar';
 import { getFormattedPeople } from '../../utils/PeopleUtils';
 import { clearSearchResults, searchPeople } from '../person/PersonActionFactory';
-import {
-  APP_TYPES_FQNS,
-  PROPERTY_TYPES,
-  SETTINGS,
-  MODULE
-} from '../../utils/consts/DataModelConsts';
+import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
+import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
 import {
   APP,
@@ -36,6 +33,8 @@ import {
 } from '../../utils/consts/FrontEndStateConsts';
 
 import * as Routes from '../../core/router/Routes';
+
+const PEOPLE_FQN = APP_TYPES.PEOPLE;
 
 const SearchBox = styled.div`
   padding: 30px 0;
@@ -110,7 +109,7 @@ class PeopleContainer extends React.Component<Props, State> {
     return (
       <div>
         <SearchBox>
-          <PersonSearchFields handleSubmit={actions.searchPeople} />
+          <PersonSearchFields includePSAInfo handleSubmit={actions.searchPeople} />
         </SearchBox>
         <PeopleList
             people={formattedPeople}
@@ -127,7 +126,7 @@ class PeopleContainer extends React.Component<Props, State> {
     let missingPeople = Immutable.Set(peopleList);
 
     psaNeighborsById.valueSeq().forEach((neighbors) => {
-      const neighbor = neighbors.getIn([APP_TYPES_FQNS.PEOPLE, PSA_NEIGHBOR.DETAILS], Immutable.Map());
+      const neighbor = neighbors.getIn([PEOPLE_FQN, PSA_NEIGHBOR.DETAILS], Immutable.Map());
       const firstNameList = neighbor.get(PROPERTY_TYPES.FIRST_NAME, Immutable.List()).map(val => val.toLowerCase());
       const lastNameList = neighbor.get(PROPERTY_TYPES.LAST_NAME, Immutable.List()).map(val => val.toLowerCase());
       const id = neighbor.get(PROPERTY_TYPES.PERSON_ID);
@@ -187,12 +186,15 @@ class PeopleContainer extends React.Component<Props, State> {
   renderRequiresActionPeopleComponent = () => <RequiresActionList />;
 
   renderRemindersPortal = () => <RemindersContainer />;
+  renderCheckInsPortal = () => <CheckInsContainer />;
 
   render() {
     const { selectedOrganizationSettings } = this.props;
     const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
+    const settingsIncludeVoiceEnroll = selectedOrganizationSettings.get(SETTINGS.ENROLL_VOICE, false);
     const courtRemindersEnabled = selectedOrganizationSettings.get(SETTINGS.COURT_REMINDERS, false);
     let remindersSwitchRoute = null;
+    let checkInsSwitchRoute = null;
 
     let navButtons = [
       {
@@ -217,12 +219,21 @@ class PeopleContainer extends React.Component<Props, State> {
       label: 'Court Reminders'
     };
 
+    const checkInsButton = {
+      path: Routes.MANAGE_PEOPLE_CHECKINS,
+      label: 'Check-Ins'
+    };
+
 
     if (includesPretrialModule) {
       navButtons = navButtons.concat(pretrialModuleNavButtons);
       if (courtRemindersEnabled) {
         navButtons.push(remindersButton);
         remindersSwitchRoute = <Route path={Routes.MANAGE_PEOPLE_REMINDERS} render={this.renderRemindersPortal} />;
+      }
+      if (settingsIncludeVoiceEnroll) {
+        navButtons.push(checkInsButton);
+        checkInsSwitchRoute = <Route path={Routes.MANAGE_PEOPLE_CHECKINS} render={this.renderCheckInsPortal} />;
       }
     }
 
@@ -236,6 +247,7 @@ class PeopleContainer extends React.Component<Props, State> {
           <Route path={Routes.MULTI_SEARCH_PEOPLE} render={this.renderMultiSearchPeopleComponent} />
           <Route path={Routes.REQUIRES_ACTION_PEOPLE} render={this.renderRequiresActionPeopleComponent} />
           { remindersSwitchRoute }
+          { checkInsSwitchRoute }
           <Redirect from={Routes.PEOPLE} to={Routes.SEARCH_PEOPLE} />
         </Switch>
       </DashboardMainSection>

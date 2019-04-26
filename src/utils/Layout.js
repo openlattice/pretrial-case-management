@@ -556,7 +556,7 @@ export const StyledColumn = styled.div`
   width: 960px;
   display: flex;
   flex-direction: column;
-  overflow: auto;
+  overflow: visble;
 `;
 
 export const StyledColumnRowWrapper = styled.div`

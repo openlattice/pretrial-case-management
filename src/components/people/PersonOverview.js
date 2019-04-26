@@ -7,6 +7,8 @@ import styled from 'styled-components';
 import { Map, List } from 'immutable';
 
 import AboutPersonGeneral from '../person/AboutPersonGeneral';
+import EventTimeline from '../person/EventTimeline';
+import EnrollStatusBanner from '../enroll/EnrollStatusBanner';
 import HearingCardsWithTitle from '../hearings/HearingCardsWithTitle';
 import SubscriptionInfo from '../subscription/SubscriptionInfo';
 import CaseHistoryList from '../casehistory/CaseHistoryList';
@@ -14,8 +16,9 @@ import ChargeHistoryStats from '../casehistory/ChargeHistoryStats';
 import LogoLoader from '../LogoLoader';
 import PSASummary from '../../containers/review/PSASummary';
 import ViewMoreLink from '../buttons/ViewMoreLink';
-import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { getIdOrValue } from '../../utils/DataUtils';
+import { getStatusForCheckInAppointments } from '../../utils/CheckInUtils';
 import {
   StyledColumn,
   StyledColumnRow,
@@ -35,17 +38,15 @@ import {
 
 import * as Routes from '../../core/router/Routes';
 
-let {
+const {
+  CHECKIN_APPOINTMENTS,
+  CHECKINS,
+  HEARINGS,
   MANUAL_PRETRIAL_CASES,
   RELEASE_RECOMMENDATIONS,
   STAFF,
   SUBSCRIPTION
-} = APP_TYPES_FQNS;
-
-MANUAL_PRETRIAL_CASES = MANUAL_PRETRIAL_CASES.toString();
-RELEASE_RECOMMENDATIONS = RELEASE_RECOMMENDATIONS.toString();
-STAFF = STAFF.toString();
-SUBSCRIPTION = SUBSCRIPTION.toString();
+} = APP_TYPES;
 
 type Props = {
   contactInfo :List<*, *>,
@@ -56,23 +57,21 @@ type Props = {
   mostRecentPSANeighbors :Map<*, *>,
   neighbors :Map<*, *>,
   openDetailsModal :() => void,
-  openUpdateContactModal :() => void,
+  courtRemindersEnabled :boolean,
   personId :string,
   psaNeighborsById :Map<*, *>,
   readOnlyPermissions :boolean,
   refreshingPersonNeighbors :boolean,
   selectedPersonData :Map<*, *>,
-  allScheduledHearings :List,
-  updatingEntity :boolean
+  entitySetIdsToAppType :Map<*, *>,
+  updatingEntity :boolean,
+  settingsIncludeVoiceEnroll :boolean,
+  personVoiceProfile :Map<*, *>
 }
 
 const StyledViewMoreLinkForCases = styled(ViewMoreLink)`
   position: absolute;
   transform: translateX(830px) translateY(15px);
-`;
-
-const StyledViewMoreLinkForHearings = styled(StyledViewMoreLinkForCases)`
-  transform: translateX(800px) translateY(20px);
 `;
 
 const StyledColumnRowWithPadding = styled(StyledColumnRow)`
@@ -89,16 +88,21 @@ const PersonOverview = ({
   neighbors,
   personId,
   psaNeighborsById,
-  allScheduledHearings,
   selectedPersonData,
   includesPretrialModule,
   openDetailsModal,
-  openUpdateContactModal,
   readOnlyPermissions,
   refreshingPersonNeighbors,
-  updatingEntity
+  updatingEntity,
+  personVoiceProfile,
+  settingsIncludeVoiceEnroll,
+  entitySetIdsToAppType
 } :Props) => {
-
+  const checkInAppointments = neighbors.get(CHECKIN_APPOINTMENTS, List());
+  const checkIns = neighbors.get(CHECKINS, List());
+  const staff = mostRecentPSANeighbors.get(STAFF, List());
+  const checkInStatusById = getStatusForCheckInAppointments(checkInAppointments, checkIns);
+  const personHearings = mostRecentPSANeighbors.get(HEARINGS, List());
   const subscription = neighbors.getIn([SUBSCRIPTION, PSA_NEIGHBOR.DETAILS], Map());
   let arrestDate = getIdOrValue(
     mostRecentPSANeighbors, MANUAL_PRETRIAL_CASES, PROPERTY_TYPES.ARREST_DATE_TIME
@@ -145,6 +149,17 @@ const PersonOverview = ({
       ) : null
   );
 
+  const renderEnrollStatusBanner = () => (
+    settingsIncludeVoiceEnroll
+      ? (
+        <StyledColumnRowWrapper>
+          <StyledColumnRow withPadding>
+            <EnrollStatusBanner person={selectedPersonData} personVoiceProfile={personVoiceProfile} />
+          </StyledColumnRow>
+        </StyledColumnRowWrapper>
+      ) : null
+  );
+
   if (loading) {
     return <LogoLoader loadingText="Loading Person Details..." />;
   }
@@ -153,10 +168,7 @@ const PersonOverview = ({
       <StyledColumn>
         <StyledColumnRowWrapper>
           <StyledColumnRow>
-            <AboutPersonGeneral
-                selectedPersonData={selectedPersonData}
-                contactInfo={contactInfo}
-                openUpdateContactModal={openUpdateContactModal} />
+            <AboutPersonGeneral selectedPersonData={selectedPersonData} />
           </StyledColumnRow>
         </StyledColumnRowWrapper>
         {
@@ -164,19 +176,14 @@ const PersonOverview = ({
             ? (
               <>
                 {renderSubscriptionInfo()}
-                <StyledColumnRowWrapper>
-                  <StyledColumnRowWithPadding>
-                    <StyledViewMoreLinkForHearings to={`${Routes.PERSON_DETAILS_ROOT}/${personId}${Routes.HEARINGS}`}>
-                      View more
-                    </StyledViewMoreLinkForHearings>
-                    <HearingCardsWithTitle
-                        readOnly
-                        title="Upcoming Hearings"
-                        hearings={allScheduledHearings}
-                        handleSelect={() => null}
-                        noHearingsMessage="There are no upcoming hearings." />
-                  </StyledColumnRowWithPadding>
-                </StyledColumnRowWrapper>
+                {renderEnrollStatusBanner()}
+                <EventTimeline
+                    scores={scores}
+                    staff={staff}
+                    entitySetIdsToAppType={entitySetIdsToAppType}
+                    hearings={personHearings}
+                    checkInAppointments={checkInAppointments}
+                    checkInStatusById={checkInStatusById} />
                 <StyledColumnRowWrapper>
                   <StyledColumnRowWithPadding>
                     <ChargeHistoryStats

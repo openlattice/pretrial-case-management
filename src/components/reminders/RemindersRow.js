@@ -46,23 +46,21 @@ const Row = styled.tr`
 `;
 
 type Props = {
-  hasOpenPSA :boolean,
   hearingTime :string,
   hearingType :string,
   contact :string,
   courtroom :string,
-  hasOpenPSA :boolean,
   personName :string,
   personId :string,
-  time :string,
+  caseNumber :string,
   wasNotified :boolean
 };
 
 class ReminderRow extends React.Component<Props, State> {
 
   renderbooleanIcon = boolean => (boolean
-    ? <StatusIconContainer><FontAwesomeIcon color="green" icon={faCheck} /></StatusIconContainer>
-    : <StatusIconContainer><FontAwesomeIcon color="red" icon={faTimesCircle} /></StatusIconContainer>
+    ? <FontAwesomeIcon color="green" icon={faCheck} />
+    : <FontAwesomeIcon color="red" icon={faTimesCircle} />
   )
 
   renderRow = () => {
@@ -72,16 +70,15 @@ class ReminderRow extends React.Component<Props, State> {
       courtroom,
       hearingTime,
       hearingType,
-      hasOpenPSA,
       personName,
       personId,
-      time,
       wasNotified
     } = this.props;
 
     const row = (
       <Row disabled>
         <Cell>{ hearingTime }</Cell>
+        <Cell>{ caseNumber }</Cell>
         <Cell>
           <StyledLink to={`${Routes.PERSON_DETAILS_ROOT}/${personId}${Routes.OVERVIEW}`}>
             { personName }
@@ -90,8 +87,11 @@ class ReminderRow extends React.Component<Props, State> {
         <Cell>{ contact }</Cell>
         <Cell>{ courtroom }</Cell>
         <Cell>{ hearingType }</Cell>
-        <Cell>{ caseNumber }</Cell>
-        <Cell>{ this.renderbooleanIcon(wasNotified) }</Cell>
+        <Cell>
+          <StatusIconContainer key={contact}>
+            { this.renderbooleanIcon(wasNotified, contact) }
+          </StatusIconContainer>
+        </Cell>
 
       </Row>
     );

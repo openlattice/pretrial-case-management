@@ -22,7 +22,7 @@ import SearchableSelect from '../../components/controls/SearchableSelect';
 import PersonContactInfo from '../../components/person/PersonContactInfo';
 import { GENDERS, STATES } from '../../utils/consts/Consts';
 import { toISODate } from '../../utils/FormattingUtils';
-import { phoneIsValid, emailIsValid } from '../../utils/PeopleUtils';
+import { phoneIsValid, emailIsValid } from '../../utils/ContactInfoUtils';
 import { newPersonSubmit } from './PersonActionFactory';
 import { clearForm } from '../psa/FormActionFactory';
 import { STATE, SEARCH } from '../../utils/consts/FrontEndStateConsts';
@@ -258,6 +258,8 @@ class NewPersonContainer extends React.Component<Props, State> {
     const middleName = state[MIDDLE_NAME_VALUE] ? state[MIDDLE_NAME_VALUE].toUpperCase() : null;
     const lastName = state[LAST_NAME_VALUE] ? state[LAST_NAME_VALUE].toUpperCase() : null;
 
+    const picture = state[PICTURE_VALUE] ? { 'content-type': 'image/png', data: state[PICTURE_VALUE] } : null;
+
     const values = {
       [ADDRESS_VALUE]: state[ADDRESS_VALUE] || null,
       [CITY_VALUE]: state[CITY_VALUE],
@@ -268,7 +270,7 @@ class NewPersonContainer extends React.Component<Props, State> {
       [GENDER_VALUE]: state[GENDER_VALUE] || null,
       [LAST_NAME_VALUE]: lastName,
       [MIDDLE_NAME_VALUE]: middleName,
-      [PICTURE_VALUE]: state[PICTURE_VALUE] || null,
+      [PICTURE_VALUE]: picture,
       [RACE_VALUE]: state[RACE_VALUE] || null,
       [SSN_VALUE]: state[SSN_VALUE] || null,
       [STATE_VALUE]: state[STATE_VALUE] || null,

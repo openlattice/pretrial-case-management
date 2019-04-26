@@ -6,7 +6,7 @@ import axios from 'axios';
 import moment from 'moment';
 import LatticeAuth from 'lattice-auth';
 import { push } from 'connected-react-router';
-import { fromJS, List, Map } from 'immutable';
+import { fromJS, List, Map, Set } from 'immutable';
 import { Constants, SearchApi } from 'lattice';
 import {
   all,
@@ -19,9 +19,9 @@ import {
 
 import { toISODate, formatDate } from '../../utils/FormattingUtils';
 import { submit } from '../../utils/submit/SubmitActionFactory';
-import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { PERSON_INFO_DATA, PSA_STATUSES } from '../../utils/consts/Consts';
 import { APP, STATE, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
-import { obfuscateEntityNeighbors } from '../../utils/consts/DemoNames';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { getPropertyTypeId } from '../../edm/edmUtils';
 import {
@@ -40,17 +40,18 @@ import {
 } from './PersonActionFactory';
 
 import * as Routes from '../../core/router/Routes';
-
+const { HAS_OPEN_PSA, HAS_MULTIPLE_OPEN_PSAS, IS_RECEIVING_REMINDERS } = PERSON_INFO_DATA;
 const { OPENLATTICE_ID_FQN } = Constants;
-let { CONTACT_INFORMATION, PEOPLE, PRETRIAL_CASES } = APP_TYPES_FQNS;
-
-PEOPLE = PEOPLE.toString();
-PRETRIAL_CASES = PRETRIAL_CASES.toString();
-CONTACT_INFORMATION = CONTACT_INFORMATION.toString();
+const {
+  CONTACT_INFORMATION,
+  PEOPLE,
+  PRETRIAL_CASES,
+  PSA_SCORES,
+  SUBSCRIPTION
+} = APP_TYPES;
 
 const getApp = state => state.get(STATE.APP, Map());
 const getEDM = state => state.get(STATE.EDM, Map());
-const getOrgId = state => state.getIn([STATE.APP, APP.SELECTED_ORG_ID], '');
 
 declare var __ENV_DEV__ :boolean;
 
@@ -99,9 +100,8 @@ function* loadPersonDetailsWorker(action) :Generator<*, *, *> {
   try {
     const { entityKeyId, shouldLoadCases } = action.value;
     const app = yield select(getApp);
-    const orgId = yield select(getOrgId);
-    const pretrialCasesEntitySetId = getEntitySetIdFromApp(app, PRETRIAL_CASES, orgId);
-    const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE, orgId);
+    const pretrialCasesEntitySetId = getEntitySetIdFromApp(app, PRETRIAL_CASES);
+    const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
     yield put(loadPersonDetails.request(action.id, { entityKeyId }));
 
     // <HACK>
@@ -139,7 +139,6 @@ function* loadPersonDetailsWorker(action) :Generator<*, *, *> {
 
     else {
       let response = yield call(SearchApi.searchEntityNeighbors, peopleEntitySetId, entityKeyId);
-      response = obfuscateEntityNeighbors(response);
       yield put(loadPersonDetails.success(action.id, { entityKeyId, response }));
     }
   }
@@ -176,7 +175,7 @@ function* updateCasesWorker(action) :Generator<*, *, *> {
   }
   catch (error) {
     console.error(error);
-    yield put(updateCases.failure(error, { cases }));
+    yield put(updateCases.failure(action.id, { cases }));
   }
   finally {
     yield put(updateCases.finally(action.id, { cases }));
@@ -229,9 +228,13 @@ function* searchPeopleWorker(action) :Generator<*, *, *> {
   try {
     yield put(searchPeople.request(action.id));
     const app = yield select(getApp);
+    const orgId = app.get(APP.SELECTED_ORG_ID, '');
     const edm = yield select(getEDM);
-    const orgId = yield select(getOrgId);
-    const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE, orgId);
+    const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
+    const psaScoresEntitySetId = getEntitySetIdFromApp(app, PSA_SCORES);
+    const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
+    const contactInformationEntitySetId = getEntitySetIdFromApp(app, CONTACT_INFORMATION);
+    const subscriptionEntitySetId = getEntitySetIdFromApp(app, SUBSCRIPTION);
     const firstNamePropertyTypeId = getPropertyTypeId(edm, PROPERTY_TYPES.FIRST_NAME);
     const lastNamePropertyTypeId = getPropertyTypeId(edm, PROPERTY_TYPES.LAST_NAME);
     const dobPropertyTypeId = getPropertyTypeId(edm, PROPERTY_TYPES.DOB);
@@ -240,6 +243,7 @@ function* searchPeopleWorker(action) :Generator<*, *, *> {
       firstName,
       lastName,
       dob,
+      includePSAInfo
     } = action.value;
     const searchFields = [];
     const updateSearchField = (searchString :string, property :string, exact? :boolean) => {
@@ -269,11 +273,59 @@ function* searchPeopleWorker(action) :Generator<*, *, *> {
       maxHits: 100
     };
 
-    const response = yield call(SearchApi.advancedSearchEntitySetData, peopleEntitySetId, searchOptions);
+    let response = yield call(SearchApi.advancedSearchEntitySetData, peopleEntitySetId, searchOptions);
+    response = fromJS(response.hits);
+    let personMap = Map();
+    if (includePSAInfo) {
+      response.forEach((person) => {
+        const personEntityKeyId = person.getIn([OPENLATTICE_ID_FQN, 0], '');
+        personMap = personMap.set(personEntityKeyId, fromJS(person));
+      });
+      let peopleNeighborsById = yield call(SearchApi.searchEntityNeighborsWithFilter, peopleEntitySetId, {
+        entityKeyIds: personMap.keySeq().toJS(),
+        sourceEntitySetIds: [psaScoresEntitySetId, contactInformationEntitySetId],
+        destinationEntitySetIds: [subscriptionEntitySetId, contactInformationEntitySetId]
+      });
+      peopleNeighborsById = fromJS(peopleNeighborsById);
+
+      peopleNeighborsById.entrySeq().forEach(([personEntityKeyId, neighbors]) => {
+        let hasActiveSubscription = false;
+        let hasPreferredContact = false;
+        let psaCount = 0;
+        neighbors.forEach((neighbor) => {
+          const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id']);
+          const appTypeFqn = entitySetIdsToAppType.get(entitySetId);
+          if (appTypeFqn === PSA_SCORES
+            && neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.STATUS, 0], '') === PSA_STATUSES.OPEN) {
+            psaCount += 1;
+          }
+          if (appTypeFqn === SUBSCRIPTION) {
+            const subscriptionIsActive = neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.IS_ACTIVE, 0], false);
+            if (subscriptionIsActive) {
+              hasActiveSubscription = true;
+            }
+          }
+          if (appTypeFqn === CONTACT_INFORMATION) {
+            const contactIsPreferred = neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.IS_PREFERRED, 0], false);
+            if (contactIsPreferred) {
+              hasPreferredContact = true;
+            }
+          }
+        });
+
+        personMap = personMap
+          .setIn([personEntityKeyId, HAS_OPEN_PSA], (psaCount > 0))
+          .setIn([personEntityKeyId, HAS_MULTIPLE_OPEN_PSAS], (psaCount > 1))
+          .setIn([personEntityKeyId, IS_RECEIVING_REMINDERS], (hasActiveSubscription && hasPreferredContact));
+      });
+      response = personMap.valueSeq();
+    }
+
     yield put(searchPeople.success(action.id, response));
   }
   catch (error) {
-    yield put(searchPeople.failure(error));
+    console.error(error);
+    yield put(searchPeople.failure(action.id, error));
   }
 
   finally {
@@ -291,9 +343,11 @@ function* searchPeopleByPhoneNumberWorker(action) :Generator<*, *, *> {
     yield put(searchPeopleByPhoneNumber.request(action.id));
     const app = yield select(getApp);
     const edm = yield select(getEDM);
-    const orgId = yield select(getOrgId);
-    const contactInformationEntitySetId = getEntitySetIdFromApp(app, CONTACT_INFORMATION, orgId);
-    const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE, orgId);
+    const orgId = app.get(APP.SELECTED_ORG_ID, '');
+    const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
+    const contactInformationEntitySetId = getEntitySetIdFromApp(app, CONTACT_INFORMATION);
+    const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
+    const subscriptionEntitySetId = getEntitySetIdFromApp(app, SUBSCRIPTION);
     const phonePropertyTypeId = getPropertyTypeId(edm, PROPERTY_TYPES.PHONE);
     const firstNamePropertyTypeId = getPropertyTypeId(edm, PROPERTY_TYPES.FIRST_NAME);
     const lastNamePropertyTypeId = getPropertyTypeId(edm, PROPERTY_TYPES.LAST_NAME);
@@ -322,9 +376,10 @@ function* searchPeopleByPhoneNumberWorker(action) :Generator<*, *, *> {
       nameConstraints :Array,
       search :string,
       property :string,
+      entitySetId :string,
     ) => {
       nameConstraints.constraints.push({
-        searchTerm: `${property}:"${search}"`,
+        searchTerm: `${entitySetId}.${property}:"${search}"`,
         fuzzy: true
       });
     };
@@ -345,8 +400,8 @@ function* searchPeopleByPhoneNumberWorker(action) :Generator<*, *, *> {
       }
       else {
         names.forEach((word) => {
-          updateConstraints(firstNameConstraints, word, firstNamePropertyTypeId);
-          updateConstraints(lastNameConstraints, word, lastNamePropertyTypeId);
+          updateConstraints(firstNameConstraints, word, firstNamePropertyTypeId, peopleEntitySetId);
+          updateConstraints(lastNameConstraints, word, lastNamePropertyTypeId, peopleEntitySetId);
         });
       }
     }
@@ -376,6 +431,7 @@ function* searchPeopleByPhoneNumberWorker(action) :Generator<*, *, *> {
     let contactIds = List();
     let peopleIds = List();
     let personIdsToContactIds = Map();
+    let subscribedPeopleIds = Set();
     let contactMap = Map();
     let peopleMap = Map();
     if (phoneFields.length) {
@@ -408,6 +464,31 @@ function* searchPeopleByPhoneNumberWorker(action) :Generator<*, *, *> {
           allResults = allResults.concat(peopleList);
         });
       }
+      if (personIdsToContactIds.size) {
+        let personNeighborsById = yield call(SearchApi.searchEntityNeighborsWithFilter, peopleEntitySetId, {
+          entityKeyIds: personIdsToContactIds.keySeq().toJS(),
+          sourceEntitySetIds: [subscriptionEntitySetId],
+          destinationEntitySetIds: [subscriptionEntitySetId]
+        });
+        personNeighborsById = fromJS(personNeighborsById);
+        personNeighborsById.entrySeq().forEach(([id, neighbors]) => {
+          const personContactIds = personIdsToContactIds.get(id, List());
+          const hasAPreferredContact = personContactIds.some((contactentityKeyId) => {
+            const contactObj = contactMap.get(contactentityKeyId, Map());
+            return contactObj.getIn([PROPERTY_TYPES.IS_PREFERRED, 0], false);
+          });
+          neighbors.forEach((neighbor) => {
+            const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id']);
+            const appTypeFqn = entitySetIdsToAppType.get(entitySetId);
+            if (appTypeFqn === SUBSCRIPTION) {
+              const subscriptionIsActive = neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.IS_ACTIVE, 0], false);
+              if (subscriptionIsActive && hasAPreferredContact) {
+                subscribedPeopleIds = subscribedPeopleIds.add(id);
+              }
+            }
+          });
+        });
+      }
     }
     if (letters.trim().length) {
       const searchOptions = nameOptions;
@@ -426,19 +507,29 @@ function* searchPeopleByPhoneNumberWorker(action) :Generator<*, *, *> {
         peopleMap = peopleMap.set(personId, person);
       });
       if (peopleIds.size) {
-        let contactsByPersonId = yield call(SearchApi.searchEntityNeighborsWithFilter, peopleEntitySetId, {
+        let personNeighborsById = yield call(SearchApi.searchEntityNeighborsWithFilter, peopleEntitySetId, {
           entityKeyIds: peopleIds.toJS(),
-          sourceEntitySetIds: [],
-          destinationEntitySetIds: [contactInformationEntitySetId]
+          sourceEntitySetIds: [contactInformationEntitySetId],
+          destinationEntitySetIds: [contactInformationEntitySetId, subscriptionEntitySetId]
         });
-        contactsByPersonId = fromJS(contactsByPersonId);
-        contactsByPersonId.entrySeq().forEach(([id, contacts]) => {
-          contacts
-            .filter((contact => !!contact.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0], '')))
-            .forEach((contact) => {
-              const contactObj = contact.get(PSA_NEIGHBOR.DETAILS, Map());
+        personNeighborsById = fromJS(personNeighborsById);
+        personNeighborsById.entrySeq().forEach(([id, neighbors]) => {
+          let hasAPreferredContact = false;
+          neighbors
+            .filter((neighbor => !!neighbor.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0], '')))
+            .forEach((neighbor) => {
+              const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id']);
+              const appTypeFqn = entitySetIdsToAppType.get(entitySetId);
+              if (appTypeFqn === SUBSCRIPTION) {
+                const subscriptionIsActive = neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.IS_ACTIVE, 0], false);
+                if (subscriptionIsActive) {
+                  subscribedPeopleIds = subscribedPeopleIds.add(id);
+                }
+              }
+              const contactObj = neighbor.get(PSA_NEIGHBOR.DETAILS, Map());
               const contactId = contactObj.getIn([OPENLATTICE_ID_FQN, 0], '');
               const contactIsPreferred = contactObj.getIn([PROPERTY_TYPES.IS_PREFERRED, 0], false);
+              if (contactIsPreferred) hasAPreferredContact = true;
               const personNeedsContact = !personIdsToContactIds.get(id);
               if (personNeedsContact && contactIsPreferred) {
                 contactMap = contactMap.set(contactId, contactObj);
@@ -447,19 +538,26 @@ function* searchPeopleByPhoneNumberWorker(action) :Generator<*, *, *> {
                 );
               }
             });
+          if (!hasAPreferredContact) {
+            subscribedPeopleIds = subscribedPeopleIds.delete(id);
+          }
         });
       }
     }
     let people = Map();
     allResults.forEach((person) => {
-      const personId = person.getIn([OPENLATTICE_ID_FQN, 0], '');
-      people = people.set(personId, person);
+      const personEntityKeyId = person.getIn([OPENLATTICE_ID_FQN, 0], '');
+      people = people.set(
+        personEntityKeyId,
+        person.set(IS_RECEIVING_REMINDERS, subscribedPeopleIds.includes(personEntityKeyId))
+      );
     });
 
     yield put(searchPeopleByPhoneNumber.success(action.id, {
       people,
       contactMap,
-      personIdsToContactIds
+      personIdsToContactIds,
+      subscribedPeopleIds
     }));
   }
   catch (error) {

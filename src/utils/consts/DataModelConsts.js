@@ -1,88 +1,96 @@
 /*
  * @flow
  */
-import { Models } from 'lattice';
+import { Constants, Models } from 'lattice';
 
 const { FullyQualifiedName } = Models;
+const { OPENLATTICE_ID_FQN } = Constants;
+
+export const SEARCH_PREFIX = 'entity';
 
 export const APP_NAME = 'psa';
 
 export const ORG_IDS = {
   DEMO_ORG: '1d5aa1f4-4d22-46a5-97cd-dcc6820e7ff8',
+  PCM_DEMO_ORG: 'dd9fb3e7-7e70-45ae-8b43-ea479b067e68',
   PENNINGTON_SD: '67d555b4-7495-414e-a259-ef82ba71779a',
   MINNEHAHA_SD: 'e558ee21-8fec-4c65-aeda-039924ba9a92',
   SHELBY_TN: 'f61d005b-ff0d-4260-b42a-2a03854aa8e2'
 };
 
 /*
-* App Type FQNs
+* App Types
 */
 
-export const APP_TYPES_FQNS = {
-  ARREST_CHARGE_LIST: new FullyQualifiedName('publicsafety.arrestchargelist'),
-  APP_SETTINGS: new FullyQualifiedName('app.settings'),
-  ADDRESSES: new FullyQualifiedName('app.address'),
-  APPEARS_IN: new FullyQualifiedName('app.appearsin'),
-  APPEARS_IN_STATE: new FullyQualifiedName('app.appearsinstate'),
-  ARREST_APPEARS_IN: new FullyQualifiedName('app.appearsinarrest'),
-  ARREST_CHARGED_WITH: new FullyQualifiedName('app.arrestchargedwith'),
-  ARREST_CHARGES: new FullyQualifiedName('app.arrestcharges'),
-  ARREST_CASES: new FullyQualifiedName('app.arrestpretrialcases'),
-  ARRESTED_IN: new FullyQualifiedName('app.arrestedin'),
-  ASSESSED_BY: new FullyQualifiedName('app.assessedby'),
-  ASSESSED_BY_STATE: new FullyQualifiedName('app.assessedby_shared'),
-  BONDS: new FullyQualifiedName('app.manualbonds'),
-  CALCULATED_FOR: new FullyQualifiedName('app.calculatedfor'),
-  CHARGED_WITH: new FullyQualifiedName('app.chargedwith'),
-  CHARGES: new FullyQualifiedName('app.courtcharges'),
-  CONTACT_INFO_GIVEN: new FullyQualifiedName('app.contactinfogiven'),
-  CONTACT_INFORMATION: new FullyQualifiedName('app.contactinformation'),
-  COURT_CHARGE_LIST: new FullyQualifiedName('publicsafety.courtchargelist'),
-  DMF_RESULTS: new FullyQualifiedName('app.rcm'),
-  DMF_RISK_FACTORS: new FullyQualifiedName('app.rcmriskfactors'),
-  EDITED_BY: new FullyQualifiedName('app.editedby'),
-  FTAS: new FullyQualifiedName('app.ftas'),
-  HEARINGS: new FullyQualifiedName('app.hearings'),
-  INCIDENT: new FullyQualifiedName('app.incident'),
-  JUDGES: new FullyQualifiedName('app.judges'),
-  LIVES_AT: new FullyQualifiedName('app.livesat'),
-  LIVES_AT_ARREST: new FullyQualifiedName('app.livesat_arrest'),
-  MANUAL_CHARGES: new FullyQualifiedName('app.manualcharges'),
-  MANUAL_PRETRIAL_CASES: new FullyQualifiedName('app.manualpretrialcases'),
-  OUTCOMES: new FullyQualifiedName('app.psaoutcomes'),
-  OVERSAW: new FullyQualifiedName('app.oversaw'),
-  PEOPLE: new FullyQualifiedName('app.people'),
-  PRETRIAL_CASES: new FullyQualifiedName('app.courtpretrialcases'),
-  PSA_RISK_FACTORS: new FullyQualifiedName('app.psariskfactors'),
-  PSA_SCORES: new FullyQualifiedName('app.psascores'),
-  REGISTERED_FOR: new FullyQualifiedName('app.registeredfor'),
-  RELEASE_CONDITIONS: new FullyQualifiedName('app.releaseconditions'),
-  RELEASE_RECOMMENDATIONS: new FullyQualifiedName('app.psanotes'),
-  REMINDER_OPT_OUTS: new FullyQualifiedName('app.optout'),
-  REMINDERS: new FullyQualifiedName('app.remindersent'),
-  SENTENCES: new FullyQualifiedName('app.sentences'),
-  SUBSCRIPTION: new FullyQualifiedName('app.subscription'),
-  SPEAKER_RECOGNITION_PROFILES: new FullyQualifiedName('app.speakerrecognitionprofiles'),
-  STAFF: new FullyQualifiedName('app.staff'),
-  UJS_EMPLOYEES: new FullyQualifiedName('app.employees')
+export const APP_TYPES = {
+  ARREST_CHARGE_LIST: 'publicsafety.arrestchargelist',
+  APP_SETTINGS: 'app.settings',
+  ADDRESSES: 'app.address',
+  APPEARS_IN: 'app.appearsin',
+  APPEARS_IN_STATE: 'app.appearsinstate',
+  ARREST_APPEARS_IN: 'app.appearsinarrest',
+  ARREST_CHARGED_WITH: 'app.arrestchargedwith',
+  ARREST_CHARGES: 'app.arrestcharges',
+  ARREST_CASES: 'app.arrestpretrialcases',
+  ARRESTED_IN: 'app.arrestedin',
+  ASSESSED_BY: 'app.assessedby',
+  ASSESSED_BY_STATE: 'app.assessedby_shared',
+  BONDS: 'app.manualbonds',
+  CALCULATED_FOR: 'app.calculatedfor',
+  CALLED: 'app.called',
+  CHARGED_WITH: 'app.chargedwith',
+  CHARGES: 'app.courtcharges',
+  CHECKIN_APPOINTMENTS: 'app.checkinAppointment',
+  CHECKINS: 'app.checkin',
+  CONTACT_INFO_GIVEN: 'app.contactinfogiven',
+  CONTACT_INFORMATION: 'app.contactinformation',
+  COURT_CHARGE_LIST: 'publicsafety.courtchargelist',
+  DMF_RESULTS: 'app.rcm',
+  DMF_RISK_FACTORS: 'app.rcmriskfactors',
+  EDITED_BY: 'app.editedby',
+  FTAS: 'app.ftas',
+  HEARINGS: 'app.hearings',
+  INCIDENT: 'app.incident',
+  JUDGES: 'app.judges',
+  LIVES_AT: 'app.livesat',
+  LIVES_AT_ARREST: 'app.livesat_arrest',
+  MANUAL_CHARGES: 'app.manualcharges',
+  MANUAL_COURT_CHARGES: 'app.manualcourtcharges',
+  MANUAL_PRETRIAL_CASES: 'app.manualpretrialcases',
+  MANUAL_PRETRIAL_COURT_CASES: 'app.manualpretrialcourtcases',
+  MANUAL_REMINDERS: 'app.manualreminders',
+  OUTCOMES: 'app.psaoutcomes',
+  OVERSAW: 'app.oversaw',
+  PEOPLE: 'app.people',
+  PRETRIAL_CASES: 'app.courtpretrialcases',
+  PSA_RISK_FACTORS: 'app.psariskfactors',
+  PSA_SCORES: 'app.psascores',
+  REGISTERED_FOR: 'app.registeredfor',
+  RELEASE_CONDITIONS: 'app.releaseconditions',
+  RELEASE_RECOMMENDATIONS: 'app.psanotes',
+  REMINDER_OPT_OUTS: 'app.optout',
+  REMINDERS: 'app.remindersent',
+  SENTENCES: 'app.sentences',
+  SUBSCRIPTION: 'app.subscription',
+  SPEAKER_RECOGNITION_PROFILES: 'app.speakerrecognitionprofiles',
+  STAFF: 'app.staff',
+  UJS_EMPLOYEES: 'app.employees'
 };
 
-export const SETTINGS = {
-  CONTEXTS: 'contexts',
-  LOAD_CASES: 'loadCasesOnTheFly',
-  COURT_REMINDERS: 'courtRemindersEnabled',
-  MODULES: 'modules'
+
+/*
+* App Type Fqns
+*/
+
+const getAppTypeFqns = () => {
+  const appTypeFqns = {};
+  Object.entries(APP_TYPES).forEach(([key, appType]) => {
+    appTypeFqns[key] = new FullyQualifiedName(appType);
+  });
+  return appTypeFqns;
 };
 
-export const CONTEXTS = {
-  COURT: 'court',
-  BOOKING: 'booking'
-};
-
-export const MODULE = {
-  PSA: 'psa',
-  PRETRIAL: 'pretrial',
-};
+export const APP_TYPES_FQNS = getAppTypeFqns();
 
 /*
  * Charge FQNs
@@ -105,53 +113,16 @@ export const CHARGE_FQNS = {
   BRE: new FullyQualifiedName('ol.breindicator'),
 };
 
-export const ENTITY_SETS = {
-  PEOPLE: 'southdakotapeople',
-  ADDRESSES: 'southdakotaaddresses',
-  CHARGES: 'southdakotacharges',
-  SENTENCES: 'southdakotasentences',
-  PRETRIAL_CASES: 'southdakotapretrialcaseprocessings',
-  MANUAL_PRETRIAL_CASES: 'southdakotamanualpretrialcaseprocessings',
-  MANUAL_CHARGES: 'southdakotamanualcharges',
-  PSA_RISK_FACTORS: 'southdakotapsariskfactors',
-  PSA_SCORES: 'southdakotapsas',
-  DMF_RISK_FACTORS: 'southdakotadmfriskfactors',
-  DMF_RESULTS: 'southdakotadmfs',
-  RELEASE_RECOMMENDATIONS: 'southdakotareleaserecommendations',
-  STAFF: 'southdakotastaff',
-  SPEAKER_RECOGNITION_PROFILES: 'southdakotaspeakerverificationprofiles',
-  FTAS: 'southdakotaftas',
-  HEARINGS: 'southdakotahearings',
-  OUTCOMES: 'southdakotapsaoutcomes',
-  JUDGES: 'southdakotajudges',
-  BONDS: 'southdakotamanualbonds',
-  RELEASE_CONDITIONS: 'southdakotareleaseconditions',
-  CONTACT_INFORMATION: 'southdakotacontactinformation',
-
-  // judge entity sets
-  MIN_PEN_PEOPLE: 'MinPenPeople',
-  UJS_EMPLOYEES: 'UJSEmployees',
-
-  // arrest entity sets
-  ARREST_CASES: 'PenZuercherPretrialCase',
-  ARREST_CHARGES: 'PenZuercherCharge',
-  ARREST_APPEARS_IN: 'PenZuercherAppearsin',
-  ARREST_CHARGED_WITH: 'PenZuercherchargedwith',
-
-  // association entity sets
-  APPEARS_IN: 'southdakotaappearsin',
-  ASSESSED_BY: 'southdakotaassessedby',
-  LIVES_AT: 'southdakotalivesat',
-  CALCULATED_FOR: 'southdakotacalculatedfor',
-  CHARGED_WITH: 'southdakotachargedwith',
-  REGISTERED_FOR: 'southdakotaregisteredfor',
-  EDITED_BY: 'southdakotaeditedby',
-  CONTACT_INFO_GIVEN: 'southdakotacontactinfogiven'
-};
-
 export const PROPERTY_TYPES = {
+  ENTITY_KEY_ID: OPENLATTICE_ID_FQN,
+
   APP_DETAILS: 'ol.appdetails',
+  GENERAL_ID: 'general.id',
   STRING_ID: 'general.stringid',
+  TYPE: 'ol.type',
+  STATUS: 'general.status',
+  RESULT: 'general.result',
+
   COMPLETED_DATE_TIME: 'date.completeddatetime',
   DATE_TIME: 'general.datetime',
   START_DATE: 'ol.startdate',
@@ -194,6 +165,9 @@ export const PROPERTY_TYPES = {
   CHARGE_DMF_STEP_4: 'ol.dmfstep4indicator',
   BHE: 'ol.bheindicator',
   BRE: 'ol.breindicator',
+
+  // Check-ins
+  CONFIDENCE: 'general.confidence',
 
   // location-specific fields
   ADDRESS: 'location.Address',
@@ -306,7 +280,6 @@ export const PROPERTY_TYPES = {
   REASON: 'ol.reason',
 
   // Release condition entity type consts
-  CONDITION_TYPE: 'ol.type',
   FREQUENCY: 'general.frequency',
   OTHER_TEXT: 'ol.othertext',
   PERSON_NAME: 'general.fullname',
@@ -318,17 +291,15 @@ export const PROPERTY_TYPES = {
   NCA_SCALE: 'psa.ncaScale',
   FTA_SCALE: 'psa.ftaScale',
   TIMESTAMP: 'psa.GeneratedDate',
-  STATUS: 'general.status',
   STATUS_NOTES: 'general.statusnotes',
   FAILURE_REASON: 'justice.failurereason',
 
   // Release recommendation entity type consts
-  GENERAL_ID: 'general.id',
   RELEASE_RECOMMENDATION: 'publicsafety.recommendation',
 
   // Voice recognition entity type consts
-  AUDIO_SAMPLE: 'media.audio',
-  PIN: 'general.pin',
+  AUDIO_SAMPLE: 'ol.audio',
+  PIN: 'ol.token',
 
   // Subscription
   SUBSCRIPTION_ID: 'ol.id',
@@ -338,5 +309,8 @@ export const PROPERTY_TYPES = {
 
   // Reminders
   REMINDER_ID: 'ol.id',
-  NOTIFIED: 'ol.notified'
+  REMINDER_STATUS: 'ol.status',
+  NOTIFIED: 'ol.notified',
+  REMINDER_NOTES: 'ol.notes',
+  CONTACT_METHOD: 'ol.contactmethod'
 };

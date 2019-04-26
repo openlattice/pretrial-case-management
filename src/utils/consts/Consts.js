@@ -189,7 +189,9 @@ export const FORM_IDS = {
   STAFF_ID: 'staffId',
   CONTACT_ID: 'contactId',
   BOND_ID: 'bondId',
-  TIMESTAMP: 'timestamp'
+  TIMESTAMP: 'timestamp',
+  CONTACT_INFO_ID: 'contactInfoId',
+  HEARING_ID: 'hearingId'
 };
 
 export const EDIT_FIELDS = {
@@ -205,7 +207,8 @@ export const EDIT_FIELDS = {
 export const LIST_FIELDS = {
   ENTITY_SET_ID: 'entitySetId',
   ID: 'entityKeyId',
-  RELEASE_CONDITIONS_FIELD: 'releaseConditionField'
+  RELEASE_CONDITIONS_FIELD: 'releaseConditionField',
+  CHECKIN_APPOINTMENTS_FIELD: 'checkInAppointmentField'
 };
 
 export const FORM_LENGTHS = {
@@ -229,6 +232,7 @@ export const ID_FIELD_NAMES = {
   PERSON_ID: 'personId',
   CASE_ID: 'caseId',
   ARREST_ID: 'arrestId',
+  ARREST_ID_FOR_COURT: 'arrestIdForCourt',
   STAFF_ID: 'staffId',
   TIMESTAMP: 'timestamp',
   DMF_RISK_FACTORS_ID: 'dmfRiskFactorsId',
@@ -237,7 +241,9 @@ export const ID_FIELD_NAMES = {
   HEARING_ID: 'hearingId',
   OUTCOME_ID: 'outcomeId',
   EMPLOYEE_ID: 'employeeId',
-  JUDGE_ID: 'judgeId'
+  JUDGE_ID: 'judgeId',
+  CONTACT_INFO_ID: 'contactInfoId',
+  CHARGE_ID: 'chargeId'
 };
 
 export const ID_FIELDS = {
@@ -303,6 +309,13 @@ export const JURISDICTION = {
   [CONTEXT.COURT_MINN]: 'Minnehaha County, South Dakota',
   [CONTEXT.BOOKING]: 'Pennington County, South Dakota'
 };
+
+export const PERSON_INFO_DATA = {
+  HAS_OPEN_PSA: 'hasOpenPsa',
+  HAS_MULTIPLE_OPEN_PSAS: 'hasMultipleOpenPSAs',
+  IS_RECEIVING_REMINDERS: 'isReceivingReminders'
+};
+
 
 export const TABLE_WIDTH = 1000;
 export const ROW_HEIGHT = 50;

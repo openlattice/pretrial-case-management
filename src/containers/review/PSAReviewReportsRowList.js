@@ -18,12 +18,8 @@ import { PSA_FAILURE_REASONS, PSA_STATUSES, SORT_TYPES } from '../../utils/const
 import { sortByDate, sortByName } from '../../utils/PSAUtils';
 import { getIdOrValue } from '../../utils/DataUtils';
 import { OL } from '../../utils/consts/Colors';
-import {
-  APP_TYPES_FQNS,
-  PROPERTY_TYPES,
-  SETTINGS,
-  MODULE
-} from '../../utils/consts/DataModelConsts';
+import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
+import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import {
   APP,
   STATE,
@@ -42,11 +38,8 @@ import * as CourtActionFactory from '../court/CourtActionFactory';
 import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
 import * as DataActionFactory from '../../utils/data/DataActionFactory';
 
-const { PSA_SCORES } = APP_TYPES_FQNS;
-let { ASSESSED_BY } = APP_TYPES_FQNS;
-const peopleFqn :string = APP_TYPES_FQNS.PEOPLE.toString();
-const psaScoresFqn :string = PSA_SCORES.toString();
-ASSESSED_BY = ASSESSED_BY.toString();
+const { PSA_SCORES } = APP_TYPES;
+const peopleFqn :string = APP_TYPES.PEOPLE;
 
 const StyledCenteredContainer = styled.div`
   text-align: center;
@@ -325,7 +318,7 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
   renderFTAStats = () => {
     const { neighbors, personId } = this.props;
     if (personId && neighbors.size) {
-      const personPSAs = neighbors.getIn([personId, psaScoresFqn], Map());
+      const personPSAs = neighbors.getIn([personId, PSA_SCORES], Map());
       let psaFailures = 0;
       let ftas = 0;
       personPSAs.forEach((psa) => {

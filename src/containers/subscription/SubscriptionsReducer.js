@@ -7,13 +7,10 @@ import { Map, List, fromJS } from 'immutable';
 import { CLEAR_SUBSCRIPTION_MODAL, loadSubcriptionModal } from './SubscriptionsActionFactory';
 import { refreshPersonNeighbors, updateContactInfo } from '../people/PeopleActionFactory';
 
-import { APP_TYPES_FQNS } from '../../utils/consts/DataModelConsts';
+import { APP_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_NEIGHBOR, SUBSCRIPTIONS } from '../../utils/consts/FrontEndStateConsts';
 
-let { CONTACT_INFORMATION, SUBSCRIPTION } = APP_TYPES_FQNS;
-
-CONTACT_INFORMATION = CONTACT_INFORMATION.toString();
-SUBSCRIPTION = SUBSCRIPTION.toString();
+const { CONTACT_INFORMATION, SUBSCRIPTION } = APP_TYPES;
 
 const INITIAL_STATE :Map<*, *> = fromJS({
   [SUBSCRIPTIONS.LOADING_SUBSCRIPTION_MODAL]: false,

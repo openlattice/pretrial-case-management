@@ -1,7 +1,7 @@
 /*
  * @flow
  */
-import Immutable, { Map } from 'immutable';
+import Immutable, { fromJS, List, Map } from 'immutable';
 import Papa from 'papaparse';
 import moment from 'moment';
 import {
@@ -11,6 +11,7 @@ import {
   Models
 } from 'lattice';
 import {
+  all,
   call,
   put,
   takeEvery,
@@ -19,11 +20,12 @@ import {
 
 import FileSaver from '../../utils/FileSaver';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
+import { hearingIsCancelled } from '../../utils/HearingUtils';
 import { getPropertyTypeId } from '../../edm/edmUtils';
 import { toISODate, formatDateTime, formatDate } from '../../utils/FormattingUtils';
-import { getFilteredNeighbor, stripIdField } from '../../utils/DataUtils';
-import { obfuscateBulkEntityNeighbors } from '../../utils/consts/DemoNames';
-import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { getFilteredNeighbor, stripIdField, getSearchTerm } from '../../utils/DataUtils';
+import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { HEADERS_OBJ, POSITIONS } from '../../utils/consts/CSVConsts';
 import { PSA_STATUSES } from '../../utils/consts/Consts';
 import {
@@ -44,19 +46,17 @@ import {
 const {
   HEARINGS,
   DMF_RISK_FACTORS,
+  MANUAL_CHARGES,
+  MANUAL_COURT_CHARGES,
+  MANUAL_PRETRIAL_CASES,
+  MANUAL_PRETRIAL_COURT_CASES,
   PEOPLE,
+  PRETRIAL_CASES,
+  CHARGES,
   PSA_RISK_FACTORS,
   PSA_SCORES,
   STAFF
-} = APP_TYPES_FQNS;
-
-
-const hearingsFqn :string = HEARINGS.toString();
-const dmfRiskFactorsFqn :string = DMF_RISK_FACTORS.toString();
-const peopleFqn :string = PEOPLE.toString();
-const psaRiskFactorsFqn :string = PSA_RISK_FACTORS.toString();
-const psaScoresFqn :string = PSA_SCORES.toString();
-const staffFqn :string = STAFF.toString();
+} = APP_TYPES;
 
 const getApp = state => state.get(STATE.APP, Map());
 const getEDM = state => state.get(STATE.EDM, Map());
@@ -128,13 +128,22 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
       domain
     } = action.value;
 
+    const caseToChargeTypes = {
+      [MANUAL_PRETRIAL_CASES]: MANUAL_CHARGES,
+      [MANUAL_PRETRIAL_COURT_CASES]: MANUAL_COURT_CHARGES,
+      [PRETRIAL_CASES]: CHARGES
+    };
+
+    let caseIdsToScoreIds = Map();
+
     const app = yield select(getApp);
     const orgId = yield select(getOrgId);
+    const includesPretrialModule = app.getIn([APP.SELECTED_ORG_SETTINGS, SETTINGS.MODULES, MODULE.PRETRIAL], false);
     const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
-    const dmfRiskFactorsEntitySetId = getEntitySetIdFromApp(app, dmfRiskFactorsFqn, orgId);
-    const psaRiskFactorsEntitySetId = getEntitySetIdFromApp(app, psaRiskFactorsFqn, orgId);
-    const psaEntitySetId = getEntitySetIdFromApp(app, psaScoresFqn, orgId);
-    const staffEntitySetId = getEntitySetIdFromApp(app, staffFqn, orgId);
+    const dmfRiskFactorsEntitySetId = getEntitySetIdFromApp(app, DMF_RISK_FACTORS);
+    const psaRiskFactorsEntitySetId = getEntitySetIdFromApp(app, PSA_RISK_FACTORS);
+    const psaEntitySetId = getEntitySetIdFromApp(app, PSA_SCORES);
+    const staffEntitySetId = getEntitySetIdFromApp(app, STAFF);
 
     const start = moment(startDate);
     const end = moment(endDate);
@@ -152,8 +161,7 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
       scoresAsMap = scoresAsMap.set(row[OPENLATTICE_ID_FQN][0], stripIdField(Immutable.fromJS(row)));
     });
 
-    let neighborsById = yield call(SearchApi.searchEntityNeighborsBulk, psaEntitySetId, scoresAsMap.keySeq().toJS());
-    neighborsById = obfuscateBulkEntityNeighbors(neighborsById); // TODO just for demo
+    const neighborsById = yield call(SearchApi.searchEntityNeighborsBulk, psaEntitySetId, scoresAsMap.keySeq().toJS());
     let usableNeighborsById = Immutable.Map();
 
     Object.keys(neighborsById).forEach((id) => {
@@ -163,11 +171,17 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
       neighborList.forEach((neighborObj) => {
         const neighbor = getFilteredNeighbor(neighborObj);
         const entitySetId = neighbor.neighborEntitySet.id;
+        const entityKeyId = neighbor[PSA_NEIGHBOR.DETAILS][PROPERTY_TYPES.ENTITY_KEY_ID][0];
+        const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
         if (domain && neighbor.neighborEntitySet && entitySetId === staffEntitySetId) {
           const filer = neighbor.neighborDetails[PROPERTY_TYPES.PERSON_ID][0];
           if (!filer.toLowerCase().endsWith(domain)) {
             domainMatch = false;
           }
+        }
+
+        if (Object.keys(caseToChargeTypes).includes(appTypeFqn)) {
+          caseIdsToScoreIds = caseIdsToScoreIds.setIn([appTypeFqn, entityKeyId], id);
         }
 
         const timestampList = neighbor.associationDetails[PROPERTY_TYPES.TIMESTAMP]
@@ -183,31 +197,106 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
         usableNeighborsById = usableNeighborsById.set(id, usableNeighbors);
       }
     });
+    const chargeCalls = [];
+    const getChargeCall = (entitySetId, entityKeyIds, chargeEntitySetId) => (
+      call(
+        SearchApi.searchEntityNeighborsWithFilter,
+        entitySetId, {
+          entityKeyIds,
+          sourceEntitySetIds: [chargeEntitySetId],
+          destinationEntitySetIds: []
+        }
+      )
+    );
+    Object.keys(caseToChargeTypes).forEach((appTypeFqn) => {
+      if (caseIdsToScoreIds.get(appTypeFqn, Map()).size) {
+        const caseEntitySetId = getEntitySetIdFromApp(app, appTypeFqn);
+        const chargeEntitySetId = getEntitySetIdFromApp(app, caseToChargeTypes[appTypeFqn]);
+        chargeCalls.push(
+          getChargeCall(caseEntitySetId, caseIdsToScoreIds.get(appTypeFqn, Map()).keySeq().toJS(), chargeEntitySetId)
+        );
+      }
+    });
+
+    const chargesByIdList = yield all(chargeCalls);
+    let chargesById = Map();
+
+    chargesByIdList.forEach((chargeList) => {
+      chargesById = chargesById.merge(fromJS(chargeList));
+    });
+
+    Object.keys(caseToChargeTypes).forEach((appTypeFqn) => {
+      if (caseIdsToScoreIds.get(appTypeFqn, Map()).size) {
+        const caseIdsToScoreIdsForAppType = caseIdsToScoreIds.get(appTypeFqn);
+        chargesById.entrySeq().forEach(([id, charges]) => {
+          const psaEntityKeyId = caseIdsToScoreIdsForAppType.get(id, '');
+          if (psaEntityKeyId) {
+            charges.forEach((charge) => {
+              usableNeighborsById = usableNeighborsById.set(
+                psaEntityKeyId,
+                usableNeighborsById.get(psaEntityKeyId, List()).push(charge)
+              );
+            });
+          }
+        });
+      }
+    });
 
     const getUpdatedEntity = (combinedEntityInit, appTypeFqn, details) => {
       if (filters && !filters[appTypeFqn]) return combinedEntityInit;
       let combinedEntity = combinedEntityInit;
-      details.keySeq().forEach((fqn) => {
-        const keyString = `${fqn}|${appTypeFqn}`;
-        const headerString = HEADERS_OBJ[keyString];
-        const header = filters ? filters[appTypeFqn][fqn] : headerString;
-        if (header) {
-          let newArrayValues = combinedEntity.get(header, Immutable.List());
-          details.get(fqn).forEach((val) => {
-            let newVal = val;
-            if (DATETIME_FQNS.includes(fqn)) {
-              newVal = formatDateTime(val, 'YYYY-MM-DD hh:mma');
-            }
-            if (fqn === PROPERTY_TYPES.DOB) {
-              newVal = formatDate(val, 'MM-DD-YYYY');
-            }
-            if (!newArrayValues.includes(val)) {
-              newArrayValues = newArrayValues.push(newVal);
-            }
-          });
-          combinedEntity = combinedEntity.set(header, newArrayValues);
+      if (Object.values(caseToChargeTypes).includes(appTypeFqn)) {
+        let keyString = appTypeFqn;
+        if (!includesPretrialModule) {
+          keyString = `${MANUAL_COURT_CHARGES}|${MANUAL_CHARGES}`;
         }
-      });
+        const headerString = HEADERS_OBJ[keyString];
+        let newArrayValues = combinedEntity.get(headerString, Immutable.List());
+        let statute = '';
+        let description = '';
+        details.keySeq().forEach((fqn) => {
+          if (headerString) {
+            details.get(fqn).forEach((val) => {
+              if (fqn === PROPERTY_TYPES.CHARGE_STATUTE) {
+                statute = val;
+              }
+              else if (fqn === PROPERTY_TYPES.CHARGE_DESCRIPTION) {
+                description = val;
+              }
+            });
+          }
+        });
+        if (statute.length && description.length) {
+          const chargeString = `${statute}|${description}`;
+          newArrayValues = newArrayValues.push(chargeString);
+          combinedEntity = combinedEntity.set(headerString, newArrayValues);
+        }
+      }
+      else {
+        details.keySeq().forEach((fqn) => {
+          const keyString = `${fqn}|${appTypeFqn}`;
+          const headerString = HEADERS_OBJ[keyString];
+          const header = filters ? filters[appTypeFqn][fqn] : headerString;
+          if (header) {
+            let newArrayValues = combinedEntity.get(header, Immutable.List());
+
+            details.get(fqn).forEach((val) => {
+              let newVal = val;
+              if (DATETIME_FQNS.includes(fqn)) {
+                newVal = formatDateTime(val, 'YYYY-MM-DD hh:mma');
+              }
+              if (fqn === PROPERTY_TYPES.DOB) {
+                newVal = formatDate(val, 'MM-DD-YYYY');
+              }
+              if (!newArrayValues.includes(val)) {
+                newArrayValues = newArrayValues.push(newVal);
+              }
+            });
+            combinedEntity = combinedEntity.set(headerString, newArrayValues);
+          }
+        });
+      }
+
       return combinedEntity;
     };
     let jsonResults = Immutable.List();
@@ -215,7 +304,7 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
     usableNeighborsById.keySeq().forEach((id) => {
       let combinedEntity = getUpdatedEntity(
         Immutable.Map(),
-        psaScoresFqn,
+        PSA_SCORES,
         scoresAsMap.get(id)
       );
 
@@ -313,12 +402,12 @@ function* downloadPSAsByHearingDateWorker(action :SequenceAction) :Generator<*, 
     yield put(downloadPSAsByHearingDate.request(action.id, { noResults }));
     const app = yield select(getApp);
     const orgId = yield select(getOrgId);
-    const dmfRiskFactorsEntitySetId = getEntitySetIdFromApp(app, dmfRiskFactorsFqn, orgId);
-    const hearingsEntitySetId = getEntitySetIdFromApp(app, hearingsFqn, orgId);
-    const peopleEntitySetId = getEntitySetIdFromApp(app, peopleFqn, orgId);
-    const psaEntitySetId = getEntitySetIdFromApp(app, psaScoresFqn, orgId);
-    const psaRiskFactorsEntitySetId = getEntitySetIdFromApp(app, psaRiskFactorsFqn, orgId);
-    const staffEntitySetId = getEntitySetIdFromApp(app, staffFqn, orgId);
+    const dmfRiskFactorsEntitySetId = getEntitySetIdFromApp(app, DMF_RISK_FACTORS);
+    const hearingsEntitySetId = getEntitySetIdFromApp(app, HEARINGS);
+    const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
+    const psaEntitySetId = getEntitySetIdFromApp(app, PSA_SCORES);
+    const psaRiskFactorsEntitySetId = getEntitySetIdFromApp(app, PSA_RISK_FACTORS);
+    const staffEntitySetId = getEntitySetIdFromApp(app, STAFF);
     const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
 
     if (selectedHearingData.size) {
@@ -473,7 +562,7 @@ function* downloadPSAsByHearingDateWorker(action :SequenceAction) :Generator<*, 
         usableNeighborsById.keySeq().forEach((id) => {
           let combinedEntity = getUpdatedEntity(
             Immutable.Map(),
-            psaScoresFqn,
+            PSA_SCORES,
             scoresAsMap.get(id)
           );
 
@@ -578,14 +667,13 @@ function* getDownloadFiltersWorker(action :SequenceAction) :Generator<*, *, *> {
 
     const app = yield select(getApp);
     const edm = yield select(getEDM);
-    const orgId = yield select(getOrgId);
-    const hearingEntitySetId = getEntitySetIdFromApp(app, hearingsFqn, orgId);
+    const hearingEntitySetId = getEntitySetIdFromApp(app, HEARINGS);
     const datePropertyTypeId = getPropertyTypeId(edm, DATE_TIME_FQN);
 
     const ceiling = yield call(DataApi.getEntitySetSize, hearingEntitySetId);
 
     const hearingOptions = {
-      searchTerm: `${datePropertyTypeId}:"${start}"`,
+      searchTerm: getSearchTerm(datePropertyTypeId, start),
       start: 0,
       maxHits: ceiling,
       fuzzy: false
@@ -600,10 +688,8 @@ function* getDownloadFiltersWorker(action :SequenceAction) :Generator<*, *, *> {
         const hearingId = hearing.getIn([OPENLATTICE_ID_FQN, 0]);
         const hearingType = hearing.getIn([PROPERTY_TYPES.HEARING_TYPE, 0]);
         const hearingCourtroom = hearing.getIn([PROPERTY_TYPES.COURTROOM, 0]);
-        const hearingIsInactive = hearing.getIn([PROPERTY_TYPES.HEARING_INACTIVE, 0], false);
-        const hearingHasBeenCancelled = hearing.getIn([PROPERTY_TYPES.UPDATE_TYPE, 0], '')
-          .toLowerCase().trim() === 'cancelled';
-        if (hearingId && hearingType && !hearingHasBeenCancelled && !hearingIsInactive) {
+        const hearingIsInactive = hearingIsCancelled(hearing);
+        if (hearingId && hearingType && !hearingIsInactive) {
           if (courtTime && sameAshearingDate) {
             const formattedTime = moment(courtTime).format(('HH:mm'));
             options = options.set(

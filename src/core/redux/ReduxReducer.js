@@ -8,11 +8,14 @@ import { combineReducers } from 'redux-immutable';
 
 import appReducer from '../../containers/app/AppReducer';
 import chargesReducer from '../../containers/charges/ChargesReducer';
+import checkInsReducer from '../../containers/checkins/CheckInsReducer';
 import courtReducer from '../../containers/court/CourtReducer';
 import dashboardReducer from '../../containers/dashboard/DashboardReducer';
 import downloadReducer from '../../containers/download/DownloadReducer';
 import edmReducer from '../../edm/EDMReducer';
 import enrollReducer from '../../containers/enroll/EnrollReducer';
+import hearingsReducer from '../../containers/hearings/HearingsReducer';
+import manualRemindersReducer from '../../containers/manualreminders/ManualRemindersReducer';
 import psaModalReducer from '../../containers/psamodal/PSAModalReducer';
 import psaReducer from '../../containers/psa/FormReducer';
 import peopleReducer from '../../containers/people/PeopleReducer';
@@ -31,11 +34,14 @@ export default function reduxReducer(routerHistory :any) {
     [STATE.APP]: appReducer,
     [STATE.AUTH]: AuthReducer,
     [STATE.CHARGES]: chargesReducer,
+    [STATE.CHECK_INS]: checkInsReducer,
     [STATE.COURT]: courtReducer,
     [STATE.DASHBOARD]: dashboardReducer,
     [STATE.DOWNLOAD]: downloadReducer,
     [STATE.EDM]: edmReducer,
     [STATE.ENROLL]: enrollReducer,
+    [STATE.HEARINGS]: hearingsReducer,
+    [STATE.MANUAL_REMINDERS]: manualRemindersReducer,
     [STATE.PSA]: psaReducer,
     [STATE.PSA_MODAL]: psaModalReducer,
     [STATE.PEOPLE]: peopleReducer,

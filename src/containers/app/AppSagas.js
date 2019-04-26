@@ -22,7 +22,7 @@ import {
   takeEvery
 } from '@redux-saga/core/effects';
 
-import { APP_TYPES_FQNS, APP_NAME } from '../../utils/consts/DataModelConsts';
+import { APP_TYPES, APP_NAME } from '../../utils/consts/DataModelConsts';
 import { removeTermsToken } from '../../utils/AcceptTermsUtils';
 import { defaultSettings } from '../../utils/AppUtils';
 import * as Routes from '../../core/router/Routes';
@@ -33,11 +33,6 @@ import {
   loadApp
 } from './AppActionFactory';
 
-const { OPENLATTICE_ID_FQN } = Constants;
-
-let { APP_SETTINGS } = APP_TYPES_FQNS;
-APP_SETTINGS = APP_SETTINGS.toString();
-
 const { SecurableTypes } = Types;
 const { getEntityDataModelProjection } = EntityDataModelApiActions;
 const { getEntityDataModelProjectionWorker } = EntityDataModelApiSagas;
@@ -46,6 +41,9 @@ const { getAppWorker, getAppConfigsWorker, getAppTypesWorker } = AppApiSagas;
 const { getEntitySetData } = DataApiActions;
 const { getEntitySetDataWorker } = DataApiSagas;
 
+const { OPENLATTICE_ID_FQN } = Constants;
+
+const { APP_SETTINGS } = APP_TYPES;
 
 function* loadAppWorker(action :SequenceAction) :Generator<*, *, *> {
 
