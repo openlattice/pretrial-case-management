@@ -1,7 +1,7 @@
 /*
  * @flow
  */
-import { AuthorizationApi } from 'lattice';
+import { AuthorizationApi, DataApi, SearchApi } from 'lattice';
 import { DataApiActions, DataApiSagas } from 'lattice-sagas';
 import { Map, Set, fromJS } from 'immutable';
 import {
@@ -12,18 +12,25 @@ import {
   takeEvery
 } from '@redux-saga/core/effects';
 
-import { getEntityKeyId } from '../../utils/DataUtils';
-import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { getEntitySetIdFromApp } from '../../utils/AppUtils';
+import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
+import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { APP, STATE } from '../../utils/consts/FrontEndStateConsts';
 import {
   DELETE_CHARGE,
+  LOAD_ARRESTING_AGENCIES,
   LOAD_CHARGES,
   UPDATE_CHARGE,
   deleteCharge,
+  loadArrestingAgencies,
   loadCharges,
   updateCharge
 } from './ChargesActionFactory';
 
+const { ARRESTING_AGENCIES } = APP_TYPES;
+const { ENTITY_KEY_ID } = PROPERTY_TYPES;
+
+const getApp = state => state.get(STATE.APP, Map());
 const getOrgId = state => state.getIn([STATE.APP, APP.SELECTED_ORG_ID], '');
 
 const { getEntitySetData } = DataApiActions;
@@ -67,6 +74,43 @@ function* updateChargeWorker(action :SequenceAction) :Generator<*, *, *> {
 }
 function* updateChargesWatcher() :Generator<*, *, *> {
   yield takeEvery(UPDATE_CHARGE, updateChargeWorker);
+}
+
+/*
+ * loadArrestingAgencies()
+ */
+
+function* loadArrestingAgenciesWorker(action :SequenceAction) :Generator<*, *, *> {
+  try {
+    yield put(loadArrestingAgencies.request(action.id));
+    const app = yield select(getApp);
+    const arrestAgenciesEntitySetId = getEntitySetIdFromApp(app, ARRESTING_AGENCIES);
+    const entitySetSize = yield call(DataApi.getEntitySetSize, arrestAgenciesEntitySetId);
+    const options = {
+      searchTerm: '*',
+      start: 0,
+      maxHits: entitySetSize
+    };
+
+    const allAgencyData = yield call(SearchApi.searchEntitySetData, arrestAgenciesEntitySetId, options);
+    let allAgencies = Map();
+    fromJS(allAgencyData.hits).forEach((agency) => {
+      const { [ENTITY_KEY_ID]: angencyEntityKeyId } = getEntityProperties(agency, [ENTITY_KEY_ID]);
+      allAgencies = allAgencies.set(angencyEntityKeyId, agency);
+    });
+    yield put(loadArrestingAgencies.success(action.id, { allAgencies }));
+  }
+  catch (error) {
+    console.error(error);
+    yield put(loadArrestingAgencies.failure(action.id, error));
+  }
+  finally {
+    yield put(loadArrestingAgencies.finally(action.id));
+  }
+}
+
+function* loadArrestingAgenciesWatcher() :Generator<*, *, *> {
+  yield takeEvery(LOAD_ARRESTING_AGENCIES, loadArrestingAgenciesWorker);
 }
 
 /*
@@ -206,6 +250,7 @@ function* loadChargesWatcher() :Generator<*, *, *> {
 
 export {
   deleteChargesWatcher,
+  loadArrestingAgenciesWatcher,
   loadChargesWatcher,
   updateChargesWatcher
 };
