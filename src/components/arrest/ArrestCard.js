@@ -31,6 +31,7 @@ const ArrestCard = ({ arrest, component } :Props) => {
     arrest,
     [CASE_ID, ARREST_DATE_TIME, ARRESTING_AGENCY]
   );
+
   const arrestDate = formatDateTime(arrestDateTime, 'MM/DD/YYYY');
   const arrestTime = formatDateTime(arrestDateTime, 'HH:mm');
 
@@ -69,6 +70,10 @@ const ArrestCard = ({ arrest, component } :Props) => {
       {
         label: 'Arrest Time',
         content: [arrestTime]
+      },
+      {
+        label: 'Arresting Agency',
+        content: [arrestingAgency]
       }
     ];
   }
