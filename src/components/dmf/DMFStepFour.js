@@ -42,9 +42,9 @@ const StepFour = ({
       content: [<ContentsWrapper key={1}><BooleanFlag dims={flagDims} value={stepFourVal} /></ContentsWrapper>]
     },
     {
-      label: 'Current charge is violent and PSA resulted in NVCA flag?',
+      label: 'Current charge is not violent and PSA resulted in NVCA flag?',
       content: [
-        <ContentsWrapper key={2}><BooleanFlag dims={flagDims} value={nvca && currentViolentOffense} /></ContentsWrapper>
+        <ContentsWrapper key={2}><BooleanFlag dims={flagDims} value={nvca && !currentViolentOffense} /></ContentsWrapper>
       ]
     },
     {
