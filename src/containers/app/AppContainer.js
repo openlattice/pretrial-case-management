@@ -4,7 +4,7 @@
 
 import React from 'react';
 import styled from 'styled-components';
-import { AuthActions } from 'lattice-auth';
+import { AuthActions, AuthUtils } from 'lattice-auth';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { EntityDataModelApiActions } from 'lattice-sagas';
@@ -15,6 +15,7 @@ import AppConsent from './AppConsent';
 import ErrorPage from '../../components/ErrorPage';
 import HeaderNav from '../../components/nav/HeaderNav';
 import Dashboard from '../../components/dashboard/Dashboard';
+import SettingsContainer from '../settings/SettingsContainer';
 import HearingSettingsModal from '../../components/hearings/HearingSettingsModal';
 import Forms from '../forms/Forms';
 import ContactSupport from '../../components/app/ContactSupport';
@@ -141,6 +142,14 @@ class AppContainer extends React.Component<Props, *> {
       : <Redirect to={Routes.TERMS} />
   );
 
+  renderIfAdmin = (Component, props) => {
+    if (!AuthUtils.isAdmin()) {
+      return <Redirect to={Routes.DASHBOARD} />;
+    }
+
+    return this.renderComponent(Component, props);
+  }
+
   renderAppBody = () => {
     const { app, errors } = this.props;
     const loading = app.get(APP.LOADING, false);
@@ -153,13 +162,18 @@ class AppContainer extends React.Component<Props, *> {
     }
 
     return loading
-      ? <LogoLoader loadingText="Loading..." />
+      ? (
+        <AppBodyWrapper>
+          <LogoLoader loadingText="Loading..." />
+        </AppBodyWrapper>
+      )
       : (
         <AppBodyWrapper>
           <Switch>
             <Route path={Routes.TERMS} component={AppConsent} />
             <Route path={Routes.DASHBOARD} render={() => this.renderComponent(Dashboard)} />
             <Route path={Routes.FORMS} render={() => this.renderComponent(Forms)} />
+            <Route path={Routes.SETTINGS} render={() => this.renderIfAdmin(SettingsContainer)} />
             <Redirect to={Routes.DASHBOARD} />
           </Switch>
         </AppBodyWrapper>
