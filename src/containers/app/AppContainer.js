@@ -162,7 +162,11 @@ class AppContainer extends React.Component<Props, *> {
     }
 
     return loading
-      ? <LogoLoader loadingText="Loading..." />
+      ? (
+        <AppBodyWrapper>
+          <LogoLoader loadingText="Loading..." />
+        </AppBodyWrapper>
+      )
       : (
         <AppBodyWrapper>
           <Switch>
