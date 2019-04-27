@@ -5,9 +5,15 @@
 import axios from 'axios';
 import moment from 'moment';
 import LatticeAuth from 'lattice-auth';
+import { SearchApiActions, SearchApiSagas } from 'lattice-sagas';
 import { push } from 'connected-react-router';
-import { fromJS, List, Map, Set } from 'immutable';
 import { Constants, SearchApi } from 'lattice';
+import {
+  fromJS,
+  List,
+  Map,
+  Set
+} from 'immutable';
 import {
   all,
   call,
@@ -40,6 +46,10 @@ import {
 } from './PersonActionFactory';
 
 import * as Routes from '../../core/router/Routes';
+
+const { searchEntityNeighborsWithFilter, searchEntitySetData } = SearchApiActions;
+const { searchEntityNeighborsWithFilterWorker, searchEntitySetDataWorker } = SearchApiSagas;
+
 const { HAS_OPEN_PSA, HAS_MULTIPLE_OPEN_PSAS, IS_RECEIVING_REMINDERS } = PERSON_INFO_DATA;
 const { OPENLATTICE_ID_FQN } = Constants;
 const {
@@ -273,21 +283,38 @@ function* searchPeopleWorker(action) :Generator<*, *, *> {
       maxHits: 100
     };
 
-    let response = yield call(SearchApi.advancedSearchEntitySetData, peopleEntitySetId, searchOptions);
-    response = fromJS(response.hits);
+    const response = yield call(
+      searchEntitySetDataWorker,
+      searchEntitySetData({ entitySetId: peopleEntitySetId, searchOptions })
+    );
+    if (response.error) throw response.error;
+
     let personMap = Map();
-    if (response.size) {
+    if (response.data.hits.length > 1) {
+      const searchResults = fromJS(response.data.hits);
+      searchResults.forEach((person) => {
+        const personEntityKeyId = person.getIn([OPENLATTICE_ID_FQN, 0], '');
+        personMap = personMap.set(personEntityKeyId, person);
+      });
       if (includePSAInfo) {
-        response.forEach((person) => {
-          const personEntityKeyId = person.getIn([OPENLATTICE_ID_FQN, 0], '');
-          personMap = personMap.set(personEntityKeyId, fromJS(person));
-        });
-        let peopleNeighborsById = yield call(SearchApi.searchEntityNeighborsWithFilter, peopleEntitySetId, {
-          entityKeyIds: personMap.keySeq().toJS(),
-          sourceEntitySetIds: [psaScoresEntitySetId, contactInformationEntitySetId],
-          destinationEntitySetIds: [subscriptionEntitySetId, contactInformationEntitySetId]
-        });
-        peopleNeighborsById = fromJS(peopleNeighborsById);
+        let peopleNeighborsById = yield call(
+          searchEntityNeighborsWithFilterWorker,
+          searchEntityNeighborsWithFilter({
+            entitySetId: peopleEntitySetId,
+            filter: {
+              entityKeyIds: personMap.keySeq().toJS(),
+              sourceEntitySetIds: [psaScoresEntitySetId, contactInformationEntitySetId],
+              destinationEntitySetIds: [subscriptionEntitySetId, contactInformationEntitySetId]
+            }
+          })
+        );
+        if (peopleNeighborsById.error) throw peopleNeighborsById.error;
+        // let peopleNeighborsById = yield call(SearchApi.searchEntityNeighborsWithFilter, peopleEntitySetId, {
+        //   entityKeyIds: personMap.keySeq().toJS(),
+        //   sourceEntitySetIds: [psaScoresEntitySetId, contactInformationEntitySetId],
+        //   destinationEntitySetIds: [subscriptionEntitySetId, contactInformationEntitySetId]
+        // });
+        peopleNeighborsById = fromJS(peopleNeighborsById.data);
 
         peopleNeighborsById.entrySeq().forEach(([personEntityKeyId, neighbors]) => {
           let hasActiveSubscription = false;
@@ -319,11 +346,11 @@ function* searchPeopleWorker(action) :Generator<*, *, *> {
             .setIn([personEntityKeyId, HAS_MULTIPLE_OPEN_PSAS], (psaCount > 1))
             .setIn([personEntityKeyId, IS_RECEIVING_REMINDERS], (hasActiveSubscription && hasPreferredContact));
         });
-        response = personMap.valueSeq();
       }
     }
+    const personList = personMap.valueSeq();
 
-    yield put(searchPeople.success(action.id, response));
+    yield put(searchPeople.success(action.id, personList));
   }
   catch (error) {
     console.error(error);
