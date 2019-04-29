@@ -13,12 +13,6 @@ const loadDataModel :RequestSequence = newRequestSequence(LOAD_DATA_MODEL);
 const LOAD_NEIGHBORS :string = 'LOAD_NEIGHBORS';
 const loadNeighbors :RequestSequence = newRequestSequence(LOAD_NEIGHBORS);
 
-const HARD_RESTART :'HARD_RESTART' = 'HARD_RESTART';
-function hardRestart() :Object {
-  return {
-    type: HARD_RESTART
-  };
-}
 // reducer only
 
 const CLEAR_FORM :string = 'CLEAR_FORM';
@@ -39,7 +33,6 @@ export {
   LOAD_DATA_MODEL,
   LOAD_NEIGHBORS,
   addCaseAndCharges,
-  hardRestart,
   loadDataModel,
   loadNeighbors,
   CLEAR_FORM,
