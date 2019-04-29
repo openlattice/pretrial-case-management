@@ -19,7 +19,7 @@ import * as Routes from './Routes';
 
 function* goToRouteWorker(action :RoutingAction) :Generator<*, *, *> {
 
-  const { route } = action;
+  const { route } = action.value;
   if (route === null || route === undefined || !route.startsWith('/', 0)) {
     throw new Error('Invalid Route Provided');
   }
