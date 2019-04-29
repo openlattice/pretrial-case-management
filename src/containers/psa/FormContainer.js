@@ -287,8 +287,6 @@ type Props = {
       pretrialCase :Immutable.Map<*, *>,
       charges :Immutable.List<Immutable.Map<*, *>>
     }) => void,
-
-    hardRestart :() => void;
     loadDataModel :() => void,
     loadNeighbors :(value :{
       entitySetId :string,
@@ -1027,7 +1025,7 @@ class Form extends React.Component<Props, State> {
     } = this.state;
 
     const {
-      actions,
+      history,
       allCasesForPerson,
       allChargesForPerson,
       allHearings,
@@ -1056,7 +1054,7 @@ class Form extends React.Component<Props, State> {
           personId={this.getPersonIdValue()}
           psaId={psaId}
           submitSuccess={!submitError}
-          onClose={actions.hardRestart}
+          onClose={() => history.push(Routes.CREATE_FORMS)}
           charges={charges}
           notes={psaForm.get(PSA.NOTES)}
           allCases={allCasesForPerson}
@@ -1071,7 +1069,7 @@ class Form extends React.Component<Props, State> {
 
   renderPSAResultsModal = () => {
     const { confirmationModalOpen } = this.state;
-    const { actions, isSubmitting, isSubmitted } = this.props;
+    const { history, isSubmitting, isSubmitted } = this.props;
     const currentPage = getCurrentPage(window.location);
     if (!currentPage || Number.isNaN(currentPage)) return null;
     if (currentPage < 4 || (!isSubmitting && !isSubmitted)) {
@@ -1083,7 +1081,7 @@ class Form extends React.Component<Props, State> {
           open={confirmationModalOpen}
           submissionStatus={isSubmitting || isSubmitted}
           pageContent={this.getPsaResults}
-          handleModalButtonClick={actions.hardRestart} />
+          handleModalButtonClick={() => history.push(Routes.CREATE_FORMS)} />
     );
   }
 
