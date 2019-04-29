@@ -42,8 +42,6 @@ const { logout } = AuthActions;
 const { getAllPropertyTypes } = EntityDataModelApiActions;
 
 const {
-  ARRESTING_AGENCIES,
-  JUDGES,
   ARREST_CHARGE_LIST,
   COURT_CHARGE_LIST
 } = APP_TYPES;
@@ -105,21 +103,13 @@ class AppContainer extends React.Component<Props, *> {
         const selectedOrgId :string = id;
         const arrestChargesEntitySetId = getEntitySetIdFromApp(app, ARREST_CHARGE_LIST);
         const courtChargesEntitySetId = getEntitySetIdFromApp(app, COURT_CHARGE_LIST);
-        const judgesEntitySetId = getEntitySetIdFromApp(app, JUDGES);
-        const arrestAngenciesEntitySetId = getEntitySetIdFromApp(app, ARRESTING_AGENCIES);
-        if (arrestChargesEntitySetId && courtChargesEntitySetId) {
-          actions.loadCharges({
-            arrestChargesEntitySetId,
-            courtChargesEntitySetId,
-            selectedOrgId
-          });
-        }
-        if (judgesEntitySetId) {
-          actions.loadJudges();
-        }
-        if (arrestAngenciesEntitySetId) {
-          actions.loadArrestingAgencies();
-        }
+        actions.loadCharges({
+          arrestChargesEntitySetId,
+          courtChargesEntitySetId,
+          selectedOrgId
+        });
+        actions.loadJudges();
+        actions.loadArrestingAgencies();
       });
     }
   }
