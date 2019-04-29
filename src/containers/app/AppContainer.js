@@ -99,7 +99,7 @@ class AppContainer extends React.Component<Props, *> {
     const nextOrg = app.get(APP.ORGS);
     const nextOrgId = app.get(APP.SELECTED_ORG_ID);
     const prevOrgId = prevProps.app.get(APP.SELECTED_ORG_ID);
-    if (prevOrgId !== nextOrgId) {
+    if (nextOrgId && prevOrgId !== nextOrgId) {
       nextOrg.keySeq().forEach((id) => {
         const selectedOrgId :string = id;
         const arrestChargesEntitySetId = getEntitySetIdFromApp(app, ARREST_CHARGE_LIST);
