@@ -30,6 +30,7 @@ const {
   CHECKIN_APPOINTMENTS,
   CONTACT_INFORMATION,
   DMF_RESULTS,
+  HEARINGS,
   PSA_SCORES,
   RELEASE_RECOMMENDATIONS
 } = APP_TYPES;
@@ -346,7 +347,16 @@ export default function peopleReducer(state = INITIAL_STATE, action) {
               } = getEntityProperties(checkInAppointment, [PROPERTY_TYPES.ENTITY_KEY_ID]);
               return entityKeyId !== checkInAppoiontmentsEntityKeyId;
             });
-          personNeighbors = personNeighbors.set(CHECKIN_APPOINTMENTS, personCheckInAppointments);
+          const personHearings = personNeighbors.get(HEARINGS, List())
+            .filter((hearing) => {
+              const {
+                [PROPERTY_TYPES.ENTITY_KEY_ID]: hearingEntityKeyId
+              } = getEntityProperties(hearing, [PROPERTY_TYPES.ENTITY_KEY_ID]);
+              return entityKeyId !== hearingEntityKeyId;
+            });
+          personNeighbors = personNeighbors
+            .set(HEARINGS, personHearings)
+            .set(CHECKIN_APPOINTMENTS, personCheckInAppointments);
 
           return state.setIn([PEOPLE.NEIGHBORS, personId], personNeighbors);
         }
