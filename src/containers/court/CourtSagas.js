@@ -26,7 +26,7 @@ import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { getSearchTerm } from '../../utils/DataUtils';
 import { hearingIsCancelled } from '../../utils/HearingUtils';
 import { getPropertyTypeId } from '../../edm/edmUtils';
-import { PSA_STATUSES } from '../../utils/consts/Consts';
+import { MAX_HITS, PSA_STATUSES } from '../../utils/consts/Consts';
 import { toISODate, TIME_FORMAT } from '../../utils/FormattingUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import {
@@ -243,12 +243,10 @@ function* loadHearingsForDateWorker(action :SequenceAction) :Generator<*, *, *> 
     const hearingEntitySetId = getEntitySetIdFromApp(app, HEARINGS);
     const datePropertyTypeId = getPropertyTypeId(edm, DATE_TIME_FQN);
 
-    const ceiling = yield call(DataApi.getEntitySetSize, hearingEntitySetId);
-
     const hearingOptions = {
       searchTerm: getSearchTerm(datePropertyTypeId, toISODate(action.value)),
       start: 0,
-      maxHits: ceiling,
+      maxHits: MAX_HITS,
       fuzzy: false
     };
     const allHearingData = yield call(SearchApi.searchEntitySetData, hearingEntitySetId, hearingOptions);
@@ -454,11 +452,10 @@ function* loadJudgesWorker(action :SequenceAction) :Generator<*, *, *> {
     yield put(loadJudges.request(action.id));
     const app = yield select(getApp);
     const judgesEntitySetId = getEntitySetIdFromApp(app, JUDGES);
-    const entitySetSize = yield call(DataApi.getEntitySetSize, judgesEntitySetId);
     const options = {
       searchTerm: '*',
       start: 0,
-      maxHits: entitySetSize
+      maxHits: MAX_HITS
     };
 
     const allJudgeData = yield call(SearchApi.searchEntitySetData, judgesEntitySetId, options);

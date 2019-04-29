@@ -26,7 +26,7 @@ import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { hearingNeedsReminder } from '../../utils/RemindersUtils';
 import { hearingIsCancelled } from '../../utils/HearingUtils';
 import { getPropertyTypeId } from '../../edm/edmUtils';
-import { PSA_STATUSES } from '../../utils/consts/Consts';
+import { MAX_HITS, PSA_STATUSES } from '../../utils/consts/Consts';
 import exportPDFList from '../../utils/CourtRemindersPDFUtils';
 import { toISODate } from '../../utils/FormattingUtils';
 import { addWeekdays, getSearchTerm } from '../../utils/DataUtils';
@@ -191,12 +191,10 @@ function* loadOptOutsForDateWorker(action :SequenceAction) :Generator<*, *, *> {
     const optOutEntitySetId = getEntitySetIdFromApp(app, REMINDER_OPT_OUTS);
     const datePropertyTypeId = getPropertyTypeId(edm, DATE_TIME_FQN);
 
-    const ceiling = yield call(DataApi.getEntitySetSize, optOutEntitySetId);
-
     const reminderOptions = {
       searchTerm: getSearchTerm(datePropertyTypeId, toISODate(date)),
       start: 0,
-      maxHits: ceiling,
+      maxHits: MAX_HITS,
       fuzzy: false
     };
     const allOptOutDataforDate = yield call(SearchApi.searchEntitySetData, optOutEntitySetId, reminderOptions);
@@ -251,12 +249,10 @@ function* loadRemindersforDateWorker(action :SequenceAction) :Generator<*, *, *>
     const remindersEntitySetId = getEntitySetIdFromApp(app, REMINDERS);
     const datePropertyTypeId = getPropertyTypeId(edm, DATE_TIME_FQN);
 
-    const ceiling = yield call(DataApi.getEntitySetSize, remindersEntitySetId);
-
     const reminderOptions = {
       searchTerm: getSearchTerm(datePropertyTypeId, toISODate(date)),
       start: 0,
-      maxHits: ceiling,
+      maxHits: MAX_HITS,
       fuzzy: false
     };
     const allRemindersDataforDate = yield call(SearchApi.searchEntitySetData, remindersEntitySetId, reminderOptions);
@@ -544,8 +540,6 @@ function* bulkDownloadRemindersPDFWorker(action :SequenceAction) :Generator<*, *
     const datePropertyTypeId = getPropertyTypeId(edm, DATE_TIME_FQN);
     const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
 
-    const ceiling = yield call(DataApi.getEntitySetSize, hearingsEntitySetId);
-
     const oneWeekAhead = addWeekdays(date, 7);
 
     const getDateSearch = selectedDate => getSearchTerm(datePropertyTypeId, toISODate(selectedDate));
@@ -553,7 +547,7 @@ function* bulkDownloadRemindersPDFWorker(action :SequenceAction) :Generator<*, *
     const reminderOptions = {
       searchTerm: `${getDateSearch(oneWeekAhead)}`,
       start: 0,
-      maxHits: ceiling,
+      maxHits: MAX_HITS,
       fuzzy: false
     };
 

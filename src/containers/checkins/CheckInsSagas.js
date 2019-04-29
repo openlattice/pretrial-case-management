@@ -22,6 +22,7 @@ import { getEntityProperties, getSearchTerm } from '../../utils/DataUtils';
 import { toISODate } from '../../utils/FormattingUtils';
 import { getPropertyTypeId } from '../../edm/edmUtils';
 import { APPOINTMENT_TYPES } from '../../utils/consts/AppointmentConsts';
+import { MAX_HITS } from '../../utils/consts/Consts';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import {
   APP,
@@ -75,7 +76,7 @@ function* loadCheckInAppointmentsForDateWorker(action :SequenceAction) :Generato
     const checkInOptions = {
       searchTerm: getSearchTerm(startDatePropertyTypeId, toISODate(date)),
       start: 0,
-      maxHits: 10000,
+      maxHits: MAX_HITS,
       fuzzy: false
     };
     const allCheckInDataforDate = yield call(

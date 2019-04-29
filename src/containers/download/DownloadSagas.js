@@ -27,7 +27,7 @@ import { getFilteredNeighbor, stripIdField, getSearchTerm } from '../../utils/Da
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { HEADERS_OBJ, POSITIONS } from '../../utils/consts/CSVConsts';
-import { PSA_STATUSES } from '../../utils/consts/Consts';
+import { PSA_STATUSES, MAX_HITS } from '../../utils/consts/Consts';
 import {
   APP,
   PSA_NEIGHBOR,
@@ -147,11 +147,10 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
 
     const start = moment(startDate);
     const end = moment(endDate);
-    const entitySetSize = yield call(DataApi.getEntitySetSize, psaEntitySetId);
     const options = {
       searchTerm: '*',
       start: 0,
-      maxHits: entitySetSize
+      maxHits: MAX_HITS
     };
 
     const allScoreData = yield call(SearchApi.searchEntitySetData, psaEntitySetId, options);
@@ -670,12 +669,10 @@ function* getDownloadFiltersWorker(action :SequenceAction) :Generator<*, *, *> {
     const hearingEntitySetId = getEntitySetIdFromApp(app, HEARINGS);
     const datePropertyTypeId = getPropertyTypeId(edm, DATE_TIME_FQN);
 
-    const ceiling = yield call(DataApi.getEntitySetSize, hearingEntitySetId);
-
     const hearingOptions = {
       searchTerm: getSearchTerm(datePropertyTypeId, start),
       start: 0,
-      maxHits: ceiling,
+      maxHits: MAX_HITS,
       fuzzy: false
     };
 

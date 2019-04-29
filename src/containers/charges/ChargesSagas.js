@@ -15,6 +15,7 @@ import {
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { MAX_HITS } from '../../utils/consts/Consts';
 import { APP, STATE } from '../../utils/consts/FrontEndStateConsts';
 import {
   DELETE_CHARGE,
@@ -85,11 +86,10 @@ function* loadArrestingAgenciesWorker(action :SequenceAction) :Generator<*, *, *
     yield put(loadArrestingAgencies.request(action.id));
     const app = yield select(getApp);
     const arrestAgenciesEntitySetId = getEntitySetIdFromApp(app, ARRESTING_AGENCIES);
-    const entitySetSize = yield call(DataApi.getEntitySetSize, arrestAgenciesEntitySetId);
     const options = {
       searchTerm: '*',
       start: 0,
-      maxHits: entitySetSize
+      maxHits: MAX_HITS
     };
 
     const allAgencyData = yield call(SearchApi.searchEntitySetData, arrestAgenciesEntitySetId, options);
