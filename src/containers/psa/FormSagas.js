@@ -16,7 +16,6 @@ import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { APP, STATE } from '../../utils/consts/FrontEndStateConsts';
 import { PSA_STATUSES } from '../../utils/consts/Consts';
 import {
-  HARD_RESTART,
   LOAD_DATA_MODEL,
   LOAD_NEIGHBORS,
   loadDataModel,

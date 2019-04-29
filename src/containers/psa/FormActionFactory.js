@@ -29,7 +29,6 @@ const setPSAValues :RequestSequence = newRequestSequence(SET_PSA_VALUES);
 
 export {
   ADD_CASE_AND_CHARGES,
-  HARD_RESTART,
   LOAD_DATA_MODEL,
   LOAD_NEIGHBORS,
   addCaseAndCharges,
