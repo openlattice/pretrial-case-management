@@ -62,6 +62,8 @@ export const APP = {
 export const CHARGES = {
   ARREST: 'arrestCharges',
   ARREST_PERMISSIONS: 'arrestChargePermissions',
+  ARRESTING_AGENCIES: 'arrestingAgencies',
+  LOADING_AGENCIES: 'loadingAgencies',
   COURT: 'courtCharges',
   COURT_PERMISSIONS: 'courtChargePermissions',
   ARREST_VIOLENT: 'violentArrestCharges',

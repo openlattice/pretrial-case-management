@@ -4,6 +4,8 @@
 
 export const MAX_PAGE = 5;
 
+export const MAX_HITS = 10000;
+
 export const FORM_PATHS = {
   1: '/1',
   2: '/2',

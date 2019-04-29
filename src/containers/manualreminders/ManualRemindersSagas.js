@@ -12,7 +12,6 @@ import {
 import {
   Constants,
   SearchApi,
-  DataApi,
   Models
 } from 'lattice';
 import {
@@ -28,11 +27,8 @@ import { getPropertyTypeId } from '../../edm/edmUtils';
 import { toISODate } from '../../utils/FormattingUtils';
 import { hearingNeedsReminder } from '../../utils/RemindersUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import {
-  APP,
-  PSA_NEIGHBOR,
-  STATE
-} from '../../utils/consts/FrontEndStateConsts';
+import { MAX_HITS } from '../../utils/consts/Consts';
+import { APP, PSA_NEIGHBOR, STATE } from '../../utils/consts/FrontEndStateConsts';
 import {
   LOAD_MANUAL_REMINDERS_FORM,
   LOAD_MANUAL_REMINDERS,
@@ -138,12 +134,10 @@ function* loadManualRemindersForDateWorker(action :SequenceAction) :Generator<*,
     const manualRemindersEntitySetId = getEntitySetIdFromApp(app, MANUAL_REMINDERS);
     const datePropertyTypeId = getPropertyTypeId(edm, DATE_TIME_FQN);
 
-    const ceiling = yield call(DataApi.getEntitySetSize, manualRemindersEntitySetId);
-
     const reminderOptions = {
       searchTerm: getSearchTerm(datePropertyTypeId, toISODate(date)),
       start: 0,
-      maxHits: ceiling,
+      maxHits: MAX_HITS,
       fuzzy: false
     };
     const allRemindersDataforDate = yield call(

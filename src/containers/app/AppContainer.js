@@ -22,6 +22,7 @@ import ContactSupport from '../../components/app/ContactSupport';
 import LogoLoader from '../../components/LogoLoader';
 import WelcomeBanner from '../../components/WelcomeBanner';
 import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
+import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { APP_TYPES } from '../../utils/consts/DataModelConsts';
 import { termsAreAccepted } from '../../utils/AcceptTermsUtils';
 import { OL } from '../../utils/consts/Colors';
@@ -41,7 +42,6 @@ const { logout } = AuthActions;
 const { getAllPropertyTypes } = EntityDataModelApiActions;
 
 const {
-  JUDGES,
   ARREST_CHARGE_LIST,
   COURT_CHARGE_LIST
 } = APP_TYPES;
@@ -97,29 +97,20 @@ class AppContainer extends React.Component<Props, *> {
   componentDidUpdate(prevProps) {
     const { app, actions } = this.props;
     const nextOrg = app.get(APP.ORGS);
-    const prevOrg = prevProps.app.get(APP.ORGS);
-    if (prevOrg.size !== nextOrg.size) {
+    const nextOrgId = app.get(APP.SELECTED_ORG_ID);
+    const prevOrgId = prevProps.app.get(APP.SELECTED_ORG_ID);
+    if (nextOrgId && prevOrgId !== nextOrgId) {
       nextOrg.keySeq().forEach((id) => {
         const selectedOrgId :string = id;
-        const arrestChargesEntitySetId = app.getIn(
-          [ARREST_CHARGE_LIST, APP.ENTITY_SETS_BY_ORG, selectedOrgId]
-        );
-        const courtChargesEntitySetId = app.getIn(
-          [COURT_CHARGE_LIST, APP.ENTITY_SETS_BY_ORG, selectedOrgId]
-        );
-        const judgesEntitySetId = app.getIn(
-          [JUDGES, APP.ENTITY_SETS_BY_ORG, selectedOrgId]
-        );
-        if (arrestChargesEntitySetId && courtChargesEntitySetId) {
-          actions.loadCharges({
-            arrestChargesEntitySetId,
-            courtChargesEntitySetId,
-            selectedOrgId
-          });
-        }
-        if (judgesEntitySetId) {
-          actions.loadJudges();
-        }
+        const arrestChargesEntitySetId = getEntitySetIdFromApp(app, ARREST_CHARGE_LIST);
+        const courtChargesEntitySetId = getEntitySetIdFromApp(app, COURT_CHARGE_LIST);
+        actions.loadCharges({
+          arrestChargesEntitySetId,
+          courtChargesEntitySetId,
+          selectedOrgId
+        });
+        actions.loadJudges();
+        actions.loadArrestingAgencies();
       });
     }
   }

@@ -6,7 +6,6 @@ import React from 'react';
 import styled from 'styled-components';
 import Immutable from 'immutable';
 
-import LoadingSpinner from '../LoadingSpinner';
 import LogoLoader from '../LogoLoader';
 import NoSearchResults from './NoSearchResults';
 import PersonCard from './PersonCard';

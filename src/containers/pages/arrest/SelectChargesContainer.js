@@ -3,7 +3,7 @@
  */
 
 import React from 'react';
-import Immutable, { Map, fromJS } from 'immutable';
+import Immutable, { Map, List, fromJS } from 'immutable';
 import styled from 'styled-components';
 import moment from 'moment';
 import randomUUID from 'uuid/v4';
@@ -14,20 +14,30 @@ import { faExclamationTriangle } from '@fortawesome/pro-light-svg-icons';
 import BasicButton from '../../../components/buttons/BasicButton';
 import SecondaryButton from '../../../components/buttons/SecondaryButton';
 import SearchableSelect from '../../../components/controls/SearchableSelect';
+import DropDownMenu from '../../../components/StyledSelect';
+import AsyncStyledSelect from '../../../components/AsyncSelect';
 import DateTimePicker from '../../../components/datetime/DateTimePicker';
 import QUALIFIERS from '../../../utils/consts/QualifierConsts';
-import { CHARGE, ID_FIELD_NAMES } from '../../../utils/consts/Consts';
+import { CHARGE } from '../../../utils/consts/Consts';
 import type { Charge } from '../../../utils/consts/Consts';
 import { APP, CHARGES, STATE } from '../../../utils/consts/FrontEndStateConsts';
 import { CASE_CONTEXTS, SETTINGS } from '../../../utils/consts/AppSettingConsts';
 import { PROPERTY_TYPES } from '../../../utils/consts/DataModelConsts';
 import { toISODateTime } from '../../../utils/FormattingUtils';
+import { getFirstNeighborValue, getEntityProperties } from '../../../utils/DataUtils';
 import { OL } from '../../../utils/consts/Colors';
 
 import {
   StyledFormWrapper,
   Title
 } from '../../../utils/Layout';
+
+const {
+  ARRESTING_AGENCY,
+  CASE_NUMBER,
+  ID,
+  NAME
+} = PROPERTY_TYPES;
 
 const {
   DISPOSITION_DATE,
@@ -58,6 +68,9 @@ const HeaderWrapper = styled.div`
 const GeneralInputField = styled.input`
   width: 100%;
   height: 44px;
+  padding: 2px 8px;
+  background: ${OL.GREY38};
+  border: none;
 `;
 
 const CountsInput = styled.input.attrs({
@@ -145,6 +158,7 @@ const TitleWrapper = styled.div`
 `;
 
 type Props = {
+  arrestingAgencies :Map<*, *>,
   chargeOptions :Map<*, *>,
   chargeType :string,
   selectedOrganizationSettings :Immutable.Map<*, *>,
@@ -168,10 +182,31 @@ class SelectChargesContainer extends React.Component<Props, State> {
       chargeType: props.chargeType,
       courtCaseNumber: '',
       arrestTrackingNumber: '',
+      arrestAgency: '',
       arrestDate: moment(props.defaultArrest.getIn([PROPERTY_TYPES.ARREST_DATE_TIME, 0])),
       caseDispositionDate: '',
       charges: this.formatChargeList(props.defaultCharges)
     };
+  }
+
+
+  static getDerivedStateFromProps(nextProps) {
+    const { defaultArrest } = nextProps;
+    if (defaultArrest.size) {
+      let {
+        [CASE_NUMBER]: arrestTrackingNumber,
+        [ARRESTING_AGENCY]: arrestAgency
+      } = getEntityProperties(defaultArrest, [CASE_NUMBER, ARRESTING_AGENCY]);
+      arrestTrackingNumber = arrestTrackingNumber || '';
+      arrestAgency = arrestAgency || '';
+      if (arrestTrackingNumber || arrestAgency) {
+        return {
+          arrestTrackingNumber,
+          arrestAgency
+        };
+      }
+    }
+    return null;
   }
 
   formatChargeList = (chargeList :Immutable.List<*>) :Object[] => {
@@ -223,8 +258,9 @@ class SelectChargesContainer extends React.Component<Props, State> {
   }
 
   onSubmit = () => {
-    const { onSubmit, nextPage } = this.props;
+    const { onSubmit, nextPage, defaultArrest } = this.props;
     const {
+      arrestAgency,
       arrestDate,
       arrestTrackingNumber,
       caseDispositionDate,
@@ -240,7 +276,8 @@ class SelectChargesContainer extends React.Component<Props, State> {
     if (caseDispositionDate) caseEntity[PROPERTY_TYPES.CASE_DISPOSITION_DATE] = [this.getDateTime(caseDispositionDate)];
     if (arrestDate) caseEntity[PROPERTY_TYPES.ARREST_DATE_TIME] = [this.getDateTime(arrestDate)];
     if (courtCaseNumber) caseEntity[PROPERTY_TYPES.CASE_NUMBER] = [courtCaseNumber];
-    if (arrestTrackingNumber) caseEntity[ID_FIELD_NAMES.ARREST_ID_FOR_COURT] = [arrestTrackingNumber];
+    if (!defaultArrest.size && arrestTrackingNumber) caseEntity[PROPERTY_TYPES.CASE_NUMBER] = [arrestTrackingNumber];
+    if (arrestAgency) caseEntity[PROPERTY_TYPES.ARRESTING_AGENCY] = [arrestAgency];
 
     const chargeEntities = charges.map((charge, index) => {
       const statute = charge.getIn([PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE, 0], '');
@@ -273,6 +310,36 @@ class SelectChargesContainer extends React.Component<Props, State> {
     this.setState({ [name]: value });
   }
 
+  onOptionSelect = (e) => {
+    const { name, value } = e;
+    this.setState({ [name]: value });
+  }
+
+  renderArrestAgencySelection = () => {
+    const { defaultArrest } = this.props;
+    const {
+      [ARRESTING_AGENCY]: arrestAgencyFromSelectedArrest
+    } = getEntityProperties(defaultArrest, [CASE_NUMBER, ARRESTING_AGENCY]);
+    const agencyOptions = this.formatArrestingAgencyList();
+    const agencyInput = (
+      <DropDownMenu
+          background={OL.GREY38}
+          disabled={!!arrestAgencyFromSelectedArrest}
+          placeholder="Select Arrest Agency"
+          classNamePrefix="lattice-select"
+          onChange={this.onOptionSelect}
+          options={agencyOptions} />
+    );
+
+    return agencyOptions.size || arrestAgencyFromSelectedArrest
+      ? (
+        <InputLabel>
+          Arresting Agency
+          { agencyInput }
+        </InputLabel>
+      ) : null;
+  }
+
   renderArrestAndCourtCaseNumberInput = () => {
     const { arrestTrackingNumber, courtCaseNumber } = this.state;
     return (
@@ -284,6 +351,7 @@ class SelectChargesContainer extends React.Component<Props, State> {
               value={arrestTrackingNumber}
               onChange={this.onInputChange} />
         </InputLabel>
+        { this.renderArrestAgencySelection() }
         <InputLabel>
           Court Case Number
           <GeneralInputField
@@ -295,25 +363,53 @@ class SelectChargesContainer extends React.Component<Props, State> {
     );
   }
 
-  renderDispositionInput = () => {
-    const { caseDispositionDate } = this.state;
+  onSelect = (name) => {
+    this.setState({ arrestAgency: name });
+  }
+
+  formatArrestingAgencyList = () => {
+    const { arrestingAgencies } = this.props;
+    let agencyOptions = List();
+    arrestingAgencies.valueSeq().forEach((agency) => {
+      const {
+        [NAME]: agencyName,
+        [ID]: angencyNameShort
+      } = getEntityProperties(agency, [NAME, ID]);
+      agencyOptions = agencyOptions.push({
+        name: 'arrestAgency',
+        value: angencyNameShort,
+        label: `${angencyNameShort} - ${agencyName}`
+      });
+    });
+    return agencyOptions;
+  }
+
+
+  renderArrestInfoInput = () => {
+    const { defaultArrest } = this.props;
+    const { arrestTrackingNumber } = this.state;
+    const {
+      [CASE_NUMBER]: caseIdFromSelectedArrest
+    } = getEntityProperties(defaultArrest, [CASE_NUMBER, ARRESTING_AGENCY]);
     return (
-      <InputLabel>
-        Case Disposition Date
-        <DateTimePicker
-            name="caseDispositionDate"
-            value={caseDispositionDate}
-            onChange={(date) => {
-              this.setState({ caseDispositionDate: date });
-            }} />
-      </InputLabel>
+      <>
+        <InputLabel>
+          Arrest Tracking Number
+          <GeneralInputField
+              disabled={!!caseIdFromSelectedArrest}
+              name="arrestTrackingNumber"
+              value={arrestTrackingNumber}
+              onChange={this.onInputChange} />
+        </InputLabel>
+        { this.renderArrestAgencySelection() }
+      </>
     );
   }
 
   renderDispositionOrCourtCaseNumberInput = () => {
     const { chargeType } = this.state;
     return (chargeType === CASE_CONTEXTS.ARREST)
-      ? this.renderDispositionInput()
+      ? this.renderArrestInfoInput()
       : this.renderArrestAndCourtCaseNumberInput();
   }
 
@@ -340,11 +436,11 @@ class SelectChargesContainer extends React.Component<Props, State> {
   }
 
   addCharge = (newChargeInput :Charge) => {
-    let newCharge = newChargeInput;
     let { charges } = this.state;
+    let { value: charge } = newChargeInput;
     const { caseDispositionDate } = this.state;
-    if (caseDispositionDate) newCharge = newCharge.set(DISPOSITION_DATE, caseDispositionDate);
-    charges = charges.push(newCharge);
+    if (caseDispositionDate) charge = charge.set(DISPOSITION_DATE, caseDispositionDate);
+    charges = charges.push(charge);
     this.setState({ charges });
   }
 
@@ -433,20 +529,42 @@ class SelectChargesContainer extends React.Component<Props, State> {
     );
   }
 
+  handleFilterRequest = (chargeList, searchQuery) => {
+    let matchesStatute;
+    let matchesDescription;
+    let nextCharges = chargeList;
+    if (searchQuery) {
+      nextCharges = nextCharges.filter((charge) => {
+        const statute = getFirstNeighborValue(charge.value, PROPERTY_TYPES.STATUTE);
+        const description = getFirstNeighborValue(charge.value, PROPERTY_TYPES.REFERENCE_CHARGE_DESCRIPTION);
+        if (statute) {
+          matchesStatute = statute.toLowerCase().includes(searchQuery.toLowerCase());
+        }
+        if (description) {
+          matchesDescription = description.toLowerCase().includes(searchQuery.toLowerCase());
+        }
+        return matchesStatute || matchesDescription;
+      });
+    }
+    return nextCharges;
+  }
+
   renderCharges = () => {
-    const { chargeOptions } = this.props;
+    const { chargeList } = this.props;
     const { charges } = this.state;
     const chargeItems = charges.map(this.renderSingleCharge);
     return (
       <div>
         <SectionHeader>Charges</SectionHeader>
         {chargeItems}
-        <ChargeSearch
-            scrollVisible
-            onSelect={this.addCharge}
-            options={chargeOptions}
-            searchPlaceholder="Select a charge"
-            openAbove />
+        <AsyncStyledSelect
+            value={null}
+            background={OL.GREY38}
+            placeholder="Select a charge"
+            classNamePrefix="lattice-select"
+            onChange={this.addCharge}
+            options={chargeList}
+            filterFn={this.handleFilterRequest} />
         <hr />
       </div>
     );
@@ -497,6 +615,7 @@ function mapStateToProps(state) {
     [APP.SELECTED_ORG_SETTINGS]: app.get(APP.SELECTED_ORG_SETTINGS),
 
     // Charges
+    [CHARGES.ARRESTING_AGENCIES]: charges.get(CHARGES.ARRESTING_AGENCIES),
     [CHARGES.ARREST]: charges.get(CHARGES.ARREST),
     [CHARGES.COURT]: charges.get(CHARGES.COURT),
     [CHARGES.LOADING]: charges.get(CHARGES.LOADING),
