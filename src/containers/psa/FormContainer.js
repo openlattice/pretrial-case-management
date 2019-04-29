@@ -1027,7 +1027,7 @@ class Form extends React.Component<Props, State> {
     } = this.state;
 
     const {
-      actions,
+      history,
       allCasesForPerson,
       allChargesForPerson,
       allHearings,
@@ -1056,7 +1056,7 @@ class Form extends React.Component<Props, State> {
           personId={this.getPersonIdValue()}
           psaId={psaId}
           submitSuccess={!submitError}
-          onClose={actions.hardRestart}
+          onClose={() => history.push(Routes.CREATE_FORMS)}
           charges={charges}
           notes={psaForm.get(PSA.NOTES)}
           allCases={allCasesForPerson}
