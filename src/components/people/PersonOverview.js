@@ -66,6 +66,7 @@ type Props = {
   entitySetIdsToAppType :Map<*, *>,
   updatingEntity :boolean,
   settingsIncludeVoiceEnroll :boolean,
+  personReminders :Map<*, *>,
   personVoiceProfile :Map<*, *>
 }
 
@@ -95,6 +96,7 @@ const PersonOverview = ({
   refreshingPersonNeighbors,
   updatingEntity,
   personVoiceProfile,
+  personReminders,
   settingsIncludeVoiceEnroll,
   entitySetIdsToAppType
 } :Props) => {
@@ -183,7 +185,8 @@ const PersonOverview = ({
                     entitySetIdsToAppType={entitySetIdsToAppType}
                     hearings={personHearings}
                     checkInAppointments={checkInAppointments}
-                    checkInStatusById={checkInStatusById} />
+                    checkInStatusById={checkInStatusById}
+                    personReminders={personReminders} />
                 <StyledColumnRowWrapper>
                   <StyledColumnRowWithPadding>
                     <ChargeHistoryStats

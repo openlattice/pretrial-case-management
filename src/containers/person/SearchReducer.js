@@ -70,6 +70,7 @@ export default function searchReducer(state = INITIAL_STATE, action) {
           .set(SEARCH.LOADING, false)
           .set(SEARCH.SEARCH_ERROR, false),
         FAILURE: () => state
+          .set(SEARCH.SEARCH_RESULTS, List())
           .set(SEARCH.LOADING, false)
           .set(SEARCH.SEARCH_ERROR, true),
         FINALLY: () => state

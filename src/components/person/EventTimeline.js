@@ -22,9 +22,11 @@ const {
   DATE_TIME,
   END_DATE,
   ENTITY_KEY_ID,
+  NOTIFIED,
   PERSON_ID,
   HEARING_TYPE,
-  START_DATE
+  START_DATE,
+  TYPE
 } = PROPERTY_TYPES;
 
 type Props = {
@@ -33,6 +35,7 @@ type Props = {
   hearings :List<*>,
   checkInAppointments :List<*>,
   entitySetIdsToAppType :Map<*, *>,
+  personReminders :Map<*, *>,
   checkInStatusById :Map<*, *>,
 };
 
@@ -50,7 +53,8 @@ const IconWrapper = styled.div`
   transform: ${(props) => {
     const { numIcons } = props;
     if (numIcons > 1) {
-      return `translateY(${-numIcons * 10}px)`;
+      const yDistance = ((numIcons - 1) * -2) * 10;
+      return `translateY(${yDistance}px)`;
     }
     return '';
   }};
@@ -137,11 +141,12 @@ export default class EventTimeline extends React.Component<Props> {
     let events = Map();
     let endDate = moment().endOf('day');
     const {
-      scores,
-      staff,
-      hearings,
       checkInAppointments,
-      entitySetIdsToAppType
+      hearings,
+      entitySetIdsToAppType,
+      personReminders,
+      scores,
+      staff
     } = this.props;
 
     let { [DATE_TIME]: startDate } = getEntityProperties(scores, [DATE_TIME]);
@@ -149,6 +154,10 @@ export default class EventTimeline extends React.Component<Props> {
     const filteredCheckIns = checkInAppointments.filter((checkInAppointment) => {
       const { [END_DATE]: checkInTime } = getEntityProperties(checkInAppointment, [END_DATE]);
       return moment(checkInTime).isSameOrAfter(startDate);
+    });
+    const filteredPersonReminders = personReminders.filter((reminder) => {
+      const { [DATE_TIME]: reminderTime } = getEntityProperties(reminder, [DATE_TIME]);
+      return moment(reminderTime).isSameOrAfter(startDate);
     });
 
     staff.forEach((staffer) => {
@@ -184,6 +193,13 @@ export default class EventTimeline extends React.Component<Props> {
       if (endDate.isBefore(checkInDate)) endDate = moment(checkInDate);
       events = events.set(checkInDate, events.get(checkInDate, List()).push(checkInDetails));
     });
+    filteredPersonReminders.forEach((reminder) => {
+      let reminderDetails = reminder.get(PSA_NEIGHBOR.DETAILS);
+      reminderDetails = reminderDetails.set('type', EVENT_TYPES.REMINDER_SENT);
+      const reminderDate = moment(this.getEventDate(reminderDetails)).format('MM/DD/YYYY');
+      if (endDate.isBefore(reminderDate)) endDate = moment(reminderDate);
+      events = events.set(reminderDate, events.get(reminderDate, List()).push(reminderDetails));
+    });
 
     return { events, startDate, endDate };
   }
@@ -198,7 +214,7 @@ export default class EventTimeline extends React.Component<Props> {
     </TagGroupWrapper>
   );
 
-  getIcons = (event) => {
+  getIcons = (event, startDate) => {
     const { checkInStatusById } = this.props;
     let color = OL.PURPLE02;
     const eventType = event.get('type', '');
@@ -240,10 +256,18 @@ export default class EventTimeline extends React.Component<Props> {
       const hearingType = event.getIn([HEARING_TYPE, 0], '');
       if (hearingType) label = `${label} (${hearingType})`;
     }
+    if (eventType === EVENT_TYPES.REMINDER_SENT) {
+      const {
+        [NOTIFIED]: wasNotified,
+        [TYPE]: reminderType
+      } = getEntityProperties(event, [NOTIFIED, TYPE]);
+      if (reminderType) label = `${label} (${reminderType})`;
+      color = wasNotified ? OL.GREEN01 : OL.RED01;
+    }
 
     return (
-      <IconContainer key={`${color}-${label}-${eventType}`}>
-        <FontAwesomeIcon color={color} icon={icon} />
+      <IconContainer key={`${color}-${label}-${eventType}-${startDate}`}>
+        <FontAwesomeIcon height="1em" width="1em" color={color} icon={icon} />
         <Tooltip value={label} />
       </IconContainer>
     );
@@ -258,9 +282,9 @@ export default class EventTimeline extends React.Component<Props> {
           {
             events.entrySeq().map(([date, eventList]) => {
               const iconGroup = (
-                <IconWrapper numIcons={eventList.size}>
+                <IconWrapper key={date} numIcons={eventList.size}>
                   {
-                    eventList.map(event => this.getIcons(event))
+                    eventList.map(event => this.getIcons(event, startDate))
                   }
                 </IconWrapper>
               );

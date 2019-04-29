@@ -57,6 +57,8 @@ const {
   DMF_RESULTS,
   DMF_RISK_FACTORS,
   RELEASE_CONDITIONS,
+  REMINDERS,
+  MANUAL_REMINDERS,
   SPEAKER_RECOGNITION_PROFILES
 } = APP_TYPES;
 
@@ -388,6 +390,9 @@ class PersonDetailsContainer extends React.Component<Props, State> {
     const contactInfo = neighbors.get(CONTACT_INFORMATION, List());
     const mostRecentPSAEntityKeyId = getEntityKeyId(mostRecentPSA.get(PSA_NEIGHBOR.DETAILS, Map()));
     const allScheduledHearings = getScheduledHearings(neighbors);
+    const reminders = neighbors.get(REMINDERS, List());
+    const manualReminders = neighbors.get(MANUAL_REMINDERS, List());
+    const personReminders = reminders.concat(manualReminders);
     const isLoading = (
       isLoadingJudges
       || loadingPSAData
@@ -412,6 +417,7 @@ class PersonDetailsContainer extends React.Component<Props, State> {
           mostRecentPSAEntityKeyId={mostRecentPSAEntityKeyId}
           neighbors={neighbors}
           personId={personId}
+          personReminders={personReminders}
           personVoiceProfile={personVoiceProfile}
           psaNeighborsById={psaNeighborsById}
           readOnlyPermissions={readOnlyPermissions}

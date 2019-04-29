@@ -6,7 +6,8 @@ import {
   faMicrophoneAlt,
   faFolderOpen,
   faFolder,
-  faFileEdit
+  faFileEdit,
+  faPaperPlane
 } from '@fortawesome/pro-solid-svg-icons';
 
 export const EVENT_TYPES = {
@@ -14,7 +15,8 @@ export const EVENT_TYPES = {
   CHECKIN_APPOINTMENTS: 'Check-In Appointment',
   PSA_CREATED: 'PSA Created',
   PSA_EDITED: 'PSA Edited',
-  PSA_CLOSED: 'PSA Closed'
+  PSA_CLOSED: 'PSA Closed',
+  REMINDER_SENT: 'Reminder Sent'
 };
 
 
@@ -43,10 +45,16 @@ const PSA_CLOSED_EVENT = {
   icon: faFolder
 };
 
+const REMINDER_EVENT = {
+  label: 'Reminder Sent',
+  icon: faPaperPlane
+};
+
 export const EVENT_LABELS = {
   [EVENT_TYPES.HEARING]: HEARING_EVENT,
   [EVENT_TYPES.CHECKIN_APPOINTMENTS]: CHECKIN_APPOINTMENTS_EVENT,
   [EVENT_TYPES.PSA_CREATED]: PSA_CREATED_EVENT,
   [EVENT_TYPES.PSA_EDITED]: PSA_EDITED_EVENT,
-  [EVENT_TYPES.PSA_CLOSED]: PSA_CLOSED_EVENT
+  [EVENT_TYPES.PSA_CLOSED]: PSA_CLOSED_EVENT,
+  [EVENT_TYPES.REMINDER_SENT]: REMINDER_EVENT
 };
