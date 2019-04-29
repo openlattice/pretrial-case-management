@@ -97,8 +97,9 @@ class AppContainer extends React.Component<Props, *> {
   componentDidUpdate(prevProps) {
     const { app, actions } = this.props;
     const nextOrg = app.get(APP.ORGS);
-    const prevOrg = prevProps.app.get(APP.ORGS);
-    if (prevOrg.size !== nextOrg.size) {
+    const nextOrgId = app.get(APP.SELECTED_ORG_ID);
+    const prevOrgId = prevProps.app.get(APP.SELECTED_ORG_ID);
+    if (prevOrgId !== nextOrgId) {
       nextOrg.keySeq().forEach((id) => {
         const selectedOrgId :string = id;
         const arrestChargesEntitySetId = getEntitySetIdFromApp(app, ARREST_CHARGE_LIST);
@@ -123,8 +124,6 @@ class AppContainer extends React.Component<Props, *> {
         orgId: organization.value,
         title: organization.label
       });
-      actions.loadJudges();
-      actions.loadArrestingAgencies();
     }
   }
 
