@@ -290,7 +290,7 @@ function* searchPeopleWorker(action) :Generator<*, *, *> {
     if (response.error) throw response.error;
 
     let personMap = Map();
-    if (response.data.hits.length > 1) {
+    if (response.data.hits.length > 0) {
       const searchResults = fromJS(response.data.hits);
       searchResults.forEach((person) => {
         const personEntityKeyId = person.getIn([OPENLATTICE_ID_FQN, 0], '');
@@ -309,11 +309,6 @@ function* searchPeopleWorker(action) :Generator<*, *, *> {
           })
         );
         if (peopleNeighborsById.error) throw peopleNeighborsById.error;
-        // let peopleNeighborsById = yield call(SearchApi.searchEntityNeighborsWithFilter, peopleEntitySetId, {
-        //   entityKeyIds: personMap.keySeq().toJS(),
-        //   sourceEntitySetIds: [psaScoresEntitySetId, contactInformationEntitySetId],
-        //   destinationEntitySetIds: [subscriptionEntitySetId, contactInformationEntitySetId]
-        // });
         peopleNeighborsById = fromJS(peopleNeighborsById.data);
 
         peopleNeighborsById.entrySeq().forEach(([personEntityKeyId, neighbors]) => {
