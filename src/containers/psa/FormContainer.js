@@ -90,6 +90,7 @@ import * as ReviewActionFactory from '../review/ReviewActionFactory';
 import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
 import * as CourtActionFactory from '../court/CourtActionFactory';
 import * as Routes from '../../core/router/Routes';
+import * as RoutingActionFactory from '../../core/router/RoutingActionFactory';
 
 
 const { OPENLATTICE_ID_FQN } = Constants;
@@ -1056,7 +1057,7 @@ class Form extends React.Component<Props, State> {
           personId={this.getPersonIdValue()}
           psaId={psaId}
           submitSuccess={!submitError}
-          onClose={actions.hardRestart}
+          onClose={actions.goToRoot}
           charges={charges}
           notes={psaForm.get(PSA.NOTES)}
           allCases={allCasesForPerson}
@@ -1083,7 +1084,7 @@ class Form extends React.Component<Props, State> {
           open={confirmationModalOpen}
           submissionStatus={isSubmitting || isSubmitted}
           pageContent={this.getPsaResults}
-          handleModalButtonClick={actions.hardRestart} />
+          handleModalButtonClick={actions.goToRoot} />
     );
   }
 
@@ -1196,6 +1197,9 @@ function mapDispatchToProps(dispatch :Function) :Object {
   });
   Object.keys(SubmitActionFactory).forEach((action :string) => {
     actions[action] = SubmitActionFactory[action];
+  });
+  Object.keys(RoutingActionFactory).forEach((action :string) => {
+    actions[action] = RoutingActionFactory[action];
   });
 
   return {
