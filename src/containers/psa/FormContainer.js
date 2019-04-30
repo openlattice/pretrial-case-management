@@ -414,17 +414,17 @@ class Form extends React.Component<Props, State> {
   }
 
   redirectToFirstPageIfNecessary = () => {
-    const { psaForm, history, selectedPerson } = this.props;
+    const { psaForm, actions, selectedPerson } = this.props;
     const { scoresWereGenerated } = this.state;
     const loadedContextParams = this.loadContextParams();
     if (loadedContextParams) {
-      history.push(`${Routes.PSA_FORM}/1`);
+      actions.goToRoute({ route: `${Routes.PSA_FORM}/1` });
     }
     else if (!psaForm.get(DMF.COURT_OR_BOOKING)) {
-      history.push(Routes.DASHBOARD);
+      actions.goToRoute({ route: Routes.DASHBOARD });
     }
     else if ((!selectedPerson.size || !scoresWereGenerated) && !window.location.href.endsWith('1')) {
-      history.push(`${Routes.PSA_FORM}/1`);
+      actions.goToRoute({ route: `${Routes.PSA_FORM}/1` });
     }
   }
 
@@ -641,9 +641,9 @@ class Form extends React.Component<Props, State> {
   }
 
   handlePageChange = (path :string) => {
-    const { actions, history } = this.props;
+    const { actions } = this.props;
     actions.clearSubmit();
-    history.push(path);
+    actions.goToRoute({ route: path });
   };
 
   getSearchPeopleSection = () => {
