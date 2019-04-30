@@ -140,7 +140,7 @@ export default function* sagas() :Generator<*, *, *> {
 
     // Routing Sagas
     fork(RoutingSagas.goToRootWatcher),
-    fork(RoutingSagas.goToRouteWatcher),
+    fork(RoutingSagas.goToPathWatcher),
 
     // Subscriptions Sagas
     fork(SubscriptionsSagas.loadSubcriptionModalWatcher)
