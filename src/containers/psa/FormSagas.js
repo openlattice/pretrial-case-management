@@ -16,7 +16,6 @@ import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { APP, STATE } from '../../utils/consts/FrontEndStateConsts';
 import { PSA_STATUSES } from '../../utils/consts/Consts';
 import {
-  HARD_RESTART,
   LOAD_DATA_MODEL,
   LOAD_NEIGHBORS,
   loadDataModel,
@@ -123,21 +122,8 @@ function* loadNeighborsWatcher() :Generator<*, *, *> {
   yield takeEvery(LOAD_NEIGHBORS, loadNeighborsWorker);
 }
 
-function* hardRestartWorker() :Generator<*, *, *> {
-  // hardRestartWorker and Watcher taken from BHR
-  yield call(() => {
-    window.location.href = `${window.location.origin}${window.location.pathname}`;
-  });
-}
-
-function* hardRestartWatcher() :Generator<*, *, *> {
-
-  yield takeEvery(HARD_RESTART, hardRestartWorker);
-}
-
 
 export {
-  hardRestartWatcher,
   loadDataModelWatcher,
   loadNeighborsWatcher
 };

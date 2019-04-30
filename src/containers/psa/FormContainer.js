@@ -288,8 +288,6 @@ type Props = {
       pretrialCase :Immutable.Map<*, *>,
       charges :Immutable.List<Immutable.Map<*, *>>
     }) => void,
-
-    hardRestart :() => void;
     loadDataModel :() => void,
     loadNeighbors :(value :{
       entitySetId :string,
