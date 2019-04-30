@@ -60,7 +60,7 @@ type Props = {
   selectedOrganizationId :string,
   selectedOrganizationSettings :Map,
   actions :{
-    goToRoute :() => void
+    goToPath :(path :string) => void
   }
 };
 
@@ -484,7 +484,7 @@ class PSASubmittedPage extends React.Component<Props, State> {
     return (
       <BasicButton
           onClick={() => {
-            actions.goToRoute({ route: Routes.PERSON_DETAILS.replace(':personId', personId) });
+            actions.goToPath(Routes.PERSON_DETAILS.replace(':personId', personId));
           }}>
         Go to Profile
       </BasicButton>

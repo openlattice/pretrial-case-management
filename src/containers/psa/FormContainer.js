@@ -284,6 +284,7 @@ const numPages = 4;
 
 type Props = {
   actions :{
+    goToPath :(path :string) => void,
     addCaseAndCharges :(value :{
       pretrialCase :Immutable.Map<*, *>,
       charges :Immutable.List<Immutable.Map<*, *>>
@@ -416,13 +417,13 @@ class Form extends React.Component<Props, State> {
     const { scoresWereGenerated } = this.state;
     const loadedContextParams = this.loadContextParams();
     if (loadedContextParams) {
-      actions.goToRoute({ route: `${Routes.PSA_FORM}/1` });
+      actions.goToPath(`${Routes.PSA_FORM}/1`);
     }
     else if (!psaForm.get(DMF.COURT_OR_BOOKING)) {
-      actions.goToRoute({ route: Routes.DASHBOARD });
+      actions.goToPath(Routes.DASHBOARD);
     }
     else if ((!selectedPerson.size || !scoresWereGenerated) && !window.location.href.endsWith('1')) {
-      actions.goToRoute({ route: `${Routes.PSA_FORM}/1` });
+      actions.goToPath(`${Routes.PSA_FORM}/1`);
     }
   }
 
@@ -641,7 +642,7 @@ class Form extends React.Component<Props, State> {
   handlePageChange = (path :string) => {
     const { actions } = this.props;
     actions.clearSubmit();
-    actions.goToRoute({ route: path });
+    actions.goToPath(path);
   };
 
   getSearchPeopleSection = () => {
