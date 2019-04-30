@@ -5,48 +5,40 @@
 import { put, takeEvery } from '@redux-saga/core/effects';
 import { push } from 'connected-react-router';
 
-import {
-  GO_TO_ROOT,
-  GO_TO_ROUTE
-} from './RoutingActionFactory';
+import { GO_TO_ROOT, GO_TO_PATH } from './RoutingActionFactory';
 
-import * as Routes from './Routes';
-
+import type { RoutingAction } from './RoutingActionFactory';
 
 /*
- * goToRoute()
+ * goToPath()
  */
 
-function* goToRouteWorker(action :RoutingAction) :Generator<*, *, *> {
+function* goToPathWorker(action :RoutingAction) :Generator<*, *, *> {
 
-  const { route } = action.value;
-  if (route === null || route === undefined || !route.startsWith('/', 0)) {
-    throw new Error('Invalid Route Provided');
+  const { path } = action;
+  if (path === null || path === undefined || !path.startsWith('/', 0)) {
+    throw new Error('Invalid Path Provided');
   }
 
-  yield put(push({ pathname: route }));
+  yield put(push({ pathname: path }));
+
 }
 
-function* goToRouteWatcher() :Generator<*, *, *> {
+function* goToPathWatcher() :Generator<*, *, *> {
 
-  yield takeEvery(GO_TO_ROUTE, goToRouteWorker);
+  yield takeEvery(GO_TO_PATH, goToPathWorker);
 }
 
 /*
  * goToRoot()
  */
 
-function* goToRootWorker() :Generator<*, *, *> {
-
-  yield put(push({ pathname: Routes.CREATE_FORMS }));
-}
-
 function* goToRootWatcher() :Generator<*, *, *> {
 
-  yield takeEvery(GO_TO_ROOT, goToRootWorker);
+  yield takeEvery(GO_TO_ROOT, goToPathWorker);
 }
 
 export {
   goToRootWatcher,
-  goToRouteWatcher
+  goToPathWatcher
 };
