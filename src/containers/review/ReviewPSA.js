@@ -272,12 +272,6 @@ class ReviewPSA extends React.Component<Props, State> {
     this.handleFilterRequest();
   }
 
-  handleClose = () => {
-    const { history } = this.props;
-    this.updateFilters({ date: moment().format() });
-    history.push(Routes.DASHBOARD);
-  }
-
   renderDateRangePicker = () => {
     const { filters } = this.state;
     const { date } = filters;
