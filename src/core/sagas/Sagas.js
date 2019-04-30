@@ -20,6 +20,7 @@ import * as PsaSagas from '../../containers/psa/FormSagas';
 import * as ReleaseConditionsSagas from '../../containers/releaseconditions/ReleaseConditionsSagas';
 import * as RemindersSagas from '../../containers/reminders/RemindersSagas';
 import * as ReviewSagas from '../../containers/review/ReviewSagas';
+import * as RoutingSagas from '../router/RoutingSagas';
 import * as DownloadSagas from '../../containers/download/DownloadSagas';
 import * as EnrollSagas from '../../containers/enroll/EnrollSagas';
 import * as SubmitSagas from '../../utils/submit/SubmitSaga';
@@ -136,6 +137,10 @@ export default function* sagas() :Generator<*, *, *> {
     fork(ReviewSagas.loadPSAsByDateWatcher),
     fork(ReviewSagas.refreshPSANeighborsWatcher),
     fork(ReviewSagas.updateScoresAndRiskFactorsWatcher),
+
+    // Routing Sagas
+    fork(RoutingSagas.goToRootWatcher),
+    fork(RoutingSagas.goToPathWatcher),
 
     // Subscriptions Sagas
     fork(SubscriptionsSagas.loadSubcriptionModalWatcher)

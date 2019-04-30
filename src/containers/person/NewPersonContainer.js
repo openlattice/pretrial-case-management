@@ -19,15 +19,16 @@ import Checkbox from '../../components/controls/StyledCheckbox';
 import StyledInput from '../../components/controls/StyledInput';
 import DatePicker from '../../components/datetime/DatePicker';
 import SearchableSelect from '../../components/controls/SearchableSelect';
-import PersonContactInfo from '../../components/person/PersonContactInfo';
 import { GENDERS, STATES } from '../../utils/consts/Consts';
 import { toISODate } from '../../utils/FormattingUtils';
 import { phoneIsValid, emailIsValid } from '../../utils/ContactInfoUtils';
-import { newPersonSubmit } from './PersonActionFactory';
-import { clearForm } from '../psa/FormActionFactory';
 import { STATE, SEARCH } from '../../utils/consts/FrontEndStateConsts';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
+
+import * as PersonActionFactory from './PersonActionFactory';
+import * as FormActionFactory from '../psa/FormActionFactory';
+import * as RoutingActionFactory from '../../core/router/RoutingActionFactory';
 
 import {
   ADDRESS_VALUE,
@@ -316,7 +317,7 @@ class NewPersonContainer extends React.Component<Props, State> {
   )
 
   render() {
-    const { history } = this.props;
+    const { actions } = this.props;
     const { state } = this;
     return (
       <StyledFormWrapper>
@@ -325,7 +326,7 @@ class NewPersonContainer extends React.Component<Props, State> {
             <UnpaddedRow>
               <Header>Enter New Person Information</Header>
               <ButtonGroup>
-                <BasicButton onClick={() => history.push(Routes.CREATE_FORMS)}>Discard</BasicButton>
+                <BasicButton onClick={actions.goToRoot}>Discard</BasicButton>
                 <InfoButton onClick={this.submitNewPerson} disabled={!this.isReadyToSubmit()}>Submit</InfoButton>
               </ButtonGroup>
             </UnpaddedRow>
@@ -384,16 +385,6 @@ class NewPersonContainer extends React.Component<Props, State> {
               </InputGroup>
             </InputRow>
           </FormSection>
-
-          {/* <PersonContactInfo
-              phone={state[PROPERTY_TYPES.PHONE]}
-              phoneIsValid={this.phoneNumValid()}
-              email={state[PROPERTY_TYPES.EMAIL]}
-              emailIsValid={this.emailAddValid()}
-              isMobile={state[PROPERTY_TYPES.IS_MOBILE]}
-              handleOnChangeInput={this.handleOnChangeInput}
-              handleCheckboxChange={this.handleCheckboxChange} /> */}
-
           <FormSection>
             <PaddedRow>
               <SubHeader>Mailing address</SubHeader>
@@ -475,10 +466,26 @@ function mapStateToProps(state :Immutable.Map<*, *>) :Object {
   };
 }
 
+
 function mapDispatchToProps(dispatch :Function) :Object {
+  const actions :{ [string] :Function } = {};
+
+  Object.keys(PersonActionFactory).forEach((action :string) => {
+    actions[action] = PersonActionFactory[action];
+  });
+
+  Object.keys(FormActionFactory).forEach((action :string) => {
+    actions[action] = FormActionFactory[action];
+  });
+
+  Object.keys(RoutingActionFactory).forEach((action :string) => {
+    actions[action] = RoutingActionFactory[action];
+  });
 
   return {
-    actions: bindActionCreators({ newPersonSubmit, clearForm }, dispatch)
+    actions: {
+      ...bindActionCreators(actions, dispatch)
+    }
   };
 }
 

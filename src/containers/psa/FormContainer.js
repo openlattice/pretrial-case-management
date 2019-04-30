@@ -90,6 +90,7 @@ import * as ReviewActionFactory from '../review/ReviewActionFactory';
 import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
 import * as CourtActionFactory from '../court/CourtActionFactory';
 import * as Routes from '../../core/router/Routes';
+import * as RoutingActionFactory from '../../core/router/RoutingActionFactory';
 
 
 const { OPENLATTICE_ID_FQN } = Constants;
@@ -283,6 +284,7 @@ const numPages = 4;
 
 type Props = {
   actions :{
+    goToPath :(path :string) => void,
     addCaseAndCharges :(value :{
       pretrialCase :Immutable.Map<*, *>,
       charges :Immutable.List<Immutable.Map<*, *>>
@@ -411,17 +413,17 @@ class Form extends React.Component<Props, State> {
   }
 
   redirectToFirstPageIfNecessary = () => {
-    const { psaForm, history, selectedPerson } = this.props;
+    const { psaForm, actions, selectedPerson } = this.props;
     const { scoresWereGenerated } = this.state;
     const loadedContextParams = this.loadContextParams();
     if (loadedContextParams) {
-      history.push(`${Routes.PSA_FORM}/1`);
+      actions.goToPath(`${Routes.PSA_FORM}/1`);
     }
     else if (!psaForm.get(DMF.COURT_OR_BOOKING)) {
-      history.push(Routes.DASHBOARD);
+      actions.goToPath(Routes.DASHBOARD);
     }
     else if ((!selectedPerson.size || !scoresWereGenerated) && !window.location.href.endsWith('1')) {
-      history.push(`${Routes.PSA_FORM}/1`);
+      actions.goToPath(`${Routes.PSA_FORM}/1`);
     }
   }
 
@@ -638,9 +640,9 @@ class Form extends React.Component<Props, State> {
   }
 
   handlePageChange = (path :string) => {
-    const { actions, history } = this.props;
+    const { actions } = this.props;
     actions.clearSubmit();
-    history.push(path);
+    actions.goToPath(path);
   };
 
   getSearchPeopleSection = () => {
@@ -1025,7 +1027,7 @@ class Form extends React.Component<Props, State> {
     } = this.state;
 
     const {
-      history,
+      actions,
       allCasesForPerson,
       allChargesForPerson,
       allHearings,
@@ -1054,7 +1056,7 @@ class Form extends React.Component<Props, State> {
           personId={this.getPersonIdValue()}
           psaId={psaId}
           submitSuccess={!submitError}
-          onClose={() => history.push(Routes.CREATE_FORMS)}
+          onClose={actions.goToRoot}
           charges={charges}
           notes={psaForm.get(PSA.NOTES)}
           allCases={allCasesForPerson}
@@ -1069,7 +1071,7 @@ class Form extends React.Component<Props, State> {
 
   renderPSAResultsModal = () => {
     const { confirmationModalOpen } = this.state;
-    const { history, isSubmitting, isSubmitted } = this.props;
+    const { actions, isSubmitting, isSubmitted } = this.props;
     const currentPage = getCurrentPage(window.location);
     if (!currentPage || Number.isNaN(currentPage)) return null;
     if (currentPage < 4 || (!isSubmitting && !isSubmitted)) {
@@ -1081,7 +1083,7 @@ class Form extends React.Component<Props, State> {
           open={confirmationModalOpen}
           submissionStatus={isSubmitting || isSubmitted}
           pageContent={this.getPsaResults}
-          handleModalButtonClick={() => history.push(Routes.CREATE_FORMS)} />
+          handleModalButtonClick={actions.goToRoot} />
     );
   }
 
@@ -1194,6 +1196,9 @@ function mapDispatchToProps(dispatch :Function) :Object {
   });
   Object.keys(SubmitActionFactory).forEach((action :string) => {
     actions[action] = SubmitActionFactory[action];
+  });
+  Object.keys(RoutingActionFactory).forEach((action :string) => {
+    actions[action] = RoutingActionFactory[action];
   });
 
   return {
