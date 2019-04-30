@@ -2,17 +2,36 @@
  * @flow
  */
 
-import { newRequestSequence } from 'redux-reqseq';
+import * as Routes from './Routes';
 
-const GO_TO_ROOT :string = 'GO_TO_ROOT';
-const goToRoot :RequestSequence = newRequestSequence(GO_TO_ROOT);
+declare type RoutingAction = {
+  type :string;
+  path :string;
+};
 
-const GO_TO_ROUTE :string = 'GO_TO_ROUTE';
-const goToRoute :RequestSequence = newRequestSequence(GO_TO_ROUTE);
+const GO_TO_ROOT :'GO_TO_ROOT' = 'GO_TO_ROOT';
+function goToRoot() :RoutingAction {
+  return {
+    path: Routes.ROOT,
+    type: GO_TO_ROOT,
+  };
+}
+
+const GO_TO_PATH :'GO_TO_PATH' = 'GO_TO_PATH';
+function goToPath(path :string) :RoutingAction {
+  return {
+    path,
+    type: GO_TO_PATH,
+  };
+}
 
 export {
   GO_TO_ROOT,
-  GO_TO_ROUTE,
+  GO_TO_PATH,
   goToRoot,
-  goToRoute
+  goToPath
+};
+
+export type {
+  RoutingAction,
 };
