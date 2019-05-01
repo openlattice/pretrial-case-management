@@ -28,6 +28,7 @@ import { submit } from '../../utils/submit/SubmitActionFactory';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PERSON_INFO_DATA, PSA_STATUSES } from '../../utils/consts/Consts';
 import { APP, STATE, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
+import { getSearchTerm } from '../../utils/DataUtils';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { getPropertyTypeId } from '../../edm/edmUtils';
 import {
@@ -400,10 +401,10 @@ function* searchPeopleByPhoneNumberWorker(action) :Generator<*, *, *> {
       nameConstraints :Array,
       search :string,
       property :string,
-      entitySetId :string,
     ) => {
+      const formattedSearchTerm = getSearchTerm(property, search);
       nameConstraints.constraints.push({
-        searchTerm: `${entitySetId}.${property}:"${search}"`,
+        searchTerm: formattedSearchTerm,
         fuzzy: true
       });
     };
@@ -424,8 +425,8 @@ function* searchPeopleByPhoneNumberWorker(action) :Generator<*, *, *> {
       }
       else {
         names.forEach((word) => {
-          updateConstraints(firstNameConstraints, word, firstNamePropertyTypeId, peopleEntitySetId);
-          updateConstraints(lastNameConstraints, word, lastNamePropertyTypeId, peopleEntitySetId);
+          updateConstraints(firstNameConstraints, word, firstNamePropertyTypeId);
+          updateConstraints(lastNameConstraints, word, lastNamePropertyTypeId);
         });
       }
     }
