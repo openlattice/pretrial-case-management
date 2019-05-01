@@ -5,9 +5,10 @@ import React from 'react';
 import styled from 'styled-components';
 import { Map } from 'immutable';
 
+import ConfirmationModal from '../ConfirmationModal';
 import HearingRow from './HearingRow';
 import { OL } from '../../utils/consts/Colors';
-import { PSA_STATUSES } from '../../utils/consts/Consts';
+import { CONFIRMATION_ACTION_TYPES, CONFIRMATION_OBJECT_TYPES, PSA_STATUSES } from '../../utils/consts/Consts';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { sortHearingsByDate, getHearingString } from '../../utils/HearingUtils';
 import { getEntityProperties, isUUID, getIdOrValue } from '../../utils/DataUtils';
@@ -68,63 +69,113 @@ const Headers = () => (
 
 type Props = {
   maxHeight :number,
+  refreshingPersonNeighbors :boolean,
   rows :Map<*, *>,
   hearingsWithOutcomes :Map<*, *>,
   hearingNeighborsById :Map<*, *>,
   cancelFn :(values :{ entityKeyId :string }) => void,
 }
 
-const HearingsTable = ({
-  maxHeight,
-  rows,
-  cancelFn,
-  hearingsWithOutcomes,
-  hearingNeighborsById
-} :Props) => {
-  let hearingCourtStringsCounts = Map();
-  rows.forEach((hearing) => {
-    const hearingCourtString = getHearingString(hearing);
-    hearingCourtStringsCounts = hearingCourtStringsCounts.set(
-      hearingCourtString,
-      hearingCourtStringsCounts.get(hearingCourtString, 0) + 1
-    );
+
+class HearingsTable extends React.Component<Props, *> {
+  constructor(props :Props) {
+    super(props);
+    this.state = {
+      confirmationModalOpen: false,
+      hearingEntityKeyId: ''
+    };
+  }
+
+  componentWillReceiveProps(nextProps) {
+    const { refreshingPersonNeighbors } = this.props;
+    const nextPropsRefreshingPersonNeighbors = nextProps.refreshingPersonNeighbors;
+    if (refreshingPersonNeighbors && !nextPropsRefreshingPersonNeighbors) {
+      this.closeConfirmationModal();
+    }
+  }
+
+  openConfirmationModal = (hearingEntityKeyId :string) => this.setState({
+    confirmationModalOpen: true,
+    hearingEntityKeyId
   });
 
-  return (
-    <Table>
-      <Headers />
-      <Body maxHeight={maxHeight}>
-        {rows.sort(sortHearingsByDate).valueSeq().map(((row) => {
-          const {
-            [PROPERTY_TYPES.CASE_ID]: hearingCaseId,
-            [PROPERTY_TYPES.ENTITY_KEY_ID]: hearingEntityKeyId
-          } = getEntityProperties(row, [
-            PROPERTY_TYPES.CASE_ID,
-            PROPERTY_TYPES.ENTITY_KEY_ID
-          ]);
-          const hearingCourtString = getHearingString(row);
+  closeConfirmationModal = () => this.setState({
+    confirmationModalOpen: false,
+    hearingEntityKeyId: ''
+  });
 
-          const hearingIsADuplicate = (hearingCourtStringsCounts.get(hearingCourtString) > 1);
-          const hearingWasCreatedManually = isUUID(hearingCaseId);
-          const hearingHasOutcome = hearingsWithOutcomes.includes(hearingEntityKeyId);
-          const disabled = hearingHasOutcome || !hearingWasCreatedManually;
-          const hearingHasOpenPSA = getIdOrValue(hearingNeighborsById
-            .get(hearingEntityKeyId, Map()), PSA_SCORES, PROPERTY_TYPES.STATUS) === PSA_STATUSES.OPEN;
-          return (
-            <HearingRow
-                key={`${hearingEntityKeyId}-${hearingCourtString}-${hearingCaseId}`}
-                hearing={row}
-                caseId={hearingCaseId}
-                isDuplicate={hearingIsADuplicate}
-                hasOpenPSA={hearingHasOpenPSA}
-                hasOutcome={hearingHasOutcome}
-                cancelFn={cancelFn}
-                disabled={disabled} />
-          );
-        }))}
-      </Body>
-    </Table>
-  );
-};
+  renderConfirmationModal = () => {
+    const { cancelFn, refreshingPersonNeighbors } = this.props;
+    const { confirmationModalOpen, hearingEntityKeyId } = this.state;
+
+
+    return (
+      <ConfirmationModal
+          disabled={refreshingPersonNeighbors}
+          confirmationType={CONFIRMATION_ACTION_TYPES.CANCEL}
+          objectType={CONFIRMATION_OBJECT_TYPES.HEARING}
+          onClose={this.closeConfirmationModal}
+          open={confirmationModalOpen}
+          confirmationAction={() => cancelFn(hearingEntityKeyId)} />
+    );
+  }
+
+  render() {
+    const {
+      maxHeight,
+      rows,
+      cancelFn,
+      hearingsWithOutcomes,
+      hearingNeighborsById
+    } = this.props;
+    let hearingCourtStringsCounts = Map();
+    rows.forEach((hearing) => {
+      const hearingCourtString = getHearingString(hearing);
+      hearingCourtStringsCounts = hearingCourtStringsCounts.set(
+        hearingCourtString,
+        hearingCourtStringsCounts.get(hearingCourtString, 0) + 1
+      );
+    });
+
+    return (
+      <>
+        <Table>
+          <Headers />
+          <Body maxHeight={maxHeight}>
+            {rows.sort(sortHearingsByDate).valueSeq().map(((row) => {
+              const {
+                [PROPERTY_TYPES.CASE_ID]: hearingCaseId,
+                [PROPERTY_TYPES.ENTITY_KEY_ID]: hearingEntityKeyId
+              } = getEntityProperties(row, [
+                PROPERTY_TYPES.CASE_ID,
+                PROPERTY_TYPES.ENTITY_KEY_ID
+              ]);
+              const hearingCourtString = getHearingString(row);
+              const hearingIsADuplicate = (hearingCourtStringsCounts.get(hearingCourtString) > 1);
+              const hearingWasCreatedManually = isUUID(hearingCaseId);
+              const hearingHasOutcome = hearingsWithOutcomes.includes(hearingEntityKeyId);
+              const disabled = hearingHasOutcome || !hearingWasCreatedManually;
+              const hearingHasOpenPSA = getIdOrValue(hearingNeighborsById
+                .get(hearingEntityKeyId, Map()), PSA_SCORES, PROPERTY_TYPES.STATUS) === PSA_STATUSES.OPEN;
+              return (
+                <HearingRow
+                    key={`${hearingEntityKeyId}-${hearingCourtString}-${hearingCaseId}`}
+                    hearing={row}
+                    openConfirmationModal={this.openConfirmationModal}
+                    caseId={hearingCaseId}
+                    isDuplicate={hearingIsADuplicate}
+                    hasOpenPSA={hearingHasOpenPSA}
+                    hasOutcome={hearingHasOutcome}
+                    cancelFn={cancelFn}
+                    disabled={disabled} />
+              );
+            }))}
+          </Body>
+        </Table>
+        { this.renderConfirmationModal() }
+      </>
+    );
+  }
+}
 
 export default HearingsTable;
