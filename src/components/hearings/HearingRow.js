@@ -107,76 +107,80 @@ type Props = {
   hasOpenPSA :boolean,
   hasOutcome :boolean,
   hearing :Immutable.Map<*, *>,
-  cancelFn :(entityKeyId :string) => void,
+  openConfirmationModal :(hearingEntityKeyId :string) => void,
   isDuplicate :boolean,
   disabled :boolean
 };
 
-const HearingRow = ({
-  caseId,
-  hasOpenPSA,
-  hasOutcome,
-  hearing,
-  cancelFn,
-  disabled,
-  isDuplicate
-} :Props) => {
+class HearingRow extends React.Component<Props, *> {
 
-  const {
-    [COURTROOM]: courtroom,
-    [DATE_TIME]: hearingDateTime,
-    [ENTITY_KEY_ID]: hearingEntityKeyId,
-    [HEARING_TYPE]: hearingType
-  } = getEntityProperties(hearing,
-    [
-      COURTROOM,
-      DATE_TIME,
-      ENTITY_KEY_ID,
-      HEARING_TYPE
-    ]);
-
-  const { date: hearingDate, time: hearingTime } = getDateAndTime(hearingDateTime);
-
-  const renderBooleanIcon = boolean => (boolean
-    ? <StatusIconContainer><FontAwesomeIcon color="green" icon={faCheck} /></StatusIconContainer>
-    : <StatusIconContainer><FontAwesomeIcon color="red" icon={faTimesCircle} /></StatusIconContainer>
+  renderBooleanIcon = boolean => (
+    boolean
+      ? <StatusIconContainer><FontAwesomeIcon color="green" icon={faCheck} /></StatusIconContainer>
+      : <StatusIconContainer><FontAwesomeIcon color="red" icon={faTimesCircle} /></StatusIconContainer>
   );
 
-  const disabledText = hasOutcome ? 'Hearing Has Outcome' : 'Odyssey Hearing';
+  renderDuplicateTag = () => {
+    const { isDuplicate } = this.props;
+    return isDuplicate
+      ? (
+        <DuplicateText>
+          <StatusIconContainer><FontAwesomeIcon color="red" icon={faExclamationTriangle} /></StatusIconContainer>
+          Duplicate
+        </DuplicateText>
+      ) : null;
+  }
 
-  const renderCancelButton = (
-    <CancelButton onClick={() => cancelFn(hearingEntityKeyId)} disabled={disabled}>
-      { disabled ? disabledText : 'Cancel Hearing'}
-    </CancelButton>
-  );
+  renderCancelButton = () => {
+    const {
+      disabled,
+      hasOutcome,
+      hearing,
+      openConfirmationModal
+    } = this.props;
+    const disabledText = hasOutcome ? 'Hearing Has Outcome' : 'Odyssey Hearing';
+    const {
+      [ENTITY_KEY_ID]: hearingEntityKeyId,
+    } = getEntityProperties(hearing, [ENTITY_KEY_ID]);
 
-  const renderDuplicateTag = isDuplicate
-    ? (
-      <DuplicateText>
-        <StatusIconContainer><FontAwesomeIcon color="red" icon={faExclamationTriangle} /></StatusIconContainer>
-        Duplicate
-      </DuplicateText>
-    ) : null;
+    return (
+      <CancelButton onClick={() => openConfirmationModal(hearingEntityKeyId)} disabled={disabled}>
+        { disabled ? disabledText : 'Cancel Hearing'}
+      </CancelButton>
+    );
+  }
 
-  return (
-    <Row
-        disabled>
-      <Cell>{ hearingDate }</Cell>
-      <Cell>{ hearingTime }</Cell>
-      <Cell>{ courtroom }</Cell>
-      <Cell>
-        { hearingType }
-        { renderDuplicateTag }
-      </Cell>
-      <Cell>
-        <CaseId>{caseId}</CaseId>
-        <Tooltip value={caseId} />
-      </Cell>
-      <Cell>{renderBooleanIcon(hasOpenPSA)}</Cell>
-      <Cell>{renderCancelButton}</Cell>
-    </Row>
-  );
-};
+  render() {
+    const { caseId, hasOpenPSA, hearing } = this.props;
+
+    const {
+      [COURTROOM]: courtroom,
+      [DATE_TIME]: hearingDateTime,
+      [HEARING_TYPE]: hearingType
+    } = getEntityProperties(hearing, [COURTROOM, DATE_TIME, HEARING_TYPE]);
+
+    const { date: hearingDate, time: hearingTime } = getDateAndTime(hearingDateTime);
+
+    return (
+      <Row
+          disabled>
+        <Cell>{ hearingDate }</Cell>
+        <Cell>{ hearingTime }</Cell>
+        <Cell>{ courtroom }</Cell>
+        <Cell>
+          { hearingType }
+          { this.renderDuplicateTag() }
+        </Cell>
+        <Cell>
+          <CaseId>{caseId}</CaseId>
+          <Tooltip value={caseId} />
+        </Cell>
+        <Cell>{this.renderBooleanIcon(hasOpenPSA)}</Cell>
+        <Cell>{this.renderCancelButton()}</Cell>
+      </Row>
+    );
+  }
+}
 
 
 export default HearingRow;
