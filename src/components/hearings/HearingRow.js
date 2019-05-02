@@ -138,7 +138,7 @@ class HearingRow extends React.Component<Props, *> {
       hearing,
       openConfirmationModal
     } = this.props;
-    const disabledText = hasOutcome ? 'Hearing Has Outcome' : 'Odyssey Hearing';
+    const disabledText = hasOutcome ? 'Hearing Has Outcome' : 'Hearing';
     const {
       [ENTITY_KEY_ID]: hearingEntityKeyId,
     } = getEntityProperties(hearing, [ENTITY_KEY_ID]);
