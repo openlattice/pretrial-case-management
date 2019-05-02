@@ -61,7 +61,7 @@ type Props = {
 const MODAL_WIDTH = '300px';
 const MODAL_HEIGHT = '200px';
 
-const ManageSubscriptionModal = ({
+const ConfirmationModal = ({
   confirmationAction,
   confirmationType,
   disabled,
@@ -96,4 +96,4 @@ const ManageSubscriptionModal = ({
   </Wrapper>
 );
 
-export default ManageSubscriptionModal;
+export default ConfirmationModal;
