@@ -86,10 +86,10 @@ class HearingsTable extends React.Component<Props, *> {
     };
   }
 
-  componentWillReceiveProps(nextProps) {
+  componentDidUpdate(prevProps) {
     const { refreshingPersonNeighbors } = this.props;
-    const nextPropsRefreshingPersonNeighbors = nextProps.refreshingPersonNeighbors;
-    if (refreshingPersonNeighbors && !nextPropsRefreshingPersonNeighbors) {
+    const prevPropsRefreshingPersonNeighbors = prevProps.refreshingPersonNeighbors;
+    if (refreshingPersonNeighbors && !prevPropsRefreshingPersonNeighbors) {
       this.closeConfirmationModal();
     }
   }
