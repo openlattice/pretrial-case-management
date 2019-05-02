@@ -220,12 +220,15 @@ export function* enrollVoiceWorker(action :SequenceAction) :Generator<*, *, *> {
     const profileEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.SPEAKER_RECOGNITION_PROFILES);
     const audioPropertyId = getPropertyTypeId(edm, PROPERTY_TYPES.AUDIO_SAMPLE);
 
+    const uint8array = new TextEncoder('utf-8').encode(audio);
+    const ui8string = new TextDecoder('utf-8').decode(uint8array);
+
     const profileEntity = {
       [profileEntityKeyId]: {
         [audioPropertyId]: [
           {
             'content-type': 'audio/wav',
-            data: window.btoa(String.fromCharCode(...new Uint8Array(audio)))
+            data: window.btoa(ui8string)
           }
         ]
       }
