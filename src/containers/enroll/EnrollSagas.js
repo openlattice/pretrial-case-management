@@ -206,6 +206,16 @@ function* getProfileWatcher() :Generator<*, *, *> {
   yield takeEvery(GET_PROFILE, getProfileWorker);
 }
 
+function bufferToString(arrayBuffer :ArrayBuffer) {
+  const uint8Array = new Uint8Array(arrayBuffer);
+  const CHUNK_SZ = 0x8000;
+  const c = [];
+  for (let i = 0; i < uint8Array.length; i += CHUNK_SZ) {
+    c.push(String.fromCharCode.apply(null, uint8Array.subarray(i, i + CHUNK_SZ)));
+  }
+  return c.join('');
+}
+
 export function* enrollVoiceWorker(action :SequenceAction) :Generator<*, *, *> {
   yield put(enrollVoice.request(action.id));
   const {
@@ -220,15 +230,12 @@ export function* enrollVoiceWorker(action :SequenceAction) :Generator<*, *, *> {
     const profileEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.SPEAKER_RECOGNITION_PROFILES);
     const audioPropertyId = getPropertyTypeId(edm, PROPERTY_TYPES.AUDIO_SAMPLE);
 
-    const uint8array = new TextEncoder('utf-8').encode(audio);
-    const ui8string = new TextDecoder('utf-8').decode(uint8array);
-
     const profileEntity = {
       [profileEntityKeyId]: {
         [audioPropertyId]: [
           {
             'content-type': 'audio/wav',
-            data: window.btoa(ui8string)
+            data: window.btoa(bufferToString(audio))
           }
         ]
       }
