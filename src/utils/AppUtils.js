@@ -1,6 +1,3 @@
-/*
- * @flow
- */
 import { APP } from './consts/FrontEndStateConsts';
 
 import { ORG_IDS } from './consts/DataModelConsts';
@@ -26,7 +23,7 @@ export const defaultSettings = {
   }
 };
 
-export const getEntitySetIdFromApp :string = (app, fqn :string) => {
+export const getEntitySetIdFromApp = (app, fqn) => {
   const orgId = app.get(APP.SELECTED_ORG_ID);
   return app.getIn([
     fqn,
@@ -35,7 +32,7 @@ export const getEntitySetIdFromApp :string = (app, fqn :string) => {
   ]);
 };
 
-export const getJurisdiction :string = (selectedOrganizationId) => {
+export const getJurisdiction = (selectedOrganizationId) => {
   let jurisdiction;
   switch (selectedOrganizationId) {
     case ORG_IDS.PENNINGTON_SD:

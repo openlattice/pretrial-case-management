@@ -112,7 +112,7 @@ function* getCasesAndCharges(neighbors) {
   const personEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
   const personEntityKeyId = getEntityKeyId(neighbors, PEOPLE);
 
-  let personNeighbors = yield call(SearchApi.searchEntityNeighbors, personEntitySetId, personEntityKeyId);
+  const personNeighbors = yield call(SearchApi.searchEntityNeighbors, personEntitySetId, personEntityKeyId);
 
   let pretrialCaseOptionsWithDate = Immutable.List();
   let pretrialCaseOptionsWithoutDate = Immutable.List();
@@ -292,11 +292,13 @@ function* loadPSADataWorker(action :SequenceAction) :Generator<*, *, *> {
       const manualPretrialCasesEntitySetId = getEntitySetIdFromApp(app, MANUAL_PRETRIAL_CASES);
       const manualPretrialCourtCasesEntitySetId = getEntitySetIdFromApp(app, MANUAL_PRETRIAL_COURT_CASES);
       const releaseRecommendationsEntitySetId = getEntitySetIdFromApp(app, RELEASE_RECOMMENDATIONS);
+      const psaRiskFactorsEntitySetId = getEntitySetIdFromApp(app, PSA_RISK_FACTORS);
       let neighborsById = yield call(SearchApi.searchEntityNeighborsWithFilter, psaScoresEntitySetId, {
         entityKeyIds: action.value,
         sourceEntitySetIds: [psaScoresEntitySetId, releaseRecommendationsEntitySetId, dmfFqnEntitySetId],
         destinationEntitySetIds: [
           peopleEntitySetId,
+          psaRiskFactorsEntitySetId,
           psaScoresEntitySetId,
           staffEntitySetId,
           manualPretrialCourtCasesEntitySetId,
