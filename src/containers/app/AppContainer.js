@@ -3,6 +3,8 @@
  */
 
 import React from 'react';
+
+import isFunction from 'lodash/isFunction';
 import styled from 'styled-components';
 import { AuthActions, AuthUtils } from 'lattice-auth';
 import { bindActionCreators } from 'redux';
@@ -21,6 +23,7 @@ import Forms from '../forms/Forms';
 import ContactSupport from '../../components/app/ContactSupport';
 import LogoLoader from '../../components/LogoLoader';
 import WelcomeBanner from '../../components/WelcomeBanner';
+import { GOOGLE_TRACKING_ID } from '../../core/tracking/google/GoogleAnalytics';
 import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { APP_TYPES } from '../../utils/consts/DataModelConsts';
@@ -37,6 +40,8 @@ import * as Routes from '../../core/router/Routes';
 import * as AppActionFactory from './AppActionFactory';
 import * as CourtActionFactory from '../court/CourtActionFactory';
 import * as ChargesActionFactory from '../charges/ChargesActionFactory';
+
+declare var gtag :?Function;
 
 const { logout } = AuthActions;
 const { getAllPropertyTypes } = EntityDataModelApiActions;
@@ -81,12 +86,12 @@ type Props = {
     getAllPropertyTypes :RequestSequence;
     loadApp :RequestSequence;
     loadCharges :RequestSequence;
-    switchOrganization :(orgId :string) => Object;
+    switchOrganization :(org :Object) => Object;
     logout :() => void;
   };
 };
 
-class AppContainer extends React.Component<Props, *> {
+class AppContainer extends React.Component<Props, {}> {
 
   componentDidMount() {
     const { actions } = this.props;
@@ -94,7 +99,7 @@ class AppContainer extends React.Component<Props, *> {
     actions.getAllPropertyTypes();
   }
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps :Props) {
     const { app, actions } = this.props;
     const nextOrg = app.get(APP.ORGS);
     const nextOrgId = app.get(APP.SELECTED_ORG_ID);
@@ -112,6 +117,16 @@ class AppContainer extends React.Component<Props, *> {
         actions.loadJudges();
         actions.loadArrestingAgencies();
       });
+    }
+  }
+
+  handleOnClickLogOut = () => {
+
+    const { actions } = this.props;
+    actions.logout();
+
+    if (isFunction(gtag)) {
+      gtag('config', GOOGLE_TRACKING_ID, { user_id: undefined, send_page_view: false });
     }
   }
 
@@ -173,7 +188,6 @@ class AppContainer extends React.Component<Props, *> {
 
   render() {
     const {
-      actions,
       app,
       selectedOrganizationSettings,
       selectedOrganizationTitle
@@ -190,7 +204,7 @@ class AppContainer extends React.Component<Props, *> {
       <AppWrapper>
         <HeaderNav
             loading={loading}
-            logout={actions.logout}
+            logout={this.handleOnClickLogOut}
             organizations={orgList}
             pretrialModule={includesPretrialModule}
             selectedOrg={selectedOrg}
@@ -249,4 +263,5 @@ function mapDispatchToProps(dispatch :Function) :Object {
   };
 }
 
+// $FlowFixMe
 export default connect(mapStateToProps, mapDispatchToProps)(AppContainer);
