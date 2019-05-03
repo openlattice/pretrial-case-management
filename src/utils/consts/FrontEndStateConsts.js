@@ -251,6 +251,7 @@ export const PEOPLE = {
   SCORES_ENTITY_SET_ID: 'scoresEntitySetId',
   RESULTS: 'peopleResults',
   PERSON_DATA: 'selectedPersonData',
+  VOICE_ENROLLMENT_PROGRESS: 'voiceEnrollmentProgress',
   PERSON_ENTITY_KEY_ID: 'selectedPersonEntityKeyId',
   FETCHING_PEOPLE: 'isFetchingPeople',
   FETCHING_PERSON_DATA: 'isFetchingPersonData',
