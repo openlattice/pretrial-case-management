@@ -115,13 +115,23 @@ const Pagination = (props :Props) => {
       <PageListItem disabled={frontJumpDisabled || frontArrowDisabled}>
         <a onClick={() => onChangePage(1)}>1</a>
       </PageListItem>
-      <PageListItem disabled={frontJumpDisabled || frontArrowDisabled}>
-        <a onClick={() => onChangePage(activePage - 1)}>...</a>
-      </PageListItem>
+      {
+        numPages > (MAX_PAGE_DISPLAY + 1)
+          ? (
+            <PageListItem disabled={frontJumpDisabled || frontArrowDisabled}>
+              <a onClick={() => onChangePage(activePage - 1)}>...</a>
+            </PageListItem>
+          ) : null
+      }
       {indices}
-      <PageListItem disabled={backJumpDisabled || backArrowDisabled}>
-        <a onClick={() => onChangePage(activePage + 1)}>...</a>
-      </PageListItem>
+      {
+        numPages > (MAX_PAGE_DISPLAY + 1)
+          ? (
+            <PageListItem disabled={backJumpDisabled || backArrowDisabled}>
+              <a onClick={() => onChangePage(activePage + 1)}>...</a>
+            </PageListItem>
+          ) : null
+      }
       <PageListItem disabled={backJumpDisabled || backArrowDisabled}>
         <a onClick={() => onChangePage(numPages)}>{numPages}</a>
       </PageListItem>
