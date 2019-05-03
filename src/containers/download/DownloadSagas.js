@@ -278,7 +278,6 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
           const header = filters ? filters[appTypeFqn][fqn] : headerString;
           if (header) {
             let newArrayValues = combinedEntity.get(header, Immutable.List());
-
             details.get(fqn).forEach((val) => {
               let newVal = val;
               if (DATETIME_FQNS.includes(fqn)) {
@@ -291,7 +290,7 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
                 newArrayValues = newArrayValues.push(newVal);
               }
             });
-            combinedEntity = combinedEntity.set(headerString, newArrayValues);
+            combinedEntity = combinedEntity.set(header, newArrayValues);
           }
         });
       }
