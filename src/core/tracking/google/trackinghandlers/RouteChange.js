@@ -7,6 +7,7 @@ import { Map } from 'immutable';
 import { AuthUtils } from 'lattice-auth';
 
 import Logger from '../../../../utils/Logger';
+import * as Routes from '../../../router/Routes';
 import { GOOGLE_TRACKING_ID } from '../GoogleAnalytics';
 
 const LOG :Logger = new Logger('RouteChangeEventHandler');
@@ -24,29 +25,44 @@ type RouteChangeEvent = {
 
 export default function handler(action :Action, prevState :Map, nextState :Map) {
 
-  const prevPath = prevState.getIn(['router', 'location', 'pathname'], '');
-  const prevSearch = prevState.getIn(['router', 'location', 'search'], '');
-  const nextPath = nextState.getIn(['router', 'location', 'pathname'], '');
-  const nextSearch = nextState.getIn(['router', 'location', 'search'], '');
-  if (prevPath === nextPath && prevSearch === nextSearch) {
-    return;
-  }
+  try {
+    const prevPath = prevState.getIn(['router', 'location', 'pathname'], '');
+    const prevSearch = prevState.getIn(['router', 'location', 'search'], '');
+    const nextPath = nextState.getIn(['router', 'location', 'pathname'], '');
+    const nextSearch = nextState.getIn(['router', 'location', 'search'], '');
+    if (prevPath === nextPath && prevSearch === nextSearch) {
+      return;
+    }
 
-  const event :RouteChangeEvent = {};
-  event.page_location = window.location.href;
-  event.page_path = window.location.href.replace(window.location.origin, '');
+    const { location } = window;
+    const origin = `${location.protocol}//${location.host}`;
+    let url = `${origin}${location.pathname}${location.hash}`.split('?')[0];
+    if (url.includes(Routes.PERSON_DETAILS_ROOT)) {
+      // replace person id with "{id}"
+      const slashIndex1 = url.indexOf(Routes.PERSON_DETAILS_ROOT) + Routes.PERSON_DETAILS_ROOT.length;
+      const slashIndex2 = url.indexOf('/', slashIndex1 + 1);
+      url = `${url.substring(0, slashIndex1)}/{id}${url.substring(slashIndex2)}`;
+    }
 
-  if (AuthUtils.isAuthenticated()) {
-    const userInfo = AuthUtils.getUserInfo();
-    if (userInfo && userInfo.id) {
-      event.user_id = userInfo.id;
+    const event :RouteChangeEvent = {};
+    event.page_location = url;
+    event.page_path = url.replace(origin, '');
+
+    if (AuthUtils.isAuthenticated()) {
+      const userInfo = AuthUtils.getUserInfo();
+      if (userInfo && userInfo.id) {
+        event.user_id = userInfo.id;
+      }
+    }
+
+    if (isFunction(gtag)) {
+      gtag('config', GOOGLE_TRACKING_ID, event);
+    }
+    else {
+      LOG.error('global "gtag" function not available', gtag);
     }
   }
-
-  if (isFunction(gtag)) {
-    gtag('config', GOOGLE_TRACKING_ID, event);
-  }
-  else {
-    LOG.error('global "gtag" function not available', gtag);
+  catch (e) {
+    LOG.error('caught an exception', e);
   }
 }
