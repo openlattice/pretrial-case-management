@@ -16,6 +16,7 @@ import { getEntityProperties } from '../../utils/DataUtils';
 import { formatPersonName, formatPeopleInfo } from '../../utils/PeopleUtils';
 import { InputRow } from '../person/PersonFormTags';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { PEOPLE, STATE } from '../../utils/consts/FrontEndStateConsts';
 
 import * as EnrollActionFactory from '../../containers/enroll/EnrollActionFactory';
 
@@ -57,6 +58,7 @@ const UnderlinedTextButton = styled.div`
 type Props = {
   person :Map<*, *>,
   personVoiceProfile :boolean,
+  voiceEnrollmentProgress :number,
   actions :{
     clearEnrollState :() => void
   }
@@ -70,12 +72,31 @@ class EnrollStatusBanner extends React.Component<Props, State> {
     };
   }
 
-  openEnrollVoiceModal = () => this.setState({ enrollVoiceModalOpen: true });
-  closeEnrollVoiceModal = () => {
-    const { actions } = this.props;
-    this.setState({ enrollVoiceModalOpen: false });
-    actions.clearEnrollState();
+  componentDidMount() {
+    const { actions, person, personVoiceProfile } = this.props;
+    const {
+      [PERSON_ID]: personId,
+      [ENTITY_KEY_ID]: personEntityKeyId,
+    } = getEntityProperties(person, [PERSON_ID, ENTITY_KEY_ID]);
+    if (personVoiceProfile.size && personId && personEntityKeyId) {
+      actions.getProfile({ personId, personEntityKeyId });
+    }
+  }
+
+  openEnrollVoiceModal = () => {
+    this.clearEnrollState();
+    this.setState({ enrollVoiceModalOpen: true });
   };
+
+  closeEnrollVoiceModal = () => {
+    this.setState({ enrollVoiceModalOpen: false });
+    this.clearEnrollState();
+  };
+
+  clearEnrollState = () => {
+    const { actions } = this.props;
+    actions.clearEnrollState();
+  }
 
   renderVoiceEnrollmentModal = () => {
     const { enrollVoiceModalOpen } = this.state;
@@ -108,18 +129,44 @@ class EnrollStatusBanner extends React.Component<Props, State> {
   }
 
   renderEnrollmentIcon = () => {
-    const { personVoiceProfile } = this.props;
-    return personVoiceProfile.size
-      ? <StatusIconContainer><FontAwesomeIcon color="green" icon={faMicrophoneAlt} /></StatusIconContainer>
-      : <StatusIconContainer><FontAwesomeIcon color="red" icon={faMicrophoneAltSlash} /></StatusIconContainer>;
+    const { personVoiceProfile, voiceEnrollmentProgress } = this.props;
+    let enrollmentIcon = <FontAwesomeIcon color={OL.RED01} icon={faMicrophoneAltSlash} />;
+    if (personVoiceProfile.size) {
+      switch (voiceEnrollmentProgress) {
+        case 3:
+          enrollmentIcon = <FontAwesomeIcon color={OL.GREEN01} icon={faMicrophoneAlt} />;
+          break;
+        case 2:
+        case 1:
+        case 0:
+          enrollmentIcon = <FontAwesomeIcon color={OL.ORANGE01} icon={faMicrophoneAltSlash} />;
+          break;
+        default:
+          break;
+      }
+    }
+    return <StatusIconContainer>{enrollmentIcon}</StatusIconContainer>;
   }
 
   renderEnrollmentText = () => {
-    const { person, personVoiceProfile } = this.props;
+    const { person, personVoiceProfile, voiceEnrollmentProgress } = this.props;
     const { firstMidLast } = formatPeopleInfo(person);
-    return personVoiceProfile.size
-      ? `${firstMidLast} is enrolled in check-ins`
-      : `${firstMidLast} is not enrolled in check-ins`;
+    let enrollmentText = `${firstMidLast} is not enrolled in check-ins`;
+    if (personVoiceProfile) {
+      switch (voiceEnrollmentProgress) {
+        case 3:
+          enrollmentText = `${firstMidLast} is enrolled in check-ins`;
+          break;
+        case 2:
+        case 1:
+        case 0:
+          enrollmentText = `${firstMidLast}'s check-in enrollment is incomplete`;
+          break;
+        default:
+          break;
+      }
+    }
+    return enrollmentText;
   }
 
   renderEnrollmentBanner = () => (
@@ -138,6 +185,15 @@ class EnrollStatusBanner extends React.Component<Props, State> {
   }
 }
 
+
+function mapStateToProps(state) {
+  const people = state.get(STATE.PEOPLE);
+
+  return {
+    [PEOPLE.VOICE_ENROLLMENT_PROGRESS]: people.get(PEOPLE.VOICE_ENROLLMENT_PROGRESS),
+  };
+}
+
 function mapDispatchToProps(dispatch :Function) :Object {
   const actions :{ [string] :Function } = {};
 
@@ -152,4 +208,4 @@ function mapDispatchToProps(dispatch :Function) :Object {
   };
 }
 
-export default connect(null, mapDispatchToProps)(EnrollStatusBanner);
+export default connect(mapStateToProps, mapDispatchToProps)(EnrollStatusBanner);
