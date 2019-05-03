@@ -7,7 +7,6 @@ import { Map } from 'immutable';
 import { AuthUtils } from 'lattice-auth';
 
 import Logger from '../../../../utils/Logger';
-import * as Routes from '../../../router/Routes';
 import { GOOGLE_TRACKING_ID } from '../GoogleAnalytics';
 
 const LOG :Logger = new Logger('RouteChangeEventHandler');
@@ -34,15 +33,9 @@ export default function handler(action :Action, prevState :Map, nextState :Map) 
       return;
     }
 
-    const { location } = window;
+    const location :Location = window.location;
     const origin = `${location.protocol}//${location.host}`;
-    let url = `${origin}${location.pathname}${location.hash}`.split('?')[0];
-    if (url.includes(Routes.PERSON_DETAILS_ROOT)) {
-      // replace person id with "{id}"
-      const slashIndex1 = url.indexOf(Routes.PERSON_DETAILS_ROOT) + Routes.PERSON_DETAILS_ROOT.length;
-      const slashIndex2 = url.indexOf('/', slashIndex1 + 1);
-      url = `${url.substring(0, slashIndex1)}/{id}${url.substring(slashIndex2)}`;
-    }
+    const url = `${origin}${location.pathname}${location.hash}`.split('?')[0];
 
     const event :RouteChangeEvent = {};
     event.page_location = url;
