@@ -10,12 +10,13 @@ import {
 } from 'immutable';
 
 import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
-import { changePSAStatus, updateScoresAndRiskFactors, loadPSAData } from '../review/ReviewActionFactory';
-import { deleteEntity } from '../../utils/data/DataActionFactory';
-import { refreshHearingNeighbors } from '../court/CourtActionFactory';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PEOPLE, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { PSA_STATUSES } from '../../utils/consts/Consts';
+import { enrollVoice, getProfile } from '../enroll/EnrollActionFactory';
+import { changePSAStatus, updateScoresAndRiskFactors, loadPSAData } from '../review/ReviewActionFactory';
+import { deleteEntity } from '../../utils/data/DataActionFactory';
+import { refreshHearingNeighbors } from '../court/CourtActionFactory';
 import {
   CLEAR_PERSON,
   getPeople,
@@ -46,6 +47,7 @@ const INITIAL_STATE = fromJS({
   [PEOPLE.SCORES_ENTITY_SET_ID]: '',
   [PEOPLE.RESULTS]: List(),
   [PEOPLE.PERSON_DATA]: Map(),
+  [PEOPLE.VOICE_ENROLLMENT_PROGRESS]: 0,
   [PEOPLE.PERSON_ENTITY_KEY_ID]: '',
   [PEOPLE.FETCHING_PEOPLE]: false,
   [PEOPLE.FETCHING_PERSON_DATA]: false,
@@ -143,6 +145,16 @@ export default function peopleReducer(state = INITIAL_STATE, action) {
         }
       });
     }
+
+    case enrollVoice.case(action.type): {
+      return enrollVoice.reducer(state, action, {
+        SUCCESS: () => {
+          const { numSubmissions } = action.value;
+          return state.set(PEOPLE.VOICE_ENROLLMENT_PROGRESS, numSubmissions);
+        }
+      });
+    }
+
     case getPeople.case(action.type): {
       return getPeople.reducer(state, action, {
         REQUEST: () => state.set(PEOPLE.FETCHING_PEOPLE, true),
@@ -151,6 +163,7 @@ export default function peopleReducer(state = INITIAL_STATE, action) {
         FINALLY: () => state.set(PEOPLE.FETCHING_PEOPLE, false)
       });
     }
+
     case getPersonData.case(action.type): {
       return getPersonData.reducer(state, action, {
         REQUEST: () => state.set(PEOPLE.FETCHING_PERSON_DATA, true),
@@ -158,6 +171,15 @@ export default function peopleReducer(state = INITIAL_STATE, action) {
           .set(PEOPLE.PERSON_DATA, fromJS(action.value.person)
             .set(PEOPLE.PERSON_ENTITY_KEY_ID, action.value.entityKeyId)),
         FAILURE: () => state.set(PEOPLE.PERSON_DATA, Map())
+      });
+    }
+
+    case getProfile.case(action.type): {
+      return getProfile.reducer(state, action, {
+        SUCCESS: () => {
+          const { numSubmissions } = action.value;
+          return state.set(PEOPLE.VOICE_ENROLLMENT_PROGRESS, numSubmissions);
+        }
       });
     }
 

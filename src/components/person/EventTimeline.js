@@ -179,7 +179,7 @@ export default class EventTimeline extends React.Component<Props> {
       events = events.set(staffDate, events.get(staffDate, List()).push(staffObj));
     });
     hearings.forEach((hearing) => {
-      let hearingDetails = hearing.get(PSA_NEIGHBOR.DETAILS);
+      let hearingDetails = hearing.get(PSA_NEIGHBOR.DETAILS, Map());
       hearingDetails = hearingDetails.set('type', EVENT_TYPES.HEARING);
       const hearingDate = moment(this.getEventDate(hearingDetails)).format('MM/DD/YYYY');
       if (endDate.isBefore(hearingDate)) endDate = moment(hearingDate);
@@ -187,14 +187,14 @@ export default class EventTimeline extends React.Component<Props> {
       events = events.set(hearingDate, events.get(hearingDate, List()).push(hearingDetails));
     });
     filteredCheckIns.forEach((checkInAppointment) => {
-      let checkInDetails = checkInAppointment.get(PSA_NEIGHBOR.DETAILS);
+      let checkInDetails = checkInAppointment.get(PSA_NEIGHBOR.DETAILS, Map());
       checkInDetails = checkInDetails.set('type', EVENT_TYPES.CHECKIN_APPOINTMENTS);
       const checkInDate = moment(this.getEventDate(checkInDetails)).format('MM/DD/YYYY');
       if (endDate.isBefore(checkInDate)) endDate = moment(checkInDate);
       events = events.set(checkInDate, events.get(checkInDate, List()).push(checkInDetails));
     });
     filteredPersonReminders.forEach((reminder) => {
-      let reminderDetails = reminder.get(PSA_NEIGHBOR.DETAILS);
+      let reminderDetails = reminder.get(PSA_NEIGHBOR.DETAILS, Map());
       reminderDetails = reminderDetails.set('type', EVENT_TYPES.REMINDER_SENT);
       const reminderDate = moment(this.getEventDate(reminderDetails)).format('MM/DD/YYYY');
       if (endDate.isBefore(reminderDate)) endDate = moment(reminderDate);

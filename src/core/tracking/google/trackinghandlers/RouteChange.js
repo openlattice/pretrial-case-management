@@ -24,29 +24,38 @@ type RouteChangeEvent = {
 
 export default function handler(action :Action, prevState :Map, nextState :Map) {
 
-  const prevPath = prevState.getIn(['router', 'location', 'pathname'], '');
-  const prevSearch = prevState.getIn(['router', 'location', 'search'], '');
-  const nextPath = nextState.getIn(['router', 'location', 'pathname'], '');
-  const nextSearch = nextState.getIn(['router', 'location', 'search'], '');
-  if (prevPath === nextPath && prevSearch === nextSearch) {
-    return;
-  }
+  try {
+    const prevPath = prevState.getIn(['router', 'location', 'pathname'], '');
+    const prevSearch = prevState.getIn(['router', 'location', 'search'], '');
+    const nextPath = nextState.getIn(['router', 'location', 'pathname'], '');
+    const nextSearch = nextState.getIn(['router', 'location', 'search'], '');
+    if (prevPath === nextPath && prevSearch === nextSearch) {
+      return;
+    }
 
-  const event :RouteChangeEvent = {};
-  event.page_location = window.location.href;
-  event.page_path = window.location.href.replace(window.location.origin, '');
+    const location :Location = window.location;
+    const origin = `${location.protocol}//${location.host}`;
+    const url = `${origin}${location.pathname}${location.hash}`.split('?')[0];
 
-  if (AuthUtils.isAuthenticated()) {
-    const userInfo = AuthUtils.getUserInfo();
-    if (userInfo && userInfo.id) {
-      event.user_id = userInfo.id;
+    const event :RouteChangeEvent = {};
+    event.page_location = url;
+    event.page_path = url.replace(origin, '');
+
+    if (AuthUtils.isAuthenticated()) {
+      const userInfo = AuthUtils.getUserInfo();
+      if (userInfo && userInfo.id) {
+        event.user_id = userInfo.id;
+      }
+    }
+
+    if (isFunction(gtag)) {
+      gtag('config', GOOGLE_TRACKING_ID, event);
+    }
+    else {
+      LOG.error('global "gtag" function not available', gtag);
     }
   }
-
-  if (isFunction(gtag)) {
-    gtag('config', GOOGLE_TRACKING_ID, event);
-  }
-  else {
-    LOG.error('global "gtag" function not available', gtag);
+  catch (e) {
+    LOG.error('caught an exception', e);
   }
 }
