@@ -160,6 +160,7 @@ class EnrollVoice extends React.Component<Props, State> {
   static getDerivedStateFromProps(nextProps, prevState) {
     const {
       actions,
+      errorMessage,
       profileEntityKeyId,
       loadingProfile,
       personEntityKeyId,
@@ -167,12 +168,14 @@ class EnrollVoice extends React.Component<Props, State> {
     } = nextProps;
     const receivedPersonEntityKeyId = !prevState.personEntityKeyId && personEntityKeyId;
     const receivedPersonId = !prevState.personId && personId;
-    if (!loadingProfile && receivedPersonEntityKeyId && receivedPersonId) {
-      actions.getProfile({ personId, personEntityKeyId });
-      return { personEntityKeyId, personId };
-    }
-    if (!profileEntityKeyId) {
-      actions.getProfile({ personId, personEntityKeyId });
+    if (!errorMessage) {
+      if (!loadingProfile && receivedPersonEntityKeyId && receivedPersonId) {
+        actions.getProfile({ personId, personEntityKeyId });
+        return { personEntityKeyId, personId };
+      }
+      if (!profileEntityKeyId) {
+        actions.getProfile({ personId, personEntityKeyId });
+      }
     }
     return null;
   }
