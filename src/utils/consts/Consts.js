@@ -318,6 +318,16 @@ export const PERSON_INFO_DATA = {
   IS_RECEIVING_REMINDERS: 'isReceivingReminders'
 };
 
+export const CONFIRMATION_ACTION_TYPES = {
+  DELETE: 'delete',
+  CANCEL: 'cancel'
+};
+
+export const CONFIRMATION_OBJECT_TYPES = {
+  CHARGE: 'charge',
+  HEARING: 'hearing'
+};
+
 
 export const TABLE_WIDTH = 1000;
 export const ROW_HEIGHT = 50;
