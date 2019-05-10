@@ -16,7 +16,6 @@ import {
 const INITIAL_STATE_FIELDS = {
   [ENROLL.LOADING_PROFILE]: false,
   [ENROLL.ENTITY_KEY_ID]: '',
-  [ENROLL.PROFILE_ID]: '',
   [ENROLL.PIN]: '',
   [ENROLL.SUBMITTING_AUDIO]: false,
   [ENROLL.NUM_SUBMISSIONS]: 0,
@@ -34,17 +33,14 @@ export default function enrollReducer(state :Map<*, *> = INITIAL_STATE, action :
         REQUEST: () => state
           .set(ENROLL.LOADING_PROFILE, true)
           .set(ENROLL.ERROR, '')
-          .set(ENROLL.PROFILE_ID, '')
           .set(ENROLL.PIN, ''),
         SUCCESS: () => {
           const {
             numSubmissions,
             pin,
-            profileEntityKeyId,
-            profileId
+            profileEntityKeyId
           } = action.value;
           return state
-            .set(ENROLL.PROFILE_ID, profileId)
             .set(ENROLL.ENTITY_KEY_ID, profileEntityKeyId)
             .set(ENROLL.PIN, pin)
             .set(ENROLL.NUM_SUBMISSIONS, numSubmissions)
@@ -53,7 +49,6 @@ export default function enrollReducer(state :Map<*, *> = INITIAL_STATE, action :
         FAILURE: () => {
           const { error } = action.value;
           return state
-            .set(ENROLL.PROFILE_ID, '')
             .set(ENROLL.PIN, '')
             .set(ENROLL.ERROR, error);
         },

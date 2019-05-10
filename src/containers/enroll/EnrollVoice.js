@@ -134,7 +134,6 @@ type Props = {
   personEntityKeyId :string,
   profileEntityKeyId :string,
   loadingProfile :boolean,
-  profileId :string,
   pin :string,
   submittingAudio :boolean,
   numSubmissions :number,
@@ -142,7 +141,7 @@ type Props = {
   onClose :() => void,
   actions :{
     getProfile :(personId :string, personEntityKeyId :string) => void,
-    enrollVoice :(profileId :string, blobObject :Object) => void,
+    enrollVoice :(profileEntityKeyId :string, blobObject :Object) => void,
     clearEnrollError :() => void,
   }
 }
@@ -161,20 +160,22 @@ class EnrollVoice extends React.Component<Props, State> {
   static getDerivedStateFromProps(nextProps, prevState) {
     const {
       actions,
+      errorMessage,
       profileEntityKeyId,
       loadingProfile,
       personEntityKeyId,
-      personId,
-      profileId
+      personId
     } = nextProps;
     const receivedPersonEntityKeyId = !prevState.personEntityKeyId && personEntityKeyId;
     const receivedPersonId = !prevState.personId && personId;
-    if (!loadingProfile && receivedPersonEntityKeyId && receivedPersonId) {
-      actions.getProfile({ personId, personEntityKeyId });
-      return { personEntityKeyId, personId };
-    }
-    if (profileId && !profileEntityKeyId) {
-      actions.getProfile({ personId, personEntityKeyId });
+    if (!errorMessage) {
+      if (!loadingProfile && receivedPersonEntityKeyId && receivedPersonId) {
+        actions.getProfile({ personId, personEntityKeyId });
+        return { personEntityKeyId, personId };
+      }
+      if (!profileEntityKeyId) {
+        actions.getProfile({ personId, personEntityKeyId });
+      }
     }
     return null;
   }
@@ -200,10 +201,10 @@ class EnrollVoice extends React.Component<Props, State> {
   getSearchPeopleSection = () => <SearchPersonContainer onSelectPerson={this.onSelectPerson} />;
 
   submitAudio = () => {
-    const { actions, profileEntityKeyId, profileId } = this.props;
+    const { actions, profileEntityKeyId } = this.props;
     const { blobObject } = this.state;
     this.setState({ blobObject: null });
-    actions.enrollVoice({ profileId, profileEntityKeyId, audio: blobObject });
+    actions.enrollVoice({ profileEntityKeyId, audio: blobObject });
   }
 
   renderSubmit = () => {
@@ -301,7 +302,6 @@ function mapStateToProps(state :Map<>) :Object {
   return {
     [ENROLL.LOADING_PROFILE]: enroll.get(ENROLL.LOADING_PROFILE),
     [ENROLL.ENTITY_KEY_ID]: enroll.get(ENROLL.ENTITY_KEY_ID),
-    [ENROLL.PROFILE_ID]: enroll.get(ENROLL.PROFILE_ID),
     [ENROLL.PIN]: enroll.get(ENROLL.PIN),
     [ENROLL.SUBMITTING_AUDIO]: enroll.get(ENROLL.SUBMITTING_AUDIO),
     [ENROLL.NUM_SUBMISSIONS]: enroll.get(ENROLL.NUM_SUBMISSIONS),
