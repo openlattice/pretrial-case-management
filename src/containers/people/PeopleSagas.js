@@ -254,6 +254,7 @@ function* getPersonNeighborsWorker(action) :Generator<*, *, *> {
         const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
         const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
         if (appTypeFqn === HEARINGS) {
+          const hearingDetails = neighbor.get(PSA_NEIGHBOR.DETAILS, Map());
           const {
             [DATE_TIME]: hearingDateTime,
             [HEARING_TYPE]: hearingType
@@ -266,7 +267,7 @@ function* getPersonNeighborsWorker(action) :Generator<*, *, *> {
           if (hearingDateTime && !hearingIsGeneric && !hearingIsInactive) {
             mostRecentPSANeighborsByAppTypeFqn = mostRecentPSANeighborsByAppTypeFqn.set(
               appTypeFqn,
-              mostRecentPSANeighborsByAppTypeFqn.get(appTypeFqn, List()).push(fromJS(neighbor))
+              mostRecentPSANeighborsByAppTypeFqn.get(appTypeFqn, List()).push(fromJS(hearingDetails))
             );
           }
         }
@@ -374,7 +375,7 @@ function* refreshPersonNeighborsWorker(action) :Generator<*, *, *> {
         if (hearingExists && !hearingIsGeneric && !hearingIsInactive) {
           neighbors = neighbors.set(
             appTypeFqn,
-            neighbors.get(appTypeFqn, List()).push(neighbor)
+            neighbors.get(appTypeFqn, List()).push(hearingDetails)
           );
         }
       }
@@ -404,11 +405,33 @@ function* refreshPersonNeighborsWorker(action) :Generator<*, *, *> {
       psaNeighbors.forEach((neighbor) => {
         const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
         const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
-        if (appTypeFqn === STAFF) {
+        if (appTypeFqn === HEARINGS) {
+          const hearingDetails = neighbor.get(PSA_NEIGHBOR.DETAILS, Map());
+          const {
+            [DATE_TIME]: hearingDateTime,
+            [HEARING_TYPE]: hearingType
+          } = getEntityProperties(neighbor, [
+            DATE_TIME,
+            HEARING_TYPE
+          ]);
+          const hearingIsInactive = hearingIsCancelled(neighbor);
+          const hearingIsGeneric = hearingType.toLowerCase().trim() === 'all other hearings';
+          if (hearingDateTime && !hearingIsGeneric && !hearingIsInactive) {
+            mostRecentPSANeighborsByAppTypeFqn = mostRecentPSANeighborsByAppTypeFqn.set(
+              appTypeFqn,
+              mostRecentPSANeighborsByAppTypeFqn.get(appTypeFqn, List()).push(fromJS(hearingDetails))
+            );
+          }
+        }
+        else if (LIST_FQNS.includes(appTypeFqn)) {
           mostRecentPSANeighborsByAppTypeFqn = mostRecentPSANeighborsByAppTypeFqn.set(
             appTypeFqn,
             mostRecentPSANeighborsByAppTypeFqn.get(appTypeFqn, List()).push(neighbor)
           );
+        }
+        else if (appTypeFqn === MANUAL_PRETRIAL_CASES || appTypeFqn === MANUAL_PRETRIAL_COURT_CASES) {
+          mostRecentPSANeighborsByAppTypeFqn = mostRecentPSANeighborsByAppTypeFqn
+            .set(MANUAL_PRETRIAL_CASES, fromJS(neighbor));
         }
         else {
           mostRecentPSANeighborsByAppTypeFqn = mostRecentPSANeighborsByAppTypeFqn.set(
