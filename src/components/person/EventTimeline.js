@@ -179,7 +179,7 @@ export default class EventTimeline extends React.Component<Props> {
       events = events.set(staffDate, events.get(staffDate, List()).push(staffObj));
     });
     hearings.forEach((hearing) => {
-      let hearingDetails = hearing.get(PSA_NEIGHBOR.DETAILS, Map());
+      let hearingDetails = hearing.get(PSA_NEIGHBOR.DETAILS, hearing || Map());
       hearingDetails = hearingDetails.set('type', EVENT_TYPES.HEARING);
       const hearingDate = moment(this.getEventDate(hearingDetails)).format('MM/DD/YYYY');
       if (endDate.isBefore(hearingDate)) endDate = moment(hearingDate);
@@ -214,8 +214,9 @@ export default class EventTimeline extends React.Component<Props> {
     </TagGroupWrapper>
   );
 
-  getIcons = (event, startDate) => {
+  getIcons = (event) => {
     const { checkInStatusById } = this.props;
+    const eventDate = this.getEventDate(event);
     let color = OL.PURPLE02;
     const eventType = event.get('type', '');
     const { icon } = EVENT_LABELS[eventType];
@@ -266,7 +267,7 @@ export default class EventTimeline extends React.Component<Props> {
     }
 
     return (
-      <IconContainer key={`${color}-${label}-${eventType}-${startDate}`}>
+      <IconContainer key={`${color}-${label}-${eventType}-${eventDate}`}>
         <FontAwesomeIcon height="1em" width="1em" color={color} icon={icon} />
         <Tooltip value={label} />
       </IconContainer>
@@ -284,7 +285,7 @@ export default class EventTimeline extends React.Component<Props> {
               const iconGroup = (
                 <IconWrapper key={date} numIcons={eventList.size}>
                   {
-                    eventList.map(event => this.getIcons(event, startDate))
+                    eventList.map(event => this.getIcons(event))
                   }
                 </IconWrapper>
               );
