@@ -4,9 +4,9 @@
 import axios from 'axios';
 import randomUUID from 'uuid/v4';
 import moment from 'moment';
-import { fromJS, Map } from 'immutable';
+import { fromJS, Map, Set } from 'immutable';
 import { AuthUtils } from 'lattice-auth';
-import { DataApi, DataIntegrationApi, SearchApi } from 'lattice';
+import { DataApi, SearchApi } from 'lattice';
 import {
   call,
   put,
@@ -33,44 +33,94 @@ const getOrgId = state => state.getIn([STATE.APP, APP.SELECTED_ORG_ID], '');
 
 const CHECKINS_BASE_URL = 'https://api.openlattice.com/checkins/voice';
 
-const getEntityId = (entity, primaryKeyIds) => {
-  const pKeyVals = [];
-  primaryKeyIds.forEach((pKey) => {
-    if (entity[pKey]) {
-      const keyValues = [];
-      entity[pKey].forEach((value) => {
-        keyValues.push(btoa(value));
-      });
-      pKeyVals.push(btoa(encodeURI(keyValues.join(','))));
-    }
-  });
-  return pKeyVals.length ? pKeyVals.join(',') : randomUUID();
-};
-
 const getHeaders = () => ({
   Authorization: `Bearer ${AuthUtils.getAuthToken()}`
 });
 
-function* tryLoadProfile(id) {
-  try {
-    return yield call(axios, {
-      method: 'get',
-      url: `${CHECKINS_BASE_URL}/profile/${id}`,
-      headers: getHeaders()
-    });
-  }
-  catch (error) {
-    return null;
-  }
-}
-
 function* getPin(id) {
   const response = yield call(axios, {
     method: 'get',
-    url: `${CHECKINS_BASE_URL}/pin?profileId=${id}`,
+    url: `${CHECKINS_BASE_URL}/pin?profileEntityKeyId=${id}`,
     headers: getHeaders()
   });
   return response.data;
+}
+
+function* getOrCreateProfileEntity(personEntityKeyId :string) :Generator<*, *, *> {
+  const app = yield select(getApp);
+  const edm = yield select(getEDM);
+  const orgId = yield select(getOrgId);
+
+  const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
+  const peopleEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.PEOPLE);
+  const enrollVoiceEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.SPEAKER_RECOGNITION_PROFILES);
+
+  const generalIdPropertyId = getPropertyTypeId(edm, PROPERTY_TYPES.GENERAL_ID);
+  const pinPropertyId = getPropertyTypeId(edm, PROPERTY_TYPES.PIN);
+
+  try {
+    const peopleNeighborsById = yield call(SearchApi.searchEntityNeighborsWithFilter, peopleEntitySetId, {
+      entityKeyIds: [personEntityKeyId],
+      sourceEntitySetIds: [enrollVoiceEntitySetId],
+      destinationEntitySetIds: []
+    });
+    const personNeighbors = fromJS(Object.values(peopleNeighborsById)[0] || []);
+
+    let voiceProfile;
+    let isCreating = false;
+
+    if (personNeighbors.size) {
+
+      personNeighbors.forEach((neighbor) => {
+        const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
+        const neighborObj = neighbor.get(PSA_NEIGHBOR.DETAILS, Map());
+        const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
+        if (appTypeFqn === APP_TYPES.SPEAKER_RECOGNITION_PROFILES) {
+
+          console.log(neighbor.toJS())
+
+          const profileEntityKeyId = neighborObj.getIn([PROPERTY_TYPES.ENTITY_KEY_ID, 0], '');
+          const pin = neighborObj.getIn([PROPERTY_TYPES.PIN, 0], undefined);
+          const numSubmissions = neighborObj.get(PROPERTY_TYPES.AUDIO_SAMPLE, Set()).size;
+
+          voiceProfile = { profileEntityKeyId, pin, numSubmissions };
+        }
+      });
+    }
+
+    if (!voiceProfile) {
+      isCreating = true;
+
+      const newProfileEntity = { [generalIdPropertyId]: [] };
+      const [profileEntityKeyId] = yield call(DataApi.createOrMergeEntityData,
+        enrollVoiceEntitySetId,
+        [newProfileEntity]);
+
+      voiceProfile = {
+        profileEntityKeyId,
+        pin: undefined,
+        numSubmissions: 0
+      };
+    }
+
+    const { pin, profileEntityKeyId } = voiceProfile;
+
+    if (!pin) {
+      let newPin = yield call(getPin, profileEntityKeyId);
+      newPin = `${newPin}`;
+      voiceProfile.pin = newPin;
+      yield call(DataApi.updateEntityData,
+        enrollVoiceEntitySetId,
+        { [profileEntityKeyId]: { [pinPropertyId]: [newPin] } },
+        'PartialReplace');
+    }
+
+    return { voiceProfile, isCreating };
+  }
+  catch (error) {
+    console.error(error);
+    return null;
+  }
 }
 
 export function* getProfileWorker(action :SequenceAction) :Generator<*, *, *> {
@@ -80,115 +130,31 @@ export function* getProfileWorker(action :SequenceAction) :Generator<*, *, *> {
 
     const app = yield select(getApp);
     const edm = yield select(getEDM);
-    const orgId = yield select(getOrgId);
 
-    const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
     const peopleEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.PEOPLE);
     const enrollVoiceEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.SPEAKER_RECOGNITION_PROFILES);
     const registeredForEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.REGISTERED_FOR);
-    const personIdPropertyId = getPropertyTypeId(edm, PROPERTY_TYPES.PERSON_ID);
-    const generalIdPropertyId = getPropertyTypeId(edm, PROPERTY_TYPES.GENERAL_ID);
     const completedDateTimePropertyId = getPropertyTypeId(edm, PROPERTY_TYPES.COMPLETED_DATE_TIME);
-    const pinPropertyId = getPropertyTypeId(edm, PROPERTY_TYPES.PIN);
 
-    const peopleNeighborsById = yield call(SearchApi.searchEntityNeighborsWithFilter, peopleEntitySetId, {
-      entityKeyIds: [personEntityKeyId],
-      sourceEntitySetIds: [enrollVoiceEntitySetId],
-      destinationEntitySetIds: []
-    });
-    const personNeighbors = fromJS(Object.values(peopleNeighborsById)[0] || []);
-    let voiceProfileRequest;
-    let voiceProfileEntityKeyId;
-    let voiceProfileId;
-    let voiceProfile;
-    let pin;
-    if (personNeighbors.size) {
-      personNeighbors.forEach((neighbor) => {
-        const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
-        const neighborObj = neighbor.get(PSA_NEIGHBOR.DETAILS, Map());
-        const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
-        if (appTypeFqn === APP_TYPES.SPEAKER_RECOGNITION_PROFILES) {
-          pin = neighborObj.getIn([PROPERTY_TYPES.PIN, 0], undefined);
-          voiceProfileEntityKeyId = neighborObj.getIn([PROPERTY_TYPES.ENTITY_KEY_ID, 0], '');
-          voiceProfileId = neighborObj.getIn([PROPERTY_TYPES.GENERAL_ID, 0], '');
-        }
+    const { voiceProfile, isCreating } = yield call(getOrCreateProfileEntity, personEntityKeyId);
+
+    /* Create new profile entity with pin */
+    if (isCreating) {
+
+      const { profileEntityKeyId } = voiceProfile;
+
+      const getEntityDataKey = (entitySetId, entityKeyId) => ({ entitySetId, entityKeyId });
+
+      yield call(DataApi.createAssociations, {
+        [registeredForEntitySetId]: [{
+          data: { [completedDateTimePropertyId]: [toISODateTime(moment())] },
+          src: getEntityDataKey(enrollVoiceEntitySetId, profileEntityKeyId),
+          dst: getEntityDataKey(peopleEntitySetId, personEntityKeyId)
+        }]
       });
-      if (voiceProfileId) {
-        voiceProfileRequest = yield call(tryLoadProfile, voiceProfileId);
-        voiceProfile = voiceProfileRequest;
-      }
     }
 
-    if (!voiceProfile || !voiceProfile.data || !voiceProfile.data.verificationProfileId) {
-      const createProfileRequest = {
-        method: 'post',
-        url: `${CHECKINS_BASE_URL}/profile/create`,
-        headers: getHeaders()
-      };
-
-      const createProfileResponse = yield call(axios, createProfileRequest);
-      const speakerVerificationId = createProfileResponse.data;
-      const newPin = yield call(getPin, speakerVerificationId);
-
-      const personDetails = {
-        [personIdPropertyId]: [personId]
-      };
-
-      const voiceDetails = {
-        [generalIdPropertyId]: [speakerVerificationId],
-        [pinPropertyId]: [`${newPin}`]
-      };
-
-      const registeredForDetails = {
-        [completedDateTimePropertyId]: [toISODateTime(moment())]
-      };
-
-      const personEntityKey = {
-        entitySetId: peopleEntitySetId,
-        entityId: getEntityId(personDetails, [personIdPropertyId])
-      };
-
-      const voiceEntityKey = {
-        entitySetId: enrollVoiceEntitySetId,
-        entityId: speakerVerificationId
-      };
-
-      const registeredForEntityKey = {
-        entitySetId: registeredForEntitySetId,
-        entityId: getEntityId(registeredForDetails, [completedDateTimePropertyId])
-      };
-
-      const entities = [{
-        key: personEntityKey,
-        details: personDetails
-      }, {
-        key: voiceEntityKey,
-        details: voiceDetails
-      }];
-      const associations = [{
-        key: registeredForEntityKey,
-        src: voiceEntityKey,
-        dst: personEntityKey,
-        details: registeredForDetails
-      }];
-
-      yield call(DataIntegrationApi.createEntityAndAssociationData, { entities, associations });
-      yield put(getProfile.success(action.id, {
-        profileId: speakerVerificationId,
-        pin: newPin,
-        numSubmissions: 0,
-        profileEntityKeyId: ''
-      }));
-    }
-    else {
-      if (!pin) pin = yield call(getPin, voiceProfile.data.verificationProfileId);
-      yield put(getProfile.success(action.id, {
-        profileId: voiceProfile.data.verificationProfileId,
-        pin,
-        numSubmissions: voiceProfile.data.enrollmentsCount,
-        profileEntityKeyId: voiceProfileEntityKeyId
-      }));
-    }
+    yield put(getProfile.success(action.id, voiceProfile));
   }
   catch (error) {
     console.error(error);
@@ -219,7 +185,6 @@ function bufferToString(arrayBuffer :ArrayBuffer) {
 export function* enrollVoiceWorker(action :SequenceAction) :Generator<*, *, *> {
   yield put(enrollVoice.request(action.id));
   const {
-    profileId,
     profileEntityKeyId,
     audio
   } = action.value;
@@ -244,7 +209,7 @@ export function* enrollVoiceWorker(action :SequenceAction) :Generator<*, *, *> {
 
     const enrollRequest = {
       method: 'post',
-      url: `${CHECKINS_BASE_URL}/profile/${profileId}`,
+      url: `${CHECKINS_BASE_URL}/profile/${profileEntityKeyId}`,
       headers: Object.assign({}, getHeaders(), { 'Content-Type': 'multipart/form-data' }),
       data: audio
     };
@@ -252,8 +217,9 @@ export function* enrollVoiceWorker(action :SequenceAction) :Generator<*, *, *> {
 
     yield call(DataApi.updateEntityData, profileEntitySetId, profileEntity, 'Merge');
 
-    const profile = yield call(tryLoadProfile, profileId);
-    const { enrollmentsCount: numSubmissions } = profile.data;
+    const profile = yield call(DataApi.getEntityData, profileEntitySetId, profileEntityKeyId);
+    const numSubmissions = (profile[PROPERTY_TYPES.AUDIO_SAMPLE] || []).length;
+
     yield put(enrollVoice.success(action.id, { numSubmissions }));
 
   }

@@ -4,7 +4,6 @@
 
 import React from 'react';
 import styled from 'styled-components';
-import { Constants } from 'lattice';
 import { Map, List } from 'immutable';
 
 import Modal, { ModalTransition } from '@atlaskit/modal-dialog';
@@ -33,8 +32,6 @@ import * as ChargesActionFactory from './ChargesActionFactory';
 const MODAL_WIDTH = '800px';
 
 const { ARREST_CHARGE_LIST, COURT_CHARGE_LIST } = APP_TYPES;
-
-const { OPENLATTICE_ID_FQN } = Constants;
 
 const Body = styled.div`
   border: none;

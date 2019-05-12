@@ -9,9 +9,11 @@ import CheckboxButton from '../controls/StyledCheckboxButton';
 import StyledCheckbox from '../controls/StyledCheckbox';
 import StyledInput from '../controls/StyledInput';
 import InfoButton from '../buttons/InfoButton';
+import ConfirmationModal from '../ConfirmationModal';
 import { PrimaryButton, TertiaryButton } from '../../utils/Layout';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { CHARGE_TYPES, CHARGE_HEADERS } from '../../utils/consts/ChargeConsts';
+import { CONFIRMATION_ACTION_TYPES, CONFIRMATION_OBJECT_TYPES } from '../../utils/consts/Consts';
 import { OL } from '../../utils/consts/Colors';
 import {
   FormSection,
@@ -94,11 +96,15 @@ class PersonContactInfo extends React.Component<Props, State> {
     super(props);
     this.state = {
       editing: false,
+      confirmationModalOpen: false
     };
   }
 
   editCharge = () => (this.setState({ editing: true }));
   cancelEditCharge = () => (this.setState({ editing: false }))
+
+  openConfirmationModal = () => this.setState({ confirmationModalOpen: true });
+  closeConfirmationModal = () => this.setState({ confirmationModalOpen: false });
 
   renderSubmitButton = () => {
     const { readyToSubmit, onSubmit } = this.props;
@@ -109,14 +115,12 @@ class PersonContactInfo extends React.Component<Props, State> {
     );
   }
 
-  renderDeleteButton = () => {
-    const { deleteCharge } = this.props;
-    return (
-      <DeleteButton onClick={deleteCharge}>
-        Delete
-      </DeleteButton>
-    );
-  }
+  renderDeleteButton = () => (
+    <DeleteButton onClick={this.openConfirmationModal}>
+      Delete
+    </DeleteButton>
+  );
+
   renderEditButton = () => (
     <PrimaryButton onClick={this.editCharge}>
       Edit Charge
@@ -195,6 +199,20 @@ class PersonContactInfo extends React.Component<Props, State> {
   }
 
   formatBooleanLabel = boolean => (boolean ? 'Yes' : 'No');
+
+  renderConfirmationModal = () => {
+    const { deleteCharge } = this.props;
+    const { confirmationModalOpen } = this.state;
+
+    return (
+      <ConfirmationModal
+          confirmationType={CONFIRMATION_ACTION_TYPES.DELETE}
+          objectType={CONFIRMATION_OBJECT_TYPES.CHARGE}
+          onClose={this.closeConfirmationModal}
+          open={confirmationModalOpen}
+          confirmationAction={deleteCharge} />
+    );
+  }
 
   render() {
     const { chargeType, confirmViolentCharge, handleCheckboxChange } = this.props;
@@ -325,6 +343,7 @@ class PersonContactInfo extends React.Component<Props, State> {
           </CheckboxContainer>
         </InputRow>
         { this.renderButtons() }
+        { this.renderConfirmationModal() }
       </StyledFormSection>
     );
   }
