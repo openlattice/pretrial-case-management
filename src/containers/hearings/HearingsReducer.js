@@ -21,7 +21,8 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [HEARINGS.COURTROOM]: '',
   [HEARINGS.JUDGE]: ''
 });
-export default function subscriptionsReducer(state :Map<*, *> = INITIAL_STATE, action :SequenceAction) {
+
+export default function hearingsReducer(state :Map<*, *> = INITIAL_STATE, action :SequenceAction) {
   switch (action.type) {
 
     case CLEAR_HEARING_SETTINGS: return INITIAL_STATE;
