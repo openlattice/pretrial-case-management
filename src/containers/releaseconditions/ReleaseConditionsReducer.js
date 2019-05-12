@@ -8,7 +8,7 @@ import { getEntityProperties } from '../../utils/DataUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { RELEASE_COND } from '../../utils/consts/FrontEndStateConsts';
 import { deleteEntity } from '../../utils/data/DataActionFactory';
-import { refreshHearingNeighbors } from '../court/CourtActionFactory';
+import { refreshHearingAndNeighbors } from '../hearings/HearingsActionFactory';
 import { refreshPSANeighbors } from '../review/ReviewActionFactory';
 import {
   CLEAR_RELEASE_CONDITIONS,
@@ -97,16 +97,20 @@ export default function releaseConditionsReducer(state :Map<*, *> = INITIAL_STAT
       });
     }
 
-    case refreshHearingNeighbors.case(action.type): {
-      return refreshHearingNeighbors.reducer(state, action, {
+    case refreshHearingAndNeighbors.case(action.type): {
+      return refreshHearingAndNeighbors.reducer(state, action, {
         REQUEST: () => state.set(RELEASE_COND.REFRESHING_RELEASE_CONDITIONS, true),
         SUCCESS: () => {
-          const { neighbors } = action.value;
-          const outcomeEntity = neighbors.get(OUTCOMES, Map());
+          const {
+            hearing,
+            hearingNeighborsByAppTypeFqn
+          } = action.value;
+          const outcomeEntity = hearingNeighborsByAppTypeFqn.get(OUTCOMES, Map());
 
           return state
+            .set(RELEASE_COND.SELECTED_HEARING, hearing)
             .set(RELEASE_COND.HAS_OUTCOME, !!outcomeEntity.size)
-            .set(RELEASE_COND.HEARING_NEIGHBORS, neighbors);
+            .set(RELEASE_COND.HEARING_NEIGHBORS, hearingNeighborsByAppTypeFqn);
         },
         FINALLY: () => state.set(RELEASE_COND.REFRESHING_RELEASE_CONDITIONS, false),
       });
