@@ -158,3 +158,5 @@ export const getCreateAssociationObject = ({
 );
 
 export const getSearchTerm = (propertyTypeId, searchString) => `${SEARCH_PREFIX}.${propertyTypeId}:"${searchString}"`;
+
+export const getSearchTermNotExact = (propertyTypeId, searchString) => `${SEARCH_PREFIX}.${propertyTypeId}:${searchString}`;
