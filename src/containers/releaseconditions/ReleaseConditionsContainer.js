@@ -74,11 +74,12 @@ import {
   SUBMIT
 } from '../../utils/consts/FrontEndStateConsts';
 
-import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
-import * as DataActionFactory from '../../utils/data/DataActionFactory';
-import * as ReviewActionFactory from '../review/ReviewActionFactory';
-import * as ReleaseConditionsActionFactory from './ReleaseConditionsActionFactory';
 import * as CourtActionFactory from '../court/CourtActionFactory';
+import * as DataActionFactory from '../../utils/data/DataActionFactory';
+import * as HearingsActionFactory from '../hearings/HearingsActionFactory';
+import * as ReleaseConditionsActionFactory from './ReleaseConditionsActionFactory';
+import * as ReviewActionFactory from '../review/ReviewActionFactory';
+import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
 
 const { CHECKIN_APPOINTMENTS_FIELD, RELEASE_CONDITIONS_FIELD } = LIST_FIELDS;
 const { OPENLATTICE_ID_FQN } = Constants;
@@ -297,7 +298,6 @@ type Props = {
       callback :() => void
     }) => void,
     refreshPSANeighbors :({ id :string }) => void,
-    refreshHearingNeighbors :({ id :string }) => void,
     replaceAssociation :(values :{
       associationEntity :Map<*, *>,
       associationEntityName :string,
@@ -418,7 +418,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
   refreshHearingsNeighborsCallback = () => {
     const { hearingEntityKeyId } = this.props;
     const { actions } = this.props;
-    actions.refreshHearingNeighbors({ id: hearingEntityKeyId });
+    actions.refreshHearingAndNeighbors({ hearingEntityKeyId });
   }
 
   refreshPSANeighborsCallback = () => {
@@ -1255,7 +1255,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
         entitySetName: HEARINGS,
         entityKeyId: hearingEntityKeyId,
         values: newHearing,
-        callback: this.refreshPSANeighborsCallback
+        callback: this.refreshHearingsNeighborsCallback
       });
     }
   }
@@ -1628,12 +1628,16 @@ function mapStateToProps(state) {
 function mapDispatchToProps(dispatch :Function) :Object {
   const actions :{ [string] :Function } = {};
 
+  Object.keys(CourtActionFactory).forEach((action :string) => {
+    actions[action] = CourtActionFactory[action];
+  });
+
   Object.keys(DataActionFactory).forEach((action :string) => {
     actions[action] = DataActionFactory[action];
   });
 
-  Object.keys(SubmitActionFactory).forEach((action :string) => {
-    actions[action] = SubmitActionFactory[action];
+  Object.keys(HearingsActionFactory).forEach((action :string) => {
+    actions[action] = HearingsActionFactory[action];
   });
 
   Object.keys(ReleaseConditionsActionFactory).forEach((action :string) => {
@@ -1644,8 +1648,8 @@ function mapDispatchToProps(dispatch :Function) :Object {
     actions[action] = ReviewActionFactory[action];
   });
 
-  Object.keys(CourtActionFactory).forEach((action :string) => {
-    actions[action] = CourtActionFactory[action];
+  Object.keys(SubmitActionFactory).forEach((action :string) => {
+    actions[action] = SubmitActionFactory[action];
   });
 
   return {
