@@ -72,7 +72,7 @@ const LIST_ENTITY_SETS = List.of(
   CONTACT_INFORMATION
 );
 
-function* getHearingAndNeighbors(hearingId :string) :Generator<*, *, *> {
+function* getHearingAndNeighbors(hearingEntityKeyId :string) :Generator<*, *, *> {
   let hearingNeighborsByAppTypeFqn = Map();
   const app = yield select(getApp);
   const orgId = yield select(getOrgId);
@@ -83,14 +83,14 @@ function* getHearingAndNeighbors(hearingId :string) :Generator<*, *, *> {
    * Get Hearing Info
    */
 
-  let hearing = yield call(DataApi.getEntityData, hearingsEntitySetId, hearingId);
+  let hearing = yield call(DataApi.getEntityData, hearingsEntitySetId, hearingEntityKeyId);
   hearing = fromJS(hearing);
 
   /*
    * Get Neighbors
    */
 
-  let hearingNeighbors = yield call(SearchApi.searchEntityNeighbors, hearingsEntitySetId, hearingId);
+  let hearingNeighbors = yield call(SearchApi.searchEntityNeighbors, hearingsEntitySetId, hearingEntityKeyId);
   hearingNeighbors = fromJS(hearingNeighbors);
   /*
    * Format Neighbors
