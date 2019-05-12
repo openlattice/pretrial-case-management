@@ -37,10 +37,10 @@ import {
   PSA_NEIGHBOR
 } from '../../utils/consts/FrontEndStateConsts';
 
-import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
 import * as DataActionFactory from '../../utils/data/DataActionFactory';
+import * as HearingsActionFactory from './HearingsActionFactory';
 import * as ReviewActionFactory from '../review/ReviewActionFactory';
-import * as CourtActionFactory from '../court/CourtActionFactory';
+import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
 
 const {
   CONTACT_INFORMATION,
@@ -116,14 +116,13 @@ type Props = {
       entitySetId :string,
       entityKeyId :string
     }) => void,
-    loadHearingNeighbors :(hearingIds :string[]) => void,
     submit :(values :{
       config :Map<*, *>,
       values :Map<*, *>,
       callback :() => void
     }) => void,
     refreshPSANeighbors :({ id :string }) => void,
-    refreshHearingNeighbors :({ id :string }) => void,
+    refreshHearingAndNeighbors :({ hearingEntityKeyId :string }) => void,
     replaceAssociation :(values :{
       associationEntity :Map<*, *>,
       associationEntityName :string,
@@ -230,7 +229,7 @@ class SelectHearingsContainer extends React.Component<Props, State> {
   refreshHearingsNeighborsCallback = () => {
     const { selectedHearing } = this.state;
     const { actions, psaEntityKeyId } = this.props;
-    actions.refreshHearingNeighbors({ id: selectedHearing.entityKeyId });
+    actions.refreshHearingAndNeighbors({ id: selectedHearing.entityKeyId });
     if (psaEntityKeyId) actions.refreshPSANeighbors({ id: psaEntityKeyId });
   }
 
@@ -452,16 +451,16 @@ function mapDispatchToProps(dispatch :Function) :Object {
     actions[action] = DataActionFactory[action];
   });
 
-  Object.keys(SubmitActionFactory).forEach((action :string) => {
-    actions[action] = SubmitActionFactory[action];
+  Object.keys(HearingsActionFactory).forEach((action :string) => {
+    actions[action] = HearingsActionFactory[action];
   });
 
   Object.keys(ReviewActionFactory).forEach((action :string) => {
     actions[action] = ReviewActionFactory[action];
   });
 
-  Object.keys(CourtActionFactory).forEach((action :string) => {
-    actions[action] = CourtActionFactory[action];
+  Object.keys(SubmitActionFactory).forEach((action :string) => {
+    actions[action] = SubmitActionFactory[action];
   });
 
   return {
