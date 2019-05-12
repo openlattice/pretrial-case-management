@@ -112,7 +112,6 @@ type Props = {
     }) => void,
     refreshPSANeighbors :({ id :string }) => void,
     refreshPersonNeighbors :(values :{ personId :string }) => void,
-    refreshHearingNeighbors :({ id :string }) => void,
     replaceAssociation :(values :{
       associationEntity :Map<*, *>,
       associationEntityName :string,
