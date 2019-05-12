@@ -16,17 +16,21 @@ import {
   filterPeopleIdsWithOpenPSAs,
   loadHearingsForDate,
   loadHearingNeighbors,
-  refreshHearingNeighbors,
   loadJudges,
   SET_COURT_DATE
 } from './CourtActionFactory';
 import { refreshPSANeighbors, changePSAStatus } from '../review/ReviewActionFactory';
+import { refreshHearingAndNeighbors } from '../hearings/HearingsActionFactory';
 import { SWITCH_ORGANIZATION } from '../app/AppActionFactory';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { COURT } from '../../utils/consts/FrontEndStateConsts';
 import { PSA_STATUSES } from '../../utils/consts/Consts';
+import { getEntityProperties } from '../../utils/DataUtils';
+import { TIME_FORMAT } from '../../utils/FormattingUtils';
 
 const { OPENLATTICE_ID_FQN } = Constants;
+
+const { DATE_TIME, ENTITY_KEY_ID } = PROPERTY_TYPES;
 
 const { HEARINGS } = APP_TYPES;
 
@@ -164,12 +168,49 @@ export default function courtReducer(state :Map<*, *> = INITIAL_STATE, action :S
       return state.set(COURT.COURT_DATE, courtDate);
     }
 
-    case refreshHearingNeighbors.case(action.type): {
-      return refreshHearingNeighbors.reducer(state, action, {
+    case refreshHearingAndNeighbors.case(action.type): {
+      return refreshHearingAndNeighbors.reducer(state, action, {
         REQUEST: () => state.set(COURT.HEARING_IDS_REFRESHING, true),
         SUCCESS: () => {
-          const { id, neighbors } = action.value;
-          return state.setIn([COURT.HEARINGS_NEIGHBORS_BY_ID, id], neighbors);
+          const {
+            hearing,
+            hearingEntityKeyId,
+            hearingNeighborsByAppTypeFqn
+          } = action.value;
+          const {
+            [DATE_TIME]: updatedHearingDateTime,
+          } = getEntityProperties(hearing, [DATE_TIME]);
+          const formattedHearingDateTime = moment(updatedHearingDateTime).format(TIME_FORMAT);
+          const courtDate = state.get(COURT.COURT_DATE);
+          let hearingsByTime = state.get(COURT.HEARINGS_BY_TIME, Map());
+          hearingsByTime.entrySeq().forEach(([time, hearings]) => {
+            const filteredHearings = hearings.filter((existingHearing) => {
+              const {
+                [ENTITY_KEY_ID]: existingHearingEntityKeyId,
+                [DATE_TIME]: hearingDateTime,
+              } = getEntityProperties(existingHearing, [ENTITY_KEY_ID]);
+              const refreshedHearing = (existingHearingEntityKeyId === hearingEntityKeyId) ? hearing : null;
+              if (refreshedHearing) {
+                return moment(hearingDateTime).isSame(courtDate, 'day');
+              }
+              return true;
+            });
+            if (filteredHearings.size && hearings.size !== filteredHearings.size) {
+              hearingsByTime = hearingsByTime.set(time, filteredHearings);
+            }
+            else {
+              hearingsByTime = hearingsByTime.delete(time);
+            }
+          });
+          if (!hearingsByTime.get(formattedHearingDateTime)) {
+            hearingsByTime = hearingsByTime.set(
+              formattedHearingDateTime,
+              hearingsByTime.get(formattedHearingDateTime, List()).push(hearing)
+            );
+          }
+          return state
+            .set(COURT.HEARINGS_BY_TIME, hearingsByTime)
+            .setIn([COURT.HEARINGS_NEIGHBORS_BY_ID, hearingEntityKeyId], hearingNeighborsByAppTypeFqn);
         },
         FINALLY: () => state.set(COURT.HEARING_IDS_REFRESHING, false),
       });
