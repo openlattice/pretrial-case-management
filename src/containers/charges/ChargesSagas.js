@@ -1,8 +1,7 @@
 /*
  * @flow
  */
-import { AuthorizationApi, DataApi, SearchApi } from 'lattice';
-import { DataApiActions, DataApiSagas } from 'lattice-sagas';
+import { AuthorizationApi, SearchApi } from 'lattice';
 import { Map, Set, fromJS } from 'immutable';
 import {
   all,
@@ -33,9 +32,6 @@ const { ENTITY_KEY_ID } = PROPERTY_TYPES;
 
 const getApp = state => state.get(STATE.APP, Map());
 const getOrgId = state => state.getIn([STATE.APP, APP.SELECTED_ORG_ID], '');
-
-const { getEntitySetData } = DataApiActions;
-const { getEntitySetDataWorker } = DataApiSagas;
 
 /*
  * deleteCharge()
@@ -137,6 +133,12 @@ function* loadChargesWorker(action :SequenceAction) :Generator<*, *, *> {
   const { id, value } = action;
   const { arrestChargesEntitySetId, courtChargesEntitySetId, selectedOrgId } = value;
 
+  const options = {
+    start: 0,
+    maxHits: 10000,
+    searchTerm: '*'
+  };
+
   const chargePermissions = yield call(AuthorizationApi.checkAuthorizations, [
     { aclKey: [arrestChargesEntitySetId], permissions: ['WRITE'] },
     { aclKey: [courtChargesEntitySetId], permissions: ['WRITE'] }
@@ -150,15 +152,15 @@ function* loadChargesWorker(action :SequenceAction) :Generator<*, *, *> {
     let courtChargesByEntityKeyId = Map();
 
     let [arrestCharges, courtCharges] = yield all([
-      call(getEntitySetDataWorker, getEntitySetData({ entitySetId: arrestChargesEntitySetId })),
-      call(getEntitySetDataWorker, getEntitySetData({ entitySetId: courtChargesEntitySetId }))
+      call(SearchApi.searchEntitySetData, arrestChargesEntitySetId, options),
+      call(SearchApi.searchEntitySetData, courtChargesEntitySetId, options)
     ]);
     const chargeError = arrestCharges.error || courtCharges.error;
     if (chargeError) throw chargeError;
 
     // reset values to data
-    arrestCharges = fromJS(arrestCharges.data);
-    courtCharges = fromJS(courtCharges.data);
+    arrestCharges = fromJS(arrestCharges.hits);
+    courtCharges = fromJS(courtCharges.hits);
 
     // Map charges by EnityKeyId for easy state update
     arrestCharges.forEach((charge) => {
