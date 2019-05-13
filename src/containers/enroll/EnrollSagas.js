@@ -77,8 +77,6 @@ function* getOrCreateProfileEntity(personEntityKeyId :string) :Generator<*, *, *
         const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
         if (appTypeFqn === APP_TYPES.SPEAKER_RECOGNITION_PROFILES) {
 
-          console.log(neighbor.toJS())
-
           const profileEntityKeyId = neighborObj.getIn([PROPERTY_TYPES.ENTITY_KEY_ID, 0], '');
           const pin = neighborObj.getIn([PROPERTY_TYPES.PIN, 0], undefined);
           const numSubmissions = neighborObj.get(PROPERTY_TYPES.AUDIO_SAMPLE, Set()).size;
