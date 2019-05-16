@@ -343,7 +343,6 @@ class PSAInputForm extends React.Component<Props, State> {
     }
 
     if (requiredFields.valueSeq().filter(this.invalidValue).toList().size) {
-      console.log(requiredFields.toJS());
       this.setState({ incomplete: true });
     }
     else {
