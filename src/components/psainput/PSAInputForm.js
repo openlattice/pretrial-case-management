@@ -324,11 +324,23 @@ class PSAInputForm extends React.Component<Props, State> {
   invalidValue = (val :string) => val === null || val === undefined || val === 'null' || val === 'undefined';
 
   handleSubmit = (e) => {
-    const { input, handleSubmit } = this.props;
+    const { input, handleSubmit, selectedOrganizationSettings } = this.props;
+    const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
     e.preventDefault();
 
-    const requiredFields = (input.get(DMF.COURT_OR_BOOKING) === CONTEXT.BOOKING)
-      ? input : input.remove(DMF.SECONDARY_RELEASE_CHARGES).remove(DMF.SECONDARY_HOLD_CHARGES);
+    let requiredFields = input;
+    if (!includesPretrialModule) {
+      requiredFields = requiredFields
+        .remove(STEP_2_CHARGES)
+        .remove(STEP_4_CHARGES)
+        .remove(SECONDARY_RELEASE_CHARGES)
+        .remove(SECONDARY_HOLD_CHARGES);
+    }
+    else if (input.get(DMF.COURT_OR_BOOKING) === CONTEXT.COURT) {
+      requiredFields = requiredFields
+        .remove(SECONDARY_RELEASE_CHARGES)
+        .remove(SECONDARY_HOLD_CHARGES);
+    }
 
     if (requiredFields.valueSeq().filter(this.invalidValue).toList().size) {
       this.setState({ incomplete: true });
