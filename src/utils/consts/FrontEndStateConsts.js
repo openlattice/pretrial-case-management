@@ -163,6 +163,9 @@ export const ENROLL = {
 
 export const HEARINGS = {
   SETTINGS_MODAL_OPEN: 'hearingSettingsModalOpen',
+  REFRESHING_HEARING_AND_NEIGHBORS: 'refreshingHearingAndNeighbors',
+  UPDATED_HEARING: 'updatedHearing',
+  UPDATED_HEARING_NEIGHBORS: 'updatedHearingNeighbors',
   DATE: 'hearingDate',
   TIME: 'hearingTime',
   COURTROOM: 'hearingCourtroom',
