@@ -97,7 +97,6 @@ export const COURT = {
   PEOPLE_RECEIVING_REMINDERS: 'peopleReceivingReminders',
   LOADING_HEARINGS: 'isLoadingHearings',
   LOADING_HEARING_NEIGHBORS: 'isLoadingHearingsNeighbors',
-  HEARING_IDS_REFRESHING: 'hearingIdsRefreshing',
   LOADING_PSAS: 'isLoadingPSAs',
   LOADING_ERROR: 'loadingError',
   LOADING_HEARINGS_ERROR: 'loadingHearingError',
