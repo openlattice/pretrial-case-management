@@ -6,7 +6,7 @@ import React from 'react';
 import styled from 'styled-components';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { List, Map, Set } from 'immutable';
+import { List, Map } from 'immutable';
 
 import InfoButton from '../../components/buttons/InfoButton';
 import HearingCardsWithTitle from '../../components/hearings/HearingCardsWithTitle';
@@ -29,6 +29,7 @@ import {
 } from '../../utils/consts/Consts';
 import {
   APP,
+  HEARINGS,
   STATE,
   SUBMIT,
   REVIEW,
@@ -93,7 +94,7 @@ type Props = {
   app :Map<*, *>,
   psaHearings :List<*, *>,
   personHearings :List<*, *>,
-  hearingIdsRefreshing :Set<*, *>,
+  refreshingHearingAndNeighbors :boolean,
   hearingNeighborsById :Map<*, *>,
   neighbors :Map<*, *>,
   psaIdsRefreshing :Map<*, *>,
@@ -347,7 +348,7 @@ class SelectHearingsContainer extends React.Component<Props, State> {
     const {
       neighbors,
       hearingNeighborsById,
-      hearingIdsRefreshing,
+      refreshingHearingAndNeighbors,
       submitting,
       psaIdsRefreshing,
       refreshingNeighbors,
@@ -363,7 +364,7 @@ class SelectHearingsContainer extends React.Component<Props, State> {
       || replacingAssociation
       || refreshingNeighbors
       || psaIdsRefreshing.size
-      || hearingIdsRefreshing);
+      || refreshingHearingAndNeighbors);
 
     const loadingText = (submitting || replacingEntity || replacingAssociation) ? 'Submitting' : 'Reloading';
     return (
@@ -415,6 +416,7 @@ function mapStateToProps(state) {
   const app = state.get(STATE.APP);
   const orgId = app.get(APP.SELECTED_ORG_ID, '');
   const court = state.get(STATE.COURT);
+  const hearings = state.get(STATE.HEARINGS);
   const review = state.get(STATE.REVIEW);
   const submit = state.get(STATE.SUBMIT);
   return {
@@ -427,7 +429,8 @@ function mapStateToProps(state) {
     [COURT.LOADING_HEARING_NEIGHBORS]: court.get(COURT.LOADING_HEARING_NEIGHBORS),
     [COURT.HEARINGS_NEIGHBORS_BY_ID]: court.get(COURT.HEARINGS_NEIGHBORS_BY_ID),
     [COURT.ALL_JUDGES]: court.get(COURT.ALL_JUDGES),
-    [COURT.HEARING_IDS_REFRESHING]: court.get(COURT.HEARING_IDS_REFRESHING),
+
+    [HEARINGS.REFRESHING_HEARING_AND_NEIGHBORS]: hearings.get(HEARINGS.REFRESHING_HEARING_AND_NEIGHBORS),
 
     [REVIEW.SCORES]: review.get(REVIEW.SCORES),
     [REVIEW.NEIGHBORS_BY_ID]: review.get(REVIEW.NEIGHBORS_BY_ID),
