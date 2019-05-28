@@ -5,12 +5,11 @@
 import { push } from 'connected-react-router';
 import { Constants, Types } from 'lattice';
 import { AuthActions, AccountUtils } from 'lattice-auth';
+import { SearchApi } from 'lattice';
 import { OrderedMap, fromJS } from 'immutable';
 import {
   AppApiActions,
   AppApiSagas,
-  DataApiActions,
-  DataApiSagas,
   EntityDataModelApiActions,
   EntityDataModelApiSagas,
 } from 'lattice-sagas';
@@ -38,8 +37,6 @@ const { getEntityDataModelProjection } = EntityDataModelApiActions;
 const { getEntityDataModelProjectionWorker } = EntityDataModelApiSagas;
 const { getApp, getAppConfigs, getAppTypes } = AppApiActions;
 const { getAppWorker, getAppConfigsWorker, getAppTypesWorker } = AppApiSagas;
-const { getEntitySetData } = DataApiActions;
-const { getEntitySetDataWorker } = DataApiSagas;
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
@@ -99,16 +96,20 @@ function* loadAppWorker(action :SequenceAction) :Generator<*, *, *> {
       }
     });
     const appSettingCalls = appSettingsByOrgId.valueSeq().map(entitySetId => (
-      call(getEntitySetDataWorker, getEntitySetData({ entitySetId }))
+      call(SearchApi.searchEntitySetData, entitySetId, {
+        start: 0,
+        maxHits: 10000,
+        searchTerm: '*'
+      })
     ));
 
     const orgIds = appSettingsByOrgId.keySeq().toJS();
     const appSettingResults = yield all(appSettingCalls.toJS());
 
     let i = 0;
-    appSettingResults.forEach((setting) => {
+    appSettingResults.map(({ hits }) => hits).forEach((setting) => {
       const entitySetId = orgIds[i];
-      const settingsEntity = setting.data[0];
+      const settingsEntity = setting[0] || '{}';
       const settings = JSON.parse(settingsEntity['ol.appdetails']);
       settings[OPENLATTICE_ID_FQN] = settingsEntity[OPENLATTICE_ID_FQN][0];
       appSettingsByOrgId = appSettingsByOrgId.set(entitySetId, fromJS(settings));
