@@ -27,6 +27,7 @@ import {
   APP,
   COURT,
   EDM,
+  HEARINGS,
   PEOPLE,
   PSA_NEIGHBOR,
   REVIEW,
@@ -49,7 +50,7 @@ import * as PeopleActionFactory from '../../containers/people/PeopleActionFactor
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
-const { HEARINGS, OUTCOMES, PRETRIAL_CASES } = APP_TYPES;
+const { OUTCOMES, PRETRIAL_CASES } = APP_TYPES;
 
 const ColumnWrapper = styled(StyledColumnRowWrapper)`
   background: transparent;
@@ -85,6 +86,7 @@ const StyledInfoButton = styled(InfoButton)`
 
 type Props = {
   app :Map<*, *>,
+  chargeHistory :Map<*, *>,
   defaultBond :Map<*, *>,
   defaultConditions :Map<*, *>,
   defaultDMF :Map<*, *>,
@@ -98,6 +100,8 @@ type Props = {
   personId :?string,
   psaEntityKeyId :Map<*, *>,
   psaId :?string,
+  psaIdsRefreshing :List<*, *>,
+  refreshingHearingAndNeighbors :boolean,
   refreshingPersonNeighbors :boolean,
   actions :{
     deleteEntity :(values :{
@@ -150,7 +154,7 @@ class PersonHearings extends React.Component<Props, State> {
 
   cancelHearing = (entityKeyId) => {
     const { actions, app, fqnToIdMap } = this.props;
-    const hearingEntitySetId = getEntitySetIdFromApp(app, HEARINGS);
+    const hearingEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.HEARINGS);
     const values = {
       [entityKeyId]: {
         [fqnToIdMap.get(PROPERTY_TYPES.HEARING_INACTIVE)]: [true]
@@ -220,7 +224,7 @@ class PersonHearings extends React.Component<Props, State> {
       defaultDMF,
       dmfId,
       hearingNeighborsById,
-      hearingIdsRefreshing,
+      refreshingHearingAndNeighbors,
       jurisdiction,
       neighbors,
       psaEntityKeyId,
@@ -236,7 +240,7 @@ class PersonHearings extends React.Component<Props, State> {
       .getIn([selectedHearingEntityKeyId, PRETRIAL_CASES, PSA_NEIGHBOR.DETAILS], Map());
     caseHistory = caseHistory.size ? fromJS([caseHistory]) : List();
     const refreshingNeighbors = psaIdsRefreshing.has(psaEntityKeyId);
-    const refreshing = (hearingIdsRefreshing || refreshingNeighbors);
+    const refreshing = (refreshingHearingAndNeighbors || refreshingNeighbors);
 
     return (
       <ReleaseConditionsModal
@@ -320,9 +324,10 @@ class PersonHearings extends React.Component<Props, State> {
 
 function mapStateToProps(state) {
   const app = state.get(STATE.APP);
-  const edm = state.get(STATE.EDM);
-  const review = state.get(STATE.REVIEW);
   const court = state.get(STATE.COURT);
+  const edm = state.get(STATE.EDM);
+  const hearings = state.get(STATE.HEARINGS);
+  const review = state.get(STATE.REVIEW);
   const people = state.get(STATE.PEOPLE);
   return {
     app,
@@ -332,7 +337,8 @@ function mapStateToProps(state) {
     [COURT.LOADING_HEARING_NEIGHBORS]: court.get(COURT.LOADING_HEARING_NEIGHBORS),
     [COURT.HEARINGS_NEIGHBORS_BY_ID]: court.get(COURT.HEARINGS_NEIGHBORS_BY_ID),
     [COURT.ALL_JUDGES]: court.get(COURT.ALL_JUDGES),
-    [COURT.HEARING_IDS_REFRESHING]: court.get(COURT.HEARING_IDS_REFRESHING),
+
+    [HEARINGS.REFRESHING_HEARING_AND_NEIGHBORS]: hearings.get(HEARINGS.REFRESHING_HEARING_AND_NEIGHBORS),
 
     [EDM.FQN_TO_ID]: edm.get(EDM.FQN_TO_ID),
 
