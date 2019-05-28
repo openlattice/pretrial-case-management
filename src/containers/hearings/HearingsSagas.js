@@ -81,11 +81,11 @@ function* getHearingAndNeighbors(hearingEntityKeyId :string) :Generator<*, *, *>
       if (LIST_ENTITY_SETS.includes(appTypeFqn)) {
         hearingNeighborsByAppTypeFqn = hearingNeighborsByAppTypeFqn.set(
           appTypeFqn,
-          hearingNeighborsByAppTypeFqn.get(appTypeFqn, List()).push(fromJS(neighbor))
+          hearingNeighborsByAppTypeFqn.get(appTypeFqn, List()).push(neighbor)
         );
       }
       else {
-        hearingNeighborsByAppTypeFqn = hearingNeighborsByAppTypeFqn.set(appTypeFqn, fromJS(neighbor));
+        hearingNeighborsByAppTypeFqn = hearingNeighborsByAppTypeFqn.set(appTypeFqn, neighbor);
       }
     }
   });
