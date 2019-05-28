@@ -46,7 +46,6 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   // Hearings Neighbors
   [COURT.LOADING_HEARING_NEIGHBORS]: false,
   [COURT.HEARINGS_NEIGHBORS_BY_ID]: Map(),
-  [COURT.HEARING_IDS_REFRESHING]: false,
   [COURT.LOADING_HEARINGS_ERROR]: false,
 
   // People
@@ -170,7 +169,6 @@ export default function courtReducer(state :Map<*, *> = INITIAL_STATE, action :S
 
     case refreshHearingAndNeighbors.case(action.type): {
       return refreshHearingAndNeighbors.reducer(state, action, {
-        REQUEST: () => state.set(COURT.HEARING_IDS_REFRESHING, true),
         SUCCESS: () => {
           const {
             hearing,
@@ -212,7 +210,6 @@ export default function courtReducer(state :Map<*, *> = INITIAL_STATE, action :S
             .set(COURT.HEARINGS_BY_TIME, hearingsByTime)
             .setIn([COURT.HEARINGS_NEIGHBORS_BY_ID, hearingEntityKeyId], hearingNeighborsByAppTypeFqn);
         },
-        FINALLY: () => state.set(COURT.HEARING_IDS_REFRESHING, false),
       });
     }
 
