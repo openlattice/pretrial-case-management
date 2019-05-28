@@ -22,13 +22,14 @@ import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import {
   APP,
-  STATE,
-  REVIEW,
-  SUBMIT,
+  COURT,
+  HEARINGS,
   PEOPLE,
   PSA_NEIGHBOR,
   PSA_MODAL,
-  COURT
+  REVIEW,
+  STATE,
+  SUBMIT
 } from '../../utils/consts/FrontEndStateConsts';
 
 import * as FormActionFactory from '../psa/FormActionFactory';
@@ -430,10 +431,11 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
 
 function mapStateToProps(state) {
   const app = state.get(STATE.APP);
+  const court = state.get(STATE.COURT);
+  const hearings = state.get(STATE.HEARINGS);
   const orgId = app.get(APP.SELECTED_ORG_ID, '');
   const people = state.get(STATE.PEOPLE);
   const review = state.get(STATE.REVIEW);
-  const court = state.get(STATE.COURT);
   const submit = state.get(STATE.SUBMIT);
   const psaModal = state.get(STATE.PSA_MODAL);
   // TODO: Address prop names so that consts can be used as keys
@@ -441,6 +443,12 @@ function mapStateToProps(state) {
     [APP.ENTITY_SETS_BY_ORG]: app.getIn([APP.ENTITY_SETS_BY_ORG, orgId], Map()),
     [APP.SELECTED_ORG_ID]: app.get(APP.ESELECTED_ORG_ID),
     [APP.SELECTED_ORG_SETTINGS]: app.get(APP.SELECTED_ORG_SETTINGS),
+
+    [COURT.LOADING_HEARING_NEIGHBORS]: court.get(COURT.LOADING_HEARING_NEIGHBORS),
+    [COURT.HEARINGS_NEIGHBORS_BY_ID]: court.get(COURT.HEARINGS_NEIGHBORS_BY_ID),
+    [COURT.ALL_JUDGES]: court.get(COURT.ALL_JUDGES),
+
+    [HEARINGS.REFRESHING_HEARING_AND_NEIGHBORS]: hearings.get(HEARINGS.REFRESHING_HEARING_AND_NEIGHBORS),
 
     [REVIEW.ENTITY_SET_ID]: review.get(REVIEW.ENTITY_SET_ID) || people.get(PEOPLE.SCORES_ENTITY_SET_ID),
     [REVIEW.NEIGHBORS_BY_ID]: review.get(REVIEW.NEIGHBORS_BY_ID),
@@ -452,11 +460,6 @@ function mapStateToProps(state) {
 
     [PEOPLE.PERSON_DATA]: people.get(PEOPLE.PERSON_DATA),
     [PEOPLE.NEIGHBORS]: people.get(PEOPLE.NEIGHBORS, Map()),
-
-    [COURT.LOADING_HEARING_NEIGHBORS]: court.get(COURT.LOADING_HEARING_NEIGHBORS),
-    [COURT.HEARINGS_NEIGHBORS_BY_ID]: court.get(COURT.HEARINGS_NEIGHBORS_BY_ID),
-    [COURT.HEARING_IDS_REFRESHING]: court.get(COURT.HEARING_IDS_REFRESHING),
-    [COURT.ALL_JUDGES]: court.get(COURT.ALL_JUDGES),
 
     [SUBMIT.SUBMITTING]: submit.get(SUBMIT.SUBMITTING, false)
   };
