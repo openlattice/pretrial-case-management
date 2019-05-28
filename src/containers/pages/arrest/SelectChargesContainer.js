@@ -13,7 +13,6 @@ import { faExclamationTriangle } from '@fortawesome/pro-light-svg-icons';
 
 import BasicButton from '../../../components/buttons/BasicButton';
 import SecondaryButton from '../../../components/buttons/SecondaryButton';
-import SearchableSelect from '../../../components/controls/SearchableSelect';
 import DropDownMenu from '../../../components/StyledSelect';
 import AsyncStyledSelect from '../../../components/AsyncSelect';
 import DateTimePicker from '../../../components/datetime/DateTimePicker';
