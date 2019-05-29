@@ -179,7 +179,7 @@ export default class EventTimeline extends React.Component<Props> {
       events = events.set(staffDate, events.get(staffDate, List()).push(staffObj));
     });
     hearings.forEach((hearing) => {
-      let hearingDetails = hearing.get(PSA_NEIGHBOR.DETAILS, hearing || Map());
+      let hearingDetails = hearing.get(PSA_NEIGHBOR.DETAILS, hearing);
       hearingDetails = hearingDetails.set('type', EVENT_TYPES.HEARING);
       const hearingDate = moment(this.getEventDate(hearingDetails)).format('MM/DD/YYYY');
       if (endDate.isBefore(hearingDate)) endDate = moment(hearingDate);
