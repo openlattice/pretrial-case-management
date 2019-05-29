@@ -3,18 +3,13 @@
  */
 
 import moment from 'moment';
+import { Constants, SearchApi, Models } from 'lattice';
 import {
   fromJS,
   Map,
   Set,
   List
 } from 'immutable';
-import {
-  Constants,
-  SearchApi,
-  DataApi,
-  Models
-} from 'lattice';
 import {
   call,
   put,
@@ -39,12 +34,10 @@ import {
   FILTER_PEOPLE_IDS_WITH_OPEN_PSAS,
   LOAD_HEARINGS_FOR_DATE,
   LOAD_HEARING_NEIGHBORS,
-  REFRESH_HEARING_NEIGHBORS,
   LOAD_JUDGES,
   filterPeopleIdsWithOpenPSAs,
   loadHearingsForDate,
   loadHearingNeighbors,
-  refreshHearingNeighbors,
   loadJudges
 } from './CourtActionFactory';
 
@@ -403,50 +396,6 @@ function* loadHearingNeighborsWatcher() :Generator<*, *, *> {
   yield takeEvery(LOAD_HEARING_NEIGHBORS, loadHearingNeighborsWorker);
 }
 
-function* refreshHearingNeighborsWorker(action :SequenceAction) :Generator<*, *, *> {
-  const { id } = action.value;
-  try {
-    yield put(refreshHearingNeighbors.request(action.id, { id }));
-    const app = yield select(getApp);
-    const orgId = yield select(getOrgId);
-    const hearingEntitySetId = getEntitySetIdFromApp(app, HEARINGS);
-    const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
-
-    let neighborsList = yield call(SearchApi.searchEntityNeighbors, hearingEntitySetId, id);
-    neighborsList = fromJS(neighborsList);
-    let neighbors = Map();
-    neighborsList.forEach((neighbor) => {
-      const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id']);
-      const appTypeFqn = entitySetIdsToAppType.get(entitySetId, JUDGES);
-      const entitySetName = entitySetIdsToAppType.get(entitySetId, JUDGES);
-      if (LIST_APP_TYPES.includes(appTypeFqn)) {
-        neighbors = neighbors.set(
-          entitySetName,
-          neighbors.get(entitySetName, List()).push(fromJS(neighbor))
-        );
-      }
-      else {
-        neighbors = neighbors.set(
-          entitySetName,
-          fromJS(neighbor)
-        );
-      }
-    });
-    yield put(refreshHearingNeighbors.success(action.id, { id, neighbors }));
-  }
-  catch (error) {
-    console.error(error);
-    yield put(refreshHearingNeighbors.failure(action.id, error));
-  }
-  finally {
-    yield put(refreshHearingNeighbors.finally(action.id, { id }));
-  }
-}
-
-function* refreshHearingNeighborsWatcher() :Generator<*, *, *> {
-  yield takeEvery(REFRESH_HEARING_NEIGHBORS, refreshHearingNeighborsWorker);
-}
-
 function* loadJudgesWorker(action :SequenceAction) :Generator<*, *, *> {
   try {
     yield put(loadJudges.request(action.id));
@@ -479,6 +428,5 @@ export {
   filterPeopleIdsWithOpenPSAsWatcher,
   loadHearingsForDateWatcher,
   loadHearingNeighborsWatcher,
-  refreshHearingNeighborsWatcher,
   loadJudgesWatcher
 };

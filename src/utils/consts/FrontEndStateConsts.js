@@ -97,7 +97,6 @@ export const COURT = {
   PEOPLE_RECEIVING_REMINDERS: 'peopleReceivingReminders',
   LOADING_HEARINGS: 'isLoadingHearings',
   LOADING_HEARING_NEIGHBORS: 'isLoadingHearingsNeighbors',
-  HEARING_IDS_REFRESHING: 'hearingIdsRefreshing',
   LOADING_PSAS: 'isLoadingPSAs',
   LOADING_ERROR: 'loadingError',
   LOADING_HEARINGS_ERROR: 'loadingHearingError',
@@ -163,6 +162,9 @@ export const ENROLL = {
 
 export const HEARINGS = {
   SETTINGS_MODAL_OPEN: 'hearingSettingsModalOpen',
+  REFRESHING_HEARING_AND_NEIGHBORS: 'refreshingHearingAndNeighbors',
+  UPDATED_HEARING: 'updatedHearing',
+  UPDATED_HEARING_NEIGHBORS: 'updatedHearingNeighbors',
   DATE: 'hearingDate',
   TIME: 'hearingTime',
   COURTROOM: 'hearingCourtroom',

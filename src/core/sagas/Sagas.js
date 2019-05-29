@@ -14,6 +14,7 @@ import * as PersonSagas from '../../containers/person/PersonSagas';
 import * as PeopleSagas from '../../containers/people/PeopleSagas';
 import * as DashboardSagas from '../../containers/dashboard/DashboardSagas';
 import * as DataSagas from '../../utils/data/DataSagas';
+import * as HearingsSagas from '../../containers/hearings/HearingsSagas';
 import * as ManualRemindersSagas from '../../containers/manualreminders/ManualRemindersSagas';
 import * as PSAModalSagas from '../../containers/psamodal/PSAModalSagas';
 import * as PsaSagas from '../../containers/psa/FormSagas';
@@ -57,7 +58,6 @@ export default function* sagas() :Generator<*, *, *> {
     fork(CourtSagas.filterPeopleIdsWithOpenPSAsWatcher),
     fork(CourtSagas.loadHearingsForDateWatcher),
     fork(CourtSagas.loadHearingNeighborsWatcher),
-    fork(CourtSagas.refreshHearingNeighborsWatcher),
     fork(CourtSagas.loadJudgesWatcher),
 
     // DashboardSagas
@@ -80,6 +80,9 @@ export default function* sagas() :Generator<*, *, *> {
     // EnrollSagas
     fork(EnrollSagas.enrollVoiceWatcher),
     fork(EnrollSagas.getProfileWatcher),
+
+    // HearingsSagas
+    fork(HearingsSagas.refreshHearingAndNeighborsWatcher),
 
     // Manual Reminders
     fork(ManualRemindersSagas.loadManualRemindersFormWatcher),

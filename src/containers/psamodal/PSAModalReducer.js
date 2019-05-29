@@ -4,10 +4,12 @@
 import { Constants } from 'lattice';
 import { Map, List, fromJS } from 'immutable';
 
+import { getEntityProperties } from '../../utils/DataUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_MODAL, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { loadPSAModal, CLEAR_PSA_MODAL } from './PSAModalActionFactory';
-import { loadHearingNeighbors, refreshHearingNeighbors } from '../court/CourtActionFactory';
+import { loadHearingNeighbors } from '../court/CourtActionFactory';
+import { refreshHearingAndNeighbors } from '../hearings/HearingsActionFactory';
 import { updateContactInfo, refreshPersonNeighbors } from '../people/PeopleActionFactory';
 import {
   changePSAStatus,
@@ -17,6 +19,8 @@ import {
 } from '../review/ReviewActionFactory';
 
 const { OPENLATTICE_ID_FQN } = Constants;
+
+const { ENTITY_KEY_ID } = PROPERTY_TYPES;
 
 const {
   CONTACT_INFORMATION,
@@ -169,12 +173,36 @@ export default function psaModalReducer(state :Map<*, *> = INITIAL_STATE, action
       });
     }
 
-    case refreshHearingNeighbors.case(action.type): {
-      return refreshHearingNeighbors.reducer(state, action, {
+    case refreshHearingAndNeighbors.case(action.type): {
+      return refreshHearingAndNeighbors.reducer(state, action, {
         REQUEST: () => state.set(PSA_MODAL.LOADING_HEARING_NEIGHBORS, true),
         SUCCESS: () => {
-          const { neighbors, id } = action.value;
-          return state.setIn([PSA_MODAL.HEARINGS_NEIGHBORS_BY_ID, id], neighbors);
+          const {
+            hearingEntityKeyId,
+            hearing,
+            hearingNeighborsByAppTypeFqn
+          } = action.value;
+          /*
+          * Get PSA Hearings and Neighbors
+          */
+          const psaHearings = state.get(PSA_MODAL.HEARINGS, List());
+          const psaNeighbors = state.get(PSA_MODAL.PSA_NEIGHBORS, List());
+          /*
+          * Replace hearings in PSA Hearings List
+          */
+          const nextPSAHearings = psaHearings.map((psaHearing) => {
+            const { [ENTITY_KEY_ID]: entityKeyId } = getEntityProperties(psaHearing, [ENTITY_KEY_ID]);
+            if (entityKeyId === hearingEntityKeyId) return hearing;
+            return psaHearing;
+          });
+          /*
+          * Replace hearings list in PSA neighbors with updated list
+          */
+          const nextPSANeighbors = psaNeighbors.set(HEARINGS, nextPSAHearings);
+          return state
+            .setIn([PSA_MODAL.HEARINGS_NEIGHBORS_BY_ID, hearingEntityKeyId], hearingNeighborsByAppTypeFqn)
+            .set(PSA_MODAL.PSA_NEIGHBORS, nextPSANeighbors)
+            .set(PSA_MODAL.HEARINGS, nextPSAHearings);
         },
         FAILURE: () => state.set(PSA_MODAL.LOADING_HEARING_NEIGHBORS, false),
         FINALLY: () => state.set(PSA_MODAL.LOADING_HEARING_NEIGHBORS, false),

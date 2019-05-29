@@ -67,6 +67,7 @@ import {
   APP,
   COURT,
   EDM,
+  HEARINGS,
   PSA_ASSOCIATION,
   PSA_NEIGHBOR,
   RELEASE_COND,
@@ -74,11 +75,12 @@ import {
   SUBMIT
 } from '../../utils/consts/FrontEndStateConsts';
 
-import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
-import * as DataActionFactory from '../../utils/data/DataActionFactory';
-import * as ReviewActionFactory from '../review/ReviewActionFactory';
-import * as ReleaseConditionsActionFactory from './ReleaseConditionsActionFactory';
 import * as CourtActionFactory from '../court/CourtActionFactory';
+import * as DataActionFactory from '../../utils/data/DataActionFactory';
+import * as HearingsActionFactory from '../hearings/HearingsActionFactory';
+import * as ReleaseConditionsActionFactory from './ReleaseConditionsActionFactory';
+import * as ReviewActionFactory from '../review/ReviewActionFactory';
+import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
 
 const { CHECKIN_APPOINTMENTS_FIELD, RELEASE_CONDITIONS_FIELD } = LIST_FIELDS;
 const { OPENLATTICE_ID_FQN } = Constants;
@@ -89,7 +91,6 @@ const {
   DMF_RESULTS,
   DMF_RISK_FACTORS,
   JUDGES,
-  HEARINGS,
   PEOPLE,
   PSA_SCORES,
   PRETRIAL_CASES,
@@ -269,7 +270,7 @@ type Props = {
   creatingAssociations :boolean,
   fqnToIdMap :Map<*, *>,
   hasOutcome :boolean,
-  hearingIdsRefreshing :boolean,
+  refreshingHearingAndNeighbors :boolean,
   hearingNeighbors :Map<*, *>,
   hearingEntityKeyId :string,
   loadingReleaseCondtions :boolean,
@@ -297,7 +298,6 @@ type Props = {
       callback :() => void
     }) => void,
     refreshPSANeighbors :({ id :string }) => void,
-    refreshHearingNeighbors :({ id :string }) => void,
     replaceAssociation :(values :{
       associationEntity :Map<*, *>,
       associationEntityName :string,
@@ -418,7 +418,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
   refreshHearingsNeighborsCallback = () => {
     const { hearingEntityKeyId } = this.props;
     const { actions } = this.props;
-    actions.refreshHearingNeighbors({ id: hearingEntityKeyId });
+    actions.refreshHearingAndNeighbors({ hearingEntityKeyId });
   }
 
   refreshPSANeighborsCallback = () => {
@@ -787,7 +787,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       !hearingCheckInAppointmentEntityKeyIds.includes(checkInEntityKeyId)
     ));
     const registeredforEntitySetId = getEntitySetIdFromApp(app, REGISTERED_FOR);
-    const hearingEntitySetId = getEntitySetIdFromApp(app, HEARINGS);
+    const hearingEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.HEARINGS);
     const appointmentEntitySetId = getEntitySetIdFromApp(app, CHECKIN_APPOINTMENTS);
     const dateCompletedPropertyId = fqnToIdMap.get(PROPERTY_TYPES.COMPLETED_DATE_TIME, '');
     const newAssociationEntities = { [registeredforEntitySetId]: [] };
@@ -1209,13 +1209,13 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
 
     const associationEntitySetId = getEntitySetIdFromApp(app, ASSESSED_BY);
     const srcEntitySetId = getEntitySetIdFromApp(app, JUDGES);
-    const hearingEntitySetId = getEntitySetIdFromApp(app, HEARINGS);
+    const hearingEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.HEARINGS);
 
     const associationEntitySetName = ASSESSED_BY;
     const associationEntityKeyId = judgeEntity ? judgeAssociationEntityKeyId : null;
     const srcEntitySetName = JUDGES;
     const srcEntityKeyId = judgeId;
-    const dstEntitySetName = HEARINGS;
+    const dstEntitySetName = APP_TYPES.HEARINGS;
     const dstEntityKeyId = hearingEntityKeyId;
     if (judgeIsOther && associationEntityKeyId) {
       deleteEntity({
@@ -1252,10 +1252,10 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
         .toJS();
       replaceEntity({
         entitySetId: hearingEntitySetId,
-        entitySetName: HEARINGS,
+        entitySetName: APP_TYPES.HEARINGS,
         entityKeyId: hearingEntityKeyId,
         values: newHearing,
-        callback: this.refreshPSANeighborsCallback
+        callback: this.refreshHearingsNeighborsCallback
       });
     }
   }
@@ -1266,7 +1266,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       app,
       fqnToIdMap
     } = this.props;
-    const entitySetId = getEntitySetIdFromApp(app, HEARINGS);
+    const entitySetId = getEntitySetIdFromApp(app, APP_TYPES.HEARINGS);
     const values = {
       [entityKeyId]: {
         [fqnToIdMap.get(PROPERTY_TYPES.HEARING_INACTIVE)]: [true]
@@ -1539,7 +1539,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       loadingReleaseCondtions,
       replacingEntity,
       replacingAssociation,
-      hearingIdsRefreshing,
+      refreshingHearingAndNeighbors,
       refreshingSelectedHearing,
       submitting,
       refreshingReleaseConditions,
@@ -1550,7 +1550,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       loadingReleaseCondtions
       || replacingEntity
       || replacingAssociation
-      || hearingIdsRefreshing
+      || refreshingHearingAndNeighbors
       || refreshingSelectedHearing
       || submitting
       || refreshingReleaseConditions
@@ -1594,6 +1594,7 @@ function mapStateToProps(state) {
   const app = state.get(STATE.APP);
   const court = state.get(STATE.COURT);
   const edm = state.get(STATE.EDM);
+  const hearings = state.get(STATE.HEARINGS);
   const orgId = app.get(APP.SELECTED_ORG_ID, '');
   const releaseConditions = state.get(STATE.RELEASE_CONDITIONS);
   const submit = state.get(STATE.SUBMIT);
@@ -1603,6 +1604,10 @@ function mapStateToProps(state) {
     [APP.SELECTED_ORG_SETTINGS]: app.get(APP.SELECTED_ORG_SETTINGS, Map()),
     [APP.ENTITY_SETS_BY_ORG]: app.get(APP.ENTITY_SETS_BY_ORG, Map()),
     [APP.FQN_TO_ID]: app.get(APP.FQN_TO_ID),
+
+    [COURT.ALL_JUDGES]: court.get(COURT.ALL_JUDGES),
+
+    [HEARINGS.REFRESH_HEARING_AND_NEIGHBORS]: hearings.get(HEARINGS.REFRESH_HEARING_AND_NEIGHBORS),
 
     [EDM.FQN_TO_ID]: edm.get(EDM.FQN_TO_ID),
 
@@ -1615,8 +1620,6 @@ function mapStateToProps(state) {
     [RELEASE_COND.REFRESHING_RELEASE_CONDITIONS]: releaseConditions.get(RELEASE_COND.REFRESHING_RELEASE_CONDITIONS),
     [RELEASE_COND.REFRESHING_SELECTED_HEARING]: releaseConditions.get(RELEASE_COND.REFRESHING_SELECTED_HEARING),
 
-    [COURT.ALL_JUDGES]: court.get(COURT.ALL_JUDGES),
-    [COURT.HEARING_IDS_REFRESHING]: court.get(COURT.HEARING_IDS_REFRESHING),
 
     [SUBMIT.CREATING_ASSOCIATIONS]: submit.get(SUBMIT.CREATING_ASSOCIATIONS),
     [SUBMIT.REPLACING_ASSOCIATION]: submit.get(SUBMIT.REPLACING_ASSOCIATION),
@@ -1628,12 +1631,16 @@ function mapStateToProps(state) {
 function mapDispatchToProps(dispatch :Function) :Object {
   const actions :{ [string] :Function } = {};
 
+  Object.keys(CourtActionFactory).forEach((action :string) => {
+    actions[action] = CourtActionFactory[action];
+  });
+
   Object.keys(DataActionFactory).forEach((action :string) => {
     actions[action] = DataActionFactory[action];
   });
 
-  Object.keys(SubmitActionFactory).forEach((action :string) => {
-    actions[action] = SubmitActionFactory[action];
+  Object.keys(HearingsActionFactory).forEach((action :string) => {
+    actions[action] = HearingsActionFactory[action];
   });
 
   Object.keys(ReleaseConditionsActionFactory).forEach((action :string) => {
@@ -1644,8 +1651,8 @@ function mapDispatchToProps(dispatch :Function) :Object {
     actions[action] = ReviewActionFactory[action];
   });
 
-  Object.keys(CourtActionFactory).forEach((action :string) => {
-    actions[action] = CourtActionFactory[action];
+  Object.keys(SubmitActionFactory).forEach((action :string) => {
+    actions[action] = SubmitActionFactory[action];
   });
 
   return {
