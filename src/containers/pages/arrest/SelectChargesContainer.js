@@ -13,7 +13,6 @@ import { faExclamationTriangle } from '@fortawesome/pro-light-svg-icons';
 
 import BasicButton from '../../../components/buttons/BasicButton';
 import SecondaryButton from '../../../components/buttons/SecondaryButton';
-import SearchableSelect from '../../../components/controls/SearchableSelect';
 import DropDownMenu from '../../../components/StyledSelect';
 import AsyncStyledSelect from '../../../components/AsyncSelect';
 import DateTimePicker from '../../../components/datetime/DateTimePicker';
@@ -85,6 +84,7 @@ const CountsInput = styled.input.attrs({
   font-size: 14px;
   align-items: center;
   padding-left: 20px;
+  margin-top: 10px
 `;
 
 const StyledTitle = styled(Title)`
@@ -110,10 +110,6 @@ const CaseDetailsWrapper = styled.div`
   display: grid;
   grid-template-columns: 45% 45%;
   grid-gap: 10%;
-`;
-
-const ChargeSearch = styled(SearchableSelect)`
-  margin-top: 30px;
 `;
 
 const ChargeWrapper = styled.div`
@@ -160,6 +156,7 @@ const TitleWrapper = styled.div`
 type Props = {
   arrestingAgencies :Map<*, *>,
   chargeOptions :Map<*, *>,
+  chargeList :List<*>,
   chargeType :string,
   selectedOrganizationSettings :Immutable.Map<*, *>,
   defaultArrest :Immutable.Map<*, *>,
@@ -384,6 +381,20 @@ class SelectChargesContainer extends React.Component<Props, State> {
     return agencyOptions;
   }
 
+  formatQualifiers = () => {
+    let qualifierOptions = List();
+    QUALIFIERS.forEach((qualifier) => {
+      qualifierOptions = qualifierOptions.push({
+        target: {
+          name: QUALIFIER,
+          value: qualifier
+        },
+        label: qualifier
+      });
+    });
+    return qualifierOptions;
+  }
+
 
   renderArrestInfoInput = () => {
     const { defaultArrest } = this.props;
@@ -516,12 +527,14 @@ class SelectChargesContainer extends React.Component<Props, State> {
           </ChargeTitle>
         </TitleWrapper>
         <ChargeOptionsWrapper>
-          <SearchableSelect
-              onSelect={getOnSelect(QUALIFIER)}
-              options={this.formatSelectOptions(QUALIFIERS)}
-              searchPlaceholder="Select a qualifier"
-              value={qualifier}
-              onClear={getOnClear(QUALIFIER)} />
+          <DropDownMenu
+              autoFocus
+              background={OL.GREY38}
+              classNamePrefix="lattice-select"
+              onChange={getOnSelect()}
+              options={this.formatQualifiers()}
+              placeholder="Select a qualifier"
+              inputValue={qualifier} />
           {this.renderInputField(charge, NUMBER_OF_COUNTS, onChange)}
           <DeleteButton onClick={() => this.deleteCharge(index)}>Remove</DeleteButton>
         </ChargeOptionsWrapper>
@@ -535,7 +548,7 @@ class SelectChargesContainer extends React.Component<Props, State> {
     let nextCharges = chargeList;
     if (searchQuery) {
       nextCharges = nextCharges.filter((charge) => {
-        const statute = getFirstNeighborValue(charge.value, PROPERTY_TYPES.STATUTE);
+        const statute = getFirstNeighborValue(charge.value, PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE);
         const description = getFirstNeighborValue(charge.value, PROPERTY_TYPES.REFERENCE_CHARGE_DESCRIPTION);
         if (statute) {
           matchesStatute = statute.toLowerCase().includes(searchQuery.toLowerCase());
