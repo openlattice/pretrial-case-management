@@ -3,6 +3,7 @@
  */
 
 import { newRequestSequence } from 'redux-reqseq';
+import type { RequestSequence } from 'redux-reqseq';
 
 const ADD_CASE_AND_CHARGES :string = 'ADD_CASE_AND_CHARGES';
 const addCaseAndCharges :RequestSequence = newRequestSequence(ADD_CASE_AND_CHARGES);

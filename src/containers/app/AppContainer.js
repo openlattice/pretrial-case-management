@@ -12,6 +12,7 @@ import { connect } from 'react-redux';
 import { EntityDataModelApiActions } from 'lattice-sagas';
 import { Redirect, Route, Switch } from 'react-router-dom';
 import { Map } from 'immutable';
+import type { RequestSequence } from 'redux-reqseq';
 
 import AppConsent from './AppConsent';
 import ErrorPage from '../../components/ErrorPage';

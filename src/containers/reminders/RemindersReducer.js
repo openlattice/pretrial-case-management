@@ -36,7 +36,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [REMINDERS.LOADING_OPT_OUT_NEIGHBORS]: false,
   [REMINDERS.LOADING_REMINDER_PDF]: false,
 });
-export default function remindersReducer(state :Map<*, *> = INITIAL_STATE, action :SequenceAction) {
+export default function remindersReducer(state :Map<*, *> = INITIAL_STATE, action :Object) {
   switch (action.type) {
 
     case bulkDownloadRemindersPDF.case(action.type): {

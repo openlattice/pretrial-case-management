@@ -3,9 +3,8 @@
  */
 
 import { push } from 'connected-react-router';
-import { Constants, Types } from 'lattice';
+import { Constants, SearchApi, Types } from 'lattice';
 import { AuthActions, AccountUtils } from 'lattice-auth';
-import { SearchApi } from 'lattice';
 import { OrderedMap, fromJS } from 'immutable';
 import {
   AppApiActions,
@@ -13,6 +12,7 @@ import {
   EntityDataModelApiActions,
   EntityDataModelApiSagas,
 } from 'lattice-sagas';
+import type { SequenceAction } from 'redux-reqseq';
 
 import {
   all,

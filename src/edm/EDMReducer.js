@@ -5,6 +5,7 @@
 import { List, Map, fromJS } from 'immutable';
 import { Models } from 'lattice';
 import { EntityDataModelApiActions } from 'lattice-sagas';
+import type { SequenceAction } from 'redux-reqseq';
 
 import { EDM } from '../utils/consts/FrontEndStateConsts';
 

@@ -35,7 +35,7 @@ const CHARGE_PT_PAIRS = {
   [PROPERTY_TYPES.BHE]: CHARGES.BHE
 };
 
-export default function chargesReducer(state :Map<*, *> = INITIAL_STATE, action :SequenceAction) {
+export default function chargesReducer(state :Map<*, *> = INITIAL_STATE, action :Object) {
   switch (action.type) {
 
     case loadArrestingAgencies.case(action.type): {
