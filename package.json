@@ -22,7 +22,7 @@
     "type": "git",
     "url": "git+https://github.com/Lattice-Works/pretrial-case-management"
   },
-  "license": "GPL-3.0",
+  "license": "UNLICENSED",
   "dependencies": {
     "@atlaskit/datetime-picker": "7.0.2",
     "@atlaskit/modal-dialog": "8.0.4",
