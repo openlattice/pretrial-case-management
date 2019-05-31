@@ -186,24 +186,32 @@ export default function courtReducer(state :Map<*, *> = INITIAL_STATE, action :O
               const {
                 [ENTITY_KEY_ID]: existingHearingEntityKeyId,
                 [DATE_TIME]: hearingDateTime,
-              } = getEntityProperties(existingHearing, [ENTITY_KEY_ID]);
+              } = getEntityProperties(existingHearing, [ENTITY_KEY_ID, DATE_TIME]);
               const refreshedHearing = (existingHearingEntityKeyId === hearingEntityKeyId) ? hearing : null;
               if (refreshedHearing) {
-                return moment(hearingDateTime).isSame(courtDate, 'day');
+                return courtDate.isSame(hearingDateTime, 'day')
+                && moment(updatedHearingDateTime).isSame(hearingDateTime);
               }
               return true;
             });
-            if (filteredHearings.size && hearings.size !== filteredHearings.size) {
-              hearingsByTime = hearingsByTime.set(time, filteredHearings);
-            }
-            else {
+            if (!filteredHearings.size) {
               hearingsByTime = hearingsByTime.delete(time);
             }
+            else {
+              hearingsByTime = hearingsByTime.set(time, filteredHearings);
+            }
           });
-          if (!hearingsByTime.get(formattedHearingDateTime)) {
+          const hearingsAtTimeOfRefreshedHearing = hearingsByTime.get(formattedHearingDateTime, List());
+          const hearingIsInCorrectTime = hearingsAtTimeOfRefreshedHearing.some((existingHearing) => {
+            const {
+              [ENTITY_KEY_ID]: existingHearingEntityKeyId
+            } = getEntityProperties(existingHearing, [ENTITY_KEY_ID]);
+            return existingHearingEntityKeyId === hearingEntityKeyId;
+          });
+          if (!hearingIsInCorrectTime) {
             hearingsByTime = hearingsByTime.set(
               formattedHearingDateTime,
-              hearingsByTime.get(formattedHearingDateTime, List()).push(hearing)
+              hearingsAtTimeOfRefreshedHearing.push(hearing)
             );
           }
           return state
