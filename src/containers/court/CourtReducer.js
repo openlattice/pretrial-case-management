@@ -71,7 +71,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [COURT.COURTROOMS]: Set()
 });
 
-export default function courtReducer(state :Map<*, *> = INITIAL_STATE, action :SequenceAction) {
+export default function courtReducer(state :Map<*, *> = INITIAL_STATE, action :Object) {
   switch (action.type) {
 
     case changePSAStatus.case(action.type): {

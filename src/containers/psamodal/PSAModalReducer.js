@@ -56,7 +56,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [PSA_MODAL.PERSON_NEIGHBORS]: Map(),
 });
 
-export default function psaModalReducer(state :Map<*, *> = INITIAL_STATE, action :SequenceAction) {
+export default function psaModalReducer(state :Map<*, *> = INITIAL_STATE, action :Object) {
   switch (action.type) {
 
     case loadPSAModal.case(action.type): {

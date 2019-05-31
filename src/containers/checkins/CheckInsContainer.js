@@ -16,6 +16,7 @@ import {
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHourglassHalf, faMicrophoneAlt } from '@fortawesome/pro-light-svg-icons';
+import type { RequestSequence } from 'redux-reqseq';
 
 import DatePicker from '../../components/datetime/DatePicker';
 import TableWithPagination from '../../components/reminders/TableWithPagination';

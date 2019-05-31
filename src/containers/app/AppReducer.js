@@ -54,7 +54,7 @@ const getEntityTypePropertyTypes = (edm :Object, entityTypeId :string) :Object =
   return propertyTypesMap;
 };
 
-export default function appReducer(state :Map<*, *> = INITIAL_STATE, action :SequenceAction) {
+export default function appReducer(state :Map<*, *> = INITIAL_STATE, action :Object) {
 
   switch (action.type) {
 

@@ -21,6 +21,7 @@ import {
   takeEvery,
   select
 } from '@redux-saga/core/effects';
+import type { SequenceAction } from 'redux-reqseq';
 
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { hearingIsCancelled } from '../../utils/HearingUtils';

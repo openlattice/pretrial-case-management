@@ -18,7 +18,7 @@ import {
   takeEvery,
   select
 } from '@redux-saga/core/effects';
-
+import type { SequenceAction } from 'redux-reqseq';
 
 import releaseConditionsConfig from '../../config/formconfig/ReleaseConditionsConfig';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';

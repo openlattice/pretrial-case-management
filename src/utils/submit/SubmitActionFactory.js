@@ -3,6 +3,7 @@
  */
 
 import { newRequestSequence } from 'redux-reqseq';
+import type { RequestSequence } from 'redux-reqseq';
 
 const CLEAR_SUBMIT :string = 'CLEAR_SUBMIT';
 const clearSubmit :RequestSequence = newRequestSequence(CLEAR_SUBMIT);

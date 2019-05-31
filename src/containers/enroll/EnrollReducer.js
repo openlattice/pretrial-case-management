@@ -24,7 +24,7 @@ const INITIAL_STATE_FIELDS = {
 
 const INITIAL_STATE :Map<> = Immutable.fromJS(INITIAL_STATE_FIELDS);
 
-export default function enrollReducer(state :Map<*, *> = INITIAL_STATE, action :SequenceAction) {
+export default function enrollReducer(state :Map<*, *> = INITIAL_STATE, action :Object) {
 
   switch (action.type) {
 
