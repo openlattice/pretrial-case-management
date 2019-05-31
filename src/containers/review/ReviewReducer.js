@@ -47,7 +47,7 @@ const INITIAL_STATE :Immutable.Map<*, *> = Immutable.fromJS({
   [REVIEW.PSA_IDS_REFRESHING]: Immutable.Set()
 });
 
-export default function reviewReducer(state :Immutable.Map<*, *> = INITIAL_STATE, action :SequenceAction) {
+export default function reviewReducer(state :Immutable.Map<*, *> = INITIAL_STATE, action :Object) {
   switch (action.type) {
 
     case SWITCH_ORGANIZATION: {

@@ -15,6 +15,7 @@ import {
   takeEvery,
   select
 } from '@redux-saga/core/effects';
+import type { SequenceAction } from 'redux-reqseq';
 
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { APP, PSA_NEIGHBOR, STATE } from '../../utils/consts/FrontEndStateConsts';

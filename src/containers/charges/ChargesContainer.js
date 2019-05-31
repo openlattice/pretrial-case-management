@@ -8,6 +8,7 @@ import { Map } from 'immutable';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { Redirect, Route, Switch } from 'react-router-dom';
+import type { RequestSequence } from 'redux-reqseq';
 
 import SearchBar from '../../components/PSASearchBar';
 import NewChargeModal from './NewChargeModal';

@@ -19,6 +19,7 @@ import {
   takeEvery,
   select
 } from '@redux-saga/core/effects';
+import type { RequestSequence, SequenceAction } from 'redux-reqseq';
 
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { getPropertyTypeId } from '../../edm/edmUtils';

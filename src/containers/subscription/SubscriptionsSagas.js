@@ -9,6 +9,7 @@ import {
   select,
   takeEvery
 } from '@redux-saga/core/effects';
+import type { SequenceAction } from 'redux-reqseq';
 
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { APP, PSA_NEIGHBOR, STATE } from '../../utils/consts/FrontEndStateConsts';

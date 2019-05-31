@@ -26,7 +26,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [HEARINGS.UPDATED_HEARING_NEIGHBORS]: Map()
 });
 
-export default function hearingsReducer(state :Map<*, *> = INITIAL_STATE, action :SequenceAction) {
+export default function hearingsReducer(state :Map<*, *> = INITIAL_STATE, action :Object) {
   switch (action.type) {
 
     case CLEAR_HEARING_SETTINGS: return INITIAL_STATE;

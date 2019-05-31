@@ -68,7 +68,7 @@ const INITIAL_STATE = fromJS({
   [PEOPLE.REQUIRES_ACTION_LOADING]: false
 });
 
-export default function peopleReducer(state = INITIAL_STATE, action) {
+export default function peopleReducer(state :Map = INITIAL_STATE, action :Object) {
   switch (action.type) {
 
     case CLEAR_PERSON: {

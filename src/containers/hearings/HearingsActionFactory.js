@@ -3,6 +3,7 @@
  */
 
 import { newRequestSequence } from 'redux-reqseq';
+import type { RequestSequence } from 'redux-reqseq';
 
 const CLEAR_HEARING_SETTINGS :string = 'CLEAR_HEARING_SETTINGS';
 const clearHearingSettings :RequestSequence = newRequestSequence(CLEAR_HEARING_SETTINGS);

@@ -3,6 +3,7 @@
  */
 
 import { newRequestSequence } from 'redux-reqseq';
+import type { RequestSequence } from 'redux-reqseq';
 
 const CHANGE_HEARING_FILTERS :string = 'CHANGE_HEARING_FILTERS';
 const changeHearingFilters :RequestSequence = newRequestSequence(CHANGE_HEARING_FILTERS);

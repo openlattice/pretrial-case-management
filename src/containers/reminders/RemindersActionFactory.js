@@ -3,6 +3,7 @@
  */
 
 import { newRequestSequence } from 'redux-reqseq';
+import type { RequestSequence } from 'redux-reqseq';
 
 const BULK_DOWNLOAD_REMINDERS_PDF :string = 'BULK_DOWNLOAD_REMINDERS_PDF';
 const bulkDownloadRemindersPDF :RequestSequence = newRequestSequence(BULK_DOWNLOAD_REMINDERS_PDF);

@@ -3,6 +3,7 @@
  */
 
 import { newRequestSequence } from 'redux-reqseq';
+import type { RequestSequence } from 'redux-reqseq';
 
 const CLEAR_RELEASE_CONDITIONS :string = 'CLEAR_RELEASE_CONDITIONS';
 const clearReleaseConditions :RequestSequence = newRequestSequence(CLEAR_RELEASE_CONDITIONS);

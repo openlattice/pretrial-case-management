@@ -2,6 +2,7 @@
  * @flow
  */
 import { newRequestSequence } from 'redux-reqseq';
+import type { RequestSequence } from 'redux-reqseq';
 
 const GET_PROFILE :string = 'GET_PROFILE';
 const getProfile :RequestSequence = newRequestSequence(GET_PROFILE);

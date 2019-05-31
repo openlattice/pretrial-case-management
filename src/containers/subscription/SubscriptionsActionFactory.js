@@ -3,6 +3,7 @@
  */
 
 import { newRequestSequence } from 'redux-reqseq';
+import type { RequestSequence } from 'redux-reqseq';
 
 const CLEAR_SUBSCRIPTION_MODAL :string = 'CLEAR_SUBSCRIPTION_MODAL';
 const clearSubscriptionModal :RequestSequence = newRequestSequence(CLEAR_SUBSCRIPTION_MODAL);
