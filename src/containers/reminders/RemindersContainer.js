@@ -9,6 +9,7 @@ import { fromJS, Map, Set } from 'immutable';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { Constants } from 'lattice';
+import type { RequestSequence } from 'redux-reqseq';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {

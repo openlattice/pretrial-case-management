@@ -3,6 +3,7 @@
  */
 
 import { newRequestSequence } from 'redux-reqseq';
+import type { RequestSequence } from 'redux-reqseq';
 
 const BULK_DOWNLOAD_PSA_REVIEW_PDF :string = 'BULK_DOWNLOAD_PSA_REVIEW_PDF';
 const bulkDownloadPSAReviewPDF :RequestSequence = newRequestSequence(BULK_DOWNLOAD_PSA_REVIEW_PDF);

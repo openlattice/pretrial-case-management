@@ -5,6 +5,7 @@
 import axios from 'axios';
 import LatticeAuth from 'lattice-auth';
 import { call, put, takeEvery } from '@redux-saga/core/effects';
+import type { SequenceAction } from 'redux-reqseq';
 
 import {
   LOAD_DASHBOARD_DATA,

@@ -36,7 +36,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [RELEASE_COND.REFRESHING_SELECTED_HEARING]: false
 });
 
-export default function releaseConditionsReducer(state :Map<*, *> = INITIAL_STATE, action :SequenceAction) {
+export default function releaseConditionsReducer(state :Map<*, *> = INITIAL_STATE, action :Object) {
   switch (action.type) {
 
     case CLEAR_RELEASE_CONDITIONS:

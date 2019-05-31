@@ -3,6 +3,7 @@
  */
 
 import { newRequestSequence } from 'redux-reqseq';
+import type { RequestSequence } from 'redux-reqseq';
 
 const DELETE_CHARGE :string = 'DELETE_CHARGE';
 const deleteCharge :RequestSequence = newRequestSequence(DELETE_CHARGE);

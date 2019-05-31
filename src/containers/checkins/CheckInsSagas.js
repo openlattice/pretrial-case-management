@@ -16,6 +16,7 @@ import {
   List,
   Set
 } from 'immutable';
+import type { SequenceAction } from 'redux-reqseq';
 
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { getEntityProperties, getSearchTerm } from '../../utils/DataUtils';

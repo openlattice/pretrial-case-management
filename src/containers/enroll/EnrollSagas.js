@@ -13,6 +13,7 @@ import {
   select,
   takeEvery
 } from '@redux-saga/core/effects';
+import type { SequenceAction } from 'redux-reqseq';
 
 import {
   GET_PROFILE,

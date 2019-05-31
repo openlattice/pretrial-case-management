@@ -8,6 +8,7 @@ import { Map } from 'immutable';
 import { Constants } from 'lattice';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
+import type { RequestSequence } from 'redux-reqseq';
 
 import StyledCheckbox from '../../components/controls/StyledCheckbox';
 import StyledInput from '../../components/controls/StyledInput';

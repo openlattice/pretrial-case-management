@@ -18,7 +18,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [SUBSCRIPTIONS.PERSON_NEIGHBORS]: Map(),
   [SUBSCRIPTIONS.SUBSCRIPTION]: Map()
 });
-export default function subscriptionsReducer(state :Map<*, *> = INITIAL_STATE, action :SequenceAction) {
+export default function subscriptionsReducer(state :Map<*, *> = INITIAL_STATE, action :Object) {
   switch (action.type) {
 
     case CLEAR_SUBSCRIPTION_MODAL: return INITIAL_STATE;
