@@ -268,11 +268,11 @@ export default class PSAReviewReportsRow extends React.Component<Props, State> {
   renderMetadataText = (actionText, dateText, user) => {
     const text = [actionText];
 
-    if (dateText.length) {
+    if (dateText && dateText.length) {
       text.push(' on ');
       text.push(<ImportantMetadataText key={`${actionText}-${dateText}`}>{dateText}</ImportantMetadataText>);
     }
-    if (user.length) {
+    if (user && user.length) {
       text.push(' by ');
       text.push(<ImportantMetadataText key={`${actionText}-${user}`}>{user}</ImportantMetadataText>);
     }
