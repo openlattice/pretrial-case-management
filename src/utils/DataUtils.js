@@ -126,15 +126,15 @@ export const getDateAndTime = (dateTime) => {
 // Pass entity object and list of property types and will return and object of labels
 // mapped to properties.
 export const getEntityProperties = (entityObj, propertyList) => {
-  let returnCaseFields = Map();
+  let returnPropertyFields = Map();
   if (propertyList.length) {
     propertyList.forEach((propertyType) => {
       const backUpValue = entityObj.get(propertyType, '');
       const property = getFirstNeighborValue(entityObj, propertyType, backUpValue);
-      returnCaseFields = returnCaseFields.set(propertyType, property);
+      returnPropertyFields = returnPropertyFields.set(propertyType, property);
     });
   }
-  return returnCaseFields.toJS();
+  return returnPropertyFields.toJS();
 };
 
 export const getCreateAssociationObject = ({
