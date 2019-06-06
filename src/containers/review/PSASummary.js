@@ -214,7 +214,7 @@ class PSASummary extends React.Component<Props, *> {
 
     const { downloadPSAReviewPDF } = actions;
     let filer;
-    const psaDate = formatDateTimeList(getTimeStamp(neighbors, PSA_RISK_FACTORS));
+    const psaDate = formatDateTimeList(scores.get(PROPERTY_TYPES.DATE_TIME, getTimeStamp(neighbors, PSA_RISK_FACTORS)));
     neighbors.get(STAFF, Immutable.List()).forEach((neighbor) => {
       const associationEntitySetId = neighbor.getIn([PSA_ASSOCIATION.ENTITY_SET, 'id']);
       const appTypeFqn = entitySetsByOrganization.get(associationEntitySetId);
