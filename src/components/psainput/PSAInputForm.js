@@ -336,7 +336,7 @@ class PSAInputForm extends React.Component<Props, State> {
         .remove(SECONDARY_RELEASE_CHARGES)
         .remove(SECONDARY_HOLD_CHARGES);
     }
-    else if (input.get(DMF.COURT_OR_BOOKING) === CONTEXT.COURT) {
+    else if (input.get(DMF.COURT_OR_BOOKING, '').includes(CONTEXT.COURT)) {
       requiredFields = requiredFields
         .remove(SECONDARY_RELEASE_CHARGES)
         .remove(SECONDARY_HOLD_CHARGES);
