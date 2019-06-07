@@ -299,7 +299,11 @@ export default class PSAReviewReportsRow extends React.Component<Props, State> {
 
       if (appTypFqn === ASSESSED_BY) {
         creator = personId;
-        const maybeDate = moment(neighbor.getIn([PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.COMPLETED_DATE_TIME, 0], ''));
+        const maybeDate = moment(
+          scores.getIn([PROPERTY_TYPES.DATE_TIME, 0],
+            neighbor.getIn([PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.COMPLETED_DATE_TIME, 0], ''))
+        );
+
 
         if (maybeDate.isValid()) dateCreated = maybeDate;
       }

@@ -37,6 +37,7 @@ import {
 import { LOAD_PSA_MODAL, loadPSAModal } from './PSAModalActionFactory';
 
 const {
+  ENTITY_KEY_ID,
   DATE_TIME,
   HEARING_INACTIVE,
   UPDATE_TYPE,
@@ -72,6 +73,7 @@ function* loadPSAModalWorker(action :SequenceAction) :Generator<*, *, *> {
   try {
     yield put(loadPSAModal.request(action.id));
 
+    let scoresAsMap = Map();
     let allFilers = Set();
     let hearingIds = Set();
     let allDatesEdited = List();
@@ -120,7 +122,7 @@ function* loadPSAModalWorker(action :SequenceAction) :Generator<*, *, *> {
         neighbor.getIn([
           PSA_ASSOCIATION.DETAILS,
           PROPERTY_TYPES.DATE_TIME
-        ], List())).forEach((timestamp) => {
+        ], List.of(scores.getIn([PROPERTY_TYPES.DATE_TIME, 0])) || List())).forEach((timestamp) => {
         const timestampMoment = moment(timestamp);
         if (timestampMoment.isValid()) {
           allDatesEdited = allDatesEdited.push(timestampMoment.format('MM/DD/YYYY'));

@@ -630,7 +630,7 @@ class PSAModal extends React.Component<Props, State> {
     );
     const lastEditDateForPSA = psaNeighbors.getIn(
       [STAFF, 0, PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.DATE_TIME, 0],
-      ''
+      scores.getIn([PROPERTY_TYPES.DATE_TIME, 0], '')
     );
     const {
       chargeHistoryForMostRecentPSA,
@@ -807,7 +807,7 @@ class PSAModal extends React.Component<Props, State> {
     );
     const lastEditDateForPSA = psaNeighbors.getIn(
       [STAFF, 0, PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.DATE_TIME, 0],
-      ''
+      scores.getIn([PROPERTY_TYPES.DATE_TIME, 0], '')
     );
     const {
       caseHistoryForMostRecentPSA,

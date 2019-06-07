@@ -165,6 +165,10 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
     let usableNeighborsById = Immutable.Map();
 
     Object.keys(neighborsById).forEach((id) => {
+      const psaCreationDate = moment(scoresAsMap.getIn([id, PROPERTY_TYPES.DATE_TIME, 0]));
+      const psaWasCreatedInTimeRange = psaCreationDate.isValid()
+                && psaCreationDate.isSameOrAfter(start)
+                && psaCreationDate.isSameOrBefore(end);
       let usableNeighbors = Immutable.List();
       const neighborList = neighborsById[id];
       let domainMatch = true;
@@ -184,13 +188,15 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
           caseIdsToScoreIds = caseIdsToScoreIds.setIn([appTypeFqn, entityKeyId], id);
         }
 
-        const timestampList = neighbor.associationDetails[PROPERTY_TYPES.TIMESTAMP]
+        let timestamp = neighbor.associationDetails[PROPERTY_TYPES.TIMESTAMP]
           || neighbor.associationDetails[PROPERTY_TYPES.COMPLETED_DATE_TIME];
-        if (timestampList && timestampList.length) {
-          const timestamp = moment(timestampList[0]);
-          if (timestamp.isSameOrAfter(start) && timestamp.isSameOrBefore(end)) {
-            usableNeighbors = usableNeighbors.push(Immutable.fromJS(neighbor));
-          }
+        timestamp = timestamp ? timestamp[0] : '';
+        const timestampMoment = moment(timestamp);
+        const neighborsWereEditedInTimeRange = timestampMoment.isValid()
+          && timestampMoment.isSameOrAfter(start)
+          && timestampMoment.isSameOrBefore(end);
+        if (psaWasCreatedInTimeRange || neighborsWereEditedInTimeRange) {
+          usableNeighbors = usableNeighbors.push(Immutable.fromJS(neighbor));
         }
       });
       if (domainMatch && usableNeighbors.size > 0) {
@@ -352,6 +358,9 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
 
     if (filters) {
       jsonResults = jsonResults.sortBy(psa => psa.get('First Name')).sortBy(psa => psa.get('Last Name'));
+    }
+    else {
+      jsonResults = jsonResults.sortBy(psa => psa.get('FIRST')).sortBy(psa => psa.get('LAST'));
     }
 
     const fields = filters
