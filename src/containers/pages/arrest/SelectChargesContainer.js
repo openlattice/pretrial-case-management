@@ -533,8 +533,7 @@ class SelectChargesContainer extends React.Component<Props, State> {
               classNamePrefix="lattice-select"
               onChange={getOnSelect()}
               options={this.formatQualifiers()}
-              placeholder="Select a qualifier"
-              inputValue={qualifier} />
+              placeholder={qualifier || 'Select a qualifier'} />
           {this.renderInputField(charge, NUMBER_OF_COUNTS, onChange)}
           <DeleteButton onClick={() => this.deleteCharge(index)}>Remove</DeleteButton>
         </ChargeOptionsWrapper>
