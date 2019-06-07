@@ -148,8 +148,6 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
 
     const start = moment(startDate);
     const end = moment(endDate);
-    console.log(startDate);
-    console.log(endDate);
     const options = {
       searchTerm: '*',
       start: 0,
@@ -165,8 +163,6 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
 
     const neighborsById = yield call(SearchApi.searchEntityNeighborsBulk, psaEntitySetId, scoresAsMap.keySeq().toJS());
     let usableNeighborsById = Immutable.Map();
-    console.log(Object.keys(neighborsById));
-    console.log(scoresAsMap.toJS());
 
     Object.keys(neighborsById).forEach((id) => {
       const psaCreationDate = moment(scoresAsMap.getIn([id, PROPERTY_TYPES.DATE_TIME, 0]));
@@ -196,7 +192,6 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
           || neighbor.associationDetails[PROPERTY_TYPES.COMPLETED_DATE_TIME];
         timestamp = timestamp ? timestamp[0] : '';
         const timestampMoment = moment(timestamp);
-        console.log(timestamp);
         const neighborsWereEditedInTimeRange = timestampMoment.isValid()
           && timestampMoment.isSameOrAfter(start)
           && timestampMoment.isSameOrBefore(end);
