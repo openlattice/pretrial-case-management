@@ -282,7 +282,9 @@ function* loadPSADataWorker(action :SequenceAction) :Generator<*, *, *> {
     let psaNeighborsByDate = Immutable.Map();
     let hearingIds = Immutable.Set();
 
-    if (action.value.length) {
+    const { psaIds, scoresAsMap } = action.value;
+
+    if (psaIds.length) {
       const app = yield select(getApp);
       const orgId = yield select(getOrgId);
       const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
@@ -295,7 +297,7 @@ function* loadPSADataWorker(action :SequenceAction) :Generator<*, *, *> {
       const releaseRecommendationsEntitySetId = getEntitySetIdFromApp(app, RELEASE_RECOMMENDATIONS);
       const psaRiskFactorsEntitySetId = getEntitySetIdFromApp(app, PSA_RISK_FACTORS);
       let neighborsById = yield call(SearchApi.searchEntityNeighborsWithFilter, psaScoresEntitySetId, {
-        entityKeyIds: action.value,
+        entityKeyIds: psaIds,
         sourceEntitySetIds: [psaScoresEntitySetId, releaseRecommendationsEntitySetId, dmfFqnEntitySetId],
         destinationEntitySetIds: [
           peopleEntitySetId,
@@ -311,6 +313,11 @@ function* loadPSADataWorker(action :SequenceAction) :Generator<*, *, *> {
       neighborsById.entrySeq().forEach(([id, neighbors]) => {
         let allDatesEdited = Immutable.List();
         let neighborsByAppTypeFqn = Immutable.Map();
+        const psaCreationDate = moment(scoresAsMap.getIn([id, PROPERTY_TYPES.DATE_TIME, 0], ''));
+        if (psaCreationDate.isValid()) {
+          allDatesEdited = allDatesEdited.push(psaCreationDate.format('MM/DD/YYYY'));
+        }
+
         neighbors.forEach((neighbor) => {
           neighbor.getIn([PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.TIMESTAMP],
             neighbor.getIn([
@@ -420,7 +427,7 @@ function* loadPSAsByDateWorker(action :SequenceAction) :Generator<*, *, *> {
 
     const psaIds = scoresAsMap.keySeq().toJS();
     if (psaIds.length) {
-      const loadPSADataRequest = loadPSAData(psaIds);
+      const loadPSADataRequest = loadPSAData({ psaIds, scoresAsMap });
       yield put(loadPSADataRequest);
       yield takeReqSeqSuccessFailure(loadPSAData, loadPSADataRequest);
     }
@@ -501,7 +508,10 @@ const getPSADataFromNeighbors = (
 
     if (id === assessedByEntitySetId) {
       createData = {
-        timestamp: writerNeighbor.getIn([PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.COMPLETED_DATE_TIME, 0], ''),
+        timestamp: writerNeighbor.getIn(
+          [PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.COMPLETED_DATE_TIME, 0],
+          scores.getIn([PROPERTY_TYPES.DATE_TIME, 0], '')
+        ),
         user
       };
     }
