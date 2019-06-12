@@ -5,6 +5,7 @@
 import moment from 'moment';
 import type { SequenceAction } from 'redux-reqseq';
 import { Constants, SearchApi, Models } from 'lattice';
+import { SearchApiActions, SearchApiSagas } from 'lattice-sagas';
 import {
   fromJS,
   Map,
@@ -66,6 +67,9 @@ const {
   IS_PREFERRED,
   STATUS
 } = PROPERTY_TYPES;
+
+const { searchEntitySetData } = SearchApiActions;
+const { searchEntitySetDataWorker } = SearchApiSagas;
 
 const { OPENLATTICE_ID_FQN } = Constants;
 const { FullyQualifiedName } = Models;
@@ -413,8 +417,12 @@ function* getRemindersActionList(
   const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
 
   /* Grab All Hearing Data */
-  const allHearingDataforDate = yield call(SearchApi.searchEntitySetData, hearingsEntitySetId, hearingSearchOptions);
-  const hearingsOnDate = fromJS(allHearingDataforDate.hits);
+  const allHearingDataforDate = yield call(
+    searchEntitySetDataWorker,
+    searchEntitySetData({ entitySetId: hearingsEntitySetId, searchOptions: hearingSearchOptions })
+  );
+  if (allHearingDataforDate.error) throw allHearingDataforDate.error;
+  const hearingsOnDate = fromJS(allHearingDataforDate.data.hits);
 
   if (hearingsOnDate.size) {
     hearingsOnDate.forEach((hearing) => {
@@ -493,11 +501,12 @@ function* getRemindersActionList(
   });
 
   const allManualRemindersforDate = yield call(
-    SearchApi.searchEntitySetData,
-    manualRemindersEntitySetId,
-    manualRemindersSearchOptions
+    searchEntitySetDataWorker,
+    searchEntitySetData({ entitySetId: manualRemindersEntitySetId, searchOptions: manualRemindersSearchOptions })
   );
-  const manualRemindersOnDates = fromJS(allManualRemindersforDate.hits);
+  if (allManualRemindersforDate.error) throw allManualRemindersforDate.error;
+  const manualRemindersOnDates = fromJS(allManualRemindersforDate.data.hits);
+
   let manualReminderIds = Set();
   if (manualRemindersOnDates.size) {
     manualRemindersOnDates.forEach((manualReminder) => {
@@ -621,7 +630,7 @@ function* bulkDownloadRemindersPDFWorker(action :SequenceAction) :Generator<*, *
 
     const getDateSearch = selectedDate => getSearchTerm(datePropertyTypeId, toISODate(selectedDate));
 
-    const reminderOptions = {
+    const hearingOptions = {
       searchTerm: `${getDateSearch(oneWeekAhead)}`,
       start: 0,
       maxHits: MAX_HITS,
@@ -629,8 +638,13 @@ function* bulkDownloadRemindersPDFWorker(action :SequenceAction) :Generator<*, *
     };
 
 
-    const allHearingDataforDate = yield call(SearchApi.searchEntitySetData, hearingsEntitySetId, reminderOptions);
-    const hearingsOnDate = fromJS(allHearingDataforDate.hits);
+    // const allHearingDataforDate = yield call(SearchApi.searchEntitySetData, hearingsEntitySetId, reminderOptions);
+    const allHearingDataforDate = yield call(
+      searchEntitySetDataWorker,
+      searchEntitySetData({ entitySetId: hearingsEntitySetId, searchOptions: hearingOptions })
+    );
+    if (allHearingDataforDate.error) throw allHearingDataforDate.error;
+    const hearingsOnDate = fromJS(allHearingDataforDate.data.hits);
     if (hearingsOnDate.size) {
       hearingsOnDate.forEach((hearing) => {
         const entityKeyId = hearing.getIn([OPENLATTICE_ID_FQN, 0], '');
