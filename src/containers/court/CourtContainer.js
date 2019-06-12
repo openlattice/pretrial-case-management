@@ -217,8 +217,7 @@ type Props = {
     loadPSAsByDate :(filter :string) => void,
     refreshPSANeighbors :({ id :string }) => void,
     replaceEntity :(value :{ entitySetName :string, entityKeyId :string, values :Object }) => void,
-    submit :(value :{ config :Object, values :Object}) => void,
-    loadPSAData :(psaIds :string[]) => void
+    submit :(value :{ config :Object, values :Object}) => void
   }
 };
 

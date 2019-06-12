@@ -29,7 +29,12 @@ import { toISODate } from '../../utils/FormattingUtils';
 import { hearingNeedsReminder } from '../../utils/RemindersUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { MAX_HITS } from '../../utils/consts/Consts';
-import { APP, PSA_NEIGHBOR, STATE } from '../../utils/consts/FrontEndStateConsts';
+import {
+  APP,
+  PSA_NEIGHBOR,
+  REMINDERS,
+  STATE
+} from '../../utils/consts/FrontEndStateConsts';
 import {
   LOAD_MANUAL_REMINDERS_FORM,
   LOAD_MANUAL_REMINDERS,
@@ -53,6 +58,9 @@ const { FullyQualifiedName } = Models;
 
 const getApp = state => state.get(STATE.APP, Map());
 const getEDM = state => state.get(STATE.EDM, Map());
+const getReminderActionListDate = state => (
+  state.getIn([STATE.REMINDERS, REMINDERS.REMINDERS_ACTION_LIST_DATE], moment())
+);
 const getOrgId = state => state.getIn([STATE.APP, APP.SELECTED_ORG_ID], '');
 
 function* loadManualRemindersFormWorker(action :SequenceAction) :Generator<*, *, *> {
@@ -63,6 +71,7 @@ function* loadManualRemindersFormWorker(action :SequenceAction) :Generator<*, *,
 
     const app = yield select(getApp);
     const orgId = yield select(getOrgId);
+    const remindersActionListDate = yield select(getReminderActionListDate);
     const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
     const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
     const hearingsEntitySetId = getEntitySetIdFromApp(app, HEARINGS);
@@ -82,7 +91,7 @@ function* loadManualRemindersFormWorker(action :SequenceAction) :Generator<*, *,
           const neighborObj = neighbor.get(PSA_NEIGHBOR.DETAILS, Map());
           const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
           if (appTypeFqn === HEARINGS) {
-            if (hearingNeedsReminder(neighborObj)) {
+            if (hearingNeedsReminder(neighborObj, remindersActionListDate)) {
               neighborsByAppTypeFqn = neighborsByAppTypeFqn.set(
                 appTypeFqn,
                 neighborsByAppTypeFqn.get(appTypeFqn, List()).push(fromJS(neighborObj))
