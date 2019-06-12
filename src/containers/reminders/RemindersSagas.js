@@ -3,6 +3,8 @@
  */
 
 import moment from 'moment';
+import type { SequenceAction } from 'redux-reqseq';
+import { Constants, SearchApi, Models } from 'lattice';
 import {
   fromJS,
   Map,
@@ -10,27 +12,20 @@ import {
   List
 } from 'immutable';
 import {
-  Constants,
-  SearchApi,
-  DataApi,
-  Models
-} from 'lattice';
-import {
   call,
   put,
   select,
   takeEvery
 } from '@redux-saga/core/effects';
-import type { SequenceAction } from 'redux-reqseq';
 
+import exportPDFList from '../../utils/CourtRemindersPDFUtils';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { hearingNeedsReminder } from '../../utils/RemindersUtils';
 import { hearingIsCancelled } from '../../utils/HearingUtils';
 import { getPropertyTypeId } from '../../edm/edmUtils';
 import { MAX_HITS, PSA_STATUSES } from '../../utils/consts/Consts';
-import exportPDFList from '../../utils/CourtRemindersPDFUtils';
 import { toISODate } from '../../utils/FormattingUtils';
-import { addWeekdays, getSearchTerm } from '../../utils/DataUtils';
+import { addWeekdays, getEntityProperties, getSearchTerm } from '../../utils/DataUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import {
   APP,
@@ -42,13 +37,13 @@ import {
   BULK_DOWNLOAD_REMINDERS_PDF,
   LOAD_OPT_OUT_NEIGHBORS,
   LOAD_OPT_OUTS_FOR_DATE,
-  LOAD_PEOPLE_WITH_HEARINGS_BUT_NO_CONTACTS,
   LOAD_REMINDER_NEIGHBORS,
+  LOAD_REMINDERS_ACTION_LIST,
   LOAD_REMINDERS_FOR_DATE,
   bulkDownloadRemindersPDF,
   loadOptOutNeighbors,
+  loadRemindersActionList,
   loadOptOutsForDate,
-  loadPeopleWithHearingsButNoContacts,
   loadReminderNeighborsById,
   loadRemindersforDate
 } from './RemindersActionFactory';
@@ -56,12 +51,21 @@ import {
 const {
   CONTACT_INFORMATION,
   HEARINGS,
+  MANUAL_REMINDERS,
   PEOPLE,
   PSA_SCORES,
   REMINDERS,
   REMINDER_OPT_OUTS,
-  PRETRIAL_CASES
+  PRETRIAL_CASES,
+  SUBSCRIPTION
 } = APP_TYPES;
+
+const {
+  ENTITY_KEY_ID,
+  IS_ACTIVE,
+  IS_PREFERRED,
+  STATUS
+} = PROPERTY_TYPES;
 
 const { OPENLATTICE_ID_FQN } = Constants;
 const { FullyQualifiedName } = Models;
@@ -69,23 +73,6 @@ const { FullyQualifiedName } = Models;
 const getApp = state => state.get(STATE.APP, Map());
 const getEDM = state => state.get(STATE.EDM, Map());
 const getOrgId = state => state.getIn([STATE.APP, APP.SELECTED_ORG_ID], '');
-
-function* getAllSearchResults(entitySetId :string, searchTerm :string) :Generator<*, *, *> {
-  const loadSizeRequest = {
-    searchTerm,
-    start: 0,
-    maxHits: 1
-  };
-  const response = yield call(SearchApi.searchEntitySetData, entitySetId, loadSizeRequest);
-  const { numHits } = response;
-
-  const loadResultsRequest = {
-    searchTerm,
-    start: 0,
-    maxHits: numHits
-  };
-  return yield call(SearchApi.searchEntitySetData, entitySetId, loadResultsRequest);
-}
 
 function* loadOptOutNeighborsWorker(action :SequenceAction) :Generator<*, *, *> {
 
@@ -402,113 +389,204 @@ function* loadReminderNeighborsByIdWatcher() :Generator<*, *, *> {
   yield takeEvery(LOAD_REMINDER_NEIGHBORS, loadReminderNeighborsByIdWorker);
 }
 
-function* loadPeopleWithHearingsButNoContactsWorker(action :SequenceAction) :Generator<*, *, *> {
-  try {
-    yield put(loadPeopleWithHearingsButNoContacts.request(action.id));
 
-    let peopleWithOpenPSAsandHearingsButNoContactById = Map();
-    let hearingsMap = Map();
-    let peopleMap = Map();
+function* getRemindersActionList(
+  remindersActionListDate,
+  hearingSearchOptions,
+  manualRemindersSearchOptions,
+  daysToCheck
+) :Generator<*, *, *> {
+  let hearingIds = Set();
+  let peopleIds = Set();
+  let peopleMap = Map();
+  let remindersActionList = Map();
 
-    const app = yield select(getApp);
-    const edm = yield select(getEDM);
-    const orgId = yield select(getOrgId);
-    const statusFqn = new FullyQualifiedName(PROPERTY_TYPES.STATUS);
-    const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
-    const psaScoresEntitySetId = getEntitySetIdFromApp(app, PSA_SCORES);
-    const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
-    const hearingsEntitySetId = getEntitySetIdFromApp(app, HEARINGS);
-    const contactInformationEntityKeyId = getEntitySetIdFromApp(app, CONTACT_INFORMATION);
+  const app = yield select(getApp);
+  const orgId = yield select(getOrgId);
 
-    /* Grab Open PSAs */
-    const statusPropertyTypeId = getPropertyTypeId(edm, statusFqn);
-    const filter = PSA_STATUSES.OPEN;
-    const searchTerm = getSearchTerm(statusPropertyTypeId, filter);
-    const allScoreData = yield call(getAllSearchResults, psaScoresEntitySetId, searchTerm);
-    const scoreIds = fromJS(allScoreData.hits).map(score => score.getIn([OPENLATTICE_ID_FQN, 0], ''));
+  const hearingsEntitySetId = getEntitySetIdFromApp(app, HEARINGS);
+  const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
+  const contactInformationEntitySetId = getEntitySetIdFromApp(app, CONTACT_INFORMATION);
+  const psaScoresEntitySetId = getEntitySetIdFromApp(app, PSA_SCORES);
+  const manualRemindersEntitySetId = getEntitySetIdFromApp(app, MANUAL_REMINDERS);
+  const subscriptionEntitySetId = getEntitySetIdFromApp(app, SUBSCRIPTION);
+  const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
 
-    /* Grab people for all Open PSAs */
-    let psaNeighborsById = yield call(SearchApi.searchEntityNeighborsWithFilter, psaScoresEntitySetId, {
-      entityKeyIds: scoreIds.toJS(),
-      sourceEntitySetIds: [],
-      destinationEntitySetIds: [peopleEntitySetId, hearingsEntitySetId]
-    });
-    psaNeighborsById = fromJS(psaNeighborsById);
+  /* Grab All Hearing Data */
+  const allHearingDataforDate = yield call(SearchApi.searchEntitySetData, hearingsEntitySetId, hearingSearchOptions);
+  const hearingsOnDate = fromJS(allHearingDataforDate.hits);
 
-    /* Filter for people with hearings */
-    psaNeighborsById.entrySeq().forEach(([_, neighbors]) => {
-      neighbors.forEach((neighbor) => {
-        const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
-        const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
-        const isPerson = appTypeFqn === PEOPLE;
-        if (isPerson) {
-          const entityKeyId = neighbor.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0], '');
-          const person = neighbor.get(PSA_NEIGHBOR.DETAILS, Map());
-          peopleMap = peopleMap.set(entityKeyId, person);
-        }
-      });
-    });
-
-    /* Grab people neighbors */
-    let peopleNeighborsById = yield call(SearchApi.searchEntityNeighborsWithFilter, peopleEntitySetId, {
-      entityKeyIds: peopleMap.keySeq().toJS(),
-      sourceEntitySetIds: [contactInformationEntityKeyId],
-      destinationEntitySetIds: [contactInformationEntityKeyId, hearingsEntitySetId]
-    });
-    peopleNeighborsById = fromJS(peopleNeighborsById);
-
-    peopleNeighborsById.entrySeq().forEach(([id, neighbors]) => {
-      let hasPreferredContact = false;
-      let hasFutureHearing = false;
-      neighbors.forEach((neighbor) => {
-        const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
-        const entityKeyId = neighbor.getIn([PSA_ASSOCIATION.DETAILS, OPENLATTICE_ID_FQN, 0], '');
-        const neighborObj = neighbor.get(PSA_NEIGHBOR.DETAILS, Map());
-        const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
-        const isContactInformation = appTypeFqn === CONTACT_INFORMATION;
-        const isHearing = appTypeFqn === HEARINGS;
-        if (isHearing) {
-          const hearingDateTime = neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.DATE_TIME, 0]);
-          const hearingExists = !!hearingDateTime;
-          const hearingType = neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.HEARING_TYPE, 0]);
-          const hearingIsInactive = hearingIsCancelled(neighbor);
-          const hearingInFuture = moment().startOf('day').isBefore(hearingDateTime);
-          if (hearingType
-            && hearingExists
-            && hearingInFuture
-            && !hearingIsInactive
-          ) {
-            const needsReminder = hearingNeedsReminder(neighborObj);
-            if (needsReminder) {
-              hasFutureHearing = true;
-            }
-            hearingsMap = hearingsMap.set(entityKeyId, neighborObj);
-          }
-        }
-        if (isContactInformation) {
-          const isPreferred = neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.IS_PREFERRED, 0], false);
-          if (isPreferred) hasPreferredContact = true;
-        }
-      });
-      if (!hasPreferredContact && hasFutureHearing) {
-        const person = peopleMap.get(id, Map());
-        peopleWithOpenPSAsandHearingsButNoContactById = peopleWithOpenPSAsandHearingsButNoContactById.set(id, person);
+  if (hearingsOnDate.size) {
+    hearingsOnDate.forEach((hearing) => {
+      const hearingDateTime = hearing.getIn([PROPERTY_TYPES.DATE_TIME, 0]);
+      const hearingExists = !!hearingDateTime;
+      const hearingOnDateSelected = daysToCheck.some(date => moment(hearingDateTime).isSame(date, 'day'));
+      const hearingType = hearing.getIn([PROPERTY_TYPES.HEARING_TYPE, 0]);
+      const hearingEntityKeyId = hearing.getIn([OPENLATTICE_ID_FQN, 0]);
+      const hearingIsInactive = hearingIsCancelled(hearing);
+      if (hearingType
+        && hearingExists
+        && hearingOnDateSelected
+        && !hearingIsInactive
+      ) {
+        hearingIds = hearingIds.add(hearingEntityKeyId);
       }
     });
-    yield put(loadPeopleWithHearingsButNoContacts
-      .success(action.id, { peopleWithOpenPSAsandHearingsButNoContactById }));
+  }
+
+  /* Grab hearing people neighbors */
+  let hearingNeighborsById = yield call(SearchApi.searchEntityNeighborsWithFilter, hearingsEntitySetId, {
+    entityKeyIds: hearingIds.toJS(),
+    sourceEntitySetIds: [peopleEntitySetId],
+    destinationEntitySetIds: []
+  });
+  hearingNeighborsById = fromJS(hearingNeighborsById);
+
+  hearingNeighborsById.entrySeq().forEach(([_, neighbors]) => {
+    neighbors.forEach((neighbor) => {
+      const { [ENTITY_KEY_ID]: entityKeyId } = getEntityProperties(neighbor, [ENTITY_KEY_ID]);
+      const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
+      const neighborObj = neighbor.get(PSA_NEIGHBOR.DETAILS, Map());
+      const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
+      if (appTypeFqn === PEOPLE) {
+        peopleIds = peopleIds.add(entityKeyId);
+        peopleMap = peopleMap.set(entityKeyId, neighborObj);
+      }
+    });
+  });
+
+  /* Grab people for all Hearings on Selected Date */
+  let peopleNeighbors = yield call(SearchApi.searchEntityNeighborsWithFilter, peopleEntitySetId, {
+    entityKeyIds: peopleIds.toJS(),
+    sourceEntitySetIds: [psaScoresEntitySetId, contactInformationEntitySetId],
+    destinationEntitySetIds: [contactInformationEntitySetId, subscriptionEntitySetId]
+  });
+  peopleNeighbors = fromJS(peopleNeighbors);
+
+  /* Filter for people with open PSAs and either not contact info or subscription */
+  peopleNeighbors.entrySeq().forEach(([id, neighbors]) => {
+    let hasAnOpenPSA = false;
+    let hasPreferredContact = false;
+    let hasASubscription = false;
+    neighbors.forEach((neighbor) => {
+      const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
+      const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
+      if (appTypeFqn === SUBSCRIPTION) {
+        const { [IS_ACTIVE]: isActive } = getEntityProperties(neighbor, [IS_ACTIVE]);
+        if (isActive) hasASubscription = true;
+      }
+      if (appTypeFqn === CONTACT_INFORMATION) {
+        const { [IS_PREFERRED]: isPreferred } = getEntityProperties(neighbor, [IS_PREFERRED]);
+        if (isPreferred) hasPreferredContact = true;
+      }
+      if (appTypeFqn === PSA_SCORES) {
+        const { [STATUS]: status } = getEntityProperties(neighbor, [STATUS]);
+        const isOpen = (status === PSA_STATUSES.OPEN);
+        if (isOpen) hasAnOpenPSA = true;
+      }
+    });
+    const personIsReceivingReminders = hasPreferredContact && hasASubscription;
+    if (hasAnOpenPSA && !personIsReceivingReminders) {
+      const person = peopleMap.get(id, Map());
+      remindersActionList = remindersActionList.set(id, person);
+    }
+  });
+
+  const allManualRemindersforDate = yield call(
+    SearchApi.searchEntitySetData,
+    manualRemindersEntitySetId,
+    manualRemindersSearchOptions
+  );
+  const manualRemindersOnDates = fromJS(allManualRemindersforDate.hits);
+  let manualReminderIds = Set();
+  if (manualRemindersOnDates.size) {
+    manualRemindersOnDates.forEach((manualReminder) => {
+      const { [ENTITY_KEY_ID]: manualReminderEntityKeyId } = getEntityProperties(manualReminder, [ENTITY_KEY_ID]);
+      manualReminderIds = manualReminderIds.add(manualReminderEntityKeyId);
+    });
+
+    /* Grab hearing people neighbors */
+    let manualReminderNeighborsById = yield call(
+      SearchApi.searchEntityNeighborsWithFilter,
+      manualRemindersEntitySetId,
+      {
+        entityKeyIds: manualReminderIds.toJS(),
+        sourceEntitySetIds: [],
+        destinationEntitySetIds: [peopleEntitySetId]
+      }
+    );
+    manualReminderNeighborsById = fromJS(manualReminderNeighborsById);
+
+    manualReminderNeighborsById.entrySeq().forEach(([_, neighbors]) => {
+      neighbors.forEach((neighbor) => {
+        const { [ENTITY_KEY_ID]: entityKeyId } = getEntityProperties(neighbor, [ENTITY_KEY_ID]);
+        const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
+        const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
+        if (appTypeFqn === PEOPLE) {
+          remindersActionList = remindersActionList.delete(entityKeyId);
+        }
+      });
+    });
+  }
+  return remindersActionList;
+}
+
+function* loadRemindersActionListWorker(action :SequenceAction) :Generator<*, *, *> {
+  try {
+    yield put(loadRemindersActionList.request(action.id));
+    const { remindersActionListDate } = action.value;
+
+    const DATE_TIME_FQN = new FullyQualifiedName(PROPERTY_TYPES.DATE_TIME);
+
+    const edm = yield select(getEDM);
+    const datePropertyTypeId = getPropertyTypeId(edm, DATE_TIME_FQN);
+
+    const oneDayAhead = toISODate(addWeekdays(remindersActionListDate, 1));
+    const oneWeekAhead = toISODate(addWeekdays(remindersActionListDate, 7));
+
+    const hearingSearchOptions = {
+      searchTerm: `entity.${datePropertyTypeId}:"${oneDayAhead}" OR entity.${datePropertyTypeId}:"${oneWeekAhead}"`,
+      start: 0,
+      maxHits: MAX_HITS,
+      fuzzy: false
+    };
+
+    const today = toISODate(moment());
+    const sixDaysAhead = toISODate(addWeekdays(remindersActionListDate, 6));
+
+    const manualRemindersOptions = {
+      searchTerm: `entity.${datePropertyTypeId}:"${today}" OR entity.${datePropertyTypeId}:"${sixDaysAhead}"`,
+      start: 0,
+      maxHits: MAX_HITS,
+      fuzzy: false
+    };
+
+    const daysToCheck = List.of(oneDayAhead, oneWeekAhead);
+
+    const remindersActionList = yield call(
+      getRemindersActionList,
+      remindersActionListDate,
+      hearingSearchOptions,
+      manualRemindersOptions,
+      daysToCheck
+    );
+
+    console.log(remindersActionList.toJS());
+
+    yield put(loadRemindersActionList
+      .success(action.id, { remindersActionList }));
   }
   catch (error) {
     console.error(error);
-    yield put(loadPeopleWithHearingsButNoContacts.failure(action.id, error));
+    yield put(loadRemindersActionList.failure(action.id, error));
   }
   finally {
-    yield put(loadPeopleWithHearingsButNoContacts.finally(action.id));
+    yield put(loadRemindersActionList.finally(action.id));
   }
 }
 
-function* loadPeopleWithHearingsButNoContactsWatcher() :Generator<*, *, *> {
-  yield takeEvery(LOAD_PEOPLE_WITH_HEARINGS_BUT_NO_CONTACTS, loadPeopleWithHearingsButNoContactsWorker);
+function* loadRemindersActionListWatcher() :Generator<*, *, *> {
+  yield takeEvery(LOAD_REMINDERS_ACTION_LIST, loadRemindersActionListWorker);
 }
 
 function* bulkDownloadRemindersPDFWorker(action :SequenceAction) :Generator<*, *, *> {
@@ -518,12 +596,12 @@ function* bulkDownloadRemindersPDFWorker(action :SequenceAction) :Generator<*, *
     let {
       optOutPeopleIds,
       failedPeopleIds,
-      peopleWithHearingsButNoContacts
+      remindersActionList
     } = action.value;
 
     if (!optOutPeopleIds) optOutPeopleIds = List();
     if (!failedPeopleIds) failedPeopleIds = List();
-    if (!peopleWithHearingsButNoContacts) peopleWithHearingsButNoContacts = List();
+    if (!remindersActionList) remindersActionList = List();
 
     let hearingIds = Set();
     let hearingMap = Map();
@@ -590,12 +668,11 @@ function* bulkDownloadRemindersPDFWorker(action :SequenceAction) :Generator<*, *
         const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
         const neighborObj = neighbor.get(PSA_NEIGHBOR.DETAILS, Map());
         const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
-        const isPerson = appTypeFqn === PEOPLE;
-        if (isPerson) {
+        if (appTypeFqn === PEOPLE) {
           const entityKeyId = neighbor.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0], '');
           hasNotBeenContacted = optOutPeopleIds.includes(entityKeyId)
             || failedPeopleIds.includes(entityKeyId)
-            || peopleWithHearingsButNoContacts.includes(entityKeyId);
+            || remindersActionList.includes(entityKeyId);
           if (hasNotBeenContacted) {
             hasNotBeenContacted = true;
             person = neighborObj;
@@ -639,7 +716,7 @@ export {
   bulkDownloadRemindersPDFWatcher,
   loadOptOutNeighborsWatcher,
   loadOptOutsForDateWatcher,
-  loadPeopleWithHearingsButNoContactsWatcher,
+  loadRemindersActionListWatcher,
   loadRemindersforDateWatcher,
   loadReminderNeighborsByIdWatcher
 };
