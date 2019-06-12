@@ -56,6 +56,7 @@ import {
 } from '../../utils/consts/Consts';
 import {
   OUTCOMES,
+  OTHER_OUTCOMES,
   RELEASES,
   WARRANTS,
   BOND_TYPES,
@@ -555,10 +556,10 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
 
       let warrant = null;
       let release = null;
-      if (outcome === OUTCOMES.FTA) {
+      if (outcome === OTHER_OUTCOMES.FTA) {
         warrant = bondType ? WARRANTS.WARRANT : WARRANTS.NO_WARRANT;
       }
-      else if (outcome !== OUTCOMES.FTA) {
+      else if (outcome !== OTHER_OUTCOMES.FTA) {
         release = bondType ? RELEASES.RELEASED : RELEASES.HELD;
       }
 
@@ -674,15 +675,16 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
   handleInputChange = (e) => {
     const { name, value } = e.target;
     const state :State = Object.assign({}, this.state, { [name]: value });
+    const otherOutcomes = Object.values(OTHER_OUTCOMES);
     switch (name) {
       case 'outcome': {
-        if (value !== OUTCOMES.OTHER) {
+        if (!otherOutcomes.includes(value)) {
           state[OTHER_OUTCOME_TEXT] = '';
         }
-        if (value !== OUTCOMES.FTA) {
+        if (value !== OTHER_OUTCOMES.FTA) {
           state[WARRANT] = null;
         }
-        if (value === OUTCOMES.FTA) {
+        if (otherOutcomes.includes(value)) {
           state[RELEASE] = null;
         }
         break;
@@ -1045,11 +1047,11 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       disabled,
       outcome,
       otherConditionText,
-      otherOutcomeText,
       release,
       warrant
     } = this.state;
     const settingsIncludeVoiceEnroll = selectedOrganizationSettings.get(SETTINGS.ENROLL_VOICE, false);
+    const coreOutcomes = Object.values(OUTCOMES);
 
     const checkInRestriction = settingsIncludeVoiceEnroll ? false : !checkinFrequency;
 
@@ -1057,8 +1059,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       disabled
       || submitting
       || !outcome
-      || !(release || warrant)
-      || (outcome === OUTCOMES.OTHER && !otherOutcomeText.length)
+      || (coreOutcomes.includes(outcome) && !(release || warrant))
       || (release && release === RELEASES.RELEASED && !bondType)
       || (warrant && warrant === WARRANTS.WARRANT && !bondType)
       || ((bondType === BOND_TYPES.CASH_ONLY || bondType === BOND_TYPES.CASH_SURETY) && !bondAmount.length)
@@ -1455,8 +1456,11 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
 
   renderOutcomesAndReleaseConditions = () => {
     const { state } = this;
+    console.log(state);
     const { release, warrant } = state;
-    const outcomeIsFTA = state[OUTCOME] === OUTCOMES.FTA;
+    const coreOutcomes = Object.values(OUTCOMES);
+    const outcomeIsNotOther = coreOutcomes.includes(state[OUTCOME])
+    const outcomeIsFTA = state[OUTCOME] === OTHER_OUTCOMES.FTA;
     const RELEASED = release !== RELEASES.RELEASED;
     const NO_WARRANT = warrant !== WARRANTS.WARRANT;
     const {
@@ -1482,7 +1486,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
             handleInputChange={this.handleInputChange}
             disabled={state.disabled} />
         {
-          !outcomeIsFTA
+          outcomeIsNotOther
             ? <DecisionSection mapOptionsToRadioButtons={this.mapOptionsToRadioButtons} />
             : null
         }
