@@ -281,12 +281,20 @@ export const PSA_STATUSES = {
 };
 
 export const PSA_FAILURE_REASONS = {
-  FTA: 'Failure to Appear',
   NONCOMPLIANCE: 'Non-compliance',
   REARREST: 'Rearrest',
   REARREST_VA: 'Rearrest (Violent Offense)',
   OTHER: 'Other'
 };
+
+export const OTHER_FAILURE_REASONS = {
+  DECLINED: 'Declined',
+  DISMISSED: 'Dismissed',
+  FTA: 'Failure to Appear',
+  RESERVE_BOND: 'Reserve Bond',
+  PLEAD_GUILTY: 'Plead Guilty',
+};
+
 
 export const SORT_TYPES = {
   DATE: 'DATE',
