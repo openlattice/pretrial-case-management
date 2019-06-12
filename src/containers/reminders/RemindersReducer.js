@@ -1,21 +1,26 @@
 /*
  * @flow
  */
-
+import moment from 'moment';
 import { Map, Set, fromJS } from 'immutable';
 
 import {
   bulkDownloadRemindersPDF,
   loadOptOutNeighbors,
   loadOptOutsForDate,
-  loadPeopleWithHearingsButNoContacts,
+  loadRemindersActionList,
   loadReminderNeighborsById,
-  loadRemindersforDate
+  loadRemindersforDate,
+  REMOVE_FROM_REMIDNERS_ACTION_LIST,
+  SET_DATE_FOR_REMIDNERS_ACTION_LIST
 } from './RemindersActionFactory';
 import { SWITCH_ORGANIZATION } from '../app/AppActionFactory';
 import { REMINDERS } from '../../utils/consts/FrontEndStateConsts';
 
 const INITIAL_STATE :Map<*, *> = fromJS({
+  [REMINDERS.REMINDERS_ACTION_LIST_DATE]: moment(),
+  [REMINDERS.LOADING_REMINDERS_ACTION_LIST]: false,
+  [REMINDERS.REMINDERS_ACTION_LIST]: Map(),
   [REMINDERS.REMINDER_IDS]: Set(),
   [REMINDERS.FUTURE_REMINDERS]: Map(),
   [REMINDERS.PAST_REMINDERS]: Map(),
@@ -26,8 +31,6 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [REMINDERS.REMINDER_NEIGHBORS]: Map(),
   [REMINDERS.REMINDERS_WITH_OPEN_PSA_IDS]: Map(),
   [REMINDERS.LOADING_REMINDER_NEIGHBORS]: false,
-  [REMINDERS.PEOPLE_WITH_HEARINGS_BUT_NO_CONTACT]: Map(),
-  [REMINDERS.LOADING_PEOPLE_NO_CONTACTS]: false,
   [REMINDERS.OPT_OUTS]: Map(),
   [REMINDERS.OPT_OUT_NEIGHBORS]: Map(),
   [REMINDERS.OPT_OUT_PEOPLE_IDS]: Set(),
@@ -113,16 +116,28 @@ export default function remindersReducer(state :Map<*, *> = INITIAL_STATE, actio
       });
     }
 
-    case loadPeopleWithHearingsButNoContacts.case(action.type): {
-      return loadPeopleWithHearingsButNoContacts.reducer(state, action, {
-        REQUEST: () => state.set(REMINDERS.LOADING_PEOPLE_NO_CONTACTS, true),
+    case loadRemindersActionList.case(action.type): {
+      return loadRemindersActionList.reducer(state, action, {
+        REQUEST: () => state.set(REMINDERS.LOADING_REMINDERS_ACTION_LIST, true),
         SUCCESS: () => {
-          const { peopleWithOpenPSAsandHearingsButNoContactById } = action.value;
+          const { remindersActionList } = action.value;
           return state
-            .set(REMINDERS.PEOPLE_WITH_HEARINGS_BUT_NO_CONTACT, peopleWithOpenPSAsandHearingsButNoContactById);
+            .set(REMINDERS.REMINDERS_ACTION_LIST, remindersActionList);
         },
-        FINALLY: () => state.set(REMINDERS.LOADING_PEOPLE_NO_CONTACTS, false)
+        FINALLY: () => state.set(REMINDERS.LOADING_REMINDERS_ACTION_LIST, false)
       });
+    }
+
+    case REMOVE_FROM_REMIDNERS_ACTION_LIST: {
+      const { personEntityKeyId } = action.value;
+      console.log(personEntityKeyId);
+      const remindersActionList = state.get(REMINDERS.REMINDERS_ACTION_LIST, Map()).delete(personEntityKeyId);
+      return state.set(REMINDERS.REMINDERS_ACTION_LIST, remindersActionList);
+    }
+
+    case SET_DATE_FOR_REMIDNERS_ACTION_LIST: {
+      const { date } = action.value;
+      return state.set(REMINDERS.REMINDERS_ACTION_LIST_DATE, moment(date));
     }
 
     case SWITCH_ORGANIZATION:
