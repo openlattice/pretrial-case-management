@@ -20,6 +20,7 @@ import SubscriptionInfo from '../../components/subscription/SubscriptionInfo';
 import ContactInfoTable from '../../components/contactinformation/ContactInfoTable';
 import NewContactForm from '../people/NewContactForm';
 import { FORM_IDS } from '../../utils/consts/Consts';
+import { getEntityProperties } from '../../utils/DataUtils';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
@@ -44,11 +45,14 @@ import {
 import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
 import * as DataActionFactory from '../../utils/data/DataActionFactory';
 import * as PeopleActionFactory from '../people/PeopleActionFactory';
+import * as RemindersActionFactory from '../reminders/RemindersActionFactory';
 import * as SubscriptionsActionFactory from './SubscriptionsActionFactory';
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
 const { SUBSCRIPTION } = APP_TYPES;
+
+const { ENTITY_KEY_ID, PERSON_ID } = PROPERTY_TYPES;
 
 const ContactHeader = styled.div`
   display: flex;
@@ -163,8 +167,12 @@ class ManageSubscriptionModal extends React.Component<Props, State> {
 
   refreshPersonNeighborsCallback = () => {
     const { actions, person } = this.props;
-    const personId = person.getIn([PROPERTY_TYPES.PERSON_ID, 0], '');
+    const {
+      [ENTITY_KEY_ID]: personEntityKeyId,
+      [PERSON_ID]: personId,
+    } = getEntityProperties(person, [ENTITY_KEY_ID, PERSON_ID]);
     actions.refreshPersonNeighbors({ personId });
+    actions.removeFromRemindersActionList({ personEntityKeyId });
     this.setState(INITIAL_STATE);
   }
 
@@ -448,6 +456,10 @@ function mapDispatchToProps(dispatch :Function) :Object {
 
   Object.keys(PeopleActionFactory).forEach((action :string) => {
     actions[action] = PeopleActionFactory[action];
+  });
+
+  Object.keys(RemindersActionFactory).forEach((action :string) => {
+    actions[action] = RemindersActionFactory[action];
   });
 
   Object.keys(SubscriptionsActionFactory).forEach((action :string) => {
