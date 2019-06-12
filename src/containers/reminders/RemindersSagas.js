@@ -571,8 +571,6 @@ function* loadRemindersActionListWorker(action :SequenceAction) :Generator<*, *,
       daysToCheck
     );
 
-    console.log(remindersActionList.toJS());
-
     yield put(loadRemindersActionList
       .success(action.id, { remindersActionList }));
   }

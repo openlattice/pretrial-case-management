@@ -130,7 +130,6 @@ export default function remindersReducer(state :Map<*, *> = INITIAL_STATE, actio
 
     case REMOVE_FROM_REMIDNERS_ACTION_LIST: {
       const { personEntityKeyId } = action.value;
-      console.log(personEntityKeyId);
       const remindersActionList = state.get(REMINDERS.REMINDERS_ACTION_LIST, Map()).delete(personEntityKeyId);
       return state.set(REMINDERS.REMINDERS_ACTION_LIST, remindersActionList);
     }
