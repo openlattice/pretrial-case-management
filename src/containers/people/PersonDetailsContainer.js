@@ -21,9 +21,14 @@ import PSAModal from '../psamodal/PSAModal';
 import { getPSAIdsFromNeighbors } from '../../utils/PeopleUtils';
 import { getChargeHistory } from '../../utils/CaseUtils';
 import { JURISDICTION } from '../../utils/consts/Consts';
-import { getEntityKeyId, getIdOrValue, getNeighborDetailsForEntitySet } from '../../utils/DataUtils';
 import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import {
+  getEntityProperties,
+  getEntityKeyId,
+  getIdOrValue,
+  getNeighborDetailsForEntitySet
+} from '../../utils/DataUtils';
 import {
   getScheduledHearings,
   getPastHearings,
@@ -165,7 +170,14 @@ class PersonDetailsContainer extends React.Component<Props, State> {
       actions.getPersonNeighbors({ personId });
     }
     if (personChanged) {
-      actions.loadPSAData(psaIds);
+      let scoresAsMap = Map();
+      neighbors.get(APP_TYPES.PSA_SCORES, List()).forEach((score) => {
+        const {
+          [PROPERTY_TYPES.ENTITY_KEY_ID]: psaEntityKeyId
+        } = getEntityProperties(score, [PROPERTY_TYPES.ENTITY_KEY_ID]);
+        scoresAsMap = scoresAsMap.set(psaEntityKeyId, score);
+      });
+      actions.loadPSAData({ psaIds, scoresAsMap });
       actions.loadHearingNeighbors({ hearingIds: personHearingIds });
     }
     if (hearingIds.size !== prevProps.hearingIds.size) {
