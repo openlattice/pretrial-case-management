@@ -44,7 +44,6 @@ type Props = {
       neighbors :Map<*, *>,
       scores :Map<*, *>
     }) => void,
-    loadPSAData :(psaIds :string[]) => void,
     loadCaseHistory :(values :{
       personId :string,
       neighbors :Immutable.Map<*, *>

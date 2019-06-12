@@ -24,20 +24,24 @@ import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
 import { FORM_IDS } from '../../utils/consts/Consts';
 import { filterContactsByType, getContactInfoFields } from '../../utils/ContactInfoUtils';
-import { getEntityKeyId, getFirstNeighborValue } from '../../utils/DataUtils';
+import { getEntityProperties, getEntityKeyId, getFirstNeighborValue } from '../../utils/DataUtils';
 import { REMINDER_TYPES } from '../../utils/RemindersUtils';
 import { CONTACT_METHODS } from '../../utils/consts/ContactInfoConsts';
 import {
   APP,
+  REMINDERS,
   STATE,
   MANUAL_REMINDERS,
   SUBMIT
 } from '../../utils/consts/FrontEndStateConsts';
 
-import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
 import * as ManualRemindersActionFactory from './ManualRemindersActionFactory';
+import * as RemindersActionFactory from '../reminders/RemindersActionFactory';
+import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
 
 const { CONTACT_INFORMATION, HEARINGS } = APP_TYPES;
+
+const { ENTITY_KEY_ID } = PROPERTY_TYPES;
 
 /*
  * styled components
@@ -118,7 +122,7 @@ const INITIAL_STATE = {
   selectedHearing: { hearing: Map(), hearingId: '', entityKeyId: '' },
   addingNewContact: false,
   contact: Map(),
-  contactMethod: '',
+  contactMethod: CONTACT_METHODS.EMAIL,
   notified: true,
   notes: '',
   editing: false
@@ -195,8 +199,10 @@ class ManualRemindersForm extends React.Component<Props, State> {
   }
 
   submitCallback = () => {
-    const { submitCallback } = this.props;
+    const { actions, person, submitCallback } = this.props;
+    const { [ENTITY_KEY_ID]: personEntityKeyId } = getEntityProperties(person, [ENTITY_KEY_ID]);
     if (submitCallback) submitCallback();
+    actions.removeFromRemindersActionList({ personEntityKeyId });
   }
 
   submitManualReminder = () => {
@@ -207,7 +213,7 @@ class ManualRemindersForm extends React.Component<Props, State> {
       app,
       values,
       config: ManualReminderConfig,
-      callback: this.submitCallBack
+      callback: this.submitCallback
     });
   }
 
@@ -350,7 +356,7 @@ class ManualRemindersForm extends React.Component<Props, State> {
                 onChange={this.handleInputChange}
                 checked={notified === false} />
           </FormContainer>
-          { notified ? this.renderContactMethod() : null }
+          { this.renderContactMethod() }
           { (isPhone || isEmail) ? this.renderContactTableAndForm() : null }
         </>
       ) : null;
@@ -444,6 +450,10 @@ function mapDispatchToProps(dispatch :Function) :Object {
 
   Object.keys(ManualRemindersActionFactory).forEach((action :string) => {
     actions[action] = ManualRemindersActionFactory[action];
+  });
+
+  Object.keys(RemindersActionFactory).forEach((action :string) => {
+    actions[action] = RemindersActionFactory[action];
   });
 
   return {

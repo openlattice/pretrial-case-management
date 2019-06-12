@@ -95,8 +95,8 @@ export const sortEntities = (entities, neighbors, shouldSortByDateTime, sort) =>
     return 0;
   }));
 
-export const hearingNeedsReminder = (hearing) => {
-  const today = moment();
+export const hearingNeedsReminder = (hearing, date) => {
+  const today = date || moment();
   const oneDayAhead = addWeekdays(today, 1);
   const oneWeekAhead = addWeekdays(today, 7);
   const { [PROPERTY_TYPES.DATE_TIME]: hearingDateTime } = getEntityProperties(hearing, [PROPERTY_TYPES.DATE_TIME]);

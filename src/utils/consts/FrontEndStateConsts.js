@@ -288,6 +288,9 @@ export const RELEASE_COND = {
 // Reminders
 
 export const REMINDERS = {
+  REMINDERS_ACTION_LIST_DATE: 'remindersActionListDate',
+  REMINDERS_ACTION_LIST: 'remindersActionList',
+  LOADING_REMINDERS_ACTION_LIST: 'loadingRemindersActionList',
   REMINDER_IDS: 'reminderIds',
   FUTURE_REMINDERS: 'futureReminders',
   PAST_REMINDERS: 'pastReminders',
@@ -298,8 +301,6 @@ export const REMINDERS = {
   REMINDER_NEIGHBORS: 'reminderNeighborsById',
   REMINDERS_WITH_OPEN_PSA_IDS: 'remindersWithOpenPSA',
   LOADING_REMINDER_NEIGHBORS: 'loadingReminderNeighbors',
-  PEOPLE_WITH_HEARINGS_BUT_NO_CONTACT: 'peopleWithHearingsButNoContacts',
-  LOADING_PEOPLE_NO_CONTACTS: 'loadingPeopleWithNoContacts',
   OPT_OUTS: 'optOutMap',
   OPT_OUT_NEIGHBORS: 'optOutNeighbors',
   OPT_OUT_PEOPLE_IDS: 'optOutPeopleIds',
