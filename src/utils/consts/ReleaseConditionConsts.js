@@ -3,9 +3,17 @@ import { PROPERTY_TYPES } from './DataModelConsts';
 export const OUTCOMES = {
   ACCEPTED: 'Judge accepted PSA recommendation',
   INCREASED: 'Judge increased PSA recommendation',
-  DECREASED: 'Judge decreased PSA recommendation',
-  FTA: 'Failed to appear',
-  OTHER: 'Other'
+  DECREASED: 'Judge decreased PSA recommendation'
+};
+
+export const OTHER_OUTCOME = { OTHER_OUTCOME: 'Other' }
+
+export const OTHER_OUTCOMES = {
+  DECLINED: 'Declined',
+  DISMISSED: 'Dismissed',
+  FTA: 'Failure to Appear',
+  RESERVE_BOND: 'Reserve Bond',
+  PLEAD_GUILTY: 'Plead Guilty to All Charges'
 };
 
 export const RELEASES = {
@@ -22,7 +30,8 @@ export const BOND_TYPES = {
   PR: 'PR',
   CASH_ONLY: 'Cash Only',
   CASH_SURETY: 'Cash/Surety',
-  REINSTATE: 'Reinstate'
+  REINSTATE: 'Reinstate',
+  NO_BOND: 'No Bond'
 };
 
 export const CONDITION_LIST = {
