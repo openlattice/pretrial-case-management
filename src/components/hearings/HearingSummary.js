@@ -105,6 +105,8 @@ const HearingSummary = ({ hearing }) => {
   let bondType;
   let bondAmount;
   let decision = HELD;
+
+  const coreOutcomes = Object.values(OUTCOMES);
   const reccomendation = HEADER_LABELS[hearingOutcome.getIn([PROPERTY_TYPES.RELEASE_TYPE, 0])];
   const outcome = hearingOutcome.getIn([PROPERTY_TYPES.OUTCOME, 0]);
   if (hearingBond) {
@@ -115,7 +117,7 @@ const HearingSummary = ({ hearing }) => {
     decision = RELEASED;
   }
 
-  if (outcome === OUTCOMES.FTA) decision = 'N/A';
+  if (!coreOutcomes.includes(outcome)) decision = 'N/A';
 
   let conditionsByType = Immutable.Map();
   if (hearingConditions) {
