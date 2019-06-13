@@ -10,6 +10,7 @@ import {
   SearchApi,
   Models
 } from 'lattice';
+import { SearchApiActions, SearchApiSagas } from 'lattice-sagas';
 import {
   all,
   call,
@@ -59,6 +60,9 @@ const {
   STAFF
 } = APP_TYPES;
 
+const { searchEntityNeighborsWithFilter } = SearchApiActions;
+const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
+
 const getApp = state => state.get(STATE.APP, Map());
 const getEDM = state => state.get(STATE.EDM, Map());
 const getOrgId = state => state.getIn([STATE.APP, APP.SELECTED_ORG_ID], '');
@@ -66,7 +70,12 @@ const getOrgId = state => state.getIn([STATE.APP, APP.SELECTED_ORG_ID], '');
 const { OPENLATTICE_ID_FQN } = Constants;
 const { FullyQualifiedName } = Models;
 
-const DATETIME_FQNS = [PROPERTY_TYPES.TIMESTAMP, PROPERTY_TYPES.COMPLETED_DATE_TIME, PROPERTY_TYPES.DATE_TIME];
+const DATETIME_FQNS = [
+  PROPERTY_TYPES.TIMESTAMP,
+  PROPERTY_TYPES.COMPLETED_DATE_TIME,
+  PROPERTY_TYPES.DATE_TIME,
+  PROPERTY_TYPES.ARREST_DATE_TIME
+];
 
 const getStepTwo = (
   neighborList,
@@ -145,6 +154,15 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
     const psaRiskFactorsEntitySetId = getEntitySetIdFromApp(app, PSA_RISK_FACTORS);
     const psaEntitySetId = getEntitySetIdFromApp(app, PSA_SCORES);
     const staffEntitySetId = getEntitySetIdFromApp(app, STAFF);
+    const peopleEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.PEOPLE);
+    const arrestCasesEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.ARREST_CASES);
+    const pretrialCasesEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.MANUAL_PRETRIAL_CASES);
+    const manualPretrialCourtCasesEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.MANUAL_PRETRIAL_COURT_CASES);
+    const releaseRecommendationsEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.RELEASE_RECOMMENDATIONS);
+    const dmfResultsEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.DMF_RESULTS);
+    const outcomesEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.OUTCOMES);
+    const bondsEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.BONDS);
+    const releaseConditionsEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.RELEASE_CONDITIONS);
 
     const start = moment(startDate);
     const end = moment(endDate);
@@ -161,16 +179,41 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
       scoresAsMap = scoresAsMap.set(row[OPENLATTICE_ID_FQN][0], stripIdField(Immutable.fromJS(row)));
     });
 
-    const neighborsById = yield call(SearchApi.searchEntityNeighborsBulk, psaEntitySetId, scoresAsMap.keySeq().toJS());
+    const neighborsById = yield call(
+      searchEntityNeighborsWithFilterWorker,
+      searchEntityNeighborsWithFilter({
+        entitySetId: psaEntitySetId,
+        filter: {
+          entityKeyIds: scoresAsMap.keySeq().toJS(),
+          sourceEntitySetIds: [
+            dmfResultsEntitySetId,
+            releaseRecommendationsEntitySetId,
+            bondsEntitySetId,
+            outcomesEntitySetId,
+            releaseConditionsEntitySetId
+          ],
+          destinationEntitySetIds: [
+            peopleEntitySetId,
+            psaRiskFactorsEntitySetId,
+            dmfRiskFactorsEntitySetId,
+            pretrialCasesEntitySetId,
+            manualPretrialCourtCasesEntitySetId,
+            arrestCasesEntitySetId,
+            staffEntitySetId
+          ]
+        }
+      })
+    );
+    if (neighborsById.error) throw neighborsById.error;
     let usableNeighborsById = Immutable.Map();
 
-    Object.keys(neighborsById).forEach((id) => {
+    Object.keys(neighborsById.data).forEach((id) => {
       const psaCreationDate = moment(scoresAsMap.getIn([id, PROPERTY_TYPES.DATE_TIME, 0]));
       const psaWasCreatedInTimeRange = psaCreationDate.isValid()
                 && psaCreationDate.isSameOrAfter(start)
                 && psaCreationDate.isSameOrBefore(end);
       let usableNeighbors = Immutable.List();
-      const neighborList = neighborsById[id];
+      const neighborList = neighborsById.data[id];
       let domainMatch = true;
       neighborList.forEach((neighborObj) => {
         const neighbor = getFilteredNeighbor(neighborObj);
@@ -189,7 +232,8 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
         }
 
         let timestamp = neighbor.associationDetails[PROPERTY_TYPES.TIMESTAMP]
-          || neighbor.associationDetails[PROPERTY_TYPES.COMPLETED_DATE_TIME];
+          || neighbor.associationDetails[PROPERTY_TYPES.COMPLETED_DATE_TIME]
+          || neighbor.neighborDetails[PROPERTY_TYPES.START_DATE];
         timestamp = timestamp ? timestamp[0] : '';
         const timestampMoment = moment(timestamp);
         const neighborsWereEditedInTimeRange = timestampMoment.isValid()
