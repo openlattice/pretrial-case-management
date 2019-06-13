@@ -132,7 +132,7 @@ const DATE_FORMAT = 'MM/DD';
 export default class EventTimeline extends React.Component<Props> {
 
   getEventDate = (event :Immutable.Map<*, *>) => (
-    moment.utc(event.getIn(
+    moment(event.getIn(
       [DATE_TIME, 0], event.getIn([COMPLETED_DATE_TIME, 0], event.getIn([START_DATE, 0], ''))
     ))
   )
