@@ -169,8 +169,13 @@ const StyledSectionBottomBarWrapper = styled.div`
         );
       case CONTENT_CONSTS.PROFILE:
         return (
-          `padding: 30px;
-           img {
+          `
+            background: ${OL.WHITE};
+            border: solid 1px ${OL.GREY11};
+            border-radius: 5px;
+            margin-bottom: 20px;
+            padding: 30px;
+            img {
              margin-right: 50px;
            }`
         );
