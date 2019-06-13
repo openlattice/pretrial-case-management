@@ -1,12 +1,14 @@
 /*
  * @flow
  */
-import { Map, fromJS } from 'immutable';
+import { List, Map, fromJS } from 'immutable';
 import { Constants } from 'lattice';
 
+import { getEntityProperties } from '../../utils/DataUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { RELEASE_COND } from '../../utils/consts/FrontEndStateConsts';
-import { refreshHearingNeighbors } from '../court/CourtActionFactory';
+import { deleteEntity } from '../../utils/data/DataActionFactory';
+import { refreshHearingAndNeighbors } from '../hearings/HearingsActionFactory';
 import { refreshPSANeighbors } from '../review/ReviewActionFactory';
 import {
   CLEAR_RELEASE_CONDITIONS,
@@ -14,7 +16,12 @@ import {
   updateOutcomesAndReleaseCondtions
 } from './ReleaseConditionsActionFactory';
 
-const { HEARINGS, OUTCOMES, DMF_RESULTS } = APP_TYPES;
+const {
+  HEARINGS,
+  OUTCOMES,
+  DMF_RESULTS,
+  CHECKIN_APPOINTMENTS
+} = APP_TYPES;
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
@@ -29,7 +36,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [RELEASE_COND.REFRESHING_SELECTED_HEARING]: false
 });
 
-export default function releaseConditionsReducer(state :Map<*, *> = INITIAL_STATE, action :SequenceAction) {
+export default function releaseConditionsReducer(state :Map<*, *> = INITIAL_STATE, action :Object) {
   switch (action.type) {
 
     case CLEAR_RELEASE_CONDITIONS:
@@ -63,16 +70,47 @@ export default function releaseConditionsReducer(state :Map<*, *> = INITIAL_STAT
       });
     }
 
-    case refreshHearingNeighbors.case(action.type): {
-      return refreshHearingNeighbors.reducer(state, action, {
-        REQUEST: () => state.set(RELEASE_COND.REFRESHING_RELEASE_CONDITIONS, true),
+    case deleteEntity.case(action.type): {
+      return deleteEntity.reducer(state, action, {
         SUCCESS: () => {
-          const { neighbors } = action.value;
-          const outcomeEntity = neighbors.get(OUTCOMES, Map());
+          const { entityKeyId } = action.value;
+
+          const hearingCheckInAppointments = state.getIn([RELEASE_COND.HEARING_NEIGHBORS, CHECKIN_APPOINTMENTS], List())
+            .filter((checkInAppointment) => {
+              const {
+                [PROPERTY_TYPES.ENTITY_KEY_ID]: checkInAppoiontmentsEntityKeyId
+              } = getEntityProperties(checkInAppointment, [PROPERTY_TYPES.ENTITY_KEY_ID]);
+              return entityKeyId !== checkInAppoiontmentsEntityKeyId;
+            });
+          const personCheckInAppointments = state.getIn([RELEASE_COND.PERSON_NEIGHBORS, CHECKIN_APPOINTMENTS], List())
+            .filter((checkInAppointment) => {
+              const {
+                [PROPERTY_TYPES.ENTITY_KEY_ID]: checkInAppoiontmentsEntityKeyId
+              } = getEntityProperties(checkInAppointment, [PROPERTY_TYPES.ENTITY_KEY_ID]);
+              return entityKeyId !== checkInAppoiontmentsEntityKeyId;
+            });
 
           return state
+            .setIn([RELEASE_COND.HEARING_NEIGHBORS, CHECKIN_APPOINTMENTS], hearingCheckInAppointments)
+            .setIn([RELEASE_COND.PERSON_NEIGHBORS, CHECKIN_APPOINTMENTS], personCheckInAppointments);
+        }
+      });
+    }
+
+    case refreshHearingAndNeighbors.case(action.type): {
+      return refreshHearingAndNeighbors.reducer(state, action, {
+        REQUEST: () => state.set(RELEASE_COND.REFRESHING_RELEASE_CONDITIONS, true),
+        SUCCESS: () => {
+          const {
+            hearing,
+            hearingNeighborsByAppTypeFqn
+          } = action.value;
+          const outcomeEntity = hearingNeighborsByAppTypeFqn.get(OUTCOMES, Map());
+
+          return state
+            .set(RELEASE_COND.SELECTED_HEARING, hearing)
             .set(RELEASE_COND.HAS_OUTCOME, !!outcomeEntity.size)
-            .set(RELEASE_COND.HEARING_NEIGHBORS, neighbors);
+            .set(RELEASE_COND.HEARING_NEIGHBORS, hearingNeighborsByAppTypeFqn);
         },
         FINALLY: () => state.set(RELEASE_COND.REFRESHING_RELEASE_CONDITIONS, false),
       });
@@ -89,7 +127,7 @@ export default function releaseConditionsReducer(state :Map<*, *> = INITIAL_STAT
           neighbors.get(HEARINGS).forEach((hearing) => {
             const hearingEntityKeyId = hearing.getIn([OPENLATTICE_ID_FQN, 0]);
             if (hearingEntityKeyId === selectedHearingEntityKeyId) {
-              selectedHearing = hearing
+              selectedHearing = hearing;
             }
           });
 

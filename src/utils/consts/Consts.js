@@ -4,6 +4,8 @@
 
 export const MAX_PAGE = 5;
 
+export const MAX_HITS = 10000;
+
 export const FORM_PATHS = {
   1: '/1',
   2: '/2',
@@ -151,6 +153,7 @@ export const NOTES = {
 };
 
 export const CONTEXT = {
+  COURT: 'Court',
   DEMO_ORG: 'Court (Demo)',
   COURT_MINN: 'Court (Minnehaha)',
   COURT_PENN: 'Court (Pennington)',
@@ -207,7 +210,8 @@ export const EDIT_FIELDS = {
 export const LIST_FIELDS = {
   ENTITY_SET_ID: 'entitySetId',
   ID: 'entityKeyId',
-  RELEASE_CONDITIONS_FIELD: 'releaseConditionField'
+  RELEASE_CONDITIONS_FIELD: 'releaseConditionField',
+  CHECKIN_APPOINTMENTS_FIELD: 'checkInAppointmentField'
 };
 
 export const FORM_LENGTHS = {
@@ -313,6 +317,16 @@ export const PERSON_INFO_DATA = {
   HAS_OPEN_PSA: 'hasOpenPsa',
   HAS_MULTIPLE_OPEN_PSAS: 'hasMultipleOpenPSAs',
   IS_RECEIVING_REMINDERS: 'isReceivingReminders'
+};
+
+export const CONFIRMATION_ACTION_TYPES = {
+  DELETE: 'delete',
+  CANCEL: 'cancel'
+};
+
+export const CONFIRMATION_OBJECT_TYPES = {
+  CHARGE: 'charge',
+  HEARING: 'hearing'
 };
 
 

@@ -3,6 +3,7 @@
  */
 
 import { newRequestSequence } from 'redux-reqseq';
+import type { RequestSequence } from 'redux-reqseq';
 
 const CLEAR_MANUAL_REMINDERS_FORM :string = 'CLEAR_MANUAL_REMINDERS_FORM';
 const clearManualRemindersForm :RequestSequence = newRequestSequence(CLEAR_MANUAL_REMINDERS_FORM);

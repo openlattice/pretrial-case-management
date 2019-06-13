@@ -4,13 +4,18 @@
 
 import React from 'react';
 import styled from 'styled-components';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
 
 import StyledButton from '../../components/buttons/StyledButton';
 import { acceptTerms, termsAreAccepted } from '../../utils/AcceptTermsUtils';
-import * as Routes from '../../core/router/Routes';
+
+import * as RoutingActionFactory from '../../core/router/RoutingActionFactory'
 
 type Props = {
-  history :string[]
+  actions :{
+    goToRoot :() => void;
+  }
 }
 
 const TermsContainer = styled.div`
@@ -38,7 +43,7 @@ const TERMS = `By logging into this system you acknowledge you are accessing a r
 recorded, and is subject to an audit. Unauthorized use of the system is strictly prohibited and you may be subject to criminal and/or civil penalties.
 By clicking Sign In, you consent to any monitoring and recording performed by this system.`;
 
-export default class AppConsent extends React.Component<Props> {
+class AppConsent extends React.Component<Props> {
 
   componentDidMount() {
     if (termsAreAccepted()) {
@@ -47,7 +52,8 @@ export default class AppConsent extends React.Component<Props> {
   }
 
   redirect = () => {
-    this.props.history.push(Routes.DASHBOARD);
+    const { actions } = this.props;
+    actions.goToRoot();
   }
 
   acceptTerms = () => {
@@ -68,3 +74,20 @@ export default class AppConsent extends React.Component<Props> {
   }
 
 }
+
+
+function mapDispatchToProps(dispatch :Function) :Object {
+  const actions :{ [string] :Function } = {};
+
+  Object.keys(RoutingActionFactory).forEach((action :string) => {
+    actions[action] = RoutingActionFactory[action];
+  });
+
+  return {
+    actions: {
+      ...bindActionCreators(actions, dispatch)
+    }
+  };
+}
+
+export default connect(null, mapDispatchToProps)(AppConsent);

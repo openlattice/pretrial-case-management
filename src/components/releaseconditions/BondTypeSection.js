@@ -24,7 +24,7 @@ const BondTypeSection = ({
 } :Props) => (
   <RowWrapper>
     <h1>Bond Type</h1>
-    <OptionsGrid numColumns={4}>
+    <OptionsGrid numColumns={5}>
       {mapOptionsToRadioButtons(BOND_TYPES, 'bondType')}
     </OptionsGrid>
     {

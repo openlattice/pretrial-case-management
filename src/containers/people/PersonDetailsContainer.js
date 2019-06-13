@@ -21,9 +21,14 @@ import PSAModal from '../psamodal/PSAModal';
 import { getPSAIdsFromNeighbors } from '../../utils/PeopleUtils';
 import { getChargeHistory } from '../../utils/CaseUtils';
 import { JURISDICTION } from '../../utils/consts/Consts';
-import { getEntityKeyId, getIdOrValue, getNeighborDetailsForEntitySet } from '../../utils/DataUtils';
 import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import {
+  getEntityProperties,
+  getEntityKeyId,
+  getIdOrValue,
+  getNeighborDetailsForEntitySet
+} from '../../utils/DataUtils';
 import {
   getScheduledHearings,
   getPastHearings,
@@ -56,7 +61,10 @@ const {
   OUTCOMES,
   DMF_RESULTS,
   DMF_RISK_FACTORS,
-  RELEASE_CONDITIONS
+  RELEASE_CONDITIONS,
+  REMINDERS,
+  MANUAL_REMINDERS,
+  SPEAKER_RECOGNITION_PROFILES
 } = APP_TYPES;
 
 const ToolbarWrapper = styled.div`
@@ -68,6 +76,7 @@ const ToolbarWrapper = styled.div`
 
 type Props = {
   entityKeyId :string,
+  entitySetsByOrganization :Map<*, *>,
   hearingNeighborsById :Map<*, *>,
   hearingIds :List<*, *>,
   isLoadingHearingsNeighbors :boolean,
@@ -161,7 +170,14 @@ class PersonDetailsContainer extends React.Component<Props, State> {
       actions.getPersonNeighbors({ personId });
     }
     if (personChanged) {
-      actions.loadPSAData(psaIds);
+      let scoresAsMap = Map();
+      neighbors.get(APP_TYPES.PSA_SCORES, List()).forEach((score) => {
+        const {
+          [PROPERTY_TYPES.ENTITY_KEY_ID]: psaEntityKeyId
+        } = getEntityProperties(score, [PROPERTY_TYPES.ENTITY_KEY_ID]);
+        scoresAsMap = scoresAsMap.set(psaEntityKeyId, score);
+      });
+      actions.loadPSAData({ psaIds, scoresAsMap });
       actions.loadHearingNeighbors({ hearingIds: personHearingIds });
     }
     if (hearingIds.size !== prevProps.hearingIds.size) {
@@ -376,14 +392,19 @@ class PersonDetailsContainer extends React.Component<Props, State> {
       readOnlyPermissions,
       selectedOrganizationId,
       selectedOrganizationSettings,
-      updatingEntity
+      updatingEntity,
+      entitySetsByOrganization
     } = this.props;
     const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], '');
+    const settingsIncludeVoiceEnroll = selectedOrganizationSettings.get(SETTINGS.ENROLL_VOICE, false);
     const courtRemindersEnabled = selectedOrganizationSettings.get(SETTINGS.COURT_REMINDERS, false);
     const { downloadPSAReviewPDF } = actions;
     const contactInfo = neighbors.get(CONTACT_INFORMATION, List());
     const mostRecentPSAEntityKeyId = getEntityKeyId(mostRecentPSA.get(PSA_NEIGHBOR.DETAILS, Map()));
     const allScheduledHearings = getScheduledHearings(neighbors);
+    const reminders = neighbors.get(REMINDERS, List());
+    const manualReminders = neighbors.get(MANUAL_REMINDERS, List());
+    const personReminders = reminders.concat(manualReminders);
     const isLoading = (
       isLoadingJudges
       || loadingPSAData
@@ -392,9 +413,11 @@ class PersonDetailsContainer extends React.Component<Props, State> {
       || !selectedOrganizationId
       || !personId
     );
+    const personVoiceProfile = neighbors.get(SPEAKER_RECOGNITION_PROFILES, Map());
     return (
       <PersonOverview
           courtRemindersEnabled={courtRemindersEnabled}
+          entitySetIdsToAppType={entitySetsByOrganization.get(selectedOrganizationId, Map())}
           refreshingPersonNeighbors={refreshingPersonNeighbors}
           updatingEntity={updatingEntity}
           includesPretrialModule={includesPretrialModule}
@@ -406,10 +429,13 @@ class PersonDetailsContainer extends React.Component<Props, State> {
           mostRecentPSAEntityKeyId={mostRecentPSAEntityKeyId}
           neighbors={neighbors}
           personId={personId}
+          personReminders={personReminders}
+          personVoiceProfile={personVoiceProfile}
           psaNeighborsById={psaNeighborsById}
           readOnlyPermissions={readOnlyPermissions}
           allScheduledHearings={allScheduledHearings}
           selectedPersonData={selectedPersonData}
+          settingsIncludeVoiceEnroll={settingsIncludeVoiceEnroll}
           openDetailsModal={this.openDetailsModal} />
     );
   }
@@ -486,15 +512,29 @@ class PersonDetailsContainer extends React.Component<Props, State> {
 function mapStateToProps(state, ownProps) {
   const { personId } = ownProps.match.params;
   const app = state.get(STATE.APP);
-  const review = state.get(STATE.REVIEW);
-  const people = state.get(STATE.PEOPLE);
   const court = state.get(STATE.COURT);
-  const submit = state.get(STATE.SUBMIT);
+  const people = state.get(STATE.PEOPLE);
   const psaModal = state.get(STATE.PSA_MODAL);
+  const review = state.get(STATE.REVIEW);
+  const submit = state.get(STATE.SUBMIT);
 
   return {
     [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
     [APP.SELECTED_ORG_SETTINGS]: app.get(APP.SELECTED_ORG_SETTINGS),
+    [APP.ENTITY_SETS_BY_ORG]: app.get(APP.ENTITY_SETS_BY_ORG),
+
+    [COURT.LOADING_HEARING_NEIGHBORS]: court.get(COURT.LOADING_HEARING_NEIGHBORS),
+    [COURT.HEARINGS_NEIGHBORS_BY_ID]: court.get(COURT.HEARINGS_NEIGHBORS_BY_ID),
+    [COURT.ALL_JUDGES]: court.get(COURT.ALL_JUDGES),
+    [COURT.LOADING_JUDGES]: court.get(COURT.LOADING_JUDGES),
+
+    [PEOPLE.FETCHING_PERSON_DATA]: people.get(PEOPLE.FETCHING_PERSON_DATA),
+    [PEOPLE.PERSON_DATA]: people.get(PEOPLE.PERSON_DATA),
+    [PEOPLE.NEIGHBORS]: people.getIn([PEOPLE.NEIGHBORS, personId], Map()),
+    [PEOPLE.MOST_RECENT_PSA]: people.get(PEOPLE.MOST_RECENT_PSA),
+    [PEOPLE.MOST_RECENT_PSA_NEIGHBORS]: people.get(PEOPLE.MOST_RECENT_PSA_NEIGHBORS),
+    [PEOPLE.REFRESHING_PERSON_NEIGHBORS]: people.get(PEOPLE.REFRESHING_PERSON_NEIGHBORS),
+    personHearings: people.getIn([PEOPLE.NEIGHBORS, personId, HEARINGS], Map()),
 
     personId,
     [REVIEW.ENTITY_SET_ID]: review.get(REVIEW.ENTITY_SET_ID) || people.get(PEOPLE.SCORES_ENTITY_SET_ID),
@@ -506,21 +546,8 @@ function mapStateToProps(state, ownProps) {
     [REVIEW.PSA_IDS_REFRESHING]: review.get(REVIEW.PSA_IDS_REFRESHING),
     readOnlyPermissions: review.get(REVIEW.READ_ONLY),
 
-    [PEOPLE.FETCHING_PERSON_DATA]: people.get(PEOPLE.FETCHING_PERSON_DATA),
-    [PEOPLE.PERSON_DATA]: people.get(PEOPLE.PERSON_DATA),
-    [PEOPLE.NEIGHBORS]: people.getIn([PEOPLE.NEIGHBORS, personId], Map()),
-    [PEOPLE.MOST_RECENT_PSA]: people.get(PEOPLE.MOST_RECENT_PSA),
-    [PEOPLE.MOST_RECENT_PSA_NEIGHBORS]: people.get(PEOPLE.MOST_RECENT_PSA_NEIGHBORS),
-    [PEOPLE.REFRESHING_PERSON_NEIGHBORS]: people.get(PEOPLE.REFRESHING_PERSON_NEIGHBORS),
-    personHearings: people.getIn([PEOPLE.NEIGHBORS, personId, HEARINGS], Map()),
-
     [PSA_MODAL.HEARING_IDS]: psaModal.get(PSA_MODAL.HEARING_IDS),
 
-    [COURT.LOADING_HEARING_NEIGHBORS]: court.get(COURT.LOADING_HEARING_NEIGHBORS),
-    [COURT.HEARINGS_NEIGHBORS_BY_ID]: court.get(COURT.HEARINGS_NEIGHBORS_BY_ID),
-    [COURT.HEARING_IDS_REFRESHING]: court.get(COURT.HEARING_IDS_REFRESHING),
-    [COURT.ALL_JUDGES]: court.get(COURT.ALL_JUDGES),
-    [COURT.LOADING_JUDGES]: court.get(COURT.LOADING_JUDGES),
 
     [SUBMIT.SUBMITTING]: submit.get(SUBMIT.SUBMITTING, false),
     [SUBMIT.UPDATING_ENTITY]: submit.get(SUBMIT.UPDATING_ENTITY, false)

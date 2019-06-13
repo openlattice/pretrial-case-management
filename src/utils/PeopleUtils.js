@@ -17,8 +17,9 @@ const { PSA_SCORES } = APP_TYPES;
 export const formatPersonName = (firstName, middleName, lastName) => {
   const midName = middleName ? ` ${middleName}` : '';
   const lastFirstMid = `${lastName}, ${firstName}${midName}`;
+  const firstMidLast = `${firstName}${midName} ${lastName}`;
 
-  return lastFirstMid;
+  return { firstMidLast, lastFirstMid };
 };
 
 export const formatPeopleInfo = (person) => {
@@ -31,7 +32,7 @@ export const formatPeopleInfo = (person) => {
   const photo = getFirstNeighborValue(
     person, PROPERTY_TYPES.PICTURE, getFirstNeighborValue(person, PROPERTY_TYPES.MUGSHOT)
   );
-  const lastFirstMid = formatPersonName(firstName, middleName, lastName);
+  const { firstMidLast, lastFirstMid } = formatPersonName(firstName, middleName, lastName);
   const hasOpenPSA = person.get(HAS_OPEN_PSA, false);
   const multipleOpenPSAs = person.get(HAS_MULTIPLE_OPEN_PSAS, false);
   const isReceivingReminders = person.get(IS_RECEIVING_REMINDERS, false);
@@ -43,6 +44,7 @@ export const formatPeopleInfo = (person) => {
     lastName,
     dob,
     photo,
+    firstMidLast,
     lastFirstMid,
     hasOpenPSA,
     multipleOpenPSAs,

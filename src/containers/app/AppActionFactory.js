@@ -3,6 +3,7 @@
  */
 
 import { newRequestSequence } from 'redux-reqseq';
+import type { RequestSequence } from 'redux-reqseq';
 
 const LOAD_APP :string = 'LOAD_APP';
 const loadApp :RequestSequence = newRequestSequence(LOAD_APP);

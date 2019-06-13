@@ -3,6 +3,7 @@
  */
 
 import { newRequestSequence } from 'redux-reqseq';
+import type { RequestSequence } from 'redux-reqseq';
 
 const ADD_CASE_AND_CHARGES :string = 'ADD_CASE_AND_CHARGES';
 const addCaseAndCharges :RequestSequence = newRequestSequence(ADD_CASE_AND_CHARGES);
@@ -13,12 +14,6 @@ const loadDataModel :RequestSequence = newRequestSequence(LOAD_DATA_MODEL);
 const LOAD_NEIGHBORS :string = 'LOAD_NEIGHBORS';
 const loadNeighbors :RequestSequence = newRequestSequence(LOAD_NEIGHBORS);
 
-const HARD_RESTART :'HARD_RESTART' = 'HARD_RESTART';
-function hardRestart() :Object {
-  return {
-    type: HARD_RESTART
-  };
-}
 // reducer only
 
 const CLEAR_FORM :string = 'CLEAR_FORM';
@@ -35,11 +30,9 @@ const setPSAValues :RequestSequence = newRequestSequence(SET_PSA_VALUES);
 
 export {
   ADD_CASE_AND_CHARGES,
-  HARD_RESTART,
   LOAD_DATA_MODEL,
   LOAD_NEIGHBORS,
   addCaseAndCharges,
-  hardRestart,
   loadDataModel,
   loadNeighbors,
   CLEAR_FORM,

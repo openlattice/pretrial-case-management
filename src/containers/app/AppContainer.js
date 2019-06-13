@@ -3,24 +3,30 @@
  */
 
 import React from 'react';
+
+import isFunction from 'lodash/isFunction';
 import styled from 'styled-components';
-import { AuthActions } from 'lattice-auth';
+import { AuthActions, AuthUtils } from 'lattice-auth';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { EntityDataModelApiActions } from 'lattice-sagas';
 import { Redirect, Route, Switch } from 'react-router-dom';
 import { Map } from 'immutable';
+import type { RequestSequence } from 'redux-reqseq';
 
 import AppConsent from './AppConsent';
 import ErrorPage from '../../components/ErrorPage';
 import HeaderNav from '../../components/nav/HeaderNav';
 import Dashboard from '../../components/dashboard/Dashboard';
+import SettingsContainer from '../settings/SettingsContainer';
 import HearingSettingsModal from '../../components/hearings/HearingSettingsModal';
 import Forms from '../forms/Forms';
 import ContactSupport from '../../components/app/ContactSupport';
 import LogoLoader from '../../components/LogoLoader';
 import WelcomeBanner from '../../components/WelcomeBanner';
+import { GOOGLE_TRACKING_ID } from '../../core/tracking/google/GoogleAnalytics';
 import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
+import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { APP_TYPES } from '../../utils/consts/DataModelConsts';
 import { termsAreAccepted } from '../../utils/AcceptTermsUtils';
 import { OL } from '../../utils/consts/Colors';
@@ -36,11 +42,12 @@ import * as AppActionFactory from './AppActionFactory';
 import * as CourtActionFactory from '../court/CourtActionFactory';
 import * as ChargesActionFactory from '../charges/ChargesActionFactory';
 
+declare var gtag :?Function;
+
 const { logout } = AuthActions;
 const { getAllPropertyTypes } = EntityDataModelApiActions;
 
 const {
-  JUDGES,
   ARREST_CHARGE_LIST,
   COURT_CHARGE_LIST
 } = APP_TYPES;
@@ -80,12 +87,12 @@ type Props = {
     getAllPropertyTypes :RequestSequence;
     loadApp :RequestSequence;
     loadCharges :RequestSequence;
-    switchOrganization :(orgId :string) => Object;
+    switchOrganization :(org :Object) => Object;
     logout :() => void;
   };
 };
 
-class AppContainer extends React.Component<Props, *> {
+class AppContainer extends React.Component<Props, {}> {
 
   componentDidMount() {
     const { actions } = this.props;
@@ -93,33 +100,34 @@ class AppContainer extends React.Component<Props, *> {
     actions.getAllPropertyTypes();
   }
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps :Props) {
     const { app, actions } = this.props;
     const nextOrg = app.get(APP.ORGS);
-    const prevOrg = prevProps.app.get(APP.ORGS);
-    if (prevOrg.size !== nextOrg.size) {
+    const nextOrgId = app.get(APP.SELECTED_ORG_ID);
+    const prevOrgId = prevProps.app.get(APP.SELECTED_ORG_ID);
+    if (nextOrgId && prevOrgId !== nextOrgId) {
       nextOrg.keySeq().forEach((id) => {
         const selectedOrgId :string = id;
-        const arrestChargesEntitySetId = app.getIn(
-          [ARREST_CHARGE_LIST, APP.ENTITY_SETS_BY_ORG, selectedOrgId]
-        );
-        const courtChargesEntitySetId = app.getIn(
-          [COURT_CHARGE_LIST, APP.ENTITY_SETS_BY_ORG, selectedOrgId]
-        );
-        const judgesEntitySetId = app.getIn(
-          [JUDGES, APP.ENTITY_SETS_BY_ORG, selectedOrgId]
-        );
-        if (arrestChargesEntitySetId && courtChargesEntitySetId) {
-          actions.loadCharges({
-            arrestChargesEntitySetId,
-            courtChargesEntitySetId,
-            selectedOrgId
-          });
-        }
-        if (judgesEntitySetId) {
-          actions.loadJudges();
-        }
+        const arrestChargesEntitySetId = getEntitySetIdFromApp(app, ARREST_CHARGE_LIST);
+        const courtChargesEntitySetId = getEntitySetIdFromApp(app, COURT_CHARGE_LIST);
+        actions.loadCharges({
+          arrestChargesEntitySetId,
+          courtChargesEntitySetId,
+          selectedOrgId
+        });
+        actions.loadJudges();
+        actions.loadArrestingAgencies();
       });
+    }
+  }
+
+  handleOnClickLogOut = () => {
+
+    const { actions } = this.props;
+    actions.logout();
+
+    if (isFunction(gtag)) {
+      gtag('config', GOOGLE_TRACKING_ID, { user_id: undefined, send_page_view: false });
     }
   }
 
@@ -141,6 +149,14 @@ class AppContainer extends React.Component<Props, *> {
       : <Redirect to={Routes.TERMS} />
   );
 
+  renderIfAdmin = (Component, props) => {
+    if (!AuthUtils.isAdmin()) {
+      return <Redirect to={Routes.DASHBOARD} />;
+    }
+
+    return this.renderComponent(Component, props);
+  }
+
   renderAppBody = () => {
     const { app, errors } = this.props;
     const loading = app.get(APP.LOADING, false);
@@ -153,13 +169,18 @@ class AppContainer extends React.Component<Props, *> {
     }
 
     return loading
-      ? <LogoLoader loadingText="Loading..." />
+      ? (
+        <AppBodyWrapper>
+          <LogoLoader loadingText="Loading..." />
+        </AppBodyWrapper>
+      )
       : (
         <AppBodyWrapper>
           <Switch>
             <Route path={Routes.TERMS} component={AppConsent} />
             <Route path={Routes.DASHBOARD} render={() => this.renderComponent(Dashboard)} />
             <Route path={Routes.FORMS} render={() => this.renderComponent(Forms)} />
+            <Route path={Routes.SETTINGS} render={() => this.renderIfAdmin(SettingsContainer)} />
             <Redirect to={Routes.DASHBOARD} />
           </Switch>
         </AppBodyWrapper>
@@ -168,7 +189,6 @@ class AppContainer extends React.Component<Props, *> {
 
   render() {
     const {
-      actions,
       app,
       selectedOrganizationSettings,
       selectedOrganizationTitle
@@ -185,7 +205,7 @@ class AppContainer extends React.Component<Props, *> {
       <AppWrapper>
         <HeaderNav
             loading={loading}
-            logout={actions.logout}
+            logout={this.handleOnClickLogOut}
             organizations={orgList}
             pretrialModule={includesPretrialModule}
             selectedOrg={selectedOrg}
@@ -244,4 +264,5 @@ function mapDispatchToProps(dispatch :Function) :Object {
   };
 }
 
+// $FlowFixMe
 export default connect(mapStateToProps, mapDispatchToProps)(AppContainer);

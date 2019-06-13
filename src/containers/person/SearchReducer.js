@@ -16,8 +16,6 @@ import {
 
 import { SEARCH } from '../../utils/consts/FrontEndStateConsts';
 
-declare var __ENV_DEV__ :boolean;
-
 const INITIAL_STATE :Map<*, *> = fromJS({
   [SEARCH.LOADING]: false,
   [SEARCH.SEARCH_RESULTS]: List(),
@@ -36,7 +34,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [SEARCH.CREATE_PERSON_ERROR]: false,
 });
 
-export default function searchReducer(state = INITIAL_STATE, action) {
+export default function searchReducer(state :Map = INITIAL_STATE, action :Object) {
 
   switch (action.type) {
 
@@ -70,6 +68,7 @@ export default function searchReducer(state = INITIAL_STATE, action) {
           .set(SEARCH.LOADING, false)
           .set(SEARCH.SEARCH_ERROR, false),
         FAILURE: () => state
+          .set(SEARCH.SEARCH_RESULTS, List())
           .set(SEARCH.LOADING, false)
           .set(SEARCH.SEARCH_ERROR, true),
         FINALLY: () => state

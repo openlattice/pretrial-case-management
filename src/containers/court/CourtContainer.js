@@ -217,8 +217,7 @@ type Props = {
     loadPSAsByDate :(filter :string) => void,
     refreshPSANeighbors :({ id :string }) => void,
     replaceEntity :(value :{ entitySetName :string, entityKeyId :string, values :Object }) => void,
-    submit :(value :{ config :Object, values :Object}) => void,
-    loadPSAData :(psaIds :string[]) => void
+    submit :(value :{ config :Object, values :Object}) => void
   }
 };
 
@@ -320,7 +319,8 @@ class CourtContainer extends React.Component<Props, State> {
     const hasMultipleOpenPSAs = peopleWithMultipleOpenPsas.includes(personEntityKeyId);
     const lastEditDate = moment(psaEditDatesById.getIn(
       [openPSAId, PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.COMPLETED_DATE_TIME, 0],
-      psaEditDatesById.getIn([openPSAId, PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.DATE_TIME, 0], '')
+      psaEditDatesById.getIn([openPSAId, PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.DATE_TIME, 0],
+        psaEditDatesById.getIn([openPSAId, PROPERTY_TYPES.DATE_TIME], ''))
     )).format('MM/DD/YYYY');
     const personObj = formatPeopleInfo(person);
     return (

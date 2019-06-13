@@ -3,17 +3,16 @@
  */
 
 import { push } from 'connected-react-router';
-import { Types } from 'lattice';
+import { Constants, SearchApi, Types } from 'lattice';
 import { AuthActions, AccountUtils } from 'lattice-auth';
 import { OrderedMap, fromJS } from 'immutable';
 import {
   AppApiActions,
   AppApiSagas,
-  DataApiActions,
-  DataApiSagas,
   EntityDataModelApiActions,
   EntityDataModelApiSagas,
 } from 'lattice-sagas';
+import type { SequenceAction } from 'redux-reqseq';
 
 import {
   all,
@@ -33,16 +32,15 @@ import {
   loadApp
 } from './AppActionFactory';
 
-const { APP_SETTINGS } = APP_TYPES;
-
 const { SecurableTypes } = Types;
 const { getEntityDataModelProjection } = EntityDataModelApiActions;
 const { getEntityDataModelProjectionWorker } = EntityDataModelApiSagas;
 const { getApp, getAppConfigs, getAppTypes } = AppApiActions;
 const { getAppWorker, getAppConfigsWorker, getAppTypesWorker } = AppApiSagas;
-const { getEntitySetData } = DataApiActions;
-const { getEntitySetDataWorker } = DataApiSagas;
 
+const { OPENLATTICE_ID_FQN } = Constants;
+
+const { APP_SETTINGS } = APP_TYPES;
 
 function* loadAppWorker(action :SequenceAction) :Generator<*, *, *> {
 
@@ -98,16 +96,22 @@ function* loadAppWorker(action :SequenceAction) :Generator<*, *, *> {
       }
     });
     const appSettingCalls = appSettingsByOrgId.valueSeq().map(entitySetId => (
-      call(getEntitySetDataWorker, getEntitySetData({ entitySetId }))
+      call(SearchApi.searchEntitySetData, entitySetId, {
+        start: 0,
+        maxHits: 10000,
+        searchTerm: '*'
+      })
     ));
 
     const orgIds = appSettingsByOrgId.keySeq().toJS();
     const appSettingResults = yield all(appSettingCalls.toJS());
 
     let i = 0;
-    appSettingResults.forEach((setting) => {
+    appSettingResults.map(({ hits }) => hits).forEach((setting) => {
       const entitySetId = orgIds[i];
-      const settings = JSON.parse(setting.data[0]['ol.appdetails']);
+      const settingsEntity = setting[0] || '{}';
+      const settings = JSON.parse(settingsEntity['ol.appdetails']);
+      settings[OPENLATTICE_ID_FQN] = settingsEntity[OPENLATTICE_ID_FQN][0];
       appSettingsByOrgId = appSettingsByOrgId.set(entitySetId, fromJS(settings));
       i += 1;
     });

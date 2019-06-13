@@ -99,7 +99,6 @@ type Props = {
       callback :() => void
     }) => void,
     refreshPSANeighbors :({ id :string }) => void,
-    refreshHearingNeighbors :({ id :string }) => void,
     replaceAssociation :(values :{
       associationEntity :Map<*, *>,
       associationEntityName :string,
@@ -426,7 +425,6 @@ function mapStateToProps(state) {
     [COURT.LOADING_HEARING_NEIGHBORS]: court.get(COURT.LOADING_HEARING_NEIGHBORS),
     [COURT.HEARINGS_NEIGHBORS_BY_ID]: court.get(COURT.HEARINGS_NEIGHBORS_BY_ID),
     [COURT.ALL_JUDGES]: court.get(COURT.ALL_JUDGES),
-    [COURT.HEARING_IDS_REFRESHING]: court.get(COURT.HEARING_IDS_REFRESHING),
 
     [HEARINGS.DATE]: hearings.get(HEARINGS.DATE),
     [HEARINGS.TIME]: hearings.get(HEARINGS.TIME),

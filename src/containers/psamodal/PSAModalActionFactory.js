@@ -3,6 +3,7 @@
  */
 
 import { newRequestSequence } from 'redux-reqseq';
+import type { RequestSequence } from 'redux-reqseq';
 
 const CLEAR_PSA_MODAL :string = 'CLEAR_PSA_MODAL';
 const clearPSAModal :RequestSequence = newRequestSequence(CLEAR_PSA_MODAL);

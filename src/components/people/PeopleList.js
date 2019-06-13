@@ -6,7 +6,6 @@ import React from 'react';
 import styled from 'styled-components';
 import Immutable from 'immutable';
 
-import LoadingSpinner from '../LoadingSpinner';
 import LogoLoader from '../LogoLoader';
 import NoSearchResults from './NoSearchResults';
 import PersonCard from './PersonCard';
@@ -36,7 +35,7 @@ const PeopleList = ({ people, isFetchingPeople, didMapPeopleToProps } :Props) =>
   const renderPersonCards = () => {
     try {
       if (people && people.size > 0) {
-        return people.map(person => (
+        const personCards = people.map(person => (
           <PersonCard
               hasOpenPSA={person.hasOpenPSA}
               multipleOpenPSAs={person.multipleOpenPSAs}
@@ -44,8 +43,13 @@ const PeopleList = ({ people, isFetchingPeople, didMapPeopleToProps } :Props) =>
               key={person.personId}
               personObj={person} />
         ));
+        return (
+          <CardsWrapper>
+            { personCards }
+          </CardsWrapper>
+        );
       }
-      else if (people && people.size === 0 && didMapPeopleToProps) {
+      if (people && people.size === 0 && didMapPeopleToProps) {
         return <NoSearchResultsPadded />;
       }
 
@@ -60,12 +64,9 @@ const PeopleList = ({ people, isFetchingPeople, didMapPeopleToProps } :Props) =>
     }
   };
 
-  return (
-    <CardsWrapper>
-      { renderPersonCards() }
-      { isFetchingPeople ? <LogoLoader loadingText="Searching..." /> : null }
-    </CardsWrapper>
-  );
+  return isFetchingPeople
+    ? <LogoLoader loadingText="Searching..." />
+    : renderPersonCards();
 };
 
 export default PeopleList;

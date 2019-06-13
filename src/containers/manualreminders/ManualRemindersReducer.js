@@ -31,7 +31,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [MANUAL_REMINDERS.FAILED_REMINDER_IDS]: Set()
 });
 
-export default function manualRemindersReducer(state :Map<*, *> = INITIAL_STATE, action :SequenceAction) {
+export default function manualRemindersReducer(state :Map<*, *> = INITIAL_STATE, action :Object) {
   switch (action.type) {
 
     case loadManualRemindersForm.case(action.type): {

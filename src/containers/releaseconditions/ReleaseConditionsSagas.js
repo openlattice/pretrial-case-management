@@ -2,6 +2,7 @@
  * @flow
  */
 
+import moment from 'moment';
 import { Map, List, fromJS } from 'immutable';
 import {
   DataApi,
@@ -17,12 +18,12 @@ import {
   takeEvery,
   select
 } from '@redux-saga/core/effects';
-
+import type { SequenceAction } from 'redux-reqseq';
 
 import releaseConditionsConfig from '../../config/formconfig/ReleaseConditionsConfig';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
-import { getEntityKeyId, getMapFromEntityKeysToPropertyKeys } from '../../utils/DataUtils';
-import { APP_TYPES } from '../../utils/consts/DataModelConsts';
+import { getEntityProperties, getEntityKeyId, getMapFromEntityKeysToPropertyKeys } from '../../utils/DataUtils';
+import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { APP, PSA_NEIGHBOR, STATE } from '../../utils/consts/FrontEndStateConsts';
 
 import {
@@ -37,6 +38,7 @@ const { DeleteTypes } = Types;
 
 const {
   BONDS,
+  CHECKIN_APPOINTMENTS,
   CHARGES,
   CONTACT_INFORMATION,
   DMF_RESULTS,
@@ -49,7 +51,8 @@ const {
   RELEASE_CONDITIONS,
   REMINDERS,
   STAFF,
-  SUBSCRIPTION
+  SUBSCRIPTION,
+  SPEAKER_RECOGNITION_PROFILES
 } = APP_TYPES;
 
 /*
@@ -58,9 +61,18 @@ const {
 const getApp = state => state.get(STATE.APP, Map());
 const getOrgId = state => state.getIn([STATE.APP, APP.SELECTED_ORG_ID], '');
 
-const LIST_ENTITY_SETS = List.of(STAFF, RELEASE_CONDITIONS, HEARINGS, PRETRIAL_CASES, REMINDERS);
+const LIST_ENTITY_SETS = List.of(
+  CHECKIN_APPOINTMENTS,
+  STAFF,
+  RELEASE_CONDITIONS,
+  HEARINGS,
+  PRETRIAL_CASES,
+  REMINDERS,
+  CHARGES,
+  CONTACT_INFORMATION
+);
 
-function* getHearingAndNeighbors(hearingId :string) :Generator<*, *, *> {
+function* getHearingAndNeighbors(hearingEntityKeyId :string) :Generator<*, *, *> {
   let hearingNeighborsByAppTypeFqn = Map();
   const app = yield select(getApp);
   const orgId = yield select(getOrgId);
@@ -71,14 +83,14 @@ function* getHearingAndNeighbors(hearingId :string) :Generator<*, *, *> {
    * Get Hearing Info
    */
 
-  let hearing = yield call(DataApi.getEntityData, hearingsEntitySetId, hearingId);
+  let hearing = yield call(DataApi.getEntityData, hearingsEntitySetId, hearingEntityKeyId);
   hearing = fromJS(hearing);
 
   /*
    * Get Neighbors
    */
 
-  let hearingNeighbors = yield call(SearchApi.searchEntityNeighbors, hearingsEntitySetId, hearingId);
+  let hearingNeighbors = yield call(SearchApi.searchEntityNeighbors, hearingsEntitySetId, hearingEntityKeyId);
   hearingNeighbors = fromJS(hearingNeighbors);
   /*
    * Format Neighbors
@@ -114,13 +126,15 @@ function* loadReleaseConditionsWorker(action :SequenceAction) :Generator<*, *, *
     const app = yield select(getApp);
     const orgId = yield select(getOrgId);
     const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
+    const checkInAppointmentEntitySetId = getEntitySetIdFromApp(app, CHECKIN_APPOINTMENTS);
     const chargesEntitySetId = getEntitySetIdFromApp(app, CHARGES);
     const dmfEntitySetId = getEntitySetIdFromApp(app, DMF_RESULTS);
     const dmfRiskFactorsEntitySetId = getEntitySetIdFromApp(app, DMF_RISK_FACTORS);
     const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
     const subscriptionEntitySetId = getEntitySetIdFromApp(app, SUBSCRIPTION);
     const contactInformationEntitySetId = getEntitySetIdFromApp(app, CONTACT_INFORMATION);
-    const psaScoresEntityKeyId = getEntitySetIdFromApp(app, PSA_SCORES);
+    const psaScoresEntitySetId = getEntitySetIdFromApp(app, PSA_SCORES);
+    const voiceProfileEntitySetId = getEntitySetIdFromApp(app, SPEAKER_RECOGNITION_PROFILES);
 
     /*
      * Get Hearing and Hearing Neighbors
@@ -134,7 +148,7 @@ function* loadReleaseConditionsWorker(action :SequenceAction) :Generator<*, *, *
 
     const psaId = getEntityKeyId(hearingNeighborsByAppTypeFqn, PSA_SCORES);
 
-    let psaNeighbors = yield call(SearchApi.searchEntityNeighborsWithFilter, psaScoresEntityKeyId, {
+    let psaNeighbors = yield call(SearchApi.searchEntityNeighborsWithFilter, psaScoresEntitySetId, {
       entityKeyIds: [psaId],
       sourceEntitySetIds: [dmfEntitySetId],
       destinationEntitySetIds: [dmfRiskFactorsEntitySetId]
@@ -161,7 +175,7 @@ function* loadReleaseConditionsWorker(action :SequenceAction) :Generator<*, *, *
 
     let personNeighbors = yield call(SearchApi.searchEntityNeighborsWithFilter, peopleEntitySetId, {
       entityKeyIds: [personId],
-      sourceEntitySetIds: [contactInformationEntitySetId],
+      sourceEntitySetIds: [contactInformationEntitySetId, checkInAppointmentEntitySetId, voiceProfileEntitySetId],
       destinationEntitySetIds: [subscriptionEntitySetId, contactInformationEntitySetId, chargesEntitySetId]
     });
 
@@ -170,14 +184,22 @@ function* loadReleaseConditionsWorker(action :SequenceAction) :Generator<*, *, *
     personNeighbors.forEach((neighbor) => {
       const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
       const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
-
-      if (appTypeFqn === CONTACT_INFORMATION || appTypeFqn === CHARGES) {
+      if (appTypeFqn === CHECKIN_APPOINTMENTS) {
+        const { [PROPERTY_TYPES.END_DATE]: checkInEndDate } = getEntityProperties(neighbor, [PROPERTY_TYPES.END_DATE]);
+        if (moment().isBefore(checkInEndDate)) {
+          personNeighborsByAppTypeFqn = personNeighborsByAppTypeFqn.set(
+            appTypeFqn,
+            personNeighborsByAppTypeFqn.get(appTypeFqn, List()).push(neighbor)
+          );
+        }
+      }
+      else if (LIST_ENTITY_SETS.includes(appTypeFqn)) {
         personNeighborsByAppTypeFqn = personNeighborsByAppTypeFqn.set(
           appTypeFqn,
           personNeighborsByAppTypeFqn.get(appTypeFqn, List()).push(neighbor)
         );
       }
-      else if (appTypeFqn === SUBSCRIPTION) {
+      else {
         personNeighborsByAppTypeFqn = personNeighborsByAppTypeFqn.set(
           appTypeFqn,
           neighbor

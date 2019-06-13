@@ -268,11 +268,11 @@ export default class PSAReviewReportsRow extends React.Component<Props, State> {
   renderMetadataText = (actionText, dateText, user) => {
     const text = [actionText];
 
-    if (dateText.length) {
+    if (dateText && dateText.length) {
       text.push(' on ');
       text.push(<ImportantMetadataText key={`${actionText}-${dateText}`}>{dateText}</ImportantMetadataText>);
     }
-    if (user.length) {
+    if (user && user.length) {
       text.push(' by ');
       text.push(<ImportantMetadataText key={`${actionText}-${user}`}>{user}</ImportantMetadataText>);
     }
@@ -291,16 +291,20 @@ export default class PSAReviewReportsRow extends React.Component<Props, State> {
     let creator;
     let dateEdited;
     let editor;
+    dateCreated = moment(scores.getIn([PROPERTY_TYPES.DATE_TIME, 0], ''));
 
     psaNeighbors.get(STAFF, Immutable.List()).forEach((neighbor) => {
       const associationEntitySetId = neighbor.getIn([PSA_ASSOCIATION.ENTITY_SET, 'id']);
       const appTypFqn = entitySetIdsToAppType.get(associationEntitySetId, '');
       const personId = neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.PERSON_ID, 0], '');
-
       if (appTypFqn === ASSESSED_BY) {
         creator = personId;
-        const maybeDate = moment(neighbor.getIn([PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.COMPLETED_DATE_TIME, 0], ''));
-
+        const maybeDate = moment(
+          neighbor.getIn(
+            [PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.COMPLETED_DATE_TIME, 0],
+            neighbor.getIn([PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.DATE_TIME, 0], dateCreated)
+          )
+        );
         if (maybeDate.isValid()) dateCreated = maybeDate;
       }
       if (appTypFqn === EDITED_BY) {

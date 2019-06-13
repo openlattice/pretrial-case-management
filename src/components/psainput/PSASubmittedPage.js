@@ -7,6 +7,7 @@ import Immutable, { Map } from 'immutable';
 import styled from 'styled-components';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
+import { bindActionCreators } from 'redux';
 
 import BasicButton from '../buttons/BasicButton';
 import InfoButton from '../buttons/InfoButton';
@@ -35,6 +36,8 @@ import {
   SelectedScaleBlock,
   ScaleWrapper
 } from '../../utils/Layout';
+
+import * as RoutingActionFactory from '../../core/router/RoutingActionFactory'
 import * as Routes from '../../core/router/Routes';
 
 type Props = {
@@ -53,10 +56,12 @@ type Props = {
   allHearings :Immutable.List<*>,
   getOnExport :(isCompact :boolean) => void,
   onClose :() => void,
-  history :string[],
   violentArrestCharges :Immutable.Map<*, *>,
   selectedOrganizationId :string,
-  selectedOrganizationSettings :Map
+  selectedOrganizationSettings :Map,
+  actions :{
+    goToPath :(path :string) => void
+  }
 };
 
 type State = {
@@ -356,20 +361,18 @@ class PSASubmittedPage extends React.Component<Props, State> {
         <ResultHeader>{label}</ResultHeader>
         {this.renderScale(scores.getIn([fqn, 0]))}
       </div>
-    )
-  }
-
-  renderScores = () => {
-    return (
-      <ScoresContainer>
-        {this.renderNvca()}
-        <InlineScores>
-          {this.renderScaleItem(PROPERTY_TYPES.NCA_SCALE, 'New Criminal Activity Scale')}
-          {this.renderScaleItem(PROPERTY_TYPES.FTA_SCALE, 'Failure to Appear Scale')}
-        </InlineScores>
-      </ScoresContainer>
     );
   }
+
+  renderScores = () => (
+    <ScoresContainer>
+      {this.renderNvca()}
+      <InlineScores>
+        {this.renderScaleItem(PROPERTY_TYPES.NCA_SCALE, 'New Criminal Activity Scale')}
+        {this.renderScaleItem(PROPERTY_TYPES.FTA_SCALE, 'Failure to Appear Scale')}
+      </InlineScores>
+    </ScoresContainer>
+  );
 
   renderDMF = () => {
     const { dmf, selectedOrganizationSettings } = this.props;
@@ -477,11 +480,11 @@ class PSASubmittedPage extends React.Component<Props, State> {
   }
 
   renderProfileButton = () => {
-    const { history, personId } = this.props;
+    const { actions, personId } = this.props;
     return (
       <BasicButton
           onClick={() => {
-            history.push(Routes.PERSON_DETAILS.replace(':personId', personId));
+            actions.goToPath(Routes.PERSON_DETAILS.replace(':personId', personId));
           }}>
         Go to Profile
       </BasicButton>
@@ -646,4 +649,19 @@ function mapStateToProps(state :Immutable.Map<*, *>) :Object {
   };
 }
 
-export default withRouter(connect(mapStateToProps, null)(PSASubmittedPage));
+
+function mapDispatchToProps(dispatch :Function) :Object {
+  const actions :{ [string] :Function } = {};
+
+  Object.keys(RoutingActionFactory).forEach((action :string) => {
+    actions[action] = RoutingActionFactory[action];
+  });
+
+  return {
+    actions: {
+      ...bindActionCreators(actions, dispatch)
+    }
+  };
+}
+
+export default withRouter(connect(mapStateToProps, mapDispatchToProps)(PSASubmittedPage));

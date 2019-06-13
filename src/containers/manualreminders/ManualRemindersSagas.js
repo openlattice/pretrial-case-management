@@ -12,7 +12,6 @@ import {
 import {
   Constants,
   SearchApi,
-  DataApi,
   Models
 } from 'lattice';
 import {
@@ -21,6 +20,7 @@ import {
   select,
   takeEvery
 } from '@redux-saga/core/effects';
+import type { SequenceAction } from 'redux-reqseq';
 
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { getSearchTerm } from '../../utils/DataUtils';
@@ -28,9 +28,11 @@ import { getPropertyTypeId } from '../../edm/edmUtils';
 import { toISODate } from '../../utils/FormattingUtils';
 import { hearingNeedsReminder } from '../../utils/RemindersUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { MAX_HITS } from '../../utils/consts/Consts';
 import {
   APP,
   PSA_NEIGHBOR,
+  REMINDERS,
   STATE
 } from '../../utils/consts/FrontEndStateConsts';
 import {
@@ -56,6 +58,9 @@ const { FullyQualifiedName } = Models;
 
 const getApp = state => state.get(STATE.APP, Map());
 const getEDM = state => state.get(STATE.EDM, Map());
+const getReminderActionListDate = state => (
+  state.getIn([STATE.REMINDERS, REMINDERS.REMINDERS_ACTION_LIST_DATE], moment())
+);
 const getOrgId = state => state.getIn([STATE.APP, APP.SELECTED_ORG_ID], '');
 
 function* loadManualRemindersFormWorker(action :SequenceAction) :Generator<*, *, *> {
@@ -66,6 +71,7 @@ function* loadManualRemindersFormWorker(action :SequenceAction) :Generator<*, *,
 
     const app = yield select(getApp);
     const orgId = yield select(getOrgId);
+    const remindersActionListDate = yield select(getReminderActionListDate);
     const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
     const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
     const hearingsEntitySetId = getEntitySetIdFromApp(app, HEARINGS);
@@ -85,7 +91,7 @@ function* loadManualRemindersFormWorker(action :SequenceAction) :Generator<*, *,
           const neighborObj = neighbor.get(PSA_NEIGHBOR.DETAILS, Map());
           const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
           if (appTypeFqn === HEARINGS) {
-            if (hearingNeedsReminder(neighborObj)) {
+            if (hearingNeedsReminder(neighborObj, remindersActionListDate)) {
               neighborsByAppTypeFqn = neighborsByAppTypeFqn.set(
                 appTypeFqn,
                 neighborsByAppTypeFqn.get(appTypeFqn, List()).push(fromJS(neighborObj))
@@ -138,12 +144,10 @@ function* loadManualRemindersForDateWorker(action :SequenceAction) :Generator<*,
     const manualRemindersEntitySetId = getEntitySetIdFromApp(app, MANUAL_REMINDERS);
     const datePropertyTypeId = getPropertyTypeId(edm, DATE_TIME_FQN);
 
-    const ceiling = yield call(DataApi.getEntitySetSize, manualRemindersEntitySetId);
-
     const reminderOptions = {
       searchTerm: getSearchTerm(datePropertyTypeId, toISODate(date)),
       start: 0,
-      maxHits: ceiling,
+      maxHits: MAX_HITS,
       fuzzy: false
     };
     const allRemindersDataforDate = yield call(

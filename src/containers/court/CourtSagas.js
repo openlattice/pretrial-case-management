@@ -3,6 +3,7 @@
  */
 
 import moment from 'moment';
+import { Constants, SearchApi, Models } from 'lattice';
 import {
   fromJS,
   Map,
@@ -10,22 +11,18 @@ import {
   List
 } from 'immutable';
 import {
-  Constants,
-  SearchApi,
-  DataApi,
-  Models
-} from 'lattice';
-import {
   call,
   put,
   select,
   takeEvery
 } from '@redux-saga/core/effects';
+import type { SequenceAction } from 'redux-reqseq';
 
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { getSearchTerm } from '../../utils/DataUtils';
+import { hearingIsCancelled } from '../../utils/HearingUtils';
 import { getPropertyTypeId } from '../../edm/edmUtils';
-import { PSA_STATUSES } from '../../utils/consts/Consts';
+import { MAX_HITS, PSA_STATUSES } from '../../utils/consts/Consts';
 import { toISODate, TIME_FORMAT } from '../../utils/FormattingUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import {
@@ -38,16 +35,15 @@ import {
   FILTER_PEOPLE_IDS_WITH_OPEN_PSAS,
   LOAD_HEARINGS_FOR_DATE,
   LOAD_HEARING_NEIGHBORS,
-  REFRESH_HEARING_NEIGHBORS,
   LOAD_JUDGES,
   filterPeopleIdsWithOpenPSAs,
   loadHearingsForDate,
   loadHearingNeighbors,
-  refreshHearingNeighbors,
   loadJudges
 } from './CourtActionFactory';
 
 const {
+  CHECKIN_APPOINTMENTS,
   CONTACT_INFORMATION,
   HEARINGS,
   JUDGES,
@@ -60,6 +56,8 @@ const {
 
 const { OPENLATTICE_ID_FQN } = Constants;
 const { FullyQualifiedName } = Models;
+
+const LIST_APP_TYPES = [CHECKIN_APPOINTMENTS, CONTACT_INFORMATION, HEARINGS, RELEASE_CONDITIONS, STAFF];
 
 const getApp = state => state.get(STATE.APP, Map());
 const getEDM = state => state.get(STATE.EDM, Map());
@@ -179,6 +177,8 @@ function* filterPeopleIdsWithOpenPSAsWorker(action :SequenceAction) :Generator<*
     psaNeighborsById.entrySeq().forEach(([id, neighbors]) => {
       let mostRecentEditDate;
       let mostRecentNeighbor;
+
+      const psaCreationDate = scoresAsMap.get([id, PROPERTY_TYPES.DATE_TIME, 0], '');
       neighbors.forEach((neighbor) => {
         const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id']);
         const appTypeFqn = entitySetIdsToAppType.get(entitySetId, JUDGES);
@@ -197,7 +197,10 @@ function* filterPeopleIdsWithOpenPSAsWorker(action :SequenceAction) :Generator<*
           }
         }
       });
-      psaIdToMostRecentEditDate = psaIdToMostRecentEditDate.set(id, mostRecentNeighbor);
+      psaIdToMostRecentEditDate = psaIdToMostRecentEditDate.set(
+        id,
+        mostRecentNeighbor.set(PROPERTY_TYPES.DATE_TIME, psaCreationDate)
+      );
     });
     yield put(filterPeopleIdsWithOpenPSAs.success(action.id, {
       filteredPersonIds,
@@ -239,12 +242,10 @@ function* loadHearingsForDateWorker(action :SequenceAction) :Generator<*, *, *> 
     const hearingEntitySetId = getEntitySetIdFromApp(app, HEARINGS);
     const datePropertyTypeId = getPropertyTypeId(edm, DATE_TIME_FQN);
 
-    const ceiling = yield call(DataApi.getEntitySetSize, hearingEntitySetId);
-
     const hearingOptions = {
       searchTerm: getSearchTerm(datePropertyTypeId, toISODate(action.value)),
       start: 0,
-      maxHits: ceiling,
+      maxHits: MAX_HITS,
       fuzzy: false
     };
     const allHearingData = yield call(SearchApi.searchEntitySetData, hearingEntitySetId, hearingOptions);
@@ -257,13 +258,10 @@ function* loadHearingsForDateWorker(action :SequenceAction) :Generator<*, *, *> 
           === toISODate(action.value);
         const hearingType = hearing.getIn([PROPERTY_TYPES.HEARING_TYPE, 0]);
         const hearingId = hearing.getIn([OPENLATTICE_ID_FQN, 0]);
-        const hearingIsInactive = hearing.getIn([PROPERTY_TYPES.HEARING_INACTIVE, 0], false);
-        const hearingHasBeenCancelled = hearing.getIn([PROPERTY_TYPES.UPDATE_TYPE, 0], '')
-          .toLowerCase().trim() === 'cancelled';
+        const hearingIsInactive = hearingIsCancelled(hearing);
         if (hearingType
           && hearingExists
           && hearingOnDateSelected
-          && !hearingHasBeenCancelled
           && !hearingIsInactive
         ) hearingIds = hearingIds.add(hearingId);
       });
@@ -271,10 +269,8 @@ function* loadHearingsForDateWorker(action :SequenceAction) :Generator<*, *, *> 
 
     hearingsToday.filter((hearing) => {
       const hearingHasValidDateTime = moment(hearing.getIn([PROPERTY_TYPES.DATE_TIME, 0], '')).isValid();
-      const hearingIsInactive = hearing.getIn([PROPERTY_TYPES.HEARING_INACTIVE, 0], false);
-      const hearingHasBeenCancelled = hearing
-        .getIn([PROPERTY_TYPES.UPDATE_TYPE, 0], '').toLowerCase().trim() === 'cancelled';
-      if (!hearingHasValidDateTime || hearingHasBeenCancelled || hearingIsInactive) return false;
+      const hearingIsInactive = hearingIsCancelled(hearing);
+      if (!hearingHasValidDateTime || hearingIsInactive) return false;
       return true;
     })
       .forEach((hearing) => {
@@ -406,60 +402,15 @@ function* loadHearingNeighborsWatcher() :Generator<*, *, *> {
   yield takeEvery(LOAD_HEARING_NEIGHBORS, loadHearingNeighborsWorker);
 }
 
-function* refreshHearingNeighborsWorker(action :SequenceAction) :Generator<*, *, *> {
-  const { id } = action.value;
-  try {
-    yield put(refreshHearingNeighbors.request(action.id, { id }));
-    const app = yield select(getApp);
-    const orgId = yield select(getOrgId);
-    const hearingEntitySetId = getEntitySetIdFromApp(app, HEARINGS);
-    const releaseConditionsEntitySetId = getEntitySetIdFromApp(app, RELEASE_CONDITIONS);
-    const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
-
-    let neighborsList = yield call(SearchApi.searchEntityNeighbors, hearingEntitySetId, id);
-    neighborsList = fromJS(neighborsList);
-    let neighbors = Map();
-    neighborsList.forEach((neighbor) => {
-      const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id']);
-      const entitySetName = entitySetIdsToAppType.get(entitySetId, JUDGES);
-      if (entitySetId === releaseConditionsEntitySetId) {
-        neighbors = neighbors.set(
-          entitySetName,
-          neighbors.get(entitySetName, List()).push(fromJS(neighbor))
-        );
-      }
-      else {
-        neighbors = neighbors.set(
-          entitySetName,
-          fromJS(neighbor)
-        );
-      }
-    });
-    yield put(refreshHearingNeighbors.success(action.id, { id, neighbors }));
-  }
-  catch (error) {
-    console.error(error);
-    yield put(refreshHearingNeighbors.failure(action.id, error));
-  }
-  finally {
-    yield put(refreshHearingNeighbors.finally(action.id, { id }));
-  }
-}
-
-function* refreshHearingNeighborsWatcher() :Generator<*, *, *> {
-  yield takeEvery(REFRESH_HEARING_NEIGHBORS, refreshHearingNeighborsWorker);
-}
-
 function* loadJudgesWorker(action :SequenceAction) :Generator<*, *, *> {
   try {
     yield put(loadJudges.request(action.id));
     const app = yield select(getApp);
     const judgesEntitySetId = getEntitySetIdFromApp(app, JUDGES);
-    const entitySetSize = yield call(DataApi.getEntitySetSize, judgesEntitySetId);
     const options = {
       searchTerm: '*',
       start: 0,
-      maxHits: entitySetSize
+      maxHits: MAX_HITS
     };
 
     const allJudgeData = yield call(SearchApi.searchEntitySetData, judgesEntitySetId, options);
@@ -483,6 +434,5 @@ export {
   filterPeopleIdsWithOpenPSAsWatcher,
   loadHearingsForDateWatcher,
   loadHearingNeighborsWatcher,
-  refreshHearingNeighborsWatcher,
   loadJudgesWatcher
 };

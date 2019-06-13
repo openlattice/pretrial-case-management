@@ -41,7 +41,7 @@ import psaConfig from '../../config/formconfig/PsaConfig';
 import SubscriptionInfo from '../../components/subscription/SubscriptionInfo';
 import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
 import { OL } from '../../utils/consts/Colors';
-import { getEntityKeyId } from '../../utils/DataUtils';
+import { getFirstNeighborValue, getEntityKeyId } from '../../utils/DataUtils';
 import { toISODateTime } from '../../utils/FormattingUtils';
 import { getScoresAndRiskFactors, calculateDMF, getDMFRiskFactors } from '../../utils/ScoringUtils';
 import { tryAutofillFields } from '../../utils/AutofillUtils';
@@ -90,6 +90,7 @@ import * as ReviewActionFactory from '../review/ReviewActionFactory';
 import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
 import * as CourtActionFactory from '../court/CourtActionFactory';
 import * as Routes from '../../core/router/Routes';
+import * as RoutingActionFactory from '../../core/router/RoutingActionFactory';
 
 
 const { OPENLATTICE_ID_FQN } = Constants;
@@ -283,12 +284,11 @@ const numPages = 4;
 
 type Props = {
   actions :{
+    goToPath :(path :string) => void,
     addCaseAndCharges :(value :{
       pretrialCase :Immutable.Map<*, *>,
       charges :Immutable.List<Immutable.Map<*, *>>
     }) => void,
-
-    hardRestart :() => void;
     loadDataModel :() => void,
     loadNeighbors :(value :{
       entitySetId :string,
@@ -413,17 +413,17 @@ class Form extends React.Component<Props, State> {
   }
 
   redirectToFirstPageIfNecessary = () => {
-    const { psaForm, history, selectedPerson } = this.props;
+    const { psaForm, actions, selectedPerson } = this.props;
     const { scoresWereGenerated } = this.state;
     const loadedContextParams = this.loadContextParams();
     if (loadedContextParams) {
-      history.push(`${Routes.PSA_FORM}/1`);
+      actions.goToPath(`${Routes.PSA_FORM}/1`);
     }
     else if (!psaForm.get(DMF.COURT_OR_BOOKING)) {
-      history.push(Routes.DASHBOARD);
+      actions.goToPath(Routes.DASHBOARD);
     }
     else if ((!selectedPerson.size || !scoresWereGenerated) && !window.location.href.endsWith('1')) {
-      history.push(`${Routes.PSA_FORM}/1`);
+      actions.goToPath(`${Routes.PSA_FORM}/1`);
     }
   }
 
@@ -640,9 +640,9 @@ class Form extends React.Component<Props, State> {
   }
 
   handlePageChange = (path :string) => {
-    const { actions, history } = this.props;
+    const { actions } = this.props;
     actions.clearSubmit();
-    history.push(path);
+    actions.goToPath(path);
   };
 
   getSearchPeopleSection = () => {
@@ -824,9 +824,23 @@ class Form extends React.Component<Props, State> {
     const orgCharges = chargesByOrgId.get(selectedOrganizationId, Map()).valueSeq();
     let chargeOptions = Map();
     orgCharges.forEach((charge) => {
-      chargeOptions = chargeOptions.set(this.formatCharge(charge), charge);
+      chargeOptions = chargeOptions.set(
+        this.formatCharge(charge),
+        {
+          label: this.formatCharge(charge),
+          value: charge
+        }
+      );
     });
-    return chargeOptions.sortBy((statute, _) => statute);
+
+    const sortedChargeList = chargeOptions.valueSeq()
+      .sortBy(charge => getFirstNeighborValue(charge.value, PROPERTY_TYPES.REFERENCE_CHARGE_DESCRIPTION))
+      .sortBy(charge => getFirstNeighborValue(charge.value, PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE));
+
+    return {
+      chargeOptions: chargeOptions.sortBy((statute, _) => statute),
+      chargeList: sortedChargeList
+    };
   }
 
   getSelectChargesSection = () => {
@@ -841,6 +855,7 @@ class Form extends React.Component<Props, State> {
     } = this.props;
     const caseContext = psaForm.get(DMF.COURT_OR_BOOKING) === CONTEXT.BOOKING ? CONTEXTS.BOOKING : CONTEXTS.COURT;
     const chargeType = selectedOrganizationSettings.getIn([SETTINGS.CASE_CONTEXTS, caseContext]);
+    const { chargeList, chargeOptions } = this.formatChargeOptions();
     if (isLoadingNeighbors || loadingPersonDetails) {
       return <LogoLoader loadingText="Loading Person Details..." />;
     }
@@ -850,7 +865,8 @@ class Form extends React.Component<Props, State> {
           chargeType={chargeType}
           defaultArrest={selectedPretrialCase}
           defaultCharges={charges}
-          chargeOptions={this.formatChargeOptions()}
+          chargeOptions={chargeOptions}
+          chargeList={chargeList}
           nextPage={this.nextPage}
           prevPage={this.prevPage}
           onSubmit={actions.addCaseAndCharges} />
@@ -1040,7 +1056,7 @@ class Form extends React.Component<Props, State> {
           personId={this.getPersonIdValue()}
           psaId={psaId}
           submitSuccess={!submitError}
-          onClose={actions.hardRestart}
+          onClose={actions.goToRoot}
           charges={charges}
           notes={psaForm.get(PSA.NOTES)}
           allCases={allCasesForPerson}
@@ -1067,7 +1083,7 @@ class Form extends React.Component<Props, State> {
           open={confirmationModalOpen}
           submissionStatus={isSubmitting || isSubmitted}
           pageContent={this.getPsaResults}
-          handleModalButtonClick={actions.hardRestart} />
+          handleModalButtonClick={actions.goToRoot} />
     );
   }
 
@@ -1180,6 +1196,9 @@ function mapDispatchToProps(dispatch :Function) :Object {
   });
   Object.keys(SubmitActionFactory).forEach((action :string) => {
     actions[action] = SubmitActionFactory[action];
+  });
+  Object.keys(RoutingActionFactory).forEach((action :string) => {
+    actions[action] = RoutingActionFactory[action];
   });
 
   return {

@@ -5,9 +5,15 @@
 import axios from 'axios';
 import moment from 'moment';
 import LatticeAuth from 'lattice-auth';
+import { SearchApiActions, SearchApiSagas } from 'lattice-sagas';
 import { push } from 'connected-react-router';
-import { fromJS, List, Map, Set } from 'immutable';
 import { Constants, SearchApi } from 'lattice';
+import {
+  fromJS,
+  List,
+  Map,
+  Set
+} from 'immutable';
 import {
   all,
   call,
@@ -16,12 +22,14 @@ import {
   takeEvery,
   select
 } from '@redux-saga/core/effects';
+import type { RequestSequence, SequenceAction } from 'redux-reqseq';
 
 import { toISODate, formatDate } from '../../utils/FormattingUtils';
 import { submit } from '../../utils/submit/SubmitActionFactory';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PERSON_INFO_DATA, PSA_STATUSES } from '../../utils/consts/Consts';
 import { APP, STATE, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
+import { getSearchTerm } from '../../utils/DataUtils';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { getPropertyTypeId } from '../../edm/edmUtils';
 import {
@@ -40,6 +48,10 @@ import {
 } from './PersonActionFactory';
 
 import * as Routes from '../../core/router/Routes';
+
+const { searchEntityNeighborsWithFilter, searchEntitySetData } = SearchApiActions;
+const { searchEntityNeighborsWithFilterWorker, searchEntitySetDataWorker } = SearchApiSagas;
+
 const { HAS_OPEN_PSA, HAS_MULTIPLE_OPEN_PSAS, IS_RECEIVING_REMINDERS } = PERSON_INFO_DATA;
 const { OPENLATTICE_ID_FQN } = Constants;
 const {
@@ -273,55 +285,69 @@ function* searchPeopleWorker(action) :Generator<*, *, *> {
       maxHits: 100
     };
 
-    let response = yield call(SearchApi.advancedSearchEntitySetData, peopleEntitySetId, searchOptions);
-    response = fromJS(response.hits);
+    const response = yield call(
+      searchEntitySetDataWorker,
+      searchEntitySetData({ entitySetId: peopleEntitySetId, searchOptions })
+    );
+    if (response.error) throw response.error;
+
     let personMap = Map();
-    if (includePSAInfo) {
-      response.forEach((person) => {
+    if (response.data.hits.length > 0) {
+      const searchResults = fromJS(response.data.hits);
+      searchResults.forEach((person) => {
         const personEntityKeyId = person.getIn([OPENLATTICE_ID_FQN, 0], '');
-        personMap = personMap.set(personEntityKeyId, fromJS(person));
+        personMap = personMap.set(personEntityKeyId, person);
       });
-      let peopleNeighborsById = yield call(SearchApi.searchEntityNeighborsWithFilter, peopleEntitySetId, {
-        entityKeyIds: personMap.keySeq().toJS(),
-        sourceEntitySetIds: [psaScoresEntitySetId, contactInformationEntitySetId],
-        destinationEntitySetIds: [subscriptionEntitySetId, contactInformationEntitySetId]
-      });
-      peopleNeighborsById = fromJS(peopleNeighborsById);
+      if (includePSAInfo) {
+        let peopleNeighborsById = yield call(
+          searchEntityNeighborsWithFilterWorker,
+          searchEntityNeighborsWithFilter({
+            entitySetId: peopleEntitySetId,
+            filter: {
+              entityKeyIds: personMap.keySeq().toJS(),
+              sourceEntitySetIds: [psaScoresEntitySetId, contactInformationEntitySetId],
+              destinationEntitySetIds: [subscriptionEntitySetId, contactInformationEntitySetId]
+            }
+          })
+        );
+        if (peopleNeighborsById.error) throw peopleNeighborsById.error;
+        peopleNeighborsById = fromJS(peopleNeighborsById.data);
 
-      peopleNeighborsById.entrySeq().forEach(([personEntityKeyId, neighbors]) => {
-        let hasActiveSubscription = false;
-        let hasPreferredContact = false;
-        let psaCount = 0;
-        neighbors.forEach((neighbor) => {
-          const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id']);
-          const appTypeFqn = entitySetIdsToAppType.get(entitySetId);
-          if (appTypeFqn === PSA_SCORES
-            && neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.STATUS, 0], '') === PSA_STATUSES.OPEN) {
-            psaCount += 1;
-          }
-          if (appTypeFqn === SUBSCRIPTION) {
-            const subscriptionIsActive = neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.IS_ACTIVE, 0], false);
-            if (subscriptionIsActive) {
-              hasActiveSubscription = true;
+        peopleNeighborsById.entrySeq().forEach(([personEntityKeyId, neighbors]) => {
+          let hasActiveSubscription = false;
+          let hasPreferredContact = false;
+          let psaCount = 0;
+          neighbors.forEach((neighbor) => {
+            const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id']);
+            const appTypeFqn = entitySetIdsToAppType.get(entitySetId);
+            if (appTypeFqn === PSA_SCORES
+              && neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.STATUS, 0], '') === PSA_STATUSES.OPEN) {
+              psaCount += 1;
             }
-          }
-          if (appTypeFqn === CONTACT_INFORMATION) {
-            const contactIsPreferred = neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.IS_PREFERRED, 0], false);
-            if (contactIsPreferred) {
-              hasPreferredContact = true;
+            if (appTypeFqn === SUBSCRIPTION) {
+              const subscriptionIsActive = neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.IS_ACTIVE, 0], false);
+              if (subscriptionIsActive) {
+                hasActiveSubscription = true;
+              }
             }
-          }
+            if (appTypeFqn === CONTACT_INFORMATION) {
+              const contactIsPreferred = neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.IS_PREFERRED, 0], false);
+              if (contactIsPreferred) {
+                hasPreferredContact = true;
+              }
+            }
+          });
+
+          personMap = personMap
+            .setIn([personEntityKeyId, HAS_OPEN_PSA], (psaCount > 0))
+            .setIn([personEntityKeyId, HAS_MULTIPLE_OPEN_PSAS], (psaCount > 1))
+            .setIn([personEntityKeyId, IS_RECEIVING_REMINDERS], (hasActiveSubscription && hasPreferredContact));
         });
-
-        personMap = personMap
-          .setIn([personEntityKeyId, HAS_OPEN_PSA], (psaCount > 0))
-          .setIn([personEntityKeyId, HAS_MULTIPLE_OPEN_PSAS], (psaCount > 1))
-          .setIn([personEntityKeyId, IS_RECEIVING_REMINDERS], (hasActiveSubscription && hasPreferredContact));
-      });
-      response = personMap.valueSeq();
+      }
     }
+    const personList = personMap.valueSeq();
 
-    yield put(searchPeople.success(action.id, response));
+    yield put(searchPeople.success(action.id, personList));
   }
   catch (error) {
     console.error(error);
@@ -376,10 +402,10 @@ function* searchPeopleByPhoneNumberWorker(action) :Generator<*, *, *> {
       nameConstraints :Array,
       search :string,
       property :string,
-      entitySetId :string,
     ) => {
+      const formattedSearchTerm = getSearchTerm(property, search);
       nameConstraints.constraints.push({
-        searchTerm: `${entitySetId}.${property}:"${search}"`,
+        searchTerm: formattedSearchTerm,
         fuzzy: true
       });
     };
@@ -400,8 +426,8 @@ function* searchPeopleByPhoneNumberWorker(action) :Generator<*, *, *> {
       }
       else {
         names.forEach((word) => {
-          updateConstraints(firstNameConstraints, word, firstNamePropertyTypeId, peopleEntitySetId);
-          updateConstraints(lastNameConstraints, word, lastNamePropertyTypeId, peopleEntitySetId);
+          updateConstraints(firstNameConstraints, word, firstNamePropertyTypeId);
+          updateConstraints(lastNameConstraints, word, lastNamePropertyTypeId);
         });
       }
     }

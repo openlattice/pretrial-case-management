@@ -38,7 +38,6 @@ type Props = {
     }) => void,
     loadReleaseConditions :({ hearingId :string }) => void,
     refreshPSANeighbors :({ id :string }) => void,
-    refreshHearingNeighbors :({ id :string }) => void,
     replaceAssociation :(values :{
       associationEntity :Map<*, *>,
       associationEntityName :string,

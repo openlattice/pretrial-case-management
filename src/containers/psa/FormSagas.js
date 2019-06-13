@@ -1,8 +1,14 @@
 /*
  * @flow
  */
-import { Map } from 'immutable';
-import { Constants, EntityDataModelApi, SearchApi } from 'lattice';
+import { fromJS, Map } from 'immutable';
+import type { SequenceAction } from 'redux-reqseq';
+import {
+  Constants,
+  DataApi,
+  EntityDataModelApi,
+  SearchApi
+} from 'lattice';
 import {
   call,
   put,
@@ -12,16 +18,18 @@ import {
 
 import { loadPSAData } from '../review/ReviewActionFactory';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
+import { getEntityProperties } from '../../utils/DataUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { APP, STATE } from '../../utils/consts/FrontEndStateConsts';
+import { APP, STATE, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { PSA_STATUSES } from '../../utils/consts/Consts';
 import {
-  HARD_RESTART,
   LOAD_DATA_MODEL,
   LOAD_NEIGHBORS,
   loadDataModel,
   loadNeighbors
 } from './FormActionFactory';
+
+const { ENTITY_KEY_ID } = PROPERTY_TYPES;
 
 const { PEOPLE, PSA_SCORES } = APP_TYPES;
 
@@ -95,6 +103,8 @@ function* getOpenPSANeighbors(neighbors) :Generator<*, *, *> {
 function* loadNeighborsWorker(action :SequenceAction) :Generator<*, *, *> {
   const { entityKeyId } = action.value;
 
+  let scoresAsMap = Map();
+
   const app = yield select(getApp);
   const orgId = yield select(getOrgId);
   const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
@@ -106,9 +116,18 @@ function* loadNeighborsWorker(action :SequenceAction) :Generator<*, *, *> {
     const neighbors = yield call(SearchApi.searchEntityNeighbors, peopleEntitySetId, entityKeyId);
 
     const openPSAs = yield call(getOpenPSANeighbors, neighbors);
+    fromJS(neighbors).forEach((neighbor) => {
+      const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id']);
+      const { [ENTITY_KEY_ID]: neighborEntityKeyId } = getEntityProperties(neighbor, [ENTITY_KEY_ID]);
+      const neighborDetails = neighbor.get(PSA_NEIGHBOR.DETAILS, Map());
+      const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
+      if (appTypeFqn === PSA_SCORES) {
+        scoresAsMap = scoresAsMap.set(neighborEntityKeyId, neighborDetails);
+      }
+    });
 
     yield put(loadNeighbors.success(action.id, { neighbors, openPSAs, entitySetIdsToAppType }));
-    yield put(loadPSAData(getAllPSAIds(neighbors, psaEntitySetId)));
+    yield put(loadPSAData({ psaIds: getAllPSAIds(neighbors, psaEntitySetId), scoresAsMap }));
   }
   catch (error) {
     console.error(error);
@@ -123,21 +142,8 @@ function* loadNeighborsWatcher() :Generator<*, *, *> {
   yield takeEvery(LOAD_NEIGHBORS, loadNeighborsWorker);
 }
 
-function* hardRestartWorker() :Generator<*, *, *> {
-  // hardRestartWorker and Watcher taken from BHR
-  yield call(() => {
-    window.location.href = `${window.location.origin}${window.location.pathname}`;
-  });
-}
-
-function* hardRestartWatcher() :Generator<*, *, *> {
-
-  yield takeEvery(HARD_RESTART, hardRestartWorker);
-}
-
 
 export {
-  hardRestartWatcher,
   loadDataModelWatcher,
   loadNeighborsWatcher
 };

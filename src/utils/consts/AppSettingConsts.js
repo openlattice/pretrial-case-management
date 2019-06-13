@@ -20,7 +20,9 @@ export const SETTINGS = {
   COURT_CASES_INTEGRATED: 'courtCasesIntegrated',
   CASE_CONTEXTS: 'caseContexts',
   CONTEXTS: 'contexts',
-  LOAD_CASES: 'loadCasesOnTheFly',
   COURT_REMINDERS: 'courtRemindersEnabled',
-  MODULES: 'modules'
+  ENROLL_VOICE: 'enrollVoice',
+  LOAD_CASES: 'loadCasesOnTheFly',
+  MODULES: 'modules',
+  PREFERRED_COUNTY: 'preferredCountyEntityKeyId'
 };

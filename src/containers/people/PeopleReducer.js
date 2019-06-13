@@ -9,12 +9,14 @@ import {
   Set
 } from 'immutable';
 
-import { getEntityKeyId } from '../../utils/DataUtils';
-import { changePSAStatus, updateScoresAndRiskFactors, loadPSAData } from '../review/ReviewActionFactory';
-import { refreshHearingNeighbors } from '../court/CourtActionFactory';
+import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PEOPLE, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { PSA_STATUSES } from '../../utils/consts/Consts';
+import { enrollVoice, getProfile } from '../enroll/EnrollActionFactory';
+import { changePSAStatus, updateScoresAndRiskFactors, loadPSAData } from '../review/ReviewActionFactory';
+import { deleteEntity } from '../../utils/data/DataActionFactory';
+import { refreshHearingAndNeighbors } from '../hearings/HearingsActionFactory';
 import {
   CLEAR_PERSON,
   getPeople,
@@ -26,11 +28,18 @@ import {
 } from './PeopleActionFactory';
 
 const {
+  CHECKIN_APPOINTMENTS,
   CONTACT_INFORMATION,
   DMF_RESULTS,
+  HEARINGS,
   PSA_SCORES,
   RELEASE_RECOMMENDATIONS
 } = APP_TYPES;
+
+const {
+  ENTITY_KEY_ID,
+  PERSON_ID
+} = PROPERTY_TYPES;
 
 const PEOPLE_FQN = APP_TYPES.PEOPLE;
 
@@ -39,6 +48,7 @@ const INITIAL_STATE = fromJS({
   [PEOPLE.SCORES_ENTITY_SET_ID]: '',
   [PEOPLE.RESULTS]: List(),
   [PEOPLE.PERSON_DATA]: Map(),
+  [PEOPLE.VOICE_ENROLLMENT_PROGRESS]: 0,
   [PEOPLE.PERSON_ENTITY_KEY_ID]: '',
   [PEOPLE.FETCHING_PEOPLE]: false,
   [PEOPLE.FETCHING_PERSON_DATA]: false,
@@ -58,7 +68,7 @@ const INITIAL_STATE = fromJS({
   [PEOPLE.REQUIRES_ACTION_LOADING]: false
 });
 
-export default function peopleReducer(state = INITIAL_STATE, action) {
+export default function peopleReducer(state :Map = INITIAL_STATE, action :Object) {
   switch (action.type) {
 
     case CLEAR_PERSON: {
@@ -136,6 +146,16 @@ export default function peopleReducer(state = INITIAL_STATE, action) {
         }
       });
     }
+
+    case enrollVoice.case(action.type): {
+      return enrollVoice.reducer(state, action, {
+        SUCCESS: () => {
+          const { numSubmissions } = action.value;
+          return state.set(PEOPLE.VOICE_ENROLLMENT_PROGRESS, numSubmissions);
+        }
+      });
+    }
+
     case getPeople.case(action.type): {
       return getPeople.reducer(state, action, {
         REQUEST: () => state.set(PEOPLE.FETCHING_PEOPLE, true),
@@ -144,6 +164,7 @@ export default function peopleReducer(state = INITIAL_STATE, action) {
         FINALLY: () => state.set(PEOPLE.FETCHING_PEOPLE, false)
       });
     }
+
     case getPersonData.case(action.type): {
       return getPersonData.reducer(state, action, {
         REQUEST: () => state.set(PEOPLE.FETCHING_PERSON_DATA, true),
@@ -151,6 +172,15 @@ export default function peopleReducer(state = INITIAL_STATE, action) {
           .set(PEOPLE.PERSON_DATA, fromJS(action.value.person)
             .set(PEOPLE.PERSON_ENTITY_KEY_ID, action.value.entityKeyId)),
         FAILURE: () => state.set(PEOPLE.PERSON_DATA, Map())
+      });
+    }
+
+    case getProfile.case(action.type): {
+      return getProfile.reducer(state, action, {
+        SUCCESS: () => {
+          const { numSubmissions } = action.value;
+          return state.set(PEOPLE.VOICE_ENROLLMENT_PROGRESS, numSubmissions);
+        }
       });
     }
 
@@ -253,12 +283,74 @@ export default function peopleReducer(state = INITIAL_STATE, action) {
       });
     }
 
-    case refreshHearingNeighbors.case(action.type): {
-      return refreshHearingNeighbors.reducer(state, action, {
+    case refreshHearingAndNeighbors.case(action.type): {
+      return refreshHearingAndNeighbors.reducer(state, action, {
         SUCCESS: () => {
-          const { neighbors } = action.value;
-          const nextNeighbors = state.get(PEOPLE.MOST_RECENT_PSA_NEIGHBORS).merge(neighbors);
-          return state.set(PEOPLE.MOST_RECENT_PSA_NEIGHBORS, nextNeighbors);
+          let nextState = state;
+          const { hearing, hearingNeighborsByAppTypeFqn, hearingEntityKeyId } = action.value;
+          /*
+           * Get personId and Neighbors
+           */
+          const personEntity = hearingNeighborsByAppTypeFqn.get(PEOPLE_FQN, Map());
+          const { [PERSON_ID]: personId } = getEntityProperties(personEntity, [PERSON_ID]);
+          let personNeighbors = state.getIn([PEOPLE.NEIGHBORS, personId], Map());
+          /*
+          * Replace the hearing in the person's neighbors.
+          */
+          const personHearings = personNeighbors.get(HEARINGS, List());
+          const nextPersonHearings = personHearings.map((personHearing) => {
+            const { [ENTITY_KEY_ID]: entityKeyId } = getEntityProperties(personHearing, [ENTITY_KEY_ID]);
+            if (entityKeyId === hearingEntityKeyId) return hearing;
+            return personHearing;
+          });
+          /*
+          * Grab the checkins associated to the person and the updated hearing.
+          */
+          const hearingCheckInAppointments = hearingNeighborsByAppTypeFqn.get(CHECKIN_APPOINTMENTS, List());
+          const personCheckInAppointments = personNeighbors.get(CHECKIN_APPOINTMENTS, List());
+          /*
+           * Get most recent PSA's neighbors and determine whether the hearing being updated is associated with it,
+           * and if so, replace check-in appointments and hearings with updated lists.
+           */
+          const mostRecentPSANeighbors = state.get(PEOPLE.MOST_RECENT_PSA_NEIGHBORS);
+          const isAssociatedWithMostRecentPSA = mostRecentPSANeighbors.get(HEARINGS, List()).some((psaHearing) => {
+            const { [ENTITY_KEY_ID]: recentHearingEntityKeyId } = getEntityProperties(psaHearing, [ENTITY_KEY_ID]);
+            return recentHearingEntityKeyId === hearingEntityKeyId;
+          });
+          if (isAssociatedWithMostRecentPSA) {
+            const mostRecentPSAHearings = mostRecentPSANeighbors.get(HEARINGS, List());
+            let mostRecentCheckInAppointments = Set.of(mostRecentPSANeighbors.get(CHECKIN_APPOINTMENTS, List()));
+            hearingCheckInAppointments.forEach((checkInAppointment) => {
+              mostRecentCheckInAppointments = mostRecentCheckInAppointments.add(checkInAppointment);
+            });
+            const nextRecentPSAHearings = mostRecentPSAHearings.map((psaHearing) => {
+              const { [ENTITY_KEY_ID]: entityKeyId } = getEntityProperties(psaHearing, [ENTITY_KEY_ID]);
+              if (entityKeyId === hearingEntityKeyId) return hearing;
+              return psaHearing;
+            });
+            personNeighbors = personNeighbors.set(HEARINGS, nextPersonHearings);
+            nextState = nextState
+              .setIn(
+                [PEOPLE.MOST_RECENT_PSA_NEIGHBORS, CHECKIN_APPOINTMENTS],
+                mostRecentCheckInAppointments
+              )
+              .setIn(
+                [PEOPLE.MOST_RECENT_PSA_NEIGHBORS, HEARINGS],
+                nextRecentPSAHearings
+              );
+          }
+          /*
+           * Add all checkin apointments to one set for person neighbors
+           */
+          let nextCheckInAppointmentsById = Map();
+          hearingCheckInAppointments.concat(personCheckInAppointments)
+            .forEach((checkInAppointment) => {
+              const { [ENTITY_KEY_ID]: entityKeyId } = getEntityProperties(checkInAppointment, [ENTITY_KEY_ID]);
+              nextCheckInAppointmentsById = nextCheckInAppointmentsById.set(entityKeyId, checkInAppointment);
+            });
+          personNeighbors = personNeighbors.set(CHECKIN_APPOINTMENTS, nextCheckInAppointmentsById.valueSeq());
+          nextState = nextState.setIn([PEOPLE.NEIGHBORS, personId], personNeighbors);
+          return nextState;
         }
       });
     }
@@ -308,6 +400,37 @@ export default function peopleReducer(state = INITIAL_STATE, action) {
           return state.setIn([PEOPLE.NEIGHBORS, personId, CONTACT_INFORMATION], contactInformation);
         },
         FINALLY: () => state.set(PEOPLE.REFRESHING_PERSON_NEIGHBORS, false)
+      });
+    }
+
+
+    case deleteEntity.case(action.type): {
+      return deleteEntity.reducer(state, action, {
+        SUCCESS: () => {
+          const { entityKeyId } = action.value;
+          const personId = state.getIn([PEOPLE.PERSON_DATA, PROPERTY_TYPES.PERSON_ID, 0], '');
+          let personNeighbors = state.getIn([PEOPLE.NEIGHBORS, personId], Map());
+
+          const personCheckInAppointments = personNeighbors.get(CHECKIN_APPOINTMENTS, List())
+            .filter((checkInAppointment) => {
+              const {
+                [PROPERTY_TYPES.ENTITY_KEY_ID]: checkInAppoiontmentsEntityKeyId
+              } = getEntityProperties(checkInAppointment, [PROPERTY_TYPES.ENTITY_KEY_ID]);
+              return entityKeyId !== checkInAppoiontmentsEntityKeyId;
+            });
+          const personHearings = personNeighbors.get(HEARINGS, List())
+            .filter((hearing) => {
+              const {
+                [PROPERTY_TYPES.ENTITY_KEY_ID]: hearingEntityKeyId
+              } = getEntityProperties(hearing, [PROPERTY_TYPES.ENTITY_KEY_ID]);
+              return entityKeyId !== hearingEntityKeyId;
+            });
+          personNeighbors = personNeighbors
+            .set(HEARINGS, personHearings)
+            .set(CHECKIN_APPOINTMENTS, personCheckInAppointments);
+
+          return state.setIn([PEOPLE.NEIGHBORS, personId], personNeighbors);
+        }
       });
     }
 

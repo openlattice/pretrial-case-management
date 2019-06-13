@@ -14,15 +14,18 @@ import {
   call,
   put,
   takeEvery,
-  all
+  all,
+  select
 } from '@redux-saga/core/effects';
 
-import { APP } from '../consts/FrontEndStateConsts';
+import { APP, EDM, STATE } from '../consts/FrontEndStateConsts';
 import { stripIdField } from '../DataUtils';
 import {
+  CREATE_ASSOCIATIONS,
   REPLACE_ASSOCIATION,
   REPLACE_ENTITY,
   SUBMIT,
+  createAssociations,
   replaceAssociation,
   replaceEntity,
   submit
@@ -33,6 +36,10 @@ const {
 } = Models;
 
 const { DeleteTypes } = Types;
+
+/*
+ * Selectors
+ */
 
 function getEntityId(primaryKey, propertyTypesById, values, fields) {
   const fieldNamesByFqn = {};
@@ -91,6 +98,45 @@ function shouldCreateEntity(entityDescription, values, details) {
     if (allFalse) return false;
   }
   return true;
+}
+
+
+function* createAssociationsWorker(action :SequenceAction) :Generator<*, *, *> {
+  const {
+    associationObjects,
+    callback
+  } = action.value;
+
+  try {
+    yield put(createAssociations.request(action.id));
+
+    // Create new association
+    const associationCalls = associationObjects.map(submitObject => (
+      call(
+        DataApi.createAssociations,
+        submitObject
+      )
+    ));
+
+    yield all(associationCalls);
+
+    yield put(createAssociations.success(action.id));
+
+    if (callback) {
+      callback();
+    }
+  }
+  catch (error) {
+    console.error(error);
+    yield put(createAssociations.failure(action.id, { error }));
+  }
+  finally {
+    yield put(createAssociations.finally(action.id));
+  }
+}
+
+function* createAssociationsWatcher() :Generator<*, *, *> {
+  yield takeEvery(CREATE_ASSOCIATIONS, createAssociationsWorker);
 }
 
 function* replaceEntityWorker(action :SequenceAction) :Generator<*, *, *> {
@@ -168,14 +214,26 @@ function* submitWorker(action :SequenceAction) :Generator<*, *, *> {
     });
 
     const mappedEntities = {};
+    const multipleValuesMap = {};
+    const multipleValueAssociationAliasNames = [];
     config.entitySets.forEach((entityDescription, index) => {
       const entitySetId = allEntitySetIds[index];
       const primaryKey = edmDetails.entityTypes[edmDetails.entitySets[entitySetId].entityTypeId].key;
-      const entityList = (entityDescription.multipleValuesField)
-        ? values[entityDescription.multipleValuesField] : [values];
+      let entityList;
+      const { multipleValuesEntity, multipleValuesField } = entityDescription;
+      if (multipleValuesField) {
+        entityList = values[entityDescription.multipleValuesField];
+      }
+      else if (multipleValuesEntity) {
+        entityList = values[entityDescription.multipleValuesEntity];
+        multipleValueAssociationAliasNames.push(entityDescription.alias);
+      }
+      else {
+        entityList = [values];
+      }
       if (entityList) {
         const entitiesForAlias = [];
-        entityList.forEach((entityValues) => {
+        entityList.forEach((entityValues, idx) => {
           const details = getEntityDetails(entityDescription, propertyTypesByFqn, entityValues);
           if (shouldCreateEntity(entityDescription, entityValues, details)) {
             let entityId;
@@ -194,8 +252,21 @@ function* submitWorker(action :SequenceAction) :Generator<*, *, *> {
                 entitySetId,
                 entityId
               };
-              const entity = { key, details };
+              const entity = {
+                key,
+                details
+              };
               entitiesForAlias.push(entity);
+              if (multipleValuesEntity) {
+                multipleValuesMap[multipleValuesEntity] = multipleValuesMap[multipleValuesEntity] || [];
+                multipleValuesMap[multipleValuesEntity][idx] = multipleValuesMap[multipleValuesEntity][idx] || {};
+                multipleValuesMap[multipleValuesEntity][idx][entityDescription.alias] = entity;
+              }
+              if (multipleValuesField) {
+                multipleValuesMap[multipleValuesField] = multipleValuesMap[multipleValuesField] || [];
+                multipleValuesMap[multipleValuesField][idx] = multipleValuesMap[multipleValuesField][idx] || {};
+                multipleValuesMap[multipleValuesField][idx][entityDescription.alias] = entity;
+              }
             }
           }
         });
@@ -203,26 +274,78 @@ function* submitWorker(action :SequenceAction) :Generator<*, *, *> {
       }
     });
     const associationAliases = {};
+    const multipleValueAssociationAliases = {};
     config.associations.forEach((associationDescription) => {
       const { association } = associationDescription;
-      const completeAssociation = associationAliases[association] || [];
-      completeAssociation.push(associationDescription);
-      associationAliases[association] = completeAssociation;
+      if (multipleValueAssociationAliasNames.includes(association)) {
+        const completeAssociation = multipleValueAssociationAliases[association] || [];
+        completeAssociation.push(associationDescription);
+        multipleValueAssociationAliases[association] = completeAssociation;
+      }
+      else {
+        const completeAssociation = associationAliases[association] || [];
+        completeAssociation.push(associationDescription);
+        associationAliases[association] = completeAssociation;
+      }
     });
 
     const entities = [];
     const associations = [];
 
+    Object.entries(multipleValueAssociationAliases).forEach(([alias, associationList]) => {
+      associationList.forEach((associationDescription) => {
+        const { src, dst } = associationDescription;
+        Object.values(multipleValuesMap).forEach((dataList) => {
+          dataList.forEach((data) => {
+            const associationEntity = data[alias];
+            const sourceEntity = data[src];
+            const destinationEntity = data[dst];
+            if (associationEntity && sourceEntity) {
+              const dstEntities = mappedEntities[dst];
+              dstEntities.forEach((dstEntity) => {
+                const srcKey = sourceEntity.key;
+                const dstKey = dstEntity.key;
+                if (srcKey && dstKey) {
+                  const association = Object.assign({}, associationEntity, {
+                    src: srcKey,
+                    dst: dstKey
+                  });
+                  associations.push(association);
+                }
+              });
+            }
+            else if (associationEntity && destinationEntity) {
+              const srcEntities = mappedEntities[dst];
+              srcEntities.forEach((srcEntity) => {
+                const srcKey = srcEntity.key;
+                const dstKey = destinationEntity.key;
+                if (srcKey && dstKey) {
+                  const association = Object.assign({}, associationEntity, {
+                    src: srcKey,
+                    dst: dstKey
+                  });
+                  associations.push(association);
+                }
+              });
+            }
+          });
+        });
+      });
+    });
+
     Object.keys(mappedEntities).forEach((alias) => {
       if (associationAliases[alias]) {
         mappedEntities[alias].forEach((associationEntityDescription) => {
+
           const associationDescriptions = associationAliases[alias];
 
           associationDescriptions.forEach((associationDescription) => {
             const { src, dst } = associationDescription;
+            const srcEntities = mappedEntities[src];
+            const dstEntities = mappedEntities[dst];
 
-            mappedEntities[src].forEach((srcEntity) => {
-              mappedEntities[dst].forEach((dstEntity) => {
+            srcEntities.forEach((srcEntity) => {
+              dstEntities.forEach((dstEntity) => {
 
                 const srcKey = srcEntity.key;
                 const dstKey = dstEntity.key;
@@ -238,12 +361,13 @@ function* submitWorker(action :SequenceAction) :Generator<*, *, *> {
           });
         });
       }
-      else {
+      else if (!multipleValueAssociationAliases[alias]) {
         mappedEntities[alias].forEach((entity) => {
           entities.push(entity);
         });
       }
     });
+
     yield call(DataIntegrationApi.createEntityAndAssociationData, { entities, associations });
     yield put(submit.success(action.id));
 
@@ -364,6 +488,7 @@ function* replaceAssociationWatcher() :Generator<*, *, *> {
 }
 
 export {
+  createAssociationsWatcher,
   replaceAssociationWatcher,
   replaceEntityWatcher,
   submitWatcher

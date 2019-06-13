@@ -3,8 +3,9 @@
 export const STATE = {
   APP: 'app',
   AUTH: 'auth',
-  COURT: 'court',
   CHARGES: 'charges',
+  CHECK_INS: 'checkIns',
+  COURT: 'court',
   DASHBOARD: 'dashboard',
   DOWNLOAD: 'download',
   EDM: 'edm',
@@ -61,6 +62,8 @@ export const APP = {
 export const CHARGES = {
   ARREST: 'arrestCharges',
   ARREST_PERMISSIONS: 'arrestChargePermissions',
+  ARRESTING_AGENCIES: 'arrestingAgencies',
+  LOADING_AGENCIES: 'loadingAgencies',
   COURT: 'courtCharges',
   COURT_PERMISSIONS: 'courtChargePermissions',
   ARREST_VIOLENT: 'violentArrestCharges',
@@ -70,6 +73,16 @@ export const CHARGES = {
   BRE: 'bookingReleaseExceptionCharges',
   BHE: 'bookingHoldExceptionCharges',
   LOADING: 'loadingCharges'
+};
+
+// Check-Ins
+export const CHECK_IN = {
+  CHECK_INS_LOADED: 'checkInsLoaded',
+  LOADING_CHECK_INS: 'loadingCheckIns',
+  CHECK_IN_IDS: 'checkInIds',
+  CHECK_INS_BY_ID: 'checkInsById',
+  LOADING_CHECK_IN_NEIGHBORS: 'loadingCheckInNieghbors',
+  CHECK_IN_NEIGHBORS_BY_ID: 'checkInNeighborsById'
 };
 
 // Court
@@ -84,7 +97,6 @@ export const COURT = {
   PEOPLE_RECEIVING_REMINDERS: 'peopleReceivingReminders',
   LOADING_HEARINGS: 'isLoadingHearings',
   LOADING_HEARING_NEIGHBORS: 'isLoadingHearingsNeighbors',
-  HEARING_IDS_REFRESHING: 'hearingIdsRefreshing',
   LOADING_PSAS: 'isLoadingPSAs',
   LOADING_ERROR: 'loadingError',
   LOADING_HEARINGS_ERROR: 'loadingHearingError',
@@ -139,7 +151,7 @@ export const EDM = {
 
 export const ENROLL = {
   LOADING_PROFILE: 'loadingProfile',
-  PROFILE_ID: 'profileId',
+  ENTITY_KEY_ID: 'profileEntityKeyId',
   PIN: 'pin',
   SUBMITTING_AUDIO: 'submittingAudio',
   NUM_SUBMISSIONS: 'numSubmissions',
@@ -150,6 +162,9 @@ export const ENROLL = {
 
 export const HEARINGS = {
   SETTINGS_MODAL_OPEN: 'hearingSettingsModalOpen',
+  REFRESHING_HEARING_AND_NEIGHBORS: 'refreshingHearingAndNeighbors',
+  UPDATED_HEARING: 'updatedHearing',
+  UPDATED_HEARING_NEIGHBORS: 'updatedHearingNeighbors',
   DATE: 'hearingDate',
   TIME: 'hearingTime',
   COURTROOM: 'hearingCourtroom',
@@ -237,6 +252,7 @@ export const PEOPLE = {
   SCORES_ENTITY_SET_ID: 'scoresEntitySetId',
   RESULTS: 'peopleResults',
   PERSON_DATA: 'selectedPersonData',
+  VOICE_ENROLLMENT_PROGRESS: 'voiceEnrollmentProgress',
   PERSON_ENTITY_KEY_ID: 'selectedPersonEntityKeyId',
   FETCHING_PEOPLE: 'isFetchingPeople',
   FETCHING_PERSON_DATA: 'isFetchingPersonData',
@@ -272,6 +288,9 @@ export const RELEASE_COND = {
 // Reminders
 
 export const REMINDERS = {
+  REMINDERS_ACTION_LIST_DATE: 'remindersActionListDate',
+  REMINDERS_ACTION_LIST: 'remindersActionList',
+  LOADING_REMINDERS_ACTION_LIST: 'loadingRemindersActionList',
   REMINDER_IDS: 'reminderIds',
   FUTURE_REMINDERS: 'futureReminders',
   PAST_REMINDERS: 'pastReminders',
@@ -282,8 +301,6 @@ export const REMINDERS = {
   REMINDER_NEIGHBORS: 'reminderNeighborsById',
   REMINDERS_WITH_OPEN_PSA_IDS: 'remindersWithOpenPSA',
   LOADING_REMINDER_NEIGHBORS: 'loadingReminderNeighbors',
-  PEOPLE_WITH_HEARINGS_BUT_NO_CONTACT: 'peopleWithHearingsButNoContacts',
-  LOADING_PEOPLE_NO_CONTACTS: 'loadingPeopleWithNoContacts',
   OPT_OUTS: 'optOutMap',
   OPT_OUT_NEIGHBORS: 'optOutNeighbors',
   OPT_OUT_PEOPLE_IDS: 'optOutPeopleIds',
@@ -340,6 +357,8 @@ export const SEARCH = {
 // Submit
 
 export const SUBMIT = {
+  CREATING_ASSOCIATIONS: 'creatingAssociations',
+  CREATE_ASSOCIATIONS_COMPLETE: 'createAssociationComplete',
   REPLACING_ENTITY: 'replacingEntity',
   REPLACE_ENTITY_SUCCESS: 'replaceEntitySuccess',
   UPDATING_ENTITY: 'updatingEntity',

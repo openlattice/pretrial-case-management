@@ -3,6 +3,7 @@
  */
 
 import { newRequestSequence } from 'redux-reqseq';
+import type { RequestSequence } from 'redux-reqseq';
 
 const DELETE_ENTITY :string = 'DELETE_ENTITY';
 const deleteEntity :RequestSequence = newRequestSequence(DELETE_ENTITY);

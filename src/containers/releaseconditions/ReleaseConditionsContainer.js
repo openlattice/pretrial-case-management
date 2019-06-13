@@ -29,7 +29,6 @@ import SearchableSelect from '../../components/controls/SearchableSelect';
 import InfoButton from '../../components/buttons/InfoButton';
 import BasicButton from '../../components/buttons/BasicButton';
 import releaseConditionsConfig from '../../config/formconfig/ReleaseConditionsConfig';
-import { NoContactRow } from '../../components/releaseconditions/ReleaseConditionsStyledTags';
 import { OL } from '../../utils/consts/Colors';
 import { getTimeOptions } from '../../utils/consts/DateTimeConsts';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
@@ -37,8 +36,11 @@ import { getChargeHistory } from '../../utils/CaseUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { toISODate, toISODateTime, formatDateTime } from '../../utils/FormattingUtils';
 import { HEARING_CONSTS } from '../../utils/consts/HearingConsts';
+import { SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { formatJudgeName, getCourtroomOptions, getJudgeOptions } from '../../utils/HearingUtils';
+import { NoContactRow } from '../../components/releaseconditions/ReleaseConditionsStyledTags';
 import {
+  getCreateAssociationObject,
   getEntityKeyId,
   getNeighborDetailsForEntitySet,
   getFirstNeighborValue,
@@ -54,6 +56,7 @@ import {
 } from '../../utils/consts/Consts';
 import {
   OUTCOMES,
+  OTHER_OUTCOMES,
   RELEASES,
   WARRANTS,
   BOND_TYPES,
@@ -65,6 +68,7 @@ import {
   APP,
   COURT,
   EDM,
+  HEARINGS,
   PSA_ASSOCIATION,
   PSA_NEIGHBOR,
   RELEASE_COND,
@@ -72,24 +76,27 @@ import {
   SUBMIT
 } from '../../utils/consts/FrontEndStateConsts';
 
-import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
-import * as DataActionFactory from '../../utils/data/DataActionFactory';
-import * as ReviewActionFactory from '../review/ReviewActionFactory';
-import * as ReleaseConditionsActionFactory from './ReleaseConditionsActionFactory';
 import * as CourtActionFactory from '../court/CourtActionFactory';
+import * as DataActionFactory from '../../utils/data/DataActionFactory';
+import * as HearingsActionFactory from '../hearings/HearingsActionFactory';
+import * as ReleaseConditionsActionFactory from './ReleaseConditionsActionFactory';
+import * as ReviewActionFactory from '../review/ReviewActionFactory';
+import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
 
-const { RELEASE_CONDITIONS_FIELD } = LIST_FIELDS;
+const { CHECKIN_APPOINTMENTS_FIELD, RELEASE_CONDITIONS_FIELD } = LIST_FIELDS;
 const { OPENLATTICE_ID_FQN } = Constants;
 
 const {
   ASSESSED_BY,
+  CHECKIN_APPOINTMENTS,
   DMF_RESULTS,
   DMF_RISK_FACTORS,
   JUDGES,
-  HEARINGS,
   PEOPLE,
   PSA_SCORES,
-  PRETRIAL_CASES
+  PRETRIAL_CASES,
+  REGISTERED_FOR,
+  SPEAKER_RECOGNITION_PROFILES
 } = APP_TYPES;
 
 const RELEASE_CONDITIONS_FQN = APP_TYPES.RELEASE_CONDITIONS;
@@ -261,9 +268,10 @@ type Props = {
   app :Map<*, *>,
   allJudges :Map<*, *>,
   backToSelection :() => void,
+  creatingAssociations :boolean,
   fqnToIdMap :Map<*, *>,
   hasOutcome :boolean,
-  hearingIdsRefreshing :boolean,
+  refreshingHearingAndNeighbors :boolean,
   hearingNeighbors :Map<*, *>,
   hearingEntityKeyId :string,
   loadingReleaseCondtions :boolean,
@@ -275,6 +283,7 @@ type Props = {
   replacingEntity :boolean,
   selectedHearing :Map<*, *>,
   selectedOrganizationId :string,
+  selectedOrganizationSettings :Map<*, *>,
   submitting :boolean,
   actions :{
     clearReleaseConditions :() => void;
@@ -290,7 +299,6 @@ type Props = {
       callback :() => void
     }) => void,
     refreshPSANeighbors :({ id :string }) => void,
-    refreshHearingNeighbors :({ id :string }) => void,
     replaceAssociation :(values :{
       associationEntity :Map<*, *>,
       associationEntityName :string,
@@ -350,7 +358,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
   }
 
   componentWillReceiveProps(nextProps :Props) {
-    const { hearingEntityKeyId, selectedHearing } = this.props;
+    const { personNeighbors, hearingEntityKeyId, selectedHearing } = this.props;
 
     const { defaultBond, defaultConditions, defaultOutcome } = this.getNeighborEntities(this.props);
     const { judgeEntity, judgeName } = this.getJudgeEntity(this.props);
@@ -372,16 +380,18 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
         !== getFirstNeighborValue(nextNeighborEntities.defaultBond, PROPERTY_TYPES.BOND_AMOUNT);
 
     const conditionTypes = defaultConditions.map(neighbor => getFirstNeighborValue(
-      neighbor, PROPERTY_TYPES.CONDITION_TYPE
+      neighbor, PROPERTY_TYPES.TYPE
     ), []);
 
     const conditionsSizeChanged = defaultConditions.size !== nextNeighborEntities.defaultConditions.size;
 
     const defaultConditionsChanged = conditionsSizeChanged
       || nextNeighborEntities.defaultConditions.some((condition) => {
-        const conditionType = getFirstNeighborValue(condition, PROPERTY_TYPES.CONDITION_TYPE);
+        const conditionType = getFirstNeighborValue(condition, PROPERTY_TYPES.TYPE);
         return !conditionTypes.includes(conditionType);
       });
+
+    const personNeighborsLoaded = !personNeighbors.size && nextProps.personNeighbors.size;
 
     if (
       outComeChanged
@@ -390,6 +400,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       || nextJudge.judgeName !== judgeName
       || nextJudge.judgeEntity !== judgeEntity
       || nextProps.hearingEntityKeyId !== hearingEntityKeyId
+      || personNeighborsLoaded
       || getFirstNeighborValue(nextProps.selectedHearing, PROPERTY_TYPES.DATE_TIME)
         !== getFirstNeighborValue(selectedHearing, PROPERTY_TYPES.DATE_TIME)
       || getFirstNeighborValue(nextProps.selectedHearing, PROPERTY_TYPES.COURTROOM)
@@ -408,7 +419,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
   refreshHearingsNeighborsCallback = () => {
     const { hearingEntityKeyId } = this.props;
     const { actions } = this.props;
-    actions.refreshHearingNeighbors({ id: hearingEntityKeyId });
+    actions.refreshHearingAndNeighbors({ hearingEntityKeyId });
   }
 
   refreshPSANeighborsCallback = () => {
@@ -438,16 +449,18 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
 
   getNeighborEntities = (props) => {
     const { hearingNeighbors, psaNeighbors } = props;
+    const defaultCheckInAppointments = hearingNeighbors.get(CHECKIN_APPOINTMENTS, List());
     const defaultBond = hearingNeighbors.get(BONDS_FQN, Map());
     const defaultConditions = hearingNeighbors.get(RELEASE_CONDITIONS_FQN, List());
     const defaultDMF = psaNeighbors.getIn([DMF_RESULTS, PSA_NEIGHBOR.DETAILS], Map());
     const psaEntity = hearingNeighbors.getIn([PSA_SCORES, PSA_NEIGHBOR.DETAILS], Map());
-    const personEntity = hearingNeighbors.get([PEOPLE, PSA_NEIGHBOR.DETAILS], Map());
+    const personEntity = hearingNeighbors.getIn([PEOPLE, PSA_NEIGHBOR.DETAILS], Map());
     let defaultOutcome = hearingNeighbors.get(OUTCOMES_FQN, Map());
 
     defaultOutcome = defaultOutcome.size ? defaultOutcome : defaultDMF;
 
     return {
+      defaultCheckInAppointments,
       defaultBond,
       defaultConditions,
       defaultDMF,
@@ -476,10 +489,22 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
 
 
   getStateFromProps = (props :Props) :State => {
-    const { selectedHearing, hasOutcome } = props;
+    const { personNeighbors, selectedHearing, hasOutcome } = props;
 
-    const { defaultBond, defaultConditions, defaultOutcome } = this.getNeighborEntities(props);
+    const {
+      defaultCheckInAppointments,
+      defaultBond,
+      defaultConditions,
+      defaultOutcome
+    } = this.getNeighborEntities(props);
     const { judgeEntity, judgeName } = this.getJudgeEntity(props);
+
+    const existingCheckInAppointmentEntityKeyIds = [];
+    const personCheckInAppointments = personNeighbors.get(CHECKIN_APPOINTMENTS, Map());
+    personCheckInAppointments.forEach((appointment) => {
+      const entityKeyId = getFirstNeighborValue(appointment, PROPERTY_TYPES.ENTITY_KEY_ID);
+      existingCheckInAppointmentEntityKeyIds.push(entityKeyId);
+    });
 
     let modifyingHearing = false;
     const hearingDateTimeString = getFirstNeighborValue(selectedHearing, PROPERTY_TYPES.DATE_TIME);
@@ -505,7 +530,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
 
       let conditionsByType = Map();
       defaultConditions.forEach((condition) => {
-        const type = condition.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.CONDITION_TYPE, 0]);
+        const type = condition.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.TYPE, 0]);
         conditionsByType = conditionsByType.set(type, conditionsByType.get(type, List()).push(
           condition.get(PSA_NEIGHBOR.DETAILS, (condition || Map())) // check for old data
         ));
@@ -531,10 +556,10 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
 
       let warrant = null;
       let release = null;
-      if (outcome === OUTCOMES.FTA) {
+      if (outcome === OTHER_OUTCOMES.FTA) {
         warrant = bondType ? WARRANTS.WARRANT : WARRANTS.NO_WARRANT;
       }
-      else if (outcome !== OUTCOMES.FTA) {
+      else if (outcome !== OTHER_OUTCOMES.FTA) {
         release = bondType ? RELEASES.RELEASED : RELEASES.HELD;
       }
 
@@ -558,7 +583,10 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
         otherJudgeText,
         judge,
         judgeId,
-        disabled: true
+        disabled: true,
+        defaultCheckInAppointments,
+        newCheckInAppointmentEntities: [],
+        existingCheckInAppointmentEntityKeyIds
       };
     }
     return {
@@ -582,7 +610,10 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       judge,
       judgeId,
       disabled: false,
-      editingHearing
+      editingHearing,
+      defaultCheckInAppointments,
+      newCheckInAppointmentEntities: [],
+      existingCheckInAppointmentEntityKeyIds
     };
   }
 
@@ -644,15 +675,16 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
   handleInputChange = (e) => {
     const { name, value } = e.target;
     const state :State = Object.assign({}, this.state, { [name]: value });
+    const otherOutcomes = Object.values(OTHER_OUTCOMES);
     switch (name) {
       case 'outcome': {
-        if (value !== OUTCOMES.OTHER) {
+        if (!otherOutcomes.includes(value)) {
           state[OTHER_OUTCOME_TEXT] = '';
         }
-        if (value !== OUTCOMES.FTA) {
+        if (value !== OTHER_OUTCOMES.FTA) {
           state[WARRANT] = null;
         }
-        if (value === OUTCOMES.FTA) {
+        if (otherOutcomes.includes(value)) {
           state[RELEASE] = null;
         }
         break;
@@ -706,8 +738,9 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
     this.setState(state);
   }
 
-  mapOptionsToRadioButtons = (options :{}, field :string) => {
+  mapOptionsToRadioButtons = (options :{}, field :string, parentState ?:Object) => {
     const { disabled } = this.state;
+    const stateOfTruth = parentState || this.state;
     return (
       Object.values(options).map(option => (
         <RadioWrapper key={option}>
@@ -715,7 +748,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
               large
               name={field}
               value={option}
-              checked={this.state[field] === option}
+              checked={stateOfTruth[field] === option}
               onChange={this.handleInputChange}
               disabled={disabled}
               label={option} />
@@ -724,8 +757,9 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
     );
   }
 
-  mapOptionsToCheckboxButtons = (options :{}, field :string) => {
+  mapOptionsToCheckboxButtons = (options :{}, field :string, parentState ?:Object) => {
     const { disabled } = this.state;
+    const stateOfTruth = parentState || this.state;
     return (
       Object.values(options).map(option => (
         <RadioWrapper key={option}>
@@ -733,7 +767,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
               large
               name={field}
               value={option}
-              checked={this.state[field].includes(option)}
+              checked={stateOfTruth[field].includes(option)}
               onChange={this.handleCheckboxChange}
               disabled={disabled}
               label={option} />
@@ -742,20 +776,36 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
     );
   }
 
-  renderConditionCheckbox = (condition, optionalLabel) => {
-    const { conditions, disabled } = this.state;
-    return (
-      <RadioWrapper>
-        <CheckboxButton
-            large
-            name="conditions"
-            value={condition}
-            checked={conditions.includes(condition)}
-            label={optionalLabel || condition}
-            disabled={disabled}
-            onChange={this.handleConditionChange} />
-      </RadioWrapper>
-    );
+  getAssociationsForExistingAppointments = () => {
+    const { app, fqnToIdMap, hearingEntityKeyId } = this.props;
+    const { existingCheckInAppointmentEntityKeyIds } = this.state;
+    const { defaultCheckInAppointments } = this.getNeighborEntities(this.props);
+
+    const hearingCheckInAppointmentEntityKeyIds = defaultCheckInAppointments.map((checkIn) => {
+      const entityKeyId = getEntityKeyId(checkIn);
+      return entityKeyId;
+    });
+    const existingCheckInEntityKeyIds = existingCheckInAppointmentEntityKeyIds.filter(checkInEntityKeyId => (
+      !hearingCheckInAppointmentEntityKeyIds.includes(checkInEntityKeyId)
+    ));
+    const registeredforEntitySetId = getEntitySetIdFromApp(app, REGISTERED_FOR);
+    const hearingEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.HEARINGS);
+    const appointmentEntitySetId = getEntitySetIdFromApp(app, CHECKIN_APPOINTMENTS);
+    const dateCompletedPropertyId = fqnToIdMap.get(PROPERTY_TYPES.COMPLETED_DATE_TIME, '');
+    const newAssociationEntities = { [registeredforEntitySetId]: [] };
+    let milliseconds = 3;
+    existingCheckInEntityKeyIds.forEach((entityKeyId) => {
+      const hearingAssociation = getCreateAssociationObject({
+        associationEntity: { [dateCompletedPropertyId]: [moment().add(milliseconds, 'ms').toISOString(true)] },
+        srcEntitySetId: appointmentEntitySetId,
+        srcEntityKeyId: entityKeyId,
+        dstEntitySetId: hearingEntitySetId,
+        dstEntityKeyId: hearingEntityKeyId
+      });
+      milliseconds += 1;
+      newAssociationEntities[registeredforEntitySetId].push(hearingAssociation);
+    });
+    return newAssociationEntities;
   }
 
   onSubmit = () => {
@@ -768,6 +818,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       conditions,
       checkinFrequency,
       c247Types,
+      newCheckInAppointmentEntities,
       otherConditionText,
       editingHearing
     } = this.state;
@@ -775,8 +826,8 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
     const {
       actions,
       app,
-      selectedHearing,
-      hearingEntityKeyId
+      hearingEntityKeyId,
+      selectedHearing
     } = this.props;
 
     const {
@@ -788,12 +839,17 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       personEntity
     } = this.getNeighborEntities(this.props);
 
+    const newAssociationEntities = this.getAssociationsForExistingAppointments();
+
     const hearingId = getFirstNeighborValue(selectedHearing, PROPERTY_TYPES.CASE_ID);
     const psaId = getFirstNeighborValue(psaEntity, PROPERTY_TYPES.GENERAL_ID);
     const personId = getFirstNeighborValue(personEntity, PROPERTY_TYPES.PERSON_ID);
     const dmfId = getFirstNeighborValue(defaultDMF, PROPERTY_TYPES.GENERAL_ID);
+    const outcomeId = getFirstNeighborValue(defaultOutcome, PROPERTY_TYPES.GENERAL_ID, undefined);
+    const bondId = getFirstNeighborValue(defaultBond, PROPERTY_TYPES.GENERAL_ID, undefined);
 
     const {
+      createAssociations,
       updateOutcomesAndReleaseCondtions,
       submit
     } = actions;
@@ -827,6 +883,8 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       [ID_FIELD_NAMES.DMF_ID]: dmfId,
       [ID_FIELD_NAMES.PSA_ID]: psaId,
       [ID_FIELD_NAMES.HEARING_ID]: hearingId,
+      [ID_FIELD_NAMES.OUTCOME_ID]: outcomeId,
+      [ID_FIELD_NAMES.BOND_ID]: bondId,
       [PROPERTY_TYPES.COMPLETED_DATE_TIME]: toISODateTime(moment())
     };
 
@@ -891,7 +949,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
     const conditionsEntity = [];
     if (release === RELEASES.HELD) {
       conditionsEntity.push({
-        [PROPERTY_TYPES.CONDITION_TYPE]: NO_RELEASE_CONDITION,
+        [PROPERTY_TYPES.TYPE]: NO_RELEASE_CONDITION,
         [PROPERTY_TYPES.START_DATE]: startDate,
         [PROPERTY_TYPES.GENERAL_ID]: randomUUID()
       });
@@ -900,7 +958,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       conditions.forEach((condition) => {
 
         const conditionObj = {
-          [PROPERTY_TYPES.CONDITION_TYPE]: condition,
+          [PROPERTY_TYPES.TYPE]: condition,
           [PROPERTY_TYPES.START_DATE]: startDate,
           [PROPERTY_TYPES.GENERAL_ID]: randomUUID()
         };
@@ -933,9 +991,20 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       });
     }
     submission[RELEASE_CONDITIONS_FIELD] = conditionsEntity;
+    if (newCheckInAppointmentEntities.length) {
+      submission[CHECKIN_APPOINTMENTS_FIELD] = newCheckInAppointmentEntities;
+      conditionSubmit[CHECKIN_APPOINTMENTS_FIELD] = newCheckInAppointmentEntities;
+    }
     conditionSubmit[RELEASE_CONDITIONS_FIELD] = conditionsEntity;
     submission.bonddate = moment().add(1, 'ms').toISOString(true);
     submission.outcomedate = moment().add(2, 'ms').toISOString(true);
+
+    if (Object.keys(newAssociationEntities).length) {
+      createAssociations({
+        associationObjects: [newAssociationEntities],
+        callback: this.refreshHearingsNeighborsCallback
+      });
+    }
     if (editingHearing) {
       updateOutcomesAndReleaseCondtions({
         psaId,
@@ -968,7 +1037,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
   }
 
   isReadyToSubmit = () => {
-    const { submitting } = this.props;
+    const { submitting, selectedOrganizationSettings } = this.props;
     const {
       bondAmount,
       bondType,
@@ -978,21 +1047,23 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       disabled,
       outcome,
       otherConditionText,
-      otherOutcomeText,
       release,
       warrant
     } = this.state;
+    const settingsIncludeVoiceEnroll = selectedOrganizationSettings.get(SETTINGS.ENROLL_VOICE, false);
+    const coreOutcomes = Object.values(OUTCOMES);
+
+    const checkInRestriction = settingsIncludeVoiceEnroll ? false : !checkinFrequency;
 
     if (
       disabled
       || submitting
       || !outcome
-      || !(release || warrant)
-      || (outcome === OUTCOMES.OTHER && !otherOutcomeText.length)
+      || (coreOutcomes.includes(outcome) && !(release || warrant))
       || (release && release === RELEASES.RELEASED && !bondType)
       || (warrant && warrant === WARRANTS.WARRANT && !bondType)
       || ((bondType === BOND_TYPES.CASH_ONLY || bondType === BOND_TYPES.CASH_SURETY) && !bondAmount.length)
-      || (conditions.includes(CONDITION_LIST.CHECKINS) && !checkinFrequency)
+      || (conditions.includes(CONDITION_LIST.CHECKINS) && checkInRestriction)
       || (conditions.includes(CONDITION_LIST.C_247) && !(c247Types.length || c247Types.size))
       || (conditions.includes(CONDITION_LIST.OTHER) && !otherConditionText.length)
       || (conditions.includes(CONDITION_LIST.NO_CONTACT)
@@ -1139,13 +1210,13 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
 
     const associationEntitySetId = getEntitySetIdFromApp(app, ASSESSED_BY);
     const srcEntitySetId = getEntitySetIdFromApp(app, JUDGES);
-    const hearingEntitySetId = getEntitySetIdFromApp(app, HEARINGS);
+    const hearingEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.HEARINGS);
 
     const associationEntitySetName = ASSESSED_BY;
     const associationEntityKeyId = judgeEntity ? judgeAssociationEntityKeyId : null;
     const srcEntitySetName = JUDGES;
     const srcEntityKeyId = judgeId;
-    const dstEntitySetName = HEARINGS;
+    const dstEntitySetName = APP_TYPES.HEARINGS;
     const dstEntityKeyId = hearingEntityKeyId;
     if (judgeIsOther && associationEntityKeyId) {
       deleteEntity({
@@ -1182,10 +1253,10 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
         .toJS();
       replaceEntity({
         entitySetId: hearingEntitySetId,
-        entitySetName: HEARINGS,
+        entitySetName: APP_TYPES.HEARINGS,
         entityKeyId: hearingEntityKeyId,
         values: newHearing,
-        callback: this.refreshPSANeighborsCallback
+        callback: this.refreshHearingsNeighborsCallback
       });
     }
   }
@@ -1196,7 +1267,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       app,
       fqnToIdMap
     } = this.props;
-    const entitySetId = getEntitySetIdFromApp(app, HEARINGS);
+    const entitySetId = getEntitySetIdFromApp(app, APP_TYPES.HEARINGS);
     const values = {
       [entityKeyId]: {
         [fqnToIdMap.get(PROPERTY_TYPES.HEARING_INACTIVE)]: [true]
@@ -1221,12 +1292,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       backToSelection,
       hasOutcome,
       hearingEntityKeyId,
-      hearingIdsRefreshing,
-      loadingReleaseCondtions,
       psaNeighbors,
-      refreshingSelectedHearing,
-      replacingAssociation,
-      replacingEntity,
       selectedHearing
     } = this.props;
     const {
@@ -1373,21 +1439,6 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       </ContentSection>
     );
 
-    const loadingText = loadingReleaseCondtions
-      ? 'Loading Hearing Details...'
-      : 'Updating Hearing...';
-
-    if (
-      loadingReleaseCondtions
-      || replacingEntity
-      || replacingAssociation
-      || hearingIdsRefreshing
-      || refreshingSelectedHearing
-    ) {
-      return <LogoLoader size={30} loadingText={loadingText} />;
-    }
-
-
     return (
       <HearingSectionWrapper>
         {hearingInfoSection}
@@ -1399,25 +1450,31 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
     );
   }
 
+  addAppointmentsToSubmission = ({ newCheckInAppointmentEntities }) => {
+    if (newCheckInAppointmentEntities) this.setState({ newCheckInAppointmentEntities });
+  }
+
   renderOutcomesAndReleaseConditions = () => {
     const { state } = this;
     const { release, warrant } = state;
-    const outcomeIsFTA = state[OUTCOME] === OUTCOMES.FTA;
+    const coreOutcomes = Object.values(OUTCOMES);
+    const outcomeIsNotOther = coreOutcomes.includes(state[OUTCOME])
+    const outcomeIsFTA = state[OUTCOME] === OTHER_OUTCOMES.FTA;
     const RELEASED = release !== RELEASES.RELEASED;
     const NO_WARRANT = warrant !== WARRANTS.WARRANT;
     const {
-      hearingIdsRefreshing,
-      loadingReleaseCondtions,
-      refreshingReleaseConditions,
-      submitting
+      hearingEntityKeyId,
+      hearingNeighbors,
+      personNeighbors,
+      selectedOrganizationSettings
     } = this.props;
+    const person = getNeighborDetailsForEntitySet(hearingNeighbors, PEOPLE);
+    const { defaultCheckInAppointments } = this.getNeighborEntities(this.props);
+    const personCheckInAppointments = personNeighbors.get(CHECKIN_APPOINTMENTS, Map());
+    const personVoiceProfile = personNeighbors.get(SPEAKER_RECOGNITION_PROFILES, Map());
+    const allCheckInAppointments = defaultCheckInAppointments.merge(personCheckInAppointments);
 
-    if (loadingReleaseCondtions || submitting || refreshingReleaseConditions || hearingIdsRefreshing) {
-      const loadingText = loadingReleaseCondtions
-        ? 'Loading Release Conditions...'
-        : 'Refreshing Release Conditions...';
-      return <LogoLoader size={30} loadingText={loadingText} />;
-    }
+    const settingsIncludeVoiceEnroll = selectedOrganizationSettings.get(SETTINGS.ENROLL_VOICE, false);
 
     return (
       <>
@@ -1428,7 +1485,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
             handleInputChange={this.handleInputChange}
             disabled={state.disabled} />
         {
-          !outcomeIsFTA
+          outcomeIsNotOther
             ? <DecisionSection mapOptionsToRadioButtons={this.mapOptionsToRadioButtons} />
             : null
         }
@@ -1439,7 +1496,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
         }
         {
           RELEASED ? null : (
-            <div>
+            <>
               <BondTypeSection
                   mapOptionsToRadioButtons={this.mapOptionsToRadioButtons}
                   handleNumberInputChange={this.handleNumberInputChange}
@@ -1447,14 +1504,21 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
                   bondAmount={`${state[BOND_AMOUNT]}`}
                   disabled={state.disabled} />
               <ConditionsSection
-                  mapOptionsToRadioButtons={this.mapOptionsToRadioButtons}
-                  mapOptionsToCheckboxButtons={this.mapOptionsToCheckboxButtons}
-                  handleInputChange={this.handleInputChange}
-                  renderNoContactPeople={this.renderNoContactPeople}
+                  hearingEntityKeyId={hearingEntityKeyId}
+                  parentState={this.state}
+                  appointmentEntities={allCheckInAppointments}
+                  addAppointmentsToSubmission={this.addAppointmentsToSubmission}
                   conditions={state[CONDITIONS]}
+                  disabled={state.disabled}
+                  handleInputChange={this.handleInputChange}
+                  person={person}
+                  personVoiceProfile={personVoiceProfile}
+                  settingsIncludeVoiceEnroll={settingsIncludeVoiceEnroll}
+                  mapOptionsToCheckboxButtons={this.mapOptionsToCheckboxButtons}
+                  mapOptionsToRadioButtons={this.mapOptionsToRadioButtons}
                   otherCondition={state[OTHER_CONDITION_TEXT]}
-                  disabled={state.disabled} />
-            </div>
+                  renderNoContactPeople={this.renderNoContactPeople} />
+            </>
           )
         }
         {
@@ -1474,7 +1538,31 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
   }
 
   render() {
+    const {
+      loadingReleaseCondtions,
+      replacingEntity,
+      replacingAssociation,
+      refreshingHearingAndNeighbors,
+      refreshingSelectedHearing,
+      submitting,
+      refreshingReleaseConditions,
+      creatingAssociations
+    } = this.props;
     const { state } = this;
+    const loading = (
+      loadingReleaseCondtions
+      || replacingEntity
+      || replacingAssociation
+      || refreshingHearingAndNeighbors
+      || refreshingSelectedHearing
+      || submitting
+      || refreshingReleaseConditions
+      || creatingAssociations
+    );
+    const loadingText = 'Loading Hearing & Release Conditions...';
+    if (loading) {
+      return <LogoLoader size={30} loadingText={loadingText} />;
+    }
     return (
       <Wrapper>
         { this.renderHearingInfo() }
@@ -1509,6 +1597,7 @@ function mapStateToProps(state) {
   const app = state.get(STATE.APP);
   const court = state.get(STATE.COURT);
   const edm = state.get(STATE.EDM);
+  const hearings = state.get(STATE.HEARINGS);
   const orgId = app.get(APP.SELECTED_ORG_ID, '');
   const releaseConditions = state.get(STATE.RELEASE_CONDITIONS);
   const submit = state.get(STATE.SUBMIT);
@@ -1518,6 +1607,10 @@ function mapStateToProps(state) {
     [APP.SELECTED_ORG_SETTINGS]: app.get(APP.SELECTED_ORG_SETTINGS, Map()),
     [APP.ENTITY_SETS_BY_ORG]: app.get(APP.ENTITY_SETS_BY_ORG, Map()),
     [APP.FQN_TO_ID]: app.get(APP.FQN_TO_ID),
+
+    [COURT.ALL_JUDGES]: court.get(COURT.ALL_JUDGES),
+
+    [HEARINGS.REFRESH_HEARING_AND_NEIGHBORS]: hearings.get(HEARINGS.REFRESH_HEARING_AND_NEIGHBORS),
 
     [EDM.FQN_TO_ID]: edm.get(EDM.FQN_TO_ID),
 
@@ -1530,9 +1623,8 @@ function mapStateToProps(state) {
     [RELEASE_COND.REFRESHING_RELEASE_CONDITIONS]: releaseConditions.get(RELEASE_COND.REFRESHING_RELEASE_CONDITIONS),
     [RELEASE_COND.REFRESHING_SELECTED_HEARING]: releaseConditions.get(RELEASE_COND.REFRESHING_SELECTED_HEARING),
 
-    [COURT.ALL_JUDGES]: court.get(COURT.ALL_JUDGES),
-    [COURT.HEARING_IDS_REFRESHING]: court.get(COURT.HEARING_IDS_REFRESHING),
 
+    [SUBMIT.CREATING_ASSOCIATIONS]: submit.get(SUBMIT.CREATING_ASSOCIATIONS),
     [SUBMIT.REPLACING_ASSOCIATION]: submit.get(SUBMIT.REPLACING_ASSOCIATION),
     [SUBMIT.REPLACING_ENTITY]: submit.get(SUBMIT.REPLACING_ENTITY),
     [SUBMIT.SUBMITTING]: submit.get(SUBMIT.SUBMITTING)
@@ -1542,12 +1634,16 @@ function mapStateToProps(state) {
 function mapDispatchToProps(dispatch :Function) :Object {
   const actions :{ [string] :Function } = {};
 
+  Object.keys(CourtActionFactory).forEach((action :string) => {
+    actions[action] = CourtActionFactory[action];
+  });
+
   Object.keys(DataActionFactory).forEach((action :string) => {
     actions[action] = DataActionFactory[action];
   });
 
-  Object.keys(SubmitActionFactory).forEach((action :string) => {
-    actions[action] = SubmitActionFactory[action];
+  Object.keys(HearingsActionFactory).forEach((action :string) => {
+    actions[action] = HearingsActionFactory[action];
   });
 
   Object.keys(ReleaseConditionsActionFactory).forEach((action :string) => {
@@ -1558,8 +1654,8 @@ function mapDispatchToProps(dispatch :Function) :Object {
     actions[action] = ReviewActionFactory[action];
   });
 
-  Object.keys(CourtActionFactory).forEach((action :string) => {
-    actions[action] = CourtActionFactory[action];
+  Object.keys(SubmitActionFactory).forEach((action :string) => {
+    actions[action] = SubmitActionFactory[action];
   });
 
   return {

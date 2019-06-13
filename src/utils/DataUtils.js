@@ -56,8 +56,8 @@ export const getIdOrValue = (neighbors :Map<*, *>, entitySetName :string, option
 export const getTimeStamp = (neighbors :Map<*, *>, entitySetName :string) :string => (
   neighbors.getIn([entitySetName, PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.TIMESTAMP], Map())
 );
-export const getNeighborDetailsForEntitySet = (neighbors :Map<*, *>, name :string) :string => (
-  neighbors.getIn([name, PSA_NEIGHBOR.DETAILS], neighbors.get(PSA_NEIGHBOR.DETAILS, Map()))
+export const getNeighborDetailsForEntitySet = (neighbors :Map<*, *>, name :string, defaultValue = Map()) :string => (
+  neighbors.getIn([name, PSA_NEIGHBOR.DETAILS], neighbors.get(PSA_NEIGHBOR.DETAILS, defaultValue))
 );
 export const getAssociationDetailsForEntitySet = (neighbors :Map<*, *>, name :string) :string => (
   neighbors.getIn([name, PSA_ASSOCIATION.DETAILS], neighbors.get(PSA_ASSOCIATION.DETAILS, Map()))
@@ -113,7 +113,7 @@ export const getMapFromEntityKeysToPropertyKeys = (entity, entityKeyId, property
 
 export const getFirstNeighborValue = (neighborObj, fqn, defaultValue = '') => neighborObj.getIn(
   [PSA_NEIGHBOR.DETAILS, fqn, 0],
-  neighborObj.getIn([fqn, 0], defaultValue)
+  neighborObj.getIn([fqn, 0], neighborObj.get(fqn, defaultValue))
 );
 
 export const getDateAndTime = (dateTime) => {
@@ -125,13 +125,38 @@ export const getDateAndTime = (dateTime) => {
 
 // Pass entity object and list of property types and will return and object of labels
 // mapped to properties.
-export const getEntityProperties = (caseObj, propertyList) => {
-  let returnCaseFields = Map();
-  propertyList.forEach((propertyType) => {
-    const property = getFirstNeighborValue(caseObj, propertyType);
-    returnCaseFields = returnCaseFields.set(propertyType, property);
-  });
-  return returnCaseFields.toJS();
+export const getEntityProperties = (entityObj, propertyList) => {
+  let returnPropertyFields = Map();
+  if (propertyList.length) {
+    propertyList.forEach((propertyType) => {
+      const backUpValue = entityObj.get(propertyType, '');
+      const property = getFirstNeighborValue(entityObj, propertyType, backUpValue);
+      returnPropertyFields = returnPropertyFields.set(propertyType, property);
+    });
+  }
+  return returnPropertyFields.toJS();
 };
 
+export const getCreateAssociationObject = ({
+  associationEntity,
+  srcEntitySetId,
+  srcEntityKeyId,
+  dstEntitySetId,
+  dstEntityKeyId
+}) => (
+  {
+    data: associationEntity,
+    src: {
+      entitySetId: srcEntitySetId,
+      entityKeyId: srcEntityKeyId
+    },
+    dst: {
+      entitySetId: dstEntitySetId,
+      entityKeyId: dstEntityKeyId
+    }
+  }
+);
+
 export const getSearchTerm = (propertyTypeId, searchString) => `${SEARCH_PREFIX}.${propertyTypeId}:"${searchString}"`;
+
+export const getSearchTermNotExact = (propertyTypeId, searchString) => `${SEARCH_PREFIX}.${propertyTypeId}:${searchString}`;

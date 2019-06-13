@@ -28,7 +28,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [DOWNLOAD.ALL_HEARING_DATA]: Set()
 });
 
-export default function downloadReducer(state :Map<*, *> = INITIAL_STATE, action :SequenceAction) {
+export default function downloadReducer(state :Map<*, *> = INITIAL_STATE, action :Object) {
   switch (action.type) {
 
     case downloadChargeLists.case(action.type): {
