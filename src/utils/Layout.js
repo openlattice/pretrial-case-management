@@ -4,23 +4,10 @@
 import styled from 'styled-components';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Link } from 'react-router-dom';
-import {
-  Button,
-  Checkbox,
-  Col,
-  ControlLabel,
-  FormControl,
-  FormGroup,
-  Radio,
-  Row,
-  ToggleButton,
-  ToggleButtonGroup
-} from 'react-bootstrap';
 import BasicButton from '../components/buttons/BasicButton';
 import closeX from '../assets/svg/close-x-gray.svg';
 
 import { OL } from './consts/Colors';
-import { FLEX } from './consts/Consts';
 
 export const PrimaryButton = styled(BasicButton)`
   border-radius: 3px;
@@ -65,35 +52,9 @@ export const TertiaryButton = styled(BasicButton)`
   }
 `;
 
-export const PaddedRow = styled(Row)`
-  margin-bottom: 38px;
-`;
-
-export const UnpaddedRow = styled(Row)`
-  margin-bottom: 0;
-`;
-
-export const CheckboxRow = styled(Row)`
-  margin-bottom: 10px;
-`;
-
-export const UnpaddedCol = styled(Col)`
-  padding-left: 0;
-  padding-right: 0;
-`;
-
-export const TableFormControl = styled(FormControl)`
-  border-radius: 0;
-`;
-
-export const Label = styled(ControlLabel)`
-  color: ${OL.GREY34};
-  font-size: 16px;
-  font-weight: 400;
-`;
-
-export const TitleLabel = styled(Label)`
+export const TitleLabel = styled.div`
   display: block;
+  font-size: 16px;
   font-family: 'Open Sans', sans-serif;
   color: ${OL.GREY01};
 `;
@@ -107,33 +68,10 @@ export const TableRowLabel = styled(TitleLabel)`
   font-size: 16px;
 `;
 
-export const SectionHeader = styled(Label)`
-  font-size: 24px;
-  margin-bottom: 24px;
-`;
-
 export const SectionHeaderSubtitle = styled.div`
   margin: -24px 0 24px 0;
   font-size: 16px;
   font-style: italic;
-`;
-
-export const InlineRadio = styled(Radio)`
-  font-size: 16px;
-`;
-
-export const InlineCheckbox = styled(Checkbox)`
-  font-size: 16px;
-  margin-right: 12px;
-  margin-bottom: 10px;
-  margin-left: 0 !important;
-`;
-
-export const InputWrapper = styled(({ flex, children, ...rest }) => (
-  <FormGroup {...rest}>{children}</FormGroup>
-))`
-  padding-right: 30px;
-  flex: ${props => props.flex || FLEX.COL_1_3};
 `;
 
 export const OtherWrapper = styled.span`
@@ -198,18 +136,6 @@ export const UndecoratedLink = styled(Link)`
   }
 `;
 
-export const StyledToggleButtonGroup = styled(ToggleButtonGroup)`
-  display: flex;
-  width: 100%;
-`;
-
-export const StyledToggleButton = styled(ToggleButton)`
-  display: block;
-  width: 100%;
-  text-align: center;
-  -webkit-appearance: none !important;
-`;
-
 // from original PSA app
 
 export const Page = styled.div`
@@ -255,17 +181,6 @@ export const ButtonWrapper = styled.div`
 export const SubmitButtonWrapper = styled(ButtonWrapper)`
   padding-top: 20px;
   text-align: center;
-`;
-
-export const SubmitButton = styled(Button).attrs({
-  type: props => props.type || 'submit'
-})`
-  background-color: ${OL.BLUE10};
-  border: none;
-
-  &:hover {
-    background-color: ${OL.BLUE11};
-  }
 `;
 
 export const InlineBold = styled.span`
