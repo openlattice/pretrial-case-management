@@ -114,11 +114,9 @@ export const getHearingsIdsFromNeighbors = psaNeighbors => (
 // Get future hearings in sequential order from psa neighbors
 export const getScheduledHearings = (psaNeighbors) => {
   const todaysDate = moment().startOf('day');
-  let filteredCourtStrings = List();
   return (
     getHearingsFromNeighbors(psaNeighbors)
       .filter((hearing) => {
-        const hearingCourtString = getHearingString(hearing);
         const {
           [COURTROOM]: courtroom,
           [DATE_TIME]: hearingDateTime,
@@ -127,16 +125,13 @@ export const getScheduledHearings = (psaNeighbors) => {
         const { date: hearingDate, time: hearingTime } = getDateAndTime(hearingDateTime);
         const hearingCancelled = hearingIsCancelled(hearing);
 
-        const hearingIsADuplicate = filteredCourtStrings.includes(hearingCourtString);
         if (
           !hearingCancelled
           && hearingDate
           && hearingTime
           && courtroom
           && hearingType
-          && !hearingIsADuplicate
         ) {
-          filteredCourtStrings = filteredCourtStrings.push(hearingCourtString);
           if (todaysDate.isBefore(hearingDateTime)) return true;
         }
         return false;
@@ -148,11 +143,9 @@ export const getScheduledHearings = (psaNeighbors) => {
 // Get past hearings in sequential order from psa neighbors
 export const getPastHearings = (psaNeighbors) => {
   const todaysDate = moment().startOf('day');
-  let filteredCourtStrings = List();
   return (
     getHearingsFromNeighbors(psaNeighbors)
       .filter((hearing) => {
-        const hearingCourtString = getHearingString(hearing);
         const {
           [COURTROOM]: courtroom,
           [DATE_TIME]: hearingDateTime,
@@ -160,16 +153,13 @@ export const getPastHearings = (psaNeighbors) => {
         } = getEntityProperties(hearing, [COURTROOM, DATE_TIME, HEARING_TYPE]);
         const { date: hearingDate, time: hearingTime } = getDateAndTime(hearingDateTime);
         const hearingCancelled = hearingIsCancelled(hearing);
-        const hearingIsADuplicate = filteredCourtStrings.includes(hearingCourtString);
         if (
           !hearingCancelled
           && hearingDate
           && hearingTime
           && courtroom
           && hearingType
-          && !hearingIsADuplicate
         ) {
-          filteredCourtStrings = filteredCourtStrings.push(hearingCourtString);
           return todaysDate.isAfter(hearingDateTime);
         }
         return false;
