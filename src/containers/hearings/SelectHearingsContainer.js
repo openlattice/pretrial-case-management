@@ -104,12 +104,13 @@ type Props = {
   psaNeighbors :Map<*, *>,
   submitting :boolean,
   context :string,
+  openClosePSAModal :() => void,
+  personNeighbors :Map<*, *>,
   refreshingNeighbors :boolean,
   refreshingPersonNeighbors :boolean,
   readOnly :boolean,
   replacingAssociation :boolean,
   replacingEntity :boolean,
-  personNeighbors :Map<*, *>,
   selectedOrganizationSettings :Map<*, *>,
   updatingEntity :boolean,
   actions :{
@@ -135,6 +136,7 @@ type Props = {
       callback :() => void
     }) => void
   },
+  openClosePSAModal :() => void,
   onSubmit? :(hearing :Object) => void
 }
 
@@ -236,9 +238,11 @@ class SelectHearingsContainer extends React.Component<Props, State> {
 
   renderSelectReleaseCondtions = (selectedHearing) => {
     const { entityKeyId } = selectedHearing;
+    const { openClosePSAModal } = this.props;
     return (
       <Wrapper withPadding>
         <ReleaseConditionsContainer
+            openClosePSAModal={openClosePSAModal}
             backToSelection={this.backToHearingSelection}
             hearingEntityKeyId={entityKeyId} />
       </Wrapper>
