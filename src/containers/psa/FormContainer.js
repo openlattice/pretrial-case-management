@@ -10,7 +10,6 @@ import randomUUID from 'uuid/v4';
 import moment from 'moment';
 import qs from 'query-string';
 import { AuthUtils } from 'lattice-auth';
-import { Button } from 'react-bootstrap';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { Constants } from 'lattice';
@@ -623,16 +622,6 @@ class Form extends React.Component<Props, State> {
   };
 
   renderDiscardButton = () => <DiscardButton onClick={this.handleClose}>Discard</DiscardButton>;
-
-  renderClearButton = () => {
-    const { scoresWereGenerated } = this.state;
-    if (!scoresWereGenerated) return null;
-    return (
-      <ButtonWrapper>
-        <Button bsStyle="primary" bsSize="small" onClick={this.clear}>Restart</Button>
-      </ButtonWrapper>
-    );
-  }
 
   handleClose = () => {
     this.clear();
