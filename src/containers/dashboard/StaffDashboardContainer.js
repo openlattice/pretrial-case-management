@@ -10,7 +10,6 @@ import { connect } from 'react-redux';
 import { Redirect, Route, Switch } from 'react-router-dom';
 
 import DashboardMainSection from '../../components/dashboard/DashboardMainSection';
-import VisualizeContainer from './VisualizeContainer';
 import NavButtonToolbar from '../../components/buttons/NavButtonToolbar';
 import {
   APP,
@@ -74,7 +73,7 @@ class StaffDashboard extends React.Component<Props, State> {
     }
   }
 
-  renderVisualizationPortal = () => <VisualizeContainer />;
+  renderVisualizationPortal = () => <div />;
 
   render() {
     const visualizeRoute = `${Routes.STAFF_DASHBOARD}/${Routes.VISUALIZE}`;
