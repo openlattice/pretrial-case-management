@@ -4,19 +4,25 @@
 
 import React from 'react';
 import styled from 'styled-components';
-import { Col } from 'react-bootstrap';
 
 import DatePicker from '../datetime/DatePicker';
 import StyledInput from '../controls/StyledInput';
 import InfoButton from '../buttons/InfoButton';
-import { UnpaddedRow, TitleLabel } from '../../utils/Layout';
+import { TitleLabel } from '../../utils/Layout';
 
-const SearchRow = styled(UnpaddedRow)`
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  margin: 10px;
+const SearchRow = styled.div`
   width: 100%;
+  display: grid;
+  grid-auto-columns: 1fr;
+  grid-auto-flow: column;
+  grid-gap: 30px;
+  padding: 0 30px;
+`;
+
+const GridItem = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  flex-direction: column;
 `;
 
 const StyledTitleLabel = styled(TitleLabel)`
@@ -80,25 +86,25 @@ export default class PersonSearchFields extends React.Component<Props, State> {
     const { firstName, lastName, dob } = this.state;
     return (
       <SearchRow>
-        <Col lg={3}>
+        <GridItem>
           <StyledTitleLabel>Last name</StyledTitleLabel>
           <StyledInput name="lastName" onKeyPress={this.handleKeyPress} onChange={this.onChange} value={lastName} />
-        </Col>
-        <Col lg={3}>
+        </GridItem>
+        <GridItem>
           <StyledTitleLabel>First name</StyledTitleLabel>
           <StyledInput name="firstName" onKeyPress={this.handleKeyPress} onChange={this.onChange} value={firstName} />
-        </Col>
-        <Col lg={3}>
+        </GridItem>
+        <GridItem>
           <StyledTitleLabel>Date of birth</StyledTitleLabel>
           <DatePicker
               onKeyPress={this.handleKeyPress}
               name="dob"
               onChange={this.onDobChange}
               value={dob} />
-        </Col>
-        <Col lg={3}>
+        </GridItem>
+        <GridItem>
           <InfoButton onClick={this.handleSubmit}>Search</InfoButton>
-        </Col>
+        </GridItem>
       </SearchRow>
     );
   }
