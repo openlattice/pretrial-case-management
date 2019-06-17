@@ -20,7 +20,7 @@ const StyledSection = styled(FullWidthContainer)`
 const StyledContentBlockWrapper = styled.div`
   width: 100%;
   display: grid;
-  ${props => getComputedTopWrapperStyle(props.component)};
+  ${getComputedTopWrapperStyle};
 `;
 
 const StyledSectionHeader = styled.div`
@@ -30,7 +30,7 @@ const StyledSectionHeader = styled.div`
   font-family: 'Open Sans', sans-serif;
   font-weight: 600;
   color: ${OL.GREY01};
-  ${props => getComputedHeaderStyle(props.component)};
+  ${getComputedHeaderStyle};
 `;
 const StyledSectionBottomBarWrapper = styled.div`
   width: 100%;
@@ -43,7 +43,7 @@ const StyledSectionBottomBarWrapper = styled.div`
   font-size: 14px;
   font-weight: bold;
   margin-bottom: 12px;
-  ${props => getComputedBottomWrapperStyle(props.component)};
+  ${getComputedBottomWrapperStyle};
   ${props => (props.modifyingHearing ? 'padding-top: 8px;' : '')}
 `;
 
