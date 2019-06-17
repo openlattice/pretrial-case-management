@@ -286,6 +286,8 @@ class PSAModal extends React.Component<Props, State> {
     });
   }
 
+  openClosePSAModal = () => this.setState({ closingPSAModalOpen: true });
+
   exitEdit = () => {
     this.setState({ editing: false });
   }
@@ -899,6 +901,7 @@ class PSAModal extends React.Component<Props, State> {
       <ModalWrapper withPadding>
         <SelectHearingsContainer
             {...this.props}
+            openClosePSAModal={this.openClosePSAModal}
             chargeHistory={chargeHistory}
             psaHearings={hearings}
             submitting={submitting}
