@@ -41,7 +41,7 @@ export default class ExpandableText extends React.Component<Props, State> {
     return (
       <div>
         {displayText}
-        <ButtonText bsStyle="link" onClick={this.switchState}>{controlText}</ButtonText>
+        <ButtonText onClick={this.switchState}>{controlText}</ButtonText>
       </div>
     );
   }
