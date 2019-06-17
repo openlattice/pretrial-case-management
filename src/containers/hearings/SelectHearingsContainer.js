@@ -8,11 +8,11 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { List, Map } from 'immutable';
 
-import InfoButton from '../../components/buttons/InfoButton';
-import HearingCardsWithTitle from '../../components/hearings/HearingCardsWithTitle';
 import HearingCardsHolder from '../../components/hearings/HearingCardsHolder';
-import NewHearingSection from '../../components/hearings/NewHearingSection';
+import HearingCardsWithTitle from '../../components/hearings/HearingCardsWithTitle';
+import InfoButton from '../../components/buttons/InfoButton';
 import LogoLoader from '../../components/LogoLoader';
+import NewHearingSection from '../../components/hearings/NewHearingSection';
 import psaHearingConfig from '../../config/formconfig/PSAHearingConfig';
 import ReleaseConditionsContainer from '../releaseconditions/ReleaseConditionsContainer';
 import SubscriptionInfo from '../../components/subscription/SubscriptionInfo';
@@ -91,40 +91,13 @@ const CreateButton = styled(InfoButton)`
 `;
 
 type Props = {
-  app :Map<*, *>,
-  psaHearings :List<*, *>,
-  personHearings :List<*, *>,
-  refreshingHearingAndNeighbors :boolean,
-  hearingNeighborsById :Map<*, *>,
-  neighbors :Map<*, *>,
-  psaIdsRefreshing :Map<*, *>,
-  psaId :string,
-  psaEntityKeyId :string,
-  personId :string,
-  psaNeighbors :Map<*, *>,
-  submitting :boolean,
-  context :string,
-  openClosePSAModal :() => void,
-  personNeighbors :Map<*, *>,
-  refreshingNeighbors :boolean,
-  refreshingPersonNeighbors :boolean,
-  readOnly :boolean,
-  replacingAssociation :boolean,
-  replacingEntity :boolean,
-  selectedOrganizationSettings :Map<*, *>,
-  updatingEntity :boolean,
   actions :{
     deleteEntity :(values :{
       entitySetId :string,
       entityKeyId :string
     }) => void,
-    submit :(values :{
-      config :Map<*, *>,
-      values :Map<*, *>,
-      callback :() => void
-    }) => void,
-    refreshPSANeighbors :({ id :string }) => void,
     refreshHearingAndNeighbors :({ hearingEntityKeyId :string }) => void,
+    refreshPSANeighbors :({ id :string }) => void,
     replaceAssociation :(values :{
       associationEntity :Map<*, *>,
       associationEntityName :string,
@@ -134,20 +107,46 @@ type Props = {
       dstEntityName :string,
       dstEntityKeyId :string,
       callback :() => void
+    }) => void,
+    submit :(values :{
+      config :Map<*, *>,
+      values :Map<*, *>,
+      callback :() => void
     }) => void
   },
+  app :Map<*, *>,
+  context :string,
+  hearingNeighborsById :Map<*, *>,
+  neighbors :Map<*, *>,
+  onSubmit? :(hearing :Object) => void,
   openClosePSAModal :() => void,
-  onSubmit? :(hearing :Object) => void
+  personHearings :List<*, *>,
+  personId :string,
+  personNeighbors :Map<*, *>,
+  psaEntityKeyId :string,
+  psaHearings :List<*, *>,
+  psaId :string,
+  psaIdsRefreshing :Map<*, *>,
+  psaNeighbors :Map<*, *>,
+  readOnly :boolean,
+  refreshingHearingAndNeighbors :boolean,
+  refreshingNeighbors :boolean,
+  refreshingPersonNeighbors :boolean,
+  replacingAssociation :boolean,
+  replacingEntity :boolean,
+  selectedOrganizationSettings :Map<*, *>,
+  submitting :boolean,
+  updatingEntity :boolean
 }
 
 type State = {
+  judge :string,
   manuallyCreatingHearing :boolean,
+  newHearingCourtroom :?string,
   newHearingDate :?string,
   newHearingTime :?string,
-  newHearingCourtroom :?string,
-  selectedHearing :Object,
-  judge :string,
   otherJudgeText :string,
+  selectedHearing :Object,
   selectingReleaseConditions :boolean
 };
 
