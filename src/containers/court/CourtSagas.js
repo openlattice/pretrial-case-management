@@ -43,10 +43,12 @@ import {
 } from './CourtActionFactory';
 
 const {
+  BONDS,
   CHECKIN_APPOINTMENTS,
   CONTACT_INFORMATION,
   HEARINGS,
   JUDGES,
+  OUTCOMES,
   PEOPLE,
   PSA_SCORES,
   RELEASE_CONDITIONS,
@@ -326,7 +328,12 @@ function* loadHearingNeighborsWorker(action :SequenceAction) :Generator<*, *, *>
       const releaseConditionsEntitySetId = getEntitySetIdFromApp(app, RELEASE_CONDITIONS);
       const psaEntitySetId = getEntitySetIdFromApp(app, PSA_SCORES);
       let neighborsById = yield call(SearchApi.searchEntityNeighborsWithFilter, hearingEntitySetId, {
-        entityKeyIds: hearingIds
+        entityKeyIds: hearingIds,
+        sourceEntitySetIds: [
+          peopleEntitySetId,
+          psaEntitySetId
+        ],
+        destinationEntitySetIds: []
       });
       neighborsById = fromJS(neighborsById);
       neighborsById.entrySeq().forEach(([hearingId, neighbors]) => {
@@ -339,31 +346,23 @@ function* loadHearingNeighborsWorker(action :SequenceAction) :Generator<*, *, *>
             const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id']);
             const entitySetName = entitySetIdsToAppType.get(entitySetId, JUDGES);
             const entityKeyId = neighbor.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0]);
-            if (entitySetId === releaseConditionsEntitySetId) {
-              hearingNeighborsMap = hearingNeighborsMap.set(
-                entitySetName,
-                hearingNeighborsMap.get(entitySetName, List()).push(fromJS(neighbor))
+            if (entitySetId === peopleEntitySetId) {
+              hasPerson = true;
+              personId = entityKeyId;
+              personIds = personIds.add(personId);
+            }
+            if (entitySetId === psaEntitySetId
+                && neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.STATUS, 0]) === PSA_STATUSES.OPEN) {
+              hasPSA = true;
+              scoresAsMap = scoresAsMap.set(
+                entityKeyId,
+                fromJS(neighbor.get(PSA_NEIGHBOR.DETAILS))
               );
             }
-            else {
-              if (entitySetId === peopleEntitySetId) {
-                hasPerson = true;
-                personId = entityKeyId;
-                personIds = personIds.add(personId);
-              }
-              if (entitySetId === psaEntitySetId
-                  && neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.STATUS, 0]) === PSA_STATUSES.OPEN) {
-                hasPSA = true;
-                scoresAsMap = scoresAsMap.set(
-                  entityKeyId,
-                  fromJS(neighbor.get(PSA_NEIGHBOR.DETAILS))
-                );
-              }
-              hearingNeighborsMap = hearingNeighborsMap.set(
-                entitySetName,
-                fromJS(neighbor)
-              );
-            }
+            hearingNeighborsMap = hearingNeighborsMap.set(
+              entitySetName,
+              fromJS(neighbor)
+            );
           }));
           if (hasPerson && !hasPSA) {
             personIdsToHearingIds = personIdsToHearingIds.set(
