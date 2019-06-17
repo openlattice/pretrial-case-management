@@ -275,6 +275,7 @@ type Props = {
   hearingNeighbors :Map<*, *>,
   hearingEntityKeyId :string,
   loadingReleaseCondtions :boolean,
+  openClosePSAModal :() => void,
   personNeighbors :Map<*, *>,
   psaNeighbors :Map<*, *>,
   refreshingReleaseConditions :boolean,
@@ -827,6 +828,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       actions,
       app,
       hearingEntityKeyId,
+      openClosePSAModal,
       selectedHearing
     } = this.props;
 
@@ -1028,7 +1030,8 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
         callback: this.refreshHearingsNeighborsCallback
       });
     }
-
+    const otherOutcomes = Object.values(OTHER_OUTCOMES);
+    if (openClosePSAModal && otherOutcomes.includes(outcome)) openClosePSAModal();
   }
 
   cleanNoContactPeopleList = () => {
