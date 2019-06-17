@@ -4,12 +4,7 @@
 import Immutable, { fromJS, List, Map } from 'immutable';
 import Papa from 'papaparse';
 import moment from 'moment';
-import {
-  Constants,
-  DataApi,
-  SearchApi,
-  Models
-} from 'lattice';
+import { Constants, SearchApi, Models } from 'lattice';
 import { SearchApiActions, SearchApiSagas } from 'lattice-sagas';
 import {
   all,
@@ -461,6 +456,7 @@ function* downloadPSAsByHearingDateWorker(action :SequenceAction) :Generator<*, 
     const psaRiskFactorsEntitySetId = getEntitySetIdFromApp(app, PSA_RISK_FACTORS);
     const staffEntitySetId = getEntitySetIdFromApp(app, STAFF);
     const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
+    const dmfResultsEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.DMF_RESULTS);
 
     if (selectedHearingData.size) {
       selectedHearingData.forEach((hearing) => {
@@ -471,8 +467,22 @@ function* downloadPSAsByHearingDateWorker(action :SequenceAction) :Generator<*, 
       });
     }
 
-    let hearingNeighborsById = yield call(SearchApi.searchEntityNeighborsBulk, hearingsEntitySetId, hearingIds.toJS());
-    hearingNeighborsById = Immutable.fromJS(hearingNeighborsById);
+    let hearingNeighborsById = yield call(
+      searchEntityNeighborsWithFilterWorker,
+      searchEntityNeighborsWithFilter({
+        entitySetId: hearingsEntitySetId,
+        filter: {
+          entityKeyIds: hearingIds.toJS(),
+          sourceEntitySetIds: [
+            peopleEntitySetId,
+            psaEntitySetId
+          ],
+          destinationEntitySetIds: []
+        }
+      })
+    );
+    if (hearingNeighborsById.error) throw hearingNeighborsById.error;
+    hearingNeighborsById = Immutable.fromJS(hearingNeighborsById.data);
     hearingNeighborsById.entrySeq().forEach(([hearingId, neighbors]) => {
       let hasPerson = false;
       let hasPSA = false;
@@ -508,12 +518,22 @@ function* downloadPSAsByHearingDateWorker(action :SequenceAction) :Generator<*, 
 
     if (personIdsToHearingIds.size) {
       let peopleNeighborsById = yield call(
-        SearchApi.searchEntityNeighborsBulk,
-        peopleEntitySetId,
-        personIdsToHearingIds.keySeq().toJS()
+        searchEntityNeighborsWithFilterWorker,
+        searchEntityNeighborsWithFilter({
+          entitySetId: peopleEntitySetId,
+          filter: {
+            entityKeyIds: personIdsToHearingIds.keySeq().toJS(),
+            sourceEntitySetIds: [],
+            destinationEntitySetIds: [
+              hearingsEntitySetId,
+              psaEntitySetId
+            ]
+          }
+        })
       );
+      if (peopleNeighborsById.error) throw peopleNeighborsById.error;
+      peopleNeighborsById = Immutable.fromJS(peopleNeighborsById.data);
 
-      peopleNeighborsById = Immutable.fromJS(peopleNeighborsById);
       peopleNeighborsById.entrySeq().forEach(([id, neighbors]) => {
         let hasValidHearing = false;
         let mostCurrentPSA;
@@ -557,12 +577,25 @@ function* downloadPSAsByHearingDateWorker(action :SequenceAction) :Generator<*, 
 
     if (hearingIdsToPSAIds.size) {
       const psaNeighborsById = yield call(
-        SearchApi.searchEntityNeighborsBulk,
-        psaEntitySetId,
-        hearingIdsToPSAIds.valueSeq().toJS()
+        searchEntityNeighborsWithFilterWorker,
+        searchEntityNeighborsWithFilter({
+          entitySetId: psaEntitySetId,
+          filter: {
+            entityKeyIds: hearingIdsToPSAIds.valueSeq().toJS(),
+            sourceEntitySetIds: [
+              dmfResultsEntitySetId
+            ],
+            destinationEntitySetIds: [
+              peopleEntitySetId,
+              psaRiskFactorsEntitySetId,
+              dmfRiskFactorsEntitySetId,
+              staffEntitySetId
+            ]
+          }
+        })
       );
-
-      Object.entries(psaNeighborsById).forEach(([id, neighborList]) => {
+      if (psaNeighborsById.error) throw psaNeighborsById.error;
+      Object.entries(psaNeighborsById.data).forEach(([id, neighborList]) => {
         let domainMatch = true;
         neighborList.forEach((neighborObj) => {
           const neighbor = getFilteredNeighbor(neighborObj);
