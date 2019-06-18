@@ -463,11 +463,11 @@ class PersonDetailsContainer extends React.Component<Props, State> {
 
     return (
       <PathContainer>
-        <ViewMoreLink noPadding to={Routes.PEOPLE}>Manage People</ViewMoreLink>
+        <ViewMoreLink to={Routes.PEOPLE}>Manage People</ViewMoreLink>
         <IconContainer>
-          <FontAwesomeIcon small icon={faChevronRight} color={OL.PURPLE02} />
+          <FontAwesomeIcon small="true" icon={faChevronRight} color={OL.PURPLE02} />
         </IconContainer>
-        <ViewMoreLink noPadding to={overviewRoute}>{firstMidLast}</ViewMoreLink>
+        <ViewMoreLink to={overviewRoute}>{firstMidLast}</ViewMoreLink>
       </PathContainer>
     )
   }
