@@ -1,21 +1,26 @@
 /*
  * @flow
  */
-
 import React from 'react';
 import styled from 'styled-components';
-import { Col } from 'react-bootstrap';
 
 import DatePicker from '../datetime/DatePicker';
-import StyledInput from '../controls/StyledInput';
 import InfoButton from '../buttons/InfoButton';
-import { UnpaddedRow, TitleLabel } from '../../utils/Layout';
+import StyledInput from '../controls/StyledInput';
+import { TitleLabel } from '../../utils/Layout';
 
-const SearchRow = styled(UnpaddedRow)`
+const GridItem = styled.div`
   display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  margin: 10px;
+  flex-direction: column;
+  justify-content: flex-end;
+`;
+
+const SearchRow = styled.div`
+  display: grid;
+  grid-auto-columns: 1fr;
+  grid-auto-flow: column;
+  grid-gap: 30px;
+  padding: 0 30px;
   width: 100%;
 `;
 
@@ -24,30 +29,30 @@ const StyledTitleLabel = styled(TitleLabel)`
 `;
 
 type Props = {
-  firstName :string,
-  lastName :string,
   dob :string,
-  includePSAInfo :boolean,
+  firstName :string,
   handleSubmit :(value :{firstName :string, lastName :string, dob :string}) => void,
+  includePSAInfo :boolean,
+  lastName :string
 };
 
 type State = {
+  dob :string,
   firstName :string,
-  lastName :string,
-  dob :string
+  lastName :string
 }
 
 export default class PersonSearchFields extends React.Component<Props, State> {
 
   constructor(props :Props) {
+    const dob = props.dob ? props.dob : '';
     const firstName = props.firstName ? props.firstName : '';
     const lastName = props.lastName ? props.lastName : '';
-    const dob = props.dob ? props.dob : '';
     super(props);
     this.state = {
+      dob,
       firstName,
-      lastName,
-      dob
+      lastName
     };
   }
 
@@ -55,10 +60,10 @@ export default class PersonSearchFields extends React.Component<Props, State> {
     const { handleSubmit, includePSAInfo } = this.props;
     const { firstName, lastName, dob } = this.state;
     handleSubmit({
-      firstName,
-      lastName,
       dob,
-      includePSAInfo
+      firstName,
+      includePSAInfo,
+      lastName
     });
   }
 
@@ -80,25 +85,25 @@ export default class PersonSearchFields extends React.Component<Props, State> {
     const { firstName, lastName, dob } = this.state;
     return (
       <SearchRow>
-        <Col lg={3}>
+        <GridItem>
           <StyledTitleLabel>Last name</StyledTitleLabel>
           <StyledInput name="lastName" onKeyPress={this.handleKeyPress} onChange={this.onChange} value={lastName} />
-        </Col>
-        <Col lg={3}>
+        </GridItem>
+        <GridItem>
           <StyledTitleLabel>First name</StyledTitleLabel>
           <StyledInput name="firstName" onKeyPress={this.handleKeyPress} onChange={this.onChange} value={firstName} />
-        </Col>
-        <Col lg={3}>
+        </GridItem>
+        <GridItem>
           <StyledTitleLabel>Date of birth</StyledTitleLabel>
           <DatePicker
               onKeyPress={this.handleKeyPress}
               name="dob"
               onChange={this.onDobChange}
               value={dob} />
-        </Col>
-        <Col lg={3}>
+        </GridItem>
+        <GridItem>
           <InfoButton onClick={this.handleSubmit}>Search</InfoButton>
-        </Col>
+        </GridItem>
       </SearchRow>
     );
   }
