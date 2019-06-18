@@ -52,7 +52,6 @@
     "prop-types": "^15.6.0",
     "query-string": "^5.1.0",
     "react": "~16.8.0",
-    "react-bootstrap": "^0.31.3",
     "react-dom": "~16.8.0",
     "react-redux": "~6.0.0",
     "react-router": "~4.3.0",

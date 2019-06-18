@@ -13,8 +13,6 @@ import BasicButton from '../buttons/BasicButton';
 import logo from '../../assets/images/logo.jpg';
 import createReport from '../../assets/svg/create-report.svg';
 import createReportSelected from '../../assets/svg/create-report-selected.svg';
-import dashboard from '../../assets/svg/dashboard.svg';
-import dashboardSelected from '../../assets/svg/dashboard-selected.svg';
 import downloads from '../../assets/svg/downloads.svg';
 import downloadsSelected from '../../assets/svg/downloads-selected.svg';
 import NavButton from './NavButton';
@@ -229,18 +227,11 @@ class HeaderNav extends React.Component<Props, *> {
             {
               pretrialModule
                 ? (
-                  <>
-                    <NavButton
-                        path={Routes.STAFF_DASHBOARD}
-                        defaultIcon={dashboard}
-                        selectedIcon={dashboardSelected}
-                        label="Dashboard" />
-                    <NavButton
-                        path={Routes.JUDGE_VIEW}
-                        defaultIcon={judges}
-                        selectedIcon={judgesSelected}
-                        label="Judges" />
-                  </>
+                  <NavButton
+                      path={Routes.JUDGE_VIEW}
+                      defaultIcon={judges}
+                      selectedIcon={judgesSelected}
+                      label="Judges" />
                 )
                 : null
             }
