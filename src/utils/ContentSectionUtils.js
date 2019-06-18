@@ -18,7 +18,7 @@ export const getComputedTopWrapperStyle = (props) => {
         `;
     case CONTENT_CONSTS.PROFILE:
       return css`
-        grid-template-columns: repeat(5, 1fr);
+        grid-template-columns: repeat(4, 1fr);
         grid-row-gap: 20px;
         `;
     case CONTENT_CONSTS.HEARINGS:
