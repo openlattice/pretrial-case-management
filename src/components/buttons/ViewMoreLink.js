@@ -15,7 +15,7 @@ const ViewMoreLink = styled(Link)`
   font-weight: 600;
   font-size: 14px;
   outline: none;
-  padding: 10px 20px;
+  padding: ${props => (props.noPadding ? '10px 0 ' : '10px 20px')};
   text-align: right;
 
   &:hover {

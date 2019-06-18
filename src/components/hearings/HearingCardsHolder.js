@@ -21,7 +21,7 @@ const CardsHolder = styled.div`
   width: 100%;
   display: grid;
   grid-template-columns: repeat(${props => (props.columns ? props.columns : 2)}, 1fr);
-  grid-gap: 20px;
+  grid-gap: 10px;
   margin-bottom: 30px
 `;
 
