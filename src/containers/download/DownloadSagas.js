@@ -523,11 +523,8 @@ function* downloadPSAsByHearingDateWorker(action :SequenceAction) :Generator<*, 
           entitySetId: peopleEntitySetId,
           filter: {
             entityKeyIds: personIdsToHearingIds.keySeq().toJS(),
-            sourceEntitySetIds: [],
-            destinationEntitySetIds: [
-              hearingsEntitySetId,
-              psaEntitySetId
-            ]
+            sourceEntitySetIds: [psaEntitySetId],
+            destinationEntitySetIds: [hearingsEntitySetId]
           }
         })
       );
