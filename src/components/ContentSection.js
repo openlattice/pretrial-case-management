@@ -20,6 +20,7 @@ const StyledSection = styled(FullWidthContainer)`
 const StyledContentBlockWrapper = styled.div`
   width: 100%;
   display: grid;
+  grid-auto-rows: min-content;
   ${getComputedTopWrapperStyle};
 `;
 
