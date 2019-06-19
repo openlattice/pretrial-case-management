@@ -3,6 +3,7 @@
  */
 import moment from 'moment';
 import { Constants, DataApi, SearchApi } from 'lattice';
+import { SearchApiActions, SearchApiSagas } from 'lattice-sagas';
 import {
   Map,
   List,
@@ -40,30 +41,35 @@ import {
   updateContactInfo
 } from './PeopleActionFactory';
 
+const { searchEntityNeighborsWithFilter } = SearchApiActions;
+const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
+
 const {
   CHARGES,
   CHECKINS,
   CHECKIN_APPOINTMENTS,
   CONTACT_INFORMATION,
+  DMF_RISK_FACTORS,
   FTAS,
   HEARINGS,
+  MANUAL_CHARGES,
+  MANUAL_COURT_CHARGES,
   MANUAL_PRETRIAL_CASES,
   MANUAL_PRETRIAL_COURT_CASES,
+  MANUAL_REMINDERS,
   PEOPLE,
+  PSA_RISK_FACTORS,
   PSA_SCORES,
   PRETRIAL_CASES,
+  RELEASE_CONDITIONS,
   RELEASE_RECOMMENDATIONS,
+  SENTENCES,
   STAFF,
   SUBSCRIPTION,
   SPEAKER_RECOGNITION_PROFILES
 } = APP_TYPES;
 
-const {
-  DATE_TIME,
-  HEARING_INACTIVE,
-  UPDATE_TYPE,
-  HEARING_TYPE
-} = PROPERTY_TYPES;
+const { DATE_TIME, HEARING_TYPE } = PROPERTY_TYPES;
 
 const LIST_FQNS = [CHECKINS, CHECKIN_APPOINTMENTS, CONTACT_INFORMATION, HEARINGS, PRETRIAL_CASES, STAFF, CHARGES];
 
@@ -160,14 +166,77 @@ function* getPersonNeighborsWorker(action) :Generator<*, *, *> {
 
     const app = yield select(getApp);
     const orgId = yield select(getOrgId);
-    const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
-    const psaScoresEntitySetId = getEntitySetIdFromApp(app, PSA_SCORES);
     const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
 
+    /*
+     * Get Entity Set Ids
+     */
+    const arrestCasesEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.ARREST_CASES);
+    const bondsEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.BONDS);
+    const chargesEntitySetId = getEntitySetIdFromApp(app, CHARGES);
+    const checkInAppointmentsEntitySetId = getEntitySetIdFromApp(app, CHECKIN_APPOINTMENTS);
+    const contactInformationEntitySetId = getEntitySetIdFromApp(app, CONTACT_INFORMATION);
+    const dmfResultsEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.DMF_RESULTS);
+    const dmfRiskFactorsEntitySetId = getEntitySetIdFromApp(app, DMF_RISK_FACTORS);
+    const ftaEntitySetId = getEntitySetIdFromApp(app, FTAS);
+    const hearingsEntitySetId = getEntitySetIdFromApp(app, HEARINGS);
+    const manualChargesEntitySetId = getEntitySetIdFromApp(app, MANUAL_CHARGES);
+    const manualCourtChargesEntitySetId = getEntitySetIdFromApp(app, MANUAL_COURT_CHARGES);
+    const manualPretrialCourtCasesEntitySetId = getEntitySetIdFromApp(app, MANUAL_PRETRIAL_COURT_CASES);
+    const manualRemindersEntitySetId = getEntitySetIdFromApp(app, MANUAL_REMINDERS);
+    const manualPretrialCasesEntitySetId = getEntitySetIdFromApp(app, MANUAL_PRETRIAL_CASES);
+    const outcomesEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.OUTCOMES);
+    const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
+    const pretrialCasesEntitySetId = getEntitySetIdFromApp(app, PRETRIAL_CASES);
+    const psaRiskFactorsEntitySetId = getEntitySetIdFromApp(app, PSA_RISK_FACTORS);
+    const psaScoresEntitySetId = getEntitySetIdFromApp(app, PSA_SCORES);
+    const releaseConditionsEntitySetId = getEntitySetIdFromApp(app, RELEASE_CONDITIONS);
+    const releaseRecommendationsEntitySetId = getEntitySetIdFromApp(app, RELEASE_RECOMMENDATIONS);
+    const sentencesEntitySetId = getEntitySetIdFromApp(app, SENTENCES);
+
     const person = yield getEntityForPersonId(personId);
-    const entityKeyId = person[OPENLATTICE_ID_FQN][0];
-    let neighbors = yield call(SearchApi.searchEntityNeighbors, peopleEntitySetId, entityKeyId);
-    neighbors = fromJS(neighbors);
+    const personEntityKeyId = person[OPENLATTICE_ID_FQN][0];
+    /*
+     * Get Neighbors
+     */
+    let peopleNeighborsById = yield call(
+      searchEntityNeighborsWithFilterWorker,
+      searchEntityNeighborsWithFilter({
+        entitySetId: peopleEntitySetId,
+        filter: {
+          entityKeyIds: [personEntityKeyId],
+          sourceEntitySetIds: [
+            bondsEntitySetId,
+            checkInAppointmentsEntitySetId,
+            contactInformationEntitySetId,
+            dmfResultsEntitySetId,
+            dmfRiskFactorsEntitySetId,
+            ftaEntitySetId,
+            manualRemindersEntitySetId,
+            outcomesEntitySetId,
+            peopleEntitySetId,
+            psaRiskFactorsEntitySetId,
+            psaScoresEntitySetId,
+            releaseConditionsEntitySetId,
+            releaseRecommendationsEntitySetId
+          ],
+          destinationEntitySetIds: [
+            arrestCasesEntitySetId,
+            chargesEntitySetId,
+            hearingsEntitySetId,
+            manualChargesEntitySetId,
+            manualCourtChargesEntitySetId,
+            manualPretrialCourtCasesEntitySetId,
+            pretrialCasesEntitySetId,
+            manualPretrialCasesEntitySetId,
+            sentencesEntitySetId
+          ]
+        }
+      })
+    );
+    if (peopleNeighborsById.error) throw peopleNeighborsById.error;
+    peopleNeighborsById = fromJS(peopleNeighborsById.data);
+    const neighbors = peopleNeighborsById.get(personEntityKeyId, List());
 
     let hearingEntityKeyId = Set();
 
