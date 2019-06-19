@@ -238,9 +238,6 @@ function* getPersonNeighborsWorker(action) :Generator<*, *, *> {
     peopleNeighborsById = fromJS(peopleNeighborsById.data);
     const neighbors = peopleNeighborsById.get(personEntityKeyId, List());
 
-    // let neighbors = yield call(SearchApi.searchEntityNeighbors, peopleEntitySetId, personEntityKeyId);
-    // neighbors = fromJS(neighbors);
-
     let hearingEntityKeyId = Set();
 
     neighbors.forEach((neighborObj) => {
