@@ -101,12 +101,17 @@ function* filterPeopleIdsWithOpenPSAsWorker(action :SequenceAction) :Generator<*
     const psaEntitySetId = getEntitySetIdFromApp(app, PSA_SCORES);
     const staffEntitySetId = getEntitySetIdFromApp(app, STAFF);
     if (personIds.size) {
-      let peopleNeighborsById = yield call(SearchApi.searchEntityNeighborsWithFilter, peopleEntitySetId, {
-        entityKeyIds: personIds.toJS(),
-        sourceEntitySetIds: [psaEntitySetId, contactInformationEntitySetId],
-        destinationEntitySetIds: [hearingsEntitySetId, subscriptionEntitySetId, contactInformationEntitySetId]
-      });
-      peopleNeighborsById = fromJS(peopleNeighborsById);
+      let peopleNeighborsById = yield call(
+        searchEntityNeighborsWithFilterWorker,
+        searchEntityNeighborsWithFilter({
+          entityKeyIds: personIds.toJS(),
+          sourceEntitySetIds: [psaEntitySetId, contactInformationEntitySetId],
+          destinationEntitySetIds: [hearingsEntitySetId, subscriptionEntitySetId, contactInformationEntitySetId]
+        })
+      );
+      if (peopleNeighborsById.error) throw peopleNeighborsById.error;
+      peopleNeighborsById = fromJS(peopleNeighborsById.data);
+
       peopleNeighborsById.entrySeq().forEach(([id, neighbors]) => {
 
         let hasValidHearing = false;
@@ -175,12 +180,16 @@ function* filterPeopleIdsWithOpenPSAsWorker(action :SequenceAction) :Generator<*
       });
     }
     let psaIdToMostRecentEditDate = Map();
-    let psaNeighborsById = yield call(SearchApi.searchEntityNeighborsWithFilter, psaEntitySetId, {
-      entityKeyIds: openPSAIds.toJS(),
-      sourceEntitySetIds: [peopleEntitySetId],
-      destinationEntitySetIds: [staffEntitySetId]
-    });
-    psaNeighborsById = fromJS(psaNeighborsById);
+    let psaNeighborsById = yield call(
+      searchEntityNeighborsWithFilterWorker,
+      searchEntityNeighborsWithFilter({
+        entityKeyIds: openPSAIds.toJS(),
+        sourceEntitySetIds: [peopleEntitySetId],
+        destinationEntitySetIds: [staffEntitySetId]
+      })
+    );
+    if (psaNeighborsById.error) throw psaNeighborsById.error;
+    psaNeighborsById = fromJS(psaNeighborsById.data);
     psaNeighborsById.entrySeq().forEach(([id, neighbors]) => {
       let mostRecentEditDate;
       let mostRecentNeighbor;
