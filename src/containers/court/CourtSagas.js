@@ -4,6 +4,7 @@
 
 import moment from 'moment';
 import { Constants, SearchApi, Models } from 'lattice';
+import { SearchApiActions, SearchApiSagas } from 'lattice-sagas';
 import {
   fromJS,
   Map,
@@ -56,6 +57,9 @@ const {
   SUBSCRIPTION,
   STAFF
 } = APP_TYPES;
+
+const { searchEntityNeighborsWithFilter } = SearchApiActions;
+const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
 
 const { OPENLATTICE_ID_FQN } = Constants;
 const { FullyQualifiedName } = Models;
@@ -337,20 +341,28 @@ function* loadHearingNeighborsWorker(action :SequenceAction) :Generator<*, *, *>
       const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
       const releaseConditionsEntitySetId = getEntitySetIdFromApp(app, RELEASE_CONDITIONS);
       const psaEntitySetId = getEntitySetIdFromApp(app, PSA_SCORES);
-      let neighborsById = yield call(SearchApi.searchEntityNeighborsWithFilter, hearingsEntitySetId, {
-        entityKeyIds: hearingIds,
-        sourceEntitySetIds: [
-          bondsEntitySetId,
-          checkInAppointmentsEntitySetId,
-          manualRemindersEntitySetId,
-          outcomesEntitySetId,
-          peopleEntitySetId,
-          psaEntitySetId,
-          releaseConditionsEntitySetId
-        ],
-        destinationEntitySetIds: [judgesEntitySetId]
-      });
-      neighborsById = fromJS(neighborsById);
+
+      let neighborsById = yield call(
+        searchEntityNeighborsWithFilterWorker,
+        searchEntityNeighborsWithFilter({
+          entitySetId: hearingsEntitySetId,
+          filter: {
+            entityKeyIds: hearingIds,
+            sourceEntitySetIds: [
+              bondsEntitySetId,
+              checkInAppointmentsEntitySetId,
+              manualRemindersEntitySetId,
+              outcomesEntitySetId,
+              peopleEntitySetId,
+              psaEntitySetId,
+              releaseConditionsEntitySetId
+            ],
+            destinationEntitySetIds: [judgesEntitySetId]
+          }
+        })
+      );
+      if (neighborsById.error) throw neighborsById.error;
+      neighborsById = fromJS(neighborsById.data);
       neighborsById.entrySeq().forEach(([hearingId, neighbors]) => {
         if (neighbors) {
           let hasPerson = false;
