@@ -104,9 +104,12 @@ function* filterPeopleIdsWithOpenPSAsWorker(action :SequenceAction) :Generator<*
       let peopleNeighborsById = yield call(
         searchEntityNeighborsWithFilterWorker,
         searchEntityNeighborsWithFilter({
-          entityKeyIds: personIds.toJS(),
-          sourceEntitySetIds: [psaEntitySetId, contactInformationEntitySetId],
-          destinationEntitySetIds: [hearingsEntitySetId, subscriptionEntitySetId, contactInformationEntitySetId]
+          entitySetId: peopleEntitySetId,
+          filter: {
+            entityKeyIds: personIds.toJS(),
+            sourceEntitySetIds: [psaEntitySetId, contactInformationEntitySetId],
+            destinationEntitySetIds: [hearingsEntitySetId, subscriptionEntitySetId, contactInformationEntitySetId]
+          }
         })
       );
       if (peopleNeighborsById.error) throw peopleNeighborsById.error;
@@ -183,9 +186,12 @@ function* filterPeopleIdsWithOpenPSAsWorker(action :SequenceAction) :Generator<*
     let psaNeighborsById = yield call(
       searchEntityNeighborsWithFilterWorker,
       searchEntityNeighborsWithFilter({
-        entityKeyIds: openPSAIds.toJS(),
-        sourceEntitySetIds: [peopleEntitySetId],
-        destinationEntitySetIds: [staffEntitySetId]
+        entitySetId: psaEntitySetId,
+        filter: {
+          entityKeyIds: openPSAIds.toJS(),
+          sourceEntitySetIds: [peopleEntitySetId],
+          destinationEntitySetIds: [staffEntitySetId]
+        }
       })
     );
     if (psaNeighborsById.error) throw psaNeighborsById.error;
