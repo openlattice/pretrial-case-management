@@ -10,6 +10,10 @@ import { connect } from 'react-redux';
 import { Redirect, Route, Switch } from 'react-router-dom';
 import { Constants } from 'lattice';
 
+import { faChevronRight } from '@fortawesome/pro-light-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+
+import AboutPersonGeneral from '../../components/person/AboutPersonGeneral';
 import ClosePSAModal from '../../components/review/ClosePSAModal';
 import DashboardMainSection from '../../components/dashboard/DashboardMainSection';
 import NavButtonToolbar from '../../components/buttons/NavButtonToolbar';
@@ -18,9 +22,11 @@ import PersonPSA from '../../components/people/PersonPSA';
 import PersonHearings from '../../components/people/PersonHearings';
 import PersonCases from '../../components/people/PersonCases';
 import PSAModal from '../psamodal/PSAModal';
-import { getPSAIdsFromNeighbors } from '../../utils/PeopleUtils';
+import ViewMoreLink from '../../components/buttons/ViewMoreLink';
+import { formatPeopleInfo, getPSAIdsFromNeighbors } from '../../utils/PeopleUtils';
 import { getChargeHistory } from '../../utils/CaseUtils';
 import { JURISDICTION } from '../../utils/consts/Consts';
+import { OL } from '../../utils/consts/Colors';
 import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import {
@@ -72,6 +78,15 @@ const ToolbarWrapper = styled.div`
   flex-direction: row;
   justify-content: space-between;
   align-items: flex-start;
+`;
+
+const PathContainer = styled.div`
+  display: flex;
+  flex-direction: row;
+`;
+
+const IconContainer = styled.div`
+  padding: 10px;
 `;
 
 type Props = {
@@ -440,8 +455,25 @@ class PersonDetailsContainer extends React.Component<Props, State> {
     );
   }
 
+  renderLinkPath = () => {
+    const { personId, selectedPersonData } = this.props;
+
+    const { firstMidLast } = formatPeopleInfo(selectedPersonData);
+    const overviewRoute = `${Routes.PERSON_DETAILS_ROOT}/${personId}${Routes.OVERVIEW}`;
+
+    return (
+      <PathContainer>
+        <ViewMoreLink to={Routes.PEOPLE}>Manage People</ViewMoreLink>
+        <IconContainer>
+          <FontAwesomeIcon small="true" icon={faChevronRight} color={OL.PURPLE02} />
+        </IconContainer>
+        <ViewMoreLink to={overviewRoute}>{firstMidLast}</ViewMoreLink>
+      </PathContainer>
+    )
+  }
+
   render() {
-    const { personId, selectedOrganizationSettings } = this.props;
+    const { personId, selectedOrganizationSettings, selectedPersonData } = this.props;
     const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], '');
     const overviewRoute = `${Routes.PERSON_DETAILS_ROOT}/${personId}${Routes.OVERVIEW}`;
     const psaRoute = `${Routes.PERSON_DETAILS_ROOT}/${personId}${Routes.PSA}`;
@@ -473,6 +505,8 @@ class PersonDetailsContainer extends React.Component<Props, State> {
 
     return (
       <DashboardMainSection>
+        { this.renderLinkPath() }
+        <AboutPersonGeneral selectedPersonData={selectedPersonData} />
         <ToolbarWrapper>
           <NavButtonToolbar options={navButtons} />
         </ToolbarWrapper>

@@ -3,15 +3,11 @@
  */
 
 import React from 'react';
-import styled from 'styled-components';
 import { Map } from 'immutable';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
-import { Redirect, Route, Switch } from 'react-router-dom';
 
 import DashboardMainSection from '../../components/dashboard/DashboardMainSection';
-import VisualizeContainer from './VisualizeContainer';
-import NavButtonToolbar from '../../components/buttons/NavButtonToolbar';
 import {
   APP,
   STATE,
@@ -19,15 +15,7 @@ import {
   REVIEW,
 } from '../../utils/consts/FrontEndStateConsts';
 
-import * as Routes from '../../core/router/Routes';
 import * as ReviewActionFactory from '../review/ReviewActionFactory';
-
-const ToolbarWrapper = styled.div`
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: flex-start;
-`;
 
 type Props = {
   selectedOrganizationId :string,
@@ -74,30 +62,11 @@ class StaffDashboard extends React.Component<Props, State> {
     }
   }
 
-  renderVisualizationPortal = () => <VisualizeContainer />;
-
   render() {
-    const visualizeRoute = `${Routes.STAFF_DASHBOARD}/${Routes.VISUALIZE}`;
-    const redirectRoute = visualizeRoute;
-
-    const navButtons = [
-      {
-        path: visualizeRoute,
-        label: 'Visualize'
-      }
-    ];
 
 
     return (
-      <DashboardMainSection>
-        <ToolbarWrapper>
-          <NavButtonToolbar options={navButtons} />
-        </ToolbarWrapper>
-        <Switch>
-          <Route path={visualizeRoute} render={this.renderVisualizationPortal} />
-          <Redirect from={Routes.STAFF_DASHBOARD} to={redirectRoute} />
-        </Switch>
-      </DashboardMainSection>
+      <DashboardMainSection />
     );
   }
 }

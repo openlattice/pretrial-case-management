@@ -6,10 +6,8 @@ import React from 'react';
 import styled from 'styled-components';
 import { Map, List } from 'immutable';
 
-import AboutPersonGeneral from '../person/AboutPersonGeneral';
 import EventTimeline from '../person/EventTimeline';
 import EnrollStatusBanner from '../enroll/EnrollStatusBanner';
-import HearingCardsWithTitle from '../hearings/HearingCardsWithTitle';
 import SubscriptionInfo from '../subscription/SubscriptionInfo';
 import CaseHistoryList from '../casehistory/CaseHistoryList';
 import ChargeHistoryStats from '../casehistory/ChargeHistoryStats';
@@ -168,11 +166,6 @@ const PersonOverview = ({
   return (
     <Wrapper>
       <StyledColumn>
-        <StyledColumnRowWrapper>
-          <StyledColumnRow>
-            <AboutPersonGeneral selectedPersonData={selectedPersonData} />
-          </StyledColumnRow>
-        </StyledColumnRowWrapper>
         {
           includesPretrialModule
             ? (
