@@ -48,6 +48,7 @@ const {
   CONTACT_INFORMATION,
   HEARINGS,
   JUDGES,
+  MANUAL_REMINDERS,
   OUTCOMES,
   PEOPLE,
   PSA_SCORES,
@@ -323,17 +324,31 @@ function* loadHearingNeighborsWorker(action :SequenceAction) :Generator<*, *, *>
       const app = yield select(getApp);
       const orgId = yield select(getOrgId);
       const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
-      const hearingEntitySetId = getEntitySetIdFromApp(app, HEARINGS);
+
+      /*
+       * Get Entity Set Ids
+       */
+      const bondsEntitySetId = getEntitySetIdFromApp(app, BONDS);
+      const checkInAppointmentsEntitySetId = getEntitySetIdFromApp(app, CHECKIN_APPOINTMENTS);
+      const hearingsEntitySetId = getEntitySetIdFromApp(app, HEARINGS);
+      const judgesEntitySetId = getEntitySetIdFromApp(app, JUDGES);
+      const manualRemindersEntitySetId = getEntitySetIdFromApp(app, MANUAL_REMINDERS);
+      const outcomesEntitySetId = getEntitySetIdFromApp(app, OUTCOMES);
       const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
       const releaseConditionsEntitySetId = getEntitySetIdFromApp(app, RELEASE_CONDITIONS);
       const psaEntitySetId = getEntitySetIdFromApp(app, PSA_SCORES);
-      let neighborsById = yield call(SearchApi.searchEntityNeighborsWithFilter, hearingEntitySetId, {
+      let neighborsById = yield call(SearchApi.searchEntityNeighborsWithFilter, hearingsEntitySetId, {
         entityKeyIds: hearingIds,
         sourceEntitySetIds: [
+          bondsEntitySetId,
+          checkInAppointmentsEntitySetId,
+          manualRemindersEntitySetId,
+          outcomesEntitySetId,
           peopleEntitySetId,
-          psaEntitySetId
+          psaEntitySetId,
+          releaseConditionsEntitySetId
         ],
-        destinationEntitySetIds: []
+        destinationEntitySetIds: [judgesEntitySetId]
       });
       neighborsById = fromJS(neighborsById);
       neighborsById.entrySeq().forEach(([hearingId, neighbors]) => {
