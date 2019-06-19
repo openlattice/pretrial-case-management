@@ -245,12 +245,15 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
     const chargeCalls = [];
     const getChargeCall = (entitySetId, entityKeyIds, chargeEntitySetId) => (
       call(
-        SearchApi.searchEntityNeighborsWithFilter,
-        entitySetId, {
-          entityKeyIds,
-          sourceEntitySetIds: [chargeEntitySetId],
-          destinationEntitySetIds: []
-        }
+        searchEntityNeighborsWithFilterWorker,
+        searchEntityNeighborsWithFilter({
+          entitySetId,
+          filter: {
+            entityKeyIds,
+            sourceEntitySetIds: [chargeEntitySetId],
+            destinationEntitySetIds: []
+          }
+        })
       )
     );
     Object.keys(caseToChargeTypes).forEach((appTypeFqn) => {
