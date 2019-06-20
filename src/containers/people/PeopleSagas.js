@@ -337,6 +337,7 @@ function* getPersonNeighborsWorker(action) :Generator<*, *, *> {
               dmfRiskFactorsEntitySetId,
               hearingsEntitySetId,
               manualPretrialCourtCasesEntitySetId,
+              manualPretrialCasesEntitySetId,
               peopleEntitySetId,
               psaRiskFactorsEntitySetId,
               pretrialCasesEntitySetId,
@@ -447,6 +448,7 @@ function* refreshPersonNeighborsWorker(action) :Generator<*, *, *> {
     const releaseConditionsEntitySetId = getEntitySetIdFromApp(app, RELEASE_CONDITIONS);
     const releaseRecommendationsEntitySetId = getEntitySetIdFromApp(app, RELEASE_RECOMMENDATIONS);
     const sentencesEntitySetId = getEntitySetIdFromApp(app, SENTENCES);
+    const staffEntitySetId = getEntitySetIdFromApp(app, STAFF);
 
     const person = yield getEntityForPersonId(personId);
     const personEntityKeyId = person[OPENLATTICE_ID_FQN][0];
@@ -557,9 +559,36 @@ function* refreshPersonNeighborsWorker(action) :Generator<*, *, *> {
 
     let mostRecentPSANeighborsByAppTypeFqn = Map();
     if (mostRecentPSA.size) {
-      const psaId = mostRecentPSA.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0]);
-      let psaNeighbors = yield call(SearchApi.searchEntityNeighbors, psaScoresEntitySetId, psaId);
-      psaNeighbors = fromJS(psaNeighbors);
+      const psaEntityKeyId = mostRecentPSA.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0]);
+      let psaNeighbors = yield call(
+        searchEntityNeighborsWithFilterWorker,
+        searchEntityNeighborsWithFilter({
+          entitySetId: psaScoresEntitySetId,
+          filter: {
+            entityKeyIds: [psaEntityKeyId],
+            sourceEntitySetIds: [
+              bondsEntitySetId,
+              dmfResultsEntitySetId,
+              outcomesEntitySetId,
+              releaseRecommendationsEntitySetId,
+              releaseConditionsEntitySetId
+            ],
+            destinationEntitySetIds: [
+              arrestCasesEntitySetId,
+              dmfRiskFactorsEntitySetId,
+              hearingsEntitySetId,
+              manualPretrialCourtCasesEntitySetId,
+              peopleEntitySetId,
+              psaRiskFactorsEntitySetId,
+              pretrialCasesEntitySetId,
+              staffEntitySetId
+            ]
+          }
+        })
+      );
+      if (psaNeighbors.error) throw psaNeighbors.error;
+      psaNeighbors = fromJS(psaNeighbors.data).get(psaEntityKeyId, List());
+
       psaNeighbors.forEach((neighbor) => {
         const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
         const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
