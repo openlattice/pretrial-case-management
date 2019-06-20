@@ -271,15 +271,6 @@ function* loadCaseHistoryWorker(action :SequenceAction) :Generator<*, *, *> {
       allFTAs,
       allHearings
     } = yield getCasesAndCharges(neighbors);
-    console.log(fromJS({
-      allCases,
-      allManualCases,
-      allCharges,
-      allManualCharges,
-      allSentences,
-      allFTAs,
-      allHearings
-    }).toJS());
 
     const chargesByCaseId = getMapByCaseId(allCharges, PROPERTY_TYPES.CHARGE_ID);
     const manualChargesByCaseId = getMapByCaseId(allManualCharges, PROPERTY_TYPES.CHARGE_ID);
