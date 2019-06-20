@@ -141,11 +141,8 @@ function* loadPSAModalWorker(action :SequenceAction) :Generator<*, *, *> {
       })
     );
     if (psaNeighborsById.error) throw psaNeighborsById.error;
-    console.log(psaId);
-    console.log(psaNeighborsById);
     let psaNeighbors = fromJS(psaNeighborsById.data);
     psaNeighbors = psaNeighbors.get(psaId, List());
-    console.log(psaNeighbors.toJS());
 
     /*
      * Check PSA Permissions
