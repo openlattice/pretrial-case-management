@@ -386,7 +386,7 @@ function* loadHearingNeighborsWorker(action :SequenceAction) :Generator<*, *, *>
           let hearingNeighborsMap = Map();
           neighbors.forEach(((neighbor) => {
             const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id']);
-            const appTypFqn = entitySetIdsToAppType.get(entitySetId, JUDGES);
+            const appTypeFqn = entitySetIdsToAppType.get(entitySetId, JUDGES);
             const entityKeyId = neighbor.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0]);
             if (entitySetId === peopleEntitySetId) {
               hasPerson = true;
@@ -401,14 +401,14 @@ function* loadHearingNeighborsWorker(action :SequenceAction) :Generator<*, *, *>
                 fromJS(neighbor.get(PSA_NEIGHBOR.DETAILS))
               );
             }
-            if (LIST_APP_TYPES.includes(appTypFqn)) {
+            if (LIST_APP_TYPES.includes(appTypeFqn)) {
               hearingNeighborsMap = hearingNeighborsMap.set(
-                appTypFqn,
-                hearingNeighborsMap.get(appTypFqn, List()).push(neighbor)
+                appTypeFqn,
+                hearingNeighborsMap.get(appTypeFqn, List()).push(neighbor)
               );
             }
             else {
-              hearingNeighborsMap = hearingNeighborsMap.set(appTypFqn, neighbor);
+              hearingNeighborsMap = hearingNeighborsMap.set(appTypeFqn, neighbor);
             }
           }));
           if (hasPerson && !hasPSA) {
