@@ -472,6 +472,7 @@ function* downloadPSAsByHearingDateWorker(action :SequenceAction) :Generator<*, 
     const staffEntitySetId = getEntitySetIdFromApp(app, STAFF);
     const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
     const dmfResultsEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.DMF_RESULTS);
+    const releaseRecommendationsEntitySetId = getEntitySetIdFromApp(app, RELEASE_RECOMMENDATIONS);
 
     if (selectedHearingData.size) {
       selectedHearingData.forEach((hearing) => {
@@ -595,12 +596,13 @@ function* downloadPSAsByHearingDateWorker(action :SequenceAction) :Generator<*, 
           filter: {
             entityKeyIds: hearingIdsToPSAIds.valueSeq().toJS(),
             sourceEntitySetIds: [
-              dmfResultsEntitySetId
+              dmfResultsEntitySetId,
+              releaseRecommendationsEntitySetId
             ],
             destinationEntitySetIds: [
+              dmfRiskFactorsEntitySetId,
               peopleEntitySetId,
               psaRiskFactorsEntitySetId,
-              dmfRiskFactorsEntitySetId,
               staffEntitySetId
             ]
           }
