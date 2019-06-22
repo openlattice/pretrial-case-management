@@ -41,15 +41,21 @@ import {
 } from './DownloadActionFactory';
 
 const {
-  HEARINGS,
+  ARREST_CASES,
+  BONDS,
+  CHARGES,
+  DMF_RESULTS,
   DMF_RISK_FACTORS,
+  HEARINGS,
   MANUAL_CHARGES,
   MANUAL_COURT_CHARGES,
   MANUAL_PRETRIAL_CASES,
   MANUAL_PRETRIAL_COURT_CASES,
+  OUTCOMES,
   PEOPLE,
   PRETRIAL_CASES,
-  CHARGES,
+  RELEASE_CONDITIONS,
+  RELEASE_RECOMMENDATIONS,
   PSA_RISK_FACTORS,
   PSA_SCORES,
   STAFF
@@ -145,19 +151,24 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
     const orgId = yield select(getOrgId);
     const includesPretrialModule = app.getIn([APP.SELECTED_ORG_SETTINGS, SETTINGS.MODULES, MODULE.PRETRIAL], false);
     const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
+
+    /*
+     * Get Entity Set Ids
+     */
+    const arrestCasesEntitySetId = getEntitySetIdFromApp(app, ARREST_CASES);
+    const bondsEntitySetId = getEntitySetIdFromApp(app, BONDS);
+    const dmfResultsEntitySetId = getEntitySetIdFromApp(app, DMF_RESULTS);
     const dmfRiskFactorsEntitySetId = getEntitySetIdFromApp(app, DMF_RISK_FACTORS);
-    const psaRiskFactorsEntitySetId = getEntitySetIdFromApp(app, PSA_RISK_FACTORS);
+    const manualPretrialCasesEntitySetId = getEntitySetIdFromApp(app, MANUAL_PRETRIAL_CASES);
+    const manualPretrialCourtCasesEntitySetId = getEntitySetIdFromApp(app, MANUAL_PRETRIAL_COURT_CASES);
+    const outcomesEntitySetId = getEntitySetIdFromApp(app, OUTCOMES);
+    const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
     const psaEntitySetId = getEntitySetIdFromApp(app, PSA_SCORES);
+    const pretrialCasesEntitySetId = getEntitySetIdFromApp(app, PRETRIAL_CASES);
+    const psaRiskFactorsEntitySetId = getEntitySetIdFromApp(app, PSA_RISK_FACTORS);
+    const releaseConditionsEntitySetId = getEntitySetIdFromApp(app, RELEASE_CONDITIONS);
+    const releaseRecommendationsEntitySetId = getEntitySetIdFromApp(app, RELEASE_RECOMMENDATIONS);
     const staffEntitySetId = getEntitySetIdFromApp(app, STAFF);
-    const peopleEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.PEOPLE);
-    const arrestCasesEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.ARREST_CASES);
-    const pretrialCasesEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.MANUAL_PRETRIAL_CASES);
-    const manualPretrialCourtCasesEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.MANUAL_PRETRIAL_COURT_CASES);
-    const releaseRecommendationsEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.RELEASE_RECOMMENDATIONS);
-    const dmfResultsEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.DMF_RESULTS);
-    const outcomesEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.OUTCOMES);
-    const bondsEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.BONDS);
-    const releaseConditionsEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.RELEASE_CONDITIONS);
 
     const start = moment(startDate);
     const end = moment(endDate);
@@ -192,6 +203,7 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
             psaRiskFactorsEntitySetId,
             dmfRiskFactorsEntitySetId,
             pretrialCasesEntitySetId,
+            manualPretrialCasesEntitySetId,
             manualPretrialCourtCasesEntitySetId,
             arrestCasesEntitySetId,
             staffEntitySetId
@@ -245,12 +257,15 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
     const chargeCalls = [];
     const getChargeCall = (entitySetId, entityKeyIds, chargeEntitySetId) => (
       call(
-        SearchApi.searchEntityNeighborsWithFilter,
-        entitySetId, {
-          entityKeyIds,
-          sourceEntitySetIds: [chargeEntitySetId],
-          destinationEntitySetIds: []
-        }
+        searchEntityNeighborsWithFilterWorker,
+        searchEntityNeighborsWithFilter({
+          entitySetId,
+          filter: {
+            entityKeyIds,
+            sourceEntitySetIds: [chargeEntitySetId],
+            destinationEntitySetIds: []
+          }
+        })
       )
     );
     Object.keys(caseToChargeTypes).forEach((appTypeFqn) => {
@@ -457,6 +472,7 @@ function* downloadPSAsByHearingDateWorker(action :SequenceAction) :Generator<*, 
     const staffEntitySetId = getEntitySetIdFromApp(app, STAFF);
     const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
     const dmfResultsEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.DMF_RESULTS);
+    const releaseRecommendationsEntitySetId = getEntitySetIdFromApp(app, RELEASE_RECOMMENDATIONS);
 
     if (selectedHearingData.size) {
       selectedHearingData.forEach((hearing) => {
@@ -580,12 +596,13 @@ function* downloadPSAsByHearingDateWorker(action :SequenceAction) :Generator<*, 
           filter: {
             entityKeyIds: hearingIdsToPSAIds.valueSeq().toJS(),
             sourceEntitySetIds: [
-              dmfResultsEntitySetId
+              dmfResultsEntitySetId,
+              releaseRecommendationsEntitySetId
             ],
             destinationEntitySetIds: [
+              dmfRiskFactorsEntitySetId,
               peopleEntitySetId,
               psaRiskFactorsEntitySetId,
-              dmfRiskFactorsEntitySetId,
               staffEntitySetId
             ]
           }
