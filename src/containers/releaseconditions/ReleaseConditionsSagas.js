@@ -9,7 +9,6 @@ import {
   DataApi,
   EntityDataModelApi,
   Models,
-  SearchApi,
   Types
 } from 'lattice';
 import {
