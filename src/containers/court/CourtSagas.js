@@ -200,7 +200,7 @@ function* filterPeopleIdsWithOpenPSAsWorker(action :SequenceAction) :Generator<*
       let mostRecentEditDate;
       let mostRecentNeighbor;
 
-      const psaCreationDate = scoresAsMap.get([id, PROPERTY_TYPES.DATE_TIME, 0], '');
+      const psaCreationDate = scoresAsMap.getIn([id, PROPERTY_TYPES.DATE_TIME, 0], '');
       neighbors.forEach((neighbor) => {
         const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id']);
         const appTypeFqn = entitySetIdsToAppType.get(entitySetId, JUDGES);
