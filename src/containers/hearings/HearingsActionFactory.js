@@ -20,15 +20,20 @@ const openHearingSettingsModal :RequestSequence = newRequestSequence(OPEN_HEARIN
 const SET_HEARING_SETTINGS :string = 'SET_HEARING_SETTINGS';
 const setHearingSettings :RequestSequence = newRequestSequence(SET_HEARING_SETTINGS);
 
+const SUBMIT_HEARING :string = 'SUBMIT_HEARING';
+const submitHearing :RequestSequence = newRequestSequence(SUBMIT_HEARING);
+
 export {
   CLEAR_HEARING_SETTINGS,
   CLOSE_HEARING_SETTINGS_MODAL,
   REFRESH_HEARING_AND_NEIGHBORS,
   OPEN_HEARING_SETTINGS_MODAL,
   SET_HEARING_SETTINGS,
+  SUBMIT_HEARING,
   clearHearingSettings,
   closeHearingSettingsModal,
   refreshHearingAndNeighbors,
   openHearingSettingsModal,
-  setHearingSettings
+  setHearingSettings,
+  submitHearing
 };
