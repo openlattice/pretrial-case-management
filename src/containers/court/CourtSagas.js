@@ -366,6 +366,7 @@ function* loadHearingNeighborsWorker(action :SequenceAction) :Generator<*, *, *>
             sourceEntitySetIds: [
               bondsEntitySetId,
               checkInAppointmentsEntitySetId,
+              judgesEntitySetId,
               manualRemindersEntitySetId,
               outcomesEntitySetId,
               peopleEntitySetId,
