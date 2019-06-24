@@ -995,6 +995,7 @@ function* refreshPSANeighborsWorker(action :SequenceAction) :Generator<*, *, *> 
     const bondsEntitySetId = getEntitySetIdFromApp(app, BONDS);
     const dmfResultsEntitySetId = getEntitySetIdFromApp(app, DMF_RESULTS);
     const dmfRiskFactorsEntitySetId = getEntitySetIdFromApp(app, DMF_RISK_FACTORS);
+    const hearingsEntitySetId = getEntitySetIdFromApp(app, HEARINGS);
     const manualPretrialCasesEntitySetId = getEntitySetIdFromApp(app, MANUAL_PRETRIAL_CASES);
     const manualPretrialCourtCasesEntitySetId = getEntitySetIdFromApp(app, MANUAL_PRETRIAL_COURT_CASES);
     const outcomesEntitySetId = getEntitySetIdFromApp(app, OUTCOMES);
@@ -1004,7 +1005,6 @@ function* refreshPSANeighborsWorker(action :SequenceAction) :Generator<*, *, *> 
     const releaseConditionsEntitySetId = getEntitySetIdFromApp(app, RELEASE_CONDITIONS);
     const releaseRecommendationsEntitySetId = getEntitySetIdFromApp(app, RELEASE_RECOMMENDATIONS);
     const staffEntitySetId = getEntitySetIdFromApp(app, STAFF);
-    const hearingsEntitySetId = getEntitySetIdFromApp(app, HEARINGS);
 
     let psaNeighborsById = yield call(
       searchEntityNeighborsWithFilterWorker,
@@ -1020,6 +1020,7 @@ function* refreshPSANeighborsWorker(action :SequenceAction) :Generator<*, *, *> 
             releaseConditionsEntitySetId
           ],
           destinationEntitySetIds: [
+            hearingsEntitySetId,
             peopleEntitySetId,
             psaRiskFactorsEntitySetId,
             dmfRiskFactorsEntitySetId,
@@ -1036,28 +1037,29 @@ function* refreshPSANeighborsWorker(action :SequenceAction) :Generator<*, *, *> 
     if (psaNeighborsById.error) throw psaNeighborsById.error;
     psaNeighborsById = fromJS(psaNeighborsById.data);
     const neighborsList = psaNeighborsById.get(id, List());
+
     let neighbors = Immutable.Map();
     neighborsList.forEach((neighbor) => {
-      const { neighborEntitySet, neighborDetails } = neighbor;
-      const entitySetId = neighborEntitySet.id;
-      const appTypeFqn = entitySetIdsToAppType.get(entitySetId);
-      if (neighborEntitySet && neighborDetails) {
+      const neighborEntitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id']);
+      const neighborDetails = neighbor.get(PSA_NEIGHBOR.DETAILS, Map());
+      const appTypeFqn = entitySetIdsToAppType.get(neighborEntitySetId, '');
+      if (neighborEntitySetId && appTypeFqn) {
         if (LIST_ENTITY_SETS.includes(appTypeFqn)) {
-          if (entitySetId === hearingsEntitySetId) {
+          if (appTypeFqn === HEARINGS) {
             neighbors = neighbors.set(
               appTypeFqn,
-              neighbors.get(appTypeFqn, Immutable.List()).push(Immutable.fromJS(neighborDetails))
+              neighbors.get(appTypeFqn, Immutable.List()).push(neighborDetails)
             );
           }
           else {
             neighbors = neighbors.set(
               appTypeFqn,
-              neighbors.get(appTypeFqn, Immutable.List()).push(Immutable.fromJS(neighbor))
+              neighbors.get(appTypeFqn, Immutable.List()).push(neighbor)
             );
           }
         }
         else {
-          neighbors = neighbors.set(appTypeFqn, Immutable.fromJS(neighbor));
+          neighbors = neighbors.set(appTypeFqn, neighbor);
         }
       }
     });

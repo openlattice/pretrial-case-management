@@ -1211,16 +1211,19 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       `${date.format(dateFormat)} ${time.format(timeFormat)}`, `${dateFormat} ${timeFormat}`
     );
 
+    const associationEntitySetName = ASSESSED_BY;
     const associationEntitySetId = getEntitySetIdFromApp(app, ASSESSED_BY);
-    const srcEntitySetId = getEntitySetIdFromApp(app, JUDGES);
+    const associationEntityKeyId = judgeEntity ? judgeAssociationEntityKeyId : null;
     const hearingEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.HEARINGS);
 
-    const associationEntitySetName = ASSESSED_BY;
-    const associationEntityKeyId = judgeEntity ? judgeAssociationEntityKeyId : null;
-    const srcEntitySetName = JUDGES;
-    const srcEntityKeyId = judgeId;
-    const dstEntitySetName = APP_TYPES.HEARINGS;
-    const dstEntityKeyId = hearingEntityKeyId;
+    const dstEntitySetName = JUDGES;
+    const dstEntitySetId = getEntitySetIdFromApp(app, JUDGES);
+    const dstEntityKeyId = judgeId;
+
+    const srcEntitySetName = APP_TYPES.HEARINGS;
+    const srcEntitySetId = hearingEntitySetId;
+    const srcEntityKeyId = hearingEntityKeyId;
+
     if (judgeIsOther && associationEntityKeyId) {
       deleteEntity({
         entitySetId: associationEntitySetId,
@@ -1243,7 +1246,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
         dstEntitySetName,
         dstEntityKeyId,
         associationEntitySetId,
-        dstEntitySetId: hearingEntitySetId,
+        dstEntitySetId,
         callback: this.refreshHearingsNeighborsCallback
       });
     }
