@@ -7,7 +7,6 @@ import styled from 'styled-components';
 
 import DMFCell from './DMFCell';
 import rightArrow from '../../assets/svg/dmf-arrow.svg';
-import { CONTEXT } from '../../utils/consts/Consts';
 import { DMFIncreaseText, StepWrapper } from './DMFStyledTags';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
@@ -44,10 +43,7 @@ const StyledStepWrapper = styled(StepWrapper)`
 
 const SummaryDMFDetails = ({ neighbors, scores } :Props) => {
   const dmfRiskFactors = neighbors.getIn([DMF_RISK_FACTORS, PSA_NEIGHBOR.DETAILS], Immutable.Map());
-  let context = dmfRiskFactors.getIn([PROPERTY_TYPES.CONTEXT, 0]);
-  if (context === 'Court') {
-    context = CONTEXT.COURT_PENN;
-  }
+  const context = dmfRiskFactors.getIn([PROPERTY_TYPES.CONTEXT, 0]);
   const psaRiskFactors = neighbors.getIn([PSA_RISK_FACTORS, PSA_NEIGHBOR.DETAILS], Immutable.Map());
   const dmfEntity = neighbors.getIn([DMF_RESULTS, PSA_NEIGHBOR.DETAILS], Immutable.Map());
   const dmf = formatDMFFromEntity(dmfEntity);
@@ -105,7 +101,7 @@ const SummaryDMFDetails = ({ neighbors, scores } :Props) => {
     else {
       dmfCell = (
         <ScoreContent>
-          <DMFCell dmf={dmf} selected large />
+          <DMFCell dmf={dmfDecision} selected large />
         </ScoreContent>
       );
     }

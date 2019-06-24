@@ -1464,7 +1464,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
     const { state } = this;
     const { release, warrant } = state;
     const coreOutcomes = Object.values(OUTCOMES);
-    const outcomeIsNotOther = coreOutcomes.includes(state[OUTCOME])
+    const outcomeIsNotOther = coreOutcomes.includes(state[OUTCOME]);
     const outcomeIsFTA = state[OUTCOME] === OTHER_OUTCOMES.FTA;
     const RELEASED = release !== RELEASES.RELEASED;
     const NO_WARRANT = warrant !== WARRANTS.WARRANT;

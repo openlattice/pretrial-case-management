@@ -137,6 +137,29 @@ export const increaseDMFSeverity = (dmfResult, context) => {
     }
   }
 
+  if (context === CONTEXT.DEMO_ORG) {
+
+    switch (newColor) {
+      case COLORS.LIGHT_GREEN:
+        increasedValues[RESULT_CATEGORIES.CONDITION_1] = CONDITION_TYPES.CHECKIN_MONTHLY;
+        break;
+      case COLORS.YELLOW:
+        increasedValues[RESULT_CATEGORIES.CONDITION_1] = CONDITION_TYPES.CHECKIN_TWICE_MONTHLY;
+        increasedValues[RESULT_CATEGORIES.CONDITION_2] = CONDITION_TYPES.IF_APPLICABLE_247;
+        break;
+      case COLORS.ORANGE:
+        increasedValues[RESULT_CATEGORIES.CONDITION_1] = CONDITION_TYPES.CHECKIN_WEEKLY;
+        increasedValues[RESULT_CATEGORIES.CONDITION_2] = CONDITION_TYPES.IF_APPLICABLE_247;
+        break;
+      case COLORS.RED:
+        increasedValues[RESULT_CATEGORIES.CONDITION_1] = CONDITION_TYPES.CHECKIN_WEEKLY_AT_LEAST;
+        increasedValues[RESULT_CATEGORIES.CONDITION_2] = CONDITION_TYPES.IF_APPLICABLE_247;
+        break;
+      default:
+        break;
+    }
+  }
+
   if (context === CONTEXT.BOOKING) {
     increasedValues[RESULT_CATEGORIES.CONDITION_1] = CONDITION_TYPES.HOLD_PENDING_JUDICIAL_REVIEW;
   }
@@ -185,8 +208,7 @@ export const formatDMFFromEntity = dmfEntity => ({
   [RESULT_CATEGORIES.CONDITION_3]: dmfEntity.getIn([PROPERTY_TYPES.CONDITION_3, 0])
 });
 
-export const getDMFDecision = (ncaScore, ftaScore, initContext) => {
-  const context = (initContext === 'Court') ? CONTEXT.COURT_PENN : initContext;
+export const getDMFDecision = (ncaScore, ftaScore, context) => {
   if (!DMF_RESULTS[ncaScore] || !DMF_RESULTS[ncaScore][ftaScore]) return null;
   return DMF_RESULTS[ncaScore][ftaScore][context];
 };
