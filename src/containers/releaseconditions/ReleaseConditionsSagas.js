@@ -115,6 +115,7 @@ function* getHearingAndNeighbors(hearingEntityKeyId :string) :Generator<*, *, *>
         sourceEntitySetIds: [
           bondsEntitySetId,
           checkInAppointmentsEntitySetId,
+          judgesEntitySetId,
           manualRemindersEntitySetId,
           outcomesEntitySetId,
           peopleEntitySetId,
