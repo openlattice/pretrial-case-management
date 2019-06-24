@@ -432,7 +432,6 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
 
   getJudgeEntity = (props) => {
     const { selectedHearing, hearingNeighbors } = props;
-    console.log(hearingNeighbors.toJS());
     const judgeEntity = getNeighborDetailsForEntitySet(hearingNeighbors, JUDGES);
     const judgeAssociationEntityKeyId = hearingNeighbors
       .getIn([JUDGES, PSA_ASSOCIATION.DETAILS, OPENLATTICE_ID_FQN, 0], '');
@@ -1310,7 +1309,6 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       otherJudgeText,
       judge
     } = this.state;
-    console.log(selectedHearing.toJS());
 
     const hearingId = getFirstNeighborValue(selectedHearing, PROPERTY_TYPES.CASE_ID);
     const hearingDateTime = getFirstNeighborValue(selectedHearing, PROPERTY_TYPES.DATE_TIME);
