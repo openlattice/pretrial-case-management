@@ -78,7 +78,7 @@ class EnrollStatusBanner extends React.Component<Props, State> {
       [PERSON_ID]: personId,
       [ENTITY_KEY_ID]: personEntityKeyId,
     } = getEntityProperties(person, [PERSON_ID, ENTITY_KEY_ID]);
-    if (!personVoiceProfile.size && personId && personEntityKeyId) {
+    if (personVoiceProfile.size && personId && personEntityKeyId) {
       actions.getProfile({ personId, personEntityKeyId });
     }
   }
