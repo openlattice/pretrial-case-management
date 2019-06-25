@@ -132,8 +132,12 @@ function* loadPersonDetailsWorker(action) :Generator<*, *, *> {
           entitySetId: peopleEntitySetId,
           filter: {
             entityKeyIds: [entityKeyId],
-            sourceEntitySetIds: [],
-            destinationEntitySetIds: [pretrialCasesEntitySetId]
+            sourceEntitySetIds: [psaScoresEntitySetId],
+            destinationEntitySetIds: [
+              arrestCasesEntitySetId,
+              chargesEntitySetId,
+              pretrialCasesEntitySetId
+            ]
           }
         })
       );
