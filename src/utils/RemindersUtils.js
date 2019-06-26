@@ -65,6 +65,9 @@ export const getOptOutFields = (optOut) => {
   };
 };
 
+const isNotEqual = (str1, str2) => (str1 !== str2);
+const isGreater = (str1, str2) => (str1 > str2 ? 1 : -1);
+
 export const sortEntities = (entities, neighbors, shouldSortByDateTime, sort) => (
   entities.valueSeq().sort((entity1, entity2) => {
     const entityKeyId1 = getEntityKeyId(entity1);
@@ -91,18 +94,18 @@ export const sortEntities = (entities, neighbors, shouldSortByDateTime, sort) =>
 
     if (shouldSortByDateTime && !dateTime1.isSame(dateTime2)) return dateTime1.isBefore(dateTime2) ? -1 : 1;
     if (sort === SORT_TYPES.CASE_NUM) {
-      if (caseNumber1 !== caseNumber2) return caseNumber1 > caseNumber2 ? 1 : -1;
+      if (isNotEqual(caseNumber1, caseNumber2)) return isGreater(caseNumber1, caseNumber2);
       if (!hearingDateTime1.isSame(hearingDateTime2)) return hearingDateTime1.isBefore(hearingDateTime2) ? -1 : 1;
-      if (lastName1 !== lastName2) return lastName1 > lastName2 ? 1 : -1;
-      if (firstName1 !== firstName2) return firstName1 > firstName2 ? 1 : -1;
+      if (isNotEqual(lastName1, lastName2)) return isGreater(lastName1, lastName2);
+      if (isNotEqual(firstName1, firstName2)) return isGreater(firstName1, firstName2);
     }
     if (sort === SORT_TYPES.DATE) {
       if (!hearingDateTime1.isSame(hearingDateTime2)) return hearingDateTime1.isBefore(hearingDateTime2) ? -1 : 1;
-      if (lastName1 !== lastName2) return lastName1 > lastName2 ? 1 : -1;
-      if (firstName1 !== firstName2) return firstName1 > firstName2 ? 1 : -1;
+      if (isNotEqual(lastName1, lastName2)) return isGreater(lastName1, lastName2);
+      if (isNotEqual(firstName1, firstName2)) return isGreater(firstName1, firstName2);
     }
-    if (lastName1 !== lastName2) return lastName1 > lastName2 ? 1 : -1;
-    if (firstName1 !== firstName2) return firstName1 > firstName2 ? 1 : -1;
+    if (isNotEqual(lastName1, lastName2)) return isGreater(lastName1, lastName2);
+    if (isNotEqual(firstName1, firstName2)) return isGreater(firstName1, firstName2);
     if (!hearingDateTime1.isSame(hearingDateTime2)) return hearingDateTime1.isBefore(hearingDateTime2) ? -1 : 1;
     return 0;
   }));
