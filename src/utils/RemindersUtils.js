@@ -11,7 +11,7 @@ import {
   getFirstNeighborValue
 } from './DataUtils';
 
-const { HEARINGS, PEOPLE } = APP_TYPES;
+const { HEARINGS, PEOPLE, PRETRIAL_CASES } = APP_TYPES;
 
 export const REMINDERS_HEADERS = {
   TIME: 'Time',
@@ -69,6 +69,9 @@ export const sortEntities = (entities, neighbors, shouldSortByDateTime, sort) =>
   entities.valueSeq().sort((entity1, entity2) => {
     const entityKeyId1 = getEntityKeyId(entity1);
     const person1 = neighbors.getIn([entityKeyId1, PEOPLE, PSA_NEIGHBOR.DETAILS], Map());
+    const caseNumber1 = neighbors.getIn(
+      [entityKeyId1, PRETRIAL_CASES, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.CASE_ID, 0], ''
+    );
     const hearingDateTime1 = moment(neighbors
       .getIn([entityKeyId1, HEARINGS, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.DATE_TIME, 0], ''));
     const dateTime1 = moment(getFirstNeighborValue(entity1, PROPERTY_TYPES.DATE_TIME));
@@ -77,6 +80,9 @@ export const sortEntities = (entities, neighbors, shouldSortByDateTime, sort) =>
 
     const entityKeyId2 = getEntityKeyId(entity2);
     const person2 = neighbors.getIn([entityKeyId2, PEOPLE, PSA_NEIGHBOR.DETAILS], Map());
+    const caseNumber2 = neighbors.getIn(
+      [entityKeyId2, PRETRIAL_CASES, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.CASE_ID, 0], ''
+    );
     const hearingDateTime2 = moment(neighbors
       .getIn([entityKeyId2, HEARINGS, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.DATE_TIME, 0], ''));
     const dateTime2 = moment(getFirstNeighborValue(entity2, PROPERTY_TYPES.DATE_TIME));
@@ -84,6 +90,12 @@ export const sortEntities = (entities, neighbors, shouldSortByDateTime, sort) =>
     const lastName2 = getFirstNeighborValue(person2, PROPERTY_TYPES.LAST_NAME);
 
     if (shouldSortByDateTime && !dateTime1.isSame(dateTime2)) return dateTime1.isBefore(dateTime2) ? -1 : 1;
+    if (sort === SORT_TYPES.CASE_NUM) {
+      if (caseNumber1 !== caseNumber2) return caseNumber1 > caseNumber2 ? 1 : -1;
+      if (!hearingDateTime1.isSame(hearingDateTime2)) return hearingDateTime1.isBefore(hearingDateTime2) ? -1 : 1;
+      if (lastName1 !== lastName2) return lastName1 > lastName2 ? 1 : -1;
+      if (firstName1 !== firstName2) return firstName1 > firstName2 ? 1 : -1;
+    }
     if (sort === SORT_TYPES.DATE) {
       if (!hearingDateTime1.isSame(hearingDateTime2)) return hearingDateTime1.isBefore(hearingDateTime2) ? -1 : 1;
       if (lastName1 !== lastName2) return lastName1 > lastName2 ? 1 : -1;
