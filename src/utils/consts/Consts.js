@@ -290,7 +290,8 @@ export const PSA_FAILURE_REASONS = {
 
 export const SORT_TYPES = {
   DATE: 'DATE',
-  NAME: 'NAME'
+  NAME: 'NAME',
+  CASE_NUM: 'CASE_NUM'
 };
 
 export const RELEASE_CONDITIONS = {
