@@ -139,39 +139,41 @@ function* getOpenPSANeighbors(neighbors) :Generator<*, *, *> {
   /*
    * Get PSA Ids
    */
-  const openPSAIds = getOpenPSAIds(neighbors.toJS(), psaScoresEntitySetId);
+  const openPSAIds = getOpenPSAIds(neighbors, psaScoresEntitySetId);
   /*
    * Get PSA Neighbors
    */
-  const psaNeighborsById = yield call(
-    searchEntityNeighborsWithFilterWorker,
-    searchEntityNeighborsWithFilter({
-      entitySetId: psaScoresEntitySetId,
-      filter: {
-        entityKeyIds: openPSAIds,
-        sourceEntitySetIds: [
-          bondsEntitySetId,
-          dmfResultsEntitySetId,
-          outcomesEntitySetId,
-          releaseRecommendationsEntitySetId,
-          releaseConditionsEntitySetId
-        ],
-        destinationEntitySetIds: [
-          arrestCasesEntitySetId,
-          dmfRiskFactorsEntitySetId,
-          hearingsEntitySetId,
-          manualPretrialCourtCasesEntitySetId,
-          manualPretrialCasesEntitySetId,
-          peopleEntitySetId,
-          psaRiskFactorsEntitySetId,
-          pretrialCasesEntitySetId,
-          staffEntitySetId
-        ]
-      }
-    })
-  );
-  if (psaNeighborsById.error) throw psaNeighborsById.error;
-  openPSANeighbors = psaNeighborsById.data;
+  if (openPSAIds.length) {
+    const psaNeighborsById = yield call(
+      searchEntityNeighborsWithFilterWorker,
+      searchEntityNeighborsWithFilter({
+        entitySetId: psaScoresEntitySetId,
+        filter: {
+          entityKeyIds: openPSAIds,
+          sourceEntitySetIds: [
+            bondsEntitySetId,
+            dmfResultsEntitySetId,
+            outcomesEntitySetId,
+            releaseRecommendationsEntitySetId,
+            releaseConditionsEntitySetId
+          ],
+          destinationEntitySetIds: [
+            arrestCasesEntitySetId,
+            dmfRiskFactorsEntitySetId,
+            hearingsEntitySetId,
+            manualPretrialCourtCasesEntitySetId,
+            manualPretrialCasesEntitySetId,
+            peopleEntitySetId,
+            psaRiskFactorsEntitySetId,
+            pretrialCasesEntitySetId,
+            staffEntitySetId
+          ]
+        }
+      })
+    );
+    if (psaNeighborsById.error) throw psaNeighborsById.error;
+    openPSANeighbors = psaNeighborsById.data;
+  }
   return openPSANeighbors;
 }
 
@@ -254,7 +256,7 @@ function* loadNeighborsWorker(action :SequenceAction) :Generator<*, *, *> {
     peopleNeighborsById = fromJS(peopleNeighborsById.data);
     const neighbors = peopleNeighborsById.get(entityKeyId, List());
 
-    const openPSAs = yield call(getOpenPSANeighbors, neighbors);
+    const openPSAs = yield call(getOpenPSANeighbors, neighbors.toJS());
     fromJS(neighbors).forEach((neighbor) => {
       const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id']);
       const { [ENTITY_KEY_ID]: neighborEntityKeyId } = getEntityProperties(neighbor, [ENTITY_KEY_ID]);
@@ -266,7 +268,9 @@ function* loadNeighborsWorker(action :SequenceAction) :Generator<*, *, *> {
     });
 
     yield put(loadNeighbors.success(action.id, { neighbors, openPSAs, entitySetIdsToAppType }));
-    yield put(loadPSAData({ psaIds: getAllPSAIds(neighbors.toJS(), psaScoresEntitySetId), scoresAsMap }));
+    if (scoresAsMap.size) {
+      yield put(loadPSAData({ psaIds: scoresAsMap.keySeq().toJS(), scoresAsMap }));
+    }
   }
   catch (error) {
     console.error(error);
