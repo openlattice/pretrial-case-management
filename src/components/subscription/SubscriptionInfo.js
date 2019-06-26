@@ -8,10 +8,9 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCheck, faCog, faTimesCircle } from '@fortawesome/pro-light-svg-icons';
+import { faCheck, faTimesCircle } from '@fortawesome/pro-light-svg-icons';
 
 import ManageSubscriptionModal from '../../containers/subscription/ManageSubscriptionModal';
-import StyledButton from '../buttons/StyledButton';
 import LoadingSpinner from '../LoadingSpinner';
 import { getEntityKeyId } from '../../utils/DataUtils';
 import { formatPeopleInfo } from '../../utils/PeopleUtils';
@@ -32,9 +31,17 @@ const LoadingWrapper = styled.div`
 const Status = styled(InputRow)`
   display: flex;
   flex-direction: row;
-  justify-content: space-between;
   align-items: center;
   margin: 0;
+`;
+
+const UnderlinedTextButton = styled.div`
+  display: block;
+  color: ${OL.PURPLE02};
+  text-decoration: 'underline';
+  :hover {
+    cursor: pointer;
+  }
 `;
 
 const StatusText = styled.div`
@@ -50,7 +57,7 @@ const StatusIconContainer = styled.div`
 const StyledFormSection = styled(FormSection)`
   border-bottom: ${props => (props.modal ? 'none' : `border-bottom: 1px solid ${OL.GREY11}`)};
   margin-bottom: 0 !important;
-  padding: 20px 0;
+  padding: 10px 0;
 `;
 
 type Props = {
@@ -87,11 +94,10 @@ class SubscriptionInfo extends React.Component<Props, State> {
   renderManageSubscriptionButton = () => {
     const subscriptionText = ' Manage Subscription';
     return (
-      <StyledButton
+      <UnderlinedTextButton
           onClick={this.openManageSubscriptionModal}>
-        <FontAwesomeIcon icon={faCog} />
         {subscriptionText}
-      </StyledButton>
+      </UnderlinedTextButton>
     );
   }
 
