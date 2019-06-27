@@ -50,6 +50,7 @@ const {
   CHECKIN_APPOINTMENTS,
   CONTACT_INFORMATION,
   DMF_RISK_FACTORS,
+  ENROLL_VOICE,
   FTAS,
   HEARINGS,
   MANUAL_CHARGES,
@@ -193,7 +194,9 @@ function* getPersonNeighborsWorker(action) :Generator<*, *, *> {
     const releaseConditionsEntitySetId = getEntitySetIdFromApp(app, RELEASE_CONDITIONS);
     const releaseRecommendationsEntitySetId = getEntitySetIdFromApp(app, RELEASE_RECOMMENDATIONS);
     const sentencesEntitySetId = getEntitySetIdFromApp(app, SENTENCES);
+    const speakerRecognitionProfilesEntitySetId = getEntitySetIdFromApp(app, SPEAKER_RECOGNITION_PROFILES);
     const staffEntitySetId = getEntitySetIdFromApp(app, STAFF);
+    const subscriptionEntitySetId = getEntitySetIdFromApp(app, SUBSCRIPTION);
 
     const person = yield getEntityForPersonId(personId);
     const personEntityKeyId = person[OPENLATTICE_ID_FQN][0];
@@ -219,7 +222,8 @@ function* getPersonNeighborsWorker(action) :Generator<*, *, *> {
             psaRiskFactorsEntitySetId,
             psaScoresEntitySetId,
             releaseConditionsEntitySetId,
-            releaseRecommendationsEntitySetId
+            releaseRecommendationsEntitySetId,
+            speakerRecognitionProfilesEntitySetId
           ],
           destinationEntitySetIds: [
             arrestCasesEntitySetId,
@@ -230,7 +234,8 @@ function* getPersonNeighborsWorker(action) :Generator<*, *, *> {
             manualPretrialCourtCasesEntitySetId,
             pretrialCasesEntitySetId,
             manualPretrialCasesEntitySetId,
-            sentencesEntitySetId
+            sentencesEntitySetId,
+            subscriptionEntitySetId
           ]
         }
       })
