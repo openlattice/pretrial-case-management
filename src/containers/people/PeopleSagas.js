@@ -3,6 +3,7 @@
  */
 import moment from 'moment';
 import { Constants, DataApi, SearchApi } from 'lattice';
+import { SearchApiActions, SearchApiSagas } from 'lattice-sagas';
 import {
   Map,
   List,
@@ -40,30 +41,36 @@ import {
   updateContactInfo
 } from './PeopleActionFactory';
 
+const { searchEntityNeighborsWithFilter } = SearchApiActions;
+const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
+
 const {
   CHARGES,
   CHECKINS,
   CHECKIN_APPOINTMENTS,
   CONTACT_INFORMATION,
+  DMF_RISK_FACTORS,
+  ENROLL_VOICE,
   FTAS,
   HEARINGS,
+  MANUAL_CHARGES,
+  MANUAL_COURT_CHARGES,
   MANUAL_PRETRIAL_CASES,
   MANUAL_PRETRIAL_COURT_CASES,
+  MANUAL_REMINDERS,
   PEOPLE,
+  PSA_RISK_FACTORS,
   PSA_SCORES,
   PRETRIAL_CASES,
+  RELEASE_CONDITIONS,
   RELEASE_RECOMMENDATIONS,
+  SENTENCES,
   STAFF,
   SUBSCRIPTION,
   SPEAKER_RECOGNITION_PROFILES
 } = APP_TYPES;
 
-const {
-  DATE_TIME,
-  HEARING_INACTIVE,
-  UPDATE_TYPE,
-  HEARING_TYPE
-} = PROPERTY_TYPES;
+const { DATE_TIME, HEARING_TYPE } = PROPERTY_TYPES;
 
 const LIST_FQNS = [CHECKINS, CHECKIN_APPOINTMENTS, CONTACT_INFORMATION, HEARINGS, PRETRIAL_CASES, STAFF, CHARGES];
 
@@ -160,14 +167,82 @@ function* getPersonNeighborsWorker(action) :Generator<*, *, *> {
 
     const app = yield select(getApp);
     const orgId = yield select(getOrgId);
-    const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
-    const psaScoresEntitySetId = getEntitySetIdFromApp(app, PSA_SCORES);
     const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
 
+    /*
+     * Get Entity Set Ids
+     */
+    const arrestCasesEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.ARREST_CASES);
+    const bondsEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.BONDS);
+    const chargesEntitySetId = getEntitySetIdFromApp(app, CHARGES);
+    const checkInAppointmentsEntitySetId = getEntitySetIdFromApp(app, CHECKIN_APPOINTMENTS);
+    const contactInformationEntitySetId = getEntitySetIdFromApp(app, CONTACT_INFORMATION);
+    const dmfResultsEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.DMF_RESULTS);
+    const dmfRiskFactorsEntitySetId = getEntitySetIdFromApp(app, DMF_RISK_FACTORS);
+    const ftaEntitySetId = getEntitySetIdFromApp(app, FTAS);
+    const hearingsEntitySetId = getEntitySetIdFromApp(app, HEARINGS);
+    const manualChargesEntitySetId = getEntitySetIdFromApp(app, MANUAL_CHARGES);
+    const manualCourtChargesEntitySetId = getEntitySetIdFromApp(app, MANUAL_COURT_CHARGES);
+    const manualPretrialCourtCasesEntitySetId = getEntitySetIdFromApp(app, MANUAL_PRETRIAL_COURT_CASES);
+    const manualRemindersEntitySetId = getEntitySetIdFromApp(app, MANUAL_REMINDERS);
+    const manualPretrialCasesEntitySetId = getEntitySetIdFromApp(app, MANUAL_PRETRIAL_CASES);
+    const outcomesEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.OUTCOMES);
+    const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
+    const pretrialCasesEntitySetId = getEntitySetIdFromApp(app, PRETRIAL_CASES);
+    const psaRiskFactorsEntitySetId = getEntitySetIdFromApp(app, PSA_RISK_FACTORS);
+    const psaScoresEntitySetId = getEntitySetIdFromApp(app, PSA_SCORES);
+    const releaseConditionsEntitySetId = getEntitySetIdFromApp(app, RELEASE_CONDITIONS);
+    const releaseRecommendationsEntitySetId = getEntitySetIdFromApp(app, RELEASE_RECOMMENDATIONS);
+    const sentencesEntitySetId = getEntitySetIdFromApp(app, SENTENCES);
+    const speakerRecognitionProfilesEntitySetId = getEntitySetIdFromApp(app, SPEAKER_RECOGNITION_PROFILES);
+    const staffEntitySetId = getEntitySetIdFromApp(app, STAFF);
+    const subscriptionEntitySetId = getEntitySetIdFromApp(app, SUBSCRIPTION);
+
     const person = yield getEntityForPersonId(personId);
-    const entityKeyId = person[OPENLATTICE_ID_FQN][0];
-    let neighbors = yield call(SearchApi.searchEntityNeighbors, peopleEntitySetId, entityKeyId);
-    neighbors = fromJS(neighbors);
+    const personEntityKeyId = person[OPENLATTICE_ID_FQN][0];
+    /*
+     * Get Neighbors
+     */
+    let peopleNeighborsById = yield call(
+      searchEntityNeighborsWithFilterWorker,
+      searchEntityNeighborsWithFilter({
+        entitySetId: peopleEntitySetId,
+        filter: {
+          entityKeyIds: [personEntityKeyId],
+          sourceEntitySetIds: [
+            bondsEntitySetId,
+            checkInAppointmentsEntitySetId,
+            contactInformationEntitySetId,
+            dmfResultsEntitySetId,
+            dmfRiskFactorsEntitySetId,
+            ftaEntitySetId,
+            manualRemindersEntitySetId,
+            outcomesEntitySetId,
+            peopleEntitySetId,
+            psaRiskFactorsEntitySetId,
+            psaScoresEntitySetId,
+            releaseConditionsEntitySetId,
+            releaseRecommendationsEntitySetId,
+            speakerRecognitionProfilesEntitySetId
+          ],
+          destinationEntitySetIds: [
+            arrestCasesEntitySetId,
+            chargesEntitySetId,
+            hearingsEntitySetId,
+            manualChargesEntitySetId,
+            manualCourtChargesEntitySetId,
+            manualPretrialCourtCasesEntitySetId,
+            pretrialCasesEntitySetId,
+            manualPretrialCasesEntitySetId,
+            sentencesEntitySetId,
+            subscriptionEntitySetId
+          ]
+        }
+      })
+    );
+    if (peopleNeighborsById.error) throw peopleNeighborsById.error;
+    peopleNeighborsById = fromJS(peopleNeighborsById.data);
+    const neighbors = peopleNeighborsById.get(personEntityKeyId, List());
 
     let hearingEntityKeyId = Set();
 
@@ -248,9 +323,37 @@ function* getPersonNeighborsWorker(action) :Generator<*, *, *> {
 
     let mostRecentPSANeighborsByAppTypeFqn = Map();
     if (mostRecentPSA.size) {
-      const psaId = mostRecentPSA.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0]);
-      let psaNeighbors = yield call(SearchApi.searchEntityNeighbors, psaScoresEntitySetId, psaId);
-      psaNeighbors = fromJS(psaNeighbors);
+      const psaEntityKeyId = mostRecentPSA.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0]);
+      let psaNeighbors = yield call(
+        searchEntityNeighborsWithFilterWorker,
+        searchEntityNeighborsWithFilter({
+          entitySetId: psaScoresEntitySetId,
+          filter: {
+            entityKeyIds: [psaEntityKeyId],
+            sourceEntitySetIds: [
+              bondsEntitySetId,
+              dmfResultsEntitySetId,
+              outcomesEntitySetId,
+              releaseRecommendationsEntitySetId,
+              releaseConditionsEntitySetId
+            ],
+            destinationEntitySetIds: [
+              arrestCasesEntitySetId,
+              dmfRiskFactorsEntitySetId,
+              hearingsEntitySetId,
+              manualPretrialCourtCasesEntitySetId,
+              manualPretrialCasesEntitySetId,
+              peopleEntitySetId,
+              psaRiskFactorsEntitySetId,
+              pretrialCasesEntitySetId,
+              staffEntitySetId
+            ]
+          }
+        })
+      );
+      if (psaNeighbors.error) throw psaNeighbors.error;
+      psaNeighbors = fromJS(psaNeighbors.data).get(psaEntityKeyId, List());
+
       psaNeighbors.forEach((neighbor) => {
         const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
         const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
@@ -325,13 +428,74 @@ function* refreshPersonNeighborsWorker(action) :Generator<*, *, *> {
     const app = yield select(getApp);
     const orgId = yield select(getOrgId);
     const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
+    /*
+     * Get Entity Set Ids
+     */
+    const arrestCasesEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.ARREST_CASES);
+    const bondsEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.BONDS);
+    const chargesEntitySetId = getEntitySetIdFromApp(app, CHARGES);
+    const checkInAppointmentsEntitySetId = getEntitySetIdFromApp(app, CHECKIN_APPOINTMENTS);
+    const contactInformationEntitySetId = getEntitySetIdFromApp(app, CONTACT_INFORMATION);
+    const dmfResultsEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.DMF_RESULTS);
+    const dmfRiskFactorsEntitySetId = getEntitySetIdFromApp(app, DMF_RISK_FACTORS);
+    const ftaEntitySetId = getEntitySetIdFromApp(app, FTAS);
+    const hearingsEntitySetId = getEntitySetIdFromApp(app, HEARINGS);
+    const manualChargesEntitySetId = getEntitySetIdFromApp(app, MANUAL_CHARGES);
+    const manualCourtChargesEntitySetId = getEntitySetIdFromApp(app, MANUAL_COURT_CHARGES);
+    const manualPretrialCourtCasesEntitySetId = getEntitySetIdFromApp(app, MANUAL_PRETRIAL_COURT_CASES);
+    const manualRemindersEntitySetId = getEntitySetIdFromApp(app, MANUAL_REMINDERS);
+    const manualPretrialCasesEntitySetId = getEntitySetIdFromApp(app, MANUAL_PRETRIAL_CASES);
+    const outcomesEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.OUTCOMES);
     const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
+    const pretrialCasesEntitySetId = getEntitySetIdFromApp(app, PRETRIAL_CASES);
+    const psaRiskFactorsEntitySetId = getEntitySetIdFromApp(app, PSA_RISK_FACTORS);
     const psaScoresEntitySetId = getEntitySetIdFromApp(app, PSA_SCORES);
+    const releaseConditionsEntitySetId = getEntitySetIdFromApp(app, RELEASE_CONDITIONS);
+    const releaseRecommendationsEntitySetId = getEntitySetIdFromApp(app, RELEASE_RECOMMENDATIONS);
+    const sentencesEntitySetId = getEntitySetIdFromApp(app, SENTENCES);
+    const staffEntitySetId = getEntitySetIdFromApp(app, STAFF);
 
     const person = yield getEntityForPersonId(personId);
-    const entityKeyId = person[OPENLATTICE_ID_FQN][0];
-    let neighborsList = yield call(SearchApi.searchEntityNeighbors, peopleEntitySetId, entityKeyId);
-    neighborsList = fromJS(neighborsList);
+    const personEntityKeyId = person[OPENLATTICE_ID_FQN][0];
+
+    let peopleNeighborsById = yield call(
+      searchEntityNeighborsWithFilterWorker,
+      searchEntityNeighborsWithFilter({
+        entitySetId: peopleEntitySetId,
+        filter: {
+          entityKeyIds: [personEntityKeyId],
+          sourceEntitySetIds: [
+            bondsEntitySetId,
+            checkInAppointmentsEntitySetId,
+            contactInformationEntitySetId,
+            dmfResultsEntitySetId,
+            dmfRiskFactorsEntitySetId,
+            ftaEntitySetId,
+            manualRemindersEntitySetId,
+            outcomesEntitySetId,
+            peopleEntitySetId,
+            psaRiskFactorsEntitySetId,
+            psaScoresEntitySetId,
+            releaseConditionsEntitySetId,
+            releaseRecommendationsEntitySetId
+          ],
+          destinationEntitySetIds: [
+            arrestCasesEntitySetId,
+            chargesEntitySetId,
+            hearingsEntitySetId,
+            manualChargesEntitySetId,
+            manualCourtChargesEntitySetId,
+            manualPretrialCourtCasesEntitySetId,
+            pretrialCasesEntitySetId,
+            manualPretrialCasesEntitySetId,
+            sentencesEntitySetId
+          ]
+        }
+      })
+    );
+    if (peopleNeighborsById.error) throw peopleNeighborsById.error;
+    peopleNeighborsById = fromJS(peopleNeighborsById.data);
+    const neighborsList = peopleNeighborsById.get(personEntityKeyId, List());
 
     neighborsList.forEach((neighbor) => {
       const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
@@ -400,9 +564,36 @@ function* refreshPersonNeighborsWorker(action) :Generator<*, *, *> {
 
     let mostRecentPSANeighborsByAppTypeFqn = Map();
     if (mostRecentPSA.size) {
-      const psaId = mostRecentPSA.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0]);
-      let psaNeighbors = yield call(SearchApi.searchEntityNeighbors, psaScoresEntitySetId, psaId);
-      psaNeighbors = fromJS(psaNeighbors);
+      const psaEntityKeyId = mostRecentPSA.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0]);
+      let psaNeighbors = yield call(
+        searchEntityNeighborsWithFilterWorker,
+        searchEntityNeighborsWithFilter({
+          entitySetId: psaScoresEntitySetId,
+          filter: {
+            entityKeyIds: [psaEntityKeyId],
+            sourceEntitySetIds: [
+              bondsEntitySetId,
+              dmfResultsEntitySetId,
+              outcomesEntitySetId,
+              releaseRecommendationsEntitySetId,
+              releaseConditionsEntitySetId
+            ],
+            destinationEntitySetIds: [
+              arrestCasesEntitySetId,
+              dmfRiskFactorsEntitySetId,
+              hearingsEntitySetId,
+              manualPretrialCourtCasesEntitySetId,
+              peopleEntitySetId,
+              psaRiskFactorsEntitySetId,
+              pretrialCasesEntitySetId,
+              staffEntitySetId
+            ]
+          }
+        })
+      );
+      if (psaNeighbors.error) throw psaNeighbors.error;
+      psaNeighbors = fromJS(psaNeighbors.data).get(psaEntityKeyId, List());
+
       psaNeighbors.forEach((neighbor) => {
         const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
         const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
@@ -445,7 +636,7 @@ function* refreshPersonNeighborsWorker(action) :Generator<*, *, *> {
 
     yield put(refreshPersonNeighbors.success(action.id, {
       personId,
-      entityKeyId,
+      personEntityKeyId,
       mostRecentPSA,
       mostRecentPSANeighborsByAppTypeFqn,
       neighbors,
@@ -485,14 +676,23 @@ function* updateContactInfoWorker(action :SequenceAction) :Generator<*, *, *> {
     yield call(DataApi.updateEntityData, contactInformationEntitySetId, entities, 'PartialReplace');
 
     /* get updated contact info for person */
-    const filteredNeighbors = yield call(SearchApi.searchEntityNeighborsWithFilter, peopleEntitySetId, {
-      entityKeyIds: [personEntityKeyId],
-      sourceEntitySetIds: [contactInformationEntitySetId],
-      destinationEntitySetIds: [contactInformationEntitySetId]
-    });
+    let peopleNeighborsById = yield call(
+      searchEntityNeighborsWithFilterWorker,
+      searchEntityNeighborsWithFilter({
+        entitySetId: peopleEntitySetId,
+        filter: {
+          entityKeyIds: [personEntityKeyId],
+          sourceEntitySetIds: [contactInformationEntitySetId],
+          destinationEntitySetIds: [contactInformationEntitySetId]
+        }
+      })
+    );
+    if (peopleNeighborsById.error) throw peopleNeighborsById.error;
+    peopleNeighborsById = fromJS(peopleNeighborsById.data);
+    peopleNeighborsById = peopleNeighborsById.get(personEntityKeyId, List());
 
     /* filter neighbors for contact info */
-    const contactInformation = fromJS(Object.values(filteredNeighbors)).get(0, List()).filter((neighbor) => {
+    const contactInformation = peopleNeighborsById.filter((neighbor) => {
       const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
       const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
       const isContactInfo = appTypeFqn === CONTACT_INFORMATION;
@@ -554,19 +754,25 @@ function* loadRequiresActionPeopleWorker(action :SequenceAction) :Generator<*, *
     const psaIds = psaScoreMap.keySeq().toJS();
 
     /* get people and cases for all open PSAs */
-    let openPSAIdsToPeopleAndCases = yield call(SearchApi.searchEntityNeighborsWithFilter, psaScoresEntitySetId, {
-      entityKeyIds: psaIds,
-      sourceEntitySetIds: [psaScoresEntitySetId, releaseRecommendationsEntitySetId],
-      destinationEntitySetIds: [
-        peopleEntitySetId,
-        psaScoresEntitySetId,
-        staffEntitySetId,
-        manualPretrialCasesFqnEntitySetId
-      ]
-    });
+    let openPSAIdsToPeopleAndCases = yield call(
+      searchEntityNeighborsWithFilterWorker,
+      searchEntityNeighborsWithFilter({
+        entitySetId: psaScoresEntitySetId,
+        filter: {
+          entityKeyIds: psaIds,
+          sourceEntitySetIds: [releaseRecommendationsEntitySetId],
+          destinationEntitySetIds: [
+            peopleEntitySetId,
+            staffEntitySetId,
+            manualPretrialCasesFqnEntitySetId
+          ]
+        }
+      })
+    );
+    if (openPSAIdsToPeopleAndCases.error) throw openPSAIdsToPeopleAndCases.error;
+    openPSAIdsToPeopleAndCases = fromJS(openPSAIdsToPeopleAndCases.data);
 
     /* all people Ids */
-    openPSAIdsToPeopleAndCases = fromJS(openPSAIdsToPeopleAndCases);
     openPSAIdsToPeopleAndCases.entrySeq().forEach(([psaId, neighbors]) => {
       let psaNeighbors = Map();
       neighbors.forEach((neighbor) => {
@@ -592,12 +798,19 @@ function* loadRequiresActionPeopleWorker(action :SequenceAction) :Generator<*, *
     });
 
     /* get filtered neighbors for all people with open PSAs */
-    let peopleWithOpenPSANeighbors = yield call(SearchApi.searchEntityNeighborsWithFilter, peopleEntitySetId, {
-      entityKeyIds: peopleIds.toJS(),
-      sourceEntitySetIds: [psaScoresEntitySetId, ftaEntitySetId],
-      destinationEntitySetIds: [chargesEntitySetId, pretrialCasesEntitySetId, ftaEntitySetId]
-    });
-    peopleWithOpenPSANeighbors = fromJS(peopleWithOpenPSANeighbors);
+    let peopleWithOpenPSANeighbors = yield call(
+      searchEntityNeighborsWithFilterWorker,
+      searchEntityNeighborsWithFilter({
+        entitySetId: peopleEntitySetId,
+        filter: {
+          entityKeyIds: peopleIds.toJS(),
+          sourceEntitySetIds: [psaScoresEntitySetId, ftaEntitySetId],
+          destinationEntitySetIds: [chargesEntitySetId, pretrialCasesEntitySetId, ftaEntitySetId]
+        }
+      })
+    );
+    if (peopleWithOpenPSANeighbors.error) throw peopleWithOpenPSANeighbors.error;
+    peopleWithOpenPSANeighbors = fromJS(peopleWithOpenPSANeighbors.data);
 
     /* map person neighbors by personId -> appTypeFqn -> neighbors */
     peopleWithOpenPSANeighbors.entrySeq().forEach(([personId, neighbors]) => {

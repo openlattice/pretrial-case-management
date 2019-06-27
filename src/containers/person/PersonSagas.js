@@ -55,6 +55,7 @@ const { searchEntityNeighborsWithFilterWorker, searchEntitySetDataWorker } = Sea
 const { HAS_OPEN_PSA, HAS_MULTIPLE_OPEN_PSAS, IS_RECEIVING_REMINDERS } = PERSON_INFO_DATA;
 const { OPENLATTICE_ID_FQN } = Constants;
 const {
+  CHARGES,
   CONTACT_INFORMATION,
   PEOPLE,
   PRETRIAL_CASES,
@@ -110,16 +111,40 @@ function* loadPersonId(person) :Generator<*, *, *> {
 function* loadPersonDetailsWorker(action) :Generator<*, *, *> {
 
   try {
+
     const { entityKeyId, shouldLoadCases } = action.value;
     const app = yield select(getApp);
+
+    const arrestCasesEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.ARREST_CASES);
+    const chargesEntitySetId = getEntitySetIdFromApp(app, CHARGES);
     const pretrialCasesEntitySetId = getEntitySetIdFromApp(app, PRETRIAL_CASES);
     const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
+    const psaScoresEntitySetId = getEntitySetIdFromApp(app, PSA_SCORES);
+
     yield put(loadPersonDetails.request(action.id, { entityKeyId }));
 
     // <HACK>
     if (shouldLoadCases && !__ENV_DEV__) {
       yield call(loadCaseHistory, entityKeyId);
-      const response = yield call(SearchApi.searchEntityNeighbors, peopleEntitySetId, entityKeyId);
+      let peopleNeighborsById = yield call(
+        searchEntityNeighborsWithFilterWorker,
+        searchEntityNeighborsWithFilter({
+          entitySetId: peopleEntitySetId,
+          filter: {
+            entityKeyIds: [entityKeyId],
+            sourceEntitySetIds: [psaScoresEntitySetId],
+            destinationEntitySetIds: [
+              arrestCasesEntitySetId,
+              chargesEntitySetId,
+              pretrialCasesEntitySetId
+            ]
+          }
+        })
+      );
+      if (peopleNeighborsById.error) throw peopleNeighborsById.error;
+      peopleNeighborsById = peopleNeighborsById.data;
+      const response = peopleNeighborsById[entityKeyId];
+
       const caseNums = (response || []).filter((neighborObj) => {
         const { neighborEntitySet, neighborDetails } = neighborObj;
         return neighborEntitySet && neighborDetails && neighborEntitySet.id === pretrialCasesEntitySetId;
@@ -150,7 +175,24 @@ function* loadPersonDetailsWorker(action) :Generator<*, *, *> {
     // </HACK>
 
     else {
-      let response = yield call(SearchApi.searchEntityNeighbors, peopleEntitySetId, entityKeyId);
+      let peopleNeighborsById = yield call(
+        searchEntityNeighborsWithFilterWorker,
+        searchEntityNeighborsWithFilter({
+          entitySetId: peopleEntitySetId,
+          filter: {
+            entityKeyIds: [entityKeyId],
+            sourceEntitySetIds: [psaScoresEntitySetId],
+            destinationEntitySetIds: [
+              arrestCasesEntitySetId,
+              chargesEntitySetId,
+              pretrialCasesEntitySetId
+            ]
+          }
+        })
+      );
+      if (peopleNeighborsById.error) throw peopleNeighborsById.error;
+      peopleNeighborsById = fromJS(peopleNeighborsById.data);
+      const response = peopleNeighborsById.get(entityKeyId);
       yield put(loadPersonDetails.success(action.id, { entityKeyId, response }));
     }
   }

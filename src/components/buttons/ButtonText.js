@@ -3,11 +3,10 @@
  */
 
 import styled from 'styled-components';
-import { Link } from 'react-router-dom';
 
 import { OL } from '../../utils/consts/Colors';
 
-const ViewMoreLink = styled(Link)`
+const ButtonText = styled.button`
   background-color: transparent;
   border: none;
   color: ${OL.PURPLE02};
@@ -15,7 +14,6 @@ const ViewMoreLink = styled(Link)`
   font-weight: 600;
   font-size: 14px;
   outline: none;
-  padding: ${props => (props.noPadding ? '10px 0 ' : '10px 20px')};
   text-align: right;
 
   &:hover {
@@ -23,4 +21,4 @@ const ViewMoreLink = styled(Link)`
   }
 `;
 
-export default ViewMoreLink;
+export default ButtonText;

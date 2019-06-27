@@ -132,7 +132,7 @@ const DATE_FORMAT = 'MM/DD';
 export default class EventTimeline extends React.Component<Props> {
 
   getEventDate = (event :Immutable.Map<*, *>) => (
-    moment.utc(event.getIn(
+    moment(event.getIn(
       [DATE_TIME, 0], event.getIn([COMPLETED_DATE_TIME, 0], event.getIn([START_DATE, 0], ''))
     ))
   )
@@ -221,9 +221,9 @@ export default class EventTimeline extends React.Component<Props> {
     const eventType = event.get('type', '');
     const { icon } = EVENT_LABELS[eventType];
     let { label } = EVENT_LABELS[eventType];
+    const eventEKID = event.getIn([ENTITY_KEY_ID, 0], '');
     if (eventType === EVENT_TYPES.CHECKIN_APPOINTMENTS) {
-      const checkInId = event.getIn([ENTITY_KEY_ID, 0], '');
-      const checkInAppointmentsStatus = checkInStatusById.get(checkInId, List());
+      const checkInAppointmentsStatus = checkInStatusById.get(eventEKID, List());
       if (checkInAppointmentsStatus.size) {
         const status = checkInAppointmentsStatus.get('checkInStatus');
         switch (status) {
@@ -267,7 +267,7 @@ export default class EventTimeline extends React.Component<Props> {
     }
 
     return (
-      <IconContainer key={`${color}-${label}-${eventType}-${eventDate}`}>
+      <IconContainer key={`${eventType}-${label}-${eventEKID}-${eventDate}`}>
         <FontAwesomeIcon height="1em" width="1em" color={color} icon={icon} />
         <Tooltip value={label} />
       </IconContainer>
@@ -282,17 +282,17 @@ export default class EventTimeline extends React.Component<Props> {
         <TagRow>
           {
             events.entrySeq().map(([date, eventList]) => {
+              const dateTime = moment(date);
+              const positionRatio = Math.floor(moment.duration(startDate.diff(dateTime)).as('days') / duration * 100);
+              const dateLabel = dateTime.format(DATE_FORMAT);
+              const leftOffset = positionRatio;
               const iconGroup = (
-                <IconWrapper key={date} numIcons={eventList.size}>
+                <IconWrapper key={`${date}${positionRatio}`} numIcons={eventList.size}>
                   {
                     eventList.map(event => this.getIcons(event))
                   }
                 </IconWrapper>
               );
-              const dateTime = moment(date);
-              const positionRatio = Math.floor(moment.duration(startDate.diff(dateTime)).as('days') / duration * 100);
-              const dateLabel = dateTime.format(DATE_FORMAT);
-              const leftOffset = positionRatio;
 
               return this.renderTag(leftOffset, dateLabel, iconGroup, dateTime);
             })

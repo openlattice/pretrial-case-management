@@ -131,7 +131,7 @@ class EnrollStatusBanner extends React.Component<Props, State> {
   renderEnrollmentIcon = () => {
     const { personVoiceProfile, voiceEnrollmentProgress } = this.props;
     let enrollmentIcon = <FontAwesomeIcon color={OL.RED01} icon={faMicrophoneAltSlash} />;
-    if (personVoiceProfile.size) {
+    if (personVoiceProfile) {
       switch (voiceEnrollmentProgress) {
         case 3:
           enrollmentIcon = <FontAwesomeIcon color={OL.GREEN01} icon={faMicrophoneAlt} />;

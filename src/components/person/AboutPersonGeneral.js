@@ -117,8 +117,7 @@ class AboutPersonGeneral extends React.Component<Props, *> {
     return (
       <ContentSection
           photo={mugshot}
-          component={CONTENT_CONSTS.PROFILE}
-          header={header}>
+          component={CONTENT_CONSTS.PROFILE}>
         {content}
       </ContentSection>
     );

@@ -3,7 +3,8 @@
  */
 
 import { Map, List, fromJS } from 'immutable';
-import { DataApi, SearchApi } from 'lattice';
+import { DataApi } from 'lattice';
+import { SearchApiActions, SearchApiSagas } from 'lattice-sagas';
 import {
   call,
   put,
@@ -22,15 +23,25 @@ import {
 } from './HearingsActionFactory';
 
 const {
+  BONDS,
   CHECKIN_APPOINTMENTS,
   CHARGES,
   CONTACT_INFORMATION,
   HEARINGS,
+  JUDGES,
+  MANUAL_REMINDERS,
+  OUTCOMES,
+  PEOPLE,
   PRETRIAL_CASES,
+  PSA_SCORES,
   RELEASE_CONDITIONS,
   REMINDERS,
   STAFF
 } = APP_TYPES;
+
+const { searchEntityNeighborsWithFilter } = SearchApiActions;
+const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
+
 
 /*
  * Selectors
@@ -54,8 +65,19 @@ function* getHearingAndNeighbors(hearingEntityKeyId :string) :Generator<*, *, *>
   const app = yield select(getApp);
   const orgId = yield select(getOrgId);
   const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
-  const hearingsEntitySetId = getEntitySetIdFromApp(app, HEARINGS);
 
+  /*
+   * Get Entity Set Ids
+   */
+  const bondsEntitySetId = getEntitySetIdFromApp(app, BONDS);
+  const checkInAppointmentsEntitySetId = getEntitySetIdFromApp(app, CHECKIN_APPOINTMENTS);
+  const hearingsEntitySetId = getEntitySetIdFromApp(app, HEARINGS);
+  const judgesEntitySetId = getEntitySetIdFromApp(app, JUDGES);
+  const manualRemindersEntitySetId = getEntitySetIdFromApp(app, MANUAL_REMINDERS);
+  const outcomesEntitySetId = getEntitySetIdFromApp(app, OUTCOMES);
+  const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
+  const psaEntitySetId = getEntitySetIdFromApp(app, PSA_SCORES);
+  const releaseConditionsEntitySetId = getEntitySetIdFromApp(app, RELEASE_CONDITIONS);
   /*
    * Get Hearing Info
    */
@@ -66,9 +88,29 @@ function* getHearingAndNeighbors(hearingEntityKeyId :string) :Generator<*, *, *>
   /*
    * Get Neighbors
    */
-
-  let hearingNeighbors = yield call(SearchApi.searchEntityNeighbors, hearingsEntitySetId, hearingEntityKeyId);
-  hearingNeighbors = fromJS(hearingNeighbors);
+  let hearingNeighborsById = yield call(
+    searchEntityNeighborsWithFilterWorker,
+    searchEntityNeighborsWithFilter({
+      entitySetId: hearingsEntitySetId,
+      filter: {
+        entityKeyIds: [hearingEntityKeyId],
+        sourceEntitySetIds: [
+          bondsEntitySetId,
+          checkInAppointmentsEntitySetId,
+          judgesEntitySetId,
+          manualRemindersEntitySetId,
+          outcomesEntitySetId,
+          peopleEntitySetId,
+          psaEntitySetId,
+          releaseConditionsEntitySetId
+        ],
+        destinationEntitySetIds: [judgesEntitySetId]
+      }
+    })
+  );
+  if (hearingNeighborsById.error) throw hearingNeighborsById.error;
+  hearingNeighborsById = fromJS(hearingNeighborsById.data);
+  const hearingNeighbors = hearingNeighborsById.get(hearingEntityKeyId, List());
   /*
    * Format Neighbors
    */

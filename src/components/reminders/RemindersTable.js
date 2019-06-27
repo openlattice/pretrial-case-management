@@ -70,7 +70,12 @@ const NoResultsForTable = styled(NoResults)`
 class RemindersTable extends React.Component<Props, State> {
 
   renderHeaders = () => {
-    const { appTypeFqn, sortByDate, sortByName } = this.props;
+    const {
+      appTypeFqn,
+      sortByDate,
+      sortByName,
+      sortByCaseNumber
+    } = this.props;
     let headers = null;
 
     if (appTypeFqn === REMINDERS) {
@@ -80,7 +85,10 @@ class RemindersTable extends React.Component<Props, State> {
             {`${REMINDERS_HEADERS.COURT_TIME} `}
             <FontAwesomeIcon color={OL.GREY01} icon={faSortDown} />
           </HeaderElement>
-          <HeaderElement>{REMINDERS_HEADERS.CASE_NUM}</HeaderElement>
+          <HeaderElement onClick={sortByCaseNumber}>
+            {`${REMINDERS_HEADERS.CASE_NUM} `}
+            <FontAwesomeIcon color={OL.GREY01} icon={faSortDown} />
+          </HeaderElement>
           <HeaderElement onClick={sortByName}>
             {`${REMINDERS_HEADERS.NAME} `}
             <FontAwesomeIcon color={OL.GREY01} icon={faSortDown} />

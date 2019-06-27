@@ -4,12 +4,8 @@
 import Immutable, { fromJS, List, Map } from 'immutable';
 import Papa from 'papaparse';
 import moment from 'moment';
-import {
-  Constants,
-  DataApi,
-  SearchApi,
-  Models
-} from 'lattice';
+import { Constants, SearchApi, Models } from 'lattice';
+import { SearchApiActions, SearchApiSagas } from 'lattice-sagas';
 import {
   all,
   call,
@@ -45,19 +41,28 @@ import {
 } from './DownloadActionFactory';
 
 const {
-  HEARINGS,
+  ARREST_CASES,
+  BONDS,
+  CHARGES,
+  DMF_RESULTS,
   DMF_RISK_FACTORS,
+  HEARINGS,
   MANUAL_CHARGES,
   MANUAL_COURT_CHARGES,
   MANUAL_PRETRIAL_CASES,
   MANUAL_PRETRIAL_COURT_CASES,
+  OUTCOMES,
   PEOPLE,
   PRETRIAL_CASES,
-  CHARGES,
+  RELEASE_CONDITIONS,
+  RELEASE_RECOMMENDATIONS,
   PSA_RISK_FACTORS,
   PSA_SCORES,
   STAFF
 } = APP_TYPES;
+
+const { searchEntityNeighborsWithFilter } = SearchApiActions;
+const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
 
 const getApp = state => state.get(STATE.APP, Map());
 const getEDM = state => state.get(STATE.EDM, Map());
@@ -66,7 +71,12 @@ const getOrgId = state => state.getIn([STATE.APP, APP.SELECTED_ORG_ID], '');
 const { OPENLATTICE_ID_FQN } = Constants;
 const { FullyQualifiedName } = Models;
 
-const DATETIME_FQNS = [PROPERTY_TYPES.TIMESTAMP, PROPERTY_TYPES.COMPLETED_DATE_TIME, PROPERTY_TYPES.DATE_TIME];
+const DATETIME_FQNS = [
+  PROPERTY_TYPES.TIMESTAMP,
+  PROPERTY_TYPES.COMPLETED_DATE_TIME,
+  PROPERTY_TYPES.DATE_TIME,
+  PROPERTY_TYPES.ARREST_DATE_TIME
+];
 
 const getStepTwo = (
   neighborList,
@@ -141,9 +151,23 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
     const orgId = yield select(getOrgId);
     const includesPretrialModule = app.getIn([APP.SELECTED_ORG_SETTINGS, SETTINGS.MODULES, MODULE.PRETRIAL], false);
     const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
+
+    /*
+     * Get Entity Set Ids
+     */
+    const arrestCasesEntitySetId = getEntitySetIdFromApp(app, ARREST_CASES);
+    const bondsEntitySetId = getEntitySetIdFromApp(app, BONDS);
+    const dmfResultsEntitySetId = getEntitySetIdFromApp(app, DMF_RESULTS);
     const dmfRiskFactorsEntitySetId = getEntitySetIdFromApp(app, DMF_RISK_FACTORS);
-    const psaRiskFactorsEntitySetId = getEntitySetIdFromApp(app, PSA_RISK_FACTORS);
+    const manualPretrialCasesEntitySetId = getEntitySetIdFromApp(app, MANUAL_PRETRIAL_CASES);
+    const manualPretrialCourtCasesEntitySetId = getEntitySetIdFromApp(app, MANUAL_PRETRIAL_COURT_CASES);
+    const outcomesEntitySetId = getEntitySetIdFromApp(app, OUTCOMES);
+    const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
     const psaEntitySetId = getEntitySetIdFromApp(app, PSA_SCORES);
+    const pretrialCasesEntitySetId = getEntitySetIdFromApp(app, PRETRIAL_CASES);
+    const psaRiskFactorsEntitySetId = getEntitySetIdFromApp(app, PSA_RISK_FACTORS);
+    const releaseConditionsEntitySetId = getEntitySetIdFromApp(app, RELEASE_CONDITIONS);
+    const releaseRecommendationsEntitySetId = getEntitySetIdFromApp(app, RELEASE_RECOMMENDATIONS);
     const staffEntitySetId = getEntitySetIdFromApp(app, STAFF);
 
     const start = moment(startDate);
@@ -161,16 +185,42 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
       scoresAsMap = scoresAsMap.set(row[OPENLATTICE_ID_FQN][0], stripIdField(Immutable.fromJS(row)));
     });
 
-    const neighborsById = yield call(SearchApi.searchEntityNeighborsBulk, psaEntitySetId, scoresAsMap.keySeq().toJS());
+    const neighborsById = yield call(
+      searchEntityNeighborsWithFilterWorker,
+      searchEntityNeighborsWithFilter({
+        entitySetId: psaEntitySetId,
+        filter: {
+          entityKeyIds: scoresAsMap.keySeq().toJS(),
+          sourceEntitySetIds: [
+            dmfResultsEntitySetId,
+            releaseRecommendationsEntitySetId,
+            bondsEntitySetId,
+            outcomesEntitySetId,
+            releaseConditionsEntitySetId
+          ],
+          destinationEntitySetIds: [
+            peopleEntitySetId,
+            psaRiskFactorsEntitySetId,
+            dmfRiskFactorsEntitySetId,
+            pretrialCasesEntitySetId,
+            manualPretrialCasesEntitySetId,
+            manualPretrialCourtCasesEntitySetId,
+            arrestCasesEntitySetId,
+            staffEntitySetId
+          ]
+        }
+      })
+    );
+    if (neighborsById.error) throw neighborsById.error;
     let usableNeighborsById = Immutable.Map();
 
-    Object.keys(neighborsById).forEach((id) => {
+    Object.keys(neighborsById.data).forEach((id) => {
       const psaCreationDate = moment(scoresAsMap.getIn([id, PROPERTY_TYPES.DATE_TIME, 0]));
       const psaWasCreatedInTimeRange = psaCreationDate.isValid()
                 && psaCreationDate.isSameOrAfter(start)
                 && psaCreationDate.isSameOrBefore(end);
       let usableNeighbors = Immutable.List();
-      const neighborList = neighborsById[id];
+      const neighborList = neighborsById.data[id];
       let domainMatch = true;
       neighborList.forEach((neighborObj) => {
         const neighbor = getFilteredNeighbor(neighborObj);
@@ -189,7 +239,8 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
         }
 
         let timestamp = neighbor.associationDetails[PROPERTY_TYPES.TIMESTAMP]
-          || neighbor.associationDetails[PROPERTY_TYPES.COMPLETED_DATE_TIME];
+          || neighbor.associationDetails[PROPERTY_TYPES.COMPLETED_DATE_TIME]
+          || neighbor.neighborDetails[PROPERTY_TYPES.START_DATE];
         timestamp = timestamp ? timestamp[0] : '';
         const timestampMoment = moment(timestamp);
         const neighborsWereEditedInTimeRange = timestampMoment.isValid()
@@ -206,12 +257,15 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
     const chargeCalls = [];
     const getChargeCall = (entitySetId, entityKeyIds, chargeEntitySetId) => (
       call(
-        SearchApi.searchEntityNeighborsWithFilter,
-        entitySetId, {
-          entityKeyIds,
-          sourceEntitySetIds: [chargeEntitySetId],
-          destinationEntitySetIds: []
-        }
+        searchEntityNeighborsWithFilterWorker,
+        searchEntityNeighborsWithFilter({
+          entitySetId,
+          filter: {
+            entityKeyIds,
+            sourceEntitySetIds: [chargeEntitySetId],
+            destinationEntitySetIds: []
+          }
+        })
       )
     );
     Object.keys(caseToChargeTypes).forEach((appTypeFqn) => {
@@ -417,6 +471,8 @@ function* downloadPSAsByHearingDateWorker(action :SequenceAction) :Generator<*, 
     const psaRiskFactorsEntitySetId = getEntitySetIdFromApp(app, PSA_RISK_FACTORS);
     const staffEntitySetId = getEntitySetIdFromApp(app, STAFF);
     const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
+    const dmfResultsEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.DMF_RESULTS);
+    const releaseRecommendationsEntitySetId = getEntitySetIdFromApp(app, RELEASE_RECOMMENDATIONS);
 
     if (selectedHearingData.size) {
       selectedHearingData.forEach((hearing) => {
@@ -427,8 +483,22 @@ function* downloadPSAsByHearingDateWorker(action :SequenceAction) :Generator<*, 
       });
     }
 
-    let hearingNeighborsById = yield call(SearchApi.searchEntityNeighborsBulk, hearingsEntitySetId, hearingIds.toJS());
-    hearingNeighborsById = Immutable.fromJS(hearingNeighborsById);
+    let hearingNeighborsById = yield call(
+      searchEntityNeighborsWithFilterWorker,
+      searchEntityNeighborsWithFilter({
+        entitySetId: hearingsEntitySetId,
+        filter: {
+          entityKeyIds: hearingIds.toJS(),
+          sourceEntitySetIds: [
+            peopleEntitySetId,
+            psaEntitySetId
+          ],
+          destinationEntitySetIds: []
+        }
+      })
+    );
+    if (hearingNeighborsById.error) throw hearingNeighborsById.error;
+    hearingNeighborsById = Immutable.fromJS(hearingNeighborsById.data);
     hearingNeighborsById.entrySeq().forEach(([hearingId, neighbors]) => {
       let hasPerson = false;
       let hasPSA = false;
@@ -464,12 +534,19 @@ function* downloadPSAsByHearingDateWorker(action :SequenceAction) :Generator<*, 
 
     if (personIdsToHearingIds.size) {
       let peopleNeighborsById = yield call(
-        SearchApi.searchEntityNeighborsBulk,
-        peopleEntitySetId,
-        personIdsToHearingIds.keySeq().toJS()
+        searchEntityNeighborsWithFilterWorker,
+        searchEntityNeighborsWithFilter({
+          entitySetId: peopleEntitySetId,
+          filter: {
+            entityKeyIds: personIdsToHearingIds.keySeq().toJS(),
+            sourceEntitySetIds: [psaEntitySetId],
+            destinationEntitySetIds: [hearingsEntitySetId]
+          }
+        })
       );
+      if (peopleNeighborsById.error) throw peopleNeighborsById.error;
+      peopleNeighborsById = Immutable.fromJS(peopleNeighborsById.data);
 
-      peopleNeighborsById = Immutable.fromJS(peopleNeighborsById);
       peopleNeighborsById.entrySeq().forEach(([id, neighbors]) => {
         let hasValidHearing = false;
         let mostCurrentPSA;
@@ -513,12 +590,26 @@ function* downloadPSAsByHearingDateWorker(action :SequenceAction) :Generator<*, 
 
     if (hearingIdsToPSAIds.size) {
       const psaNeighborsById = yield call(
-        SearchApi.searchEntityNeighborsBulk,
-        psaEntitySetId,
-        hearingIdsToPSAIds.valueSeq().toJS()
+        searchEntityNeighborsWithFilterWorker,
+        searchEntityNeighborsWithFilter({
+          entitySetId: psaEntitySetId,
+          filter: {
+            entityKeyIds: hearingIdsToPSAIds.valueSeq().toJS(),
+            sourceEntitySetIds: [
+              dmfResultsEntitySetId,
+              releaseRecommendationsEntitySetId
+            ],
+            destinationEntitySetIds: [
+              dmfRiskFactorsEntitySetId,
+              peopleEntitySetId,
+              psaRiskFactorsEntitySetId,
+              staffEntitySetId
+            ]
+          }
+        })
       );
-
-      Object.entries(psaNeighborsById).forEach(([id, neighborList]) => {
+      if (psaNeighborsById.error) throw psaNeighborsById.error;
+      Object.entries(psaNeighborsById.data).forEach(([id, neighborList]) => {
         let domainMatch = true;
         neighborList.forEach((neighborObj) => {
           const neighbor = getFilteredNeighbor(neighborObj);

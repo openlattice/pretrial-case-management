@@ -275,6 +275,7 @@ type Props = {
   hearingNeighbors :Map<*, *>,
   hearingEntityKeyId :string,
   loadingReleaseCondtions :boolean,
+  openClosePSAModal :() => void,
   personNeighbors :Map<*, *>,
   psaNeighbors :Map<*, *>,
   refreshingReleaseConditions :boolean,
@@ -827,6 +828,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       actions,
       app,
       hearingEntityKeyId,
+      openClosePSAModal,
       selectedHearing
     } = this.props;
 
@@ -1028,7 +1030,8 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
         callback: this.refreshHearingsNeighborsCallback
       });
     }
-
+    const otherOutcomes = Object.values(OTHER_OUTCOMES);
+    if (openClosePSAModal && otherOutcomes.includes(outcome)) openClosePSAModal();
   }
 
   cleanNoContactPeopleList = () => {
@@ -1208,16 +1211,19 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       `${date.format(dateFormat)} ${time.format(timeFormat)}`, `${dateFormat} ${timeFormat}`
     );
 
+    const associationEntitySetName = ASSESSED_BY;
     const associationEntitySetId = getEntitySetIdFromApp(app, ASSESSED_BY);
-    const srcEntitySetId = getEntitySetIdFromApp(app, JUDGES);
+    const associationEntityKeyId = judgeEntity ? judgeAssociationEntityKeyId : null;
     const hearingEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.HEARINGS);
 
-    const associationEntitySetName = ASSESSED_BY;
-    const associationEntityKeyId = judgeEntity ? judgeAssociationEntityKeyId : null;
-    const srcEntitySetName = JUDGES;
-    const srcEntityKeyId = judgeId;
-    const dstEntitySetName = APP_TYPES.HEARINGS;
-    const dstEntityKeyId = hearingEntityKeyId;
+    const dstEntitySetName = JUDGES;
+    const dstEntitySetId = getEntitySetIdFromApp(app, JUDGES);
+    const dstEntityKeyId = judgeId;
+
+    const srcEntitySetName = APP_TYPES.HEARINGS;
+    const srcEntitySetId = hearingEntitySetId;
+    const srcEntityKeyId = hearingEntityKeyId;
+
     if (judgeIsOther && associationEntityKeyId) {
       deleteEntity({
         entitySetId: associationEntitySetId,
@@ -1240,7 +1246,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
         dstEntitySetName,
         dstEntityKeyId,
         associationEntitySetId,
-        dstEntitySetId: hearingEntitySetId,
+        dstEntitySetId,
         callback: this.refreshHearingsNeighborsCallback
       });
     }
@@ -1458,7 +1464,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
     const { state } = this;
     const { release, warrant } = state;
     const coreOutcomes = Object.values(OUTCOMES);
-    const outcomeIsNotOther = coreOutcomes.includes(state[OUTCOME])
+    const outcomeIsNotOther = coreOutcomes.includes(state[OUTCOME]);
     const outcomeIsFTA = state[OUTCOME] === OTHER_OUTCOMES.FTA;
     const RELEASED = release !== RELEASES.RELEASED;
     const NO_WARRANT = warrant !== WARRANTS.WARRANT;

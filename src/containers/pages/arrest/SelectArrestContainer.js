@@ -5,7 +5,6 @@
 import React from 'react';
 import Immutable from 'immutable';
 import styled from 'styled-components';
-import { Button } from 'react-bootstrap';
 
 import ArrestTable from '../../../components/arrest/ArrestTable';
 import BasicButton from '../../../components/buttons/BasicButton';
@@ -68,12 +67,6 @@ const ModifyButton = styled(BasicButton)`
   margin-right: 10px;
 `;
 
-export const NavButton = styled(Button)`
-  font-weight: medium;
-  margin: 0 10px;
-  width: 170px;
-`;
-
 /*
  * types
  */
@@ -104,7 +97,7 @@ class SelectArrestContainer extends React.Component<Props, State> {
   };
 
   renderSearchResults = () => {
-    const { caseOptions } = this.props
+    const { caseOptions } = this.props;
     if (caseOptions.isEmpty()) {
       return <NoResultsText>No arrests found.</NoResultsText>;
     }

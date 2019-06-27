@@ -105,6 +105,7 @@ class RemindersTableWithPagination extends React.Component<Props, State> {
 
   sortByDate = () => this.setState({ sort: SORT_TYPES.DATE });
   sortByName = () => this.setState({ sort: SORT_TYPES.NAME });
+  sortByCaseNumber = () => this.setState({ sort: SORT_TYPES.CASE_NUM });
 
   getSortedEntities = () => {
     const { sort } = this.state;
@@ -151,6 +152,7 @@ class RemindersTableWithPagination extends React.Component<Props, State> {
       <RemindersTable
           sortByName={this.sortByName}
           sortByDate={this.sortByDate}
+          sortByCaseNumber={this.sortByCaseNumber}
           entities={pageOfEntities}
           neighbors={neighbors}
           remindersWithOpenPSA={remindersWithOpenPSA}
