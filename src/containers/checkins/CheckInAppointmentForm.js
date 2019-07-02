@@ -114,13 +114,7 @@ class NewHearingSection extends React.Component<Props, State> {
   createCheckInSubmissionValues = (date) => {
     const startDate = date;
     const endDate = toISODate(moment(startDate).add(1, 'd'));
-    const appointmentEntity = {
-      [PROPERTY_TYPES.GENERAL_ID]: [randomUUID()],
-      [PROPERTY_TYPES.START_DATE]: [startDate],
-      [PROPERTY_TYPES.END_DATE]: [endDate],
-      [PROPERTY_TYPES.TYPE]: [APPOINTMENT_TYPES.CHECK_IN],
-      [PROPERTY_TYPES.COMPLETED_DATE_TIME]: [toISODateTime(moment(startDate))]
-    };
+    const appointmentEntity = { startDate, endDate };
     return fromJS(appointmentEntity);
   }
 
