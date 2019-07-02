@@ -31,7 +31,6 @@ import psaEditedConfig from '../../config/formconfig/PsaEditedConfig';
 import closeX from '../../assets/svg/close-x-gray.svg';
 import LoadPersonCaseHistoryButton from '../person/LoadPersonCaseHistoryButton';
 import { getScoresAndRiskFactors, calculateDMF } from '../../utils/ScoringUtils';
-import { getEntityKeyId, getEntitySetId, getIdOrValue } from '../../utils/DataUtils';
 import { CenteredContainer, Title } from '../../utils/Layout';
 import { toISODateTime } from '../../utils/FormattingUtils';
 import { getCasesForPSA, currentPendingCharges } from '../../utils/CaseUtils';
@@ -41,6 +40,12 @@ import { OL } from '../../utils/consts/Colors';
 import { psaIsClosed } from '../../utils/PSAUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { CONTEXTS, MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
+import {
+  getEntityKeyId,
+  getEntityProperties,
+  getEntitySetId,
+  getIdOrValue
+} from '../../utils/DataUtils';
 import {
   APP,
   PSA_NEIGHBOR,
@@ -59,12 +64,13 @@ import {
 } from '../../utils/consts/Consts';
 
 import * as Routes from '../../core/router/Routes';
-import * as FormActionFactory from '../psa/FormActionFactory';
-import * as ReviewActionFactory from '../review/ReviewActionFactory';
-import * as PSAModalActionFactory from './PSAModalActionFactory';
 import * as CourtActionFactory from '../court/CourtActionFactory';
-import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
 import * as DataActionFactory from '../../utils/data/DataActionFactory';
+import * as FormActionFactory from '../psa/FormActionFactory';
+import * as HearingsActionFactory from '../hearings/HearingsActionFactory';
+import * as PSAModalActionFactory from './PSAModalActionFactory';
+import * as ReviewActionFactory from '../review/ReviewActionFactory';
+import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
 
 const {
   BONDS,
@@ -81,6 +87,8 @@ const {
   RELEASE_RECOMMENDATIONS,
   STAFF
 } = APP_TYPES;
+
+const { ENTITY_KEY_ID } = PROPERTY_TYPES;
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
@@ -246,8 +254,7 @@ type Props = {
     changePSAStatus :(values :{
       scoresId :string,
       scoresEntity :Map<*, *>
-    }) => void,
-    loadHearingNeighbors :(hearingIds :string[]) => void
+    }) => void
   }
 };
 
@@ -897,6 +904,9 @@ class PSAModal extends React.Component<Props, State> {
       psaPermissions
     } = this.props;
 
+    const person = psaNeighbors.getIn([PEOPLE, PSA_NEIGHBOR.DETAILS], Map());
+    const { [ENTITY_KEY_ID]: personEKID } = getEntityProperties(person, [ENTITY_KEY_ID]);
+
     return (
       <ModalWrapper withPadding>
         <SelectHearingsContainer
@@ -908,6 +918,7 @@ class PSAModal extends React.Component<Props, State> {
             refreshingNeighbors={refreshingNeighbors}
             dmfId={this.getIdOrValue(DMF_RESULTS)}
             personId={personId}
+            personEKID={personEKID}
             personNeighbors={personNeighbors}
             psaEntityKeyId={entityKeyId}
             deleteHearing={this.deleteHearing}
@@ -1038,6 +1049,7 @@ class PSAModal extends React.Component<Props, State> {
 
 function mapStateToProps(state) {
   const app = state.get(STATE.APP);
+  const hearings = state.get(STATE.HEARINGS);
   const psaModal = state.get(STATE.PSA_MODAL);
   const search = state.get(STATE.SEARCH);
   return {
@@ -1046,6 +1058,8 @@ function mapStateToProps(state) {
     [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
     [APP.SELECTED_ORG_SETTINGS]: app.get(APP.SELECTED_ORG_SETTINGS),
 
+    [HEARINGS.HEARING_NEIGHBORS_BY_ID]: hearings.get(HEARINGS.HEARING_NEIGHBORS_BY_ID),
+
     [PSA_MODAL.SCORES]: psaModal.get(PSA_MODAL.SCORES),
     [PSA_MODAL.PSA_ID]: psaModal.get(PSA_MODAL.PSA_ID),
     [PSA_MODAL.LOADING_PSA_MODAL]: psaModal.get(PSA_MODAL.LOADING_PSA_MODAL),
@@ -1053,7 +1067,6 @@ function mapStateToProps(state) {
     [PSA_MODAL.PSA_PERMISSIONS]: psaModal.get(PSA_MODAL.PSA_PERMISSIONS),
     [PSA_MODAL.HEARINGS]: psaModal.get(PSA_MODAL.HEARINGS),
     [PSA_MODAL.HEARING_IDS]: psaModal.get(PSA_MODAL.HEARING_IDS),
-    [PSA_MODAL.HEARINGS_NEIGHBORS_BY_ID]: psaModal.get(PSA_MODAL.HEARINGS_NEIGHBORS_BY_ID),
     [PSA_MODAL.LOADING_HEARING_NEIGHBORS]: psaModal.get(PSA_MODAL.LOADING_HEARING_NEIGHBORS),
     [PSA_MODAL.PERSON_HEARINGS]: psaModal.get(PSA_MODAL.PERSON_HEARINGS),
     [PSA_MODAL.PERSON_NEIGHBORS]: psaModal.get(PSA_MODAL.PERSON_NEIGHBORS),
@@ -1076,24 +1089,28 @@ function mapStateToProps(state) {
 function mapDispatchToProps(dispatch :Function) :Object {
   const actions :{ [string] :Function } = {};
 
-  Object.keys(FormActionFactory).forEach((action :string) => {
-    actions[action] = FormActionFactory[action];
-  });
-
-  Object.keys(ReviewActionFactory).forEach((action :string) => {
-    actions[action] = ReviewActionFactory[action];
-  });
-
-  Object.keys(PSAModalActionFactory).forEach((action :string) => {
-    actions[action] = PSAModalActionFactory[action];
-  });
-
   Object.keys(CourtActionFactory).forEach((action :string) => {
     actions[action] = CourtActionFactory[action];
   });
 
   Object.keys(DataActionFactory).forEach((action :string) => {
     actions[action] = DataActionFactory[action];
+  });
+
+  Object.keys(FormActionFactory).forEach((action :string) => {
+    actions[action] = FormActionFactory[action];
+  });
+
+  Object.keys(HearingsActionFactory).forEach((action :string) => {
+    actions[action] = HearingsActionFactory[action];
+  });
+
+  Object.keys(PSAModalActionFactory).forEach((action :string) => {
+    actions[action] = PSAModalActionFactory[action];
+  });
+
+  Object.keys(ReviewActionFactory).forEach((action :string) => {
+    actions[action] = ReviewActionFactory[action];
   });
 
   Object.keys(SubmitActionFactory).forEach((action :string) => {
