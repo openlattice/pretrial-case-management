@@ -4,7 +4,13 @@
 
 import moment from 'moment';
 import { Map, List, fromJS } from 'immutable';
-import { SearchApiActions, SearchApiSagas } from 'lattice-sagas';
+import randomUUID from 'uuid/v4';
+import {
+  DataApiActions,
+  DataApiSagas,
+  SearchApiActions,
+  SearchApiSagas
+} from 'lattice-sagas';
 import {
   DataApi,
   EntityDataModelApi,
@@ -22,19 +28,25 @@ import type { SequenceAction } from 'redux-reqseq';
 
 import releaseConditionsConfig from '../../config/formconfig/ReleaseConditionsConfig';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
+import { getPropertyTypeId } from '../../edm/edmUtils';
 import { getEntityProperties, getEntityKeyId, getMapFromEntityKeysToPropertyKeys } from '../../utils/DataUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { APP, PSA_NEIGHBOR, STATE } from '../../utils/consts/FrontEndStateConsts';
-
+import { REMINDER_TYPES } from '../../utils/RemindersUtils';
+import { refreshHearingAndNeighbors } from '../hearings/HearingsActionFactory';
 import {
   LOAD_RELEASE_CONDTIONS,
+  SUBMIT_RELEASE_CONDTIONS,
   UPDATE_OUTCOMES_AND_RELEASE_CONDITIONS,
   loadReleaseConditions,
+  submitReleaseConditions,
   updateOutcomesAndReleaseCondtions
 } from './ReleaseConditionsActionFactory';
 
 const { searchEntityNeighborsWithFilter } = SearchApiActions;
 const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
+const { createEntityAndAssociationData } = DataApiActions;
+const { createEntityAndAssociationDataWorker } = DataApiSagas;
 
 const { FullyQualifiedName } = Models;
 const { DeleteTypes } = Types;
@@ -53,6 +65,7 @@ const {
   PEOPLE,
   PRETRIAL_CASES,
   PSA_SCORES,
+  REGISTERED_FOR,
   RELEASE_CONDITIONS,
   REMINDERS,
   STAFF,
@@ -60,10 +73,31 @@ const {
   SPEAKER_RECOGNITION_PROFILES
 } = APP_TYPES;
 
+
+const {
+  APPEARED,
+  BOND_AMOUNT,
+  BOND_TYPE,
+  COMPLETED_DATE_TIME,
+  END_DATE,
+  FREQUENCY,
+  GENERAL_ID,
+  JUDGE_ACCEPTED,
+  OTHER_TEXT,
+  OUTCOME,
+  PERSON_NAME,
+  PERSON_TYPE,
+  PLAN_TYPE,
+  RELEASE_TYPE,
+  START_DATE,
+  TYPE
+} = PROPERTY_TYPES;
+
 /*
  * Selectors
  */
 const getApp = state => state.get(STATE.APP, Map());
+const getEDM = state => state.get(STATE.EDM, Map());
 const getOrgId = state => state.getIn([STATE.APP, APP.SELECTED_ORG_ID], '');
 
 const LIST_ENTITY_SETS = List.of(
@@ -283,6 +317,324 @@ function* loadReleaseConditionsWatcher() :Generator<*, *, *> {
   yield takeEvery(LOAD_RELEASE_CONDTIONS, loadReleaseConditionsWorker);
 }
 
+function* submitReleaseConditionsWorker(action :SequenceAction) :Generator<*, *, *> {
+  try {
+    yield put(submitReleaseConditions.request(action.id));
+    const {
+      bondAmount,
+      bondType,
+      checkInAppointments,
+      dmfResultsEKID,
+      hearingEKID,
+      judgeAccepted,
+      outcomeSelection,
+      outcomeText,
+      personEKID,
+      psaScoresEKID,
+      releaseConditions,
+      releaseType
+    } = action.value;
+
+    /*
+     * Get Property Type Ids
+     */
+    const app = yield select(getApp);
+    const edm = yield select(getEDM);
+
+    const bondAmountPTID = getPropertyTypeId(edm, BOND_AMOUNT);
+    const bondTypePTID = getPropertyTypeId(edm, BOND_TYPE);
+    const completedDateTimePTID = getPropertyTypeId(edm, COMPLETED_DATE_TIME);
+    const endDatePTID = getPropertyTypeId(edm, END_DATE);
+    const frequencyPTID = getPropertyTypeId(edm, FREQUENCY);
+    const generalIdPTID = getPropertyTypeId(edm, GENERAL_ID);
+    const judgeAcceptedPTID = getPropertyTypeId(edm, JUDGE_ACCEPTED);
+    const otherTextPTID = getPropertyTypeId(edm, OTHER_TEXT);
+    const outcomePTID = getPropertyTypeId(edm, OUTCOME);
+    const personNamePTID = getPropertyTypeId(edm, PERSON_NAME);
+    const personTypePTID = getPropertyTypeId(edm, PERSON_TYPE);
+    const planTypePTID = getPropertyTypeId(edm, PLAN_TYPE);
+    const releaseTypePTID = getPropertyTypeId(edm, RELEASE_TYPE);
+    const startDatePTID = getPropertyTypeId(edm, START_DATE);
+    const typePTID = getPropertyTypeId(edm, TYPE);
+
+    /*
+     * Get Entity Set Ids
+     */
+    const bondsESID = getEntitySetIdFromApp(app, BONDS);
+    const checkInAppointmentsESID = getEntitySetIdFromApp(app, CHECKIN_APPOINTMENTS);
+    const dmfResultsESID = getEntitySetIdFromApp(app, DMF_RESULTS);
+    const hearingsESID = getEntitySetIdFromApp(app, HEARINGS);
+    const outcomesESID = getEntitySetIdFromApp(app, OUTCOMES);
+    const peopleESID = getEntitySetIdFromApp(app, PEOPLE);
+    const psaScoresESID = getEntitySetIdFromApp(app, PSA_SCORES);
+    const registeredForESID = getEntitySetIdFromApp(app, REGISTERED_FOR);
+    const releaseConditionsESID = getEntitySetIdFromApp(app, RELEASE_CONDITIONS);
+
+    /*
+     * Create id property values for new entities
+     */
+    const bondId = randomUUID();
+    const outcomeId = randomUUID();
+
+    /*
+     * Assemble Assoociations
+     */
+    const associations = {
+      [registeredForESID]: [
+        {
+          data: { [completedDateTimePTID]: [moment().toISOString(true)] },
+          srcEntityIndex: 0,
+          srcEntitySetId: outcomesESID,
+          dstEntityKeyId: personEKID,
+          dstEntitySetId: peopleESID
+        },
+        {
+          data: { [completedDateTimePTID]: [moment().toISOString(true)] },
+          srcEntityIndex: 0,
+          srcEntitySetId: outcomesESID,
+          dstEntityKeyId: dmfResultsEKID,
+          dstEntitySetId: dmfResultsESID
+        },
+        {
+          data: { [completedDateTimePTID]: [moment().toISOString(true)] },
+          srcEntityIndex: 0,
+          srcEntitySetId: outcomesESID,
+          dstEntityKeyId: psaScoresEKID,
+          dstEntitySetId: psaScoresESID
+        },
+        {
+          data: { [completedDateTimePTID]: [moment().toISOString(true)] },
+          srcEntityIndex: 0,
+          srcEntitySetId: outcomesESID,
+          dstEntityKeyId: hearingEKID,
+          dstEntitySetId: hearingsESID
+        },
+      ]
+    };
+
+    /*
+     * Assemble Entities
+     */
+    const entities = {
+      [outcomesESID]: [
+        {
+          [generalIdPTID]: [outcomeId],
+          [judgeAcceptedPTID]: [judgeAccepted],
+          [outcomePTID]: [outcomeSelection],
+          [otherTextPTID]: [outcomeText],
+          [releaseTypePTID]: [releaseType]
+        }
+      ]
+    };
+
+    if (bondType) {
+      const bondEntity = {
+        [generalIdPTID]: [bondId],
+        [bondTypePTID]: [bondType]
+      };
+      if (bondAmount) bondEntity[bondAmountPTID] = [bondAmount];
+      entities[bondsESID] = [bondEntity];
+      associations[registeredForESID] = associations[registeredForESID].concat([
+        {
+          data: { [completedDateTimePTID]: [moment().toISOString(true)] },
+          srcEntityIndex: 0,
+          srcEntitySetId: bondsESID,
+          dstEntityKeyId: personEKID,
+          dstEntitySetId: peopleESID
+        },
+        {
+          data: { [completedDateTimePTID]: [moment().toISOString(true)] },
+          srcEntityIndex: 0,
+          srcEntitySetId: bondsESID,
+          dstEntityKeyId: dmfResultsEKID,
+          dstEntitySetId: dmfResultsESID
+        },
+        {
+          data: { [completedDateTimePTID]: [moment().toISOString(true)] },
+          srcEntityIndex: 0,
+          srcEntitySetId: bondsESID,
+          dstEntityKeyId: psaScoresEKID,
+          dstEntitySetId: psaScoresESID
+        },
+        {
+          data: { [completedDateTimePTID]: [moment().toISOString(true)] },
+          srcEntityIndex: 0,
+          srcEntitySetId: bondsESID,
+          dstEntityKeyId: hearingEKID,
+          dstEntitySetId: hearingsESID
+        },
+      ]);
+    }
+
+    /*
+     * Add CheckIn appointment entities and associations
+     */
+    if (checkInAppointments.length) {
+      entities[checkInAppointmentsESID] = [];
+      checkInAppointments.forEach((appointment, index) => {
+        const newCheckInAppointmentId = randomUUID();
+        const { startDate, endDate } = appointment;
+
+        const newCheckInAppointmentEntity = {
+          [generalIdPTID]: [newCheckInAppointmentId],
+          [typePTID]: [REMINDER_TYPES.CHECKIN],
+          [startDatePTID]: [startDate],
+          [endDatePTID]: [endDate],
+        };
+
+        const associationData = [
+          {
+            data: { [completedDateTimePTID]: [moment().toISOString(true)] },
+            srcEntityIndex: index,
+            srcEntitySetId: checkInAppointmentsESID,
+            dstEntityKeyId: personEKID,
+            dstEntitySetId: peopleESID
+          },
+          {
+            data: { [completedDateTimePTID]: [moment().toISOString(true)] },
+            srcEntityIndex: index,
+            srcEntitySetId: checkInAppointmentsESID,
+            dstEntityKeyId: hearingEKID,
+            dstEntitySetId: hearingsESID
+          }
+        ];
+
+        entities[checkInAppointmentsESID].push(newCheckInAppointmentEntity);
+        associations[registeredForESID] = associations[registeredForESID].concat(associationData);
+      });
+    }
+
+    /*
+     * Add release condition entities and associations
+     */
+    if (releaseConditions.length) {
+      entities[releaseConditionsESID] = [];
+      releaseConditions.forEach((releaseCondtiion, index) => {
+        const releaseConditionId = randomUUID();
+        const {
+          [START_DATE]: startDate,
+          [TYPE]: releaseConditionType,
+          [FREQUENCY]: frequency,
+          [OTHER_TEXT]: otherText,
+          [PLAN_TYPE]: planType,
+          [PERSON_NAME]: personName,
+          [PERSON_TYPE]: personType
+        } = releaseCondtiion;
+
+        const releaseConditionEntity = {
+          [generalIdPTID]: [releaseConditionId],
+          [typePTID]: [releaseConditionType],
+          [startDatePTID]: [startDate]
+        };
+        if (frequency) {
+          releaseConditionEntity[frequencyPTID] = [frequency];
+        }
+        if (otherText) {
+          releaseConditionEntity[otherTextPTID] = [otherText];
+        }
+        if (planType) {
+          releaseConditionEntity[planTypePTID] = [planType];
+        }
+        if (personName && personType) {
+          releaseConditionEntity[personNamePTID] = [personName];
+          releaseConditionEntity[personTypePTID] = [personType];
+        }
+
+        const associationData = [
+          {
+            data: { [completedDateTimePTID]: [moment().toISOString(true)] },
+            srcEntityIndex: index,
+            srcEntitySetId: releaseConditionsESID,
+            dstEntityKeyId: personEKID,
+            dstEntitySetId: peopleESID
+          },
+          {
+            data: { [completedDateTimePTID]: [moment().toISOString(true)] },
+            srcEntityIndex: index,
+            srcEntitySetId: releaseConditionsESID,
+            dstEntityKeyId: dmfResultsEKID,
+            dstEntitySetId: dmfResultsESID
+          },
+          {
+            data: { [completedDateTimePTID]: [moment().toISOString(true)] },
+            srcEntityIndex: index,
+            srcEntitySetId: releaseConditionsESID,
+            dstEntityKeyId: psaScoresEKID,
+            dstEntitySetId: psaScoresESID
+          },
+          {
+            data: { [completedDateTimePTID]: [moment().toISOString(true)] },
+            srcEntityIndex: index,
+            srcEntitySetId: releaseConditionsESID,
+            dstEntityIndex: 0,
+            dstEntitySetId: outcomesESID
+          },
+          {
+            data: { [completedDateTimePTID]: [moment().toISOString(true)] },
+            srcEntityIndex: index,
+            srcEntitySetId: releaseConditionsESID,
+            dstEntityKeyId: hearingEKID,
+            dstEntitySetId: hearingsESID
+          }
+        ];
+
+        if (bondType) {
+          associations[registeredForESID] = associations[registeredForESID].concat(
+            {
+              data: { [completedDateTimePTID]: [moment().toISOString(true)] },
+              srcEntityIndex: index,
+              srcEntitySetId: releaseConditionsESID,
+              dstEntityIndex: 0,
+              dstEntitySetId: bondsESID
+            }
+          );
+        }
+
+        entities[releaseConditionsESID].push(releaseConditionEntity);
+        associations[registeredForESID] = associations[registeredForESID].concat(associationData);
+      });
+    }
+    console.log('entities');
+    console.log(entities);
+    console.log('associations');
+    console.log(associations);
+
+    /*
+     * Submit data and collect response
+     */
+    const response = yield call(
+      createEntityAndAssociationDataWorker,
+      createEntityAndAssociationData({ associations, entities })
+    );
+    if (response.error) throw response.error;
+
+    yield call(refreshHearingAndNeighbors, { hearingEntityKeyId: hearingEKID });
+    // /*
+    //  * Collect Hearing and Neighbors
+    //  */
+    // const { hearing, hearingNeighborsByAppTypeFqn } = yield call(getHearingAndNeighbors, hearingEntityKeyId);
+    //
+    // yield put(submitReleaseConditions.success(action.id, {
+    //   hearing,
+    //   hearingNeighborsByAppTypeFqn,
+    //   psaEKID: psaScoresEKID,
+    //   personEKID
+    // }));
+  }
+
+  catch (error) {
+    console.error(error);
+    yield put(submitReleaseConditions.failure(action.id, error));
+  }
+  finally {
+    yield put(submitReleaseConditions.finally(action.id));
+  }
+}
+
+function* submitReleaseConditionsWatcher() :Generator<*, *, *> {
+  yield takeEvery(SUBMIT_RELEASE_CONDTIONS, submitReleaseConditionsWorker);
+}
+
 
 function* updateOutcomesAndReleaseCondtionsWorker(action :SequenceAction) :Generator<*, *, *> {
   try {
@@ -427,5 +779,6 @@ function* updateOutcomesAndReleaseCondtionsWatcher() :Generator<*, *, *> {
 
 export {
   loadReleaseConditionsWatcher,
+  submitReleaseConditionsWatcher,
   updateOutcomesAndReleaseCondtionsWatcher
 };
