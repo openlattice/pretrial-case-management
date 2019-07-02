@@ -32,28 +32,23 @@ import {
   PSA_NEIGHBOR,
   STATE
 } from '../../utils/consts/FrontEndStateConsts';
+
+import { loadHearingNeighbors } from '../hearings/HearingsActionFactory';
 import {
   FILTER_PEOPLE_IDS_WITH_OPEN_PSAS,
   LOAD_HEARINGS_FOR_DATE,
-  LOAD_HEARING_NEIGHBORS,
   LOAD_JUDGES,
   filterPeopleIdsWithOpenPSAs,
   loadHearingsForDate,
-  loadHearingNeighbors,
   loadJudges
 } from './CourtActionFactory';
 
 const {
-  BONDS,
-  CHECKIN_APPOINTMENTS,
   CONTACT_INFORMATION,
   HEARINGS,
   JUDGES,
-  MANUAL_REMINDERS,
-  OUTCOMES,
   PEOPLE,
   PSA_SCORES,
-  RELEASE_CONDITIONS,
   SUBSCRIPTION,
   STAFF
 } = APP_TYPES;
@@ -63,8 +58,6 @@ const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
 
 const { OPENLATTICE_ID_FQN } = Constants;
 const { FullyQualifiedName } = Models;
-
-const LIST_APP_TYPES = [CHECKIN_APPOINTMENTS, CONTACT_INFORMATION, HEARINGS, RELEASE_CONDITIONS, STAFF];
 
 const getApp = state => state.get(STATE.APP, Map());
 const getEDM = state => state.get(STATE.EDM, Map());
@@ -328,127 +321,6 @@ function* loadHearingsForDateWatcher() :Generator<*, *, *> {
   yield takeEvery(LOAD_HEARINGS_FOR_DATE, loadHearingsForDateWorker);
 }
 
-function* loadHearingNeighborsWorker(action :SequenceAction) :Generator<*, *, *> {
-  try {
-    yield put(loadHearingNeighbors.request(action.id));
-
-    const { hearingIds, hearingDateTime } = action.value;
-
-    let hearingNeighborsById = Map();
-    let personIdsToHearingIds = Map();
-    let personIds = Set();
-    let scoresAsMap = Map();
-
-    if (hearingIds.length) {
-      const app = yield select(getApp);
-      const orgId = yield select(getOrgId);
-      const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
-
-      /*
-       * Get Entity Set Ids
-       */
-      const bondsEntitySetId = getEntitySetIdFromApp(app, BONDS);
-      const checkInAppointmentsEntitySetId = getEntitySetIdFromApp(app, CHECKIN_APPOINTMENTS);
-      const hearingsEntitySetId = getEntitySetIdFromApp(app, HEARINGS);
-      const judgesEntitySetId = getEntitySetIdFromApp(app, JUDGES);
-      const manualRemindersEntitySetId = getEntitySetIdFromApp(app, MANUAL_REMINDERS);
-      const outcomesEntitySetId = getEntitySetIdFromApp(app, OUTCOMES);
-      const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
-      const releaseConditionsEntitySetId = getEntitySetIdFromApp(app, RELEASE_CONDITIONS);
-      const psaEntitySetId = getEntitySetIdFromApp(app, PSA_SCORES);
-
-      let neighborsById = yield call(
-        searchEntityNeighborsWithFilterWorker,
-        searchEntityNeighborsWithFilter({
-          entitySetId: hearingsEntitySetId,
-          filter: {
-            entityKeyIds: hearingIds,
-            sourceEntitySetIds: [
-              bondsEntitySetId,
-              checkInAppointmentsEntitySetId,
-              judgesEntitySetId,
-              manualRemindersEntitySetId,
-              outcomesEntitySetId,
-              peopleEntitySetId,
-              psaEntitySetId,
-              releaseConditionsEntitySetId
-            ],
-            destinationEntitySetIds: [judgesEntitySetId]
-          }
-        })
-      );
-      if (neighborsById.error) throw neighborsById.error;
-      neighborsById = fromJS(neighborsById.data);
-      neighborsById.entrySeq().forEach(([hearingId, neighbors]) => {
-        if (neighbors) {
-          let hasPerson = false;
-          let hasPSA = false;
-          let personId;
-          let hearingNeighborsMap = Map();
-          neighbors.forEach(((neighbor) => {
-            const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id']);
-            const appTypeFqn = entitySetIdsToAppType.get(entitySetId, JUDGES);
-            const entityKeyId = neighbor.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0]);
-            if (entitySetId === peopleEntitySetId) {
-              hasPerson = true;
-              personId = entityKeyId;
-              personIds = personIds.add(personId);
-            }
-            if (entitySetId === psaEntitySetId
-                && neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.STATUS, 0]) === PSA_STATUSES.OPEN) {
-              hasPSA = true;
-              scoresAsMap = scoresAsMap.set(
-                entityKeyId,
-                fromJS(neighbor.get(PSA_NEIGHBOR.DETAILS))
-              );
-            }
-            if (LIST_APP_TYPES.includes(appTypeFqn)) {
-              hearingNeighborsMap = hearingNeighborsMap.set(
-                appTypeFqn,
-                hearingNeighborsMap.get(appTypeFqn, List()).push(neighbor)
-              );
-            }
-            else {
-              hearingNeighborsMap = hearingNeighborsMap.set(appTypeFqn, neighbor);
-            }
-          }));
-          if (hasPerson && !hasPSA) {
-            personIdsToHearingIds = personIdsToHearingIds.set(
-              personId,
-              hearingId
-            );
-          }
-          hearingNeighborsById = hearingNeighborsById.set(hearingId, hearingNeighborsMap);
-        }
-      });
-    }
-    yield put(loadHearingNeighbors.success(action.id, { hearingNeighborsById, hearingDateTime }));
-
-    if (hearingDateTime) {
-      const peopleIdsWithOpenPSAs = filterPeopleIdsWithOpenPSAs({
-        personIds,
-        hearingDateTime,
-        scoresAsMap,
-        personIdsToHearingIds,
-        hearingNeighborsById
-      });
-      yield put(peopleIdsWithOpenPSAs);
-    }
-
-  }
-  catch (error) {
-    console.error(error);
-    yield put(loadHearingNeighbors.failure(action.id, error));
-  }
-  finally {
-    yield put(loadHearingNeighbors.finally(action.id));
-  }
-}
-
-function* loadHearingNeighborsWatcher() :Generator<*, *, *> {
-  yield takeEvery(LOAD_HEARING_NEIGHBORS, loadHearingNeighborsWorker);
-}
-
 function* loadJudgesWorker(action :SequenceAction) :Generator<*, *, *> {
   try {
     yield put(loadJudges.request(action.id));
@@ -480,6 +352,5 @@ function* loadJudgesWatcher() :Generator<*, *, *> {
 export {
   filterPeopleIdsWithOpenPSAsWatcher,
   loadHearingsForDateWatcher,
-  loadHearingNeighborsWatcher,
   loadJudgesWatcher
 };
