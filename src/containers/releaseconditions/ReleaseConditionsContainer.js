@@ -42,6 +42,7 @@ import { NoContactRow } from '../../components/releaseconditions/ReleaseConditio
 import {
   getCreateAssociationObject,
   getEntityKeyId,
+  getEntityProperties,
   getNeighborDetailsForEntitySet,
   getFirstNeighborValue,
   isUUID
@@ -116,6 +117,11 @@ const {
   OTHER_CONDITION_TEXT,
   NO_CONTACT_PEOPLE
 } = RELEASE_CONDITIONS;
+
+const {
+  ENTITY_KEY_ID,
+  TYPE
+} = PROPERTY_TYPES;
 
 const NO_RELEASE_CONDITION = 'No release';
 
@@ -292,7 +298,6 @@ type Props = {
       entitySetId :string,
       entityKeyId :string
     }) => void,
-    loadHearingNeighbors :(hearingIds :string[]) => void,
     loadReleaseConditions :({ hearingId :string }) => void,
     submit :(values :{
       config :Map<*, *>,
@@ -832,6 +837,8 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       selectedHearing
     } = this.props;
 
+    console.log(hearingEntityKeyId);
+
     const {
       defaultBond,
       defaultConditions,
@@ -841,17 +848,23 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       personEntity
     } = this.getNeighborEntities(this.props);
 
+    let deleteConditions = List();
+
     const newAssociationEntities = this.getAssociationsForExistingAppointments();
 
     const hearingId = getFirstNeighborValue(selectedHearing, PROPERTY_TYPES.CASE_ID);
     const psaId = getFirstNeighborValue(psaEntity, PROPERTY_TYPES.GENERAL_ID);
+    const psaScoresEKID = getFirstNeighborValue(psaEntity, ENTITY_KEY_ID);
     const personId = getFirstNeighborValue(personEntity, PROPERTY_TYPES.PERSON_ID);
+    const personEKID = getFirstNeighborValue(personEntity, ENTITY_KEY_ID);
     const dmfId = getFirstNeighborValue(defaultDMF, PROPERTY_TYPES.GENERAL_ID);
+    const dmfResultsEKID = getFirstNeighborValue(defaultDMF, ENTITY_KEY_ID);
     const outcomeId = getFirstNeighborValue(defaultOutcome, PROPERTY_TYPES.GENERAL_ID, undefined);
     const bondId = getFirstNeighborValue(defaultBond, PROPERTY_TYPES.GENERAL_ID, undefined);
 
     const {
       createAssociations,
+      submitReleaseConditions,
       updateOutcomesAndReleaseCondtions,
       submit
     } = actions;
@@ -870,6 +883,14 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
 
     const outcomeEntityKeyId = getEntityKeyId(defaultOutcome);
     const conditionEntityKeyIds = defaultConditions.map(neighbor => getEntityKeyId(neighbor));
+    let conditionTypes = Map();
+    defaultConditions.forEach((neighbor) => {
+      const {
+        [ENTITY_KEY_ID]: conditionEntityKeyId,
+        [TYPE]: conditionType
+      } = getEntityProperties(neighbor, [ENTITY_KEY_ID, TYPE]);
+      conditionTypes = conditionTypes.set(conditionType, conditionEntityKeyId);
+    })
     const bondEntityKeyId = getEntityKeyId(defaultBond);
 
     if (!this.isReadyToSubmit()) {
@@ -953,43 +974,51 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       conditionsEntity.push({
         [PROPERTY_TYPES.TYPE]: NO_RELEASE_CONDITION,
         [PROPERTY_TYPES.START_DATE]: startDate,
-        [PROPERTY_TYPES.GENERAL_ID]: randomUUID()
       });
     }
     else {
       conditions.forEach((condition) => {
+        if (!conditionTypes.get(condition)) {
+          const conditionObj = {
+            [PROPERTY_TYPES.TYPE]: condition,
+            [PROPERTY_TYPES.START_DATE]: startDate,
+            [PROPERTY_TYPES.GENERAL_ID]: randomUUID()
+          };
 
-        const conditionObj = {
-          [PROPERTY_TYPES.TYPE]: condition,
-          [PROPERTY_TYPES.START_DATE]: startDate,
-          [PROPERTY_TYPES.GENERAL_ID]: randomUUID()
-        };
+          if (condition === CONDITION_LIST.CHECKINS) {
+            conditionObj[PROPERTY_TYPES.FREQUENCY] = checkinFrequency;
+          }
 
-        if (condition === CONDITION_LIST.CHECKINS) {
-          conditionObj[PROPERTY_TYPES.FREQUENCY] = checkinFrequency;
-        }
+          if (condition === CONDITION_LIST.OTHER) {
+            conditionObj[PROPERTY_TYPES.OTHER_TEXT] = otherConditionText;
+          }
 
-        if (condition === CONDITION_LIST.OTHER) {
-          conditionObj[PROPERTY_TYPES.OTHER_TEXT] = otherConditionText;
-        }
-
-        if (condition === CONDITION_LIST.C_247) {
-          c247Types.forEach((c247Type) => {
-            conditionsEntity.push(Object.assign({}, conditionObj, C_247_MAPPINGS[c247Type], {
-              [PROPERTY_TYPES.GENERAL_ID]: randomUUID()
-            }));
-          });
-        }
-        else if (condition === CONDITION_LIST.NO_CONTACT) {
-          this.cleanNoContactPeopleList().forEach((noContactPerson) => {
-            conditionsEntity.push(Object.assign({}, conditionObj, noContactPerson, {
-              [PROPERTY_TYPES.GENERAL_ID]: randomUUID()
-            }));
-          });
+          if (condition === CONDITION_LIST.C_247) {
+            c247Types.forEach((c247Type) => {
+              conditionsEntity.push(Object.assign({}, conditionObj, C_247_MAPPINGS[c247Type], {
+                [PROPERTY_TYPES.GENERAL_ID]: randomUUID()
+              }));
+            });
+          }
+          else if (condition === CONDITION_LIST.NO_CONTACT) {
+            this.cleanNoContactPeopleList().forEach((noContactPerson) => {
+              conditionsEntity.push(Object.assign({}, conditionObj, noContactPerson, {
+                [PROPERTY_TYPES.GENERAL_ID]: randomUUID()
+              }));
+            });
+          }
+          else {
+            conditionsEntity.push(conditionObj);
+          }
         }
         else {
-          conditionsEntity.push(conditionObj);
+          conditionTypes.keySeq().forEach((conditionType) => {
+            if (!conditions.includes(conditionType)) {
+              deleteConditions = deleteConditions.push(conditionTypes.get(conditionType));
+            }
+          });
         }
+
       });
     }
     submission[RELEASE_CONDITIONS_FIELD] = conditionsEntity;
@@ -1000,6 +1029,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
     conditionSubmit[RELEASE_CONDITIONS_FIELD] = conditionsEntity;
     submission.bonddate = moment().add(1, 'ms').toISOString(true);
     submission.outcomedate = moment().add(2, 'ms').toISOString(true);
+
 
     if (Object.keys(newAssociationEntities).length) {
       createAssociations({
@@ -1023,11 +1053,19 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       this.setState({ editingHearing: false });
     }
     else {
-      submit({
-        app,
-        config: releaseConditionsConfig,
-        values: submission,
-        callback: this.refreshHearingsNeighborsCallback
+      submitReleaseConditions({
+        bondAmount,
+        bondType,
+        checkInAppointments: newCheckInAppointmentEntities,
+        dmfResultsEKID,
+        hearingEKID: hearingEntityKeyId,
+        judgeAccepted,
+        outcomeSelection: outcome,
+        outcomeText: otherOutcomeText,
+        personEKID,
+        psaScoresEKID,
+        releaseConditions: conditionsEntity,
+        releaseType
       });
     }
     const otherOutcomes = Object.values(OTHER_OUTCOMES);
@@ -1271,7 +1309,8 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
     const {
       actions,
       app,
-      fqnToIdMap
+      fqnToIdMap,
+      backToSelection
     } = this.props;
     const entitySetId = getEntitySetIdFromApp(app, APP_TYPES.HEARINGS);
     const values = {
@@ -1285,6 +1324,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       updateType: 'PartialReplace',
       callback: this.refreshHearingsNeighborsCallback
     });
+    backToSelection();
   }
 
   onInputChange = (e) => {
@@ -1565,6 +1605,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       || refreshingReleaseConditions
       || creatingAssociations
     );
+    console.log(this.props.hearingNeighbors.toJS());
     const loadingText = 'Loading Hearing & Release Conditions...';
     if (loading) {
       return <LogoLoader size={30} loadingText={loadingText} />;
