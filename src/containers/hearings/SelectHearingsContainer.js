@@ -120,6 +120,7 @@ type Props = {
   neighbors :Map<*, *>,
   onSubmit? :(hearing :Object) => void,
   openClosePSAModal :() => void,
+  personEKID :string,
   personHearings :List<*, *>,
   personId :string,
   personNeighbors :Map<*, *>,
@@ -135,7 +136,7 @@ type Props = {
   replacingAssociation :boolean,
   replacingEntity :boolean,
   selectedOrganizationSettings :Map<*, *>,
-  submitting :boolean,
+  submittingHearing :boolean,
   updatingEntity :boolean
 }
 
@@ -185,7 +186,7 @@ class SelectHearingsContainer extends React.Component<Props, State> {
     const {
       neighbors,
       context,
-      personId,
+      personEKID,
       psaId,
       psaEntityKeyId
     } = this.props;
@@ -196,8 +197,8 @@ class SelectHearingsContainer extends React.Component<Props, State> {
 
     return (
       <NewHearingSection
-          personId={personId}
-          psaEntityKeyId={psaEntityKeyId}
+          personEKID={personEKID}
+          psaEKID={psaEntityKeyId}
           psaId={psaId}
           manuallyCreatingHearing={manuallyCreatingHearing}
           jurisdiction={jurisdiction}
@@ -352,7 +353,7 @@ class SelectHearingsContainer extends React.Component<Props, State> {
       neighbors,
       hearingNeighborsById,
       refreshingHearingAndNeighbors,
-      submitting,
+      submittingHearing,
       psaIdsRefreshing,
       refreshingNeighbors,
       replacingAssociation,
@@ -362,14 +363,14 @@ class SelectHearingsContainer extends React.Component<Props, State> {
       .keySeq().filter(id => hearingNeighborsById.getIn([id, OUTCOMES]));
     const scheduledHearings = getScheduledHearings(neighbors);
     const pastHearings = getPastHearings(neighbors);
-    const isLoading = (submitting
+    const isLoading = (submittingHearing
       || replacingEntity
       || replacingAssociation
       || refreshingNeighbors
       || psaIdsRefreshing.size
       || refreshingHearingAndNeighbors);
 
-    const loadingText = (submitting || replacingEntity || replacingAssociation) ? 'Submitting' : 'Reloading';
+    const loadingText = (submittingHearing || replacingEntity || replacingAssociation) ? 'Submitting' : 'Reloading';
     return (
       <>
         {
@@ -429,10 +430,11 @@ function mapStateToProps(state) {
     [APP.ENTITY_SETS_BY_ORG]: app.get(APP.ENTITY_SETS_BY_ORG, Map()),
     [APP.FQN_TO_ID]: app.get(APP.FQN_TO_ID),
 
-    [COURT.LOADING_HEARING_NEIGHBORS]: court.get(COURT.LOADING_HEARING_NEIGHBORS),
-    [COURT.HEARINGS_NEIGHBORS_BY_ID]: court.get(COURT.HEARINGS_NEIGHBORS_BY_ID),
     [COURT.ALL_JUDGES]: court.get(COURT.ALL_JUDGES),
 
+    [HEARINGS.LOADING_HEARING_NEIGHBORS]: hearings.get(HEARINGS.LOADING_HEARING_NEIGHBORS),
+    [HEARINGS.HEARING_NEIGHBORS_BY_ID]: hearings.get(HEARINGS.HEARING_NEIGHBORS_BY_ID),
+    [HEARINGS.SUBMITTING_HEARING]: hearings.get(HEARINGS.SUBMITTING_HEARING),
     [HEARINGS.REFRESHING_HEARING_AND_NEIGHBORS]: hearings.get(HEARINGS.REFRESHING_HEARING_AND_NEIGHBORS),
 
     [REVIEW.SCORES]: review.get(REVIEW.SCORES),
