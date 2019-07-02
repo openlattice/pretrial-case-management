@@ -91,20 +91,15 @@ export const COURT = {
   COURT_DATE: 'courtDate',
   HEARINGS_TODAY: 'hearingsToday',
   HEARINGS_BY_TIME: 'hearingsByTime',
-  HEARINGS_NEIGHBORS_BY_ID: 'hearingNeighborsById',
   PEOPLE_WITH_OPEN_PSAS: 'peopleWithOpenPsas',
   PEOPLE_WITH_MULTIPLE_OPEN_PSAS: 'peopleWithMultipleOpenPsas',
   PEOPLE_RECEIVING_REMINDERS: 'peopleReceivingReminders',
   LOADING_HEARINGS: 'isLoadingHearings',
-  LOADING_HEARING_NEIGHBORS: 'isLoadingHearingsNeighbors',
   LOADING_PSAS: 'isLoadingPSAs',
   LOADING_ERROR: 'loadingError',
-  LOADING_HEARINGS_ERROR: 'loadingHearingError',
   COUNTY: 'county',
   COURTROOM: 'courtroom',
   COURTROOMS: 'courtrooms',
-  COURTROOM_OPTIONS: 'courtroomOptions',
-  LOADING_COURTROOM_OPTIONS: 'loadingCoutrooms',
   OPEN_PSAS: 'openPSAs',
   SCORES_AS_MAP: 'scoresAsMap',
   PSA_EDIT_DATES: 'psaEditDatesById',
@@ -113,8 +108,6 @@ export const COURT = {
 
   // JUDGES
   ALL_JUDGES: 'allJudges',
-  PENNINGTON_JUDGES: 'penningtonJudges',
-  MINNEHAHA_JUDGES: 'minnehahaJudges',
   LOADING_JUDGES: 'isLoadingJudges',
   LOADING_JUDGES_ERROR: 'loadingJudgesError'
 };
@@ -161,14 +154,20 @@ export const ENROLL = {
 // Hearings
 
 export const HEARINGS = {
-  SETTINGS_MODAL_OPEN: 'hearingSettingsModalOpen',
+  COURTROOM: 'hearingCourtroom',
+  DATE: 'hearingDate',
+  HEARINGS_BY_ID: 'hearingsById',
+  HEARING_NEIGHBORS_BY_ID: 'hearingNeighborsById',
+  LOADING_HEARING_NEIGHBORS: 'loadingHearingNeighbors',
+  JUDGE: 'hearingJudge',
   REFRESHING_HEARING_AND_NEIGHBORS: 'refreshingHearingAndNeighbors',
+  SETTINGS_MODAL_OPEN: 'hearingSettingsModalOpen',
+  SUBMITTED_HEARING: 'submittedHearing',
+  SUBMITTED_HEARING_NEIGHBORS: 'submittedHearingNeighbors',
+  SUBMITTING_HEARING: 'submittingHearing',
+  TIME: 'hearingTime',
   UPDATED_HEARING: 'updatedHearing',
   UPDATED_HEARING_NEIGHBORS: 'updatedHearingNeighbors',
-  DATE: 'hearingDate',
-  TIME: 'hearingTime',
-  COURTROOM: 'hearingCourtroom',
-  JUDGE: 'hearingJudge'
 };
 
 // Manual Reminders
