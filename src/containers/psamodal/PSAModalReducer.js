@@ -8,8 +8,7 @@ import { getEntityProperties } from '../../utils/DataUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_MODAL, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { loadPSAModal, CLEAR_PSA_MODAL } from './PSAModalActionFactory';
-import { loadHearingNeighbors } from '../court/CourtActionFactory';
-import { refreshHearingAndNeighbors } from '../hearings/HearingsActionFactory';
+import { submitHearing, refreshHearingAndNeighbors } from '../hearings/HearingsActionFactory';
 import { updateContactInfo, refreshPersonNeighbors } from '../people/PeopleActionFactory';
 import {
   changePSAStatus,
@@ -43,7 +42,6 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [PSA_MODAL.HEARINGS]: List(),
   [PSA_MODAL.HEARING_IDS]: List(),
   [PSA_MODAL.LOADING_HEARING_NEIGHBORS]: false,
-  [PSA_MODAL.HEARINGS_NEIGHBORS_BY_ID]: Map(),
   [PSA_MODAL.PERSON_ID]: '',
   [PSA_MODAL.LOADING_CASES]: false,
   [PSA_MODAL.CASE_HISTORY]: List(),
@@ -161,27 +159,11 @@ export default function psaModalReducer(state :Map<*, *> = INITIAL_STATE, action
       });
     }
 
-    case loadHearingNeighbors.case(action.type): {
-      return loadHearingNeighbors.reducer(state, action, {
-        REQUEST: () => state.set(PSA_MODAL.LOADING_HEARING_NEIGHBORS, true),
-        SUCCESS: () => {
-          const { hearingNeighborsById } = action.value;
-          return state.set(PSA_MODAL.HEARINGS_NEIGHBORS_BY_ID, hearingNeighborsById);
-        },
-        FAILURE: () => state.set(PSA_MODAL.LOADING_HEARING_NEIGHBORS, false),
-        FINALLY: () => state.set(PSA_MODAL.LOADING_HEARING_NEIGHBORS, false),
-      });
-    }
-
     case refreshHearingAndNeighbors.case(action.type): {
       return refreshHearingAndNeighbors.reducer(state, action, {
         REQUEST: () => state.set(PSA_MODAL.LOADING_HEARING_NEIGHBORS, true),
         SUCCESS: () => {
-          const {
-            hearingEntityKeyId,
-            hearing,
-            hearingNeighborsByAppTypeFqn
-          } = action.value;
+          const { hearingEntityKeyId, hearing } = action.value;
           /*
           * Get PSA Hearings and Neighbors
           */
@@ -200,12 +182,32 @@ export default function psaModalReducer(state :Map<*, *> = INITIAL_STATE, action
           */
           const nextPSANeighbors = psaNeighbors.set(HEARINGS, nextPSAHearings);
           return state
-            .setIn([PSA_MODAL.HEARINGS_NEIGHBORS_BY_ID, hearingEntityKeyId], hearingNeighborsByAppTypeFqn)
             .set(PSA_MODAL.PSA_NEIGHBORS, nextPSANeighbors)
             .set(PSA_MODAL.HEARINGS, nextPSAHearings);
         },
         FAILURE: () => state.set(PSA_MODAL.LOADING_HEARING_NEIGHBORS, false),
         FINALLY: () => state.set(PSA_MODAL.LOADING_HEARING_NEIGHBORS, false),
+      });
+    }
+
+    case submitHearing.case(action.type): {
+      return submitHearing.reducer(state, action, {
+        SUCCESS: () => {
+          const { hearing } = action.value;
+          /*
+          * Get PSA Hearings and Neighbors
+          */
+          const psaHearings = state.get(PSA_MODAL.HEARINGS, List());
+          const psaNeighbors = state.get(PSA_MODAL.PSA_NEIGHBORS, List());
+          /*
+          * Replace hearings list in PSA neighbors with updated list
+          */
+          const nextPSANeighbors = psaNeighbors.set(HEARINGS, psaNeighbors.get(HEARINGS, List()).push(hearing));
+          const nextPSAHearings = psaHearings.push(hearing);
+          return state
+            .set(PSA_MODAL.PSA_NEIGHBORS, nextPSANeighbors)
+            .set(PSA_MODAL.HEARINGS, nextPSAHearings);
+        }
       });
     }
 
