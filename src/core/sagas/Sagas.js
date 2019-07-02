@@ -121,6 +121,7 @@ export default function* sagas() :Generator<*, *, *> {
 
     // Release Conditions Sagas
     fork(ReleaseConditionsSagas.loadReleaseConditionsWatcher),
+    fork(ReleaseConditionsSagas.submitReleaseConditionsWatcher),
     fork(ReleaseConditionsSagas.updateOutcomesAndReleaseCondtionsWatcher),
 
     // Reminder Sagas
