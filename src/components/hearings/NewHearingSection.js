@@ -15,7 +15,6 @@ import ContentSection from '../ContentSection';
 import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
 import DatePicker from '../datetime/DatePicker';
 import InfoButton from '../buttons/InfoButton';
-import psaHearingConfig from '../../config/formconfig/PSAHearingConfig';
 import SearchableSelect from '../controls/SearchableSelect';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
@@ -37,7 +36,10 @@ import {
 } from '../../utils/consts/Consts';
 
 import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
+import * as HearingsActionFactory from '../../containers/hearings/HearingsActionFactory';
 import * as ReviewActionFactory from '../../containers/review/ReviewActionFactory';
+
+const { ENTITY_KEY_ID } = PROPERTY_TYPES;
 
 const StyledSearchableSelect = styled(SearchableSelect)`
   width: 200px;
@@ -89,8 +91,8 @@ type Props = {
   allJudges :List<*, *>,
   jurisdiction :string,
   manuallyCreatingHearing :boolean,
-  psaId :string,
-  psaEntityKeyId :string,
+  psaEKID :string,
+  personEKID :string,
   personId :string,
   actions :{
     submit :(values :{
@@ -119,6 +121,7 @@ const INITIAL_STATE = {
   newHearingDate: moment().format('MM/DD/YYYY'),
   newHearingTime: undefined,
   judge: '',
+  judgeEKID: '',
   otherJudgeText: '',
 };
 
@@ -139,44 +142,42 @@ class NewHearingSection extends React.Component<Props, State> {
       [HEARINGS.DATE]: newHearingDate,
       [HEARINGS.TIME]: newHearingTime,
       [HEARINGS.COURTROOM]: newHearingCourtroom,
-      [HEARINGS.JUDGE]: judgeId
+      [HEARINGS.JUDGE]: judgeEKID
     } = this.props;
     let judge;
     allJudges.forEach((judgeObj) => {
-      const { [PROPERTY_TYPES.PERSON_ID]: hearingJudgeId } = getEntityProperties(judgeObj, [PROPERTY_TYPES.PERSON_ID]);
+      const { [ENTITY_KEY_ID]: hearingJudgeEKID } = getEntityProperties(judgeObj, [ENTITY_KEY_ID]);
       const fullNameString = formatJudgeName(judgeObj);
-      if (judgeId === hearingJudgeId) judge = fullNameString;
+      if (judgeEKID === hearingJudgeEKID) judge = fullNameString;
     });
     this.setState({
       newHearingCourtroom,
       newHearingDate,
       newHearingTime,
       judge,
-      judgeId,
+      judgeEKID
     });
   }
 
-  selectHearing = (hearingDetails) => {
+  submitHearing = ({
+    hearingDateTime,
+    hearingCoutroom,
+    hearingComments,
+  }) => {
+    const { judgeEKID } = this.state;
     const {
-      app,
-      psaId,
-      personId,
-      psaEntityKeyId,
+      psaEKID,
+      personEKID,
       actions,
       afterSubmit
     } = this.props;
-
-    const values = Object.assign({}, hearingDetails, {
-      [ID_FIELD_NAMES.PSA_ID]: psaId,
-      [FORM_IDS.PERSON_ID]: personId
-    });
-
-    const callback = psaEntityKeyId ? () => actions.refreshPSANeighbors({ id: psaEntityKeyId }) : () => {};
-    actions.submit({
-      app,
-      values,
-      config: psaHearingConfig,
-      callback
+    actions.submitHearing({
+      hearingDateTime,
+      hearingCoutroom,
+      hearingComments,
+      judgeEKID,
+      personEKID,
+      psaEKID
     });
     if (afterSubmit) afterSubmit();
   }
@@ -188,38 +189,22 @@ class NewHearingSection extends React.Component<Props, State> {
       newHearingTime,
       newHearingCourtroom,
       otherJudgeText,
-      judge,
-      judgeId
+      judge
     } = this.state;
     const dateFormat = 'MM/DD/YYYY';
     const timeFormat = 'hh:mm a';
     const date = moment(newHearingDate);
     const time = moment(newHearingTime, timeFormat);
-    let judgeName = judge;
     if (date.isValid() && time.isValid()) {
       const datetime = moment(`${date.format(dateFormat)} ${time.format(timeFormat)}`, `${dateFormat} ${timeFormat}`);
-      let hearing = {
-        [ID_FIELD_NAMES.HEARING_ID]: randomUUID(),
-        [HEARING.DATE_TIME]: datetime.toISOString(true),
-        [HEARING.COURTROOM]: newHearingCourtroom,
-        [PROPERTY_TYPES.HEARING_TYPE]: HEARING_TYPES.INITIAL_APPEARANCE
-      };
       if (judge === 'Other') {
-        this.setState({ judgeId: '' });
-        judgeName = otherJudgeText;
-        hearing = Object.assign({}, hearing, {
-          [PROPERTY_TYPES.HEARING_COMMENTS]: otherJudgeText
-        });
+        this.setState({ judgeEKID: '' });
       }
-      else {
-        hearing = Object.assign({}, hearing, {
-          [ID_FIELD_NAMES.TIMESTAMP]: moment().toISOString(true),
-          [ID_FIELD_NAMES.JUDGE_ID]: judgeId
-        });
-      }
-      this.selectHearing(hearing);
-      const hearingForRender = Object.assign({}, hearing, { judgeName });
-      onSubmit(hearingForRender);
+      this.submitHearing({
+        hearingDateTime: datetime.toISOString(true),
+        hearingCoutroom: newHearingCourtroom,
+        hearingComments: otherJudgeText
+      });
       this.setState(INITIAL_STATE);
     }
   }
@@ -229,10 +214,10 @@ class NewHearingSection extends React.Component<Props, State> {
       newHearingCourtroom,
       newHearingDate,
       newHearingTime,
-      judgeId,
+      judgeEKID,
       otherJudgeText
     } = this.state;
-    const judgeInfoPresent = (judgeId || otherJudgeText);
+    const judgeInfoPresent = (judgeEKID || otherJudgeText);
     return (
       newHearingCourtroom
       && newHearingDate
@@ -265,7 +250,7 @@ class NewHearingSection extends React.Component<Props, State> {
       case HEARING_CONSTS.JUDGE: {
         this.setState({
           [HEARING_CONSTS.JUDGE]: optionMap.get(HEARING_CONSTS.FULL_NAME),
-          [HEARING_CONSTS.JUDGE_ID]: optionMap.getIn([PROPERTY_TYPES.PERSON_ID, 0])
+          [HEARING_CONSTS.JUDGE_ID]: optionMap.getIn([ENTITY_KEY_ID, 0])
         });
         break;
       }
@@ -422,14 +407,14 @@ function mapStateToProps(state) {
   return {
     app,
 
-    [COURT.LOADING_HEARING_NEIGHBORS]: court.get(COURT.LOADING_HEARING_NEIGHBORS),
-    [COURT.HEARINGS_NEIGHBORS_BY_ID]: court.get(COURT.HEARINGS_NEIGHBORS_BY_ID),
     [COURT.ALL_JUDGES]: court.get(COURT.ALL_JUDGES),
 
     [HEARINGS.DATE]: hearings.get(HEARINGS.DATE),
     [HEARINGS.TIME]: hearings.get(HEARINGS.TIME),
     [HEARINGS.COURTROOM]: hearings.get(HEARINGS.COURTROOM),
     [HEARINGS.JUDGE]: hearings.get(HEARINGS.JUDGE),
+    [HEARINGS.HEARING_NEIGHBORS_BY_ID]: hearings.get(HEARINGS.HEARING_NEIGHBORS_BY_ID),
+    [HEARINGS.LOADING_HEARING_NEIGHBORS]: hearings.get(HEARINGS.LOADING_HEARING_NEIGHBORS),
 
     [REVIEW.SCORES]: review.get(REVIEW.SCORES),
     [REVIEW.NEIGHBORS_BY_ID]: review.get(REVIEW.NEIGHBORS_BY_ID),
@@ -440,6 +425,10 @@ function mapStateToProps(state) {
 
 function mapDispatchToProps(dispatch :Function) :Object {
   const actions :{ [string] :Function } = {};
+
+  Object.keys(HearingsActionFactory).forEach((action :string) => {
+    actions[action] = HearingsActionFactory[action];
+  });
 
   Object.keys(SubmitActionFactory).forEach((action :string) => {
     actions[action] = SubmitActionFactory[action];
