@@ -19,9 +19,7 @@ import InfoButton from '../buttons/InfoButton';
 import HearingsTable from '../hearings/HearingsTable';
 import ReleaseConditionsModal from '../releaseconditions/ReleaseConditionsModal';
 import LogoLoader from '../LogoLoader';
-import psaHearingConfig from '../../config/formconfig/PSAHearingConfig';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
-import { FORM_IDS, ID_FIELD_NAMES } from '../../utils/consts/Consts';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import {
   APP,
@@ -75,13 +73,6 @@ const TitleWrapper = styled.div`
   flex-direction: row;
   justify-content: flex-start;
   align-items: center;
-`;
-
-const StyledInfoButton = styled(InfoButton)`
-  width: 178px;
-  height: 40px;
-  padding: 0;
-  margin: 0;
 `;
 
 type Props = {
