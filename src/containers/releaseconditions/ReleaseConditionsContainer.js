@@ -28,7 +28,6 @@ import DatePicker from '../../components/datetime/DatePicker';
 import SearchableSelect from '../../components/controls/SearchableSelect';
 import InfoButton from '../../components/buttons/InfoButton';
 import BasicButton from '../../components/buttons/BasicButton';
-import releaseConditionsConfig from '../../config/formconfig/ReleaseConditionsConfig';
 import { OL } from '../../utils/consts/Colors';
 import { getTimeOptions } from '../../utils/consts/DateTimeConsts';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
@@ -280,7 +279,7 @@ type Props = {
   refreshingHearingAndNeighbors :boolean,
   hearingNeighbors :Map<*, *>,
   hearingEntityKeyId :string,
-  loadingReleaseCondtions :boolean,
+  loadingReleaseConditions :boolean,
   openClosePSAModal :() => void,
   personNeighbors :Map<*, *>,
   psaNeighbors :Map<*, *>,
@@ -291,7 +290,7 @@ type Props = {
   selectedHearing :Map<*, *>,
   selectedOrganizationId :string,
   selectedOrganizationSettings :Map<*, *>,
-  submitting :boolean,
+  submittingReleaseConditions :boolean,
   actions :{
     clearReleaseConditions :() => void;
     deleteEntity :(values :{
@@ -837,8 +836,6 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       selectedHearing
     } = this.props;
 
-    console.log(hearingEntityKeyId);
-
     const {
       defaultBond,
       defaultConditions,
@@ -1039,18 +1036,21 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
     }
     if (editingHearing) {
       updateOutcomesAndReleaseCondtions({
-        psaId,
-        hearingEntityKeyId,
-        conditionSubmit,
-        conditionEntityKeyIds,
         bondEntity,
         bondEntityKeyId,
+        dmfResultsEKID,
+        releaseConditions: conditionsEntity,
+        deleteConditions,
+        hearingEKID: hearingEntityKeyId,
         outcomeEntity,
         outcomeEntityKeyId,
+        psaId,
+        personEKID,
+        psaScoresEKID,
         callback: submit,
         refreshHearingsNeighborsCallback: this.refreshHearingsNeighborsCallback
       });
-      this.setState({ editingHearing: false });
+      // this.setState({ editingHearing: false });
     }
     else {
       submitReleaseConditions({
@@ -1078,7 +1078,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
   }
 
   isReadyToSubmit = () => {
-    const { submitting, selectedOrganizationSettings } = this.props;
+    const { submittingReleaseConditions, selectedOrganizationSettings } = this.props;
     const {
       bondAmount,
       bondType,
@@ -1098,7 +1098,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
 
     if (
       disabled
-      || submitting
+      || submittingReleaseConditions
       || !outcome
       || (coreOutcomes.includes(outcome) && !(release || warrant))
       || (release && release === RELEASES.RELEASED && !bondType)
@@ -1585,27 +1585,26 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
 
   render() {
     const {
-      loadingReleaseCondtions,
+      loadingReleaseConditions,
       replacingEntity,
       replacingAssociation,
       refreshingHearingAndNeighbors,
       refreshingSelectedHearing,
-      submitting,
+      submittingReleaseConditions,
       refreshingReleaseConditions,
       creatingAssociations
     } = this.props;
     const { state } = this;
     const loading = (
-      loadingReleaseCondtions
+      loadingReleaseConditions
       || replacingEntity
       || replacingAssociation
       || refreshingHearingAndNeighbors
       || refreshingSelectedHearing
-      || submitting
+      || submittingReleaseConditions
       || refreshingReleaseConditions
       || creatingAssociations
     );
-    console.log(this.props.hearingNeighbors.toJS());
     const loadingText = 'Loading Hearing & Release Conditions...';
     if (loading) {
       return <LogoLoader size={30} loadingText={loadingText} />;
@@ -1669,12 +1668,12 @@ function mapStateToProps(state) {
     [RELEASE_COND.LOADING_RELEASE_CONDITIONS]: releaseConditions.get(RELEASE_COND.LOADING_RELEASE_CONDITIONS),
     [RELEASE_COND.REFRESHING_RELEASE_CONDITIONS]: releaseConditions.get(RELEASE_COND.REFRESHING_RELEASE_CONDITIONS),
     [RELEASE_COND.REFRESHING_SELECTED_HEARING]: releaseConditions.get(RELEASE_COND.REFRESHING_SELECTED_HEARING),
+    [RELEASE_COND.SUBMITTING_RELEASE_CONDITIONS]: releaseConditions.get(RELEASE_COND.SUBMITTING_RELEASE_CONDITIONS),
 
 
     [SUBMIT.CREATING_ASSOCIATIONS]: submit.get(SUBMIT.CREATING_ASSOCIATIONS),
     [SUBMIT.REPLACING_ASSOCIATION]: submit.get(SUBMIT.REPLACING_ASSOCIATION),
-    [SUBMIT.REPLACING_ENTITY]: submit.get(SUBMIT.REPLACING_ENTITY),
-    [SUBMIT.SUBMITTING]: submit.get(SUBMIT.SUBMITTING)
+    [SUBMIT.REPLACING_ENTITY]: submit.get(SUBMIT.REPLACING_ENTITY)
   };
 }
 
