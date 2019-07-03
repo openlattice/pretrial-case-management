@@ -101,16 +101,6 @@ export function addWeekdays(date, days) {
   return newDate;
 }
 
-export const getMapFromEntityKeysToPropertyKeys = (entity, entityKeyId, propertyTypesByFqn) => {
-  let entityObject = Map();
-  Object.keys(entity).forEach((key) => {
-    const propertyTypeKeyId = propertyTypesByFqn[key].id;
-    const property = entity[key] ? [entity[key]] : [];
-    entityObject = entityObject.setIn([entityKeyId, propertyTypeKeyId], property);
-  });
-  return entityObject;
-};
-
 export const getFirstNeighborValue = (neighborObj, fqn, defaultValue = '') => neighborObj.getIn(
   [PSA_NEIGHBOR.DETAILS, fqn, 0],
   neighborObj.getIn([fqn, 0], neighborObj.get(fqn, defaultValue))
