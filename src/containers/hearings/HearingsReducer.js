@@ -13,6 +13,7 @@ import {
   OPEN_HEARING_SETTINGS_MODAL,
   refreshHearingAndNeighbors,
   SET_HEARING_SETTINGS,
+  submitExistingHearing,
   submitHearing
 } from './HearingsActionFactory';
 
@@ -108,6 +109,26 @@ export default function hearingsReducer(state :Map<*, *> = INITIAL_STATE, action
         .set(HEARINGS.TIME, time)
         .set(HEARINGS.COURTROOM, courtroom)
         .set(HEARINGS.JUDGE, judge);
+    }
+
+    case submitExistingHearing.case(action.type): {
+      return submitExistingHearing.reducer(state, action, {
+        REQUEST: () => state.set(HEARINGS.SUBMITTING_HEARING, true),
+        SUCCESS: () => {
+          const { hearing, hearingNeighborsByAppTypeFqn } = action.value;
+          const { [ENTITY_KEY_ID]: hearingEntityKeyId } = getEntityProperties(hearing, [ENTITY_KEY_ID]);
+          const hearingsMap = state.get(HEARINGS.HEARINGS_BY_ID, Map()).set(hearingEntityKeyId, hearing);
+          const hearingsNeighborsMap = state.get(HEARINGS.HEARING_NEIGHBORS_BY_ID, Map())
+            .set(hearingEntityKeyId, hearingNeighborsByAppTypeFqn);
+
+          return state
+            .set(HEARINGS.HEARINGS_BY_ID, hearingsMap)
+            .set(HEARINGS.HEARING_NEIGHBORS_BY_ID, hearingsNeighborsMap)
+            .set(HEARINGS.SUBMITTED_HEARING, hearing)
+            .set(HEARINGS.SUBMITTED_HEARING_NEIGHBORS, hearingNeighborsByAppTypeFqn);
+        },
+        FINALLY: () => state.set(HEARINGS.SUBMITTING_HEARING, false),
+      });
     }
 
     case submitHearing.case(action.type): {
