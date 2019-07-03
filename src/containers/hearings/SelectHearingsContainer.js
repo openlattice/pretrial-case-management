@@ -18,6 +18,7 @@ import ReleaseConditionsContainer from '../releaseconditions/ReleaseConditionsCo
 import SubscriptionInfo from '../../components/subscription/SubscriptionInfo';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { getScheduledHearings, getPastHearings, getHearingString } from '../../utils/HearingUtils';
+import { getEntityProperties } from '../../utils/DataUtils';
 import { OL } from '../../utils/consts/Colors';
 import { SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { Title } from '../../utils/Layout';
@@ -51,6 +52,11 @@ const {
 } = APP_TYPES;
 
 const PEOPLE_FQN = APP_TYPES.PEOPLE;
+
+const {
+  ENTITY_KEY_ID,
+  CASE_ID
+} = PROPERTY_TYPES;
 
 const Container = styled.div`
   hr {
@@ -248,48 +254,23 @@ class SelectHearingsContainer extends React.Component<Props, State> {
       </Wrapper>
     );
   }
-  selectHearing = (hearingDetails) => {
-    const {
-      app,
-      psaId,
-      personId,
-      actions
-    } = this.props;
 
-    const values = Object.assign({}, hearingDetails, {
-      [ID_FIELD_NAMES.PSA_ID]: psaId,
-      [FORM_IDS.PERSON_ID]: personId
-    });
-
-    actions.submit({
-      app,
-      values,
-      config: psaHearingConfig,
-      callback: this.refreshHearingsNeighborsCallback
-    });
-  }
-
-  selectExistingHearing = (row, hearingId) => {
+  selectExistingHearing = (row) => {
     const {
       actions,
-      app,
-      onSubmit,
-      psaId
+      personEKID,
+      psaEntityKeyId
     } = this.props;
-    const values = {
-      [ID_FIELD_NAMES.HEARING_ID]: hearingId,
-      [ID_FIELD_NAMES.PSA_ID]: psaId,
-    };
-    actions.submit({
-      app,
-      values,
-      config: psaHearingConfig,
-      callback: this.refreshHearingsNeighborsCallback
-    });
-    onSubmit({
-      [ID_FIELD_NAMES.HEARING_ID]: hearingId,
-      [HEARING.DATE_TIME]: row.getIn([PROPERTY_TYPES.DATE_TIME, 0], ''),
-      [HEARING.COURTROOM]: row.getIn([PROPERTY_TYPES.COURTROOM, 0], '')
+    const { submitExistingHearing } = actions;
+    const {
+      [ENTITY_KEY_ID]: hearingEKID,
+      [CASE_ID]: caseId
+    } = getEntityProperties(row, [ENTITY_KEY_ID, CASE_ID]);
+    submitExistingHearing({
+      caseId,
+      hearingEKID,
+      personEKID,
+      psaEKID: psaEntityKeyId
     });
   }
 
