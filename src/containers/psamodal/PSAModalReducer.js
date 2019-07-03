@@ -8,7 +8,7 @@ import { getEntityProperties } from '../../utils/DataUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_MODAL, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { loadPSAModal, CLEAR_PSA_MODAL } from './PSAModalActionFactory';
-import { submitHearing, refreshHearingAndNeighbors } from '../hearings/HearingsActionFactory';
+import { submitExistingHearing, submitHearing, refreshHearingAndNeighbors } from '../hearings/HearingsActionFactory';
 import { updateContactInfo, refreshPersonNeighbors } from '../people/PeopleActionFactory';
 import {
   changePSAStatus,
@@ -187,6 +187,27 @@ export default function psaModalReducer(state :Map<*, *> = INITIAL_STATE, action
         },
         FAILURE: () => state.set(PSA_MODAL.LOADING_HEARING_NEIGHBORS, false),
         FINALLY: () => state.set(PSA_MODAL.LOADING_HEARING_NEIGHBORS, false),
+      });
+    }
+
+    case submitExistingHearing.case(action.type): {
+      return submitExistingHearing.reducer(state, action, {
+        SUCCESS: () => {
+          const { hearing } = action.value;
+          /*
+          * Get PSA Hearings and Neighbors
+          */
+          const psaHearings = state.get(PSA_MODAL.HEARINGS, List());
+          const psaNeighbors = state.get(PSA_MODAL.PSA_NEIGHBORS, List());
+          /*
+          * Replace hearings list in PSA neighbors with updated list
+          */
+          const nextPSANeighbors = psaNeighbors.set(HEARINGS, psaNeighbors.get(HEARINGS, List()).push(hearing));
+          const nextPSAHearings = psaHearings.push(hearing);
+          return state
+            .set(PSA_MODAL.PSA_NEIGHBORS, nextPSANeighbors)
+            .set(PSA_MODAL.HEARINGS, nextPSAHearings);
+        }
       });
     }
 
