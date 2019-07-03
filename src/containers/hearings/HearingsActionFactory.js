@@ -26,6 +26,9 @@ const openHearingSettingsModal :RequestSequence = newRequestSequence(OPEN_HEARIN
 const SET_HEARING_SETTINGS :string = 'SET_HEARING_SETTINGS';
 const setHearingSettings :RequestSequence = newRequestSequence(SET_HEARING_SETTINGS);
 
+const SUBMIT_EXISTING_HEARING :string = 'SUBMIT_EXISTING_HEARING';
+const submitExistingHearing :RequestSequence = newRequestSequence(SUBMIT_EXISTING_HEARING);
+
 const SUBMIT_HEARING :string = 'SUBMIT_HEARING';
 const submitHearing :RequestSequence = newRequestSequence(SUBMIT_HEARING);
 
@@ -37,6 +40,7 @@ export {
   REFRESH_HEARING_AND_NEIGHBORS,
   OPEN_HEARING_SETTINGS_MODAL,
   SET_HEARING_SETTINGS,
+  SUBMIT_EXISTING_HEARING,
   SUBMIT_HEARING,
   clearHearingSettings,
   clearSubmittedHearing,
@@ -45,5 +49,6 @@ export {
   refreshHearingAndNeighbors,
   openHearingSettingsModal,
   setHearingSettings,
+  submitExistingHearing,
   submitHearing
 };
