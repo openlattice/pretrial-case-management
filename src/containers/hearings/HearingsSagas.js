@@ -37,14 +37,16 @@ import { filterPeopleIdsWithOpenPSAs } from '../court/CourtActionFactory';
 import {
   LOAD_HEARING_NEIGHBORS,
   REFRESH_HEARING_AND_NEIGHBORS,
+  SUBMIT_EXISTING_HEARING,
   SUBMIT_HEARING,
   loadHearingNeighbors,
   refreshHearingAndNeighbors,
+  submitExistingHearing,
   submitHearing
 } from './HearingsActionFactory';
 
-const { createEntityAndAssociationData } = DataApiActions;
-const { createEntityAndAssociationDataWorker } = DataApiSagas;
+const { createAssociations, createEntityAndAssociationData } = DataApiActions;
+const { createAssociationsWorker, createEntityAndAssociationDataWorker } = DataApiSagas;
 const { searchEntityNeighborsWithFilter } = SearchApiActions;
 const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
 
@@ -304,7 +306,6 @@ function* loadHearingNeighborsWatcher() :Generator<*, *, *> {
 }
 
 
-
 function* refreshHearingAndNeighborsWorker(action :SequenceAction) :Generator<*, *, *> {
   const { hearingEntityKeyId } = action.value; // Deconstruct action argument
   try {
@@ -334,6 +335,87 @@ function* refreshHearingAndNeighborsWorker(action :SequenceAction) :Generator<*,
 
 function* refreshHearingAndNeighborsWatcher() :Generator<*, *, *> {
   yield takeEvery(REFRESH_HEARING_AND_NEIGHBORS, refreshHearingAndNeighborsWorker);
+}
+
+
+function* submitExistingHearingWorker(action :SequenceAction) :Generator<*, *, *> {
+  const {
+    caseId,
+    hearingEKID,
+    personEKID,
+    psaEKID
+  } = action.value;
+  try {
+    yield put(submitExistingHearing.request(action.id));
+    /*
+     * Get Property Type Ids
+     */
+    const app = yield select(getApp);
+    const edm = yield select(getEDM);
+    const stringIdPTID = getPropertyTypeId(edm, STRING_ID);
+
+    /*
+     * Get Entity Set Ids
+     */
+    const appearsInESID = getEntitySetIdFromApp(app, APPEARS_IN);
+    const hearingsESID = getEntitySetIdFromApp(app, HEARINGS);
+    const psaScoresESID = getEntitySetIdFromApp(app, PSA_SCORES);
+    /*
+     * Assemble Assoociations
+     */
+    const associations = {
+      [appearsInESID]: [
+        {
+          data: { [stringIdPTID]: [caseId] },
+          dst: {
+            entityKeyId: hearingEKID,
+            entitySetId: hearingsESID
+          },
+          src: {
+            entityKeyId: psaEKID,
+            entitySetId: psaScoresESID
+          }
+        }
+      ]
+    };
+    console.log(associations);
+
+    /*
+     * Submit Associations
+     */
+    const response = yield call(
+      createAssociationsWorker,
+      createAssociations(associations)
+    );
+
+    if (response.error) throw response.error;
+
+    /*
+     * Get Hearing and Hearing Neighbors
+     */
+
+    const { hearing, hearingNeighborsByAppTypeFqn } = yield call(getHearingAndNeighbors, hearingEKID);
+
+    yield put(submitExistingHearing.success(action.id, {
+      personEKID,
+      psaEKID,
+      hearingEntityKeyId: hearingEKID,
+      hearing,
+      hearingNeighborsByAppTypeFqn
+    }));
+  }
+
+  catch (error) {
+    console.error(error);
+    yield put(submitExistingHearing.failure(action.id, error));
+  }
+  finally {
+    yield put(submitExistingHearing.finally(action.id));
+  }
+}
+
+function* submitExistingHearingWatcher() :Generator<*, *, *> {
+  yield takeEvery(SUBMIT_EXISTING_HEARING, submitExistingHearingWorker);
 }
 
 function* submitHearingWorker(action :SequenceAction) :Generator<*, *, *> {
@@ -468,5 +550,6 @@ function* submitHearingWatcher() :Generator<*, *, *> {
 export {
   loadHearingNeighborsWatcher,
   refreshHearingAndNeighborsWatcher,
+  submitExistingHearingWatcher,
   submitHearingWatcher
 };
