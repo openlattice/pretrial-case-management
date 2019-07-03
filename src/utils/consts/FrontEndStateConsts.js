@@ -279,9 +279,10 @@ export const RELEASE_COND = {
   HEARING_NEIGHBORS: 'hearingNeighbors',
   PERSON_NEIGHBORS: 'personNeighbors',
   PSA_NEIGHBORS: 'psaNeighbors',
-  LOADING_RELEASE_CONDITIONS: 'loadingReleaseCondtions',
+  LOADING_RELEASE_CONDITIONS: 'loadingReleaseConditions',
   REFRESHING_RELEASE_CONDITIONS: 'refreshingReleaseConditions',
-  REFRESHING_SELECTED_HEARING: 'refreshingSelectedHearing'
+  REFRESHING_SELECTED_HEARING: 'refreshingSelectedHearing',
+  SUBMITTING_RELEASE_CONDITIONS: 'submittingReleaseConditions'
 };
 
 // Reminders
