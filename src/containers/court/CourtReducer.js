@@ -19,7 +19,7 @@ import {
   SET_COURT_DATE
 } from './CourtActionFactory';
 import { refreshPSANeighbors, changePSAStatus } from '../review/ReviewActionFactory';
-import { refreshHearingAndNeighbors, submitHearing } from '../hearings/HearingsActionFactory';
+import { refreshHearingAndNeighbors, submitExistingHearing, submitHearing } from '../hearings/HearingsActionFactory';
 import { SWITCH_ORGANIZATION } from '../app/AppActionFactory';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { COURT } from '../../utils/consts/FrontEndStateConsts';
@@ -29,7 +29,7 @@ import { TIME_FORMAT } from '../../utils/FormattingUtils';
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
-const { COURTROOM, DATE_TIME, ENTITY_KEY_ID } = PROPERTY_TYPES;
+const { DATE_TIME, ENTITY_KEY_ID } = PROPERTY_TYPES;
 
 const { HEARINGS } = APP_TYPES;
 
@@ -251,6 +251,23 @@ export default function courtReducer(state :Map<*, *> = INITIAL_STATE, action :O
               }
             }
           });
+          return state.set(COURT.HEARINGS_BY_TIME, hearingsByTime);
+        }
+      });
+    }
+
+    case submitExistingHearing.case(action.type): {
+      return submitExistingHearing.reducer(state, action, {
+        SUCCESS: () => {
+          const { hearing } = action.value;
+          const courtDate = state.get(COURT.COURT_DATE);
+          let hearingsByTime = state.get(COURT.HEARINGS_BY_TIME, Map());
+          const { [DATE_TIME]: hearingDateTime } = getEntityProperties(hearing, [ENTITY_KEY_ID]);
+          const hearingDateTimeMoment = moment(hearingDateTime);
+          if (hearingDateTimeMoment.isSame(courtDate, 'day')) {
+            const time = hearingDateTimeMoment.format(TIME_FORMAT);
+            hearingsByTime = hearingsByTime.set(time, hearingsByTime.get(time, List()).push(hearing));
+          }
           return state.set(COURT.HEARINGS_BY_TIME, hearingsByTime);
         }
       });
