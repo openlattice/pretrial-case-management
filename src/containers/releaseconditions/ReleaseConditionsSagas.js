@@ -4,6 +4,8 @@
 
 import moment from 'moment';
 import { Map, List, fromJS } from 'immutable';
+import type { SequenceAction } from 'redux-reqseq';
+import { DataApi, Types } from 'lattice';
 import randomUUID from 'uuid/v4';
 import {
   DataApiActions,
@@ -12,28 +14,19 @@ import {
   SearchApiSagas
 } from 'lattice-sagas';
 import {
-  DataApi,
-  EntityDataModelApi,
-  Models,
-  Types
-} from 'lattice';
-import {
   all,
   call,
   put,
   takeEvery,
   select
 } from '@redux-saga/core/effects';
-import type { SequenceAction } from 'redux-reqseq';
 
-import releaseConditionsConfig from '../../config/formconfig/ReleaseConditionsConfig';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
-import { getPropertyTypeId } from '../../edm/edmUtils';
-import { getEntityProperties, getEntityKeyId, getMapFromEntityKeysToPropertyKeys } from '../../utils/DataUtils';
+import { getPropertyTypeId, getMapFromEntityKeysToPropertyKeys } from '../../edm/edmUtils';
+import { getEntityProperties, getEntityKeyId } from '../../utils/DataUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { APP, PSA_NEIGHBOR, STATE } from '../../utils/consts/FrontEndStateConsts';
 import { REMINDER_TYPES } from '../../utils/RemindersUtils';
-import { refreshHearingAndNeighbors } from '../hearings/HearingsActionFactory';
 import {
   LOAD_RELEASE_CONDTIONS,
   SUBMIT_RELEASE_CONDTIONS,
@@ -48,7 +41,6 @@ const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
 const { createEntityAndAssociationData } = DataApiActions;
 const { createEntityAndAssociationDataWorker } = DataApiSagas;
 
-const { FullyQualifiedName } = Models;
 const { DeleteTypes } = Types;
 
 const {
@@ -75,7 +67,6 @@ const {
 
 
 const {
-  APPEARED,
   BOND_AMOUNT,
   BOND_TYPE,
   COMPLETED_DATE_TIME,
@@ -594,10 +585,6 @@ function* submitReleaseConditionsWorker(action :SequenceAction) :Generator<*, *,
         associations[registeredForESID] = associations[registeredForESID].concat(associationData);
       });
     }
-    console.log('entities');
-    console.log(entities);
-    console.log('associations');
-    console.log(associations);
 
     /*
      * Submit data and collect response
@@ -607,19 +594,17 @@ function* submitReleaseConditionsWorker(action :SequenceAction) :Generator<*, *,
       createEntityAndAssociationData({ associations, entities })
     );
     if (response.error) throw response.error;
+    /*
+     * Collect Hearing and Neighbors
+     */
+    const { hearing, hearingNeighborsByAppTypeFqn } = yield call(getHearingAndNeighbors, hearingEKID);
 
-    yield call(refreshHearingAndNeighbors, { hearingEntityKeyId: hearingEKID });
-    // /*
-    //  * Collect Hearing and Neighbors
-    //  */
-    // const { hearing, hearingNeighborsByAppTypeFqn } = yield call(getHearingAndNeighbors, hearingEntityKeyId);
-    //
-    // yield put(submitReleaseConditions.success(action.id, {
-    //   hearing,
-    //   hearingNeighborsByAppTypeFqn,
-    //   psaEKID: psaScoresEKID,
-    //   personEKID
-    // }));
+    yield put(submitReleaseConditions.success(action.id, {
+      hearing,
+      hearingNeighborsByAppTypeFqn,
+      psaEKID: psaScoresEKID,
+      personEKID
+    }));
   }
 
   catch (error) {
@@ -640,86 +625,89 @@ function* updateOutcomesAndReleaseCondtionsWorker(action :SequenceAction) :Gener
   try {
     const {
       psaId,
-      conditionSubmit,
-      conditionEntityKeyIds,
+      releaseConditions,
+      deleteConditions,
+      dmfResultsEKID,
       bondEntity,
       bondEntityKeyId,
-      hearingEntityKeyId,
+      hearingEKID,
       outcomeEntity,
       outcomeEntityKeyId,
-      callback,
-      refreshHearingsNeighborsCallback
+      personEKID,
+      psaScoresEKID
     } = action.value;
 
+    /*
+     * Get Property Type Ids
+     */
     const app = yield select(getApp);
-    const releaseConditionEntitySetId = getEntitySetIdFromApp(app, RELEASE_CONDITIONS);
-    const bondEntitySetId = getEntitySetIdFromApp(app, BONDS);
-    const outcomeEntitySetId = getEntitySetIdFromApp(app, OUTCOMES);
+    const edm = yield select(getEDM);
 
-    const allEntitySetIds = { releaseConditionEntitySetId, bondEntitySetId, outcomeEntitySetId };
+    const completedDateTimePTID = getPropertyTypeId(edm, COMPLETED_DATE_TIME);
+    const frequencyPTID = getPropertyTypeId(edm, FREQUENCY);
+    const generalIdPTID = getPropertyTypeId(edm, GENERAL_ID);
+    const otherTextPTID = getPropertyTypeId(edm, OTHER_TEXT);
+    const personNamePTID = getPropertyTypeId(edm, PERSON_NAME);
+    const personTypePTID = getPropertyTypeId(edm, PERSON_TYPE);
+    const planTypePTID = getPropertyTypeId(edm, PLAN_TYPE);
+    const startDatePTID = getPropertyTypeId(edm, START_DATE);
+    const typePTID = getPropertyTypeId(edm, TYPE);
 
-    const edmDetailsRequest = Object.values(allEntitySetIds).map(id => (
-      {
-        id,
-        type: 'EntitySet',
-        include: [
-          'EntitySet',
-          'EntityType',
-          'PropertyTypeInEntitySet'
-        ]
-      }
-    ));
+    /*
+     * Get Entity Set Ids
+     */
+    const bondsESID = getEntitySetIdFromApp(app, BONDS);
+    const dmfResultsESID = getEntitySetIdFromApp(app, DMF_RESULTS);
+    const hearingsESID = getEntitySetIdFromApp(app, HEARINGS);
+    const outcomesESID = getEntitySetIdFromApp(app, OUTCOMES);
+    const peopleESID = getEntitySetIdFromApp(app, PEOPLE);
+    const psaScoresESID = getEntitySetIdFromApp(app, PSA_SCORES);
+    const registeredForESID = getEntitySetIdFromApp(app, REGISTERED_FOR);
+    const releaseConditionsESID = getEntitySetIdFromApp(app, RELEASE_CONDITIONS);
 
     const updates = [];
     const updatedEntities = [];
 
-    conditionEntityKeyIds.toJS().forEach((entityKeyId) => {
+    deleteConditions.toJS().forEach((entityKeyId) => {
       updates.push(call(
         DataApi.deleteEntity,
-        allEntitySetIds.releaseConditionEntitySetId,
+        releaseConditionsESID,
         entityKeyId,
         DeleteTypes.Soft
       ));
     });
 
-    const edmDetails = yield call(EntityDataModelApi.getEntityDataModelProjection, edmDetailsRequest);
-
-    const propertyTypesByFqn = {};
-    Object.values(edmDetails.propertyTypes).forEach((propertyType) => {
-      const fqn = new FullyQualifiedName(propertyType.type).getFullyQualifiedName();
-      propertyTypesByFqn[fqn] = propertyType;
-    });
 
     if (bondEntityKeyId && fromJS(bondEntity).size) {
       const bondEntityOject = getMapFromEntityKeysToPropertyKeys(
         bondEntity,
         bondEntityKeyId,
-        propertyTypesByFqn
+        edm
       );
       updates.push(
         call(DataApi.updateEntityData,
-          allEntitySetIds.bondEntitySetId,
+          bondsESID,
           bondEntityOject.toJS(),
           'PartialReplace')
       );
 
-      updatedEntities.push(call(DataApi.getEntityData, allEntitySetIds.bondEntitySetId, bondEntityKeyId));
+      updatedEntities.push(call(DataApi.getEntityData, bondsESID, bondEntityKeyId));
     }
 
     if (outcomeEntityKeyId && fromJS(outcomeEntity).size) {
       const outcomeEntityOject = getMapFromEntityKeysToPropertyKeys(
         outcomeEntity,
         outcomeEntityKeyId,
-        propertyTypesByFqn
+        edm
       );
       updates.push(
         call(DataApi.updateEntityData,
-          allEntitySetIds.outcomeEntitySetId,
+          outcomesESID,
           outcomeEntityOject.toJS(),
           'PartialReplace')
       );
 
-      updatedEntities.push(call(DataApi.getEntityData, allEntitySetIds.outcomeEntitySetId, outcomeEntityKeyId));
+      updatedEntities.push(call(DataApi.getEntityData, outcomesESID, outcomeEntityKeyId));
     }
 
     yield all(updates);
@@ -736,16 +724,112 @@ function* updateOutcomesAndReleaseCondtionsWorker(action :SequenceAction) :Gener
       newOutcomeEntity = yield all(updatedEntities);
     }
 
-    const submitValues = {
-      app,
-      config: releaseConditionsConfig,
-      values: conditionSubmit,
-      callback: refreshHearingsNeighborsCallback
-    };
+    /*
+     * Add release condition entities and associations
+     */
+    const entities = {};
+    const associations = {};
+    if (releaseConditions.length) {
+      entities[releaseConditionsESID] = [];
+      associations[registeredForESID] = [];
+      releaseConditions.forEach((releaseCondtiion, index) => {
+        const releaseConditionId = randomUUID();
+        const {
+          [START_DATE]: startDate,
+          [TYPE]: releaseConditionType,
+          [FREQUENCY]: frequency,
+          [OTHER_TEXT]: otherText,
+          [PLAN_TYPE]: planType,
+          [PERSON_NAME]: personName,
+          [PERSON_TYPE]: personType
+        } = releaseCondtiion;
 
-    yield call(callback, submitValues);
+        const releaseConditionEntity = {
+          [generalIdPTID]: [releaseConditionId],
+          [typePTID]: [releaseConditionType],
+          [startDatePTID]: [startDate]
+        };
+        if (frequency) {
+          releaseConditionEntity[frequencyPTID] = [frequency];
+        }
+        if (otherText) {
+          releaseConditionEntity[otherTextPTID] = [otherText];
+        }
+        if (planType) {
+          releaseConditionEntity[planTypePTID] = [planType];
+        }
+        if (personName && personType) {
+          releaseConditionEntity[personNamePTID] = [personName];
+          releaseConditionEntity[personTypePTID] = [personType];
+        }
 
-    let { hearingNeighborsByAppTypeFqn } = yield call(getHearingAndNeighbors, hearingEntityKeyId);
+        const associationData = [
+          {
+            data: { [completedDateTimePTID]: [moment().toISOString(true)] },
+            srcEntityIndex: index,
+            srcEntitySetId: releaseConditionsESID,
+            dstEntityKeyId: personEKID,
+            dstEntitySetId: peopleESID
+          },
+          {
+            data: { [completedDateTimePTID]: [moment().toISOString(true)] },
+            srcEntityIndex: index,
+            srcEntitySetId: releaseConditionsESID,
+            dstEntityKeyId: dmfResultsEKID,
+            dstEntitySetId: dmfResultsESID
+          },
+          {
+            data: { [completedDateTimePTID]: [moment().toISOString(true)] },
+            srcEntityIndex: index,
+            srcEntitySetId: releaseConditionsESID,
+            dstEntityKeyId: psaScoresEKID,
+            dstEntitySetId: psaScoresESID
+          },
+          {
+            data: { [completedDateTimePTID]: [moment().toISOString(true)] },
+            srcEntityIndex: index,
+            srcEntitySetId: releaseConditionsESID,
+            dstEntityKeyId: outcomeEntityKeyId,
+            dstEntitySetId: outcomesESID
+          },
+          {
+            data: { [completedDateTimePTID]: [moment().toISOString(true)] },
+            srcEntityIndex: index,
+            srcEntitySetId: releaseConditionsESID,
+            dstEntityKeyId: hearingEKID,
+            dstEntitySetId: hearingsESID
+          }
+        ];
+
+        if (bondEntityKeyId && fromJS(bondEntity).size) {
+          associations[registeredForESID] = associations[registeredForESID].concat(
+            {
+              data: { [completedDateTimePTID]: [moment().toISOString(true)] },
+              srcEntityIndex: index,
+              srcEntitySetId: releaseConditionsESID,
+              dstEntityKeyId: bondEntityKeyId,
+              dstEntitySetId: bondsESID
+            }
+          );
+        }
+
+        entities[releaseConditionsESID].push(releaseConditionEntity);
+        associations[registeredForESID] = associations[registeredForESID].concat(associationData);
+      });
+      /*
+      * Submit data and collect response
+      */
+      const response = yield call(
+        createEntityAndAssociationDataWorker,
+        createEntityAndAssociationData({ associations, entities })
+      );
+      if (response.error) throw response.error;
+    }
+
+
+    // yield call(callback, submitValues);
+
+    let { hearingNeighborsByAppTypeFqn } = yield call(getHearingAndNeighbors, hearingEKID);
 
     if (newBondEntity) {
       hearingNeighborsByAppTypeFqn = hearingNeighborsByAppTypeFqn
@@ -758,7 +842,6 @@ function* updateOutcomesAndReleaseCondtionsWorker(action :SequenceAction) :Gener
 
     yield put(updateOutcomesAndReleaseCondtions.success(action.id, {
       psaId,
-      edmDetails,
       hearingNeighborsByAppTypeFqn,
       newBondEntity,
       newOutcomeEntity
