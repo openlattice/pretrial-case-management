@@ -13,7 +13,6 @@ import HearingCardsWithTitle from '../../components/hearings/HearingCardsWithTit
 import InfoButton from '../../components/buttons/InfoButton';
 import LogoLoader from '../../components/LogoLoader';
 import NewHearingSection from '../../components/hearings/NewHearingSection';
-import psaHearingConfig from '../../config/formconfig/PSAHearingConfig';
 import ReleaseConditionsContainer from '../releaseconditions/ReleaseConditionsContainer';
 import SubscriptionInfo from '../../components/subscription/SubscriptionInfo';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
@@ -22,12 +21,7 @@ import { getEntityProperties } from '../../utils/DataUtils';
 import { OL } from '../../utils/consts/Colors';
 import { SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { Title } from '../../utils/Layout';
-import {
-  FORM_IDS,
-  ID_FIELD_NAMES,
-  HEARING,
-  JURISDICTION
-} from '../../utils/consts/Consts';
+import { JURISDICTION } from '../../utils/consts/Consts';
 import {
   APP,
   HEARINGS,
@@ -120,15 +114,12 @@ type Props = {
       callback :() => void
     }) => void
   },
-  app :Map<*, *>,
   context :string,
   hearingNeighborsById :Map<*, *>,
   neighbors :Map<*, *>,
-  onSubmit? :(hearing :Object) => void,
   openClosePSAModal :() => void,
   personEKID :string,
   personHearings :List<*, *>,
-  personId :string,
   personNeighbors :Map<*, *>,
   psaEntityKeyId :string,
   psaHearings :List<*, *>,
@@ -158,10 +149,6 @@ type State = {
 };
 
 class SelectHearingsContainer extends React.Component<Props, State> {
-
-  static defaultProps = {
-    onSubmit: () => {}
-  }
 
   constructor(props :Props) {
     super(props);
