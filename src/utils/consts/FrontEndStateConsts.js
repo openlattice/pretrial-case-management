@@ -55,7 +55,8 @@ export const APP = {
   SELECTED_ORG_TITLE: 'selectedOrganizationTitle',
   APP_SETTINGS_ID: 'appSettingsEntitySetId',
   SELECTED_ORG_SETTINGS: 'selectedOrganizationSettings',
-  SETTINGS_BY_ORG_ID: 'appSettingsByOrgId'
+  SETTINGS_BY_ORG_ID: 'appSettingsByOrgId',
+  STAFF_IDS_TO_EKIDS: 'staffIdsToEntityKeyIds'
 };
 
 // CHARGES
@@ -242,7 +243,11 @@ export const PSA_FORM = {
   SUBMITTED: 'isSubmitted',
   SUBMITTING: 'isSubmitting',
   LOADING_NEIGHBORS: 'isLoadingNeighbors',
-  SUBMIT_ERROR: 'submitError'
+  SUBMIT_ERROR: 'submitError',
+  SUBMITTED_PSA: 'submittedPSA',
+  PSA_SUBMISSION_COMPLETE: 'psaSubmissionComplete',
+  SUBMITTED_PSA_NEIGHBORS: 'submittedPSANeighbors',
+  SUBMITTING_PSA: 'submittingPSA'
 };
 
 // People
