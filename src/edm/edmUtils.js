@@ -20,3 +20,17 @@ export const getMapFromEntityKeysToPropertyKeys = (entity :Object, entityKeyId :
   });
   return entityObject;
 };
+
+export const getPropteryIdToValueMap = (entity :Object, edm :Map) => {
+  const entityObject = {};
+  Object.keys(entity).forEach((key) => {
+    const propertyTypeKeyId = getPropertyTypeId(edm, key);
+    if (entity[key]) {
+      const isAnArray = Array.isArray(entity[key]);
+      const value = entity[key];
+      const property = isAnArray ? value : [value];
+      entityObject[propertyTypeKeyId] = property;
+    }
+  });
+  return entityObject;
+};
