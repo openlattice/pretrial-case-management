@@ -3,7 +3,12 @@
  */
 import moment from 'moment';
 import { Constants, DataApi, SearchApi } from 'lattice';
-import { SearchApiActions, SearchApiSagas } from 'lattice-sagas';
+import {
+  DataApiActions,
+  DataApiSagas,
+  SearchApiActions,
+  SearchApiSagas
+} from 'lattice-sagas';
 import {
   Map,
   List,
@@ -30,17 +35,21 @@ import {
   GET_PEOPLE,
   GET_PERSON_DATA,
   GET_PERSON_NEIGHBORS,
+  GET_STAFF_EKIDS,
   LOAD_REQUIRES_ACTION_PEOPLE,
   REFRESH_PERSON_NEIGHBORS,
   UPDATE_CONTACT_INFORMATION,
   getPeople,
   getPersonData,
   getPersonNeighbors,
+  getStaffEKIDs,
   loadRequiresActionPeople,
   refreshPersonNeighbors,
   updateContactInfo
 } from './PeopleActionFactory';
 
+const { getEntitySetData } = DataApiActions;
+const { getEntitySetDataWorker } = DataApiSagas;
 const { searchEntityNeighborsWithFilter } = SearchApiActions;
 const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
 
@@ -70,7 +79,12 @@ const {
   SPEAKER_RECOGNITION_PROFILES
 } = APP_TYPES;
 
-const { DATE_TIME, HEARING_TYPE } = PROPERTY_TYPES;
+const {
+  DATE_TIME,
+  ENTITY_KEY_ID,
+  HEARING_TYPE,
+  PERSON_ID
+} = PROPERTY_TYPES;
 
 const LIST_FQNS = [CHECKINS, CHECKIN_APPOINTMENTS, CONTACT_INFORMATION, HEARINGS, PRETRIAL_CASES, STAFF, CHARGES];
 
@@ -413,6 +427,44 @@ function* getPersonNeighborsWorker(action) :Generator<*, *, *> {
 
 function* getPersonNeighborsWatcher() :Generator<*, *, *> {
   yield takeEvery(GET_PERSON_NEIGHBORS, getPersonNeighborsWorker);
+}
+
+
+function* getStaffEKIDsWorker(action) :Generator<*, *, *> {
+
+  try {
+    yield put(getStaffEKIDs.request(action.id));
+    let staffIdsToEKIDS = Map();
+
+    const app = yield select(getApp);
+    const staffESID = getEntitySetIdFromApp(app, STAFF);
+    const staffEntities = yield call(
+      getEntitySetDataWorker,
+      getEntitySetData({ entitySetId: staffESID })
+    );
+    if (staffEntities.error) throw staffEntities.error;
+
+    fromJS(staffEntities.data).forEach((staffMember) => {
+      const {
+        [ENTITY_KEY_ID]: staffEKID,
+        [PERSON_ID]: staffId
+      } = getEntityProperties(staffMember, [ENTITY_KEY_ID, PERSON_ID]);
+      staffIdsToEKIDS = staffIdsToEKIDS.set(staffId, staffEKID);
+    });
+
+
+    yield put(getStaffEKIDs.success(action.id, staffIdsToEKIDS));
+  }
+  catch (error) {
+    yield put(getStaffEKIDs.failure(action.id, error));
+  }
+  finally {
+    yield put(getStaffEKIDs.finally(action.id));
+  }
+}
+
+function* getStaffEKIDsWatcher() :Generator<*, *, *> {
+  yield takeEvery(GET_STAFF_EKIDS, getStaffEKIDsWorker);
 }
 
 function* refreshPersonNeighborsWorker(action) :Generator<*, *, *> {
@@ -923,6 +975,7 @@ export {
   getPeopleWatcher,
   getPersonDataWatcher,
   getPersonNeighborsWatcher,
+  getStaffEKIDsWatcher,
   loadRequiresActionPeopleWatcher,
   refreshPersonNeighborsWatcher,
   updateContactInfoWatcher
