@@ -14,7 +14,7 @@ import { changePSAStatus, updateScoresAndRiskFactors } from '../review/ReviewAct
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA, NOTES, DMF } from '../../utils/consts/Consts';
 import { getMapByCaseId } from '../../utils/CaseUtils';
-import { getEntityKeyId } from '../../utils/DataUtils';
+import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
 import { PSA_NEIGHBOR, PSA_FORM } from '../../utils/consts/FrontEndStateConsts';
 import {
   ADD_CASE_AND_CHARGES,
@@ -23,13 +23,15 @@ import {
   SELECT_PRETRIAL_CASE,
   SET_PSA_VALUES,
   loadDataModel,
-  loadNeighbors
+  loadNeighbors,
+  submitPSA
 } from './FormActionFactory';
 
 const {
   ARREST_DATE_TIME,
   CHARGE_ID,
-  CASE_ID
+  CASE_ID,
+  ENTITY_KEY_ID
 } = PROPERTY_TYPES;
 
 const {
@@ -126,10 +128,13 @@ const INITIAL_STATE :Map<> = fromJS({
   [PSA_FORM.PSA]: INITIAL_PSA_FORM,
   [PSA_FORM.DATA_MODEL]: Map(),
   [PSA_FORM.ENTITY_SET_LOOKUP]: Map(),
-  [PSA_FORM.SUBMITTED]: false,
-  [PSA_FORM.SUBMITTING]: false,
   [PSA_FORM.LOADING_NEIGHBORS]: false,
-  [PSA_FORM.SUBMIT_ERROR]: false
+  [PSA_FORM.SUBMIT_ERROR]: false,
+  // Submit
+  [PSA_FORM.SUBMITTING_PSA]: false,
+  [PSA_FORM.PSA_SUBMISSION_COMPLETE]: false,
+  [PSA_FORM.SUBMITTED_PSA]: Map(),
+  [PSA_FORM.SUBMITTED_PSA_NEIGHBORS]: Map()
 });
 
 const ARREST_CHARGE_AUTOFILLS = [
@@ -301,6 +306,7 @@ function formReducer(state :Map<> = INITIAL_STATE, action :Object) {
 
       const { selectedPretrialCase } = action.value;
 
+      const { [ENTITY_KEY_ID]: arrestCaseEKID } = getEntityProperties(selectedPretrialCase, [ENTITY_KEY_ID])
       const selectedCaseIdList = selectedPretrialCase.get(CASE_ID, List());
       const charges = state.get(PSA_FORM.ALL_ARREST_CHARGES)
         .filter(charge => getCaseAndChargeNum(charge)[0] === selectedCaseIdList.get(0))
@@ -308,7 +314,7 @@ function formReducer(state :Map<> = INITIAL_STATE, action :Object) {
       return state
         .set(PSA_FORM.SELECT_PRETRIAL_CASE, selectedPretrialCase)
         .set(PSA_FORM.CHARGES, charges)
-        .set(PSA_FORM.ARREST_ID, selectedCaseIdList.get(0, ''));
+        .set(PSA_FORM.ARREST_ID, arrestCaseEKID);
     }
 
     case SET_PSA_VALUES: {
@@ -406,6 +412,24 @@ function formReducer(state :Map<> = INITIAL_STATE, action :Object) {
           return state
             .set(PSA_FORM.ALL_PSAS, allPSAs);
         }
+      });
+    }
+
+    case submitPSA.case(action.type): {
+      return submitPSA.reducer(state, action, {
+        REQUEST: () => state
+          .set(PSA_FORM.PSA_SUBMISSION_COMPLETE, false)
+          .set(PSA_FORM.SUBMITTING_PSA, true),
+        SUCCESS: () => {
+          const { psaScoresEntity, psaNeighborsByAppTypeFqn } = action.value;
+          return state
+            .set(PSA_FORM.SUBMITTED_PSA, psaScoresEntity)
+            .set(PSA_FORM.SUBMITTED_PSA_NEIGHBORS, psaNeighborsByAppTypeFqn);
+        },
+        FAILURE: () => state.set(PSA_FORM.SUBMIT_ERROR, true),
+        FINALLY: () => state
+          .set(PSA_FORM.PSA_SUBMISSION_COMPLETE, true)
+          .set(PSA_FORM.SUBMITTING_PSA, false)
       });
     }
 
