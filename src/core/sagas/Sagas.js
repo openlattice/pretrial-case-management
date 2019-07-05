@@ -109,6 +109,7 @@ export default function* sagas() :Generator<*, *, *> {
     fork(PeopleSagas.getPeopleWatcher),
     fork(PeopleSagas.getPersonDataWatcher),
     fork(PeopleSagas.getPersonNeighborsWatcher),
+    fork(PeopleSagas.getStaffEKIDsWatcher),
     fork(PeopleSagas.loadRequiresActionPeopleWatcher),
     fork(PeopleSagas.refreshPersonNeighborsWatcher),
     fork(PeopleSagas.updateContactInfoWatcher),
@@ -119,6 +120,7 @@ export default function* sagas() :Generator<*, *, *> {
     // PSA Sagas
     fork(PsaSagas.loadDataModelWatcher),
     fork(PsaSagas.loadNeighborsWatcher),
+    fork(PsaSagas.submitPSAWatcher),
 
     // Release Conditions Sagas
     fork(ReleaseConditionsSagas.loadReleaseConditionsWatcher),
