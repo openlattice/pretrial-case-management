@@ -14,6 +14,12 @@ const loadDataModel :RequestSequence = newRequestSequence(LOAD_DATA_MODEL);
 const LOAD_NEIGHBORS :string = 'LOAD_NEIGHBORS';
 const loadNeighbors :RequestSequence = newRequestSequence(LOAD_NEIGHBORS);
 
+const SUBMIT_PSA :string = 'SUBMIT_PSA';
+const submitPSA :RequestSequence = newRequestSequence(SUBMIT_PSA);
+
+const UPDATE_PSA :string = 'UPDATE_PSA';
+const updatePSA :RequestSequence = newRequestSequence(UPDATE_PSA);
+
 // reducer only
 
 const CLEAR_FORM :string = 'CLEAR_FORM';
@@ -32,9 +38,13 @@ export {
   ADD_CASE_AND_CHARGES,
   LOAD_DATA_MODEL,
   LOAD_NEIGHBORS,
+  SUBMIT_PSA,
+  UPDATE_PSA,
   addCaseAndCharges,
   loadDataModel,
   loadNeighbors,
+  submitPSA,
+  updatePSA,
   CLEAR_FORM,
   SELECT_PERSON,
   SELECT_PRETRIAL_CASE,
