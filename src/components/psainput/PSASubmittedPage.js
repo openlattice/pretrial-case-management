@@ -402,7 +402,7 @@ class PSASubmittedPage extends React.Component<Props, State> {
     const { riskFactors } = this.props;
 
     const format = (valList) => {
-      if (!valList.length) return '';
+      if (!valList || !valList.length) return '';
       const val = valList[0];
       if (val.length) return val;
       return val ? 'Yes' : 'No';
@@ -526,7 +526,7 @@ class PSASubmittedPage extends React.Component<Props, State> {
     const {
       allHearings,
       personId,
-      psaId,
+      psaEKID,
       isSubmitting,
       context,
       submittedHearing,
@@ -543,7 +543,7 @@ class PSASubmittedPage extends React.Component<Props, State> {
               submitting={isSubmitting}
               jurisdiction={jurisdiction}
               personEKID={personId}
-              psaEKID={psaId}
+              psaEKID={psaEKID}
               hearings={allHearings}
               manuallyCreatingHearing />
         </CreateHearingWrapper>
