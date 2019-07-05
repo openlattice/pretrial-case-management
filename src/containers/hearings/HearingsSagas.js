@@ -378,7 +378,6 @@ function* submitExistingHearingWorker(action :SequenceAction) :Generator<*, *, *
         }
       ]
     };
-    console.log(associations);
 
     /*
      * Submit Associations
