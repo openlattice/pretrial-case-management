@@ -36,7 +36,6 @@ import ArrestCard from '../../components/arrest/ArrestCard';
 import ChargeTable from '../../components/charges/ChargeTable';
 import PSAReviewReportsRowList from '../review/PSAReviewReportsRowList';
 import exportPDF from '../../utils/PDFUtils';
-import psaConfig from '../../config/formconfig/PsaConfig';
 import SubscriptionInfo from '../../components/subscription/SubscriptionInfo';
 import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
 import { OL } from '../../utils/consts/Colors';
@@ -56,7 +55,6 @@ import {
 import {
   CONTEXT,
   DMF,
-  ID_FIELD_NAMES,
   NOTES,
   PSA,
   PSA_STATUSES
@@ -74,7 +72,6 @@ import {
   PEOPLE
 } from '../../utils/consts/FrontEndStateConsts';
 import {
-  ButtonWrapper,
   StyledFormWrapper,
   StyledSectionWrapper,
   StyledColumnRow
@@ -352,6 +349,7 @@ type Props = {
   numCasesToLoad :number,
   openPSAs :Immutable.Map<*, *>,
   psaForm :Immutable.Map<*, *>,
+  psaSubmissionComplete :boolean,
   readOnlyPermissions :boolean,
   refreshingPersonNeighbors :boolean,
   selectedOrganizationId :string,
@@ -1031,6 +1029,7 @@ class Form extends React.Component<Props, State> {
       allHearings,
       allJudges,
       charges,
+      selectedPerson,
       psaForm,
       submittedPSA,
       submittedPSANeighbors,
@@ -1049,6 +1048,7 @@ class Form extends React.Component<Props, State> {
     });
 
     const { [ENTITY_KEY_ID]: psaEKID } = getEntityProperties(submittedPSA, [ENTITY_KEY_ID]);
+    const { [ENTITY_KEY_ID]: personEKID } = getEntityProperties(selectedPerson, [ENTITY_KEY_ID]);
     const psaRiskFactores = submittedPSANeighbors.getIn([PSA_RISK_FACTORS, PSA_NEIGHBOR.DETAILS], Map());
     const dmfResults = submittedPSANeighbors.getIn([DMF_RESULTS, PSA_NEIGHBOR.DETAILS], Map());
 
@@ -1058,8 +1058,9 @@ class Form extends React.Component<Props, State> {
           scores={submittedPSA}
           riskFactors={psaRiskFactores.toJS()}
           context={context}
-          dmf={dmfResults.toJS()}
+          dmf={dmfResults}
           personId={this.getPersonIdValue()}
+          personEKID={personEKID}
           psaEKID={psaEKID}
           psaId={psaId}
           submitSuccess={!submitError}
@@ -1197,21 +1198,27 @@ function mapDispatchToProps(dispatch :Function) :Object {
   Object.keys(FormActionFactory).forEach((action :string) => {
     actions[action] = FormActionFactory[action];
   });
+
   Object.keys(PersonActionFactory).forEach((action :string) => {
     actions[action] = PersonActionFactory[action];
   });
+
   Object.keys(ReviewActionFactory).forEach((action :string) => {
     actions[action] = ReviewActionFactory[action];
   });
+
   Object.keys(CourtActionFactory).forEach((action :string) => {
     actions[action] = CourtActionFactory[action];
   });
+
   Object.keys(SubmitActionFactory).forEach((action :string) => {
     actions[action] = SubmitActionFactory[action];
   });
+
   Object.keys(RoutingActionFactory).forEach((action :string) => {
     actions[action] = RoutingActionFactory[action];
   });
+
 
   return {
     actions: {
