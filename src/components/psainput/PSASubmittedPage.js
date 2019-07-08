@@ -28,7 +28,7 @@ import closeXBlackIcon from '../../assets/svg/close-x-black.svg';
 import { OL } from '../../utils/consts/Colors';
 import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { getHeaderText } from '../../utils/DMFUtils';
+import { formatDMFFromEntity, getHeaderText } from '../../utils/DMFUtils';
 import { JURISDICTION } from '../../utils/consts/Consts';
 import {
   APP,
@@ -53,7 +53,8 @@ type Props = {
   riskFactors :Object,
   dmf :Object,
   personId :string,
-  psaId :string,
+  personEKID :string,
+  psaEKID :string,
   submitSuccess :boolean,
   charges :Immutable.List<*>,
   notes :string,
@@ -385,14 +386,15 @@ class PSASubmittedPage extends React.Component<Props, State> {
   renderDMF = () => {
     const { dmf, selectedOrganizationSettings } = this.props;
     const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
+    const formattedDMF = formatDMFFromEntity(dmf);
 
     return includesPretrialModule
       ? (
         <DMF>
           <ResultHeader>RCM Result</ResultHeader>
           <section>
-            <DMFCell dmf={dmf} selected large />
-            <span>{getHeaderText(dmf)}</span>
+            <DMFCell dmf={formattedDMF} selected large />
+            <span>{getHeaderText(formattedDMF)}</span>
           </section>
         </DMF>
       ) : null;
@@ -525,7 +527,7 @@ class PSASubmittedPage extends React.Component<Props, State> {
   renderHearingNewHearingSection = () => {
     const {
       allHearings,
-      personId,
+      personEKID,
       psaEKID,
       isSubmitting,
       context,
@@ -542,7 +544,7 @@ class PSASubmittedPage extends React.Component<Props, State> {
           <NewHearingSection
               submitting={isSubmitting}
               jurisdiction={jurisdiction}
-              personEKID={personId}
+              personEKID={personEKID}
               psaEKID={psaEKID}
               hearings={allHearings}
               manuallyCreatingHearing />
