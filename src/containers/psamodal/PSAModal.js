@@ -48,6 +48,7 @@ import {
 } from '../../utils/DataUtils';
 import {
   APP,
+  HEARINGS,
   PSA_NEIGHBOR,
   PSA_ASSOCIATION,
   PSA_MODAL,
@@ -77,7 +78,6 @@ const {
   CALCULATED_FOR,
   DMF_RESULTS,
   DMF_RISK_FACTORS,
-  HEARINGS,
   MANUAL_PRETRIAL_CASES,
   OUTCOMES,
   PEOPLE,
@@ -594,8 +594,8 @@ class PSAModal extends React.Component<Props, State> {
   deleteHearing = () => {
     const { actions, entityKeyId } = this.props;
     actions.deleteEntity({
-      entitySetId: this.getEntitySetId(HEARINGS),
-      entityKeyId: this.getEntityKeyId(HEARINGS)
+      entitySetId: this.getEntitySetId(APP_TYPES.HEARINGS),
+      entityKeyId: this.getEntityKeyId(APP_TYPES.HEARINGS)
     });
     actions.refreshPSANeighbors({ id: entityKeyId });
   }
@@ -875,7 +875,7 @@ class PSAModal extends React.Component<Props, State> {
 
   renderReleaseCondtionsSummary = () => {
     const { psaNeighbors, hearingNeighborsById } = this.props;
-    const psaHearings = psaNeighbors.get(HEARINGS, List());
+    const psaHearings = psaNeighbors.get(APP_TYPES.HEARINGS, List());
     const hearingsWithOutcomes = psaHearings.filter((hearing) => {
       const entityKeyId = hearing.getIn([OPENLATTICE_ID_FQN, 0]);
       return !!hearingNeighborsById.getIn([entityKeyId, OUTCOMES]);
@@ -923,7 +923,7 @@ class PSAModal extends React.Component<Props, State> {
             psaEntityKeyId={entityKeyId}
             deleteHearing={this.deleteHearing}
             refreshPSANeighborsCallback={this.refreshPSANeighborsCallback}
-            hearingId={this.getEntityKeyId(HEARINGS)}
+            hearingId={this.getEntityKeyId(APP_TYPES.HEARINGS)}
             personHearings={personHearings}
             readOnly={!psaPermissions}
             psaNeighbors={psaNeighbors}
