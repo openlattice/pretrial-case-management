@@ -830,10 +830,8 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
 
     const {
       actions,
-      app,
       hearingEntityKeyId,
-      openClosePSAModal,
-      selectedHearing
+      openClosePSAModal
     } = this.props;
 
     const {
@@ -849,28 +847,16 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
 
     const newAssociationEntities = this.getAssociationsForExistingAppointments();
 
-    const hearingId = getFirstNeighborValue(selectedHearing, PROPERTY_TYPES.CASE_ID);
     const psaId = getFirstNeighborValue(psaEntity, PROPERTY_TYPES.GENERAL_ID);
     const psaScoresEKID = getFirstNeighborValue(psaEntity, ENTITY_KEY_ID);
-    const personId = getFirstNeighborValue(personEntity, PROPERTY_TYPES.PERSON_ID);
     const personEKID = getFirstNeighborValue(personEntity, ENTITY_KEY_ID);
-    const dmfId = getFirstNeighborValue(defaultDMF, PROPERTY_TYPES.GENERAL_ID);
     const dmfResultsEKID = getFirstNeighborValue(defaultDMF, ENTITY_KEY_ID);
-    const outcomeId = getFirstNeighborValue(defaultOutcome, PROPERTY_TYPES.GENERAL_ID, undefined);
-    const bondId = getFirstNeighborValue(defaultBond, PROPERTY_TYPES.GENERAL_ID, undefined);
 
     const {
       createAssociations,
       submitReleaseConditions,
-      updateOutcomesAndReleaseCondtions,
-      submit
+      updateOutcomesAndReleaseCondtions
     } = actions;
-
-
-    const bondTime = defaultBond.getIn([PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.COMPLETED_DATE_TIME, 0]);
-    const conditionsTime = defaultConditions.getIn([0, PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.COMPLETED_DATE_TIME, 0]);
-
-    const bondShouldSubmit = !bondTime || bondTime === conditionsTime;
 
     const outcomeShouldSubmit = !getFirstNeighborValue(defaultOutcome, PROPERTY_TYPES.OUTCOME);
     const outcomeShouldReplace = !outcomeShouldSubmit;
@@ -879,7 +865,6 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
     const judgeAccepted = (outcome === OUTCOMES.ACCEPTED);
 
     const outcomeEntityKeyId = getEntityKeyId(defaultOutcome);
-    const conditionEntityKeyIds = defaultConditions.map(neighbor => getEntityKeyId(neighbor));
     let conditionTypes = Map();
     defaultConditions.forEach((neighbor) => {
       const {
@@ -887,7 +872,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
         [TYPE]: conditionType
       } = getEntityProperties(neighbor, [ENTITY_KEY_ID, TYPE]);
       conditionTypes = conditionTypes.set(conditionType, conditionEntityKeyId);
-    })
+    });
     const bondEntityKeyId = getEntityKeyId(defaultBond);
 
     if (!this.isReadyToSubmit()) {
@@ -897,51 +882,6 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
     const startDate = toISODate(moment());
     let bondEntity;
     let outcomeEntity;
-
-    const conditionSubmit = {
-      [FORM_IDS.PERSON_ID]: personId,
-      [ID_FIELD_NAMES.DMF_ID]: dmfId,
-      [ID_FIELD_NAMES.PSA_ID]: psaId,
-      [ID_FIELD_NAMES.HEARING_ID]: hearingId,
-      [ID_FIELD_NAMES.OUTCOME_ID]: outcomeId,
-      [ID_FIELD_NAMES.BOND_ID]: bondId,
-      [PROPERTY_TYPES.COMPLETED_DATE_TIME]: toISODateTime(moment())
-    };
-
-    if (bondShouldSubmit) {
-      conditionSubmit[ID_FIELD_NAMES.BOND_ID] = randomUUID();
-      conditionSubmit[PROPERTY_TYPES.BOND_TYPE] = bondType;
-      conditionSubmit[PROPERTY_TYPES.BOND_AMOUNT] = bondAmount;
-      conditionSubmit.bonddate = moment().add(1, 'ms').toISOString(true);
-    }
-
-    if (outcomeShouldSubmit) {
-      conditionSubmit[ID_FIELD_NAMES.OUTCOME_ID] = randomUUID();
-      conditionSubmit[PROPERTY_TYPES.OUTCOME] = outcome;
-      conditionSubmit[PROPERTY_TYPES.OTHER_TEXT] = otherOutcomeText;
-      conditionSubmit[PROPERTY_TYPES.RELEASE_TYPE] = releaseType;
-      conditionSubmit[PROPERTY_TYPES.JUDGE_ACCEPTED] = judgeAccepted;
-      conditionSubmit.outcomedate = moment().add(2, 'ms').toISOString(true);
-    }
-
-    const submission = {
-      [FORM_IDS.PERSON_ID]: personId,
-      [ID_FIELD_NAMES.DMF_ID]: dmfId,
-      [ID_FIELD_NAMES.PSA_ID]: psaId,
-      [ID_FIELD_NAMES.HEARING_ID]: hearingId,
-
-      // Outcome
-      [ID_FIELD_NAMES.OUTCOME_ID]: randomUUID(),
-      [PROPERTY_TYPES.OUTCOME]: outcome,
-      [PROPERTY_TYPES.OTHER_TEXT]: otherOutcomeText,
-      [PROPERTY_TYPES.RELEASE_TYPE]: releaseType,
-      [PROPERTY_TYPES.JUDGE_ACCEPTED]: judgeAccepted,
-
-      // Bond
-      [PROPERTY_TYPES.BOND_TYPE]: bondType,
-      [PROPERTY_TYPES.BOND_AMOUNT]: bondAmount,
-      [PROPERTY_TYPES.COMPLETED_DATE_TIME]: toISODateTime(moment())
-    };
 
     if (outcomeShouldReplace) {
       outcomeEntity = {
@@ -957,7 +897,6 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
         [PROPERTY_TYPES.BOND_TYPE]: bondType,
         [PROPERTY_TYPES.BOND_AMOUNT]: bondAmount
       };
-      submission[ID_FIELD_NAMES.BOND_ID] = randomUUID();
     }
     else {
       bondEntity = {
@@ -1018,15 +957,6 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
 
       });
     }
-    submission[RELEASE_CONDITIONS_FIELD] = conditionsEntity;
-    if (newCheckInAppointmentEntities.length) {
-      submission[CHECKIN_APPOINTMENTS_FIELD] = newCheckInAppointmentEntities;
-      conditionSubmit[CHECKIN_APPOINTMENTS_FIELD] = newCheckInAppointmentEntities;
-    }
-    conditionSubmit[RELEASE_CONDITIONS_FIELD] = conditionsEntity;
-    submission.bonddate = moment().add(1, 'ms').toISOString(true);
-    submission.outcomedate = moment().add(2, 'ms').toISOString(true);
-
 
     if (Object.keys(newAssociationEntities).length) {
       createAssociations({
@@ -1038,19 +968,17 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       updateOutcomesAndReleaseCondtions({
         bondEntity,
         bondEntityKeyId,
-        dmfResultsEKID,
-        releaseConditions: conditionsEntity,
         deleteConditions,
+        dmfResultsEKID,
         hearingEKID: hearingEntityKeyId,
         outcomeEntity,
         outcomeEntityKeyId,
-        psaId,
         personEKID,
         psaScoresEKID,
-        callback: submit,
-        refreshHearingsNeighborsCallback: this.refreshHearingsNeighborsCallback
+        psaId,
+        releaseConditions: conditionsEntity,
       });
-      // this.setState({ editingHearing: false });
+      this.setState({ editingHearing: false });
     }
     else {
       submitReleaseConditions({
