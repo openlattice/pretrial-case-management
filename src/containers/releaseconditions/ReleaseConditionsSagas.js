@@ -624,17 +624,17 @@ function* submitReleaseConditionsWatcher() :Generator<*, *, *> {
 function* updateOutcomesAndReleaseCondtionsWorker(action :SequenceAction) :Generator<*, *, *> {
   try {
     const {
-      psaId,
-      releaseConditions,
-      deleteConditions,
-      dmfResultsEKID,
       bondEntity,
       bondEntityKeyId,
+      deleteConditions,
+      dmfResultsEKID,
       hearingEKID,
       outcomeEntity,
       outcomeEntityKeyId,
       personEKID,
-      psaScoresEKID
+      psaScoresEKID,
+      psaId,
+      releaseConditions
     } = action.value;
 
     /*
