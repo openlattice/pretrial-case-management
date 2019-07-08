@@ -328,7 +328,7 @@ function* getPSAScoresAndNeighbors(psaScoresEKID :string) :Generator<*, *, *> {
     const staffESID = getEntitySetIdFromApp(app, STAFF);
 
     /*
-    * Get Hearing Info
+    * Get PSA Score Info
     */
     const psaResponse = yield call(
       getEntityDataWorker,
