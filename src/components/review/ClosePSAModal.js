@@ -5,10 +5,8 @@
 import React from 'react';
 import styled from 'styled-components';
 import Immutable, { Map, fromJS } from 'immutable';
-import moment from 'moment';
 import { connect } from 'react-redux';
 import Modal, { ModalTransition } from '@atlaskit/modal-dialog';
-import { AuthUtils } from 'lattice-auth';
 import { bindActionCreators } from 'redux';
 
 import RadioButton from '../controls/StyledRadioButton';
@@ -16,15 +14,13 @@ import Checkbox from '../controls/StyledCheckbox';
 import StyledInput from '../controls/StyledInput';
 import InfoButton from '../buttons/InfoButton';
 import closeX from '../../assets/svg/close-x-gray.svg';
-import psaEditedConfig from '../../config/formconfig/PsaEditedConfig';
 import { CenteredContainer } from '../../utils/Layout';
 import { OL } from '../../utils/consts/Colors';
 import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { APP, STATE } from '../../utils/consts/FrontEndStateConsts';
-import { PSA_STATUSES, PSA_FAILURE_REASONS, EDIT_FIELDS } from '../../utils/consts/Consts';
-import { stripIdField } from '../../utils/DataUtils';
-import { toISODateTime } from '../../utils/FormattingUtils';
+import { PSA_STATUSES, PSA_FAILURE_REASONS } from '../../utils/consts/Consts';
+import { getEntityKeyId, stripIdField } from '../../utils/DataUtils';
 
 import * as FormActionFactory from '../../containers/psa/FormActionFactory';
 import * as ReviewActionFactory from '../../containers/review/ReviewActionFactory';
@@ -228,6 +224,7 @@ class ClosePSAModal extends React.Component<Props, State> {
     } = this.props;
     if (!actions.changePSAStatus) return;
     const statusNotesList = (statusNotes && statusNotes.length) ? Immutable.List.of(statusNotes) : Immutable.List();
+    const psaEKID = getEntityKeyId(scores);
 
     const scoresEntity = stripIdField(scores
       .set(PROPERTY_TYPES.STATUS, Immutable.List.of(status))
@@ -239,16 +236,7 @@ class ClosePSAModal extends React.Component<Props, State> {
       callback: onStatusChangeCallback
     });
 
-    actions.submit({
-      app,
-      config: psaEditedConfig,
-      values: {
-        [EDIT_FIELDS.PSA_ID]: [scoresEntity.getIn([PROPERTY_TYPES.GENERAL_ID, 0])],
-        [EDIT_FIELDS.TIMESTAMP]: [toISODateTime(moment())],
-        [EDIT_FIELDS.PERSON_ID]: [AuthUtils.getUserInfo().email]
-      },
-      callback: actions.clearSubmit
-    });
+    actions.editPSA({ psaEKID });
     onSubmit();
     this.setState({ editing: false });
   }
