@@ -73,7 +73,9 @@ export const CHARGES = {
   DMF_STEP_4: 'dmfStep4Charges',
   BRE: 'bookingReleaseExceptionCharges',
   BHE: 'bookingHoldExceptionCharges',
-  LOADING: 'loadingCharges'
+  LOADING: 'loadingCharges',
+  SUBMITTING_CHARGE: 'submittingCharge',
+  UPDATING_CHARGE: 'updatingCharge'
 };
 
 // Check-Ins
