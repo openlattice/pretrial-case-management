@@ -337,7 +337,6 @@ function* refreshHearingAndNeighborsWatcher() :Generator<*, *, *> {
   yield takeEvery(REFRESH_HEARING_AND_NEIGHBORS, refreshHearingAndNeighborsWorker);
 }
 
-
 function* submitExistingHearingWorker(action :SequenceAction) :Generator<*, *, *> {
   const {
     caseId,
