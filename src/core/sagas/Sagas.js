@@ -118,6 +118,7 @@ export default function* sagas() :Generator<*, *, *> {
     fork(PSAModalSagas.loadPSAModalWatcher),
 
     // PSA Sagas
+    fork(PsaSagas.editPSAWatcher),
     fork(PsaSagas.loadDataModelWatcher),
     fork(PsaSagas.loadNeighborsWatcher),
     fork(PsaSagas.submitPSAWatcher),
