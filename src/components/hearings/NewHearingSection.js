@@ -183,7 +183,6 @@ class NewHearingSection extends React.Component<Props, State> {
   }
 
   selectCurrentHearing = () => {
-    const { onSubmit } = this.props;
     const {
       newHearingDate,
       newHearingTime,
