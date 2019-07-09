@@ -13,15 +13,13 @@ import { bindActionCreators } from 'redux';
 import NewChargeForm from '../../components/managecharges/NewChargeForm';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { CHARGE_TYPES } from '../../utils/consts/ChargeConsts';
-import { ID_FIELD_NAMES } from '../../utils/consts/Consts';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { Wrapper, TitleWrapper, CloseModalX } from '../../utils/Layout';
 import {
   APP,
   CHARGES,
   EDM,
-  STATE,
-  SUBMIT
+  STATE
 } from '../../utils/consts/FrontEndStateConsts';
 
 import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
@@ -44,7 +42,6 @@ const Body = styled.div`
 
 type Props = {
   arrestEntitySetId :string,
-  app :Map<*, *>,
   chargeType :string,
   courtEntitySetId :string,
   creatingNew :boolean,
@@ -108,10 +105,6 @@ const INITIAL_STATE = {
 };
 
 class NewChargeModal extends React.Component<Props, State> {
-
-  static defaultProps = {
-    onSubmit: () => {}
-  }
 
   constructor(props :Props) {
     super(props);
