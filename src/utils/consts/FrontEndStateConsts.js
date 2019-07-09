@@ -240,14 +240,13 @@ export const PSA_FORM = {
   PSA: 'psa',
   DATA_MODEL: 'dataModel',
   ENTITY_SET_LOOKUP: 'entitySetLookup',
-  SUBMITTED: 'isSubmitted',
-  SUBMITTING: 'isSubmitting',
   LOADING_NEIGHBORS: 'isLoadingNeighbors',
   SUBMIT_ERROR: 'submitError',
   SUBMITTED_PSA: 'submittedPSA',
   PSA_SUBMISSION_COMPLETE: 'psaSubmissionComplete',
   SUBMITTED_PSA_NEIGHBORS: 'submittedPSANeighbors',
-  SUBMITTING_PSA: 'submittingPSA'
+  SUBMITTING_PSA: 'submittingPSA',
+  EDITING_PSA: 'editingPSA'
 };
 
 // People
