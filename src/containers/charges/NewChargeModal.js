@@ -12,7 +12,6 @@ import { bindActionCreators } from 'redux';
 
 import NewChargeForm from '../../components/managecharges/NewChargeForm';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
-import { arrestChargeConfig, courtChargeConfig } from '../../config/formconfig/ChargeConfig';
 import { CHARGE_TYPES } from '../../utils/consts/ChargeConsts';
 import { ID_FIELD_NAMES } from '../../utils/consts/Consts';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
@@ -213,8 +212,7 @@ class NewChargeModal extends React.Component<Props, State> {
     let newChargeFields = {
       [PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE]: [newStatute],
       [PROPERTY_TYPES.REFERENCE_CHARGE_DESCRIPTION]: [newDescription],
-      [PROPERTY_TYPES.CHARGE_IS_VIOLENT]: [newIsViolent],
-      [ID_FIELD_NAMES.CHARGE_ID]: [`${newStatute}|${newDescription}`],
+      [PROPERTY_TYPES.CHARGE_IS_VIOLENT]: [newIsViolent]
     };
     if (chargeType === CHARGE_TYPES.ARREST) {
       newChargeFields = Object.assign({}, newChargeFields, {
@@ -262,23 +260,13 @@ class NewChargeModal extends React.Component<Props, State> {
 
   updateCharge = () => {
     const {
-      app,
       actions,
       chargeType,
       onClose,
       existingCharge
     } = this.props;
-    const { updateEntity, submit } = actions;
+    const { updateEntity, createCharge } = actions;
     const entitySetId = this.getChargeListEntitySetId();
-    let config;
-    // TODO: We propbably want to change the name of these entity sets so that they capture county and state
-    if (chargeType === CHARGE_TYPES.COURT) {
-      config = courtChargeConfig();
-    }
-    if (chargeType === CHARGE_TYPES.ARREST) {
-      config = arrestChargeConfig();
-    }
-
 
     if (existingCharge) {
       const entities = this.getChargeUpdate();
@@ -290,13 +278,8 @@ class NewChargeModal extends React.Component<Props, State> {
       });
     }
     else {
-      const newChargeFields = this.getChargeFields();
-      submit({
-        app,
-        config,
-        values: newChargeFields,
-        callback: this.reloadChargesCallback
-      });
+      const newChargeEntity = this.getChargeFields();
+      createCharge({ chargeType, newChargeEntity });
     }
     onClose();
   }
@@ -411,8 +394,8 @@ class NewChargeModal extends React.Component<Props, State> {
 }
 
 function mapStateToProps(state) {
-  const submit = state.get(STATE.SUBMIT);
   const app = state.get(STATE.APP);
+  const charges = state.get(STATE.CHARGES);
   const edm = state.get(STATE.EDM);
   const orgId = app.get(APP.SELECTED_ORG_ID, '');
   return {
@@ -427,7 +410,7 @@ function mapStateToProps(state) {
     [EDM.FQN_TO_ID]: edm.get(EDM.FQN_TO_ID),
 
     // Submit
-    [SUBMIT.SUBMITTING]: submit.get(SUBMIT.SUBMITTING, false)
+    [CHARGES.SUBMITTING_CHARGE]: charges.get(CHARGES.SUBMITTING_CHARGE)
   };
 }
 
