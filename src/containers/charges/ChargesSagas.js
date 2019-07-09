@@ -1,8 +1,10 @@
 /*
  * @flow
  */
-import { AuthorizationApi, SearchApi } from 'lattice';
+import { AuthorizationApi, DataApi, SearchApi } from 'lattice';
 import { Map, Set, fromJS } from 'immutable';
+import type { SequenceAction } from 'redux-reqseq';
+import { DataApiActions, DataApiSagas } from 'lattice-sagas';
 import {
   all,
   call,
@@ -10,29 +12,109 @@ import {
   select,
   takeEvery
 } from '@redux-saga/core/effects';
-import type { SequenceAction } from 'redux-reqseq';
 
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
+import { getPropteryIdToValueMap } from '../../edm/edmUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { MAX_HITS } from '../../utils/consts/Consts';
 import { APP, STATE } from '../../utils/consts/FrontEndStateConsts';
+import { CHARGE_TYPES } from '../../utils/consts/ChargeConsts';
 import {
+  CREATE_CHARGE,
   DELETE_CHARGE,
   LOAD_ARRESTING_AGENCIES,
   LOAD_CHARGES,
   UPDATE_CHARGE,
+  createCharge,
   deleteCharge,
   loadArrestingAgencies,
   loadCharges,
   updateCharge
 } from './ChargesActionFactory';
 
-const { ARRESTING_AGENCIES } = APP_TYPES;
+const { createOrMergeEntityData, getEntityData } = DataApiActions;
+const { createOrMergeEntityDataWorker, getEntityDataWorker } = DataApiSagas;
+
+const { ARREST_CHARGE_LIST, ARRESTING_AGENCIES, COURT_CHARGE_LIST } = APP_TYPES;
 const { ENTITY_KEY_ID } = PROPERTY_TYPES;
 
 const getApp = state => state.get(STATE.APP, Map());
+const getEDM = state => state.get(STATE.EDM, Map());
 const getOrgId = state => state.getIn([STATE.APP, APP.SELECTED_ORG_ID], '');
+
+/*
+ * createArrestCharge()
+ */
+
+function* createChargeWorker(action :SequenceAction) :Generator<*, *, *> {
+  try {
+    yield put(createCharge.request(action.id));
+    let charge = Map();
+    const app = yield select(getApp);
+    const edm = yield select(getEDM);
+    const orgId = yield select(getOrgId);
+
+    const { chargeType, newChargeEntity } = action.value;
+
+    let chargeESID;
+
+    switch (chargeType) {
+      case CHARGE_TYPES.ARREST:
+        chargeESID = getEntitySetIdFromApp(app, ARREST_CHARGE_LIST);
+        break;
+      case CHARGE_TYPES.COURT:
+        chargeESID = getEntitySetIdFromApp(app, COURT_CHARGE_LIST);
+        break;
+      default:
+        break;
+    }
+
+    const chargeSubmitEntity = getPropteryIdToValueMap(newChargeEntity, edm);
+
+    /*
+    * Submit data and collect response
+    */
+    const [chargeEKID] = yield call(
+      DataApi.createOrMergeEntityData,
+      chargeESID,
+      [chargeSubmitEntity]
+    );
+
+    /*
+    * Get Charge Info
+    */
+
+    const chargeData = yield call(
+      getEntityDataWorker,
+      getEntityData({
+        entitySetId: chargeESID,
+        entityKeyId: chargeEKID
+      })
+    );
+    if (chargeData.error) throw chargeData.error;
+    charge = fromJS(chargeData.data);
+
+
+    yield put(createCharge.success(action.id, {
+      charge,
+      chargeEKID,
+      chargeType,
+      orgId
+    }));
+
+  }
+  catch (error) {
+    console.error(error);
+    yield put(createCharge.failure(action.id, error));
+  }
+  finally {
+    yield put(createCharge.finally(action.id));
+  }
+}
+function* createChargeWatcher() :Generator<*, *, *> {
+  yield takeEvery(CREATE_CHARGE, createChargeWorker);
+}
 
 /*
  * deleteCharge()
@@ -252,6 +334,7 @@ function* loadChargesWatcher() :Generator<*, *, *> {
 }
 
 export {
+  createChargeWatcher,
   deleteChargesWatcher,
   loadArrestingAgenciesWatcher,
   loadChargesWatcher,
