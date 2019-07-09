@@ -83,7 +83,8 @@ export const CHECK_IN = {
   CHECK_IN_IDS: 'checkInIds',
   CHECK_INS_BY_ID: 'checkInsById',
   LOADING_CHECK_IN_NEIGHBORS: 'loadingCheckInNieghbors',
-  CHECK_IN_NEIGHBORS_BY_ID: 'checkInNeighborsById'
+  CHECK_IN_NEIGHBORS_BY_ID: 'checkInNeighborsById',
+  SUBMITTING_CHECKINS: 'submittingCheckins',
 };
 
 // Court
