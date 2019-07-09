@@ -21,7 +21,7 @@ import {
 
 import { loadPSAData } from '../review/ReviewActionFactory';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
-import { getEntityProperties } from '../../utils/DataUtils';
+import { createIdObject, getEntityProperties } from '../../utils/DataUtils';
 import { getPropertyTypeId, getPropteryIdToValueMap } from '../../edm/edmUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_STATUSES } from '../../utils/consts/Consts';
@@ -142,54 +142,27 @@ function* editPSAWorker(action :SequenceAction) :Generator<*, *, *> {
      */
 
     const data = { [datetimePTID]: [moment().toISOString(true)] };
-    const dst = {
-      entityKeyId: staffEKID,
-      entitySetId: staffESID
-    };
+    const dst = createIdObject(staffEKID, staffESID);
+    const psaSource = createIdObject(psaEKID, psaScoresESID);
+    const psaRiskFactorsSource = createIdObject(psaRiskFactorsEKID, psaRiskFactorsESID);
+    const dmfResultsSource = createIdObject(dmfResultsEKID, dmfResultsESID);
+    const dmfRiskFactorsSource = createIdObject(dmfRiskFactorsEKID, dmfRiskFactorsESID);
 
     const associations = {
-      [editedBynESID]: [
-        {
-          data,
-          dst,
-          src: {
-            entityKeyId: psaEKID,
-            entitySetId: psaScoresESID
-          }
-        },
-        {
-          data,
-          dst,
-          src: {
-            entityKeyId: psaRiskFactorsEKID,
-            entitySetId: psaRiskFactorsESID
-          }
-        }
-      ]
+      [editedBynESID]: [{ data, dst, src: psaSource }]
     };
+
+    if (psaRiskFactorsEKID) {
+      associations[editedBynESID] = associations[editedBynESID].concat([{ data, dst, src: psaRiskFactorsSource }]);
+    }
 
     if (includesPretrialModule) {
       associations[editedBynESID] = associations[editedBynESID].concat([
-        {
-          data,
-          dst,
-          src: {
-            entityKeyId: dmfResultsEKID,
-            entitySetId: dmfResultsESID
-          }
-        },
-        {
-          data,
-          dst,
-          src: {
-            entityKeyId: dmfRiskFactorsEKID,
-            entitySetId: dmfRiskFactorsESID
-          }
-        },
+        { data, dst, src: dmfResultsSource },
+        { data, dst, src: dmfRiskFactorsSource }
       ]);
     }
 
-    console.log(associations);
     /*
      * Submit Associations
      */
