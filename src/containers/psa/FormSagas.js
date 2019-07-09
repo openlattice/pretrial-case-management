@@ -50,6 +50,7 @@ const {
   APPEARS_IN,
   ARREST_CASES,
   ASSESSED_BY,
+  ARREST_CHARGES,
   BONDS,
   CALCULATED_FOR,
   CHARGED_WITH,
@@ -295,6 +296,7 @@ function* getOpenPSANeighbors(neighbors) :Generator<*, *, *> {
    * Get Entity Set Ids
    */
   const arrestCasesEntitySetId = getEntitySetIdFromApp(app, ARREST_CASES);
+  const arrestChargesEntitySetId = getEntitySetIdFromApp(app, ARREST_CHARGES);
   const bondsEntitySetId = getEntitySetIdFromApp(app, BONDS);
   const dmfResultsEntitySetId = getEntitySetIdFromApp(app, DMF_RESULTS);
   const dmfRiskFactorsEntitySetId = getEntitySetIdFromApp(app, DMF_RISK_FACTORS);
@@ -332,6 +334,7 @@ function* getOpenPSANeighbors(neighbors) :Generator<*, *, *> {
           ],
           destinationEntitySetIds: [
             arrestCasesEntitySetId,
+            arrestChargesEntitySetId,
             dmfRiskFactorsEntitySetId,
             hearingsEntitySetId,
             manualPretrialCourtCasesEntitySetId,
@@ -363,6 +366,7 @@ function* loadNeighborsWorker(action :SequenceAction) :Generator<*, *, *> {
    * Get Entity Set Ids
    */
   const arrestCasesEntitySetId = getEntitySetIdFromApp(app, ARREST_CASES);
+  const arrestChargesEntitySetId = getEntitySetIdFromApp(app, ARREST_CHARGES);
   const bondsEntitySetId = getEntitySetIdFromApp(app, BONDS);
   const chargesEntitySetId = getEntitySetIdFromApp(app, CHARGES);
   const checkInAppointmentsEntitySetId = getEntitySetIdFromApp(app, CHECKIN_APPOINTMENTS);
@@ -413,6 +417,7 @@ function* loadNeighborsWorker(action :SequenceAction) :Generator<*, *, *> {
           ],
           destinationEntitySetIds: [
             arrestCasesEntitySetId,
+            arrestChargesEntitySetId,
             chargesEntitySetId,
             hearingsEntitySetId,
             manualChargesEntitySetId,
