@@ -8,6 +8,9 @@ import type { RequestSequence } from 'redux-reqseq';
 const ADD_CASE_AND_CHARGES :string = 'ADD_CASE_AND_CHARGES';
 const addCaseAndCharges :RequestSequence = newRequestSequence(ADD_CASE_AND_CHARGES);
 
+const EDIT_PSA :string = 'EDIT_PSA';
+const editPSA :RequestSequence = newRequestSequence(EDIT_PSA);
+
 const LOAD_DATA_MODEL :string = 'LOAD_DATA_MODEL';
 const loadDataModel :RequestSequence = newRequestSequence(LOAD_DATA_MODEL);
 
@@ -16,9 +19,6 @@ const loadNeighbors :RequestSequence = newRequestSequence(LOAD_NEIGHBORS);
 
 const SUBMIT_PSA :string = 'SUBMIT_PSA';
 const submitPSA :RequestSequence = newRequestSequence(SUBMIT_PSA);
-
-const UPDATE_PSA :string = 'UPDATE_PSA';
-const updatePSA :RequestSequence = newRequestSequence(UPDATE_PSA);
 
 // reducer only
 
@@ -39,12 +39,12 @@ export {
   LOAD_DATA_MODEL,
   LOAD_NEIGHBORS,
   SUBMIT_PSA,
-  UPDATE_PSA,
+  EDIT_PSA,
   addCaseAndCharges,
   loadDataModel,
   loadNeighbors,
   submitPSA,
-  updatePSA,
+  editPSA,
   CLEAR_FORM,
   SELECT_PERSON,
   SELECT_PRETRIAL_CASE,
