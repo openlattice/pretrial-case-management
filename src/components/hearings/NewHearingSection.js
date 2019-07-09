@@ -112,7 +112,6 @@ type Props = {
       callback :() => void
     }) => void
   },
-  onSubmit? :(hearing :Object) => void,
   afterSubmit :() => void
 }
 
@@ -126,10 +125,6 @@ const INITIAL_STATE = {
 };
 
 class NewHearingSection extends React.Component<Props, State> {
-
-  static defaultProps = {
-    onSubmit: () => {}
-  }
 
   constructor(props :Props) {
     super(props);
