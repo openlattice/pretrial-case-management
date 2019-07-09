@@ -127,6 +127,8 @@ export const getEntityProperties = (entityObj, propertyList) => {
   return returnPropertyFields.toJS();
 };
 
+export const createIdObject = (entityKeyId, entitySetId) => ({ entityKeyId, entitySetId });
+
 export const getCreateAssociationObject = ({
   associationEntity,
   srcEntitySetId,
