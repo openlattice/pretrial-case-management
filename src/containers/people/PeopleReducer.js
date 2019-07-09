@@ -13,6 +13,7 @@ import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PEOPLE, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { PSA_STATUSES } from '../../utils/consts/Consts';
+import { editPSA } from '../psa/FormActionFactory';
 import { enrollVoice, getProfile } from '../enroll/EnrollActionFactory';
 import { changePSAStatus, updateScoresAndRiskFactors, loadPSAData } from '../review/ReviewActionFactory';
 import { deleteEntity } from '../../utils/data/DataActionFactory';
@@ -33,7 +34,8 @@ const {
   DMF_RESULTS,
   HEARINGS,
   PSA_SCORES,
-  RELEASE_RECOMMENDATIONS
+  RELEASE_RECOMMENDATIONS,
+  STAFF
 } = APP_TYPES;
 
 const {
@@ -143,6 +145,17 @@ export default function peopleReducer(state :Map = INITIAL_STATE, action :Object
             .set(PEOPLE.NO_PENDING_CHARGES_PEOPLE, peopleWithNoPendingCharges)
             .set(PEOPLE.NO_PENDING_CHARGES_PSA_SCORES, psaScoresWithNoPendingCharges)
             .set(PEOPLE.MOST_RECENT_PSA, mostRecentPSA);
+        }
+      });
+    }
+
+    case editPSA.case(action.type): {
+      return editPSA.reducer(state, action, {
+        SUCCESS: () => {
+          const { psaEKID, staffNeighbors } = action.value;
+          let psaNeighbors = state.get(PEOPLE.PSA_NEIGHBORS_BY_ID, Map());
+          psaNeighbors = psaNeighbors.setIn([psaEKID, STAFF], staffNeighbors);
+          return state.set(PEOPLE.PSA_NEIGHBORS, psaNeighbors);
         }
       });
     }
