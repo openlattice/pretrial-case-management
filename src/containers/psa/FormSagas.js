@@ -4,6 +4,7 @@
 import moment from 'moment';
 import { fromJS, List, Map } from 'immutable';
 import type { SequenceAction } from 'redux-reqseq';
+import { AuthUtils } from 'lattice-auth';
 import { Constants, EntityDataModelApi } from 'lattice';
 import {
   DataApiActions,
@@ -21,24 +22,24 @@ import {
 import { loadPSAData } from '../review/ReviewActionFactory';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { getEntityProperties } from '../../utils/DataUtils';
-import { hearingIsCancelled } from '../../utils/HearingUtils';
 import { getPropertyTypeId, getPropteryIdToValueMap } from '../../edm/edmUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { APP, STATE, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { PSA_STATUSES } from '../../utils/consts/Consts';
+import { APP, STATE, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import {
+  EDIT_PSA,
   LOAD_DATA_MODEL,
   LOAD_NEIGHBORS,
   SUBMIT_PSA,
-  UPDATE_PSA,
+  editPSA,
   loadDataModel,
   loadNeighbors,
-  submitPSA,
-  updatePSA,
+  submitPSA
 } from './FormActionFactory';
 
 const {
   COMPLETED_DATE_TIME,
+  DATE_TIME,
   ENTITY_KEY_ID,
   GENERAL_ID,
   TIMESTAMP,
@@ -46,17 +47,18 @@ const {
 } = PROPERTY_TYPES;
 
 const {
-  CALCULATED_FOR,
-  ASSESSED_BY,
-  CHARGED_WITH,
   APPEARS_IN,
   ARREST_CASES,
+  ASSESSED_BY,
   BONDS,
+  CALCULATED_FOR,
+  CHARGED_WITH,
   CHARGES,
   CHECKIN_APPOINTMENTS,
   CONTACT_INFORMATION,
   DMF_RESULTS,
   DMF_RISK_FACTORS,
+  EDITED_BY,
   FTAS,
   HEARINGS,
   MANUAL_CHARGES,
@@ -88,6 +90,162 @@ const { OPENLATTICE_ID_FQN } = Constants;
 
 const LIST_ENTITY_SETS = List.of(STAFF, RELEASE_CONDITIONS, HEARINGS, PRETRIAL_CASES, CHECKIN_APPOINTMENTS);
 
+const getStaffId = () => {
+  const staffInfo = AuthUtils.getUserInfo();
+  let staffId = staffInfo.id;
+  if (staffInfo.email && staffInfo.email.length > 0) {
+    staffId = staffInfo.email;
+  }
+  return staffId;
+};
+
+function* editPSAWorker(action :SequenceAction) :Generator<*, *, *> {
+  const {
+    includesPretrialModule,
+    psaEKID,
+    psaRiskFactorsEKID,
+    dmfResultsEKID,
+    dmfRiskFactorsEKID
+  } = action.value;
+  try {
+    yield put(editPSA.request(action.id));
+    const app = yield select(getApp);
+    const edm = yield select(getEDM);
+    const orgId = yield select(getOrgId);
+    const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
+
+    /*
+     * Get Staff Entity Key Id
+     */
+    const staffIdsToEntityKeyIds = app.get(APP.STAFF_IDS_TO_EKIDS, Map());
+    const staffId = getStaffId();
+    const staffEKID = staffIdsToEntityKeyIds.get(staffId, '');
+
+    /*
+     * Get Property Type Ids
+     */
+    const datetimePTID = getPropertyTypeId(edm, DATE_TIME);
+
+    /*
+     * Get Entity Set Ids
+     */
+    const editedBynESID = getEntitySetIdFromApp(app, EDITED_BY);
+    const dmfResultsESID = getEntitySetIdFromApp(app, DMF_RESULTS);
+    const dmfRiskFactorsESID = getEntitySetIdFromApp(app, DMF_RISK_FACTORS);
+    const psaRiskFactorsESID = getEntitySetIdFromApp(app, PSA_RISK_FACTORS);
+    const psaScoresESID = getEntitySetIdFromApp(app, PSA_SCORES);
+    const staffESID = getEntitySetIdFromApp(app, STAFF);
+
+    /*
+     * Assemble Assoociations
+     */
+
+    const data = { [datetimePTID]: [moment().toISOString(true)] };
+    const dst = {
+      entityKeyId: staffEKID,
+      entitySetId: staffESID
+    };
+
+    const associations = {
+      [editedBynESID]: [
+        {
+          data,
+          dst,
+          src: {
+            entityKeyId: psaEKID,
+            entitySetId: psaScoresESID
+          }
+        },
+        {
+          data,
+          dst,
+          src: {
+            entityKeyId: psaRiskFactorsEKID,
+            entitySetId: psaRiskFactorsESID
+          }
+        }
+      ]
+    };
+
+    if (includesPretrialModule) {
+      associations[editedBynESID] = associations[editedBynESID].concat([
+        {
+          data,
+          dst,
+          src: {
+            entityKeyId: dmfResultsEKID,
+            entitySetId: dmfResultsESID
+          }
+        },
+        {
+          data,
+          dst,
+          src: {
+            entityKeyId: dmfRiskFactorsEKID,
+            entitySetId: dmfRiskFactorsESID
+          }
+        },
+      ]);
+    }
+
+    console.log(associations);
+    /*
+     * Submit Associations
+     */
+    const response = yield call(
+      createAssociationsWorker,
+      createAssociations(associations)
+    );
+
+    if (response.error) throw response.error;
+
+    /*
+     * Get updated staff data for psa
+     */
+
+    let psaNeighborsById = yield call(
+      searchEntityNeighborsWithFilterWorker,
+      searchEntityNeighborsWithFilter({
+        entitySetId: psaScoresESID,
+        filter: {
+          entityKeyIds: [psaEKID],
+          sourceEntitySetIds: [],
+          destinationEntitySetIds: [staffESID]
+        }
+      })
+    );
+
+    if (psaNeighborsById.error) throw psaNeighborsById.error;
+    psaNeighborsById = fromJS(psaNeighborsById.data);
+    const psaNeighbors = psaNeighborsById.get(psaEKID, List());
+
+    /*
+     * Format Neighbors
+     */
+    const staffNeighbors = psaNeighbors.filter((neighbor) => {
+      const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id']);
+      const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
+      return appTypeFqn && appTypeFqn === STAFF;
+    });
+
+    yield put(editPSA.success(action.id, {
+      psaEKID,
+      staffNeighbors
+    }));
+  }
+
+  catch (error) {
+    console.error(error);
+    yield put(editPSA.failure(action.id, error));
+  }
+  finally {
+    yield put(editPSA.finally(action.id));
+  }
+}
+
+function* editPSAWatcher() :Generator<*, *, *> {
+  yield takeEvery(EDIT_PSA, editPSAWorker);
+}
 
 function* loadDataModelWorker(action :SequenceAction) :Generator<*, *, *> {
 
@@ -767,6 +925,7 @@ function* submitPSAWatcher() :Generator<*, *, *> {
 }
 
 export {
+  editPSAWatcher,
   loadDataModelWatcher,
   loadNeighborsWatcher,
   submitPSAWatcher
