@@ -1,16 +1,34 @@
 /*
  * @flow
  */
-import { Map, Set, fromJS } from 'immutable';
+import {
+  List,
+  Map,
+  Set,
+  fromJS
+} from 'immutable';
 
+import { getEntityProperties } from '../../utils/DataUtils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { CHARGES } from '../../utils/consts/FrontEndStateConsts';
+import { CHARGE_TYPES } from '../../utils/consts/ChargeConsts';
 import {
+  createCharge,
   deleteCharge,
   loadArrestingAgencies,
   loadCharges,
   updateCharge
 } from './ChargesActionFactory';
+
+const {
+  BHE,
+  BRE,
+  CHARGE_IS_VIOLENT,
+  CHARGE_DMF_STEP_2,
+  CHARGE_DMF_STEP_4,
+  REFERENCE_CHARGE_STATUTE,
+  REFERENCE_CHARGE_DESCRIPTION,
+} = PROPERTY_TYPES;
 
 const INITIAL_STATE :Map<*, *> = fromJS({
   [CHARGES.ARRESTING_AGENCIES]: Map(),
@@ -25,7 +43,9 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [CHARGES.DMF_STEP_4]: Map(),
   [CHARGES.BRE]: Map(),
   [CHARGES.BHE]: Map(),
-  [CHARGES.LOADING]: false
+  [CHARGES.LOADING]: false,
+  [CHARGES.SUBMITTING_CHARGE]: false,
+  [CHARGES.UPDATING_CHARGE]: false,
 });
 
 const CHARGE_PT_PAIRS = {
@@ -37,6 +57,64 @@ const CHARGE_PT_PAIRS = {
 
 export default function chargesReducer(state :Map<*, *> = INITIAL_STATE, action :Object) {
   switch (action.type) {
+
+    case createCharge.case(action.type): {
+      return createCharge.reducer(state, action, {
+        REQUEST: () => state.set(CHARGES.SUBMITTING_CHARGE, true),
+        SUCCESS: () => {
+          const {
+            charge,
+            chargeEKID,
+            chargeType,
+            orgId
+          } = action.value;
+          const fieldOfState = chargeType === CHARGE_TYPES.COURT ? CHARGES.COURT : CHARGES.ARREST;
+
+          const {
+            [BHE]: chargeIsBHE,
+            [BRE]: chargeIsBRE,
+            [CHARGE_IS_VIOLENT]: chargeIsViolent,
+            [CHARGE_DMF_STEP_2]: chargeIsStep2,
+            [CHARGE_DMF_STEP_4]: chargeIsStep4,
+            [REFERENCE_CHARGE_DESCRIPTION]: description,
+            [REFERENCE_CHARGE_STATUTE]: statute
+          } = getEntityProperties(charge,
+            [
+              CHARGE_IS_VIOLENT,
+              CHARGE_DMF_STEP_2,
+              CHARGE_DMF_STEP_4,
+              BHE,
+              BRE,
+              REFERENCE_CHARGE_STATUTE,
+              REFERENCE_CHARGE_DESCRIPTION
+            ]);
+
+          let nextState = state;
+
+          const setChargeInState = field => nextState.setIn(
+            [field, orgId, statute],
+            nextState.getIn([field, orgId, statute], List()).push(description)
+          );
+
+          if (charge.size) {
+            nextState = nextState.setIn([fieldOfState, orgId, chargeEKID], charge);
+
+            if (chargeIsViolent) {
+              nextState = chargeType === CHARGE_TYPES.COURT
+                ? setChargeInState(CHARGES.COURT_VIOLENT)
+                : setChargeInState(CHARGES.ARREST_VIOLENT);
+            }
+            if (chargeIsStep2) nextState = setChargeInState(CHARGES.DMF_STEP_2);
+            if (chargeIsStep4) nextState = setChargeInState(CHARGES.DMF_STEP_4);
+            if (chargeIsBHE) nextState = setChargeInState(CHARGES.BHE);
+            if (chargeIsBRE) nextState = setChargeInState(CHARGES.BRE);
+          }
+
+          return nextState;
+        },
+        FINALLY: () => state.set(CHARGES.SUBMITTING_CHARGE, false)
+      });
+    }
 
     case loadArrestingAgencies.case(action.type): {
       return loadArrestingAgencies.reducer(state, action, {
