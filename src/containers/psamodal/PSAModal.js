@@ -496,7 +496,6 @@ class PSAModal extends React.Component<Props, State> {
     e.preventDefault();
     const {
       actions,
-      app,
       entityKeyId,
       psaNeighbors,
       scores,
@@ -561,26 +560,22 @@ class PSAModal extends React.Component<Props, State> {
       notesEntity
     });
 
-    const values = {
-      [EDIT_FIELDS.PSA_ID]: [scoreId],
-      [EDIT_FIELDS.RISK_FACTORS_ID]: [riskFactorsId],
-      [EDIT_FIELDS.DMF_ID]: [dmfId],
-      [EDIT_FIELDS.DMF_RISK_FACTORS_ID]: [dmfRiskFactorsId],
-      [EDIT_FIELDS.NOTES_ID]: [notesId],
-      [EDIT_FIELDS.TIMESTAMP]: [toISODateTime(moment())],
-      [EDIT_FIELDS.PERSON_ID]: [AuthUtils.getUserInfo().email]
-    };
+    const psaRiskFactors = psaNeighbors.get(PSA_RISK_FACTORS, Map());
+    const dmfResults = psaNeighbors.get(DMF_RESULTS, Map());
+    const dmfRiskFactors = psaNeighbors.get(DMF_RISK_FACTORS, Map());
 
-    if (!includesPretrialModule) {
-      delete values[EDIT_FIELDS.DMF_ID];
-      delete values[EDIT_FIELDS.DMF_RISK_FACTORS_ID];
-    }
+    const psaEKID = getEntityKeyId(scores);
+    const psaRiskFactorsEKID = getEntityKeyId(psaRiskFactors);
+    const dmfResultsEKID = getEntityKeyId(dmfResults);
+    const dmfRiskFactorsEKID = getEntityKeyId(dmfRiskFactors);
 
     if (scoreId) {
-      actions.submit({
-        app,
-        config: psaEditedConfig,
-        values
+      actions.editPSA({
+        includesPretrialModule,
+        psaEKID,
+        psaRiskFactorsEKID,
+        dmfResultsEKID,
+        dmfRiskFactorsEKID
       });
     }
 
