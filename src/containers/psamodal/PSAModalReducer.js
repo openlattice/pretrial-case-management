@@ -8,6 +8,7 @@ import { getEntityProperties } from '../../utils/DataUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_MODAL, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { loadPSAModal, CLEAR_PSA_MODAL } from './PSAModalActionFactory';
+import { editPSA } from '../psa/FormActionFactory';
 import { submitExistingHearing, submitHearing, refreshHearingAndNeighbors } from '../hearings/HearingsActionFactory';
 import { updateContactInfo, refreshPersonNeighbors } from '../people/PeopleActionFactory';
 import {
@@ -30,6 +31,7 @@ const {
   PSA_RISK_FACTORS,
   PSA_SCORES,
   RELEASE_RECOMMENDATIONS,
+  STAFF,
   SUBSCRIPTION
 } = APP_TYPES;
 
@@ -52,10 +54,24 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [PSA_MODAL.FTA_HISTORY]: Map(),
   [PSA_MODAL.PERSON_HEARINGS]: Map(),
   [PSA_MODAL.PERSON_NEIGHBORS]: Map(),
+  [PSA_MODAL.EDITING_PSA]: false
 });
 
 export default function psaModalReducer(state :Map<*, *> = INITIAL_STATE, action :Object) {
   switch (action.type) {
+
+    case editPSA.case(action.type): {
+      return editPSA.reducer(state, action, {
+        REQUEST: () => state.set(PSA_MODAL.EDITING_PSA, true),
+        SUCCESS: () => {
+          const { staffNeighbors } = action.value;
+          let psaNeighbors = state.get(PSA_MODAL.PSA_NEIGHBORS, Map());
+          psaNeighbors = psaNeighbors.set(STAFF, staffNeighbors);
+          return state.set(PSA_MODAL.PSA_NEIGHBORS, psaNeighbors);
+        },
+        FINALLY: () => state.set(PSA_MODAL.EDITING_PSA, false),
+      });
+    }
 
     case loadPSAModal.case(action.type): {
       return loadPSAModal.reducer(state, action, {
