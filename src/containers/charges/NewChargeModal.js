@@ -4,7 +4,7 @@
 
 import React from 'react';
 import styled from 'styled-components';
-import { Map, List } from 'immutable';
+import { fromJS, Map, List } from 'immutable';
 
 import Modal, { ModalTransition } from '@atlaskit/modal-dialog';
 import { connect } from 'react-redux';
@@ -185,7 +185,7 @@ class NewChargeModal extends React.Component<Props, State> {
     chargePropertyTypes.forEach((propertyType) => {
       const newValue = state[propertyType];
       const propertyTypeId = fqnToIdMap.get(propertyType, '');
-      if (newValue) entityFields[propertyTypeId] = [newValue];
+      if (newValue !== undefined) entityFields[propertyTypeId] = [newValue];
     });
     return { [entityKeyId]: entityFields };
   }
@@ -255,20 +255,15 @@ class NewChargeModal extends React.Component<Props, State> {
     const {
       actions,
       chargeType,
+      entityKeyId,
       onClose,
       existingCharge
     } = this.props;
-    const { updateEntity, createCharge } = actions;
-    const entitySetId = this.getChargeListEntitySetId();
+    const { createCharge, updateCharge } = actions;
 
     if (existingCharge) {
       const entities = this.getChargeUpdate();
-      updateEntity({
-        entitySetId,
-        entities,
-        updateType: 'PartialReplace',
-        callback: this.reloadChargesCallback
-      });
+      updateCharge({ chargeType, chargeEKID: entityKeyId, entities });
     }
     else {
       const newChargeEntity = this.getChargeFields();
@@ -277,33 +272,17 @@ class NewChargeModal extends React.Component<Props, State> {
     onClose();
   }
 
-  deleteChargeCallback = () => {
+  deleteCharge = () => {
     const {
       actions,
       chargeType,
       entityKeyId,
-      selectedOrganizationId
-    } = this.props;
-    const { deleteCharge } = actions;
-    const chargePropertyType = (chargeType === CHARGE_TYPES.COURT) ? CHARGES.COURT : CHARGES.ARREST;
-    deleteCharge({
-      entityKeyId,
-      selectedOrganizationId,
-      chargePropertyType,
-      callback: this.reloadChargesCallback
-    });
-  }
-
-  deleteCharge = () => {
-    const {
-      actions,
-      entityKeyId,
       onClose,
     } = this.props;
-    const { deleteEntity } = actions;
-    const entitySetId = this.getChargeListEntitySetId();
+    const { deleteCharge } = actions;
+    const charge = fromJS(this.getChargeFields());
 
-    deleteEntity({ entityKeyId, entitySetId, callback: this.deleteChargeCallback });
+    deleteCharge({ charge, chargeEKID: entityKeyId, chargeType });
     onClose();
   }
 
