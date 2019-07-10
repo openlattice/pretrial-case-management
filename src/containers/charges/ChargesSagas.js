@@ -145,7 +145,7 @@ function* deleteChargeWorker(action :SequenceAction) :Generator<*, *, *> {
     const chargeESID = yield call(getChargeESID, chargeType);
 
     /*
-    * Submit data and collect response
+    * Delete data and collect response
     */
     const deleteData = yield call(
       deleteEntityWorker,
