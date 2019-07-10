@@ -10,11 +10,9 @@ import Immutable, { List, Map } from 'immutable';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import Modal, { ModalTransition } from '@atlaskit/modal-dialog';
-import { AuthUtils } from 'lattice-auth';
 import { Link } from 'react-router-dom';
 
 import CustomTabs from '../../components/tabs/Tabs';
-import CourtCaseForPSAConfig from '../../config/formconfig/CourtCaseForPSAConfig';
 import LogoLoader from '../../components/LogoLoader';
 import PSAInputForm from '../../components/psainput/PSAInputForm';
 import PersonCard from '../../components/person/PersonCardReview';
@@ -31,7 +29,6 @@ import closeX from '../../assets/svg/close-x-gray.svg';
 import LoadPersonCaseHistoryButton from '../person/LoadPersonCaseHistoryButton';
 import { getScoresAndRiskFactors, calculateDMF } from '../../utils/ScoringUtils';
 import { CenteredContainer, Title } from '../../utils/Layout';
-import { toISODateTime } from '../../utils/FormattingUtils';
 import { getCasesForPSA, currentPendingCharges } from '../../utils/CaseUtils';
 import { RESULT_CATEGORIES } from '../../utils/consts/DMFResultConsts';
 import { formatDMFFromEntity } from '../../utils/DMFUtils';
@@ -57,8 +54,6 @@ import {
 import {
   CONTEXT,
   DMF,
-  EDIT_FIELDS,
-  ID_FIELD_NAMES,
   NOTES,
   PSA
 } from '../../utils/consts/Consts';
@@ -74,7 +69,6 @@ import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
 
 const {
   BONDS,
-  CALCULATED_FOR,
   DMF_RESULTS,
   DMF_RISK_FACTORS,
   MANUAL_PRETRIAL_CASES,
