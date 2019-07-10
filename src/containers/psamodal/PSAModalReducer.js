@@ -8,7 +8,7 @@ import { getEntityProperties } from '../../utils/DataUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_MODAL, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { loadPSAModal, CLEAR_PSA_MODAL } from './PSAModalActionFactory';
-import { editPSA } from '../psa/FormActionFactory';
+import { addCaseToPSA, editPSA, removeCaseFromPSA } from '../psa/FormActionFactory';
 import { submitExistingHearing, submitHearing, refreshHearingAndNeighbors } from '../hearings/HearingsActionFactory';
 import { updateContactInfo, refreshPersonNeighbors } from '../people/PeopleActionFactory';
 import {
@@ -28,6 +28,7 @@ const {
   DMF_RESULTS,
   HEARINGS,
   PEOPLE,
+  PRETRIAL_CASES,
   PSA_RISK_FACTORS,
   PSA_SCORES,
   RELEASE_RECOMMENDATIONS,
@@ -59,6 +60,17 @@ const INITIAL_STATE :Map<*, *> = fromJS({
 
 export default function psaModalReducer(state :Map<*, *> = INITIAL_STATE, action :Object) {
   switch (action.type) {
+
+    case addCaseToPSA.case(action.type): {
+      return addCaseToPSA.reducer(state, action, {
+        SUCCESS: () => {
+          const { pretrialCaseNeighbors } = action.value;
+          let psaNeighbors = state.get(PSA_MODAL.PSA_NEIGHBORS, Map());
+          psaNeighbors = psaNeighbors.set(PRETRIAL_CASES, pretrialCaseNeighbors);
+          return state.set(PSA_MODAL.PSA_NEIGHBORS, psaNeighbors);
+        }
+      });
+    }
 
     case editPSA.case(action.type): {
       return editPSA.reducer(state, action, {
@@ -119,6 +131,17 @@ export default function psaModalReducer(state :Map<*, *> = INITIAL_STATE, action
             .set(PSA_MODAL.PSA_NEIGHBORS, neighbors)
             .set(PSA_MODAL.HEARINGS, hearings)
             .set(PSA_MODAL.HEARING_IDS, hearingIds);
+        }
+      });
+    }
+
+    case removeCaseFromPSA.case(action.type): {
+      return removeCaseFromPSA.reducer(state, action, {
+        SUCCESS: () => {
+          const { pretrialCaseNeighbors } = action.value;
+          let psaNeighbors = state.get(PSA_MODAL.PSA_NEIGHBORS, Map());
+          psaNeighbors = psaNeighbors.set(PRETRIAL_CASES, pretrialCaseNeighbors);
+          return state.set(PSA_MODAL.PSA_NEIGHBORS, psaNeighbors);
         }
       });
     }
