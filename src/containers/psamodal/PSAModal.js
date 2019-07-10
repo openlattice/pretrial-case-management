@@ -762,33 +762,18 @@ class PSAModal extends React.Component<Props, State> {
     );
   }
 
-  addCaseToPSA = (values) => {
-    const { actions, app, scores } = this.props;
-    const psaId = scores.getIn([PROPERTY_TYPES.GENERAL_ID, 0]);
-
-    const caseToPSAValues = Object.assign({}, values, {
-      [PROPERTY_TYPES.TIMESTAMP]: moment().toISOString(true),
-      [ID_FIELD_NAMES.PSA_ID]: psaId
-    });
-
-    actions.submit({
-      app,
-      config: CourtCaseForPSAConfig,
-      values: caseToPSAValues,
-      callback: this.refreshPSANeighborsCallback
-    });
+  addCaseToPSA = (caseEKID) => {
+    const { actions, scores } = this.props;
+    const { addCaseToPSA } = actions;
+    const psaEKID = getEntityKeyId(scores);
+    addCaseToPSA({ psaEKID, caseEKID });
   }
 
-  removeCaseFromPSA = (associationEntityKeyId) => {
-    const { actions, fqnsToEntitySetIds, selectedOrganizationId } = this.props;
-    const { deleteEntity } = actions;
-    const entitySetId = fqnsToEntitySetIds.getIn([selectedOrganizationId, CALCULATED_FOR]);
-
-    deleteEntity({
-      entitySetId,
-      entityKeyId: associationEntityKeyId,
-      callback: this.refreshPSANeighborsCallback
-    });
+  removeCaseFromPSA = (associationEKID) => {
+    const { actions, scores } = this.props;
+    const { removeCaseFromPSA } = actions;
+    const psaEKID = getEntityKeyId(scores);
+    removeCaseFromPSA({ associationEKID, psaEKID });
   }
 
   renderCaseHistory = () => {
