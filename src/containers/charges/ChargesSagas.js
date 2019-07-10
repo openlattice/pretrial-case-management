@@ -1,10 +1,15 @@
 /*
  * @flow
  */
-import { AuthorizationApi, DataApi, SearchApi } from 'lattice';
 import { Map, Set, fromJS } from 'immutable';
 import type { SequenceAction } from 'redux-reqseq';
 import { DataApiActions, DataApiSagas } from 'lattice-sagas';
+import {
+  AuthorizationApi,
+  DataApi,
+  SearchApi,
+  Types
+} from 'lattice';
 import {
   all,
   call,
@@ -33,8 +38,10 @@ import {
   updateCharge
 } from './ChargesActionFactory';
 
-const { createOrMergeEntityData, getEntityData } = DataApiActions;
-const { createOrMergeEntityDataWorker, getEntityDataWorker } = DataApiSagas;
+const { DeleteTypes } = Types;
+
+const { deleteEntity, getEntityData, updateEntityData } = DataApiActions;
+const { deleteEntityWorker, getEntityDataWorker, updateEntityDataWorker } = DataApiSagas;
 
 const { ARREST_CHARGE_LIST, ARRESTING_AGENCIES, COURT_CHARGE_LIST } = APP_TYPES;
 const { ENTITY_KEY_ID } = PROPERTY_TYPES;
@@ -42,6 +49,22 @@ const { ENTITY_KEY_ID } = PROPERTY_TYPES;
 const getApp = state => state.get(STATE.APP, Map());
 const getEDM = state => state.get(STATE.EDM, Map());
 const getOrgId = state => state.getIn([STATE.APP, APP.SELECTED_ORG_ID], '');
+
+function* getChargeESID(chargeType :string) :Generator<*, *, *> {
+  const app = yield select(getApp);
+  let chargeESID;
+  switch (chargeType) {
+    case CHARGE_TYPES.ARREST:
+      chargeESID = getEntitySetIdFromApp(app, ARREST_CHARGE_LIST);
+      break;
+    case CHARGE_TYPES.COURT:
+      chargeESID = getEntitySetIdFromApp(app, COURT_CHARGE_LIST);
+      break;
+    default:
+      break;
+  }
+  return chargeESID;
+}
 
 /*
  * createArrestCharge()
@@ -51,24 +74,12 @@ function* createChargeWorker(action :SequenceAction) :Generator<*, *, *> {
   try {
     yield put(createCharge.request(action.id));
     let charge = Map();
-    const app = yield select(getApp);
     const edm = yield select(getEDM);
     const orgId = yield select(getOrgId);
 
     const { chargeType, newChargeEntity } = action.value;
 
-    let chargeESID;
-
-    switch (chargeType) {
-      case CHARGE_TYPES.ARREST:
-        chargeESID = getEntitySetIdFromApp(app, ARREST_CHARGE_LIST);
-        break;
-      case CHARGE_TYPES.COURT:
-        chargeESID = getEntitySetIdFromApp(app, COURT_CHARGE_LIST);
-        break;
-      default:
-        break;
-    }
+    const chargeESID = yield call(getChargeESID, chargeType);
 
     const chargeSubmitEntity = getPropteryIdToValueMap(newChargeEntity, edm);
 
@@ -121,13 +132,47 @@ function* createChargeWatcher() :Generator<*, *, *> {
  */
 
 function* deleteChargeWorker(action :SequenceAction) :Generator<*, *, *> {
-  const { entityKeyId, chargePropertyType } = action.value;
-  const selectedOrganizationId = yield select(getOrgId);
-  yield put(deleteCharge.success(action.id, {
-    entityKeyId,
-    selectedOrganizationId,
-    chargePropertyType
-  }));
+  try {
+    yield put(deleteCharge.request(action.id));
+    const orgId = yield select(getOrgId);
+
+    const {
+      charge,
+      chargeEKID,
+      chargeType
+    } = action.value;
+
+    const chargeESID = yield call(getChargeESID, chargeType);
+
+    /*
+    * Submit data and collect response
+    */
+    const deleteData = yield call(
+      deleteEntityWorker,
+      deleteEntity({
+        entityKeyId: chargeEKID,
+        entitySetId: chargeESID,
+        deleteType: DeleteTypes.Soft
+      })
+    );
+    if (deleteData.error) throw deleteData.error;
+
+
+    yield put(deleteCharge.success(action.id, {
+      charge,
+      chargeEKID,
+      chargeType,
+      orgId
+    }));
+
+  }
+  catch (error) {
+    console.error(error);
+    yield put(deleteCharge.failure(action.id, error));
+  }
+  finally {
+    yield put(deleteCharge.finally(action.id));
+  }
 }
 function* deleteChargesWatcher() :Generator<*, *, *> {
   yield takeEvery(DELETE_CHARGE, deleteChargeWorker);
@@ -139,18 +184,61 @@ function* deleteChargesWatcher() :Generator<*, *, *> {
 
 
 function* updateChargeWorker(action :SequenceAction) :Generator<*, *, *> {
-  const selectedOrganizationId = yield select(getOrgId);
-  const {
-    entity,
-    entityKeyId,
-    chargePropertyType
-  } = action.value;
-  yield put(updateCharge.success(action.id, {
-    entity,
-    entityKeyId,
-    selectedOrganizationId,
-    chargePropertyType
-  }));
+  try {
+    yield put(updateCharge.request(action.id));
+    let charge = Map();
+    const orgId = yield select(getOrgId);
+
+    const { chargeType, chargeEKID, entities } = action.value;
+
+    const chargeESID = yield call(getChargeESID, chargeType);
+
+    const updateType = 'PartialReplace';
+
+    /*
+     * Submit Updates
+     */
+    const response = yield call(
+      updateEntityDataWorker,
+      updateEntityData({
+        entitySetId: chargeESID,
+        entities,
+        updateType
+      })
+    );
+
+    if (response.error) throw response.error;
+
+    /*
+    * Get Charge Info
+    */
+
+    const chargeData = yield call(
+      getEntityDataWorker,
+      getEntityData({
+        entitySetId: chargeESID,
+        entityKeyId: chargeEKID
+      })
+    );
+    if (chargeData.error) throw chargeData.error;
+    charge = fromJS(chargeData.data);
+
+
+    yield put(updateCharge.success(action.id, {
+      charge,
+      chargeEKID,
+      chargeType,
+      orgId
+    }));
+  }
+  catch (error) {
+    console.error(error);
+    yield put(updateCharge.failure(action.id, error));
+  }
+  finally {
+    yield put(updateCharge.finally(action.id));
+  }
+
 }
 function* updateChargesWatcher() :Generator<*, *, *> {
   yield takeEvery(UPDATE_CHARGE, updateChargeWorker);
