@@ -2,7 +2,7 @@
  * @flow
  */
 
-import moment from 'moment';
+import { DateTime } from 'luxon';
 import { DataApi } from 'lattice';
 import randomUUID from 'uuid/v4';
 import {
@@ -464,7 +464,7 @@ function* submitHearingWorker(action :SequenceAction) :Generator<*, *, *> {
      */
     const associations = {
       [assessedByESID]: [{
-        data: { [completedDatetimePTID]: [moment().toISOString(true)] },
+        data: { [completedDatetimePTID]: [DateTime.local().toISO()] },
         srcEntityIndex: 0,
         srcEntitySetId: hearingsESID,
         dstEntityKeyId: judgeEKID,
