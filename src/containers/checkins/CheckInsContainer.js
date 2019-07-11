@@ -7,12 +7,7 @@ import styled from 'styled-components';
 import moment from 'moment';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
-import {
-  fromJS,
-  Map,
-  Set,
-  List
-} from 'immutable';
+import { fromJS, Map, List } from 'immutable';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHourglassHalf, faMicrophoneAlt } from '@fortawesome/pro-light-svg-icons';
