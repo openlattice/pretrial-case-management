@@ -26,7 +26,7 @@ import {
 import type { SequenceAction } from 'redux-reqseq';
 
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
-import { getEntityProperties } from '../../utils/DataUtils';
+import { createIdObject, getEntityProperties } from '../../utils/DataUtils';
 import { getPropertyTypeId } from '../../edm/edmUtils';
 import { SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
@@ -45,8 +45,8 @@ import {
   submitHearing
 } from './HearingsActionFactory';
 
-const { createAssociations, createEntityAndAssociationData } = DataApiActions;
-const { createAssociationsWorker, createEntityAndAssociationDataWorker } = DataApiSagas;
+const { createAssociations, createEntityAndAssociationData, getEntityData } = DataApiActions;
+const { createAssociationsWorker, createEntityAndAssociationDataWorker, getEntityDataWorker } = DataApiSagas;
 const { searchEntityNeighborsWithFilter } = SearchApiActions;
 const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
 
@@ -128,8 +128,13 @@ function* getHearingAndNeighbors(hearingEntityKeyId :string) :Generator<*, *, *>
     * Get Hearing Info
     */
 
-    hearing = yield call(DataApi.getEntityData, hearingsEntitySetId, hearingEntityKeyId);
-    hearing = fromJS(hearing);
+    const hearingIdObject = createIdObject(hearingEntityKeyId, hearingsEntitySetId);
+    const hearingResponse = yield call(
+      getEntityDataWorker,
+      getEntityData(hearingIdObject)
+    );
+    if (hearingResponse.error) throw hearingResponse.error;
+    hearing = fromJS(hearingResponse.data);
 
     /*
     * Get Neighbors
