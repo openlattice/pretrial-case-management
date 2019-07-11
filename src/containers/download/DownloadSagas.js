@@ -20,11 +20,16 @@ import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { hearingIsCancelled } from '../../utils/HearingUtils';
 import { getPropertyTypeId } from '../../edm/edmUtils';
 import { toISODate, formatDateTime, formatDate } from '../../utils/FormattingUtils';
-import { getFilteredNeighbor, stripIdField, getSearchTerm } from '../../utils/DataUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { HEADERS_OBJ, POSITIONS } from '../../utils/consts/CSVConsts';
 import { PSA_STATUSES, MAX_HITS } from '../../utils/consts/Consts';
+import {
+  getFilteredNeighbor,
+  stripIdField,
+  getSearchTerm,
+  getSearchTermNotExact
+} from '../../utils/DataUtils';
 import {
   APP,
   PSA_NEIGHBOR,
@@ -148,6 +153,7 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
     let caseIdsToScoreIds = Map();
 
     const app = yield select(getApp);
+    const edm = yield select(getEDM);
     const orgId = yield select(getOrgId);
     const includesPretrialModule = app.getIn([APP.SELECTED_ORG_SETTINGS, SETTINGS.MODULES, MODULE.PRETRIAL], false);
     const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
@@ -170,12 +176,22 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
     const releaseRecommendationsEntitySetId = getEntitySetIdFromApp(app, RELEASE_RECOMMENDATIONS);
     const staffEntitySetId = getEntitySetIdFromApp(app, STAFF);
 
+    const datePropertyTypeId = getPropertyTypeId(edm, PROPERTY_TYPES.DATE_TIME);
+
     const start = moment(startDate);
+    const startSearchValue = toISODate(start);
     const end = moment(endDate);
+    const endSearchValue = toISODate(end);
+
+    const searchString = `[${startSearchValue} TO ${endSearchValue}]`;
+
+    const dateRangeSearchValue = getSearchTermNotExact(datePropertyTypeId, searchString);
+
     const options = {
-      searchTerm: '*',
+      searchTerm: dateRangeSearchValue,
       start: 0,
-      maxHits: MAX_HITS
+      maxHits: MAX_HITS,
+      fuzzy: false
     };
 
     const allScoreData = yield call(SearchApi.searchEntitySetData, psaEntitySetId, options);
