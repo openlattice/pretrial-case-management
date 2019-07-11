@@ -463,12 +463,14 @@ function* getPSAScoresAndNeighbors(psaScoresEKID :string) :Generator<*, *, *> {
     const releaseRecommendationsESID = getEntitySetIdFromApp(app, RELEASE_RECOMMENDATIONS);
     const staffESID = getEntitySetIdFromApp(app, STAFF);
 
+
     /*
     * Get PSA Score Info
     */
+    const psaIdObject = createIdObject(psaScoresEKID, psaScoresESID);
     const psaResponse = yield call(
       getEntityDataWorker,
-      getEntityData({ entitySetId: psaScoresESID, entityKeyId: psaScoresEKID })
+      getEntityData(psaIdObject)
     );
     if (psaResponse.error) throw psaResponse.error;
     psaScoresEntity = fromJS(psaResponse.data);
