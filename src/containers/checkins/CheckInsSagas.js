@@ -2,8 +2,9 @@
  * @flow
  */
 
-import moment from 'moment';
-import { SearchApi, DataApi } from 'lattice';
+import type { SequenceAction } from 'redux-reqseq';
+import { DateTime } from 'luxon';
+import { SearchApi } from 'lattice';
 import {
   call,
   put,
@@ -16,7 +17,6 @@ import {
   List,
   Set
 } from 'immutable';
-import type { SequenceAction } from 'redux-reqseq';
 
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { getEntityProperties, getSearchTerm } from '../../utils/DataUtils';
@@ -25,12 +25,7 @@ import { getPropertyTypeId } from '../../edm/edmUtils';
 import { APPOINTMENT_TYPES } from '../../utils/consts/AppointmentConsts';
 import { MAX_HITS } from '../../utils/consts/Consts';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import {
-  APP,
-  PSA_ASSOCIATION,
-  PSA_NEIGHBOR,
-  STATE
-} from '../../utils/consts/FrontEndStateConsts';
+import { APP, PSA_NEIGHBOR, STATE } from '../../utils/consts/FrontEndStateConsts';
 import {
   LOAD_CHECKIN_APPOINTMENTS_FOR_DATE,
   LOAD_CHECK_IN_NEIGHBORS,
@@ -195,7 +190,7 @@ function* loadCheckInNeighborsWorker(action :SequenceAction) :Generator<*, *, *>
             const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
             if (appTypeFqn === CHECKINS) {
               const { [COMPLETED_DATE_TIME]: dateTime } = getEntityProperties(neighbor, [PHONE, COMPLETED_DATE_TIME]);
-              if (moment(dateTime).isSame(date, 'd')) {
+              if (DateTime.fromISO(dateTime).hasSame(DateTime.fromISO(date), 'day')) {
                 neighborsByAppTypeFqn = neighborsByAppTypeFqn.set(
                   appTypeFqn,
                   neighborsByAppTypeFqn.get(appTypeFqn, List()).push(
