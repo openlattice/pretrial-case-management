@@ -23,7 +23,7 @@ import {
 
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { getPropertyTypeId, getMapFromEntityKeysToPropertyKeys } from '../../edm/edmUtils';
-import { getEntityProperties, getEntityKeyId } from '../../utils/DataUtils';
+import { createIdObject, getEntityProperties, getEntityKeyId } from '../../utils/DataUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { APP, PSA_NEIGHBOR, STATE } from '../../utils/consts/FrontEndStateConsts';
 import { REMINDER_TYPES } from '../../utils/RemindersUtils';
@@ -36,10 +36,10 @@ import {
   updateOutcomesAndReleaseCondtions
 } from './ReleaseConditionsActionFactory';
 
+const { createEntityAndAssociationData, getEntityData } = DataApiActions;
+const { createEntityAndAssociationDataWorker, getEntityDataWorker } = DataApiSagas;
 const { searchEntityNeighborsWithFilter } = SearchApiActions;
 const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
-const { createEntityAndAssociationData } = DataApiActions;
-const { createEntityAndAssociationDataWorker } = DataApiSagas;
 
 const { DeleteTypes } = Types;
 
@@ -103,79 +103,88 @@ const LIST_ENTITY_SETS = List.of(
 );
 
 function* getHearingAndNeighbors(hearingEntityKeyId :string) :Generator<*, *, *> {
+  let hearing = Map();
   let hearingNeighborsByAppTypeFqn = Map();
-  const app = yield select(getApp);
-  const orgId = yield select(getOrgId);
-  const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
-  /*
-   * Get Entity Set Ids
-   */
-  const bondsEntitySetId = getEntitySetIdFromApp(app, BONDS);
-  const checkInAppointmentsEntitySetId = getEntitySetIdFromApp(app, CHECKIN_APPOINTMENTS);
-  const hearingsEntitySetId = getEntitySetIdFromApp(app, HEARINGS);
-  const judgesEntitySetId = getEntitySetIdFromApp(app, JUDGES);
-  const manualRemindersEntitySetId = getEntitySetIdFromApp(app, MANUAL_REMINDERS);
-  const outcomesEntitySetId = getEntitySetIdFromApp(app, OUTCOMES);
-  const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
-  const releaseConditionsEntitySetId = getEntitySetIdFromApp(app, RELEASE_CONDITIONS);
-  const psaEntitySetId = getEntitySetIdFromApp(app, PSA_SCORES);
 
-  /*
-   * Get Hearing Info
-   */
+  if (hearingEntityKeyId) {
+    const app = yield select(getApp);
+    const orgId = yield select(getOrgId);
+    const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
+    /*
+    * Get Entity Set Ids
+    */
+    const bondsEntitySetId = getEntitySetIdFromApp(app, BONDS);
+    const checkInAppointmentsEntitySetId = getEntitySetIdFromApp(app, CHECKIN_APPOINTMENTS);
+    const hearingsEntitySetId = getEntitySetIdFromApp(app, HEARINGS);
+    const judgesEntitySetId = getEntitySetIdFromApp(app, JUDGES);
+    const manualRemindersEntitySetId = getEntitySetIdFromApp(app, MANUAL_REMINDERS);
+    const outcomesEntitySetId = getEntitySetIdFromApp(app, OUTCOMES);
+    const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
+    const releaseConditionsEntitySetId = getEntitySetIdFromApp(app, RELEASE_CONDITIONS);
+    const psaEntitySetId = getEntitySetIdFromApp(app, PSA_SCORES);
 
-  let hearing = yield call(DataApi.getEntityData, hearingsEntitySetId, hearingEntityKeyId);
-  hearing = fromJS(hearing);
+    /*
+    * Get Hearing Info
+    */
 
-  /*
-   * Get Neighbors
-   */
+    const hearingIdObject = createIdObject(hearingEntityKeyId, hearingsEntitySetId);
+    const hearingResponse = yield call(
+      getEntityDataWorker,
+      getEntityData(hearingIdObject)
+    );
+    if (hearingResponse.error) throw hearingResponse.error;
+    hearing = fromJS(hearingResponse.data);
 
-  let hearingNeighborsById = yield call(
-    searchEntityNeighborsWithFilterWorker,
-    searchEntityNeighborsWithFilter({
-      entitySetId: hearingsEntitySetId,
-      filter: {
-        entityKeyIds: [hearingEntityKeyId],
-        sourceEntitySetIds: [
-          bondsEntitySetId,
-          checkInAppointmentsEntitySetId,
-          judgesEntitySetId,
-          manualRemindersEntitySetId,
-          outcomesEntitySetId,
-          peopleEntitySetId,
-          psaEntitySetId,
-          releaseConditionsEntitySetId
-        ],
-        destinationEntitySetIds: [judgesEntitySetId]
+    /*
+    * Get Neighbors
+    */
+
+    let hearingNeighborsById = yield call(
+      searchEntityNeighborsWithFilterWorker,
+      searchEntityNeighborsWithFilter({
+        entitySetId: hearingsEntitySetId,
+        filter: {
+          entityKeyIds: [hearingEntityKeyId],
+          sourceEntitySetIds: [
+            bondsEntitySetId,
+            checkInAppointmentsEntitySetId,
+            judgesEntitySetId,
+            manualRemindersEntitySetId,
+            outcomesEntitySetId,
+            peopleEntitySetId,
+            psaEntitySetId,
+            releaseConditionsEntitySetId
+          ],
+          destinationEntitySetIds: [judgesEntitySetId]
+        }
+      })
+    );
+    if (hearingNeighborsById.error) throw hearingNeighborsById.error;
+    hearingNeighborsById = fromJS(hearingNeighborsById.data);
+    const hearingNeighbors = hearingNeighborsById.get(hearingEntityKeyId, List());
+
+    /*
+    * Format Neighbors
+    */
+
+    hearingNeighbors.forEach((neighbor) => {
+
+      const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id']);
+      const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
+      if (appTypeFqn) {
+
+        if (LIST_ENTITY_SETS.includes(appTypeFqn)) {
+          hearingNeighborsByAppTypeFqn = hearingNeighborsByAppTypeFqn.set(
+            appTypeFqn,
+            hearingNeighborsByAppTypeFqn.get(appTypeFqn, List()).push(fromJS(neighbor))
+          );
+        }
+        else {
+          hearingNeighborsByAppTypeFqn = hearingNeighborsByAppTypeFqn.set(appTypeFqn, fromJS(neighbor));
+        }
       }
-    })
-  );
-  if (hearingNeighborsById.error) throw hearingNeighborsById.error;
-  hearingNeighborsById = fromJS(hearingNeighborsById.data);
-  const hearingNeighbors = hearingNeighborsById.get(hearingEntityKeyId, List());
-
-  /*
-   * Format Neighbors
-   */
-
-  hearingNeighbors.forEach((neighbor) => {
-
-    const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id']);
-    const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
-    if (appTypeFqn) {
-
-      if (LIST_ENTITY_SETS.includes(appTypeFqn)) {
-        hearingNeighborsByAppTypeFqn = hearingNeighborsByAppTypeFqn.set(
-          appTypeFqn,
-          hearingNeighborsByAppTypeFqn.get(appTypeFqn, List()).push(fromJS(neighbor))
-        );
-      }
-      else {
-        hearingNeighborsByAppTypeFqn = hearingNeighborsByAppTypeFqn.set(appTypeFqn, fromJS(neighbor));
-      }
-    }
-  });
+    });
+  }
 
   return { hearing, hearingNeighborsByAppTypeFqn };
 }
