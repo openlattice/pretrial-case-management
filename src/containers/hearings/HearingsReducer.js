@@ -36,7 +36,8 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [HEARINGS.HEARING_NEIGHBORS_BY_ID]: Map(),
   [HEARINGS.SUBMITTED_HEARING]: Map(),
   [HEARINGS.SUBMITTED_HEARING_NEIGHBORS]: Map(),
-  [HEARINGS.SUBMITTING_HEARING]: false
+  [HEARINGS.SUBMITTING_HEARING]: false,
+  [HEARINGS.SUBMISSION_ERROR]: false,
 });
 
 export default function hearingsReducer(state :Map<*, *> = INITIAL_STATE, action :Object) {
@@ -127,6 +128,7 @@ export default function hearingsReducer(state :Map<*, *> = INITIAL_STATE, action
             .set(HEARINGS.SUBMITTED_HEARING, hearing)
             .set(HEARINGS.SUBMITTED_HEARING_NEIGHBORS, hearingNeighborsByAppTypeFqn);
         },
+        FAILURE: () => state.set(HEARINGS.SUBMISSION_ERROR, action.value),
         FINALLY: () => state.set(HEARINGS.SUBMITTING_HEARING, false),
       });
     }
@@ -147,6 +149,7 @@ export default function hearingsReducer(state :Map<*, *> = INITIAL_STATE, action
             .set(HEARINGS.SUBMITTED_HEARING, hearing)
             .set(HEARINGS.SUBMITTED_HEARING_NEIGHBORS, hearingNeighborsByAppTypeFqn);
         },
+        FAILURE: () => state.set(HEARINGS.SUBMISSION_ERROR, action.value),
         FINALLY: () => state.set(HEARINGS.SUBMITTING_HEARING, false),
       });
     }
