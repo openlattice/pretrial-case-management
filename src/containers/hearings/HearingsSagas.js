@@ -3,7 +3,6 @@
  */
 
 import { DateTime } from 'luxon';
-import { DataApi } from 'lattice';
 import randomUUID from 'uuid/v4';
 import {
   fromJS,
