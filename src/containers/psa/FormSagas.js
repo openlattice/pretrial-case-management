@@ -1,7 +1,7 @@
 /*
  * @flow
  */
-import moment from 'moment';
+import { DateTime } from 'luxon';
 import { fromJS, List, Map } from 'immutable';
 import type { SequenceAction } from 'redux-reqseq';
 import { AuthUtils } from 'lattice-auth';
@@ -141,7 +141,7 @@ function* editPSAWorker(action :SequenceAction) :Generator<*, *, *> {
      * Assemble Assoociations
      */
 
-    const data = { [datetimePTID]: [moment().toISOString(true)] };
+    const data = { [datetimePTID]: [DateTime.local().toISO()] };
     const dst = createIdObject(staffEKID, staffESID);
     const psaSource = createIdObject(psaEKID, psaScoresESID);
     const psaRiskFactorsSource = createIdObject(psaRiskFactorsEKID, psaRiskFactorsESID);
@@ -590,12 +590,14 @@ function* submitPSAWorker(action :SequenceAction) :Generator<*, *, *> {
      */
     const completedDateTimePTID = getPropertyTypeId(edm, COMPLETED_DATE_TIME);
     const timeStampPTID = getPropertyTypeId(edm, TIMESTAMP);
+    const dateTimePTID = getPropertyTypeId(edm, DATE_TIME);
     const stringIdPTID = getPropertyTypeId(edm, STRING_ID);
 
     /*
      * Assemble Entities
      */
     const psaSubmitEntity = getPropteryIdToValueMap(psaEntity, edm);
+    psaSubmitEntity[dateTimePTID] = [DateTime.local().toISO()];
     const psaRiskFactorsSubmitEntity = getPropteryIdToValueMap(psaRiskFactorsEntity, edm);
     const psaNotesSubmitEntity = getPropteryIdToValueMap(psaNotesEntity, edm);
     const dmfResultsSubmitEntity = getPropteryIdToValueMap(dmfResultsEntity, edm);
@@ -617,8 +619,8 @@ function* submitPSAWorker(action :SequenceAction) :Generator<*, *, *> {
 
     // Association Data
     const caseNum = caseEntity[GENERAL_ID];
-    const calculatedForData = { [timeStampPTID]: [moment().toISOString(true)] };
-    const assessedByData = { [completedDateTimePTID]: [moment().toISOString(true)] };
+    const calculatedForData = { [timeStampPTID]: [DateTime.local().toISO()] };
+    const assessedByData = { [completedDateTimePTID]: [DateTime.local().toISO()] };
     const appearsInData = { [stringIdPTID]: [caseNum] };
     const chargedWithData = { [stringIdPTID]: [caseNum] };
 

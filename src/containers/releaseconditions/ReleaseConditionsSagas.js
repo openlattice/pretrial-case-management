@@ -2,7 +2,7 @@
  * @flow
  */
 
-import moment from 'moment';
+import { DateTime } from 'luxon';
 import { Map, List, fromJS } from 'immutable';
 import type { SequenceAction } from 'redux-reqseq';
 import { DataApi, Types } from 'lattice';
@@ -265,7 +265,7 @@ function* loadReleaseConditionsWorker(action :SequenceAction) :Generator<*, *, *
       const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
       if (appTypeFqn === CHECKIN_APPOINTMENTS) {
         const { [PROPERTY_TYPES.END_DATE]: checkInEndDate } = getEntityProperties(neighbor, [PROPERTY_TYPES.END_DATE]);
-        if (moment().isBefore(checkInEndDate)) {
+        if (DateTime.local() < DateTime.fromISO(checkInEndDate)) {
           personNeighborsByAppTypeFqn = personNeighborsByAppTypeFqn.set(
             appTypeFqn,
             personNeighborsByAppTypeFqn.get(appTypeFqn, List()).push(neighbor)
@@ -370,31 +370,32 @@ function* submitReleaseConditionsWorker(action :SequenceAction) :Generator<*, *,
     /*
      * Assemble Assoociations
      */
+    const data = { [completedDateTimePTID]: [DateTime.local().toISO()] };
     const associations = {
       [registeredForESID]: [
         {
-          data: { [completedDateTimePTID]: [moment().toISOString(true)] },
+          data,
           srcEntityIndex: 0,
           srcEntitySetId: outcomesESID,
           dstEntityKeyId: personEKID,
           dstEntitySetId: peopleESID
         },
         {
-          data: { [completedDateTimePTID]: [moment().toISOString(true)] },
+          data,
           srcEntityIndex: 0,
           srcEntitySetId: outcomesESID,
           dstEntityKeyId: dmfResultsEKID,
           dstEntitySetId: dmfResultsESID
         },
         {
-          data: { [completedDateTimePTID]: [moment().toISOString(true)] },
+          data,
           srcEntityIndex: 0,
           srcEntitySetId: outcomesESID,
           dstEntityKeyId: psaScoresEKID,
           dstEntitySetId: psaScoresESID
         },
         {
-          data: { [completedDateTimePTID]: [moment().toISOString(true)] },
+          data,
           srcEntityIndex: 0,
           srcEntitySetId: outcomesESID,
           dstEntityKeyId: hearingEKID,
@@ -427,28 +428,28 @@ function* submitReleaseConditionsWorker(action :SequenceAction) :Generator<*, *,
       entities[bondsESID] = [bondEntity];
       associations[registeredForESID] = associations[registeredForESID].concat([
         {
-          data: { [completedDateTimePTID]: [moment().toISOString(true)] },
+          data,
           srcEntityIndex: 0,
           srcEntitySetId: bondsESID,
           dstEntityKeyId: personEKID,
           dstEntitySetId: peopleESID
         },
         {
-          data: { [completedDateTimePTID]: [moment().toISOString(true)] },
+          data,
           srcEntityIndex: 0,
           srcEntitySetId: bondsESID,
           dstEntityKeyId: dmfResultsEKID,
           dstEntitySetId: dmfResultsESID
         },
         {
-          data: { [completedDateTimePTID]: [moment().toISOString(true)] },
+          data,
           srcEntityIndex: 0,
           srcEntitySetId: bondsESID,
           dstEntityKeyId: psaScoresEKID,
           dstEntitySetId: psaScoresESID
         },
         {
-          data: { [completedDateTimePTID]: [moment().toISOString(true)] },
+          data,
           srcEntityIndex: 0,
           srcEntitySetId: bondsESID,
           dstEntityKeyId: hearingEKID,
@@ -475,14 +476,14 @@ function* submitReleaseConditionsWorker(action :SequenceAction) :Generator<*, *,
 
         const associationData = [
           {
-            data: { [completedDateTimePTID]: [moment().toISOString(true)] },
+            data,
             srcEntityIndex: index,
             srcEntitySetId: checkInAppointmentsESID,
             dstEntityKeyId: personEKID,
             dstEntitySetId: peopleESID
           },
           {
-            data: { [completedDateTimePTID]: [moment().toISOString(true)] },
+            data,
             srcEntityIndex: index,
             srcEntitySetId: checkInAppointmentsESID,
             dstEntityKeyId: hearingEKID,
@@ -533,35 +534,35 @@ function* submitReleaseConditionsWorker(action :SequenceAction) :Generator<*, *,
 
         const associationData = [
           {
-            data: { [completedDateTimePTID]: [moment().toISOString(true)] },
+            data,
             srcEntityIndex: index,
             srcEntitySetId: releaseConditionsESID,
             dstEntityKeyId: personEKID,
             dstEntitySetId: peopleESID
           },
           {
-            data: { [completedDateTimePTID]: [moment().toISOString(true)] },
+            data,
             srcEntityIndex: index,
             srcEntitySetId: releaseConditionsESID,
             dstEntityKeyId: dmfResultsEKID,
             dstEntitySetId: dmfResultsESID
           },
           {
-            data: { [completedDateTimePTID]: [moment().toISOString(true)] },
+            data,
             srcEntityIndex: index,
             srcEntitySetId: releaseConditionsESID,
             dstEntityKeyId: psaScoresEKID,
             dstEntitySetId: psaScoresESID
           },
           {
-            data: { [completedDateTimePTID]: [moment().toISOString(true)] },
+            data,
             srcEntityIndex: index,
             srcEntitySetId: releaseConditionsESID,
             dstEntityIndex: 0,
             dstEntitySetId: outcomesESID
           },
           {
-            data: { [completedDateTimePTID]: [moment().toISOString(true)] },
+            data,
             srcEntityIndex: index,
             srcEntitySetId: releaseConditionsESID,
             dstEntityKeyId: hearingEKID,
@@ -572,7 +573,7 @@ function* submitReleaseConditionsWorker(action :SequenceAction) :Generator<*, *,
         if (bondType) {
           associations[registeredForESID] = associations[registeredForESID].concat(
             {
-              data: { [completedDateTimePTID]: [moment().toISOString(true)] },
+              data,
               srcEntityIndex: index,
               srcEntitySetId: releaseConditionsESID,
               dstEntityIndex: 0,
@@ -729,6 +730,7 @@ function* updateOutcomesAndReleaseCondtionsWorker(action :SequenceAction) :Gener
      */
     const entities = {};
     const associations = {};
+    const data = { [completedDateTimePTID]: [DateTime.local().toISO()] };
     if (releaseConditions.length) {
       entities[releaseConditionsESID] = [];
       associations[registeredForESID] = [];
@@ -765,35 +767,35 @@ function* updateOutcomesAndReleaseCondtionsWorker(action :SequenceAction) :Gener
 
         const associationData = [
           {
-            data: { [completedDateTimePTID]: [moment().toISOString(true)] },
+            data,
             srcEntityIndex: index,
             srcEntitySetId: releaseConditionsESID,
             dstEntityKeyId: personEKID,
             dstEntitySetId: peopleESID
           },
           {
-            data: { [completedDateTimePTID]: [moment().toISOString(true)] },
+            data,
             srcEntityIndex: index,
             srcEntitySetId: releaseConditionsESID,
             dstEntityKeyId: dmfResultsEKID,
             dstEntitySetId: dmfResultsESID
           },
           {
-            data: { [completedDateTimePTID]: [moment().toISOString(true)] },
+            data,
             srcEntityIndex: index,
             srcEntitySetId: releaseConditionsESID,
             dstEntityKeyId: psaScoresEKID,
             dstEntitySetId: psaScoresESID
           },
           {
-            data: { [completedDateTimePTID]: [moment().toISOString(true)] },
+            data,
             srcEntityIndex: index,
             srcEntitySetId: releaseConditionsESID,
             dstEntityKeyId: outcomeEntityKeyId,
             dstEntitySetId: outcomesESID
           },
           {
-            data: { [completedDateTimePTID]: [moment().toISOString(true)] },
+            data,
             srcEntityIndex: index,
             srcEntitySetId: releaseConditionsESID,
             dstEntityKeyId: hearingEKID,
@@ -804,7 +806,7 @@ function* updateOutcomesAndReleaseCondtionsWorker(action :SequenceAction) :Gener
         if (bondEntityKeyId && fromJS(bondEntity).size) {
           associations[registeredForESID] = associations[registeredForESID].concat(
             {
-              data: { [completedDateTimePTID]: [moment().toISOString(true)] },
+              data,
               srcEntityIndex: index,
               srcEntitySetId: releaseConditionsESID,
               dstEntityKeyId: bondEntityKeyId,

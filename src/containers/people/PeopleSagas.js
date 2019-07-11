@@ -1,7 +1,8 @@
 /*
  * @flow
  */
-import moment from 'moment';
+
+import { DateTime } from 'luxon';
 import { Constants, DataApi, SearchApi } from 'lattice';
 import {
   DataApiActions,
@@ -59,7 +60,6 @@ const {
   CHECKIN_APPOINTMENTS,
   CONTACT_INFORMATION,
   DMF_RISK_FACTORS,
-  ENROLL_VOICE,
   FTAS,
   HEARINGS,
   MANUAL_CHARGES,
@@ -264,10 +264,15 @@ function* getPersonNeighborsWorker(action) :Generator<*, *, *> {
       const entitySetId = neighborObj.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
       const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
       const neighborEntityKeyId = neighborObj.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0], '');
-      const entityDateTime = moment(neighborObj.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.DATE_TIME, 0]));
+      const entityDateTime = DateTime.fromISO(
+        neighborObj.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.DATE_TIME, 0], '')
+      );
 
       if (appTypeFqn === PSA_SCORES) {
-        if (!mostRecentPSA.size || !currentPSADateTime || currentPSADateTime.isBefore(entityDateTime)) {
+        if (
+          entityDateTime.isValid
+          && (!mostRecentPSA.size || !currentPSADateTime || currentPSADateTime < entityDateTime)
+        ) {
           mostRecentPSA = neighborObj;
           currentPSADateTime = entityDateTime;
         }
@@ -552,9 +557,15 @@ function* refreshPersonNeighborsWorker(action) :Generator<*, *, *> {
     neighborsList.forEach((neighbor) => {
       const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
       const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
-      const entityDateTime = moment(neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.DATE_TIME, 0]));
+      const entityDateTime = DateTime.fromISO(
+        neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.DATE_TIME, 0], '')
+      );
+
       if (appTypeFqn === PSA_SCORES) {
-        if (!mostRecentPSA || !currentPSADateTime || currentPSADateTime.isBefore(entityDateTime)) {
+        if (
+          entityDateTime.isValid
+          && (!mostRecentPSA.size || !currentPSADateTime || currentPSADateTime < entityDateTime)
+        ) {
           mostRecentPSA = neighbor;
           currentPSADateTime = entityDateTime;
         }
@@ -910,11 +921,11 @@ function* loadRequiresActionPeopleWorker(action :SequenceAction) :Generator<*, *
         personNeighbors.get(PSA_SCORES, List()).forEach((psa) => {
           const psaId = psa.getIn([OPENLATTICE_ID_FQN, 0], '');
           let hasPendingCharges = false;
-          const psaDate = moment(psa.getIn([PROPERTY_TYPES.DATE_TIME, 0], ''));
+          const psaDate = DateTime.fromISO(psa.getIn([PROPERTY_TYPES.DATE_TIME, 0], ''));
           const hasFTASincePSA = personNeighbors.get(FTAS, List()).some((fta) => {
-            const ftaDateTime = fta.getIn([PROPERTY_TYPES.DATE_TIME, 0], '');
-            if (psaDate.isValid()) {
-              return psaDate.isBefore(ftaDateTime);
+            const ftaDateTime = DateTime.fromISO(fta.getIn([PROPERTY_TYPES.DATE_TIME, 0], ''));
+            if (psaDate.isValid) {
+              return psaDate < ftaDateTime;
             }
             return false;
           });
@@ -922,7 +933,7 @@ function* loadRequiresActionPeopleWorker(action :SequenceAction) :Generator<*, *
             peopleWithRecentFTAs = peopleWithRecentFTAs.add(personId);
             psaScoresWithRecentFTAs = psaScoresWithRecentFTAs.add(psaId);
           }
-          const arrestDate = moment(psaNeighborsById
+          const arrestDate = DateTime.fromISO(psaNeighborsById
             .getIn([psaId, MANUAL_PRETRIAL_CASES, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.ARREST_DATE_TIME, 0]));
           const { chargeHistoryForMostRecentPSA } = getCasesForPSA(
             personCaseHistory,
@@ -931,7 +942,7 @@ function* loadRequiresActionPeopleWorker(action :SequenceAction) :Generator<*, *
             arrestDate,
             undefined
           );
-          if (psaScoreMap.get(psaId) && arrestDate.isValid()) {
+          if (psaScoreMap.get(psaId) && arrestDate.isValid) {
             chargeHistoryForMostRecentPSA.entrySeq().forEach(([_, charges]) => {
               const psaHasPendingCharges = charges.some(charge => !charge.getIn([PROPERTY_TYPES.DISPOSITION_DATE, 0]));
               if (psaHasPendingCharges) hasPendingCharges = true;
