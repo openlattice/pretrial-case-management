@@ -11,33 +11,35 @@ import { connect } from 'react-redux';
 import { Constants } from 'lattice';
 import { List, Map, OrderedMap } from 'immutable';
 
-import CaseHistoryList from '../../components/casehistory/CaseHistoryList';
-import LogoLoader from '../../components/LogoLoader';
-import OutcomeSection from '../../components/releaseconditions/OutcomeSection';
-import DecisionSection from '../../components/releaseconditions/DecisionSection';
-import WarrantSection from '../../components/releaseconditions/WarrantSection';
+import BasicButton from '../../components/buttons/BasicButton';
 import BondTypeSection from '../../components/releaseconditions/BondTypeSection';
+import CaseHistoryList from '../../components/casehistory/CaseHistoryList';
+import CheckboxButton from '../../components/controls/StyledCheckboxButton';
 import ConditionsSection from '../../components/releaseconditions/ConditionsSection';
+import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
 import ContentBlock from '../../components/ContentBlock';
 import ContentSection from '../../components/ContentSection';
-import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
-import RadioButton from '../../components/controls/StyledRadioButton';
-import CheckboxButton from '../../components/controls/StyledCheckboxButton';
-import StyledInput from '../../components/controls/StyledInput';
 import DatePicker from '../../components/datetime/DatePicker';
-import SearchableSelect from '../../components/controls/SearchableSelect';
+import DecisionSection from '../../components/releaseconditions/DecisionSection';
 import InfoButton from '../../components/buttons/InfoButton';
-import BasicButton from '../../components/buttons/BasicButton';
+import LogoLoader from '../../components/LogoLoader';
+import NoContactPeople from '../../components/releaseconditions/NoContactPeopleSection';
+import OutcomeSection from '../../components/releaseconditions/OutcomeSection';
+import RadioButton from '../../components/controls/StyledRadioButton';
+import SearchableSelect from '../../components/controls/SearchableSelect';
+import StyledInput from '../../components/controls/StyledInput';
+import WarrantSection from '../../components/releaseconditions/WarrantSection';
 import { OL } from '../../utils/consts/Colors';
 import { getTimeOptions } from '../../utils/consts/DateTimeConsts';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { getChargeHistory } from '../../utils/CaseUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { toISODate, toISODateTime, formatDateTime } from '../../utils/FormattingUtils';
+import { toISODate, formatDateTime } from '../../utils/FormattingUtils';
 import { HEARING_CONSTS } from '../../utils/consts/HearingConsts';
 import { SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { formatJudgeName, getCourtroomOptions, getJudgeOptions } from '../../utils/HearingUtils';
 import { NoContactRow } from '../../components/releaseconditions/ReleaseConditionsStyledTags';
+import { RELEASE_CONDITIONS, HEARING_TYPES, JURISDICTION } from '../../utils/consts/Consts';
 import {
   getCreateAssociationObject,
   getEntityKeyId,
@@ -46,14 +48,6 @@ import {
   getFirstNeighborValue,
   isUUID
 } from '../../utils/DataUtils';
-import {
-  RELEASE_CONDITIONS,
-  LIST_FIELDS,
-  ID_FIELD_NAMES,
-  FORM_IDS,
-  HEARING_TYPES,
-  JURISDICTION
-} from '../../utils/consts/Consts';
 import {
   OUTCOMES,
   OTHER_OUTCOMES,
@@ -83,7 +77,6 @@ import * as ReleaseConditionsActionFactory from './ReleaseConditionsActionFactor
 import * as ReviewActionFactory from '../review/ReviewActionFactory';
 import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
 
-const { CHECKIN_APPOINTMENTS_FIELD, RELEASE_CONDITIONS_FIELD } = LIST_FIELDS;
 const { OPENLATTICE_ID_FQN } = Constants;
 
 const {
@@ -1092,40 +1085,11 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       personTypeOptions = personTypeOptions.set(val, val);
     });
     return (
-      <NoContactPeopleWrapper>
-        <h2>No contact order</h2>
-        <NoContactRow>
-          <h3>Person Type</h3>
-          <h3>Person Name</h3>
-        </NoContactRow>
-        {noContactPeople.map((person, index) => (
-          <StyledNoContactRow key={`${person.name}-${index}`}>
-            <NoContactPeopleCell>
-              <SearchableSelect
-                  value={person[PROPERTY_TYPES.PERSON_TYPE]}
-                  searchPlaceholder="Select"
-                  onSelect={value => this.handleOnListChange(PROPERTY_TYPES.PERSON_TYPE, value, index)}
-                  options={personTypeOptions}
-                  disabled={disabled}
-                  selectOnly
-                  transparent
-                  short />
-            </NoContactPeopleCell>
-            <NoContactPeopleCell>
-              <StyledInput
-                  value={person[PROPERTY_TYPES.PERSON_NAME]}
-                  onChange={e => this.handleOnListChange(PROPERTY_TYPES.PERSON_NAME, e.target.value, index)}
-                  disabled={disabled} />
-            </NoContactPeopleCell>
-            <NoContactPeopleCell>
-              <StyledBasicButton onClick={() => this.removePersonRow(index)}>
-                Remove
-              </StyledBasicButton>
-            </NoContactPeopleCell>
-          </StyledNoContactRow>
-        ))}
-        <hr />
-      </NoContactPeopleWrapper>
+      <NoContactPeople
+          disabled={disabled}
+          noContactPeople={noContactPeople}
+          handleOnListChange={this.handleOnListChange}
+          removePersonRow={this.removePersonRow} />
     );
   }
 
@@ -1136,11 +1100,8 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       hearingEntityKeyId,
       selectedHearing
     } = this.props;
-    const {
-      deleteEntity,
-      replaceAssociation,
-      replaceEntity
-    } = actions;
+    const { deleteEntity, replaceAssociation, replaceEntity } = actions;
+    const { judgeEntity, judgeName, judgeAssociationEntityKeyId } = this.getJudgeEntity(this.props);
     const {
       judge,
       judgeId,
@@ -1149,11 +1110,6 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       hearingCourtroom,
       otherJudgeText
     } = this.state;
-    const {
-      judgeEntity,
-      judgeName,
-      judgeAssociationEntityKeyId
-    } = this.getJudgeEntity(this.props);
 
     const judgeNameEdited = judge !== judgeName;
     const judgeIsOther = (judge === 'Other');
