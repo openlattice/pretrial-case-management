@@ -1,12 +1,12 @@
 /*
  * @flow
  */
-
-import moment from 'moment';
+import { DateTime } from 'luxon';
 import randomUUID from 'uuid/v4';
 import type { SequenceAction } from 'redux-reqseq';
 import { SearchApi } from 'lattice';
 import { DataApiActions, DataApiSagas } from 'lattice-sagas';
+
 import {
   call,
   put,
@@ -112,6 +112,7 @@ function* createCheckinAppointmentsWorker(action :SequenceAction) :Generator<*, 
 
     const entities = {};
     const associations = {};
+    const data = { [completedDateTimePTID]: [DateTime.local().toISO()] };
     if (checkInAppointments.length) {
       entities[checkInAppointmentsESID] = [];
       associations[registeredForESID] = [];
@@ -129,14 +130,14 @@ function* createCheckinAppointmentsWorker(action :SequenceAction) :Generator<*, 
 
         const registeredForAssociations = [
           {
-            data: { [completedDateTimePTID]: [moment().toISOString(true)] },
+            data,
             srcEntityIndex: index,
             srcEntitySetId: checkInAppointmentsESID,
             dstEntityKeyId: personEKID,
             dstEntitySetId: peopleESID
           },
           {
-            data: { [completedDateTimePTID]: [moment().toISOString(true)] },
+            data,
             srcEntityIndex: index,
             srcEntitySetId: checkInAppointmentsESID,
             dstEntityKeyId: hearingEKID,
@@ -326,7 +327,7 @@ function* loadCheckInNeighborsWorker(action :SequenceAction) :Generator<*, *, *>
             const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
             if (appTypeFqn === CHECKINS) {
               const { [COMPLETED_DATE_TIME]: dateTime } = getEntityProperties(neighbor, [PHONE, COMPLETED_DATE_TIME]);
-              if (moment(dateTime).isSame(date, 'd')) {
+              if (DateTime.fromISO(dateTime).hasSame(DateTime.fromISO(date), 'day')) {
                 neighborsByAppTypeFqn = neighborsByAppTypeFqn.set(
                   appTypeFqn,
                   neighborsByAppTypeFqn.get(appTypeFqn, List()).push(

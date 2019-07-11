@@ -2,7 +2,7 @@
  * @flow
  */
 
-import moment from 'moment';
+import { DateTime } from 'luxon';
 import { Map, List, fromJS } from 'immutable';
 import type { SequenceAction } from 'redux-reqseq';
 import { DataApi, Types } from 'lattice';
@@ -23,10 +23,9 @@ import {
 
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { getPropertyTypeId, getMapFromEntityKeysToPropertyKeys } from '../../edm/edmUtils';
-import { getEntityProperties, getEntityKeyId } from '../../utils/DataUtils';
+import { createIdObject, getEntityProperties, getEntityKeyId } from '../../utils/DataUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { APP, PSA_NEIGHBOR, STATE } from '../../utils/consts/FrontEndStateConsts';
-import { REMINDER_TYPES } from '../../utils/RemindersUtils';
 import {
   LOAD_RELEASE_CONDTIONS,
   SUBMIT_RELEASE_CONDTIONS,
@@ -36,10 +35,10 @@ import {
   updateOutcomesAndReleaseCondtions
 } from './ReleaseConditionsActionFactory';
 
+const { createEntityAndAssociationData, getEntityData } = DataApiActions;
+const { createEntityAndAssociationDataWorker, getEntityDataWorker } = DataApiSagas;
 const { searchEntityNeighborsWithFilter } = SearchApiActions;
 const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
-const { createEntityAndAssociationData } = DataApiActions;
-const { createEntityAndAssociationDataWorker } = DataApiSagas;
 
 const { DeleteTypes } = Types;
 
@@ -103,79 +102,88 @@ const LIST_ENTITY_SETS = List.of(
 );
 
 function* getHearingAndNeighbors(hearingEntityKeyId :string) :Generator<*, *, *> {
+  let hearing = Map();
   let hearingNeighborsByAppTypeFqn = Map();
-  const app = yield select(getApp);
-  const orgId = yield select(getOrgId);
-  const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
-  /*
-   * Get Entity Set Ids
-   */
-  const bondsEntitySetId = getEntitySetIdFromApp(app, BONDS);
-  const checkInAppointmentsEntitySetId = getEntitySetIdFromApp(app, CHECKIN_APPOINTMENTS);
-  const hearingsEntitySetId = getEntitySetIdFromApp(app, HEARINGS);
-  const judgesEntitySetId = getEntitySetIdFromApp(app, JUDGES);
-  const manualRemindersEntitySetId = getEntitySetIdFromApp(app, MANUAL_REMINDERS);
-  const outcomesEntitySetId = getEntitySetIdFromApp(app, OUTCOMES);
-  const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
-  const releaseConditionsEntitySetId = getEntitySetIdFromApp(app, RELEASE_CONDITIONS);
-  const psaEntitySetId = getEntitySetIdFromApp(app, PSA_SCORES);
 
-  /*
-   * Get Hearing Info
-   */
+  if (hearingEntityKeyId) {
+    const app = yield select(getApp);
+    const orgId = yield select(getOrgId);
+    const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
+    /*
+    * Get Entity Set Ids
+    */
+    const bondsEntitySetId = getEntitySetIdFromApp(app, BONDS);
+    const checkInAppointmentsEntitySetId = getEntitySetIdFromApp(app, CHECKIN_APPOINTMENTS);
+    const hearingsEntitySetId = getEntitySetIdFromApp(app, HEARINGS);
+    const judgesEntitySetId = getEntitySetIdFromApp(app, JUDGES);
+    const manualRemindersEntitySetId = getEntitySetIdFromApp(app, MANUAL_REMINDERS);
+    const outcomesEntitySetId = getEntitySetIdFromApp(app, OUTCOMES);
+    const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
+    const releaseConditionsEntitySetId = getEntitySetIdFromApp(app, RELEASE_CONDITIONS);
+    const psaEntitySetId = getEntitySetIdFromApp(app, PSA_SCORES);
 
-  let hearing = yield call(DataApi.getEntityData, hearingsEntitySetId, hearingEntityKeyId);
-  hearing = fromJS(hearing);
+    /*
+    * Get Hearing Info
+    */
 
-  /*
-   * Get Neighbors
-   */
+    const hearingIdObject = createIdObject(hearingEntityKeyId, hearingsEntitySetId);
+    const hearingResponse = yield call(
+      getEntityDataWorker,
+      getEntityData(hearingIdObject)
+    );
+    if (hearingResponse.error) throw hearingResponse.error;
+    hearing = fromJS(hearingResponse.data);
 
-  let hearingNeighborsById = yield call(
-    searchEntityNeighborsWithFilterWorker,
-    searchEntityNeighborsWithFilter({
-      entitySetId: hearingsEntitySetId,
-      filter: {
-        entityKeyIds: [hearingEntityKeyId],
-        sourceEntitySetIds: [
-          bondsEntitySetId,
-          checkInAppointmentsEntitySetId,
-          judgesEntitySetId,
-          manualRemindersEntitySetId,
-          outcomesEntitySetId,
-          peopleEntitySetId,
-          psaEntitySetId,
-          releaseConditionsEntitySetId
-        ],
-        destinationEntitySetIds: [judgesEntitySetId]
+    /*
+    * Get Neighbors
+    */
+
+    let hearingNeighborsById = yield call(
+      searchEntityNeighborsWithFilterWorker,
+      searchEntityNeighborsWithFilter({
+        entitySetId: hearingsEntitySetId,
+        filter: {
+          entityKeyIds: [hearingEntityKeyId],
+          sourceEntitySetIds: [
+            bondsEntitySetId,
+            checkInAppointmentsEntitySetId,
+            judgesEntitySetId,
+            manualRemindersEntitySetId,
+            outcomesEntitySetId,
+            peopleEntitySetId,
+            psaEntitySetId,
+            releaseConditionsEntitySetId
+          ],
+          destinationEntitySetIds: [judgesEntitySetId]
+        }
+      })
+    );
+    if (hearingNeighborsById.error) throw hearingNeighborsById.error;
+    hearingNeighborsById = fromJS(hearingNeighborsById.data);
+    const hearingNeighbors = hearingNeighborsById.get(hearingEntityKeyId, List());
+
+    /*
+    * Format Neighbors
+    */
+
+    hearingNeighbors.forEach((neighbor) => {
+
+      const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id']);
+      const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
+      if (appTypeFqn) {
+
+        if (LIST_ENTITY_SETS.includes(appTypeFqn)) {
+          hearingNeighborsByAppTypeFqn = hearingNeighborsByAppTypeFqn.set(
+            appTypeFqn,
+            hearingNeighborsByAppTypeFqn.get(appTypeFqn, List()).push(fromJS(neighbor))
+          );
+        }
+        else {
+          hearingNeighborsByAppTypeFqn = hearingNeighborsByAppTypeFqn.set(appTypeFqn, fromJS(neighbor));
+        }
       }
-    })
-  );
-  if (hearingNeighborsById.error) throw hearingNeighborsById.error;
-  hearingNeighborsById = fromJS(hearingNeighborsById.data);
-  const hearingNeighbors = hearingNeighborsById.get(hearingEntityKeyId, List());
-
-  /*
-   * Format Neighbors
-   */
-
-  hearingNeighbors.forEach((neighbor) => {
-
-    const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id']);
-    const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
-    if (appTypeFqn) {
-
-      if (LIST_ENTITY_SETS.includes(appTypeFqn)) {
-        hearingNeighborsByAppTypeFqn = hearingNeighborsByAppTypeFqn.set(
-          appTypeFqn,
-          hearingNeighborsByAppTypeFqn.get(appTypeFqn, List()).push(fromJS(neighbor))
-        );
-      }
-      else {
-        hearingNeighborsByAppTypeFqn = hearingNeighborsByAppTypeFqn.set(appTypeFqn, fromJS(neighbor));
-      }
-    }
-  });
+    });
+  }
 
   return { hearing, hearingNeighborsByAppTypeFqn };
 }
@@ -265,7 +273,7 @@ function* loadReleaseConditionsWorker(action :SequenceAction) :Generator<*, *, *
       const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
       if (appTypeFqn === CHECKIN_APPOINTMENTS) {
         const { [PROPERTY_TYPES.END_DATE]: checkInEndDate } = getEntityProperties(neighbor, [PROPERTY_TYPES.END_DATE]);
-        if (moment().isBefore(checkInEndDate)) {
+        if (DateTime.local() < DateTime.fromISO(checkInEndDate)) {
           personNeighborsByAppTypeFqn = personNeighborsByAppTypeFqn.set(
             appTypeFqn,
             personNeighborsByAppTypeFqn.get(appTypeFqn, List()).push(neighbor)
@@ -367,31 +375,32 @@ function* submitReleaseConditionsWorker(action :SequenceAction) :Generator<*, *,
     /*
      * Assemble Assoociations
      */
+    const data = { [completedDateTimePTID]: [DateTime.local().toISO()] };
     const associations = {
       [registeredForESID]: [
         {
-          data: { [completedDateTimePTID]: [moment().toISOString(true)] },
+          data,
           srcEntityIndex: 0,
           srcEntitySetId: outcomesESID,
           dstEntityKeyId: personEKID,
           dstEntitySetId: peopleESID
         },
         {
-          data: { [completedDateTimePTID]: [moment().toISOString(true)] },
+          data,
           srcEntityIndex: 0,
           srcEntitySetId: outcomesESID,
           dstEntityKeyId: dmfResultsEKID,
           dstEntitySetId: dmfResultsESID
         },
         {
-          data: { [completedDateTimePTID]: [moment().toISOString(true)] },
+          data,
           srcEntityIndex: 0,
           srcEntitySetId: outcomesESID,
           dstEntityKeyId: psaScoresEKID,
           dstEntitySetId: psaScoresESID
         },
         {
-          data: { [completedDateTimePTID]: [moment().toISOString(true)] },
+          data,
           srcEntityIndex: 0,
           srcEntitySetId: outcomesESID,
           dstEntityKeyId: hearingEKID,
@@ -424,28 +433,28 @@ function* submitReleaseConditionsWorker(action :SequenceAction) :Generator<*, *,
       entities[bondsESID] = [bondEntity];
       associations[registeredForESID] = associations[registeredForESID].concat([
         {
-          data: { [completedDateTimePTID]: [moment().toISOString(true)] },
+          data,
           srcEntityIndex: 0,
           srcEntitySetId: bondsESID,
           dstEntityKeyId: personEKID,
           dstEntitySetId: peopleESID
         },
         {
-          data: { [completedDateTimePTID]: [moment().toISOString(true)] },
+          data,
           srcEntityIndex: 0,
           srcEntitySetId: bondsESID,
           dstEntityKeyId: dmfResultsEKID,
           dstEntitySetId: dmfResultsESID
         },
         {
-          data: { [completedDateTimePTID]: [moment().toISOString(true)] },
+          data,
           srcEntityIndex: 0,
           srcEntitySetId: bondsESID,
           dstEntityKeyId: psaScoresEKID,
           dstEntitySetId: psaScoresESID
         },
         {
-          data: { [completedDateTimePTID]: [moment().toISOString(true)] },
+          data,
           srcEntityIndex: 0,
           srcEntitySetId: bondsESID,
           dstEntityKeyId: hearingEKID,
@@ -492,35 +501,35 @@ function* submitReleaseConditionsWorker(action :SequenceAction) :Generator<*, *,
 
         const associationData = [
           {
-            data: { [completedDateTimePTID]: [moment().toISOString(true)] },
+            data,
             srcEntityIndex: index,
             srcEntitySetId: releaseConditionsESID,
             dstEntityKeyId: personEKID,
             dstEntitySetId: peopleESID
           },
           {
-            data: { [completedDateTimePTID]: [moment().toISOString(true)] },
+            data,
             srcEntityIndex: index,
             srcEntitySetId: releaseConditionsESID,
             dstEntityKeyId: dmfResultsEKID,
             dstEntitySetId: dmfResultsESID
           },
           {
-            data: { [completedDateTimePTID]: [moment().toISOString(true)] },
+            data,
             srcEntityIndex: index,
             srcEntitySetId: releaseConditionsESID,
             dstEntityKeyId: psaScoresEKID,
             dstEntitySetId: psaScoresESID
           },
           {
-            data: { [completedDateTimePTID]: [moment().toISOString(true)] },
+            data,
             srcEntityIndex: index,
             srcEntitySetId: releaseConditionsESID,
             dstEntityIndex: 0,
             dstEntitySetId: outcomesESID
           },
           {
-            data: { [completedDateTimePTID]: [moment().toISOString(true)] },
+            data,
             srcEntityIndex: index,
             srcEntitySetId: releaseConditionsESID,
             dstEntityKeyId: hearingEKID,
@@ -531,7 +540,7 @@ function* submitReleaseConditionsWorker(action :SequenceAction) :Generator<*, *,
         if (bondType) {
           associations[registeredForESID] = associations[registeredForESID].concat(
             {
-              data: { [completedDateTimePTID]: [moment().toISOString(true)] },
+              data,
               srcEntityIndex: index,
               srcEntitySetId: releaseConditionsESID,
               dstEntityIndex: 0,
@@ -688,6 +697,7 @@ function* updateOutcomesAndReleaseCondtionsWorker(action :SequenceAction) :Gener
      */
     const entities = {};
     const associations = {};
+    const data = { [completedDateTimePTID]: [DateTime.local().toISO()] };
     if (releaseConditions.length) {
       entities[releaseConditionsESID] = [];
       associations[registeredForESID] = [];
@@ -724,35 +734,35 @@ function* updateOutcomesAndReleaseCondtionsWorker(action :SequenceAction) :Gener
 
         const associationData = [
           {
-            data: { [completedDateTimePTID]: [moment().toISOString(true)] },
+            data,
             srcEntityIndex: index,
             srcEntitySetId: releaseConditionsESID,
             dstEntityKeyId: personEKID,
             dstEntitySetId: peopleESID
           },
           {
-            data: { [completedDateTimePTID]: [moment().toISOString(true)] },
+            data,
             srcEntityIndex: index,
             srcEntitySetId: releaseConditionsESID,
             dstEntityKeyId: dmfResultsEKID,
             dstEntitySetId: dmfResultsESID
           },
           {
-            data: { [completedDateTimePTID]: [moment().toISOString(true)] },
+            data,
             srcEntityIndex: index,
             srcEntitySetId: releaseConditionsESID,
             dstEntityKeyId: psaScoresEKID,
             dstEntitySetId: psaScoresESID
           },
           {
-            data: { [completedDateTimePTID]: [moment().toISOString(true)] },
+            data,
             srcEntityIndex: index,
             srcEntitySetId: releaseConditionsESID,
             dstEntityKeyId: outcomeEntityKeyId,
             dstEntitySetId: outcomesESID
           },
           {
-            data: { [completedDateTimePTID]: [moment().toISOString(true)] },
+            data,
             srcEntityIndex: index,
             srcEntitySetId: releaseConditionsESID,
             dstEntityKeyId: hearingEKID,
@@ -763,7 +773,7 @@ function* updateOutcomesAndReleaseCondtionsWorker(action :SequenceAction) :Gener
         if (bondEntityKeyId && fromJS(bondEntity).size) {
           associations[registeredForESID] = associations[registeredForESID].concat(
             {
-              data: { [completedDateTimePTID]: [moment().toISOString(true)] },
+              data,
               srcEntityIndex: index,
               srcEntitySetId: releaseConditionsESID,
               dstEntityKeyId: bondEntityKeyId,

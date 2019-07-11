@@ -167,6 +167,7 @@ export const HEARINGS = {
   SUBMITTED_HEARING: 'submittedHearing',
   SUBMITTED_HEARING_NEIGHBORS: 'submittedHearingNeighbors',
   SUBMITTING_HEARING: 'submittingHearing',
+  SUBMISSION_ERROR: 'hearingSubmissionError',
   TIME: 'hearingTime',
   UPDATED_HEARING: 'updatedHearing',
   UPDATED_HEARING_NEIGHBORS: 'updatedHearingNeighbors',
