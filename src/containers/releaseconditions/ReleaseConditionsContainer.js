@@ -23,7 +23,6 @@ import LogoLoader from '../../components/LogoLoader';
 import NoContactPeople from '../../components/releaseconditions/NoContactPeopleSection';
 import OutcomeSection from '../../components/releaseconditions/OutcomeSection';
 import RadioButton from '../../components/controls/StyledRadioButton';
-import SearchableSelect from '../../components/controls/SearchableSelect';
 import WarrantSection from '../../components/releaseconditions/WarrantSection';
 import { OL } from '../../utils/consts/Colors';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
@@ -62,6 +61,7 @@ import {
   SUBMIT
 } from '../../utils/consts/FrontEndStateConsts';
 
+import * as CheckInsActionFactory from '../checkins/CheckInsActionFactory';
 import * as CourtActionFactory from '../court/CourtActionFactory';
 import * as DataActionFactory from '../../utils/data/DataActionFactory';
 import * as HearingsActionFactory from '../hearings/HearingsActionFactory';
@@ -181,7 +181,6 @@ const BLANK_PERSON_ROW = {
 
 type Props = {
   app :Map<*, *>,
-  allJudges :Map<*, *>,
   backToSelection :() => void,
   creatingAssociations :boolean,
   fqnToIdMap :Map<*, *>,
@@ -737,6 +736,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
     const dmfResultsEKID = getFirstNeighborValue(defaultDMF, ENTITY_KEY_ID);
 
     const {
+      createCheckinAppointments,
       createAssociations,
       submitReleaseConditions,
       updateOutcomesAndReleaseCondtions
@@ -848,6 +848,13 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
         callback: this.refreshHearingsNeighborsCallback
       });
     }
+    if (newCheckInAppointmentEntities.length) {
+      createCheckinAppointments({
+        checkInAppointments: newCheckInAppointmentEntities,
+        hearingEKID: hearingEntityKeyId,
+        personEKID
+      });
+    }
     if (editingHearing) {
       updateOutcomesAndReleaseCondtions({
         bondEntity,
@@ -868,7 +875,6 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       submitReleaseConditions({
         bondAmount,
         bondType,
-        checkInAppointments: newCheckInAppointmentEntities,
         dmfResultsEKID,
         hearingEKID: hearingEntityKeyId,
         judgeAccepted,
@@ -1197,6 +1203,10 @@ function mapStateToProps(state) {
 
 function mapDispatchToProps(dispatch :Function) :Object {
   const actions :{ [string] :Function } = {};
+
+  Object.keys(CheckInsActionFactory).forEach((action :string) => {
+    actions[action] = CheckInsActionFactory[action];
+  });
 
   Object.keys(CourtActionFactory).forEach((action :string) => {
     actions[action] = CourtActionFactory[action];

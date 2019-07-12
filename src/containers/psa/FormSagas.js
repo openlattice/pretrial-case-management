@@ -5,7 +5,7 @@ import { DateTime } from 'luxon';
 import { fromJS, List, Map } from 'immutable';
 import type { SequenceAction } from 'redux-reqseq';
 import { AuthUtils } from 'lattice-auth';
-import { Constants, EntityDataModelApi } from 'lattice';
+import { Constants, EntityDataModelApi, Types } from 'lattice';
 import {
   DataApiActions,
   DataApiSagas,
@@ -27,14 +27,18 @@ import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_STATUSES } from '../../utils/consts/Consts';
 import { APP, STATE, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import {
+  ADD_CASE_TO_PSA,
   EDIT_PSA,
   LOAD_DATA_MODEL,
   LOAD_NEIGHBORS,
+  REMOVE_CASE_FROM_PSA,
   SUBMIT_PSA,
+  addCaseToPSA,
   editPSA,
   loadDataModel,
   loadNeighbors,
-  submitPSA
+  removeCaseFromPSA,
+  submitPSA,
 } from './FormActionFactory';
 
 const {
@@ -78,8 +82,18 @@ const {
   STAFF
 } = APP_TYPES;
 
-const { createAssociations, createEntityAndAssociationData, getEntityData } = DataApiActions;
-const { createAssociationsWorker, createEntityAndAssociationDataWorker, getEntityDataWorker } = DataApiSagas;
+const {
+  createAssociations,
+  createEntityAndAssociationData,
+  deleteEntity,
+  getEntityData
+} = DataApiActions;
+const {
+  createAssociationsWorker,
+  createEntityAndAssociationDataWorker,
+  deleteEntityWorker,
+  getEntityDataWorker
+} = DataApiSagas;
 const { searchEntityNeighborsWithFilter } = SearchApiActions;
 const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
 
@@ -88,6 +102,8 @@ const getEDM = state => state.get(STATE.EDM, Map());
 const getOrgId = state => state.getIn([STATE.APP, APP.SELECTED_ORG_ID], '');
 
 const { OPENLATTICE_ID_FQN } = Constants;
+
+const { DeleteTypes } = Types;
 
 const LIST_ENTITY_SETS = List.of(STAFF, RELEASE_CONDITIONS, HEARINGS, PRETRIAL_CASES, CHECKIN_APPOINTMENTS);
 
@@ -99,6 +115,171 @@ const getStaffId = () => {
   }
   return staffId;
 };
+
+function* addCaseToPSAWorker(action :SequenceAction) :Generator<*, *, *> {
+  const { psaEKID, caseEKID } = action.value;
+  try {
+    yield put(addCaseToPSA.request(action.id));
+    const app = yield select(getApp);
+    const edm = yield select(getEDM);
+    const orgId = yield select(getOrgId);
+    const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
+
+    /*
+     * Get Property Type Ids
+     */
+    const timestampPTID = getPropertyTypeId(edm, TIMESTAMP);
+
+    /*
+     * Get Entity Set Ids
+     */
+    const calculatedForESID = getEntitySetIdFromApp(app, CALCULATED_FOR);
+    const pretrialCasesESID = getEntitySetIdFromApp(app, PRETRIAL_CASES);
+    const psaScoresESID = getEntitySetIdFromApp(app, PSA_SCORES);
+
+    /*
+     * Assemble Assoociations
+     */
+
+    const data = { [timestampPTID]: [moment().toISOString(true)] };
+    const src = createIdObject(psaEKID, psaScoresESID);
+    const dst = createIdObject(caseEKID, pretrialCasesESID);
+
+    const associations = {
+      [calculatedForESID]: [{ data, dst, src }]
+    };
+
+    /*
+     * Submit Associations
+     */
+    const response = yield call(
+      createAssociationsWorker,
+      createAssociations(associations)
+    );
+
+    if (response.error) throw response.error;
+
+    /*
+     * Get updated staff data for psa
+     */
+
+    let psaNeighborsById = yield call(
+      searchEntityNeighborsWithFilterWorker,
+      searchEntityNeighborsWithFilter({
+        entitySetId: psaScoresESID,
+        filter: {
+          entityKeyIds: [psaEKID],
+          sourceEntitySetIds: [],
+          destinationEntitySetIds: [pretrialCasesESID]
+        }
+      })
+    );
+
+    if (psaNeighborsById.error) throw psaNeighborsById.error;
+    psaNeighborsById = fromJS(psaNeighborsById.data);
+    const psaNeighbors = psaNeighborsById.get(psaEKID, List());
+
+    /*
+     * Format Neighbors
+     */
+    const pretrialCaseNeighbors = psaNeighbors.filter((neighbor) => {
+      const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id']);
+      const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
+      return appTypeFqn && appTypeFqn === PRETRIAL_CASES;
+    });
+
+    yield put(addCaseToPSA.success(action.id, { psaEKID, pretrialCaseNeighbors }));
+  }
+
+  catch (error) {
+    console.error(error);
+    yield put(addCaseToPSA.failure(action.id, error));
+  }
+  finally {
+    yield put(addCaseToPSA.finally(action.id));
+  }
+}
+
+function* addCaseToPSAWatcher() :Generator<*, *, *> {
+  yield takeEvery(ADD_CASE_TO_PSA, addCaseToPSAWorker);
+}
+
+function* removeCaseFromPSAWorker(action :SequenceAction) :Generator<*, *, *> {
+  const { associationEKID, psaEKID } = action.value;
+  try {
+    yield put(removeCaseFromPSA.request(action.id));
+    const app = yield select(getApp);
+    const orgId = yield select(getOrgId);
+    const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
+
+    /*
+     * Get Entity Set Ids
+     */
+    const calculatedForESID = getEntitySetIdFromApp(app, CALCULATED_FOR);
+    const pretrialCasesESID = getEntitySetIdFromApp(app, PRETRIAL_CASES);
+    const psaScoresESID = getEntitySetIdFromApp(app, PSA_SCORES);
+
+    /*
+     * Delete data and collect response
+     */
+    const deleteData = yield call(
+      deleteEntityWorker,
+      deleteEntity({
+        entityKeyId: associationEKID,
+        entitySetId: calculatedForESID,
+        deleteType: DeleteTypes.Soft
+      })
+    );
+
+    if (deleteData.error) throw deleteData.error;
+
+    /*
+     * Get updated staff data for psa
+     */
+
+    let psaNeighborsById = yield call(
+      searchEntityNeighborsWithFilterWorker,
+      searchEntityNeighborsWithFilter({
+        entitySetId: psaScoresESID,
+        filter: {
+          entityKeyIds: [psaEKID],
+          sourceEntitySetIds: [],
+          destinationEntitySetIds: [pretrialCasesESID]
+        }
+      })
+    );
+
+    if (psaNeighborsById.error) throw psaNeighborsById.error;
+    psaNeighborsById = fromJS(psaNeighborsById.data);
+    const psaNeighbors = psaNeighborsById.get(psaEKID, List());
+
+    /*
+     * Format Neighbors
+     */
+    const pretrialCaseNeighbors = psaNeighbors.filter((neighbor) => {
+      const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id']);
+      const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
+      return appTypeFqn && appTypeFqn === PRETRIAL_CASES;
+    });
+
+    yield put(removeCaseFromPSA.success(action.id, {
+      psaEKID,
+      pretrialCaseNeighbors
+    }));
+  }
+
+  catch (error) {
+    console.error(error);
+    yield put(removeCaseFromPSA.failure(action.id, error));
+  }
+  finally {
+    yield put(removeCaseFromPSA.finally(action.id));
+  }
+}
+
+function* removeCaseFromPSAWatcher() :Generator<*, *, *> {
+  yield takeEvery(REMOVE_CASE_FROM_PSA, removeCaseFromPSAWorker);
+}
 
 function* editPSAWorker(action :SequenceAction) :Generator<*, *, *> {
   const {
@@ -907,8 +1088,10 @@ function* submitPSAWatcher() :Generator<*, *, *> {
 }
 
 export {
+  addCaseToPSAWatcher,
   editPSAWatcher,
   loadDataModelWatcher,
   loadNeighborsWatcher,
+  removeCaseFromPSAWatcher,
   submitPSAWatcher
 };

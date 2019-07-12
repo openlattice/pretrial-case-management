@@ -73,7 +73,9 @@ export const CHARGES = {
   DMF_STEP_4: 'dmfStep4Charges',
   BRE: 'bookingReleaseExceptionCharges',
   BHE: 'bookingHoldExceptionCharges',
-  LOADING: 'loadingCharges'
+  LOADING: 'loadingCharges',
+  SUBMITTING_CHARGE: 'submittingCharge',
+  UPDATING_CHARGE: 'updatingCharge'
 };
 
 // Check-Ins
@@ -83,7 +85,8 @@ export const CHECK_IN = {
   CHECK_IN_IDS: 'checkInIds',
   CHECK_INS_BY_ID: 'checkInsById',
   LOADING_CHECK_IN_NEIGHBORS: 'loadingCheckInNieghbors',
-  CHECK_IN_NEIGHBORS_BY_ID: 'checkInNeighborsById'
+  CHECK_IN_NEIGHBORS_BY_ID: 'checkInNeighborsById',
+  SUBMITTING_CHECKINS: 'submittingCheckins',
 };
 
 // Court
@@ -222,6 +225,8 @@ export const PSA_MODAL = {
 // PSA
 
 export const PSA_FORM = {
+  ADDING_CASE_TO_PSA: 'addingCaseToPSA',
+  ARREST_ID: 'arrestId',
   ARREST_OPTIONS: 'arrestOptions',
   ALL_CASES: 'allCasesForPerson',
   ALL_CHARGES: 'allChargesForPerson',
@@ -233,22 +238,22 @@ export const PSA_FORM = {
   ALL_MANUAL_CHARGES: 'allManualCharges',
   ALL_HEARINGS: 'allHearings',
   ALL_CONTACTS: 'allContacts',
-  SUBSCRIPTION: 'subscription',
   CHARGES: 'charges',
-  SELECT_PERSON: 'selectedPerson',
-  OPEN_PSAS: 'openPSAs',
-  ARREST_ID: 'arrestId',
-  SELECT_PRETRIAL_CASE: 'selectedPretrialCase',
-  PSA: 'psa',
   DATA_MODEL: 'dataModel',
+  EDITING_PSA: 'editingPSA',
   ENTITY_SET_LOOKUP: 'entitySetLookup',
   LOADING_NEIGHBORS: 'isLoadingNeighbors',
+  OPEN_PSAS: 'openPSAs',
+  PSA: 'psa',
+  PSA_SUBMISSION_COMPLETE: 'psaSubmissionComplete',
+  REMOVING_CASE_FROM_PSA: 'removingCaseFromPSA',
+  SELECT_PRETRIAL_CASE: 'selectedPretrialCase',
+  SELECT_PERSON: 'selectedPerson',
   SUBMIT_ERROR: 'submitError',
   SUBMITTED_PSA: 'submittedPSA',
-  PSA_SUBMISSION_COMPLETE: 'psaSubmissionComplete',
   SUBMITTED_PSA_NEIGHBORS: 'submittedPSANeighbors',
   SUBMITTING_PSA: 'submittingPSA',
-  EDITING_PSA: 'editingPSA'
+  SUBSCRIPTION: 'subscription'
 };
 
 // People

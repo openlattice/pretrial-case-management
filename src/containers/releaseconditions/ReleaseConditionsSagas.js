@@ -26,7 +26,6 @@ import { getPropertyTypeId, getMapFromEntityKeysToPropertyKeys } from '../../edm
 import { createIdObject, getEntityProperties, getEntityKeyId } from '../../utils/DataUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { APP, PSA_NEIGHBOR, STATE } from '../../utils/consts/FrontEndStateConsts';
-import { REMINDER_TYPES } from '../../utils/RemindersUtils';
 import {
   LOAD_RELEASE_CONDTIONS,
   SUBMIT_RELEASE_CONDTIONS,
@@ -323,7 +322,6 @@ function* submitReleaseConditionsWorker(action :SequenceAction) :Generator<*, *,
     const {
       bondAmount,
       bondType,
-      checkInAppointments,
       dmfResultsEKID,
       hearingEKID,
       judgeAccepted,
@@ -344,7 +342,6 @@ function* submitReleaseConditionsWorker(action :SequenceAction) :Generator<*, *,
     const bondAmountPTID = getPropertyTypeId(edm, BOND_AMOUNT);
     const bondTypePTID = getPropertyTypeId(edm, BOND_TYPE);
     const completedDateTimePTID = getPropertyTypeId(edm, COMPLETED_DATE_TIME);
-    const endDatePTID = getPropertyTypeId(edm, END_DATE);
     const frequencyPTID = getPropertyTypeId(edm, FREQUENCY);
     const generalIdPTID = getPropertyTypeId(edm, GENERAL_ID);
     const judgeAcceptedPTID = getPropertyTypeId(edm, JUDGE_ACCEPTED);
@@ -361,7 +358,6 @@ function* submitReleaseConditionsWorker(action :SequenceAction) :Generator<*, *,
      * Get Entity Set Ids
      */
     const bondsESID = getEntitySetIdFromApp(app, BONDS);
-    const checkInAppointmentsESID = getEntitySetIdFromApp(app, CHECKIN_APPOINTMENTS);
     const dmfResultsESID = getEntitySetIdFromApp(app, DMF_RESULTS);
     const hearingsESID = getEntitySetIdFromApp(app, HEARINGS);
     const outcomesESID = getEntitySetIdFromApp(app, OUTCOMES);
@@ -465,44 +461,6 @@ function* submitReleaseConditionsWorker(action :SequenceAction) :Generator<*, *,
           dstEntitySetId: hearingsESID
         },
       ]);
-    }
-
-    /*
-     * Add CheckIn appointment entities and associations
-     */
-    if (checkInAppointments.length) {
-      entities[checkInAppointmentsESID] = [];
-      checkInAppointments.forEach((appointment, index) => {
-        const newCheckInAppointmentId = randomUUID();
-        const { startDate, endDate } = appointment;
-
-        const newCheckInAppointmentEntity = {
-          [generalIdPTID]: [newCheckInAppointmentId],
-          [typePTID]: [REMINDER_TYPES.CHECKIN],
-          [startDatePTID]: [startDate],
-          [endDatePTID]: [endDate],
-        };
-
-        const associationData = [
-          {
-            data,
-            srcEntityIndex: index,
-            srcEntitySetId: checkInAppointmentsESID,
-            dstEntityKeyId: personEKID,
-            dstEntitySetId: peopleESID
-          },
-          {
-            data,
-            srcEntityIndex: index,
-            srcEntitySetId: checkInAppointmentsESID,
-            dstEntityKeyId: hearingEKID,
-            dstEntitySetId: hearingsESID
-          }
-        ];
-
-        entities[checkInAppointmentsESID].push(newCheckInAppointmentEntity);
-        associations[registeredForESID] = associations[registeredForESID].concat(associationData);
-      });
     }
 
     /*

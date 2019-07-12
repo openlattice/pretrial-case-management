@@ -45,12 +45,14 @@ export default function* sagas() :Generator<*, *, *> {
     fork(AuthSagas.watchLogout),
 
     // ChargesSagas
+    fork(ChargesSagas.createChargeWatcher),
     fork(ChargesSagas.deleteChargesWatcher),
     fork(ChargesSagas.loadArrestingAgenciesWatcher),
     fork(ChargesSagas.loadChargesWatcher),
     fork(ChargesSagas.updateChargesWatcher),
 
     // CheckInsSagas
+    fork(CheckInsSagas.createCheckinAppointmentsWatcher),
     fork(CheckInsSagas.loadCheckInAppointmentsForDateWatcher),
     fork(CheckInsSagas.loadCheckInNeighborsWatcher),
 
@@ -119,9 +121,11 @@ export default function* sagas() :Generator<*, *, *> {
     fork(PSAModalSagas.loadPSAModalWatcher),
 
     // PSA Sagas
+    fork(PsaSagas.addCaseToPSAWatcher),
     fork(PsaSagas.editPSAWatcher),
     fork(PsaSagas.loadDataModelWatcher),
     fork(PsaSagas.loadNeighborsWatcher),
+    fork(PsaSagas.removeCaseFromPSAWatcher),
     fork(PsaSagas.submitPSAWatcher),
 
     // Release Conditions Sagas

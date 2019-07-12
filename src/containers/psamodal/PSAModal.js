@@ -10,11 +10,9 @@ import Immutable, { List, Map } from 'immutable';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import Modal, { ModalTransition } from '@atlaskit/modal-dialog';
-import { AuthUtils } from 'lattice-auth';
 import { Link } from 'react-router-dom';
 
 import CustomTabs from '../../components/tabs/Tabs';
-import CourtCaseForPSAConfig from '../../config/formconfig/CourtCaseForPSAConfig';
 import LogoLoader from '../../components/LogoLoader';
 import PSAInputForm from '../../components/psainput/PSAInputForm';
 import PersonCard from '../../components/person/PersonCardReview';
@@ -56,8 +54,6 @@ import {
 import {
   CONTEXT,
   DMF,
-  EDIT_FIELDS,
-  ID_FIELD_NAMES,
   NOTES,
   PSA
 } from '../../utils/consts/Consts';
@@ -73,7 +69,6 @@ import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
 
 const {
   BONDS,
-  CALCULATED_FOR,
   DMF_RESULTS,
   DMF_RISK_FACTORS,
   MANUAL_PRETRIAL_CASES,
@@ -761,33 +756,18 @@ class PSAModal extends React.Component<Props, State> {
     );
   }
 
-  addCaseToPSA = (values) => {
-    const { actions, app, scores } = this.props;
-    const psaId = scores.getIn([PROPERTY_TYPES.GENERAL_ID, 0]);
-
-    const caseToPSAValues = Object.assign({}, values, {
-      [PROPERTY_TYPES.TIMESTAMP]: moment().toISOString(true),
-      [ID_FIELD_NAMES.PSA_ID]: psaId
-    });
-
-    actions.submit({
-      app,
-      config: CourtCaseForPSAConfig,
-      values: caseToPSAValues,
-      callback: this.refreshPSANeighborsCallback
-    });
+  addCaseToPSA = (caseEKID) => {
+    const { actions, scores } = this.props;
+    const { addCaseToPSA } = actions;
+    const psaEKID = getEntityKeyId(scores);
+    addCaseToPSA({ psaEKID, caseEKID });
   }
 
-  removeCaseFromPSA = (associationEntityKeyId) => {
-    const { actions, fqnsToEntitySetIds, selectedOrganizationId } = this.props;
-    const { deleteEntity } = actions;
-    const entitySetId = fqnsToEntitySetIds.getIn([selectedOrganizationId, CALCULATED_FOR]);
-
-    deleteEntity({
-      entitySetId,
-      entityKeyId: associationEntityKeyId,
-      callback: this.refreshPSANeighborsCallback
-    });
+  removeCaseFromPSA = (associationEKID) => {
+    const { actions, scores } = this.props;
+    const { removeCaseFromPSA } = actions;
+    const psaEKID = getEntityKeyId(scores);
+    removeCaseFromPSA({ associationEKID, psaEKID });
   }
 
   renderCaseHistory = () => {
