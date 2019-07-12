@@ -17,7 +17,12 @@ import { editPSA } from '../psa/FormActionFactory';
 import { enrollVoice, getProfile } from '../enroll/EnrollActionFactory';
 import { changePSAStatus, updateScoresAndRiskFactors, loadPSAData } from '../review/ReviewActionFactory';
 import { deleteEntity } from '../../utils/data/DataActionFactory';
-import { refreshHearingAndNeighbors, submitExistingHearing, submitHearing } from '../hearings/HearingsActionFactory';
+import {
+  refreshHearingAndNeighbors,
+  submitExistingHearing,
+  submitHearing,
+  updateHearing
+} from '../hearings/HearingsActionFactory';
 import {
   CLEAR_PERSON,
   getPeople,
@@ -463,6 +468,16 @@ export default function peopleReducer(state :Map = INITIAL_STATE, action :Object
             .set(CHECKIN_APPOINTMENTS, personCheckInAppointments);
 
           return state.setIn([PEOPLE.NEIGHBORS, personId], personNeighbors);
+        }
+      });
+    }
+
+    case updateHearing.case(action.type): {
+      return updateHearing.reducer(state, action, {
+        SUCCESS: () => {
+          const { hearing, personEKID } = action.value;
+          const personHearings = state.getIn([PEOPLE.NEIGHBORS, personEKID, HEARINGS], List()).push(hearing);
+          return state.setIn([PEOPLE.NEIGHBORS, personEKID, HEARINGS], personHearings);
         }
       });
     }
