@@ -175,17 +175,18 @@ export const HEARINGS = {
 // Manual Reminders
 
 export const MANUAL_REMINDERS = {
+  FAILED_REMINDER_IDS: 'failedManualReminderIds',
+  LOADED: 'manualRemindersLoaded',
+  LOADING_FORM: 'loadingManualReminderForm',
+  LOADING_MANUAL_REMINDERS: 'loadingManualReminders',
+  LOADING_REMINDER_NEIGHBORS: 'loadingManualReminderNeighbors',
+  MANUAL_REMINDER_NEIGHBORS: 'manualReminderNeighborsById',
+  PEOPLE_NEIGHBORS: 'peopleNeighborsForManualReminder',
+  PEOPLE_RECEIVING_REMINDERS: 'peopleReceivingManualReminders',
   REMINDER_IDS: 'manualReminderIds',
   REMINDERS_BY_ID: 'manualRemindersById',
   SUCCESSFUL_REMINDER_IDS: 'successfulManualReminderIds',
-  PEOPLE_RECEIVING_REMINDERS: 'peopleReceivingManualReminders',
-  FAILED_REMINDER_IDS: 'failedManualReminderIds',
-  LOADING_MANUAL_REMINDERS: 'loadingManualReminders',
-  LOADED: 'manualRemindersLoaded',
-  MANUAL_REMINDER_NEIGHBORS: 'manualReminderNeighborsById',
-  LOADING_REMINDER_NEIGHBORS: 'loadingManualReminderNeighbors',
-  LOADING_FORM: 'loadingManualReminderForm',
-  PEOPLE_NEIGHBORS: 'peopleNeighborsForManualReminder'
+  UPDATING_HEARING: 'updatingHearing'
 };
 
 // PSA Modal
