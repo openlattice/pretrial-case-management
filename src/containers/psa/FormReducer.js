@@ -22,8 +22,10 @@ import {
   SELECT_PERSON,
   SELECT_PRETRIAL_CASE,
   SET_PSA_VALUES,
+  addCaseToPSA,
   loadDataModel,
   loadNeighbors,
+  removeCaseFromPSA,
   submitPSA
 } from './FormActionFactory';
 
@@ -134,7 +136,10 @@ const INITIAL_STATE :Map<> = fromJS({
   [PSA_FORM.SUBMITTING_PSA]: false,
   [PSA_FORM.PSA_SUBMISSION_COMPLETE]: false,
   [PSA_FORM.SUBMITTED_PSA]: Map(),
-  [PSA_FORM.SUBMITTED_PSA_NEIGHBORS]: Map()
+  [PSA_FORM.SUBMITTED_PSA_NEIGHBORS]: Map(),
+  // Adding and Removing Cases
+  [PSA_FORM.ADDING_CASE_TO_PSA]: false,
+  [PSA_FORM.REMOVING_CASE_FROM_PSA]: false
 });
 
 const ARREST_CHARGE_AUTOFILLS = [
@@ -147,6 +152,13 @@ const ARREST_CHARGE_AUTOFILLS = [
 
 function formReducer(state :Map<> = INITIAL_STATE, action :Object) {
   switch (action.type) {
+
+    case addCaseToPSA.case(action.type): {
+      return addCaseToPSA.reducer(state, action, {
+        REQUEST: () => state.set(PSA_FORM.ADDING_CASE_TO_PSA, true),
+        FINALLY: () => state.set(PSA_FORM.ADDING_CASE_TO_PSA, false)
+      });
+    }
 
     case changePSAStatus.case(action.type): {
       return changePSAStatus.reducer(state, action, {
@@ -412,6 +424,13 @@ function formReducer(state :Map<> = INITIAL_STATE, action :Object) {
           return state
             .set(PSA_FORM.ALL_PSAS, allPSAs);
         }
+      });
+    }
+
+    case removeCaseFromPSA.case(action.type): {
+      return removeCaseFromPSA.reducer(state, action, {
+        REQUEST: () => state.set(PSA_FORM.REMOVING_CASE_FROM_PSA, true),
+        FINALLY: () => state.set(PSA_FORM.REMOVING_CASE_FROM_PSA, false)
       });
     }
 
