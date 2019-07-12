@@ -42,7 +42,6 @@ import {
 
 import * as CourtActionFactory from './CourtActionFactory';
 import * as FormActionFactory from '../psa/FormActionFactory';
-import * as HearingsActionFactory from '../hearings/HearingsActionFactory';
 import * as ReviewActionFactory from '../review/ReviewActionFactory';
 import * as PSAModalActionFactory from '../psamodal/PSAModalActionFactory';
 import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
@@ -613,10 +612,6 @@ function mapDispatchToProps(dispatch :Function) :Object {
 
   Object.keys(FormActionFactory).forEach((action :string) => {
     actions[action] = FormActionFactory[action];
-  });
-
-  Object.keys(HearingsActionFactory).forEach((action :string) => {
-    actions[action] = HearingsActionFactory[action];
   });
 
   Object.keys(ReviewActionFactory).forEach((action :string) => {
