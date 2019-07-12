@@ -336,13 +336,6 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
     actions.refreshHearingAndNeighbors({ hearingEntityKeyId });
   }
 
-  refreshPSANeighborsCallback = () => {
-    const { psaEntity } = this.getNeighborEntities(this.props);
-    const psaEntityKeyId = getEntityKeyId(psaEntity);
-    const { actions } = this.props;
-    if (psaEntityKeyId) actions.refreshPSANeighbors({ id: psaEntityKeyId });
-  }
-
   getJudgeEntity = (props) => {
     const { selectedHearing, hearingNeighbors } = props;
     const judgeEntity = getNeighborDetailsForEntitySet(hearingNeighbors, JUDGES);
