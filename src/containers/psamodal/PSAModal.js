@@ -31,7 +31,6 @@ import closeX from '../../assets/svg/close-x-gray.svg';
 import LoadPersonCaseHistoryButton from '../person/LoadPersonCaseHistoryButton';
 import { getScoresAndRiskFactors, calculateDMF } from '../../utils/ScoringUtils';
 import { CenteredContainer, Title } from '../../utils/Layout';
-import { toISODateTime } from '../../utils/FormattingUtils';
 import { getCasesForPSA, currentPendingCharges } from '../../utils/CaseUtils';
 import { RESULT_CATEGORIES } from '../../utils/consts/DMFResultConsts';
 import { formatDMFFromEntity } from '../../utils/DMFUtils';
