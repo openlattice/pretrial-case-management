@@ -5,7 +5,6 @@
 import React from 'react';
 import moment from 'moment';
 import styled from 'styled-components';
-import randomUUID from 'uuid/v4';
 import { fromJS, Map } from 'immutable';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -28,12 +27,6 @@ import {
   REVIEW,
   COURT
 } from '../../utils/consts/FrontEndStateConsts';
-import {
-  FORM_IDS,
-  ID_FIELD_NAMES,
-  HEARING,
-  HEARING_TYPES
-} from '../../utils/consts/Consts';
 
 import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
 import * as HearingsActionFactory from '../../containers/hearings/HearingsActionFactory';
