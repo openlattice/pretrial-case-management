@@ -634,7 +634,7 @@ function mapStateToProps(state) {
 function mapDispatchToProps(dispatch :Function) :Object {
   const actions :{ [string] :Function } = {};
 
-  actions[updateEntity] = updateEntity;
+  actions.updateEntity = updateEntity;
 
   Object.keys(HearingsActionFactory).forEach((action :string) => {
     actions[action] = HearingsActionFactory[action];
