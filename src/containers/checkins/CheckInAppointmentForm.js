@@ -90,7 +90,7 @@ const INITIAL_STATE = {
   appointmentType: APPOINTMENT_PATTERN.SINGLE
 };
 
-class NewHearingSection extends React.Component<Props, State> {
+class CheckInappointmentForm extends React.Component<Props, State> {
 
   constructor(props :Props) {
     super(props);
@@ -114,7 +114,7 @@ class NewHearingSection extends React.Component<Props, State> {
   createCheckInSubmissionValues = (date) => {
     const startDate = date;
     const endDate = toISODate(moment(startDate).add(1, 'd'));
-    const appointmentEntity = { startDate, endDate };
+    const appointmentEntity = { [PROPERTY_TYPES.START_DATE]: startDate, [PROPERTY_TYPES.END_DATE]: endDate };
     return fromJS(appointmentEntity);
   }
 
@@ -371,4 +371,4 @@ function mapDispatchToProps(dispatch :Function) :Object {
   };
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(NewHearingSection);
+export default connect(mapStateToProps, mapDispatchToProps)(CheckInappointmentForm);

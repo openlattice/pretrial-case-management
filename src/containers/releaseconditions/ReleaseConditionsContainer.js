@@ -33,7 +33,7 @@ import { getTimeOptions } from '../../utils/consts/DateTimeConsts';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { getChargeHistory } from '../../utils/CaseUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { toISODate, toISODateTime, formatDateTime } from '../../utils/FormattingUtils';
+import { toISODate, formatDateTime } from '../../utils/FormattingUtils';
 import { HEARING_CONSTS } from '../../utils/consts/HearingConsts';
 import { SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { formatJudgeName, getCourtroomOptions, getJudgeOptions } from '../../utils/HearingUtils';
@@ -48,9 +48,6 @@ import {
 } from '../../utils/DataUtils';
 import {
   RELEASE_CONDITIONS,
-  LIST_FIELDS,
-  ID_FIELD_NAMES,
-  FORM_IDS,
   HEARING_TYPES,
   JURISDICTION
 } from '../../utils/consts/Consts';
@@ -76,6 +73,7 @@ import {
   SUBMIT
 } from '../../utils/consts/FrontEndStateConsts';
 
+import * as CheckInsActionFactory from '../checkins/CheckInsActionFactory';
 import * as CourtActionFactory from '../court/CourtActionFactory';
 import * as DataActionFactory from '../../utils/data/DataActionFactory';
 import * as HearingsActionFactory from '../hearings/HearingsActionFactory';
@@ -83,7 +81,6 @@ import * as ReleaseConditionsActionFactory from './ReleaseConditionsActionFactor
 import * as ReviewActionFactory from '../review/ReviewActionFactory';
 import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
 
-const { CHECKIN_APPOINTMENTS_FIELD, RELEASE_CONDITIONS_FIELD } = LIST_FIELDS;
 const { OPENLATTICE_ID_FQN } = Constants;
 
 const {
@@ -853,6 +850,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
     const dmfResultsEKID = getFirstNeighborValue(defaultDMF, ENTITY_KEY_ID);
 
     const {
+      createCheckinAppointments,
       createAssociations,
       submitReleaseConditions,
       updateOutcomesAndReleaseCondtions
@@ -964,6 +962,13 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
         callback: this.refreshHearingsNeighborsCallback
       });
     }
+    if (newCheckInAppointmentEntities.length) {
+      createCheckinAppointments({
+        checkInAppointments: newCheckInAppointmentEntities,
+        hearingEKID: hearingEntityKeyId,
+        personEKID
+      });
+    }
     if (editingHearing) {
       updateOutcomesAndReleaseCondtions({
         bondEntity,
@@ -984,7 +989,6 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       submitReleaseConditions({
         bondAmount,
         bondType,
-        checkInAppointments: newCheckInAppointmentEntities,
         dmfResultsEKID,
         hearingEKID: hearingEntityKeyId,
         judgeAccepted,
@@ -1607,6 +1611,10 @@ function mapStateToProps(state) {
 
 function mapDispatchToProps(dispatch :Function) :Object {
   const actions :{ [string] :Function } = {};
+
+  Object.keys(CheckInsActionFactory).forEach((action :string) => {
+    actions[action] = CheckInsActionFactory[action];
+  });
 
   Object.keys(CourtActionFactory).forEach((action :string) => {
     actions[action] = CourtActionFactory[action];

@@ -1,10 +1,12 @@
 /*
  * @flow
  */
-
-import type { SequenceAction } from 'redux-reqseq';
 import { DateTime } from 'luxon';
+import randomUUID from 'uuid/v4';
+import type { SequenceAction } from 'redux-reqseq';
 import { SearchApi } from 'lattice';
+import { DataApiActions, DataApiSagas } from 'lattice-sagas';
+
 import {
   call,
   put,
@@ -23,30 +25,45 @@ import { getEntityProperties, getSearchTerm } from '../../utils/DataUtils';
 import { toISODate } from '../../utils/FormattingUtils';
 import { getPropertyTypeId } from '../../edm/edmUtils';
 import { APPOINTMENT_TYPES } from '../../utils/consts/AppointmentConsts';
+import { REMINDER_TYPES } from '../../utils/RemindersUtils';
 import { MAX_HITS } from '../../utils/consts/Consts';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { APP, PSA_NEIGHBOR, STATE } from '../../utils/consts/FrontEndStateConsts';
+import { refreshHearingAndNeighbors } from '../hearings/HearingsActionFactory';
+import { SETTINGS } from '../../utils/consts/AppSettingConsts';
 import {
+  CREATE_CHECK_IN_APPOINTMENTS,
   LOAD_CHECKIN_APPOINTMENTS_FOR_DATE,
   LOAD_CHECK_IN_NEIGHBORS,
+  createCheckinAppointments,
   loadCheckInAppointmentsForDate,
   loadCheckInNeighbors
 } from './CheckInsActionFactory';
 
+const { PREFERRED_COUNTY } = SETTINGS;
+
+const { createEntityAndAssociationData } = DataApiActions;
+const { createEntityAndAssociationDataWorker } = DataApiSagas;
+
 const {
+  APPEARS_IN,
   CHECKINS,
   CHECKIN_APPOINTMENTS,
+  COUNTIES,
   HEARINGS,
   PEOPLE,
+  REGISTERED_FOR,
   REMINDERS,
   PRETRIAL_CASES
 } = APP_TYPES;
 
 const {
-  PHONE,
   COMPLETED_DATE_TIME,
-  START_DATE,
+  END_DATE,
   ENTITY_KEY_ID,
+  GENERAL_ID,
+  PHONE,
+  START_DATE,
   TYPE
 } = PROPERTY_TYPES;
 
@@ -55,6 +72,126 @@ const getEDM = state => state.get(STATE.EDM, Map());
 const getOrgId = state => state.getIn([STATE.APP, APP.SELECTED_ORG_ID], '');
 
 const LIST_APP_TYPES = List.of(HEARINGS, REMINDERS);
+
+function* createCheckinAppointmentsWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  try {
+    yield put(createCheckinAppointments.request(action.id));
+    const {
+      checkInAppointments,
+      hearingEKID,
+      personEKID
+    } = action.value;
+
+    /*
+     * Get Property Type Ids
+     */
+    const app = yield select(getApp);
+    const edm = yield select(getEDM);
+
+    const completedDateTimePTID = getPropertyTypeId(edm, COMPLETED_DATE_TIME);
+    const endDatePTID = getPropertyTypeId(edm, END_DATE);
+    const generalIdPTID = getPropertyTypeId(edm, GENERAL_ID);
+    const startDatePTID = getPropertyTypeId(edm, START_DATE);
+    const typePTID = getPropertyTypeId(edm, TYPE);
+
+    /*
+     * Get Entity Set Ids
+     */
+    const appearsInESID = getEntitySetIdFromApp(app, APPEARS_IN);
+    const checkInAppointmentsESID = getEntitySetIdFromApp(app, CHECKIN_APPOINTMENTS);
+    const countiesESID = getEntitySetIdFromApp(app, COUNTIES);
+    const hearingsESID = getEntitySetIdFromApp(app, HEARINGS);
+    const peopleESID = getEntitySetIdFromApp(app, PEOPLE);
+    const registeredForESID = getEntitySetIdFromApp(app, REGISTERED_FOR);
+
+    /*
+     * Get Preferred County from app settings
+     */
+    const preferredCountyEKID = app.getIn([APP.SELECTED_ORG_SETTINGS, PREFERRED_COUNTY], '');
+
+    const entities = {};
+    const associations = {};
+    const data = { [completedDateTimePTID]: [DateTime.local().toISO()] };
+    if (checkInAppointments.length) {
+      entities[checkInAppointmentsESID] = [];
+      associations[registeredForESID] = [];
+      associations[appearsInESID] = [];
+      checkInAppointments.forEach((appointment, index) => {
+        const newCheckInAppointmentId = randomUUID();
+        const { [PROPERTY_TYPES.START_DATE]: startDate, [PROPERTY_TYPES.END_DATE]: endDate } = appointment;
+
+        const newCheckInAppointmentEntity = {
+          [generalIdPTID]: [newCheckInAppointmentId],
+          [typePTID]: [REMINDER_TYPES.CHECKIN],
+          [startDatePTID]: [startDate],
+          [endDatePTID]: [endDate],
+        };
+
+        const registeredForAssociations = [
+          {
+            data,
+            srcEntityIndex: index,
+            srcEntitySetId: checkInAppointmentsESID,
+            dstEntityKeyId: personEKID,
+            dstEntitySetId: peopleESID
+          },
+          {
+            data,
+            srcEntityIndex: index,
+            srcEntitySetId: checkInAppointmentsESID,
+            dstEntityKeyId: hearingEKID,
+            dstEntitySetId: hearingsESID
+          }
+        ];
+
+        const appearsInAssociations = [
+          {
+            data: {},
+            srcEntityIndex: index,
+            srcEntitySetId: checkInAppointmentsESID,
+            dstEntityKeyId: preferredCountyEKID,
+            dstEntitySetId: countiesESID
+          }
+        ];
+
+        entities[checkInAppointmentsESID].push(newCheckInAppointmentEntity);
+        associations[registeredForESID] = associations[registeredForESID].concat(registeredForAssociations);
+        associations[appearsInESID] = associations[appearsInESID].concat(appearsInAssociations);
+      });
+      /*
+      * Submit data and collect response
+      */
+      const response = yield call(
+        createEntityAndAssociationDataWorker,
+        createEntityAndAssociationData({ associations, entities })
+      );
+      if (response.error) throw response.error;
+    }
+    /*
+    * Refresh Hearing and Neighbors
+    */
+    const hearingRefresh = refreshHearingAndNeighbors({ hearingEntityKeyId: hearingEKID });
+    yield put(hearingRefresh);
+
+    yield put(createCheckinAppointments.success(action.id, {
+      hearingEKID,
+      personEKID
+    }));
+  }
+
+  catch (error) {
+    console.error(error);
+    yield put(createCheckinAppointments.failure(action.id, { error }));
+  }
+  finally {
+    yield put(createCheckinAppointments.finally(action.id));
+  }
+}
+
+function* createCheckinAppointmentsWatcher() :Generator<*, *, *> {
+  yield takeEvery(CREATE_CHECK_IN_APPOINTMENTS, createCheckinAppointmentsWorker);
+}
 
 function* loadCheckInAppointmentsForDateWorker(action :SequenceAction) :Generator<*, *, *> {
 
@@ -253,6 +390,7 @@ function* loadCheckInNeighborsWatcher() :Generator<*, *, *> {
 }
 
 export {
+  createCheckinAppointmentsWatcher,
   loadCheckInAppointmentsForDateWatcher,
   loadCheckInNeighborsWatcher
 };
