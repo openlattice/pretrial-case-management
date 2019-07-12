@@ -5,6 +5,7 @@
 import React from 'react';
 
 import isFunction from 'lodash/isFunction';
+import { DateTime } from 'luxon';
 import styled from 'styled-components';
 import { AuthActions, AuthUtils } from 'lattice-auth';
 import { bindActionCreators } from 'redux';
@@ -41,7 +42,7 @@ import * as Routes from '../../core/router/Routes';
 import * as AppActionFactory from './AppActionFactory';
 import * as CourtActionFactory from '../court/CourtActionFactory';
 import * as ChargesActionFactory from '../charges/ChargesActionFactory';
-import * as PeopleActionFactory from '../people/PeopleActionFactory';
+import { getStaffEKIDs } from '../people/PeopleActionFactory';
 
 declare var gtag :?Function;
 
@@ -257,9 +258,7 @@ function mapDispatchToProps(dispatch :Function) :Object {
     actions[action] = ChargesActionFactory[action];
   });
 
-  Object.keys(PeopleActionFactory).forEach((action :string) => {
-    actions[action] = PeopleActionFactory[action];
-  });
+  actions.getStaffEKIDs = getStaffEKIDs;
 
   actions.logout = logout;
   actions.getAllPropertyTypes = getAllPropertyTypes;
