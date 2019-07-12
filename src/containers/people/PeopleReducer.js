@@ -28,6 +28,7 @@ import {
   getPeople,
   getPersonData,
   getPersonNeighbors,
+  getStaffEKIDs,
   loadRequiresActionPeople,
   refreshPersonNeighbors,
   updateContactInfo
@@ -180,6 +181,15 @@ export default function peopleReducer(state :Map = INITIAL_STATE, action :Object
         SUCCESS: () => state.set(PEOPLE.RESULTS, fromJS(action.value)),
         FAILURE: () => state.set(PEOPLE.RESULTS, List()),
         FINALLY: () => state.set(PEOPLE.FETCHING_PEOPLE, false)
+      });
+    }
+
+    case getStaffEKIDs.case(action.type): {
+      return getStaffEKIDs.reducer(state, action, {
+        REQUEST: () => state.set(PEOPLE.LOADING_STAFF, true),
+        SUCCESS: () => state.set(PEOPLE.STAFF_IDS_TO_EKIDS, fromJS(action.value)),
+        FAILURE: () => state.set(PEOPLE.ERROR, action.value),
+        FINALLY: () => state.set(PEOPLE.LOADING_STAFF, false)
       });
     }
 
