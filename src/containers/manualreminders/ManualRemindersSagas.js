@@ -287,7 +287,6 @@ function* loadManualRemindersNeighborsByIdWorker(action :SequenceAction) :Genera
         }
         manualReminderNeighborsById = manualReminderNeighborsById.set(manualReminderEntityKeyId, neighborsByAppTypeFqn);
       });
-      console.log(manualReminderNeighborsById.toJS());
 
       let hearingNeighborsById = yield call(SearchApi.searchEntityNeighborsWithFilter, hearingsEntitySetId, {
         entityKeyIds: hearingIds.toJS(),

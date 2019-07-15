@@ -180,7 +180,6 @@ class ManualRemindersForm extends React.Component<Props, State> {
     const { actions } = this.props;
     const { submitManualReminder } = actions;
     const submission = this.getSubmissionValues();
-    console.log(submission);
     submitManualReminder(submission);
   }
 
