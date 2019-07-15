@@ -17,12 +17,18 @@ import { editPSA } from '../psa/FormActionFactory';
 import { enrollVoice, getProfile } from '../enroll/EnrollActionFactory';
 import { changePSAStatus, updateScoresAndRiskFactors, loadPSAData } from '../review/ReviewActionFactory';
 import { deleteEntity } from '../../utils/data/DataActionFactory';
-import { refreshHearingAndNeighbors, submitExistingHearing, submitHearing } from '../hearings/HearingsActionFactory';
+import {
+  refreshHearingAndNeighbors,
+  submitExistingHearing,
+  submitHearing,
+  updateHearing
+} from '../hearings/HearingsActionFactory';
 import {
   CLEAR_PERSON,
   getPeople,
   getPersonData,
   getPersonNeighbors,
+  getStaffEKIDs,
   loadRequiresActionPeople,
   refreshPersonNeighbors,
   updateContactInfo
@@ -175,6 +181,15 @@ export default function peopleReducer(state :Map = INITIAL_STATE, action :Object
         SUCCESS: () => state.set(PEOPLE.RESULTS, fromJS(action.value)),
         FAILURE: () => state.set(PEOPLE.RESULTS, List()),
         FINALLY: () => state.set(PEOPLE.FETCHING_PEOPLE, false)
+      });
+    }
+
+    case getStaffEKIDs.case(action.type): {
+      return getStaffEKIDs.reducer(state, action, {
+        REQUEST: () => state.set(PEOPLE.LOADING_STAFF, true),
+        SUCCESS: () => state.set(PEOPLE.STAFF_IDS_TO_EKIDS, fromJS(action.value)),
+        FAILURE: () => state.set(PEOPLE.ERROR, action.value),
+        FINALLY: () => state.set(PEOPLE.LOADING_STAFF, false)
       });
     }
 
@@ -463,6 +478,16 @@ export default function peopleReducer(state :Map = INITIAL_STATE, action :Object
             .set(CHECKIN_APPOINTMENTS, personCheckInAppointments);
 
           return state.setIn([PEOPLE.NEIGHBORS, personId], personNeighbors);
+        }
+      });
+    }
+
+    case updateHearing.case(action.type): {
+      return updateHearing.reducer(state, action, {
+        SUCCESS: () => {
+          const { hearing, personEKID } = action.value;
+          const personHearings = state.getIn([PEOPLE.NEIGHBORS, personEKID, HEARINGS], List()).push(hearing);
+          return state.setIn([PEOPLE.NEIGHBORS, personEKID, HEARINGS], personHearings);
         }
       });
     }

@@ -1,0 +1,650 @@
+/*
+ * @flow
+ */
+
+import React from 'react';
+import { DateTime } from 'luxon';
+import styled from 'styled-components';
+import { fromJS, Map } from 'immutable';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+
+import BasicButton from '../../components/buttons/BasicButton';
+import ContentBlock from '../../components/ContentBlock';
+import ContentSection from '../../components/ContentSection';
+import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
+import DatePicker from '../../components/datetime/DatePicker';
+import InfoButton from '../../components/buttons/InfoButton';
+import LogoLoader from '../../components/LogoLoader';
+import SearchableSelect from '../../components/controls/SearchableSelect';
+import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { OL } from '../../utils/consts/Colors';
+import { HEARING_CONSTS } from '../../utils/consts/HearingConsts';
+import { getCourtroomOptions, getJudgeOptions, formatJudgeName } from '../../utils/HearingUtils';
+import { getEntitySetIdFromApp } from '../../utils/AppUtils';
+import { getTimeOptions } from '../../utils/consts/DateTimeConsts';
+import {
+  getEntityKeyId,
+  getEntityProperties,
+  getNeighborDetailsForEntitySet,
+  isUUID
+} from '../../utils/DataUtils';
+import {
+  COURT,
+  EDM,
+  HEARINGS,
+  PSA_ASSOCIATION,
+  STATE
+} from '../../utils/consts/FrontEndStateConsts';
+
+import * as HearingsActionFactory from './HearingsActionFactory';
+import { updateEntity } from '../../utils/data/DataActionFactory';
+
+const { JUDGES } = APP_TYPES;
+const {
+  CASE_ID,
+  DATE_TIME,
+  COURTROOM,
+  ENTITY_KEY_ID,
+} = PROPERTY_TYPES;
+
+const StyledSearchableSelect = styled(SearchableSelect)`
+  width: 200px;
+  input {
+    width: 100%;
+    font-size: 14px;
+  }
+`;
+
+const CreateButton = styled(InfoButton)`
+  width: 210px;
+  height: 40px;
+  margin-top: 50px;
+  padding-left: 0;
+  padding-right: 0;
+`;
+
+const NameInput = styled.input.attrs({
+  type: 'text'
+})`
+  width: 189px;
+  height: 40px;
+  border: 1px solid ${OL.GREY05};
+  border-radius: 3px;
+  color: ${OL.BLUE03};
+  font-size: 14px;
+  font-weight: 400;
+  padding: 0 45px 0 20px;
+  background-color: ${OL.WHITE};
+`;
+
+const HearingSectionAside = styled.div`
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+`;
+
+const HearingSectionWrapper = styled.div`
+  min-height: 160px;
+  display: grid;
+  grid-template-columns: 75% 25%;
+  padding: ${props => (props.hearing ? 30 : 0)}px;
+  margin: 0 -15px;
+`;
+
+const StyledBasicButton = styled(BasicButton)`
+  width: 100%;
+  max-width: 210px;
+  height: 40px;
+  margin: 10px;
+  padding: 10px 25px;
+  background-color: ${props => (props.update ? OL.PURPLE02 : OL.GREY08)};
+  color: ${props => (props.update ? OL.WHITE : OL.GREY02)};
+`;
+
+
+const HearingInfoButtons = styled.div`
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+`;
+
+type Props = {
+  allJudges :List<*>,
+  app :Map<*, *>,
+  backToSelection :() => void;
+  fqnToIdMap :Map<*, *>,
+  hasOutcome :boolean,
+  hearing :Map<*, *>,
+  hearingNeighbors :Map<*, *>,
+  hearingEKID :string,
+  jurisdiction :string,
+  updatingHearing :boolean,
+  psaEKID :string,
+  personEKID :string,
+  actions :{
+    submitHearing :(values :{
+      hearingDateTime :string,
+      hearingCourtroom :string,
+      hearingComments :string,
+      judgeEKID :string,
+      personEKID :string,
+      psaEKID :string,
+    }) => void,
+    updateHearing :(values :{
+      hearingEntity :Object,
+      hearingEKID :string,
+      judgeEKID :string,
+      oldJudgeAssociationEKID :string
+    }) => void,
+  }
+}
+
+const DATE_FORMAT = 'MM/dd/yyyy';
+const TIME_FORMAT = 'h:mm a';
+
+const INITIAL_STATE = {
+  modifyingHearing: false,
+  newHearingCourtroom: undefined,
+  newHearingDate: DateTime.local().toFormat(DATE_FORMAT),
+  newHearingTime: undefined,
+  judge: '',
+  judgeEKID: '',
+  otherJudgeText: '',
+};
+
+
+class HearingForm extends React.Component<Props, State> {
+
+  constructor(props :Props) {
+    super(props);
+    this.state = INITIAL_STATE;
+  }
+
+  componentDidMount() {
+    const { allJudges, hearing } = this.props;
+    let judgeName = '';
+    let modifyingHearing = true;
+    let {
+      [HEARINGS.DATE]: newHearingDate,
+      [HEARINGS.TIME]: newHearingTime,
+      [HEARINGS.COURTROOM]: newHearingCourtroom,
+      [HEARINGS.JUDGE]: judgeEKID
+    } = this.props;
+    if (hearing) {
+      modifyingHearing = false;
+      const {
+        hearingDate,
+        hearingTime,
+        hearingCourtroom,
+      } = this.getHearingInfo();
+      newHearingDate = hearingDate;
+      newHearingTime = hearingTime;
+      newHearingCourtroom = hearingCourtroom;
+    }
+    const { judgeEntity } = this.getJudgeEntity();
+    if (judgeEntity.size) {
+      judgeEKID = getEntityKeyId(judgeEntity);
+    }
+
+    allJudges.forEach((judgeObj) => {
+      const hearingJudgeEKID = getEntityKeyId(judgeObj);
+      const fullNameString = formatJudgeName(judgeObj);
+      if (judgeEKID === hearingJudgeEKID) judgeName = fullNameString;
+    });
+
+    this.setState({
+      modifyingHearing,
+      newHearingCourtroom,
+      newHearingDate,
+      newHearingTime,
+      judge: judgeName,
+      judgeEKID
+    });
+  }
+
+  componentWillUnmount() {
+    const { actions } = this.props;
+    actions.clearSubmittedHearing();
+  }
+
+  submitHearing = () => {
+    const {
+      actions,
+      personEKID,
+      psaEKID,
+      backToSelection
+    } = this.props;
+    const { submitHearing } = actions;
+    const {
+      newHearingDate,
+      newHearingTime,
+      newHearingCourtroom,
+      otherJudgeText,
+      judge,
+      judgeEKID
+    } = this.state;
+    const date = DateTime.fromFormat(newHearingDate, DATE_FORMAT).toISODate();
+    const time = DateTime.fromFormat(newHearingTime, TIME_FORMAT).toISOTime();
+    const datetime = DateTime.fromISO(`${date}T${time}`);
+    if (datetime.isValid) {
+      if (judge === 'Other') {
+        this.setState({ judgeEKID: '' });
+      }
+      const hearingDateTime = datetime.toISO();
+      const hearingCourtroom = newHearingCourtroom;
+      const hearingComments = otherJudgeText;
+      submitHearing({
+        hearingDateTime,
+        hearingCourtroom,
+        hearingComments,
+        judgeEKID,
+        personEKID,
+        psaEKID
+      });
+      this.setState(INITIAL_STATE);
+    }
+    if (backToSelection) backToSelection();
+  }
+
+  getHearingInfo = () => {
+    const { hearing } = this.props;
+    let hearingDate;
+    let hearingTime;
+    let hearingCourtroom;
+    if (hearing) {
+      const {
+        [DATE_TIME]: existingHearingDateTime,
+        [COURTROOM]: existingHearingCourtroom,
+      } = getEntityProperties(hearing, [DATE_TIME, COURTROOM]);
+      hearingDate = DateTime.fromISO(existingHearingDateTime).toFormat(DATE_FORMAT);
+      hearingTime = DateTime.fromISO(existingHearingDateTime).toFormat(TIME_FORMAT);
+      hearingCourtroom = existingHearingCourtroom;
+    }
+    return { hearingDate, hearingTime, hearingCourtroom };
+  }
+
+  getJudgeEntity = () => {
+    const { hearing, hearingNeighbors } = this.props;
+    let judgeEntity = Map();
+    let judgeAssociationEKID;
+    let judgesNameFromHearingComments;
+    let judgeName;
+    if (hearing && hearingNeighbors) {
+      judgeEntity = getNeighborDetailsForEntitySet(hearingNeighbors, JUDGES);
+      judgeAssociationEKID = hearingNeighbors.getIn([JUDGES, PSA_ASSOCIATION.DETAILS, ENTITY_KEY_ID, 0], '');
+      judgesNameFromHearingComments = hearing.getIn([PROPERTY_TYPES.HEARING_COMMENTS, 0], 'N/A');
+      judgeName = judgeEntity.size ? formatJudgeName(judgeEntity) : judgesNameFromHearingComments;
+    }
+
+    return {
+      judgeEntity,
+      judgeName,
+      judgeAssociationEKID
+    };
+  }
+
+  updateHearing = () => {
+    const {
+      actions,
+      hearingEKID,
+      hearing
+    } = this.props;
+    const { updateHearing } = actions;
+    const {
+      judge,
+      judgeEKID,
+      newHearingDate,
+      newHearingTime,
+      newHearingCourtroom,
+      otherJudgeText
+    } = this.state;
+    let judgeText;
+    const judgeIsOther = (judge === 'Other');
+
+    const { judgeEntity, judgeAssociationEKID } = this.getJudgeEntity();
+    if (judgeIsOther) {
+      this.setState({ judgeEKID: '' });
+      judgeText = [otherJudgeText];
+    }
+    const { [DATE_TIME]: dateTime } = getEntityProperties(hearing, [DATE_TIME]);
+
+    const date = newHearingDate
+      ? DateTime.fromFormat(newHearingDate, DATE_FORMAT).toISODate()
+      : DateTime.fromISO(dateTime).toISODate();
+    const time = DateTime.fromFormat(newHearingTime, TIME_FORMAT).toISOTime()
+      || DateTime.fromISO(dateTime).toISOTime();
+
+    const hearingDateTime = DateTime.fromISO(`${date}T${time}`);
+
+    const associationEntityKeyId = judgeEntity.size ? judgeAssociationEKID : null;
+    const hearingEntity = {};
+    if (hearingDateTime.isValid) hearingEntity[PROPERTY_TYPES.DATE_TIME] = [hearingDateTime.toISO()];
+    if (newHearingCourtroom) hearingEntity[PROPERTY_TYPES.COURTROOM] = [newHearingCourtroom];
+    if (judgeText) hearingEntity[PROPERTY_TYPES.HEARING_COMMENTS] = judgeText;
+
+    updateHearing({
+      hearingEntity,
+      hearingEKID,
+      judgeEKID,
+      oldJudgeAssociationEKID: associationEntityKeyId
+    });
+
+    this.setState({ modifyingHearing: false });
+  }
+
+  isReadyToSubmit = () => {
+    const {
+      newHearingCourtroom,
+      newHearingDate,
+      newHearingTime,
+      judgeEKID,
+      otherJudgeText
+    } = this.state;
+    const judgeInfoPresent = (judgeEKID || otherJudgeText);
+    return (
+      newHearingCourtroom
+      && newHearingDate
+      && newHearingTime
+      && judgeInfoPresent
+    );
+  }
+
+  onInputChange = (e) => {
+    const { name, value } = e.target;
+    this.setState({ [name]: value });
+  }
+
+  onDateChange = (hearingDate) => {
+    this.setState({ [HEARING_CONSTS.NEW_HEARING_DATE]: hearingDate });
+  }
+
+  renderDatePicker = () => {
+    const { newHearingDate, modifyingHearing } = this.state;
+    const { hearingDate } = this.getHearingInfo();
+    return modifyingHearing
+      ? (
+        <DatePicker
+            value={newHearingDate || DateTime.local().toFormat(DATE_FORMAT)}
+            onChange={this.onDateChange} />
+      ) : hearingDate;
+  }
+
+  onSelectChange = (option) => {
+    const optionMap = fromJS(option);
+    switch (optionMap.get(HEARING_CONSTS.FIELD)) {
+      case HEARING_CONSTS.JUDGE: {
+        this.setState({
+          [HEARING_CONSTS.JUDGE]: optionMap.get(HEARING_CONSTS.FULL_NAME),
+          [HEARING_CONSTS.JUDGE_ID]: optionMap.getIn([ENTITY_KEY_ID, 0])
+        });
+        break;
+      }
+      case HEARING_CONSTS.NEW_HEARING_TIME: {
+        this.setState({
+          [HEARING_CONSTS.NEW_HEARING_TIME]: optionMap.get(HEARING_CONSTS.NEW_HEARING_TIME)
+        });
+        break;
+      }
+      case HEARING_CONSTS.NEW_HEARING_COURTROOM: {
+        this.setState({
+          [HEARING_CONSTS.NEW_HEARING_COURTROOM]: optionMap.get(HEARING_CONSTS.NEW_HEARING_COURTROOM)
+        });
+        break;
+      }
+      default:
+        break;
+    }
+  }
+
+  renderTimeOptions = () => {
+    const { newHearingTime, modifyingHearing } = this.state;
+    const { hearingTime } = this.getHearingInfo();
+    return modifyingHearing
+      ? (
+        <StyledSearchableSelect
+            options={getTimeOptions()}
+            value={newHearingTime}
+            onSelect={time => this.onSelectChange({
+              [HEARING_CONSTS.FIELD]: HEARING_CONSTS.NEW_HEARING_TIME,
+              [HEARING_CONSTS.NEW_HEARING_TIME]: time
+            })}
+            short />
+      ) : hearingTime;
+  }
+
+  renderCourtoomOptions = () => {
+    const { newHearingCourtroom, modifyingHearing } = this.state;
+    const { hearingCourtroom } = this.getHearingInfo();
+    return modifyingHearing
+      ? (
+        <StyledSearchableSelect
+            options={getCourtroomOptions()}
+            value={newHearingCourtroom}
+            onSelect={courtroom => this.onSelectChange({
+              [HEARING_CONSTS.FIELD]: HEARING_CONSTS.NEW_HEARING_COURTROOM,
+              [HEARING_CONSTS.NEW_HEARING_COURTROOM]: courtroom
+            })}
+            short />
+      ) : hearingCourtroom;
+  }
+
+  renderJudgeOptions = () => {
+    const { allJudges, jurisdiction } = this.props;
+    const { judge, modifyingHearing } = this.state;
+    const { judgeName } = this.getJudgeEntity();
+    return modifyingHearing
+      ? (
+        <StyledSearchableSelect
+            options={getJudgeOptions(allJudges, jurisdiction)}
+            value={judge}
+            onSelect={this.onSelectChange}
+            short />
+      ) : judgeName;
+  }
+
+  renderOtherJudgeTextField = () => {
+    const { otherJudgeText, modifyingHearing } = this.state;
+    return modifyingHearing
+      ? (
+        <NameInput
+            onChange={this.onInputChange}
+            name="otherJudgeText"
+            value={otherJudgeText} />
+      ) : otherJudgeText;
+  }
+
+  renderCreateHearingButton = () => (
+    <CreateButton disabled={!this.isReadyToSubmit()} onClick={this.submitHearing}>
+      Create New
+    </CreateButton>
+  );
+
+  renderUpdateAndCancelButtons = () => {
+    const { modifyingHearing } = this.state;
+    return modifyingHearing
+      ? (
+        <HearingInfoButtons modifyingHearing>
+          <StyledBasicButton onClick={() => this.setState({ modifyingHearing: false })}>Cancel</StyledBasicButton>
+          <StyledBasicButton update onClick={this.updateHearing}>Update</StyledBasicButton>
+        </HearingInfoButtons>
+      )
+      : (
+        <HearingInfoButtons>
+          <StyledBasicButton
+              onClick={() => this.setState({ modifyingHearing: true })}>
+            Edit
+          </StyledBasicButton>
+        </HearingInfoButtons>
+      );
+  }
+
+  cancelHearing = (entityKeyId) => {
+    const {
+      actions,
+      app,
+      fqnToIdMap,
+      backToSelection
+    } = this.props;
+    const entitySetId = getEntitySetIdFromApp(app, APP_TYPES.HEARINGS);
+    const values = {
+      [entityKeyId]: {
+        [fqnToIdMap.get(PROPERTY_TYPES.HEARING_INACTIVE)]: [true]
+      }
+    };
+    actions.updateEntity({
+      entitySetId,
+      entities: values,
+      updateType: 'PartialReplace',
+      callback: this.refreshHearingsNeighborsCallback
+    });
+    if (backToSelection) backToSelection();
+  }
+
+  renderCancelHearingButton = () => {
+    const { hasOutcome, hearing, hearingEKID } = this.props;
+    const { [CASE_ID]: hearingId } = getEntityProperties(hearing, [CASE_ID, DATE_TIME]);
+    const hearingWasCreatedManually = isUUID(hearingId);
+
+    const disabledText = hearingWasCreatedManually ? 'Has Outcome' : 'Odyssey Hearing';
+    const cancelButtonText = (hasOutcome || !hearingWasCreatedManually) ? disabledText : 'Cancel Hearing';
+    return (
+      <StyledBasicButton onClick={() => this.cancelHearing(hearingEKID)} disabled={hasOutcome}>
+        { cancelButtonText }
+      </StyledBasicButton>
+    );
+  }
+
+  renderBackToSelectionButton = () => {
+    const { backToSelection } = this.props;
+    return backToSelection
+      ? <StyledBasicButton onClick={backToSelection}>Back to Selection</StyledBasicButton>
+      : null;
+  }
+
+  renderCreateOrEditButtonGroups = () => {
+    const { modifyingHearing } = this.state;
+    const { hearing } = this.props;
+    let buttonGroup = null;
+    if (hearing) {
+      buttonGroup = (
+        <>
+          { modifyingHearing ? this.renderCancelHearingButton() : null }
+          { this.renderUpdateAndCancelButtons() }
+        </>
+      );
+    }
+    else {
+      buttonGroup = this.renderCreateHearingButton();
+    }
+    return buttonGroup;
+  }
+
+  render() {
+    const { hearing, updatingHearing } = this.props;
+
+    if (updatingHearing) return <LogoLoader size={30} loadingText="Updating Hearing" />;
+    const { judge } = this.state;
+    const date = this.renderDatePicker();
+    const time = this.renderTimeOptions();
+    const courtroom = this.renderCourtoomOptions();
+    const judgeSelect = this.renderJudgeOptions();
+    const otherJudge = this.renderOtherJudgeTextField();
+
+    const HEARING_ARR = [
+      {
+        label: 'Date',
+        content: [date]
+      },
+      {
+        label: 'Time',
+        content: [time]
+      },
+      {
+        label: 'Courtroom',
+        content: [courtroom]
+      },
+      {
+        label: 'Judge',
+        content: [judgeSelect]
+      }
+    ];
+    if (judge === 'Other') {
+      HEARING_ARR.push(
+        {
+          label: "Other Judge's Name",
+          content: [otherJudge]
+        }
+      );
+    }
+
+    const headerText = hearing ? '' : 'Create New Hearing';
+    const hearingInfoContent = HEARING_ARR.map(hearingItem => (
+      <ContentBlock
+          component={CONTENT_CONSTS.CREATING_HEARING}
+          contentBlock={hearingItem}
+          key={hearingItem.label} />
+    ));
+
+    const hearingInfoSection = (
+      <ContentSection
+          header={headerText}
+          modifyingHearing
+          component={CONTENT_CONSTS.CREATING_HEARING}>
+        {hearingInfoContent}
+      </ContentSection>
+    );
+
+    return (
+      <HearingSectionWrapper hearing={hearing}>
+        {hearingInfoSection}
+        <HearingSectionAside>
+          { this.renderCreateOrEditButtonGroups() }
+        </HearingSectionAside>
+      </HearingSectionWrapper>
+    );
+  }
+}
+
+function mapStateToProps(state) {
+  const app = state.get(STATE.APP);
+  const court = state.get(STATE.COURT);
+  const edm = state.get(STATE.EDM);
+  const hearings = state.get(STATE.HEARINGS);
+  return {
+    app,
+    [COURT.ALL_JUDGES]: court.get(COURT.ALL_JUDGES),
+
+    [EDM.FQN_TO_ID]: edm.get(EDM.FQN_TO_ID),
+
+    [HEARINGS.DATE]: hearings.get(HEARINGS.DATE),
+    [HEARINGS.TIME]: hearings.get(HEARINGS.TIME),
+    [HEARINGS.COURTROOM]: hearings.get(HEARINGS.COURTROOM),
+    [HEARINGS.JUDGE]: hearings.get(HEARINGS.JUDGE),
+    [HEARINGS.HEARING_NEIGHBORS_BY_ID]: hearings.get(HEARINGS.HEARING_NEIGHBORS_BY_ID),
+    [HEARINGS.LOADING_HEARING_NEIGHBORS]: hearings.get(HEARINGS.LOADING_HEARING_NEIGHBORS),
+    [HEARINGS.SUBMITTING_HEARING]: hearings.get(HEARINGS.SUBMITTING_HEARING),
+    [HEARINGS.UPDATING_HEARING]: hearings.get(HEARINGS.UPDATING_HEARING),
+  };
+}
+
+function mapDispatchToProps(dispatch :Function) :Object {
+  const actions :{ [string] :Function } = {};
+
+  actions.updateEntity = updateEntity;
+
+  Object.keys(HearingsActionFactory).forEach((action :string) => {
+    actions[action] = HearingsActionFactory[action];
+  });
+
+  return {
+    actions: {
+      ...bindActionCreators(actions, dispatch)
+    }
+  };
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(HearingForm);

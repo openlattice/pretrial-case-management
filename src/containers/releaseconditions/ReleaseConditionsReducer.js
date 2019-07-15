@@ -8,7 +8,7 @@ import { getEntityProperties } from '../../utils/DataUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { RELEASE_COND } from '../../utils/consts/FrontEndStateConsts';
 import { deleteEntity } from '../../utils/data/DataActionFactory';
-import { refreshHearingAndNeighbors } from '../hearings/HearingsActionFactory';
+import { updateHearing, refreshHearingAndNeighbors, submitHearing } from '../hearings/HearingsActionFactory';
 import { refreshPSANeighbors } from '../review/ReviewActionFactory';
 import {
   CLEAR_RELEASE_CONDITIONS,
@@ -19,6 +19,7 @@ import {
 
 const {
   HEARINGS,
+  JUDGES,
   OUTCOMES,
   DMF_RESULTS,
   CHECKIN_APPOINTMENTS
@@ -169,6 +170,33 @@ export default function releaseConditionsReducer(state :Map<*, *> = INITIAL_STAT
           return state.set(RELEASE_COND.HEARING_NEIGHBORS, hearingNeighborsByAppTypeFqn);
         },
         FINALLY: () => state.set(RELEASE_COND.REFRESHING_RELEASE_CONDITIONS, false),
+      });
+    }
+
+    case submitHearing.case(action.type): {
+      return submitHearing.reducer(state, action, {
+        SUCCESS: () => {
+          const { hearing, hearingNeighborsByAppTypeFqn } = action.value;
+          const selectedHearingNeighbors = state.set(RELEASE_COND.HEARING_NEIGHBORS, hearingNeighborsByAppTypeFqn);
+
+          return state
+            .set(RELEASE_COND.SELECTED_HEARING, hearing)
+            .set(RELEASE_COND.HEARING_NEIGHBORS, selectedHearingNeighbors);
+        },
+      });
+    }
+
+    case updateHearing.case(action.type): {
+      return updateHearing.reducer(state, action, {
+        SUCCESS: () => {
+          const { hearing, hearingJudge } = action.value;
+          const selectedHearingNeighbors = state.get(RELEASE_COND.HEARING_NEIGHBORS, Map())
+            .set(JUDGES, hearingJudge);
+
+          return state
+            .set(RELEASE_COND.SELECTED_HEARING, hearing)
+            .set(RELEASE_COND.HEARING_NEIGHBORS, selectedHearingNeighbors);
+        },
       });
     }
 

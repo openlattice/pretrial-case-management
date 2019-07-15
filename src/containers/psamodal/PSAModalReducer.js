@@ -9,8 +9,13 @@ import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_MODAL, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { loadPSAModal, CLEAR_PSA_MODAL } from './PSAModalActionFactory';
 import { addCaseToPSA, editPSA, removeCaseFromPSA } from '../psa/FormActionFactory';
-import { submitExistingHearing, submitHearing, refreshHearingAndNeighbors } from '../hearings/HearingsActionFactory';
 import { updateContactInfo, refreshPersonNeighbors } from '../people/PeopleActionFactory';
+import {
+  refreshHearingAndNeighbors,
+  submitExistingHearing,
+  submitHearing,
+  updateHearing
+} from '../hearings/HearingsActionFactory';
 import {
   changePSAStatus,
   loadCaseHistory,
@@ -55,7 +60,8 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [PSA_MODAL.FTA_HISTORY]: Map(),
   [PSA_MODAL.PERSON_HEARINGS]: Map(),
   [PSA_MODAL.PERSON_NEIGHBORS]: Map(),
-  [PSA_MODAL.EDITING_PSA]: false
+  [PSA_MODAL.EDITING_PSA]: false,
+  [PSA_MODAL.ERROR]: ''
 });
 
 export default function psaModalReducer(state :Map<*, *> = INITIAL_STATE, action :Object) {
@@ -81,6 +87,7 @@ export default function psaModalReducer(state :Map<*, *> = INITIAL_STATE, action
           psaNeighbors = psaNeighbors.set(STAFF, staffNeighbors);
           return state.set(PSA_MODAL.PSA_NEIGHBORS, psaNeighbors);
         },
+        ERROR: () => state.set(PSA_MODAL.ERROR, action.value),
         FINALLY: () => state.set(PSA_MODAL.EDITING_PSA, false),
       });
     }
@@ -290,6 +297,25 @@ export default function psaModalReducer(state :Map<*, *> = INITIAL_STATE, action
             .setIn([PSA_MODAL.PERSON_NEIGHBORS, SUBSCRIPTION], subscription)
             .setIn([PSA_MODAL.PERSON_NEIGHBORS, CONTACT_INFORMATION], contacts);
         }
+      });
+    }
+
+    case updateHearing.case(action.type): {
+      return updateHearing.reducer(state, action, {
+        SUCCESS: () => {
+          const { hearing, hearingEKID } = action.value;
+          /*
+          * Get PSA Hearings and Neighbors
+          */
+          const psaHearings = state.get(PSA_MODAL.HEARINGS, List()).map((selectHearing) => {
+            const { [ENTITY_KEY_ID]: EKID } = getEntityProperties(selectHearing, [ENTITY_KEY_ID]);
+            if (EKID === hearingEKID) return hearing;
+            return selectHearing;
+          });
+          return state
+            .setIn([PSA_MODAL.PSA_NEIGHBORS, HEARINGS], psaHearings)
+            .set(PSA_MODAL.HEARINGS, psaHearings);
+        },
       });
     }
 
