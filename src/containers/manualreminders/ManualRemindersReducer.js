@@ -2,13 +2,19 @@
  * @flow
  */
 
-import { Map, Set, fromJS } from 'immutable';
+import {
+  List,
+  Map,
+  Set,
+  fromJS
+} from 'immutable';
 
 import {
   CLEAR_MANUAL_REMINDERS_FORM,
   loadManualRemindersForm,
   loadManualRemindersForDate,
   loadManualRemindersNeighborsById,
+  submitManualReminder
 } from './ManualRemindersActionFactory';
 import { refreshPersonNeighbors } from '../people/PeopleActionFactory';
 import { MANUAL_REMINDERS } from '../../utils/consts/FrontEndStateConsts';
@@ -28,7 +34,11 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [MANUAL_REMINDERS.PEOPLE_RECEIVING_REMINDERS]: Set(),
   [MANUAL_REMINDERS.LOADING_REMINDER_NEIGHBORS]: false,
   [MANUAL_REMINDERS.SUCCESSFUL_REMINDER_IDS]: Set(),
-  [MANUAL_REMINDERS.FAILED_REMINDER_IDS]: Set()
+  [MANUAL_REMINDERS.FAILED_REMINDER_IDS]: Set(),
+  [MANUAL_REMINDERS.SUBMITTED_MANUAL_REMINDER]: Map(),
+  [MANUAL_REMINDERS.SUBMITTED_MANUAL_REMINDER_NEIGHBORS]: Map(),
+  [MANUAL_REMINDERS.SUBMITTING_MANUAL_REMINDER]: false,
+  [MANUAL_REMINDERS.SUBMISSION_ERROR]: List()
 });
 
 export default function manualRemindersReducer(state :Map<*, *> = INITIAL_STATE, action :Object) {
@@ -90,6 +100,34 @@ export default function manualRemindersReducer(state :Map<*, *> = INITIAL_STATE,
           const personNeighbors = state.set(CONTACT_INFORMATION, contactInfo);
           return state.set(MANUAL_REMINDERS.PEOPLE_NEIGHBORS, personNeighbors);
         }
+      });
+    }
+
+    case submitManualReminder.case(action.type): {
+      return submitManualReminder.reducer(state, action, {
+        REQUEST: () => state.set(MANUAL_REMINDERS.SUBMITTING_MANUAL_REMINDER, true),
+        SUCCESS: () => {
+          const { manualReminder, manualReminderEKID, manualReminderNeighbors } = action.value;
+          const failedReminderIds = state
+            .get(MANUAL_REMINDERS.FAILED_REMINDER_IDS, Set())
+            .add(manualReminderEKID);
+          const manualReminderIds = state
+            .get(MANUAL_REMINDERS.REMINDER_IDS, Set())
+            .add(manualReminderEKID);
+          const successfulReminderIds = state
+            .get(MANUAL_REMINDERS.SUCCESSFUL_REMINDER_IDS, Set())
+            .add(manualReminderEKID);
+          return state
+            .set(MANUAL_REMINDERS.SUBMITTED_MANUAL_REMINDER, manualReminder)
+            .set(MANUAL_REMINDERS.SUBMITTED_MANUAL_REMINDER_NEIGHBORS, manualReminderNeighbors)
+            .setIn([MANUAL_REMINDERS.REMINDERS_BY_ID, manualReminderEKID], manualReminder)
+            .setIn([MANUAL_REMINDERS.MANUAL_REMINDER_NEIGHBORS, manualReminderEKID], manualReminderNeighbors)
+            .set(MANUAL_REMINDERS.REMINDER_IDS, manualReminderIds)
+            .set(MANUAL_REMINDERS.FAILED_REMINDER_IDS, failedReminderIds)
+            .set(MANUAL_REMINDERS.SUCCESSFUL_REMINDER_IDS, successfulReminderIds);
+        },
+        FAILURE: () => state.set(MANUAL_REMINDERS.SUBMISSION_ERROR, action.value),
+        FINALLY: () => state.set(MANUAL_REMINDERS.SUBMITTING_MANUAL_REMINDER, false)
       });
     }
 
