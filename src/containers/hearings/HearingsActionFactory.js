@@ -32,6 +32,9 @@ const submitExistingHearing :RequestSequence = newRequestSequence(SUBMIT_EXISTIN
 const SUBMIT_HEARING :string = 'SUBMIT_HEARING';
 const submitHearing :RequestSequence = newRequestSequence(SUBMIT_HEARING);
 
+const UPDATE_HEARING :string = 'UPDATE_HEARING';
+const updateHearing :RequestSequence = newRequestSequence(UPDATE_HEARING);
+
 export {
   CLEAR_HEARING_SETTINGS,
   CLEAR_SUBMITTED_HEARING,
@@ -42,6 +45,7 @@ export {
   SET_HEARING_SETTINGS,
   SUBMIT_EXISTING_HEARING,
   SUBMIT_HEARING,
+  UPDATE_HEARING,
   clearHearingSettings,
   clearSubmittedHearing,
   closeHearingSettingsModal,
@@ -50,5 +54,6 @@ export {
   openHearingSettingsModal,
   setHearingSettings,
   submitExistingHearing,
-  submitHearing
+  submitHearing,
+  updateHearing
 };

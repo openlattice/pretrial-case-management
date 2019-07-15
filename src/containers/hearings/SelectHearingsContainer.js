@@ -10,9 +10,9 @@ import { List, Map } from 'immutable';
 
 import HearingCardsHolder from '../../components/hearings/HearingCardsHolder';
 import HearingCardsWithTitle from '../../components/hearings/HearingCardsWithTitle';
+import HearingsForm from './HearingsForm';
 import InfoButton from '../../components/buttons/InfoButton';
 import LogoLoader from '../../components/LogoLoader';
-import NewHearingSection from '../../components/hearings/NewHearingSection';
 import ReleaseConditionsContainer from '../releaseconditions/ReleaseConditionsContainer';
 import SubscriptionInfo from '../../components/subscription/SubscriptionInfo';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
@@ -123,7 +123,6 @@ type Props = {
   personNeighbors :Map<*, *>,
   psaEntityKeyId :string,
   psaHearings :List<*, *>,
-  psaId :string,
   psaIdsRefreshing :Map<*, *>,
   psaNeighbors :Map<*, *>,
   readOnly :boolean,
@@ -175,12 +174,10 @@ class SelectHearingsContainer extends React.Component<Props, State> {
   }
 
   renderNewHearingSection = () => {
-    const { manuallyCreatingHearing } = this.state;
     const {
       neighbors,
       context,
       personEKID,
-      psaId,
       psaEntityKeyId
     } = this.props;
     const psaContext = neighbors
@@ -189,13 +186,11 @@ class SelectHearingsContainer extends React.Component<Props, State> {
     const jurisdiction = JURISDICTION[psaContext];
 
     return (
-      <NewHearingSection
+      <HearingsForm
+          backToSelection={this.backToHearingSelection}
           personEKID={personEKID}
           psaEKID={psaEntityKeyId}
-          psaId={psaId}
-          manuallyCreatingHearing={manuallyCreatingHearing}
-          jurisdiction={jurisdiction}
-          afterSubmit={this.backToHearingSelection} />
+          jurisdiction={jurisdiction} />
     );
   }
 

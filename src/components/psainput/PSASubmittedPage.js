@@ -18,7 +18,7 @@ import DMFCell from '../dmf/DMFCell';
 import ChargeTable from '../charges/ChargeTable';
 import CaseHistoryTimeline from '../casehistory/CaseHistoryTimeline';
 import RiskFactorsTable from '../riskfactors/RiskFactorsTable';
-import NewHearingSection from '../hearings/NewHearingSection';
+import HearingsForm from '../../containers/hearings/HearingsForm';
 import SelectedHearingInfo from '../hearings/SelectedHearingInfo';
 import psaSuccessIcon from '../../assets/svg/psa-success.svg';
 import psaFailureIcon from '../../assets/svg/psa-failure.svg';
@@ -526,10 +526,8 @@ class PSASubmittedPage extends React.Component<Props, State> {
 
   renderHearingNewHearingSection = () => {
     const {
-      allHearings,
       personEKID,
       psaEKID,
-      isSubmitting,
       context,
       submittedHearing,
       submittedHearingNeighbors,
@@ -541,13 +539,10 @@ class PSASubmittedPage extends React.Component<Props, State> {
     if (!submittedHearing.size) {
       return (
         <CreateHearingWrapper>
-          <NewHearingSection
-              submitting={isSubmitting}
+          <HearingsForm
               jurisdiction={jurisdiction}
               personEKID={personEKID}
-              psaEKID={psaEKID}
-              hearings={allHearings}
-              manuallyCreatingHearing />
+              psaEKID={psaEKID} />
         </CreateHearingWrapper>
       );
     }

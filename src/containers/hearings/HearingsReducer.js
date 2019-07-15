@@ -14,13 +14,15 @@ import {
   refreshHearingAndNeighbors,
   SET_HEARING_SETTINGS,
   submitExistingHearing,
-  submitHearing
+  submitHearing,
+  updateHearing
 } from './HearingsActionFactory';
 
 import { HEARINGS } from '../../utils/consts/FrontEndStateConsts';
-import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { getEntityProperties } from '../../utils/DataUtils';
 
+const { JUDGES } = APP_TYPES;
 const { ENTITY_KEY_ID } = PROPERTY_TYPES;
 
 const INITIAL_STATE :Map<*, *> = fromJS({
@@ -151,6 +153,27 @@ export default function hearingsReducer(state :Map<*, *> = INITIAL_STATE, action
         },
         FAILURE: () => state.set(HEARINGS.SUBMISSION_ERROR, action.value),
         FINALLY: () => state.set(HEARINGS.SUBMITTING_HEARING, false),
+      });
+    }
+
+    case updateHearing.case(action.type): {
+      return updateHearing.reducer(state, action, {
+        REQUEST: () => state.set(HEARINGS.UPDATING_HEARING, true),
+        SUCCESS: () => {
+          const { hearingEKID, hearing, hearingJudge } = action.value;
+          const hearingsMap = state.get(HEARINGS.HEARINGS_BY_ID, Map()).set(hearingEKID, hearing);
+          const hearingsNeighborsMap = state.get(HEARINGS.HEARING_NEIGHBORS_BY_ID, Map())
+            .setIn([hearingEKID, JUDGES], hearingJudge);
+          const hearingNeighbors = hearingsNeighborsMap.get(hearingEKID);
+
+          return state
+            .set(HEARINGS.HEARINGS_BY_ID, hearingsMap)
+            .set(HEARINGS.HEARING_NEIGHBORS_BY_ID, hearingsNeighborsMap)
+            .set(HEARINGS.SUBMITTED_HEARING, hearing)
+            .set(HEARINGS.SUBMITTED_HEARING_NEIGHBORS, hearingNeighbors);
+        },
+        FAILURE: () => state.set(HEARINGS.SUBMISSION_ERROR, action.value),
+        FINALLY: () => state.set(HEARINGS.UPDATING_HEARING, false),
       });
     }
 

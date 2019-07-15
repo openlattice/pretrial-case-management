@@ -4,6 +4,7 @@
 
 import { DateTime } from 'luxon';
 import randomUUID from 'uuid/v4';
+import { Types } from 'lattice';
 import {
   fromJS,
   List,
@@ -26,7 +27,7 @@ import type { SequenceAction } from 'redux-reqseq';
 
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { createIdObject, getEntityProperties } from '../../utils/DataUtils';
-import { getPropertyTypeId } from '../../edm/edmUtils';
+import { getPropertyTypeId, getPropteryIdToValueMap } from '../../edm/edmUtils';
 import { SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { HEARING_TYPES, PSA_STATUSES } from '../../utils/consts/Consts';
@@ -38,14 +39,30 @@ import {
   REFRESH_HEARING_AND_NEIGHBORS,
   SUBMIT_EXISTING_HEARING,
   SUBMIT_HEARING,
+  UPDATE_HEARING,
   loadHearingNeighbors,
   refreshHearingAndNeighbors,
   submitExistingHearing,
-  submitHearing
+  submitHearing,
+  updateHearing
 } from './HearingsActionFactory';
 
-const { createAssociations, createEntityAndAssociationData, getEntityData } = DataApiActions;
-const { createAssociationsWorker, createEntityAndAssociationDataWorker, getEntityDataWorker } = DataApiSagas;
+const { DeleteTypes } = Types;
+
+const {
+  createAssociations,
+  createEntityAndAssociationData,
+  deleteEntity,
+  getEntityData,
+  updateEntityData
+} = DataApiActions;
+const {
+  createAssociationsWorker,
+  createEntityAndAssociationDataWorker,
+  deleteEntityWorker,
+  getEntityDataWorker,
+  updateEntityDataWorker
+} = DataApiSagas;
 const { searchEntityNeighborsWithFilter } = SearchApiActions;
 const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
 
@@ -123,10 +140,10 @@ function* getHearingAndNeighbors(hearingEntityKeyId :string) :Generator<*, *, *>
     const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
     const psaEntitySetId = getEntitySetIdFromApp(app, PSA_SCORES);
     const releaseConditionsEntitySetId = getEntitySetIdFromApp(app, RELEASE_CONDITIONS);
+
     /*
     * Get Hearing Info
     */
-
     const hearingIdObject = createIdObject(hearingEntityKeyId, hearingsEntitySetId);
     const hearingResponse = yield call(
       getEntityDataWorker,
@@ -425,7 +442,7 @@ function* submitHearingWorker(action :SequenceAction) :Generator<*, *, *> {
     yield put(submitHearing.request(action.id));
     const {
       hearingDateTime,
-      hearingCoutroom,
+      hearingCourtroom,
       hearingComments,
       judgeEKID,
       personEKID,
@@ -506,7 +523,7 @@ function* submitHearingWorker(action :SequenceAction) :Generator<*, *, *> {
       [hearingsESID]: [{
         [caseIdPTID]: [hearingId],
         [dateTimePTID]: [hearingDateTime],
-        [courtroomPTID]: [hearingCoutroom],
+        [courtroomPTID]: [hearingCourtroom],
         [hearingTypePTID]: [HEARING_TYPES.INITIAL_APPEARANCE],
         [hearingCommentsPTID]: [hearingComments]
       }]
@@ -549,9 +566,145 @@ function* submitHearingWatcher() :Generator<*, *, *> {
   yield takeEvery(SUBMIT_HEARING, submitHearingWorker);
 }
 
+function* updateHearingWorker(action :SequenceAction) :Generator<*, *, *> {
+  try {
+    yield put(updateHearing.request(action.id));
+    const {
+      hearingEntity,
+      hearingEKID,
+      judgeEKID,
+      oldJudgeAssociationEKID,
+      personEKID
+    } = action.value;
+
+    const app = yield select(getApp);
+    const edm = yield select(getEDM);
+    const orgId = yield select(getOrgId);
+    const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
+
+    /*
+    * Get Property Type Ids
+    */
+    const completedDatetimePTID = getPropertyTypeId(edm, COMPLETED_DATE_TIME);
+    const updatedHearingObject = getPropteryIdToValueMap(hearingEntity, edm);
+
+    /*
+     * Get Entity Set Ids
+     */
+    const assessedByESID = getEntitySetIdFromApp(app, ASSESSED_BY);
+    const hearingsESID = getEntitySetIdFromApp(app, HEARINGS);
+    const judgesESID = getEntitySetIdFromApp(app, JUDGES);
+
+    /*
+     * Delete old association to Judge
+     */
+    if (oldJudgeAssociationEKID) {
+      const deleteResponse = yield call(
+        deleteEntityWorker,
+        deleteEntity({
+          entityKeyId: oldJudgeAssociationEKID,
+          entitySetId: assessedByESID,
+          deleteType: DeleteTypes.Soft
+        })
+      );
+      if (deleteResponse.error) throw deleteResponse.error;
+    }
+
+    /*
+     * Assemble and Submit New Judge Association
+     */
+    if (judgeEKID) {
+      const data = { [completedDatetimePTID]: [DateTime.local().toISO()] };
+      const src = createIdObject(hearingEKID, hearingsESID);
+      const dst = createIdObject(judgeEKID, judgesESID);
+      const associations = { [assessedByESID]: [{ data, src, dst }] };
+
+      const associationsResponse = yield call(
+        createAssociationsWorker,
+        createAssociations(associations)
+      );
+      if (associationsResponse.error) throw associationsResponse.error;
+    }
+
+    /*
+     * Update Hearing Data
+     */
+
+    const updateResponse = yield call(
+      updateEntityDataWorker,
+      updateEntityData({
+        entitySetId: hearingsESID,
+        entities: { [hearingEKID]: updatedHearingObject },
+        updateType: 'PartialReplace'
+      })
+    );
+    if (updateResponse.error) throw updateResponse.error;
+
+    /*
+     * Get updated hearing
+     */
+    const hearingIdObject = createIdObject(hearingEKID, hearingsESID);
+    const hearingResponse = yield call(
+      getEntityDataWorker,
+      getEntityData(hearingIdObject)
+    );
+    if (hearingResponse.error) throw hearingResponse.error;
+    const hearing = fromJS(hearingResponse.data);
+
+    /*
+     * Get hearing judge neighbors
+     */
+    let hearingNeighborsById = yield call(
+      searchEntityNeighborsWithFilterWorker,
+      searchEntityNeighborsWithFilter({
+        entitySetId: hearingsESID,
+        filter: {
+          entityKeyIds: [hearingEKID],
+          sourceEntitySetIds: [],
+          destinationEntitySetIds: [judgesESID]
+        }
+      })
+    );
+    if (hearingNeighborsById.error) throw hearingNeighborsById.error;
+    hearingNeighborsById = fromJS(hearingNeighborsById.data);
+    const hearingNeighbors = hearingNeighborsById.get(hearingEKID, List());
+
+    let hearingJudge = Map();
+    if (hearingNeighbors) {
+      hearingNeighbors.forEach(((neighbor) => {
+        const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id']);
+        const appTypeFqn = entitySetIdsToAppType.get(entitySetId, JUDGES);
+        if (appTypeFqn === JUDGES) {
+          hearingJudge = neighbor;
+        }
+      }));
+    }
+
+    yield put(updateHearing.success(action.id, {
+      hearingEKID,
+      hearing,
+      hearingJudge,
+      personEKID
+    }));
+  }
+
+  catch (error) {
+    console.error(error);
+    yield put(updateHearing.failure(action.id, error));
+  }
+  finally {
+    yield put(updateHearing.finally(action.id));
+  }
+}
+
+function* updateHearingWatcher() :Generator<*, *, *> {
+  yield takeEvery(UPDATE_HEARING, updateHearingWorker);
+}
+
 export {
   loadHearingNeighborsWatcher,
   refreshHearingAndNeighborsWatcher,
   submitExistingHearingWatcher,
-  submitHearingWatcher
+  submitHearingWatcher,
+  updateHearingWatcher
 };

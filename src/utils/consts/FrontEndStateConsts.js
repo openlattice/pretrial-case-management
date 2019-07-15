@@ -178,21 +178,22 @@ export const HEARINGS = {
 // Manual Reminders
 
 export const MANUAL_REMINDERS = {
+  FAILED_REMINDER_IDS: 'failedManualReminderIds',
+  LOADED: 'manualRemindersLoaded',
+  LOADING_FORM: 'loadingManualReminderForm',
+  LOADING_MANUAL_REMINDERS: 'loadingManualReminders',
+  LOADING_REMINDER_NEIGHBORS: 'loadingManualReminderNeighbors',
+  MANUAL_REMINDER_NEIGHBORS: 'manualReminderNeighborsById',
+  PEOPLE_NEIGHBORS: 'peopleNeighborsForManualReminder',
+  PEOPLE_RECEIVING_REMINDERS: 'peopleReceivingManualReminders',
   REMINDER_IDS: 'manualReminderIds',
   REMINDERS_BY_ID: 'manualRemindersById',
   SUCCESSFUL_REMINDER_IDS: 'successfulManualReminderIds',
-  PEOPLE_RECEIVING_REMINDERS: 'peopleReceivingManualReminders',
-  FAILED_REMINDER_IDS: 'failedManualReminderIds',
-  LOADING_MANUAL_REMINDERS: 'loadingManualReminders',
-  LOADED: 'manualRemindersLoaded',
-  MANUAL_REMINDER_NEIGHBORS: 'manualReminderNeighborsById',
-  LOADING_REMINDER_NEIGHBORS: 'loadingManualReminderNeighbors',
-  LOADING_FORM: 'loadingManualReminderForm',
-  PEOPLE_NEIGHBORS: 'peopleNeighborsForManualReminder',
   SUBMITTED_MANUAL_REMINDER: 'submittedManualReminder',
   SUBMITTED_MANUAL_REMINDER_NEIGHBORS: 'submittedManualReminderNeighbors',
   SUBMITTING_MANUAL_REMINDER: 'submittingManualReminder',
-  SUBMISSION_ERROR: 'manualReminderSubmissionError'
+  SUBMISSION_ERROR: 'manualReminderSubmissionError',
+  UPDATING_HEARING: 'updatingHearing'
 };
 
 // PSA Modal
@@ -222,7 +223,8 @@ export const PSA_MODAL = {
   MANUAL_CHARGE_HISTORY: 'manualChargeHistory',
   SENTENCE_HISTORY: 'sentenceHistory',
   FTA_HISTORY: 'ftaHistory',
-  PERSON_HEARINGS: 'personHearings'
+  PERSON_HEARINGS: 'personHearings',
+  ERROR: 'errorMessage'
 };
 
 // PSA
@@ -282,7 +284,8 @@ export const PEOPLE = {
   MULTIPLE_PSA_PEOPLE: 'peopleWithMultiplePSAs',
   RECENT_FTA_PEOPLE: 'peopleWithRecentFTAs',
   NO_PENDING_CHARGES_PEOPLE: 'peopleWithNoPendingCharges',
-  REQUIRES_ACTION_LOADING: 'loadingRequiresActionPeople'
+  REQUIRES_ACTION_LOADING: 'loadingRequiresActionPeople',
+  ERROR: 'errorMessage'
 };
 
 // Release Conditions
@@ -382,7 +385,7 @@ export const SUBMIT = {
   SUBMITTING: 'submitting',
   SUCCESS: 'submitSuccess',
   SUBMITTED: 'submitted',
-  ERROR: 'error'
+  ERROR: 'errorMessage'
 };
 
 // Subscriptions
