@@ -188,7 +188,11 @@ export const MANUAL_REMINDERS = {
   MANUAL_REMINDER_NEIGHBORS: 'manualReminderNeighborsById',
   LOADING_REMINDER_NEIGHBORS: 'loadingManualReminderNeighbors',
   LOADING_FORM: 'loadingManualReminderForm',
-  PEOPLE_NEIGHBORS: 'peopleNeighborsForManualReminder'
+  PEOPLE_NEIGHBORS: 'peopleNeighborsForManualReminder',
+  SUBMITTED_MANUAL_REMINDER: 'submittedManualReminder',
+  SUBMITTED_MANUAL_REMINDER_NEIGHBORS: 'submittedManualReminderNeighbors',
+  SUBMITTING_MANUAL_REMINDER: 'submittingManualReminder',
+  SUBMISSION_ERROR: 'manualReminderSubmissionError'
 };
 
 // PSA Modal
