@@ -18,9 +18,9 @@ import LoadingSpinner from '../../components/LoadingSpinner';
 import SubscriptionConfig from '../../config/formconfig/SubscriptionConfig';
 import SubscriptionInfo from '../../components/subscription/SubscriptionInfo';
 import ContactInfoTable from '../../components/contactinformation/ContactInfoTable';
-import NewContactForm from '../people/NewContactForm';
+import NewContactForm from '../contactinformation/NewContactForm';
 import { FORM_IDS } from '../../utils/consts/Consts';
-import { getEntityProperties } from '../../utils/DataUtils';
+import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
@@ -33,6 +33,7 @@ import {
 } from '../../utils/Layout';
 import {
   APP,
+  CONTACT_INFO,
   EDM,
   REVIEW,
   PEOPLE,
@@ -43,6 +44,7 @@ import {
 } from '../../utils/consts/FrontEndStateConsts';
 
 import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
+import { updateContactsBulk } from '../contactinformation/ContactInfoActionFactory';
 import * as DataActionFactory from '../../utils/data/DataActionFactory';
 import * as PeopleActionFactory from '../people/PeopleActionFactory';
 import * as RemindersActionFactory from '../reminders/RemindersActionFactory';
@@ -191,16 +193,13 @@ class ManageSubscriptionModal extends React.Component<Props, State> {
   updateExistingContacts = () => {
     const { updates } = this.state;
     const { actions, person } = this.props;
-    const { updateContactInfo } = actions;
-    const personId = person.getIn([PROPERTY_TYPES.PERSON_ID, 0], '');
-    const personEntityKeyId = person.getIn([OPENLATTICE_ID_FQN, 0], '');
+    const { updateContactsBulk } = actions;
+    const personEKID = getEntityKeyId(person);
 
     if (fromJS(updates).size) {
-      updateContactInfo({
+      updateContactsBulk({
         entities: updates,
-        personEntityKeyId,
-        personId,
-        callback: this.uponUpdate
+        personEKID
       });
     }
     else {
@@ -257,6 +256,8 @@ class ManageSubscriptionModal extends React.Component<Props, State> {
       loadingSubscriptionInfo,
       subscription,
       submitting,
+      submittingContactInfo,
+      updatingContactInfo,
       refreshingPersonNeighbors,
       updatingEntity
     } = this.props;
@@ -282,6 +283,8 @@ class ManageSubscriptionModal extends React.Component<Props, State> {
               || refreshingPersonNeighbors
               || updatingEntity
               || noPreferredContacts
+              || submittingContactInfo
+              || updatingContactInfo
             }
             isSubscribed={isSubscribed}
             onClick={subscribeFn}>
@@ -292,12 +295,12 @@ class ManageSubscriptionModal extends React.Component<Props, State> {
             ? (
               <>
                 <SaveButton
-                    disabled={submitting || refreshingPersonNeighbors}
+                    disabled={submitting || submittingContactInfo || updatingContactInfo || refreshingPersonNeighbors}
                     onClick={this.updateExistingContacts}>
                   Save
                 </SaveButton>
                 <CancelEditButton
-                    disabled={refreshingPersonNeighbors}
+                    disabled={updatingContactInfo}
                     onClick={this.notModifyingContactInformation}>
                   Cancel
                 </CancelEditButton>
@@ -323,7 +326,7 @@ class ManageSubscriptionModal extends React.Component<Props, State> {
       refreshingPersonNeighbors
     } = this.props;
     const { modifyingContactInformation } = this.state;
-    const personId = person.getIn([PROPERTY_TYPES.PERSON_ID, 0], '');
+    const personEKID = getEntityKeyId(person);
     return (
       <>
         <ContactHeader>
@@ -348,7 +351,7 @@ class ManageSubscriptionModal extends React.Component<Props, State> {
         {
           modifyingContactInformation
             ? (
-              <NewContactForm personId={personId} editing={modifyingContactInformation} />
+              <NewContactForm personEKID={personEKID} editing={modifyingContactInformation} />
             )
             : null
         }
@@ -417,7 +420,7 @@ class ManageSubscriptionModal extends React.Component<Props, State> {
 
 function mapStateToProps(state) {
   const app = state.get(STATE.APP);
-  const submit = state.get(STATE.SUBMIT);
+  const contactInformation = state.get(STATE.CONTACT_INFO);
   const review = state.get(STATE.REVIEW);
   const edm = state.get(STATE.EDM);
   const people = state.get(STATE.PEOPLE);
@@ -427,14 +430,18 @@ function mapStateToProps(state) {
     [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
     [APP.SELECTED_ORG_SETTINGS]: app.get(APP.SELECTED_ORG_SETTINGS),
 
+    [CONTACT_INFO.SUBMITTING_CONTACT_INFO]: contactInformation.get(CONTACT_INFO.SUBMITTING_CONTACT_INFO),
+    [CONTACT_INFO.UPDATING_CONTACT_INFO]: contactInformation.get(CONTACT_INFO.UPDATING_CONTACT_INFO),
+    [CONTACT_INFO.UPDATING_ENTITY]: contactInformation.get(CONTACT_INFO.UPDATING_ENTITY, false),
+
     [EDM.FQN_TO_ID]: edm.get(EDM.FQN_TO_ID),
 
     [REVIEW.READ_ONLY]: review.get(REVIEW.READ_ONLY),
 
     [PEOPLE.REFRESHING_PERSON_NEIGHBORS]: people.get(PEOPLE.REFRESHING_PERSON_NEIGHBORS, false),
 
-    [SUBMIT.SUBMITTING]: submit.get(SUBMIT.SUBMITTING, false),
-    [SUBMIT.UPDATING_ENTITY]: submit.get(SUBMIT.UPDATING_ENTITY, false),
+    [SUBMIT.SUBMITTING]: contactInformation.get(SUBMIT.SUBMITTING, false),
+    [SUBMIT.UPDATING_ENTITY]: contactInformation.get(SUBMIT.UPDATING_ENTITY, false),
 
     [SUBSCRIPTIONS.LOADING_SUBSCRIPTION_MODAL]: subscription.get(SUBSCRIPTIONS.LOADING_SUBSCRIPTION_MODAL),
     [SUBSCRIPTIONS.CONTACT_INFO]: subscription.get(SUBSCRIPTIONS.CONTACT_INFO),
@@ -445,6 +452,8 @@ function mapStateToProps(state) {
 
 function mapDispatchToProps(dispatch :Function) :Object {
   const actions :{ [string] :Function } = {};
+
+  actions.updateContactsBulk = updateContactsBulk;
 
   Object.keys(DataActionFactory).forEach((action :string) => {
     actions[action] = DataActionFactory[action];
