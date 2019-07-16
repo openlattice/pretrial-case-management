@@ -84,9 +84,9 @@ const getOrgId = state => state.getIn([STATE.APP, APP.SELECTED_ORG_ID], '');
 
 const getStaffId = () => {
   const staffInfo = AuthUtils.getUserInfo();
-  let staffId = staffInfo.id;
-  if (staffInfo.email && staffInfo.email.length > 0) {
-    staffId = staffInfo.email;
+  let staffId = staffInfo.email;
+  if (!staffId.length) {
+    staffId = staffInfo.id;
   }
   return staffId;
 };
