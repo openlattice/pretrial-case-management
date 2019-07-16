@@ -9,7 +9,8 @@ import {
   Map
 } from 'immutable';
 
-import { updateContactInfo, refreshPersonNeighbors } from '../people/PeopleActionFactory';
+import { refreshPersonNeighbors } from '../people/PeopleActionFactory';
+import { submitContact, updateContactsBulk } from '../contactinformation/ContactInfoActionFactory';
 import { changePSAStatus, updateScoresAndRiskFactors } from '../review/ReviewActionFactory';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA, NOTES, DMF } from '../../utils/consts/Consts';
@@ -388,8 +389,18 @@ function formReducer(state :Map<> = INITIAL_STATE, action :Object) {
         .set(PSA_FORM.SUBMIT_ERROR, false);
     }
 
-    case updateContactInfo.case(action.type): {
-      return updateContactInfo.reducer(state, action, {
+    case submitContact.case(action.type): {
+      return submitContact.reducer(state, action, {
+        SUCCESS: () => {
+          const { contactInfo } = action.value;
+          const newContactInfo = state.get(PSA_FORM.ALL_CONTACTS, List()).push(contactInfo);
+          return state.set(PSA_FORM.ALL_CONTACTS, newContactInfo);
+        }
+      });
+    }
+
+    case updateContactsBulk.case(action.type): {
+      return updateContactsBulk.reducer(state, action, {
         SUCCESS: () => {
           const { contactInformation } = action.value;
           return state.set(PSA_FORM.ALL_CONTACTS, contactInformation);
