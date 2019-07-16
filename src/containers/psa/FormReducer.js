@@ -10,7 +10,7 @@ import {
 } from 'immutable';
 
 import { refreshPersonNeighbors } from '../people/PeopleActionFactory';
-import { submitContact, updateContactsBulk } from '../contactinformation/ContactInfoActionFactory';
+import { submitContact, updateContactsBulk } from '../contactinformation/ContactInfoActions';
 import { changePSAStatus, updateScoresAndRiskFactors } from '../review/ReviewActionFactory';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA, NOTES, DMF } from '../../utils/consts/Consts';

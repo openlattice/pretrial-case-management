@@ -34,7 +34,7 @@ import {
   MANUAL_REMINDERS
 } from '../../utils/consts/FrontEndStateConsts';
 
-import { clearSubmittedContact } from '../contactinformation/ContactInfoActionFactory';
+import { clearSubmittedContact } from '../contactinformation/ContactInfoActions';
 import * as ManualRemindersActionFactory from './ManualRemindersActionFactory';
 import * as RemindersActionFactory from '../reminders/RemindersActionFactory';
 import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
@@ -96,6 +96,7 @@ const NotesInput = styled.textarea`
 
 type Props = {
   app :Map<*, *>,
+  contactInfoSubmissionComplete :boolean,
   loadingManualReminderForm :boolean,
   personId :string,
   person :Map<*, *>,
@@ -133,18 +134,11 @@ class ManualRemindersForm extends React.Component<Props, State> {
   static getDerivedStateFromProps(nextProps, prevState) {
     const { addingNewContact } = prevState;
     const { actions, contactInfoSubmissionComplete } = nextProps;
-    const { clearSubmittedContact } = actions;
     if (contactInfoSubmissionComplete && addingNewContact) {
-      clearSubmittedContact();
+      actions.clearSubmittedContact();
       return { addingNewContact: false };
     }
     return null;
-  }
-
-  refreshPersonNeighborsCallback = () => {
-    const { actions, personId } = this.props;
-    actions.refreshPersonNeighbors({ personId });
-    this.setState(INITIAL_STATE);
   }
 
   getStaffId = () => {

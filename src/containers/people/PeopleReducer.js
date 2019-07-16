@@ -16,7 +16,7 @@ import { PSA_STATUSES } from '../../utils/consts/Consts';
 import { editPSA } from '../psa/FormActionFactory';
 import { enrollVoice, getProfile } from '../enroll/EnrollActionFactory';
 import { changePSAStatus, updateScoresAndRiskFactors, loadPSAData } from '../review/ReviewActionFactory';
-import { submitContact, updateContactsBulk } from '../contactinformation/ContactInfoActionFactory';
+import { submitContact, updateContactsBulk } from '../contactinformation/ContactInfoActions';
 import { deleteEntity } from '../../utils/data/DataActionFactory';
 import {
   refreshHearingAndNeighbors,

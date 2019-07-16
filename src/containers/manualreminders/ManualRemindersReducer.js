@@ -16,7 +16,7 @@ import {
   loadManualRemindersNeighborsById,
 } from './ManualRemindersActionFactory';
 import { refreshPersonNeighbors } from '../people/PeopleActionFactory';
-import { submitContact } from '../contactinformation/ContactInfoActionFactory';
+import { submitContact } from '../contactinformation/ContactInfoActions';
 import { MANUAL_REMINDERS, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { APP_TYPES } from '../../utils/consts/DataModelConsts';
 

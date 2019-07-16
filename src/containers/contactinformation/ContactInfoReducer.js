@@ -8,7 +8,7 @@ import {
   submitContact,
   updateContact,
   updateContactsBulk
-} from './ContactInfoActionFactory';
+} from './ContactInfoActions';
 
 import { CONTACT_INFO } from '../../utils/consts/FrontEndStateConsts';
 

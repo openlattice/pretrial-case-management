@@ -44,7 +44,7 @@ import {
 } from '../../utils/consts/FrontEndStateConsts';
 
 import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
-import { updateContactsBulk } from '../contactinformation/ContactInfoActionFactory';
+import { updateContactsBulk } from '../contactinformation/ContactInfoActions';
 import * as DataActionFactory from '../../utils/data/DataActionFactory';
 import * as PeopleActionFactory from '../people/PeopleActionFactory';
 import * as RemindersActionFactory from '../reminders/RemindersActionFactory';

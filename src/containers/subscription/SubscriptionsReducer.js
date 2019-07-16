@@ -6,7 +6,7 @@ import { Map, List, fromJS } from 'immutable';
 
 import { CLEAR_SUBSCRIPTION_MODAL, loadSubcriptionModal } from './SubscriptionsActionFactory';
 import { refreshPersonNeighbors } from '../people/PeopleActionFactory';
-import { submitContact, updateContactsBulk } from '../contactinformation/ContactInfoActionFactory';
+import { submitContact, updateContactsBulk } from '../contactinformation/ContactInfoActions';
 
 import { APP_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_NEIGHBOR, SUBSCRIPTIONS } from '../../utils/consts/FrontEndStateConsts';

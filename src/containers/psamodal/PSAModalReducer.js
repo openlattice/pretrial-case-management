@@ -10,7 +10,7 @@ import { PSA_MODAL, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts'
 import { loadPSAModal, CLEAR_PSA_MODAL } from './PSAModalActionFactory';
 import { addCaseToPSA, editPSA, removeCaseFromPSA } from '../psa/FormActionFactory';
 import { refreshPersonNeighbors } from '../people/PeopleActionFactory';
-import { submitContact, updateContactsBulk } from '../contactinformation/ContactInfoActionFactory';
+import { submitContact, updateContactsBulk } from '../contactinformation/ContactInfoActions';
 import {
   refreshHearingAndNeighbors,
   submitExistingHearing,
