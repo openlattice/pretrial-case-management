@@ -2,7 +2,12 @@
  * @flow
  */
 
-import { Map, Set, fromJS } from 'immutable';
+import {
+  List,
+  Map,
+  Set,
+  fromJS
+} from 'immutable';
 
 import {
   CLEAR_MANUAL_REMINDERS_FORM,
@@ -11,7 +16,8 @@ import {
   loadManualRemindersNeighborsById,
 } from './ManualRemindersActionFactory';
 import { refreshPersonNeighbors } from '../people/PeopleActionFactory';
-import { MANUAL_REMINDERS } from '../../utils/consts/FrontEndStateConsts';
+import { submitContact } from '../contactinformation/ContactInfoActionFactory';
+import { MANUAL_REMINDERS, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { APP_TYPES } from '../../utils/consts/DataModelConsts';
 
 const { CONTACT_INFORMATION } = APP_TYPES;
@@ -79,6 +85,20 @@ export default function manualRemindersReducer(state :Map<*, *> = INITIAL_STATE,
             .set(MANUAL_REMINDERS.MANUAL_REMINDER_NEIGHBORS, manualReminderNeighborsById);
         },
         FINALLY: () => state.set(MANUAL_REMINDERS.LOADING_REMINDER_NEIGHBORS, false)
+      });
+    }
+
+    case submitContact.case(action.type): {
+      return submitContact.reducer(state, action, {
+        SUCCESS: () => {
+          const { contactInfo } = action.value;
+          const contactEntity = Map().withMutations(map => map.set(PSA_NEIGHBOR.DETAILS, contactInfo));
+          const updatedContactInfo = state
+            .getIn([MANUAL_REMINDERS.PEOPLE_NEIGHBORS, CONTACT_INFORMATION], List()).push(contactEntity);
+          const nextState = state
+            .setIn([MANUAL_REMINDERS.PEOPLE_NEIGHBORS, CONTACT_INFORMATION], updatedContactInfo);
+          return nextState;
+        }
       });
     }
 
