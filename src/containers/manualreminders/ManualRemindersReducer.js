@@ -18,9 +18,12 @@ import {
 } from './ManualRemindersActionFactory';
 import { refreshPersonNeighbors } from '../people/PeopleActionFactory';
 import { MANUAL_REMINDERS } from '../../utils/consts/FrontEndStateConsts';
-import { APP_TYPES } from '../../utils/consts/DataModelConsts';
+import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { getEntityProperties } from '../../utils/DataUtils';
 
 const { CONTACT_INFORMATION } = APP_TYPES;
+
+const { NOTIFIED } = PROPERTY_TYPES;
 
 const INITIAL_STATE :Map<*, *> = fromJS({
   [MANUAL_REMINDERS.LOADING_FORM]: false,
@@ -108,15 +111,18 @@ export default function manualRemindersReducer(state :Map<*, *> = INITIAL_STATE,
         REQUEST: () => state.set(MANUAL_REMINDERS.SUBMITTING_MANUAL_REMINDER, true),
         SUCCESS: () => {
           const { manualReminder, manualReminderEKID, manualReminderNeighbors } = action.value;
-          const failedReminderIds = state
-            .get(MANUAL_REMINDERS.FAILED_REMINDER_IDS, Set())
-            .add(manualReminderEKID);
+          const { [NOTIFIED]: wasNotified } = getEntityProperties(manualReminder, [NOTIFIED]);
           const manualReminderIds = state
             .get(MANUAL_REMINDERS.REMINDER_IDS, Set())
             .add(manualReminderEKID);
-          const successfulReminderIds = state
-            .get(MANUAL_REMINDERS.SUCCESSFUL_REMINDER_IDS, Set())
-            .add(manualReminderEKID);
+          let successfulReminderIds = state.get(MANUAL_REMINDERS.SUCCESSFUL_REMINDER_IDS, Set());
+          let failedReminderIds = state.get(MANUAL_REMINDERS.FAILED_REMINDER_IDS, Set())
+          if (wasNotified) {
+            successfulReminderIds = successfulReminderIds.add(manualReminderEKID);
+          }
+          else {
+            failedReminderIds = failedReminderIds.add(manualReminderEKID);
+          }
           return state
             .set(MANUAL_REMINDERS.SUBMITTED_MANUAL_REMINDER, manualReminder)
             .set(MANUAL_REMINDERS.SUBMITTED_MANUAL_REMINDER_NEIGHBORS, manualReminderNeighbors)
