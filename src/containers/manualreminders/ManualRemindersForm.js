@@ -133,12 +133,19 @@ class ManualRemindersForm extends React.Component<Props, State> {
 
   static getDerivedStateFromProps(nextProps, prevState) {
     const { addingNewContact } = prevState;
-    const { actions, contactInfoSubmissionComplete } = nextProps;
+    const { contactInfoSubmissionComplete } = nextProps;
     if (contactInfoSubmissionComplete && addingNewContact) {
-      actions.clearSubmittedContact();
       return { addingNewContact: false };
     }
     return null;
+  }
+
+  componentDidUpdate() {
+    const { addingNewContact } = this.state;
+    const { actions, contactInfoSubmissionComplete } = this.props;
+    if (contactInfoSubmissionComplete && addingNewContact) {
+      actions.clearSubmittedContact();
+    }
   }
 
   getStaffId = () => {
