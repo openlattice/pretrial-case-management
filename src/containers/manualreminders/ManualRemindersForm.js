@@ -142,7 +142,7 @@ class ManualRemindersForm extends React.Component<Props, State> {
 
   isReadyToSubmit = () :boolean => {
     const { contactMethod } = this.state;
-    return contactMethod;
+    return !!contactMethod;
   }
 
   getSubmissionValues = () => {
