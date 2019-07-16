@@ -30,8 +30,7 @@ import {
   MANUAL_REMINDERS
 } from '../../utils/consts/FrontEndStateConsts';
 
-import * as ManualRemindersActionFactory from './ManualRemindersActionFactory';
-import * as RemindersActionFactory from '../reminders/RemindersActionFactory';
+import { submitManualReminder } from './ManualRemindersActionFactory';
 
 const { CONTACT_INFORMATION, HEARINGS } = APP_TYPES;
 const {
@@ -97,23 +96,17 @@ const NotesInput = styled.textarea`
 
 type Props = {
   loadingManualReminderForm :boolean,
-  personId :string,
   person :Map<*, *>,
   peopleNeighborsForManualReminder :Map<*, *>,
   submittedManualReminder :Map<*, *>,
   submittingManualReminder :boolean,
   actions :{
-    refreshPersonNeighbors :(values :{ personId :string }) => void,
-    submit :(values :{
-      config :Map<*, *>,
-      values :Map<*, *>,
-      callback :() => void
-    }) => void,
-    updateContactInfo :(values :{
-      entities :Map<*, *>,
-      personId :string,
-      callback :() => void
-    }) => void,
+    submitManualReminder :(values :{
+      contactInformationEKID :string,
+      hearingEKID :string,
+      manualReminderEntity :string,
+      personEKID :string
+    }) => void
   }
 }
 
@@ -132,12 +125,6 @@ class ManualRemindersForm extends React.Component<Props, State> {
   constructor(props :Props) {
     super(props);
     this.state = INITIAL_STATE;
-  }
-
-  refreshPersonNeighborsCallback = () => {
-    const { actions, personId } = this.props;
-    actions.refreshPersonNeighbors({ personId });
-    this.setState(INITIAL_STATE);
   }
 
   isReadyToSubmit = () :boolean => {
@@ -178,9 +165,8 @@ class ManualRemindersForm extends React.Component<Props, State> {
 
   submitManualReminder = () => {
     const { actions } = this.props;
-    const { submitManualReminder } = actions;
     const submission = this.getSubmissionValues();
-    submitManualReminder(submission);
+    actions.submitManualReminder(submission);
   }
 
   renderSubmitButton = () => {
@@ -414,13 +400,7 @@ function mapStateToProps(state) {
 function mapDispatchToProps(dispatch :Function) :Object {
   const actions :{ [string] :Function } = {};
 
-  Object.keys(ManualRemindersActionFactory).forEach((action :string) => {
-    actions[action] = ManualRemindersActionFactory[action];
-  });
-
-  Object.keys(RemindersActionFactory).forEach((action :string) => {
-    actions[action] = RemindersActionFactory[action];
-  });
+  actions.submitManualReminder = submitManualReminder;
 
   return {
     actions: {
