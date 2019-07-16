@@ -5,6 +5,7 @@ export const STATE = {
   AUTH: 'auth',
   CHARGES: 'charges',
   CHECK_INS: 'checkIns',
+  CONTACT_INFO: 'contactInformation',
   COURT: 'court',
   DASHBOARD: 'dashboard',
   DOWNLOAD: 'download',
@@ -87,6 +88,16 @@ export const CHECK_IN = {
   LOADING_CHECK_IN_NEIGHBORS: 'loadingCheckInNieghbors',
   CHECK_IN_NEIGHBORS_BY_ID: 'checkInNeighborsById',
   SUBMITTING_CHECKINS: 'submittingCheckins',
+};
+
+// Contact-Info
+export const CONTACT_INFO = {
+  SUBMITTED_CONTACT_INFO: 'submittedContact',
+  SUBMITTING_CONTACT_INFO: 'submittingContactInfo',
+  SUBMISSION_COMPLETE: 'contactInfoSubmissionComplete',
+  SUBMISSION_ERROR: 'submissionError',
+  UPDATED_CONTACTS: 'updatedContacts',
+  UPDATING_CONTACT_INFO: 'updatingContactInfo'
 };
 
 // Court
