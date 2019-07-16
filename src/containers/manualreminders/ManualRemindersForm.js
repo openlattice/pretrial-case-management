@@ -17,7 +17,7 @@ import InfoButton from '../../components/buttons/InfoButton';
 import LogoLoader from '../../components/LogoLoader';
 import SelectContactInfoTable from '../../components/contactinformation/SelectContactInfoTable';
 import StyledRadio from '../../components/controls/StyledRadio';
-import NewContactForm from '../people/NewContactForm';
+import NewContactForm from '../contactinformation/NewContactForm';
 import HearingCardsHolder from '../../components/hearings/HearingCardsHolder';
 import { formatPeopleInfo } from '../../utils/PeopleUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
@@ -29,12 +29,12 @@ import { REMINDER_TYPES } from '../../utils/RemindersUtils';
 import { CONTACT_METHODS } from '../../utils/consts/ContactInfoConsts';
 import {
   APP,
-  REMINDERS,
+  CONTACT_INFO,
   STATE,
-  MANUAL_REMINDERS,
-  SUBMIT
+  MANUAL_REMINDERS
 } from '../../utils/consts/FrontEndStateConsts';
 
+import { clearSubmittedContact } from '../contactinformation/ContactInfoActionFactory';
 import * as ManualRemindersActionFactory from './ManualRemindersActionFactory';
 import * as RemindersActionFactory from '../reminders/RemindersActionFactory';
 import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
@@ -109,12 +109,7 @@ type Props = {
       config :Map<*, *>,
       values :Map<*, *>,
       callback :() => void
-    }) => void,
-    updateContactInfo :(values :{
-      entities :Map<*, *>,
-      personId :string,
-      callback :() => void
-    }) => void,
+    }) => void
   }
 }
 
@@ -133,6 +128,17 @@ class ManualRemindersForm extends React.Component<Props, State> {
   constructor(props :Props) {
     super(props);
     this.state = INITIAL_STATE;
+  }
+
+  static getDerivedStateFromProps(nextProps, prevState) {
+    const { addingNewContact } = prevState;
+    const { actions, contactInfoSubmissionComplete } = nextProps;
+    const { clearSubmittedContact } = actions;
+    if (contactInfoSubmissionComplete && addingNewContact) {
+      clearSubmittedContact();
+      return { addingNewContact: false };
+    }
+    return null;
   }
 
   refreshPersonNeighborsCallback = () => {
@@ -270,7 +276,6 @@ class ManualRemindersForm extends React.Component<Props, State> {
   }
 
   addingContactInformation = () => this.setState({ addingNewContact: true });
-  notAddingContactInformation = () => this.setState({ addingNewContact: false });
 
   renderAddContactButton = () => (
     <FlexContainer>
@@ -280,15 +285,14 @@ class ManualRemindersForm extends React.Component<Props, State> {
 
   renderContactForm = () => {
     const { person } = this.props;
-    const { personId } = formatPeopleInfo(person);
     const { addingNewContact } = this.state;
+    const personEKID = getEntityKeyId(person);
     return (
       <>
         <InputLabel>Add Contact</InputLabel>
         <NewContactForm
-            personId={personId}
-            editing={!!addingNewContact}
-            submitCallback={this.notAddingContactInformation} />
+            personEKID={personEKID}
+            editing={!!addingNewContact} />
       </>
     );
   }
@@ -426,7 +430,7 @@ class ManualRemindersForm extends React.Component<Props, State> {
 
 function mapStateToProps(state) {
   const app = state.get(STATE.APP);
-  const submit = state.get(STATE.SUBMIT);
+  const contactInformation = state.get(STATE.CONTACT_INFO);
   const manualReminders = state.get(STATE.MANUAL_REMINDERS);
   return {
     app,
@@ -436,13 +440,15 @@ function mapStateToProps(state) {
     [MANUAL_REMINDERS.LOADING_FORM]: manualReminders.get(MANUAL_REMINDERS.LOADING_FORM),
     [MANUAL_REMINDERS.PEOPLE_NEIGHBORS]: manualReminders.get(MANUAL_REMINDERS.PEOPLE_NEIGHBORS),
 
-    [SUBMIT.SUBMITTING]: submit.get(SUBMIT.SUBMITTING),
-    [SUBMIT.SUBMITTED]: submit.get(SUBMIT.SUBMITTED)
+    [CONTACT_INFO.submittingContactInfo]: contactInformation.get(CONTACT_INFO.submittingContactInfo),
+    [CONTACT_INFO.SUBMISSION_COMPLETE]: contactInformation.get(CONTACT_INFO.SUBMISSION_COMPLETE)
   };
 }
 
 function mapDispatchToProps(dispatch :Function) :Object {
   const actions :{ [string] :Function } = {};
+
+  actions.clearSubmittedContact = clearSubmittedContact;
 
   Object.keys(SubmitActionFactory).forEach((action :string) => {
     actions[action] = SubmitActionFactory[action];
