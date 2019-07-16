@@ -9,7 +9,8 @@ import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_MODAL, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { loadPSAModal, CLEAR_PSA_MODAL } from './PSAModalActionFactory';
 import { addCaseToPSA, editPSA, removeCaseFromPSA } from '../psa/FormActionFactory';
-import { updateContactInfo, refreshPersonNeighbors } from '../people/PeopleActionFactory';
+import { refreshPersonNeighbors } from '../people/PeopleActionFactory';
+import { submitContact, updateContactsBulk } from '../contactinformation/ContactInfoActionFactory';
 import {
   refreshHearingAndNeighbors,
   submitExistingHearing,
@@ -278,8 +279,19 @@ export default function psaModalReducer(state :Map<*, *> = INITIAL_STATE, action
       });
     }
 
-    case updateContactInfo.case(action.type): {
-      return updateContactInfo.reducer(state, action, {
+    case submitContact.case(action.type): {
+      return submitContact.reducer(state, action, {
+        SUCCESS: () => {
+          const { contactInfo } = action.value;
+          const newContactInfo = state
+            .getIn([PSA_MODAL.PERSON_NEIGHBORS, CONTACT_INFORMATION], List()).push(contactInfo);
+          return state.setIn([PSA_MODAL.PERSON_NEIGHBORS, CONTACT_INFORMATION], newContactInfo);
+        }
+      });
+    }
+
+    case updateContactsBulk.case(action.type): {
+      return updateContactsBulk.reducer(state, action, {
         SUCCESS: () => {
           const { contactInformation } = action.value;
           return state.setIn([PSA_MODAL.PERSON_NEIGHBORS, CONTACT_INFORMATION], contactInformation);

@@ -5,7 +5,8 @@
 import { Map, List, fromJS } from 'immutable';
 
 import { CLEAR_SUBSCRIPTION_MODAL, loadSubcriptionModal } from './SubscriptionsActionFactory';
-import { refreshPersonNeighbors, updateContactInfo } from '../people/PeopleActionFactory';
+import { refreshPersonNeighbors } from '../people/PeopleActionFactory';
+import { submitContact, updateContactsBulk } from '../contactinformation/ContactInfoActionFactory';
 
 import { APP_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_NEIGHBOR, SUBSCRIPTIONS } from '../../utils/consts/FrontEndStateConsts';
@@ -55,8 +56,23 @@ export default function subscriptionsReducer(state :Map<*, *> = INITIAL_STATE, a
       });
     }
 
-    case updateContactInfo.case(action.type): {
-      return updateContactInfo.reducer(state, action, {
+    case submitContact.case(action.type): {
+      return submitContact.reducer(state, action, {
+        SUCCESS: () => {
+          const { contactInfo } = action.value;
+          const contactEntity = Map().withMutations(map => map.set(PSA_NEIGHBOR.DETAILS, contactInfo));
+          const nextContacts = state.getIn([SUBSCRIPTIONS.PERSON_NEIGHBORS, CONTACT_INFORMATION], List())
+            .push(contactEntity);
+          const personNeighbors = state.setIn([SUBSCRIPTIONS.PERSON_NEIGHBORS, CONTACT_INFORMATION], nextContacts);
+          return state
+            .set(SUBSCRIPTIONS.PERSON_NEIGHBORS, personNeighbors)
+            .set(SUBSCRIPTIONS.CONTACT_INFO, nextContacts);
+        }
+      });
+    }
+
+    case updateContactsBulk.case(action.type): {
+      return updateContactsBulk.reducer(state, action, {
         SUCCESS: () => {
           const { contactInformation } = action.value;
           const personNeighbors = state.merge({ CONTACT_INFORMATION: contactInformation });
