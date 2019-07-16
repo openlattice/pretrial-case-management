@@ -16,6 +16,7 @@ import { PSA_STATUSES } from '../../utils/consts/Consts';
 import { editPSA } from '../psa/FormActionFactory';
 import { enrollVoice, getProfile } from '../enroll/EnrollActionFactory';
 import { changePSAStatus, updateScoresAndRiskFactors, loadPSAData } from '../review/ReviewActionFactory';
+import { submitContact, updateContactsBulk } from '../contactinformation/ContactInfoActionFactory';
 import { deleteEntity } from '../../utils/data/DataActionFactory';
 import {
   refreshHearingAndNeighbors,
@@ -30,8 +31,7 @@ import {
   getPersonNeighbors,
   getStaffEKIDs,
   loadRequiresActionPeople,
-  refreshPersonNeighbors,
-  updateContactInfo
+  refreshPersonNeighbors
 } from './PeopleActionFactory';
 
 const {
@@ -420,14 +420,23 @@ export default function peopleReducer(state :Map = INITIAL_STATE, action :Object
       });
     }
 
-    case updateContactInfo.case(action.type): {
-      return updateContactInfo.reducer(state, action, {
-        REQUEST: () => state.set(PEOPLE.REFRESHING_PERSON_NEIGHBORS, true),
+    case submitContact.case(action.type): {
+      return submitContact.reducer(state, action, {
         SUCCESS: () => {
-          const { personId, contactInformation } = action.value;
-          return state.setIn([PEOPLE.NEIGHBORS, personId, CONTACT_INFORMATION], contactInformation);
-        },
-        FINALLY: () => state.set(PEOPLE.REFRESHING_PERSON_NEIGHBORS, false)
+          const { personEKID, contactInfo } = action.value;
+          const updatedContactInfo = state
+            .getIn([PEOPLE.NEIGHBORS, personEKID, CONTACT_INFORMATION], List()).push(contactInfo);
+          return state.setIn([PEOPLE.NEIGHBORS, personEKID, CONTACT_INFORMATION], updatedContactInfo);
+        }
+      });
+    }
+
+    case updateContactsBulk.case(action.type): {
+      return updateContactsBulk.reducer(state, action, {
+        SUCCESS: () => {
+          const { personEKID, contactInformation } = action.value;
+          return state.setIn([PEOPLE.NEIGHBORS, personEKID, CONTACT_INFORMATION], contactInformation);
+        }
       });
     }
 
