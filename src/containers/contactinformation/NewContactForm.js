@@ -19,7 +19,7 @@ import { InputGroup } from '../../components/person/PersonFormTags';
 import { CONTACT_METHODS } from '../../utils/consts/ContactInfoConsts';
 import { APP, CONTACT_INFO, STATE } from '../../utils/consts/FrontEndStateConsts';
 
-import * as ContactInfoActionFactory from './ContactInfoActionFactory';
+import * as ContactInfoActions from './ContactInfoActions';
 
 
 /*
@@ -308,8 +308,8 @@ function mapStateToProps(state) {
 function mapDispatchToProps(dispatch :Function) :Object {
   const actions :{ [string] :Function } = {};
 
-  Object.keys(ContactInfoActionFactory).forEach((action :string) => {
-    actions[action] = ContactInfoActionFactory[action];
+  Object.keys(ContactInfoActions).forEach((action :string) => {
+    actions[action] = ContactInfoActions[action];
   });
 
   return {
