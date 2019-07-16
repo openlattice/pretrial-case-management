@@ -20,7 +20,7 @@ import {
 
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { createIdObject } from '../../utils/DataUtils';
-import { getPropertyTypeId, getPropteryIdToValueMap } from '../../edm/edmUtils';
+import { getPropertyTypeId, getPropertyIdToValueMap } from '../../edm/edmUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { APP, PSA_NEIGHBOR, STATE } from '../../utils/consts/FrontEndStateConsts';
 import {
@@ -30,7 +30,7 @@ import {
   submitContact,
   updateContact,
   updateContactsBulk
-} from './ContactInfoActionFactory';
+} from './ContactInfoActions';
 
 const { createEntityAndAssociationData, getEntityData, updateEntityData } = DataApiActions;
 const { createEntityAndAssociationDataWorker, getEntityDataWorker, updateEntityDataWorker } = DataApiSagas;
@@ -65,7 +65,7 @@ function* submitContactWorker(action :SequenceAction) :Generator<*, *, *> {
     /*
      * Get Submission Entity
      */
-    const contactSubmission = getPropteryIdToValueMap(contactEntity, edm);
+    const contactSubmission = getPropertyIdToValueMap(contactEntity, edm);
 
     /*
      * Get Entity Set Ids
@@ -160,7 +160,7 @@ function* updateContactWorker(action :SequenceAction) :Generator<*, *, *> {
     /*
      * Get Submission Entity
      */
-    const contactSubmission = getPropteryIdToValueMap(contactEntity, edm);
+    const contactSubmission = getPropertyIdToValueMap(contactEntity, edm);
 
     /*
      * Update Contact Data
