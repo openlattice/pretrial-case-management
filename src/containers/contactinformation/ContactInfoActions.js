@@ -5,8 +5,10 @@
 import { newRequestSequence } from 'redux-reqseq';
 import type { RequestSequence } from 'redux-reqseq';
 
-const CLEAR_SUBMITTED_CONTACT :string = 'CLEAR_SUBMITTED_CONTACT';
-const clearSubmittedContact :RequestSequence = newRequestSequence(CLEAR_SUBMITTED_CONTACT);
+const CLEAR_SUBMITTED_CONTACT :'CLEAR_SUBMITTED_CONTACT' = 'CLEAR_SUBMITTED_CONTACT';
+const clearSubmittedContact = () => ({
+  type: CLEAR_SUBMITTED_CONTACT
+});
 
 const SUBMIT_CONTACT :string = 'SUBMIT_CONTACT';
 const submitContact :RequestSequence = newRequestSequence(SUBMIT_CONTACT);
