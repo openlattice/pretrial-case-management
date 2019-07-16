@@ -4,6 +4,7 @@
 
 import { DateTime } from 'luxon';
 import { AuthUtils } from 'lattice-auth';
+import { Constants, Models } from 'lattice';
 import {
   DataApiActions,
   DataApiSagas,
@@ -17,11 +18,6 @@ import {
   List
 } from 'immutable';
 import {
-  Constants,
-  SearchApi,
-  Models
-} from 'lattice';
-import {
   call,
   put,
   select,
@@ -30,7 +26,8 @@ import {
 import type { SequenceAction } from 'redux-reqseq';
 
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
-import { createIdObject, getSearchTermNotExact } from '../../utils/DataUtils';
+import { createIdObject } from '../../utils/DataUtils';
+import { getUTCDateRangeSearchString } from '../../utils/consts/DateTimeConsts';
 import { getPropertyTypeId, getPropteryIdToValueMap } from '../../edm/edmUtils';
 import { hearingNeedsReminder } from '../../utils/RemindersUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
@@ -180,12 +177,10 @@ function* loadManualRemindersForDateWorker(action :SequenceAction) :Generator<*,
     const edm = yield select(getEDM);
     const manualRemindersEntitySetId = getEntitySetIdFromApp(app, MANUAL_REMINDERS);
     const datePropertyTypeId = getPropertyTypeId(edm, DATE_TIME_FQN);
-    const startOfDay = date.startOf('day').toUTC().toISO();
-    const endOfDay = date.endOf('day').toUTC().toISO();
-    const dateRangeString = `[${startOfDay} TO ${endOfDay}]`;
+    const searchTerm = getUTCDateRangeSearchString(datePropertyTypeId, date);
 
     const reminderOptions = {
-      searchTerm: getSearchTermNotExact(datePropertyTypeId, dateRangeString),
+      searchTerm,
       start: 0,
       maxHits: MAX_HITS,
       fuzzy: false

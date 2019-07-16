@@ -25,6 +25,7 @@ import { hearingIsCancelled } from '../../utils/HearingUtils';
 import { getPropertyTypeId } from '../../edm/edmUtils';
 import { MAX_HITS, PSA_STATUSES } from '../../utils/consts/Consts';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { getUTCDateRangeSearchString} from '../../utils/consts/DateTimeConsts';
 import { APP, PSA_NEIGHBOR, STATE } from '../../utils/consts/FrontEndStateConsts';
 import {
   addWeekdays,
@@ -180,12 +181,10 @@ function* loadOptOutsForDateWorker(action :SequenceAction) :Generator<*, *, *> {
     const edm = yield select(getEDM);
     const optOutEntitySetId = getEntitySetIdFromApp(app, REMINDER_OPT_OUTS);
     const datePropertyTypeId = getPropertyTypeId(edm, DATE_TIME_FQN);
-    const startOfDay = date.startOf('day').toUTC().toISO();
-    const endOfDay = date.endOf('day').toUTC().toISO();
-    const dateRangeString = `[${startOfDay} TO ${endOfDay}]`;
+    const searchTerm = getUTCDateRangeSearchString(datePropertyTypeId, date);
 
     const reminderOptions = {
-      searchTerm: getSearchTermNotExact(datePropertyTypeId, dateRangeString),
+      searchTerm,
       start: 0,
       maxHits: MAX_HITS,
       fuzzy: false
@@ -241,12 +240,10 @@ function* loadRemindersforDateWorker(action :SequenceAction) :Generator<*, *, *>
     const edm = yield select(getEDM);
     const remindersEntitySetId = getEntitySetIdFromApp(app, REMINDERS);
     const datePropertyTypeId = getPropertyTypeId(edm, DATE_TIME_FQN);
-    const startOfDay = date.startOf('day').toUTC().toISO();
-    const endOfDay = date.endOf('day').toUTC().toISO();
-    const dateRangeString = `[${startOfDay} TO ${endOfDay}]`;
+    const searchTerm = getUTCDateRangeSearchString(datePropertyTypeId, date);
 
     const reminderOptions = {
-      searchTerm: getSearchTermNotExact(datePropertyTypeId, dateRangeString),
+      searchTerm,
       start: 0,
       maxHits: MAX_HITS,
       fuzzy: false
