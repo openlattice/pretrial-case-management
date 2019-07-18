@@ -80,6 +80,7 @@ const AddContactButton = styled(InfoButton)`
 `;
 
 type Props = {
+  contactInfoSubmissionComplete :boolean,
   personEKID :string,
   submittingContactInfo :boolean,
   actions :{
@@ -112,7 +113,6 @@ class NewContactForm extends React.Component<Props, State> {
   static getDerivedStateFromProps(nextProps, prevState) {
     const { actions, contactInfoSubmissionComplete } = nextProps;
     if (prevState.addingNewContact && contactInfoSubmissionComplete) {
-      actions.clearSubmittedContact();
       return INITIAL_STATE;
     }
     if (nextProps.editing !== prevState.addingNewContact) {
@@ -122,6 +122,14 @@ class NewContactForm extends React.Component<Props, State> {
       return INITIAL_STATE;
     }
     return null;
+  }
+
+  componentDidUpdate() {
+    const { addingNewContact } = this.state;
+    const { actions, contactInfoSubmissionComplete } = this.props;
+    if (addingNewContact && contactInfoSubmissionComplete) {
+      actions.clearSubmittedContact();
+    }
   }
 
   createNewContact = () => {
