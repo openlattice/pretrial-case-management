@@ -189,6 +189,10 @@ export const MANUAL_REMINDERS = {
   REMINDER_IDS: 'manualReminderIds',
   REMINDERS_BY_ID: 'manualRemindersById',
   SUCCESSFUL_REMINDER_IDS: 'successfulManualReminderIds',
+  SUBMITTED_MANUAL_REMINDER: 'submittedManualReminder',
+  SUBMITTED_MANUAL_REMINDER_NEIGHBORS: 'submittedManualReminderNeighbors',
+  SUBMITTING_MANUAL_REMINDER: 'submittingManualReminder',
+  SUBMISSION_ERROR: 'manualReminderSubmissionError',
   UPDATING_HEARING: 'updatingHearing'
 };
 

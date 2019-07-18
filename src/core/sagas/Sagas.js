@@ -93,6 +93,7 @@ export default function* sagas() :Generator<*, *, *> {
     fork(ManualRemindersSagas.loadManualRemindersFormWatcher),
     fork(ManualRemindersSagas.loadManualRemindersForDateWatcher),
     fork(ManualRemindersSagas.loadManualRemindersNeighborsByIdWatcher),
+    fork(ManualRemindersSagas.submitManualReminderWatcher),
 
     // SubmitDataSaga
     fork(SubmitSagas.createAssociationsWatcher),

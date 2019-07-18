@@ -4,7 +4,7 @@
 
 import React from 'react';
 import styled from 'styled-components';
-import moment from 'moment';
+import { DateTime } from 'luxon';
 import { fromJS, Map, Set } from 'immutable';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
@@ -145,7 +145,7 @@ type Props = {
   pastReminders :Map<*, *>,
   peopleReceivingManualReminders :Map<*, *>,
   reminderNeighborsById :Map<*, *>,
-  remindersActionListDate :moment,
+  remindersActionListDate :DateTime,
   remindersActionList :Map<*, *>,
   remindersLoaded :boolean,
   manualRemindersById :Map<*, *>,
@@ -236,7 +236,7 @@ class RemindersContainer extends React.Component<Props, State> {
   manualRemindersSubmitCallback = () => {
     const { actions, remindersActionListDate } = this.props;
     const { loadManualRemindersForDate } = actions;
-    if (moment(remindersActionListDate).isValid()) {
+    if (remindersActionListDate.isValid) {
       loadManualRemindersForDate({ date: remindersActionListDate });
     }
   }
@@ -247,7 +247,7 @@ class RemindersContainer extends React.Component<Props, State> {
     return (
       <DatePicker
           subtle
-          value={remindersActionListDate.format('YYYY-MM-DD')}
+          value={remindersActionListDate.toISODate()}
           onChange={date => actions.setDateForRemindersActionList({ date })} />
     );
   }
