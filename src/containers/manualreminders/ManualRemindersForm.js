@@ -5,13 +5,11 @@
 import React from 'react';
 import styled from 'styled-components';
 import randomUUID from 'uuid/v4';
-import moment from 'moment';
+import { DateTime } from 'luxon';
 import { Map, List } from 'immutable';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { AuthUtils } from 'lattice-auth';
 
-import ManualReminderConfig from '../../config/formconfig/ManualReminderConfig';
 import BasicButton from '../../components/buttons/BasicButton';
 import InfoButton from '../../components/buttons/InfoButton';
 import LogoLoader from '../../components/LogoLoader';
@@ -22,9 +20,8 @@ import HearingCardsHolder from '../../components/hearings/HearingCardsHolder';
 import { formatPeopleInfo } from '../../utils/PeopleUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
-import { FORM_IDS } from '../../utils/consts/Consts';
 import { filterContactsByType, getContactInfoFields } from '../../utils/ContactInfoUtils';
-import { getEntityProperties, getEntityKeyId, getFirstNeighborValue } from '../../utils/DataUtils';
+import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
 import { REMINDER_TYPES } from '../../utils/RemindersUtils';
 import { CONTACT_METHODS } from '../../utils/consts/ContactInfoConsts';
 import {
@@ -35,13 +32,18 @@ import {
 } from '../../utils/consts/FrontEndStateConsts';
 
 import { clearSubmittedContact } from '../contactinformation/ContactInfoActions';
-import * as ManualRemindersActionFactory from './ManualRemindersActionFactory';
-import * as RemindersActionFactory from '../reminders/RemindersActionFactory';
-import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
+import { submitManualReminder } from './ManualRemindersActionFactory';
 
 const { CONTACT_INFORMATION, HEARINGS } = APP_TYPES;
+const {
+  DATE_TIME,
+  CONTACT_METHOD,
+  NOTIFIED,
+  REMINDER_ID,
+  REMINDER_NOTES,
+  TYPE
+} = PROPERTY_TYPES;
 
-const { ENTITY_KEY_ID } = PROPERTY_TYPES;
 
 /*
  * styled components
@@ -95,21 +97,19 @@ const NotesInput = styled.textarea`
 `;
 
 type Props = {
-  app :Map<*, *>,
   contactInfoSubmissionComplete :boolean,
   loadingManualReminderForm :boolean,
-  personId :string,
   person :Map<*, *>,
   peopleNeighborsForManualReminder :Map<*, *>,
-  submitting :boolean,
-  submitted :boolean,
-  submitCallback :() => void,
+  submittedManualReminder :Map<*, *>,
+  submittingManualReminder :boolean,
   actions :{
-    refreshPersonNeighbors :(values :{ personId :string }) => void,
-    submit :(values :{
-      config :Map<*, *>,
-      values :Map<*, *>,
-      callback :() => void
+    clearSubmittedContact :() => void,
+    submitManualReminder :(values :{
+      contactInformationEKID :string,
+      hearingEKID :string,
+      manualReminderEntity :string,
+      personEKID :string
     }) => void
   }
 }
@@ -148,18 +148,9 @@ class ManualRemindersForm extends React.Component<Props, State> {
     }
   }
 
-  getStaffId = () => {
-    const staffInfo = AuthUtils.getUserInfo();
-    let staffId = staffInfo.id;
-    if (staffInfo.email && staffInfo.email.length > 0) {
-      staffId = staffInfo.email;
-    }
-    return staffId;
-  }
-
   isReadyToSubmit = () :boolean => {
     const { contactMethod } = this.state;
-    return contactMethod;
+    return !!contactMethod;
   }
 
   getSubmissionValues = () => {
@@ -171,67 +162,42 @@ class ManualRemindersForm extends React.Component<Props, State> {
       selectedHearing,
     } = this.state;
     const { person } = this.props;
-    const { personId } = formatPeopleInfo(person);
     const { hearing } = selectedHearing;
 
-    const staffId = this.getStaffId();
+    const contactInformationEKID = getEntityKeyId(contact);
+    const hearingEKID = getEntityKeyId(hearing);
+    const personEKID = getEntityKeyId(person);
 
-    const hearingId = getFirstNeighborValue(hearing, PROPERTY_TYPES.CASE_ID, null);
-
-    const contactInformationId = getFirstNeighborValue(contact, PROPERTY_TYPES.GENERAL_ID, null);
-
-    const submissionValues = {
-      [PROPERTY_TYPES.DATE_TIME]: [moment().toISOString(true)],
-
-      // Reminder
-      [PROPERTY_TYPES.CONTACT_METHOD]: [contactMethod],
-      [PROPERTY_TYPES.NOTIFIED]: [notified],
-      [PROPERTY_TYPES.REMINDER_ID]: [randomUUID()],
-      [PROPERTY_TYPES.REMINDER_NOTES]: [notes],
-      [PROPERTY_TYPES.TYPE]: [REMINDER_TYPES.HEARING],
-
-      // Person
-      [FORM_IDS.PERSON_ID]: [personId],
-
-      // Hearing
-      [FORM_IDS.HEARING_ID]: [hearingId],
-
-      // Hearing
-      [FORM_IDS.CONTACT_INFO_ID]: [contactInformationId],
-
-      // staff
-      [FORM_IDS.STAFF_ID]: [staffId],
+    const manualReminderEntity = {
+      [DATE_TIME]: [DateTime.local().toISO()],
+      [CONTACT_METHOD]: [contactMethod],
+      [NOTIFIED]: [notified],
+      [REMINDER_ID]: [randomUUID()],
+      [REMINDER_NOTES]: [notes],
+      [TYPE]: [REMINDER_TYPES.HEARING]
     };
-    return submissionValues;
-  }
-
-  submitCallback = () => {
-    const { actions, person, submitCallback } = this.props;
-    const { [ENTITY_KEY_ID]: personEntityKeyId } = getEntityProperties(person, [ENTITY_KEY_ID]);
-    if (submitCallback) submitCallback();
-    actions.removeFromRemindersActionList({ personEntityKeyId });
+    return {
+      contactInformationEKID,
+      hearingEKID,
+      manualReminderEntity,
+      personEKID
+    };
   }
 
   submitManualReminder = () => {
-    const { actions, app } = this.props;
-    const { submit } = actions;
-    const values = this.getSubmissionValues();
-    submit({
-      app,
-      values,
-      config: ManualReminderConfig,
-      callback: this.submitCallback
-    });
+    const { actions } = this.props;
+    const submission = this.getSubmissionValues();
+    actions.submitManualReminder(submission);
   }
 
   renderSubmitButton = () => {
-    const { submitting, submitted } = this.props;
-    return submitted
+    const { submittingManualReminder, submittedManualReminder } = this.props;
+    return submittedManualReminder.size
       ? <SuccessBanner>Reminder Has Been Submitted</SuccessBanner>
       : (
         <FlexContainer>
           <InfoButton
-              disabled={submitting || !this.isReadyToSubmit()}
+              disabled={submittingManualReminder || !this.isReadyToSubmit()}
               onClick={this.submitManualReminder}>
             Submit
           </InfoButton>
@@ -249,7 +215,7 @@ class ManualRemindersForm extends React.Component<Props, State> {
   onContactListRadioChange = contact => this.setState({ contact });
 
   renderContactMethod = () => {
-    const { submitted } = this.props;
+    const { submittedManualReminder } = this.props;
     const { contactMethod } = this.state;
     const isPhone = (contactMethod === CONTACT_METHODS.PHONE);
     const isEmail = (contactMethod === CONTACT_METHODS.EMAIL);
@@ -258,14 +224,14 @@ class ManualRemindersForm extends React.Component<Props, State> {
         <InputLabel>How were they contacted?</InputLabel>
         <FormContainer>
           <StyledRadio
-              disabled={submitted}
+              disabled={!!submittedManualReminder.size}
               label={CONTACT_METHODS.PHONE}
               name="contactMethod"
               value={CONTACT_METHODS.PHONE}
               onChange={this.handleInputChange}
               checked={isPhone} />
           <StyledRadio
-              disabled={submitted}
+              disabled={!!submittedManualReminder.size}
               label={CONTACT_METHODS.EMAIL}
               name="contactMethod"
               value={CONTACT_METHODS.EMAIL}
@@ -300,13 +266,13 @@ class ManualRemindersForm extends React.Component<Props, State> {
 
   renderContactTableAndForm = () => {
     const { addingNewContact, contact, contactMethod } = this.state;
-    const { peopleNeighborsForManualReminder, submitted } = this.props;
+    const { peopleNeighborsForManualReminder, submittedManualReminder } = this.props;
     const { contactEntityKeyId } = getContactInfoFields(contact);
     let contacts = filterContactsByType(
       peopleNeighborsForManualReminder.get(CONTACT_INFORMATION, List()),
       contactMethod
     );
-    if (submitted) {
+    if (submittedManualReminder.size) {
       contacts = contacts.filter((contactObj) => {
         const entityKeyId = getEntityKeyId(contactObj);
         return entityKeyId === contactEntityKeyId;
@@ -320,8 +286,12 @@ class ManualRemindersForm extends React.Component<Props, State> {
               onCheckBoxChange={this.onContactListRadioChange}
               selectedContactEntityKeyId={contactEntityKeyId}
               noResults={!contacts.size} />
-          { !addingNewContact && !submitted ? this.renderAddContactButton() : null }
-          { addingNewContact && !submitted ? this.renderContactForm() : null }
+          { !addingNewContact && !submittedManualReminder.size ? this.renderAddContactButton() : null }
+          {
+            (contactMethod === CONTACT_METHODS.PHONE && addingNewContact && !submittedManualReminder.size)
+              ? this.renderContactForm()
+              : null
+          }
         </>
       );
     }
@@ -335,7 +305,7 @@ class ManualRemindersForm extends React.Component<Props, State> {
   }
 
   renderContactSection = () => {
-    const { submitted } = this.props;
+    const { submittedManualReminder } = this.props;
     const { contactMethod, selectedHearing, notified } = this.state;
 
     const { hearing } = selectedHearing;
@@ -347,14 +317,14 @@ class ManualRemindersForm extends React.Component<Props, State> {
           <InputLabel>{`Was ${this.getSubjectsName()} succesfully contacted?`}</InputLabel>
           <FormContainer>
             <StyledRadio
-                disabled={submitted}
+                disabled={!!submittedManualReminder.size}
                 label="Yes"
                 name="notified"
                 value
                 onChange={this.handleInputChange}
                 checked={notified === true} />
             <StyledRadio
-                disabled={submitted}
+                disabled={!!submittedManualReminder.size}
                 label="No"
                 name="notified"
                 value={false}
@@ -394,18 +364,18 @@ class ManualRemindersForm extends React.Component<Props, State> {
   }
 
   renderNotesSection = () => {
-    const { submitted } = this.props;
-    const { notes } = this.state;
+    const { submittedManualReminder } = this.props;
+    const { [REMINDER_NOTES]: notes } = getEntityProperties(submittedManualReminder, [REMINDER_NOTES]);
     return (
       <>
         <InputLabel>Notes</InputLabel>
         <FlexContainer>
           {
-            submitted
+            submittedManualReminder.size
               ? notes
               : (
                 <NotesInput
-                    disabled={submitted}
+                    disabled={submittedManualReminder.size}
                     onChange={this.handleInputChange}
                     name="notes" />
               )
@@ -416,8 +386,8 @@ class ManualRemindersForm extends React.Component<Props, State> {
   }
 
   render() {
-    const { loadingManualReminderForm, submitting } = this.props;
-    if (loadingManualReminderForm || submitting) return <LogoLoader />;
+    const { loadingManualReminderForm, submittingManualReminder } = this.props;
+    if (loadingManualReminderForm || submittingManualReminder) return <LogoLoader />;
     return (
       <FormWrapper>
         {this.renderHearingSelection()}
@@ -434,15 +404,19 @@ function mapStateToProps(state) {
   const contactInformation = state.get(STATE.CONTACT_INFO);
   const manualReminders = state.get(STATE.MANUAL_REMINDERS);
   return {
-    app,
     [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
     [APP.SELECTED_ORG_SETTINGS]: app.get(APP.SELECTED_ORG_SETTINGS),
 
+    [CONTACT_INFO.submittingContactInfo]: contactInformation.get(CONTACT_INFO.submittingContactInfo),
+    [CONTACT_INFO.SUBMISSION_COMPLETE]: contactInformation.get(CONTACT_INFO.SUBMISSION_COMPLETE),
+
     [MANUAL_REMINDERS.LOADING_FORM]: manualReminders.get(MANUAL_REMINDERS.LOADING_FORM),
     [MANUAL_REMINDERS.PEOPLE_NEIGHBORS]: manualReminders.get(MANUAL_REMINDERS.PEOPLE_NEIGHBORS),
-
-    [CONTACT_INFO.submittingContactInfo]: contactInformation.get(CONTACT_INFO.submittingContactInfo),
-    [CONTACT_INFO.SUBMISSION_COMPLETE]: contactInformation.get(CONTACT_INFO.SUBMISSION_COMPLETE)
+    [MANUAL_REMINDERS.SUBMITTED_MANUAL_REMINDER]: manualReminders.get(MANUAL_REMINDERS.SUBMITTED_MANUAL_REMINDER),
+    [MANUAL_REMINDERS.SUBMITTED_MANUAL_REMINDER_NEIGHBORS]: manualReminders
+      .get(MANUAL_REMINDERS.SUBMITTED_MANUAL_REMINDER_NEIGHBORS),
+    [MANUAL_REMINDERS.SUBMITTING_MANUAL_REMINDER]: manualReminders.get(MANUAL_REMINDERS.SUBMITTING_MANUAL_REMINDER),
+    [MANUAL_REMINDERS.SUBMISSION_ERROR]: manualReminders.get(MANUAL_REMINDERS.SUBMISSION_ERROR),
   };
 }
 
@@ -450,18 +424,7 @@ function mapDispatchToProps(dispatch :Function) :Object {
   const actions :{ [string] :Function } = {};
 
   actions.clearSubmittedContact = clearSubmittedContact;
-
-  Object.keys(SubmitActionFactory).forEach((action :string) => {
-    actions[action] = SubmitActionFactory[action];
-  });
-
-  Object.keys(ManualRemindersActionFactory).forEach((action :string) => {
-    actions[action] = ManualRemindersActionFactory[action];
-  });
-
-  Object.keys(RemindersActionFactory).forEach((action :string) => {
-    actions[action] = RemindersActionFactory[action];
-  });
+  actions.submitManualReminder = submitManualReminder;
 
   return {
     actions: {
