@@ -111,7 +111,7 @@ class NewContactForm extends React.Component<Props, State> {
   }
 
   static getDerivedStateFromProps(nextProps, prevState) {
-    const { actions, contactInfoSubmissionComplete } = nextProps;
+    const { contactInfoSubmissionComplete } = nextProps;
     if (prevState.addingNewContact && contactInfoSubmissionComplete) {
       return INITIAL_STATE;
     }
