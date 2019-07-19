@@ -28,7 +28,7 @@ import type { SequenceAction } from 'redux-reqseq';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { createIdObject } from '../../utils/DataUtils';
 import { getUTCDateRangeSearchString } from '../../utils/consts/DateTimeConsts';
-import { getPropertyTypeId, getPropteryIdToValueMap } from '../../edm/edmUtils';
+import { getPropertyTypeId, getPropertyIdToValueMap } from '../../edm/edmUtils';
 import { hearingNeedsReminder } from '../../utils/RemindersUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { MAX_HITS } from '../../utils/consts/Consts';
@@ -387,7 +387,7 @@ function* submitManualReminderWorker(action :SequenceAction) :Generator<*, *, *>
     /*
      * Get Entity Submission
      */
-    const manualReminderSubmitEntity = getPropteryIdToValueMap(manualReminderEntity, edm);
+    const manualReminderSubmitEntity = getPropertyIdToValueMap(manualReminderEntity, edm);
 
     /*
      * Get Entity Set Ids
