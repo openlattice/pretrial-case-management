@@ -2,7 +2,7 @@
  * @flow
  */
 import { List, Map, fromJS } from 'immutable';
-
+import { RequestStates } from 'redux-reqseq';
 import {
   CLEAR_SUBMITTED_CONTACT,
   submitContact,
@@ -10,59 +10,119 @@ import {
   updateContactsBulk
 } from './ContactInfoActions';
 
-import { CONTACT_INFO } from '../../utils/consts/FrontEndStateConsts';
+import { REDUX } from '../../utils/consts/redux/SharedConsts';
+import { actionValueIsInvalid, getErrorStatus } from '../../utils/consts/redux/ReduxUtils';
+import { CONTACT_INFO_ACTIONS, CONTACT_INFO_DATA } from '../../utils/consts/redux/ContactInformationConsts';
+
+const {
+  FAILURE,
+  PENDING,
+  STANDBY,
+  SUCCESS
+} = RequestStates;
 
 const INITIAL_STATE :Map<*, *> = fromJS({
-  [CONTACT_INFO.SUBMITTED_CONTACT_INFO]: Map(),
-  [CONTACT_INFO.UPDATED_CONTACTS]: List(),
-  [CONTACT_INFO.SUBMITTING_CONTACT_INFO]: false,
-  [CONTACT_INFO.SUBMISSION_COMPLETE]: false,
-  [CONTACT_INFO.SUBMISSION_ERROR]: false,
-  [CONTACT_INFO.UPDATING_CONTACT_INFO]: false,
+  [REDUX.ACTIONS]: {
+    [CONTACT_INFO_ACTIONS.SUBMIT_CONTACT]: {
+      [REDUX.REQUEST_STATE]: STANDBY
+    },
+    [CONTACT_INFO_ACTIONS.UPDATE_CONTACT]: {
+      [REDUX.REQUEST_STATE]: STANDBY
+    },
+    [CONTACT_INFO_ACTIONS.UPDATE_CONTACTS_BULK]: {
+      [REDUX.REQUEST_STATE]: STANDBY
+    }
+  },
+  [REDUX.ERRORS]: {
+    [CONTACT_INFO_ACTIONS.SUBMIT_CONTACT]: Map(),
+    [CONTACT_INFO_ACTIONS.UPDATE_CONTACT]: Map(),
+    [CONTACT_INFO_ACTIONS.UPDATE_CONTACTS_BULK]: Map()
+  },
+  [CONTACT_INFO_DATA.SUBMITTED_CONTACT_INFO]: Map(),
+  [CONTACT_INFO_DATA.UPDATED_CONTACTS]: List(),
+  [CONTACT_INFO_DATA.UPDATING_CONTACT_INFO]: false,
 });
 
 export default function contactInfoReducer(state :Map<*, *> = INITIAL_STATE, action :Object) {
   switch (action.type) {
 
-    case CLEAR_SUBMITTED_CONTACT: return INITIAL_STATE;
+    case CLEAR_SUBMITTED_CONTACT: return state.set(CONTACT_INFO_DATA.SUBMITTED_CONTACT_INFO, Map());
 
     case submitContact.case(action.type): {
       return submitContact.reducer(state, action, {
         REQUEST: () => state
-          .set(CONTACT_INFO.SUBMITTING_CONTACT_INFO, true)
-          .set(CONTACT_INFO.SUBMISSION_COMPLETE, false),
+          .setIn([REDUX.ACTIONS, CONTACT_INFO_ACTIONS.SUBMIT_CONTACT, action.id], fromJS(action))
+          .setIn([REDUX.ACTIONS, CONTACT_INFO_ACTIONS.SUBMIT_CONTACT, REDUX.REQUEST_STATE], PENDING),
         SUCCESS: () => {
           const { contactInfo } = action.value;
-          return state.set(CONTACT_INFO.SUBMITTED_CONTACT_INFO, contactInfo);
+          return state
+            .set(CONTACT_INFO_DATA.SUBMITTED_CONTACT_INFO, contactInfo)
+            .setIn([REDUX.ACTIONS, CONTACT_INFO_ACTIONS.SUBMIT_CONTACT, REDUX.REQUEST_STATE], SUCCESS);
         },
-        FAILURE: () => state.set(CONTACT_INFO.SUBMISSION_ERROR, action.value),
+        FAILURE: () => {
+          if (actionValueIsInvalid(action.value)) {
+            return state;
+          }
+          const error = getErrorStatus(action);
+          return state
+            .set(CONTACT_INFO_DATA.SUBMITTED_CONTACT_INFO, Map())
+            .setIn([REDUX.ERRORS, CONTACT_INFO_ACTIONS.SUBMIT_CONTACT], error)
+            .setIn([REDUX.ACTIONS, CONTACT_INFO_ACTIONS.SUBMIT_CONTACT, REDUX.REQUEST_STATE], FAILURE);
+        },
         FINALLY: () => state
-          .set(CONTACT_INFO.SUBMITTING_CONTACT_INFO, false)
-          .set(CONTACT_INFO.SUBMISSION_COMPLETE, true),
+          .deleteIn([REDUX.ACTIONS, CONTACT_INFO_ACTIONS.SUBMIT_CONTACT, action.id])
       });
     }
 
     case updateContact.case(action.type): {
       return updateContact.reducer(state, action, {
-        REQUEST: () => state.set(CONTACT_INFO.UPDATING_CONTACT_INFO, true),
+        REQUEST: () => state
+          .setIn([REDUX.ACTIONS, CONTACT_INFO_ACTIONS.UPDATE_CONTACT, action.id], fromJS(action))
+          .setIn([REDUX.ACTIONS, CONTACT_INFO_ACTIONS.UPDATE_CONTACT, REDUX.REQUEST_STATE], PENDING),
         SUCCESS: () => {
           const { contactInfo } = action.value;
-          return state.set(CONTACT_INFO.SUBMITTED_CONTACT_INFO, contactInfo);
+          return state
+            .set(CONTACT_INFO_DATA.SUBMITTED_CONTACT_INFO, contactInfo)
+            .setIn([REDUX.ACTIONS, CONTACT_INFO_ACTIONS.UPDATE_CONTACT, REDUX.REQUEST_STATE], SUCCESS);
         },
-        FAILURE: () => state.set(CONTACT_INFO.SUBMISSION_ERROR, action.value),
-        FINALLY: () => state.set(CONTACT_INFO.UPDATING_CONTACT_INFO, false),
+        FAILURE: () => {
+          if (actionValueIsInvalid(action.value)) {
+            return state;
+          }
+          const error = getErrorStatus(action);
+          return state
+            .set(CONTACT_INFO_DATA.SUBMITTED_CONTACT_INFO, Map())
+            .setIn([REDUX.ERRORS, CONTACT_INFO_ACTIONS.UPDATE_CONTACT], error)
+            .setIn([REDUX.ACTIONS, CONTACT_INFO_ACTIONS.UPDATE_CONTACT, REDUX.REQUEST_STATE], FAILURE);
+        },
+        FINALLY: () => state
+          .deleteIn([REDUX.ACTIONS, CONTACT_INFO_ACTIONS.UPDATE_CONTACT, action.id])
       });
     }
 
     case updateContactsBulk.case(action.type): {
       return updateContactsBulk.reducer(state, action, {
-        REQUEST: () => state.set(CONTACT_INFO.UPDATING_CONTACT_INFO, true),
+        REQUEST: () => state
+          .setIn([REDUX.ACTIONS, CONTACT_INFO_ACTIONS.UPDATE_CONTACTS_BULK, action.id], fromJS(action))
+          .setIn([REDUX.ACTIONS, CONTACT_INFO_ACTIONS.UPDATE_CONTACTS_BULK, REDUX.REQUEST_STATE], PENDING),
         SUCCESS: () => {
           const { contactInformation } = action.value;
-          return state.set(CONTACT_INFO.UPDATED_CONTACTS, contactInformation);
+          return state
+            .set(CONTACT_INFO_DATA.UPDATED_CONTACTS, contactInformation)
+            .setIn([REDUX.ACTIONS, CONTACT_INFO_ACTIONS.UPDATE_CONTACTS_BULK, REDUX.REQUEST_STATE], SUCCESS);
         },
-        FAILURE: () => state.set(CONTACT_INFO.SUBMISSION_ERROR, action.value),
-        FINALLY: () => state.set(CONTACT_INFO.UPDATING_CONTACT_INFO, false),
+        FAILURE: () => {
+          if (actionValueIsInvalid(action.value)) {
+            return state;
+          }
+          const error = getErrorStatus(action);
+          return state
+            .set(CONTACT_INFO_DATA.UPDATED_CONTACTS, List())
+            .setIn([REDUX.ERRORS, CONTACT_INFO_ACTIONS.UPDATE_CONTACTS_BULK], error)
+            .setIn([REDUX.ACTIONS, CONTACT_INFO_ACTIONS.UPDATE_CONTACTS_BULK, REDUX.REQUEST_STATE], FAILURE);
+        },
+        FINALLY: () => state
+          .deleteIn([REDUX.ACTIONS, CONTACT_INFO_ACTIONS.UPDATE_CONTACTS_BULK, action.id])
       });
     }
 
