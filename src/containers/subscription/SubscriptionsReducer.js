@@ -11,14 +11,37 @@ import { submitContact, updateContactsBulk } from '../contactinformation/Contact
 import { APP_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_NEIGHBOR, SUBSCRIPTIONS } from '../../utils/consts/FrontEndStateConsts';
 
+import { REDUX } from '../../utils/consts/redux/SharedConsts';
+import { actionValueIsInvalid, getErrorStatus } from '../../utils/consts/redux/ReduxUtils';
+import { SUBSCRIPTION_ACTIONS, SUBSCRIPTION_DATA } from '../../utils/consts/redux/SubscriptionConsts';
+
 const { CONTACT_INFORMATION, SUBSCRIPTION } = APP_TYPES;
 
+const {
+  FAILURE,
+  PENDING,
+  STANDBY,
+  SUCCESS
+} = RequestStates;
+
 const INITIAL_STATE :Map<*, *> = fromJS({
-  [SUBSCRIPTIONS.LOADING_SUBSCRIPTION_MODAL]: false,
-  [SUBSCRIPTIONS.CONTACT_INFO]: List(),
-  [SUBSCRIPTIONS.PERSON_NEIGHBORS]: Map(),
-  [SUBSCRIPTIONS.SUBSCRIPTION]: Map()
+  [REDUX.ACTIONS]: {
+    [SUBSCRIPTION_ACTIONS.SUBSCRIBE]: {
+      [REDUX.REQUEST_STATE]: STANDBY
+    },
+    [SUBSCRIPTION_ACTIONS.UNSUBSCRIBE]: {
+      [REDUX.REQUEST_STATE]: STANDBY
+    }
+  },
+  [REDUX.ERRORS]: {
+    [SUBSCRIPTION_ACTIONS.SUBSCRIBE]: Map(),
+    [SUBSCRIPTION_ACTIONS.UNSUBSCRIBE]: Map()
+  },
+  [SUBSCRIPTION_DATA.CONTACT_INFO]: Map(),
+  [SUBSCRIPTION_DATA.PERSON_NEIGHBORS]: Map(),
+  [SUBSCRIPTION_DATA.SUBMITTED_SUBSCRIPTION]: Map()
 });
+
 export default function subscriptionsReducer(state :Map<*, *> = INITIAL_STATE, action :Object) {
   switch (action.type) {
 
