@@ -24,15 +24,16 @@ import { filterContactsByType, getContactInfoFields } from '../../utils/ContactI
 import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
 import { REMINDER_TYPES } from '../../utils/RemindersUtils';
 import { CONTACT_METHODS } from '../../utils/consts/ContactInfoConsts';
+import { CONTACT_INFO_ACTIONS } from '../../utils/consts/redux/ContactInformationConsts';
+import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { getReqState, requestIsSuccess } from '../../utils/consts/redux/ReduxUtils';
+
 import {
   APP,
-  CONTACT_INFO,
-  STATE,
   MANUAL_REMINDERS
 } from '../../utils/consts/FrontEndStateConsts';
 
-import { clearSubmittedContact } from '../contactinformation/ContactInfoActions';
-import { submitManualReminder } from './ManualRemindersActionFactory';
+import { clearManualRemindersForm, submitManualReminder } from './ManualRemindersActionFactory';
 
 const { CONTACT_INFORMATION, HEARINGS } = APP_TYPES;
 const {
@@ -97,7 +98,6 @@ const NotesInput = styled.textarea`
 `;
 
 type Props = {
-  contactInfoSubmissionComplete :boolean,
   loadingManualReminderForm :boolean,
   person :Map<*, *>,
   peopleNeighborsForManualReminder :Map<*, *>,
@@ -133,19 +133,17 @@ class ManualRemindersForm extends React.Component<Props, State> {
 
   static getDerivedStateFromProps(nextProps, prevState) {
     const { addingNewContact } = prevState;
-    const { contactInfoSubmissionComplete } = nextProps;
+    const { submitContactReqState } = nextProps;
+    const contactInfoSubmissionComplete = requestIsSuccess(submitContactReqState);
     if (contactInfoSubmissionComplete && addingNewContact) {
       return { addingNewContact: false };
     }
     return null;
   }
 
-  componentDidUpdate() {
-    const { addingNewContact } = this.state;
-    const { actions, contactInfoSubmissionComplete } = this.props;
-    if (contactInfoSubmissionComplete && addingNewContact) {
-      actions.clearSubmittedContact();
-    }
+  componentWillUnmount() {
+
+
   }
 
   isReadyToSubmit = () :boolean => {
@@ -401,14 +399,13 @@ class ManualRemindersForm extends React.Component<Props, State> {
 
 function mapStateToProps(state) {
   const app = state.get(STATE.APP);
-  const contactInformation = state.get(STATE.CONTACT_INFO);
+  const contactInfo = state.get(STATE.CONTACT_INFO);
   const manualReminders = state.get(STATE.MANUAL_REMINDERS);
   return {
     [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
     [APP.SELECTED_ORG_SETTINGS]: app.get(APP.SELECTED_ORG_SETTINGS),
 
-    [CONTACT_INFO.submittingContactInfo]: contactInformation.get(CONTACT_INFO.submittingContactInfo),
-    [CONTACT_INFO.SUBMISSION_COMPLETE]: contactInformation.get(CONTACT_INFO.SUBMISSION_COMPLETE),
+    submitContactReqState: getReqState(contactInfo, CONTACT_INFO_ACTIONS.SUBMIT_CONTACT),
 
     [MANUAL_REMINDERS.LOADING_FORM]: manualReminders.get(MANUAL_REMINDERS.LOADING_FORM),
     [MANUAL_REMINDERS.PEOPLE_NEIGHBORS]: manualReminders.get(MANUAL_REMINDERS.PEOPLE_NEIGHBORS),
@@ -422,8 +419,7 @@ function mapStateToProps(state) {
 
 function mapDispatchToProps(dispatch :Function) :Object {
   const actions :{ [string] :Function } = {};
-
-  actions.clearSubmittedContact = clearSubmittedContact;
+  actions.clearManualRemindersForm = clearManualRemindersForm;
   actions.submitManualReminder = submitManualReminder;
 
   return {
