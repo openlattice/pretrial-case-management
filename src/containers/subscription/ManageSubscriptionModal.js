@@ -33,15 +33,16 @@ import {
 } from '../../utils/Layout';
 import {
   APP,
-  CONTACT_INFO,
   EDM,
   REVIEW,
   PEOPLE,
-  STATE,
-  SUBMIT,
   SUBSCRIPTIONS,
   PSA_NEIGHBOR
 } from '../../utils/consts/FrontEndStateConsts';
+import { CONTACT_INFO_ACTIONS } from '../../utils/consts/redux/ContactInformationConsts';
+import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUtils';
+
 
 import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
 import { updateContactsBulk } from '../contactinformation/ContactInfoActions';
@@ -130,9 +131,11 @@ type Props = {
   person :Map<*, *>,
   readOnlyPermissions :boolean,
   refreshingPersonNeighbors :boolean,
+  submitContactReqState :RequestState,
   subscription :Map<*, *>,
   submitting :boolean,
   updatingEntity :boolean,
+  updateContactsBulkReqState :RequestState,
   open :() => void,
   onClose :() => void,
   actions :{
@@ -193,11 +196,10 @@ class ManageSubscriptionModal extends React.Component<Props, State> {
   updateExistingContacts = () => {
     const { updates } = this.state;
     const { actions, person } = this.props;
-    const { updateContactsBulk } = actions;
     const personEKID = getEntityKeyId(person);
 
     if (fromJS(updates).size) {
-      updateContactsBulk({
+      actions.updateContactsBulk({
         entities: updates,
         personEKID
       });
@@ -256,11 +258,13 @@ class ManageSubscriptionModal extends React.Component<Props, State> {
       loadingSubscriptionInfo,
       subscription,
       submitting,
-      submittingContactInfo,
-      updatingContactInfo,
+      submitContactReqState,
+      updateContactsBulkReqState,
       refreshingPersonNeighbors,
       updatingEntity
     } = this.props;
+    const submittingContactInfo = requestIsPending(submitContactReqState);
+    const updatingContactInfo = requestIsPending(updateContactsBulkReqState);
     const subscriptionExists = !!subscription.size;
     const isSubscribed = subscription.getIn([PROPERTY_TYPES.IS_ACTIVE, 0], false);
     let subscribeButtonText = isSubscribed ? 'Unsubscribe' : 'Subscribe';
@@ -420,7 +424,7 @@ class ManageSubscriptionModal extends React.Component<Props, State> {
 
 function mapStateToProps(state) {
   const app = state.get(STATE.APP);
-  const contactInformation = state.get(STATE.CONTACT_INFO);
+  const contactInfo = state.get(STATE.CONTACT_INFO);
   const review = state.get(STATE.REVIEW);
   const edm = state.get(STATE.EDM);
   const people = state.get(STATE.PEOPLE);
@@ -430,18 +434,14 @@ function mapStateToProps(state) {
     [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
     [APP.SELECTED_ORG_SETTINGS]: app.get(APP.SELECTED_ORG_SETTINGS),
 
-    [CONTACT_INFO.SUBMITTING_CONTACT_INFO]: contactInformation.get(CONTACT_INFO.SUBMITTING_CONTACT_INFO),
-    [CONTACT_INFO.UPDATING_CONTACT_INFO]: contactInformation.get(CONTACT_INFO.UPDATING_CONTACT_INFO),
-    [CONTACT_INFO.UPDATING_ENTITY]: contactInformation.get(CONTACT_INFO.UPDATING_ENTITY, false),
+    submitContactReqState: getReqState(contactInfo, CONTACT_INFO_ACTIONS.SUBMIT_CONTACT),
+    updateContactsBulkReqState: getReqState(contactInfo, CONTACT_INFO_ACTIONS.UPDATE_CONTACTS_BULK),
 
     [EDM.FQN_TO_ID]: edm.get(EDM.FQN_TO_ID),
 
     [REVIEW.READ_ONLY]: review.get(REVIEW.READ_ONLY),
 
     [PEOPLE.REFRESHING_PERSON_NEIGHBORS]: people.get(PEOPLE.REFRESHING_PERSON_NEIGHBORS, false),
-
-    [SUBMIT.SUBMITTING]: contactInformation.get(SUBMIT.SUBMITTING, false),
-    [SUBMIT.UPDATING_ENTITY]: contactInformation.get(SUBMIT.UPDATING_ENTITY, false),
 
     [SUBSCRIPTIONS.LOADING_SUBSCRIPTION_MODAL]: subscription.get(SUBSCRIPTIONS.LOADING_SUBSCRIPTION_MODAL),
     [SUBSCRIPTIONS.CONTACT_INFO]: subscription.get(SUBSCRIPTIONS.CONTACT_INFO),
