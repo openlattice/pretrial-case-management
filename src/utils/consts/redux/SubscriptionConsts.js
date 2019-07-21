@@ -12,5 +12,6 @@ export const SUBSCRIPTION_ACTIONS = {
 export const SUBSCRIPTION_DATA = {
   CONTACT_INFO: 'contactInfo',
   PERSON_NEIGHBORS: 'personNeighbors',
-  SUBSCRIPTION: 'subscription'
+  SUBSCRIPTION: 'subscription',
+  SUBSCRIPTIONS_BY_ID: 'subscriptionsById'
 };
