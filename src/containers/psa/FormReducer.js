@@ -12,6 +12,7 @@ import {
 import { refreshPersonNeighbors } from '../people/PeopleActionFactory';
 import { submitContact, updateContactsBulk } from '../contactinformation/ContactInfoActions';
 import { changePSAStatus, updateScoresAndRiskFactors } from '../review/ReviewActionFactory';
+import { subscribe, unsubscribe } from '../subscription/SubscriptionsActionFactory';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA, NOTES, DMF } from '../../utils/consts/Consts';
 import { getMapByCaseId } from '../../utils/CaseUtils';
@@ -460,6 +461,24 @@ function formReducer(state :Map<> = INITIAL_STATE, action :Object) {
         FINALLY: () => state
           .set(PSA_FORM.PSA_SUBMISSION_COMPLETE, true)
           .set(PSA_FORM.SUBMITTING_PSA, false)
+      });
+    }
+
+    case subscribe.case(action.type): {
+      return subscribe.reducer(state, action, {
+        SUCCESS: () => {
+          const { subscription } = action.value;
+          return state.setIn([PSA_FORM.SELECT_PERSON_NEIGHBORS, SUBSCRIPTION], subscription);
+        },
+      });
+    }
+
+    case unsubscribe.case(action.type): {
+      return unsubscribe.reducer(state, action, {
+        SUCCESS: () => {
+          const { subscription } = action.value;
+          return state.setIn([PSA_FORM.SELECT_PERSON_NEIGHBORS, SUBSCRIPTION], subscription);
+        },
       });
     }
 
