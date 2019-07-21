@@ -4,26 +4,24 @@
 
 import React from 'react';
 import styled from 'styled-components';
-import moment from 'moment';
-import randomUUID from 'uuid/v4';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import Modal, { ModalTransition } from '@atlaskit/modal-dialog';
 import { Map, fromJS } from 'immutable';
-import { Constants } from 'lattice';
 
 import BasicButton from '../../components/buttons/BasicButton';
 import InfoButton from '../../components/buttons/InfoButton';
 import LoadingSpinner from '../../components/LoadingSpinner';
-import SubscriptionConfig from '../../config/formconfig/SubscriptionConfig';
 import SubscriptionInfo from '../../components/subscription/SubscriptionInfo';
 import ContactInfoTable from '../../components/contactinformation/ContactInfoTable';
 import NewContactForm from '../contactinformation/NewContactForm';
-import { FORM_IDS } from '../../utils/consts/Consts';
 import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
-import { getEntitySetIdFromApp } from '../../utils/AppUtils';
-import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
+import { CONTACT_INFO_ACTIONS } from '../../utils/consts/redux/ContactInformationConsts';
+import { SUBSCRIPTION_ACTIONS, SUBSCRIPTION_DATA } from '../../utils/consts/redux/SubscriptionConsts';
+import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUtils';
 import {
   CloseModalX,
   NoResults,
@@ -36,12 +34,8 @@ import {
   EDM,
   REVIEW,
   PEOPLE,
-  SUBSCRIPTIONS,
   PSA_NEIGHBOR
 } from '../../utils/consts/FrontEndStateConsts';
-import { CONTACT_INFO_ACTIONS } from '../../utils/consts/redux/ContactInformationConsts';
-import { STATE } from '../../utils/consts/redux/SharedConsts';
-import { getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUtils';
 
 
 import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
@@ -51,11 +45,7 @@ import * as PeopleActionFactory from '../people/PeopleActionFactory';
 import * as RemindersActionFactory from '../reminders/RemindersActionFactory';
 import * as SubscriptionsActionFactory from './SubscriptionsActionFactory';
 
-const { OPENLATTICE_ID_FQN } = Constants;
-
-const { SUBSCRIPTION } = APP_TYPES;
-
-const { ENTITY_KEY_ID, PERSON_ID } = PROPERTY_TYPES;
+const { ENTITY_KEY_ID, PERSON_ID, IS_ACTIVE } = PROPERTY_TYPES;
 
 const ContactHeader = styled.div`
   display: flex;
@@ -124,7 +114,6 @@ const INITIAL_STATE = {
 };
 
 type Props = {
-  app :Map<*, *>,
   contactInfo :Map<*, *>,
   fqnToIdMap :Map<*, *>,
   loadingSubscriptionInfo :boolean,
@@ -170,17 +159,6 @@ class ManageSubscriptionModal extends React.Component<Props, State> {
     });
   }
 
-  refreshPersonNeighborsCallback = () => {
-    const { actions, person } = this.props;
-    const {
-      [ENTITY_KEY_ID]: personEntityKeyId,
-      [PERSON_ID]: personId,
-    } = getEntityProperties(person, [ENTITY_KEY_ID, PERSON_ID]);
-    actions.refreshPersonNeighbors({ personId });
-    actions.removeFromRemindersActionList({ personEntityKeyId });
-    this.setState(INITIAL_STATE);
-  }
-
   modifyContactInformation = () => this.setState({
     modifyingContactInformation: true
   });
@@ -209,46 +187,18 @@ class ManageSubscriptionModal extends React.Component<Props, State> {
     }
   }
 
-  createSubscription = () => {
-    const { actions, app, person } = this.props;
-    const personId = person.getIn([PROPERTY_TYPES.PERSON_ID, 0], '');
-    const values = {
-      [PROPERTY_TYPES.SUBSCRIPTION_ID]: randomUUID(),
-      [PROPERTY_TYPES.IS_ACTIVE]: true,
-      [PROPERTY_TYPES.DAY_INTERVAL]: true,
-      [PROPERTY_TYPES.WEEK_INTERVAL]: true,
-      [FORM_IDS.PERSON_ID]: personId,
-      [PROPERTY_TYPES.COMPLETED_DATE_TIME]: moment().toISOString(true)
-    };
-    actions.submit({
-      app,
-      config: SubscriptionConfig,
-      values,
-      callback: this.refreshPersonNeighborsCallback
-    });
+  subscribePerson = () => {
+    const { actions, person, subscription } = this.props;
+    const personEKID = getEntityKeyId(person);
+    const subscriptionEKID = getEntityKeyId(subscription);
+    actions.subscribe({ personEKID, subscriptionEKID });
   }
 
-  toggleSubscription = () => {
-    const {
-      actions,
-      app,
-      fqnToIdMap,
-      subscription
-    } = this.props;
-    const isSubscribed = subscription.getIn([PROPERTY_TYPES.IS_ACTIVE, 0], false);
-    const entitySetId = getEntitySetIdFromApp(app, SUBSCRIPTION);
-    const entityKeyId = subscription.getIn([OPENLATTICE_ID_FQN, 0], '');
-    const values = {
-      [entityKeyId]: {
-        [fqnToIdMap.get(PROPERTY_TYPES.IS_ACTIVE)]: [!isSubscribed]
-      }
-    };
-    actions.updateEntity({
-      entitySetId,
-      entities: values,
-      updateType: 'PartialReplace',
-      callback: this.refreshPersonNeighborsCallback
-    });
+  unsubscribePerson = () => {
+    const { actions, person, subscription } = this.props;
+    const personEKID = getEntityKeyId(person);
+    const subscriptionEKID = getEntityKeyId(subscription);
+    actions.unsubscribe({ personEKID, subscriptionEKID });
   }
 
   renderSubscribeButton = () => {
@@ -265,8 +215,8 @@ class ManageSubscriptionModal extends React.Component<Props, State> {
     } = this.props;
     const submittingContactInfo = requestIsPending(submitContactReqState);
     const updatingContactInfo = requestIsPending(updateContactsBulkReqState);
-    const subscriptionExists = !!subscription.size;
-    const isSubscribed = subscription.getIn([PROPERTY_TYPES.IS_ACTIVE, 0], false);
+    const { [IS_ACTIVE]: isSubscribed } = getEntityProperties(subscription);
+    const subscribeFn = (isSubscribed) ? this.unsubscribePerson : this.subscribePerson;
     let subscribeButtonText = isSubscribed ? 'Unsubscribe' : 'Subscribe';
     if (
       submitting
@@ -275,7 +225,6 @@ class ManageSubscriptionModal extends React.Component<Props, State> {
       || loadingSubscriptionInfo
     ) subscribeButtonText = 'Loading...';
     const editContactInfoText = 'Add Contact Info';
-    const subscribeFn = subscriptionExists ? this.toggleSubscription : this.createSubscription;
     const noPreferredContacts = !contactInfo
       .filter(contact => contact.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.IS_PREFERRED, 0], false)).size;
     return (
@@ -443,10 +392,12 @@ function mapStateToProps(state) {
 
     [PEOPLE.REFRESHING_PERSON_NEIGHBORS]: people.get(PEOPLE.REFRESHING_PERSON_NEIGHBORS, false),
 
-    [SUBSCRIPTIONS.LOADING_SUBSCRIPTION_MODAL]: subscription.get(SUBSCRIPTIONS.LOADING_SUBSCRIPTION_MODAL),
-    [SUBSCRIPTIONS.CONTACT_INFO]: subscription.get(SUBSCRIPTIONS.CONTACT_INFO),
-    [SUBSCRIPTIONS.PERSON_NEIGHBORS]: subscription.get(SUBSCRIPTIONS.PERSON_NEIGHBORS),
-    [SUBSCRIPTIONS.SUBSCRIPTION]: subscription.get(SUBSCRIPTIONS.SUBSCRIPTION)
+    loadSubscriptionModalReqState: getReqState(subscription, SUBSCRIPTION_ACTIONS.LOAD_SUBSCRIPTION_MODAL),
+    subscribeReqState: getReqState(subscription, SUBSCRIPTION_ACTIONS.SUBSCRIBE),
+    unsubscribeReqState: getReqState(subscription, SUBSCRIPTION_ACTIONS.UNSUBSCRIBE),
+    [SUBSCRIPTION_DATA.CONTACT_INFO]: subscription.get(SUBSCRIPTION_DATA.CONTACT_INFO),
+    [SUBSCRIPTION_DATA.PERSON_NEIGHBORS]: subscription.get(SUBSCRIPTION_DATA.PERSON_NEIGHBORS),
+    [SUBSCRIPTION_DATA.SUBSCRIPTION]: subscription.get(SUBSCRIPTION_DATA.SUBSCRIPTION),
   };
 }
 
