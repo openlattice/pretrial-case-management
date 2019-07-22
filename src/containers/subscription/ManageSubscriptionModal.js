@@ -4,9 +4,10 @@
 
 import React from 'react';
 import styled from 'styled-components';
+import Modal, { ModalTransition } from '@atlaskit/modal-dialog';
+import type { RequestState } from 'redux-reqseq';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import Modal, { ModalTransition } from '@atlaskit/modal-dialog';
 import { Map, fromJS } from 'immutable';
 
 import BasicButton from '../../components/buttons/BasicButton';
