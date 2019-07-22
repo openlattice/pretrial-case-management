@@ -20,7 +20,7 @@ import {
   loadSubcriptionModal,
   subscribe,
   unsubscribe
-} from './SubscriptionsActionFactory';
+} from './SubscriptionActions';
 
 const { CONTACT_INFORMATION, SUBSCRIPTION } = APP_TYPES;
 
