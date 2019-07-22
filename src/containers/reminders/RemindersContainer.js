@@ -41,7 +41,7 @@ import {
 import * as AppActionFactory from '../app/AppActionFactory';
 import * as RemindersActionFactory from './RemindersActionFactory';
 import * as ManualRemindersActionFactory from '../manualreminders/ManualRemindersActionFactory';
-import * as SubscriptionsActionFactory from '../subscription/SubscriptionsActionFactory';
+import * as SubscriptionActions from '../subscription/SubscriptionActions';
 import * as PersonActionFactory from '../person/PersonActionFactory';
 
 const { OPENLATTICE_ID_FQN } = Constants;
@@ -572,8 +572,8 @@ function mapDispatchToProps(dispatch :Function) :Object {
     actions[action] = PersonActionFactory[action];
   });
 
-  Object.keys(SubscriptionsActionFactory).forEach((action :string) => {
-    actions[action] = SubscriptionsActionFactory[action];
+  Object.keys(SubscriptionActions).forEach((action :string) => {
+    actions[action] = SubscriptionActions[action];
   });
 
   return {
