@@ -18,7 +18,7 @@ import { enrollVoice, getProfile } from '../enroll/EnrollActionFactory';
 import { changePSAStatus, updateScoresAndRiskFactors, loadPSAData } from '../review/ReviewActionFactory';
 import { submitContact, updateContactsBulk } from '../contactinformation/ContactInfoActions';
 import { deleteEntity } from '../../utils/data/DataActionFactory';
-import { subscribe, unsubscribe } from '../subscription/SubscriptionsActionFactory';
+import { subscribe, unsubscribe } from '../subscription/SubscriptionActions';
 import {
   refreshHearingAndNeighbors,
   submitExistingHearing,
@@ -465,8 +465,10 @@ export default function peopleReducer(state :Map = INITIAL_STATE, action :Object
     case subscribe.case(action.type): {
       return subscribe.reducer(state, action, {
         SUCCESS: () => {
-          const { personEKID, subscription } = action.value;
-          return state.setIn([PEOPLE.NEIGHBORS, personEKID, SUBSCRIPTION], subscription);
+          const { subscription } = action.value;
+          const personDetails = state.get(PEOPLE.PERSON_DATA, Map());
+          const { [PERSON_ID]: personID } = getEntityProperties(personDetails, [PERSON_ID]);
+          return state.setIn([PEOPLE.NEIGHBORS, personID, SUBSCRIPTION, PSA_NEIGHBOR.DETAILS], subscription);
         },
       });
     }
@@ -476,8 +478,8 @@ export default function peopleReducer(state :Map = INITIAL_STATE, action :Object
         SUCCESS: () => {
           const { subscription } = action.value;
           const personDetails = state.get(PEOPLE.PERSON_DATA, Map());
-          const personEKID = getEntityKeyId(personDetails);
-          return state.setIn([PEOPLE.NEIGHBORS, personEKID, SUBSCRIPTION], subscription);
+          const { [PERSON_ID]: personID } = getEntityProperties(personDetails, [PERSON_ID]);
+          return state.setIn([PEOPLE.NEIGHBORS, personID, SUBSCRIPTION, PSA_NEIGHBOR.DETAILS], subscription);
         },
       });
     }
