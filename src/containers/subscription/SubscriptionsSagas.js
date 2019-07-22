@@ -16,6 +16,7 @@ import {
 
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { createIdObject } from '../../utils/DataUtils';
+import { getPropertyIdToValueMap } from '../../edm/edmUtils';
 import { APP, PSA_NEIGHBOR, STATE } from '../../utils/consts/FrontEndStateConsts';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 
@@ -26,7 +27,7 @@ import {
   loadSubcriptionModal,
   subscribe,
   unsubscribe
-} from './SubscriptionsActionFactory';
+} from './SubscriptionActions';
 
 
 const { createEntityAndAssociationData, getEntityData, updateEntityData } = DataApiActions;
@@ -48,6 +49,7 @@ const {
 } = APP_TYPES;
 
 const getApp = state => state.get(STATE.APP, Map());
+const getEDM = state => state.get(STATE.EDM, Map());
 const getOrgId = state => state.getIn([STATE.APP, APP.SELECTED_ORG_ID], '');
 
 function* loadSubcriptionModalWorker(action :SequenceAction) :Generator<*, *, *> {
@@ -110,17 +112,19 @@ function* subscribeWorker(action :SequenceAction) :Generator<*, *, *> {
     let { subscriptionEKID } = action.value;
 
     const app = yield select(getApp);
+    const edm = yield select(getEDM);
     const registeredForESID = getEntitySetIdFromApp(app, REGISTERED_FOR);
     const peopleESID = getEntitySetIdFromApp(app, PEOPLE);
     const subscriptionESID = getEntitySetIdFromApp(app, SUBSCRIPTION);
 
     if (subscriptionEKID) {
       const newSubscriptionEntity = { [IS_ACTIVE]: [true] };
+      const subscriptionSubmitEntity = getPropertyIdToValueMap(newSubscriptionEntity, edm);
       const updateResponse = yield call(
         updateEntityDataWorker,
         updateEntityData({
           entitySetId: subscriptionESID,
-          entities: { [subscriptionEKID]: newSubscriptionEntity },
+          entities: { [subscriptionEKID]: subscriptionSubmitEntity },
           updateType: 'PartialReplace'
         })
       );
@@ -136,7 +140,8 @@ function* subscribeWorker(action :SequenceAction) :Generator<*, *, *> {
         [DAY_INTERVAL]: [true],
         [WEEK_INTERVAL]: [true]
       };
-      const entities = { [subscriptionEKID]: [newSubscriptionEntity] };
+      const subscriptionSubmitEntity = getPropertyIdToValueMap(newSubscriptionEntity, edm);
+      const entities = { [subscriptionEKID]: [subscriptionSubmitEntity] };
       /*
        * Assemble Assoociations
        */
@@ -200,14 +205,16 @@ function* unsubscribeWorker(action :SequenceAction) :Generator<*, *, *> {
     const { subscriptionEKID } = action.value;
 
     const app = yield select(getApp);
+    const edm = yield select(getEDM);
     const subscriptionESID = getEntitySetIdFromApp(app, SUBSCRIPTION);
 
-    const newSubscriptionEntity = { [IS_ACTIVE]: [true] };
+    const newSubscriptionEntity = { [IS_ACTIVE]: [false] };
+    const subscriptionSubmitEntity = getPropertyIdToValueMap(newSubscriptionEntity, edm);
     const updateResponse = yield call(
       updateEntityDataWorker,
       updateEntityData({
         entitySetId: subscriptionESID,
-        entities: { [subscriptionEKID]: newSubscriptionEntity },
+        entities: { [subscriptionEKID]: subscriptionSubmitEntity },
         updateType: 'PartialReplace'
       })
     );
