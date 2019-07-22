@@ -11,7 +11,7 @@ import {
 } from './ContactInfoActions';
 
 import { REDUX } from '../../utils/consts/redux/SharedConsts';
-import { actionValueIsInvalid, getErrorStatus } from '../../utils/consts/redux/ReduxUtils';
+import { actionValueIsInvalid } from '../../utils/consts/redux/ReduxUtils';
 import { CONTACT_INFO_ACTIONS, CONTACT_INFO_DATA } from '../../utils/consts/redux/ContactInformationConsts';
 
 const {
@@ -62,7 +62,7 @@ export default function contactInfoReducer(state :Map<*, *> = INITIAL_STATE, act
           if (actionValueIsInvalid(action.value)) {
             return state;
           }
-          const error = getErrorStatus(action);
+          const { error } = action.value;
           return state
             .set(CONTACT_INFO_DATA.SUBMITTED_CONTACT_INFO, Map())
             .setIn([REDUX.ERRORS, CONTACT_INFO_ACTIONS.SUBMIT_CONTACT], error)
@@ -88,7 +88,7 @@ export default function contactInfoReducer(state :Map<*, *> = INITIAL_STATE, act
           if (actionValueIsInvalid(action.value)) {
             return state;
           }
-          const error = getErrorStatus(action);
+          const { error } = action.value;
           return state
             .set(CONTACT_INFO_DATA.SUBMITTED_CONTACT_INFO, Map())
             .setIn([REDUX.ERRORS, CONTACT_INFO_ACTIONS.UPDATE_CONTACT], error)
@@ -114,7 +114,7 @@ export default function contactInfoReducer(state :Map<*, *> = INITIAL_STATE, act
           if (actionValueIsInvalid(action.value)) {
             return state;
           }
-          const error = getErrorStatus(action);
+          const { error } = action.value;
           return state
             .set(CONTACT_INFO_DATA.UPDATED_CONTACTS, List())
             .setIn([REDUX.ERRORS, CONTACT_INFO_ACTIONS.UPDATE_CONTACTS_BULK], error)

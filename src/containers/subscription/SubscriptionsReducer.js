@@ -10,7 +10,7 @@ import { APP_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_NEIGHBOR, SUBSCRIPTIONS } from '../../utils/consts/FrontEndStateConsts';
 import { REDUX } from '../../utils/consts/redux/SharedConsts';
 import { getEntityKeyId } from '../../utils/DataUtils';
-import { actionValueIsInvalid, getErrorStatus } from '../../utils/consts/redux/ReduxUtils';
+import { actionValueIsInvalid } from '../../utils/consts/redux/ReduxUtils';
 import { SUBSCRIPTION_ACTIONS, SUBSCRIPTION_DATA } from '../../utils/consts/redux/SubscriptionConsts';
 
 import { refreshPersonNeighbors } from '../people/PeopleActionFactory';
@@ -83,7 +83,7 @@ export default function subscriptionsReducer(state :Map<*, *> = INITIAL_STATE, a
           if (actionValueIsInvalid(action.value)) {
             return state;
           }
-          const error = getErrorStatus(action);
+          const { error } = action.value;
           return state
             .set(SUBSCRIPTIONS.SUBSCRIPTION, Map())
             .setIn([REDUX.ERRORS, SUBSCRIPTION_ACTIONS.LOAD_SUBSCRIPTION_MODAL], error)
@@ -161,7 +161,7 @@ export default function subscriptionsReducer(state :Map<*, *> = INITIAL_STATE, a
           if (actionValueIsInvalid(action.value)) {
             return state;
           }
-          const error = getErrorStatus(action);
+          const { error } = action.value;
           return state
             .set(SUBSCRIPTIONS.SUBSCRIPTION, Map())
             .setIn([REDUX.ERRORS, SUBSCRIPTION_ACTIONS.SUBSCRIBE], error)
@@ -194,7 +194,7 @@ export default function subscriptionsReducer(state :Map<*, *> = INITIAL_STATE, a
           if (actionValueIsInvalid(action.value)) {
             return state;
           }
-          const error = getErrorStatus(action);
+          const { error } = action.value;
           return state
             .set(SUBSCRIPTIONS.SUBSCRIPTION, Map())
             .setIn([REDUX.ERRORS, SUBSCRIPTION_ACTIONS.UNSUBSCRIBE], error)
