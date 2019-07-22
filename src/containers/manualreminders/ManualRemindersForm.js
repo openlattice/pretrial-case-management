@@ -141,11 +141,6 @@ class ManualRemindersForm extends React.Component<Props, State> {
     return null;
   }
 
-  componentWillUnmount() {
-
-
-  }
-
   isReadyToSubmit = () :boolean => {
     const { contactMethod } = this.state;
     return !!contactMethod;
