@@ -11,13 +11,15 @@ import { bindActionCreators } from 'redux';
 import StyledInput from '../../components/controls/StyledInput';
 import InfoButton from '../../components/buttons/InfoButton';
 import CheckboxButton from '../../components/controls/StyledCheckboxButton';
-import { FORM_IDS } from '../../utils/consts/Consts';
 import { phoneIsValid, emailIsValid, formatPhoneNumber } from '../../utils/ContactInfoUtils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
 import { InputGroup } from '../../components/person/PersonFormTags';
 import { CONTACT_METHODS } from '../../utils/consts/ContactInfoConsts';
-import { APP, CONTACT_INFO, STATE } from '../../utils/consts/FrontEndStateConsts';
+import { APP } from '../../utils/consts/FrontEndStateConsts';
+import { CONTACT_INFO_ACTIONS } from '../../utils/consts/redux/ContactInformationConsts';
+import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { getReqState, requestIsPending, requestIsSuccess } from '../../utils/consts/redux/ReduxUtils';
 
 import * as ContactInfoActions from './ContactInfoActions';
 
@@ -80,9 +82,8 @@ const AddContactButton = styled(InfoButton)`
 `;
 
 type Props = {
-  contactInfoSubmissionComplete :boolean,
   personEKID :string,
-  submittingContactInfo :boolean,
+  submitContactReqState :RequestState,
   actions :{
     refreshPersonNeighbors :(values :{ personId :string }) => void,
     submit :(values :{
@@ -111,8 +112,9 @@ class NewContactForm extends React.Component<Props, State> {
   }
 
   static getDerivedStateFromProps(nextProps, prevState) {
-    const { contactInfoSubmissionComplete } = nextProps;
-    if (prevState.addingNewContact && contactInfoSubmissionComplete) {
+    const { submitContactReqState } = nextProps;
+    const contactSubmitSuccess = requestIsSuccess(submitContactReqState);
+    if (prevState.addingNewContact && contactSubmitSuccess) {
       return INITIAL_STATE;
     }
     if (nextProps.editing !== prevState.addingNewContact) {
@@ -122,14 +124,6 @@ class NewContactForm extends React.Component<Props, State> {
       return INITIAL_STATE;
     }
     return null;
-  }
-
-  componentDidUpdate() {
-    const { addingNewContact } = this.state;
-    const { actions, contactInfoSubmissionComplete } = this.props;
-    if (addingNewContact && contactInfoSubmissionComplete) {
-      actions.clearSubmittedContact();
-    }
   }
 
   createNewContact = () => {
@@ -170,7 +164,8 @@ class NewContactForm extends React.Component<Props, State> {
   }
 
   renderAddContactButton = () => {
-    const { submittingContactInfo } = this.props;
+    const { submitContactReqState } = this.props;
+    const submittingContactInfo = requestIsPending(submitContactReqState);
     return (
       <AddContactButton
           disabled={submittingContactInfo || !this.isReadyToSubmit()}
@@ -218,7 +213,8 @@ class NewContactForm extends React.Component<Props, State> {
   }
 
   renderContact = () => {
-    const { submittingContactInfo } = this.props;
+    const { submitContactReqState } = this.props;
+    const submittingContactInfo = requestIsPending(submitContactReqState);
     const { contact } = this.state;
     return (
       <StyledInputWithErrors
@@ -231,7 +227,8 @@ class NewContactForm extends React.Component<Props, State> {
   }
 
   isMobile = () => {
-    const { submittingContactInfo } = this.props;
+    const { submitContactReqState } = this.props;
+    const submittingContactInfo = requestIsPending(submitContactReqState);
     const { state } = this;
     const { contactMethod } = this.state;
     const isMobile = state[PROPERTY_TYPES.IS_MOBILE];
@@ -261,7 +258,8 @@ class NewContactForm extends React.Component<Props, State> {
   }
 
   isPreferred = () => {
-    const { submittingContactInfo } = this.props;
+    const { submitContactReqState } = this.props;
+    const submittingContactInfo = requestIsPending(submitContactReqState);
     const { state } = this;
     const isPreferred = state[PROPERTY_TYPES.IS_PREFERRED];
     const { contactMethod } = state;
@@ -308,8 +306,7 @@ function mapStateToProps(state) {
     [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
     [APP.SELECTED_ORG_SETTINGS]: app.get(APP.SELECTED_ORG_SETTINGS),
 
-    [CONTACT_INFO.SUBMISSION_COMPLETE]: contactInfo.get(CONTACT_INFO.SUBMISSION_COMPLETE),
-    [CONTACT_INFO.SUBMITTING_CONTACT_INFO]: contactInfo.get(CONTACT_INFO.SUBMITTING_CONTACT_INFO),
+    submitContactReqState: getReqState(contactInfo, CONTACT_INFO_ACTIONS.SUBMIT_CONTACT),
   };
 }
 

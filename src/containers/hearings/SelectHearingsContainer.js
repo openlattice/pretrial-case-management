@@ -128,12 +128,10 @@ type Props = {
   readOnly :boolean,
   refreshingHearingAndNeighbors :boolean,
   refreshingNeighbors :boolean,
-  refreshingPersonNeighbors :boolean,
   replacingAssociation :boolean,
   replacingEntity :boolean,
   selectedOrganizationSettings :Map<*, *>,
   submittingHearing :boolean,
-  updatingEntity :boolean
 }
 
 type State = {
@@ -287,12 +285,10 @@ class SelectHearingsContainer extends React.Component<Props, State> {
 
   renderSubscriptionInfo = () => {
     const {
-      refreshingPersonNeighbors,
       readOnly,
       personNeighbors,
       psaNeighbors,
-      selectedOrganizationSettings,
-      updatingEntity,
+      selectedOrganizationSettings
     } = this.props;
     const subscription = personNeighbors.getIn([SUBSCRIPTION, PSA_NEIGHBOR.DETAILS], Map());
     const contactInfo = personNeighbors.get(CONTACT_INFORMATION, List());
@@ -301,8 +297,6 @@ class SelectHearingsContainer extends React.Component<Props, State> {
     return courtRemindersEnabled
       ? (
         <SubscriptionInfo
-            refreshingPersonNeighbors={refreshingPersonNeighbors}
-            updatingEntity={updatingEntity}
             readOnly={readOnly}
             subscription={subscription}
             contactInfo={contactInfo}

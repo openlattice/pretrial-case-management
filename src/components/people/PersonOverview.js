@@ -59,10 +59,8 @@ type Props = {
   personId :string,
   psaNeighborsById :Map<*, *>,
   readOnlyPermissions :boolean,
-  refreshingPersonNeighbors :boolean,
   selectedPersonData :Map<*, *>,
   entitySetIdsToAppType :Map<*, *>,
-  updatingEntity :boolean,
   settingsIncludeVoiceEnroll :boolean,
   personReminders :Map<*, *>,
   personVoiceProfile :Map<*, *>
@@ -91,8 +89,6 @@ const PersonOverview = ({
   includesPretrialModule,
   openDetailsModal,
   readOnlyPermissions,
-  refreshingPersonNeighbors,
-  updatingEntity,
   personVoiceProfile,
   personReminders,
   settingsIncludeVoiceEnroll,
@@ -138,8 +134,6 @@ const PersonOverview = ({
         <StyledColumnRowWrapper>
           <StyledColumnRow withPadding>
             <SubscriptionInfo
-                refreshingPersonNeighbors={refreshingPersonNeighbors}
-                updatingEntity={updatingEntity}
                 readOnly={readOnlyPermissions}
                 subscription={subscription}
                 contactInfo={contactInfo}
