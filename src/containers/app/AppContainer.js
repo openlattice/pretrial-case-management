@@ -5,6 +5,7 @@
 import React from 'react';
 
 import isFunction from 'lodash/isFunction';
+import { DateTime } from 'luxon';
 import styled from 'styled-components';
 import { AuthActions, AuthUtils } from 'lattice-auth';
 import { bindActionCreators } from 'redux';
@@ -41,6 +42,7 @@ import * as Routes from '../../core/router/Routes';
 import * as AppActionFactory from './AppActionFactory';
 import * as CourtActionFactory from '../court/CourtActionFactory';
 import * as ChargesActionFactory from '../charges/ChargesActionFactory';
+import { getStaffEKIDs } from '../people/PeopleActionFactory';
 
 declare var gtag :?Function;
 
@@ -116,6 +118,7 @@ class AppContainer extends React.Component<Props, {}> {
           selectedOrgId
         });
         actions.loadJudges();
+        actions.getStaffEKIDs();
         actions.loadArrestingAgencies();
       });
     }
@@ -230,6 +233,7 @@ function mapStateToProps(state) {
     [APP.SELECTED_ORG_SETTINGS]: app.get(APP.SELECTED_ORG_SETTINGS),
     [APP.SELECTED_ORG_TITLE]: app.get(APP.SELECTED_ORG_TITLE),
     [APP.ERRORS]: app.get(APP.ERRORS),
+    [APP.STAFF_IDS_TO_EKIDS]: app.get(APP.STAFF_IDS_TO_EKIDS),
 
     [CHARGES.ARREST]: charges.get(CHARGES.ARREST),
     [CHARGES.COURT]: charges.get(CHARGES.COURT),
@@ -253,6 +257,8 @@ function mapDispatchToProps(dispatch :Function) :Object {
   Object.keys(ChargesActionFactory).forEach((action :string) => {
     actions[action] = ChargesActionFactory[action];
   });
+
+  actions.getStaffEKIDs = getStaffEKIDs;
 
   actions.logout = logout;
   actions.getAllPropertyTypes = getAllPropertyTypes;

@@ -7,6 +7,7 @@ import Immutable from 'immutable';
 import { APP_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_NEIGHBOR, REVIEW } from '../../utils/consts/FrontEndStateConsts';
 import { SWITCH_ORGANIZATION } from '../app/AppActionFactory';
+import { editPSA } from '../psa/FormActionFactory';
 import { updateOutcomesAndReleaseCondtions } from '../releaseconditions/ReleaseConditionsActionFactory';
 import {
   changePSAStatus,
@@ -24,7 +25,8 @@ const {
   DMF_RISK_FACTORS,
   OUTCOMES,
   PSA_RISK_FACTORS,
-  RELEASE_RECOMMENDATIONS
+  RELEASE_RECOMMENDATIONS,
+  STAFF
 } = APP_TYPES;
 
 const INITIAL_STATE :Immutable.Map<*, *> = Immutable.fromJS({
@@ -67,6 +69,18 @@ export default function reviewReducer(state :Immutable.Map<*, *> = INITIAL_STATE
         REQUEST: () => state.set(REVIEW.READ_ONLY, true),
         SUCCESS: () => state.set(REVIEW.READ_ONLY, action.value.readOnly),
         FAILURE: () => state.set(REVIEW.READ_ONLY, true)
+      });
+    }
+
+
+    case editPSA.case(action.type): {
+      return editPSA.reducer(state, action, {
+        SUCCESS: () => {
+          const { psaEKID, staffNeighbors } = action.value;
+          let psaNeighbors = state.get(REVIEW.NEIGHBORS_BY_ID, Immutable.Map());
+          psaNeighbors = psaNeighbors.setIn([psaEKID, STAFF], staffNeighbors);
+          return state.set(REVIEW.NEIGHBORS_BY_ID, psaNeighbors);
+        }
       });
     }
 

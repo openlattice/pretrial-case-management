@@ -10,11 +10,9 @@ import Immutable, { List, Map } from 'immutable';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import Modal, { ModalTransition } from '@atlaskit/modal-dialog';
-import { AuthUtils } from 'lattice-auth';
 import { Link } from 'react-router-dom';
 
 import CustomTabs from '../../components/tabs/Tabs';
-import CourtCaseForPSAConfig from '../../config/formconfig/CourtCaseForPSAConfig';
 import LogoLoader from '../../components/LogoLoader';
 import PSAInputForm from '../../components/psainput/PSAInputForm';
 import PersonCard from '../../components/person/PersonCardReview';
@@ -27,13 +25,10 @@ import SelectHearingsContainer from '../hearings/SelectHearingsContainer';
 import PSAModalSummary from '../../components/review/PSAModalSummary';
 import ReleaseConditionsSummary from '../../components/releaseconditions/ReleaseConditionsSummary';
 import ClosePSAModal from '../../components/review/ClosePSAModal';
-import psaEditedConfig from '../../config/formconfig/PsaEditedConfig';
 import closeX from '../../assets/svg/close-x-gray.svg';
 import LoadPersonCaseHistoryButton from '../person/LoadPersonCaseHistoryButton';
 import { getScoresAndRiskFactors, calculateDMF } from '../../utils/ScoringUtils';
-import { getEntityKeyId, getEntitySetId, getIdOrValue } from '../../utils/DataUtils';
 import { CenteredContainer, Title } from '../../utils/Layout';
-import { toISODateTime } from '../../utils/FormattingUtils';
 import { getCasesForPSA, currentPendingCharges } from '../../utils/CaseUtils';
 import { RESULT_CATEGORIES } from '../../utils/consts/DMFResultConsts';
 import { formatDMFFromEntity } from '../../utils/DMFUtils';
@@ -42,7 +37,14 @@ import { psaIsClosed } from '../../utils/PSAUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { CONTEXTS, MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
 import {
+  getEntityKeyId,
+  getEntityProperties,
+  getEntitySetId,
+  getIdOrValue
+} from '../../utils/DataUtils';
+import {
   APP,
+  HEARINGS,
   PSA_NEIGHBOR,
   PSA_ASSOCIATION,
   PSA_MODAL,
@@ -52,26 +54,23 @@ import {
 import {
   CONTEXT,
   DMF,
-  EDIT_FIELDS,
-  ID_FIELD_NAMES,
   NOTES,
   PSA
 } from '../../utils/consts/Consts';
 
 import * as Routes from '../../core/router/Routes';
-import * as FormActionFactory from '../psa/FormActionFactory';
-import * as ReviewActionFactory from '../review/ReviewActionFactory';
-import * as PSAModalActionFactory from './PSAModalActionFactory';
 import * as CourtActionFactory from '../court/CourtActionFactory';
-import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
 import * as DataActionFactory from '../../utils/data/DataActionFactory';
+import * as FormActionFactory from '../psa/FormActionFactory';
+import * as HearingsActionFactory from '../hearings/HearingsActionFactory';
+import * as PSAModalActionFactory from './PSAModalActionFactory';
+import * as ReviewActionFactory from '../review/ReviewActionFactory';
+import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
 
 const {
   BONDS,
-  CALCULATED_FOR,
   DMF_RESULTS,
   DMF_RISK_FACTORS,
-  HEARINGS,
   MANUAL_PRETRIAL_CASES,
   OUTCOMES,
   PEOPLE,
@@ -81,6 +80,8 @@ const {
   RELEASE_RECOMMENDATIONS,
   STAFF
 } = APP_TYPES;
+
+const { ENTITY_KEY_ID } = PROPERTY_TYPES;
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
@@ -246,8 +247,7 @@ type Props = {
     changePSAStatus :(values :{
       scoresId :string,
       scoresEntity :Map<*, *>
-    }) => void,
-    loadHearingNeighbors :(hearingIds :string[]) => void
+    }) => void
   }
 };
 
@@ -489,7 +489,6 @@ class PSAModal extends React.Component<Props, State> {
     e.preventDefault();
     const {
       actions,
-      app,
       entityKeyId,
       psaNeighbors,
       scores,
@@ -554,26 +553,22 @@ class PSAModal extends React.Component<Props, State> {
       notesEntity
     });
 
-    const values = {
-      [EDIT_FIELDS.PSA_ID]: [scoreId],
-      [EDIT_FIELDS.RISK_FACTORS_ID]: [riskFactorsId],
-      [EDIT_FIELDS.DMF_ID]: [dmfId],
-      [EDIT_FIELDS.DMF_RISK_FACTORS_ID]: [dmfRiskFactorsId],
-      [EDIT_FIELDS.NOTES_ID]: [notesId],
-      [EDIT_FIELDS.TIMESTAMP]: [toISODateTime(moment())],
-      [EDIT_FIELDS.PERSON_ID]: [AuthUtils.getUserInfo().email]
-    };
+    const psaRiskFactors = psaNeighbors.get(PSA_RISK_FACTORS, Map());
+    const dmfResults = psaNeighbors.get(DMF_RESULTS, Map());
+    const dmfRiskFactors = psaNeighbors.get(DMF_RISK_FACTORS, Map());
 
-    if (!includesPretrialModule) {
-      delete values[EDIT_FIELDS.DMF_ID];
-      delete values[EDIT_FIELDS.DMF_RISK_FACTORS_ID];
-    }
+    const psaEKID = getEntityKeyId(scores);
+    const psaRiskFactorsEKID = getEntityKeyId(psaRiskFactors);
+    const dmfResultsEKID = getEntityKeyId(dmfResults);
+    const dmfRiskFactorsEKID = getEntityKeyId(dmfRiskFactors);
 
     if (scoreId) {
-      actions.submit({
-        app,
-        config: psaEditedConfig,
-        values
+      actions.editPSA({
+        includesPretrialModule,
+        psaEKID,
+        psaRiskFactorsEKID,
+        dmfResultsEKID,
+        dmfRiskFactorsEKID
       });
     }
 
@@ -587,8 +582,8 @@ class PSAModal extends React.Component<Props, State> {
   deleteHearing = () => {
     const { actions, entityKeyId } = this.props;
     actions.deleteEntity({
-      entitySetId: this.getEntitySetId(HEARINGS),
-      entityKeyId: this.getEntityKeyId(HEARINGS)
+      entitySetId: this.getEntitySetId(APP_TYPES.HEARINGS),
+      entityKeyId: this.getEntityKeyId(APP_TYPES.HEARINGS)
     });
     actions.refreshPSANeighbors({ id: entityKeyId });
   }
@@ -761,33 +756,18 @@ class PSAModal extends React.Component<Props, State> {
     );
   }
 
-  addCaseToPSA = (values) => {
-    const { actions, app, scores } = this.props;
-    const psaId = scores.getIn([PROPERTY_TYPES.GENERAL_ID, 0]);
-
-    const caseToPSAValues = Object.assign({}, values, {
-      [PROPERTY_TYPES.TIMESTAMP]: moment().toISOString(true),
-      [ID_FIELD_NAMES.PSA_ID]: psaId
-    });
-
-    actions.submit({
-      app,
-      config: CourtCaseForPSAConfig,
-      values: caseToPSAValues,
-      callback: this.refreshPSANeighborsCallback
-    });
+  addCaseToPSA = (caseEKID) => {
+    const { actions, scores } = this.props;
+    const { addCaseToPSA } = actions;
+    const psaEKID = getEntityKeyId(scores);
+    addCaseToPSA({ psaEKID, caseEKID });
   }
 
-  removeCaseFromPSA = (associationEntityKeyId) => {
-    const { actions, fqnsToEntitySetIds, selectedOrganizationId } = this.props;
-    const { deleteEntity } = actions;
-    const entitySetId = fqnsToEntitySetIds.getIn([selectedOrganizationId, CALCULATED_FOR]);
-
-    deleteEntity({
-      entitySetId,
-      entityKeyId: associationEntityKeyId,
-      callback: this.refreshPSANeighborsCallback
-    });
+  removeCaseFromPSA = (associationEKID) => {
+    const { actions, scores } = this.props;
+    const { removeCaseFromPSA } = actions;
+    const psaEKID = getEntityKeyId(scores);
+    removeCaseFromPSA({ associationEKID, psaEKID });
   }
 
   renderCaseHistory = () => {
@@ -868,7 +848,7 @@ class PSAModal extends React.Component<Props, State> {
 
   renderReleaseCondtionsSummary = () => {
     const { psaNeighbors, hearingNeighborsById } = this.props;
-    const psaHearings = psaNeighbors.get(HEARINGS, List());
+    const psaHearings = psaNeighbors.get(APP_TYPES.HEARINGS, List());
     const hearingsWithOutcomes = psaHearings.filter((hearing) => {
       const entityKeyId = hearing.getIn([OPENLATTICE_ID_FQN, 0]);
       return !!hearingNeighborsById.getIn([entityKeyId, OUTCOMES]);
@@ -897,6 +877,9 @@ class PSAModal extends React.Component<Props, State> {
       psaPermissions
     } = this.props;
 
+    const person = psaNeighbors.getIn([PEOPLE, PSA_NEIGHBOR.DETAILS], Map());
+    const { [ENTITY_KEY_ID]: personEKID } = getEntityProperties(person, [ENTITY_KEY_ID]);
+
     return (
       <ModalWrapper withPadding>
         <SelectHearingsContainer
@@ -908,11 +891,12 @@ class PSAModal extends React.Component<Props, State> {
             refreshingNeighbors={refreshingNeighbors}
             dmfId={this.getIdOrValue(DMF_RESULTS)}
             personId={personId}
+            personEKID={personEKID}
             personNeighbors={personNeighbors}
             psaEntityKeyId={entityKeyId}
             deleteHearing={this.deleteHearing}
             refreshPSANeighborsCallback={this.refreshPSANeighborsCallback}
-            hearingId={this.getEntityKeyId(HEARINGS)}
+            hearingId={this.getEntityKeyId(APP_TYPES.HEARINGS)}
             personHearings={personHearings}
             readOnly={!psaPermissions}
             psaNeighbors={psaNeighbors}
@@ -1038,6 +1022,7 @@ class PSAModal extends React.Component<Props, State> {
 
 function mapStateToProps(state) {
   const app = state.get(STATE.APP);
+  const hearings = state.get(STATE.HEARINGS);
   const psaModal = state.get(STATE.PSA_MODAL);
   const search = state.get(STATE.SEARCH);
   return {
@@ -1046,6 +1031,8 @@ function mapStateToProps(state) {
     [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
     [APP.SELECTED_ORG_SETTINGS]: app.get(APP.SELECTED_ORG_SETTINGS),
 
+    [HEARINGS.HEARING_NEIGHBORS_BY_ID]: hearings.get(HEARINGS.HEARING_NEIGHBORS_BY_ID),
+
     [PSA_MODAL.SCORES]: psaModal.get(PSA_MODAL.SCORES),
     [PSA_MODAL.PSA_ID]: psaModal.get(PSA_MODAL.PSA_ID),
     [PSA_MODAL.LOADING_PSA_MODAL]: psaModal.get(PSA_MODAL.LOADING_PSA_MODAL),
@@ -1053,7 +1040,6 @@ function mapStateToProps(state) {
     [PSA_MODAL.PSA_PERMISSIONS]: psaModal.get(PSA_MODAL.PSA_PERMISSIONS),
     [PSA_MODAL.HEARINGS]: psaModal.get(PSA_MODAL.HEARINGS),
     [PSA_MODAL.HEARING_IDS]: psaModal.get(PSA_MODAL.HEARING_IDS),
-    [PSA_MODAL.HEARINGS_NEIGHBORS_BY_ID]: psaModal.get(PSA_MODAL.HEARINGS_NEIGHBORS_BY_ID),
     [PSA_MODAL.LOADING_HEARING_NEIGHBORS]: psaModal.get(PSA_MODAL.LOADING_HEARING_NEIGHBORS),
     [PSA_MODAL.PERSON_HEARINGS]: psaModal.get(PSA_MODAL.PERSON_HEARINGS),
     [PSA_MODAL.PERSON_NEIGHBORS]: psaModal.get(PSA_MODAL.PERSON_NEIGHBORS),
@@ -1076,24 +1062,28 @@ function mapStateToProps(state) {
 function mapDispatchToProps(dispatch :Function) :Object {
   const actions :{ [string] :Function } = {};
 
-  Object.keys(FormActionFactory).forEach((action :string) => {
-    actions[action] = FormActionFactory[action];
-  });
-
-  Object.keys(ReviewActionFactory).forEach((action :string) => {
-    actions[action] = ReviewActionFactory[action];
-  });
-
-  Object.keys(PSAModalActionFactory).forEach((action :string) => {
-    actions[action] = PSAModalActionFactory[action];
-  });
-
   Object.keys(CourtActionFactory).forEach((action :string) => {
     actions[action] = CourtActionFactory[action];
   });
 
   Object.keys(DataActionFactory).forEach((action :string) => {
     actions[action] = DataActionFactory[action];
+  });
+
+  Object.keys(FormActionFactory).forEach((action :string) => {
+    actions[action] = FormActionFactory[action];
+  });
+
+  Object.keys(HearingsActionFactory).forEach((action :string) => {
+    actions[action] = HearingsActionFactory[action];
+  });
+
+  Object.keys(PSAModalActionFactory).forEach((action :string) => {
+    actions[action] = PSAModalActionFactory[action];
+  });
+
+  Object.keys(ReviewActionFactory).forEach((action :string) => {
+    actions[action] = ReviewActionFactory[action];
   });
 
   Object.keys(SubmitActionFactory).forEach((action :string) => {

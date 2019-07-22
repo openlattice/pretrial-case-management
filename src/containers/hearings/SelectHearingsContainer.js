@@ -10,23 +10,18 @@ import { List, Map } from 'immutable';
 
 import HearingCardsHolder from '../../components/hearings/HearingCardsHolder';
 import HearingCardsWithTitle from '../../components/hearings/HearingCardsWithTitle';
+import HearingsForm from './HearingsForm';
 import InfoButton from '../../components/buttons/InfoButton';
 import LogoLoader from '../../components/LogoLoader';
-import NewHearingSection from '../../components/hearings/NewHearingSection';
-import psaHearingConfig from '../../config/formconfig/PSAHearingConfig';
 import ReleaseConditionsContainer from '../releaseconditions/ReleaseConditionsContainer';
 import SubscriptionInfo from '../../components/subscription/SubscriptionInfo';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { getScheduledHearings, getPastHearings, getHearingString } from '../../utils/HearingUtils';
+import { getEntityProperties } from '../../utils/DataUtils';
 import { OL } from '../../utils/consts/Colors';
 import { SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { Title } from '../../utils/Layout';
-import {
-  FORM_IDS,
-  ID_FIELD_NAMES,
-  HEARING,
-  JURISDICTION
-} from '../../utils/consts/Consts';
+import { JURISDICTION } from '../../utils/consts/Consts';
 import {
   APP,
   HEARINGS,
@@ -51,6 +46,11 @@ const {
 } = APP_TYPES;
 
 const PEOPLE_FQN = APP_TYPES.PEOPLE;
+
+const {
+  ENTITY_KEY_ID,
+  CASE_ID
+} = PROPERTY_TYPES;
 
 const Container = styled.div`
   hr {
@@ -114,18 +114,15 @@ type Props = {
       callback :() => void
     }) => void
   },
-  app :Map<*, *>,
   context :string,
   hearingNeighborsById :Map<*, *>,
   neighbors :Map<*, *>,
-  onSubmit? :(hearing :Object) => void,
   openClosePSAModal :() => void,
+  personEKID :string,
   personHearings :List<*, *>,
-  personId :string,
   personNeighbors :Map<*, *>,
   psaEntityKeyId :string,
   psaHearings :List<*, *>,
-  psaId :string,
   psaIdsRefreshing :Map<*, *>,
   psaNeighbors :Map<*, *>,
   readOnly :boolean,
@@ -135,7 +132,7 @@ type Props = {
   replacingAssociation :boolean,
   replacingEntity :boolean,
   selectedOrganizationSettings :Map<*, *>,
-  submitting :boolean,
+  submittingHearing :boolean,
   updatingEntity :boolean
 }
 
@@ -151,10 +148,6 @@ type State = {
 };
 
 class SelectHearingsContainer extends React.Component<Props, State> {
-
-  static defaultProps = {
-    onSubmit: () => {}
-  }
 
   constructor(props :Props) {
     super(props);
@@ -181,12 +174,10 @@ class SelectHearingsContainer extends React.Component<Props, State> {
   }
 
   renderNewHearingSection = () => {
-    const { manuallyCreatingHearing } = this.state;
     const {
       neighbors,
       context,
-      personId,
-      psaId,
+      personEKID,
       psaEntityKeyId
     } = this.props;
     const psaContext = neighbors
@@ -195,13 +186,11 @@ class SelectHearingsContainer extends React.Component<Props, State> {
     const jurisdiction = JURISDICTION[psaContext];
 
     return (
-      <NewHearingSection
-          personId={personId}
-          psaEntityKeyId={psaEntityKeyId}
-          psaId={psaId}
-          manuallyCreatingHearing={manuallyCreatingHearing}
-          jurisdiction={jurisdiction}
-          afterSubmit={this.backToHearingSelection} />
+      <HearingsForm
+          backToSelection={this.backToHearingSelection}
+          personEKID={personEKID}
+          psaEKID={psaEntityKeyId}
+          jurisdiction={jurisdiction} />
     );
   }
 
@@ -247,48 +236,23 @@ class SelectHearingsContainer extends React.Component<Props, State> {
       </Wrapper>
     );
   }
-  selectHearing = (hearingDetails) => {
-    const {
-      app,
-      psaId,
-      personId,
-      actions
-    } = this.props;
 
-    const values = Object.assign({}, hearingDetails, {
-      [ID_FIELD_NAMES.PSA_ID]: psaId,
-      [FORM_IDS.PERSON_ID]: personId
-    });
-
-    actions.submit({
-      app,
-      values,
-      config: psaHearingConfig,
-      callback: this.refreshHearingsNeighborsCallback
-    });
-  }
-
-  selectExistingHearing = (row, hearingId) => {
+  selectExistingHearing = (row) => {
     const {
       actions,
-      app,
-      onSubmit,
-      psaId
+      personEKID,
+      psaEntityKeyId
     } = this.props;
-    const values = {
-      [ID_FIELD_NAMES.HEARING_ID]: hearingId,
-      [ID_FIELD_NAMES.PSA_ID]: psaId,
-    };
-    actions.submit({
-      app,
-      values,
-      config: psaHearingConfig,
-      callback: this.refreshHearingsNeighborsCallback
-    });
-    onSubmit({
-      [ID_FIELD_NAMES.HEARING_ID]: hearingId,
-      [HEARING.DATE_TIME]: row.getIn([PROPERTY_TYPES.DATE_TIME, 0], ''),
-      [HEARING.COURTROOM]: row.getIn([PROPERTY_TYPES.COURTROOM, 0], '')
+    const { submitExistingHearing } = actions;
+    const {
+      [ENTITY_KEY_ID]: hearingEKID,
+      [CASE_ID]: caseId
+    } = getEntityProperties(row, [ENTITY_KEY_ID, CASE_ID]);
+    submitExistingHearing({
+      caseId,
+      hearingEKID,
+      personEKID,
+      psaEKID: psaEntityKeyId
     });
   }
 
@@ -352,7 +316,7 @@ class SelectHearingsContainer extends React.Component<Props, State> {
       neighbors,
       hearingNeighborsById,
       refreshingHearingAndNeighbors,
-      submitting,
+      submittingHearing,
       psaIdsRefreshing,
       refreshingNeighbors,
       replacingAssociation,
@@ -362,14 +326,14 @@ class SelectHearingsContainer extends React.Component<Props, State> {
       .keySeq().filter(id => hearingNeighborsById.getIn([id, OUTCOMES]));
     const scheduledHearings = getScheduledHearings(neighbors);
     const pastHearings = getPastHearings(neighbors);
-    const isLoading = (submitting
+    const isLoading = (submittingHearing
       || replacingEntity
       || replacingAssociation
       || refreshingNeighbors
       || psaIdsRefreshing.size
       || refreshingHearingAndNeighbors);
 
-    const loadingText = (submitting || replacingEntity || replacingAssociation) ? 'Submitting' : 'Reloading';
+    const loadingText = (submittingHearing || replacingEntity || replacingAssociation) ? 'Submitting' : 'Reloading';
     return (
       <>
         {
@@ -429,10 +393,11 @@ function mapStateToProps(state) {
     [APP.ENTITY_SETS_BY_ORG]: app.get(APP.ENTITY_SETS_BY_ORG, Map()),
     [APP.FQN_TO_ID]: app.get(APP.FQN_TO_ID),
 
-    [COURT.LOADING_HEARING_NEIGHBORS]: court.get(COURT.LOADING_HEARING_NEIGHBORS),
-    [COURT.HEARINGS_NEIGHBORS_BY_ID]: court.get(COURT.HEARINGS_NEIGHBORS_BY_ID),
     [COURT.ALL_JUDGES]: court.get(COURT.ALL_JUDGES),
 
+    [HEARINGS.LOADING_HEARING_NEIGHBORS]: hearings.get(HEARINGS.LOADING_HEARING_NEIGHBORS),
+    [HEARINGS.HEARING_NEIGHBORS_BY_ID]: hearings.get(HEARINGS.HEARING_NEIGHBORS_BY_ID),
+    [HEARINGS.SUBMITTING_HEARING]: hearings.get(HEARINGS.SUBMITTING_HEARING),
     [HEARINGS.REFRESHING_HEARING_AND_NEIGHBORS]: hearings.get(HEARINGS.REFRESHING_HEARING_AND_NEIGHBORS),
 
     [REVIEW.SCORES]: review.get(REVIEW.SCORES),

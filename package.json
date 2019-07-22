@@ -46,6 +46,7 @@
     "lattice-sagas": "0.21.0",
     "lodash": "~4.17.10",
     "loglevel": "~1.6.0",
+    "luxon": "~1.8.1",
     "moment": "~2.24.0",
     "papaparse": "^4.3.6",
     "polished": "~3.0.0",

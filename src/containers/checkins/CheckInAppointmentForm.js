@@ -5,8 +5,7 @@
 import moment from 'moment';
 import React from 'react';
 import styled from 'styled-components';
-import randomUUID from 'uuid/v4';
-import { Map, List, fromJS } from 'immutable';
+import { Map, fromJS } from 'immutable';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
@@ -15,8 +14,8 @@ import InfoButton from '../../components/buttons/InfoButton';
 import StyledRadio from '../../components/controls/StyledRadio';
 import RadioButton from '../../components/controls/StyledRadioButton';
 import SimpleCards from '../../components/cards/SimpleCards';
-import { APPOINTMENT_PATTERN, APPOINTMENT_TYPES } from '../../utils/consts/AppointmentConsts';
-import { toISODate, toISODateTime } from '../../utils/FormattingUtils';
+import { APPOINTMENT_PATTERN } from '../../utils/consts/AppointmentConsts';
+import { toISODate } from '../../utils/FormattingUtils';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { getFirstNeighborValue, getNeighborDetailsForEntitySet } from '../../utils/DataUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
@@ -90,7 +89,7 @@ const INITIAL_STATE = {
   appointmentType: APPOINTMENT_PATTERN.SINGLE
 };
 
-class NewHearingSection extends React.Component<Props, State> {
+class CheckInsAppointmentForm extends React.Component<Props, State> {
 
   constructor(props :Props) {
     super(props);
@@ -114,13 +113,7 @@ class NewHearingSection extends React.Component<Props, State> {
   createCheckInSubmissionValues = (date) => {
     const startDate = date;
     const endDate = toISODate(moment(startDate).add(1, 'd'));
-    const appointmentEntity = {
-      [PROPERTY_TYPES.GENERAL_ID]: [randomUUID()],
-      [PROPERTY_TYPES.START_DATE]: [startDate],
-      [PROPERTY_TYPES.END_DATE]: [endDate],
-      [PROPERTY_TYPES.TYPE]: [APPOINTMENT_TYPES.CHECK_IN],
-      [PROPERTY_TYPES.COMPLETED_DATE_TIME]: [toISODateTime(moment(startDate))]
-    };
+    const appointmentEntity = { [PROPERTY_TYPES.START_DATE]: startDate, [PROPERTY_TYPES.END_DATE]: endDate };
     return fromJS(appointmentEntity);
   }
 
@@ -377,4 +370,4 @@ function mapDispatchToProps(dispatch :Function) :Object {
   };
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(NewHearingSection);
+export default connect(mapStateToProps, mapDispatchToProps)(CheckInsAppointmentForm);

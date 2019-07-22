@@ -30,7 +30,6 @@ type Props = {
       entitySetId :string,
       entityKeyId :string
     }) => void,
-    loadHearingNeighbors :(hearingIds :string[]) => void,
     submit :(values :{
       config :Map<*, *>,
       values :Map<*, *>,

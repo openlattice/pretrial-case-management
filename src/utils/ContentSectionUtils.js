@@ -25,7 +25,7 @@ export const getComputedTopWrapperStyle = (props) => {
     case CONTENT_CONSTS.CREATING_HEARING:
       return css`
         grid-template-columns: repeat(3, 1fr);
-        grid-row-gap: 20px;
+        grid-gap: 20px;
         :nth-last-child(4) {
          justify-content: flex-end;
         }

@@ -311,6 +311,7 @@ export const RELEASE_CONDITIONS = {
 export const JURISDICTION = {
   [CONTEXT.COURT_PENN]: 'Pennington County, South Dakota',
   [CONTEXT.COURT_MINN]: 'Minnehaha County, South Dakota',
+  [CONTEXT.DEMO_ORG]: 'San Mateo County, California',
   [CONTEXT.BOOKING]: 'Pennington County, South Dakota'
 };
 

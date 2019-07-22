@@ -8,16 +8,18 @@ import { getEntityProperties } from '../../utils/DataUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { RELEASE_COND } from '../../utils/consts/FrontEndStateConsts';
 import { deleteEntity } from '../../utils/data/DataActionFactory';
-import { refreshHearingAndNeighbors } from '../hearings/HearingsActionFactory';
+import { updateHearing, refreshHearingAndNeighbors, submitHearing } from '../hearings/HearingsActionFactory';
 import { refreshPSANeighbors } from '../review/ReviewActionFactory';
 import {
   CLEAR_RELEASE_CONDITIONS,
   loadReleaseConditions,
+  submitReleaseConditions,
   updateOutcomesAndReleaseCondtions
 } from './ReleaseConditionsActionFactory';
 
 const {
   HEARINGS,
+  JUDGES,
   OUTCOMES,
   DMF_RESULTS,
   CHECKIN_APPOINTMENTS
@@ -33,7 +35,8 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [RELEASE_COND.PSA_NEIGHBORS]: Map(),
   [RELEASE_COND.LOADING_RELEASE_CONDITIONS]: false,
   [RELEASE_COND.REFRESHING_RELEASE_CONDITIONS]: false,
-  [RELEASE_COND.REFRESHING_SELECTED_HEARING]: false
+  [RELEASE_COND.REFRESHING_SELECTED_HEARING]: false,
+  [RELEASE_COND.SUBMITTING_RELEASE_CONDITIONS]: false,
 });
 
 export default function releaseConditionsReducer(state :Map<*, *> = INITIAL_STATE, action :Object) {
@@ -67,6 +70,27 @@ export default function releaseConditionsReducer(state :Map<*, *> = INITIAL_STAT
             .set(RELEASE_COND.PSA_NEIGHBORS, psaNeighborsByAppTypeFqn);
         },
         FINALLY: () => state.set(RELEASE_COND.LOADING_RELEASE_CONDITIONS, false),
+      });
+    }
+
+    case submitReleaseConditions.case(action.type): {
+      return submitReleaseConditions.reducer(state, action, {
+        REQUEST: () => state.set(RELEASE_COND.SUBMITTING_RELEASE_CONDITIONS, true),
+        SUCCESS: () => {
+          const {
+            hearing,
+            hearingNeighborsByAppTypeFqn
+          } = action.value;
+          const outcomeEntity = hearingNeighborsByAppTypeFqn.get(OUTCOMES, Map());
+
+          const hasOutcome = !!(outcomeEntity.size);
+
+          return state
+            .set(RELEASE_COND.SELECTED_HEARING, hearing)
+            .set(RELEASE_COND.HAS_OUTCOME, hasOutcome)
+            .set(RELEASE_COND.HEARING_NEIGHBORS, hearingNeighborsByAppTypeFqn);
+        },
+        FINALLY: () => state.set(RELEASE_COND.SUBMITTING_RELEASE_CONDITIONS, false),
       });
     }
 
@@ -146,6 +170,33 @@ export default function releaseConditionsReducer(state :Map<*, *> = INITIAL_STAT
           return state.set(RELEASE_COND.HEARING_NEIGHBORS, hearingNeighborsByAppTypeFqn);
         },
         FINALLY: () => state.set(RELEASE_COND.REFRESHING_RELEASE_CONDITIONS, false),
+      });
+    }
+
+    case submitHearing.case(action.type): {
+      return submitHearing.reducer(state, action, {
+        SUCCESS: () => {
+          const { hearing, hearingNeighborsByAppTypeFqn } = action.value;
+          const selectedHearingNeighbors = state.set(RELEASE_COND.HEARING_NEIGHBORS, hearingNeighborsByAppTypeFqn);
+
+          return state
+            .set(RELEASE_COND.SELECTED_HEARING, hearing)
+            .set(RELEASE_COND.HEARING_NEIGHBORS, selectedHearingNeighbors);
+        },
+      });
+    }
+
+    case updateHearing.case(action.type): {
+      return updateHearing.reducer(state, action, {
+        SUCCESS: () => {
+          const { hearing, hearingJudge } = action.value;
+          const selectedHearingNeighbors = state.get(RELEASE_COND.HEARING_NEIGHBORS, Map())
+            .set(JUDGES, hearingJudge);
+
+          return state
+            .set(RELEASE_COND.SELECTED_HEARING, hearing)
+            .set(RELEASE_COND.HEARING_NEIGHBORS, selectedHearingNeighbors);
+        },
       });
     }
 

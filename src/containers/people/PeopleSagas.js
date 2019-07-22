@@ -1,9 +1,15 @@
 /*
  * @flow
  */
-import moment from 'moment';
+
+import { DateTime } from 'luxon';
 import { Constants, DataApi, SearchApi } from 'lattice';
-import { SearchApiActions, SearchApiSagas } from 'lattice-sagas';
+import {
+  DataApiActions,
+  DataApiSagas,
+  SearchApiActions,
+  SearchApiSagas
+} from 'lattice-sagas';
 import {
   Map,
   List,
@@ -30,17 +36,19 @@ import {
   GET_PEOPLE,
   GET_PERSON_DATA,
   GET_PERSON_NEIGHBORS,
+  GET_STAFF_EKIDS,
   LOAD_REQUIRES_ACTION_PEOPLE,
   REFRESH_PERSON_NEIGHBORS,
-  UPDATE_CONTACT_INFORMATION,
   getPeople,
   getPersonData,
   getPersonNeighbors,
+  getStaffEKIDs,
   loadRequiresActionPeople,
   refreshPersonNeighbors,
-  updateContactInfo
 } from './PeopleActionFactory';
 
+const { getEntitySetData } = DataApiActions;
+const { getEntitySetDataWorker } = DataApiSagas;
 const { searchEntityNeighborsWithFilter } = SearchApiActions;
 const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
 
@@ -50,7 +58,6 @@ const {
   CHECKIN_APPOINTMENTS,
   CONTACT_INFORMATION,
   DMF_RISK_FACTORS,
-  ENROLL_VOICE,
   FTAS,
   HEARINGS,
   MANUAL_CHARGES,
@@ -70,7 +77,12 @@ const {
   SPEAKER_RECOGNITION_PROFILES
 } = APP_TYPES;
 
-const { DATE_TIME, HEARING_TYPE } = PROPERTY_TYPES;
+const {
+  DATE_TIME,
+  ENTITY_KEY_ID,
+  HEARING_TYPE,
+  PERSON_ID
+} = PROPERTY_TYPES;
 
 const LIST_FQNS = [CHECKINS, CHECKIN_APPOINTMENTS, CONTACT_INFORMATION, HEARINGS, PRETRIAL_CASES, STAFF, CHARGES];
 
@@ -250,10 +262,15 @@ function* getPersonNeighborsWorker(action) :Generator<*, *, *> {
       const entitySetId = neighborObj.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
       const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
       const neighborEntityKeyId = neighborObj.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0], '');
-      const entityDateTime = moment(neighborObj.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.DATE_TIME, 0]));
+      const entityDateTime = DateTime.fromISO(
+        neighborObj.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.DATE_TIME, 0], '')
+      );
 
       if (appTypeFqn === PSA_SCORES) {
-        if (!mostRecentPSA.size || !currentPSADateTime || currentPSADateTime.isBefore(entityDateTime)) {
+        if (
+          entityDateTime.isValid
+          && (!mostRecentPSA.size || !currentPSADateTime || currentPSADateTime < entityDateTime)
+        ) {
           mostRecentPSA = neighborObj;
           currentPSADateTime = entityDateTime;
         }
@@ -415,6 +432,44 @@ function* getPersonNeighborsWatcher() :Generator<*, *, *> {
   yield takeEvery(GET_PERSON_NEIGHBORS, getPersonNeighborsWorker);
 }
 
+
+function* getStaffEKIDsWorker(action) :Generator<*, *, *> {
+
+  try {
+    yield put(getStaffEKIDs.request(action.id));
+    let staffIdsToEKIDS = Map();
+
+    const app = yield select(getApp);
+    const staffESID = getEntitySetIdFromApp(app, STAFF);
+    const staffEntities = yield call(
+      getEntitySetDataWorker,
+      getEntitySetData({ entitySetId: staffESID })
+    );
+    if (staffEntities.error) throw staffEntities.error;
+
+    fromJS(staffEntities.data).forEach((staffMember) => {
+      const {
+        [ENTITY_KEY_ID]: staffEKID,
+        [PERSON_ID]: staffId
+      } = getEntityProperties(staffMember, [ENTITY_KEY_ID, PERSON_ID]);
+      staffIdsToEKIDS = staffIdsToEKIDS.set(staffId, staffEKID);
+    });
+
+
+    yield put(getStaffEKIDs.success(action.id, staffIdsToEKIDS));
+  }
+  catch (error) {
+    yield put(getStaffEKIDs.failure(action.id, error));
+  }
+  finally {
+    yield put(getStaffEKIDs.finally(action.id));
+  }
+}
+
+function* getStaffEKIDsWatcher() :Generator<*, *, *> {
+  yield takeEvery(GET_STAFF_EKIDS, getStaffEKIDsWorker);
+}
+
 function* refreshPersonNeighborsWorker(action) :Generator<*, *, *> {
 
   const { personId } = action.value;
@@ -500,9 +555,15 @@ function* refreshPersonNeighborsWorker(action) :Generator<*, *, *> {
     neighborsList.forEach((neighbor) => {
       const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
       const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
-      const entityDateTime = moment(neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.DATE_TIME, 0]));
+      const entityDateTime = DateTime.fromISO(
+        neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.DATE_TIME, 0], '')
+      );
+
       if (appTypeFqn === PSA_SCORES) {
-        if (!mostRecentPSA || !currentPSADateTime || currentPSADateTime.isBefore(entityDateTime)) {
+        if (
+          entityDateTime.isValid
+          && (!mostRecentPSA.size || !currentPSADateTime || currentPSADateTime < entityDateTime)
+        ) {
           mostRecentPSA = neighbor;
           currentPSADateTime = entityDateTime;
         }
@@ -656,65 +717,6 @@ function* refreshPersonNeighborsWatcher() :Generator<*, *, *> {
   yield takeEvery(REFRESH_PERSON_NEIGHBORS, refreshPersonNeighborsWorker);
 }
 
-function* updateContactInfoWorker(action :SequenceAction) :Generator<*, *, *> {
-  const {
-    entities,
-    personId,
-    personEntityKeyId,
-    callback
-  } = action.value;
-
-  try {
-    yield put(updateContactInfo.request(action.id));
-    const app = yield select(getApp);
-    const orgId = yield select(getOrgId);
-    const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
-    const contactInformationEntitySetId = getEntitySetIdFromApp(app, CONTACT_INFORMATION);
-    const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
-
-    /* partially update contact info */
-    yield call(DataApi.updateEntityData, contactInformationEntitySetId, entities, 'PartialReplace');
-
-    /* get updated contact info for person */
-    let peopleNeighborsById = yield call(
-      searchEntityNeighborsWithFilterWorker,
-      searchEntityNeighborsWithFilter({
-        entitySetId: peopleEntitySetId,
-        filter: {
-          entityKeyIds: [personEntityKeyId],
-          sourceEntitySetIds: [contactInformationEntitySetId],
-          destinationEntitySetIds: [contactInformationEntitySetId]
-        }
-      })
-    );
-    if (peopleNeighborsById.error) throw peopleNeighborsById.error;
-    peopleNeighborsById = fromJS(peopleNeighborsById.data);
-    peopleNeighborsById = peopleNeighborsById.get(personEntityKeyId, List());
-
-    /* filter neighbors for contact info */
-    const contactInformation = peopleNeighborsById.filter((neighbor) => {
-      const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
-      const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
-      const isContactInfo = appTypeFqn === CONTACT_INFORMATION;
-      return isContactInfo;
-    });
-
-    if (callback) callback();
-
-    yield put(updateContactInfo.success(action.id, { personId, contactInformation }));
-  }
-  catch (error) {
-    yield put(updateContactInfo.failure(action.id, { error }));
-  }
-  finally {
-    yield put(updateContactInfo.finally(action.id));
-  }
-}
-
-function* updateContactInfoWatcher() :Generator<*, *, *> {
-  yield takeEvery(UPDATE_CONTACT_INFORMATION, updateContactInfoWorker);
-}
-
 function* loadRequiresActionPeopleWorker(action :SequenceAction) :Generator<*, *, *> {
   let psaScoreMap = Map();
   let psaScoresWithNoPendingCharges = Set();
@@ -858,11 +860,11 @@ function* loadRequiresActionPeopleWorker(action :SequenceAction) :Generator<*, *
         personNeighbors.get(PSA_SCORES, List()).forEach((psa) => {
           const psaId = psa.getIn([OPENLATTICE_ID_FQN, 0], '');
           let hasPendingCharges = false;
-          const psaDate = moment(psa.getIn([PROPERTY_TYPES.DATE_TIME, 0], ''));
+          const psaDate = DateTime.fromISO(psa.getIn([PROPERTY_TYPES.DATE_TIME, 0], ''));
           const hasFTASincePSA = personNeighbors.get(FTAS, List()).some((fta) => {
-            const ftaDateTime = fta.getIn([PROPERTY_TYPES.DATE_TIME, 0], '');
-            if (psaDate.isValid()) {
-              return psaDate.isBefore(ftaDateTime);
+            const ftaDateTime = DateTime.fromISO(fta.getIn([PROPERTY_TYPES.DATE_TIME, 0], ''));
+            if (psaDate.isValid) {
+              return psaDate < ftaDateTime;
             }
             return false;
           });
@@ -870,7 +872,7 @@ function* loadRequiresActionPeopleWorker(action :SequenceAction) :Generator<*, *
             peopleWithRecentFTAs = peopleWithRecentFTAs.add(personId);
             psaScoresWithRecentFTAs = psaScoresWithRecentFTAs.add(psaId);
           }
-          const arrestDate = moment(psaNeighborsById
+          const arrestDate = DateTime.fromISO(psaNeighborsById
             .getIn([psaId, MANUAL_PRETRIAL_CASES, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.ARREST_DATE_TIME, 0]));
           const { chargeHistoryForMostRecentPSA } = getCasesForPSA(
             personCaseHistory,
@@ -879,7 +881,7 @@ function* loadRequiresActionPeopleWorker(action :SequenceAction) :Generator<*, *
             arrestDate,
             undefined
           );
-          if (psaScoreMap.get(psaId) && arrestDate.isValid()) {
+          if (psaScoreMap.get(psaId) && arrestDate.isValid) {
             chargeHistoryForMostRecentPSA.entrySeq().forEach(([_, charges]) => {
               const psaHasPendingCharges = charges.some(charge => !charge.getIn([PROPERTY_TYPES.DISPOSITION_DATE, 0]));
               if (psaHasPendingCharges) hasPendingCharges = true;
@@ -923,7 +925,7 @@ export {
   getPeopleWatcher,
   getPersonDataWatcher,
   getPersonNeighborsWatcher,
+  getStaffEKIDsWatcher,
   loadRequiresActionPeopleWatcher,
-  refreshPersonNeighborsWatcher,
-  updateContactInfoWatcher
+  refreshPersonNeighborsWatcher
 };
