@@ -11,6 +11,5 @@ export const CONTACT_INFO_ACTIONS = {
 
 export const CONTACT_INFO_DATA = {
   SUBMITTED_CONTACT_INFO: 'submittedContact',
-  UPDATING_CONTACT_INFO: 'updatingContactInfo',
   UPDATED_CONTACTS: 'updatedContacts'
 };

@@ -39,8 +39,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     [CONTACT_INFO_ACTIONS.UPDATE_CONTACTS_BULK]: Map()
   },
   [CONTACT_INFO_DATA.SUBMITTED_CONTACT_INFO]: Map(),
-  [CONTACT_INFO_DATA.UPDATED_CONTACTS]: List(),
-  [CONTACT_INFO_DATA.UPDATING_CONTACT_INFO]: false,
+  [CONTACT_INFO_DATA.UPDATED_CONTACTS]: List()
 });
 
 export default function contactInfoReducer(state :Map<*, *> = INITIAL_STATE, action :Object) {
