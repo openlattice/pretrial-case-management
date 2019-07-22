@@ -163,6 +163,8 @@ export default function* sagas() :Generator<*, *, *> {
     fork(RoutingSagas.goToPathWatcher),
 
     // Subscriptions Sagas
-    fork(SubscriptionsSagas.loadSubcriptionModalWatcher)
+    fork(SubscriptionsSagas.loadSubcriptionModalWatcher),
+    fork(SubscriptionsSagas.subscribeWatcher),
+    fork(SubscriptionsSagas.unsubscribeWatcher)
   ]);
 }
