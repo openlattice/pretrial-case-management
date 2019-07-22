@@ -3,22 +3,57 @@
  */
 
 import { Map, List, fromJS } from 'immutable';
+import { RequestStates } from 'redux-reqseq';
 
-import { CLEAR_SUBSCRIPTION_MODAL, loadSubcriptionModal } from './SubscriptionsActionFactory';
-import { refreshPersonNeighbors } from '../people/PeopleActionFactory';
-import { submitContact, updateContactsBulk } from '../contactinformation/ContactInfoActions';
 
 import { APP_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_NEIGHBOR, SUBSCRIPTIONS } from '../../utils/consts/FrontEndStateConsts';
+import { REDUX } from '../../utils/consts/redux/SharedConsts';
+import { getEntityKeyId } from '../../utils/DataUtils';
+import { actionValueIsInvalid, getErrorStatus } from '../../utils/consts/redux/ReduxUtils';
+import { SUBSCRIPTION_ACTIONS, SUBSCRIPTION_DATA } from '../../utils/consts/redux/SubscriptionConsts';
+
+import { refreshPersonNeighbors } from '../people/PeopleActionFactory';
+import { submitContact, updateContactsBulk } from '../contactinformation/ContactInfoActions';
+import {
+  CLEAR_SUBSCRIPTION_MODAL,
+  loadSubcriptionModal,
+  subscribe,
+  unsubscribe
+} from './SubscriptionActions';
 
 const { CONTACT_INFORMATION, SUBSCRIPTION } = APP_TYPES;
 
+const {
+  FAILURE,
+  PENDING,
+  STANDBY,
+  SUCCESS
+} = RequestStates;
+
 const INITIAL_STATE :Map<*, *> = fromJS({
-  [SUBSCRIPTIONS.LOADING_SUBSCRIPTION_MODAL]: false,
-  [SUBSCRIPTIONS.CONTACT_INFO]: List(),
-  [SUBSCRIPTIONS.PERSON_NEIGHBORS]: Map(),
-  [SUBSCRIPTIONS.SUBSCRIPTION]: Map()
+  [REDUX.ACTIONS]: {
+    [SUBSCRIPTION_ACTIONS.LOAD_SUBSCRIPTION_MODAL]: {
+      [REDUX.REQUEST_STATE]: STANDBY
+    },
+    [SUBSCRIPTION_ACTIONS.SUBSCRIBE]: {
+      [REDUX.REQUEST_STATE]: STANDBY
+    },
+    [SUBSCRIPTION_ACTIONS.UNSUBSCRIBE]: {
+      [REDUX.REQUEST_STATE]: STANDBY
+    }
+  },
+  [REDUX.ERRORS]: {
+    [SUBSCRIPTION_ACTIONS.LOAD_SUBSCRIPTION_MODAL]: Map(),
+    [SUBSCRIPTION_ACTIONS.SUBSCRIBE]: Map(),
+    [SUBSCRIPTION_ACTIONS.UNSUBSCRIBE]: Map()
+  },
+  [SUBSCRIPTION_DATA.CONTACT_INFO]: Map(),
+  [SUBSCRIPTION_DATA.PERSON_NEIGHBORS]: Map(),
+  [SUBSCRIPTION_DATA.SUBSCRIPTION]: Map(),
+  [SUBSCRIPTION_DATA.SUBSCRIPTIONS_BY_ID]: Map()
 });
+
 export default function subscriptionsReducer(state :Map<*, *> = INITIAL_STATE, action :Object) {
   switch (action.type) {
 
@@ -26,15 +61,36 @@ export default function subscriptionsReducer(state :Map<*, *> = INITIAL_STATE, a
 
     case loadSubcriptionModal.case(action.type): {
       return loadSubcriptionModal.reducer(state, action, {
-        REQUEST: () => state.set(SUBSCRIPTIONS.LOADING_SUBSCRIPTION_MODAL, true),
+        REQUEST: () => state
+          .setIn([REDUX.ACTIONS, SUBSCRIPTION_ACTIONS.LOAD_SUBSCRIPTION_MODAL, action.id], fromJS(action))
+          .setIn([REDUX.ACTIONS, SUBSCRIPTION_ACTIONS.LOAD_SUBSCRIPTION_MODAL, REDUX.REQUEST_STATE], PENDING),
         SUCCESS: () => {
           const { personNeighbors } = action.value;
+          const contactInfo = personNeighbors.get(CONTACT_INFORMATION, List());
+          const subscription = personNeighbors.get(SUBSCRIPTION, Map());
+
+          const subscriptionEKID = getEntityKeyId(subscription);
+          const subscriptionsById = state
+            .get(SUBSCRIPTION_DATA.SUBSCRIPTIONS_BY_ID, Map()).set(subscriptionEKID, subscription);
           return state
-            .set(SUBSCRIPTIONS.PERSON_NEIGHBORS, personNeighbors)
-            .set(SUBSCRIPTIONS.CONTACT_INFO, personNeighbors.get(CONTACT_INFORMATION, List()))
-            .set(SUBSCRIPTIONS.SUBSCRIPTION, personNeighbors.get(SUBSCRIPTION, Map()));
+            .set(SUBSCRIPTION_DATA.PERSON_NEIGHBORS, personNeighbors)
+            .set(SUBSCRIPTION_DATA.CONTACT_INFO, contactInfo)
+            .set(SUBSCRIPTIONS.SUBSCRIPTION, subscription)
+            .set(SUBSCRIPTIONS.SUBSCRIPTIONS_BY_ID, subscriptionsById)
+            .setIn([REDUX.ACTIONS, SUBSCRIPTION_ACTIONS.LOAD_SUBSCRIPTION_MODAL, REDUX.REQUEST_STATE], SUCCESS);
         },
-        FINALLY: () => state.set(SUBSCRIPTIONS.LOADING_SUBSCRIPTION_MODAL, false)
+        FAILURE: () => {
+          if (actionValueIsInvalid(action.value)) {
+            return state;
+          }
+          const error = getErrorStatus(action);
+          return state
+            .set(SUBSCRIPTIONS.SUBSCRIPTION, Map())
+            .setIn([REDUX.ERRORS, SUBSCRIPTION_ACTIONS.LOAD_SUBSCRIPTION_MODAL], error)
+            .setIn([REDUX.ACTIONS, SUBSCRIPTION_ACTIONS.LOAD_SUBSCRIPTION_MODAL, REDUX.REQUEST_STATE], FAILURE);
+        },
+        FINALLY: () => state
+          .deleteIn([REDUX.ACTIONS, SUBSCRIPTION_ACTIONS.LOAD_SUBSCRIPTION_MODAL.SUBMIT_CONTACT, action.id])
       });
     }
 
@@ -80,6 +136,72 @@ export default function subscriptionsReducer(state :Map<*, *> = INITIAL_STATE, a
             .set(SUBSCRIPTIONS.PERSON_NEIGHBORS, personNeighbors)
             .set(SUBSCRIPTIONS.CONTACT_INFO, contactInformation);
         }
+      });
+    }
+
+    case subscribe.case(action.type): {
+      return subscribe.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([REDUX.ACTIONS, SUBSCRIPTION_ACTIONS.SUBSCRIBE, action.id], fromJS(action))
+          .setIn([REDUX.ACTIONS, SUBSCRIPTION_ACTIONS.SUBSCRIBE, REDUX.REQUEST_STATE], PENDING),
+        SUCCESS: () => {
+          const { subscriptionEKID, subscription } = action.value;
+          const personNeighbors = state
+            .get(SUBSCRIPTION_DATA.PERSON_NEIGHBORS, Map())
+            .set(SUBSCRIPTION, subscription);
+          const subscriptionsById = state
+            .get(SUBSCRIPTION_DATA.SUBSCRIPTIONS_BY_ID, Map()).set(subscriptionEKID, subscription);
+          return state
+            .set(SUBSCRIPTION_DATA.PERSON_NEIGHBORS, personNeighbors)
+            .set(SUBSCRIPTIONS.SUBSCRIPTION, subscription)
+            .set(SUBSCRIPTIONS.SUBSCRIPTIONS_BY_ID, subscriptionsById)
+            .setIn([REDUX.ACTIONS, SUBSCRIPTION_ACTIONS.SUBSCRIBE, REDUX.REQUEST_STATE], SUCCESS);
+        },
+        FAILURE: () => {
+          if (actionValueIsInvalid(action.value)) {
+            return state;
+          }
+          const error = getErrorStatus(action);
+          return state
+            .set(SUBSCRIPTIONS.SUBSCRIPTION, Map())
+            .setIn([REDUX.ERRORS, SUBSCRIPTION_ACTIONS.SUBSCRIBE], error)
+            .setIn([REDUX.ACTIONS, SUBSCRIPTION_ACTIONS.SUBSCRIBE, REDUX.REQUEST_STATE], FAILURE);
+        },
+        FINALLY: () => state
+          .deleteIn([REDUX.ACTIONS, SUBSCRIPTION_ACTIONS.SUBSCRIBE.SUBMIT_CONTACT, action.id])
+      });
+    }
+
+    case unsubscribe.case(action.type): {
+      return unsubscribe.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([REDUX.ACTIONS, SUBSCRIPTION_ACTIONS.UNSUBSCRIBE, action.id], fromJS(action))
+          .setIn([REDUX.ACTIONS, SUBSCRIPTION_ACTIONS.UNSUBSCRIBE, REDUX.REQUEST_STATE], PENDING),
+        SUCCESS: () => {
+          const { subscriptionEKID, subscription } = action.value;
+          const personNeighbors = state
+            .get(SUBSCRIPTION_DATA.PERSON_NEIGHBORS, Map())
+            .set(SUBSCRIPTION, subscription);
+          const subscriptionsById = state
+            .get(SUBSCRIPTION_DATA.SUBSCRIPTIONS_BY_ID, Map()).set(subscriptionEKID, subscription);
+          return state
+            .set(SUBSCRIPTION_DATA.PERSON_NEIGHBORS, personNeighbors)
+            .set(SUBSCRIPTIONS.SUBSCRIPTION, subscription)
+            .set(SUBSCRIPTIONS.SUBSCRIPTIONS_BY_ID, subscriptionsById)
+            .setIn([REDUX.ACTIONS, SUBSCRIPTION_ACTIONS.UNSUBSCRIBE, REDUX.REQUEST_STATE], SUCCESS);
+        },
+        FAILURE: () => {
+          if (actionValueIsInvalid(action.value)) {
+            return state;
+          }
+          const error = getErrorStatus(action);
+          return state
+            .set(SUBSCRIPTIONS.SUBSCRIPTION, Map())
+            .setIn([REDUX.ERRORS, SUBSCRIPTION_ACTIONS.UNSUBSCRIBE], error)
+            .setIn([REDUX.ACTIONS, SUBSCRIPTION_ACTIONS.UNSUBSCRIBE, REDUX.REQUEST_STATE], FAILURE);
+        },
+        FINALLY: () => state
+          .deleteIn([REDUX.ACTIONS, SUBSCRIPTION_ACTIONS.UNSUBSCRIBE.SUBMIT_CONTACT, action.id])
       });
     }
 
