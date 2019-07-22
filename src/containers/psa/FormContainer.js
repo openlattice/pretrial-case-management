@@ -886,11 +886,9 @@ class Form extends React.Component<Props, State> {
     const {
       allContacts,
       readOnlyPermissions,
-      refreshingPersonNeighbors,
       selectedPerson,
       selectedOrganizationSettings,
       subscription,
-      updatingEntity
     } = this.props;
     const courtRemindersEnabled = selectedOrganizationSettings.get(SETTINGS.COURT_REMINDERS, false);
     return courtRemindersEnabled
@@ -898,8 +896,6 @@ class Form extends React.Component<Props, State> {
         <ContextRow>
           <StyledColumnRow withPadding>
             <SubscriptionInfo
-                refreshingPersonNeighbors={refreshingPersonNeighbors}
-                updatingEntity={updatingEntity}
                 readOnly={readOnlyPermissions}
                 subscription={subscription}
                 contactInfo={allContacts}
