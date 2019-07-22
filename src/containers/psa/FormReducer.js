@@ -12,7 +12,7 @@ import {
 import { refreshPersonNeighbors } from '../people/PeopleActionFactory';
 import { submitContact, updateContactsBulk } from '../contactinformation/ContactInfoActions';
 import { changePSAStatus, updateScoresAndRiskFactors } from '../review/ReviewActionFactory';
-import { subscribe, unsubscribe } from '../subscription/SubscriptionsActionFactory';
+import { subscribe, unsubscribe } from '../subscription/SubscriptionActions';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA, NOTES, DMF } from '../../utils/consts/Consts';
 import { getMapByCaseId } from '../../utils/CaseUtils';
