@@ -15,6 +15,7 @@ export const STATE = {
   MANUAL_REMINDERS: 'manualReminders',
   PSA_MODAL: 'psaModal',
   PSA: 'psa',
+  PERSON: 'person',
   PEOPLE: 'people',
   RELEASE_CONDITIONS: 'releaseConditions',
   REMINDERS: 'reminders',
