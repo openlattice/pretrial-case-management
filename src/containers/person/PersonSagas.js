@@ -22,11 +22,11 @@ import {
 import {
   all,
   call,
+  push,
   put,
   takeEvery,
   select
 } from '@redux-saga/core/effects';
-import type { RequestSequence, SequenceAction } from 'redux-reqseq';
 
 import { toISODate } from '../../utils/FormattingUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
@@ -48,7 +48,7 @@ import {
   searchPeople,
   searchPeopleByPhoneNumber,
   updateCases,
-} from './PersonActionFactory';
+} from './PersonActions';
 
 import * as Routes from '../../core/router/Routes';
 
@@ -236,7 +236,7 @@ function* newPersonSubmitWorker(action) :Generator<*, *, *> {
       addressEntity,
       contactEntity,
       newPersonEntity
-    } = this.props;
+    } = action.value;
     /*
     * Get App and Edm state
     */
@@ -347,9 +347,8 @@ function* newPersonSubmitWorker(action) :Generator<*, *, *> {
     if (peopleNeighborsById.error) throw peopleNeighborsById.error;
     peopleNeighborsById = fromJS(peopleNeighborsById.data);
     const personNeighbors = peopleNeighborsById.get(personEKID);
-    let personNeighborsByAppTypeFqn = Map();
 
-    personNeighborsByAppTypeFqn = personNeighborsByAppTypeFqn.withMutations((map) => {
+    const personNeighborsByAppTypeFqn = Map().withMutations((map) => {
       personNeighbors.forEach((neighbor) => {
         const neighborObj = neighbor.get(PSA_NEIGHBOR.DETAILS, Map());
         const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
@@ -368,8 +367,11 @@ function* newPersonSubmitWorker(action) :Generator<*, *, *> {
         }
       });
     });
+    // TODO: update create psa flow to route you to creating a psa for this person upon submit
+    yield put(push(Routes.ROOT));
     yield put(newPersonSubmit.success(action.id, {
       person,
+      personEKID,
       personNeighborsByAppTypeFqn
     }));
   }
