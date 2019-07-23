@@ -83,7 +83,7 @@ import {
 } from '../../utils/Helpers';
 
 import * as FormActionFactory from './FormActionFactory';
-import * as PersonActionFactory from '../person/PersonActionFactory';
+import * as PersonActions from '../person/PersonActions';
 import * as ReviewActionFactory from '../review/ReviewActionFactory';
 import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
 import * as CourtActionFactory from '../court/CourtActionFactory';
@@ -1195,8 +1195,8 @@ function mapDispatchToProps(dispatch :Function) :Object {
     actions[action] = FormActionFactory[action];
   });
 
-  Object.keys(PersonActionFactory).forEach((action :string) => {
-    actions[action] = PersonActionFactory[action];
+  Object.keys(PersonActions).forEach((action :string) => {
+    actions[action] = PersonActions[action];
   });
 
   Object.keys(ReviewActionFactory).forEach((action :string) => {
