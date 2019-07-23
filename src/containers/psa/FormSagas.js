@@ -22,7 +22,7 @@ import {
 import { loadPSAData } from '../review/ReviewActionFactory';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { createIdObject, getEntityProperties } from '../../utils/DataUtils';
-import { getPropertyTypeId, getPropteryIdToValueMap } from '../../edm/edmUtils';
+import { getPropertyTypeId, getPropertyIdToValueMap } from '../../edm/edmUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_STATUSES } from '../../utils/consts/Consts';
 import { APP, STATE, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
@@ -779,13 +779,13 @@ function* submitPSAWorker(action :SequenceAction) :Generator<*, *, *> {
     /*
      * Assemble Entities
      */
-    const psaSubmitEntity = getPropteryIdToValueMap(psaEntity, edm);
+    const psaSubmitEntity = getPropertyIdToValueMap(psaEntity, edm);
     psaSubmitEntity[dateTimePTID] = [DateTime.local().toISO()];
-    const psaRiskFactorsSubmitEntity = getPropteryIdToValueMap(psaRiskFactorsEntity, edm);
-    const psaNotesSubmitEntity = getPropteryIdToValueMap(psaNotesEntity, edm);
-    const dmfResultsSubmitEntity = getPropteryIdToValueMap(dmfResultsEntity, edm);
-    const dmfRiskFactorsSubmitEntity = getPropteryIdToValueMap(dmfRiskFactorsEntity, edm);
-    const caseSubmitEntity = getPropteryIdToValueMap(caseEntity, edm);
+    const psaRiskFactorsSubmitEntity = getPropertyIdToValueMap(psaRiskFactorsEntity, edm);
+    const psaNotesSubmitEntity = getPropertyIdToValueMap(psaNotesEntity, edm);
+    const dmfResultsSubmitEntity = getPropertyIdToValueMap(dmfResultsEntity, edm);
+    const dmfRiskFactorsSubmitEntity = getPropertyIdToValueMap(dmfRiskFactorsEntity, edm);
+    const caseSubmitEntity = getPropertyIdToValueMap(caseEntity, edm);
 
     const entities = {
       [psaScoresESID]: [psaSubmitEntity],
@@ -1027,7 +1027,7 @@ function* submitPSAWorker(action :SequenceAction) :Generator<*, *, *> {
       entities[chargeESID] = [];
       associations[chargedWithESID] = [];
       chargeEntities.forEach((charge, index) => {
-        const chargeSubmitEntity = getPropteryIdToValueMap(charge, edm);
+        const chargeSubmitEntity = getPropertyIdToValueMap(charge, edm);
         const chargeToCaseAssociation = {
           data: appearsInData,
           srcEntityIndex: index,

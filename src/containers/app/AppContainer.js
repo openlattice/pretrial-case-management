@@ -5,7 +5,6 @@
 import React from 'react';
 
 import isFunction from 'lodash/isFunction';
-import { DateTime } from 'luxon';
 import styled from 'styled-components';
 import { AuthActions, AuthUtils } from 'lattice-auth';
 import { bindActionCreators } from 'redux';

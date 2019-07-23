@@ -9,8 +9,10 @@ import {
   Map
 } from 'immutable';
 
-import { updateContactInfo, refreshPersonNeighbors } from '../people/PeopleActionFactory';
+import { refreshPersonNeighbors } from '../people/PeopleActionFactory';
+import { submitContact, updateContactsBulk } from '../contactinformation/ContactInfoActions';
 import { changePSAStatus, updateScoresAndRiskFactors } from '../review/ReviewActionFactory';
+import { subscribe, unsubscribe } from '../subscription/SubscriptionActions';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA, NOTES, DMF } from '../../utils/consts/Consts';
 import { getMapByCaseId } from '../../utils/CaseUtils';
@@ -388,8 +390,18 @@ function formReducer(state :Map<> = INITIAL_STATE, action :Object) {
         .set(PSA_FORM.SUBMIT_ERROR, false);
     }
 
-    case updateContactInfo.case(action.type): {
-      return updateContactInfo.reducer(state, action, {
+    case submitContact.case(action.type): {
+      return submitContact.reducer(state, action, {
+        SUCCESS: () => {
+          const { contactInfo } = action.value;
+          const newContactInfo = state.get(PSA_FORM.ALL_CONTACTS, List()).push(contactInfo);
+          return state.set(PSA_FORM.ALL_CONTACTS, newContactInfo);
+        }
+      });
+    }
+
+    case updateContactsBulk.case(action.type): {
+      return updateContactsBulk.reducer(state, action, {
         SUCCESS: () => {
           const { contactInformation } = action.value;
           return state.set(PSA_FORM.ALL_CONTACTS, contactInformation);
@@ -449,6 +461,24 @@ function formReducer(state :Map<> = INITIAL_STATE, action :Object) {
         FINALLY: () => state
           .set(PSA_FORM.PSA_SUBMISSION_COMPLETE, true)
           .set(PSA_FORM.SUBMITTING_PSA, false)
+      });
+    }
+
+    case subscribe.case(action.type): {
+      return subscribe.reducer(state, action, {
+        SUCCESS: () => {
+          const { subscription } = action.value;
+          return state.setIn([PSA_FORM.SELECT_PERSON_NEIGHBORS, SUBSCRIPTION], subscription);
+        },
+      });
+    }
+
+    case unsubscribe.case(action.type): {
+      return unsubscribe.reducer(state, action, {
+        SUCCESS: () => {
+          const { subscription } = action.value;
+          return state.setIn([PSA_FORM.SELECT_PERSON_NEIGHBORS, SUBSCRIPTION], subscription);
+        },
       });
     }
 

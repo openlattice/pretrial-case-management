@@ -15,7 +15,7 @@ import InfoButton from '../../components/buttons/InfoButton';
 import LogoLoader from '../../components/LogoLoader';
 import SelectContactInfoTable from '../../components/contactinformation/SelectContactInfoTable';
 import StyledRadio from '../../components/controls/StyledRadio';
-import NewContactForm from '../people/NewContactForm';
+import NewContactForm from '../contactinformation/NewContactForm';
 import HearingCardsHolder from '../../components/hearings/HearingCardsHolder';
 import { formatPeopleInfo } from '../../utils/PeopleUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
@@ -24,13 +24,16 @@ import { filterContactsByType, getContactInfoFields } from '../../utils/ContactI
 import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
 import { REMINDER_TYPES } from '../../utils/RemindersUtils';
 import { CONTACT_METHODS } from '../../utils/consts/ContactInfoConsts';
+import { CONTACT_INFO_ACTIONS } from '../../utils/consts/redux/ContactInformationConsts';
+import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { getReqState, requestIsSuccess } from '../../utils/consts/redux/ReduxUtils';
+
 import {
   APP,
-  STATE,
   MANUAL_REMINDERS
 } from '../../utils/consts/FrontEndStateConsts';
 
-import { submitManualReminder } from './ManualRemindersActionFactory';
+import { clearManualRemindersForm, submitManualReminder } from './ManualRemindersActionFactory';
 
 const { CONTACT_INFORMATION, HEARINGS } = APP_TYPES;
 const {
@@ -101,6 +104,7 @@ type Props = {
   submittedManualReminder :Map<*, *>,
   submittingManualReminder :boolean,
   actions :{
+    clearSubmittedContact :() => void,
     submitManualReminder :(values :{
       contactInformationEKID :string,
       hearingEKID :string,
@@ -125,6 +129,16 @@ class ManualRemindersForm extends React.Component<Props, State> {
   constructor(props :Props) {
     super(props);
     this.state = INITIAL_STATE;
+  }
+
+  static getDerivedStateFromProps(nextProps, prevState) {
+    const { addingNewContact } = prevState;
+    const { submitContactReqState } = nextProps;
+    const contactInfoSubmissionComplete = requestIsSuccess(submitContactReqState);
+    if (contactInfoSubmissionComplete && addingNewContact) {
+      return { addingNewContact: false };
+    }
+    return null;
   }
 
   isReadyToSubmit = () :boolean => {
@@ -222,7 +236,6 @@ class ManualRemindersForm extends React.Component<Props, State> {
   }
 
   addingContactInformation = () => this.setState({ addingNewContact: true });
-  notAddingContactInformation = () => this.setState({ addingNewContact: false });
 
   renderAddContactButton = () => (
     <FlexContainer>
@@ -232,15 +245,14 @@ class ManualRemindersForm extends React.Component<Props, State> {
 
   renderContactForm = () => {
     const { person } = this.props;
-    const { personId } = formatPeopleInfo(person);
     const { addingNewContact } = this.state;
+    const personEKID = getEntityKeyId(person);
     return (
       <>
         <InputLabel>Add Contact</InputLabel>
         <NewContactForm
-            personId={personId}
-            editing={!!addingNewContact}
-            submitCallback={this.notAddingContactInformation} />
+            personEKID={personEKID}
+            editing={!!addingNewContact} />
       </>
     );
   }
@@ -382,10 +394,13 @@ class ManualRemindersForm extends React.Component<Props, State> {
 
 function mapStateToProps(state) {
   const app = state.get(STATE.APP);
+  const contactInfo = state.get(STATE.CONTACT_INFO);
   const manualReminders = state.get(STATE.MANUAL_REMINDERS);
   return {
     [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
     [APP.SELECTED_ORG_SETTINGS]: app.get(APP.SELECTED_ORG_SETTINGS),
+
+    submitContactReqState: getReqState(contactInfo, CONTACT_INFO_ACTIONS.SUBMIT_CONTACT),
 
     [MANUAL_REMINDERS.LOADING_FORM]: manualReminders.get(MANUAL_REMINDERS.LOADING_FORM),
     [MANUAL_REMINDERS.PEOPLE_NEIGHBORS]: manualReminders.get(MANUAL_REMINDERS.PEOPLE_NEIGHBORS),
@@ -399,7 +414,7 @@ function mapStateToProps(state) {
 
 function mapDispatchToProps(dispatch :Function) :Object {
   const actions :{ [string] :Function } = {};
-
+  actions.clearManualRemindersForm = clearManualRemindersForm;
   actions.submitManualReminder = submitManualReminder;
 
   return {

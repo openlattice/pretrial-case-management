@@ -1,4 +1,5 @@
 import moment from 'moment';
+import { DateTime } from 'luxon';
 import { Map } from 'immutable';
 
 import { SORT_TYPES } from './consts/Consts';
@@ -111,10 +112,10 @@ export const sortEntities = (entities, neighbors, shouldSortByDateTime, sort) =>
   }));
 
 export const hearingNeedsReminder = (hearing, date) => {
-  const today = date || moment();
+  const today = date || DateTime.local();
   const oneDayAhead = addWeekdays(today, 1);
   const oneWeekAhead = addWeekdays(today, 7);
   const { [PROPERTY_TYPES.DATE_TIME]: hearingDateTime } = getEntityProperties(hearing, [PROPERTY_TYPES.DATE_TIME]);
-  return moment(hearingDateTime).isSame(oneDayAhead, 'day')
-   || moment(hearingDateTime).isSame(oneWeekAhead, 'day');
+  return DateTime.fromISO(hearingDateTime).hasSame(oneDayAhead, 'day')
+   || DateTime.fromISO(hearingDateTime).hasSame(oneWeekAhead, 'day');
 };
