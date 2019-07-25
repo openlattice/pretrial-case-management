@@ -1,0 +1,131 @@
+/*
+ * @flow
+ */
+
+import React from 'react';
+import { Map, List } from 'immutable';
+import styled from 'styled-components';
+import moment from 'moment';
+
+import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { OL } from '../../utils/consts/Colors';
+import { psaIsClosed } from '../../utils/PSAUtils';
+import { PSA_NEIGHBOR, PSA_ASSOCIATION } from '../../utils/consts/FrontEndStateConsts';
+
+const {
+  ASSESSED_BY,
+  EDITED_BY,
+  STAFF,
+} = APP_TYPES;
+
+const MetadataWrapper = styled.div`
+  width: 100%;
+`;
+const MetadataSubWrapper = styled.div`
+  width: 100%;
+`;
+const MetadataText = styled.div`
+  width: 100%;
+  font-family: 'Open Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 300;
+  text-align: right;
+  margin: 10px 0 -30px -30px;
+  color: ${OL.GREY02};
+`;
+
+const ImportantMetadataText = styled.span`
+  color: ${OL.GREY15};
+`;
+
+const MetadataItem = styled.div`
+  height: 10px;
+  display: block;
+`;
+
+type Props = {
+  entitySetIdsToAppType :Map<*, *>,
+  psaNeighbors :Map<*, *>,
+  scores :Map<*, *>,
+};
+
+type State = {
+  open :boolean,
+  closing :boolean,
+  closePSAButtonActive :boolean
+};
+
+export default class PSAMetaData extends React.Component<Props, State> {
+
+  renderMetadataText = (actionText, dateText, user) => {
+    const text = [actionText];
+
+    if (dateText && dateText.length) {
+      text.push(' on ');
+      text.push(<ImportantMetadataText key={`${actionText}-${dateText}`}>{dateText}</ImportantMetadataText>);
+    }
+    if (user && user.length) {
+      text.push(' by ');
+      text.push(<ImportantMetadataText key={`${actionText}-${user}`}>{user}</ImportantMetadataText>);
+    }
+    return <MetadataText>{text}</MetadataText>;
+  }
+
+  render() {
+    const {
+      entitySetIdsToAppType,
+      psaNeighbors,
+      scores
+    } = this.props;
+    const dateFormat = 'MM/DD/YYYY hh:mm a';
+    let dateCreated;
+    let creator;
+    let dateEdited;
+    let editor;
+    dateCreated = moment(scores.getIn([PROPERTY_TYPES.DATE_TIME, 0], ''));
+
+    psaNeighbors.get(STAFF, List()).forEach((neighbor) => {
+      const associationEntitySetId = neighbor.getIn([PSA_ASSOCIATION.ENTITY_SET, 'id']);
+      const appTypFqn = entitySetIdsToAppType.get(associationEntitySetId, '');
+      const personId = neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.PERSON_ID, 0], '');
+      if (appTypFqn === ASSESSED_BY) {
+        creator = personId;
+        const maybeDate = moment(
+          neighbor.getIn(
+            [PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.COMPLETED_DATE_TIME, 0],
+            neighbor.getIn([PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.DATE_TIME, 0], dateCreated)
+          )
+        );
+        if (maybeDate.isValid()) dateCreated = maybeDate;
+      }
+      if (appTypFqn === EDITED_BY) {
+        const maybeDate = moment(neighbor.getIn([PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.DATE_TIME, 0], ''));
+        if (maybeDate.isValid()) {
+          if (!dateEdited || dateEdited.isBefore(maybeDate)) {
+            dateEdited = maybeDate;
+            editor = personId;
+          }
+        }
+      }
+    });
+
+    const isClosed = psaIsClosed(scores);
+    const editLabel = isClosed ? 'Closed' : 'Edited';
+    if (!(dateCreated || dateEdited) && !(creator || editor)) return null;
+
+    const dateCreatedText = dateCreated ? dateCreated.format(dateFormat) : '';
+    const dateEditedText = dateEdited ? dateEdited.format(dateFormat) : '';
+
+    return (
+      <MetadataWrapper>
+        <MetadataSubWrapper>
+          <MetadataItem>{this.renderMetadataText('Created', dateCreatedText, creator)}</MetadataItem>
+          { (dateEdited || editor)
+            ? <MetadataItem>{this.renderMetadataText(editLabel, dateEditedText, editor)}</MetadataItem>
+            : null
+          }
+        </MetadataSubWrapper>
+      </MetadataWrapper>
+    );
+  }
+}
