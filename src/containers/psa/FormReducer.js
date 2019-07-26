@@ -118,7 +118,6 @@ const INITIAL_STATE :Map<> = fromJS({
   [PSA_FORM.ALL_ARREST_CHARGES]: List(),
   [PSA_FORM.ALL_FTAS]: List(),
   [PSA_FORM.ALL_PSAS]: List(),
-  [PSA_FORM.SELECT_PERSON]: List(),
   [PSA_FORM.SUBSCRIPTION]: Map(),
   [PSA_FORM.ALL_MANUAL_CASES]: List(),
   [PSA_FORM.ALL_MANUAL_CHARGES]: Map(),
@@ -320,7 +319,7 @@ function formReducer(state :Map<> = INITIAL_STATE, action :Object) {
 
       const { selectedPretrialCase } = action.value;
 
-      const { [ENTITY_KEY_ID]: arrestCaseEKID } = getEntityProperties(selectedPretrialCase, [ENTITY_KEY_ID])
+      const { [ENTITY_KEY_ID]: arrestCaseEKID } = getEntityProperties(selectedPretrialCase, [ENTITY_KEY_ID]);
       const selectedCaseIdList = selectedPretrialCase.get(CASE_ID, List());
       const charges = state.get(PSA_FORM.ALL_ARREST_CHARGES)
         .filter(charge => getCaseAndChargeNum(charge)[0] === selectedCaseIdList.get(0))

@@ -19,6 +19,7 @@ import hearingsReducer from '../../containers/hearings/HearingsReducer';
 import manualRemindersReducer from '../../containers/manualreminders/ManualRemindersReducer';
 import psaModalReducer from '../../containers/psamodal/PSAModalReducer';
 import psaReducer from '../../containers/psa/FormReducer';
+import personReducer from '../../containers/person/PersonReducer';
 import peopleReducer from '../../containers/people/PeopleReducer';
 import releaseConditionsReducer from '../../containers/releaseconditions/ReleaseConditionsReducer';
 import remindersReducer from '../../containers/reminders/RemindersReducer';
@@ -47,6 +48,7 @@ export default function reduxReducer(routerHistory :any) {
     [STATE.PSA]: psaReducer,
     [STATE.PSA_MODAL]: psaModalReducer,
     [STATE.PEOPLE]: peopleReducer,
+    [STATE.PERSON]: personReducer,
     [STATE.RELEASE_CONDITIONS]: releaseConditionsReducer,
     [STATE.REMINDERS]: remindersReducer,
     [STATE.REVIEW]: reviewReducer,

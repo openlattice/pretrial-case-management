@@ -20,6 +20,7 @@ export const STATE = {
   PSA_MODAL: 'psaModal',
   PSA: 'psa',
   PEOPLE: 'people',
+  PERSON: 'person',
   RELEASE_CONDITIONS: 'releaseConditions',
   REMINDERS: 'reminders',
   REVIEW: 'review',
