@@ -43,8 +43,8 @@ import {
   ScaleWrapper
 } from '../../utils/Layout';
 
-import * as HearingsActionFactory from '../../containers/hearings/HearingsActionFactory';
-import * as RoutingActionFactory from '../../core/router/RoutingActionFactory';
+import { clearSubmittedHearing } from '../../containers/hearings/HearingsActionFactory';
+import { goToPath } from '../../core/router/RoutingActionFactory';
 import * as Routes from '../../core/router/Routes';
 
 type Props = {
@@ -503,9 +503,8 @@ class PSASubmittedPage extends React.Component<Props, State> {
 
   setHearing = () => {
     const { actions } = this.props;
-    const { clearSubmittedHearing } = actions;
     this.setState({ settingHearing: true });
-    clearSubmittedHearing();
+    actions.clearSubmittedHearing();
   };
 
   renderSetHearingButton = () => {
@@ -670,13 +669,8 @@ function mapStateToProps(state :Immutable.Map<*, *>) :Object {
 function mapDispatchToProps(dispatch :Function) :Object {
   const actions :{ [string] :Function } = {};
 
-  Object.keys(HearingsActionFactory).forEach((action :string) => {
-    actions[action] = HearingsActionFactory[action];
-  });
-
-  Object.keys(RoutingActionFactory).forEach((action :string) => {
-    actions[action] = RoutingActionFactory[action];
-  });
+  actions.clearSubmittedHearing = clearSubmittedHearing;
+  actions.goToPath = goToPath;
 
   return {
     actions: {
