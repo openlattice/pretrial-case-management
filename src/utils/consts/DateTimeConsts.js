@@ -1,5 +1,8 @@
 import Immutable from 'immutable';
 
+export const DATE_FORMAT = 'MM/dd/yyyy';
+export const TIME_FORMAT = 'h:mm a';
+
 export const TIMES = [
   '12:00 AM',
   '12:15 AM',
