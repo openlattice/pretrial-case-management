@@ -22,9 +22,12 @@ import {
   STATE
 } from '../../utils/consts/FrontEndStateConsts';
 
-import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
-import * as DataActionFactory from '../../utils/data/DataActionFactory';
-import * as ChargesActionFactory from './ChargesActionFactory';
+import {
+  createCharge,
+  deleteCharge,
+  loadCharges,
+  updateCharge
+} from './ChargesActionFactory';
 
 const MODAL_WIDTH = '800px';
 
@@ -61,33 +64,25 @@ type Props = {
   statute :string,
   selectedOrganizationId :string,
   actions :{
+    createCharge :(values :{
+      chargeType :string,
+      newChargeEntity :Object
+    }) => void,
     deleteCharge :(values :{
-      entityKeyId :string,
-      selectedOrganizationId :string,
-      chargePropertyType :string,
+      charge :Object,
+      chargeEKID :string,
+      chargeType :string,
     }) => void,
-    deleteEntity :(values :{
-      entityKeyId :string,
-      entitySetId :string,
-      entitySetName :string,
-    }) => void,
-    updateEntity :(values :{
-      entitySetId :string,
-      entities :string,
-      updateType :string,
-      callback :() => void
+    loadCharges :(values :{
+      selectedOrgId :string,
+      arrestChargesEntitySetId :string,
+      courtChargesEntitySetId :string,
     }) => void,
     updateCharge :(values :{
-      entityKeyId :string,
-      selectedOrganizationId :string,
-      chargePropertyType :string,
-    }) => void,
-    submit :(values :{
-      config :Map<*, *>,
-      values :Map<*, *>,
-      callback :() => void
-    }) => void,
-    replaceEntity :(value :{ entitySetName :string, entityKeyId :string, values :Object }) => void,
+      chargeType :string,
+      chargeEKID :string,
+      entities :Object,
+    }) => void
   },
 }
 
@@ -259,15 +254,14 @@ class NewChargeModal extends React.Component<Props, State> {
       onClose,
       existingCharge
     } = this.props;
-    const { createCharge, updateCharge } = actions;
 
     if (existingCharge) {
       const entities = this.getChargeUpdate();
-      updateCharge({ chargeType, chargeEKID: entityKeyId, entities });
+      actions.updateCharge({ chargeType, chargeEKID: entityKeyId, entities });
     }
     else {
       const newChargeEntity = this.getChargeFields();
-      createCharge({ chargeType, newChargeEntity });
+      actions.createCharge({ chargeType, newChargeEntity });
     }
     onClose();
   }
@@ -279,10 +273,9 @@ class NewChargeModal extends React.Component<Props, State> {
       entityKeyId,
       onClose,
     } = this.props;
-    const { deleteCharge } = actions;
     const charge = fromJS(this.getChargeFields());
 
-    deleteCharge({ charge, chargeEKID: entityKeyId, chargeType });
+    actions.deleteCharge({ charge, chargeEKID: entityKeyId, chargeType });
     onClose();
   }
 
@@ -389,17 +382,10 @@ function mapStateToProps(state) {
 function mapDispatchToProps(dispatch :Function) :Object {
   const actions :{ [string] :Function } = {};
 
-  Object.keys(ChargesActionFactory).forEach((action :string) => {
-    actions[action] = ChargesActionFactory[action];
-  });
-
-  Object.keys(DataActionFactory).forEach((action :string) => {
-    actions[action] = DataActionFactory[action];
-  });
-
-  Object.keys(SubmitActionFactory).forEach((action :string) => {
-    actions[action] = SubmitActionFactory[action];
-  });
+  actions.createCharge = createCharge;
+  actions.deleteCharge = deleteCharge;
+  actions.loadCharges = loadCharges;
+  actions.updateCharge = updateCharge;
 
   return {
     actions: {
