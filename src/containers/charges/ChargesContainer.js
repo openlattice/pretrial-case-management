@@ -44,11 +44,6 @@ type Props = {
   courtChargePermissions :boolean,
   selectedOrganizationId :string,
   location :Object,
-  actions :{
-    loadApp :RequestSequence;
-    loadCharges :RequestSequence;
-    logout :() => void;
-  };
 };
 
 const MAX_RESULTS = 20;
@@ -267,22 +262,4 @@ function mapStateToProps(state) {
   };
 }
 
-function mapDispatchToProps(dispatch :Function) :Object {
-  const actions :{ [string] :Function } = {};
-
-  Object.keys(AppActionFactory).forEach((action :string) => {
-    actions[action] = AppActionFactory[action];
-  });
-
-  Object.keys(ChargesActionFactory).forEach((action :string) => {
-    actions[action] = ChargesActionFactory[action];
-  });
-
-  return {
-    actions: {
-      ...bindActionCreators(actions, dispatch)
-    }
-  };
-}
-
-export default connect(mapStateToProps, mapDispatchToProps)(ManageChargesContainer);
+export default connect(mapStateToProps, null)(ManageChargesContainer);
