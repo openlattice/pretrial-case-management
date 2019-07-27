@@ -21,7 +21,7 @@ export const getMapFromEntityKeysToPropertyKeys = (entity :Object, entityKeyId :
   return entityObject;
 };
 
-export const getPropteryIdToValueMap = (entity :Object, edm :Map) => {
+export const getPropertyIdToValueMap = (entity :Object, edm :Map) => {
   const entityObject = {};
   Object.keys(entity).forEach((key) => {
     const propertyTypeKeyId = getPropertyTypeId(edm, key);

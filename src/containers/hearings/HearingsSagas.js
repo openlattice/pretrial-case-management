@@ -27,7 +27,7 @@ import type { SequenceAction } from 'redux-reqseq';
 
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { createIdObject, getEntityProperties } from '../../utils/DataUtils';
-import { getPropertyTypeId, getPropteryIdToValueMap } from '../../edm/edmUtils';
+import { getPropertyTypeId, getPropertyIdToValueMap } from '../../edm/edmUtils';
 import { SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { HEARING_TYPES, PSA_STATUSES } from '../../utils/consts/Consts';
@@ -586,7 +586,7 @@ function* updateHearingWorker(action :SequenceAction) :Generator<*, *, *> {
     * Get Property Type Ids
     */
     const completedDatetimePTID = getPropertyTypeId(edm, COMPLETED_DATE_TIME);
-    const updatedHearingObject = getPropteryIdToValueMap(hearingEntity, edm);
+    const updatedHearingObject = getPropertyIdToValueMap(hearingEntity, edm);
 
     /*
      * Get Entity Set Ids

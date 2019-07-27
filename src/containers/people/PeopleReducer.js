@@ -16,7 +16,9 @@ import { PSA_STATUSES } from '../../utils/consts/Consts';
 import { editPSA } from '../psa/FormActionFactory';
 import { enrollVoice, getProfile } from '../enroll/EnrollActionFactory';
 import { changePSAStatus, updateScoresAndRiskFactors, loadPSAData } from '../review/ReviewActionFactory';
+import { submitContact, updateContactsBulk } from '../contactinformation/ContactInfoActions';
 import { deleteEntity } from '../../utils/data/DataActionFactory';
+import { subscribe, unsubscribe } from '../subscription/SubscriptionActions';
 import {
   refreshHearingAndNeighbors,
   submitExistingHearing,
@@ -30,8 +32,7 @@ import {
   getPersonNeighbors,
   getStaffEKIDs,
   loadRequiresActionPeople,
-  refreshPersonNeighbors,
-  updateContactInfo
+  refreshPersonNeighbors
 } from './PeopleActionFactory';
 
 const {
@@ -41,7 +42,8 @@ const {
   HEARINGS,
   PSA_SCORES,
   RELEASE_RECOMMENDATIONS,
-  STAFF
+  STAFF,
+  SUBSCRIPTION
 } = APP_TYPES;
 
 const {
@@ -420,14 +422,23 @@ export default function peopleReducer(state :Map = INITIAL_STATE, action :Object
       });
     }
 
-    case updateContactInfo.case(action.type): {
-      return updateContactInfo.reducer(state, action, {
-        REQUEST: () => state.set(PEOPLE.REFRESHING_PERSON_NEIGHBORS, true),
+    case submitContact.case(action.type): {
+      return submitContact.reducer(state, action, {
         SUCCESS: () => {
-          const { personId, contactInformation } = action.value;
-          return state.setIn([PEOPLE.NEIGHBORS, personId, CONTACT_INFORMATION], contactInformation);
-        },
-        FINALLY: () => state.set(PEOPLE.REFRESHING_PERSON_NEIGHBORS, false)
+          const { personEKID, contactInfo } = action.value;
+          const updatedContactInfo = state
+            .getIn([PEOPLE.NEIGHBORS, personEKID, CONTACT_INFORMATION], List()).push(contactInfo);
+          return state.setIn([PEOPLE.NEIGHBORS, personEKID, CONTACT_INFORMATION], updatedContactInfo);
+        }
+      });
+    }
+
+    case updateContactsBulk.case(action.type): {
+      return updateContactsBulk.reducer(state, action, {
+        SUCCESS: () => {
+          const { personEKID, contactInformation } = action.value;
+          return state.setIn([PEOPLE.NEIGHBORS, personEKID, CONTACT_INFORMATION], contactInformation);
+        }
       });
     }
 
@@ -448,6 +459,28 @@ export default function peopleReducer(state :Map = INITIAL_STATE, action :Object
           const personHearings = state.getIn([PEOPLE.NEIGHBORS, personEKID, HEARINGS], List()).push(hearing);
           return state.setIn([PEOPLE.NEIGHBORS, personEKID, HEARINGS], personHearings);
         }
+      });
+    }
+
+    case subscribe.case(action.type): {
+      return subscribe.reducer(state, action, {
+        SUCCESS: () => {
+          const { subscription } = action.value;
+          const personDetails = state.get(PEOPLE.PERSON_DATA, Map());
+          const { [PERSON_ID]: personID } = getEntityProperties(personDetails, [PERSON_ID]);
+          return state.setIn([PEOPLE.NEIGHBORS, personID, SUBSCRIPTION, PSA_NEIGHBOR.DETAILS], subscription);
+        },
+      });
+    }
+
+    case unsubscribe.case(action.type): {
+      return unsubscribe.reducer(state, action, {
+        SUCCESS: () => {
+          const { subscription } = action.value;
+          const personDetails = state.get(PEOPLE.PERSON_DATA, Map());
+          const { [PERSON_ID]: personID } = getEntityProperties(personDetails, [PERSON_ID]);
+          return state.setIn([PEOPLE.NEIGHBORS, personID, SUBSCRIPTION, PSA_NEIGHBOR.DETAILS], subscription);
+        },
       });
     }
 

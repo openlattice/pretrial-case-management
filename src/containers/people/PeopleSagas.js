@@ -39,14 +39,12 @@ import {
   GET_STAFF_EKIDS,
   LOAD_REQUIRES_ACTION_PEOPLE,
   REFRESH_PERSON_NEIGHBORS,
-  UPDATE_CONTACT_INFORMATION,
   getPeople,
   getPersonData,
   getPersonNeighbors,
   getStaffEKIDs,
   loadRequiresActionPeople,
   refreshPersonNeighbors,
-  updateContactInfo
 } from './PeopleActionFactory';
 
 const { getEntitySetData } = DataApiActions;
@@ -719,65 +717,6 @@ function* refreshPersonNeighborsWatcher() :Generator<*, *, *> {
   yield takeEvery(REFRESH_PERSON_NEIGHBORS, refreshPersonNeighborsWorker);
 }
 
-function* updateContactInfoWorker(action :SequenceAction) :Generator<*, *, *> {
-  const {
-    entities,
-    personId,
-    personEntityKeyId,
-    callback
-  } = action.value;
-
-  try {
-    yield put(updateContactInfo.request(action.id));
-    const app = yield select(getApp);
-    const orgId = yield select(getOrgId);
-    const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
-    const contactInformationEntitySetId = getEntitySetIdFromApp(app, CONTACT_INFORMATION);
-    const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
-
-    /* partially update contact info */
-    yield call(DataApi.updateEntityData, contactInformationEntitySetId, entities, 'PartialReplace');
-
-    /* get updated contact info for person */
-    let peopleNeighborsById = yield call(
-      searchEntityNeighborsWithFilterWorker,
-      searchEntityNeighborsWithFilter({
-        entitySetId: peopleEntitySetId,
-        filter: {
-          entityKeyIds: [personEntityKeyId],
-          sourceEntitySetIds: [contactInformationEntitySetId],
-          destinationEntitySetIds: [contactInformationEntitySetId]
-        }
-      })
-    );
-    if (peopleNeighborsById.error) throw peopleNeighborsById.error;
-    peopleNeighborsById = fromJS(peopleNeighborsById.data);
-    peopleNeighborsById = peopleNeighborsById.get(personEntityKeyId, List());
-
-    /* filter neighbors for contact info */
-    const contactInformation = peopleNeighborsById.filter((neighbor) => {
-      const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
-      const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
-      const isContactInfo = appTypeFqn === CONTACT_INFORMATION;
-      return isContactInfo;
-    });
-
-    if (callback) callback();
-
-    yield put(updateContactInfo.success(action.id, { personId, contactInformation }));
-  }
-  catch (error) {
-    yield put(updateContactInfo.failure(action.id, { error }));
-  }
-  finally {
-    yield put(updateContactInfo.finally(action.id));
-  }
-}
-
-function* updateContactInfoWatcher() :Generator<*, *, *> {
-  yield takeEvery(UPDATE_CONTACT_INFORMATION, updateContactInfoWorker);
-}
-
 function* loadRequiresActionPeopleWorker(action :SequenceAction) :Generator<*, *, *> {
   let psaScoreMap = Map();
   let psaScoresWithNoPendingCharges = Set();
@@ -988,6 +927,5 @@ export {
   getPersonNeighborsWatcher,
   getStaffEKIDsWatcher,
   loadRequiresActionPeopleWatcher,
-  refreshPersonNeighborsWatcher,
-  updateContactInfoWatcher
+  refreshPersonNeighborsWatcher
 };

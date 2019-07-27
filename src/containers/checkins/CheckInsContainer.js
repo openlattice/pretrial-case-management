@@ -28,7 +28,7 @@ import {
 } from '../../utils/consts/FrontEndStateConsts';
 
 import * as CheckInsActionFactory from './CheckInsActionFactory';
-import * as PersonActionFactory from '../person/PersonActionFactory';
+import * as PersonActions from '../person/PersonActions';
 
 const { CHECKINS, PEOPLE, HEARINGS } = APP_TYPES;
 
@@ -309,8 +309,8 @@ function mapDispatchToProps(dispatch :Function) :Object {
     actions[action] = CheckInsActionFactory[action];
   });
 
-  Object.keys(PersonActionFactory).forEach((action :string) => {
-    actions[action] = PersonActionFactory[action];
+  Object.keys(PersonActions).forEach((action :string) => {
+    actions[action] = PersonActions[action];
   });
 
   return {

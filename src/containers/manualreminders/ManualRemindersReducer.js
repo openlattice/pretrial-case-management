@@ -17,7 +17,8 @@ import {
   submitManualReminder
 } from './ManualRemindersActionFactory';
 import { refreshPersonNeighbors } from '../people/PeopleActionFactory';
-import { MANUAL_REMINDERS } from '../../utils/consts/FrontEndStateConsts';
+import { submitContact } from '../contactinformation/ContactInfoActions';
+import { MANUAL_REMINDERS, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { getEntityProperties } from '../../utils/DataUtils';
 
@@ -92,6 +93,20 @@ export default function manualRemindersReducer(state :Map<*, *> = INITIAL_STATE,
             .set(MANUAL_REMINDERS.MANUAL_REMINDER_NEIGHBORS, manualReminderNeighborsById);
         },
         FINALLY: () => state.set(MANUAL_REMINDERS.LOADING_REMINDER_NEIGHBORS, false)
+      });
+    }
+
+    case submitContact.case(action.type): {
+      return submitContact.reducer(state, action, {
+        SUCCESS: () => {
+          const { contactInfo } = action.value;
+          const contactEntity = Map().withMutations(map => map.set(PSA_NEIGHBOR.DETAILS, contactInfo));
+          const updatedContactInfo = state
+            .getIn([MANUAL_REMINDERS.PEOPLE_NEIGHBORS, CONTACT_INFORMATION], List()).push(contactEntity);
+          const nextState = state
+            .setIn([MANUAL_REMINDERS.PEOPLE_NEIGHBORS, CONTACT_INFORMATION], updatedContactInfo);
+          return nextState;
+        }
       });
     }
 

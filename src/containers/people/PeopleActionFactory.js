@@ -25,8 +25,6 @@ const getPersonNeighbors = newRequestSequence(GET_PERSON_NEIGHBORS);
 const GET_STAFF_EKIDS = 'GET_STAFF_EKIDS';
 const getStaffEKIDs = newRequestSequence(GET_STAFF_EKIDS);
 
-const UPDATE_CONTACT_INFORMATION = 'UPDATE_CONTACT_INFORMATION';
-const updateContactInfo = newRequestSequence(UPDATE_CONTACT_INFORMATION);
 
 export {
   CLEAR_PERSON,
@@ -36,13 +34,11 @@ export {
   GET_STAFF_EKIDS,
   LOAD_REQUIRES_ACTION_PEOPLE,
   REFRESH_PERSON_NEIGHBORS,
-  UPDATE_CONTACT_INFORMATION,
   clearPerson,
   getPeople,
   getPersonData,
   getPersonNeighbors,
   getStaffEKIDs,
   loadRequiresActionPeople,
-  refreshPersonNeighbors,
-  updateContactInfo
+  refreshPersonNeighbors
 };

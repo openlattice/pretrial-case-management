@@ -20,7 +20,7 @@ import {
 
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
-import { getPropteryIdToValueMap } from '../../edm/edmUtils';
+import { getPropertyIdToValueMap } from '../../edm/edmUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { MAX_HITS } from '../../utils/consts/Consts';
 import { APP, STATE } from '../../utils/consts/FrontEndStateConsts';
@@ -81,7 +81,7 @@ function* createChargeWorker(action :SequenceAction) :Generator<*, *, *> {
 
     const chargeESID = yield call(getChargeESID, chargeType);
 
-    const chargeSubmitEntity = getPropteryIdToValueMap(newChargeEntity, edm);
+    const chargeSubmitEntity = getPropertyIdToValueMap(newChargeEntity, edm);
 
     /*
     * Submit data and collect response

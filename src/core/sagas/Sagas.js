@@ -9,6 +9,7 @@ import { EntityDataModelApiSagas } from 'lattice-sagas';
 import * as AppSagas from '../../containers/app/AppSagas';
 import * as ChargesSagas from '../../containers/charges/ChargesSagas';
 import * as CheckInsSagas from '../../containers/checkins/CheckInsSagas';
+import * as ContactInfoSagas from '../../containers/contactinformation/ContactInfoSagas';
 import * as CourtSagas from '../../containers/court/CourtSagas';
 import * as PersonSagas from '../../containers/person/PersonSagas';
 import * as PeopleSagas from '../../containers/people/PeopleSagas';
@@ -55,6 +56,11 @@ export default function* sagas() :Generator<*, *, *> {
     fork(CheckInsSagas.createCheckinAppointmentsWatcher),
     fork(CheckInsSagas.loadCheckInAppointmentsForDateWatcher),
     fork(CheckInsSagas.loadCheckInNeighborsWatcher),
+
+    // ContactInfoSagas
+    fork(ContactInfoSagas.submitContactWatcher),
+    fork(ContactInfoSagas.updateContactWatcher),
+    fork(ContactInfoSagas.updateContactsBulkWatcher),
 
     // CourtSagas
     fork(CourtSagas.filterPeopleIdsWithOpenPSAsWatcher),
@@ -116,7 +122,6 @@ export default function* sagas() :Generator<*, *, *> {
     fork(PeopleSagas.getStaffEKIDsWatcher),
     fork(PeopleSagas.loadRequiresActionPeopleWatcher),
     fork(PeopleSagas.refreshPersonNeighborsWatcher),
-    fork(PeopleSagas.updateContactInfoWatcher),
 
     // PSA Modal Sagas
     fork(PSAModalSagas.loadPSAModalWatcher),
@@ -158,6 +163,8 @@ export default function* sagas() :Generator<*, *, *> {
     fork(RoutingSagas.goToPathWatcher),
 
     // Subscriptions Sagas
-    fork(SubscriptionsSagas.loadSubcriptionModalWatcher)
+    fork(SubscriptionsSagas.loadSubcriptionModalWatcher),
+    fork(SubscriptionsSagas.subscribeWatcher),
+    fork(SubscriptionsSagas.unsubscribeWatcher)
   ]);
 }

@@ -83,7 +83,7 @@ import {
 } from '../../utils/Helpers';
 
 import * as FormActionFactory from './FormActionFactory';
-import * as PersonActionFactory from '../person/PersonActionFactory';
+import * as PersonActions from '../person/PersonActions';
 import * as ReviewActionFactory from '../review/ReviewActionFactory';
 import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
 import * as CourtActionFactory from '../court/CourtActionFactory';
@@ -886,11 +886,9 @@ class Form extends React.Component<Props, State> {
     const {
       allContacts,
       readOnlyPermissions,
-      refreshingPersonNeighbors,
       selectedPerson,
       selectedOrganizationSettings,
       subscription,
-      updatingEntity
     } = this.props;
     const courtRemindersEnabled = selectedOrganizationSettings.get(SETTINGS.COURT_REMINDERS, false);
     return courtRemindersEnabled
@@ -898,8 +896,6 @@ class Form extends React.Component<Props, State> {
         <ContextRow>
           <StyledColumnRow withPadding>
             <SubscriptionInfo
-                refreshingPersonNeighbors={refreshingPersonNeighbors}
-                updatingEntity={updatingEntity}
                 readOnly={readOnlyPermissions}
                 subscription={subscription}
                 contactInfo={allContacts}
@@ -1199,8 +1195,8 @@ function mapDispatchToProps(dispatch :Function) :Object {
     actions[action] = FormActionFactory[action];
   });
 
-  Object.keys(PersonActionFactory).forEach((action :string) => {
-    actions[action] = PersonActionFactory[action];
+  Object.keys(PersonActions).forEach((action :string) => {
+    actions[action] = PersonActions[action];
   });
 
   Object.keys(ReviewActionFactory).forEach((action :string) => {
