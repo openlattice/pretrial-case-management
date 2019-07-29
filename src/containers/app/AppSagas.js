@@ -107,14 +107,16 @@ function* loadAppWorker(action :SequenceAction) :Generator<*, *, *> {
     const appSettingResults = yield all(appSettingCalls.toJS());
 
     let i = 0;
-    appSettingResults.map(({ hits }) => hits).forEach((setting) => {
-      const entitySetId = orgIds[i];
-      const settingsEntity = setting[0] || '{}';
-      const settings = JSON.parse(settingsEntity['ol.appdetails']);
-      settings[OPENLATTICE_ID_FQN] = settingsEntity[OPENLATTICE_ID_FQN][0];
-      appSettingsByOrgId = appSettingsByOrgId.set(entitySetId, fromJS(settings));
-      i += 1;
-    });
+    appSettingResults
+      .filter(({ hits }) => !!hits.length)
+      .map(({ hits }) => hits).forEach((setting) => {
+        const entitySetId = orgIds[i];
+        const settingsEntity = setting[0] || '{}';
+        const settings = JSON.parse(settingsEntity['ol.appdetails']);
+        settings[OPENLATTICE_ID_FQN] = settingsEntity[OPENLATTICE_ID_FQN][0];
+        appSettingsByOrgId = appSettingsByOrgId.set(entitySetId, fromJS(settings));
+        i += 1;
+      });
 
     yield put(loadApp.success(action.id, {
       app,
