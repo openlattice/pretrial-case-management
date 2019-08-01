@@ -44,7 +44,6 @@ import * as CourtActionFactory from './CourtActionFactory';
 import * as FormActionFactory from '../psa/FormActionFactory';
 import * as ReviewActionFactory from '../review/ReviewActionFactory';
 import * as PSAModalActionFactory from '../psamodal/PSAModalActionFactory';
-import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
 import * as DataActionFactory from '../../utils/data/DataActionFactory';
 
 const { PEOPLE } = APP_TYPES;
@@ -192,8 +191,6 @@ type Props = {
   county :string,
   peopleWithOpenPsas :Set<*>,
   peopleIdsToOpenPSAIds :Map<*>,
-  scoresAsMap :Map<*>,
-  submitting :boolean,
   peopleWithMultipleOpenPsas :Set<*>,
   peopleReceivingReminders :Set<*>,
   selectedOrganizationId :string,
@@ -204,7 +201,6 @@ type Props = {
     changeHearingFilters :({ county? :string, courtroom? :string }) => void,
     checkPSAPermissions :() => void,
     clearSubmit :() => void,
-    deleteEntity :(value :{ entitySetName :string, entityKeyId :string }) => void,
     downloadPSAReviewPDF :(values :{
       neighbors :Map<*, *>,
       scores :Map<*, *>
@@ -215,10 +211,6 @@ type Props = {
     }) => void,
     loadHearingsForDate :(date :Object) => void,
     loadJudges :() => void,
-    loadPSAsByDate :(filter :string) => void,
-    refreshPSANeighbors :({ id :string }) => void,
-    replaceEntity :(value :{ entitySetName :string, entityKeyId :string, values :Object }) => void,
-    submit :(value :{ config :Object, values :Object}) => void
   }
 };
 
@@ -620,10 +612,6 @@ function mapDispatchToProps(dispatch :Function) :Object {
 
   Object.keys(PSAModalActionFactory).forEach((action :string) => {
     actions[action] = PSAModalActionFactory[action];
-  });
-
-  Object.keys(SubmitActionFactory).forEach((action :string) => {
-    actions[action] = SubmitActionFactory[action];
   });
 
   Object.keys(DataActionFactory).forEach((action :string) => {
