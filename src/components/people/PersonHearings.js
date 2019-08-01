@@ -19,9 +19,7 @@ import InfoButton from '../buttons/InfoButton';
 import HearingsTable from '../hearings/HearingsTable';
 import ReleaseConditionsModal from '../releaseconditions/ReleaseConditionsModal';
 import LogoLoader from '../LogoLoader';
-import psaHearingConfig from '../../config/formconfig/PSAHearingConfig';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
-import { FORM_IDS, ID_FIELD_NAMES } from '../../utils/consts/Consts';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import {
   APP,
@@ -77,13 +75,6 @@ const TitleWrapper = styled.div`
   align-items: center;
 `;
 
-const StyledInfoButton = styled(InfoButton)`
-  width: 178px;
-  height: 40px;
-  padding: 0;
-  margin: 0;
-`;
-
 type Props = {
   app :Map<*, *>,
   chargeHistory :Map<*, *>,
@@ -108,7 +99,6 @@ type Props = {
       entitySetId :string,
       entityKeyId :string
     }) => void,
-    loadHearingNeighbors :(hearingIds :string[]) => void,
     submit :(values :{
       app :Map<*, *>,
       config :Map<*, *>,
@@ -171,43 +161,6 @@ class PersonHearings extends React.Component<Props, State> {
   onClose = () => this.setState({
     releaseConditionsModalOpen: false
   })
-
-
-  renderCreateHearingButton = () => (
-    <StyledInfoButton onClick={this.manuallyCreatingHearing}>Create New Hearing</StyledInfoButton>
-  )
-
-  renderAddHearingButton = () => (
-    <StyledInfoButton onClick={this.openNewHearingModal}>Add New Hearing</StyledInfoButton>
-  )
-
-  selectHearing = (hearingDetails) => {
-    const {
-      app,
-      psaId,
-      personId,
-      psaEntityKeyId,
-      actions
-    } = this.props;
-
-    const values = Object.assign({}, hearingDetails, {
-      [ID_FIELD_NAMES.PSA_ID]: psaId,
-      [FORM_IDS.PERSON_ID]: personId
-    });
-
-    const callback = psaEntityKeyId ? () => actions.refreshPSANeighbors({ id: psaEntityKeyId }) : () => {};
-    actions.submit({
-      app,
-      values,
-      config: psaHearingConfig,
-      callback
-    });
-  }
-
-  selectExistingHearing = (row, hearingId) => {
-    const hearingWithOnlyId = { [ID_FIELD_NAMES.HEARING_ID]: hearingId };
-    this.selectHearing(hearingWithOnlyId);
-  }
 
   selectingReleaseConditions = (row, hearingId, entityKeyId) => {
     this.setState({
@@ -334,10 +287,10 @@ function mapStateToProps(state) {
     [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
     [APP.SELECTED_ORG_SETTINGS]: app.get(APP.SELECTED_ORG_SETTINGS),
 
-    [COURT.LOADING_HEARING_NEIGHBORS]: court.get(COURT.LOADING_HEARING_NEIGHBORS),
-    [COURT.HEARINGS_NEIGHBORS_BY_ID]: court.get(COURT.HEARINGS_NEIGHBORS_BY_ID),
     [COURT.ALL_JUDGES]: court.get(COURT.ALL_JUDGES),
 
+    [HEARINGS.LOADING_HEARING_NEIGHBORS]: hearings.get(HEARINGS.LOADING_HEARING_NEIGHBORS),
+    [HEARINGS.HEARING_NEIGHBORS_BY_ID]: hearings.get(HEARINGS.HEARING_NEIGHBORS_BY_ID),
     [HEARINGS.REFRESHING_HEARING_AND_NEIGHBORS]: hearings.get(HEARINGS.REFRESHING_HEARING_AND_NEIGHBORS),
 
     [EDM.FQN_TO_ID]: edm.get(EDM.FQN_TO_ID),

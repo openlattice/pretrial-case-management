@@ -9,6 +9,7 @@ import { combineReducers } from 'redux-immutable';
 import appReducer from '../../containers/app/AppReducer';
 import chargesReducer from '../../containers/charges/ChargesReducer';
 import checkInsReducer from '../../containers/checkins/CheckInsReducer';
+import contactInfoReducer from '../../containers/contactinformation/ContactInfoReducer';
 import courtReducer from '../../containers/court/CourtReducer';
 import dashboardReducer from '../../containers/dashboard/DashboardReducer';
 import downloadReducer from '../../containers/download/DownloadReducer';
@@ -18,6 +19,7 @@ import hearingsReducer from '../../containers/hearings/HearingsReducer';
 import manualRemindersReducer from '../../containers/manualreminders/ManualRemindersReducer';
 import psaModalReducer from '../../containers/psamodal/PSAModalReducer';
 import psaReducer from '../../containers/psa/FormReducer';
+import personReducer from '../../containers/person/PersonReducer';
 import peopleReducer from '../../containers/people/PeopleReducer';
 import releaseConditionsReducer from '../../containers/releaseconditions/ReleaseConditionsReducer';
 import remindersReducer from '../../containers/reminders/RemindersReducer';
@@ -35,6 +37,7 @@ export default function reduxReducer(routerHistory :any) {
     [STATE.AUTH]: AuthReducer,
     [STATE.CHARGES]: chargesReducer,
     [STATE.CHECK_INS]: checkInsReducer,
+    [STATE.CONTACT_INFO]: contactInfoReducer,
     [STATE.COURT]: courtReducer,
     [STATE.DASHBOARD]: dashboardReducer,
     [STATE.DOWNLOAD]: downloadReducer,
@@ -45,6 +48,7 @@ export default function reduxReducer(routerHistory :any) {
     [STATE.PSA]: psaReducer,
     [STATE.PSA_MODAL]: psaModalReducer,
     [STATE.PEOPLE]: peopleReducer,
+    [STATE.PERSON]: personReducer,
     [STATE.RELEASE_CONDITIONS]: releaseConditionsReducer,
     [STATE.REMINDERS]: remindersReducer,
     [STATE.REVIEW]: reviewReducer,

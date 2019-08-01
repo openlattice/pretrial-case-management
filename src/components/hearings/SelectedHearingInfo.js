@@ -4,15 +4,26 @@
 
 import React from 'react';
 import styled from 'styled-components';
+import { Map } from 'immutable';
 
 import InfoButton from '../buttons/InfoButton';
 import closeX from '../../assets/svg/close-x-gray.svg';
 import { OL } from '../../utils/consts/Colors';
-import { HEARING } from '../../utils/consts/Consts';
+import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { formatJudgeName } from '../../utils/HearingUtils';
+import { getEntityProperties } from '../../utils/DataUtils';
 import { formatDate, formatDateTime } from '../../utils/FormattingUtils';
 
+const { JUDGES } = APP_TYPES;
+
+const {
+  COURTROOM,
+  DATE_TIME,
+} = PROPERTY_TYPES;
+
 type Props = {
-  hearing :Object,
+  hearing :Map<*, *>,
+  hearingNeighbors :Map<*, *>,
   onClose :() => void,
   setHearing :() => void
 };
@@ -74,41 +85,53 @@ const InfoItem = styled.div`
   }
 `;
 
-const SelectedHearingInfo = ({ hearing, setHearing, onClose } :Props) => (
-  <Container>
-    <CloseButtonWrapper>
-      <button onClick={onClose}><img src={closeX} alt="" /></button>
-    </CloseButtonWrapper>
-    <div>
-      <InfoRow center>
-        <h1>Hearing schedule has been set.</h1>
-      </InfoRow>
+const SelectedHearingInfo = ({
+  hearing,
+  hearingNeighbors,
+  setHearing,
+  onClose
+} :Props) => {
+  const {
+    [DATE_TIME]: hearingDateTime,
+    [COURTROOM]: hearingCourtroom,
+  } = getEntityProperties(hearing, [DATE_TIME, COURTROOM]);
+  const judge = hearingNeighbors.get(JUDGES, Map());
+  const judgeName = formatJudgeName(judge);
+  return (
+    <Container>
+      <CloseButtonWrapper>
+        <button onClick={onClose}><img src={closeX} alt="" /></button>
+      </CloseButtonWrapper>
+      <div>
+        <InfoRow center>
+          <h1>Hearing schedule has been set.</h1>
+        </InfoRow>
 
-      <InfoRow>
-        <InfoItem>
-          <span>Date</span>
-          <div>{formatDate(hearing[HEARING.DATE_TIME])}</div>
-        </InfoItem>
-        <InfoItem>
-          <span>Time</span>
-          <div>{formatDateTime(hearing[HEARING.DATE_TIME], 'hh:mm a')}</div>
-        </InfoItem>
-        <InfoItem>
-          <span>Courtroom</span>
-          <div>{hearing[HEARING.COURTROOM]}</div>
-        </InfoItem>
-        <InfoItem>
-          <span>Judge</span>
-          <div>{hearing.judgeName}</div>
-        </InfoItem>
-      </InfoRow>
+        <InfoRow>
+          <InfoItem>
+            <span>Date</span>
+            <div>{formatDate(hearingDateTime)}</div>
+          </InfoItem>
+          <InfoItem>
+            <span>Time</span>
+            <div>{formatDateTime(hearingDateTime, 'hh:mm a')}</div>
+          </InfoItem>
+          <InfoItem>
+            <span>Courtroom</span>
+            <div>{hearingCourtroom}</div>
+          </InfoItem>
+          <InfoItem>
+            <span>Judge</span>
+            <div>{judgeName}</div>
+          </InfoItem>
+        </InfoRow>
 
-      <InfoRow center>
-        <InfoButton onClick={onClose}>Close</InfoButton>
-        <InfoButton onClick={setHearing}>Set Hearing</InfoButton>
-      </InfoRow>
-    </div>
-  </Container>
-);
-
+        <InfoRow center>
+          <InfoButton onClick={onClose}>Close</InfoButton>
+          <InfoButton onClick={setHearing}>Set Hearing</InfoButton>
+        </InfoRow>
+      </div>
+    </Container>
+  );
+}
 export default SelectedHearingInfo;

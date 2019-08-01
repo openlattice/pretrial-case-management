@@ -22,33 +22,16 @@ import SearchableSelect from '../../components/controls/SearchableSelect';
 import { GENDERS, STATES } from '../../utils/consts/Consts';
 import { toISODate } from '../../utils/FormattingUtils';
 import { phoneIsValid, emailIsValid } from '../../utils/ContactInfoUtils';
-import { STATE, SEARCH } from '../../utils/consts/FrontEndStateConsts';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
+import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUtils';
+import { PERSON_ACTIONS, PERSON_DATA } from '../../utils/consts/redux/PersonConsts';
 
-import * as PersonActionFactory from './PersonActionFactory';
+import * as PersonActions from './PersonActions';
 import * as FormActionFactory from '../psa/FormActionFactory';
 import * as RoutingActionFactory from '../../core/router/RoutingActionFactory';
 
-import {
-  ADDRESS_VALUE,
-  CITY_VALUE,
-  COUNTRY_VALUE,
-  DOB_VALUE,
-  ETHNICITY_VALUE,
-  FIRST_NAME_VALUE,
-  GENDER_VALUE,
-  ID_VALUE,
-  LAST_NAME_VALUE,
-  LIVES_AT_ID_VALUE,
-  MIDDLE_NAME_VALUE,
-  PICTURE_VALUE,
-  RACE_VALUE,
-  SSN_VALUE,
-  STATE_VALUE,
-  ZIP_VALUE,
-  newPersonSubmissionConfig
-} from './NewPersonSubmissionConfig';
 import * as Routes from '../../core/router/Routes';
 import {
   StyledFormWrapper,
@@ -66,6 +49,54 @@ import {
   Header,
   SubHeader
 } from '../../components/person/PersonFormTags';
+
+const {
+  ADDRESS,
+  CITY,
+  DOB,
+  EMAIL,
+  ETHNICITY,
+  FIRST_NAME,
+  GENERAL_ID,
+  IS_MOBILE,
+  LAST_NAME,
+  MIDDLE_NAME,
+  MUGSHOT,
+  PERSON_ID,
+  PHONE,
+  RACE,
+  SEX,
+  SSN,
+  STATE: STATE_PT,
+  ZIP
+} = PROPERTY_TYPES;
+
+const ADDRESS_PROPERTIES = [
+  ADDRESS,
+  CITY,
+  STATE_PT,
+  ZIP
+];
+
+const CONTACT_PROPERTIES = [
+  GENERAL_ID,
+  EMAIL,
+  PHONE,
+  IS_MOBILE
+];
+
+const PERSON_PROPERTIES = [
+  DOB,
+  ETHNICITY,
+  FIRST_NAME,
+  SEX,
+  LAST_NAME,
+  MIDDLE_NAME,
+  MUGSHOT,
+  RACE,
+  SSN,
+  PERSON_ID
+];
 
 /*
  * styled components
@@ -91,10 +122,8 @@ type Props = {
   location :{
     search :string
   },
-  app :Map<*, *>,
   isCreatingPerson :boolean,
   createPersonError :boolean,
-  history :string[]
 }
 
 type State = {
@@ -145,23 +174,22 @@ class NewPersonContainer extends React.Component<Props, State> {
     const dob = optionalParams[Routes.DOB] || '';
 
     this.state = {
-      [ADDRESS_VALUE]: '',
-      [CITY_VALUE]: '',
-      [COUNTRY_VALUE]: '',
-      [DOB_VALUE]: dob,
-      [ETHNICITY_VALUE]: '',
-      [FIRST_NAME_VALUE]: firstName,
-      [GENDER_VALUE]: '',
-      [LAST_NAME_VALUE]: lastName,
-      [MIDDLE_NAME_VALUE]: '',
-      [PICTURE_VALUE]: '',
-      [RACE_VALUE]: '',
-      [SSN_VALUE]: '',
-      [STATE_VALUE]: '',
-      [ZIP_VALUE]: '',
-      [PROPERTY_TYPES.EMAIL]: '',
-      [PROPERTY_TYPES.PHONE]: '',
-      [PROPERTY_TYPES.IS_MOBILE]: false,
+      [ADDRESS]: '',
+      [CITY]: '',
+      [DOB]: dob,
+      [ETHNICITY]: '',
+      [FIRST_NAME]: firstName,
+      [SEX]: '',
+      [LAST_NAME]: lastName,
+      [MIDDLE_NAME]: '',
+      [MUGSHOT]: '',
+      [RACE]: '',
+      [SSN]: '',
+      [STATE_PT]: '',
+      [ZIP]: '',
+      [EMAIL]: '',
+      [PHONE]: '',
+      [IS_MOBILE]: false,
       showSelfieWebCam: false
     };
   }
@@ -173,7 +201,7 @@ class NewPersonContainer extends React.Component<Props, State> {
 
   hasInvalidDOB = () => {
     const { state } = this;
-    const dob = state[DOB_VALUE];
+    const dob = state[DOB];
     const dobIsValid = moment(dob).isAfter('1/1/1900') && moment(dob).isBefore(moment());
     if (dob) return !dobIsValid;
     return undefined;
@@ -182,9 +210,9 @@ class NewPersonContainer extends React.Component<Props, State> {
   isReadyToSubmit = () :boolean => {
     const { isCreatingPerson } = this.props;
     const { state } = this;
-    const dob = state[DOB_VALUE];
+    const dob = state[DOB];
     const hasDOB = dob && !this.hasInvalidDOB();
-    const hasName = !!state[FIRST_NAME_VALUE] && !!state[LAST_NAME_VALUE];
+    const hasName = !!state[FIRST_NAME] && !!state[LAST_NAME];
     const phoneFormatIsCorrect = this.phoneNumValid();
     const emailFormatIsCorrect = this.emailAddValid();
     return !isCreatingPerson && hasDOB && hasName && phoneFormatIsCorrect && emailFormatIsCorrect;
@@ -195,7 +223,7 @@ class NewPersonContainer extends React.Component<Props, State> {
     const dobValue = toISODate(dobMoment) || '';
 
     this.setState({
-      [DOB_VALUE]: dobValue
+      [DOB]: dobValue
     });
   }
 
@@ -242,50 +270,59 @@ class NewPersonContainer extends React.Component<Props, State> {
   handleOnSelfieCapture = (selfieDataAsBase64 :?string) => {
 
     this.setState({
-      [PICTURE_VALUE]: selfieDataAsBase64 || ''
+      [MUGSHOT]: selfieDataAsBase64 || ''
     });
   }
 
-  submitNewPerson = () => {
-    const { actions, app } = this.props;
+  getAddressEntity = () => {
     const { state } = this;
-    const config = newPersonSubmissionConfig;
+    const addressEntity = {};
+    ADDRESS_PROPERTIES.forEach((property) => {
+      if (state[property]) addressEntity[property] = state[property]
+    })
+    return addressEntity
+  }
+
+  getContactEntity = () => {
+    const { state } = this;
+    const contactEntity = {};
+    CONTACT_PROPERTIES.forEach((property) => {
+      if (state[property]) contactEntity[property] = state[property]
+    })
+    return contactEntity
+  }
+
+
+  submitNewPerson = () => {
+    const { actions } = this.props;
+    const { state } = this;
 
     if (this.selfieWebCam) {
       this.selfieWebCam.closeMediaStream();
     }
 
-    const firstName = state[FIRST_NAME_VALUE] ? state[FIRST_NAME_VALUE].toUpperCase() : null;
-    const middleName = state[MIDDLE_NAME_VALUE] ? state[MIDDLE_NAME_VALUE].toUpperCase() : null;
-    const lastName = state[LAST_NAME_VALUE] ? state[LAST_NAME_VALUE].toUpperCase() : null;
+    const firstName = state[FIRST_NAME] ? state[FIRST_NAME].toUpperCase() : null;
+    const middleName = state[MIDDLE_NAME] ? state[MIDDLE_NAME].toUpperCase() : null;
+    const lastName = state[LAST_NAME] ? state[LAST_NAME].toUpperCase() : null;
 
-    const picture = state[PICTURE_VALUE] ? { 'content-type': 'image/png', data: state[PICTURE_VALUE] } : null;
+    const picture = state[MUGSHOT] ? { 'content-type': 'image/png', data: state[MUGSHOT] } : null;
+    const addressEntity = this.getAddressEntity();
+    const contactEntity = this.getContactEntity();
+    const newPersonEntity = {};
+    PERSON_PROPERTIES.forEach((property) => {
+      if (state[property]) newPersonEntity[property] = state[property];
+    });
 
-    const values = {
-      [ADDRESS_VALUE]: state[ADDRESS_VALUE] || null,
-      [CITY_VALUE]: state[CITY_VALUE],
-      [COUNTRY_VALUE]: state[COUNTRY_VALUE] || null,
-      [DOB_VALUE]: state[DOB_VALUE] || null,
-      [ETHNICITY_VALUE]: state[ETHNICITY_VALUE] || null,
-      [FIRST_NAME_VALUE]: firstName,
-      [GENDER_VALUE]: state[GENDER_VALUE] || null,
-      [LAST_NAME_VALUE]: lastName,
-      [MIDDLE_NAME_VALUE]: middleName,
-      [PICTURE_VALUE]: picture,
-      [RACE_VALUE]: state[RACE_VALUE] || null,
-      [SSN_VALUE]: state[SSN_VALUE] || null,
-      [STATE_VALUE]: state[STATE_VALUE] || null,
-      [ZIP_VALUE]: state[ZIP_VALUE] || null,
-      [ID_VALUE]: uuid(),
-      [LIVES_AT_ID_VALUE]: uuid(),
-      [PROPERTY_TYPES.GENERAL_ID]: uuid(),
-      [PROPERTY_TYPES.EMAIL]: state[PROPERTY_TYPES.EMAIL] || null,
-      [PROPERTY_TYPES.PHONE]: state[PROPERTY_TYPES.PHONE] || null,
-      [PROPERTY_TYPES.IS_MOBILE]: state[PROPERTY_TYPES.IS_MOBILE] || null,
-      [PROPERTY_TYPES.CONTACT_INFO_GIVEN_ID]: uuid()
-    };
-
-    actions.newPersonSubmit({ app, config, values });
+    newPersonEntity[FIRST_NAME] = firstName;
+    newPersonEntity[LAST_NAME] = lastName;
+    newPersonEntity[MIDDLE_NAME] = middleName;
+    newPersonEntity[PERSON_ID] = uuid();
+    if (picture) newPersonEntity[MUGSHOT] = picture;
+    actions.newPersonSubmit({
+      addressEntity,
+      contactEntity,
+      newPersonEntity
+    });
   }
 
   getOptionsMap = valueList => valueList.map(value => <option key={value} value={value}>{value}</option>);
@@ -344,15 +381,15 @@ class NewPersonContainer extends React.Component<Props, State> {
             <InputRow numColumns={3}>
               <InputGroup>
                 <InputLabel>Last name*</InputLabel>
-                {this.renderInput(LAST_NAME_VALUE)}
+                {this.renderInput(LAST_NAME)}
               </InputGroup>
               <InputGroup>
                 <InputLabel>First name*</InputLabel>
-                {this.renderInput(FIRST_NAME_VALUE)}
+                {this.renderInput(FIRST_NAME)}
               </InputGroup>
               <InputGroup>
                 <InputLabel>Middle name</InputLabel>
-                {this.renderInput(MIDDLE_NAME_VALUE)}
+                {this.renderInput(MIDDLE_NAME)}
               </InputGroup>
             </InputRow>
 
@@ -361,27 +398,27 @@ class NewPersonContainer extends React.Component<Props, State> {
                 <InputLabel>Date of birth*</InputLabel>
                 <DatePicker
                     isInvalid={this.hasInvalidDOB()}
-                    value={state[DOB_VALUE]}
+                    value={state[DOB]}
                     onChange={this.handleOnChangeDateOfBirth} />
               </InputGroup>
               <InputGroup>
                 <InputLabel>Gender</InputLabel>
-                {this.getSelect(GENDER_VALUE, GENDERS)}
+                {this.getSelect(SEX, GENDERS)}
               </InputGroup>
               <InputGroup>
                 <InputLabel>Social Security #</InputLabel>
-                {this.renderInput(SSN_VALUE)}
+                {this.renderInput(SSN)}
               </InputGroup>
             </InputRow>
 
             <InputRow numColumns={2}>
               <InputGroup>
                 <InputLabel>Race</InputLabel>
-                {this.getSelect(RACE_VALUE, RACES)}
+                {this.getSelect(RACE, RACES)}
               </InputGroup>
               <InputGroup>
                 <InputLabel>Ethnicity</InputLabel>
-                {this.getSelect(ETHNICITY_VALUE, ETHNICITIES)}
+                {this.getSelect(ETHNICITY, ETHNICITIES)}
               </InputGroup>
             </InputRow>
           </FormSection>
@@ -393,26 +430,22 @@ class NewPersonContainer extends React.Component<Props, State> {
             <InputRow other="66% 33%">
               <InputGroup>
                 <InputLabel>Address</InputLabel>
-                {this.renderInput(ADDRESS_VALUE)}
+                {this.renderInput(ADDRESS)}
               </InputGroup>
               <InputGroup>
                 <InputLabel>City</InputLabel>
-                {this.renderInput(CITY_VALUE)}
+                {this.renderInput(CITY)}
               </InputGroup>
             </InputRow>
 
-            <InputRow numColumns={3}>
+            <InputRow numColumns={2}>
               <InputGroup>
                 <InputLabel>State</InputLabel>
-                {this.getSelect(STATE_VALUE, STATES, true)}
-              </InputGroup>
-              <InputGroup>
-                <InputLabel>Country</InputLabel>
-                {this.renderInput(COUNTRY_VALUE)}
+                {this.getSelect(STATE_PT, STATES, true)}
               </InputGroup>
               <InputGroup>
                 <InputLabel>ZIP code</InputLabel>
-                {this.renderInput(ZIP_VALUE)}
+                {this.renderInput(ZIP)}
               </InputGroup>
             </InputRow>
           </FormSection>
@@ -456,13 +489,12 @@ class NewPersonContainer extends React.Component<Props, State> {
 }
 
 function mapStateToProps(state :Immutable.Map<*, *>) :Object {
-  const search = state.get(STATE.SEARCH);
-  const app = state.get(STATE.APP);
+  const person = state.get(STATE.PERSON);
 
   return {
-    app,
-    [SEARCH.CREATING_PERSON]: search.get(SEARCH.CREATING_PERSON),
-    [SEARCH.CREATE_PERSON_ERROR]: search.get(SEARCH.CREATE_PERSON_ERROR)
+    newPersonSubmitReqState: getReqState(person, PERSON_ACTIONS.NEW_PERSON_SUBMIT),
+    [PERSON_DATA.SUBMITTED_PERSON]: person.get(PERSON_DATA.SUBMITTED_PERSON),
+    [PERSON_DATA.SUBMITTED_PERSON_NEIGHBORS]: person.get(PERSON_DATA.SUBMITTED_PERSON_NEIGHBORS)
   };
 }
 
@@ -470,8 +502,8 @@ function mapStateToProps(state :Immutable.Map<*, *>) :Object {
 function mapDispatchToProps(dispatch :Function) :Object {
   const actions :{ [string] :Function } = {};
 
-  Object.keys(PersonActionFactory).forEach((action :string) => {
-    actions[action] = PersonActionFactory[action];
+  Object.keys(PersonActions).forEach((action :string) => {
+    actions[action] = PersonActions[action];
   });
 
   Object.keys(FormActionFactory).forEach((action :string) => {

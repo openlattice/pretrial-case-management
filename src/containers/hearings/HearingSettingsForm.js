@@ -33,7 +33,7 @@ import {
 
 import * as HearingsActionFactory from './HearingsActionFactory';
 
-const { PERSON_ID } = PROPERTY_TYPES;
+const { ENTITY_KEY_ID } = PROPERTY_TYPES;
 
 const StyledSearchableSelect = styled(SearchableSelect)`
   width: 200px;
@@ -108,7 +108,7 @@ const INITIAL_STATE = {
   newHearingDate: moment().format('MM/DD/YYYY'),
   newHearingTime: undefined,
   judge: '',
-  judgeId: ''
+  judgeEKID: ''
 };
 
 class HearingSettingsForm extends React.Component<Props, State> {
@@ -124,20 +124,20 @@ class HearingSettingsForm extends React.Component<Props, State> {
       [HEARINGS.DATE]: newHearingDate,
       [HEARINGS.TIME]: newHearingTime,
       [HEARINGS.COURTROOM]: newHearingCourtroom,
-      [HEARINGS.JUDGE]: judgeId
+      [HEARINGS.JUDGE]: judgeEKID
     } = this.props;
     let judge;
     allJudges.forEach((judgeObj) => {
-      const { [PERSON_ID]: hearingJudgeId } = getEntityProperties(judgeObj, [PERSON_ID]);
+      const { [ENTITY_KEY_ID]: hearingJudgeEKID } = getEntityProperties(judgeObj, [ENTITY_KEY_ID]);
       const fullNameString = formatJudgeName(judgeObj);
-      if (judgeId === hearingJudgeId) judge = fullNameString;
+      if (judgeEKID === hearingJudgeEKID) judge = fullNameString;
     });
     this.setState({
       newHearingCourtroom,
       newHearingDate,
       newHearingTime,
       judge,
-      judgeId,
+      judgeEKID,
     });
   }
 
@@ -146,13 +146,13 @@ class HearingSettingsForm extends React.Component<Props, State> {
       newHearingCourtroom,
       newHearingDate,
       newHearingTime,
-      judgeId
+      judgeEKID
     } = this.state;
     return (
       newHearingCourtroom
       || newHearingDate
       || newHearingTime
-      || judgeId
+      || judgeEKID
     );
   }
 
@@ -180,7 +180,7 @@ class HearingSettingsForm extends React.Component<Props, State> {
       case HEARING_CONSTS.JUDGE: {
         this.setState({
           [HEARING_CONSTS.JUDGE]: optionMap.get(HEARING_CONSTS.FULL_NAME),
-          [HEARING_CONSTS.JUDGE_ID]: optionMap.getIn([PROPERTY_TYPES.PERSON_ID, 0])
+          [HEARING_CONSTS.JUDGE_ID]: optionMap.getIn([ENTITY_KEY_ID, 0])
         });
         break;
       }
@@ -258,7 +258,7 @@ class HearingSettingsForm extends React.Component<Props, State> {
       newHearingTime: time,
       newHearingDate: date,
       newHearingCourtroom: courtroom,
-      judgeId: judge
+      judgeEKID: judge
     } = this.state;
     actions.setHearingSettings({
       date,
@@ -349,7 +349,9 @@ function mapStateToProps(state) {
   return {
     app,
     [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
+
     [COURT.ALL_JUDGES]: court.get(COURT.ALL_JUDGES),
+
     [HEARINGS.DATE]: hearings.get(HEARINGS.DATE),
     [HEARINGS.TIME]: hearings.get(HEARINGS.TIME),
     [HEARINGS.COURTROOM]: hearings.get(HEARINGS.COURTROOM),
