@@ -5,7 +5,6 @@
 import React from 'react';
 import styled from 'styled-components';
 import Modal, { ModalTransition } from '@atlaskit/modal-dialog';
-import { Map } from 'immutable';
 
 
 import EnrollVoice from '../../containers/enroll/EnrollVoice';
@@ -32,15 +31,7 @@ type Props = {
   personEntityKeyId :string,
   personName :string,
   open :() => void,
-  onClose :() => void,
-  actions :{
-    refreshPersonNeighbors :(values :{ personId :string }) => void,
-    submit :(values :{
-      config :Map<*, *>,
-      values :Map<*, *>,
-      callback :() => void
-    }) => void,
-  }
+  onClose :() => void
 }
 
 const MODAL_WIDTH = '750px';
