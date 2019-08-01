@@ -85,11 +85,9 @@ type Props = {
   personEKID :string,
   submitContactReqState :RequestState,
   actions :{
-    refreshPersonNeighbors :(values :{ personId :string }) => void,
-    submit :(values :{
-      config :Map<*, *>,
-      values :Map<*, *>,
-      callback :() => void
+    submitContact :(values :{
+      contactEntity :Object,
+      personEKID :string
     }) => void
   }
 }
