@@ -24,9 +24,6 @@ export const getUTCDateRangeSearchString = (PTID :UUID, startDate :DateTime, end
   return getSearchTermNotExact(PTID, dateRangeString);
 };
 
-export const DATE_FORMAT = 'MM/dd/yyyy';
-export const TIME_FORMAT = 'h:mm a';
-
 export const TIMES = [
   '12:00 AM',
   '12:15 AM',
