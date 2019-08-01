@@ -84,21 +84,13 @@ type Props = {
   manuallyCreatingHearing :boolean,
   allJudges :Map<*, *>,
   actions :{
-    submit :(values :{
-      config :Map<*, *>,
-      values :Map<*, *>,
-      callback :() => void
-    }) => void,
-    refreshPSANeighbors :({ id :string }) => void,
-    replaceAssociation :(values :{
-      associationEntity :Map<*, *>,
-      associationEntityName :string,
-      associationEntityKeyId :string,
-      srcEntityName :string,
-      srcEntityKeyId :string,
-      dstEntityName :string,
-      dstEntityKeyId :string,
-      callback :() => void
+    clearHearingSettings :() => void,
+    closeHearingSettingsModal :() => void,
+    setHearingSettings :(values :{
+      date :string,
+      time :string,
+      courtroom :string,
+      judge :string
     }) => void
   }
 }
