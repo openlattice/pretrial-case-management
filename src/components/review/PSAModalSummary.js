@@ -191,7 +191,7 @@ class PSAModalSummary extends React.Component<Props, *> {
     ];
 
     const content = generalContent.map(item => (
-      <ContentBlock>
+      <ContentBlock key={item.label}>
         <ContentLabel>{ item.label }</ContentLabel>
         <Content>{ item.content }</Content>
       </ContentBlock>
