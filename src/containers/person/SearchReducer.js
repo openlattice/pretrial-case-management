@@ -12,7 +12,7 @@ import {
   searchPeople,
   searchPeopleByPhoneNumber,
   updateCases,
-} from './PersonActionFactory';
+} from './PersonActions';
 
 import { SEARCH } from '../../utils/consts/FrontEndStateConsts';
 

@@ -22,9 +22,6 @@ import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { CHARGE_TYPES } from '../../utils/consts/ChargeConsts';
 
 import * as Routes from '../../core/router/Routes';
-import * as AppActionFactory from '../app/AppActionFactory';
-import * as ChargesActionFactory from './ChargesActionFactory';
-
 
 const ToolbarWrapper = styled.div`
   display: flex;
@@ -44,11 +41,6 @@ type Props = {
   courtChargePermissions :boolean,
   selectedOrganizationId :string,
   location :Object,
-  actions :{
-    loadApp :RequestSequence;
-    loadCharges :RequestSequence;
-    logout :() => void;
-  };
 };
 
 const MAX_RESULTS = 20;
@@ -267,22 +259,4 @@ function mapStateToProps(state) {
   };
 }
 
-function mapDispatchToProps(dispatch :Function) :Object {
-  const actions :{ [string] :Function } = {};
-
-  Object.keys(AppActionFactory).forEach((action :string) => {
-    actions[action] = AppActionFactory[action];
-  });
-
-  Object.keys(ChargesActionFactory).forEach((action :string) => {
-    actions[action] = ChargesActionFactory[action];
-  });
-
-  return {
-    actions: {
-      ...bindActionCreators(actions, dispatch)
-    }
-  };
-}
-
-export default connect(mapStateToProps, mapDispatchToProps)(ManageChargesContainer);
+export default connect(mapStateToProps, null)(ManageChargesContainer);

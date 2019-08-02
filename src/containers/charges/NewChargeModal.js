@@ -4,7 +4,7 @@
 
 import React from 'react';
 import styled from 'styled-components';
-import { Map, List } from 'immutable';
+import { fromJS, Map, List } from 'immutable';
 
 import Modal, { ModalTransition } from '@atlaskit/modal-dialog';
 import { connect } from 'react-redux';
@@ -12,22 +12,22 @@ import { bindActionCreators } from 'redux';
 
 import NewChargeForm from '../../components/managecharges/NewChargeForm';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
-import { arrestChargeConfig, courtChargeConfig } from '../../config/formconfig/ChargeConfig';
 import { CHARGE_TYPES } from '../../utils/consts/ChargeConsts';
-import { ID_FIELD_NAMES } from '../../utils/consts/Consts';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { Wrapper, TitleWrapper, CloseModalX } from '../../utils/Layout';
 import {
   APP,
   CHARGES,
   EDM,
-  STATE,
-  SUBMIT
+  STATE
 } from '../../utils/consts/FrontEndStateConsts';
 
-import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
-import * as DataActionFactory from '../../utils/data/DataActionFactory';
-import * as ChargesActionFactory from './ChargesActionFactory';
+import {
+  createCharge,
+  deleteCharge,
+  loadCharges,
+  updateCharge
+} from './ChargesActionFactory';
 
 const MODAL_WIDTH = '800px';
 
@@ -45,7 +45,6 @@ const Body = styled.div`
 
 type Props = {
   arrestEntitySetId :string,
-  app :Map<*, *>,
   chargeType :string,
   courtEntitySetId :string,
   creatingNew :boolean,
@@ -65,33 +64,25 @@ type Props = {
   statute :string,
   selectedOrganizationId :string,
   actions :{
+    createCharge :(values :{
+      chargeType :string,
+      newChargeEntity :Object
+    }) => void,
     deleteCharge :(values :{
-      entityKeyId :string,
-      selectedOrganizationId :string,
-      chargePropertyType :string,
+      charge :Object,
+      chargeEKID :string,
+      chargeType :string,
     }) => void,
-    deleteEntity :(values :{
-      entityKeyId :string,
-      entitySetId :string,
-      entitySetName :string,
-    }) => void,
-    updateEntity :(values :{
-      entitySetId :string,
-      entities :string,
-      updateType :string,
-      callback :() => void
+    loadCharges :(values :{
+      selectedOrgId :string,
+      arrestChargesEntitySetId :string,
+      courtChargesEntitySetId :string,
     }) => void,
     updateCharge :(values :{
-      entityKeyId :string,
-      selectedOrganizationId :string,
-      chargePropertyType :string,
-    }) => void,
-    submit :(values :{
-      config :Map<*, *>,
-      values :Map<*, *>,
-      callback :() => void
-    }) => void,
-    replaceEntity :(value :{ entitySetName :string, entityKeyId :string, values :Object }) => void,
+      chargeType :string,
+      chargeEKID :string,
+      entities :Object,
+    }) => void
   },
 }
 
@@ -109,10 +100,6 @@ const INITIAL_STATE = {
 };
 
 class NewChargeModal extends React.Component<Props, State> {
-
-  static defaultProps = {
-    onSubmit: () => {}
-  }
 
   constructor(props :Props) {
     super(props);
@@ -193,7 +180,7 @@ class NewChargeModal extends React.Component<Props, State> {
     chargePropertyTypes.forEach((propertyType) => {
       const newValue = state[propertyType];
       const propertyTypeId = fqnToIdMap.get(propertyType, '');
-      if (newValue) entityFields[propertyTypeId] = [newValue];
+      if (newValue !== undefined) entityFields[propertyTypeId] = [newValue];
     });
     return { [entityKeyId]: entityFields };
   }
@@ -213,8 +200,7 @@ class NewChargeModal extends React.Component<Props, State> {
     let newChargeFields = {
       [PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE]: [newStatute],
       [PROPERTY_TYPES.REFERENCE_CHARGE_DESCRIPTION]: [newDescription],
-      [PROPERTY_TYPES.CHARGE_IS_VIOLENT]: [newIsViolent],
-      [ID_FIELD_NAMES.CHARGE_ID]: [`${newStatute}|${newDescription}`],
+      [PROPERTY_TYPES.CHARGE_IS_VIOLENT]: [newIsViolent]
     };
     if (chargeType === CHARGE_TYPES.ARREST) {
       newChargeFields = Object.assign({}, newChargeFields, {
@@ -262,72 +248,34 @@ class NewChargeModal extends React.Component<Props, State> {
 
   updateCharge = () => {
     const {
-      app,
       actions,
       chargeType,
+      entityKeyId,
       onClose,
       existingCharge
     } = this.props;
-    const { updateEntity, submit } = actions;
-    const entitySetId = this.getChargeListEntitySetId();
-    let config;
-    // TODO: We propbably want to change the name of these entity sets so that they capture county and state
-    if (chargeType === CHARGE_TYPES.COURT) {
-      config = courtChargeConfig();
-    }
-    if (chargeType === CHARGE_TYPES.ARREST) {
-      config = arrestChargeConfig();
-    }
-
 
     if (existingCharge) {
       const entities = this.getChargeUpdate();
-      updateEntity({
-        entitySetId,
-        entities,
-        updateType: 'PartialReplace',
-        callback: this.reloadChargesCallback
-      });
+      actions.updateCharge({ chargeType, chargeEKID: entityKeyId, entities });
     }
     else {
-      const newChargeFields = this.getChargeFields();
-      submit({
-        app,
-        config,
-        values: newChargeFields,
-        callback: this.reloadChargesCallback
-      });
+      const newChargeEntity = this.getChargeFields();
+      actions.createCharge({ chargeType, newChargeEntity });
     }
     onClose();
-  }
-
-  deleteChargeCallback = () => {
-    const {
-      actions,
-      chargeType,
-      entityKeyId,
-      selectedOrganizationId
-    } = this.props;
-    const { deleteCharge } = actions;
-    const chargePropertyType = (chargeType === CHARGE_TYPES.COURT) ? CHARGES.COURT : CHARGES.ARREST;
-    deleteCharge({
-      entityKeyId,
-      selectedOrganizationId,
-      chargePropertyType,
-      callback: this.reloadChargesCallback
-    });
   }
 
   deleteCharge = () => {
     const {
       actions,
+      chargeType,
       entityKeyId,
       onClose,
     } = this.props;
-    const { deleteEntity } = actions;
-    const entitySetId = this.getChargeListEntitySetId();
+    const charge = fromJS(this.getChargeFields());
 
-    deleteEntity({ entityKeyId, entitySetId, callback: this.deleteChargeCallback });
+    actions.deleteCharge({ charge, chargeEKID: entityKeyId, chargeType });
     onClose();
   }
 
@@ -411,8 +359,8 @@ class NewChargeModal extends React.Component<Props, State> {
 }
 
 function mapStateToProps(state) {
-  const submit = state.get(STATE.SUBMIT);
   const app = state.get(STATE.APP);
+  const charges = state.get(STATE.CHARGES);
   const edm = state.get(STATE.EDM);
   const orgId = app.get(APP.SELECTED_ORG_ID, '');
   return {
@@ -427,24 +375,17 @@ function mapStateToProps(state) {
     [EDM.FQN_TO_ID]: edm.get(EDM.FQN_TO_ID),
 
     // Submit
-    [SUBMIT.SUBMITTING]: submit.get(SUBMIT.SUBMITTING, false)
+    [CHARGES.SUBMITTING_CHARGE]: charges.get(CHARGES.SUBMITTING_CHARGE)
   };
 }
 
 function mapDispatchToProps(dispatch :Function) :Object {
   const actions :{ [string] :Function } = {};
 
-  Object.keys(ChargesActionFactory).forEach((action :string) => {
-    actions[action] = ChargesActionFactory[action];
-  });
-
-  Object.keys(DataActionFactory).forEach((action :string) => {
-    actions[action] = DataActionFactory[action];
-  });
-
-  Object.keys(SubmitActionFactory).forEach((action :string) => {
-    actions[action] = SubmitActionFactory[action];
-  });
+  actions.createCharge = createCharge;
+  actions.deleteCharge = deleteCharge;
+  actions.loadCharges = loadCharges;
+  actions.updateCharge = updateCharge;
 
   return {
     actions: {

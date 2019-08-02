@@ -32,12 +32,13 @@ import {
   SUBMIT
 } from '../../utils/consts/FrontEndStateConsts';
 
-import * as FormActionFactory from '../psa/FormActionFactory';
-import * as ReviewActionFactory from './ReviewActionFactory';
-import * as PSAModalActionFactory from '../psamodal/PSAModalActionFactory';
 import * as CourtActionFactory from '../court/CourtActionFactory';
-import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
 import * as DataActionFactory from '../../utils/data/DataActionFactory';
+import * as FormActionFactory from '../psa/FormActionFactory';
+import * as HearingsActionFactory from '../hearings/HearingsActionFactory';
+import * as PSAModalActionFactory from '../psamodal/PSAModalActionFactory';
+import * as ReviewActionFactory from './ReviewActionFactory';
+import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
 
 const { PSA_SCORES } = APP_TYPES;
 const peopleFqn :string = APP_TYPES.PEOPLE;
@@ -118,7 +119,6 @@ type Props = {
   sort? :?string,
   component :?string,
   entitySetsByOrganization :Map<*, *>,
-  entitySetIdsToAppType :Map<*, *>,
   hideCaseHistory? :boolean,
   hearingIds :Set<*>,
   filterType :string,
@@ -138,7 +138,6 @@ type Props = {
     loadJudges :() => void,
     checkPSAPermissions :() => void,
     refreshPSANeighbors :({ id :string }) => void,
-    submit :(value :{ config :Object, values :Object}) => void,
     replaceEntity :(value :{ entitySetName :string, entityKeyId :string, values :Object }) => void,
     deleteEntity :(value :{ entitySetName :string, entityKeyId :string }) => void,
     clearSubmit :() => void,
@@ -248,7 +247,6 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
       downloadPSAReviewPDF,
       loadPSAModal,
       loadHearingNeighbors,
-      submit,
       replaceEntity,
       deleteEntity,
       refreshPSANeighbors
@@ -274,7 +272,6 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
           loadHearingNeighbors={loadHearingNeighbors}
           loadPSAModal={loadPSAModal}
           onStatusChangeCallback={onStatusChangeCallback}
-          submitData={submit}
           replaceEntity={replaceEntity}
           deleteEntity={deleteEntity}
           refreshPSANeighbors={refreshPSANeighbors}
@@ -444,10 +441,10 @@ function mapStateToProps(state) {
     [APP.SELECTED_ORG_ID]: app.get(APP.ESELECTED_ORG_ID),
     [APP.SELECTED_ORG_SETTINGS]: app.get(APP.SELECTED_ORG_SETTINGS),
 
-    [COURT.LOADING_HEARING_NEIGHBORS]: court.get(COURT.LOADING_HEARING_NEIGHBORS),
-    [COURT.HEARINGS_NEIGHBORS_BY_ID]: court.get(COURT.HEARINGS_NEIGHBORS_BY_ID),
     [COURT.ALL_JUDGES]: court.get(COURT.ALL_JUDGES),
 
+    [HEARINGS.LOADING_HEARING_NEIGHBORS]: hearings.get(HEARINGS.LOADING_HEARING_NEIGHBORS),
+    [HEARINGS.HEARING_NEIGHBORS_BY_ID]: hearings.get(HEARINGS.HEARING_NEIGHBORS_BY_ID),
     [HEARINGS.REFRESHING_HEARING_AND_NEIGHBORS]: hearings.get(HEARINGS.REFRESHING_HEARING_AND_NEIGHBORS),
 
     [REVIEW.ENTITY_SET_ID]: review.get(REVIEW.ENTITY_SET_ID) || people.get(PEOPLE.SCORES_ENTITY_SET_ID),
@@ -468,8 +465,16 @@ function mapStateToProps(state) {
 function mapDispatchToProps(dispatch :Function) :Object {
   const actions :{ [string] :Function } = {};
 
+  Object.keys(CourtActionFactory).forEach((action :string) => {
+    actions[action] = CourtActionFactory[action];
+  });
+
   Object.keys(FormActionFactory).forEach((action :string) => {
     actions[action] = FormActionFactory[action];
+  });
+
+  Object.keys(HearingsActionFactory).forEach((action :string) => {
+    actions[action] = HearingsActionFactory[action];
   });
 
   Object.keys(ReviewActionFactory).forEach((action :string) => {
@@ -478,10 +483,6 @@ function mapDispatchToProps(dispatch :Function) :Object {
 
   Object.keys(PSAModalActionFactory).forEach((action :string) => {
     actions[action] = PSAModalActionFactory[action];
-  });
-
-  Object.keys(CourtActionFactory).forEach((action :string) => {
-    actions[action] = CourtActionFactory[action];
   });
 
   Object.keys(SubmitActionFactory).forEach((action :string) => {

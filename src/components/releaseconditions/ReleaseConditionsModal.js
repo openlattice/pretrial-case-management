@@ -24,31 +24,7 @@ type Props = {
   hearingNeighborsById :Map<*, *>,
   open :boolean,
   onClose :() => void,
-  refreshing :boolean,
-  actions :{
-    deleteEntity :(values :{
-      entitySetId :string,
-      entityKeyId :string
-    }) => void,
-    loadHearingNeighbors :(hearingIds :string[]) => void,
-    submit :(values :{
-      config :Map<*, *>,
-      values :Map<*, *>,
-      callback :() => void
-    }) => void,
-    loadReleaseConditions :({ hearingId :string }) => void,
-    refreshPSANeighbors :({ id :string }) => void,
-    replaceAssociation :(values :{
-      associationEntity :Map<*, *>,
-      associationEntityName :string,
-      associationEntityKeyId :string,
-      srcEntityName :string,
-      srcEntityKeyId :string,
-      dstEntityName :string,
-      dstEntityKeyId :string,
-      callback :() => void
-    }) => void
-  }
+  refreshing :boolean
 }
 
 
@@ -97,6 +73,6 @@ const ReleaseConditionsModal = ({
       </ModalTransition>
     </Wrapper>
   );
-}
+};
 
 export default ReleaseConditionsModal;

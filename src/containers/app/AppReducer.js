@@ -8,6 +8,7 @@ import { AccountUtils } from 'lattice-auth';
 
 import { APP_TYPES, APP_TYPES_FQNS } from '../../utils/consts/DataModelConsts';
 import { APP } from '../../utils/consts/FrontEndStateConsts';
+import { getStaffEKIDs } from '../people/PeopleActionFactory';
 import {
   loadApp,
   SWITCH_ORGANIZATION
@@ -43,7 +44,8 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [APP.SELECTED_ORG_TITLE]: '',
   [APP.APP_SETTINGS_ID]: '',
   [APP.SETTINGS_BY_ORG_ID]: Map(),
-  [APP.SELECTED_ORG_SETTINGS]: Map()
+  [APP.SELECTED_ORG_SETTINGS]: Map(),
+  [APP.STAFF_IDS_TO_EKIDS]: Map(),
 });
 
 const getEntityTypePropertyTypes = (edm :Object, entityTypeId :string) :Object => {
@@ -177,6 +179,12 @@ export default function appReducer(state :Map<*, *> = INITIAL_STATE, action :Obj
         FINALLY: () => state
           .set(APP.LOADING, false)
           .deleteIn([APP.ACTIONS, APP.LOAD_APP, action.id])
+      });
+    }
+
+    case getStaffEKIDs.case(action.type): {
+      return getStaffEKIDs.reducer(state, action, {
+        SUCCESS: () => state.set(APP.STAFF_IDS_TO_EKIDS, action.value)
       });
     }
 

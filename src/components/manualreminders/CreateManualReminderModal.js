@@ -31,15 +31,7 @@ type Props = {
   person :Map<*, *>,
   open :() => void,
   onClose :() => void,
-  submitCallback :() => void,
-  actions :{
-    refreshPersonNeighbors :(values :{ personId :string }) => void,
-    submit :(values :{
-      config :Map<*, *>,
-      values :Map<*, *>,
-      callback :() => void
-    }) => void,
-  }
+  submitCallback :() => void
 }
 
 const MODAL_WIDTH = '750px';

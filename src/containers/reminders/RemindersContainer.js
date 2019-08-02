@@ -4,7 +4,7 @@
 
 import React from 'react';
 import styled from 'styled-components';
-import moment from 'moment';
+import { DateTime } from 'luxon';
 import { fromJS, Map, Set } from 'immutable';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
@@ -41,8 +41,8 @@ import {
 import * as AppActionFactory from '../app/AppActionFactory';
 import * as RemindersActionFactory from './RemindersActionFactory';
 import * as ManualRemindersActionFactory from '../manualreminders/ManualRemindersActionFactory';
-import * as SubscriptionsActionFactory from '../subscription/SubscriptionsActionFactory';
-import * as PersonActionFactory from '../person/PersonActionFactory';
+import * as SubscriptionActions from '../subscription/SubscriptionActions';
+import * as PersonActions from '../person/PersonActions';
 
 const { OPENLATTICE_ID_FQN } = Constants;
 const peopleFqn = APP_TYPES.PEOPLE;
@@ -145,7 +145,7 @@ type Props = {
   pastReminders :Map<*, *>,
   peopleReceivingManualReminders :Map<*, *>,
   reminderNeighborsById :Map<*, *>,
-  remindersActionListDate :moment,
+  remindersActionListDate :DateTime,
   remindersActionList :Map<*, *>,
   remindersLoaded :boolean,
   manualRemindersById :Map<*, *>,
@@ -236,7 +236,7 @@ class RemindersContainer extends React.Component<Props, State> {
   manualRemindersSubmitCallback = () => {
     const { actions, remindersActionListDate } = this.props;
     const { loadManualRemindersForDate } = actions;
-    if (moment(remindersActionListDate).isValid()) {
+    if (remindersActionListDate.isValid) {
       loadManualRemindersForDate({ date: remindersActionListDate });
     }
   }
@@ -247,7 +247,7 @@ class RemindersContainer extends React.Component<Props, State> {
     return (
       <DatePicker
           subtle
-          value={remindersActionListDate.format('YYYY-MM-DD')}
+          value={remindersActionListDate.toISODate()}
           onChange={date => actions.setDateForRemindersActionList({ date })} />
     );
   }
@@ -568,12 +568,12 @@ function mapDispatchToProps(dispatch :Function) :Object {
     actions[action] = ManualRemindersActionFactory[action];
   });
 
-  Object.keys(PersonActionFactory).forEach((action :string) => {
-    actions[action] = PersonActionFactory[action];
+  Object.keys(PersonActions).forEach((action :string) => {
+    actions[action] = PersonActions[action];
   });
 
-  Object.keys(SubscriptionsActionFactory).forEach((action :string) => {
-    actions[action] = SubscriptionsActionFactory[action];
+  Object.keys(SubscriptionActions).forEach((action :string) => {
+    actions[action] = SubscriptionActions[action];
   });
 
   return {

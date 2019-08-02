@@ -15,12 +15,11 @@ import {
   CHANGE_HEARING_FILTERS,
   filterPeopleIdsWithOpenPSAs,
   loadHearingsForDate,
-  loadHearingNeighbors,
   loadJudges,
   SET_COURT_DATE
 } from './CourtActionFactory';
 import { refreshPSANeighbors, changePSAStatus } from '../review/ReviewActionFactory';
-import { refreshHearingAndNeighbors } from '../hearings/HearingsActionFactory';
+import { refreshHearingAndNeighbors, submitExistingHearing, submitHearing } from '../hearings/HearingsActionFactory';
 import { SWITCH_ORGANIZATION } from '../app/AppActionFactory';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { COURT } from '../../utils/consts/FrontEndStateConsts';
@@ -42,11 +41,6 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [COURT.HEARINGS_TODAY]: List(),
   [COURT.HEARINGS_BY_TIME]: Map(),
   [COURT.LOADING_ERROR]: false,
-
-  // Hearings Neighbors
-  [COURT.LOADING_HEARING_NEIGHBORS]: false,
-  [COURT.HEARINGS_NEIGHBORS_BY_ID]: Map(),
-  [COURT.LOADING_HEARINGS_ERROR]: false,
 
   // People
   [COURT.PEOPLE_WITH_OPEN_PSAS]: Set(),
@@ -94,7 +88,6 @@ export default function courtReducer(state :Map<*, *> = INITIAL_STATE, action :O
     case filterPeopleIdsWithOpenPSAs.case(action.type): {
       return filterPeopleIdsWithOpenPSAs.reducer(state, action, {
         REQUEST: () => state
-          .set(COURT.HEARINGS_NEIGHBORS_BY_ID, Map())
           .set(COURT.PEOPLE_WITH_OPEN_PSAS, Set())
           .set(COURT.PEOPLE_WITH_MULTIPLE_OPEN_PSAS, Set())
           .set(COURT.SCORES_AS_MAP, Map())
@@ -106,14 +99,10 @@ export default function courtReducer(state :Map<*, *> = INITIAL_STATE, action :O
             personIdsToOpenPSAIds,
             personIdsWhoAreSubscribed,
             openPSAIds,
-            hearingNeighborsById,
             peopleWithMultiplePSAs,
             psaIdToMostRecentEditDate
           } = action.value;
-          const currentHearingNeighborsState = state.get(COURT.HEARINGS_NEIGHBORS_BY_ID);
-          const newHearingNeighborsState = currentHearingNeighborsState.merge(hearingNeighborsById);
           return state
-            .set(COURT.HEARINGS_NEIGHBORS_BY_ID, newHearingNeighborsState)
             .set(COURT.PEOPLE_WITH_OPEN_PSAS, fromJS(filteredPersonIds))
             .set(COURT.PEOPLE_WITH_MULTIPLE_OPEN_PSAS, peopleWithMultiplePSAs)
             .set(COURT.PEOPLE_RECEIVING_REMINDERS, personIdsWhoAreSubscribed)
@@ -170,11 +159,7 @@ export default function courtReducer(state :Map<*, *> = INITIAL_STATE, action :O
     case refreshHearingAndNeighbors.case(action.type): {
       return refreshHearingAndNeighbors.reducer(state, action, {
         SUCCESS: () => {
-          const {
-            hearing,
-            hearingEntityKeyId,
-            hearingNeighborsByAppTypeFqn
-          } = action.value;
+          const { hearing, hearingEntityKeyId } = action.value;
           const {
             [DATE_TIME]: updatedHearingDateTime,
           } = getEntityProperties(hearing, [DATE_TIME]);
@@ -215,33 +200,10 @@ export default function courtReducer(state :Map<*, *> = INITIAL_STATE, action :O
             );
           }
           return state
-            .set(COURT.HEARINGS_BY_TIME, hearingsByTime)
-            .setIn([COURT.HEARINGS_NEIGHBORS_BY_ID, hearingEntityKeyId], hearingNeighborsByAppTypeFqn);
+            .set(COURT.HEARINGS_BY_TIME, hearingsByTime);
         },
       });
     }
-
-    case loadHearingNeighbors.case(action.type): {
-      return loadHearingNeighbors.reducer(state, action, {
-        REQUEST: () => state
-          .set(COURT.LOADING_HEARING_NEIGHBORS, true)
-          .set(COURT.LOADING_HEARINGS_ERROR, false),
-        SUCCESS: () => {
-          const currentState = state.get(COURT.HEARINGS_NEIGHBORS_BY_ID);
-          const newState = currentState.merge(action.value.hearingNeighborsById);
-          return (
-            state
-              .set(COURT.HEARINGS_NEIGHBORS_BY_ID, newState)
-              .set(COURT.LOADING_HEARINGS_ERROR, false)
-          );
-        },
-        FAILURE: () => state
-          .set(COURT.HEARINGS_NEIGHBORS_BY_ID, Map())
-          .set(COURT.LOADING_HEARINGS_ERROR, false),
-        FINALLY: () => state.set(COURT.LOADING_HEARING_NEIGHBORS, false)
-      });
-    }
-
 
     case loadJudges.case(action.type): {
       return loadJudges.reducer(state, action, {
@@ -289,6 +251,40 @@ export default function courtReducer(state :Map<*, *> = INITIAL_STATE, action :O
               }
             }
           });
+          return state.set(COURT.HEARINGS_BY_TIME, hearingsByTime);
+        }
+      });
+    }
+
+    case submitExistingHearing.case(action.type): {
+      return submitExistingHearing.reducer(state, action, {
+        SUCCESS: () => {
+          const { hearing } = action.value;
+          const courtDate = state.get(COURT.COURT_DATE);
+          let hearingsByTime = state.get(COURT.HEARINGS_BY_TIME, Map());
+          const { [DATE_TIME]: hearingDateTime } = getEntityProperties(hearing, [ENTITY_KEY_ID]);
+          const hearingDateTimeMoment = moment(hearingDateTime);
+          if (hearingDateTimeMoment.isSame(courtDate, 'day')) {
+            const time = hearingDateTimeMoment.format(TIME_FORMAT);
+            hearingsByTime = hearingsByTime.set(time, hearingsByTime.get(time, List()).push(hearing));
+          }
+          return state.set(COURT.HEARINGS_BY_TIME, hearingsByTime);
+        }
+      });
+    }
+
+    case submitHearing.case(action.type): {
+      return submitHearing.reducer(state, action, {
+        SUCCESS: () => {
+          const { hearing } = action.value;
+          const courtDate = state.get(COURT.COURT_DATE);
+          let hearingsByTime = state.get(COURT.HEARINGS_BY_TIME, Map());
+          const { [DATE_TIME]: hearingDateTime } = getEntityProperties(hearing, [ENTITY_KEY_ID]);
+          const hearingDateTimeMoment = moment(hearingDateTime);
+          if (hearingDateTimeMoment.isSame(courtDate, 'day')) {
+            const time = hearingDateTimeMoment.format(TIME_FORMAT);
+            hearingsByTime = hearingsByTime.set(time, hearingsByTime.get(time, List()).push(hearing));
+          }
           return state.set(COURT.HEARINGS_BY_TIME, hearingsByTime);
         }
       });

@@ -13,11 +13,12 @@ import BasicButton from '../buttons/BasicButton';
 import InfoButton from '../buttons/InfoButton';
 import DropdownButton from '../buttons/DropdownButton';
 import LoadingSpinner from '../LoadingSpinner';
+import LogoLoader from '../LogoLoader';
 import DMFCell from '../dmf/DMFCell';
 import ChargeTable from '../charges/ChargeTable';
 import CaseHistoryTimeline from '../casehistory/CaseHistoryTimeline';
 import RiskFactorsTable from '../riskfactors/RiskFactorsTable';
-import NewHearingSection from '../hearings/NewHearingSection';
+import HearingsForm from '../../containers/hearings/HearingsForm';
 import SelectedHearingInfo from '../hearings/SelectedHearingInfo';
 import psaSuccessIcon from '../../assets/svg/psa-success.svg';
 import psaFailureIcon from '../../assets/svg/psa-failure.svg';
@@ -25,11 +26,16 @@ import closeXWhiteIcon from '../../assets/svg/close-x-white.svg';
 import closeXGrayIcon from '../../assets/svg/close-x-gray.svg';
 import closeXBlackIcon from '../../assets/svg/close-x-black.svg';
 import { OL } from '../../utils/consts/Colors';
-import { APP, CHARGES, STATE } from '../../utils/consts/FrontEndStateConsts';
 import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { getHeaderText } from '../../utils/DMFUtils';
+import { formatDMFFromEntity, getHeaderText } from '../../utils/DMFUtils';
 import { JURISDICTION } from '../../utils/consts/Consts';
+import {
+  APP,
+  CHARGES,
+  HEARINGS,
+  STATE
+} from '../../utils/consts/FrontEndStateConsts';
 import {
   ResultHeader,
   ScaleBlock,
@@ -37,7 +43,8 @@ import {
   ScaleWrapper
 } from '../../utils/Layout';
 
-import * as RoutingActionFactory from '../../core/router/RoutingActionFactory'
+import { clearSubmittedHearing } from '../../containers/hearings/HearingsActionFactory';
+import { goToPath } from '../../core/router/RoutingActionFactory';
 import * as Routes from '../../core/router/Routes';
 
 type Props = {
@@ -46,7 +53,8 @@ type Props = {
   riskFactors :Object,
   dmf :Object,
   personId :string,
-  psaId :string,
+  personEKID :string,
+  psaEKID :string,
   submitSuccess :boolean,
   charges :Immutable.List<*>,
   notes :string,
@@ -59,14 +67,16 @@ type Props = {
   violentArrestCharges :Immutable.Map<*, *>,
   selectedOrganizationId :string,
   selectedOrganizationSettings :Map,
+  submittedHearing :Map<*, *>,
+  submittedHearingNeighbors :Map<*, *>,
+  submittingHearing :boolean,
   actions :{
     goToPath :(path :string) => void
   }
 };
 
 type State = {
-  settingHearing :boolean,
-  selectedHearing :Object
+  settingHearing :boolean
 };
 
 const STATUSES = {
@@ -287,8 +297,7 @@ class PSASubmittedPage extends React.Component<Props, State> {
   constructor(props :Props) {
     super(props);
     this.state = {
-      settingHearing: false,
-      selectedHearing: undefined
+      settingHearing: false
     };
   }
 
@@ -340,7 +349,7 @@ class PSASubmittedPage extends React.Component<Props, State> {
         <ResultHeader>New Violent Criminal Activity Flag</ResultHeader>
         <Flag>{scores.getIn([PROPERTY_TYPES.NVCA_FLAG, 0]) ? 'Yes' : 'No'}</Flag>
       </div>
-    )
+    );
   }
 
   renderScale = (val :number) => {
@@ -377,14 +386,15 @@ class PSASubmittedPage extends React.Component<Props, State> {
   renderDMF = () => {
     const { dmf, selectedOrganizationSettings } = this.props;
     const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
+    const formattedDMF = formatDMFFromEntity(dmf);
 
     return includesPretrialModule
       ? (
         <DMF>
           <ResultHeader>RCM Result</ResultHeader>
           <section>
-            <DMFCell dmf={dmf} selected large />
-            <span>{getHeaderText(dmf)}</span>
+            <DMFCell dmf={formattedDMF} selected large />
+            <span>{getHeaderText(formattedDMF)}</span>
           </section>
         </DMF>
       ) : null;
@@ -394,7 +404,7 @@ class PSASubmittedPage extends React.Component<Props, State> {
     const { riskFactors } = this.props;
 
     const format = (valList) => {
-      if (!valList.length) return '';
+      if (!valList || !valList.length) return '';
       const val = valList[0];
       if (val.length) return val;
       return val ? 'Yes' : 'No';
@@ -491,14 +501,16 @@ class PSASubmittedPage extends React.Component<Props, State> {
     );
   }
 
-  setHearing = () => this.setState({
-    settingHearing: true,
-    selectedHearing: undefined
-  });
+  setHearing = () => {
+    const { actions } = this.props;
+    this.setState({ settingHearing: true });
+    actions.clearSubmittedHearing();
+  };
 
   renderSetHearingButton = () => {
-    const { settingHearing, selectedHearing } = this.state;
-    const buttonText = selectedHearing ? 'View Hearing' : 'Set Hearing';
+    const { submittedHearing } = this.props;
+    const { settingHearing } = this.state;
+    const buttonText = submittedHearing.size ? 'View Hearing' : 'Set Hearing';
     return !settingHearing
       ? (
         <InfoButton
@@ -509,38 +521,36 @@ class PSASubmittedPage extends React.Component<Props, State> {
       ) : null;
   };
 
+  onSubmittedHearingClose
+
   renderHearingNewHearingSection = () => {
     const {
-      allHearings,
-      personId,
-      psaId,
-      isSubmitting,
-      context
+      personEKID,
+      psaEKID,
+      context,
+      submittedHearing,
+      submittedHearingNeighbors,
+      submittingHearing
     } = this.props;
-    const { selectedHearing } = this.state;
+    if (submittingHearing) return <LogoLoader />;
+
     const jurisdiction = JURISDICTION[context];
-    if (!selectedHearing) {
+    if (!submittedHearing.size) {
       return (
         <CreateHearingWrapper>
-          <NewHearingSection
-              submitting={isSubmitting}
+          <HearingsForm
               jurisdiction={jurisdiction}
-              personId={personId}
-              psaId={psaId}
-              hearings={allHearings}
-              manuallyCreatingHearing
-              onSubmit={hearing => this.setState({ selectedHearing: hearing })} />
+              personEKID={personEKID}
+              psaEKID={psaEKID} />
         </CreateHearingWrapper>
       );
     }
     return (
       <SelectedHearingInfo
-          hearing={selectedHearing}
+          hearing={submittedHearing}
+          hearingNeighbors={submittedHearingNeighbors}
           setHearing={this.setHearing}
-          onClose={() => this.setState({
-            settingHearing: false,
-            selectedHearing: undefined
-          })} />
+          onClose={() => this.setState({ settingHearing: false })} />
     );
   }
 
@@ -637,6 +647,7 @@ class PSASubmittedPage extends React.Component<Props, State> {
 function mapStateToProps(state :Immutable.Map<*, *>) :Object {
   const app = state.get(STATE.APP);
   const charges = state.get(STATE.CHARGES);
+  const hearings = state.get(STATE.HEARINGS);
   return {
     // App
     [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
@@ -645,7 +656,12 @@ function mapStateToProps(state :Immutable.Map<*, *>) :Object {
 
     // Charges
     [CHARGES.ARREST_VIOLENT]: charges.get(CHARGES.ARREST_VIOLENT),
-    [CHARGES.COURT_VIOLENT]: charges.get(CHARGES.COURT_VIOLENT)
+    [CHARGES.COURT_VIOLENT]: charges.get(CHARGES.COURT_VIOLENT),
+
+    // Hearings
+    [HEARINGS.SUBMITTED_HEARING]: hearings.get(HEARINGS.SUBMITTED_HEARING),
+    [HEARINGS.SUBMITTED_HEARING_NEIGHBORS]: hearings.get(HEARINGS.SUBMITTED_HEARING_NEIGHBORS),
+    [HEARINGS.SUBMITTING_HEARING]: hearings.get(HEARINGS.SUBMITTING_HEARING)
   };
 }
 
@@ -653,9 +669,8 @@ function mapStateToProps(state :Immutable.Map<*, *>) :Object {
 function mapDispatchToProps(dispatch :Function) :Object {
   const actions :{ [string] :Function } = {};
 
-  Object.keys(RoutingActionFactory).forEach((action :string) => {
-    actions[action] = RoutingActionFactory[action];
-  });
+  actions.clearSubmittedHearing = clearSubmittedHearing;
+  actions.goToPath = goToPath;
 
   return {
     actions: {
