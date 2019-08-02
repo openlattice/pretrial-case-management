@@ -45,6 +45,7 @@ import * as FormActionFactory from '../psa/FormActionFactory';
 import * as ReviewActionFactory from '../review/ReviewActionFactory';
 import * as PSAModalActionFactory from '../psamodal/PSAModalActionFactory';
 import * as DataActionFactory from '../../utils/data/DataActionFactory';
+import { clearSubmit } from '../../utils/submit/SubmitActionFactory';
 
 const { PEOPLE } = APP_TYPES;
 
@@ -597,6 +598,8 @@ function mapStateToProps(state) {
 
 function mapDispatchToProps(dispatch :Function) :Object {
   const actions :{ [string] :Function } = {};
+
+  actions.clearSubmit = clearSubmit;
 
   Object.keys(CourtActionFactory).forEach((action :string) => {
     actions[action] = CourtActionFactory[action];
