@@ -4,6 +4,7 @@ import { ORG_IDS } from './consts/DataModelConsts';
 import { CONTEXT } from './consts/Consts';
 
 const {
+  COURT_LINCOLN,
   COURT_MINN,
   COURT_PENN,
   COURT_SHELBY,
@@ -37,6 +38,9 @@ export const getJurisdiction = (selectedOrganizationId) => {
   switch (selectedOrganizationId) {
     case ORG_IDS.PENNINGTON_SD:
       jurisdiction = COURT_PENN;
+      break;
+    case ORG_IDS.LINCOLN_SD:
+      jurisdiction = COURT_LINCOLN;
       break;
     case ORG_IDS.MINNEHAHA_SD:
       jurisdiction = COURT_MINN;
