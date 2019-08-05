@@ -5,7 +5,6 @@
 import React from 'react';
 import { Map, List } from 'immutable';
 import styled from 'styled-components';
-import moment from 'moment';
 
 import PSAModal from '../../containers/psamodal/PSAModal';
 import PSAMetaData from './PSAMetaData';
