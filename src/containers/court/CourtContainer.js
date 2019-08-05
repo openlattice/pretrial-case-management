@@ -10,6 +10,7 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { NavLink } from 'react-router-dom';
 import { Constants } from 'lattice';
+import type { RequestState } from 'redux-reqseq';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faClone } from '@fortawesome/pro-light-svg-icons';
@@ -34,11 +35,13 @@ import {
   APP,
   COURT,
   EDM,
-  HEARINGS,
   PSA_ASSOCIATION,
   PSA_NEIGHBOR,
   STATE
 } from '../../utils/consts/FrontEndStateConsts';
+
+import { HEARINGS_ACTIONS, HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
+import { getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUtils';
 
 import * as CourtActionFactory from './CourtActionFactory';
 import * as FormActionFactory from '../psa/FormActionFactory';
@@ -183,7 +186,7 @@ const ToggleWrapper = styled.div`
 type Props = {
   courtDate :moment,
   isLoadingHearings :boolean,
-  isLoadingHearingsNeighbors :boolean,
+  loadHearingNeighborsReqState :RequestState,
   hearingsByTime :Map<*, *>,
   hearingNeighborsById :Map<*, *>,
   isLoadingPSAs :boolean,
@@ -505,10 +508,11 @@ class CourtContainer extends React.Component<Props, State> {
   renderContent = () => {
     const {
       isLoadingHearings,
-      isLoadingHearingsNeighbors,
+      loadHearingNeighborsReqState,
       isLoadingPSAs,
       hearingsByTime
     } = this.props;
+    const isLoadingHearingsNeighbors = requestIsPending(loadHearingNeighborsReqState);
     if (isLoadingHearings || isLoadingHearingsNeighbors || isLoadingPSAs) {
       return <LogoLoader loadingText="Loading..." />;
     }
@@ -589,8 +593,8 @@ function mapStateToProps(state) {
     [COURT.PEOPLE_IDS_TO_OPEN_PSA_IDS]: court.get(COURT.PEOPLE_IDS_TO_OPEN_PSA_IDS),
     [COURT.ALL_JUDGES]: court.get(COURT.ALL_JUDGES),
 
-    [HEARINGS.HEARING_NEIGHBORS_BY_ID]: hearings.get(HEARINGS.HEARING_NEIGHBORS_BY_ID),
-    [HEARINGS.LOADING_HEARING_NEIGHBORS]: hearings.get(HEARINGS.LOADING_HEARING_NEIGHBORS),
+    [HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID]: hearings.get(HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID),
+    loadHearingNeighborsReqState: getReqState(hearings, HEARINGS_ACTIONS.LOAD_HEARING_NEIGHBORS),
 
     [EDM.FQN_TO_ID]: edm.get(EDM.FQN_TO_ID),
   };
