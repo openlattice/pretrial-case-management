@@ -7,6 +7,7 @@ import styled from 'styled-components';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { Constants } from 'lattice';
+import type { RequestState } from 'redux-reqseq';
 import {
   List,
   Map,
@@ -24,11 +25,9 @@ import {
   APP,
   COURT,
   EDM,
-  HEARINGS,
   PEOPLE,
   PSA_NEIGHBOR,
-  REVIEW,
-  STATE
+  REVIEW
 } from '../../utils/consts/FrontEndStateConsts';
 import {
   Count,
@@ -38,6 +37,11 @@ import {
   Title,
   Wrapper
 } from '../../utils/Layout';
+
+
+import { HEARINGS_ACTIONS, HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
+import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUtils';
 
 import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
 import * as DataActionFactory from '../../utils/data/DataActionFactory';
@@ -91,7 +95,7 @@ type Props = {
   psaEntityKeyId :Map<*, *>,
   psaId :?string,
   psaIdsRefreshing :List<*, *>,
-  refreshingHearingAndNeighbors :boolean,
+  refreshHearingAndNeighborsReqState :RequestState,
   refreshingPersonNeighbors :boolean,
   actions :{
     deleteEntity :(values :{
@@ -170,7 +174,7 @@ class PersonHearings extends React.Component<Props, State> {
       defaultDMF,
       dmfId,
       hearingNeighborsById,
-      refreshingHearingAndNeighbors,
+      refreshHearingAndNeighborsReqState,
       jurisdiction,
       neighbors,
       psaEntityKeyId,
@@ -186,6 +190,7 @@ class PersonHearings extends React.Component<Props, State> {
       .getIn([selectedHearingEntityKeyId, PRETRIAL_CASES, PSA_NEIGHBOR.DETAILS], Map());
     caseHistory = caseHistory.size ? fromJS([caseHistory]) : List();
     const refreshingNeighbors = psaIdsRefreshing.has(psaEntityKeyId);
+    const refreshingHearingAndNeighbors = requestIsPending(refreshHearingAndNeighborsReqState);
     const refreshing = (refreshingHearingAndNeighbors || refreshingNeighbors);
 
     return (
@@ -282,9 +287,9 @@ function mapStateToProps(state) {
 
     [COURT.ALL_JUDGES]: court.get(COURT.ALL_JUDGES),
 
-    [HEARINGS.LOADING_HEARING_NEIGHBORS]: hearings.get(HEARINGS.LOADING_HEARING_NEIGHBORS),
-    [HEARINGS.HEARING_NEIGHBORS_BY_ID]: hearings.get(HEARINGS.HEARING_NEIGHBORS_BY_ID),
-    [HEARINGS.REFRESHING_HEARING_AND_NEIGHBORS]: hearings.get(HEARINGS.REFRESHING_HEARING_AND_NEIGHBORS),
+    // Hearings
+    refreshHearingAndNeighborsReqState: getReqState(hearings, HEARINGS_ACTIONS.REFRESH_HEARING_AND_NEIGHBORS),
+    [HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID]: hearings.get(HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID),
 
     [EDM.FQN_TO_ID]: edm.get(EDM.FQN_TO_ID),
 
