@@ -30,12 +30,9 @@ import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { APP_TYPES } from '../../utils/consts/DataModelConsts';
 import { termsAreAccepted } from '../../utils/AcceptTermsUtils';
 import { OL } from '../../utils/consts/Colors';
-import {
-  APP,
-  CHARGES,
-  HEARINGS,
-  STATE
-} from '../../utils/consts/FrontEndStateConsts';
+import { APP, CHARGES, STATE } from '../../utils/consts/FrontEndStateConsts';
+
+import { HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
 
 import * as Routes from '../../core/router/Routes';
 import * as AppActionFactory from './AppActionFactory';
@@ -238,7 +235,7 @@ function mapStateToProps(state) {
     [CHARGES.COURT]: charges.get(CHARGES.COURT),
     [CHARGES.LOADING]: charges.get(CHARGES.LOADING),
 
-    [HEARINGS.SETTINGS_MODAL_OPEN]: hearings.get(HEARINGS.SETTINGS_MODAL_OPEN)
+    [HEARINGS_DATA.SETTINGS_MODAL_OPEN]: hearings.get(HEARINGS_DATA.SETTINGS_MODAL_OPEN)
   };
 }
 
