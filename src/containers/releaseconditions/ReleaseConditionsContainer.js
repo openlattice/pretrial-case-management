@@ -802,14 +802,11 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
             conditionsEntity.push(conditionObj);
           }
         }
-        else {
-          conditionTypes.keySeq().forEach((conditionType) => {
-            if (!conditions.includes(conditionType)) {
-              deleteConditions = deleteConditions.push(conditionTypes.get(conditionType));
-            }
-          });
+      });
+      conditionTypes.keySeq().forEach((conditionType) => {
+        if (!conditions.includes(conditionType)) {
+          deleteConditions = deleteConditions.push(conditionTypes.get(conditionType));
         }
-
       });
     }
 
