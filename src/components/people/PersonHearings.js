@@ -15,7 +15,6 @@ import {
 } from 'immutable';
 
 import HearingCardsWithTitle from '../hearings/HearingCardsWithTitle';
-import InfoButton from '../buttons/InfoButton';
 import HearingsTable from '../hearings/HearingsTable';
 import ReleaseConditionsModal from '../releaseconditions/ReleaseConditionsModal';
 import LogoLoader from '../LogoLoader';
@@ -98,12 +97,6 @@ type Props = {
     deleteEntity :(values :{
       entitySetId :string,
       entityKeyId :string
-    }) => void,
-    submit :(values :{
-      app :Map<*, *>,
-      config :Map<*, *>,
-      values :Map<*, *>,
-      callback :() => void
     }) => void,
     refreshPSANeighbors :({ id :string }) => void,
     refreshPersonNeighbors :(values :{ personId :string }) => void,

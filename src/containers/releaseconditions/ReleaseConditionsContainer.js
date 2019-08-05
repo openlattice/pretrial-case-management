@@ -202,29 +202,7 @@ type Props = {
   submittingReleaseConditions :boolean,
   actions :{
     clearReleaseConditions :() => void;
-    deleteEntity :(values :{
-      entitySetId :string,
-      entityKeyId :string
-    }) => void,
     loadReleaseConditions :({ hearingId :string }) => void,
-    submit :(values :{
-      config :Map<*, *>,
-      values :Map<*, *>,
-      callback :() => void
-    }) => void,
-    refreshPSANeighbors :({ id :string }) => void,
-    replaceAssociation :(values :{
-      associationEntity :Map<*, *>,
-      associationEntityName :string,
-      associationEntityKeyId :string,
-      srcEntityName :string,
-      srcEntityKeyId :string,
-      dstEntityName :string,
-      dstEntityKeyId :string,
-      callback :() => void
-    }) => void,
-    replaceEntity :(value :{ entitySetName :string, entityKeyId :string, values :Object }) => void,
-    submit :(value :{ app :Map<*, *>, config :Object, values :Object, callback? :() => void }) => void
   },
 };
 

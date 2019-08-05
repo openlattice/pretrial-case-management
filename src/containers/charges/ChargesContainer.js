@@ -22,9 +22,6 @@ import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { CHARGE_TYPES } from '../../utils/consts/ChargeConsts';
 
 import * as Routes from '../../core/router/Routes';
-import * as AppActionFactory from '../app/AppActionFactory';
-import * as ChargesActionFactory from './ChargesActionFactory';
-
 
 const ToolbarWrapper = styled.div`
   display: flex;

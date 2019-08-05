@@ -28,9 +28,7 @@ import {
   COURT
 } from '../../utils/consts/FrontEndStateConsts';
 
-import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
-import * as HearingsActionFactory from '../../containers/hearings/HearingsActionFactory';
-import * as ReviewActionFactory from '../../containers/review/ReviewActionFactory';
+import { submitHearing } from '../../containers/hearings/HearingsActionFactory';
 
 const { ENTITY_KEY_ID } = PROPERTY_TYPES;
 
@@ -88,21 +86,13 @@ type Props = {
   personEKID :string,
   personId :string,
   actions :{
-    submit :(values :{
-      config :Map<*, *>,
-      values :Map<*, *>,
-      callback :() => void
-    }) => void,
-    refreshPSANeighbors :({ id :string }) => void,
-    replaceAssociation :(values :{
-      associationEntity :Map<*, *>,
-      associationEntityName :string,
-      associationEntityKeyId :string,
-      srcEntityName :string,
-      srcEntityKeyId :string,
-      dstEntityName :string,
-      dstEntityKeyId :string,
-      callback :() => void
+    submitHearing :(values :{
+      hearingDateTime :string,
+      hearingCourtroom :string,
+      hearingComments :string,
+      judgeEKID :string,
+      personEKID :string,
+      psaEKID :string
     }) => void
   },
   afterSubmit :() => void
@@ -413,17 +403,7 @@ function mapStateToProps(state) {
 function mapDispatchToProps(dispatch :Function) :Object {
   const actions :{ [string] :Function } = {};
 
-  Object.keys(HearingsActionFactory).forEach((action :string) => {
-    actions[action] = HearingsActionFactory[action];
-  });
-
-  Object.keys(SubmitActionFactory).forEach((action :string) => {
-    actions[action] = SubmitActionFactory[action];
-  });
-
-  Object.keys(ReviewActionFactory).forEach((action :string) => {
-    actions[action] = ReviewActionFactory[action];
-  });
+  actions.submitHearing = submitHearing;
 
   return {
     actions: {

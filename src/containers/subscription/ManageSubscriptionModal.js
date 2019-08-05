@@ -122,11 +122,18 @@ type Props = {
   open :() => void,
   onClose :() => void,
   actions :{
-    refreshPersonNeighbors :(values :{ personId :string }) => void,
-    submit :(values :{
-      config :Map<*, *>,
-      values :Map<*, *>,
-      callback :() => void
+    clearSubscriptionModal :() => void,
+    updateContactsBulk :(values :{
+      entities :Map<*, *>,
+      personEKID :string
+    }) => void,
+    subscribe :(values :{
+      personEKID :string,
+      subscriptionEKID :Map<*, *>
+    }) => void,
+    unsubscribe :(values :{
+      personEKID :string,
+      subscriptionEKID :Map<*, *>
     }) => void,
   }
 }

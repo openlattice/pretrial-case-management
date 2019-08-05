@@ -24,7 +24,6 @@ import { getEntityKeyId, stripIdField } from '../../utils/DataUtils';
 
 import * as FormActionFactory from '../../containers/psa/FormActionFactory';
 import * as ReviewActionFactory from '../../containers/review/ReviewActionFactory';
-import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
 import * as DataActionFactory from '../../utils/data/DataActionFactory';
 
 const ModalWrapper = styled(CenteredContainer)`
@@ -117,7 +116,6 @@ type Props = {
   onStatusChangeCallback :() => void,
   actions :{
     clearSubmit :() => void,
-    submit :(value :{ config :Object, values :Object, callback? :() => void }) => void,
     downloadPSAReviewPDF :(values :{
       neighbors :Immutable.Map<*, *>,
       scores :Immutable.Map<*, *>
@@ -330,10 +328,6 @@ function mapDispatchToProps(dispatch :Function) :Object {
 
   Object.keys(DataActionFactory).forEach((action :string) => {
     actions[action] = DataActionFactory[action];
-  });
-
-  Object.keys(SubmitActionFactory).forEach((action :string) => {
-    actions[action] = SubmitActionFactory[action];
   });
 
   return {

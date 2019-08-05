@@ -119,7 +119,6 @@ type Props = {
   sort? :?string,
   component :?string,
   entitySetsByOrganization :Map<*, *>,
-  entitySetIdsToAppType :Map<*, *>,
   hideCaseHistory? :boolean,
   hearingIds :Set<*>,
   filterType :string,
@@ -139,7 +138,6 @@ type Props = {
     loadJudges :() => void,
     checkPSAPermissions :() => void,
     refreshPSANeighbors :({ id :string }) => void,
-    submit :(value :{ config :Object, values :Object}) => void,
     replaceEntity :(value :{ entitySetName :string, entityKeyId :string, values :Object }) => void,
     deleteEntity :(value :{ entitySetName :string, entityKeyId :string }) => void,
     clearSubmit :() => void,
@@ -249,7 +247,6 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
       downloadPSAReviewPDF,
       loadPSAModal,
       loadHearingNeighbors,
-      submit,
       replaceEntity,
       deleteEntity,
       refreshPSANeighbors
@@ -275,7 +272,6 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
           loadHearingNeighbors={loadHearingNeighbors}
           loadPSAModal={loadPSAModal}
           onStatusChangeCallback={onStatusChangeCallback}
-          submitData={submit}
           replaceEntity={replaceEntity}
           deleteEntity={deleteEntity}
           refreshPSANeighbors={refreshPSANeighbors}

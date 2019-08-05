@@ -30,8 +30,7 @@ import {
   SUBMIT
 } from '../../utils/consts/FrontEndStateConsts';
 
-import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
-import * as DataActionFactory from '../../utils/data/DataActionFactory';
+import { deleteEntity } from '../../utils/data/DataActionFactory';
 
 const { CHECKIN_APPOINTMENTS } = APP_TYPES;
 
@@ -71,12 +70,10 @@ type Props = {
   app :Map<*, *>,
   addAppointmentsToSubmission :() => void,
   actions :{
-    refreshPersonNeighbors :(values :{ personId :string }) => void,
-    submit :(values :{
-      config :Map<*, *>,
-      values :Map<*, *>,
-      callback :() => void
-    }) => void,
+    deleteEntity :(values :{
+      entitySetId :string,
+      entityKeyId :string
+    }) => void
   }
 }
 
@@ -355,13 +352,7 @@ function mapStateToProps(state) {
 function mapDispatchToProps(dispatch :Function) :Object {
   const actions :{ [string] :Function } = {};
 
-  Object.keys(DataActionFactory).forEach((action :string) => {
-    actions[action] = DataActionFactory[action];
-  });
-
-  Object.keys(SubmitActionFactory).forEach((action :string) => {
-    actions[action] = SubmitActionFactory[action];
-  });
+  actions.deleteEntity = deleteEntity;
 
   return {
     actions: {

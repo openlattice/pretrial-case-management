@@ -107,11 +107,6 @@ type Props = {
       dstEntityName :string,
       dstEntityKeyId :string,
       callback :() => void
-    }) => void,
-    submit :(values :{
-      config :Map<*, *>,
-      values :Map<*, *>,
-      callback :() => void
     }) => void
   },
   context :string,
