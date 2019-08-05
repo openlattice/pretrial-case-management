@@ -8,7 +8,8 @@ import Modal, { ModalTransition } from '@atlaskit/modal-dialog';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import HearingSettingsForm from '../../containers/hearings/HearingSettingsForm';
-import { STATE, HEARINGS } from '../../utils/consts/FrontEndStateConsts';
+import { STATE } from '../../utils/consts/FrontEndStateConsts';
+import { HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
 import {
   CloseModalX,
   PaddedStyledColumnRow,
@@ -88,7 +89,7 @@ class HearingSettingsModal extends React.Component<Props, State> {
 function mapStateToProps(state) {
   const hearings = state.get(STATE.HEARINGS);
   return {
-    [HEARINGS.SETTINGS_MODAL_OPEN]: hearings.get(HEARINGS.SETTINGS_MODAL_OPEN)
+    [HEARINGS_DATA.SETTINGS_MODAL_OPEN]: hearings.get(HEARINGS_DATA.SETTINGS_MODAL_OPEN)
   };
 }
 
