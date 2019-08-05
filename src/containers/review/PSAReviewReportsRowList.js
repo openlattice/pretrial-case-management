@@ -23,14 +23,15 @@ import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import {
   APP,
   COURT,
-  HEARINGS,
   PEOPLE,
   PSA_NEIGHBOR,
   PSA_MODAL,
   REVIEW,
-  STATE,
   SUBMIT
 } from '../../utils/consts/FrontEndStateConsts';
+
+// Redux State Imports
+import { STATE } from '../../utils/consts/redux/SharedConsts';
 
 import * as CourtActionFactory from '../court/CourtActionFactory';
 import * as DataActionFactory from '../../utils/data/DataActionFactory';
@@ -429,7 +430,6 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
 function mapStateToProps(state) {
   const app = state.get(STATE.APP);
   const court = state.get(STATE.COURT);
-  const hearings = state.get(STATE.HEARINGS);
   const orgId = app.get(APP.SELECTED_ORG_ID, '');
   const people = state.get(STATE.PEOPLE);
   const review = state.get(STATE.REVIEW);
@@ -442,10 +442,6 @@ function mapStateToProps(state) {
     [APP.SELECTED_ORG_SETTINGS]: app.get(APP.SELECTED_ORG_SETTINGS),
 
     [COURT.ALL_JUDGES]: court.get(COURT.ALL_JUDGES),
-
-    [HEARINGS.LOADING_HEARING_NEIGHBORS]: hearings.get(HEARINGS.LOADING_HEARING_NEIGHBORS),
-    [HEARINGS.HEARING_NEIGHBORS_BY_ID]: hearings.get(HEARINGS.HEARING_NEIGHBORS_BY_ID),
-    [HEARINGS.REFRESHING_HEARING_AND_NEIGHBORS]: hearings.get(HEARINGS.REFRESHING_HEARING_AND_NEIGHBORS),
 
     [REVIEW.ENTITY_SET_ID]: review.get(REVIEW.ENTITY_SET_ID) || people.get(PEOPLE.SCORES_ENTITY_SET_ID),
     [REVIEW.NEIGHBORS_BY_ID]: review.get(REVIEW.NEIGHBORS_BY_ID),
