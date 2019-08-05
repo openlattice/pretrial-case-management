@@ -44,14 +44,16 @@ import {
 import {
   APP,
   COURT,
-  HEARINGS,
-  STATE,
   SUBMIT,
   PEOPLE,
   REVIEW,
   PSA_NEIGHBOR,
   PSA_MODAL
 } from '../../utils/consts/FrontEndStateConsts';
+
+// Redux State Imports
+import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
 
 import * as Routes from '../../core/router/Routes';
 import * as CourtActionFactory from '../court/CourtActionFactory';
@@ -559,8 +561,7 @@ function mapStateToProps(state, ownProps) {
     [COURT.ALL_JUDGES]: court.get(COURT.ALL_JUDGES),
     [COURT.LOADING_JUDGES]: court.get(COURT.LOADING_JUDGES),
 
-    [HEARINGS.HEARING_NEIGHBORS_BY_ID]: hearings.get(HEARINGS.HEARING_NEIGHBORS_BY_ID),
-    [HEARINGS.LOADING_HEARING_NEIGHBORS]: hearings.get(HEARINGS.LOADING_HEARING_NEIGHBORS),
+    [HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID]: hearings.get(HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID),
 
     [PEOPLE.FETCHING_PERSON_DATA]: people.get(PEOPLE.FETCHING_PERSON_DATA),
     [PEOPLE.PERSON_DATA]: people.get(PEOPLE.PERSON_DATA),
