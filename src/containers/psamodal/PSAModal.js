@@ -44,11 +44,9 @@ import {
 } from '../../utils/DataUtils';
 import {
   APP,
-  HEARINGS,
   PSA_NEIGHBOR,
   PSA_ASSOCIATION,
   PSA_MODAL,
-  STATE,
   SEARCH
 } from '../../utils/consts/FrontEndStateConsts';
 import {
@@ -57,6 +55,9 @@ import {
   NOTES,
   PSA
 } from '../../utils/consts/Consts';
+
+import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
 
 import * as Routes from '../../core/router/Routes';
 import * as CourtActionFactory from '../court/CourtActionFactory';
@@ -1031,7 +1032,7 @@ function mapStateToProps(state) {
     [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
     [APP.SELECTED_ORG_SETTINGS]: app.get(APP.SELECTED_ORG_SETTINGS),
 
-    [HEARINGS.HEARING_NEIGHBORS_BY_ID]: hearings.get(HEARINGS.HEARING_NEIGHBORS_BY_ID),
+    [HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID]: hearings.get(HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID),
 
     [PSA_MODAL.SCORES]: psaModal.get(PSA_MODAL.SCORES),
     [PSA_MODAL.PSA_ID]: psaModal.get(PSA_MODAL.PSA_ID),
