@@ -29,7 +29,7 @@ import { REMINDER_TYPES } from '../../utils/RemindersUtils';
 import { MAX_HITS } from '../../utils/consts/Consts';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { APP, PSA_NEIGHBOR, STATE } from '../../utils/consts/FrontEndStateConsts';
-import { refreshHearingAndNeighbors } from '../hearings/HearingsActionFactory';
+import { refreshHearingAndNeighbors } from '../hearings/HearingsActions';
 import { SETTINGS } from '../../utils/consts/AppSettingConsts';
 import {
   CREATE_CHECK_IN_APPOINTMENTS,

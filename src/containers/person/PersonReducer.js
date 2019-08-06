@@ -31,7 +31,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [PERSON_DATA.SUBMITTED_PERSON_NEIGHBORS]: Map()
 });
 
-export default function subscriptionsReducer(state :Map<*, *> = INITIAL_STATE, action :Object) {
+export default function personReducer(state :Map<*, *> = INITIAL_STATE, action :Object) {
   switch (action.type) {
 
     case newPersonSubmit.case(action.type): {

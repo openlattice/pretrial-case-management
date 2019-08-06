@@ -7,9 +7,11 @@ import styled from 'styled-components';
 import moment from 'moment';
 import randomUUID from 'uuid/v4';
 import { bindActionCreators } from 'redux';
+import type { Dispatch } from 'redux';
 import { connect } from 'react-redux';
 import { Constants } from 'lattice';
 import { List, Map, OrderedMap } from 'immutable';
+import type { RequestState } from 'redux-reqseq';
 
 import BasicButton from '../../components/buttons/BasicButton';
 import BondTypeSection from '../../components/releaseconditions/BondTypeSection';
@@ -53,21 +55,26 @@ import {
   APP,
   COURT,
   EDM,
-  HEARINGS,
   PSA_ASSOCIATION,
   PSA_NEIGHBOR,
-  RELEASE_COND,
-  STATE,
   SUBMIT
 } from '../../utils/consts/FrontEndStateConsts';
 
-import * as CheckInsActionFactory from '../checkins/CheckInsActionFactory';
-import * as CourtActionFactory from '../court/CourtActionFactory';
-import * as DataActionFactory from '../../utils/data/DataActionFactory';
-import * as HearingsActionFactory from '../hearings/HearingsActionFactory';
-import * as ReleaseConditionsActionFactory from './ReleaseConditionsActionFactory';
-import * as ReviewActionFactory from '../review/ReviewActionFactory';
-import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
+import { HEARINGS_ACTIONS } from '../../utils/consts/redux/HearingsConsts';
+import { RELEASE_COND_ACTIONS, RELEASE_COND_DATA } from '../../utils/consts/redux/ReleaseConditionsConsts';
+import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUtils';
+
+
+import { createCheckinAppointments } from '../checkins/CheckInsActionFactory';
+import { refreshHearingAndNeighbors } from '../hearings/HearingsActions';
+import { createAssociations } from '../../utils/submit/SubmitActionFactory';
+import {
+  clearReleaseConditions,
+  loadReleaseConditions,
+  submitReleaseConditions,
+  updateOutcomesAndReleaseCondtions,
+} from './ReleaseConditionsActionFactory';
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
@@ -185,24 +192,57 @@ type Props = {
   creatingAssociations :boolean,
   fqnToIdMap :Map<*, *>,
   hasOutcome :boolean,
-  refreshingHearingAndNeighbors :boolean,
   hearingNeighbors :Map<*, *>,
   hearingEntityKeyId :string,
-  loadingReleaseConditions :boolean,
+  loadReleaseConditionsReqState :RequestState,
   openClosePSAModal :() => void,
   personNeighbors :Map<*, *>,
   psaNeighbors :Map<*, *>,
-  refreshingReleaseConditions :boolean,
-  refreshingSelectedHearing :boolean,
-  replacingAssociation :boolean,
-  replacingEntity :boolean,
+  refreshHearingAndNeighborsReqState :RequestState,
   selectedHearing :Map<*, *>,
   selectedOrganizationId :string,
   selectedOrganizationSettings :Map<*, *>,
-  submittingReleaseConditions :boolean,
+  submitReleaseConditionsReqState :RequestState,
+  updateOutcomesAndReleaseCondtionsReqState :RequestState,
   actions :{
     clearReleaseConditions :() => void;
-    loadReleaseConditions :({ hearingId :string }) => void,
+    loadReleaseConditions :(values :{ hearingId :string }) => void,
+    submitReleaseConditions :(values :{
+      bondAmount :string,
+      bondType :string,
+      dmfResultsEKID :string,
+      hearingEKID :string,
+      judgeAccepted :boolean,
+      outcomeSelection :Object,
+      outcomeText :string,
+      personEKID :string,
+      psaScoresEKID :string,
+      releaseConditions :Object[],
+      releaseType :string
+    }) => void,
+    updateOutcomesAndReleaseCondtions :(values :{
+      bondEntity :Object,
+      bondEntityKeyId :string,
+      deleteConditions :string[],
+      dmfResultsEKID :string,
+      hearingEKID :string,
+      outcomeEntity :Object,
+      outcomeEntityKeyId :string,
+      personEKID :string,
+      psaScoresEKID :string,
+      psaId :string,
+      releaseConditions :Object[]
+    }) => void,
+    refreshHearingAndNeighbors :(values :{ hearingEntityKeyId :string }) => void,
+    createCheckinAppointments :(values :{
+      checkInAppointments :Object[],
+      hearingEKID :string,
+      personEKID :string
+    }) => void,
+    createAssociations :(values :{
+      associationObjects :Object[],
+      callback :() => void
+    }) => void,
   },
 };
 
@@ -238,8 +278,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
 
   loadReleaseConditions = (props) => {
     const { actions, hearingEntityKeyId } = props;
-    const { loadReleaseConditions } = actions;
-    loadReleaseConditions({ hearingId: hearingEntityKeyId });
+    actions.loadReleaseConditions({ hearingId: hearingEntityKeyId });
   }
 
   componentDidMount() {
@@ -304,8 +343,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
 
   componentWillUnmount() {
     const { actions } = this.props;
-    const { clearReleaseConditions } = actions;
-    clearReleaseConditions();
+    actions.clearReleaseConditions();
   }
 
   refreshHearingsNeighborsCallback = () => {
@@ -706,13 +744,6 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
     const personEKID = getFirstNeighborValue(personEntity, ENTITY_KEY_ID);
     const dmfResultsEKID = getFirstNeighborValue(defaultDMF, ENTITY_KEY_ID);
 
-    const {
-      createCheckinAppointments,
-      createAssociations,
-      submitReleaseConditions,
-      updateOutcomesAndReleaseCondtions
-    } = actions;
-
     const outcomeShouldSubmit = !getFirstNeighborValue(defaultOutcome, PROPERTY_TYPES.OUTCOME);
     const outcomeShouldReplace = !outcomeShouldSubmit;
 
@@ -802,32 +833,29 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
             conditionsEntity.push(conditionObj);
           }
         }
-        else {
-          conditionTypes.keySeq().forEach((conditionType) => {
-            if (!conditions.includes(conditionType)) {
-              deleteConditions = deleteConditions.push(conditionTypes.get(conditionType));
-            }
-          });
+      });
+      conditionTypes.keySeq().forEach((conditionType) => {
+        if (!conditions.includes(conditionType)) {
+          deleteConditions = deleteConditions.push(conditionTypes.get(conditionType));
         }
-
       });
     }
 
     if (Object.keys(newAssociationEntities).length) {
-      createAssociations({
+      actions.createAssociations({
         associationObjects: [newAssociationEntities],
         callback: this.refreshHearingsNeighborsCallback
       });
     }
     if (newCheckInAppointmentEntities.length) {
-      createCheckinAppointments({
+      actions.createCheckinAppointments({
         checkInAppointments: newCheckInAppointmentEntities,
         hearingEKID: hearingEntityKeyId,
         personEKID
       });
     }
     if (editingHearing) {
-      updateOutcomesAndReleaseCondtions({
+      actions.updateOutcomesAndReleaseCondtions({
         bondEntity,
         bondEntityKeyId,
         deleteConditions,
@@ -843,7 +871,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       this.setState({ editingHearing: false });
     }
     else {
-      submitReleaseConditions({
+      actions.submitReleaseConditions({
         bondAmount,
         bondType,
         dmfResultsEKID,
@@ -867,7 +895,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
   }
 
   isReadyToSubmit = () => {
-    const { submittingReleaseConditions, selectedOrganizationSettings } = this.props;
+    const { submitReleaseConditionsReqState, selectedOrganizationSettings } = this.props;
     const {
       bondAmount,
       bondType,
@@ -880,6 +908,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       release,
       warrant
     } = this.state;
+    const submittingReleaseConditions = requestIsPending(submitReleaseConditionsReqState);
     const settingsIncludeVoiceEnroll = selectedOrganizationSettings.get(SETTINGS.ENROLL_VOICE, false);
     const coreOutcomes = Object.values(OUTCOMES);
 
@@ -1080,24 +1109,22 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
 
   render() {
     const {
-      loadingReleaseConditions,
-      replacingEntity,
-      replacingAssociation,
-      refreshingHearingAndNeighbors,
-      refreshingSelectedHearing,
-      submittingReleaseConditions,
-      refreshingReleaseConditions,
-      creatingAssociations
+      creatingAssociations,
+      loadReleaseConditionsReqState,
+      refreshHearingAndNeighborsReqState,
+      submitReleaseConditionsReqState,
+      updateOutcomesAndReleaseCondtionsReqState,
     } = this.props;
     const { state } = this;
+    const loadingReleaseConditions = requestIsPending(loadReleaseConditionsReqState);
+    const updatingOutcomesAndReleaseConditions = requestIsPending(updateOutcomesAndReleaseCondtionsReqState);
+    const submittingReleaseConditions = requestIsPending(submitReleaseConditionsReqState);
+    const refreshingHearingAndNeighbors = requestIsPending(refreshHearingAndNeighborsReqState);
     const loading = (
       loadingReleaseConditions
-      || replacingEntity
-      || replacingAssociation
       || refreshingHearingAndNeighbors
-      || refreshingSelectedHearing
       || submittingReleaseConditions
-      || refreshingReleaseConditions
+      || updatingOutcomesAndReleaseConditions
       || creatingAssociations
     );
     const loadingText = 'Loading Hearing & Release Conditions...';
@@ -1151,63 +1178,39 @@ function mapStateToProps(state) {
 
     [COURT.ALL_JUDGES]: court.get(COURT.ALL_JUDGES),
 
-    [HEARINGS.REFRESH_HEARING_AND_NEIGHBORS]: hearings.get(HEARINGS.REFRESH_HEARING_AND_NEIGHBORS),
+    refreshHearingAndNeighborsReqState: getReqState(hearings, HEARINGS_ACTIONS.REFRESH_HEARING_AND_NEIGHBORS),
 
     [EDM.FQN_TO_ID]: edm.get(EDM.FQN_TO_ID),
 
-    [RELEASE_COND.SELECTED_HEARING]: releaseConditions.get(RELEASE_COND.SELECTED_HEARING),
-    [RELEASE_COND.HAS_OUTCOME]: releaseConditions.get(RELEASE_COND.HAS_OUTCOME),
-    [RELEASE_COND.HEARING_NEIGHBORS]: releaseConditions.get(RELEASE_COND.HEARING_NEIGHBORS),
-    [RELEASE_COND.PERSON_NEIGHBORS]: releaseConditions.get(RELEASE_COND.PERSON_NEIGHBORS),
-    [RELEASE_COND.PSA_NEIGHBORS]: releaseConditions.get(RELEASE_COND.PSA_NEIGHBORS),
-    [RELEASE_COND.LOADING_RELEASE_CONDITIONS]: releaseConditions.get(RELEASE_COND.LOADING_RELEASE_CONDITIONS),
-    [RELEASE_COND.REFRESHING_RELEASE_CONDITIONS]: releaseConditions.get(RELEASE_COND.REFRESHING_RELEASE_CONDITIONS),
-    [RELEASE_COND.REFRESHING_SELECTED_HEARING]: releaseConditions.get(RELEASE_COND.REFRESHING_SELECTED_HEARING),
-    [RELEASE_COND.SUBMITTING_RELEASE_CONDITIONS]: releaseConditions.get(RELEASE_COND.SUBMITTING_RELEASE_CONDITIONS),
-
+    loadReleaseConditionsReqState: getReqState(releaseConditions, RELEASE_COND_ACTIONS.LOAD_RELEASE_CONDITIONS),
+    submitReleaseConditionsReqState: getReqState(releaseConditions, RELEASE_COND_ACTIONS.SUBMIT_RELEASE_CONDITIONS),
+    updateOutcomesAndReleaseCondtionsReqState: getReqState(
+      releaseConditions, RELEASE_COND_ACTIONS.UPDATE_OUTCOMES_AND_RELEASE_CONDITIONS
+    ),
+    [RELEASE_COND_DATA.SELECTED_HEARING]: releaseConditions.get(RELEASE_COND_DATA.SELECTED_HEARING),
+    [RELEASE_COND_DATA.HAS_OUTCOME]: releaseConditions.get(RELEASE_COND_DATA.HAS_OUTCOME),
+    [RELEASE_COND_DATA.HEARING_NEIGHBORS]: releaseConditions.get(RELEASE_COND_DATA.HEARING_NEIGHBORS),
+    [RELEASE_COND_DATA.PERSON_NEIGHBORS]: releaseConditions.get(RELEASE_COND_DATA.PERSON_NEIGHBORS),
+    [RELEASE_COND_DATA.PSA_NEIGHBORS]: releaseConditions.get(RELEASE_COND_DATA.PSA_NEIGHBORS),
 
     [SUBMIT.CREATING_ASSOCIATIONS]: submit.get(SUBMIT.CREATING_ASSOCIATIONS),
-    [SUBMIT.REPLACING_ASSOCIATION]: submit.get(SUBMIT.REPLACING_ASSOCIATION),
-    [SUBMIT.REPLACING_ENTITY]: submit.get(SUBMIT.REPLACING_ENTITY)
   };
 }
 
-function mapDispatchToProps(dispatch :Function) :Object {
-  const actions :{ [string] :Function } = {};
-
-  Object.keys(CheckInsActionFactory).forEach((action :string) => {
-    actions[action] = CheckInsActionFactory[action];
-  });
-
-  Object.keys(CourtActionFactory).forEach((action :string) => {
-    actions[action] = CourtActionFactory[action];
-  });
-
-  Object.keys(DataActionFactory).forEach((action :string) => {
-    actions[action] = DataActionFactory[action];
-  });
-
-  Object.keys(HearingsActionFactory).forEach((action :string) => {
-    actions[action] = HearingsActionFactory[action];
-  });
-
-  Object.keys(ReleaseConditionsActionFactory).forEach((action :string) => {
-    actions[action] = ReleaseConditionsActionFactory[action];
-  });
-
-  Object.keys(ReviewActionFactory).forEach((action :string) => {
-    actions[action] = ReviewActionFactory[action];
-  });
-
-  Object.keys(SubmitActionFactory).forEach((action :string) => {
-    actions[action] = SubmitActionFactory[action];
-  });
-
-  return {
-    actions: {
-      ...bindActionCreators(actions, dispatch)
-    }
-  };
-}
+const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
+  actions: bindActionCreators({
+    // Release Conditions Actions
+    clearReleaseConditions,
+    loadReleaseConditions,
+    submitReleaseConditions,
+    updateOutcomesAndReleaseCondtions,
+    // Hearings Actions
+    refreshHearingAndNeighbors,
+    // Check Ins Actions
+    createCheckinAppointments,
+    // Submit Actions
+    createAssociations,
+  }, dispatch)
+});
 
 export default connect(mapStateToProps, mapDispatchToProps)(ReleaseConditionsContainer);
