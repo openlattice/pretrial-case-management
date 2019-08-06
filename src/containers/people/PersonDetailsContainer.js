@@ -76,6 +76,8 @@ const {
   SPEAKER_RECOGNITION_PROFILES
 } = APP_TYPES;
 
+const { ENTITY_KEY_ID } = PROPERTY_TYPES;
+
 const ToolbarWrapper = styled.div`
   display: flex;
   flex-direction: row;
@@ -333,8 +335,10 @@ class PersonDetailsContainer extends React.Component<Props, State> {
       personId,
       psaNeighborsById,
       mostRecentPSA,
-      selectedOrganizationId
+      selectedOrganizationId,
+      selectedPersonData
     } = this.props;
+    const { [ENTITY_KEY_ID]: personEKID } = getEntityProperties(selectedPersonData, [ENTITY_KEY_ID])
     const personHearingsWithOutcomes = neighbors.get(APP_TYPES.HEARINGS, List()).filter((hearing) => {
       const id = hearing.getIn([OPENLATTICE_ID_FQN, 0], '');
       const hasOutcome = !!hearingNeighborsById.getIn([id, OUTCOMES]);
@@ -385,6 +389,7 @@ class PersonDetailsContainer extends React.Component<Props, State> {
           hearingNeighborsById={hearingNeighborsById}
           pastHearings={pastHearings}
           personId={personId}
+          personEKID={personEKID}
           psaEntityKeyId={mostRecentPSAEntityKeyId}
           psaId={psaId} />
     );
