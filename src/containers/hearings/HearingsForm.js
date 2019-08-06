@@ -38,7 +38,7 @@ import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { HEARINGS_ACTIONS, HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
 
 // Action Imports
-import { clearSubmittedHearing, submitHearing, updateHearing } from './HearingsActionFactory';
+import { clearSubmittedHearing, submitHearing, updateHearing } from './HearingsActions';
 import { updateEntity } from '../../utils/data/DataActionFactory';
 
 const { JUDGES } = APP_TYPES;

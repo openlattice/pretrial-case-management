@@ -36,7 +36,7 @@ import { STATE } from '../../utils/consts/redux/SharedConsts';
 import * as CourtActionFactory from '../court/CourtActionFactory';
 import * as DataActionFactory from '../../utils/data/DataActionFactory';
 import * as FormActionFactory from '../psa/FormActionFactory';
-import * as HearingsActionFactory from '../hearings/HearingsActionFactory';
+import * as HearingsActions from '../hearings/HearingsActions';
 import * as PSAModalActionFactory from '../psamodal/PSAModalActionFactory';
 import * as ReviewActionFactory from './ReviewActionFactory';
 import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
@@ -469,8 +469,8 @@ function mapDispatchToProps(dispatch :Function) :Object {
     actions[action] = FormActionFactory[action];
   });
 
-  Object.keys(HearingsActionFactory).forEach((action :string) => {
-    actions[action] = HearingsActionFactory[action];
+  Object.keys(HearingsActions).forEach((action :string) => {
+    actions[action] = HearingsActions[action];
   });
 
   Object.keys(ReviewActionFactory).forEach((action :string) => {

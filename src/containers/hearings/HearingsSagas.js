@@ -45,7 +45,7 @@ import {
   submitExistingHearing,
   submitHearing,
   updateHearing
-} from './HearingsActionFactory';
+} from './HearingsActions';
 
 const { DeleteTypes } = Types;
 

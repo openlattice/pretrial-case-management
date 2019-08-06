@@ -10,6 +10,7 @@ import {
 } from 'immutable';
 
 import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
+import { hearingIsCancelled } from '../../utils/HearingUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PEOPLE, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { PSA_STATUSES } from '../../utils/consts/Consts';
@@ -24,7 +25,7 @@ import {
   submitExistingHearing,
   submitHearing,
   updateHearing
-} from '../hearings/HearingsActionFactory';
+} from '../hearings/HearingsActions';
 import {
   CLEAR_PERSON,
   getPeople,

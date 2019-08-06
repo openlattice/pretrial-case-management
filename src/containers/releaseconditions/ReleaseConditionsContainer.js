@@ -67,7 +67,7 @@ import { getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUti
 import * as CheckInsActionFactory from '../checkins/CheckInsActionFactory';
 import * as CourtActionFactory from '../court/CourtActionFactory';
 import * as DataActionFactory from '../../utils/data/DataActionFactory';
-import * as HearingsActionFactory from '../hearings/HearingsActionFactory';
+import * as HearingsActions from '../hearings/HearingsActions';
 import * as ReleaseConditionsActionFactory from './ReleaseConditionsActionFactory';
 import * as ReviewActionFactory from '../review/ReviewActionFactory';
 import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
@@ -1188,8 +1188,8 @@ function mapDispatchToProps(dispatch :Function) :Object {
     actions[action] = DataActionFactory[action];
   });
 
-  Object.keys(HearingsActionFactory).forEach((action :string) => {
-    actions[action] = HearingsActionFactory[action];
+  Object.keys(HearingsActions).forEach((action :string) => {
+    actions[action] = HearingsActions[action];
   });
 
   Object.keys(ReleaseConditionsActionFactory).forEach((action :string) => {

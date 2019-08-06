@@ -18,7 +18,7 @@ import {
   submitExistingHearing,
   submitHearing,
   updateHearing
-} from './HearingsActionFactory';
+} from './HearingsActions';
 
 import { TIME_FORMAT } from '../../utils/consts/DateTimeConsts';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';

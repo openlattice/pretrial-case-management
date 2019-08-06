@@ -17,7 +17,7 @@ import {
   submitExistingHearing,
   submitHearing,
   updateHearing
-} from '../hearings/HearingsActionFactory';
+} from '../hearings/HearingsActions';
 import {
   changePSAStatus,
   loadCaseHistory,

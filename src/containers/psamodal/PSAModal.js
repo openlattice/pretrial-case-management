@@ -63,7 +63,7 @@ import * as Routes from '../../core/router/Routes';
 import * as CourtActionFactory from '../court/CourtActionFactory';
 import * as DataActionFactory from '../../utils/data/DataActionFactory';
 import * as FormActionFactory from '../psa/FormActionFactory';
-import * as HearingsActionFactory from '../hearings/HearingsActionFactory';
+import * as HearingsActions from '../hearings/HearingsActions';
 import * as PSAModalActionFactory from './PSAModalActionFactory';
 import * as ReviewActionFactory from '../review/ReviewActionFactory';
 import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
@@ -1075,8 +1075,8 @@ function mapDispatchToProps(dispatch :Function) :Object {
     actions[action] = FormActionFactory[action];
   });
 
-  Object.keys(HearingsActionFactory).forEach((action :string) => {
-    actions[action] = HearingsActionFactory[action];
+  Object.keys(HearingsActions).forEach((action :string) => {
+    actions[action] = HearingsActions[action];
   });
 
   Object.keys(PSAModalActionFactory).forEach((action :string) => {
