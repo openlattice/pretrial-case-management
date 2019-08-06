@@ -36,11 +36,7 @@ import { HEARINGS_ACTIONS, HEARINGS_DATA } from '../../utils/consts/redux/Hearin
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUtils';
 
-
-import * as DataActionFactory from '../../utils/data/DataActionFactory';
-import * as HearingsActions from './HearingsActions';
-import * as ReviewActionFactory from '../review/ReviewActionFactory';
-import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
+import { submitExistingHearing } from './HearingsActions';
 
 const {
   CONTACT_INFORMATION,
@@ -51,10 +47,7 @@ const {
 
 const PEOPLE_FQN = APP_TYPES.PEOPLE;
 
-const {
-  ENTITY_KEY_ID,
-  CASE_ID
-} = PROPERTY_TYPES;
+const { ENTITY_KEY_ID, CASE_ID } = PROPERTY_TYPES;
 
 const Container = styled.div`
   hr {
@@ -96,21 +89,11 @@ const CreateButton = styled(InfoButton)`
 
 type Props = {
   actions :{
-    deleteEntity :(values :{
-      entitySetId :string,
-      entityKeyId :string
-    }) => void,
-    refreshHearingAndNeighbors :({ hearingEntityKeyId :string }) => void,
-    refreshPSANeighbors :({ id :string }) => void,
-    replaceAssociation :(values :{
-      associationEntity :Map<*, *>,
-      associationEntityName :string,
-      associationEntityKeyId :string,
-      srcEntityName :string,
-      srcEntityKeyId :string,
-      dstEntityName :string,
-      dstEntityKeyId :string,
-      callback :() => void
+    submitExistingHearing :(values :{
+      caseId :string,
+      hearingEKID :string,
+      personEKID :string,
+      psaEKID :string
     }) => void
   },
   context :string,
@@ -122,14 +105,12 @@ type Props = {
   personNeighbors :Map<*, *>,
   psaEntityKeyId :string,
   psaHearings :List<*, *>,
-  psaIdsRefreshing :Map<*, *>,
   psaNeighbors :Map<*, *>,
   readOnly :boolean,
   refreshHearingAndNeighborsReqState :RequestState,
   submitExistingHearingReqState :RequestState,
   submitHearingReqState :RequestState,
   updateHearingReqState :RequestState,
-  refreshingNeighbors :boolean,
   selectedOrganizationSettings :Map<*, *>,
 }
 
@@ -214,13 +195,6 @@ class SelectHearingsContainer extends React.Component<Props, State> {
     });
   }
 
-  refreshHearingsNeighborsCallback = () => {
-    const { selectedHearing } = this.state;
-    const { actions, psaEntityKeyId } = this.props;
-    actions.refreshHearingAndNeighbors({ id: selectedHearing.entityKeyId });
-    if (psaEntityKeyId) actions.refreshPSANeighbors({ id: psaEntityKeyId });
-  }
-
   renderSelectReleaseCondtions = (selectedHearing) => {
     const { entityKeyId } = selectedHearing;
     const { openClosePSAModal } = this.props;
@@ -240,12 +214,11 @@ class SelectHearingsContainer extends React.Component<Props, State> {
       personEKID,
       psaEntityKeyId
     } = this.props;
-    const { submitExistingHearing } = actions;
     const {
       [ENTITY_KEY_ID]: hearingEKID,
       [CASE_ID]: caseId
     } = getEntityProperties(row, [ENTITY_KEY_ID, CASE_ID]);
-    submitExistingHearing({
+    actions.submitExistingHearing({
       caseId,
       hearingEKID,
       personEKID,
@@ -311,9 +284,7 @@ class SelectHearingsContainer extends React.Component<Props, State> {
       refreshHearingAndNeighborsReqState,
       submitExistingHearingReqState,
       submitHearingReqState,
-      updateHearingReqState,
-      psaIdsRefreshing,
-      refreshingNeighbors
+      updateHearingReqState
     } = this.props;
     const submittingHearing = requestIsPending(submitHearingReqState);
     const updatingHearing = requestIsPending(updateHearingReqState);
@@ -326,8 +297,6 @@ class SelectHearingsContainer extends React.Component<Props, State> {
     const isLoading = (submittingHearing
       || updatingHearing
       || submittingExistingHearing
-      || refreshingNeighbors
-      || psaIdsRefreshing.size
       || refreshingHearingAndNeighbors);
 
     const loadingText = (
@@ -419,21 +388,7 @@ function mapStateToProps(state) {
 function mapDispatchToProps(dispatch :Function) :Object {
   const actions :{ [string] :Function } = {};
 
-  Object.keys(DataActionFactory).forEach((action :string) => {
-    actions[action] = DataActionFactory[action];
-  });
-
-  Object.keys(HearingsActions).forEach((action :string) => {
-    actions[action] = HearingsActions[action];
-  });
-
-  Object.keys(ReviewActionFactory).forEach((action :string) => {
-    actions[action] = ReviewActionFactory[action];
-  });
-
-  Object.keys(SubmitActionFactory).forEach((action :string) => {
-    actions[action] = SubmitActionFactory[action];
-  });
+  actions.submitExistingHearing = submitExistingHearing;
 
   return {
     actions: {
