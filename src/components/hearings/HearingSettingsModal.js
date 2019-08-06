@@ -17,7 +17,7 @@ import {
   Wrapper
 } from '../../utils/Layout';
 
-import * as HearingsActionFactory from '../../containers/hearings/HearingsActionFactory';
+import { closeHearingSettingsModal } from '../../containers/hearings/HearingsActions';
 
 
 const ModalBody = styled.div`
@@ -96,9 +96,7 @@ function mapStateToProps(state) {
 function mapDispatchToProps(dispatch :Function) :Object {
   const actions :{ [string] :Function } = {};
 
-  Object.keys(HearingsActionFactory).forEach((action :string) => {
-    actions[action] = HearingsActionFactory[action];
-  });
+  actions.closeHearingSettingsModal = closeHearingSettingsModal;
 
   return {
     actions: {
