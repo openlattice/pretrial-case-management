@@ -19,12 +19,10 @@ import HearingCardsWithTitle from '../hearings/HearingCardsWithTitle';
 import HearingsTable from '../hearings/HearingsTable';
 import ReleaseConditionsModal from '../releaseconditions/ReleaseConditionsModal';
 import LogoLoader from '../LogoLoader';
-import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import {
   APP,
   COURT,
-  EDM,
   PEOPLE,
   PSA_NEIGHBOR,
   REVIEW
@@ -43,11 +41,7 @@ import { HEARINGS_ACTIONS, HEARINGS_DATA } from '../../utils/consts/redux/Hearin
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUtils';
 
-import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
-import * as DataActionFactory from '../../utils/data/DataActionFactory';
-import * as ReviewActionFactory from '../../containers/review/ReviewActionFactory';
-import * as CourtActionFactory from '../../containers/court/CourtActionFactory';
-import * as PeopleActionFactory from '../../containers/people/PeopleActionFactory';
+import { updateHearing } from '../../containers/hearings/HearingsActions';
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
@@ -79,18 +73,17 @@ const TitleWrapper = styled.div`
 `;
 
 type Props = {
-  app :Map<*, *>,
   chargeHistory :Map<*, *>,
   defaultBond :Map<*, *>,
   defaultConditions :Map<*, *>,
   defaultDMF :Map<*, *>,
   dmfId :string,
-  fqnToIdMap :Map<*, *>,
   hearingNeighborsById :Map<*, *>,
   jurisdiction :?string,
   loading :boolean,
   neighbors :Map<*, *>,
   hearings :List<*, *>,
+  personEKID :?string,
   personId :?string,
   psaEntityKeyId :Map<*, *>,
   psaId :?string,
@@ -134,24 +127,13 @@ class PersonHearings extends React.Component<Props, State> {
     };
   }
 
-  refreshPersonNeighborsCallback = () => {
-    const { actions, personId } = this.props;
-    actions.refreshPersonNeighbors({ personId });
-  }
-
   cancelHearing = (entityKeyId) => {
-    const { actions, app, fqnToIdMap } = this.props;
-    const hearingEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.HEARINGS);
-    const values = {
-      [entityKeyId]: {
-        [fqnToIdMap.get(PROPERTY_TYPES.HEARING_INACTIVE)]: [true]
-      }
-    };
-    actions.updateEntity({
-      entitySetId: hearingEntitySetId,
-      entities: values,
-      updateType: 'PartialReplace',
-      callback: this.refreshPersonNeighborsCallback
+    const { actions, personEKID } = this.props;
+    const hearingEntity = { [PROPERTY_TYPES.HEARING_INACTIVE]: [true] };
+    actions.updateHearing({
+      hearingEntity,
+      hearingEKID: entityKeyId,
+      personEKID
     });
   }
 
@@ -276,12 +258,10 @@ class PersonHearings extends React.Component<Props, State> {
 function mapStateToProps(state) {
   const app = state.get(STATE.APP);
   const court = state.get(STATE.COURT);
-  const edm = state.get(STATE.EDM);
   const hearings = state.get(STATE.HEARINGS);
   const review = state.get(STATE.REVIEW);
   const people = state.get(STATE.PEOPLE);
   return {
-    app,
     [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
     [APP.SELECTED_ORG_SETTINGS]: app.get(APP.SELECTED_ORG_SETTINGS),
 
@@ -290,8 +270,6 @@ function mapStateToProps(state) {
     // Hearings
     refreshHearingAndNeighborsReqState: getReqState(hearings, HEARINGS_ACTIONS.REFRESH_HEARING_AND_NEIGHBORS),
     [HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID]: hearings.get(HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID),
-
-    [EDM.FQN_TO_ID]: edm.get(EDM.FQN_TO_ID),
 
     [PEOPLE.REFRESHING_PERSON_NEIGHBORS]: people.get(PEOPLE.REFRESHING_PERSON_NEIGHBORS),
 
@@ -306,25 +284,7 @@ function mapStateToProps(state) {
 function mapDispatchToProps(dispatch :Function) :Object {
   const actions :{ [string] :Function } = {};
 
-  Object.keys(DataActionFactory).forEach((action :string) => {
-    actions[action] = DataActionFactory[action];
-  });
-
-  Object.keys(SubmitActionFactory).forEach((action :string) => {
-    actions[action] = SubmitActionFactory[action];
-  });
-
-  Object.keys(PeopleActionFactory).forEach((action :string) => {
-    actions[action] = PeopleActionFactory[action];
-  });
-
-  Object.keys(ReviewActionFactory).forEach((action :string) => {
-    actions[action] = ReviewActionFactory[action];
-  });
-
-  Object.keys(CourtActionFactory).forEach((action :string) => {
-    actions[action] = CourtActionFactory[action];
-  });
+  actions.updateHearing = updateHearing;
 
   return {
     actions: {
