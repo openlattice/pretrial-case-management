@@ -6,10 +6,8 @@ import { RequestStates } from 'redux-reqseq';
 
 import { getEntityProperties } from '../../utils/DataUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { RELEASE_COND } from '../../utils/consts/FrontEndStateConsts';
 import { deleteEntity } from '../../utils/data/DataActionFactory';
 import { updateHearing, refreshHearingAndNeighbors, submitHearing } from '../hearings/HearingsActions';
-import { refreshPSANeighbors } from '../review/ReviewActionFactory';
 import {
   CLEAR_RELEASE_CONDITIONS,
   loadReleaseConditions,
@@ -22,7 +20,6 @@ import { actionValueIsInvalid } from '../../utils/consts/redux/ReduxUtils';
 import { RELEASE_COND_ACTIONS, RELEASE_COND_DATA } from '../../utils/consts/redux/ReleaseConditionsConsts';
 
 const {
-  HEARINGS,
   JUDGES,
   OUTCOMES,
   DMF_RESULTS,
@@ -199,27 +196,6 @@ export default function releaseConditionsReducer(state :Map<*, *> = INITIAL_STAT
       });
     }
 
-    case refreshPSANeighbors.case(action.type): {
-      return refreshPSANeighbors.reducer(state, action, {
-        REQUEST: () => state.set(RELEASE_COND.REFRESHING_SELECTED_HEARING, true),
-        SUCCESS: () => {
-          const { neighbors } = action.value;
-
-          let selectedHearing = state.get(RELEASE_COND.SELECTED_HEARING, Map());
-          const selectedHearingEntityKeyId = selectedHearing.getIn([ENTITY_KEY_ID, 0], '');
-          neighbors.get(HEARINGS).forEach((hearing) => {
-            const hearingEntityKeyId = hearing.getIn([ENTITY_KEY_ID, 0]);
-            if (hearingEntityKeyId === selectedHearingEntityKeyId) {
-              selectedHearing = hearing;
-            }
-          });
-
-          return state.set(RELEASE_COND.SELECTED_HEARING, selectedHearing);
-        },
-        FINALLY: () => state.set(RELEASE_COND.REFRESHING_SELECTED_HEARING, false),
-      });
-    }
-
     case updateOutcomesAndReleaseCondtions.case(action.type): {
       return updateOutcomesAndReleaseCondtions.reducer(state, action, {
         REQUEST: () => state
@@ -257,11 +233,11 @@ export default function releaseConditionsReducer(state :Map<*, *> = INITIAL_STAT
       return submitHearing.reducer(state, action, {
         SUCCESS: () => {
           const { hearing, hearingNeighborsByAppTypeFqn } = action.value;
-          const selectedHearingNeighbors = state.set(RELEASE_COND.HEARING_NEIGHBORS, hearingNeighborsByAppTypeFqn);
+          const selectedHearingNeighbors = state.set(RELEASE_COND_DATA.HEARING_NEIGHBORS, hearingNeighborsByAppTypeFqn);
 
           return state
-            .set(RELEASE_COND.SELECTED_HEARING, hearing)
-            .set(RELEASE_COND.HEARING_NEIGHBORS, selectedHearingNeighbors);
+            .set(RELEASE_COND_DATA.SELECTED_HEARING, hearing)
+            .set(RELEASE_COND_DATA.HEARING_NEIGHBORS, selectedHearingNeighbors);
         },
       });
     }
@@ -270,12 +246,12 @@ export default function releaseConditionsReducer(state :Map<*, *> = INITIAL_STAT
       return updateHearing.reducer(state, action, {
         SUCCESS: () => {
           const { hearing, hearingJudge } = action.value;
-          const selectedHearingNeighbors = state.get(RELEASE_COND.HEARING_NEIGHBORS, Map())
+          const selectedHearingNeighbors = state.get(RELEASE_COND_DATA.HEARING_NEIGHBORS, Map())
             .set(JUDGES, hearingJudge);
 
           return state
-            .set(RELEASE_COND.SELECTED_HEARING, hearing)
-            .set(RELEASE_COND.HEARING_NEIGHBORS, selectedHearingNeighbors);
+            .set(RELEASE_COND_DATA.SELECTED_HEARING, hearing)
+            .set(RELEASE_COND_DATA.HEARING_NEIGHBORS, selectedHearingNeighbors);
         },
       });
     }
