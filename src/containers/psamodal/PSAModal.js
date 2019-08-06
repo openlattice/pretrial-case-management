@@ -189,7 +189,6 @@ type Props = {
   chargeHistory :Map<*, *>,
   entityKeyId :string,
   ftaHistory :Map<*, *>,
-  fqnsToEntitySetIds :Map<*, *>,
   hearings :List<*>,
   hearingNeighborsById :Map<*, *>,
   hideProfile? :boolean,
@@ -201,7 +200,6 @@ type Props = {
   manualChargeHistory :Map<*, *>,
   onClose :() => {},
   open :boolean,
-  readOnly :boolean,
   personDetailsLoaded :boolean,
   personId :string,
   personHearings :Map<*, *>,
@@ -209,14 +207,10 @@ type Props = {
   psaId :Map<*, *>,
   psaNeighbors :Map<*, *>,
   psaPermissions :boolean,
-  refreshingNeighbors :boolean,
   scores :Map<*, *>,
-  scoresEntitySetId :string,
-  selectedOrganizationId :string,
   selectedOrganizationSettings :Map<*, *>,
   sentenceHistory :Map<*, *>,
   submitting :boolean,
-  judgesview :boolean,
   actions :{
     clearSubmit :() => void,
     deleteEntity :(value :{ entitySetId :string, entityKeyId :string }) => void,
@@ -224,7 +218,6 @@ type Props = {
       neighbors :Map<*, *>,
       scores :Map<*, *>
     }) => void,
-    refreshPSANeighbors :({ id :string }) => void,
     replaceEntity :(value :{ entitySetName :string, entityKeyId :string, values :Object }) => void,
     submit :(value :{ config :Object, values :Object, callback? :() => void }) => void,
     submitData :(value :{ config :Object, values :Object }) => void,
@@ -481,11 +474,6 @@ class PSAModal extends React.Component<Props, State> {
     return getIdOrValue(psaNeighbors, name, optionalFQN);
   };
 
-  refreshPSANeighborsCallback = () => {
-    const { actions, entityKeyId } = this.props;
-    actions.refreshPSANeighbors({ id: entityKeyId });
-  }
-
   onRiskFactorEdit = (e :Object) => {
     e.preventDefault();
     const {
@@ -578,15 +566,6 @@ class PSAModal extends React.Component<Props, State> {
 
   handleStatusChange = () => {
     this.setState({ editing: false });
-  }
-
-  deleteHearing = () => {
-    const { actions, entityKeyId } = this.props;
-    actions.deleteEntity({
-      entitySetId: this.getEntitySetId(APP_TYPES.HEARINGS),
-      entityKeyId: this.getEntityKeyId(APP_TYPES.HEARINGS)
-    });
-    actions.refreshPSANeighbors({ id: entityKeyId });
   }
 
   getName = () => {
@@ -869,7 +848,6 @@ class PSAModal extends React.Component<Props, State> {
       hearings,
       psaNeighbors,
       submitting,
-      refreshingNeighbors,
       scores,
       entityKeyId,
       personHearings,
@@ -880,23 +858,20 @@ class PSAModal extends React.Component<Props, State> {
 
     const person = psaNeighbors.getIn([PEOPLE, PSA_NEIGHBOR.DETAILS], Map());
     const { [ENTITY_KEY_ID]: personEKID } = getEntityProperties(person, [ENTITY_KEY_ID]);
-
+    const psaContext = psaNeighbors.getIn([PSA_RISK_FACTORS, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.CONTEXT, 0], '');
     return (
       <ModalWrapper withPadding>
         <SelectHearingsContainer
-            {...this.props}
+            context={psaContext}
             openClosePSAModal={this.openClosePSAModal}
             chargeHistory={chargeHistory}
             psaHearings={hearings}
             submitting={submitting}
-            refreshingNeighbors={refreshingNeighbors}
             dmfId={this.getIdOrValue(DMF_RESULTS)}
             personId={personId}
             personEKID={personEKID}
             personNeighbors={personNeighbors}
             psaEntityKeyId={entityKeyId}
-            deleteHearing={this.deleteHearing}
-            refreshPSANeighborsCallback={this.refreshPSANeighborsCallback}
             hearingId={this.getEntityKeyId(APP_TYPES.HEARINGS)}
             personHearings={personHearings}
             readOnly={!psaPermissions}
