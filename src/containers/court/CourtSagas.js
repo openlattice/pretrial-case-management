@@ -33,7 +33,7 @@ import {
   STATE
 } from '../../utils/consts/FrontEndStateConsts';
 
-import { loadHearingNeighbors } from '../hearings/HearingsActionFactory';
+import { loadHearingNeighbors } from '../hearings/HearingsActions';
 import {
   FILTER_PEOPLE_IDS_WITH_OPEN_PSAS,
   LOAD_HEARINGS_FOR_DATE,

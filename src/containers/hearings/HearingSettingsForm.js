@@ -24,14 +24,12 @@ import { getCourtroomOptions, getJudgeOptions, formatJudgeName } from '../../uti
 import { getEntityProperties } from '../../utils/DataUtils';
 import { getJurisdiction } from '../../utils/AppUtils';
 import { getTimeOptions } from '../../utils/consts/DateTimeConsts';
-import {
-  APP,
-  STATE,
-  HEARINGS,
-  COURT
-} from '../../utils/consts/FrontEndStateConsts';
+import { APP, COURT } from '../../utils/consts/FrontEndStateConsts';
 
-import * as HearingsActionFactory from './HearingsActionFactory';
+import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
+
+import * as HearingsActions from './HearingsActions';
 
 const { ENTITY_KEY_ID } = PROPERTY_TYPES;
 
@@ -113,10 +111,10 @@ class HearingSettingsForm extends React.Component<Props, State> {
   componentDidMount() {
     const {
       allJudges,
-      [HEARINGS.DATE]: newHearingDate,
-      [HEARINGS.TIME]: newHearingTime,
-      [HEARINGS.COURTROOM]: newHearingCourtroom,
-      [HEARINGS.JUDGE]: judgeEKID
+      [HEARINGS_DATA.DATE]: newHearingDate,
+      [HEARINGS_DATA.TIME]: newHearingTime,
+      [HEARINGS_DATA.COURTROOM]: newHearingCourtroom,
+      [HEARINGS_DATA.JUDGE]: judgeEKID
     } = this.props;
     let judge;
     allJudges.forEach((judgeObj) => {
@@ -344,18 +342,18 @@ function mapStateToProps(state) {
 
     [COURT.ALL_JUDGES]: court.get(COURT.ALL_JUDGES),
 
-    [HEARINGS.DATE]: hearings.get(HEARINGS.DATE),
-    [HEARINGS.TIME]: hearings.get(HEARINGS.TIME),
-    [HEARINGS.COURTROOM]: hearings.get(HEARINGS.COURTROOM),
-    [HEARINGS.JUDGE]: hearings.get(HEARINGS.JUDGE)
+    [HEARINGS_DATA.DATE]: hearings.get(HEARINGS_DATA.DATE),
+    [HEARINGS_DATA.TIME]: hearings.get(HEARINGS_DATA.TIME),
+    [HEARINGS_DATA.COURTROOM]: hearings.get(HEARINGS_DATA.COURTROOM),
+    [HEARINGS_DATA.JUDGE]: hearings.get(HEARINGS_DATA.JUDGE)
   };
 }
 
 function mapDispatchToProps(dispatch :Function) :Object {
   const actions :{ [string] :Function } = {};
 
-  Object.keys(HearingsActionFactory).forEach((action :string) => {
-    actions[action] = HearingsActionFactory[action];
+  Object.keys(HearingsActions).forEach((action :string) => {
+    actions[action] = HearingsActions[action];
   });
 
   return {

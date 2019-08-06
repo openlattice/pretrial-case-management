@@ -8,7 +8,8 @@ import Modal, { ModalTransition } from '@atlaskit/modal-dialog';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import HearingSettingsForm from '../../containers/hearings/HearingSettingsForm';
-import { STATE, HEARINGS } from '../../utils/consts/FrontEndStateConsts';
+import { STATE } from '../../utils/consts/FrontEndStateConsts';
+import { HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
 import {
   CloseModalX,
   PaddedStyledColumnRow,
@@ -16,7 +17,7 @@ import {
   Wrapper
 } from '../../utils/Layout';
 
-import * as HearingsActionFactory from '../../containers/hearings/HearingsActionFactory';
+import { closeHearingSettingsModal } from '../../containers/hearings/HearingsActions';
 
 
 const ModalBody = styled.div`
@@ -88,16 +89,14 @@ class HearingSettingsModal extends React.Component<Props, State> {
 function mapStateToProps(state) {
   const hearings = state.get(STATE.HEARINGS);
   return {
-    [HEARINGS.SETTINGS_MODAL_OPEN]: hearings.get(HEARINGS.SETTINGS_MODAL_OPEN)
+    [HEARINGS_DATA.SETTINGS_MODAL_OPEN]: hearings.get(HEARINGS_DATA.SETTINGS_MODAL_OPEN)
   };
 }
 
 function mapDispatchToProps(dispatch :Function) :Object {
   const actions :{ [string] :Function } = {};
 
-  Object.keys(HearingsActionFactory).forEach((action :string) => {
-    actions[action] = HearingsActionFactory[action];
-  });
+  actions.closeHearingSettingsModal = closeHearingSettingsModal;
 
   return {
     actions: {

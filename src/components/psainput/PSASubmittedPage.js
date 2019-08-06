@@ -8,6 +8,7 @@ import styled from 'styled-components';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 import { bindActionCreators } from 'redux';
+import type { RequestState } from 'redux-reqseq';
 
 import BasicButton from '../buttons/BasicButton';
 import InfoButton from '../buttons/InfoButton';
@@ -30,20 +31,18 @@ import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { formatDMFFromEntity, getHeaderText } from '../../utils/DMFUtils';
 import { JURISDICTION } from '../../utils/consts/Consts';
-import {
-  APP,
-  CHARGES,
-  HEARINGS,
-  STATE
-} from '../../utils/consts/FrontEndStateConsts';
+import { APP, CHARGES } from '../../utils/consts/FrontEndStateConsts';
 import {
   ResultHeader,
   ScaleBlock,
   SelectedScaleBlock,
   ScaleWrapper
 } from '../../utils/Layout';
+import { HEARINGS_ACTIONS, HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
+import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUtils';
 
-import { clearSubmittedHearing } from '../../containers/hearings/HearingsActionFactory';
+import { clearSubmittedHearing } from '../../containers/hearings/HearingsActions';
 import { goToPath } from '../../core/router/RoutingActionFactory';
 import * as Routes from '../../core/router/Routes';
 
@@ -61,7 +60,6 @@ type Props = {
   context :string,
   allCases :Immutable.List<*>,
   allCharges :Immutable.Map<*, *>,
-  allHearings :Immutable.List<*>,
   getOnExport :(isCompact :boolean) => void,
   onClose :() => void,
   violentArrestCharges :Immutable.Map<*, *>,
@@ -69,7 +67,7 @@ type Props = {
   selectedOrganizationSettings :Map,
   submittedHearing :Map<*, *>,
   submittedHearingNeighbors :Map<*, *>,
-  submittingHearing :boolean,
+  submitHearingReqState :RequestState,
   actions :{
     goToPath :(path :string) => void
   }
@@ -530,8 +528,9 @@ class PSASubmittedPage extends React.Component<Props, State> {
       context,
       submittedHearing,
       submittedHearingNeighbors,
-      submittingHearing
+      submitHearingReqState
     } = this.props;
+    const submittingHearing = requestIsPending(submitHearingReqState);
     if (submittingHearing) return <LogoLoader />;
 
     const jurisdiction = JURISDICTION[context];
@@ -659,9 +658,9 @@ function mapStateToProps(state :Immutable.Map<*, *>) :Object {
     [CHARGES.COURT_VIOLENT]: charges.get(CHARGES.COURT_VIOLENT),
 
     // Hearings
-    [HEARINGS.SUBMITTED_HEARING]: hearings.get(HEARINGS.SUBMITTED_HEARING),
-    [HEARINGS.SUBMITTED_HEARING_NEIGHBORS]: hearings.get(HEARINGS.SUBMITTED_HEARING_NEIGHBORS),
-    [HEARINGS.SUBMITTING_HEARING]: hearings.get(HEARINGS.SUBMITTING_HEARING)
+    submitHearingReqState: getReqState(hearings, HEARINGS_ACTIONS.SUBMIT_HEARING),
+    [HEARINGS_DATA.SUBMITTED_HEARING]: hearings.get(HEARINGS_DATA.SUBMITTED_HEARING),
+    [HEARINGS_DATA.SUBMITTED_HEARING_NEIGHBORS]: hearings.get(HEARINGS_DATA.SUBMITTED_HEARING_NEIGHBORS)
   };
 }
 
