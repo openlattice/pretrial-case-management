@@ -8,6 +8,7 @@ import styled from 'styled-components';
 import { fromJS, Map } from 'immutable';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
+import type { RequestState } from 'redux-reqseq';
 
 import BasicButton from '../../components/buttons/BasicButton';
 import ContentBlock from '../../components/ContentBlock';
@@ -23,21 +24,21 @@ import { HEARING_CONSTS } from '../../utils/consts/HearingConsts';
 import { getCourtroomOptions, getJudgeOptions, formatJudgeName } from '../../utils/HearingUtils';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { getTimeOptions } from '../../utils/consts/DateTimeConsts';
+import { COURT, EDM, PSA_ASSOCIATION } from '../../utils/consts/FrontEndStateConsts';
 import {
   getEntityKeyId,
   getEntityProperties,
   getNeighborDetailsForEntitySet,
   isUUID
 } from '../../utils/DataUtils';
-import {
-  COURT,
-  EDM,
-  HEARINGS,
-  PSA_ASSOCIATION,
-  STATE
-} from '../../utils/consts/FrontEndStateConsts';
 
-import * as HearingsActionFactory from './HearingsActionFactory';
+// Redux State Imports
+import { getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUtils';
+import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { HEARINGS_ACTIONS, HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
+
+// Action Imports
+import { clearSubmittedHearing, submitHearing, updateHearing } from './HearingsActions';
 import { updateEntity } from '../../utils/data/DataActionFactory';
 
 const { JUDGES } = APP_TYPES;
@@ -122,7 +123,7 @@ type Props = {
   hearingNeighbors :Map<*, *>,
   hearingEKID :string,
   jurisdiction :string,
-  updatingHearing :boolean,
+  updateHearingReqState :RequestState,
   psaEKID :string,
   personEKID :string,
   actions :{
@@ -169,10 +170,10 @@ class HearingForm extends React.Component<Props, State> {
     let judgeName = '';
     let modifyingHearing = true;
     let {
-      [HEARINGS.DATE]: newHearingDate,
-      [HEARINGS.TIME]: newHearingTime,
-      [HEARINGS.COURTROOM]: newHearingCourtroom,
-      [HEARINGS.JUDGE]: judgeEKID
+      [HEARINGS_DATA.DATE]: newHearingDate,
+      [HEARINGS_DATA.TIME]: newHearingTime,
+      [HEARINGS_DATA.COURTROOM]: newHearingCourtroom,
+      [HEARINGS_DATA.JUDGE]: judgeEKID
     } = this.props;
     if (hearing) {
       modifyingHearing = false;
@@ -218,7 +219,6 @@ class HearingForm extends React.Component<Props, State> {
       psaEKID,
       backToSelection
     } = this.props;
-    const { submitHearing } = actions;
     const {
       newHearingDate,
       newHearingTime,
@@ -237,7 +237,7 @@ class HearingForm extends React.Component<Props, State> {
       const hearingDateTime = datetime.toISO();
       const hearingCourtroom = newHearingCourtroom;
       const hearingComments = otherJudgeText;
-      submitHearing({
+      actions.submitHearing({
         hearingDateTime,
         hearingCourtroom,
         hearingComments,
@@ -293,7 +293,6 @@ class HearingForm extends React.Component<Props, State> {
       hearingEKID,
       hearing
     } = this.props;
-    const { updateHearing } = actions;
     const {
       judge,
       judgeEKID,
@@ -326,7 +325,7 @@ class HearingForm extends React.Component<Props, State> {
     if (newHearingCourtroom) hearingEntity[PROPERTY_TYPES.COURTROOM] = [newHearingCourtroom];
     if (judgeText) hearingEntity[PROPERTY_TYPES.HEARING_COMMENTS] = judgeText;
 
-    updateHearing({
+    actions.updateHearing({
       hearingEntity,
       hearingEKID,
       judgeEKID,
@@ -544,8 +543,8 @@ class HearingForm extends React.Component<Props, State> {
   }
 
   render() {
-    const { hearing, updatingHearing } = this.props;
-
+    const { hearing, updateHearingReqState } = this.props;
+    const updatingHearing = requestIsPending(updateHearingReqState);
     if (updatingHearing) return <LogoLoader size={30} loadingText="Updating Hearing" />;
     const { judge } = this.state;
     const date = this.renderDatePicker();
@@ -620,14 +619,11 @@ function mapStateToProps(state) {
 
     [EDM.FQN_TO_ID]: edm.get(EDM.FQN_TO_ID),
 
-    [HEARINGS.DATE]: hearings.get(HEARINGS.DATE),
-    [HEARINGS.TIME]: hearings.get(HEARINGS.TIME),
-    [HEARINGS.COURTROOM]: hearings.get(HEARINGS.COURTROOM),
-    [HEARINGS.JUDGE]: hearings.get(HEARINGS.JUDGE),
-    [HEARINGS.HEARING_NEIGHBORS_BY_ID]: hearings.get(HEARINGS.HEARING_NEIGHBORS_BY_ID),
-    [HEARINGS.LOADING_HEARING_NEIGHBORS]: hearings.get(HEARINGS.LOADING_HEARING_NEIGHBORS),
-    [HEARINGS.SUBMITTING_HEARING]: hearings.get(HEARINGS.SUBMITTING_HEARING),
-    [HEARINGS.UPDATING_HEARING]: hearings.get(HEARINGS.UPDATING_HEARING),
+    [HEARINGS_DATA.DATE]: hearings.get(HEARINGS_DATA.DATE),
+    [HEARINGS_DATA.TIME]: hearings.get(HEARINGS_DATA.TIME),
+    [HEARINGS_DATA.COURTROOM]: hearings.get(HEARINGS_DATA.COURTROOM),
+    [HEARINGS_DATA.JUDGE]: hearings.get(HEARINGS_DATA.JUDGE),
+    submitExistingHearingReqState: getReqState(hearings, HEARINGS_ACTIONS.SUBMIT_EXISTING_HEARING)
   };
 }
 
@@ -636,9 +632,9 @@ function mapDispatchToProps(dispatch :Function) :Object {
 
   actions.updateEntity = updateEntity;
 
-  Object.keys(HearingsActionFactory).forEach((action :string) => {
-    actions[action] = HearingsActionFactory[action];
-  });
+  actions.clearSubmittedHearing = clearSubmittedHearing;
+  actions.submitHearing = submitHearing;
+  actions.updateHearing = updateHearing;
 
   return {
     actions: {

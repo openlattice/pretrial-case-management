@@ -19,7 +19,7 @@ import {
   SET_COURT_DATE
 } from './CourtActionFactory';
 import { refreshPSANeighbors, changePSAStatus } from '../review/ReviewActionFactory';
-import { refreshHearingAndNeighbors, submitExistingHearing, submitHearing } from '../hearings/HearingsActionFactory';
+import { refreshHearingAndNeighbors, submitExistingHearing, submitHearing } from '../hearings/HearingsActions';
 import { SWITCH_ORGANIZATION } from '../app/AppActionFactory';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { COURT } from '../../utils/consts/FrontEndStateConsts';

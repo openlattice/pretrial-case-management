@@ -8,7 +8,7 @@ import { getEntityProperties } from '../../utils/DataUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { RELEASE_COND } from '../../utils/consts/FrontEndStateConsts';
 import { deleteEntity } from '../../utils/data/DataActionFactory';
-import { updateHearing, refreshHearingAndNeighbors, submitHearing } from '../hearings/HearingsActionFactory';
+import { updateHearing, refreshHearingAndNeighbors, submitHearing } from '../hearings/HearingsActions';
 import { refreshPSANeighbors } from '../review/ReviewActionFactory';
 import {
   CLEAR_RELEASE_CONDITIONS,

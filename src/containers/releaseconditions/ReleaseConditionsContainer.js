@@ -10,6 +10,7 @@ import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { Constants } from 'lattice';
 import { List, Map, OrderedMap } from 'immutable';
+import type { RequestState } from 'redux-reqseq';
 
 import BasicButton from '../../components/buttons/BasicButton';
 import BondTypeSection from '../../components/releaseconditions/BondTypeSection';
@@ -53,18 +54,20 @@ import {
   APP,
   COURT,
   EDM,
-  HEARINGS,
   PSA_ASSOCIATION,
   PSA_NEIGHBOR,
   RELEASE_COND,
-  STATE,
   SUBMIT
 } from '../../utils/consts/FrontEndStateConsts';
+
+import { HEARINGS_ACTIONS } from '../../utils/consts/redux/HearingsConsts';
+import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUtils';
 
 import * as CheckInsActionFactory from '../checkins/CheckInsActionFactory';
 import * as CourtActionFactory from '../court/CourtActionFactory';
 import * as DataActionFactory from '../../utils/data/DataActionFactory';
-import * as HearingsActionFactory from '../hearings/HearingsActionFactory';
+import * as HearingsActions from '../hearings/HearingsActions';
 import * as ReleaseConditionsActionFactory from './ReleaseConditionsActionFactory';
 import * as ReviewActionFactory from '../review/ReviewActionFactory';
 import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
@@ -185,7 +188,6 @@ type Props = {
   creatingAssociations :boolean,
   fqnToIdMap :Map<*, *>,
   hasOutcome :boolean,
-  refreshingHearingAndNeighbors :boolean,
   hearingNeighbors :Map<*, *>,
   hearingEntityKeyId :string,
   loadingReleaseConditions :boolean,
@@ -193,7 +195,7 @@ type Props = {
   personNeighbors :Map<*, *>,
   psaNeighbors :Map<*, *>,
   refreshingReleaseConditions :boolean,
-  refreshingSelectedHearing :boolean,
+  refreshHearingAndNeighborsReqState :RequestState,
   replacingAssociation :boolean,
   replacingEntity :boolean,
   selectedHearing :Map<*, *>,
@@ -1080,19 +1082,18 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       loadingReleaseConditions,
       replacingEntity,
       replacingAssociation,
-      refreshingHearingAndNeighbors,
-      refreshingSelectedHearing,
+      refreshHearingAndNeighborsReqState,
       submittingReleaseConditions,
       refreshingReleaseConditions,
       creatingAssociations
     } = this.props;
     const { state } = this;
+    const refreshingHearingAndNeighbors = requestIsPending(refreshHearingAndNeighborsReqState);
     const loading = (
       loadingReleaseConditions
       || replacingEntity
       || replacingAssociation
       || refreshingHearingAndNeighbors
-      || refreshingSelectedHearing
       || submittingReleaseConditions
       || refreshingReleaseConditions
       || creatingAssociations
@@ -1148,7 +1149,7 @@ function mapStateToProps(state) {
 
     [COURT.ALL_JUDGES]: court.get(COURT.ALL_JUDGES),
 
-    [HEARINGS.REFRESH_HEARING_AND_NEIGHBORS]: hearings.get(HEARINGS.REFRESH_HEARING_AND_NEIGHBORS),
+    refreshHearingAndNeighborsReqState: getReqState(hearings, HEARINGS_ACTIONS.REFRESH_HEARING_AND_NEIGHBORS),
 
     [EDM.FQN_TO_ID]: edm.get(EDM.FQN_TO_ID),
 
@@ -1184,8 +1185,8 @@ function mapDispatchToProps(dispatch :Function) :Object {
     actions[action] = DataActionFactory[action];
   });
 
-  Object.keys(HearingsActionFactory).forEach((action :string) => {
-    actions[action] = HearingsActionFactory[action];
+  Object.keys(HearingsActions).forEach((action :string) => {
+    actions[action] = HearingsActions[action];
   });
 
   Object.keys(ReleaseConditionsActionFactory).forEach((action :string) => {

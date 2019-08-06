@@ -10,6 +10,7 @@ import {
 } from 'immutable';
 
 import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
+import { hearingIsCancelled } from '../../utils/HearingUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PEOPLE, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { PSA_STATUSES } from '../../utils/consts/Consts';
@@ -24,7 +25,7 @@ import {
   submitExistingHearing,
   submitHearing,
   updateHearing
-} from '../hearings/HearingsActionFactory';
+} from '../hearings/HearingsActions';
 import {
   CLEAR_PERSON,
   getPeople,
@@ -518,9 +519,20 @@ export default function peopleReducer(state :Map = INITIAL_STATE, action :Object
     case updateHearing.case(action.type): {
       return updateHearing.reducer(state, action, {
         SUCCESS: () => {
-          const { hearing, personEKID } = action.value;
-          const personHearings = state.getIn([PEOPLE.NEIGHBORS, personEKID, HEARINGS], List()).push(hearing);
-          return state.setIn([PEOPLE.NEIGHBORS, personEKID, HEARINGS], personHearings);
+          const { hearing } = action.value;
+          const personId = state.getIn([PEOPLE.PERSON_DATA, PROPERTY_TYPES.PERSON_ID, 0], '');
+          const { [ENTITY_KEY_ID]: updatedHearingEKID } = getEntityProperties(hearing, [ENTITY_KEY_ID]);
+          let personHearings = state.getIn([PEOPLE.NEIGHBORS, personId, HEARINGS], List());
+          if (hearingIsCancelled(hearing)) {
+            personHearings = personHearings.filter((existingHearing) => {
+              const { [ENTITY_KEY_ID]: hearingEKID } = getEntityProperties(existingHearing, [ENTITY_KEY_ID]);
+              return hearingEKID !== updatedHearingEKID;
+            });
+          }
+          else {
+            personHearings = personHearings.push(hearing);
+          }
+          return state.setIn([PEOPLE.NEIGHBORS, personId, HEARINGS], personHearings);
         }
       });
     }

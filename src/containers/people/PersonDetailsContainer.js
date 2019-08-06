@@ -44,8 +44,6 @@ import {
 import {
   APP,
   COURT,
-  HEARINGS,
-  STATE,
   SUBMIT,
   PEOPLE,
   REVIEW,
@@ -53,9 +51,13 @@ import {
   PSA_MODAL
 } from '../../utils/consts/FrontEndStateConsts';
 
+// Redux State Imports
+import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
+
 import * as Routes from '../../core/router/Routes';
 import * as CourtActionFactory from '../court/CourtActionFactory';
-import * as HearingsActionFactory from '../hearings/HearingsActionFactory';
+import * as HearingsActions from '../hearings/HearingsActions';
 import * as PeopleActionFactory from './PeopleActionFactory';
 import * as ReviewActionFactory from '../review/ReviewActionFactory';
 import * as PSAModalActionFactory from '../psamodal/PSAModalActionFactory';
@@ -73,6 +75,8 @@ const {
   MANUAL_REMINDERS,
   SPEAKER_RECOGNITION_PROFILES
 } = APP_TYPES;
+
+const { ENTITY_KEY_ID } = PROPERTY_TYPES;
 
 const ToolbarWrapper = styled.div`
   display: flex;
@@ -331,8 +335,10 @@ class PersonDetailsContainer extends React.Component<Props, State> {
       personId,
       psaNeighborsById,
       mostRecentPSA,
-      selectedOrganizationId
+      selectedOrganizationId,
+      selectedPersonData
     } = this.props;
+    const { [ENTITY_KEY_ID]: personEKID } = getEntityProperties(selectedPersonData, [ENTITY_KEY_ID])
     const personHearingsWithOutcomes = neighbors.get(APP_TYPES.HEARINGS, List()).filter((hearing) => {
       const id = hearing.getIn([OPENLATTICE_ID_FQN, 0], '');
       const hasOutcome = !!hearingNeighborsById.getIn([id, OUTCOMES]);
@@ -383,6 +389,7 @@ class PersonDetailsContainer extends React.Component<Props, State> {
           hearingNeighborsById={hearingNeighborsById}
           pastHearings={pastHearings}
           personId={personId}
+          personEKID={personEKID}
           psaEntityKeyId={mostRecentPSAEntityKeyId}
           psaId={psaId} />
     );
@@ -559,8 +566,7 @@ function mapStateToProps(state, ownProps) {
     [COURT.ALL_JUDGES]: court.get(COURT.ALL_JUDGES),
     [COURT.LOADING_JUDGES]: court.get(COURT.LOADING_JUDGES),
 
-    [HEARINGS.HEARING_NEIGHBORS_BY_ID]: hearings.get(HEARINGS.HEARING_NEIGHBORS_BY_ID),
-    [HEARINGS.LOADING_HEARING_NEIGHBORS]: hearings.get(HEARINGS.LOADING_HEARING_NEIGHBORS),
+    [HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID]: hearings.get(HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID),
 
     [PEOPLE.FETCHING_PERSON_DATA]: people.get(PEOPLE.FETCHING_PERSON_DATA),
     [PEOPLE.PERSON_DATA]: people.get(PEOPLE.PERSON_DATA),
@@ -595,8 +601,8 @@ function mapDispatchToProps(dispatch) {
     actions[action] = CourtActionFactory[action];
   });
 
-  Object.keys(HearingsActionFactory).forEach((action :string) => {
-    actions[action] = HearingsActionFactory[action];
+  Object.keys(HearingsActions).forEach((action :string) => {
+    actions[action] = HearingsActions[action];
   });
 
   Object.keys(PeopleActionFactory).forEach((action :string) => {

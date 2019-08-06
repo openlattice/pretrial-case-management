@@ -7,6 +7,7 @@ import styled from 'styled-components';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { List, Map } from 'immutable';
+import type { RequestState } from 'redux-reqseq';
 
 import HearingCardsHolder from '../../components/hearings/HearingCardsHolder';
 import HearingCardsWithTitle from '../../components/hearings/HearingCardsWithTitle';
@@ -24,8 +25,6 @@ import { Title } from '../../utils/Layout';
 import { JURISDICTION } from '../../utils/consts/Consts';
 import {
   APP,
-  HEARINGS,
-  STATE,
   SUBMIT,
   REVIEW,
   COURT,
@@ -33,8 +32,13 @@ import {
   PSA_NEIGHBOR
 } from '../../utils/consts/FrontEndStateConsts';
 
+import { HEARINGS_ACTIONS, HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
+import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUtils';
+
+
 import * as DataActionFactory from '../../utils/data/DataActionFactory';
-import * as HearingsActionFactory from './HearingsActionFactory';
+import * as HearingsActions from './HearingsActions';
 import * as ReviewActionFactory from '../review/ReviewActionFactory';
 import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
 
@@ -121,12 +125,12 @@ type Props = {
   psaIdsRefreshing :Map<*, *>,
   psaNeighbors :Map<*, *>,
   readOnly :boolean,
-  refreshingHearingAndNeighbors :boolean,
+  refreshHearingAndNeighborsReqState :RequestState,
+  submitExistingHearingReqState :RequestState,
+  submitHearingReqState :RequestState,
+  updateHearingReqState :RequestState,
   refreshingNeighbors :boolean,
-  replacingAssociation :boolean,
-  replacingEntity :boolean,
   selectedOrganizationSettings :Map<*, *>,
-  submittingHearing :boolean,
 }
 
 type State = {
@@ -304,25 +308,31 @@ class SelectHearingsContainer extends React.Component<Props, State> {
     const {
       neighbors,
       hearingNeighborsById,
-      refreshingHearingAndNeighbors,
-      submittingHearing,
+      refreshHearingAndNeighborsReqState,
+      submitExistingHearingReqState,
+      submitHearingReqState,
+      updateHearingReqState,
       psaIdsRefreshing,
-      refreshingNeighbors,
-      replacingAssociation,
-      replacingEntity
+      refreshingNeighbors
     } = this.props;
+    const submittingHearing = requestIsPending(submitHearingReqState);
+    const updatingHearing = requestIsPending(updateHearingReqState);
+    const submittingExistingHearing = requestIsPending(submitExistingHearingReqState);
+    const refreshingHearingAndNeighbors = requestIsPending(refreshHearingAndNeighborsReqState);
     const hearingsWithOutcomes = hearingNeighborsById
       .keySeq().filter(id => hearingNeighborsById.getIn([id, OUTCOMES]));
     const scheduledHearings = getScheduledHearings(neighbors);
     const pastHearings = getPastHearings(neighbors);
     const isLoading = (submittingHearing
-      || replacingEntity
-      || replacingAssociation
+      || updatingHearing
+      || submittingExistingHearing
       || refreshingNeighbors
       || psaIdsRefreshing.size
       || refreshingHearingAndNeighbors);
 
-    const loadingText = (submittingHearing || replacingEntity || replacingAssociation) ? 'Submitting' : 'Reloading';
+    const loadingText = (
+      submittingHearing || updatingHearing || submittingExistingHearing
+    ) ? 'Submitting' : 'Reloading';
     return (
       <>
         {
@@ -384,10 +394,12 @@ function mapStateToProps(state) {
 
     [COURT.ALL_JUDGES]: court.get(COURT.ALL_JUDGES),
 
-    [HEARINGS.LOADING_HEARING_NEIGHBORS]: hearings.get(HEARINGS.LOADING_HEARING_NEIGHBORS),
-    [HEARINGS.HEARING_NEIGHBORS_BY_ID]: hearings.get(HEARINGS.HEARING_NEIGHBORS_BY_ID),
-    [HEARINGS.SUBMITTING_HEARING]: hearings.get(HEARINGS.SUBMITTING_HEARING),
-    [HEARINGS.REFRESHING_HEARING_AND_NEIGHBORS]: hearings.get(HEARINGS.REFRESHING_HEARING_AND_NEIGHBORS),
+    submitExistingHearingReqState: getReqState(hearings, HEARINGS_ACTIONS.SUBMIT_EXISTING_HEARING),
+    submitHearingReqState: getReqState(hearings, HEARINGS_ACTIONS.SUBMIT_HEARING),
+    updateHearingReqState: getReqState(hearings, HEARINGS_ACTIONS.UPDATE_HEARING),
+    loadHearingNeighborsReqState: getReqState(hearings, HEARINGS_ACTIONS.LOAD_HEARING_NEIGHBORS),
+    refreshHearingAndNeighborsReqState: getReqState(hearings, HEARINGS_ACTIONS.REFRESH_HEARING_AND_NEIGHBORS),
+    [HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID]: hearings.get(HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID),
 
     [REVIEW.SCORES]: review.get(REVIEW.SCORES),
     [REVIEW.NEIGHBORS_BY_ID]: review.get(REVIEW.NEIGHBORS_BY_ID),
@@ -411,8 +423,8 @@ function mapDispatchToProps(dispatch :Function) :Object {
     actions[action] = DataActionFactory[action];
   });
 
-  Object.keys(HearingsActionFactory).forEach((action :string) => {
-    actions[action] = HearingsActionFactory[action];
+  Object.keys(HearingsActions).forEach((action :string) => {
+    actions[action] = HearingsActions[action];
   });
 
   Object.keys(ReviewActionFactory).forEach((action :string) => {
