@@ -590,6 +590,7 @@ function* submitReleaseConditionsWatcher() :Generator<*, *, *> {
 
 function* updateOutcomesAndReleaseCondtionsWorker(action :SequenceAction) :Generator<*, *, *> {
   try {
+    yield put(updateOutcomesAndReleaseCondtions.request(action.id));
     const {
       bondEntity,
       bondEntityKeyId,
