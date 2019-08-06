@@ -29,7 +29,7 @@ import { APP, COURT } from '../../utils/consts/FrontEndStateConsts';
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
 
-import * as HearingsActionFactory from './HearingsActionFactory';
+import * as HearingsActions from './HearingsActions';
 
 const { ENTITY_KEY_ID } = PROPERTY_TYPES;
 
@@ -352,8 +352,8 @@ function mapStateToProps(state) {
 function mapDispatchToProps(dispatch :Function) :Object {
   const actions :{ [string] :Function } = {};
 
-  Object.keys(HearingsActionFactory).forEach((action :string) => {
-    actions[action] = HearingsActionFactory[action];
+  Object.keys(HearingsActions).forEach((action :string) => {
+    actions[action] = HearingsActions[action];
   });
 
   return {
