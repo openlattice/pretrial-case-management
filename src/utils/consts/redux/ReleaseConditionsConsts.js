@@ -9,9 +9,9 @@ export const RELEASE_COND_ACTIONS = {
 };
 
 export const RELEASE_COND_DATA = {
-  SELECTED_HEARING: 'contactInfo',
-  HAS_OUTCOME: 'personNeighbors',
-  HEARING_NEIGHBORS: 'subscription',
-  PERSON_NEIGHBORS: 'subscriptionsById',
-  PSA_NEIGHBORS: 'subscriptionsById'
+  HAS_OUTCOME: 'hasOutcome',
+  HEARING_NEIGHBORS: 'hearingNeighbors',
+  PERSON_NEIGHBORS: 'personNeighbors',
+  PSA_NEIGHBORS: 'psaNeighbors',
+  SELECTED_HEARING: 'selectedHearing'
 };
