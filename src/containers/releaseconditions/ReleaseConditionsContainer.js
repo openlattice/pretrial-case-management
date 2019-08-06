@@ -7,6 +7,7 @@ import styled from 'styled-components';
 import moment from 'moment';
 import randomUUID from 'uuid/v4';
 import { bindActionCreators } from 'redux';
+import type { Dispatch } from 'redux';
 import { connect } from 'react-redux';
 import { Constants } from 'lattice';
 import { List, Map, OrderedMap } from 'immutable';
@@ -1119,8 +1120,6 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
     const updatingOutcomesAndReleaseConditions = requestIsPending(updateOutcomesAndReleaseCondtionsReqState);
     const submittingReleaseConditions = requestIsPending(submitReleaseConditionsReqState);
     const refreshingHearingAndNeighbors = requestIsPending(refreshHearingAndNeighborsReqState);
-    console.log(updateOutcomesAndReleaseCondtionsReqState);
-    console.log(updatingOutcomesAndReleaseConditions);
     const loading = (
       loadingReleaseConditions
       || refreshingHearingAndNeighbors
@@ -1198,29 +1197,20 @@ function mapStateToProps(state) {
   };
 }
 
-function mapDispatchToProps(dispatch :Function) :Object {
-  const actions :{ [string] :Function } = {};
-
-  // Release Conditions Actions
-  actions.clearReleaseConditions = clearReleaseConditions;
-  actions.loadReleaseConditions = loadReleaseConditions;
-  actions.submitReleaseConditions = submitReleaseConditions;
-  actions.updateOutcomesAndReleaseCondtions = updateOutcomesAndReleaseCondtions;
-
-  // Hearings Actions
-  actions.refreshHearingAndNeighbors = refreshHearingAndNeighbors;
-
-  // Check Ins Actions
-  actions.createCheckinAppointments = createCheckinAppointments;
-
-  // Submit Actions
-  actions.createAssociations = createAssociations;
-
-  return {
-    actions: {
-      ...bindActionCreators(actions, dispatch)
-    }
-  };
-}
+const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
+  actions: bindActionCreators({
+    // Release Conditions Actions
+    clearReleaseConditions,
+    loadReleaseConditions,
+    submitReleaseConditions,
+    updateOutcomesAndReleaseCondtions,
+    // Hearings Actions
+    refreshHearingAndNeighbors,
+    // Check Ins Actions
+    createCheckinAppointments,
+    // Submit Actions
+    createAssociations,
+  }, dispatch)
+});
 
 export default connect(mapStateToProps, mapDispatchToProps)(ReleaseConditionsContainer);
