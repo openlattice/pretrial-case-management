@@ -42,7 +42,7 @@ import { HEARINGS_ACTIONS, HEARINGS_DATA } from '../../utils/consts/redux/Hearin
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUtils';
 
-import { clearSubmittedHearing } from '../../containers/hearings/HearingsActionFactory';
+import { clearSubmittedHearing } from '../../containers/hearings/HearingsActions';
 import { goToPath } from '../../core/router/RoutingActionFactory';
 import * as Routes from '../../core/router/Routes';
 
