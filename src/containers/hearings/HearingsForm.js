@@ -22,9 +22,8 @@ import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
 import { HEARING_CONSTS } from '../../utils/consts/HearingConsts';
 import { getCourtroomOptions, getJudgeOptions, formatJudgeName } from '../../utils/HearingUtils';
-import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { getTimeOptions } from '../../utils/consts/DateTimeConsts';
-import { COURT, EDM, PSA_ASSOCIATION } from '../../utils/consts/FrontEndStateConsts';
+import { COURT, PSA_ASSOCIATION } from '../../utils/consts/FrontEndStateConsts';
 import {
   getEntityKeyId,
   getEntityProperties,
@@ -39,7 +38,6 @@ import { HEARINGS_ACTIONS, HEARINGS_DATA } from '../../utils/consts/redux/Hearin
 
 // Action Imports
 import { clearSubmittedHearing, submitHearing, updateHearing } from './HearingsActions';
-import { updateEntity } from '../../utils/data/DataActionFactory';
 
 const { JUDGES } = APP_TYPES;
 const {
@@ -115,9 +113,7 @@ const HearingInfoButtons = styled.div`
 
 type Props = {
   allJudges :List<*>,
-  app :Map<*, *>,
   backToSelection :() => void;
-  fqnToIdMap :Map<*, *>,
   hasOutcome :boolean,
   hearing :Map<*, *>,
   hearingNeighbors :Map<*, *>,
@@ -481,24 +477,13 @@ class HearingForm extends React.Component<Props, State> {
       );
   }
 
-  cancelHearing = (entityKeyId) => {
-    const {
-      actions,
-      app,
-      fqnToIdMap,
-      backToSelection
-    } = this.props;
-    const entitySetId = getEntitySetIdFromApp(app, APP_TYPES.HEARINGS);
-    const values = {
-      [entityKeyId]: {
-        [fqnToIdMap.get(PROPERTY_TYPES.HEARING_INACTIVE)]: [true]
-      }
-    };
-    actions.updateEntity({
-      entitySetId,
-      entities: values,
-      updateType: 'PartialReplace',
-      callback: this.refreshHearingsNeighborsCallback
+  cancelHearing = (hearingEKID) => {
+    const { actions, backToSelection, personEKID } = this.props;
+    const hearingEntity = { [PROPERTY_TYPES.HEARING_INACTIVE]: [true] };
+    actions.updateHearing({
+      hearingEntity,
+      hearingEKID,
+      personEKID
     });
     if (backToSelection) backToSelection();
   }
@@ -611,13 +596,10 @@ class HearingForm extends React.Component<Props, State> {
 function mapStateToProps(state) {
   const app = state.get(STATE.APP);
   const court = state.get(STATE.COURT);
-  const edm = state.get(STATE.EDM);
   const hearings = state.get(STATE.HEARINGS);
   return {
     app,
     [COURT.ALL_JUDGES]: court.get(COURT.ALL_JUDGES),
-
-    [EDM.FQN_TO_ID]: edm.get(EDM.FQN_TO_ID),
 
     [HEARINGS_DATA.DATE]: hearings.get(HEARINGS_DATA.DATE),
     [HEARINGS_DATA.TIME]: hearings.get(HEARINGS_DATA.TIME),
@@ -629,8 +611,6 @@ function mapStateToProps(state) {
 
 function mapDispatchToProps(dispatch :Function) :Object {
   const actions :{ [string] :Function } = {};
-
-  actions.updateEntity = updateEntity;
 
   actions.clearSubmittedHearing = clearSubmittedHearing;
   actions.submitHearing = submitHearing;
