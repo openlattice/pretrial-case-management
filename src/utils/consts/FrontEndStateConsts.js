@@ -105,14 +105,10 @@ export const CONTACT_INFO = {
 
 export const COURT = {
   COURT_DATE: 'courtDate',
-  HEARINGS_TODAY: 'hearingsToday',
-  HEARINGS_BY_TIME: 'hearingsByTime',
   PEOPLE_WITH_OPEN_PSAS: 'peopleWithOpenPsas',
   PEOPLE_WITH_MULTIPLE_OPEN_PSAS: 'peopleWithMultipleOpenPsas',
   PEOPLE_RECEIVING_REMINDERS: 'peopleReceivingReminders',
-  LOADING_HEARINGS: 'isLoadingHearings',
   LOADING_PSAS: 'isLoadingPSAs',
-  LOADING_ERROR: 'loadingError',
   COUNTY: 'county',
   COURTROOM: 'courtroom',
   COURTROOMS: 'courtrooms',
