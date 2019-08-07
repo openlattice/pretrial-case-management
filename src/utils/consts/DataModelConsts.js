@@ -12,6 +12,7 @@ export const APP_NAME = 'psa';
 
 export const ORG_IDS = {
   DEMO_ORG: '1d5aa1f4-4d22-46a5-97cd-dcc6820e7ff8',
+  LINCOLN_SD: 'ad76f03a-57ad-4aa9-8007-4adad5130ac7',
   PCM_DEMO_ORG: 'dd9fb3e7-7e70-45ae-8b43-ea479b067e68',
   PENNINGTON_SD: '67d555b4-7495-414e-a259-ef82ba71779a',
   MINNEHAHA_SD: 'e558ee21-8fec-4c65-aeda-039924ba9a92',

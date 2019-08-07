@@ -351,7 +351,6 @@ type Props = {
   psaForm :Immutable.Map<*, *>,
   psaSubmissionComplete :boolean,
   readOnlyPermissions :boolean,
-  refreshingPersonNeighbors :boolean,
   selectedOrganizationId :string,
   selectedPerson :Immutable.Map<*, *>,
   selectedPersonId :string,
@@ -363,7 +362,6 @@ type Props = {
   submittedPSANeighbors :Immutable.Map<*, *>,
   submittingPSA :boolean,
   subscription :Immutable.Map<*, *>,
-  updatingEntity :boolean,
   violentCourtCharges :Immutable.Map<*, *>,
   violentArrestCharges :Immutable.Map<*, *>,
   location :{
