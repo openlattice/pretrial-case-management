@@ -11,6 +11,7 @@ import {
   CLEAR_HEARING_SETTINGS,
   CLEAR_SUBMITTED_HEARING,
   CLOSE_HEARING_SETTINGS_MODAL,
+  loadHearingsForDate,
   loadHearingNeighbors,
   OPEN_HEARING_SETTINGS_MODAL,
   refreshHearingAndNeighbors,
@@ -42,6 +43,9 @@ const {
 
 const INITIAL_STATE :Map<*, *> = fromJS({
   [REDUX.ACTIONS]: {
+    [HEARINGS_ACTIONS.LOAD_HEARINGS_FOR_DATE]: {
+      [REDUX.REQUEST_STATE]: STANDBY
+    },
     [HEARINGS_ACTIONS.LOAD_HEARING_NEIGHBORS]: {
       [REDUX.REQUEST_STATE]: STANDBY
     },
@@ -59,6 +63,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     }
   },
   [REDUX.ERRORS]: {
+    [HEARINGS_ACTIONS.LOAD_HEARINGS_FOR_DATE]: Map(),
     [HEARINGS_ACTIONS.LOAD_HEARING_NEIGHBORS]: Map(),
     [HEARINGS_ACTIONS.REFRESH_HEARING_AND_NEIGHBORS]: Map(),
     [HEARINGS_ACTIONS.SUBMIT_EXISTING_HEARING]: Map(),
@@ -67,6 +72,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   },
   [HEARINGS_DATA.COURTROOM]: '',
   [HEARINGS_DATA.DATE]: DateTime.local().toISODate(),
+  [HEARINGS_DATA.HEARINGS_BY_DATE_AND_TIME]: Map(),
   [HEARINGS_DATA.HEARINGS_BY_ID]: Map(),
   [HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID]: Map(),
   [HEARINGS_DATA.JUDGE]: '',
@@ -103,6 +109,36 @@ export default function hearingsReducer(state :Map<*, *> = INITIAL_STATE, action
           const newHearingNeighborsState = currentHearingNeighborsState.merge(hearingNeighborsById);
           return state.set(HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID, newHearingNeighborsState);
         }
+      });
+    }
+
+    case loadHearingsForDate.case(action.type): {
+      return loadHearingsForDate.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([REDUX.ACTIONS, HEARINGS_ACTIONS.LOAD_HEARINGS_FOR_DATE, action.id], fromJS(action))
+          .setIn([REDUX.ACTIONS, HEARINGS_ACTIONS.LOAD_HEARINGS_FOR_DATE, REDUX.REQUEST_STATE], PENDING),
+        SUCCESS: () => {
+          const {
+            hearingDate,
+            hearingsByTime
+          } = action.value;
+          const currentHearings = state.getIn([HEARINGS_DATA.HEARINGS_BY_DATE_AND_TIME, hearingDate], Map());
+          const nextHearings = currentHearings.merge(hearingsByTime);
+          return state
+            .setIn([HEARINGS_DATA.HEARINGS_BY_DATE_AND_TIME, hearingDate], nextHearings)
+            .setIn([REDUX.ACTIONS, HEARINGS_ACTIONS.LOAD_HEARINGS_FOR_DATE, REDUX.REQUEST_STATE], SUCCESS);
+        },
+        FAILURE: () => {
+          if (actionValueIsInvalid(action.value)) {
+            return state;
+          }
+          const { error } = action.value;
+          return state
+            .setIn([REDUX.ERRORS, HEARINGS_ACTIONS.LOAD_HEARINGS_FOR_DATE], error)
+            .setIn([REDUX.ACTIONS, HEARINGS_ACTIONS.LOAD_HEARINGS_FOR_DATE, REDUX.REQUEST_STATE], FAILURE);
+        },
+        FINALLY: () => state
+          .deleteIn([REDUX.ACTIONS, HEARINGS_ACTIONS.LOAD_HEARINGS_FOR_DATE, action.id])
       });
     }
 
