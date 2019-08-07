@@ -90,7 +90,7 @@ export default function subscriptionsReducer(state :Map<*, *> = INITIAL_STATE, a
             .setIn([REDUX.ACTIONS, SUBSCRIPTION_ACTIONS.LOAD_SUBSCRIPTION_MODAL, REDUX.REQUEST_STATE], FAILURE);
         },
         FINALLY: () => state
-          .deleteIn([REDUX.ACTIONS, SUBSCRIPTION_ACTIONS.LOAD_SUBSCRIPTION_MODAL.SUBMIT_CONTACT, action.id])
+          .deleteIn([REDUX.ACTIONS, SUBSCRIPTION_ACTIONS.LOAD_SUBSCRIPTION_MODAL, action.id])
       });
     }
 
@@ -168,7 +168,7 @@ export default function subscriptionsReducer(state :Map<*, *> = INITIAL_STATE, a
             .setIn([REDUX.ACTIONS, SUBSCRIPTION_ACTIONS.SUBSCRIBE, REDUX.REQUEST_STATE], FAILURE);
         },
         FINALLY: () => state
-          .deleteIn([REDUX.ACTIONS, SUBSCRIPTION_ACTIONS.SUBSCRIBE.SUBMIT_CONTACT, action.id])
+          .deleteIn([REDUX.ACTIONS, SUBSCRIPTION_ACTIONS.SUBSCRIBE, action.id])
       });
     }
 
@@ -201,7 +201,7 @@ export default function subscriptionsReducer(state :Map<*, *> = INITIAL_STATE, a
             .setIn([REDUX.ACTIONS, SUBSCRIPTION_ACTIONS.UNSUBSCRIBE, REDUX.REQUEST_STATE], FAILURE);
         },
         FINALLY: () => state
-          .deleteIn([REDUX.ACTIONS, SUBSCRIPTION_ACTIONS.UNSUBSCRIBE.SUBMIT_CONTACT, action.id])
+          .deleteIn([REDUX.ACTIONS, SUBSCRIPTION_ACTIONS.UNSUBSCRIBE, action.id])
       });
     }
 

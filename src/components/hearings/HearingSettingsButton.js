@@ -7,11 +7,11 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCheck, faCog, faTimesCircle } from '@fortawesome/pro-light-svg-icons';
+import { faCog } from '@fortawesome/pro-light-svg-icons';
 
 import StyledButton from '../buttons/StyledButton';
 
-import * as HearingsActionFactory from '../../containers/hearings/HearingsActionFactory';
+import { openHearingSettingsModal } from '../../containers/hearings/HearingsActions';
 
 const DownloadButtonContainer = styled.div`
   width: max-content;
@@ -43,9 +43,7 @@ class HearingSettingsButton extends React.Component<Props, State> {
 function mapDispatchToProps(dispatch :Function) :Object {
   const actions :{ [string] :Function } = {};
 
-  Object.keys(HearingsActionFactory).forEach((action :string) => {
-    actions[action] = HearingsActionFactory[action];
-  });
+  actions.openHearingSettingsModal = openHearingSettingsModal;
 
   return {
     actions: {
