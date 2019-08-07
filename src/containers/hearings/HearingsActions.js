@@ -30,6 +30,9 @@ const setHearingSettings = () => ({
   type: SET_HEARING_SETTINGS
 });
 
+const LOAD_HEARINGS_FOR_DATE :string = 'LOAD_HEARINGS_FOR_DATE';
+const loadHearingsForDate :RequestSequence = newRequestSequence(LOAD_HEARINGS_FOR_DATE);
+
 const LOAD_HEARING_NEIGHBORS :string = 'LOAD_HEARING_NEIGHBORS';
 const loadHearingNeighbors :RequestSequence = newRequestSequence(LOAD_HEARING_NEIGHBORS);
 
@@ -49,6 +52,7 @@ export {
   CLEAR_HEARING_SETTINGS,
   CLEAR_SUBMITTED_HEARING,
   CLOSE_HEARING_SETTINGS_MODAL,
+  LOAD_HEARINGS_FOR_DATE,
   LOAD_HEARING_NEIGHBORS,
   REFRESH_HEARING_AND_NEIGHBORS,
   OPEN_HEARING_SETTINGS_MODAL,
@@ -59,6 +63,7 @@ export {
   clearHearingSettings,
   clearSubmittedHearing,
   closeHearingSettingsModal,
+  loadHearingsForDate,
   loadHearingNeighbors,
   refreshHearingAndNeighbors,
   openHearingSettingsModal,
