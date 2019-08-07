@@ -64,7 +64,6 @@ export default function* sagas() :Generator<*, *, *> {
 
     // CourtSagas
     fork(CourtSagas.filterPeopleIdsWithOpenPSAsWatcher),
-    fork(CourtSagas.loadHearingsForDateWatcher),
     fork(CourtSagas.loadJudgesWatcher),
 
     // DashboardSagas
@@ -89,6 +88,7 @@ export default function* sagas() :Generator<*, *, *> {
     fork(EnrollSagas.getProfileWatcher),
 
     // HearingsSagas
+    fork(HearingsSagas.loadHearingsForDateWatcher),
     fork(HearingsSagas.loadHearingNeighborsWatcher),
     fork(HearingsSagas.refreshHearingAndNeighborsWatcher),
     fork(HearingsSagas.submitExistingHearingWatcher),
