@@ -127,12 +127,12 @@ class PersonHearings extends React.Component<Props, State> {
     };
   }
 
-  cancelHearing = (hearing) => {
+  cancelHearing = (oldHearing) => {
     const { actions, personEKID } = this.props;
     const newHearing = { [PROPERTY_TYPES.HEARING_INACTIVE]: [true] };
     actions.updateHearing({
       newHearing,
-      oldHearing: hearing,
+      oldHearing,
       personEKID
     });
   }

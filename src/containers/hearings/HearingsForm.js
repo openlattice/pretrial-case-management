@@ -475,12 +475,12 @@ class HearingForm extends React.Component<Props, State> {
       );
   }
 
-  cancelHearing = (hearing) => {
+  cancelHearing = (oldHearing) => {
     const { actions, backToSelection, personEKID } = this.props;
     const newHearing = { [PROPERTY_TYPES.HEARING_INACTIVE]: [true] };
     actions.updateHearing({
       newHearing,
-      oldHearing: hearing,
+      oldHearing,
       personEKID
     });
     if (backToSelection) backToSelection();
