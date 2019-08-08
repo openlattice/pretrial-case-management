@@ -26,8 +26,9 @@ const openHearingSettingsModal = () => ({
 });
 
 const SET_HEARING_SETTINGS :'SET_HEARING_SETTINGS' = 'SET_HEARING_SETTINGS';
-const setHearingSettings = () => ({
-  type: SET_HEARING_SETTINGS
+const setHearingSettings = value => ({
+  type: SET_HEARING_SETTINGS,
+  value
 });
 
 const LOAD_HEARINGS_FOR_DATE :string = 'LOAD_HEARINGS_FOR_DATE';
