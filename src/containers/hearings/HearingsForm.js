@@ -286,7 +286,6 @@ class HearingForm extends React.Component<Props, State> {
   updateHearing = () => {
     const {
       actions,
-      hearingEKID,
       hearing
     } = this.props;
     const {
@@ -316,14 +315,14 @@ class HearingForm extends React.Component<Props, State> {
     const hearingDateTime = DateTime.fromISO(`${date}T${time}`);
 
     const associationEntityKeyId = judgeEntity.size ? judgeAssociationEKID : null;
-    const hearingEntity = {};
-    if (hearingDateTime.isValid) hearingEntity[PROPERTY_TYPES.DATE_TIME] = [hearingDateTime.toISO()];
-    if (newHearingCourtroom) hearingEntity[PROPERTY_TYPES.COURTROOM] = [newHearingCourtroom];
-    if (judgeText) hearingEntity[PROPERTY_TYPES.HEARING_COMMENTS] = judgeText;
+    const newHearing = {};
+    if (hearingDateTime.isValid) newHearing[PROPERTY_TYPES.DATE_TIME] = [hearingDateTime.toISO()];
+    if (newHearingCourtroom) newHearing[PROPERTY_TYPES.COURTROOM] = [newHearingCourtroom];
+    if (judgeText) newHearing[PROPERTY_TYPES.HEARING_COMMENTS] = judgeText;
 
     actions.updateHearing({
-      hearingEntity,
-      hearingEKID,
+      newHearing,
+      oldHearing: hearing,
       judgeEKID,
       oldJudgeAssociationEKID: associationEntityKeyId
     });
@@ -477,26 +476,26 @@ class HearingForm extends React.Component<Props, State> {
       );
   }
 
-  cancelHearing = (hearingEKID) => {
+  cancelHearing = (hearing) => {
     const { actions, backToSelection, personEKID } = this.props;
-    const hearingEntity = { [PROPERTY_TYPES.HEARING_INACTIVE]: [true] };
+    const newHearing = { [PROPERTY_TYPES.HEARING_INACTIVE]: [true] };
     actions.updateHearing({
-      hearingEntity,
-      hearingEKID,
+      newHearing,
+      oldHearing: hearing,
       personEKID
     });
     if (backToSelection) backToSelection();
   }
 
   renderCancelHearingButton = () => {
-    const { hasOutcome, hearing, hearingEKID } = this.props;
+    const { hasOutcome, hearing } = this.props;
     const { [CASE_ID]: hearingId } = getEntityProperties(hearing, [CASE_ID, DATE_TIME]);
     const hearingWasCreatedManually = isUUID(hearingId);
 
     const disabledText = hearingWasCreatedManually ? 'Has Outcome' : 'Odyssey Hearing';
     const cancelButtonText = (hasOutcome || !hearingWasCreatedManually) ? disabledText : 'Cancel Hearing';
     return (
-      <StyledBasicButton onClick={() => this.cancelHearing(hearingEKID)} disabled={hasOutcome}>
+      <StyledBasicButton onClick={() => this.cancelHearing(hearing)} disabled={hasOutcome}>
         { cancelButtonText }
       </StyledBasicButton>
     );
