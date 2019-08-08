@@ -43,13 +43,19 @@ import {
 import { HEARINGS_ACTIONS, HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
 import { getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUtils';
 
-import * as CourtActionFactory from './CourtActionFactory';
-import * as FormActionFactory from '../psa/FormActionFactory';
-import * as ReviewActionFactory from '../review/ReviewActionFactory';
-import * as PSAModalActionFactory from '../psamodal/PSAModalActionFactory';
-import * as DataActionFactory from '../../utils/data/DataActionFactory';
+import { loadPSAModal } from '../psamodal/PSAModalActionFactory';
 import { clearSubmit } from '../../utils/submit/SubmitActionFactory';
 import { loadHearingsForDate } from '../hearings/HearingsActions';
+import {
+  changeHearingFilters,
+  loadJudges,
+  setCourtDate
+} from './CourtActionFactory';
+import {
+  bulkDownloadPSAReviewPDF,
+  checkPSAPermissions,
+  loadCaseHistory
+} from '../review/ReviewActionFactory';
 
 const { PEOPLE } = APP_TYPES;
 
@@ -249,9 +255,8 @@ class CourtContainer extends React.Component<Props, State> {
 
   openPSAModal = ({ psaId }) => {
     const { actions } = this.props;
-    const { loadPSAModal } = actions;
     this.setState({ psaId });
-    loadPSAModal({ psaId, callback: this.loadCaseHistoryCallback });
+    actions.loadPSAModal({ psaId, callback: this.loadCaseHistoryCallback });
     this.setState({ psaModalOpen: true });
   }
 
@@ -263,10 +268,9 @@ class CourtContainer extends React.Component<Props, State> {
       hearingNeighborsById,
       selectedOrganizationId
     } = this.props;
-    const { checkPSAPermissions, loadJudges } = actions;
     if (selectedOrganizationId) {
-      checkPSAPermissions();
-      loadJudges();
+      actions.checkPSAPermissions();
+      actions.loadJudges();
       if (!hearingsByTime.size || !hearingNeighborsById.size) {
         actions.loadHearingsForDate(courtDate);
       }
@@ -281,10 +285,9 @@ class CourtContainer extends React.Component<Props, State> {
       hearingNeighborsById,
       selectedOrganizationId
     } = this.props;
-    const { checkPSAPermissions, loadJudges } = actions;
     if (selectedOrganizationId !== nextProps.selectedOrganizationId) {
-      checkPSAPermissions();
-      loadJudges();
+      actions.checkPSAPermissions();
+      actions.loadJudges();
       if (!hearingsByTime.size || !hearingNeighborsById.size || courtDate !== nextProps.courtDate) {
         actions.loadHearingsForDate(courtDate);
       }
@@ -298,11 +301,10 @@ class CourtContainer extends React.Component<Props, State> {
 
   loadCaseHistoryCallback = (personId, psaNeighbors) => {
     const { actions } = this.props;
-    const { loadCaseHistory } = actions;
-    loadCaseHistory({ personId, neighbors: psaNeighbors });
+    actions.loadCaseHistory({ personId, neighbors: psaNeighbors });
   }
 
-  renderPersonCard = (person, index) => {
+  renderPersonCard = (person, _) => {
     const {
       peopleIdsToOpenPSAIds,
       peopleWithOpenPsas,
@@ -485,8 +487,7 @@ class CourtContainer extends React.Component<Props, State> {
     const { actions } = this.props;
     const courtDate = DateTime.fromFormat(dateStr, DATE_FORMAT);
     if (courtDate.isValid) {
-      console.log(courtDate);
-      actions.setCourtDate({ courtDate: courtDate });
+      actions.setCourtDate({ courtDate });
       actions.loadHearingsForDate(courtDate);
     }
   }
@@ -607,37 +608,23 @@ function mapStateToProps(state) {
   };
 }
 
-function mapDispatchToProps(dispatch :Function) :Object {
-  const actions :{ [string] :Function } = {};
-
-  actions.clearSubmit = clearSubmit;
-  actions.loadHearingsForDate = loadHearingsForDate;
-
-  Object.keys(CourtActionFactory).forEach((action :string) => {
-    actions[action] = CourtActionFactory[action];
-  });
-
-  Object.keys(FormActionFactory).forEach((action :string) => {
-    actions[action] = FormActionFactory[action];
-  });
-
-  Object.keys(ReviewActionFactory).forEach((action :string) => {
-    actions[action] = ReviewActionFactory[action];
-  });
-
-  Object.keys(PSAModalActionFactory).forEach((action :string) => {
-    actions[action] = PSAModalActionFactory[action];
-  });
-
-  Object.keys(DataActionFactory).forEach((action :string) => {
-    actions[action] = DataActionFactory[action];
-  });
-
-  return {
-    actions: {
-      ...bindActionCreators(actions, dispatch)
-    }
-  };
-}
+const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
+  actions: bindActionCreators({
+    // Court actions
+    changeHearingFilters,
+    loadJudges,
+    setCourtDate,
+    // Hearings Actions
+    loadHearingsForDate,
+    // PSA Modal actions
+    loadPSAModal,
+    // Review actions
+    bulkDownloadPSAReviewPDF,
+    checkPSAPermissions,
+    loadCaseHistory,
+    // Submit Actions
+    clearSubmit
+  }, dispatch)
+});
 
 export default connect(mapStateToProps, mapDispatchToProps)(CourtContainer);
