@@ -91,16 +91,6 @@ export const CHECK_IN = {
   SUBMITTING_CHECKINS: 'submittingCheckins',
 };
 
-// Contact-Info
-export const CONTACT_INFO = {
-  SUBMITTED_CONTACT_INFO: 'submittedContact',
-  SUBMITTING_CONTACT_INFO: 'submittingContactInfo',
-  SUBMISSION_COMPLETE: 'contactInfoSubmissionComplete',
-  SUBMISSION_ERROR: 'submissionError',
-  UPDATED_CONTACTS: 'updatedContacts',
-  UPDATING_CONTACT_INFO: 'updatingContactInfo'
-};
-
 // Court
 
 export const COURT = {
@@ -163,25 +153,6 @@ export const ENROLL = {
   ERROR: 'errorMessage'
 };
 
-// Hearings
-
-export const HEARINGS = {
-  COURTROOM: 'hearingCourtroom',
-  DATE: 'hearingDate',
-  HEARINGS_BY_ID: 'hearingsById',
-  HEARING_NEIGHBORS_BY_ID: 'hearingNeighborsById',
-  LOADING_HEARING_NEIGHBORS: 'loadingHearingNeighbors',
-  JUDGE: 'hearingJudge',
-  REFRESHING_HEARING_AND_NEIGHBORS: 'refreshingHearingAndNeighbors',
-  SETTINGS_MODAL_OPEN: 'hearingSettingsModalOpen',
-  SUBMITTED_HEARING: 'submittedHearing',
-  SUBMITTED_HEARING_NEIGHBORS: 'submittedHearingNeighbors',
-  SUBMITTING_HEARING: 'submittingHearing',
-  SUBMISSION_ERROR: 'hearingSubmissionError',
-  TIME: 'hearingTime',
-  UPDATED_HEARING: 'updatedHearing',
-  UPDATED_HEARING_NEIGHBORS: 'updatedHearingNeighbors',
-};
 
 // Manual Reminders
 
