@@ -302,7 +302,7 @@ class SelectHearingsContainer extends React.Component<Props, State> {
     );
 
     const loadingText = (
-      submittingHearing || updatingHearing || submittingExistingHearing
+      submittingHearing || submittingExistingHearing || updatingHearing
     ) ? 'Submitting' : 'Reloading';
     return (
       <>
