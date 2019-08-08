@@ -117,7 +117,6 @@ type Props = {
   hasOutcome :boolean,
   hearing :Map<*, *>,
   hearingNeighbors :Map<*, *>,
-  hearingEKID :string,
   jurisdiction :string,
   updateHearingReqState :RequestState,
   psaEKID :string,
@@ -604,7 +603,8 @@ function mapStateToProps(state) {
     [HEARINGS_DATA.TIME]: hearings.get(HEARINGS_DATA.TIME),
     [HEARINGS_DATA.COURTROOM]: hearings.get(HEARINGS_DATA.COURTROOM),
     [HEARINGS_DATA.JUDGE]: hearings.get(HEARINGS_DATA.JUDGE),
-    submitExistingHearingReqState: getReqState(hearings, HEARINGS_ACTIONS.SUBMIT_EXISTING_HEARING)
+    submitExistingHearingReqState: getReqState(hearings, HEARINGS_ACTIONS.SUBMIT_EXISTING_HEARING),
+    updateHearingReqState: getReqState(hearings, HEARINGS_ACTIONS.UPDATE_HEARING)
   };
 }
 
