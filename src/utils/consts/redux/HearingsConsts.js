@@ -13,6 +13,7 @@ export const HEARINGS_ACTIONS = {
 
 export const HEARINGS_DATA = {
   COURTROOM: 'hearingCourtroom',
+  COURTROOMS_BY_DATE: 'courtroomsByDate',
   DATE: 'hearingDate',
   HEARINGS_BY_DATE_AND_TIME: 'hearingsByDate',
   HEARINGS_BY_ID: 'hearingsById',
