@@ -326,7 +326,7 @@ class CourtContainer extends React.Component<Props, State> {
     const lastEditDateString = completedDateFromAssociation || dateTimeFromAssociation || editDateFromPSA;
 
     const lastEditDate = DateTime.fromISO(lastEditDateString).toFormat(DATE_FORMAT);
-    
+
     const personObj = formatPeopleInfo(person);
     return (
       <PersonCard
@@ -582,7 +582,8 @@ function mapStateToProps(state) {
   const edm = state.get(STATE.EDM);
   const hearings = state.get(STATE.HEARINGS);
   const courtDate = court.get(COURT.COURT_DATE).toISODate();
-  const hearingsByTime = hearings.getIn([HEARINGS_DATA.HEARINGS_BY_DATE_AND_TIME, courtDate], Map())
+  const hearingsByTime = hearings.getIn([HEARINGS_DATA.HEARINGS_BY_DATE_AND_TIME, courtDate], Map());
+  const courtrooms = hearings.getIn([HEARINGS_DATA.COURTROOMS_BY_DATE, courtDate], Set());
   return {
     [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
     [APP.SELECTED_ORG_TITLE]: app.get(APP.SELECTED_ORG_TITLE),
@@ -595,7 +596,6 @@ function mapStateToProps(state) {
     [COURT.LOADING_PSAS]: court.get(COURT.LOADING_PSAS),
     [COURT.COUNTY]: court.get(COURT.COUNTY),
     [COURT.COURTROOM]: court.get(COURT.COURTROOM),
-    [COURT.COURTROOMS]: court.get(COURT.COURTROOMS),
     [COURT.SCORES_AS_MAP]: court.get(COURT.SCORES_AS_MAP),
     [COURT.PSA_EDIT_DATES]: court.get(COURT.PSA_EDIT_DATES),
     [COURT.OPEN_PSA_IDS]: court.get(COURT.OPEN_PSA_IDS),
@@ -603,6 +603,7 @@ function mapStateToProps(state) {
     [COURT.ALL_JUDGES]: court.get(COURT.ALL_JUDGES),
 
     // Hearings
+    courtrooms,
     hearingsByTime,
     loadHearingsForDateReqState: getReqState(hearings, HEARINGS_ACTIONS.LOAD_HEARINGS_FOR_DATE),
     loadHearingNeighborsReqState: getReqState(hearings, HEARINGS_ACTIONS.LOAD_HEARING_NEIGHBORS),
