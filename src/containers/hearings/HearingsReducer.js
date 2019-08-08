@@ -3,8 +3,8 @@
  */
 import moment from 'moment';
 import { DateTime } from 'luxon';
-import { Map, fromJS } from 'immutable';
 import { RequestStates } from 'redux-reqseq';
+import { fromJS, List, Map } from 'immutable';
 
 import { filterPeopleIdsWithOpenPSAs } from '../court/CourtActionFactory';
 import {
@@ -31,7 +31,7 @@ import { actionValueIsInvalid } from '../../utils/consts/redux/ReduxUtils';
 import { HEARINGS_ACTIONS, HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
 
 const { JUDGES } = APP_TYPES;
-const { ENTITY_KEY_ID } = PROPERTY_TYPES;
+const { DATE_TIME, ENTITY_KEY_ID } = PROPERTY_TYPES;
 
 const {
   FAILURE,
@@ -71,6 +71,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     [HEARINGS_ACTIONS.UPDATE_HEARING]: Map()
   },
   [HEARINGS_DATA.COURTROOM]: '',
+  [HEARINGS_DATA.COURTROOMS_BY_DATE]: Map(),
   [HEARINGS_DATA.DATE]: DateTime.local().toISODate(),
   [HEARINGS_DATA.HEARINGS_BY_DATE_AND_TIME]: Map(),
   [HEARINGS_DATA.HEARINGS_BY_ID]: Map(),
@@ -119,13 +120,22 @@ export default function hearingsReducer(state :Map<*, *> = INITIAL_STATE, action
           .setIn([REDUX.ACTIONS, HEARINGS_ACTIONS.LOAD_HEARINGS_FOR_DATE, REDUX.REQUEST_STATE], PENDING),
         SUCCESS: () => {
           const {
-            hearingDate,
-            hearingsByTime
+            courtrooms,
+            hearingsById,
+            hearingsByTime,
+            hearingDateTime,
           } = action.value;
-          const currentHearings = state.getIn([HEARINGS_DATA.HEARINGS_BY_DATE_AND_TIME, hearingDate], Map());
-          const nextHearings = currentHearings.merge(hearingsByTime);
+          const currentHearingsById = state.get(HEARINGS_DATA.HEARINGS_BY_ID, Map());
+          const nextHearingsById = currentHearingsById.merge(hearingsById);
+
+          const hearingDate = hearingDateTime.toISODate();
+          const currentHearingsByTime = state.getIn([HEARINGS_DATA.HEARINGS_BY_DATE_AND_TIME, hearingDate], Map());
+          const nextHearingsByTime = currentHearingsByTime.merge(hearingsByTime);
+
           return state
-            .setIn([HEARINGS_DATA.HEARINGS_BY_DATE_AND_TIME, hearingDate], nextHearings)
+            .set(HEARINGS_DATA.HEARINGS_BY_ID, nextHearingsById)
+            .setIn([HEARINGS_DATA.COURTROOMS_BY_DATE, hearingDate], courtrooms)
+            .setIn([HEARINGS_DATA.HEARINGS_BY_DATE_AND_TIME, hearingDate], nextHearingsByTime)
             .setIn([REDUX.ACTIONS, HEARINGS_ACTIONS.LOAD_HEARINGS_FOR_DATE, REDUX.REQUEST_STATE], SUCCESS);
         },
         FAILURE: () => {
@@ -222,16 +232,29 @@ export default function hearingsReducer(state :Map<*, *> = INITIAL_STATE, action
           .setIn([REDUX.ACTIONS, HEARINGS_ACTIONS.SUBMIT_EXISTING_HEARING, REDUX.REQUEST_STATE], PENDING),
         SUCCESS: () => {
           const { hearing, hearingNeighborsByAppTypeFqn } = action.value;
-          const { [ENTITY_KEY_ID]: hearingEntityKeyId } = getEntityProperties(hearing, [ENTITY_KEY_ID]);
+          const {
+            [DATE_TIME]: hearingDateTime,
+            [ENTITY_KEY_ID]: hearingEntityKeyId
+          } = getEntityProperties(hearing, [DATE_TIME, ENTITY_KEY_ID]);
+
           const hearingsMap = state.get(HEARINGS_DATA.HEARINGS_BY_ID, Map()).set(hearingEntityKeyId, hearing);
           const hearingsNeighborsMap = state.get(HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID, Map())
             .set(hearingEntityKeyId, hearingNeighborsByAppTypeFqn);
+
+          const hearingISODate = hearingDateTime.toISODate();
+          let hearingsByTime = state.getIn([HEARINGS_DATA.HEARINGS_BY_DATE_AND_TIME, hearingISODate], Map());
+          const hearingDateTimeDT = DateTime.fromISO(hearingDateTime);
+          if (hearingDateTimeDT.isValid) {
+            const time = hearingDateTimeDT.format(TIME_FORMAT);
+            hearingsByTime = hearingsByTime.set(time, hearingsByTime.get(time, List()).push(hearing));
+          }
 
           return state
             .set(HEARINGS_DATA.HEARINGS_BY_ID, hearingsMap)
             .set(HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID, hearingsNeighborsMap)
             .set(HEARINGS_DATA.SUBMITTED_HEARING, hearing)
             .set(HEARINGS_DATA.SUBMITTED_HEARING_NEIGHBORS, hearingNeighborsByAppTypeFqn)
+            .setIn([HEARINGS_DATA.HEARINGS_BY_DATE_AND_TIME, hearingISODate], hearingsByTime)
             .setIn([REDUX.ACTIONS, HEARINGS_ACTIONS.SUBMIT_EXISTING_HEARING, REDUX.REQUEST_STATE], SUCCESS);
         },
         FAILURE: () => {
@@ -257,16 +280,29 @@ export default function hearingsReducer(state :Map<*, *> = INITIAL_STATE, action
           .setIn([REDUX.ACTIONS, HEARINGS_ACTIONS.SUBMIT_HEARING, REDUX.REQUEST_STATE], PENDING),
         SUCCESS: () => {
           const { hearing, hearingNeighborsByAppTypeFqn } = action.value;
-          const { [ENTITY_KEY_ID]: hearingEntityKeyId } = getEntityProperties(hearing, [ENTITY_KEY_ID]);
+          const {
+            [DATE_TIME]: hearingDateTime,
+            [ENTITY_KEY_ID]: hearingEntityKeyId
+          } = getEntityProperties(hearing, [DATE_TIME, ENTITY_KEY_ID]);
+
           const hearingsMap = state.get(HEARINGS_DATA.HEARINGS_BY_ID, Map()).set(hearingEntityKeyId, hearing);
           const hearingsNeighborsMap = state.get(HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID, Map())
             .set(hearingEntityKeyId, hearingNeighborsByAppTypeFqn);
+
+          const hearingISODate = hearingDateTime.toISODate();
+          let hearingsByTime = state.getIn([HEARINGS_DATA.HEARINGS_BY_DATE_AND_TIME, hearingISODate], Map());
+          const hearingDateTimeDT = DateTime.fromISO(hearingDateTime);
+          if (hearingDateTimeDT.isValid) {
+            const time = hearingDateTimeDT.format(TIME_FORMAT);
+            hearingsByTime = hearingsByTime.set(time, hearingsByTime.get(time, List()).push(hearing));
+          }
 
           return state
             .set(HEARINGS_DATA.HEARINGS_BY_ID, hearingsMap)
             .set(HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID, hearingsNeighborsMap)
             .set(HEARINGS_DATA.SUBMITTED_HEARING, hearing)
             .set(HEARINGS_DATA.SUBMITTED_HEARING_NEIGHBORS, hearingNeighborsByAppTypeFqn)
+            .setIn([HEARINGS_DATA.HEARINGS_BY_DATE_AND_TIME, hearingISODate], hearingsByTime)
             .setIn([REDUX.ACTIONS, HEARINGS_ACTIONS.SUBMIT_HEARING, REDUX.REQUEST_STATE], SUCCESS);
         },
         FAILURE: () => {
@@ -291,20 +327,64 @@ export default function hearingsReducer(state :Map<*, *> = INITIAL_STATE, action
           .setIn([REDUX.ACTIONS, HEARINGS_ACTIONS.UPDATE_HEARING, action.id], fromJS(action))
           .setIn([REDUX.ACTIONS, HEARINGS_ACTIONS.UPDATE_HEARING, REDUX.REQUEST_STATE], PENDING),
         SUCCESS: () => {
-          const { hearingEKID, hearing, hearingJudge } = action.value;
+          const {
+            hearingEKID,
+            hearing,
+            hearingJudge,
+            oldHearingDateTime
+          } = action.value;
           const hearingsMap = state.get(HEARINGS_DATA.HEARINGS_BY_ID, Map()).set(hearingEKID, hearing);
           const hearingsNeighborsMap = state.get(HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID, Map())
             .setIn([hearingEKID, JUDGES], hearingJudge);
           const hearingNeighbors = hearingsNeighborsMap.get(hearingEKID);
 
-          return state
+          const { [DATE_TIME]: updatedHearingDateTime } = getEntityProperties(hearing, [DATE_TIME]);
+          const updatedHearingDT = DateTime.fromISO(updatedHearingDateTime);
+          const updatedHearingTime = updatedHearingDT.toFormat(TIME_FORMAT);
+          const updatedHearingDate = updatedHearingDT.toISODate();
+
+          const oldHearingDT = DateTime.fromISO(oldHearingDateTime);
+          const oldHearingTime = oldHearingDT.toFormat(TIME_FORMAT);
+          const oldHearingDate = oldHearingDT.toISODate();
+
+          let nextHearingsByDateAndTime = state.get(HEARINGS_DATA.HEARINGS_BY_DATE_AND_TIME, Map());
+          const hearingsByDateAndTime = state.get(HEARINGS_DATA.HEARINGS_BY_DATE_AND_TIME, Map());
+          if (updatedHearingDT.isValid) {
+            hearingsByDateAndTime.entrySeq().forEach(([date, hearingsByTime]) => {
+              let nextHearingsByTime = Map();
+              const isOldHearingDate = date === oldHearingDate;
+              const isNewHearingDate = date === updatedHearingDate;
+              if (isNewHearingDate) {
+                const nextHearingsAtNewTime = hearingsByTime.get(updatedHearingTime, List()).push(hearing);
+                nextHearingsByTime = nextHearingsByTime.set(updatedHearingTime, nextHearingsAtNewTime);
+              }
+              if (isOldHearingDate) {
+                const nextHearingsAtOldTime = hearingsByTime.get(oldHearingTime, List()).filter((existingHearing) => {
+                  const {
+                    [ENTITY_KEY_ID]: existingHearingEntityKeyId
+                  } = getEntityProperties(existingHearing, [ENTITY_KEY_ID]);
+                  return existingHearingEntityKeyId !== hearingEKID;
+                });
+                if (!nextHearingsAtOldTime.size) {
+                  nextHearingsByTime = nextHearingsByTime.delete(oldHearingTime);
+                }
+                else {
+                  nextHearingsByTime = nextHearingsByTime.set(oldHearingTime, nextHearingsAtOldTime);
+                }
+              }
+              nextHearingsByDateAndTime = nextHearingsByDateAndTime.set(date, nextHearingsByTime);
+            });
+          }
+          const nextState = state
             .set(HEARINGS_DATA.HEARINGS_BY_ID, hearingsMap)
             .set(HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID, hearingsNeighborsMap)
             .set(HEARINGS_DATA.SUBMITTED_HEARING, hearing)
             .set(HEARINGS_DATA.SUBMITTED_HEARING_NEIGHBORS, hearingNeighbors)
             .set(HEARINGS_DATA.UPDATED_HEARING, hearing)
             .set(HEARINGS_DATA.UPDATED_HEARING_NEIGHBORS, hearingNeighbors)
-            .setIn([REDUX.ACTIONS, HEARINGS_ACTIONS.UPDATE_HEARING, REDUX.UPDATE_HEARING], SUCCESS);
+            .setIn([HEARINGS_DATA.HEARINGS_BY_DATE_AND_TIME], nextHearingsByDateAndTime)
+            .setIn([REDUX.ACTIONS, HEARINGS_ACTIONS.UPDATE_HEARING, REDUX.REQUEST_STATE], SUCCESS);
+          return nextState;
         },
         FAILURE: () => {
           if (actionValueIsInvalid(action.value)) {
