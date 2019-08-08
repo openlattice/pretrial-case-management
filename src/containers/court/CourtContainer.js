@@ -317,11 +317,16 @@ class CourtContainer extends React.Component<Props, State> {
     const hasOpenPSA = peopleWithOpenPsas.has(personEntityKeyId);
     const isReceivingReminders = peopleReceivingReminders.includes(personEntityKeyId);
     const hasMultipleOpenPSAs = peopleWithMultipleOpenPsas.includes(personEntityKeyId);
-    const lastEditDate = DateTime.fromISO(psaEditDatesById.getIn(
-      [openPSAId, PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.COMPLETED_DATE_TIME, 0],
-      psaEditDatesById.getIn([openPSAId, PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.DATE_TIME, 0],
-        psaEditDatesById.getIn([openPSAId, PROPERTY_TYPES.DATE_TIME], ''))
-    )).toFormat(DATE_FORMAT);
+
+    const completedDateFromAssociation = psaEditDatesById
+      .getIn([openPSAId, PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.COMPLETED_DATE_TIME, 0], '');
+    const dateTimeFromAssociation = psaEditDatesById
+      .getIn([openPSAId, PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.DATE_TIME, 0], '');
+    const editDateFromPSA = psaEditDatesById.getIn([openPSAId, PROPERTY_TYPES.DATE_TIME], '');
+    const lastEditDateString = completedDateFromAssociation || dateTimeFromAssociation || editDateFromPSA;
+
+    const lastEditDate = DateTime.fromISO(lastEditDateString).toFormat(DATE_FORMAT);
+    
     const personObj = formatPeopleInfo(person);
     return (
       <PersonCard

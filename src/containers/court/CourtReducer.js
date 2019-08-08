@@ -209,9 +209,9 @@ export default function courtReducer(state :Map<*, *> = INITIAL_STATE, action :O
           const courtDate = state.get(COURT.COURT_DATE);
           let hearingsByTime = state.get(COURT.HEARINGS_BY_TIME, Map());
           const { [DATE_TIME]: hearingDateTime } = getEntityProperties(hearing, [DATE_TIME]);
-          const hearingDateTimeMoment = DateTime.fromISO(hearingDateTime);
-          if (hearingDateTimeMoment.hasSame(courtDate, 'day')) {
-            const time = hearingDateTimeMoment.format(TIME_FORMAT);
+          const hearingDateTimeDT = DateTime.fromISO(hearingDateTime);
+          if (hearingDateTimeDT.hasSame(courtDate, 'day')) {
+            const time = hearingDateTimeDT.format(TIME_FORMAT);
             hearingsByTime = hearingsByTime.set(time, hearingsByTime.get(time, List()).push(hearing));
           }
           return state.set(COURT.HEARINGS_BY_TIME, hearingsByTime);
@@ -226,9 +226,9 @@ export default function courtReducer(state :Map<*, *> = INITIAL_STATE, action :O
           const courtDate = state.get(COURT.COURT_DATE);
           let hearingsByTime = state.get(COURT.HEARINGS_BY_TIME, Map());
           const { [DATE_TIME]: hearingDateTime } = getEntityProperties(hearing, [DATE_TIME]);
-          const hearingDateTimeMoment = DateTime.fromISO(hearingDateTime);
-          if (hearingDateTimeMoment.hasSame(courtDate, 'day')) {
-            const time = hearingDateTimeMoment.format(TIME_FORMAT);
+          const hearingDateTimeDT = DateTime.fromISO(hearingDateTime);
+          if (hearingDateTimeDT.hasSame(courtDate, 'day')) {
+            const time = hearingDateTimeDT.format(TIME_FORMAT);
             hearingsByTime = hearingsByTime.set(time, hearingsByTime.get(time, List()).push(hearing));
           }
           return state.set(COURT.HEARINGS_BY_TIME, hearingsByTime);
