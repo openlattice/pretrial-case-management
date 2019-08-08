@@ -101,7 +101,6 @@ export const COURT = {
   LOADING_PSAS: 'isLoadingPSAs',
   COUNTY: 'county',
   COURTROOM: 'courtroom',
-  COURTROOMS: 'courtrooms',
   OPEN_PSAS: 'openPSAs',
   SCORES_AS_MAP: 'scoresAsMap',
   PSA_EDIT_DATES: 'psaEditDatesById',
