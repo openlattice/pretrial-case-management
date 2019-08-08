@@ -4,7 +4,12 @@
 import moment from 'moment';
 import { DateTime } from 'luxon';
 import { RequestStates } from 'redux-reqseq';
-import { fromJS, List, Map } from 'immutable';
+import {
+  fromJS,
+  List,
+  Map,
+  Set
+} from 'immutable';
 
 import { filterPeopleIdsWithOpenPSAs } from '../court/CourtActionFactory';
 import {
@@ -31,7 +36,7 @@ import { actionValueIsInvalid } from '../../utils/consts/redux/ReduxUtils';
 import { HEARINGS_ACTIONS, HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
 
 const { JUDGES } = APP_TYPES;
-const { DATE_TIME, ENTITY_KEY_ID } = PROPERTY_TYPES;
+const { COURTROOM, DATE_TIME, ENTITY_KEY_ID } = PROPERTY_TYPES;
 
 const {
   FAILURE,
@@ -233,9 +238,10 @@ export default function hearingsReducer(state :Map<*, *> = INITIAL_STATE, action
         SUCCESS: () => {
           const { hearing, hearingNeighborsByAppTypeFqn } = action.value;
           const {
+            [COURTROOM]: hearingCourtroom,
             [DATE_TIME]: hearingDateTime,
             [ENTITY_KEY_ID]: hearingEntityKeyId
-          } = getEntityProperties(hearing, [DATE_TIME, ENTITY_KEY_ID]);
+          } = getEntityProperties(hearing, [COURTROOM, DATE_TIME, ENTITY_KEY_ID]);
 
           const hearingsMap = state.get(HEARINGS_DATA.HEARINGS_BY_ID, Map()).set(hearingEntityKeyId, hearing);
           const hearingsNeighborsMap = state.get(HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID, Map())
@@ -249,11 +255,16 @@ export default function hearingsReducer(state :Map<*, *> = INITIAL_STATE, action
             hearingsByTime = hearingsByTime.set(time, hearingsByTime.get(time, List()).push(hearing));
           }
 
+          const nextCourtroomsForDate = state
+            .getIn([HEARINGS_DATA.COURTROOMS_BY_DATE, hearingISODate], Set())
+            .add(hearingCourtroom);
+
           return state
             .set(HEARINGS_DATA.HEARINGS_BY_ID, hearingsMap)
             .set(HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID, hearingsNeighborsMap)
             .set(HEARINGS_DATA.SUBMITTED_HEARING, hearing)
             .set(HEARINGS_DATA.SUBMITTED_HEARING_NEIGHBORS, hearingNeighborsByAppTypeFqn)
+            .setIn([HEARINGS_DATA.COURTROOMS_BY_DATE, hearingISODate], nextCourtroomsForDate)
             .setIn([HEARINGS_DATA.HEARINGS_BY_DATE_AND_TIME, hearingISODate], hearingsByTime)
             .setIn([REDUX.ACTIONS, HEARINGS_ACTIONS.SUBMIT_EXISTING_HEARING, REDUX.REQUEST_STATE], SUCCESS);
         },
@@ -281,9 +292,10 @@ export default function hearingsReducer(state :Map<*, *> = INITIAL_STATE, action
         SUCCESS: () => {
           const { hearing, hearingNeighborsByAppTypeFqn } = action.value;
           const {
+            [COURTROOM]: hearingCourtroom,
             [DATE_TIME]: hearingDateTime,
             [ENTITY_KEY_ID]: hearingEntityKeyId
-          } = getEntityProperties(hearing, [DATE_TIME, ENTITY_KEY_ID]);
+          } = getEntityProperties(hearing, [COURTROOM, DATE_TIME, ENTITY_KEY_ID]);
 
           const hearingsMap = state.get(HEARINGS_DATA.HEARINGS_BY_ID, Map()).set(hearingEntityKeyId, hearing);
           const hearingsNeighborsMap = state.get(HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID, Map())
@@ -297,11 +309,16 @@ export default function hearingsReducer(state :Map<*, *> = INITIAL_STATE, action
             hearingsByTime = hearingsByTime.set(time, hearingsByTime.get(time, List()).push(hearing));
           }
 
+          const nextCourtroomsForDate = state
+            .getIn([HEARINGS_DATA.COURTROOMS_BY_DATE, hearingISODate], Set())
+            .add(hearingCourtroom);
+
           return state
             .set(HEARINGS_DATA.HEARINGS_BY_ID, hearingsMap)
             .set(HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID, hearingsNeighborsMap)
             .set(HEARINGS_DATA.SUBMITTED_HEARING, hearing)
             .set(HEARINGS_DATA.SUBMITTED_HEARING_NEIGHBORS, hearingNeighborsByAppTypeFqn)
+            .setIn([HEARINGS_DATA.COURTROOMS_BY_DATE, hearingISODate], nextCourtroomsForDate)
             .setIn([HEARINGS_DATA.HEARINGS_BY_DATE_AND_TIME, hearingISODate], hearingsByTime)
             .setIn([REDUX.ACTIONS, HEARINGS_ACTIONS.SUBMIT_HEARING, REDUX.REQUEST_STATE], SUCCESS);
         },
@@ -338,7 +355,10 @@ export default function hearingsReducer(state :Map<*, *> = INITIAL_STATE, action
             .setIn([hearingEKID, JUDGES], hearingJudge);
           const hearingNeighbors = hearingsNeighborsMap.get(hearingEKID);
 
-          const { [DATE_TIME]: updatedHearingDateTime } = getEntityProperties(hearing, [DATE_TIME]);
+          const {
+            [COURTROOM]: updatedHearingCourtroom,
+            [DATE_TIME]: updatedHearingDateTime
+          } = getEntityProperties(hearing, [COURTROOM, DATE_TIME]);
           const updatedHearingDT = DateTime.fromISO(updatedHearingDateTime);
           const updatedHearingTime = updatedHearingDT.toFormat(TIME_FORMAT);
           const updatedHearingDate = updatedHearingDT.toISODate();
@@ -375,6 +395,11 @@ export default function hearingsReducer(state :Map<*, *> = INITIAL_STATE, action
               nextHearingsByDateAndTime = nextHearingsByDateAndTime.set(date, nextHearingsByTime);
             });
           }
+
+          const nextCourtroomsForDate = state
+            .getIn([HEARINGS_DATA.COURTROOMS_BY_DATE, updatedHearingDate], Set())
+            .add(updatedHearingCourtroom);
+
           const nextState = state
             .set(HEARINGS_DATA.HEARINGS_BY_ID, hearingsMap)
             .set(HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID, hearingsNeighborsMap)
@@ -382,6 +407,7 @@ export default function hearingsReducer(state :Map<*, *> = INITIAL_STATE, action
             .set(HEARINGS_DATA.SUBMITTED_HEARING_NEIGHBORS, hearingNeighbors)
             .set(HEARINGS_DATA.UPDATED_HEARING, hearing)
             .set(HEARINGS_DATA.UPDATED_HEARING_NEIGHBORS, hearingNeighbors)
+            .setIn([HEARINGS_DATA.COURTROOMS_BY_DATE, updatedHearingDate], nextCourtroomsForDate)
             .setIn([HEARINGS_DATA.HEARINGS_BY_DATE_AND_TIME], nextHearingsByDateAndTime)
             .setIn([REDUX.ACTIONS, HEARINGS_ACTIONS.UPDATE_HEARING, REDUX.REQUEST_STATE], SUCCESS);
           return nextState;
