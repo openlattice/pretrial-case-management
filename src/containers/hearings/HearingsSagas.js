@@ -217,6 +217,7 @@ function* loadHearingsForDateWorker(action :SequenceAction) :Generator<*, *, *> 
     let courtrooms = Set();
     let hearingIds = Set();
     let hearingsByTime = Map();
+    let hearingsById = Map();
 
     const app = yield select(getApp);
     const edm = yield select(getEDM);
@@ -256,6 +257,7 @@ function* loadHearingsForDateWorker(action :SequenceAction) :Generator<*, *, *> 
           && !hearingIsInactive
         ) hearingIds = hearingIds.add(hearingEKID);
         if (!hearingDateTimeDT.isValid || hearingIsInactive) return false;
+        hearingsById = hearingsById.set(hearingEKID, hearing);
         const time = hearingDateTimeDT.toFormat(TIME_FORMAT);
         hearingsByTime = hearingsByTime.set(
           time,
@@ -268,11 +270,11 @@ function* loadHearingsForDateWorker(action :SequenceAction) :Generator<*, *, *> 
 
     hearingIds = hearingIds.toJS();
     const hearingDateTime = action.value;
-    const hearingDate = hearingDateTime.toISODate();
     const hearingNeighbors = loadHearingNeighbors({ hearingIds, hearingDateTime });
 
     yield put(loadHearingsForDate.success(action.id, {
-      hearingDate,
+      hearingsById,
+      hearingDateTime,
       hearingsOnDate,
       hearingsByTime,
       courtrooms
@@ -389,7 +391,7 @@ function* loadHearingNeighborsWorker(action :SequenceAction) :Generator<*, *, *>
     }
     yield put(loadHearingNeighbors.success(action.id, { hearingNeighborsById, hearingDateTime }));
 
-    if (hearingDateTime.isValid) {
+    if (hearingDateTime && hearingDateTime.isValid) {
       const peopleIdsWithOpenPSAs = filterPeopleIdsWithOpenPSAs({
         personIds,
         hearingDateTime,
@@ -658,12 +660,17 @@ function* updateHearingWorker(action :SequenceAction) :Generator<*, *, *> {
   try {
     yield put(updateHearing.request(action.id));
     const {
-      hearingEntity,
-      hearingEKID,
+      newHearing,
+      oldHearing,
       judgeEKID,
       oldJudgeAssociationEKID,
       personEKID
     } = action.value;
+
+    const {
+      [DATE_TIME]: oldHearingDateTime,
+      [ENTITY_KEY_ID]: hearingEKID
+    } = getEntityProperties(oldHearing, [DATE_TIME, ENTITY_KEY_ID]);
 
     const app = yield select(getApp);
     const edm = yield select(getEDM);
@@ -674,7 +681,7 @@ function* updateHearingWorker(action :SequenceAction) :Generator<*, *, *> {
     * Get Property Type Ids
     */
     const completedDatetimePTID = getPropertyTypeId(edm, COMPLETED_DATE_TIME);
-    const updatedHearingObject = getPropertyIdToValueMap(hearingEntity, edm);
+    const updatedHearingObject = getPropertyIdToValueMap(newHearing, edm);
 
     /*
      * Get Entity Set Ids
@@ -772,6 +779,7 @@ function* updateHearingWorker(action :SequenceAction) :Generator<*, *, *> {
       hearingEKID,
       hearing,
       hearingJudge,
+      oldHearingDateTime,
       personEKID
     }));
   }
