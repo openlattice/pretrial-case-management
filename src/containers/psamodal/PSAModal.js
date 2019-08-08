@@ -17,12 +17,16 @@ import LogoLoader from '../../components/LogoLoader';
 import PSAInputForm from '../../components/psainput/PSAInputForm';
 import PersonCard from '../../components/person/PersonCardReview';
 import StyledButton from '../../components/buttons/StyledButton';
+import PSAReportDownloadButton from '../../components/review/PSAReportDownloadButton';
+import PSAStats from '../../components/review/PSAStats';
 import DropdownButton from '../../components/buttons/DropdownButton';
 import CaseHistory from '../../components/casehistory/CaseHistory';
 import CaseHistoryTimeline from '../../components/casehistory/CaseHistoryTimeline';
 import DMFExplanation from '../../components/dmf/DMFExplanation';
 import SelectHearingsContainer from '../hearings/SelectHearingsContainer';
 import PSAModalSummary from '../../components/review/PSAModalSummary';
+import ModalHeader from './ModalHeader';
+import PersonCardSummary from '../../components/person/PersonCardSummary';
 import ReleaseConditionsSummary from '../../components/releaseconditions/ReleaseConditionsSummary';
 import ClosePSAModal from '../../components/review/ClosePSAModal';
 import closeX from '../../assets/svg/close-x-gray.svg';
@@ -599,8 +603,6 @@ class PSAModal extends React.Component<Props, State> {
       caseNumbersToAssociationId = caseNumbersToAssociationId.set(caseNum, associationEntityKeyId);
     });
 
-    if (loadingPSAModal || loadingCaseHistory) return <LogoLoader loadingText="Loading person details..." />;
-
     const arrestDate = psaNeighbors.getIn(
       [MANUAL_PRETRIAL_CASES, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.ARREST_DATE_TIME, 0],
       ''
@@ -893,18 +895,18 @@ class PSAModal extends React.Component<Props, State> {
       loadingCaseHistory,
       scores,
       open,
+      psaNeighbors,
       psaPermissions,
       psaId,
-      personId,
       selectedOrganizationSettings
     } = this.props;
+    const person = psaNeighbors.getIn([PEOPLE, PSA_NEIGHBOR.DETAILS], Map());
 
     const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], '');
 
     const { closingPSAModalOpen } = this.state;
 
     if (!scores) return null;
-    const changeStatusText = psaIsClosed(scores) ? 'Change PSA Status' : 'Close PSA';
 
     const modalHasLoaded = !loadingPSAModal && !loadingCaseHistory;
 
@@ -969,26 +971,19 @@ class PSAModal extends React.Component<Props, State> {
               )
               : null
             }
-            <TitleWrapper>
-              <TitleHeader>
-                PSA Details:
-                <StyledLink to={`${Routes.PERSON_DETAILS_ROOT}/${personId}${Routes.OVERVIEW}`}>
-                  {`  ${this.getName()}`}
-                </StyledLink>
-              </TitleHeader>
-              <div>
-                { psaPermissions && modalHasLoaded
-                  ? (
-                    <ClosePSAButton onClick={() => this.setState({ closingPSAModalOpen: true })}>
-                      {changeStatusText}
-                    </ClosePSAButton>
-                  )
-                  : null
-                }
-                <CloseModalX onClick={() => this.onClose()} />
-              </div>
-            </TitleWrapper>
-            <CustomTabs panes={tabs} />
+            {
+              (loadingPSAModal || loadingCaseHistory)
+                ? <LogoLoader loadingText="Loading person details..." />
+                : (
+                  <>
+                    <ModalHeader
+                        person={person}
+                        onClose={this.onClose}
+                        closePSAFn={() => this.setState({ closingPSAModalOpen: true })} />
+                    <CustomTabs panes={tabs} />
+                  </>
+                )
+            }
           </Modal>
         )}
       </ModalTransition>

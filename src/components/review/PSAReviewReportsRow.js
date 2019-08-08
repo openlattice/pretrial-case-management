@@ -3,11 +3,11 @@
  */
 
 import React from 'react';
-import Immutable from 'immutable';
+import { Map, List } from 'immutable';
 import styled from 'styled-components';
-import moment from 'moment';
 
 import PSAModal from '../../containers/psamodal/PSAModal';
+import PSAMetaData from './PSAMetaData';
 import ClosePSAModal from './ClosePSAModal';
 import BasicButton from '../buttons/StyledButton';
 import PersonCard from '../person/PersonCardReview';
@@ -16,15 +16,9 @@ import PSAStats from './PSAStats';
 import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
-import { psaIsClosed } from '../../utils/PSAUtils';
-import { PSA_NEIGHBOR, PSA_ASSOCIATION } from '../../utils/consts/FrontEndStateConsts';
+import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 
-const {
-  ASSESSED_BY,
-  EDITED_BY,
-  PEOPLE,
-  STAFF,
-} = APP_TYPES;
+const { PEOPLE } = APP_TYPES;
 
 
 const ReviewRowContainer = styled.div`
@@ -83,31 +77,6 @@ const StatsForProfile = styled.div`
   flex-direction: row;
 `;
 
-const MetadataWrapper = styled.div`
-  width: 100%;
-`;
-const MetadataSubWrapper = styled.div`
-  width: 100%;
-`;
-const MetadataText = styled.div`
-  width: 100%;
-  font-family: 'Open Sans', sans-serif;
-  font-size: 13px;
-  font-weight: 300;
-  text-align: right;
-  margin: 10px 0 -30px -30px;
-  color: ${OL.GREY02};
-`;
-
-const ImportantMetadataText = styled.span`
-  color: ${OL.GREY15};
-`;
-
-const MetadataItem = styled.div`
-  height: 10px;
-  display: block;
-`;
-
 const ClosePSAButton = styled(BasicButton)`
   font-family: 'Open Sans', sans-serif;
   font-size: 14px;
@@ -125,32 +94,21 @@ const ClosePSAButton = styled(BasicButton)`
 
 type Props = {
   entityKeyId :string,
-  scores :Immutable.Map<*, *>,
-  psaNeighbors :Immutable.Map<*, *>,
-  hideCaseHistory? :boolean,
+  entitySetIdsToAppType :Map<*, *>,
+  scores :Map<*, *>,
+  psaNeighbors :Map<*, *>,
   hideProfile? :boolean,
-  onStatusChangeCallback? :() => void,
-  caseHistory :Immutable.List<*>,
-  manualCaseHistory :Immutable.List<*>,
-  chargeHistory :Immutable.Map<*, *>,
-  manualChargeHistory :Immutable.Map<*, *>,
-  sentenceHistory :Immutable.Map<*, *>,
-  ftaHistory :Immutable.Map<*, *>,
-  readOnly :boolean,
-  personId? :string,
+  includesPretrialModule :boolean,
   component :string,
-  submitting :boolean,
   downloadFn :(values :{
-    neighbors :Immutable.Map<*, *>,
-    scores :Immutable.Map<*, *>
+    neighbors :Map<*, *>,
+    scores :Map<*, *>
   }) => void,
   loadCaseHistoryFn :(values :{
     personId :string,
-    neighbors :Immutable.Map<*, *>
+    neighbors :Map<*, *>
   }) => void,
-  replaceEntity :(value :{ entitySetName :string, entityKeyId :string, values :Object }) => void,
-  deleteEntity :(value :{ entitySetName :string, entityKeyId :string }) => void,
-  refreshPSANeighbors :({ id :string }) => void
+  loadPSAModal :() => void
 };
 
 type State = {
@@ -162,9 +120,7 @@ type State = {
 export default class PSAReviewReportsRow extends React.Component<Props, State> {
 
   static defaultProps = {
-    hideCaseHistory: false,
-    hideProfile: false,
-    onStatusChangeCallback: () => {}
+    hideProfile: false
   }
 
   constructor(props :Props) {
@@ -180,7 +136,7 @@ export default class PSAReviewReportsRow extends React.Component<Props, State> {
     const { psaNeighbors, hideProfile } = this.props;
     if (hideProfile) return null;
 
-    const personDetails = psaNeighbors.getIn([PEOPLE, PSA_NEIGHBOR.DETAILS], Immutable.Map());
+    const personDetails = psaNeighbors.getIn([PEOPLE, PSA_NEIGHBOR.DETAILS], Map());
     if (!personDetails.size) return <div>Person details unknown.</div>;
     return (
       <PersonCardWrapper>
@@ -250,7 +206,7 @@ export default class PSAReviewReportsRow extends React.Component<Props, State> {
             open={closing}
             defaultStatus={scores.getIn([PROPERTY_TYPES.STATUS, 0])}
             defaultStatusNotes={scores.getIn([PROPERTY_TYPES.STATUS_NOTES, 0])}
-            defaultFailureReasons={scores.get(PROPERTY_TYPES.FAILURE_REASON, Immutable.List()).toJS()}
+            defaultFailureReasons={scores.get(PROPERTY_TYPES.FAILURE_REASON, List()).toJS()}
             onClose={() => this.setState({ closePSAButtonActive: false, closing: false, open: false })}
             onSubmit={this.handleStatusChange} />
       )
@@ -264,76 +220,17 @@ export default class PSAReviewReportsRow extends React.Component<Props, State> {
     return modal;
   }
 
-  renderMetadataText = (actionText, dateText, user) => {
-    const text = [actionText];
-
-    if (dateText && dateText.length) {
-      text.push(' on ');
-      text.push(<ImportantMetadataText key={`${actionText}-${dateText}`}>{dateText}</ImportantMetadataText>);
-    }
-    if (user && user.length) {
-      text.push(' by ');
-      text.push(<ImportantMetadataText key={`${actionText}-${user}`}>{user}</ImportantMetadataText>);
-    }
-    return <MetadataText>{text}</MetadataText>;
-  }
-
   renderMetadata = () => {
     const {
-      component,
       entitySetIdsToAppType,
       psaNeighbors,
       scores
     } = this.props;
-    const dateFormat = 'MM/DD/YYYY hh:mm a';
-    let dateCreated;
-    let creator;
-    let dateEdited;
-    let editor;
-    dateCreated = moment(scores.getIn([PROPERTY_TYPES.DATE_TIME, 0], ''));
-
-    psaNeighbors.get(STAFF, Immutable.List()).forEach((neighbor) => {
-      const associationEntitySetId = neighbor.getIn([PSA_ASSOCIATION.ENTITY_SET, 'id']);
-      const appTypFqn = entitySetIdsToAppType.get(associationEntitySetId, '');
-      const personId = neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.PERSON_ID, 0], '');
-      if (appTypFqn === ASSESSED_BY) {
-        creator = personId;
-        const maybeDate = moment(
-          neighbor.getIn(
-            [PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.COMPLETED_DATE_TIME, 0],
-            neighbor.getIn([PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.DATE_TIME, 0], dateCreated)
-          )
-        );
-        if (maybeDate.isValid()) dateCreated = maybeDate;
-      }
-      if (appTypFqn === EDITED_BY) {
-        const maybeDate = moment(neighbor.getIn([PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.DATE_TIME, 0], ''));
-        if (maybeDate.isValid()) {
-          if (!dateEdited || dateEdited.isBefore(maybeDate)) {
-            dateEdited = maybeDate;
-            editor = personId;
-          }
-        }
-      }
-    });
-
-    const isClosed = psaIsClosed(scores);
-    const editLabel = isClosed ? 'Closed' : 'Edited';
-    if (!(dateCreated || dateEdited) && !(creator || editor)) return null;
-
-    const dateCreatedText = dateCreated ? dateCreated.format(dateFormat) : '';
-    const dateEditedText = dateEdited ? dateEdited.format(dateFormat) : '';
-
     return (
-      <MetadataWrapper>
-        <MetadataSubWrapper>
-          <MetadataItem>{this.renderMetadataText('Created', dateCreatedText, creator)}</MetadataItem>
-          { (dateEdited || editor)
-            ? <MetadataItem>{this.renderMetadataText(editLabel, dateEditedText, editor)}</MetadataItem>
-            : null
-          }
-        </MetadataSubWrapper>
-      </MetadataWrapper>
+      <PSAMetaData
+          entitySetIdsToAppType={entitySetIdsToAppType}
+          psaNeighbors={psaNeighbors}
+          scores={scores} />
     );
   }
 
