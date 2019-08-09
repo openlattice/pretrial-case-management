@@ -5,13 +5,6 @@
 import { newRequestSequence } from 'redux-reqseq';
 import type { RequestSequence } from 'redux-reqseq';
 
-
-const SET_COURT_DATE :'SET_COURT_DATE' = 'SET_COURT_DATE';
-const setCourtDate = value => ({
-  type: SET_COURT_DATE,
-  value
-});
-
 const CHANGE_HEARING_FILTERS :string = 'CHANGE_HEARING_FILTERS';
 const changeHearingFilters :RequestSequence = newRequestSequence(CHANGE_HEARING_FILTERS);
 
@@ -25,9 +18,7 @@ export {
   CHANGE_HEARING_FILTERS,
   FILTER_PEOPLE_IDS_WITH_OPEN_PSAS,
   LOAD_JUDGES,
-  SET_COURT_DATE,
   changeHearingFilters,
   filterPeopleIdsWithOpenPSAs,
-  loadJudges,
-  setCourtDate
+  loadJudges
 };
