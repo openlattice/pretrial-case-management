@@ -45,12 +45,8 @@ import { getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUti
 
 import { loadPSAModal } from '../psamodal/PSAModalActionFactory';
 import { clearSubmit } from '../../utils/submit/SubmitActionFactory';
-import { loadHearingsForDate } from '../hearings/HearingsActions';
-import {
-  changeHearingFilters,
-  loadJudges,
-  setCourtDate
-} from './CourtActionFactory';
+import { loadHearingsForDate, setCourtDate } from '../hearings/HearingsActions';
+import { changeHearingFilters } from './CourtActionFactory';
 import {
   bulkDownloadPSAReviewPDF,
   checkPSAPermissions,
@@ -220,8 +216,7 @@ type Props = {
       personId :string,
       neighbors :Map<*, *>
     }) => void,
-    loadHearingsForDate :(date :Object) => void,
-    loadJudges :() => void,
+    loadHearingsForDate :(date :Object) => void
   }
 };
 
@@ -270,7 +265,6 @@ class CourtContainer extends React.Component<Props, State> {
     } = this.props;
     if (selectedOrganizationId) {
       actions.checkPSAPermissions();
-      actions.loadJudges();
       if (!hearingsByTime.size || !hearingNeighborsById.size) {
         actions.loadHearingsForDate(courtDate);
       }
@@ -287,7 +281,6 @@ class CourtContainer extends React.Component<Props, State> {
     } = this.props;
     if (selectedOrganizationId !== nextProps.selectedOrganizationId) {
       actions.checkPSAPermissions();
-      actions.loadJudges();
       if (!hearingsByTime.size || !hearingNeighborsById.size || courtDate !== nextProps.courtDate) {
         actions.loadHearingsForDate(courtDate);
       }
@@ -581,7 +574,7 @@ function mapStateToProps(state) {
   const court = state.get(STATE.COURT);
   const edm = state.get(STATE.EDM);
   const hearings = state.get(STATE.HEARINGS);
-  const courtDate = court.get(COURT.COURT_DATE).toISODate();
+  const courtDate = hearings.get(HEARINGS_DATA.COURT_DATE).toISODate();
   const hearingsByTime = hearings.getIn([HEARINGS_DATA.HEARINGS_BY_DATE_AND_TIME, courtDate], Map());
   const courtrooms = hearings.getIn([HEARINGS_DATA.COURTROOMS_BY_DATE, courtDate], Set());
   return {
@@ -589,7 +582,6 @@ function mapStateToProps(state) {
     [APP.SELECTED_ORG_TITLE]: app.get(APP.SELECTED_ORG_TITLE),
 
     // Court
-    [COURT.COURT_DATE]: court.get(COURT.COURT_DATE),
     [COURT.PEOPLE_WITH_OPEN_PSAS]: court.get(COURT.PEOPLE_WITH_OPEN_PSAS),
     [COURT.PEOPLE_WITH_MULTIPLE_OPEN_PSAS]: court.get(COURT.PEOPLE_WITH_MULTIPLE_OPEN_PSAS),
     [COURT.PEOPLE_RECEIVING_REMINDERS]: court.get(COURT.PEOPLE_RECEIVING_REMINDERS),
@@ -607,6 +599,7 @@ function mapStateToProps(state) {
     hearingsByTime,
     loadHearingsForDateReqState: getReqState(hearings, HEARINGS_ACTIONS.LOAD_HEARINGS_FOR_DATE),
     loadHearingNeighborsReqState: getReqState(hearings, HEARINGS_ACTIONS.LOAD_HEARING_NEIGHBORS),
+    [HEARINGS_DATA.COURT_DATE]: hearings.get(HEARINGS_DATA.COURT_DATE),
     [HEARINGS_DATA.HEARINGS_BY_DATE]: hearings.get(HEARINGS_DATA.HEARINGS_BY_DATE_AND_TIME),
     [HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID]: hearings.get(HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID),
 
@@ -618,10 +611,9 @@ const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
   actions: bindActionCreators({
     // Court actions
     changeHearingFilters,
-    loadJudges,
-    setCourtDate,
     // Hearings Actions
     loadHearingsForDate,
+    setCourtDate,
     // PSA Modal actions
     loadPSAModal,
     // Review actions
