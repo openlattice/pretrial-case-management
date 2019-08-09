@@ -25,6 +25,12 @@ const openHearingSettingsModal = () => ({
   type: OPEN_HEARING_SETTINGS_MODAL
 });
 
+const SET_COURT_DATE :'SET_COURT_DATE' = 'SET_COURT_DATE';
+const setCourtDate = value => ({
+  type: SET_COURT_DATE,
+  value
+});
+
 const SET_HEARING_SETTINGS :'SET_HEARING_SETTINGS' = 'SET_HEARING_SETTINGS';
 const setHearingSettings = value => ({
   type: SET_HEARING_SETTINGS,
@@ -57,6 +63,7 @@ export {
   LOAD_HEARING_NEIGHBORS,
   REFRESH_HEARING_AND_NEIGHBORS,
   OPEN_HEARING_SETTINGS_MODAL,
+  SET_COURT_DATE,
   SET_HEARING_SETTINGS,
   SUBMIT_EXISTING_HEARING,
   SUBMIT_HEARING,
@@ -68,6 +75,7 @@ export {
   loadHearingNeighbors,
   refreshHearingAndNeighbors,
   openHearingSettingsModal,
+  setCourtDate,
   setHearingSettings,
   submitExistingHearing,
   submitHearing,

@@ -20,6 +20,7 @@ import {
   loadHearingNeighbors,
   OPEN_HEARING_SETTINGS_MODAL,
   refreshHearingAndNeighbors,
+  SET_COURT_DATE,
   SET_HEARING_SETTINGS,
   submitExistingHearing,
   submitHearing,
@@ -75,6 +76,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     [HEARINGS_ACTIONS.SUBMIT_HEARING]: Map(),
     [HEARINGS_ACTIONS.UPDATE_HEARING]: Map()
   },
+  [HEARINGS_DATA.COURT_DATE]: DateTime.local(),
   [HEARINGS_DATA.COURTROOM]: '',
   [HEARINGS_DATA.COURTROOMS_BY_DATE]: Map(),
   [HEARINGS_DATA.DATE]: DateTime.local().toISODate(),
@@ -336,6 +338,11 @@ export default function hearingsReducer(state :Map<*, *> = INITIAL_STATE, action
         FINALLY: () => state
           .deleteIn([REDUX.ACTIONS, HEARINGS_ACTIONS.SUBMIT_HEARING, action.id])
       });
+    }
+
+    case SET_COURT_DATE: {
+      const { courtDate } = action.value;
+      return state.set(HEARINGS_DATA.COURT_DATE, courtDate);
     }
 
     case updateHearing.case(action.type): {
