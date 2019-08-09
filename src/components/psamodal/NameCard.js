@@ -4,17 +4,27 @@
 import React from 'react';
 import styled from 'styled-components';
 
-import ContentBlock from '../ContentBlock';
-import ContentSection from '../ContentSection';
-import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
 import defaultUserIcon from '../../assets/svg/profile-placeholder-round.svg';
 import { formatValue, formatDateList } from '../../utils/FormattingUtils';
-import { OL } from '../../utils/consts/Colors';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import {
+  Content,
+  ContentBlock,
+  ContentLabel,
+  PersonPicture,
+  PersonMugshot
+} from '../../utils/Layout';
 
 const PersonCardWrapper = styled.div`
   width: 100%;
+  display: grid;
+  grid-template-columns: 10% 20% 20% 20% 30%;
 `;
+
+const MugShot = styled(PersonMugshot)`
+  width: 36px;
+`;
+
 
 export default ({ person } :Props) => {
   const firstName = formatValue(person.get(PROPERTY_TYPES.FIRST_NAME, ''));
@@ -26,41 +36,36 @@ export default ({ person } :Props) => {
     || defaultUserIcon;
   const generalContent = [
     {
-      label: 'Last Name',
-      content: [lastName]
-    },
-    {
       label: 'First Name',
-      content: [firstName]
+      content: firstName
     },
     {
       label: 'Middle Name',
-      content: [middleName]
+      content: middleName
+    },
+    {
+      label: 'Last Name',
+      content: lastName
     },
     {
       label: 'Date of Birth',
-      content: [dob]
+      content: dob
     }
   ];
 
   const content = generalContent.map(item => (
-    <ContentBlock
-        component={CONTENT_CONSTS.SUMMARY}
-        contentBlock={item}
-        key={item.label} />
+    <ContentBlock key={item.label}>
+      <ContentLabel>{ item.label }</ContentLabel>
+      <Content>{ item.content }</Content>
+    </ContentBlock>
   ));
 
   return (
     <PersonCardWrapper>
-      <ContentSection
-          component={CONTENT_CONSTS.SUMMARY}
-          photo={mugshot}
-          header="Person"
-          firstName={firstName}
-          middleName={middleName}
-          lastName={lastName}>
-        {content}
-      </ContentSection>
+      <MugShot>
+        <PersonPicture src={mugshot} alt="" />
+      </MugShot>
+      {content}
     </PersonCardWrapper>
   );
 };
