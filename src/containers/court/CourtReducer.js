@@ -12,8 +12,7 @@ import {
 import {
   CHANGE_HEARING_FILTERS,
   filterPeopleIdsWithOpenPSAs,
-  loadJudges,
-  SET_COURT_DATE
+  loadJudges
 } from './CourtActionFactory';
 import { changePSAStatus } from '../review/ReviewActionFactory';
 import { SWITCH_ORGANIZATION } from '../app/AppActionFactory';
@@ -23,7 +22,6 @@ import { PSA_STATUSES } from '../../utils/consts/Consts';
 
 
 const INITIAL_STATE :Map<*, *> = fromJS({
-  [COURT.COURT_DATE]: DateTime.local(),
   [COURT.COUNTY]: '',
   [COURT.COURTROOM]: '',
 
@@ -108,11 +106,6 @@ export default function courtReducer(state :Map<*, *> = INITIAL_STATE, action :O
         newState = newState.set(COURT.COURTROOM, courtroom);
       }
       return newState;
-    }
-
-    case SET_COURT_DATE: {
-      const { courtDate } = action.value;
-      return state.set(COURT.COURT_DATE, courtDate);
     }
 
     case loadJudges.case(action.type): {
