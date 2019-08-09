@@ -314,32 +314,33 @@ function* loadHearingNeighborsWorker(action :SequenceAction) :Generator<*, *, *>
       /*
        * Get Entity Set Ids
        */
-      const bondsEntitySetId = getEntitySetIdFromApp(app, BONDS);
-      const checkInAppointmentsEntitySetId = getEntitySetIdFromApp(app, CHECKIN_APPOINTMENTS);
-      const hearingsEntitySetId = getEntitySetIdFromApp(app, HEARINGS);
-      const judgesEntitySetId = getEntitySetIdFromApp(app, JUDGES);
-      const manualRemindersEntitySetId = getEntitySetIdFromApp(app, MANUAL_REMINDERS);
-      const outcomesEntitySetId = getEntitySetIdFromApp(app, OUTCOMES);
-      const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
-      const releaseConditionsEntitySetId = getEntitySetIdFromApp(app, RELEASE_CONDITIONS);
-      const psaEntitySetId = getEntitySetIdFromApp(app, PSA_SCORES);
+      const bondsESID = getEntitySetIdFromApp(app, BONDS);
+      const checkInAppointmentsESID = getEntitySetIdFromApp(app, CHECKIN_APPOINTMENTS);
+      const countiesESID = getEntitySetIdFromApp(app, COUNTIES);
+      const hearingsESID = getEntitySetIdFromApp(app, HEARINGS);
+      const judgesESID = getEntitySetIdFromApp(app, JUDGES);
+      const manualRemindersESID = getEntitySetIdFromApp(app, MANUAL_REMINDERS);
+      const outcomesESID = getEntitySetIdFromApp(app, OUTCOMES);
+      const peopleESID = getEntitySetIdFromApp(app, PEOPLE);
+      const releaseConditionsESID = getEntitySetIdFromApp(app, RELEASE_CONDITIONS);
+      const psaESID = getEntitySetIdFromApp(app, PSA_SCORES);
 
       let neighborsById = yield call(
         searchEntityNeighborsWithFilterWorker,
         searchEntityNeighborsWithFilter({
-          entitySetId: hearingsEntitySetId,
+          entitySetId: hearingsESID,
           filter: {
             entityKeyIds: hearingIds,
             sourceEntitySetIds: [
-              bondsEntitySetId,
-              checkInAppointmentsEntitySetId,
-              manualRemindersEntitySetId,
-              outcomesEntitySetId,
-              peopleEntitySetId,
-              psaEntitySetId,
-              releaseConditionsEntitySetId
+              bondsESID,
+              checkInAppointmentsESID,
+              manualRemindersESID,
+              outcomesESID,
+              peopleESID,
+              psaESID,
+              releaseConditionsESID
             ],
-            destinationEntitySetIds: [judgesEntitySetId]
+            destinationEntitySetIds: [countiesESID, judgesESID]
           }
         })
       );
