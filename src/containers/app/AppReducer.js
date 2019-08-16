@@ -5,9 +5,12 @@
 import { Models } from 'lattice';
 import { List, Map, fromJS } from 'immutable';
 import { AccountUtils } from 'lattice-auth';
+import { RequestStates } from 'redux-reqseq';
 
-import { APP_TYPES, APP_TYPES_FQNS } from '../../utils/consts/DataModelConsts';
-import { APP } from '../../utils/consts/FrontEndStateConsts';
+import { APP_TYPES_FQNS } from '../../utils/consts/DataModelConsts';
+import { REDUX } from '../../utils/consts/redux/SharedConsts';
+import { actionValueIsInvalid } from '../../utils/consts/redux/ReduxUtils';
+import { APP_ACTIONS, APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { getStaffEKIDs } from '../people/PeopleActionFactory';
 import {
   loadApp,
@@ -16,36 +19,32 @@ import {
 
 const { FullyQualifiedName } = Models;
 
-const { ARREST_CHARGE_LIST, COURT_CHARGE_LIST, APP_SETTINGS } = APP_TYPES;
-
-const APP_CONFIG_INITIAL_STATE :Map<*, *> = fromJS({
-  [APP.ENTITY_SETS_BY_ORG]: Map(),
-  [APP.PRIMARY_KEYS]: List(),
-  [APP.PROPERTY_TYPES]: Map(),
-});
+const {
+  FAILURE,
+  PENDING,
+  STANDBY,
+  SUCCESS
+} = RequestStates;
 
 const INITIAL_STATE :Map<*, *> = fromJS({
-  [ARREST_CHARGE_LIST]: APP_CONFIG_INITIAL_STATE,
-  [COURT_CHARGE_LIST]: APP_CONFIG_INITIAL_STATE,
-  [APP_SETTINGS]: APP_CONFIG_INITIAL_STATE,
-  [APP.ENTITY_SETS_BY_ORG]: Map(),
-  [APP.FQN_TO_ID]: Map(),
-  [APP.ACTIONS]: {
-    [APP.LOAD_APP]: Map(),
+  [REDUX.ACTIONS]: {
+    [APP_ACTIONS.LOAD_APP]: {
+      [REDUX.REQUEST_STATE]: STANDBY
+    }
   },
-  [APP.APP]: Map(),
-  [APP.APP_TYPES]: Map(),
-  [APP.ERRORS]: {
-    [APP.LOAD_APP]: '',
+  [REDUX.ERRORS]: {
+    [APP_ACTIONS.LOAD_APP]: Map(),
   },
-  [APP.LOADING]: true,
-  [APP.ORGS]: Map(),
-  [APP.SELECTED_ORG_ID]: '',
-  [APP.SELECTED_ORG_TITLE]: '',
-  [APP.APP_SETTINGS_ID]: '',
-  [APP.SETTINGS_BY_ORG_ID]: Map(),
-  [APP.SELECTED_ORG_SETTINGS]: Map(),
-  [APP.STAFF_IDS_TO_EKIDS]: Map(),
+  [APP_DATA.APP]: Map(),
+  [APP_DATA.DATA_MODEL]: Map(),
+  [APP_DATA.ENTITY_SETS_BY_ORG]: Map(),
+  [APP_DATA.FQN_TO_ID]: Map(),
+  [APP_DATA.ORGS]: Map(),
+  [APP_DATA.SELECTED_ORG_ID]: '',
+  [APP_DATA.SELECTED_ORG_SETTINGS]: Map(),
+  [APP_DATA.SELECTED_ORG_TITLE]: '',
+  [APP_DATA.SETTINGS_BY_ORG_ID]: Map(),
+  [APP_DATA.STAFF_IDS_TO_EKIDS]: Map(),
 });
 
 const getEntityTypePropertyTypes = (edm :Object, entityTypeId :string) :Object => {
@@ -62,30 +61,19 @@ export default function appReducer(state :Map<*, *> = INITIAL_STATE, action :Obj
 
     case SWITCH_ORGANIZATION: {
       return state
-        .set(APP.SELECTED_ORG_ID, action.org.orgId)
-        .set(APP.SELECTED_ORG_SETTINGS, action.org.settings)
-        .set(APP.SELECTED_ORG_TITLE, action.org.title);
+        .set(APP_DATA.SELECTED_ORG_ID, action.org.orgId)
+        .set(APP_DATA.SELECTED_ORG_SETTINGS, action.org.settings)
+        .set(APP_DATA.SELECTED_ORG_TITLE, action.org.title);
     }
 
     case loadApp.case(action.type): {
       return loadApp.reducer(state, action, {
         REQUEST: () => state
-          .set(APP.LOADING, true)
-          .set(APP.SELECTED_ORG_ID, '')
-          .setIn([APP.ACTIONS, APP.LOAD_APP, action.id], fromJS(action)),
+          .set(APP_DATA.SELECTED_ORG_ID, '')
+          .setIn([REDUX.ACTIONS, APP_ACTIONS.LOAD_APP, action.id], fromJS(action))
+          .setIn([REDUX.ACTIONS, APP_ACTIONS.LOAD_APP, REDUX.REQUEST_STATE], PENDING),
         SUCCESS: () => {
-          let entitySetsByOrgId = Map();
-          let fqnToIdMap = Map();
-          if (!state.hasIn([APP.ACTIONS, APP.LOAD_APP, action.id])) {
-            return state;
-          }
-
           const { value } = action;
-          if (value === null || value === undefined) {
-            return state;
-          }
-
-          let newState :Map<*, *> = state;
           const {
             app,
             appConfigs,
@@ -93,6 +81,18 @@ export default function appReducer(state :Map<*, *> = INITIAL_STATE, action :Obj
             appTypes,
             edm
           } = value;
+          let newState :Map<*, *> = state;
+          let entitySetsByOrgId :Map<*, *> = Map();
+          let fqnToIdMap :Map<*, *> = Map();
+
+          if (!state.hasIn([REDUX.ACTIONS, APP_ACTIONS.LOAD_APP, action.id])) {
+            return state;
+          }
+
+          if (value === null || value === undefined) {
+            return state;
+          }
+
           const organizations :Object = {};
 
           appConfigs.forEach((appConfig :Object) => {
@@ -106,7 +106,7 @@ export default function appReducer(state :Map<*, *> = INITIAL_STATE, action :Obj
                 Object.values(APP_TYPES_FQNS).forEach((fqn) => {
                   const fqnString = fqn.toString();
                   newState = newState.setIn(
-                    [fqnString, APP.ENTITY_SETS_BY_ORG, orgId],
+                    [fqnString, APP_DATA.ENTITY_SETS_BY_ORG, orgId],
                     appConfig.config[fqnString].entitySetId
                   );
                   fqnToIdMap = fqnToIdMap.set(
@@ -139,52 +139,58 @@ export default function appReducer(state :Map<*, *> = INITIAL_STATE, action :Obj
             const propertyTypes = getEntityTypePropertyTypes(edm, appType.entityTypeId);
             const primaryKeys = edm.entityTypes[appType.entityTypeId].key;
             newState = newState
-              .setIn([appTypeFqn, APP.PROPERTY_TYPES], fromJS(propertyTypes))
-              .setIn([appTypeFqn, APP.PRIMARY_KEYS], fromJS(primaryKeys));
+              .setIn([appTypeFqn, APP_DATA.PROPERTY_TYPES], fromJS(propertyTypes))
+              .setIn([appTypeFqn, APP_DATA.PRIMARY_KEYS], fromJS(primaryKeys));
           });
 
           const appSettings = appSettingsByOrgId.get(selectedOrganizationId, Map());
 
-          return newState
-            .set(APP.APP, app)
-            .set(APP.ENTITY_SETS_BY_ORG, entitySetsByOrgId)
-            .set(APP.FQN_TO_ID, fqnToIdMap)
-            .set(APP.ORGS, fromJS(organizations))
-            .set(APP.SELECTED_ORG_ID, selectedOrganizationId)
-            .set(APP.SELECTED_ORG_TITLE, selectedOrganizationTitle)
-            .set(APP.SETTINGS_BY_ORG_ID, appSettingsByOrgId)
-            .set(APP.SELECTED_ORG_SETTINGS, appSettings);
+          newState = newState
+            .set(APP_DATA.APP, app)
+            .set(APP_DATA.DATA_MODEL, edm)
+            .set(APP_DATA.ENTITY_SETS_BY_ORG, entitySetsByOrgId)
+            .set(APP_DATA.FQN_TO_ID, fqnToIdMap)
+            .set(APP_DATA.ORGS, fromJS(organizations))
+            .set(APP_DATA.SELECTED_ORG_ID, selectedOrganizationId)
+            .set(APP_DATA.SELECTED_ORG_TITLE, selectedOrganizationTitle)
+            .set(APP_DATA.SETTINGS_BY_ORG_ID, appSettingsByOrgId)
+            .set(APP_DATA.SELECTED_ORG_SETTINGS, appSettings)
+            .setIn([REDUX.ACTIONS, APP_ACTIONS.LOAD_APP, REDUX.REQUEST_STATE], SUCCESS);
+          return newState;
         },
         FAILURE: () => {
+          if (actionValueIsInvalid(action.value)) {
+            return state;
+          }
           let { error } = action.value;
           const { defaultSettings } = action.value;
           let newState = Map();
           Object.values(APP_TYPES_FQNS).forEach((fqn) => {
             const fqnString = fqn.toString();
             newState = newState
-              .setIn([fqnString, APP.ENTITY_SETS_BY_ORG], Map())
-              .setIn([fqnString, APP.PRIMARY_KEYS], List())
-              .setIn([fqnString, APP.PROPERTY_TYPES], Map());
+              .setIn([fqnString, APP_DATA.ENTITY_SETS_BY_ORG], Map())
+              .setIn([fqnString, APP_DATA.PRIMARY_KEYS], List())
+              .setIn([fqnString, APP_DATA.PROPERTY_TYPES], Map());
           });
           if (!error) error = { loadApp: '' };
           return newState
-            .set(APP.ENTITY_SETS_BY_ORG, Map())
-            .set(APP.FQN_TO_ID, Map())
-            .setIn([APP.ERRORS, APP.LOAD_APP], fromJS(error))
-            .set(APP.ORGS, Map())
-            .set(APP.SELECTED_ORG_ID, '')
-            .set(APP.SELECTED_ORG_TITLE, '')
-            .set(APP.SELECTED_ORG_SETTINGS, fromJS(defaultSettings));
+            .set(APP_DATA.ENTITY_SETS_BY_ORG, Map())
+            .set(APP_DATA.FQN_TO_ID, Map())
+            .set(APP_DATA.ORGS, Map())
+            .set(APP_DATA.SELECTED_ORG_ID, '')
+            .set(APP_DATA.SELECTED_ORG_TITLE, '')
+            .set(APP_DATA.SELECTED_ORG_SETTINGS, fromJS(defaultSettings))
+            .setIn([REDUX.ERRORS, APP_ACTIONS.LOAD_APP], error)
+            .setIn([REDUX.ACTIONS, APP_ACTIONS.LOAD_APP, REDUX.REQUEST_STATE], FAILURE);
         },
         FINALLY: () => state
-          .set(APP.LOADING, false)
-          .deleteIn([APP.ACTIONS, APP.LOAD_APP, action.id])
+          .deleteIn([REDUX.ACTIONS, APP_ACTIONS.LOAD_APP, action.id])
       });
     }
 
     case getStaffEKIDs.case(action.type): {
       return getStaffEKIDs.reducer(state, action, {
-        SUCCESS: () => state.set(APP.STAFF_IDS_TO_EKIDS, action.value)
+        SUCCESS: () => state.set(APP_DATA.STAFF_IDS_TO_EKIDS, action.value)
       });
     }
 
