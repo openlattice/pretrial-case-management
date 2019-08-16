@@ -164,8 +164,6 @@ class AppContainer extends React.Component<Props, {}> {
   renderAppBody = () => {
     const { loadAppReqState, loadAppError } = this.props;
     const loading = requestIsPending(loadAppReqState);
-    console.log(loading);
-    console.log(loadAppReqState);
 
     if (loadAppError.size) {
       return (
