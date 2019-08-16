@@ -31,13 +31,11 @@ import { PSA_STATUSES } from '../../utils/consts/Consts';
 import { formatDMFFromEntity } from '../../utils/DMFUtils';
 import { getEntityKeyId, stripIdField, getSearchTerm } from '../../utils/DataUtils';
 import { hearingIsCancelled } from '../../utils/HearingUtils';
-import {
-  APP,
-  CHARGES,
-  PSA_NEIGHBOR,
-  PSA_ASSOCIATION,
-  STATE
-} from '../../utils/consts/FrontEndStateConsts';
+import { CHARGES, PSA_NEIGHBOR, PSA_ASSOCIATION } from '../../utils/consts/FrontEndStateConsts';
+
+import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { APP_DATA } from '../../utils/consts/redux/AppConsts';
+
 import {
   BULK_DOWNLOAD_PSA_REVIEW_PDF,
   CHANGE_PSA_STATUS,
@@ -95,7 +93,7 @@ const chargesFqn :string = APP_TYPES.CHARGES;
 const getApp = state => state.get(STATE.APP, Map());
 const getCharges = state => state.get(STATE.CHARGES, Map());
 const getEDM = state => state.get(STATE.EDM, Map());
-const getOrgId = state => state.getIn([STATE.APP, APP.SELECTED_ORG_ID], '');
+const getOrgId = state => state.getIn([STATE.APP, APP_DATA.SELECTED_ORG_ID], '');
 
 const { FullyQualifiedName } = Models;
 
@@ -116,7 +114,7 @@ const orderCasesByArrestDate = (case1, case2) => {
 function* getCasesAndCharges(neighbors) {
   const app = yield select(getApp);
   const orgId = yield select(getOrgId);
-  const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
+  const entitySetIdsToAppType = app.getIn([APP_DATA.ENTITY_SETS_BY_ORG, orgId]);
   const personEntityKeyId = getEntityKeyId(neighbors, PEOPLE);
 
   const arrestCasesEntitySetId = getEntitySetIdFromApp(app, ARREST_CASES);
@@ -330,7 +328,7 @@ function* loadPSADataWorker(action :SequenceAction) :Generator<*, *, *> {
     if (psaIds.length) {
       const app = yield select(getApp);
       const orgId = yield select(getOrgId);
-      const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
+      const entitySetIdsToAppType = app.getIn([APP_DATA.ENTITY_SETS_BY_ORG, orgId]);
       const dmfFqnEntitySetId = getEntitySetIdFromApp(app, DMF_RESULTS);
       const psaScoresEntitySetId = getEntitySetIdFromApp(app, PSA_SCORES);
       const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
@@ -605,8 +603,8 @@ function* bulkDownloadPSAReviewPDFWorker(action :SequenceAction) :Generator<*, *
 
     const app = yield select(getApp);
     const orgId = yield select(getOrgId);
-    const settings = app.get(APP.SELECTED_ORG_SETTINGS);
-    const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId], Map());
+    const settings = app.get(APP_DATA.SELECTED_ORG_SETTINGS);
+    const entitySetIdsToAppType = app.getIn([APP_DATA.ENTITY_SETS_BY_ORG, orgId], Map());
 
     /*
      * Get Entity Set Ids
@@ -813,7 +811,7 @@ function* downloadPSAReviewPDFWorker(action :SequenceAction) :Generator<*, *, *>
       allFTAs
     } = yield getCasesAndCharges(neighbors);
     const app = yield select(getApp);
-    const settings = app.get(APP.SELECTED_ORG_SETTINGS);
+    const settings = app.get(APP_DATA.SELECTED_ORG_SETTINGS);
     const charges = yield select(getCharges);
     const orgId = yield select(getOrgId);
     const assessedByEntitySetId = getEntitySetIdFromApp(app, ASSESSED_BY);
@@ -986,7 +984,7 @@ function* refreshPSANeighborsWorker(action :SequenceAction) :Generator<*, *, *> 
 
     const app = yield select(getApp);
     const orgId = yield select(getOrgId);
-    const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
+    const entitySetIdsToAppType = app.getIn([APP_DATA.ENTITY_SETS_BY_ORG, orgId]);
     const psaScoresEntitySetId = getEntitySetIdFromApp(app, PSA_SCORES);
     /*
      * Get Entity Set Ids
