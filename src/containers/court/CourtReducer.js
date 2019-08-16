@@ -2,7 +2,6 @@
  * @flow
  */
 
-import { DateTime } from 'luxon';
 import {
   Map,
   Set,
