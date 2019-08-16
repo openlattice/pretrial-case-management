@@ -406,33 +406,6 @@ function* editPSAWatcher() :Generator<*, *, *> {
   yield takeEvery(EDIT_PSA, editPSAWorker);
 }
 
-function* loadDataModelWorker(action :SequenceAction) :Generator<*, *, *> {
-
-  try {
-    yield put(loadDataModel.request(action.id));
-    const app = yield select(getApp);
-    const orgId = yield select(getOrgId);
-    const entitySetIds = app.getIn([APP_DATA.ENTITY_SETS_BY_ORG, orgId], Map()).keySeq().toJS();
-    const selectors = entitySetIds.map(id => ({
-      id,
-      type: 'EntitySet',
-      include: ['EntitySet', 'EntityType', 'PropertyTypeInEntitySet']
-    }));
-    const dataModel = yield call(EntityDataModelApi.getEntityDataModelProjection, selectors);
-    yield put(loadDataModel.success(action.id, { dataModel }));
-  }
-  catch (error) {
-    yield put(loadDataModel.failure(action.id, { error }));
-  }
-  finally {
-    yield put(loadDataModel.finally(action.id));
-  }
-}
-
-function* loadDataModelWatcher() :Generator<*, *, *> {
-  yield takeEvery(LOAD_DATA_MODEL, loadDataModelWorker);
-}
-
 const getOpenPSAIds = (neighbors, psaScoresEntitySetId) => {
   if (!neighbors) return [];
   return neighbors.filter((neighbor) => {
@@ -1094,7 +1067,6 @@ function* submitPSAWatcher() :Generator<*, *, *> {
 export {
   addCaseToPSAWatcher,
   editPSAWatcher,
-  loadDataModelWatcher,
   loadNeighborsWatcher,
   removeCaseFromPSAWatcher,
   submitPSAWatcher
