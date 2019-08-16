@@ -91,31 +91,16 @@ export const CHECK_IN = {
   SUBMITTING_CHECKINS: 'submittingCheckins',
 };
 
-// Contact-Info
-export const CONTACT_INFO = {
-  SUBMITTED_CONTACT_INFO: 'submittedContact',
-  SUBMITTING_CONTACT_INFO: 'submittingContactInfo',
-  SUBMISSION_COMPLETE: 'contactInfoSubmissionComplete',
-  SUBMISSION_ERROR: 'submissionError',
-  UPDATED_CONTACTS: 'updatedContacts',
-  UPDATING_CONTACT_INFO: 'updatingContactInfo'
-};
-
 // Court
 
 export const COURT = {
   COURT_DATE: 'courtDate',
-  HEARINGS_TODAY: 'hearingsToday',
-  HEARINGS_BY_TIME: 'hearingsByTime',
   PEOPLE_WITH_OPEN_PSAS: 'peopleWithOpenPsas',
   PEOPLE_WITH_MULTIPLE_OPEN_PSAS: 'peopleWithMultipleOpenPsas',
   PEOPLE_RECEIVING_REMINDERS: 'peopleReceivingReminders',
-  LOADING_HEARINGS: 'isLoadingHearings',
   LOADING_PSAS: 'isLoadingPSAs',
-  LOADING_ERROR: 'loadingError',
   COUNTY: 'county',
   COURTROOM: 'courtroom',
-  COURTROOMS: 'courtrooms',
   OPEN_PSAS: 'openPSAs',
   SCORES_AS_MAP: 'scoresAsMap',
   PSA_EDIT_DATES: 'psaEditDatesById',
@@ -167,25 +152,6 @@ export const ENROLL = {
   ERROR: 'errorMessage'
 };
 
-// Hearings
-
-export const HEARINGS = {
-  COURTROOM: 'hearingCourtroom',
-  DATE: 'hearingDate',
-  HEARINGS_BY_ID: 'hearingsById',
-  HEARING_NEIGHBORS_BY_ID: 'hearingNeighborsById',
-  LOADING_HEARING_NEIGHBORS: 'loadingHearingNeighbors',
-  JUDGE: 'hearingJudge',
-  REFRESHING_HEARING_AND_NEIGHBORS: 'refreshingHearingAndNeighbors',
-  SETTINGS_MODAL_OPEN: 'hearingSettingsModalOpen',
-  SUBMITTED_HEARING: 'submittedHearing',
-  SUBMITTED_HEARING_NEIGHBORS: 'submittedHearingNeighbors',
-  SUBMITTING_HEARING: 'submittingHearing',
-  SUBMISSION_ERROR: 'hearingSubmissionError',
-  TIME: 'hearingTime',
-  UPDATED_HEARING: 'updatedHearing',
-  UPDATED_HEARING_NEIGHBORS: 'updatedHearingNeighbors',
-};
 
 // Manual Reminders
 

@@ -139,12 +139,9 @@ class HearingRow extends React.Component<Props, *> {
       openConfirmationModal
     } = this.props;
     const disabledText = hasOutcome ? 'Hearing Has Outcome' : 'Hearing';
-    const {
-      [ENTITY_KEY_ID]: hearingEntityKeyId,
-    } = getEntityProperties(hearing, [ENTITY_KEY_ID]);
 
     return (
-      <CancelButton onClick={() => openConfirmationModal(hearingEntityKeyId)} disabled={disabled}>
+      <CancelButton onClick={() => openConfirmationModal(hearing)} disabled={disabled}>
         { disabled ? disabledText : 'Cancel Hearing'}
       </CancelButton>
     );

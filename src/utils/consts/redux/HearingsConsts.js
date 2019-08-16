@@ -3,7 +3,8 @@
  */
 
 export const HEARINGS_ACTIONS = {
-  LOAD_HEARING_NEIGHBORS: 'updateContactsBulk',
+  LOAD_HEARINGS_FOR_DATE: 'loadHearingsForDate',
+  LOAD_HEARING_NEIGHBORS: 'loadHearingNeighbors',
   REFRESH_HEARING_AND_NEIGHBORS: 'refreshHearingAndNeighbors',
   SUBMIT_EXISTING_HEARING: 'submitExistingHearing',
   SUBMIT_HEARING: 'submitHearing',
@@ -11,8 +12,11 @@ export const HEARINGS_ACTIONS = {
 };
 
 export const HEARINGS_DATA = {
+  COURT_DATE: 'courtDate',
   COURTROOM: 'hearingCourtroom',
+  COURTROOMS_BY_DATE: 'courtroomsByDate',
   DATE: 'hearingDate',
+  HEARINGS_BY_DATE_AND_TIME: 'hearingsByDate',
   HEARINGS_BY_ID: 'hearingsById',
   HEARING_NEIGHBORS_BY_ID: 'hearingNeighborsById',
   JUDGE: 'hearingJudge',

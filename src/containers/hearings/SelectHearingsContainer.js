@@ -294,13 +294,15 @@ class SelectHearingsContainer extends React.Component<Props, State> {
       .keySeq().filter(id => hearingNeighborsById.getIn([id, OUTCOMES]));
     const scheduledHearings = getScheduledHearings(neighbors);
     const pastHearings = getPastHearings(neighbors);
-    const isLoading = (submittingHearing
+    const isLoading = (
+      submittingHearing
       || updatingHearing
       || submittingExistingHearing
-      || refreshingHearingAndNeighbors);
+      || refreshingHearingAndNeighbors
+    );
 
     const loadingText = (
-      submittingHearing || updatingHearing || submittingExistingHearing
+      submittingHearing || submittingExistingHearing || updatingHearing
     ) ? 'Submitting' : 'Reloading';
     return (
       <>

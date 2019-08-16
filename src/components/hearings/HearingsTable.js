@@ -82,7 +82,7 @@ class HearingsTable extends React.Component<Props, *> {
     super(props);
     this.state = {
       confirmationModalOpen: false,
-      hearingEntityKeyId: ''
+      hearing: Map()
     };
   }
 
@@ -94,19 +94,19 @@ class HearingsTable extends React.Component<Props, *> {
     }
   }
 
-  openConfirmationModal = (hearingEntityKeyId :string) => this.setState({
+  openConfirmationModal = (hearing :Map) => this.setState({
     confirmationModalOpen: true,
-    hearingEntityKeyId
+    hearing
   });
 
   closeConfirmationModal = () => this.setState({
     confirmationModalOpen: false,
-    hearingEntityKeyId: ''
+    hearing: Map()
   });
 
   renderConfirmationModal = () => {
     const { cancelFn, refreshingPersonNeighbors } = this.props;
-    const { confirmationModalOpen, hearingEntityKeyId } = this.state;
+    const { confirmationModalOpen, hearing } = this.state;
 
 
     return (
@@ -116,7 +116,7 @@ class HearingsTable extends React.Component<Props, *> {
           objectType={CONFIRMATION_OBJECT_TYPES.HEARING}
           onClose={this.closeConfirmationModal}
           open={confirmationModalOpen}
-          confirmationAction={() => cancelFn(hearingEntityKeyId)} />
+          confirmationAction={() => cancelFn(hearing)} />
     );
   }
 

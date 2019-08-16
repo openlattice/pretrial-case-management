@@ -4,7 +4,7 @@
 
 import React from 'react';
 import styled from 'styled-components';
-import moment from 'moment';
+import { DateTime } from 'luxon';
 import { Map, List, Set } from 'immutable';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -27,8 +27,8 @@ import PSAModal from '../psamodal/PSAModal';
 import { formatPeopleInfo, sortPeopleByName } from '../../utils/PeopleUtils';
 import * as Routes from '../../core/router/Routes';
 import { StyledSectionWrapper } from '../../utils/Layout';
-import { TIME_FORMAT } from '../../utils/FormattingUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { DATE_FORMAT, TIME_FORMAT } from '../../utils/consts/DateTimeConsts';
 import { DOMAIN } from '../../utils/consts/ReportDownloadTypes';
 import { OL } from '../../utils/consts/Colors';
 import {
@@ -43,12 +43,15 @@ import {
 import { HEARINGS_ACTIONS, HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
 import { getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUtils';
 
-import * as CourtActionFactory from './CourtActionFactory';
-import * as FormActionFactory from '../psa/FormActionFactory';
-import * as ReviewActionFactory from '../review/ReviewActionFactory';
-import * as PSAModalActionFactory from '../psamodal/PSAModalActionFactory';
-import * as DataActionFactory from '../../utils/data/DataActionFactory';
+import { loadPSAModal } from '../psamodal/PSAModalActionFactory';
 import { clearSubmit } from '../../utils/submit/SubmitActionFactory';
+import { loadHearingsForDate, setCourtDate } from '../hearings/HearingsActions';
+import { changeHearingFilters } from './CourtActionFactory';
+import {
+  bulkDownloadPSAReviewPDF,
+  checkPSAPermissions,
+  loadCaseHistory
+} from '../review/ReviewActionFactory';
 
 const { PEOPLE } = APP_TYPES;
 
@@ -184,15 +187,15 @@ const ToggleWrapper = styled.div`
 `;
 
 type Props = {
-  courtDate :moment,
-  isLoadingHearings :boolean,
-  loadHearingNeighborsReqState :RequestState,
+  courtDate :DateTime,
   hearingsByTime :Map<*, *>,
   hearingNeighborsById :Map<*, *>,
   isLoadingPSAs :boolean,
   courtroom :string,
   courtrooms :List<*>,
   county :string,
+  loadHearingsForDateReqState :RequestState,
+  loadHearingNeighborsReqState :RequestState,
   peopleWithOpenPsas :Set<*>,
   peopleIdsToOpenPSAIds :Map<*>,
   peopleWithMultipleOpenPsas :Set<*>,
@@ -213,8 +216,7 @@ type Props = {
       personId :string,
       neighbors :Map<*, *>
     }) => void,
-    loadHearingsForDate :(date :Object) => void,
-    loadJudges :() => void,
+    loadHearingsForDate :(date :Object) => void
   }
 };
 
@@ -248,9 +250,8 @@ class CourtContainer extends React.Component<Props, State> {
 
   openPSAModal = ({ psaId }) => {
     const { actions } = this.props;
-    const { loadPSAModal } = actions;
     this.setState({ psaId });
-    loadPSAModal({ psaId, callback: this.loadCaseHistoryCallback });
+    actions.loadPSAModal({ psaId, callback: this.loadCaseHistoryCallback });
     this.setState({ psaModalOpen: true });
   }
 
@@ -262,12 +263,10 @@ class CourtContainer extends React.Component<Props, State> {
       hearingNeighborsById,
       selectedOrganizationId
     } = this.props;
-    const { checkPSAPermissions, loadHearingsForDate, loadJudges } = actions;
     if (selectedOrganizationId) {
-      checkPSAPermissions();
-      loadJudges();
+      actions.checkPSAPermissions();
       if (!hearingsByTime.size || !hearingNeighborsById.size) {
-        loadHearingsForDate(courtDate);
+        actions.loadHearingsForDate(courtDate);
       }
     }
   }
@@ -280,12 +279,10 @@ class CourtContainer extends React.Component<Props, State> {
       hearingNeighborsById,
       selectedOrganizationId
     } = this.props;
-    const { checkPSAPermissions, loadHearingsForDate, loadJudges } = actions;
     if (selectedOrganizationId !== nextProps.selectedOrganizationId) {
-      checkPSAPermissions();
-      loadJudges();
+      actions.checkPSAPermissions();
       if (!hearingsByTime.size || !hearingNeighborsById.size || courtDate !== nextProps.courtDate) {
-        loadHearingsForDate(courtDate);
+        actions.loadHearingsForDate(courtDate);
       }
     }
   }
@@ -297,11 +294,10 @@ class CourtContainer extends React.Component<Props, State> {
 
   loadCaseHistoryCallback = (personId, psaNeighbors) => {
     const { actions } = this.props;
-    const { loadCaseHistory } = actions;
-    loadCaseHistory({ personId, neighbors: psaNeighbors });
+    actions.loadCaseHistory({ personId, neighbors: psaNeighbors });
   }
 
-  renderPersonCard = (person, index) => {
+  renderPersonCard = (person, _) => {
     const {
       peopleIdsToOpenPSAIds,
       peopleWithOpenPsas,
@@ -314,11 +310,16 @@ class CourtContainer extends React.Component<Props, State> {
     const hasOpenPSA = peopleWithOpenPsas.has(personEntityKeyId);
     const isReceivingReminders = peopleReceivingReminders.includes(personEntityKeyId);
     const hasMultipleOpenPSAs = peopleWithMultipleOpenPsas.includes(personEntityKeyId);
-    const lastEditDate = moment(psaEditDatesById.getIn(
-      [openPSAId, PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.COMPLETED_DATE_TIME, 0],
-      psaEditDatesById.getIn([openPSAId, PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.DATE_TIME, 0],
-        psaEditDatesById.getIn([openPSAId, PROPERTY_TYPES.DATE_TIME], ''))
-    )).format('MM/DD/YYYY');
+
+    const completedDateFromAssociation = psaEditDatesById
+      .getIn([openPSAId, PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.COMPLETED_DATE_TIME, 0], '');
+    const dateTimeFromAssociation = psaEditDatesById
+      .getIn([openPSAId, PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.DATE_TIME, 0], '');
+    const editDateFromPSA = psaEditDatesById.getIn([openPSAId, PROPERTY_TYPES.DATE_TIME], '');
+    const lastEditDateString = completedDateFromAssociation || dateTimeFromAssociation || editDateFromPSA;
+
+    const lastEditDate = DateTime.fromISO(lastEditDateString).toFormat(DATE_FORMAT);
+
     const personObj = formatPeopleInfo(person);
     return (
       <PersonCard
@@ -337,7 +338,7 @@ class CourtContainer extends React.Component<Props, State> {
 
   downloadPDFs = (courtroom, people, time) => {
     const { actions } = this.props;
-    const fileName = `${courtroom}-${moment().format('YYYY-MM-DD')}-${time}`;
+    const fileName = `${courtroom}-${DateTime.local().toISODate()}-${time}`;
     actions.bulkDownloadPSAReviewPDF({
       fileName,
       peopleEntityKeyIds: people.valueSeq().map(person => person.getIn([OPENLATTICE_ID_FQN, 0])).toJS()
@@ -482,8 +483,8 @@ class CourtContainer extends React.Component<Props, State> {
 
   handleDateChange = (dateStr) => {
     const { actions } = this.props;
-    const courtDate = moment(dateStr);
-    if (courtDate.isValid()) {
+    const courtDate = DateTime.fromFormat(dateStr, DATE_FORMAT);
+    if (courtDate.isValid) {
       actions.setCourtDate({ courtDate });
       actions.loadHearingsForDate(courtDate);
     }
@@ -495,7 +496,7 @@ class CourtContainer extends React.Component<Props, State> {
       <DatePickerWrapper>
         <Label>Hearing Date</Label>
         <DatePicker
-            value={courtDate.format('YYYY-MM-DD')}
+            value={courtDate.toFormat(DATE_FORMAT)}
             onChange={this.handleDateChange} />
       </DatePickerWrapper>
     );
@@ -507,19 +508,22 @@ class CourtContainer extends React.Component<Props, State> {
 
   renderContent = () => {
     const {
-      isLoadingHearings,
+      loadHearingsForDateReqState,
       loadHearingNeighborsReqState,
       isLoadingPSAs,
       hearingsByTime
     } = this.props;
-    const isLoadingHearingsNeighbors = requestIsPending(loadHearingNeighborsReqState);
-    if (isLoadingHearings || isLoadingHearingsNeighbors || isLoadingPSAs) {
+    const loadingHearingsNeighbors = requestIsPending(loadHearingNeighborsReqState);
+    const loadingHearings = requestIsPending(loadHearingsForDateReqState);
+    if (loadingHearings || loadingHearingsNeighbors || isLoadingPSAs) {
       return <LogoLoader loadingText="Loading..." />;
     }
 
-    const timeOptions = hearingsByTime.keySeq().sort((time1, time2) => (
-      moment(time1, TIME_FORMAT).isSameOrBefore(moment(time2, TIME_FORMAT)) ? -1 : 1));
-
+    const timeOptions = hearingsByTime.keySeq().sort((time1, time2) => {
+      const dateTime1 = DateTime.fromFormat(time1, TIME_FORMAT);
+      const dateTime2 = DateTime.fromFormat(time2, TIME_FORMAT);
+      return dateTime1 <= dateTime2 ? -1 : 1;
+    });
 
     return timeOptions.map(this.renderHearingsAtTime);
 
@@ -570,66 +574,55 @@ function mapStateToProps(state) {
   const court = state.get(STATE.COURT);
   const edm = state.get(STATE.EDM);
   const hearings = state.get(STATE.HEARINGS);
+  const courtDate = hearings.get(HEARINGS_DATA.COURT_DATE).toISODate();
+  const hearingsByTime = hearings.getIn([HEARINGS_DATA.HEARINGS_BY_DATE_AND_TIME, courtDate], Map());
+  const courtrooms = hearings.getIn([HEARINGS_DATA.COURTROOMS_BY_DATE, courtDate], Set());
   return {
     [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
     [APP.SELECTED_ORG_TITLE]: app.get(APP.SELECTED_ORG_TITLE),
 
-    [COURT.COURT_DATE]: court.get(COURT.COURT_DATE),
-    [COURT.HEARINGS_TODAY]: court.get(COURT.HEARINGS_TODAY),
-    [COURT.HEARINGS_BY_TIME]: court.get(COURT.HEARINGS_BY_TIME),
-    [COURT.LOADING_HEARINGS_ERROR]: court.get(COURT.LOADING_HEARINGS_ERROR),
+    // Court
     [COURT.PEOPLE_WITH_OPEN_PSAS]: court.get(COURT.PEOPLE_WITH_OPEN_PSAS),
     [COURT.PEOPLE_WITH_MULTIPLE_OPEN_PSAS]: court.get(COURT.PEOPLE_WITH_MULTIPLE_OPEN_PSAS),
     [COURT.PEOPLE_RECEIVING_REMINDERS]: court.get(COURT.PEOPLE_RECEIVING_REMINDERS),
-    [COURT.LOADING_HEARINGS]: court.get(COURT.LOADING_HEARINGS),
     [COURT.LOADING_PSAS]: court.get(COURT.LOADING_PSAS),
-    [COURT.LOADING_ERROR]: court.get(COURT.LOADING_ERROR),
     [COURT.COUNTY]: court.get(COURT.COUNTY),
     [COURT.COURTROOM]: court.get(COURT.COURTROOM),
-    [COURT.COURTROOMS]: court.get(COURT.COURTROOMS),
     [COURT.SCORES_AS_MAP]: court.get(COURT.SCORES_AS_MAP),
     [COURT.PSA_EDIT_DATES]: court.get(COURT.PSA_EDIT_DATES),
     [COURT.OPEN_PSA_IDS]: court.get(COURT.OPEN_PSA_IDS),
     [COURT.PEOPLE_IDS_TO_OPEN_PSA_IDS]: court.get(COURT.PEOPLE_IDS_TO_OPEN_PSA_IDS),
     [COURT.ALL_JUDGES]: court.get(COURT.ALL_JUDGES),
 
-    [HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID]: hearings.get(HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID),
+    // Hearings
+    courtrooms,
+    hearingsByTime,
+    loadHearingsForDateReqState: getReqState(hearings, HEARINGS_ACTIONS.LOAD_HEARINGS_FOR_DATE),
     loadHearingNeighborsReqState: getReqState(hearings, HEARINGS_ACTIONS.LOAD_HEARING_NEIGHBORS),
+    [HEARINGS_DATA.COURT_DATE]: hearings.get(HEARINGS_DATA.COURT_DATE),
+    [HEARINGS_DATA.HEARINGS_BY_DATE]: hearings.get(HEARINGS_DATA.HEARINGS_BY_DATE_AND_TIME),
+    [HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID]: hearings.get(HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID),
 
     [EDM.FQN_TO_ID]: edm.get(EDM.FQN_TO_ID),
   };
 }
 
-function mapDispatchToProps(dispatch :Function) :Object {
-  const actions :{ [string] :Function } = {};
-
-  actions.clearSubmit = clearSubmit;
-
-  Object.keys(CourtActionFactory).forEach((action :string) => {
-    actions[action] = CourtActionFactory[action];
-  });
-
-  Object.keys(FormActionFactory).forEach((action :string) => {
-    actions[action] = FormActionFactory[action];
-  });
-
-  Object.keys(ReviewActionFactory).forEach((action :string) => {
-    actions[action] = ReviewActionFactory[action];
-  });
-
-  Object.keys(PSAModalActionFactory).forEach((action :string) => {
-    actions[action] = PSAModalActionFactory[action];
-  });
-
-  Object.keys(DataActionFactory).forEach((action :string) => {
-    actions[action] = DataActionFactory[action];
-  });
-
-  return {
-    actions: {
-      ...bindActionCreators(actions, dispatch)
-    }
-  };
-}
+const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
+  actions: bindActionCreators({
+    // Court actions
+    changeHearingFilters,
+    // Hearings Actions
+    loadHearingsForDate,
+    setCourtDate,
+    // PSA Modal actions
+    loadPSAModal,
+    // Review actions
+    bulkDownloadPSAReviewPDF,
+    checkPSAPermissions,
+    loadCaseHistory,
+    // Submit Actions
+    clearSubmit
+  }, dispatch)
+});
 
 export default connect(mapStateToProps, mapDispatchToProps)(CourtContainer);
