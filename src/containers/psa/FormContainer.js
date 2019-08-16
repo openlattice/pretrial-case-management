@@ -299,11 +299,6 @@ type Props = {
       pretrialCase :Immutable.Map<*, *>,
       charges :Immutable.List<Immutable.Map<*, *>>
     }) => void,
-    loadDataModel :() => void,
-    loadNeighbors :(value :{
-      entitySetId :string,
-      entityKeyId :string
-    }) => void,
     clearForm :() => void,
     selectPerson :(value :{
       selectedPerson :Immutable.Map<*, *>
@@ -315,7 +310,6 @@ type Props = {
     setPSAValues :(value :{
       newValues :Immutable.Map<*, *>
     }) => void,
-    loadJudges :() => void,
     submit :({ config :Object, values :Object }) => void,
     clearSubmit :() => void,
     changePSAStatus :(values :{
@@ -393,19 +387,9 @@ class Form extends React.Component<Props, State> {
   componentDidMount() {
     const { actions, selectedOrganizationId } = this.props;
     if (selectedOrganizationId) {
-      actions.loadDataModel();
-      actions.loadJudges();
       actions.checkPSAPermissions();
     }
     this.redirectToFirstPageIfNecessary();
-  }
-
-  componentDidUpdate(prevProps) {
-    const { actions, selectedOrganizationId } = this.props;
-    if (selectedOrganizationId !== prevProps.selectedOrganizationId) {
-      actions.loadDataModel();
-      actions.loadJudges();
-    }
   }
 
   loadContextParams = () => {
