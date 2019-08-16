@@ -10,15 +10,12 @@ import Immutable, { List, Map } from 'immutable';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import Modal, { ModalTransition } from '@atlaskit/modal-dialog';
-import { Link } from 'react-router-dom';
 
 import CustomTabs from '../../components/tabs/Tabs';
 import LogoLoader from '../../components/LogoLoader';
 import PSAInputForm from '../../components/psainput/PSAInputForm';
 import PersonCard from '../../components/person/PersonCardReview';
 import StyledButton from '../../components/buttons/StyledButton';
-import PSAReportDownloadButton from '../../components/review/PSAReportDownloadButton';
-import PSAStats from '../../components/review/PSAStats';
 import DropdownButton from '../../components/buttons/DropdownButton';
 import CaseHistory from '../../components/casehistory/CaseHistory';
 import CaseHistoryTimeline from '../../components/casehistory/CaseHistoryTimeline';
@@ -26,10 +23,8 @@ import DMFExplanation from '../../components/dmf/DMFExplanation';
 import SelectHearingsContainer from '../hearings/SelectHearingsContainer';
 import PSAModalSummary from '../../components/review/PSAModalSummary';
 import ModalHeader from './ModalHeader';
-import PersonCardSummary from '../../components/person/PersonCardSummary';
 import ReleaseConditionsSummary from '../../components/releaseconditions/ReleaseConditionsSummary';
 import ClosePSAModal from '../../components/review/ClosePSAModal';
-import closeX from '../../assets/svg/close-x-gray.svg';
 import LoadPersonCaseHistoryButton from '../person/LoadPersonCaseHistoryButton';
 import { getScoresAndRiskFactors, calculateDMF } from '../../utils/ScoringUtils';
 import { CenteredContainer, Title } from '../../utils/Layout';
@@ -63,7 +58,6 @@ import {
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
 
-import * as Routes from '../../core/router/Routes';
 import * as CourtActionFactory from '../court/CourtActionFactory';
 import * as DataActionFactory from '../../utils/data/DataActionFactory';
 import * as FormActionFactory from '../psa/FormActionFactory';
@@ -89,13 +83,6 @@ const {
 const { ENTITY_KEY_ID } = PROPERTY_TYPES;
 
 const { OPENLATTICE_ID_FQN } = Constants;
-
-const StyledLink = styled(Link)`
-  color: ${OL.GREY01};
-  :hover {
-    color: ${OL.PURPLE02};
-  }
-`;
 
 const DownloadButtonContainer = styled.div`
   width: 100%;
@@ -126,28 +113,7 @@ const TitleWrapper = styled.div`
   justify-content: space-between;
   align-items: center;
 `;
-const TitleHeader = styled.span`
-  margin-right: 15px;
-  font-size: 18px;
-  font-weight: 600;
-  color: ${OL.GREY01};
-  span {
-    text-transform: uppercase;
-  }
-`;
 
-const ClosePSAButton = styled(StyledButton)`
-  font-family: 'Open Sans', sans-serif;
-  font-size: 14px;
-  font-weight: 600;
-  text-align: center;
-  color: ${OL.PURPLE02};
-  width: 162px;
-  height: 40px;
-  border: none;
-  border-radius: 3px;
-  background-color: ${OL.PURPLE06};
-`;
 const EditPSAButton = styled(StyledButton)`
   margin: ${props => (props.footer ? '-20px 0 30px' : '0')};
   font-family: 'Open Sans', sans-serif;
@@ -174,20 +140,7 @@ const PSAFormHeader = styled.div`
   border-bottom: solid 1px ${OL.GREY11} !important;
 `;
 
-const CloseModalX = styled.img.attrs({
-  alt: '',
-  src: closeX
-})`
-  height: 16px;
-  width: 16px;
-  margin-left: 40px;
-  &:hover {
-    cursor: pointer;
-  }
-`;
-
 type Props = {
-  app :Map<*, *>,
   caseHistory :List<*>,
   caseLoadsComplete :boolean,
   chargeHistory :Map<*, *>,
@@ -972,7 +925,7 @@ class PSAModal extends React.Component<Props, State> {
               : null
             }
             {
-              (loadingPSAModal || loadingCaseHistory)
+              (loadingPSAModal)
                 ? <LogoLoader loadingText="Loading person details..." />
                 : (
                   <>
