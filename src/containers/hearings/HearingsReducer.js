@@ -249,11 +249,11 @@ export default function hearingsReducer(state :Map<*, *> = INITIAL_STATE, action
           const hearingsNeighborsMap = state.get(HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID, Map())
             .set(hearingEntityKeyId, hearingNeighborsByAppTypeFqn);
 
-          const hearingISODate = hearingDateTime.toISODate();
+          const hearingISODate = DateTime.fromISO(hearingDateTime).toISODate();
           let hearingsByTime = state.getIn([HEARINGS_DATA.HEARINGS_BY_DATE_AND_TIME, hearingISODate], Map());
           const hearingDateTimeDT = DateTime.fromISO(hearingDateTime);
           if (hearingDateTimeDT.isValid) {
-            const time = hearingDateTimeDT.format(TIME_FORMAT);
+            const time = hearingDateTimeDT.toFormat(TIME_FORMAT);
             hearingsByTime = hearingsByTime.set(time, hearingsByTime.get(time, List()).push(hearing));
           }
 
@@ -303,11 +303,11 @@ export default function hearingsReducer(state :Map<*, *> = INITIAL_STATE, action
           const hearingsNeighborsMap = state.get(HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID, Map())
             .set(hearingEntityKeyId, hearingNeighborsByAppTypeFqn);
 
-          const hearingISODate = hearingDateTime.toISODate();
+          const hearingISODate = DateTime.fromISO(hearingDateTime).toISODate();
           let hearingsByTime = state.getIn([HEARINGS_DATA.HEARINGS_BY_DATE_AND_TIME, hearingISODate], Map());
           const hearingDateTimeDT = DateTime.fromISO(hearingDateTime);
           if (hearingDateTimeDT.isValid) {
-            const time = hearingDateTimeDT.format(TIME_FORMAT);
+            const time = hearingDateTimeDT.toFormat(TIME_FORMAT);
             hearingsByTime = hearingsByTime.set(time, hearingsByTime.get(time, List()).push(hearing));
           }
 
