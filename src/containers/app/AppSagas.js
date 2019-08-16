@@ -76,7 +76,7 @@ function* loadAppWorker(action :SequenceAction) :Generator<*, *, *> {
     const appTypes :Object[] = (Object.values(appTypesMap) :any);
     const projection :Object[] = appTypes.map((appType :Object) => ({
       id: appType.entityTypeId,
-      include: [SecurableTypes.EntityType, SecurableTypes.PropertyTypeInEntitySet],
+      include: [SecurableTypes.EntitySet, SecurableTypes.EntityType, SecurableTypes.PropertyTypeInEntitySet],
       type: SecurableTypes.EntityType,
     }));
     response = yield call(getEntityDataModelProjectionWorker, getEntityDataModelProjection(projection));
