@@ -14,6 +14,8 @@ export const actionValueIsInvalid = value => value === null || value === undefin
 
 export const getReqState = (slice, actionType) => slice.getIn([REDUX.ACTIONS, actionType, REDUX.REQUEST_STATE]);
 
+export const getError = (slice, actionType) => slice.getIn([REDUX.ERRORS, actionType]);
+
 
 // Rquest State Validation
 export const requestIsFailure = request => request === RequestStates.FAILURE;
