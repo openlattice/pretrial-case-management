@@ -25,7 +25,6 @@ import {
   SELECT_PRETRIAL_CASE,
   SET_PSA_VALUES,
   addCaseToPSA,
-  loadDataModel,
   loadNeighbors,
   removeCaseFromPSA,
   submitPSA
@@ -129,7 +128,6 @@ const INITIAL_STATE :Map<> = fromJS({
   [PSA_FORM.ARREST_ID]: '',
   [PSA_FORM.SELECT_PRETRIAL_CASE]: Map(),
   [PSA_FORM.PSA]: INITIAL_PSA_FORM,
-  [PSA_FORM.DATA_MODEL]: Map(),
   [PSA_FORM.ENTITY_SET_LOOKUP]: Map(),
   [PSA_FORM.LOADING_NEIGHBORS]: false,
   [PSA_FORM.SUBMIT_ERROR]: false,
@@ -173,16 +171,6 @@ function formReducer(state :Map<> = INITIAL_STATE, action :Object) {
             return true;
           });
           return state.setIn(['allPSAs'], nextNeighbors);
-        }
-      });
-    }
-
-    case loadDataModel.case(action.type): {
-      return loadDataModel.reducer(state, action, {
-        SUCCESS: () => {
-          const { dataModel } = action.value;
-          return state
-            .set(PSA_FORM.DATA_MODEL, fromJS(dataModel));
         }
       });
     }
