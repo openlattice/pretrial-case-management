@@ -525,19 +525,8 @@ class PSAModal extends React.Component<Props, State> {
     this.setState({ editing: false });
   }
 
-  getName = () => {
-    const { psaNeighbors, loadingPSAModal, loadingCaseHistory } = this.props;
-    const person = psaNeighbors.getIn([PEOPLE, PSA_NEIGHBOR.DETAILS], Map());
-    const firstName = person.getIn([PROPERTY_TYPES.FIRST_NAME, 0], '');
-    const lastName = person.getIn([PROPERTY_TYPES.LAST_NAME, 0], '');
-    if (loadingPSAModal || loadingCaseHistory) return 'Loading...';
-    return `${firstName} ${lastName}`;
-  }
-
   renderSummary = () => {
     const {
-      loadingPSAModal,
-      loadingCaseHistory,
       psaNeighbors,
       scores,
       manualCaseHistory,
