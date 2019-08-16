@@ -33,7 +33,10 @@ import { getPropertyTypeId, getPropertyIdToValueMap } from '../../edm/edmUtils';
 import { SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { HEARING_TYPES, PSA_STATUSES, MAX_HITS } from '../../utils/consts/Consts';
-import { APP, PSA_NEIGHBOR, STATE } from '../../utils/consts/FrontEndStateConsts';
+import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
+
+import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 
 import { filterPeopleIdsWithOpenPSAs } from '../court/CourtActionFactory';
 import {
@@ -110,7 +113,7 @@ const {
  */
 const getApp = state => state.get(STATE.APP, Map());
 const getEDM = state => state.get(STATE.EDM, Map());
-const getOrgId = state => state.getIn([STATE.APP, APP.SELECTED_ORG_ID], '');
+const getOrgId = state => state.getIn([STATE.APP, APP_DATA.SELECTED_ORG_ID], '');
 
 const LIST_ENTITY_SETS = List.of(
   CHARGES,
@@ -130,7 +133,7 @@ function* getHearingAndNeighbors(hearingEntityKeyId :string) :Generator<*, *, *>
   if (hearingEntityKeyId) {
     const app = yield select(getApp);
     const orgId = yield select(getOrgId);
-    const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
+    const entitySetIdsToAppType = app.getIn([APP_DATA.ENTITY_SETS_BY_ORG, orgId]);
 
     /*
     * Get Entity Set Ids
@@ -309,7 +312,7 @@ function* loadHearingNeighborsWorker(action :SequenceAction) :Generator<*, *, *>
     if (hearingIds.length) {
       const app = yield select(getApp);
       const orgId = yield select(getOrgId);
-      const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
+      const entitySetIdsToAppType = app.getIn([APP_DATA.ENTITY_SETS_BY_ORG, orgId]);
 
       /*
        * Get Entity Set Ids
@@ -558,7 +561,7 @@ function* submitHearingWorker(action :SequenceAction) :Generator<*, *, *> {
     /*
      * Get Preferred County from app settings
      */
-    const preferredCountyEntityKeyId = app.getIn([APP.SELECTED_ORG_SETTINGS, PREFERRED_COUNTY], '');
+    const preferredCountyEntityKeyId = app.getIn([APP_DATA.SELECTED_ORG_SETTINGS, PREFERRED_COUNTY], '');
     /*
      * Get Entity Set Ids
      */
@@ -676,7 +679,7 @@ function* updateHearingWorker(action :SequenceAction) :Generator<*, *, *> {
     const app = yield select(getApp);
     const edm = yield select(getEDM);
     const orgId = yield select(getOrgId);
-    const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
+    const entitySetIdsToAppType = app.getIn([APP_DATA.ENTITY_SETS_BY_ORG, orgId]);
 
     /*
     * Get Property Type Ids
