@@ -14,7 +14,6 @@ import StyledCheckbox from '../../components/controls/StyledCheckbox';
 import StyledInput from '../../components/controls/StyledInput';
 import StyledRadio from '../../components/controls/StyledRadio';
 import InfoButton from '../../components/buttons/InfoButton';
-import { APP, STATE } from '../../utils/consts/FrontEndStateConsts';
 import { PROPERTY_TYPES, APP_TYPES } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
 import {
@@ -23,6 +22,9 @@ import {
   MODULE,
   SETTINGS
 } from '../../utils/consts/AppSettingConsts';
+
+import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 
 import * as AppActionFactory from '../app/AppActionFactory';
 import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
@@ -242,17 +244,17 @@ class SettingsContainer extends React.Component<Props, State> {
 function mapStateToProps(state) {
   const app = state.get(STATE.APP);
 
-  const orgId = app.get(APP.SELECTED_ORG_ID);
+  const orgId = app.get(APP_DATA.SELECTED_ORG_ID);
 
   let settingsEntitySetId;
-  app.getIn([APP.ENTITY_SETS_BY_ORG, orgId], Map()).entrySeq().forEach(([entitySetId, fqn]) => {
+  app.getIn([APP_DATA.ENTITY_SETS_BY_ORG, orgId], Map()).entrySeq().forEach(([entitySetId, fqn]) => {
     if (fqn === APP_TYPES.APP_SETTINGS) {
       settingsEntitySetId = entitySetId;
     }
   });
 
   return {
-    settings: app.getIn([APP.SETTINGS_BY_ORG_ID, orgId], Map()),
+    settings: app.getIn([APP_DATA.SETTINGS_BY_ORG_ID, orgId], Map()),
     settingsEntitySetId
   };
 }

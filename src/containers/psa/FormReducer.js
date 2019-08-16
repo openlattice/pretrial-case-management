@@ -181,13 +181,8 @@ function formReducer(state :Map<> = INITIAL_STATE, action :Object) {
       return loadDataModel.reducer(state, action, {
         SUCCESS: () => {
           const { dataModel } = action.value;
-          const entitySetLookup = {};
-          Object.values(dataModel.entitySets).forEach((entitySet) => {
-            entitySetLookup[entitySet.name] = entitySet.id;
-          });
           return state
-            .set(PSA_FORM.DATA_MODEL, fromJS(dataModel))
-            .set(PSA_FORM.ENTITY_SET_LOOKUP, fromJS(entitySetLookup));
+            .set(PSA_FORM.DATA_MODEL, fromJS(dataModel));
         }
       });
     }

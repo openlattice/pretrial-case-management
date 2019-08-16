@@ -24,9 +24,10 @@ import { getCourtroomOptions, getJudgeOptions, formatJudgeName } from '../../uti
 import { getEntityProperties } from '../../utils/DataUtils';
 import { getJurisdiction } from '../../utils/AppUtils';
 import { getTimeOptions } from '../../utils/consts/DateTimeConsts';
-import { APP, COURT } from '../../utils/consts/FrontEndStateConsts';
+import { COURT } from '../../utils/consts/FrontEndStateConsts';
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
 
 import * as HearingsActions from './HearingsActions';
@@ -338,7 +339,7 @@ function mapStateToProps(state) {
   const hearings = state.get(STATE.HEARINGS);
   return {
     app,
-    [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
+    [APP_DATA.SELECTED_ORG_ID]: app.get(APP_DATA.SELECTED_ORG_ID),
 
     [COURT.ALL_JUDGES]: court.get(COURT.ALL_JUDGES),
 

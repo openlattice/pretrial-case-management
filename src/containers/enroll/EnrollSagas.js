@@ -2,7 +2,6 @@
  * @flow
  */
 import axios from 'axios';
-import randomUUID from 'uuid/v4';
 import moment from 'moment';
 import { fromJS, Map, Set } from 'immutable';
 import { AuthUtils } from 'lattice-auth';
@@ -25,12 +24,15 @@ import {
 import { toISODateTime } from '../../utils/FormattingUtils';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { getPropertyTypeId } from '../../edm/edmUtils';
-import { APP, STATE, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
+import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+
+import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 
 const getApp = state => state.get(STATE.APP, Map());
 const getEDM = state => state.get(STATE.EDM, Map());
-const getOrgId = state => state.getIn([STATE.APP, APP.SELECTED_ORG_ID], '');
+const getOrgId = state => state.getIn([STATE.APP, APP_DATA.SELECTED_ORG_ID], '');
 
 const CHECKINS_BASE_URL = 'https://api.openlattice.com/checkins/voice';
 
@@ -52,7 +54,7 @@ function* getOrCreateProfileEntity(personEntityKeyId :string) :Generator<*, *, *
   const edm = yield select(getEDM);
   const orgId = yield select(getOrgId);
 
-  const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
+  const entitySetIdsToAppType = app.getIn([APP_DATA.ENTITY_SETS_BY_ORG, orgId]);
   const peopleEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.PEOPLE);
   const enrollVoiceEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.SPEAKER_RECOGNITION_PROFILES);
 

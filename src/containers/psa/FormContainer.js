@@ -60,14 +60,12 @@ import {
   PSA_STATUSES
 } from '../../utils/consts/Consts';
 import {
-  APP,
   CHARGES,
   COURT,
   PSA_FORM,
   PSA_NEIGHBOR,
   REVIEW,
   SEARCH,
-  STATE,
   SUBMIT,
   PEOPLE
 } from '../../utils/consts/FrontEndStateConsts';
@@ -81,6 +79,9 @@ import {
   getPrevPath,
   getCurrentPage
 } from '../../utils/Helpers';
+
+import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 
 import * as FormActionFactory from './FormActionFactory';
 import * as PersonActions from '../person/PersonActions';
@@ -1122,9 +1123,10 @@ function mapStateToProps(state :Immutable.Map<*, *>) :Object {
 
   return {
     // App
-    [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
-    [APP.SELECTED_ORG_SETTINGS]: app.get(APP.SELECTED_ORG_SETTINGS),
-    [APP.STAFF_IDS_TO_EKIDS]: app.get(APP.STAFF_IDS_TO_EKIDS),
+    [APP_DATA.SELECTED_ORG_ID]: app.get(APP_DATA.SELECTED_ORG_ID),
+    [APP_DATA.SELECTED_ORG_SETTINGS]: app.get(APP_DATA.SELECTED_ORG_SETTINGS),
+    [APP_DATA.STAFF_IDS_TO_EKIDS]: app.get(APP_DATA.STAFF_IDS_TO_EKIDS),
+    [APP_DATA.DATA_MODEL]: psaForm.get(APP_DATA.DATA_MODEL),
 
     // Charges
     [CHARGES.ARREST]: charges.get(CHARGES.ARREST),
@@ -1154,7 +1156,6 @@ function mapStateToProps(state :Immutable.Map<*, *>) :Object {
     [PSA_FORM.ARREST_ID]: psaForm.get(PSA_FORM.ARREST_ID),
     [PSA_FORM.SELECT_PRETRIAL_CASE]: psaForm.get(PSA_FORM.SELECT_PRETRIAL_CASE),
     psaForm: psaForm.get(PSA_FORM.PSA),
-    [PSA_FORM.DATA_MODEL]: psaForm.get(PSA_FORM.DATA_MODEL),
     [PSA_FORM.ENTITY_SET_LOOKUP]: psaForm.get(PSA_FORM.ENTITY_SET_LOOKUP),
     [PSA_FORM.LOADING_NEIGHBORS]: psaForm.get(PSA_FORM.LOADING_NEIGHBORS),
 

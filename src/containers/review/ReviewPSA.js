@@ -22,12 +22,7 @@ import { SORT_TYPES } from '../../utils/consts/Consts';
 import { OL } from '../../utils/consts/Colors';
 import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import {
-  APP,
-  STATE,
-  REVIEW,
-  PSA_NEIGHBOR
-} from '../../utils/consts/FrontEndStateConsts';
+import { REVIEW, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import {
   DATE_FORMAT,
   FILTER_TYPE,
@@ -37,6 +32,9 @@ import {
   SORT_OPTIONS_ARR,
   NAV_OPTIONS
 } from '../../utils/consts/ReviewPSAConsts';
+
+import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 
 import * as FormActionFactory from '../psa/FormActionFactory';
 import * as ReviewActionFactory from './ReviewActionFactory';
@@ -610,8 +608,8 @@ function mapStateToProps(state) {
   const app = state.get(STATE.APP);
   const review = state.get(STATE.REVIEW);
   return {
-    [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID, ''),
-    [APP.SELECTED_ORG_SETTINGS]: app.get(APP.SELECTED_ORG_SETTINGS, ''),
+    [APP_DATA.SELECTED_ORG_ID]: app.get(APP_DATA.SELECTED_ORG_ID, ''),
+    [APP_DATA.SELECTED_ORG_SETTINGS]: app.get(APP_DATA.SELECTED_ORG_SETTINGS, ''),
 
     [REVIEW.SCORES]: review.get(REVIEW.SCORES),
     [REVIEW.NEIGHBORS_BY_DATE]: review.get(REVIEW.NEIGHBORS_BY_DATE),

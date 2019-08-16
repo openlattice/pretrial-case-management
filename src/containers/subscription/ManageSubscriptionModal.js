@@ -19,10 +19,6 @@ import NewContactForm from '../contactinformation/NewContactForm';
 import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
-import { CONTACT_INFO_ACTIONS } from '../../utils/consts/redux/ContactInformationConsts';
-import { SUBSCRIPTION_ACTIONS, SUBSCRIPTION_DATA } from '../../utils/consts/redux/SubscriptionConsts';
-import { STATE } from '../../utils/consts/redux/SharedConsts';
-import { getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUtils';
 import {
   CloseModalX,
   NoResults,
@@ -31,11 +27,17 @@ import {
   Wrapper,
 } from '../../utils/Layout';
 import {
-  APP,
   EDM,
   REVIEW,
   PSA_NEIGHBOR
 } from '../../utils/consts/FrontEndStateConsts';
+
+
+import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUtils';
+import { APP_DATA } from '../../utils/consts/redux/AppConsts';
+import { CONTACT_INFO_ACTIONS } from '../../utils/consts/redux/ContactInformationConsts';
+import { SUBSCRIPTION_ACTIONS, SUBSCRIPTION_DATA } from '../../utils/consts/redux/SubscriptionConsts';
 
 import { updateContactsBulk } from '../contactinformation/ContactInfoActions';
 import * as SubscriptionActions from './SubscriptionActions';
@@ -376,8 +378,8 @@ function mapStateToProps(state) {
   const subscription = state.get(STATE.SUBSCRIPTIONS);
   return {
     app,
-    [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
-    [APP.SELECTED_ORG_SETTINGS]: app.get(APP.SELECTED_ORG_SETTINGS),
+    [APP_DATA.SELECTED_ORG_ID]: app.get(APP_DATA.SELECTED_ORG_ID),
+    [APP_DATA.SELECTED_ORG_SETTINGS]: app.get(APP_DATA.SELECTED_ORG_SETTINGS),
 
     submitContactReqState: getReqState(contactInfo, CONTACT_INFO_ACTIONS.SUBMIT_CONTACT),
     updateContactsBulkReqState: getReqState(contactInfo, CONTACT_INFO_ACTIONS.UPDATE_CONTACTS_BULK),

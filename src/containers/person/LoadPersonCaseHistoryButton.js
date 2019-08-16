@@ -14,12 +14,10 @@ import * as FormActionFactory from '../psa/FormActionFactory';
 import * as ReviewActionFactory from '../review/ReviewActionFactory';
 import * as PersonActions from './PersonActions';
 
-import {
-  APP,
-  PSA_MODAL,
-  SEARCH,
-  STATE
-} from '../../utils/consts/FrontEndStateConsts';
+import { PSA_MODAL, SEARCH } from '../../utils/consts/FrontEndStateConsts';
+
+import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 
 type Props = {
   selectedOrganizationSettings :Map<*, *>,
@@ -110,9 +108,9 @@ function mapStateToProps(state) {
 
   return {
     // App
-    [APP.ORGS]: app.get(APP.ORGS),
-    [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
-    [APP.SELECTED_ORG_SETTINGS]: app.get(APP.SELECTED_ORG_SETTINGS),
+    [APP_DATA.ORGS]: app.get(APP_DATA.ORGS),
+    [APP_DATA.SELECTED_ORG_ID]: app.get(APP_DATA.SELECTED_ORG_ID),
+    [APP_DATA.SELECTED_ORG_SETTINGS]: app.get(APP_DATA.SELECTED_ORG_SETTINGS),
 
     // People
     [PSA_MODAL.LOADING_CASES]: psaModal.get(PSA_MODAL.LOADING_CASES),

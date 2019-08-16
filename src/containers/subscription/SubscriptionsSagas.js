@@ -17,8 +17,11 @@ import {
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { createIdObject } from '../../utils/DataUtils';
 import { getPropertyIdToValueMap } from '../../edm/edmUtils';
-import { APP, PSA_NEIGHBOR, STATE } from '../../utils/consts/FrontEndStateConsts';
+import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+
+import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 
 import {
   LOAD_SUBSCRIPTION_MODAL,
@@ -50,7 +53,7 @@ const {
 
 const getApp = state => state.get(STATE.APP, Map());
 const getEDM = state => state.get(STATE.EDM, Map());
-const getOrgId = state => state.getIn([STATE.APP, APP.SELECTED_ORG_ID], '');
+const getOrgId = state => state.getIn([STATE.APP, APP_DATA.SELECTED_ORG_ID], '');
 
 function* loadSubcriptionModalWorker(action :SequenceAction) :Generator<*, *, *> {
 
@@ -61,7 +64,7 @@ function* loadSubcriptionModalWorker(action :SequenceAction) :Generator<*, *, *>
 
     const app = yield select(getApp);
     const orgId = yield select(getOrgId);
-    const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
+    const entitySetIdsToAppType = app.getIn([APP_DATA.ENTITY_SETS_BY_ORG, orgId]);
     const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
     const contactInformationEntitySetId = getEntitySetIdFromApp(app, CONTACT_INFORMATION);
     const subscriptionEntitySetId = getEntitySetIdFromApp(app, SUBSCRIPTION);

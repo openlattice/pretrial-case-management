@@ -31,15 +31,18 @@ import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { formatDMFFromEntity, getHeaderText } from '../../utils/DMFUtils';
 import { JURISDICTION } from '../../utils/consts/Consts';
-import { APP, CHARGES } from '../../utils/consts/FrontEndStateConsts';
 import {
   ResultHeader,
   ScaleBlock,
   SelectedScaleBlock,
   ScaleWrapper
 } from '../../utils/Layout';
-import { HEARINGS_ACTIONS, HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
+
+import { CHARGES } from '../../utils/consts/FrontEndStateConsts';
+
+import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { HEARINGS_ACTIONS, HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
 import { getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUtils';
 
 import { clearSubmittedHearing } from '../../containers/hearings/HearingsActions';
@@ -649,9 +652,9 @@ function mapStateToProps(state :Immutable.Map<*, *>) :Object {
   const hearings = state.get(STATE.HEARINGS);
   return {
     // App
-    [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
-    [APP.SELECTED_ORG_TITLE]: app.get(APP.SELECTED_ORG_TITLE),
-    [APP.SELECTED_ORG_SETTINGS]: app.get(APP.SELECTED_ORG_SETTINGS),
+    [APP_DATA.SELECTED_ORG_ID]: app.get(APP_DATA.SELECTED_ORG_ID),
+    [APP_DATA.SELECTED_ORG_TITLE]: app.get(APP_DATA.SELECTED_ORG_TITLE),
+    [APP_DATA.SELECTED_ORG_SETTINGS]: app.get(APP_DATA.SELECTED_ORG_SETTINGS),
 
     // Charges
     [CHARGES.ARREST_VIOLENT]: charges.get(CHARGES.ARREST_VIOLENT),

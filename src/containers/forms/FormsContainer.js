@@ -10,11 +10,14 @@ import DashboardMainSection from '../../components/dashboard/DashboardMainSectio
 import CreateFormListItem from '../../components/dashboard/CreateFormListItem';
 import psaIcon from '../../assets/svg/public-safety-icon.svg';
 import { getJurisdiction } from '../../utils/AppUtils';
-import { APP, STATE } from '../../utils/consts/FrontEndStateConsts';
 import { CONTEXT } from '../../utils/consts/Consts';
 import { CONTEXTS, SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { OL } from '../../utils/consts/Colors';
 import { StyledFormWrapper } from '../../utils/Layout';
+
+import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { APP_DATA } from '../../utils/consts/redux/AppConsts';
+
 import * as Routes from '../../core/router/Routes';
 
 const { BOOKING } = CONTEXT;
@@ -88,9 +91,9 @@ function mapStateToProps(state) {
 
   return {
     // App
-    [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
-    [APP.SELECTED_ORG_SETTINGS]: app.get(APP.SELECTED_ORG_SETTINGS),
-    [APP.SELECTED_ORG_TITLE]: app.get(APP.SELECTED_ORG_TITLE),
+    [APP_DATA.SELECTED_ORG_ID]: app.get(APP_DATA.SELECTED_ORG_ID),
+    [APP_DATA.SELECTED_ORG_SETTINGS]: app.get(APP_DATA.SELECTED_ORG_SETTINGS),
+    [APP_DATA.SELECTED_ORG_TITLE]: app.get(APP_DATA.SELECTED_ORG_TITLE),
   };
 }
 

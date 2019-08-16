@@ -31,7 +31,7 @@ import {
 import { toISODate } from '../../utils/FormattingUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PERSON_INFO_DATA, PSA_STATUSES } from '../../utils/consts/Consts';
-import { APP, STATE, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
+import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { createIdObject, getSearchTerm } from '../../utils/DataUtils';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { getPropertyTypeId, getPropertyIdToValueMap } from '../../edm/edmUtils';
@@ -49,6 +49,9 @@ import {
   searchPeopleByPhoneNumber,
   updateCases,
 } from './PersonActions';
+
+import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 
 import * as Routes from '../../core/router/Routes';
 
@@ -75,7 +78,7 @@ const { ID, STRING_ID } = PROPERTY_TYPES;
 
 const getApp = state => state.get(STATE.APP, Map());
 const getEDM = state => state.get(STATE.EDM, Map());
-const getOrgId = state => state.getIn([STATE.APP, APP.SELECTED_ORG_ID], '');
+const getOrgId = state => state.getIn([STATE.APP, APP_DATA.SELECTED_ORG_ID], '');
 
 declare var __ENV_DEV__ :boolean;
 
@@ -243,7 +246,7 @@ function* newPersonSubmitWorker(action) :Generator<*, *, *> {
     const app = yield select(getApp);
     const edm = yield select(getEDM);
     const orgId = yield select(getOrgId);
-    const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
+    const entitySetIdsToAppType = app.getIn([APP_DATA.ENTITY_SETS_BY_ORG, orgId]);
 
     let personEKID;
     const peopleESID = getEntitySetIdFromApp(app, PEOPLE);
@@ -389,9 +392,9 @@ function* searchPeopleWorker(action) :Generator<*, *, *> {
   try {
     yield put(searchPeople.request(action.id));
     const app = yield select(getApp);
-    const orgId = app.get(APP.SELECTED_ORG_ID, '');
+    const orgId = app.get(APP_DATA.SELECTED_ORG_ID, '');
     const edm = yield select(getEDM);
-    const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
+    const entitySetIdsToAppType = app.getIn([APP_DATA.ENTITY_SETS_BY_ORG, orgId]);
     const psaScoresEntitySetId = getEntitySetIdFromApp(app, PSA_SCORES);
     const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
     const contactInformationEntitySetId = getEntitySetIdFromApp(app, CONTACT_INFORMATION);
@@ -518,8 +521,8 @@ function* searchPeopleByPhoneNumberWorker(action) :Generator<*, *, *> {
     yield put(searchPeopleByPhoneNumber.request(action.id));
     const app = yield select(getApp);
     const edm = yield select(getEDM);
-    const orgId = app.get(APP.SELECTED_ORG_ID, '');
-    const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
+    const orgId = app.get(APP_DATA.SELECTED_ORG_ID, '');
+    const entitySetIdsToAppType = app.getIn([APP_DATA.ENTITY_SETS_BY_ORG, orgId]);
     const contactInformationEntitySetId = getEntitySetIdFromApp(app, CONTACT_INFORMATION);
     const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
     const subscriptionEntitySetId = getEntitySetIdFromApp(app, SUBSCRIPTION);

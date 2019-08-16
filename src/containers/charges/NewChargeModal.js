@@ -15,12 +15,9 @@ import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { CHARGE_TYPES } from '../../utils/consts/ChargeConsts';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { Wrapper, TitleWrapper, CloseModalX } from '../../utils/Layout';
-import {
-  APP,
-  CHARGES,
-  EDM,
-  STATE
-} from '../../utils/consts/FrontEndStateConsts';
+import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { APP_DATA } from '../../utils/consts/redux/AppConsts';
+import { CHARGES, EDM } from '../../utils/consts/FrontEndStateConsts';
 
 import {
   createCharge,
@@ -362,15 +359,15 @@ function mapStateToProps(state) {
   const app = state.get(STATE.APP);
   const charges = state.get(STATE.CHARGES);
   const edm = state.get(STATE.EDM);
-  const orgId = app.get(APP.SELECTED_ORG_ID, '');
+  const orgId = app.get(APP_DATA.SELECTED_ORG_ID, '');
   return {
     // App
     app,
-    [APP.SELECTED_ORG_ID]: orgId,
+    [APP_DATA.SELECTED_ORG_ID]: orgId,
     arrestEntitySetId: getEntitySetIdFromApp(app, ARREST_CHARGE_LIST),
     courtEntitySetId: getEntitySetIdFromApp(app, COURT_CHARGE_LIST),
-    [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
-    [APP.SELECTED_ORG_TITLE]: app.get(APP.SELECTED_ORG_TITLE),
+    [APP_DATA.SELECTED_ORG_ID]: app.get(APP_DATA.SELECTED_ORG_ID),
+    [APP_DATA.SELECTED_ORG_TITLE]: app.get(APP_DATA.SELECTED_ORG_TITLE),
 
     [EDM.FQN_TO_ID]: edm.get(EDM.FQN_TO_ID),
 

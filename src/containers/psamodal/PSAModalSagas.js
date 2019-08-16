@@ -27,12 +27,10 @@ import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { hearingIsCancelled } from '../../utils/HearingUtils';
 import { getEntityProperties, getEntityKeyId } from '../../utils/DataUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import {
-  APP,
-  PSA_NEIGHBOR,
-  PSA_ASSOCIATION,
-  STATE
-} from '../../utils/consts/FrontEndStateConsts';
+import { PSA_NEIGHBOR, PSA_ASSOCIATION } from '../../utils/consts/FrontEndStateConsts';
+
+import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 
 import { LOAD_PSA_MODAL, loadPSAModal } from './PSAModalActionFactory';
 
@@ -66,7 +64,7 @@ const {
  * Selectors
  */
 const getApp = state => state.get(STATE.APP, Map());
-const getOrgId = state => state.getIn([STATE.APP, APP.SELECTED_ORG_ID], '');
+const getOrgId = state => state.getIn([STATE.APP, APP_DATA.SELECTED_ORG_ID], '');
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
@@ -84,7 +82,7 @@ function* loadPSAModalWorker(action :SequenceAction) :Generator<*, *, *> {
     let psaPermissions = false;
     const app = yield select(getApp);
     const orgId = yield select(getOrgId);
-    const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
+    const entitySetIdsToAppType = app.getIn([APP_DATA.ENTITY_SETS_BY_ORG, orgId]);
 
     /*
      * Get Entity Set Ids

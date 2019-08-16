@@ -19,12 +19,15 @@ import DateTimePicker from '../../../components/datetime/DateTimePicker';
 import QUALIFIERS from '../../../utils/consts/QualifierConsts';
 import { CHARGE } from '../../../utils/consts/Consts';
 import type { Charge } from '../../../utils/consts/Consts';
-import { APP, CHARGES, STATE } from '../../../utils/consts/FrontEndStateConsts';
+import { CHARGES } from '../../../utils/consts/FrontEndStateConsts';
 import { CASE_CONTEXTS, SETTINGS } from '../../../utils/consts/AppSettingConsts';
 import { PROPERTY_TYPES } from '../../../utils/consts/DataModelConsts';
 import { toISODateTime } from '../../../utils/FormattingUtils';
 import { getFirstNeighborValue, getEntityProperties } from '../../../utils/DataUtils';
 import { OL } from '../../../utils/consts/Colors';
+
+import { STATE } from '../../../utils/consts/redux/SharedConsts';
+import { APP_DATA } from '../../../utils/consts/redux/AppConsts';
 
 import {
   StyledFormWrapper,
@@ -622,9 +625,9 @@ function mapStateToProps(state) {
 
   return {
     // App
-    [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
-    [APP.SELECTED_ORG_TITLE]: app.get(APP.SELECTED_ORG_TITLE),
-    [APP.SELECTED_ORG_SETTINGS]: app.get(APP.SELECTED_ORG_SETTINGS),
+    [APP_DATA.SELECTED_ORG_ID]: app.get(APP_DATA.SELECTED_ORG_ID),
+    [APP_DATA.SELECTED_ORG_TITLE]: app.get(APP_DATA.SELECTED_ORG_TITLE),
+    [APP_DATA.SELECTED_ORG_SETTINGS]: app.get(APP_DATA.SELECTED_ORG_SETTINGS),
 
     // Charges
     [CHARGES.ARRESTING_AGENCIES]: charges.get(CHARGES.ARRESTING_AGENCIES),
