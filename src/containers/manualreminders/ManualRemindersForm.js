@@ -142,8 +142,8 @@ class ManualRemindersForm extends React.Component<Props, State> {
   }
 
   isReadyToSubmit = () :boolean => {
-    const { contactMethod } = this.state;
-    return !!contactMethod;
+    const { notified } = this.state;
+    return !!notified;
   }
 
   getSubmissionValues = () => {
@@ -201,7 +201,14 @@ class ManualRemindersForm extends React.Component<Props, State> {
   handleInputChange = (e) => {
     const { name, value } = e.target;
 
-    if (name === 'notified') this.setState({ [name]: value === 'true' });
+    if (name === 'notified') {
+      const wasNotified = value === 'true';
+      const stateObject = { [name]: wasNotified };
+      if (!wasNotified) {
+        stateObject.contactMethod = undefined;
+      }
+      this.setState(stateObject);
+    }
     else this.setState({ [name]: value });
   }
 
@@ -209,30 +216,32 @@ class ManualRemindersForm extends React.Component<Props, State> {
 
   renderContactMethod = () => {
     const { submittedManualReminder } = this.props;
-    const { contactMethod } = this.state;
+    const { contactMethod, notified } = this.state;
     const isPhone = (contactMethod === CONTACT_METHODS.PHONE);
     const isEmail = (contactMethod === CONTACT_METHODS.EMAIL);
-    return (
-      <>
-        <InputLabel>How were they contacted?</InputLabel>
-        <FormContainer>
-          <StyledRadio
-              disabled={!!submittedManualReminder.size}
-              label={CONTACT_METHODS.PHONE}
-              name="contactMethod"
-              value={CONTACT_METHODS.PHONE}
-              onChange={this.handleInputChange}
-              checked={isPhone} />
-          <StyledRadio
-              disabled={!!submittedManualReminder.size}
-              label={CONTACT_METHODS.EMAIL}
-              name="contactMethod"
-              value={CONTACT_METHODS.EMAIL}
-              onChange={this.handleInputChange}
-              checked={isEmail} />
-        </FormContainer>
-      </>
-    );
+    return notified
+      ? (
+        <>
+          <InputLabel>How were they contacted?</InputLabel>
+          <FormContainer>
+            <StyledRadio
+                disabled={!!submittedManualReminder.size}
+                label={CONTACT_METHODS.PHONE}
+                name="contactMethod"
+                value={CONTACT_METHODS.PHONE}
+                onChange={this.handleInputChange}
+                checked={isPhone} />
+            <StyledRadio
+                disabled={!!submittedManualReminder.size}
+                label={CONTACT_METHODS.EMAIL}
+                name="contactMethod"
+                value={CONTACT_METHODS.EMAIL}
+                onChange={this.handleInputChange}
+                checked={isEmail} />
+          </FormContainer>
+        </>
+      )
+      : null;
   }
 
   addingContactInformation = () => this.setState({ addingNewContact: true });
@@ -257,6 +266,13 @@ class ManualRemindersForm extends React.Component<Props, State> {
     );
   }
 
+  contactInfoInput = () => {
+    const { addingNewContact } = this.state;
+    return addingNewContact
+      ? this.renderContactForm()
+      : this.renderAddContactButton();
+  }
+
   renderContactTableAndForm = () => {
     const { addingNewContact, contact, contactMethod } = this.state;
     const { peopleNeighborsForManualReminder, submittedManualReminder } = this.props;
@@ -279,16 +295,20 @@ class ManualRemindersForm extends React.Component<Props, State> {
               onCheckBoxChange={this.onContactListRadioChange}
               selectedContactEntityKeyId={contactEntityKeyId}
               noResults={!contacts.size} />
-          { !addingNewContact && !submittedManualReminder.size ? this.renderAddContactButton() : null }
-          {
-            (contactMethod === CONTACT_METHODS.PHONE && addingNewContact && !submittedManualReminder.size)
-              ? this.renderContactForm()
-              : null
-          }
+          { submittedManualReminder.size ? this.contactInfoInput() : null }
         </>
       );
     }
-    return this.renderContactForm();
+    return (
+      <>
+        { !addingNewContact && !submittedManualReminder.size ? this.renderAddContactButton() : null }
+        {
+          (addingNewContact && !submittedManualReminder.size)
+            ? this.renderContactForm()
+            : null
+        }
+      </>
+    );
   }
 
   getSubjectsName = () => {
