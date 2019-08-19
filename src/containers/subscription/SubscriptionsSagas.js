@@ -141,17 +141,19 @@ function* subscribeWorker(action :SequenceAction) :Generator<*, *, *> {
         [WEEK_INTERVAL]: [true]
       };
       const subscriptionSubmitEntity = getPropertyIdToValueMap(newSubscriptionEntity, edm);
-      const entities = { [subscriptionEKID]: [subscriptionSubmitEntity] };
+      const entities = { [subscriptionESID]: [subscriptionSubmitEntity] };
       /*
        * Assemble Assoociations
        */
+      const associationDataObject = { [COMPLETED_DATE_TIME]: [DateTime.local().toISO()] };
+      const data = getPropertyIdToValueMap(associationDataObject, edm);
       const associations = {
         [registeredForESID]: [{
-          data: { [COMPLETED_DATE_TIME]: [DateTime.local()] },
-          srcEntityIndex: 0,
-          srcEntitySetId: subscriptionESID,
-          dstEntityKeyId: personEKID,
-          dstEntitySetId: peopleESID
+          data,
+          dstEntityIndex: 0,
+          dstEntitySetId: subscriptionESID,
+          srcEntityKeyId: personEKID,
+          srcEntitySetId: peopleESID
         }]
       };
       /*
