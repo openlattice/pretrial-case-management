@@ -1,7 +1,6 @@
 /*
  * @flow
  */
-import moment from 'moment';
 import { DateTime } from 'luxon';
 import { RequestStates } from 'redux-reqseq';
 import {
@@ -87,7 +86,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [HEARINGS_DATA.SETTINGS_MODAL_OPEN]: false,
   [HEARINGS_DATA.SUBMITTED_HEARING]: Map(),
   [HEARINGS_DATA.SUBMITTED_HEARING_NEIGHBORS]: Map(),
-  [HEARINGS_DATA.TIME]: DateTime.local().toFormat(TIME_FORMAT),
+  [HEARINGS_DATA.TIME]: '',
   [HEARINGS_DATA.UPDATED_HEARING]: Map(),
   [HEARINGS_DATA.UPDATED_HEARING_NEIGHBORS]: Map()
 });
@@ -96,7 +95,7 @@ export default function hearingsReducer(state :Map<*, *> = INITIAL_STATE, action
   switch (action.type) {
 
     case CLEAR_HEARING_SETTINGS: return state
-      .set(HEARINGS_DATA.DATE, moment().format('MM/DD/YYYY'))
+      .set(HEARINGS_DATA.DATE, DateTime.local().toISODate())
       .set(HEARINGS_DATA.COURTROOM, '')
       .set(HEARINGS_DATA.JUDGE, '')
       .set(HEARINGS_DATA.TIME, '');
