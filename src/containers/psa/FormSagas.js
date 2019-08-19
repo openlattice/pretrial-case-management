@@ -141,7 +141,7 @@ function* addCaseToPSAWorker(action :SequenceAction) :Generator<*, *, *> {
      * Assemble Assoociations
      */
 
-    const data = { [timestampPTID]: [moment().toISOString(true)] };
+    const data = { [timestampPTID]: [DateTime.local().toISO()] };
     const src = createIdObject(psaEKID, psaScoresESID);
     const dst = createIdObject(caseEKID, pretrialCasesESID);
 
