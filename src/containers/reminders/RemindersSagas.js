@@ -557,21 +557,25 @@ function* loadRemindersActionListWorker(action :SequenceAction) :Generator<*, *,
     const edm = yield select(getEDM);
     const datePropertyTypeId = getPropertyTypeId(edm, DATE_TIME_FQN);
 
-    const oneDayAhead = addWeekdays(remindersActionListDate, 1).toISODate();
-    const oneWeekAhead = addWeekdays(remindersActionListDate, 7).toISODate();
+    const oneDayAhead = addWeekdays(remindersActionListDate, 1);
+    const oneWeekAhead = addWeekdays(remindersActionListDate, 7);
+    const oneDayAheadSearchTerm = getUTCDateRangeSearchString(datePropertyTypeId, oneDayAhead);
+    const oneWeekAheadSearchTerm = getUTCDateRangeSearchString(datePropertyTypeId, oneWeekAhead);
 
     const hearingSearchOptions = {
-      searchTerm: `entity.${datePropertyTypeId}:"${oneDayAhead}" OR entity.${datePropertyTypeId}:"${oneWeekAhead}"`,
+      searchTerm: `${oneDayAheadSearchTerm} OR ${oneWeekAheadSearchTerm}`,
       start: 0,
       maxHits: MAX_HITS,
       fuzzy: false
     };
 
-    const today = DateTime.local().toISO();
-    const sixDaysAhead = addWeekdays(remindersActionListDate, 6).toISODate();
+    const today = remindersActionListDate;
+    const sixDaysAhead = addWeekdays(remindersActionListDate, 6);
+    const todaySearchTerm = getUTCDateRangeSearchString(datePropertyTypeId, today);
+    const sixDaysAheadSearchTerm = getUTCDateRangeSearchString(datePropertyTypeId, sixDaysAhead);
 
     const manualRemindersOptions = {
-      searchTerm: `entity.${datePropertyTypeId}:"${today}" OR entity.${datePropertyTypeId}:"${sixDaysAhead}"`,
+      searchTerm: `${todaySearchTerm} OR ${sixDaysAheadSearchTerm}`,
       start: 0,
       maxHits: MAX_HITS,
       fuzzy: false

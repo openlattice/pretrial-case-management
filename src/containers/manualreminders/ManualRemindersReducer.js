@@ -131,7 +131,7 @@ export default function manualRemindersReducer(state :Map<*, *> = INITIAL_STATE,
             .get(MANUAL_REMINDERS.REMINDER_IDS, Set())
             .add(manualReminderEKID);
           let successfulReminderIds = state.get(MANUAL_REMINDERS.SUCCESSFUL_REMINDER_IDS, Set());
-          let failedReminderIds = state.get(MANUAL_REMINDERS.FAILED_REMINDER_IDS, Set())
+          let failedReminderIds = state.get(MANUAL_REMINDERS.FAILED_REMINDER_IDS, Set());
           if (wasNotified) {
             successfulReminderIds = successfulReminderIds.add(manualReminderEKID);
           }
