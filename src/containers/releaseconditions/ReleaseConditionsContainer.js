@@ -785,10 +785,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       };
     }
     else {
-      bondEntity = {
-        [PROPERTY_TYPES.BOND_TYPE]: null,
-        [PROPERTY_TYPES.BOND_AMOUNT]: null
-      };
+      bondEntity = null;
     }
 
     const conditionsEntity = [];
@@ -797,6 +794,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
         [PROPERTY_TYPES.TYPE]: NO_RELEASE_CONDITION,
         [PROPERTY_TYPES.START_DATE]: startDate,
       });
+      deleteConditions = conditionTypes.valueSeq();
     }
     else {
       conditions.forEach((condition) => {
