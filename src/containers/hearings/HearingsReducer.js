@@ -26,7 +26,7 @@ import {
   updateHearing
 } from './HearingsActions';
 
-import { TIME_FORMAT } from '../../utils/consts/DateTimeConsts';
+import { DATE_FORMAT, TIME_FORMAT } from '../../utils/consts/DateTimeConsts';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { getEntityProperties } from '../../utils/DataUtils';
 
@@ -78,7 +78,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [HEARINGS_DATA.COURT_DATE]: DateTime.local(),
   [HEARINGS_DATA.COURTROOM]: '',
   [HEARINGS_DATA.COURTROOMS_BY_DATE]: Map(),
-  [HEARINGS_DATA.DATE]: DateTime.local().toISODate(),
+  [HEARINGS_DATA.DATE]: DateTime.local().toFormat(DATE_FORMAT),
   [HEARINGS_DATA.HEARINGS_BY_DATE_AND_TIME]: Map(),
   [HEARINGS_DATA.HEARINGS_BY_ID]: Map(),
   [HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID]: Map(),
