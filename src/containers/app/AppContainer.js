@@ -36,8 +36,8 @@ import { HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
 
 import * as Routes from '../../core/router/Routes';
 import * as AppActionFactory from './AppActionFactory';
-import * as CourtActionFactory from '../court/CourtActionFactory';
 import * as ChargesActionFactory from '../charges/ChargesActionFactory';
+import { loadJudges } from '../hearings/HearingsActions';
 import { getStaffEKIDs } from '../people/PeopleActionFactory';
 
 declare var gtag :?Function;
@@ -104,6 +104,7 @@ class AppContainer extends React.Component<Props, {}> {
     const nextOrgId = app.get(APP.SELECTED_ORG_ID);
     const prevOrgId = prevProps.app.get(APP.SELECTED_ORG_ID);
     if (nextOrgId && prevOrgId !== nextOrgId) {
+      actions.loadJudges();
       nextOrg.keySeq().forEach((id) => {
         const selectedOrgId :string = id;
         const arrestChargesEntitySetId = getEntitySetIdFromApp(app, ARREST_CHARGE_LIST);
@@ -113,7 +114,6 @@ class AppContainer extends React.Component<Props, {}> {
           courtChargesEntitySetId,
           selectedOrgId
         });
-        actions.loadJudges();
         actions.getStaffEKIDs();
         actions.loadArrestingAgencies();
       });
@@ -246,14 +246,11 @@ function mapDispatchToProps(dispatch :Function) :Object {
     actions[action] = AppActionFactory[action];
   });
 
-  Object.keys(CourtActionFactory).forEach((action :string) => {
-    actions[action] = CourtActionFactory[action];
-  });
-
   Object.keys(ChargesActionFactory).forEach((action :string) => {
     actions[action] = ChargesActionFactory[action];
   });
 
+  actions.loadJudges = loadJudges;
   actions.getStaffEKIDs = getStaffEKIDs;
 
   actions.logout = logout;
