@@ -11,6 +11,7 @@ import uuid from 'uuid/v4';
 import moment from 'moment';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
+import type { RequestState } from 'redux-reqseq';
 
 import SelfieWebCam from '../../components/SelfieWebCam';
 import BasicButton from '../../components/buttons/BasicButton';
@@ -25,7 +26,7 @@ import { phoneIsValid, emailIsValid } from '../../utils/ContactInfoUtils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
 import { STATE } from '../../utils/consts/redux/SharedConsts';
-import { getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUtils';
+import { getReqState, requestIsSuccess } from '../../utils/consts/redux/ReduxUtils';
 import { PERSON_ACTIONS, PERSON_DATA } from '../../utils/consts/redux/PersonConsts';
 
 import * as PersonActions from './PersonActions';
@@ -115,7 +116,9 @@ const ErrorMessage = styled.div`
  */
 
 type Props = {
+  newPersonSubmitReqState :RequestState,
   actions :{
+    goToPath :Function,
     newPersonSubmit :Function,
     clearForm :Function
   },
@@ -192,6 +195,12 @@ class NewPersonContainer extends React.Component<Props, State> {
       [IS_MOBILE]: false,
       showSelfieWebCam: false
     };
+  }
+  componentDidUpdate() {
+    const { actions, newPersonSubmitReqState } = this.props;
+    if (requestIsSuccess(newPersonSubmitReqState)) {
+      actions.goToPath(Routes.ROOT);
+    }
   }
 
   componentWillUnmount() {
