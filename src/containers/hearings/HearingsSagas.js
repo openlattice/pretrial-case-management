@@ -434,6 +434,7 @@ function* loadJudgesWorker(action :SequenceAction) :Generator<*, *, *> {
       start: 0,
       maxHits: MAX_HITS
     };
+    /* get all judge data */
     const allJudgeData = yield call(
       searchEntitySetDataWorker,
       searchEntitySetData({ entitySetId: judgesESID, searchOptions: options })
@@ -446,7 +447,7 @@ function* loadJudgesWorker(action :SequenceAction) :Generator<*, *, *> {
       return getEntityKeyId(judge);
     });
 
-    /* get people and cases for all open PSAs */
+    /* get county neighbors */
     const judgeNeighborsById = yield call(
       searchEntityNeighborsWithFilterWorker,
       searchEntityNeighborsWithFilter({
@@ -459,6 +460,7 @@ function* loadJudgesWorker(action :SequenceAction) :Generator<*, *, *> {
       })
     );
     if (judgeNeighborsById.error) throw judgeNeighborsById.error;
+    /* store judge ids by county id */
     const judgesByCounty = Map().withMutations((map) => {
       fromJS(judgeNeighborsById.data).entrySeq().forEach(([id, neighbors]) => {
         neighbors.forEach((neighbor) => {
