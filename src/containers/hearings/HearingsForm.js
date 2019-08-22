@@ -436,7 +436,6 @@ class HearingForm extends React.Component<Props, State> {
     const { judgeName } = this.getJudgeEntity();
     const preferredCountyEKID = app.getIn([APP.SELECTED_ORG_SETTINGS, PREFERRED_COUNTY], '');
     const judgeIdsForCounty = judgesByCounty.get(preferredCountyEKID, List());
-    console.log(judgeIdsForCounty.toJS());
     return modifyingHearing
       ? (
         <StyledSearchableSelect
