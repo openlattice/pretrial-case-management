@@ -592,7 +592,6 @@ function mapStateToProps(state) {
     [COURT.PSA_EDIT_DATES]: court.get(COURT.PSA_EDIT_DATES),
     [COURT.OPEN_PSA_IDS]: court.get(COURT.OPEN_PSA_IDS),
     [COURT.PEOPLE_IDS_TO_OPEN_PSA_IDS]: court.get(COURT.PEOPLE_IDS_TO_OPEN_PSA_IDS),
-    [COURT.ALL_JUDGES]: court.get(COURT.ALL_JUDGES),
 
     // Hearings
     courtrooms,

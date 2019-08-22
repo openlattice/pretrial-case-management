@@ -100,7 +100,6 @@ type Props = {
   hearingNeighborsById :Map<*, *>,
   hearingIds :List<*, *>,
   isLoadingHearingsNeighbors :boolean,
-  isLoadingJudges :boolean,
   isFetchingPersonData :boolean,
   loadingPSAData :boolean,
   loadingPSAResults :boolean,
@@ -135,7 +134,6 @@ type Props = {
       neighbors :Immutable.Map<*, *>
     }) => void,
     loadHearingNeighbors :(hearingIds :string[]) => void,
-    loadJudges :() => void,
     checkPSAPermissions :() => void,
     refreshPSANeighbors :({ id :string }) => void,
     clearSubmit :() => void,
@@ -162,7 +160,6 @@ class PersonDetailsContainer extends React.Component<Props, State> {
     const { actions, personId, selectedOrganizationId } = this.props;
     if (selectedOrganizationId && personId) {
       actions.checkPSAPermissions();
-      actions.loadJudges();
       actions.getPersonData(personId);
       actions.getPersonNeighbors({ personId });
     }
@@ -182,7 +179,6 @@ class PersonDetailsContainer extends React.Component<Props, State> {
     const personChanged = (psaIds.length && !prevProps.neighbors.size && neighbors.size);
     if (selectedOrganizationId && orgChanged) {
       actions.checkPSAPermissions();
-      actions.loadJudges();
       actions.getPersonData(personId);
       actions.getPersonNeighbors({ personId });
     }
@@ -327,7 +323,6 @@ class PersonDetailsContainer extends React.Component<Props, State> {
       hearingNeighborsById,
       personHearings,
       isLoadingHearingsNeighbors,
-      isLoadingJudges,
       loadingPSAData,
       loadingPSAResults,
       isFetchingPersonData,
@@ -365,7 +360,6 @@ class PersonDetailsContainer extends React.Component<Props, State> {
     const isLoading = (
       isLoadingHearingsNeighbors
       || !selectedOrganizationId
-      || isLoadingJudges
       || loadingPSAData
       || loadingPSAResults
       || isFetchingPersonData
@@ -399,7 +393,6 @@ class PersonDetailsContainer extends React.Component<Props, State> {
     const {
       actions,
       isFetchingPersonData,
-      isLoadingJudges,
       loadingPSAData,
       loadingPSAResults,
       mostRecentPSA,
@@ -426,8 +419,7 @@ class PersonDetailsContainer extends React.Component<Props, State> {
     const manualReminders = neighbors.get(MANUAL_REMINDERS, List());
     const personReminders = reminders.concat(manualReminders);
     const isLoading = (
-      isLoadingJudges
-      || loadingPSAData
+      loadingPSAData
       || loadingPSAResults
       || isFetchingPersonData
       || !selectedOrganizationId
@@ -562,9 +554,6 @@ function mapStateToProps(state, ownProps) {
     [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
     [APP.SELECTED_ORG_SETTINGS]: app.get(APP.SELECTED_ORG_SETTINGS),
     [APP.ENTITY_SETS_BY_ORG]: app.get(APP.ENTITY_SETS_BY_ORG),
-
-    [COURT.ALL_JUDGES]: court.get(COURT.ALL_JUDGES),
-    [COURT.LOADING_JUDGES]: court.get(COURT.LOADING_JUDGES),
 
     [HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID]: hearings.get(HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID),
 
