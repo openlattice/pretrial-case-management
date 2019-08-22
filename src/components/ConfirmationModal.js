@@ -5,7 +5,6 @@
 import React from 'react';
 import styled from 'styled-components';
 import Modal, { ModalTransition } from '@atlaskit/modal-dialog';
-import { Map } from 'immutable';
 
 import BasicButton from './buttons/BasicButton';
 import { Wrapper } from '../utils/Layout';
@@ -47,15 +46,7 @@ type Props = {
   disabled :boolean,
   objectType :string,
   open :() => void,
-  onClose :() => void,
-  actions :{
-    refreshPersonNeighbors :(values :{ personId :string }) => void,
-    submit :(values :{
-      config :Map<*, *>,
-      values :Map<*, *>,
-      callback :() => void
-    }) => void,
-  }
+  onClose :() => void
 }
 
 const MODAL_WIDTH = '300px';

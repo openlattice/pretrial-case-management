@@ -20,7 +20,7 @@ import {
   updateEntity
 } from './DataActionFactory';
 
-import { loadPersonDetails } from '../../containers/person/PersonActionFactory';
+import { loadPersonDetails } from '../../containers/person/PersonActions';
 import { STATE, SEARCH } from '../consts/FrontEndStateConsts';
 
 const { DeleteTypes } = Types;

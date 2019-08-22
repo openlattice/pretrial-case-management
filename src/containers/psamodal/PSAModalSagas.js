@@ -7,8 +7,7 @@ import { SearchApiActions, SearchApiSagas } from 'lattice-sagas';
 import {
   AuthorizationApi,
   Constants,
-  DataApi,
-  SearchApi
+  DataApi
 } from 'lattice';
 import {
   Map,

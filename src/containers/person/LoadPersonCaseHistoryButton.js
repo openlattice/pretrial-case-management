@@ -12,7 +12,7 @@ import { SETTINGS } from '../../utils/consts/AppSettingConsts';
 
 import * as FormActionFactory from '../psa/FormActionFactory';
 import * as ReviewActionFactory from '../review/ReviewActionFactory';
-import * as PersonActionFactory from './PersonActionFactory';
+import * as PersonActions from './PersonActions';
 
 import {
   APP,
@@ -138,8 +138,8 @@ function mapDispatchToProps(dispatch :Function) :Object {
     actions[action] = ReviewActionFactory[action];
   });
 
-  Object.keys(PersonActionFactory).forEach((action :string) => {
-    actions[action] = PersonActionFactory[action];
+  Object.keys(PersonActions).forEach((action :string) => {
+    actions[action] = PersonActions[action];
   });
 
   return {

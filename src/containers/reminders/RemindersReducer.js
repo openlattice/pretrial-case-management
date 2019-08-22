@@ -1,9 +1,11 @@
 /*
  * @flow
  */
-import moment from 'moment';
+import { DateTime } from 'luxon';
 import { Map, Set, fromJS } from 'immutable';
 
+import { DATE_FORMAT } from '../../utils/consts/DateTimeConsts';
+import { submitManualReminder } from '../manualreminders/ManualRemindersActionFactory';
 import {
   bulkDownloadRemindersPDF,
   loadOptOutNeighbors,
@@ -18,7 +20,7 @@ import { SWITCH_ORGANIZATION } from '../app/AppActionFactory';
 import { REMINDERS } from '../../utils/consts/FrontEndStateConsts';
 
 const INITIAL_STATE :Map<*, *> = fromJS({
-  [REMINDERS.REMINDERS_ACTION_LIST_DATE]: moment(),
+  [REMINDERS.REMINDERS_ACTION_LIST_DATE]: DateTime.local(),
   [REMINDERS.LOADING_REMINDERS_ACTION_LIST]: false,
   [REMINDERS.REMINDERS_ACTION_LIST]: Map(),
   [REMINDERS.REMINDER_IDS]: Set(),
@@ -128,6 +130,17 @@ export default function remindersReducer(state :Map<*, *> = INITIAL_STATE, actio
       });
     }
 
+    case submitManualReminder.case(action.type): {
+      return submitManualReminder.reducer(state, action, {
+        SUCCESS: () => {
+          const { personEKID } = action.value;
+          const remindersActionList = state.get(REMINDERS.REMINDERS_ACTION_LIST, Map()).delete(personEKID);
+          return state
+            .set(REMINDERS.REMINDERS_ACTION_LIST, remindersActionList);
+        }
+      });
+    }
+
     case REMOVE_FROM_REMIDNERS_ACTION_LIST: {
       const { personEntityKeyId } = action.value;
       const remindersActionList = state.get(REMINDERS.REMINDERS_ACTION_LIST, Map()).delete(personEntityKeyId);
@@ -136,7 +149,8 @@ export default function remindersReducer(state :Map<*, *> = INITIAL_STATE, actio
 
     case SET_DATE_FOR_REMIDNERS_ACTION_LIST: {
       const { date } = action.value;
-      return state.set(REMINDERS.REMINDERS_ACTION_LIST_DATE, moment(date));
+      const formattedDate = DateTime.fromFormat(date, DATE_FORMAT);
+      return state.set(REMINDERS.REMINDERS_ACTION_LIST_DATE, formattedDate);
     }
 
     case SWITCH_ORGANIZATION:

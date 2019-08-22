@@ -2,6 +2,7 @@
 * @flow
 */
 import moment from 'moment';
+import { DateTime } from 'luxon';
 import { isImmutable, Map, fromJS } from 'immutable';
 import { Constants } from 'lattice';
 
@@ -85,31 +86,21 @@ export const sortByDate = (d1, d2, fqn) => (
 
 export const isUUID = uuid => (/^[A-F\d]{8}-[A-F\d]{4}-4[A-F\d]{3}-[89AB][A-F\d]{3}-[A-F\d]{12}$/i).test(uuid);
 
-const dateOnWeekend = date => date.isoWeekday() === 6 || date.isoWeekday() === 7;
-const dateOnHoliday = date => federalHolidays.includes(date.format('YYYY-MM-DD'));
+const dateOnWeekend = date => date.weekday === 6 || date.weekday === 7;
+const dateOnHoliday = date => federalHolidays.includes(date.toISODate());
 
 export function addWeekdays(date, days) {
-  let newDate = moment(date).add(days, 'days');
+  let newDate = DateTime.fromISO(date).plus({ days });
   let onWeekend = dateOnWeekend(newDate);
   let onHoliday = dateOnHoliday(newDate);
 
   while (onWeekend || onHoliday) {
-    newDate = newDate.add(1, 'days');
+    newDate = newDate.plus({ days: 1 });
     onWeekend = dateOnWeekend(newDate);
     onHoliday = dateOnHoliday(newDate);
   }
   return newDate;
 }
-
-export const getMapFromEntityKeysToPropertyKeys = (entity, entityKeyId, propertyTypesByFqn) => {
-  let entityObject = Map();
-  Object.keys(entity).forEach((key) => {
-    const propertyTypeKeyId = propertyTypesByFqn[key].id;
-    const property = entity[key] ? [entity[key]] : [];
-    entityObject = entityObject.setIn([entityKeyId, propertyTypeKeyId], property);
-  });
-  return entityObject;
-};
 
 export const getFirstNeighborValue = (neighborObj, fqn, defaultValue = '') => neighborObj.getIn(
   [PSA_NEIGHBOR.DETAILS, fqn, 0],
@@ -136,6 +127,8 @@ export const getEntityProperties = (entityObj, propertyList) => {
   }
   return returnPropertyFields.toJS();
 };
+
+export const createIdObject = (entityKeyId, entitySetId) => ({ entityKeyId, entitySetId });
 
 export const getCreateAssociationObject = ({
   associationEntity,

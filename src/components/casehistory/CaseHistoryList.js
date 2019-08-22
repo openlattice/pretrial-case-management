@@ -21,6 +21,12 @@ import {
   PendingChargeStatus
 } from '../../utils/Layout';
 
+const {
+  ENTITY_KEY_ID,
+  CASE_ID,
+  FILE_DATE,
+} = PROPERTY_TYPES
+
 const InfoRow = styled.div`
   background-color: ${OL.GREY09};
   display: flex;
@@ -96,12 +102,12 @@ const CaseHistoryList = ({
   modal,
   isCompact
 } :Props) => {
-  const addCaseToPSAButton = (caseNum) => {
-    const associationEntityKeyId = caseNumbersToAssociationId.get(caseNum);
-    let onClick = () => addCaseToPSA({ [ID_FIELD_NAMES.CASE_ID]: caseNum });
+  const addCaseToPSAButton = (caseEKID, caseNum) => {
+    const associationEKID = caseNumbersToAssociationId.get(caseNum);
+    let onClick = () => addCaseToPSA(caseEKID);
     let buttonText = 'Add to PSA';
-    if (associationEntityKeyId) {
-      onClick = () => removeCaseFromPSA(associationEntityKeyId);
+    if (associationEKID) {
+      onClick = () => removeCaseFromPSA(associationEKID);
       buttonText = 'Remove From PSA';
     }
     return (psaPermissions && caseNum && pendingCases)
@@ -124,9 +130,10 @@ const CaseHistoryList = ({
     .filter(caseObj => getFirstNeighborValue(caseObj, PROPERTY_TYPES.CASE_ID).length)
     .map((caseObj) => {
       const {
-        [PROPERTY_TYPES.CASE_ID]: caseId,
-        [PROPERTY_TYPES.FILE_DATE]: fileDate
-      } = getEntityProperties(caseObj, [PROPERTY_TYPES.CASE_ID, PROPERTY_TYPES.FILE_DATE]);
+        [ENTITY_KEY_ID]: caseEKID,
+        [CASE_ID]: caseId,
+        [FILE_DATE]: fileDate
+      } = getEntityProperties(caseObj, [ENTITY_KEY_ID, CASE_ID, FILE_DATE]);
       const formattedFileDate = formatDateList([fileDate]);
       const charges = chargeHistory.get(caseId);
       const dateList = caseObj.get(PROPERTY_TYPES.FILE_DATE, Immutable.List());
@@ -144,7 +151,7 @@ const CaseHistoryList = ({
                 }
               </InfoItem>
             </InfoRowContainer>
-            { caseNumbersToAssociationId ? addCaseToPSAButton(caseId) : null }
+            { caseNumbersToAssociationId ? addCaseToPSAButton(caseEKID, caseId) : null }
           </InfoRow>
           <ChargeList
               isCompact={isCompact}

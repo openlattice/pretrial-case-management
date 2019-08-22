@@ -36,15 +36,9 @@ type Props = {
       personId :string,
       neighbors :Immutable.Map<*, *>
     }) => void,
-    loadHearingNeighbors :(hearingIds :string[]) => void,
     loadJudges :() => void,
     checkPSAPermissions :() => void,
-    refreshPSANeighbors :({ id :string }) => void,
-    submit :(value :{ config :Object, values :Object}) => void,
-    replaceEntity :(value :{ entitySetName :string, entityKeyId :string, values :Object }) => void,
-    deleteEntity :(value :{ entitySetName :string, entityKeyId :string }) => void,
     clearSubmit :() => void,
-
   },
   match :{
     params :{

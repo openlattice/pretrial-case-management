@@ -5,9 +5,14 @@
 import axios from 'axios';
 import moment from 'moment';
 import LatticeAuth from 'lattice-auth';
-import { SearchApiActions, SearchApiSagas } from 'lattice-sagas';
-import { push } from 'connected-react-router';
+import randomUUID from 'uuid/v4';
 import { Constants, SearchApi } from 'lattice';
+import {
+  DataApiActions,
+  DataApiSagas,
+  SearchApiActions,
+  SearchApiSagas
+} from 'lattice-sagas';
 import {
   fromJS,
   List,
@@ -17,21 +22,19 @@ import {
 import {
   all,
   call,
+  push,
   put,
-  take,
   takeEvery,
   select
 } from '@redux-saga/core/effects';
-import type { RequestSequence, SequenceAction } from 'redux-reqseq';
 
-import { toISODate, formatDate } from '../../utils/FormattingUtils';
-import { submit } from '../../utils/submit/SubmitActionFactory';
+import { toISODate } from '../../utils/FormattingUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PERSON_INFO_DATA, PSA_STATUSES } from '../../utils/consts/Consts';
 import { APP, STATE, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
-import { getSearchTerm } from '../../utils/DataUtils';
+import { createIdObject, getSearchTerm } from '../../utils/DataUtils';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
-import { getPropertyTypeId } from '../../edm/edmUtils';
+import { getPropertyTypeId, getPropertyIdToValueMap } from '../../edm/edmUtils';
 import {
   CLEAR_SEARCH_RESULTS,
   LOAD_PERSON_DETAILS,
@@ -45,26 +48,34 @@ import {
   searchPeople,
   searchPeopleByPhoneNumber,
   updateCases,
-} from './PersonActionFactory';
+} from './PersonActions';
 
 import * as Routes from '../../core/router/Routes';
 
+const { createEntityAndAssociationData, createOrMergeEntityData, getEntityData } = DataApiActions;
+const { createEntityAndAssociationDataWorker, createOrMergeEntityDataWorker, getEntityDataWorker } = DataApiSagas;
 const { searchEntityNeighborsWithFilter, searchEntitySetData } = SearchApiActions;
 const { searchEntityNeighborsWithFilterWorker, searchEntitySetDataWorker } = SearchApiSagas;
 
 const { HAS_OPEN_PSA, HAS_MULTIPLE_OPEN_PSAS, IS_RECEIVING_REMINDERS } = PERSON_INFO_DATA;
 const { OPENLATTICE_ID_FQN } = Constants;
 const {
+  ADDRESSES,
   CHARGES,
+  CONTACT_INFO_GIVEN,
   CONTACT_INFORMATION,
+  LIVES_AT,
   PEOPLE,
   PRETRIAL_CASES,
   PSA_SCORES,
   SUBSCRIPTION
 } = APP_TYPES;
 
+const { ID, STRING_ID } = PROPERTY_TYPES;
+
 const getApp = state => state.get(STATE.APP, Map());
 const getEDM = state => state.get(STATE.EDM, Map());
+const getOrgId = state => state.getIn([STATE.APP, APP.SELECTED_ORG_ID], '');
 
 declare var __ENV_DEV__ :boolean;
 
@@ -83,28 +94,6 @@ function* loadCaseHistory(entityKeyId :string) :Generator<*, *, *> {
   }
   catch (error) {
     console.error(`Unable to load case history for person with entityKeyId: ${entityKeyId}`);
-  }
-}
-
-function* loadPersonId(person) :Generator<*, *, *> {
-  const firstName = person.firstNameValue;
-  const lastName = person.lastNameValue;
-  const dob = formatDate(person.dobValue, 'MM/DD/YYYY');
-  try {
-    const loadRequest = {
-      method: 'post',
-      url: 'https://api.openlattice.com/bifrost/caseloader/id',
-      data: { firstName, lastName, dob },
-      headers: {
-        Authorization: `Bearer ${AuthUtils.getAuthToken()}`
-      }
-    };
-    const response = yield call(axios, loadRequest);
-    return response.data ? response.data.toString() : '';
-  }
-  catch (error) {
-    console.error('Unable to load person id from Odyssey.');
-    return '';
   }
 }
 
@@ -240,33 +229,151 @@ function* updateCasesWatcher() :Generator<*, *, *> {
   yield takeEvery(UPDATE_CASES, updateCasesWorker);
 }
 
-function takeReqSeqSuccessFailure(reqseq :RequestSequence, seqAction :SequenceAction) {
-  return take(
-    (anAction :Object) => (anAction.type === reqseq.SUCCESS && anAction.id === seqAction.id)
-        || (anAction.type === reqseq.FAILURE && anAction.id === seqAction.id)
-  );
-}
-
 function* newPersonSubmitWorker(action) :Generator<*, *, *> {
   try {
     yield put(newPersonSubmit.request(action.id));
-    const { app, config, values } = action.value;
-    const personId = yield call(loadPersonId, values);
-    if (personId && personId.length) {
-      values.idValue = personId;
-    }
-    const submitAction :SequenceAction = submit({ app, config, values });
-    yield put(submitAction);
-    const submitRes :SequenceAction = yield takeReqSeqSuccessFailure(submit, submitAction);
+    const {
+      addressEntity,
+      contactEntity,
+      newPersonEntity
+    } = action.value;
+    /*
+    * Get App and Edm state
+    */
+    const app = yield select(getApp);
+    const edm = yield select(getEDM);
+    const orgId = yield select(getOrgId);
+    const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
 
-    if (submitRes.type === submit.SUCCESS) {
-      yield put(newPersonSubmit.success(action.id));
-      // TODO: is routing the best way to handle a successful submit?
-      yield put(push(Routes.ROOT));
+    let personEKID;
+    const peopleESID = getEntitySetIdFromApp(app, PEOPLE);
+    const personSubmitEntity = getPropertyIdToValueMap(newPersonEntity, edm);
+
+    /*
+     * Check to see if contact or address are being submitted
+     */
+
+    const addressIncluded = !!Object.keys(addressEntity).length;
+    const contactIncluded = !!Object.keys(contactEntity).length;
+
+    const addressESID = getEntitySetIdFromApp(app, ADDRESSES);
+    const contactInfoESID = getEntitySetIdFromApp(app, CONTACT_INFORMATION);
+
+    if (addressIncluded || contactIncluded) {
+      const entities = { [peopleESID]: [personSubmitEntity] };
+      const associations = {};
+      /*
+      * Add address if present
+      */
+
+      if (addressIncluded) {
+        const stringIdPTID = getPropertyTypeId(edm, STRING_ID);
+        const livesAtESID = getEntitySetIdFromApp(app, LIVES_AT);
+
+        const addressSubmitEntity = getPropertyIdToValueMap(addressEntity, edm);
+        entities[addressESID] = [addressSubmitEntity];
+        associations[livesAtESID] = [{
+          data: { [stringIdPTID]: [randomUUID()] },
+          srcEntityIndex: 0,
+          srcEntitySetId: peopleESID,
+          dstEntityIndex: 0,
+          dstEntitySetId: addressESID
+        }];
+      }
+      if (contactIncluded) {
+        const olIdPTID = getPropertyTypeId(edm, ID);
+        const contactInfoGivenESID = getEntitySetIdFromApp(app, CONTACT_INFO_GIVEN);
+
+        const contactSubmitEntity = getPropertyIdToValueMap(contactEntity, edm);
+        entities[contactInfoESID] = [contactSubmitEntity];
+        associations[contactInfoGivenESID] = [{
+          data: { [olIdPTID]: [randomUUID()] },
+          srcEntityIndex: 0,
+          srcEntitySetId: peopleESID,
+          dstEntityIndex: 0,
+          dstEntitySetId: contactInfoESID
+        }];
+      }
+      /*
+      * Submit data and collect response
+      */
+      const response = yield call(
+        createEntityAndAssociationDataWorker,
+        createEntityAndAssociationData({ associations, entities })
+      );
+      if (response.error) throw response.error;
+      /*
+      * Collect Person and Neighbors
+      */
+      const entityKeyIds = fromJS(response.data.entityKeyIds);
+
+      personEKID = entityKeyIds.getIn([peopleESID, 0], '');
     }
     else {
-      yield put(newPersonSubmit.failure(action.id));
+      const createPersonResponse = yield call(
+        createOrMergeEntityDataWorker,
+        createOrMergeEntityData({
+          entitySetId: peopleESID,
+          entities: [personSubmitEntity]
+        })
+      );
+      if (createPersonResponse.error) throw createPersonResponse.error;
+      const { data: EKIDs } = createPersonResponse;
+      personEKID = EKIDs[0];
     }
+
+    /*
+    * Get Hearing Info
+    */
+    const personIdObject = createIdObject(personEKID, peopleESID);
+    const personResponse = yield call(
+      getEntityDataWorker,
+      getEntityData(personIdObject)
+    );
+    if (personResponse.error) throw personResponse.error;
+    const person = fromJS(personResponse.data);
+
+    let peopleNeighborsById = yield call(
+      searchEntityNeighborsWithFilterWorker,
+      searchEntityNeighborsWithFilter({
+        entitySetId: peopleESID,
+        filter: {
+          entityKeyIds: [personEKID],
+          sourceEntitySetIds: [],
+          destinationEntitySetIds: [addressESID, contactInfoESID]
+        }
+      })
+    );
+    if (peopleNeighborsById.error) throw peopleNeighborsById.error;
+    peopleNeighborsById = fromJS(peopleNeighborsById.data);
+    const personNeighbors = peopleNeighborsById.get(personEKID);
+
+    const personNeighborsByAppTypeFqn = Map().withMutations((map) => {
+      personNeighbors.forEach((neighbor) => {
+        const neighborObj = neighbor.get(PSA_NEIGHBOR.DETAILS, Map());
+        const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
+        const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
+        if (appTypeFqn === CONTACT_INFORMATION) {
+          map.set(
+            appTypeFqn,
+            map.get(appTypeFqn, List()).push(neighborObj)
+          );
+        }
+        else if (appTypeFqn === ADDRESSES) {
+          map.set(
+            appTypeFqn,
+            map.get(appTypeFqn, List()).push(neighborObj)
+          );
+        }
+      });
+    });
+    // TODO: update create psa flow to route you to creating a psa for this person upon submit
+    yield put(push(Routes.ROOT));
+    yield put(newPersonSubmit.success(action.id, {
+      person,
+      personEKID,
+      personNeighborsByAppTypeFqn
+    }));
   }
   catch (error) {
     console.error(error);

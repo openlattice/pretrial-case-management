@@ -20,7 +20,7 @@ export const HEARING_CONSTS = {
   FIELD: 'field',
   FULL_NAME: 'fullName',
   JUDGE: 'judge',
-  JUDGE_ID: 'judgeId',
+  JUDGE_ID: 'judgeEKID',
   NEW_HEARING_TIME: 'newHearingTime',
   NEW_HEARING_DATE: 'newHearingDate',
   NEW_HEARING_COURTROOM: 'newHearingCourtroom',

@@ -19,7 +19,7 @@ import DashboardMainSection from '../../components/dashboard/DashboardMainSectio
 import LogoLoader from '../../components/LogoLoader';
 import NavButtonToolbar from '../../components/buttons/NavButtonToolbar';
 import { getFormattedPeople } from '../../utils/PeopleUtils';
-import { clearSearchResults, searchPeople } from '../person/PersonActionFactory';
+import { clearSearchResults, searchPeople } from '../person/PersonActions';
 import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';

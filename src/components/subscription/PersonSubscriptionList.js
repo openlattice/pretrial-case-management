@@ -16,7 +16,7 @@ import { OL } from '../../utils/consts/Colors';
 import { SEARCH, STATE } from '../../utils/consts/FrontEndStateConsts';
 import { formatPeopleInfo, sortPeopleByName } from '../../utils/PeopleUtils';
 
-import * as SubscriptionsActionFactory from '../../containers/subscription/SubscriptionsActionFactory';
+import * as SubscriptionActions from '../../containers/subscription/SubscriptionActions';
 import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
 import * as ManualRemindersActionFactory from '../../containers/manualreminders/ManualRemindersActionFactory';
 
@@ -175,8 +175,8 @@ function mapDispatchToProps(dispatch :Function) :Object {
     actions[action] = ManualRemindersActionFactory[action];
   });
 
-  Object.keys(SubscriptionsActionFactory).forEach((action :string) => {
-    actions[action] = SubscriptionsActionFactory[action];
+  Object.keys(SubscriptionActions).forEach((action :string) => {
+    actions[action] = SubscriptionActions[action];
   });
 
   Object.keys(SubmitActionFactory).forEach((action :string) => {

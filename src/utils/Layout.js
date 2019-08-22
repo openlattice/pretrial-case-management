@@ -631,3 +631,31 @@ export const StyledTooltip = styled.div`
   padding: 8px 15px;
   white-space: normal !important;
 `;
+
+export const Content = styled.div`
+  font-family: 'Open Sans', sans-serif;
+  font-weight: normal;
+  color: ${OL.GREY15};
+`;
+
+export const ContentBlock = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
+
+export const ContentHeader = styled.div`
+  width: 100%;
+  font-family: 'Open Sans', sans-serif;
+  padding-bottom: 15px;
+  font-size: 16px;
+  font-weight: 600;
+  color: ${OL.GREY01};
+`;
+
+export const ContentLabel = styled.div`
+  font-family: 'Open Sans',sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: ${OL.GREY02};
+`;

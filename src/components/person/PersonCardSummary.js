@@ -14,7 +14,6 @@ import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 
 const PersonCardWrapper = styled.div`
   width: 100%;
-  border-right: solid 1px ${OL.GREY28};
 `;
 
 export default ({ person } :Props) => {

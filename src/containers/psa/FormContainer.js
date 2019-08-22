@@ -36,15 +36,15 @@ import ArrestCard from '../../components/arrest/ArrestCard';
 import ChargeTable from '../../components/charges/ChargeTable';
 import PSAReviewReportsRowList from '../review/PSAReviewReportsRowList';
 import exportPDF from '../../utils/PDFUtils';
-import psaConfig from '../../config/formconfig/PsaConfig';
 import SubscriptionInfo from '../../components/subscription/SubscriptionInfo';
 import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
 import { OL } from '../../utils/consts/Colors';
-import { getFirstNeighborValue, getEntityKeyId } from '../../utils/DataUtils';
+import { getEntityProperties, getFirstNeighborValue, getEntityKeyId } from '../../utils/DataUtils';
 import { toISODateTime } from '../../utils/FormattingUtils';
 import { getScoresAndRiskFactors, calculateDMF, getDMFRiskFactors } from '../../utils/ScoringUtils';
 import { tryAutofillFields } from '../../utils/AutofillUtils';
-import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { RESULT_CATEGORIES_TO_PROPERTY_TYPES } from '../../utils/consts/DMFResultConsts';
 import { STATUS_OPTIONS_FOR_PENDING_PSAS } from '../../utils/consts/ReviewPSAConsts';
 import {
   CASE_CONTEXTS,
@@ -55,7 +55,6 @@ import {
 import {
   CONTEXT,
   DMF,
-  ID_FIELD_NAMES,
   NOTES,
   PSA,
   PSA_STATUSES
@@ -65,6 +64,7 @@ import {
   CHARGES,
   COURT,
   PSA_FORM,
+  PSA_NEIGHBOR,
   REVIEW,
   SEARCH,
   STATE,
@@ -72,7 +72,6 @@ import {
   PEOPLE
 } from '../../utils/consts/FrontEndStateConsts';
 import {
-  ButtonWrapper,
   StyledFormWrapper,
   StyledSectionWrapper,
   StyledColumnRow
@@ -84,7 +83,7 @@ import {
 } from '../../utils/Helpers';
 
 import * as FormActionFactory from './FormActionFactory';
-import * as PersonActionFactory from '../person/PersonActionFactory';
+import * as PersonActions from '../person/PersonActions';
 import * as ReviewActionFactory from '../review/ReviewActionFactory';
 import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
 import * as CourtActionFactory from '../court/CourtActionFactory';
@@ -93,6 +92,17 @@ import * as RoutingActionFactory from '../../core/router/RoutingActionFactory';
 
 
 const { OPENLATTICE_ID_FQN } = Constants;
+
+const {
+  PSA_RISK_FACTORS,
+  DMF_RESULTS
+} = APP_TYPES;
+
+const {
+  ENTITY_KEY_ID,
+  GENERAL_ID,
+  RELEASE_RECOMMENDATION
+} = PROPERTY_TYPES;
 
 const PSARowListHeader = styled.div`
   width: 100%;
@@ -322,7 +332,6 @@ type Props = {
   allJudges :Immutable.List<*>,
   allPSAs :Immutable.List<*>,
   allSentencesForPerson :Immutable.List<*>,
-  app :Immutable.Map<*, *>,
   arrestId :string,
   arrestOptions :Immutable.List<*>,
   bookingHoldExceptionCharges :Immutable.Map<*, *>,
@@ -335,23 +344,24 @@ type Props = {
   history :string[],
   isLoadingCases :boolean,
   isLoadingNeighbors :boolean,
-  isSubmitted :boolean,
-  isSubmitting :boolean,
   loadingPersonDetails :boolean,
   numCasesLoaded :number,
   numCasesToLoad :number,
   openPSAs :Immutable.Map<*, *>,
   psaForm :Immutable.Map<*, *>,
+  psaSubmissionComplete :boolean,
   readOnlyPermissions :boolean,
-  refreshingPersonNeighbors :boolean,
   selectedOrganizationId :string,
   selectedPerson :Immutable.Map<*, *>,
   selectedPersonId :string,
   selectedPretrialCase :Immutable.Map<*, *>,
   selectedOrganizationSettings :Immutable.Map<*, *>,
+  staffIdsToEntityKeyIds :Immutable.Map<*, *>,
   submitError :boolean,
+  submittedPSA :Immutable.Map<*, *>,
+  submittedPSANeighbors :Immutable.Map<*, *>,
+  submittingPSA :boolean,
   subscription :Immutable.Map<*, *>,
-  updatingEntity :boolean,
   violentCourtCharges :Immutable.Map<*, *>,
   violentArrestCharges :Immutable.Map<*, *>,
   location :{
@@ -492,73 +502,74 @@ class Form extends React.Component<Props, State> {
     return staffId;
   }
 
-  submitEntities = (scores, riskFactors, dmf) => {
-    const staffId = this.getStaffId();
+  submitEntities = (scores, riskFactors, dmf, dmfRiskFactors) => {
     const {
       actions,
-      app,
       arrestId,
       charges,
       psaForm,
       selectedPerson,
       selectedPretrialCase,
-      selectedOrganizationSettings
+      selectedOrganizationSettings,
+      staffIdsToEntityKeyIds
     } = this.props;
 
     const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], '');
+    const psaNotes = psaForm.get(PSA.NOTES, '');
 
-    const values = Object.assign(
-      {},
-      psaForm.toJS(),
-      riskFactors,
-      scores.toJS(),
-      dmf
-    );
+    const staffId = this.getStaffId();
+    const staffEKID = staffIdsToEntityKeyIds.get(staffId, '');
+    const { [ENTITY_KEY_ID]: personEKID } = getEntityProperties(selectedPerson, [ENTITY_KEY_ID]);
 
-    const psaId = randomUUID();
+    const psaEntity = scores.toJS();
+    psaEntity[GENERAL_ID] = [randomUUID()];
 
-    values[ID_FIELD_NAMES.PSA_ID] = [psaId];
-    values[ID_FIELD_NAMES.RISK_FACTORS_ID] = [randomUUID()];
-    values[ID_FIELD_NAMES.DMF_ID] = [randomUUID()];
-    values[ID_FIELD_NAMES.DMF_RISK_FACTORS_ID] = [randomUUID()];
-    values[ID_FIELD_NAMES.NOTES_ID] = [randomUUID()];
-    values[ID_FIELD_NAMES.PERSON_ID] = [selectedPerson.getIn([PROPERTY_TYPES.PERSON_ID, 0])];
-    values[ID_FIELD_NAMES.STAFF_ID] = [staffId];
+    const psaRiskFactorsEntity = riskFactors;
+    psaRiskFactorsEntity[GENERAL_ID] = [randomUUID()];
 
-    values[ID_FIELD_NAMES.TIMESTAMP] = toISODateTime(moment());
+    const psaNotesEntity = {
+      [RELEASE_RECOMMENDATION]: psaNotes,
+      [GENERAL_ID]: [randomUUID()]
+    };
 
-    Object.assign(values, selectedPretrialCase.toJS());
-    values.charges = charges.toJS();
-    if (arrestId.length) {
-      values[ID_FIELD_NAMES.ARREST_ID] = [arrestId];
-    }
+    const dmfResultsEntity = {};
+    Object.entries(dmf).forEach(([key, value]) => {
+      dmfResultsEntity[RESULT_CATEGORIES_TO_PROPERTY_TYPES[key]] = value;
+    });
+    dmfResultsEntity[GENERAL_ID] = [randomUUID()];
+
+    const dmfRiskFactorsEntity = dmfRiskFactors;
+    dmfRiskFactorsEntity[GENERAL_ID] = [randomUUID()];
+
+    const caseEntity = selectedPretrialCase.toJS();
+    const chargeEntities = charges.toJS();
 
     // Get Case Context from settings and pass to config
     const caseContext = psaForm.get(DMF.COURT_OR_BOOKING) === CONTEXT.BOOKING ? CONTEXTS.BOOKING : CONTEXTS.COURT;
     const chargeType = selectedOrganizationSettings.getIn([SETTINGS.CASE_CONTEXTS, caseContext]);
     const manualCourtCasesAndCharges = (chargeType === CASE_CONTEXTS.COURT);
 
-    const config = psaConfig({ manualCourtCasesAndCharges });
-
-
-    if ((values[DMF.COURT_OR_BOOKING] !== CONTEXT.BOOKING) || !includesPretrialModule) {
-      delete values[DMF.SECONDARY_RELEASE_CHARGES];
-      delete values[NOTES[DMF.SECONDARY_RELEASE_CHARGES]];
-      delete values[DMF.SECONDARY_HOLD_CHARGES];
-      delete values[NOTES[DMF.SECONDARY_HOLD_CHARGES]];
+    if ((dmfResultsEntity[DMF.COURT_OR_BOOKING] !== CONTEXT.BOOKING) || !includesPretrialModule) {
+      delete dmfResultsEntity[DMF.SECONDARY_RELEASE_CHARGES];
+      delete dmfResultsEntity[NOTES[DMF.SECONDARY_RELEASE_CHARGES]];
+      delete dmfResultsEntity[DMF.SECONDARY_HOLD_CHARGES];
+      delete dmfResultsEntity[NOTES[DMF.SECONDARY_HOLD_CHARGES]];
     }
-    if (!includesPretrialModule) {
-      delete values[ID_FIELD_NAMES.DMF_ID];
-      delete values[ID_FIELD_NAMES.DMF_RISK_FACTORS_ID];
-      delete values[DMF.EXTRADITED];
-      delete values[NOTES[DMF.EXTRADITED]];
-      delete values[DMF.STEP_2_CHARGES];
-      delete values[NOTES[DMF.STEP_2_CHARGES]];
-      delete values[DMF.STEP_4_CHARGES];
-      delete values[NOTES[DMF.STEP_4_CHARGES]];
-    }
-    actions.submit({ app, values, config });
-    this.setState({ psaId });
+
+    actions.submitPSA({
+      arrestCaseEKID: arrestId,
+      caseEntity,
+      chargeEntities,
+      dmfResultsEntity,
+      dmfRiskFactorsEntity,
+      includesPretrialModule,
+      manualCourtCasesAndCharges,
+      personEKID,
+      psaEntity,
+      psaNotesEntity,
+      psaRiskFactorsEntity,
+      staffEKID
+    });
   }
 
   getFqn = propertyType => `${propertyType.getIn(['type', 'namespace'])}.${propertyType.getIn(['type', 'name'])}`
@@ -604,7 +615,9 @@ class Form extends React.Component<Props, State> {
       scoresWereGenerated: true,
       confirmationModalOpen: true
     });
-    this.submitEntities(scores.set(PROPERTY_TYPES.STATUS, Immutable.List.of(PSA_STATUSES.OPEN)), riskFactors, dmf);
+    this.submitEntities(
+      scores.set(PROPERTY_TYPES.STATUS, Immutable.List.of(PSA_STATUSES.OPEN)), riskFactors, dmf, dmfRiskFactors
+    );
   }
 
   clear = () => {
@@ -871,11 +884,9 @@ class Form extends React.Component<Props, State> {
     const {
       allContacts,
       readOnlyPermissions,
-      refreshingPersonNeighbors,
       selectedPerson,
       selectedOrganizationSettings,
       subscription,
-      updatingEntity
     } = this.props;
     const courtRemindersEnabled = selectedOrganizationSettings.get(SETTINGS.COURT_REMINDERS, false);
     return courtRemindersEnabled
@@ -883,8 +894,6 @@ class Form extends React.Component<Props, State> {
         <ContextRow>
           <StyledColumnRow withPadding>
             <SubscriptionInfo
-                refreshingPersonNeighbors={refreshingPersonNeighbors}
-                updatingEntity={updatingEntity}
                 readOnly={readOnlyPermissions}
                 subscription={subscription}
                 contactInfo={allContacts}
@@ -1006,15 +1015,7 @@ class Form extends React.Component<Props, State> {
   }
 
   getPsaResults = () => {
-    const { isSubmitting, submitError } = this.props;
-    const {
-      scoresWereGenerated,
-      scores,
-      riskFactors,
-      dmf,
-      psaId
-    } = this.state;
-
+    const { psaId, scoresWereGenerated } = this.state;
     const {
       actions,
       allCasesForPerson,
@@ -1022,7 +1023,12 @@ class Form extends React.Component<Props, State> {
       allHearings,
       allJudges,
       charges,
-      psaForm
+      selectedPerson,
+      psaForm,
+      submittedPSA,
+      submittedPSANeighbors,
+      submittingPSA,
+      submitError
     } = this.props;
 
     if (!scoresWereGenerated) return null;
@@ -1035,14 +1041,21 @@ class Form extends React.Component<Props, State> {
       chargesByCaseId = chargesByCaseId.set(caseNum, chargesByCaseId.get(caseNum, Immutable.List()).push(charge));
     });
 
+    const { [ENTITY_KEY_ID]: psaEKID } = getEntityProperties(submittedPSA, [ENTITY_KEY_ID]);
+    const { [ENTITY_KEY_ID]: personEKID } = getEntityProperties(selectedPerson, [ENTITY_KEY_ID]);
+    const psaRiskFactores = submittedPSANeighbors.getIn([PSA_RISK_FACTORS, PSA_NEIGHBOR.DETAILS], Map());
+    const dmfResults = submittedPSANeighbors.getIn([DMF_RESULTS, PSA_NEIGHBOR.DETAILS], Map());
+
     return (
       <PSASubmittedPage
-          isSubmitting={isSubmitting}
-          scores={scores}
-          riskFactors={riskFactors}
+          isSubmitting={submittingPSA}
+          scores={submittedPSA}
+          riskFactors={psaRiskFactores.toJS()}
           context={context}
-          dmf={dmf}
+          dmf={dmfResults}
           personId={this.getPersonIdValue()}
+          personEKID={personEKID}
+          psaEKID={psaEKID}
           psaId={psaId}
           submitSuccess={!submitError}
           onClose={actions.goToRoot}
@@ -1060,17 +1073,21 @@ class Form extends React.Component<Props, State> {
 
   renderPSAResultsModal = () => {
     const { confirmationModalOpen } = this.state;
-    const { actions, isSubmitting, isSubmitted } = this.props;
+    const {
+      actions,
+      psaSubmissionComplete,
+      submittingPSA
+    } = this.props;
     const currentPage = getCurrentPage(window.location);
     if (!currentPage || Number.isNaN(currentPage)) return null;
-    if (currentPage < 4 || (!isSubmitting && !isSubmitted)) {
+    if (currentPage < 4 || (!submittingPSA && !psaSubmissionComplete)) {
       return null;
     }
 
     return (
       <ConfirmationModal
           open={confirmationModalOpen}
-          submissionStatus={isSubmitting || isSubmitted}
+          submissionStatus={submittingPSA || psaSubmissionComplete}
           pageContent={this.getPsaResults}
           handleModalButtonClick={actions.goToRoot} />
     );
@@ -1105,9 +1122,9 @@ function mapStateToProps(state :Immutable.Map<*, *>) :Object {
 
   return {
     // App
-    app,
     [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
     [APP.SELECTED_ORG_SETTINGS]: app.get(APP.SELECTED_ORG_SETTINGS),
+    [APP.STAFF_IDS_TO_EKIDS]: app.get(APP.STAFF_IDS_TO_EKIDS),
 
     // Charges
     [CHARGES.ARREST]: charges.get(CHARGES.ARREST),
@@ -1142,11 +1159,12 @@ function mapStateToProps(state :Immutable.Map<*, *>) :Object {
     [PSA_FORM.LOADING_NEIGHBORS]: psaForm.get(PSA_FORM.LOADING_NEIGHBORS),
 
     // Submit
-    [PSA_FORM.SUBMITTED]: submit.get(SUBMIT.SUBMITTED),
-    [PSA_FORM.SUBMITTING]: submit.get(SUBMIT.SUBMITTING),
-    [PSA_FORM.SUBMIT_ERROR]: submit.get(SUBMIT.ERROR),
+    [PSA_FORM.SUBMITTING_PSA]: psaForm.get(PSA_FORM.SUBMITTING_PSA),
+    [PSA_FORM.PSA_SUBMISSION_COMPLETE]: psaForm.get(PSA_FORM.PSA_SUBMISSION_COMPLETE),
+    [PSA_FORM.SUBMITTED_PSA]: psaForm.get(PSA_FORM.SUBMITTED_PSA),
+    [PSA_FORM.SUBMITTED_PSA_NEIGHBORS]: psaForm.get(PSA_FORM.SUBMITTED_PSA_NEIGHBORS),
+    [PSA_FORM.SUBMIT_ERROR]: psaForm.get(PSA_FORM.SUBMIT_ERROR),
 
-    [SUBMIT.SUBMITTING]: submit.get(SUBMIT.SUBMITTING),
     [SUBMIT.UPDATING_ENTITY]: submit.get(SUBMIT.UPDATING_ENTITY),
 
     // People
@@ -1174,21 +1192,27 @@ function mapDispatchToProps(dispatch :Function) :Object {
   Object.keys(FormActionFactory).forEach((action :string) => {
     actions[action] = FormActionFactory[action];
   });
-  Object.keys(PersonActionFactory).forEach((action :string) => {
-    actions[action] = PersonActionFactory[action];
+
+  Object.keys(PersonActions).forEach((action :string) => {
+    actions[action] = PersonActions[action];
   });
+
   Object.keys(ReviewActionFactory).forEach((action :string) => {
     actions[action] = ReviewActionFactory[action];
   });
+
   Object.keys(CourtActionFactory).forEach((action :string) => {
     actions[action] = CourtActionFactory[action];
   });
+
   Object.keys(SubmitActionFactory).forEach((action :string) => {
     actions[action] = SubmitActionFactory[action];
   });
+
   Object.keys(RoutingActionFactory).forEach((action :string) => {
     actions[action] = RoutingActionFactory[action];
   });
+
 
   return {
     actions: {

@@ -10,21 +10,30 @@ import {
 } from 'immutable';
 
 import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
+import { hearingIsCancelled } from '../../utils/HearingUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PEOPLE, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { PSA_STATUSES } from '../../utils/consts/Consts';
+import { editPSA } from '../psa/FormActionFactory';
 import { enrollVoice, getProfile } from '../enroll/EnrollActionFactory';
 import { changePSAStatus, updateScoresAndRiskFactors, loadPSAData } from '../review/ReviewActionFactory';
+import { submitContact, updateContactsBulk } from '../contactinformation/ContactInfoActions';
 import { deleteEntity } from '../../utils/data/DataActionFactory';
-import { refreshHearingAndNeighbors } from '../hearings/HearingsActionFactory';
+import { subscribe, unsubscribe } from '../subscription/SubscriptionActions';
+import {
+  refreshHearingAndNeighbors,
+  submitExistingHearing,
+  submitHearing,
+  updateHearing
+} from '../hearings/HearingsActions';
 import {
   CLEAR_PERSON,
   getPeople,
   getPersonData,
   getPersonNeighbors,
+  getStaffEKIDs,
   loadRequiresActionPeople,
-  refreshPersonNeighbors,
-  updateContactInfo
+  refreshPersonNeighbors
 } from './PeopleActionFactory';
 
 const {
@@ -33,7 +42,9 @@ const {
   DMF_RESULTS,
   HEARINGS,
   PSA_SCORES,
-  RELEASE_RECOMMENDATIONS
+  RELEASE_RECOMMENDATIONS,
+  STAFF,
+  SUBSCRIPTION
 } = APP_TYPES;
 
 const {
@@ -147,6 +158,17 @@ export default function peopleReducer(state :Map = INITIAL_STATE, action :Object
       });
     }
 
+    case editPSA.case(action.type): {
+      return editPSA.reducer(state, action, {
+        SUCCESS: () => {
+          const { psaEKID, staffNeighbors } = action.value;
+          let psaNeighbors = state.get(PEOPLE.PSA_NEIGHBORS_BY_ID, Map());
+          psaNeighbors = psaNeighbors.setIn([psaEKID, STAFF], staffNeighbors);
+          return state.set(PEOPLE.PSA_NEIGHBORS, psaNeighbors);
+        }
+      });
+    }
+
     case enrollVoice.case(action.type): {
       return enrollVoice.reducer(state, action, {
         SUCCESS: () => {
@@ -162,6 +184,15 @@ export default function peopleReducer(state :Map = INITIAL_STATE, action :Object
         SUCCESS: () => state.set(PEOPLE.RESULTS, fromJS(action.value)),
         FAILURE: () => state.set(PEOPLE.RESULTS, List()),
         FINALLY: () => state.set(PEOPLE.FETCHING_PEOPLE, false)
+      });
+    }
+
+    case getStaffEKIDs.case(action.type): {
+      return getStaffEKIDs.reducer(state, action, {
+        REQUEST: () => state.set(PEOPLE.LOADING_STAFF, true),
+        SUCCESS: () => state.set(PEOPLE.STAFF_IDS_TO_EKIDS, fromJS(action.value)),
+        FAILURE: () => state.set(PEOPLE.ERROR, action.value),
+        FINALLY: () => state.set(PEOPLE.LOADING_STAFF, false)
       });
     }
 
@@ -392,14 +423,65 @@ export default function peopleReducer(state :Map = INITIAL_STATE, action :Object
       });
     }
 
-    case updateContactInfo.case(action.type): {
-      return updateContactInfo.reducer(state, action, {
-        REQUEST: () => state.set(PEOPLE.REFRESHING_PERSON_NEIGHBORS, true),
+    case submitContact.case(action.type): {
+      return submitContact.reducer(state, action, {
         SUCCESS: () => {
-          const { personId, contactInformation } = action.value;
-          return state.setIn([PEOPLE.NEIGHBORS, personId, CONTACT_INFORMATION], contactInformation);
+          const { personEKID, contactInfo } = action.value;
+          const updatedContactInfo = state
+            .getIn([PEOPLE.NEIGHBORS, personEKID, CONTACT_INFORMATION], List()).push(contactInfo);
+          return state.setIn([PEOPLE.NEIGHBORS, personEKID, CONTACT_INFORMATION], updatedContactInfo);
+        }
+      });
+    }
+
+    case updateContactsBulk.case(action.type): {
+      return updateContactsBulk.reducer(state, action, {
+        SUCCESS: () => {
+          const { personEKID, contactInformation } = action.value;
+          return state.setIn([PEOPLE.NEIGHBORS, personEKID, CONTACT_INFORMATION], contactInformation);
+        }
+      });
+    }
+
+    case submitExistingHearing.case(action.type): {
+      return submitExistingHearing.reducer(state, action, {
+        SUCCESS: () => {
+          const { hearing, personEKID } = action.value;
+          const personHearings = state.getIn([PEOPLE.NEIGHBORS, personEKID, HEARINGS], List()).push(hearing);
+          return state.setIn([PEOPLE.NEIGHBORS, personEKID, HEARINGS], personHearings);
+        }
+      });
+    }
+
+    case submitHearing.case(action.type): {
+      return submitHearing.reducer(state, action, {
+        SUCCESS: () => {
+          const { hearing, personEKID } = action.value;
+          const personHearings = state.getIn([PEOPLE.NEIGHBORS, personEKID, HEARINGS], List()).push(hearing);
+          return state.setIn([PEOPLE.NEIGHBORS, personEKID, HEARINGS], personHearings);
+        }
+      });
+    }
+
+    case subscribe.case(action.type): {
+      return subscribe.reducer(state, action, {
+        SUCCESS: () => {
+          const { subscription } = action.value;
+          const personDetails = state.get(PEOPLE.PERSON_DATA, Map());
+          const { [PERSON_ID]: personID } = getEntityProperties(personDetails, [PERSON_ID]);
+          return state.setIn([PEOPLE.NEIGHBORS, personID, SUBSCRIPTION, PSA_NEIGHBOR.DETAILS], subscription);
         },
-        FINALLY: () => state.set(PEOPLE.REFRESHING_PERSON_NEIGHBORS, false)
+      });
+    }
+
+    case unsubscribe.case(action.type): {
+      return unsubscribe.reducer(state, action, {
+        SUCCESS: () => {
+          const { subscription } = action.value;
+          const personDetails = state.get(PEOPLE.PERSON_DATA, Map());
+          const { [PERSON_ID]: personID } = getEntityProperties(personDetails, [PERSON_ID]);
+          return state.setIn([PEOPLE.NEIGHBORS, personID, SUBSCRIPTION, PSA_NEIGHBOR.DETAILS], subscription);
+        },
       });
     }
 
@@ -430,6 +512,27 @@ export default function peopleReducer(state :Map = INITIAL_STATE, action :Object
             .set(CHECKIN_APPOINTMENTS, personCheckInAppointments);
 
           return state.setIn([PEOPLE.NEIGHBORS, personId], personNeighbors);
+        }
+      });
+    }
+
+    case updateHearing.case(action.type): {
+      return updateHearing.reducer(state, action, {
+        SUCCESS: () => {
+          const { hearing } = action.value;
+          const personId = state.getIn([PEOPLE.PERSON_DATA, PROPERTY_TYPES.PERSON_ID, 0], '');
+          const { [ENTITY_KEY_ID]: updatedHearingEKID } = getEntityProperties(hearing, [ENTITY_KEY_ID]);
+          let personHearings = state.getIn([PEOPLE.NEIGHBORS, personId, HEARINGS], List());
+          if (hearingIsCancelled(hearing)) {
+            personHearings = personHearings.filter((existingHearing) => {
+              const { [ENTITY_KEY_ID]: hearingEKID } = getEntityProperties(existingHearing, [ENTITY_KEY_ID]);
+              return hearingEKID !== updatedHearingEKID;
+            });
+          }
+          else {
+            personHearings = personHearings.push(hearing);
+          }
+          return state.setIn([PEOPLE.NEIGHBORS, personId, HEARINGS], personHearings);
         }
       });
     }

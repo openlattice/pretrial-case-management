@@ -5,6 +5,7 @@
 import { Map, Set, fromJS } from 'immutable';
 
 import {
+  createCheckinAppointments,
   loadCheckInAppointmentsForDate,
   loadCheckInNeighbors
 } from './CheckInsActionFactory';
@@ -19,11 +20,19 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [CHECK_IN.CHECK_IN_NEIGHBORS_BY_ID]: Map(),
   [CHECK_IN.SUCCESSFUL_IDS]: Set(),
   [CHECK_IN.FAILED_IDS]: Set(),
-  [CHECK_IN.PENDING_IDS]: Set()
+  [CHECK_IN.PENDING_IDS]: Set(),
+  [CHECK_IN.SUBMITTING_CHECKINS]: false
 });
 
 export default function manualRemindersReducer(state :Map<*, *> = INITIAL_STATE, action :Object) {
   switch (action.type) {
+
+    case createCheckinAppointments.case(action.type): {
+      return createCheckinAppointments.reducer(state, action, {
+        REQUEST: () => state.set(CHECK_IN.SUBMITTING_CHECKINS, true),
+        FINALLY: () => state.set(CHECK_IN.SUBMITTING_CHECKINS, false)
+      });
+    }
 
     case loadCheckInAppointmentsForDate.case(action.type): {
       return loadCheckInAppointmentsForDate.reducer(state, action, {

@@ -9,6 +9,7 @@ import { EntityDataModelApiSagas } from 'lattice-sagas';
 import * as AppSagas from '../../containers/app/AppSagas';
 import * as ChargesSagas from '../../containers/charges/ChargesSagas';
 import * as CheckInsSagas from '../../containers/checkins/CheckInsSagas';
+import * as ContactInfoSagas from '../../containers/contactinformation/ContactInfoSagas';
 import * as CourtSagas from '../../containers/court/CourtSagas';
 import * as PersonSagas from '../../containers/person/PersonSagas';
 import * as PeopleSagas from '../../containers/people/PeopleSagas';
@@ -45,19 +46,24 @@ export default function* sagas() :Generator<*, *, *> {
     fork(AuthSagas.watchLogout),
 
     // ChargesSagas
+    fork(ChargesSagas.createChargeWatcher),
     fork(ChargesSagas.deleteChargesWatcher),
     fork(ChargesSagas.loadArrestingAgenciesWatcher),
     fork(ChargesSagas.loadChargesWatcher),
     fork(ChargesSagas.updateChargesWatcher),
 
     // CheckInsSagas
+    fork(CheckInsSagas.createCheckinAppointmentsWatcher),
     fork(CheckInsSagas.loadCheckInAppointmentsForDateWatcher),
     fork(CheckInsSagas.loadCheckInNeighborsWatcher),
 
+    // ContactInfoSagas
+    fork(ContactInfoSagas.submitContactWatcher),
+    fork(ContactInfoSagas.updateContactWatcher),
+    fork(ContactInfoSagas.updateContactsBulkWatcher),
+
     // CourtSagas
     fork(CourtSagas.filterPeopleIdsWithOpenPSAsWatcher),
-    fork(CourtSagas.loadHearingsForDateWatcher),
-    fork(CourtSagas.loadHearingNeighborsWatcher),
     fork(CourtSagas.loadJudgesWatcher),
 
     // DashboardSagas
@@ -82,12 +88,18 @@ export default function* sagas() :Generator<*, *, *> {
     fork(EnrollSagas.getProfileWatcher),
 
     // HearingsSagas
+    fork(HearingsSagas.loadHearingsForDateWatcher),
+    fork(HearingsSagas.loadHearingNeighborsWatcher),
     fork(HearingsSagas.refreshHearingAndNeighborsWatcher),
+    fork(HearingsSagas.submitExistingHearingWatcher),
+    fork(HearingsSagas.submitHearingWatcher),
+    fork(HearingsSagas.updateHearingWatcher),
 
     // Manual Reminders
     fork(ManualRemindersSagas.loadManualRemindersFormWatcher),
     fork(ManualRemindersSagas.loadManualRemindersForDateWatcher),
     fork(ManualRemindersSagas.loadManualRemindersNeighborsByIdWatcher),
+    fork(ManualRemindersSagas.submitManualReminderWatcher),
 
     // SubmitDataSaga
     fork(SubmitSagas.createAssociationsWatcher),
@@ -107,19 +119,24 @@ export default function* sagas() :Generator<*, *, *> {
     fork(PeopleSagas.getPeopleWatcher),
     fork(PeopleSagas.getPersonDataWatcher),
     fork(PeopleSagas.getPersonNeighborsWatcher),
+    fork(PeopleSagas.getStaffEKIDsWatcher),
     fork(PeopleSagas.loadRequiresActionPeopleWatcher),
     fork(PeopleSagas.refreshPersonNeighborsWatcher),
-    fork(PeopleSagas.updateContactInfoWatcher),
 
     // PSA Modal Sagas
     fork(PSAModalSagas.loadPSAModalWatcher),
 
     // PSA Sagas
+    fork(PsaSagas.addCaseToPSAWatcher),
+    fork(PsaSagas.editPSAWatcher),
     fork(PsaSagas.loadDataModelWatcher),
     fork(PsaSagas.loadNeighborsWatcher),
+    fork(PsaSagas.removeCaseFromPSAWatcher),
+    fork(PsaSagas.submitPSAWatcher),
 
     // Release Conditions Sagas
     fork(ReleaseConditionsSagas.loadReleaseConditionsWatcher),
+    fork(ReleaseConditionsSagas.submitReleaseConditionsWatcher),
     fork(ReleaseConditionsSagas.updateOutcomesAndReleaseCondtionsWatcher),
 
     // Reminder Sagas
@@ -146,6 +163,8 @@ export default function* sagas() :Generator<*, *, *> {
     fork(RoutingSagas.goToPathWatcher),
 
     // Subscriptions Sagas
-    fork(SubscriptionsSagas.loadSubcriptionModalWatcher)
+    fork(SubscriptionsSagas.loadSubcriptionModalWatcher),
+    fork(SubscriptionsSagas.subscribeWatcher),
+    fork(SubscriptionsSagas.unsubscribeWatcher)
   ]);
 }

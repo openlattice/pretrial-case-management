@@ -4,29 +4,23 @@
 
 import React from 'react';
 import styled from 'styled-components';
-import { Map } from 'immutable';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
-import addPersonContactInfoConfig from '../../config/formconfig/PersonAddContactInfoConfig';
 import StyledInput from '../../components/controls/StyledInput';
 import InfoButton from '../../components/buttons/InfoButton';
 import CheckboxButton from '../../components/controls/StyledCheckboxButton';
-import { FORM_IDS } from '../../utils/consts/Consts';
 import { phoneIsValid, emailIsValid, formatPhoneNumber } from '../../utils/ContactInfoUtils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
 import { InputGroup } from '../../components/person/PersonFormTags';
 import { CONTACT_METHODS } from '../../utils/consts/ContactInfoConsts';
-import {
-  APP,
-  STATE,
-  PEOPLE,
-  SUBMIT
-} from '../../utils/consts/FrontEndStateConsts';
+import { APP } from '../../utils/consts/FrontEndStateConsts';
+import { CONTACT_INFO_ACTIONS } from '../../utils/consts/redux/ContactInformationConsts';
+import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { getReqState, requestIsPending, requestIsSuccess } from '../../utils/consts/redux/ReduxUtils';
 
-import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
-import * as PeopleActionFactory from './PeopleActionFactory';
+import * as ContactInfoActions from './ContactInfoActions';
 
 
 /*
@@ -87,22 +81,13 @@ const AddContactButton = styled(InfoButton)`
 `;
 
 type Props = {
-  app :Map<*, *>,
-  personId :string,
-  refreshingPersonNeighbors :boolean,
-  submitting :boolean,
+  personEKID :string,
+  submitContactReqState :RequestState,
   actions :{
-    refreshPersonNeighbors :(values :{ personId :string }) => void,
-    submit :(values :{
-      config :Map<*, *>,
-      values :Map<*, *>,
-      callback :() => void
-    }) => void,
-    updateContactInfo :(values :{
-      entities :Map<*, *>,
-      personId :string,
-      callback :() => void
-    }) => void,
+    submitContact :(values :{
+      contactEntity :Object,
+      personEKID :string
+    }) => void
   }
 }
 
@@ -124,6 +109,11 @@ class NewContactForm extends React.Component<Props, State> {
   }
 
   static getDerivedStateFromProps(nextProps, prevState) {
+    const { submitContactReqState } = nextProps;
+    const contactSubmitSuccess = requestIsSuccess(submitContactReqState);
+    if (prevState.addingNewContact && contactSubmitSuccess) {
+      return INITIAL_STATE;
+    }
     if (nextProps.editing !== prevState.addingNewContact) {
       return { addingNewContact: nextProps.editing };
     }
@@ -133,20 +123,13 @@ class NewContactForm extends React.Component<Props, State> {
     return null;
   }
 
-  submitCallback = () => {
-    const { submitCallback } = this.state;
-    if (submitCallback) submitCallback();
-    this.refreshPersonNeighborsCallback();
-  }
-
   createNewContact = () => {
     const { state } = this;
     const {
       actions,
-      app,
-      personId
+      personEKID
     } = this.props;
-    const { submit } = actions;
+    const { submitContact } = actions;
 
     const email = state[PROPERTY_TYPES.EMAIL];
     const phone = state[PROPERTY_TYPES.PHONE];
@@ -173,30 +156,16 @@ class NewContactForm extends React.Component<Props, State> {
     }
 
     if (newContactFields && (email.length || phone.length)) {
-      newContactFields = Object.assign({}, newContactFields, {
-        [FORM_IDS.PERSON_ID]: personId
-      });
-      const callback = this.submitCallback;
-      submit({
-        app,
-        config: addPersonContactInfoConfig,
-        values: newContactFields,
-        callback
-      });
+      submitContact({ contactEntity: newContactFields, personEKID });
     }
   }
 
-  refreshPersonNeighborsCallback = () => {
-    const { actions, personId } = this.props;
-    actions.refreshPersonNeighbors({ personId });
-    this.setState(INITIAL_STATE);
-  }
-
   renderAddContactButton = () => {
-    const { submitting } = this.props;
+    const { submitContactReqState } = this.props;
+    const submittingContactInfo = requestIsPending(submitContactReqState);
     return (
       <AddContactButton
-          disabled={submitting || !this.isReadyToSubmit()}
+          disabled={submittingContactInfo || !this.isReadyToSubmit()}
           onClick={this.createNewContact}>
         Add
       </AddContactButton>
@@ -241,11 +210,12 @@ class NewContactForm extends React.Component<Props, State> {
   }
 
   renderContact = () => {
-    const { submitting, refreshingPersonNeighbors } = this.props;
+    const { submitContactReqState } = this.props;
+    const submittingContactInfo = requestIsPending(submitContactReqState);
     const { contact } = this.state;
     return (
       <StyledInputWithErrors
-          disabled={submitting || refreshingPersonNeighbors}
+          disabled={submittingContactInfo}
           invalid={!this.contactIsValid()}
           name="contact"
           value={contact}
@@ -254,7 +224,8 @@ class NewContactForm extends React.Component<Props, State> {
   }
 
   isMobile = () => {
-    const { submitting, refreshingPersonNeighbors } = this.props;
+    const { submitContactReqState } = this.props;
+    const submittingContactInfo = requestIsPending(submitContactReqState);
     const { state } = this;
     const { contactMethod } = this.state;
     const isMobile = state[PROPERTY_TYPES.IS_MOBILE];
@@ -263,7 +234,7 @@ class NewContactForm extends React.Component<Props, State> {
         <InputGroup>
           <InputLabel>Mobile</InputLabel>
           <CheckboxButton
-              disabled={submitting || refreshingPersonNeighbors}
+              disabled={submittingContactInfo}
               name={PROPERTY_TYPES.IS_MOBILE}
               onChange={this.updateCheckbox}
               value={isMobile}
@@ -284,7 +255,8 @@ class NewContactForm extends React.Component<Props, State> {
   }
 
   isPreferred = () => {
-    const { submitting, refreshingPersonNeighbors } = this.props;
+    const { submitContactReqState } = this.props;
+    const submittingContactInfo = requestIsPending(submitContactReqState);
     const { state } = this;
     const isPreferred = state[PROPERTY_TYPES.IS_PREFERRED];
     const { contactMethod } = state;
@@ -293,7 +265,7 @@ class NewContactForm extends React.Component<Props, State> {
       <InputGroup>
         <InputLabel>Preferred</InputLabel>
         <CheckboxButton
-            disabled={submitting || refreshingPersonNeighbors || isEmail}
+            disabled={submittingContactInfo || isEmail}
             name={PROPERTY_TYPES.IS_PREFERRED}
             onChange={this.updateCheckbox}
             value={isPreferred}
@@ -325,28 +297,21 @@ class NewContactForm extends React.Component<Props, State> {
 
 function mapStateToProps(state) {
   const app = state.get(STATE.APP);
-  const submit = state.get(STATE.SUBMIT);
-  const people = state.get(STATE.PEOPLE);
+  const contactInfo = state.get(STATE.CONTACT_INFO);
   return {
     app,
     [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
     [APP.SELECTED_ORG_SETTINGS]: app.get(APP.SELECTED_ORG_SETTINGS),
 
-    [PEOPLE.REFRESHING_PERSON_NEIGHBORS]: people.get(PEOPLE.REFRESHING_PERSON_NEIGHBORS),
-
-    [SUBMIT.SUBMITTING]: submit.get(SUBMIT.SUBMITTING, false)
+    submitContactReqState: getReqState(contactInfo, CONTACT_INFO_ACTIONS.SUBMIT_CONTACT),
   };
 }
 
 function mapDispatchToProps(dispatch :Function) :Object {
   const actions :{ [string] :Function } = {};
 
-  Object.keys(SubmitActionFactory).forEach((action :string) => {
-    actions[action] = SubmitActionFactory[action];
-  });
-
-  Object.keys(PeopleActionFactory).forEach((action :string) => {
-    actions[action] = PeopleActionFactory[action];
+  Object.keys(ContactInfoActions).forEach((action :string) => {
+    actions[action] = ContactInfoActions[action];
   });
 
   return {

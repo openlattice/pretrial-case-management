@@ -5,6 +5,7 @@ export const STATE = {
   AUTH: 'auth',
   CHARGES: 'charges',
   CHECK_INS: 'checkIns',
+  CONTACT_INFO: 'contactInformation',
   COURT: 'court',
   DASHBOARD: 'dashboard',
   DOWNLOAD: 'download',
@@ -14,6 +15,7 @@ export const STATE = {
   MANUAL_REMINDERS: 'manualReminders',
   PSA_MODAL: 'psaModal',
   PSA: 'psa',
+  PERSON: 'person',
   PEOPLE: 'people',
   RELEASE_CONDITIONS: 'releaseConditions',
   REMINDERS: 'reminders',
@@ -55,7 +57,8 @@ export const APP = {
   SELECTED_ORG_TITLE: 'selectedOrganizationTitle',
   APP_SETTINGS_ID: 'appSettingsEntitySetId',
   SELECTED_ORG_SETTINGS: 'selectedOrganizationSettings',
-  SETTINGS_BY_ORG_ID: 'appSettingsByOrgId'
+  SETTINGS_BY_ORG_ID: 'appSettingsByOrgId',
+  STAFF_IDS_TO_EKIDS: 'staffIdsToEntityKeyIds'
 };
 
 // CHARGES
@@ -72,7 +75,9 @@ export const CHARGES = {
   DMF_STEP_4: 'dmfStep4Charges',
   BRE: 'bookingReleaseExceptionCharges',
   BHE: 'bookingHoldExceptionCharges',
-  LOADING: 'loadingCharges'
+  LOADING: 'loadingCharges',
+  SUBMITTING_CHARGE: 'submittingCharge',
+  UPDATING_CHARGE: 'updatingCharge'
 };
 
 // Check-Ins
@@ -82,29 +87,20 @@ export const CHECK_IN = {
   CHECK_IN_IDS: 'checkInIds',
   CHECK_INS_BY_ID: 'checkInsById',
   LOADING_CHECK_IN_NEIGHBORS: 'loadingCheckInNieghbors',
-  CHECK_IN_NEIGHBORS_BY_ID: 'checkInNeighborsById'
+  CHECK_IN_NEIGHBORS_BY_ID: 'checkInNeighborsById',
+  SUBMITTING_CHECKINS: 'submittingCheckins',
 };
 
 // Court
 
 export const COURT = {
   COURT_DATE: 'courtDate',
-  HEARINGS_TODAY: 'hearingsToday',
-  HEARINGS_BY_TIME: 'hearingsByTime',
-  HEARINGS_NEIGHBORS_BY_ID: 'hearingNeighborsById',
   PEOPLE_WITH_OPEN_PSAS: 'peopleWithOpenPsas',
   PEOPLE_WITH_MULTIPLE_OPEN_PSAS: 'peopleWithMultipleOpenPsas',
   PEOPLE_RECEIVING_REMINDERS: 'peopleReceivingReminders',
-  LOADING_HEARINGS: 'isLoadingHearings',
-  LOADING_HEARING_NEIGHBORS: 'isLoadingHearingsNeighbors',
   LOADING_PSAS: 'isLoadingPSAs',
-  LOADING_ERROR: 'loadingError',
-  LOADING_HEARINGS_ERROR: 'loadingHearingError',
   COUNTY: 'county',
   COURTROOM: 'courtroom',
-  COURTROOMS: 'courtrooms',
-  COURTROOM_OPTIONS: 'courtroomOptions',
-  LOADING_COURTROOM_OPTIONS: 'loadingCoutrooms',
   OPEN_PSAS: 'openPSAs',
   SCORES_AS_MAP: 'scoresAsMap',
   PSA_EDIT_DATES: 'psaEditDatesById',
@@ -113,8 +109,6 @@ export const COURT = {
 
   // JUDGES
   ALL_JUDGES: 'allJudges',
-  PENNINGTON_JUDGES: 'penningtonJudges',
-  MINNEHAHA_JUDGES: 'minnehahaJudges',
   LOADING_JUDGES: 'isLoadingJudges',
   LOADING_JUDGES_ERROR: 'loadingJudgesError'
 };
@@ -158,33 +152,26 @@ export const ENROLL = {
   ERROR: 'errorMessage'
 };
 
-// Hearings
-
-export const HEARINGS = {
-  SETTINGS_MODAL_OPEN: 'hearingSettingsModalOpen',
-  REFRESHING_HEARING_AND_NEIGHBORS: 'refreshingHearingAndNeighbors',
-  UPDATED_HEARING: 'updatedHearing',
-  UPDATED_HEARING_NEIGHBORS: 'updatedHearingNeighbors',
-  DATE: 'hearingDate',
-  TIME: 'hearingTime',
-  COURTROOM: 'hearingCourtroom',
-  JUDGE: 'hearingJudge'
-};
 
 // Manual Reminders
 
 export const MANUAL_REMINDERS = {
+  FAILED_REMINDER_IDS: 'failedManualReminderIds',
+  LOADED: 'manualRemindersLoaded',
+  LOADING_FORM: 'loadingManualReminderForm',
+  LOADING_MANUAL_REMINDERS: 'loadingManualReminders',
+  LOADING_REMINDER_NEIGHBORS: 'loadingManualReminderNeighbors',
+  MANUAL_REMINDER_NEIGHBORS: 'manualReminderNeighborsById',
+  PEOPLE_NEIGHBORS: 'peopleNeighborsForManualReminder',
+  PEOPLE_RECEIVING_REMINDERS: 'peopleReceivingManualReminders',
   REMINDER_IDS: 'manualReminderIds',
   REMINDERS_BY_ID: 'manualRemindersById',
   SUCCESSFUL_REMINDER_IDS: 'successfulManualReminderIds',
-  PEOPLE_RECEIVING_REMINDERS: 'peopleReceivingManualReminders',
-  FAILED_REMINDER_IDS: 'failedManualReminderIds',
-  LOADING_MANUAL_REMINDERS: 'loadingManualReminders',
-  LOADED: 'manualRemindersLoaded',
-  MANUAL_REMINDER_NEIGHBORS: 'manualReminderNeighborsById',
-  LOADING_REMINDER_NEIGHBORS: 'loadingManualReminderNeighbors',
-  LOADING_FORM: 'loadingManualReminderForm',
-  PEOPLE_NEIGHBORS: 'peopleNeighborsForManualReminder'
+  SUBMITTED_MANUAL_REMINDER: 'submittedManualReminder',
+  SUBMITTED_MANUAL_REMINDER_NEIGHBORS: 'submittedManualReminderNeighbors',
+  SUBMITTING_MANUAL_REMINDER: 'submittingManualReminder',
+  SUBMISSION_ERROR: 'manualReminderSubmissionError',
+  UPDATING_HEARING: 'updatingHearing'
 };
 
 // PSA Modal
@@ -214,12 +201,15 @@ export const PSA_MODAL = {
   MANUAL_CHARGE_HISTORY: 'manualChargeHistory',
   SENTENCE_HISTORY: 'sentenceHistory',
   FTA_HISTORY: 'ftaHistory',
-  PERSON_HEARINGS: 'personHearings'
+  PERSON_HEARINGS: 'personHearings',
+  ERROR: 'errorMessage'
 };
 
 // PSA
 
 export const PSA_FORM = {
+  ADDING_CASE_TO_PSA: 'addingCaseToPSA',
+  ARREST_ID: 'arrestId',
   ARREST_OPTIONS: 'arrestOptions',
   ALL_CASES: 'allCasesForPerson',
   ALL_CHARGES: 'allChargesForPerson',
@@ -231,19 +221,22 @@ export const PSA_FORM = {
   ALL_MANUAL_CHARGES: 'allManualCharges',
   ALL_HEARINGS: 'allHearings',
   ALL_CONTACTS: 'allContacts',
-  SUBSCRIPTION: 'subscription',
   CHARGES: 'charges',
-  SELECT_PERSON: 'selectedPerson',
-  OPEN_PSAS: 'openPSAs',
-  ARREST_ID: 'arrestId',
-  SELECT_PRETRIAL_CASE: 'selectedPretrialCase',
-  PSA: 'psa',
   DATA_MODEL: 'dataModel',
+  EDITING_PSA: 'editingPSA',
   ENTITY_SET_LOOKUP: 'entitySetLookup',
-  SUBMITTED: 'isSubmitted',
-  SUBMITTING: 'isSubmitting',
   LOADING_NEIGHBORS: 'isLoadingNeighbors',
-  SUBMIT_ERROR: 'submitError'
+  OPEN_PSAS: 'openPSAs',
+  PSA: 'psa',
+  PSA_SUBMISSION_COMPLETE: 'psaSubmissionComplete',
+  REMOVING_CASE_FROM_PSA: 'removingCaseFromPSA',
+  SELECT_PRETRIAL_CASE: 'selectedPretrialCase',
+  SELECT_PERSON: 'selectedPerson',
+  SUBMIT_ERROR: 'submitError',
+  SUBMITTED_PSA: 'submittedPSA',
+  SUBMITTED_PSA_NEIGHBORS: 'submittedPSANeighbors',
+  SUBMITTING_PSA: 'submittingPSA',
+  SUBSCRIPTION: 'subscription'
 };
 
 // People
@@ -269,21 +262,10 @@ export const PEOPLE = {
   MULTIPLE_PSA_PEOPLE: 'peopleWithMultiplePSAs',
   RECENT_FTA_PEOPLE: 'peopleWithRecentFTAs',
   NO_PENDING_CHARGES_PEOPLE: 'peopleWithNoPendingCharges',
-  REQUIRES_ACTION_LOADING: 'loadingRequiresActionPeople'
+  REQUIRES_ACTION_LOADING: 'loadingRequiresActionPeople',
+  ERROR: 'errorMessage'
 };
 
-// Release Conditions
-
-export const RELEASE_COND = {
-  SELECTED_HEARING: 'selectedHearing',
-  HAS_OUTCOME: 'hasOutcome',
-  HEARING_NEIGHBORS: 'hearingNeighbors',
-  PERSON_NEIGHBORS: 'personNeighbors',
-  PSA_NEIGHBORS: 'psaNeighbors',
-  LOADING_RELEASE_CONDITIONS: 'loadingReleaseCondtions',
-  REFRESHING_RELEASE_CONDITIONS: 'refreshingReleaseConditions',
-  REFRESHING_SELECTED_HEARING: 'refreshingSelectedHearing'
-};
 
 // Reminders
 
@@ -368,7 +350,7 @@ export const SUBMIT = {
   SUBMITTING: 'submitting',
   SUCCESS: 'submitSuccess',
   SUBMITTED: 'submitted',
-  ERROR: 'error'
+  ERROR: 'errorMessage'
 };
 
 // Subscriptions

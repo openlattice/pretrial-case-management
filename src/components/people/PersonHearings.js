@@ -7,6 +7,7 @@ import styled from 'styled-components';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { Constants } from 'lattice';
+import type { RequestState } from 'redux-reqseq';
 import {
   List,
   Map,
@@ -15,23 +16,16 @@ import {
 } from 'immutable';
 
 import HearingCardsWithTitle from '../hearings/HearingCardsWithTitle';
-import InfoButton from '../buttons/InfoButton';
 import HearingsTable from '../hearings/HearingsTable';
 import ReleaseConditionsModal from '../releaseconditions/ReleaseConditionsModal';
 import LogoLoader from '../LogoLoader';
-import psaHearingConfig from '../../config/formconfig/PSAHearingConfig';
-import { getEntitySetIdFromApp } from '../../utils/AppUtils';
-import { FORM_IDS, ID_FIELD_NAMES } from '../../utils/consts/Consts';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import {
   APP,
   COURT,
-  EDM,
-  HEARINGS,
   PEOPLE,
   PSA_NEIGHBOR,
-  REVIEW,
-  STATE
+  REVIEW
 } from '../../utils/consts/FrontEndStateConsts';
 import {
   Count,
@@ -42,11 +36,12 @@ import {
   Wrapper
 } from '../../utils/Layout';
 
-import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
-import * as DataActionFactory from '../../utils/data/DataActionFactory';
-import * as ReviewActionFactory from '../../containers/review/ReviewActionFactory';
-import * as CourtActionFactory from '../../containers/court/CourtActionFactory';
-import * as PeopleActionFactory from '../../containers/people/PeopleActionFactory';
+
+import { HEARINGS_ACTIONS, HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
+import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUtils';
+
+import { updateHearing } from '../../containers/hearings/HearingsActions';
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
@@ -77,43 +72,28 @@ const TitleWrapper = styled.div`
   align-items: center;
 `;
 
-const StyledInfoButton = styled(InfoButton)`
-  width: 178px;
-  height: 40px;
-  padding: 0;
-  margin: 0;
-`;
-
 type Props = {
-  app :Map<*, *>,
   chargeHistory :Map<*, *>,
   defaultBond :Map<*, *>,
   defaultConditions :Map<*, *>,
   defaultDMF :Map<*, *>,
   dmfId :string,
-  fqnToIdMap :Map<*, *>,
   hearingNeighborsById :Map<*, *>,
   jurisdiction :?string,
   loading :boolean,
   neighbors :Map<*, *>,
   hearings :List<*, *>,
+  personEKID :?string,
   personId :?string,
   psaEntityKeyId :Map<*, *>,
   psaId :?string,
   psaIdsRefreshing :List<*, *>,
-  refreshingHearingAndNeighbors :boolean,
+  refreshHearingAndNeighborsReqState :RequestState,
   refreshingPersonNeighbors :boolean,
   actions :{
     deleteEntity :(values :{
       entitySetId :string,
       entityKeyId :string
-    }) => void,
-    loadHearingNeighbors :(hearingIds :string[]) => void,
-    submit :(values :{
-      app :Map<*, *>,
-      config :Map<*, *>,
-      values :Map<*, *>,
-      callback :() => void
     }) => void,
     refreshPSANeighbors :({ id :string }) => void,
     refreshPersonNeighbors :(values :{ personId :string }) => void,
@@ -147,67 +127,19 @@ class PersonHearings extends React.Component<Props, State> {
     };
   }
 
-  refreshPersonNeighborsCallback = () => {
-    const { actions, personId } = this.props;
-    actions.refreshPersonNeighbors({ personId });
-  }
-
-  cancelHearing = (entityKeyId) => {
-    const { actions, app, fqnToIdMap } = this.props;
-    const hearingEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.HEARINGS);
-    const values = {
-      [entityKeyId]: {
-        [fqnToIdMap.get(PROPERTY_TYPES.HEARING_INACTIVE)]: [true]
-      }
-    };
-    actions.updateEntity({
-      entitySetId: hearingEntitySetId,
-      entities: values,
-      updateType: 'PartialReplace',
-      callback: this.refreshPersonNeighborsCallback
+  cancelHearing = (oldHearing) => {
+    const { actions, personEKID } = this.props;
+    const newHearing = { [PROPERTY_TYPES.HEARING_INACTIVE]: [true] };
+    actions.updateHearing({
+      newHearing,
+      oldHearing,
+      personEKID
     });
   }
 
   onClose = () => this.setState({
     releaseConditionsModalOpen: false
   })
-
-
-  renderCreateHearingButton = () => (
-    <StyledInfoButton onClick={this.manuallyCreatingHearing}>Create New Hearing</StyledInfoButton>
-  )
-
-  renderAddHearingButton = () => (
-    <StyledInfoButton onClick={this.openNewHearingModal}>Add New Hearing</StyledInfoButton>
-  )
-
-  selectHearing = (hearingDetails) => {
-    const {
-      app,
-      psaId,
-      personId,
-      psaEntityKeyId,
-      actions
-    } = this.props;
-
-    const values = Object.assign({}, hearingDetails, {
-      [ID_FIELD_NAMES.PSA_ID]: psaId,
-      [FORM_IDS.PERSON_ID]: personId
-    });
-
-    const callback = psaEntityKeyId ? () => actions.refreshPSANeighbors({ id: psaEntityKeyId }) : () => {};
-    actions.submit({
-      app,
-      values,
-      config: psaHearingConfig,
-      callback
-    });
-  }
-
-  selectExistingHearing = (row, hearingId) => {
-    const hearingWithOnlyId = { [ID_FIELD_NAMES.HEARING_ID]: hearingId };
-    this.selectHearing(hearingWithOnlyId);
-  }
 
   selectingReleaseConditions = (row, hearingId, entityKeyId) => {
     this.setState({
@@ -224,7 +156,7 @@ class PersonHearings extends React.Component<Props, State> {
       defaultDMF,
       dmfId,
       hearingNeighborsById,
-      refreshingHearingAndNeighbors,
+      refreshHearingAndNeighborsReqState,
       jurisdiction,
       neighbors,
       psaEntityKeyId,
@@ -240,6 +172,7 @@ class PersonHearings extends React.Component<Props, State> {
       .getIn([selectedHearingEntityKeyId, PRETRIAL_CASES, PSA_NEIGHBOR.DETAILS], Map());
     caseHistory = caseHistory.size ? fromJS([caseHistory]) : List();
     const refreshingNeighbors = psaIdsRefreshing.has(psaEntityKeyId);
+    const refreshingHearingAndNeighbors = requestIsPending(refreshHearingAndNeighborsReqState);
     const refreshing = (refreshingHearingAndNeighbors || refreshingNeighbors);
 
     return (
@@ -325,22 +258,18 @@ class PersonHearings extends React.Component<Props, State> {
 function mapStateToProps(state) {
   const app = state.get(STATE.APP);
   const court = state.get(STATE.COURT);
-  const edm = state.get(STATE.EDM);
   const hearings = state.get(STATE.HEARINGS);
   const review = state.get(STATE.REVIEW);
   const people = state.get(STATE.PEOPLE);
   return {
-    app,
     [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
     [APP.SELECTED_ORG_SETTINGS]: app.get(APP.SELECTED_ORG_SETTINGS),
 
-    [COURT.LOADING_HEARING_NEIGHBORS]: court.get(COURT.LOADING_HEARING_NEIGHBORS),
-    [COURT.HEARINGS_NEIGHBORS_BY_ID]: court.get(COURT.HEARINGS_NEIGHBORS_BY_ID),
     [COURT.ALL_JUDGES]: court.get(COURT.ALL_JUDGES),
 
-    [HEARINGS.REFRESHING_HEARING_AND_NEIGHBORS]: hearings.get(HEARINGS.REFRESHING_HEARING_AND_NEIGHBORS),
-
-    [EDM.FQN_TO_ID]: edm.get(EDM.FQN_TO_ID),
+    // Hearings
+    refreshHearingAndNeighborsReqState: getReqState(hearings, HEARINGS_ACTIONS.REFRESH_HEARING_AND_NEIGHBORS),
+    [HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID]: hearings.get(HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID),
 
     [PEOPLE.REFRESHING_PERSON_NEIGHBORS]: people.get(PEOPLE.REFRESHING_PERSON_NEIGHBORS),
 
@@ -355,25 +284,7 @@ function mapStateToProps(state) {
 function mapDispatchToProps(dispatch :Function) :Object {
   const actions :{ [string] :Function } = {};
 
-  Object.keys(DataActionFactory).forEach((action :string) => {
-    actions[action] = DataActionFactory[action];
-  });
-
-  Object.keys(SubmitActionFactory).forEach((action :string) => {
-    actions[action] = SubmitActionFactory[action];
-  });
-
-  Object.keys(PeopleActionFactory).forEach((action :string) => {
-    actions[action] = PeopleActionFactory[action];
-  });
-
-  Object.keys(ReviewActionFactory).forEach((action :string) => {
-    actions[action] = ReviewActionFactory[action];
-  });
-
-  Object.keys(CourtActionFactory).forEach((action :string) => {
-    actions[action] = CourtActionFactory[action];
-  });
+  actions.updateHearing = updateHearing;
 
   return {
     actions: {

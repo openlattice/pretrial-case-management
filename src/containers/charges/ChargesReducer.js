@@ -1,16 +1,33 @@
 /*
  * @flow
  */
-import { Map, Set, fromJS } from 'immutable';
+import {
+  Set,
+  Map,
+  fromJS
+} from 'immutable';
 
+import { getEntityProperties } from '../../utils/DataUtils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { CHARGES } from '../../utils/consts/FrontEndStateConsts';
+import { CHARGE_TYPES } from '../../utils/consts/ChargeConsts';
 import {
+  createCharge,
   deleteCharge,
   loadArrestingAgencies,
   loadCharges,
   updateCharge
 } from './ChargesActionFactory';
+
+const {
+  BHE,
+  BRE,
+  CHARGE_IS_VIOLENT,
+  CHARGE_DMF_STEP_2,
+  CHARGE_DMF_STEP_4,
+  REFERENCE_CHARGE_STATUTE,
+  REFERENCE_CHARGE_DESCRIPTION,
+} = PROPERTY_TYPES;
 
 const INITIAL_STATE :Map<*, *> = fromJS({
   [CHARGES.ARRESTING_AGENCIES]: Map(),
@@ -25,18 +42,89 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [CHARGES.DMF_STEP_4]: Map(),
   [CHARGES.BRE]: Map(),
   [CHARGES.BHE]: Map(),
-  [CHARGES.LOADING]: false
+  [CHARGES.LOADING]: false,
+  [CHARGES.SUBMITTING_CHARGE]: false,
+  [CHARGES.UPDATING_CHARGE]: false,
 });
 
-const CHARGE_PT_PAIRS = {
-  [PROPERTY_TYPES.CHARGE_DMF_STEP_2]: CHARGES.DMF_STEP_2,
-  [PROPERTY_TYPES.CHARGE_DMF_STEP_4]: CHARGES.DMF_STEP_4,
-  [PROPERTY_TYPES.BRE]: CHARGES.BRE,
-  [PROPERTY_TYPES.BHE]: CHARGES.BHE
+const prepareNewChargeState = (state, value, deletingCharge) => {
+  const {
+    charge,
+    chargeEKID,
+    chargeType,
+    orgId,
+  } = value;
+  const fieldOfState = chargeType === CHARGE_TYPES.COURT ? CHARGES.COURT : CHARGES.ARREST;
+  const violentChargeField = chargeType === CHARGE_TYPES.COURT ? CHARGES.COURT_VIOLENT : CHARGES.ARREST_VIOLENT;
+
+  const {
+    [BHE]: chargeIsBHE,
+    [BRE]: chargeIsBRE,
+    [CHARGE_IS_VIOLENT]: chargeIsViolent,
+    [CHARGE_DMF_STEP_2]: chargeIsStep2,
+    [CHARGE_DMF_STEP_4]: chargeIsStep4,
+    [REFERENCE_CHARGE_DESCRIPTION]: description,
+    [REFERENCE_CHARGE_STATUTE]: statute
+  } = getEntityProperties(charge,
+    [
+      CHARGE_IS_VIOLENT,
+      CHARGE_DMF_STEP_2,
+      CHARGE_DMF_STEP_4,
+      BHE,
+      BRE,
+      REFERENCE_CHARGE_STATUTE,
+      REFERENCE_CHARGE_DESCRIPTION
+    ]);
+
+  let nextState = state;
+
+  const setChargeInState = field => nextState.setIn(
+    [field, orgId, statute],
+    nextState.getIn([field, orgId, statute], Set()).add(description)
+  );
+
+  const removeChargeInState = field => nextState.setIn(
+    [field, orgId, statute],
+    nextState.getIn([field, orgId, statute], Set()).delete(description)
+  );
+
+  if (charge.size) {
+    if (deletingCharge) {
+      nextState = nextState.deleteIn([fieldOfState, orgId, chargeEKID]);
+      if (chargeIsViolent) nextState = removeChargeInState(violentChargeField);
+      if (chargeIsStep2) nextState = removeChargeInState(CHARGES.DMF_STEP_2);
+      if (chargeIsStep4) nextState = removeChargeInState(CHARGES.DMF_STEP_4);
+      if (chargeIsBHE) nextState = removeChargeInState(CHARGES.BHE);
+      if (chargeIsBRE) nextState = removeChargeInState(CHARGES.BRE);
+    }
+    else {
+      nextState = nextState.setIn([fieldOfState, orgId, chargeEKID], charge);
+      if (chargeIsViolent) nextState = setChargeInState(violentChargeField);
+      else nextState = removeChargeInState(violentChargeField);
+      if (chargeIsStep2) nextState = setChargeInState(CHARGES.DMF_STEP_2);
+      else nextState = removeChargeInState(CHARGES.DMF_STEP_2);
+      if (chargeIsStep4) nextState = setChargeInState(CHARGES.DMF_STEP_4);
+      else nextState = removeChargeInState(CHARGES.DMF_STEP_4);
+      if (chargeIsBHE) nextState = setChargeInState(CHARGES.BHE);
+      else nextState = removeChargeInState(CHARGES.BHE);
+      if (chargeIsBRE) nextState = setChargeInState(CHARGES.BRE);
+      else nextState = removeChargeInState(CHARGES.BRE);
+    }
+  }
+
+  return nextState;
 };
 
 export default function chargesReducer(state :Map<*, *> = INITIAL_STATE, action :Object) {
   switch (action.type) {
+
+    case createCharge.case(action.type): {
+      return createCharge.reducer(state, action, {
+        REQUEST: () => state.set(CHARGES.SUBMITTING_CHARGE, true),
+        SUCCESS: () => prepareNewChargeState(state, action.value, false),
+        FINALLY: () => state.set(CHARGES.SUBMITTING_CHARGE, false)
+      });
+    }
 
     case loadArrestingAgencies.case(action.type): {
       return loadArrestingAgencies.reducer(state, action, {
@@ -51,49 +139,17 @@ export default function chargesReducer(state :Map<*, *> = INITIAL_STATE, action 
 
     case deleteCharge.case(action.type): {
       return deleteCharge.reducer(state, action, {
-        SUCCESS: () => {
-          const { entityKeyId, selectedOrganizationId, chargePropertyType } = action.value;
-          return state.deleteIn([chargePropertyType, selectedOrganizationId, entityKeyId]);
-        }
+        REQUEST: () => state.set(CHARGES.DELETING_CHARGE, true),
+        SUCCESS: () => prepareNewChargeState(state, action.value, true),
+        FINALLY: () => state.set(CHARGES.DELETING_CHARGE, false)
       });
     }
 
     case updateCharge.case(action.type): {
       return updateCharge.reducer(state, action, {
-        SUCCESS: () => {
-          const {
-            entity,
-            entityKeyId,
-            selectedOrganizationId,
-            chargePropertyType
-          } = action.value;
-          const charge = fromJS(entity);
-
-          const statute = charge.getIn([PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE, 0], '');
-          const description = charge.getIn([PROPERTY_TYPES.REFERENCE_CHARGE_DESCRIPTION, 0], '');
-
-          let newState = state.setIn([chargePropertyType, selectedOrganizationId, entityKeyId], charge);
-
-          if (charge.getIn([PROPERTY_TYPES.CHARGE_IS_VIOLENT, 0], false)) {
-            const chargeField = chargePropertyType === CHARGES.ARREST ? CHARGES.ARREST_VIOLENT : CHARGES.COURT_VIOLENT;
-            newState = newState.setIn(
-              [chargeField, selectedOrganizationId, statute],
-              newState.getIn([chargeField, selectedOrganizationId, statute], Set()).add(description)
-            );
-          }
-
-          Object.entries(CHARGE_PT_PAIRS).forEach(([propertyType, chargeField]) => {
-            let descriptions = newState.getIn([chargeField, selectedOrganizationId, statute], Set());
-            if (charge.getIn([propertyType, 0], false)) {
-              descriptions = descriptions.add(description);
-            }
-            else if (newState.getIn([chargeField, selectedOrganizationId, statute])) {
-              descriptions = descriptions.delete(description);
-            }
-            newState = newState.setIn([chargeField, selectedOrganizationId, statute], descriptions);
-          });
-          return newState;
-        }
+        REQUEST: () => state.set(CHARGES.UPDATING_CHARGE, true),
+        SUCCESS: () => prepareNewChargeState(state, action.value, false),
+        FINALLY: () => state.set(CHARGES.UPDATING_CHARGE, false)
       });
     }
 

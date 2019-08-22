@@ -129,16 +129,6 @@ const Error = styled.div`
   margin-top: 30px;
 `;
 
-const LoadingReports = styled.div`
-  height: 200px;
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  padding: 30px;
-`;
-
 type Props = {
   actions :{
     downloadPsaForms :(value :{

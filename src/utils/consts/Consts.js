@@ -156,6 +156,7 @@ export const CONTEXT = {
   COURT: 'Court',
   DEMO_ORG: 'Court (Demo)',
   COURT_MINN: 'Court (Minnehaha)',
+  COURT_LINCOLN: 'Court (Lincoln)',
   COURT_PENN: 'Court (Pennington)',
   COURT_SHELBY: 'Court (Shelby)',
   BOOKING: 'Booking'
@@ -310,7 +311,9 @@ export const RELEASE_CONDITIONS = {
 
 export const JURISDICTION = {
   [CONTEXT.COURT_PENN]: 'Pennington County, South Dakota',
+  [CONTEXT.COURT_LINCOLN]: 'Lincoln County, South Dakota',
   [CONTEXT.COURT_MINN]: 'Minnehaha County, South Dakota',
+  [CONTEXT.DEMO_ORG]: 'San Mateo County, California',
   [CONTEXT.BOOKING]: 'Pennington County, South Dakota'
 };
 

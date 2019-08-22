@@ -2,7 +2,7 @@
  * @flow
  */
 
-import moment from 'moment';
+import { DateTime } from 'luxon';
 import type { SequenceAction } from 'redux-reqseq';
 import { Constants, SearchApi, Models } from 'lattice';
 import { SearchApiActions, SearchApiSagas } from 'lattice-sagas';
@@ -21,19 +21,18 @@ import {
 
 import exportPDFList from '../../utils/CourtRemindersPDFUtils';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
-import { hearingNeedsReminder } from '../../utils/RemindersUtils';
 import { hearingIsCancelled } from '../../utils/HearingUtils';
 import { getPropertyTypeId } from '../../edm/edmUtils';
 import { MAX_HITS, PSA_STATUSES } from '../../utils/consts/Consts';
-import { toISODate } from '../../utils/FormattingUtils';
-import { addWeekdays, getEntityProperties, getSearchTerm } from '../../utils/DataUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { getUTCDateRangeSearchString} from '../../utils/consts/DateTimeConsts';
+import { APP, PSA_NEIGHBOR, STATE } from '../../utils/consts/FrontEndStateConsts';
 import {
-  APP,
-  PSA_ASSOCIATION,
-  PSA_NEIGHBOR,
-  STATE
-} from '../../utils/consts/FrontEndStateConsts';
+  addWeekdays,
+  getEntityProperties,
+  getSearchTerm,
+  getSearchTermNotExact
+} from '../../utils/DataUtils';
 import {
   BULK_DOWNLOAD_REMINDERS_PDF,
   LOAD_OPT_OUT_NEIGHBORS,
@@ -182,9 +181,10 @@ function* loadOptOutsForDateWorker(action :SequenceAction) :Generator<*, *, *> {
     const edm = yield select(getEDM);
     const optOutEntitySetId = getEntitySetIdFromApp(app, REMINDER_OPT_OUTS);
     const datePropertyTypeId = getPropertyTypeId(edm, DATE_TIME_FQN);
+    const searchTerm = getUTCDateRangeSearchString(datePropertyTypeId, date);
 
     const reminderOptions = {
-      searchTerm: getSearchTerm(datePropertyTypeId, toISODate(date)),
+      searchTerm,
       start: 0,
       maxHits: MAX_HITS,
       fuzzy: false
@@ -240,9 +240,10 @@ function* loadRemindersforDateWorker(action :SequenceAction) :Generator<*, *, *>
     const edm = yield select(getEDM);
     const remindersEntitySetId = getEntitySetIdFromApp(app, REMINDERS);
     const datePropertyTypeId = getPropertyTypeId(edm, DATE_TIME_FQN);
+    const searchTerm = getUTCDateRangeSearchString(datePropertyTypeId, date);
 
     const reminderOptions = {
-      searchTerm: getSearchTerm(datePropertyTypeId, toISODate(date)),
+      searchTerm,
       start: 0,
       maxHits: MAX_HITS,
       fuzzy: false
@@ -251,12 +252,12 @@ function* loadRemindersforDateWorker(action :SequenceAction) :Generator<*, *, *>
     const remindersOnDate = fromJS(allRemindersDataforDate.hits);
     remindersOnDate.forEach((reminder) => {
       const entityKeyId = reminder.getIn([OPENLATTICE_ID_FQN, 0], '');
-      const dateTime = moment(reminder.getIn([PROPERTY_TYPES.DATE_TIME, 0]));
+      const dateTime = DateTime.fromISO(reminder.getIn([PROPERTY_TYPES.DATE_TIME, 0]));
       const wasNotified = reminder.getIn([PROPERTY_TYPES.NOTIFIED, 0], false);
 
-      const reminderIsPending = dateTime.isAfter();
+      const reminderIsPending = dateTime > DateTime.local();
 
-      if (entityKeyId && dateTime) {
+      if (entityKeyId && dateTime.isValid) {
         reminderIds = reminderIds.add(entityKeyId);
         if (reminderIsPending) {
           futureReminders = futureReminders.set(entityKeyId, reminder);
@@ -428,7 +429,8 @@ function* getRemindersActionList(
     hearingsOnDate.forEach((hearing) => {
       const hearingDateTime = hearing.getIn([PROPERTY_TYPES.DATE_TIME, 0]);
       const hearingExists = !!hearingDateTime;
-      const hearingOnDateSelected = daysToCheck.some(date => moment(hearingDateTime).isSame(date, 'day'));
+      const hearingOnDateSelected = daysToCheck.some(date => (
+        DateTime.fromISO(hearingDateTime).hasSame(DateTime.fromISO(date), 'day')));
       const hearingType = hearing.getIn([PROPERTY_TYPES.HEARING_TYPE, 0]);
       const hearingEntityKeyId = hearing.getIn([OPENLATTICE_ID_FQN, 0]);
       const hearingIsInactive = hearingIsCancelled(hearing);
@@ -443,62 +445,65 @@ function* getRemindersActionList(
   }
 
   /* Grab hearing people neighbors */
-  let hearingNeighborsById = yield call(SearchApi.searchEntityNeighborsWithFilter, hearingsEntitySetId, {
-    entityKeyIds: hearingIds.toJS(),
-    sourceEntitySetIds: [peopleEntitySetId],
-    destinationEntitySetIds: []
-  });
-  hearingNeighborsById = fromJS(hearingNeighborsById);
+  if (hearingIds.size) {
+    let hearingNeighborsById = yield call(SearchApi.searchEntityNeighborsWithFilter, hearingsEntitySetId, {
+      entityKeyIds: hearingIds.toJS(),
+      sourceEntitySetIds: [peopleEntitySetId],
+      destinationEntitySetIds: []
+    });
+    hearingNeighborsById = fromJS(hearingNeighborsById);
 
-  hearingNeighborsById.entrySeq().forEach(([_, neighbors]) => {
-    neighbors.forEach((neighbor) => {
-      const { [ENTITY_KEY_ID]: entityKeyId } = getEntityProperties(neighbor, [ENTITY_KEY_ID]);
-      const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
-      const neighborObj = neighbor.get(PSA_NEIGHBOR.DETAILS, Map());
-      const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
-      if (appTypeFqn === PEOPLE) {
-        peopleIds = peopleIds.add(entityKeyId);
-        peopleMap = peopleMap.set(entityKeyId, neighborObj);
+    hearingNeighborsById.entrySeq().forEach(([_, neighbors]) => {
+      neighbors.forEach((neighbor) => {
+        const { [ENTITY_KEY_ID]: entityKeyId } = getEntityProperties(neighbor, [ENTITY_KEY_ID]);
+        const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
+        const neighborObj = neighbor.get(PSA_NEIGHBOR.DETAILS, Map());
+        const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
+        if (appTypeFqn === PEOPLE) {
+          peopleIds = peopleIds.add(entityKeyId);
+          peopleMap = peopleMap.set(entityKeyId, neighborObj);
+        }
+      });
+    });
+  }
+  if (peopleIds.size) {
+    /* Grab people for all Hearings on Selected Date */
+    let peopleNeighbors = yield call(SearchApi.searchEntityNeighborsWithFilter, peopleEntitySetId, {
+      entityKeyIds: peopleIds.toJS(),
+      sourceEntitySetIds: [psaScoresEntitySetId, contactInformationEntitySetId],
+      destinationEntitySetIds: [contactInformationEntitySetId, subscriptionEntitySetId]
+    });
+    peopleNeighbors = fromJS(peopleNeighbors);
+
+    /* Filter for people with open PSAs and either not contact info or subscription */
+    peopleNeighbors.entrySeq().forEach(([id, neighbors]) => {
+      let hasAnOpenPSA = false;
+      let hasPreferredContact = false;
+      let hasASubscription = false;
+      neighbors.forEach((neighbor) => {
+        const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
+        const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
+        if (appTypeFqn === SUBSCRIPTION) {
+          const { [IS_ACTIVE]: isActive } = getEntityProperties(neighbor, [IS_ACTIVE]);
+          if (isActive) hasASubscription = true;
+        }
+        if (appTypeFqn === CONTACT_INFORMATION) {
+          const { [IS_PREFERRED]: isPreferred } = getEntityProperties(neighbor, [IS_PREFERRED]);
+          if (isPreferred) hasPreferredContact = true;
+        }
+        if (appTypeFqn === PSA_SCORES) {
+          const { [STATUS]: status } = getEntityProperties(neighbor, [STATUS]);
+          const isOpen = (status === PSA_STATUSES.OPEN);
+          if (isOpen) hasAnOpenPSA = true;
+        }
+      });
+      const personIsReceivingReminders = hasPreferredContact && hasASubscription;
+      if (hasAnOpenPSA && !personIsReceivingReminders) {
+        const person = peopleMap.get(id, Map());
+        remindersActionList = remindersActionList.set(id, person);
       }
     });
-  });
-
-  /* Grab people for all Hearings on Selected Date */
-  let peopleNeighbors = yield call(SearchApi.searchEntityNeighborsWithFilter, peopleEntitySetId, {
-    entityKeyIds: peopleIds.toJS(),
-    sourceEntitySetIds: [psaScoresEntitySetId, contactInformationEntitySetId],
-    destinationEntitySetIds: [contactInformationEntitySetId, subscriptionEntitySetId]
-  });
-  peopleNeighbors = fromJS(peopleNeighbors);
-
-  /* Filter for people with open PSAs and either not contact info or subscription */
-  peopleNeighbors.entrySeq().forEach(([id, neighbors]) => {
-    let hasAnOpenPSA = false;
-    let hasPreferredContact = false;
-    let hasASubscription = false;
-    neighbors.forEach((neighbor) => {
-      const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
-      const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
-      if (appTypeFqn === SUBSCRIPTION) {
-        const { [IS_ACTIVE]: isActive } = getEntityProperties(neighbor, [IS_ACTIVE]);
-        if (isActive) hasASubscription = true;
-      }
-      if (appTypeFqn === CONTACT_INFORMATION) {
-        const { [IS_PREFERRED]: isPreferred } = getEntityProperties(neighbor, [IS_PREFERRED]);
-        if (isPreferred) hasPreferredContact = true;
-      }
-      if (appTypeFqn === PSA_SCORES) {
-        const { [STATUS]: status } = getEntityProperties(neighbor, [STATUS]);
-        const isOpen = (status === PSA_STATUSES.OPEN);
-        if (isOpen) hasAnOpenPSA = true;
-      }
-    });
-    const personIsReceivingReminders = hasPreferredContact && hasASubscription;
-    if (hasAnOpenPSA && !personIsReceivingReminders) {
-      const person = peopleMap.get(id, Map());
-      remindersActionList = remindersActionList.set(id, person);
-    }
-  });
+  }
 
   const allManualRemindersforDate = yield call(
     searchEntitySetDataWorker,
@@ -515,27 +520,29 @@ function* getRemindersActionList(
     });
 
     /* Grab hearing people neighbors */
-    let manualReminderNeighborsById = yield call(
-      SearchApi.searchEntityNeighborsWithFilter,
-      manualRemindersEntitySetId,
-      {
-        entityKeyIds: manualReminderIds.toJS(),
-        sourceEntitySetIds: [],
-        destinationEntitySetIds: [peopleEntitySetId]
-      }
-    );
-    manualReminderNeighborsById = fromJS(manualReminderNeighborsById);
-
-    manualReminderNeighborsById.entrySeq().forEach(([_, neighbors]) => {
-      neighbors.forEach((neighbor) => {
-        const { [ENTITY_KEY_ID]: entityKeyId } = getEntityProperties(neighbor, [ENTITY_KEY_ID]);
-        const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
-        const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
-        if (appTypeFqn === PEOPLE) {
-          remindersActionList = remindersActionList.delete(entityKeyId);
+    if (manualReminderIds.size) {
+      let manualReminderNeighborsById = yield call(
+        SearchApi.searchEntityNeighborsWithFilter,
+        manualRemindersEntitySetId,
+        {
+          entityKeyIds: manualReminderIds.toJS(),
+          sourceEntitySetIds: [],
+          destinationEntitySetIds: [peopleEntitySetId]
         }
+      );
+      manualReminderNeighborsById = fromJS(manualReminderNeighborsById);
+
+      manualReminderNeighborsById.entrySeq().forEach(([_, neighbors]) => {
+        neighbors.forEach((neighbor) => {
+          const { [ENTITY_KEY_ID]: entityKeyId } = getEntityProperties(neighbor, [ENTITY_KEY_ID]);
+          const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
+          const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
+          if (appTypeFqn === PEOPLE) {
+            remindersActionList = remindersActionList.delete(entityKeyId);
+          }
+        });
       });
-    });
+    }
   }
   return remindersActionList;
 }
@@ -550,21 +557,25 @@ function* loadRemindersActionListWorker(action :SequenceAction) :Generator<*, *,
     const edm = yield select(getEDM);
     const datePropertyTypeId = getPropertyTypeId(edm, DATE_TIME_FQN);
 
-    const oneDayAhead = toISODate(addWeekdays(remindersActionListDate, 1));
-    const oneWeekAhead = toISODate(addWeekdays(remindersActionListDate, 7));
+    const oneDayAhead = addWeekdays(remindersActionListDate, 1);
+    const oneWeekAhead = addWeekdays(remindersActionListDate, 7);
+    const oneDayAheadSearchTerm = getUTCDateRangeSearchString(datePropertyTypeId, oneDayAhead);
+    const oneWeekAheadSearchTerm = getUTCDateRangeSearchString(datePropertyTypeId, oneWeekAhead);
 
     const hearingSearchOptions = {
-      searchTerm: `entity.${datePropertyTypeId}:"${oneDayAhead}" OR entity.${datePropertyTypeId}:"${oneWeekAhead}"`,
+      searchTerm: `${oneDayAheadSearchTerm} OR ${oneWeekAheadSearchTerm}`,
       start: 0,
       maxHits: MAX_HITS,
       fuzzy: false
     };
 
-    const today = toISODate(moment());
-    const sixDaysAhead = toISODate(addWeekdays(remindersActionListDate, 6));
+    const today = remindersActionListDate;
+    const sixDaysAhead = addWeekdays(remindersActionListDate, 6);
+    const todaySearchTerm = getUTCDateRangeSearchString(datePropertyTypeId, today);
+    const sixDaysAheadSearchTerm = getUTCDateRangeSearchString(datePropertyTypeId, sixDaysAhead);
 
     const manualRemindersOptions = {
-      searchTerm: `entity.${datePropertyTypeId}:"${today}" OR entity.${datePropertyTypeId}:"${sixDaysAhead}"`,
+      searchTerm: `${todaySearchTerm} OR ${sixDaysAheadSearchTerm}`,
       start: 0,
       maxHits: MAX_HITS,
       fuzzy: false
@@ -626,12 +637,10 @@ function* bulkDownloadRemindersPDFWorker(action :SequenceAction) :Generator<*, *
     const datePropertyTypeId = getPropertyTypeId(edm, DATE_TIME_FQN);
     const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
 
-    const oneWeekAhead = addWeekdays(date, 7);
-
-    const getDateSearch = selectedDate => getSearchTerm(datePropertyTypeId, toISODate(selectedDate));
+    const oneWeekAhead = addWeekdays(date, 7).toISODate();
 
     const hearingOptions = {
-      searchTerm: `${getDateSearch(oneWeekAhead)}`,
+      searchTerm: `${getSearchTerm(datePropertyTypeId, oneWeekAhead)}`,
       start: 0,
       maxHits: MAX_HITS,
       fuzzy: false
@@ -650,7 +659,7 @@ function* bulkDownloadRemindersPDFWorker(action :SequenceAction) :Generator<*, *
         const entityKeyId = hearing.getIn([OPENLATTICE_ID_FQN, 0], '');
         const hearingDateTime = hearing.getIn([PROPERTY_TYPES.DATE_TIME, 0]);
         const hearingExists = !!hearingDateTime;
-        const hearingOnDateSelected = moment(hearingDateTime).isSame(oneWeekAhead, 'day');
+        const hearingOnDateSelected = DateTime.fromISO(hearingDateTime).hasSame(DateTime.fromISO(oneWeekAhead), 'day');
         const hearingType = hearing.getIn([PROPERTY_TYPES.HEARING_TYPE, 0]);
         const hearingId = hearing.getIn([OPENLATTICE_ID_FQN, 0]);
         const hearingIsInactive = hearingIsCancelled(hearing);

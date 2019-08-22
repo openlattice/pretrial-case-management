@@ -7,7 +7,7 @@ import Immutable from 'immutable';
 import { APP_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_NEIGHBOR, REVIEW } from '../../utils/consts/FrontEndStateConsts';
 import { SWITCH_ORGANIZATION } from '../app/AppActionFactory';
-import { updateOutcomesAndReleaseCondtions } from '../releaseconditions/ReleaseConditionsActionFactory';
+import { editPSA } from '../psa/FormActionFactory';
 import {
   changePSAStatus,
   checkPSAPermissions,
@@ -19,12 +19,11 @@ import {
 } from './ReviewActionFactory';
 
 const {
-  BONDS,
   DMF_RESULTS,
   DMF_RISK_FACTORS,
-  OUTCOMES,
   PSA_RISK_FACTORS,
-  RELEASE_RECOMMENDATIONS
+  RELEASE_RECOMMENDATIONS,
+  STAFF
 } = APP_TYPES;
 
 const INITIAL_STATE :Immutable.Map<*, *> = Immutable.fromJS({
@@ -67,6 +66,18 @@ export default function reviewReducer(state :Immutable.Map<*, *> = INITIAL_STATE
         REQUEST: () => state.set(REVIEW.READ_ONLY, true),
         SUCCESS: () => state.set(REVIEW.READ_ONLY, action.value.readOnly),
         FAILURE: () => state.set(REVIEW.READ_ONLY, true)
+      });
+    }
+
+
+    case editPSA.case(action.type): {
+      return editPSA.reducer(state, action, {
+        SUCCESS: () => {
+          const { psaEKID, staffNeighbors } = action.value;
+          let psaNeighbors = state.get(REVIEW.NEIGHBORS_BY_ID, Immutable.Map());
+          psaNeighbors = psaNeighbors.setIn([psaEKID, STAFF], staffNeighbors);
+          return state.set(REVIEW.NEIGHBORS_BY_ID, psaNeighbors);
+        }
       });
     }
 
@@ -222,51 +233,6 @@ export default function reviewReducer(state :Immutable.Map<*, *> = INITIAL_STATE
             .set(REVIEW.NEIGHBORS_BY_ID, psaNeighborsById)
             .set(REVIEW.NEIGHBORS_BY_DATE, psaNeighborsByDate);
         }
-      });
-    }
-
-    case updateOutcomesAndReleaseCondtions.case(action.type): {
-      return updateOutcomesAndReleaseCondtions.reducer(state, action, {
-        REQUEST: () => state.set(
-          REVIEW.PSA_IDS_REFRESHING,
-          state.get(REVIEW.PSA_IDS_REFRESHING)
-        ),
-        SUCCESS: () => {
-          const {
-            psaId,
-            newBondEntity,
-            newOutcomeEntity
-          } = action.value;
-
-          let psaNeighborsByDate = state.get(REVIEW.NEIGHBORS_BY_DATE);
-
-          psaNeighborsByDate.keySeq().forEach((date) => {
-            if (psaNeighborsByDate.get(date).get(psaId)) {
-              psaNeighborsByDate = psaNeighborsByDate.setIn(
-                [date, psaId, OUTCOMES, PSA_NEIGHBOR.DETAILS],
-                Immutable.fromJS(newOutcomeEntity)
-              ).setIn(
-                [date, psaId, BONDS, PSA_NEIGHBOR.DETAILS],
-                Immutable.fromJS(newBondEntity)
-              );
-            }
-          });
-          const psaNeighborsById = state.get(REVIEW.NEIGHBORS_BY_ID)
-            .setIn(
-              [psaId, OUTCOMES, PSA_NEIGHBOR.DETAILS],
-              Immutable.fromJS(newOutcomeEntity)
-            ).setIn(
-              [psaId, BONDS, PSA_NEIGHBOR.DETAILS],
-              Immutable.fromJS(newBondEntity)
-            );
-          return state
-            .set(REVIEW.NEIGHBORS_BY_ID, psaNeighborsById)
-            .set(REVIEW.NEIGHBORS_BY_DATE, psaNeighborsByDate);
-        },
-        FINALLY: () => state.set(
-          REVIEW.PSA_IDS_REFRESHING,
-          state.get(REVIEW.PSA_IDS_REFRESHING)
-        )
       });
     }
 
