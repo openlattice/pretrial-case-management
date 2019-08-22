@@ -36,7 +36,6 @@ type Props = {
       personId :string,
       neighbors :Immutable.Map<*, *>
     }) => void,
-    loadJudges :() => void,
     checkPSAPermissions :() => void,
     clearSubmit :() => void,
   },

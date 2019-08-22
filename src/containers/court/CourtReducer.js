@@ -2,7 +2,6 @@
  * @flow
  */
 
-import { DateTime } from 'luxon';
 import {
   Map,
   Set,
@@ -11,8 +10,7 @@ import {
 
 import {
   CHANGE_HEARING_FILTERS,
-  filterPeopleIdsWithOpenPSAs,
-  loadJudges
+  filterPeopleIdsWithOpenPSAs
 } from './CourtActionFactory';
 import { changePSAStatus } from '../review/ReviewActionFactory';
 import { SWITCH_ORGANIZATION } from '../app/AppActionFactory';
@@ -106,20 +104,6 @@ export default function courtReducer(state :Map<*, *> = INITIAL_STATE, action :O
         newState = newState.set(COURT.COURTROOM, courtroom);
       }
       return newState;
-    }
-
-    case loadJudges.case(action.type): {
-      return loadJudges.reducer(state, action, {
-        REQUEST: () => state.set(COURT.LOADING_JUDGES, true),
-        SUCCESS: () => {
-          const { allJudges } = action.value;
-          return state.set(COURT.ALL_JUDGES, allJudges);
-        },
-        FAILURE: () => state
-          .set(COURT.ALL_JUDGES, Map())
-          .set(COURT.LOADING_JUDGES_ERROR, action.error),
-        FINALLY: () => state.set(COURT.LOADING_JUDGES, false)
-      });
     }
 
     case SWITCH_ORGANIZATION: {
