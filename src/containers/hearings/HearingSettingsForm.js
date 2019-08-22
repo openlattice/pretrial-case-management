@@ -334,14 +334,12 @@ class HearingSettingsForm extends React.Component<Props, State> {
 
 function mapStateToProps(state) {
   const app = state.get(STATE.APP);
-  const court = state.get(STATE.COURT);
   const hearings = state.get(STATE.HEARINGS);
   return {
     app,
     [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
 
-    [COURT.ALL_JUDGES]: court.get(COURT.ALL_JUDGES),
-
+    [HEARINGS_DATA.ALL_JUDGES]: hearings.get(HEARINGS_DATA.ALL_JUDGES),
     [HEARINGS_DATA.DATE]: hearings.get(HEARINGS_DATA.DATE),
     [HEARINGS_DATA.TIME]: hearings.get(HEARINGS_DATA.TIME),
     [HEARINGS_DATA.COURTROOM]: hearings.get(HEARINGS_DATA.COURTROOM),
