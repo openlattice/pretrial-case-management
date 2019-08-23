@@ -23,7 +23,6 @@ import { HEARING_CONSTS } from '../../utils/consts/HearingConsts';
 import { getCourtroomOptions, getJudgeOptions, formatJudgeName } from '../../utils/HearingUtils';
 import { getEntityProperties } from '../../utils/DataUtils';
 import { getTimeOptions } from '../../utils/consts/DateTimeConsts';
-import { COURT } from '../../utils/consts/FrontEndStateConsts';
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
@@ -226,7 +225,7 @@ class HearingSettingsForm extends React.Component<Props, State> {
   renderJudgeOptions = () => {
     const { judge } = this.state;
     const { app, judgesById, judgesByCounty } = this.props;
-    const preferredCountyEKID = app.getIn([APP.SELECTED_ORG_SETTINGS, PREFERRED_COUNTY], '');
+    const preferredCountyEKID = app.getIn([APP_DATA.SELECTED_ORG_SETTINGS, PREFERRED_COUNTY], '');
     const judgeIdsForCounty = judgesByCounty.get(preferredCountyEKID, List());
     return (
       <StyledSearchableSelect

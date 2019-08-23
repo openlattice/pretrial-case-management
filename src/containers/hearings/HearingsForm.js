@@ -23,7 +23,7 @@ import { OL } from '../../utils/consts/Colors';
 import { HEARING_CONSTS } from '../../utils/consts/HearingConsts';
 import { getCourtroomOptions, getJudgeOptions, formatJudgeName } from '../../utils/HearingUtils';
 import { getTimeOptions } from '../../utils/consts/DateTimeConsts';
-import { APP, PSA_ASSOCIATION } from '../../utils/consts/FrontEndStateConsts';
+import { PSA_ASSOCIATION } from '../../utils/consts/FrontEndStateConsts';
 import { SETTINGS } from '../../utils/consts/AppSettingConsts';
 import {
   getEntityKeyId,
@@ -35,6 +35,7 @@ import {
 // Redux State Imports
 import { getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUtils';
 import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { HEARINGS_ACTIONS, HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
 
 // Action Imports
@@ -434,7 +435,7 @@ class HearingForm extends React.Component<Props, State> {
     const { app, judgesById, judgesByCounty } = this.props;
     const { judge, modifyingHearing } = this.state;
     const { judgeName } = this.getJudgeEntity();
-    const preferredCountyEKID = app.getIn([APP.SELECTED_ORG_SETTINGS, PREFERRED_COUNTY], '');
+    const preferredCountyEKID = app.getIn([APP_DATA.SELECTED_ORG_SETTINGS, PREFERRED_COUNTY], '');
     const judgeIdsForCounty = judgesByCounty.get(preferredCountyEKID, List());
     return modifyingHearing
       ? (
