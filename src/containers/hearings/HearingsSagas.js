@@ -428,7 +428,7 @@ function* loadJudgesWorker(action :SequenceAction) :Generator<*, *, *> {
     yield put(loadJudges.request(action.id));
     const app = yield select(getApp);
     const orgId = yield select(getOrgId);
-    const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
+    const entitySetIdsToAppType = app.getIn([APP_DATA.ENTITY_SETS_BY_ORG, orgId]);
     let judgesById = Map();
     const countiesESID = getEntitySetIdFromApp(app, COUNTIES);
     const judgesESID = getEntitySetIdFromApp(app, JUDGES);
