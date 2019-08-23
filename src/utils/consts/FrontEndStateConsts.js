@@ -39,28 +39,6 @@ export const PSA_ASSOCIATION = {
   ENTITY_SET: 'associationEntitySet'
 };
 
-// App
-export const APP = {
-  ACTIONS: 'actions',
-  APP: 'app',
-  APP_TYPES: 'appTypes',
-  ENTITY_SETS_BY_ORG: 'entitySetsByOrganization',
-  FQN_TO_ID: 'fqnsToEntitySetIds',
-  ERRORS: 'errors',
-  JURISDICTION: 'jurisdiction',
-  LOADING: 'isLoadingApp',
-  LOAD_APP: 'loadApp',
-  ORGS: 'organizations',
-  PRIMARY_KEYS: 'primaryKeys',
-  PROPERTY_TYPES: 'propertyTypes',
-  SELECTED_ORG_ID: 'selectedOrganizationId',
-  SELECTED_ORG_TITLE: 'selectedOrganizationTitle',
-  APP_SETTINGS_ID: 'appSettingsEntitySetId',
-  SELECTED_ORG_SETTINGS: 'selectedOrganizationSettings',
-  SETTINGS_BY_ORG_ID: 'appSettingsByOrgId',
-  STAFF_IDS_TO_EKIDS: 'staffIdsToEntityKeyIds'
-};
-
 // CHARGES
 export const CHARGES = {
   ARREST: 'arrestCharges',
@@ -222,7 +200,6 @@ export const PSA_FORM = {
   ALL_HEARINGS: 'allHearings',
   ALL_CONTACTS: 'allContacts',
   CHARGES: 'charges',
-  DATA_MODEL: 'dataModel',
   EDITING_PSA: 'editingPSA',
   ENTITY_SET_LOOKUP: 'entitySetLookup',
   LOADING_NEIGHBORS: 'isLoadingNeighbors',

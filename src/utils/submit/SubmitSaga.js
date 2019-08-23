@@ -14,11 +14,10 @@ import {
   call,
   put,
   takeEvery,
-  all,
-  select
+  all
 } from '@redux-saga/core/effects';
 
-import { APP, EDM, STATE } from '../consts/FrontEndStateConsts';
+import { APP_DATA } from '../consts/redux/AppConsts';
 import { stripIdField } from '../DataUtils';
 import {
   CREATE_ASSOCIATIONS,
@@ -183,7 +182,7 @@ function* submitWorker(action :SequenceAction) :Generator<*, *, *> {
     let allEntitySetIds;
     // TODO: Yuck! Will refactor how we collect entitySetIds once we have appTypes for each Entity Set
     if (app) {
-      const selectedOrganizationId = app.get(APP.SELECTED_ORG_ID);
+      const selectedOrganizationId = app.get(APP_DATA.SELECTED_ORG_ID);
       allEntitySetIds = config.entitySets.map(({ name }) => app.getIn([
         name,
         'entitySetsByOrganization',

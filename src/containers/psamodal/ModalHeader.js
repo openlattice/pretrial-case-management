@@ -17,12 +17,10 @@ import closeX from '../../assets/svg/close-x-gray.svg';
 import { OL } from '../../utils/consts/Colors';
 import { psaIsClosed } from '../../utils/PSAUtils';
 import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
+import { PSA_MODAL } from '../../utils/consts/FrontEndStateConsts';
 
-import {
-  APP,
-  PSA_MODAL,
-  STATE,
-} from '../../utils/consts/FrontEndStateConsts';
+import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 
 import { downloadPSAReviewPDF } from '../review/ReviewActionFactory';
 
@@ -92,7 +90,7 @@ class ModalHeader extends React.Component<Props, State> {
 
   renderPersonInfo = () => {
     const { person } = this.props;
-    return <NameCard person={person} />
+    return <NameCard person={person} />;
   }
 
   renderPSAReportDownloadButton = () => {
@@ -164,11 +162,11 @@ function mapStateToProps(state) {
   const app = state.get(STATE.APP);
   const psaModal = state.get(STATE.PSA_MODAL);
 
-  const orgId = app.get(APP.SELECTED_ORG_ID, '');
+  const orgId = app.get(APP_DATA.SELECTED_ORG_ID, '');
   return {
-    [APP.SELECTED_ORG_SETTINGS]: app.get(APP.SELECTED_ORG_SETTINGS),
-    [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
-    [APP.ENTITY_SETS_BY_ORG]: app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]),
+    [APP_DATA.SELECTED_ORG_SETTINGS]: app.get(APP_DATA.SELECTED_ORG_SETTINGS),
+    [APP_DATA.SELECTED_ORG_ID]: app.get(APP_DATA.SELECTED_ORG_ID),
+    [APP_DATA.ENTITY_SETS_BY_ORG]: app.getIn([APP_DATA.ENTITY_SETS_BY_ORG, orgId]),
 
     [PSA_MODAL.SCORES]: psaModal.get(PSA_MODAL.SCORES),
     [PSA_MODAL.LOADING_PSA_MODAL]: psaModal.get(PSA_MODAL.LOADING_PSA_MODAL),

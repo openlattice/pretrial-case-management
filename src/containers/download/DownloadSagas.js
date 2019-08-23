@@ -24,18 +24,13 @@ import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { HEADERS_OBJ, POSITIONS } from '../../utils/consts/CSVConsts';
 import { PSA_STATUSES, MAX_HITS } from '../../utils/consts/Consts';
+import { PSA_NEIGHBOR, PSA_ASSOCIATION } from '../../utils/consts/FrontEndStateConsts';
 import {
   getFilteredNeighbor,
   stripIdField,
   getSearchTerm,
   getSearchTermNotExact
 } from '../../utils/DataUtils';
-import {
-  APP,
-  PSA_NEIGHBOR,
-  PSA_ASSOCIATION,
-  STATE
-} from '../../utils/consts/FrontEndStateConsts';
 import {
   DOWNLOAD_PSA_BY_HEARING_DATE,
   DOWNLOAD_PSA_FORMS,
@@ -44,6 +39,9 @@ import {
   downloadPsaForms,
   getDownloadFilters
 } from './DownloadActionFactory';
+
+import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 
 const {
   ARREST_CASES,
@@ -71,7 +69,7 @@ const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
 
 const getApp = state => state.get(STATE.APP, Map());
 const getEDM = state => state.get(STATE.EDM, Map());
-const getOrgId = state => state.getIn([STATE.APP, APP.SELECTED_ORG_ID], '');
+const getOrgId = state => state.getIn([STATE.APP, APP_DATA.SELECTED_ORG_ID], '');
 
 const { OPENLATTICE_ID_FQN } = Constants;
 const { FullyQualifiedName } = Models;
@@ -155,8 +153,8 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
     const app = yield select(getApp);
     const edm = yield select(getEDM);
     const orgId = yield select(getOrgId);
-    const includesPretrialModule = app.getIn([APP.SELECTED_ORG_SETTINGS, SETTINGS.MODULES, MODULE.PRETRIAL], false);
-    const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
+    const includesPretrialModule = app.getIn([APP_DATA.SELECTED_ORG_SETTINGS, SETTINGS.MODULES, MODULE.PRETRIAL], false);
+    const entitySetIdsToAppType = app.getIn([APP_DATA.ENTITY_SETS_BY_ORG, orgId]);
 
     /*
      * Get Entity Set Ids
@@ -486,7 +484,7 @@ function* downloadPSAsByHearingDateWorker(action :SequenceAction) :Generator<*, 
     const psaEntitySetId = getEntitySetIdFromApp(app, PSA_SCORES);
     const psaRiskFactorsEntitySetId = getEntitySetIdFromApp(app, PSA_RISK_FACTORS);
     const staffEntitySetId = getEntitySetIdFromApp(app, STAFF);
-    const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
+    const entitySetIdsToAppType = app.getIn([APP_DATA.ENTITY_SETS_BY_ORG, orgId]);
     const dmfResultsEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.DMF_RESULTS);
     const releaseRecommendationsEntitySetId = getEntitySetIdFromApp(app, RELEASE_RECOMMENDATIONS);
 

@@ -22,12 +22,10 @@ import { OL } from '../../utils/consts/Colors';
 import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
 import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import {
-  APP,
-  PEOPLE,
-  SEARCH,
-  STATE,
-} from '../../utils/consts/FrontEndStateConsts';
+import { PEOPLE, SEARCH } from '../../utils/consts/FrontEndStateConsts';
+
+import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 
 import * as ReviewActionFactory from '../review/ReviewActionFactory';
 import * as PeopleActionFactory from './PeopleActionFactory';
@@ -349,11 +347,11 @@ function mapStateToProps(state) {
   const app = state.get(STATE.APP);
   const people = state.get(STATE.PEOPLE);
   const search = state.get(STATE.SEARCH);
-  const orgId = app.get(APP.SELECTED_ORG_ID);
+  const orgId = app.get(APP_DATA.SELECTED_ORG_ID);
   return {
-    [APP.SELECTED_ORG_ID]: orgId,
-    [APP.SELECTED_ORG_SETTINGS]: app.get(APP.SELECTED_ORG_SETTINGS),
-    entitySetIdsToAppType: app.getIn([APP.ENTITY_SETS_BY_ORG, orgId], Map()),
+    [APP_DATA.SELECTED_ORG_ID]: orgId,
+    [APP_DATA.SELECTED_ORG_SETTINGS]: app.get(APP_DATA.SELECTED_ORG_SETTINGS),
+    entitySetIdsToAppType: app.getIn([APP_DATA.ENTITY_SETS_BY_ORG, orgId], Map()),
 
     [PEOPLE.REQUIRES_ACTION_PEOPLE]: people.get(PEOPLE.REQUIRES_ACTION_PEOPLE),
     [PEOPLE.REQUIRES_ACTION_SCORES]: people.get(PEOPLE.REQUIRES_ACTION_SCORES),

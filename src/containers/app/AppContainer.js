@@ -12,7 +12,7 @@ import { connect } from 'react-redux';
 import { EntityDataModelApiActions } from 'lattice-sagas';
 import { Redirect, Route, Switch } from 'react-router-dom';
 import { Map } from 'immutable';
-import type { RequestSequence } from 'redux-reqseq';
+import type { RequestSequence, RequestState } from 'redux-reqseq';
 
 import AppConsent from './AppConsent';
 import ErrorPage from '../../components/ErrorPage';
@@ -30,9 +30,13 @@ import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { APP_TYPES } from '../../utils/consts/DataModelConsts';
 import { termsAreAccepted } from '../../utils/AcceptTermsUtils';
 import { OL } from '../../utils/consts/Colors';
-import { APP, CHARGES, STATE } from '../../utils/consts/FrontEndStateConsts';
 
+import { CHARGES } from '../../utils/consts/FrontEndStateConsts';
+
+import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { APP_ACTIONS, APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
+import { getError, getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUtils';
 
 import * as Routes from '../../core/router/Routes';
 import * as AppActionFactory from './AppActionFactory';
@@ -80,7 +84,8 @@ type Props = {
   appSettingsByOrgId :Map<*, *>,
   selectedOrganizationSettings :Map<*, *>,
   selectedOrganizationTitle :string,
-  errors :Map<*, *>,
+  loadAppReqState :RequestState,
+  loadAppError :Map<*, *>,
   actions :{
     getAllPropertyTypes :RequestSequence;
     loadApp :RequestSequence;
@@ -100,9 +105,9 @@ class AppContainer extends React.Component<Props, {}> {
 
   componentDidUpdate(prevProps :Props) {
     const { app, actions } = this.props;
-    const nextOrg = app.get(APP.ORGS);
-    const nextOrgId = app.get(APP.SELECTED_ORG_ID);
-    const prevOrgId = prevProps.app.get(APP.SELECTED_ORG_ID);
+    const nextOrg = app.get(APP_DATA.ORGS);
+    const nextOrgId = app.get(APP_DATA.SELECTED_ORG_ID);
+    const prevOrgId = prevProps.app.get(APP_DATA.SELECTED_ORG_ID);
     if (nextOrgId && prevOrgId !== nextOrgId) {
       actions.loadJudges();
       nextOrg.keySeq().forEach((id) => {
@@ -132,7 +137,7 @@ class AppContainer extends React.Component<Props, {}> {
 
   switchOrganization = (organization) => {
     const { actions, app, appSettingsByOrgId } = this.props;
-    const selectedOrganizationId = app.get(APP.SELECTED_ORG_ID);
+    const selectedOrganizationId = app.get(APP_DATA.SELECTED_ORG_ID);
     if (organization.value !== selectedOrganizationId) {
       actions.switchOrganization({
         settings: appSettingsByOrgId.get(organization.value, Map()),
@@ -157,11 +162,10 @@ class AppContainer extends React.Component<Props, {}> {
   }
 
   renderAppBody = () => {
-    const { app, errors } = this.props;
-    const loading = app.get(APP.LOADING, false);
-    const error = errors.get('loadApp', '').toString();
+    const { loadAppReqState, loadAppError } = this.props;
+    const loading = requestIsPending(loadAppReqState);
 
-    if (error.length) {
+    if (loadAppError.size) {
       return (
         <ErrorPage />
       );
@@ -189,14 +193,15 @@ class AppContainer extends React.Component<Props, {}> {
   render() {
     const {
       app,
+      loadAppReqState,
       selectedOrganizationSettings,
       selectedOrganizationTitle
     } = this.props;
     const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
     const tool = includesPretrialModule ? 'Pretrial Case Management' : 'PSA Calculator';
-    const loading = app.get(APP.LOADING, false);
-    const selectedOrg = app.get(APP.SELECTED_ORG_ID, '');
-    const orgList = app.get(APP.ORGS).entrySeq().map(([value, organization]) => {
+    const loading = requestIsPending(loadAppReqState);
+    const selectedOrg = app.get(APP_DATA.SELECTED_ORG_ID, '');
+    const orgList = app.get(APP_DATA.ORGS).entrySeq().map(([value, organization]) => {
       const label = organization.get('title', '');
       return { label, value };
     });
@@ -224,12 +229,13 @@ function mapStateToProps(state) {
   const hearings = state.get(STATE.HEARINGS);
   return {
     app,
-    [APP.SELECTED_ORG_ID]: app.get(APP.APP_SETTINGS_ID),
-    [APP.SETTINGS_BY_ORG_ID]: app.get(APP.SETTINGS_BY_ORG_ID),
-    [APP.SELECTED_ORG_SETTINGS]: app.get(APP.SELECTED_ORG_SETTINGS),
-    [APP.SELECTED_ORG_TITLE]: app.get(APP.SELECTED_ORG_TITLE),
-    [APP.ERRORS]: app.get(APP.ERRORS),
-    [APP.STAFF_IDS_TO_EKIDS]: app.get(APP.STAFF_IDS_TO_EKIDS),
+    loadAppReqState: getReqState(app, APP_ACTIONS.LOAD_APP),
+    loadAppError: getError(app, APP_ACTIONS.LOAD_APP),
+    [APP_DATA.SELECTED_ORG_ID]: app.get(APP_DATA.APP_DATA_SETTINGS_ID),
+    [APP_DATA.SETTINGS_BY_ORG_ID]: app.get(APP_DATA.SETTINGS_BY_ORG_ID),
+    [APP_DATA.SELECTED_ORG_SETTINGS]: app.get(APP_DATA.SELECTED_ORG_SETTINGS),
+    [APP_DATA.SELECTED_ORG_TITLE]: app.get(APP_DATA.SELECTED_ORG_TITLE),
+    [APP_DATA.STAFF_IDS_TO_EKIDS]: app.get(APP_DATA.STAFF_IDS_TO_EKIDS),
 
     [CHARGES.ARREST]: charges.get(CHARGES.ARREST),
     [CHARGES.COURT]: charges.get(CHARGES.COURT),

@@ -25,7 +25,11 @@ import { createIdObject, getEntityProperties } from '../../utils/DataUtils';
 import { getPropertyTypeId, getPropertyIdToValueMap } from '../../edm/edmUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_STATUSES } from '../../utils/consts/Consts';
-import { APP, STATE, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
+import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
+
+import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { APP_DATA } from '../../utils/consts/redux/AppConsts';
+
 import {
   ADD_CASE_TO_PSA,
   EDIT_PSA,
@@ -99,7 +103,7 @@ const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
 
 const getApp = state => state.get(STATE.APP, Map());
 const getEDM = state => state.get(STATE.EDM, Map());
-const getOrgId = state => state.getIn([STATE.APP, APP.SELECTED_ORG_ID], '');
+const getOrgId = state => state.getIn([STATE.APP, APP_DATA.SELECTED_ORG_ID], '');
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
@@ -123,7 +127,7 @@ function* addCaseToPSAWorker(action :SequenceAction) :Generator<*, *, *> {
     const app = yield select(getApp);
     const edm = yield select(getEDM);
     const orgId = yield select(getOrgId);
-    const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
+    const entitySetIdsToAppType = app.getIn([APP_DATA.ENTITY_SETS_BY_ORG, orgId]);
 
     /*
      * Get Property Type Ids
@@ -210,7 +214,7 @@ function* removeCaseFromPSAWorker(action :SequenceAction) :Generator<*, *, *> {
     yield put(removeCaseFromPSA.request(action.id));
     const app = yield select(getApp);
     const orgId = yield select(getOrgId);
-    const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
+    const entitySetIdsToAppType = app.getIn([APP_DATA.ENTITY_SETS_BY_ORG, orgId]);
 
     /*
      * Get Entity Set Ids
@@ -294,12 +298,12 @@ function* editPSAWorker(action :SequenceAction) :Generator<*, *, *> {
     const app = yield select(getApp);
     const edm = yield select(getEDM);
     const orgId = yield select(getOrgId);
-    const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
+    const entitySetIdsToAppType = app.getIn([APP_DATA.ENTITY_SETS_BY_ORG, orgId]);
 
     /*
      * Get Staff Entity Key Id
      */
-    const staffIdsToEntityKeyIds = app.get(APP.STAFF_IDS_TO_EKIDS, Map());
+    const staffIdsToEntityKeyIds = app.get(APP_DATA.STAFF_IDS_TO_EKIDS, Map());
     const staffId = getStaffId();
     const staffEKID = staffIdsToEntityKeyIds.get(staffId, '');
 
@@ -402,33 +406,6 @@ function* editPSAWatcher() :Generator<*, *, *> {
   yield takeEvery(EDIT_PSA, editPSAWorker);
 }
 
-function* loadDataModelWorker(action :SequenceAction) :Generator<*, *, *> {
-
-  try {
-    yield put(loadDataModel.request(action.id));
-    const app = yield select(getApp);
-    const orgId = yield select(getOrgId);
-    const entitySetIds = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId], Map()).keySeq().toJS();
-    const selectors = entitySetIds.map(id => ({
-      id,
-      type: 'EntitySet',
-      include: ['EntitySet', 'EntityType', 'PropertyTypeInEntitySet']
-    }));
-    const dataModel = yield call(EntityDataModelApi.getEntityDataModelProjection, selectors);
-    yield put(loadDataModel.success(action.id, { dataModel }));
-  }
-  catch (error) {
-    yield put(loadDataModel.failure(action.id, { error }));
-  }
-  finally {
-    yield put(loadDataModel.finally(action.id));
-  }
-}
-
-function* loadDataModelWatcher() :Generator<*, *, *> {
-  yield takeEvery(LOAD_DATA_MODEL, loadDataModelWorker);
-}
-
 const getOpenPSAIds = (neighbors, psaScoresEntitySetId) => {
   if (!neighbors) return [];
   return neighbors.filter((neighbor) => {
@@ -514,7 +491,7 @@ function* loadNeighborsWorker(action :SequenceAction) :Generator<*, *, *> {
 
   const app = yield select(getApp);
   const orgId = yield select(getOrgId);
-  const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId], Map());
+  const entitySetIdsToAppType = app.getIn([APP_DATA.ENTITY_SETS_BY_ORG, orgId], Map());
 
   /*
    * Get Entity Set Ids
@@ -624,7 +601,7 @@ function* getPSAScoresAndNeighbors(psaScoresEKID :string) :Generator<*, *, *> {
   if (psaScoresEKID) {
     const app = yield select(getApp);
     const orgId = yield select(getOrgId);
-    const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
+    const entitySetIdsToAppType = app.getIn([APP_DATA.ENTITY_SETS_BY_ORG, orgId]);
     /*
      * Get Entity Set Ids
      */
@@ -1090,7 +1067,6 @@ function* submitPSAWatcher() :Generator<*, *, *> {
 export {
   addCaseToPSAWatcher,
   editPSAWatcher,
-  loadDataModelWatcher,
   loadNeighborsWatcher,
   removeCaseFromPSAWatcher,
   submitPSAWatcher

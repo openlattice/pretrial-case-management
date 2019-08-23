@@ -5,7 +5,7 @@
 import { DateTime } from 'luxon';
 import { Map, List, fromJS } from 'immutable';
 import type { SequenceAction } from 'redux-reqseq';
-import { DataApi, Types } from 'lattice';
+import { Types } from 'lattice';
 import randomUUID from 'uuid/v4';
 import {
   DataApiActions,
@@ -25,7 +25,7 @@ import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { getPropertyTypeId, getPropertyIdToValueMap } from '../../edm/edmUtils';
 import { createIdObject, getEntityProperties, getEntityKeyId } from '../../utils/DataUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { APP, PSA_NEIGHBOR, STATE } from '../../utils/consts/FrontEndStateConsts';
+import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import {
   LOAD_RELEASE_CONDTIONS,
   SUBMIT_RELEASE_CONDTIONS,
@@ -34,6 +34,9 @@ import {
   submitReleaseConditions,
   updateOutcomesAndReleaseCondtions
 } from './ReleaseConditionsActionFactory';
+
+import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 
 const {
   createEntityAndAssociationData,
@@ -97,7 +100,7 @@ const {
  */
 const getApp = state => state.get(STATE.APP, Map());
 const getEDM = state => state.get(STATE.EDM, Map());
-const getOrgId = state => state.getIn([STATE.APP, APP.SELECTED_ORG_ID], '');
+const getOrgId = state => state.getIn([STATE.APP, APP_DATA.SELECTED_ORG_ID], '');
 
 const LIST_ENTITY_SETS = List.of(
   CHECKIN_APPOINTMENTS,
@@ -117,7 +120,7 @@ function* getHearingAndNeighbors(hearingEntityKeyId :string) :Generator<*, *, *>
   if (hearingEntityKeyId) {
     const app = yield select(getApp);
     const orgId = yield select(getOrgId);
-    const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
+    const entitySetIdsToAppType = app.getIn([APP_DATA.ENTITY_SETS_BY_ORG, orgId]);
     /*
     * Get Entity Set Ids
     */
@@ -205,7 +208,7 @@ function* loadReleaseConditionsWorker(action :SequenceAction) :Generator<*, *, *
 
     const app = yield select(getApp);
     const orgId = yield select(getOrgId);
-    const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
+    const entitySetIdsToAppType = app.getIn([APP_DATA.ENTITY_SETS_BY_ORG, orgId]);
     const checkInAppointmentEntitySetId = getEntitySetIdFromApp(app, CHECKIN_APPOINTMENTS);
     const chargesEntitySetId = getEntitySetIdFromApp(app, CHARGES);
     const dmfEntitySetId = getEntitySetIdFromApp(app, DMF_RESULTS);

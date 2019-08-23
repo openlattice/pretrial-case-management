@@ -21,7 +21,6 @@ import { OL } from '../../utils/consts/Colors';
 import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import {
-  APP,
   COURT,
   PEOPLE,
   PSA_NEIGHBOR,
@@ -32,6 +31,7 @@ import {
 
 // Redux State Imports
 import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 
 import * as CourtActionFactory from '../court/CourtActionFactory';
 import * as DataActionFactory from '../../utils/data/DataActionFactory';
@@ -414,16 +414,16 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
 function mapStateToProps(state) {
   const app = state.get(STATE.APP);
   const court = state.get(STATE.COURT);
-  const orgId = app.get(APP.SELECTED_ORG_ID, '');
+  const orgId = app.get(APP_DATA.SELECTED_ORG_ID, '');
   const people = state.get(STATE.PEOPLE);
   const review = state.get(STATE.REVIEW);
   const submit = state.get(STATE.SUBMIT);
   const psaModal = state.get(STATE.PSA_MODAL);
   // TODO: Address prop names so that consts can be used as keys
   return {
-    [APP.ENTITY_SETS_BY_ORG]: app.getIn([APP.ENTITY_SETS_BY_ORG, orgId], Map()),
-    [APP.SELECTED_ORG_ID]: app.get(APP.ESELECTED_ORG_ID),
-    [APP.SELECTED_ORG_SETTINGS]: app.get(APP.SELECTED_ORG_SETTINGS),
+    [APP_DATA.ENTITY_SETS_BY_ORG]: app.getIn([APP_DATA.ENTITY_SETS_BY_ORG, orgId], Map()),
+    [APP_DATA.SELECTED_ORG_ID]: app.get(APP_DATA.ESELECTED_ORG_ID),
+    [APP_DATA.SELECTED_ORG_SETTINGS]: app.get(APP_DATA.SELECTED_ORG_SETTINGS),
 
     [REVIEW.ENTITY_SET_ID]: review.get(REVIEW.ENTITY_SET_ID) || people.get(PEOPLE.SCORES_ENTITY_SET_ID),
     [REVIEW.NEIGHBORS_BY_ID]: review.get(REVIEW.NEIGHBORS_BY_ID),

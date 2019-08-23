@@ -32,12 +32,7 @@ import { getPropertyTypeId, getPropertyIdToValueMap } from '../../edm/edmUtils';
 import { hearingNeedsReminder } from '../../utils/RemindersUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { MAX_HITS } from '../../utils/consts/Consts';
-import {
-  APP,
-  PSA_NEIGHBOR,
-  REMINDERS,
-  STATE
-} from '../../utils/consts/FrontEndStateConsts';
+import { PSA_NEIGHBOR, REMINDERS } from '../../utils/consts/FrontEndStateConsts';
 import {
   LOAD_MANUAL_REMINDERS_FORM,
   LOAD_MANUAL_REMINDERS,
@@ -48,6 +43,9 @@ import {
   loadManualRemindersNeighborsById,
   submitManualReminder,
 } from './ManualRemindersActionFactory';
+
+import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 
 const { createEntityAndAssociationData, getEntityData } = DataApiActions;
 const { createEntityAndAssociationDataWorker, getEntityDataWorker } = DataApiSagas;
@@ -77,7 +75,7 @@ const getEDM = state => state.get(STATE.EDM, Map());
 const getReminderActionListDate = state => (
   state.getIn([STATE.REMINDERS, REMINDERS.REMINDERS_ACTION_LIST_DATE], DateTime.local().toISO())
 );
-const getOrgId = state => state.getIn([STATE.APP, APP.SELECTED_ORG_ID], '');
+const getOrgId = state => state.getIn([STATE.APP, APP_DATA.SELECTED_ORG_ID], '');
 
 const getStaffId = () => {
   const staffInfo = AuthUtils.getUserInfo();
@@ -97,7 +95,7 @@ function* loadManualRemindersFormWorker(action :SequenceAction) :Generator<*, *,
     const app = yield select(getApp);
     const orgId = yield select(getOrgId);
     const remindersActionListDate = yield select(getReminderActionListDate);
-    const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
+    const entitySetIdsToAppType = app.getIn([APP_DATA.ENTITY_SETS_BY_ORG, orgId]);
     const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
     const hearingsEntitySetId = getEntitySetIdFromApp(app, HEARINGS);
     const contactInformationEntitySetId = getEntitySetIdFromApp(app, CONTACT_INFORMATION);
@@ -250,7 +248,7 @@ function* loadManualRemindersNeighborsByIdWorker(action :SequenceAction) :Genera
     if (manualReminderIds.length) {
       const app = yield select(getApp);
       const orgId = yield select(getOrgId);
-      const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
+      const entitySetIdsToAppType = app.getIn([APP_DATA.ENTITY_SETS_BY_ORG, orgId]);
       const pretrialCasesEntitySetId = getEntitySetIdFromApp(app, PRETRIAL_CASES);
       /*
        * Get Entity Set Ids
@@ -376,8 +374,8 @@ function* submitManualReminderWorker(action :SequenceAction) :Generator<*, *, *>
     /*
      * Get Staff Entity Key Id
      */
-    const staffIdsToEntityKeyIds = app.get(APP.STAFF_IDS_TO_EKIDS, Map());
-    const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
+    const staffIdsToEntityKeyIds = app.get(APP_DATA.STAFF_IDS_TO_EKIDS, Map());
+    const entitySetIdsToAppType = app.getIn([APP_DATA.ENTITY_SETS_BY_ORG, orgId]);
     const staffId = getStaffId();
     const staffEKID = staffIdsToEntityKeyIds.get(staffId, '');
 

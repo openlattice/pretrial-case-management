@@ -24,7 +24,6 @@ import { SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { Title } from '../../utils/Layout';
 import { JURISDICTION } from '../../utils/consts/Consts';
 import {
-  APP,
   SUBMIT,
   REVIEW,
   COURT,
@@ -32,9 +31,10 @@ import {
   PSA_NEIGHBOR
 } from '../../utils/consts/FrontEndStateConsts';
 
-import { HEARINGS_ACTIONS, HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUtils';
+import { APP_DATA } from '../../utils/consts/redux/AppConsts';
+import { HEARINGS_ACTIONS, HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
 
 import { submitExistingHearing } from './HearingsActions';
 
@@ -351,17 +351,17 @@ class SelectHearingsContainer extends React.Component<Props, State> {
 
 function mapStateToProps(state) {
   const app = state.get(STATE.APP);
-  const orgId = app.get(APP.SELECTED_ORG_ID, '');
+  const orgId = app.get(APP_DATA.SELECTED_ORG_ID, '');
   const court = state.get(STATE.COURT);
   const hearings = state.get(STATE.HEARINGS);
   const review = state.get(STATE.REVIEW);
   const submit = state.get(STATE.SUBMIT);
   return {
     app,
-    [APP.SELECTED_ORG_ID]: orgId,
-    [APP.SELECTED_ORG_SETTINGS]: app.get(APP.SELECTED_ORG_SETTINGS, Map()),
-    [APP.ENTITY_SETS_BY_ORG]: app.get(APP.ENTITY_SETS_BY_ORG, Map()),
-    [APP.FQN_TO_ID]: app.get(APP.FQN_TO_ID),
+    [APP_DATA.SELECTED_ORG_ID]: orgId,
+    [APP_DATA.SELECTED_ORG_SETTINGS]: app.get(APP_DATA.SELECTED_ORG_SETTINGS, Map()),
+    [APP_DATA.ENTITY_SETS_BY_ORG]: app.get(APP_DATA.ENTITY_SETS_BY_ORG, Map()),
+    [APP_DATA.FQN_TO_ID]: app.get(APP_DATA.FQN_TO_ID),
 
     submitExistingHearingReqState: getReqState(hearings, HEARINGS_ACTIONS.SUBMIT_EXISTING_HEARING),
     submitHearingReqState: getReqState(hearings, HEARINGS_ACTIONS.SUBMIT_HEARING),

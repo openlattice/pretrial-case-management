@@ -5,10 +5,8 @@
 import React from 'react';
 import styled from 'styled-components';
 import { Map } from 'immutable';
-import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { Redirect, Route, Switch } from 'react-router-dom';
-import type { RequestSequence } from 'redux-reqseq';
 
 import SearchBar from '../../components/PSASearchBar';
 import NewChargeModal from './NewChargeModal';
@@ -16,10 +14,13 @@ import ChargeTable from '../../components/managecharges/ChargeTable';
 import DashboardMainSection from '../../components/dashboard/DashboardMainSection';
 import NavButtonToolbar from '../../components/buttons/NavButtonToolbar';
 import Pagination from '../../components/Pagination';
-import { APP, CHARGES, STATE } from '../../utils/consts/FrontEndStateConsts';
+import { CHARGES } from '../../utils/consts/FrontEndStateConsts';
 import { PrimaryButton } from '../../utils/Layout';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { CHARGE_TYPES } from '../../utils/consts/ChargeConsts';
+
+import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 
 import * as Routes from '../../core/router/Routes';
 
@@ -247,9 +248,9 @@ function mapStateToProps(state) {
 
   return {
     // App
-    [APP.ORGS]: app.get(APP.ORGS),
-    [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
-    [APP.SELECTED_ORG_TITLE]: app.get(APP.SELECTED_ORG_TITLE),
+    [APP_DATA.ORGS]: app.get(APP_DATA.ORGS),
+    [APP_DATA.SELECTED_ORG_ID]: app.get(APP_DATA.SELECTED_ORG_ID),
+    [APP_DATA.SELECTED_ORG_TITLE]: app.get(APP_DATA.SELECTED_ORG_TITLE),
 
     // Charges
     [CHARGES.ARREST]: charges.get(CHARGES.ARREST),

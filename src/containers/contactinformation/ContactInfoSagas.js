@@ -22,7 +22,7 @@ import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { createIdObject } from '../../utils/DataUtils';
 import { getPropertyTypeId, getPropertyIdToValueMap } from '../../edm/edmUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { APP, PSA_NEIGHBOR, STATE } from '../../utils/consts/FrontEndStateConsts';
+import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import {
   SUBMIT_CONTACT,
   UPDATE_CONTACT,
@@ -31,6 +31,9 @@ import {
   updateContact,
   updateContactsBulk
 } from './ContactInfoActions';
+
+import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 
 const { createEntityAndAssociationData, getEntityData, updateEntityData } = DataApiActions;
 const { createEntityAndAssociationDataWorker, getEntityDataWorker, updateEntityDataWorker } = DataApiSagas;
@@ -48,7 +51,7 @@ const { ID } = PROPERTY_TYPES;
  */
 const getApp = state => state.get(STATE.APP, Map());
 const getEDM = state => state.get(STATE.EDM, Map());
-const getOrgId = state => state.getIn([STATE.APP, APP.SELECTED_ORG_ID], '');
+const getOrgId = state => state.getIn([STATE.APP, APP_DATA.SELECTED_ORG_ID], '');
 
 function* submitContactWorker(action :SequenceAction) :Generator<*, *, *> {
   try {
@@ -214,7 +217,7 @@ function* updateContactsBulkWorker(action :SequenceAction) :Generator<*, *, *> {
     yield put(updateContactsBulk.request(action.id));
     const app = yield select(getApp);
     const orgId = yield select(getOrgId);
-    const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
+    const entitySetIdsToAppType = app.getIn([APP_DATA.ENTITY_SETS_BY_ORG, orgId]);
     const contactInfoESID = getEntitySetIdFromApp(app, CONTACT_INFORMATION);
     const peopleESID = getEntitySetIdFromApp(app, PEOPLE);
     const updateType = 'PartialReplace';

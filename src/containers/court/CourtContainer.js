@@ -32,14 +32,14 @@ import { DATE_FORMAT, TIME_FORMAT } from '../../utils/consts/DateTimeConsts';
 import { DOMAIN } from '../../utils/consts/ReportDownloadTypes';
 import { OL } from '../../utils/consts/Colors';
 import {
-  APP,
   COURT,
   EDM,
   PSA_ASSOCIATION,
-  PSA_NEIGHBOR,
-  STATE
+  PSA_NEIGHBOR
 } from '../../utils/consts/FrontEndStateConsts';
 
+import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { HEARINGS_ACTIONS, HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
 import { getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUtils';
 
@@ -578,8 +578,8 @@ function mapStateToProps(state) {
   const hearingsByTime = hearings.getIn([HEARINGS_DATA.HEARINGS_BY_DATE_AND_TIME, courtDate], Map());
   const courtrooms = hearings.getIn([HEARINGS_DATA.COURTROOMS_BY_DATE, courtDate], Set());
   return {
-    [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
-    [APP.SELECTED_ORG_TITLE]: app.get(APP.SELECTED_ORG_TITLE),
+    [APP_DATA.SELECTED_ORG_ID]: app.get(APP_DATA.SELECTED_ORG_ID),
+    [APP_DATA.SELECTED_ORG_TITLE]: app.get(APP_DATA.SELECTED_ORG_TITLE),
 
     // Court
     [COURT.PEOPLE_WITH_OPEN_PSAS]: court.get(COURT.PEOPLE_WITH_OPEN_PSAS),

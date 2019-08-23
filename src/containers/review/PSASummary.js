@@ -23,14 +23,15 @@ import { NoResults, Title, SummaryRowWrapper } from '../../utils/Layout';
 import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import {
-  APP,
   EDM,
-  STATE,
   REVIEW,
   PEOPLE,
   PSA_NEIGHBOR,
   PSA_ASSOCIATION
 } from '../../utils/consts/FrontEndStateConsts';
+
+import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 
 import * as Routes from '../../core/router/Routes';
 import * as ReviewActionFactory from './ReviewActionFactory';
@@ -323,14 +324,14 @@ class PSASummary extends React.Component<Props, *> {
 
 function mapStateToProps(state) {
   const app = state.get(STATE.APP);
-  const orgId = app.get(APP.SELECTED_ORG_ID, '');
+  const orgId = app.get(APP_DATA.SELECTED_ORG_ID, '');
   const edm = state.get(STATE.EDM);
   const review = state.get(STATE.REVIEW);
   const people = state.get(STATE.PEOPLE);
 
   return {
-    [APP.SELECTED_ORG_SETTINGS]: app.get(APP.SELECTED_ORG_SETTINGS),
-    [APP.ENTITY_SETS_BY_ORG]: app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]),
+    [APP_DATA.SELECTED_ORG_SETTINGS]: app.get(APP_DATA.SELECTED_ORG_SETTINGS),
+    [APP_DATA.ENTITY_SETS_BY_ORG]: app.getIn([APP_DATA.ENTITY_SETS_BY_ORG, orgId]),
 
     [EDM.FQN_TO_ID]: edm.get(EDM.FQN_TO_ID),
 

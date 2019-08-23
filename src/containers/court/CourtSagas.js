@@ -18,12 +18,10 @@ import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
 import { MAX_HITS, PSA_STATUSES } from '../../utils/consts/Consts';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import {
-  APP,
-  PSA_ASSOCIATION,
-  PSA_NEIGHBOR,
-  STATE
-} from '../../utils/consts/FrontEndStateConsts';
+import { PSA_ASSOCIATION, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
+
+import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 
 import {
   FILTER_PEOPLE_IDS_WITH_OPEN_PSAS,
@@ -50,7 +48,7 @@ const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
 const { OPENLATTICE_ID_FQN } = Constants;
 
 const getApp = state => state.get(STATE.APP, Map());
-const getOrgId = state => state.getIn([STATE.APP, APP.SELECTED_ORG_ID], '');
+const getOrgId = state => state.getIn([STATE.APP, APP_DATA.SELECTED_ORG_ID], '');
 
 function* filterPeopleIdsWithOpenPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
 
@@ -74,7 +72,7 @@ function* filterPeopleIdsWithOpenPSAsWorker(action :SequenceAction) :Generator<*
 
     const app = yield select(getApp);
     const orgId = yield select(getOrgId);
-    const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
+    const entitySetIdsToAppType = app.getIn([APP_DATA.ENTITY_SETS_BY_ORG, orgId]);
     const contactInformationEntitySetId = getEntitySetIdFromApp(app, CONTACT_INFORMATION);
     const subscriptionEntitySetId = getEntitySetIdFromApp(app, SUBSCRIPTION);
     const hearingsEntitySetId = getEntitySetIdFromApp(app, HEARINGS);

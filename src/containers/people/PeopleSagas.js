@@ -25,7 +25,7 @@ import {
 import type { SequenceAction } from 'redux-reqseq';
 
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { APP, PSA_NEIGHBOR, STATE } from '../../utils/consts/FrontEndStateConsts';
+import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { getEntityProperties, getSearchTerm } from '../../utils/DataUtils';
 import { hearingIsCancelled } from '../../utils/HearingUtils';
@@ -46,6 +46,9 @@ import {
   loadRequiresActionPeople,
   refreshPersonNeighbors,
 } from './PeopleActionFactory';
+
+import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 
 const { getEntitySetData } = DataApiActions;
 const { getEntitySetDataWorker } = DataApiSagas;
@@ -90,7 +93,7 @@ const { OPENLATTICE_ID_FQN } = Constants;
 
 const getApp = state => state.get(STATE.APP, Map());
 const getEDM = state => state.get(STATE.EDM, Map());
-const getOrgId = state => state.getIn([STATE.APP, APP.SELECTED_ORG_ID], '');
+const getOrgId = state => state.getIn([STATE.APP, APP_DATA.SELECTED_ORG_ID], '');
 
 function* getAllSearchResults(entitySetId :string, searchTerm :string) :Generator<*, *, *> {
   const loadSizeRequest = {
@@ -179,7 +182,7 @@ function* getPersonNeighborsWorker(action) :Generator<*, *, *> {
 
     const app = yield select(getApp);
     const orgId = yield select(getOrgId);
-    const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
+    const entitySetIdsToAppType = app.getIn([APP_DATA.ENTITY_SETS_BY_ORG, orgId]);
 
     /*
      * Get Entity Set Ids
@@ -482,7 +485,7 @@ function* refreshPersonNeighborsWorker(action) :Generator<*, *, *> {
     let neighbors = Map();
     const app = yield select(getApp);
     const orgId = yield select(getOrgId);
-    const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
+    const entitySetIdsToAppType = app.getIn([APP_DATA.ENTITY_SETS_BY_ORG, orgId]);
     /*
      * Get Entity Set Ids
      */
@@ -734,7 +737,7 @@ function* loadRequiresActionPeopleWorker(action :SequenceAction) :Generator<*, *
     const app = yield select(getApp);
     const edm = yield select(getEDM);
     const orgId = yield select(getOrgId);
-    const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
+    const entitySetIdsToAppType = app.getIn([APP_DATA.ENTITY_SETS_BY_ORG, orgId]);
     const psaScoresEntitySetId = getEntitySetIdFromApp(app, PSA_SCORES);
     const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
     const manualPretrialCasesFqnEntitySetId = getEntitySetIdFromApp(app, MANUAL_PRETRIAL_CASES);

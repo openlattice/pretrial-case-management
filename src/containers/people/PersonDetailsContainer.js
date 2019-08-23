@@ -42,7 +42,6 @@ import {
   getHearingsIdsFromNeighbors
 } from '../../utils/HearingUtils';
 import {
-  APP,
   COURT,
   SUBMIT,
   PEOPLE,
@@ -53,6 +52,7 @@ import {
 
 // Redux State Imports
 import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
 
 import * as Routes from '../../core/router/Routes';
@@ -551,9 +551,9 @@ function mapStateToProps(state, ownProps) {
   const submit = state.get(STATE.SUBMIT);
 
   return {
-    [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
-    [APP.SELECTED_ORG_SETTINGS]: app.get(APP.SELECTED_ORG_SETTINGS),
-    [APP.ENTITY_SETS_BY_ORG]: app.get(APP.ENTITY_SETS_BY_ORG),
+    [APP_DATA.SELECTED_ORG_ID]: app.get(APP_DATA.SELECTED_ORG_ID),
+    [APP_DATA.SELECTED_ORG_SETTINGS]: app.get(APP_DATA.SELECTED_ORG_SETTINGS),
+    [APP_DATA.ENTITY_SETS_BY_ORG]: app.get(APP_DATA.ENTITY_SETS_BY_ORG),
 
     [HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID]: hearings.get(HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID),
 
