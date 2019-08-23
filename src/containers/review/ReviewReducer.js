@@ -8,7 +8,6 @@ import { APP_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_NEIGHBOR, REVIEW } from '../../utils/consts/FrontEndStateConsts';
 import { SWITCH_ORGANIZATION } from '../app/AppActionFactory';
 import { editPSA } from '../psa/FormActionFactory';
-import { updateOutcomesAndReleaseCondtions } from '../releaseconditions/ReleaseConditionsActionFactory';
 import {
   changePSAStatus,
   checkPSAPermissions,
@@ -20,10 +19,8 @@ import {
 } from './ReviewActionFactory';
 
 const {
-  BONDS,
   DMF_RESULTS,
   DMF_RISK_FACTORS,
-  OUTCOMES,
   PSA_RISK_FACTORS,
   RELEASE_RECOMMENDATIONS,
   STAFF
@@ -236,51 +233,6 @@ export default function reviewReducer(state :Immutable.Map<*, *> = INITIAL_STATE
             .set(REVIEW.NEIGHBORS_BY_ID, psaNeighborsById)
             .set(REVIEW.NEIGHBORS_BY_DATE, psaNeighborsByDate);
         }
-      });
-    }
-
-    case updateOutcomesAndReleaseCondtions.case(action.type): {
-      return updateOutcomesAndReleaseCondtions.reducer(state, action, {
-        REQUEST: () => state.set(
-          REVIEW.PSA_IDS_REFRESHING,
-          state.get(REVIEW.PSA_IDS_REFRESHING)
-        ),
-        SUCCESS: () => {
-          const {
-            psaId,
-            newBondEntity,
-            newOutcomeEntity
-          } = action.value;
-
-          let psaNeighborsByDate = state.get(REVIEW.NEIGHBORS_BY_DATE);
-
-          psaNeighborsByDate.keySeq().forEach((date) => {
-            if (psaNeighborsByDate.get(date).get(psaId)) {
-              psaNeighborsByDate = psaNeighborsByDate.setIn(
-                [date, psaId, OUTCOMES, PSA_NEIGHBOR.DETAILS],
-                Immutable.fromJS(newOutcomeEntity)
-              ).setIn(
-                [date, psaId, BONDS, PSA_NEIGHBOR.DETAILS],
-                Immutable.fromJS(newBondEntity)
-              );
-            }
-          });
-          const psaNeighborsById = state.get(REVIEW.NEIGHBORS_BY_ID)
-            .setIn(
-              [psaId, OUTCOMES, PSA_NEIGHBOR.DETAILS],
-              Immutable.fromJS(newOutcomeEntity)
-            ).setIn(
-              [psaId, BONDS, PSA_NEIGHBOR.DETAILS],
-              Immutable.fromJS(newBondEntity)
-            );
-          return state
-            .set(REVIEW.NEIGHBORS_BY_ID, psaNeighborsById)
-            .set(REVIEW.NEIGHBORS_BY_DATE, psaNeighborsByDate);
-        },
-        FINALLY: () => state.set(
-          REVIEW.PSA_IDS_REFRESHING,
-          state.get(REVIEW.PSA_IDS_REFRESHING)
-        )
       });
     }
 

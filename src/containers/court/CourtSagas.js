@@ -15,7 +15,7 @@ import {
 import type { SequenceAction } from 'redux-reqseq';
 
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
-import { getEntityProperties } from '../../utils/DataUtils';
+import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
 import { MAX_HITS, PSA_STATUSES } from '../../utils/consts/Consts';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_ASSOCIATION, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
@@ -25,9 +25,7 @@ import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 
 import {
   FILTER_PEOPLE_IDS_WITH_OPEN_PSAS,
-  LOAD_JUDGES,
   filterPeopleIdsWithOpenPSAs,
-  loadJudges
 } from './CourtActionFactory';
 
 const {
@@ -231,35 +229,6 @@ function* filterPeopleIdsWithOpenPSAsWatcher() :Generator<*, *, *> {
   yield takeEvery(FILTER_PEOPLE_IDS_WITH_OPEN_PSAS, filterPeopleIdsWithOpenPSAsWorker);
 }
 
-function* loadJudgesWorker(action :SequenceAction) :Generator<*, *, *> {
-  try {
-    yield put(loadJudges.request(action.id));
-    const app = yield select(getApp);
-    const judgesEntitySetId = getEntitySetIdFromApp(app, JUDGES);
-    const options = {
-      searchTerm: '*',
-      start: 0,
-      maxHits: MAX_HITS
-    };
-
-    const allJudgeData = yield call(SearchApi.searchEntitySetData, judgesEntitySetId, options);
-    const allJudges = fromJS(allJudgeData.hits);
-    yield put(loadJudges.success(action.id, { allJudges }));
-  }
-  catch (error) {
-    console.error(error);
-    yield put(loadJudges.failure(action.id, error));
-  }
-  finally {
-    yield put(loadJudges.finally(action.id));
-  }
-}
-
-function* loadJudgesWatcher() :Generator<*, *, *> {
-  yield takeEvery(LOAD_JUDGES, loadJudgesWorker);
-}
-
 export {
-  filterPeopleIdsWithOpenPSAsWatcher,
-  loadJudgesWatcher
+  filterPeopleIdsWithOpenPSAsWatcher
 };

@@ -324,7 +324,6 @@ type Props = {
   allContacts :Immutable.Map<*>,
   allFTAs :Immutable.List<*>,
   allHearings :Immutable.List<*>,
-  allJudges :Immutable.List<*>,
   allPSAs :Immutable.List<*>,
   allSentencesForPerson :Immutable.List<*>,
   arrestId :string,
@@ -1006,7 +1005,6 @@ class Form extends React.Component<Props, State> {
       allCasesForPerson,
       allChargesForPerson,
       allHearings,
-      allJudges,
       charges,
       selectedPerson,
       psaForm,
@@ -1049,7 +1047,6 @@ class Form extends React.Component<Props, State> {
           allCases={allCasesForPerson}
           allCharges={chargesByCaseId}
           allHearings={allHearings}
-          allJudges={allJudges}
           getOnExport={this.getOnExport} />
     );
   }
@@ -1154,9 +1151,6 @@ function mapStateToProps(state :Immutable.Map<*, *>) :Object {
 
     // People
     [PEOPLE.REFRESHING_PERSON_NEIGHBORS]: people.get(PEOPLE.REFRESHING_PERSON_NEIGHBORS),
-
-    // Court
-    [COURT.ALL_JUDGES]: court.get(COURT.ALL_JUDGES),
 
     // Review
     readOnlyPermissions: review.get(REVIEW.READ_ONLY),

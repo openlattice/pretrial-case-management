@@ -363,8 +363,6 @@ function mapStateToProps(state) {
     [APP_DATA.ENTITY_SETS_BY_ORG]: app.get(APP_DATA.ENTITY_SETS_BY_ORG, Map()),
     [APP_DATA.FQN_TO_ID]: app.get(APP_DATA.FQN_TO_ID),
 
-    [COURT.ALL_JUDGES]: court.get(COURT.ALL_JUDGES),
-
     submitExistingHearingReqState: getReqState(hearings, HEARINGS_ACTIONS.SUBMIT_EXISTING_HEARING),
     submitHearingReqState: getReqState(hearings, HEARINGS_ACTIONS.SUBMIT_HEARING),
     updateHearingReqState: getReqState(hearings, HEARINGS_ACTIONS.UPDATE_HEARING),

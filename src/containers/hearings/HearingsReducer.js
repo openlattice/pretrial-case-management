@@ -1,7 +1,6 @@
 /*
  * @flow
  */
-import moment from 'moment';
 import { DateTime } from 'luxon';
 import { RequestStates } from 'redux-reqseq';
 import {
@@ -18,6 +17,7 @@ import {
   CLOSE_HEARING_SETTINGS_MODAL,
   loadHearingsForDate,
   loadHearingNeighbors,
+  loadJudges,
   OPEN_HEARING_SETTINGS_MODAL,
   refreshHearingAndNeighbors,
   SET_COURT_DATE,
@@ -27,7 +27,7 @@ import {
   updateHearing
 } from './HearingsActions';
 
-import { TIME_FORMAT } from '../../utils/consts/DateTimeConsts';
+import { DATE_FORMAT, TIME_FORMAT } from '../../utils/consts/DateTimeConsts';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { getEntityProperties } from '../../utils/DataUtils';
 
@@ -55,6 +55,9 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     [HEARINGS_ACTIONS.LOAD_HEARING_NEIGHBORS]: {
       [REDUX.REQUEST_STATE]: STANDBY
     },
+    [HEARINGS_ACTIONS.LOAD_JUDGES]: {
+      [REDUX.REQUEST_STATE]: STANDBY
+    },
     [HEARINGS_ACTIONS.REFRESH_HEARING_AND_NEIGHBORS]: {
       [REDUX.REQUEST_STATE]: STANDBY
     },
@@ -71,23 +74,27 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [REDUX.ERRORS]: {
     [HEARINGS_ACTIONS.LOAD_HEARINGS_FOR_DATE]: Map(),
     [HEARINGS_ACTIONS.LOAD_HEARING_NEIGHBORS]: Map(),
+    [HEARINGS_ACTIONS.LOAD_JUDGES]: Map(),
     [HEARINGS_ACTIONS.REFRESH_HEARING_AND_NEIGHBORS]: Map(),
     [HEARINGS_ACTIONS.SUBMIT_EXISTING_HEARING]: Map(),
     [HEARINGS_ACTIONS.SUBMIT_HEARING]: Map(),
     [HEARINGS_ACTIONS.UPDATE_HEARING]: Map()
   },
+  [HEARINGS_DATA.ALL_JUDGES]: Map(),
   [HEARINGS_DATA.COURT_DATE]: DateTime.local(),
   [HEARINGS_DATA.COURTROOM]: '',
   [HEARINGS_DATA.COURTROOMS_BY_DATE]: Map(),
-  [HEARINGS_DATA.DATE]: DateTime.local().toISODate(),
+  [HEARINGS_DATA.DATE]: DateTime.local().toFormat(DATE_FORMAT),
   [HEARINGS_DATA.HEARINGS_BY_DATE_AND_TIME]: Map(),
   [HEARINGS_DATA.HEARINGS_BY_ID]: Map(),
   [HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID]: Map(),
   [HEARINGS_DATA.JUDGE]: '',
+  [HEARINGS_DATA.JUDGES_BY_ID]: Map(),
+  [HEARINGS_DATA.JUDGES_BY_COUNTY]: Map(),
   [HEARINGS_DATA.SETTINGS_MODAL_OPEN]: false,
   [HEARINGS_DATA.SUBMITTED_HEARING]: Map(),
   [HEARINGS_DATA.SUBMITTED_HEARING_NEIGHBORS]: Map(),
-  [HEARINGS_DATA.TIME]: DateTime.local().toFormat(TIME_FORMAT),
+  [HEARINGS_DATA.TIME]: '',
   [HEARINGS_DATA.UPDATED_HEARING]: Map(),
   [HEARINGS_DATA.UPDATED_HEARING_NEIGHBORS]: Map()
 });
@@ -96,7 +103,7 @@ export default function hearingsReducer(state :Map<*, *> = INITIAL_STATE, action
   switch (action.type) {
 
     case CLEAR_HEARING_SETTINGS: return state
-      .set(HEARINGS_DATA.DATE, moment().format('MM/DD/YYYY'))
+      .set(HEARINGS_DATA.DATE, DateTime.local().toISODate())
       .set(HEARINGS_DATA.COURTROOM, '')
       .set(HEARINGS_DATA.JUDGE, '')
       .set(HEARINGS_DATA.TIME, '');
@@ -184,6 +191,40 @@ export default function hearingsReducer(state :Map<*, *> = INITIAL_STATE, action
         },
         FINALLY: () => state
           .deleteIn([REDUX.ACTIONS, HEARINGS_ACTIONS.LOAD_HEARING_NEIGHBORS, action.id])
+      });
+    }
+
+    case loadJudges.case(action.type): {
+      return loadJudges.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([REDUX.ACTIONS, HEARINGS_ACTIONS.LOAD_JUDGES, action.id], fromJS(action))
+          .setIn([REDUX.ACTIONS, HEARINGS_ACTIONS.LOAD_JUDGES, REDUX.REQUEST_STATE], PENDING),
+        SUCCESS: () => {
+          const {
+            allJudges,
+            judgesByCounty,
+            judgesById
+          } = action.value;
+          return state
+            .set(HEARINGS_DATA.ALL_JUDGES, allJudges)
+            .set(HEARINGS_DATA.JUDGES_BY_COUNTY, judgesByCounty)
+            .set(HEARINGS_DATA.JUDGES_BY_ID, judgesById)
+            .setIn([REDUX.ACTIONS, HEARINGS_ACTIONS.LOAD_JUDGES, REDUX.REQUEST_STATE], SUCCESS);
+        },
+        FAILURE: () => {
+          if (actionValueIsInvalid(action.value)) {
+            return state;
+          }
+          const { error } = action.value;
+          return state
+            .set(HEARINGS_DATA.ALL_JUDGES, Map())
+            .set(HEARINGS_DATA.JUDGES_BY_COUNTY, Map())
+            .set(HEARINGS_DATA.JUDGES_BY_ID, Map())
+            .setIn([REDUX.ERRORS, HEARINGS_ACTIONS.LOAD_JUDGES], error)
+            .setIn([REDUX.ACTIONS, HEARINGS_ACTIONS.LOAD_JUDGES, REDUX.REQUEST_STATE], FAILURE);
+        },
+        FINALLY: () => state
+          .deleteIn([REDUX.ACTIONS, HEARINGS_ACTIONS.LOAD_JUDGES, action.id])
       });
     }
 

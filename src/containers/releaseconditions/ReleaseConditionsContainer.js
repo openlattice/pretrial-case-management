@@ -785,10 +785,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       };
     }
     else {
-      bondEntity = {
-        [PROPERTY_TYPES.BOND_TYPE]: null,
-        [PROPERTY_TYPES.BOND_AMOUNT]: null
-      };
+      bondEntity = null;
     }
 
     const conditionsEntity = [];
@@ -797,6 +794,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
         [PROPERTY_TYPES.TYPE]: NO_RELEASE_CONDITION,
         [PROPERTY_TYPES.START_DATE]: startDate,
       });
+      deleteConditions = conditionTypes.valueSeq();
     }
     else {
       conditions.forEach((condition) => {
@@ -1175,8 +1173,6 @@ function mapStateToProps(state) {
     [APP_DATA.SELECTED_ORG_SETTINGS]: app.get(APP_DATA.SELECTED_ORG_SETTINGS, Map()),
     [APP_DATA.ENTITY_SETS_BY_ORG]: app.get(APP_DATA.ENTITY_SETS_BY_ORG, Map()),
     [APP_DATA.FQN_TO_ID]: app.get(APP_DATA.FQN_TO_ID),
-
-    [COURT.ALL_JUDGES]: court.get(COURT.ALL_JUDGES),
 
     refreshHearingAndNeighborsReqState: getReqState(hearings, HEARINGS_ACTIONS.REFRESH_HEARING_AND_NEIGHBORS),
 

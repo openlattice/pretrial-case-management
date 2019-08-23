@@ -369,11 +369,13 @@ function* submitManualReminderWorker(action :SequenceAction) :Generator<*, *, *>
 
     const app = yield select(getApp);
     const edm = yield select(getEDM);
+    const orgId = yield select(getOrgId);
 
     /*
      * Get Staff Entity Key Id
      */
     const staffIdsToEntityKeyIds = app.get(APP_DATA.STAFF_IDS_TO_EKIDS, Map());
+    const entitySetIdsToAppType = app.getIn([APP_DATA.ENTITY_SETS_BY_ORG, orgId]);
     const staffId = getStaffId();
     const staffEKID = staffIdsToEntityKeyIds.get(staffId, '');
 
@@ -425,7 +427,12 @@ function* submitManualReminderWorker(action :SequenceAction) :Generator<*, *, *>
           srcEntitySetId: manualRemindersESID,
           dstEntityKeyId: personEKID,
           dstEntitySetId: peopleESID
-        },
+        }
+      ]
+    };
+
+    if (contactInformationEKID) {
+      associations[registeredForESID].push(
         {
           data,
           srcEntityIndex: 0,
@@ -433,8 +440,8 @@ function* submitManualReminderWorker(action :SequenceAction) :Generator<*, *, *>
           dstEntityKeyId: contactInformationEKID,
           dstEntitySetId: contactInformationESID
         }
-      ]
-    };
+      );
+    }
 
     /*
      * Assemble Entities
@@ -482,7 +489,23 @@ function* submitManualReminderWorker(action :SequenceAction) :Generator<*, *, *>
     );
     if (manualReminderNeighborsById.error) throw manualReminderNeighborsById.error;
     manualReminderNeighborsById = fromJS(manualReminderNeighborsById.data);
-    const manualReminderNeighbors = manualReminderNeighborsById.get(manualReminderEKID, List());
+    const manualReminderNeighborsList = manualReminderNeighborsById.get(manualReminderEKID, List());
+
+    let peopleReceivingManualReminders = Set();
+    const manualReminderNeighbors = Map().withMutations((map) => {
+      manualReminderNeighborsList.forEach((neighbor) => {
+        const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
+        const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
+        const entityKeyId = neighbor.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0]);
+        if (appTypeFqn === PEOPLE) {
+          peopleReceivingManualReminders = peopleReceivingManualReminders.add(entityKeyId);
+        }
+        map.set(
+          appTypeFqn,
+          fromJS(neighbor)
+        );
+      });
+    });
 
     yield put(submitManualReminder.success(action.id, {
       manualReminder,

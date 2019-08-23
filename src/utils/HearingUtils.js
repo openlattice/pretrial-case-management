@@ -77,19 +77,17 @@ export const getCourtroomOptions = () => {
   return courtroomOptions;
 };
 
-export const getJudgeOptions = (allJudges, jurisdiction) => {
+export const getJudgeOptions = (judgeIdsForCounty, judgesByID) => {
   let judgeOptions = Map();
-  allJudges.forEach((judge) => {
-    const judgeJurisdiction = judge.getIn([PROPERTY_TYPES.JURISDICTION, 0]);
-    if (judgeJurisdiction === jurisdiction) {
-      const fullNameString = formatJudgeName(judge);
-      judgeOptions = judgeOptions.set(
-        fullNameString,
-        judge
-          .set(HEARING_CONSTS.FULL_NAME, fullNameString)
-          .set(HEARING_CONSTS.FIELD, HEARING_CONSTS.JUDGE)
-      );
-    }
+  judgeIdsForCounty.forEach((judgeEKID) => {
+    const judge = judgesByID.get(judgeEKID);
+    const fullNameString = formatJudgeName(judge);
+    judgeOptions = judgeOptions.set(
+      fullNameString,
+      judge
+        .set(HEARING_CONSTS.FULL_NAME, fullNameString)
+        .set(HEARING_CONSTS.FIELD, HEARING_CONSTS.JUDGE)
+    );
   });
   judgeOptions = judgeOptions.set(HEARING_CONSTS.OTHER_JUDGE, Map({
     [HEARING_CONSTS.FULL_NAME]: HEARING_CONSTS.OTHER_JUDGE,

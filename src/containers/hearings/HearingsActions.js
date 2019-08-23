@@ -43,6 +43,9 @@ const loadHearingsForDate :RequestSequence = newRequestSequence(LOAD_HEARINGS_FO
 const LOAD_HEARING_NEIGHBORS :string = 'LOAD_HEARING_NEIGHBORS';
 const loadHearingNeighbors :RequestSequence = newRequestSequence(LOAD_HEARING_NEIGHBORS);
 
+const LOAD_JUDGES :string = 'LOAD_JUDGES';
+const loadJudges :RequestSequence = newRequestSequence(LOAD_JUDGES);
+
 const REFRESH_HEARING_AND_NEIGHBORS :string = 'REFRESH_HEARING_AND_NEIGHBORS';
 const refreshHearingAndNeighbors :RequestSequence = newRequestSequence(REFRESH_HEARING_AND_NEIGHBORS);
 
@@ -61,6 +64,7 @@ export {
   CLOSE_HEARING_SETTINGS_MODAL,
   LOAD_HEARINGS_FOR_DATE,
   LOAD_HEARING_NEIGHBORS,
+  LOAD_JUDGES,
   REFRESH_HEARING_AND_NEIGHBORS,
   OPEN_HEARING_SETTINGS_MODAL,
   SET_COURT_DATE,
@@ -73,6 +77,7 @@ export {
   closeHearingSettingsModal,
   loadHearingsForDate,
   loadHearingNeighbors,
+  loadJudges,
   refreshHearingAndNeighbors,
   openHearingSettingsModal,
   setCourtDate,

@@ -22,7 +22,6 @@ import {
 import {
   all,
   call,
-  push,
   put,
   takeEvery,
   select
@@ -317,7 +316,7 @@ function* newPersonSubmitWorker(action) :Generator<*, *, *> {
         createOrMergeEntityDataWorker,
         createOrMergeEntityData({
           entitySetId: peopleESID,
-          entities: [personSubmitEntity]
+          entityData: [personSubmitEntity]
         })
       );
       if (createPersonResponse.error) throw createPersonResponse.error;
@@ -335,43 +334,45 @@ function* newPersonSubmitWorker(action) :Generator<*, *, *> {
     );
     if (personResponse.error) throw personResponse.error;
     const person = fromJS(personResponse.data);
-
-    let peopleNeighborsById = yield call(
-      searchEntityNeighborsWithFilterWorker,
-      searchEntityNeighborsWithFilter({
-        entitySetId: peopleESID,
-        filter: {
-          entityKeyIds: [personEKID],
-          sourceEntitySetIds: [],
-          destinationEntitySetIds: [addressESID, contactInfoESID]
-        }
-      })
-    );
-    if (peopleNeighborsById.error) throw peopleNeighborsById.error;
-    peopleNeighborsById = fromJS(peopleNeighborsById.data);
-    const personNeighbors = peopleNeighborsById.get(personEKID);
-
-    const personNeighborsByAppTypeFqn = Map().withMutations((map) => {
-      personNeighbors.forEach((neighbor) => {
-        const neighborObj = neighbor.get(PSA_NEIGHBOR.DETAILS, Map());
-        const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
-        const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
-        if (appTypeFqn === CONTACT_INFORMATION) {
-          map.set(
-            appTypeFqn,
-            map.get(appTypeFqn, List()).push(neighborObj)
-          );
-        }
-        else if (appTypeFqn === ADDRESSES) {
-          map.set(
-            appTypeFqn,
-            map.get(appTypeFqn, List()).push(neighborObj)
-          );
+    let personNeighborsByAppTypeFqn = Map();
+    if (addressIncluded || contactIncluded) {
+      let peopleNeighborsById = yield call(
+        searchEntityNeighborsWithFilterWorker,
+        searchEntityNeighborsWithFilter({
+          entitySetId: peopleESID,
+          filter: {
+            entityKeyIds: [personEKID],
+            sourceEntitySetIds: [],
+            destinationEntitySetIds: [addressESID, contactInfoESID]
+          }
+        })
+      );
+      if (peopleNeighborsById.error) throw peopleNeighborsById.error;
+      peopleNeighborsById = fromJS(peopleNeighborsById.data);
+      const personNeighbors = peopleNeighborsById.get(personEKID);
+      personNeighborsByAppTypeFqn = personNeighborsByAppTypeFqn.withMutations((map) => {
+        if (personNeighbors.size) {
+          personNeighbors.forEach((neighbor) => {
+            const neighborObj = neighbor.get(PSA_NEIGHBOR.DETAILS, Map());
+            const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
+            const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
+            if (appTypeFqn === CONTACT_INFORMATION) {
+              map.set(
+                appTypeFqn,
+                map.get(appTypeFqn, List()).push(neighborObj)
+              );
+            }
+            else if (appTypeFqn === ADDRESSES) {
+              map.set(
+                appTypeFqn,
+                map.get(appTypeFqn, List()).push(neighborObj)
+              );
+            }
+          });
         }
       });
-    });
-    // TODO: update create psa flow to route you to creating a psa for this person upon submit
-    yield put(push(Routes.ROOT));
+      // TODO: update create psa flow to route you to creating a psa for this person upon submit
+    }
     yield put(newPersonSubmit.success(action.id, {
       person,
       personEKID,
@@ -380,7 +381,7 @@ function* newPersonSubmitWorker(action) :Generator<*, *, *> {
   }
   catch (error) {
     console.error(error);
-    yield put(newPersonSubmit.failure(error));
+    yield put(newPersonSubmit.failure(action.id, error));
   }
 }
 

@@ -5,7 +5,7 @@
 import { DateTime } from 'luxon';
 import { Map, List, fromJS } from 'immutable';
 import type { SequenceAction } from 'redux-reqseq';
-import { DataApi, Types } from 'lattice';
+import { Types } from 'lattice';
 import randomUUID from 'uuid/v4';
 import {
   DataApiActions,
@@ -22,7 +22,7 @@ import {
 } from '@redux-saga/core/effects';
 
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
-import { getPropertyTypeId, getMapFromEntityKeysToPropertyKeys } from '../../edm/edmUtils';
+import { getPropertyTypeId, getPropertyIdToValueMap } from '../../edm/edmUtils';
 import { createIdObject, getEntityProperties, getEntityKeyId } from '../../utils/DataUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
@@ -38,8 +38,18 @@ import {
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 
-const { createEntityAndAssociationData, getEntityData } = DataApiActions;
-const { createEntityAndAssociationDataWorker, getEntityDataWorker } = DataApiSagas;
+const {
+  createEntityAndAssociationData,
+  deleteEntity,
+  getEntityData,
+  updateEntityData
+} = DataApiActions;
+const {
+  createEntityAndAssociationDataWorker,
+  deleteEntityWorker,
+  getEntityDataWorker,
+  updateEntityDataWorker
+} = DataApiSagas;
 const { searchEntityNeighborsWithFilter } = SearchApiActions;
 const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
 
@@ -608,6 +618,7 @@ function* updateOutcomesAndReleaseCondtionsWorker(action :SequenceAction) :Gener
       releaseConditions
     } = action.value;
 
+
     /*
      * Get Property Type Ids
      */
@@ -637,73 +648,120 @@ function* updateOutcomesAndReleaseCondtionsWorker(action :SequenceAction) :Gener
     const releaseConditionsESID = getEntitySetIdFromApp(app, RELEASE_CONDITIONS);
 
     const updates = [];
-    const updatedEntities = [];
+    const entities = {};
+    const associations = {};
+    let creatingBondOrReleaseConditions = false;
+    entities[releaseConditionsESID] = [];
+    associations[registeredForESID] = [];
 
-    deleteConditions.toJS().forEach((entityKeyId) => {
-      updates.push(call(
-        DataApi.deleteEntity,
-        releaseConditionsESID,
-        entityKeyId,
-        DeleteTypes.Soft
-      ));
-    });
+    if (deleteConditions.size) {
+      deleteConditions.toJS().forEach((entityKeyId) => {
+        updates.push(
+          call(
+            deleteEntityWorker,
+            deleteEntity({
+              entityKeyId,
+              entitySetId: releaseConditionsESID,
+              deleteType: DeleteTypes.Soft
+            })
+          )
+        );
+      });
+      yield all(updates);
+    }
 
 
-    if (bondEntityKeyId && fromJS(bondEntity).size) {
-      const bondEntityOject = getMapFromEntityKeysToPropertyKeys(
-        bondEntity,
-        bondEntityKeyId,
-        edm
-      );
-      updates.push(
-        call(DataApi.updateEntityData,
-          bondsESID,
-          bondEntityOject.toJS(),
-          'PartialReplace')
-      );
-
-      updatedEntities.push(call(DataApi.getEntityData, bondsESID, bondEntityKeyId));
+    if (bondEntityKeyId) {
+      if (bondEntity) {
+        // If bondEntity is present, Update Bond Entity
+        const bondEntityOject = getPropertyIdToValueMap(bondEntity, edm);
+        const updatedBondObject = { [bondEntityKeyId]: bondEntityOject };
+        const bondUpdateResponse = yield call(
+          updateEntityDataWorker,
+          updateEntityData({
+            entitySetId: bondsESID,
+            entities: updatedBondObject,
+            updateType: 'PartialReplace'
+          })
+        );
+        if (bondUpdateResponse.error) throw bondUpdateResponse.error;
+      }
+      else {
+        // Delete Bond Entity
+        const deleteBondResponse = yield call(
+          deleteEntityWorker,
+          deleteEntity({
+            entityKeyId: bondEntityKeyId,
+            entitySetId: bondsESID,
+            deleteType: DeleteTypes.Soft
+          })
+        );
+        if (deleteBondResponse.error) throw deleteBondResponse.error;
+      }
+    }
+    else if (bondEntity) {
+      // if bondEnitty is Present but no bondEKID, create new bond entity
+      creatingBondOrReleaseConditions = true;
+      const bondEntityOject = getPropertyIdToValueMap(bondEntity, edm);
+      const data = { [completedDateTimePTID]: [DateTime.local().toISO()] };
+      entities[bondsESID] = [bondEntityOject];
+      associations[registeredForESID] = associations[registeredForESID].concat([
+        {
+          data,
+          srcEntityIndex: 0,
+          srcEntitySetId: bondsESID,
+          dstEntityKeyId: personEKID,
+          dstEntitySetId: peopleESID
+        },
+        {
+          data,
+          srcEntityIndex: 0,
+          srcEntitySetId: bondsESID,
+          dstEntityKeyId: dmfResultsEKID,
+          dstEntitySetId: dmfResultsESID
+        },
+        {
+          data,
+          srcEntityIndex: 0,
+          srcEntitySetId: bondsESID,
+          dstEntityKeyId: psaScoresEKID,
+          dstEntitySetId: psaScoresESID
+        },
+        {
+          data,
+          srcEntityIndex: 0,
+          srcEntitySetId: bondsESID,
+          dstEntityKeyId: hearingEKID,
+          dstEntitySetId: hearingsESID
+        },
+      ]);
     }
 
     if (outcomeEntityKeyId && fromJS(outcomeEntity).size) {
-      const outcomeEntityOject = getMapFromEntityKeysToPropertyKeys(
-        outcomeEntity,
-        outcomeEntityKeyId,
-        edm
+      /*
+      * Update Bond Entity
+      */
+      const outcomeEntityOject = getPropertyIdToValueMap(outcomeEntity, edm);
+      const updatedOutcomeObject = { [outcomeEntityKeyId]: outcomeEntityOject };
+      const outcomeUpdateResponse = yield call(
+        updateEntityDataWorker,
+        updateEntityData({
+          entitySetId: outcomesESID,
+          entities: updatedOutcomeObject,
+          updateType: 'PartialReplace'
+        })
       );
-      updates.push(
-        call(DataApi.updateEntityData,
-          outcomesESID,
-          outcomeEntityOject.toJS(),
-          'PartialReplace')
-      );
-
-      updatedEntities.push(call(DataApi.getEntityData, outcomesESID, outcomeEntityKeyId));
+      if (outcomeUpdateResponse.error) throw outcomeUpdateResponse.error;
     }
 
-    yield all(updates);
-
-    let newBondEntity;
-    let newOutcomeEntity;
-    if (bondEntityKeyId && outcomeEntityKeyId) {
-      [newBondEntity, newOutcomeEntity] = yield all(updatedEntities);
-    }
-    else if (bondEntityKeyId && !outcomeEntityKeyId) {
-      newBondEntity = yield all(updatedEntities);
-    }
-    else if (!bondEntityKeyId && outcomeEntityKeyId) {
-      newOutcomeEntity = yield all(updatedEntities);
-    }
 
     /*
      * Add release condition entities and associations
      */
-    const entities = {};
-    const associations = {};
+
     const data = { [completedDateTimePTID]: [DateTime.local().toISO()] };
     if (releaseConditions.length) {
-      entities[releaseConditionsESID] = [];
-      associations[registeredForESID] = [];
+      creatingBondOrReleaseConditions = true;
       releaseConditions.forEach((releaseCondtiion, index) => {
         const releaseConditionId = randomUUID();
         const {
@@ -761,19 +819,12 @@ function* updateOutcomesAndReleaseCondtionsWorker(action :SequenceAction) :Gener
             data,
             srcEntityIndex: index,
             srcEntitySetId: releaseConditionsESID,
-            dstEntityKeyId: outcomeEntityKeyId,
-            dstEntitySetId: outcomesESID
-          },
-          {
-            data,
-            srcEntityIndex: index,
-            srcEntitySetId: releaseConditionsESID,
             dstEntityKeyId: hearingEKID,
             dstEntitySetId: hearingsESID
           }
         ];
 
-        if (bondEntityKeyId && fromJS(bondEntity).size) {
+        if (bondEntityKeyId && bondEntity) {
           associations[registeredForESID] = associations[registeredForESID].concat(
             {
               data,
@@ -785,9 +836,24 @@ function* updateOutcomesAndReleaseCondtionsWorker(action :SequenceAction) :Gener
           );
         }
 
+        if (outcomeEntityKeyId && fromJS(outcomeEntity).size) {
+          associations[registeredForESID] = associations[registeredForESID].concat(
+            {
+              data,
+              srcEntityIndex: index,
+              srcEntitySetId: releaseConditionsESID,
+              dstEntityKeyId: outcomeEntityKeyId,
+              dstEntitySetId: outcomesESID
+            }
+          );
+        }
+
         entities[releaseConditionsESID].push(releaseConditionEntity);
         associations[registeredForESID] = associations[registeredForESID].concat(associationData);
       });
+
+    }
+    if (creatingBondOrReleaseConditions) {
       /*
       * Submit data and collect response
       */
@@ -798,25 +864,11 @@ function* updateOutcomesAndReleaseCondtionsWorker(action :SequenceAction) :Gener
       if (response.error) throw response.error;
     }
 
-
-    // yield call(callback, submitValues);
-
-    let { hearingNeighborsByAppTypeFqn } = yield call(getHearingAndNeighbors, hearingEKID);
-
-    if (newBondEntity) {
-      hearingNeighborsByAppTypeFqn = hearingNeighborsByAppTypeFqn
-        .setIn([BONDS, PSA_NEIGHBOR.DETAILS], fromJS(newBondEntity));
-    }
-    if (newOutcomeEntity) {
-      hearingNeighborsByAppTypeFqn = hearingNeighborsByAppTypeFqn
-        .setIn([OUTCOMES, PSA_NEIGHBOR.DETAILS], fromJS(newOutcomeEntity));
-    }
+    const { hearingNeighborsByAppTypeFqn } = yield call(getHearingAndNeighbors, hearingEKID);
 
     yield put(updateOutcomesAndReleaseCondtions.success(action.id, {
       psaId,
-      hearingNeighborsByAppTypeFqn,
-      newBondEntity,
-      newOutcomeEntity
+      hearingNeighborsByAppTypeFqn
     }));
   }
   catch (error) {
