@@ -67,7 +67,8 @@ export const APP_TYPES = {
   OUTCOMES: 'app.psaoutcomes',
   OVERSAW: 'app.oversaw',
   PEOPLE: 'app.people',
-  PRESIDES_OVER: 'app.presidesover',
+  // TODO: Bring this back if we need to write to it
+  // PRESIDES_OVER: 'presidesover.app',
   PRETRIAL_CASES: 'app.courtpretrialcases',
   PSA_RISK_FACTORS: 'app.psariskfactors',
   PSA_SCORES: 'app.psascores',
