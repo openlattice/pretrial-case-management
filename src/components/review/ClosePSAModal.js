@@ -18,9 +18,11 @@ import { CenteredContainer } from '../../utils/Layout';
 import { OL } from '../../utils/consts/Colors';
 import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { APP, STATE } from '../../utils/consts/FrontEndStateConsts';
 import { PSA_STATUSES, PSA_FAILURE_REASONS } from '../../utils/consts/Consts';
 import { getEntityKeyId, stripIdField } from '../../utils/DataUtils';
+
+import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 
 import * as FormActionFactory from '../../containers/psa/FormActionFactory';
 import * as ReviewActionFactory from '../../containers/review/ReviewActionFactory';
@@ -311,7 +313,7 @@ function mapStateToProps(state) {
   const app = state.get(STATE.APP);
   return {
     app,
-    [APP.SELECTED_ORG_SETTINGS]: app.get(APP.SELECTED_ORG_SETTINGS)
+    [APP_DATA.SELECTED_ORG_SETTINGS]: app.get(APP_DATA.SELECTED_ORG_SETTINGS)
   };
 }
 

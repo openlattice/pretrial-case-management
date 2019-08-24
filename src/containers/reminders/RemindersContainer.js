@@ -30,13 +30,14 @@ import { OL } from '../../utils/consts/Colors';
 import { APP_TYPES } from '../../utils/consts/DataModelConsts';
 import { FILTERS } from '../../utils/RemindersUtils';
 import {
-  APP,
   MANUAL_REMINDERS,
   REMINDERS,
   PSA_NEIGHBOR,
-  SEARCH,
-  STATE
+  SEARCH
 } from '../../utils/consts/FrontEndStateConsts';
+
+import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 
 import * as AppActionFactory from '../app/AppActionFactory';
 import * as RemindersActionFactory from './RemindersActionFactory';
@@ -510,9 +511,9 @@ function mapStateToProps(state) {
 
   return {
     // App
-    [APP.ORGS]: app.get(APP.ORGS),
-    [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
-    [APP.SELECTED_ORG_TITLE]: app.get(APP.SELECTED_ORG_TITLE),
+    [APP_DATA.ORGS]: app.get(APP_DATA.ORGS),
+    [APP_DATA.SELECTED_ORG_ID]: app.get(APP_DATA.SELECTED_ORG_ID),
+    [APP_DATA.SELECTED_ORG_TITLE]: app.get(APP_DATA.SELECTED_ORG_TITLE),
 
     // Reminders
     [REMINDERS.REMINDERS_ACTION_LIST_DATE]: reminders.get(REMINDERS.REMINDERS_ACTION_LIST_DATE),

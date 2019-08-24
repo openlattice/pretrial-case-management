@@ -23,12 +23,10 @@ import { OL } from '../../utils/consts/Colors';
 import { InputGroup } from '../../components/person/PersonFormTags';
 import { CHECKIN_FREQUENCIES } from '../../utils/consts/ReleaseConditionConsts';
 import { OptionsGrid, SubConditionsWrapper } from '../../components/releaseconditions/ReleaseConditionsStyledTags';
-import {
-  APP,
-  STATE,
-  PEOPLE,
-  SUBMIT
-} from '../../utils/consts/FrontEndStateConsts';
+import { PEOPLE, SUBMIT } from '../../utils/consts/FrontEndStateConsts';
+
+import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 
 import { deleteEntity } from '../../utils/data/DataActionFactory';
 
@@ -340,8 +338,8 @@ function mapStateToProps(state) {
   const people = state.get(STATE.PEOPLE);
   return {
     app,
-    [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
-    [APP.SELECTED_ORG_SETTINGS]: app.get(APP.SELECTED_ORG_SETTINGS),
+    [APP_DATA.SELECTED_ORG_ID]: app.get(APP_DATA.SELECTED_ORG_ID),
+    [APP_DATA.SELECTED_ORG_SETTINGS]: app.get(APP_DATA.SELECTED_ORG_SETTINGS),
 
     [PEOPLE.REFRESHING_PERSON_NEIGHBORS]: people.get(PEOPLE.REFRESHING_PERSON_NEIGHBORS),
 

@@ -28,7 +28,7 @@ import { APPOINTMENT_TYPES } from '../../utils/consts/AppointmentConsts';
 import { REMINDER_TYPES } from '../../utils/RemindersUtils';
 import { MAX_HITS } from '../../utils/consts/Consts';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { APP, PSA_NEIGHBOR, STATE } from '../../utils/consts/FrontEndStateConsts';
+import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { refreshHearingAndNeighbors } from '../hearings/HearingsActions';
 import { SETTINGS } from '../../utils/consts/AppSettingConsts';
 import {
@@ -39,6 +39,9 @@ import {
   loadCheckInAppointmentsForDate,
   loadCheckInNeighbors
 } from './CheckInsActionFactory';
+
+import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 
 const { PREFERRED_COUNTY } = SETTINGS;
 
@@ -69,7 +72,7 @@ const {
 
 const getApp = state => state.get(STATE.APP, Map());
 const getEDM = state => state.get(STATE.EDM, Map());
-const getOrgId = state => state.getIn([STATE.APP, APP.SELECTED_ORG_ID], '');
+const getOrgId = state => state.getIn([STATE.APP, APP_DATA.SELECTED_ORG_ID], '');
 
 const LIST_APP_TYPES = List.of(HEARINGS, REMINDERS);
 
@@ -108,7 +111,7 @@ function* createCheckinAppointmentsWorker(action :SequenceAction) :Generator<*, 
     /*
      * Get Preferred County from app settings
      */
-    const preferredCountyEKID = app.getIn([APP.SELECTED_ORG_SETTINGS, PREFERRED_COUNTY], '');
+    const preferredCountyEKID = app.getIn([APP_DATA.SELECTED_ORG_SETTINGS, PREFERRED_COUNTY], '');
 
     const entities = {};
     const associations = {};
@@ -269,7 +272,7 @@ function* loadCheckInNeighborsWorker(action :SequenceAction) :Generator<*, *, *>
     if (checkInAppointmentIds.length) {
       const app = yield select(getApp);
       const orgId = yield select(getOrgId);
-      const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
+      const entitySetIdsToAppType = app.getIn([APP_DATA.ENTITY_SETS_BY_ORG, orgId]);
       const checkInAppoiontmentsEntitySetId = getEntitySetIdFromApp(app, CHECKIN_APPOINTMENTS);
       const checkInsEntitySetId = getEntitySetIdFromApp(app, CHECKINS);
       const hearingsEntitySetId = getEntitySetIdFromApp(app, HEARINGS);

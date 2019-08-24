@@ -1,4 +1,4 @@
-import { APP } from './consts/FrontEndStateConsts';
+import { APP_DATA } from './consts/redux/AppConsts';
 
 import { ORG_IDS } from './consts/DataModelConsts';
 import { CONTEXT } from './consts/Consts';
@@ -25,10 +25,10 @@ export const defaultSettings = {
 };
 
 export const getEntitySetIdFromApp = (app, fqn) => {
-  const orgId = app.get(APP.SELECTED_ORG_ID);
+  const orgId = app.get(APP_DATA.SELECTED_ORG_ID);
   return app.getIn([
     fqn,
-    APP.ENTITY_SETS_BY_ORG,
+    APP_DATA.ENTITY_SETS_BY_ORG,
     orgId
   ]);
 };

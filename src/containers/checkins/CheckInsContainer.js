@@ -20,12 +20,10 @@ import { OL } from '../../utils/consts/Colors';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { FILTERS, RESULT_TYPE } from '../../utils/consts/CheckInConsts';
 import { getEntityProperties } from '../../utils/DataUtils';
-import {
-  APP,
-  CHECK_IN,
-  SEARCH,
-  STATE
-} from '../../utils/consts/FrontEndStateConsts';
+import { CHECK_IN, SEARCH } from '../../utils/consts/FrontEndStateConsts';
+
+import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 
 import * as CheckInsActionFactory from './CheckInsActionFactory';
 import * as PersonActions from '../person/PersonActions';
@@ -280,9 +278,9 @@ function mapStateToProps(state) {
 
   return {
     // App
-    [APP.ORGS]: app.get(APP.ORGS),
-    [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
-    [APP.SELECTED_ORG_TITLE]: app.get(APP.SELECTED_ORG_TITLE),
+    [APP_DATA.ORGS]: app.get(APP_DATA.ORGS),
+    [APP_DATA.SELECTED_ORG_ID]: app.get(APP_DATA.SELECTED_ORG_ID),
+    [APP_DATA.SELECTED_ORG_TITLE]: app.get(APP_DATA.SELECTED_ORG_TITLE),
 
     // Reminders
     [CHECK_IN.CHECK_INS_LOADED]: checkIns.get(CHECK_IN.CHECK_INS_LOADED),

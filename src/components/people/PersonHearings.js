@@ -20,8 +20,8 @@ import HearingsTable from '../hearings/HearingsTable';
 import ReleaseConditionsModal from '../releaseconditions/ReleaseConditionsModal';
 import LogoLoader from '../LogoLoader';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import {
-  APP,
   COURT,
   PEOPLE,
   PSA_NEIGHBOR,
@@ -262,10 +262,8 @@ function mapStateToProps(state) {
   const review = state.get(STATE.REVIEW);
   const people = state.get(STATE.PEOPLE);
   return {
-    [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
-    [APP.SELECTED_ORG_SETTINGS]: app.get(APP.SELECTED_ORG_SETTINGS),
-
-    [COURT.ALL_JUDGES]: court.get(COURT.ALL_JUDGES),
+    [APP_DATA.SELECTED_ORG_ID]: app.get(APP_DATA.SELECTED_ORG_ID),
+    [APP_DATA.SELECTED_ORG_SETTINGS]: app.get(APP_DATA.SELECTED_ORG_SETTINGS),
 
     // Hearings
     refreshHearingAndNeighborsReqState: getReqState(hearings, HEARINGS_ACTIONS.REFRESH_HEARING_AND_NEIGHBORS),

@@ -8,7 +8,7 @@ import { fromJS, Map, List } from 'immutable';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 
-import { APP, CHARGES, STATE } from '../../utils/consts/FrontEndStateConsts';
+import { CHARGES, STATE } from '../../utils/consts/FrontEndStateConsts';
 import { OL } from '../../utils/consts/Colors';
 import { getViolentChargeLabels } from '../../utils/ArrestChargeUtils';
 import { formatValue, formatDateList } from '../../utils/FormattingUtils';
@@ -27,6 +27,7 @@ import {
   InlineBold
 } from '../../utils/Layout';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 
 const {
   CHARGE_STATUTE,
@@ -248,8 +249,8 @@ function mapStateToProps(state :Map<*, *>) :Object {
   const charges = state.get(STATE.CHARGES);
   return {
     // App
-    [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
-    [APP.SELECTED_ORG_TITLE]: app.get(APP.SELECTED_ORG_TITLE),
+    [APP_DATA.SELECTED_ORG_ID]: app.get(APP_DATA.SELECTED_ORG_ID),
+    [APP_DATA.SELECTED_ORG_TITLE]: app.get(APP_DATA.SELECTED_ORG_TITLE),
 
     // Charges
     [CHARGES.ARREST]: charges.get(CHARGES.ARREST),

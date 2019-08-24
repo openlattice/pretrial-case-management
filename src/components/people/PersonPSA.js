@@ -19,6 +19,7 @@ import { SORT_TYPES, PSA_STATUSES } from '../../utils/consts/Consts';
 import { STATUS_OPTION_CHECKBOXES } from '../../utils/consts/ReviewPSAConsts';
 import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import {
   AlternateSectionHeader,
   Count,
@@ -28,7 +29,6 @@ import {
   Wrapper
 } from '../../utils/Layout';
 import {
-  APP,
   STATE,
   PEOPLE,
   REVIEW,
@@ -189,7 +189,7 @@ function mapStateToProps(state) {
   const people = state.get(STATE.PEOPLE);
 
   return {
-    [APP.SELECTED_ORG_SETTINGS]: app.get(APP.SELECTED_ORG_SETTINGS),
+    [APP_DATA.SELECTED_ORG_SETTINGS]: app.get(APP_DATA.SELECTED_ORG_SETTINGS),
 
     [REVIEW.NEIGHBORS_BY_ID]: review.get(REVIEW.NEIGHBORS_BY_ID),
     [REVIEW.LOADING_DATA]: review.get(REVIEW.LOADING_DATA),

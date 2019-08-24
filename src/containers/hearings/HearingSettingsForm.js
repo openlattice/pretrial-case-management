@@ -5,7 +5,7 @@
 import React from 'react';
 import moment from 'moment';
 import styled from 'styled-components';
-import { fromJS, Map } from 'immutable';
+import { fromJS, Map, List } from 'immutable';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
@@ -17,21 +17,21 @@ import InfoButton from '../../components/buttons/InfoButton';
 import BasicButton from '../../components/buttons/BasicButton';
 import SearchableSelect from '../../components/controls/SearchableSelect';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { JURISDICTION } from '../../utils/consts/Consts';
+import { SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { OL } from '../../utils/consts/Colors';
 import { HEARING_CONSTS } from '../../utils/consts/HearingConsts';
 import { getCourtroomOptions, getJudgeOptions, formatJudgeName } from '../../utils/HearingUtils';
 import { getEntityProperties } from '../../utils/DataUtils';
-import { getJurisdiction } from '../../utils/AppUtils';
 import { getTimeOptions } from '../../utils/consts/DateTimeConsts';
-import { APP, COURT } from '../../utils/consts/FrontEndStateConsts';
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
 
 import * as HearingsActions from './HearingsActions';
 
 const { ENTITY_KEY_ID } = PROPERTY_TYPES;
+const { PREFERRED_COUNTY } = SETTINGS;
 
 const StyledSearchableSelect = styled(SearchableSelect)`
   width: 200px;
@@ -78,9 +78,12 @@ const HearingSectionWrapper = styled.div`
 `;
 
 type Props = {
+  allJudges :Map<*, *>,
+  app :Map<*, *>,
   selectedOrganizationId :string,
   manuallyCreatingHearing :boolean,
-  allJudges :Map<*, *>,
+  judgesById :Map<*, *>,
+  judgesByCounty :Map<*, *>,
   actions :{
     clearHearingSettings :() => void,
     closeHearingSettingsModal :() => void,
@@ -220,12 +223,13 @@ class HearingSettingsForm extends React.Component<Props, State> {
   }
 
   renderJudgeOptions = () => {
-    const { allJudges, selectedOrganizationId } = this.props;
     const { judge } = this.state;
-    const jurisdiction = JURISDICTION[getJurisdiction(selectedOrganizationId)];
+    const { app, judgesById, judgesByCounty } = this.props;
+    const preferredCountyEKID = app.getIn([APP_DATA.SELECTED_ORG_SETTINGS, PREFERRED_COUNTY], '');
+    const judgeIdsForCounty = judgesByCounty.get(preferredCountyEKID, List());
     return (
       <StyledSearchableSelect
-          options={getJudgeOptions(allJudges, jurisdiction)}
+          options={getJudgeOptions(judgeIdsForCounty, judgesById)}
           value={judge}
           onSelect={this.onSelectChange}
           short />
@@ -334,14 +338,14 @@ class HearingSettingsForm extends React.Component<Props, State> {
 
 function mapStateToProps(state) {
   const app = state.get(STATE.APP);
-  const court = state.get(STATE.COURT);
   const hearings = state.get(STATE.HEARINGS);
   return {
     app,
-    [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
+    [APP_DATA.SELECTED_ORG_ID]: app.get(APP_DATA.SELECTED_ORG_ID),
 
-    [COURT.ALL_JUDGES]: court.get(COURT.ALL_JUDGES),
-
+    [HEARINGS_DATA.ALL_JUDGES]: hearings.get(HEARINGS_DATA.ALL_JUDGES),
+    [HEARINGS_DATA.JUDGES_BY_COUNTY]: hearings.get(HEARINGS_DATA.JUDGES_BY_COUNTY),
+    [HEARINGS_DATA.JUDGES_BY_ID]: hearings.get(HEARINGS_DATA.JUDGES_BY_ID),
     [HEARINGS_DATA.DATE]: hearings.get(HEARINGS_DATA.DATE),
     [HEARINGS_DATA.TIME]: hearings.get(HEARINGS_DATA.TIME),
     [HEARINGS_DATA.COURTROOM]: hearings.get(HEARINGS_DATA.COURTROOM),

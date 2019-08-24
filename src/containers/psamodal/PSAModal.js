@@ -42,7 +42,6 @@ import {
   getIdOrValue
 } from '../../utils/DataUtils';
 import {
-  APP,
   PSA_NEIGHBOR,
   PSA_ASSOCIATION,
   PSA_MODAL,
@@ -56,6 +55,7 @@ import {
 } from '../../utils/consts/Consts';
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
 
 import * as CourtActionFactory from '../court/CourtActionFactory';
@@ -940,9 +940,9 @@ function mapStateToProps(state) {
   const search = state.get(STATE.SEARCH);
   return {
     app,
-    [APP.FQN_TO_ID]: app.get(APP.FQN_TO_ID),
-    [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
-    [APP.SELECTED_ORG_SETTINGS]: app.get(APP.SELECTED_ORG_SETTINGS),
+    [APP_DATA.FQN_TO_ID]: app.get(APP_DATA.FQN_TO_ID),
+    [APP_DATA.SELECTED_ORG_ID]: app.get(APP_DATA.SELECTED_ORG_ID),
+    [APP_DATA.SELECTED_ORG_SETTINGS]: app.get(APP_DATA.SELECTED_ORG_SETTINGS),
 
     [HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID]: hearings.get(HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID),
 

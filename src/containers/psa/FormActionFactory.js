@@ -11,9 +11,6 @@ const addCaseToPSA :RequestSequence = newRequestSequence(ADD_CASE_TO_PSA);
 const EDIT_PSA :string = 'EDIT_PSA';
 const editPSA :RequestSequence = newRequestSequence(EDIT_PSA);
 
-const LOAD_DATA_MODEL :string = 'LOAD_DATA_MODEL';
-const loadDataModel :RequestSequence = newRequestSequence(LOAD_DATA_MODEL);
-
 const LOAD_NEIGHBORS :string = 'LOAD_NEIGHBORS';
 const loadNeighbors :RequestSequence = newRequestSequence(LOAD_NEIGHBORS);
 
@@ -43,13 +40,11 @@ const setPSAValues :RequestSequence = newRequestSequence(SET_PSA_VALUES);
 export {
   ADD_CASE_TO_PSA,
   EDIT_PSA,
-  LOAD_DATA_MODEL,
   LOAD_NEIGHBORS,
   REMOVE_CASE_FROM_PSA,
   SUBMIT_PSA,
   addCaseToPSA,
   editPSA,
-  loadDataModel,
   loadNeighbors,
   removeCaseFromPSA,
   submitPSA,

@@ -23,7 +23,8 @@ import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
 import { getPropertyIdToValueMap } from '../../edm/edmUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { MAX_HITS } from '../../utils/consts/Consts';
-import { APP, STATE } from '../../utils/consts/FrontEndStateConsts';
+import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { CHARGE_TYPES } from '../../utils/consts/ChargeConsts';
 import {
   CREATE_CHARGE,
@@ -48,7 +49,7 @@ const { ENTITY_KEY_ID } = PROPERTY_TYPES;
 
 const getApp = state => state.get(STATE.APP, Map());
 const getEDM = state => state.get(STATE.EDM, Map());
-const getOrgId = state => state.getIn([STATE.APP, APP.SELECTED_ORG_ID], '');
+const getOrgId = state => state.getIn([STATE.APP, APP_DATA.SELECTED_ORG_ID], '');
 
 function* getChargeESID(chargeType :string) :Generator<*, *, *> {
   const app = yield select(getApp);

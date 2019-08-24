@@ -60,14 +60,12 @@ import {
   PSA_STATUSES
 } from '../../utils/consts/Consts';
 import {
-  APP,
   CHARGES,
   COURT,
   PSA_FORM,
   PSA_NEIGHBOR,
   REVIEW,
   SEARCH,
-  STATE,
   SUBMIT,
   PEOPLE
 } from '../../utils/consts/FrontEndStateConsts';
@@ -81,6 +79,9 @@ import {
   getPrevPath,
   getCurrentPage
 } from '../../utils/Helpers';
+
+import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 
 import * as FormActionFactory from './FormActionFactory';
 import * as PersonActions from '../person/PersonActions';
@@ -298,11 +299,6 @@ type Props = {
       pretrialCase :Immutable.Map<*, *>,
       charges :Immutable.List<Immutable.Map<*, *>>
     }) => void,
-    loadDataModel :() => void,
-    loadNeighbors :(value :{
-      entitySetId :string,
-      entityKeyId :string
-    }) => void,
     clearForm :() => void,
     selectPerson :(value :{
       selectedPerson :Immutable.Map<*, *>
@@ -314,7 +310,6 @@ type Props = {
     setPSAValues :(value :{
       newValues :Immutable.Map<*, *>
     }) => void,
-    loadJudges :() => void,
     submit :({ config :Object, values :Object }) => void,
     clearSubmit :() => void,
     changePSAStatus :(values :{
@@ -329,7 +324,6 @@ type Props = {
   allContacts :Immutable.Map<*>,
   allFTAs :Immutable.List<*>,
   allHearings :Immutable.List<*>,
-  allJudges :Immutable.List<*>,
   allPSAs :Immutable.List<*>,
   allSentencesForPerson :Immutable.List<*>,
   arrestId :string,
@@ -392,19 +386,9 @@ class Form extends React.Component<Props, State> {
   componentDidMount() {
     const { actions, selectedOrganizationId } = this.props;
     if (selectedOrganizationId) {
-      actions.loadDataModel();
-      actions.loadJudges();
       actions.checkPSAPermissions();
     }
     this.redirectToFirstPageIfNecessary();
-  }
-
-  componentDidUpdate(prevProps) {
-    const { actions, selectedOrganizationId } = this.props;
-    if (selectedOrganizationId !== prevProps.selectedOrganizationId) {
-      actions.loadDataModel();
-      actions.loadJudges();
-    }
   }
 
   loadContextParams = () => {
@@ -1021,7 +1005,6 @@ class Form extends React.Component<Props, State> {
       allCasesForPerson,
       allChargesForPerson,
       allHearings,
-      allJudges,
       charges,
       selectedPerson,
       psaForm,
@@ -1064,7 +1047,6 @@ class Form extends React.Component<Props, State> {
           allCases={allCasesForPerson}
           allCharges={chargesByCaseId}
           allHearings={allHearings}
-          allJudges={allJudges}
           getOnExport={this.getOnExport} />
     );
   }
@@ -1115,16 +1097,16 @@ function mapStateToProps(state :Immutable.Map<*, *>) :Object {
   const psaForm = state.get(STATE.PSA);
   const search = state.get(STATE.SEARCH);
   const submit = state.get(STATE.SUBMIT);
-  const court = state.get(STATE.COURT);
   const charges = state.get(STATE.CHARGES);
   const review = state.get(STATE.REVIEW);
   const people = state.get(STATE.PEOPLE);
 
   return {
     // App
-    [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
-    [APP.SELECTED_ORG_SETTINGS]: app.get(APP.SELECTED_ORG_SETTINGS),
-    [APP.STAFF_IDS_TO_EKIDS]: app.get(APP.STAFF_IDS_TO_EKIDS),
+    [APP_DATA.SELECTED_ORG_ID]: app.get(APP_DATA.SELECTED_ORG_ID),
+    [APP_DATA.SELECTED_ORG_SETTINGS]: app.get(APP_DATA.SELECTED_ORG_SETTINGS),
+    [APP_DATA.STAFF_IDS_TO_EKIDS]: app.get(APP_DATA.STAFF_IDS_TO_EKIDS),
+    [APP_DATA.DATA_MODEL]: app.get(APP_DATA.DATA_MODEL),
 
     // Charges
     [CHARGES.ARREST]: charges.get(CHARGES.ARREST),
@@ -1154,7 +1136,6 @@ function mapStateToProps(state :Immutable.Map<*, *>) :Object {
     [PSA_FORM.ARREST_ID]: psaForm.get(PSA_FORM.ARREST_ID),
     [PSA_FORM.SELECT_PRETRIAL_CASE]: psaForm.get(PSA_FORM.SELECT_PRETRIAL_CASE),
     psaForm: psaForm.get(PSA_FORM.PSA),
-    [PSA_FORM.DATA_MODEL]: psaForm.get(PSA_FORM.DATA_MODEL),
     [PSA_FORM.ENTITY_SET_LOOKUP]: psaForm.get(PSA_FORM.ENTITY_SET_LOOKUP),
     [PSA_FORM.LOADING_NEIGHBORS]: psaForm.get(PSA_FORM.LOADING_NEIGHBORS),
 
@@ -1169,9 +1150,6 @@ function mapStateToProps(state :Immutable.Map<*, *>) :Object {
 
     // People
     [PEOPLE.REFRESHING_PERSON_NEIGHBORS]: people.get(PEOPLE.REFRESHING_PERSON_NEIGHBORS),
-
-    // Court
-    [COURT.ALL_JUDGES]: court.get(COURT.ALL_JUDGES),
 
     // Review
     readOnlyPermissions: review.get(REVIEW.READ_ONLY),

@@ -26,25 +26,30 @@ import {
 import type { SequenceAction } from 'redux-reqseq';
 
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
-import { createIdObject, getEntityProperties } from '../../utils/DataUtils';
+import { createIdObject, getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
 import { getUTCDateRangeSearchString, TIME_FORMAT } from '../../utils/consts/DateTimeConsts';
 import { hearingIsCancelled } from '../../utils/HearingUtils';
 import { getPropertyTypeId, getPropertyIdToValueMap } from '../../edm/edmUtils';
 import { SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { HEARING_TYPES, PSA_STATUSES, MAX_HITS } from '../../utils/consts/Consts';
-import { APP, PSA_NEIGHBOR, STATE } from '../../utils/consts/FrontEndStateConsts';
+import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
+
+import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 
 import { filterPeopleIdsWithOpenPSAs } from '../court/CourtActionFactory';
 import {
   LOAD_HEARINGS_FOR_DATE,
   LOAD_HEARING_NEIGHBORS,
+  LOAD_JUDGES,
   REFRESH_HEARING_AND_NEIGHBORS,
   SUBMIT_EXISTING_HEARING,
   SUBMIT_HEARING,
   UPDATE_HEARING,
   loadHearingsForDate,
   loadHearingNeighbors,
+  loadJudges,
   refreshHearingAndNeighbors,
   submitExistingHearing,
   submitHearing,
@@ -110,7 +115,7 @@ const {
  */
 const getApp = state => state.get(STATE.APP, Map());
 const getEDM = state => state.get(STATE.EDM, Map());
-const getOrgId = state => state.getIn([STATE.APP, APP.SELECTED_ORG_ID], '');
+const getOrgId = state => state.getIn([STATE.APP, APP_DATA.SELECTED_ORG_ID], '');
 
 const LIST_ENTITY_SETS = List.of(
   CHARGES,
@@ -130,7 +135,7 @@ function* getHearingAndNeighbors(hearingEntityKeyId :string) :Generator<*, *, *>
   if (hearingEntityKeyId) {
     const app = yield select(getApp);
     const orgId = yield select(getOrgId);
-    const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
+    const entitySetIdsToAppType = app.getIn([APP_DATA.ENTITY_SETS_BY_ORG, orgId]);
 
     /*
     * Get Entity Set Ids
@@ -309,7 +314,7 @@ function* loadHearingNeighborsWorker(action :SequenceAction) :Generator<*, *, *>
     if (hearingIds.length) {
       const app = yield select(getApp);
       const orgId = yield select(getOrgId);
-      const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
+      const entitySetIdsToAppType = app.getIn([APP_DATA.ENTITY_SETS_BY_ORG, orgId]);
 
       /*
        * Get Entity Set Ids
@@ -415,6 +420,83 @@ function* loadHearingNeighborsWorker(action :SequenceAction) :Generator<*, *, *>
 
 function* loadHearingNeighborsWatcher() :Generator<*, *, *> {
   yield takeEvery(LOAD_HEARING_NEIGHBORS, loadHearingNeighborsWorker);
+}
+
+
+function* loadJudgesWorker(action :SequenceAction) :Generator<*, *, *> {
+  try {
+    yield put(loadJudges.request(action.id));
+    const app = yield select(getApp);
+    const orgId = yield select(getOrgId);
+    const entitySetIdsToAppType = app.getIn([APP_DATA.ENTITY_SETS_BY_ORG, orgId]);
+    let judgesById = Map();
+    const countiesESID = getEntitySetIdFromApp(app, COUNTIES);
+    const judgesESID = getEntitySetIdFromApp(app, JUDGES);
+    const options = {
+      searchTerm: '*',
+      start: 0,
+      maxHits: MAX_HITS
+    };
+    /* get all judge data */
+    const allJudgeData = yield call(
+      searchEntitySetDataWorker,
+      searchEntitySetData({ entitySetId: judgesESID, searchOptions: options })
+    );
+    if (allJudgeData.error) throw allJudgeData.error;
+    const allJudges = fromJS(allJudgeData.data.hits);
+    const allJudgeIds = allJudges.map((judge) => {
+      const judgeEKID = getEntityKeyId(judge);
+      judgesById = judgesById.set(judgeEKID, judge);
+      return getEntityKeyId(judge);
+    });
+
+    /* get county neighbors */
+    const judgeNeighborsById = yield call(
+      searchEntityNeighborsWithFilterWorker,
+      searchEntityNeighborsWithFilter({
+        entitySetId: judgesESID,
+        filter: {
+          entityKeyIds: allJudgeIds.toJS(),
+          sourceEntitySetIds: [],
+          destinationEntitySetIds: [countiesESID]
+        }
+      })
+    );
+    if (judgeNeighborsById.error) throw judgeNeighborsById.error;
+    /* store judge ids by county id */
+    const judgesByCounty = Map().withMutations((map) => {
+      fromJS(judgeNeighborsById.data).entrySeq().forEach(([id, neighbors]) => {
+        neighbors.forEach((neighbor) => {
+          const neighborEKID = getEntityKeyId(neighbor);
+          const neighborESID = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
+          const appTypeFqn = entitySetIdsToAppType.get(neighborESID, '');
+          if (appTypeFqn === COUNTIES) {
+            map.set(
+              neighborEKID,
+              map.get(neighborEKID, Set()).add(id)
+            );
+          }
+        });
+      });
+    });
+
+    yield put(loadJudges.success(action.id, {
+      allJudges,
+      judgesByCounty,
+      judgesById
+    }));
+  }
+  catch (error) {
+    console.error(error);
+    yield put(loadJudges.failure(action.id, error));
+  }
+  finally {
+    yield put(loadJudges.finally(action.id));
+  }
+}
+
+function* loadJudgesWatcher() :Generator<*, *, *> {
+  yield takeEvery(LOAD_JUDGES, loadJudgesWorker);
 }
 
 
@@ -558,7 +640,7 @@ function* submitHearingWorker(action :SequenceAction) :Generator<*, *, *> {
     /*
      * Get Preferred County from app settings
      */
-    const preferredCountyEntityKeyId = app.getIn([APP.SELECTED_ORG_SETTINGS, PREFERRED_COUNTY], '');
+    const preferredCountyEntityKeyId = app.getIn([APP_DATA.SELECTED_ORG_SETTINGS, PREFERRED_COUNTY], '');
     /*
      * Get Entity Set Ids
      */
@@ -676,7 +758,7 @@ function* updateHearingWorker(action :SequenceAction) :Generator<*, *, *> {
     const app = yield select(getApp);
     const edm = yield select(getEDM);
     const orgId = yield select(getOrgId);
-    const entitySetIdsToAppType = app.getIn([APP.ENTITY_SETS_BY_ORG, orgId]);
+    const entitySetIdsToAppType = app.getIn([APP_DATA.ENTITY_SETS_BY_ORG, orgId]);
 
     /*
     * Get Property Type Ids
@@ -801,6 +883,7 @@ function* updateHearingWatcher() :Generator<*, *, *> {
 export {
   loadHearingsForDateWatcher,
   loadHearingNeighborsWatcher,
+  loadJudgesWatcher,
   refreshHearingAndNeighborsWatcher,
   submitExistingHearingWatcher,
   submitHearingWatcher,

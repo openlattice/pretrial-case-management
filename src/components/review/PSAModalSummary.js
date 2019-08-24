@@ -25,12 +25,11 @@ import {
   ContentLabel,
   SummaryRowWrapper
 } from '../../utils/Layout';
-import {
-  STATE,
-  APP,
-  CHARGES,
-  PSA_NEIGHBOR
-} from '../../utils/consts/FrontEndStateConsts';
+
+import { CHARGES, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
+
+import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 
 const { MANUAL_PRETRIAL_CASES } = APP_TYPES;
 
@@ -263,9 +262,9 @@ function mapStateToProps(state :Immutable.Map<*, *>) :Object {
   const charges = state.get(STATE.CHARGES);
   return {
     // App
-    [APP.SELECTED_ORG_ID]: app.get(APP.SELECTED_ORG_ID),
-    [APP.SELECTED_ORG_TITLE]: app.get(APP.SELECTED_ORG_TITLE),
-    [APP.SELECTED_ORG_SETTINGS]: app.get(APP.SELECTED_ORG_SETTINGS),
+    [APP_DATA.SELECTED_ORG_ID]: app.get(APP_DATA.SELECTED_ORG_ID),
+    [APP_DATA.SELECTED_ORG_TITLE]: app.get(APP_DATA.SELECTED_ORG_TITLE),
+    [APP_DATA.SELECTED_ORG_SETTINGS]: app.get(APP_DATA.SELECTED_ORG_SETTINGS),
 
     // Charges
     [CHARGES.ARREST_VIOLENT]: charges.get(CHARGES.ARREST_VIOLENT),

@@ -52,7 +52,6 @@ import {
   NO_CONTACT_TYPES
 } from '../../utils/consts/ReleaseConditionConsts';
 import {
-  APP,
   COURT,
   EDM,
   PSA_ASSOCIATION,
@@ -60,10 +59,11 @@ import {
   SUBMIT
 } from '../../utils/consts/FrontEndStateConsts';
 
-import { HEARINGS_ACTIONS } from '../../utils/consts/redux/HearingsConsts';
-import { RELEASE_COND_ACTIONS, RELEASE_COND_DATA } from '../../utils/consts/redux/ReleaseConditionsConsts';
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUtils';
+import { APP_DATA } from '../../utils/consts/redux/AppConsts';
+import { HEARINGS_ACTIONS } from '../../utils/consts/redux/HearingsConsts';
+import { RELEASE_COND_ACTIONS, RELEASE_COND_DATA } from '../../utils/consts/redux/ReleaseConditionsConsts';
 
 
 import { createCheckinAppointments } from '../checkins/CheckInsActionFactory';
@@ -1164,17 +1164,15 @@ function mapStateToProps(state) {
   const court = state.get(STATE.COURT);
   const edm = state.get(STATE.EDM);
   const hearings = state.get(STATE.HEARINGS);
-  const orgId = app.get(APP.SELECTED_ORG_ID, '');
+  const orgId = app.get(APP_DATA.SELECTED_ORG_ID, '');
   const releaseConditions = state.get(STATE.RELEASE_CONDITIONS);
   const submit = state.get(STATE.SUBMIT);
   return {
     app,
-    [APP.SELECTED_ORG_ID]: orgId,
-    [APP.SELECTED_ORG_SETTINGS]: app.get(APP.SELECTED_ORG_SETTINGS, Map()),
-    [APP.ENTITY_SETS_BY_ORG]: app.get(APP.ENTITY_SETS_BY_ORG, Map()),
-    [APP.FQN_TO_ID]: app.get(APP.FQN_TO_ID),
-
-    [COURT.ALL_JUDGES]: court.get(COURT.ALL_JUDGES),
+    [APP_DATA.SELECTED_ORG_ID]: orgId,
+    [APP_DATA.SELECTED_ORG_SETTINGS]: app.get(APP_DATA.SELECTED_ORG_SETTINGS, Map()),
+    [APP_DATA.ENTITY_SETS_BY_ORG]: app.get(APP_DATA.ENTITY_SETS_BY_ORG, Map()),
+    [APP_DATA.FQN_TO_ID]: app.get(APP_DATA.FQN_TO_ID),
 
     refreshHearingAndNeighborsReqState: getReqState(hearings, HEARINGS_ACTIONS.REFRESH_HEARING_AND_NEIGHBORS),
 

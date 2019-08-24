@@ -23,9 +23,9 @@ import { clearSearchResults, searchPeople } from '../person/PersonActions';
 import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
+import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import {
-  APP,
-  STATE,
   SEARCH,
   PEOPLE,
   REVIEW,
@@ -264,7 +264,7 @@ function mapStateToProps(state) {
   const openPSAs = state.getIn([STATE.REVIEW, REVIEW.SCORES], Immutable.Map());
   const psaNeighborsById = state.getIn([STATE.REVIEW, REVIEW.NEIGHBORS_BY_ID], Immutable.Map());
   return {
-    [APP.SELECTED_ORG_SETTINGS]: app.get(APP.SELECTED_ORG_SETTINGS),
+    [APP_DATA.SELECTED_ORG_SETTINGS]: app.get(APP_DATA.SELECTED_ORG_SETTINGS),
     peopleResults,
     isFetchingPeople,
     loadingPSAData,
