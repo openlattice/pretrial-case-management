@@ -5,7 +5,7 @@ import { DateTime } from 'luxon';
 import { fromJS, List, Map } from 'immutable';
 import type { SequenceAction } from 'redux-reqseq';
 import { AuthUtils } from 'lattice-auth';
-import { Constants, EntityDataModelApi, Types } from 'lattice';
+import { Constants, Types } from 'lattice';
 import {
   DataApiActions,
   DataApiSagas,
@@ -33,13 +33,11 @@ import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import {
   ADD_CASE_TO_PSA,
   EDIT_PSA,
-  LOAD_DATA_MODEL,
   LOAD_NEIGHBORS,
   REMOVE_CASE_FROM_PSA,
   SUBMIT_PSA,
   addCaseToPSA,
   editPSA,
-  loadDataModel,
   loadNeighbors,
   removeCaseFromPSA,
   submitPSA,
@@ -50,6 +48,7 @@ const {
   DATE_TIME,
   ENTITY_KEY_ID,
   GENERAL_ID,
+  PERSON_ID,
   TIMESTAMP,
   STRING_ID
 } = PROPERTY_TYPES;
@@ -773,6 +772,17 @@ function* submitPSAWorker(action :SequenceAction) :Generator<*, *, *> {
       [caseESID]: [caseSubmitEntity]
     };
 
+    let staffDstKey = 'dstEntityKeyId';
+    let staffDstVal = staffEKID;
+    if (!staffDstVal) {
+      const staffId = getStaffId();
+      const staffEntity = { [PERSON_ID]: [staffId] };
+      const staffSubmitEntity = getPropertyIdToValueMap(staffEntity, edm);
+      entities[staffESID] = [staffSubmitEntity];
+      staffDstKey = 'dstEntityIndex';
+      staffDstVal = 0;
+    }
+
     /*
      * Assemble Associations
      */
@@ -859,35 +869,35 @@ function* submitPSAWorker(action :SequenceAction) :Generator<*, *, *> {
           data: assessedByData,
           srcEntityIndex: 0,
           srcEntitySetId: psaScoresESID,
-          dstEntityKeyId: staffEKID,
+          [staffDstKey]: staffDstVal,
           dstEntitySetId: staffESID
         },
         {
           data: assessedByData,
           srcEntityIndex: 0,
           srcEntitySetId: psaRiskFactorsESID,
-          dstEntityKeyId: staffEKID,
+          [staffDstKey]: staffDstVal,
           dstEntitySetId: staffESID
         },
         {
           data: assessedByData,
           srcEntityIndex: 0,
           srcEntitySetId: dmfResultsESID,
-          dstEntityKeyId: staffEKID,
+          [staffDstKey]: staffDstVal,
           dstEntitySetId: staffESID
         },
         {
           data: assessedByData,
           srcEntityIndex: 0,
           srcEntitySetId: dmfRiskFactorsESID,
-          dstEntityKeyId: staffEKID,
+          [staffDstKey]: staffDstVal,
           dstEntitySetId: staffESID
         },
         {
           data: assessedByData,
           srcEntityIndex: 0,
           srcEntitySetId: psaNotesESID,
-          dstEntityKeyId: staffEKID,
+          [staffDstKey]: staffDstVal,
           dstEntitySetId: staffESID
         }
       ],

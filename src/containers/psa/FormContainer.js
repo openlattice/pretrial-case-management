@@ -1097,7 +1097,6 @@ function mapStateToProps(state :Immutable.Map<*, *>) :Object {
   const psaForm = state.get(STATE.PSA);
   const search = state.get(STATE.SEARCH);
   const submit = state.get(STATE.SUBMIT);
-  const court = state.get(STATE.COURT);
   const charges = state.get(STATE.CHARGES);
   const review = state.get(STATE.REVIEW);
   const people = state.get(STATE.PEOPLE);
@@ -1107,7 +1106,7 @@ function mapStateToProps(state :Immutable.Map<*, *>) :Object {
     [APP_DATA.SELECTED_ORG_ID]: app.get(APP_DATA.SELECTED_ORG_ID),
     [APP_DATA.SELECTED_ORG_SETTINGS]: app.get(APP_DATA.SELECTED_ORG_SETTINGS),
     [APP_DATA.STAFF_IDS_TO_EKIDS]: app.get(APP_DATA.STAFF_IDS_TO_EKIDS),
-    [APP_DATA.DATA_MODEL]: psaForm.get(APP_DATA.DATA_MODEL),
+    [APP_DATA.DATA_MODEL]: app.get(APP_DATA.DATA_MODEL),
 
     // Charges
     [CHARGES.ARREST]: charges.get(CHARGES.ARREST),
