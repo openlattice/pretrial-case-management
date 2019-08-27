@@ -243,7 +243,7 @@ class PSAModal extends React.Component<Props, State> {
     this.setState({ editing: false });
   }
 
-  onClose() {
+  onClose = () => {
     const { onClose } = this.props;
     this.exitEdit();
     onClose();
