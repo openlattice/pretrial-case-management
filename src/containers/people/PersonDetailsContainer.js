@@ -42,7 +42,6 @@ import {
   getHearingsIdsFromNeighbors
 } from '../../utils/HearingUtils';
 import {
-  COURT,
   SUBMIT,
   PEOPLE,
   REVIEW,
@@ -333,7 +332,7 @@ class PersonDetailsContainer extends React.Component<Props, State> {
       selectedOrganizationId,
       selectedPersonData
     } = this.props;
-    const { [ENTITY_KEY_ID]: personEKID } = getEntityProperties(selectedPersonData, [ENTITY_KEY_ID])
+    const { [ENTITY_KEY_ID]: personEKID } = getEntityProperties(selectedPersonData, [ENTITY_KEY_ID]);
     const personHearingsWithOutcomes = neighbors.get(APP_TYPES.HEARINGS, List()).filter((hearing) => {
       const id = hearing.getIn([OPENLATTICE_ID_FQN, 0], '');
       const hasOutcome = !!hearingNeighborsById.getIn([id, OUTCOMES]);
@@ -543,7 +542,6 @@ class PersonDetailsContainer extends React.Component<Props, State> {
 function mapStateToProps(state, ownProps) {
   const { personId } = ownProps.match.params;
   const app = state.get(STATE.APP);
-  const court = state.get(STATE.COURT);
   const hearings = state.get(STATE.HEARINGS);
   const people = state.get(STATE.PEOPLE);
   const psaModal = state.get(STATE.PSA_MODAL);
