@@ -21,7 +21,7 @@ import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { CONTACT_INFO_ACTIONS } from '../../utils/consts/redux/ContactInformationConsts';
 
-import * as ContactInfoActions from './ContactInfoActions';
+import { clearSubmittedContact, submitContact } from './ContactInfoActions';
 
 
 /*
@@ -124,13 +124,21 @@ class NewContactForm extends React.Component<Props, State> {
     return null;
   }
 
+  componentDidUpdate() {
+    const { addingNewContact } = this.state;
+    const { actions, submitContactReqState } = this.props;
+    const contactSubmitSuccess = requestIsSuccess(submitContactReqState);
+    if (addingNewContact && contactSubmitSuccess) {
+      actions.clearSubmittedContact();
+    }
+  }
+
   createNewContact = () => {
     const { state } = this;
     const {
       actions,
       personEKID
     } = this.props;
-    const { submitContact } = actions;
 
     const email = state[PROPERTY_TYPES.EMAIL];
     const phone = state[PROPERTY_TYPES.PHONE];
@@ -157,7 +165,7 @@ class NewContactForm extends React.Component<Props, State> {
     }
 
     if (newContactFields && (email.length || phone.length)) {
-      submitContact({ contactEntity: newContactFields, personEKID });
+      actions.submitContact({ contactEntity: newContactFields, personEKID });
     }
   }
 
@@ -308,18 +316,13 @@ function mapStateToProps(state) {
   };
 }
 
-function mapDispatchToProps(dispatch :Function) :Object {
-  const actions :{ [string] :Function } = {};
 
-  Object.keys(ContactInfoActions).forEach((action :string) => {
-    actions[action] = ContactInfoActions[action];
-  });
-
-  return {
-    actions: {
-      ...bindActionCreators(actions, dispatch)
-    }
-  };
-}
+const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
+  actions: bindActionCreators({
+    // Release Conditions Actions
+    clearSubmittedContact,
+    submitContact
+  }, dispatch)
+});
 
 export default connect(mapStateToProps, mapDispatchToProps)(NewContactForm);
