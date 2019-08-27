@@ -657,13 +657,6 @@ function* submitHearingWorker(action :SequenceAction) :Generator<*, *, *> {
      * Assemble Assoociations
      */
     const associations = {
-      [assessedByESID]: [{
-        data: { [completedDatetimePTID]: [DateTime.local().toISO()] },
-        srcEntityIndex: 0,
-        srcEntitySetId: hearingsESID,
-        dstEntityKeyId: judgeEKID,
-        dstEntitySetId: judgesESID
-      }],
       [appearsInStateESID]: [{
         data: {},
         srcEntityIndex: 0,
@@ -688,6 +681,19 @@ function* submitHearingWorker(action :SequenceAction) :Generator<*, *, *> {
         }
       ]
     };
+
+    if (judgeEKID) {
+      associations[assessedByESID] = [];
+      associations[assessedByESID] = associations[assessedByESID].concat(
+        {
+          data: { [completedDatetimePTID]: [DateTime.local().toISO()] },
+          srcEntityIndex: 0,
+          srcEntitySetId: hearingsESID,
+          dstEntityKeyId: judgeEKID,
+          dstEntitySetId: judgesESID
+        }
+      );
+    }
 
     /*
      * Assemble Entities
