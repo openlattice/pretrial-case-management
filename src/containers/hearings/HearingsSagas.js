@@ -26,7 +26,6 @@ import {
 import type { SequenceAction } from 'redux-reqseq';
 
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
-import { createIdObject, getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
 import { getUTCDateRangeSearchString, TIME_FORMAT } from '../../utils/consts/DateTimeConsts';
 import { hearingIsCancelled } from '../../utils/HearingUtils';
 import { getPropertyTypeId, getPropertyIdToValueMap } from '../../edm/edmUtils';
@@ -34,6 +33,12 @@ import { SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { HEARING_TYPES, PSA_STATUSES, MAX_HITS } from '../../utils/consts/Consts';
 import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
+import {
+  createIdObject,
+  getEntityKeyId,
+  getEntityProperties,
+  isUUID
+} from '../../utils/DataUtils';
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
@@ -657,13 +662,6 @@ function* submitHearingWorker(action :SequenceAction) :Generator<*, *, *> {
      * Assemble Assoociations
      */
     const associations = {
-      [assessedByESID]: [{
-        data: { [completedDatetimePTID]: [DateTime.local().toISO()] },
-        srcEntityIndex: 0,
-        srcEntitySetId: hearingsESID,
-        dstEntityKeyId: judgeEKID,
-        dstEntitySetId: judgesESID
-      }],
       [appearsInStateESID]: [{
         data: {},
         srcEntityIndex: 0,
@@ -688,6 +686,19 @@ function* submitHearingWorker(action :SequenceAction) :Generator<*, *, *> {
         }
       ]
     };
+
+    if (isUUID(judgeEKID)) {
+      associations[assessedByESID] = [];
+      associations[assessedByESID] = associations[assessedByESID].concat(
+        {
+          data: { [completedDatetimePTID]: [DateTime.local().toISO()] },
+          srcEntityIndex: 0,
+          srcEntitySetId: hearingsESID,
+          dstEntityKeyId: judgeEKID,
+          dstEntitySetId: judgesESID
+        }
+      );
+    }
 
     /*
      * Assemble Entities
