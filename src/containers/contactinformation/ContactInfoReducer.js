@@ -45,7 +45,9 @@ const INITIAL_STATE :Map<*, *> = fromJS({
 export default function contactInfoReducer(state :Map<*, *> = INITIAL_STATE, action :Object) {
   switch (action.type) {
 
-    case CLEAR_SUBMITTED_CONTACT: return state.set(CONTACT_INFO_DATA.SUBMITTED_CONTACT_INFO, Map());
+    case CLEAR_SUBMITTED_CONTACT: return state
+      .set(CONTACT_INFO_DATA.SUBMITTED_CONTACT_INFO, Map())
+      .setIn([REDUX.ACTIONS, CONTACT_INFO_ACTIONS.SUBMIT_CONTACT, REDUX.REQUEST_STATE], STANDBY);
 
     case submitContact.case(action.type): {
       return submitContact.reducer(state, action, {
