@@ -77,7 +77,8 @@ export const getCourtroomOptions = () => {
   return courtroomOptions;
 };
 
-export const getJudgeOptions = (judgeIdsForCounty, judgesByID) => {
+export const getJudgeOptions = (judgeIdsForCounty, judgesByID, includeOther = false) => {
+  console.log(includeOther);
   let judgeOptions = Map();
   judgeIdsForCounty.forEach((judgeEKID) => {
     const judge = judgesByID.get(judgeEKID);
@@ -89,10 +90,12 @@ export const getJudgeOptions = (judgeIdsForCounty, judgesByID) => {
         .set(HEARING_CONSTS.FIELD, HEARING_CONSTS.JUDGE)
     );
   });
-  judgeOptions = judgeOptions.set(HEARING_CONSTS.OTHER_JUDGE, Map({
-    [HEARING_CONSTS.FULL_NAME]: HEARING_CONSTS.OTHER_JUDGE,
-    [HEARING_CONSTS.FIELD]: HEARING_CONSTS.JUDGE
-  }));
+  if (includeOther) {
+    judgeOptions = judgeOptions.set(HEARING_CONSTS.OTHER_JUDGE, Map({
+      [HEARING_CONSTS.FULL_NAME]: HEARING_CONSTS.OTHER_JUDGE,
+      [HEARING_CONSTS.FIELD]: HEARING_CONSTS.JUDGE
+    }));
+  }
   return judgeOptions.toOrderedMap().sortBy((k, _) => k);
 };
 
