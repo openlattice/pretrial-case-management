@@ -232,7 +232,6 @@ function mapStateToProps(state) {
   const app = state.get(STATE.APP);
   const charges = state.get(STATE.CHARGES);
   const hearings = state.get(STATE.HEARINGS);
-  console.log(app.toJS());
   return {
     app,
     loadAppReqState: getReqState(app, APP_ACTIONS.LOAD_APP),
