@@ -84,7 +84,9 @@ export const sortByDate = (d1, d2, fqn) => (
   moment(d1.getIn([fqn, 0], '')).isBefore(moment(d2.getIn([fqn, 0], ''))) ? 1 : -1
 );
 
-export const isUUID = uuid => (/^[A-F\d]{8}-[A-F\d]{4}-4[A-F\d]{3}-[89AB][A-F\d]{3}-[A-F\d]{12}$/i).test(uuid);
+const BASE_UUID_PATTERN :RegExp = /^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$/i;
+
+export const isUUID = uuid => (BASE_UUID_PATTERN).test(uuid);
 
 const dateOnWeekend = date => date.weekday === 6 || date.weekday === 7;
 const dateOnHoliday = date => federalHolidays.includes(date.toISODate());
