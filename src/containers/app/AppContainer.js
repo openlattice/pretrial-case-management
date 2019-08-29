@@ -36,7 +36,12 @@ import { CHARGES } from '../../utils/consts/FrontEndStateConsts';
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_ACTIONS, APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
-import { getError, getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUtils';
+import {
+  getError,
+  getReqState,
+  requestIsFailure,
+  requestIsPending
+} from '../../utils/consts/redux/ReduxUtils';
 
 import * as Routes from '../../core/router/Routes';
 import * as AppActionFactory from './AppActionFactory';
@@ -162,10 +167,10 @@ class AppContainer extends React.Component<Props, {}> {
   }
 
   renderAppBody = () => {
-    const { loadAppReqState, loadAppError } = this.props;
+    const { loadAppReqState } = this.props;
     const loading = requestIsPending(loadAppReqState);
-
-    if (loadAppError.size) {
+    const loadingError = requestIsFailure(loadAppReqState);
+    if (loadingError) {
       return (
         <ErrorPage />
       );

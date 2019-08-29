@@ -440,7 +440,7 @@ class HearingForm extends React.Component<Props, State> {
     return modifyingHearing
       ? (
         <StyledSearchableSelect
-            options={getJudgeOptions(judgeIdsForCounty, judgesById)}
+            options={getJudgeOptions(judgeIdsForCounty, judgesById, true)}
             value={judge}
             onSelect={this.onSelectChange}
             short />
