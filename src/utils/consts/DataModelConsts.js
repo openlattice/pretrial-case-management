@@ -222,7 +222,7 @@ export const PROPERTY_TYPES = {
   JAIL_MONTHS_SUSPENDED: 'justice.incarcerationsuspendedmonths',
   JAIL_YEARS_SUSPENDED: 'justice.incarcerationsuspendedyears',
   JAIL_START_DATE: 'justice.incarcerationstartdate',
-  CONCURRENT_CONSECUTIVE: 'justice.concurrentconsecutive',
+  CONCURRENT_CONSECUTIVE: 'ol.concurrentconsecutive',
 
   // Hearing entity type consts
   COURTROOM: 'justice.courtroom',
