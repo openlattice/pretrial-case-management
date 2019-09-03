@@ -11,6 +11,7 @@ import * as ChargesSagas from '../../containers/charges/ChargesSagas';
 import * as CheckInsSagas from '../../containers/checkins/CheckInsSagas';
 import * as ContactInfoSagas from '../../containers/contactinformation/ContactInfoSagas';
 import * as CourtSagas from '../../containers/court/CourtSagas';
+import * as CountiesSagas from '../../containers/counties/CountiesSagas';
 import * as PersonSagas from '../../containers/person/PersonSagas';
 import * as PeopleSagas from '../../containers/people/PeopleSagas';
 import * as DashboardSagas from '../../containers/dashboard/DashboardSagas';
@@ -64,6 +65,9 @@ export default function* sagas() :Generator<*, *, *> {
 
     // CourtSagas
     fork(CourtSagas.filterPeopleIdsWithOpenPSAsWatcher),
+
+    // CountiesSagas
+    fork(CountiesSagas.loadCountiesWatcher),
 
     // DashboardSagas
     fork(DashboardSagas.loadDashboardDataWatcher),
