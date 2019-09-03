@@ -469,8 +469,9 @@ class RemindersContainer extends React.Component<Props, State> {
         value: countyEKID
       };
     }).toJS();
+    countyOptions.unshift({ label: 'All', value: '' });
     const currentFilterValue :Object = {
-      label: countiesById.getIn([countyFilter, NAME, 0], ''),
+      label: countiesById.getIn([countyFilter, NAME, 0], 'All'),
       value: countyFilter
     };
     return (
