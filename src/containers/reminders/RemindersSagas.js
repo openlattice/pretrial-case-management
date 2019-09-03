@@ -4,7 +4,7 @@
 
 import { DateTime } from 'luxon';
 import type { SequenceAction } from 'redux-reqseq';
-import { Constants, SearchApi, Models } from 'lattice';
+import { Models } from 'lattice';
 import { SearchApiActions, SearchApiSagas } from 'lattice-sagas';
 import {
   fromJS,
@@ -25,13 +25,13 @@ import { hearingIsCancelled } from '../../utils/HearingUtils';
 import { getPropertyTypeId } from '../../edm/edmUtils';
 import { MAX_HITS, PSA_STATUSES } from '../../utils/consts/Consts';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { getUTCDateRangeSearchString} from '../../utils/consts/DateTimeConsts';
+import { getUTCDateRangeSearchString } from '../../utils/consts/DateTimeConsts';
 import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import {
   addWeekdays,
   getEntityProperties,
   getSearchTerm,
-  getSearchTermNotExact
+  getEntityKeyId
 } from '../../utils/DataUtils';
 import {
   BULK_DOWNLOAD_REMINDERS_PDF,
@@ -53,6 +53,7 @@ import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 
 const {
   CONTACT_INFORMATION,
+  COUNTIES,
   HEARINGS,
   MANUAL_REMINDERS,
   PEOPLE,
@@ -64,16 +65,17 @@ const {
 } = APP_TYPES;
 
 const {
+  DATE_TIME,
   ENTITY_KEY_ID,
   IS_ACTIVE,
   IS_PREFERRED,
+  NOTIFIED,
   STATUS
 } = PROPERTY_TYPES;
 
-const { searchEntitySetData } = SearchApiActions;
-const { searchEntitySetDataWorker } = SearchApiSagas;
+const { searchEntitySetData, searchEntityNeighborsWithFilter } = SearchApiActions;
+const { searchEntitySetDataWorker, searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
 
-const { OPENLATTICE_ID_FQN } = Constants;
 const { FullyQualifiedName } = Models;
 
 const getApp = state => state.get(STATE.APP, Map());
@@ -98,18 +100,27 @@ function* loadOptOutNeighborsWorker(action :SequenceAction) :Generator<*, *, *> 
     const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
 
     if (optOutIds.length) {
-      let neighborsById = yield call(SearchApi.searchEntityNeighborsWithFilter, optOutEntitySetId, {
-        entityKeyIds: optOutIds,
-        sourceEntitySetIds: [],
-        destinationEntitySetIds: [contactInformationEntitySetId, hearingsEntitySetId, peopleEntitySetId]
-      });
-      neighborsById = fromJS(neighborsById);
+      /* Get contact info Neighbors */
+      const optOutNeighborResponse = yield call(
+        searchEntityNeighborsWithFilterWorker,
+        searchEntityNeighborsWithFilter({
+          entitySetId: optOutEntitySetId,
+          filter: {
+            entityKeyIds: optOutIds,
+            sourceEntitySetIds: [],
+            destinationEntitySetIds: [contactInformationEntitySetId, hearingsEntitySetId, peopleEntitySetId]
+          }
+        })
+      );
+      if (optOutNeighborResponse.error) throw optOutNeighborResponse.error;
+      const neighborsById = fromJS(optOutNeighborResponse.data);
+
       neighborsById.entrySeq().forEach(([optOutId, neighbors]) => {
         let neighborsByAppTypeFqn = Map();
         if (neighbors) {
           neighbors.forEach((neighbor) => {
             const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
-            const entityKeyId = neighbor.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0], '');
+            const entityKeyId = getEntityKeyId(neighbor);
             const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
             if (appTypeFqn === PEOPLE) {
               optOutPeopleIds = optOutPeopleIds.add(entityKeyId);
@@ -129,18 +140,27 @@ function* loadOptOutNeighborsWorker(action :SequenceAction) :Generator<*, *, *> 
     }
 
     if (optOutContactInfoIds.size) {
-      let neighborsById = yield call(SearchApi.searchEntityNeighborsWithFilter, contactInformationEntitySetId, {
-        entityKeyIds: optOutContactInfoIds.toJS(),
-        sourceEntitySetIds: [peopleEntitySetId],
-        destinationEntitySetIds: [peopleEntitySetId]
-      });
-      neighborsById = fromJS(neighborsById);
+      /* Get contact info Neighbors */
+      const contactInfoNeighborResponse = yield call(
+        searchEntityNeighborsWithFilterWorker,
+        searchEntityNeighborsWithFilter({
+          entitySetId: contactInformationEntitySetId,
+          filter: {
+            entityKeyIds: optOutContactInfoIds.toJS(),
+            sourceEntitySetIds: [peopleEntitySetId],
+            destinationEntitySetIds: [peopleEntitySetId]
+          }
+        })
+      );
+      if (contactInfoNeighborResponse.error) throw contactInfoNeighborResponse.error;
+      const neighborsById = fromJS(contactInfoNeighborResponse.data);
+
       neighborsById.entrySeq().forEach(([contactInfoId, neighbors]) => {
         let neighborsByAppTypeFqn = Map();
         if (neighbors.size) {
           neighbors.forEach((neighbor) => {
             const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
-            const entityKeyId = neighbor.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0], '');
+            const entityKeyId = getEntityKeyId(neighbor);
             const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
             if (appTypeFqn === PEOPLE) {
               optOutPeopleIds = optOutPeopleIds.add(entityKeyId);
@@ -174,42 +194,41 @@ function* loadOptOutsForDateWorker(action :SequenceAction) :Generator<*, *, *> {
   try {
     yield put(loadOptOutsForDate.request(action.id));
     const { date } = action.value;
-    let optOutIds = Set();
     let optOutMap = Map();
-    let optOutsWithReasons = Set();
 
     const DATE_TIME_FQN = new FullyQualifiedName(PROPERTY_TYPES.DATE_TIME);
 
     const app = yield select(getApp);
     const edm = yield select(getEDM);
-    const optOutEntitySetId = getEntitySetIdFromApp(app, REMINDER_OPT_OUTS);
+    const optOutESID = getEntitySetIdFromApp(app, REMINDER_OPT_OUTS);
     const datePropertyTypeId = getPropertyTypeId(edm, DATE_TIME_FQN);
     const searchTerm = getUTCDateRangeSearchString(datePropertyTypeId, date);
 
-    const reminderOptions = {
+    const optOutOptions = {
       searchTerm,
       start: 0,
       maxHits: MAX_HITS,
       fuzzy: false
     };
-    const allOptOutDataforDate = yield call(SearchApi.searchEntitySetData, optOutEntitySetId, reminderOptions);
-    const optOutsOnDate = fromJS(allOptOutDataforDate.hits);
+    const optOutResponse = yield call(
+      searchEntitySetDataWorker,
+      searchEntitySetData({
+        entitySetId: optOutESID,
+        searchOptions: optOutOptions
+      })
+    );
+    if (optOutResponse.error) throw optOutResponse.error;
+    const optOutsOnDate = fromJS(optOutResponse.data.hits);
     optOutsOnDate.forEach((optOut) => {
-      const entityKeyId = optOut.getIn([OPENLATTICE_ID_FQN, 0], '');
-      const hasReason = !!optOut.getIn([PROPERTY_TYPES.REASON, 0], '');
+      const entityKeyId = getEntityKeyId(optOut);
 
-      optOutIds = optOutIds.add(entityKeyId);
       optOutMap = optOutMap.set(entityKeyId, optOut);
-      if (hasReason) optOutsWithReasons = optOutsWithReasons.add(entityKeyId);
     });
 
-    yield put(loadOptOutsForDate.success(action.id, {
-      optOutMap,
-      optOutsWithReasons
-    }));
+    yield put(loadOptOutsForDate.success(action.id, { optOutMap }));
 
-    if (optOutIds.size) {
-      optOutIds = optOutIds.toJS();
+    if (optOutMap.size) {
+      const optOutIds = optOutMap.keySeq().toJS();
       yield put(loadOptOutNeighbors({ optOutIds }));
     }
   }
@@ -231,9 +250,6 @@ function* loadRemindersforDateWorker(action :SequenceAction) :Generator<*, *, *>
   try {
     yield put(loadRemindersforDate.request(action.id));
     const { date } = action.value;
-    let reminderIds = Set();
-    let futureReminders = Map();
-    let pastReminders = Map();
     let successfulRemindersIds = Set();
     let failedRemindersIds = Set();
 
@@ -251,42 +267,43 @@ function* loadRemindersforDateWorker(action :SequenceAction) :Generator<*, *, *>
       maxHits: MAX_HITS,
       fuzzy: false
     };
-    const allRemindersDataforDate = yield call(SearchApi.searchEntitySetData, remindersEntitySetId, reminderOptions);
-    const remindersOnDate = fromJS(allRemindersDataforDate.hits);
-    remindersOnDate.forEach((reminder) => {
-      const entityKeyId = reminder.getIn([OPENLATTICE_ID_FQN, 0], '');
-      const dateTime = DateTime.fromISO(reminder.getIn([PROPERTY_TYPES.DATE_TIME, 0]));
-      const wasNotified = reminder.getIn([PROPERTY_TYPES.NOTIFIED, 0], false);
-
-      const reminderIsPending = dateTime > DateTime.local();
-
-      if (entityKeyId && dateTime.isValid) {
-        reminderIds = reminderIds.add(entityKeyId);
-        if (reminderIsPending) {
-          futureReminders = futureReminders.set(entityKeyId, reminder);
-        }
-        else {
-          pastReminders = pastReminders.set(entityKeyId, reminder);
+    const reminderResponse = yield call(
+      searchEntitySetDataWorker,
+      searchEntitySetData({
+        entitySetId: remindersEntitySetId,
+        searchOptions: reminderOptions
+      })
+    );
+    if (reminderResponse.error) throw reminderResponse.error;
+    const remindersOnDate = fromJS(reminderResponse.data.hits);
+    const remindersById = Map().withMutations((mutableMap) => {
+      remindersOnDate.forEach((reminder) => {
+        const {
+          [ENTITY_KEY_ID]: reminderEKID,
+          [DATE_TIME]: reminderDateTime,
+          [NOTIFIED]: wasNotified = false
+        } = getEntityProperties(reminder, [ENTITY_KEY_ID, DATE_TIME, NOTIFIED]);
+        const dateTime = DateTime.fromISO(reminderDateTime);
+        if (reminderEKID && dateTime.isValid) {
+          mutableMap.set(reminderEKID, reminder);
           if (wasNotified) {
-            successfulRemindersIds = successfulRemindersIds.add(entityKeyId);
+            successfulRemindersIds = successfulRemindersIds.add(reminderEKID);
           }
           else {
-            failedRemindersIds = failedRemindersIds.add(entityKeyId);
+            failedRemindersIds = failedRemindersIds.add(reminderEKID);
           }
         }
-      }
-    });
+      });
+    })
 
     yield put(loadRemindersforDate.success(action.id, {
-      reminderIds,
-      futureReminders,
-      pastReminders,
+      remindersById,
       successfulRemindersIds,
       failedRemindersIds,
     }));
 
-    if (reminderIds.size) {
-      reminderIds = reminderIds.toJS();
+    if (remindersById.size) {
+      const reminderIds = remindersById.keySeq().toJS();
       yield put(loadReminderNeighborsById({ reminderIds }));
     }
   }
@@ -314,22 +331,35 @@ function* loadReminderNeighborsByIdWorker(action :SequenceAction) :Generator<*, 
     let hearingIds = Set();
     let hearingsMap = Map();
     let hearingIdsToReminderIds = Map();
+    let reminderIdsByCounty = Map();
 
     if (reminderIds.length) {
       const app = yield select(getApp);
       const orgId = yield select(getOrgId);
       const entitySetIdsToAppType = app.getIn([APP_DATA.ENTITY_SETS_BY_ORG, orgId]);
-      const remindersEntitySetId = getEntitySetIdFromApp(app, REMINDERS);
-      const contactInformationEntitySetId = getEntitySetIdFromApp(app, CONTACT_INFORMATION);
-      const hearingsEntitySetId = getEntitySetIdFromApp(app, HEARINGS);
-      const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
-      const pretrialCasesEntitySetId = getEntitySetIdFromApp(app, PRETRIAL_CASES);
-      let neighborsById = yield call(SearchApi.searchEntityNeighborsWithFilter, remindersEntitySetId, {
-        entityKeyIds: reminderIds,
-        sourceEntitySetIds: [],
-        destinationEntitySetIds: [contactInformationEntitySetId, hearingsEntitySetId, peopleEntitySetId]
-      });
-      neighborsById = fromJS(neighborsById);
+      const contactInformationESID = getEntitySetIdFromApp(app, CONTACT_INFORMATION);
+      const countiesESID = getEntitySetIdFromApp(app, COUNTIES);
+      const hearingsESID = getEntitySetIdFromApp(app, HEARINGS);
+      const peopleESID = getEntitySetIdFromApp(app, PEOPLE);
+      const pretrialCasesESID = getEntitySetIdFromApp(app, PRETRIAL_CASES);
+      const remindersESID = getEntitySetIdFromApp(app, REMINDERS);
+      /*
+      * Get Reminders Neighbors
+      */
+      const reminderNeighborResponse = yield call(
+        searchEntityNeighborsWithFilterWorker,
+        searchEntityNeighborsWithFilter({
+          entitySetId: remindersESID,
+          filter: {
+            entityKeyIds: reminderIds,
+            sourceEntitySetIds: [],
+            destinationEntitySetIds: [contactInformationESID, hearingsESID, peopleESID]
+          }
+        })
+      );
+      if (reminderNeighborResponse.error) throw reminderNeighborResponse.error;
+      const neighborsById = fromJS(reminderNeighborResponse.data);
+
       neighborsById.entrySeq().forEach(([reminderId, neighbors]) => {
         let neighborsByAppTypeFqn = Map();
         if (neighbors) {
@@ -337,7 +367,7 @@ function* loadReminderNeighborsByIdWorker(action :SequenceAction) :Generator<*, 
             const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
             const neighborObj = neighbor.get(PSA_NEIGHBOR.DETAILS, Map());
             const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
-            const entityKeyId = neighbor.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0]);
+            const entityKeyId = getEntityKeyId(neighbor);
             if (appTypeFqn === HEARINGS) {
               hearingIdsToReminderIds = hearingIdsToReminderIds.set(entityKeyId, reminderId);
               hearingIds = hearingIds.add(entityKeyId);
@@ -352,15 +382,27 @@ function* loadReminderNeighborsByIdWorker(action :SequenceAction) :Generator<*, 
         reminderNeighborsById = reminderNeighborsById.set(reminderId, neighborsByAppTypeFqn);
       });
 
-      let hearingNeighborsById = yield call(SearchApi.searchEntityNeighborsWithFilter, hearingsEntitySetId, {
-        entityKeyIds: hearingIds.toJS(),
-        sourceEntitySetIds: [],
-        destinationEntitySetIds: [pretrialCasesEntitySetId]
-      });
-      hearingNeighborsById = fromJS(hearingNeighborsById);
-      hearingNeighborsById.entrySeq().forEach(([hearingId, neighbors]) => {
+      /*
+      * Get Hearing Neighbors
+      */
+      const hearingNeighborResponse = yield call(
+        searchEntityNeighborsWithFilterWorker,
+        searchEntityNeighborsWithFilter({
+          entitySetId: hearingsESID,
+          filter: {
+            entityKeyIds: hearingIds.toJS(),
+            sourceEntitySetIds: [],
+            destinationEntitySetIds: [pretrialCasesESID, countiesESID]
+          }
+        })
+      );
+      if (hearingNeighborResponse.error) throw hearingNeighborResponse.error;
+      const hearingNeighborsById = fromJS(hearingNeighborResponse.data);
+
+      hearingNeighborsById.entrySeq().forEach(([hearingEKID, neighbors]) => {
         if (neighbors.size) {
           let neighborsByAppTypeFqn = Map();
+          const reminderEKID = hearingIdsToReminderIds.get(hearingEKID);
           neighbors.forEach((neighbor) => {
             const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
             const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
@@ -370,18 +412,25 @@ function* loadReminderNeighborsByIdWorker(action :SequenceAction) :Generator<*, 
                 fromJS(neighbor)
               );
             }
+            if (appTypeFqn === COUNTIES) {
+              const countyEKID = getEntityKeyId(neighbor);
+              reminderIdsByCounty = reminderIdsByCounty.set(
+                countyEKID,
+                reminderIdsByCounty.get(countyEKID, Set()).add(reminderEKID)
+              );
+            }
           });
-          const reminderId = hearingIdsToReminderIds.get(hearingId);
           reminderNeighborsById = reminderNeighborsById.set(
-            reminderId,
-            reminderNeighborsById.get(reminderId, Map()).merge(neighborsByAppTypeFqn)
+            reminderEKID,
+            reminderNeighborsById.get(reminderEKID, Map()).merge(neighborsByAppTypeFqn)
           );
         }
       });
     }
 
     yield put(loadReminderNeighborsById.success(action.id, {
-      reminderNeighborsById
+      reminderNeighborsById,
+      reminderIdsByCounty
     }));
   }
   catch (error) {
@@ -435,7 +484,7 @@ function* getRemindersActionList(
       const hearingOnDateSelected = daysToCheck.some(date => (
         DateTime.fromISO(hearingDateTime).hasSame(DateTime.fromISO(date), 'day')));
       const hearingType = hearing.getIn([PROPERTY_TYPES.HEARING_TYPE, 0]);
-      const hearingEntityKeyId = hearing.getIn([OPENLATTICE_ID_FQN, 0]);
+      const hearingEntityKeyId = getEntityKeyId(hearing);
       const hearingIsInactive = hearingIsCancelled(hearing);
       if (hearingType
         && hearingExists
@@ -449,12 +498,20 @@ function* getRemindersActionList(
 
   /* Grab hearing people neighbors */
   if (hearingIds.size) {
-    let hearingNeighborsById = yield call(SearchApi.searchEntityNeighborsWithFilter, hearingsEntitySetId, {
-      entityKeyIds: hearingIds.toJS(),
-      sourceEntitySetIds: [peopleEntitySetId],
-      destinationEntitySetIds: []
-    });
-    hearingNeighborsById = fromJS(hearingNeighborsById);
+    /* get hearing neighbors */
+    const hearingNeighborsResponse = yield call(
+      searchEntityNeighborsWithFilterWorker,
+      searchEntityNeighborsWithFilter({
+        entitySetId: hearingsEntitySetId,
+        filter: {
+          entityKeyIds: hearingIds.toJS(),
+          sourceEntitySetIds: [peopleEntitySetId],
+          destinationEntitySetIds: []
+        }
+      })
+    );
+    if (hearingNeighborsResponse.error) throw hearingNeighborsResponse.error;
+    const hearingNeighborsById = fromJS(hearingNeighborsResponse.data);
 
     hearingNeighborsById.entrySeq().forEach(([_, neighbors]) => {
       neighbors.forEach((neighbor) => {
@@ -471,15 +528,24 @@ function* getRemindersActionList(
   }
   if (peopleIds.size) {
     /* Grab people for all Hearings on Selected Date */
-    let peopleNeighbors = yield call(SearchApi.searchEntityNeighborsWithFilter, peopleEntitySetId, {
-      entityKeyIds: peopleIds.toJS(),
-      sourceEntitySetIds: [psaScoresEntitySetId, contactInformationEntitySetId],
-      destinationEntitySetIds: [contactInformationEntitySetId, subscriptionEntitySetId]
-    });
-    peopleNeighbors = fromJS(peopleNeighbors);
+    const peopleNeighborsResponse = yield call(
+      searchEntityNeighborsWithFilterWorker,
+      searchEntityNeighborsWithFilter({
+        entitySetId: peopleEntitySetId,
+        filter: {
+          entityKeyIds: peopleIds.toJS(),
+          sourceEntitySetIds: [psaScoresEntitySetId, contactInformationEntitySetId],
+          destinationEntitySetIds: [contactInformationEntitySetId, subscriptionEntitySetId]
+        }
+      })
+    );
+    if (peopleNeighborsResponse.error) throw peopleNeighborsResponse.error;
+    const peopleNeighborsById = fromJS(peopleNeighborsResponse.data);
+    console.log('peopleNeighborsById');
+    console.log(peopleNeighborsById.toJS());
 
     /* Filter for people with open PSAs and either not contact info or subscription */
-    peopleNeighbors.entrySeq().forEach(([id, neighbors]) => {
+    peopleNeighborsById.entrySeq().forEach(([id, neighbors]) => {
       let hasAnOpenPSA = false;
       let hasPreferredContact = false;
       let hasASubscription = false;
@@ -524,16 +590,19 @@ function* getRemindersActionList(
 
     /* Grab hearing people neighbors */
     if (manualReminderIds.size) {
-      let manualReminderNeighborsById = yield call(
-        SearchApi.searchEntityNeighborsWithFilter,
-        manualRemindersEntitySetId,
-        {
-          entityKeyIds: manualReminderIds.toJS(),
-          sourceEntitySetIds: [],
-          destinationEntitySetIds: [peopleEntitySetId]
-        }
+      const manualReminderNeighborsResponse = yield call(
+        searchEntityNeighborsWithFilterWorker,
+        searchEntityNeighborsWithFilter({
+          entitySetId: manualRemindersEntitySetId,
+          filter: {
+            entityKeyIds: manualReminderIds.toJS(),
+            sourceEntitySetIds: [],
+            destinationEntitySetIds: [peopleEntitySetId]
+          }
+        })
       );
-      manualReminderNeighborsById = fromJS(manualReminderNeighborsById);
+      if (manualReminderNeighborsResponse.error) throw manualReminderNeighborsResponse.error;
+      const manualReminderNeighborsById = fromJS(manualReminderNeighborsResponse.data);
 
       manualReminderNeighborsById.entrySeq().forEach(([_, neighbors]) => {
         neighbors.forEach((neighbor) => {
@@ -649,8 +718,6 @@ function* bulkDownloadRemindersPDFWorker(action :SequenceAction) :Generator<*, *
       fuzzy: false
     };
 
-
-    // const allHearingDataforDate = yield call(SearchApi.searchEntitySetData, hearingsEntitySetId, reminderOptions);
     const allHearingDataforDate = yield call(
       searchEntitySetDataWorker,
       searchEntitySetData({ entitySetId: hearingsEntitySetId, searchOptions: hearingOptions })
@@ -659,31 +726,37 @@ function* bulkDownloadRemindersPDFWorker(action :SequenceAction) :Generator<*, *
     const hearingsOnDate = fromJS(allHearingDataforDate.data.hits);
     if (hearingsOnDate.size) {
       hearingsOnDate.forEach((hearing) => {
-        const entityKeyId = hearing.getIn([OPENLATTICE_ID_FQN, 0], '');
+        const entityKeyId = getEntityKeyId(hearing);
         const hearingDateTime = hearing.getIn([PROPERTY_TYPES.DATE_TIME, 0]);
         const hearingExists = !!hearingDateTime;
         const hearingOnDateSelected = DateTime.fromISO(hearingDateTime).hasSame(DateTime.fromISO(oneWeekAhead), 'day');
         const hearingType = hearing.getIn([PROPERTY_TYPES.HEARING_TYPE, 0]);
-        const hearingId = hearing.getIn([OPENLATTICE_ID_FQN, 0]);
         const hearingIsInactive = hearingIsCancelled(hearing);
         if (hearingType
           && hearingExists
           && hearingOnDateSelected
           && !hearingIsInactive
         ) {
-          hearingIds = hearingIds.add(hearingId);
+          hearingIds = hearingIds.add(entityKeyId);
           hearingMap = hearingMap.set(entityKeyId, hearing);
         }
       });
     }
 
     /* Grab hearing neighbors */
-    let hearingNeighborsById = yield call(SearchApi.searchEntityNeighborsWithFilter, hearingsEntitySetId, {
-      entityKeyIds: hearingIds.toJS(),
-      sourceEntitySetIds: [peopleEntitySetId],
-      destinationEntitySetIds: []
-    });
-    hearingNeighborsById = fromJS(hearingNeighborsById);
+    const hearingNeighborsResponse = yield call(
+      searchEntityNeighborsWithFilterWorker,
+      searchEntityNeighborsWithFilter({
+        entitySetId: hearingsEntitySetId,
+        filter: {
+          entityKeyIds: hearingIds.toJS(),
+          sourceEntitySetIds: [peopleEntitySetId],
+          destinationEntitySetIds: []
+        }
+      })
+    );
+    if (hearingNeighborsResponse.error) throw hearingNeighborsResponse.error;
+    const hearingNeighborsById = fromJS(hearingNeighborsResponse.data);
 
     hearingNeighborsById.entrySeq().forEach(([id, neighbors]) => {
       let hasNotBeenContacted = false;
@@ -693,7 +766,7 @@ function* bulkDownloadRemindersPDFWorker(action :SequenceAction) :Generator<*, *
         const neighborObj = neighbor.get(PSA_NEIGHBOR.DETAILS, Map());
         const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
         if (appTypeFqn === PEOPLE) {
-          const entityKeyId = neighbor.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0], '');
+          const entityKeyId = getEntityKeyId(neighbor);
           hasNotBeenContacted = optOutPeopleIds.includes(entityKeyId)
             || failedPeopleIds.includes(entityKeyId)
             || remindersActionList.includes(entityKeyId);
@@ -713,7 +786,7 @@ function* bulkDownloadRemindersPDFWorker(action :SequenceAction) :Generator<*, *
       pageDetailsList = pageDetailsList.push({ selectedPerson, selectedHearing });
     });
     pageDetailsList = pageDetailsList
-      .groupBy(reminderObj => reminderObj.selectedPerson.getIn([OPENLATTICE_ID_FQN, 0], ''))
+      .groupBy(reminderObj => reminderObj.selectedPerson.getIn([ENTITY_KEY_ID, 0], ''))
       .valueSeq()
       .map((personList) => {
         const selectPerson = personList.getIn([0, 'selectedPerson'], Map());
