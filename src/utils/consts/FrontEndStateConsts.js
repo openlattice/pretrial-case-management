@@ -243,33 +243,6 @@ export const PEOPLE = {
   ERROR: 'errorMessage'
 };
 
-
-// Reminders
-
-export const REMINDERS = {
-  REMINDERS_ACTION_LIST_DATE: 'remindersActionListDate',
-  REMINDERS_ACTION_LIST: 'remindersActionList',
-  LOADING_REMINDERS_ACTION_LIST: 'loadingRemindersActionList',
-  REMINDER_IDS: 'reminderIds',
-  FUTURE_REMINDERS: 'futureReminders',
-  PAST_REMINDERS: 'pastReminders',
-  SUCCESSFUL_REMINDER_IDS: 'successfulReminderIds',
-  FAILED_REMINDER_IDS: 'failedReminderIds',
-  LOADING_REMINDERS: 'loadingReminders',
-  LOADED: 'remindersLoaded',
-  REMINDER_NEIGHBORS: 'reminderNeighborsById',
-  REMINDERS_WITH_OPEN_PSA_IDS: 'remindersWithOpenPSA',
-  LOADING_REMINDER_NEIGHBORS: 'loadingReminderNeighbors',
-  OPT_OUTS: 'optOutMap',
-  OPT_OUT_NEIGHBORS: 'optOutNeighbors',
-  OPT_OUT_PEOPLE_IDS: 'optOutPeopleIds',
-  OPT_OUTS_WITH_REASON: 'optOutsWithReasons',
-  REMINDER_IDS_TO_OPT_OUT_IDS: 'reminderIdsToOptOutIds',
-  LOADING_OPT_OUTS: 'loadingOptOuts',
-  LOADING_OPT_OUT_NEIGHBORS: 'loadingOptOutNeighbors',
-  LOADING_REMINDER_PDF: 'loadingReminderPDF'
-};
-
 // Review
 
 export const REVIEW = {

@@ -46,6 +46,7 @@ import {
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
+import { REMINDERS_DATA } from '../../utils/consts/redux/RemindersConsts';
 
 const { createEntityAndAssociationData, getEntityData } = DataApiActions;
 const { createEntityAndAssociationDataWorker, getEntityDataWorker } = DataApiSagas;
@@ -73,7 +74,7 @@ const { FullyQualifiedName } = Models;
 const getApp = state => state.get(STATE.APP, Map());
 const getEDM = state => state.get(STATE.EDM, Map());
 const getReminderActionListDate = state => (
-  state.getIn([STATE.REMINDERS, REMINDERS.REMINDERS_ACTION_LIST_DATE], DateTime.local().toISO())
+  state.getIn([STATE.REMINDERS, REMINDERS_DATA.REMINDERS_ACTION_LIST_DATE], DateTime.local().toISO())
 );
 const getOrgId = state => state.getIn([STATE.APP, APP_DATA.SELECTED_ORG_ID], '');
 

@@ -11,6 +11,7 @@ export const STATE = {
   CHECK_INS: 'checkIns',
   CONTACT_INFO: 'contactInformation',
   COURT: 'court',
+  COUNTIES: 'counties',
   DASHBOARD: 'dashboard',
   DOWNLOAD: 'download',
   EDM: 'edm',

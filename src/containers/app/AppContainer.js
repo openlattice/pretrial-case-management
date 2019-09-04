@@ -35,6 +35,7 @@ import { CHARGES } from '../../utils/consts/FrontEndStateConsts';
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_ACTIONS, APP_DATA } from '../../utils/consts/redux/AppConsts';
+import { COUNTIES_ACTIONS } from '../../utils/consts/redux/CountiesConsts';
 import { HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
 import {
   getError,
@@ -46,6 +47,7 @@ import {
 import * as Routes from '../../core/router/Routes';
 import * as AppActionFactory from './AppActionFactory';
 import * as ChargesActionFactory from '../charges/ChargesActionFactory';
+import { loadCounties } from '../counties/CountiesActions';
 import { loadJudges } from '../hearings/HearingsActions';
 import { getStaffEKIDs } from '../people/PeopleActionFactory';
 
@@ -114,6 +116,7 @@ class AppContainer extends React.Component<Props, {}> {
     const nextOrgId = app.get(APP_DATA.SELECTED_ORG_ID);
     const prevOrgId = prevProps.app.get(APP_DATA.SELECTED_ORG_ID);
     if (nextOrgId && prevOrgId !== nextOrgId) {
+      actions.loadCounties();
       actions.loadJudges();
       nextOrg.keySeq().forEach((id) => {
         const selectedOrgId :string = id;
@@ -231,6 +234,7 @@ class AppContainer extends React.Component<Props, {}> {
 function mapStateToProps(state) {
   const app = state.get(STATE.APP);
   const charges = state.get(STATE.CHARGES);
+  const counties = state.get(STATE.COUNTIES);
   const hearings = state.get(STATE.HEARINGS);
   return {
     app,
@@ -246,6 +250,8 @@ function mapStateToProps(state) {
     [CHARGES.COURT]: charges.get(CHARGES.COURT),
     [CHARGES.LOADING]: charges.get(CHARGES.LOADING),
 
+    loadCountiesReqState: getReqState(counties, COUNTIES_ACTIONS.LOAD_COUNTIES),
+
     [HEARINGS_DATA.SETTINGS_MODAL_OPEN]: hearings.get(HEARINGS_DATA.SETTINGS_MODAL_OPEN)
   };
 }
@@ -260,6 +266,8 @@ function mapDispatchToProps(dispatch :Function) :Object {
   Object.keys(ChargesActionFactory).forEach((action :string) => {
     actions[action] = ChargesActionFactory[action];
   });
+
+  actions.loadCounties = loadCounties;
 
   actions.loadJudges = loadJudges;
   actions.getStaffEKIDs = getStaffEKIDs;
