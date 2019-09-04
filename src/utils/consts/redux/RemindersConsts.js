@@ -12,17 +12,17 @@ export const REMINDERS_ACTIONS = {
 };
 
 export const REMINDERS_DATA = {
-  REMINDERS_ACTION_LIST_DATE: 'remindersActionListDate',
-  REMINDERS_ACTION_LIST: 'remindersActionList',
-  REMINDER_IDS: 'reminderIds',
-  FUTURE_REMINDERS: 'futureReminders',
-  REMINDERS_BY_ID: 'remindersById',
-  REMINDERS_BY_COUNTY: 'remindersByCounty',
-  SUCCESSFUL_REMINDER_IDS: 'successfulReminderIds',
   FAILED_REMINDER_IDS: 'failedReminderIds',
-  REMINDER_NEIGHBORS: 'reminderNeighborsById',
-  REMINDERS_WITH_OPEN_PSA_IDS: 'remindersWithOpenPSA',
+  FUTURE_REMINDERS: 'futureReminders',
   OPT_OUTS: 'optOutMap',
   OPT_OUT_NEIGHBORS: 'optOutNeighbors',
   OPT_OUT_PEOPLE_IDS: 'optOutPeopleIds',
+  REMINDER_IDS: 'reminderIds',
+  REMINDER_NEIGHBORS: 'reminderNeighborsById',
+  REMINDERS_ACTION_LIST: 'remindersActionList',
+  REMINDERS_ACTION_LIST_DATE: 'remindersActionListDate',
+  REMINDERS_BY_COUNTY: 'remindersByCounty',
+  REMINDERS_BY_ID: 'remindersById',
+  REMINDERS_WITH_OPEN_PSA_IDS: 'remindersWithOpenPSA',
+  SUCCESSFUL_REMINDER_IDS: 'successfulReminderIds',
 };
