@@ -295,7 +295,7 @@ function* loadRemindersforDateWorker(action :SequenceAction) :Generator<*, *, *>
           }
         }
       });
-    })
+    });
 
     yield put(loadRemindersforDate.success(action.id, {
       remindersById,
