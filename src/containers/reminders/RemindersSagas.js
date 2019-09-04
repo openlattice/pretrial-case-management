@@ -23,10 +23,11 @@ import exportPDFList from '../../utils/CourtRemindersPDFUtils';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { hearingIsCancelled } from '../../utils/HearingUtils';
 import { getPropertyTypeId } from '../../edm/edmUtils';
-import { MAX_HITS, PSA_STATUSES } from '../../utils/consts/Consts';
+import { MAX_HITS } from '../../utils/consts/Consts';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { getUTCDateRangeSearchString } from '../../utils/consts/DateTimeConsts';
 import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
+import { SETTINGS } from '../../utils/consts/AppSettingConsts';
 import {
   addWeekdays,
   getEntityProperties,
@@ -51,13 +52,14 @@ import {
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 
+const { PREFERRED_COUNTY } = SETTINGS;
+
 const {
   CONTACT_INFORMATION,
   COUNTIES,
   HEARINGS,
   MANUAL_REMINDERS,
   PEOPLE,
-  PSA_SCORES,
   REMINDERS,
   REMINDER_OPT_OUTS,
   PRETRIAL_CASES,
@@ -69,8 +71,7 @@ const {
   ENTITY_KEY_ID,
   IS_ACTIVE,
   IS_PREFERRED,
-  NOTIFIED,
-  STATUS
+  NOTIFIED
 } = PROPERTY_TYPES;
 
 const { searchEntitySetData, searchEntityNeighborsWithFilter } = SearchApiActions;
@@ -460,14 +461,15 @@ function* getRemindersActionList(
 
   const app = yield select(getApp);
   const orgId = yield select(getOrgId);
-
-  const hearingsEntitySetId = getEntitySetIdFromApp(app, HEARINGS);
-  const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
-  const contactInformationEntitySetId = getEntitySetIdFromApp(app, CONTACT_INFORMATION);
-  const psaScoresEntitySetId = getEntitySetIdFromApp(app, PSA_SCORES);
-  const manualRemindersEntitySetId = getEntitySetIdFromApp(app, MANUAL_REMINDERS);
-  const subscriptionEntitySetId = getEntitySetIdFromApp(app, SUBSCRIPTION);
+  const preferredCountyEKID = app.getIn([APP_DATA.SELECTED_ORG_SETTINGS, PREFERRED_COUNTY], '');
   const entitySetIdsToAppType = app.getIn([APP_DATA.ENTITY_SETS_BY_ORG, orgId]);
+
+  const contactInformationEntitySetId = getEntitySetIdFromApp(app, CONTACT_INFORMATION);
+  const countiesESID = getEntitySetIdFromApp(app, COUNTIES);
+  const hearingsEntitySetId = getEntitySetIdFromApp(app, HEARINGS);
+  const manualRemindersEntitySetId = getEntitySetIdFromApp(app, MANUAL_REMINDERS);
+  const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
+  const subscriptionEntitySetId = getEntitySetIdFromApp(app, SUBSCRIPTION);
 
   /* Grab All Hearing Data */
   const allHearingDataforDate = yield call(
@@ -506,7 +508,7 @@ function* getRemindersActionList(
         filter: {
           entityKeyIds: hearingIds.toJS(),
           sourceEntitySetIds: [peopleEntitySetId],
-          destinationEntitySetIds: []
+          destinationEntitySetIds: [countiesESID]
         }
       })
     );
@@ -514,16 +516,24 @@ function* getRemindersActionList(
     const hearingNeighborsById = fromJS(hearingNeighborsResponse.data);
 
     hearingNeighborsById.entrySeq().forEach(([_, neighbors]) => {
+      let personEKID;
+      let isPerferredCounty = false;
       neighbors.forEach((neighbor) => {
         const { [ENTITY_KEY_ID]: entityKeyId } = getEntityProperties(neighbor, [ENTITY_KEY_ID]);
         const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
         const neighborObj = neighbor.get(PSA_NEIGHBOR.DETAILS, Map());
         const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
         if (appTypeFqn === PEOPLE) {
-          peopleIds = peopleIds.add(entityKeyId);
+          personEKID = entityKeyId;
           peopleMap = peopleMap.set(entityKeyId, neighborObj);
         }
+        if (appTypeFqn === COUNTIES) {
+          if (entityKeyId === preferredCountyEKID) isPerferredCounty = true;
+        }
       });
+      if (personEKID && isPerferredCounty) {
+        peopleIds = peopleIds.add(personEKID);
+      }
     });
   }
   if (peopleIds.size) {
@@ -534,19 +544,18 @@ function* getRemindersActionList(
         entitySetId: peopleEntitySetId,
         filter: {
           entityKeyIds: peopleIds.toJS(),
-          sourceEntitySetIds: [psaScoresEntitySetId, contactInformationEntitySetId],
+          sourceEntitySetIds: [contactInformationEntitySetId],
           destinationEntitySetIds: [contactInformationEntitySetId, subscriptionEntitySetId]
         }
       })
     );
     if (peopleNeighborsResponse.error) throw peopleNeighborsResponse.error;
     const peopleNeighborsById = fromJS(peopleNeighborsResponse.data);
-    console.log('peopleNeighborsById');
-    console.log(peopleNeighborsById.toJS());
+
 
     /* Filter for people with open PSAs and either not contact info or subscription */
     peopleNeighborsById.entrySeq().forEach(([id, neighbors]) => {
-      let hasAnOpenPSA = false;
+
       let hasPreferredContact = false;
       let hasASubscription = false;
       neighbors.forEach((neighbor) => {
@@ -560,14 +569,9 @@ function* getRemindersActionList(
           const { [IS_PREFERRED]: isPreferred } = getEntityProperties(neighbor, [IS_PREFERRED]);
           if (isPreferred) hasPreferredContact = true;
         }
-        if (appTypeFqn === PSA_SCORES) {
-          const { [STATUS]: status } = getEntityProperties(neighbor, [STATUS]);
-          const isOpen = (status === PSA_STATUSES.OPEN);
-          if (isOpen) hasAnOpenPSA = true;
-        }
       });
       const personIsReceivingReminders = hasPreferredContact && hasASubscription;
-      if (hasAnOpenPSA && !personIsReceivingReminders) {
+      if (!personIsReceivingReminders) {
         const person = peopleMap.get(id, Map());
         remindersActionList = remindersActionList.set(id, person);
       }
