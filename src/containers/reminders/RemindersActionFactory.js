@@ -6,8 +6,9 @@ import { newRequestSequence } from 'redux-reqseq';
 import type { RequestSequence } from 'redux-reqseq';
 
 const SET_DATE_FOR_REMIDNERS_ACTION_LIST :'SET_DATE_FOR_REMIDNERS_ACTION_LIST' = 'SET_DATE_FOR_REMIDNERS_ACTION_LIST';
-const setDateForRemindersActionList = () => ({
-  type: SET_DATE_FOR_REMIDNERS_ACTION_LIST
+const setDateForRemindersActionList = value => ({
+  type: SET_DATE_FOR_REMIDNERS_ACTION_LIST,
+  value
 });
 
 const BULK_DOWNLOAD_REMINDERS_PDF :string = 'BULK_DOWNLOAD_REMINDERS_PDF';
