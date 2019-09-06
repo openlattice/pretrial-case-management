@@ -78,7 +78,6 @@ export const getCourtroomOptions = () => {
 };
 
 export const getJudgeOptions = (judgeIdsForCounty, judgesByID, includeOther = false) => {
-  console.log(includeOther);
   let judgeOptions = Map();
   judgeIdsForCounty.forEach((judgeEKID) => {
     const judge = judgesByID.get(judgeEKID);

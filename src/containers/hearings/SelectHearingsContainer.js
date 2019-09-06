@@ -26,7 +26,6 @@ import { JURISDICTION } from '../../utils/consts/Consts';
 import {
   SUBMIT,
   REVIEW,
-  COURT,
   PEOPLE,
   PSA_NEIGHBOR
 } from '../../utils/consts/FrontEndStateConsts';

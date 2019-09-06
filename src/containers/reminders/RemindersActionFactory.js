@@ -5,6 +5,12 @@
 import { newRequestSequence } from 'redux-reqseq';
 import type { RequestSequence } from 'redux-reqseq';
 
+const SET_DATE_FOR_REMIDNERS_ACTION_LIST :'SET_DATE_FOR_REMIDNERS_ACTION_LIST' = 'SET_DATE_FOR_REMIDNERS_ACTION_LIST';
+const setDateForRemindersActionList = value => ({
+  type: SET_DATE_FOR_REMIDNERS_ACTION_LIST,
+  value
+});
+
 const BULK_DOWNLOAD_REMINDERS_PDF :string = 'BULK_DOWNLOAD_REMINDERS_PDF';
 const bulkDownloadRemindersPDF :RequestSequence = newRequestSequence(BULK_DOWNLOAD_REMINDERS_PDF);
 
@@ -25,9 +31,6 @@ const loadReminderNeighborsById :RequestSequence = newRequestSequence(LOAD_REMIN
 
 const REMOVE_FROM_REMIDNERS_ACTION_LIST :string = 'REMOVE_FROM_REMIDNERS_ACTION_LIST';
 const removeFromRemindersActionList :RequestSequence = newRequestSequence(REMOVE_FROM_REMIDNERS_ACTION_LIST);
-
-const SET_DATE_FOR_REMIDNERS_ACTION_LIST :string = 'SET_DATE_FOR_REMIDNERS_ACTION_LIST';
-const setDateForRemindersActionList :RequestSequence = newRequestSequence(SET_DATE_FOR_REMIDNERS_ACTION_LIST);
 
 export {
   BULK_DOWNLOAD_REMINDERS_PDF,

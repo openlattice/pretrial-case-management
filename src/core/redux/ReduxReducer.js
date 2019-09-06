@@ -11,6 +11,7 @@ import chargesReducer from '../../containers/charges/ChargesReducer';
 import checkInsReducer from '../../containers/checkins/CheckInsReducer';
 import contactInfoReducer from '../../containers/contactinformation/ContactInfoReducer';
 import courtReducer from '../../containers/court/CourtReducer';
+import countiesReducer from '../../containers/counties/CountiesReducer';
 import dashboardReducer from '../../containers/dashboard/DashboardReducer';
 import downloadReducer from '../../containers/download/DownloadReducer';
 import edmReducer from '../../edm/EDMReducer';
@@ -28,7 +29,7 @@ import searchReducer from '../../containers/person/SearchReducer';
 import submitReducer from '../../utils/submit/SubmitReducer';
 import subscriptionsReducer from '../../containers/subscription/SubscriptionsReducer';
 
-import { STATE } from '../../utils/consts/FrontEndStateConsts';
+import { STATE } from '../../utils/consts/redux/SharedConsts';
 
 export default function reduxReducer(routerHistory :any) {
 
@@ -39,6 +40,7 @@ export default function reduxReducer(routerHistory :any) {
     [STATE.CHECK_INS]: checkInsReducer,
     [STATE.CONTACT_INFO]: contactInfoReducer,
     [STATE.COURT]: courtReducer,
+    [STATE.COUNTIES]: countiesReducer,
     [STATE.DASHBOARD]: dashboardReducer,
     [STATE.DOWNLOAD]: downloadReducer,
     [STATE.EDM]: edmReducer,
