@@ -1,2 +1,2 @@
-const VOICE_PROMPT = 'My voice is stronger than passwords.';
+const VOICE_PROMPT = 'Never forget tomorrow is a new day.';
 export default VOICE_PROMPT;
