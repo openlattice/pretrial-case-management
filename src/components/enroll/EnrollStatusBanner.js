@@ -16,7 +16,7 @@ import { getEntityProperties } from '../../utils/DataUtils';
 import { formatPersonName, formatPeopleInfo } from '../../utils/PeopleUtils';
 import { InputRow } from '../person/PersonFormTags';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { PEOPLE, STATE } from '../../utils/consts/FrontEndStateConsts';
+import { ENROLL, PEOPLE, STATE } from '../../utils/consts/FrontEndStateConsts';
 
 import * as EnrollActionFactory from '../../containers/enroll/EnrollActionFactory';
 
@@ -58,6 +58,7 @@ const UnderlinedTextButton = styled.div`
 type Props = {
   person :Map<*, *>,
   personVoiceProfile :boolean,
+  loadingProfile :boolean,
   voiceEnrollmentProgress :number,
   actions :{
     clearEnrollState :() => void
@@ -73,12 +74,18 @@ class EnrollStatusBanner extends React.Component<Props, State> {
   }
 
   componentDidMount() {
-    const { actions, person, personVoiceProfile } = this.props;
+    const {
+      actions,
+      loadingProfile,
+      person,
+      personVoiceProfile
+    } = this.props;
+
     const {
       [PERSON_ID]: personId,
       [ENTITY_KEY_ID]: personEntityKeyId,
     } = getEntityProperties(person, [PERSON_ID, ENTITY_KEY_ID]);
-    if (personVoiceProfile.size && personId && personEntityKeyId) {
+    if (!loadingProfile && personVoiceProfile.size && personId && personEntityKeyId) {
       actions.getProfile({ personId, personEntityKeyId });
     }
   }
@@ -188,9 +195,11 @@ class EnrollStatusBanner extends React.Component<Props, State> {
 
 function mapStateToProps(state) {
   const people = state.get(STATE.PEOPLE);
+  const enroll = state.get(STATE.ENROLL);
 
   return {
     [PEOPLE.VOICE_ENROLLMENT_PROGRESS]: people.get(PEOPLE.VOICE_ENROLLMENT_PROGRESS),
+    [ENROLL.LOADING_PROFILE]: enroll.get(ENROLL.LOADING_PROFILE),
   };
 }
 
