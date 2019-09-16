@@ -1,21 +1,23 @@
 /*
  * @flow
  */
+
 import Immutable from 'immutable';
+import {
+  all,
+  call,
+  put,
+  takeEvery,
+} from '@redux-saga/core/effects';
 import {
   DataApi,
   DataIntegrationApi,
   EntityDataModelApi,
+  EntitySetsApi,
   Models,
   Types
 } from 'lattice';
-
-import {
-  call,
-  put,
-  takeEvery,
-  all
-} from '@redux-saga/core/effects';
+import type { SequenceAction } from 'redux-reqseq';
 
 import { APP_DATA } from '../consts/redux/AppConsts';
 import { stripIdField } from '../DataUtils';
@@ -149,7 +151,7 @@ function* replaceEntityWorker(action :SequenceAction) :Generator<*, *, *> {
     } = action.value;
     let { entitySetId } = action.value;
 
-    if (!entitySetId) entitySetId = yield call(EntityDataModelApi.getEntitySetId, entitySetName);
+    if (!entitySetId) entitySetId = yield call(EntitySetsApi.getEntitySetId, entitySetName);
     yield call(DataApi.replaceEntityInEntitySetUsingFqns, entitySetId, entityKeyId, stripIdField(values));
 
     yield put(replaceEntity.success(action.id));
@@ -191,7 +193,7 @@ function* submitWorker(action :SequenceAction) :Generator<*, *, *> {
     }
     else {
       const allEntitySetIdsRequest = config.entitySets.map(entitySet => (
-        call(EntityDataModelApi.getEntitySetId, entitySet.name)
+        call(EntitySetsApi.getEntitySetId, entitySet.name)
       ));
       allEntitySetIds = yield all(allEntitySetIdsRequest);
     }
@@ -420,9 +422,9 @@ function* replaceAssociationWorker(action :SequenceAction) :Generator<*, *, *> {
     yield put(replaceAssociation.request(action.id));
 
     // Collect Entity Set Ids for association, src, and dst
-    if (!associationEntitySetId) associationEntitySetId = yield call(EntityDataModelApi.getEntitySetId, associationEntitySetName);
-    if (!srcEntitySetId) srcEntitySetId = yield call(EntityDataModelApi.getEntitySetId, srcEntitySetName);
-    if (!dstEntitySetId) dstEntitySetId = yield call(EntityDataModelApi.getEntitySetId, dstEntitySetName);
+    if (!associationEntitySetId) associationEntitySetId = yield call(EntitySetsApi.getEntitySetId, associationEntitySetName);
+    if (!srcEntitySetId) srcEntitySetId = yield call(EntitySetsApi.getEntitySetId, srcEntitySetName);
+    if (!dstEntitySetId) dstEntitySetId = yield call(EntitySetsApi.getEntitySetId, dstEntitySetName);
 
     const allEntitySetIds = [associationEntitySetId, srcEntitySetId, dstEntitySetId];
 
