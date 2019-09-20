@@ -5,17 +5,16 @@
 import React from 'react';
 import styled from 'styled-components';
 import { Map } from 'immutable';
-import { Constants } from 'lattice';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
+import { Checkbox, Radio, Select } from 'lattice-ui-kit';
 import type { RequestSequence } from 'redux-reqseq';
 
-import StyledCheckbox from '../../components/controls/StyledCheckbox';
-import StyledInput from '../../components/controls/StyledInput';
-import StyledRadio from '../../components/controls/StyledRadio';
 import InfoButton from '../../components/buttons/InfoButton';
+import RCMSettings from './RCMSettings';
 import { PROPERTY_TYPES, APP_TYPES } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
+import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
 import {
   CASE_CONTEXTS,
   CONTEXTS,
@@ -25,16 +24,17 @@ import {
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
+import { COUNTIES_DATA } from '../../utils/consts/redux/CountiesConsts';
+import { SETTINGS_DATA } from '../../utils/consts/redux/SettingsConsts';
 
-import * as AppActionFactory from '../app/AppActionFactory';
-import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
+import * as SettingsActions from './SettingsActions';
 import {
   StyledFormViewWrapper,
   StyledFormWrapper,
   StyledSectionWrapper
 } from '../../utils/Layout';
 
-const { OPENLATTICE_ID_FQN } = Constants;
+const { ENTITY_KEY_ID, NAME } = PROPERTY_TYPES;
 
 const Section = styled.div`
   width: 100%;
@@ -60,7 +60,13 @@ const SubSection = styled.div`
     font-size: 16px;
     color: ${OL.GREY01};
   }
+`;
 
+
+const StyledCell = styled.td`
+  padding: 10px 10px;
+  text-align: ${props => props.align || 'left'};
+  word-wrap: break-word;
 `;
 
 const RadioSection = styled.div`
@@ -88,7 +94,9 @@ const SubmitRow = styled.div`
 
 type Props = {
   settings :Map<*, *>,
-  settingsEntitySetId :string,
+  selectedOrganizationId :string,
+  selectedOrganizationSettings :Map<*, *>,
+  countiesById :Map<*, *>,
   actions :{
     loadApp :RequestSequence;
     replaceEntity :RequestSequence;
@@ -96,75 +104,89 @@ type Props = {
 };
 
 class SettingsContainer extends React.Component<Props, State> {
-  constructor(props :Props) {
-    super(props);
-    this.state = {
-      settings: props.settings.delete(OPENLATTICE_ID_FQN)
-    };
+
+  initializeSettings = () => {
+    const { actions, selectedOrganizationSettings } = this.props;
+    console.log(selectedOrganizationSettings.toJS());
+    actions.initializeSettings({ selectedOrganizationSettings });
   }
 
-  componentWillReceiveProps(nextProps) {
-    const { settings } = this.props;
-    if (settings !== nextProps.settings) {
-      this.setState({ settings: nextProps.settings.delete(OPENLATTICE_ID_FQN) });
+  componentDidMount() {
+    const { selectedOrganizationId } = this.props;
+    if (selectedOrganizationId) {
+      this.initializeSettings();
     }
   }
 
-  renderCheckbox = (valuePath, label) => {
-    const { settings } = this.state;
+  componentWillReceiveProps(nextProps) {
+    const { selectedOrganizationId } = this.props;
+    if (selectedOrganizationId !== nextProps.selectedOrganizationId) {
+      this.initializeSettings();
+    }
+  }
+
+  renderCheckbox = (path, label) => {
+    const { actions, settings } = this.props;
     return (
-      <StyledCheckbox
-          checked={settings.getIn(valuePath, false)}
-          label={label}
-          onChange={({ target }) => {
-            this.setState({ settings: settings.setIn(valuePath, target.checked) });
-          }} />
+      <StyledCell align="center">
+        <Checkbox
+            checked={settings.getIn(path, false)}
+            label={label}
+            onChange={({ target }) => {
+              actions.updateSetting({ path, value: target.checked });
+            }} />
+      </StyledCell>
     );
   }
 
-  renderInput = (field) => {
-    const { settings } = this.state;
+  renderRadioButton = (path, optionValue, label) => {
+    const { actions, settings } = this.props;
+
     return (
-      <StyledInput
-          value={settings.get(field, '')}
-          onChange={({ target }) => {
-            let { value } = target;
-            if (!value) value = undefined;
-            this.setState({ settings: settings.set(field, value) });
-          }} />
+      <StyledCell align="center">
+        <Radio
+            value={optionValue}
+            checked={settings.getIn(path) === optionValue}
+            label={label}
+            onChange={({ target }) => {
+              actions.updateSetting({ path, value: target.value });
+            }} />
+      </StyledCell>
     );
   }
 
-  renderRadioButton = (valuePath, optionValue, label) => {
-    const { settings } = this.state;
+  updatePreferredCounty = (county) => {
+    const { actions } = this.props;
+    actions.updateSetting({ path: [SETTINGS.PREFERRED_COUNTY], value: county });
+  };
 
+  renderCountyFilter = () => {
+    const { countiesById, settings } = this.props;
+    const countyFilter = settings.get(SETTINGS.PREFERRED_COUNTY, '');
+    const countyOptions :List = countiesById.entrySeq().map(([countyEKID, county]) => {
+      const { [NAME]: countyName } = getEntityProperties(county, [ENTITY_KEY_ID, NAME]);
+      return {
+        label: countyName,
+        value: countyEKID
+      };
+    }).toJS();
+    const currentFilterValue :Object = {
+      label: countiesById.getIn([countyFilter, NAME, 0], 'All'),
+      value: countyFilter
+    };
     return (
-      <StyledRadio
-          value={optionValue}
-          checked={settings.getIn(valuePath) === optionValue}
-          label={label}
-          onChange={({ target }) => {
-            this.setState({ settings: settings.setIn(valuePath, target.value) });
-          }} />
+      <Select
+          value={currentFilterValue}
+          options={countyOptions}
+          onChange={this.updatePreferredCounty} />
     );
   }
 
   submit = () => {
-    const { actions, settings, settingsEntitySetId } = this.props;
+    const { actions, settings, selectedOrganizationSettings } = this.props;
+    const settingsEKID = selectedOrganizationSettings.get(ENTITY_KEY_ID, '');
 
-    const entityKeyId = settings.get(OPENLATTICE_ID_FQN);
-    const entitySetId = settingsEntitySetId;
-
-    const values = {
-      [PROPERTY_TYPES.APP_DETAILS]: [JSON.stringify(this.state.settings.toJS())]
-    };
-
-    actions.replaceEntity({
-      entityKeyId,
-      entitySetId,
-      values,
-      callback: actions.loadApp
-    });
+    actions.submitSettings({ settingsEKID, settings });
   }
 
   render() {
@@ -227,13 +249,16 @@ class SettingsContainer extends React.Component<Props, State> {
               <SubSection>
                 <h1>Preferred County Entity Key Id</h1>
                 <article>
-                  {this.renderInput(SETTINGS.PREFERRED_COUNTY)}
+                  {this.renderCountyFilter()}
                 </article>
               </SubSection>
             </Section>
             <SubmitRow>
               <InfoButton onClick={this.submit}>Save Changes</InfoButton>
             </SubmitRow>
+            <Section>
+              <RCMSettings />
+            </Section>
           </StyledSectionWrapper>
         </StyledFormWrapper>
       </StyledFormViewWrapper>
@@ -243,31 +268,25 @@ class SettingsContainer extends React.Component<Props, State> {
 
 function mapStateToProps(state) {
   const app = state.get(STATE.APP);
-
-  const orgId = app.get(APP_DATA.SELECTED_ORG_ID);
-
-  let settingsEntitySetId;
-  app.getIn([APP_DATA.ENTITY_SETS_BY_ORG, orgId], Map()).entrySeq().forEach(([entitySetId, fqn]) => {
-    if (fqn === APP_TYPES.APP_SETTINGS) {
-      settingsEntitySetId = entitySetId;
-    }
-  });
-
+  const counties = state.get(STATE.COUNTIES);
+  const settings = state.get(STATE.SETTINGS);
   return {
-    settings: app.getIn([APP_DATA.SETTINGS_BY_ORG_ID, orgId], Map()),
-    settingsEntitySetId
+
+    // Counties
+    [COUNTIES_DATA.COUNTIES_BY_ID]: counties.get(COUNTIES_DATA.COUNTIES_BY_ID),
+
+    [APP_DATA.SELECTED_ORG_ID]: app.get(APP_DATA.SELECTED_ORG_ID),
+    [APP_DATA.SELECTED_ORG_SETTINGS]: app.get(APP_DATA.SELECTED_ORG_SETTINGS),
+
+    settings: settings.get(SETTINGS_DATA.APP_SETTINGS)
   };
 }
 
 function mapDispatchToProps(dispatch :Function) :Object {
   const actions :{ [string] :Function } = {};
 
-  Object.keys(AppActionFactory).forEach((action :string) => {
-    actions[action] = AppActionFactory[action];
-  });
-
-  Object.keys(SubmitActionFactory).forEach((action :string) => {
-    actions[action] = SubmitActionFactory[action];
+  Object.keys(SettingsActions).forEach((action :string) => {
+    actions[action] = SettingsActions[action];
   });
 
   return {
