@@ -12,6 +12,7 @@ import { REDUX } from '../../utils/consts/redux/SharedConsts';
 import { actionValueIsInvalid } from '../../utils/consts/redux/ReduxUtils';
 import { APP_ACTIONS, APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { getStaffEKIDs } from '../people/PeopleActionFactory';
+import { submitSettings } from '../settings/SettingsActions';
 import {
   loadApp,
   SWITCH_ORGANIZATION
@@ -191,6 +192,14 @@ export default function appReducer(state :Map<*, *> = INITIAL_STATE, action :Obj
     case getStaffEKIDs.case(action.type): {
       return getStaffEKIDs.reducer(state, action, {
         SUCCESS: () => state.set(APP_DATA.STAFF_IDS_TO_EKIDS, action.value)
+      });
+    }
+
+    case submitSettings.case(action.type): {
+      return submitSettings.reducer(state, action, {
+        SUCCESS: () => state
+          .setIn([APP_DATA.SETTINGS_BY_ORG_ID, action.value.orgId], action.value.submittedSettings)
+          .set(APP_DATA.SELECTED_ORG_SETTINGS, action.value.submittedSettings)
       });
     }
 
