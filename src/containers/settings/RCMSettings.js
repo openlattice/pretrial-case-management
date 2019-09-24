@@ -4,24 +4,34 @@
 
 import React from 'react';
 import styled from 'styled-components';
+import { fromJS, Map } from 'immutable';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import {
-  Card,
+  Button,
   CardSegment,
-  EditButton,
+  Checkbox,
+  MinusButton,
   PlusButton
 } from 'lattice-ui-kit';
 
-import ReleaseConditionsTable from './ConditionsTable';
+import BookingHoldSection from './BookingHoldSection';
+import ReleaseConditionsTable from '../../components/settings/ConditionsTable';
+import ReleaseTypeTable from '../../components/settings/ReleaseTypeTable';
 import { OL } from '../../utils/consts/Colors';
-import { SETTINGS, RCM, RCM_DATA } from '../../utils/consts/AppSettingConsts';
-
+import { HeaderSection } from '../../components/settings/SettingsStyledComponents';
+import {
+  SETTINGS,
+  BOOKING_LABELS,
+  CONTEXTS,
+  RCM,
+  RCM_DATA
+} from '../../utils/consts/AppSettingConsts';
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { SETTINGS_DATA } from '../../utils/consts/redux/SettingsConsts';
 
-import { updateSetting } from './SettingsActions';
+import { submitSettings, updateSetting } from './SettingsActions';
 
 const RCMGrid = styled.div`
   display: grid;
@@ -31,6 +41,10 @@ const RCMGrid = styled.div`
 
 const RCMCell = styled.div`
   min-height: 75px;
+  font-family: 'Open Sans', sans-serif;
+  font-weight: 600;
+  font-size: 12px;
+  padding: 5px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -39,27 +53,24 @@ const RCMCell = styled.div`
   background: ${props => props.color};
 `;
 
-const Section = styled.div`
+const SubmitRow = styled.div`
   width: 100%;
-  padding: 30px;
-  border-bottom: 1px solid ${OL.GREY11};
-  display: grid;
-  grid-template-columns: 3fr 1fr 1fr;
+  padding: 20px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
 `;
 
-const HeaderSection = styled.div`
-  font-family: 'Open Sans', sans-serif;
-  font-size: 18px;
-  color: ${OL.GREY01};
-  width: 100%;
-  padding: 5px;
-  button {
-    width: 100%;
-  }
+const StyledCell = styled.div`
+  padding: 10px 10px;
+  text-align: ${props => props.align || 'left'};
+  word-wrap: break-word;
 `;
 
 
 type Props = {
+  editing :boolean,
   settings :Object,
   actions :{
     updateSetting :RequestSequence;
@@ -69,16 +80,20 @@ type Props = {
 class RCMSettings extends React.Component<Props, State> {
   constructor(props :Props) {
     super(props);
-    this.state = { editing: false };
+    this.state = {
+      bookingView: false
+    };
   }
 
-  getLevels = () => {
+  getLevels = (all) => {
     const { settings } = this.props;
     const levels = settings[SETTINGS.RCM][RCM.LEVELS];
+    if (all) return levels;
+    const activeLevels = {};
     Object.keys(levels).forEach((idx) => {
-      if (!levels[idx].active) delete levels[idx];
+      if (levels[idx].active) activeLevels[idx] = levels[idx];
     });
-    return levels;
+    return activeLevels;
   }
 
   getConditions = () => {
@@ -109,28 +124,34 @@ class RCMSettings extends React.Component<Props, State> {
   }
 
   getCell = (ftaScore, ncaScore) => {
+    const { bookingView } = this.state;
     const levels = this.getLevels();
     const cellInfo = this.getCellInfo(ftaScore, ncaScore);
     let cellConditions = [];
     let cellColor = '#8e929b';
+    let label;
+    let levelNumber;
     if (cellInfo) {
-      const levelNumber = cellInfo[RCM_DATA.LEVEL];
+      levelNumber = cellInfo[RCM_DATA.LEVEL];
       cellColor = levels[levelNumber][RCM_DATA.COLOR];
       cellConditions = this.getConditionsForCell(levelNumber);
+      label = cellConditions.join(', ');
+    }
+    if (levelNumber && bookingView) {
+      label = levels[levelNumber][RCM_DATA.BOOKING_HOLD] ? BOOKING_LABELS.HOLD : BOOKING_LABELS.RELEASE;
     }
     return (
       <RCMCell
           key={`FTA ${ftaScore} NCA ${ncaScore}`}
           onClick={() => this.changeConditionLevel(ftaScore, ncaScore)}
           color={cellColor}>
-        { cellConditions.join(',') }
+        { label }
       </RCMCell>
     );
   }
 
   changeConditionLevel = (ftaScore, ncaScore) => {
-    const { editing } = this.state;
-    const { actions } = this.props;
+    const { actions, editing } = this.props;
     const matrix = this.getMatrix();
     const levels = this.getLevels();
     const cellInfo = this.getCellInfo(ftaScore, ncaScore);
@@ -145,7 +166,7 @@ class RCMSettings extends React.Component<Props, State> {
   getCells = () => {
     const rcmCells = [];
     for (let ftaScore = 1; ftaScore <= 6; ftaScore += 1) {
-      rcmCells.push(<RCMCell key={`FTA ${ftaScore}`} color="#eaeaf0">{`FTA ${ftaScore}`}</RCMCell>);
+      rcmCells.push(<RCMCell key={`FTA ${ftaScore}`} color={OL.GREY07}>{`FTA ${ftaScore}`}</RCMCell>);
       for (let ncaScore = 1; ncaScore <= 6; ncaScore += 1) {
         const cell = this.getCell(ftaScore, ncaScore);
         rcmCells.push(cell);
@@ -156,13 +177,13 @@ class RCMSettings extends React.Component<Props, State> {
 
   getHeaderRow = () => (
     <>
-      <RCMCell color="#eaeaf0" />
-      <RCMCell color="#eaeaf0">NCA 1</RCMCell>
-      <RCMCell color="#eaeaf0">NCA 2</RCMCell>
-      <RCMCell color="#eaeaf0">NCA 3</RCMCell>
-      <RCMCell color="#eaeaf0">NCA 4</RCMCell>
-      <RCMCell color="#eaeaf0">NCA 5</RCMCell>
-      <RCMCell color="#eaeaf0">NCA 6</RCMCell>
+      <RCMCell color={OL.WHITE} />
+      <RCMCell color={OL.GREY07}>NCA 1</RCMCell>
+      <RCMCell color={OL.GREY07}>NCA 2</RCMCell>
+      <RCMCell color={OL.GREY07}>NCA 3</RCMCell>
+      <RCMCell color={OL.GREY07}>NCA 4</RCMCell>
+      <RCMCell color={OL.GREY07}>NCA 5</RCMCell>
+      <RCMCell color={OL.GREY07}>NCA 6</RCMCell>
     </>
   )
 
@@ -176,60 +197,157 @@ class RCMSettings extends React.Component<Props, State> {
   )
 
   renderConditionsTable = () => {
-    const { editing } = this.state;
+    const { editing } = this.props;
     const conditions = this.getConditions();
     const levels = this.getLevels();
+    const conditionValues = Object.values(conditions);
+    if (editing) conditionValues.push({});
     return (
       <ReleaseConditionsTable
           editing={editing}
-          conditions={Object.values(conditions)}
+          conditions={conditionValues}
           levels={levels} />
     );
   }
-
-  startEdit = () => this.setState({ editing: true });
-  cancelEdit = () => this.setState({ editing: false });
 
   addLevel = () => {
     const { actions } = this.props;
     const levels = this.getLevels();
     const nextLevel = Object.keys(levels).length + 1;
-    console.log(nextLevel);
     if (nextLevel <= 6) {
       actions.updateSetting({ path: [SETTINGS.RCM, RCM.LEVELS, `${nextLevel}`, RCM_DATA.ACTIVE], value: true });
     }
   }
 
+  removeLevel = () => {
+    const { actions } = this.props;
+    const allLevels = this.getLevels(true);
+    const activeLevels = this.getLevels();
+    const matrix = this.getMatrix();
+    const conditions = this.getConditions();
+    const lastLevel = Object.keys(activeLevels).length;
+    if (lastLevel > 3) {
+      allLevels[lastLevel][RCM_DATA.ACTIVE] = false;
+      const nextConditions = Map().withMutations((mutableMap) => {
+        Object.values(conditions).forEach((condition) => {
+          if (condition.description) {
+            const nextCondition = condition;
+            nextCondition[lastLevel] = false;
+            mutableMap.set(condition.description, nextCondition);
+          }
+        });
+      });
+      for (let ftaScore = 1; ftaScore <= 6; ftaScore += 1) {
+        for (let ncaScore = 1; ncaScore <= 6; ncaScore += 1) {
+          if (matrix[ftaScore][ncaScore]) {
+            const currentLevel = matrix[ftaScore][ncaScore][RCM_DATA.LEVEL];
+            if (currentLevel === lastLevel) {
+              matrix[ftaScore][ncaScore][RCM_DATA.LEVEL] = lastLevel - 1;
+            }
+          }
+        }
+      }
+      const nextRCM = fromJS({
+        [RCM.CONDITIONS]: nextConditions,
+        [RCM.MATRIX]: matrix,
+        [RCM.LEVELS]: allLevels,
+      });
+      actions.updateSetting({ path: [SETTINGS.RCM], value: nextRCM });
+    }
+  }
+
+  renderBookingViewCheckbox = () => {
+    const { bookingView } = this.state;
+    const { settings } = this.props;
+    const includesBookingContext = settings[SETTINGS.CONTEXTS][CONTEXTS.BOOKING];
+    return includesBookingContext
+      ? (
+        <StyledCell align="center">
+          <Checkbox
+              checked={bookingView}
+              label="Booking View"
+              onChange={({ target }) => {
+                this.setState({ bookingView: target.checked });
+              }} />
+        </StyledCell>
+      ) : null;
+  }
+
+  renderBookingHoldSection = () => {
+    const { editing } = this.props;
+    const { settings } = this.props;
+    const levels = this.getLevels();
+    const includesBookingContext = settings[SETTINGS.CONTEXTS][CONTEXTS.BOOKING];
+    return includesBookingContext
+      ? <CardSegment><BookingHoldSection editing={editing} levels={levels} /></CardSegment> : null;
+  }
+
+  renderReleaseTypeTable = () => {
+    const { editing, settings } = this.props;
+    const includesBookingContext = settings[SETTINGS.CONTEXTS][CONTEXTS.BOOKING];
+    const levels = this.getLevels();
+    return includesBookingContext
+      ? (
+        <ReleaseTypeTable
+            includesBookingContext={includesBookingContext}
+            editing={editing}
+            levels={levels} />
+      ) : null;
+  }
+
   renderHeader = () => {
-    const { editing } = this.state;
+    const { editing } = this.props;
+    const numOfActiveLevels = Object.values(this.getLevels()).length;
     return (
-      <Section>
+      <CardSegment>
         <HeaderSection>Manage RCM</HeaderSection>
         <HeaderSection>
-          {
-            editing
-              ? <PlusButton mode="positive" onClick={this.addLevel}>Add Level</PlusButton>
-              : <div />
-          }
+          <div>
+            {
+              editing
+                ? (
+                  <>
+                    <PlusButton
+                        mode="positive"
+                        disabled={numOfActiveLevels === 6}
+                        onClick={this.addLevel}>
+                        Level
+                    </PlusButton>
+                    <MinusButton
+                        mode="negative"
+                        disabled={numOfActiveLevels === 3}
+                        onClick={this.removeLevel}>
+                        Level
+                    </MinusButton>
+                  </>
+                )
+                : <div />
+            }
+          </div>
         </HeaderSection>
-        <HeaderSection>
-          {
-            editing
-              ? <EditButton onClick={this.cancelEdit}>Cancel</EditButton>
-              : <EditButton onClick={this.startEdit}>Edit</EditButton>
-          }
-        </HeaderSection>
-      </Section>
+      </CardSegment>
     );
   }
 
   render() {
+    const { actions, editing } = this.props;
     return (
-      <Card>
+      <>
         {this.renderHeader()}
+        {this.renderBookingHoldSection()}
+        {this.renderReleaseTypeTable()}
         {this.renderConditionsTable()}
+        {this.renderBookingViewCheckbox()}
         {this.renderMatrix()}
-      </Card>
+        {
+          editing
+            ? (
+              <SubmitRow>
+                <Button mode="primary" onClick={actions.submitSettings}>Submit</Button>
+              </SubmitRow>
+            ) : null
+        }
+      </>
     );
   }
 }
@@ -244,6 +362,7 @@ function mapStateToProps(state) {
 
 const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
   actions: bindActionCreators({
+    submitSettings,
     updateSetting
   }, dispatch)
 });
