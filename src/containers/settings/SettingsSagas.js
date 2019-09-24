@@ -20,6 +20,7 @@ import { createIdObject } from '../../utils/DataUtils';
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
+import { SETTINGS_DATA } from '../../utils/consts/redux/SettingsConsts';
 
 import { submitSettings, SUBMIT_SETTINGS } from './SettingsActions';
 
@@ -30,7 +31,7 @@ const {
   APP_SETTINGS,
 } = APP_TYPES;
 
-const { APP_DETAILS } = PROPERTY_TYPES;
+const { APP_DETAILS, ENTITY_KEY_ID } = PROPERTY_TYPES;
 
 
 /*
@@ -38,12 +39,14 @@ const { APP_DETAILS } = PROPERTY_TYPES;
  */
 const getApp = state => state.get(STATE.APP, Map());
 const getEDM = state => state.get(STATE.EDM, Map());
+const getSettingsState = state => state.getIn([STATE.SETTINGS, SETTINGS_DATA.APP_SETTINGS], Map());
 const getOrgId = state => state.getIn([STATE.APP, APP_DATA.SELECTED_ORG_ID], '');
 
 function* submitSettingsWorker(action :SequenceAction) :Generator<*, *, *> {
   try {
     yield put(submitSettings.request(action.id));
-    const { settingsEKID, settings } = action.value;
+
+    const settings = yield select(getSettingsState);
 
     const updatedSettings = { [APP_DETAILS]: [JSON.stringify(settings)] };
 
@@ -52,13 +55,12 @@ function* submitSettingsWorker(action :SequenceAction) :Generator<*, *, *> {
     const orgId = yield select(getOrgId);
 
     const updatedSettingsObject = getPropertyIdToValueMap(updatedSettings, edm);
-    console.log(updatedSettingsObject);
 
     /*
      * Get Entity Set Ids
      */
+    const settingsEKID = app.getIn([APP_DATA.SELECTED_ORG_SETTINGS, ENTITY_KEY_ID], '');
     const settingsESID = getEntitySetIdFromApp(app, APP_SETTINGS);
-
 
     /*
      * Update Hearing Data
