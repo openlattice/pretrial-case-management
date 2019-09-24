@@ -34,7 +34,7 @@ const CellContent = styled.div`
 `;
 
 const StyledCell = styled.td`
-  padding: 10px 10px;
+  padding: 5px 5px;
   text-align: ${props => props.align || 'left'};
   word-wrap: break-word;
 `;
@@ -87,7 +87,7 @@ class ConditionsRow extends React.Component<Props, *> {
     } = this.props;
     const columns = Object.keys(levels)
       .map(idx => (
-        <StyledCell align="center">
+        <StyledCell key={`${data.description}-LEVEL${idx}`} align="center">
           <Checkbox
               disabled={!editing || !data.description}
               defaultChecked={data[idx]}
