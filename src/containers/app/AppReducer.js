@@ -7,9 +7,10 @@ import { List, Map, fromJS } from 'immutable';
 import { AccountUtils } from 'lattice-auth';
 import { RequestStates } from 'redux-reqseq';
 
-import { APP_TYPES_FQNS } from '../../utils/consts/DataModelConsts';
+import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { REDUX } from '../../utils/consts/redux/SharedConsts';
 import { actionValueIsInvalid } from '../../utils/consts/redux/ReduxUtils';
+import { getEntityProperties } from '../../utils/DataUtils';
 import { APP_ACTIONS, APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { getStaffEKIDs } from '../people/PeopleActionFactory';
 import { submitSettings } from '../settings/SettingsActions';
@@ -19,6 +20,8 @@ import {
 } from './AppActionFactory';
 
 const { FullyQualifiedName } = Models;
+
+const { APP_DETAILS, ENTITY_KEY_ID } = PROPERTY_TYPES;
 
 const {
   FAILURE,
@@ -197,9 +200,18 @@ export default function appReducer(state :Map<*, *> = INITIAL_STATE, action :Obj
 
     case submitSettings.case(action.type): {
       return submitSettings.reducer(state, action, {
-        SUCCESS: () => state
-          .setIn([APP_DATA.SETTINGS_BY_ORG_ID, action.value.orgId], action.value.submittedSettings)
-          .set(APP_DATA.SELECTED_ORG_SETTINGS, action.value.submittedSettings)
+        SUCCESS: () => {
+          const { orgId, submittedSettings } = action.value;
+          const {
+            [APP_DETAILS]: unparsedAppSettings,
+            [ENTITY_KEY_ID]: settingsEKID
+          } = getEntityProperties(submittedSettings, [APP_DETAILS, ENTITY_KEY_ID]);
+          let appSettings = fromJS(JSON.parse(unparsedAppSettings));
+          appSettings = appSettings.set(ENTITY_KEY_ID, settingsEKID);
+          return state
+            .setIn([APP_DATA.SETTINGS_BY_ORG_ID, orgId], appSettings)
+            .set(APP_DATA.SELECTED_ORG_SETTINGS, appSettings);
+        }
       });
     }
 
