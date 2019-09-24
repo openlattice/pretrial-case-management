@@ -54,8 +54,8 @@ const INITIAL_STATE :Map<*, *> = fromJS({
       [CONTEXTS.COURT]: CASE_CONTEXTS.BOOKING
     },
     [SETTINGS.CONTEXTS]: {
-      [CONTEXTS.BOOKING]: true,
-      [CONTEXTS.COURT]: false
+      [CONTEXTS.BOOKING]: false,
+      [CONTEXTS.COURT]: true
     },
     [SETTINGS.MODULES]: {
       [MODULE.PSA]: true,
@@ -84,7 +84,9 @@ export default function courtReducer(state :Map<*, *> = INITIAL_STATE, action :O
         REQUEST: () => state
           .setIn([REDUX.ACTIONS, SETTINGS_ACTIONS.SUBMIT_SETTINGS, action.id], fromJS(action))
           .setIn([REDUX.ACTIONS, SETTINGS_ACTIONS.SUBMIT_SETTINGS, REDUX.REQUEST_STATE], PENDING),
-        SUCCESS: () => state.setIn([REDUX.ACTIONS, SETTINGS_ACTIONS.SUBMIT_SETTINGS, REDUX.REQUEST_STATE], SUCCESS),
+        SUCCESS: () => state
+          .setIn([SETTINGS_DATA.APP_SETTINGS, SETTINGS.ARRESTS_INTEGRATED], action.value.submittedSettings.remove)
+          .setIn([REDUX.ACTIONS, SETTINGS_ACTIONS.SUBMIT_SETTINGS, REDUX.REQUEST_STATE], SUCCESS),
         FAILURE: () => {
           if (actionValueIsInvalid(action.value)) {
             return state;
@@ -128,7 +130,7 @@ export default function courtReducer(state :Map<*, *> = INITIAL_STATE, action :O
     case UPDATE_SETTING: {
       const { path, value } = action.value;
       path.unshift(SETTINGS_DATA.APP_SETTINGS);
-      return value ? state.setIn(path, value) : state;
+      return state.setIn(path, value);
     }
 
     case SWITCH_ORGANIZATION: {
