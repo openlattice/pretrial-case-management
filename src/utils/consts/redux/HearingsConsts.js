@@ -20,6 +20,7 @@ export const HEARINGS_DATA = {
   DATE: 'hearingDate',
   HEARINGS_BY_DATE_AND_TIME: 'hearingsByDate',
   HEARINGS_BY_ID: 'hearingsById',
+  HEARINGS_BY_COUNTY: 'hearingsByCounty',
   HEARING_NEIGHBORS_BY_ID: 'hearingNeighborsById',
   JUDGE: 'hearingJudge',
   JUDGES_BY_ID: 'judgesById',
