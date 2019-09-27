@@ -366,8 +366,7 @@ class PSAInputForm extends React.Component<Props, State> {
     const {
       viewOnly,
       input,
-      handleInputChange,
-      selectedOrganizationSettings
+      handleInputChange
     } = this.props;
     // Only render autojustification if app settings loads historical charges
     const rowNumFormatted = num < 10 ? `0${num}` : `${num}`;
