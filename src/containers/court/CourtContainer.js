@@ -5,6 +5,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import { DateTime } from 'luxon';
+import { Select } from 'lattice-ui-kit';
 import { Map, List, Set } from 'immutable';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -25,10 +26,12 @@ import PersonCard from '../../components/people/PersonCard';
 import DatePicker from '../../components/datetime/DatePicker';
 import PSAModal from '../psamodal/PSAModal';
 import { formatPeopleInfo, sortPeopleByName } from '../../utils/PeopleUtils';
+import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
 import * as Routes from '../../core/router/Routes';
 import { StyledSectionWrapper } from '../../utils/Layout';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { DATE_FORMAT, TIME_FORMAT } from '../../utils/consts/DateTimeConsts';
+import { SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { DOMAIN } from '../../utils/consts/ReportDownloadTypes';
 import { OL } from '../../utils/consts/Colors';
 import {
@@ -40,6 +43,7 @@ import {
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
+import { COUNTIES_DATA } from '../../utils/consts/redux/CountiesConsts';
 import { HEARINGS_ACTIONS, HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
 import { getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUtils';
 
@@ -54,9 +58,11 @@ import {
 } from '../review/ReviewActionFactory';
 
 const { PEOPLE } = APP_TYPES;
+const { ENTITY_KEY_ID, NAME } = PROPERTY_TYPES;
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
+const { PREFERRED_COUNTY } = SETTINGS;
 
 const Legend = styled.div`
   display: flex;
@@ -162,7 +168,7 @@ const PeopleWrapper = styled.div`
   column-gap: 3%;
 `;
 
-const DatePickerWrapper = styled.div`
+const SubSection = styled.div`
   width: 200px;
   display: flex;
   flex-direction: column;
@@ -188,6 +194,8 @@ const ToggleWrapper = styled.div`
 
 type Props = {
   courtDate :DateTime,
+  countiesById :Map<*, *>,
+  hearingsByCounty :Map<*, *>,
   hearingsByTime :Map<*, *>,
   hearingNeighborsById :Map<*, *>,
   isLoadingPSAs :boolean,
@@ -201,6 +209,7 @@ type Props = {
   peopleWithMultipleOpenPsas :Set<*>,
   peopleReceivingReminders :Set<*>,
   selectedOrganizationId :string,
+  selectedOrganizationSettings :Map<*, *>,
   selectedOrganizationTitle :string,
   psaEditDatesById :Map<*, *>,
   actions :{
@@ -230,6 +239,7 @@ class CourtContainer extends React.Component<Props, State> {
   constructor(props :Props) {
     super(props);
     this.state = {
+      countyFilter: '',
       psaModalOpen: false
     };
   }
@@ -261,13 +271,18 @@ class CourtContainer extends React.Component<Props, State> {
       courtDate,
       hearingsByTime,
       hearingNeighborsById,
-      selectedOrganizationId
+      selectedOrganizationId,
+      selectedOrganizationSettings
     } = this.props;
+    const preferredCountyEKID :UUID = selectedOrganizationSettings.get(PREFERRED_COUNTY, '');
     if (selectedOrganizationId) {
       actions.checkPSAPermissions();
       if (!hearingsByTime.size || !hearingNeighborsById.size) {
         actions.loadHearingsForDate(courtDate);
       }
+    }
+    if (preferredCountyEKID) {
+      this.setState({ countyFilter: preferredCountyEKID });
     }
   }
 
@@ -361,34 +376,60 @@ class CourtContainer extends React.Component<Props, State> {
     );
   }
 
+  setCountyFilter = filter => this.setState({ countyFilter: filter.value });
+
+  renderCountyFilter = () => {
+    const { countyFilter } = this.state;
+    const {
+      countiesById,
+      loadHearingsForDateReqState,
+      loadHearingNeighborsReqState,
+    } = this.props;
+    const remindersAreLoading :boolean = requestIsPending(loadHearingsForDateReqState)
+      || requestIsPending(loadHearingNeighborsReqState);
+    const countyOptions :List = countiesById.entrySeq().map(([countyEKID, county]) => {
+      const { [NAME]: countyName } = getEntityProperties(county, [ENTITY_KEY_ID, NAME]);
+      return {
+        label: countyName,
+        value: countyEKID
+      };
+    }).toJS();
+    countyOptions.unshift({ label: 'All', value: '' });
+    const currentFilterValue :Object = {
+      label: countiesById.getIn([countyFilter, NAME, 0], 'All'),
+      value: countyFilter
+    };
+    return (
+      <Select
+          value={currentFilterValue}
+          options={countyOptions}
+          isLoading={remindersAreLoading}
+          onChange={this.setCountyFilter} />
+    );
+  }
+
   renderHearingsAtTime = (time) => {
+    const { countyFilter } = this.state;
     const {
       county,
       courtroom,
       hearingsByTime,
+      hearingsByCounty,
       hearingNeighborsById
     } = this.props;
     let hearingsByCourtroom = Map();
+    const hearinIdsForCountyFilter = hearingsByCounty.get(countyFilter, Set());
 
     hearingsByTime.get(time).forEach((hearing) => {
       let shouldInclude = true;
       const room = hearing.getIn([PROPERTY_TYPES.COURTROOM, 0], '');
-
-      if (county.length || courtroom.length) {
-
-        if (courtroom.length && room !== courtroom) {
-          shouldInclude = false;
-        }
-
-        if (shouldInclude && county.length) {
-          const isPenn = room.startsWith(PENN_ROOM_PREFIX);
-          shouldInclude = isPenn ? county === DOMAIN.PENNINGTON : county === DOMAIN.MINNEHAHA;
-        }
-      }
+      const hearingEKID = getEntityKeyId(hearing);
+      if (courtroom.length && room !== courtroom) shouldInclude = false;
+      if (shouldInclude && !hearinIdsForCountyFilter.includes(hearingEKID)) shouldInclude = false;
+      if (!countyFilter) shouldInclude = true;
       if (shouldInclude) {
-        const hearingId = hearing.getIn([OPENLATTICE_ID_FQN, 0]);
         const person = hearingNeighborsById
-          .getIn([hearingId, PEOPLE, PSA_NEIGHBOR.DETAILS], Map());
+          .getIn([hearingEKID, PEOPLE, PSA_NEIGHBOR.DETAILS], Map());
         const personId = person.getIn([PROPERTY_TYPES.PERSON_ID, 0]);
         if (personId) {
           hearingsByCourtroom = hearingsByCourtroom
@@ -409,14 +450,6 @@ class CourtContainer extends React.Component<Props, State> {
         }
       </HearingTime>
     );
-  }
-
-  onCountyChange = (county) => {
-    const { actions } = this.props;
-    actions.changeHearingFilters({
-      county,
-      courtroom: ''
-    });
   }
 
   onCourtroomChange = (courtroom) => {
@@ -493,12 +526,12 @@ class CourtContainer extends React.Component<Props, State> {
   renderDatePicker = () => {
     const { courtDate } = this.props;
     return (
-      <DatePickerWrapper>
+      <SubSection>
         <Label>Hearing Date</Label>
         <DatePicker
             value={courtDate.toFormat(DATE_FORMAT)}
             onChange={this.handleDateChange} />
-      </DatePickerWrapper>
+      </SubSection>
     );
   }
 
@@ -556,9 +589,11 @@ class CourtContainer extends React.Component<Props, State> {
           </Header>
           <StyledSectionWrapper>
             {this.renderDatePicker()}
-            {this.renderLegend()}
-            {this.renderCountyChoices()}
+            <SubSection>
+              {this.renderCountyFilter()}
+            </SubSection>
             {this.renderCourtroomChoices()}
+            {this.renderLegend()}
             {this.renderSearchLink()}
             {this.renderContent()}
           </StyledSectionWrapper>
@@ -572,6 +607,7 @@ class CourtContainer extends React.Component<Props, State> {
 function mapStateToProps(state) {
   const app = state.get(STATE.APP);
   const court = state.get(STATE.COURT);
+  const counties = state.get(STATE.COUNTIES);
   const edm = state.get(STATE.EDM);
   const hearings = state.get(STATE.HEARINGS);
   const courtDate = hearings.get(HEARINGS_DATA.COURT_DATE).toISODate();
@@ -580,13 +616,16 @@ function mapStateToProps(state) {
   return {
     [APP_DATA.SELECTED_ORG_ID]: app.get(APP_DATA.SELECTED_ORG_ID),
     [APP_DATA.SELECTED_ORG_TITLE]: app.get(APP_DATA.SELECTED_ORG_TITLE),
+    [APP_DATA.SELECTED_ORG_SETTINGS]: app.get(APP_DATA.SELECTED_ORG_SETTINGS),
+
+    // Counties
+    [COUNTIES_DATA.COUNTIES_BY_ID]: counties.get(COUNTIES_DATA.COUNTIES_BY_ID),
 
     // Court
     [COURT.PEOPLE_WITH_OPEN_PSAS]: court.get(COURT.PEOPLE_WITH_OPEN_PSAS),
     [COURT.PEOPLE_WITH_MULTIPLE_OPEN_PSAS]: court.get(COURT.PEOPLE_WITH_MULTIPLE_OPEN_PSAS),
     [COURT.PEOPLE_RECEIVING_REMINDERS]: court.get(COURT.PEOPLE_RECEIVING_REMINDERS),
     [COURT.LOADING_PSAS]: court.get(COURT.LOADING_PSAS),
-    [COURT.COUNTY]: court.get(COURT.COUNTY),
     [COURT.COURTROOM]: court.get(COURT.COURTROOM),
     [COURT.SCORES_AS_MAP]: court.get(COURT.SCORES_AS_MAP),
     [COURT.PSA_EDIT_DATES]: court.get(COURT.PSA_EDIT_DATES),
@@ -600,6 +639,7 @@ function mapStateToProps(state) {
     loadHearingNeighborsReqState: getReqState(hearings, HEARINGS_ACTIONS.LOAD_HEARING_NEIGHBORS),
     [HEARINGS_DATA.COURT_DATE]: hearings.get(HEARINGS_DATA.COURT_DATE),
     [HEARINGS_DATA.HEARINGS_BY_DATE]: hearings.get(HEARINGS_DATA.HEARINGS_BY_DATE_AND_TIME),
+    [HEARINGS_DATA.HEARINGS_BY_COUNTY]: hearings.get(HEARINGS_DATA.HEARINGS_BY_COUNTY),
     [HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID]: hearings.get(HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID),
 
     [EDM.FQN_TO_ID]: edm.get(EDM.FQN_TO_ID),
