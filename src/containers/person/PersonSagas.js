@@ -6,7 +6,7 @@ import axios from 'axios';
 import moment from 'moment';
 import LatticeAuth from 'lattice-auth';
 import randomUUID from 'uuid/v4';
-import { Constants, SearchApi } from 'lattice';
+import { Constants, SearchApi, DataIntegrationApi } from 'lattice';
 import {
   DataApiActions,
   DataApiSagas,
@@ -54,8 +54,8 @@ import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 
 import * as Routes from '../../core/router/Routes';
 
-const { createEntityAndAssociationData, createOrMergeEntityData, getEntityData } = DataApiActions;
-const { createEntityAndAssociationDataWorker, createOrMergeEntityDataWorker, getEntityDataWorker } = DataApiSagas;
+const { createEntityAndAssociationData, updateEntityData, getEntityData } = DataApiActions;
+const { createEntityAndAssociationDataWorker, updateEntityDataWorker, getEntityDataWorker } = DataApiSagas;
 const { searchEntityNeighborsWithFilter, searchEntitySetData } = SearchApiActions;
 const { searchEntityNeighborsWithFilterWorker, searchEntitySetDataWorker } = SearchApiSagas;
 
@@ -247,9 +247,23 @@ function* newPersonSubmitWorker(action) :Generator<*, *, *> {
     const orgId = yield select(getOrgId);
     const entitySetIdsToAppType = app.getIn([APP_DATA.ENTITY_SETS_BY_ORG, orgId]);
 
-    let personEKID;
+    // let personEKID;
     const peopleESID = getEntitySetIdFromApp(app, PEOPLE);
     const personSubmitEntity = getPropertyIdToValueMap(newPersonEntity, edm);
+
+    const personEKID = randomUUID();
+
+    yield call(DataIntegrationApi.getEntityKeyIds, [personEKID]);
+
+    const updateResponse = yield call(
+      updateEntityDataWorker,
+      updateEntityData({
+        entitySetId: peopleESID,
+        entities: { [personEKID]: personSubmitEntity },
+        updateType: 'PartialReplace'
+      })
+    );
+    if (updateResponse.error) throw updateResponse.error;
 
     /*
      * Check to see if contact or address are being submitted
@@ -262,7 +276,7 @@ function* newPersonSubmitWorker(action) :Generator<*, *, *> {
     const contactInfoESID = getEntitySetIdFromApp(app, CONTACT_INFORMATION);
 
     if (addressIncluded || contactIncluded) {
-      const entities = { [peopleESID]: [personSubmitEntity] };
+      const entities = {};
       const associations = {};
       /*
       * Add address if present
@@ -307,21 +321,6 @@ function* newPersonSubmitWorker(action) :Generator<*, *, *> {
       /*
       * Collect Person and Neighbors
       */
-      const entityKeyIds = fromJS(response.data.entityKeyIds);
-
-      personEKID = entityKeyIds.getIn([peopleESID, 0], '');
-    }
-    else {
-      const createPersonResponse = yield call(
-        createOrMergeEntityDataWorker,
-        createOrMergeEntityData({
-          entitySetId: peopleESID,
-          entityData: [personSubmitEntity]
-        })
-      );
-      if (createPersonResponse.error) throw createPersonResponse.error;
-      const { data: EKIDs } = createPersonResponse;
-      personEKID = EKIDs[0];
     }
 
     /*
