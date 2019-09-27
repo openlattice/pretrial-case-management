@@ -1,10 +1,10 @@
-import Immutable from 'immutable';
+import Immutable, { fromJS } from 'immutable';
 import psaScenarios from './consts/test/ScoringTestConsts';
-import dmfScenarios from './consts/test/DMFTestConsts';
+import dmfScenarios from './consts/test/RCMTestConsts';
 import { getScoresAndRiskFactors, calculateDMF } from './ScoringUtils';
 import { DMF } from './consts/Consts';
 import { PROPERTY_TYPES } from './consts/DataModelConsts';
-import { RESULT_CATEGORIES } from './consts/DMFResultConsts';
+import { RESULTS } from './consts/RCMResultsConsts';
 
 describe('ScoringUtils', () => {
 
@@ -12,24 +12,30 @@ describe('ScoringUtils', () => {
 
     describe('Score DMFs', () => {
       dmfScenarios.forEach((scenario, index) => {
-        Object.keys(scenario.expected).forEach((context) => {
-          test(`should correctly score DMF scenario ${index} with context ${context}`, () => {
-            const inputData = Immutable.fromJS(scenario.inputData).set(DMF.COURT_OR_BOOKING, context);
-            const dmf = calculateDMF(inputData, Immutable.fromJS(scenario.scores));
+        test(`should correctly score DMF scenario ${index}`, () => {
+          const inputData = Immutable.fromJS(scenario.inputData).set(DMF.COURT_OR_BOOKING);
+          const settings = fromJS(scenario.settings);
+          const {
+            [RESULTS.RCM]: rcm,
+            [RESULTS.COURT_CONDITIONS]: courtConditions,
+            [RESULTS.BOOKING_CONDITIONS]: bookingConditions
+          } = calculateDMF(inputData, Immutable.fromJS(scenario.scores), settings);
 
-            expect(dmf[RESULT_CATEGORIES.COLOR])
-              .toEqual(scenario.expected[context][RESULT_CATEGORIES.COLOR]);
-            expect(dmf[RESULT_CATEGORIES.RELEASE_TYPE])
-              .toEqual(scenario.expected[context][RESULT_CATEGORIES.RELEASE_TYPE]);
-            expect(dmf[RESULT_CATEGORIES.CONDITIONS_LEVEL])
-              .toEqual(scenario.expected[context][RESULT_CATEGORIES.CONDITIONS_LEVEL]);
-            expect(dmf[RESULT_CATEGORIES.CONDITION_1])
-              .toEqual(scenario.expected[context][RESULT_CATEGORIES.CONDITION_1]);
-            expect(dmf[RESULT_CATEGORIES.CONDITION_2])
-              .toEqual(scenario.expected[context][RESULT_CATEGORIES.CONDITION_2]);
-            expect(dmf[RESULT_CATEGORIES.CONDITION_3])
-              .toEqual(scenario.expected[context][RESULT_CATEGORIES.CONDITION_3]);
-          });
+          expect(rcm[PROPERTY_TYPES.COLOR])
+            .toEqual(scenario.expected[RESULTS.RCM][PROPERTY_TYPES.COLOR]);
+          expect(rcm[PROPERTY_TYPES.RELEASE_TYPE])
+            .toEqual(scenario.expected[RESULTS.RCM][PROPERTY_TYPES.RELEASE_TYPE]);
+          expect(rcm[PROPERTY_TYPES.CONDITIONS_LEVEL])
+            .toEqual(scenario.expected[RESULTS.RCM][PROPERTY_TYPES.CONDITIONS_LEVEL]);
+
+          for (let conditionNum = 0; conditionNum < courtConditions.length; conditionNum += 1) {
+            expect(courtConditions[conditionNum][PROPERTY_TYPES.TYPE])
+              .toEqual(scenario.expected[RESULTS.COURT_CONDITIONS][conditionNum][PROPERTY_TYPES.TYPE]);
+          }
+          for (let conditionNum = 0; conditionNum < bookingConditions.length; conditionNum += 1) {
+            expect(bookingConditions[conditionNum][PROPERTY_TYPES.TYPE])
+              .toEqual(scenario.expected[RESULTS.BOOKING_CONDITIONS][conditionNum][PROPERTY_TYPES.TYPE]);
+          }
         });
       });
     });
