@@ -33,7 +33,7 @@ import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { toISODate } from '../../utils/FormattingUtils';
 import { SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { formatJudgeName } from '../../utils/HearingUtils';
-import { RELEASE_CONDITIONS, JURISDICTION } from '../../utils/consts/Consts';
+import { RELEASE_CONDITIONS } from '../../utils/consts/Consts';
 import {
   getCreateAssociationObject,
   getEntityKeyId,
@@ -81,7 +81,6 @@ const { OPENLATTICE_ID_FQN } = Constants;
 const {
   CHECKIN_APPOINTMENTS,
   DMF_RESULTS,
-  DMF_RISK_FACTORS,
   JUDGES,
   PEOPLE,
   PSA_SCORES,
@@ -197,7 +196,6 @@ type Props = {
   loadReleaseConditionsReqState :RequestState,
   openClosePSAModal :() => void,
   personNeighbors :Map<*, *>,
-  psaNeighbors :Map<*, *>,
   refreshHearingAndNeighborsReqState :RequestState,
   selectedHearing :Map<*, *>,
   selectedOrganizationId :string,
@@ -994,16 +992,12 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       hasOutcome,
       hearingEntityKeyId,
       hearingNeighbors,
-      psaNeighbors,
       selectedHearing
     } = this.props;
     const { psaEntity, personEntity } = this.getNeighborEntities(this.props);
 
     const psaEKID = getFirstNeighborValue(psaEntity, ENTITY_KEY_ID);
     const personEKID = getFirstNeighborValue(personEntity, ENTITY_KEY_ID);
-
-    const psaContext = psaNeighbors.getIn([DMF_RISK_FACTORS, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.CONTEXT, 0]);
-    const jurisdiction = JURISDICTION[psaContext];
 
     return (
       <HearingsForm
@@ -1013,8 +1007,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
           hearingEKID={hearingEntityKeyId}
           backToSelection={backToSelection}
           psaEKID={psaEKID}
-          personEKID={personEKID}
-          jurisdiction={jurisdiction} />
+          personEKID={personEKID} />
     );
   }
 
@@ -1161,7 +1154,6 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
 
 function mapStateToProps(state) {
   const app = state.get(STATE.APP);
-  const court = state.get(STATE.COURT);
   const edm = state.get(STATE.EDM);
   const hearings = state.get(STATE.HEARINGS);
   const orgId = app.get(APP_DATA.SELECTED_ORG_ID, '');

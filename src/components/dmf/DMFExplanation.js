@@ -32,10 +32,7 @@ const DMFExplanation = ({
   riskFactors,
   scores
 } :Props) => {
-  let context = riskFactors.get(DMF.COURT_OR_BOOKING);
-  if (context === 'Court') {
-    context = CONTEXT.COURT_PENN;
-  }
+  const context = riskFactors.get(DMF.COURT_OR_BOOKING);
   const extradited = riskFactors.get(DMF.EXTRADITED) === `${true}`;
   const extraditedNotes = riskFactors.get(NOTES[DMF.EXTRADITED]);
   const currentViolentOffense = riskFactors.get(PSA.CURRENT_VIOLENT_OFFENSE) === `${true}`;

@@ -79,7 +79,6 @@ type Props = {
   defaultDMF :Map<*, *>,
   dmfId :string,
   hearingNeighborsById :Map<*, *>,
-  jurisdiction :?string,
   loading :boolean,
   neighbors :Map<*, *>,
   hearings :List<*, *>,
@@ -157,7 +156,6 @@ class PersonHearings extends React.Component<Props, State> {
       dmfId,
       hearingNeighborsById,
       refreshHearingAndNeighborsReqState,
-      jurisdiction,
       neighbors,
       psaEntityKeyId,
       psaIdsRefreshing,
@@ -187,7 +185,6 @@ class PersonHearings extends React.Component<Props, State> {
           hearingId={selectedHearingId}
           hearingEntityKeyId={selectedHearingEntityKeyId}
           hearingNeighborsById={hearingNeighborsById}
-          jurisdiction={jurisdiction}
           neighbors={neighbors}
           refreshing={refreshing}
           onClose={this.onClose}

@@ -30,7 +30,6 @@ import { OL } from '../../utils/consts/Colors';
 import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { formatDMFFromEntity, getHeaderText } from '../../utils/DMFUtils';
-import { JURISDICTION } from '../../utils/consts/Consts';
 import {
   ResultHeader,
   ScaleBlock,
@@ -528,7 +527,6 @@ class PSASubmittedPage extends React.Component<Props, State> {
     const {
       personEKID,
       psaEKID,
-      context,
       submittedHearing,
       submittedHearingNeighbors,
       submitHearingReqState
@@ -536,12 +534,10 @@ class PSASubmittedPage extends React.Component<Props, State> {
     const submittingHearing = requestIsPending(submitHearingReqState);
     if (submittingHearing) return <LogoLoader />;
 
-    const jurisdiction = JURISDICTION[context];
     if (!submittedHearing.size) {
       return (
         <CreateHearingWrapper>
           <HearingsForm
-              jurisdiction={jurisdiction}
               personEKID={personEKID}
               psaEKID={psaEKID} />
         </CreateHearingWrapper>

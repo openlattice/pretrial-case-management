@@ -22,7 +22,6 @@ import { getEntityProperties } from '../../utils/DataUtils';
 import { OL } from '../../utils/consts/Colors';
 import { SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { Title } from '../../utils/Layout';
-import { JURISDICTION } from '../../utils/consts/Consts';
 import {
   SUBMIT,
   REVIEW,
@@ -39,7 +38,6 @@ import { submitExistingHearing } from './HearingsActions';
 
 const {
   CONTACT_INFORMATION,
-  DMF_RISK_FACTORS,
   OUTCOMES,
   SUBSCRIPTION
 } = APP_TYPES;
@@ -95,7 +93,6 @@ type Props = {
       psaEKID :string
     }) => void
   },
-  context :string,
   hearingNeighborsById :Map<*, *>,
   neighbors :Map<*, *>,
   openClosePSAModal :() => void,
@@ -152,22 +149,15 @@ class SelectHearingsContainer extends React.Component<Props, State> {
 
   renderNewHearingSection = () => {
     const {
-      neighbors,
-      context,
       personEKID,
       psaEntityKeyId
     } = this.props;
-    const psaContext = neighbors
-      ? neighbors.getIn([DMF_RISK_FACTORS, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.CONTEXT, 0])
-      : context;
-    const jurisdiction = JURISDICTION[psaContext];
 
     return (
       <HearingsForm
           backToSelection={this.backToHearingSelection}
           personEKID={personEKID}
-          psaEKID={psaEntityKeyId}
-          jurisdiction={jurisdiction} />
+          psaEKID={psaEntityKeyId} />
     );
   }
 
@@ -351,7 +341,6 @@ class SelectHearingsContainer extends React.Component<Props, State> {
 function mapStateToProps(state) {
   const app = state.get(STATE.APP);
   const orgId = app.get(APP_DATA.SELECTED_ORG_ID, '');
-  const court = state.get(STATE.COURT);
   const hearings = state.get(STATE.HEARINGS);
   const review = state.get(STATE.REVIEW);
   const submit = state.get(STATE.SUBMIT);

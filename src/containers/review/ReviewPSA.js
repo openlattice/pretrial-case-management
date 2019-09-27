@@ -138,7 +138,6 @@ const ErrorText = styled.div`
 `;
 
 type Props = {
-  history :string[],
   scoresAsMap :Map<*, *>,
   selectedOrganizationSettings :Map<*, *>,
   psaNeighborsByDate :Map<*, Map<*, *>>,

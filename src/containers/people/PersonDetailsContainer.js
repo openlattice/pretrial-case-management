@@ -25,7 +25,6 @@ import PSAModal from '../psamodal/PSAModal';
 import ViewMoreLink from '../../components/buttons/ViewMoreLink';
 import { formatPeopleInfo, getPSAIdsFromNeighbors } from '../../utils/PeopleUtils';
 import { getChargeHistory } from '../../utils/CaseUtils';
-import { JURISDICTION } from '../../utils/consts/Consts';
 import { OL } from '../../utils/consts/Colors';
 import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
@@ -344,7 +343,6 @@ class PersonDetailsContainer extends React.Component<Props, State> {
     const psaId = mostRecentPSA.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.GENERAL_ID, 0], '');
     const dmfId = getIdOrValue(neighborsForMostRecentPSA, DMF_RESULTS);
     const context = getIdOrValue(neighborsForMostRecentPSA, DMF_RISK_FACTORS, PROPERTY_TYPES.CONTEXT);
-    const jurisdiction = JURISDICTION[context];
     const hearingsWithOutcomes = hearingNeighborsById
       .keySeq().filter(id => hearingNeighborsById.getIn([id, OUTCOMES]));
     const scheduledHearings = getScheduledHearings(personHearingsWithOutcomes);
@@ -375,7 +373,6 @@ class PersonDetailsContainer extends React.Component<Props, State> {
           dmfId={dmfId}
           hearings={personHearings}
           hearingsWithOutcomes={hearingsWithOutcomes}
-          jurisdiction={jurisdiction}
           loading={isLoading}
           scheduledHearings={scheduledHearings}
           neighbors={neighborsForMostRecentPSA}
