@@ -309,14 +309,6 @@ export const RELEASE_CONDITIONS = {
   WARRANT: 'warrant'
 };
 
-export const JURISDICTION = {
-  [CONTEXT.COURT_PENN]: 'Pennington County, South Dakota',
-  [CONTEXT.COURT_LINCOLN]: 'Lincoln County, South Dakota',
-  [CONTEXT.COURT_MINN]: 'Minnehaha County, South Dakota',
-  [CONTEXT.DEMO_ORG]: 'San Mateo County, California',
-  [CONTEXT.BOOKING]: 'Pennington County, South Dakota'
-};
-
 export const PERSON_INFO_DATA = {
   HAS_OPEN_PSA: 'hasOpenPsa',
   HAS_MULTIPLE_OPEN_PSAS: 'hasMultipleOpenPSAs',
