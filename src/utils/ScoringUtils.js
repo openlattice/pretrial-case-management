@@ -2,16 +2,22 @@
  * @flow
  */
 import Immutable from 'immutable';
-import { PSA, DMF, NOTES } from './consts/Consts';
 import { PROPERTY_TYPES } from './consts/DataModelConsts';
+import { SETTINGS } from './consts/AppSettingConsts';
 import {
-  getDMFDecision,
-  increaseDMFSeverity,
+  CONTEXT,
+  PSA,
+  DMF,
+  NOTES
+} from './consts/Consts';
+import {
+  getRCMDecision,
+  increaseRCMSeverity,
   shouldCheckForSecondaryRelease,
-  updateDMFSecondaryRelease,
+  updateRCMSecondaryRelease,
   shouldCheckForSecondaryHold,
-  updateDMFSecondaryHold
-} from './DMFUtils';
+  updateRCMSecondaryHold
+} from './RCMUtils';
 
 const {
   AGE_AT_CURRENT_ARREST,
@@ -320,36 +326,42 @@ export const getDMFRiskFactors = (inputData) => {
   };
 };
 
-export const calculateDMF = (inputData, scores) => {
+export const calculateDMF = (inputData, scores, settings) => {
+  const context = inputData.get(DMF.COURT_OR_BOOKING);
+  const nca = scores.getIn([PROPERTY_TYPES.NCA_SCALE, 0]);
+  const fta = scores.getIn([PROPERTY_TYPES.FTA_SCALE, 0]);
   const extradited = inputData.get(DMF.EXTRADITED) === 'true';
   const stepTwo = inputData.get(DMF.STEP_2_CHARGES) === 'true';
   const currentViolentOffense = inputData.get(PSA.CURRENT_VIOLENT_OFFENSE) === 'true';
-  const secondaryRelease = inputData.get(DMF.SECONDARY_RELEASE_CHARGES) === 'true';
-  const secondaryHold = inputData.get(DMF.SECONDARY_HOLD_CHARGES) === 'true';
   const nvca = scores.getIn([PROPERTY_TYPES.NVCA_FLAG, 0]);
   const violent = currentViolentOffense && nvca;
   const violentRisk = !currentViolentOffense && nvca;
-
   const stepFour = inputData.get(DMF.STEP_4_CHARGES) === 'true' || violentRisk;
-  const context = inputData.get(DMF.COURT_OR_BOOKING);
 
-  if (extradited || stepTwo || violent) {
-    return getDMFDecision(6, 6, context);
-  }
-  const nca = scores.getIn([PROPERTY_TYPES.NCA_SCALE, 0]);
-  const fta = scores.getIn([PROPERTY_TYPES.FTA_SCALE, 0]);
-  const stepThreeCalculation = getDMFDecision(nca, fta, context);
-  if (stepFour) {
-    return increaseDMFSeverity(stepThreeCalculation, context);
-  }
+  let rcmResult = getRCMDecision(nca, fta, settings);
 
-  if (shouldCheckForSecondaryRelease(context, nca, fta) && secondaryRelease) {
-    return updateDMFSecondaryRelease(stepThreeCalculation);
-  }
+  const includeStepIncreases = settings.get(SETTINGS.STEP_INCREASES, false);
+  const includeSecondaryBookingCharges = settings.get(SETTINGS.SECONDARY_BOOKING_CHARGES, false);
 
-  if (shouldCheckForSecondaryHold(context, nca, fta) && secondaryHold) {
-    return updateDMFSecondaryHold(stepThreeCalculation);
+  if (includeStepIncreases) {
+
+    if (extradited || stepTwo || violent) {
+      rcmResult = getRCMDecision(6, 6, settings);
+    }
+    if (stepFour) {
+      rcmResult = increaseRCMSeverity(rcmResult.rcm, settings, context);
+    }
   }
-  
-  return stepThreeCalculation;
+  if (includeSecondaryBookingCharges) {
+    const secondaryRelease = inputData.get(DMF.SECONDARY_RELEASE_CHARGES) === 'true';
+    const secondaryHold = inputData.get(DMF.SECONDARY_HOLD_CHARGES) === 'true';
+    const conditionLevel = rcmResult.rcm[PROPERTY_TYPES.CONDITIONS_LEVEL];
+    if (!stepFour && shouldCheckForSecondaryRelease(conditionLevel, settings) && secondaryRelease) {
+      rcmResult = updateRCMSecondaryRelease(rcmResult);
+    }
+    if (shouldCheckForSecondaryHold(conditionLevel, settings) && secondaryHold) {
+      rcmResult = updateRCMSecondaryHold(rcmResult);
+    }
+  }
+  return rcmResult;
 };
