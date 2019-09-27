@@ -8,7 +8,8 @@ import { CardSegment, Table } from 'lattice-ui-kit';
 
 import ReleaseTypeRow from '../../containers/settings/ReleaseTypeRow';
 import { HeaderSection } from './SettingsStyledComponents';
-import { RCM_DATA, RELEASE_TYPE_HEADERS } from '../../utils/consts/AppSettingConsts';
+import { RCM_DATA } from '../../utils/consts/AppSettingConsts';
+import { RELEASE_TYPE_HEADERS } from '../../utils/consts/RCMResultsConsts';
 
 type Props = {
   editing :boolean,
