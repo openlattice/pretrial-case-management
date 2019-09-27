@@ -20,9 +20,9 @@ import ReleaseConditionsTable from '../../components/settings/ConditionsTable';
 import ReleaseTypeTable from '../../components/settings/ReleaseTypeTable';
 import { OL } from '../../utils/consts/Colors';
 import { HeaderSection } from '../../components/settings/SettingsStyledComponents';
+import { BOOKING_CONDITIONS } from '../../utils/consts/RCMResultsConsts';
 import {
   SETTINGS,
-  BOOKING_LABELS,
   CONTEXTS,
   RCM,
   RCM_DATA
@@ -118,15 +118,15 @@ class RCMSettings extends React.Component<Props, State> {
     return cellConditions;
   }
 
-  getCellInfo = (ftaScore, ncaScore) => {
+  getCellInfo = (ncaScore, ftaScore) => {
     const matrix = this.getMatrix();
-    return matrix[ftaScore][ncaScore];
+    return matrix[ncaScore][ftaScore];
   }
 
-  getCell = (ftaScore, ncaScore) => {
+  getCell = (ncaScore, ftaScore) => {
     const { bookingView } = this.state;
     const levels = this.getLevels();
-    const cellInfo = this.getCellInfo(ftaScore, ncaScore);
+    const cellInfo = this.getCellInfo(ncaScore, ftaScore);
     let cellConditions = [];
     let cellColor = '#8e929b';
     let label;
@@ -138,27 +138,27 @@ class RCMSettings extends React.Component<Props, State> {
       label = cellConditions.join(', ');
     }
     if (levelNumber && bookingView) {
-      label = levels[levelNumber][RCM_DATA.BOOKING_HOLD] ? BOOKING_LABELS.HOLD : BOOKING_LABELS.RELEASE;
+      label = levels[levelNumber][RCM_DATA.BOOKING_HOLD] ? BOOKING_CONDITIONS.HOLD : BOOKING_CONDITIONS.RELEASE;
     }
     return (
       <RCMCell
           key={`FTA ${ftaScore} NCA ${ncaScore}`}
-          onClick={() => this.changeConditionLevel(ftaScore, ncaScore)}
+          onClick={() => this.changeConditionLevel(ncaScore, ftaScore)}
           color={cellColor}>
         { label }
       </RCMCell>
     );
   }
 
-  changeConditionLevel = (ftaScore, ncaScore) => {
+  changeConditionLevel = (ncaScore, ftaScore) => {
     const { actions, editing } = this.props;
     const matrix = this.getMatrix();
     const levels = this.getLevels();
-    const cellInfo = this.getCellInfo(ftaScore, ncaScore);
+    const cellInfo = this.getCellInfo(ncaScore, ftaScore);
     if (editing && cellInfo) {
       const currentLevel = cellInfo[RCM_DATA.LEVEL];
       const nextLevel = (levels[currentLevel + 1] && levels[currentLevel + 1].active) ? currentLevel + 1 : 1;
-      matrix[ftaScore][ncaScore][RCM_DATA.LEVEL] = nextLevel;
+      matrix[ncaScore][ftaScore][RCM_DATA.LEVEL] = nextLevel;
       actions.updateSetting({ path: [SETTINGS.RCM, RCM.MATRIX], value: matrix });
     }
   }
@@ -168,7 +168,7 @@ class RCMSettings extends React.Component<Props, State> {
     for (let ftaScore = 1; ftaScore <= 6; ftaScore += 1) {
       rcmCells.push(<RCMCell key={`FTA ${ftaScore}`} color={OL.GREY07}>{`FTA ${ftaScore}`}</RCMCell>);
       for (let ncaScore = 1; ncaScore <= 6; ncaScore += 1) {
-        const cell = this.getCell(ftaScore, ncaScore);
+        const cell = this.getCell(ncaScore, ftaScore);
         rcmCells.push(cell);
       }
     }
