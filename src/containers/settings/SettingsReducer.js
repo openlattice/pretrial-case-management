@@ -11,13 +11,12 @@ import {
   submitSettings,
   UPDATE_SETTING
 } from './SettingsActions';
+
 import { SWITCH_ORGANIZATION } from '../app/AppActionFactory';
+import { defaultMatrix, defaultConditions, defaultLevels } from '../../utils/consts/RCMResultsConsts';
 import {
   CASE_CONTEXTS,
   CONTEXTS,
-  defaultConditions,
-  defaultMatrix,
-  defaultLevels,
   MODULE,
   RCM,
   SETTINGS,
@@ -46,9 +45,11 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [SETTINGS_DATA.APP_SETTINGS]: {
     [SETTINGS.ARRESTS_INTEGRATED]: false,
     [SETTINGS.COURT_CASES_INTEGRATED]: false,
-    [SETTINGS.LOAD_CASES]: false,
     [SETTINGS.COURT_REMINDERS]: false,
     [SETTINGS.ENROLL_VOICE]: false,
+    [SETTINGS.STEP_INCREASES]: false,
+    [SETTINGS.SECONDARY_HOLD_CHARGES]: false,
+    [SETTINGS.LOAD_CASES]: false,
     [SETTINGS.CASE_CONTEXTS]: {
       [CONTEXTS.BOOKING]: CASE_CONTEXTS.ARREST,
       [CONTEXTS.COURT]: CASE_CONTEXTS.BOOKING
