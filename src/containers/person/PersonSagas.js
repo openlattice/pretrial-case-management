@@ -73,7 +73,7 @@ const {
   SUBSCRIPTION
 } = APP_TYPES;
 
-const { ID, STRING_ID } = PROPERTY_TYPES;
+const { ID, STRING_ID, PERSON_ID } = PROPERTY_TYPES;
 
 const getApp = state => state.get(STATE.APP, Map());
 const getEDM = state => state.get(STATE.EDM, Map());
@@ -82,6 +82,8 @@ const getOrgId = state => state.getIn([STATE.APP, APP_DATA.SELECTED_ORG_ID], '')
 declare var __ENV_DEV__ :boolean;
 
 const { AuthUtils } = LatticeAuth;
+
+const getPersonEntityId = subjectId => btoa(encodeURI(btoa([subjectId])));
 
 function* loadCaseHistory(entityKeyId :string) :Generator<*, *, *> {
   try {
@@ -251,9 +253,10 @@ function* newPersonSubmitWorker(action) :Generator<*, *, *> {
     const peopleESID = getEntitySetIdFromApp(app, PEOPLE);
     const personSubmitEntity = getPropertyIdToValueMap(newPersonEntity, edm);
 
-    const personEKID = randomUUID();
+    const personSubjectId = newPersonEntity[PERSON_ID];
+    const entityId = getPersonEntityId(personSubjectId);
 
-    yield call(DataIntegrationApi.getEntityKeyIds, [personEKID]);
+    const [personEKID] = yield call(DataIntegrationApi.getEntityKeyIds, [entityId]);
 
     const updateResponse = yield call(
       updateEntityDataWorker,
