@@ -281,9 +281,7 @@ class CourtContainer extends React.Component<Props, State> {
         actions.loadHearingsForDate(courtDate);
       }
     }
-    if (preferredCountyEKID) {
-      this.setState({ countyFilter: preferredCountyEKID });
-    }
+    this.setState({ countyFilter: preferredCountyEKID });
   }
 
   componentWillReceiveProps(nextProps) {
@@ -292,12 +290,15 @@ class CourtContainer extends React.Component<Props, State> {
       courtDate,
       hearingsByTime,
       hearingNeighborsById,
-      selectedOrganizationId
+      selectedOrganizationId,
+      selectedOrganizationSettings
     } = this.props;
+    const preferredCountyEKID :UUID = selectedOrganizationSettings.get(PREFERRED_COUNTY, '');
     if (selectedOrganizationId !== nextProps.selectedOrganizationId) {
       actions.checkPSAPermissions();
       if (!hearingsByTime.size || !hearingNeighborsById.size || courtDate !== nextProps.courtDate) {
         actions.loadHearingsForDate(courtDate);
+        this.setState({ countyFilter: preferredCountyEKID });
       }
     }
   }
