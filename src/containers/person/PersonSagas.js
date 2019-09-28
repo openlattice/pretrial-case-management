@@ -255,8 +255,9 @@ function* newPersonSubmitWorker(action) :Generator<*, *, *> {
 
     const personSubjectId = newPersonEntity[PERSON_ID];
     const entityId = getPersonEntityId(personSubjectId);
+    const entityKey = { entitySetId: peopleESID, entityId };
 
-    const [personEKID] = yield call(DataIntegrationApi.getEntityKeyIds, [entityId]);
+    const [personEKID] = yield call(DataIntegrationApi.getEntityKeyIds, [entityKey]);
 
     const updateResponse = yield call(
       updateEntityDataWorker,
@@ -373,7 +374,7 @@ function* newPersonSubmitWorker(action) :Generator<*, *, *> {
           });
         }
       });
-      // TODO: update create psa flow to route you to creating a psa for this person upon submit
+    //  TODO: update create psa flow to route you to creating a psa for this person upon submit
     }
     yield put(newPersonSubmit.success(action.id, {
       person,
