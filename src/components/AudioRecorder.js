@@ -16,7 +16,7 @@ import audioBufferToWav from '../utils/WavUtils';
  * constants
  */
 
-const MAX_LENGTH = 15;
+const MAX_LENGTH = 5;
 
 const CANVAS_WIDTH = 600;
 const CANVAS_HEIGHT = 200;

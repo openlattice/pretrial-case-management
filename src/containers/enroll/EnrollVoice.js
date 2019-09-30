@@ -168,8 +168,8 @@ class EnrollVoice extends React.Component<Props, State> {
     } = nextProps;
     const receivedPersonEntityKeyId = !prevState.personEntityKeyId && personEntityKeyId;
     const receivedPersonId = !prevState.personId && personId;
-    if (!errorMessage) {
-      if (!loadingProfile && receivedPersonEntityKeyId && receivedPersonId) {
+    if (!errorMessage && !loadingProfile) {
+      if (receivedPersonEntityKeyId && receivedPersonId) {
         actions.getProfile({ personId, personEntityKeyId });
         return { personEntityKeyId, personId };
       }
@@ -192,10 +192,12 @@ class EnrollVoice extends React.Component<Props, State> {
   }
 
   onSelectPerson = (person, personEntityKeyId) => {
-    const { actions } = this.props;
+    const { actions, loadingProfile } = this.props;
     const personId = person.getIn([PROPERTY_TYPES.PERSON_ID, 0], '');
     this.setState({ personEntityKeyId, personId });
-    actions.getProfile({ personId, personEntityKeyId });
+    if (!loadingProfile) {
+      actions.getProfile({ personId, personEntityKeyId });
+    }
   }
 
   getSearchPeopleSection = () => <SearchPersonContainer onSelectPerson={this.onSelectPerson} />;

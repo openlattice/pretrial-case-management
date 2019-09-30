@@ -312,6 +312,7 @@ function* loadHearingNeighborsWorker(action :SequenceAction) :Generator<*, *, *>
     const { hearingIds, hearingDateTime } = action.value;
 
     let hearingNeighborsById = Map();
+    let hearingIdsByCounty = Map();
     let personIdsToHearingIds = Map();
     let personIds = Set();
     let scoresAsMap = Map();
@@ -380,6 +381,12 @@ function* loadHearingNeighborsWorker(action :SequenceAction) :Generator<*, *, *>
                 fromJS(neighbor.get(PSA_NEIGHBOR.DETAILS))
               );
             }
+            if (appTypeFqn === COUNTIES) {
+              hearingIdsByCounty = hearingIdsByCounty.set(
+                entityKeyId,
+                hearingIdsByCounty.get(entityKeyId, Set()).add(hearingId)
+              );
+            }
             if (LIST_ENTITY_SETS.includes(appTypeFqn)) {
               hearingNeighborsMap = hearingNeighborsMap.set(
                 appTypeFqn,
@@ -400,7 +407,7 @@ function* loadHearingNeighborsWorker(action :SequenceAction) :Generator<*, *, *>
         }
       });
     }
-    yield put(loadHearingNeighbors.success(action.id, { hearingNeighborsById, hearingDateTime }));
+    yield put(loadHearingNeighbors.success(action.id, { hearingIdsByCounty, hearingNeighborsById, hearingDateTime }));
 
     if (hearingDateTime && hearingDateTime.isValid) {
       const peopleIdsWithOpenPSAs = filterPeopleIdsWithOpenPSAs({

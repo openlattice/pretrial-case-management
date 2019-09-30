@@ -2,13 +2,13 @@
  * @flow
  */
 
-import { DataApi, EntityDataModelApi, Types } from 'lattice';
 import {
   call,
   put,
   select,
   takeEvery
 } from '@redux-saga/core/effects';
+import { DataApi, EntitySetsApi, Types } from 'lattice';
 import type { SequenceAction } from 'redux-reqseq';
 
 import {
@@ -31,7 +31,7 @@ function* deleteEntityWorker(action :SequenceAction) :Generator<*, *, *> {
 
   try {
     yield put(deleteEntity.request(action.id));
-    if (!entitySetId) entitySetId = yield call(EntityDataModelApi.getEntitySetId, entitySetName);
+    if (!entitySetId) entitySetId = yield call(EntitySetsApi.getEntitySetId, entitySetName);
     yield call(DataApi.deleteEntity, entitySetId, entityKeyId, DeleteTypes.Soft);
     yield put(deleteEntity.success(action.id, { entityKeyId }));
 

@@ -86,6 +86,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [HEARINGS_DATA.COURTROOMS_BY_DATE]: Map(),
   [HEARINGS_DATA.DATE]: DateTime.local().toFormat(DATE_FORMAT),
   [HEARINGS_DATA.HEARINGS_BY_DATE_AND_TIME]: Map(),
+  [HEARINGS_DATA.HEARINGS_BY_COUNTY]: Map(),
   [HEARINGS_DATA.HEARINGS_BY_ID]: Map(),
   [HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID]: Map(),
   [HEARINGS_DATA.JUDGE]: '',
@@ -172,11 +173,12 @@ export default function hearingsReducer(state :Map<*, *> = INITIAL_STATE, action
           .setIn([REDUX.ACTIONS, HEARINGS_ACTIONS.LOAD_HEARING_NEIGHBORS, action.id], fromJS(action))
           .setIn([REDUX.ACTIONS, HEARINGS_ACTIONS.LOAD_HEARING_NEIGHBORS, REDUX.REQUEST_STATE], PENDING),
         SUCCESS: () => {
-          const { hearingNeighborsById } = action.value;
+          const { hearingNeighborsById, hearingIdsByCounty } = action.value;
           const currentState = state.get(HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID);
           const newState = currentState.merge(hearingNeighborsById);
           return state
             .set(HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID, newState)
+            .set(HEARINGS_DATA.HEARINGS_BY_COUNTY, hearingIdsByCounty)
             .setIn([REDUX.ACTIONS, HEARINGS_ACTIONS.LOAD_HEARING_NEIGHBORS, REDUX.REQUEST_STATE], SUCCESS);
         },
         FAILURE: () => {

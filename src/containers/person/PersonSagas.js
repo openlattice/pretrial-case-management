@@ -6,7 +6,7 @@ import axios from 'axios';
 import moment from 'moment';
 import LatticeAuth from 'lattice-auth';
 import randomUUID from 'uuid/v4';
-import { Constants, SearchApi } from 'lattice';
+import { Constants, SearchApi, DataIntegrationApi } from 'lattice';
 import {
   DataApiActions,
   DataApiSagas,
@@ -54,8 +54,8 @@ import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 
 import * as Routes from '../../core/router/Routes';
 
-const { createEntityAndAssociationData, createOrMergeEntityData, getEntityData } = DataApiActions;
-const { createEntityAndAssociationDataWorker, createOrMergeEntityDataWorker, getEntityDataWorker } = DataApiSagas;
+const { createEntityAndAssociationData, updateEntityData, getEntityData } = DataApiActions;
+const { createEntityAndAssociationDataWorker, updateEntityDataWorker, getEntityDataWorker } = DataApiSagas;
 const { searchEntityNeighborsWithFilter, searchEntitySetData } = SearchApiActions;
 const { searchEntityNeighborsWithFilterWorker, searchEntitySetDataWorker } = SearchApiSagas;
 
@@ -73,7 +73,7 @@ const {
   SUBSCRIPTION
 } = APP_TYPES;
 
-const { ID, STRING_ID } = PROPERTY_TYPES;
+const { ID, STRING_ID, PERSON_ID } = PROPERTY_TYPES;
 
 const getApp = state => state.get(STATE.APP, Map());
 const getEDM = state => state.get(STATE.EDM, Map());
@@ -82,6 +82,8 @@ const getOrgId = state => state.getIn([STATE.APP, APP_DATA.SELECTED_ORG_ID], '')
 declare var __ENV_DEV__ :boolean;
 
 const { AuthUtils } = LatticeAuth;
+
+const getPersonEntityId = subjectId => btoa(encodeURI(btoa([subjectId])));
 
 function* loadCaseHistory(entityKeyId :string) :Generator<*, *, *> {
   try {
@@ -247,9 +249,25 @@ function* newPersonSubmitWorker(action) :Generator<*, *, *> {
     const orgId = yield select(getOrgId);
     const entitySetIdsToAppType = app.getIn([APP_DATA.ENTITY_SETS_BY_ORG, orgId]);
 
-    let personEKID;
+    // let personEKID;
     const peopleESID = getEntitySetIdFromApp(app, PEOPLE);
     const personSubmitEntity = getPropertyIdToValueMap(newPersonEntity, edm);
+
+    const personSubjectId = newPersonEntity[PERSON_ID];
+    const entityId = getPersonEntityId(personSubjectId);
+    const entityKey = { entitySetId: peopleESID, entityId };
+
+    const [personEKID] = yield call(DataIntegrationApi.getEntityKeyIds, [entityKey]);
+
+    const updateResponse = yield call(
+      updateEntityDataWorker,
+      updateEntityData({
+        entitySetId: peopleESID,
+        entities: { [personEKID]: personSubmitEntity },
+        updateType: 'PartialReplace'
+      })
+    );
+    if (updateResponse.error) throw updateResponse.error;
 
     /*
      * Check to see if contact or address are being submitted
@@ -262,7 +280,7 @@ function* newPersonSubmitWorker(action) :Generator<*, *, *> {
     const contactInfoESID = getEntitySetIdFromApp(app, CONTACT_INFORMATION);
 
     if (addressIncluded || contactIncluded) {
-      const entities = { [peopleESID]: [personSubmitEntity] };
+      const entities = {};
       const associations = {};
       /*
       * Add address if present
@@ -307,21 +325,6 @@ function* newPersonSubmitWorker(action) :Generator<*, *, *> {
       /*
       * Collect Person and Neighbors
       */
-      const entityKeyIds = fromJS(response.data.entityKeyIds);
-
-      personEKID = entityKeyIds.getIn([peopleESID, 0], '');
-    }
-    else {
-      const createPersonResponse = yield call(
-        createOrMergeEntityDataWorker,
-        createOrMergeEntityData({
-          entitySetId: peopleESID,
-          entityData: [personSubmitEntity]
-        })
-      );
-      if (createPersonResponse.error) throw createPersonResponse.error;
-      const { data: EKIDs } = createPersonResponse;
-      personEKID = EKIDs[0];
     }
 
     /*
@@ -371,7 +374,7 @@ function* newPersonSubmitWorker(action) :Generator<*, *, *> {
           });
         }
       });
-      // TODO: update create psa flow to route you to creating a psa for this person upon submit
+    //  TODO: update create psa flow to route you to creating a psa for this person upon submit
     }
     yield put(newPersonSubmit.success(action.id, {
       person,
