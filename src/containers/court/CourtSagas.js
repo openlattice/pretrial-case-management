@@ -3,7 +3,7 @@
  */
 
 import { DateTime } from 'luxon';
-import { Constants, SearchApi } from 'lattice';
+import { Constants } from 'lattice';
 import { SearchApiActions, SearchApiSagas } from 'lattice-sagas';
 import { fromJS, Map, Set } from 'immutable';
 import {
@@ -15,8 +15,8 @@ import {
 import type { SequenceAction } from 'redux-reqseq';
 
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
-import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
-import { MAX_HITS, PSA_STATUSES } from '../../utils/consts/Consts';
+import { getEntityProperties } from '../../utils/DataUtils';
+import { PSA_STATUSES } from '../../utils/consts/Consts';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_ASSOCIATION, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 
