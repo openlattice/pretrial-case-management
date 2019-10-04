@@ -1,3 +1,4 @@
+import { CONTEXT } from './Consts';
 
 export const CASE_CONTEXTS = {
   ARREST: 'arrest',
@@ -8,6 +9,17 @@ export const CONTEXTS = {
   COURT: 'court',
   BOOKING: 'booking'
 };
+
+export const CONTEXT_OPTIONS = [
+  {
+    label: CONTEXT.COURT,
+    value: CONTEXTS.COURT
+  },
+  {
+    label: CONTEXT.BOOKING,
+    value: CONTEXTS.BOOKING
+  }
+];
 
 export const MODULE = {
   PSA: 'psa',
