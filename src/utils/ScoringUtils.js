@@ -5,7 +5,6 @@ import Immutable from 'immutable';
 import { PROPERTY_TYPES } from './consts/DataModelConsts';
 import { SETTINGS } from './consts/AppSettingConsts';
 import {
-  CONTEXT,
   PSA,
   DMF,
   NOTES
