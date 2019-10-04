@@ -16,14 +16,17 @@ import {
 } from 'lattice-ui-kit';
 
 import BookingHoldSection from './BookingHoldSection';
+import LevelColorsSection from './LevelColorsSection';
 import ReleaseConditionsTable from '../../components/settings/ConditionsTable';
 import ReleaseTypeTable from '../../components/settings/ReleaseTypeTable';
+import ToggleButtons from '../../components/buttons/ToggleButtons';
 import { OL } from '../../utils/consts/Colors';
 import { HeaderSection } from '../../components/settings/SettingsStyledComponents';
 import { BOOKING_CONDITIONS } from '../../utils/consts/RCMResultsConsts';
 import {
   SETTINGS,
   CONTEXTS,
+  CONTEXT_OPTIONS,
   RCM,
   RCM_DATA
 } from '../../utils/consts/AppSettingConsts';
@@ -63,9 +66,13 @@ const SubmitRow = styled.div`
 `;
 
 const StyledCell = styled.div`
-  padding: 10px 10px;
+  padding: 10px;
   text-align: ${props => props.align || 'left'};
   word-wrap: break-word;
+`;
+
+const ToggleWrapper = styled(StyledCell)`
+  padding: 30px;
 `;
 
 
@@ -104,6 +111,13 @@ class RCMSettings extends React.Component<Props, State> {
   getMatrix = () => {
     const { settings } = this.props;
     return settings[SETTINGS.RCM][RCM.MATRIX];
+  }
+
+  isReadyToSubmit = () => {
+    const levels = this.getLevels();
+    const conditions = this.getConditions();
+    return fromJS(levels)
+      .keySeq().every(level => fromJS(conditions).valueSeq().some(condition => condition.get(level, false)));
   }
 
   getConditionsForCell = (level) => {
@@ -197,17 +211,19 @@ class RCMSettings extends React.Component<Props, State> {
   )
 
   renderConditionsTable = () => {
+    const { bookingView } = this.state;
     const { editing } = this.props;
     const conditions = this.getConditions();
     const levels = this.getLevels();
     const conditionValues = Object.values(conditions);
     if (editing) conditionValues.push({});
-    return (
-      <ReleaseConditionsTable
-          editing={editing}
-          conditions={conditionValues}
-          levels={levels} />
-    );
+    return (!bookingView)
+      ? (
+        <ReleaseConditionsTable
+            editing={editing}
+            conditions={conditionValues}
+            levels={levels} />
+      ) : null;
   }
 
   addLevel = () => {
@@ -256,42 +272,50 @@ class RCMSettings extends React.Component<Props, State> {
     }
   }
 
-  renderBookingViewCheckbox = () => {
-    const { bookingView } = this.state;
-    const { settings } = this.props;
-    const includesBookingContext = settings[SETTINGS.CONTEXTS][CONTEXTS.BOOKING];
-    return includesBookingContext
-      ? (
-        <StyledCell align="center">
-          <Checkbox
-              checked={bookingView}
-              label="Booking View"
-              onChange={({ target }) => {
-                this.setState({ bookingView: target.checked });
-              }} />
-        </StyledCell>
-      ) : null;
-  }
-
   renderBookingHoldSection = () => {
-    const { editing } = this.props;
-    const { settings } = this.props;
+    const { bookingView } = this.state;
+    const { editing, settings } = this.props;
     const levels = this.getLevels();
     const includesBookingContext = settings[SETTINGS.CONTEXTS][CONTEXTS.BOOKING];
-    return includesBookingContext
+    return includesBookingContext && bookingView
       ? <CardSegment><BookingHoldSection editing={editing} levels={levels} /></CardSegment> : null;
   }
 
+  renderLevelColorsSection = () => {
+    const { editing } = this.props;
+    const levels = this.getLevels();
+    return <CardSegment><LevelColorsSection editing={editing} levels={levels} /></CardSegment>;
+  }
+
   renderReleaseTypeTable = () => {
+    const { bookingView } = this.state;
     const { editing, settings } = this.props;
     const includesBookingContext = settings[SETTINGS.CONTEXTS][CONTEXTS.BOOKING];
     const levels = this.getLevels();
-    return includesBookingContext
+    return !bookingView
       ? (
         <ReleaseTypeTable
             includesBookingContext={includesBookingContext}
             editing={editing}
             levels={levels} />
+      ) : null;
+  }
+
+  renderContextToggle = () => {
+    const { bookingView } = this.state;
+    const { settings } = this.props;
+    const includesBookingContext = settings[SETTINGS.CONTEXTS][CONTEXTS.BOOKING];
+    const selectedValue = bookingView ? CONTEXT_OPTIONS[1] : CONTEXT_OPTIONS[0];
+    return (includesBookingContext)
+      ? (
+        <ToggleWrapper align="center">
+          <ToggleButtons
+              options={CONTEXT_OPTIONS}
+              selectedOption={selectedValue.value}
+              onSelect={(value) => {
+                this.setState({ bookingView: value === CONTEXTS.BOOKING });
+              }} />
+        </ToggleWrapper>
       ) : null;
   }
 
@@ -334,16 +358,17 @@ class RCMSettings extends React.Component<Props, State> {
     return (
       <>
         {this.renderHeader()}
+        {this.renderContextToggle()}
+        {this.renderMatrix()}
+        {this.renderLevelColorsSection()}
         {this.renderBookingHoldSection()}
         {this.renderReleaseTypeTable()}
         {this.renderConditionsTable()}
-        {this.renderBookingViewCheckbox()}
-        {this.renderMatrix()}
         {
           editing
             ? (
               <SubmitRow>
-                <Button mode="primary" onClick={actions.submitSettings}>Submit</Button>
+                <Button mode="primary" disabled={!this.isReadyToSubmit()} onClick={actions.submitSettings}>Submit</Button>
               </SubmitRow>
             ) : null
         }
