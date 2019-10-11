@@ -105,7 +105,6 @@ class StepFour extends React.Component<Props, *> {
 
     const { rcm, courtConditions, bookingConditions } = getRCMDecision(ncaScore, ftaScore, settings);
     const conditions :Object[] = context === CONTEXT.BOOKING ? bookingConditions : courtConditions;
-    console.log(rcm);
 
     const shouldDisplayRCMCell :boolean = context !== CONTEXT.BOOKING
       || (secondaryReleaseVal || secondaryHoldVal);

@@ -93,7 +93,7 @@ class SummaryRCMDetails extends React.Component<Props, *> {
     const { settings } = this.props;
     const { ftaScore, ncaScore } = this.getScores();
     const rcm1 :Object = getRCMDecision(ncaScore, ftaScore, settings);
-    const rcm2 :Object = increaseRCMSeverity(ncaScore, ftaScore, settings);
+    const rcm2 :Object = increaseRCMSeverity(rcm1, settings);
     return this.getRCMStep(rcm1, rcm2);
   }
 
@@ -126,7 +126,6 @@ class SummaryRCMDetails extends React.Component<Props, *> {
     const rcmCourtConditions = neighbors.getIn([RCM_COURT_CONDITIONS], legacyConditions);
 
     const conditions = rcmCourtConditions.size ? rcmCourtConditions : rcmBookingConditions;
-    console.log(conditions.toJS())
 
     let rcmCell = null;
     if (rcm) {
