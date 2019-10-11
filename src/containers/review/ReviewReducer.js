@@ -14,13 +14,12 @@ import {
   loadCaseHistory,
   loadPSAData,
   loadPSAsByDate,
-  refreshPSANeighbors,
   updateScoresAndRiskFactors
 } from './ReviewActionFactory';
 
 const {
-  DMF_RESULTS,
-  DMF_RISK_FACTORS,
+  RCM_RESULTS,
+  RCM_RISK_FACTORS,
   PSA_RISK_FACTORS,
   RELEASE_RECOMMENDATIONS,
   STAFF
@@ -152,27 +151,6 @@ export default function reviewReducer(state :Immutable.Map<*, *> = INITIAL_STATE
       });
     }
 
-    case refreshPSANeighbors.case(action.type): {
-      return refreshPSANeighbors.reducer(state, action, {
-        REQUEST: () => state.set(
-          REVIEW.PSA_IDS_REFRESHING,
-          state.get(REVIEW.PSA_IDS_REFRESHING).add(action.value.id)
-        ),
-        SUCCESS: () => {
-          const { neighbors } = action.value;
-          let psaNeighborsById = state.get(REVIEW.NEIGHBORS_BY_ID);
-
-          psaNeighborsById = psaNeighborsById.set(action.value.id, neighbors);
-
-          return state.set(REVIEW.NEIGHBORS_BY_ID, psaNeighborsById);
-        },
-        FINALLY: () => state.set(
-          REVIEW.PSA_IDS_REFRESHING,
-          state.get(REVIEW.PSA_IDS_REFRESHING).delete(action.value.id)
-        )
-      });
-    }
-
     case updateScoresAndRiskFactors.case(action.type): {
       return updateScoresAndRiskFactors.reducer(state, action, {
         SUCCESS: () => {
@@ -180,8 +158,8 @@ export default function reviewReducer(state :Immutable.Map<*, *> = INITIAL_STATE
             scoresId,
             newScoreEntity,
             newRiskFactorsEntity,
-            newDMFEntity,
-            newDMFRiskFactorsEntity,
+            newRCMEntity,
+            newRCMRiskFactorsEntity,
             newNotesEntity
           } = action.value;
 
@@ -202,11 +180,11 @@ export default function reviewReducer(state :Immutable.Map<*, *> = INITIAL_STATE
                 [date, scoresId, PSA_RISK_FACTORS, PSA_NEIGHBOR.DETAILS],
                 Immutable.fromJS(newRiskFactorsEntity)
               ).setIn(
-                [date, scoresId, DMF_RESULTS, PSA_NEIGHBOR.DETAILS],
-                Immutable.fromJS(newDMFEntity)
+                [date, scoresId, RCM_RESULTS, PSA_NEIGHBOR.DETAILS],
+                Immutable.fromJS(newRCMEntity)
               ).setIn(
-                [date, scoresId, DMF_RISK_FACTORS, PSA_NEIGHBOR.DETAILS],
-                Immutable.fromJS(newDMFRiskFactorsEntity)
+                [date, scoresId, RCM_RISK_FACTORS, PSA_NEIGHBOR.DETAILS],
+                Immutable.fromJS(newRCMRiskFactorsEntity)
               ).setIn(
                 [date, scoresId, RELEASE_RECOMMENDATIONS, PSA_NEIGHBOR.DETAILS],
                 Immutable.fromJS(notesEntity)
@@ -218,11 +196,11 @@ export default function reviewReducer(state :Immutable.Map<*, *> = INITIAL_STATE
               [scoresId, PSA_RISK_FACTORS, PSA_NEIGHBOR.DETAILS],
               Immutable.fromJS(newRiskFactorsEntity)
             ).setIn(
-              [scoresId, DMF_RESULTS, PSA_NEIGHBOR.DETAILS],
-              Immutable.fromJS(newDMFEntity)
+              [scoresId, RCM_RESULTS, PSA_NEIGHBOR.DETAILS],
+              Immutable.fromJS(newRCMEntity)
             ).setIn(
-              [scoresId, DMF_RISK_FACTORS, PSA_NEIGHBOR.DETAILS],
-              Immutable.fromJS(newDMFRiskFactorsEntity)
+              [scoresId, RCM_RISK_FACTORS, PSA_NEIGHBOR.DETAILS],
+              Immutable.fromJS(newRCMRiskFactorsEntity)
             )
             .setIn(
               [scoresId, RELEASE_RECOMMENDATIONS, PSA_NEIGHBOR.DETAILS],

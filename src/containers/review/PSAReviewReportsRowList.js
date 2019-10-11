@@ -137,7 +137,6 @@ type Props = {
     }) => void,
     loadHearingNeighbors :(hearingIds :string[]) => void,
     checkPSAPermissions :() => void,
-    refreshPSANeighbors :({ id :string }) => void,
     replaceEntity :(value :{ entitySetName :string, entityKeyId :string, values :Object }) => void,
     deleteEntity :(value :{ entitySetName :string, entityKeyId :string }) => void,
     clearSubmit :() => void,
@@ -233,8 +232,7 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
       loadPSAModal,
       loadHearingNeighbors,
       replaceEntity,
-      deleteEntity,
-      refreshPSANeighbors
+      deleteEntity
     } = actions;
 
     const neighbors = psaNeighborsById.get(scoreId, Map());
@@ -259,7 +257,6 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
           onStatusChangeCallback={onStatusChangeCallback}
           replaceEntity={replaceEntity}
           deleteEntity={deleteEntity}
-          refreshPSANeighbors={refreshPSANeighbors}
           refreshingNeighbors={psaIdsRefreshing.has(scoreId)}
           key={scoreId}
           hideCaseHistory={hideCaseHistory}
