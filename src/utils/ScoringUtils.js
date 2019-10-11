@@ -350,7 +350,7 @@ export const calculateRCM = (inputData, scores, settings) => {
       rcmResult = getRCMDecision(6, 6, settings);
     }
     if (stepFour) {
-      rcmResult = increaseRCMSeverity(rcmResult.rcm, settings, context);
+      rcmResult = increaseRCMSeverity(rcmResult, settings);
     }
   }
   if (includeSecondaryBookingCharges) {
