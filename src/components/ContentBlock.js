@@ -77,7 +77,7 @@ const StyledContent = styled.div`
   color: ${OL.GREY15};
   font-size: ${(props) => {
     switch (props.component) {
-      case CONTENT_CONSTS.DMF:
+      case CONTENT_CONSTS.RCM:
         return (
           16
         );
