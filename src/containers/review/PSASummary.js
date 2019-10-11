@@ -15,7 +15,7 @@ import ContentBlock from '../../components/ContentBlock';
 import PersonCardSummary from '../../components/person/PersonCardSummary';
 import PSAReportDownloadButton from '../../components/review/PSAReportDownloadButton';
 import PSAStats from '../../components/review/PSAStats';
-import SummaryDMFDetails from '../../components/dmf/SummaryDMFDetails';
+import SummaryRCMDetails from '../../components/rcm/SummaryRCMDetails';
 import { formatDateTimeList } from '../../utils/FormattingUtils';
 import { getTimeStamp, getNeighborDetailsForEntitySet } from '../../utils/DataUtils';
 import { OL } from '../../utils/consts/Colors';
@@ -276,7 +276,7 @@ class PSASummary extends React.Component<Props, *> {
         </ScoresContainer>
         <ScoresContainer>
           <ScoreTitle>RCM</ScoreTitle>
-          <SummaryDMFDetails neighbors={neighbors} scores={scores} />
+          <SummaryRCMDetails neighbors={neighbors} scores={scores} />
         </ScoresContainer>
       </SummaryRowWrapper>
     );
