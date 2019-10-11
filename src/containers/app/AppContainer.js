@@ -50,6 +50,7 @@ import * as ChargesActionFactory from '../charges/ChargesActionFactory';
 import { loadCounties } from '../counties/CountiesActions';
 import { loadJudges } from '../hearings/HearingsActions';
 import { getStaffEKIDs } from '../people/PeopleActionFactory';
+import { initializeSettings } from '../settings/SettingsActions';
 
 declare var gtag :?Function;
 
@@ -118,6 +119,7 @@ class AppContainer extends React.Component<Props, {}> {
     if (nextOrgId && prevOrgId !== nextOrgId) {
       actions.loadCounties();
       actions.loadJudges();
+      this.initializeSettings();
       nextOrg.keySeq().forEach((id) => {
         const selectedOrgId :string = id;
         const arrestChargesEntitySetId = getEntitySetIdFromApp(app, ARREST_CHARGE_LIST);
@@ -131,6 +133,11 @@ class AppContainer extends React.Component<Props, {}> {
         actions.loadArrestingAgencies();
       });
     }
+  }
+
+  initializeSettings = () => {
+    const { actions, selectedOrganizationSettings } = this.props;
+    actions.initializeSettings({ selectedOrganizationSettings });
   }
 
   handleOnClickLogOut = () => {
@@ -268,12 +275,11 @@ function mapDispatchToProps(dispatch :Function) :Object {
   });
 
   actions.loadCounties = loadCounties;
-
   actions.loadJudges = loadJudges;
   actions.getStaffEKIDs = getStaffEKIDs;
-
   actions.logout = logout;
   actions.getAllPropertyTypes = getAllPropertyTypes;
+  actions.initializeSettings = initializeSettings;
 
   return {
     actions: {
