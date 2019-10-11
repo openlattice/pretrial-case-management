@@ -126,7 +126,6 @@ export default function* sagas() :Generator<*, *, *> {
     fork(PeopleSagas.getPersonNeighborsWatcher),
     fork(PeopleSagas.getStaffEKIDsWatcher),
     fork(PeopleSagas.loadRequiresActionPeopleWatcher),
-    fork(PeopleSagas.refreshPersonNeighborsWatcher),
 
     // PSA Modal Sagas
     fork(PSAModalSagas.loadPSAModalWatcher),
@@ -141,7 +140,7 @@ export default function* sagas() :Generator<*, *, *> {
     // Release Conditions Sagas
     fork(ReleaseConditionsSagas.loadReleaseConditionsWatcher),
     fork(ReleaseConditionsSagas.submitReleaseConditionsWatcher),
-    fork(ReleaseConditionsSagas.updateOutcomesAndReleaseCondtionsWatcher),
+    fork(ReleaseConditionsSagas.updateOutcomesAndReleaseConditionsWatcher),
 
     // Reminder Sagas
     fork(RemindersSagas.bulkDownloadRemindersPDFWatcher),
@@ -159,7 +158,6 @@ export default function* sagas() :Generator<*, *, *> {
     fork(ReviewSagas.loadCaseHistoryWatcher),
     fork(ReviewSagas.loadPSADataWatcher),
     fork(ReviewSagas.loadPSAsByDateWatcher),
-    fork(ReviewSagas.refreshPSANeighborsWatcher),
     fork(ReviewSagas.updateScoresAndRiskFactorsWatcher),
 
     // Routing Sagas
