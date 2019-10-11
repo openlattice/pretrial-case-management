@@ -18,8 +18,8 @@ const bookingHoldConditions = [{ [PROPERTY_TYPES.TYPE]: BOOKING_CONDITIONS.HOLD 
 const bookingReleaseConditions = [{ [PROPERTY_TYPES.TYPE]: BOOKING_CONDITIONS.RELEASE }];
 
 export const getHeaderText = (rcm) => {
-  const releaseType = rcm[RESULT_CATEGORIES.RELEASE_TYPE];
-  const conditionsLevel = rcm[RESULT_CATEGORIES.CONDITIONS_LEVEL];
+  const releaseType = rcm[PROPERTY_TYPES.RELEASE_TYPE];
+  const conditionsLevel = rcm[PROPERTY_TYPES.CONDITIONS_LEVEL];
   switch (releaseType) {
     case RELEASE_TYPES.RELEASE:
       return `${RELEASE_TYPE_HEADERS[RELEASE_TYPES.RELEASE]} (Level ${conditionsLevel})`;

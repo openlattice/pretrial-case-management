@@ -1,3 +1,4 @@
+import { fromJS } from 'immutable';
 
 import { PROPERTY_TYPES } from './consts/DataModelConsts';
 
@@ -36,23 +37,23 @@ describe('RCMUtils', () => {
 
     test('should return correct header text depending on RCM result', () => {
 
-      expect(getHeaderText(RCM_LEVEL_1))
-        .toEqual(`${RELEASE_TYPE_HEADERS[RELEASE_TYPES.RELEASE_WITH_CONDITIONS]} (Level 1)`);
+      expect(getHeaderText(RCM_LEVEL_1[RESULTS.RCM]))
+        .toEqual(`${RELEASE_TYPE_HEADERS[RELEASE_TYPES.RELEASE]} (Level 1)`);
 
-      expect(getHeaderText(RCM_LEVEL_2))
+      expect(getHeaderText(RCM_LEVEL_2[RESULTS.RCM]))
         .toEqual(`${RELEASE_TYPE_HEADERS[RELEASE_TYPES.RELEASE_WITH_CONDITIONS]} (Level 2)`);
 
-      expect(getHeaderText(RCM_LEVEL_3))
+      expect(getHeaderText(RCM_LEVEL_3[RESULTS.RCM]))
         .toEqual(`${RELEASE_TYPE_HEADERS[RELEASE_TYPES.RELEASE_WITH_CONDITIONS]} (Level 3)`);
 
-      expect(getHeaderText(RCM_LEVEL_4))
+      expect(getHeaderText(RCM_LEVEL_4[RESULTS.RCM]))
         .toEqual(`${RELEASE_TYPE_HEADERS[RELEASE_TYPES.RELEASE_WITH_CONDITIONS]} (Level 4)`);
 
-      expect(getHeaderText(RCM_LEVEL_5))
+      expect(getHeaderText(RCM_LEVEL_5[RESULTS.RCM]))
         .toEqual(`${RELEASE_TYPE_HEADERS[RELEASE_TYPES.RELEASE_WITH_CONDITIONS]} (Level 5)`);
 
-      expect(getHeaderText(RCM_LEVEL_6))
-        .toEqual(`${RELEASE_TYPE_HEADERS[RELEASE_TYPES.RELEASE_WITH_CONDITIONS]} (Level 6)`);
+      expect(getHeaderText(RCM_LEVEL_6[RESULTS.RCM]))
+        .toEqual(`${RELEASE_TYPE_HEADERS[RELEASE_TYPES.MAXIMUM_CONDITIONS]} (Level 6)`);
 
     });
 
@@ -67,15 +68,15 @@ describe('RCMUtils', () => {
   describe('shouldCheckForSecondaryRelease', () => {
 
     test('should return false if level provided is not a booking release level', () => {
-      expect(shouldCheckForSecondaryRelease(6, defaultSettings)).toEqual(false);
+      expect(shouldCheckForSecondaryRelease(6, fromJS(defaultSettings))).toEqual(false);
     });
 
     test('should return true if level provided is a booking release level', () => {
-      expect(shouldCheckForSecondaryRelease(1, defaultSettings)).toEqual(true);
-      expect(shouldCheckForSecondaryRelease(2, defaultSettings)).toEqual(true);
-      expect(shouldCheckForSecondaryRelease(3, defaultSettings)).toEqual(true);
-      expect(shouldCheckForSecondaryRelease(4, defaultSettings)).toEqual(true);
-      expect(shouldCheckForSecondaryRelease(4, defaultSettings)).toEqual(true);
+      expect(shouldCheckForSecondaryRelease(1, fromJS(defaultSettings))).toEqual(true);
+      expect(shouldCheckForSecondaryRelease(2, fromJS(defaultSettings))).toEqual(true);
+      expect(shouldCheckForSecondaryRelease(3, fromJS(defaultSettings))).toEqual(true);
+      expect(shouldCheckForSecondaryRelease(4, fromJS(defaultSettings))).toEqual(true);
+      expect(shouldCheckForSecondaryRelease(4, fromJS(defaultSettings))).toEqual(true);
     });
   });
 
