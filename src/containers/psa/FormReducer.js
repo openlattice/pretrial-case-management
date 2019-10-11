@@ -9,12 +9,12 @@ import {
   Map
 } from 'immutable';
 
-import { refreshPersonNeighbors } from '../people/PeopleActionFactory';
 import { submitContact, updateContactsBulk } from '../contactinformation/ContactInfoActions';
 import { changePSAStatus, updateScoresAndRiskFactors } from '../review/ReviewActionFactory';
 import { subscribe, unsubscribe } from '../subscription/SubscriptionActions';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { PSA, NOTES, DMF } from '../../utils/consts/Consts';
+import { PSA, NOTES } from '../../utils/consts/Consts';
+import { RCM_FIELDS } from '../../utils/consts/RCMResultsConsts';
 import { getMapByCaseId } from '../../utils/CaseUtils';
 import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
 import { PSA_NEIGHBOR, PSA_FORM } from '../../utils/consts/FrontEndStateConsts';
@@ -56,7 +56,7 @@ const {
   COURT_OR_BOOKING,
   SECONDARY_RELEASE_CHARGES,
   SECONDARY_HOLD_CHARGES
-} = DMF;
+} = RCM_FIELDS;
 
 const {
   ARREST_CASES,
@@ -387,19 +387,6 @@ function formReducer(state :Map<> = INITIAL_STATE, action :Object) {
         SUCCESS: () => {
           const { contactInformation } = action.value;
           return state.set(PSA_FORM.ALL_CONTACTS, contactInformation);
-        }
-      });
-    }
-
-    case refreshPersonNeighbors.case(action.type): {
-      return refreshPersonNeighbors.reducer(state, action, {
-        SUCCESS: () => {
-          const { neighbors } = action.value;
-          const subscription = neighbors.getIn([SUBSCRIPTION, PSA_NEIGHBOR.DETAILS], Map());
-          const contacts = neighbors.getIn([CONTACT_INFORMATION], List());
-          return state
-            .set(PSA_FORM.SUBSCRIPTION, subscription)
-            .set(PSA_FORM.ALL_CONTACTS, contacts);
         }
       });
     }
