@@ -22,10 +22,12 @@ import { getSentenceToIncarcerationCaseNums } from '../../utils/SentenceUtils';
 import { StyledSectionWrapper, ErrorMessage } from '../../utils/Layout';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
+import { RCM_FIELDS } from '../../utils/consts/RCMResultsConsts';
 import { OL } from '../../utils/consts/Colors';
+import { CONTEXT, NOTES, PSA } from '../../utils/consts/Consts';
 import {
   getViolentChargeLabels,
-  getDMFStepChargeLabels,
+  getRCMStepChargeLabels,
   getBHEAndBREChargeLabels
 } from '../../utils/ArrestChargeUtils';
 import {
@@ -34,12 +36,6 @@ import {
   getPreviousFelonyLabels,
   getPreviousViolentChargeLabels
 } from '../../utils/AutofillUtils';
-import {
-  CONTEXT,
-  DMF,
-  NOTES,
-  PSA
-} from '../../utils/consts/Consts';
 import {
   CURRENT_AGE_PROMPT,
   CURRENT_VIOLENT_OFFENSE_PROMPT,
@@ -80,7 +76,7 @@ const {
   COURT_OR_BOOKING,
   SECONDARY_RELEASE_CHARGES,
   SECONDARY_HOLD_CHARGES
-} = DMF;
+} = RCM_FIELDS;
 
 const FormWrapper = styled(StyledSectionWrapper)`
   padding: 30px 0;
@@ -257,8 +253,8 @@ const ButtonRow = styled.div`
 type Props = {
   bookingHoldExceptionCharges :Map<*, *>,
   bookingReleaseExceptionCharges :Map<*, *>,
-  dmfStep2Charges :Map<*, *>,
-  dmfStep4Charges :Map<*, *>,
+  rcmStep2Charges :Map<*, *>,
+  rcmStep4Charges :Map<*, *>,
   selectedOrganizationId :string,
   selectedOrganizationSettings :boolean,
   violentArrestCharges :Map<*, *>,
@@ -339,7 +335,7 @@ class PSAInputForm extends React.Component<Props, State> {
         .remove(SECONDARY_RELEASE_CHARGES)
         .remove(SECONDARY_HOLD_CHARGES);
     }
-    else if (input.get(DMF.COURT_OR_BOOKING, '').includes(CONTEXT.COURT)) {
+    else if (input.get(COURT_OR_BOOKING, '').includes(CONTEXT.COURT)) {
       requiredFields = requiredFields
         .remove(SECONDARY_RELEASE_CHARGES)
         .remove(SECONDARY_HOLD_CHARGES);
@@ -420,8 +416,8 @@ class PSAInputForm extends React.Component<Props, State> {
       bookingReleaseExceptionCharges,
       currCase,
       currCharges,
-      dmfStep2Charges,
-      dmfStep4Charges,
+      rcmStep2Charges,
+      rcmStep4Charges,
       exitEdit,
       handleClose,
       input,
@@ -437,8 +433,8 @@ class PSAInputForm extends React.Component<Props, State> {
     const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false)
     const violentChargeList = violentArrestCharges.get(selectedOrganizationId, Map());
     const violentCourtChargeList = violentCourtCharges.get(selectedOrganizationId, Map());
-    const dmfStep2ChargeList = dmfStep2Charges.get(selectedOrganizationId, Map());
-    const dmfStep4ChargeList = dmfStep4Charges.get(selectedOrganizationId, Map());
+    const rcmStep2ChargeList = rcmStep2Charges.get(selectedOrganizationId, Map());
+    const rcmStep4ChargeList = rcmStep4Charges.get(selectedOrganizationId, Map());
     const bookingReleaseExceptionChargeList = bookingReleaseExceptionCharges.get(selectedOrganizationId, Map());
     const bookingHoldExceptionChargeList = bookingHoldExceptionCharges.get(selectedOrganizationId, Map());
 
@@ -446,7 +442,7 @@ class PSAInputForm extends React.Component<Props, State> {
     const {
       step2Charges,
       step4Charges
-    } = getDMFStepChargeLabels({ currCharges, dmfStep2ChargeList, dmfStep4ChargeList });
+    } = getRCMStepChargeLabels({ currCharges, rcmStep2ChargeList, rcmStep4ChargeList });
     const {
       currentBHECharges,
       currentNonBHECharges,
@@ -591,7 +587,7 @@ class PSAInputForm extends React.Component<Props, State> {
               includesPretrialModule
                 ? (
                   <>
-                    <PaddedHeader>DMF Information</PaddedHeader>
+                    <PaddedHeader>RCM Information</PaddedHeader>
 
                     {
                       this.renderTFQuestionRow(
@@ -717,8 +713,8 @@ function mapStateToProps(state :Immutable.Map<*, *>) :Object {
     [CHARGES.COURT]: charges.get(CHARGES.COURT),
     [CHARGES.ARREST_VIOLENT]: charges.get(CHARGES.ARREST_VIOLENT),
     [CHARGES.COURT_VIOLENT]: charges.get(CHARGES.COURT_VIOLENT),
-    [CHARGES.DMF_STEP_2]: charges.get(CHARGES.DMF_STEP_2),
-    [CHARGES.DMF_STEP_4]: charges.get(CHARGES.DMF_STEP_4),
+    [CHARGES.RCM_STEP_2]: charges.get(CHARGES.RCM_STEP_2),
+    [CHARGES.RCM_STEP_4]: charges.get(CHARGES.RCM_STEP_4),
     [CHARGES.BRE]: charges.get(CHARGES.BRE),
     [CHARGES.BHE]: charges.get(CHARGES.BHE),
     [CHARGES.LOADING]: charges.get(CHARGES.LOADING),
