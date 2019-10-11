@@ -8,7 +8,6 @@ import { Map, List } from 'immutable';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { Redirect, Route, Switch } from 'react-router-dom';
-import { Constants } from 'lattice';
 
 import { faChevronRight } from '@fortawesome/pro-light-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -24,22 +23,11 @@ import PersonCases from '../../components/people/PersonCases';
 import PSAModal from '../psamodal/PSAModal';
 import ViewMoreLink from '../../components/buttons/ViewMoreLink';
 import { formatPeopleInfo, getPSAIdsFromNeighbors } from '../../utils/PeopleUtils';
-import { getChargeHistory } from '../../utils/CaseUtils';
 import { OL } from '../../utils/consts/Colors';
 import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import {
-  getEntityProperties,
-  getEntityKeyId,
-  getIdOrValue,
-  getNeighborDetailsForEntitySet
-} from '../../utils/DataUtils';
-import {
-  getScheduledHearings,
-  getPastHearings,
-  getAvailableHearings,
-  getHearingsIdsFromNeighbors
-} from '../../utils/HearingUtils';
+import { getEntityProperties, getEntityKeyId } from '../../utils/DataUtils';
+import { getScheduledHearings, getHearingsIdsFromNeighbors } from '../../utils/HearingUtils';
 import {
   SUBMIT,
   PEOPLE,
@@ -60,15 +48,8 @@ import * as PeopleActionFactory from './PeopleActionFactory';
 import * as ReviewActionFactory from '../review/ReviewActionFactory';
 import * as PSAModalActionFactory from '../psamodal/PSAModalActionFactory';
 
-const { OPENLATTICE_ID_FQN } = Constants;
-
 const {
-  BONDS,
   CONTACT_INFORMATION,
-  OUTCOMES,
-  DMF_RESULTS,
-  DMF_RISK_FACTORS,
-  RELEASE_CONDITIONS,
   REMINDERS,
   MANUAL_REMINDERS,
   SPEAKER_RECOGNITION_PROFILES
@@ -133,7 +114,6 @@ type Props = {
     }) => void,
     loadHearingNeighbors :(hearingIds :string[]) => void,
     checkPSAPermissions :() => void,
-    refreshPSANeighbors :({ id :string }) => void,
     clearSubmit :() => void,
 
   },
@@ -201,12 +181,6 @@ class PersonDetailsContainer extends React.Component<Props, State> {
     actions.clearPerson();
   }
 
-  refreshPSANeighborsCallback = () => {
-    const { actions, mostRecentPSA } = this.props;
-    const mostRecentPSAEntityKeyId = getEntityKeyId(mostRecentPSA.get(PSA_NEIGHBOR.DETAILS, Map()));
-    actions.refreshPSANeighbors({ id: mostRecentPSAEntityKeyId });
-  }
-
   handleStatusChange = () => {
     this.setState({ closing: false });
   }
@@ -235,8 +209,7 @@ class PersonDetailsContainer extends React.Component<Props, State> {
             defaultFailureReasons={scores.get(PROPERTY_TYPES.FAILURE_REASON, List()).toJS()}
             openModal={this.openModal}
             onClose={() => this.setState({ closePSAButtonActive: false, closing: false, open: false })}
-            onSubmit={this.handleStatusChange}
-            onStatusChangeCallback={this.refreshPSANeighborsCallback} />
+            onSubmit={this.handleStatusChange} />
       )
       : (
         <PSAModal
@@ -324,35 +297,14 @@ class PersonDetailsContainer extends React.Component<Props, State> {
       loadingPSAData,
       loadingPSAResults,
       isFetchingPersonData,
-      neighbors,
-      personId,
       psaNeighborsById,
       mostRecentPSA,
       selectedOrganizationId,
       selectedPersonData
     } = this.props;
     const { [ENTITY_KEY_ID]: personEKID } = getEntityProperties(selectedPersonData, [ENTITY_KEY_ID]);
-    const personHearingsWithOutcomes = neighbors.get(APP_TYPES.HEARINGS, List()).filter((hearing) => {
-      const id = hearing.getIn([OPENLATTICE_ID_FQN, 0], '');
-      const hasOutcome = !!hearingNeighborsById.getIn([id, OUTCOMES]);
-      return hasOutcome;
-    });
-    const chargeHistory = getChargeHistory(neighbors);
     const mostRecentPSAEntityKeyId = getEntityKeyId(mostRecentPSA.get(PSA_NEIGHBOR.DETAILS, Map()));
     const neighborsForMostRecentPSA = psaNeighborsById.get(mostRecentPSAEntityKeyId, Map());
-    const psaId = mostRecentPSA.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.GENERAL_ID, 0], '');
-    const dmfId = getIdOrValue(neighborsForMostRecentPSA, DMF_RESULTS);
-    const context = getIdOrValue(neighborsForMostRecentPSA, DMF_RISK_FACTORS, PROPERTY_TYPES.CONTEXT);
-    const hearingsWithOutcomes = hearingNeighborsById
-      .keySeq().filter(id => hearingNeighborsById.getIn([id, OUTCOMES]));
-    const scheduledHearings = getScheduledHearings(personHearingsWithOutcomes);
-    const pastHearings = getPastHearings(personHearingsWithOutcomes);
-    const availableHearings = getAvailableHearings(personHearings, scheduledHearings, hearingNeighborsById);
-    const defaultOutcome = getNeighborDetailsForEntitySet(neighborsForMostRecentPSA, OUTCOMES);
-    const defaultDMF = getNeighborDetailsForEntitySet(neighborsForMostRecentPSA, DMF_RESULTS);
-    const defaultBond = getNeighborDetailsForEntitySet(neighborsForMostRecentPSA, BONDS);
-    const defaultConditions = neighborsForMostRecentPSA.get(RELEASE_CONDITIONS, List())
-      .map(neighbor => neighbor.get(PSA_NEIGHBOR.DETAILS, Map()));
 
     const isLoading = (
       isLoadingHearingsNeighbors
@@ -364,24 +316,12 @@ class PersonDetailsContainer extends React.Component<Props, State> {
 
     return (
       <PersonHearings
-          availableHearings={availableHearings}
-          chargeHistory={chargeHistory}
-          defaultBond={defaultBond}
-          defaultConditions={defaultConditions}
-          defaultDMF={defaultDMF}
-          defaultOutcome={defaultOutcome}
-          dmfId={dmfId}
           hearings={personHearings}
-          hearingsWithOutcomes={hearingsWithOutcomes}
           loading={isLoading}
-          scheduledHearings={scheduledHearings}
           neighbors={neighborsForMostRecentPSA}
           hearingNeighborsById={hearingNeighborsById}
-          pastHearings={pastHearings}
-          personId={personId}
           personEKID={personEKID}
-          psaEntityKeyId={mostRecentPSAEntityKeyId}
-          psaId={psaId} />
+          psaEntityKeyId={mostRecentPSAEntityKeyId} />
     );
   }
 
