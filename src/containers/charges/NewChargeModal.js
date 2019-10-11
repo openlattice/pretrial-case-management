@@ -90,8 +90,8 @@ const INITIAL_STATE = {
   [PROPERTY_TYPES.REFERENCE_CHARGE_DEGREE]: '',
   [PROPERTY_TYPES.REFERENCE_CHARGE_LEVEL]: '',
   [PROPERTY_TYPES.CHARGE_IS_VIOLENT]: false,
-  [PROPERTY_TYPES.CHARGE_DMF_STEP_2]: false,
-  [PROPERTY_TYPES.CHARGE_DMF_STEP_4]: false,
+  [PROPERTY_TYPES.CHARGE_RCM_STEP_2]: false,
+  [PROPERTY_TYPES.CHARGE_RCM_STEP_4]: false,
   [PROPERTY_TYPES.BHE]: false,
   [PROPERTY_TYPES.BRE]: false
 };
@@ -152,8 +152,8 @@ class NewChargeModal extends React.Component<Props, State> {
       [PROPERTY_TYPES.REFERENCE_CHARGE_LEVEL]: degree,
       [PROPERTY_TYPES.REFERENCE_CHARGE_DEGREE]: degreeShort,
       [PROPERTY_TYPES.CHARGE_IS_VIOLENT]: isViolent,
-      [PROPERTY_TYPES.CHARGE_DMF_STEP_2]: isStep2,
-      [PROPERTY_TYPES.CHARGE_DMF_STEP_4]: isStep4,
+      [PROPERTY_TYPES.CHARGE_RCM_STEP_2]: isStep2,
+      [PROPERTY_TYPES.CHARGE_RCM_STEP_4]: isStep4,
       [PROPERTY_TYPES.BHE]: isBHE,
       [PROPERTY_TYPES.BRE]: isBRE
     });
@@ -168,8 +168,8 @@ class NewChargeModal extends React.Component<Props, State> {
       PROPERTY_TYPES.REFERENCE_CHARGE_LEVEL,
       PROPERTY_TYPES.REFERENCE_CHARGE_DEGREE,
       PROPERTY_TYPES.CHARGE_IS_VIOLENT,
-      PROPERTY_TYPES.CHARGE_DMF_STEP_2,
-      PROPERTY_TYPES.CHARGE_DMF_STEP_4,
+      PROPERTY_TYPES.CHARGE_RCM_STEP_2,
+      PROPERTY_TYPES.CHARGE_RCM_STEP_4,
       PROPERTY_TYPES.BHE,
       PROPERTY_TYPES.BRE,
     );
@@ -190,8 +190,8 @@ class NewChargeModal extends React.Component<Props, State> {
     const newDegree = state[PROPERTY_TYPES.REFERENCE_CHARGE_LEVEL];
     const newDegreeShort = state[PROPERTY_TYPES.REFERENCE_CHARGE_DEGREE];
     const newIsViolent = state[PROPERTY_TYPES.CHARGE_IS_VIOLENT];
-    const newIsStep2 = state[PROPERTY_TYPES.CHARGE_DMF_STEP_2];
-    const newIsStep4 = state[PROPERTY_TYPES.CHARGE_DMF_STEP_4];
+    const newIsStep2 = state[PROPERTY_TYPES.CHARGE_RCM_STEP_2];
+    const newIsStep4 = state[PROPERTY_TYPES.CHARGE_RCM_STEP_4];
     const newIsBHE = state[PROPERTY_TYPES.BHE];
     const newIsBRE = state[PROPERTY_TYPES.BRE];
     let newChargeFields = {
@@ -203,8 +203,8 @@ class NewChargeModal extends React.Component<Props, State> {
       newChargeFields = Object.assign({}, newChargeFields, {
         [PROPERTY_TYPES.REFERENCE_CHARGE_DEGREE]: [newDegreeShort],
         [PROPERTY_TYPES.REFERENCE_CHARGE_LEVEL]: [newDegree],
-        [PROPERTY_TYPES.CHARGE_DMF_STEP_2]: [newIsStep2],
-        [PROPERTY_TYPES.CHARGE_DMF_STEP_4]: [newIsStep4],
+        [PROPERTY_TYPES.CHARGE_RCM_STEP_2]: [newIsStep2],
+        [PROPERTY_TYPES.CHARGE_RCM_STEP_4]: [newIsStep4],
         [PROPERTY_TYPES.BHE]: [newIsBHE],
         [PROPERTY_TYPES.BRE]: [newIsBRE]
       });
@@ -335,8 +335,8 @@ class NewChargeModal extends React.Component<Props, State> {
                       degreeShort={state[PROPERTY_TYPES.REFERENCE_CHARGE_DEGREE]}
                       existingCharge={existingCharge}
                       isViolent={state[PROPERTY_TYPES.CHARGE_IS_VIOLENT]}
-                      isStep2={state[PROPERTY_TYPES.CHARGE_DMF_STEP_2]}
-                      isStep4={state[PROPERTY_TYPES.CHARGE_DMF_STEP_4]}
+                      isStep2={state[PROPERTY_TYPES.CHARGE_RCM_STEP_2]}
+                      isStep4={state[PROPERTY_TYPES.CHARGE_RCM_STEP_4]}
                       isBHE={state[PROPERTY_TYPES.BHE]}
                       isBRE={state[PROPERTY_TYPES.BRE]}
                       handleCheckboxChange={this.handleCheckboxChange}
