@@ -1,6 +1,7 @@
 /*
  * @flow
  */
+import { RCM_FIELDS } from './RCMResultsConsts';
 
 export const MAX_PAGE = 5;
 
@@ -145,11 +146,11 @@ export const NOTES = {
   [PSA.PRIOR_FAILURE_TO_APPEAR_RECENT]: 'priorFailureToAppearRecentNotes',
   [PSA.PRIOR_FAILURE_TO_APPEAR_OLD]: 'priorFailureToAppearOldNotes',
   [PSA.PRIOR_SENTENCE_TO_INCARCERATION]: 'priorSentenceToIncarcerationNotes',
-  [DMF.EXTRADITED]: 'extraditedNotes',
-  [DMF.STEP_2_CHARGES]: 'dmfStep2ChargesNotes',
-  [DMF.STEP_4_CHARGES]: 'dmfStep4ChargesNotes',
-  [DMF.SECONDARY_RELEASE_CHARGES]: 'dmfSecondaryReleaseChargesNotes',
-  [DMF.SECONDARY_HOLD_CHARGES]: 'dmfSecondaryHoldChargesNotes'
+  [RCM_FIELDS.EXTRADITED]: 'extraditedNotes',
+  [RCM_FIELDS.STEP_2_CHARGES]: 'rcmStep2ChargesNotes',
+  [RCM_FIELDS.STEP_4_CHARGES]: 'rcmStep4ChargesNotes',
+  [RCM_FIELDS.SECONDARY_RELEASE_CHARGES]: 'rcmSecondaryReleaseChargesNotes',
+  [RCM_FIELDS.SECONDARY_HOLD_CHARGES]: 'rcmSecondaryHoldChargesNotes'
 };
 
 export const CONTEXT = {

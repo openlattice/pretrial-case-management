@@ -6,13 +6,31 @@ import { Map } from 'immutable';
 import { PROPERTY_TYPES } from './consts/DataModelConsts';
 import { SETTINGS, RCM, RCM_DATA } from './consts/AppSettingConsts';
 import {
+  RESULT_CATEGORIES,
   COLOR_MAP,
   BOOKING_CONDITIONS,
-  RESULTS
+  RESULTS,
+  RELEASE_TYPE_HEADERS,
+  RELEASE_TYPES
 } from './consts/RCMResultsConsts';
 
 const bookingHoldConditions = [{ [PROPERTY_TYPES.TYPE]: BOOKING_CONDITIONS.HOLD }];
 const bookingReleaseConditions = [{ [PROPERTY_TYPES.TYPE]: BOOKING_CONDITIONS.RELEASE }];
+
+export const getHeaderText = (rcm) => {
+  const releaseType = rcm[RESULT_CATEGORIES.RELEASE_TYPE];
+  const conditionsLevel = rcm[RESULT_CATEGORIES.CONDITIONS_LEVEL];
+  switch (releaseType) {
+    case RELEASE_TYPES.RELEASE:
+      return `${RELEASE_TYPE_HEADERS[RELEASE_TYPES.RELEASE]} (Level ${conditionsLevel})`;
+    case RELEASE_TYPES.RELEASE_WITH_CONDITIONS:
+      return `${RELEASE_TYPE_HEADERS[RELEASE_TYPES.RELEASE_WITH_CONDITIONS]} (Level ${conditionsLevel})`;
+    case RELEASE_TYPES.MAXIMUM_CONDITIONS:
+      return `${RELEASE_TYPE_HEADERS[RELEASE_TYPES.MAXIMUM_CONDITIONS]} (Level ${conditionsLevel})`;
+    default:
+      return '';
+  }
+};
 
 export const getRCMSettings = (settings :Map) => settings.get(SETTINGS.RCM, Map());
 export const getRCMConditions = (rcmSettings :Map) => rcmSettings.get(RCM.CONDITIONS, Map());
@@ -73,7 +91,6 @@ export const getRCMDecision = (ncaScore :number, ftaScore :number, settings :Map
 
   const bookingConditions = resultLevel.get(RCM_DATA.BOOKING_HOLD, false)
     ? bookingHoldConditions : bookingReleaseConditions;
-
   if (resultLevel.size && resultReleastType && resultColor) {
     return {
       [RESULTS.RCM]: rcm,

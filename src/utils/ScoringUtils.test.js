@@ -1,25 +1,24 @@
 import Immutable, { fromJS } from 'immutable';
 import psaScenarios from './consts/test/ScoringTestConsts';
-import dmfScenarios from './consts/test/RCMTestConsts';
-import { getScoresAndRiskFactors, calculateDMF } from './ScoringUtils';
-import { DMF } from './consts/Consts';
+import rcmScenarios from './consts/test/RCMTestConsts';
+import { getScoresAndRiskFactors, calculateRCM } from './ScoringUtils';
 import { PROPERTY_TYPES } from './consts/DataModelConsts';
-import { RESULTS } from './consts/RCMResultsConsts';
+import { RESULTS, RCM_FIELDS } from './consts/RCMResultsConsts';
 
 describe('ScoringUtils', () => {
 
   describe('Score values', () => {
 
-    describe('Score DMFs', () => {
-      dmfScenarios.forEach((scenario, index) => {
-        test(`should correctly score DMF scenario ${index}`, () => {
-          const inputData = Immutable.fromJS(scenario.inputData).set(DMF.COURT_OR_BOOKING);
+    describe('Score RCMs', () => {
+      rcmScenarios.forEach((scenario, index) => {
+        test(`should correctly score RCM scenario ${index}`, () => {
+          const inputData = Immutable.fromJS(scenario.inputData).set(RCM_FIELDS.COURT_OR_BOOKING);
           const settings = fromJS(scenario.settings);
           const {
             [RESULTS.RCM]: rcm,
             [RESULTS.COURT_CONDITIONS]: courtConditions,
             [RESULTS.BOOKING_CONDITIONS]: bookingConditions
-          } = calculateDMF(inputData, Immutable.fromJS(scenario.scores), settings);
+          } = calculateRCM(inputData, Immutable.fromJS(scenario.scores), settings);
 
           expect(rcm[PROPERTY_TYPES.COLOR])
             .toEqual(scenario.expected[RESULTS.RCM][PROPERTY_TYPES.COLOR]);

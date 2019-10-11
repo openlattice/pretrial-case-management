@@ -33,7 +33,7 @@ export const getViolentChargeLabels = ({ currCharges, violentChargeList }) => {
   return currentViolentCharges;
 };
 
-export const getDMFStepChargeLabels = ({ currCharges, dmfStep2ChargeList, dmfStep4ChargeList }) => {
+export const getRCMStepChargeLabels = ({ currCharges, rcmStep2ChargeList, rcmStep4ChargeList }) => {
   let step2Charges = List();
   let step4Charges = List();
 
@@ -42,11 +42,11 @@ export const getDMFStepChargeLabels = ({ currCharges, dmfStep2ChargeList, dmfSte
     let isStep4 = false;
     const { statute, description } = getChargeFields(charge);
 
-    if (dmfStep2ChargeList) {
-      isStep2 = dmfStep2ChargeList.get(statute, Set()).includes(description);
+    if (rcmStep2ChargeList) {
+      isStep2 = rcmStep2ChargeList.get(statute, Set()).includes(description);
     }
-    if (dmfStep4ChargeList) {
-      isStep4 = dmfStep4ChargeList.get(statute, Set()).includes(description);
+    if (rcmStep4ChargeList) {
+      isStep4 = rcmStep4ChargeList.get(statute, Set()).includes(description);
     }
 
     if (isStep2) step2Charges = step2Charges.push(getChargeTitle(charge, true));

@@ -52,8 +52,10 @@ export const APP_TYPES = {
   COURT_CHARGE_LIST: 'publicsafety.courtchargelist',
   COURTHOUSES: 'app.courthouses',
   COURTROOMS: 'app.courtrooms',
-  DMF_RESULTS: 'app.rcm',
-  DMF_RISK_FACTORS: 'app.rcmriskfactors',
+  RCM_RESULTS: 'app.rcm',
+  RCM_RISK_FACTORS: 'app.rcmriskfactors',
+  RCM_BOOKING_CONDITIONS: 'app.bookingreleaseconditions',
+  RCM_COURT_CONDITIONS: 'app.courtreleaseconditions',
   EDITED_BY: 'app.editedby',
   FTAS: 'app.ftas',
   HEARINGS: 'app.hearings',
@@ -176,8 +178,8 @@ export const PROPERTY_TYPES = {
   REFERENCE_CHARGE_LEVEL: 'ol.level',
   REFERENCE_CHARGE_DEGREE: 'ol.levelstate',
   CHARGE_IS_VIOLENT: 'ol.violent',
-  CHARGE_DMF_STEP_2: 'ol.dmfstep2indicator',
-  CHARGE_DMF_STEP_4: 'ol.dmfstep4indicator',
+  CHARGE_RCM_STEP_2: 'ol.dmfstep2indicator',
+  CHARGE_RCM_STEP_4: 'ol.dmfstep4indicator',
   BHE: 'ol.bheindicator',
   BRE: 'ol.breindicator',
 
@@ -262,22 +264,22 @@ export const PROPERTY_TYPES = {
   PRIOR_FAILURE_TO_APPEAR_OLD_NOTES: 'psa.PriorFailureToAppearOlderThanTwoYearsNotes',
   PRIOR_SENTENCE_TO_INCARCERATION_NOTES: 'psa.PriorSentenceToIncarcerationNotes',
 
-  // DMF risk factors entity type consts
+  // RCM risk factors entity type consts
   EXTRADITED: 'justice.extradited',
-  DMF_STEP_2_CHARGES: 'justice.dmfstep2',
-  DMF_STEP_4_CHARGES: 'justice.dmfstep4',
-  DMF_SECONDARY_RELEASE_CHARGES: 'justice.dmfsecondaryreleasecharges',
-  DMF_SECONDARY_HOLD_CHARGES: 'justice.dmfsecondaryholdcharges',
+  RCM_STEP_2_CHARGES: 'justice.dmfstep2',
+  RCM_STEP_4_CHARGES: 'justice.dmfstep4',
+  RCM_SECONDARY_RELEASE_CHARGES: 'justice.dmfsecondaryreleasecharges',
+  RCM_SECONDARY_HOLD_CHARGES: 'justice.dmfsecondaryholdcharges',
   CONTEXT: 'general.context',
 
-  // DMF risk factor notes entity type consts
+  // RCM risk factor notes entity type consts
   EXTRADITED_NOTES: 'justice.extraditednotes',
-  DMF_STEP_2_CHARGES_NOTES: 'justice.dmfstep2notes',
-  DMF_STEP_4_CHARGES_NOTES: 'justice.dmfstep4notes',
-  DMF_SECONDARY_RELEASE_CHARGES_NOTES: 'justice.dmfsecondaryreleasechargesnotes',
-  DMF_SECONDARY_HOLD_CHARGES_NOTES: 'justice.dmfsecondaryholdchargesnotes',
+  RCM_STEP_2_CHARGES_NOTES: 'justice.dmfstep2notes',
+  RCM_STEP_4_CHARGES_NOTES: 'justice.dmfstep4notes',
+  RCM_SECONDARY_RELEASE_CHARGES_NOTES: 'justice.dmfsecondaryreleasechargesnotes',
+  RCM_SECONDARY_HOLD_CHARGES_NOTES: 'justice.dmfsecondaryholdchargesnotes',
 
-  // DMF result entity type consts
+  // RCM result entity type consts
   COLOR: 'general.color',
   RELEASE_TYPE: 'criminaljustice.releasetype',
   CONDITIONS_LEVEL: 'justice.conditionslevel',

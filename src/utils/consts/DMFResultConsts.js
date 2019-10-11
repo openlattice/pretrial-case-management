@@ -66,7 +66,7 @@ export const CONDITION_LABELS = {
 };
 
 // NCA score -> FTA score -> PSA CONTEXT
-export const DMF_RESULTS = {
+export const RCM_RESULTS = {
   1: {
     1: {
       [CONTEXT.COURT_PENN]: {

@@ -4,11 +4,8 @@
 import Immutable from 'immutable';
 import { PROPERTY_TYPES } from './consts/DataModelConsts';
 import { SETTINGS } from './consts/AppSettingConsts';
-import {
-  PSA,
-  DMF,
-  NOTES
-} from './consts/Consts';
+import { RCM_FIELDS } from './consts/RCMResultsConsts';
+import { PSA, NOTES } from './consts/Consts';
 import {
   getRCMDecision,
   increaseRCMSeverity,
@@ -17,6 +14,15 @@ import {
   shouldCheckForSecondaryHold,
   updateRCMSecondaryHold
 } from './RCMUtils';
+
+const {
+  EXTRADITED,
+  STEP_2_CHARGES,
+  STEP_4_CHARGES,
+  COURT_OR_BOOKING,
+  SECONDARY_RELEASE_CHARGES,
+  SECONDARY_HOLD_CHARGES,
+} = RCM_FIELDS;
 
 const {
   AGE_AT_CURRENT_ARREST,
@@ -276,66 +282,62 @@ export function getScoresAndRiskFactors(psaForm :Immutable.Map<*, *>) :{} {
   return { riskFactors, scores, scoreTotals };
 }
 
-export const stepTwoIncrease = (dmfRiskFactors, psaRiskFactors, psaScores) => {
-  const extradited = dmfRiskFactors.getIn([PROPERTY_TYPES.EXTRADITED, 0]);
-  const chargeMatch = dmfRiskFactors.getIn([PROPERTY_TYPES.DMF_STEP_2_CHARGES, 0]);
+export const stepTwoIncrease = (rcmRiskFactors, psaRiskFactors, psaScores) => {
+  const extradited = rcmRiskFactors.getIn([PROPERTY_TYPES.EXTRADITED, 0]);
+  const chargeMatch = rcmRiskFactors.getIn([PROPERTY_TYPES.RCM_STEP_2_CHARGES, 0]);
   const violent = psaRiskFactors.getIn([PROPERTY_TYPES.CURRENT_VIOLENT_OFFENSE, 0])
     && psaScores.getIn([PROPERTY_TYPES.NVCA_FLAG, 0]);
   return extradited || chargeMatch || violent;
 };
 
-export const stepFourIncrease = (dmfRiskFactors, psaRiskFactors, psaScores) => {
-  const chargeMatch = dmfRiskFactors.getIn([PROPERTY_TYPES.DMF_STEP_4_CHARGES, 0]);
+export const stepFourIncrease = (rcmRiskFactors, psaRiskFactors, psaScores) => {
+  const chargeMatch = rcmRiskFactors.getIn([PROPERTY_TYPES.RCM_STEP_4_CHARGES, 0]);
   const violentRisk = !psaRiskFactors.getIn([PROPERTY_TYPES.CURRENT_VIOLENT_OFFENSE, 0])
     && psaScores.getIn([PROPERTY_TYPES.NVCA_FLAG, 0]);
   return chargeMatch || violentRisk;
 };
 
-export const dmfSecondaryReleaseDecrease = (dmfRiskFactors, psaScores) => {
-  const context = dmfRiskFactors.getIn([PROPERTY_TYPES.CONTEXT, 0]);
-  const nca = psaScores.getIn([PROPERTY_TYPES.NCA_SCALE, 0]);
-  const fta = psaScores.getIn([PROPERTY_TYPES.FTA_SCALE, 0]);
-  const chargeMatch = dmfRiskFactors.getIn([PROPERTY_TYPES.DMF_SECONDARY_RELEASE_CHARGES, 0], false);
-  return shouldCheckForSecondaryRelease(context, nca, fta) && chargeMatch;
+export const rcmSecondaryReleaseDecrease = (rcm, rcmRiskFactors, settings) => {
+  const conditionsLevel = rcm.getIn([PROPERTY_TYPES.CONDITIONS_LEVEL, 0]);
+  const chargeMatch = rcmRiskFactors.getIn([PROPERTY_TYPES.RCM_SECONDARY_RELEASE_CHARGES, 0], false);
+  return shouldCheckForSecondaryRelease(conditionsLevel, settings) && chargeMatch;
 };
 
-export const dmfSecondaryHoldIncrease = (dmfRiskFactors, psaScores) => {
-  const context = dmfRiskFactors.getIn([PROPERTY_TYPES.CONTEXT, 0]);
-  const nca = psaScores.getIn([PROPERTY_TYPES.NCA_SCALE, 0]);
-  const fta = psaScores.getIn([PROPERTY_TYPES.FTA_SCALE, 0]);
-  const chargeMatch = dmfRiskFactors.getIn([PROPERTY_TYPES.DMF_SECONDARY_HOLD_CHARGES, 0], false);
-  return shouldCheckForSecondaryHold(context, nca, fta) && chargeMatch;
+export const rcmSecondaryHoldIncrease = (rcm, rcmRiskFactors, settings) => {
+  const conditionsLevel = rcm.getIn([PROPERTY_TYPES.CONDITIONS_LEVEL, 0]);
+  const chargeMatch = rcmRiskFactors.getIn([PROPERTY_TYPES.RCM_SECONDARY_HOLD_CHARGES, 0], false);
+  return shouldCheckForSecondaryHold(conditionsLevel, settings) && chargeMatch;
 };
 
-export const getDMFRiskFactors = (inputData) => {
-  const extradited = inputData.get(DMF.EXTRADITED) === 'true';
-  const stepTwo = inputData.get(DMF.STEP_2_CHARGES) === 'true';
-  const stepFour = inputData.get(DMF.STEP_4_CHARGES) === 'true';
-  const secondaryRelease = inputData.get(DMF.SECONDARY_RELEASE_CHARGES) === 'true';
-  const secondaryHold = inputData.get(DMF.SECONDARY_HOLD_CHARGES) === 'true';
-  const context = inputData.get(DMF.COURT_OR_BOOKING);
+export const getRCMRiskFactors = (inputData) => {
+  const extradited = inputData.get(EXTRADITED) === 'true';
+  const stepTwo = inputData.get(STEP_2_CHARGES) === 'true';
+  const stepFour = inputData.get(STEP_4_CHARGES) === 'true';
+  const secondaryRelease = inputData.get(SECONDARY_RELEASE_CHARGES) === 'true';
+  const secondaryHold = inputData.get(SECONDARY_HOLD_CHARGES) === 'true';
+  const context = inputData.get(COURT_OR_BOOKING);
 
   return {
     [PROPERTY_TYPES.EXTRADITED]: [extradited],
-    [PROPERTY_TYPES.DMF_STEP_2_CHARGES]: [stepTwo],
-    [PROPERTY_TYPES.DMF_STEP_4_CHARGES]: [stepFour],
-    [PROPERTY_TYPES.DMF_SECONDARY_RELEASE_CHARGES]: [secondaryRelease],
-    [PROPERTY_TYPES.DMF_SECONDARY_HOLD_CHARGES]: [secondaryHold],
+    [PROPERTY_TYPES.RCM_STEP_2_CHARGES]: [stepTwo],
+    [PROPERTY_TYPES.RCM_STEP_4_CHARGES]: [stepFour],
+    [PROPERTY_TYPES.RCM_SECONDARY_RELEASE_CHARGES]: [secondaryRelease],
+    [PROPERTY_TYPES.RCM_SECONDARY_HOLD_CHARGES]: [secondaryHold],
     [PROPERTY_TYPES.CONTEXT]: [context]
   };
 };
 
-export const calculateDMF = (inputData, scores, settings) => {
-  const context = inputData.get(DMF.COURT_OR_BOOKING);
+export const calculateRCM = (inputData, scores, settings) => {
+  const context = inputData.get(COURT_OR_BOOKING);
   const nca = scores.getIn([PROPERTY_TYPES.NCA_SCALE, 0]);
   const fta = scores.getIn([PROPERTY_TYPES.FTA_SCALE, 0]);
-  const extradited = inputData.get(DMF.EXTRADITED) === 'true';
-  const stepTwo = inputData.get(DMF.STEP_2_CHARGES) === 'true';
+  const extradited = inputData.get(EXTRADITED) === 'true';
+  const stepTwo = inputData.get(STEP_2_CHARGES) === 'true';
   const currentViolentOffense = inputData.get(PSA.CURRENT_VIOLENT_OFFENSE) === 'true';
   const nvca = scores.getIn([PROPERTY_TYPES.NVCA_FLAG, 0]);
   const violent = currentViolentOffense && nvca;
   const violentRisk = !currentViolentOffense && nvca;
-  const stepFour = inputData.get(DMF.STEP_4_CHARGES) === 'true' || violentRisk;
+  const stepFour = inputData.get(STEP_4_CHARGES) === 'true' || violentRisk;
 
   let rcmResult = getRCMDecision(nca, fta, settings);
 
@@ -352,8 +354,8 @@ export const calculateDMF = (inputData, scores, settings) => {
     }
   }
   if (includeSecondaryBookingCharges) {
-    const secondaryRelease = inputData.get(DMF.SECONDARY_RELEASE_CHARGES) === 'true';
-    const secondaryHold = inputData.get(DMF.SECONDARY_HOLD_CHARGES) === 'true';
+    const secondaryRelease = inputData.get(SECONDARY_RELEASE_CHARGES) === 'true';
+    const secondaryHold = inputData.get(SECONDARY_HOLD_CHARGES) === 'true';
     const conditionLevel = rcmResult.rcm[PROPERTY_TYPES.CONDITIONS_LEVEL];
     if (!stepFour && shouldCheckForSecondaryRelease(conditionLevel, settings) && secondaryRelease) {
       rcmResult = updateRCMSecondaryRelease(rcmResult);

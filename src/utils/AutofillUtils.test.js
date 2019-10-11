@@ -1,6 +1,7 @@
 import Immutable, { Map, Set, fromJS } from 'immutable';
 
-import { CHARGE, PSA, DMF } from './consts/Consts';
+import { PSA } from './consts/Consts';
+import { RCM_FIELDS } from './consts/RCMResultsConsts';
 import { PROPERTY_TYPES } from './consts/DataModelConsts';
 
 import {
@@ -115,13 +116,13 @@ import {
 
   tryAutofillPriorSentenceToIncarceration,
 
-  tryAutofillDMFStepTwo,
+  tryAutofillRCMStepTwo,
 
-  tryAutofillDMFStepFour,
+  tryAutofillRCMStepFour,
 
-  tryAutofillDMFSecondaryReleaseCharges,
+  tryAutofillRCMSecondaryReleaseCharges,
 
-  tryAutofillDMFSecondaryHoldCharges,
+  tryAutofillRCMSecondaryHoldCharges,
 
   tryAutofillFields
 } from './AutofillUtils';
@@ -129,26 +130,26 @@ import {
 const { STEP_TWO, STEP_FOUR, ALL_VIOLENT } = CHARGE_VALUES;
 const violentCourtChargeList = fromJS(ODYSSEY_VIOLENT_CHARGES);
 let violentChargeList = Map();
-let dmfStep2ChargeList = Map();
-let dmfStep4ChargeList = Map();
+let rcmStep2ChargeList = Map();
+let rcmStep4ChargeList = Map();
 let bookingReleaseExceptionChargeList = Map();
 let bookingHoldExceptionChargeList = Map();
 
 fromJS(STEP_TWO).forEach((charge) => {
   const statute = charge.getIn([PROPERTY_TYPES.CHARGE_STATUTE, 0], '');
   const description = charge.getIn([PROPERTY_TYPES.CHARGE_DESCRIPTION, 0], '');
-  dmfStep2ChargeList = dmfStep2ChargeList.set(
+  rcmStep2ChargeList = rcmStep2ChargeList.set(
     statute,
-    dmfStep2ChargeList.get(statute, Set()).add(description)
+    rcmStep2ChargeList.get(statute, Set()).add(description)
   );
 });
 
 fromJS(STEP_FOUR).forEach((charge) => {
   const statute = charge.getIn([PROPERTY_TYPES.CHARGE_STATUTE, 0], '');
   const description = charge.getIn([PROPERTY_TYPES.CHARGE_DESCRIPTION, 0], '');
-  dmfStep4ChargeList = dmfStep4ChargeList.set(
+  rcmStep4ChargeList = rcmStep4ChargeList.set(
     statute,
-    dmfStep4ChargeList.get(statute, Set()).add(description)
+    rcmStep4ChargeList.get(statute, Set()).add(description)
   );
 });
 
@@ -1361,13 +1362,13 @@ describe('AutofillUtils', () => {
 
   });
 
-  describe('Q11 DMF Step two charge logic', () => {
+  describe('Q11 RCM Step two charge logic', () => {
 
     describe('tryStepTwo', () => {
 
       test('should return true or false depending whether any charges match the step 2 list', () => {
 
-        expect(tryAutofillDMFStepTwo(
+        expect(tryAutofillRCMStepTwo(
           Immutable.List.of(
             MOCK_VIOLENT_CHARGE_1,
             MOCK_VIOLENT_CHARGE_2,
@@ -1378,10 +1379,10 @@ describe('AutofillUtils', () => {
             MOCK_BHE_CHARGE_1,
             MOCK_BHE_CHARGE_2
           ),
-          dmfStep2ChargeList
+          rcmStep2ChargeList
         )).toEqual('true');
 
-        expect(tryAutofillDMFStepTwo(
+        expect(tryAutofillRCMStepTwo(
           Immutable.List.of(
             MOCK_VIOLENT_CHARGE_1,
             MOCK_VIOLENT_CHARGE_2,
@@ -1390,26 +1391,26 @@ describe('AutofillUtils', () => {
             MOCK_BHE_CHARGE_1,
             MOCK_BHE_CHARGE_2
           ),
-          dmfStep2ChargeList
+          rcmStep2ChargeList
         )).toEqual('false');
 
-        expect(tryAutofillDMFStepTwo(
+        expect(tryAutofillRCMStepTwo(
           Immutable.List.of(
             MOCK_STEP_2_CHARGE_V_1
           ),
-          dmfStep2ChargeList
+          rcmStep2ChargeList
         )).toEqual('true');
 
-        expect(tryAutofillDMFStepTwo(
+        expect(tryAutofillRCMStepTwo(
           Immutable.List.of(
             MOCK_STEP_2_CHARGE_V_2
           ),
-          dmfStep2ChargeList
+          rcmStep2ChargeList
         )).toEqual('true');
 
-        expect(tryAutofillDMFStepTwo(
+        expect(tryAutofillRCMStepTwo(
           Immutable.List(),
-          dmfStep2ChargeList
+          rcmStep2ChargeList
         )).toEqual('false');
 
       });
@@ -1418,13 +1419,13 @@ describe('AutofillUtils', () => {
 
   });
 
-  describe('Q12 DMF Step four charge logic', () => {
+  describe('Q12 RCM Step four charge logic', () => {
 
-    describe('tryAutofillDMFStepFour', () => {
+    describe('tryAutofillRCMStepFour', () => {
 
       test('should return true or false depending whether any charges match the step 4 list', () => {
 
-        expect(tryAutofillDMFStepFour(
+        expect(tryAutofillRCMStepFour(
           Immutable.List.of(
             MOCK_VIOLENT_CHARGE_1,
             MOCK_VIOLENT_CHARGE_2,
@@ -1435,10 +1436,10 @@ describe('AutofillUtils', () => {
             MOCK_BHE_CHARGE_1,
             MOCK_BHE_CHARGE_2
           ),
-          dmfStep4ChargeList
+          rcmStep4ChargeList
         )).toEqual('true');
 
-        expect(tryAutofillDMFStepFour(
+        expect(tryAutofillRCMStepFour(
           Immutable.List.of(
             MOCK_VIOLENT_CHARGE_1,
             MOCK_VIOLENT_CHARGE_2,
@@ -1447,26 +1448,26 @@ describe('AutofillUtils', () => {
             MOCK_BHE_CHARGE_1,
             MOCK_BHE_CHARGE_2
           ),
-          dmfStep4ChargeList
+          rcmStep4ChargeList
         )).toEqual('false');
 
-        expect(tryAutofillDMFStepFour(
+        expect(tryAutofillRCMStepFour(
           Immutable.List.of(
             MOCK_STEP_4_CHARGE_NV
           ),
-          dmfStep4ChargeList
+          rcmStep4ChargeList
         )).toEqual('true');
 
-        expect(tryAutofillDMFStepFour(
+        expect(tryAutofillRCMStepFour(
           Immutable.List.of(
             MOCK_STEP_4_CHARGE_V
           ),
-          dmfStep4ChargeList
+          rcmStep4ChargeList
         )).toEqual('true');
 
-        expect(tryAutofillDMFStepFour(
+        expect(tryAutofillRCMStepFour(
           Immutable.List(),
-          dmfStep4ChargeList
+          rcmStep4ChargeList
         )).toEqual('false');
 
       });
@@ -1477,11 +1478,11 @@ describe('AutofillUtils', () => {
 
   describe('Q13 BHE secondary release charge logic', () => {
 
-    describe('tryAutofillDMFSecondaryReleaseCharges', () => {
+    describe('tryAutofillRCMSecondaryReleaseCharges', () => {
 
       test('should return true or false depending whether all charges match the BHE list', () => {
 
-        expect(tryAutofillDMFSecondaryReleaseCharges(
+        expect(tryAutofillRCMSecondaryReleaseCharges(
           Immutable.List.of(
             MOCK_VIOLENT_CHARGE_1,
             MOCK_VIOLENT_CHARGE_2,
@@ -1495,7 +1496,7 @@ describe('AutofillUtils', () => {
           bookingHoldExceptionChargeList
         )).toEqual('false');
 
-        expect(tryAutofillDMFSecondaryReleaseCharges(
+        expect(tryAutofillRCMSecondaryReleaseCharges(
           Immutable.List.of(
             MOCK_VIOLENT_CHARGE_1,
             MOCK_VIOLENT_CHARGE_2,
@@ -1507,7 +1508,7 @@ describe('AutofillUtils', () => {
           bookingHoldExceptionChargeList
         )).toEqual('false');
 
-        expect(tryAutofillDMFSecondaryReleaseCharges(
+        expect(tryAutofillRCMSecondaryReleaseCharges(
           Immutable.List.of(
             MOCK_BHE_CHARGE_1
           ),
@@ -1515,14 +1516,14 @@ describe('AutofillUtils', () => {
         )).toEqual('true');
 
 
-        expect(tryAutofillDMFSecondaryReleaseCharges(
+        expect(tryAutofillRCMSecondaryReleaseCharges(
           Immutable.List.of(
             MOCK_BHE_CHARGE_2
           ),
           bookingHoldExceptionChargeList
         )).toEqual('true');
 
-        expect(tryAutofillDMFSecondaryReleaseCharges(
+        expect(tryAutofillRCMSecondaryReleaseCharges(
           Immutable.List.of(
             MOCK_BHE_CHARGE_1,
             MOCK_BHE_CHARGE_2
@@ -1530,7 +1531,7 @@ describe('AutofillUtils', () => {
           bookingHoldExceptionChargeList
         )).toEqual('true');
 
-        expect(tryAutofillDMFSecondaryReleaseCharges(
+        expect(tryAutofillRCMSecondaryReleaseCharges(
           Immutable.List.of(
             MOCK_BHE_CHARGE_1,
             MOCK_BHE_CHARGE_1
@@ -1538,7 +1539,7 @@ describe('AutofillUtils', () => {
           bookingHoldExceptionChargeList
         )).toEqual('true');
 
-        expect(tryAutofillDMFSecondaryReleaseCharges(
+        expect(tryAutofillRCMSecondaryReleaseCharges(
           Immutable.List(),
           bookingHoldExceptionChargeList
         )).toEqual('false');
@@ -1550,11 +1551,11 @@ describe('AutofillUtils', () => {
 
   describe('Q14 BHE secondary hold charge logic', () => {
 
-    describe('tryAutofillDMFSecondaryHoldCharges', () => {
+    describe('tryAutofillRCMSecondaryHoldCharges', () => {
 
       test('should return true or false depending whether any charges match the BRE list', () => {
 
-        expect(tryAutofillDMFSecondaryHoldCharges(
+        expect(tryAutofillRCMSecondaryHoldCharges(
           Immutable.List.of(
             MOCK_VIOLENT_CHARGE_1,
             MOCK_VIOLENT_CHARGE_2,
@@ -1568,7 +1569,7 @@ describe('AutofillUtils', () => {
           bookingReleaseExceptionChargeList
         )).toEqual('true');
 
-        expect(tryAutofillDMFSecondaryHoldCharges(
+        expect(tryAutofillRCMSecondaryHoldCharges(
           Immutable.List.of(
             MOCK_VIOLENT_CHARGE_1,
             MOCK_VIOLENT_CHARGE_2,
@@ -1580,21 +1581,21 @@ describe('AutofillUtils', () => {
           bookingReleaseExceptionChargeList
         )).toEqual('false');
 
-        expect(tryAutofillDMFSecondaryHoldCharges(
+        expect(tryAutofillRCMSecondaryHoldCharges(
           Immutable.List.of(
             MOCK_BRE_CHARGE_1
           ),
           bookingReleaseExceptionChargeList
         )).toEqual('true');
 
-        expect(tryAutofillDMFSecondaryHoldCharges(
+        expect(tryAutofillRCMSecondaryHoldCharges(
           Immutable.List.of(
             MOCK_BRE_CHARGE_2
           ),
           bookingReleaseExceptionChargeList
         )).toEqual('true');
 
-        expect(tryAutofillDMFSecondaryHoldCharges(
+        expect(tryAutofillRCMSecondaryHoldCharges(
           Immutable.List.of(
             MOCK_BRE_CHARGE_1,
             MOCK_BRE_CHARGE_2
@@ -1602,7 +1603,7 @@ describe('AutofillUtils', () => {
           bookingReleaseExceptionChargeList
         )).toEqual('true');
 
-        expect(tryAutofillDMFSecondaryHoldCharges(
+        expect(tryAutofillRCMSecondaryHoldCharges(
           Immutable.List.of(
             MOCK_BRE_CHARGE_1,
             MOCK_BRE_CHARGE_1
@@ -1610,7 +1611,7 @@ describe('AutofillUtils', () => {
           bookingReleaseExceptionChargeList
         )).toEqual('true');
 
-        expect(tryAutofillDMFSecondaryHoldCharges(
+        expect(tryAutofillRCMSecondaryHoldCharges(
           Immutable.List())).toEqual('false');
 
       });
@@ -1668,8 +1669,8 @@ describe('AutofillUtils', () => {
           Immutable.Map(),
           violentChargeList,
           violentCourtChargeList,
-          dmfStep2ChargeList,
-          dmfStep4ChargeList,
+          rcmStep2ChargeList,
+          rcmStep4ChargeList,
           bookingReleaseExceptionChargeList,
           bookingHoldExceptionChargeList
         )).toEqual(Immutable.fromJS({
@@ -1682,10 +1683,10 @@ describe('AutofillUtils', () => {
           [PSA.PRIOR_FAILURE_TO_APPEAR_RECENT]: '2',
           [PSA.PRIOR_FAILURE_TO_APPEAR_OLD]: 'true',
           [PSA.PRIOR_SENTENCE_TO_INCARCERATION]: 'true',
-          [DMF.STEP_2_CHARGES]: 'false',
-          [DMF.STEP_4_CHARGES]: 'true',
-          [DMF.SECONDARY_RELEASE_CHARGES]: 'false',
-          [DMF.SECONDARY_HOLD_CHARGES]: 'false'
+          [RCM_FIELDS.STEP_2_CHARGES]: 'false',
+          [RCM_FIELDS.STEP_4_CHARGES]: 'true',
+          [RCM_FIELDS.SECONDARY_RELEASE_CHARGES]: 'false',
+          [RCM_FIELDS.SECONDARY_HOLD_CHARGES]: 'false'
         }));
       });
 
@@ -1721,8 +1722,8 @@ describe('AutofillUtils', () => {
           Immutable.Map(),
           violentChargeList,
           violentCourtChargeList,
-          dmfStep2ChargeList,
-          dmfStep4ChargeList,
+          rcmStep2ChargeList,
+          rcmStep4ChargeList,
           bookingReleaseExceptionChargeList,
           bookingHoldExceptionChargeList
         )).toEqual(Immutable.fromJS({
@@ -1735,10 +1736,10 @@ describe('AutofillUtils', () => {
           [PSA.PRIOR_FAILURE_TO_APPEAR_RECENT]: '1',
           [PSA.PRIOR_FAILURE_TO_APPEAR_OLD]: 'false',
           [PSA.PRIOR_SENTENCE_TO_INCARCERATION]: 'false',
-          [DMF.STEP_2_CHARGES]: 'true',
-          [DMF.STEP_4_CHARGES]: 'false',
-          [DMF.SECONDARY_RELEASE_CHARGES]: 'false',
-          [DMF.SECONDARY_HOLD_CHARGES]: 'false'
+          [RCM_FIELDS.STEP_2_CHARGES]: 'true',
+          [RCM_FIELDS.STEP_4_CHARGES]: 'false',
+          [RCM_FIELDS.SECONDARY_RELEASE_CHARGES]: 'false',
+          [RCM_FIELDS.SECONDARY_HOLD_CHARGES]: 'false'
         }));
       });
 
@@ -1767,8 +1768,8 @@ describe('AutofillUtils', () => {
           Immutable.Map(),
           violentChargeList,
           violentCourtChargeList,
-          dmfStep2ChargeList,
-          dmfStep4ChargeList,
+          rcmStep2ChargeList,
+          rcmStep4ChargeList,
           bookingReleaseExceptionChargeList,
           bookingHoldExceptionChargeList
         )).toEqual(Immutable.fromJS({
@@ -1781,10 +1782,10 @@ describe('AutofillUtils', () => {
           [PSA.PRIOR_FAILURE_TO_APPEAR_RECENT]: '0',
           [PSA.PRIOR_FAILURE_TO_APPEAR_OLD]: 'false',
           [PSA.PRIOR_SENTENCE_TO_INCARCERATION]: 'false',
-          [DMF.STEP_2_CHARGES]: 'false',
-          [DMF.STEP_4_CHARGES]: 'false',
-          [DMF.SECONDARY_RELEASE_CHARGES]: 'false',
-          [DMF.SECONDARY_HOLD_CHARGES]: 'true'
+          [RCM_FIELDS.STEP_2_CHARGES]: 'false',
+          [RCM_FIELDS.STEP_4_CHARGES]: 'false',
+          [RCM_FIELDS.SECONDARY_RELEASE_CHARGES]: 'false',
+          [RCM_FIELDS.SECONDARY_HOLD_CHARGES]: 'true'
         }));
       });
 
@@ -1829,8 +1830,8 @@ describe('AutofillUtils', () => {
           Immutable.Map(),
           violentChargeList,
           violentCourtChargeList,
-          dmfStep2ChargeList,
-          dmfStep4ChargeList,
+          rcmStep2ChargeList,
+          rcmStep4ChargeList,
           bookingReleaseExceptionChargeList,
           bookingHoldExceptionChargeList
         )).toEqual(Immutable.fromJS({
@@ -1843,10 +1844,10 @@ describe('AutofillUtils', () => {
           [PSA.PRIOR_FAILURE_TO_APPEAR_RECENT]: '0',
           [PSA.PRIOR_FAILURE_TO_APPEAR_OLD]: 'true',
           [PSA.PRIOR_SENTENCE_TO_INCARCERATION]: 'true',
-          [DMF.STEP_2_CHARGES]: 'true',
-          [DMF.STEP_4_CHARGES]: 'true',
-          [DMF.SECONDARY_RELEASE_CHARGES]: 'false',
-          [DMF.SECONDARY_HOLD_CHARGES]: 'true'
+          [RCM_FIELDS.STEP_2_CHARGES]: 'true',
+          [RCM_FIELDS.STEP_4_CHARGES]: 'true',
+          [RCM_FIELDS.SECONDARY_RELEASE_CHARGES]: 'false',
+          [RCM_FIELDS.SECONDARY_HOLD_CHARGES]: 'true'
         }));
       });
 
@@ -1883,8 +1884,8 @@ describe('AutofillUtils', () => {
           Immutable.Map(),
           violentChargeList,
           violentCourtChargeList,
-          dmfStep2ChargeList,
-          dmfStep4ChargeList,
+          rcmStep2ChargeList,
+          rcmStep4ChargeList,
           bookingReleaseExceptionChargeList,
           bookingHoldExceptionChargeList
         )).toEqual(Immutable.fromJS({
@@ -1897,10 +1898,10 @@ describe('AutofillUtils', () => {
           [PSA.PRIOR_FAILURE_TO_APPEAR_RECENT]: '0',
           [PSA.PRIOR_FAILURE_TO_APPEAR_OLD]: 'true',
           [PSA.PRIOR_SENTENCE_TO_INCARCERATION]: 'true',
-          [DMF.STEP_2_CHARGES]: 'false',
-          [DMF.STEP_4_CHARGES]: 'false',
-          [DMF.SECONDARY_RELEASE_CHARGES]: 'true',
-          [DMF.SECONDARY_HOLD_CHARGES]: 'false'
+          [RCM_FIELDS.STEP_2_CHARGES]: 'false',
+          [RCM_FIELDS.STEP_4_CHARGES]: 'false',
+          [RCM_FIELDS.SECONDARY_RELEASE_CHARGES]: 'true',
+          [RCM_FIELDS.SECONDARY_HOLD_CHARGES]: 'false'
         }));
       });
 
@@ -1937,8 +1938,8 @@ describe('AutofillUtils', () => {
           Immutable.Map(),
           violentChargeList,
           violentCourtChargeList,
-          dmfStep2ChargeList,
-          dmfStep4ChargeList,
+          rcmStep2ChargeList,
+          rcmStep4ChargeList,
           bookingReleaseExceptionChargeList,
           bookingHoldExceptionChargeList
         )).toEqual(Immutable.fromJS({
@@ -1951,10 +1952,10 @@ describe('AutofillUtils', () => {
           [PSA.PRIOR_FAILURE_TO_APPEAR_RECENT]: '0',
           [PSA.PRIOR_FAILURE_TO_APPEAR_OLD]: 'true',
           [PSA.PRIOR_SENTENCE_TO_INCARCERATION]: 'true',
-          [DMF.STEP_2_CHARGES]: 'false',
-          [DMF.STEP_4_CHARGES]: 'false',
-          [DMF.SECONDARY_RELEASE_CHARGES]: 'false',
-          [DMF.SECONDARY_HOLD_CHARGES]: 'true'
+          [RCM_FIELDS.STEP_2_CHARGES]: 'false',
+          [RCM_FIELDS.STEP_4_CHARGES]: 'false',
+          [RCM_FIELDS.SECONDARY_RELEASE_CHARGES]: 'false',
+          [RCM_FIELDS.SECONDARY_HOLD_CHARGES]: 'true'
         }));
       });
 

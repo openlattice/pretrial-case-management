@@ -5,11 +5,30 @@
 import { OL } from './Colors';
 import { RCM_DATA } from './AppSettingConsts';
 
+
+export const RCM_FIELDS = {
+  EXTRADITED: 'personWasExtradited',
+  STEP_2_CHARGES: 'rcmStepTwoCharges',
+  STEP_4_CHARGES: 'rcmStepFourCharges',
+  COURT_OR_BOOKING: 'courtOrBooking',
+  SECONDARY_RELEASE_CHARGES: 'rcmSecondaryReleaseCharges',
+  SECONDARY_HOLD_CHARGES: 'rcmSecondaryHoldCharges'
+};
+
+export const NOTES = {
+  [RCM_FIELDS.EXTRADITED]: 'extraditedNotes',
+  [RCM_FIELDS.STEP_2_CHARGES]: 'rcmStep2ChargesNotes',
+  [RCM_FIELDS.STEP_4_CHARGES]: 'rcmStep4ChargesNotes',
+  [RCM_FIELDS.SECONDARY_RELEASE_CHARGES]: 'rcmSecondaryReleaseChargesNotes',
+  [RCM_FIELDS.SECONDARY_HOLD_CHARGES]: 'rcmSecondaryHoldChargesNotes'
+};
+
+
 export const RESULTS = {
   RCM: 'rcm',
   CONDITIONS: 'conditions',
   COURT_CONDITIONS: 'courtConditions',
-  BOOKING_CONDITIONS: 'bookingCondition'
+  BOOKING_CONDITIONS: 'bookingConditions'
 };
 
 export const DEFAULT_CONDITIONS = {
@@ -25,10 +44,7 @@ export const DEFAULT_CONDITIONS = {
 export const RESULT_CATEGORIES = {
   COLOR: 'COLOR',
   RELEASE_TYPE: 'RELEASE_TYPE',
-  CONDITIONS_LEVEL: 'CONDITIONS_LEVEL',
-  CONDITION_1: 'CONDITION_1',
-  CONDITION_2: 'CONDITION_2',
-  CONDITION_3: 'CONDITION_3'
+  CONDITIONS_LEVEL: 'CONDITIONS_LEVEL'
 };
 
 export const COLORS = {
@@ -40,6 +56,7 @@ export const COLORS = {
   RED: 'RED'
 };
 
+
 export const COLOR_MAP = {
   [OL.BLUE02]: 'BLUE',
   [OL.GREEN01]: 'DARK_GREEN',
@@ -47,6 +64,25 @@ export const COLOR_MAP = {
   [OL.YELLOW02]: 'YELLOW',
   [OL.ORANGE01]: 'ORANGE',
   [OL.RED01]: 'RED'
+};
+
+export const COLOR_RESULTS_MAP = {
+  BLUE: OL.BLUE02,
+  DARK_GREEN: OL.GREEN01,
+  LIGHT_GREEN: OL.GREEN02,
+  YELLOW: OL.YELLOW02,
+  ORANGE: OL.ORANGE01,
+  RED: OL.RED01
+};
+
+
+export const TEXT_COLOR_MAPPINGS = {
+  [OL.BLUE02]: OL.GREY15,
+  [OL.GREEN01]: OL.WHITE,
+  [OL.GREEN02]: OL.GREY15,
+  [OL.YELLOW02]: OL.GREY15,
+  [OL.ORANGE01]: OL.GREY15,
+  [OL.RED01]: OL.GREY15
 };
 
 export const RELEASE_TYPES = {

@@ -6,7 +6,7 @@ import { APP_TYPES, PROPERTY_TYPES } from './DataModelConsts';
 
 const {
   ASSESSED_BY,
-  DMF_RESULTS,
+  RCM_RESULTS,
   PEOPLE,
   PSA_RISK_FACTORS,
   PSA_SCORES,
@@ -31,7 +31,7 @@ export const SUMMARY_REPORT = {
     [PROPERTY_TYPES.NCA_SCALE]: 'NCA',
     [PROPERTY_TYPES.FTA_SCALE]: 'FTA'
   },
-  [DMF_RESULTS]: {
+  [RCM_RESULTS]: {
     S2: 'S2',
     S4: 'S4',
     [PROPERTY_TYPES.COLOR]: 'RCM Color',

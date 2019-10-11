@@ -14,8 +14,8 @@ import { chargeIsMostSerious, historicalChargeIsViolent, getSummaryStats } from 
 import { getSentenceToIncarcerationCaseNums } from './SentenceUtils';
 import { getRecentFTAs, getOldFTAs } from './FTAUtils';
 import { sortPeopleByName } from './PeopleUtils';
-import { getHeaderText, getConditionsTextList } from './DMFUtils';
-import { stepTwoIncrease, stepFourIncrease, dmfSecondaryReleaseDecrease } from './ScoringUtils';
+import { getHeaderText } from './RCMUtils';
+import { stepTwoIncrease, stepFourIncrease, rcmSecondaryReleaseDecrease } from './ScoringUtils';
 import {
   formatValue,
   formatDate,
@@ -399,31 +399,32 @@ const scores = (doc :Object, yInit :number, scoreValues :Immutable.Map<*, *>) :n
   return y;
 };
 
-const dmf = (
+const rcm = (
   doc :Object,
   yInit :number,
-  dmfValues :Immutable.Map<*, *>,
-  dmfRiskFactors :Immutable.Map<*, *>,
+  rcmValues :Immutable.Map<*, *>,
+  rcmRiskFactors :Immutable.Map<*, *>,
+  rcmConditions :Immutable.List<*>,
   psaRiskFactors :Immutable.Map<*, *>,
   psaScores :Immutable.Map<*, *>
 ) :number => {
   let y = yInit;
   doc.setFont('helvetica', 'normal');
-  if (dmfValues.size) {
+  if (rcmValues.size) {
     y += Y_INC_LARGE + 2;
     scoreHeader(doc, y, X_COL_1, 'RCM Result');
     y += Y_INC_LARGE;
-    detailValueText(doc, y, X_COL_1, getHeaderText(dmfValues.toJS()));
+    detailValueText(doc, y, X_COL_1, getHeaderText(rcmValues.toJS()));
     y += Y_INC;
 
     let modificationText;
-    if (stepTwoIncrease(dmfRiskFactors, psaRiskFactors, psaScores)) {
+    if (stepTwoIncrease(rcmRiskFactors, psaRiskFactors, psaScores)) {
       modificationText = 'Step two increase.';
     }
-    else if (stepFourIncrease(dmfRiskFactors, psaRiskFactors, psaScores)) {
+    else if (stepFourIncrease(rcmRiskFactors, psaRiskFactors, psaScores)) {
       modificationText = 'Step four increase.';
     }
-    else if (dmfSecondaryReleaseDecrease(dmfRiskFactors, psaScores)) {
+    else if (rcmSecondaryReleaseDecrease(rcmRiskFactors, psaScores)) {
       modificationText = 'Exception release.';
     }
 
@@ -434,7 +435,7 @@ const dmf = (
       y += Y_INC;
     }
 
-    const conditionsText = getConditionsTextList(dmfValues.toJS()).join(' - ');
+    const conditionsText = rcmConditions.join(' - ');
     if (conditionsText.length) {
       doc.setDrawColor(152);
       doc.setFillColor(255);
@@ -1002,8 +1003,16 @@ const getPDFContents = (
   // SCORES SECTION
   y = scores(doc, y, data.get('scores'));
 
-  // DMF SECTION
-  y = dmf(doc, y, data.get('dmf'), data.get('dmfRiskFactors'), data.get('psaRiskFactors'), data.get('scores'));
+  // RCM SECTION
+  y = rcm(
+    doc,
+    y,
+    data.get('rcm'),
+    data.get('rcmRiskFactors'),
+    data.get('rcmConditions'),
+    data.get('psaRiskFactors'),
+    data.get('scores'),
+  );
   y += Y_INC_LARGE;
 
   // ARREST OR COURT CHARGES SECTION
