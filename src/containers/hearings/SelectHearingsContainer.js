@@ -96,10 +96,10 @@ type Props = {
   hearingNeighborsById :Map<*, *>,
   neighbors :Map<*, *>,
   openClosePSAModal :() => void,
+  psaEntityKeyId :string,
   personEKID :string,
   personHearings :List<*, *>,
   personNeighbors :Map<*, *>,
-  psaEntityKeyId :string,
   psaHearings :List<*, *>,
   psaNeighbors :Map<*, *>,
   readOnly :boolean,
@@ -184,7 +184,7 @@ class SelectHearingsContainer extends React.Component<Props, State> {
     });
   }
 
-  renderSelectReleaseCondtions = (selectedHearing) => {
+  renderSelectReleaseConditions = (selectedHearing) => {
     const { entityKeyId } = selectedHearing;
     const { openClosePSAModal } = this.props;
     return (
@@ -321,7 +321,7 @@ class SelectHearingsContainer extends React.Component<Props, State> {
         }
         <hr />
         { selectingReleaseConditions
-          ? this.renderSelectReleaseCondtions(selectedHearing)
+          ? this.renderSelectReleaseConditions(selectedHearing)
           : this.renderAvailableHearings(manuallyCreatingHearing, scheduledHearings)
         }
       </>
