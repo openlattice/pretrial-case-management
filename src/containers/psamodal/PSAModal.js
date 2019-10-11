@@ -419,7 +419,8 @@ class PSAModal extends React.Component<Props, State> {
     const existingBookingCondition = psaNeighbors.getIn([RCM_BOOKING_CONDITIONS, 0], Map());
     const existingBookingConditionType = existingBookingCondition.getIn([PSA_NEIGHBOR.DETAILS, TYPE, 0], '');
     const ekid = getEntityKeyId(existingBookingCondition);
-    return (existingBookingConditionType !== newBookingCondition[TYPE]) ? { ekid, newBookingCondition } : null;
+    return (existingBookingConditionType !== newBookingCondition[TYPE])
+      ? { ekid, newBookingCondition } : { ekid: '', newBookingCondition: {} };
   }
 
   getCourtConditionsEdit = (newCourtConditions) => {
