@@ -73,14 +73,14 @@ import {
   clearReleaseConditions,
   loadReleaseConditions,
   submitReleaseConditions,
-  updateOutcomesAndReleaseCondtions,
+  updateOutcomesAndReleaseConditions,
 } from './ReleaseConditionsActionFactory';
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
 const {
   CHECKIN_APPOINTMENTS,
-  DMF_RESULTS,
+  RCM_RESULTS,
   JUDGES,
   PEOPLE,
   PSA_SCORES,
@@ -201,14 +201,14 @@ type Props = {
   selectedOrganizationId :string,
   selectedOrganizationSettings :Map<*, *>,
   submitReleaseConditionsReqState :RequestState,
-  updateOutcomesAndReleaseCondtionsReqState :RequestState,
+  updateOutcomesAndReleaseConditionsReqState :RequestState,
   actions :{
     clearReleaseConditions :() => void;
     loadReleaseConditions :(values :{ hearingId :string }) => void,
     submitReleaseConditions :(values :{
       bondAmount :string,
       bondType :string,
-      dmfResultsEKID :string,
+      rcmResultsEKID :string,
       hearingEKID :string,
       judgeAccepted :boolean,
       outcomeSelection :Object,
@@ -218,11 +218,11 @@ type Props = {
       releaseConditions :Object[],
       releaseType :string
     }) => void,
-    updateOutcomesAndReleaseCondtions :(values :{
+    updateOutcomesAndReleaseConditions :(values :{
       bondEntity :Object,
       bondEntityKeyId :string,
       deleteConditions :string[],
-      dmfResultsEKID :string,
+      rcmResultsEKID :string,
       hearingEKID :string,
       outcomeEntity :Object,
       outcomeEntityKeyId :string,
@@ -373,18 +373,18 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
     const defaultCheckInAppointments = hearingNeighbors.get(CHECKIN_APPOINTMENTS, List());
     const defaultBond = hearingNeighbors.get(BONDS_FQN, Map());
     const defaultConditions = hearingNeighbors.get(RELEASE_CONDITIONS_FQN, List());
-    const defaultDMF = psaNeighbors.getIn([DMF_RESULTS, PSA_NEIGHBOR.DETAILS], Map());
+    const defaultRCM = psaNeighbors.getIn([RCM_RESULTS, PSA_NEIGHBOR.DETAILS], Map());
     const psaEntity = hearingNeighbors.getIn([PSA_SCORES, PSA_NEIGHBOR.DETAILS], Map());
     const personEntity = hearingNeighbors.getIn([PEOPLE, PSA_NEIGHBOR.DETAILS], Map());
     let defaultOutcome = hearingNeighbors.get(OUTCOMES_FQN, Map());
 
-    defaultOutcome = defaultOutcome.size ? defaultOutcome : defaultDMF;
+    defaultOutcome = defaultOutcome.size ? defaultOutcome : defaultRCM;
 
     return {
       defaultCheckInAppointments,
       defaultBond,
       defaultConditions,
-      defaultDMF,
+      defaultRCM,
       defaultOutcome,
       psaEntity,
       personEntity
@@ -727,7 +727,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
     const {
       defaultBond,
       defaultConditions,
-      defaultDMF,
+      defaultRCM,
       defaultOutcome,
       psaEntity,
       personEntity
@@ -740,12 +740,12 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
     const psaId = getFirstNeighborValue(psaEntity, PROPERTY_TYPES.GENERAL_ID);
     const psaScoresEKID = getFirstNeighborValue(psaEntity, ENTITY_KEY_ID);
     const personEKID = getFirstNeighborValue(personEntity, ENTITY_KEY_ID);
-    const dmfResultsEKID = getFirstNeighborValue(defaultDMF, ENTITY_KEY_ID);
+    const rcmResultsEKID = getFirstNeighborValue(defaultRCM, ENTITY_KEY_ID);
 
     const outcomeShouldSubmit = !getFirstNeighborValue(defaultOutcome, PROPERTY_TYPES.OUTCOME);
     const outcomeShouldReplace = !outcomeShouldSubmit;
 
-    const releaseType = getFirstNeighborValue(defaultDMF, PROPERTY_TYPES.RELEASE_TYPE);
+    const releaseType = getFirstNeighborValue(defaultRCM, PROPERTY_TYPES.RELEASE_TYPE);
     const judgeAccepted = (outcome === OUTCOMES.ACCEPTED);
 
     const outcomeEntityKeyId = getEntityKeyId(defaultOutcome);
@@ -851,11 +851,11 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       });
     }
     if (editingHearing) {
-      actions.updateOutcomesAndReleaseCondtions({
+      actions.updateOutcomesAndReleaseConditions({
         bondEntity,
         bondEntityKeyId,
         deleteConditions,
-        dmfResultsEKID,
+        rcmResultsEKID,
         hearingEKID: hearingEntityKeyId,
         outcomeEntity,
         outcomeEntityKeyId,
@@ -870,7 +870,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       actions.submitReleaseConditions({
         bondAmount,
         bondType,
-        dmfResultsEKID,
+        rcmResultsEKID,
         hearingEKID: hearingEntityKeyId,
         judgeAccepted,
         outcomeSelection: outcome,
@@ -1104,11 +1104,11 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       loadReleaseConditionsReqState,
       refreshHearingAndNeighborsReqState,
       submitReleaseConditionsReqState,
-      updateOutcomesAndReleaseCondtionsReqState,
+      updateOutcomesAndReleaseConditionsReqState,
     } = this.props;
     const { state } = this;
     const loadingReleaseConditions = requestIsPending(loadReleaseConditionsReqState);
-    const updatingOutcomesAndReleaseConditions = requestIsPending(updateOutcomesAndReleaseCondtionsReqState);
+    const updatingOutcomesAndReleaseConditions = requestIsPending(updateOutcomesAndReleaseConditionsReqState);
     const submittingReleaseConditions = requestIsPending(submitReleaseConditionsReqState);
     const refreshingHearingAndNeighbors = requestIsPending(refreshHearingAndNeighborsReqState);
     const loading = (
@@ -1172,7 +1172,7 @@ function mapStateToProps(state) {
 
     loadReleaseConditionsReqState: getReqState(releaseConditions, RELEASE_COND_ACTIONS.LOAD_RELEASE_CONDITIONS),
     submitReleaseConditionsReqState: getReqState(releaseConditions, RELEASE_COND_ACTIONS.SUBMIT_RELEASE_CONDITIONS),
-    updateOutcomesAndReleaseCondtionsReqState: getReqState(
+    updateOutcomesAndReleaseConditionsReqState: getReqState(
       releaseConditions, RELEASE_COND_ACTIONS.UPDATE_OUTCOMES_AND_RELEASE_CONDITIONS
     ),
     [RELEASE_COND_DATA.SELECTED_HEARING]: releaseConditions.get(RELEASE_COND_DATA.SELECTED_HEARING),
@@ -1191,7 +1191,7 @@ const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
     clearReleaseConditions,
     loadReleaseConditions,
     submitReleaseConditions,
-    updateOutcomesAndReleaseCondtions,
+    updateOutcomesAndReleaseConditions,
     // Hearings Actions
     refreshHearingAndNeighbors,
     // Check Ins Actions
