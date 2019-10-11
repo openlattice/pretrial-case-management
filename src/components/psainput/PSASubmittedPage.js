@@ -15,7 +15,7 @@ import InfoButton from '../buttons/InfoButton';
 import DropdownButton from '../buttons/DropdownButton';
 import LoadingSpinner from '../LoadingSpinner';
 import LogoLoader from '../LogoLoader';
-import DMFCell from '../dmf/DMFCell';
+import RCMCell from '../rcm/RCMCell';
 import ChargeTable from '../charges/ChargeTable';
 import CaseHistoryTimeline from '../casehistory/CaseHistoryTimeline';
 import RiskFactorsTable from '../riskfactors/RiskFactorsTable';
@@ -29,7 +29,7 @@ import closeXBlackIcon from '../../assets/svg/close-x-black.svg';
 import { OL } from '../../utils/consts/Colors';
 import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { formatDMFFromEntity, getHeaderText } from '../../utils/DMFUtils';
+import { getHeaderText } from '../../utils/RCMUtils';
 import {
   ResultHeader,
   ScaleBlock,
@@ -52,14 +52,14 @@ type Props = {
   isSubmitting :boolean,
   scores :Immutable.Map<*, *>,
   riskFactors :Object,
-  dmf :Object,
+  rcm :Object,
   personId :string,
   personEKID :string,
   psaEKID :string,
   submitSuccess :boolean,
   charges :Immutable.List<*>,
   notes :string,
-  context :string,
+  conditions :List,
   allCases :Immutable.List<*>,
   allCharges :Immutable.Map<*, *>,
   getOnExport :(isCompact :boolean) => void,
@@ -208,7 +208,7 @@ const CreateHearingWrapper = styled.div`
   padding-top: 30px;
 `;
 
-const DMF = styled(WideContainer)`
+const RCM = styled(WideContainer)`
   border-top: 1px solid ${OL.GREY11};
   border-bottom: 1px solid ${OL.GREY11};
   margin-top: 30px;
@@ -383,20 +383,23 @@ class PSASubmittedPage extends React.Component<Props, State> {
     </ScoresContainer>
   );
 
-  renderDMF = () => {
-    const { dmf, selectedOrganizationSettings } = this.props;
+  renderRCM = () => {
+    const {
+      rcm,
+      conditions,
+      selectedOrganizationSettings
+    } = this.props;
     const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
-    const formattedDMF = formatDMFFromEntity(dmf);
 
     return includesPretrialModule
       ? (
-        <DMF>
+        <RCM>
           <ResultHeader>RCM Result</ResultHeader>
           <section>
-            <DMFCell dmf={formattedDMF} selected large />
-            <span>{getHeaderText(formattedDMF)}</span>
+            <RCMCell rcm={rcm} conditions={conditions} large />
+            <span>{getHeaderText(rcm.toJS())}</span>
           </section>
-        </DMF>
+        </RCM>
       ) : null;
   }
 
@@ -567,7 +570,7 @@ class PSASubmittedPage extends React.Component<Props, State> {
     return (
       <>
         {this.renderScores()}
-        {this.renderDMF()}
+        {this.renderRCM()}
         <MinimallyPaddedResultHeader>Charges</MinimallyPaddedResultHeader>
         <WideContainer>
           <ChargeTable
