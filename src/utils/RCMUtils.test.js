@@ -68,14 +68,14 @@ describe('RCMUtils', () => {
   describe('shouldCheckForSecondaryRelease', () => {
 
     test('should return false if level provided is not a booking release level', () => {
+      expect(shouldCheckForSecondaryRelease(1, fromJS(defaultSettings))).toEqual(false);
+      expect(shouldCheckForSecondaryRelease(5, fromJS(defaultSettings))).toEqual(false);
       expect(shouldCheckForSecondaryRelease(6, fromJS(defaultSettings))).toEqual(false);
     });
 
     test('should return true if level provided is a booking release level', () => {
-      expect(shouldCheckForSecondaryRelease(1, fromJS(defaultSettings))).toEqual(true);
       expect(shouldCheckForSecondaryRelease(2, fromJS(defaultSettings))).toEqual(true);
       expect(shouldCheckForSecondaryRelease(3, fromJS(defaultSettings))).toEqual(true);
-      expect(shouldCheckForSecondaryRelease(4, fromJS(defaultSettings))).toEqual(true);
       expect(shouldCheckForSecondaryRelease(4, fromJS(defaultSettings))).toEqual(true);
     });
   });
@@ -100,8 +100,8 @@ describe('RCMUtils', () => {
 
       expect(updateRCMSecondaryRelease(RCM_LEVEL_3)).toEqual({
         [RESULTS.RCM]: {
-          [PROPERTY_TYPES.COLOR]: COLORS.BLUE,
-          [PROPERTY_TYPES.RELEASE_TYPE]: RELEASE_TYPES.RELEASE,
+          [PROPERTY_TYPES.COLOR]: COLORS.LIGHT_GREEN,
+          [PROPERTY_TYPES.RELEASE_TYPE]: RELEASE_TYPES.RELEASE_WITH_CONDITIONS,
           [PROPERTY_TYPES.CONDITIONS_LEVEL]: 3
         },
         [RESULTS.COURT_CONDITIONS]: [
@@ -126,20 +126,6 @@ describe('RCMUtils', () => {
         ]
       });
 
-      expect(updateRCMSecondaryRelease(RCM_LEVEL_4)).toEqual({
-        [RESULTS.RCM]: {
-          [PROPERTY_TYPES.COLOR]: COLORS.ORANGE,
-          [PROPERTY_TYPES.RELEASE_TYPE]: RELEASE_TYPES.RELEASE_WITH_CONDITIONS,
-          [PROPERTY_TYPES.CONDITIONS_LEVEL]: 5
-        },
-        [RESULTS.COURT_CONDITIONS]: [
-          { [PROPERTY_TYPES.TYPE]: DEFAULT_CONDITIONS.CONDITION_5 }
-        ],
-        [RESULTS.BOOKING_CONDITIONS]: [
-          { [PROPERTY_TYPES.TYPE]: BOOKING_CONDITIONS.RELEASE }
-        ]
-      });
-
     });
 
   });
@@ -147,15 +133,15 @@ describe('RCMUtils', () => {
   describe('shouldCheckForSecondaryHold', () => {
 
     test('should return true if level provided is booking hold level', () => {
-      expect(shouldCheckForSecondaryHold(1, defaultSettings)).toEqual(true);
+      expect(shouldCheckForSecondaryHold(1, fromJS(defaultSettings))).toEqual(true);
+      expect(shouldCheckForSecondaryHold(2, fromJS(defaultSettings))).toEqual(true);
+      expect(shouldCheckForSecondaryHold(3, fromJS(defaultSettings))).toEqual(true);
+      expect(shouldCheckForSecondaryHold(4, fromJS(defaultSettings))).toEqual(true);
+      expect(shouldCheckForSecondaryHold(5, fromJS(defaultSettings))).toEqual(true);
     });
 
     test('should return false if level provided is not a booking hold level', () => {
-      expect(shouldCheckForSecondaryHold(2, defaultSettings)).toEqual(false);
-      expect(shouldCheckForSecondaryHold(3, defaultSettings)).toEqual(false);
-      expect(shouldCheckForSecondaryHold(4, defaultSettings)).toEqual(false);
-      expect(shouldCheckForSecondaryHold(4, defaultSettings)).toEqual(false);
-      expect(shouldCheckForSecondaryHold(6, defaultSettings)).toEqual(false);
+      expect(shouldCheckForSecondaryHold(6, fromJS(defaultSettings))).toEqual(false);
     });
   });
 
@@ -183,12 +169,12 @@ describe('RCMUtils', () => {
   describe('getRCMDecision', () => {
 
     test('should return correct RCM for scores and context', () => {
-      expect(getRCMDecision(1, 1, defaultSettings)).toEqual(RCM_LEVEL_1);
-      expect(getRCMDecision(3, 3, defaultSettings)).toEqual(RCM_LEVEL_2);
-      expect(getRCMDecision(2, 5, defaultSettings)).toEqual(RCM_LEVEL_3);
-      expect(getRCMDecision(4, 3, defaultSettings)).toEqual(RCM_LEVEL_4);
-      expect(getRCMDecision(4, 5, defaultSettings)).toEqual(RCM_LEVEL_5);
-      expect(getRCMDecision(6, 6, defaultSettings)).toEqual(RCM_LEVEL_6);
+      expect(getRCMDecision(1, 1, fromJS(defaultSettings))).toEqual(RCM_LEVEL_1);
+      expect(getRCMDecision(3, 3, fromJS(defaultSettings))).toEqual(RCM_LEVEL_2);
+      expect(getRCMDecision(2, 5, fromJS(defaultSettings))).toEqual(RCM_LEVEL_3);
+      expect(getRCMDecision(4, 3, fromJS(defaultSettings))).toEqual(RCM_LEVEL_4);
+      expect(getRCMDecision(4, 5, fromJS(defaultSettings))).toEqual(RCM_LEVEL_5);
+      expect(getRCMDecision(6, 6, fromJS(defaultSettings))).toEqual(RCM_LEVEL_6);
     });
 
   });
@@ -197,11 +183,12 @@ describe('RCMUtils', () => {
 
     test('should increase color, release type, and conditions level for step 4 increase, if possible', () => {
 
-      expect(increaseRCMSeverity(RCM_LEVEL_1)).toEqual(RCM_LEVEL_2);
-      expect(increaseRCMSeverity(RCM_LEVEL_2)).toEqual(RCM_LEVEL_3);
-      expect(increaseRCMSeverity(RCM_LEVEL_3)).toEqual(RCM_LEVEL_4);
-      expect(increaseRCMSeverity(RCM_LEVEL_4)).toEqual(RCM_LEVEL_5);
-      expect(increaseRCMSeverity(RCM_LEVEL_5)).toEqual(RCM_LEVEL_6);
+      expect(increaseRCMSeverity(RCM_LEVEL_1, fromJS(defaultSettings))).toEqual(RCM_LEVEL_2);
+      expect(increaseRCMSeverity(RCM_LEVEL_2, fromJS(defaultSettings))).toEqual(RCM_LEVEL_3);
+      expect(increaseRCMSeverity(RCM_LEVEL_3, fromJS(defaultSettings))).toEqual(RCM_LEVEL_4);
+      expect(increaseRCMSeverity(RCM_LEVEL_4, fromJS(defaultSettings))).toEqual(RCM_LEVEL_5);
+      expect(increaseRCMSeverity(RCM_LEVEL_5, fromJS(defaultSettings))).toEqual(RCM_LEVEL_6);
+      expect(increaseRCMSeverity(RCM_LEVEL_6, fromJS(defaultSettings))).toEqual(RCM_LEVEL_6);
 
     });
 
