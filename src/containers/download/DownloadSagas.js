@@ -1,11 +1,16 @@
 /*
  * @flow
  */
-import Immutable, { fromJS, List, Map } from 'immutable';
 import Papa from 'papaparse';
 import moment from 'moment';
 import { Constants, SearchApi, Models } from 'lattice';
 import { SearchApiActions, SearchApiSagas } from 'lattice-sagas';
+import {
+  fromJS,
+  List,
+  Map,
+  Set
+} from 'immutable';
 import {
   all,
   call,
@@ -47,8 +52,8 @@ const {
   ARREST_CASES,
   BONDS,
   CHARGES,
-  DMF_RESULTS,
-  DMF_RISK_FACTORS,
+  RCM_RESULTS,
+  RCM_RISK_FACTORS,
   HEARINGS,
   MANUAL_CHARGES,
   MANUAL_COURT_CHARGES,
@@ -84,7 +89,7 @@ const DATETIME_FQNS = [
 const getStepTwo = (
   neighborList,
   psaScores,
-  dmfRiskFactorsEntitySetId,
+  rcmRiskFactorsEntitySetId,
   psaRiskFactorsEntitySetId
 ) => {
   const nvca = psaScores.getIn([PROPERTY_TYPES.NVCA_FLAG, 0], false);
@@ -94,10 +99,10 @@ const getStepTwo = (
 
   neighborList.forEach((neighbor) => {
     const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
-    const data = neighbor.get(PSA_NEIGHBOR.DETAILS, Immutable.Map());
-    if (entitySetId === dmfRiskFactorsEntitySetId) {
+    const data = neighbor.get(PSA_NEIGHBOR.DETAILS, Map());
+    if (entitySetId === rcmRiskFactorsEntitySetId) {
       extradited = data.getIn([PROPERTY_TYPES.EXTRADITED, 0], false);
-      step2Charges = data.getIn([PROPERTY_TYPES.DMF_STEP_2_CHARGES, 0], false);
+      step2Charges = data.getIn([PROPERTY_TYPES.RCM_STEP_2_CHARGES, 0], false);
     }
     else if (entitySetId === psaRiskFactorsEntitySetId) {
       currentViolentOffense = data.getIn([PROPERTY_TYPES.CURRENT_VIOLENT_OFFENSE, 0], false);
@@ -110,7 +115,7 @@ const getStepTwo = (
 const getStepFour = (
   neighborList,
   psaScores,
-  dmfRiskFactorsEntitySetId,
+  rcmRiskFactorsEntitySetId,
   psaRiskFactorsEntitySetId
 ) => {
   const nvca = psaScores.getIn([PROPERTY_TYPES.NVCA_FLAG, 0], false);
@@ -119,9 +124,9 @@ const getStepFour = (
 
   neighborList.forEach((neighbor) => {
     const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
-    const data = neighbor.get(PSA_NEIGHBOR.DETAILS, Immutable.Map());
-    if (entitySetId === dmfRiskFactorsEntitySetId) {
-      step4Charges = data.getIn([PROPERTY_TYPES.DMF_STEP_4_CHARGES, 0], false);
+    const data = neighbor.get(PSA_NEIGHBOR.DETAILS, Map());
+    if (entitySetId === rcmRiskFactorsEntitySetId) {
+      step4Charges = data.getIn([PROPERTY_TYPES.RCM_STEP_4_CHARGES, 0], false);
     }
     else if (entitySetId === psaRiskFactorsEntitySetId) {
       currentViolentOffense = data.getIn([PROPERTY_TYPES.CURRENT_VIOLENT_OFFENSE, 0], false);
@@ -153,7 +158,8 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
     const app = yield select(getApp);
     const edm = yield select(getEDM);
     const orgId = yield select(getOrgId);
-    const includesPretrialModule = app.getIn([APP_DATA.SELECTED_ORG_SETTINGS, SETTINGS.MODULES, MODULE.PRETRIAL], false);
+    const includesPretrialModule = app
+      .getIn([APP_DATA.SELECTED_ORG_SETTINGS, SETTINGS.MODULES, MODULE.PRETRIAL], false);
     const entitySetIdsToAppType = app.getIn([APP_DATA.ENTITY_SETS_BY_ORG, orgId]);
 
     /*
@@ -161,8 +167,8 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
      */
     const arrestCasesEntitySetId = getEntitySetIdFromApp(app, ARREST_CASES);
     const bondsEntitySetId = getEntitySetIdFromApp(app, BONDS);
-    const dmfResultsEntitySetId = getEntitySetIdFromApp(app, DMF_RESULTS);
-    const dmfRiskFactorsEntitySetId = getEntitySetIdFromApp(app, DMF_RISK_FACTORS);
+    const rcmResultsEntitySetId = getEntitySetIdFromApp(app, RCM_RESULTS);
+    const rcmRiskFactorsEntitySetId = getEntitySetIdFromApp(app, RCM_RISK_FACTORS);
     const manualPretrialCasesEntitySetId = getEntitySetIdFromApp(app, MANUAL_PRETRIAL_CASES);
     const manualPretrialCourtCasesEntitySetId = getEntitySetIdFromApp(app, MANUAL_PRETRIAL_COURT_CASES);
     const outcomesEntitySetId = getEntitySetIdFromApp(app, OUTCOMES);
@@ -194,9 +200,9 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
 
     const allScoreData = yield call(SearchApi.searchEntitySetData, psaEntitySetId, options);
 
-    let scoresAsMap = Immutable.Map();
+    let scoresAsMap = Map();
     allScoreData.hits.forEach((row) => {
-      scoresAsMap = scoresAsMap.set(row[OPENLATTICE_ID_FQN][0], stripIdField(Immutable.fromJS(row)));
+      scoresAsMap = scoresAsMap.set(row[OPENLATTICE_ID_FQN][0], stripIdField(fromJS(row)));
     });
 
     const neighborsById = yield call(
@@ -206,7 +212,7 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
         filter: {
           entityKeyIds: scoresAsMap.keySeq().toJS(),
           sourceEntitySetIds: [
-            dmfResultsEntitySetId,
+            rcmResultsEntitySetId,
             releaseRecommendationsEntitySetId,
             bondsEntitySetId,
             outcomesEntitySetId,
@@ -215,7 +221,7 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
           destinationEntitySetIds: [
             peopleEntitySetId,
             psaRiskFactorsEntitySetId,
-            dmfRiskFactorsEntitySetId,
+            rcmRiskFactorsEntitySetId,
             pretrialCasesEntitySetId,
             manualPretrialCasesEntitySetId,
             manualPretrialCourtCasesEntitySetId,
@@ -226,14 +232,14 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
       })
     );
     if (neighborsById.error) throw neighborsById.error;
-    let usableNeighborsById = Immutable.Map();
+    let usableNeighborsById = Map();
 
     Object.keys(neighborsById.data).forEach((id) => {
       const psaCreationDate = moment(scoresAsMap.getIn([id, PROPERTY_TYPES.DATE_TIME, 0]));
       const psaWasCreatedInTimeRange = psaCreationDate.isValid()
                 && psaCreationDate.isSameOrAfter(start)
                 && psaCreationDate.isSameOrBefore(end);
-      let usableNeighbors = Immutable.List();
+      let usableNeighbors = List();
       const neighborList = neighborsById.data[id];
       let domainMatch = true;
       neighborList.forEach((neighborObj) => {
@@ -261,7 +267,7 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
           && timestampMoment.isSameOrAfter(start)
           && timestampMoment.isSameOrBefore(end);
         if (psaWasCreatedInTimeRange || neighborsWereEditedInTimeRange) {
-          usableNeighbors = usableNeighbors.push(Immutable.fromJS(neighbor));
+          usableNeighbors = usableNeighbors.push(fromJS(neighbor));
         }
       });
       if (domainMatch && usableNeighbors.size > 0) {
@@ -325,7 +331,7 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
           keyString = `${MANUAL_COURT_CHARGES}|${MANUAL_CHARGES}`;
         }
         const headerString = HEADERS_OBJ[keyString];
-        let newArrayValues = combinedEntity.get(headerString, Immutable.List());
+        let newArrayValues = combinedEntity.get(headerString, List());
         let statute = '';
         let description = '';
         details.keySeq().forEach((fqn) => {
@@ -352,7 +358,7 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
           const headerString = HEADERS_OBJ[keyString];
           const header = filters ? filters[appTypeFqn][fqn] : headerString;
           if (header) {
-            let newArrayValues = combinedEntity.get(header, Immutable.List());
+            let newArrayValues = combinedEntity.get(header, List());
             details.get(fqn).forEach((val) => {
               let newVal = val;
               if (DATETIME_FQNS.includes(fqn)) {
@@ -372,11 +378,11 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
 
       return combinedEntity;
     };
-    let jsonResults = Immutable.List();
-    let allHeaders = Immutable.Set();
+    let jsonResults = List();
+    let allHeaders = Set();
     usableNeighborsById.keySeq().forEach((id) => {
       let combinedEntity = getUpdatedEntity(
-        Immutable.Map(),
+        Map(),
         PSA_SCORES,
         scoresAsMap.get(id)
       );
@@ -394,7 +400,7 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
         combinedEntity = getUpdatedEntity(
           combinedEntity,
           neighborAppTypeFqn,
-          neighbor.get(PSA_NEIGHBOR.DETAILS, Immutable.Map())
+          neighbor.get(PSA_NEIGHBOR.DETAILS, Map())
         );
         allHeaders = allHeaders.union(combinedEntity.keys())
           .sort((header1, header2) => (POSITIONS.indexOf(header1) >= POSITIONS.indexOf(header2) ? 1 : -1));
@@ -403,13 +409,13 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
       combinedEntity = combinedEntity.set('S2', getStepTwo(
         usableNeighborsById.get(id),
         scoresAsMap.get(id),
-        dmfRiskFactorsEntitySetId,
+        rcmRiskFactorsEntitySetId,
         psaRiskFactorsEntitySetId
       ));
       combinedEntity = combinedEntity.set('S4', getStepFour(
         usableNeighborsById.get(id),
         scoresAsMap.get(id),
-        dmfRiskFactorsEntitySetId,
+        rcmRiskFactorsEntitySetId,
         psaRiskFactorsEntitySetId
       ));
 
@@ -469,23 +475,23 @@ function* downloadPSAsByHearingDateWorker(action :SequenceAction) :Generator<*, 
       domain
     } = action.value;
     let noResults = false;
-    let usableNeighborsById = Immutable.Map();
-    let hearingIds = Immutable.Set();
-    let hearingIdsToPSAIds = Immutable.Map();
-    let personIdsToHearingIds = Immutable.Map();
-    let scoresAsMap = Immutable.Map();
+    let usableNeighborsById = Map();
+    let hearingIds = Set();
+    let hearingIdsToPSAIds = Map();
+    let personIdsToHearingIds = Map();
+    let scoresAsMap = Map();
 
     yield put(downloadPSAsByHearingDate.request(action.id, { noResults }));
     const app = yield select(getApp);
     const orgId = yield select(getOrgId);
-    const dmfRiskFactorsEntitySetId = getEntitySetIdFromApp(app, DMF_RISK_FACTORS);
+    const rcmRiskFactorsEntitySetId = getEntitySetIdFromApp(app, RCM_RISK_FACTORS);
     const hearingsEntitySetId = getEntitySetIdFromApp(app, HEARINGS);
     const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
     const psaEntitySetId = getEntitySetIdFromApp(app, PSA_SCORES);
     const psaRiskFactorsEntitySetId = getEntitySetIdFromApp(app, PSA_RISK_FACTORS);
     const staffEntitySetId = getEntitySetIdFromApp(app, STAFF);
     const entitySetIdsToAppType = app.getIn([APP_DATA.ENTITY_SETS_BY_ORG, orgId]);
-    const dmfResultsEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.DMF_RESULTS);
+    const rcmResultsEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.RCM_RESULTS);
     const releaseRecommendationsEntitySetId = getEntitySetIdFromApp(app, RELEASE_RECOMMENDATIONS);
 
     if (selectedHearingData.size) {
@@ -512,7 +518,7 @@ function* downloadPSAsByHearingDateWorker(action :SequenceAction) :Generator<*, 
       })
     );
     if (hearingNeighborsById.error) throw hearingNeighborsById.error;
-    hearingNeighborsById = Immutable.fromJS(hearingNeighborsById.data);
+    hearingNeighborsById = fromJS(hearingNeighborsById.data);
     hearingNeighborsById.entrySeq().forEach(([hearingId, neighbors]) => {
       let hasPerson = false;
       let hasPSA = false;
@@ -559,7 +565,7 @@ function* downloadPSAsByHearingDateWorker(action :SequenceAction) :Generator<*, 
         })
       );
       if (peopleNeighborsById.error) throw peopleNeighborsById.error;
-      peopleNeighborsById = Immutable.fromJS(peopleNeighborsById.data);
+      peopleNeighborsById = fromJS(peopleNeighborsById.data);
 
       peopleNeighborsById.entrySeq().forEach(([id, neighbors]) => {
         let hasValidHearing = false;
@@ -610,11 +616,11 @@ function* downloadPSAsByHearingDateWorker(action :SequenceAction) :Generator<*, 
           filter: {
             entityKeyIds: hearingIdsToPSAIds.valueSeq().toJS(),
             sourceEntitySetIds: [
-              dmfResultsEntitySetId,
+              rcmResultsEntitySetId,
               releaseRecommendationsEntitySetId
             ],
             destinationEntitySetIds: [
-              dmfRiskFactorsEntitySetId,
+              rcmRiskFactorsEntitySetId,
               peopleEntitySetId,
               psaRiskFactorsEntitySetId,
               staffEntitySetId
@@ -638,7 +644,7 @@ function* downloadPSAsByHearingDateWorker(action :SequenceAction) :Generator<*, 
         if (domainMatch) {
           usableNeighborsById = usableNeighborsById.set(
             id,
-            Immutable.fromJS(neighborList)
+            fromJS(neighborList)
           );
         }
       });
@@ -651,7 +657,7 @@ function* downloadPSAsByHearingDateWorker(action :SequenceAction) :Generator<*, 
             const headerString = HEADERS_OBJ[keyString];
             const header = filters ? filters[appTypeFqn][fqn] : headerString;
             if (header) {
-              let newArrayValues = combinedEntity.get(header, Immutable.List());
+              let newArrayValues = combinedEntity.get(header, List());
               details.get(fqn).forEach((val) => {
                 let newVal = val;
                 if (DATETIME_FQNS.includes(fqn)) {
@@ -670,11 +676,11 @@ function* downloadPSAsByHearingDateWorker(action :SequenceAction) :Generator<*, 
           return combinedEntity;
         };
 
-        let jsonResults = Immutable.List();
-        let allHeaders = Immutable.Set();
+        let jsonResults = List();
+        let allHeaders = Set();
         usableNeighborsById.keySeq().forEach((id) => {
           let combinedEntity = getUpdatedEntity(
-            Immutable.Map(),
+            Map(),
             PSA_SCORES,
             scoresAsMap.get(id)
           );
@@ -692,7 +698,7 @@ function* downloadPSAsByHearingDateWorker(action :SequenceAction) :Generator<*, 
             combinedEntity = getUpdatedEntity(
               combinedEntity,
               neighborAppTypeFqn,
-              neighbor.get(PSA_NEIGHBOR.DETAILS, Immutable.Map())
+              neighbor.get(PSA_NEIGHBOR.DETAILS, Map())
             );
             allHeaders = allHeaders.union(combinedEntity.keys())
               .sort((header1, header2) => (POSITIONS.indexOf(header1) >= POSITIONS.indexOf(header2) ? 1 : -1));
@@ -701,13 +707,13 @@ function* downloadPSAsByHearingDateWorker(action :SequenceAction) :Generator<*, 
           combinedEntity = combinedEntity.set('S2', getStepTwo(
             usableNeighborsById.get(id),
             scoresAsMap.get(id),
-            dmfRiskFactorsEntitySetId,
+            rcmRiskFactorsEntitySetId,
             psaRiskFactorsEntitySetId
           ));
           combinedEntity = combinedEntity.set('S4', getStepFour(
             usableNeighborsById.get(id),
             scoresAsMap.get(id),
-            dmfRiskFactorsEntitySetId,
+            rcmRiskFactorsEntitySetId,
             psaRiskFactorsEntitySetId
           ));
 
@@ -768,9 +774,9 @@ function* downloadPSAsByHearingDateWatcher() :Generator<*, *, *> {
 function* getDownloadFiltersWorker(action :SequenceAction) :Generator<*, *, *> {
   try {
     yield put(getDownloadFilters.request(action.id));
-    let courtrooms = Immutable.Map();
-    let options = Immutable.Map();
-    let courtTimeOptions = Immutable.Map();
+    let courtrooms = Map();
+    let options = Map();
+    let courtTimeOptions = Map();
     let noResults = false;
     const { hearingDate } = action.value;
 
@@ -791,7 +797,7 @@ function* getDownloadFiltersWorker(action :SequenceAction) :Generator<*, *, *> {
     };
 
     let allHearingData = yield call(SearchApi.searchEntitySetData, hearingEntitySetId, hearingOptions);
-    allHearingData = Immutable.fromJS(allHearingData.hits);
+    allHearingData = fromJS(allHearingData.hits);
     if (allHearingData.size) {
       allHearingData.forEach((hearing) => {
         const courtTime = hearing.getIn([PROPERTY_TYPES.DATE_TIME, 0]);
@@ -805,7 +811,7 @@ function* getDownloadFiltersWorker(action :SequenceAction) :Generator<*, *, *> {
             const formattedTime = moment(courtTime).format(('HH:mm'));
             options = options.set(
               `${hearingCourtroom} - ${formattedTime}`,
-              options.get(`${hearingCourtroom} - ${formattedTime}`, Immutable.List()).push(hearing)
+              options.get(`${hearingCourtroom} - ${formattedTime}`, List()).push(hearing)
             );
           }
           courtrooms = courtrooms.set(hearingCourtroom, hearingCourtroom);
