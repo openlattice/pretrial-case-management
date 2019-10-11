@@ -1061,22 +1061,22 @@ function* updateScoresAndRiskFactorsWorker(action :SequenceAction) :Generator<*,
     const psaNeighbors = psaScoresNeighborsById.get(scoresEKID, List());
 
     /* Format Neighbors */
-    const psaNeighborsByAppTypeFqn = Map().withMutations((mutbaleMap) => {
+    const psaNeighborsByAppTypeFqn = Map().withMutations((mutable) => {
       psaNeighbors.forEach((neighbor) => {
         const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id']);
         const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
         if (appTypeFqn) {
           if (LIST_ENTITY_SETS.includes(appTypeFqn)) {
-            mutbaleMap.set(
+            mutable.set(
               appTypeFqn,
-              psaNeighborsByAppTypeFqn.get(appTypeFqn, List()).push(fromJS(neighbor))
+              mutable.get(appTypeFqn, List()).push(fromJS(neighbor))
             );
           }
           else if (appTypeFqn === MANUAL_PRETRIAL_CASES || appTypeFqn === MANUAL_PRETRIAL_COURT_CASES) {
-            mutbaleMap.set(MANUAL_PRETRIAL_CASES, neighbor);
+            mutable.set(MANUAL_PRETRIAL_CASES, neighbor);
           }
           else {
-            mutbaleMap.set(appTypeFqn, fromJS(neighbor));
+            mutable.set(appTypeFqn, fromJS(neighbor));
           }
         }
       });
