@@ -361,6 +361,7 @@ export default function peopleReducer(state :Map = INITIAL_STATE, action :Object
       return updateScoresAndRiskFactors.reducer(state, action, {
         SUCCESS: () => {
           const {
+            scoresId,
             newScoreEntity,
             newRCMEntity,
             newNotesEntity
@@ -369,8 +370,7 @@ export default function peopleReducer(state :Map = INITIAL_STATE, action :Object
           let mostRecentPSANeighbors = state.get(PEOPLE.MOST_RECENT_PSA_NEIGHBORS, Map());
           const mostRecentPSAEntityKeyId = getEntityKeyId(mostRecentPSA.get(PSA_NEIGHBOR.DETAILS, Map()));
           const personId = state.getIn([PEOPLE.PERSON_DATA, PROPERTY_TYPES.PERSON_ID, 0], '');
-          const olID = newScoreEntity[OPENLATTICE_ID_FQN][0];
-          if (olID === mostRecentPSAEntityKeyId) {
+          if (scoresId === mostRecentPSAEntityKeyId) {
             mostRecentPSA = mostRecentPSA.set(PSA_NEIGHBOR.DETAILS, fromJS(newScoreEntity));
             mostRecentPSANeighbors = mostRecentPSANeighbors
               .setIn([RCM_RESULTS, PSA_NEIGHBOR.DETAILS], fromJS(newRCMEntity))
@@ -380,7 +380,7 @@ export default function peopleReducer(state :Map = INITIAL_STATE, action :Object
           const newPSAs = state.getIn([PEOPLE.NEIGHBORS, personId, PSA_SCORES], Map())
             .map((psa) => {
               const psaNeighborID = psa.get(PSA_NEIGHBOR.ID);
-              if (psaNeighborID === olID) {
+              if (psaNeighborID === scoresId) {
                 return psa.set(PSA_NEIGHBOR.DETAILS, fromJS(newScoreEntity));
               }
               return psa;
