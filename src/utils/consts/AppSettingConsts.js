@@ -1,4 +1,16 @@
-import { CONTEXT } from './Consts';
+/*
+ * @flow
+ */
+
+export const CONTEXT = {
+  COURT: 'Court',
+  DEMO_ORG: 'Court (Demo)',
+  COURT_MINN: 'Court (Minnehaha)',
+  COURT_LINCOLN: 'Court (Lincoln)',
+  COURT_PENN: 'Court (Pennington)',
+  COURT_SHELBY: 'Court (Shelby)',
+  BOOKING: 'Booking'
+};
 
 export const CASE_CONTEXTS = {
   ARREST: 'arrest',
