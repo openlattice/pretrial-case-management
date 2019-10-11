@@ -10,7 +10,7 @@ import ContentBlock from '../ContentBlock';
 import { OL } from '../../utils/consts/Colors';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
-import { HEADER_LABELS } from '../../utils/consts/DMFResultConsts';
+import { RELEASE_TYPE_HEADERS } from '../../utils/consts/RCMResultsConsts';
 import {
   BOND_TYPES,
   CONDITION_LIST,
@@ -86,12 +86,12 @@ const RowItem = styled.div`
   flex-direction: column;
 `;
 
-const CondtionList = styled.div`
+const ConditionList = styled.div`
   margin-top: 30px;
   list-style: none;
 `;
 
-const HearingSummary = ({ hearing }) => {
+const HearingSummary = ({ hearing } :Props) => {
   const {
     date,
     time,
@@ -107,7 +107,7 @@ const HearingSummary = ({ hearing }) => {
   let decision = HELD;
 
   const coreOutcomes = Object.values(OUTCOMES);
-  const reccomendation = HEADER_LABELS[hearingOutcome.getIn([PROPERTY_TYPES.RELEASE_TYPE, 0])];
+  const reccomendation = RELEASE_TYPE_HEADERS[hearingOutcome.getIn([PROPERTY_TYPES.RELEASE_TYPE, 0])];
   const outcome = hearingOutcome.getIn([PROPERTY_TYPES.OUTCOME, 0]);
   if (hearingBond) {
     bondType = hearingBond.getIn([PROPERTY_TYPES.BOND_TYPE, 0]);
@@ -310,14 +310,14 @@ const HearingSummary = ({ hearing }) => {
       </OutcomeItems>
       { hearingConditions
         ? (
-          <CondtionList>
+          <ConditionList>
             <Headers>
               <RowItem>Start Date</RowItem>
               <RowItem>Condition</RowItem>
               <RowItem>Type</RowItem>
             </Headers>
             {listItems}
-          </CondtionList>
+          </ConditionList>
         )
         : null
       }
