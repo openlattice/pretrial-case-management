@@ -6,6 +6,7 @@
   ],
   "plugins": [
     "flowtype",
+    "import",
     "jest",
     "react"
   ],
@@ -24,7 +25,7 @@
     }
   },
   "rules": {
-    "arrow-body-style": ["error", "as-needed"],
+    "arrow-body-style": ["warn", "as-needed"],
     "brace-style": ["error", "stroustrup"],
     "comma-dangle": ["error", "only-multiline"],
     "function-paren-newline": ["error", "consistent"],
@@ -111,6 +112,12 @@
 
     "jsx-a11y/href-no-hash": "off",
 
+    "react/default-props-match-prop-types": [
+      "error",
+      {
+        "allowRequiredDefaults": true
+      }
+    ],
     "react/forbid-prop-types": "warn",
     "react/jsx-closing-bracket-location": [
       "error",
@@ -127,6 +134,7 @@
     ],
     "react/jsx-indent-props": ["error", 4],
     "react/jsx-one-expression-per-line": "warn",
+    "react/no-did-update-set-state": "warn",
     "react/prefer-stateless-function": "warn",
     "react/require-default-props": [
       "error",
@@ -134,6 +142,8 @@
         "forbidDefaultForRequired": false,
       }
     ],
-    "react/sort-comp": "off"
+    "react/sort-comp": "off",
+    "react/state-in-constructor": ["warn", "always"],
+    "react/static-property-placement": ["error", "static public field"]
   }
 }

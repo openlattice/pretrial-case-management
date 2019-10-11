@@ -302,7 +302,7 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
     let chargesById = Map();
 
     chargesByIdList.forEach((chargeList) => {
-      chargesById = chargesById.merge(fromJS(chargeList));
+      chargesById = chargesById.merge(fromJS(chargeList.data));
     });
 
     Object.keys(caseToChargeTypes).forEach((appTypeFqn) => {
