@@ -3,11 +3,11 @@
  */
 import React from 'react';
 import { DateTime } from 'luxon';
-import Immutable, { Map } from 'immutable';
+import { List, Map } from 'immutable';
 import styled from 'styled-components';
 import { connect } from 'react-redux';
 
-import SummaryDMFDetails from '../dmf/SummaryDMFDetails';
+import SummaryRCMDetails from '../rcm/SummaryRCMDetails';
 import { getEntityProperties, getNeighborDetailsForEntitySet } from '../../utils/DataUtils';
 import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { OL } from '../../utils/consts/Colors';
@@ -30,6 +30,7 @@ import { CHARGES, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
+import { SETTINGS_DATA } from '../../utils/consts/redux/SettingsConsts';
 
 const { MANUAL_PRETRIAL_CASES } = APP_TYPES;
 
@@ -80,19 +81,20 @@ type Props = {
   addCaseToPSA :() => void,
   removeCaseFromPSA :() => void,
   chargeType :string,
-  caseNumbersToAssociationId :Immutable.List,
-  chargeHistoryForMostRecentPSA :Immutable.Map,
-  caseHistoryForMostRecentPSA :Immutable.List,
+  caseNumbersToAssociationId :List,
+  chargeHistoryForMostRecentPSA :Map,
+  caseHistoryForMostRecentPSA :List,
   notes :string,
-  scores :Immutable.Map<*, *>,
-  neighbors :Immutable.Map<*, *>,
-  manualCaseHistory :Immutable.List<*>,
-  chargeHistory :Immutable.List<*>,
-  manualChargeHistory :Immutable.Map<*, *>,
-  pendingCharges :Immutable.List<*>,
+  scores :Map<*, *>,
+  neighbors :Map<*, *>,
+  manualCaseHistory :List<*>,
+  chargeHistory :List<*>,
+  manualChargeHistory :Map<*, *>,
+  pendingCharges :List<*>,
   selectedOrganizationId :string,
-  selectedOrganizationSettings :Immutable.Map<*, *>,
-  violentArrestCharges :Immutable.Map<*, *>,
+  selectedOrganizationSettings :Map<*, *>,
+  settings :Map<*, *>,
+  violentArrestCharges :Map<*, *>,
   psaPermissions :boolean
 };
 
@@ -121,7 +123,7 @@ class PSAModalSummary extends React.Component<Props, *> {
     );
     const pretrialCase = manualCaseHistory
       .filter(caseObj => caseObj.getIn([PROPERTY_TYPES.CASE_ID, 0], '') === caseNum);
-    const charges = manualChargeHistory.get(caseNum, Immutable.List());
+    const charges = manualChargeHistory.get(caseNum, List());
 
     const associatedCasesForForPSA = caseHistoryForMostRecentPSA.filter((caseObj) => {
       const caseNo = caseObj.getIn([PROPERTY_TYPES.CASE_ID, 0]);
@@ -217,11 +219,11 @@ class PSAModalSummary extends React.Component<Props, *> {
   }
 
   renderRCM = () => {
-    const { neighbors, scores } = this.props;
+    const { neighbors, scores, settings } = this.props;
     return (
       <RCMWrapper>
         <ContentHeader>RCM</ContentHeader>
-        <SummaryDMFDetails neighbors={neighbors} scores={scores} />
+        <SummaryRCMDetails neighbors={neighbors} scores={scores} settings={settings} />
       </RCMWrapper>
     );
   }
@@ -257,9 +259,10 @@ class PSAModalSummary extends React.Component<Props, *> {
   }
 }
 
-function mapStateToProps(state :Immutable.Map<*, *>) :Object {
+function mapStateToProps(state :Map<*, *>) :Object {
   const app = state.get(STATE.APP);
   const charges = state.get(STATE.CHARGES);
+  const settings = state.getIn([STATE.SETTINGS, SETTINGS_DATA.APP_SETTINGS]);
   return {
     // App
     [APP_DATA.SELECTED_ORG_ID]: app.get(APP_DATA.SELECTED_ORG_ID),
@@ -268,7 +271,8 @@ function mapStateToProps(state :Immutable.Map<*, *>) :Object {
 
     // Charges
     [CHARGES.ARREST_VIOLENT]: charges.get(CHARGES.ARREST_VIOLENT),
-    [CHARGES.COURT_VIOLENT]: charges.get(CHARGES.COURT_VIOLENT)
+    [CHARGES.COURT_VIOLENT]: charges.get(CHARGES.COURT_VIOLENT),
+    settings
   };
 }
 
