@@ -41,10 +41,10 @@ import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
 import { OL } from '../../utils/consts/Colors';
 import { getEntityProperties, getFirstNeighborValue, getEntityKeyId } from '../../utils/DataUtils';
 import { toISODateTime } from '../../utils/FormattingUtils';
-import { getScoresAndRiskFactors, calculateDMF, getDMFRiskFactors } from '../../utils/ScoringUtils';
+import { getScoresAndRiskFactors, calculateRCM, getRCMRiskFactors } from '../../utils/ScoringUtils';
 import { tryAutofillFields } from '../../utils/AutofillUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { RESULT_CATEGORIES_TO_PROPERTY_TYPES } from '../../utils/consts/DMFResultConsts';
+import { RCM_FIELDS } from '../../utils/consts/RCMResultsConsts';
 import { STATUS_OPTIONS_FOR_PENDING_PSAS } from '../../utils/consts/ReviewPSAConsts';
 import {
   CASE_CONTEXTS,
@@ -54,14 +54,12 @@ import {
 } from '../../utils/consts/AppSettingConsts';
 import {
   CONTEXT,
-  DMF,
   NOTES,
   PSA,
   PSA_STATUSES
 } from '../../utils/consts/Consts';
 import {
   CHARGES,
-  COURT,
   PSA_FORM,
   PSA_NEIGHBOR,
   REVIEW,
@@ -96,14 +94,21 @@ const { OPENLATTICE_ID_FQN } = Constants;
 
 const {
   PSA_RISK_FACTORS,
-  DMF_RESULTS
+  RCM_BOOKING_CONDITIONS,
+  RCM_COURT_CONDITIONS,
+  RCM_RESULTS
 } = APP_TYPES;
 
 const {
+  CONDITION_1,
+  CONDITION_2,
+  CONDITION_3,
   ENTITY_KEY_ID,
   GENERAL_ID,
   RELEASE_RECOMMENDATION
 } = PROPERTY_TYPES;
+
+const conditionProperties = [CONDITION_1, CONDITION_2, CONDITION_3];
 
 const PSARowListHeader = styled.div`
   width: 100%;
@@ -274,7 +279,7 @@ const INITIAL_STATE = Immutable.fromJS({
   status: STATUS_OPTIONS_FOR_PENDING_PSAS.OPEN.value,
   personForm: INITIAL_PERSON_FORM,
   riskFactors: {},
-  dmfRiskFactors: {},
+  rcmRiskFactors: {},
   scores: {
     ftaTotal: 0,
     ncaTotal: 0,
@@ -283,7 +288,7 @@ const INITIAL_STATE = Immutable.fromJS({
     [PROPERTY_TYPES.NCA_SCALE]: [0],
     [PROPERTY_TYPES.NVCA_FLAG]: [false]
   },
-  dmf: {},
+  rcm: {},
   scoresWereGenerated: false,
   psaIdClosing: undefined,
   skipClosePSAs: false,
@@ -333,8 +338,8 @@ type Props = {
   caseLoadsComplete :boolean,
   charges :Immutable.List<*>,
   courtCharges :Immutable.Map<*, *>,
-  dmfStep2Charges :Immutable.Map<*, *>,
-  dmfStep4Charges :Immutable.Map<*, *>,
+  rcmStep2Charges :Immutable.Map<*, *>,
+  rcmStep4Charges :Immutable.Map<*, *>,
   history :string[],
   isLoadingCases :boolean,
   isLoadingNeighbors :boolean,
@@ -367,9 +372,11 @@ type State = {
   state :string,
   personForm :Immutable.Map<*, *>,
   riskFactors :{},
-  dmfRiskFactors :{},
+  rcmRiskFactors :{},
   scores :{},
-  dmf :{},
+  rcm :{},
+  courtConditions :[],
+  bookingConditions :[],
   confirmationModalOpen :boolean,
   scoresWereGenerated :boolean,
   psaIdClosing :?string,
@@ -397,7 +404,7 @@ class Form extends React.Component<Props, State> {
     if (hashSplit.length > 1) {
       const params = qs.parse(hashSplit[1]);
       if (params.context) {
-        const newValues = Immutable.Map().set(DMF.COURT_OR_BOOKING, params.context);
+        const newValues = Immutable.Map().set(RCM_FIELDS.COURT_OR_BOOKING, params.context);
         actions.setPSAValues({ newValues });
         return true;
       }
@@ -412,7 +419,7 @@ class Form extends React.Component<Props, State> {
     if (loadedContextParams) {
       actions.goToPath(`${Routes.PSA_FORM}/1`);
     }
-    else if (!psaForm.get(DMF.COURT_OR_BOOKING)) {
+    else if (!psaForm.get(RCM_FIELDS.COURT_OR_BOOKING)) {
       actions.goToPath(Routes.DASHBOARD);
     }
     else if ((!selectedPerson.size || !scoresWereGenerated) && !window.location.href.endsWith('1')) {
@@ -431,8 +438,8 @@ class Form extends React.Component<Props, State> {
       charges,
       bookingHoldExceptionCharges,
       bookingReleaseExceptionCharges,
-      dmfStep2Charges,
-      dmfStep4Charges,
+      rcmStep2Charges,
+      rcmStep4Charges,
       psaForm,
       selectedOrganizationId,
       selectedPretrialCase,
@@ -441,8 +448,8 @@ class Form extends React.Component<Props, State> {
     } = nextProps;
     const violentArrestChargeList = violentArrestCharges.get(selectedOrganizationId, Map());
     const violentCourtChargeList = violentCourtCharges.get(selectedOrganizationId, Map());
-    const dmfStep2ChargeList = dmfStep2Charges.get(selectedOrganizationId, Map());
-    const dmfStep4ChargeList = dmfStep4Charges.get(selectedOrganizationId, Map());
+    const rcmStep2ChargeList = rcmStep2Charges.get(selectedOrganizationId, Map());
+    const rcmStep4ChargeList = rcmStep4Charges.get(selectedOrganizationId, Map());
     const bookingReleaseExceptionChargeList = bookingReleaseExceptionCharges.get(selectedOrganizationId, Map());
     const bookingHoldExceptionChargeList = bookingHoldExceptionCharges.get(selectedOrganizationId, Map());
     if (nextProps.location.pathname.endsWith('4') && !location.pathname.endsWith('4')) {
@@ -458,8 +465,8 @@ class Form extends React.Component<Props, State> {
           psaForm,
           violentArrestChargeList,
           violentCourtChargeList,
-          dmfStep2ChargeList,
-          dmfStep4ChargeList,
+          rcmStep2ChargeList,
+          rcmStep4ChargeList,
           bookingReleaseExceptionChargeList,
           bookingHoldExceptionChargeList
         )
@@ -486,7 +493,14 @@ class Form extends React.Component<Props, State> {
     return staffId;
   }
 
-  submitEntities = (scores, riskFactors, dmf, dmfRiskFactors) => {
+  submitEntities = (
+    scores,
+    riskFactors,
+    rcm,
+    rcmRiskFactors,
+    bookingConditions,
+    courtConditions
+  ) => {
     const {
       actions,
       arrestId,
@@ -516,36 +530,46 @@ class Form extends React.Component<Props, State> {
       [GENERAL_ID]: [randomUUID()]
     };
 
-    const dmfResultsEntity = {};
-    Object.entries(dmf).forEach(([key, value]) => {
-      dmfResultsEntity[RESULT_CATEGORIES_TO_PROPERTY_TYPES[key]] = value;
-    });
-    dmfResultsEntity[GENERAL_ID] = [randomUUID()];
+    const rcmResultsEntity = rcm;
+    rcmResultsEntity[GENERAL_ID] = [randomUUID()];
 
-    const dmfRiskFactorsEntity = dmfRiskFactors;
-    dmfRiskFactorsEntity[GENERAL_ID] = [randomUUID()];
+    const rcmRiskFactorsEntity = rcmRiskFactors;
+    rcmRiskFactorsEntity[GENERAL_ID] = [randomUUID()];
 
     const caseEntity = selectedPretrialCase.toJS();
     const chargeEntities = charges.toJS();
 
+    const bookingConditionsWithIds = bookingConditions.map((condition) => {
+      const conditionEntity = condition;
+      conditionEntity[GENERAL_ID] = [randomUUID()];
+      return conditionEntity;
+    });
+    const courtConditionsWithIds = courtConditions.map((condition) => {
+      const conditionEntity = condition;
+      conditionEntity[GENERAL_ID] = [randomUUID()];
+      return conditionEntity;
+    });
+
     // Get Case Context from settings and pass to config
-    const caseContext = psaForm.get(DMF.COURT_OR_BOOKING) === CONTEXT.BOOKING ? CONTEXTS.BOOKING : CONTEXTS.COURT;
+    const caseContext = psaForm.get(RCM_FIELDS.COURT_OR_BOOKING) === CONTEXT.BOOKING ? CONTEXTS.BOOKING : CONTEXTS.COURT;
     const chargeType = selectedOrganizationSettings.getIn([SETTINGS.CASE_CONTEXTS, caseContext]);
     const manualCourtCasesAndCharges = (chargeType === CASE_CONTEXTS.COURT);
 
-    if ((dmfResultsEntity[DMF.COURT_OR_BOOKING] !== CONTEXT.BOOKING) || !includesPretrialModule) {
-      delete dmfResultsEntity[DMF.SECONDARY_RELEASE_CHARGES];
-      delete dmfResultsEntity[NOTES[DMF.SECONDARY_RELEASE_CHARGES]];
-      delete dmfResultsEntity[DMF.SECONDARY_HOLD_CHARGES];
-      delete dmfResultsEntity[NOTES[DMF.SECONDARY_HOLD_CHARGES]];
+    if ((rcmResultsEntity[RCM_FIELDS.COURT_OR_BOOKING] !== CONTEXT.BOOKING) || !includesPretrialModule) {
+      delete rcmResultsEntity[RCM_FIELDS.SECONDARY_RELEASE_CHARGES];
+      delete rcmResultsEntity[NOTES[RCM_FIELDS.SECONDARY_RELEASE_CHARGES]];
+      delete rcmResultsEntity[RCM_FIELDS.SECONDARY_HOLD_CHARGES];
+      delete rcmResultsEntity[NOTES[RCM_FIELDS.SECONDARY_HOLD_CHARGES]];
     }
 
     actions.submitPSA({
       arrestCaseEKID: arrestId,
+      bookingConditionsWithIds,
       caseEntity,
       chargeEntities,
-      dmfResultsEntity,
-      dmfRiskFactorsEntity,
+      courtConditionsWithIds,
+      rcmResultsEntity,
+      rcmRiskFactorsEntity,
       includesPretrialModule,
       manualCourtCasesAndCharges,
       personEKID,
@@ -588,19 +612,30 @@ class Form extends React.Component<Props, State> {
     // import module settings
     const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], '');
     const { riskFactors, scores } = getScoresAndRiskFactors(psaForm);
-    // don't calculate dmf if module settings doesn't include pretrial
-    const dmf = includesPretrialModule ? calculateDMF(psaForm, scores) : {};
-    const dmfRiskFactors = includesPretrialModule ? getDMFRiskFactors(psaForm) : {};
+    // don't calculate rcm if module settings doesn't include pretrial
+    const {
+      rcm,
+      courtConditions,
+      bookingConditions
+    } = includesPretrialModule ? calculateRCM(psaForm, scores, selectedOrganizationSettings) : {};
+    const rcmRiskFactors = includesPretrialModule ? getRCMRiskFactors(psaForm) : {};
     this.setState({
       riskFactors,
-      dmfRiskFactors,
+      rcmRiskFactors,
       scores,
-      dmf,
+      rcm,
+      courtConditions,
+      bookingConditions,
       scoresWereGenerated: true,
       confirmationModalOpen: true
     });
     this.submitEntities(
-      scores.set(PROPERTY_TYPES.STATUS, Immutable.List.of(PSA_STATUSES.OPEN)), riskFactors, dmf, dmfRiskFactors
+      scores.set(PROPERTY_TYPES.STATUS, List.of(PSA_STATUSES.OPEN)),
+      riskFactors,
+      rcm,
+      rcmRiskFactors,
+      bookingConditions,
+      courtConditions
     );
   }
 
@@ -770,7 +805,7 @@ class Form extends React.Component<Props, State> {
       return <LogoLoader />;
     }
 
-    const pendingPSAs = (skipClosePSAs || psaForm.get(DMF.COURT_OR_BOOKING) === CONTEXT.BOOKING)
+    const pendingPSAs = (skipClosePSAs || psaForm.get(RCM_FIELDS.COURT_OR_BOOKING) === CONTEXT.BOOKING)
       ? null : this.getPendingPSAs();
     return pendingPSAs || (
       <SelectArrestContainer
@@ -803,7 +838,7 @@ class Form extends React.Component<Props, State> {
       selectedOrganizationId
     } = this.props;
 
-    const caseContext = psaForm.get(DMF.COURT_OR_BOOKING) === CONTEXT.BOOKING ? CONTEXTS.BOOKING : CONTEXTS.COURT;
+    const caseContext = psaForm.get(RCM_FIELDS.COURT_OR_BOOKING) === CONTEXT.BOOKING ? CONTEXTS.BOOKING : CONTEXTS.COURT;
     const chargeType = selectedOrganizationSettings.getIn([SETTINGS.CASE_CONTEXTS, caseContext]);
     const chargesByOrgId = chargeType === CASE_CONTEXTS.COURT ? courtCharges : arrestCharges;
 
@@ -839,7 +874,7 @@ class Form extends React.Component<Props, State> {
       selectedPretrialCase,
       selectedOrganizationSettings,
     } = this.props;
-    const caseContext = psaForm.get(DMF.COURT_OR_BOOKING) === CONTEXT.BOOKING ? CONTEXTS.BOOKING : CONTEXTS.COURT;
+    const caseContext = psaForm.get(RCM_FIELDS.COURT_OR_BOOKING) === CONTEXT.BOOKING ? CONTEXTS.BOOKING : CONTEXTS.COURT;
     const chargeType = selectedOrganizationSettings.getIn([SETTINGS.CASE_CONTEXTS, caseContext]);
     const { chargeList, chargeOptions } = this.formatChargeOptions();
     if (isLoadingNeighbors || loadingPersonDetails) {
@@ -965,7 +1000,17 @@ class Form extends React.Component<Props, State> {
       selectedOrganizationId,
       selectedOrganizationSettings
     } = this.props;
-    const { dmfRiskFactors, riskFactors, scores } = this.state;
+    const {
+      rcmRiskFactors,
+      riskFactors,
+      bookingConditions,
+      courtConditions,
+      scores
+    } = this.state;
+
+    const context = psaForm.get('courtOrBooking');
+    const conditions = context === CONTEXT.BOOKING ? bookingConditions : courtConditions;
+
     const violentArrestChargeList = violentArrestCharges.get(selectedOrganizationId, List());
     const violentCourtChargeList = violentCourtCharges.get(selectedOrganizationId, List());
     const notes = psaForm.get(PSA.NOTES, '');
@@ -974,7 +1019,8 @@ class Form extends React.Component<Props, State> {
       .set('scores', scores)
       .set('riskFactors', this.setMultimapToMap(riskFactors))
       .set('psaRiskFactors', Immutable.fromJS(riskFactors))
-      .set('dmfRiskFactors', Immutable.fromJS(dmfRiskFactors));
+      .set('rcmRiskFactors', Immutable.fromJS(rcmRiskFactors))
+      .set('rcmConditions', Immutable.fromJS(conditions));
 
     exportPDF(
       data,
@@ -1027,7 +1073,15 @@ class Form extends React.Component<Props, State> {
     const { [ENTITY_KEY_ID]: psaEKID } = getEntityProperties(submittedPSA, [ENTITY_KEY_ID]);
     const { [ENTITY_KEY_ID]: personEKID } = getEntityProperties(selectedPerson, [ENTITY_KEY_ID]);
     const psaRiskFactores = submittedPSANeighbors.getIn([PSA_RISK_FACTORS, PSA_NEIGHBOR.DETAILS], Map());
-    const dmfResults = submittedPSANeighbors.getIn([DMF_RESULTS, PSA_NEIGHBOR.DETAILS], Map());
+    const rcm = submittedPSANeighbors.getIn([RCM_RESULTS, PSA_NEIGHBOR.DETAILS], Map());
+    const legacyConditions = conditionProperties.map((conditionField) => {
+      const conditionFromRCM = rcm.get(conditionField, '');
+      return { [PROPERTY_TYPES.TYPE]: conditionFromRCM };
+    });
+    const rcmBookingConditions = submittedPSANeighbors.get(RCM_BOOKING_CONDITIONS, legacyConditions);
+    const rcmCourtConditions = submittedPSANeighbors.get(RCM_COURT_CONDITIONS, legacyConditions);
+
+    const conditions = rcmCourtConditions.size ? rcmCourtConditions : rcmBookingConditions;
 
     return (
       <PSASubmittedPage
@@ -1035,7 +1089,8 @@ class Form extends React.Component<Props, State> {
           scores={submittedPSA}
           riskFactors={psaRiskFactores.toJS()}
           context={context}
-          dmf={dmfResults}
+          rcm={rcm}
+          conditions={conditions}
           personId={this.getPersonIdValue()}
           personEKID={personEKID}
           psaEKID={psaEKID}
@@ -1113,8 +1168,8 @@ function mapStateToProps(state :Immutable.Map<*, *>) :Object {
     [CHARGES.COURT]: charges.get(CHARGES.COURT),
     [CHARGES.ARREST_VIOLENT]: charges.get(CHARGES.ARREST_VIOLENT),
     [CHARGES.COURT_VIOLENT]: charges.get(CHARGES.COURT_VIOLENT),
-    [CHARGES.DMF_STEP_2]: charges.get(CHARGES.DMF_STEP_2),
-    [CHARGES.DMF_STEP_4]: charges.get(CHARGES.DMF_STEP_4),
+    [CHARGES.RCM_STEP_2]: charges.get(CHARGES.RCM_STEP_2),
+    [CHARGES.RCM_STEP_4]: charges.get(CHARGES.RCM_STEP_4),
     [CHARGES.BRE]: charges.get(CHARGES.BRE),
     [CHARGES.BHE]: charges.get(CHARGES.BHE),
     [CHARGES.LOADING]: charges.get(CHARGES.LOADING),
