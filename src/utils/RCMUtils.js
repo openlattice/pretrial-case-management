@@ -6,7 +6,6 @@ import { Map } from 'immutable';
 import { PROPERTY_TYPES } from './consts/DataModelConsts';
 import { SETTINGS, RCM, RCM_DATA } from './consts/AppSettingConsts';
 import {
-  RESULT_CATEGORIES,
   COLOR_MAP,
   BOOKING_CONDITIONS,
   RESULTS,
@@ -106,7 +105,7 @@ export const increaseRCMSeverity = (rcmResult :Object, settings :Map) => {
   const rcmSettings = getRCMSettings(settings);
   const rcmConditions = getRCMConditions(rcmSettings);
   const activeLevels = getActiveRCMLevels(rcmSettings);
-  const currentLevel = rcmResult[PROPERTY_TYPES.CONDITIONS_LEVEL];
+  const currentLevel = rcmResult[RESULTS.RCM][PROPERTY_TYPES.CONDITIONS_LEVEL];
   const nextLevel = currentLevel < activeLevels.size
     ? currentLevel + 1
     : currentLevel;
