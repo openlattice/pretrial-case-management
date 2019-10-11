@@ -35,7 +35,8 @@ class ReleaseTypeTable extends React.Component<Props, State> {
     Object.keys(RELEASE_TYPE_HEADERS).forEach((releaseType) => {
       const releaseObject = {
         [RCM_DATA.RELEASE_TYPE]: releaseType,
-        description: RELEASE_TYPE_HEADERS[releaseType]
+        description: RELEASE_TYPE_HEADERS[releaseType],
+        id: RELEASE_TYPE_HEADERS[releaseType]
       };
       releaseTypeData.push(releaseObject);
     });
