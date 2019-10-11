@@ -32,14 +32,13 @@ import {
   getPersonData,
   getPersonNeighbors,
   getStaffEKIDs,
-  loadRequiresActionPeople,
-  refreshPersonNeighbors
+  loadRequiresActionPeople
 } from './PeopleActionFactory';
 
 const {
   CHECKIN_APPOINTMENTS,
   CONTACT_INFORMATION,
-  DMF_RESULTS,
+  RCM_RESULTS,
   HEARINGS,
   PSA_SCORES,
   RELEASE_RECOMMENDATIONS,
@@ -286,34 +285,6 @@ export default function peopleReducer(state :Map = INITIAL_STATE, action :Object
       });
     }
 
-    case refreshPersonNeighbors.case(action.type): {
-      return refreshPersonNeighbors.reducer(state, action, {
-        REQUEST: () => state
-          .setIn([PEOPLE.NEIGHBORS, action.personId], Map())
-          .set(PEOPLE.REFRESHING_PERSON_NEIGHBORS, true),
-        SUCCESS: () => {
-          const {
-            personId,
-            mostRecentPSA,
-            mostRecentPSANeighborsByAppTypeFqn,
-            neighbors,
-            scoresEntitySetId
-          } = action.value;
-
-          return (
-            state.setIn([PEOPLE.NEIGHBORS, personId], neighbors)
-              .set(PEOPLE.SCORES_ENTITY_SET_ID, scoresEntitySetId)
-              .set(PEOPLE.MOST_RECENT_PSA, mostRecentPSA)
-              .set(PEOPLE.MOST_RECENT_PSA_NEIGHBORS, mostRecentPSANeighborsByAppTypeFqn)
-          );
-        },
-        FAILURE: () => state
-          .setIn([PEOPLE.NEIGHBORS, action.personId], Map())
-          .set(PEOPLE.REFRESHING_PERSON_NEIGHBORS, false),
-        FINALLY: () => state.set(PEOPLE.REFRESHING_PERSON_NEIGHBORS, false)
-      });
-    }
-
     case refreshHearingAndNeighbors.case(action.type): {
       return refreshHearingAndNeighbors.reducer(state, action, {
         SUCCESS: () => {
@@ -391,7 +362,7 @@ export default function peopleReducer(state :Map = INITIAL_STATE, action :Object
         SUCCESS: () => {
           const {
             newScoreEntity,
-            newDMFEntity,
+            newRCMEntity,
             newNotesEntity
           } = action.value;
           let mostRecentPSA = state.get(PEOPLE.MOST_RECENT_PSA, Map());
@@ -402,7 +373,7 @@ export default function peopleReducer(state :Map = INITIAL_STATE, action :Object
           if (olID === mostRecentPSAEntityKeyId) {
             mostRecentPSA = mostRecentPSA.set(PSA_NEIGHBOR.DETAILS, fromJS(newScoreEntity));
             mostRecentPSANeighbors = mostRecentPSANeighbors
-              .setIn([DMF_RESULTS, PSA_NEIGHBOR.DETAILS], fromJS(newDMFEntity))
+              .setIn([RCM_RESULTS, PSA_NEIGHBOR.DETAILS], fromJS(newRCMEntity))
               .setIn([RELEASE_RECOMMENDATIONS, PSA_NEIGHBOR.DETAILS], fromJS(newNotesEntity));
           }
 
