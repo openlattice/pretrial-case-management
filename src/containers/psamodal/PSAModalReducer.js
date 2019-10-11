@@ -1,7 +1,6 @@
 /*
  * @flow
  */
-import { Constants } from 'lattice';
 import { Map, List, fromJS } from 'immutable';
 
 import { getEntityProperties } from '../../utils/DataUtils';
@@ -9,7 +8,6 @@ import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_MODAL, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { loadPSAModal, CLEAR_PSA_MODAL } from './PSAModalActionFactory';
 import { addCaseToPSA, editPSA, removeCaseFromPSA } from '../psa/FormActionFactory';
-import { refreshPersonNeighbors } from '../people/PeopleActionFactory';
 import { submitContact, updateContactsBulk } from '../contactinformation/ContactInfoActions';
 import { subscribe, unsubscribe } from '../subscription/SubscriptionActions';
 import {
@@ -21,18 +19,15 @@ import {
 import {
   changePSAStatus,
   loadCaseHistory,
-  refreshPSANeighbors,
   updateScoresAndRiskFactors
 } from '../review/ReviewActionFactory';
-
-const { OPENLATTICE_ID_FQN } = Constants;
 
 const { ENTITY_KEY_ID } = PROPERTY_TYPES;
 
 const {
   CONTACT_INFORMATION,
-  DMF_RISK_FACTORS,
-  DMF_RESULTS,
+  RCM_RISK_FACTORS,
+  RCM_RESULTS,
   HEARINGS,
   PEOPLE,
   PRETRIAL_CASES,
@@ -130,20 +125,6 @@ export default function psaModalReducer(state :Map<*, *> = INITIAL_STATE, action
       });
     }
 
-    case refreshPSANeighbors.case(action.type): {
-      return refreshPSANeighbors.reducer(state, action, {
-        SUCCESS: () => {
-          const { neighbors } = action.value;
-          const hearings = neighbors.get(HEARINGS, List());
-          const hearingIds = hearings.map(hearing => hearing.getIn([OPENLATTICE_ID_FQN, 0], ''));
-          return state
-            .set(PSA_MODAL.PSA_NEIGHBORS, neighbors)
-            .set(PSA_MODAL.HEARINGS, hearings)
-            .set(PSA_MODAL.HEARING_IDS, hearingIds);
-        }
-      });
-    }
-
     case removeCaseFromPSA.case(action.type): {
       return removeCaseFromPSA.reducer(state, action, {
         SUCCESS: () => {
@@ -161,16 +142,16 @@ export default function psaModalReducer(state :Map<*, *> = INITIAL_STATE, action
           const {
             newScoreEntity,
             newRiskFactorsEntity,
-            newDMFEntity,
-            newDMFRiskFactorsEntity,
+            newRCMEntity,
+            newRCMRiskFactorsEntity,
             newNotesEntity
           } = action.value;
 
           let neighborsByAppTypeFqn = state.get(PSA_MODAL.PSA_NEIGHBORS);
           neighborsByAppTypeFqn = neighborsByAppTypeFqn
             .setIn([PSA_RISK_FACTORS, PSA_NEIGHBOR.DETAILS], fromJS(newRiskFactorsEntity))
-            .setIn([DMF_RESULTS, PSA_NEIGHBOR.DETAILS], fromJS(newDMFEntity))
-            .setIn([DMF_RISK_FACTORS, PSA_NEIGHBOR.DETAILS], fromJS(newDMFRiskFactorsEntity))
+            .setIn([RCM_RESULTS, PSA_NEIGHBOR.DETAILS], fromJS(newRCMEntity))
+            .setIn([RCM_RISK_FACTORS, PSA_NEIGHBOR.DETAILS], fromJS(newRCMRiskFactorsEntity))
             .setIn([RELEASE_RECOMMENDATIONS, PSA_NEIGHBOR.DETAILS], fromJS(newNotesEntity));
           return state
             .set(PSA_MODAL.SCORES, fromJS(newScoreEntity))
@@ -296,19 +277,6 @@ export default function psaModalReducer(state :Map<*, *> = INITIAL_STATE, action
         SUCCESS: () => {
           const { contactInformation } = action.value;
           return state.setIn([PSA_MODAL.PERSON_NEIGHBORS, CONTACT_INFORMATION], contactInformation);
-        }
-      });
-    }
-
-    case refreshPersonNeighbors.case(action.type): {
-      return refreshPersonNeighbors.reducer(state, action, {
-        SUCCESS: () => {
-          const { neighbors } = action.value;
-          const subscription = neighbors.getIn([SUBSCRIPTION], Map());
-          const contacts = neighbors.getIn([CONTACT_INFORMATION], List());
-          return state
-            .setIn([PSA_MODAL.PERSON_NEIGHBORS, SUBSCRIPTION], subscription)
-            .setIn([PSA_MODAL.PERSON_NEIGHBORS, CONTACT_INFORMATION], contacts);
         }
       });
     }
