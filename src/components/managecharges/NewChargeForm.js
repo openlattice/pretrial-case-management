@@ -295,13 +295,13 @@ class PersonContactInfo extends React.Component<Props, State> {
                 <InputGroup>
                   <InputLabel>Step 2</InputLabel>
                   {this.renderCheckboxInput(CHARGE_HEADERS.STEP_2,
-                    PROPERTY_TYPES.CHARGE_DMF_STEP_2,
+                    PROPERTY_TYPES.CHARGE_RCM_STEP_2,
                     isStep2)}
                 </InputGroup>
                 <InputGroup>
                   <InputLabel>Step 4</InputLabel>
                   {this.renderCheckboxInput(CHARGE_HEADERS.STEP_4,
-                    PROPERTY_TYPES.CHARGE_DMF_STEP_4,
+                    PROPERTY_TYPES.CHARGE_RCM_STEP_4,
                     isStep4)}
                 </InputGroup>
                 <InputGroup>
