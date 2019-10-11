@@ -298,8 +298,8 @@ const permissionsSelector = (entitySetId, permissions) => {
 function* loadChargesWorker(action :SequenceAction) :Generator<*, *, *> {
   let violentArrestCharges = Map();
   let violentCourtCharges = Map();
-  let dmfStep2Charges = Map();
-  let dmfStep4Charges = Map();
+  let rcmStep2Charges = Map();
+  let rcmStep4Charges = Map();
   let bookingReleaseExceptionCharges = Map();
   let bookingHoldExceptionCharges = Map();
   const { id, value } = action;
@@ -345,7 +345,7 @@ function* loadChargesWorker(action :SequenceAction) :Generator<*, *, *> {
       courtChargesByEntityKeyId = courtChargesByEntityKeyId.set(entityKeyId, charge);
     });
 
-    // Collect violent, dmf, bhe and bre lists for arrest charges
+    // Collect violent, rcm, bhe and bre lists for arrest charges
     arrestCharges.forEach((charge) => {
       const statute = charge.getIn([PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE, 0], '');
       const description = charge.getIn([PROPERTY_TYPES.REFERENCE_CHARGE_DESCRIPTION, 0], '');
@@ -355,16 +355,16 @@ function* loadChargesWorker(action :SequenceAction) :Generator<*, *, *> {
           violentArrestCharges.get(statute, Set()).add(description)
         );
       }
-      if (charge.getIn([PROPERTY_TYPES.CHARGE_DMF_STEP_2, 0], false)) {
-        dmfStep2Charges = dmfStep2Charges.set(
+      if (charge.getIn([PROPERTY_TYPES.CHARGE_RCM_STEP_2, 0], false)) {
+        rcmStep2Charges = rcmStep2Charges.set(
           statute,
-          dmfStep2Charges.get(statute, Set()).add(description)
+          rcmStep2Charges.get(statute, Set()).add(description)
         );
       }
-      if (charge.getIn([PROPERTY_TYPES.CHARGE_DMF_STEP_4, 0], false)) {
-        dmfStep4Charges = dmfStep4Charges.set(
+      if (charge.getIn([PROPERTY_TYPES.CHARGE_RCM_STEP_4, 0], false)) {
+        rcmStep4Charges = rcmStep4Charges.set(
           statute,
-          dmfStep4Charges.get(statute, Set()).add(description)
+          rcmStep4Charges.get(statute, Set()).add(description)
         );
       }
       if (charge.getIn([PROPERTY_TYPES.BRE, 0], false)) {
@@ -402,8 +402,8 @@ function* loadChargesWorker(action :SequenceAction) :Generator<*, *, *> {
       courtCharges,
       courtChargesByEntityKeyId,
       courtChargePermissions,
-      dmfStep2Charges,
-      dmfStep4Charges,
+      rcmStep2Charges,
+      rcmStep4Charges,
       selectedOrgId,
       violentArrestCharges,
       violentCourtCharges
