@@ -12,7 +12,7 @@ import {
   CLEAR_RELEASE_CONDITIONS,
   loadReleaseConditions,
   submitReleaseConditions,
-  updateOutcomesAndReleaseCondtions
+  updateOutcomesAndReleaseConditions
 } from './ReleaseConditionsActionFactory';
 
 import { REDUX } from '../../utils/consts/redux/SharedConsts';
@@ -22,7 +22,7 @@ import { RELEASE_COND_ACTIONS, RELEASE_COND_DATA } from '../../utils/consts/redu
 const {
   JUDGES,
   OUTCOMES,
-  DMF_RESULTS,
+  RCM_RESULTS,
   CHECKIN_APPOINTMENTS
 } = APP_TYPES;
 
@@ -77,10 +77,10 @@ export default function releaseConditionsReducer(state :Map<*, *> = INITIAL_STAT
             personNeighborsByAppTypeFqn,
             psaNeighborsByAppTypeFqn,
           } = action.value;
-          const dmfEntity = psaNeighborsByAppTypeFqn.get(DMF_RESULTS, Map());
+          const rcmEntity = psaNeighborsByAppTypeFqn.get(RCM_RESULTS, Map());
           const outcomeEntity = hearingNeighborsByAppTypeFqn.get(OUTCOMES, Map());
 
-          const oldOutcome = dmfEntity.getIn([PROPERTY_TYPES.OUTCOME, 0]);
+          const oldOutcome = rcmEntity.getIn([PROPERTY_TYPES.OUTCOME, 0]);
 
           const hasOutcome = !!(oldOutcome || outcomeEntity.size);
 
@@ -196,8 +196,8 @@ export default function releaseConditionsReducer(state :Map<*, *> = INITIAL_STAT
       });
     }
 
-    case updateOutcomesAndReleaseCondtions.case(action.type): {
-      return updateOutcomesAndReleaseCondtions.reducer(state, action, {
+    case updateOutcomesAndReleaseConditions.case(action.type): {
+      return updateOutcomesAndReleaseConditions.reducer(state, action, {
         REQUEST: () => state
           .setIn(
             [REDUX.ACTIONS, RELEASE_COND_ACTIONS.UPDATE_OUTCOMES_AND_RELEASE_CONDITIONS, action.id], fromJS(action)
