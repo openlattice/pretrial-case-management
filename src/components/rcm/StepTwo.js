@@ -113,8 +113,8 @@ class StepTwo extends React.Component <Props, *> {
       bookingConditions: bookingConditionsS2
     } = getRCMDecision(6, 6, settings);
 
-    const conditions = context !== CONTEXT.BOOKING ? bookingConditions : courtConditions;
-    const conditionsS2 = context !== CONTEXT.BOOKING ? bookingConditionsS2 : courtConditionsS2;
+    const conditions = context === CONTEXT.BOOKING ? bookingConditions : courtConditions;
+    const conditionsS2 = context === CONTEXT.BOOKING ? bookingConditionsS2 : courtConditionsS2;
 
     const rcmDisplay = StepTwoDecision
       ? (
