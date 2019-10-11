@@ -47,7 +47,7 @@ const {
 const conditionProperties = [CONDITION_1, CONDITION_2, CONDITION_3];
 
 const ScoreContent = styled.div`
-  padding: 20px 30px 0;
+  padding: 20px 20px 0;
   width: 100%;
   display: flex;
   flex-direction: row;
