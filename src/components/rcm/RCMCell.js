@@ -72,6 +72,7 @@ const Cell = styled.div`
 `;
 
 const StyledCell = styled(Cell)`
+  margin: 5px;
   background-color: ${props => props.color};
   color: ${props => TEXT_COLOR_MAPPINGS[props.color]};
   opacity: ${props => (props.opaque ? 1 : 0.5)};
@@ -95,19 +96,16 @@ const RCMCell = ({
         opaque={opaque}
         color={color}
         onClick={onClick}>
-      {
-        cellConditions.map((condition) => {
-          const { [TYPE]: conditionType } = getEntityProperties(condition, [TYPE]);
-          return (
-            <Condition
-                large={large}
-                table={table}
-                key={conditionType}>
-              {conditionType}
-            </Condition>
-          )
-        })
-      }
+      <Condition
+          large={large}
+          table={table}>
+        {
+          cellConditions.map((condition) => {
+            const { [TYPE]: conditionType } = getEntityProperties(condition, [TYPE]);
+            return conditionType;
+          }).join(', ')
+        }
+      </Condition>
     </StyledCell>
   );
 };
