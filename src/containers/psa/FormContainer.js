@@ -4,7 +4,7 @@
 
 import React from 'react';
 
-import Immutable, { Map, List } from 'immutable';
+import { fromJS, Map, List } from 'immutable';
 import styled from 'styled-components';
 import randomUUID from 'uuid/v4';
 import moment from 'moment';
@@ -105,7 +105,8 @@ const {
   CONDITION_3,
   ENTITY_KEY_ID,
   GENERAL_ID,
-  RELEASE_RECOMMENDATION
+  RELEASE_RECOMMENDATION,
+  TYPE
 } = PROPERTY_TYPES;
 
 const conditionProperties = [CONDITION_1, CONDITION_2, CONDITION_3];
@@ -263,7 +264,7 @@ const FilterWrapper = styled.div`
   }
 `;
 
-const INITIAL_PERSON_FORM = Immutable.fromJS({
+const INITIAL_PERSON_FORM = fromJS({
   id: '',
   lastName: '',
   firstName: '',
@@ -274,7 +275,7 @@ const INITIAL_PERSON_FORM = Immutable.fromJS({
   sex: ''
 });
 
-const INITIAL_STATE = Immutable.fromJS({
+const INITIAL_STATE = fromJS({
   confirmationModalOpen: false,
   status: STATUS_OPTIONS_FOR_PENDING_PSAS.OPEN.value,
   personForm: INITIAL_PERSON_FORM,
@@ -301,68 +302,68 @@ type Props = {
   actions :{
     goToPath :(path :string) => void,
     addCaseAndCharges :(value :{
-      pretrialCase :Immutable.Map<*, *>,
-      charges :Immutable.List<Immutable.Map<*, *>>
+      pretrialCase :Map<*, *>,
+      charges :List<Map<*, *>>
     }) => void,
     clearForm :() => void,
     selectPerson :(value :{
-      selectedPerson :Immutable.Map<*, *>
+      selectedPerson :Map<*, *>
     }) => void,
     selectPretrialCase :(value :{
-      selectedPretrialCase :Immutable.Map<*, *>
+      selectedPretrialCase :Map<*, *>
     }) => void,
     loadPersonDetails :(value :{personId :string, shouldLoadCases :boolean}) => void,
     setPSAValues :(value :{
-      newValues :Immutable.Map<*, *>
+      newValues :Map<*, *>
     }) => void,
     submit :({ config :Object, values :Object }) => void,
     clearSubmit :() => void,
     changePSAStatus :(values :{
       scoresId :string,
-      scoresEntity :Immutable.Map<*, *>,
+      scoresEntity :Map<*, *>,
       callback? :() => void
     }) => void
   },
-  arrestCharges :Immutable.Map<*, *>,
-  allCasesForPerson :Immutable.List<*>,
-  allChargesForPerson :Immutable.List<*>,
-  allContacts :Immutable.Map<*>,
-  allFTAs :Immutable.List<*>,
-  allHearings :Immutable.List<*>,
-  allPSAs :Immutable.List<*>,
-  allSentencesForPerson :Immutable.List<*>,
+  arrestCharges :Map<*, *>,
+  allCasesForPerson :List<*>,
+  allChargesForPerson :List<*>,
+  allContacts :Map<*>,
+  allFTAs :List<*>,
+  allHearings :List<*>,
+  allPSAs :List<*>,
+  allSentencesForPerson :List<*>,
   arrestId :string,
-  arrestOptions :Immutable.List<*>,
-  bookingHoldExceptionCharges :Immutable.Map<*, *>,
-  bookingReleaseExceptionCharges :Immutable.Map<*, *>,
+  arrestOptions :List<*>,
+  bookingHoldExceptionCharges :Map<*, *>,
+  bookingReleaseExceptionCharges :Map<*, *>,
   caseLoadsComplete :boolean,
-  charges :Immutable.List<*>,
-  courtCharges :Immutable.Map<*, *>,
-  rcmStep2Charges :Immutable.Map<*, *>,
-  rcmStep4Charges :Immutable.Map<*, *>,
+  charges :List<*>,
+  courtCharges :Map<*, *>,
+  rcmStep2Charges :Map<*, *>,
+  rcmStep4Charges :Map<*, *>,
   history :string[],
   isLoadingCases :boolean,
   isLoadingNeighbors :boolean,
   loadingPersonDetails :boolean,
   numCasesLoaded :number,
   numCasesToLoad :number,
-  openPSAs :Immutable.Map<*, *>,
-  psaForm :Immutable.Map<*, *>,
+  openPSAs :Map<*, *>,
+  psaForm :Map<*, *>,
   psaSubmissionComplete :boolean,
   readOnlyPermissions :boolean,
   selectedOrganizationId :string,
-  selectedPerson :Immutable.Map<*, *>,
+  selectedPerson :Map<*, *>,
   selectedPersonId :string,
-  selectedPretrialCase :Immutable.Map<*, *>,
-  selectedOrganizationSettings :Immutable.Map<*, *>,
-  staffIdsToEntityKeyIds :Immutable.Map<*, *>,
+  selectedPretrialCase :Map<*, *>,
+  selectedOrganizationSettings :Map<*, *>,
+  staffIdsToEntityKeyIds :Map<*, *>,
   submitError :boolean,
-  submittedPSA :Immutable.Map<*, *>,
-  submittedPSANeighbors :Immutable.Map<*, *>,
+  submittedPSA :Map<*, *>,
+  submittedPSANeighbors :Map<*, *>,
   submittingPSA :boolean,
-  subscription :Immutable.Map<*, *>,
-  violentCourtCharges :Immutable.Map<*, *>,
-  violentArrestCharges :Immutable.Map<*, *>,
+  subscription :Map<*, *>,
+  violentCourtCharges :Map<*, *>,
+  violentArrestCharges :Map<*, *>,
   location :{
     pathname :string
   }
@@ -370,7 +371,7 @@ type Props = {
 
 type State = {
   state :string,
-  personForm :Immutable.Map<*, *>,
+  personForm :Map<*, *>,
   riskFactors :{},
   rcmRiskFactors :{},
   scores :{},
@@ -404,7 +405,7 @@ class Form extends React.Component<Props, State> {
     if (hashSplit.length > 1) {
       const params = qs.parse(hashSplit[1]);
       if (params.context) {
-        const newValues = Immutable.Map().set(RCM_FIELDS.COURT_OR_BOOKING, params.context);
+        const newValues = Map().set(RCM_FIELDS.COURT_OR_BOOKING, params.context);
         actions.setPSAValues({ newValues });
         return true;
       }
@@ -480,7 +481,7 @@ class Form extends React.Component<Props, State> {
 
   handleInputChange = (e) => {
     const { actions } = this.props;
-    const newValues = Immutable.fromJS({ [e.target.name]: e.target.value });
+    const newValues = fromJS({ [e.target.name]: e.target.value });
     actions.setPSAValues({ newValues });
   }
 
@@ -646,7 +647,7 @@ class Form extends React.Component<Props, State> {
   }
 
   setMultimapToMap = (setMultimap) => {
-    let map = Immutable.Map();
+    let map = Map();
     Object.keys(setMultimap).forEach((key) => {
       map = map.set(key, setMultimap[key][0]);
     });
@@ -682,9 +683,9 @@ class Form extends React.Component<Props, State> {
     const { actions, selectedPersonId } = this.props;
     const scoresId = scores.getIn([OPENLATTICE_ID_FQN, 0]);
     let scoresEntity = scores.remove('id').remove(OPENLATTICE_ID_FQN);
-    scoresEntity = scoresEntity.set(PROPERTY_TYPES.STATUS, Immutable.List.of(status));
+    scoresEntity = scoresEntity.set(PROPERTY_TYPES.STATUS, List.of(status));
     if (failureReason.length) {
-      scoresEntity = scoresEntity.set(PROPERTY_TYPES.FAILURE_REASON, Immutable.fromJS(failureReason));
+      scoresEntity = scoresEntity.set(PROPERTY_TYPES.FAILURE_REASON, fromJS(failureReason));
     }
 
     const callback = () => {
@@ -1009,18 +1010,19 @@ class Form extends React.Component<Props, State> {
     } = this.state;
 
     const context = psaForm.get('courtOrBooking');
-    const conditions = context === CONTEXT.BOOKING ? bookingConditions : courtConditions;
+    let conditions = context === CONTEXT.BOOKING ? bookingConditions : courtConditions;
+    conditions = conditions.map(condition => condition[TYPE]);
 
     const violentArrestChargeList = violentArrestCharges.get(selectedOrganizationId, List());
     const violentCourtChargeList = violentCourtCharges.get(selectedOrganizationId, List());
     const notes = psaForm.get(PSA.NOTES, '');
-    const data = Immutable.fromJS(this.state)
+    const data = fromJS(this.state)
       .set('notes', notes)
       .set('scores', scores)
       .set('riskFactors', this.setMultimapToMap(riskFactors))
-      .set('psaRiskFactors', Immutable.fromJS(riskFactors))
-      .set('rcmRiskFactors', Immutable.fromJS(rcmRiskFactors))
-      .set('rcmConditions', Immutable.fromJS(conditions));
+      .set('psaRiskFactors', fromJS(riskFactors))
+      .set('rcmRiskFactors', fromJS(rcmRiskFactors))
+      .set('rcmConditions', fromJS(conditions));
 
     exportPDF(
       data,
@@ -1064,33 +1066,25 @@ class Form extends React.Component<Props, State> {
 
     const context = psaForm.get('courtOrBooking');
 
-    let chargesByCaseId = Immutable.Map();
+    let chargesByCaseId = Map();
     allChargesForPerson.forEach((charge) => {
       const caseNum = charge.getIn([PROPERTY_TYPES.CHARGE_ID, 0], '').split('|')[0];
-      chargesByCaseId = chargesByCaseId.set(caseNum, chargesByCaseId.get(caseNum, Immutable.List()).push(charge));
+      chargesByCaseId = chargesByCaseId.set(caseNum, chargesByCaseId.get(caseNum, List()).push(charge));
     });
 
     const { [ENTITY_KEY_ID]: psaEKID } = getEntityProperties(submittedPSA, [ENTITY_KEY_ID]);
     const { [ENTITY_KEY_ID]: personEKID } = getEntityProperties(selectedPerson, [ENTITY_KEY_ID]);
     const psaRiskFactores = submittedPSANeighbors.getIn([PSA_RISK_FACTORS, PSA_NEIGHBOR.DETAILS], Map());
     const rcm = submittedPSANeighbors.getIn([RCM_RESULTS, PSA_NEIGHBOR.DETAILS], Map());
-    const legacyConditions = conditionProperties.map((conditionField) => {
-      const conditionFromRCM = rcm.get(conditionField, '');
-      return { [PROPERTY_TYPES.TYPE]: conditionFromRCM };
-    });
-    const rcmBookingConditions = submittedPSANeighbors.get(RCM_BOOKING_CONDITIONS, legacyConditions);
-    const rcmCourtConditions = submittedPSANeighbors.get(RCM_COURT_CONDITIONS, legacyConditions);
-
-    const conditions = rcmCourtConditions.size ? rcmCourtConditions : rcmBookingConditions;
 
     return (
       <PSASubmittedPage
+          submittedPSANeighbors={submittedPSANeighbors}
           isSubmitting={submittingPSA}
           scores={submittedPSA}
           riskFactors={psaRiskFactores.toJS()}
           context={context}
           rcm={rcm}
-          conditions={conditions}
           personId={this.getPersonIdValue()}
           personEKID={personEKID}
           psaEKID={psaEKID}
@@ -1147,7 +1141,7 @@ class Form extends React.Component<Props, State> {
   }
 }
 
-function mapStateToProps(state :Immutable.Map<*, *>) :Object {
+function mapStateToProps(state :Map<*, *>) :Object {
   const app = state.get(STATE.APP);
   const psaForm = state.get(STATE.PSA);
   const search = state.get(STATE.SEARCH);
