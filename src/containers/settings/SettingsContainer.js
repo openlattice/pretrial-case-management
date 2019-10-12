@@ -292,7 +292,15 @@ class SettingsContainer extends React.Component<Props, State> {
                   </RadioSection>
                 </article>
               </SubSection>
+              <SubSection>
+                <h1>Additional RCM Guidance:</h1>
+                <ChoiceWrapper>
+                  {this.renderCheckbox([SETTINGS.STEP_INCREASES], 'Step Increases')}
+                  {this.renderCheckbox([SETTINGS.SECONDARY_HOLD_CHARGES], 'Secondary Hold and Release Charges')}
+                </ChoiceWrapper>
+              </SubSection>
             </CardSegment>
+            { this.renderAdvancedSettings() }
             <RCMSettings editing={editing} />
           </Card>
         </StyledFormWrapper>
