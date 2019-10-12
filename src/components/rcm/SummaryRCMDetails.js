@@ -58,7 +58,8 @@ const ScoreContent = styled.div`
 type Props = {
   settings :Map<*, *>,
   scores :Map<*, *>,
-  neighbors :Map<*, *>
+  neighbors :Map<*, *>,
+  isBookingContext :boolean
 };
 
 class SummaryRCMDetails extends React.Component<Props, *> {
@@ -72,14 +73,17 @@ class SummaryRCMDetails extends React.Component<Props, *> {
     return { ftaScore, ncaScore };
   }
 
-  getRCMStep = (rcm1, rcm2) => (
-    <ScoreContent>
-      <RCMIncreaseText>Step two increase</RCMIncreaseText>
-      <RCMCell rcm={rcm1.rcm} conditions={rcm1.courtConditions} />
-      <img src={rightArrow} alt="" />
-      <RCMCell rcm={rcm2.rcm} conditions={rcm2.courtConditions} />
-    </ScoreContent>
-  )
+  getRCMStep = (rcm1, rcm2) => {
+    const { isBookingContext } = this.props;
+    return (
+      <ScoreContent>
+        <RCMIncreaseText>Step two increase</RCMIncreaseText>
+        <RCMCell rcm={rcm1.rcm} conditions={isBookingContext ? rcm1.bookingConditions : rcm1.courtConditions} />
+        <img src={rightArrow} alt="" />
+        <RCMCell rcm={rcm2.rcm} conditions={isBookingContext ? rcm2.bookingConditions : rcm2.courtConditions} />
+      </ScoreContent>
+    );
+  }
 
   getStepTwoRCM = () => {
     const { settings } = this.props;
@@ -114,7 +118,12 @@ class SummaryRCMDetails extends React.Component<Props, *> {
   }
 
   render() {
-    const { neighbors, scores, settings } = this.props;
+    const {
+      neighbors,
+      scores,
+      settings,
+      isBookingContext
+    } = this.props;
     const rcmRiskFactors = neighbors.getIn([RCM_RISK_FACTORS, PSA_NEIGHBOR.DETAILS], Map());
     const psaRiskFactors = neighbors.getIn([PSA_RISK_FACTORS, PSA_NEIGHBOR.DETAILS], Map());
     const rcm = neighbors.getIn([RCM_RESULTS, PSA_NEIGHBOR.DETAILS], Map());
@@ -125,7 +134,7 @@ class SummaryRCMDetails extends React.Component<Props, *> {
     const rcmBookingConditions = neighbors.getIn([RCM_BOOKING_CONDITIONS], legacyConditions);
     const rcmCourtConditions = neighbors.getIn([RCM_COURT_CONDITIONS], legacyConditions);
 
-    const conditions = rcmCourtConditions.size ? rcmCourtConditions : rcmBookingConditions;
+    const conditions = isBookingContext ? rcmBookingConditions : rcmCourtConditions;
 
     let rcmCell = null;
     if (rcm) {
