@@ -11,7 +11,7 @@ import BooleanFlag from '../BooleanFlag';
 import rightArrow from '../../assets/svg/rcm-arrow.svg';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { getRCMDecision } from '../../utils/RCMUtils';
-import { CONTEXT, PSA } from '../../utils/consts/Consts';
+import { PSA } from '../../utils/consts/Consts';
 import { RCM_FIELDS } from '../../utils/consts/RCMResultsConsts';
 import { getEntityProperties } from '../../utils/DataUtils';
 import {
@@ -94,7 +94,7 @@ class StepTwo extends React.Component <Props, *> {
       scores,
       settings,
       riskFactors,
-      context
+      isBookingContext
     } = this.props;
     const {
       [NCA_SCALE]: ncaScore,
@@ -113,8 +113,8 @@ class StepTwo extends React.Component <Props, *> {
       bookingConditions: bookingConditionsS2
     } = getRCMDecision(6, 6, settings);
 
-    const conditions = context === CONTEXT.BOOKING ? bookingConditions : courtConditions;
-    const conditionsS2 = context === CONTEXT.BOOKING ? bookingConditionsS2 : courtConditionsS2;
+    const conditions = isBookingContext ? bookingConditions : courtConditions;
+    const conditionsS2 = isBookingContext ? bookingConditionsS2 : courtConditionsS2;
 
     const rcmDisplay = StepTwoDecision
       ? (
