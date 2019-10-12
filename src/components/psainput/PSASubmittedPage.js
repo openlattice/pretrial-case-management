@@ -3,7 +3,7 @@
  */
 
 import React from 'react';
-import Immutable, { Map } from 'immutable';
+import { fromJS, List, Map } from 'immutable';
 import styled from 'styled-components';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
@@ -15,7 +15,6 @@ import InfoButton from '../buttons/InfoButton';
 import DropdownButton from '../buttons/DropdownButton';
 import LoadingSpinner from '../LoadingSpinner';
 import LogoLoader from '../LogoLoader';
-import RCMCell from '../rcm/RCMCell';
 import ChargeTable from '../charges/ChargeTable';
 import CaseHistoryTimeline from '../casehistory/CaseHistoryTimeline';
 import RiskFactorsTable from '../riskfactors/RiskFactorsTable';
@@ -26,7 +25,9 @@ import psaFailureIcon from '../../assets/svg/psa-failure.svg';
 import closeXWhiteIcon from '../../assets/svg/close-x-white.svg';
 import closeXGrayIcon from '../../assets/svg/close-x-gray.svg';
 import closeXBlackIcon from '../../assets/svg/close-x-black.svg';
+import SummaryRCMDetails from '../rcm/SummaryRCMDetails';
 import { OL } from '../../utils/consts/Colors';
+import { CONTEXT } from '../../utils/consts/Consts';
 import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { getHeaderText } from '../../utils/RCMUtils';
@@ -49,27 +50,28 @@ import { goToPath } from '../../core/router/RoutingActionFactory';
 import * as Routes from '../../core/router/Routes';
 
 type Props = {
-  isSubmitting :boolean,
-  scores :Immutable.Map<*, *>,
-  riskFactors :Object,
-  rcm :Object,
-  personId :string,
-  personEKID :string,
-  psaEKID :string,
-  submitSuccess :boolean,
-  charges :Immutable.List<*>,
-  notes :string,
-  conditions :List,
-  allCases :Immutable.List<*>,
-  allCharges :Immutable.Map<*, *>,
+  allCases :List<*>,
+  allCharges :Map<*, *>,
+  charges :List<*>,
+  context :string,
   getOnExport :(isCompact :boolean) => void,
+  isSubmitting :boolean,
+  notes :string,
   onClose :() => void,
-  violentArrestCharges :Immutable.Map<*, *>,
+  personEKID :string,
+  personId :string,
+  psaEKID :string,
+  rcm :Object,
+  riskFactors :Object,
+  scores :Map<*, *>,
   selectedOrganizationId :string,
   selectedOrganizationSettings :Map,
+  submitHearingReqState :RequestState,
+  submitSuccess :boolean,
   submittedHearing :Map<*, *>,
   submittedHearingNeighbors :Map<*, *>,
-  submitHearingReqState :RequestState,
+  submittedPSANeighbors :Map<*, *>,
+  violentArrestCharges :Map<*, *>,
   actions :{
     goToPath :(path :string) => void
   }
@@ -386,8 +388,10 @@ class PSASubmittedPage extends React.Component<Props, State> {
   renderRCM = () => {
     const {
       rcm,
-      conditions,
-      selectedOrganizationSettings
+      context,
+      scores,
+      selectedOrganizationSettings,
+      submittedPSANeighbors
     } = this.props;
     const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
 
@@ -395,10 +399,11 @@ class PSASubmittedPage extends React.Component<Props, State> {
       ? (
         <RCM>
           <ResultHeader>RCM Result</ResultHeader>
-          <section>
-            <RCMCell rcm={rcm} conditions={conditions} large />
-            <span>{getHeaderText(rcm.toJS())}</span>
-          </section>
+          <SummaryRCMDetails
+              neighbors={submittedPSANeighbors}
+              scores={scores}
+              isBookingContext={context === CONTEXT.BOOKING} />
+          <span>{getHeaderText(rcm.toJS())}</span>
         </RCM>
       ) : null;
   }
@@ -413,7 +418,7 @@ class PSASubmittedPage extends React.Component<Props, State> {
       return val ? 'Yes' : 'No';
     };
 
-    const rows = Immutable.fromJS([
+    const rows = fromJS([
       {
         number: 1,
         riskFactor: 'Age at Current Arrest',
@@ -645,7 +650,7 @@ class PSASubmittedPage extends React.Component<Props, State> {
   }
 }
 
-function mapStateToProps(state :Immutable.Map<*, *>) :Object {
+function mapStateToProps(state :Map<*, *>) :Object {
   const app = state.get(STATE.APP);
   const charges = state.get(STATE.CHARGES);
   const hearings = state.get(STATE.HEARINGS);
