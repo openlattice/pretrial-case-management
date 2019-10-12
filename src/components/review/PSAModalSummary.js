@@ -219,11 +219,11 @@ class PSAModalSummary extends React.Component<Props, *> {
   }
 
   renderRCM = () => {
-    const { neighbors, scores, settings } = this.props;
+    const { neighbors, scores } = this.props;
     return (
       <RCMWrapper>
         <ContentHeader>RCM</ContentHeader>
-        <SummaryRCMDetails neighbors={neighbors} scores={scores} settings={settings} />
+        <SummaryRCMDetails neighbors={neighbors} scores={scores} />
       </RCMWrapper>
     );
   }
