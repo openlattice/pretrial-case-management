@@ -328,7 +328,6 @@ export const getRCMRiskFactors = (inputData) => {
 };
 
 export const calculateRCM = (inputData, scores, settings) => {
-  const context = inputData.get(COURT_OR_BOOKING);
   const nca = scores.getIn([PROPERTY_TYPES.NCA_SCALE, 0]);
   const fta = scores.getIn([PROPERTY_TYPES.FTA_SCALE, 0]);
   const extradited = inputData.get(EXTRADITED) === 'true';
