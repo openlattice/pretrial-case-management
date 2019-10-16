@@ -84,7 +84,9 @@ type Props = {
   peopleWithRecentFTAs :Set<*>,
   psaNeighborsById :Map<*, *>,
   psaScoresWithNoPendingCharges :Set<*>,
+  psaScoresWithNoHearings :Set<*>,
   psaScoresWithRecentFTAs :Set<*>,
+  peopleWithPSAsWithNoHearings :Set<*>,
   selectedOrganizationId :string,
   selectedOrganizationSettings :Map<*, *>,
   actions :{
@@ -95,7 +97,8 @@ type Props = {
 const REQUIRES_ACTION_FILTERS = {
   MULTIPLE_PSA_PEOPLE: PEOPLE.MULTIPLE_PSA_PEOPLE,
   RECENT_FTA_PEOPLE: PEOPLE.RECENT_FTA_PEOPLE,
-  NO_PENDING_CHARGES_PEOPLE: PEOPLE.NO_PENDING_CHARGES_PEOPLE
+  NO_PENDING_CHARGES_PEOPLE: PEOPLE.NO_PENDING_CHARGES_PEOPLE,
+  NO_HEARINGS_PEOPLE: PEOPLE.NO_HEARINGS_PEOPLE,
 };
 
 class RequiresActionList extends React.Component<Props, State> {
@@ -199,7 +202,8 @@ class RequiresActionList extends React.Component<Props, State> {
           [ENTITY_KEY_ID]: personEKID,
         } = getEntityProperties(person, [DOB, FIRST_NAME, LAST_NAME, MIDDLE_NAME, ENTITY_KEY_ID]);
         let oldPSADate;
-        requiresActionPeopleNeighbors.getIn([personEKID, PSA_SCORES], List()).forEach((psaScore) => {
+        const personPSAs = requiresActionPeopleNeighbors.getIn([personEKID, PSA_SCORES], List());
+        personPSAs.forEach((psaScore) => {
           const { [DATE_TIME]: psaCreationDate } = getEntityProperties(psaScore, [DATE_TIME]);
           const psaDateTime = DateTime.fromISO(psaCreationDate);
           if (!oldPSADate || oldPSADate > psaDateTime) oldPSADate = psaDateTime;
@@ -212,6 +216,7 @@ class RequiresActionList extends React.Component<Props, State> {
           middleName,
           oldPSADate,
           personEKID,
+          psaCount: personPSAs.size,
           id
         };
       }
@@ -246,6 +251,7 @@ class RequiresActionList extends React.Component<Props, State> {
       peopleWithMultiplePSAs,
       peopleWithRecentFTAs,
       psaScoresWithNoPendingCharges,
+      peopleWithPSAsWithNoHearings,
       selectedOrganizationSettings
     } = this.props;
     const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
@@ -255,6 +261,7 @@ class RequiresActionList extends React.Component<Props, State> {
           peopleWithMultiplePSAs={peopleWithMultiplePSAs}
           peopleWithRecentFTAs={peopleWithRecentFTAs}
           peopleWithNoPendingCharges={psaScoresWithNoPendingCharges}
+          peopleWithPSAsWithNoHearings={peopleWithPSAsWithNoHearings}
           filter={filter}
           onChange={this.updateFilter} />
     );
@@ -274,6 +281,7 @@ class RequiresActionList extends React.Component<Props, State> {
       psaNeighborsById,
       requiresActionPeopleNeighbors,
       psaScoresWithRecentFTAs,
+      psaScoresWithNoHearings,
       selectedOrganizationSettings
     } = this.props;
     if (!selectedPersonId) return null;
@@ -286,6 +294,12 @@ class RequiresActionList extends React.Component<Props, State> {
       personPSAs = personPSAs.filter((psa) => {
         const entityKeyId = psa.getIn([OPENLATTICE_ID_FQN, 0], '');
         return psaScoresWithRecentFTAs.includes(entityKeyId);
+      });
+    }
+    if (filter === REQUIRES_ACTION_FILTERS.NO_HEARINGS_PEOPLE) {
+      personPSAs = personPSAs.filter((psa) => {
+        const entityKeyId = psa.getIn([OPENLATTICE_ID_FQN, 0], '');
+        return psaScoresWithNoHearings.includes(entityKeyId);
       });
     }
     const psaList = personPSAs.sortBy((psa) => {
@@ -356,11 +370,13 @@ function mapStateToProps(state) {
     [PEOPLE.REQUIRES_ACTION_SCORES]: people.get(PEOPLE.REQUIRES_ACTION_SCORES),
     [PEOPLE.PSA_NEIGHBORS_BY_ID]: people.get(PEOPLE.PSA_NEIGHBORS_BY_ID),
     [PEOPLE.NO_PENDING_CHARGES_PSA_SCORES]: people.get(PEOPLE.NO_PENDING_CHARGES_PSA_SCORES),
+    [PEOPLE.NO_HEARINGS_PSA_SCORES]: people.get(PEOPLE.NO_HEARINGS_PSA_SCORES),
     [PEOPLE.REQUIRES_ACTION_NEIGHBORS]: people.get(PEOPLE.REQUIRES_ACTION_NEIGHBORS),
     [PEOPLE.MULTIPLE_PSA_PEOPLE]: people.get(PEOPLE.MULTIPLE_PSA_PEOPLE),
     [PEOPLE.RECENT_FTA_PEOPLE]: people.get(PEOPLE.RECENT_FTA_PEOPLE),
     [PEOPLE.RECENT_FTA_PSA_SCORES]: people.get(PEOPLE.RECENT_FTA_PSA_SCORES),
     [PEOPLE.NO_PENDING_CHARGES_PEOPLE]: people.get(PEOPLE.NO_PENDING_CHARGES_PEOPLE),
+    [PEOPLE.NO_HEARINGS_PEOPLE]: people.get(PEOPLE.NO_HEARINGS_PEOPLE),
     [PEOPLE.REQUIRES_ACTION_LOADING]: people.get(PEOPLE.REQUIRES_ACTION_LOADING),
 
     [SEARCH.LOADING]: search.get(SEARCH.LOADING)
