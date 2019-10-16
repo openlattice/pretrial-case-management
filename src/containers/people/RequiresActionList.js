@@ -5,7 +5,8 @@
 import React from 'react';
 import styled from 'styled-components';
 import moment from 'moment';
-import { fromJS, Map, List } from 'immutable';
+import { Map, List } from 'immutable';
+import { DateTime } from 'luxon';
 import { Constants } from 'lattice';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
@@ -15,9 +16,8 @@ import PSAReviewReportsRow from '../../components/review/PSAReviewReportsRow';
 import LogoLoader from '../../components/LogoLoader';
 import SearchBar from '../../components/PSASearchBar';
 import DashboardMainSection from '../../components/dashboard/DashboardMainSection';
-import Pagination from '../../components/Pagination';
 import RequiresActionTable from '../../components/requiresaction/RequiresActionTable';
-import { formatPeopleInfo, sortPeopleByName } from '../../utils/PeopleUtils';
+import { getEntityProperties } from '../../utils/DataUtils';
 import { OL } from '../../utils/consts/Colors';
 import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
 import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
@@ -34,6 +34,14 @@ import * as PSAModalActionFactory from '../psamodal/PSAModalActionFactory';
 const { OPENLATTICE_ID_FQN } = Constants;
 
 const { PSA_SCORES } = APP_TYPES;
+const {
+  DATE_TIME,
+  DOB,
+  ENTITY_KEY_ID,
+  FIRST_NAME,
+  LAST_NAME,
+  MIDDLE_NAME
+} = PROPERTY_TYPES;
 
 const SectionWrapper = styled.div`
     width: 100%;
@@ -147,14 +155,14 @@ class RequiresActionList extends React.Component<Props, State> {
         let matchesLastName = false;
         let matchesMiddleName = false;
         const {
-          personEntityKeyId,
+          personEKID,
           dob,
           firstName,
           personId,
           lastName,
           middleName
-        } = formatPeopleInfo(fromJS(person));
-        if (selectedPersonId === personEntityKeyId) personIsSelected = true;
+        } = person;
+        if (selectedPersonId === personEKID) personIsSelected = true;
         searchQueryWords.forEach((word) => {
           if (dob && dob.toLowerCase().includes(word.toLowerCase())) matchesDOB = true;
           if (firstName && firstName.toLowerCase().includes(word.toLowerCase())) matchesFirstName = true;
@@ -177,10 +185,36 @@ class RequiresActionList extends React.Component<Props, State> {
 
   getActionList = () => {
     const { props } = this;
-    const { requiresActionPeople } = this.props;
+    const { requiresActionPeople, requiresActionPeopleNeighbors } = this.props;
     const { filter } = this.state;
     let people = props[filter].map(
-      (personId, idx) => requiresActionPeople.get(personId, Map()).set('id', personId + idx).toJS()
+      (personId, idx) => {
+        const person = requiresActionPeople.get(personId, Map());
+        const id = personId + idx;
+        const {
+          [DOB]: dob,
+          [FIRST_NAME]: firstName,
+          [LAST_NAME]: lastName,
+          [MIDDLE_NAME]: middleName,
+          [ENTITY_KEY_ID]: personEKID,
+        } = getEntityProperties(person, [DOB, FIRST_NAME, LAST_NAME, MIDDLE_NAME, ENTITY_KEY_ID]);
+        let oldPSADate;
+        requiresActionPeopleNeighbors.getIn([personEKID, PSA_SCORES], List()).forEach((psaScore) => {
+          const { [DATE_TIME]: psaCreationDate } = getEntityProperties(psaScore, [DATE_TIME]);
+          const psaDateTime = DateTime.fromISO(psaCreationDate);
+          if (!oldPSADate || oldPSADate > psaDateTime) oldPSADate = psaDateTime;
+        });
+        oldPSADate = oldPSADate.toISODate();
+        return {
+          dob,
+          firstName,
+          lastName,
+          middleName,
+          oldPSADate,
+          personEKID,
+          id
+        };
+      }
     );
     people = this.handleFilterRequest(people);
     return { people };
@@ -197,7 +231,7 @@ class RequiresActionList extends React.Component<Props, State> {
       <RequiresActionTable
           handleSelect={this.setPersonId}
           selectedPersonId={selectedPersonId}
-          people={people} />
+          people={people.toJS()} />
     );
   }
 
