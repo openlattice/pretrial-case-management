@@ -6,7 +6,7 @@ import React from 'react';
 import { Map } from 'immutable';
 import { Table } from 'lattice-ui-kit';
 
-import RequiresActionPersonRow from '../../containers/people/RequiresActionPersonRow';
+import RequiresActionPersonRow from './RequiresActionPersonRow';
 
 type Props = {
   selectedPersonId :string,
