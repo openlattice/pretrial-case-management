@@ -11,8 +11,8 @@ import { OL } from '../../utils/consts/Colors';
 const percentageToHsl = (count) => {
   let percentage = count / 500;
   if (count > 500) percentage = 1;
-  const hue = (percentage * -120) + 120;
-  return `hsl(${hue}, 100%, 50%)`;
+  const hue = (percentage * -162) + 162;
+  return `hsl(${hue}, 100%, ${28 + percentage * (34)}%)`;
 };
 
 export const RadioInputContainer = styled.input.attrs({
