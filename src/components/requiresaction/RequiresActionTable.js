@@ -19,6 +19,7 @@ const HEADERS = [
   { key: 'firstName', label: 'First Name' },
   { key: 'dob', label: 'Date of Birth' },
   { key: 'oldPSADate', label: 'PSA Date (oldest)' },
+  { key: 'psaCount', label: 'PSA Count' }
 ];
 
 const ReleaseConditionsTable = ({
