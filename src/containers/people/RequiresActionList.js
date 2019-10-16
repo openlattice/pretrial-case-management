@@ -5,7 +5,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import moment from 'moment';
-import { Map, List } from 'immutable';
+import { fromJS, Map, List } from 'immutable';
 import { Constants } from 'lattice';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
@@ -16,7 +16,7 @@ import LogoLoader from '../../components/LogoLoader';
 import SearchBar from '../../components/PSASearchBar';
 import DashboardMainSection from '../../components/dashboard/DashboardMainSection';
 import Pagination from '../../components/Pagination';
-import PersonTable from '../../components/people/PersonTable';
+import RequiresActionTable from '../../components/requiresaction/RequiresActionTable';
 import { formatPeopleInfo, sortPeopleByName } from '../../utils/PeopleUtils';
 import { OL } from '../../utils/consts/Colors';
 import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
@@ -90,14 +90,11 @@ const REQUIRES_ACTION_FILTERS = {
   NO_PENDING_CHARGES_PEOPLE: PEOPLE.NO_PENDING_CHARGES_PEOPLE
 };
 
-const PAGE_SIZE = 8;
-
 class RequiresActionList extends React.Component<Props, State> {
   constructor(props :Props) {
     super(props);
     this.state = {
       filter: REQUIRES_ACTION_FILTERS.MULTIPLE_PSA_PEOPLE,
-      start: 0,
       searchQuery: '',
       selectedPersonId: ''
     };
@@ -129,23 +126,17 @@ class RequiresActionList extends React.Component<Props, State> {
     }
   }
 
-  setPersonId = (person, selectedPersonId) => this.setState({ selectedPersonId });
+  setPersonId = selectedPersonId => this.setState({ selectedPersonId });
 
   handleOnChangeSearchQuery = (event :SyntheticInputEvent<*>) => {
-    let { start } = this.state;
-    const { numPages } = this.getActionList();
-    const currPage = (start / PAGE_SIZE) + 1;
-    if (currPage > numPages) start = (numPages - 1) * PAGE_SIZE;
-    if (start <= 0) start = 0;
     this.setState({
-      searchQuery: event.target.value,
-      start
+      searchQuery: event.target.value
     });
   }
 
   handleFilterRequest = (people) => {
     const { searchQuery, selectedPersonId } = this.state;
-    let nextPeople = people.sort(sortPeopleByName);
+    let nextPeople = people;
     if (searchQuery) {
       const searchQueryWords = searchQuery.split(' ');
       nextPeople = people.filter((person) => {
@@ -162,7 +153,7 @@ class RequiresActionList extends React.Component<Props, State> {
           personId,
           lastName,
           middleName
-        } = formatPeopleInfo(person);
+        } = formatPeopleInfo(fromJS(person));
         if (selectedPersonId === personEntityKeyId) personIsSelected = true;
         searchQueryWords.forEach((word) => {
           if (dob && dob.toLowerCase().includes(word.toLowerCase())) matchesDOB = true;
@@ -188,32 +179,11 @@ class RequiresActionList extends React.Component<Props, State> {
     const { props } = this;
     const { requiresActionPeople } = this.props;
     const { filter } = this.state;
-    let people = props[filter].map(personId => requiresActionPeople.get(personId, Map()));
-    people = this.handleFilterRequest(people);
-    const numResults = people.size;
-    const numPages = Math.ceil(numResults / PAGE_SIZE);
-    return { people, numResults, numPages };
-  }
-
-  updatePage = (start) => {
-    this.setState({ start });
-    window.scrollTo({
-      top: 0,
-      behavior: 'smooth'
-    });
-  }
-
-  renderPagination = () => {
-    const { start } = this.state;
-    const { numPages } = this.getActionList();
-    const currPage = (start / PAGE_SIZE) + 1;
-    return (
-      <Pagination
-          numPages={numPages}
-          activePage={currPage}
-          updateStart={this.updateStart}
-          onChangePage={page => this.updatePage((page - 1) * PAGE_SIZE)} />
+    let people = props[filter].map(
+      (personId, idx) => requiresActionPeople.get(personId, Map()).set('id', personId + idx).toJS()
     );
+    people = this.handleFilterRequest(people);
+    return { people };
   }
 
   renderPersonSearch = () => (
@@ -221,21 +191,18 @@ class RequiresActionList extends React.Component<Props, State> {
   )
 
   renderPeople = () => {
-    const { selectedPersonId, start } = this.state;
+    const { selectedPersonId } = this.state;
     const { people } = this.getActionList();
-    const pageOfPeople = people.slice(start, start + PAGE_SIZE);
     return (
-      <PersonTable
+      <RequiresActionTable
           handleSelect={this.setPersonId}
           selectedPersonId={selectedPersonId}
-          people={pageOfPeople}
-          small />
+          people={people} />
     );
   }
 
   updateFilter = filter => this.setState({
     filter,
-    start: 0,
     selectedPersonId: ''
   });
 
@@ -329,12 +296,10 @@ class RequiresActionList extends React.Component<Props, State> {
         <SectionWrapper>
           <SubToolbarWrapper>
             { this.renderPersonSearch() }
-            { this.renderPagination() }
           </SubToolbarWrapper>
           { this.renderPeople() }
           <SubToolbarWrapper>
             <div />
-            { this.renderPagination() }
           </SubToolbarWrapper>
         </SectionWrapper>
         {this.renderPSAReviewRows() }
