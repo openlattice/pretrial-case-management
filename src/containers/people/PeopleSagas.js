@@ -884,14 +884,17 @@ function* loadRequiresActionPeopleWorker(action :SequenceAction) :Generator<*, *
             arrestDate,
             undefined
           );
-          if (psaScoreMap.get(psaId) && arrestDate.isValid) {
-            chargeHistoryForMostRecentPSA.entrySeq().forEach(([_, charges]) => {
-              const psaHasPendingCharges = charges.some(charge => !charge.getIn([PROPERTY_TYPES.DISPOSITION_DATE, 0]));
-              if (psaHasPendingCharges) hasPendingCharges = true;
-            });
-            if (chargeHistoryForMostRecentPSA.size && !hasPendingCharges) {
-              psaScoresWithNoPendingCharges = psaScoresWithNoPendingCharges.add(psaId);
-              peopleWithNoPendingCharges = peopleWithNoPendingCharges.add(personId);
+          if (psaScoreMap.get(psaId)) {
+            if (chargeHistoryForMostRecentPSA.size) {
+              chargeHistoryForMostRecentPSA.entrySeq().forEach(([_, charges]) => {
+                const pendingCharges = charges
+                  .filter(charge => !charge.getIn([PROPERTY_TYPES.DISPOSITION_DATE, 0]));
+                if (pendingCharges.size) hasPendingCharges = true;
+              });
+              if (!hasPendingCharges) {
+                psaScoresWithNoPendingCharges = psaScoresWithNoPendingCharges.add(psaId);
+                peopleWithNoPendingCharges = peopleWithNoPendingCharges.add(personId);
+              }
             }
           }
         });
