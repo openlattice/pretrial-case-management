@@ -73,6 +73,11 @@ const RequiresActionPersonRow = ({
           { data.oldPSADate }
         </CellContent>
       </StyledCell>
+      <StyledCell>
+        <CellContent>
+          { data.psaCount }
+        </CellContent>
+      </StyledCell>
     </RequiresActionRowWrapper>
   );
 };
