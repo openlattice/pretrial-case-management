@@ -93,7 +93,7 @@ class RCMSettings extends React.Component<Props, *> {
     return matrix[ncaScore][ftaScore];
   }
 
-  changeConditionLevel = (ncaScore, ftaScore) => {
+  handleConditionLevelChange = (ncaScore, ftaScore) => {
     const { changeConditionLevel } = this.props;
     if (changeConditionLevel) changeConditionLevel(ncaScore, ftaScore);
   }
@@ -127,7 +127,7 @@ class RCMSettings extends React.Component<Props, *> {
       <RCMCell
           key={`FTA ${ftaScore} NCA ${ncaScore}`}
           opaque={selected}
-          onClick={() => this.changeConditionLevel(ncaScore, ftaScore)}
+          onClick={() => this.handleConditionLevelChange(ncaScore, ftaScore)}
           color={cellColor}>
         { label }
       </RCMCell>
