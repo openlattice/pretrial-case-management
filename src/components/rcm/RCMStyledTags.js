@@ -2,6 +2,8 @@
  * @flow
  */
 import styled from 'styled-components';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faAngleRight } from '@fortawesome/pro-light-svg-icons';
 
 import { OL } from '../../utils/consts/Colors';
 import { FullWidthContainer } from '../../utils/Layout';
@@ -103,10 +105,9 @@ export const RCMIncreaseText = styled.div`
   }
 `;
 
-export const RCMIncreaseCell = styled.div`
-  display: flex;
-  flex-direction: row;
-  img {
-    margin: 3px;
-  }
+export const IncreaseArrow = styled(FontAwesomeIcon).attrs({
+  icon: faAngleRight,
+  size: '3x'
+})`
+  color: ${OL.GREY02};
 `;
