@@ -4,7 +4,7 @@
 
 import React from 'react';
 import styled from 'styled-components';
-import { fromJS, isImmutable } from 'immutable';
+import { fromJS } from 'immutable';
 
 import { getEntityProperties } from '../../utils/DataUtils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
@@ -13,12 +13,12 @@ import { TEXT_COLOR_MAPPINGS, COLOR_RESULTS_MAP } from '../../utils/consts/RCMRe
 const { COLOR, TYPE } = PROPERTY_TYPES;
 
 type Props = {
-  opaque :boolean,
-  rcm :Object,
   conditions :Object[],
   large? :boolean,
-  table :boolean,
-  onClick :() => void
+  onClick :() => void,
+  opaque :boolean,
+  rcm :Object,
+  table :boolean
 };
 
 const Condition = styled.div`
@@ -86,8 +86,8 @@ const RCMCell = ({
   table,
   onClick
 } :Props) => {
-  const cellConditions = isImmutable(conditions) ? conditions : fromJS(conditions);
-  const cellRCM = isImmutable(rcm) ? rcm : fromJS(rcm);
+  const cellConditions = fromJS(conditions);
+  const cellRCM = fromJS(rcm);
   const color = COLOR_RESULTS_MAP[cellRCM.getIn([COLOR, 0], cellRCM.get(COLOR, ''))];
   return (
     <StyledCell
