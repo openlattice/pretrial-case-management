@@ -66,6 +66,15 @@ export const COLOR_MAP = {
   [OL.RED01]: 'RED'
 };
 
+export const COLOR_LABELS = {
+  [OL.BLUE02]: 'Blue',
+  [OL.GREEN01]: 'Dark Green',
+  [OL.GREEN02]: 'Light Green',
+  [OL.YELLOW02]: 'Yellow',
+  [OL.ORANGE01]: 'Organe',
+  [OL.RED01]: 'Red'
+};
+
 export const COLOR_RESULTS_MAP = {
   BLUE: OL.BLUE02,
   DARK_GREEN: OL.GREEN01,
