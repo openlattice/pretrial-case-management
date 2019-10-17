@@ -138,7 +138,7 @@ class RCMSettings extends React.Component<Props, State> {
       mappedCondition.id = idx;
       return mappedCondition;
     });
-    if (editing) conditionValues.push({});
+    if (editing) conditionValues.push({ id: 'emptyOption' });
     return (!bookingView)
       ? (
         <ReleaseConditionsTable
