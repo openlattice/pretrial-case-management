@@ -54,7 +54,7 @@ type Props = {
   scores :Map<*, *>
 };
 
-class RCMSettings extends React.Component<Props, State> {
+class RCMSettings extends React.Component<Props, *> {
 
   getLevels = (all) => {
     const { settings } = this.props;
