@@ -126,10 +126,21 @@ class SettingsContainer extends React.Component<Props, State> {
     }
   }
 
-  handleUpdateSetting = ({ value, path }) => {
+
+  handleCheckboxUpdateSetting = (e) => {
     const { actions } = this.props;
+    const { target } = e;
+    const path = target.value.split(',');
+    actions.updateSetting({ path, value: target.checked });
+  };
+
+  handleRadioUpdateSetting = (e) => {
+    const { actions } = this.props;
+    const { target } = e;
+    const { name, value } = target;
+    const path = name.split(',');
     actions.updateSetting({ path, value });
-  }
+  };
 
   renderCheckbox = (path, label) => {
     const { editing } = this.state;
@@ -137,12 +148,11 @@ class SettingsContainer extends React.Component<Props, State> {
     return (
       <StyledCell key={label + path} align="center">
         <Checkbox
+            value={path}
             disabled={!editing}
             checked={settings.getIn(path, false)}
             label={label}
-            onChange={(event) => {
-              this.handleUpdateSetting({ path, value: event.target.checked });
-            }} />
+            onChange={this.handleCheckboxUpdateSetting} />
       </StyledCell>
     );
   }
@@ -154,12 +164,11 @@ class SettingsContainer extends React.Component<Props, State> {
       <StyledCell align="center">
         <Radio
             disabled={!editing}
+            name={path}
             value={optionValue}
             checked={settings.getIn(path) === optionValue}
             label={label}
-            onChange={(event) => {
-              this.handleUpdateSetting({ path, value: event.target.value });
-            }} />
+            onChange={this.handleRadioUpdateSetting} />
       </StyledCell>
     );
   }
