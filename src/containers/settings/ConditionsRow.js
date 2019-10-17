@@ -87,7 +87,7 @@ class ConditionsRow extends React.Component<Props, *> {
     } = this.props;
     const columns = Object.keys(levels)
       .map(idx => (
-        <StyledCell key={`${data.description}-LEVEL${idx}`} align="center">
+        <StyledCell key={`${data.description}-LEVEL${levels[idx][RCM_DATA.COLOR]}`} align="center">
           <Checkbox
               disabled={!editing || !data.description}
               defaultChecked={data[idx]}
