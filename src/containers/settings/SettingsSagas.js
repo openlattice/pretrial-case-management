@@ -2,15 +2,16 @@
  * @flow
  */
 
+import type { SequenceAction } from 'redux-reqseq';
 import { fromJS, Map } from 'immutable';
 import { DataApiActions, DataApiSagas } from 'lattice-sagas';
+import { Types } from 'lattice';
 import {
   call,
   put,
   takeEvery,
   select
 } from '@redux-saga/core/effects';
-import type { SequenceAction } from 'redux-reqseq';
 
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 
@@ -33,6 +34,7 @@ const {
 
 const { APP_DETAILS, ENTITY_KEY_ID } = PROPERTY_TYPES;
 
+const { UpdateTypes } = Types;
 
 /*
  * Selectors
@@ -71,7 +73,7 @@ function* submitSettingsWorker(action :SequenceAction) :Generator<*, *, *> {
       updateEntityData({
         entitySetId: settingsESID,
         entities: { [settingsEKID]: updatedSettingsObject },
-        updateType: 'PartialReplace'
+        updateType: UpdateTypes.PartialReplace
       })
     );
     if (updateResponse.error) throw updateResponse.error;
