@@ -13,7 +13,7 @@ import {
   PlusButton
 } from 'lattice-ui-kit';
 
-
+import { StyledCell, CellContent } from '../../components/rcm/RCMStyledTags';
 import { SETTINGS, RCM, RCM_DATA } from '../../utils/consts/AppSettingConsts';
 import { OL } from '../../utils/consts/Colors';
 import { STATE } from '../../utils/consts/redux/SharedConsts';
@@ -24,19 +24,6 @@ import { updateSetting, deleteRCMCondition } from './SettingsActions';
 
 const ConditionsRowWrapper = styled.tr.attrs(() => ({ tabIndex: '1' }))`
   border-bottom: 1px solid ${OL.GREY11};
-`;
-
-const CellContent = styled.div`
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-`;
-
-const StyledCell = styled.td`
-  padding: 5px 5px;
-  text-align: ${props => props.align || 'left'};
-  word-wrap: break-word;
 `;
 
 type Props = {

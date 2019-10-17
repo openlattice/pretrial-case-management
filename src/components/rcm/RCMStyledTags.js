@@ -105,6 +105,19 @@ export const RCMIncreaseText = styled.div`
   }
 `;
 
+export const CellContent = styled.div`
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+`;
+
+export const StyledCell = styled.td`
+  padding: 5px 5px;
+  text-align: ${props => props.align || 'left'};
+  word-wrap: break-word;
+`;
+
 export const IncreaseArrow = styled(FontAwesomeIcon).attrs({
   icon: faAngleRight,
   size: '3x'
