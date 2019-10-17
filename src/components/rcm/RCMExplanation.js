@@ -15,7 +15,7 @@ import { getEntityProperties } from '../../utils/DataUtils';
 import { PSA } from '../../utils/consts/Consts';
 import { RCM_FIELDS } from '../../utils/consts/RCMResultsConsts';
 
-const { NCA_SCALE, FTA_SCALE, NVCA_FLAG } = PROPERTY_TYPES;
+const { NVCA_FLAG } = PROPERTY_TYPES;
 
 const {
   COURT_OR_BOOKING,
@@ -44,7 +44,7 @@ const RCMExplanation = ({
   const secondaryHoldVal = riskFactors.get(SECONDARY_HOLD_CHARGES) === `${true}`;
 
 
-  const { [NVCA_FLAG]: nvcaFlag } = getEntityProperties(scores, [NCA_SCALE, FTA_SCALE, NVCA_FLAG]);
+  const { [NVCA_FLAG]: nvcaFlag } = getEntityProperties(scores, [NVCA_FLAG]);
 
   const stepTwoIncrease = extradited || stepTwoCharges || (nvcaFlag && currentViolentOffense);
   const stepFourIncrease = stepFourCharges || (nvcaFlag && !currentViolentOffense);

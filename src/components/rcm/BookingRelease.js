@@ -25,7 +25,7 @@ import {
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { SETTINGS_DATA } from '../../utils/consts/redux/SettingsConsts';
 
-const { NCA_SCALE, FTA_SCALE, NVCA_FLAG } = PROPERTY_TYPES;
+const { NCA_SCALE, FTA_SCALE } = PROPERTY_TYPES;
 
 type Props = {
   settings :Map<*, *>,
@@ -54,7 +54,7 @@ class BookingRelease extends React.Component<Props, *> {
     const {
       [NCA_SCALE]: ncaScore,
       [FTA_SCALE]: ftaScore
-    } = getEntityProperties(scores, [NCA_SCALE, FTA_SCALE, NVCA_FLAG]);
+    } = getEntityProperties(scores, [NCA_SCALE, FTA_SCALE]);
     const rcmResult = getRCMDecision(ncaScore, ftaScore, settings);
     const level :number = rcmResult.rcm[PROPERTY_TYPES.CONDITIONS_LEVEL];
     if (!shouldRender || !shouldCheckForSecondaryRelease(level, settings)) return null;
