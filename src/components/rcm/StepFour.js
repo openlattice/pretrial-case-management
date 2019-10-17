@@ -7,7 +7,6 @@ import { connect } from 'react-redux';
 
 import RCMCell from './RCMCell';
 import BooleanFlag from '../BooleanFlag';
-import rightArrow from '../../assets/svg/rcm-arrow.svg';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { getEntityProperties } from '../../utils/DataUtils';
 import { getRCMDecision, increaseRCMSeverity } from '../../utils/RCMUtils';
@@ -15,15 +14,16 @@ import { CONTEXT, PSA } from '../../utils/consts/Consts';
 import { RCM_FIELDS } from '../../utils/consts/RCMResultsConsts';
 import {
   ContentsWrapper,
-  StepIncreaseWrapper,
-  StyledSection,
+  FLAG_DIMS,
   Flags,
-  StyledContentBlock,
-  StyledContentLabel,
-  StyledContent,
+  IncreaseArrow,
   RCMIncreaseText,
-  RCMIncreaseCell,
-  FLAG_DIMS
+  StepIncreaseWrapper,
+  StepWrapper,
+  StyledContent,
+  StyledContentLabel,
+  StyledContentBlock,
+  StyledSection
 } from './RCMStyledTags';
 import { Title, FullWidthContainer } from '../../utils/Layout';
 
@@ -33,10 +33,10 @@ import { SETTINGS_DATA } from '../../utils/consts/redux/SettingsConsts';
 const { NCA_SCALE, FTA_SCALE, NVCA_FLAG } = PROPERTY_TYPES;
 
 type Props = {
-  settings :Map<*, *>,
-  scores :Map<*, *>,
-  riskFactors :Map<*, *>,
   context :string,
+  riskFactors :Map<*, *>,
+  scores :Map<*, *>,
+  settings :Map<*, *>,
   shouldRender :boolean
 };
 
@@ -136,11 +136,11 @@ class StepFour extends React.Component<Props, *> {
             STEP FOUR INCREASE APPLIED
             <span>increased conditions for release</span>
           </RCMIncreaseText>
-          <RCMIncreaseCell>
+          <StepWrapper>
             <RCMCell rcm={rcm} conditions={conditions} large />
-            <img src={rightArrow} alt="" />
+            <IncreaseArrow />
             <RCMCell rcm={rcmS3} conditions={conditionsS3} large />
-          </RCMIncreaseCell>
+          </StepWrapper>
         </StyledSection>
       );
     }

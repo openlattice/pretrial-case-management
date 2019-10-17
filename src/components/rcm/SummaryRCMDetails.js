@@ -7,8 +7,7 @@ import { connect } from 'react-redux';
 import { fromJS, Map } from 'immutable';
 
 import RCMCell from './RCMCell';
-import rightArrow from '../../assets/svg/rcm-arrow.svg';
-import { RCMIncreaseText } from './RCMStyledTags';
+import { IncreaseArrow, StepWrapper, RCMIncreaseText } from './RCMStyledTags';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { getEntityProperties } from '../../utils/DataUtils';
@@ -78,9 +77,11 @@ class SummaryRCMDetails extends React.Component<Props, *> {
     return (
       <ScoreContent>
         <RCMIncreaseText>Step two increase</RCMIncreaseText>
-        <RCMCell rcm={rcm1.rcm} conditions={isBookingContext ? rcm1.bookingConditions : rcm1.courtConditions} />
-        <img src={rightArrow} alt="" />
-        <RCMCell rcm={rcm2.rcm} conditions={isBookingContext ? rcm2.bookingConditions : rcm2.courtConditions} />
+        <StepWrapper>
+          <RCMCell rcm={rcm1.rcm} conditions={isBookingContext ? rcm1.bookingConditions : rcm1.courtConditions} />
+          <IncreaseArrow />
+          <RCMCell rcm={rcm2.rcm} conditions={isBookingContext ? rcm2.bookingConditions : rcm2.courtConditions} />
+        </StepWrapper>
       </ScoreContent>
     );
   }

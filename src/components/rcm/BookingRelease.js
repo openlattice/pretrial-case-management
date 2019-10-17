@@ -7,14 +7,14 @@ import { connect } from 'react-redux';
 import { Map } from 'immutable';
 
 import RCMCell from './RCMCell';
-import rightArrow from '../../assets/svg/rcm-arrow.svg';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { getEntityProperties } from '../../utils/DataUtils';
 import { RCM_FIELDS } from '../../utils/consts/RCMResultsConsts';
 import {
+  IncreaseArrow,
+  RCMIncreaseText,
   StepHeader,
   StepWrapper,
-  RCMIncreaseText
 } from './RCMStyledTags';
 import {
   getRCMDecision,
@@ -66,7 +66,7 @@ class BookingRelease extends React.Component<Props, *> {
       ? (
         <StepWrapper>
           <RCMCell rcm={rcmResult.rcm} conditions={rcmResult.bookingConditions} large />
-          <img src={rightArrow} alt="" />
+          <IncreaseArrow />
           <RCMCell rcm={updatedRCM} conditions={updatedConditions} large />
         </StepWrapper>
       ) : (

@@ -8,7 +8,6 @@ import { connect } from 'react-redux';
 
 import RCMCell from './RCMCell';
 import BooleanFlag from '../BooleanFlag';
-import rightArrow from '../../assets/svg/rcm-arrow.svg';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { getRCMDecision } from '../../utils/RCMUtils';
 import { PSA } from '../../utils/consts/Consts';
@@ -16,15 +15,16 @@ import { RCM_FIELDS } from '../../utils/consts/RCMResultsConsts';
 import { getEntityProperties } from '../../utils/DataUtils';
 import {
   ContentsWrapper,
-  StepIncreaseWrapper,
-  StyledSection,
+  FLAG_DIMS,
   Flags,
-  StyledContentBlock,
-  StyledContentLabel,
-  StyledContent,
+  IncreaseArrow,
   RCMIncreaseText,
-  RCMIncreaseCell,
-  FLAG_DIMS
+  StepIncreaseWrapper,
+  StepWrapper,
+  StyledContent,
+  StyledContentLabel,
+  StyledContentBlock,
+  StyledSection
 } from './RCMStyledTags';
 import { Title, FullWidthContainer } from '../../utils/Layout';
 
@@ -34,9 +34,10 @@ import { SETTINGS_DATA } from '../../utils/consts/redux/SettingsConsts';
 const { NCA_SCALE, FTA_SCALE, NVCA_FLAG } = PROPERTY_TYPES;
 
 type Props = {
-  settings :Map<*, *>,
+  isBookingContext :boolean,
+  riskFactors :Map<*, *>,
   scores :Map<*, *>,
-  riskFactors :Map<*, *>
+  settings :Map<*, *>
 };
 
 class StepTwo extends React.Component <Props, *> {
@@ -123,11 +124,11 @@ class StepTwo extends React.Component <Props, *> {
             STEP TWO INCREASE APPLIED
             <span>maximum conditions for any release</span>
           </RCMIncreaseText>
-          <RCMIncreaseCell>
+          <StepWrapper>
             <RCMCell rcm={rcm} conditions={conditions} large />
-            <img src={rightArrow} alt="" />
+            <IncreaseArrow />
             <RCMCell rcm={rcmS2} conditions={conditionsS2} large />
-          </RCMIncreaseCell>
+          </StepWrapper>
         </StyledSection>
       )
       : (

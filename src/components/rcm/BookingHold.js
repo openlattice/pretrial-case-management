@@ -7,14 +7,14 @@ import { Map } from 'immutable';
 import { connect } from 'react-redux';
 
 import RCMCell from './RCMCell';
-import rightArrow from '../../assets/svg/rcm-arrow.svg';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { getEntityProperties } from '../../utils/DataUtils';
 import { RCM_FIELDS } from '../../utils/consts/RCMResultsConsts';
 import {
+  IncreaseArrow,
+  RCMIncreaseText,
   StepHeader,
-  StepWrapper,
-  RCMIncreaseText
+  StepWrapper
 } from './RCMStyledTags';
 import {
   getRCMDecision,
@@ -22,15 +22,16 @@ import {
   updateRCMSecondaryHold
 } from '../../utils/RCMUtils';
 
+
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { SETTINGS_DATA } from '../../utils/consts/redux/SettingsConsts';
 
 const { NCA_SCALE, FTA_SCALE, NVCA_FLAG } = PROPERTY_TYPES;
 
 type Props = {
-  settings :Map<*, *>,
-  scores :Map<*, *>,
   riskFactors :Map<*, *>,
+  scores :Map<*, *>,
+  settings :Map<*, *>,
   shouldRender :boolean
 };
 
@@ -66,7 +67,7 @@ class BookingHold extends React.Component<Props, *> {
       ? (
         <StepWrapper>
           <RCMCell rcm={rcmResult.rcm} conditions={rcmResult.bookingConditions} large />
-          <img src={rightArrow} alt="" />
+          <IncreaseArrow />
           <RCMCell rcm={updatedRCM} conditions={updatedConditions} large />
         </StepWrapper>
       ) : (
