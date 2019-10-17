@@ -126,17 +126,22 @@ class SettingsContainer extends React.Component<Props, State> {
     }
   }
 
+  handleUpdateSetting = ({ value, path }) => {
+    const { actions } = this.props;
+    actions.updateSetting({ path, value });
+  }
+
   renderCheckbox = (path, label) => {
     const { editing } = this.state;
-    const { actions, settings } = this.props;
+    const { settings } = this.props;
     return (
       <StyledCell key={label + path} align="center">
         <Checkbox
             disabled={!editing}
             checked={settings.getIn(path, false)}
             label={label}
-            onChange={({ target }) => {
-              actions.updateSetting({ path, value: target.checked });
+            onChange={(e) => {
+              this.handleUpdateSetting({ path, value: e.target.checked });
             }} />
       </StyledCell>
     );
@@ -144,7 +149,7 @@ class SettingsContainer extends React.Component<Props, State> {
 
   renderRadioButton = (path, optionValue, label) => {
     const { editing } = this.state;
-    const { actions, settings } = this.props;
+    const { settings } = this.props;
     return (
       <StyledCell align="center">
         <Radio
@@ -152,8 +157,8 @@ class SettingsContainer extends React.Component<Props, State> {
             value={optionValue}
             checked={settings.getIn(path) === optionValue}
             label={label}
-            onChange={({ target }) => {
-              actions.updateSetting({ path, value: target.value });
+            onChange={(e) => {
+              this.handleUpdateSetting({ path, value: e.target.value });
             }} />
       </StyledCell>
     );
