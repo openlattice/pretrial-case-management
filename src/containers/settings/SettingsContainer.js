@@ -140,8 +140,8 @@ class SettingsContainer extends React.Component<Props, State> {
             disabled={!editing}
             checked={settings.getIn(path, false)}
             label={label}
-            onChange={(e) => {
-              this.handleUpdateSetting({ path, value: e.target.checked });
+            onChange={(event) => {
+              this.handleUpdateSetting({ path, value: event.target.checked });
             }} />
       </StyledCell>
     );
@@ -157,8 +157,8 @@ class SettingsContainer extends React.Component<Props, State> {
             value={optionValue}
             checked={settings.getIn(path) === optionValue}
             label={label}
-            onChange={(e) => {
-              this.handleUpdateSetting({ path, value: e.target.value });
+            onChange={(event) => {
+              this.handleUpdateSetting({ path, value: event.target.value });
             }} />
       </StyledCell>
     );
