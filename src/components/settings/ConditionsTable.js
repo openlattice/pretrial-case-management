@@ -15,13 +15,15 @@ type Props = {
   levels :Map<*, *>
 };
 
-class ReleaseConditionsTable extends React.Component<Props, State> {
+class ConditionsTable extends React.Component<Props, State> {
 
   getHeaders = () => {
     const { editing, levels } = this.props;
     const headers :Object[] = [{ key: 'description', label: 'Description' }];
     for (let level = 1; level <= Object.keys(levels).length; level += 1) {
-      if (levels[level].active) headers.push({ key: `Level ${level}`, label: `Level ${level}`, cellStyle: { width: '12%' } });
+      if (levels[level].active) {
+        headers.push({ key: `Level ${level}`, label: `Level ${level}`, cellStyle: { width: '12%' } });
+      }
     }
     if (editing) headers.push({ key: 'removerow', label: '' });
     return headers;
@@ -56,4 +58,4 @@ class ReleaseConditionsTable extends React.Component<Props, State> {
   }
 }
 
-export default ReleaseConditionsTable;
+export default ConditionsTable;
