@@ -4,10 +4,11 @@
 
 import React from 'react';
 import styled from 'styled-components';
+import { Map } from 'immutable';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 
-import { COLOR_MAP } from '../../utils/consts/RCMResultsConsts';
+import { COLOR_LABELS, COLOR_MAP } from '../../utils/consts/RCMResultsConsts';
 import ColorSwatches from '../../components/settings/ColorSwatches';
 import {
   SETTINGS,
@@ -59,6 +60,25 @@ class LevelColorsSection extends React.Component<Props, *> {
     const usedColors = Object.values(levels).map(level => level[RCM_DATA.COLOR]);
     return Object.keys(COLOR_MAP).filter(color => !usedColors.includes(color));
   }
+  getAvailableColorObjectList = () => {
+    const { levels } = this.props;
+    const usedColors = Object.values(levels).map(level => level[RCM_DATA.COLOR]);
+    const colorMap = Map().withMutations((mutableMap) => {
+      Object.keys(COLOR_MAP).forEach((color) => {
+        const value = COLOR_MAP[color];
+        const label = COLOR_LABELS[color];
+        const isDisabled = !usedColors.includes(color);
+        const colorObject = {
+          color,
+          value,
+          label,
+          isDisabled
+        };
+        mutableMap.set(color, colorObject);
+      });
+    });
+    return colorMap;
+  }
 
   getColumns = () => {
     const { levels, editing } = this.props;
@@ -70,6 +90,7 @@ class LevelColorsSection extends React.Component<Props, *> {
               editing={editing}
               levels={levels}
               updateColorForLevel={this.updateColorForLevel}
+              colorObjects={this.getAvailableColorObjectList()}
               availableColors={this.getAvailableColors()} />
           <div>{`Level ${idx}`}</div>
         </CellContent>
