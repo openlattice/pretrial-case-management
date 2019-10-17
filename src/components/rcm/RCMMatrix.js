@@ -100,7 +100,7 @@ class RCMSettings extends React.Component<Props, *> {
 
   getCell = (ncaScore, ftaScore) => {
     const { scores, bookingView } = this.props;
-    let selected = false;
+    let selected = true;
     if (scores) {
       const {
         [FTA_SCALE]: fta,
