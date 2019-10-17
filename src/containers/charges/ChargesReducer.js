@@ -88,6 +88,12 @@ const prepareNewChargeState = (state, value, deletingCharge) => {
     nextState.getIn([field, orgId, statute], Set()).delete(description)
   );
 
+  const handleSetAndRemove = (qualifier, field) => {
+    if (qualifier) nextState = setChargeInState(field);
+    else nextState = removeChargeInState(field);
+    return nextState;
+  };
+
   if (charge.size) {
     if (deletingCharge) {
       nextState = nextState.deleteIn([fieldOfState, orgId, chargeEKID]);
@@ -99,16 +105,11 @@ const prepareNewChargeState = (state, value, deletingCharge) => {
     }
     else {
       nextState = nextState.setIn([fieldOfState, orgId, chargeEKID], charge);
-      if (chargeIsViolent) nextState = setChargeInState(violentChargeField);
-      else nextState = removeChargeInState(violentChargeField);
-      if (chargeIsStep2) nextState = setChargeInState(CHARGES.RCM_STEP_2);
-      else nextState = removeChargeInState(CHARGES.RCM_STEP_2);
-      if (chargeIsStep4) nextState = setChargeInState(CHARGES.RCM_STEP_4);
-      else nextState = removeChargeInState(CHARGES.RCM_STEP_4);
-      if (chargeIsBHE) nextState = setChargeInState(CHARGES.BHE);
-      else nextState = removeChargeInState(CHARGES.BHE);
-      if (chargeIsBRE) nextState = setChargeInState(CHARGES.BRE);
-      else nextState = removeChargeInState(CHARGES.BRE);
+      nextState = handleSetAndRemove(chargeIsViolent, violentChargeField);
+      nextState = handleSetAndRemove(chargeIsStep2, CHARGES.RCM_STEP_2);
+      nextState = handleSetAndRemove(chargeIsStep4, CHARGES.RCM_STEP_4);
+      nextState = handleSetAndRemove(chargeIsBHE, CHARGES.BHE);
+      nextState = handleSetAndRemove(chargeIsBRE, CHARGES.BRE);
     }
   }
 
