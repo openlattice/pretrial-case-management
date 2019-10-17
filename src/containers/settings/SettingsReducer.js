@@ -72,7 +72,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
 
 });
 
-export default function courtReducer(state :Map<*, *> = INITIAL_STATE, action :Object) {
+export default function settingsReducer(state :Map<*, *> = INITIAL_STATE, action :Object) {
   switch (action.type) {
 
     case DELETE_RCM_CONDITION: {
