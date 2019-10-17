@@ -106,7 +106,7 @@ class RCMSettings extends React.Component<Props, *> {
         [FTA_SCALE]: fta,
         [NCA_SCALE]: nca
       } = getEntityProperties(scores, [FTA_SCALE, NCA_SCALE]);
-      selected = scores && ((ncaScore === nca) && (ftaScore === fta));
+      selected = (ncaScore === nca) && (ftaScore === fta);
     }
     const levels = this.getLevels();
     const cellInfo = this.getCellInfo(ncaScore, ftaScore);
