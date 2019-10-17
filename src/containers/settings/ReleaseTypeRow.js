@@ -38,9 +38,15 @@ class ReleaseTypeRow extends React.Component<Props, *> {
 
   getPath = level => [SETTINGS.RCM, RCM.LEVELS, `${level}`, RCM_DATA.RELEASE_TYPE];
 
+  handleUpdateSetting = (e) => {
+    const { actions, data } = this.props;
+    const { target } = e;
+    const path = target.value.split(',');
+    actions.updateSetting({ path, value: data.releaseType });
+  };
+
   getColumns = () => {
     const {
-      actions,
       data,
       levels,
       editing,
@@ -53,11 +59,9 @@ class ReleaseTypeRow extends React.Component<Props, *> {
           <StyledCell key={`LEVEL${idx}`} align="center">
             <Radio
                 disabled={!editing}
-                value={data.releaseType}
+                value={path}
                 checked={settings.getIn(path, '') === data.releaseType}
-                onChange={({ target }) => {
-                  actions.updateSetting({ path, value: target.value });
-                }} />
+                onChange={this.handleUpdateSetting} />
           </StyledCell>
         );
       });
