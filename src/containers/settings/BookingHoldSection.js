@@ -58,7 +58,7 @@ class BookingHoldSection extends React.Component<Props, *> {
     const { levels, editing } = this.props;
     const columns = Object.keys(levels)
       .map(idx => (
-        <CellContent key={`RT4Level ${idx}`} align="center">
+        <CellContent key={`${levels[idx][RCM_DATA.COLOR]}`} align="center">
           <Checkbox
               label={`Level ${idx}`}
               disabled={!editing}
