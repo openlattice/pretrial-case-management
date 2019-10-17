@@ -53,11 +53,12 @@ class ConditionsRow extends React.Component<Props, *> {
     actions.updateSetting({ path: [SETTINGS.RCM, RCM.CONDITIONS], value: nextConditions });
   }
 
-  updateCondition = (description, levelIdx, value) => {
-    const { actions, settings } = this.props;
+  updateCondition = (e) => {
+    const { actions, data, settings } = this.props;
     const conditions = settings.getIn([SETTINGS.RCM, RCM.CONDITIONS], Map());
-    const { target } = value;
-    const nextConditions = conditions.setIn([description, levelIdx], target.checked);
+    const { target } = e;
+    const { checked, value } = target;
+    const nextConditions = conditions.setIn([data[RCM_DATA.DESCRIPTION], value], checked);
     actions.updateSetting({ path: [SETTINGS.RCM, RCM.CONDITIONS], value: nextConditions });
   }
 
@@ -76,10 +77,10 @@ class ConditionsRow extends React.Component<Props, *> {
       .map(idx => (
         <StyledCell key={`${data.description}-LEVEL${idx}`} align="center">
           <Checkbox
+              value={idx}
               disabled={!editing || !data.description}
               defaultChecked={data[idx]}
-              color={levels[idx][RCM_DATA.COLOR]}
-              onChange={value => this.updateCondition(data[RCM_DATA.DESCRIPTION], idx, value)} />
+              onChange={this.updateCondition} />
         </StyledCell>
       ));
     return columns;
