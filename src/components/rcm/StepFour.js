@@ -51,23 +51,23 @@ class StepFour extends React.Component<Props, *> {
     const STEP4_VALS = [
       {
         label: 'Does current charge match listed charges?',
-        content: [
-          <ContentsWrapper key={1}>
+        content: (
+          <ContentsWrapper>
             <BooleanFlag dims={FLAG_DIMS} value={stepFourCharges} />
           </ContentsWrapper>
-        ]
+        )
       },
       {
         label: 'Current charge is not violent and PSA resulted in NVCA flag?',
-        content: [
-          <ContentsWrapper key={2}>
+        content: (
+          <ContentsWrapper>
             <BooleanFlag dims={FLAG_DIMS} value={nvcaFlag && !currentViolentOffense} />
           </ContentsWrapper>
-        ]
+        )
       },
       {
         label: '',
-        content: []
+        content: null
       }
     ];
 

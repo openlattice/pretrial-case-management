@@ -51,27 +51,27 @@ class StepTwo extends React.Component <Props, *> {
     const STEP2_VALS = [
       {
         label: 'Extradited for current charge?',
-        content: [
-          <ContentsWrapper key={1}>
+        content: (
+          <ContentsWrapper>
             <BooleanFlag dims={FLAG_DIMS} value={extradited} />
           </ContentsWrapper>
-        ]
+        )
       },
       {
         label: 'Does current charge match listed charges?',
-        content: [
-          <ContentsWrapper key={2}>
+        content: (
+          <ContentsWrapper>
             <BooleanFlag dims={FLAG_DIMS} value={stepTwoCharges} />
           </ContentsWrapper>
-        ]
+        )
       },
       {
         label: 'Current charge is violent and PSA resulted in NVCA flag?',
-        content: [
-          <ContentsWrapper key={3}>
+        content: (
+          <ContentsWrapper>
             <BooleanFlag dims={FLAG_DIMS} value={nvcaFlag && currentViolentOffense} />
           </ContentsWrapper>
-        ]
+        )
       }
     ];
 
