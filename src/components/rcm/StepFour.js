@@ -116,10 +116,7 @@ class StepFour extends React.Component<Props, *> {
           <RCMIncreaseText>
             STEP FOUR INCREASE NOT APPLICABLE
           </RCMIncreaseText>
-          { shouldDisplayRCMCell
-            ? <RCMCell rcm={rcm} conditions={conditions} large />
-            : null
-          }
+          { shouldDisplayRCMCell && <RCMCell rcm={rcm} conditions={conditions} large /> }
         </StyledSection>
       );
     }
