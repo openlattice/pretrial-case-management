@@ -44,7 +44,7 @@ class StepFour extends React.Component<Props, *> {
 
   renderFlags = () => {
     const { scores, riskFactors } = this.props;
-    const { [NVCA_FLAG]: nvcaFlag } = getEntityProperties(scores, [NCA_SCALE, FTA_SCALE, NVCA_FLAG]);
+    const { [NVCA_FLAG]: nvcaFlag } = getEntityProperties(scores, [NVCA_FLAG]);
     const currentViolentOffense :boolean = riskFactors.get(PSA.CURRENT_VIOLENT_OFFENSE) === `${true}`;
     const stepFourCharges :boolean = riskFactors.get(RCM_FIELDS.STEP_4_CHARGES) === `${true}`;
 

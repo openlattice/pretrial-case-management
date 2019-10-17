@@ -44,7 +44,7 @@ class StepTwo extends React.Component <Props, *> {
 
   renderFlags = () => {
     const { scores, riskFactors } = this.props;
-    const { [NVCA_FLAG]: nvcaFlag } = getEntityProperties(scores, [NCA_SCALE, FTA_SCALE, NVCA_FLAG]);
+    const { [NVCA_FLAG]: nvcaFlag } = getEntityProperties(scores, [NVCA_FLAG]);
     const extradited = riskFactors.get(RCM_FIELDS.EXTRADITED) === `${true}`;
     const currentViolentOffense = riskFactors.get(PSA.CURRENT_VIOLENT_OFFENSE) === `${true}`;
     const stepTwoCharges = riskFactors.get(RCM_FIELDS.STEP_2_CHARGES) === `${true}`;
@@ -101,7 +101,7 @@ class StepTwo extends React.Component <Props, *> {
       [NCA_SCALE]: ncaScore,
       [FTA_SCALE]: ftaScore,
       [NVCA_FLAG]: nvcaFlag,
-    } = getEntityProperties(scores, [NCA_SCALE, FTA_SCALE, NVCA_FLAG]);
+    } = getEntityProperties(scores, [NCA_SCALE, FTA_SCALE]);
     const extradited = riskFactors.get(RCM_FIELDS.EXTRADITED) === `${true}`;
     const currentViolentOffense = riskFactors.get(PSA.CURRENT_VIOLENT_OFFENSE) === `${true}`;
     const stepTwoCharges = riskFactors.get(RCM_FIELDS.STEP_2_CHARGES) === `${true}`;
