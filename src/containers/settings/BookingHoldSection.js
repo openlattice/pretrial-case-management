@@ -63,7 +63,6 @@ class BookingHoldSection extends React.Component<Props, *> {
               label={`Level ${idx}`}
               disabled={!editing}
               defaultChecked={levels[idx][RCM_DATA.BOOKING_HOLD]}
-              color={levels[idx][RCM_DATA.COLOR]}
               onChange={value => this.updateHoldStatusForLevel(idx, value)} />
         </CellContent>
       ));
