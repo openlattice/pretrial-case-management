@@ -314,7 +314,6 @@ class SettingsContainer extends React.Component<Props, State> {
                 </ChoiceWrapper>
               </SubSection>
             </CardSegment>
-            { this.renderAdvancedSettings() }
             <RCMSettings editing={editing} />
           </Card>
         </StyledFormWrapper>
