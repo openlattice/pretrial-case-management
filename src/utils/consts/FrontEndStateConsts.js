@@ -233,12 +233,14 @@ export const PEOPLE = {
   REQUIRES_ACTION_PEOPLE: 'requiresActionPeople',
   REQUIRES_ACTION_SCORES: 'requiresActionPSAScores',
   NO_PENDING_CHARGES_PSA_SCORES: 'psaScoresWithNoPendingCharges',
+  NO_HEARINGS_PSA_SCORES: 'psaScoresWithNoHearings',
   RECENT_FTA_PSA_SCORES: 'psaScoresWithRecentFTAs',
   REQUIRES_ACTION_NEIGHBORS: 'requiresActionPeopleNeighbors',
   PSA_NEIGHBORS_BY_ID: 'psaNeighborsById',
   MULTIPLE_PSA_PEOPLE: 'peopleWithMultiplePSAs',
   RECENT_FTA_PEOPLE: 'peopleWithRecentFTAs',
   NO_PENDING_CHARGES_PEOPLE: 'peopleWithNoPendingCharges',
+  NO_HEARINGS_PEOPLE: 'peopleWithPSAsWithNoHearings',
   REQUIRES_ACTION_LOADING: 'loadingRequiresActionPeople',
   ERROR: 'errorMessage'
 };

@@ -6,6 +6,7 @@ import React from 'react';
 import styled from 'styled-components';
 import moment from 'moment';
 import { Map, List } from 'immutable';
+import { DateTime } from 'luxon';
 import { Constants } from 'lattice';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
@@ -15,9 +16,8 @@ import PSAReviewReportsRow from '../../components/review/PSAReviewReportsRow';
 import LogoLoader from '../../components/LogoLoader';
 import SearchBar from '../../components/PSASearchBar';
 import DashboardMainSection from '../../components/dashboard/DashboardMainSection';
-import Pagination from '../../components/Pagination';
-import PersonTable from '../../components/people/PersonTable';
-import { formatPeopleInfo, sortPeopleByName } from '../../utils/PeopleUtils';
+import RequiresActionTable from '../../components/requiresaction/RequiresActionTable';
+import { getEntityProperties } from '../../utils/DataUtils';
 import { OL } from '../../utils/consts/Colors';
 import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
 import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
@@ -34,6 +34,14 @@ import * as PSAModalActionFactory from '../psamodal/PSAModalActionFactory';
 const { OPENLATTICE_ID_FQN } = Constants;
 
 const { PSA_SCORES } = APP_TYPES;
+const {
+  DATE_TIME,
+  DOB,
+  ENTITY_KEY_ID,
+  FIRST_NAME,
+  LAST_NAME,
+  MIDDLE_NAME
+} = PROPERTY_TYPES;
 
 const SectionWrapper = styled.div`
     width: 100%;
@@ -76,7 +84,9 @@ type Props = {
   peopleWithRecentFTAs :Set<*>,
   psaNeighborsById :Map<*, *>,
   psaScoresWithNoPendingCharges :Set<*>,
+  psaScoresWithNoHearings :Set<*>,
   psaScoresWithRecentFTAs :Set<*>,
+  peopleWithPSAsWithNoHearings :Set<*>,
   selectedOrganizationId :string,
   selectedOrganizationSettings :Map<*, *>,
   actions :{
@@ -87,17 +97,15 @@ type Props = {
 const REQUIRES_ACTION_FILTERS = {
   MULTIPLE_PSA_PEOPLE: PEOPLE.MULTIPLE_PSA_PEOPLE,
   RECENT_FTA_PEOPLE: PEOPLE.RECENT_FTA_PEOPLE,
-  NO_PENDING_CHARGES_PEOPLE: PEOPLE.NO_PENDING_CHARGES_PEOPLE
+  NO_PENDING_CHARGES_PEOPLE: PEOPLE.NO_PENDING_CHARGES_PEOPLE,
+  NO_HEARINGS_PEOPLE: PEOPLE.NO_HEARINGS_PEOPLE,
 };
-
-const PAGE_SIZE = 8;
 
 class RequiresActionList extends React.Component<Props, State> {
   constructor(props :Props) {
     super(props);
     this.state = {
       filter: REQUIRES_ACTION_FILTERS.MULTIPLE_PSA_PEOPLE,
-      start: 0,
       searchQuery: '',
       selectedPersonId: ''
     };
@@ -129,23 +137,17 @@ class RequiresActionList extends React.Component<Props, State> {
     }
   }
 
-  setPersonId = (person, selectedPersonId) => this.setState({ selectedPersonId });
+  setPersonId = selectedPersonId => this.setState({ selectedPersonId });
 
   handleOnChangeSearchQuery = (event :SyntheticInputEvent<*>) => {
-    let { start } = this.state;
-    const { numPages } = this.getActionList();
-    const currPage = (start / PAGE_SIZE) + 1;
-    if (currPage > numPages) start = (numPages - 1) * PAGE_SIZE;
-    if (start <= 0) start = 0;
     this.setState({
-      searchQuery: event.target.value,
-      start
+      searchQuery: event.target.value
     });
   }
 
   handleFilterRequest = (people) => {
     const { searchQuery, selectedPersonId } = this.state;
-    let nextPeople = people.sort(sortPeopleByName);
+    let nextPeople = people;
     if (searchQuery) {
       const searchQueryWords = searchQuery.split(' ');
       nextPeople = people.filter((person) => {
@@ -156,14 +158,14 @@ class RequiresActionList extends React.Component<Props, State> {
         let matchesLastName = false;
         let matchesMiddleName = false;
         const {
-          personEntityKeyId,
+          personEKID,
           dob,
           firstName,
           personId,
           lastName,
           middleName
-        } = formatPeopleInfo(person);
-        if (selectedPersonId === personEntityKeyId) personIsSelected = true;
+        } = person;
+        if (selectedPersonId === personEKID) personIsSelected = true;
         searchQueryWords.forEach((word) => {
           if (dob && dob.toLowerCase().includes(word.toLowerCase())) matchesDOB = true;
           if (firstName && firstName.toLowerCase().includes(word.toLowerCase())) matchesFirstName = true;
@@ -186,34 +188,41 @@ class RequiresActionList extends React.Component<Props, State> {
 
   getActionList = () => {
     const { props } = this;
-    const { requiresActionPeople } = this.props;
+    const { requiresActionPeople, requiresActionPeopleNeighbors } = this.props;
     const { filter } = this.state;
-    let people = props[filter].map(personId => requiresActionPeople.get(personId, Map()));
-    people = this.handleFilterRequest(people);
-    const numResults = people.size;
-    const numPages = Math.ceil(numResults / PAGE_SIZE);
-    return { people, numResults, numPages };
-  }
-
-  updatePage = (start) => {
-    this.setState({ start });
-    window.scrollTo({
-      top: 0,
-      behavior: 'smooth'
-    });
-  }
-
-  renderPagination = () => {
-    const { start } = this.state;
-    const { numPages } = this.getActionList();
-    const currPage = (start / PAGE_SIZE) + 1;
-    return (
-      <Pagination
-          numPages={numPages}
-          activePage={currPage}
-          updateStart={this.updateStart}
-          onChangePage={page => this.updatePage((page - 1) * PAGE_SIZE)} />
+    let people = props[filter].map(
+      (personId, idx) => {
+        const person = requiresActionPeople.get(personId, Map());
+        const id = personId + idx;
+        const {
+          [DOB]: dob,
+          [FIRST_NAME]: firstName,
+          [LAST_NAME]: lastName,
+          [MIDDLE_NAME]: middleName,
+          [ENTITY_KEY_ID]: personEKID,
+        } = getEntityProperties(person, [DOB, FIRST_NAME, LAST_NAME, MIDDLE_NAME, ENTITY_KEY_ID]);
+        let oldPSADate;
+        const personPSAs = requiresActionPeopleNeighbors.getIn([personEKID, PSA_SCORES], List());
+        personPSAs.forEach((psaScore) => {
+          const { [DATE_TIME]: psaCreationDate } = getEntityProperties(psaScore, [DATE_TIME]);
+          const psaDateTime = DateTime.fromISO(psaCreationDate);
+          if (!oldPSADate || oldPSADate > psaDateTime) oldPSADate = psaDateTime;
+        });
+        oldPSADate = oldPSADate.toISODate();
+        return {
+          dob,
+          firstName,
+          lastName,
+          middleName,
+          oldPSADate,
+          personEKID,
+          psaCount: personPSAs.size,
+          id
+        };
+      }
     );
+    people = this.handleFilterRequest(people);
+    return { people };
   }
 
   renderPersonSearch = () => (
@@ -221,21 +230,18 @@ class RequiresActionList extends React.Component<Props, State> {
   )
 
   renderPeople = () => {
-    const { selectedPersonId, start } = this.state;
+    const { selectedPersonId } = this.state;
     const { people } = this.getActionList();
-    const pageOfPeople = people.slice(start, start + PAGE_SIZE);
     return (
-      <PersonTable
+      <RequiresActionTable
           handleSelect={this.setPersonId}
           selectedPersonId={selectedPersonId}
-          people={pageOfPeople}
-          small />
+          people={people.toJS()} />
     );
   }
 
   updateFilter = filter => this.setState({
     filter,
-    start: 0,
     selectedPersonId: ''
   });
 
@@ -245,6 +251,7 @@ class RequiresActionList extends React.Component<Props, State> {
       peopleWithMultiplePSAs,
       peopleWithRecentFTAs,
       psaScoresWithNoPendingCharges,
+      peopleWithPSAsWithNoHearings,
       selectedOrganizationSettings
     } = this.props;
     const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
@@ -254,6 +261,7 @@ class RequiresActionList extends React.Component<Props, State> {
           peopleWithMultiplePSAs={peopleWithMultiplePSAs}
           peopleWithRecentFTAs={peopleWithRecentFTAs}
           peopleWithNoPendingCharges={psaScoresWithNoPendingCharges}
+          peopleWithPSAsWithNoHearings={peopleWithPSAsWithNoHearings}
           filter={filter}
           onChange={this.updateFilter} />
     );
@@ -273,6 +281,7 @@ class RequiresActionList extends React.Component<Props, State> {
       psaNeighborsById,
       requiresActionPeopleNeighbors,
       psaScoresWithRecentFTAs,
+      psaScoresWithNoHearings,
       selectedOrganizationSettings
     } = this.props;
     if (!selectedPersonId) return null;
@@ -285,6 +294,12 @@ class RequiresActionList extends React.Component<Props, State> {
       personPSAs = personPSAs.filter((psa) => {
         const entityKeyId = psa.getIn([OPENLATTICE_ID_FQN, 0], '');
         return psaScoresWithRecentFTAs.includes(entityKeyId);
+      });
+    }
+    if (filter === REQUIRES_ACTION_FILTERS.NO_HEARINGS_PEOPLE) {
+      personPSAs = personPSAs.filter((psa) => {
+        const entityKeyId = psa.getIn([OPENLATTICE_ID_FQN, 0], '');
+        return psaScoresWithNoHearings.includes(entityKeyId);
       });
     }
     const psaList = personPSAs.sortBy((psa) => {
@@ -329,12 +344,10 @@ class RequiresActionList extends React.Component<Props, State> {
         <SectionWrapper>
           <SubToolbarWrapper>
             { this.renderPersonSearch() }
-            { this.renderPagination() }
           </SubToolbarWrapper>
           { this.renderPeople() }
           <SubToolbarWrapper>
             <div />
-            { this.renderPagination() }
           </SubToolbarWrapper>
         </SectionWrapper>
         {this.renderPSAReviewRows() }
@@ -357,11 +370,13 @@ function mapStateToProps(state) {
     [PEOPLE.REQUIRES_ACTION_SCORES]: people.get(PEOPLE.REQUIRES_ACTION_SCORES),
     [PEOPLE.PSA_NEIGHBORS_BY_ID]: people.get(PEOPLE.PSA_NEIGHBORS_BY_ID),
     [PEOPLE.NO_PENDING_CHARGES_PSA_SCORES]: people.get(PEOPLE.NO_PENDING_CHARGES_PSA_SCORES),
+    [PEOPLE.NO_HEARINGS_PSA_SCORES]: people.get(PEOPLE.NO_HEARINGS_PSA_SCORES),
     [PEOPLE.REQUIRES_ACTION_NEIGHBORS]: people.get(PEOPLE.REQUIRES_ACTION_NEIGHBORS),
     [PEOPLE.MULTIPLE_PSA_PEOPLE]: people.get(PEOPLE.MULTIPLE_PSA_PEOPLE),
     [PEOPLE.RECENT_FTA_PEOPLE]: people.get(PEOPLE.RECENT_FTA_PEOPLE),
     [PEOPLE.RECENT_FTA_PSA_SCORES]: people.get(PEOPLE.RECENT_FTA_PSA_SCORES),
     [PEOPLE.NO_PENDING_CHARGES_PEOPLE]: people.get(PEOPLE.NO_PENDING_CHARGES_PEOPLE),
+    [PEOPLE.NO_HEARINGS_PEOPLE]: people.get(PEOPLE.NO_HEARINGS_PEOPLE),
     [PEOPLE.REQUIRES_ACTION_LOADING]: people.get(PEOPLE.REQUIRES_ACTION_LOADING),
 
     [SEARCH.LOADING]: search.get(SEARCH.LOADING)

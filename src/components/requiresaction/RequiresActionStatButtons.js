@@ -11,8 +11,8 @@ const ButtonsWrapper = styled.div`
   width: 100%;
   padding: 30px 0;
   display: grid;
-  grid-template-columns: 30% 30% 30%;
-  grid-gap: 5%;
+  grid-template-columns: repeat(4, 1fr);
+  grid-gap: 10px;
 `;
 
 
@@ -29,27 +29,34 @@ class Tabs extends React.Component<Props, State> {
       filter,
       peopleWithMultiplePSAs,
       peopleWithRecentFTAs,
-      peopleWithNoPendingCharges
+      peopleWithNoPendingCharges,
+      peopleWithPSAsWithNoHearings
     } = this.props;
 
     const buttonObjects = [
       {
         count: peopleWithMultiplePSAs.size,
-        title: 'People With Multiple PSAs',
+        title: 'People w/ Multiple PSAs',
         name: PEOPLE.MULTIPLE_PSA_PEOPLE,
         checked: filter === PEOPLE.MULTIPLE_PSA_PEOPLE
       },
       {
         count: peopleWithRecentFTAs.size,
-        title: 'People With Recent FTAs',
+        title: 'People w/ Recent FTAs',
         name: PEOPLE.RECENT_FTA_PEOPLE,
         checked: filter === PEOPLE.RECENT_FTA_PEOPLE
       },
       {
         count: peopleWithNoPendingCharges.size,
-        title: 'PSAs With No Pending Charges',
+        title: 'PSAs w/ No Pending Charges',
         name: PEOPLE.NO_PENDING_CHARGES_PEOPLE,
         checked: filter === PEOPLE.NO_PENDING_CHARGES_PEOPLE
+      },
+      {
+        count: peopleWithPSAsWithNoHearings.size,
+        title: 'PSAs w/ No Hearings',
+        name: PEOPLE.NO_HEARINGS_PEOPLE,
+        checked: filter === PEOPLE.NO_HEARINGS_PEOPLE
       }
     ];
 

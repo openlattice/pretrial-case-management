@@ -723,6 +723,7 @@ function* refreshPersonNeighborsWatcher() :Generator<*, *, *> {
 function* loadRequiresActionPeopleWorker(action :SequenceAction) :Generator<*, *, *> {
   let psaScoreMap = Map();
   let psaScoresWithNoPendingCharges = Set();
+  let psaScoresWithNoHearings = Set();
   let psaScoresWithRecentFTAs = Set();
   let psaNeighborsById = Map();
   let peopleIds = Set();
@@ -730,6 +731,7 @@ function* loadRequiresActionPeopleWorker(action :SequenceAction) :Generator<*, *
   let peopleWithMultipleOpenPSAs = Set();
   let peopleWithRecentFTAs = Set();
   let peopleWithNoPendingCharges = Set();
+  let peopleWithPSAsWithNoHearings = Set();
   let peopleNeighborsById = Map();
 
   try {
@@ -738,6 +740,7 @@ function* loadRequiresActionPeopleWorker(action :SequenceAction) :Generator<*, *
     const edm = yield select(getEDM);
     const orgId = yield select(getOrgId);
     const entitySetIdsToAppType = app.getIn([APP_DATA.ENTITY_SETS_BY_ORG, orgId]);
+    const hearingsESID = getEntitySetIdFromApp(app, HEARINGS);
     const psaScoresEntitySetId = getEntitySetIdFromApp(app, PSA_SCORES);
     const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
     const manualPretrialCasesFqnEntitySetId = getEntitySetIdFromApp(app, MANUAL_PRETRIAL_CASES);
@@ -767,6 +770,7 @@ function* loadRequiresActionPeopleWorker(action :SequenceAction) :Generator<*, *
           entityKeyIds: psaIds,
           sourceEntitySetIds: [releaseRecommendationsEntitySetId],
           destinationEntitySetIds: [
+            hearingsESID,
             peopleEntitySetId,
             staffEntitySetId,
             manualPretrialCasesFqnEntitySetId
@@ -799,6 +803,7 @@ function* loadRequiresActionPeopleWorker(action :SequenceAction) :Generator<*, *
           psaNeighbors = psaNeighbors.set(appTypeFqn, neighbor);
         }
       });
+      if (!psaNeighbors.get(HEARINGS, List()).size) psaScoresWithNoHearings = psaScoresWithNoHearings.add(psaId);
       psaNeighborsById = psaNeighborsById.set(psaId, psaNeighbors);
     });
 
@@ -875,6 +880,9 @@ function* loadRequiresActionPeopleWorker(action :SequenceAction) :Generator<*, *
             peopleWithRecentFTAs = peopleWithRecentFTAs.add(personId);
             psaScoresWithRecentFTAs = psaScoresWithRecentFTAs.add(psaId);
           }
+          if (psaScoresWithNoHearings.includes(psaId)) {
+            peopleWithPSAsWithNoHearings = peopleWithPSAsWithNoHearings.add(personId);
+          }
           const arrestDate = DateTime.fromISO(psaNeighborsById
             .getIn([psaId, MANUAL_PRETRIAL_CASES, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.ARREST_DATE_TIME, 0]));
           const { chargeHistoryForMostRecentPSA } = getCasesForPSA(
@@ -884,14 +892,17 @@ function* loadRequiresActionPeopleWorker(action :SequenceAction) :Generator<*, *
             arrestDate,
             undefined
           );
-          if (psaScoreMap.get(psaId) && arrestDate.isValid) {
-            chargeHistoryForMostRecentPSA.entrySeq().forEach(([_, charges]) => {
-              const psaHasPendingCharges = charges.some(charge => !charge.getIn([PROPERTY_TYPES.DISPOSITION_DATE, 0]));
-              if (psaHasPendingCharges) hasPendingCharges = true;
-            });
-            if (chargeHistoryForMostRecentPSA.size && !hasPendingCharges) {
-              psaScoresWithNoPendingCharges = psaScoresWithNoPendingCharges.add(psaId);
-              peopleWithNoPendingCharges = peopleWithNoPendingCharges.add(personId);
+          if (psaScoreMap.get(psaId)) {
+            if (chargeHistoryForMostRecentPSA.size) {
+              chargeHistoryForMostRecentPSA.entrySeq().forEach(([_, charges]) => {
+                const pendingCharges = charges
+                  .filter(charge => !charge.getIn([PROPERTY_TYPES.DISPOSITION_DATE, 0]));
+                if (pendingCharges.size) hasPendingCharges = true;
+              });
+              if (!hasPendingCharges) {
+                psaScoresWithNoPendingCharges = psaScoresWithNoPendingCharges.add(psaId);
+                peopleWithNoPendingCharges = peopleWithNoPendingCharges.add(personId);
+              }
             }
           }
         });
@@ -904,10 +915,12 @@ function* loadRequiresActionPeopleWorker(action :SequenceAction) :Generator<*, *
       peopleWithMultipleOpenPSAs,
       peopleWithRecentFTAs,
       peopleWithNoPendingCharges,
+      peopleWithPSAsWithNoHearings,
       peopleMap,
       psaScoreMap,
       psaNeighborsById,
       psaScoresWithNoPendingCharges,
+      psaScoresWithNoHearings,
       psaScoresWithRecentFTAs
     }));
   }
