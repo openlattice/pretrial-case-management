@@ -71,7 +71,7 @@ export const COLOR_LABELS = {
   [OL.GREEN01]: 'Dark Green',
   [OL.GREEN02]: 'Light Green',
   [OL.YELLOW02]: 'Yellow',
-  [OL.ORANGE01]: 'Organe',
+  [OL.ORANGE01]: 'Orange',
   [OL.RED01]: 'Red'
 };
 
