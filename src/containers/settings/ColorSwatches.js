@@ -3,8 +3,8 @@
  */
 
 import React from 'react';
-import Select from 'react-select';
 import styled from 'styled-components';
+import { Select } from 'lattice-ui-kit';
 import { Map } from 'immutable';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
