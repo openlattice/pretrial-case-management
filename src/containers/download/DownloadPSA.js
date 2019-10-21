@@ -392,17 +392,12 @@ class DownloadPSA extends React.Component<Props, State> {
                   <BasicDownloadButton
                       disabled={downloadingReports || this.getErrorText(downloads)}
                       onClick={() => this.downloadbyPSADate(PSA_RESPONSE_TABLE, DOMAIN.MINNEHAHA)}>
-                    Download Minnehaha PSA Response Table
+                    PSA Response Table
                   </BasicDownloadButton>
                   <BasicDownloadButton
                       disabled={downloadingReports || this.getErrorText(downloads)}
                       onClick={() => this.downloadbyPSADate(SUMMARY_REPORT, DOMAIN.MINNEHAHA)}>
-                    Download Minnehaha Summary Report
-                  </BasicDownloadButton>
-                  <BasicDownloadButton
-                      disabled={downloadingReports || this.getErrorText(downloads)}
-                      onClick={() => this.downloadbyPSADate(SUMMARY_REPORT, DOMAIN.PENNINGTON)}>
-                    Download Pennington Summary Report
+                    Summary Report
                   </BasicDownloadButton>
                 </ButtonRow>
               ) : null
@@ -411,7 +406,7 @@ class DownloadPSA extends React.Component<Props, State> {
             <InfoDownloadButton
                 disabled={downloadingReports || this.getErrorText(downloads)}
                 onClick={() => this.downloadbyPSADate()}>
-              Download All PSA Data
+              All PSA Data
             </InfoDownloadButton>
           </ButtonRow>
           {
