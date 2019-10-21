@@ -240,7 +240,11 @@ class PSAModal extends React.Component<Props, State> {
   openClosePSAModal = () => this.setState({ closingPSAModalOpen: true });
 
   exitEdit = () => {
-    this.setState({ editing: false });
+    const { psaNeighbors } = this.props;
+    this.setState({
+      editing: false,
+      riskFactors: this.getRiskFactors(psaNeighbors)
+    });
   }
 
   onClose = () => {

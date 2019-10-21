@@ -76,7 +76,9 @@ const INITIAL_STATE = fromJS({
   [PEOPLE.MULTIPLE_PSA_PEOPLE]: Set(),
   [PEOPLE.RECENT_FTA_PEOPLE]: Set(),
   [PEOPLE.NO_PENDING_CHARGES_PEOPLE]: Set(),
-  [PEOPLE.REQUIRES_ACTION_LOADING]: false
+  [PEOPLE.REQUIRES_ACTION_LOADING]: false,
+  [PEOPLE.NO_HEARINGS_PEOPLE]: Set(),
+  [PEOPLE.NO_HEARINGS_PSA_SCORES]: Set(),
 });
 
 export default function peopleReducer(state :Map = INITIAL_STATE, action :Object) {
@@ -261,10 +263,12 @@ export default function peopleReducer(state :Map = INITIAL_STATE, action :Object
             peopleWithMultipleOpenPSAs,
             peopleWithRecentFTAs,
             peopleWithNoPendingCharges,
+            peopleWithPSAsWithNoHearings,
             peopleMap,
             psaScoreMap,
             psaNeighborsById,
             psaScoresWithNoPendingCharges,
+            psaScoresWithNoHearings,
             psaScoresWithRecentFTAs
           } = action.value;
           return (
@@ -278,6 +282,8 @@ export default function peopleReducer(state :Map = INITIAL_STATE, action :Object
               .set(PEOPLE.MULTIPLE_PSA_PEOPLE, peopleWithMultipleOpenPSAs)
               .set(PEOPLE.RECENT_FTA_PEOPLE, peopleWithRecentFTAs)
               .set(PEOPLE.NO_PENDING_CHARGES_PEOPLE, peopleWithNoPendingCharges)
+              .set(PEOPLE.NO_HEARINGS_PEOPLE, peopleWithPSAsWithNoHearings)
+              .set(PEOPLE.NO_HEARINGS_PSA_SCORES, psaScoresWithNoHearings)
           );
         },
         FAILURE: () => state
