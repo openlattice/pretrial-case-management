@@ -285,7 +285,6 @@ function formReducer(state :Map<> = INITIAL_STATE, action :Object) {
         allChargesForPerson = allChargesForPerson.push(charge);
       });
       return state
-        .set(PSA_FORM.ARREST_OPTIONS, state.get(PSA_FORM.ARREST_OPTIONS).unshift(pretrialCase))
         .set(PSA_FORM.ALL_CHARGES, allChargesForPerson)
         .set(PSA_FORM.CHARGES, charges)
         .set(PSA_FORM.SELECT_PRETRIAL_CASE, pretrialCase);
