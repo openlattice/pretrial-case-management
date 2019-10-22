@@ -143,8 +143,7 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
     const {
       startDate,
       endDate,
-      filters,
-      domain
+      filters
     } = action.value;
 
     const caseToChargeTypes = {
@@ -241,18 +240,11 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
                 && psaCreationDate.isSameOrBefore(end);
       let usableNeighbors = List();
       const neighborList = neighborsById.data[id];
-      let domainMatch = true;
       neighborList.forEach((neighborObj) => {
         const neighbor = getFilteredNeighbor(neighborObj);
         const entitySetId = neighbor.neighborEntitySet.id;
         const entityKeyId = neighbor[PSA_NEIGHBOR.DETAILS][PROPERTY_TYPES.ENTITY_KEY_ID][0];
         const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
-        if (domain && neighbor.neighborEntitySet && entitySetId === staffEntitySetId) {
-          const filer = neighbor.neighborDetails[PROPERTY_TYPES.PERSON_ID][0];
-          if (!filer.toLowerCase().endsWith(domain)) {
-            domainMatch = false;
-          }
-        }
 
         if (Object.keys(caseToChargeTypes).includes(appTypeFqn)) {
           caseIdsToScoreIds = caseIdsToScoreIds.setIn([appTypeFqn, entityKeyId], id);
@@ -270,7 +262,7 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
           usableNeighbors = usableNeighbors.push(fromJS(neighbor));
         }
       });
-      if (domainMatch && usableNeighbors.size > 0) {
+      if (usableNeighbors.size > 0) {
         usableNeighborsById = usableNeighborsById.set(id, usableNeighbors);
       }
     });

@@ -1,8 +1,19 @@
+/*
+ * @flow
+ */
+
 import React from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
 
 import { OL } from '../../utils/consts/Colors';
+
+const percentageToHsl = (count) => {
+  let percentage = count / 500;
+  if (count > 500) percentage = 1;
+  const hue = (percentage * -162) + 162;
+  return `hsl(${hue}, 100%, ${28 + percentage * (34)}%)`;
+};
 
 export const RadioInputContainer = styled.input.attrs({
   type: 'radio'
@@ -19,13 +30,10 @@ export const RadioContainer = styled.label`
 
 const Count = styled.div`
   font-size: 25px;
-  color: ${(props) => {
-    if (props.checked) {
-      return props.disabled ? OL.GREEN02 : OL.RED01;
-    }
-    return props.disabled ? OL.GREEN02 : OL.GREY02;
-  }}
+  color: ${props => percentageToHsl(props.count)};
+  opacity: ${props => (props.checked ? 1 : 0.5)};
 `;
+
 const Title = styled.div`
   font-size: 13.5px;
   color: ${props => (props.checked ? OL.GREY01 : OL.GREY02)};
@@ -87,7 +95,7 @@ const StyledRadioButton = ({
         onChange={onChange}
         disabled={disabled} />
     <RadioSelection large={large}>
-      <Count checked={checked} green={disabled}>{count}</Count>
+      <Count checked={checked} count={count}>{count}</Count>
       <Title checked={checked}>{label}</Title>
     </RadioSelection>
   </RadioContainer>

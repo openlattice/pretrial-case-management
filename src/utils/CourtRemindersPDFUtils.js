@@ -237,7 +237,7 @@ const exportPDFList = (fileName :string, pages :{
       selectedHearing
     );
   });
-  doc.save(fileName);
+  doc.save(`${fileName}.pdf`);
 };
 
 export default exportPDFList;

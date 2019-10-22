@@ -1,5 +1,9 @@
+/*
+ * @flow
+ */
+
 import { Map, List } from 'immutable';
-import moment from 'moment';
+import { DateTime, Interval } from 'luxon';
 
 import { PSA_STATUSES } from './consts/Consts';
 import { APP_TYPES, PROPERTY_TYPES } from './consts/DataModelConsts';
@@ -58,8 +62,9 @@ export const getPendingCharges = (caseNum, chargeHistory, arrestDate, psaClosure
     pendingCharges = chargeHistory.get(caseNum)
       .filter((charge) => {
         let { dispositionDate } = getChargeFields(charge);
-        dispositionDate = moment(dispositionDate);
-        return dispositionDate.isBetween(arrestDate, psaClosureDate, null, []);
+        dispositionDate = DateTime.fromISO(dispositionDate);
+        if (!dispositionDate.isValid) dispositionDate = DateTime.local();
+        return Interval.fromDateTimes(arrestDate, psaClosureDate).contains(dispositionDate);
       });
   }
   return pendingCharges;
@@ -71,8 +76,9 @@ const getNonPendingCharges = (caseNum, chargeHistory, arrestDate, psaClosureDate
     nonPendingCharges = chargeHistory.get(caseNum)
       .filter((charge) => {
         let { dispositionDate } = getChargeFields(charge);
-        dispositionDate = moment(dispositionDate);
-        return !dispositionDate.isBetween(arrestDate, psaClosureDate, null, []);
+        dispositionDate = DateTime.fromISO(dispositionDate);
+        if (!dispositionDate.isValid) dispositionDate = DateTime.local();
+        return !Interval.fromDateTimes(arrestDate, psaClosureDate).contains(dispositionDate);
       });
   }
   return nonPendingCharges;
@@ -102,11 +108,11 @@ export const getCasesForPSA = (
   const { status } = getPSAFields(scores);
   const psaIsClosed = status !== PSA_STATUSES.OPEN;
 
-  const psaArrestDateTime = moment(arrestDate || undefined);
-  const psaClosureDate = psaIsClosed ? moment(lastEditDateForPSA) : moment().add(1, 'day');
+  const psaArrestDateTime = DateTime.fromISO(arrestDate || undefined);
+  const psaClosureDate = psaIsClosed ? DateTime.fromISO(lastEditDateForPSA) : DateTime.local().plus({ day: 1 });
 
 
-  if (psaArrestDateTime.isValid()) {
+  if (psaArrestDateTime.isValid) {
     caseHistory.forEach((caseObj) => {
       const caseNum = getFirstNeighborValue(caseObj, PROPERTY_TYPES.CASE_ID);
       const pendingCharges = getPendingCharges(caseNum, chargeHistory, psaArrestDateTime, psaClosureDate);
