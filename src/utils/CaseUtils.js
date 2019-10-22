@@ -63,6 +63,7 @@ export const getPendingCharges = (caseNum, chargeHistory, arrestDate, psaClosure
       .filter((charge) => {
         let { dispositionDate } = getChargeFields(charge);
         dispositionDate = DateTime.fromISO(dispositionDate);
+        if (!dispositionDate.isValid) dispositionDate = DateTime.local();
         return Interval.fromDateTimes(arrestDate, psaClosureDate).contains(dispositionDate);
       });
   }
@@ -76,6 +77,7 @@ const getNonPendingCharges = (caseNum, chargeHistory, arrestDate, psaClosureDate
       .filter((charge) => {
         let { dispositionDate } = getChargeFields(charge);
         dispositionDate = DateTime.fromISO(dispositionDate);
+        if (!dispositionDate.isValid) dispositionDate = DateTime.local();
         return !Interval.fromDateTimes(arrestDate, psaClosureDate).contains(dispositionDate);
       });
   }
