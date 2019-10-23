@@ -3,28 +3,86 @@
  */
 
 import React from 'react';
+import styled from 'styled-components';
+import { DateTime } from 'luxon';
 import { Map, Set } from 'immutable';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { COURT, EDM } from '../../utils/consts/FrontEndStateConsts';
+import {
+  Card,
+  CardSegment,
+  Select
+} from 'lattice-ui-kit';
+
+import CountiesDropdown from '../counties/CountiesDropdown';
+import DatePicker from '../../components/datetime/DatePicker';
+import { DATE_FORMAT } from '../../utils/consts/DateTimeConsts';
+import { EDM } from '../../utils/consts/FrontEndStateConsts';
+import { OL } from '../../utils/consts/Colors';
+import { sortCourtrooms } from '../../utils/DataUtils';
+
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { COUNTIES_DATA } from '../../utils/consts/redux/CountiesConsts';
 import { HEARINGS_ACTIONS, HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
-import { getReqState } from '../../utils/consts/redux/ReduxUtils';
+import { getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUtils';
+import { SETTINGS } from '../../utils/consts/AppSettingConsts';
 
 import { loadPSAModal } from '../psamodal/PSAModalActionFactory';
 import { clearSubmit } from '../../utils/submit/SubmitActionFactory';
-import { loadHearingsForDate, setCourtDate } from './HearingsActions';
+import { loadHearingsForDate, setManageHearingsDate } from './HearingsActions';
 import {
   bulkDownloadPSAReviewPDF,
   checkPSAPermissions,
   loadCaseHistory
 } from '../review/ReviewActionFactory';
 
+const { PREFERRED_COUNTY } = SETTINGS;
+
+const StyledTitleWrapper = styled.div`
+  color: ${OL.GREY34};
+  display: flex;
+  font-size: 24px;
+  margin-bottom: 30px;
+  width: 100%;
+`;
+
+const Title = styled.div`
+  height: 100%;
+  font-size: 24px;
+  display: flex;
+`;
+const Filters = styled.div`
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-gap: 30px;
+`;
+
+const FilterTitle = styled.div`
+  font-size: 14px;
+  color: ${OL.GREY01};
+  margin-bottom: 10px;
+`;
+
+const FilterElement = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+`;
+
 type Props = {
-  selectedOrganizationTitle :string,
+  manageHearingsDate :DateTime,
+  countiesById :Map<*, *>,
+  hearingsByCourtroom :Map<*, *>,
+  hearingsByCounty :Map<*, *>,
+  hearingsByTime :Map<*, *>,
+  hearingNeighborsById :Map<*, *>,
+  loadHearingsForDateReqState :RequestState,
+  loadHearingNeighborsReqState :RequestState,
+  selectedOrganizationId :string,
+  selectedOrganizationSettings :Map<*, *>,
   actions :{
     bulkDownloadPSAReviewPDF :({ peopleEntityKeyIds :string[] }) => void,
     changeHearingFilters :({ county? :string, courtroom? :string }) => void,
@@ -46,17 +104,160 @@ type State = {
   date :Object
 }
 
-class CourtContainer extends React.Component<Props, State> {
+class ManageHearingsContainer extends React.Component<Props, State> {
+  constructor(props :Props) {
+    super(props);
+    this.state = {
+      countyFilter: '',
+      courtroom: ''
+    };
+  }
+
+  componentDidMount() {
+    const {
+      actions,
+      manageHearingsDate,
+      hearingsByTime,
+      hearingNeighborsById,
+      selectedOrganizationId,
+      selectedOrganizationSettings
+    } = this.props;
+    const preferredCountyEKID :UUID = selectedOrganizationSettings.get(PREFERRED_COUNTY, '');
+    if (selectedOrganizationId) {
+      actions.checkPSAPermissions();
+      if (!hearingsByTime.size || !hearingNeighborsById.size) {
+        actions.loadHearingsForDate(manageHearingsDate);
+      }
+    }
+    this.setState({ countyFilter: preferredCountyEKID });
+  }
+
+  componentDidUpdate(nextProps) {
+    const {
+      actions,
+      manageHearingsDate,
+      hearingsByTime,
+      hearingNeighborsById,
+      selectedOrganizationId,
+      selectedOrganizationSettings
+    } = this.props;
+    const preferredCountyEKID :UUID = selectedOrganizationSettings.get(PREFERRED_COUNTY, '');
+    if (selectedOrganizationId !== nextProps.selectedOrganizationId) {
+      actions.checkPSAPermissions();
+      if (!hearingsByTime.size || !hearingNeighborsById.size || manageHearingsDate !== nextProps.manageHearingsDate) {
+        actions.loadHearingsForDate(manageHearingsDate);
+        this.setState({ countyFilter: preferredCountyEKID, courtroom: '' });
+      }
+    }
+  }
+
+  getFilterElement = (title, filter) => (
+    <FilterElement>
+      <FilterTitle>{title}</FilterTitle>
+      <div>{filter}</div>
+    </FilterElement>
+  );
+
+  setCourtroomFilter = filter => this.setState({ courtroom: filter.value });
+
+  renderCourtroomFilter = () => {
+    const { courtroom } = this.state;
+    const {
+      hearingsByCourtroom,
+      loadHearingsForDateReqState,
+      loadHearingNeighborsReqState,
+    } = this.props;
+    const hearingsAreLoading :boolean = requestIsPending(loadHearingsForDateReqState)
+      || requestIsPending(loadHearingNeighborsReqState);
+    const courtroomOptions :List = hearingsByCourtroom.keySeq().map((courtroomName) => {
+      return {
+        label: courtroomName,
+        value: courtroomName
+      };
+    }).sort((cr1, cr2) => sortCourtrooms(cr1.label, cr2.label)).toJS();
+    const currentFilterValue = { label: (courtroom || 'All'), value: courtroom };
+    courtroomOptions.unshift(currentFilterValue);
+    return (
+      <Select
+          value={currentFilterValue}
+          options={courtroomOptions}
+          isLoading={hearingsAreLoading}
+          onChange={this.setCourtroomFilter} />
+    );
+  }
+
+  handleDateChange = (dateStr) => {
+    const { actions } = this.props;
+    const manageHearingsDate = DateTime.fromFormat(dateStr, DATE_FORMAT);
+    if (manageHearingsDate.isValid) {
+      actions.setCourtDate({ manageHearingsDate });
+      actions.loadHearingsForDate(manageHearingsDate);
+    }
+  }
+
+  renderManageHearingDate = () => {
+    const { manageHearingsDate } = this.props;
+    return (
+      <DatePicker
+          value={manageHearingsDate.toFormat(DATE_FORMAT)}
+          onChange={this.handleDateChange} />
+    );
+  }
+
+  setCountyFilter = filter => this.setState({ countyFilter: filter.value });
+
+  renderCountyFilter = () => {
+    const { countyFilter } = this.state;
+    const {
+      countiesById,
+      loadHearingsForDateReqState,
+      loadHearingNeighborsReqState,
+    } = this.props;
+    const hearingsAreLoading :boolean = requestIsPending(loadHearingsForDateReqState)
+      || requestIsPending(loadHearingNeighborsReqState);
+    return (
+      <CountiesDropdown
+          value={countyFilter}
+          options={countiesById}
+          loading={hearingsAreLoading}
+          onChange={this.setCountyFilter} />
+    );
+  }
+
+  renderFilters = () => (
+    <Filters>
+      { this.getFilterElement('Hearing Date', this.renderManageHearingDate())}
+      { this.getFilterElement('County', this.renderCountyFilter())}
+      { this.getFilterElement('Courtroom', this.renderCourtroomFilter())}
+    </Filters>
+  )
+
+  renderHeader = () => (
+    <StyledTitleWrapper>
+      <Title>Manage Hearings</Title>
+    </StyledTitleWrapper>
+  )
 
   render() {
-    const { selectedOrganizationTitle } = this.props;
-    return null;
+
+    return (
+      <>
+        { this.renderHeader() }
+        <Card>
+          <CardSegment>
+            {this.renderFilters()}
+          </CardSegment>
+          <CardSegment>
+            body
+          </CardSegment>
+        </Card>
+      </>
+    );
   }
 }
 
 function mapStateToProps(state) {
   const app = state.get(STATE.APP);
-  const court = state.get(STATE.COURT);
   const counties = state.get(STATE.COUNTIES);
   const edm = state.get(STATE.EDM);
   const hearings = state.get(STATE.HEARINGS);
@@ -71,25 +272,15 @@ function mapStateToProps(state) {
     // Counties
     [COUNTIES_DATA.COUNTIES_BY_ID]: counties.get(COUNTIES_DATA.COUNTIES_BY_ID),
 
-    // Court
-    [COURT.PEOPLE_WITH_OPEN_PSAS]: court.get(COURT.PEOPLE_WITH_OPEN_PSAS),
-    [COURT.PEOPLE_WITH_MULTIPLE_OPEN_PSAS]: court.get(COURT.PEOPLE_WITH_MULTIPLE_OPEN_PSAS),
-    [COURT.PEOPLE_RECEIVING_REMINDERS]: court.get(COURT.PEOPLE_RECEIVING_REMINDERS),
-    [COURT.LOADING_PSAS]: court.get(COURT.LOADING_PSAS),
-    [COURT.COURTROOM]: court.get(COURT.COURTROOM),
-    [COURT.SCORES_AS_MAP]: court.get(COURT.SCORES_AS_MAP),
-    [COURT.PSA_EDIT_DATES]: court.get(COURT.PSA_EDIT_DATES),
-    [COURT.OPEN_PSA_IDS]: court.get(COURT.OPEN_PSA_IDS),
-    [COURT.PEOPLE_IDS_TO_OPEN_PSA_IDS]: court.get(COURT.PEOPLE_IDS_TO_OPEN_PSA_IDS),
-
     // Hearings
     courtrooms,
     hearingsByTime,
     loadHearingsForDateReqState: getReqState(hearings, HEARINGS_ACTIONS.LOAD_HEARINGS_FOR_DATE),
     loadHearingNeighborsReqState: getReqState(hearings, HEARINGS_ACTIONS.LOAD_HEARING_NEIGHBORS),
-    [HEARINGS_DATA.COURT_DATE]: hearings.get(HEARINGS_DATA.COURT_DATE),
+    [HEARINGS_DATA.MANAGE_HEARINGS_DATE]: hearings.get(HEARINGS_DATA.MANAGE_HEARINGS_DATE),
     [HEARINGS_DATA.HEARINGS_BY_DATE]: hearings.get(HEARINGS_DATA.HEARINGS_BY_DATE_AND_TIME),
     [HEARINGS_DATA.HEARINGS_BY_COUNTY]: hearings.get(HEARINGS_DATA.HEARINGS_BY_COUNTY),
+    [HEARINGS_DATA.HEARINGS_BY_COURTROOM]: hearings.get(HEARINGS_DATA.HEARINGS_BY_COURTROOM),
     [HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID]: hearings.get(HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID),
 
     [EDM.FQN_TO_ID]: edm.get(EDM.FQN_TO_ID),
@@ -100,7 +291,7 @@ const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
   actions: bindActionCreators({
     // Hearings Actions
     loadHearingsForDate,
-    setCourtDate,
+    setManageHearingsDate,
     // PSA Modal actions
     loadPSAModal,
     // Review actions
@@ -112,4 +303,4 @@ const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
   }, dispatch)
 });
 
-export default connect(mapStateToProps, mapDispatchToProps)(CourtContainer);
+export default connect(mapStateToProps, mapDispatchToProps)(ManageHearingsContainer);
