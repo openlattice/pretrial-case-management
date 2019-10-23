@@ -228,6 +228,7 @@ function* loadHearingsForDateWorker(action :SequenceAction) :Generator<*, *, *> 
     let hearingIds = Set();
     let hearingsByTime = Map();
     let hearingsById = Map();
+    let hearingIdsByCourtroom = Map();
 
     const app = yield select(getApp);
     const edm = yield select(getEDM);
@@ -269,6 +270,10 @@ function* loadHearingsForDateWorker(action :SequenceAction) :Generator<*, *, *> 
         if (!hearingDateTimeDT.isValid || hearingIsInactive) return false;
         hearingsById = hearingsById.set(hearingEKID, hearing);
         const time = hearingDateTimeDT.toFormat(TIME_FORMAT);
+        hearingIdsByCourtroom = hearingIdsByCourtroom.set(
+          hearingCourtroom,
+          hearingIdsByCourtroom.get(hearingCourtroom, Set()).add(hearingEKID)
+        );
         hearingsByTime = hearingsByTime.set(
           time,
           hearingsByTime.get(time, List()).push(hearing)
@@ -287,6 +292,7 @@ function* loadHearingsForDateWorker(action :SequenceAction) :Generator<*, *, *> 
       hearingDateTime,
       hearingsOnDate,
       hearingsByTime,
+      hearingIdsByCourtroom,
       courtrooms
     }));
     yield put(hearingNeighbors);
