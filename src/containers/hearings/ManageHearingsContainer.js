@@ -75,8 +75,8 @@ const FilterElement = styled.div`
 type Props = {
   manageHearingsDate :DateTime,
   countiesById :Map<*, *>,
-  hearingsByCourtroom :Map<*, *>,
   hearingsByCounty :Map<*, *>,
+  hearingsByCourtroom :Map<*, *>,
   hearingsByTime :Map<*, *>,
   hearingNeighborsById :Map<*, *>,
   loadHearingsForDateReqState :RequestState,
@@ -188,10 +188,10 @@ class ManageHearingsContainer extends React.Component<Props, State> {
 
   handleDateChange = (dateStr) => {
     const { actions } = this.props;
-    const manageHearingsDate = DateTime.fromFormat(dateStr, DATE_FORMAT);
-    if (manageHearingsDate.isValid) {
-      actions.setCourtDate({ manageHearingsDate });
-      actions.loadHearingsForDate(manageHearingsDate);
+    const date = DateTime.fromFormat(dateStr, DATE_FORMAT);
+    if (date.isValid) {
+      actions.setManageHearingsDate({ date });
+      actions.loadHearingsForDate(date);
     }
   }
 
@@ -239,7 +239,7 @@ class ManageHearingsContainer extends React.Component<Props, State> {
   )
 
   render() {
-
+    console.log(this.props);
     return (
       <>
         { this.renderHeader() }
