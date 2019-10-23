@@ -11,6 +11,7 @@ import FormsContainer from '../../containers/forms/FormsContainer';
 import ManageChargesContainer from '../../containers/charges/ChargesContainer';
 import NewPersonContainer from '../../containers/person/NewPersonContainer';
 import PeopleContainer from '../../containers/people/PeopleContainer';
+import ManageHearingsContainer from '../../containers/hearings/ManageHearingsContainer';
 import PersonDetailsContainer from '../../containers/people/PersonDetailsContainer';
 import DownloadPSA from '../../containers/download/DownloadPSA';
 import ReviewPSA from '../../containers/review/ReviewPSA';
@@ -38,6 +39,7 @@ const Dashboard = () => (
         <Route path={Routes.MANAGE_CHARGES} component={ManageChargesContainer} />
         <Route path={Routes.PEOPLE} component={PeopleContainer} />
         <Route path={Routes.PERSON_DETAILS} component={PersonDetailsContainer} />
+        <Route path={Routes.MANAGE_HEARINGS} component={ManageHearingsContainer} />
         <Route path={Routes.DOWNLOAD_FORMS} component={DownloadPSA} />
         <Route path={Routes.JUDGE_VIEW} component={CourtContainer} />
         <Route path={Routes.REVIEW_FORMS} component={ReviewPSA} />
