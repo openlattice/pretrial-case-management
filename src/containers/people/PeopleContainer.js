@@ -15,6 +15,7 @@ import CheckInsContainer from '../checkins/CheckInsContainer';
 import PersonSearchFields from '../../components/person/PersonSearchFields';
 import PersonTextAreaInput from '../../components/person/PersonTextAreaInput';
 import PeopleList from '../../components/people/PeopleList';
+import ManageHearingsContainer from '../hearings/ManageHearingsContainer';
 import DashboardMainSection from '../../components/dashboard/DashboardMainSection';
 import LogoLoader from '../../components/LogoLoader';
 import NavButtonToolbar from '../../components/buttons/NavButtonToolbar';
@@ -119,6 +120,8 @@ class PeopleContainer extends React.Component<Props, State> {
     );
   }
 
+  renderManageHearingsComponentComponent = () => <ManageHearingsContainer />;
+
   getFilteredPeopleList = () => {
     const { psaNeighborsById } = this.props;
     const { peopleList } = this.state;
@@ -209,6 +212,10 @@ class PeopleContainer extends React.Component<Props, State> {
         label: 'Multi-Search'
       },
       {
+        path: Routes.MANAGE_HEARINGS,
+        label: 'Manage Hearings'
+      },
+      {
         path: Routes.REQUIRES_ACTION_PEOPLE,
         label: 'Requires Action'
       }
@@ -245,6 +252,7 @@ class PeopleContainer extends React.Component<Props, State> {
         <Switch>
           <Route path={Routes.SEARCH_PEOPLE} render={this.renderSearchPeopleComponent} />
           <Route path={Routes.MULTI_SEARCH_PEOPLE} render={this.renderMultiSearchPeopleComponent} />
+          <Route path={Routes.MANAGE_HEARINGS} render={this.renderManageHearingsComponent} />
           <Route path={Routes.REQUIRES_ACTION_PEOPLE} render={this.renderRequiresActionPeopleComponent} />
           { remindersSwitchRoute }
           { checkInsSwitchRoute }
