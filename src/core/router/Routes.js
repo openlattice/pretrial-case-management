@@ -73,5 +73,8 @@ export const ARREST_CHARGES = '/arrest';
 export const COURT_CHARGES = '/court';
 export const SETTINGS = '/settings';
 
+/* Manage Charges */
+export const MANAGE_HEARINGS :string = `${DASHBOARD}/manage-hearings`;
+
 /* Staff Dashboard */
 export const STAFF_DASHBOARD :string = `${DASHBOARD}/staff_dasboard`;
