@@ -31,6 +31,12 @@ const setCourtDate = value => ({
   value
 });
 
+const SET_MANAGE_HEARINGS_DATE :'SET_MANAGE_HEARINGS_DATE' = 'SET_MANAGE_HEARINGS_DATE';
+const setManageHearingsDate = value => ({
+  type: SET_MANAGE_HEARINGS_DATE,
+  value
+});
+
 const SET_HEARING_SETTINGS :'SET_HEARING_SETTINGS' = 'SET_HEARING_SETTINGS';
 const setHearingSettings = value => ({
   type: SET_HEARING_SETTINGS,
@@ -60,29 +66,31 @@ const updateHearing :RequestSequence = newRequestSequence(UPDATE_HEARING);
 
 export {
   CLEAR_HEARING_SETTINGS,
-  CLEAR_SUBMITTED_HEARING,
-  CLOSE_HEARING_SETTINGS_MODAL,
-  LOAD_HEARINGS_FOR_DATE,
-  LOAD_HEARING_NEIGHBORS,
-  LOAD_JUDGES,
-  REFRESH_HEARING_AND_NEIGHBORS,
-  OPEN_HEARING_SETTINGS_MODAL,
-  SET_COURT_DATE,
-  SET_HEARING_SETTINGS,
-  SUBMIT_EXISTING_HEARING,
-  SUBMIT_HEARING,
-  UPDATE_HEARING,
   clearHearingSettings,
+  CLEAR_SUBMITTED_HEARING,
   clearSubmittedHearing,
+  CLOSE_HEARING_SETTINGS_MODAL,
   closeHearingSettingsModal,
+  LOAD_HEARINGS_FOR_DATE,
   loadHearingsForDate,
+  LOAD_HEARING_NEIGHBORS,
   loadHearingNeighbors,
+  LOAD_JUDGES,
   loadJudges,
+  REFRESH_HEARING_AND_NEIGHBORS,
   refreshHearingAndNeighbors,
+  OPEN_HEARING_SETTINGS_MODAL,
   openHearingSettingsModal,
+  SET_COURT_DATE,
   setCourtDate,
+  SET_HEARING_SETTINGS,
   setHearingSettings,
+  SET_MANAGE_HEARINGS_DATE,
+  setManageHearingsDate,
+  SUBMIT_EXISTING_HEARING,
   submitExistingHearing,
+  SUBMIT_HEARING,
   submitHearing,
+  UPDATE_HEARING,
   updateHearing
 };
