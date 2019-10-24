@@ -9,6 +9,7 @@ import { getSearchTermNotExact } from '../DataUtils';
 
 export const DATE_FORMAT = 'MM/dd/yyyy';
 export const TIME_FORMAT = 'h:mm a';
+export const DATETIME_FORMAT = `${DATE_FORMAT} ${TIME_FORMAT}`;
 
 export const getUTCDateRangeSearchString = (PTID :UUID, startDate :DateTime, endDate :?DateTime) => {
   let start = startDate.toUTC().toISO();
