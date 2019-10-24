@@ -512,7 +512,7 @@ class RemindersContainer extends React.Component<Props, State> {
       entities = manualRemindersById;
     }
     if (countyFilter) {
-      const reminderIds = remindersByCounty.get(countyFilter, List());
+      const reminderIds = remindersByCounty.get(countyFilter, List()).concat(manualRemindersById.keySeq());
       entities = entities.filter((reminder, entityKeyId) => reminderIds.includes(entityKeyId));
     }
 
