@@ -5,11 +5,12 @@
 import React from 'react';
 import { Map, List } from 'immutable';
 import styled from 'styled-components';
-import moment from 'moment';
+import { DateTime } from 'luxon';
 
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
 import { psaIsClosed } from '../../utils/PSAUtils';
+import { formatDateTime } from '../../utils/FormattingUtils';
 import { PSA_NEIGHBOR, PSA_ASSOCIATION } from '../../utils/consts/FrontEndStateConsts';
 
 const {
@@ -77,12 +78,11 @@ export default class PSAMetaData extends React.Component<Props, State> {
       psaNeighbors,
       scores
     } = this.props;
-    const dateFormat = 'MM/DD/YYYY hh:mm a';
     let dateCreated;
     let creator;
     let dateEdited;
     let editor;
-    dateCreated = moment(scores.getIn([PROPERTY_TYPES.DATE_TIME, 0], ''));
+    dateCreated = DateTime.fromISO(scores.getIn([PROPERTY_TYPES.DATE_TIME, 0], ''));
 
     psaNeighbors.get(STAFF, List()).forEach((neighbor) => {
       const associationEntitySetId = neighbor.getIn([PSA_ASSOCIATION.ENTITY_SET, 'id']);
@@ -90,18 +90,18 @@ export default class PSAMetaData extends React.Component<Props, State> {
       const personId = neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.PERSON_ID, 0], '');
       if (appTypFqn === ASSESSED_BY) {
         creator = personId;
-        const maybeDate = moment(
+        const maybeDate = DateTime.fromISO(
           neighbor.getIn(
             [PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.COMPLETED_DATE_TIME, 0],
-            neighbor.getIn([PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.DATE_TIME, 0], dateCreated)
+            neighbor.getIn([PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.DATE_TIME, 0], dateCreated.toISO())
           )
         );
-        if (maybeDate.isValid()) dateCreated = maybeDate;
+        if (maybeDate.isValid) dateCreated = maybeDate;
       }
       if (appTypFqn === EDITED_BY) {
-        const maybeDate = moment(neighbor.getIn([PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.DATE_TIME, 0], ''));
-        if (maybeDate.isValid()) {
-          if (!dateEdited || dateEdited.isBefore(maybeDate)) {
+        const maybeDate = DateTime.fromISO(neighbor.getIn([PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.DATE_TIME, 0], ''));
+        if (maybeDate.isValid) {
+          if (!dateEdited || dateEdited < maybeDate) {
             dateEdited = maybeDate;
             editor = personId;
           }
@@ -113,8 +113,8 @@ export default class PSAMetaData extends React.Component<Props, State> {
     const editLabel = isClosed ? 'Closed' : 'Edited';
     if (!(dateCreated || dateEdited) && !(creator || editor)) return null;
 
-    const dateCreatedText = dateCreated ? dateCreated.format(dateFormat) : '';
-    const dateEditedText = dateEdited ? dateEdited.format(dateFormat) : '';
+    const dateCreatedText = dateCreated ? formatDateTime(dateCreated) : '';
+    const dateEditedText = dateEdited ? formatDateTime(dateEdited) : '';
 
     return (
       <MetadataWrapper>
