@@ -5,7 +5,7 @@
 import React from 'react';
 import { Map, List } from 'immutable';
 import styled from 'styled-components';
-import moment from 'moment';
+import { DateTime } from 'luxon';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
@@ -15,6 +15,7 @@ import { PSA_ASSOCIATION, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateC
 import { EVENT_TYPES, EVENT_LABELS } from '../../utils/consts/EventConsts';
 import { FILTERS } from '../../utils/consts/CheckInConsts';
 import { getEntityProperties } from '../../utils/DataUtils';
+import { formatDate } from '../../utils/FormattingUtils';
 import { StyledTooltip } from './PersonStyledTags';
 
 const {
@@ -123,23 +124,21 @@ const TagGroup = styled.div`
   }
 `;
 
-const Tooltip = ({ value }) => (
+const Tooltip = ({ value } :string) => (
   value && value.length ? <LabelToolTip>{value}</LabelToolTip> : null
 );
-
-const DATE_FORMAT = 'MM/DD';
 
 export default class EventTimeline extends React.Component<Props> {
 
   getEventDate = (event :Immutable.Map<*, *>) => (
-    moment(event.getIn(
+    event.getIn(
       [DATE_TIME, 0], event.getIn([COMPLETED_DATE_TIME, 0], event.getIn([START_DATE, 0], ''))
-    ))
+    )
   )
 
   getAllEventsAndRange = () => {
     let events = Map();
-    let endDate = moment().endOf('day');
+    let endDate = DateTime.local().endOf('day');
     const {
       checkInAppointments,
       hearings,
@@ -150,14 +149,14 @@ export default class EventTimeline extends React.Component<Props> {
     } = this.props;
 
     let { [DATE_TIME]: startDate } = getEntityProperties(scores, [DATE_TIME]);
-    startDate = moment(startDate);
+    startDate = DateTime.fromISO(startDate);
     const filteredCheckIns = checkInAppointments.filter((checkInAppointment) => {
       const { [END_DATE]: checkInTime } = getEntityProperties(checkInAppointment, [END_DATE]);
-      return moment(checkInTime).isSameOrAfter(startDate);
+      return DateTime.fromISO(checkInTime) >= startDate;
     });
     const filteredPersonReminders = personReminders.filter((reminder) => {
       const { [DATE_TIME]: reminderTime } = getEntityProperties(reminder, [DATE_TIME]);
-      return moment(reminderTime).isSameOrAfter(startDate);
+      return DateTime.fromISO(reminderTime) >= startDate;
     });
 
     staff.forEach((staffer) => {
@@ -167,38 +166,42 @@ export default class EventTimeline extends React.Component<Props> {
       const associationEntitySetId = staffer.getIn([PSA_ASSOCIATION.ENTITY_SET, 'id'], '');
       const appTypeFqn = entitySetIdsToAppType.get(associationEntitySetId, '');
       const staffDetails = neighborDetails.merge(associationDetails);
-      const staffDate = moment(this.getEventDate(associationDetails)).format('MM/DD/YYYY');
-      if (endDate.isBefore(staffDate)) endDate = moment(staffDate);
-      if (startDate.isAfter(staffDate)) startDate = moment(staffDate);
+      const staffDate = DateTime.fromISO(this.getEventDate(associationDetails));
+      const formattedStaffDate = staffDate.toISO();
+      if (endDate < staffDate) endDate = staffDate;
+      if (startDate > staffDate) startDate = staffDate;
       if (appTypeFqn === APP_TYPES.EDITED_BY) {
         staffObj = staffDetails.set('type', EVENT_TYPES.PSA_EDITED);
       }
       else if (appTypeFqn === APP_TYPES.ASSESSED_BY) {
         staffObj = staffDetails.set('type', EVENT_TYPES.PSA_CREATED);
       }
-      events = events.set(staffDate, events.get(staffDate, List()).push(staffObj));
+      events = events.set(formattedStaffDate, events.get(formattedStaffDate, List()).push(staffObj));
     });
     hearings.forEach((hearing) => {
       let hearingDetails = hearing.get(PSA_NEIGHBOR.DETAILS, hearing);
       hearingDetails = hearingDetails.set('type', EVENT_TYPES.HEARING);
-      const hearingDate = moment(this.getEventDate(hearingDetails)).format('MM/DD/YYYY');
-      if (endDate.isBefore(hearingDate)) endDate = moment(hearingDate);
-      if (startDate.isAfter(hearingDate)) startDate = moment(hearingDate);
-      events = events.set(hearingDate, events.get(hearingDate, List()).push(hearingDetails));
+      const hearingDate = DateTime.fromISO(this.getEventDate(hearingDetails));
+      const formattedHearingDate = hearingDate.toISO();
+      if (endDate < hearingDate) endDate = hearingDate;
+      if (startDate > hearingDate) startDate = hearingDate;
+      events = events.set(formattedHearingDate, events.get(formattedHearingDate, List()).push(hearingDetails));
     });
     filteredCheckIns.forEach((checkInAppointment) => {
       let checkInDetails = checkInAppointment.get(PSA_NEIGHBOR.DETAILS, Map());
       checkInDetails = checkInDetails.set('type', EVENT_TYPES.CHECKIN_APPOINTMENTS);
-      const checkInDate = moment(this.getEventDate(checkInDetails)).format('MM/DD/YYYY');
-      if (endDate.isBefore(checkInDate)) endDate = moment(checkInDate);
-      events = events.set(checkInDate, events.get(checkInDate, List()).push(checkInDetails));
+      const checkInDate = DateTime.fromISO(this.getEventDate(checkInDetails));
+      const formattedCheckInDate = checkInDate.toISO();
+      if (endDate < checkInDate) endDate = checkInDate;
+      events = events.set(formattedCheckInDate, events.get(formattedCheckInDate, List()).push(checkInDetails));
     });
     filteredPersonReminders.forEach((reminder) => {
       let reminderDetails = reminder.get(PSA_NEIGHBOR.DETAILS, Map());
       reminderDetails = reminderDetails.set('type', EVENT_TYPES.REMINDER_SENT);
-      const reminderDate = moment(this.getEventDate(reminderDetails)).format('MM/DD/YYYY');
-      if (endDate.isBefore(reminderDate)) endDate = moment(reminderDate);
-      events = events.set(reminderDate, events.get(reminderDate, List()).push(reminderDetails));
+      const reminderDate = DateTime.fromISO(this.getEventDate(reminderDetails));
+      const formattedReminderDate = reminderDate.toISO();
+      if (endDate < reminderDate) endDate = reminderDate;
+      events = events.set(formattedReminderDate, events.get(formattedReminderDate, List()).push(reminderDetails));
     });
 
     return { events, startDate, endDate };
@@ -276,15 +279,16 @@ export default class EventTimeline extends React.Component<Props> {
 
   renderTags = () => {
     const { events, startDate, endDate } = this.getAllEventsAndRange();
-    const duration = moment.duration(startDate.diff(endDate.add(12, 'h'))).as('days');
+    const duration = Math.floor(startDate.diff(endDate.plus({ hours: 12 }), 'days').days);
     if (events.size) {
       return (
         <TagRow>
           {
             events.entrySeq().map(([date, eventList]) => {
-              const dateTime = moment(date);
-              const positionRatio = Math.floor(moment.duration(startDate.diff(dateTime)).as('days') / duration * 100);
-              const dateLabel = dateTime.format(DATE_FORMAT);
+              const dateTime = DateTime.fromISO(date);
+              const positionRatio = Math.ceil(startDate.diff(dateTime, 'days').days / duration * 100);
+              console.log(startDate.diff(dateTime, 'days').days);
+              const dateLabel = formatDate(date);
               const leftOffset = positionRatio;
               const iconGroup = (
                 <IconWrapper key={`${date}${positionRatio}`} numIcons={eventList.size}>
