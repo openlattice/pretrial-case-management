@@ -4,7 +4,7 @@
 import React from 'react';
 import Immutable from 'immutable';
 import styled from 'styled-components';
-import moment from 'moment';
+import { DateTime } from 'luxon';
 
 import ChargeList from '../charges/ChargeList';
 import LoadingSpinner from '../LoadingSpinner';
@@ -120,12 +120,12 @@ const CaseHistoryList = ({
   };
 
   const caseCount = caseHistory.size;
-  const oneWeekAgo = moment().subtract(1, 'week');
+  const oneWeekAgo = DateTime.local().minus({ week: 1 });
   const cases = caseHistory
     .sort((c1, c2) => {
-      const date1 = moment(getFirstNeighborValue(c1, PROPERTY_TYPES.FILE_DATE));
-      const date2 = moment(getFirstNeighborValue(c2, PROPERTY_TYPES.FILE_DATE));
-      return date1.isBefore(date2) ? 1 : -1;
+      const date1 = DateTime.fromISO(getFirstNeighborValue(c1, PROPERTY_TYPES.FILE_DATE));
+      const date2 = DateTime.fromISO(getFirstNeighborValue(c2, PROPERTY_TYPES.FILE_DATE));
+      return date1 < date2 ? 1 : -1;
     })
     .filter(caseObj => getFirstNeighborValue(caseObj, PROPERTY_TYPES.CASE_ID).length)
     .map((caseObj) => {
@@ -137,7 +137,7 @@ const CaseHistoryList = ({
       const formattedFileDate = formatDateList([fileDate]);
       const charges = chargeHistory.get(caseId);
       const dateList = caseObj.get(PROPERTY_TYPES.FILE_DATE, Immutable.List());
-      const hasBeenUpdated = dateList.some(date => oneWeekAgo.isBefore(date));
+      const hasBeenUpdated = dateList.some(date => oneWeekAgo < date);
       return (
         <div key={caseId}>
           <InfoRow modal={modal}>
