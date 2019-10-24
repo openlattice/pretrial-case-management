@@ -13,12 +13,12 @@ import InfoButton from '../buttons/InfoButton';
 import { OL } from '../../utils/consts/Colors';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { getEntityProperties, getDateAndTime } from '../../utils/DataUtils';
+import { formatDate, formatTime } from '../../utils/FormattingUtils';
 import { StyledTooltip } from '../../utils/Layout';
 
 const {
   COURTROOM,
   DATE_TIME,
-  ENTITY_KEY_ID,
   HEARING_TYPE
 } = PROPERTY_TYPES;
 
@@ -155,9 +155,10 @@ class HearingRow extends React.Component<Props, *> {
       [DATE_TIME]: hearingDateTime,
       [HEARING_TYPE]: hearingType
     } = getEntityProperties(hearing, [COURTROOM, DATE_TIME, HEARING_TYPE]);
+    console.log(hearingDateTime);
 
-    const { date: hearingDate, time: hearingTime } = getDateAndTime(hearingDateTime);
-
+    const hearingDate = formatDate(hearingDateTime);
+    const hearingTime = formatTime(hearingDateTime);
     return (
       <Row
           disabled>
