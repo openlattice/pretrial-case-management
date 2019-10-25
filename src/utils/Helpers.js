@@ -48,9 +48,9 @@ export const getIsLastPage = (location :Location, optionalNumPages :?number) :bo
 };
 
 export const formatDOB = (dob :string) :string => {
-  const dobMoment = DateTime.fromISO(dob);
+  const dobDT = DateTime.fromISO(dob);
   if (dob === undefined) return 'N/A';
-  if (!dobMoment.isValid) return dob;
+  if (!dobDT.isValid) return dob;
   return formatDate(dob);
 };
 

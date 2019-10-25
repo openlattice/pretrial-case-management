@@ -248,10 +248,10 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
           || neighbor.associationDetails[PROPERTY_TYPES.COMPLETED_DATE_TIME]
           || neighbor.neighborDetails[PROPERTY_TYPES.START_DATE];
         timestamp = timestamp ? timestamp[0] : '';
-        const timestampMoment = DateTime.fromISO(timestamp);
-        const neighborsWereEditedInTimeRange = timestampMoment.isValid
-          && timestampMoment >= start
-          && timestampMoment <= end;
+        const timestampDT = DateTime.fromISO(timestamp);
+        const neighborsWereEditedInTimeRange = timestampDT.isValid
+          && timestampDT >= start
+          && timestampDT <= end;
         if (psaWasCreatedInTimeRange || neighborsWereEditedInTimeRange) {
           usableNeighbors = usableNeighbors.push(Immutable.fromJS(neighbor));
         }
