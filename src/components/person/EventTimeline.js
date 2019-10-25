@@ -287,7 +287,6 @@ export default class EventTimeline extends React.Component<Props> {
             events.entrySeq().map(([date, eventList]) => {
               const dateTime = DateTime.fromISO(date);
               const positionRatio = Math.ceil(startDate.diff(dateTime, 'days').days / duration * 100);
-              console.log(startDate.diff(dateTime, 'days').days);
               const dateLabel = formatDate(date);
               const leftOffset = positionRatio;
               const iconGroup = (

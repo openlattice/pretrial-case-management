@@ -155,7 +155,6 @@ class HearingRow extends React.Component<Props, *> {
       [DATE_TIME]: hearingDateTime,
       [HEARING_TYPE]: hearingType
     } = getEntityProperties(hearing, [COURTROOM, DATE_TIME, HEARING_TYPE]);
-    console.log(hearingDateTime);
 
     const hearingDate = formatDate(hearingDateTime);
     const hearingTime = formatTime(hearingDateTime);
