@@ -51,10 +51,5 @@ export function formatDateTime(dateString :string) :string {
   if (!dateString) return '';
   const date = getDT(dateString);
   if (!date || !date.isValid) return dateString;
-  return date.toFormat(DATETIME_FORMAT);
-}
-
-export function formatDateTimeList(dateTimeList :string[]) :string {
-  if (!dateTimeList || (!dateTimeList.length && !dateTimeList.size)) return '';
-  return dateTimeList.map(dateString => formatDateTime(dateString)).join(', ');
+  return formateDTtoDateTimeString(date);
 }
