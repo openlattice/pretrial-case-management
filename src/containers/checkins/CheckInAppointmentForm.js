@@ -18,6 +18,7 @@ import { APPOINTMENT_PATTERN } from '../../utils/consts/AppointmentConsts';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { getFirstNeighborValue, getNeighborDetailsForEntitySet } from '../../utils/DataUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { DATE_FORMAT } from '../../utils/consts/DateTimeConsts';
 import { OL } from '../../utils/consts/Colors';
 import { InputGroup } from '../../components/person/PersonFormTags';
 import { CHECKIN_FREQUENCIES } from '../../utils/consts/ReleaseConditionConsts';
@@ -267,11 +268,11 @@ class CheckInsAppointmentForm extends React.Component<Props, State> {
 
   onDateChange = ({ start, end }) => {
     if (start) {
-      const startDate = DateTime.fromISO(start);
+      const startDate = DateTime.fromFormat(start, DATE_FORMAT);
       this.setState({ startDate });
     }
     else if (end) {
-      const endDate = DateTime.fromISO(end);
+      const endDate = DateTime.fromFormat(end, DATE_FORMAT);
       this.setState({ endDate });
     }
   }
