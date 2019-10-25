@@ -7,7 +7,7 @@ import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { Redirect, Route, Switch } from 'react-router-dom';
 import styled from 'styled-components';
-import moment from 'moment';
+import { DateTime } from 'luxon';
 import { List, Map, Set } from 'immutable';
 
 import DatePicker from '../../components/datetime/DatePicker';
@@ -20,11 +20,11 @@ import PersonSearchFields from '../../components/person/PersonSearchFields';
 import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
 import { SORT_TYPES } from '../../utils/consts/Consts';
 import { OL } from '../../utils/consts/Colors';
+import { formatDate } from '../../utils/FormattingUtils';
 import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { REVIEW, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import {
-  DATE_FORMAT,
   FILTER_TYPE,
   STATUS_OPTIONS,
   STATUS_OPTIONS_ARR,
@@ -176,7 +176,7 @@ class ReviewPSA extends React.Component<Props, State> {
       options: List(),
       filterType: FILTER_TYPE.VIEW_ALL,
       filters: {
-        date: moment().format(),
+        date: formatDate(DateTime.local().toISO()),
         firstName: '',
         lastName: '',
         dob: '',
@@ -228,7 +228,7 @@ class ReviewPSA extends React.Component<Props, State> {
     const path = location.pathname;
     const pathsDoNotMatch = path !== this.props.location.pathname;
     if (pathsDoNotMatch && path.endsWith(Routes.REVIEW_REPORTS)) {
-      this.resetState(FILTER_TYPE.VIEW_ALL, moment());
+      this.resetState(FILTER_TYPE.VIEW_ALL, formatDate(DateTime.local().toISODate()));
       this.switchToViewAll();
     }
     else if (pathsDoNotMatch && path.endsWith(Routes.SEARCH_FORMS)) {
@@ -459,7 +459,7 @@ class ReviewPSA extends React.Component<Props, State> {
 
   filterByDate = () => {
     const { filters, options } = this.state;
-    const date = moment(filters.date).format(DATE_FORMAT);
+    const { date } = filters;
 
     if (filters.date === '' || !filters.date) {
       return this.filterWithoutDate();

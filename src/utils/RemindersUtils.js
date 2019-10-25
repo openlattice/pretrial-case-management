@@ -1,4 +1,4 @@
-import moment from 'moment';
+
 import { DateTime } from 'luxon';
 import { Map } from 'immutable';
 
@@ -76,9 +76,9 @@ export const sortEntities = (entities, neighbors, shouldSortByDateTime, sort) =>
     const caseNumber1 = neighbors.getIn(
       [entityKeyId1, PRETRIAL_CASES, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.CASE_ID, 0], ''
     );
-    const hearingDateTime1 = moment(neighbors
+    const hearingDateTime1 = DateTime.fromISO(neighbors
       .getIn([entityKeyId1, HEARINGS, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.DATE_TIME, 0], ''));
-    const dateTime1 = moment(getFirstNeighborValue(entity1, PROPERTY_TYPES.DATE_TIME));
+    const dateTime1 = DateTime.fromISO(getFirstNeighborValue(entity1, PROPERTY_TYPES.DATE_TIME));
     const firstName1 = getFirstNeighborValue(person1, PROPERTY_TYPES.FIRST_NAME);
     const lastName1 = getFirstNeighborValue(person1, PROPERTY_TYPES.LAST_NAME);
 
@@ -87,27 +87,27 @@ export const sortEntities = (entities, neighbors, shouldSortByDateTime, sort) =>
     const caseNumber2 = neighbors.getIn(
       [entityKeyId2, PRETRIAL_CASES, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.CASE_ID, 0], ''
     );
-    const hearingDateTime2 = moment(neighbors
+    const hearingDateTime2 = DateTime.fromISO(neighbors
       .getIn([entityKeyId2, HEARINGS, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.DATE_TIME, 0], ''));
-    const dateTime2 = moment(getFirstNeighborValue(entity2, PROPERTY_TYPES.DATE_TIME));
+    const dateTime2 = DateTime.fromISO(getFirstNeighborValue(entity2, PROPERTY_TYPES.DATE_TIME));
     const firstName2 = getFirstNeighborValue(person2, PROPERTY_TYPES.FIRST_NAME);
     const lastName2 = getFirstNeighborValue(person2, PROPERTY_TYPES.LAST_NAME);
 
-    if (shouldSortByDateTime && !dateTime1.isSame(dateTime2)) return dateTime1.isBefore(dateTime2) ? -1 : 1;
+    if (shouldSortByDateTime && !dateTime1.hasSame(dateTime2)) return dateTime1 < dateTime2 ? -1 : 1;
     if (sort === SORT_TYPES.CASE_NUM) {
       if (isNotEqual(caseNumber1, caseNumber2)) return isGreater(caseNumber1, caseNumber2);
-      if (!hearingDateTime1.isSame(hearingDateTime2)) return hearingDateTime1.isBefore(hearingDateTime2) ? -1 : 1;
+      if (!hearingDateTime1.hasSame(hearingDateTime2)) return hearingDateTime1 < hearingDateTime2 ? -1 : 1;
       if (isNotEqual(lastName1, lastName2)) return isGreater(lastName1, lastName2);
       if (isNotEqual(firstName1, firstName2)) return isGreater(firstName1, firstName2);
     }
     if (sort === SORT_TYPES.DATE) {
-      if (!hearingDateTime1.isSame(hearingDateTime2)) return hearingDateTime1.isBefore(hearingDateTime2) ? -1 : 1;
+      if (!hearingDateTime1.hasSame(hearingDateTime2)) return hearingDateTime1 < hearingDateTime2 ? -1 : 1;
       if (isNotEqual(lastName1, lastName2)) return isGreater(lastName1, lastName2);
       if (isNotEqual(firstName1, firstName2)) return isGreater(firstName1, firstName2);
     }
     if (isNotEqual(lastName1, lastName2)) return isGreater(lastName1, lastName2);
     if (isNotEqual(firstName1, firstName2)) return isGreater(firstName1, firstName2);
-    if (!hearingDateTime1.isSame(hearingDateTime2)) return hearingDateTime1.isBefore(hearingDateTime2) ? -1 : 1;
+    if (!hearingDateTime1.hasSame(hearingDateTime2)) return hearingDateTime1 < hearingDateTime2 ? -1 : 1;
     return 0;
   }));
 

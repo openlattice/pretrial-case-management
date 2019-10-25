@@ -1,5 +1,5 @@
-import moment from 'moment';
-import { OrderedMap, Map, List } from 'immutable';
+import { DateTime } from 'luxon';
+import { OrderedMap, Map } from 'immutable';
 
 import { formatPersonName } from './PeopleUtils';
 import { APP_TYPES, PROPERTY_TYPES } from './consts/DataModelConsts';
@@ -113,7 +113,7 @@ export const getHearingsIdsFromNeighbors = psaNeighbors => (
 
 // Get future hearings in sequential order from psa neighbors
 export const getScheduledHearings = (psaNeighbors) => {
-  const todaysDate = moment().startOf('day');
+  const todaysDate = DateTime.local().startOf('day');
   return (
     getHearingsFromNeighbors(psaNeighbors)
       .filter((hearing) => {
@@ -142,7 +142,7 @@ export const getScheduledHearings = (psaNeighbors) => {
 
 // Get past hearings in sequential order from psa neighbors
 export const getPastHearings = (psaNeighbors) => {
-  const todaysDate = moment().startOf('day');
+  const todaysDate = DateTime.local().startOf('day');
   return (
     getHearingsFromNeighbors(psaNeighbors)
       .filter((hearing) => {
@@ -160,7 +160,7 @@ export const getPastHearings = (psaNeighbors) => {
           && courtroom
           && hearingType
         ) {
-          return todaysDate.isAfter(hearingDateTime);
+          return todaysDate > DateTime.fromISO(hearingDateTime);
         }
         return false;
       })
@@ -188,7 +188,7 @@ export const getAvailableHearings = (personHearings, scheduledHearings, hearingN
     } = getEntityProperties(hearing, [COURTROOM, DATE_TIME, ENTITY_KEY_ID]);
     const hasOutcome = !!hearingNeighborsById.getIn([hearingEntityKeyId, OUTCOMES]);
     const hearingCancelled = hearingIsCancelled(hearing);
-    const hearingIsInPast = moment(hearingDateTime).isBefore(moment());
+    const hearingIsInPast = DateTime.fromISO(hearingDateTime) < DateTime.local();
     return !((scheduledHearingMap.get(hearingDateTime) === hearingCourtroom)
     || hasOutcome
     || hearingCancelled
@@ -200,8 +200,8 @@ export const getAvailableHearings = (personHearings, scheduledHearings, hearingN
 
 
 export const sortHearingsByDate = (h1, h2) => {
-  const h1Date = moment(getFirstNeighborValue(h1, PROPERTY_TYPES.DATE_TIME));
-  const h2Date = moment(getFirstNeighborValue(h2, PROPERTY_TYPES.DATE_TIME));
-  if (h1Date.isValid() && h2Date.isValid()) return h1Date.isBefore(h2Date) ? -1 : 1;
+  const h1Date = DateTime.fromISO(getFirstNeighborValue(h1, PROPERTY_TYPES.DATE_TIME));
+  const h2Date = DateTime.fromISO(getFirstNeighborValue(h2, PROPERTY_TYPES.DATE_TIME));
+  if (h1Date.isValid && h2Date.isValid) return h1Date < h2Date ? -1 : 1;
   return 0;
 };

@@ -1,5 +1,5 @@
+
 import Immutable from 'immutable';
-import moment from 'moment';
 
 import { PROPERTY_TYPES } from './consts/DataModelConsts';
 
