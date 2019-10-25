@@ -18,6 +18,7 @@ import DatePicker from '../../components/datetime/DatePicker';
 import InfoButton from '../../components/buttons/InfoButton';
 import LogoLoader from '../../components/LogoLoader';
 import SearchableSelect from '../../components/controls/SearchableSelect';
+import { formatDate, formatTime } from '../../utils/FormattingUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
 import { HEARING_CONSTS } from '../../utils/consts/HearingConsts';
@@ -261,8 +262,8 @@ class HearingForm extends React.Component<Props, State> {
         [DATE_TIME]: existingHearingDateTime,
         [COURTROOM]: existingHearingCourtroom,
       } = getEntityProperties(hearing, [DATE_TIME, COURTROOM]);
-      hearingDate = DateTime.fromISO(existingHearingDateTime).toFormat(DATE_FORMAT);
-      hearingTime = DateTime.fromISO(existingHearingDateTime).toFormat(TIME_FORMAT);
+      hearingDate = formatDate(existingHearingDateTime);
+      hearingTime = formatTime(existingHearingDateTime);
       hearingCourtroom = existingHearingCourtroom;
     }
     return { hearingDate, hearingTime, hearingCourtroom };
