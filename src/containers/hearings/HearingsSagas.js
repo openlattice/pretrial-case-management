@@ -26,7 +26,8 @@ import {
 import type { SequenceAction } from 'redux-reqseq';
 
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
-import { getUTCDateRangeSearchString, TIME_FORMAT } from '../../utils/consts/DateTimeConsts';
+import { formatTime } from '../../utils/FormattingUtils';
+import { getUTCDateRangeSearchString } from '../../utils/consts/DateTimeConsts';
 import { hearingIsCancelled } from '../../utils/HearingUtils';
 import { getPropertyTypeId, getPropertyIdToValueMap } from '../../edm/edmUtils';
 import { SETTINGS } from '../../utils/consts/AppSettingConsts';
@@ -258,6 +259,7 @@ function* loadHearingsForDateWorker(action :SequenceAction) :Generator<*, *, *> 
           [ENTITY_KEY_ID]: hearingEKID
         } :Object = getEntityProperties(hearing, [COURTROOM, DATE_TIME, HEARING_TYPE, ENTITY_KEY_ID]);
         const hearingDateTimeDT = DateTime.fromISO(hearingDateTime);
+        const formattedHearingTime = formatTime(hearingDateTime);
         const hearingExists = !!hearingDateTime;
         const hearingOnDateSelected = hearingDateTimeDT.hasSame(action.value, 'day');
         const hearingIsInactive = hearingIsCancelled(hearing);
@@ -268,10 +270,9 @@ function* loadHearingsForDateWorker(action :SequenceAction) :Generator<*, *, *> 
         ) hearingIds = hearingIds.add(hearingEKID);
         if (!hearingDateTimeDT.isValid || hearingIsInactive) return false;
         hearingsById = hearingsById.set(hearingEKID, hearing);
-        const time = hearingDateTimeDT.toFormat(TIME_FORMAT);
         hearingsByTime = hearingsByTime.set(
-          time,
-          hearingsByTime.get(time, List()).push(hearing)
+          formattedHearingTime,
+          hearingsByTime.get(formattedHearingTime, List()).push(hearing)
         );
         if (hearingCourtroom) courtrooms = courtrooms.add(hearingCourtroom);
         return true;
