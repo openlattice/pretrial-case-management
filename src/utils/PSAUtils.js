@@ -71,7 +71,7 @@ export const sortByDate = ([id1, neighbor1], [id2, neighbor2], entitySetsByOrgan
   });
 
   if (latest1 && latest2) {
-    return latest1.isAfter(latest2) ? -1 : 1;
+    return latest1 > latest2 ? -1 : 1;
   }
 
   if (latest1 || latest2) {
