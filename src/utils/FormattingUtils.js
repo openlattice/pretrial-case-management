@@ -21,8 +21,10 @@ export const getDT = (dateString) => {
   const todayIsInDST = todayDT.isInDST;
   const tzHasDST = Info.hasDST();
   let date = DateTime.fromISO(dateString);
-  if (tzHasDST && !todayIsInDST && date.isInDST) date = date.minus({ hours: 1 });
-  if (tzHasDST && todayIsInDST && !date.isInDST) date = date.plus({ hours: 1 });
+  if (tzHasDST) {
+    if (!todayIsInDST && date.isInDST) date = date.minus({ hours: 1 });
+    if (todayIsInDST && !date.isInDST) date = date.plus({ hours: 1 });
+  }
   return date;
 };
 
