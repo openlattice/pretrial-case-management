@@ -147,12 +147,12 @@ describe('FormattingUtils', () => {
         expect(formatDateTimeList([
           '1994-08-04T13:00:00.000',
           '2018-01-01T01:00:00.000'
-        ])).toEqual('08/04/1994 1:00 PM, 01/01/2018 1:00 AM');
+        ])).toEqual('08/04/1994 1:00 PM, 01/01/2018 2:00 AM');
         expect(formatDateTimeList([
           '1994-08-04T11:15:00.000',
           '2018-01-01T10:00:00.000',
           '1995-08-09T07:59:00.000'
-        ])).toEqual('08/04/1994 11:15 AM, 01/01/2018 10:00 AM, 08/09/1995 7:59 AM');
+        ])).toEqual('08/04/1994 11:15 AM, 01/01/2018 11:00 AM, 08/09/1995 7:59 AM');
       });
 
       test('should return comma separated list of supplied Immutable datetime lists', () => {
@@ -160,12 +160,12 @@ describe('FormattingUtils', () => {
         expect(formatDateTimeList(Immutable.List.of(
           '1994-08-04T13:00:00.000',
           '2018-01-01T01:00:00.000'
-        ))).toEqual('08/04/1994 1:00 PM, 01/01/2018 1:00 AM');
+        ))).toEqual('08/04/1994 1:00 PM, 01/01/2018 2:00 AM');
         expect(formatDateTimeList(Immutable.List.of(
           '1994-08-04T11:15:00.000',
           '2018-01-01T10:00:00.000',
           '1995-08-09T07:59:00.000'
-        ))).toEqual('08/04/1994 11:15 AM, 01/01/2018 10:00 AM, 08/09/1995 7:59 AM');
+        ))).toEqual('08/04/1994 11:15 AM, 01/01/2018 11:00 AM, 08/09/1995 7:59 AM');
       });
 
     });
