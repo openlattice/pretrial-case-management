@@ -16,6 +16,11 @@ export function formatValue(rawValue :string | string[]) :string {
   return rawValue.join(', ');
 }
 
+export const formateDTtoDateString = (dateTime :DateTime) => dateTime.toFormat(DATE_FORMAT);
+export const formateDTtoDateTimeString = (dateTime :DateTime) => dateTime.toFormat(DATETIME_FORMAT);
+export const formateDTtoTimeString = (dateTime :DateTime) => dateTime.toFormat(TIME_FORMAT);
+
+
 export const getDT = (dateString) => {
   const todayDT = DateTime.local();
   const todayIsInDST = todayDT.isInDST;
@@ -32,14 +37,14 @@ export function formatDate(dateString :string) :string {
   if (!dateString) return '';
   const date = getDT(dateString);
   if (!date || !date.isValid) return dateString;
-  return date.toFormat(DATE_FORMAT);
+  return formateDTtoDateString(date);
 }
 
 export function formatTime(dateString :string) :string {
   if (!dateString) return '';
   const date = getDT(dateString);
   if (!date || !date.isValid) return dateString;
-  return date.toFormat(TIME_FORMAT);
+  return formateDTtoTimeString(date);
 }
 
 export function formatDateList(dateList :string[]) :string {
