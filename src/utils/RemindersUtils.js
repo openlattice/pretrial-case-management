@@ -93,21 +93,21 @@ export const sortEntities = (entities, neighbors, shouldSortByDateTime, sort) =>
     const firstName2 = getFirstNeighborValue(person2, PROPERTY_TYPES.FIRST_NAME);
     const lastName2 = getFirstNeighborValue(person2, PROPERTY_TYPES.LAST_NAME);
 
-    if (shouldSortByDateTime && !dateTime1.hasSame(dateTime2)) return dateTime1 < dateTime2 ? -1 : 1;
+    if (shouldSortByDateTime && !dateTime1.hasSame(dateTime2, 'minutes')) return dateTime1 < dateTime2 ? -1 : 1;
     if (sort === SORT_TYPES.CASE_NUM) {
       if (isNotEqual(caseNumber1, caseNumber2)) return isGreater(caseNumber1, caseNumber2);
-      if (!hearingDateTime1.hasSame(hearingDateTime2)) return hearingDateTime1 < hearingDateTime2 ? -1 : 1;
+      if (!hearingDateTime1.hasSame(hearingDateTime2, 'minutes')) return hearingDateTime1 < hearingDateTime2 ? -1 : 1;
       if (isNotEqual(lastName1, lastName2)) return isGreater(lastName1, lastName2);
       if (isNotEqual(firstName1, firstName2)) return isGreater(firstName1, firstName2);
     }
     if (sort === SORT_TYPES.DATE) {
-      if (!hearingDateTime1.hasSame(hearingDateTime2)) return hearingDateTime1 < hearingDateTime2 ? -1 : 1;
+      if (!hearingDateTime1.hasSame(hearingDateTime2, 'minutes')) return hearingDateTime1 < hearingDateTime2 ? -1 : 1;
       if (isNotEqual(lastName1, lastName2)) return isGreater(lastName1, lastName2);
       if (isNotEqual(firstName1, firstName2)) return isGreater(firstName1, firstName2);
     }
     if (isNotEqual(lastName1, lastName2)) return isGreater(lastName1, lastName2);
     if (isNotEqual(firstName1, firstName2)) return isGreater(firstName1, firstName2);
-    if (!hearingDateTime1.hasSame(hearingDateTime2)) return hearingDateTime1 < hearingDateTime2 ? -1 : 1;
+    if (!hearingDateTime1.hasSame(hearingDateTime2, 'minutes')) return hearingDateTime1 < hearingDateTime2 ? -1 : 1;
     return 0;
   }));
 
