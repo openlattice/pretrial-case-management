@@ -132,7 +132,7 @@ export const getScheduledHearings = (psaNeighbors) => {
           && courtroom
           && hearingType
         ) {
-          if (todaysDate.isBefore(hearingDateTime)) return true;
+          if (todaysDate < DateTime.fromISO(hearingDateTime)) return true;
         }
         return false;
       })

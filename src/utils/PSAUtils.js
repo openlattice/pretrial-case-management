@@ -53,7 +53,7 @@ export const sortByDate = ([id1, neighbor1], [id2, neighbor2], entitySetsByOrgan
       ? PROPERTY_TYPES.COMPLETED_DATE_TIME : PROPERTY_TYPES.DATE_TIME;
     const date = DateTime.fromISO(neighborObj.getIn([PSA_ASSOCIATION.DETAILS, ptFqn, 0], ''));
     if (date.isValid) {
-      if (!latest || latest.isBefore(date)) {
+      if (!latest || latest < date) {
         return date;
       }
     }
