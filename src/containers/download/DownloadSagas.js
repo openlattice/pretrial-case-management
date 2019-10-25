@@ -3,7 +3,7 @@
  */
 import Immutable, { fromJS, List, Map } from 'immutable';
 import Papa from 'papaparse';
-import moment from 'moment';
+import { DateTime } from 'luxon';
 import { Constants, SearchApi, Models } from 'lattice';
 import { SearchApiActions, SearchApiSagas } from 'lattice-sagas';
 import {
@@ -19,7 +19,7 @@ import FileSaver from '../../utils/FileSaver';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { hearingIsCancelled } from '../../utils/HearingUtils';
 import { getPropertyTypeId } from '../../edm/edmUtils';
-import { toISODate, formatDateTime, formatDate } from '../../utils/FormattingUtils';
+import { formatDateTime, formatDate } from '../../utils/FormattingUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { HEADERS_OBJ, POSITIONS } from '../../utils/consts/CSVConsts';
@@ -175,10 +175,10 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
 
     const datePropertyTypeId = getPropertyTypeId(edm, PROPERTY_TYPES.DATE_TIME);
 
-    const start = moment(startDate);
-    const startSearchValue = toISODate(start);
-    const end = moment(endDate);
-    const endSearchValue = toISODate(end);
+    const start = DateTime.fromISO(startDate);
+    const startSearchValue = start.toISODate();
+    const end = DateTime.fromISO(endDate);
+    const endSearchValue = end.toISODate();
 
     const searchString = `[${startSearchValue} TO ${endSearchValue}]`;
 
@@ -228,10 +228,10 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
     let usableNeighborsById = Immutable.Map();
 
     Object.keys(neighborsById.data).forEach((id) => {
-      const psaCreationDate = moment(scoresAsMap.getIn([id, PROPERTY_TYPES.DATE_TIME, 0]));
-      const psaWasCreatedInTimeRange = psaCreationDate.isValid()
-                && psaCreationDate.isSameOrAfter(start)
-                && psaCreationDate.isSameOrBefore(end);
+      const psaCreationDate = DateTime.fromISO(scoresAsMap.getIn([id, PROPERTY_TYPES.DATE_TIME, 0]));
+      const psaWasCreatedInTimeRange = psaCreationDate.isValid
+                && psaCreationDate >= start
+                && psaCreationDate <= end;
       let usableNeighbors = Immutable.List();
       const neighborList = neighborsById.data[id];
       neighborList.forEach((neighborObj) => {
@@ -248,10 +248,10 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
           || neighbor.associationDetails[PROPERTY_TYPES.COMPLETED_DATE_TIME]
           || neighbor.neighborDetails[PROPERTY_TYPES.START_DATE];
         timestamp = timestamp ? timestamp[0] : '';
-        const timestampMoment = moment(timestamp);
-        const neighborsWereEditedInTimeRange = timestampMoment.isValid()
-          && timestampMoment.isSameOrAfter(start)
-          && timestampMoment.isSameOrBefore(end);
+        const timestampDT = DateTime.fromISO(timestamp);
+        const neighborsWereEditedInTimeRange = timestampDT.isValid
+          && timestampDT >= start
+          && timestampDT <= end;
         if (psaWasCreatedInTimeRange || neighborsWereEditedInTimeRange) {
           usableNeighbors = usableNeighbors.push(Immutable.fromJS(neighbor));
         }
@@ -348,10 +348,10 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
             details.get(fqn).forEach((val) => {
               let newVal = val;
               if (DATETIME_FQNS.includes(fqn)) {
-                newVal = formatDateTime(val, 'YYYY-MM-DD hh:mma');
+                newVal = formatDateTime(val);
               }
               if (fqn === PROPERTY_TYPES.DOB) {
-                newVal = formatDate(val, 'MM-DD-YYYY');
+                newVal = formatDate(val);
               }
               if (!newArrayValues.includes(val)) {
                 newArrayValues = newArrayValues.push(newVal);
@@ -431,7 +431,7 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
       data: jsonResults.toJS()
     });
 
-    const name = `PSAs-${start.format('MM-DD-YYYY')}-to-${end.format('MM-DD-YYYY')}`;
+    const name = `PSAs-${start.toISODate()}-to-${end.toISODate()}`;
 
     FileSaver.saveFile(csv, name, 'csv');
 
@@ -561,11 +561,11 @@ function* downloadPSAsByHearingDateWorker(action :SequenceAction) :Generator<*, 
         neighbors.forEach((neighbor) => {
           const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id']);
           const entityKeyId = neighbor.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0]);
-          const entityDateTime = moment(neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.DATE_TIME, 0]));
+          const entityDateTime = DateTime.fromISO(neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.DATE_TIME, 0]));
 
           if (entitySetId === hearingsEntitySetId) {
             const hearingDate = entityDateTime;
-            const hearingDateInRange = hearingDate.isSame(enteredHearingDate, 'day');
+            const hearingDateInRange = hearingDate.hasSame(DateTime.fromISO(enteredHearingDate), 'day');
             if (hearingDateInRange) {
               hasValidHearing = true;
             }
@@ -573,7 +573,7 @@ function* downloadPSAsByHearingDateWorker(action :SequenceAction) :Generator<*, 
 
           if (entitySetId === psaEntitySetId
               && neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.STATUS, 0]) === PSA_STATUSES.OPEN) {
-            if (!mostCurrentPSA || currentPSADateTime.isBefore(entityDateTime)) {
+            if (!mostCurrentPSA || currentPSADateTime < entityDateTime) {
               mostCurrentPSA = neighbor;
               mostCurrentPSAEntityKeyId = entityKeyId;
               currentPSADateTime = entityDateTime;
@@ -647,10 +647,10 @@ function* downloadPSAsByHearingDateWorker(action :SequenceAction) :Generator<*, 
               details.get(fqn).forEach((val) => {
                 let newVal = val;
                 if (DATETIME_FQNS.includes(fqn)) {
-                  newVal = formatDateTime(val, 'YYYY-MM-DD hh:mma');
+                  newVal = formatDateTime(val);
                 }
                 if (fqn === PROPERTY_TYPES.DOB) {
-                  newVal = formatDate(val, 'MM-DD-YYYY');
+                  newVal = formatDate(val);
                 }
                 if (!newArrayValues.includes(val)) {
                   newArrayValues = newArrayValues.push(newVal);
@@ -766,7 +766,7 @@ function* getDownloadFiltersWorker(action :SequenceAction) :Generator<*, *, *> {
     let noResults = false;
     const { hearingDate } = action.value;
 
-    const start = toISODate(hearingDate);
+    const start = hearingDate;
 
     const DATE_TIME_FQN = new FullyQualifiedName(PROPERTY_TYPES.DATE_TIME);
 
@@ -787,14 +787,14 @@ function* getDownloadFiltersWorker(action :SequenceAction) :Generator<*, *, *> {
     if (allHearingData.size) {
       allHearingData.forEach((hearing) => {
         const courtTime = hearing.getIn([PROPERTY_TYPES.DATE_TIME, 0]);
-        const sameAshearingDate = (hearingDate.isSame(courtTime, 'day'));
+        const sameAshearingDate = (hearingDate.hasSame(courtTime, 'day'));
         const hearingId = hearing.getIn([OPENLATTICE_ID_FQN, 0]);
         const hearingType = hearing.getIn([PROPERTY_TYPES.HEARING_TYPE, 0]);
         const hearingCourtroom = hearing.getIn([PROPERTY_TYPES.COURTROOM, 0]);
         const hearingIsInactive = hearingIsCancelled(hearing);
         if (hearingId && hearingType && !hearingIsInactive) {
           if (courtTime && sameAshearingDate) {
-            const formattedTime = moment(courtTime).format(('HH:mm'));
+            const formattedTime = DateTime.fromISO(courtTime).toISODate();
             options = options.set(
               `${hearingCourtroom} - ${formattedTime}`,
               options.get(`${hearingCourtroom} - ${formattedTime}`, Immutable.List()).push(hearing)

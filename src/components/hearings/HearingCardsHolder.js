@@ -12,7 +12,7 @@ import ContentBlock from '../ContentBlock';
 import ContentSection from '../ContentSection';
 import { NoResults } from '../../utils/Layout';
 import { OL } from '../../utils/consts/Colors';
-import { formatDateTime } from '../../utils/FormattingUtils';
+import { formatDate, formatTime } from '../../utils/FormattingUtils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 
 const { OPENLATTICE_ID_FQN } = Constants;
@@ -86,8 +86,8 @@ const HearingCardsHolder = ({
 
   const hearingOptions = hearings.map((hearing) => {
     const dateTime = hearing.getIn([PROPERTY_TYPES.DATE_TIME, 0], '');
-    const date = formatDateTime(dateTime, 'MM/DD/YYYY');
-    const time = formatDateTime(dateTime, 'HH:mm');
+    const date = formatDate(dateTime);
+    const time = formatTime(dateTime);
     const courtroom = hearing.getIn([PROPERTY_TYPES.COURTROOM, 0], '');
     const courtType = hearing.getIn([PROPERTY_TYPES.HEARING_TYPE, 0], '')
 

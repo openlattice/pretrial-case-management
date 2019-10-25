@@ -2,7 +2,7 @@
  * @flow
  */
 import axios from 'axios';
-import moment from 'moment';
+import { DateTime } from 'luxon';
 import { fromJS, Map, Set } from 'immutable';
 import { AuthUtils } from 'lattice-auth';
 import { DataApi, SearchApi } from 'lattice';
@@ -21,7 +21,6 @@ import {
   enrollVoice
 } from './EnrollActionFactory';
 
-import { toISODateTime } from '../../utils/FormattingUtils';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { getPropertyTypeId } from '../../edm/edmUtils';
 import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
@@ -114,7 +113,7 @@ function* getOrCreateProfileEntity(personEntityKeyId :string) :Generator<*, *, *
           srcEntityIndex: 0,
           dstEntitySetId: peopleEntitySetId,
           dstEntityKeyId: personEntityKeyId,
-          data: { [completedDateTimePropertyId]: [toISODateTime(moment())] }
+          data: { [completedDateTimePropertyId]: [DateTime.local().toISO()] }
         }]
       }
     });

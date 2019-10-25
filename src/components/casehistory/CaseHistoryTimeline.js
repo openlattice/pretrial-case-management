@@ -5,7 +5,7 @@
 import React from 'react';
 import Immutable from 'immutable';
 import styled from 'styled-components';
-import moment from 'moment';
+import { DateTime } from 'luxon';
 
 import { OL } from '../../utils/consts/Colors';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
@@ -105,12 +105,14 @@ const ReferenceDates = styled.div`
   }
 `;
 
-const MONTH_FORMAT = 'MM/YYYY';
+const MONTH_FORMAT = 'MM/yyyy';
+const YEAR_FORMAT = 'yyyy';
 
 export default class CaseHistoryTimeline extends React.Component<Props> {
 
-  getCaseDate = (pretrialCase :Immutable.Map<*, *>) =>
-    moment.utc(pretrialCase.getIn([PROPERTY_TYPES.FILE_DATE, 0], ''));
+  getCaseDate = (pretrialCase :Immutable.Map<*, *>) => (
+    DateTime.fromISO(pretrialCase.getIn([PROPERTY_TYPES.FILE_DATE, 0], ''))
+  )
 
   getInitializedCountsMap = () => Immutable.Map().set('m', 0).set('f', 0).set('v', 0);
 
@@ -141,11 +143,11 @@ export default class CaseHistoryTimeline extends React.Component<Props> {
 
     let chargeTypesByMonth = Immutable.Map();
     caseHistory
-      .filter(pretrialCase =>
-        this.getCaseDate(pretrialCase).isSameOrAfter(moment().startOf('day').subtract(2, 'years')))
+      .filter(pretrialCase => this.getCaseDate(pretrialCase) >= DateTime.local().startOf('day').minus({ years: 2 }))
       .forEach((pretrialCase) => {
         const caseNum = pretrialCase.getIn([PROPERTY_TYPES.CASE_ID, 0], '');
-        const month = this.getCaseDate(pretrialCase).format(MONTH_FORMAT);
+        const fileDate = pretrialCase.getIn([PROPERTY_TYPES.FILE_DATE, 0], '');
+        const month = DateTime.fromISO(fileDate).toFormat(MONTH_FORMAT);
 
         chargeHistory.get(caseNum, Immutable.List()).forEach((charge) => {
 
@@ -161,16 +163,16 @@ export default class CaseHistoryTimeline extends React.Component<Props> {
   }
 
   renderReferenceDates = () => {
-    const now = moment();
-    const oneYearAgo = moment().subtract(1, 'years');
-    const twoYearsAgo = moment().subtract(2, 'years');
+    const now = DateTime.local();
+    const oneYearAgo = DateTime.local().minus({ years: 1 });
+    const twoYearsAgo = DateTime.local().minus({ years: 2 });
     return (
       <ReferenceDates>
-        <span>{twoYearsAgo.format(MONTH_FORMAT)}</span>
-        <span>{oneYearAgo.format('YYYY')}</span>
-        <span>{oneYearAgo.format(MONTH_FORMAT)}</span>
-        <span>{now.format('YYYY')}</span>
-        <span>{now.format(MONTH_FORMAT)}</span>
+        <span>{twoYearsAgo.toFormat(MONTH_FORMAT)}</span>
+        <span>{oneYearAgo.toFormat(YEAR_FORMAT)}</span>
+        <span>{oneYearAgo.toFormat(MONTH_FORMAT)}</span>
+        <span>{now.toFormat(YEAR_FORMAT)}</span>
+        <span>{now.toFormat(MONTH_FORMAT)}</span>
       </ReferenceDates>
     );
   }
@@ -207,33 +209,34 @@ export default class CaseHistoryTimeline extends React.Component<Props> {
 
   renderTags = () => {
     const totalMonths = 24;
-    let lastLongLabelMonthMoment;
+    let lastLongLabelMonthDT;
     let lastLabelWasTall;
+    const chargeTypesByMonth = this.getChargeTypesByMonth().entrySeq()
+      .filter(([_, counts]) => (counts.get('m') > 0 || counts.get('f') > 0 || counts.get('v') > 0))
+      .sort(([dt1], [dt2]) => (
+        DateTime.fromFormat(dt1, MONTH_FORMAT) < DateTime.fromFormat(dt2, MONTH_FORMAT) ? -1 : 1));
 
     return (
       <TagRow>
         {
-          this.getChargeTypesByMonth().entrySeq()
-            .filter(([month, counts]) => counts.get('m') > 0 || counts.get('f') > 0 || counts.get('v') > 0)
-            .sort(([m1], [m2]) => (moment(m1, MONTH_FORMAT).isBefore(moment(m2, MONTH_FORMAT)) ? -1 : 1))
+          chargeTypesByMonth
             .map(([month, counts]) => {
               let tall = false;
-              const monthMoment = moment(month, MONTH_FORMAT);
-              const diff = moment().diff(monthMoment, 'months');
-              const monthLabel = monthMoment.format('MMM');
+              const monthDT = DateTime.fromFormat(month, MONTH_FORMAT);
+              const diff = DateTime.local().diff(monthDT, 'months').months;
+              const monthLabel = monthDT.toFormat('MMM');
               const leftOffset = ((totalMonths - diff) / 24) * 100;
               const violent = counts.get('v') > 0;
               const tagLabel = this.formatTagLabel(counts);
               if (tagLabel.length > 1) {
-                if (lastLongLabelMonthMoment
+                if (lastLongLabelMonthDT
                   && !lastLabelWasTall
-                  && monthMoment.diff(lastLongLabelMonthMoment, 'months') === 1) {
+                  && monthDT.diff(lastLongLabelMonthDT, 'months').months === 1) {
                   tall = true;
                 }
-                lastLongLabelMonthMoment = monthMoment;
+                lastLongLabelMonthDT = monthDT;
               }
               lastLabelWasTall = tall;
-
               return this.renderTag(leftOffset, violent, tagLabel, monthLabel, tall);
             })
         }

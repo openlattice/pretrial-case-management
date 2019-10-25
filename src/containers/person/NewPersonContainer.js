@@ -8,7 +8,7 @@ import Immutable, { Map } from 'immutable';
 import styled from 'styled-components';
 import qs from 'query-string';
 import uuid from 'uuid/v4';
-import moment from 'moment';
+import { DateTime } from 'luxon';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import type { RequestState } from 'redux-reqseq';
@@ -21,7 +21,6 @@ import StyledInput from '../../components/controls/StyledInput';
 import DatePicker from '../../components/datetime/DatePicker';
 import SearchableSelect from '../../components/controls/SearchableSelect';
 import { GENDERS, STATES } from '../../utils/consts/Consts';
-import { toISODate } from '../../utils/FormattingUtils';
 import { phoneIsValid, emailIsValid } from '../../utils/ContactInfoUtils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
@@ -211,7 +210,10 @@ class NewPersonContainer extends React.Component<Props, State> {
   hasInvalidDOB = () => {
     const { state } = this;
     const dob = state[DOB];
-    const dobIsValid = moment(dob).isAfter('1/1/1900') && moment(dob).isBefore(moment());
+    const dobDT = DateTime.fromISO(dob);
+    const maxAge = DateTime.local().minus(150, 'years');
+    const minAge = DateTime.local().minus(18, 'years');
+    const dobIsValid = dobDT < maxAge && dobDT > minAge;
     if (dob) return !dobIsValid;
     return undefined;
   }
@@ -228,9 +230,7 @@ class NewPersonContainer extends React.Component<Props, State> {
   }
 
   handleOnChangeDateOfBirth = (dob :?string) => {
-    const dobMoment = dob ? moment(dob) : null;
-    const dobValue = toISODate(dobMoment) || '';
-
+    const dobValue = dob ? DateTime.fromISO(dob).toISODate() : '';
     this.setState({
       [DOB]: dobValue
     });

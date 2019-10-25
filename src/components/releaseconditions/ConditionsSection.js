@@ -1,8 +1,8 @@
 /*
  * @flow
  */
-import moment from 'moment';
 import React from 'react';
+import { DateTime } from 'luxon';
 import { Map } from 'immutable';
 
 import EnrollStatusBanner from '../enroll/EnrollStatusBanner';
@@ -74,9 +74,9 @@ class ConditionsSection extends React.Component<Props, State> {
     const sortedEntities = appointmentEntities.sort((a1, a2) => {
       const a1StartDate = getFirstNeighborValue(a1, START_DATE);
       const a2StartDate = getFirstNeighborValue(a2, START_DATE);
-      const a1moment = moment(a1StartDate);
-      const a2moment = moment(a2StartDate);
-      return a1moment.isBefore(a2moment) ? -1 : 1;
+      const a1DT = DateTime.fromISO(a1StartDate);
+      const a2DT = DateTime.fromISO(a2StartDate);
+      return a1DT < a2DT ? -1 : 1;
     });
     sortedEntities.forEach((appointment) => {
       const startDate = getFirstNeighborValue(appointment, START_DATE);

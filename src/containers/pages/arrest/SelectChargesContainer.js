@@ -5,8 +5,8 @@
 import React from 'react';
 import Immutable, { Map, List, fromJS } from 'immutable';
 import styled from 'styled-components';
-import moment from 'moment';
 import randomUUID from 'uuid/v4';
+import { DateTime } from 'luxon';
 import { connect } from 'react-redux';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faExclamationTriangle } from '@fortawesome/pro-light-svg-icons';
@@ -22,7 +22,6 @@ import type { Charge } from '../../../utils/consts/Consts';
 import { CHARGES } from '../../../utils/consts/FrontEndStateConsts';
 import { CASE_CONTEXTS, SETTINGS } from '../../../utils/consts/AppSettingConsts';
 import { PROPERTY_TYPES } from '../../../utils/consts/DataModelConsts';
-import { toISODateTime } from '../../../utils/FormattingUtils';
 import { getFirstNeighborValue, getEntityProperties } from '../../../utils/DataUtils';
 import { OL } from '../../../utils/consts/Colors';
 
@@ -178,12 +177,15 @@ class SelectChargesContainer extends React.Component<Props, State> {
 
   constructor(props :Props) {
     super(props);
+    const arrestTimeString = props.defaultArrest.getIn([PROPERTY_TYPES.ARREST_DATE_TIME, 0]);
+    let arrestDatetime = DateTime.fromISO(arrestTimeString);
+    if (!arrestDatetime.isValid) arrestDatetime = DateTime.local();
     this.state = {
       chargeType: props.chargeType,
       courtCaseNumber: '',
       arrestTrackingNumber: '',
       arrestAgency: '',
-      arrestDate: moment(props.defaultArrest.getIn([PROPERTY_TYPES.ARREST_DATE_TIME, 0])),
+      arrestDate: arrestDatetime,
       caseDispositionDate: '',
       charges: this.formatChargeList(props.defaultCharges)
     };
@@ -249,9 +251,9 @@ class SelectChargesContainer extends React.Component<Props, State> {
 
   getDateTime = (dateTimeStr) => {
     if (dateTimeStr) {
-      const dateTime = moment(dateTimeStr);
-      if (dateTime.isValid()) {
-        return toISODateTime(dateTime);
+      const dateTime = DateTime.fromISO(dateTimeStr);
+      if (dateTime.isValid) {
+        return dateTime.toISO();
       }
     }
     return '';
@@ -270,7 +272,7 @@ class SelectChargesContainer extends React.Component<Props, State> {
     const caseId = randomUUID();
     const caseEntity = {
       [PROPERTY_TYPES.CASE_ID]: [caseId],
-      [PROPERTY_TYPES.FILE_DATE]: [toISODateTime(moment())],
+      [PROPERTY_TYPES.FILE_DATE]: [DateTime.local().toISO()],
       [PROPERTY_TYPES.NUMBER_OF_CHARGES]: [charges.size]
     };
     if (caseDispositionDate) caseEntity[PROPERTY_TYPES.CASE_DISPOSITION_DATE] = [this.getDateTime(caseDispositionDate)];

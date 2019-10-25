@@ -1,5 +1,6 @@
+
 import Immutable from 'immutable';
-import moment from 'moment';
+import { DateTime } from 'luxon';
 
 import { APP_TYPES, PROPERTY_TYPES } from './consts/DataModelConsts';
 import { PSA_STATUSES } from './consts/Consts';
@@ -50,9 +51,9 @@ export const sortByDate = ([id1, neighbor1], [id2, neighbor2], entitySetsByOrgan
     const associationName = entitySetsByOrganization.get(associationId);
     const ptFqn = associationName === ASSESSED_BY
       ? PROPERTY_TYPES.COMPLETED_DATE_TIME : PROPERTY_TYPES.DATE_TIME;
-    const date = moment(neighborObj.getIn([PSA_ASSOCIATION.DETAILS, ptFqn, 0], ''));
-    if (date.isValid()) {
-      if (!latest || latest.isBefore(date)) {
+    const date = DateTime.fromISO(neighborObj.getIn([PSA_ASSOCIATION.DETAILS, ptFqn, 0], ''));
+    if (date.isValid) {
+      if (!latest || latest < date) {
         return date;
       }
     }
@@ -70,7 +71,7 @@ export const sortByDate = ([id1, neighbor1], [id2, neighbor2], entitySetsByOrgan
   });
 
   if (latest1 && latest2) {
-    return latest1.isAfter(latest2) ? -1 : 1;
+    return latest1 > latest2 ? -1 : 1;
   }
 
   if (latest1 || latest2) {
@@ -102,8 +103,8 @@ export const getLastEditDetails = (neighbors) => {
   neighbors.get(STAFF, Immutable.List()).forEach((neighbor) => {
     if (neighbor.getIn([PSA_ASSOCIATION.ENTITY_SET, 'name']) === EDITED_BY) {
       const editUser = neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.PERSON_ID, 0]);
-      const editDate = moment(neighbor.getIn([PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.DATE_TIME, 0], ''));
-      if (editUser && editDate.isValid() && (!date || editDate.isAfter(date))) {
+      const editDate = DateTime.fromISO(neighbor.getIn([PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.DATE_TIME, 0], ''));
+      if (editUser && editDate.isValid && (!date || editDate > date)) {
         date = editDate;
         user = editUser;
       }

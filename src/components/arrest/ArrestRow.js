@@ -7,7 +7,7 @@ import styled from 'styled-components';
 import { Map } from 'immutable';
 
 import { OL } from '../../utils/consts/Colors';
-import { formatDateTime } from '../../utils/FormattingUtils';
+import { formatDate, formatTime } from '../../utils/FormattingUtils';
 import { getEntityProperties, getEntityKeyId } from '../../utils/DataUtils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 
@@ -63,8 +63,8 @@ const ArrestRow = ({ arrest, handleSelect } :Props) => {
     NUMBER_OF_CHARGES
   ]);
   const caseNum = caseNumber || caseId;
-  const arrestDate = formatDateTime(arrestDateTime, 'MM/DD/YYYY');
-  const arrestTime = formatDateTime(arrestDateTime, 'HH:mm');
+  const arrestDate = formatDate(arrestDateTime);
+  const arrestTime = formatTime(arrestDateTime);
 
   const caseEntityKeyId :string = getEntityKeyId(arrest);
 

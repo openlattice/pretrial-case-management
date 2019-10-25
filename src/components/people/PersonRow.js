@@ -111,7 +111,7 @@ const PersonRow = ({
   const firstName = formatValue(person.get(FIRST_NAME, Immutable.List()));
   const middleName = formatValue(person.get(MIDDLE_NAME, Immutable.List()));
   const lastName = formatValue(person.get(LAST_NAME, Immutable.List()));
-  const dob = formatDateList(person.get(DOB, Immutable.List()), 'MM/DD/YYYY');
+  const dob = formatDateList(person.get(DOB, Immutable.List()));
   const id :string = person.getIn([PERSON_ID, 0], '');
   const displayId = id.length <= 11 ? id : `${id.substr(0, 10)}...`;
   const entityKeyId :string = person.getIn([OPENLATTICE_ID_FQN, 0], '');

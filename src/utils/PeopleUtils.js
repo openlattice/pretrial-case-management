@@ -1,5 +1,5 @@
 
-import moment from 'moment';
+import { DateTime } from 'luxon';
 import { List } from 'immutable';
 import { Constants } from 'lattice';
 
@@ -61,9 +61,9 @@ export const sortPeopleByName = (p1, p2) => {
   const p2First = p2.getIn([PROPERTY_TYPES.FIRST_NAME, 0], '').toLowerCase();
   if (p1First !== p2First) return p1First < p2First ? -1 : 1;
 
-  const p1Dob = moment(p1.getIn([PROPERTY_TYPES.DOB, 0], ''));
-  const p2Dob = moment(p2.getIn([PROPERTY_TYPES.DOB, 0], ''));
-  if (p1Dob.isValid() && p2Dob.isValid()) return p1Dob.isBefore(p2Dob) ? -1 : 1;
+  const p1Dob = DateTime.fromISO(p1.getIn([PROPERTY_TYPES.DOB, 0], ''));
+  const p2Dob = DateTime.fromISO(p2.getIn([PROPERTY_TYPES.DOB, 0], ''));
+  if (p1Dob.isValid && p2Dob.isValid) return p1Dob < p2Dob ? -1 : 1;
 
   return 0;
 };

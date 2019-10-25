@@ -2,7 +2,9 @@
  * @flow
  */
 
-import moment from 'moment';
+import { DateTime } from 'luxon';
+
+import { formatDate } from './FormattingUtils';
 import { FORM_LENGTHS } from './consts/Consts';
 
 type Location = {
@@ -46,10 +48,10 @@ export const getIsLastPage = (location :Location, optionalNumPages :?number) :bo
 };
 
 export const formatDOB = (dob :string) :string => {
-  const dobMoment = moment(dob);
+  const dobDT = DateTime.fromISO(dob);
   if (dob === undefined) return 'N/A';
-  if (!dobMoment.isValid()) return dob;
-  return dobMoment.format('MM/DD/YYYY');
+  if (!dobDT.isValid) return dob;
+  return formatDate(dob);
 };
 
 export const isNotNumber = (number :string | number) :boolean => {

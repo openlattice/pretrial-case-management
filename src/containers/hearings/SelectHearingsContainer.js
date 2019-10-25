@@ -290,7 +290,7 @@ class SelectHearingsContainer extends React.Component<Props, State> {
     const submittingExistingHearing = requestIsPending(submitExistingHearingReqState);
     const refreshingHearingAndNeighbors = requestIsPending(refreshHearingAndNeighborsReqState);
     const hearingsWithOutcomes = hearingNeighborsById
-      .keySeq().filter(id => hearingNeighborsById.getIn([id, OUTCOMES]));
+      .keySeq().filter(id => hearingNeighborsById.getIn([id, OUTCOMES], Map()).size);
     const scheduledHearings = getScheduledHearings(neighbors);
     const pastHearings = getPastHearings(neighbors);
     const isLoading = (

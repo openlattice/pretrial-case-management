@@ -3,8 +3,8 @@
  */
 
 import React from 'react';
-import moment from 'moment';
 import styled from 'styled-components';
+import { DateTime } from 'luxon';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { Map, List } from 'immutable';
@@ -171,20 +171,12 @@ class DownloadPSA extends React.Component<Props, State> {
     this.state = {
       startDate: '',
       endDate: '',
-      hearingDate: moment(),
+      hearingDate: DateTime.local(),
       selectedHearingData: List(),
       byHearingDate: false,
       byPSADate: false,
       courtTime: ''
     };
-  }
-
-  componentDidMount() {
-    let { hearingDate } = this.state;
-    hearingDate = moment(hearingDate);
-    if (hearingDate.isValid()) {
-      this.setState({ hearingDate });
-    }
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -208,23 +200,23 @@ class DownloadPSA extends React.Component<Props, State> {
 
     if (startDate && endDate) {
 
-      const start = moment(startDate);
-      const end = moment(endDate);
-      const today = moment();
+      const start = DateTime.fromISO(startDate);
+      const end = DateTime.fromISO(endDate);
+      const today = DateTime.local();
 
       if ((downloads === REPORT_TYPES.BY_HEARING) && noHearingResults) {
         errorText = 'No PSAs match the criteria selected.';
       }
-      if (!start.isValid() || !end.isValid()) {
+      if (!start.isValid || !end.isValid) {
         errorText = 'At least one of the selected dates is invalid.';
       }
-      else if ((downloads === REPORT_TYPES.BY_PSA) && start.isAfter(today)) {
+      else if ((downloads === REPORT_TYPES.BY_PSA) && start > today) {
         errorText = 'The selected start date cannot be later than today.';
       }
-      else if (end.isBefore(start)) {
+      else if (end < start) {
         errorText = 'The selected end date must be after the selected start date.';
       }
-      else if ((downloads === REPORT_TYPES.BY_PSA) && end.isSame(start)) {
+      else if ((downloads === REPORT_TYPES.BY_PSA) && end.hasSame(start, 'day')) {
         errorText = 'The selected start and end dates must be different for reports by PSA date.';
       }
     }
@@ -263,7 +255,7 @@ class DownloadPSA extends React.Component<Props, State> {
 
   handleCourtAndTimeSelection = (option) => {
     const courtTime = option.getIn([0, PROPERTY_TYPES.DATE_TIME, 0], '');
-    const formattedTime = moment(courtTime).format(('HH:mm'));
+    const formattedTime = DateTime.fromISO(courtTime).toISOTime();
     const hearingCourtroom = option.getIn([0, PROPERTY_TYPES.COURTROOM, 0]);
     this.setState({
       courtTime: `${hearingCourtroom} - ${formattedTime}`,
@@ -285,8 +277,8 @@ class DownloadPSA extends React.Component<Props, State> {
 
   onHearingDateChange = (dateStr) => {
     const { actions } = this.props;
-    const hearingDate = moment(dateStr);
-    if (hearingDate.isValid()) {
+    const hearingDate = DateTime.fromISO(dateStr);
+    if (hearingDate.isValid) {
       this.setState({ hearingDate });
       actions.getDownloadFilters({ hearingDate });
     }
@@ -297,11 +289,11 @@ class DownloadPSA extends React.Component<Props, State> {
     const { start, end } = dates;
 
     let nextStart = start || startDate;
-    if (nextStart) nextStart = moment(nextStart);
+    if (nextStart) nextStart = DateTime.fromISO(nextStart);
     let nextEnd = end || endDate;
-    if (nextEnd) nextEnd = moment(nextEnd);
-    startDate = startDate ? moment(startDate) : startDate;
-    endDate = endDate ? moment(endDate) : endDate;
+    if (nextEnd) nextEnd = DateTime.fromISO(nextEnd);
+    startDate = startDate ? DateTime.fromISO(startDate) : startDate;
+    endDate = endDate ? DateTime.fromISO(endDate) : endDate;
     this.setState({
       startDate: nextStart,
       endDate: nextEnd
@@ -361,7 +353,7 @@ class DownloadPSA extends React.Component<Props, State> {
       this.setState({
         byHearingDate: true,
         byPSADate: false,
-        hearingDate: moment(),
+        hearingDate: DateTime.local(),
         startDate: '',
         endDate: '',
       });
@@ -369,7 +361,7 @@ class DownloadPSA extends React.Component<Props, State> {
     else if (name === REPORT_TYPES.BY_PSA) {
       this.setState({
         byHearingDate: false,
-        hearingDate: moment(),
+        hearingDate: DateTime.local(),
         byPSADate: true,
         startDate: '',
         endDate: '',

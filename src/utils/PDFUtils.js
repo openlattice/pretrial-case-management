@@ -4,7 +4,7 @@
 
 import JSPDF from 'jspdf';
 import Immutable, { Set } from 'immutable';
-import moment from 'moment';
+import { DateTime } from 'luxon';
 
 import { CASE_CONTEXTS, CONTEXTS, SETTINGS } from './consts/AppSettingConsts';
 import { CONTEXT } from './consts/Consts';
@@ -31,11 +31,9 @@ import {
 
 const {
   AGE_AT_CURRENT_ARREST,
-  AGE_AT_CURRENT_ARREST_NOTES,
   ARREST_DATE,
   ARREST_DATE_TIME,
   CURRENT_VIOLENT_OFFENSE,
-  CURRENT_VIOLENT_OFFENSE_NOTES,
   CURRENT_VIOLENT_OFFENSE_AND_YOUNG,
   DOB,
   FILE_DATE,
@@ -46,20 +44,13 @@ const {
   MOST_SERIOUS_CHARGE_NO,
   MOST_SERIOUS_CHARGE_DEG,
   PENDING_CHARGE,
-  PENDING_CHARGE_NOTES,
   PRIOR_MISDEMEANOR,
-  PRIOR_MISDEMEANOR_NOTES,
   PRIOR_FELONY,
-  PRIOR_FELONY_NOTES,
   PRIOR_CONVICTION,
   PRIOR_VIOLENT_CONVICTION,
-  PRIOR_VIOLENT_CONVICTION_NOTES,
   PRIOR_FAILURE_TO_APPEAR_RECENT,
-  PRIOR_FAILURE_TO_APPEAR_RECENT_NOTES,
   PRIOR_FAILURE_TO_APPEAR_OLD,
-  PRIOR_FAILURE_TO_APPEAR_OLD_NOTES,
   PRIOR_SENTENCE_TO_INCARCERATION,
-  PRIOR_SENTENCE_TO_INCARCERATION_NOTES,
   RACE,
   SEX,
   CHARGE_STATUTE,
@@ -75,7 +66,6 @@ const {
 } = PROPERTY_TYPES;
 
 const MAX_Y = 270;
-const LARGE_FONT_SIZE = 15;
 const MEDIUM_FONT_SIZE = 14;
 const FONT_SIZE = 10;
 const X_MARGIN = 10;
@@ -84,7 +74,6 @@ const Y_INC = 5;
 const Y_INC_SMALL = 4;
 const Y_INC_LARGE = 7;
 const SCORE_OFFSET = 5;
-const RESPONSE_OFFSET = (X_MAX * 2) / 3;
 const GENERATED_RISK_FACTOR_OFFSET = X_MARGIN + 5;
 const BOX_MARGIN = X_MARGIN + 5;
 const BOX_HEIGHT = 6;
@@ -285,13 +274,13 @@ const person = (
 
   let createdText = createData.user;
   let editedText = '';
-  if (createData.timestamp && moment(createData.timestamp).isValid()) {
+  if (createData.timestamp && DateTime.fromISO(createData.timestamp).isValid) {
     createdText = `${createdText} at ${formatDateTime(createData.timestamp)}`;
   }
 
   if (updateData) {
     editedText = updateData.user;
-    if (updateData.timestamp && moment(updateData.timestamp).isValid()) {
+    if (updateData.timestamp && DateTime.fromISO(updateData.timestamp).isValid) {
       editedText = `${editedText} at ${formatDateTime(updateData.timestamp)}`;
     }
   }
