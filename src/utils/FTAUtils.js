@@ -3,7 +3,7 @@
  */
 
 import Immutable from 'immutable';
-import moment from 'moment';
+import { DateTime } from 'luxon';
 
 import { formatDate } from './FormattingUtils';
 import { shouldIgnoreCharge, getCaseNumFromCharge } from './HistoricalChargeUtils';
@@ -29,11 +29,11 @@ const matchesValidCharges = (fta, allCharges) => {
 };
 
 const getPastTwoYearsComparison = (dateStr, psaDate) => {
-  const psaCompletedDate = psaDate ? moment(psaDate) : moment();
-  const twoYearsAgo = psaCompletedDate.subtract(2, 'years');
-  const date = moment(dateStr);
-  if (!date.isValid()) return COMPARISON.INVALID;
-  return twoYearsAgo.isSameOrBefore(date) ? COMPARISON.NEW : COMPARISON.OLD;
+  const psaCompletedDate = psaDate ? DateTime.fromISO(psaDate) : DateTime.local();
+  const twoYearsAgo = psaCompletedDate.minus({ years: 2 });
+  const date = DateTime.fromISO(dateStr);
+  if (!date.isValid) return COMPARISON.INVALID;
+  return twoYearsAgo <= date ? COMPARISON.NEW : COMPARISON.OLD;
 };
 
 export const getFTALabel = (fta) => {

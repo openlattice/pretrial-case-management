@@ -4,7 +4,7 @@
 
 import React from 'react';
 import styled from 'styled-components';
-import moment from 'moment';
+import { DateTime, Interval } from 'luxon';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { fromJS, Map, List } from 'immutable';
@@ -91,7 +91,7 @@ class CheckInsContainer extends React.Component<Props, State> {
   constructor(props :Props) {
     super(props);
     this.state = {
-      selectedDate: moment(),
+      selectedDate: DateTime.local(),
       filter: ''
     };
   }
@@ -128,9 +128,9 @@ class CheckInsContainer extends React.Component<Props, State> {
 
   onDateChange = (dateStr) => {
     const { actions } = this.props;
-    const date = moment(dateStr);
+    const date = DateTime.fromISO(dateStr);
     const { loadCheckInAppointmentsForDate } = actions;
-    if (date.isValid()) {
+    if (date.isValid) {
       this.setState({ selectedDate: date });
       loadCheckInAppointmentsForDate({ date });
     }
@@ -203,6 +203,8 @@ class CheckInsContainer extends React.Component<Props, State> {
         [START_DATE]: startDate,
         [END_DATE]: endDate
       } = getEntityProperties(checkInAppointment, [START_DATE, END_DATE]);
+      const startDT = DateTime.fromISO(startDate);
+      const endDT = DateTime.fromISO(endDate);
 
       const checkIns = checkInAppointmentNeighbors.get(CHECKINS, List());
       let successfulCheckIns = List();
@@ -212,15 +214,17 @@ class CheckInsContainer extends React.Component<Props, State> {
           [COMPLETED_DATE_TIME]: checkInTime,
           [RESULT]: result
         } = getEntityProperties(checkIn, [COMPLETED_DATE_TIME, RESULT]);
-        const validCheckInTime = moment(checkInTime).isBetween(startDate, endDate);
+        const checkinDT = DateTime.fromISO(checkInTime);
+        const validCheckInTime = Interval.fromDateTimes(startDT, endDT).contains(checkinDT);
         const checkInAccepted = result === RESULT_TYPE.ACCEPT;
         if (validCheckInTime && checkInAccepted) successfulCheckIns = successfulCheckIns.push(checkIn);
         else failedCheckIns = failedCheckIns.push(checkIn);
       });
       let filterResult = true;
+      const nowDT = DateTime.local();
       switch (filter) {
         case FILTERS.FAILED:
-          filterResult = moment().isAfter(endDate)
+          filterResult = nowDT > endDT
           || (!successfulCheckIns.size && failedCheckIns.size);
           break;
         case FILTERS.SUCCESSFUL:
@@ -229,7 +233,7 @@ class CheckInsContainer extends React.Component<Props, State> {
         case FILTERS.PENDING:
           filterResult = successfulCheckIns.size === 0
             && failedCheckIns.size === 0
-            && moment().isBefore(endDate);
+            && nowDT < endDT;
           break;
         default:
           break;

@@ -7,12 +7,12 @@ import React from 'react';
 import Immutable, { Map, List } from 'immutable';
 import styled from 'styled-components';
 import randomUUID from 'uuid/v4';
-import moment from 'moment';
 import qs from 'query-string';
 import { AuthUtils } from 'lattice-auth';
-import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
+import { connect } from 'react-redux';
 import { Constants } from 'lattice';
+import { DateTime } from 'luxon';
 import {
   Redirect,
   Route,
@@ -40,7 +40,6 @@ import SubscriptionInfo from '../../components/subscription/SubscriptionInfo';
 import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
 import { OL } from '../../utils/consts/Colors';
 import { getEntityProperties, getFirstNeighborValue, getEntityKeyId } from '../../utils/DataUtils';
-import { toISODateTime } from '../../utils/FormattingUtils';
 import { getScoresAndRiskFactors, calculateDMF, getDMFRiskFactors } from '../../utils/ScoringUtils';
 import { tryAutofillFields } from '../../utils/AutofillUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
@@ -990,7 +989,7 @@ class Form extends React.Component<Props, State> {
       violentCourtChargeList,
       {
         user: this.getStaffId(),
-        timestamp: toISODateTime(moment())
+        timestamp: DateTime.local().toISO()
       },
       false,
       isCompact,

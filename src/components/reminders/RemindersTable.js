@@ -2,7 +2,6 @@
  * @flow
  */
 import React from 'react';
-import moment from 'moment';
 import styled from 'styled-components';
 import { Map } from 'immutable';
 
@@ -16,6 +15,7 @@ import { NoResults } from '../../utils/Layout';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { formatPeopleInfo } from '../../utils/PeopleUtils';
+import { formatTime } from '../../utils/FormattingUtils';
 import { CHECKIN_HEADERS } from '../../utils/consts/CheckInConsts';
 import {
   getEntityKeyId,
@@ -195,7 +195,7 @@ class RemindersTable extends React.Component<Props, State> {
               courtroom={courtroom}
               hearingTime={hearingDateTime}
               hearingType={hearingType}
-              time={moment(dateTime).format('HH:mm')}
+              time={formatTime(hearingDateTime)}
               wasNotified={wasNotified}
               personId={personId}
               personName={lastFirstMid}
@@ -218,7 +218,7 @@ class RemindersTable extends React.Component<Props, State> {
               key={optOutEntityKeyId}
               contact={contact}
               reason={reason}
-              time={moment(dateTime).format('HH:mm')}
+              time={formatTime(dateTime)}
               personId={personId}
               personName={lastFirstMid} />
         );

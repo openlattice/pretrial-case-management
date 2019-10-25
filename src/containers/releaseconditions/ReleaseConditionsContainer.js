@@ -4,8 +4,8 @@
 
 import React from 'react';
 import styled from 'styled-components';
-import moment from 'moment';
 import randomUUID from 'uuid/v4';
+import { DateTime } from 'luxon';
 import { bindActionCreators } from 'redux';
 import type { Dispatch } from 'redux';
 import { connect } from 'react-redux';
@@ -30,7 +30,6 @@ import { OL } from '../../utils/consts/Colors';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { getChargeHistory } from '../../utils/CaseUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { toISODate } from '../../utils/FormattingUtils';
 import { SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { formatJudgeName } from '../../utils/HearingUtils';
 import { RELEASE_CONDITIONS, JURISDICTION } from '../../utils/consts/Consts';
@@ -52,7 +51,6 @@ import {
   NO_CONTACT_TYPES
 } from '../../utils/consts/ReleaseConditionConsts';
 import {
-  COURT,
   EDM,
   PSA_ASSOCIATION,
   PSA_NEIGHBOR,
@@ -431,8 +429,8 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
 
     let modifyingHearing = false;
     const hearingDateTimeString = getFirstNeighborValue(selectedHearing, PROPERTY_TYPES.DATE_TIME);
-    const hearingDateTimeMoment = moment(hearingDateTimeString);
-    let hearingDateTime = hearingDateTimeMoment.isValid() ? hearingDateTimeMoment : null;
+    const hearingDateTimeDT = DateTime.fromISO(hearingDateTimeString);
+    let hearingDateTime = hearingDateTimeDT.isValid ? hearingDateTimeDT : null;
     let hearingCourtroom = getFirstNeighborValue(selectedHearing, PROPERTY_TYPES.COURTROOM);
     const otherJudgeText = '';
     const judgeId = judgeEntity ? getFirstNeighborValue(judgeEntity, PROPERTY_TYPES.PERSON_ID) : null;
@@ -693,7 +691,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
     let milliseconds = 3;
     existingCheckInEntityKeyIds.forEach((entityKeyId) => {
       const hearingAssociation = getCreateAssociationObject({
-        associationEntity: { [dateCompletedPropertyId]: [moment().add(milliseconds, 'ms').toISOString(true)] },
+        associationEntity: { [dateCompletedPropertyId]: [DateTime.local().plus({ milliseconds }).toISOString(true)] },
         srcEntitySetId: appointmentEntitySetId,
         srcEntityKeyId: entityKeyId,
         dstEntitySetId: hearingEntitySetId,
@@ -765,7 +763,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       return;
     }
 
-    const startDate = toISODate(moment());
+    const startDate = DateTime.local().toISODate();
     let bondEntity;
     let outcomeEntity;
 
@@ -1161,7 +1159,6 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
 
 function mapStateToProps(state) {
   const app = state.get(STATE.APP);
-  const court = state.get(STATE.COURT);
   const edm = state.get(STATE.EDM);
   const hearings = state.get(STATE.HEARINGS);
   const orgId = app.get(APP_DATA.SELECTED_ORG_ID, '');

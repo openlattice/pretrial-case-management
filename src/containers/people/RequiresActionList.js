@@ -4,7 +4,6 @@
 
 import React from 'react';
 import styled from 'styled-components';
-import moment from 'moment';
 import { Map, List } from 'immutable';
 import { DateTime } from 'luxon';
 import { Constants } from 'lattice';
@@ -304,7 +303,8 @@ class RequiresActionList extends React.Component<Props, State> {
     }
     const psaList = personPSAs.sortBy((psa) => {
       const psaDate = psa.getIn([PROPERTY_TYPES.DATE_TIME, 0], '');
-      if (!earliestPSADate || earliestPSADate.isAfter(psaDate)) earliestPSADate = moment(psaDate);
+      const psaDT = DateTime.fromISO(psaDate);
+      if (!earliestPSADate || earliestPSADate > psaDT) earliestPSADate = DateTime.fromISO(psaDate);
     }).map((psa) => {
       const entityKeyId = psa.getIn([OPENLATTICE_ID_FQN, 0], '');
       const psaNeighbors = psaNeighborsById.get(entityKeyId, Map());

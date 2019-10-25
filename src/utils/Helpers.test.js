@@ -323,14 +323,7 @@ describe('Helpers', () => {
     describe('formatDOB', () => {
 
       test('should format DOB in the expected format', () => {
-        expect(formatDOB('08/04/1994')).toEqual('08/04/1994');
-        expect(formatDOB('8/4/1994')).toEqual('08/04/1994');
-        expect(formatDOB('8-4-1994')).toEqual('08/04/1994');
-        expect(formatDOB('08-04-1994')).toEqual('08/04/1994');
         expect(formatDOB('1994-08-04')).toEqual('08/04/1994');
-        expect(formatDOB('8/4/1994 12:00 pm')).toEqual('08/04/1994');
-        expect(formatDOB('August 4 1994')).toEqual('08/04/1994');
-        expect(formatDOB('Aug 4 1994')).toEqual('08/04/1994');
       });
 
       test('should return invalid dates as they were input', () => {

@@ -2,9 +2,9 @@
  * @flow
  */
 
-import moment from 'moment';
 import React from 'react';
 import styled from 'styled-components';
+import { DateTime } from 'luxon';
 import { Map, fromJS } from 'immutable';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -15,10 +15,10 @@ import StyledRadio from '../../components/controls/StyledRadio';
 import RadioButton from '../../components/controls/StyledRadioButton';
 import SimpleCards from '../../components/cards/SimpleCards';
 import { APPOINTMENT_PATTERN } from '../../utils/consts/AppointmentConsts';
-import { toISODate } from '../../utils/FormattingUtils';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { getFirstNeighborValue, getNeighborDetailsForEntitySet } from '../../utils/DataUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { DATE_FORMAT } from '../../utils/consts/DateTimeConsts';
 import { OL } from '../../utils/consts/Colors';
 import { InputGroup } from '../../components/person/PersonFormTags';
 import { CHECKIN_FREQUENCIES } from '../../utils/consts/ReleaseConditionConsts';
@@ -78,8 +78,8 @@ type Props = {
 const INITIAL_STATE = {
   editing: false,
   appointmentEntities: Map(),
-  startDate: moment(),
-  endDate: moment(),
+  startDate: DateTime.local(),
+  endDate: DateTime.local(),
   frequency: '',
   appointmentType: APPOINTMENT_PATTERN.SINGLE
 };
@@ -107,7 +107,7 @@ class CheckInsAppointmentForm extends React.Component<Props, State> {
 
   createCheckInSubmissionValues = (date) => {
     const startDate = date;
-    const endDate = toISODate(moment(startDate).add(1, 'd'));
+    const endDate = DateTime.fromISO(startDate).plus({ day: 1 }).toISODate();
     const appointmentEntity = { [PROPERTY_TYPES.START_DATE]: startDate, [PROPERTY_TYPES.END_DATE]: endDate };
     return fromJS(appointmentEntity);
   }
@@ -146,23 +146,23 @@ class CheckInsAppointmentForm extends React.Component<Props, State> {
     let { appointmentEntities } = this.state;
     let appointmentDate = startDate;
     const addingRecurringAppointment = (appointmentType === APPOINTMENT_PATTERN.RECURRING);
-    if (addingRecurringAppointment && startDate.isValid() && endDate.isValid() && frequency) {
+    if (addingRecurringAppointment && startDate.isValid && endDate.isValid && frequency) {
       const end = endDate;
-      while (appointmentDate.isBefore(end)) {
-        const isoDateTime = toISODate(appointmentDate);
+      while (appointmentDate < end) {
+        const isoDate = appointmentDate.toISODate();
         const { value, increment } = this.getFrequencyConversion();
-        const appointmentEntity = this.createCheckInSubmissionValues(isoDateTime);
-        if (!appointmentEntities.get(isoDateTime)) {
-          appointmentEntities = appointmentEntities.set(isoDateTime, appointmentEntity);
+        const appointmentEntity = this.createCheckInSubmissionValues(isoDate);
+        if (!appointmentEntities.get(isoDate)) {
+          appointmentEntities = appointmentEntities.set(isoDate, appointmentEntity);
         }
-        appointmentDate = moment(appointmentDate).add(value, increment);
+        appointmentDate = DateTime.fromISO(appointmentDate).plus({ [increment]: value });
       }
     }
     else {
-      const isoDateTime = toISODate(appointmentDate);
-      const appointmentEntity = this.createCheckInSubmissionValues(isoDateTime);
-      if (!appointmentEntities.get(isoDateTime)) {
-        appointmentEntities = appointmentEntities.set(isoDateTime, appointmentEntity);
+      const isoDate = appointmentDate.toISODate();
+      const appointmentEntity = this.createCheckInSubmissionValues(isoDate);
+      if (!appointmentEntities.get(isoDate)) {
+        appointmentEntities = appointmentEntities.set(isoDate, appointmentEntity);
       }
     }
     this.setState({ appointmentEntities });
@@ -203,9 +203,11 @@ class CheckInsAppointmentForm extends React.Component<Props, State> {
   renderAppointmentCards = () => {
     const { appointmentEntities } = this.state;
     const sortedEntities = appointmentEntities.valueSeq().sort((a1, a2) => {
-      const a1moment = moment(getFirstNeighborValue(a1, PROPERTY_TYPES.START_DATE));
-      const a2moment = moment(getFirstNeighborValue(a2, PROPERTY_TYPES.START_DATE));
-      return a1moment.isBefore(a2moment) ? -1 : 1;
+      const a1date = getFirstNeighborValue(a1, PROPERTY_TYPES.START_DATE);
+      const a2date = getFirstNeighborValue(a2, PROPERTY_TYPES.START_DATE);
+      const a1DateTime = DateTime.fromISO(a1date);
+      const a2DateTime = DateTime.fromISO(a2date);
+      return a1DateTime < a2DateTime ? -1 : 1;
     });
 
     return (
@@ -266,11 +268,11 @@ class CheckInsAppointmentForm extends React.Component<Props, State> {
 
   onDateChange = ({ start, end }) => {
     if (start) {
-      const startDate = moment(start);
+      const startDate = DateTime.fromFormat(start, DATE_FORMAT);
       this.setState({ startDate });
     }
     else if (end) {
-      const endDate = moment(end);
+      const endDate = DateTime.fromFormat(end, DATE_FORMAT);
       this.setState({ endDate });
     }
   }

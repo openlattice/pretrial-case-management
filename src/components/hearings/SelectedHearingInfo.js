@@ -12,7 +12,7 @@ import { OL } from '../../utils/consts/Colors';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { formatJudgeName } from '../../utils/HearingUtils';
 import { getEntityProperties } from '../../utils/DataUtils';
-import { formatDate, formatDateTime } from '../../utils/FormattingUtils';
+import { formatDate, formatTime } from '../../utils/FormattingUtils';
 
 const { JUDGES } = APP_TYPES;
 
@@ -114,7 +114,7 @@ const SelectedHearingInfo = ({
           </InfoItem>
           <InfoItem>
             <span>Time</span>
-            <div>{formatDateTime(hearingDateTime, 'hh:mm a')}</div>
+            <div>{formatTime(hearingDateTime)}</div>
           </InfoItem>
           <InfoItem>
             <span>Courtroom</span>
@@ -133,5 +133,5 @@ const SelectedHearingInfo = ({
       </div>
     </Container>
   );
-}
+};
 export default SelectedHearingInfo;

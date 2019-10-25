@@ -7,7 +7,7 @@ import Immutable from 'immutable';
 import ContentBlock from '../ContentBlock';
 import ContentSection from '../ContentSection';
 import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
-import { formatDateTime } from '../../utils/FormattingUtils';
+import { formatDate, formatTime } from '../../utils/FormattingUtils';
 import { getEntityProperties } from '../../utils/DataUtils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 
@@ -32,8 +32,8 @@ const ArrestCard = ({ arrest, component } :Props) => {
     [CASE_ID, ARREST_DATE_TIME, ARRESTING_AGENCY]
   );
 
-  const arrestDate = formatDateTime(arrestDateTime, 'MM/DD/YYYY');
-  const arrestTime = formatDateTime(arrestDateTime, 'HH:mm');
+  const arrestDate = formatDate(arrestDateTime);
+  const arrestTime = formatTime(arrestDateTime);
 
   let generalContent;
 
