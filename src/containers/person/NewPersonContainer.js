@@ -8,7 +8,7 @@ import Immutable, { Map } from 'immutable';
 import styled from 'styled-components';
 import qs from 'query-string';
 import uuid from 'uuid/v4';
-import { DateTime } from 'luxon';
+import { DateTime, Interval } from 'luxon';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import type { RequestState } from 'redux-reqseq';
@@ -24,6 +24,7 @@ import { GENDERS, STATES } from '../../utils/consts/Consts';
 import { phoneIsValid, emailIsValid } from '../../utils/ContactInfoUtils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
+import { DATE_FORMAT } from '../../utils/consts/DateTimeConsts';
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { getReqState, requestIsSuccess } from '../../utils/consts/redux/ReduxUtils';
 import { PERSON_ACTIONS, PERSON_DATA } from '../../utils/consts/redux/PersonConsts';
@@ -211,9 +212,9 @@ class NewPersonContainer extends React.Component<Props, State> {
     const { state } = this;
     const dob = state[DOB];
     const dobDT = DateTime.fromISO(dob);
-    const maxAge = DateTime.local().minus(150, 'years');
-    const minAge = DateTime.local().minus(18, 'years');
-    const dobIsValid = dobDT < maxAge && dobDT > minAge;
+    const maxAge = DateTime.local().minus({ years: 150 });
+    const minAge = DateTime.local().minus({ years: 18 });
+    const dobIsValid = Interval.fromDateTimes(maxAge, minAge).contains(dobDT);
     if (dob) return !dobIsValid;
     return undefined;
   }
@@ -230,7 +231,7 @@ class NewPersonContainer extends React.Component<Props, State> {
   }
 
   handleOnChangeDateOfBirth = (dob :?string) => {
-    const dobValue = dob ? DateTime.fromISO(dob).toISODate() : '';
+    const dobValue = dob ? DateTime.fromFormat(dob, DATE_FORMAT).toISODate() : '';
     this.setState({
       [DOB]: dobValue
     });
@@ -287,18 +288,18 @@ class NewPersonContainer extends React.Component<Props, State> {
     const { state } = this;
     const addressEntity = {};
     ADDRESS_PROPERTIES.forEach((property) => {
-      if (state[property]) addressEntity[property] = state[property]
-    })
-    return addressEntity
+      if (state[property]) addressEntity[property] = state[property];
+    });
+    return addressEntity;
   }
 
   getContactEntity = () => {
     const { state } = this;
     const contactEntity = {};
     CONTACT_PROPERTIES.forEach((property) => {
-      if (state[property]) contactEntity[property] = state[property]
-    })
-    return contactEntity
+      if (state[property]) contactEntity[property] = state[property];
+    });
+    return contactEntity;
   }
 
 
