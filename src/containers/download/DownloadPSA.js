@@ -19,6 +19,7 @@ import StyledCheckbox from '../../components/controls/StyledCheckbox';
 import { OL } from '../../utils/consts/Colors';
 import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { DATE_FORMAT } from '../../utils/consts/DateTimeConsts';
 import { DOWNLOAD } from '../../utils/consts/FrontEndStateConsts';
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
@@ -277,7 +278,7 @@ class DownloadPSA extends React.Component<Props, State> {
 
   onHearingDateChange = (dateStr) => {
     const { actions } = this.props;
-    const hearingDate = DateTime.fromISO(dateStr);
+    const hearingDate = DateTime.fromFormat(dateStr, DATE_FORMAT);
     if (hearingDate.isValid) {
       this.setState({ hearingDate });
       actions.getDownloadFilters({ hearingDate });
@@ -461,8 +462,8 @@ class DownloadPSA extends React.Component<Props, State> {
                       ? (
                         <CourtroomOptionsWrapper>
                           <DatePicker
-                              value={hearingDate.format('YYYY-MM-DD')}
-                              onChange={date => this.onHearingDateChange(date)} />
+                              value={hearingDate.toISO()}
+                              onChange={this.onHearingDateChange} />
                           { this.renderCourtTimeOptions() }
                         </CourtroomOptionsWrapper>
                       ) : null
