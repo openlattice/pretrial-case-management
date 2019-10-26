@@ -19,7 +19,7 @@ import FileSaver from '../../utils/FileSaver';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { hearingIsCancelled } from '../../utils/HearingUtils';
 import { getPropertyTypeId } from '../../edm/edmUtils';
-import { formatDateTime, formatDate } from '../../utils/FormattingUtils';
+import { formatDateTime, formatDate, formatTime } from '../../utils/FormattingUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { HEADERS_OBJ, POSITIONS } from '../../utils/consts/CSVConsts';
@@ -776,25 +776,27 @@ function* getDownloadFiltersWorker(action :SequenceAction) :Generator<*, *, *> {
     const datePropertyTypeId = getPropertyTypeId(edm, DATE_TIME_FQN);
 
     const hearingOptions = {
-      searchTerm: getSearchTerm(datePropertyTypeId, start),
+      searchTerm: getSearchTerm(datePropertyTypeId, start.toISODate()),
       start: 0,
       maxHits: MAX_HITS,
       fuzzy: false
     };
+    console.log(hearingOptions);
 
     let allHearingData = yield call(SearchApi.searchEntitySetData, hearingEntitySetId, hearingOptions);
     allHearingData = Immutable.fromJS(allHearingData.hits);
     if (allHearingData.size) {
       allHearingData.forEach((hearing) => {
         const courtTime = hearing.getIn([PROPERTY_TYPES.DATE_TIME, 0]);
-        const sameAshearingDate = (hearingDate.hasSame(courtTime, 'day'));
+        const courtDT = DateTime.fromISO(courtTime);
+        const formattedTime = formatTime(courtTime);
+        const sameAshearingDate = (hearingDate.hasSame(courtDT, 'day'));
         const hearingId = hearing.getIn([OPENLATTICE_ID_FQN, 0]);
         const hearingType = hearing.getIn([PROPERTY_TYPES.HEARING_TYPE, 0]);
         const hearingCourtroom = hearing.getIn([PROPERTY_TYPES.COURTROOM, 0]);
         const hearingIsInactive = hearingIsCancelled(hearing);
         if (hearingId && hearingType && !hearingIsInactive) {
-          if (courtTime && sameAshearingDate) {
-            const formattedTime = DateTime.fromISO(courtTime).toISODate();
+          if (courtDT.isValid && sameAshearingDate) {
             options = options.set(
               `${hearingCourtroom} - ${formattedTime}`,
               options.get(`${hearingCourtroom} - ${formattedTime}`, Immutable.List()).push(hearing)
