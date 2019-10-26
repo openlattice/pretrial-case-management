@@ -781,7 +781,6 @@ function* getDownloadFiltersWorker(action :SequenceAction) :Generator<*, *, *> {
       maxHits: MAX_HITS,
       fuzzy: false
     };
-    console.log(hearingOptions);
 
     let allHearingData = yield call(SearchApi.searchEntitySetData, hearingEntitySetId, hearingOptions);
     allHearingData = Immutable.fromJS(allHearingData.hits);
