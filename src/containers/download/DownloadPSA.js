@@ -217,7 +217,7 @@ class DownloadPSA extends React.Component<Props, State> {
       else if (end < start) {
         errorText = 'The selected end date must be after the selected start date.';
       }
-      else if ((downloads === REPORT_TYPES.BY_PSA) && end.hasSame(start, 'day')) {
+      else if ((downloads === REPORT_TYPES.BY_PSA) && end.hasSame(start, 'minutes')) {
         errorText = 'The selected start and end dates must be different for reports by PSA date.';
       }
     }
