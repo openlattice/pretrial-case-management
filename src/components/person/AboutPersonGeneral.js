@@ -4,7 +4,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import Immutable from 'immutable';
-import moment from 'moment';
+import { DateTime } from 'luxon';
 
 import ContentBlock from '../ContentBlock';
 import ContentSection from '../ContentSection';
@@ -21,13 +21,6 @@ const {
   MUGSHOT,
   PICTURE
 } = PROPERTY_TYPES;
-
-const HeaderWrapper = styled.div`
-  width: 100%;
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-`;
 
 type Props = {
   selectedPersonData :Immutable.Map<*, *>
@@ -58,7 +51,7 @@ class AboutPersonGeneral extends React.Component<Props, *> {
       || defaultUserIcon;
 
     if (dobList.size) {
-      age = moment().diff(moment(dobList.get(0, '')), 'years');
+      age = Math.floor(DateTime.local().diff(DateTime.fromISO(dobList.get(0, '')), 'years').years);
     }
 
     try {
@@ -107,12 +100,6 @@ class AboutPersonGeneral extends React.Component<Props, *> {
           component={CONTENT_CONSTS.PROFILE}
           key={person.label} />
     ));
-
-    const header = (
-      <HeaderWrapper>
-        {`${firstName} ${middleName} ${lastName}`}
-      </HeaderWrapper>
-    );
 
     return (
       <ContentSection

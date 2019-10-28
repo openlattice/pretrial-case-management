@@ -3,8 +3,8 @@
  */
 
 import React from 'react';
-import moment from 'moment';
 import styled from 'styled-components';
+import { DateTime } from 'luxon';
 import { fromJS, Map, List } from 'immutable';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -98,7 +98,7 @@ type Props = {
 
 const INITIAL_STATE = {
   newHearingCourtroom: undefined,
-  newHearingDate: moment().format('MM/DD/YYYY'),
+  newHearingDate: DateTime.local().toISO(),
   newHearingTime: undefined,
   judge: '',
   judgeEKID: ''
@@ -162,7 +162,7 @@ class HearingSettingsForm extends React.Component<Props, State> {
     const { newHearingDate } = this.state;
     return (
       <DatePicker
-          value={newHearingDate || moment()}
+          value={newHearingDate || DateTime.local().toISO()}
           onChange={this.onDateChange} />
     );
   }

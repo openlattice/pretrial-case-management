@@ -3,7 +3,7 @@
  */
 
 import React from 'react';
-import moment from 'moment';
+import { DateTime } from 'luxon';
 import styled from 'styled-components';
 import { Map, List } from 'immutable';
 import { Link } from 'react-router-dom';
@@ -11,7 +11,8 @@ import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHourglassHalf, faMicrophoneAlt } from '@fortawesome/pro-light-svg-icons';
 
-import { getDateAndTime, getEntityProperties, getNeighborDetailsForEntitySet } from '../../utils/DataUtils';
+import { getEntityProperties, getNeighborDetailsForEntitySet } from '../../utils/DataUtils';
+import { formatDateTime } from '../../utils/FormattingUtils';
 import { getCheckInAttempts } from '../../utils/CheckInUtils';
 import { formatPeopleInfo } from '../../utils/PeopleUtils';
 import { OL } from '../../utils/consts/Colors';
@@ -124,9 +125,9 @@ class CheckInRow extends React.Component<Props, State> {
         PROPERTY_TYPES.DATE_TIME,
         PROPERTY_TYPES.HEARING_TYPE
       ]);
-      if (!mostRecentHearing || moment(dateTime).isAfter(mostRecentHearing.dateTime)) {
-        const { date: hearingDate, time: hearingTime } = getDateAndTime(dateTime);
-        mostRecentHearing = { courtroom, dateTime: `${hearingDate} ${hearingTime}`, hearingType };
+      const hearingDT = DateTime.fromISO(dateTime);
+      if (!mostRecentHearing || hearingDT > DateTime.fromISO(mostRecentHearing.dateTime)) {
+        mostRecentHearing = { courtroom, dateTime, hearingType };
       }
     });
     const {
@@ -142,7 +143,7 @@ class CheckInRow extends React.Component<Props, State> {
           </StyledLink>
         </Cell>
         <Cell>{ checkInNumber || '-' }</Cell>
-        <Cell>{ mostRecentHearing.dateTime }</Cell>
+        <Cell>{ formatDateTime(mostRecentHearing.dateTime) }</Cell>
         <Cell>{ mostRecentHearing.courtroom }</Cell>
         <Cell>{ mostRecentHearing.hearingType }</Cell>
         <Cell>{ caseNumber }</Cell>

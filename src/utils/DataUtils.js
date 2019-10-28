@@ -1,12 +1,13 @@
 /*
 * @flow
 */
-import moment from 'moment';
+
 import { DateTime } from 'luxon';
 import { isImmutable, Map, fromJS } from 'immutable';
 import { Constants } from 'lattice';
 
 import federalHolidays from './consts/FederalHolidays';
+import { formatDate, formatTime } from './FormattingUtils';
 import { PROPERTY_TYPES, SEARCH_PREFIX } from './consts/DataModelConsts';
 import { PSA_NEIGHBOR, PSA_ASSOCIATION } from './consts/FrontEndStateConsts';
 
@@ -85,7 +86,7 @@ export const getFilteredNeighborsById = (neighborValues) => {
 };
 
 export const sortByDate = (d1, d2, fqn) => (
-  moment(d1.getIn([fqn, 0], '')).isBefore(moment(d2.getIn([fqn, 0], ''))) ? 1 : -1
+  DateTime.fromISO(d1.getIn([fqn, 0], '')) < (DateTime.fromISO(d2.getIn([fqn, 0], ''))) ? 1 : -1
 );
 
 const BASE_UUID_PATTERN :RegExp = /^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$/i;
@@ -114,8 +115,8 @@ export const getFirstNeighborValue = (neighborObj, fqn, defaultValue = '') => ne
 );
 
 export const getDateAndTime = (dateTime) => {
-  const date = moment(dateTime).format('MM/DD/YYYY');
-  const time = moment(dateTime).format('HH:mm');
+  const date = formatDate(dateTime);
+  const time = formatTime(dateTime);
 
   return { date, time };
 };

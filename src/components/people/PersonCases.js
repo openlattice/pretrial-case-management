@@ -4,7 +4,7 @@
 
 import React from 'react';
 import styled from 'styled-components';
-import moment from 'moment';
+import { DateTime } from 'luxon';
 import { Map } from 'immutable';
 
 import CaseHistoryTimeline from '../casehistory/CaseHistoryTimeline';
@@ -66,10 +66,10 @@ const PersonCases = ({
   let arrestDate = getIdOrValue(
     mostRecentPSANeighbors, MANUAL_PRETRIAL_CASES, PROPERTY_TYPES.ARREST_DATE_TIME
   );
-  if (!arrestDate) arrestDate = formatDate(moment());
+  if (!arrestDate) arrestDate = formatDate(DateTime.local().toISODate());
   const lastEditDateForPSA = psaNeighborsById.getIn(
     [mostRecentPSAEntityKeyId, STAFF, 0, PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.DATE_TIME, 0],
-    formatDate(moment())
+    formatDate(DateTime.local().toISODate())
   );
   const {
     caseHistoryForMostRecentPSA,

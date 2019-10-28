@@ -4,7 +4,7 @@
 
 import React from 'react';
 import styled from 'styled-components';
-import moment from 'moment';
+import { DateTime } from 'luxon';
 import { Constants } from 'lattice';
 import Immutable, { List, Map } from 'immutable';
 import { connect } from 'react-redux';
@@ -240,7 +240,11 @@ class PSAModal extends React.Component<Props, State> {
   openClosePSAModal = () => this.setState({ closingPSAModalOpen: true });
 
   exitEdit = () => {
-    this.setState({ editing: false });
+    const { psaNeighbors } = this.props;
+    this.setState({
+      editing: false,
+      riskFactors: this.getRiskFactors(psaNeighbors)
+    });
   }
 
   onClose = () => {
@@ -776,8 +780,8 @@ class PSAModal extends React.Component<Props, State> {
     const hearingsWithOutcomes = psaHearings.filter((hearing) => {
       const entityKeyId = hearing.getIn([OPENLATTICE_ID_FQN, 0]);
       return !!hearingNeighborsById.getIn([entityKeyId, OUTCOMES]);
-    }).sort((h1, h2) => (moment(h1.getIn([PROPERTY_TYPES.DATE_TIME, 0], ''))
-      .isBefore(h2.getIn([PROPERTY_TYPES.DATE_TIME, 0], '')) ? 1 : -1));
+    }).sort((h1, h2) => (DateTime.fromISO(h1.getIn([PROPERTY_TYPES.DATE_TIME, 0], ''))
+      < DateTime.fromISO(h2.getIn([PROPERTY_TYPES.DATE_TIME, 0], '')) ? 1 : -1));
 
     return (
       <ReleaseConditionsSummary

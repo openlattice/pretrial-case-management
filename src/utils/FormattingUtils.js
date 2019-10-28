@@ -4,9 +4,9 @@
 
 /* eslint-disable import/prefer-default-export */
 
-import moment from 'moment';
+import { DateTime, Info } from 'luxon';
 
-export const TIME_FORMAT = 'h:mm a';
+import { DATE_FORMAT, TIME_FORMAT, DATETIME_FORMAT } from './consts/DateTimeConsts';
 
 export function formatValue(rawValue :string | string[]) :string {
   if (!rawValue || (!rawValue.length && !rawValue.size)) return '';
@@ -16,44 +16,45 @@ export function formatValue(rawValue :string | string[]) :string {
   return rawValue.join(', ');
 }
 
-export function formatDate(dateString :string, optionalFormat :?string) :string {
+export const formateDTtoDateString = (dateTime :DateTime) => dateTime.toFormat(DATE_FORMAT);
+export const formateDTtoDateTimeString = (dateTime :DateTime) => dateTime.toFormat(DATETIME_FORMAT);
+export const formateDTtoTimeString = (dateTime :DateTime) => dateTime.toFormat(TIME_FORMAT);
+
+
+export const getDT = (dateString) => {
+  const todayDT = DateTime.local();
+  const todayIsInDST = todayDT.isInDST;
+  const tzHasDST = Info.hasDST();
+  let date = DateTime.fromISO(dateString);
+  if (tzHasDST) {
+    if (!todayIsInDST && date.isInDST) date = date.minus({ hours: 1 });
+    if (todayIsInDST && !date.isInDST) date = date.plus({ hours: 1 });
+  }
+  return date;
+};
+
+export function formatDate(dateString :string) :string {
   if (!dateString) return '';
-  const date = moment(dateString);
-  if (!date || !date.isValid()) return dateString;
-  const format = optionalFormat || 'MM/DD/YYYY';
-  return date.format(format);
+  const date = getDT(dateString);
+  if (!date || !date.isValid) return dateString;
+  return formateDTtoDateString(date);
 }
 
-export function formatDateList(dateList :string[], optionalFormat :?string) :string {
+export function formatTime(dateString :string) :string {
+  if (!dateString) return '';
+  const date = getDT(dateString);
+  if (!date || !date.isValid) return dateString;
+  return formateDTtoTimeString(date);
+}
+
+export function formatDateList(dateList :string[]) :string {
   if (!dateList || (!dateList.length && !dateList.size)) return '';
-  return dateList.map(dateString => formatDate(dateString, optionalFormat)).join(', ');
+  return dateList.map(dateString => formatDate(dateString)).join(', ');
 }
 
-export function formatDateTime(dateString :string, optionalFormat :?string) :string {
+export function formatDateTime(dateString :string) :string {
   if (!dateString) return '';
-  const date = moment(dateString);
-  if (!date || !date.isValid()) return dateString;
-  const format = optionalFormat || 'MM/DD/YYYY h:mma';
-  return date.format(format);
-}
-
-export function formatDateTimeList(dateTimeList :string[], optionalFormat :?string) :string {
-  if (!dateTimeList || (!dateTimeList.length && !dateTimeList.size)) return '';
-  return dateTimeList.map(dateString => formatDateTime(dateString, optionalFormat)).join(', ');
-}
-
-export function toISODateTime(momentObj) {
-  let momentStr;
-  if (momentObj && momentObj.isValid && momentObj.isValid()) {
-    momentStr = momentObj.format('YYYY-MM-DDTHH:mm:ss.SSSZ');
-  }
-  return momentStr;
-}
-
-export function toISODate(momentObj) {
-  let momentStr;
-  if (momentObj && momentObj.isValid && momentObj.isValid()) {
-    momentStr = momentObj.format('YYYY-MM-DD');
-  }
-  return momentStr;
+  const date = getDT(dateString);
+  if (!date || !date.isValid) return dateString;
+  return formateDTtoDateTimeString(date);
 }
