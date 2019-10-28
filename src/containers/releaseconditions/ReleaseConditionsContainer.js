@@ -691,7 +691,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
     let milliseconds = 3;
     existingCheckInEntityKeyIds.forEach((entityKeyId) => {
       const hearingAssociation = getCreateAssociationObject({
-        associationEntity: { [dateCompletedPropertyId]: [DateTime.local().plus({ milliseconds }).toISOString(true)] },
+        associationEntity: { [dateCompletedPropertyId]: [DateTime.local().plus({ milliseconds }).toISO()] },
         srcEntitySetId: appointmentEntitySetId,
         srcEntityKeyId: entityKeyId,
         dstEntitySetId: hearingEntitySetId,

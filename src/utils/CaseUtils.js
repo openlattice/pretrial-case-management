@@ -109,7 +109,7 @@ export const getCasesForPSA = (
   const psaIsClosed = status !== PSA_STATUSES.OPEN;
 
   const psaArrestDateTime = DateTime.fromISO(arrestDate || undefined);
-  const psaClosureDate = psaIsClosed ? DateTime.fromISO(lastEditDateForPSA) : DateTime.local().plus({ day: 1 });
+  const psaClosureDate = psaIsClosed ? DateTime.fromISO(lastEditDateForPSA) : DateTime.local().plus({ days: 1 });
 
 
   if (psaArrestDateTime.isValid) {
