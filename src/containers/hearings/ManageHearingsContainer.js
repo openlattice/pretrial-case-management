@@ -40,6 +40,11 @@ import {
 
 const { PREFERRED_COUNTY } = SETTINGS;
 
+const ManageHearingsBody = styled.div`
+  display: grid;
+  grid-template-columns: 315px 645px;
+`;
+
 const StyledTitleWrapper = styled.div`
   color: ${OL.GREY34};
   display: flex;
@@ -247,9 +252,10 @@ class ManageHearingsContainer extends React.Component<Props, State> {
           <CardSegment>
             {this.renderFilters()}
           </CardSegment>
-          <CardSegment>
-            body
-          </CardSegment>
+          <ManageHearingsBody>
+            <div>list</div>
+            <div>details</div>
+          </ManageHearingsBody>
         </Card>
       </>
     );
