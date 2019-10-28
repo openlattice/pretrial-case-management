@@ -107,7 +107,7 @@ class CheckInsAppointmentForm extends React.Component<Props, State> {
 
   createCheckInSubmissionValues = (date) => {
     const startDate = date;
-    const endDate = DateTime.fromISO(startDate).plus({ day: 1 }).toISODate();
+    const endDate = DateTime.fromISO(startDate).plus({ days: 1 }).toISODate();
     const appointmentEntity = { [PROPERTY_TYPES.START_DATE]: startDate, [PROPERTY_TYPES.END_DATE]: endDate };
     return fromJS(appointmentEntity);
   }
