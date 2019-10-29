@@ -19,6 +19,7 @@ import { FullWidthContainer, NoResults } from '../../utils/Layout';
 import PersonSearchFields from '../../components/person/PersonSearchFields';
 import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
 import { SORT_TYPES } from '../../utils/consts/Consts';
+import { DATE_FORMAT } from '../../utils/consts/DateTimeConsts';
 import { OL } from '../../utils/consts/Colors';
 import { formatDate } from '../../utils/FormattingUtils';
 import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
@@ -424,8 +425,9 @@ class ReviewPSA extends React.Component<Props, State> {
     const { scoresAsMap } = this.props;
     const { filters, options, status } = this.state;
     const { firstName, lastName, dob } = filters;
-    if (!firstName.length && !lastName.length) return List();
+    if (!firstName.length && !lastName.length && !dob.length) return List();
     const notAllStatus = status !== 'ALL';
+    const formatteDOB = DateTime.fromFormat(dob, DATE_FORMAT).toISODate();
 
     const personResults = options.entrySeq().filter(([scoreId, neighbors]) => {
       if (!this.domainMatch(neighbors)) return false;
@@ -448,8 +450,8 @@ class ReviewPSA extends React.Component<Props, State> {
 
       if (!neighborFirst.filter(val => val.toLowerCase().includes(firstName.toLowerCase())).size) return false;
       if (!neighborLast.filter(val => val.toLowerCase().includes(lastName.toLowerCase())).size) return false;
-      if (dob && dob.length
-        && !neighborDob.filter(val => val.toLowerCase().includes(dob.split('T')[0])).size) return false;
+      if (formatteDOB && formatteDOB.length
+        && !neighborDob.filter(val => val.includes(formatteDOB)).size) return false;
 
       return true;
     });
