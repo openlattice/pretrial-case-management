@@ -5,19 +5,21 @@
 import React from 'react';
 import styled from 'styled-components';
 import { DateTime } from 'luxon';
-import { Map, Set } from 'immutable';
+import { Map, Set, List } from 'immutable';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
+import ManageHearingsListItem from '../../components/managehearings/ManageHearingsListItem';
 import { OL } from '../../utils/consts/Colors';
 import { STATE } from '../../utils/consts/redux/SharedConsts';
-import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
-import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { COURT, PSA_ASSOCIATION } from '../../utils/consts/FrontEndStateConsts';
+import { DATE_FORMAT } from '../../utils/consts/DateTimeConsts';
+import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
-import { getEntityKeyId } from '../../utils/DataUtils';
 import { COUNTIES_DATA } from '../../utils/consts/redux/CountiesConsts';
 import { HEARINGS_ACTIONS, HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
 import { getReqState } from '../../utils/consts/redux/ReduxUtils';
+import { getEntityProperties } from '../../utils/DataUtils';
 
 import { loadPSAModal } from '../psamodal/PSAModalActionFactory';
 import { clearSubmit } from '../../utils/submit/SubmitActionFactory';
@@ -28,8 +30,7 @@ import {
   loadCaseHistory
 } from '../review/ReviewActionFactory';
 
-const { PEOPLE } = APP_TYPES;
-const { COURTROOM } = PROPERTY_TYPES;
+const { COURTROOM, ENTITY_KEY_ID } = PROPERTY_TYPES;
 
 
 const ManageHearingsList = styled.div`
@@ -52,6 +53,7 @@ const HearingTime = styled(HeaderItem)`
 `;
 
 type Props = {
+  courtroomFilter :string,
   countyFilter :string,
   courtroom :string,
   manageHearingsDate :DateTime,
@@ -83,46 +85,68 @@ type Props = {
 
 class ManageHearingsContainer extends React.Component<Props, *> {
 
-  renderHearingsAtTime = (time) => {
+  renderHearingsByTime = () => {
     const {
+      courtroomFilter,
       countyFilter,
-      courtroom,
       hearingsByTime,
       hearingsByCounty,
-      hearingNeighborsById
+      hearingNeighborsById,
+      peopleIdsToOpenPSAIds,
+      peopleReceivingReminders,
+      peopleWithOpenPsas,
+      peopleWithMultipleOpenPsas,
+      psaEditDatesById
     } = this.props;
-    let hearingsByCourtroom = Map();
     const hearinIdsForCountyFilter = hearingsByCounty.get(countyFilter, Set());
 
-    hearingsByTime.get(time).forEach((hearing) => {
-      let shouldInclude = true;
-      const room = hearing.getIn([COURTROOM, 0], '');
-      const hearingEKID = getEntityKeyId(hearing);
-      if (courtroom.length && room !== courtroom) shouldInclude = false;
-      if (shouldInclude && !hearinIdsForCountyFilter.includes(hearingEKID)) shouldInclude = false;
-      if (!countyFilter) shouldInclude = true;
-      if (shouldInclude) {
-        const person = hearingNeighborsById
-          .getIn([hearingEKID, PEOPLE, PSA_NEIGHBOR.DETAILS], Map());
-        const personId = person.getIn([PROPERTY_TYPES.PERSON_ID, 0]);
-        if (personId) {
-          hearingsByCourtroom = hearingsByCourtroom
-            .set(room, hearingsByCourtroom.get(room, Map()).set(personId, person));
+    const hearingsByCourtroom = Map().withMutations((mutableMap) => {
+      hearingsByTime.entrySeq().forEach(([time, hearings]) => {
+        if (hearings.size) {
+          hearings.forEach((hearing) => {
+            let shouldInclude = true;
+            const {
+              [COURTROOM]: hearingCourtroom,
+              [ENTITY_KEY_ID]: hearingEKID,
+            } = getEntityProperties(hearing, [COURTROOM, ENTITY_KEY_ID]);
+            const {
+              [ENTITY_KEY_ID]: personEKID,
+            } = getEntityProperties(hearing, [COURTROOM, ENTITY_KEY_ID]);
+            const hearingNeighbors = hearingNeighborsById.get(hearingEKID, Map());
+            if (courtroomFilter.length && hearingCourtroom !== courtroomFilter) shouldInclude = false;
+            if (countyFilter.length && !hearinIdsForCountyFilter.includes(hearingEKID)) shouldInclude = false;
+            if (shouldInclude) {
+              const psaEKID = peopleIdsToOpenPSAIds.get(personEKID, '');
+              const hasOpenPSA = peopleWithOpenPsas.has(personEKID);
+              const isReceivingReminders = peopleReceivingReminders.includes(personEKID);
+              const hasMultipleOpenPSAs = peopleWithMultipleOpenPsas.includes(personEKID);
+
+              const completedDateFromAssociation = psaEditDatesById
+                .getIn([psaEKID, PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.COMPLETED_DATE_TIME, 0], '');
+              const dateTimeFromAssociation = psaEditDatesById
+                .getIn([psaEKID, PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.DATE_TIME, 0], '');
+              const editDateFromPSA = psaEditDatesById.getIn([psaEKID, PROPERTY_TYPES.DATE_TIME], '');
+              const lastEditDateString = completedDateFromAssociation || dateTimeFromAssociation || editDateFromPSA;
+
+              const lastEditDate = DateTime.fromISO(lastEditDateString).toFormat(DATE_FORMAT);
+
+              mutableMap.setIn(
+                [time, hearingCourtroom],
+                mutableMap
+                  .getIn([time, hearingCourtroom], List()).push(
+                    <ManageHearingsListItem
+                        hearingNeighbors={hearingNeighbors}
+                        lastEditDate={lastEditDate}
+                        hasOpenPSA={hasOpenPSA}
+                        isReceivingReminders={isReceivingReminders}
+                        hasMultipleOpenPSAs={hasMultipleOpenPSAs} />
+                  )
+              );
+            }
+          });
         }
-      }
+      });
     });
-
-    if (!hearingsByCourtroom.size) return null;
-
-    return (
-      <HearingTime key={`${time}${courtroom}`}>
-        <h1>{time}</h1>
-        {
-          hearingsByCourtroom.entrySeq()
-            .map(([room, people]) => this.renderHearingRow(room, people, time)).toJS()
-        }
-      </HearingTime>
-    );
   }
 
   render() {
@@ -136,11 +160,11 @@ class ManageHearingsContainer extends React.Component<Props, *> {
 function mapStateToProps(state) {
   const app = state.get(STATE.APP);
   const counties = state.get(STATE.COUNTIES);
-  const edm = state.get(STATE.EDM);
+  const court = state.get(STATE.COURT);
   const hearings = state.get(STATE.HEARINGS);
-  const courtDate = hearings.get(HEARINGS_DATA.COURT_DATE).toISODate();
-  const hearingsByTime = hearings.getIn([HEARINGS_DATA.HEARINGS_BY_DATE_AND_TIME, courtDate], Map());
-  const courtrooms = hearings.getIn([HEARINGS_DATA.COURTROOMS_BY_DATE, courtDate], Set());
+  const hearingDate = hearings.get(HEARINGS_DATA.MANAGE_HEARINGS_DATE).toISODate();
+  const hearingsByTime = hearings.getIn([HEARINGS_DATA.HEARINGS_BY_DATE_AND_TIME, hearingDate], Map());
+  const courtrooms = hearings.getIn([HEARINGS_DATA.COURTROOMS_BY_DATE, hearingDate], Set());
   return {
     [APP_DATA.SELECTED_ORG_ID]: app.get(APP_DATA.SELECTED_ORG_ID),
     [APP_DATA.SELECTED_ORG_TITLE]: app.get(APP_DATA.SELECTED_ORG_TITLE),
@@ -148,6 +172,14 @@ function mapStateToProps(state) {
 
     // Counties
     [COUNTIES_DATA.COUNTIES_BY_ID]: counties.get(COUNTIES_DATA.COUNTIES_BY_ID),
+
+    // Court
+    [COURT.PEOPLE_WITH_OPEN_PSAS]: court.get(COURT.PEOPLE_WITH_OPEN_PSAS),
+    [COURT.PEOPLE_WITH_MULTIPLE_OPEN_PSAS]: court.get(COURT.PEOPLE_WITH_MULTIPLE_OPEN_PSAS),
+    [COURT.PEOPLE_RECEIVING_REMINDERS]: court.get(COURT.PEOPLE_RECEIVING_REMINDERS),
+    [COURT.PSA_EDIT_DATES]: court.get(COURT.PSA_EDIT_DATES),
+    [COURT.OPEN_PSA_IDS]: court.get(COURT.OPEN_PSA_IDS),
+    [COURT.PEOPLE_IDS_TO_OPEN_PSA_IDS]: court.get(COURT.PEOPLE_IDS_TO_OPEN_PSA_IDS),
 
     // Hearings
     courtrooms,
@@ -159,8 +191,6 @@ function mapStateToProps(state) {
     [HEARINGS_DATA.HEARINGS_BY_COUNTY]: hearings.get(HEARINGS_DATA.HEARINGS_BY_COUNTY),
     [HEARINGS_DATA.HEARINGS_BY_COURTROOM]: hearings.get(HEARINGS_DATA.HEARINGS_BY_COURTROOM),
     [HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID]: hearings.get(HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID),
-
-    [EDM.FQN_TO_ID]: edm.get(EDM.FQN_TO_ID),
   };
 }
 
