@@ -142,7 +142,7 @@ class CheckInsContainer extends React.Component<Props, State> {
     return (
       <DatePicker
           subtle
-          value={selectedDate.format('YYYY-MM-DD')}
+          value={selectedDate.toISODate()}
           onChange={date => this.onDateChange(date)} />
     );
   }
@@ -255,7 +255,7 @@ class CheckInsContainer extends React.Component<Props, State> {
       <ResultsWrapper>
         {
           this.renderCheckInsTable(
-            'Reminders',
+            'Check Ins',
             entities,
             checkInNeighborsById,
             filters
