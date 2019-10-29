@@ -3,7 +3,7 @@
  */
 
 import Immutable, { Map, List } from 'immutable';
-import moment from 'moment';
+import { DateTime } from 'luxon';
 
 import { PROPERTY_TYPES } from './consts/DataModelConsts';
 import { PSA } from './consts/Consts';
@@ -65,12 +65,12 @@ export const tryAutofillAge = (
   defaultValue :string,
   selectedPerson :Map<*, *>
 ) :string => {
-  const dob = moment.utc(selectedPerson.getIn([DOB, 0], ''));
-  let arrest = moment.utc(dateArrested);
-  if (!arrest.isValid()) arrest = moment();
+  const dob = DateTime.fromISO(selectedPerson.getIn([DOB, 0], ''));
+  let arrest = DateTime.fromISO(dateArrested);
+  if (!arrest.isValid) arrest = DateTime.local();
   let ageAtCurrentArrestValue = defaultValue;
-  if (dob.isValid() && arrest.isValid()) {
-    const age = Math.floor(moment.duration(arrest.diff(dob)).asYears());
+  if (dob.isValid && arrest.isValid) {
+    const age = Math.floor(arrest.diff(dob, 'years').years);
     if (!Number.isNaN(age)) {
       if (age <= 20) ageAtCurrentArrestValue = '0';
       if (age === 21 || age === 22) ageAtCurrentArrestValue = '1';
@@ -96,16 +96,16 @@ const filterPendingCharges = (
   allCharges :List<*>
 ) :List<*> => {
   if (!dateArrested || !dateArrested.length || !currCaseNum || !currCaseNum.length) return List();
-  const arrestDate = moment(dateArrested);
+  const arrestDate = DateTime.fromISO(dateArrested);
   let casesWithArrestBefore = Immutable.OrderedSet(); // Set of case numbers with an arrest date before the current one
   let casesWithDispositionAfter = Map(); // Map from case nums to charge list with date after current arrest
 
-  if (arrestDate.isValid()) {
+  if (arrestDate.isValid) {
     allCases.forEach((caseDetails) => {
-      const prevArrestDate = moment(caseDetails.getIn([ARREST_DATE_TIME, 0],
+      const prevArrestDate = DateTime.fromISO(caseDetails.getIn([ARREST_DATE_TIME, 0],
         caseDetails.getIn([ARREST_DATE, 0],
           caseDetails.getIn([FILE_DATE, 0], ''))));
-      if (prevArrestDate.isValid() && prevArrestDate.isBefore(arrestDate)) {
+      if (prevArrestDate.isValid && prevArrestDate < arrestDate) {
         const caseNum = caseDetails.getIn([CASE_ID, 0]);
         if (caseNum !== currCaseNum) casesWithArrestBefore = casesWithArrestBefore.add(caseNum);
       }
@@ -126,8 +126,8 @@ const filterPendingCharges = (
         shouldInclude = true;
       }
       else {
-        const dispositionDate = moment(dispositionDateStr);
-        if (dispositionDate.isValid() && dispositionDate.isAfter(arrestDate)) {
+        const dispositionDate = DateTime.fromISO(dispositionDateStr);
+        if (dispositionDate.isValid && dispositionDate > arrestDate) {
           shouldInclude = true;
         }
       }

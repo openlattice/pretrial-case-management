@@ -1,7 +1,7 @@
 /*
  * @flow
  */
-import moment from 'moment';
+import { DateTime } from 'luxon';
 import { Constants } from 'lattice';
 import {
   fromJS,
@@ -250,11 +250,10 @@ function formReducer(state :Map<> = INITIAL_STATE, action :Object) {
           });
 
           arrestOptionsWithDate = arrestOptionsWithDate.sort((case1, case2) => {
-            const arr1 = moment(case1.getIn([ARREST_DATE_TIME, 0], ''));
-            const arr2 = moment(case2.getIn([ARREST_DATE_TIME, 0], ''));
-            if (arr1.isValid() && arr2.isValid()) {
-              if (arr1.isBefore(arr2)) return 1;
-              if (arr1.isAfter(arr2)) return -1;
+            const arr1 = DateTime.fromISO(case1.getIn([ARREST_DATE_TIME, 0], ''));
+            const arr2 = DateTime.fromISO(case2.getIn([ARREST_DATE_TIME, 0], ''));
+            if (arr1.isValid && arr2.isValid) {
+              return (arr1 < arr2) ? 1 : -1;
             }
             return 0;
           });

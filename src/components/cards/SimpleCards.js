@@ -2,13 +2,13 @@
  * @flow
  */
 
-import moment from 'moment';
 import React from 'react';
 import Immutable from 'immutable';
 import styled from 'styled-components';
 
 import { CloseModalX } from '../../utils/Layout';
 import { OL } from '../../utils/consts/Colors';
+import { formatDate } from '../../utils/FormattingUtils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { getEntityProperties, getFirstNeighborValue } from '../../utils/DataUtils';
 
@@ -77,7 +77,7 @@ const SimpleCards = ({
       return (
         <CardWrapper key={startDate}>
           <Card>
-            { moment(startDate).format('MM/DD/YYYY') }
+            { formatDate(startDate) }
             { removeEntity ? <RemoveEntityX onClick={() => removeEntity({ entityKeyId, startDate })} /> : null }
           </Card>
         </CardWrapper>

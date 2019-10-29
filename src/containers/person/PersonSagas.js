@@ -3,9 +3,9 @@
  */
 
 import axios from 'axios';
-import moment from 'moment';
 import LatticeAuth from 'lattice-auth';
 import randomUUID from 'uuid/v4';
+import { DateTime } from 'luxon';
 import { Constants, SearchApi, DataIntegrationApi } from 'lattice';
 import {
   DataApiActions,
@@ -27,8 +27,8 @@ import {
   select
 } from '@redux-saga/core/effects';
 
-import { toISODate } from '../../utils/FormattingUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { DATE_FORMAT } from '../../utils/consts/DateTimeConsts';
 import { PERSON_INFO_DATA, PSA_STATUSES } from '../../utils/consts/Consts';
 import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { createIdObject, getSearchTerm } from '../../utils/DataUtils';
@@ -51,8 +51,6 @@ import {
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
-
-import * as Routes from '../../core/router/Routes';
 
 const { createEntityAndAssociationData, updateEntityData, getEntityData } = DataApiActions;
 const { createEntityAndAssociationDataWorker, updateEntityDataWorker, getEntityDataWorker } = DataApiSagas;
@@ -430,9 +428,9 @@ function* searchPeopleWorker(action) :Generator<*, *, *> {
       updateSearchField(lastName.trim(), lastNamePropertyTypeId);
     }
     if (dob && dob.trim().length) {
-      const dobMoment = moment(dob.trim());
-      if (dobMoment.isValid()) {
-        updateSearchField(toISODate(dobMoment), dobPropertyTypeId, true);
+      const dobDT = DateTime.fromFormat(dob.trim(), DATE_FORMAT);
+      if (dobDT.isValid) {
+        updateSearchField(dobDT.toISODate(), dobPropertyTypeId, true);
       }
     }
     const searchOptions = {
@@ -448,7 +446,7 @@ function* searchPeopleWorker(action) :Generator<*, *, *> {
     if (response.error) throw response.error;
 
     let personMap = Map();
-    if (response.data.hits.length > 0) {
+    if (response.data.numHits > 0) {
       const searchResults = fromJS(response.data.hits);
       searchResults.forEach((person) => {
         const personEntityKeyId = person.getIn([OPENLATTICE_ID_FQN, 0], '');

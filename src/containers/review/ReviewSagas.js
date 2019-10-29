@@ -4,7 +4,6 @@
 
 import Immutable, { List, Map, fromJS } from 'immutable';
 import { DateTime } from 'luxon';
-import moment from 'moment';
 import {
   DataApiActions,
   DataApiSagas,
@@ -31,6 +30,7 @@ import type { RequestSequence, SequenceAction } from 'redux-reqseq';
 
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { getPropertyTypeId, getPropertyIdToValueMap } from '../../edm/edmUtils';
+import { formatDate } from '../../utils/FormattingUtils';
 import exportPDF, { exportPDFList } from '../../utils/PDFUtils';
 import { getMapByCaseId } from '../../utils/CaseUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
@@ -122,11 +122,14 @@ const LIST_ENTITY_SETS = Immutable.List.of(
 );
 
 const orderCasesByArrestDate = (case1, case2) => {
-  const date1 = moment(case1.getIn([PROPERTY_TYPES.ARREST_DATE, 0], case1.getIn([PROPERTY_TYPES.FILE_DATE, 0], '')));
-  const date2 = moment(case2.getIn([PROPERTY_TYPES.ARREST_DATE, 0], case2.getIn([PROPERTY_TYPES.FILE_DATE, 0], '')));
-  if (date1.isValid() && date2.isValid()) {
-    if (date1.isBefore(date2)) return 1;
-    if (date1.isAfter(date2)) return -1;
+  const date1 = DateTime.fromISO(
+    case1.getIn([PROPERTY_TYPES.ARREST_DATE, 0], case1.getIn([PROPERTY_TYPES.FILE_DATE, 0], ''))
+  );
+  const date2 = DateTime.fromISO(
+    case2.getIn([PROPERTY_TYPES.ARREST_DATE, 0], case2.getIn([PROPERTY_TYPES.FILE_DATE, 0], ''))
+  );
+  if (date1.isValid && date2.isValid) {
+    return (date1 < date2) ? 1 : -1;
   }
   return 0;
 };
@@ -383,9 +386,10 @@ function* loadPSADataWorker(action :SequenceAction) :Generator<*, *, *> {
       neighborsById.entrySeq().forEach(([id, neighbors]) => {
         let allDatesEdited = Immutable.List();
         let neighborsByAppTypeFqn = Immutable.Map();
-        const psaCreationDate = moment(scoresAsMap.getIn([id, PROPERTY_TYPES.DATE_TIME, 0], ''));
-        if (psaCreationDate.isValid()) {
-          allDatesEdited = allDatesEdited.push(psaCreationDate.format('MM/DD/YYYY'));
+        const psaCreationDate = scoresAsMap.getIn([id, PROPERTY_TYPES.DATE_TIME, 0], '');
+        const psaCreationDT = DateTime.fromISO(psaCreationDate);
+        if (psaCreationDT.isValid) {
+          allDatesEdited = allDatesEdited.push(formatDate(psaCreationDate));
         }
 
         neighbors.forEach((neighbor) => {
@@ -394,9 +398,9 @@ function* loadPSADataWorker(action :SequenceAction) :Generator<*, *, *> {
               PSA_ASSOCIATION.DETAILS,
               PROPERTY_TYPES.DATE_TIME
             ], Immutable.List())).forEach((timestamp) => {
-            const timestampMoment = moment(timestamp);
-            if (timestampMoment.isValid()) {
-              allDatesEdited = allDatesEdited.push(timestampMoment.format('MM/DD/YYYY'));
+            const timestampDT = DateTime.fromISO(timestamp);
+            if (timestampDT.isValid) {
+              allDatesEdited = allDatesEdited.push(formatDate(timestamp));
             }
           });
 
@@ -592,9 +596,9 @@ const getPSADataFromNeighbors = (
         updateData = newUpdateData;
       }
       else {
-        const prevTime = moment(updateData.timestamp);
-        const currTime = moment(timestamp);
-        if (!prevTime.isValid() || currTime.isAfter(prevTime)) {
+        const prevTime = DateTime.fromISO(updateData.timestamp);
+        const currTime = DateTime.fromISO(timestamp);
+        if (!prevTime.isValid || currTime > prevTime) {
           updateData = newUpdateData;
         }
       }
@@ -728,16 +732,16 @@ function* bulkDownloadPSAReviewPDFWorker(action :SequenceAction) :Generator<*, *
           const t2List = n2.associationDetails[PROPERTY_TYPES.TIMESTAMP];
 
           if (t1List && t1List.length) {
-            t1 = moment(t1List[0]);
+            t1 = DateTime.fromISO(t1List[0]);
           }
 
           if (t2List && t2List.length) {
-            t2 = moment(t2List[0]);
+            t2 = DateTime.fromISO(t2List[0]);
           }
 
           if (!t1) return 1;
           if (!t2) return -1;
-          return t1.isBefore(t2) ? 1 : -1;
+          return t1 < t2 ? 1 : -1;
         });
 
         psasById = psasById.set(psaNeighbors[0].neighborId, psaNeighbors[0].neighborDetails);

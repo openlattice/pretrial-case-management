@@ -7,7 +7,7 @@ import React from 'react';
 import Immutable from 'immutable';
 import styled from 'styled-components';
 import qs from 'query-string';
-import moment from 'moment';
+import { DateTime } from 'luxon';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 
@@ -17,7 +17,6 @@ import PersonTable from '../../components/people/PersonTable';
 import LogoLoader from '../../components/LogoLoader';
 import NoSearchResults from '../../components/people/NoSearchResults';
 import { clearSearchResults, searchPeople } from './PersonActions';
-import { toISODate } from '../../utils/FormattingUtils';
 import { StyledFormViewWrapper, StyledSectionWrapper, StyledFormWrapper } from '../../utils/Layout';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { STATE, SEARCH } from '../../utils/consts/FrontEndStateConsts';
@@ -163,7 +162,7 @@ class SearchPeopleContainer extends React.Component<Props, State> {
       [Routes.FIRST_NAME]: firstName
     };
     if (dob) {
-      params[Routes.DOB] = toISODate(moment(dob));
+      params[Routes.DOB] = DateTime.fromISO(dob).toISODate();
     }
 
     history.push(`${Routes.NEW_PERSON}?${qs.stringify(params)}`);
@@ -179,9 +178,9 @@ class SearchPeopleContainer extends React.Component<Props, State> {
       const p2First = p2.getIn([PROPERTY_TYPES.FIRST_NAME, 0], '').toLowerCase();
       if (p1First !== p2First) return p1First < p2First ? -1 : 1;
 
-      const p1Dob = moment(p1.getIn([PROPERTY_TYPES.DOB, 0], ''));
-      const p2Dob = moment(p2.getIn([PROPERTY_TYPES.DOB, 0], ''));
-      if (p1Dob.isValid() && p2Dob.isValid()) return p1Dob.isBefore(p2Dob) ? -1 : 1;
+      const p1Dob = DateTime.fromISO(p1.getIn([PROPERTY_TYPES.DOB, 0], ''));
+      const p2Dob = DateTime.fromISO(p2.getIn([PROPERTY_TYPES.DOB, 0], ''));
+      if (p1Dob.isValid && p2Dob.isValid) return p1Dob < p2Dob ? -1 : 1;
 
       return 0;
     });

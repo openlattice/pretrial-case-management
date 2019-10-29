@@ -2,7 +2,7 @@
  * @flow
  */
 import React from 'react';
-import Immutable from 'immutable';
+import { Map, List } from 'immutable';
 import styled from 'styled-components';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -16,8 +16,8 @@ import PersonCardSummary from '../../components/person/PersonCardSummary';
 import PSAReportDownloadButton from '../../components/review/PSAReportDownloadButton';
 import PSAStats from '../../components/review/PSAStats';
 import SummaryRCMDetails from '../../components/rcm/SummaryRCMDetails';
-import { formatDateTimeList } from '../../utils/FormattingUtils';
-import { getTimeStamp, getNeighborDetailsForEntitySet } from '../../utils/DataUtils';
+import { formatDateTime } from '../../utils/FormattingUtils';
+import { getEntityProperties, getNeighborDetailsForEntitySet } from '../../utils/DataUtils';
 import { OL } from '../../utils/consts/Colors';
 import { NoResults, Title, SummaryRowWrapper } from '../../utils/Layout';
 import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
@@ -139,17 +139,17 @@ const ViewPSADetailsButton = styled(BasicButton)`
 
 type Props = {
   notes :string,
-  entitySetsByOrganization :Immutable.Map<*, *>,
-  scores :Immutable.Map<*, *>,
-  neighbors :Immutable.Map<*, *>,
+  entitySetsByOrganization :Map<*, *>,
+  scores :Map<*, *>,
+  neighbors :Map<*, *>,
   fileNewPSA :boolean,
   profile :boolean,
-  selectedOrganizationSettings :Immutable.Map<*, *>,
+  selectedOrganizationSettings :Map<*, *>,
   openDetailsModal :() => void,
   actions :{
     downloadPSAReviewPDF :(values :{
-      neighbors :Immutable.Map<*, *>,
-      scores :Immutable.Map<*, *>
+      neighbors :Map<*, *>,
+      scores :Map<*, *>
     }) => void,
   },
 };
@@ -215,8 +215,14 @@ class PSASummary extends React.Component<Props, *> {
 
     const { downloadPSAReviewPDF } = actions;
     let filer;
-    const psaDate = formatDateTimeList(scores.get(PROPERTY_TYPES.DATE_TIME, getTimeStamp(neighbors, PSA_RISK_FACTORS)));
-    neighbors.get(STAFF, Immutable.List()).forEach((neighbor) => {
+    const riskFactors = neighbors.get(PSA_RISK_FACTORS, Map());
+    const { [PROPERTY_TYPES.DATE_TIME]: psaDate } = getEntityProperties(scores, [PROPERTY_TYPES.DATE_TIME]);
+    const {
+      [PROPERTY_TYPES.TIMESTAMP]: psaRiskFactorsDate
+    } = getEntityProperties(riskFactors, [PROPERTY_TYPES.TIMESTAMP]);
+    const usableDate = formatDateTime(psaDate || psaRiskFactorsDate);
+
+    neighbors.get(STAFF, List()).forEach((neighbor) => {
       const associationEntitySetId = neighbor.getIn([PSA_ASSOCIATION.ENTITY_SET, 'id']);
       const appTypeFqn = entitySetsByOrganization.get(associationEntitySetId);
       const personId = neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.PERSON_ID, 0], '');
@@ -227,7 +233,7 @@ class PSASummary extends React.Component<Props, *> {
     return (
       <PSADetails>
         <ContentBlock
-            contentBlock={{ label: 'psa date', content: [psaDate] }}
+            contentBlock={{ label: 'psa date', content: [usableDate] }}
             component={CONTENT_CONSTS.SUMMARY} />
         <ContentBlock
             contentBlock={{ label: 'filer', content: [filer] }}

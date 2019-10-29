@@ -3,11 +3,11 @@
  */
 
 import React from 'react';
-import moment from 'moment';
 import styled from 'styled-components';
+import { DateTime } from 'luxon';
 import { DateTimePicker } from '@atlaskit/datetime-picker';
 
-import { MIL_TIME } from '../../utils/consts/DateTimeConsts';
+import { formatTime } from '../../utils/FormattingUtils';
 
 const DateTimePickerWrapper = styled.div`
   position: relative;
@@ -40,7 +40,7 @@ const StyledStyledDateTimePicker = ({
           hideIcon
           timeIsEditable
           placeholder={dateFormat}
-          times={[moment().format(timeFormat)]}
+          times={[formatTime(DateTime.local().toISO())]}
           datePickerSelectProps={{
             placeholder: dateFormat,
           }} />

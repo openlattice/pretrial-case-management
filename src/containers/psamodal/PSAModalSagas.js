@@ -2,7 +2,7 @@
  * @flow
  */
 
-import moment from 'moment';
+import { DateTime } from 'luxon';
 import { SearchApiActions, SearchApiSagas } from 'lattice-sagas';
 import {
   AuthorizationApi,
@@ -25,6 +25,7 @@ import type { SequenceAction } from 'redux-reqseq';
 
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { hearingIsCancelled } from '../../utils/HearingUtils';
+import { formatDate } from '../../utils/FormattingUtils';
 import { getEntityProperties, getEntityKeyId } from '../../utils/DataUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_NEIGHBOR, PSA_ASSOCIATION } from '../../utils/consts/FrontEndStateConsts';
@@ -182,9 +183,9 @@ function* loadPSAModalWorker(action :SequenceAction) :Generator<*, *, *> {
           PSA_ASSOCIATION.DETAILS,
           PROPERTY_TYPES.DATE_TIME
         ], List.of(scores.getIn([PROPERTY_TYPES.DATE_TIME, 0])) || List())).forEach((timestamp) => {
-        const timestampMoment = moment(timestamp);
-        if (timestampMoment.isValid()) {
-          allDatesEdited = allDatesEdited.push(timestampMoment.format('MM/DD/YYYY'));
+        const timestampDT = DateTime.fromISO(timestamp);
+        if (timestampDT.isValid) {
+          allDatesEdited = allDatesEdited.push(formatDate(timestamp));
         }
       });
 
