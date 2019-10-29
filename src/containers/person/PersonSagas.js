@@ -28,6 +28,7 @@ import {
 } from '@redux-saga/core/effects';
 
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { DATE_FORMAT } from '../../utils/consts/DateTimeConsts';
 import { PERSON_INFO_DATA, PSA_STATUSES } from '../../utils/consts/Consts';
 import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { createIdObject, getSearchTerm } from '../../utils/DataUtils';
@@ -427,7 +428,7 @@ function* searchPeopleWorker(action) :Generator<*, *, *> {
       updateSearchField(lastName.trim(), lastNamePropertyTypeId);
     }
     if (dob && dob.trim().length) {
-      const dobDT = DateTime.fromISO(dob.trim());
+      const dobDT = DateTime.fromFormat(dob.trim(), DATE_FORMAT);
       if (dobDT.isValid) {
         updateSearchField(dobDT.toISODate(), dobPropertyTypeId, true);
       }
@@ -445,7 +446,7 @@ function* searchPeopleWorker(action) :Generator<*, *, *> {
     if (response.error) throw response.error;
 
     let personMap = Map();
-    if (response.data.hits.length > 0) {
+    if (response.data.numHits > 0) {
       const searchResults = fromJS(response.data.hits);
       searchResults.forEach((person) => {
         const personEntityKeyId = person.getIn([OPENLATTICE_ID_FQN, 0], '');
