@@ -31,6 +31,18 @@ const setCourtDate = value => ({
   value
 });
 
+const SET_COURTROOM_FILTER :'SET_COURTROOM_FILTER' = 'SET_COURTROOM_FILTER';
+const setCourtroomFilter = value => ({
+  type: SET_COURTROOM_FILTER,
+  value
+});
+
+const SET_COUNTY_FILTER :'SET_COUNTY_FILTER' = 'SET_COUNTY_FILTER';
+const setCountyFilter = value => ({
+  type: SET_COUNTY_FILTER,
+  value
+});
+
 const SET_MANAGE_HEARINGS_DATE :'SET_MANAGE_HEARINGS_DATE' = 'SET_MANAGE_HEARINGS_DATE';
 const setManageHearingsDate = value => ({
   type: SET_MANAGE_HEARINGS_DATE,
@@ -83,6 +95,10 @@ export {
   openHearingSettingsModal,
   SET_COURT_DATE,
   setCourtDate,
+  SET_COUNTY_FILTER,
+  setCountyFilter,
+  SET_COURTROOM_FILTER,
+  setCourtroomFilter,
   SET_HEARING_SETTINGS,
   setHearingSettings,
   SET_MANAGE_HEARINGS_DATE,
