@@ -57,7 +57,7 @@ import { HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
 import * as Routes from '../../core/router/Routes';
 import * as CourtActionFactory from '../court/CourtActionFactory';
 import * as HearingsActions from '../hearings/HearingsActions';
-import * as PeopleActionFactory from './PeopleActionFactory';
+import * as PeopleActions from './PeopleActions';
 import * as ReviewActionFactory from '../review/ReviewActionFactory';
 import * as PSAModalActionFactory from '../psamodal/PSAModalActionFactory';
 
@@ -592,8 +592,8 @@ function mapDispatchToProps(dispatch) {
     actions[action] = HearingsActions[action];
   });
 
-  Object.keys(PeopleActionFactory).forEach((action :string) => {
-    actions[action] = PeopleActionFactory[action];
+  Object.keys(PeopleActions).forEach((action :string) => {
+    actions[action] = PeopleActions[action];
   });
 
   Object.keys(ReviewActionFactory).forEach((action :string) => {

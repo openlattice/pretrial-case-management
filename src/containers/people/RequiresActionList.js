@@ -27,7 +27,7 @@ import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 
 import * as ReviewActionFactory from '../review/ReviewActionFactory';
-import * as PeopleActionFactory from './PeopleActionFactory';
+import * as PeopleActions from './PeopleActions';
 import * as PSAModalActionFactory from '../psamodal/PSAModalActionFactory';
 
 const { OPENLATTICE_ID_FQN } = Constants;
@@ -390,8 +390,8 @@ function mapDispatchToProps(dispatch) {
     actions[action] = ReviewActionFactory[action];
   });
 
-  Object.keys(PeopleActionFactory).forEach((action :string) => {
-    actions[action] = PeopleActionFactory[action];
+  Object.keys(PeopleActions).forEach((action :string) => {
+    actions[action] = PeopleActions[action];
   });
 
   Object.keys(PSAModalActionFactory).forEach((action :string) => {
