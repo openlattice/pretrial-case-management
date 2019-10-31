@@ -5,7 +5,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import { DateTime } from 'luxon';
-import { Map, Set } from 'immutable';
+import { Map } from 'immutable';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import {
@@ -14,6 +14,7 @@ import {
   Select
 } from 'lattice-ui-kit';
 
+import ManageHearingsList from './ManageHearingsList';
 import CountiesDropdown from '../counties/CountiesDropdown';
 import DatePicker from '../../components/datetime/DatePicker';
 import { DATE_FORMAT } from '../../utils/consts/DateTimeConsts';
@@ -29,14 +30,7 @@ import { HEARINGS_ACTIONS, HEARINGS_DATA } from '../../utils/consts/redux/Hearin
 import { getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUtils';
 import { SETTINGS } from '../../utils/consts/AppSettingConsts';
 
-import { loadPSAModal } from '../psamodal/PSAModalActionFactory';
-import { clearSubmit } from '../../utils/submit/SubmitActionFactory';
-import { loadHearingsForDate, setManageHearingsDate } from './HearingsActions';
-import {
-  bulkDownloadPSAReviewPDF,
-  checkPSAPermissions,
-  loadCaseHistory
-} from '../review/ReviewActionFactory';
+import { loadHearingsForDate, setManageHearingsDate, setCountyFilter } from './HearingsActions';
 
 const { PREFERRED_COUNTY } = SETTINGS;
 
@@ -78,10 +72,11 @@ const FilterElement = styled.div`
 `;
 
 type Props = {
+  countyFilter :string,
+  courtroomFilter :string,
   manageHearingsDate :DateTime,
   countiesById :Map<*, *>,
-  hearingsByCounty :Map<*, *>,
-  hearingsByCourtroom :Map<*, *>,
+  courtroomOptions :Map<*, *>,
   hearingsByTime :Map<*, *>,
   hearingNeighborsById :Map<*, *>,
   loadHearingsForDateReqState :RequestState,
@@ -105,18 +100,7 @@ type Props = {
   }
 };
 
-type State = {
-  date :Object
-}
-
-class ManageHearingsContainer extends React.Component<Props, State> {
-  constructor(props :Props) {
-    super(props);
-    this.state = {
-      countyFilter: '',
-      courtroom: ''
-    };
-  }
+class ManageHearingsContainer extends React.Component<Props, *> {
 
   componentDidMount() {
     const {
@@ -129,12 +113,11 @@ class ManageHearingsContainer extends React.Component<Props, State> {
     } = this.props;
     const preferredCountyEKID :UUID = selectedOrganizationSettings.get(PREFERRED_COUNTY, '');
     if (selectedOrganizationId) {
-      actions.checkPSAPermissions();
       if (!hearingsByTime.size || !hearingNeighborsById.size) {
         actions.loadHearingsForDate(manageHearingsDate);
       }
+      if (preferredCountyEKID) actions.setCountyFilter({ value: preferredCountyEKID });
     }
-    this.setState({ countyFilter: preferredCountyEKID });
   }
 
   componentDidUpdate(nextProps) {
@@ -148,10 +131,9 @@ class ManageHearingsContainer extends React.Component<Props, State> {
     } = this.props;
     const preferredCountyEKID :UUID = selectedOrganizationSettings.get(PREFERRED_COUNTY, '');
     if (selectedOrganizationId !== nextProps.selectedOrganizationId) {
-      actions.checkPSAPermissions();
       if (!hearingsByTime.size || !hearingNeighborsById.size || manageHearingsDate !== nextProps.manageHearingsDate) {
         actions.loadHearingsForDate(manageHearingsDate);
-        this.setState({ countyFilter: preferredCountyEKID, courtroom: '' });
+        if (preferredCountyEKID) actions.setCountyFilter({ value: preferredCountyEKID });
       }
     }
   }
@@ -163,31 +145,29 @@ class ManageHearingsContainer extends React.Component<Props, State> {
     </FilterElement>
   );
 
-  setCourtroomFilter = filter => this.setState({ courtroom: filter.value });
-
   renderCourtroomFilter = () => {
-    const { courtroom } = this.state;
     const {
-      hearingsByCourtroom,
+      actions,
+      courtroomOptions,
       loadHearingsForDateReqState,
       loadHearingNeighborsReqState,
     } = this.props;
     const hearingsAreLoading :boolean = requestIsPending(loadHearingsForDateReqState)
       || requestIsPending(loadHearingNeighborsReqState);
-    const courtroomOptions :List = hearingsByCourtroom.keySeq().map((courtroomName) => {
+    const options :List = courtroomOptions.map((courtroomName) => {
       return {
         label: courtroomName,
         value: courtroomName
       };
     }).sort((cr1, cr2) => sortCourtrooms(cr1.label, cr2.label)).toJS();
-    const currentFilterValue = { label: (courtroom || 'All'), value: courtroom };
-    courtroomOptions.unshift(currentFilterValue);
+    const currentFilterValue = { label: 'All', value: '' };
+    options.unshift(currentFilterValue);
     return (
       <Select
           value={currentFilterValue}
-          options={courtroomOptions}
+          options={options}
           isLoading={hearingsAreLoading}
-          onChange={this.setCourtroomFilter} />
+          onChange={actions.setCourtroomFilter} />
     );
   }
 
@@ -209,11 +189,10 @@ class ManageHearingsContainer extends React.Component<Props, State> {
     );
   }
 
-  setCountyFilter = filter => this.setState({ countyFilter: filter.value });
-
   renderCountyFilter = () => {
-    const { countyFilter } = this.state;
+    const { countyFilter } = this.props;
     const {
+      actions,
       countiesById,
       loadHearingsForDateReqState,
       loadHearingNeighborsReqState,
@@ -225,7 +204,7 @@ class ManageHearingsContainer extends React.Component<Props, State> {
           value={countyFilter}
           options={countiesById}
           loading={hearingsAreLoading}
-          onChange={this.setCountyFilter} />
+          onChange={actions.setCountyFilter} />
     );
   }
 
@@ -244,7 +223,7 @@ class ManageHearingsContainer extends React.Component<Props, State> {
   )
 
   render() {
-    console.log(this.props);
+    const { countyFilter, courtroomFilter } = this.props;
     return (
       <>
         { this.renderHeader() }
@@ -253,7 +232,9 @@ class ManageHearingsContainer extends React.Component<Props, State> {
             {this.renderFilters()}
           </CardSegment>
           <ManageHearingsBody>
-            <div>list</div>
+            <ManageHearingsList
+                countyFilter={countyFilter}
+                courtroomFilter={courtroomFilter} />
             <div>details</div>
           </ManageHearingsBody>
         </Card>
@@ -269,24 +250,22 @@ function mapStateToProps(state) {
   const hearings = state.get(STATE.HEARINGS);
   const courtDate = hearings.get(HEARINGS_DATA.COURT_DATE).toISODate();
   const hearingsByTime = hearings.getIn([HEARINGS_DATA.HEARINGS_BY_DATE_AND_TIME, courtDate], Map());
-  const courtrooms = hearings.getIn([HEARINGS_DATA.COURTROOMS_BY_DATE, courtDate], Set());
   return {
     [APP_DATA.SELECTED_ORG_ID]: app.get(APP_DATA.SELECTED_ORG_ID),
-    [APP_DATA.SELECTED_ORG_TITLE]: app.get(APP_DATA.SELECTED_ORG_TITLE),
     [APP_DATA.SELECTED_ORG_SETTINGS]: app.get(APP_DATA.SELECTED_ORG_SETTINGS),
 
     // Counties
     [COUNTIES_DATA.COUNTIES_BY_ID]: counties.get(COUNTIES_DATA.COUNTIES_BY_ID),
 
     // Hearings
-    courtrooms,
     hearingsByTime,
     loadHearingsForDateReqState: getReqState(hearings, HEARINGS_ACTIONS.LOAD_HEARINGS_FOR_DATE),
     loadHearingNeighborsReqState: getReqState(hearings, HEARINGS_ACTIONS.LOAD_HEARING_NEIGHBORS),
-    [HEARINGS_DATA.MANAGE_HEARINGS_DATE]: hearings.get(HEARINGS_DATA.MANAGE_HEARINGS_DATE),
-    [HEARINGS_DATA.HEARINGS_BY_COUNTY]: hearings.get(HEARINGS_DATA.HEARINGS_BY_COUNTY),
-    [HEARINGS_DATA.HEARINGS_BY_COURTROOM]: hearings.get(HEARINGS_DATA.HEARINGS_BY_COURTROOM),
+    [HEARINGS_DATA.COUNTY_FILTER]: hearings.get(HEARINGS_DATA.COUNTY_FILTER),
+    [HEARINGS_DATA.COURTROOM_FILTER]: hearings.get(HEARINGS_DATA.COURTROOM_FILTER),
+    [HEARINGS_DATA.COURTROOM_OPTIONS]: hearings.get(HEARINGS_DATA.COURTROOM_OPTIONS),
     [HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID]: hearings.get(HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID),
+    [HEARINGS_DATA.MANAGE_HEARINGS_DATE]: hearings.get(HEARINGS_DATA.MANAGE_HEARINGS_DATE),
 
     [EDM.FQN_TO_ID]: edm.get(EDM.FQN_TO_ID),
   };
@@ -297,14 +276,7 @@ const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
     // Hearings Actions
     loadHearingsForDate,
     setManageHearingsDate,
-    // PSA Modal actions
-    loadPSAModal,
-    // Review actions
-    bulkDownloadPSAReviewPDF,
-    checkPSAPermissions,
-    loadCaseHistory,
-    // Submit Actions
-    clearSubmit
+    setCountyFilter,
   }, dispatch)
 });
 
