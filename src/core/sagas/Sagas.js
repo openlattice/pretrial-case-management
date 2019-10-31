@@ -125,7 +125,6 @@ export default function* sagas() :Generator<*, *, *> {
     fork(PeopleSagas.getPersonNeighborsWatcher),
     fork(PeopleSagas.getStaffEKIDsWatcher),
     fork(PeopleSagas.loadRequiresActionPeopleWatcher),
-    fork(PeopleSagas.refreshPersonNeighborsWatcher),
 
     // PSA Modal Sagas
     fork(PSAModalSagas.loadPSAModalWatcher),

@@ -9,7 +9,6 @@ import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_MODAL, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { loadPSAModal, CLEAR_PSA_MODAL } from './PSAModalActionFactory';
 import { addCaseToPSA, editPSA, removeCaseFromPSA } from '../psa/FormActionFactory';
-import { refreshPersonNeighbors } from '../people/PeopleActionFactory';
 import { submitContact, updateContactsBulk } from '../contactinformation/ContactInfoActions';
 import { subscribe, unsubscribe } from '../subscription/SubscriptionActions';
 import {
@@ -296,19 +295,6 @@ export default function psaModalReducer(state :Map<*, *> = INITIAL_STATE, action
         SUCCESS: () => {
           const { contactInformation } = action.value;
           return state.setIn([PSA_MODAL.PERSON_NEIGHBORS, CONTACT_INFORMATION], contactInformation);
-        }
-      });
-    }
-
-    case refreshPersonNeighbors.case(action.type): {
-      return refreshPersonNeighbors.reducer(state, action, {
-        SUCCESS: () => {
-          const { neighbors } = action.value;
-          const subscription = neighbors.getIn([SUBSCRIPTION], Map());
-          const contacts = neighbors.getIn([CONTACT_INFORMATION], List());
-          return state
-            .setIn([PSA_MODAL.PERSON_NEIGHBORS, SUBSCRIPTION], subscription)
-            .setIn([PSA_MODAL.PERSON_NEIGHBORS, CONTACT_INFORMATION], contacts);
         }
       });
     }

@@ -33,8 +33,7 @@ import {
   getPersonNeighbors,
   getStaffEKIDs,
   loadRequiresActionPeople,
-  refreshPersonNeighbors
-} from './PeopleActionFactory';
+} from './PeopleActions';
 
 const {
   CHECKIN_APPOINTMENTS,
@@ -289,34 +288,6 @@ export default function peopleReducer(state :Map = INITIAL_STATE, action :Object
         FAILURE: () => state
           .set(PEOPLE.FETCHING_PEOPLE, false),
         FINALLY: () => state.set(PEOPLE.REQUIRES_ACTION_LOADING, false)
-      });
-    }
-
-    case refreshPersonNeighbors.case(action.type): {
-      return refreshPersonNeighbors.reducer(state, action, {
-        REQUEST: () => state
-          .setIn([PEOPLE.NEIGHBORS, action.personId], Map())
-          .set(PEOPLE.REFRESHING_PERSON_NEIGHBORS, true),
-        SUCCESS: () => {
-          const {
-            personId,
-            mostRecentPSA,
-            mostRecentPSANeighborsByAppTypeFqn,
-            neighbors,
-            scoresEntitySetId
-          } = action.value;
-
-          return (
-            state.setIn([PEOPLE.NEIGHBORS, personId], neighbors)
-              .set(PEOPLE.SCORES_ENTITY_SET_ID, scoresEntitySetId)
-              .set(PEOPLE.MOST_RECENT_PSA, mostRecentPSA)
-              .set(PEOPLE.MOST_RECENT_PSA_NEIGHBORS, mostRecentPSANeighborsByAppTypeFqn)
-          );
-        },
-        FAILURE: () => state
-          .setIn([PEOPLE.NEIGHBORS, action.personId], Map())
-          .set(PEOPLE.REFRESHING_PERSON_NEIGHBORS, false),
-        FINALLY: () => state.set(PEOPLE.REFRESHING_PERSON_NEIGHBORS, false)
       });
     }
 
