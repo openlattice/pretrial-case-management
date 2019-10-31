@@ -34,6 +34,7 @@ import { SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { HEARING_TYPES, PSA_STATUSES, MAX_HITS } from '../../utils/consts/Consts';
 import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
+import { HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
 import {
   createIdObject,
   getEntityKeyId,
@@ -122,6 +123,7 @@ const {
 const getApp = state => state.get(STATE.APP, Map());
 const getEDM = state => state.get(STATE.EDM, Map());
 const getOrgId = state => state.getIn([STATE.APP, APP_DATA.SELECTED_ORG_ID], '');
+const getHearingsByEKID = state => state.getIn([STATE.HEARINGS, HEARINGS_DATA.HEARINGS_BY_ID], '');
 
 const LIST_ENTITY_SETS = List.of(
   CHARGES,
@@ -320,6 +322,7 @@ function* loadHearingNeighborsWorker(action :SequenceAction) :Generator<*, *, *>
 
     let hearingNeighborsById = Map();
     let hearingIdsByCounty = Map();
+    let courtroomsByCounty = Map();
     let personIdsToHearingIds = Map();
     let personIds = Set();
     let scoresAsMap = Map();
@@ -327,6 +330,7 @@ function* loadHearingNeighborsWorker(action :SequenceAction) :Generator<*, *, *>
     if (hearingIds.length) {
       const app = yield select(getApp);
       const orgId = yield select(getOrgId);
+      const hearingsByEKID = yield select(getHearingsByEKID);
       const entitySetIdsToAppType = app.getIn([APP_DATA.ENTITY_SETS_BY_ORG, orgId]);
 
       /*
@@ -342,6 +346,7 @@ function* loadHearingNeighborsWorker(action :SequenceAction) :Generator<*, *, *>
       const peopleESID = getEntitySetIdFromApp(app, PEOPLE);
       const releaseConditionsESID = getEntitySetIdFromApp(app, RELEASE_CONDITIONS);
       const psaESID = getEntitySetIdFromApp(app, PSA_SCORES);
+      const pretrialCases = getEntitySetIdFromApp(app, PRETRIAL_CASES);
 
       let neighborsById = yield call(
         searchEntityNeighborsWithFilterWorker,
@@ -358,7 +363,7 @@ function* loadHearingNeighborsWorker(action :SequenceAction) :Generator<*, *, *>
               psaESID,
               releaseConditionsESID
             ],
-            destinationEntitySetIds: [countiesESID, judgesESID]
+            destinationEntitySetIds: [countiesESID, judgesESID, pretrialCases]
           }
         })
       );
@@ -389,10 +394,18 @@ function* loadHearingNeighborsWorker(action :SequenceAction) :Generator<*, *, *>
               );
             }
             if (appTypeFqn === COUNTIES) {
+              const hearing = hearingsByEKID.get(hearingId, Map());
               hearingIdsByCounty = hearingIdsByCounty.set(
                 entityKeyId,
                 hearingIdsByCounty.get(entityKeyId, Set()).add(hearingId)
               );
+              if (hearing.size) {
+                const { [COURTROOM]: hearingCourtRoom } = getEntityProperties(hearing, [COURTROOM])
+                courtroomsByCounty = courtroomsByCounty.set(
+                  entityKeyId,
+                  courtroomsByCounty.get(entityKeyId, Set()).add(hearingCourtRoom)
+                );
+              }
             }
             if (LIST_ENTITY_SETS.includes(appTypeFqn)) {
               hearingNeighborsMap = hearingNeighborsMap.set(
@@ -414,7 +427,12 @@ function* loadHearingNeighborsWorker(action :SequenceAction) :Generator<*, *, *>
         }
       });
     }
-    yield put(loadHearingNeighbors.success(action.id, { hearingIdsByCounty, hearingNeighborsById, hearingDateTime }));
+    yield put(loadHearingNeighbors.success(action.id, {
+      courtroomsByCounty,
+      hearingIdsByCounty,
+      hearingNeighborsById,
+      hearingDateTime
+    }));
 
     if (hearingDateTime && hearingDateTime.isValid) {
       const peopleIdsWithOpenPSAs = filterPeopleIdsWithOpenPSAs({
