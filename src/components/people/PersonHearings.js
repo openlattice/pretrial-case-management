@@ -96,7 +96,6 @@ type Props = {
       entityKeyId :string
     }) => void,
     refreshPSANeighbors :({ id :string }) => void,
-    refreshPersonNeighbors :(values :{ personId :string }) => void,
     replaceAssociation :(values :{
       associationEntity :Map<*, *>,
       associationEntityName :string,
