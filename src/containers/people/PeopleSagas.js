@@ -3,7 +3,7 @@
  */
 
 import { DateTime } from 'luxon';
-import { Constants, DataApi, SearchApi } from 'lattice';
+import { Constants, SearchApi } from 'lattice';
 import {
   DataApiActions,
   DataApiSagas,
@@ -32,13 +32,14 @@ import { hearingIsCancelled } from '../../utils/HearingUtils';
 import { getPropertyTypeId } from '../../edm/edmUtils';
 import { PSA_STATUSES } from '../../utils/consts/Consts';
 import { getCasesForPSA, getChargeHistory, getCaseHistory } from '../../utils/CaseUtils';
+import { loadPSAData } from '../review/ReviewActionFactory';
 import {
-  GET_PEOPLE,
+  GET_PEOPLE_NEIGHBORS,
   GET_PERSON_DATA,
   GET_PERSON_NEIGHBORS,
   GET_STAFF_EKIDS,
   LOAD_REQUIRES_ACTION_PEOPLE,
-  getPeople,
+  getPeopleNeighbors,
   getPersonData,
   getPersonNeighbors,
   getStaffEKIDs,
@@ -85,7 +86,27 @@ const {
   PERSON_ID
 } = PROPERTY_TYPES;
 
-const LIST_FQNS = [CHECKINS, CHECKIN_APPOINTMENTS, CONTACT_INFORMATION, HEARINGS, PRETRIAL_CASES, STAFF, CHARGES];
+const LIST_FQNS = [
+  CHARGES,
+  CHECKINS,
+  CHECKIN_APPOINTMENTS,
+  CONTACT_INFORMATION,
+  DMF_RISK_FACTORS,
+  FTAS,
+  HEARINGS,
+  MANUAL_CHARGES,
+  MANUAL_COURT_CHARGES,
+  MANUAL_PRETRIAL_CASES,
+  MANUAL_PRETRIAL_COURT_CASES,
+  MANUAL_REMINDERS,
+  PSA_RISK_FACTORS,
+  PSA_SCORES,
+  PRETRIAL_CASES,
+  RELEASE_CONDITIONS,
+  RELEASE_RECOMMENDATIONS,
+  SENTENCES,
+  STAFF
+];
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
@@ -110,25 +131,201 @@ function* getAllSearchResults(entitySetId :string, searchTerm :string) :Generato
   return yield call(SearchApi.searchEntitySetData, entitySetId, loadResultsRequest);
 }
 
-function* getPeopleWorker(action) :Generator<*, *, *> {
+function* getPeopleNeighborsWorker(action) :Generator<*, *, *> {
+
+  const {
+    peopleEKIDS,
+    srcEntitySets,
+    dstEntitySets
+  } = action.value;
 
   try {
-    yield put(getPeople.request(action.id));
+    yield put(getPeopleNeighbors.request(action.id));
+    let mostRecentPSAEKIDs = Set();
+    let scoresAsMap = Map();
+
     const app = yield select(getApp);
+    const orgId = yield select(getOrgId);
+    const entitySetIdsToAppType = app.getIn([APP_DATA.ENTITY_SETS_BY_ORG, orgId]);
+
+    /*
+     * Get Entity Set Ids
+     */
+    const arrestCasesEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.ARREST_CASES);
+    const bondsEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.BONDS);
+    const chargesEntitySetId = getEntitySetIdFromApp(app, CHARGES);
+    const checkInAppointmentsEntitySetId = getEntitySetIdFromApp(app, CHECKIN_APPOINTMENTS);
+    const contactInformationEntitySetId = getEntitySetIdFromApp(app, CONTACT_INFORMATION);
+    const dmfResultsEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.DMF_RESULTS);
+    const dmfRiskFactorsEntitySetId = getEntitySetIdFromApp(app, DMF_RISK_FACTORS);
+    const ftaEntitySetId = getEntitySetIdFromApp(app, FTAS);
+    const hearingsEntitySetId = getEntitySetIdFromApp(app, HEARINGS);
+    const manualChargesEntitySetId = getEntitySetIdFromApp(app, MANUAL_CHARGES);
+    const manualCourtChargesEntitySetId = getEntitySetIdFromApp(app, MANUAL_COURT_CHARGES);
+    const manualPretrialCourtCasesEntitySetId = getEntitySetIdFromApp(app, MANUAL_PRETRIAL_COURT_CASES);
+    const manualRemindersEntitySetId = getEntitySetIdFromApp(app, MANUAL_REMINDERS);
+    const manualPretrialCasesEntitySetId = getEntitySetIdFromApp(app, MANUAL_PRETRIAL_CASES);
+    const outcomesEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.OUTCOMES);
     const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
-    const response = yield call(DataApi.getEntitySetData, peopleEntitySetId);
-    yield put(getPeople.success(action.id, response));
+    const pretrialCasesEntitySetId = getEntitySetIdFromApp(app, PRETRIAL_CASES);
+    const psaRiskFactorsEntitySetId = getEntitySetIdFromApp(app, PSA_RISK_FACTORS);
+    const psaScoresEntitySetId = getEntitySetIdFromApp(app, PSA_SCORES);
+    const releaseConditionsEntitySetId = getEntitySetIdFromApp(app, RELEASE_CONDITIONS);
+    const releaseRecommendationsEntitySetId = getEntitySetIdFromApp(app, RELEASE_RECOMMENDATIONS);
+    const sentencesEntitySetId = getEntitySetIdFromApp(app, SENTENCES);
+    const speakerRecognitionProfilesEntitySetId = getEntitySetIdFromApp(app, SPEAKER_RECOGNITION_PROFILES);
+    const subscriptionEntitySetId = getEntitySetIdFromApp(app, SUBSCRIPTION);
+
+    let sourceEntitySetIds = [
+      bondsEntitySetId,
+      checkInAppointmentsEntitySetId,
+      contactInformationEntitySetId,
+      dmfResultsEntitySetId,
+      dmfRiskFactorsEntitySetId,
+      ftaEntitySetId,
+      manualRemindersEntitySetId,
+      outcomesEntitySetId,
+      peopleEntitySetId,
+      psaRiskFactorsEntitySetId,
+      psaScoresEntitySetId,
+      releaseConditionsEntitySetId,
+      releaseRecommendationsEntitySetId,
+      speakerRecognitionProfilesEntitySetId
+    ];
+
+    let destinationEntitySetIds = [
+      arrestCasesEntitySetId,
+      chargesEntitySetId,
+      hearingsEntitySetId,
+      manualChargesEntitySetId,
+      manualCourtChargesEntitySetId,
+      manualPretrialCourtCasesEntitySetId,
+      pretrialCasesEntitySetId,
+      manualPretrialCasesEntitySetId,
+      sentencesEntitySetId,
+      subscriptionEntitySetId
+    ];
+
+    if (srcEntitySets) {
+      sourceEntitySetIds = srcEntitySets.map(appType => getEntitySetIdFromApp(app, appType));
+    }
+    if (dstEntitySets) {
+      destinationEntitySetIds = dstEntitySets.map(appType => getEntitySetIdFromApp(app, appType));
+    }
+
+    /*
+     * Get Neighbors
+     */
+    let peopleNeighborsResponse = yield call(
+      searchEntityNeighborsWithFilterWorker,
+      searchEntityNeighborsWithFilter({
+        entitySetId: peopleEntitySetId,
+        filter: {
+          entityKeyIds: peopleEKIDS,
+          sourceEntitySetIds,
+          destinationEntitySetIds
+        }
+      })
+    );
+    if (peopleNeighborsResponse.error) throw peopleNeighborsResponse.error;
+    peopleNeighborsResponse = fromJS(peopleNeighborsResponse.data);
+
+    let hearingEKIDs = Set();
+
+    const peopleNeighborsById = Map().withMutations((mutableMap) => {
+      peopleNeighborsResponse.entrySeq().forEach(([personEKID, neighbors]) => {
+
+        let neighborsByAppTypeFqn = Map();
+        let mostRecentPSAEKID = '';
+        let currentPSADateTime;
+        let caseNums = Set();
+        neighbors.forEach((neighbor) => {
+          const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
+          const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
+          const neighborEntityKeyId = neighbor.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0], '');
+          const entityDateTime = DateTime.fromISO(
+            neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.DATE_TIME, 0], '')
+          );
+
+          if (appTypeFqn === PSA_SCORES) {
+            if (
+              entityDateTime.isValid
+              && (!mostRecentPSAEKID || !currentPSADateTime || currentPSADateTime < entityDateTime)
+            ) {
+              mostRecentPSAEKID = neighborEntityKeyId;
+              currentPSADateTime = entityDateTime;
+            }
+
+            const psaDetails = neighbor.get(PSA_NEIGHBOR.DETAILS, Map());
+            scoresAsMap = scoresAsMap.set(neighborEntityKeyId, psaDetails);
+          }
+          if (appTypeFqn === HEARINGS) {
+            const {
+              [HEARING_TYPE]: hearingType,
+              [DATE_TIME]: hearingDateTime,
+              [ENTITY_KEY_ID]: hearingEKID
+            } = getEntityProperties(neighbor, [DATE_TIME, ENTITY_KEY_ID, HEARING_TYPE]);
+            const hearingDetails = neighbor.get(PSA_NEIGHBOR.DETAILS, Map());
+            const hearingExists = !!hearingDateTime && !!hearingEKID;
+            const hearingIsInactive = hearingIsCancelled(hearingDetails);
+            const hearingIsGeneric = hearingType.toLowerCase().trim() === 'all other hearings';
+            const hearingIsADuplicate = hearingEKIDs.includes(neighborEntityKeyId);
+            if (
+              hearingExists
+              && !hearingIsGeneric
+              && !hearingIsInactive
+              && !hearingIsADuplicate
+            ) {
+              neighborsByAppTypeFqn = neighborsByAppTypeFqn.set(
+                appTypeFqn,
+                neighborsByAppTypeFqn.get(appTypeFqn, List()).push(hearingDetails)
+              );
+            }
+            hearingEKIDs = hearingEKIDs.add(neighborEntityKeyId);
+          }
+          else if (appTypeFqn === PRETRIAL_CASES) {
+            const caseNum = neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.CASE_ID, 0]);
+            if (!caseNums.has(caseNum)) {
+              caseNums = caseNums.add(caseNum);
+              neighborsByAppTypeFqn = neighborsByAppTypeFqn.set(
+                appTypeFqn,
+                neighborsByAppTypeFqn.get(appTypeFqn, List()).push(neighbor)
+              );
+            }
+          }
+          else if (LIST_FQNS.includes(appTypeFqn)) {
+            neighborsByAppTypeFqn = neighborsByAppTypeFqn.set(
+              appTypeFqn,
+              neighborsByAppTypeFqn.get(appTypeFqn, List()).push(neighbor)
+            );
+          }
+          else {
+            neighborsByAppTypeFqn = neighborsByAppTypeFqn.set(
+              appTypeFqn,
+              neighbor
+            );
+          }
+        });
+        mutableMap.set(personEKID, peopleNeighborsById);
+        if (mostRecentPSAEKID) mostRecentPSAEKIDs = mostRecentPSAEKIDs.add(mostRecentPSAEKID);
+      });
+    });
+
+    yield call(loadPSAData, { psaIds: mostRecentPSAEKIDs.toJS(), scoresAsMap })
+
+    yield put(getPeopleNeighbors.success(action.id, { peopleNeighborsById }));
   }
   catch (error) {
-    yield put(getPeople.failure(action.id, error));
+    console.error(error);
+    yield put(getPeopleNeighbors.failure(action.id, { error }));
   }
   finally {
-    yield put(getPeople.finally(action.id));
+    yield put(getPeopleNeighbors.finally(action.id));
   }
 }
 
-function* getPeopleWatcher() :Generator<*, *, *> {
-  yield takeEvery(GET_PEOPLE, getPeopleWorker);
+function* getPeopleNeighborsWatcher() :Generator<*, *, *> {
+  yield takeEvery(GET_PEOPLE_NEIGHBORS, getPeopleNeighborsWorker);
 }
 
 function* getEntityForPersonId(personId :string) :Generator<*, *, *> {
@@ -411,9 +608,9 @@ function* getPersonNeighborsWorker(action) :Generator<*, *, *> {
         }
       });
     }
-
     yield put(getPersonNeighbors.success(action.id, {
       personId,
+      personEntityKeyId,
       neighbors: uniqNeighborsByEntitySet,
       psaScoresEntitySetId,
       mostRecentPSA,
@@ -689,7 +886,7 @@ function* loadRequiresActionPeopleWatcher() :Generator<*, *, *> {
 }
 
 export {
-  getPeopleWatcher,
+  getPeopleNeighborsWatcher,
   getPersonDataWatcher,
   getPersonNeighborsWatcher,
   getStaffEKIDsWatcher,
