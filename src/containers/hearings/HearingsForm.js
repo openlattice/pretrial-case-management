@@ -230,8 +230,8 @@ class HearingForm extends React.Component<Props, State> {
       judgeEKID
     } = this.state;
     const date = DateTime.fromFormat(newHearingDate, DATE_FORMAT);
-    const time = DateTime.fromFormat(newHearingTime, TIME_FORMAT);
-    const datetime = DateTime.fromSQL(`${date.toISODate()} ${time.hour}:${time.minute}`);
+    const time = DateTime.fromFormat(newHearingTime, TIME_FORMAT).toLocaleString(DateTime.TIME_24_SIMPLE);
+    const datetime = DateTime.fromSQL(`${date.toISODate()} ${time}`);
     if (datetime.isValid) {
       if (judge === 'Other') {
         this.setState({ judgeEKID: '' });
