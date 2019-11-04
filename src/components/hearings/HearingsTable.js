@@ -69,7 +69,7 @@ const Headers = () => (
 
 type Props = {
   maxHeight :number,
-  refreshingPersonNeighbors :boolean,
+  refreshingHearingAndNeighbors :boolean,
   rows :Map<*, *>,
   hearingsWithOutcomes :Map<*, *>,
   hearingNeighborsById :Map<*, *>,
@@ -87,9 +87,9 @@ class HearingsTable extends React.Component<Props, *> {
   }
 
   componentDidUpdate(prevProps) {
-    const { refreshingPersonNeighbors } = this.props;
-    const prevPropsRefreshingPersonNeighbors = prevProps.refreshingPersonNeighbors;
-    if (refreshingPersonNeighbors && !prevPropsRefreshingPersonNeighbors) {
+    const { refreshingHearingAndNeighbors } = this.props;
+    const prevPropsRefreshingPersonNeighbors = prevProps.refreshingHearingAndNeighbors;
+    if (!refreshingHearingAndNeighbors && prevPropsRefreshingPersonNeighbors) {
       this.closeConfirmationModal();
     }
   }
@@ -105,13 +105,13 @@ class HearingsTable extends React.Component<Props, *> {
   });
 
   renderConfirmationModal = () => {
-    const { cancelFn, refreshingPersonNeighbors } = this.props;
+    const { cancelFn, refreshingHearingAndNeighbors } = this.props;
     const { confirmationModalOpen, hearing } = this.state;
 
 
     return (
       <ConfirmationModal
-          disabled={refreshingPersonNeighbors}
+          disabled={refreshingHearingAndNeighbors}
           confirmationType={CONFIRMATION_ACTION_TYPES.CANCEL}
           objectType={CONFIRMATION_OBJECT_TYPES.HEARING}
           onClose={this.closeConfirmationModal}
