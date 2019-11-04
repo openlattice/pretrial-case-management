@@ -1,7 +1,6 @@
 /*
  * @flow
  */
-import { Constants } from 'lattice';
 import { Map, List, fromJS } from 'immutable';
 
 import { getEntityProperties } from '../../utils/DataUtils';
@@ -20,11 +19,8 @@ import {
 import {
   changePSAStatus,
   loadCaseHistory,
-  refreshPSANeighbors,
   updateScoresAndRiskFactors
 } from '../review/ReviewActionFactory';
-
-const { OPENLATTICE_ID_FQN } = Constants;
 
 const { ENTITY_KEY_ID } = PROPERTY_TYPES;
 
@@ -126,20 +122,6 @@ export default function psaModalReducer(state :Map<*, *> = INITIAL_STATE, action
         SUCCESS: () => state
           .set(PSA_MODAL.SCORES, fromJS(action.value.entity))
           .setIn([PSA_MODAL.PSA_NEIGHBORS, PSA_SCORES], fromJS(action.value.entity))
-      });
-    }
-
-    case refreshPSANeighbors.case(action.type): {
-      return refreshPSANeighbors.reducer(state, action, {
-        SUCCESS: () => {
-          const { neighbors } = action.value;
-          const hearings = neighbors.get(HEARINGS, List());
-          const hearingIds = hearings.map(hearing => hearing.getIn([OPENLATTICE_ID_FQN, 0], ''));
-          return state
-            .set(PSA_MODAL.PSA_NEIGHBORS, neighbors)
-            .set(PSA_MODAL.HEARINGS, hearings)
-            .set(PSA_MODAL.HEARING_IDS, hearingIds);
-        }
       });
     }
 
