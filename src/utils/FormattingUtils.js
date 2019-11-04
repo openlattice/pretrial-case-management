@@ -21,17 +21,7 @@ export const formateDTtoDateTimeString = (dateTime :DateTime) => dateTime.toForm
 export const formateDTtoTimeString = (dateTime :DateTime) => dateTime.toFormat(TIME_FORMAT);
 
 
-export const getDT = (dateString) => {
-  const todayDT = DateTime.local();
-  const todayIsInDST = todayDT.isInDST;
-  const tzHasDST = Info.hasDST();
-  let date = DateTime.fromISO(dateString);
-  if (tzHasDST) {
-    if (!todayIsInDST && date.isInDST) date = date.minus({ hours: 1 });
-    if (todayIsInDST && !date.isInDST) date = date.plus({ hours: 1 });
-  }
-  return date;
-};
+export const getDT = dateString => DateTime.fromISO(dateString);
 
 export function formatDate(dateString :string) :string {
   if (!dateString) return '';
