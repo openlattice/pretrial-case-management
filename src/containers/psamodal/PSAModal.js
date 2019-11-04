@@ -179,7 +179,6 @@ type Props = {
     submit :(value :{ config :Object, values :Object, callback? :() => void }) => void,
     submitData :(value :{ config :Object, values :Object }) => void,
     updateScoresAndRiskFactors :(values :{
-      scoresEntitySetId :string,
       scoresId :string,
       scoresEntity :Map<*, *>,
       riskFactorsEntitySetId :string,
