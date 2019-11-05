@@ -132,7 +132,7 @@ export const getMostRecentPSA = (psas :Object[]) => {
       [DATE_TIME]: psaDateTime
     } = getEntityProperties(psa, [ENTITY_KEY_ID, DATE_TIME]);
     const psaDT = DateTime.fromISO(psaDateTime);
-    if (!mostRecentPSADateTime || mostRecentPSADateTime > psaDT) {
+    if (!mostRecentPSADateTime || mostRecentPSADateTime < psaDT) {
       mostRecentPSAEKID = psaEKID;
       mostRecentPSADateTime = psaDT;
       mostRecentPSA = psa;
