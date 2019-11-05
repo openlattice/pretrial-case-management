@@ -118,7 +118,12 @@ class PersonOverview extends React.Component<Props, State> {
   }
 
   renderPSAs = () => {
-    const { neighbors, loading, personId } = this.props;
+    const {
+      neighbors,
+      loading,
+      personId,
+      personEKID
+    } = this.props;
     const { statusFilters } = this.state;
     const scoreSeq = neighbors.get(PSA_SCORES, Map())
       .filter(neighbor => !!neighbor.get(PSA_NEIGHBOR.DETAILS)
