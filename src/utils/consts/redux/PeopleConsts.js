@@ -5,7 +5,6 @@
 export const PEOPLE_ACTIONS = {
   GET_PEOPLE_NEIGHBORS: 'getPeopleNeighbors',
   GET_PERSON_DATA: 'getPersonData',
-  GET_PERSON_NEIGHBORS: 'getPersonNeighbors',
   GET_STAFF_EKIDS: 'getStaffEKIDs',
   LOAD_REQUIRES_ACTION_PEOPLE: 'loadRequiresActionPeople'
 };
