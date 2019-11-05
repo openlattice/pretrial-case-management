@@ -17,6 +17,7 @@ import AboutPersonGeneral from '../../components/person/AboutPersonGeneral';
 import ClosePSAModal from '../../components/review/ClosePSAModal';
 import DashboardMainSection from '../../components/dashboard/DashboardMainSection';
 import NavButtonToolbar from '../../components/buttons/NavButtonToolbar';
+import LogoLoader from '../../components/LogoLoader';
 import PersonOverview from '../../components/people/PersonOverview';
 import PersonPSA from '../../components/people/PersonPSA';
 import PersonHearings from '../../components/people/PersonHearings';
@@ -122,9 +123,6 @@ type Props = {
   updatingEntity :boolean,
   actions :{
     getPersonData :(personId :string) => void,
-    getPersonNeighbors :(value :{
-      personId :string
-    }) => void,
     loadCaseHistory :(values :{
       personId :string,
       neighbors :Map<*, *>
@@ -165,7 +163,6 @@ class PersonDetailsContainer extends React.Component<Props, State> {
     if (selectedOrganizationId && personId) {
       actions.checkPSAPermissions();
       actions.getPersonData(personId);
-      actions.getPersonNeighbors({ personId });
     }
   }
 
@@ -180,6 +177,7 @@ class PersonDetailsContainer extends React.Component<Props, State> {
     } = this.props;
     const orgChanged = selectedOrganizationId !== prevProps.selectedOrganizationId;
     const personEKID = getEntityKeyId(selectedPersonData);
+    const prevPersonEKID = getEntityKeyId(prevProps.selectedPersonData);
     const personNeighbors = peopleNeighborsById.get(personEKID, Map());
     const prevPropspersonNeighbors = prevProps.peopleNeighborsById.get(personEKID, Map());
     const personHearingIds = personNeighbors.get(HEARINGS, List()).map(hearing => getEntityKeyId(hearing)).toJS();
@@ -188,7 +186,9 @@ class PersonDetailsContainer extends React.Component<Props, State> {
     if (selectedOrganizationId && orgChanged) {
       actions.checkPSAPermissions();
       actions.getPersonData(personId);
-      actions.getPersonNeighbors({ personId });
+    }
+    if (personEKID !== prevPersonEKID) {
+      actions.getPeopleNeighbors({ peopleEKIDS: [personEKID] });
     }
     if (personChanged) {
       let scoresAsMap = Map();
@@ -411,7 +411,6 @@ class PersonDetailsContainer extends React.Component<Props, State> {
   renderOverview = () => {
     const {
       actions,
-      isFetchingPersonData,
       loadingPSAData,
       loadingPSAResults,
       peopleNeighborsById,
@@ -493,7 +492,16 @@ class PersonDetailsContainer extends React.Component<Props, State> {
   }
 
   render() {
-    const { personId, selectedOrganizationSettings, selectedPersonData } = this.props;
+    const {
+      personId,
+      selectedOrganizationSettings,
+      selectedPersonData,
+      getPeopleNeighborsRequestState,
+      getPersonDataRequestState
+    } = this.props;
+
+    const loadingPersonData = requestIsPending(getPersonDataRequestState);
+    const loadingPersonNieghbors = requestIsPending(getPeopleNeighborsRequestState);
     const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], '');
     const overviewRoute = `${Routes.PERSON_DETAILS_ROOT}/${personId}${Routes.OVERVIEW}`;
     const psaRoute = `${Routes.PERSON_DETAILS_ROOT}/${personId}${Routes.PSA}`;
@@ -523,6 +531,32 @@ class PersonDetailsContainer extends React.Component<Props, State> {
       ]);
     }
 
+    const routeOptions = includesPretrialModule
+      ? (
+        <>
+          <Switch>
+            <Route path={overviewRoute} render={this.renderOverview} />
+            <Route path={psaRoute} render={this.renderPSA} />
+            <Route path={hearingsRoute} render={this.renderHearings} />
+            <Route path={casesRoute} render={this.renderCases} />
+            <Redirect from={Routes.PEOPLE} to={overviewRoute} />
+            <Redirect from={Routes.PERSON_DETAILS_ROOT} to={overviewRoute} />
+            <Redirect from={`${Routes.PERSON_DETAILS_ROOT}/${personId}`} to={overviewRoute} />
+          </Switch>
+        </>
+      )
+      : (
+        <>
+          <Switch>
+            <Route path={overviewRoute} render={this.renderOverview} />
+            <Route path={psaRoute} render={this.renderPSA} />
+            <Redirect from={Routes.PEOPLE} to={overviewRoute} />
+            <Redirect from={Routes.PERSON_DETAILS_ROOT} to={overviewRoute} />
+            <Redirect from={`${Routes.PERSON_DETAILS_ROOT}/${personId}`} to={overviewRoute} />
+          </Switch>
+        </>
+      );
+
     return (
       <DashboardMainSection>
         { this.renderLinkPath() }
@@ -532,31 +566,9 @@ class PersonDetailsContainer extends React.Component<Props, State> {
         </ToolbarWrapper>
         { this.renderPSADetailsModal() }
         {
-          includesPretrialModule
-            ? (
-              <>
-                <Switch>
-                  <Route path={overviewRoute} render={this.renderOverview} />
-                  <Route path={psaRoute} render={this.renderPSA} />
-                  <Route path={hearingsRoute} render={this.renderHearings} />
-                  <Route path={casesRoute} render={this.renderCases} />
-                  <Redirect from={Routes.PEOPLE} to={overviewRoute} />
-                  <Redirect from={Routes.PERSON_DETAILS_ROOT} to={overviewRoute} />
-                  <Redirect from={`${Routes.PERSON_DETAILS_ROOT}/${personId}`} to={overviewRoute} />
-                </Switch>
-              </>
-            )
-            : (
-              <>
-                <Switch>
-                  <Route path={overviewRoute} render={this.renderOverview} />
-                  <Route path={psaRoute} render={this.renderPSA} />
-                  <Redirect from={Routes.PEOPLE} to={overviewRoute} />
-                  <Redirect from={Routes.PERSON_DETAILS_ROOT} to={overviewRoute} />
-                  <Redirect from={`${Routes.PERSON_DETAILS_ROOT}/${personId}`} to={overviewRoute} />
-                </Switch>
-              </>
-            )
+          loadingPersonData || loadingPersonNieghbors
+            ? <LogoLoader loadingText="Loading Person Details..." />
+            : routeOptions
         }
       </DashboardMainSection>
     );
@@ -582,6 +594,7 @@ function mapStateToProps(state, ownProps) {
     [HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID]: hearings.get(HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID),
 
     getPersonDataRequestState: getReqState(people, PEOPLE_ACTIONS.GET_PERSON_DATA),
+    getPeopleNeighborsRequestState: getReqState(people, PEOPLE_ACTIONS.GET_PEOPLE_NEIGHBORS),
     [PEOPLE_DATA.PERSON_DATA]: people.get(PEOPLE_DATA.PERSON_DATA),
     [PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID]: people.get(PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID, Map()),
     personHearings: people.getIn([PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID, personEKID, APP_TYPES.HEARINGS], Map()),
