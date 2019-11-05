@@ -18,9 +18,6 @@ import * as ReviewActionFactory from '../review/ReviewActionFactory';
 type Props = {
   selectedOrganizationId :string,
   actions :{
-    getPersonNeighbors :(value :{
-      personId :string
-    }) => void,
     loadCaseHistory :(values :{
       personId :string,
       neighbors :Map<*, *>

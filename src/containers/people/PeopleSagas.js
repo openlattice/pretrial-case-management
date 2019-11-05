@@ -36,12 +36,10 @@ import { loadPSAData } from '../review/ReviewActionFactory';
 import {
   GET_PEOPLE_NEIGHBORS,
   GET_PERSON_DATA,
-  GET_PERSON_NEIGHBORS,
   GET_STAFF_EKIDS,
   LOAD_REQUIRES_ACTION_PEOPLE,
   getPeopleNeighbors,
   getPersonData,
-  getPersonNeighbors,
   getStaffEKIDs,
   loadRequiresActionPeople
 } from './PeopleActions';
@@ -143,6 +141,7 @@ function* getPeopleNeighborsWorker(action) :Generator<*, *, *> {
     yield put(getPeopleNeighbors.request(action.id));
     let mostRecentPSAEKIDs = Set();
     let scoresAsMap = Map();
+    console.log(peopleEKIDS);
 
     const app = yield select(getApp);
     const orgId = yield select(getOrgId);
@@ -306,7 +305,7 @@ function* getPeopleNeighborsWorker(action) :Generator<*, *, *> {
             );
           }
         });
-        mutableMap.set(personEKID, peopleNeighborsById);
+        mutableMap.set(personEKID, neighborsByAppTypeFqn);
         if (mostRecentPSAEKID) mostRecentPSAEKIDs = mostRecentPSAEKIDs.add(mostRecentPSAEKID);
       });
     });
@@ -350,7 +349,8 @@ function* getPersonDataWorker(action) :Generator<*, *, *> {
   try {
     yield put(getPersonData.request(action.id));
     const person = yield getEntityForPersonId(action.value);
-    yield put(getPersonData.success(action.id, { person, entityKeyId: person[OPENLATTICE_ID_FQN][0] }));
+    const personEKID = person[OPENLATTICE_ID_FQN][0];
+    yield put(getPersonData.success(action.id, { person, entityKeyId: personEKID }));
   }
   catch (error) {
     yield put(getPersonData.failure(action.id, error));
@@ -363,273 +363,6 @@ function* getPersonDataWorker(action) :Generator<*, *, *> {
 function* getPersonDataWatcher() :Generator<*, *, *> {
   yield takeEvery(GET_PERSON_DATA, getPersonDataWorker);
 }
-
-function* getPersonNeighborsWorker(action) :Generator<*, *, *> {
-
-  const { personId } = action.value;
-
-  try {
-    yield put(getPersonNeighbors.request(action.id));
-    let caseNums = Set();
-    let neighborsByEntitySet = Map();
-    let mostRecentPSA = Map();
-    let currentPSADateTime;
-
-    const app = yield select(getApp);
-    const orgId = yield select(getOrgId);
-    const entitySetIdsToAppType = app.getIn([APP_DATA.ENTITY_SETS_BY_ORG, orgId]);
-
-    /*
-     * Get Entity Set Ids
-     */
-    const arrestCasesEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.ARREST_CASES);
-    const bondsEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.BONDS);
-    const chargesEntitySetId = getEntitySetIdFromApp(app, CHARGES);
-    const checkInAppointmentsEntitySetId = getEntitySetIdFromApp(app, CHECKIN_APPOINTMENTS);
-    const contactInformationEntitySetId = getEntitySetIdFromApp(app, CONTACT_INFORMATION);
-    const dmfResultsEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.DMF_RESULTS);
-    const dmfRiskFactorsEntitySetId = getEntitySetIdFromApp(app, DMF_RISK_FACTORS);
-    const ftaEntitySetId = getEntitySetIdFromApp(app, FTAS);
-    const hearingsEntitySetId = getEntitySetIdFromApp(app, HEARINGS);
-    const manualChargesEntitySetId = getEntitySetIdFromApp(app, MANUAL_CHARGES);
-    const manualCourtChargesEntitySetId = getEntitySetIdFromApp(app, MANUAL_COURT_CHARGES);
-    const manualPretrialCourtCasesEntitySetId = getEntitySetIdFromApp(app, MANUAL_PRETRIAL_COURT_CASES);
-    const manualRemindersEntitySetId = getEntitySetIdFromApp(app, MANUAL_REMINDERS);
-    const manualPretrialCasesEntitySetId = getEntitySetIdFromApp(app, MANUAL_PRETRIAL_CASES);
-    const outcomesEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.OUTCOMES);
-    const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
-    const pretrialCasesEntitySetId = getEntitySetIdFromApp(app, PRETRIAL_CASES);
-    const psaRiskFactorsEntitySetId = getEntitySetIdFromApp(app, PSA_RISK_FACTORS);
-    const psaScoresEntitySetId = getEntitySetIdFromApp(app, PSA_SCORES);
-    const releaseConditionsEntitySetId = getEntitySetIdFromApp(app, RELEASE_CONDITIONS);
-    const releaseRecommendationsEntitySetId = getEntitySetIdFromApp(app, RELEASE_RECOMMENDATIONS);
-    const sentencesEntitySetId = getEntitySetIdFromApp(app, SENTENCES);
-    const speakerRecognitionProfilesEntitySetId = getEntitySetIdFromApp(app, SPEAKER_RECOGNITION_PROFILES);
-    const staffEntitySetId = getEntitySetIdFromApp(app, STAFF);
-    const subscriptionEntitySetId = getEntitySetIdFromApp(app, SUBSCRIPTION);
-
-    const person = yield getEntityForPersonId(personId);
-    const personEntityKeyId = person[OPENLATTICE_ID_FQN][0];
-    /*
-     * Get Neighbors
-     */
-    let peopleNeighborsById = yield call(
-      searchEntityNeighborsWithFilterWorker,
-      searchEntityNeighborsWithFilter({
-        entitySetId: peopleEntitySetId,
-        filter: {
-          entityKeyIds: [personEntityKeyId],
-          sourceEntitySetIds: [
-            bondsEntitySetId,
-            checkInAppointmentsEntitySetId,
-            contactInformationEntitySetId,
-            dmfResultsEntitySetId,
-            dmfRiskFactorsEntitySetId,
-            ftaEntitySetId,
-            manualRemindersEntitySetId,
-            outcomesEntitySetId,
-            peopleEntitySetId,
-            psaRiskFactorsEntitySetId,
-            psaScoresEntitySetId,
-            releaseConditionsEntitySetId,
-            releaseRecommendationsEntitySetId,
-            speakerRecognitionProfilesEntitySetId
-          ],
-          destinationEntitySetIds: [
-            arrestCasesEntitySetId,
-            chargesEntitySetId,
-            hearingsEntitySetId,
-            manualChargesEntitySetId,
-            manualCourtChargesEntitySetId,
-            manualPretrialCourtCasesEntitySetId,
-            pretrialCasesEntitySetId,
-            manualPretrialCasesEntitySetId,
-            sentencesEntitySetId,
-            subscriptionEntitySetId
-          ]
-        }
-      })
-    );
-    if (peopleNeighborsById.error) throw peopleNeighborsById.error;
-    peopleNeighborsById = fromJS(peopleNeighborsById.data);
-    const neighbors = peopleNeighborsById.get(personEntityKeyId, List());
-
-    let hearingEntityKeyId = Set();
-
-    neighbors.forEach((neighborObj) => {
-      const entitySetId = neighborObj.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
-      const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
-      const neighborEntityKeyId = neighborObj.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0], '');
-      const entityDateTime = DateTime.fromISO(
-        neighborObj.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.DATE_TIME, 0], '')
-      );
-
-      if (appTypeFqn === PSA_SCORES) {
-        if (
-          entityDateTime.isValid
-          && (!mostRecentPSA.size || !currentPSADateTime || currentPSADateTime < entityDateTime)
-        ) {
-          mostRecentPSA = neighborObj;
-          currentPSADateTime = entityDateTime;
-        }
-        neighborsByEntitySet = neighborsByEntitySet.set(
-          appTypeFqn,
-          neighborsByEntitySet.get(appTypeFqn, List()).push(neighborObj)
-        );
-      }
-      else if (appTypeFqn === CONTACT_INFORMATION) {
-        neighborsByEntitySet = neighborsByEntitySet.set(
-          appTypeFqn,
-          neighborsByEntitySet.get(appTypeFqn, List()).push(neighborObj)
-        );
-      }
-      else if (appTypeFqn === SUBSCRIPTION) {
-        neighborsByEntitySet = neighborsByEntitySet.set(
-          appTypeFqn,
-          neighborObj
-        );
-      }
-      else if (appTypeFqn === SPEAKER_RECOGNITION_PROFILES) {
-        neighborsByEntitySet = neighborsByEntitySet.set(
-          appTypeFqn,
-          neighborObj
-        );
-      }
-      else if (appTypeFqn === HEARINGS) {
-        const hearingDetails = neighborObj.get(PSA_NEIGHBOR.DETAILS, Map());
-        const hearingId = hearingDetails.getIn([OPENLATTICE_ID_FQN, 0]);
-        const hearingDateTime = hearingDetails.getIn([PROPERTY_TYPES.DATE_TIME, 0]);
-        const hearingExists = !!hearingDateTime && !!hearingId;
-        const hearingIsInactive = hearingIsCancelled(hearingDetails);
-        const hearingIsGeneric = hearingDetails.getIn([PROPERTY_TYPES.HEARING_TYPE, 0], '')
-          .toLowerCase().trim() === 'all other hearings';
-        const hearingIsADuplicate = hearingEntityKeyId.includes(neighborEntityKeyId);
-        if (
-          hearingExists
-          && !hearingIsGeneric
-          && !hearingIsInactive
-          && !hearingIsADuplicate
-        ) {
-          neighborsByEntitySet = neighborsByEntitySet.set(
-            appTypeFqn,
-            neighborsByEntitySet.get(appTypeFqn, List()).push(hearingDetails)
-          );
-        }
-        hearingEntityKeyId = hearingEntityKeyId.add(neighborEntityKeyId);
-      }
-      else {
-        neighborsByEntitySet = neighborsByEntitySet.set(
-          appTypeFqn,
-          neighborsByEntitySet.get(appTypeFqn, List()).push(neighborObj)
-        );
-      }
-    });
-
-    const uniqNeighborsByEntitySet = neighborsByEntitySet.set(PRETRIAL_CASES,
-      neighborsByEntitySet.get(PRETRIAL_CASES, List())
-        .filter((neighbor) => {
-          const caseNum = neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.CASE_ID, 0]);
-          if (!caseNums.has(caseNum)) {
-            caseNums = caseNums.add(caseNum);
-            return true;
-          }
-          return false;
-        }), neighborsByEntitySet);
-
-    let mostRecentPSANeighborsByAppTypeFqn = Map();
-    if (mostRecentPSA.size) {
-      const psaEntityKeyId = mostRecentPSA.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0]);
-      let psaNeighbors = yield call(
-        searchEntityNeighborsWithFilterWorker,
-        searchEntityNeighborsWithFilter({
-          entitySetId: psaScoresEntitySetId,
-          filter: {
-            entityKeyIds: [psaEntityKeyId],
-            sourceEntitySetIds: [
-              bondsEntitySetId,
-              dmfResultsEntitySetId,
-              outcomesEntitySetId,
-              releaseRecommendationsEntitySetId,
-              releaseConditionsEntitySetId
-            ],
-            destinationEntitySetIds: [
-              arrestCasesEntitySetId,
-              dmfRiskFactorsEntitySetId,
-              hearingsEntitySetId,
-              manualPretrialCourtCasesEntitySetId,
-              manualPretrialCasesEntitySetId,
-              peopleEntitySetId,
-              psaRiskFactorsEntitySetId,
-              pretrialCasesEntitySetId,
-              staffEntitySetId
-            ]
-          }
-        })
-      );
-      if (psaNeighbors.error) throw psaNeighbors.error;
-      psaNeighbors = fromJS(psaNeighbors.data).get(psaEntityKeyId, List());
-
-      psaNeighbors.forEach((neighbor) => {
-        const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
-        const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
-        if (appTypeFqn === HEARINGS) {
-          const hearingDetails = neighbor.get(PSA_NEIGHBOR.DETAILS, Map());
-          const {
-            [DATE_TIME]: hearingDateTime,
-            [HEARING_TYPE]: hearingType
-          } = getEntityProperties(neighbor, [
-            DATE_TIME,
-            HEARING_TYPE
-          ]);
-          const hearingIsInactive = hearingIsCancelled(neighbor);
-          const hearingIsGeneric = hearingType.toLowerCase().trim() === 'all other hearings';
-          if (hearingDateTime && !hearingIsGeneric && !hearingIsInactive) {
-            mostRecentPSANeighborsByAppTypeFqn = mostRecentPSANeighborsByAppTypeFqn.set(
-              appTypeFqn,
-              mostRecentPSANeighborsByAppTypeFqn.get(appTypeFqn, List()).push(fromJS(hearingDetails))
-            );
-          }
-        }
-        else if (LIST_FQNS.includes(appTypeFqn)) {
-          mostRecentPSANeighborsByAppTypeFqn = mostRecentPSANeighborsByAppTypeFqn.set(
-            appTypeFqn,
-            mostRecentPSANeighborsByAppTypeFqn.get(appTypeFqn, List()).push(neighbor)
-          );
-        }
-        else if (appTypeFqn === MANUAL_PRETRIAL_CASES || appTypeFqn === MANUAL_PRETRIAL_COURT_CASES) {
-          mostRecentPSANeighborsByAppTypeFqn = mostRecentPSANeighborsByAppTypeFqn
-            .set(MANUAL_PRETRIAL_CASES, fromJS(neighbor));
-        }
-        else {
-          mostRecentPSANeighborsByAppTypeFqn = mostRecentPSANeighborsByAppTypeFqn.set(
-            appTypeFqn,
-            fromJS(neighbor)
-          );
-        }
-      });
-    }
-    yield put(getPersonNeighbors.success(action.id, {
-      personId,
-      personEntityKeyId,
-      neighbors: uniqNeighborsByEntitySet,
-      psaScoresEntitySetId,
-      mostRecentPSA,
-      mostRecentPSANeighborsByAppTypeFqn
-    }));
-  }
-  catch (error) {
-    console.error(error);
-    yield put(getPersonNeighbors.failure(action.id, { error, personId }));
-  }
-  finally {
-    yield put(getPersonNeighbors.finally(action.id));
-  }
-}
-
-function* getPersonNeighborsWatcher() :Generator<*, *, *> {
-  yield takeEvery(GET_PERSON_NEIGHBORS, getPersonNeighborsWorker);
-}
-
 
 function* getStaffEKIDsWorker(action) :Generator<*, *, *> {
 
@@ -888,7 +621,6 @@ function* loadRequiresActionPeopleWatcher() :Generator<*, *, *> {
 export {
   getPeopleNeighborsWatcher,
   getPersonDataWatcher,
-  getPersonNeighborsWatcher,
   getStaffEKIDsWatcher,
   loadRequiresActionPeopleWatcher
 };

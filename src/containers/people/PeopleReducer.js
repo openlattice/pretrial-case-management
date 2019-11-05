@@ -29,7 +29,6 @@ import {
   CLEAR_PERSON,
   getPeopleNeighbors,
   getPersonData,
-  getPersonNeighbors,
   getStaffEKIDs,
   loadRequiresActionPeople,
 } from './PeopleActions';
@@ -243,33 +242,6 @@ export default function peopleReducer(state :Map = INITIAL_STATE, action :Object
           const { numSubmissions } = action.value;
           return state.set(PEOPLE_DATA.VOICE_ENROLLMENT_PROGRESS, numSubmissions);
         }
-      });
-    }
-
-    case getPersonNeighbors.case(action.type): {
-      return getPersonNeighbors.reducer(state, action, {
-        REQUEST: () => state
-          .setIn([REDUX.ACTIONS, PEOPLE_ACTIONS.GET_PERSON_NEIGHBORS, action.id], fromJS(action))
-          .setIn([REDUX.ACTIONS, PEOPLE_ACTIONS.GET_PERSON_NEIGHBORS, REDUX.REQUEST_STATE], PENDING),
-        SUCCESS: () => {
-          const { personEntityKeyId, neighbors } = action.value;
-          return (
-            state
-              .setIn([PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID, personEntityKeyId], neighbors)
-              .setIn([REDUX.ACTIONS, PEOPLE_ACTIONS.GET_PERSON_NEIGHBORS, REDUX.REQUEST_STATE], SUCCESS)
-          );
-        },
-        FAILURE: () => {
-          if (actionValueIsInvalid(action.value)) {
-            return state;
-          }
-          const { error } = action.value;
-          return state
-            .setIn([REDUX.ERRORS, PEOPLE_ACTIONS.GET_PERSON_NEIGHBORS], error)
-            .setIn([REDUX.ACTIONS, PEOPLE_ACTIONS.GET_PERSON_NEIGHBORS, REDUX.REQUEST_STATE], FAILURE);
-        },
-        FINALLY: () => state
-          .deleteIn([REDUX.ACTIONS, PEOPLE_ACTIONS.GET_PERSON_NEIGHBORS, action.id])
       });
     }
 
