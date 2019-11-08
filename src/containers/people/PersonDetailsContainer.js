@@ -4,6 +4,7 @@
 
 import React from 'react';
 import styled from 'styled-components';
+import type { RequestState } from 'redux-reqseq';
 import { Map, List } from 'immutable';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
@@ -24,7 +25,7 @@ import PersonHearings from '../../components/people/PersonHearings';
 import PersonCases from '../../components/people/PersonCases';
 import PSAModal from '../psamodal/PSAModal';
 import ViewMoreLink from '../../components/buttons/ViewMoreLink';
-import { formatPeopleInfo, getPSAIdsFromNeighbors } from '../../utils/PeopleUtils';
+import { formatPeopleInfo } from '../../utils/PeopleUtils';
 import { getMostRecentPSA } from '../../utils/PSAUtils';
 import { getChargeHistory } from '../../utils/CaseUtils';
 import { JURISDICTION } from '../../utils/consts/Consts';
@@ -40,8 +41,7 @@ import {
 import {
   getScheduledHearings,
   getPastHearings,
-  getAvailableHearings,
-  getHearingsIdsFromNeighbors
+  getAvailableHearings
 } from '../../utils/HearingUtils';
 import {
   SUBMIT,
@@ -81,7 +81,6 @@ const {
 } = APP_TYPES;
 
 const {
-  ENTITY_KEY_ID,
   STATUS,
   STATUS_NOTES,
   FAILURE_REASON
@@ -106,6 +105,8 @@ const IconContainer = styled.div`
 type Props = {
   entityKeyId :string,
   entitySetsByOrganization :Map<*, *>,
+  getPeopleNeighborsRequestState :RequestState,
+  getPersonDataRequestState :RequestState,
   hearingNeighborsById :Map<*, *>,
   hearingIds :List<*, *>,
   isLoadingHearingsNeighbors :boolean,
