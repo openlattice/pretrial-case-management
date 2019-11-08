@@ -23,7 +23,7 @@ import { OL } from '../../utils/consts/Colors';
 import { InputGroup } from '../../components/person/PersonFormTags';
 import { CHECKIN_FREQUENCIES } from '../../utils/consts/ReleaseConditionConsts';
 import { OptionsGrid, SubConditionsWrapper } from '../../components/releaseconditions/ReleaseConditionsStyledTags';
-import { PEOPLE, SUBMIT } from '../../utils/consts/FrontEndStateConsts';
+import { SUBMIT } from '../../utils/consts/FrontEndStateConsts';
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
@@ -107,7 +107,7 @@ class CheckInsAppointmentForm extends React.Component<Props, State> {
 
   createCheckInSubmissionValues = (date) => {
     const startDate = date;
-    const endDate = DateTime.fromISO(startDate).plus({ day: 1 }).toISODate();
+    const endDate = DateTime.fromISO(startDate).plus({ days: 1 }).toISODate();
     const appointmentEntity = { [PROPERTY_TYPES.START_DATE]: startDate, [PROPERTY_TYPES.END_DATE]: endDate };
     return fromJS(appointmentEntity);
   }
@@ -337,14 +337,10 @@ class CheckInsAppointmentForm extends React.Component<Props, State> {
 function mapStateToProps(state) {
   const app = state.get(STATE.APP);
   const submit = state.get(STATE.SUBMIT);
-  const people = state.get(STATE.PEOPLE);
   return {
     app,
     [APP_DATA.SELECTED_ORG_ID]: app.get(APP_DATA.SELECTED_ORG_ID),
     [APP_DATA.SELECTED_ORG_SETTINGS]: app.get(APP_DATA.SELECTED_ORG_SETTINGS),
-
-    [PEOPLE.REFRESHING_PERSON_NEIGHBORS]: people.get(PEOPLE.REFRESHING_PERSON_NEIGHBORS),
-
     [SUBMIT.SUBMITTING]: submit.get(SUBMIT.SUBMITTING, false)
   };
 }

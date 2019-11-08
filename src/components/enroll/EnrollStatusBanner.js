@@ -16,7 +16,10 @@ import { getEntityProperties } from '../../utils/DataUtils';
 import { formatPersonName, formatPeopleInfo } from '../../utils/PeopleUtils';
 import { InputRow } from '../person/PersonFormTags';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { ENROLL, PEOPLE, STATE } from '../../utils/consts/FrontEndStateConsts';
+import { ENROLL } from '../../utils/consts/FrontEndStateConsts';
+
+import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { PEOPLE_DATA } from '../../utils/consts/redux/PeopleConsts';
 
 import * as EnrollActionFactory from '../../containers/enroll/EnrollActionFactory';
 
@@ -198,7 +201,7 @@ function mapStateToProps(state) {
   const enroll = state.get(STATE.ENROLL);
 
   return {
-    [PEOPLE.VOICE_ENROLLMENT_PROGRESS]: people.get(PEOPLE.VOICE_ENROLLMENT_PROGRESS),
+    [PEOPLE_DATA.VOICE_ENROLLMENT_PROGRESS]: people.get(PEOPLE_DATA.VOICE_ENROLLMENT_PROGRESS),
     [ENROLL.LOADING_PROFILE]: enroll.get(ENROLL.LOADING_PROFILE),
   };
 }

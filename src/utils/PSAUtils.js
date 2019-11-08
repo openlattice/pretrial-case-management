@@ -1,12 +1,14 @@
-
-import Immutable from 'immutable';
+/*
+ * @flow
+ */
+import { List, Map } from 'immutable';
 import { DateTime } from 'luxon';
 
 import { APP_TYPES, PROPERTY_TYPES } from './consts/DataModelConsts';
 import { PSA_STATUSES } from './consts/Consts';
 import { PSA_NEIGHBOR, PSA_ASSOCIATION } from './consts/FrontEndStateConsts';
 import { sortPeopleByName } from './PeopleUtils';
-import { getFirstNeighborValue } from './DataUtils';
+import { getFirstNeighborValue, getEntityProperties } from './DataUtils';
 
 const {
   ASSESSED_BY,
@@ -14,6 +16,8 @@ const {
   PEOPLE,
   STAFF
 } = APP_TYPES;
+
+const { ENTITY_KEY_ID, DATE_TIME, STATUS } = PROPERTY_TYPES;
 
 export const getPSAFields = (scores) => {
   const failureReason = getFirstNeighborValue(scores, PROPERTY_TYPES.FAILURE_REASON);
@@ -36,8 +40,8 @@ export const getPSAFields = (scores) => {
 };
 
 export const sortByName = ([id1, neighbor1], [id2, neighbor2]) => {
-  const p1 = neighbor1.getIn([PEOPLE, PSA_NEIGHBOR.DETAILS], Immutable.Map());
-  const p2 = neighbor2.getIn([PEOPLE, PSA_NEIGHBOR.DETAILS], Immutable.Map());
+  const p1 = neighbor1.getIn([PEOPLE, PSA_NEIGHBOR.DETAILS], Map());
+  const p2 = neighbor2.getIn([PEOPLE, PSA_NEIGHBOR.DETAILS], Map());
 
   return sortPeopleByName(p1, p2);
 };
@@ -60,12 +64,12 @@ export const sortByDate = ([id1, neighbor1], [id2, neighbor2], entitySetsByOrgan
     return null;
   };
 
-  neighbor1.get(STAFF, Immutable.List()).forEach((neighborObj) => {
+  neighbor1.get(STAFF, List()).forEach((neighborObj) => {
     const date = getDate(neighborObj, latest1);
     if (date) latest1 = date;
   });
 
-  neighbor2.get(STAFF, Immutable.List()).forEach((neighborObj) => {
+  neighbor2.get(STAFF, List()).forEach((neighborObj) => {
     const date = getDate(neighborObj, latest2);
     if (date) latest2 = date;
   });
@@ -82,25 +86,25 @@ export const sortByDate = ([id1, neighbor1], [id2, neighbor2], entitySetsByOrgan
 };
 
 export const groupByStatus = (scoreSeq) => {
-  let statusMap = Immutable.Map();
+  let statusMap = Map();
 
   scoreSeq.forEach(([scoreId, scores]) => {
     const status = scores.getIn([PROPERTY_TYPES.STATUS, 0], '');
-    statusMap = statusMap.set(status, statusMap.get(status, Immutable.Map()).set(scoreId, scores));
+    statusMap = statusMap.set(status, statusMap.get(status, Map()).set(scoreId, scores));
   });
 
   return statusMap;
 };
 
 export const psaIsClosed = (psa) => {
-  const status = psa.getIn([PROPERTY_TYPES.STATUS, 0]);
-  return status && status !== PSA_STATUSES.OPEN;
+  const { [STATUS]: psaStatus } = getEntityProperties(psa, [STATUS]);
+  return psaStatus && psaStatus !== PSA_STATUSES.OPEN;
 };
 
 export const getLastEditDetails = (neighbors) => {
   let date;
   let user;
-  neighbors.get(STAFF, Immutable.List()).forEach((neighbor) => {
+  neighbors.get(STAFF, List()).forEach((neighbor) => {
     if (neighbor.getIn([PSA_ASSOCIATION.ENTITY_SET, 'name']) === EDITED_BY) {
       const editUser = neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.PERSON_ID, 0]);
       const editDate = DateTime.fromISO(neighbor.getIn([PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.DATE_TIME, 0], ''));
@@ -112,4 +116,27 @@ export const getLastEditDetails = (neighbors) => {
   });
 
   return { date, user };
+};
+
+export const getOpenPSAs = (psas :Object[]) => {
+  psas.filter(psaIsClosed);
+};
+
+export const getMostRecentPSA = (psas :Object[]) => {
+  let mostRecentPSAEKID = null;
+  let mostRecentPSA = Map();
+  let mostRecentPSADateTime;
+  psas.forEach((psa) => {
+    const {
+      [ENTITY_KEY_ID]: psaEKID,
+      [DATE_TIME]: psaDateTime
+    } = getEntityProperties(psa, [ENTITY_KEY_ID, DATE_TIME]);
+    const psaDT = DateTime.fromISO(psaDateTime);
+    if (!mostRecentPSADateTime || mostRecentPSADateTime < psaDT) {
+      mostRecentPSAEKID = psaEKID;
+      mostRecentPSADateTime = psaDT;
+      mostRecentPSA = psa;
+    }
+  });
+  return { mostRecentPSAEKID, mostRecentPSA };
 };

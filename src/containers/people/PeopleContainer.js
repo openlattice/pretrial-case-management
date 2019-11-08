@@ -270,15 +270,14 @@ function mapStateToProps(state) {
   const isFetchingPeople = state.getIn([STATE.SEARCH, SEARCH.LOADING], false);
   const loadingPSAData = state.getIn([STATE.REVIEW, REVIEW.LOADING_DATA], false);
   const openPSAs = state.getIn([STATE.REVIEW, REVIEW.SCORES], Immutable.Map());
-  const psaNeighborsById = state.getIn([STATE.REVIEW, REVIEW.NEIGHBORS_BY_ID], Immutable.Map());
+  const psaNeighborsById = state.getIn([STATE.REVIEW, REVIEW.PSA_NEIGHBORS_BY_ID], Immutable.Map());
   return {
     [APP_DATA.SELECTED_ORG_SETTINGS]: app.get(APP_DATA.SELECTED_ORG_SETTINGS),
     peopleResults,
     isFetchingPeople,
     loadingPSAData,
     openPSAs,
-    psaNeighborsById,
-    [PEOPLE.SCORES_ENTITY_SET_ID]: state.getIn([STATE.REVIEW, REVIEW.ENTITY_SET_ID], Immutable.Map())
+    psaNeighborsById
   };
 }
 

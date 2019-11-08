@@ -21,7 +21,7 @@ export const sortCourtrooms = (str1, str2) => {
 
 export const stripIdField = (entity) => {
   if (isImmutable(entity)) {
-    return entity.delete(OPENLATTICE_ID_FQN).delete('id');
+    return entity.get(PSA_NEIGHBOR.DETAILS, entity).delete(OPENLATTICE_ID_FQN).delete('id');
   }
 
   const newEntity = Object.assign({}, entity);

@@ -49,7 +49,7 @@ import * as AppActionFactory from './AppActionFactory';
 import * as ChargesActionFactory from '../charges/ChargesActionFactory';
 import { loadCounties } from '../counties/CountiesActions';
 import { loadJudges } from '../hearings/HearingsActions';
-import { getStaffEKIDs } from '../people/PeopleActionFactory';
+import { getStaffEKIDs } from '../people/PeopleActions';
 
 declare var gtag :?Function;
 

@@ -11,7 +11,7 @@ import { APP_TYPES_FQNS } from '../../utils/consts/DataModelConsts';
 import { REDUX } from '../../utils/consts/redux/SharedConsts';
 import { actionValueIsInvalid } from '../../utils/consts/redux/ReduxUtils';
 import { APP_ACTIONS, APP_DATA } from '../../utils/consts/redux/AppConsts';
-import { getStaffEKIDs } from '../people/PeopleActionFactory';
+import { getStaffEKIDs } from '../people/PeopleActions';
 import {
   loadApp,
   SWITCH_ORGANIZATION
