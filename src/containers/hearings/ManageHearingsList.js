@@ -13,25 +13,33 @@ import { bindActionCreators } from 'redux';
 import ManageHearingsListItem from '../../components/managehearings/ManageHearingsListItem';
 import { OL } from '../../utils/consts/Colors';
 import { STATE } from '../../utils/consts/redux/SharedConsts';
-import { COURT, PSA_ASSOCIATION } from '../../utils/consts/FrontEndStateConsts';
 import { TIME_FORMAT } from '../../utils/consts/DateTimeConsts';
 import { formatDate } from '../../utils/FormattingUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { HEARINGS_ACTIONS, HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
-import { getReqState } from '../../utils/consts/redux/ReduxUtils';
 import { getEntityProperties } from '../../utils/DataUtils';
+import { getOpenPSAs } from '../../utils/PSAUtils';
+import { getPreferredMobileContacts } from '../../utils/ContactInfoUtils';
+
+import { HEARINGS_ACTIONS, HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
+import { PEOPLE_ACTIONS, PEOPLE_DATA } from '../../utils/consts/redux/PeopleConsts';
+import { getReqState } from '../../utils/consts/redux/ReduxUtils';
 
 import { bulkDownloadPSAReviewPDF } from '../review/ReviewActionFactory';
 
-const { PEOPLE } = APP_TYPES;
+const {
+  CONTACT_INFORMATION,
+  PEOPLE,
+  PSA_SCORES,
+  SUBSCRIPTION
+} = APP_TYPES;
 
 const {
-  COMPLETED_DATE_TIME,
   COURTROOM,
   DATE_TIME,
   ENTITY_KEY_ID,
   FIRST_NAME,
   HEARING_TYPE,
+  IS_ACTIVE,
   LAST_NAME,
   MIDDLE_NAME
 } = PROPERTY_TYPES;
@@ -39,6 +47,7 @@ const {
 
 const ManageHearingsList = styled.div`
   width: 100%;
+  overflow: hidden;
   overflow-y: scroll;
   display: flex;
   flex-direction: column;
@@ -68,10 +77,8 @@ type Props = {
   hearingsByCounty :Map<*, *>,
   hearingsByTime :Map<*, *>,
   hearingNeighborsById :Map<*, *>,
-  peopleIdsToOpenPSAIds :Map<*, *>,
-  peopleReceivingReminders :Set<*>,
-  peopleWithMultipleOpenPsas :Set<*>,
-  psaEditDatesById :Map<*, *>,
+  peopleNeighborsById :Map<*, *>,
+  selectHearing :() => void,
   actions :{
     bulkDownloadPSAReviewPDF :({ peopleEntityKeyIds :string[] }) => void
   }
@@ -91,7 +98,7 @@ class ManageHearingsContainer extends React.Component<Props, *> {
 
   renderSearch = () => {
     const { searchTerm } = this.state;
-    return <SearchInput onChange={this.handleInputChange} name="searchTerm" value={searchTerm} />
+    return <SearchInput onChange={this.handleInputChange} name="searchTerm" value={searchTerm} />;
   }
 
   filterByPeople = (hearing) => {
@@ -139,10 +146,8 @@ class ManageHearingsContainer extends React.Component<Props, *> {
       hearingsByTime,
       hearingsByCounty,
       hearingNeighborsById,
-      peopleIdsToOpenPSAIds,
-      peopleReceivingReminders,
-      peopleWithMultipleOpenPsas,
-      psaEditDatesById
+      peopleNeighborsById,
+      selectHearing
     } = this.props;
     const hearinIdsForCountyFilter = hearingsByCounty.get(countyFilter, Set());
 
@@ -167,28 +172,29 @@ class ManageHearingsContainer extends React.Component<Props, *> {
                 const {
                   [ENTITY_KEY_ID]: personEKID,
                 } = getEntityProperties(person, [ENTITY_KEY_ID]);
-                const psaEKID :string = peopleIdsToOpenPSAIds.get(personEKID, '');
-                const isReceivingReminders :boolean = peopleReceivingReminders.includes(personEKID);
-                const hasMultipleOpenPSAs :boolean = peopleWithMultipleOpenPsas.includes(personEKID);
+                const personNeighbors = peopleNeighborsById.get(personEKID, Map());
+                const personPSAs = personNeighbors.get(PSA_SCORES, List());
+                const personOpenPSAs = getOpenPSAs(personPSAs);
+                const personContacts = personNeighbors.get(CONTACT_INFORMATION, List());
+                const personPreferredContacts = getPreferredMobileContacts(personContacts);
+                const personSubscription = personNeighbors.get(SUBSCRIPTION, Map());
+                const { [IS_ACTIVE]: subscriptionIsActive } = getEntityProperties(personSubscription, [IS_ACTIVE]);
+                const hearingPSA = hearingNeighbors.get(PSA_SCORES, Map());
+                const { [DATE_TIME]: psaDate } = getEntityProperties(hearingPSA, [DATE_TIME]);
 
-                const completedDateFromAssociation = psaEditDatesById
-                  .getIn([psaEKID, PSA_ASSOCIATION.DETAILS, COMPLETED_DATE_TIME, 0], '');
-                const dateTimeFromAssociation = psaEditDatesById
-                  .getIn([psaEKID, PSA_ASSOCIATION.DETAILS, DATE_TIME, 0], '');
-                const editDateFromPSA = psaEditDatesById.getIn([psaEKID, DATE_TIME], '');
-                const lastEditDateString = completedDateFromAssociation || dateTimeFromAssociation || editDateFromPSA;
-
-                const lastEditDate :string = formatDate(lastEditDateString);
+                const psaCreationDate :string = formatDate(psaDate);
 
                 mutableMap.setIn(
                   [time, `${hearingCourtroom}-${hearingType}`],
                   mutableMap
                     .getIn([time, `${hearingCourtroom}-${hearingType}`], List()).push(
                       <ManageHearingsListItem
+                          hearingEKID={hearingEKID}
+                          selectHearing={selectHearing}
                           hearingNeighbors={hearingNeighbors}
-                          lastEditDate={lastEditDate}
-                          isReceivingReminders={isReceivingReminders}
-                          hasMultipleOpenPSAs={hasMultipleOpenPSAs} />
+                          lastEditDate={psaCreationDate}
+                          isReceivingReminders={subscriptionIsActive && personPreferredContacts.size}
+                          hasMultipleOpenPSAs={personOpenPSAs.size > 1} />
                     )
                 );
               }
@@ -205,7 +211,7 @@ class ManageHearingsContainer extends React.Component<Props, *> {
       const hearingsByCoutroom = hearingsByTimeAndCourtroom.get(time, Map());
       return (
         <>
-          <HearingTime>{time}</HearingTime>
+          <HearingTime key={time}>{time}</HearingTime>
           {
             hearingsByCoutroom.entrySeq().map(([courtroomHearingTypeString, hearings]) => {
               const courtroomHearingTypeArray = courtroomHearingTypeString.split('-');
@@ -213,7 +219,7 @@ class ManageHearingsContainer extends React.Component<Props, *> {
               const hearingType = courtroomHearingTypeArray[1];
               return (
                 <>
-                  <HeaderItem>
+                  <HeaderItem key={courtroomHearingTypeString}>
                     {courtroom}
                     <HearingType>{hearingType}</HearingType>
                   </HeaderItem>
@@ -230,7 +236,7 @@ class ManageHearingsContainer extends React.Component<Props, *> {
   render() {
     return (
       <ManageHearingsList>
-        <HeaderItem>{this.renderSearch()}</HeaderItem>
+        <HeaderItem key="headerItem">{this.renderSearch()}</HeaderItem>
         { this.renderHearingsByTimeAndCourtroom() }
       </ManageHearingsList>
     );
@@ -238,25 +244,21 @@ class ManageHearingsContainer extends React.Component<Props, *> {
 }
 
 function mapStateToProps(state) {
-  const court = state.get(STATE.COURT);
   const hearings = state.get(STATE.HEARINGS);
+  const people = state.get(STATE.PEOPLE);
   const hearingDate = hearings.get(HEARINGS_DATA.MANAGE_HEARINGS_DATE).toISODate();
   const hearingsByTime = hearings.getIn([HEARINGS_DATA.HEARINGS_BY_DATE_AND_TIME, hearingDate], Map());
   return {
-    // Court
-    [COURT.PEOPLE_WITH_OPEN_PSAS]: court.get(COURT.PEOPLE_WITH_OPEN_PSAS),
-    [COURT.PEOPLE_WITH_MULTIPLE_OPEN_PSAS]: court.get(COURT.PEOPLE_WITH_MULTIPLE_OPEN_PSAS),
-    [COURT.PEOPLE_RECEIVING_REMINDERS]: court.get(COURT.PEOPLE_RECEIVING_REMINDERS),
-    [COURT.PSA_EDIT_DATES]: court.get(COURT.PSA_EDIT_DATES),
-    [COURT.OPEN_PSA_IDS]: court.get(COURT.OPEN_PSA_IDS),
-    [COURT.PEOPLE_IDS_TO_OPEN_PSA_IDS]: court.get(COURT.PEOPLE_IDS_TO_OPEN_PSA_IDS),
-
     // Hearings
     hearingsByTime,
     loadHearingsForDateReqState: getReqState(hearings, HEARINGS_ACTIONS.LOAD_HEARINGS_FOR_DATE),
     loadHearingNeighborsReqState: getReqState(hearings, HEARINGS_ACTIONS.LOAD_HEARING_NEIGHBORS),
     [HEARINGS_DATA.HEARINGS_BY_COUNTY]: hearings.get(HEARINGS_DATA.HEARINGS_BY_COUNTY),
     [HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID]: hearings.get(HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID),
+
+    // People
+    getPeopleNeighborsRequestState: getReqState(people, PEOPLE_ACTIONS.GET_PEOPLE_NEIGHBORS),
+    [PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID]: people.get(PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID, Map()),
   };
 }
 
