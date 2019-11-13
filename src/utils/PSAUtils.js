@@ -98,7 +98,12 @@ export const groupByStatus = (scoreSeq) => {
 
 export const psaIsClosed = (psa) => {
   const { [STATUS]: psaStatus } = getEntityProperties(psa, [STATUS]);
-  return psaStatus && psaStatus !== PSA_STATUSES.OPEN;
+  return psaStatus && (psaStatus !== PSA_STATUSES.OPEN);
+};
+
+export const psaIsOpen = (psa) => {
+  const { [STATUS]: psaStatus } = getEntityProperties(psa, [STATUS]);
+  return psaStatus && (psaStatus === PSA_STATUSES.OPEN);
 };
 
 export const getLastEditDetails = (neighbors) => {
@@ -118,9 +123,7 @@ export const getLastEditDetails = (neighbors) => {
   return { date, user };
 };
 
-export const getOpenPSAs = (psas :Object[]) => {
-  return psas.filter(psaIsClosed);
-};
+export const getOpenPSAs = (psas :Object[]) => psas.filter(psaIsOpen);
 
 export const getMostRecentPSA = (psas :Object[]) => {
   let mostRecentPSAEKID = null;
