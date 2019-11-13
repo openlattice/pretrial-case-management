@@ -4,7 +4,6 @@
 
 import React from 'react';
 import styled from 'styled-components';
-import { DateTime } from 'luxon';
 import { Map } from 'immutable';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -33,6 +32,11 @@ const DetailsContainer = styled.div`
   display: flex;
   justify-content: flex-start;
   flex-direction: column;
+`;
+
+const ModalContainer = styled.div`
+  width: 0;
+  height: 0;
 `;
 
 const StyledButton = styled(Button)`
@@ -111,9 +115,6 @@ class ManageHearingsDetails extends React.Component<Props, *> {
     );
   }
 
-  renderPSADetails = () => {
-  }
-
   renderHearingAndReleaseConditions = () => {
     const { hearingEKID } = this.props;
     return hearingEKID
@@ -128,7 +129,7 @@ class ManageHearingsDetails extends React.Component<Props, *> {
         <DetailsContainer>
           { this.renderPersonDetails() }
           { this.renderHearingAndReleaseConditions() }
-          { this.renderSubscriptionModal() }
+          <ModalContainer>{ this.renderSubscriptionModal() }</ModalContainer>
         </DetailsContainer>
       </>
     );
