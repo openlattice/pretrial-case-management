@@ -46,6 +46,7 @@ import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 
 import { filterPeopleIdsWithOpenPSAs } from '../court/CourtActionFactory';
+import { getPeopleNeighbors } from '../people/PeopleActions';
 import {
   LOAD_HEARINGS_FOR_DATE,
   LOAD_HEARING_NEIGHBORS,
@@ -102,7 +103,8 @@ const {
   PSA_SCORES,
   RELEASE_CONDITIONS,
   REMINDERS,
-  STAFF
+  STAFF,
+  SUBSCRIPTION
 } = APP_TYPES;
 
 const {
@@ -238,7 +240,11 @@ function* loadHearingsForDateWorker(action :SequenceAction) :Generator<*, *, *> 
     const hearingsESID :UUID = getEntitySetIdFromApp(app, HEARINGS);
     const datePropertyTypeId :UUID = getPropertyTypeId(edm, DATE_TIME);
 
-    const searchTerm :string = getUTCDateRangeSearchString(datePropertyTypeId, action.value);
+    const { courtDate, manageHearingsDate } = action.value;
+
+    const hearingDT = courtDate || manageHearingsDate;
+
+    const searchTerm :string = getUTCDateRangeSearchString(datePropertyTypeId, hearingDT);
 
     const hearingOptions = {
       searchTerm,
@@ -264,7 +270,7 @@ function* loadHearingsForDateWorker(action :SequenceAction) :Generator<*, *, *> 
         const hearingDateTimeDT = DateTime.fromISO(hearingDateTime);
         const formattedHearingTime = formatTime(hearingDateTime);
         const hearingExists = !!hearingDateTime;
-        const hearingOnDateSelected = hearingDateTimeDT.hasSame(action.value, 'day');
+        const hearingOnDateSelected = hearingDateTimeDT.hasSame(hearingDT, 'day');
         const hearingIsInactive = hearingIsCancelled(hearing);
         if (hearingType
           && hearingExists
@@ -287,12 +293,11 @@ function* loadHearingsForDateWorker(action :SequenceAction) :Generator<*, *, *> 
     }
 
     hearingIds = hearingIds.toJS();
-    const hearingDateTime = action.value;
-    const hearingNeighbors = loadHearingNeighbors({ hearingIds, hearingDateTime });
+    const hearingNeighbors = loadHearingNeighbors({ hearingIds, courtDate, manageHearingsDate });
 
     yield put(loadHearingsForDate.success(action.id, {
       hearingsById,
-      hearingDateTime,
+      hearingDateTime: hearingDT,
       hearingsOnDate,
       hearingsByTime,
       hearingIdsByCourtroom,
@@ -318,7 +323,9 @@ function* loadHearingNeighborsWorker(action :SequenceAction) :Generator<*, *, *>
   try {
     yield put(loadHearingNeighbors.request(action.id));
 
-    const { hearingIds, hearingDateTime } = action.value;
+    const { hearingIds, courtDate, manageHearingsDate } = action.value;
+
+    const hearingDateTime = courtDate || manageHearingsDate;
 
     let hearingNeighborsById = Map();
     let hearingIdsByCounty = Map();
@@ -400,7 +407,7 @@ function* loadHearingNeighborsWorker(action :SequenceAction) :Generator<*, *, *>
                 hearingIdsByCounty.get(entityKeyId, Set()).add(hearingId)
               );
               if (hearing.size) {
-                const { [COURTROOM]: hearingCourtRoom } = getEntityProperties(hearing, [COURTROOM])
+                const { [COURTROOM]: hearingCourtRoom } = getEntityProperties(hearing, [COURTROOM]);
                 courtroomsByCounty = courtroomsByCounty.set(
                   entityKeyId,
                   courtroomsByCounty.get(entityKeyId, Set()).add(hearingCourtRoom)
@@ -434,7 +441,17 @@ function* loadHearingNeighborsWorker(action :SequenceAction) :Generator<*, *, *>
       hearingDateTime
     }));
 
-    if (hearingDateTime && hearingDateTime.isValid) {
+    if (manageHearingsDate && manageHearingsDate.isValid) {
+      const destinationEntitySetIds = [HEARINGS, SUBSCRIPTION, CONTACT_INFORMATION];
+      const sourceEntitySetIds = [PSA_SCORES, CONTACT_INFORMATION];
+      const loadPeopleNeighbors = getPeopleNeighbors({
+        destinationEntitySetIds,
+        peopleEKIDS: personIds.toJS(),
+        sourceEntitySetIds
+      });
+      yield put(loadPeopleNeighbors);
+    }
+    if (courtDate && courtDate.isValid) {
       const peopleIdsWithOpenPSAs = filterPeopleIdsWithOpenPSAs({
         personIds,
         hearingDateTime,

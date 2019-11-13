@@ -114,7 +114,7 @@ class ManageHearingsContainer extends React.Component<Props, *> {
     const preferredCountyEKID :UUID = selectedOrganizationSettings.get(PREFERRED_COUNTY, '');
     if (selectedOrganizationId) {
       if (!hearingsByTime.size || !hearingNeighborsById.size) {
-        actions.loadHearingsForDate(manageHearingsDate);
+        actions.loadHearingsForDate({ manageHearingsDate });
       }
       if (preferredCountyEKID) actions.setCountyFilter({ value: preferredCountyEKID });
     }
@@ -132,7 +132,7 @@ class ManageHearingsContainer extends React.Component<Props, *> {
     const preferredCountyEKID :UUID = selectedOrganizationSettings.get(PREFERRED_COUNTY, '');
     if (selectedOrganizationId !== nextProps.selectedOrganizationId) {
       if (!hearingsByTime.size || !hearingNeighborsById.size || manageHearingsDate !== nextProps.manageHearingsDate) {
-        actions.loadHearingsForDate(manageHearingsDate);
+        actions.loadHearingsForDate({ manageHearingsDate });
         if (preferredCountyEKID) actions.setCountyFilter({ value: preferredCountyEKID });
       }
     }
@@ -173,10 +173,10 @@ class ManageHearingsContainer extends React.Component<Props, *> {
 
   handleDateChange = (dateStr) => {
     const { actions } = this.props;
-    const date = DateTime.fromFormat(dateStr, DATE_FORMAT);
-    if (date.isValid) {
-      actions.setManageHearingsDate({ date });
-      actions.loadHearingsForDate(date);
+    const manageHearingsDate = DateTime.fromFormat(dateStr, DATE_FORMAT);
+    if (manageHearingsDate.isValid) {
+      actions.setManageHearingsDate({ date: manageHearingsDate });
+      actions.loadHearingsForDate({ manageHearingsDate });
     }
   }
 

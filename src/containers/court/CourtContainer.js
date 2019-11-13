@@ -277,7 +277,7 @@ class CourtContainer extends React.Component<Props, State> {
     if (selectedOrganizationId) {
       actions.checkPSAPermissions();
       if (!hearingsByTime.size || !hearingNeighborsById.size) {
-        actions.loadHearingsForDate(courtDate);
+        actions.loadHearingsForDate({ courtDate });
       }
     }
     this.setState({ countyFilter: preferredCountyEKID });
@@ -296,7 +296,7 @@ class CourtContainer extends React.Component<Props, State> {
     if (selectedOrganizationId !== nextProps.selectedOrganizationId) {
       actions.checkPSAPermissions();
       if (!hearingsByTime.size || !hearingNeighborsById.size || courtDate !== nextProps.courtDate) {
-        actions.loadHearingsForDate(courtDate);
+        actions.loadHearingsForDate({ courtDate });
         this.setState({ countyFilter: preferredCountyEKID });
       }
     }
@@ -507,7 +507,7 @@ class CourtContainer extends React.Component<Props, State> {
     const courtDate = DateTime.fromFormat(dateStr, DATE_FORMAT);
     if (courtDate.isValid) {
       actions.setCourtDate({ courtDate });
-      actions.loadHearingsForDate(courtDate);
+      actions.loadHearingsForDate({ courtDate });
     }
   }
 
