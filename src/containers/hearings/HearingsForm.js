@@ -405,9 +405,9 @@ class HearingForm extends React.Component<Props, State> {
     const { hearingTime } = this.getHearingInfo();
     return modifyingHearing
       ? (
-        <StyledSearchableSelect
+        <Select
             options={getTimeOptions()}
-            value={newHearingTime}
+            value={{ label: newHearingTime, value: newHearingTime }}
             onSelect={time => this.onSelectChange({
               [HEARING_CONSTS.FIELD]: HEARING_CONSTS.NEW_HEARING_TIME,
               [HEARING_CONSTS.NEW_HEARING_TIME]: time
@@ -421,9 +421,9 @@ class HearingForm extends React.Component<Props, State> {
     const { hearingCourtroom } = this.getHearingInfo();
     return modifyingHearing
       ? (
-        <StyledSearchableSelect
+        <Select
             options={getCourtroomOptions()}
-            value={newHearingCourtroom}
+            value={{ label: newHearingCourtroom, value: newHearingCourtroom }}
             onSelect={courtroom => this.onSelectChange({
               [HEARING_CONSTS.FIELD]: HEARING_CONSTS.NEW_HEARING_COURTROOM,
               [HEARING_CONSTS.NEW_HEARING_COURTROOM]: courtroom
@@ -440,9 +440,9 @@ class HearingForm extends React.Component<Props, State> {
     const judgeIdsForCounty = judgesByCounty.get(preferredCountyEKID, List());
     return modifyingHearing
       ? (
-        <StyledSearchableSelect
+        <Select
             options={getJudgeOptions(judgeIdsForCounty, judgesById, true)}
-            value={judge}
+            value={{ label: judgeName, value: judge }}
             onSelect={this.onSelectChange}
             short />
       ) : judgeName;
@@ -460,9 +460,9 @@ class HearingForm extends React.Component<Props, State> {
   }
 
   renderCreateHearingButton = () => (
-    <CreateButton disabled={!this.isReadyToSubmit()} onClick={this.submitHearing}>
+    <StyledButton disabled={!this.isReadyToSubmit()} onClick={this.submitHearing}>
       Create New
-    </CreateButton>
+    </StyledButton>
   );
 
   renderUpdateAndCancelButtons = () => {
@@ -470,16 +470,15 @@ class HearingForm extends React.Component<Props, State> {
     return modifyingHearing
       ? (
         <HearingInfoButtons modifyingHearing>
-          <StyledBasicButton onClick={() => this.setState({ modifyingHearing: false })}>Cancel</StyledBasicButton>
-          <StyledBasicButton update onClick={this.updateHearing}>Update</StyledBasicButton>
+          <StyledButton onClick={() => this.setState({ modifyingHearing: false })}>Cancel</StyledButton>
+          <StyledButton update onClick={this.updateHearing}>Update</StyledButton>
         </HearingInfoButtons>
       )
       : (
         <HearingInfoButtons>
-          <StyledBasicButton
-              onClick={() => this.setState({ modifyingHearing: true })}>
+          <StyledButton onClick={() => this.setState({ modifyingHearing: true })}>
             Edit
-          </StyledBasicButton>
+          </StyledButton>
         </HearingInfoButtons>
       );
   }
@@ -523,7 +522,6 @@ class HearingForm extends React.Component<Props, State> {
     if (hearing) {
       buttonGroup = (
         <>
-          { modifyingHearing ? this.renderCancelHearingButton() : null }
           { this.renderUpdateAndCancelButtons() }
         </>
       );

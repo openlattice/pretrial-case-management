@@ -8,6 +8,7 @@ import { DateTime } from 'luxon';
 import { fromJS, Map, List } from 'immutable';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
+import { Button, Select } from 'lattice-ui-kit';
 
 import ContentBlock from '../../components/ContentBlock';
 import ContentSection from '../../components/ContentSection';
@@ -33,12 +34,8 @@ import * as HearingsActions from './HearingsActions';
 const { ENTITY_KEY_ID } = PROPERTY_TYPES;
 const { PREFERRED_COUNTY } = SETTINGS;
 
-const StyledSearchableSelect = styled(SearchableSelect)`
-  width: 200px;
-  input {
-    width: 100%;
-    font-size: 14px;
-  }
+const StyledSelect = styled(Select)`
+  width: 100%;
 `;
 
 const CreateButton = styled(InfoButton)`
@@ -197,7 +194,7 @@ class HearingSettingsForm extends React.Component<Props, State> {
   renderTimeOptions = () => {
     const { newHearingTime } = this.state;
     return (
-      <StyledSearchableSelect
+      <StyledSelect
           options={getTimeOptions()}
           value={newHearingTime}
           onSelect={hearingTime => this.onSelectChange({
@@ -211,7 +208,7 @@ class HearingSettingsForm extends React.Component<Props, State> {
   renderCourtoomOptions = () => {
     const { newHearingCourtroom } = this.state;
     return (
-      <StyledSearchableSelect
+      <StyledSelect
           options={getCourtroomOptions()}
           value={newHearingCourtroom}
           onSelect={hearingCourtroom => this.onSelectChange({
@@ -228,7 +225,7 @@ class HearingSettingsForm extends React.Component<Props, State> {
     const preferredCountyEKID = app.getIn([APP_DATA.SELECTED_ORG_SETTINGS, PREFERRED_COUNTY], '');
     const judgeIdsForCounty = judgesByCounty.get(preferredCountyEKID, List());
     return (
-      <StyledSearchableSelect
+      <StyledSelect
           options={getJudgeOptions(judgeIdsForCounty, judgesById)}
           value={judge}
           onSelect={this.onSelectChange}
