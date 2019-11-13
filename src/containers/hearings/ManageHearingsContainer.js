@@ -15,6 +15,7 @@ import {
 } from 'lattice-ui-kit';
 
 import ManageHearingsList from './ManageHearingsList';
+import ManageHearingsDetails from './ManageHearingsDetails';
 import CountiesDropdown from '../counties/CountiesDropdown';
 import DatePicker from '../../components/datetime/DatePicker';
 import { DATE_FORMAT } from '../../utils/consts/DateTimeConsts';
@@ -35,8 +36,9 @@ import { loadHearingsForDate, setManageHearingsDate, setCountyFilter } from './H
 const { PREFERRED_COUNTY } = SETTINGS;
 
 const ManageHearingsBody = styled.div`
+  width: 100%;
   display: grid;
-  grid-template-columns: 315px 645px;
+  grid-template-columns: 35% 65%;
 `;
 
 const StyledTitleWrapper = styled.div`
@@ -101,6 +103,14 @@ type Props = {
 };
 
 class ManageHearingsContainer extends React.Component<Props, *> {
+  constructor(props :Props) {
+    super(props);
+    this.state = {
+      selectedHearingEKID: ''
+    };
+  }
+
+  selectHearing = selectedHearingEKID => this.setState({ selectedHearingEKID });
 
   componentDidMount() {
     const {
@@ -224,6 +234,7 @@ class ManageHearingsContainer extends React.Component<Props, *> {
 
   render() {
     const { countyFilter, courtroomFilter } = this.props;
+    const { selectedHearingEKID } = this.state;
     return (
       <>
         { this.renderHeader() }
@@ -233,9 +244,10 @@ class ManageHearingsContainer extends React.Component<Props, *> {
           </CardSegment>
           <ManageHearingsBody>
             <ManageHearingsList
+                selectHearing={this.selectHearing}
                 countyFilter={countyFilter}
                 courtroomFilter={courtroomFilter} />
-            <div>details</div>
+            <ManageHearingsDetails hearingEKID={selectedHearingEKID} />
           </ManageHearingsBody>
         </Card>
       </>
@@ -248,7 +260,7 @@ function mapStateToProps(state) {
   const counties = state.get(STATE.COUNTIES);
   const edm = state.get(STATE.EDM);
   const hearings = state.get(STATE.HEARINGS);
-  const courtDate = hearings.get(HEARINGS_DATA.COURT_DATE).toISODate();
+  const courtDate = hearings.get(HEARINGS_DATA.MANAGE_HEARINGS_DATE).toISODate();
   const hearingsByTime = hearings.getIn([HEARINGS_DATA.HEARINGS_BY_DATE_AND_TIME, courtDate], Map());
   return {
     [APP_DATA.SELECTED_ORG_ID]: app.get(APP_DATA.SELECTED_ORG_ID),
