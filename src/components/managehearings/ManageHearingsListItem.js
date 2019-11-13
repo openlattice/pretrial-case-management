@@ -26,6 +26,10 @@ const {
   PICTURE
 } = PROPERTY_TYPES;
 
+const ListItemWrapper = styled.div`
+  display: block;
+  width: 100%;
+`;
 const ListItem = styled.div`
   width: 100%;
   display: grid;
@@ -79,16 +83,20 @@ const IconContainer = styled.div`
 
 type Props = {
   hearingNeighbors :Map<*, *>,
+  hearingEKID :string,
   lastEditDate :string,
   isReceivingReminders :boolean,
-  hasMultipleOpenPSAs :boolean
+  hasMultipleOpenPSAs :boolean,
+  selectHearing :() => void
 };
 
 const ManageHearingsListItem = ({
   hearingNeighbors,
+  hearingEKID,
   lastEditDate,
   isReceivingReminders,
-  hasMultipleOpenPSAs
+  hasMultipleOpenPSAs,
+  selectHearing
 } :Props) => {
   const person = hearingNeighbors.get(PEOPLE, Map());
   const hearingCase = hearingNeighbors.getIn([PRETRIAL_CASES, 0], Map());
@@ -101,7 +109,7 @@ const ManageHearingsListItem = ({
     ? <FontAwesomeIcon color={OL.GREY03} icon={faBell} /> : null;
   const hasOutcomeIcon = outcome.size
     ? <FontAwesomeIcon color={OL.GREY03} icon={faGavel} /> : null;
-  const editDateText :string = lastEditDate || 'NO OPEN PSA';
+  const editDateText :string = lastEditDate || 'NO PSA';
   const {
     [FIRST_NAME]: firstName,
     [MIDDLE_NAME]: middleName,
@@ -117,18 +125,20 @@ const ManageHearingsListItem = ({
   const { lastFirstMid } = formatPersonName(firstName, middleName, lastName);
 
   return (
-    <ListItem>
-      <Picture src={mugshot} alt="" />
-      <ListItemInfo>
-        <PSAInfo hasOpenPSA={lastEditDate}>{ psaInfo }</PSAInfo>
-        <IconContainer>
-          { hasOutcomeIcon }
-          { multiplePSAsIcon }
-          { isReceivingRemindersIcon }
-        </IconContainer>
-        <PersonName>{ lastFirstMid }</PersonName>
-      </ListItemInfo>
-    </ListItem>
+    <ListItemWrapper onClick={() => selectHearing(hearingEKID)}>
+      <ListItem>
+        <Picture src={mugshot} alt="" />
+        <ListItemInfo>
+          <PSAInfo hasOpenPSA={lastEditDate}>{ psaInfo }</PSAInfo>
+          <IconContainer>
+            { hasOutcomeIcon }
+            { multiplePSAsIcon }
+            { isReceivingRemindersIcon }
+          </IconContainer>
+          <PersonName>{ lastFirstMid }</PersonName>
+        </ListItemInfo>
+      </ListItem>
+    </ListItemWrapper>
   );
 };
 
