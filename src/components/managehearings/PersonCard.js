@@ -58,7 +58,7 @@ const SubscriptionText = styled.div`
   font-size: 12px;
   padding: 7px 10px 0 0;
   svg {
-    margin-right: 5px;
+    margin: 3px;
   }
 `;
 
