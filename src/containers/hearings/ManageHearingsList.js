@@ -47,6 +47,7 @@ const {
 
 const ManageHearingsList = styled.div`
   width: 100%;
+  max-width: 320px;
   overflow: hidden;
   overflow-y: scroll;
   display: flex;
